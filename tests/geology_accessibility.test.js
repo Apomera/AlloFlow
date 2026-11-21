@@ -22,9 +22,9 @@ describe('Geology Explorer text accessibility', () => {
   it('renders Geology Explorer without tiny utility or SVG text', () => {
     loadTool('stem_lab/stem_tool_geologyexplorer.js', 'geologyExplorer');
     const html = renderTool('geologyExplorer', { geologyExplorer: {} });
-    expect(html).not.toMatch(/text-\[(?:[0-9])px\]/);
+    expect(html).not.toMatch(/text-\[(?:[0-9]|10|11)px\]/);
     expect(html).not.toMatch(/font-size="(?:[0-9](?:\.[0-9]+)?)"/);
-    expect(html).toContain('text-[10px]');
+    expect(html).toContain('text-xs');
   });
 
   it('renders every scene and investigation mode without React key warnings', () => {

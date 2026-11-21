@@ -29,12 +29,12 @@ window.SelHub = window.SelHub || {
     document.body.appendChild(liveRegion);
   })();
 
-  // ── WCAG 2.3.3: Reduced-motion guard ──
+  // ── WCAG 2.3.3: Reduced-motion guard (scoped to Decisions shell) ──
   (function() {
     if (document.getElementById('allo-decisions-rm-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-decisions-rm-css';
-    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { [data-sel-tool-shell="decisions"] *, [data-sel-tool-shell="decisions"] *::before, [data-sel-tool-shell="decisions"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
     document.head.appendChild(st);
   })();
 
@@ -49,8 +49,10 @@ window.SelHub = window.SelHub || {
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    if (typeof window !== 'undefined' && ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute)) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
+      if (ac.state === 'suspended' && ac.resume) ac.resume();
       var osc = ac.createOscillator();
       var gain = ac.createGain();
       osc.type = type || 'sine';
@@ -1733,8 +1735,9 @@ window.SelHub = window.SelHub || {
                 h('div', {
                   style: {
                     width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
-                    background: done ? _decFg('#22c55e') : current ? '#b45309' : _decBg('#334155'),
-                    color: _decFg(done) || current ? _decFg('#fff') : _decFg('#94a3b8'), fontWeight: 600, transition: 'all 0.2s'
+                    background: done ? (_decHC ? '#000000' : '#22c55e') : current ? (_decHC ? '#000000' : '#b45309') : _decBg('#334155'),
+                    border: _decHC ? '1px solid #ffff00' : 'none',
+                    color: (done || current) ? _decFg('#fff') : _decFg('#94a3b8'), fontWeight: 600, transition: 'all 0.2s'
                   }
                 }, done ? '\u2713' : st.icon),
                 i < dtSteps.length - 1 && h('div', { style: { width: 16, height: 2, background: done ? _decFg('#22c55e') : _decBg('#334155') } })
@@ -1923,16 +1926,20 @@ window.SelHub = window.SelHub || {
               // Complete
               h('button', { 'aria-label': 'Complete & Next',
                 onClick: function() {
-                  var newDone = dtCompleted + 1;
-                  upd('dtCompleted', newDone);
+                  var doneIds = Array.isArray(d.dtCompletedIds) ? d.dtCompletedIds : [];
+                  var isNew = doneIds.indexOf(curDt.id) === -1;
+                  var nextIds = isNew ? doneIds.concat([curDt.id]) : doneIds;
+                  var newDone = isNew ? Math.max(dtCompleted + 1, nextIds.length) : dtCompleted;
                   logPractice('decision', curDt.id);
-                  awardXP(20);
-                  tryAwardBadge('first_decision');
-                  if (newDone >= 5) tryAwardBadge('decision_5');
+                  if (isNew) {
+                    awardXP(20);
+                    tryAwardBadge('first_decision');
+                    if (newDone >= 5) tryAwardBadge('decision_5');
+                  }
                   if (soundEnabled) sfxCorrect();
                   addToast('Decision tree complete!', 'success');
                   // Auto advance
-                  upd({ dtIdx: dtIdx + 1, dtStep: 0, dtValues: [], dtChoice: null, dtReflection: '', dtAiResp: null });
+                  upd({ dtCompleted: newDone, dtCompletedIds: nextIds, dtIdx: dtIdx + 1, dtStep: 0, dtValues: [], dtChoice: null, dtReflection: '', dtAiResp: null });
                   ctx.announceToSR && ctx.announceToSR('Decision tree completed, next scenario loaded');
                 },
                 style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _decBg('#15803d'), color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
@@ -2042,6 +2049,7 @@ window.SelHub = window.SelHub || {
                   upd('edAiResp', blockedMsg);
                   upd('edAiLoad', false);
                   upd('_decisionsTier', 3);
+                  if (window.SelHub && window.SelHub.showCrisisModal) window.SelHub.showCrisisModal(band);
                   return;
                 }
                 upd('edAiLoad', true);
@@ -2081,6 +2089,7 @@ window.SelHub = window.SelHub || {
                         });
                       }
                       upd('_decisionsTier', _safety.tier || 0);
+                      if (_safety.tier >= 3 && window.SelHub && window.SelHub.showCrisisModal) window.SelHub.showCrisisModal(band);
                     });
                 }
                 callGemini(prompt).then(function(result) {
@@ -2098,19 +2107,28 @@ window.SelHub = window.SelHub || {
             // Next
             h('button', { 'aria-label': 'Complete & Next',
               onClick: function() {
-                var newDone = edCompleted + 1;
-                upd('edCompleted', newDone);
+                if (!edSideA.trim() && !edSideB.trim() && !edVerdict.trim()) {
+                  addToast('Write your reasoning or verdict before completing!', 'info');
+                  return;
+                }
+                var doneIds = Array.isArray(d.edCompletedIds) ? d.edCompletedIds : [];
+                var isNew = doneIds.indexOf(curEd.id) === -1;
+                var nextIds = isNew ? doneIds.concat([curEd.id]) : doneIds;
+                var newDone = isNew ? Math.max(edCompleted + 1, nextIds.length) : edCompleted;
                 logPractice('dilemma', curEd.id);
-                awardXP(15);
-                tryAwardBadge('first_dilemma');
-                if (newDone >= 5) tryAwardBadge('dilemma_5');
+                if (isNew) {
+                  awardXP(15);
+                  tryAwardBadge('first_dilemma');
+                  if (newDone >= 5) tryAwardBadge('dilemma_5');
+                }
                 if (soundEnabled) sfxCorrect();
-                upd({ edIdx: edIdx + 1, edSideA: '', edSideB: '', edVerdict: '', edAiResp: null });
+                upd({ edCompleted: newDone, edCompletedIds: nextIds, edIdx: edIdx + 1, edSideA: '', edSideB: '', edVerdict: '', edAiResp: null });
                 ctx.announceToSR && ctx.announceToSR('Next dilemma loaded');
               },
               style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _decBg('#334155'), color: _decFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Complete & Next \u2192')
           ),
+          (_decisionsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
           // AI Response
           edAiResp && h('div', { style: { padding: 16, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid #6366f144' } },
             h('p', { style: { fontSize: 10, color: _decFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\u2728 Ethical Analysis'),
@@ -2437,6 +2455,7 @@ window.SelHub = window.SelHub || {
                   upd('rwAiResp', blockedMsg);
                   upd('rwAiLoad', false);
                   upd('_decisionsTier', 3);
+                  if (window.SelHub && window.SelHub.showCrisisModal) window.SelHub.showCrisisModal(band);
                   return;
                 }
                 upd('rwAiLoad', true);
@@ -2475,6 +2494,7 @@ window.SelHub = window.SelHub || {
                         });
                       }
                       upd('_decisionsTier', _safety.tier || 0);
+                      if (_safety.tier >= 3 && window.SelHub && window.SelHub.showCrisisModal) window.SelHub.showCrisisModal(band);
                     });
                 }
                 callGemini(prompt).then(function(result) {
@@ -2492,19 +2512,28 @@ window.SelHub = window.SelHub || {
             // Complete & Next
             h('button', { 'aria-label': 'Complete & Next',
               onClick: function() {
-                var newDone = rwCompleted + 1;
-                upd('rwCompleted', newDone);
+                if (!rwReflection.trim()) {
+                  addToast('Write a brief reflection before completing!', 'info');
+                  return;
+                }
+                var doneIds = Array.isArray(d.rwCompletedIds) ? d.rwCompletedIds : [];
+                var isNew = doneIds.indexOf(curRw.id) === -1;
+                var nextIds = isNew ? doneIds.concat([curRw.id]) : doneIds;
+                var newDone = isNew ? Math.max(rwCompleted + 1, nextIds.length) : rwCompleted;
                 logPractice('realworld', curRw.id);
-                awardXP(15);
-                tryAwardBadge('first_realworld');
-                if (newDone >= rwCases.length) tryAwardBadge('realworld_all');
+                if (isNew) {
+                  awardXP(15);
+                  tryAwardBadge('first_realworld');
+                  if (newDone >= rwCases.length) tryAwardBadge('realworld_all');
+                }
                 if (soundEnabled) sfxCorrect();
-                upd({ rwIdx: rwIdx + 1, rwReflection: '', rwAiResp: null });
+                upd({ rwCompleted: newDone, rwCompletedIds: nextIds, rwIdx: rwIdx + 1, rwReflection: '', rwAiResp: null });
                 ctx.announceToSR && ctx.announceToSR('Next case loaded');
               },
               style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _decBg('#334155'), color: _decFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Complete & Next \u2192')
           ),
+          (_decisionsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
           // AI Response
           rwAiResp && h('div', { style: { padding: 16, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid #6366f144' } },
             h('p', { style: { fontSize: 10, color: _decFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\u2728 Historical Analysis'),
@@ -2612,6 +2641,7 @@ window.SelHub = window.SelHub || {
                   upd('advResponse', blockedMsg);
                   upd('advLoading', false);
                   upd('_decisionsTier', 3);
+                  if (window.SelHub && window.SelHub.showCrisisModal) window.SelHub.showCrisisModal(band);
                   return;
                 }
                 upd('advLoading', true);
@@ -2652,14 +2682,15 @@ window.SelHub = window.SelHub || {
                         });
                       }
                       upd('_decisionsTier', _safety.tier || 0);
+                      if (_safety.tier >= 3 && window.SelHub && window.SelHub.showCrisisModal) window.SelHub.showCrisisModal(band);
                     });
                 }
                 callGemini(systemPrompt).then(function(result) {
                   var text = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
-                  upd('advResponse', text);
-                  upd('advLoading', false);
+                  var advXpCount = d.advXpCount || 0;
+                  upd({ advResponse: text, advLoading: false, advXpCount: advXpCount + 1 });
                   tryAwardBadge('ai_advisor');
-                  awardXP(10);
+                  if (advXpCount < 3) awardXP(10);
                   logPractice('advisor', 'custom');
                 }).catch(function(err) {
                   upd('advLoading', false);
@@ -2672,6 +2703,7 @@ window.SelHub = window.SelHub || {
               advLoading ? 'Thinking...' : h(Sparkles, { size: 14 }), advLoading ? null : ' Analyze My Decision'
             )
           ),
+          (_decisionsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
           // AI Response
           advResponse && h('div', { style: { padding: 20, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid ' + ACCENT_MED } },
             h('p', { style: { fontSize: 10, color: _decFg(ACCENT), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Decision Framework'),
@@ -2844,7 +2876,7 @@ window.SelHub = window.SelHub || {
 
       var content = dtContent || edContent || csContent || biasContent || vsContent || rwContent || compassContent || advContent || progressContent || printContent;
 
-      return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+      return h('div', { 'data-sel-tool-shell': 'decisions', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('decisions', h, ctx) : null),
         tabBar,
         heroBand,

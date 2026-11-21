@@ -54,7 +54,8 @@ function _promptIsolateSiblings(dialog) {
   while (node && body && node.parentElement) {
     const parent = node.parentElement;
     Array.from(parent.children).forEach((child) => {
-      if (!child || child === node || seen.has(child) || !child.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(child.tagName) || (typeof child.matches === 'function' && child.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
+      const liveSel = '[aria-live], [role="status"], [role="alert"], [data-toast-region]';
+      if (!child || child === node || seen.has(child) || !child.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(child.tagName) || (typeof child.matches === 'function' && child.matches(liveSel)) || (typeof child.querySelector === 'function' && !!child.querySelector(liveSel))) return;
       seen.add(child);
       const hadInert = child.hasAttribute('inert');
       const prevInert = child.inert;
@@ -184,10 +185,13 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
   const [error, setError] = React.useState(null);
   const inputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
+  const backdropDownRef = React.useRef(null);
   const settledRef = React.useRef(false);
   const choiceMode = Array.isArray(promptDialog.choices);
   const choices = choiceMode ? promptDialog.choices.filter(choice => choice && choice.value != null && String(choice.value)) : [];
   const validChoice = choices.some(choice => String(choice.value) === value);
+  const checkedChoiceIndex = choices.findIndex(choice => String(choice.value) === value);
+  const initialChoiceFocusIndex = checkedChoiceIndex >= 0 ? checkedChoiceIndex : 0;
 
   const handleCancel = React.useCallback(() => {
     if (settledRef.current) return;
@@ -199,12 +203,17 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
   const handleSubmit = React.useCallback(() => {
     if (settledRef.current) return;
     if (choiceMode && !validChoice) {
-      setError(_promptCopy(t, 'prompt_dialog.choose_source', 'Choose a source before continuing.'));
+      setError(promptDialog.emptyChoiceMessage || _promptCopy(t, 'prompt_dialog.choose_source', 'Choose a source before continuing.'));
       return;
     }
     if (typeof promptDialog.validate === 'function') {
-      const err = promptDialog.validate(value);
-      if (err) { setError(err); return; }
+      try {
+        const err = promptDialog.validate(value);
+        if (err) { setError(err); return; }
+      } catch (validationError) {
+        setError((validationError && validationError.message) || _promptCopy(t, 'prompt_dialog.invalid_value', 'Please enter a valid value.'));
+        return;
+      }
     }
     settledRef.current = true;
     try { promptDialog.onSubmit(value); } catch (_) {}
@@ -215,11 +224,18 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
 
   React.useEffect(() => {
     settledRef.current = false;
-    setValue(promptDialog.defaultValue != null ? String(promptDialog.defaultValue) : '');
+    const nextValue = promptDialog.defaultValue != null ? String(promptDialog.defaultValue) : '';
+    setValue(nextValue);
     setError(null);
     try {
-      inputRef.current && inputRef.current.focus();
-      if (inputRef.current && inputRef.current.select) inputRef.current.select();
+      if (Array.isArray(promptDialog.choices) && dialogRef.current) {
+        const radios = Array.from(dialogRef.current.querySelectorAll('input[type="radio"]'));
+        const targetRadio = radios.find(radio => radio.value === nextValue) || radios[0];
+        if (targetRadio) targetRadio.focus();
+      } else {
+        inputRef.current && inputRef.current.focus();
+        if (inputRef.current && inputRef.current.select) inputRef.current.select();
+      }
     } catch (_) {}
   }, [promptDialog]);
 
@@ -249,7 +265,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
     onChange: (e) => { setValue(e.target.value); if (error) setError(null); },
     placeholder: promptDialog.placeholder || '',
     maxLength: promptDialog.maxLength,
-    className: 'w-full border-2 border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl px-4 py-3 text-sm outline-none transition-all text-slate-800 placeholder:text-slate-600',
+    className: 'w-full border-2 border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl px-4 py-3 text-sm outline-none transition-all motion-reduce:transition-none text-slate-800 placeholder:text-slate-600',
     'aria-label': promptDialog.message,
     'aria-invalid': !!error,
     'aria-describedby': error ? 'alloflow-prompt-error' : undefined,
@@ -259,7 +275,12 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
     <div
       role="presentation"
       className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none"
-      onClick={(e) => { if (e.target === e.currentTarget) handleCancel(); }}
+      onMouseDown={(e) => { backdropDownRef.current = (e.target === e.currentTarget); }}
+      onClick={(e) => {
+        const allowBackdropClose = backdropDownRef.current !== false;
+        backdropDownRef.current = null;
+        if (e.target === e.currentTarget && allowBackdropClose) handleCancel();
+      }}
     >
       <div
         ref={dialogRef}
@@ -274,14 +295,14 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
           <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
             <Edit3 size={20} className="text-indigo-600" aria-hidden="true" />
           </div>
-          <h3 id="alloflow-prompt-title" className={'text-lg font-bold text-slate-800 flex-1 ' + (choiceMode ? 'min-w-0 break-words' : 'truncate')}>
+          <h2 id="alloflow-prompt-title" className={'text-lg font-bold text-slate-800 flex-1 ' + (choiceMode ? 'min-w-0 break-words' : 'truncate')}>
             {promptDialog.title || t('common.enter_value') || 'Enter Value'}
-          </h3>
+          </h2>
           <button
             type="button"
             aria-label={t('common.close') || 'Close'}
             onClick={handleCancel}
-            className="w-11 h-11 shrink-0 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300"
+            className="w-11 h-11 shrink-0 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-700"
           >
             <X size={16} aria-hidden="true" />
           </button>
@@ -293,10 +314,10 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
             {choices.map((choice, index) => {
               const choiceValue = String(choice.value);
               const checked = value === choiceValue;
-              return <label key={choiceValue} className={'flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition-colors focus-within:ring-4 focus-within:ring-indigo-500/20 ' + (checked ? 'border-indigo-600 bg-indigo-50' : 'border-slate-300 bg-white hover:border-indigo-400')}>
+              return <label key={choiceValue} className={'flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition-colors motion-reduce:transition-none focus-within:ring-4 focus-within:ring-indigo-500/20 ' + (checked ? 'border-indigo-600 bg-indigo-50' : 'border-slate-300 bg-white hover:border-indigo-400')}>
                 <input
-                  ref={index === 0 ? inputRef : undefined}
-                  data-autofocus={index === 0 ? true : undefined}
+                  ref={index === initialChoiceFocusIndex ? inputRef : undefined}
+                  data-autofocus={index === initialChoiceFocusIndex ? true : undefined}
                   type="radio"
                   name="alloflow-prompt-choice"
                   value={choiceValue}
@@ -324,7 +345,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
           <button
             type="button"
             onClick={handleCancel}
-            className="min-h-11 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-300"
+            className="min-h-11 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-600"
           >
             {promptDialog.cancelText || t('common.cancel') || 'Cancel'}
           </button>
@@ -332,7 +353,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
             type="button"
             onClick={handleSubmit}
             disabled={choiceMode && !validChoice}
-            className="min-h-11 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-indigo-500/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="min-h-11 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors motion-reduce:transition-none shadow-lg shadow-indigo-500/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {promptDialog.confirmText || t('common.ok') || 'OK'}
           </button>

@@ -1437,11 +1437,87 @@
     if(!guide)return [];
     return guide.activities.map(function(a,i){var npc=(npcs||[]).find(function(n){return n.data && n.data.name===a.npcName;}),p=a.position || (npc && npc.data.position),e=(journal.evidence||{})[a.id] || {},reviewed=!!(journal.reviewed||{})[a.id],met=e.check && e.check.status==='met';return {id:a.id,title:a.title,position:p,index:i,lit:reviewed||!!met,basis:met?'Numeric goal checked':reviewed?'Self-review recorded':'Ready to explore'};}).filter(function(a){return a.position && a.position.every(Number.isFinite);});
   }
+  function _gwePrefersReducedMotion() {
+    try { return !!(typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    catch (_) { return false; }
+  }
+  function _gweIsHighContrast() {
+    try {
+      if (typeof document !== 'undefined') {
+        if (document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) return true;
+        if (document.body && document.body.classList && document.body.classList.contains('theme-contrast')) return true;
+        if (typeof document.querySelector === 'function' && document.querySelector('.theme-contrast')) return true;
+      }
+      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+        if (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches) return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+  function _gweNowSec(state) {
+    if (_gwePrefersReducedMotion()) return 1.65;
+    var now = (typeof performance !== 'undefined' && typeof performance.now === 'function') ? performance.now() : Date.now();
+    if (state.t0 === null) state.t0 = now;
+    return 1.65 + (((now - state.t0) * 0.001) % 3600.0);
+  }
+  function applyMilestoneCrystalShader(mat, index, uTimeRef) {
+    if (!mat || _gweIsHighContrast() || typeof mat.onBeforeCompile !== 'function') return mat;
+    var isCrystal = index === 2;
+    var rimStrength = isCrystal ? 0.56 : (index === 1 ? 0.24 : 0.16);
+    var pulseAmp = isCrystal ? 0.34 : 0.08;
+    mat.customProgramCacheKey = function() { return 'gwe-milestone-beacon-' + index + '-v1'; };
+    mat.onBeforeCompile = function(shader) {
+      shader.uniforms.uGweTime = uTimeRef;
+      shader.uniforms.uGweRim = { value: rimStrength };
+      shader.uniforms.uGwePulse = { value: pulseAmp };
+      shader.uniforms.uGweCrystal = { value: isCrystal ? 1.0 : 0.0 };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vGweLocalPos;\nvarying vec3 vGweWorldPos;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvGweLocalPos = position;\nvec4 gweWp = vec4(transformed, 1.0);\n#ifdef USE_INSTANCING\n  gweWp = instanceMatrix * gweWp;\n#endif\nvGweWorldPos = (modelMatrix * gweWp).xyz;');
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>',
+          '#include <common>\n' +
+          'uniform float uGweTime;\n' +
+          'uniform float uGweRim;\n' +
+          'uniform float uGwePulse;\n' +
+          'uniform float uGweCrystal;\n' +
+          'varying vec3 vGweLocalPos;\n' +
+          'varying vec3 vGweWorldPos;'
+        )
+        .replace('#include <tonemapping_fragment>',
+          'vec3 gweN = normalize(normal);\n' +
+          'vec3 gweV = normalize(vViewPosition);\n' +
+          'float gweFresnel = pow(1.0 - clamp(dot(gweN, gweV), 0.0, 1.0), mix(3.0, 2.05, uGweCrystal));\n' +
+          'float gweFacet = 0.5 + 0.5 * sin(vGweLocalPos.y * 18.0 - uGweTime * 2.4 + vGweWorldPos.x * 0.7);\n' +
+          'float gweBeacon = 0.62 + 0.38 * sin(uGweTime * 2.1 + vGweWorldPos.x * 0.45 + vGweWorldPos.z * 0.45);\n' +
+          'vec3 gweSpecCol = mix(vec3(0.84, 0.94, 0.96), vec3(1.0, 0.88, 0.48), 0.35 + 0.65 * uGweCrystal);\n' +
+          'vec3 gwePrismatic = 0.5 + 0.5 * cos(6.28318 * (gweFresnel * 0.85 + gweFacet * 0.25 + vec3(0.0, 0.33, 0.67)));\n' +
+          'vec3 gweGlow = mix(gweSpecCol, gwePrismatic, uGweCrystal * 0.32) * (gweFresnel * uGweRim + gweFacet * gweBeacon * uGwePulse);\n' +
+          'gl_FragColor.rgb += gweGlow;\n' +
+          '#include <tonemapping_fragment>'
+        );
+    };
+    return mat;
+  }
   function createActivityMilestones(engine,milestones) {
     var THREE=window.THREE;if(!THREE || !engine || !engine.scene || !milestones.length)return null;
     var group=new THREE.Group();group.name='gw-activity-milestones';group.userData.gwDecorative=true;
-    var designs=[{geometry:new THREE.CylinderGeometry(.09,.13,1.8,6),color:0x70654f,y:.9},{geometry:new THREE.BoxGeometry(.7,.42,.06),color:0xb7c6af,y:1.65},{geometry:new THREE.OctahedronGeometry(.25,0),color:0xf2c96a,y:2.15}];
-    designs.forEach(function(d,index){var mat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.8}),mesh=new THREE.InstancedMesh(d.geometry,mat,milestones.length),matrix=new THREE.Matrix4(),q=new THREE.Quaternion(),scale=new THREE.Vector3(1,1,1);
+    var uTimeRef={value:1.65},clockState={t0:null};
+    var designs=[
+      {geometry:new THREE.CylinderGeometry(.09,.13,1.8,8),color:0x70654f,y:.9,roughness:.62,metalness:.16},
+      {geometry:new THREE.BoxGeometry(.7,.42,.06),color:0xb7c6af,y:1.65,roughness:.38,metalness:.12},
+      {geometry:new THREE.OctahedronGeometry(.25,0),color:0xf2c96a,y:2.15,roughness:.18,metalness:.34,clearcoat:.85,emissive:0x2a1f06,emissiveIntensity:.24}
+    ];
+    designs.forEach(function(d,index){
+      var usePhys=d.clearcoat!=null && typeof THREE.MeshPhysicalMaterial==='function';
+      var MatCtor=usePhys?THREE.MeshPhysicalMaterial:THREE.MeshStandardMaterial;
+      var matOpts={color:0xffffff,roughness:d.roughness,metalness:d.metalness};
+      if(usePhys){matOpts.clearcoat=d.clearcoat;matOpts.clearcoatRoughness=.12;}
+      if(d.emissive!=null){matOpts.emissive=d.emissive;matOpts.emissiveIntensity=d.emissiveIntensity;}
+      var mat=new MatCtor(matOpts);
+      applyMilestoneCrystalShader(mat,index,uTimeRef);
+      var mesh=new THREE.InstancedMesh(d.geometry,mat,milestones.length),matrix=new THREE.Matrix4(),q=new THREE.Quaternion(),scale=new THREE.Vector3(1,1,1);
+      if(index===2){mesh.onBeforeRender=function(){uTimeRef.value=_gweNowSec(clockState);};}
       milestones.forEach(function(m,i){var ground=engine._currentLesson.ground||{},p=m.position,base=Number.isFinite(ground.y)?ground.y+1:p[1];matrix.compose(new THREE.Vector3(p[0]+1.8,base+d.y,p[2]+1.8),q,scale);mesh.setMatrixAt(i,matrix);mesh.setColorAt(i,new THREE.Color(index===0?d.color:m.lit?(index===1?0x39775b:0xffce64):index===1?0x91a599:0x73877d));});mesh.userData.gwDecorative=true;group.add(mesh);});
     engine.scene.add(group);return group;
   }
@@ -1934,14 +2010,16 @@
     var canvas=document.createElement('canvas'),mask=document.createElement('canvas');
     canvas.width=canvas.height=mask.width=mask.height=size;
     var context=canvas.getContext('2d'),ink=mask.getContext('2d');
+    if(!context || !ink)return {canvas:canvas,width:width,depth:depth};
     var centerX=(box.min.x+box.max.x)/2,centerZ=(box.min.z+box.max.z)/2;
-    ink.fillStyle='rgb(49,55,45)';
+    ink.fillStyle='rgb(45,51,42)';
     footprints.forEach(function(points){
       ink.beginPath();points.forEach(function(point,i){var x=((point.x-centerX)/width+0.5)*size,y=((point.z-centerZ)/depth+0.5)*size;if(i)ink.lineTo(x,y);else ink.moveTo(x,y);});ink.closePath();ink.fill();
     });
-    // Two soft scales retain the support silhouette without a hard decal edge.
-    context.filter='blur(10px)';context.globalAlpha=0.55;context.drawImage(mask,0,0);
-    context.filter='blur(2px)';context.globalAlpha=0.28;context.drawImage(mask,0,0);
+    // Three soft scales retain grounded architectural contact without a hard decal edge.
+    context.filter='blur(14px)';context.globalAlpha=0.38;context.drawImage(mask,0,0);
+    context.filter='blur(6px)';context.globalAlpha=0.34;context.drawImage(mask,0,0);
+    context.filter='blur(2px)';context.globalAlpha=0.26;context.drawImage(mask,0,0);
     context.filter='none';context.globalAlpha=1;
     return {canvas:canvas,width:width,depth:depth};
   }
@@ -2431,20 +2509,46 @@
       engine.scene.fog=new THREE.Fog(ivory,55,145);
       studio.releaseBackdropColorSync=installStudioBackdropColorSync(engine.scene,0xf1eee8);
       var floorGeometry=new THREE.PlaneGeometry(600,600);
-      var floorMaterial=new THREE.MeshStandardMaterial({color:studioColor(0xb8b8b7),roughness:0.98,metalness:0});
+      var floorMaterial=new THREE.MeshStandardMaterial({color:studioColor(0xb8b8b7),roughness:0.90,metalness:0.02});
       var floor=new THREE.Mesh(floorGeometry,floorMaterial);floor.name='gwe-studio-floor';
       floor.rotation.x=-Math.PI/2;floor.position.set(center.x,floorY,center.z);floor.receiveShadow=true;
       floor.raycast=function(){};studio.floor=floor;studio.group.add(floor);studio.resources.push(floorGeometry,floorMaterial);
-      // A broad, almost imperceptible pool of light gives the seamless stage
+      // A broad, almost imperceptible pool of softbox light gives the seamless stage
       // depth. It is a two-triangle decoration, never a presentation pedestal.
-      var poolCanvas=document.createElement('canvas');poolCanvas.width=poolCanvas.height=128;
-      var poolContext=poolCanvas.getContext('2d'),poolGradient=poolContext.createRadialGradient(64,64,0,64,64,64);
-      poolGradient.addColorStop(0,'rgba(255,250,237,0.48)');poolGradient.addColorStop(0.45,'rgba(255,250,237,0.22)');poolGradient.addColorStop(1,'rgba(255,250,237,0)');
-      poolContext.fillStyle=poolGradient;poolContext.fillRect(0,0,128,128);
+      var poolCanvas=document.createElement('canvas');poolCanvas.width=poolCanvas.height=256;
+      var poolContext=poolCanvas.getContext('2d');
+      if(poolContext && typeof poolContext.createRadialGradient==='function'){
+        var poolGradient=poolContext.createRadialGradient(128,128,0,128,128,128);
+        poolGradient.addColorStop(0,'rgba(255,252,242,0.56)');poolGradient.addColorStop(0.32,'rgba(255,248,232,0.30)');poolGradient.addColorStop(0.68,'rgba(232,240,252,0.10)');poolGradient.addColorStop(1,'rgba(255,250,237,0)');
+        poolContext.fillStyle=poolGradient;poolContext.fillRect(0,0,256,256);
+      }
       var poolTexture=new THREE.CanvasTexture(poolCanvas);poolTexture.encoding=THREE.sRGBEncoding;poolTexture.generateMipmaps=false;poolTexture.minFilter=poolTexture.magFilter=THREE.LinearFilter;
       var poolGeometry=new THREE.PlaneGeometry(Math.max(8,(box.max.x-box.min.x)*3.2),Math.max(8,(box.max.z-box.min.z)*3.2));
-      var poolMaterial=new THREE.MeshBasicMaterial({map:poolTexture,transparent:true,opacity:0.22,depthWrite:false,toneMapped:false});
+      var poolMaterial=new THREE.MeshBasicMaterial({map:poolTexture,transparent:true,opacity:0.24,depthWrite:false,toneMapped:false});
+      var poolTimeRef={value:1.65},poolClock={t0:null};
+      if(!_gweIsHighContrast() && typeof poolMaterial.onBeforeCompile==='function'){
+        poolMaterial.customProgramCacheKey=function(){return 'gwe-studio-softbox-sheen-v1';};
+        poolMaterial.onBeforeCompile=function(shader){
+          shader.uniforms.uGwePoolTime=poolTimeRef;
+          shader.vertexShader=shader.vertexShader
+            .replace('#include <common>','#include <common>\nvarying vec2 vGwePoolUv;')
+            .replace('#include <begin_vertex>','#include <begin_vertex>\nvGwePoolUv = uv;');
+          shader.fragmentShader=shader.fragmentShader
+            .replace('#include <common>','#include <common>\nuniform float uGwePoolTime;\nvarying vec2 vGwePoolUv;')
+            .replace('#include <dithering_fragment>',
+              'vec2 gweP = (vGwePoolUv - vec2(0.5)) * 2.0;\n' +
+              'float gweR = length(gweP);\n' +
+              'float gweRing = exp(-pow((gweR - 0.52) * 4.5, 2.0));\n' +
+              'float gweSweep = 0.5 + 0.5 * sin(gweP.x * 2.6 + gweP.y * 1.9 - uGwePoolTime * 0.55);\n' +
+              'float gweMask = smoothstep(1.0, 0.25, gweR);\n' +
+              'vec3 gweSoftbox = mix(vec3(1.0, 0.98, 0.93), vec3(0.86, 0.93, 1.0), gweSweep * 0.55);\n' +
+              'gl_FragColor.rgb += gweSoftbox * (gweRing * 0.14 + gweSweep * 0.05) * gweMask;\n' +
+              '#include <dithering_fragment>'
+            );
+        };
+      }
       var pool=new THREE.Mesh(poolGeometry,poolMaterial);pool.name='gwe-studio-light-pool';pool.rotation.x=-Math.PI/2;pool.position.set(center.x,floorY+0.002,center.z);pool.raycast=function(){};
+      pool.onBeforeRender=function(){poolTimeRef.value=_gweNowSec(poolClock);};
       studio.group.add(pool);studio.resources.push(poolGeometry,poolMaterial,poolTexture);
       var footprints=studioGroundFootprints(selectedMeshes,box.min.y,engine._popBlocks),contactMap=studioContactMap(footprints,box);
       var contactTexture=new THREE.CanvasTexture(contactMap.canvas);contactTexture.encoding=THREE.sRGBEncoding;contactTexture.generateMipmaps=false;contactTexture.minFilter=contactTexture.magFilter=THREE.LinearFilter;
@@ -2455,14 +2559,14 @@
       studio.contactFootprints=footprints;studio.resources.push(contactGeometry,contactMaterial,contactTexture);
       floor.onBeforeRender=function(){suspendStudioBloom(studio);contactMaterial.opacity=engine.renderer.shadowMap.enabled?0.075:0.22;};
       var studioRadius=Math.max(2,radius),target=new THREE.Object3D();target.position.copy(center);studio.group.add(target);
-      var key=new THREE.DirectionalLight(0xfff1df,1.0);key.name='gwe-studio-key';
+      var key=new THREE.DirectionalLight(0xfff3e0,1.06);key.name='gwe-studio-key';
       key.position.set(center.x-studioRadius*0.95,center.y+studioRadius*3.4,center.z+studioRadius*1.2);key.target=target;key.castShadow=true;
-      key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=key.shadow.camera.bottom=-studioRadius*1.4;key.shadow.camera.right=key.shadow.camera.top=studioRadius*1.4;
+      key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=key.shadow.camera.bottom=-studioRadius*1.4;key.shadow.camera.right=key.shadow.camera.top=studioRadius*1.4;
       key.shadow.camera.near=0.1;key.shadow.camera.far=studioRadius*6+10;key.shadow.bias=-0.00035;key.shadow.normalBias=0.025;
       configureStudioFloorShadow(floorMaterial,key.shadow.camera,Math.min(0.14,radius*0.03));
-      var fill=new THREE.DirectionalLight(0xe8efff,0.3);fill.name='gwe-studio-fill';fill.position.set(center.x+studioRadius*2,center.y+studioRadius,center.z-studioRadius);fill.target=target;
-      var rim=new THREE.DirectionalLight(0xffffff,0.25);rim.name='gwe-studio-rim';rim.position.set(center.x-studioRadius,center.y+studioRadius,center.z-studioRadius*2);rim.target=target;
-      var hemi=new THREE.HemisphereLight(0xfffaef,0x9b907c,0.64);hemi.name='gwe-studio-ambient';
+      var fill=new THREE.DirectionalLight(0xdce9ff,0.36);fill.name='gwe-studio-fill';fill.position.set(center.x+studioRadius*2,center.y+studioRadius,center.z-studioRadius);fill.target=target;
+      var rim=new THREE.DirectionalLight(0xfffaf0,0.38);rim.name='gwe-studio-rim';rim.position.set(center.x-studioRadius*1.1,center.y+studioRadius*1.15,center.z-studioRadius*2.1);rim.target=target;
+      var hemi=new THREE.HemisphereLight(0xfffbf2,0x8e8473,0.68);hemi.name='gwe-studio-ambient';
       studio.lights=[key,fill,rim,hemi];studio.lights.forEach(function(light){studio.group.add(light);});
       engine.scene.add(studio.group);saved.look='studio';
     }
@@ -2948,13 +3052,65 @@
       var edges=floorOnly?[[0,1],[1,2],[2,3],[3,0]]:[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
       edges.forEach(function(edge){edge.forEach(function(i){positions.push.apply(positions,corners[i]);colors.push(tint.r,tint.g,tint.b);});});
     }
-    // Full bed cage gives both the footprint and permitted model height.
+    // Full bed cage gives both the footprint and permitted model height, plus luminous snap-grid bed alignment guides.
     boxLines(data.frame,data.fits?0x86d5c2:0xf1ad81,false);
+    if(data.frame && data.frame.min && data.frame.max){
+      var fMin=data.frame.min,fMax=data.frame.max,fW=fMax.x-fMin.x,fD=fMax.z-fMin.z;
+      if(isFinite(fW) && isFinite(fD) && fW>0.2 && fD>0.2){
+        var stepX=Math.max(1,Math.ceil(fW/24)),stepZ=Math.max(1,Math.ceil(fD/24));
+        var gridTint=new THREE.Color(data.fits?0x58a898:0xd98a5b).convertSRGBToLinear();
+        for(var gx=Math.ceil(fMin.x+1e-4);gx<fMax.x-1e-4;gx+=stepX){
+          positions.push(gx,fMin.y,fMin.z,gx,fMin.y,fMax.z);
+          colors.push(gridTint.r,gridTint.g,gridTint.b,gridTint.r,gridTint.g,gridTint.b);
+        }
+        for(var gz=Math.ceil(fMin.z+1e-4);gz<fMax.z-1e-4;gz+=stepZ){
+          positions.push(fMin.x,fMin.y,gz,fMax.x,fMin.y,gz);
+          colors.push(gridTint.r,gridTint.g,gridTint.b,gridTint.r,gridTint.g,gridTint.b);
+        }
+      }
+    }
     data.parts.forEach(function(part,index){if(data.parts.length>1)boxLines(part,part.raised?0xe4bc7e:palette[index%palette.length],false);});
     data.outside.forEach(function(p){var box=creationGeometryBounds(engine,[p]);if(box && !box.isEmpty())boxLines(box,0xf48675,false);});
     var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
-    var material=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:data.focus?.36:.76,depthTest:false,depthWrite:false,toneMapped:false});
-    var lines=new THREE.LineSegments(geometry,material);lines.raycast=function(){};lines.renderOrder=996;lines.userData.gwDecorative=true;group.add(lines);
+    var guideOpacity=data.focus?.36:.76;
+    var guideTimeRef={value:1.65},guideClock={t0:null};
+    var useLaserShader=!_gweIsHighContrast() && typeof THREE.ShaderMaterial==='function';
+    var material=useLaserShader ? new THREE.ShaderMaterial({
+      uniforms:{
+        uTime:guideTimeRef,
+        uOpacity:{value:guideOpacity},
+        uFits:{value:data.fits?1.0:0.0}
+      },
+      vertexShader:
+        '#ifndef USE_COLOR\nattribute vec3 color;\n#endif\n' +
+        'varying vec3 vColor;\n' +
+        'varying vec3 vWorldPos;\n' +
+        'void main() {\n' +
+        '  vColor = color;\n' +
+        '  vec4 wp = modelMatrix * vec4(position, 1.0);\n' +
+        '  vWorldPos = wp.xyz;\n' +
+        '  gl_Position = projectionMatrix * viewMatrix * wp;\n' +
+        '}',
+      fragmentShader:
+        'uniform float uTime;\n' +
+        'uniform float uOpacity;\n' +
+        'uniform float uFits;\n' +
+        'varying vec3 vColor;\n' +
+        'varying vec3 vWorldPos;\n' +
+        'void main() {\n' +
+        '  float scan = 0.5 + 0.5 * sin(vWorldPos.x * 1.6 + vWorldPos.z * 1.4 - uTime * 2.6);\n' +
+        '  float beam = pow(scan, 4.0);\n' +
+        '  float vPulse = 0.78 + 0.22 * sin(vWorldPos.y * 2.4 - uTime * 1.9);\n' +
+        '  vec3 holoAccent = mix(vec3(1.0, 0.62, 0.38), vec3(0.42, 0.98, 0.88), uFits);\n' +
+        '  vec3 col = vColor * (0.92 + 0.24 * vPulse) + holoAccent * beam * 0.42;\n' +
+        '  float alpha = clamp(uOpacity * (0.86 + 0.26 * beam), 0.12, 1.0);\n' +
+        '  gl_FragColor = vec4(col, alpha);\n' +
+        '}',
+      vertexColors:true,transparent:true,depthTest:false,depthWrite:false,toneMapped:false
+    }) : new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:guideOpacity,depthTest:false,depthWrite:false,toneMapped:false});
+    var lines=new THREE.LineSegments(geometry,material);lines.raycast=function(){};lines.renderOrder=996;lines.userData.gwDecorative=true;
+    if(useLaserShader){lines.onBeforeRender=function(){guideTimeRef.value=_gweNowSec(guideClock);};}
+    group.add(lines);
     if(data.focus){var box=creationGeometryBounds(engine,data.focus.cells),focus=createSelectionFrame(box,{components:2});if(focus){focus.name='gwe-print-issue-focus';focus.material.opacity=1;focus.renderOrder=999;group.add(focus);}}
     group.raycast=function(){};return group;
   }
@@ -3449,6 +3605,23 @@
     `;
     style.textContent += "@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root .gwe-builder-dock[data-collapsed=\"false\"][data-finder=\"false\"][data-print-preparing=\"false\"][data-coordinate-selecting=\"false\"][data-coordinate-building=\"false\"][data-selection-choosing=\"false\"][data-stamp-removing=\"false\"][data-editable-review=\"false\"]{top:68px!important;bottom:8px!important;height:auto!important;max-height:calc(100% - 76px)!important;display:block;overflow:auto!important;overscroll-behavior:contain}#geoworld-fs-workspace.gw-root .gwe-builder-dock[data-collapsed=\"false\"][data-finder=\"false\"][data-print-preparing=\"false\"][data-coordinate-selecting=\"false\"][data-coordinate-building=\"false\"][data-selection-choosing=\"false\"][data-stamp-removing=\"false\"][data-editable-review=\"false\"]>.gwe-builder-head{position:sticky;top:0;z-index:3}#geoworld-fs-workspace.gw-root .gwe-builder-dock[data-collapsed=\"false\"][data-finder=\"false\"][data-print-preparing=\"false\"][data-coordinate-selecting=\"false\"][data-coordinate-building=\"false\"][data-selection-choosing=\"false\"][data-stamp-removing=\"false\"][data-editable-review=\"false\"]>.gwe-builder-body{overflow:visible!important;flex:none}#geoworld-fs-workspace.gw-root .gwe-builder-dock[data-collapsed=\"false\"][data-finder=\"false\"][data-print-preparing=\"false\"][data-coordinate-selecting=\"false\"][data-coordinate-building=\"false\"][data-selection-choosing=\"false\"][data-stamp-removing=\"false\"][data-editable-review=\"false\"]>.gwe-builder-footer{position:sticky;bottom:0;z-index:3}}";
     style.textContent += "@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-fullscreen=\"false\"] .gwe-builder-dock[data-collapsed=\"false\"][data-finder=\"false\"][data-print-preparing=\"false\"][data-coordinate-selecting=\"false\"][data-coordinate-building=\"false\"][data-selection-choosing=\"false\"][data-stamp-removing=\"false\"][data-editable-review=\"false\"]{display:flex;overflow:hidden!important}#geoworld-fs-workspace.gw-root[data-fullscreen=\"false\"] .gwe-builder-dock[data-collapsed=\"false\"][data-finder=\"false\"][data-print-preparing=\"false\"][data-coordinate-selecting=\"false\"][data-coordinate-building=\"false\"][data-selection-choosing=\"false\"][data-stamp-removing=\"false\"][data-editable-review=\"false\"]>.gwe-builder-body{overflow:auto!important;flex:1 1 auto;min-height:0;scroll-padding-block:2px}}";
+    style.textContent += [
+      '.gwe-subject-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;background:rgba(45,212,191,0.16);border:1px solid rgba(94,234,212,0.48);color:#99f6e4;font-size:10.5px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:6px}',
+      '.gwe-home-telemetry{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:10px;min-width:0}',
+      '.gwe-home-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:rgba(13,34,32,0.82);border:1px solid rgba(94,234,212,0.34);color:#e6fffb;font-size:11px;font-weight:700;white-space:nowrap}',
+      '.gwe-home-schematic{margin-top:10px;padding:7px 10px;border-radius:12px;background:rgba(10,27,26,0.76);border:1px solid rgba(94,234,212,0.26)}',
+      '.gwe-home-starters{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding-top:9px;border-top:1px solid rgba(94,234,212,0.22)}',
+      '.gwe-home-starter-label{font-size:10.5px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:#99f6e4}',
+      '.gwe-home-starter-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 13px;border-radius:10px;background:rgba(13,34,32,0.86);border:1px solid rgba(94,234,212,0.38);color:#e6fffb;font-size:12px;font-weight:700;cursor:pointer;transition:background 140ms ease,border-color 140ms ease}',
+      '.gwe-home-starter-chip:hover:not(:disabled){background:rgba(15,118,110,0.44);border-color:#5eead4;color:#ffffff}',
+      '.gwe-home-starter-chip:focus-visible{outline:3px solid #f4d18d;outline-offset:2px}',
+      '.gwe-dock-schematic{margin:8px 14px 4px;padding:6px 8px;border-radius:10px;background:rgba(10,27,26,0.72);border:1px solid rgba(155,184,159,0.34)}',
+      '.theme-contrast .gwe-subject-badge,.theme-contrast .gwe-home-telemetry-pill,.theme-contrast .gwe-home-schematic,.theme-contrast .gwe-dock-schematic{background:#000000!important;border:1.5px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .gwe-home-starter-label{color:#ffff00!important}',
+      '.theme-contrast .gwe-home-starter-chip{background:#000000!important;border:1.5px solid #ffff00!important;color:#ffff00!important}',
+      '.theme-contrast .gwe-home-starter-chip:hover:not(:disabled){background:#ffff00!important;color:#000000!important;border-color:#ffff00!important}',
+      '@media(forced-colors:active){.gwe-subject-badge,.gwe-home-telemetry-pill,.gwe-home-schematic,.gwe-dock-schematic,.gwe-home-starter-chip{background:Canvas;color:CanvasText;border:1px solid CanvasText}}'
+    ].join('\n');
     document.head.appendChild(style);
   }
 
@@ -3512,8 +3685,18 @@
       h('svg',{viewBox:'0 0 320 200',role:'img','aria-label':map.activities?'Lesson route with numbered activity stops and structure footprints':'Lesson overview with guide locations and structure footprints',preserveAspectRatio:'xMidYMid meet'},
         h('title',null,map.activities?'Explore the lesson route':'Preview the world'),
         h('desc',null,'Overhead view. '+map.stops.length+(map.activities?' numbered stops follow the activity guide; dotted lines show their order.':' guide locations are marked.')+' The top of this map is north.'),
-        h('rect',{x:0,y:0,width:320,height:200,rx:16,fill:overview.coastal?'#d3e9e4':'#e5ebdc'}),
-        h('rect',{x:map.x,y:map.y,width:map.width,height:map.height,rx:3,fill:'#b6c69a',stroke:'#65816a',strokeWidth:1}),
+        h('defs',null,
+          h('linearGradient',{id:overview.coastal?'gwe-map-bg-coastal':'gwe-map-bg-meadow',x1:'0%',y1:'0%',x2:'100%',y2:'100%'},
+            h('stop',{offset:'0%',stopColor:overview.coastal?'#dcf1ec':'#eef2e5'}),
+            h('stop',{offset:'100%',stopColor:overview.coastal?'#c2e1dc':'#dbe4cf'})
+          ),
+          h('linearGradient',{id:'gwe-map-ground',x1:'0%',y1:'0%',x2:'0%',y2:'100%'},
+            h('stop',{offset:'0%',stopColor:'#c0d0a5'}),
+            h('stop',{offset:'100%',stopColor:'#a9bc8d'})
+          )
+        ),
+        h('rect',{x:0,y:0,width:320,height:200,rx:16,fill:'url(#'+(overview.coastal?'gwe-map-bg-coastal':'gwe-map-bg-meadow')+')'}),
+        h('rect',{x:map.x,y:map.y,width:map.width,height:map.height,rx:3,fill:'url(#gwe-map-ground)',stroke:'#5c7a62',strokeWidth:1.1}),
         map.footprints.map(function(f){return h('rect',{key:'structure-'+f.id,'data-map-structure':f.id,x:f.x,y:f.y,width:f.width,height:f.height,fill:Object.prototype.hasOwnProperty.call(colors,f.block)?colors[f.block]:'#a0aca2',stroke:f.ground?'none':'#425e554f',strokeWidth:.7});}),
         map.activities&&map.stops.length>1&&h('polyline',{points:map.stops.map(function(s){return s.point.join(',');}).join(' '),fill:'none',stroke:'#365d49',strokeWidth:1.4,strokeDasharray:'3 4',opacity:.75}),
         map.stops.map(function(s){return h('g',{key:'stop-'+s.index,'data-map-activity':s.index,'data-map-tracked':s.index===trackedIndex?'true':undefined},s.index===trackedIndex&&h('circle',{cx:s.point[0],cy:s.point[1],r:13,fill:'none',stroke:'#94702f',strokeWidth:2}),h('circle',{cx:s.point[0],cy:s.point[1],r:map.activities?9:4,fill:'#254c3a',stroke:'#fbfaef',strokeWidth:2}),map.activities&&h('text',{x:s.point[0],y:s.point[1]+.4,textAnchor:'middle',dominantBaseline:'central',fill:'#fffef2',fontSize:10,fontFamily:'system-ui,sans-serif',fontWeight:800},s.index+1));}),
@@ -3818,7 +4001,9 @@
       // Fills {value1}-style placeholders, so a translation can reorder them.
       var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var React = ctx.React, h = React.createElement;
-      var data = (ctx.toolData && ctx.toolData.geometryWorld) || {};
+      var _rawGwData = ctx.toolData && ctx.toolData.geometryWorld;
+      var data = (_rawGwData && typeof _rawGwData === 'object' && !Array.isArray(_rawGwData)) ? _rawGwData : {};
+      var isGwLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
       var isSandbox = data.activeLesson === 'builderSandbox';
       var pendingReturn = window.__alloGeometryWorldPendingBuild, hasPendingReturn = !!pendingReturn;
       var currentPrintUnit = printUnit(printContext(ctx).unitMm);
@@ -3907,7 +4092,7 @@
       function renderHomeConcept(lesson){
         var checks=window.StemLab && window.StemLab.geometryWorldLessonChecks;
         var concept=checks && typeof checks.conceptModel==='function' ? checks.conceptModel(lesson,lesson.id) : null;
-        return concept && h('div',{className:'gwe-lesson-concept','aria-label':__alloT('stem.geometryworld_builder.learning_focus','Learning focus')},h('strong',null,concept.relationship),h('p',null,concept.question));
+        return concept && h('div',{ role: 'group',className:'gwe-lesson-concept','aria-label':__alloT('stem.geometryworld_builder.learning_focus','Learning focus')},h('strong',null,concept.relationship),h('p',null,concept.question));
       }
       function renderGuidedCatalog(lessons,lesson,topic,visibleLessons,topics){
         function selectLesson(id){patchGeometryState(ctx,{geometryHomeLesson:id});}
@@ -3984,7 +4169,45 @@
         var firstActivity=lesson && Array.isArray(lesson.activities) ? lesson.activities.find(function(activity){return activity && typeof activity.title==='string';}) : null;
         return h('div',{key:'gwe-home',className:'gwe-home-backdrop'},h('section',{className:'gwe-home',ref:homeRef,tabIndex:-1,role:'dialog','aria-modal':'true','aria-labelledby':'gwe-home-title','aria-describedby':'gwe-home-description',onKeyDown:function(event){trapDialogKeys(event,closeHome);event.stopPropagation();}},
           h('header',{className:'gwe-home-top'},h('span',{className:'gwe-home-brand'},h('span',{'aria-hidden':'true'},studioCubeMark(h)),'Geometry World'),canContinue && h('button',{type:'button',className:'gwe-home-continue',onClick:continueWorkspace},'Continue your workspace',h('span',{'aria-hidden':'true'},' →'))),
-          h('div',{className:'gwe-home-heading'},homePage!=='start' && h('button',{type:'button',className:'gwe-home-back',onClick:function(){homeNavigate('start');}},'← All ways to explore'),h('p',{className:'gwe-home-eyebrow'},homePage==='start'?'Learning studio':'GEOMETRY WORLD / '+homePage.toUpperCase()),h('h1',{id:'gwe-home-title'},titles[homePage] || titles.start),h('p',{id:'gwe-home-description'},homePage==='start'?'What would you like to do?':homePage==='build'?'Build, measure, and revise a creation.':homePage==='learn'?'Investigate a world and explain the geometry you find.':homePage==='explore'?'Look for patterns, compare structures, and measure what you notice.':homePage==='create'?'Create structures, characters, and questions for a learning world.':'Return to a local project, or open an editable Geometry World JSON file.')),
+          h('div',{className:'gwe-home-heading'},homePage!=='start' && h('button',{type:'button',className:'gwe-home-back',onClick:function(){homeNavigate('start');}},'← All ways to explore'),homePage==='start' && h('span',{className:'gwe-subject-badge'},__alloT('stem.geometryworld_builder.subject_badge','3D Voxel Architecture & Spatial Engineering')),h('p',{className:'gwe-home-eyebrow'},homePage==='start'?'Learning studio':'GEOMETRY WORLD / '+homePage.toUpperCase()),h('h1',{id:'gwe-home-title'},titles[homePage] || titles.start),h('p',{id:'gwe-home-description'},homePage==='start'?'What would you like to do?':homePage==='build'?'Build, measure, and revise a creation.':homePage==='learn'?'Investigate a world and explain the geometry you find.':homePage==='explore'?'Look for patterns, compare structures, and measure what you notice.':homePage==='create'?'Create structures, characters, and questions for a learning world.':'Return to a local project, or open an editable Geometry World JSON file.'),
+            homePage==='start' && (function(){
+              var savedCount = (worldShelf && Array.isArray(worldShelf.projects)) ? worldShelf.projects.length : 0;
+              var activePipeStep = canContinue ? 1 : (doneCount > 0 ? 2 : 0);
+              return h('div',{style:{minWidth:0}},
+                h('div',{className:'gwe-home-telemetry',role:'group','aria-label':__alloT('stem.geometryworld_builder.telemetry_aria','Geometry World studio summary')},
+                  h('span',{className:'gwe-home-telemetry-pill'},__alloFill(__alloT('stem.geometryworld_builder.pill_lessons','Lessons: {done}/{total}'),{done:doneCount,total:availableLessons.length})),
+                  h('span',{className:'gwe-home-telemetry-pill'},__alloFill(__alloT('stem.geometryworld_builder.pill_saved','Saved Worlds: {count}'),{count:savedCount})),
+                  h('span',{className:'gwe-home-telemetry-pill'},__alloFill(__alloT('stem.geometryworld_builder.pill_unit','Print Scale: {unit} mm/block'),{unit:currentPrintUnit})),
+                  h('span',{className:'gwe-home-telemetry-pill'},canContinue ? __alloT('stem.geometryworld_builder.pill_session_active','Workspace: Active') : __alloT('stem.geometryworld_builder.pill_session_ready','Workspace: Ready'))
+                ),
+                h('div',{className:'gwe-home-schematic'},
+                  h('svg',{viewBox:'0 0 580 54',style:{width:'100%',height:'auto',maxHeight:56,display:'block'},role:'img','aria-label':__alloT('stem.geometryworld_builder.pipeline_aria','Three-stage spatial design workflow from voxel construction to volume measurement and 3D print preparation')},
+                    h('line',{x1:182,y1:27,x2:208,y2:27,stroke:'#5eead4',strokeWidth:2,strokeDasharray:'4 3'}),
+                    h('line',{x1:372,y1:27,x2:398,y2:27,stroke:'#5eead4',strokeWidth:2,strokeDasharray:'4 3'}),
+                    [
+                      {x:10,w:172,step:'01',title:__alloT('stem.geometryworld_builder.pipe_build','Construct Voxels'),idx:0},
+                      {x:208,w:164,step:'02',title:__alloT('stem.geometryworld_builder.pipe_measure','Measure Volume & SA'),idx:1},
+                      {x:398,w:172,step:'03',title:__alloT('stem.geometryworld_builder.pipe_print','Prepare 3D Print'),idx:2}
+                    ].map(function(node){
+                      var on = activePipeStep === node.idx;
+                      return h('g',{key:node.step},
+                        h('rect',{x:node.x,y:6,width:node.w,height:42,rx:9,fill:on?'rgba(20,184,166,0.28)':'rgba(12,30,29,0.86)',stroke:on?'#99f6e4':'rgba(94,234,212,0.38)',strokeWidth:on?2:1.2}),
+                        h('text',{x:node.x+node.w/2,y:22,textAnchor:'middle',fill:'#99f6e4',fontSize:10.5,fontWeight:800,fontFamily:'system-ui, sans-serif'},node.step),
+                        h('text',{x:node.x+node.w/2,y:38,textAnchor:'middle',fill:'#f0fdfa',fontSize:11,fontWeight:700,fontFamily:'system-ui, sans-serif'},node.title)
+                      );
+                    })
+                  )
+                ),
+                !isGwLocked && h('div',{className:'gwe-home-starters',role:'group','aria-label':__alloT('stem.geometryworld_builder.quick_starters_aria','Quick studio launchers')},
+                  h('span',{className:'gwe-home-starter-label'},__alloT('stem.geometryworld_builder.quick_starters_label','Quick Launch:')),
+                  h('button',{type:'button',className:'gwe-home-starter-chip',onClick:function(){homeNavigate('learn');}},__alloT('stem.geometryworld_builder.starter_guided','Guided Lessons')),
+                  h('button',{type:'button',className:'gwe-home-starter-chip',onClick:function(){homeNavigate('build');}},__alloT('stem.geometryworld_builder.starter_sandbox','Free Build Studio')),
+                  h('button',{type:'button',className:'gwe-home-starter-chip',onClick:function(){homeNavigate('explore');}},__alloT('stem.geometryworld_builder.starter_explore','Explore Worlds')),
+                  h('button',{type:'button',className:'gwe-home-starter-chip',onClick:function(){homeNavigate('open');}},__alloT('stem.geometryworld_builder.starter_open','Saved Projects'))
+                )
+              );
+            })()
+          ),
           homePage==='start' && h('nav',{className:'gwe-home-grid','aria-label':__alloT('stem.geometryworld_builder.geometry_world_modes','Geometry World modes')},[
             ['learn','Learn','Guided lessons','Investigate volume, area, fractions, and scale.'],
             ['build','Build','Free Build Studio','Make a creation. Measure and refine it.'],
@@ -4327,7 +4550,7 @@
         return h('details',{className:'gwe-details gwe-starter-library',onToggle:function(e){var panel=e.currentTarget;setStarterOpen(panel.open);if(panel.open)window.requestAnimationFrame(function(){if(panel.isConnected && panel.scrollIntoView)panel.scrollIntoView({block:'start'});});}},h('summary',null,'Architectural starter kit'),
           h('p',{className:'gwe-builder-note'},'Start with a complete structure, then make every block your own.'),
           h('div',{className:'gwe-starter-categories',role:'group','aria-label':__alloT('stem.geometryworld_builder.starter_category','Starter category')},['Architecture','Landscape','Buildings'].map(function(c){return h('button',{key:c,type:'button','aria-pressed':starterCategory===c,onClick:function(){var starter=starters.find(function(s){return s.category===c;});if(!starter)return;setStarterCategory(c);setStarterOptions({});setStarterId(starter.id);cancelSelectionPreview();}},c);})),
-          h('div',{className:'gwe-stamp-gallery','aria-label':__alloT('stem.geometryworld_builder.architectural_starters','Architectural starters')},starterCards.map(function(card){var s=card.stamp;return h('button',{key:s.id,type:'button',className:'gwe-stamp-card gwe-starter-card','aria-label':__alloFill(__alloT('stem.geometryworld_builder.a11y_choose_starter', 'Choose starter {value1}'), { value1: s.name }),'aria-pressed':starterId===s.id,onClick:function(){setStarterId(s.id);setStarterOptions({});cancelSelectionPreview();}},h('span',{className:'gwe-stamp-art'},h('img',{src:card.image,alt:'',loading:'lazy'}),h('span',{className:'gwe-stamp-selection'},starterId===s.id?'✓ Selected':'Choose')),h('span',{className:'gwe-stamp-card-name'},s.name),h('span',{className:'gwe-stamp-card-facts'},s.blocks.length+' editable blocks'));})),
+          h('div',{ role: 'group',className:'gwe-stamp-gallery','aria-label':__alloT('stem.geometryworld_builder.architectural_starters','Architectural starters')},starterCards.map(function(card){var s=card.stamp;return h('button',{key:s.id,type:'button',className:'gwe-stamp-card gwe-starter-card','aria-label':__alloFill(__alloT('stem.geometryworld_builder.a11y_choose_starter', 'Choose starter {value1}'), { value1: s.name }),'aria-pressed':starterId===s.id,onClick:function(){setStarterId(s.id);setStarterOptions({});cancelSelectionPreview();}},h('span',{className:'gwe-stamp-art'},h('img',{src:card.image,alt:'',loading:'lazy'}),h('span',{className:'gwe-stamp-selection'},starterId===s.id?'✓ Selected':'Choose')),h('span',{className:'gwe-stamp-card-name'},s.name),h('span',{className:'gwe-stamp-card-facts'},s.blocks.length+' editable blocks'));})),
           h('p',{className:'gwe-builder-note'},(starters.find(function(s){return s.id===starterId;})||starters[0]).description),
           h('div',{className:'gwe-starter-custom'},h('h4',null,'Make it yours'),
             configuredStarterImage && h('img',{className:'gwe-configured-preview',src:configuredStarterImage,alt:__alloT('stem.geometryworld_builder.preview_of_your_customized_starter','Preview of your customized starter')}),
@@ -4819,13 +5042,13 @@
           target.focus({preventScroll:true});
         } else target.focus();
       }, [editablePreview,editableError,editableSurface,data.showSaveRecovery]);
-      React.useLayoutEffect(function () {
+      (React.useLayoutEffect || React.useEffect)(function () {
         var origin = editableReturnFocusRef.current;
         if (!origin || editablePreview) return;
         editableReturnFocusRef.current = null;
         if (origin.target && origin.target.isConnected && origin.engine === window[ENGINE_KEY] && origin.engine.blocks === origin.blocks && editableSurface === 'studio' && workshopFocusAllowed(origin.engine,false,origin.request)) origin.target.focus();
       }, [editablePreview,editableSurface]);
-      React.useLayoutEffect(function(){
+      (React.useLayoutEffect || React.useEffect)(function(){
         var request=editableConfirmFocusRef.current;if(!request)return;var live=request.engine;
         if(request.token!==editableReadTokenRef.current || window[ENGINE_KEY]!==live || !live || live._destroyed || live._currentLesson!==request.lesson || live.blocks!==request.blocks || live._packageRevision!==request.revision || live._historyRevision!==request.history || window.__alloPrintLabPackageEditSession!==request.session || window.__alloGeometryWorldPendingBuild!==request.pending || !request.root || !request.root.isConnected){request.stop();return;}
         if(request.first || request.second || request.settle)return;
@@ -5042,7 +5265,7 @@
             h('select',{id:'gwe-creation-edit-action',value:selectionEditMode,onChange:function(event){var mode=event.target.value;setSelectionEditMode(mode);cancelSelectionPreview();if(mode==='duplicate')chooseDuplicatePosition(null,false);}},[['move','Move'],['duplicate','Duplicate'],['repeat','Repeat a pattern'],['align','Align to grid'],['rotate','Rotate 90°'],['mirrorX','Mirror left / right (X)'],['mirrorZ','Mirror front / back (Z)'],['recolor','Change material']].map(function(option){return h('option',{key:option[0],value:option[0]},option[1]);})),
             selectionEditMode==='duplicate' && h('div',{className:'gwe-copy-placement'},
               h('p',{className:'gwe-builder-note'},'Place a copy beside this creation or stack it above. Side copies leave a one-cell gap; stacked copies start on the next grid layer.'),
-              h('div',{className:'gwe-copy-directions','aria-label':__alloT('stem.geometryworld_builder.preview_a_duplicate_position','Preview a duplicate position')},[['x','Beside X'],['z','Beside Z'],['y','Stack above']].map(function(option){return h('button',{type:'button',key:option[0],onClick:function(){chooseDuplicatePosition(option[0],true);}},option[1]);}))),
+              h('div',{ role: 'group',className:'gwe-copy-directions','aria-label':__alloT('stem.geometryworld_builder.preview_a_duplicate_position','Preview a duplicate position')},[['x','Beside X'],['z','Beside Z'],['y','Stack above']].map(function(option){return h('button',{type:'button',key:option[0],onClick:function(){chooseDuplicatePosition(option[0],true);}},option[1]);}))),
             selectionEditMode==='move' && renderMoveDirections(),
             (selectionEditMode==='move' || selectionEditMode==='duplicate') && renderCoordinateInputs('gwe-creation-offset',selectionOffset,setSelectionOffset,'Offset in blocks · X right, Y up, Z depth'),
             selectionEditMode==='repeat' && h('div',{className:'gwe-pattern-options'},
@@ -5105,7 +5328,7 @@
       }
       function renderCreationCameraTools(){
         return h('details',{className:'gwe-camera-orbit-tools'},h('summary',null,'Orbit & views'),
-          h('div',{className:'gwe-builder-actions','aria-label':__alloT('stem.geometryworld_builder.orbit_selected_creation','Orbit selected creation')},
+          h('div',{ role: 'group',className:'gwe-builder-actions','aria-label':__alloT('stem.geometryworld_builder.orbit_selected_creation','Orbit selected creation')},
             [['Orbit left',-Math.PI/12,0,1],['Orbit right',Math.PI/12,0,1],['Tilt up',0,Math.PI/18,1],['Tilt down',0,-Math.PI/18,1],['Closer',0,0,1/1.18],['Farther',0,0,1.18]].map(function(action){return h('button',{key:action[0],type:'button',onClick:function(){orbitSelectedCreation(ctx,action[1],action[2],action[3]);}},action[0]);})),
           renderCreationViewPresets('gwe-builder-actions gwe-camera-view-presets',__alloT('stem.geometryworld_builder.selected_creation_views','Selected creation views'))
         );
@@ -5764,7 +5987,7 @@
       if(data.toolbarCollapsed && base.props['data-fullscreen']!=='true' && !homeOpen)additions.push(h('button',{key:'gwe-home-shortcut',type:'button',className:'gwe-home-shortcut','aria-label':__alloT('stem.geometryworld_builder.geometry_world_home','Geometry World home'),'aria-haspopup':'dialog',onClick:function(){if(engine && engine.openGeometryHome)engine.openGeometryHome();}},'World home'));
       if ((isSandbox && data.worldActive) || homeOpen) additions.push(h('input', {key:'gwe-editable-file',ref:editableInputRef,type:'file',accept:EDITABLE_FILE_TYPES,onChange:chooseEditableWorld,style:{display:'none'},tabIndex:-1,'aria-hidden':'true'}));
 
-      if(isSandbox && data.worldActive && data.creationFocusAvailable && engine && engine._creationFocus && !engine._showcase)additions.push(h('div',{key:'gwe-focus-return',className:'gwe-focus-return','aria-label':__alloT('stem.geometryworld_builder.creation_camera','Creation camera')},
+      if(isSandbox && data.worldActive && data.creationFocusAvailable && engine && engine._creationFocus && !engine._showcase)additions.push(h('div',{ role: 'group',key:'gwe-focus-return',className:'gwe-focus-return','aria-label':__alloT('stem.geometryworld_builder.creation_camera','Creation camera')},
         h('span',{className:'gwe-creation-camera-status',role:'status','data-gwe-camera-state':selectedCreationCameraView(engine)},({front:'Front view',side:'Side view',top:'Top view',custom:'Custom view',returning:'Returning to previous view'})[selectedCreationCameraView(engine)] || 'Creation framed'),h('button',{type:'button',disabled:selectedCreationCameraView(engine)==='returning',onClick:function(){if(engine.restoreCreationView)engine.restoreCreationView();setCreationCameraView(selectedCreationCameraView(engine));}},'Previous view'),renderCreationCameraTools()));
 
       if (isSandbox && data.worldActive) additions.push(h('aside', {
@@ -5787,6 +6010,19 @@
           h('li', {'aria-current': hasStudentBuild === false ? 'step' : undefined}, h('span', {'aria-hidden':'true'}, '1'), 'Build'),
           h('li', {'aria-current': hasStudentBuild !== false && !hasRetainedSelection ? 'step' : undefined}, h('span', {'aria-hidden':'true'}, '2'), 'Select'),
           h('li', {'aria-current': hasRetainedSelection ? 'step' : undefined}, h('span', {'aria-hidden':'true'}, '3'), 'Print Lab')
+        ),
+        !collapsed && !toolFinderOpen && !stampRemoval && !studioEditableReview && h('div', { className: 'gwe-dock-schematic' },
+          h('svg', { viewBox: '0 0 280 40', style: { width: '100%', height: 'auto', maxHeight: 42, display: 'block' }, role: 'img', 'aria-label': __alloT('stem.geometryworld_builder.dock_axes_aria', 'Voxel coordinate axes X width, Y height, Z depth and live block count') },
+            h('rect', { x: 2, y: 4, width: 84, height: 32, rx: 7, fill: 'rgba(13,34,32,0.88)', stroke: 'rgba(248,113,113,0.55)', strokeWidth: 1.2 }),
+            h('text', { x: 44, y: 17, textAnchor: 'middle', fill: '#fca5a5', fontSize: 10, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'X · WIDTH'),
+            h('text', { x: 44, y: 31, textAnchor: 'middle', fill: '#f8fafc', fontSize: 10.5, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, measured ? String(measured.L) : '—'),
+            h('rect', { x: 98, y: 4, width: 84, height: 32, rx: 7, fill: 'rgba(13,34,32,0.88)', stroke: 'rgba(74,222,128,0.55)', strokeWidth: 1.2 }),
+            h('text', { x: 140, y: 17, textAnchor: 'middle', fill: '#86efac', fontSize: 10, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'Y · HEIGHT'),
+            h('text', { x: 140, y: 31, textAnchor: 'middle', fill: '#f8fafc', fontSize: 10.5, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, measured ? String(measured.H) : '—'),
+            h('rect', { x: 194, y: 4, width: 84, height: 32, rx: 7, fill: 'rgba(13,34,32,0.88)', stroke: 'rgba(96,165,250,0.55)', strokeWidth: 1.2 }),
+            h('text', { x: 236, y: 17, textAnchor: 'middle', fill: '#93c5fd', fontSize: 10, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'Z · DEPTH'),
+            h('text', { x: 236, y: 31, textAnchor: 'middle', fill: '#f8fafc', fontSize: 10.5, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, measured ? String(measured.W) : '—')
+          )
         ),
         !collapsed && !toolFinderOpen && h('div', {className:'gwe-builder-actions gwe-builder-quick-actions'},
           hasStudentBuild === false
@@ -5812,7 +6048,7 @@
               h('span',{className:'gwe-selected-emblem','aria-hidden':'true'},studioCubeMark(h)),
               h('div',null,h('span',{className:'gwe-selected-eyebrow'},'Outlined selection'),h('h3',{id:'gwe-selected-creation-title',tabIndex:-1},'Selected creation'))
             ),
-            h('div',{className:'gwe-selected-metrics','aria-label':__alloT('stem.geometryworld_builder.selected_build_summary','Selected build summary')},
+            h('div',{ role: 'group',className:'gwe-selected-metrics','aria-label':__alloT('stem.geometryworld_builder.selected_build_summary','Selected build summary')},
               h('div',{className:'gwe-metric'},h('strong',null,measured.count),h('span',null,'Blocks selected')),
               h('div',{className:'gwe-grid-span'},h('span',{className:'gwe-grid-span-label'},'Grid span'),
                 h('dl',null,[['x','Width (X)',measured.L],['z','Depth (Z)',measured.W],['y','Height (Y)',measured.H]].map(function(axis){return h('div',{key:axis[0],'data-gwe-grid-axis':axis[0]},h('dt',null,axis[1]),h('dd',null,axis[2],h('span',null,axis[2]===1?'grid cell':'grid cells')));})),
@@ -5821,7 +6057,7 @@
             h('p',{className:'gwe-selection-scope'},'Showcase and Print Lab use these blocks.')
           ) : h('section', {key:'gwe-creation-summary',className:'gwe-creation-summary','data-selected':'false','aria-label':__alloT('stem.geometryworld_builder.your_creation','Your creation')},
             h('h3', {className:'gwe-section-title'}, 'Your creation'),
-            h('div', { className: 'gwe-measure-summary', 'aria-label': __alloT('stem.geometryworld_builder.build_summary','Build summary') },
+            h('div', { role: 'group', className: 'gwe-measure-summary', 'aria-label': __alloT('stem.geometryworld_builder.build_summary','Build summary') },
               h('div', { className: 'gwe-metric' }, h('strong', null, placed), h('span', null, 'Placed')),
               h('div', { className: 'gwe-metric' }, h('strong', null, measured ? measured.count : '\u2014'), h('span', null, 'Selected')),
               h('div', { className: 'gwe-metric' }, h('strong', null, measured ? measured.L + '\u00D7' + measured.W + '\u00D7' + measured.H : '\u2014'), h('span', null, 'Block bounds'))
@@ -5829,7 +6065,7 @@
           ),
           measured && !measuredIsStudentBuild && h('p', { className: 'gwe-builder-note', 'data-gwe-not-student': 'true', role: 'status' },
             'That measurement was the ground or a lesson structure. Choose your own blocks to prepare a print.'),
-          measured && h('div', { key:'gwe-inspect-actions',className: 'gwe-builder-actions', 'aria-label':__alloT('stem.geometryworld_builder.inspect_selected_creation','Inspect selected creation') },
+          measured && h('div', { role: 'group', key:'gwe-inspect-actions',className: 'gwe-builder-actions', 'aria-label':__alloT('stem.geometryworld_builder.inspect_selected_creation','Inspect selected creation') },
             measuredIsStudentBuild && h('button',{type:'button',className:'gwe-focus-action',onClick:function(){focusSelectedBuild(ctx);},title:__alloT('stem.geometryworld_builder.frame_your_creation_and_keep_editing','Frame your creation and keep editing')},'Focus creation'),
             hasRetainedSelection && renderCreationViewPresets('gwe-camera-presets',__alloT('stem.geometryworld_builder.frame_selected_creation','Frame selected creation')),
             h('button',{type:'button',className:'gwe-showcase-action',onClick:function(){showcaseBuild(ctx);}},'Showcase creation'),
@@ -5950,7 +6186,7 @@
           ),
           h('details', {className:'gwe-details gwe-workspace-options'},
             h('summary', null, 'World & scenery'),
-            h('div',{className:'gwe-builder-actions','aria-label':__alloT('stem.geometryworld_builder.free_build_environment','Free Build environment')},
+            h('div',{ role: 'group',className:'gwe-builder-actions','aria-label':__alloT('stem.geometryworld_builder.free_build_environment','Free Build environment')},
               h('button',{type:'button','aria-pressed':!!(engine && engine._currentLesson && engine._currentLesson.builderGarden!==false),onClick:function(){changeBuilderGarden(true);}},'Garden workshop'),
               h('button',{type:'button','aria-pressed':!!(engine && engine._currentLesson && engine._currentLesson.builderGarden===false),onClick:function(){changeBuilderGarden(false);}},'Open meadow')),
             h('div', { className: 'gwe-builder-actions' },
@@ -5963,7 +6199,7 @@
         !collapsed && studioEditableReview && h('div',{className:'gwe-builder-footer'},renderImportActions()),
         !collapsed && !studioEditableReview && h('div',{className:'gwe-builder-footer'},
           coordinateBuildActive && !selectionEditPreview && !toolFinderOpen && hasRetainedSelection && h('button',{type:'button',className:'gwe-resume-building gwe-coordinate-print-next',onClick:prepareSelectedPrint},'Prepare selected blocks for print'),
-          selectionEditPreview && !toolFinderOpen ? h('div',{className:'gwe-preview-footer','aria-label':__alloT('stem.geometryworld_builder.pending_preview_actions','Pending preview actions')},h('div',{className:'gwe-preview-footer-heading'},h('strong',null,selectionEditPreview.ok?'Ready to apply':'Adjust the preview'),h('span',null,(previewChangeFacts(selectionEditPreview) || {}).count || 0,' blocks')),renderPreviewButtons(false)) : h('button',{type:'button',className:'gwe-resume-building',onClick:function(){resumeBuilding();}},
+          selectionEditPreview && !toolFinderOpen ? h('div',{ role: 'group',className:'gwe-preview-footer','aria-label':__alloT('stem.geometryworld_builder.pending_preview_actions','Pending preview actions')},h('div',{className:'gwe-preview-footer-heading'},h('strong',null,selectionEditPreview.ok?'Ready to apply':'Adjust the preview'),h('span',null,(previewChangeFacts(selectionEditPreview) || {}).count || 0,' blocks')),renderPreviewButtons(false)) : h('button',{type:'button',className:'gwe-resume-building',onClick:function(){resumeBuilding();}},
             h('svg',{viewBox:'0 0 24 24',width:18,height:18,fill:'none',stroke:'currentColor',strokeWidth:1.7,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':'true',focusable:'false'},h('path',{d:'M14 5l7 7-7 7M21 12H3'})),
             'Back to building'))
       ));

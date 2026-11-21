@@ -92,7 +92,8 @@
   var pendingSend = false;
   var helloTimer = null;
   function isTrustedOpenerOrigin(origin) {
-    if (!origin || origin === 'null') return true;
+    if (origin === 'null') return true;
+    if (!origin) return false;
     if (origin === window.location.origin) return true;
     try {
       var u = new URL(origin);
@@ -142,9 +143,12 @@
   function showError(m) { err.textContent = m; show(err); show(retryBtn); focusEl(retryBtn); }
   function clearError() { hide(err); hide(retryBtn); }
 
+  var cameraRequestSeq = 0;
   function stopStream() {
+    cameraRequestSeq += 1;
     if (stream && stream.getTracks) { try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} }
     stream = null;
+    try { if (cam) cam.srcObject = null; } catch (_) {}
   }
 
   function startCamera() {
@@ -154,8 +158,13 @@
       return;
     }
     stopStream();
+    var reqSeq = ++cameraRequestSeq;
     navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facing }, width: { ideal: 1280 } }, audio: false })
       .then(function (s) {
+        if (reqSeq !== cameraRequestSeq) {
+          if (s && s.getTracks) { try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} }
+          return;
+        }
         stream = s;
         cam.srcObject = s;
         show(cam); hide(shot); show(liveRow); hide(reviewRow);
@@ -163,6 +172,7 @@
         say('Camera started. Press Snap photo, or Space while the camera view has focus.');
       })
       .catch(function (e) {
+        if (reqSeq !== cameraRequestSeq) return;
         var name = e && e.name ? e.name : '';
         // AbortError is not a refusal: the camera started and then failed,
         // usually because another app holds it. Telling the student to grant

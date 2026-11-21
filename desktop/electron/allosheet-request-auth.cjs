@@ -87,18 +87,28 @@ function hasExactOrigin(value, expectedOrigin) {
 
 function isTrustedAlloSheetGristFrameRequest(details, companionOrigin, managedOrigin) {
   if (!details || !hasExactOrigin(details.url, managedOrigin)) return false;
-  const frame = details.frame && typeof details.frame === 'object' ? details.frame : null;
-  const frameUrl = frame && frame.url || '';
-  const parentUrl = frame && frame.parent && frame.parent.url || '';
+  let frameUrl = '';
+  let parentUrl = '';
+  try {
+    const frame = details.frame && typeof details.frame === 'object' ? details.frame : null;
+    frameUrl = (frame && typeof frame.url === 'string') ? frame.url : '';
+    parentUrl = (frame && frame.parent && typeof frame.parent.url === 'string') ? frame.parent.url : '';
+  } catch (_) {
+    return false;
+  }
   const initiator = details.initiator || '';
   const resourceType = String(details.resourceType || '');
 
   // Initial navigation of the dedicated Grist iframe is initiated by the
   // companion (or by Grist itself during a same-origin navigation).
+  // When initiator is present, it MUST match a trusted origin so a foreign
+  // custom-widget iframe inside Grist cannot authenticate via parentUrl.
   if (resourceType === 'subFrame') {
-    return hasExactOrigin(initiator, companionOrigin)
-      || hasExactOrigin(initiator, managedOrigin)
-      || hasExactOrigin(parentUrl, companionOrigin)
+    if (initiator) {
+      return hasExactOrigin(initiator, companionOrigin)
+        || hasExactOrigin(initiator, managedOrigin);
+    }
+    return hasExactOrigin(parentUrl, companionOrigin)
       || hasExactOrigin(parentUrl, managedOrigin);
   }
 
@@ -130,7 +140,7 @@ function applyAlloSheetRequestAuth(headers, requestUrl, auth, trustedWebContents
       exactManagedOrigin = false;
     }
   }
-  const sensitiveNames = new Set(knownCookieNames);
+  const sensitiveNames = new Set(['electron_key', ...Array.from(knownCookieNames || [])]);
   if (auth && auth.cookieName) sensitiveNames.add(auth.cookieName);
   if (auth && auth.sessionCookieName) sensitiveNames.add(auth.sessionCookieName);
   const namesToStrip = exactManagedOrigin

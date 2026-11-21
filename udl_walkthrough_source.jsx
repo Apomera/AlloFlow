@@ -347,6 +347,7 @@ function udlwalkAggregate(sessions, roster) {
       gradeSet.add(grade);
       const cell = cells[gid][grade] || (cells[gid][grade] = blank());
       if (rating === 'no_opp') { cell.noOpp += 1; totals[gid].noOpp += 1; return; }
+      if (UDLWALK_RATINGS.indexOf(rating) === -1) return;
       cell[rating] += 1; cell.rated += 1;
       totals[gid][rating] += 1; totals[gid].rated += 1;
     });
@@ -579,23 +580,23 @@ function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
           type="button"
           onClick={onCycle}
           aria-label={lookFor.guideline + '. ' + lookFor.prompt + ' Current: ' + stateLabel + '. Activate to cycle observed, partial, not observed, unrated.'}
-          className={'shrink-0 min-w-11 min-h-11 rounded-lg border-2 font-bold text-lg inline-flex items-center justify-center ' + (meta ? meta.chip : 'bg-slate-50 text-slate-500 border-slate-300')}
+          className={'shrink-0 min-w-11 min-h-11 rounded-lg border-2 font-bold text-lg inline-flex items-center justify-center ' + (meta ? meta.chip : 'bg-slate-50 text-slate-600 border-slate-300')}
         >
           <span aria-hidden="true">{meta ? meta.short : '·'}</span>
         </button>
         <div className="min-w-0 flex-1">
           <p className="text-sm text-slate-800 leading-snug">{lookFor.prompt}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            {meta && <span className={'text-[10px] font-bold px-1.5 py-0.5 rounded border ' + meta.chip}>{tt('udlwalk.rating_' + rating, meta.label)}</span>}
+            {meta && <span className={'text-xs font-bold px-1.5 py-0.5 rounded border ' + meta.chip}>{tt('udlwalk.rating_' + rating, meta.label)}</span>}
             <button type="button" onClick={onNoOpp}
               aria-pressed={rating === 'no_opp'}
-              className={'min-h-11 px-3 py-1.5 rounded border text-[10px] font-bold ' + (rating === 'no_opp' ? UDLWALK_RATING_META.no_opp.chip : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50')}
+              className={'min-h-11 px-3 py-1.5 rounded border text-xs font-bold ' + (rating === 'no_opp' ? UDLWALK_RATING_META.no_opp.chip : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50')}
             >{tt('udlwalk.no_opp', 'No opportunity')}</button>
             <button type="button" onClick={() => setShowExamples((v) => !v)} aria-expanded={showExamples}
-              className="min-h-11 px-3 py-1.5 rounded text-[10px] text-slate-600 underline decoration-dotted hover:text-slate-800"
+              className="min-h-11 px-3 py-1.5 rounded text-xs text-slate-600 underline decoration-dotted hover:text-slate-800"
             >{tt('udlwalk.examples', 'Examples')}</button>
             <button type="button" onClick={() => setShowNote((v) => !v)} aria-expanded={showNote}
-              className="min-h-11 px-3 py-1.5 rounded text-[10px] text-slate-600 underline decoration-dotted hover:text-slate-800"
+              className="min-h-11 px-3 py-1.5 rounded text-xs text-slate-600 underline decoration-dotted hover:text-slate-800"
             >{(entry && entry.note) ? tt('udlwalk.edit_note', 'Edit note') : tt('udlwalk.add_note', 'Add note')}</button>
           </div>
           {showExamples && (
@@ -659,7 +660,7 @@ function UdlWalkTrendChart({ trend, tt }) {
       <h4 className="text-sm font-bold text-slate-700">{tt('udlwalk.trend_title', 'Trend by principle')}</h4>
       <div className="flex flex-wrap gap-3 mt-1" aria-hidden="true">
         {UDLWALK_PRINCIPLES.map((p) => (
-          <span key={p.id} className="inline-flex items-center gap-1.5 text-[11px] text-slate-600">
+          <span key={p.id} className="inline-flex items-center gap-1.5 text-xs text-slate-600">
             <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: UDLWALK_TREND_COLORS[p.id] }} />
             {tt('udlwalk.principle_' + p.id, p.label)}
           </span>
@@ -671,11 +672,11 @@ function UdlWalkTrendChart({ trend, tt }) {
           {[0, 0.25, 0.5, 0.75, 1].map((v) => (
             <g key={v}>
               <line x1={ML} x2={ML + PW} y1={py(v)} y2={py(v)} stroke={v === 0 ? '#c3c2b7' : '#e1e0d9'} strokeWidth="1" />
-              <text x={ML - 5} y={py(v) + 3.5} textAnchor="end" fontSize="10" fill="#898781">{Math.round(v * 100)}%</text>
+              <text x={ML - 5} y={py(v) + 3.5} textAnchor="end" fontSize="10" fill="#52514e">{Math.round(v * 100)}%</text>
             </g>
           ))}
           {trend.buckets.map((b, i) => (i % tickEvery === 0 || i === n - 1) ? (
-            <text key={b} x={px(i)} y={H - 6} textAnchor="middle" fontSize="10" fill="#898781">{udlwalkMonthLabel(b)}</text>
+            <text key={b} x={px(i)} y={H - 6} textAnchor="middle" fontSize="10" fill="#52514e">{udlwalkMonthLabel(b)}</text>
           ) : null)}
           {UDLWALK_PRINCIPLES.map((p) => {
             const arr = trend.series[p.id];
@@ -708,8 +709,8 @@ function UdlWalkTrendChart({ trend, tt }) {
         </svg>
       </div>
       <details className="mt-1">
-        <summary className="text-[11px] text-slate-600 underline decoration-dotted cursor-pointer min-h-8 inline-flex items-center">{tt('udlwalk.trend_table', 'Data table')}</summary>
-        <table className="mt-1 text-[11px] border-collapse">
+        <summary className="text-xs text-slate-600 underline decoration-dotted cursor-pointer min-h-8 inline-flex items-center">{tt('udlwalk.trend_table', 'Data table')}</summary>
+        <table className="mt-1 text-xs border-collapse">
           <thead>
             <tr>
               <th scope="col" className="text-left p-1 text-slate-600">{tt('udlwalk.trend_month', 'Month')}</th>
@@ -729,7 +730,7 @@ function UdlWalkTrendChart({ trend, tt }) {
           </tbody>
         </table>
       </details>
-      <p className="text-[10px] text-slate-500 mt-1">{tt('udlwalk.trend_note', 'Share of look-fors rated "observed" per month; "no opportunity" is excluded. Months with no rated items for a principle are gaps, not zeros.')}</p>
+      <p className="text-xs text-slate-600 mt-1">{tt('udlwalk.trend_note', 'Share of look-fors rated "observed" per month; "no opportunity" is excluded. Months with no rated items for a principle are gaps, not zeros.')}</p>
     </div>
   );
 }
@@ -803,7 +804,7 @@ function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack
             <ul className="mt-1 flex flex-wrap gap-1.5">
               {(session.studentIndicators || []).map((m, i) => {
                 const ind = UDLWALK_STUDENT_INDICATORS.find((s) => s.id === m.id);
-                return <li key={i} className="text-[10px] font-bold px-2 py-1 rounded-full bg-sky-100 text-sky-800 border border-sky-300">{ind ? ind.label : m.id}</li>;
+                return <li key={i} className="text-xs font-bold px-2 py-1 rounded-full bg-sky-100 text-sky-800 border border-sky-300">{ind ? ind.label : m.id}</li>;
               })}
             </ul>
           </div>
@@ -814,7 +815,7 @@ function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack
             <p className="text-xs text-slate-700 mt-1 whitespace-pre-wrap">{session.summaryNote}</p>
           </div>
         )}
-        <p className="mt-4 text-[10px] text-slate-500 border-t border-slate-200 pt-2">
+        <p className="mt-4 text-xs text-slate-600 border-t border-slate-200 pt-2">
           {tt('udlwalk.integrity_note', 'UDL-aligned look-fors based on the CAST UDL Guidelines 3.0 structure — not a validated fidelity instrument. Growth-framed: instructional-practice data, not teacher evaluation. All data stays on this device.')}
         </p>
       </div>
@@ -1025,8 +1026,16 @@ function UdlWalkthroughPanel(props) {
   const saveDraft = () => {
     if (!draft) return;
     if (draft.editingId) {
-      // Editing a saved visit: update content, keep identity fields (id,
-      // date, duration, original observer stamp) exactly as recorded.
+      // Editing a saved visit: verify it still exists before updating so a visit
+      // deleted mid-edit does not silently discard changes with an "updated" toast.
+      const exists = sessions.some((x) => x.id === draft.editingId);
+      if (!exists) {
+        setDraft(null);
+        setTab('sessions');
+        setViewSessionId(null);
+        addToast(tt('udlwalk.deleted_while_editing', 'That visit was deleted while being edited.'), 'warning');
+        return;
+      }
       setSessions((s) => s.map((x) => x.id === draft.editingId ? {
         ...x,
         context: draft.context,
@@ -1077,7 +1086,23 @@ function UdlWalkthroughPanel(props) {
     udlwalkAnnounce(tt('udlwalk.editing_announce', 'Editing a saved visit. Save to apply changes.'));
   };
 
-  const discardDraft = () => { setDraft(null); udlwalkAnnounce(tt('udlwalk.discarded_announce', 'Walkthrough discarded.')); };
+  const [armDiscard, setArmDiscard] = React.useState(false);
+  const backdropDownRef = React.useRef(false);
+  const discardDraft = () => {
+    const hasWork = Boolean(draft && (
+      Object.values(draft.evidence || {}).some((e) => e && (e.rating || String(e.note || '').trim()))
+      || (Array.isArray(draft.studentIndicators) && draft.studentIndicators.length > 0)
+      || String(draft.summaryNote || '').trim()
+    ));
+    if (hasWork && !armDiscard) {
+      setArmDiscard(true);
+      udlwalkAnnounce(tt('udlwalk.discard_arm_announce', 'Activate Discard again to permanently erase this walkthrough draft.'));
+      return;
+    }
+    setArmDiscard(false);
+    setDraft(null);
+    udlwalkAnnounce(tt('udlwalk.discarded_announce', 'Walkthrough discarded.'));
+  };
 
   const addTeacher = () => {
     const name = newTeacherName.trim();
@@ -1117,11 +1142,60 @@ function UdlWalkthroughPanel(props) {
         // Merge, don't replace: existing ids win so an old export can't clobber newer local work.
         setRoster((r) => {
           const have = new Set(r.map((x) => x.id));
-          return [...r, ...((data.roster || []).filter((x) => x && x.id && !have.has(x.id)))];
+          const merged = [...r];
+          const usedCodes = new Set(r.map((x) => x && x.code).filter(Boolean));
+          (Array.isArray(data.roster) ? data.roster : []).forEach((x) => {
+            if (!x || typeof x !== 'object' || typeof x.id !== 'string' || !x.id.trim() || have.has(x.id)) return;
+            const id = x.id.trim().slice(0, 120);
+            have.add(id);
+            const rawCode = typeof x.code === 'string' ? x.code.trim().slice(0, 40) : '';
+            const code = (rawCode && !usedCodes.has(rawCode)) ? rawCode : udlwalkNextTeacherCode(merged);
+            usedCodes.add(code);
+            merged.push({
+              id,
+              code,
+              name: typeof x.name === 'string' ? x.name.trim().slice(0, 120) : '',
+              grade: typeof x.grade === 'string' ? x.grade.trim().slice(0, 40) : '',
+              subject: typeof x.subject === 'string' ? x.subject.trim().slice(0, 80) : '',
+              notes: typeof x.notes === 'string' ? x.notes.slice(0, 1000) : '',
+              archived: !!x.archived,
+            });
+          });
+          return merged;
         });
         setSessions((s) => {
           const have = new Set(s.map((x) => x.id));
-          const merged = [...s, ...((data.sessions || []).filter((x) => x && x.id && !have.has(x.id)))];
+          const incoming = (Array.isArray(data.sessions) ? data.sessions : [])
+            .filter((x) => x && typeof x === 'object' && typeof x.id === 'string' && x.id.trim() && !have.has(x.id.trim()))
+            .map((x) => {
+              const rawEvidence = x.evidence && typeof x.evidence === 'object' && !Array.isArray(x.evidence) ? x.evidence : {};
+              const cleanEvidence = {};
+              Object.keys(rawEvidence).forEach((k) => {
+                const entry = rawEvidence[k];
+                if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+                  cleanEvidence[k] = {
+                    rating: typeof entry.rating === 'string' ? entry.rating : '',
+                    note: typeof entry.note === 'string' ? entry.note.slice(0, 2000) : '',
+                  };
+                }
+              });
+              const rawContext = x.context && typeof x.context === 'object' && !Array.isArray(x.context) ? x.context : {};
+              return {
+                ...x,
+                id: x.id.trim().slice(0, 120),
+                teacherId: typeof x.teacherId === 'string' ? x.teacherId.trim().slice(0, 120) : '',
+                date: typeof x.date === 'string' ? x.date.slice(0, 20) : udlwalkDateStamp(),
+                startedAt: Number.isFinite(Number(x.startedAt)) ? Number(x.startedAt) : Date.now(),
+                evidence: cleanEvidence,
+                studentIndicators: Array.isArray(x.studentIndicators) ? x.studentIndicators.filter((v) => typeof v === 'string').slice(0, 50) : [],
+                summaryNote: typeof x.summaryNote === 'string' ? x.summaryNote.slice(0, 4000) : '',
+                context: {
+                  grouping: typeof rawContext.grouping === 'string' ? rawContext.grouping : '',
+                  phase: typeof rawContext.phase === 'string' ? rawContext.phase : '',
+                },
+              };
+            });
+          const merged = [...s, ...incoming];
           merged.sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0));
           return merged;
         });
@@ -1150,7 +1224,13 @@ function UdlWalkthroughPanel(props) {
   ];
 
   return (
-    <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4"
+      style={{ zIndex: 260 }}
+      role="presentation"
+      onMouseDown={(e) => { backdropDownRef.current = (e.target === e.currentTarget); }}
+      onClick={(e) => { const allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget) onClose(); }}
+    >
       <div ref={dialogRef} tabIndex={-1} data-help-key="udlwalk_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="udlwalk-title" onClick={(e) => e.stopPropagation()}>
         {/* Solid, not /95: the host dark theme restyles bg-slate-50 only, so a translucent header stayed light under light text. */}
         <div className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl">
@@ -1204,17 +1284,17 @@ function UdlWalkthroughPanel(props) {
                     className="min-h-11 p-3 rounded-xl border border-indigo-300 bg-white hover:bg-indigo-50 text-left"
                   >
                     <span className="block font-bold text-sm text-indigo-800">{udlwalkTeacherDisplay(r, config.anonymizeTeachers)}</span>
-                    <span className="block text-[10px] text-slate-500">{[r.grade, r.subject].filter(Boolean).join(' · ') || r.code}</span>
+                    <span className="block text-xs text-slate-600">{[r.grade, r.subject].filter(Boolean).join(' · ') || r.code}</span>
                   </button>
                 ))}
               </div>
               <div className="flex gap-2 items-end bg-white border border-slate-300 rounded-xl p-3">
                 <div className="flex-1 min-w-0">
-                  <label htmlFor="udlwalk-quick-name" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('udlwalk.quick_add_name', 'Teacher name (optional — a code is assigned either way)')}</label>
+                  <label htmlFor="udlwalk-quick-name" className="block text-xs font-bold text-slate-600 mb-0.5">{tt('udlwalk.quick_add_name', 'Teacher name (optional — a code is assigned either way)')}</label>
                   <input id="udlwalk-quick-name" type="text" value={newTeacherName} onChange={(e) => setNewTeacherName(e.target.value)} className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 </div>
                 <div className="w-24">
-                  <label htmlFor="udlwalk-quick-grade" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('udlwalk.quick_add_grade', 'Grade')}</label>
+                  <label htmlFor="udlwalk-quick-grade" className="block text-xs font-bold text-slate-600 mb-0.5">{tt('udlwalk.quick_add_grade', 'Grade')}</label>
                   <input id="udlwalk-quick-grade" type="text" value={newTeacherGrade} onChange={(e) => setNewTeacherGrade(e.target.value)} className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 </div>
                 <button type="button" onClick={addTeacher} className="min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700">{tt('udlwalk.quick_add', 'Add')}</button>
@@ -1235,7 +1315,7 @@ function UdlWalkthroughPanel(props) {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button type="button" onClick={discardDraft} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100">{draft.editingId ? tt('udlwalk.discard_edits', 'Discard edits') : tt('udlwalk.discard', 'Discard')}</button>
+                  <button type="button" onClick={discardDraft} className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold ' + (armDiscard ? 'bg-rose-600 text-white border-rose-700' : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-100')}>{armDiscard ? tt('udlwalk.discard_confirm', 'Tap again to discard') : (draft.editingId ? tt('udlwalk.discard_edits', 'Discard edits') : tt('udlwalk.discard', 'Discard'))}</button>
                   <button type="button" onClick={saveDraft} className="min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800">{draft.editingId ? tt('udlwalk.save_edits', 'Save changes') : tt('udlwalk.save', 'Save visit')}</button>
                 </div>
               </div>
@@ -1269,7 +1349,7 @@ function UdlWalkthroughPanel(props) {
                       onClick={() => setOpenPrinciple(open ? null : pr.id)}
                       className="w-full min-h-11 flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100"
                     >
-                      <span className="font-bold text-sm text-slate-800">{tt('udlwalk.principle_' + pr.id, pr.label)} <span className="font-normal text-xs text-slate-500">({pr.hint})</span></span>
+                      <span className="font-bold text-sm text-slate-800">{tt('udlwalk.principle_' + pr.id, pr.label)} <span className="font-normal text-xs text-slate-600">({pr.hint})</span></span>
                       <span className="text-xs text-slate-600">{done}/{items.length} <span aria-hidden="true">{open ? '▾' : '▸'}</span></span>
                     </button>
                     {open && (
@@ -1298,7 +1378,7 @@ function UdlWalkthroughPanel(props) {
                         className="min-h-11 p-2 rounded-lg border border-sky-300 bg-white hover:bg-sky-50 text-left"
                       >
                         <span className="block text-xs font-bold text-sky-800">{tt('udlwalk.' + ind.id, ind.label)}</span>
-                        <span className="block text-[10px] text-slate-500">{ind.detail}</span>
+                        <span className="block text-xs text-slate-600">{ind.detail}</span>
                       </button>
                     ))}
                   </div>
@@ -1319,11 +1399,16 @@ function UdlWalkthroughPanel(props) {
               anonymize={config.anonymizeTeachers} addToast={addToast} tt={tt}
               onBack={() => setViewSessionId(null)}
               onEdit={() => {
-                if (draft && !draft.editingId) { addToast(tt('udlwalk.edit_blocked', 'Finish or discard the walkthrough in progress first.'), 'warning'); return; }
+                if (draft && draft.editingId !== viewSession.id) { addToast(tt('udlwalk.edit_blocked', 'Finish or discard the walkthrough in progress first.'), 'warning'); return; }
                 editSession(viewSession);
               }}
               onToggleShared={() => setSessions((s) => s.map((x) => x.id === viewSession.id ? { ...x, sharedWithTeacher: !x.sharedWithTeacher } : x))}
-              onDelete={() => { setSessions((s) => s.filter((x) => x.id !== viewSession.id)); setViewSessionId(null); addToast(tt('udlwalk.deleted_toast', 'Visit deleted.'), 'info'); }} />
+              onDelete={() => {
+                if (draft && draft.editingId === viewSession.id) setDraft(null);
+                setSessions((s) => s.filter((x) => x.id !== viewSession.id));
+                setViewSessionId(null);
+                addToast(tt('udlwalk.deleted_toast', 'Visit deleted.'), 'info');
+              }} />
           )}
 
           {tab === 'sessions' && !viewSession && (
@@ -1342,11 +1427,11 @@ function UdlWalkthroughPanel(props) {
                       >
                         <span className="min-w-0">
                           <span className="block font-bold text-sm text-slate-800">{udlwalkTeacherDisplay(teacher, config.anonymizeTeachers)}</span>
-                          <span className="block text-[10px] text-slate-500">{s.date} · {s.durationMin} {tt('udlwalk.minutes', 'min')}{(s.observer && s.observer.initials) ? (' · ' + tt('udlwalk.observer_short', 'obs.') + ' ' + s.observer.initials) : ''} · {(s.studentIndicators || []).length} {tt('udlwalk.moments_short', 'moments')}</span>
+                          <span className="block text-xs text-slate-600">{s.date} · {s.durationMin} {tt('udlwalk.minutes', 'min')}{(s.observer && s.observer.initials) ? (' · ' + tt('udlwalk.observer_short', 'obs.') + ' ' + s.observer.initials) : ''} · {(s.studentIndicators || []).length} {tt('udlwalk.moments_short', 'moments')}</span>
                         </span>
                         <span className="shrink-0 text-right">
-                          <span className="block text-xs font-bold text-green-700">{obs}/{rated.length} <span className="font-normal text-slate-500">{tt('udlwalk.observed_short', 'observed')}</span></span>
-                          {s.sharedWithTeacher && <span className="block text-[10px] font-bold text-green-700">{tt('udlwalk.shared_badge', '✓ shared')}</span>}
+                          <span className="block text-xs font-bold text-green-700">{obs}/{rated.length} <span className="font-normal text-slate-600">{tt('udlwalk.observed_short', 'observed')}</span></span>
+                          {s.sharedWithTeacher && <span className="block text-xs font-bold text-green-700">{tt('udlwalk.shared_badge', '✓ shared')}</span>}
                         </span>
                       </button>
                     </li>
@@ -1390,27 +1475,27 @@ function UdlWalkthroughPanel(props) {
                               <tr key={g.id} className="border-t border-slate-200">
                                 <th scope="row" className="text-left p-1.5 font-normal text-slate-700">
                                   <span className="font-bold">{g.label}</span>{' '}
-                                  <span className="text-[10px] text-slate-500">({(UDLWALK_PRINCIPLES.find((p) => p.id === g.principle) || {}).label})</span>
+                                  <span className="text-xs text-slate-600">({(UDLWALK_PRINCIPLES.find((p) => p.id === g.principle) || {}).label})</span>
                                 </th>
                                 {agg.grades.map((grade) => {
                                   const v = cellView(agg.cells[g.id][grade]);
                                   {/* No opacity on the n-counts: axe flagged 75% opacity as
                                       sub-AA contrast on the tinted cell backgrounds. */}
-                                  return <td key={grade} className={'p-1.5 text-center rounded ' + v.cls}>{v.text}{v.n ? <span className="text-[9px]"> (n={v.n})</span> : null}</td>;
+                                  return <td key={grade} className={'p-1.5 text-center rounded ' + v.cls}>{v.text}{v.n ? <span className="text-xs"> (n={v.n})</span> : null}</td>;
                                 })}
-                                <td className={'p-1.5 text-center font-bold rounded ' + total.cls}>{total.text}{total.n ? <span className="text-[9px]"> (n={total.n})</span> : null}</td>
+                                <td className={'p-1.5 text-center font-bold rounded ' + total.cls}>{total.text}{total.n ? <span className="text-xs"> (n={total.n})</span> : null}</td>
                               </tr>
                             );
                           })}
                         </tbody>
                       </table>
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-1.5">{tt('udlwalk.heatmap_note', '"No opportunity" ratings are excluded from every denominator. A small n is thin evidence, not a verdict.')}</p>
+                    <p className="text-xs text-slate-600 mt-1.5">{tt('udlwalk.heatmap_note', '"No opportunity" ratings are excluded from every denominator. A small n is thin evidence, not a verdict.')}</p>
 
                     {(() => {
                       const trend = udlwalkTrend(sessions);
                       if (trend.buckets.length < 2) {
-                        return <p className="text-[10px] text-slate-500 mt-1">{tt('udlwalk.trend_pending', 'Trend lines appear once visits span two or more months.')}</p>;
+                        return <p className="text-xs text-slate-600 mt-1">{tt('udlwalk.trend_pending', 'Trend lines appear once visits span two or more months.')}</p>;
                       }
                       return <UdlWalkTrendChart trend={trend} tt={tt} />;
                     })()}
@@ -1418,7 +1503,7 @@ function UdlWalkthroughPanel(props) {
                     {agg.pdSignals.length > 0 && (
                       <div className="mt-3 bg-white border border-indigo-300 rounded-xl p-3">
                         <h4 className="text-sm font-bold text-indigo-800">{tt('udlwalk.pd_title', 'PD signals')}</h4>
-                        <p className="text-[10px] text-slate-500">{tt('udlwalk.pd_note', 'Lowest observed-rates with at least ' + agg.minN + ' rated observations building-wide — framed as PD topics, not verdicts.')}</p>
+                        <p className="text-xs text-slate-600">{tt('udlwalk.pd_note', 'Lowest observed-rates with at least ' + agg.minN + ' rated observations building-wide — framed as PD topics, not verdicts.')}</p>
                         <ul className="mt-1.5 space-y-1">
                           {agg.pdSignals.map((sig) => {
                             const g = UDLWALK_GUIDELINES.find((x) => x.id === sig.id);
@@ -1428,8 +1513,8 @@ function UdlWalkthroughPanel(props) {
                                 {typeof window !== 'undefined' && typeof window.__alloOpenPdCatalog === 'function' && (
                                   <button
                                     type="button"
-                                    onClick={() => window.__alloOpenPdCatalog({ guideline: sig.id })}
-                                    className="mt-1.5 min-h-11 inline-flex items-center px-3 py-2 text-[11px] font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-100"
+                                    onClick={() => { if (typeof onClose === 'function') onClose(); window.__alloOpenPdCatalog({ guideline: sig.id }); }}
+                                    className="mt-1.5 min-h-11 inline-flex items-center px-3 py-2 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-100"
                                   >
                                     {tt('udlwalk.pd_find_modules', 'Find related PD modules')}
                                   </button>
@@ -1443,7 +1528,7 @@ function UdlWalkthroughPanel(props) {
 
                     <div className="mt-3 bg-white border border-slate-300 rounded-xl p-3">
                       <h4 className="text-sm font-bold text-slate-700">{tt('udlwalk.coverage_title', 'Coverage')}</h4>
-                      <p className="text-[10px] text-slate-500">{tt('udlwalk.coverage_note', 'Walkthrough initiatives die from uneven coverage — who has not had a visit lately?')}</p>
+                      <p className="text-xs text-slate-600">{tt('udlwalk.coverage_note', 'Walkthrough initiatives die from uneven coverage — who has not had a visit lately?')}</p>
                       <ul className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1">
                         {agg.coverage.map((c) => {
                           const teacher = teacherById(c.teacherId);
@@ -1459,7 +1544,7 @@ function UdlWalkthroughPanel(props) {
 
                     <div className="mt-3 bg-white border border-slate-300 rounded-xl p-3">
                       <h4 className="text-sm font-bold text-slate-700">{tt('udlwalk.research_title', 'Research export (de-identified)')}</h4>
-                      <p className="text-[10px] text-slate-500">{tt('udlwalk.research_note', 'Teacher codes only — never names. Free-text notes are excluded (they can contain names); only their presence is exported. Building name is omitted.')}</p>
+                      <p className="text-xs text-slate-600">{tt('udlwalk.research_note', 'Teacher codes only — never names. Free-text notes are excluded (they can contain names); only their presence is exported. Building name is omitted.')}</p>
                       <div className="mt-1.5 flex flex-wrap gap-2">
                         <button type="button" onClick={() => {
                           const rows = udlwalkResearchRows(sessions, roster);
@@ -1478,17 +1563,17 @@ function UdlWalkthroughPanel(props) {
 
                     <div className="mt-3 bg-white border border-slate-300 rounded-xl p-3">
                       <h4 className="text-sm font-bold text-slate-700">{tt('udlwalk.ir_title', 'Inter-rater check')}</h4>
-                      <p className="text-[10px] text-slate-500">{tt('udlwalk.ir_note', 'Two observers record the same lesson on their own devices, one imports the other’s export (Roster & setup tab), then compare the two visits here. Exact-match agreement on items both observers rated; "no opportunity" counts as a rating.')}</p>
+                      <p className="text-xs text-slate-600">{tt('udlwalk.ir_note', 'Two observers record the same lesson on their own devices, one imports the other’s export (Roster & setup tab), then compare the two visits here. Exact-match agreement on items both observers rated; "no opportunity" counts as a rating.')}</p>
                       <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div>
-                          <label htmlFor="udlwalk-ir-a" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('udlwalk.ir_a', 'Observer A visit')}</label>
+                          <label htmlFor="udlwalk-ir-a" className="block text-xs font-bold text-slate-600 mb-0.5">{tt('udlwalk.ir_a', 'Observer A visit')}</label>
                           <select id="udlwalk-ir-a" value={irA} onChange={(e) => setIrA(e.target.value)} className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="">{tt('udlwalk.ir_pick', 'Choose a visit…')}</option>
                             {sessions.map((s) => <option key={s.id} value={s.id}>{sessionLabel(s)}</option>)}
                           </select>
                         </div>
                         <div>
-                          <label htmlFor="udlwalk-ir-b" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('udlwalk.ir_b', 'Observer B visit')}</label>
+                          <label htmlFor="udlwalk-ir-b" className="block text-xs font-bold text-slate-600 mb-0.5">{tt('udlwalk.ir_b', 'Observer B visit')}</label>
                           <select id="udlwalk-ir-b" value={irB} onChange={(e) => setIrB(e.target.value)} className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="">{tt('udlwalk.ir_pick', 'Choose a visit…')}</option>
                             {sessions.map((s) => <option key={s.id} value={s.id}>{sessionLabel(s)}</option>)}
@@ -1503,7 +1588,7 @@ function UdlWalkthroughPanel(props) {
                           ) : (
                             <div>
                               <p className="font-bold text-slate-800">{Math.round(agreement.pct * 100)}% {tt('udlwalk.ir_agree', 'agreement')} ({agreement.agree}/{agreement.bothRated} {tt('udlwalk.ir_both', 'items both rated')}{agreement.onlyOne ? ('; ' + agreement.onlyOne + ' ' + tt('udlwalk.ir_only_one', 'rated by only one observer')) : ''}){agreement.kappa != null ? (' · κ = ' + agreement.kappa.toFixed(2)) : ''}</p>
-                              {agreement.kappa != null && <p className="text-[10px] text-slate-500 mt-0.5">{tt('udlwalk.ir_kappa_note', 'κ is Cohen’s kappa — agreement corrected for chance. Raw percent agreement overstates reliability when most ratings fall in one category; report κ for research use.')}</p>}
+                              {agreement.kappa != null && <p className="text-xs text-slate-600 mt-0.5">{tt('udlwalk.ir_kappa_note', 'κ is Cohen’s kappa — agreement corrected for chance. Raw percent agreement overstates reliability when most ratings fall in one category; report κ for research use.')}</p>}
                               {agreement.disagreements.length > 0 && (
                                 <ul className="mt-1.5 space-y-1">
                                   {agreement.disagreements.map((d) => (
@@ -1546,7 +1631,7 @@ function UdlWalkthroughPanel(props) {
                     </select>
                   </div>
                 </div>
-                <p className="text-[10px] text-slate-500 mb-2">{tt('udlwalk.observer_note', 'Stamped on each saved visit so merged data from two observers stays attributable — required for the inter-rater check.')}</p>
+                <p className="text-xs text-slate-600 mb-2">{tt('udlwalk.observer_note', 'Stamped on each saved visit so merged data from two observers stays attributable — required for the inter-rater check.')}</p>
                 <label htmlFor="udlwalk-building" className="block text-xs font-bold text-slate-600 mb-1">{tt('udlwalk.building_label', 'Building name (appears on exports only)')}</label>
                 <input id="udlwalk-building" type="text" value={config.buildingName}
                   onChange={(e) => setConfig((c) => ({ ...c, buildingName: e.target.value }))}
@@ -1561,7 +1646,7 @@ function UdlWalkthroughPanel(props) {
               <ul className="space-y-1.5 mb-3">
                 {[...roster].sort((a, b) => (a.archived ? 1 : 0) - (b.archived ? 1 : 0)).map((r) => (
                   <li key={r.id} className={'flex items-center gap-2 border rounded-xl p-2 ' + (r.archived ? 'bg-slate-100 border-slate-200 opacity-70' : 'bg-white border-slate-300')}>
-                    <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-300">{r.code}</span>
+                    <span className="shrink-0 text-xs font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-300">{r.code}</span>
                     <input type="text" value={r.name} aria-label={tt('udlwalk.roster_name_aria', 'Teacher name') + ' ' + r.code}
                       onChange={(e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, name: e.target.value } : x))}
                       placeholder={tt('udlwalk.name_placeholder', 'Name (optional)')}
@@ -1577,18 +1662,18 @@ function UdlWalkthroughPanel(props) {
                     <button type="button" aria-pressed={!!r.archived}
                       onClick={() => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, archived: !x.archived } : x))}
                       aria-label={(r.archived ? tt('udlwalk.restore_aria', 'Restore') : tt('udlwalk.archive_aria', 'Archive')) + ' ' + (r.name || r.code)}
-                      className={'shrink-0 min-h-11 px-3 py-1.5 rounded border text-[10px] font-bold ' + (r.archived ? 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100')}
+                      className={'shrink-0 min-h-11 px-3 py-1.5 rounded border text-xs font-bold ' + (r.archived ? 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100')}
                     >{r.archived ? tt('udlwalk.restore', 'Restore') : tt('udlwalk.archive', 'Archive')}</button>
                   </li>
                 ))}
               </ul>
               <div className="flex gap-2 items-end bg-white border border-slate-300 rounded-xl p-3 mb-3">
                 <div className="flex-1 min-w-0">
-                  <label htmlFor="udlwalk-new-name" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('udlwalk.quick_add_name', 'Teacher name (optional — a code is assigned either way)')}</label>
+                  <label htmlFor="udlwalk-new-name" className="block text-xs font-bold text-slate-600 mb-0.5">{tt('udlwalk.quick_add_name', 'Teacher name (optional — a code is assigned either way)')}</label>
                   <input id="udlwalk-new-name" type="text" value={newTeacherName} onChange={(e) => setNewTeacherName(e.target.value)} className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 </div>
                 <div className="w-24">
-                  <label htmlFor="udlwalk-new-grade" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('udlwalk.quick_add_grade', 'Grade')}</label>
+                  <label htmlFor="udlwalk-new-grade" className="block text-xs font-bold text-slate-600 mb-0.5">{tt('udlwalk.quick_add_grade', 'Grade')}</label>
                   <input id="udlwalk-new-grade" type="text" value={newTeacherGrade} onChange={(e) => setNewTeacherGrade(e.target.value)} className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 </div>
                 <button type="button" onClick={addTeacher} className="min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700">{tt('udlwalk.quick_add', 'Add')}</button>
@@ -1600,7 +1685,7 @@ function UdlWalkthroughPanel(props) {
                 <input ref={importInputRef} type="file" accept="application/json,.json" className="sr-only" aria-label={tt('udlwalk.import_aria', 'Choose a UDL Walkthrough export file')}
                   onChange={(e) => { const f = e.target.files && e.target.files[0]; try { e.target.value = ''; } catch (_) {} if (f) importJson(f); }} />
               </div>
-              <p className="mt-3 text-[10px] text-slate-500">
+              <p className="mt-3 text-xs text-slate-600">
                 {tt('udlwalk.setup_note', 'Gemini Canvas may not persist browser storage between sessions — export after observing if you need the data to survive. Imports merge; they never overwrite newer local work.')}
               </p>
             </div>

@@ -16,6 +16,7 @@ const PRIVATE_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
+  'Cross-Origin-Resource-Policy': 'same-origin',
   'X-Robots-Tag': 'noindex, nofollow',
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
 };
@@ -65,6 +66,11 @@ async function authorized(request, expected) {
 
 async function smallJson(request) {
   if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') || '')) return errorResult('JSON content type required.', 415);
+  const declared = Number(request.headers.get('Content-Length') || 0);
+  if (Number.isFinite(declared) && declared > 4096) {
+    try { await request.body?.cancel?.(); } catch (_) {}
+    return errorResult('Body too large.', 413);
+  }
   const reader = request.body?.getReader();
   if (!reader) return errorResult('JSON body required.');
   const chunks = []; let size = 0;
@@ -78,8 +84,12 @@ async function smallJson(request) {
     }
     const bytes = new Uint8Array(size); let offset = 0;
     for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
-    return { ok: true, payload: JSON.parse(new TextDecoder().decode(bytes)) };
+    return {
+      ok: true,
+      payload: JSON.parse(new TextDecoder().decode(bytes), (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v),
+    };
   } catch (_) { return errorResult('Invalid JSON body.'); }
+  finally { try { reader.releaseLock(); } catch (_) {} }
 }
 
 export class BugDigest extends DurableObject {
@@ -184,10 +194,12 @@ export class BugDigest extends DurableObject {
         const isTest = batch.kind === 'test';
         const subject = isTest ? '[AlloFlow] Notification setup test' : `[AlloFlow] ${batch.count} new error report${batch.count === 1 ? '' : 's'}`;
         const sentence = isTest ? 'This is an explicitly requested test of AlloFlow developer notifications. No report content is included.' : `${batch.count} new error report${batch.count === 1 ? ' is' : 's are'} available in your private developer inbox.`;
+        const sendPromise = Promise.resolve().then(() => this.env.EMAIL.send({ from: { email: SENDER, name: 'AlloFlow' }, to: this.env.DIGEST_RECIPIENT, subject,
+          text: `${sentence}\n\nOpen the private inbox and sign in: ${INBOX_URL}\n`,
+          html: `<p>${sentence}</p><p><a href="${INBOX_URL}">Open the private developer inbox</a> and sign in.</p>` }));
+        sendPromise.catch(() => {});
         const result = await Promise.race([
-          this.env.EMAIL.send({ from: { email: SENDER, name: 'AlloFlow' }, to: this.env.DIGEST_RECIPIENT, subject,
-            text: `${sentence}\n\nOpen the private inbox and sign in: ${INBOX_URL}\n`,
-            html: `<p>${sentence}</p><p><a href="${INBOX_URL}">Open the private developer inbox</a> and sign in.</p>` }),
+          sendPromise,
           new Promise((_, reject) => { timer = setTimeout(() => reject(Object.assign(new Error('send-timeout'), { digestTimeout: true })), SEND_TIMEOUT); }),
         ]);
         if (result && typeof result.messageId === 'string' && result.messageId.length > 0 && result.messageId.length <= 512) { status = 'accepted'; providerId = result.messageId; }
@@ -273,6 +285,7 @@ export class BugDigest extends DurableObject {
         const cutoff45 = now - 45 * 86400000;
         const cutoff90 = now - 90 * 86400000;
         this.sql('DELETE FROM receipts WHERE discovered_at < ?', cutoff45);
+        this.sql("DELETE FROM operations WHERE batch_id IN (SELECT id FROM batches WHERE status IN ('accepted', 'failed') AND updated_at < ?)", cutoff90);
         this.sql("DELETE FROM attempts WHERE batch_id IN (SELECT id FROM batches WHERE status IN ('accepted', 'failed') AND updated_at < ?)", cutoff90);
         this.sql("DELETE FROM batches WHERE status IN ('accepted', 'failed') AND updated_at < ?", cutoff90);
       });

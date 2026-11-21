@@ -1101,7 +1101,7 @@ window.StemLab = window.StemLab || {
       if (raw.phase === 'insolvent' && (raw.month < 1 || raw.cash >= 0)) return null;
       if (!raw.policy || !finite(raw.policy.reserve, 0, 0.5) || typeof raw.policy.flex !== 'boolean') return null;
       if (!Array.isArray(raw.assets) || raw.assets.length < 3 || raw.assets.length > SITES.length) return null;
-      var seen = {};
+      var seen = Object.create(null);
       for (var i = 0; i < raw.assets.length; i += 1) {
         var asset = raw.assets[i], site = siteById(asset.siteId);
         if (!site || seen[site.id] || asset.id !== 'asset-' + site.id || asset.type !== site.type) return null;
@@ -1129,11 +1129,11 @@ window.StemLab = window.StemLab || {
         if (Math.abs(totals.served + totals.unserved - totals.demand) > 0.001) return null;
         if (Math.abs(totals.generation + totals.discharge - totals.served - totals.charge - totals.curtailed) > 0.001) return null;
         if (Math.abs(totals.initialStored + totals.charge - totals.discharge - totals.storageLoss - totals.endStored) > 0.001) return null;
-        if (Math.abs(totals.served / totals.demand - totals.coverage) > 0.000001) return null;
+        if (totals.demand <= 0 || Math.abs(totals.served / totals.demand - totals.coverage) > 0.000001) return null;
         if (Math.abs(totals.revenue - totals.served * TARIFF) > 0.001 || Math.abs(totals.profit - totals.revenue + totals.operatingCost) > 0.001) return null;
-        if (entry.faults.some(function (fault) { return !fault || !seen[fault.assetId && fault.assetId.replace(/^asset-/, '')] || !integer(fault.hour, 0, DAYS[h] * 24 - 1) || typeof fault.existing !== 'boolean'; })) return null;
+        if (entry.faults.some(function (fault) { return !fault || typeof fault.assetId !== 'string' || fault.assetId.indexOf('asset-') !== 0 || seen[fault.assetId.slice(6)] !== true || !integer(fault.hour, 0, DAYS[h] * 24 - 1) || typeof fault.existing !== 'boolean'; })) return null;
         if (!Array.isArray(entry.conditionByAsset) || entry.conditionByAsset.length < 3 || entry.conditionByAsset.length > SITES.length || entry.conditionByAsset.some(function (item) {
-          return !item || !seen[item.id && item.id.replace(/^asset-/, '')] || !finite(item.condition, 0, 100) || typeof item.fault !== 'boolean';
+          return !item || typeof item.id !== 'string' || item.id.indexOf('asset-') !== 0 || seen[item.id.slice(6)] !== true || !finite(item.condition, 0, 100) || typeof item.fault !== 'boolean';
         })) return null;
       }
       if (raw.phase === 'planning' && raw.outcome !== null) return null;
@@ -1452,10 +1452,12 @@ window.StemLab = window.StemLab || {
         line(-14, 7, -14, 20, '#71868b', 2), line(18, -6, 18, 8, '#71868b', 2), line(-14, 19, 18, -5, '#84999b', 1.1),
         line(-19, 20, -9, 20, '#bac7bd', 2), line(14, 9, 22, 6, '#bac7bd', 2),
         polygon('-30,-3 7,-19 30,-3 30,0 -7,16 -30,0', '#6e8994'),
-        polygon('-28,-3 7,-18 28,-3 -7,12', 'url(#' + uid + '-solar-glass)', { stroke: '#bdd5d9', strokeWidth: 1.25 }),
+        polygon('-28,-3 7,-18 28,-3 -7,12', 'url(#' + uid + '-solar-glass)', { stroke: '#c7dfe2', strokeWidth: 1.3 }),
         h('g', { opacity: night ? 0.58 : 0.78, 'data-tycoon-cell-grid': true }, cells),
-        polygon('-28,-3 7,-18 15,-12 -20,3', '#d2f0eb', { opacity: night ? 0.035 : clamp(irradiance * 0.17, 0.035, 0.2) }),
-        line(-7, 13, 29, -2, '#d2e2dc', 1.2), line(-29, -2, -7, 13, '#8eabb3', 1));
+        polygon('-28,-3 7,-18 15,-12 -20,3', '#d2f0eb', { opacity: night ? 0.035 : clamp(irradiance * 0.19, 0.035, 0.24) }),
+        !night && irradiance > 0.12 ? polygon('-14,-9 2,-16 8,-12 -8,-5', '#ffffff', { opacity: clamp(irradiance * 0.32, 0.06, 0.34) }) : null,
+        !night && irradiance > 0.35 ? line(-19, 1, 11, -12, '#f0fffc', 1.1, { opacity: clamp((irradiance - 0.25) * 0.48, 0.08, 0.38) }) : null,
+        line(-7, 13, 29, -2, '#dcebe5', 1.25), line(-29, -2, -7, 13, '#8eabb3', 1));
     }
     function solar(site, asset) {
       var rooftop = /roof/.test(site.id), panels = [];
@@ -1465,18 +1467,29 @@ window.StemLab = window.StemLab || {
     function wind(site, asset) {
       var cached = motion.current.rotors[site.id], phase = cached ? cached.phase : 18;
       var target = liveTargets[site.id], mode = target.rotor ? cached && cached.speed >= target.rotor * 0.9 ? 'generating' : 'starting' : cached && cached.speed > 0 ? target.stopMode : 'parked';
+      var spinArc = active && target.rotor > 0 ? clamp(target.rotor / 80, 0.25, 1) : 0;
       return h('g', { 'data-tycoon-material': 'wind' },
-        h('ellipse', { cx: 32, cy: 3, rx: 64, ry: 11, fill: '#173d423b', transform: 'rotate(-12)' }),
+        h('ellipse', { cx: 34, cy: 4, rx: 68, ry: 12, fill: '#14373d36', transform: 'rotate(-12)' }),
+        h('ellipse', { cx: 46, cy: -1, rx: 32, ry: 5.5, fill: '#14373d24', transform: 'rotate(-16)' }),
         h('ellipse', { cy: 8, rx: 20, ry: 8, fill: '#617c73' }), h('ellipse', { cy: 4, rx: 20, ry: 8, fill: '#b5bfb0', stroke: '#7c9689', strokeWidth: 1.5 }),
         [[-13,2],[-7,8],[9,7],[14,0]].map(function (point, index) { return h('circle', { key: index, cx: point[0], cy: point[1], r: 1.4, fill: '#526d68', stroke: '#d3d8c4', strokeWidth: 0.5 }); }),
         polygon('-8,2 8,2 4,-103 -4,-103', 'url(#' + uid + '-tower)'),
+        line(-2.2, 0, -1.1, -99, '#ffffff', 0.9, { opacity: 0.35 }),
         h('path', { d: 'M -6 -29 Q 0 -26 6 -29 M -5 -65 Q 0 -63 5 -65', fill: 'none', stroke: '#789994', strokeWidth: 0.7, opacity: 0.65 }),
         h('path', { d: 'M -3 -5 V -18 Q -3 -23 2 -22 L 3 -5 Z', fill: '#b3c8bf', stroke: '#698a86', strokeWidth: 0.75 }), line(1, -14, 1, -10, '#547573', 0.9),
         h('ellipse', { cy: -96, rx: 6, ry: 2.8, fill: '#88a6a0', stroke: '#cadbd0', strokeWidth: 0.8 }),
         polygon('-3,-108 20,-115 26,-110 3,-102', '#dfebe0', { stroke: '#b4c9c1', strokeWidth: 0.65 }), polygon('3,-102 26,-110 26,-100 3,-92', 'url(#' + uid + '-nacelle)'),
         [0,1,2,3].map(function (index) { return line(12 + index * 3, -103 - index, 12 + index * 3, -98 - index, '#73918a', 1, { key: index }); }),
         line(6, -102, 24, -108, '#e1eee0', 0.75),
-        h('g', { transform: 'translate(0 -103)' }, h('g', { ref: function (node) { refs.current.rotors[site.id] = node; }, transform: 'rotate(' + phase + ')', 'data-tycoon-rotor': site.id, opacity: asset.status === 'building' && buildStage === 'assembly' ? 0.12 : 1, 'data-motion-rate': cached ? cached.speed : 0, 'data-motion-mode': active ? mode : 'paused', 'data-local-wind': (windSpeed * (n(site.resource) || 1)).toFixed(2) }, [0, 120, 240].map(function (angle) { return h('g', { key: angle, transform: 'rotate(' + angle + ')' }, h('path', { d: 'M -4 0 C -10 -22 -5 -53 2 -73 Q 5 -78 7 -73 L 6 -14 L 3 2 Z', fill: '#eff5e9', stroke: '#9aafb0', strokeWidth: 0.9 }), h('path', { d: 'M 2 -73 L 6 -14 L 3 2 L 0 -9 Z', fill: '#c7d9d5' })); })), h('circle', { r: 8, fill: 'url(#' + uid + '-nacelle)', stroke: '#6e8c8f', strokeWidth: 1.5 }), h('circle', { r: 5.5, fill: 'none', stroke: '#e1ece0', strokeWidth: 0.8 }), h('circle', { r: 2.5, fill: '#f2f5e9' })),
+        h('circle', { cx: 19, cy: -115.5, r: 2.2, fill: night ? '#ff8b7b' : '#e06c60', opacity: night ? 0.95 : 0.75 }),
+        h('g', { transform: 'translate(0 -103)' },
+          spinArc > 0 ? h('circle', { r: 72, fill: 'none', stroke: night ? '#b9ece8' : '#ffffff', strokeWidth: 1.8, strokeDasharray: '28 18 12 24', opacity: (0.09 + spinArc * 0.14).toFixed(3) }) : null,
+          h('g', { ref: function (node) { refs.current.rotors[site.id] = node; }, transform: 'rotate(' + phase + ')', 'data-tycoon-rotor': site.id, opacity: asset.status === 'building' && buildStage === 'assembly' ? 0.12 : 1, 'data-motion-rate': cached ? cached.speed : 0, 'data-motion-mode': active ? mode : 'paused', 'data-local-wind': (windSpeed * (n(site.resource) || 1)).toFixed(2) }, [0, 120, 240].map(function (angle) { return h('g', { key: angle, transform: 'rotate(' + angle + ')' },
+            spinArc > 0 ? h('path', { d: 'M 4 -69 A 69 69 0 0 1 24 -64', fill: 'none', stroke: '#eefcf9', strokeWidth: 1.5, strokeLinecap: 'round', opacity: (0.14 + spinArc * 0.2).toFixed(3) }) : null,
+            h('path', { d: 'M -4 0 C -10 -22 -5 -53 2 -73 Q 5 -78 7 -73 L 6 -14 L 3 2 Z', fill: '#f3f8ee', stroke: '#9aafb0', strokeWidth: 0.9 }),
+            h('path', { d: 'M 2 -73 L 6 -14 L 3 2 L 0 -9 Z', fill: '#c5d8d4' }),
+            h('path', { d: 'M -3 -5 C -7 -24 -3 -51 2 -71', fill: 'none', stroke: '#ffffff', strokeWidth: 0.7, opacity: 0.55 })); })),
+          h('circle', { r: 8, fill: 'url(#' + uid + '-nacelle)', stroke: '#6e8c8f', strokeWidth: 1.5 }), h('circle', { r: 5.5, fill: 'none', stroke: '#e1ece0', strokeWidth: 0.8 }), h('circle', { r: 2.5, fill: '#f2f5e9' })),
         line(-12, 7, 12, 7, '#d5dfce', 2));
     }
     function windsock() {
@@ -1493,7 +1506,8 @@ window.StemLab = window.StemLab || {
         var cellFill = clamp(fill * 6 - i, 0, 1), x = 3 + i * 8, y = 4 - i * 2.84;
         strips.push(h('g', { key: i, 'data-tycoon-battery-cell': site.id, 'data-cell': i, 'data-fill': cellFill },
           polygon(x + ',' + y + ' ' + (x + 6) + ',' + (y - 2.15) + ' ' + (x + 6) + ',' + (y + 16.85) + ' ' + x + ',' + (y + 19), '#345e65'),
-          cellFill > 0 ? polygon(x + ',' + y + ' ' + (x + 6 * cellFill) + ',' + (y - 2.15 * cellFill) + ' ' + (x + 6 * cellFill) + ',' + (y + 19 - 2.15 * cellFill) + ' ' + x + ',' + (y + 19), '#7ce2b5') : null));
+          cellFill > 0 ? polygon(x + ',' + y + ' ' + (x + 6 * cellFill) + ',' + (y - 2.15 * cellFill) + ' ' + (x + 6 * cellFill) + ',' + (y + 19 - 2.15 * cellFill) + ' ' + x + ',' + (y + 19), '#7ce2b5') : null,
+          cellFill > 0.2 ? line(x + 1, y + 1.5, x + 1, y + 16.5, '#d9ffea', 0.9, { opacity: 0.7 }) : null));
       }
       var indicatorState = asset.status === 'fault' ? 'fault' : asset.available === false || asset.status === 'service' || asset.status === 'building' ? 'isolated' : n(asset.power) < 0 ? 'charge' : n(asset.power) > 0 ? 'export' : 'idle';
       var indicatorColor = { charge: '#b8a8f9', export: '#ffe6a0', idle: '#9cb6b5', isolated: '#ffca72', fault: '#ff9a87' }[indicatorState];
@@ -1601,12 +1615,14 @@ window.StemLab = window.StemLab || {
         var angle = Math.atan2(dy, dx) * 180 / Math.PI + (power < 0 ? 180 : 0);
         return h('g', { key: position, transform: 'translate(' + x.toFixed(3) + ' ' + y.toFixed(3) + ') rotate(' + angle.toFixed(3) + ')', 'data-tycoon-flow-cue': id, 'data-position': position, 'data-direction': power < 0 ? 'to-storage' : 'to-grid', pointerEvents: 'none' }, polygon('-5,-4 1,0 -5,4 -2,0', color, { stroke: '#20484e', strokeWidth: 0.9, strokeLinejoin: 'round' }));
       }) : null;
+      var glowLevel = moving ? clamp(Math.sqrt(Math.abs(power) / 100), 0.2, 1) : 0;
       return h('g', { key: 'flow-' + id, ref: function (node) { refs.current.flowGroups[id] = node; }, 'data-tycoon-flow': id, 'data-power': power, 'data-direction': !power ? 'idle' : power < 0 ? 'to-storage' : id === 'town' ? 'to-community' : 'to-grid', 'data-slot-count': FLOW_SLOTS, 'data-selected': selected, 'data-flow-phase': cached ? cached.phase : 0.12, 'data-visual-magnitude': visualMagnitude, 'data-flow-speed': appearance.speed, 'aria-hidden': true },
         selected ? h('path', { d: path, fill: 'none', stroke: '#c6f7e0', strokeWidth: 12, opacity: 0.32, 'data-tycoon-selected-cable': id }) : null,
+        moving && installed ? h('path', { d: path, fill: 'none', stroke: color, strokeWidth: (6.5 + glowLevel * 5.5).toFixed(2), opacity: (0.16 + glowLevel * 0.24).toFixed(3), filter: 'url(#' + uid + '-energy-glow)', strokeLinecap: 'round' }) : null,
         h('path', { d: path, fill: 'none', stroke: installed ? '#2b5a59' : '#73948a', strokeWidth: installed ? 7 : 2, strokeDasharray: installed ? undefined : '3 7', opacity: installed ? 0.65 : 0.45 }),
-        h('path', { ref: function (node) { refs.current.paths[id] = node; }, d: path, fill: 'none', stroke: moving ? power < 0 ? '#8e6ad0' : '#cba954' : '#74948b', strokeWidth: moving ? selected ? 4.5 : 3.5 : selected ? 2.3 : 1.3, markerEnd: power > 0 ? 'url(#' + uid + '-arrow)' : undefined, markerStart: power < 0 ? 'url(#' + uid + '-charge-arrow)' : undefined, opacity: installed ? 1 : 0 }),
+        h('path', { ref: function (node) { refs.current.paths[id] = node; }, d: path, fill: 'none', stroke: moving ? power < 0 ? '#a17be6' : '#e0ba5e' : '#74948b', strokeWidth: moving ? selected ? 4.5 : 3.5 : selected ? 2.3 : 1.3, markerEnd: power > 0 ? 'url(#' + uid + '-arrow)' : undefined, markerStart: power < 0 ? 'url(#' + uid + '-charge-arrow)' : undefined, opacity: installed ? 1 : 0 }),
         directionCues,
-        Array.from({ length: FLOW_SLOTS }, function (_, index) { return h('circle', { key: index, ref: function (node) { if (!refs.current.particles[id]) refs.current.particles[id] = []; refs.current.particles[id][index] = node; }, cx: 0, cy: 0, r: appearance.radius, opacity: appearance.opacity, fill: color, visibility: moving ? 'visible' : 'hidden', 'data-tycoon-packet': id, 'data-slot': index, style: { pointerEvents: 'none' } }); }));
+        Array.from({ length: FLOW_SLOTS }, function (_, index) { return h('circle', { key: index, ref: function (node) { if (!refs.current.particles[id]) refs.current.particles[id] = []; refs.current.particles[id][index] = node; }, cx: 0, cy: 0, r: appearance.radius, opacity: appearance.opacity, fill: color, stroke: power < 0 ? '#efe4ff' : '#fff8dc', strokeWidth: 0.7, filter: moving ? 'url(#' + uid + '-energy-glow)' : undefined, visibility: moving ? 'visible' : 'hidden', 'data-tycoon-packet': id, 'data-slot': index, style: { pointerEvents: 'none' } }); }));
     }
     var skyTop = night ? '#10283b' : overcast ? '#658997' : dawn ? '#b9adad' : '#8cc7d2';
     var skyBottom = night ? '#274858' : overcast ? '#afc9c7' : dawn ? '#f0d1ae' : '#deeee1';
@@ -1747,25 +1763,85 @@ window.StemLab = window.StemLab || {
       h('svg', { viewBox: (camera.x - 550 / camera.zoom) + ' ' + (camera.y - 345 / camera.zoom) + ' ' + 1100 / camera.zoom + ' ' + 690 / camera.zoom, xmlns: 'http://www.w3.org/2000/svg', role: 'group', tabIndex: 0, 'aria-labelledby': uid + '-title ' + uid + '-description', 'aria-describedby': camera.zoom > 1 ? uid + '-pan-help' : undefined, 'data-tycoon-map': 'true', 'data-tycoon-overlay': overlay, 'data-hour': hour, 'data-night': night ? 'true' : 'false', 'data-animation': active ? 'on' : 'off', 'data-zoom': camera.zoom, onKeyDown: mapKey, onPointerDown: beginPan, onPointerMove: movePan, onPointerUp: endPan, onPointerCancel: endPan, onLostPointerCapture: endPan, style: { cursor: camera.zoom > 1 ? 'grab' : undefined, touchAction: camera.zoom > 1 ? 'none' : 'pan-y' } },
         h('title', { id: uid + '-title' }, title), h('desc', { id: uid + '-description' }, description),
         h('defs', null,
-          h('linearGradient', { id: uid + '-sky', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: skyTop }), h('stop', { offset: '100%', stopColor: skyBottom })),
-          h('linearGradient', { id: uid + '-sea', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: night ? '#31596b' : '#73b9bb' }), h('stop', { offset: '100%', stopColor: night ? '#183d53' : '#397e93' })),
-          h('linearGradient', { id: uid + '-grass', x1: '0', y1: '0', x2: '0.7', y2: '1' }, h('stop', { offset: '0%', stopColor: night ? '#376d62' : '#9bc299' }), h('stop', { offset: '100%', stopColor: night ? '#274d4a' : '#598c78' })),
-          h('linearGradient', { id: uid + '-tower', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#99b2b1' }), h('stop', { offset: '45%', stopColor: '#ecf3e9' }), h('stop', { offset: '100%', stopColor: '#b3cbc6' })),
-          h('linearGradient', { id: uid + '-solar-glass', x1: '0', y1: '0', x2: '0.8', y2: '1' }, h('stop', { offset: '0%', stopColor: night ? '#163549' : '#173f67' }), h('stop', { offset: '55%', stopColor: night ? '#25465c' : '#2f7093' }), h('stop', { offset: '100%', stopColor: night ? '#153344' : '#174b70' })),
-          h('linearGradient', { id: uid + '-nacelle', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#d8e6db' }), h('stop', { offset: '100%', stopColor: '#8daea6' })),
+          h('linearGradient', { id: uid + '-sky', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: skyTop }),
+            h('stop', { offset: '42%', stopColor: night ? '#19394d' : overcast ? '#87a8b0' : dawn ? '#d8b9ab' : '#a7d7dd' }),
+            h('stop', { offset: '100%', stopColor: skyBottom })),
+          h('linearGradient', { id: uid + '-sea', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: night ? '#2c5368' : overcast ? '#6ea6ad' : dawn ? '#7cb4b9' : '#78c3c6' }),
+            h('stop', { offset: '48%', stopColor: night ? '#1f475d' : '#4d98a7' }),
+            h('stop', { offset: '100%', stopColor: night ? '#133146' : '#2e6e85' })),
+          h('linearGradient', { id: uid + '-grass', x1: '0', y1: '0', x2: '0.7', y2: '1' },
+            h('stop', { offset: '0%', stopColor: night ? '#3c7467' : '#a4ca9f' }),
+            h('stop', { offset: '58%', stopColor: night ? '#2f5d55' : '#78a888' }),
+            h('stop', { offset: '100%', stopColor: night ? '#244745' : '#538673' })),
+          h('linearGradient', { id: uid + '-tower', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#91adac' }), h('stop', { offset: '42%', stopColor: '#f3f9f0' }), h('stop', { offset: '100%', stopColor: '#a9c4bf' })),
+          h('linearGradient', { id: uid + '-solar-glass', x1: '0', y1: '0', x2: '0.8', y2: '1' },
+            h('stop', { offset: '0%', stopColor: night ? '#132f42' : '#143c65' }),
+            h('stop', { offset: '42%', stopColor: night ? '#22445b' : '#2d7298' }),
+            h('stop', { offset: '65%', stopColor: night ? '#285069' : '#3a84a8' }),
+            h('stop', { offset: '100%', stopColor: night ? '#122c3e' : '#144468' })),
+          h('linearGradient', { id: uid + '-nacelle', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#e2efe4' }), h('stop', { offset: '100%', stopColor: '#87a8a1' })),
           h('linearGradient', { id: uid + '-cabinet-side', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#8fbbb1' }), h('stop', { offset: '100%', stopColor: '#527c7b' })),
           h('linearGradient', { id: uid + '-cabinet-top', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#d2e4d6' }), h('stop', { offset: '100%', stopColor: '#95bbb2' })),
-          h('radialGradient', { id: uid + '-sun' }, h('stop', { offset: '0%', stopColor: '#fff3b2', stopOpacity: 0.7 }), h('stop', { offset: '100%', stopColor: '#fff3b2', stopOpacity: 0 })),
+          h('radialGradient', { id: uid + '-sun' },
+            h('stop', { offset: '0%', stopColor: dawn ? '#ffdfa0' : '#fff7c4', stopOpacity: 0.85 }),
+            h('stop', { offset: '45%', stopColor: dawn ? '#f9c78f' : '#fff1a8', stopOpacity: 0.34 }),
+            h('stop', { offset: '100%', stopColor: '#fff3b2', stopOpacity: 0 })),
+          h('radialGradient', { id: uid + '-moon-glow' },
+            h('stop', { offset: '0%', stopColor: '#d8f0ec', stopOpacity: 0.42 }),
+            h('stop', { offset: '100%', stopColor: '#7eb7c4', stopOpacity: 0 })),
+          h('linearGradient', { id: uid + '-horizon-mist', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: night ? '#3c687a' : dawn ? '#f7dbc0' : '#e6f4ec', stopOpacity: 0 }),
+            h('stop', { offset: '55%', stopColor: night ? '#3c687a' : dawn ? '#f7dbc0' : '#e6f4ec', stopOpacity: night ? 0.22 : 0.36 }),
+            h('stop', { offset: '100%', stopColor: night ? '#2c5368' : '#78c3c6', stopOpacity: 0 })),
+          h('filter', { id: uid + '-energy-glow', x: '-35%', y: '-35%', width: '170%', height: '170%' },
+            h('feGaussianBlur', { stdDeviation: '2.6', result: 'glow' }),
+            h('feMerge', null, h('feMergeNode', { in: 'glow' }), h('feMergeNode', { in: 'SourceGraphic' }))),
           h('pattern', { id: uid + '-curtail-hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, h('rect', { width: 6, height: 6, fill: '#654f3b' }), line(0, 0, 0, 6, '#d9bb7d', 2)),
           h('marker', { id: uid + '-arrow', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 3, markerHeight: 3, orient: 'auto' }, polygon('0,0 8,4 0,8', '#ffe5a0')),
           h('marker', { id: uid + '-charge-arrow', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 3, markerHeight: 3, orient: 'auto-start-reverse' }, polygon('0,0 8,4 0,8', '#c5a5ff'))),
         h('g', { 'aria-hidden': true },
           h('rect', { width: 1100, height: 690, fill: 'url(#' + uid + '-sky)' }),
-          night ? h('g', { fill: '#cbe5e3' }, [[80,70],[190,45],[295,109],[442,40],[530,91],[724,50],[960,66],[1020,123]].map(function (point, index) { return h('circle', { key: index, cx: point[0], cy: point[1], r: index % 2 ? 1.7 : 2.5, opacity: 0.8 }); }), h('circle', { cx: 900, cy: 80, r: 24, fill: '#d8e8db' }), h('circle', { cx: 910, cy: 73, r: 23, fill: skyTop })) : h('g', null, h('circle', { cx: 130 + hour / 24 * 800, cy: 110 - daylight * 55, r: 100, fill: 'url(#' + uid + '-sun)' }), h('circle', { cx: 130 + hour / 24 * 800, cy: 110 - daylight * 55, r: 25, fill: overcast ? '#d9dfc9' : '#fff1b0', opacity: overcast ? 0.55 : 0.95 })),
-          h('path', { d: 'M 0 194 L 65 174 L 100 185 L 180 149 L 242 178 L 321 136 L 420 187 L 478 160 L 561 193 L 663 145 L 721 171 L 780 151 L 881 189 L 981 157 L 1100 190 V 263 H 0 Z', fill: night ? '#355563' : '#7ea9a6', opacity: 0.45 }),
+          night
+            ? h('g', { fill: '#cbe5e3' },
+                [[80,70],[190,45],[295,109],[442,40],[530,91],[724,50],[960,66],[1020,123],[138,118],[365,68],[618,34],[815,96]].map(function (point, index) { return h('circle', { key: index, cx: point[0], cy: point[1], r: index % 3 === 0 ? 2.3 : index % 2 ? 1.5 : 1.1, opacity: index % 3 === 0 ? 0.88 : 0.56 }); }),
+                h('circle', { cx: 900, cy: 80, r: 74, fill: 'url(#' + uid + '-moon-glow)' }),
+                h('circle', { cx: 900, cy: 80, r: 24, fill: '#e2f0e4' }),
+                h('circle', { cx: 910, cy: 73, r: 23, fill: skyTop }))
+            : (function () {
+                var sunX = 130 + hour / 24 * 800, sunY = 110 - daylight * 55;
+                return h('g', null,
+                  !overcast ? h('g', { opacity: clamp(daylight * 0.22, 0.06, 0.22) },
+                    polygon((sunX - 18) + ',' + (sunY + 18) + ' ' + (sunX + 18) + ',' + (sunY + 18) + ' ' + (sunX + 130) + ',232 ' + (sunX - 95) + ',232', '#fff7cc'),
+                    polygon((sunX - 8) + ',' + (sunY + 16) + ' ' + (sunX + 10) + ',' + (sunY + 16) + ' ' + (sunX + 62) + ',228 ' + (sunX - 38) + ',228', '#ffffff')) : null,
+                  h('circle', { cx: sunX, cy: sunY, r: 124, fill: 'url(#' + uid + '-sun)' }),
+                  h('circle', { cx: sunX, cy: sunY, r: 25, fill: overcast ? '#d9dfc9' : '#fff4bc', opacity: overcast ? 0.55 : 0.96 }),
+                  !overcast ? h('circle', { cx: sunX, cy: sunY, r: 17, fill: '#fffdf0', opacity: 0.72 }) : null);
+              })(),
+          h('path', { d: 'M 0 186 L 94 148 L 166 168 L 268 118 L 368 164 L 460 128 L 570 172 L 694 124 L 804 166 L 916 132 L 1030 165 L 1100 150 V 252 H 0 Z', fill: night ? '#274555' : overcast ? '#87a8ad' : '#96c0bd', opacity: 0.36 }),
+          h('path', { d: 'M 0 194 L 65 174 L 100 185 L 180 149 L 242 178 L 321 136 L 420 187 L 478 160 L 561 193 L 663 145 L 721 171 L 780 151 L 881 189 L 981 157 L 1100 190 V 263 H 0 Z', fill: night ? '#355563' : '#7ba7a4', opacity: 0.52 }),
+          h('path', { d: 'M 180 149 L 206 162 L 194 176 L 164 162 Z M 321 136 L 352 156 L 336 173 L 304 152 Z M 663 145 L 692 162 L 675 176 L 647 160 Z', fill: night ? '#577a86' : dawn ? '#f7d8be' : '#d2ece3', opacity: 0.24 }),
+          h('rect', { x: 0, y: 172, width: 1100, height: 68, fill: 'url(#' + uid + '-horizon-mist)' }),
           h('path', { d: 'M 0 222 Q 145 204 298 222 T 610 219 T 945 221 T 1100 211 V 690 H 0 Z', fill: 'url(#' + uid + '-sea)' }),
-          [0,1,2,3].map(function (index) { return h('g', { key: index, ref: function (node) { refs.current.clouds[index] = node; }, transform: 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')', fill: night ? '#769298' : '#f1f2e5', opacity: overcast ? 0.65 : 0.43, 'data-tycoon-cloud': index }, h('ellipse', { rx: overcast ? 104 : 69, ry: 14 }), h('ellipse', { cx: -23, cy: -10, rx: 36, ry: 19 }), h('ellipse', { cx: 18, cy: -8, rx: 39, ry: 17 })); }),
-          h('g', { stroke: night ? '#71a1ad' : '#c8ece1', strokeWidth: 2, fill: 'none', opacity: 0.35 }, h('path', { d: 'M 21 333 q 29 -8 51 0 M 19 369 q 23 -8 48 -2 M 1005 453 q 35 -8 73 -2 M 957 626 q 47 -8 94 1 M 19 566 q 37 -7 65 -2 M 230 651 q 42 -10 77 -3 M 1000 288 q 26 -5 60 1' })),
+          (function () {
+            var glintX = night ? 900 : 130 + hour / 24 * 800;
+            return h('g', { opacity: night ? 0.22 : overcast ? 0.1 : clamp(irradiance * 0.34, 0.12, 0.36) },
+              [0, 1, 2, 3, 4].map(function (row) {
+                var ry = 232 + row * 19, half = 34 - row * 3.5;
+                return h('line', { key: row, x1: glintX - half, y1: ry, x2: glintX + half, y2: ry, stroke: night ? '#c9ebe7' : '#fff5c4', strokeWidth: 2.4 - row * 0.25, strokeLinecap: 'round' });
+              }));
+          })(),
+          [0,1,2,3].map(function (index) { return h('g', { key: index, ref: function (node) { refs.current.clouds[index] = node; }, transform: 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')', opacity: overcast ? 0.72 : 0.48, 'data-tycoon-cloud': index },
+            h('ellipse', { cy: 5, rx: overcast ? 104 : 69, ry: 12, fill: night ? '#56727c' : overcast ? '#b6c7c9' : '#d3e4df' }),
+            h('ellipse', { rx: overcast ? 102 : 67, ry: 13, fill: night ? '#769298' : '#f3f5ea' }),
+            h('ellipse', { cx: -23, cy: -10, rx: 36, ry: 19, fill: night ? '#829ea4' : '#fafbf2' }),
+            h('ellipse', { cx: 18, cy: -8, rx: 39, ry: 17, fill: night ? '#7c989e' : '#f5f7ed' })); }),
+          h('g', { stroke: night ? '#71a1ad' : '#d3f4ea', strokeWidth: 2, fill: 'none', opacity: 0.42 }, h('path', { d: 'M 21 333 q 29 -8 51 0 M 19 369 q 23 -8 48 -2 M 1005 453 q 35 -8 73 -2 M 957 626 q 47 -8 94 1 M 19 566 q 37 -7 65 -2 M 230 651 q 42 -10 77 -3 M 1000 288 q 26 -5 60 1' })),
+          h('path', { d: 'M 94 398 Q 92 478 168 516 L 458 654 Q 518 682 590 666 L 845 616 Q 918 596 946 558 L 1014 422 Q 1034 345 984 316', fill: 'none', stroke: night ? '#7db3be' : '#e6fcf6', strokeWidth: 3.5, strokeDasharray: '18 12 7 14', opacity: night ? 0.24 : 0.46, strokeLinecap: 'round' }),
+          h('g', { opacity: night ? 0.28 : 0.56 },
+            h('path', { d: 'M 150 518 Q 178 538 205 533 Q 230 551 258 548', fill: 'none', stroke: night ? '#8bc6cf' : '#eefefb', strokeWidth: 2.2, strokeLinecap: 'round' }),
+            h('path', { d: 'M 162 529 Q 186 544 214 542', fill: 'none', stroke: '#ffffff', strokeWidth: 1.3, strokeDasharray: '4 6', strokeLinecap: 'round' })),
           h('path', { d: 'M 111 297 Q 163 267 258 239 L 460 184 Q 578 174 676 202 L 982 321 Q 1026 346 1006 421 L 936 555 Q 909 592 838 610 L 588 659 Q 518 675 459 648 L 165 511 Q 87 474 86 403 Z', fill: '#244f584d', transform: 'translate(9 11)' }),
           h('path', { d: 'M 111 285 Q 163 255 258 227 L 460 172 Q 578 162 676 190 L 982 309 Q 1026 334 1006 409 L 936 543 Q 909 580 838 598 L 588 647 Q 518 663 459 636 L 165 499 Q 87 462 86 391 Z', fill: night ? '#426c68' : '#879d83', transform: 'translate(0 8)', 'data-tycoon-shore-depth': true }),
           h('path', { d: 'M 111 285 Q 163 255 258 227 L 460 172 Q 578 162 676 190 L 982 309 Q 1026 334 1006 409 L 936 543 Q 909 580 838 598 L 588 647 Q 518 663 459 636 L 165 499 Q 87 462 86 391 Z', fill: '#c6c9a4' }),
@@ -5257,7 +5333,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     function restore(){emit(null,{settings:Object.assign({},session.original.settings),profileId:session.original.profileId,minute:session.original.minute});}
     function number(value){return rnEnergyReading(value);}
     function button(label,action,extra){return h('button',Object.assign({type:'button',onClick:action,disabled:!canAct},extra||{}),label);}
-    function pair(){return h('div',{className:'rn-discovery-pair','aria-label':tr('prepared_pair','Prepared comparison')},['a','b'].map(function(key){return h('div',{key:key,className:'rn-discovery-case'},h('span',{className:'rn-discovery-letter','aria-hidden':true},key.toUpperCase()),h('span',null,h('small',null,tr('case_'+key,'Case '+key.toUpperCase())),tr(props.id+'_'+key,discovery[key].label)));}));}
+    function pair(){return h('div',{ role: 'group',className:'rn-discovery-pair','aria-label':tr('prepared_pair','Prepared comparison')},['a','b'].map(function(key){return h('div',{key:key,className:'rn-discovery-case'},h('span',{className:'rn-discovery-letter','aria-hidden':true},key.toUpperCase()),h('span',null,h('small',null,tr('case_'+key,'Case '+key.toUpperCase())),tr(props.id+'_'+key,discovery[key].label)));}));}
     function context(){return h('p',{className:'rn-discovery-context','data-discovery-current':shown},shown==='custom'?h('span',{'data-discovery-mismatch':true},tr('workbench_differs','Workbench differs from A and B. The discovery still compares its prepared pair.')):tr('viewing_'+shown,'Workbench: case '+shown.toUpperCase()+'.'),discovery.id==='storage'?' '+tr('minute_90','Both cases use minute 90.'):null);}
     function meter(key){var item=discovery[key],power=item.run.power,width=discovery.maxPower>0?power/discovery.maxPower*100:0;
       return h('div',{key:key,className:'rn-discovery-meter-row','data-discovery-case':key},
@@ -5267,7 +5343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     var predicted=session&&session.prediction,correct=session&&predicted===discovery.outcome,outcomeLabel=tr('choice_'+discovery.outcome,{more:'More',less:'Less',same:'Same'}[discovery.outcome]);
     if(props.compact){
       if(!session||!session.revealed)return null;
-      return h('div',{className:'rn-discovery-dock','data-discovery-dock':props.id,'aria-label':tr('scene_comparison','Discovery comparison at the scene')},
+      return h('div',{ role: 'group',className:'rn-discovery-dock','data-discovery-dock':props.id,'aria-label':tr('scene_comparison','Discovery comparison at the scene')},
         h('div',null,h('strong',null,tr('compare_in_scene','Compare in the scene')),h('small',null,discovery.a.label+' → '+discovery.b.label)),
         h('div',{className:'rn-discovery-dock-actions',role:'group','aria-label':tr('scene_cases','Switch the scene between discovery cases')},['a','b'].map(function(key){return button(tr('view_'+key,'View '+key.toUpperCase()),function(){emit(change({}),setup(key));},{key:key,'data-discovery-dock-view':key,'aria-pressed':key==='a'?matchA:matchB});})),
         h('small',{className:'rn-discovery-dock-status'},shown==='custom'?tr('scene_custom','Custom workbench. Choose A or B to return to the prepared comparison.'):tr('viewing_'+shown,'Workbench: case '+shown.toUpperCase())+' '+tr('same_minute','Both cases use the same minute.')));
@@ -5286,7 +5362,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('div',{'data-discovery-results':true,'data-outcome':discovery.outcome,'data-correct':!!correct},
               h('p',{className:'rn-discovery-verdict',role:'status','aria-atomic':true,'data-discovery-verdict':true},h('strong',null,correct?tr('matched','Your prediction matched.'):tr('different','The result was different.')),' ',tr('result_'+discovery.outcome,discovery.outcome==='same'?'B delivers the same electrical output.':discovery.outcome==='more'?'B delivers more electrical output.':'B delivers less electrical output.')),
               h('p',{className:'rn-discovery-prediction-summary'},tr('your_prediction','Your prediction')+': '+tr('choice_'+predicted,{more:'More',less:'Less',same:'Same'}[predicted])+' · '+tr('model_result','Model result')+': '+outcomeLabel),
-              h('div',{className:'rn-discovery-meters','aria-label':tr('output_comparison','Electrical output comparison')},meter('a'),meter('b')),
+              h('div',{ role: 'group',className:'rn-discovery-meters','aria-label':tr('output_comparison','Electrical output comparison')},meter('a'),meter('b')),
               h('div',{className:'rn-discovery-delta','data-discovery-change':true,'data-delta':discovery.delta,'data-ratio':discovery.ratio===null?'undefined':discovery.ratio},
                 h('span',null,h('small',null,tr('change_b_a','Change, B − A')),h('strong',{title:String(discovery.delta)+' kW'},(discovery.delta>0?'+':'')+number(discovery.delta)+' kW')),
                 h('span',null,h('small',null,tr('relative_a','B relative to A')),h('strong',null,discovery.ratio===null?tr('ratio_no_baseline','No nonzero baseline'):number(discovery.ratio)+'×'))),
@@ -5426,7 +5502,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('div',{className:'rn-energy-window-strip','aria-hidden':true},h('span',{style:{left:(result.start/props.study.duration*100)+'%',width:(result.duration/props.study.duration*100)+'%'}}),h('i',{style:{left:(props.phase/props.study.duration*100)+'%'}})),
       h('p',{className:'rn-energy-window-scope'},result.empty?'Both boundaries are at the same minute. No time passes, no energy is added, and average output is undefined.':'Totals include minute '+result.start+' and stop just before minute '+result.end+'. Boundary readings alone do not determine the energy delivered between them.'),
       h('div',{className:'rn-energy-window-metrics'},metrics.map(function(metric){return h('div',{key:metric[0]},h('span',null,metric[0]),h('strong',null,metric[1]));})),
-      h('div',{className:'rn-energy-window-ledger','aria-label':__alloT('stem.renewables.selected_interval_energy_balance','Selected interval energy balance')},h('h5',null,'Account for the interval'),h('p',null,storage?rnEnergyReading(result.startStored)+' kWh stored at start + '+rnEnergyReading(result.energy.input)+' kWh accepted charging = '+rnEnergyReading(result.energy.delivered)+' kWh delivered + '+rnEnergyReading(result.energy.remainder)+' kWh conversion losses + '+rnEnergyReading(result.endStored)+' kWh stored at end.':rnEnergyReading(result.energy.input)+' kWh input resource energy = '+rnEnergyReading(result.energy.delivered)+' kWh electricity + '+rnEnergyReading(result.energy.remainder)+' kWh not delivered as electricity.'),storage&&h('p',null,'Requested discharge: '+rnEnergyReading(result.energy.requested)+' kWh = '+rnEnergyReading(result.energy.delivered)+' kWh delivered + '+rnEnergyReading(result.energy.unserved)+' kWh unmet.')),
+      h('div',{ role: 'group',className:'rn-energy-window-ledger','aria-label':__alloT('stem.renewables.selected_interval_energy_balance','Selected interval energy balance')},h('h5',null,'Account for the interval'),h('p',null,storage?rnEnergyReading(result.startStored)+' kWh stored at start + '+rnEnergyReading(result.energy.input)+' kWh accepted charging = '+rnEnergyReading(result.energy.delivered)+' kWh delivered + '+rnEnergyReading(result.energy.remainder)+' kWh conversion losses + '+rnEnergyReading(result.endStored)+' kWh stored at end.':rnEnergyReading(result.energy.input)+' kWh input resource energy = '+rnEnergyReading(result.energy.delivered)+' kWh electricity + '+rnEnergyReading(result.energy.remainder)+' kWh not delivered as electricity.'),storage&&h('p',null,'Requested discharge: '+rnEnergyReading(result.energy.requested)+' kWh = '+rnEnergyReading(result.energy.delivered)+' kWh delivered + '+rnEnergyReading(result.energy.unserved)+' kWh unmet.')),
       h('div',{className:'rn-energy-table rn-energy-window-table',tabIndex:0,role:'region','aria-label':__alloT('stem.renewables.interval_boundary_readings','Interval boundary readings')},h('table',null,h('caption',null,'Component readings at the two boundaries. Changes are end minus start; efficiency differences use percentage points.'),h('thead',null,h('tr',null,['Component','Start · '+result.start+' min','End · '+result.end+' min','Change'].map(function(label){return h('th',{key:label,scope:'col'},label);}))),h('tbody',null,result.components.map(function(component){return h('tr',{key:component.id},h('th',{scope:'row'},component.component,h('small',null,component.label)),h('td',null,rnEnergyReading(component.start)+' '+component.unit),h('td',null,rnEnergyReading(component.end)+' '+component.unit),h('td',null,(component.delta>0?'+':'')+rnEnergyReading(component.delta)+' '+component.deltaUnit));})))),
       h('p',{className:'rn-energy-window-status'},'Boundary states: '+result.startStatus+' → '+result.endStatus+'. '+(storage?'Battery power is averaged over the following minute; the final endpoint has zero power.':'The end boundary is a power reading, not an additional operating interval.')),
       h('details',{className:'rn-energy-window-states'},h('summary',null,'Operating states within this interval'),result.empty?h('p',null,'No operating minutes in this interval.'):h('div',{className:'rn-energy-table',tabIndex:0,role:'region','aria-label':__alloT('stem.renewables.interval_operating_state_totals','Interval operating state totals')},h('table',null,h('caption',null,'Minutes with the same modeled state are grouped, even when they occur at separate times.'),h('thead',null,h('tr',null,['Modeled state','Minutes','Delivered kWh'].map(function(label){return h('th',{key:label,scope:'col'},label);}))),h('tbody',null,result.states.map(function(row){return h('tr',{key:row.status},h('th',{scope:'row'},row.status),h('td',null,row.minutes),h('td',null,rnEnergyReading(row.delivered)));})))),h('p',null,result.clippedMinutes+' minutes with the resource clipped to its control range.'+(storage?' '+result.shortfallMinutes+' minutes with unmet discharge demand.':''))),
@@ -5484,10 +5560,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     function context(r){return r.profileName+(r.profileId!=='steady'||props.id==='storage'?' · minute '+r.phase:'');}
     function row(label,node,kind){return h('div',{className:'rn-energy-component-compare-row','data-comparison-series':kind},h('div',null,h('span',null,label),h('strong',null,rnEnergyReading(node.value)+' '+node.unit)),h('div',{className:'rn-energy-component-compare-track','aria-hidden':true},h('span',{style:{width:(max>0?node.value/max*100:0)+'%'}})));}
     return h('section',{className:'rn-energy-component-compare','aria-label':__alloT('stem.renewables.component_baseline_comparison_2','Component baseline comparison')},
-      h('div',{className:'rn-energy-component-compare-heading'},h('h4',null,'Compare this component'),h('span',{className:'rn-energy-component-difference','aria-label':__alloT('stem.renewables.component_reading_difference','Component reading difference')},delta===0?'No change':(delta>0?'+':'')+rnEnergyReading(delta)+' '+unit)),
+      h('div',{className:'rn-energy-component-compare-heading'},h('h4',null,'Compare this component'),h('span',{ role: 'note',className:'rn-energy-component-difference','aria-label':__alloT('stem.renewables.component_reading_difference','Component reading difference')},delta===0?'No change':(delta>0?'+':'')+rnEnergyReading(delta)+' '+unit)),
       h('p',{className:'rn-energy-component-compare-context'},'Baseline: '+props.baselineName+' · '+context(c.first)),
       h('p',{className:'rn-energy-component-compare-context'},'Current: '+context(c.second)),
-      h('div',{className:'rn-energy-component-compare-values','aria-label':__alloFill(__alloT('stem.renewables.a11y_baseline_and_current', 'Baseline and current {value1}'), { value1: second.label })},row('Baseline',first,'baseline'),row('Current',second,'current')),
+      h('div',{ role: 'group',className:'rn-energy-component-compare-values','aria-label':__alloFill(__alloT('stem.renewables.a11y_baseline_and_current', 'Baseline and current {value1}'), { value1: second.label })},row('Baseline',first,'baseline'),row('Current',second,'current')),
       h('p',{className:'rn-energy-component-compare-scale'},'Difference = current − baseline. Bars share a scale for this component only.'),
       h('div',{className:'rn-energy-component-compare-verdict'},h('strong',null,verdict),h('p',null,c.controlled?'The scenario and meaningful time match; one base input differs.':!c.comparable?'The scenario or selected minute differs, so the difference cannot be attributed to one input.':c.changes.length===0?'The base inputs match. A zero difference here can help you identify which stages respond to a change.':'More than one base input differs, so the difference cannot be attributed to one input.'),c.context.length>0&&h('ul',null,c.context.map(function(text){return h('li',{key:text},text);}))),
       c.changes.length>0&&h('details',null,h('summary',null,'Review '+c.changes.length+' changed '+(c.changes.length===1?'input':'inputs')),h('ul',null,c.changes.map(function(change){return h('li',{key:change.key},change.label+': '+rnEnergyReading(change.before)+' → '+rnEnergyReading(change.after)+' '+change.unit);}))),
@@ -5500,7 +5576,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     function btn(label,action,extra){return h('button',Object.assign({type:'button',onClick:action},extra||{}),label);}
     return h('section',{id:props.uid,className:'rn-energy-component rn-energy-component-inspector',tabIndex:-1,'aria-label':__alloT('stem.renewables.selected_component_explanation','Selected component explanation')},
       h('div',{className:'rn-energy-inspector-top'},h('span',{className:'rn-energy-inspector-kicker'},'Component inspector'),h('span',{'aria-live':'polite','aria-atomic':true,className:'rn-energy-inspector-step'},'Step '+(index+1)+' of 3 · '+component[1])),
-      h('div',{className:'rn-energy-inspector-overview'},h('div',null,h('h3',null,component[1]),h('p',null,props.description)),h('div',{className:'rn-energy-inspector-reading','aria-label':__alloT('stem.renewables.inspected_component_reading','Inspected component reading')},h('span',null,reading.label),h('strong',null,rnEnergyReading(reading.value)+' '+reading.unit),reading.note&&h('small',null,reading.note))),
+      h('div',{className:'rn-energy-inspector-overview'},h('div',null,h('h3',null,component[1]),h('p',null,props.description)),h('div',{ role: 'group',className:'rn-energy-inspector-reading','aria-label':__alloT('stem.renewables.inspected_component_reading','Inspected component reading')},h('span',null,reading.label),h('strong',null,rnEnergyReading(reading.value)+' '+reading.unit),reading.note&&h('small',null,reading.note))),
       h('div',{className:'rn-energy-inspector-navigation'},btn('Previous component',function(){props.onSelect(spec.components[index-1][0]);},{disabled:index===0}),h('span',null,'Selecting a component pauses playback.'),btn('Next component',function(){props.onSelect(spec.components[index+1][0]);},{disabled:index===2})),
       h(RenewablesEnergyComponentComparison,{React:props.React,t:props.t,id:props.id,part:props.part,comparison:props.comparison,baselineName:props.baselineName,onSave:props.onSave,onNotebook:props.onNotebook}),
       guide.inputs.length>0?h('div',{className:'rn-energy-inspector-inputs'},h('h4',null,'Inputs to explore'),h('p',null,props.profile?'Links show your base settings; readings follow the current scenario and minute.':'Jump to a control, change one input, then compare the readings.'),h('ul',null,guide.inputs.map(function(link){var c=spec.controls.find(function(c){return c[0]===link[0];});return h('li',{key:c[0]},btn(h(props.React.Fragment,null,h('span',null,c[1]),h('strong',null,rnEnergyReading(props.settings[c[0]])+' '+c[6])),function(){props.onControl(c[0]);},{'aria-label':__alloFill(__alloT('stem.renewables.a11y_jump_to_control', 'Jump to {value1} control'), { value1: c[1] })}),h('p',null,link[1]));}))):h('p',{className:'rn-energy-inspector-fixed'},guide.note),
@@ -5540,6 +5616,283 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       steady:['Illustration settled','The drawing reflects the current settings. Animation illustrates operation without advancing simulation time.']
     };
     return {code:code,title:labels[code][0],note:labels[code][1]};
+  }
+
+  // Cinema-grade WebGL1 / GLSL ES 1.00 shader kit for Renewables 3D engines:
+  // wind-slipstream ribbons, thin-film PV cobalt/gold iridescence (onBeforeCompile),
+  // hydro/ocean Gerstner wave & caustic sheen, and grid power-flow pulse shaders.
+  function _rnIsHighContrast(el) {
+    try {
+      if (el && typeof el.closest === 'function' &&
+        el.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+      var de = typeof document !== 'undefined' ? document.documentElement : null;
+      if (de && (de.classList.contains('theme-contrast') ||
+        de.getAttribute('data-theme') === 'high-contrast' ||
+        de.getAttribute('data-theme') === 'contrast')) return true;
+      var bd = typeof document !== 'undefined' ? document.body : null;
+      if (bd && (bd.classList.contains('theme-contrast') ||
+        bd.getAttribute('data-theme') === 'high-contrast' ||
+        bd.getAttribute('data-theme') === 'contrast')) return true;
+    } catch (e) {}
+    return false;
+  }
+  function _rnApplyPvIridescence(mat, sharedUniforms) {
+    if (!mat || typeof mat.onBeforeCompile !== 'function' || mat.userData._rnPvShader) return;
+    mat.userData._rnPvShader = true;
+    mat.onBeforeCompile = function (shader) {
+      shader.uniforms.uRnTime = sharedUniforms.uTime;
+      shader.uniforms.uRnSun = sharedUniforms.uSun;
+      shader.uniforms.uRnHc = sharedUniforms.uHc;
+      shader.vertexShader = 'varying vec3 vRnWPos;\nvarying vec3 vRnWNorm;\n' +
+        shader.vertexShader.replace(
+          '#include <worldpos_vertex>',
+          '#include <worldpos_vertex>\nvec4 rnWp = modelMatrix * vec4(transformed, 1.0);\nvRnWPos = rnWp.xyz;\nvRnWNorm = normalize(mat3(modelMatrix) * objectNormal);'
+        );
+      shader.fragmentShader = 'uniform float uRnTime;\nuniform float uRnSun;\nuniform float uRnHc;\nvarying vec3 vRnWPos;\nvarying vec3 vRnWNorm;\n' +
+        shader.fragmentShader.replace(
+          '#include <dithering_fragment>',
+          [
+            'if (uRnHc < 0.5) {',
+            '  vec3 rnN = normalize(vRnWNorm);',
+            '  vec3 rnV = normalize(cameraPosition - vRnWPos);',
+            '  float rnF = pow(1.0 - abs(dot(rnN, rnV)), 2.05);',
+            '  float rnGrid = 0.86 + 0.14 * sin(vRnWPos.x * 26.0) * sin(vRnWPos.z * 26.0);',
+            '  float rnSweep = 0.5 + 0.5 * sin(vRnWPos.x * 2.2 - vRnWPos.z * 1.9 - uRnTime * 1.15);',
+            '  vec3 rnCobalt = vec3(0.08, 0.42, 0.92);',
+            '  vec3 rnGold = vec3(0.98, 0.78, 0.30);',
+            '  vec3 rnCyan = vec3(0.16, 0.84, 0.96);',
+            '  vec3 rnFilm = mix(rnCobalt, mix(rnCyan, rnGold, rnSweep), clamp(rnF * 1.15, 0.0, 1.0));',
+            '  gl_FragColor.rgb += rnFilm * (0.14 + 0.48 * rnF) * (0.28 + 0.72 * uRnSun) * rnGrid;',
+            '}',
+            '#include <dithering_fragment>'
+          ].join('\n')
+        );
+    };
+    mat.customProgramCacheKey = function () { return 'rn-pv-irid-v1'; };
+    mat.needsUpdate = true;
+  }
+  function _rnApplyWaterCaustics(mat, sharedUniforms) {
+    if (!mat || typeof mat.onBeforeCompile !== 'function' || mat.userData._rnWaterShader) return;
+    mat.userData._rnWaterShader = true;
+    mat.onBeforeCompile = function (shader) {
+      shader.uniforms.uRnTime = sharedUniforms.uTime;
+      shader.uniforms.uRnFlow = sharedUniforms.uFlow;
+      shader.uniforms.uRnHc = sharedUniforms.uHc;
+      shader.vertexShader = 'varying vec3 vRnWaterPos;\nvarying vec3 vRnWaterNorm;\n' +
+        shader.vertexShader.replace(
+          '#include <worldpos_vertex>',
+          '#include <worldpos_vertex>\nvec4 rnWwp = modelMatrix * vec4(transformed, 1.0);\nvRnWaterPos = rnWwp.xyz;\nvRnWaterNorm = normalize(mat3(modelMatrix) * objectNormal);'
+        );
+      shader.fragmentShader = 'uniform float uRnTime;\nuniform float uRnFlow;\nuniform float uRnHc;\nvarying vec3 vRnWaterPos;\nvarying vec3 vRnWaterNorm;\n' +
+        shader.fragmentShader.replace(
+          '#include <dithering_fragment>',
+          [
+            'if (uRnHc < 0.5) {',
+            '  vec2 wuv = vRnWaterPos.xz * 1.45;',
+            '  float t = uRnTime * (0.85 + uRnFlow * 0.9);',
+            '  float c1 = sin(wuv.x * 3.1 + t * 1.4 + cos(wuv.y * 2.7 - t * 1.1));',
+            '  float c2 = sin(wuv.y * 3.6 - t * 1.2 + cos(wuv.x * 2.9 + t * 1.5));',
+            '  float caust = pow(clamp(0.5 + 0.5 * (c1 * c2), 0.0, 1.0), 3.2);',
+            '  vec3 wN = normalize(vRnWaterNorm);',
+            '  vec3 wV = normalize(cameraPosition - vRnWaterPos);',
+            '  float wFres = pow(1.0 - abs(dot(wN, wV)), 2.4);',
+            '  vec3 wSheen = mix(vec3(0.24, 0.84, 0.95), vec3(0.86, 0.98, 1.0), caust);',
+            '  gl_FragColor.rgb += wSheen * (caust * 0.34 + wFres * 0.28);',
+            '}',
+            '#include <dithering_fragment>'
+          ].join('\n')
+        );
+    };
+    mat.customProgramCacheKey = function () { return 'rn-water-caustic-v1'; };
+    mat.needsUpdate = true;
+  }
+  function _rnCreateWindRibbonMat(THREE, colorHex, marine, hc) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 1.4 },
+        uWind: { value: 1.0 },
+        uColor: { value: new THREE.Color(colorHex || (marine ? '#5eead4' : '#bae6fd')) },
+        uHc: { value: hc ? 1.0 : 0.0 }
+      },
+      vertexShader: [
+        'uniform float uTime;',
+        'uniform float uWind;',
+        'varying vec2 vUv;',
+        'void main() {',
+        '  vUv = uv;',
+        '  vec3 p = position;',
+        '  float wake = smoothstep(0.35, 1.0, uv.x);',
+        '  float spd = clamp(abs(uWind), 0.15, 3.0);',
+        '  float dir = uWind < 0.0 ? -1.0 : 1.0;',
+        '  p.y += sin(uv.x * 11.0 - uTime * spd * 3.4 * dir) * (0.06 + 0.10 * wake);',
+        '  p.x += cos(uv.x * 9.0 - uTime * spd * 2.8 * dir) * (0.04 + 0.08 * wake);',
+        '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform float uWind;',
+        'uniform vec3 uColor;',
+        'uniform float uHc;',
+        'varying vec2 vUv;',
+        'void main() {',
+        '  if (uHc > 0.5) discard;',
+        '  float spd = abs(uWind);',
+        '  if (spd < 0.01) discard;',
+        '  float dir = uWind < 0.0 ? -1.0 : 1.0;',
+        '  float across = 1.0 - abs(vUv.y - 0.5) * 2.0;',
+        '  float core = pow(clamp(across, 0.0, 1.0), 1.6);',
+        '  float ends = smoothstep(0.0, 0.14, vUv.x) * smoothstep(1.0, 0.80, vUv.x);',
+        '  float streak = pow(0.5 + 0.5 * sin(vUv.x * 18.0 - uTime * (2.6 + spd * 2.2) * dir), 2.5);',
+        '  float alpha = core * ends * (0.22 + 0.62 * streak) * clamp(spd * 0.85, 0.25, 0.82);',
+        '  vec3 col = mix(uColor, vec3(0.95, 0.99, 1.0), streak * core * 0.45);',
+        '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.82));',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    });
+  }
+  function _rnCreatePowerPulseMat(THREE, colorHex, hc) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 1.4 },
+        uPower: { value: 0.6 },
+        uDir: { value: 1.0 },
+        uColor: { value: new THREE.Color(colorHex || '#74f5d6') },
+        uHc: { value: hc ? 1.0 : 0.0 }
+      },
+      vertexShader: [
+        'varying vec2 vUv;',
+        'varying vec3 vNormV;',
+        'varying vec3 vViewV;',
+        'void main() {',
+        '  vUv = uv;',
+        '  vNormV = normalize(normalMatrix * normal);',
+        '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+        '  vViewV = -mv.xyz;',
+        '  gl_Position = projectionMatrix * mv;',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform float uPower;',
+        'uniform float uDir;',
+        'uniform vec3 uColor;',
+        'uniform float uHc;',
+        'varying vec2 vUv;',
+        'varying vec3 vNormV;',
+        'varying vec3 vViewV;',
+        'void main() {',
+        '  if (uHc > 0.5 || uPower < 0.01) discard;',
+        '  float ndv = abs(dot(normalize(vNormV), normalize(vViewV)));',
+        '  float pulse1 = pow(0.5 + 0.5 * sin(vUv.x * 24.0 - uTime * 5.4 * uDir), 4.5);',
+        '  float pulse2 = pow(0.5 + 0.5 * sin(vUv.x * 10.0 - uTime * 2.6 * uDir + 1.5), 3.0);',
+        '  float ends = smoothstep(0.0, 0.05, vUv.x) * smoothstep(1.0, 0.95, vUv.x);',
+        '  float glow = (0.18 + 0.65 * pulse1 + 0.25 * pulse2) * pow(ndv, 0.75) * ends * clamp(uPower, 0.15, 1.0);',
+        '  vec3 col = mix(uColor, vec3(1.0, 0.98, 0.88), pulse1 * 0.55);',
+        '  gl_FragColor = vec4(col, clamp(glow * 0.72, 0.0, 0.85));',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    });
+  }
+  function _rnCreateOceanGerstnerMat(THREE, hc) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 1.4 },
+        uDaylight: { value: 0.75 },
+        uHc: { value: hc ? 1.0 : 0.0 }
+      },
+      vertexShader: [
+        'uniform float uTime;',
+        'varying vec2 vWorldXZ;',
+        'varying float vCrest;',
+        'varying vec3 vViewV;',
+        'void main() {',
+        '  vec3 p = position;',
+        '  float w1 = sin(p.x * 0.85 + uTime * 1.15) * 0.045;',
+        '  float w2 = cos(p.y * 1.10 - uTime * 0.92 + p.x * 0.35) * 0.035;',
+        '  float w3 = sin((p.x - p.y) * 1.45 + uTime * 1.65) * 0.02;',
+        '  p.z += w1 + w2 + w3;',
+        '  vCrest = clamp((w1 + w2 + w3) * 9.0 + 0.5, 0.0, 1.0);',
+        '  vec4 wp = modelMatrix * vec4(p, 1.0);',
+        '  vWorldXZ = wp.xz;',
+        '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+        '  vViewV = -mv.xyz;',
+        '  gl_Position = projectionMatrix * mv;',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform float uDaylight;',
+        'uniform float uHc;',
+        'varying vec2 vWorldXZ;',
+        'varying float vCrest;',
+        'varying vec3 vViewV;',
+        'void main() {',
+        '  if (uHc > 0.5) discard;',
+        '  vec2 p = vWorldXZ * 0.72;',
+        '  float c1 = sin(p.x * 3.1 + uTime * 1.2 + cos(p.y * 2.6 - uTime * 0.9));',
+        '  float c2 = sin(p.y * 3.4 - uTime * 1.05 + cos(p.x * 2.8 + uTime * 1.35));',
+        '  float caustic = pow(clamp(0.5 + 0.5 * (c1 * c2), 0.0, 1.0), 3.4);',
+        '  vec3 deep = mix(vec3(0.04, 0.14, 0.22), vec3(0.07, 0.28, 0.39), uDaylight);',
+        '  vec3 shallow = mix(vec3(0.08, 0.34, 0.48), vec3(0.18, 0.62, 0.74), uDaylight);',
+        '  vec3 col = mix(deep, shallow, vCrest * 0.65) + vec3(0.45, 0.88, 0.98) * caustic * (0.28 + 0.42 * uDaylight);',
+        '  float foam = smoothstep(0.76, 0.98, vCrest) * (0.22 + 0.3 * uDaylight);',
+        '  col = mix(col, vec3(0.86, 0.97, 1.0), foam);',
+        '  gl_FragColor = vec4(col, 0.78);',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+  }
+  function _rnCreateEnergyAuraMat(THREE, colorHex, hc) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 1.4 },
+        uIntensity: { value: 0.6 },
+        uColor: { value: new THREE.Color(colorHex || '#fbbf24') },
+        uHc: { value: hc ? 1.0 : 0.0 }
+      },
+      vertexShader: [
+        'varying vec2 vUv;',
+        'void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform float uIntensity;',
+        'uniform vec3 uColor;',
+        'uniform float uHc;',
+        'varying vec2 vUv;',
+        'void main() {',
+        '  if (uHc > 0.5 || uIntensity < 0.01) discard;',
+        '  vec2 d = (vUv - 0.5) * 2.0;',
+        '  float r = length(d);',
+        '  if (r > 1.0) discard;',
+        '  float ang = atan(d.y, d.x);',
+        '  float rays = 0.68 + 0.32 * sin(ang * 8.0 + uTime * 1.4) * sin(r * 9.0 - uTime * 2.2);',
+        '  float core = pow(1.0 - r, 2.1);',
+        '  vec3 col = mix(uColor, vec3(1.0, 0.97, 0.85), core * 0.55);',
+        '  gl_FragColor = vec4(col, clamp(core * rays * uIntensity * 0.72, 0.0, 0.84));',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    });
   }
 
   function rnEnergyPointerGesture(state,type,pointer){
@@ -6727,6 +7080,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           label('1  Charging supply',-4,3,0);label('2  Stored energy',-.4,3.7,0);label('3  Inverter & load',3.4,3,1.1);
         }
         Object.keys(groups).forEach(function(key){groups[key].traverse(function(o){if(o.isMesh){o.userData.component=key;pickables.push(o);}});});
+        // Cinema-grade GLSL ES 1.00 visual shader layer (outside groups/pickables so
+        // mechanism bounds, picking, and VM-sliced branch tests remain untouched;
+        // disposed automatically via scene.traverse in release()).
+        var rnShaderClock=1.4,rnShaderHc=_rnIsHighContrast(container);
+        var rnSharedUniforms={uTime:{value:1.4},uSun:{value:.8},uFlow:{value:.5},uHc:{value:rnShaderHc?1:0}};
+        var rnShaderFx=new THREE.Group();rnShaderFx.name='energy-shader-fx';scene.add(rnShaderFx);
+        var rnShaderMats=[],rnWindRibbonGroup=null,rnSolarAura=null,rnPowerSheathMats=[];
+        if(id==='solarPv'){
+          pvCells.forEach(function(cell){_rnApplyPvIridescence(cell.material,rnSharedUniforms);});
+          var sunAuraMat=_rnCreateEnergyAuraMat(THREE,'#ffd378',rnShaderHc);
+          if(sunAuraMat){rnSolarAura=new THREE.Mesh(new THREE.PlaneGeometry(2.3,2.3),sunAuraMat);rnSolarAura.position.copy(solarDisc.position);rnShaderFx.add(rnSolarAura);rnShaderMats.push(sunAuraMat);}
+        }else if(id==='wind'||id==='tidal'){
+          var marineFx=id==='tidal';
+          rnWindRibbonGroup=new THREE.Group();rnWindRibbonGroup.name='energy-wind-ribbons';rnWindRibbonGroup.position.set(-1.1,marineFx?2.25:3.65,0);rnShaderFx.add(rnWindRibbonGroup);
+          for(var wr=0;wr<6;wr++){
+            var wAng=wr*Math.PI/3+.26,wMat=_rnCreateWindRibbonMat(THREE,marineFx?'#5eead4':'#bae6fd',marineFx,rnShaderHc);
+            if(!wMat)break;
+            var wGeo=new THREE.PlaneGeometry(6.2,.24,36,1);
+            var wMesh=new THREE.Mesh(wGeo,wMat);
+            wMesh.rotation.y=Math.PI/2;
+            wMesh.position.set(Math.cos(wAng)*1.38,Math.sin(wAng)*1.38,0);
+            wMesh.rotation.x=wAng;
+            rnWindRibbonGroup.add(wMesh);rnShaderMats.push(wMat);
+          }
+          if(marineFx&&waterVolume)_rnApplyWaterCaustics(waterVolume.material,rnSharedUniforms);
+        }else if(id==='hydro'){
+          _rnApplyWaterCaustics(reservoirWater.material,rnSharedUniforms);
+          var tailChannel=scene.getObjectByName('energy-hydro-tailrace-channel');
+          if(tailChannel)tailChannel.traverse(function(o){if(o.isMesh&&o.material&&o.material.transparent)_rnApplyWaterCaustics(o.material,rnSharedUniforms);});
+          var hydroCaustMat=_rnCreateWindRibbonMat(THREE,'#7dd3fc',true,rnShaderHc);
+          if(hydroCaustMat){var spillRibbon=new THREE.Mesh(new THREE.PlaneGeometry(3.4,.55,28,1),hydroCaustMat);spillRibbon.rotation.x=-Math.PI/2;spillRibbon.position.set(2.0,.16,1.7);rnShaderFx.add(spillRibbon);rnShaderMats.push(hydroCaustMat);}
+        }else if(id==='wave'){
+          _rnApplyWaterCaustics(ocean.material,rnSharedUniforms);
+        }else if(id==='solarThermal'){
+          mirrors.forEach(function(mg){if(mg.children[0]&&mg.children[0].material)_rnApplyPvIridescence(mg.children[0].material,rnSharedUniforms);});
+          var cspAuraMat=_rnCreateEnergyAuraMat(THREE,'#fb923c',rnShaderHc);
+          if(cspAuraMat){rnSolarAura=new THREE.Mesh(new THREE.PlaneGeometry(2.4,2.4),cspAuraMat);rnSolarAura.position.set(.5,4.6,0);rnShaderFx.add(rnSolarAura);rnShaderMats.push(cspAuraMat);}
+        }else if(id==='geothermal'||id==='biomass'||id==='storage'){
+          var fxTint=id==='storage'?'#5eead4':'#fb923c',fxPos=id==='geothermal'?[.5,1.6,0]:id==='biomass'?[-.7,1.15,1.25]:[-.45,1.4,.78];
+          var coreAuraMat=_rnCreateEnergyAuraMat(THREE,fxTint,rnShaderHc);
+          if(coreAuraMat){rnSolarAura=new THREE.Mesh(new THREE.PlaneGeometry(2.1,2.1),coreAuraMat);rnSolarAura.position.set(fxPos[0],fxPos[1],fxPos[2]);rnShaderFx.add(rnSolarAura);rnShaderMats.push(coreAuraMat);}
+        }
+        // Luminous electrical power-flow pulse sheath on active output cable(s)
+        if(typeof THREE.ShaderMaterial==='function'){
+          var cableCount=0;
+          scene.traverse(function(o){
+            if(cableCount>=3||!o.isMesh||!o.geometry||o.geometry.type!=='TubeGeometry'||!o.geometry.parameters||!o.geometry.parameters.path)return;
+            if(!/(cable|output-cable|load-cable|dc-cable|ac-cable)/.test(o.name||''))return;
+            var pMat=_rnCreatePowerPulseMat(THREE,'#fde047',rnShaderHc);
+            if(!pMat)return;
+            var pGeo=new THREE.TubeGeometry(o.geometry.parameters.path,32,(o.geometry.parameters.radius||.045)*1.65,6,false);
+            var pMesh=new THREE.Mesh(pGeo,pMat);
+            pMesh.userData.sourceCable=o;rnShaderFx.add(pMesh);rnShaderMats.push(pMat);rnPowerSheathMats.push({mesh:pMesh,mat:pMat,src:o});cableCount++;
+          });
+        }
+        function updateRnShaders(p,dtStep,animating){
+          var hc=_rnIsHighContrast(container);
+          if(reducedMotion){rnShaderClock=1.4;}
+          else if(dtStep>0){rnShaderClock+=dtStep;}
+          else if(animating){rnShaderClock+=0.016;}
+          rnSharedUniforms.uTime.value=rnShaderClock;
+          rnSharedUniforms.uHc.value=hc?1:0;
+          rnSharedUniforms.uSun.value=id==='solarPv'?Math.max(0,Math.min(1,(p.run.settings.irradiance||0)/1100)):id==='solarThermal'?Math.max(0,Math.min(1,(p.run.settings.dni||0)/1100)):.75;
+          rnSharedUniforms.uFlow.value=id==='hydro'?Math.max(0,Math.min(2,(p.run.settings.flow||0)/20)):id==='wave'?Math.max(0,Math.min(2,(p.run.settings.height||1)/3)):1;
+          var assembled=!p.inspection.isolated&&p.inspection.layout==='assembled';
+          rnShaderFx.visible=!hc&&assembled;
+          var pwrNorm=p.run.power>0?Math.min(1,p.run.power/(p.run.power+referencePower)*1.6):0;
+          rnShaderMats.forEach(function(m){
+            if(!m.uniforms)return;
+            if(m.uniforms.uTime)m.uniforms.uTime.value=rnShaderClock;
+            if(m.uniforms.uHc)m.uniforms.uHc.value=hc?1:0;
+            if(m.uniforms.uWind){
+              if(id==='wind'||id==='tidal'){var spd=p.run.settings.speed||0;m.uniforms.uWind.value=id==='tidal'?spd*.85:spd*.16;}
+              else if(id==='hydro'){m.uniforms.uWind.value=(p.run.settings.flow||0)*.08;}
+            }
+            if(m.uniforms.uIntensity){
+              if(id==='solarPv')m.uniforms.uIntensity.value=rnSharedUniforms.uSun.value;
+              else if(id==='solarThermal')m.uniforms.uIntensity.value=Math.min(1,Math.sqrt(Math.max(0,p.run.stages[1].value)/5850));
+              else m.uniforms.uIntensity.value=Math.max(pwrNorm,p.run.available>0?.45:0);
+            }
+          });
+          if(rnWindRibbonGroup&&typeof blade!=='undefined'&&blade){
+            rnWindRibbonGroup.position.y=blade.position.y;
+            rnWindRibbonGroup.scale.set(blade.scale.x,blade.scale.y,1);
+          }
+          if(rnSolarAura){
+            if(id==='solarPv'&&typeof solarDisc!=='undefined'&&solarDisc)rnSolarAura.position.copy(solarDisc.position);
+            rnSolarAura.lookAt(camera.position);
+          }
+          rnPowerSheathMats.forEach(function(entry){
+            entry.mat.uniforms.uPower.value=pwrNorm;
+            entry.mesh.visible=assembled&&!hc&&pwrNorm>0.01&&entry.src.visible;
+            if(entry.mesh.visible){entry.src.updateMatrixWorld(true);entry.mesh.matrixAutoUpdate=false;entry.mesh.matrix.copy(entry.src.matrixWorld);}
+          });
+        }
         // Keep callouts in a screen-space lane so the machinery remains unobscured.
         // Narrow screens retain the selected reading; the other two stages use compact titles.
         function labelLayout(){
@@ -6914,6 +7362,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           container.setAttribute('data-inspection-labels',String(inspection.labels));container.setAttribute('data-inspection-readings',String(inspection.readings));
           container.setAttribute('data-motion-mode',reducedMotion?'reduced':animate?'preview':'paused');container.setAttribute('data-response-state',responseSettling?'settling':'steady');container.setAttribute('data-dimension-response',dimensionSettling?'settling':'steady');container.setAttribute('data-traced-component',inspection.trace?p.selected:'none');
           pickables.forEach(function(m){if(m.material.emissive&&!m.userData.energyGlow){m.material.emissive.set(m.userData.component===hoverPart?'#497fa3':m.userData.component===p.selected?'#206852':'#000000');m.material.emissiveIntensity=m.userData.component===hoverPart?.45:inspection.trace&&m.userData.component===p.selected?.52:.25;}});
+          updateRnShaders(p,dt,animate);
           container.setAttribute('data-hovered-component',hoverPart||'none');container.setAttribute('data-focused-component',focusTarget||'none');container.setAttribute('data-camera-detail',focusDetail&&focusTarget==='generator'?'generator':focusTarget==='converter'&&id==='solarThermal'?'receiver':'none');
           renderer.render(scene,camera);container.setAttribute('data-energy-scene-id',id);
           var feedbackMode=dimensionSettling?'geometry':driveMotion.coasting?'coasting':responseSettling?'motion':'steady';
@@ -6931,7 +7380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     var responseGuide={solarPv:'The supports, sunlight and DC cable follow panel area and angle. At grazing incidence, intercepted light and electrical flow stop. Separate gold paths carry DC from the array to the inverter and AC to the load; their marks follow the corresponding power readings. Module efficiency and cell temperature change electrical output without changing incoming light. The front gauge shows selected cell temperature on a fixed −20 to 85°C scale; its brass tick marks 25°C. The inverter’s upper green bar shows actual output and its lower gold bar shows output at 25°C under the same sunlight, area and angle. Their shared relative scale follows the 25°C reference, so compare their lengths with each other; brightness and the gold cable follow power. Both bars switch off without intercepted sunlight. The temperature needle and relative comparison ease together during animation; this illustrates a setting change, not predicted heating or cooling.',wind:'Air streams surround the swept disk and follow its size and height without stretching their markers. Their travel smoothly follows wind speed, including during protective shutdown when air still moves past the slowing or stopped rotor. At zero output, the rotor, shaft and generator core ease to rest together while the gold electrical flow and load bar stop immediately. This brief coast illustrates a control change; it is not a calculated braking time and adds no electricity. Rotor size follows radius; larger rotors turn more slowly at the same wind speed. Gold cables carry electricity from the nacelle through the output cabinet to the load. The generator strip shows delivered power as a fraction of its rating: amber means the rating is reached; orange marks protective shutdown and electrical flow stops.',tidal:'Current streams surround the swept disk and follow its size and height without stretching their markers. Their travel smoothly follows current strength. Stream arrows follow the selected current direction immediately; the rotor slows through a change of direction. At slack water, the rotor, shaft and generator core ease to rest together while the gold electrical flow stops immediately. This brief coast illustrates a control change; it is not a calculated braking time and adds no electricity. Larger rotors turn more slowly. Rotor clearance and the attached generator cable follow radius. Gold flow travels from the nacelle through the output cabinet to the load in either current direction; it stops at zero output. The generator strip shows delivered power relative to its rating.',hydro:'The gold bracket and screened intake follow water head. Connected translucent pipes show water entering the top of the runner and leaving its side into the tailrace. Both pipes share an illustrative travel speed set by water flow; head changes their shape without changing that speed. The inline butterfly valve and its lever smoothly open with selected flow and close when flow stops. Head and flow smoothly change the shared runner and generator rotation. Gold flow marks carry electricity from the generator through the switchgear to the load. Efficiency changes electrical output without changing hydraulic motion.',geothermal:'Well circulation follows the selected fluid flow, with equal travel speed in the primary pipes. The connected production and reinjection routes meet the front of the exchanger. Translucent pipe walls expose the circulation markers. Pipe tints and the two unnumbered well gauges share a 40–300°C scale and follow the selected temperatures, even when circulation stops. The separate working-fluid circuit carries heat from the exchanger through the turbine and condenser, then returns to the exchanger. Its markers remain visible through the pipe walls and smoothly follow extracted heat. Their travel speed stays consistent when the layout expands; it illustrates heat transfer, not measured fluid velocity. The turbine, coupling and generator core turn together as electrical output changes. Open the generator cutaway to see the rotating core inside stationary windings; the shared motion is illustrative, not measured RPM. The gold cable starts at the generator terminal. The housed cooling fan and upward air marks share one smooth response to rejected heat. More efficient generation reduces this cooling activity while increasing electrical output. The stationary guard stays fixed as the five fan blades turn. Air marks fade at the outlet and stop when no heat is rejected; they illustrate cooling activity, not measured air velocity or temperature. The return-pipe glow also follows rejected heat, and the cooled return passes behind the generator supports.',solarThermal:'Mirror area changes the collecting surfaces and reflected beam footprint. Sunlight strength changes ray brightness. The dark receiver and fixed absorber tubes share a smooth warmth cue for useful heat; this illustrates energy transfer, not receiver temperature, warm-up or local light concentration. The instrument below the receiver compares the same incoming sunlight in two tracks: gold shows the whole input; orange shows useful heat and the muted remainder shows optical and receiver losses. Their relative lengths share one scale and change smoothly with optical efficiency; brightness follows collected sunlight. The active bars and warmth stop without input or at completion. Cycle efficiency acts downstream without changing the receiver split. Orange flow carries heat from the receiver to the power block; blue flow returns to the receiver. Translucent pipe walls expose the moving markers. Their travel smoothly follows delivered heat and stays consistent when the layout expands; it illustrates heat transfer, not measured fluid velocity. The pipes brighten with delivered heat, while the turbine, coupling and generator core turn together in response to electrical output. Open the generator cutaway to inspect the rotating core inside fixed windings. Gold flow starts at the generator terminal and follows electricity; cycle efficiency changes this output without changing heat arriving from the receiver.',wave:'Height changes the travel range. Longer periods give slower heave cycles and wider-spaced crests that travel faster once the new setting settles. Crest highlights move across the water; spacing and height are compressed for this regular-wave illustration. Period changes preserve the buoy’s local phase while the water shape adjusts smoothly. The buoy and marked upper collar slide along the fixed central post. Gold cables connect the fixed PTO terminal, platform cabinet and load; their marks show mean electrical output, so they keep the same direction on both buoy strokes. The gold ruler marks selected capture frontage on a compressed scale. Electrical equipment stays on a supported deck above the crests. The unnumbered travel guide shows the illustrated heave range; its pointer follows the buoy. Buoy size stays fixed; frontage and efficiency change mean output.',biomass:'Feed rate turns the visible feed screw; its rotation illustrates fuel delivery, not measured RPM. Flame size and ember brightness smoothly follow fuel chemical power; individual tips bend above the fixed grate. Feed and heating value change this cue, while boiler and cycle efficiency act downstream. Flames illustrate combustion, not temperature or burn timing. The translucent steam pipe brightens with useful boiler heat. Its visible markers smoothly follow that heat input and keep a consistent travel speed when the layout expands; they illustrate heat transfer, not measured steam velocity. Steam-cycle efficiency changes the shared turbine, coupling and generator motion and electrical output without changing fuel delivery or steam input. Open the generator cutaway to inspect the rotating core inside stationary windings. Gold flow starts at the generator terminal and follows electrical output.',storage:'Fixed battery modules sit behind each rack cover. The narrow front gauge repeats the exact bank state of charge at the selected minute; the modules keep their size. Supply and inverter cooling fans and outward air marks share one smooth response to active conversion loss. Higher round-trip efficiency reduces this cooling activity; it stops at zero loss, including ideal 100% efficiency. Air marks spread gently from each fixed guard and fade along their route. Fan speed and air travel illustrate cooling activity, not measured RPM, airflow, battery temperature or extra fan electricity use. Rack indicators move down while charging and up while discharging; brightness follows actual transfer power. They show the bank direction, not individual rack power. Gold paths connect the supply, bank, inverter and load. Separate positive and negative rails connect all three racks. Preview motion does not charge or empty the battery.'}[props.id];
     return h('div',{className:'rn-energy-scene',style:{'--re-scene-accent':RN_ENERGY_VISUALS[props.id].color}},
       h('style',null,'.rn-energy-response-feedback{display:flex;align-items:center;gap:12px;min-height:76px;padding:12px 16px;border-bottom:1px solid #63828b;background:#14313c;color:#c8e3de}.rn-energy-response-feedback>div{min-width:0}.rn-energy-response-feedback strong{display:block;color:#e2fff0;font-size:12px;line-height:1.5}.rn-energy-response-feedback p{margin:3px 0 0!important;font-size:11px;line-height:1.5;overflow-wrap:anywhere;color:#c8e3de}.rn-energy-response-symbol{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border:1px solid #7faaa5;border-radius:50%;color:#a1ebcb;font-size:19px}.rn-energy-response-feedback[data-illustration-response=geometry],.rn-energy-response-feedback[data-illustration-response=motion],.rn-energy-response-feedback[data-illustration-response=coasting]{background:#343329}.rn-energy-response-feedback[data-illustration-response=geometry] .rn-energy-response-symbol,.rn-energy-response-feedback[data-illustration-response=motion] .rn-energy-response-symbol,.rn-energy-response-feedback[data-illustration-response=coasting] .rn-energy-response-symbol{color:#ffe2a2;border-color:#cbb478}.rn-energy-response-feedback[data-illustration-response=geometry] strong,.rn-energy-response-feedback[data-illustration-response=motion] strong,.rn-energy-response-feedback[data-illustration-response=coasting] strong{color:#ffedc5}@media(max-width:500px){.rn-energy-response-feedback{padding:12px;min-height:100px}}.rn-energy-touch-hint{display:flex;flex-wrap:wrap;align-items:center;gap:7px 16px;padding:11px 14px;background:#163744;border-top:1px solid #63828b;border-bottom:1px solid #63828b;color:#c8e3de;font-size:11px;line-height:1.5}.rn-energy-touch-hint strong{color:#e2fff0;font-size:11px}.rn-energy-touch-hint span{display:inline-flex;align-items:center;gap:5px}.rn-energy-touch-hint b{color:#a1ebcb;font-size:17px;line-height:1}@media(max-width:480px){.rn-energy-touch-hint{gap:6px 12px}.rn-energy-touch-hint strong{flex-basis:100%}}.rn-energy-motion-speed{display:flex;align-items:center;gap:7px;color:#c8e3de;font-size:11px}.rn-energy-motion-speed select{min-height:36px;border:1px solid #779297;border-radius:6px;padding:5px;background:#173c4a;color:#eff9f6}.rn-energy-camera button[aria-pressed=true]{background:#d8f4e9;color:#163d35}'),
-      h('div',{className:'rn-energy-scene-heading'},h('div',{className:'rn-energy-scene-identity'},rnEnergyIcon(React,props.id),h('div',null,h('span',null,'Interactive mechanism'),h('strong',null,rnEnergySpec(props.id).name))),h('div',{className:'rn-energy-scene-reading','aria-label':__alloT('stem.renewables.scene_electrical_output','Scene electrical output')},h('span',null,props.id==='storage'?'Discharge output':'Electrical output'),h('strong',null,Number(props.run.power).toLocaleString(undefined,{maximumFractionDigits:2})+' ',h('small',null,'kW')))),
+      h('div',{className:'rn-energy-scene-heading'},h('div',{className:'rn-energy-scene-identity'},rnEnergyIcon(React,props.id),h('div',null,h('span',null,'Interactive mechanism'),h('strong',null,rnEnergySpec(props.id).name))),h('div',{ role: 'group',className:'rn-energy-scene-reading','aria-label':__alloT('stem.renewables.scene_electrical_output','Scene electrical output')},h('span',null,props.id==='storage'?'Discharge output':'Electrical output'),h('strong',null,Number(props.run.power).toLocaleString(undefined,{maximumFractionDigits:2})+' ',h('small',null,'kW')))),
       h('div',{className:'rn-energy-camera rn-energy-motion-controls'},h('button',{type:'button','aria-label':__alloT('stem.renewables.animate_equipment_at_current_conditions','Animate equipment at current conditions'),'aria-pressed':equipmentMotion[0]&&!motionPreference[0]&&!sequenceComplete,disabled:status!=='ready'||motionPreference[0]||sequenceComplete,onClick:function(){if(api.current)api.current('cancel-step');equipmentMotion[1](!equipmentMotion[0]);}},equipmentMotion[0]&&!motionPreference[0]&&!sequenceComplete?'Pause equipment animation':'Animate equipment'),
         h('label',{className:'rn-energy-motion-speed'},'Illustration speed',h('select',{'aria-label':__alloT('stem.renewables.illustration_speed','Illustration speed'),value:motionSpeed[0],onChange:function(e){motionSpeed[1](Number(e.target.value));}},[[.25,'Quarter speed'],[.5,'Half speed'],[1,'Normal speed']].map(function(option){return h('option',{key:option[0],value:option[0]},option[1]);}))),
         h('button',{type:'button',disabled:status!=='ready'||sequenceComplete||equipmentMotion[0]&&!motionPreference[0],onClick:function(){if(api.current)api.current('step');}},'Step illustration'),
@@ -6951,13 +7400,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       status!=='ready'&&h('div',{className:'rn-energy-fallback',role:'status'},status==='loading'?'Preparing the 3D workbench…':'3D is unavailable. Controls, calculations, and the energy-flow view remain available.',
         status==='failed'&&h('button',{type:'button',onClick:function(){retry[1](retry[0]+1);}},'Retry mechanism 3D')),
       h('div',{className:'rn-energy-viewfinder'},
-        h('div',{className:'rn-energy-orientation','aria-label':__alloT('stem.renewables.camera_orientation','Camera orientation')},
+        h('div',{ role: 'group',className:'rn-energy-orientation','aria-label':__alloT('stem.renewables.camera_orientation','Camera orientation')},
           h('svg',{viewBox:'0 0 86 76',width:86,height:76,'aria-hidden':'true',focusable:'false'},
             h('circle',{cx:43,cy:38,r:28,fill:'none',stroke:'#54757e',strokeDasharray:'2 4'}),
             [['X',Math.cos(cameraReading.yaw),Math.sin(cameraReading.yaw)*Math.sin(cameraReading.pitch),'#ffc68e'],['Y',0,-Math.cos(cameraReading.pitch),'#93efc8'],['Z',-Math.sin(cameraReading.yaw),Math.cos(cameraReading.yaw)*Math.sin(cameraReading.pitch),'#acdbff']].map(function(axis){return h('g',{key:axis[0]},h('line',{x1:43,y1:38,x2:43+axis[1]*22,y2:38+axis[2]*22,stroke:axis[3],strokeWidth:2}),h('text',{x:43+axis[1]*32,y:42+axis[2]*32,fill:axis[3],textAnchor:'middle',fontSize:10,fontWeight:700},axis[0]));}),h('circle',{cx:43,cy:38,r:3,fill:'#effdf7'})),
           h('div',null,h('span',{className:'rn-energy-camera-kicker'},'Camera orientation'),h('strong',null,cameraNames[cameraReading.name]),h('span',{className:'rn-energy-camera-angles'},Math.round(cameraReading.yaw*180/Math.PI)%360+'° around · '+Math.round(cameraReading.pitch*180/Math.PI)+'° above'),h('small',null,'Model axes · Y points up'))),
         h('div',{className:'rn-energy-camera rn-energy-presets',role:'group','aria-label':__alloT('stem.renewables.standard_camera_views','Standard camera views')},cameraPresets.map(function(a){return h('button',{type:'button',key:a[0],disabled:status!=='ready','aria-pressed':cameraReading.name===a[0],onClick:function(){if(api.current)api.current(a[0]);}},a[1]);}))),
-      h('div',{className:'rn-energy-camera rn-energy-inspection','aria-label':__alloT('stem.renewables.mechanism_inspection_controls','Mechanism inspection controls')},
+      h('div',{ role: 'group',className:'rn-energy-camera rn-energy-inspection','aria-label':__alloT('stem.renewables.mechanism_inspection_controls','Mechanism inspection controls')},
         ['assembled','exploded'].map(function(layout){return h('button',{key:layout,type:'button',disabled:status!=='ready','aria-pressed':inspection.layout===layout,onClick:function(){inspect({layout:layout});}},layout==='assembled'?'Assembled view':'Exploded view');}),
         h('button',{type:'button',disabled:status!=='ready','aria-pressed':inspection.isolated,onClick:function(){inspect({isolated:!inspection.isolated});}},'Isolate selected component'),
         h('button',{type:'button',disabled:status!=='ready','aria-pressed':inspection.labels,onClick:function(){inspect({labels:!inspection.labels});}},'Component labels'),
@@ -7060,7 +7509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       config.error&&h('p',{role:'alert'},config.error),
       h('div',{className:'rn-energy-toolbar'},btn(result?'Run experiment again':'Run experiment',run,{disabled:!!config.error,'aria-label':'Run controlled experiment'}),h('small',null,'Values follow the input control steps; duplicate values are removed.')),
       pending&&h('p',{className:'rn-energy-experiment-notice',role:'status'},'Setup changed. Run again to update the saved experiment.'),
-      result&&h('div',{className:'rn-energy-experiment-results','aria-label':__alloT('stem.renewables.saved_experiment_results','Saved experiment results')},
+      result&&h('div',{ role: 'group',className:'rn-energy-experiment-results','aria-label':__alloT('stem.renewables.saved_experiment_results','Saved experiment results')},
         h('h3',null,result.config.label+' experiment'),
         h('p',null,result.profileName+(result.duration?' · full '+result.duration+'-minute sequence':' · steady power')+' · '+result.rows.length+' distinct trials'),
         h('p',{className:'rn-energy-experiment-notice'},matches?'Workbench matches the experiment reference.':currentTrial?'Workbench shows trial '+(currentTrial.index+1)+' of this experiment.':'Workbench conditions have changed. These results retain their recorded inputs.'),
@@ -7122,7 +7571,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       var a=explanation,e=a&&a.effects;
       function measure(n){return signed(Math.abs(n)<=a.tolerance?0:n)+' '+a.unit;}
       function exportCases(){var url=URL.createObjectURL(new Blob([rnEnergyMapExplanationCsv(a,observation)],{type:'text/csv;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='renewables-'+id+'-map-trial-'+(selected+1)+'-explanation.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(function(){URL.revokeObjectURL(url);},1500);}
-      return h('details',{className:'rn-energy-map-explanation','aria-label':__alloT('stem.renewables.design_map_explanation','Design map explanation'),open:!!(explanationState&&explanationState.open),onToggle:function(event){if(event.currentTarget.open!==!!(explanationState&&explanationState.open))explain({open:event.currentTarget.open});}},h('summary',null,'Explain this combination'),a&&h('div',{'aria-label':__alloT('stem.renewables.four_case_comparison','Four-case comparison')},
+      return h('details',{className:'rn-energy-map-explanation','aria-label':__alloT('stem.renewables.design_map_explanation','Design map explanation'),open:!!(explanationState&&explanationState.open),onToggle:function(event){if(event.currentTarget.open!==!!(explanationState&&explanationState.open))explain({open:event.currentTarget.open});}},h('summary',null,'Explain this combination'),a&&h('div',{ role: 'group','aria-label':__alloT('stem.renewables.four_case_comparison','Four-case comparison')},
         h('h4',null,'What changes when these inputs act together?'),h('p',null,'Trial '+(selected+1)+' · '+a.profileName+'. Compare each change with the recorded reference. All other base inputs stay fixed.'),
         (a.unchanged.horizontal||a.unchanged.vertical)&&h('p',{className:'rn-energy-experiment-notice'},a.unchanged.horizontal&&a.unchanged.vertical?'Both selected inputs equal the reference. All four cases coincide.':(a.unchanged.horizontal?a.axes.x.label:a.axes.y.label)+' is unchanged from the reference. Two pairs of cases coincide; there is no extra combined effect.'),
         h('div',{className:'rn-energy-map-cases'},a.cases.map(function(c){return h('section',{key:c.key,className:'rn-energy-map-case','aria-label':__alloFill(__alloT('stem.renewables.a11y_explanation_case', 'Explanation case: {value1}'), { value1: c.label })},h('h5',null,c.label),h('p',null,a.axes.x.label+': '+fmt(c.settings[a.axes.x.key])+' '+a.axes.x.unit+' · '+a.axes.y.label+': '+fmt(c.settings[a.axes.y.key])+' '+a.axes.y.unit),h('strong',{className:'rn-energy-map-case-output'},fmt(c.result.value)+' '+a.unit),h('p',null,measure(c.delta)+' from reference'+(c.meetsTarget==null?'':c.meetsTarget?' · Target met':' · Below target')),h('p',{className:'rn-energy-muted'},c.result.status+(c.result.shutdownMinutes?' · '+c.result.shutdownMinutes+' min in protective shutdown':'')+(c.result.clippedMinutes?' · '+c.result.clippedMinutes+' min with a scenario input clamped':'')),btn('Inspect '+c.label.toLowerCase()+' in 3D',function(){props.onInspect(c.settings,a.profileId,a.phase);}));})),
@@ -7144,7 +7593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('label',{className:'rn-energy-experiment-writing'},'Prediction',h('textarea',{'aria-label':__alloT('stem.renewables.map_prediction','Map prediction'),maxLength:1500,value:typeof state.prediction==='string'?state.prediction:'',placeholder:__alloT('stem.renewables.which_combinations_will_help_and_where_might','Which combinations will help, and where might the output stop increasing?'),onChange:function(e){change({prediction:e.target.value});}})),
       config.error&&h('p',{role:'alert'},config.error),h('div',{className:'rn-energy-toolbar'},btn(result?'Run design map again':'Run design map',run,{disabled:!!config.error,'aria-label':'Run two-input design map'}),h('small',null,'Values follow control steps; duplicate samples are removed.')),
       pending&&h('p',{role:'status',className:'rn-energy-experiment-notice'},'Map setup changed. Run again to update the recorded combinations.'),
-      result&&h('div',{className:'rn-energy-experiment-results','aria-label':__alloT('stem.renewables.recorded_design_map','Recorded design map')},h('h3',null,result.config.x.label+' × '+result.config.y.label),h('p',null,result.profileName+' · '+result.xValues.length+' columns × '+result.yValues.length+' rows · '+result.rows.length+' recorded trials'),
+      result&&h('div',{ role: 'group',className:'rn-energy-experiment-results','aria-label':__alloT('stem.renewables.recorded_design_map','Recorded design map')},h('h3',null,result.config.x.label+' × '+result.config.y.label),h('p',null,result.profileName+' · '+result.xValues.length+' columns × '+result.yValues.length+' rows · '+result.rows.length+' recorded trials'),
         h('p',{className:'rn-energy-experiment-notice'},matches?'Workbench matches the map reference.':current?'Workbench shows map trial '+(current.index+1)+'.':explanationCase?'Workbench shows explanation case: '+explanationCase.label.toLowerCase()+'.':'Workbench conditions have changed. The map retains its recorded inputs.'),
         h('div',{className:'rn-energy-scenario-metrics'},h('div',null,h('small',null,'Recorded reference'),h('strong',null,fmt(result.reference.value)+' '+result.unit)),h('div',null,h('small',null,'Highest sampled output'),h('strong',null,fmt(result.peak)+' '+result.unit),h('small',null,result.highest.length+' trial'+(result.highest.length===1?'':'s')+' at this output')),h('div',null,h('small',null,result.config.target==null?'Sampled output range':'Trials meeting target'),h('strong',null,result.config.target==null?fmt(result.least)+'–'+fmt(result.peak)+' '+result.unit:result.targetMatches.length+' / '+result.rows.length))),
         h('p',{id:uid+'help',className:'rn-energy-muted'},'Columns: '+result.config.x.label+' ('+result.config.x.unit+'). Rows: '+result.config.y.label+' ('+result.config.y.unit+'). Each bar uses the same output scale. Select cells with the keyboard; focus the map region and use arrow keys to scroll on small screens.'),
@@ -7188,7 +7637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         entry&&h(React.Fragment,null,
           h('label',{className:'rn-energy-file-choice'},'Reading to open',h('select',{'aria-label':__alloT('stem.renewables.reading_to_open','Reading to open'),value:choice[0],onChange:function(event){choice[1](Number(event.target.value));}},data[0].entries.map(function(item,index){return h('option',{key:index,value:index},rnEnergySpec(item.id).name+' · '+(item.name||item.origin));}))),
           h('div',{className:'rn-energy-file-context'},h('strong',null,rnEnergySpec(entry.id).name),h('span',null,resolved.profileName+' · '+(entry.profileId!=='steady'||entry.id==='storage'?'minute ':'animation second ')+entry.phase)),
-          h('div',{className:'rn-energy-file-readings','aria-label':__alloT('stem.renewables.recalculated_file_readings','Recalculated file readings')},rnEnergyPathway(resolved.run).nodes.map(function(node){return h('div',{key:node.id},h('span',null,node.component),h('strong',null,rnEnergyReading(node.value)+' '+node.unit),h('small',null,node.label));})),
+          h('div',{ role: 'group',className:'rn-energy-file-readings','aria-label':__alloT('stem.renewables.recalculated_file_readings','Recalculated file readings')},rnEnergyPathway(resolved.run).nodes.map(function(node){return h('div',{key:node.id},h('span',null,node.component),h('strong',null,rnEnergyReading(node.value)+' '+node.unit),h('small',null,node.label));})),
           h('p',{className:'rn-energy-muted'},'Results are recalculated from the saved inputs using the current model.'),
           h('details',null,h('summary',null,'Review saved inputs and observation'),h('dl',{className:'rn-energy-file-inputs'},rnEnergySpec(entry.id).controls.map(function(control){return h('div',{key:control[0]},h('dt',null,control[1]),h('dd',null,String(entry.settings[control[0]])+' '+control[6]));})),h('p',{className:'rn-energy-saved-note'},entry.note||'No observation saved.')),
           entry.warnings.length>0&&h('ul',{className:'rn-energy-file-warnings'},entry.warnings.map(function(warning){return h('li',{key:warning},warning);})),
@@ -7251,7 +7700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('p',{className:'rn-energy-muted'},'Start from the saved baseline. For each changed input, replay a trial with only that input set to its current value. Every other input stays at its baseline value.'),
       h('div',{className:'rn-energy-toolbar'},h('label',{htmlFor:uid+'scope'},'Measure electricity over',h('select',{id:uid+'scope','aria-label':__alloT('stem.renewables.one_input_check_scope','One-input check scope'),value:scope,onChange:function(event){change({scope:event.target.value});}},h('option',{value:'scenario'},'Full scenario'),h('option',{value:'window'},'Selected comparison window'))),button(result?'Run one-input checks again':'Run one-input checks',run,{'aria-label':'Run one-input checks',disabled:!canRun})),
       h('p',{className:'rn-energy-muted'},!c?'Choose a baseline saved in the active operating scenario to run new checks.':window.empty?'The selected window has no operating minutes. Widen it before running checks.':c.changes.length===0?'The baseline and current inputs match. Change an input to test its effect.':'Ready: '+c.label+' · minute '+window.start+' → '+window.end+' · '+c.changes.length+' changed input'+(c.changes.length===1?'':'s')+'.'),
-      result&&h('div',{className:'rn-energy-check-results','aria-label':__alloT('stem.renewables.recorded_one_input_results','Recorded one-input results')},
+      result&&h('div',{ role: 'group',className:'rn-energy-check-results','aria-label':__alloT('stem.renewables.recorded_one_input_results','Recorded one-input results')},
         h('h3',null,'Recorded checks · '+result.label),h('p',{className:'rn-energy-muted'},(result.scope==='window'?'Selected window':'Full scenario')+' · minute '+result.start+' → '+result.end+' · baseline: '+(result.baselineName||'saved reading')),
         h('p',{className:'rn-energy-experiment-notice',role:'status'},matches?'These checks match the current comparison.':'The workbench or comparison scope has changed. These checks retain their recorded inputs and time window.'),
         h('div',{className:'rn-energy-scenario-metrics'},h('div',null,h('small',null,'Recorded baseline'),h('strong',{'data-check-total':'baseline'},rnEnergyReading(result.baselineDelivered)+' kWh')),h('div',null,h('small',null,'All changes together'),h('strong',{'data-check-total':'current'},rnEnergyReading(result.currentDelivered)+' kWh')),h('div',null,h('small',null,'Combined difference'),h('strong',{'data-check-total':'delta'},signed(result.totalDelta)+' kWh'))),
@@ -7261,7 +7710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           row.unserved!=null&&h('p',{className:'rn-energy-muted'},'Unserved scheduled demand: '+rnEnergyReading(row.unserved)+' kWh.'),
           button('Inspect this trial in 3D',function(){props.onInspect(row.settings,result.profileId,row.inspectMinute);},{'aria-label':__alloFill(__alloT('stem.renewables.a11y_inspect_isolated_in_3d', 'Inspect isolated {value1} in 3D'), { value1: row.label })}),h('small',null,'Minute '+row.inspectMinute+(row.largestPowerGap===0?' · no output gap in this period':' · largest absolute output gap for this trial'))); })),
         h('p',{className:'rn-energy-muted',style:{fontSize:12}},'Bars share one scale centered on zero. Left means less electricity; right means more. These separate trials are not additive shares of the combined change.'),
-        h('div',{className:'rn-energy-check-remainder','aria-label':__alloT('stem.renewables.combined_input_interaction','Combined-input interaction')},h('h4',null,'Do the separate effects add up?'),h('dl',null,[['Sum of separate effects',result.isolatedSum],['Combined difference',result.totalDelta],['Combined-input interaction',result.interaction]].map(function(pair){return h('div',{key:pair[0]},h('dt',null,pair[0]),h('dd',null,signed(pair[1])+' kWh'));})),h('p',null,result.rows.length===0?'The recorded inputs match, so there are no isolated changes.':result.rows.length===1?'There is only one changed input, so its isolated effect matches the combined change.':result.interaction===0?'The separate effects add up for these inputs and this period. Other settings may behave differently.':'The remainder is the combined difference minus the sum of separate effects. It reflects interactions when inputs change together, including model limits; it is not an additional energy source or a unique attribution to individual inputs.')),
+        h('div',{ role: 'group',className:'rn-energy-check-remainder','aria-label':__alloT('stem.renewables.combined_input_interaction','Combined-input interaction')},h('h4',null,'Do the separate effects add up?'),h('dl',null,[['Sum of separate effects',result.isolatedSum],['Combined difference',result.totalDelta],['Combined-input interaction',result.interaction]].map(function(pair){return h('div',{key:pair[0]},h('dt',null,pair[0]),h('dd',null,signed(pair[1])+' kWh'));})),h('p',null,result.rows.length===0?'The recorded inputs match, so there are no isolated changes.':result.rows.length===1?'There is only one changed input, so its isolated effect matches the combined change.':result.interaction===0?'The separate effects add up for these inputs and this period. Other settings may behave differently.':'The remainder is the combined difference minus the sum of separate effects. It reflects interactions when inputs change together, including model limits; it is not an additional energy source or a unique attribution to individual inputs.')),
         props.id==='storage'&&h('p',{className:'rn-energy-muted'},'Each battery trial follows the same charging and demand schedule from minute 0. Initial charge is a percentage: changing capacity can also change initially stored energy.'),
         h('div',{className:'rn-energy-toolbar'},button('Restore combined setup in 3D',function(){props.onInspect(result.currentSettings,result.profileId,result.phase);}),button('Inspect recorded baseline in 3D',function(){props.onInspect(result.baselineSettings,result.profileId,result.phase);}),button('Export one-input checks',props.onExport)),
         h('p',{className:'rn-energy-muted',style:{fontSize:12}},'Inspection loads the recorded settings, scenario, and minute. Saved notebook readings and observations stay intact; the recorded checks remain available.')));
@@ -7385,7 +7834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('p',{className:'rn-energy-muted',style:{fontSize:11,marginTop:8}},'The chart scrolls horizontally on small screens. Use the probe slider or a boundary button to inspect the full range.'),
       h('div',{className:'rn-energy-envelope-landmarks'},(result.thresholds||[]).map(function(t,i){return button(h(React.Fragment,null,t.label,h('b',null,(t.approximate?'≈ ':'')+fmt(t.x)+' '+control[6])),function(){select(t.x);},{key:i,'aria-label':'Probe '+t.label});})),
       h('div',{className:'rn-energy-envelope-probe'},h('label',{htmlFor:uid+'probe'},'Probe '+control[1].toLowerCase(),h('strong',null,precise(probe.x)+' '+control[6])),h('input',{id:uid+'probe',type:'range',min:result.axis.min,max:result.axis.max,step:'any',value:probe.x,'aria-label':tr('stem.renewables.probe_input_value','Probe input value'),'aria-valuetext':precise(probe.x)+' '+control[6]+', '+fmt(probe.power)+' kW',onChange:function(e){select(Number(e.target.value));}})),
-      h('div',{className:'rn-energy-envelope-readings','aria-label':tr('stem.renewables.current_and_probe_readings','Current and probe readings')},
+      h('div',{ role: 'group',className:'rn-energy-envelope-readings','aria-label':tr('stem.renewables.current_and_probe_readings','Current and probe readings')},
         h('div',null,h('small',null,'Current · '+precise(current.x)+' '+control[6]),h('strong',{'data-response-value':'current'},fmt(current.power)+' kW'),h('span',null,current.regimeLabel),storage&&h('span',null,fmt(current.stored)+' kWh stored')),
         h('div',null,h('small',null,'Probe · '+precise(probe.x)+' '+control[6]),h('strong',{'data-response-value':'probe'},fmt(probe.power)+' kW'),h('span',null,probe.regimeLabel+' · '+signed(probe.power-current.power)+' kW'),storage&&h('span',null,fmt(probe.stored)+' kWh stored'))),
       request.profileId!=='steady'&&h('p',{className:'rn-energy-muted'},'At scenario minute '+props.minute+'. The horizontal axis is the base input; scenario conditions are applied to each probe. Effective '+control[1].toLowerCase()+': '+precise(probe.effectiveX)+' '+control[6]+'.'),
@@ -7511,7 +7960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             playingState[1](false);clearInputUndo();var scenarios=Object.assign({},state.scenarios);scenarios[id]={profileId:e.target.value,minute:0};change({scenarios:scenarios});
           }},h('option',{value:'steady'},id==='storage'?'Original two-hour cycle':'Steady conditions'),(RN_ENERGY_PROGRAMS[id]||[]).map(function(p){return h('option',{value:p.id,key:p.id},p.name);})))),
         profile&&h('div',null,h('p',null,profile.prompt),
-          h('div',{className:'rn-energy-live-condition','aria-label':__alloT('stem.renewables.current_operating_condition','Current operating condition')},h('strong',null,profile.name+' · minute '+phase+' of '+duration),
+          h('div',{ role: 'group',className:'rn-energy-live-condition','aria-label':__alloT('stem.renewables.current_operating_condition','Current operating condition')},h('strong',null,profile.name+' · minute '+phase+' of '+duration),
             control?h('p',null,control[1]+': '+fmt(settings[control[0]])+' '+control[6]+' baseline → '+fmt(run.settings[control[0]])+' '+control[6]+' at this minute. '+(study.rows[phase].clipped?'The resource value is clipped to this control’s supported range.':''))
               :h('p',null,'Scheduled action: '+run.extra.mode+' · request '+fmt(run.extra.request)+' kW · battery power limit '+fmt(settings.power)+' kW. Charging offers and demand requests stay fixed when you change the battery.')),
           h('small',null,'Synthetic teaching sequence. '+(control?'The resource slider sets the baseline; this scenario scales it over time while holding all other inputs fixed.':'Charge, wait, and discharge intervals are prescribed; no weather or grid forecast is used.')),
@@ -7629,7 +8078,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               h('input',{id:uid+'phase',type:'range',min:0,max:duration,step:1,value:phase,'aria-label':profile?'Scenario minute':'Cycle minute',onChange:function(e){time(Number(e.target.value));}})),
             h('small',null,profile?'Synthetic conditions change with the selected minute. Playback is accelerated; energy is integrated in one-minute steps.':'0–60 min: charge. 60–120 min: discharge. Playback is accelerated; the calculation uses the labeled minutes.')):h('p',{className:'rn-energy-muted',style:{fontSize:12,marginTop:12}},'Steady conditions stay fixed until you change an input. Use the equipment animation control to inspect motion, or choose an operating scenario to explore changes over time.'),
           h(RenewablesEnergyMilestones,{React:React,t:rnT,study:study,phase:phase,onSelect:time,intervalState:intervalState,onIntervalChange:updateInterval,onExport:download}),
-          h('div',{className:'rn-energy-parts','aria-label':__alloT('stem.renewables.inspect_mechanism_components','Inspect mechanism components')},spec.components.map(function(c,i){return button((i+1)+'. '+c[1],function(){chooseComponent(c[0]);},selected===c[0],{key:c[0],'aria-label':__alloFill(__alloT('stem.renewables.a11y_inspect', 'Inspect {value1}'), { value1: c[1] })});})),
+          h('div',{ role: 'group',className:'rn-energy-parts','aria-label':__alloT('stem.renewables.inspect_mechanism_components','Inspect mechanism components')},spec.components.map(function(c,i){return button((i+1)+'. '+c[1],function(){chooseComponent(c[0]);},selected===c[0],{key:c[0],'aria-label':__alloFill(__alloT('stem.renewables.a11y_inspect', 'Inspect {value1}'), { value1: c[1] })});})),
           h(RenewablesEnergyComponentInspector,{React:React,t:rnT,id:id,uid:uid+'inspector',part:component[0],settings:settings,run:run,description:componentText,profile:profile,comparison:comparison,baselineName:readings.length?(readings[0].name||'First saved reading'):'',onSave:function(){playingState[1](false);save();setTimeout(function(){jumpTo('inspector');},0);},onNotebook:function(){jumpTo('notebook');},onSelect:chooseComponent,onControl:jumpTo,onNote:function(){jumpTo('note');}}))),
       h('section',{'aria-label':__alloT('stem.renewables.mechanism_measurements','Mechanism measurements')},
         h('div',{className:'rn-energy-metrics'},[
@@ -7711,7 +8160,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         h('div',null,btn(study?'Run outage study again':'Run outage study',run,{'aria-label':'Run outage timing study'}))),
       h('p',{className:'rn-energy-muted'},'Every case replays from minute zero. Grid backup is available before and after the outage. There is no automatic precharging from the grid. Starts are rounded to whole minutes and duplicates are removed.'),
       (changed||pending)&&h('p',{className:'rn-outage-notice',role:'status'},changed?'System inputs changed. This study retains the recorded design. Run again to test the current system.':'Study setup changed. Run again to update these results.'),
-      study&&h('div',{'aria-label':__alloT('stem.renewables.outage_study_results','Outage study results')},
+      study&&h('div',{ role: 'group','aria-label':__alloT('stem.renewables.outage_study_results','Outage study results')},
         h('p',{role:'status'},study.samples.length+' outage starts × 3 strategies = '+study.samples.length*3+' cases. Each outage lasts '+study.config.minutes+' minutes.'),
         h('p',{className:'rn-energy-muted'},'Counts describe sampled cases, not outage probabilities or a reliability guarantee. Percentages below measure demand served during each outage.'),
         h('div',{className:'rn-outage-summary'},study.strategies.map(function(s){return h('article',{key:s.policy},h('h3',null,s.name),
@@ -7785,7 +8234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('p',{className:'rn-energy-muted'},'Local demand coverage counts direct generation plus battery discharge; grid imports do not count. Initial battery energy has no assigned source, so local coverage is not a renewable-energy percentage.'),
       changed&&h('p',{className:'rn-outage-notice',role:'status'},'System inputs changed. These battery designs retain the recorded conditions. Run again to compare the current system.'),
       pending&&h('p',{className:'rn-outage-notice',role:'status'},'Design setup changed. Run again to apply the new ranges, target, or starting charge comparison.'),
-      study&&h('div',{'aria-label':__alloT('stem.renewables.battery_design_results','Battery design results')},
+      study&&h('div',{ role: 'group','aria-label':__alloT('stem.renewables.battery_design_results','Battery design results')},
         h('p',{role:'status'},study.samples.length+' sampled designs · '+study.passing+' meet the '+fmt(study.config.target)+'% local coverage target.'),
         study.baseline.coverage===null&&h('p',null,'No demand in this sequence. Coverage and target results are not evaluated.'),
         study.clipped>0&&h('p',null,study.clipped+' designs cap starting energy because their bank cannot hold the recorded '+fmt(study.baseline.initialStored)+' kWh.'),
@@ -7793,7 +8242,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('article',null,h('h3',null,'Recorded bank'),h('strong',null,coverage(study.baseline)),h('p',null,'local demand coverage'),h('small',null,fmt(study.baseline.capacity)+' kWh · '+fmt(study.baseline.power)+' kW'),h('small',null,fmt(study.baseline.initialStored)+' kWh at the start')),
           h('article',null,h('h3',null,'Designs meeting the target'),h('strong',null,study.passing+' / '+study.samples.length),h('p',null,'at least '+fmt(study.config.target)+'% local coverage'),h('small',null,'Same '+study.settings.duration+'-minute sequence for every design')),
           h('article',null,h('h3',null,'Compact options'),h('strong',null,study.frontier.length),h('p',null,'sampled capacity–power trade-offs'),h('small',null,'No other passing design uses no more of both ratings and less of at least one.'))),
-        study.frontier.length>0&&h('div',{className:'rn-energy-toolbar rn-design-options','aria-label':__alloT('stem.renewables.compact_battery_options','Compact battery options')},study.frontier.map(function(i){var e=study.samples[i];return btn(fmt(e.capacity)+' kWh / '+fmt(e.power)+' kW',function(){inspect(i);},{key:i,'aria-label':__alloFill(__alloT('stem.renewables.a11y_inspect_compact_design_kwh_kw', 'Inspect compact design {value1}: {value2} kWh, {value3} kW'), { value1: i, value2: fmt(e.capacity), value3: fmt(e.power) })});})),
+        study.frontier.length>0&&h('div',{ role: 'group',className:'rn-energy-toolbar rn-design-options','aria-label':__alloT('stem.renewables.compact_battery_options','Compact battery options')},study.frontier.map(function(i){var e=study.samples[i];return btn(fmt(e.capacity)+' kWh / '+fmt(e.power)+' kW',function(){inspect(i);},{key:i,'aria-label':__alloFill(__alloT('stem.renewables.a11y_inspect_compact_design_kwh_kw', 'Inspect compact design {value1}: {value2} kWh, {value3} kW'), { value1: i, value2: fmt(e.capacity), value3: fmt(e.power) })});})),
         study.passing===0&&study.baseline.coverage!==null&&h('p',null,'No sampled design meets this target. Explore a wider range, more generation, a different demand profile, or another battery strategy.'),
         h('p',null,'Choose a cell to restore its recorded conditions and inspect the first local supply shortfall in 3D. Compact labels describe this sample only; they do not establish cost or an optimal installation.'),
         entry&&h('div',{className:'rn-outage-matrix rn-design-matrix',role:'region',tabIndex:0,'aria-label':__alloT('stem.renewables.battery_capacity_and_power_comparison','Battery capacity and power comparison')},h('table',null,
@@ -7840,7 +8289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         h('p',null,'From '+f.fromStart+'–'+(f.fromStart+f.fromMinutes)+' min → '+f.toStart+'–'+(f.toStart+f.toMinutes)+' min. Windows stay within this '+s.duration+'-minute sequence; their end minutes are excluded.'),
         h('p',{className:'rn-energy-muted'},'Short receiving windows can increase the peak load. This schedule is prescribed; it does not automatically find the best time or cancel unmet demand.'),
         summary.overlapMinutes>0&&h('p',{className:'rn-outage-notice'},'The windows overlap for '+summary.overlapMinutes+' minutes. Increases and decreases in those minutes can cancel. The timing-change total below accounts for that.'),
-        h('div',{className:'rn-energy-scenario-metrics','aria-label':__alloT('stem.renewables.demand_shifting_summary','Demand shifting summary')},
+        h('div',{ role: 'group',className:'rn-energy-scenario-metrics','aria-label':__alloT('stem.renewables.demand_shifting_summary','Demand shifting summary')},
           h('div',null,h('small',null,'Requested energy'),h('strong',null,fmt(summary.scheduledEnergy)+' kWh'),h('small',null,'Original: '+fmt(summary.baselineEnergy)+' kWh')),
           h('div',null,h('small',null,'Energy moved between minutes'),h('strong',null,fmt(summary.netShiftedEnergy)+' kWh'),h('small',null,fmt(summary.allocatedEnergy)+' kWh selected from the source window')),
           h('div',null,h('small',null,'Peak scheduled demand'),h('strong',null,fmt(summary.scheduledPeak)+' kW'),h('small',null,'Original peak: '+fmt(summary.baselinePeak)+' kW'))),
@@ -7871,7 +8320,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('div',{className:'rn-energy-toolbar'},h('div',null,h('div',{className:'rn-energy-kicker'},'Reliability diagnostics'),h('h3',null,'Find and explain supply gaps')),btn('Export gap episodes CSV',function(){csv(false);})),
       h('p',null,'Find continuous periods when generation and battery discharge cannot cover demand. Grid backup may serve a local supply gap; an unserved gap means demand remains unmet. Results follow the current system as you change it.'),
       h('div',{className:'rn-gap-controls'},select('Gaps to investigate','scope',[['local','All local supply gaps'],['unserved','Unserved demand only']]),select('Sort supply gaps','sort',[['energy','Largest gap energy'],['duration','Longest duration'],['time','Earliest first']])),
-      h('div',{className:'rn-energy-scenario-metrics','aria-label':__alloT('stem.renewables.supply_gap_summary','Supply gap summary')},
+      h('div',{ role: 'group',className:'rn-energy-scenario-metrics','aria-label':__alloT('stem.renewables.supply_gap_summary','Supply gap summary')},
         h('div',null,h('small',null,v.scope==='local'?'Local gap episodes':'Unserved gap episodes'),h('strong',null,v.episodes.length),h('small',null,'Consecutive one-minute intervals')),
         h('div',null,h('small',null,'Longest episode'),h('strong',null,longest+' min'),h('small',null,'Within this '+a.duration+'-minute sequence')),
         h('div',null,h('small',null,v.scope==='local'?'Total local gap':'Total unserved energy'),h('strong',null,fmt(energy)+' kWh'),h('small',null,fmt(a.totals.grid)+' kWh supplied by grid; '+fmt(a.totals.unserved)+' kWh unserved in the full sequence'))),
@@ -7885,7 +8334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('p',{className:'rn-energy-muted'},'Blocks show gap duration, not power. An outlined block is selected. End minutes are excluded; grid-covered intervals remain in the top lane.'),
       !v.episodes.length&&h('p',{role:'status',className:'rn-gap-empty'},a.demand===0?'No demand is scheduled, so there are no supply gaps.':v.scope==='unserved'?'All demand is served in this replay. Switch to all local supply gaps to see where grid backup was needed.':'Generation and battery discharge cover demand in every interval of this replay.'),
       v.episodes.length>0&&h(props.React.Fragment,null,
-        h('div',{className:'rn-gap-episodes','aria-label':__alloT('stem.renewables.supply_gap_periods','Supply gap periods')},v.visible.map(function(e){var value=v.scope==='local'?e.localGap:e.unserved;return btn(h(props.React.Fragment,null,h('strong',null,e.start+'–'+e.end+' min'),h('span',null,e.minutes+' min · '+fmt(value)+' kWh '+(v.scope==='local'?'local gap':'unserved'))),function(){change({selected:e.key});},{key:e.key,'aria-pressed':selected&&e.key===selected.key,'aria-label':__alloFill(__alloT('stem.renewables.a11y_select_gap_from_to_minutes_kwh', 'Select {value1} gap from {value2} to {value3} minutes, {value4} kWh'), { value1: v.scope, value2: e.start, value3: e.end, value4: fmt(value) })});})),
+        h('div',{ role: 'group',className:'rn-gap-episodes','aria-label':__alloT('stem.renewables.supply_gap_periods','Supply gap periods')},v.visible.map(function(e){var value=v.scope==='local'?e.localGap:e.unserved;return btn(h(props.React.Fragment,null,h('strong',null,e.start+'–'+e.end+' min'),h('span',null,e.minutes+' min · '+fmt(value)+' kWh '+(v.scope==='local'?'local gap':'unserved'))),function(){change({selected:e.key});},{key:e.key,'aria-pressed':selected&&e.key===selected.key,'aria-label':__alloFill(__alloT('stem.renewables.a11y_select_gap_from_to_minutes_kwh', 'Select {value1} gap from {value2} to {value3} minutes, {value4} kWh'), { value1: v.scope, value2: e.start, value3: e.end, value4: fmt(value) })});})),
         h('div',{className:'rn-energy-toolbar'},btn('Previous gap periods',function(){change({page:v.page-1,selected:null});},{disabled:v.page===0}),h('span',{role:'status'},'Periods '+(v.page*8+1)+'–'+Math.min(v.episodes.length,(v.page+1)*8)+' of '+v.episodes.length),btn('Next gap periods',function(){change({page:v.page+1,selected:null});},{disabled:v.page>=v.pages-1}))),
       selected&&h('section',{className:'rn-gap-detail','aria-label':__alloT('stem.renewables.selected_supply_gap','Selected supply gap')},
         h('h3',null,(v.scope==='local'?'Local supply gap':'Unserved demand')+' · '+selected.start+'–'+selected.end+' min'),
@@ -7939,7 +8388,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         h('p',{className:'rn-energy-muted'},'Map blocks show duration, not power or energy. End minutes are excluded. Choose a period to move the comparison cursor to its selected moment.'),
         !v.episodes.length&&h('p',{role:'status'},pair.a.totals.demand===0?'No demand in the recorded sequence, so there are no change periods.':pair.periods.episodes.length?'No periods match this filter.':'No interval has a meaningful unmet-demand difference. Imports and storage may still differ.'),
         v.episodes.length>0&&h(props.React.Fragment,null,
-          h('div',{className:'rn-grid-period-list','aria-label':__alloT('stem.renewables.change_period_choices','Change period choices')},v.visible.map(function(p){return btn(h(props.React.Fragment,null,h('strong',null,(p.kind==='improved'?'B helps':'B worsens')+' · '+p.start+'–'+p.end+' min'),h('span',null,fmt(p.magnitude)+' kWh '+(p.kind==='improved'?'avoided':'added')+' · '+p.minutes+' min')),function(){update({selected:p.key},true);},{key:p.key,'aria-label':__alloFill(__alloT('stem.renewables.a11y_select_period_from_to_minutes', 'Select {value1} period from {value2} to {value3} minutes'), { value1: p.kind, value2: p.start, value3: p.end }),'aria-pressed':e&&p.key===e.key});})),
+          h('div',{ role: 'group',className:'rn-grid-period-list','aria-label':__alloT('stem.renewables.change_period_choices','Change period choices')},v.visible.map(function(p){return btn(h(props.React.Fragment,null,h('strong',null,(p.kind==='improved'?'B helps':'B worsens')+' · '+p.start+'–'+p.end+' min'),h('span',null,fmt(p.magnitude)+' kWh '+(p.kind==='improved'?'avoided':'added')+' · '+p.minutes+' min')),function(){update({selected:p.key},true);},{key:p.key,'aria-label':__alloFill(__alloT('stem.renewables.a11y_select_period_from_to_minutes', 'Select {value1} period from {value2} to {value3} minutes'), { value1: p.kind, value2: p.start, value3: p.end }),'aria-pressed':e&&p.key===e.key});})),
           h('div',{className:'rn-energy-toolbar'},btn('Previous change periods',function(){update({page:v.page-1,selected:null},false);},{disabled:v.page===0}),h('span',{role:'status'},'Periods '+(v.page*6+1)+'–'+Math.min(v.episodes.length,v.page*6+6)+' of '+v.episodes.length),btn('Next change periods',function(){update({page:v.page+1,selected:null},false);},{disabled:v.page>=v.pages-1}))),
         e&&h('section',{className:'rn-outage-case','aria-label':__alloT('stem.renewables.selected_change_period','Selected change period')},h('h4',null,(e.kind==='improved'?'B improves coverage':'B worsens coverage')+' · '+e.start+'–'+e.end+' min'),
           h('p',null,fmt(e.magnitude)+' kWh '+(e.kind==='improved'?'less':'more')+' unserved energy in B across '+e.minutes+' minute intervals. Largest difference: '+fmt(e.peakDifference)+' kW at minute '+e.peakMinute+'.'),
@@ -8043,7 +8492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('p',{className:'rn-energy-muted'},'Demand served includes grid imports. The target measures energy over the full sequence; a passing case may still have brief shortfalls. Equal range endpoints test one rating.'),
       changed&&h('p',{className:'rn-outage-notice',role:'status'},'System inputs changed. This grid experiment retains its recorded conditions. Run again to test the current system.'),
       pending&&h('p',{className:'rn-outage-notice',role:'status'},'Experiment setup changed. Run again to apply the new range, sample count, or target.'),
-      study&&h('div',{'aria-label':__alloT('stem.renewables.grid_capacity_experiment_results','Grid capacity experiment results')},
+      study&&h('div',{ role: 'group','aria-label':__alloT('stem.renewables.grid_capacity_experiment_results','Grid capacity experiment results')},
         h('p',{role:'status'},study.samples.length+' tested ratings × 3 strategies · '+study.duration+' minutes · '+fmt(study.config.target)+'% demand served target.'),
         study.baseline.coverage===null&&h('p',null,'No demand in this recorded sequence. Coverage and targets are not evaluated.'),
         study.settings.grid==='island'&&h('p',null,'The recorded system is islanded. Grid ratings have no effect while grid backup is unavailable.'),
@@ -8081,7 +8530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     function btn(label,action,extra){return h('button',Object.assign({type:'button',onClick:action},extra||{}),label);}
     return h('details',{id:props.uid,className:'rn-energy-panel rn-grid-review',tabIndex:-1,'aria-label':__alloT('stem.renewables.grid_connection_review','Grid connection review'),open:props.open===true,onToggle:function(e){if(e.currentTarget.open!==(props.open===true))props.onToggle(e.currentTarget.open);}},
       h('summary',null,'Grid connection review'),
-      h('div',{'aria-label':__alloT('stem.renewables.grid_connection_results','Grid connection results')},
+      h('div',{ role: 'group','aria-label':__alloT('stem.renewables.grid_connection_results','Grid connection results')},
         h('h3',null,'Can the connection cover the remaining demand?'),
         h('p',null,s.grid==='island'?'This system is islanded: grid imports are zero. A configured import limit is retained for when grid backup is available.':s.gridLimit.enabled?'The connection can import up to '+fmt(s.gridLimit.power)+' kW while the grid is available.':'Grid imports are unlimited while the grid is available in this teaching model.'),
         h('div',{className:'rn-energy-scenario-metrics'},
@@ -8170,11 +8619,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         h('circle',{cx:300,cy:172,r:10,fill:'#f9e394',stroke:'#102b39',strokeWidth:3}),
         nodes.map(function(n){var isSelected=n.id===selected;return h('g',{key:n.id,className:'rn-dispatch-node','data-dispatch-node':n.id,role:'button',tabIndex:0,focusable:true,'aria-pressed':isSelected,'aria-label':'Select '+nodeName(n)+': '+fmt(n.number)+' '+(n.unit||'kW'),onClick:function(){choose(n.id);},onKeyDown:function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();choose(n.id);}}},h('rect',{x:n.x,y:n.y,width:n.w,height:84,rx:10,fill:isSelected?'#244957':'#153744',stroke:isSelected?n.color:'#4c707d',strokeWidth:isSelected?2:1}),equipment(n),h('text',{x:n.x+13,y:n.y+21,fill:'#d5e8eb',fontSize:11},n.label),h('text',{x:n.x+13,y:n.y+45,fill:n.color,fontSize:20,fontWeight:650},fmt(n.number)+' '+(n.unit||'kW')),h('text',{x:n.x+13,y:n.y+65,fill:'#bed6dc',fontSize:9},n.note),n.id==='battery'&&h('g',{'aria-hidden':true},h('rect',{x:n.x+13,y:n.y+74,width:n.w-26,height:3,rx:1.5,fill:'#52717d'}),h('rect',{x:n.x+13,y:n.y+74,width:(n.w-26)*Math.min(100,Math.max(0,soc))/100,height:3,rx:1.5,fill:n.color}),result.capacity>0&&h('line',{x1:n.x+13+(n.w-26)*floorPercent/100,x2:n.x+13+(n.w-26)*floorPercent/100,y1:n.y+71,y2:n.y+80,stroke:'#fff5c9',strokeWidth:2})));}))),
       h('style',null,'.rn-dispatch-scale{font-size:11px;line-height:1.6;color:#bdd7dd;padding:10px 18px 0;margin:0!important}.rn-dispatch-mobile{display:none}.rn-dispatch-mobile-head{padding:12px;border:1px solid #587b86;border-radius:9px;background:#173b48}.rn-dispatch-mobile strong{font-variant-numeric:tabular-nums}.rn-dispatch-mobile-head strong{display:block;font-size:23px;color:#92e9c6}.rn-dispatch-mobile small{display:block;color:#bdd7dd!important;font-size:11px}.rn-dispatch-mobile ul{list-style:none;padding:0;margin:10px 0}.rn-dispatch-mobile li{margin:7px 0;font-size:12px}.rn-dispatch-board .rn-dispatch-mobile li button{display:block;width:100%;padding:10px;min-height:58px;border:1px solid #4f7580;border-radius:8px;background:#143340;color:#edf7f5;text-align:left;box-sizing:border-box;white-space:normal}.rn-dispatch-board .rn-dispatch-mobile li button[aria-pressed=true]{border-color:#b7e9ed;background:#214956}.rn-dispatch-board button:focus-visible{outline:3px solid #fff5c9;outline-offset:3px}.rn-dispatch-meter-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:12px;line-height:1.4}.rn-dispatch-meter-heading strong{white-space:nowrap;color:#f9e394}.rn-dispatch-mobile li[data-inactive=true] .rn-dispatch-meter-heading,.rn-dispatch-mobile li[data-inactive=true] strong{color:#b6cdd3}.rn-dispatch-meter{display:block;height:7px;margin-top:9px;border-radius:5px;background:#405f6b;overflow:hidden}.rn-dispatch-meter-fill{display:block;position:relative;overflow:hidden;height:100%;background:#f9e394;border-radius:5px}.rn-dispatch-mobile-pulse{position:absolute;inset:0;display:block;background:repeating-linear-gradient(90deg,transparent 0,transparent 12px,#fffbea 12px,#fffbea 16px,transparent 16px,transparent 32px);animation:rn-dispatch-meter-travel 1.2s linear infinite}.rn-dispatch-mobile-demand{padding:12px;border-left:3px solid #f9e394;background:#173b48;font-size:12px}.rn-dispatch-mobile-demand strong{display:block;font-size:21px;color:#f9e394;margin:4px 0}.rn-dispatch-reserve{margin:8px 18px 14px;padding:12px;border:1px solid #587b86;border-radius:8px;background:#173b48;font-size:11px;color:#d5e8eb}.rn-dispatch-reserve p{margin:0!important;line-height:1.6}.rn-dispatch-reserve strong{color:#b7e9ed;font-variant-numeric:tabular-nums}.rn-dispatch-reserve-track{position:relative;height:8px;background:#52717d;border-radius:4px;margin:10px 2px}.rn-dispatch-reserve-fill{display:block;height:100%;background:#b7e9ed;border-radius:4px}.rn-dispatch-reserve-marker{position:absolute;top:-3px;bottom:-3px;border-left:3px solid #fff5c9;transform:translateX(-1.5px)}@keyframes rn-dispatch-meter-travel{to{background-position:32px 0}}@media(max-width:600px){.rn-dispatch-diagram{display:none}.rn-dispatch-mobile{display:block;padding:14px}.rn-dispatch-reserve{margin:0 14px 14px}.rn-dispatch-scale{padding:10px 14px 0}}'),
-      h('div',{className:'rn-dispatch-mobile','aria-label':tr('stem.renewables.compact_electricity_routing','Compact electricity routing')},
+      h('div',{ role: 'group',className:'rn-dispatch-mobile','aria-label':tr('stem.renewables.compact_electricity_routing','Compact electricity routing')},
         h('div',{className:'rn-dispatch-mobile-head'},h('small',null,'RENEWABLE GENERATION'),h('strong',null,fmt(power('generation'))+' kW'),h('small',null,rnEnergySpec(s.source).name+' '+fmt(power('primaryGeneration'))+' kW'+(s.companion.enabled?' + '+rnEnergySpec(s.companion.source).name+' '+fmt(power('companionGeneration'))+' kW':''))),
         h('ul',null,[['direct','Generation → demand','demand',['source','companion','demand']],['charge','Generation → battery','battery',['battery']],['curtailed','Generation → unused','curtailed',['curtailed']],['discharge','Battery → demand','battery',['battery','demand']],['grid','Grid → demand','grid',['grid','demand']]].map(mobileFlow)),
         h('div',{className:'rn-dispatch-mobile-demand'},'Demand supplied',h('strong',null,fmt(served)+' / '+fmt(power('demand'))+' kW'),h('span',null,power('unserved')>0?fmt(power('unserved'))+' kW remains unserved':complete?'Sequence complete':power('demand')===0?'No demand in this interval':'Demand fully covered'),h('div',{className:'rn-dispatch-coverage','aria-hidden':true},h('span',{style:{width:power('demand')>0?100*served/power('demand')+'%':'0%'}})),h('small',null,'Battery: '+fmt(r.stored)+' kWh stored · '+fmt(soc)+'% charged'))),
-      h('div',{className:'rn-dispatch-reserve','aria-label':tr('stem.renewables.battery_state_and_discharge_floor','Battery state and discharge floor'),'data-dispatch-reserve':true,'data-stored-kwh':r.stored,'data-floor-kwh':r.reserve,'data-capacity-kwh':result.capacity},
+      h('div',{ role: 'group',className:'rn-dispatch-reserve','aria-label':tr('stem.renewables.battery_state_and_discharge_floor','Battery state and discharge floor'),'data-dispatch-reserve':true,'data-stored-kwh':r.stored,'data-floor-kwh':r.reserve,'data-capacity-kwh':result.capacity},
         h('p',null,h('strong',null,fmt(r.stored)+' / '+fmt(result.capacity)+' kWh stored'),result.capacity>0?' · '+fmt(soc)+'% charged':' · No battery installed'),
         result.capacity>0&&h('div',{className:'rn-dispatch-reserve-track','aria-hidden':true},h('span',{className:'rn-dispatch-reserve-fill',style:{width:Math.max(0,Math.min(100,soc))+'%'}}),h('i',{className:'rn-dispatch-reserve-marker',style:{left:floorPercent+'%'}})),
         h('p',null,result.capacity>0?'Discharge floor: '+fmt(r.reserve)+' kWh ('+fmt(floorPercent)+'% of capacity). The pale tick marks the floor set by the current strategy and grid state.':'Set battery units above zero to add storage.'),
@@ -8267,7 +8716,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('style',null,RN_ENERGY_CSS+RN_MICROGRID_CSS+RN_OUTAGE_STUDY_CSS+RN_BATTERY_DESIGN_CSS+RN_DEMAND_SHIFT_CSS+RN_SUPPLY_GAP_CSS+RN_GRID_STUDY_CSS+RN_GRID_PAIR_CSS+RN_GRID_PERIOD_CSS+RN_GRID_LIMIT_CSS),
       h('div',{className:'rn-energy-top'},h('div',null,h('div',{className:'rn-energy-kicker'},'Renewables Lab / local energy systems'),h('h2',null,'Storage & demand lab')),h('div',{className:'rn-energy-toolbar'},btn('Grid connection review',function(){change({gridReviewOpen:true});setTimeout(function(){var panel=document.getElementById(uid+'gridReview');if(panel){panel.scrollIntoView({block:'start'});panel.focus({preventScroll:true});}},0);}),btn('Supply gap explorer',function(){var panel=document.getElementById(uid+'gapExplorer');if(panel){panel.scrollIntoView({block:'start'});panel.focus({preventScroll:true});}}),btn('Demand shifting',function(){var panel=document.getElementById(uid+'flexLab');if(panel){panel.scrollIntoView({block:'start'});panel.focus({preventScroll:true});}}),btn('Battery design bench',function(){var panel=document.getElementById(uid+'designStudy');if(panel){panel.scrollIntoView({block:'start'});panel.focus({preventScroll:true});}}),btn('Outage timing study',function(){var panel=document.getElementById(uid+'outageStudy');if(panel){panel.scrollIntoView({block:'start'});panel.focus({preventScroll:true});}}),btn('← 3D workbenches',props.onBack),btn('Lab library',props.onLibrary))),
       h('p',{className:'rn-energy-muted'},'Connect up to two renewable sources to a load and a battery bank. Follow each minute of generation, storage, grid backup, and unmet demand.'),
-      h('div',{className:'rn-energy-toolbar rn-mg-presets','aria-label':__alloT('stem.renewables.starter_systems','Starter systems')},h('strong',null,'Try a system'),btn('Clouds and a battery',function(){preset('clouds');}),btn('Rising demand later',function(){preset('evening');}),btn('A grid outage',function(){preset('outage');}),btn('Solar + wind',function(){preset('hybrid');}),btn('Shift demand into daylight',function(){preset('flex');}),btn('Explain a supply gap',function(){preset('gaps');}),btn('Limited grid backup',function(){preset('gridlimit');})),
+      h('div',{ role: 'group',className:'rn-energy-toolbar rn-mg-presets','aria-label':__alloT('stem.renewables.starter_systems','Starter systems')},h('strong',null,'Try a system'),btn('Clouds and a battery',function(){preset('clouds');}),btn('Rising demand later',function(){preset('evening');}),btn('A grid outage',function(){preset('outage');}),btn('Solar + wind',function(){preset('hybrid');}),btn('Shift demand into daylight',function(){preset('flex');}),btn('Explain a supply gap',function(){preset('gaps');}),btn('Limited grid backup',function(){preset('gridlimit');})),
       h('div',{className:'rn-mg-layout'},
         h('div',null,
           h('section',{className:'rn-energy-panel rn-mg-form','aria-label':__alloT('stem.renewables.generation_setup','Generation setup')},h('h3',null,'1. Generation'),
@@ -8309,7 +8758,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           scene==='flow'&&h(RenewablesMicrogridFlow,{React:React,t:rnT,uid:uid,result:result,row:row,onPause:function(){playingPair[1](false);},onInspect:function(target){partPair[1]('converter');change({scene:target});}}),
           scene!=='flow'&&h('div',{id:uid+'outageScene',className:'rn-energy-stage',tabIndex:-1},h(RenewablesEnergyScene,{React:React,t:rnT,id:scene==='battery'?'storage':scene==='companion'?s.companion.source:s.source,run:scene==='battery'?row.batteryRun:scene==='companion'?row.companionRun:row.sourceRun,phase:minute,selected:partPair[0],onPick:partPair[1]}),
             h('div',{className:'rn-energy-scene-note'},scene==='battery'?'Schematic bank of '+s.batteryUnits+' identical units · fill shows bank state of charge':scene==='companion'?(s.companion.sourceUnits?'One of '+s.companion.sourceUnits+' second-source units':'Second-source mechanism preview · zero installed units')+' · '+companionSpec.name:'One of '+s.sourceUnits+' primary generation units · '+spec.name)),
-          scene!=='flow'&&h(React.Fragment,null,h('div',{className:'rn-energy-parts'},parts.map(function(p){return btn('Inspect '+p[1],function(){partPair[1](p[0]);},{key:p[0],'aria-pressed':partPair[0]===p[0]});})),h('div',{className:'rn-energy-component','aria-label':__alloT('stem.renewables.microgrid_component_explanation','Microgrid component explanation')},h('h3',null,part[1]),h('p',null,part[2]))),
+          scene!=='flow'&&h(React.Fragment,null,h('div',{className:'rn-energy-parts'},parts.map(function(p){return btn('Inspect '+p[1],function(){partPair[1](p[0]);},{key:p[0],'aria-pressed':partPair[0]===p[0]});})),h('div',{ role: 'group',className:'rn-energy-component','aria-label':__alloT('stem.renewables.microgrid_component_explanation','Microgrid component explanation')},h('h3',null,part[1]),h('p',null,part[2]))),
           h('div',{className:'rn-energy-time'},h('div',{className:'rn-energy-toolbar'},btn(playing?'Pause energy system':'Play energy system',function(){if(!playing&&minute>=result.duration)props.onChange(Object.assign({},state,{minute:0}));playingPair[1](!playing);},{'aria-pressed':playing}),btn('Step energy system',function(){time(minute+1);}),h('strong',null,'Minute '+minute+' / '+result.duration)),
             slider('Energy system minute',minute,0,result.duration,1,'min',time),
             h('small',null,minute===result.duration?'Sequence complete. This endpoint adds no energy.':'Power is averaged over the following minute; stored energy is measured at this boundary. Playback is accelerated.')),
@@ -8473,7 +8922,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         var shape=new THREE.Shape();outline.forEach(function(p,i){if(i===0)shape.moveTo(p[0],-p[1]);else shape.lineTo(p[0],-p[1]);});shape.closePath();
         var land=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.45,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.12,bevelThickness:.12}),new THREE.MeshStandardMaterial({color:'#47786b',roughness:1}));
         land.rotation.x=-Math.PI/2;land.position.y=-.1;scene.add(land);
+        var landShaderClock=1.4,landHc=_rnIsHighContrast(container);
+        var landSharedUniforms={uTime:{value:1.4},uSun:{value:.75},uFlow:{value:.8},uHc:{value:landHc?1:0}};
         var water=box(scene,0,-.55,0,25,.24,15,'#153f53');water.material.roughness=.28;water.material.metalness=.3;
+        var oceanCausticMat=_rnCreateOceanGerstnerMat(THREE,landHc),oceanCausticMesh=null;
+        if(oceanCausticMat){
+          oceanCausticMesh=new THREE.Mesh(new THREE.PlaneGeometry(25,15,56,34),oceanCausticMat);
+          oceanCausticMesh.rotation.x=-Math.PI/2;oceanCausticMesh.position.y=-.422;oceanCausticMesh.visible=!landHc;
+          scene.add(oceanCausticMesh);
+        }
+        var landWindRibbons=[];
+        [[-5.2,2.8,-1.2],[.4,2.8,1.5],[5.2,2.8,-1.0]].forEach(function(wp,wi){
+          var rwMat=_rnCreateWindRibbonMat(THREE,'#bae6fd',false,landHc);
+          if(!rwMat)return;
+          var rwMesh=new THREE.Mesh(new THREE.PlaneGeometry(4.4,.22,28,1),rwMat);
+          rwMesh.position.set(wp[0],wp[1],wp[2]);rwMesh.rotation.x=-.35;rwMesh.rotation.y=(wi-1)*.25;rwMesh.visible=!landHc;
+          scene.add(rwMesh);landWindRibbons.push({mesh:rwMesh,mat:rwMat,regionIdx:wi*2});
+        });
         // Shallow coastal shelves keep the boundary readable without implying geographic precision.
         [1.012,1.035].forEach(function(scale){line(outline.concat([outline[0]]).map(function(p){return [p[0]*scale,-.40,p[1]*scale];}),'#447e8b');});
         line(outline.concat([outline[0]]).map(function(p){return [p[0],.47,p[1]];}),'#8ebdab');
@@ -8506,9 +8971,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           group.traverse(function(o){if(o.isMesh||o.isSprite){o.userData.rnRegion=r.id;pickables.push(o);}});
           var curve=new THREE.QuadraticBezierCurve3(new THREE.Vector3(r.x,.73,r.z),new THREE.Vector3((r.x+2.6)/2,2.6+Math.abs(r.x-2.6)*.08,(r.z+1.1)/2),new THREE.Vector3(2.6,.98,1.1));
           var route=new THREE.Mesh(new THREE.TubeGeometry(curve,28,.031,5,false),new THREE.MeshBasicMaterial({color:'#528495',transparent:true,opacity:.75}));route.name='Regional link: '+r.id;scene.add(route);
+          var pulseMat=_rnCreatePowerPulseMat(THREE,'#74f5d6',landHc),pulseMesh=null;
+          if(pulseMat){pulseMesh=new THREE.Mesh(new THREE.TubeGeometry(curve,36,.072,6,false),pulseMat);pulseMesh.visible=!landHc;scene.add(pulseMesh);}
           var arrows=[];for(var a=0;a<3;a++){var arrow=new THREE.Mesh(new THREE.ConeGeometry(.095,.29,8),new THREE.MeshBasicMaterial({color:'#74f5d6'}));arrow.name='Transfer direction: '+r.id+' '+a;scene.add(arrow);arrows.push(arrow);}
           var outage=new THREE.Group();var crossA=box(outage,0,0,0,.48,.07,.08,'#ff867c'),crossB=box(outage,0,0,0,.48,.07,.08,'#ff867c');crossA.rotation.z=Math.PI/4;crossB.rotation.z=-Math.PI/4;outage.position.copy(curve.getPoint(.5));scene.add(outage);
-          links.push({mesh:route,index:i,curve:curve,arrows:arrows,outage:outage});
+          links.push({mesh:route,pulseMesh:pulseMesh,pulseMat:pulseMat,index:i,curve:curve,arrows:arrows,outage:outage});
         });
         // An open-air substation makes the pooled grid endpoint recognisable.
         box(scene,2.6,.50,1.1,1.15,.10,1.18,'#a4aca6');
@@ -8516,6 +8983,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         pylon(scene,2.6,.40,1.6);pylon(scene,2.6,1.80,1.6);
         [-.30,.30].forEach(function(offset){var cable=new THREE.QuadraticBezierCurve3(new THREE.Vector3(2.6+offset,1.25,.40),new THREE.Vector3(2.6+offset,.98,1.10),new THREE.Vector3(2.6+offset,1.25,1.80));var conductor=new THREE.Line(new THREE.BufferGeometry().setFromPoints(cable.getPoints(14)),new THREE.LineBasicMaterial({color:'#a3b6ba'}));scene.add(conductor);});
         scene.traverse(function(o){if(o.material&&o.material.color)o.material.color.convertSRGBToLinear();});
+        panels.forEach(function(item){_rnApplyPvIridescence(item.mesh.material,landSharedUniforms);});
+        meshes.forEach(function(item){if(item.hydro&&item.hydro.material)_rnApplyWaterCaustics(item.hydro.material,landSharedUniforms);});
         resize=function(){if(!renderer||disposed)return;var w=container.clientWidth||640,ht=container.clientHeight||360;renderer.setSize(w,ht,false);camera.aspect=w/ht;camera.fov=2*Math.atan(Math.max(12,26/camera.aspect)/44)*180/Math.PI;camera.updateProjectionMatrix();dirty=true;};
         if(window.ResizeObserver){observer=new ResizeObserver(resize);observer.observe(container);}else window.addEventListener('resize',resize);
         resize();
@@ -8535,6 +9004,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           var animate=p.motion&&!(reduce&&reduce.matches);
           if(!dirty&&!animate&&lastProps===p)return;var changed=lastProps!==p;dirty=false;lastProps=p;if(animate)flowTime+=dt*.24;
           var daylight=rows.reduce(function(n,r){return n+r.sun;},0)/rows.length;ambient.intensity=.48+daylight*.5;light.intensity=.3+daylight*1.1;scene.background.set(daylight>.05?'#173b4d':'#0b2032');scene.fog.color.copy(scene.background);
+          var hcNow=_rnIsHighContrast(container),rmNow=!!(reduce&&reduce.matches);
+          if(rmNow)landShaderClock=1.4;else if(animate)landShaderClock+=dt;
+          landSharedUniforms.uTime.value=landShaderClock;landSharedUniforms.uSun.value=daylight;landSharedUniforms.uHc.value=hcNow?1:0;
+          if(oceanCausticMat&&oceanCausticMesh){oceanCausticMat.uniforms.uTime.value=landShaderClock;oceanCausticMat.uniforms.uDaylight.value=daylight;oceanCausticMat.uniforms.uHc.value=hcNow?1:0;oceanCausticMesh.visible=!hcNow;}
+          landWindRibbons.forEach(function(rw){var rRow=rows[rw.regionIdx]||rows[0];rw.mat.uniforms.uTime.value=landShaderClock;rw.mat.uniforms.uWind.value=Math.max(.2,(rRow?rRow.windFactor:.5)*2.2);rw.mat.uniforms.uHc.value=hcNow?1:0;rw.mesh.visible=!hcNow;});
           var sunAngle=((p.hour.hour%24)/24)*Math.PI*2;light.position.set(Math.sin(sunAngle)*16,12+daylight*8,Math.cos(sunAngle)*12);
           meshes.forEach(function(item){
             var r=rows[item.index],soc=Math.max(0,Math.min(1,r.batteryCapacity?r.battery/r.batteryCapacity:0)),charging=r.charge>1e-6,discharging=r.discharge>1e-6;
@@ -8551,6 +9025,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           links.forEach(function(item){
             var r=rows[item.index],active=!r.linkOffline&&(r.imports>1e-6||r.exports>1e-6),color=r.linkOffline?'#fc867c':r.imports>1e-6?'#f4c55f':r.exports>1e-6?'#6effd3':'#528495',use=r.link?Math.min(1,Math.max(r.imports,r.exports)/r.link):0;
             item.mesh.visible=!!p.network&&p.showRoutes;item.mesh.material.color.set(color).convertSRGBToLinear();item.mesh.material.opacity=active?.55+use*.45:r.linkOffline?.4:.32;item.outage.visible=!!p.network&&p.showRoutes&&r.linkOffline;
+            if(item.pulseMesh&&item.pulseMat){
+              item.pulseMesh.visible=!hcNow&&!!p.network&&p.showRoutes&&active;
+              item.pulseMat.uniforms.uTime.value=landShaderClock;
+              item.pulseMat.uniforms.uPower.value=active?Math.max(.35,use):0;
+              item.pulseMat.uniforms.uDir.value=r.imports>1e-6?-1:1;
+              item.pulseMat.uniforms.uColor.value.set(color);
+              item.pulseMat.uniforms.uHc.value=hcNow?1:0;
+            }
             item.arrows.forEach(function(arrow,a){arrow.visible=!!p.network&&p.showRoutes&&active;if(!arrow.visible)return;var along=((a+.5)/3+(animate?flowTime:0))%1;if(r.imports>1e-6)along=1-along;arrow.position.copy(item.curve.getPoint(along));var tangent=item.curve.getTangent(along);if(r.imports>1e-6)tangent.negate();arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tangent.normalize());arrow.material.color.copy(item.mesh.material.color);arrow.scale.setScalar(.85+use*.45);});
           });
           rotors.forEach(function(rotor){rotor.assembly.visible=rotor.number<Math.min(3,Math.ceil(p.capacity.regions[rotor.index].wind/(200*RN_REGIONS[rotor.index].turbines)));if(animate)rotor.mesh.rotation.z-=dt*rows[rotor.index].windFactor*3;});
@@ -8584,7 +9066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('div',{'aria-hidden':'true',style:{position:'absolute',top:10,left:10,maxWidth:'calc(100% - 62px)',zIndex:2,color:'#e7f4f5',background:'rgba(9,29,43,.9)',border:'1px solid #557b86',borderRadius:8,padding:'6px 10px',fontSize:12,pointerEvents:'none'}},'DAY '+(1+Math.floor(props.hour.hour/24))+' · HOUR '+props.hour.hour),
       h('div',{ref:mount,className:'rn-webgl',role:'img','aria-label':__alloT('stem.renewables.3d_landscape_of_six_illustrative_us_regions','3D landscape of six illustrative US regions. Solar arrays, turbines, batteries, and electricity links reflect the selected hour. Exact readings are in the region inspector.'),'data-render-status':status}),
       status!=='ready'&&h('div',{className:'rn-scene-status',role:'status'},status==='loading'?'Loading the 3D landscape…':'3D is unavailable. The map, chart, and simulation still work.',status==='failed'&&h('button',{type:'button',onClick:function(){retryPair[1](retryPair[0]+1);}},'Retry 3D')),
-      h('div',{className:'rn-camera','aria-label':__alloT('stem.renewables.3d_camera_controls','3D camera controls')},[['left','Rotate left'],['right','Rotate right'],['in','Zoom in'],['out','Zoom out'],['top','Top view'],['focus','Focus region'],['home','Reset camera']].map(function(a){return h('button',{key:a[0],type:'button',disabled:status!=='ready',onClick:function(){if(api.current)api.current(a[0]);}},a[1]);})),
+      h('div',{ role: 'group',className:'rn-camera','aria-label':__alloT('stem.renewables.3d_camera_controls','3D camera controls')},[['left','Rotate left'],['right','Rotate right'],['in','Zoom in'],['out','Zoom out'],['top','Top view'],['focus','Focus region'],['home','Reset camera']].map(function(a){return h('button',{key:a[0],type:'button',disabled:status!=='ready',onClick:function(){if(api.current)api.current(a[0]);}},a[1]);})),
       h('div',{style:{display:'flex',gap:'8px 20px',padding:'10px 16px',alignItems:'center',flexWrap:'wrap',background:'#102b3b',color:'#dcecf3',borderTop:'1px solid #466375',fontSize:12}},
         h('label',{style:{display:'flex',gap:7,alignItems:'center',minHeight:32}},h('input',{type:'checkbox',checked:routePair[0],onChange:function(e){routePair[1](e.target.checked);}}),'Transmission routes'),
         h('label',{style:{display:'flex',gap:7,alignItems:'center',minHeight:32}},h('input',{type:'checkbox',checked:labelPair[0],onChange:function(e){labelPair[1](e.target.checked);}}),'Regional labels'),
@@ -8597,7 +9079,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           ['Battery dispatch',selectedRow.charge>1e-6?'Charging '+reading(selectedRow.charge)+' GW':selectedRow.discharge>1e-6?'Discharging '+reading(selectedRow.discharge)+' GW':'Idle',selectedRow.batteryCapacity>0?'Fill shows stored energy':'No storage capacity'],
           ['Regional link',selectedRow.linkOffline?'Offline':selectedRow.imports>1e-6?'Import '+reading(selectedRow.imports)+' GW':selectedRow.exports>1e-6?'Export '+reading(selectedRow.exports)+' GW':'No transfer',selectedRow.linkOffline?'Transfers stopped':selectedRow.link===0?'Zero transfer capacity':reading(100*Math.max(selectedRow.imports,selectedRow.exports)/selectedRow.link)+'% of '+reading(selectedRow.link)+' GW link'+(selectedRow.linkCongested?' · at capacity':'')]
         ].map(function(v){return h('div',{key:v[0],style:{minWidth:0}},h('small',{style:{display:'block',color:'#b7d1df',fontSize:11}},v[0]),h('strong',{style:{display:'block',fontSize:16,lineHeight:1.5}},v[1]),h('small',{style:{display:'block',fontSize:11,color:'#d1e2e9'}},v[2]));})),
-        h('div',{'aria-label':'Selected region generation mix: '+generationMix.map(function(v){return v[0]+' '+reading(v[1])+' GW';}).join(', '),role:'img',style:{display:'flex',height:9,borderRadius:5,overflow:'hidden',background:'#48616d'}},generationMix.map(function(v){return h('span',{key:v[0],style:{width:(generationTotal?100*v[1]/generationTotal:0)+'%',background:v[2]}});})),
+        h('div',{ role: 'group','aria-label':'Selected region generation mix: '+generationMix.map(function(v){return v[0]+' '+reading(v[1])+' GW';}).join(', '),role:'img',style:{display:'flex',height:9,borderRadius:5,overflow:'hidden',background:'#48616d'}},generationMix.map(function(v){return h('span',{key:v[0],style:{width:(generationTotal?100*v[1]/generationTotal:0)+'%',background:v[2]}});})),
         h('div',{style:{display:'flex',gap:'5px 14px',flexWrap:'wrap',marginTop:7,fontSize:11}},generationMix.map(function(v){return h('span',{key:v[0]},h('span',{'aria-hidden':'true',style:{display:'inline-block',width:8,height:8,marginRight:5,borderRadius:2,background:v[2]}}),v[0]+' '+reading(v[1])+' GW');})),
         h('p',{style:{fontSize:11,lineHeight:1.6,margin:'11px 0 0',color:'#c7dde7'}},'Arrows point toward the receiver: mint exports to the hub; gold imports to a region. Red × means an offline link; red ! means unserved demand. Arrow size shows link use; motion speed is illustrative. Battery fill is end-of-hour energy, and its arrow shows charge or discharge during that hour.'),
         h('p',{style:{fontSize:11,lineHeight:1.6,margin:'5px 0 0',color:'#b8d0dc'}},'Blue dam = hydro · white dome = nuclear · amber stack = fossil. Building windows brighten as local sunlight fades and dim with unserved demand. Their brightness represents the fraction of demand served, not which buildings have power. Equipment counts and terrain are illustrative. Solar panels and turbines indicate installed capacity; the mix readings report generation.')));
@@ -8734,7 +9216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           s.outageRegion!=='none'&&button('Inspect outage start',function(){setPlaying(false);setHour(s.outageStart);regionState[1](s.outageRegion);})),
         h('p',{className:'rn-muted'},'A national total can hide local constraints. Compare regional shortages, surplus, and full-capacity links before choosing your next investment.'),
         h('details',null,h('summary',null,'Regional outcomes across the test'),
-          h('div',{className:'rn-table-wrap',tabIndex:0,'aria-label':__alloT('stem.renewables.scrollable_regional_outcomes','Scrollable regional outcomes')},h('table',null,
+          h('div',{ role: 'group',className:'rn-table-wrap',tabIndex:0,'aria-label':__alloT('stem.renewables.scrollable_regional_outcomes','Scrollable regional outcomes')},h('table',null,
             h('caption',null,'GWh across '+s.hours+' hours. A congested link reaches its sending or receiving power limit; an offline link is counted separately.'),
             h('thead',null,h('tr',null,['Region','Renewable demand share','Fossil GWh','Unmet GWh','Curtailed GWh','Congested hours','Offline hours'].map(function(v){return h('th',{key:v,scope:'col'},v);}))),
             h('tbody',null,result.regionTotals.map(function(r){return h('tr',{key:r.id},h('th',{scope:'row'},r.name),[fmt(r.renewableShare)+'%',fmt(r.fossil),fmt(r.unmet),fmt(r.curtail),r.congestedHours,r.offlineHours].map(function(v,i){return h('td',{key:i},v);}));}))))));
@@ -8931,12 +9413,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       h('p',{className:'rn-muted'},'Build a portfolio. Follow the electricity. Test changing weather across six illustrative regions.'),
       h('div',{className:'rn-year'},h('div',null,h('div',{className:'rn-year-number'},s.year),h('small',null,'Scenario year')),
         slider('year','Adoption timeline',2025,2050,1,'','2025 starting portfolio → 2050 scenario')),
-      h('div',{className:'rn-metrics','aria-label':s.hours+'-hour scenario summary'},
+      h('div',{ role: 'group',className:'rn-metrics','aria-label':s.hours+'-hour scenario summary'},
         [['Renewable share of demand',fmt(total.renewableShare)+'%','Delivered, including stored renewables'],
           ['Demand met',fmt(total.demandMet,2)+'%',total.gapHours+' of '+s.hours+' hours have a shortfall'],
           ['Fossil backup used',fmt(total.fossil/1000,2)+' TWh','Across this '+(s.hours/24)+'-day test'],
           ['Generation curtailed',fmt(total.curtail/1000,2)+' TWh','Surplus that could not be used or stored']].map(function(m){return h('div',{className:'rn-metric',key:m[0]},h('span',null,m[0]),h('strong',null,m[1]),h('span',null,m[2]));})),
-      h('div',{className:'rn-presets','aria-label':__alloT('stem.renewables.scenario_starting_points','Scenario starting points')},
+      h('div',{ role: 'group',className:'rn-presets','aria-label':__alloT('stem.renewables.scenario_starting_points','Scenario starting points')},
         button('Balanced build',function(){change({settings:Object.assign({},RN_DEFAULT,{year:s.year})});}),
         button('Solar sprint',function(){change({settings:Object.assign({},RN_DEFAULT,{year:s.year,solarBuild:65,windBuild:8,batteryBuild:5,transmission:10})});}),
         button('Wind + connected regions',function(){change({settings:Object.assign({},RN_DEFAULT,{year:s.year,solarBuild:30,windBuild:45,batteryBuild:18,transmission:65,duration:8})});})),
@@ -8974,8 +9456,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('div',{className:'rn-stage-title'},h('strong',null,'Day '+(Math.floor(hourIndex/24)+1)+' · '+String(hourIndex%24).padStart(2,'0')+':00 Eastern'),h('small',null,'Schematic contiguous US')),
             mode==='3d'?h(RenewablesLandscape,{React:React,hour:current,capacity:capacity,selected:selected,onPick:regionState[1],motion:motion,network:true}):map(),
             h('div',{className:'rn-stage-title'},h('small',null,'Mint: exports · gold: imports · red: offline'),h('small',null,'Click a region · drag to rotate · symbols track regional capacity'))),
-          h('div',{className:'rn-region-buttons','aria-label':__alloT('stem.renewables.inspect_a_region','Inspect a region')},RN_REGIONS.map(function(r,i){var row=current.regions[i];return button(h(React.Fragment,null,r.name,h('span',null,fmt(row.demand)+' GW demand · '+(row.linkOffline?'link offline':row.unmet>.01?'shortfall':row.imports>.1?'importing':row.exports>.1?'exporting':'local balance'))),function(){regionState[1](r.id);},r.id===selected,{key:r.id,'aria-label':__alloFill(__alloT('stem.renewables.a11y_inspect', 'Inspect {value1}'), { value1: r.name })});})),
-          h('div',{className:'rn-inspector','aria-label':__alloT('stem.renewables.selected_region_measurements','Selected region measurements')},h('strong',null,regionInfo.name+' · '+String(((hourIndex+regionInfo.offset)%24+24)%24).padStart(2,'0')+':00 local scenario time'),
+          h('div',{ role: 'group',className:'rn-region-buttons','aria-label':__alloT('stem.renewables.inspect_a_region','Inspect a region')},RN_REGIONS.map(function(r,i){var row=current.regions[i];return button(h(React.Fragment,null,r.name,h('span',null,fmt(row.demand)+' GW demand · '+(row.linkOffline?'link offline':row.unmet>.01?'shortfall':row.imports>.1?'importing':row.exports>.1?'exporting':'local balance'))),function(){regionState[1](r.id);},r.id===selected,{key:r.id,'aria-label':__alloFill(__alloT('stem.renewables.a11y_inspect', 'Inspect {value1}'), { value1: r.name })});})),
+          h('div',{ role: 'group',className:'rn-inspector','aria-label':__alloT('stem.renewables.selected_region_measurements','Selected region measurements')},h('strong',null,regionInfo.name+' · '+String(((hourIndex+regionInfo.offset)%24+24)%24).padStart(2,'0')+':00 local scenario time'),
             h('dl',null,[['Solar + wind',fmt(region.solar+region.wind)+' GW'],['Hydro + nuclear',fmt(region.hydro+region.nuclear)+' GW'],['Fossil backup',fmt(region.fossil)+' GW'],['Unmet demand',fmt(region.unmet)+' GW'],
               ['Imports / exports',fmt(region.imports)+' / '+fmt(region.exports)+' GW'],['Stored energy',fmt(region.battery)+' GWh'],['Charge / discharge',fmt(region.charge)+' / '+fmt(region.discharge)+' GW'],['Curtailed',fmt(region.curtail)+' GW'],['Link state',region.linkOffline?'Offline':region.linkCongested?'At capacity':'Available'],['Reserve released',fmt(region.reserveRelease)+' GW']].map(function(pair){return h('div',{key:pair[0]},h('dt',null,pair[0]),h('dd',null,pair[1]));})),explainPanel()),sitingPanel())),
       h('section',{className:'rn-panel rn-results','aria-label':__alloT('stem.renewables.hourly_energy_accounting','Hourly energy accounting')},
@@ -8987,7 +9469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         h('p',{className:'rn-muted',style:{fontSize:12,marginTop:12}},'Storage starts empty; ending energy: '+fmt(total.endBattery)+' GWh. Conversion losses: '+fmt(total.loss)+' GWh. Transmission losses: '+fmt(total.transmissionLoss)+' GWh. Regional transfers delivered: '+fmt(total.transfer)+' GWh. Nuclear is low-carbon but is not renewable.'),
         h('div',{className:'rn-coach'},h('strong',null,'What to investigate next'),h('div',null,lesson)),
         h('details',null,h('summary',null,'Read hourly data'),
-          h('div',{className:'rn-table-wrap',tabIndex:0,'aria-label':__alloT('stem.renewables.scrollable_hourly_energy_table','Scrollable hourly energy table')},
+          h('div',{ role: 'group',className:'rn-table-wrap',tabIndex:0,'aria-label':__alloT('stem.renewables.scrollable_hourly_energy_table','Scrollable hourly energy table')},
             h('table',null,h('caption',null,'Hourly power in GW; stored energy in GWh. Each row spans one hour.'),
               h('thead',null,h('tr',null,['Hour (Eastern)','Demand','Renewables generated','Nuclear generated','Fossil','Charge','Discharge','Curtailed','Unmet','Stored GWh','Transfer loss','Shifted demand','Reserve release'].map(function(v){return h('th',{key:v,scope:'col'},v);}))),
               h('tbody',null,result.hours.map(function(r){return h('tr',{key:r.hour},h('th',{scope:'row'},'D'+(Math.floor(r.hour/24)+1)+' '+String(r.hour%24).padStart(2,'0')+':00'),
@@ -9032,19 +9514,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       var h = React.createElement;
       var useState = React.useState;
 
-      var d = (ctx.toolData && ctx.toolData['renewablesLab']) || {};
-      var upd = function(key, val) { ctx.update('renewablesLab', key, val); };
+      var rawToolData = (ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData['renewablesLab'] : null;
+      var d = (rawToolData && typeof rawToolData === 'object' && !Array.isArray(rawToolData)) ? rawToolData : {};
+      var upd = function(key, val) { if (typeof ctx.update === 'function') ctx.update('renewablesLab', key, val); };
       var updMulti = function(obj) {
-        if (ctx.updateMulti) ctx.updateMulti('renewablesLab', obj);
+        if (typeof ctx.updateMulti === 'function') ctx.updateMulti('renewablesLab', obj);
         else Object.keys(obj).forEach(function(k) { upd(k, obj[k]); });
       };
       var addToast = ctx.addToast || function(msg) { console.log('[Renewables]', msg); };
 
-      var view = d.view || 'menu';
-      var modulesVisited = d.modulesVisited || {};
-      var badges = d.badges || {};
-      var quizMastery = d.quizMastery || {};
-      var quizState = d.quizState || { idx: 0, score: 0, answered: false, lastChoice: null };
+      var view = typeof d.view === 'string' ? d.view : 'menu';
+      var modulesVisited = (d.modulesVisited && typeof d.modulesVisited === 'object' && !Array.isArray(d.modulesVisited)) ? d.modulesVisited : {};
+      var badges = (d.badges && typeof d.badges === 'object' && !Array.isArray(d.badges)) ? d.badges : {};
+      var quizMastery = (d.quizMastery && typeof d.quizMastery === 'object' && !Array.isArray(d.quizMastery)) ? d.quizMastery : {};
+      var quizState = (d.quizState && typeof d.quizState === 'object' && !Array.isArray(d.quizState)) ? d.quizState : { idx: 0, score: 0, answered: false, lastChoice: null };
 
       // ── Hydration + Canvas-survival persistence ──
       // Window slot wins over localStorage on mount (host's handleLoadProject
@@ -9184,34 +9667,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       }
 
       // Theme — green/teal clean-energy palette (distinct from firstResponse red).
-      var isContrast = !!ctx.isContrast;
-      var isDark = !!ctx.isDark;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+      var isDark = !!(ctx.isDark || ctx.theme === 'dark');
       var T = isContrast ? {
         bg: '#000000', card: '#000000', cardAlt: '#0a0a0a', border: '#fbbf24',
         text: '#ffffff', muted: '#ffffff', dim: '#ffffff',
         accent: '#fbbf24', accentHi: '#ffff00', warm: '#ffff00',
-        warn: '#ffff00', danger: '#ff6b6b', link: '#00ffff'
+        ok: '#66ff66', warn: '#ffff00', danger: '#ff6b6b', link: '#00ffff'
       } : isDark ? {
         bg: '#0f1f1c', card: '#1a302a', cardAlt: '#0d1916', border: '#2f5247',
-        text: '#ecfeff', muted: '#cbe8e0', dim: '#88a89e',
+        text: '#ecfeff', muted: '#cbe8e0', dim: '#9ec4b8',
         accent: '#10b981', accentHi: '#86efac', warm: '#facc15',
-        warn: '#f97316', danger: '#ef4444', link: '#7dd3fc'
+        ok: '#34d399', warn: '#f97316', danger: '#ef4444', link: '#7dd3fc'
       } : {
         bg: '#f0fdf4', card: '#ffffff', cardAlt: '#ecfdf5', border: '#4b7669',
-        text: '#052e2b', muted: '#28594f', dim: '#3f685f',
+        text: '#052e2b', muted: '#28594f', dim: '#375e56',
         accent: '#047857', accentHi: '#065f46', warm: '#a16207',
-        warn: '#c2410c', danger: '#b91c1c', link: '#0369a1'
+        ok: '#047857', warn: '#c2410c', danger: '#b91c1c', link: '#0369a1'
       };
 
       function btn(extra) {
         return Object.assign({
-          padding: '10px 16px', borderRadius: 10, border: '1px solid ' + T.border,
+          padding: '10px 16px', minHeight: 44, borderRadius: 10, border: '1px solid ' + T.border,
           background: T.card, color: T.text, fontSize: 14, fontWeight: 600,
           cursor: 'pointer', textAlign: 'left'
         }, extra || {});
       }
       function btnPrimary(extra) {
-        return Object.assign(btn({ background: T.accent, color: '#06281f', border: '1px solid ' + T.accent }), extra || {});
+        return Object.assign(btn({
+          background: T.accent,
+          color: isContrast ? '#000000' : (isDark ? '#06281f' : '#ffffff'),
+          border: '1px solid ' + (isContrast ? '#ffff00' : T.accent)
+        }), extra || {});
       }
 
       // ─────────────────────────────────────────
@@ -9421,32 +9908,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.6 } }, suggestion.body)
           );
         }
+        var mixTotal = Math.max(1, mixSolar + mixWind + mixHydro + mixGeo + mixNuclear + mixGas);
+        var mixSegs = [
+          { id: 'solar', label: 'Solar', pct: Math.round(mixSolar / mixTotal * 100), color: isContrast ? '#ffff00' : '#fbbf24' },
+          { id: 'wind', label: 'Wind', pct: Math.round(mixWind / mixTotal * 100), color: isContrast ? '#00ffff' : '#38bdf8' },
+          { id: 'hydro', label: 'Hydro', pct: Math.round(mixHydro / mixTotal * 100), color: isContrast ? '#66ff66' : '#34d399' },
+          { id: 'geo', label: 'Geo', pct: Math.round(mixGeo / mixTotal * 100), color: isContrast ? '#ff99ff' : '#fb7185' },
+          { id: 'nuclear', label: 'Nuclear', pct: Math.round(mixNuclear / mixTotal * 100), color: isContrast ? '#ffffff' : '#a78bfa' },
+          { id: 'gas', label: 'Gas', pct: Math.round(mixGas / mixTotal * 100), color: '#94a3b8' }
+        ];
+        var cleanPct = Math.min(100, Math.round((mixSolar + mixWind + mixHydro + mixGeo + mixNuclear) / mixTotal * 100));
+        var mixX = 16;
+        var mixBarW = 608;
+        var mixRects = mixSegs.map(function(seg) {
+          var w = Math.max(0, Math.round((seg.pct / 100) * mixBarW));
+          var rx = mixX;
+          mixX += w;
+          return { id: seg.id, x: rx, w: w, color: seg.color, label: seg.label, pct: seg.pct };
+        });
+        var presetsLocked = !!(ctx.quizMode || ctx.teacherLock || d._teacherLocked);
         return h('div', { style: { padding: 20, maxWidth: '62.5rem', width: '100%', margin: '0 auto', color: T.text } },
-          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 10 } },
-            h('h2', { style: { margin: 0, fontSize: 22 } }, __alloT('stem.renewables.renewables_lab', '⚡ Renewables Lab')),
-            h('div', { style: { fontSize: 12, color: T.dim } },
-              __alloT('stem.renewables.modules_visited', 'Modules visited: '), h('strong', { style: { color: T.text } }, visitedCount + ' / ' + (MENU_TILES.length - 2)))
+          // ── Bespoke Clean-Energy Hero Workbench Header ──
+          h('div', {
+            'data-renewables-hero': 'true',
+            style: {
+              borderRadius: 16,
+              padding: '16px 18px',
+              marginBottom: 14,
+              backgroundColor: isContrast ? '#000000' : '#064e3b',
+              backgroundImage: isContrast ? 'none' : 'linear-gradient(128deg, #022c22 0%, #065f46 52%, #0f172a 100%)',
+              border: (isContrast ? '2px' : '1px') + ' solid ' + (isContrast ? '#ffff00' : 'rgba(110,231,183,0.42)'),
+              color: '#ffffff',
+              boxShadow: isContrast ? 'none' : '0 14px 32px -14px rgba(2, 44, 34, 0.55)'
+            }
+          },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 14, minWidth: 0 } },
+              // Bespoke inline SVG emblem: wind turbine + solar grid + energy pulse
+              h('svg', { width: 48, height: 48, viewBox: '0 0 48 48', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+                h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : '#022c22', stroke: isContrast ? '#ffff00' : '#34d399', strokeWidth: 1.6 }),
+                h('circle', { cx: 16, cy: 15, r: 5, fill: isContrast ? '#ffff00' : '#fbbf24' }),
+                h('line', { x1: 31, y1: 18, x2: 31, y2: 38, stroke: isContrast ? '#ffffff' : '#a7f3d0', strokeWidth: 2 }),
+                h('path', { d: 'M31 18 L24 11 M31 18 L39 14 M31 18 L33 27', stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                h('circle', { cx: 31, cy: 18, r: 2.5, fill: '#ffffff' }),
+                h('rect', { x: 8, y: 28, width: 17, height: 10, rx: 2, fill: 'none', stroke: isContrast ? '#66ff66' : '#34d399', strokeWidth: 1.6 }),
+                h('line', { x1: 14, y1: 28, x2: 14, y2: 38, stroke: isContrast ? '#66ff66' : '#34d399', strokeWidth: 1.1 }),
+                h('line', { x1: 20, y1: 28, x2: 20, y2: 38, stroke: isContrast ? '#66ff66' : '#34d399', strokeWidth: 1.1 })
+              ),
+              h('div', { style: { flex: '1 1 240px', minWidth: 0 } },
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                  h('span', { style: { fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', padding: '2px 8px', borderRadius: 999, background: isContrast ? '#000000' : 'rgba(16,185,129,0.28)', color: isContrast ? '#ffff00' : '#a7f3d0', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(167,243,208,0.45)') } },
+                    __alloT('stem.renewables.subject_badge', 'Clean Energy Engineering · NREL / IEA / DOE')),
+                  h('span', { style: { fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: isContrast ? '#000000' : 'rgba(15,23,42,0.72)', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255,255,255,0.25)') } },
+                    __alloT('stem.renewables.modules_visited', 'Modules visited: ') + visitedCount + ' / ' + (MENU_TILES.length - 2))
+                ),
+                h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#ffffff', lineHeight: 1.15 } }, __alloT('stem.renewables.renewables_lab', '⚡ Renewables Lab')),
+                h('p', { style: { margin: '4px 0 0', color: isContrast ? '#ffffff' : '#d1fae5', fontSize: 12, lineHeight: 1.5 } },
+                  __alloT('stem.renewables.how_does_each_renewable_source_actuall', 'How does each renewable source actually generate electricity? This lab walks through the physics and engineering with live sliders. Pair with '),
+                  h('strong', { style: { color: isContrast ? '#ffff00' : '#ffffff' } }, __alloT('stem.renewables.climate_explorer', 'Climate Explorer')),
+                  __alloT('stem.renewables.for_the_policy_mix_design_side', ' for the policy + mix-design side.'))
+              ),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginLeft: 'auto' } },
+                h('span', { style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: isContrast ? '#000000' : 'rgba(15,23,42,0.76)', color: isContrast ? '#ffff00' : '#86efac', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(134,239,172,0.4)') } },
+                  __alloT('stem.renewables.pill_low_carbon', 'Saved Mix: ') + cleanPct + '% low-C'),
+                h('span', { style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: isContrast ? '#000000' : 'rgba(15,23,42,0.76)', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255,255,255,0.28)') } },
+                  __alloT('stem.renewables.quiz', 'Quiz') + ': ' + Object.keys(quizMastery).length + '/' + QUIZ.length)
+              )
+            )
           ),
-          h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            __alloT('stem.renewables.how_does_each_renewable_source_actuall', 'How does each renewable source actually generate electricity? This lab walks through the physics and engineering with live sliders. Pair with '),
-            h('strong', { style: { color: T.text } }, __alloT('stem.renewables.climate_explorer', 'Climate Explorer')),
-            __alloT('stem.renewables.for_the_policy_mix_design_side', ' for the policy + mix-design side.')),
           h('section', { 'data-renewables-launch-panel': 'true',
-            style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,78,59,0.88), rgba(15,23,42,0.94))', border: '1px solid ' + T.accent + '77', marginBottom: 14, color: '#ecfdf5', boxShadow: '0 16px 38px rgba(2,8,23,0.22)' } },
+            style: { padding: 16, borderRadius: 12, background: isContrast ? '#000000' : 'linear-gradient(135deg, rgba(6,78,59,0.92), rgba(15,23,42,0.96))', border: (isContrast ? '2px' : '1px') + ' solid ' + (isContrast ? '#ffff00' : T.accent + '77'), marginBottom: 14, color: '#ecfdf5', boxShadow: isContrast ? 'none' : '0 16px 38px rgba(2,8,23,0.22)' } },
+            // Live Saved Energy Mix Spectrum SVG Stage
+            h('div', { style: { marginBottom: 12, padding: '10px 12px', borderRadius: 10, background: isContrast ? '#000000' : 'rgba(2,6,23,0.5)', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(134,239,172,0.28)') } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                h('span', { style: { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: isContrast ? '#ffff00' : '#86efac' } },
+                  __alloT('stem.renewables.svg_mix_title', 'Current Portfolio Mix Telemetry')),
+                h('span', { style: { fontSize: 11, fontWeight: 700, color: '#f8fafc' } },
+                  cleanPct + '% ' + __alloT('stem.renewables.svg_mix_clean_label', 'Low-Carbon Share'))
+              ),
+              h('svg', {
+                viewBox: '0 0 640 58',
+                style: { width: '100%', height: 'auto', display: 'block' },
+                role: 'img',
+                'aria-label': __alloT('stem.renewables.svg_mix_aria', 'Proportional bar showing current energy mix shares across solar, wind, hydro, geothermal, nuclear, and gas')
+              },
+                h('rect', { x: 16, y: 8, width: mixBarW, height: 18, rx: 5, fill: '#1e293b', stroke: isContrast ? '#ffffff' : '#334155', strokeWidth: 1 }),
+                mixRects.map(function(r) {
+                  return r.w > 0 ? h('rect', { key: r.id, x: r.x, y: 8, width: r.w, height: 18, fill: r.color }) : null;
+                }),
+                mixSegs.map(function(seg, si) {
+                  var lx = 16 + si * 102;
+                  return h('g', { key: 'leg-' + seg.id },
+                    h('rect', { x: lx, y: 38, width: 10, height: 10, rx: 2, fill: seg.color }),
+                    h('text', { x: lx + 14, y: 47, fill: '#f8fafc', fontSize: 11, fontWeight: 600 }, seg.label + ' ' + seg.pct + '%')
+                  );
+                })
+              )
+            ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))', gap: 12 } },
               h('div', null,
-                h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#86efac', letterSpacing: 0, marginBottom: 4 } }, 'Energy launch board'),
+                h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: isContrast ? '#ffff00' : '#86efac', letterSpacing: 0, marginBottom: 4 } }, 'Energy launch board'),
                 h('div', { style: { fontSize: 21, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, __alloT('stem.renewables.pick_a_useful_starting_route', 'Pick a useful starting route')),
-                h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#cbd5e1' } },
+                h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: isContrast ? '#ffffff' : '#cbd5e1' } },
                   __alloT('stem.renewables.launch_panel_copy', 'Start with the physics, compare sources, design a mix, or test grid balance. Open the full module library when you want deeper topics.')),
-                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 8 } },
+                !presetsLocked && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 8 } },
                   renewablesLaunchTiles.map(function(tile) {
                     var visited = !!modulesVisited[tile.id];
                     return h('button', { key: tile.id, type: 'button', 'aria-label': tile.label + (visited ? ' visited' : ''),
                       onClick: function() { upd('view', tile.id); markVisited(tile.id); rnAnnounce(__alloFill(__alloT('stem.renewables.sr_opening', 'Opening {value1}'), { value1: tile.label })); },
-                      style: { minHeight: 82, padding: 10, textAlign: 'left', borderRadius: 8, border: '1px solid ' + (visited ? T.accent : 'rgba(134,239,172,0.25)'), background: visited ? 'rgba(16,185,129,0.18)' : 'rgba(15,23,42,0.55)', color: '#ecfdf5', cursor: 'pointer' } },
+                      style: { minHeight: 82, padding: 10, textAlign: 'left', borderRadius: 8, border: '1px solid ' + (isContrast ? '#ffff00' : (visited ? T.accent : 'rgba(134,239,172,0.28)')), background: isContrast ? '#000000' : (visited ? 'rgba(16,185,129,0.22)' : 'rgba(15,23,42,0.62)'), color: '#ffffff', cursor: 'pointer' } },
                       h('div', { style: { fontSize: 12, fontWeight: 900, marginBottom: 3 } }, tile.icon + ' ' + tile.label),
-                      h('div', { style: { fontSize: 10, lineHeight: 1.35, color: '#bbf7d0' } }, tile.desc)
+                      h('div', { style: { fontSize: 10, lineHeight: 1.35, color: isContrast ? '#ffff00' : '#bbf7d0' } }, tile.desc)
                     );
                   })
                 )
@@ -9455,17 +10026,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                 [
                   { label: __alloT('stem.renewables.modules_seen', 'Seen'), value: visitedCount + '/' + (MENU_TILES.length - 2) },
                   { label: __alloT('stem.renewables.library', 'Library'), value: showFullRenewablesMenu ? __alloT('stem.renewables.expanded', 'Expanded') : __alloT('stem.renewables.core', 'Core') },
-                  { label: __alloT('stem.renewables.quiz', 'Quiz'), value: ((d.quizMastery && Object.keys(d.quizMastery).length) || 0) + '/' + QUIZ.length },
+                  { label: __alloT('stem.renewables.quiz', 'Quiz'), value: Object.keys(quizMastery).length + '/' + QUIZ.length },
                   { label: __alloT('stem.renewables.badges', 'Badges'), value: Object.keys(badges).length }
                 ].map(function(card) {
-                  return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
-                    h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#cbd5e1', marginBottom: 4 } }, card.label),
+                  return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: isContrast ? '#000000' : 'rgba(2,6,23,0.42)', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(148,163,184,0.25)') } },
+                    h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: isContrast ? '#ffff00' : '#cbd5e1', marginBottom: 4 } }, card.label),
                     h('div', { style: { fontSize: 15, fontWeight: 900, color: '#f8fafc' } }, card.value)
                   );
                 }),
                 h('button', { type: 'button', 'aria-expanded': showFullRenewablesMenu ? 'true' : 'false',
                   onClick: function() { upd('showRenewablesLibrary', !d.showRenewablesLibrary); },
-                  style: { gridColumn: '1 / -1', marginTop: 0, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(134,239,172,0.32)', background: 'rgba(16,185,129,0.12)', color: '#bbf7d0', fontSize: 11, fontWeight: 900, cursor: 'pointer' } },
+                  style: { gridColumn: '1 / -1', minHeight: 44, marginTop: 0, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(134,239,172,0.42)'), background: isContrast ? '#000000' : 'rgba(16,185,129,0.18)', color: isContrast ? '#ffff00' : '#dcfce7', fontSize: 12, fontWeight: 900, cursor: 'pointer' } },
                   showFullRenewablesMenu ? __alloT('stem.renewables.hide_full_module_library', 'Hide full module library') : __alloT('stem.renewables.show_full_module_library', 'Show full module library'))
               )
             )
@@ -13086,11 +13657,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
       // === H7b'' inquiry widget: grid balance discovery ===
       function renderGridBalance() {
-        var iq = d.gridHunt || { gen: 1000, demand: 1000, storage: 200, duration: 2, soc: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var rawGh = (d.gridHunt && typeof d.gridHunt === 'object' && !Array.isArray(d.gridHunt)) ? d.gridHunt : {};
+        var iq = {
+          gen: isFinite(Number(rawGh.gen)) ? Number(rawGh.gen) : 1000,
+          demand: isFinite(Number(rawGh.demand)) ? Number(rawGh.demand) : 1000,
+          storage: isFinite(Number(rawGh.storage)) ? Number(rawGh.storage) : 200,
+          duration: isFinite(Number(rawGh.duration)) && Number(rawGh.duration) > 0 ? Number(rawGh.duration) : 2,
+          soc: rawGh.soc != null && isFinite(Number(rawGh.soc)) ? Number(rawGh.soc) : 50,
+          hypothesis: typeof rawGh.hypothesis === 'string' ? rawGh.hypothesis : '',
+          stuckRevealed: !!rawGh.stuckRevealed,
+          understood: !!rawGh.understood,
+          explanation: typeof rawGh.explanation === 'string' ? rawGh.explanation : '',
+          log: Array.isArray(rawGh.log) ? rawGh.log : []
+        };
         function setIQ(patch) { upd('gridHunt', Object.assign({}, iq, patch)); }
         var imbalance = iq.gen - iq.demand;
         var storageDuration = Math.max(0.5, iq.duration || 2);
-        var storageSocPct = iq.soc != null ? iq.soc : 50;
+        var storageSocPct = Math.max(0, Math.min(100, iq.soc));
         var storagePowerMW = iq.storage / storageDuration;
         var storageCanAct = imbalance < 0 ? storageSocPct > 0 : imbalance > 0 ? storageSocPct < 100 : true;
         var bufferCapacity = storageCanAct ? storagePowerMW : 0;
@@ -13100,26 +13683,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         if (bufferedImbalance < 50) state = 'balanced';
         else if (imbalance < 0) state = 'blackout';
         else state = 'curtailed';
-        var stateMeta = {
-          balanced:  { label: __alloT('stem.renewables.grid_balanced', '🟢 Within modeled balance band'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.renewables.supply_meets_demand_within_buffer_tole', 'Residual imbalance is within this activity\'s arbitrary 50 MW band; no frequency is calculated.') },
-          blackout:  { label: __alloT('stem.renewables.brownout_blackout_risk', '🔴 Modeled demand shortage'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.renewables.demand_exceeds_generation_storage_disc', 'Modeled demand shortage remains after the available storage power is applied.') },
-          curtailed: { label: __alloT('stem.renewables.excess_generation_curtailed', '🟡 Modeled supply surplus'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.renewables.generation_exceeds_demand_storage_abso', 'Modeled supply surplus remains after available charging power; real operators may curtail, export, or shift demand.') }
+        var stateMeta = isContrast ? {
+          balanced:  { label: __alloT('stem.renewables.grid_balanced', '🟢 Within modeled balance band'), color: '#66ff66', bg: '#000000', border: '#66ff66', desc: __alloT('stem.renewables.supply_meets_demand_within_buffer_tole', 'Residual imbalance is within this activity\'s arbitrary 50 MW band; no frequency is calculated.') },
+          blackout:  { label: __alloT('stem.renewables.brownout_blackout_risk', '🔴 Modeled demand shortage'), color: '#ff6b6b', bg: '#000000', border: '#ff6b6b', desc: __alloT('stem.renewables.demand_exceeds_generation_storage_disc', 'Modeled demand shortage remains after the available storage power is applied.') },
+          curtailed: { label: __alloT('stem.renewables.excess_generation_curtailed', '🟡 Modeled supply surplus'), color: '#ffff00', bg: '#000000', border: '#ffff00', desc: __alloT('stem.renewables.generation_exceeds_demand_storage_abso', 'Modeled supply surplus remains after available charging power; real operators may curtail, export, or shift demand.') }
+        }[state] : isDark ? {
+          balanced:  { label: __alloT('stem.renewables.grid_balanced', '🟢 Within modeled balance band'), color: '#6ee7b7', bg: '#064e3b', border: '#34d399', desc: __alloT('stem.renewables.supply_meets_demand_within_buffer_tole', 'Residual imbalance is within this activity\'s arbitrary 50 MW band; no frequency is calculated.') },
+          blackout:  { label: __alloT('stem.renewables.brownout_blackout_risk', '🔴 Modeled demand shortage'), color: '#fca5a5', bg: '#450a0a', border: '#f87171', desc: __alloT('stem.renewables.demand_exceeds_generation_storage_disc', 'Modeled demand shortage remains after the available storage power is applied.') },
+          curtailed: { label: __alloT('stem.renewables.excess_generation_curtailed', '🟡 Modeled supply surplus'), color: '#fde68a', bg: '#451a03', border: '#fbbf24', desc: __alloT('stem.renewables.generation_exceeds_demand_storage_abso', 'Modeled supply surplus remains after available charging power; real operators may curtail, export, or shift demand.') }
+        }[state] : {
+          balanced:  { label: __alloT('stem.renewables.grid_balanced', '🟢 Within modeled balance band'), color: '#047857', bg: '#ecfdf5', border: '#10b981', desc: __alloT('stem.renewables.supply_meets_demand_within_buffer_tole', 'Residual imbalance is within this activity\'s arbitrary 50 MW band; no frequency is calculated.') },
+          blackout:  { label: __alloT('stem.renewables.brownout_blackout_risk', '🔴 Modeled demand shortage'), color: '#b91c1c', bg: '#fef2f2', border: '#ef4444', desc: __alloT('stem.renewables.demand_exceeds_generation_storage_disc', 'Modeled demand shortage remains after the available storage power is applied.') },
+          curtailed: { label: __alloT('stem.renewables.excess_generation_curtailed', '🟡 Modeled supply surplus'), color: '#92400e', bg: '#fffbeb', border: '#f59e0b', desc: __alloT('stem.renewables.generation_exceeds_demand_storage_abso', 'Modeled supply surplus remains after available charging power; real operators may curtail, export, or shift demand.') }
         }[state];
         function logObs() {
           setIQ({ log: (iq.log || []).concat([{ g: iq.gen, d: iq.demand, s: iq.storage, p: Math.round(storagePowerMW), soc: storageSocPct, st: state }]).slice(-8) });
         }
-        return h('div', { className: 'p-4 rounded-xl bg-white border border-emerald-200 shadow-sm' },
-          h('h3', { className: 'text-sm font-black text-emerald-700 mb-1' }, __alloT('stem.renewables.grid_balance_discovery_2', '⚡ Grid balance discovery')),
-          h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
+        var genBarW = Math.round(Math.min(1, iq.gen / 2500) * 290);
+        var demBarW = Math.round(Math.min(1, iq.demand / 2500) * 290);
+        var bufBarW = Math.round(Math.min(1, bufferCapacity / 1600) * 290);
+        return h('div', { style: { padding: 18, maxWidth: 960, margin: '0 auto', borderRadius: 14, background: T.card, border: '1px solid ' + T.border, color: T.text } },
+          backBar(__alloT('stem.renewables.grid_balance_discovery_2', '⚡ Grid balance discovery')),
+          h('p', { style: { fontSize: 12, color: T.muted, marginBottom: 12, lineHeight: 1.55 } },
             'Compare generation and demand with a simplified storage system. Energy capacity (MWh), duration (h), and state of charge determine available power (MW). The three labels are classroom categories, not grid forecasts.'),
-          h('div', { className: 'mb-3 p-3 rounded-lg text-center', role: 'status', 'aria-live': 'polite', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
-            h('div', { className: 'text-lg font-black', style: { color: stateMeta.color } }, stateMeta.label),
-            h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, stateMeta.desc)
+          h('div', { role: 'status', 'aria-live': 'polite', style: { marginBottom: 12, padding: 12, borderRadius: 10, textAlign: 'center', background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+            h('div', { style: { fontSize: 17, fontWeight: 900, color: stateMeta.color } }, stateMeta.label),
+            h('div', { style: { fontSize: 12, color: isContrast || isDark ? '#f8fafc' : '#1e293b', marginTop: 4 } }, stateMeta.desc)
           ),
-          h('div', { className: 'mb-3 p-2 rounded bg-slate-50 border border-slate-200 text-[0.6875rem] text-slate-700' },
+          // Live SVG Power & Storage Balance Visual Stage
+          h('div', { style: { marginBottom: 12, padding: 12, borderRadius: 10, background: isContrast ? '#000000' : '#091916', border: '1px solid ' + (isContrast ? '#ffff00' : '#2f5247') } },
+            h('svg', {
+              viewBox: '0 0 560 98',
+              style: { width: '100%', height: 'auto', display: 'block' },
+              role: 'img',
+              'aria-label': __alloT('stem.renewables.svg_grid_balance_aria', 'Live bar comparison of generation megawatts, demand megawatts, and available storage buffer power')
+            },
+              h('text', { x: 10, y: 22, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'Generation'),
+              h('rect', { x: 116, y: 11, width: 290, height: 14, rx: 5, fill: '#1e293b' }),
+              h('rect', { x: 116, y: 11, width: Math.max(4, genBarW), height: 14, rx: 5, fill: isContrast ? '#66ff66' : '#10b981' }),
+              h('text', { x: 416, y: 22, fill: isContrast ? '#66ff66' : '#86efac', fontSize: 11, fontWeight: 700 }, iq.gen + ' MW'),
+
+              h('text', { x: 10, y: 50, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'Demand'),
+              h('rect', { x: 116, y: 39, width: 290, height: 14, rx: 5, fill: '#1e293b' }),
+              h('rect', { x: 116, y: 39, width: Math.max(4, demBarW), height: 14, rx: 5, fill: isContrast ? '#ffff00' : '#f59e0b' }),
+              h('text', { x: 416, y: 50, fill: isContrast ? '#ffff00' : '#fde68a', fontSize: 11, fontWeight: 700 }, iq.demand + ' MW'),
+
+              h('text', { x: 10, y: 78, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'Storage Buffer'),
+              h('rect', { x: 116, y: 67, width: 290, height: 14, rx: 5, fill: '#1e293b' }),
+              h('rect', { x: 116, y: 67, width: Math.max(4, bufBarW), height: 14, rx: 5, fill: isContrast ? '#00ffff' : '#38bdf8' }),
+              h('text', { x: 416, y: 78, fill: isContrast ? '#00ffff' : '#7dd3fc', fontSize: 11, fontWeight: 700 }, Math.round(bufferCapacity) + ' MW · ' + storageSocPct + '% SoC')
+            )
+          ),
+          h('div', { style: { marginBottom: 12, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.text } },
             h('strong', null, 'Storage rating: '), Math.round(storagePowerMW) + ' MW = ' + iq.storage + ' MWh / ' + storageDuration + ' h. ' +
             'Current stored energy: ' + (iq.storage * storageSocPct / 100).toFixed(1) + ' MWh at ' + storageSocPct + '% state of charge.'),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-5 gap-3 mb-3' },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 12 } },
             [
               { key: 'gen',      label: __alloT('stem.renewables.generation_mw', 'Generation (MW)'), val: iq.gen, min: 0, max: 2500, step: 50 },
               { key: 'demand',   label: __alloT('stem.renewables.demand_mw', 'Demand (MW)'), val: iq.demand, min: 0, max: 2500, step: 50 },
@@ -13127,53 +13745,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               { key: 'duration', label: 'Storage duration at rated power (h)', val: storageDuration, min: 0.5, max: 8, step: 0.5 },
               { key: 'soc',      label: 'State of charge (%)', val: storageSocPct, min: 0, max: 100, step: 5 }
             ].map(function(s) {
-              return h('div', { key: s.key },
-                h('label', { htmlFor: 'gb-' + s.key, className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' },
-                  s.label + ': ', h('span', { className: 'font-mono text-emerald-700' }, s.val)),
+              return h('div', { key: s.key, style: { minWidth: 0 } },
+                h('label', { htmlFor: 'gb-' + s.key, style: { display: 'block', fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 4 } },
+                  s.label + ': ', h('span', { style: { fontFamily: 'monospace', color: T.accentHi } }, s.val)),
                 h('input', { id: 'gb-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
                   onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
-                  className: 'w-full', 'aria-label': s.label }));
+                  style: { width: '100%', accentColor: T.accent }, 'aria-label': s.label }));
             })
           ),
-          h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-            h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.renewables.log', '📋 Log')),
-            h('button', { onClick: function() { setIQ({ gen: 1000, demand: 1000, storage: 200, duration: 2, soc: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-              className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.renewables.reset_2', '↺ Reset')),
-            (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+          h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' } },
+            h('button', { type: 'button', onClick: logObs, style: btnPrimary({ padding: '8px 14px', fontSize: 12 }) }, __alloT('stem.renewables.log', '📋 Log')),
+            h('button', { type: 'button', onClick: function() { setIQ({ gen: 1000, demand: 1000, storage: 200, duration: 2, soc: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+              style: btn({ padding: '8px 14px', fontSize: 12 }) }, __alloT('stem.renewables.reset_2', '↺ Reset')),
+            (iq.log || []).length > 0 && h('span', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic' } }, (iq.log || []).length + ' logged')
           ),
-          (iq.log || []).length > 0 && h('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700 mb-3', 'aria-label': __alloT('stem.renewables.a11y_logged_grid_balance_comparisons', 'Logged grid balance comparisons') },
-            h('thead', null, h('tr', { className: 'bg-slate-100' },
-              ['gen MW', 'demand MW', 'energy MWh', 'power MW', 'SoC %', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
+          (iq.log || []).length > 0 && h('table', { style: { fontSize: 11, width: '100%', borderCollapse: 'collapse', color: T.text, marginBottom: 12 }, 'aria-label': __alloT('stem.renewables.a11y_logged_grid_balance_comparisons', 'Logged grid balance comparisons') },
+            h('thead', null, h('tr', { style: { background: T.cardAlt } },
+              ['gen MW', 'demand MW', 'energy MWh', 'power MW', 'SoC %', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', style: { padding: '4px 6px', border: '1px solid ' + T.border, textAlign: 'left' } }, c); }))),
             h('tbody', null, iq.log.map(function(o, idx) {
               return h('tr', { key: 'lr' + idx },
-                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.g),
-                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.d),
-                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.s),
-                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p != null ? o.p : '—'),
-                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.soc != null ? o.soc : '—'),
-                h('td', { className: 'px-1 border border-slate-200' }, o.st));
+                h('td', { style: { padding: '4px 6px', border: '1px solid ' + T.border, fontFamily: 'monospace' } }, o.g),
+                h('td', { style: { padding: '4px 6px', border: '1px solid ' + T.border, fontFamily: 'monospace' } }, o.d),
+                h('td', { style: { padding: '4px 6px', border: '1px solid ' + T.border, fontFamily: 'monospace' } }, o.s),
+                h('td', { style: { padding: '4px 6px', border: '1px solid ' + T.border, fontFamily: 'monospace' } }, o.p != null ? o.p : '—'),
+                h('td', { style: { padding: '4px 6px', border: '1px solid ' + T.border, fontFamily: 'monospace' } }, o.soc != null ? o.soc : '—'),
+                h('td', { style: { padding: '4px 6px', border: '1px solid ' + T.border } }, o.st));
             }))
           ),
           h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
             'aria-label': __alloT('stem.renewables.hypothesis_input', 'Renewable-grid hypothesis'), placeholder: __alloT('stem.renewables.hypothesis_free_text_how_much_storage_', 'Hypothesis: How do energy capacity, duration, and state of charge limit the power available for a mismatch?'),
-            className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-            className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[0.6875rem] font-bold text-amber-800 border border-amber-300 mb-3' },
+            style: { width: '100%', fontSize: 12, border: '1px solid ' + T.border, borderRadius: 8, padding: 8, fontFamily: 'monospace', lineHeight: 1.45, marginBottom: 12, background: T.cardAlt, color: T.text }, rows: 3 }),
+          !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); },
+            style: btn({ padding: '8px 14px', fontSize: 12, marginBottom: 12 }) },
             __alloT('stem.renewables.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-          iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed mb-3' },
-            h('ul', { className: 'list-disc pl-5 space-y-1' },
+          iq.stuckRevealed && h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.text, lineHeight: 1.55, marginBottom: 12 } },
+            h('ul', { style: { margin: 0, paddingLeft: 18 } },
               h('li', null, __alloT('stem.renewables.hold_two_sliders_steady_move_the_third', 'Hold two sliders steady. Move the third. Watch.')),
               h('li', null, __alloT('stem.renewables.find_two_settings_that_produce_the_sam', 'Find two settings that produce the same state. What do they share?')),
               h('li', null, __alloT('stem.renewables.renewables_are_intermittent_investigat', 'Wind and solar output are variable. Investigate how storage power and energy ratings affect the modeled band.')),
               h('li', null, __alloT('stem.renewables.real_grids_run_at_1_frequency_why_migh', 'Real grids operate near a nominal frequency within tight reliability limits. What controls help keep them there?')))),
-          h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
-            h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+          h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent } },
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: T.text, cursor: 'pointer' } },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 18, height: 18 } }),
               __alloT('stem.renewables.i_think_i_understand_let_me_explain', 'I think I understand — let me explain')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
               'aria-label': __alloT('stem.renewables.explanation_input', 'Renewable-grid explanation'), placeholder: __alloT('stem.renewables.explain_how_generation_demand_and_stor', 'Explain how generation, demand, and storage interact to determine grid state.'),
-              className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-          h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[0.625rem] italic text-slate-600' },
+              style: { width: '100%', fontSize: 12, border: '1px solid ' + T.border, borderRadius: 8, padding: 8, fontFamily: 'monospace', lineHeight: 1.45, marginTop: 8, background: T.card, color: T.text }, rows: 4 })),
+          h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, fontStyle: 'italic', color: T.muted } },
             __alloT('stem.renewables.design_note_discrete_3_state_outcome_n', 'Model limit: one-instant classroom classifier with an arbitrary 50 MW tolerance. It omits network constraints, reserves, ramp rates, losses, state evolution, market dispatch, protection systems, and actual frequency dynamics; labels are prompts, not predictions.'))
         );
       }

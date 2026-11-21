@@ -150,7 +150,7 @@
    * Rejects multi-word strings and empty inputs.
    */
   function normalizeWord(text, options) {
-    if (typeof text !== 'string') return '';
+    if (typeof text !== 'string' || text.length > 256) return '';
     var stripPunct = !options || options.stripPunctuation !== false;
     var s = text.trim().replace(/[\u2018\u2019]/g, "'");
     if (!s) return '';
@@ -174,10 +174,23 @@
 
   function deriveCdnShardBase(rawOverride) {
     if (typeof rawOverride !== 'string') return '';
-    var base = ensureTrailingSlash(rawOverride);
+    var trimmed = rawOverride.trim();
+    if (!trimmed || !/^(?:https:\/\/|http:\/\/(?:localhost|127\.0\.0\.1)(?:[:/]|$))/i.test(trimmed)) return '';
+    var base = ensureTrailingSlash(trimmed);
     if (!base) return '';
     if (/\/word_audio_shards\/$/i.test(base)) return base;
     return base + RELATIVE_BASE;
+  }
+
+  var MAX_JSON_BYTES = 25 * 1024 * 1024;
+  function safeJsonParse(rawText) {
+    if (typeof rawText !== 'string' || rawText.length > MAX_JSON_BYTES) {
+      throw new Error('JSON payload exceeds safety limit.');
+    }
+    return JSON.parse(stripBom(rawText), function (key, value) {
+      if (key === '__proto__') return undefined;
+      return value;
+    });
   }
 
   /**
@@ -211,7 +224,12 @@
       pushBase(opts.relativeBase || RELATIVE_BASE);
     }
 
-    var localOffline = !!(envRoot && envRoot.__ALLO_LOCAL_BOX && opts.offlineOnly);
+    var localOffline = !!(envRoot && (
+      (envRoot.__ALLO_LOCAL_BOX && opts.offlineOnly)
+      || envRoot.__alloOfflineOnly === true
+      || envRoot.__alloQrStudentMode === true
+      || envRoot._alloQrBlocked === true
+    ));
     if (!localOffline) {
       var overrideBase = envRoot ? deriveCdnShardBase(envRoot._ALLOFLOW_CDN_BASE) : '';
       if (overrideBase) pushBase(overrideBase);
@@ -270,9 +288,22 @@
   }
 
   function encodeMonoPcm16Wav(audioBuffer) {
-    var sampleRate = Math.max(8000, Math.round(audioBuffer.sampleRate || 24000));
-    var numChannels = Math.max(1, audioBuffer.numberOfChannels || 1);
-    var length = audioBuffer.length || 0;
+    if (!audioBuffer || typeof audioBuffer.getChannelData !== 'function') {
+      throw new Error('Invalid audio buffer for WAV encoding.');
+    }
+    var rawRate = Number(audioBuffer.sampleRate);
+    var sampleRate = (Number.isFinite(rawRate) && rawRate > 0)
+      ? Math.max(8000, Math.min(192000, Math.round(rawRate)))
+      : 24000;
+    var rawCh = Number(audioBuffer.numberOfChannels);
+    var numChannels = (Number.isFinite(rawCh) && rawCh >= 1)
+      ? Math.min(32, Math.floor(rawCh))
+      : 1;
+    var rawLen = Number(audioBuffer.length);
+    var maxSamples = sampleRate * 60;
+    var length = (Number.isFinite(rawLen) && rawLen > 0)
+      ? Math.min(maxSamples, Math.floor(rawLen))
+      : 0;
     var channels = [];
     for (var ch = 0; ch < numChannels; ch++) {
       channels.push(audioBuffer.getChannelData(ch));
@@ -431,7 +462,8 @@
         checkNotAborted(signal);
         var url = bases[i] + relPath;
         try {
-          var init = signal ? { signal: signal } : undefined;
+          var init = { credentials: 'omit', referrerPolicy: 'no-referrer' };
+          if (signal) init.signal = signal;
           var res = await raceWithSignal(fetchImpl(url, init), signal);
           if (!res || !res.ok) {
             lastErr = new Error('HTTP ' + (res ? res.status : 'error') + ' fetching ' + url);
@@ -440,7 +472,7 @@
           var parsed;
           if (typeof res.text === 'function') {
             var rawText = await raceWithSignal(res.text(), signal);
-            parsed = JSON.parse(stripBom(rawText));
+            parsed = safeJsonParse(rawText);
           } else {
             parsed = await raceWithSignal(res.json(), signal);
           }
@@ -682,7 +714,9 @@
       var signal = opts.signal;
       checkNotAborted(signal);
 
-      var list = words ? Array.from(words) : [];
+      var list = Array.isArray(words)
+        ? words
+        : (words && typeof words[Symbol.iterator] === 'function' ? Array.from(words) : []);
       var idx = await loadIndex(opts);
       if (!idx) {
         return { loaded: 0, missing: list.length, shardsFetched: 0, ok: false };
@@ -779,7 +813,7 @@
       };
     }
 
-    return {
+    return Object.freeze({
       normalizeWord: normalizeWord,
       resolveBaseUrls: function (opts) { return resolveBaseUrls(mergedOpts(opts)); },
       loadIndex: loadIndex,
@@ -789,15 +823,15 @@
       prefetchWords: prefetchWords,
       clearCache: clearCache,
       stats: stats,
-    };
+    });
   }
 
-  return {
+  return Object.freeze({
     FORMAT: FORMAT,
     CDN_BASE: CDN_BASE,
     RELATIVE_BASE: RELATIVE_BASE,
     normalizeWord: normalizeWord,
     resolveBaseUrls: resolveBaseUrls,
     createWordAudioShardClient: createWordAudioShardClient,
-  };
+  });
 }));

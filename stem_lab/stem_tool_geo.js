@@ -66,6 +66,24 @@ window.StemLab = window.StemLab || {
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
     document.head.appendChild(st);
   })();
+  // Geodesic & cartographic map-frame polish (reduced-motion & HC safe)
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-geo-visual-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-geo-visual-css';
+    st.textContent = [
+      '@keyframes geo-beacon-pulse { 0% { opacity: 0.28; } 50% { opacity: 0.72; } 100% { opacity: 0.28; } }',
+      '[data-stem-tool-shell="geoQuiz"] .geo-beacon-halo { animation: geo-beacon-pulse 2.4s ease-in-out infinite; }',
+      '[data-stem-tool-shell="geoQuiz"] .geo-map-frame { box-shadow: inset 0 0 22px rgba(2,12,24,0.22), 0 6px 18px -10px rgba(2,12,24,0.35); }',
+      '[data-stem-tool-shell="geoQuiz"]:not([data-stem-theme="contrast"]) .geo-dist-label { background: rgba(15,23,42,0.92); color: #f8fafc; border: 1px solid rgba(56,189,248,0.55); border-radius: 6px; font-weight: 700; font-size: 11px; padding: 2px 7px; box-shadow: 0 3px 10px rgba(2,6,23,0.45); }',
+      '[data-stem-tool-shell="geoQuiz"]:not([data-stem-theme="contrast"]) .geo-dist-label.leaflet-tooltip-left::before { border-left-color: rgba(15,23,42,0.92); }',
+      '[data-stem-tool-shell="geoQuiz"]:not([data-stem-theme="contrast"]) .geo-dist-label.leaflet-tooltip-right::before { border-right-color: rgba(15,23,42,0.92); }',
+      '.theme-contrast [data-stem-tool-shell="geoQuiz"] .geo-beacon-halo { animation: none !important; opacity: 0.85 !important; }',
+      '.theme-contrast [data-stem-tool-shell="geoQuiz"] .geo-map-frame { box-shadow: none !important; border-color: #ffff00 !important; }',
+      '@media (prefers-reduced-motion: reduce) { [data-stem-tool-shell="geoQuiz"] .geo-beacon-halo { animation: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
 
 
   // ── Audio (auto-injected) ──
@@ -821,6 +839,7 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
           var geoRound = _geoNum(d.geoRound, 0);
 
           var geoLandmarkIdx = Math.max(0, Math.floor(_geoNum(d.geoLandmarkIdx, 0)));
+          var geoLandmarkXpMax = Math.max(0, Math.floor(_geoNum(d.geoLandmarkXpMax, 0)));
 
           // Distance challenge state
           var geoDistA = _geoPlainObj(d.geoDistA) ? d.geoDistA : null;
@@ -1709,7 +1728,7 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
 
               upd('geoStreak', 0);
 
-              var smaller = pickedIso === sizeTarget1.iso ? sizeTarget2 : sizeTarget1;
+              var smaller = bigger.iso === sizeTarget1.iso ? sizeTarget2 : sizeTarget1;
 
               if (typeof stemBeep === 'function') stemBeep('wrong');
 
@@ -2415,10 +2434,12 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
                         // No-label tiles: dark_all printed the capital's name right next to the marker.
                         var m = geoMiniMap(el, { labels: false }).setView([geoTarget.lat, geoTarget.lng], zoom);
                         var markerColor = answered ? (geoFeedback.correct ? '#22c55e' : '#ef4444') : '#fbbf24';
-                        // Country = soft circle on the centroid; capital = dot at the REAL city
+                        // Country = soft regional highlight vignette on the centroid; capital = glowing beacon at the REAL city
                         // (used to sit on the centroid too, which put "Ottawa" in Nunavut).
-                        window.L.circle([geoTarget.lat, geoTarget.lng], { radius: 80000, color: markerColor, weight: 1.5, fillColor: markerColor, fillOpacity: 0.12 }).addTo(m);
-                        var cap = window.L.circleMarker(capLL, { radius: answered ? 9 : 5, color: markerColor, weight: 3, fillColor: markerColor, fillOpacity: 0.6 }).addTo(m);
+                        window.L.circle([geoTarget.lat, geoTarget.lng], { radius: 135000, color: markerColor, weight: 1, opacity: 0.3, fillColor: markerColor, fillOpacity: 0.06, interactive: false }).addTo(m);
+                        window.L.circle([geoTarget.lat, geoTarget.lng], { radius: 80000, color: markerColor, weight: 1.5, fillColor: markerColor, fillOpacity: 0.14, interactive: false }).addTo(m);
+                        window.L.circleMarker(capLL, { radius: answered ? 15 : 11, color: markerColor, weight: 1.5, fillColor: markerColor, fillOpacity: 0.24, interactive: false, className: 'geo-beacon-halo' }).addTo(m);
+                        var cap = window.L.circleMarker(capLL, { radius: answered ? 9 : 5.5, color: '#ffffff', weight: 2.2, fillColor: markerColor, fillOpacity: 0.9 }).addTo(m);
                         // After the answer, name the capital where it actually is
                         if (answered) cap.bindPopup('<b>\uD83D\uDCCD ' + geoTarget.capital + '</b>').openPopup();
                         cmRef.current = m;
@@ -2427,7 +2448,8 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
                       } catch(e) { console.warn('Capital map error:', e); }
                     }, 50);
                   },
-                  style: { height: 180, width: '100%', borderRadius: 12, overflow: 'hidden', marginBottom: 12, border: '2px solid #e2e8f0' }
+                  className: 'geo-map-frame',
+                  style: { height: 180, width: '100%', borderRadius: 12, overflow: 'hidden', marginBottom: 12, border: '2px solid #cbd5e1' }
                 }),
 
                 React.createElement('div', { className: 'flex gap-2 mx-auto' },
@@ -2476,29 +2498,37 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
 
                 ),
 
-                // Multiple choice hints for easy mode — choices generated ONCE per target
-                // and stashed in state so they don't re-shuffle on every render
-                // (previously caused misclicks if React re-rendered during a click).
+                // Multiple choice hints for easy mode — deterministic per target so
+                // options never re-shuffle on re-render and never call upd() during render.
                 geoDifficulty === 'easy' && (function() {
-
-                  if (!geoCapitalsChoices) {
+                  var activeCapChoices = geoCapitalsChoices;
+                  if (!activeCapChoices) {
+                    var seedStr = String(geoTarget.iso || geoTarget.name || 'cap');
+                    var seed = 2166136261;
+                    for (var chI = 0; chI < seedStr.length; chI++) {
+                      seed ^= seedStr.charCodeAt(chI);
+                      seed = Math.imul(seed, 16777619) >>> 0;
+                    }
+                    var nextRand = function() {
+                      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+                      return seed / 4294967296;
+                    };
                     var opts = [geoTarget.capital];
                     var guard = 0;
                     while (opts.length < 4 && guard < 100) {
-                      var r = countries[Math.floor(Math.random() * countries.length)];
-                      if (opts.indexOf(r.capital) === -1) opts.push(r.capital);
+                      var r = countries[Math.floor(nextRand() * countries.length)];
+                      if (r && r.capital && opts.indexOf(r.capital) === -1) opts.push(r.capital);
                       guard++;
                     }
                     for (var si = opts.length - 1; si > 0; si--) {
-                      var sj = Math.floor(Math.random() * (si + 1));
+                      var sj = Math.floor(nextRand() * (si + 1));
                       var tmp = opts[si]; opts[si] = opts[sj]; opts[sj] = tmp;
                     }
-                    upd('geoCapitalsChoices', opts);
-                    return null; // render nothing this frame; next render has stable opts
+                    activeCapChoices = opts;
                   }
 
                   return React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center mt-3' },
-                    geoCapitalsChoices.map(function(cap) {
+                    activeCapChoices.map(function(cap) {
                       var answered = !!geoFeedback;
                       var isCorrect = answered && cap === geoTarget.capital;
                       var isWrongClicked = answered && !geoFeedback.correct && geoFeedback.picked === cap;
@@ -2559,16 +2589,19 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
                       try {
                         var zoom = geoTarget.area > 5000000 ? 2 : geoTarget.area > 1500000 ? 3 : geoTarget.area > 300000 ? 4 : 5;
                         var m = geoMiniMap(el, { labels: false }).setView([geoTarget.lat, geoTarget.lng], zoom);
-                        // Yellow pulsing marker for the target country
+                        // Luminous pulsing beacon & regional halo for the target country
                         var markerColor = answered ? (geoFeedback.correct ? '#22c55e' : '#ef4444') : '#fbbf24';
-                        window.L.circleMarker([geoTarget.lat, geoTarget.lng], { radius: 14, color: markerColor, weight: 3, fillColor: markerColor, fillOpacity: 0.35 }).addTo(m);
+                        window.L.circleMarker([geoTarget.lat, geoTarget.lng], { radius: 24, color: markerColor, weight: 1.5, opacity: 0.45, fillColor: markerColor, fillOpacity: 0.14, interactive: false, className: 'geo-beacon-halo' }).addTo(m);
+                        window.L.circleMarker([geoTarget.lat, geoTarget.lng], { radius: 13, color: '#ffffff', weight: 2.5, fillColor: markerColor, fillOpacity: 0.55 }).addTo(m);
+                        window.L.circleMarker([geoTarget.lat, geoTarget.lng], { radius: 4.5, color: markerColor, weight: 1, fillColor: '#ffffff', fillOpacity: 0.95, interactive: false }).addTo(m);
                         cmRef.current = m;
                         cmRef.iso = geoTarget.iso;
                         cmRef.answered = answered;
                       } catch(e) { console.warn('Continent map error:', e); }
                     }, 50);
                   },
-                  style: { height: 200, width: '100%', borderRadius: 12, overflow: 'hidden', marginBottom: 12, border: '2px solid #e2e8f0' }
+                  className: 'geo-map-frame',
+                  style: { height: 200, width: '100%', borderRadius: 12, overflow: 'hidden', marginBottom: 12, border: '2px solid #cbd5e1' }
                 }),
 
                 // Feedback line (inline with the map + buttons, not below everything)
@@ -2706,8 +2739,20 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
                             : ('in ' + lm.country);
                 var fmtDeg = function(v, pos, neg) { return Math.abs(v).toFixed(1) + '° ' + (v >= 0 ? pos : neg); };
 
-                // Quiz mode: ensure we have 4 multiple-choice country options (1 correct + 3 distractors)
-                if (geoLandmarkMode === 'quiz' && !geoLandmarkChoices) {
+                // Quiz mode: compute 4 multiple-choice country options deterministically
+                // when not pre-populated (avoids calling upd() during render).
+                var activeLmChoices = geoLandmarkChoices;
+                if (geoLandmarkMode === 'quiz' && !activeLmChoices) {
+                  var lmSeedStr = String(lm.name || '') + ':' + geoLandmarkIdx;
+                  var lmSeed = 2166136261;
+                  for (var lcI = 0; lcI < lmSeedStr.length; lcI++) {
+                    lmSeed ^= lmSeedStr.charCodeAt(lcI);
+                    lmSeed = Math.imul(lmSeed, 16777619) >>> 0;
+                  }
+                  var lmRand = function() {
+                    lmSeed = (Math.imul(lmSeed, 1664525) + 1013904223) >>> 0;
+                    return lmSeed / 4294967296;
+                  };
                   var used = {};
                   lmCountries.forEach(function(n) { used[n] = true; }); // never offer a co-owner as a "wrong" answer
                   // Plausible distractors: two from the landmark's OWN continent, one
@@ -2719,7 +2764,7 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
                   var drawFrom = function(pool, want) {
                     var got = [], guard = 0;
                     while (got.length < want && guard < 200 && pool.length > 0) {
-                      var pick = pool[Math.floor(Math.random() * pool.length)];
+                      var pick = pool[Math.floor(lmRand() * pool.length)];
                       if (!used[pick.name]) { used[pick.name] = true; got.push(pick.name); }
                       guard++;
                     }
@@ -2730,9 +2775,10 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
                   distractors = distractors.concat(drawFrom(countries, 3 - distractors.length));
                   var options = distractors.concat([lm.country]);
                   for (var si = options.length - 1; si > 0; si--) {
-                    var sj = Math.floor(Math.random() * (si + 1));
+                    var sj = Math.floor(lmRand() * (si + 1));
                     var tmp = options[si]; options[si] = options[sj]; options[sj] = tmp;
                   }
+                  activeLmChoices = options;
                   upd('geoLandmarkChoices', options);
                 }
 
@@ -2820,7 +2866,8 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
                           var popupHtml = (isQuiz && !revealed) ? ('<b>' + lm.name + '</b><br><i>country hidden — take a guess</i>') : ('<b>' + lm.name + '</b><br>' + lmCountries.join(' / '));
                           window.L.marker([lm.lat, lm.lng]).addTo(m).bindPopup(popupHtml).openPopup();
 
-                          window.L.circle([lm.lat, lm.lng], { radius: 50000, color: '#f6ad55', fillColor: '#f6ad55', fillOpacity: 0.2 }).addTo(m);
+                          window.L.circle([lm.lat, lm.lng], { radius: 92000, color: '#f6ad55', weight: 1, opacity: 0.32, fillColor: '#f6ad55', fillOpacity: 0.08, interactive: false, className: 'geo-beacon-halo' }).addTo(m);
+                          window.L.circle([lm.lat, lm.lng], { radius: 50000, color: '#f6ad55', weight: 2, fillColor: '#f6ad55', fillOpacity: 0.22 }).addTo(m);
 
                           lmMapRef.current = m;
 
@@ -2836,7 +2883,8 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
 
                     },
 
-                    style: { height: 220, width: '100%', borderRadius: 12, overflow: 'hidden', marginBottom: 12, border: '2px solid #e2e8f0' }
+                    className: 'geo-map-frame',
+                    style: { height: 220, width: '100%', borderRadius: 12, overflow: 'hidden', marginBottom: 12, border: '2px solid #cbd5e1' }
 
                   }),
 
@@ -2847,8 +2895,8 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
                   }, fb.msg),
 
                   // Quiz choices OR browse navigation
-                  isQuiz ? (geoLandmarkChoices && React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
-                    geoLandmarkChoices.map(function(name) {
+                  isQuiz ? (activeLmChoices && React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                    activeLmChoices.map(function(name) {
                       var isCorrect = revealed && name === lm.country;
                       var isPicked = revealed && fb && fb.picked === name;
                       var base = 'px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all ';
@@ -2875,8 +2923,12 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
                     React.createElement('span', { className: 'text-[0.6875rem] text-slate-600 self-center' }, (lmSlot + 1) + '/' + lmCount), // wraps (used to show 21/20, 22/20 ...)
                     React.createElement('button', {
                       onClick: function() {
-                        upd('geoLandmarkIdx', geoLandmarkIdx + 1);
-                        if (typeof awardStemXP === 'function' && geoLandmarkIdx % 5 === 4) awardStemXP('geoQuiz', 5, 'Explored 5 landmarks');
+                        var nextIdx = geoLandmarkIdx + 1;
+                        upd('geoLandmarkIdx', nextIdx);
+                        if (nextIdx > geoLandmarkXpMax) {
+                          upd('geoLandmarkXpMax', nextIdx);
+                          if (typeof awardStemXP === 'function' && nextIdx % 5 === 0) awardStemXP('geoQuiz', 5, 'Explored 5 landmarks');
+                        }
                       },
                       className: 'px-3 py-1 bg-teal-700 rounded text-xs font-bold text-white hover:bg-teal-800'
                     }, __alloT('stem.geo.next', 'Next \u25B6'))
@@ -3438,36 +3490,48 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
                       try {
                         var m = geoMiniMap(el, { labels: false, minZoom: 1 });
                         var aLL = capitalLatLng(geoDistA), bLL = capitalLatLng(geoDistB);
-                        // Markers on the CAPITALS (teal for A, cyan for B — match the cards)
+                        // Glowing map-pin halos + crisp white-rimmed markers on the CAPITALS (teal for A, cyan for B)
                         // Point the westernmost capital's label right and the easternmost left (inward),
                         // vertically centered on each dot so long capital names never clip left/right/top/bottom.
                         var aDir = aLL[1] <= bLL[1] ? 'right' : 'left';
                         var bDir = bLL[1] < aLL[1] ? 'right' : 'left';
-                        window.L.circleMarker(aLL, { radius: 10, color: '#14b8a6', weight: 3, fillColor: '#14b8a6', fillOpacity: 0.55 }).addTo(m).bindTooltip(geoDistA.capital, { permanent: true, direction: aDir, className: 'geo-dist-label' });
-                        window.L.circleMarker(bLL, { radius: 10, color: '#06b6d4', weight: 3, fillColor: '#06b6d4', fillOpacity: 0.55 }).addTo(m).bindTooltip(geoDistB.capital, { permanent: true, direction: bDir, className: 'geo-dist-label' });
+                        window.L.circleMarker(aLL, { radius: 17, color: '#14b8a6', weight: 1.5, fillColor: '#14b8a6', fillOpacity: 0.22, interactive: false, className: 'geo-beacon-halo' }).addTo(m);
+                        window.L.circleMarker(bLL, { radius: 17, color: '#06b6d4', weight: 1.5, fillColor: '#06b6d4', fillOpacity: 0.22, interactive: false, className: 'geo-beacon-halo' }).addTo(m);
+                        window.L.circleMarker(aLL, { radius: 9.5, color: '#ffffff', weight: 2.5, fillColor: '#14b8a6', fillOpacity: 0.9 }).addTo(m).bindTooltip(geoDistA.capital, { permanent: true, direction: aDir, className: 'geo-dist-label' });
+                        window.L.circleMarker(bLL, { radius: 9.5, color: '#ffffff', weight: 2.5, fillColor: '#06b6d4', fillOpacity: 0.9 }).addTo(m).bindTooltip(geoDistB.capital, { permanent: true, direction: bDir, className: 'geo-dist-label' });
                         // Great-circle arc, split where it crosses the antimeridian so a
                         // Tokyo–Washington route does not draw a line across the whole map.
                         var arc = greatCircleLatLngs(aLL[0], aLL[1], bLL[0], bLL[1], 64);
                         // 700-shade greens/reds: white on the old #22c55e / #ef4444 badge was 2.3:1 / 3.8:1.
                         var lineColor = answered ? (geoDistFeedback.correct ? '#15803d' : '#b91c1c') : '#fbbf24';
+                        var haloColor = answered ? (geoDistFeedback.correct ? '#4ade80' : '#f87171') : '#fde047';
                         var segments = [[]];
                         for (var ai = 0; ai < arc.length; ai++) {
                           if (ai > 0 && Math.abs(arc[ai][1] - arc[ai - 1][1]) > 180) segments.push([]);
                           segments[segments.length - 1].push(arc[ai]);
                         }
+                        // Luminous geodesic outer under-glow halo beneath each arc segment
+                        segments.forEach(function(seg) {
+                          if (seg.length > 1) window.L.polyline(seg, { color: haloColor, weight: 9.5, opacity: 0.24, interactive: false }).addTo(m);
+                        });
                         var group = window.L.featureGroup(segments.map(function(seg) {
-                          return window.L.polyline(seg, { color: lineColor, weight: 3, dashArray: answered ? null : '6,6', opacity: 0.9 });
+                          return window.L.polyline(seg, { color: lineColor, weight: 3.2, dashArray: answered ? null : '7,6', opacity: 0.95 });
                         })).addTo(m);
-                        // Midpoint label with the actual distance — only after answering
-                        if (answered && arc.length > 0) {
+                        // Animated pulse beacon at geodesic midpoint while estimating; actual distance badge after answering
+                        if (arc.length > 0) {
                           var mid = arc[Math.floor(arc.length / 2)];
-                          window.L.marker(mid, {
-                            icon: window.L.divIcon({
-                              className: 'geo-dist-midpoint',
-                              html: '<div style="background:' + lineColor + ';color:#fff;padding:3px 8px;border-radius:10px;font-weight:bold;font-size:11px;white-space:nowrap;box-shadow:0 2px 4px rgba(0,0,0,0.3)">' + fmtDist(geoDistFeedback.actual) + '</div>',
-                              iconSize: [90, 20], iconAnchor: [45, 10]
-                            })
-                          }).addTo(m);
+                          if (answered) {
+                            window.L.marker(mid, {
+                              icon: window.L.divIcon({
+                                className: 'geo-dist-midpoint',
+                                html: '<div style="background:' + lineColor + ';color:#fff;padding:3px 9px;border-radius:999px;border:1.5px solid rgba(255,255,255,0.75);font-weight:800;font-size:11px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.45)">' + fmtDist(geoDistFeedback.actual) + '</div>',
+                                iconSize: [96, 22], iconAnchor: [48, 11]
+                              })
+                            }).addTo(m);
+                          } else {
+                            window.L.circleMarker(mid, { radius: 8.5, color: haloColor, weight: 1.5, fillColor: haloColor, fillOpacity: 0.3, interactive: false, className: 'geo-beacon-halo' }).addTo(m);
+                            window.L.circleMarker(mid, { radius: 3.8, color: '#0f172a', weight: 1.4, fillColor: '#fef08a', fillOpacity: 0.98, interactive: false }).addTo(m);
+                          }
                         }
                         // Fit bounds around the arc with generous padding so permanent capital tooltips clear all edges
                         m.fitBounds(group.getBounds(), { paddingTopLeft: [96, 54], paddingBottomRight: [96, 48], maxZoom: 5 });
@@ -3477,7 +3541,8 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
                       } catch(e) { console.warn('Distance map error:', e); }
                     }, 50);
                   },
-                  style: { height: 240, width: '100%', borderRadius: 12, overflow: 'hidden', border: '2px solid #e2e8f0' }
+                  className: 'geo-map-frame',
+                  style: { height: 240, width: '100%', borderRadius: 12, overflow: 'hidden', border: '2px solid #cbd5e1' }
                 }),
 
                 // Input row
@@ -3881,9 +3946,41 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
             }
           return angles;
         };
+        // Segment-segment interior intersection (for parallel/transversal & crossing lines)
+        const segmentIntersection = (a1, a2, b1, b2) => {
+          if (!a1 || !a2 || !b1 || !b2) return null;
+          const dx1 = a2.x - a1.x, dy1 = a2.y - a1.y;
+          const dx2 = b2.x - b1.x, dy2 = b2.y - b1.y;
+          const denom = dx1 * dy2 - dy1 * dx2;
+          if (Math.abs(denom) < 1e-6) return null;
+          const t = ((b1.x - a1.x) * dy2 - (b1.y - a1.y) * dx2) / denom;
+          const u = ((b1.x - a1.x) * dy1 - (b1.y - a1.y) * dx1) / denom;
+          if (t <= 0.001 || t >= 0.999 || u <= 0.001 || u >= 0.999) return null;
+          return { x: a1.x + t * dx1, y: a1.y + t * dy1 };
+        };
+
         const allAngles = [];
         for (let vi = 0; vi < gpPoints.length; vi++)
           findAnglesAtVertex(vi).forEach(a => allAngles.push(a));
+
+        // Emit the 4 angles formed at every true interior segment-segment crossing
+        const crossings = [];
+        for (let si = 0; si < gpSegments.length; si++) {
+          for (let sj = si + 1; sj < gpSegments.length; sj++) {
+            const s1 = gpSegments[si], s2 = gpSegments[sj];
+            if (s1.from === s2.from || s1.from === s2.to || s1.to === s2.from || s1.to === s2.to) continue;
+            const a1 = gpPoints[s1.from], a2 = gpPoints[s1.to], b1 = gpPoints[s2.from], b2 = gpPoints[s2.to];
+            const ix = segmentIntersection(a1, a2, b1, b2);
+            if (!ix) continue;
+            const angA = angleBetween(a1, ix, b1);
+            const angB = Math.round((180 - angA) * 10) / 10;
+            crossings.push({ ix, s1, s2, angA, angB });
+            allAngles.push({ vertexPt: ix, p1Pt: a1, p2Pt: b1, angle: angA, isIntersection: true });
+            allAngles.push({ vertexPt: ix, p1Pt: b1, p2Pt: a2, angle: angB, isIntersection: true });
+            allAngles.push({ vertexPt: ix, p1Pt: a2, p2Pt: b2, angle: angA, isIntersection: true });
+            allAngles.push({ vertexPt: ix, p1Pt: b2, p2Pt: a1, angle: angB, isIntersection: true });
+          }
+        }
 
         // Theorem detection
         const theorems = [];
@@ -3925,18 +4022,47 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
           }
         }
         allAngles.forEach(a => {
-          if (Math.abs(a.angle-180)<3) theorems.push({ type:'straight', label:'─ Straight Angle', desc:`∠${labelFor(a.p1)}${labelFor(a.vertex)}${labelFor(a.p2)} = ${a.angle.toFixed(1)}°`, valid:true, icon:'─', detail:'Points are collinear — angle = 180°' });
+          if (!a.isIntersection && Math.abs(a.angle-180)<3) theorems.push({ type:'straight', label:'─ Straight Angle', desc:`∠${labelFor(a.p1)}${labelFor(a.vertex)}${labelFor(a.p2)} = ${a.angle.toFixed(1)}°`, valid:true, icon:'─', detail:'Points are collinear — angle = 180°' });
         });
-        for (let si = 0; si < gpSegments.length; si++) {
-          for (let sj = si+1; sj < gpSegments.length; sj++) {
-            const s1=gpSegments[si], s2=gpSegments[sj];
-            let shared=-1;
-            if (s1.from===s2.from||s1.from===s2.to) shared=s1.from;
-            else if (s1.to===s2.from||s1.to===s2.to) shared=s1.to;
-            if (shared>=0) {
-              const e1=s1.from===shared?s1.to:s1.from, e2=s2.from===shared?s2.to:s2.from;
-              const ang=angleBetween(gpPoints[e1],gpPoints[shared],gpPoints[e2]);
-              if (ang>5&&ang<175) theorems.push({ type:'vertical', label:'✖ Vertical Angles', desc:`∠${labelFor(e1)}${labelFor(shared)}${labelFor(e2)} = ${ang.toFixed(1)}°, supp = ${(180-ang).toFixed(1)}°`, valid:true, icon:'✖', detail:'Vertical angles congruent; adjacent angles supplementary.' });
+        // Vertical angles: only at genuine crossing intersections (interior crossings or
+        // shared vertices with two collinear opposite-ray pairs, never triangle corners).
+        crossings.forEach((cr) => {
+          if (cr.angA > 5 && cr.angA < 175) {
+            theorems.push({
+              type: 'vertical',
+              label: '✖ Vertical Angles',
+              desc: `${labelFor(cr.s1.from)}${labelFor(cr.s1.to)} ∩ ${labelFor(cr.s2.from)}${labelFor(cr.s2.to)}: ${cr.angA.toFixed(1)}° & ${cr.angB.toFixed(1)}°`,
+              valid: true,
+              icon: '✖',
+              detail: 'Opposite (vertical) angles are congruent; adjacent angles sum to 180°.'
+            });
+          }
+        });
+        for (let vi = 0; vi < gpPoints.length; vi++) {
+          const v = gpPoints[vi];
+          const connected = gpSegments
+            .filter(s => s.from === vi || s.to === vi)
+            .map(s => s.from === vi ? s.to : s.from)
+            .filter((idx, i, arr) => arr.indexOf(idx) === i);
+          if (connected.length < 4) continue;
+          const straightPairs = [];
+          const usedRay = new Set();
+          for (let i = 0; i < connected.length; i++) {
+            if (usedRay.has(connected[i])) continue;
+            for (let j = i + 1; j < connected.length; j++) {
+              if (usedRay.has(connected[j])) continue;
+              if (Math.abs(angleBetween(gpPoints[connected[i]], v, gpPoints[connected[j]]) - 180) < 3) {
+                straightPairs.push([connected[i], connected[j]]);
+                usedRay.add(connected[i]); usedRay.add(connected[j]);
+                break;
+              }
+            }
+          }
+          if (straightPairs.length >= 2) {
+            const e1 = straightPairs[0][0], e2 = straightPairs[1][0];
+            const ang = angleBetween(gpPoints[e1], v, gpPoints[e2]);
+            if (ang > 5 && ang < 175) {
+              theorems.push({ type:'vertical', label:'✖ Vertical Angles', desc:`∠${labelFor(e1)}${labelFor(vi)}${labelFor(e2)} = ${ang.toFixed(1)}°, supp = ${(180-ang).toFixed(1)}°`, valid:true, icon:'✖', detail:'Vertical angles congruent; adjacent angles supplementary.' });
             }
           }
         }
@@ -3967,7 +4093,7 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
           gpUpd('feedback',null); gpUpd('challengeAnswer','');
         };
         const checkChallenge = () => {
-          if (!gpChallenge) return;
+          if (!gpChallenge || (gpFeedback && gpFeedback.correct)) return;
           const ok = Math.abs(parseFloat(gp.challengeAnswer||'') - parseFloat(gpChallenge.answer)) < 1;
           gpUpd('feedback',{ correct:ok, msg: ok ? `✅ Correct! ${gpChallenge.answer}°${gpChallenge.hint?' — '+gpChallenge.hint:''}` : `❌ Answer: ${gpChallenge.answer}°${gpChallenge.hint?'. Hint: '+gpChallenge.hint:''}` });
           setExploreScore(prev=>({correct:prev.correct+(ok?1:0),total:prev.total+1}));
@@ -4074,7 +4200,7 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
           } else {
             gpUpd('matchGame',{...mg, wrong:descSlot});
             if(typeof stemBeep==='function') stemBeep(180,0.2);
-            setTimeout(()=>gpUpd('matchGame',{...(gp.matchGame||mg), wrong:null}),600);
+            setTimeout(()=>setLabToolData(prev=>{ const curGp=prev.geometryProver||{}; const curMg=curGp.matchGame; if(!curMg) return prev; return { ...prev, geometryProver: { ...curGp, matchGame: { ...curMg, wrong:null } } }; }),600);
           }
         };
         const renderMatchGame = () => {
@@ -4148,7 +4274,7 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
           } else {
             gpUpd('sorter',{...sr, streak:0, wrong:angleId});
             if(typeof stemBeep==='function') stemBeep(180,0.2);
-            setTimeout(()=>{ const cur=gp.sorter||sr; gpUpd('sorter',{...cur, wrong:null}); },600);
+            setTimeout(()=>setLabToolData(prev=>{ const curGp=prev.geometryProver||{}; const curSr=curGp.sorter; if(!curSr) return prev; return { ...prev, geometryProver: { ...curGp, sorter: { ...curSr, wrong:null } } }; }),600);
           }
         };
         const renderAngleSorter = () => {
@@ -4361,13 +4487,13 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
           : 'Drag points • Add segments to discover theorems';
 
         // SVG Canvas
-        const renderCanvas = () => React.createElement('svg', { width:W, height:H, viewBox:`0 0 ${W} ${H}`, className:'cursor-crosshair select-none', style:{background:'#faf5ff', outline:'none'}, role:'application', tabIndex:0, 'aria-label': `Geometry prover canvas. ${gpPoints.length} point${gpPoints.length===1?'':'s'} placed${gpSelected>=0?', point '+(gpSelected+1)+' selected':''}. Keyboard: Enter or Space to place a point near the selection, arrow keys to nudge the selected point, N or P to cycle selection, Delete to remove selected point.`, onKeyDown:handleCanvasKeyDown, onMouseDown:handleCanvasMouseDown, onMouseMove:handleCanvasMouseMove, onMouseUp:handleCanvasMouseUp, onMouseLeave:()=>{ handleCanvasMouseUp(); gpUpd('hoverIdx',-1); } },
+        const renderCanvas = () => React.createElement('svg', { width:W, height:H, viewBox:`0 0 ${W} ${H}`, className:'cursor-crosshair select-none', style:{background:'#faf5ff', outline: '2px solid transparent'}, role:'application', tabIndex:0, 'aria-label': `Geometry prover canvas. ${gpPoints.length} point${gpPoints.length===1?'':'s'} placed${gpSelected>=0?', point '+(gpSelected+1)+' selected':''}. Keyboard: Enter or Space to place a point near the selection, arrow keys to nudge the selected point, N or P to cycle selection, Delete to remove selected point.`, onKeyDown:handleCanvasKeyDown, onMouseDown:handleCanvasMouseDown, onMouseMove:handleCanvasMouseMove, onMouseUp:handleCanvasMouseUp, onMouseLeave:()=>{ handleCanvasMouseUp(); gpUpd('hoverIdx',-1); } },
           React.createElement('title',null,'Geometry Prover Canvas'),
           Array.from({length:Math.floor(W/gridStep)+1}).map((_,i)=>React.createElement('line',{key:'gv'+i,x1:i*gridStep,y1:0,x2:i*gridStep,y2:H,stroke:'#ede9fe',strokeWidth:0.5})),
           Array.from({length:Math.floor(H/gridStep)+1}).map((_,i)=>React.createElement('line',{key:'gh'+i,x1:0,y1:i*gridStep,x2:W,y2:i*gridStep,stroke:'#ede9fe',strokeWidth:0.5})),
           gpSegments.map((seg,si)=>{ const p1=gpPoints[seg.from],p2=gpPoints[seg.to]; if(!p1||!p2) return null; const mid=midpoint(p1,p2); return React.createElement(React.Fragment,{key:'seg'+si}, React.createElement('line',{x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:'#6d28d9',strokeWidth:2.5,strokeLinecap:'round'}), gpShowLabels&&React.createElement('rect',{x:mid.x-18,y:mid.y-9,width:36,height:16,rx:4,fill:'#f5f3ff',stroke:'#c4b5fd',strokeWidth:0.5}), gpShowLabels&&React.createElement('text',{x:mid.x,y:mid.y+4,textAnchor:'middle',style:{fontSize:'9px',fontWeight:'bold',fill:'#6d28d9'}},dist(p1,p2).toFixed(0)+'px')); }),
           allAngles.filter(a=>a.angle>2&&a.angle<178).map((a,ai)=>{
-            const v=gpPoints[a.vertex],p1=gpPoints[a.p1],p2=gpPoints[a.p2]; if(!v||!p1||!p2) return null;
+            const v=a.vertexPt||gpPoints[a.vertex],p1=a.p1Pt||gpPoints[a.p1],p2=a.p2Pt||gpPoints[a.p2]; if(!v||!p1||!p2) return null;
             const arcR=28, ang1=Math.atan2(p1.y-v.y,p1.x-v.x), ang2=Math.atan2(p2.y-v.y,p2.x-v.x);
             let sA=ang1,eA=ang2,diff=eA-sA; if(diff<0) diff+=2*Math.PI; if(diff>Math.PI){sA=ang2;eA=ang1;diff=2*Math.PI-diff;}
             const sx=v.x+arcR*Math.cos(sA),sy=v.y+arcR*Math.sin(sA),ex=v.x+arcR*Math.cos(eA),ey=v.y+arcR*Math.sin(eA);
@@ -4410,11 +4536,20 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
           const proof = GUIDED_PROOFS.find(p=>p.id===gpGuided.proofId);
           if (!proof) return null;
           const answers=gpGuided.answers||{}, done=Object.values(answers).filter(a=>a.correct).length, pct=Math.round(done/proof.steps.length*100);
-          // Collect all unique reasons from this proof, excluding already-placed correct ones
-          const usedReasons = new Set(Object.entries(answers).filter(([,a])=>a.correct).map(([si])=>proof.steps[parseInt(si)].reason));
+          // Collect all unique reasons from this proof, keeping duplicate reasons available
+          // until every step requiring that reason has been solved.
+          const reqCounts = {};
+          proof.steps.forEach(s => { reqCounts[s.reason] = (reqCounts[s.reason] || 0) + 1; });
+          const doneCounts = {};
+          Object.entries(answers).forEach(([si, a]) => {
+            if (a && a.correct && proof.steps[parseInt(si)]) {
+              const r = proof.steps[parseInt(si)].reason;
+              doneCounts[r] = (doneCounts[r] || 0) + 1;
+            }
+          });
           const allReasons = [];
           proof.steps.forEach(s => { s.options.forEach(o => { if (allReasons.indexOf(o)===-1) allReasons.push(o); }); });
-          const availableReasons = allReasons.filter(r=>!usedReasons.has(r));
+          const availableReasons = allReasons.filter(r => (doneCounts[r] || 0) < (reqCounts[r] || 1));
           const selectedChip = gp.selectedChip || null;
           const dragOverStep = gp.dragOverStep;
           // Place chip via click fallback
@@ -4746,8 +4881,8 @@ var d = _geoPlainObj(labToolData) ? labToolData : {};
               React.createElement('p',{className:'text-sm font-bold text-violet-800 mb-3'},'🎯 '+gpChallenge.question),
               gpChallenge.type==='polygon_sum'&&React.createElement('p',{className:'text-[0.6875rem] text-violet-600 italic mb-2'},'💡 How many triangles fit inside the polygon?'),
               React.createElement('div',{className:'flex gap-2'},
-                React.createElement('input',{type:'text','aria-label':__alloT('stem.geo.challenge_answer_in_degrees','Challenge answer in degrees'),value:gp.challengeAnswer||'',onChange:e=>gpUpd('challengeAnswer',e.target.value),onKeyDown:e=>{if(e.key==='Enter')checkChallenge();},placeholder:__alloT('stem.geo.your_answer',"Your answer (°)"),className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-center focus:border-violet-500 focus:ring-2 focus:ring-violet-300 outline-none'}),
-                React.createElement('button',{onClick:checkChallenge,className:'px-4 py-2 bg-violet-700 text-white font-bold rounded-lg text-sm hover:bg-violet-600 transition-all'},'✔ Check')
+                React.createElement('input',{type:'text','aria-label':__alloT('stem.geo.challenge_answer_in_degrees','Challenge answer in degrees'),value:gp.challengeAnswer||'',disabled:!!(gpFeedback&&gpFeedback.correct),onChange:e=>gpUpd('challengeAnswer',e.target.value),onKeyDown:e=>{if(e.key==='Enter')checkChallenge();},placeholder:__alloT('stem.geo.your_answer',"Your answer (°)"),className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-center focus:border-violet-500 focus:ring-2 focus:ring-violet-300 outline-none disabled:opacity-60'}),
+                React.createElement('button',{onClick:checkChallenge,disabled:!!(gpFeedback&&gpFeedback.correct),className:'px-4 py-2 bg-violet-700 text-white font-bold rounded-lg text-sm hover:bg-violet-600 transition-all disabled:opacity-40'},'✔ Check')
               ),
               gpFeedback&&React.createElement('div',{className:`mt-3 p-3 rounded-xl border ${gpFeedback.correct?'bg-emerald-50 border-emerald-200':'bg-red-50 border-red-200'}`}, React.createElement('p',{className:`text-sm font-bold ${gpFeedback.correct?'text-emerald-700':'text-red-600'}`},gpFeedback.msg))
             ),

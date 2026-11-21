@@ -102,7 +102,9 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
   const [activeDescriptionText, setActiveDescriptionText] = React.useState('');
   const [verify, setVerify] = React.useState(null); // null | 'match' | 'mismatch' | 'unknown'
   const [busy, setBusy] = React.useState(false);
+  const [playbackRate, setPlaybackRate] = React.useState(1);
   const urlsRef = React.useRef([]);
+  const mountedRef = React.useRef(true);
   const rootRef = React.useRef(null);
   const videoRef = React.useRef(null);
   const onCloseRef = React.useRef(onClose);
@@ -236,6 +238,7 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
         const idx = trapStack.lastIndexOf(trap);
         if (idx >= 0) trapStack.splice(idx, 1);
       }
+      mountedRef.current = false;
       revokeObjectUrls(urlsRef.current.splice(0));
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
         try { previousFocus.focus(); } catch (_) {}
@@ -315,7 +318,7 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
         const hex = Array.from(new Uint8Array(digest))
           .map(byte => byte.toString(16).padStart(2, '0'))
           .join('');
-        verdict = hex === ref.sha256 ? 'match' : 'mismatch';
+        verdict = hex.toLowerCase() === String(ref.sha256).trim().toLowerCase() ? 'match' : 'mismatch';
       }
 
       const mime = /\.(mp4|m4v)$/i.test(videoName)
@@ -334,6 +337,12 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
         ? URL.createObjectURL(new Blob([descriptionsVtt], { type: 'text/vtt' }))
         : null;
       if (nextDescriptionVttUrl) createdUrls.push(nextDescriptionVttUrl);
+
+      if (!mountedRef.current) {
+        revokeObjectUrls(createdUrls);
+        createdUrls = [];
+        return;
+      }
 
       replaceObjectUrls(createdUrls);
       createdUrls = [];
@@ -382,6 +391,27 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
     } catch (_) {}
   };
 
+  const jumpVideoSeconds = (delta) => {
+    const video = videoRef.current || (rootRef.current && rootRef.current.querySelector('video'));
+    if (!video) return;
+    try {
+      const current = Number(video.currentTime) || 0;
+      const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : Infinity;
+      video.currentTime = Math.max(0, Math.min(duration, current + delta));
+      syncActiveDescription({ currentTarget: video });
+    } catch (_) {}
+  };
+
+  React.useEffect(() => {
+    setPlaybackRate(1);
+  }, [videoUrl]);
+
+  React.useEffect(() => {
+    const video = videoRef.current || (rootRef.current && rootRef.current.querySelector('video'));
+    if (!video) return;
+    try { video.playbackRate = playbackRate; } catch (_) {}
+  }, [videoUrl, playbackRate]);
+
   React.useEffect(() => {
     const video = rootRef.current && rootRef.current.querySelector('video');
     if (!video) return undefined;
@@ -391,7 +421,7 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
     ['timeupdate', 'seeked', 'loadedmetadata'].forEach(name => video.addEventListener(name, sync));
     const clear = () => setActiveDescriptionText('');
     video.addEventListener('ended', clear);
-    video.setAttribute('aria-label', String(ref.title || item.title || t('video_ref.player_title') || 'Video reference'));
+    video.setAttribute('aria-label', String(ref.title || (item && item.title) || t('video_ref.player_title') || 'Video reference'));
     if (visualDescriptions.length) video.setAttribute('aria-describedby', 'video-ref-description-summary');
     else video.removeAttribute('aria-describedby');
 
@@ -417,18 +447,20 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
     ref.hasVisualDescriptions && (t('video_ref.badge_descriptions') || 'visual descriptions'),
     ref.hasLocalizations && (t('video_ref.badge_localizations') || 'localizations')
   ].filter(Boolean).join(' · ');
-  const durationLabel = `${Math.floor((ref.durationSec || 0) / 60)}:${String((ref.durationSec || 0) % 60).padStart(2, '0')}`;
+  const _totalSec = Math.floor(Math.max(0, Number(ref.durationSec) || 0));
+  const durationLabel = `${Math.floor(_totalSec / 60)}:${String(_totalSec % 60).padStart(2, '0')}`;
   const hostedUrl = typeof ref.hostedUrl === 'string' && /^https?:\/\//i.test(ref.hostedUrl.trim())
     ? ref.hostedUrl.trim()
     : '';
+  const safeTitle = String(ref.title || (item && item.title) || 'Teacher video');
 
   return (
-    <div className="fixed inset-0 z-[210] flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.72)' }} role="dialog" aria-modal="true" aria-label={t('video_ref.player_title') || 'Video reference'}>
+    <div className="fixed inset-0 z-[210] flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.72)' }} role="dialog" aria-modal="true" aria-labelledby="video-ref-player-title">
       <div ref={rootRef} tabIndex={-1} className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-violet-50">
           <div className="flex items-center gap-2 min-w-0">
             <MonitorPlay size={20} className="text-violet-700 shrink-0" aria-hidden="true" />
-            <h2 className="font-bold text-slate-800 text-base truncate">{String(ref.title || item.title || 'Teacher video')}</h2>
+            <h2 id="video-ref-player-title" className="font-bold text-slate-800 text-base truncate">{safeTitle}</h2>
           </div>
           <button type="button" onClick={onClose} data-alloflow-close-on-escape="true" className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 text-2xl leading-none px-2 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('video_ref.close') || 'Close video card'}>×</button>
         </div>
@@ -441,6 +473,47 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
               <video src={videoUrl} controls playsInline className="w-full rounded-xl bg-black" style={{ maxHeight: '52vh' }} crossOrigin="anonymous">
                 {vttUrl && <track kind="captions" src={vttUrl} default label={t('video_ref.captions_track') || 'Captions'} />}
               </video>
+              <div data-video-ref-controls="true" className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t('video_ref.skip_controls_group') || 'Skip playback time'}>
+                  <button
+                    type="button"
+                    data-video-ref-rewind="true"
+                    onClick={() => jumpVideoSeconds(-10)}
+                    aria-label={t('video_ref.rewind_10s_aria') || 'Rewind 10 seconds'}
+                    className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                  >
+                    ↺ 10s
+                  </button>
+                  <button
+                    type="button"
+                    data-video-ref-forward="true"
+                    onClick={() => jumpVideoSeconds(10)}
+                    aria-label={t('video_ref.forward_10s_aria') || 'Skip forward 10 seconds'}
+                    className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                  >
+                    10s ↻
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t('video_ref.playback_speed_group') || 'Playback speed'}>
+                  <span className="text-xs font-semibold text-slate-700">{t('video_ref.speed_label') || 'Speed:'}</span>
+                  {[0.75, 1, 1.25, 1.5].map((rate) => {
+                    const active = playbackRate === rate;
+                    return (
+                      <button
+                        key={rate}
+                        type="button"
+                        data-video-ref-speed={String(rate)}
+                        aria-pressed={active}
+                        aria-label={(t('video_ref.speed_aria') || 'Playback speed {rate}x').replace('{rate}', String(rate))}
+                        onClick={() => setPlaybackRate(rate)}
+                        className={'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (active ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100')}
+                      >
+                        {rate}×
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               {visualDescriptions.length > 0 && (
                 <section className='mt-3 rounded-xl border border-violet-200 bg-violet-50 p-3' aria-labelledby='video-ref-visual-descriptions-title'>
                   <h3 id='video-ref-visual-descriptions-title' className='text-sm font-bold text-violet-950'>

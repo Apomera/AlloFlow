@@ -27,21 +27,30 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
     const hiddenSiblings = [];
     if (document.body) {
       if (++alloScrollLock.count === 1) { alloScrollLock.prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
-      Array.from(document.body.children || []).forEach((sibling) => {
-        if (!sibling || sibling === root || sibling.contains(root)) return;
-        const tag = String(sibling.tagName || '').toUpperCase();
-        if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'LINK' || tag === 'TEMPLATE') return;
-        hiddenSiblings.push({
-          node: sibling,
-          hadAriaHidden: sibling.hasAttribute('aria-hidden'),
-          prevAriaHidden: sibling.getAttribute('aria-hidden'),
-          hadInertAttr: sibling.hasAttribute('inert'),
-          prevInertProp: sibling.inert,
+      const seenSiblings = new Set();
+      let cursor = root;
+      while (cursor && cursor.parentElement) {
+        const parent = cursor.parentElement;
+        Array.from(parent.children || []).forEach((sibling) => {
+          if (!sibling || sibling === cursor || sibling === root || sibling.contains(root) || seenSiblings.has(sibling)) return;
+          const tag = String(sibling.tagName || '').toUpperCase();
+          if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'LINK' || tag === 'TEMPLATE') return;
+          if (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
+          seenSiblings.add(sibling);
+          hiddenSiblings.push({
+            node: sibling,
+            hadAriaHidden: sibling.hasAttribute('aria-hidden'),
+            prevAriaHidden: sibling.getAttribute('aria-hidden'),
+            hadInertAttr: sibling.hasAttribute('inert'),
+            prevInertProp: sibling.inert,
+          });
+          sibling.setAttribute('aria-hidden', 'true');
+          try { sibling.inert = true; } catch (_) {}
+          try { sibling.setAttribute('inert', ''); } catch (_) {}
         });
-        sibling.setAttribute('aria-hidden', 'true');
-        try { sibling.inert = true; } catch (_) {}
-        try { sibling.setAttribute('inert', ''); } catch (_) {}
-      });
+        if (parent === document.body) break;
+        cursor = parent;
+      }
     }
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root };
@@ -184,11 +193,14 @@ function StorybookExportModal({
     ? progress.message
     : (busy ? 'Preparing your Storybook…' : '');
 
+  const dragStartedInsideRef = React.useRef(false);
   return (
     <div
       role="presentation"
       className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none"
+      onMouseDown={(event) => { dragStartedInsideRef.current = event.target !== event.currentTarget; }}
       onClick={(event) => {
+        if (dragStartedInsideRef.current) { dragStartedInsideRef.current = false; return; }
         if (!busy && event.target === event.currentTarget) handleSetShowStorybookExportModalToFalse();
       }}
     >
@@ -201,6 +213,7 @@ function StorybookExportModal({
         aria-labelledby="storybook-export-title"
         aria-describedby="storybook-export-description storybook-export-progress"
         aria-busy={busy}
+        onMouseDown={() => { dragStartedInsideRef.current = true; }}
         onClick={event => event.stopPropagation()}
       >
         <div className="flex items-center gap-3 mb-4">

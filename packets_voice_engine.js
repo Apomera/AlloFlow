@@ -25,10 +25,40 @@
     return new Promise(function (resolve, reject) {
       var script = doc.createElement('script');
       script.src = src;
-      script.onload = function () { added[src] = true; resolve(); };
-      script.onerror = function () { reject(new Error('A part of the page did not arrive: ' + src + '.')); };
+      var done = false;
+      var timer = setTimeout(function () {
+        if (done) return;
+        done = true;
+        try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
+        reject(new Error('A part of the page timed out: ' + src + '.'));
+      }, 15000);
+      script.onload = function () {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        added[src] = true;
+        resolve();
+      };
+      script.onerror = function () {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
+        reject(new Error('A part of the page did not arrive: ' + src + '.'));
+      };
       doc.head.appendChild(script);
     });
+  }
+
+  function fetchCatalog() {
+    var ctrl = typeof win.AbortController === 'function' ? new win.AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 15000) : null;
+    var clear = function () { if (timer !== null) { clearTimeout(timer); timer = null; } };
+    var opts = ctrl ? { cache: 'no-cache', signal: ctrl.signal } : { cache: 'no-cache' };
+    return win.fetch(CATALOG, opts).then(function (response) {
+      if (!response.ok) throw new Error('The list of voice files did not arrive.');
+      return response.json();
+    }).then(function (data) { clear(); return data; }, function (err) { clear(); throw err; });
   }
 
   // Starts the voice. onProgress({ stage, pct }) is the loader's own progress. Resolves when the voice can speak;
@@ -38,8 +68,7 @@
     if (getting) return getting;
     var chain = Promise.resolve();
     VOICE_FILES.forEach(function (src) { chain = chain.then(function () { return addScript(src); }); });
-    getting = chain.then(function () { return win.fetch(CATALOG, { cache: 'no-cache' }); })
-      .then(function (response) { if (!response.ok) throw new Error('The list of voice files did not arrive.'); return response.json(); })
+    getting = chain.then(fetchCatalog)
       .then(function (catalog) {
         if (typeof win._alloInstallRuntimeGraphHost !== 'function') throw new Error('The voice could not be started in this browser.');
         if (typeof win.__alloCreateVerifiedWorker !== 'function') win._alloInstallRuntimeGraphHost(catalog, win);
@@ -61,15 +90,30 @@
   // The voice says the text: the loader's WAV, as bytes. options: { word: true for one word, signal }.
   // A new recording every time (force), not the loader's remembered one. Rejects with error.code
   // 'no_sound' (the voice gave nothing) or 'bad_sound' (not a WAV), or the loader's own AbortError.
+  var MAX_WAV_BYTES = 20 * 1024 * 1024;
   function speak(text, voice, options) {
     var o = options || {};
     if (!ready || !win._kokoroTTS) return Promise.reject(new Error('The voice is not ready.'));
     return win._kokoroTTS.speak(text, voice || 'af_heart', 1, { word: o.word === true, force: true, signal: o.signal }).then(function (url) {
       if (!url) { var none = new Error('The voice gave no sound.'); none.code = 'no_sound'; throw none; }
-      return win.fetch(url).then(function (response) { return response.arrayBuffer(); });
+      if (typeof url !== 'string' || !/^(?:blob|data):/i.test(url)) {
+        var badUrl = new Error('The voice gave a sound this page cannot keep.');
+        badUrl.code = 'bad_sound';
+        throw badUrl;
+      }
+      return (o.signal ? win.fetch(url, { signal: o.signal }) : win.fetch(url)).then(function (response) {
+        if (response && response.ok === false) throw new Error('The voice audio could not be read.');
+        return response.arrayBuffer();
+      });
     }).then(function (buffer) {
       var bytes = new Uint8Array(buffer);
-      if (bytes.length < 44 || String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]) !== 'RIFF') { var bad = new Error('The voice gave a sound this page cannot keep.'); bad.code = 'bad_sound'; throw bad; }
+      if (bytes.length < 44 || bytes.length > MAX_WAV_BYTES
+        || String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]) !== 'RIFF'
+        || String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]) !== 'WAVE') {
+        var bad = new Error('The voice gave a sound this page cannot keep.');
+        bad.code = 'bad_sound';
+        throw bad;
+      }
       return bytes;
     });
   }

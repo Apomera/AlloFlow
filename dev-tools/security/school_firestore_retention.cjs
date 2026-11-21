@@ -51,9 +51,10 @@ function createSdkAdapter(scopeValue, options = {}) {
     return value;
   };
   function snapshot(snap) {
-    if (!snap || typeof snap.exists !== 'boolean') fail('RETENTION_ADAPTER_INVALID');
+    if (!snap || typeof snap.exists !== 'boolean' || !snap.ref || typeof snap.ref.path !== 'string') fail('RETENTION_ADAPTER_INVALID');
     if (!snap.exists) return { path: snap.ref.path, exists: false, data: null, version: null };
     const data = snap.data();
+    if (!data || typeof data !== 'object' || Array.isArray(data) || !snap.updateTime) fail('RETENTION_ADAPTER_INVALID');
     // A Firestore map resembling {seconds,nanoseconds} is not a Timestamp.
     // The generic core accepts timestamp-shaped adapter metadata, so enforce
     // the SDK's actual field types at this production boundary.
@@ -100,9 +101,12 @@ function createSdkAdapter(scopeValue, options = {}) {
       return result.docs.map(snapshot);
     },
     async delete(value, version, guard) {
-      if (!version || !Number.isSafeInteger(version.seconds) || !Number.isInteger(version.nanoseconds)) fail('RETENTION_VERSION_INVALID');
+      const targetPath = pathOk(value);
+      const validTs = v => v && Number.isSafeInteger(v.seconds) && v.seconds >= 0 && v.seconds <= 253402300799
+        && Number.isInteger(v.nanoseconds) && v.nanoseconds >= 0 && v.nanoseconds <= 999999999;
+      if (!validTs(version)) fail('RETENTION_VERSION_INVALID');
       const parent = `${base}/sessions/${scope.sessionId}`;
-      if (!guard || guard.parentPath !== parent || !guard.parentVersion || !Number.isSafeInteger(guard.parentVersion.seconds) || !Number.isInteger(guard.parentVersion.nanoseconds)) fail('RETENTION_PARENT_GUARD_REQUIRED');
+      if (!guard || guard.parentPath !== parent || !validTs(guard.parentVersion)) fail('RETENTION_PARENT_GUARD_REQUIRED');
       const expectedParent = new sdk.Timestamp(guard.parentVersion.seconds, guard.parentVersion.nanoseconds);
       // Bind parent ownership/hold metadata to the same server transaction as
       // the target delete. A new parent hold must not slip between a separate
@@ -110,7 +114,7 @@ function createSdkAdapter(scopeValue, options = {}) {
       await db.runTransaction(async transaction => {
         const [parentSnapshot] = await transaction.getAll(db.doc(parent), { fieldMask: metadata });
         if (!parentSnapshot.exists || !parentSnapshot.updateTime.isEqual(expectedParent)) fail('RETENTION_DOCUMENT_CHANGED');
-        transaction.delete(db.doc(pathOk(value)), { lastUpdateTime: new sdk.Timestamp(version.seconds, version.nanoseconds) });
+        transaction.delete(db.doc(targetPath), { lastUpdateTime: new sdk.Timestamp(version.seconds, version.nanoseconds) });
       }, { maxAttempts: 1 });
     },
     async close() { await Promise.allSettled([db.terminate(), listing.close()]); },
@@ -144,10 +148,29 @@ function parseArgs(argv) {
   if (required.some(key => !result[key])) fail('RETENTION_USAGE');
   return result;
 }
+function writeAllAndSync(descriptor, text, truncate = false) {
+  if (truncate) fs.ftruncateSync(descriptor, 0);
+  const buf = Buffer.from(text, 'utf8');
+  let offset = 0;
+  while (offset < buf.length) {
+    offset += fs.writeSync(descriptor, buf, offset, buf.length - offset, truncate ? offset : null);
+  }
+  fs.fsyncSync(descriptor);
+}
 function loadPlan(file) {
-  const stat = fs.lstatSync(file);
-  if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 1024 * 1024) fail('RETENTION_PLAN_INVALID');
-  const plan = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const linkStat = fs.lstatSync(file);
+  if (!linkStat.isFile() || linkStat.isSymbolicLink() || linkStat.size > 1024 * 1024) fail('RETENTION_PLAN_INVALID');
+  const fd = fs.openSync(file, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
+  let raw;
+  try {
+    const fdStat = fs.fstatSync(fd);
+    if (!fdStat.isFile() || fdStat.size > 1024 * 1024) fail('RETENTION_PLAN_INVALID');
+    raw = fs.readFileSync(fd, 'utf8');
+  } finally {
+    fs.closeSync(fd);
+  }
+  const plan = JSON.parse(raw);
+  if (!plan || typeof plan !== 'object' || Array.isArray(plan)) fail('RETENTION_PLAN_INVALID');
   Core.validateScope(plan.scope);
   if (Core.hashPlan(plan) !== plan.planHash) fail('RETENTION_PLAN_HASH_MISMATCH');
   return plan;
@@ -166,7 +189,7 @@ async function runCli(argv, io = {}) {
       descriptor = fs.openSync(args.out, 'wx', 0o600);
       adapter = factory(scope, { emulatorHost: args['emulator-host'] });
       const plan = await Core.createPlan(adapter, { scope, approvalReference: args['approval-ref'], holdsReviewed: true });
-      fs.writeFileSync(descriptor, JSON.stringify(plan, null, 2) + '\n');
+      writeAllAndSync(descriptor, JSON.stringify(plan, null, 2) + '\n', true);
       stdout(JSON.stringify({ status: 'review-required', planHash: plan.planHash, plannedDocuments: plan.manifest.documents.length }));
       return plan;
     }
@@ -175,15 +198,15 @@ async function runCli(argv, io = {}) {
     Core.validatePlan(plan, { confirmProject: args['confirm-project'], reviewedHash: args['reviewed-hash'] });
     if (args.execute && (!args['holds-reviewed'] || !args['writers-paused'])) fail('RETENTION_EXECUTION_ACKNOWLEDGMENTS_REQUIRED');
     descriptor = fs.openSync(args.receipt, 'wx', 0o600);
-    fs.writeFileSync(descriptor, JSON.stringify({ kind: 'alloflow-firestore-retention-receipt', version: 1, planHash: plan.planHash, status: 'in-progress-unverified', deletionCompleted: false }) + '\n');
+    writeAllAndSync(descriptor, JSON.stringify({ kind: 'alloflow-firestore-retention-receipt', version: 1, planHash: plan.planHash, status: 'in-progress-unverified', deletionCompleted: false }) + '\n', true);
     adapter = factory(plan.scope, { emulatorHost: args['emulator-host'] });
     let receipt;
     try { receipt = await Core.applyPlan(adapter, plan, { reviewedHash: args['reviewed-hash'], confirmProject: args['confirm-project'], execute: args.execute === true, holdsReviewed: args['holds-reviewed'] === true, writersPaused: args['writers-paused'] === true }); }
     catch (error) {
-      if (error.receipt) { fs.ftruncateSync(descriptor, 0); fs.writeSync(descriptor, JSON.stringify(error.receipt, null, 2) + '\n', 0, 'utf8'); }
+      if (error.receipt) writeAllAndSync(descriptor, JSON.stringify(error.receipt, null, 2) + '\n', true);
       throw error;
     }
-    fs.ftruncateSync(descriptor, 0); fs.writeSync(descriptor, JSON.stringify(receipt, null, 2) + '\n', 0, 'utf8');
+    writeAllAndSync(descriptor, JSON.stringify(receipt, null, 2) + '\n', true);
     stdout(JSON.stringify({ status: receipt.status, plannedDocuments: receipt.plannedDocuments, verifiedAbsent: receipt.verifiedAbsent, remainingCount: receipt.remainingCount }));
     return receipt;
   } finally {

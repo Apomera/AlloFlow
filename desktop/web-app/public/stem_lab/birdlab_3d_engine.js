@@ -632,20 +632,25 @@
         'void main(){',
         'vec3 ray=normalize(vPosition); float altitude=max(0.0,ray.y);',
         'float horizon=smoothstep(.025,.20,altitude);',
-        'vec3 sky=mix(bottom,top,smoothstep(.05,.8,altitude));',
+        'vec3 sky=mix(bottom,top,smoothstep(.04,.78,altitude));',
         'float sunward=max(0.0,dot(ray,sunDirection));',
-        'float glow=pow(sunward,14.0)*.19+pow(sunward,160.0)*.26;',
+        // Soft Rayleigh/Mie atmospheric horizon airglow warms the low woodland sky toward the sun.
+        'float airglow=exp(-altitude*6.2)*(0.26+0.74*pow(sunward,3.0))*smoothstep(.01,.14,altitude);',
+        'sky=mix(sky,mix(bottom,sunTint,.58),airglow*.34);',
+        'float glow=pow(sunward,8.0)*.14+pow(sunward,22.0)*.15+pow(sunward,160.0)*.26;',
         'sky=mix(sky,sunTint,glow*horizon);',
         'vec2 uv=ray.xz/max(.09,altitude)*.085+vec2(.38,.22)-cloudOffset;',
         'float density=texture2D(cloudField,uv).r;',
-        'float cover=smoothstep(.46,.67,density);',
+        'float cover=smoothstep(.45,.68,density);',
         'float sunSide=texture2D(cloudField,uv+sunDirection.xz*.024).r;',
-        'float relief=clamp(.88+(density-sunSide)*3.6-cover*.30,0.0,1.0);',
+        'float deepSide=texture2D(cloudField,uv+sunDirection.xz*.052).r;',
+        'float relief=clamp(.86+(density-sunSide)*3.4+(density-deepSide)*1.2-cover*.32,0.0,1.0);',
         'vec3 cloud=mix(cloudShade,cloudLight,relief);',
-        'float silver=pow(sunward,24.0)*(1.0-cover)*.42;',
-        'cloud=mix(cloud,sunTint,silver);',
+        'float silver=(pow(sunward,12.0)*.24+pow(sunward,32.0)*.38)*(1.0-cover*.82)*smoothstep(.12,.62,density);',
+        'cloud=mix(cloud,sunTint,clamp(silver,0.0,0.85));',
         'float wisps=texture2D(cloudField,uv*vec2(.48,1.8)+vec2(.26,.47)-cloudOffset*.16).g;',
-        'sky=mix(sky,cloudLight,smoothstep(.61,.81,wisps)*.16*horizon);',
+        'float highVeil=texture2D(cloudField,uv*vec2(1.25,.55)+vec2(.61,.13)-cloudOffset*.09).g;',
+        'sky=mix(sky,cloudLight,(smoothstep(.60,.81,wisps)*.16+smoothstep(.64,.85,highVeil)*.10)*horizon);',
         'sky=mix(sky,cloud,cover*.92*horizon);',
         'float disc=smoothstep(.99972,.99993,sunward)*(1.0-cover*.94)*horizon;',
         'gl_FragColor=vec4(mix(sky,sunTint,disc),1.0);',
@@ -740,6 +745,72 @@
       scene.add(sun); scene.add(sun.target);
       var rim=new THREE.DirectionalLight('#d3e6f2',.75); rim.position.set(12,15,-24); scene.add(rim);
       var sky=createWoodlandSky(THREE,quality);scene.add(sky);
+      // Soft dappled woodland canopy sunbeams aligned dynamically to the live sun vector.
+      var sunbeams=(function(){
+        var specs=quality==='low'
+          ?[[-3.2,-2.4,2.4,15.5,0.2],[4.6,-3.8,2.8,16.5,1.9],[-1.0,4.2,2.2,14.5,3.7]]
+          :[[-4.4,-3.1,2.6,16.0,0.2],[3.8,-4.2,2.9,17.0,1.4],[-2.1,3.6,2.3,15.0,2.7],[6.2,1.8,3.1,16.5,4.0],[-6.8,1.2,2.7,15.5,5.1],[1.4,-0.8,2.0,14.5,0.9]];
+        var pos=[],uvs=[],seeds=[],idx=[];
+        for(var si=0;si<specs.length;si++){
+          var sp=specs[si],bx=sp[0],bz=sp[1],bw=sp[2],bh=sp[3],sd=sp[4];
+          // Two crossed planes per shaft so beams stay volumetric from every orbit angle.
+          for(var p=0;p<2;p++){
+            var a=p*Math.PI*.5+sd*.6,ca=Math.cos(a)*bw*.5,sa=Math.sin(a)*bw*.5,base=pos.length/3;
+            pos.push(bx-ca,0,bz-sa, bx+ca,0,bz+sa, bx+ca,bh,bz+sa, bx-ca,bh,bz-sa);
+            uvs.push(0,0, 1,0, 1,1, 0,1);
+            seeds.push(sd,sd,sd,sd);
+            idx.push(base,base+1,base+2, base,base+2,base+3);
+          }
+        }
+        var geo=new THREE.BufferGeometry();
+        geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+        geo.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));
+        geo.setAttribute('blShaftSeed',new THREE.Float32BufferAttribute(seeds,1));
+        geo.setIndex(idx);
+        var mat=new THREE.ShaderMaterial({
+          transparent:true,depthWrite:false,fog:false,side:THREE.DoubleSide,
+          blending:THREE.AdditiveBlending,
+          uniforms:{
+            uColor:{value:new THREE.Color('#fff2d6')},
+            uOpacity:{value:.065},
+            uTime:{value:0},
+            uSunDir:{value:new THREE.Vector3(-18,31,14).normalize()}
+          },
+          vertexShader:[
+            'attribute float blShaftSeed; uniform vec3 uSunDir; varying vec2 vUv; varying float vSeed; varying float vDist;',
+            'void main(){',
+            '  vUv=uv; vSeed=blShaftSeed;',
+            // Shear each vertical shaft along the live solar direction so beams tilt with Daylight, Golden Hour, Dawn and Light Study.
+            '  vec3 p=position; float slant=p.y/max(0.28,uSunDir.y);',
+            '  p.x+=uSunDir.x*slant; p.z+=uSunDir.z*slant;',
+            '  vec4 wp=modelMatrix*vec4(p,1.0); vDist=length(wp.xyz-cameraPosition);',
+            '  gl_Position=projectionMatrix*viewMatrix*wp;',
+            '}'
+          ].join('\n'),
+          fragmentShader:[
+            'uniform vec3 uColor; uniform float uOpacity; uniform float uTime; varying vec2 vUv; varying float vSeed; varying float vDist;',
+            'void main(){',
+            '  float across=abs(vUv.x*2.0-1.0);',
+            '  float edge=exp(-3.2*across*across)*(1.0-smoothstep(0.62,1.0,across));',
+            '  float vert=smoothstep(0.0,0.34,vUv.y)*(1.0-smoothstep(0.76,1.0,vUv.y));',
+            '  float dapple=0.74+0.26*sin(vUv.x*11.0+vSeed*3.7+uTime*0.18)*cos(vUv.y*4.5-uTime*0.11+vSeed);',
+            '  float fade=smoothstep(2.4,5.8,vDist)*(1.0-smoothstep(26.0,46.0,vDist));',
+            '  gl_FragColor=vec4(uColor,uOpacity*edge*vert*dapple*fade);',
+            '}'
+          ].join('\n')
+        });
+        var mesh=new THREE.Mesh(geo,mat);
+        mesh.name='birdlab-woodland-sunbeams';mesh.frustumCulled=false;mesh.renderOrder=2;
+        scene.add(mesh);return mesh;
+      })();
+      var syncSunbeams=function(){
+        if(!sunbeams)return;
+        var u=sunbeams.material.uniforms;
+        u.uSunDir.value.copy(sun.position).sub(sun.target.position).normalize();
+        u.uColor.value.copy(sun.color);
+        u.uOpacity.value=raining?0:(lighting==='golden'?.115:lighting==='dawn'?.095:.062);
+        sunbeams.visible=!raining;
+      };
       habitat=global.BirdLab3DHabitat.create(THREE,scene,{quality:quality,reducedMotion:!!options.reducedMotion});
       if(habitat.root&&!habitat.root.parent) scene.add(habitat.root);
       bird=global.BirdLab3DBird.create(THREE); bird.root.name='birdlab-red-tailed-hawk'; scene.add(bird.root);
@@ -1349,7 +1420,7 @@
       var elevation=clamp(value.elevation===undefined?current.elevation:value.elevation,5,85)*Math.PI/180;
       var distance=Math.max(1,sun.position.distanceTo(sun.target.position));
       sun.position.set(Math.sin(azimuth)*Math.cos(elevation),Math.sin(elevation),Math.cos(azimuth)*Math.cos(elevation)).multiplyScalar(distance).add(sun.target.position);
-      sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();lightingDirectionCustom=true;notify(true);refresh();
+      sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();syncSunbeams();lightingDirectionCustom=true;notify(true);refresh();
     }
     function pinLightDirection(){if(!lightVisible())return;lightPin=lightDirection();notify(true);}
     function clearLightDirection(){lightPin=null;notify(true);}
@@ -1671,6 +1742,7 @@
       if(season==='winter'){hemi.groundColor.lerp(SNOW_BOUNCE,.6);hemi.intensity*=1.08;}
       if(habitat.setMist)habitat.setMist(lighting==='dawn');
       if(habitat.setRain)habitat.setRain(raining);
+      syncSunbeams();
     }
     function setLighting(value) {
       if(disposed||!Object.prototype.hasOwnProperty.call(LIGHTING,value))return;
@@ -1681,7 +1753,7 @@
       // A custom light direction survives the change of weather.
       var custom=lightingDirectionCustom,direction=sun.position.clone();
       raining=value==='rain';applyLighting();if(wildlife&&wildlife.setWeather)wildlife.setWeather(value);
-      if(custom){sun.position.copy(direction);sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();lightingDirectionCustom=true;}
+      if(custom){sun.position.copy(direction);sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();syncSunbeams();lightingDirectionCustom=true;}
       notify(true);refresh();
     }
     // Seasons change the woodland and who lives in it; the hawk's flight,
@@ -1692,7 +1764,7 @@
       if(isResidentCamera(cameraMode)&&wildlife.isPresent&&!wildlife.isPresent(cameraMode))setCamera('orbit');
       if(fieldObserver){fieldObserver.reset();observationKey='';}
       var custom=lightingDirectionCustom,direction=sun.position.clone();applyLighting();
-      if(custom){sun.position.copy(direction);sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();lightingDirectionCustom=true;}
+      if(custom){sun.position.copy(direction);sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();syncSunbeams();lightingDirectionCustom=true;}
       notify(true);refresh();
     }
     function restart() {if(mode==='free')return;leaveSurfaceRuler();wingbeatStudy=null;coursePin=null;time=repeatFlights?(cameraMode==='grouse'?17.58:11.58):0;wingPhase=0;stateStamp=-1;lastStamp=null;updateBird(0,true);updateCamera(1,true);notify(true);refresh(); }
@@ -1729,6 +1801,7 @@
       // all work without an independent timer. Reduced motion stays still.
       var weatherTime=options.reducedMotion?0:time;
       sky.material.uniforms.cloudOffset.value.set((weatherTime*.00045)%1,(weatherTime*.00019)%1);
+      if(sunbeams)sunbeams.material.uniforms.uTime.value=weatherTime;
       // The hawk in the air over the woodland is what small birds react to.
       if(wildlife.setPredator)wildlife.setPredator(mode==='free'?{x:poseState.position[0],y:poseState.position[1],z:poseState.position[2],flying:['takeoff','gliding','landing'].indexOf(poseState.phase)>=0}:null);
       wildlife.update(time,dt,mode==='free'?observer:null);

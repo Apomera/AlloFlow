@@ -121,7 +121,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       var _bodT = (ctx && ctx.theme) || {};
       var _bodHC = !!_bodT.isContrast, _bodL = !_bodHC && !_bodT.isDark;
       var _bod_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _bod_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#b45309':'#000000','#ef4444':'#000000','#15803d':'#000000','#fff':'#000000','#0ea5e9':'#000000','#a855f7':'#000000','#ec4899':'#000000'};
-      var _bod_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#64748b','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#c4b5fd':'#5b21b6','#7dd3fc':'#075985','#fde68a':'#92400e','#e9d5ff':'#581c87','#fbcfe8':'#9d174d','#fcd34d':'#78350f'}, _bod_FGH = {'#a855f7':'#ffff00','#ec4899':'#ffff00','#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fecdd3':'#ffff00','#e2e8f0':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#7dd3fc':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e9d5ff':'#ffff00','#bbf7d0':'#ffff00','#fbcfe8':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _bod_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#64748b','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#c4b5fd':'#5b21b6','#7dd3fc':'#075985','#fde68a':'#92400e','#e9d5ff':'#581c87','#fbcfe8':'#9d174d','#fcd34d':'#78350f','#fecdd3':'#9f1239','#bae6fd':'#075985','#bbf7d0':'#166534','#0ea5e9':'#0369a1','#f59e0b':'#92400e','#a855f7':'#6d28d9','#ec4899':'#9d174d'}, _bod_FGH = {'#a855f7':'#ffff00','#ec4899':'#ffff00','#f59e0b':'#ffff00','#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fecdd3':'#ffff00','#e2e8f0':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#7dd3fc':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e9d5ff':'#ffff00','#bbf7d0':'#ffff00','#fbcfe8':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
       var _bod_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _bod_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#1e293b':'#ffff00','#fb7185':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#ec4899':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00'};
       var _bodBg = function(h){ return _bodHC ? (_bod_BGH[h]||h) : (_bodL ? (_bod_BGL[h]||h) : h); };
       var _bodFg = function(h){ return _bodHC ? (_bod_FGH[h]||h) : (_bodL ? (_bod_FGL[h]||h) : h); };
@@ -133,24 +133,53 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       var labToolData = ctx.toolData || {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _bodBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.bodyStory || defaultState();
       function setB(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.bodyStory) || defaultState();
-          var next = Object.assign({}, prior, patch);
+          var resolved = typeof patch === 'function' ? patch(prior) : patch;
+          var next = Object.assign({}, prior, resolved);
           next.lastUpdated = todayISO();
           return Object.assign({}, prev, { bodyStory: next });
         });
       }
-      var view = d.view || 'home';
+      function scanBodyText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'bodyStory', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'bodyStory', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setB({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Body Story', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
+      }
+      var VALID_VIEWS = { home: 1, function: 1, pressures: 1, voices: 1, media: 1, print: 1, about: 1 };
+      var view = (d.view && Object.prototype.hasOwnProperty.call(VALID_VIEWS, d.view)) ? d.view : 'home';
       function goto(v) { setB({ view: v }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _bodFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _bodHC ? '#000000' : 'rgba(255,255,255,0.05)', border: '1px solid ' + _bodBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _bodFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _bodFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🫂 Body Story'),
             h('div', { style: { fontSize: 12, color: _bodFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Your body is not a problem to be solved.')
@@ -172,10 +201,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#fb7185' : '#334155'),
-                background: active ? 'rgba(251,113,133,0.18)' : _bodBg('#1e293b'),
+            return h('button', { key: t.id, id: 'bod-tab-' + t.id, onClick: function() { goto(t.id); },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'bod-tab-panel', tabIndex: active ? 0 : -1,
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _bodBd('#fb7185') : _bodBd('#334155')),
+                background: active ? (_bodHC ? '#000000' : 'rgba(251,113,133,0.18)') : _bodBg('#1e293b'),
                 color: active ? _bodFg('#fecdd3') : _bodFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -183,7 +212,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       }
 
       function safetyBanner() {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: _bodFg('#fecaca'), lineHeight: 1.65 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: _bodHC ? '#000000' : 'rgba(239,68,68,0.10)', borderTop: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderRight: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderBottom: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderLeft: '3px solid ' + _bodBd('#ef4444'), marginBottom: 12, fontSize: 12.5, color: _bodFg('#fecaca'), lineHeight: 1.65 } },
           h('strong', null, '🆘 If you are restricting food, purging, exercising compulsively, or thinking constantly about food and your body — please get help. '),
           'These can be life-threatening. Call the National Alliance for Eating Disorders Helpline at 1-866-662-1235 (staffed by licensed clinicians, weekdays). For an immediate crisis, call or text 988, or text HOME to 741741. For information and how to find treatment, see ',
           h('a', { href: 'https://www.nationaleatingdisorders.org/', target: '_blank', rel: 'noopener noreferrer',
@@ -194,7 +223,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
 
       function softPointer() {
         return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _bodFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _bodBg('#0f172a'), border: '1px solid ' + _bodBd('#334155'), fontSize: 11, color: _bodFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'This tool is reflective practice, not therapy. Eating disorders and severe body distress need clinical care. Crisis Text Line: text HOME to 741741.'
         );
@@ -207,7 +236,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(251,113,133,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(251,113,133,0.4)', marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 14, background: _bodHC ? '#000000' : (_bodL ? '#f8fafc' : 'linear-gradient(135deg, rgba(251,113,133,0.16) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(251,113,133,0.4)'), marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _bodFg('#fecdd3'), marginBottom: 4 } }, 'Your body is not a project.'),
             h('p', { style: { margin: '0 0 10px', color: _bodFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'You live in a culture that has spent billions of dollars convincing you that your body is wrong and that you should fix it. The "wrong" changes with the era — too thin, too thick, too curvy, too flat, too tall, too dark, too pale, too disabled. It is a moving target. It is meant to be a moving target. A body that is permanently insecure is a body that buys products.'
@@ -270,25 +299,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       // ═══════════════════════════════════════════════════════════
       function renderFunction() {
         function toggleFunction(id) {
-          var list = (d.bodyDoes || []).slice();
-          var idx = list.indexOf(id);
-          if (idx >= 0) list.splice(idx, 1); else list.push(id);
-          setB({ bodyDoes: list });
+          setB(function(prior) {
+            var list = (Array.isArray(prior.bodyDoes) ? prior.bodyDoes : []).slice();
+            var idx = list.indexOf(id);
+            if (idx >= 0) list.splice(idx, 1); else list.push(id);
+            return { bodyDoes: list };
+          });
         }
 
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 13, color: _bodFg('#bae6fd'), lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _bodHC ? '#000000' : 'rgba(14,165,233,0.10)', borderTop: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(14,165,233,0.3)'), borderRight: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(14,165,233,0.3)'), borderBottom: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(14,165,233,0.3)'), borderLeft: '3px solid ' + _bodBd('#0ea5e9'), marginBottom: 14, fontSize: 13, color: _bodFg('#bae6fd'), lineHeight: 1.7 } },
             h('strong', null, '🌊 Tylka\'s functional appreciation framework. '),
             'Research shows that focusing on what your body DOES (function) builds a more durable relationship with your body than trying to feel positive about how it LOOKS. Mark every function your body performs that you actually appreciate, even a little.'
           ),
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
             BODY_FUNCTIONS.map(function(f) {
-              var selected = (d.bodyDoes || []).indexOf(f.id) !== -1;
+              var selected = (Array.isArray(d.bodyDoes) ? d.bodyDoes : []).indexOf(f.id) !== -1;
               return h('button', { key: f.id, onClick: function() { toggleFunction(f.id); }, 'aria-pressed': selected, 'aria-label': f.label,
-                style: { textAlign: 'left', padding: 12, borderRadius: 8, border: '2px solid ' + (selected ? '#0ea5e9' : _bodBg('#1e293b')), background: selected ? 'rgba(14,165,233,0.10)' : '#0f172a', cursor: 'pointer', color: _bodFg('#e2e8f0') } },
+                style: { textAlign: 'left', padding: 12, borderRadius: 8, border: '2px solid ' + (selected ? _bodBd('#0ea5e9') : _bodBd('#1e293b')), background: selected ? (_bodHC ? '#000000' : 'rgba(14,165,233,0.10)') : _bodBg('#0f172a'), cursor: 'pointer', color: _bodFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
                   h('span', { style: { fontSize: 18 } }, f.icon),
                   h('span', { style: { fontSize: 12, color: selected ? _bodFg('#7dd3fc') : _bodFg('#cbd5e1'), lineHeight: 1.5 } }, f.label),
@@ -299,13 +330,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
           ),
 
           // Open reflection
-          h('div', { style: { padding: 14, borderRadius: 10, background: _bodBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9' } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _bodBg('#0f172a'), borderTop: '1px solid ' + _bodBd('#1e293b'), borderRight: '1px solid ' + _bodBd('#1e293b'), borderBottom: '1px solid ' + _bodBd('#1e293b'), borderLeft: '3px solid ' + _bodBd('#0ea5e9') } },
             h('label', { htmlFor: 'b-appreciation', style: { display: 'block', fontSize: 12, color: _bodFg('#7dd3fc'), fontWeight: 800, marginBottom: 6 } }, 'What else does my body do that I want to name?'),
             h('div', { style: { fontSize: 11, color: _bodFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'Be specific. Not vague positivity; concrete functions. "My hands held my friend\'s hand when they were scared." "My legs carried me through a really long bus ride."'),
             h('textarea', { id: 'b-appreciation', value: d.appreciation || '',
               placeholder: 'My body...',
               onChange: function(e) { setB({ appreciation: e.target.value }); },
-              style: { width: '100%', minHeight: 130, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
+              onBlur: function(e) { scanBodyText(e.target.value); },
+              style: { width: '100%', minHeight: 130, padding: 10, borderRadius: 6, border: '1px solid ' + _bodBd('#334155'), background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
           ),
 
           softPointer()
@@ -316,69 +348,78 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       // PRESSURES
       // ═══════════════════════════════════════════════════════════
       function renderPressures() {
+        var pressuresList = Array.isArray(d.pressures) ? d.pressures : [];
         function togglePressure(label) {
-          var list = (d.pressures || []).slice();
-          var idx = list.indexOf(label);
-          if (idx >= 0) list.splice(idx, 1); else list.push(label);
-          setB({ pressures: list });
+          setB(function(prior) {
+            var list = (Array.isArray(prior.pressures) ? prior.pressures : []).slice();
+            var idx = list.indexOf(label);
+            if (idx >= 0) list.splice(idx, 1); else list.push(label);
+            return { pressures: list };
+          });
         }
         function addCustom() {
           var el = document.getElementById('b-pressure-input');
           if (!el || !el.value.trim()) { _bodAnnounce('Write something first, then press the button again.'); return; }
-          var list = (d.pressures || []).slice();
-          if (list.indexOf(el.value.trim()) === -1) list.push(el.value.trim());
-          setB({ pressures: list });
+          var val = el.value.trim();
+          scanBodyText(val);
+          setB(function(prior) {
+            var list = (Array.isArray(prior.pressures) ? prior.pressures : []).slice();
+            if (list.indexOf(val) === -1) list.push(val);
+            return { pressures: list };
+          });
           el.value = '';
         }
         function remove(i) {
-          var list = (d.pressures || []).slice();
-          list.splice(i, 1);
-          setB({ pressures: list });
+          setB(function(prior) {
+            var list = (Array.isArray(prior.pressures) ? prior.pressures : []).slice();
+            list.splice(i, 1);
+            return { pressures: list };
+          });
         }
 
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: _bodFg('#fde68a'), lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _bodHC ? '#000000' : 'rgba(245,158,11,0.10)', borderTop: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _bodBd('#f59e0b'), marginBottom: 14, fontSize: 13, color: _bodFg('#fde68a'), lineHeight: 1.7 } },
             h('strong', null, '🌪️ Naming the pressure sources. '),
             'Body distress is rarely random. It comes from specific places. Naming the specific sources is the first step toward deciding which ones you can change, which ones you can\'t, and which ones you can at least see for what they are.'
           ),
 
           // Selected pressures
-          (d.pressures || []).length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _bodBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
-            h('div', { style: { fontSize: 12, color: _bodFg('#fde68a'), fontWeight: 800, marginBottom: 8 } }, 'My pressure sources (' + d.pressures.length + ')'),
+          pressuresList.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _bodBg('#0f172a'), borderTop: '1px solid ' + _bodBd('#1e293b'), borderRight: '1px solid ' + _bodBd('#1e293b'), borderBottom: '1px solid ' + _bodBd('#1e293b'), borderLeft: '3px solid ' + _bodBd('#f59e0b'), marginBottom: 10 } },
+            h('div', { style: { fontSize: 12, color: _bodFg('#fde68a'), fontWeight: 800, marginBottom: 8 } }, 'My pressure sources (' + pressuresList.length + ')'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-              d.pressures.map(function(p, i) {
+              pressuresList.map(function(p, i) {
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 14, background: _bodBg('#1e293b'), border: '1px solid #f59e0b66', fontSize: 12, color: _bodFg('#e2e8f0') } },
                   h('span', null, p),
-                  h('button', { onClick: function() { remove(i); }, 'aria-label': 'Remove',
-                    style: { background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕')
+                  h('button', { onClick: function() { remove(i); }, 'aria-label': 'Remove ' + p,
+                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕')
                 );
               })
             )
           ) : null,
 
           // Add custom
-          h('div', { style: { padding: 14, borderRadius: 10, background: _bodBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _bodBg('#0f172a'), borderTop: '1px solid ' + _bodBd('#1e293b'), borderRight: '1px solid ' + _bodBd('#1e293b'), borderBottom: '1px solid ' + _bodBd('#1e293b'), borderLeft: '3px solid ' + _bodBd('#f59e0b'), marginBottom: 10 } },
             h('div', { style: { fontSize: 12, color: _bodFg('#fde68a'), fontWeight: 800, marginBottom: 8 } }, '+ Add a pressure source'),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'b-pressure-input', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add pressure source'),
               h('input', { id: 'b-pressure-input', type: 'text', placeholder: 'Be specific...',
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } },
-                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
+                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _bodBd('#334155'), background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
               h('button', { onClick: addCustom, 'aria-label': 'Add pressure',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bodBg('#b45309'), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { padding: '8px 14px', borderRadius: 6, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodBg('#b45309'), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
           // Starter list
-          h('div', { style: { padding: 12, borderRadius: 10, background: _bodBg('#0f172a'), border: '1px solid #1e293b' } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _bodBg('#0f172a'), border: '1px solid ' + _bodBd('#1e293b') } },
             h('div', { style: { fontSize: 12, color: _bodFg('#94a3b8'), fontWeight: 700, marginBottom: 10 } }, 'Common pressure sources (tap to select)'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               PRESSURE_STARTERS.map(function(p, i) {
-                var selected = (d.pressures || []).indexOf(p) !== -1;
+                var selected = pressuresList.indexOf(p) !== -1;
                 return h('button', { key: i, onClick: function() { togglePressure(p); }, 'aria-pressed': selected, 'aria-label': 'Toggle: ' + p,
-                  style: { padding: '4px 10px', borderRadius: 14, border: '1px solid #f59e0b66', background: selected ? 'rgba(245,158,11,0.18)' : 'rgba(15,23,42,0.6)', color: selected ? _bodFg('#fde68a') : _bodFg('#cbd5e1'), cursor: 'pointer', fontSize: 11 } },
+                  style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + (_bodHC ? '#ffff00' : '#f59e0b66'), background: selected ? (_bodHC ? '#000000' : 'rgba(245,158,11,0.18)') : _bodBg('#0f172a'), color: selected ? _bodFg('#fde68a') : _bodFg('#cbd5e1'), cursor: 'pointer', fontSize: 11 } },
                   (selected ? '✓ ' : '+ ') + p);
               })
             )
@@ -406,6 +447,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             h('textarea', { id: 'b-voices', value: d.criticalVoices || '',
               placeholder: 'The voice sounds like... It says... I started hearing it when... It came from...',
               onChange: function(e) { setB({ criticalVoices: e.target.value }); },
+              onBlur: function(e) { scanBodyText(e.target.value); },
               style: { width: '100%', minHeight: 180, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
           ),
 
@@ -422,82 +464,96 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       // MEDIA — diet audit
       // ═══════════════════════════════════════════════════════════
       function renderMedia() {
+        var inflowsList = Array.isArray(d.mediaInflows) ? d.mediaInflows : [];
+        var cutsList = Array.isArray(d.mediaCuts) ? d.mediaCuts : [];
         function addInflow() {
           var el = document.getElementById('b-media-in');
           if (!el || !el.value.trim()) { _bodAnnounce('Write something first, then press the button again.'); return; }
-          var list = (d.mediaInflows || []).slice();
-          list.push(el.value.trim());
-          setB({ mediaInflows: list });
+          var val = el.value.trim();
+          scanBodyText(val);
+          setB(function(prior) {
+            var list = (Array.isArray(prior.mediaInflows) ? prior.mediaInflows : []).slice();
+            list.push(val);
+            return { mediaInflows: list };
+          });
           el.value = '';
         }
         function addCut() {
           var el = document.getElementById('b-media-cut');
           if (!el || !el.value.trim()) { _bodAnnounce('Write something first, then press the button again.'); return; }
-          var list = (d.mediaCuts || []).slice();
-          list.push(el.value.trim());
-          setB({ mediaCuts: list });
+          var val = el.value.trim();
+          scanBodyText(val);
+          setB(function(prior) {
+            var list = (Array.isArray(prior.mediaCuts) ? prior.mediaCuts : []).slice();
+            list.push(val);
+            return { mediaCuts: list };
+          });
           el.value = '';
         }
         function removeInflow(i) {
-          var list = (d.mediaInflows || []).slice();
-          list.splice(i, 1);
-          setB({ mediaInflows: list });
+          setB(function(prior) {
+            var list = (Array.isArray(prior.mediaInflows) ? prior.mediaInflows : []).slice();
+            list.splice(i, 1);
+            return { mediaInflows: list };
+          });
         }
         function removeCut(i) {
-          var list = (d.mediaCuts || []).slice();
-          list.splice(i, 1);
-          setB({ mediaCuts: list });
+          setB(function(prior) {
+            var list = (Array.isArray(prior.mediaCuts) ? prior.mediaCuts : []).slice();
+            list.splice(i, 1);
+            return { mediaCuts: list };
+          });
         }
 
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(236,72,153,0.10)', borderTop: '1px solid rgba(236,72,153,0.3)', borderRight: '1px solid rgba(236,72,153,0.3)', borderBottom: '1px solid rgba(236,72,153,0.3)', borderLeft: '3px solid #ec4899', marginBottom: 14, fontSize: 13, color: _bodFg('#fbcfe8'), lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _bodHC ? '#000000' : 'rgba(236,72,153,0.10)', borderTop: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(236,72,153,0.3)'), borderRight: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(236,72,153,0.3)'), borderBottom: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(236,72,153,0.3)'), borderLeft: '3px solid ' + _bodBd('#ec4899'), marginBottom: 14, fontSize: 13, color: _bodFg('#fbcfe8'), lineHeight: 1.7 } },
             h('strong', null, '📺 Your eyes have a diet. '),
             'Every account you follow, every show you watch, every feed you scroll is feeding you images and ideas about bodies. Some of it is neutral. Some of it is actively harming you. An audit makes the harm visible so you can decide what to cut.'
           ),
 
           // Inflows
-          h('div', { style: { padding: 14, borderRadius: 10, background: _bodBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _bodBg('#0f172a'), borderTop: '1px solid ' + _bodBd('#1e293b'), borderRight: '1px solid ' + _bodBd('#1e293b'), borderBottom: '1px solid ' + _bodBd('#1e293b'), borderLeft: '3px solid ' + _bodBd('#ef4444'), marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _bodFg('#fca5a5'), marginBottom: 6 } }, '📥 What I currently let in (be honest)'),
             h('div', { style: { fontSize: 11, color: _bodFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, 'Apps, accounts, shows, magazines, specific influencers. The stuff you actually look at.'),
-            (d.mediaInflows || []).length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
-              d.mediaInflows.map(function(item, i) {
+            inflowsList.length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              inflowsList.map(function(item, i) {
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 14, background: _bodBg('#1e293b'), border: '1px solid rgba(239,68,68,0.4)', fontSize: 12, color: _bodFg('#fecaca') } },
                   h('span', null, item),
-                  h('button', { onClick: function() { removeInflow(i); }, 'aria-label': 'Remove',
-                    style: { background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕'));
+                  h('button', { onClick: function() { removeInflow(i); }, 'aria-label': 'Remove ' + item,
+                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕'));
               })
             ) : null,
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'b-media-in', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add to inflows'),
               h('input', { id: 'b-media-in', type: 'text', placeholder: 'Specific account, show, app, person',
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addInflow(); } },
-                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: addInflow, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bodBg(_bodSolid('#ef4444')), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _bodBd('#334155'), background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
+              h('button', { onClick: addInflow, 'aria-label': 'Add media inflow',
+                style: { padding: '8px 14px', borderRadius: 6, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodBg(_bodSolid('#ef4444')), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
           // Cuts
-          h('div', { style: { padding: 14, borderRadius: 10, background: _bodBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _bodBg('#0f172a'), borderTop: '1px solid ' + _bodBd('#1e293b'), borderRight: '1px solid ' + _bodBd('#1e293b'), borderBottom: '1px solid ' + _bodBd('#1e293b'), borderLeft: '3px solid ' + _bodBd('#22c55e'), marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _bodFg('#bbf7d0'), marginBottom: 6 } }, '✂ What I will cut, mute, or unfollow'),
             h('div', { style: { fontSize: 11, color: _bodFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, 'For each thing you let in, ask: is this helping me come home to my body, or is it telling me I am wrong? If it is telling you you are wrong: unfollow, mute, delete, leave. The relief comes within days.'),
-            (d.mediaCuts || []).length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
-              d.mediaCuts.map(function(item, i) {
+            cutsList.length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              cutsList.map(function(item, i) {
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 14, background: _bodBg('#1e293b'), border: '1px solid rgba(34,197,94,0.4)', fontSize: 12, color: _bodFg('#bbf7d0') } },
                   h('span', null, '✂ ' + item),
-                  h('button', { onClick: function() { removeCut(i); }, 'aria-label': 'Remove',
-                    style: { background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕'));
+                  h('button', { onClick: function() { removeCut(i); }, 'aria-label': 'Remove ' + item,
+                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _bodFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕'));
               })
             ) : null,
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'b-media-cut', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add to cuts'),
               h('input', { id: 'b-media-cut', type: 'text', placeholder: 'What I will unfollow / mute / leave',
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addCut(); } },
-                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: addCut, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bodBg('#15803d'), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _bodBd('#334155'), background: _bodBg('#1e293b'), color: _bodFg('#e2e8f0'), fontSize: 13 } }),
+              h('button', { onClick: addCut, 'aria-label': 'Add media to cut',
+                style: { padding: '8px 14px', borderRadius: 6, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodBg('#15803d'), color: _bodFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
@@ -599,33 +655,37 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       // PRINT — body story summary, useful for therapy / journaling
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
-        var doneFunctions = (d.bodyDoes || []).map(function(id) {
+        var doneFunctions = (Array.isArray(d.bodyDoes) ? d.bodyDoes : []).map(function(id) {
           var f = BODY_FUNCTIONS.find(function(x) { return x.id === id; });
           return f ? f.label : null;
         }).filter(Boolean);
+        var printPressures = Array.isArray(d.pressures) ? d.pressures : [];
+        var printInflows = Array.isArray(d.mediaInflows) ? d.mediaInflows : [];
+        var printCuts = Array.isArray(d.mediaCuts) ? d.mediaCuts : [];
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(251,113,133,0.10)', borderRadius: 8, border: '1px solid rgba(251,113,133,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _bodHC ? '#000000' : 'rgba(251,113,133,0.10)', borderRadius: 8, border: '1px solid ' + (_bodHC ? '#ffff00' : 'rgba(251,113,133,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _bodFg('#fecdd3'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Body Story summary — private work; print only for yourself or a therapist conversation.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _bodFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _bodHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bodHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _bodFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _bodBg('#1e293b'), color: _bodFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _bodBd('#475569'), background: _bodBg('#1e293b'), color: _bodFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'body-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _bodBg('#fff'), color: _bodFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _bodBg('#fff'), color: _bodFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _bodBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#body-print-region, #body-print-region * { visibility: visible !important; } ' +
-              '#body-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#body-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+              '#body-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
 
-            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #be123c' } },
+            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _bodBd('#be123c') } },
               h('div', { style: { fontSize: 10, color: _bodFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Body Story'),
               h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, 'My body story'),
               d.lastUpdated ? h('div', { style: { fontSize: 12, color: _bodFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
@@ -643,10 +703,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
               h('p', { style: { margin: '0 0 0 12px', color: _bodFg('#0f172a'), fontSize: 12.5, lineHeight: 1.75, whiteSpace: 'pre-wrap' } }, d.appreciation)
             ) : null,
 
-            (d.pressures || []).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
+            printPressures.length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
               h('div', { style: { background: _bodBg('#b45309'), color: _bodFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🌪️ Pressure sources I have named'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _bodFg('#0f172a'), fontSize: 12.5, lineHeight: 1.8 } },
-                d.pressures.map(function(p, i) { return h('li', { key: i }, p); })
+                printPressures.map(function(p, i) { return h('li', { key: i }, p); })
               )
             ) : null,
 
@@ -655,19 +715,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
               h('p', { style: { margin: '0 0 0 12px', color: _bodFg('#0f172a'), fontSize: 12.5, lineHeight: 1.75, whiteSpace: 'pre-wrap' } }, d.criticalVoices)
             ) : null,
 
-            ((d.mediaInflows || []).length > 0 || (d.mediaCuts || []).length > 0) ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
+            (printInflows.length > 0 || printCuts.length > 0) ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
               h('div', { style: { background: _bodBg(_bodSolid('#ec4899')), color: _bodFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📺 Media diet'),
-              (d.mediaInflows || []).length > 0 ? h('div', { style: { marginBottom: 8, padding: '0 12px' } },
+              printInflows.length > 0 ? h('div', { style: { marginBottom: 8, padding: '0 12px' } },
                 h('div', { style: { fontSize: 10, color: _bodFg('#64748b'), textTransform: 'uppercase', fontWeight: 700, marginBottom: 2 } }, 'Currently letting in'),
-                h('div', { style: { fontSize: 12, color: _bodFg('#0f172a'), lineHeight: 1.7 } }, d.mediaInflows.join('  ·  '))
+                h('div', { style: { fontSize: 12, color: _bodFg('#0f172a'), lineHeight: 1.7 } }, printInflows.join('  ·  '))
               ) : null,
-              (d.mediaCuts || []).length > 0 ? h('div', { style: { padding: '0 12px' } },
+              printCuts.length > 0 ? h('div', { style: { padding: '0 12px' } },
                 h('div', { style: { fontSize: 10, color: _bodFg('#64748b'), textTransform: 'uppercase', fontWeight: 700, marginBottom: 2 } }, 'Cutting / muting / unfollowing'),
-                h('div', { style: { fontSize: 12, color: _bodFg('#0f172a'), lineHeight: 1.7 } }, d.mediaCuts.join('  ·  '))
+                h('div', { style: { fontSize: 12, color: _bodFg('#0f172a'), lineHeight: 1.7 } }, printCuts.join('  ·  '))
               ) : null
             ) : null,
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _bodFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid ' + _bodBd('#cbd5e1'), fontSize: 9, color: _bodFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Tylka body appreciation framework · Intuitive Eating · Help: National Alliance for Eating Disorders 1-866-662-1235; crisis 988 or text HOME to 741741. ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -689,7 +749,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Body Story' },
         header(),
         navTabs(),
-        body
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _bodBand) : null,
+        h('div', { id: 'bod-tab-panel', role: 'tabpanel', 'aria-labelledby': 'bod-tab-' + view }, body)
       );
     }
   });

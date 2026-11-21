@@ -270,7 +270,8 @@ function AdventureSetupEditor(props) {
   const [resourceQtyDrafts, setResourceQtyDrafts] = React.useState({});
   const pendingResourceFocus = React.useRef(null);
   const resourceEditorRef = React.useRef(null);
-  const resourcesLocked = locked() || typeof props.setAdventureState !== 'function';
+  const resourceConfigLocked = !props.isTeacherMode || locked();
+  const resourcesLocked = resourceConfigLocked || typeof props.setAdventureState !== 'function';
   React.useEffect(() => {
     const target = pendingResourceFocus.current;
     if (target) {
@@ -289,11 +290,11 @@ function AdventureSetupEditor(props) {
   };
   const resourceMode = props.factionResourceMode === 'manual' ? 'manual' : 'ai';
   const setResourceMode = value => {
-    if (locked()) return;
+    if (resourceConfigLocked) return;
     if (typeof props.setFactionResourceMode === 'function') props.setFactionResourceMode(value);
     else { const handler = value === 'manual' ? props.handleSetFactionResourceModeToManual : props.handleSetFactionResourceModeToAi; if (typeof handler === 'function') handler(); }
   };
-  const editResources = update => { if (!locked() && typeof props.setAdventureState === 'function') props.setAdventureState(previous => ({ ...previous, systemResources: update(previous.systemResources || []) })); };
+  const editResources = update => { if (!resourceConfigLocked && typeof props.setAdventureState === 'function') props.setAdventureState(previous => ({ ...previous, systemResources: update(previous.systemResources || []) })); };
   const addResource = () => {
     if (resourcesLocked || resources.length >= 24) return;
     pendingResourceFocus.current = id + '-resource-' + resources.length + '-name';
@@ -345,10 +346,10 @@ function AdventureSetupEditor(props) {
         {fixedHint('allowModeSwitch', 'social-focus')}
       </label>}
       {props.adventureInputMode === 'system' && <div>
-        {toggle('enableFactionResources', 'setEnableFactionResources', label('adventure.system_state_label', 'Track resources'), label('adventure.system_state_desc', 'Track how your decisions affect the system.'))}
+        {toggle('enableFactionResources', 'setEnableFactionResources', label('adventure.system_state_label', 'Track resources'), label('adventure.system_state_desc', 'Track how your decisions affect the system.'), 'allowModeSwitch')}
         {props.enableFactionResources && <>
           <label className="as-field" htmlFor={id + '-resource-mode'} data-help-key="adventure_setting_resource_mode">{label('resource_setup', 'Resource setup')}
-            <select aria-label={label('resource_setup', 'Resource setup')} className="as-control" id={id + '-resource-mode'} value={resourceMode} disabled={locked() || !(props.setFactionResourceMode || props.handleSetFactionResourceModeToManual)} onChange={e => setResourceMode(e.target.value)}>
+            <select aria-label={label('resource_setup', 'Resource setup')} className="as-control" id={id + '-resource-mode'} value={resourceMode} disabled={resourceConfigLocked || !(props.setFactionResourceMode || props.handleSetFactionResourceModeToManual)} onChange={e => setResourceMode(e.target.value)}>
               <option value="ai">{label('resources_ai', 'AI-generated resources')}</option><option value="manual">{label('resources_manual', 'Teacher-defined resources')}</option>
             </select>
           </label>

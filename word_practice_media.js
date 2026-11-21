@@ -1076,6 +1076,7 @@
   function safeHtmlImg(source) {
     const raw = source && typeof source === 'object' ? (source.src || source.dataUri || '') : source;
     const s = String(raw || '').trim();
+    if (/^https:\/\/[^\s"'<>\\]+$/i.test(s) && s.length <= 2048) return s;
     if (!/^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)[;,]/i.test(s)) return '';
     if (/svg\+xml/i.test(s)) {
       let decoded = s;
@@ -1088,7 +1089,7 @@
           try { decoded = decodeURIComponent(body); } catch (_) { decoded = body; }
         }
       }
-      if (/<script|<foreignObject|\bon[a-z]+\s*=|javascript:/i.test(decoded)) return '';
+      if (/<(script|foreignObject|iframe|object|embed)\b|<!(DOCTYPE|ENTITY)|<\?xml-stylesheet|\bon[a-z]+\s*=|javascript:|(?:xlink:)?href\s*=\s*["']\s*(?:https?:|\/\/|data:|javascript:)/i.test(decoded)) return '';
     }
     return s;
   }
@@ -1122,8 +1123,12 @@
   function blankedSentence(example, word) {
     const ex = String(example || '').trim(), w = String(word || '').trim();
     if (!ex || !w) return ex;
+    const core = getCore();
+    if (core && typeof core.maskWord === 'function') {
+      return core.maskWord(ex, w).replace(/____/g, '_______');
+    }
     const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return ex.replace(new RegExp('\\b' + escaped + '\\b', 'gi'), '_______');
+    return ex.replace(new RegExp('(?<![\\p{L}\\p{N}_])' + escaped + '(?![\\p{L}\\p{N}_])', 'giu'), '_______');
   }
   function printableCardsData(input, rawOptions = {}, fallbackTitle = 'Word Cards') {
     const core = getCore(), pack = core.normalizeInput(input);
@@ -1733,5 +1738,81 @@
       '</html>',
     ].join('\n');
   }
-  root.AlloWordPracticeMedia = { prepareAudio, buildPptx, buildPictureSlidesPptx, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, everyDeviceAudio, needsEveryDeviceAudio };
+  let _wpSylPromise = null;
+  function ensureSyllableTableLoaded(docArg) {
+    if (root.AlloModules && root.AlloModules.SyllableTableEn && typeof root.AlloModules.SyllableTableEn.lookup === 'function') {
+      return Promise.resolve(root.AlloModules.SyllableTableEn);
+    }
+    if (_wpSylPromise) return _wpSylPromise;
+    const d = docArg || (typeof document !== 'undefined' ? document : null);
+    _wpSylPromise = new Promise(resolve => {
+      if (!d || !d.createElement) { resolve(null); return; }
+      if (d.querySelector && d.querySelector('script[data-allo-syllable-table="1"]')) {
+        resolve((root.AlloModules && root.AlloModules.SyllableTableEn) || null);
+        return;
+      }
+      const sc = d.createElement('script');
+      sc.src = 'syllable_table_en.js';
+      sc.async = true;
+      sc.setAttribute('data-allo-syllable-table', '1');
+      sc.onload = () => resolve((root.AlloModules && root.AlloModules.SyllableTableEn) || null);
+      sc.onerror = () => { _wpSylPromise = null; resolve(null); };
+      (d.head || d.documentElement).appendChild(sc);
+    });
+    return _wpSylPromise;
+  }
+  function _splitSheetSyllables(word) {
+    if (typeof word !== 'string' || word.length < 4 || !/^[A-Za-z]+$/.test(word)) return null;
+    const tbl = root.AlloModules && root.AlloModules.SyllableTableEn;
+    if (!tbl || typeof tbl.lookup !== 'function') return null;
+    const found = tbl.lookup(word.toLowerCase());
+    if (!found || found.check || !Array.isArray(found.parts) || found.parts.length < 2) return null;
+    if (found.parts.join('').length !== word.length) return null;
+    const out = []; let pos = 0;
+    for (let i = 0; i < found.parts.length; i++) {
+      out.push(word.slice(pos, pos + found.parts[i].length));
+      pos += found.parts[i].length;
+    }
+    return out;
+  }
+  function applySheetReadingSupports(html, opts) {
+    const o = opts || {};
+    const useSyl = !!o.syllables, useBold = !!o.bold;
+    if ((!useSyl && !useBold) || typeof html !== 'string' || !html) return html;
+    const dotHtml = '<span aria-hidden="true" style="user-select:none;opacity:.6">\u00b7</span>';
+    let skipDepth = 0, inBody = !/<body[\s>]/i.test(html);
+    const SKIP_OPEN = /^<(?:script|style|code|pre|svg|math|title|option|textarea)\b/i;
+    const SKIP_CLOSE = /^<\/(?:script|style|code|pre|svg|math|title|option|textarea)\b/i;
+    return html.replace(/(<[^>]+>)|([^<]+)/g, (all, tag, text) => {
+      if (tag) {
+        if (/^<body[\s>]/i.test(tag)) inBody = true;
+        else if (/^<\/body>/i.test(tag)) inBody = false;
+        if (SKIP_OPEN.test(tag) && !/\/>$/.test(tag)) skipDepth++;
+        else if (SKIP_CLOSE.test(tag) && skipDepth > 0) skipDepth--;
+        return tag;
+      }
+      if (!inBody || skipDepth > 0 || !text || !/[A-Za-z\u00C0-\u024F]{2,}/.test(text)) return text;
+      return text.replace(/(&[a-z#0-9]+;)|([A-Za-z\u00C0-\u024F]{2,})/gi, (tok, ent, w) => {
+        if (ent || !w) return tok;
+        const syls = useSyl ? _splitSheetSyllables(w) : null;
+        if (!useBold) return syls ? syls.join(dotHtml) : w;
+        const cut = w.length <= 3 ? Math.max(1, w.length - 1) : Math.ceil(w.length * 0.45);
+        if (!syls) return '<b style="font-weight:700">' + w.slice(0, cut) + '</b>' + w.slice(cut);
+        let buf = '', offset = 0;
+        for (let j = 0; j < syls.length; j++) {
+          if (j > 0) buf += dotHtml;
+          const seg = syls[j], end = offset + seg.length;
+          if (end <= cut) buf += '<b style="font-weight:700">' + seg + '</b>';
+          else if (offset >= cut) buf += seg;
+          else {
+            const partCut = cut - offset;
+            buf += '<b style="font-weight:700">' + seg.slice(0, partCut) + '</b>' + seg.slice(partCut);
+          }
+          offset = end;
+        }
+        return buf;
+      });
+    });
+  }
+  root.AlloWordPracticeMedia = { prepareAudio, buildPptx, buildPictureSlidesPptx, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, everyDeviceAudio, needsEveryDeviceAudio, ensureSyllableTableLoaded, applySheetReadingSupports };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -226,7 +226,7 @@ function appliedChallengeFeedbackContext(value, options) {
           cycleStage: appliedChallengeValidationCycleProgress(cycle, data.family).stage })),
         selfCheck: checks.map(item => ({ id: item.key, studentRating: data.criteriaCheck[item.key].rating,
           needsReview: data.criteriaCheck[item.key].needsReview, studentNote: fit(data.criteriaCheck[item.key].note, 'selfCheck.' + item.key) })) },
-      lessonSourceExcerpt: fit(_apsString(opts.sourceExcerpt || data.sourceExcerpt, 5000), 'lessonSourceExcerpt'),
+      lessonSourceExcerpt: fit(_apsString(opts.sourceExcerpt || data.sourceExcerpt, 50000), 'lessonSourceExcerpt'),
       targetLearner: fit(_apsString(opts.gradeLevel || data.lessonRef.gradeLevel, 100), 'targetLearner'),
     };
     const coverage = { version: 1, workspaceFields: Object.keys(workspace).length, evidenceRows: rows.length, sourceRecords: data.sourceRecords.length,
@@ -1251,11 +1251,11 @@ function appliedChallengePromptContextSnapshot(value, options) {
     },
     lessonBoundary: {
       factReviewStatus: data.brief.factVerified ? 'Teacher verified.' : 'Teacher review pending.',
-      facts: data.brief.lockedLessonFacts.slice(0, 8).map((item) => _apsString(item, 280)),
-      openQuestions: data.brief.openQuestions.slice(0, 4).map((item) => _apsString(item, 220)),
-      criteria: data.brief.criteria.slice(0, 6).map((item) => _apsString(item, 220)),
-      constraints: data.brief.constraints.slice(0, 6).map((item) => _apsString(item, 220)),
-      evidenceBoundary: _apsString(data.brief.evidenceBoundary, 700),
+      facts: data.brief.lockedLessonFacts.slice(0, 16).map((item) => _apsString(item, 600)),
+      openQuestions: data.brief.openQuestions.slice(0, 8).map((item) => _apsString(item, 400)),
+      criteria: data.brief.criteria.slice(0, 12).map((item) => _apsString(item, 400)),
+      constraints: data.brief.constraints.slice(0, 12).map((item) => _apsString(item, 400)),
+      evidenceBoundary: _apsString(data.brief.evidenceBoundary, 1200),
     },
     currentPhase: phase ? {
       id: phase.id,
@@ -1276,7 +1276,15 @@ function appliedChallengePromptContextSnapshot(value, options) {
           studentNote: _apsString(data.criteriaCheck[item.key].note, 240),
         })),
     },
-    lessonSourceExcerpt: _apsString(opts.sourceExcerpt, 1400).trim() || undefined,
+    ...(() => {
+      const rawExcerpt = String((opts && opts.sourceExcerpt) || data.sourceExcerpt || '').trim();
+      const excerptLimit = 20000;
+      const truncated = rawExcerpt.length > excerptLimit;
+      return {
+        lessonSourceExcerpt: rawExcerpt ? (_apsString(rawExcerpt, excerptLimit) + (truncated ? ' [...]' : '')) : undefined,
+        lessonSourceCoverage: truncated ? ('First ' + excerptLimit + ' of ' + rawExcerpt.length + ' characters supplied; do not claim missing source details from omitted text.') : (rawExcerpt ? 'Full source supplied.' : undefined),
+      };
+    })(),
     targetLearner: _apsString(opts.gradeLevel, 100).trim() || undefined,
   }, null, 2);
 }
@@ -1334,7 +1342,7 @@ function buildAppliedChallengeStressTestPrompt(value) {
 function buildAppliedChallengeFeedbackPrompt(value, options) {
   const data = normalizeAppliedChallengeData(value);
   const family = APPLIED_CHALLENGE_FAMILIES[data.family];
-  const sourceExcerpt = _apsString((options && options.sourceExcerpt) || data.sourceExcerpt, 5000);
+  const sourceExcerpt = _apsString((options && options.sourceExcerpt) || data.sourceExcerpt, 50000);
   const gradeLevel = _apsString((options && options.gradeLevel) || data.lessonRef.gradeLevel, 100) || 'the learner';
   return [
     'You are a warm, strengths-first coach reviewing student-authored applied problem solving.',
@@ -1676,9 +1684,22 @@ function appliedChallengeFromSubmission(baseData, responses, resourceId, options
       return;
     }
     if (field.indexOf('selfcheck-') === 0) {
-      const checkKey = field.slice('selfcheck-'.length);
-      criteriaCheck[checkKey] = Object.assign({ rating: 'pending', note: '' }, criteriaCheck[checkKey] || {}, { note: _apsString(value, 1200) });
-      matched += 1;
+      const selfCheckMatch = /^selfcheck-(.+?)(:rating)?$/.exec(field);
+      if (selfCheckMatch) {
+        const checkKey = selfCheckMatch[1];
+        const isRatingField = !!selfCheckMatch[2];
+        const briefItems = appliedChallengeSelfCheckItems(data.brief);
+        const matchedItem = briefItems.find((it) => it.key === checkKey || (it.kind + '-' + it.index) === checkKey);
+        const itemRevision = matchedItem ? matchedItem.revision : '';
+        const prevEntry = criteriaCheck[checkKey] || { rating: 'pending', note: '', revision: itemRevision };
+        if (isRatingField) {
+          const normalizedRating = Object.prototype.hasOwnProperty.call(APPLIED_CHALLENGE_SELF_CHECK_RATINGS, value.trim()) ? value.trim() : 'pending';
+          criteriaCheck[checkKey] = Object.assign({}, prevEntry, { rating: normalizedRating, revision: itemRevision || prevEntry.revision || '' });
+        } else {
+          criteriaCheck[checkKey] = Object.assign({}, prevEntry, { note: _apsString(value, 1200), revision: itemRevision || prevEntry.revision || '' });
+        }
+        matched += 1;
+      }
       return;
     }
     const ledger = /^ledger-(\d+)-(claim|evidence|tradeoff)$/.exec(field);
@@ -1688,7 +1709,7 @@ function appliedChallengeFromSubmission(baseData, responses, resourceId, options
       matched += 1;
     }
   });
-  const evidenceLedger = data.evidenceLedger.concat(Object.keys(ledgerRows).sort().map((index) => ledgerRows[index]));
+  const evidenceLedger = data.evidenceLedger.concat(Object.keys(ledgerRows).sort((a, b) => Number(a) - Number(b)).map((index) => ledgerRows[index]));
   // Coaching artifacts belonged to the exporting draft, not to this student's work.
   return {
     matched,
@@ -1865,7 +1886,7 @@ function AppliedChallengePanel(props) {
   };
   const labelClass = 'block text-xs font-black uppercase tracking-wide text-slate-700';
   const selectClass = 'mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900';
-  const helpClass = 'mt-1 block text-[11px] font-medium normal-case leading-snug text-slate-600';
+  const helpClass = 'mt-1 block text-xs font-medium normal-case leading-snug text-slate-600';
   return (
     <div>
       <div className='m-3 space-y-4 rounded-2xl border border-orange-200 bg-orange-50/50 p-3'>
@@ -1906,7 +1927,7 @@ function AppliedChallengePanel(props) {
           <span className={helpClass}>{appliedChallengeScopeText(scope, 'description', t)}</span>
         </label>
         </div></details>
-        <label className={labelClass}>{tx('applied_challenge.panel.instructions', 'Teacher instructions')} <span className='font-medium normal-case text-slate-500'>({tx('applied_challenge.common.optional', 'optional')})</span>
+        <label className={labelClass}>{tx('applied_challenge.panel.instructions', 'Teacher instructions')} <span className='font-medium normal-case text-slate-600'>({tx('applied_challenge.common.optional', 'optional')})</span>
           <textarea aria-label={tx('applied_challenge.panel.instructions_aria', 'Custom instructions for applied challenge')} value={customInstructions} onChange={(event) => setCustomInstructions(event.target.value)} maxLength={2000} rows={3} placeholder={tx('applied_challenge.panel.instructions_placeholder', 'Use a local issue, require two alternatives...')} className='mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900' />
         </label>
       </div>
@@ -2693,8 +2714,20 @@ function AppliedChallengeView(props) {
         ? <AcTextarea aria-label={_apsFill(tx('applied_challenge.workspace.teacher_prompt_aria', 'Teacher prompt for {label}'), { label })} value={data.supports.phasePrompts[phase.id]} maxLength={1200} onChange={(event) => updateSupports({ phasePrompts: Object.assign({}, data.supports.phasePrompts, { [phase.id]: event.target.value }) })} rows={2} className='mt-2 w-full rounded-xl border border-orange-300 bg-orange-50 px-3 py-2 text-xs text-slate-800' />
         : <p id={headingId + '-prompt'} className={data.supports.phasePrompts[phase.id] === label ? 'sr-only' : 'mt-1 text-sm leading-relaxed text-slate-600'}>{data.supports.phasePrompts[phase.id]}</p>}
       <AcTextarea readOnly={learnerReadOnly} id={'applied-workspace-' + phase.id} aria-labelledby={headingId} aria-describedby={headingId + '-prompt'} value={data.workspace[phase.id]} onChange={(event) => updateWorkspace(phase.id, event.target.value)} onFocus={() => setHintPhase(phase.id)} maxLength={limit} rows={phase.id === 'response' || phase.id === 'revision' ? 7 : 4} placeholder={tx('applied_challenge.workspace.placeholder', 'Write your thinking here...')} className='mt-3 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm leading-relaxed text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600' />
-      {LocalReadAloud && !learnerReadOnly && <LocalReadAloud resource={props.referenceResource || generatedContent} text={data.workspace[phase.id]} t={t} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} stopPlayback={props.stopPlayback} />}
-      {nearLimit && <p role='status' className='mt-1 text-[11px] font-bold text-amber-800'>{_apsFill(tx('applied_challenge.workspace.near_limit', '{remaining} characters left in this section.'), { remaining: Math.max(0, limit - used) })}</p>}
+      <div className='mt-2 flex flex-wrap items-center gap-2'>
+        {!learnerReadOnly && typeof window !== 'undefined' && typeof window.AlloDictationButton === 'function' && React.createElement(window.AlloDictationButton, {
+          t,
+          language: data.language || generatedContent?.config?.language,
+          label: tx('applied_challenge.workspace.dictate', 'Dictate'),
+          onTranscript: (spoken) => {
+            const cur = String(data.workspace[phase.id] || '');
+            const sep = cur && !/\s$/.test(cur) ? ' ' : '';
+            updateWorkspace(phase.id, (cur + sep + spoken).slice(0, limit));
+          },
+        })}
+        {LocalReadAloud && !learnerReadOnly && <LocalReadAloud resource={props.referenceResource || generatedContent} text={data.workspace[phase.id]} t={t} voiceSpeed={props.voiceSpeed} voiceVolume={props.voiceVolume} stopPlayback={props.stopPlayback} />}
+      </div>
+      {nearLimit && <p role='status' className='mt-1 text-xs font-bold text-amber-800'>{_apsFill(tx('applied_challenge.workspace.near_limit', '{remaining} characters left in this section.'), { remaining: Math.max(0, limit - used) })}</p>}
     </article>;
   };
 
@@ -2788,10 +2821,10 @@ function AppliedChallengeView(props) {
               <label className='block text-xs font-black text-slate-700 md:col-span-2'>{tx('applied_challenge.cycle.test_question', 'What exactly will you check?')}
                 <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_test_question', 'Check {n} test question'), { n: cycleNumber })} value={cycle.plan.testQuestion} maxLength={2000} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { testQuestion: event.target.value })} rows={2} placeholder={tx('applied_challenge.cycle.test_question_placeholder', 'Write a question that the check could actually inform.')} className='mt-1 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
-              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.criterion', 'Criterion or constraint')} <span className='font-medium text-slate-500'>({tx('applied_challenge.common.optional', 'optional')})</span>
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.criterion', 'Criterion or constraint')} <span className='font-medium text-slate-600'>({tx('applied_challenge.common.optional', 'optional')})</span>
                 <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_criterion', 'Check {n} criterion or constraint'), { n: cycleNumber })} value={cycle.plan.criterion} maxLength={1400} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { criterion: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
-              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.expected', 'What do you expect?')} <span className='font-medium text-slate-500'>({tx('applied_challenge.cycle.expected_note', 'a prediction, not a result')})</span>
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.expected', 'What do you expect?')} <span className='font-medium text-slate-600'>({tx('applied_challenge.cycle.expected_note', 'a prediction, not a result')})</span>
                 <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_expected', 'Check {n} expected finding'), { n: cycleNumber })} value={cycle.plan.expectedFinding} maxLength={1600} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { expectedFinding: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
               <label className='block text-xs font-black text-slate-700 md:col-span-2'>{tx('applied_challenge.cycle.threshold', 'What result could change your mind or draft?')}
@@ -2824,10 +2857,10 @@ function AppliedChallengeView(props) {
               <label className='block text-xs font-black text-slate-700 md:col-span-2'>{tx('applied_challenge.cycle.reasoning', 'Why does the evidence support that decision?')}
                 <AcTextarea id={'aps-cycle-reasoning-' + cycle.id} aria-label={_apsFill(tx('applied_challenge.aria.cycle_reasoning', 'Check {n} decision reasoning'), { n: cycleNumber })} value={cycle.decision.reasoning} maxLength={3000} onChange={(event) => updateValidationCyclePart(cycle.id, 'decision', { reasoning: event.target.value })} rows={3} className='mt-1 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
-              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.revision_summary', 'What changed in your response?')} <span className='font-medium text-slate-500'>({tx('applied_challenge.common.optional', 'optional')})</span>
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.revision_summary', 'What changed in your response?')} <span className='font-medium text-slate-600'>({tx('applied_challenge.common.optional', 'optional')})</span>
                 <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_revision_summary', 'Check {n} revision summary'), { n: cycleNumber })} value={cycle.decision.revisionSummary} maxLength={2200} onChange={(event) => updateValidationCyclePart(cycle.id, 'decision', { revisionSummary: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
-              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.next_step', 'Next check or action')} <span className='font-medium text-slate-500'>({tx('applied_challenge.common.optional', 'optional')})</span>
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.next_step', 'Next check or action')} <span className='font-medium text-slate-600'>({tx('applied_challenge.common.optional', 'optional')})</span>
                 <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_next_step', 'Check {n} next step'), { n: cycleNumber })} value={cycle.decision.nextStep} maxLength={1800} onChange={(event) => updateValidationCyclePart(cycle.id, 'decision', { nextStep: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
             </div>
@@ -2879,7 +2912,7 @@ function AppliedChallengeView(props) {
             </label>
             <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.brief.facts', 'Teacher-checked lesson facts')}
               <AcListTextarea aria-label={tx('applied_challenge.aria.facts', 'Teacher-checked lesson facts')} aria-describedby='applied-facts-lock-help' readOnly={data.brief.factLocked} maxItems={12} itemMaxLength={800} t={t} value={data.brief.lockedLessonFacts.join('\n')} onChange={(event) => updateBrief({ lockedLessonFacts: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean), factVerified: false })} rows={4} className={'mt-1 w-full rounded-xl border border-amber-300 px-3 py-2 text-sm font-medium ' + (data.brief.factLocked ? 'cursor-not-allowed bg-amber-50 text-slate-600' : 'bg-white text-slate-900')} />
-              <span id='applied-facts-lock-help' className='mt-1 block text-[11px] font-medium leading-relaxed text-amber-900'>{data.brief.factLocked ? (data.brief.factVerified ? tx('applied_challenge.brief.lock_help_verified', 'These facts are locked and marked teacher verified. Unlocking and changing them removes verification.') : tx('applied_challenge.brief.lock_help_locked', 'These AI-extracted facts are locked against accidental edits but still need teacher review.')) : tx('applied_challenge.brief.lock_help_open', 'Fact editing is enabled. Any change removes verification; relock and verify after checking the lesson.')}</span>
+              <span id='applied-facts-lock-help' className='mt-1 block text-xs font-medium leading-relaxed text-amber-900'>{data.brief.factLocked ? (data.brief.factVerified ? tx('applied_challenge.brief.lock_help_verified', 'These facts are locked and marked teacher verified. Unlocking and changing them removes verification.') : tx('applied_challenge.brief.lock_help_locked', 'These AI-extracted facts are locked against accidental edits but still need teacher review.')) : tx('applied_challenge.brief.lock_help_open', 'Fact editing is enabled. Any change removes verification; relock and verify after checking the lesson.')}</span>
             </label>
             <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.brief.open_questions', 'Open questions or unknowns')}
               <AcListTextarea aria-label={tx('applied_challenge.aria.open_questions', 'Open questions or unknowns')} maxItems={10} itemMaxLength={800} t={t} value={data.brief.openQuestions.join('\n')} onChange={(event) => updateBrief({ openQuestions: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} rows={4} className='mt-1 w-full rounded-xl border border-sky-300 px-3 py-2 text-sm font-medium' />
@@ -2908,8 +2941,8 @@ function AppliedChallengeView(props) {
           <div className='mt-4 space-y-4'>
             {data.brief.context && <p className='whitespace-pre-wrap text-sm leading-relaxed text-slate-700'>{data.brief.context}</p>}
             <dl className='grid gap-3 text-sm sm:grid-cols-2'>
-              {data.brief.role && <div className='rounded-2xl bg-slate-50 p-3'><dt className='text-xs font-black uppercase tracking-wide text-slate-500'>{tx('applied_challenge.brief.your_role', 'Your role')}</dt><dd className='mt-1 font-bold text-slate-900'>{data.brief.role}</dd></div>}
-              {data.brief.audience && <div className='rounded-2xl bg-slate-50 p-3'><dt className='text-xs font-black uppercase tracking-wide text-slate-500'>{tx('applied_challenge.brief.audience', 'Audience')}</dt><dd className='mt-1 font-bold text-slate-900'>{data.brief.audience}</dd></div>}
+              {data.brief.role && <div className='rounded-2xl bg-slate-50 p-3'><dt className='text-xs font-black uppercase tracking-wide text-slate-600'>{tx('applied_challenge.brief.your_role', 'Your role')}</dt><dd className='mt-1 font-bold text-slate-900'>{data.brief.role}</dd></div>}
+              {data.brief.audience && <div className='rounded-2xl bg-slate-50 p-3'><dt className='text-xs font-black uppercase tracking-wide text-slate-600'>{tx('applied_challenge.brief.audience', 'Audience')}</dt><dd className='mt-1 font-bold text-slate-900'>{data.brief.audience}</dd></div>}
             </dl>
             {data.brief.drivingQuestion && <div className='rounded-2xl border-2 border-orange-200 bg-orange-50 p-4'><h3 className='text-xs font-black uppercase tracking-wide text-orange-800'>{tx('applied_challenge.brief.driving_question', 'Driving question')}</h3><p className='mt-2 text-lg font-black leading-relaxed text-slate-900'>{data.brief.drivingQuestion}</p></div>}
             {data.brief.seedDirection && <div className='rounded-2xl border border-violet-200 bg-violet-50 p-4'><h3 className='text-sm font-black text-violet-950'>{tx('applied_challenge.brief.seed_direction', 'Lesson-grounded direction')}</h3><p className='mt-1 text-sm leading-relaxed text-slate-800'>{data.brief.seedDirection}</p></div>}
@@ -2967,7 +3000,7 @@ function AppliedChallengeView(props) {
                       <select aria-label={_apsFill(tx('applied_challenge.aria.ledger_status', 'Evidence row {n} status'), { n: rowNumber })} value={row.status} onChange={(event) => updateEvidenceLedgerRow(row.id, { status: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
                         {Object.keys(APPLIED_CHALLENGE_EVIDENCE_STATUSES).map((id) => <option key={id} value={id} disabled={id === 'verified' && (!data.brief.factVerified || !data.brief.factSources.some(fact => fact.id === row.factId && fact.revision === row.factRevision))}>{appliedChallengeLookupLabel(APPLIED_CHALLENGE_EVIDENCE_STATUSES, 'evidence_status', id, t)}</option>)}
                       </select>
-                      <span className='mt-1 block font-medium leading-relaxed text-slate-500'>{statusDescription}</span>
+                      <span className='mt-1 block font-medium leading-relaxed text-slate-600'>{statusDescription}</span>
                     </label>
                     <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.ledger.tradeoff', 'Tradeoff, constraint, or uncertainty')}
                       <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.ledger_tradeoff', 'Evidence row {n} tradeoff, constraint, or uncertainty'), { n: rowNumber })} value={row.tradeoff} maxLength={1800} onChange={(event) => updateEvidenceLedgerRow(row.id, { tradeoff: event.target.value })} rows={2} placeholder={tx('applied_challenge.ledger.tradeoff_placeholder', 'What might this miss, cost, risk, or leave unresolved?')} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900' />
@@ -3003,7 +3036,7 @@ function AppliedChallengeView(props) {
               </dl>
               <div className='applied-challenge-no-print mt-3 flex flex-wrap items-center gap-3'>
                 <button type='button' onClick={startValidationCycleFromStressTest} disabled={data.validationCycles.length >= 6} className='min-h-11 rounded-xl border border-fuchsia-400 bg-fuchsia-50 px-3 py-2 text-xs font-black text-fuchsia-950 disabled:opacity-50'>{tx('applied_challenge.stress.use_in_check', 'Use this pressure point in a check')}</button>
-                <span className='text-xs text-slate-500'>{tx('applied_challenge.stress.use_note', 'You can use, adapt, or decline it, and explain why.')}</span>
+                <span className='text-xs text-slate-600'>{tx('applied_challenge.stress.use_note', 'You can use, adapt, or decline it, and explain why.')}</span>
               </div>
             </div>
           ) : <p className='mt-4 rounded-xl border border-dashed border-fuchsia-300 bg-white/70 p-4 text-sm text-slate-600'>{tx('applied_challenge.stress.empty', 'Add a working question and draft response, then request one challenge when you are ready to test your reasoning.')}</p>}
@@ -3024,7 +3057,7 @@ function AppliedChallengeView(props) {
           {data.validationCycles.length === 0
             ? <p className='mt-4 rounded-xl border border-dashed border-blue-300 bg-white/70 p-4 text-sm text-slate-600'>{tx('applied_challenge.validation.empty', 'No checks saved yet. You can test the draft without AI, or bring the current pressure point into a check.')}</p>
             : <div className='mt-4 space-y-3'>{data.validationCycles.map(renderValidationCycle)}</div>}
-          <p className='mt-3 text-xs text-slate-500'>{tx('applied_challenge.validation.footer', 'Plans, predictions, observations, and decisions stay visibly separate. Refreshing AI support never removes a saved check.')}</p>
+          <p className='mt-3 text-xs text-slate-600'>{tx('applied_challenge.validation.footer', 'Plans, predictions, observations, and decisions stay visibly separate. Refreshing AI support never removes a saved check.')}</p>
           </div>
         </section>);
   const renderFeedback = () => (<>{data.feedback && <section aria-label={tx('applied_challenge.feedback.aria', 'AI feedback')} className='mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4'>
@@ -3107,7 +3140,8 @@ function AppliedChallengeView(props) {
     const lang = String(document.documentElement.lang || 'en').replace(/[^a-zA-Z0-9-]/g, '').slice(0, 20) || 'en';
     const dir = document.documentElement.dir === 'rtl' ? 'rtl' : 'ltr';
     const title = [tx('applied_challenge.product_name', 'Applied Problem Solving'), data.title].filter(Boolean).join(': ').replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
-    popup.document.open(); popup.document.write('<!doctype html><html lang="' + lang + '" dir="' + dir + '"><head><meta charset="utf-8"><title>' + title + '</title></head><body>' + renderAppliedChallengePreset(data, preset, t) + '</body></html>'); popup.document.close();
+    popup.document.open(); popup.document.write('<!doctype html><html lang="' + lang + '" dir="' + dir + '"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data: blob:;"><title>' + title + '</title></head><body>' + renderAppliedChallengePreset(data, preset, t) + '</body></html>'); popup.document.close();
+    try { popup.focus(); popup.print(); } catch (_) {}
   };
   const renderFactPicker = () => <ol className='list-decimal space-y-3 pl-5 text-sm'>{data.brief.factSources.map((fact, index) => <li key={fact.id}><p>{fact.text}</p>{fact.sourceLocation && <p className='mt-1 text-xs text-slate-600'>{fact.sourceLocation}</p>}<button type='button' className='aps-button mt-2' onClick={() => connectLessonFact(fact.id)} aria-label={_apsFill(tx('applied_challenge.ledger.connect_aria', 'Connect lesson fact {n} to my evidence'), { n: index + 1 })}>{tx('applied_challenge.ledger.connect', 'Connect to my evidence')}</button></li>)}</ol>;
   const renderReference = () => <details className='aps-reference min-w-0 rounded-2xl bg-slate-50 p-3' aria-label={tx('applied_challenge.reference.heading', 'Challenge reference')}>

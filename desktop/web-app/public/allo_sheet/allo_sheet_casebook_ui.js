@@ -24,6 +24,7 @@
       var voiceStatus = { state: 'idle', engine: '', engineLabel: '', privacy: '', message: '', reason: '' };
       var boundTables = null;
       var contextDirty = false;
+      var bound = false;
 
       function byId(id) { return document.getElementById(id); }
       function clear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
@@ -500,6 +501,7 @@
           }
           control.dataset.casebookParameterKey = parameter.key;
           control.dataset.casebookParameterType = parameter.type;
+          control.dataset.casebookParameterLabel = parameter.label;
           control.setAttribute('aria-describedby', 'casebookDraftError');
           label.appendChild(control);
           wrapper.appendChild(label);
@@ -580,13 +582,20 @@
         try {
           var reviewedCaseId = String(byId('casebookDraftCaseSelect').value || '');
           var reviewedCase = book.cases.find(function (item) { return item.id === reviewedCaseId; });
-          var currentObservedAt = new Date(byId('casebookObservedAt').value).toISOString();
-          if (!reviewedCase || currentObservedAt !== draft.observedAt) {
+          var parsedObservedMs = Date.parse(byId('casebookObservedAt').value);
+          var currentObservedAt = Number.isFinite(parsedObservedMs) ? new Date(parsedObservedMs).toISOString() : '';
+          if (!reviewedCase || !currentObservedAt || currentObservedAt !== draft.observedAt) {
             throw new Error('This draft no longer matches its reviewed target or observation time. Discard it and create a new review draft.');
           }
           draft.caseId = reviewedCase.id;
           var values = Object.create(null);
-          document.querySelectorAll('[data-casebook-parameter-key]').forEach(function (control) {
+          var draftContainer = byId('casebookDraftFields') || document;
+          draftContainer.querySelectorAll('[data-casebook-parameter-key]').forEach(function (control) {
+            if (control.validity && control.validity.badInput) {
+              control.setAttribute('aria-invalid', 'true');
+              throw new Error((control.dataset.casebookParameterLabel || control.dataset.casebookParameterKey || 'Field') + ' must be a valid number.');
+            }
+            control.removeAttribute('aria-invalid');
             var value = control.value;
             if (control.dataset.casebookParameterType === 'boolean') {
               value = value === 'true' ? true : value === 'false' ? false : null;
@@ -999,14 +1008,19 @@
         var book = currentBook();
         var caseItem = selectedCase(book);
         if (!caseItem) return;
-        var goal = byId('casebookAgentGoal').value;
-        var request = Model.buildAgentReflectionRequest(book, caseItem.id, goal);
-        if (!request.recordIds.length) return;
-        abortVoice('view-hidden');
-        host.prepareAgentRows(request.recordIds, request.instruction);
+        try {
+          var goal = byId('casebookAgentGoal').value;
+          var request = Model.buildAgentReflectionRequest(book, caseItem.id, goal);
+          if (!request.recordIds.length) return;
+          abortVoice('view-hidden');
+          host.prepareAgentRows(request.recordIds, request.instruction);
+        } catch (error) {
+          announce(String(error && error.message || 'Agent reflection could not be prepared.'));
+        }
       }
 
       function appendTranscript(finalText, interimText) {
+        if (draft) return;
         if (finalText) {
           var narrative = byId('casebookNarrative');
           var priorSource = captureSource;
@@ -1161,7 +1175,7 @@
         }
         clearError('casebookCaptureError', ['casebookNarrative']);
         try {
-          recognition = availability.voice.createDictationController({
+          var controller = availability.voice.createDictationController({
             owner: 'allosheet-observation',
             label: 'AlloSheet observation dictation',
             engine: availability.engine,
@@ -1173,31 +1187,36 @@
             maxDurationMs: 120000,
             callGeminiAudio: availability.callGeminiAudio,
             onTranscript: function (transcript, isFinal, metadata) {
+              if (recognition !== controller) return;
               if (!isFinal || !String(transcript || '').trim()) return;
               appendTranscript(String(transcript).trim(), '');
               if (metadata && metadata.privacy) text(byId('casebookVoiceDisclosure'), metadata.privacy + ' No raw audio is saved by AlloSheet.');
             },
             onStateChange: function (status) {
+              if (recognition !== controller) return;
               applyVoiceStatus(status);
             },
             onError: function (error) {
+              if (recognition !== controller) return;
               if (voiceStatus.state !== 'error') {
                 applyVoiceStatus({ state: 'error', message: String(error && error.message || 'Dictation stopped. Type the observation or try again.') });
               }
               announce('Dictation stopped. No entry was recorded.');
             },
             onEnd: function () {
+              if (recognition !== controller) return;
               recognition = null;
               if (voiceStatus.state !== 'idle') applyVoiceStatus({ state: 'idle' });
             }
           });
-          if (!recognition || recognition.supported === false) {
+          recognition = controller;
+          if (!controller || controller.supported === false) {
             recognition = null;
             applyVoiceStatus({ state: 'error', message: 'Dictation could not start. Type the observation instead.' });
             return;
           }
-          if (recognition.start() === false && voiceStatus.state !== 'error') {
-            recognition = null;
+          if (controller.start() === false && voiceStatus.state !== 'error') {
+            if (recognition === controller) recognition = null;
             applyVoiceStatus({ state: 'error', message: 'Dictation could not start. Type the observation instead.' });
             return;
           }
@@ -1263,6 +1282,9 @@
           book.cases.length + ' case' + (book.cases.length === 1 ? '' : 's') + ' · '
             + book.parameters.length + ' parameter' + (book.parameters.length === 1 ? '' : 's') + ' · '
             + book.observations.length + ' observation' + (book.observations.length === 1 ? '' : 's')
+            + (book.cellIssues && book.cellIssues.length
+              ? ' · ' + book.cellIssues.length + ' table cell' + (book.cellIssues.length === 1 ? '' : 's') + ' need repair in the Table tab'
+              : '')
         );
         text(
           byId('casebookRecordNotice'),
@@ -1298,6 +1320,8 @@
       }
 
       function bind() {
+        if (bound) return;
+        bound = true;
         document.querySelectorAll('.casebook-template-button').forEach(function (button) {
           button.addEventListener('click', function () { applyTemplate(button.dataset.casebookTemplate); });
         });

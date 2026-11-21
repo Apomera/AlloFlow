@@ -559,6 +559,38 @@
       if (isClassStudent) return; // host is the source of truth
       setLocalRealm(updater);
     }
+    var realmRef = useRef(realm);
+    realmRef.current = realm;
+    var visualTransformCountRef = useRef((localRealm && localRealm.transformCount) || 0);
+    var visualTransformRealmIdRef = useRef(localRealm && localRealm.id);
+    if (visualTransformRealmIdRef.current !== (localRealm && localRealm.id)) {
+      visualTransformRealmIdRef.current = localRealm && localRealm.id;
+      visualTransformCountRef.current = (localRealm && localRealm.transformCount) || 0;
+    } else if (((localRealm && localRealm.transformCount) || 0) > visualTransformCountRef.current) {
+      visualTransformCountRef.current = localRealm.transformCount;
+    }
+    var visualInFlightRef = useRef(false);
+    var awardedMilestonesRef = useRef((function () {
+      var map = {};
+      ((localRealm && localRealm.milestones) || []).forEach(function (m) {
+        if (m && m.level != null) map[(localRealm.id || '') + ':' + m.level] = true;
+      });
+      return map;
+    })());
+    useEffect(function () {
+      if (isClassStudent) return;
+      var milestones = (localRealm && localRealm.milestones) || [];
+      milestones.forEach(function (m) {
+        if (!m || m.level == null) return;
+        var key = (localRealm.id || '') + ':' + m.level;
+        if (awardedMilestonesRef.current[key]) return;
+        awardedMilestonesRef.current[key] = true;
+        if (typeof ctx.onAwardTokens === 'function') {
+          ctx.onAwardTokens(m.tokensAwarded, 'realm-milestone', { realmId: localRealm.id, level: m.level });
+        }
+        ctx.addToast(m.emoji + ' ' + m.label + ' unlocked' + (isClassHost ? ' (class)' : '') + ' · +' + m.tokensAwarded + ' 🪙');
+      });
+    }, [localRealm && localRealm.id, (localRealm && localRealm.milestones || []).length, isClassStudent, isClassHost]); // eslint-disable-line
 
     // Phase machine
     // 'topic' → name + topic input (host-only; student skips this)
@@ -746,6 +778,11 @@
           isComplete: !!localRealm.isComplete
         }
       };
+      if (!localRealm.isComplete) {
+        payload.realmBuilder.classRewardTokens = null;
+        payload.realmBuilder.classRewardKey = null;
+        payload.realmBuilder.classRewardWrittenAt = null;
+      }
       Promise.resolve(ctx.sessionUpdate(payload)).catch(function () {
         // Silent — broadcast failures don't block local play.
       });
@@ -761,9 +798,11 @@
       if (!isClassStudent) return;
       if (!sessionState || !sessionState.realmBuilder) return;
       var rb = sessionState.realmBuilder;
+      if (rb.status !== 'closed' && rb.isComplete !== true) return;
       var key = rb.classRewardKey;
       var amount = rb.classRewardTokens;
       if (!key || !amount) return;
+      if (rb.realmId && String(key).indexOf('realm-' + rb.realmId + '-') !== 0) return;
       if (claimedRewardRef.current[key]) return;
       // Server-of-record dedupe: scan earnings for matching key.
       if (typeof ctx.getEarnings === 'function') {
@@ -949,12 +988,6 @@
         }).map(function (m) {
           return { level: m.level, label: m.label, emoji: m.emoji, zones: m.zones, achievedAt: nowIso, tokensAwarded: m.tokens };
         });
-        if (newMilestones.length > 0 && typeof ctx.onAwardTokens === 'function') {
-          newMilestones.forEach(function (m) {
-            ctx.onAwardTokens(m.tokensAwarded, 'realm-milestone', { realmId: prev.id, level: m.level });
-            ctx.addToast(m.emoji + ' ' + m.label + ' unlocked (class) · +' + m.tokensAwarded + ' 🪙');
-          });
-        }
         var isComplete = prev.isComplete || nextZoneCount >= MILESTONES[MILESTONES.length - 1].zones;
         return Object.assign({}, prev, {
           zones: (prev.zones || []).concat([newZone]),
@@ -1409,30 +1442,22 @@
         contributorNickname: isClass ? nickname : null
       }, isSelfRated && selfCheck ? selfCheck.evidenceFields(parsed) : {});
 
-      // Compute new milestone unlocks. Self-rated zones build the realm but
-      // never count toward these, because milestones pay tokens.
-      var nextZoneCount = realm.zones.length + 1;
-      var countedZones = realm.zones.filter(function (z) { return !z.selfRated; }).length + 1;
-      var alreadyAchievedLevels = (realm.milestones || []).map(function (m) { return m.level; });
-      var newMilestones = isSelfRated ? [] : MILESTONES.filter(function (m) {
-        return countedZones >= m.zones && alreadyAchievedLevels.indexOf(m.level) === -1;
-      }).map(function (m) {
-        return { level: m.level, label: m.label, emoji: m.emoji, zones: m.zones, achievedAt: nowIso, tokensAwarded: m.tokens };
-      });
-
-      // Award tokens for each new milestone hit this turn
-      if (newMilestones.length > 0 && typeof ctx.onAwardTokens === 'function') {
-        newMilestones.forEach(function (m) {
-          ctx.onAwardTokens(m.tokensAwarded, 'realm-milestone', { realmId: realm.id, level: m.level });
-          ctx.addToast(m.emoji + ' ' + m.label + ' unlocked · +' + m.tokensAwarded + ' 🪙');
-        });
-      }
-
-      var isComplete = realm.isComplete || nextZoneCount >= MILESTONES[MILESTONES.length - 1].zones;
-
+      // Compute new milestone unlocks inside the functional updater so rapid
+      // or concurrent host placements never read a stale `realm` snapshot.
+      // Self-rated zones build the realm but never count toward milestones.
       setRealm(function (prev) {
+        var prevZones = prev.zones || [];
+        var nextZoneCount = prevZones.length + 1;
+        var countedZones = prevZones.filter(function (z) { return !z.selfRated; }).length + (isSelfRated ? 0 : 1);
+        var alreadyAchievedLevels = (prev.milestones || []).map(function (m) { return m.level; });
+        var newMilestones = isSelfRated ? [] : MILESTONES.filter(function (m) {
+          return countedZones >= m.zones && alreadyAchievedLevels.indexOf(m.level) === -1;
+        }).map(function (m) {
+          return { level: m.level, label: m.label, emoji: m.emoji, zones: m.zones, achievedAt: nowIso, tokensAwarded: m.tokens };
+        });
+        var isComplete = prev.isComplete || nextZoneCount >= MILESTONES[MILESTONES.length - 1].zones;
         return Object.assign({}, prev, {
-          zones: prev.zones.concat([newZone]),
+          zones: prevZones.concat([newZone]),
           milestones: (prev.milestones || []).concat(newMilestones),
           isComplete: isComplete,
           updatedAt: nowIso
@@ -1477,22 +1502,26 @@
     // mid+ score (vs only criticals) and uses constructive editPrompts.
     // ──────────────────────────────────────────────────────────────────
     function applyVisualEvolution(zone, verb, isResonant) {
-      if (realm.transformCount >= MAX_VISUAL_TRANSFORMS) return;
-      if (!realm.canvas) return;
+      var currentRealm = realmRef.current || realm;
+      if (visualInFlightRef.current) return;
+      if (visualTransformCountRef.current >= MAX_VISUAL_TRANSFORMS) return;
+      if (!currentRealm || !currentRealm.canvas) return;
       if (!_aiUsable('imageEdit', window.callGeminiImageEdit)) return;
 
       var verbEdit = verb.editPrompt || 'with a subtle but visible change to one region of the scene';
       var cardName = zone.cardName || 'a new element';
-      var rawBase64 = realm.canvas;
+      var rawBase64 = currentRealm.canvas;
       var prefixMatch = rawBase64.match(/^data:[^;]+;base64,(.+)$/);
       if (prefixMatch) rawBase64 = prefixMatch[1];
 
       var intensity = isResonant ? 'a bold, unmistakable change' : 'a small but visible change';
-      var editPrompt = 'The same realm-scene about "' + realm.topic + '", ' + verbEdit
+      var editPrompt = 'The same realm-scene about "' + currentRealm.topic + '", ' + verbEdit
                      + '. The change reflects a student adding "' + cardName
                      + '" to the realm. Maintain the same overall composition, lighting, and style; '
                      + intensity + '. No text, no labels.';
 
+      visualInFlightRef.current = true;
+      visualTransformCountRef.current += 1;
       setTransforming(true);
       setRealm(function (prev) { return Object.assign({}, prev, { transformCount: (prev.transformCount || 0) + 1 }); });
 
@@ -1515,10 +1544,12 @@
               });
             });
           }
+          visualInFlightRef.current = false;
           setTransforming(false);
         })
         .catch(function () {
           // Silent fail — visual evolution is decorative
+          visualInFlightRef.current = false;
           setTransforming(false);
         });
     }
@@ -1560,11 +1591,11 @@
       var classBadge = null;
       if (isClassHost) {
         classBadge = h('span', {
-          style: { fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: palette.accent + '22' || 'rgba(96,165,250,0.18)', color: palette.accent || '#60a5fa', border: '1px solid ' + (palette.accent || '#60a5fa'), letterSpacing: '0.04em', textTransform: 'uppercase' }
+          style: { fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: (palette.accent ? palette.accent + '22' : 'rgba(96,165,250,0.18)'), color: palette.accent || '#60a5fa', border: '1px solid ' + (palette.accent || '#60a5fa'), letterSpacing: '0.04em', textTransform: 'uppercase' }
         }, '🌐 Hosting');
       } else if (isClassStudent) {
         classBadge = h('span', {
-          style: { fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: palette.accent + '22' || 'rgba(96,165,250,0.18)', color: palette.accent || '#60a5fa', border: '1px solid ' + (palette.accent || '#60a5fa'), letterSpacing: '0.04em', textTransform: 'uppercase' }
+          style: { fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: (palette.accent ? palette.accent + '22' : 'rgba(96,165,250,0.18)'), color: palette.accent || '#60a5fa', border: '1px solid ' + (palette.accent || '#60a5fa'), letterSpacing: '0.04em', textTransform: 'uppercase' }
         }, '🌐 Joined · ' + ((realm && realm.hostNickname) || 'Teacher'));
       }
       return h('div', {
@@ -1760,7 +1791,7 @@
           role: 'status', 'aria-live': 'polite',
           style: {
             padding: '10px 12px', marginBottom: '12px',
-            background: lastFeedback.resonant ? (palette.accent + '22' || 'rgba(96,165,250,0.18)') : (palette.surface || '#1e293b'),
+            background: lastFeedback.resonant ? ((palette.accent ? palette.accent + '22' : 'rgba(96,165,250,0.18)')) : (palette.surface || '#1e293b'),
             border: '1.5px solid ' + (lastFeedback.resonant ? (palette.accent || '#60a5fa') : (palette.border || '#334155')),
             borderRadius: '10px',
             color: palette.text || '#e2e8f0'
@@ -1778,7 +1809,7 @@
               style: {
                 marginLeft: 'auto',
                 fontVariantNumeric: 'tabular-nums',
-                background: lastFeedback.score >= 18 ? (palette.accent || '#60a5fa') : (lastFeedback.score >= 11 ? (palette.accent + '22' || 'rgba(96,165,250,0.18)') : 'transparent'),
+                background: lastFeedback.score >= 18 ? (palette.accent || '#60a5fa') : (lastFeedback.score >= 11 ? ((palette.accent ? palette.accent + '22' : 'rgba(96,165,250,0.18)')) : 'transparent'),
                 color: lastFeedback.score >= 18 ? (palette.onAccent || '#0f172a') : (lastFeedback.score >= 11 ? (palette.accent || '#60a5fa') : (palette.textMute || '#94a3b8')),
                 padding: '2px 9px', borderRadius: '999px',
                 fontWeight: lastFeedback.score >= 18 ? 800 : 700,
@@ -1912,7 +1943,7 @@
                   'aria-label': voiceMode === 'idle' ? 'Speak your justification' : label,
                   'aria-busy': busy ? 'true' : 'false',
                   style: {
-                    background: voiceMode === 'idle' ? 'transparent' : (palette.accent + '22' || 'rgba(96,165,250,0.18)'),
+                    background: voiceMode === 'idle' ? 'transparent' : ((palette.accent ? palette.accent + '22' : 'rgba(96,165,250,0.18)')),
                     color: voiceMode === 'idle' ? (palette.text || '#e2e8f0') : (palette.accent || '#60a5fa'),
                     border: '1px solid ' + (voiceMode === 'idle' ? (palette.border || '#334155') : (palette.accent || '#60a5fa')),
                     borderRadius: '999px',
@@ -2004,7 +2035,7 @@
                   var sc = z.score || 0;
                   var bg, fg;
                   if (sc >= 18) { bg = (palette.accent || '#60a5fa'); fg = (palette.onAccent || '#0f172a'); }
-                  else if (sc >= 11) { bg = (palette.accent + '22' || 'rgba(96,165,250,0.18)'); fg = (palette.accent || '#60a5fa'); }
+                  else if (sc >= 11) { bg = ((palette.accent ? palette.accent + '22' : 'rgba(96,165,250,0.18)')); fg = (palette.accent || '#60a5fa'); }
                   else { bg = 'transparent'; fg = (palette.textMute || '#94a3b8'); }
                   return h('span', {
                     style: {
@@ -2121,28 +2152,35 @@
     return prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
   }
 
+  function cmpSafeKey(value) {
+    return !!(value && value !== '__proto__' && value !== 'constructor' && value !== 'prototype');
+  }
+
   function normalizeClassPalace(raw) {
     raw = raw && typeof raw === 'object' ? raw : {};
-    var seenGroups = {};
+    var activeActivityId = cmpText(raw.activityId, 100);
+    var seenGroups = Object.create(null);
     var groups = (Array.isArray(raw.groups) ? raw.groups : []).slice(0, CMP_MAX_GROUPS).map(function(group, i) {
       group = group && typeof group === 'object' ? group : {};
-      var id = cmpText(group.id, 80) || ('group-' + (i + 1));
+      var id = cmpText(group.id, 80);
+      if (!cmpSafeKey(id)) id = 'group-' + (i + 1);
       if (seenGroups[id]) id = id + '-' + (i + 1);
       seenGroups[id] = true;
       return { id: id, title: cmpText(group.title || group.name, 80) || ('Group ' + (i + 1)) };
     });
     if (!groups.length) groups.push({ id: 'whole-class', title: 'Whole class' });
-    var groupIds = {};
+    var groupIds = Object.create(null);
     groups.forEach(function(group) { groupIds[group.id] = true; });
-    var seenRooms = {};
-    var roomCounts = {};
+    var seenRooms = Object.create(null);
+    var roomCounts = Object.create(null);
     var rooms = (Array.isArray(raw.rooms) ? raw.rooms : []).slice(0, CMP_MAX_GROUPS * CMP_MAX_ROOMS_PER_GROUP).map(function(room, i) {
       room = room && typeof room === 'object' ? room : {};
       var groupId = groupIds[room.groupId] ? room.groupId : groups[0].id;
       roomCounts[groupId] = Number(roomCounts[groupId]) || 0;
       if (roomCounts[groupId] >= CMP_MAX_ROOMS_PER_GROUP) return null;
       roomCounts[groupId] += 1;
-      var id = cmpText(room.id, 80) || ('room-' + (i + 1));
+      var id = cmpText(room.id, 80);
+      if (!cmpSafeKey(id)) id = 'room-' + (i + 1);
       if (seenRooms[id]) id = id + '-' + (i + 1);
       seenRooms[id] = true;
       return { id: id, groupId: groupId, title: cmpText(room.title, 80) || ('Room ' + (i + 1)), createdBy: cmpText(room.createdBy, 80) };
@@ -2152,10 +2190,10 @@
         rooms.push({ id: group.id + '-room-1', groupId: group.id, title: 'Entrance', createdBy: '' });
       }
     });
-    var roomIds = {};
-    var roomsById = {};
+    var roomIds = Object.create(null);
+    var roomsById = Object.create(null);
     rooms.forEach(function(room) { roomIds[room.id] = true; roomsById[room.id] = room; });
-    var locusCounts = {};
+    var locusCounts = Object.create(null);
     var loci = (Array.isArray(raw.loci) ? raw.loci : []).slice(0, CMP_MAX_LOCI).map(function(locus, i) {
       locus = locus && typeof locus === 'object' ? locus : {};
       var roomId = roomIds[locus.roomId] ? locus.roomId : rooms[0].id;
@@ -2177,24 +2215,33 @@
     var participants = {};
     Object.keys(raw.participants && typeof raw.participants === 'object' && !Array.isArray(raw.participants) ? raw.participants : {})
       .slice(0, CMP_MAX_PARTICIPANTS).forEach(function(key) {
+        if (!cmpSafeKey(key)) return;
         var item = raw.participants[key] && typeof raw.participants[key] === 'object' ? raw.participants[key] : {};
+        var itemActivityId = cmpText(item.activityId, 100);
+        if (activeActivityId && itemActivityId && itemActivityId !== activeActivityId) return;
         var participantId = cmpText(item.participantId || key, 100);
-        if (!participantId) return;
-        participants[participantId] = {
+        if (!cmpSafeKey(participantId)) return;
+        var entry = {
           participantId: participantId,
           nickname: cmpText(item.nickname, 80) || 'Student',
           groupId: groupIds[item.groupId] ? item.groupId : groups[0].id,
           role: cmpRole(item.role),
           joinedAt: cmpText(item.joinedAt, 40)
         };
+        if (itemActivityId) entry.activityId = itemActivityId;
+        participants[participantId] = entry;
       });
     var submissionSource = raw.submissions && typeof raw.submissions === 'object' && !Array.isArray(raw.submissions)
       ? raw.submissions : {};
     var normalizedSubmissionList = Object.keys(submissionSource).map(function(key) {
+      if (!cmpSafeKey(key)) return null;
       var submission = normalizePalaceSubmission(submissionSource[key]);
       if (!submission) return null;
+      if (activeActivityId && submission.activityId && submission.activityId !== activeActivityId) return null;
       submission.id = submission.id || cmpText(key, 100);
-      return { key: cmpText(key, 100) || submission.id, submission: submission };
+      var subKey = cmpText(key, 100) || submission.id;
+      if (!cmpSafeKey(subKey)) return null;
+      return { key: subKey, submission: submission };
     }).filter(function(item) { return !!(item && item.key); });
     normalizedSubmissionList.sort(function(a, b) {
       var priority = { pending: 0, returned: 1, approved: 2 };
@@ -2210,7 +2257,7 @@
     });
     return {
       status: raw.status === 'closed' ? 'closed' : (raw.status === 'open' ? 'open' : 'setup'),
-      activityId: cmpText(raw.activityId, 100),
+      activityId: activeActivityId,
       title: cmpText(raw.title, 120) || 'Class Memory Palace',
       topic: cmpText(raw.topic, 240),
       hostNickname: cmpText(raw.hostNickname, 80),
@@ -2255,7 +2302,7 @@
     var label = cmpText(raw.label, 120);
     var mnemonic = cmpText(raw.mnemonic, 360);
     if (!label || !mnemonic || (!roomId && !newRoomTitle)) return null;
-    return {
+    var submission = {
       id: cmpText(raw.id || raw.subId, 100),
       roomId: roomId,
       newRoomTitle: newRoomTitle,
@@ -2271,13 +2318,16 @@
       returnedAt: cmpText(raw.returnedAt, 40),
       approvedAt: cmpText(raw.approvedAt, 40)
     };
+    var actId = cmpText(raw.activityId, 100);
+    if (actId) submission.activityId = actId;
+    return submission;
   }
 
   function createPalaceParticipantAssignment(rawPalace, participantId, nickname) {
     var palace = normalizeClassPalace(rawPalace);
     participantId = cmpText(participantId, 100);
-    if (!participantId) return null;
-    if (palace.participants[participantId]) return palace.participants[participantId];
+    if (!cmpSafeKey(participantId)) return null;
+    if (Object.prototype.hasOwnProperty.call(palace.participants, participantId)) return palace.participants[participantId];
     if (Object.keys(palace.participants).length >= CMP_MAX_PARTICIPANTS) return null;
     var group = palace.groups.slice().sort(function(a, b) {
       var aCount = Object.keys(palace.participants).filter(function(key) { return palace.participants[key].groupId === a.id; }).length;
@@ -2285,13 +2335,15 @@
       return aCount - bCount;
     })[0] || palace.groups[0];
     var memberCount = Object.keys(palace.participants).filter(function(key) { return palace.participants[key].groupId === group.id; }).length;
-    return {
+    var assignment = {
       participantId: participantId,
       nickname: cmpText(nickname, 80) || 'Student',
       groupId: group.id,
       role: CMP_ROLES[memberCount % CMP_ROLES.length].id,
       joinedAt: new Date().toISOString()
     };
+    if (palace.activityId) assignment.activityId = palace.activityId;
+    return assignment;
   }
 
   function registerClassMemoryPalace() {
@@ -2516,7 +2568,7 @@
     var isOpen = !!(palace && palace.status === 'open');
     var participantId = cmpText(ctx.sessionParticipantId, 100)
       || ('nickname-' + cmpText(ctx.studentNickname || 'student', 70).toLowerCase().replace(/[^a-z0-9_-]+/g, '-'));
-    var participant = palace && palace.participants ? palace.participants[participantId] : null;
+    var participant = (palace && palace.participants && Object.prototype.hasOwnProperty.call(palace.participants, participantId)) ? palace.participants[participantId] : null;
     var activeGroupId = isHost
       ? (palace && palace.groups.some(function(group) { return group.id === teacherGroupId; }) ? teacherGroupId : (palace && palace.groups[0] && palace.groups[0].id))
       : (participant && participant.groupId) || (palace && palace.groups[0] && palace.groups[0].id);
@@ -2727,7 +2779,7 @@
         return;
       }
       var sub = normalizePalaceSubmission({
-        id: cmpId('palace-sub'), roomId: roomId === '__new__' ? '' : roomId,
+        id: cmpId('palace-sub'), activityId: palace.activityId, roomId: roomId === '__new__' ? '' : roomId,
         newRoomTitle: roomId === '__new__' ? newRoomTitle : '', label: label, mnemonic: mnemonic,
         participantId: participantId, groupId: activeGroupId, status: 'pending', role: participant ? participant.role : contributionRole,
         contributorNickname: cmpText(ctx.studentNickname, 80) || (isHost ? 'Teacher' : 'Student'),

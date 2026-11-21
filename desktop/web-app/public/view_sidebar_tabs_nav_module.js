@@ -39,7 +39,7 @@ function SidebarTabsNav({
     targetRef.current?.focus();
   };
   return /* @__PURE__ */ React.createElement(
-    "nav",
+    "div",
     {
       "aria-label": translatedLabel("common.content_tabs", "Content tabs"),
       "aria-orientation": "horizontal",

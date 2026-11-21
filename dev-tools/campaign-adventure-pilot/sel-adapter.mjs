@@ -37,7 +37,7 @@ export const selfAdvocacyJourney={
  id:'self-advocacy',kind:'sel',title:'A place for your voice',label:'Self-Advocacy Journey',eyebrow:'WORKING TOGETHER · 4 ENCOUNTERS',
  intro:'Join a fictional group project, ask for support, discuss a change and decide what to try next. Respond with choices, your own words or both.',
  disclosure:'A fictional practice story with several valid approaches. Characters’ replies are authored possibilities, not predictions or a score of your social skills. You may pause or leave at any time.',
- start(seed,config={}){if(Object.keys(config).length)throw Error('Unsupported practice settings.');return {chapter:0,history:[]};},
+ start(seed,config={}){if(!config||typeof config!=='object'||Array.isArray(config)||Object.keys(config).length)throw Error('Unsupported practice settings.');return {chapter:0,history:[]};},
  config:()=>({}),
  actions(model){return model.chapter<chapters.length?chapters[model.chapter].actions.map(({id,label,hint,responseTerms})=>({id,label,hint,responseTerms})):[];},
  step(model,id){const chapter=chapters[model.chapter],action=chapter?.actions.find(a=>a.id===id);if(!action)throw Error('That response is unavailable here.');return {chapter:model.chapter+1,history:[...clone(model.history),{title:chapter.title,action:action.label,reply:action.reply,reflection:action.reflection}]};},

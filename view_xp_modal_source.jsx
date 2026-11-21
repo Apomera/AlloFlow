@@ -39,6 +39,20 @@ function XPModal({
   const dialogRef = React.useRef(null);
   const progressPercent = Math.max(0, Math.min(100, Math.round(Number(globalProgress) || 0)));
   const historyEntries = Array.isArray(pointHistory) ? pointHistory.filter(Boolean) : [];
+  const xpText = (key, fallback) => { const v = typeof t === 'function' ? t(key) : ''; return v && v !== key ? v : fallback; };
+  const remainingXP = Math.max(0, (Number(globalXPNext) || 0) - (Number(currentLevelXP) || 0));
+  const activityBreakdown = React.useMemo(() => {
+    const totals = new Map();
+    historyEntries.forEach((entry) => {
+      const label = String(entry.activity || '').trim();
+      const pts = Number(entry.points) || 0;
+      if (!label || pts <= 0) return;
+      totals.set(label, (totals.get(label) || 0) + pts);
+    });
+    return Array.from(totals.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3);
+  }, [historyEntries]);
   const formatXpTime = (ts) => {
     if (ts == null || ts === '') return '';
     const d = new Date(ts);
@@ -50,12 +64,10 @@ function XPModal({
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
     const isolatedSiblings = [];
-    let branch = dialog;
-    while (branch && branch.parentElement && branch.parentElement !== document.body) {
-      branch = branch.parentElement;
-    }
-    if (branch && branch.parentElement === document.body) {
-      Array.from(document.body.children).forEach((sibling) => {
+    let branch = dialog.parentElement || dialog;
+    while (branch && branch.parentElement && branch !== document.body) {
+      const parent = branch.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
         if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
         isolatedSiblings.push({
           el: sibling,
@@ -67,6 +79,7 @@ function XPModal({
         sibling.setAttribute('inert', '');
         sibling.setAttribute('aria-hidden', 'true');
       });
+      branch = parent;
     }
     // Shared scroll-lock counter: only the last dialog to close unlocks the page.
     const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
@@ -164,11 +177,26 @@ function XPModal({
             <span>{currentLevelXP} {t('common.xp')}</span>
             <span>{globalXPNext} {t('common.xp')} · {t('learner.level')} {globalLevel + 1}</span>
           </div>
+          {remainingXP > 0 && (
+            <p data-xp-remaining className="mt-2 text-center text-xs font-bold text-indigo-800 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1">
+              {xpText('modals.xp_to_next_level', '{xp} XP to Level {level}').replace('{xp}', String(remainingXP)).replace('{level}', String((Number(globalLevel) || 0) + 1))}
+            </p>
+          )}
         </div>
         <div className="border-t border-slate-100 pt-4">
           <h3 id="xp-history-title" className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
             <HistoryIcon size={12} aria-hidden="true"/> {t('modals.xp_history')}
           </h3>
+          {activityBreakdown.length >= 2 && (
+            <div data-xp-activity-summary className="mb-3 flex flex-wrap gap-1.5">
+              {activityBreakdown.map(([label, pts]) => (
+                <span key={label} className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-green-700">
+                  <span className="truncate max-w-[11rem]">{label}</span>
+                  <span>+{pts} XP</span>
+                </span>
+              ))}
+            </div>
+          )}
           <ul className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1" aria-labelledby="xp-history-title" tabIndex={historyEntries.length > 0 ? 0 : undefined}>
             {historyEntries.length === 0 ? (
               <li className="text-center text-slate-600 text-xs italic py-4">{t('student_dashboard.no_activities')}</li>

@@ -47,15 +47,61 @@
     for (var i = 0; i < value.length; i++) { h ^= value.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
     return ('0000000' + h.toString(16)).slice(-8);
   }
+  function decodeBase64Utf8(b64) {
+    if (typeof atob === 'function') {
+      var bin = atob(b64), bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      if (typeof TextDecoder === 'function') return new TextDecoder('utf-8').decode(bytes);
+      return decodeURIComponent(escape(bin));
+    }
+    if (typeof Buffer !== 'undefined') return Buffer.from(b64, 'base64').toString('utf8');
+    return '';
+  }
+  function fallbackSvgRefusal(svg) {
+    var s = typeof svg === 'string' ? svg : '';
+    if (!/^\s*<svg[\s>]/i.test(s) || !/<\/svg>\s*$/i.test(s)) return 'not an SVG drawing';
+    if (s.length > 300000) return 'the drawing is too large';
+    if (s.indexOf('\\') >= 0) return 'an escape character';
+    if (/<!(?:doctype|entity)/i.test(s)) return 'a document type or entity declaration';
+    if (/<\?(?!xml\s)/i.test(s)) return 'a processing instruction';
+    var plain = s.replace(/&#x([0-9a-f]+);?/gi, function (_, hex) { return String.fromCharCode(parseInt(hex, 16) & 0xFFFF); })
+      .replace(/&#(\d+);?/g, function (_, dec) { return String.fromCharCode(Number(dec) & 0xFFFF); })
+      .replace(/&(colon|newline|tab);/gi, function (_, name) { return name.toLowerCase() === 'colon' ? ':' : ''; });
+    var packed = plain.replace(/[\x00-\x20]+/g, '');
+    var bareVal = function (value) { return String(value || '').replace(/[\x00-\x20]+/g, ''); };
+    if (/<\s*(?:[\w-]+:)?script\b/i.test(plain)) return 'a script';
+    if (/<\s*(?:[\w-]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject';
+    if (/<\s*(?:[\w-]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a drawing';
+    if (/[\s"'\/]on[a-z]+\s*=/i.test(plain)) return 'an event handler';
+    if (/(?:java|vb|live)script:/i.test(packed)) return 'a script address';
+    if (/xml:base\s*=/i.test(plain)) return 'a base address';
+    var m, href = /(?:[\s"'\/])(?:[\w-]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    while ((m = href.exec(plain))) {
+      if (bareVal(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
+    }
+    if (/[\s"'\/]src\s*=/i.test(plain)) return 'a link to something outside the drawing';
+    var style = /<\s*(?:[\w-]+:)?style\b[^>]*>/gi;
+    while ((m = style.exec(plain))) {
+      if (/\/\s*>$/.test(m[0])) continue;
+      var end = plain.slice(style.lastIndex).search(/<\s*\/\s*(?:[\w-]+:)?style\s*>/i);
+      var css = end < 0 ? plain.slice(style.lastIndex) : plain.slice(style.lastIndex, style.lastIndex + end);
+      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
+    }
+    var url = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
+    while ((m = url.exec(plain))) {
+      if (bareVal(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
+    }
+    return '';
+  }
   function validCustomDataUri(uri, art) {
     if (typeof uri !== 'string' || uri.length > 600000) return '';
     var norm = uri.replace(/^data:image\/jpg;base64,/i, 'data:image/jpeg;base64,');
-    var m = /^data:image\/(png|jpeg|svg\+xml);base64,([A-Za-z0-9+/=]+)$/i.exec(norm);
-    if (!m) return '';
+    var m = /^data:image\/(png|jpeg|svg\+xml);base64,([A-Za-z0-9+/]+={0,2})$/i.exec(norm);
+    if (!m || m[2].length % 4 !== 0) return '';
     if (m[1].toLowerCase() === 'svg+xml') {
       try {
-        var decoded = typeof atob === 'function' ? decodeURIComponent(escape(atob(m[2]))) : '';
-        if (!decoded || /<script|foreignobject|on[a-z]+\s*=|https?:\/\/|javascript:|\\/i.test(decoded)) return '';
+        var decoded = decodeBase64Utf8(m[2]);
+        if (!decoded || fallbackSvgRefusal(decoded)) return '';
         if (art && typeof art.svgRefusal === 'function' && art.svgRefusal(decoded)) return '';
       } catch (_) { return ''; }
     }
@@ -94,7 +140,7 @@
   function keyOf(word) { return normalizeWord(word).toLowerCase().replace(/’/g, "'"); }
   // "habitat, prey\npredator" -> { words: [{ text, word, key }], unusable: [text], twice: [word], over: n }
   function parseWords(value) {
-    var out = { words: [], unusable: [], twice: [], over: 0 }, seen = {};
+    var out = { words: [], unusable: [], twice: [], over: 0 }, seen = Object.create(null);
     text(value).replace(/^\uFEFF/, '').split(/[\n,;]+/).forEach(function (part) {
       var raw = part.replace(/^\uFEFF/, '').trim()
         .replace(/^(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '').trim();
@@ -113,7 +159,7 @@
   // ---------------------------------------------------------------------------
   // Close meanings
   // ---------------------------------------------------------------------------
-  var STOP = {};
+  var STOP = Object.create(null);
   ('a an the of to and or in on at for with by from that which who whom is are was were be been being it its as this these those your you '
     + 'they their them he she his her we our us something someone somebody thing things kind type sort way used use very can could may '
     + 'not no do does did has have had one some any such so if when where than then into out up about over').split(' ').forEach(function (w) { STOP[w] = true; });
@@ -127,7 +173,7 @@
     var x = contentWords(a), y = contentWords(b);
     if (!x.length || !y.length) return line(a).toLowerCase() === line(b).toLowerCase() && !!line(a);
     if (x.join(' ') === y.join(' ')) return true;
-    var A = {}, B = {}, inter = 0, union = 0;
+    var A = Object.create(null), B = Object.create(null), inter = 0, union = 0;
     x.forEach(function (w) { A[w] = true; });
     y.forEach(function (w) { B[w] = true; });
     Object.keys(A).forEach(function (w) { union++; if (B[w]) inter++; });
@@ -202,7 +248,7 @@
   // The candidates for a row's wrong answers, best first, one for each word: the bank's ranked wrong answers, then
   // the meanings of the other words in the list (the only ones a word the bank does not have can use).
   function poolFor(row, rows, bank) {
-    var out = [], seen = {};
+    var out = [], seen = Object.create(null);
     var add = function (cand) {
       var k = keyOf(cand.word);
       if (!k || seen[k] || k === row.key || !line(cand.def)) return;
@@ -245,7 +291,7 @@
   // in the form safely (an irregular verb, a word for a thing that cannot be counted...) is left out, never guessed.
   // ---------------------------------------------------------------------------
   var FORMS = { noun: ['s'], verb: ['s', 'ed', 'ing'], adjective: ['er', 'est'], '': ['s', 'ed', 'ing'] };
-  var IRREGULAR = {}, ODD_PLURAL = {}, ODD_ADJECTIVE = {};
+  var IRREGULAR = Object.create(null), ODD_PLURAL = Object.create(null), ODD_ADJECTIVE = Object.create(null);
   // Verbs whose past is not made with -ed (and the same with a prefix: become, understand, overcome).
   ('arise awake be bear beat begin bend bet bid bind bite bleed blow break breed bring build burn burst buy cast catch choose cling come cost creep cut deal dig dive do '
     + 'draw dream drink drive eat fall feed feel fight find flee fling fly forbid forget forgive freeze get give go grind grow hang have hear hide hit hold hurt keep '
@@ -411,7 +457,7 @@
   //   3. Words of the list whose kind is not known (a word the bank does not have), as typed, when no form is needed.
   // After "a" choices must start with a consonant sound, after "an" with a vowel sound, so the article is never a clue.
   function blankPool(row, rows, b, bank) {
-    var out = [], seen = {}, base = keyOf(row.base || row.word), form = b.form;
+    var out = [], seen = Object.create(null), base = keyOf(row.base || row.word), form = b.form;
     seen[row.key] = seen[keyOf(b.answer)] = true;
     var needVowel = b.article ? vowelSoundStart(b.answer) : false;
     // After a or an every choice starts with the same kind of sound as the answer (a unified whole -> consonant sounds, never "a invited").
@@ -482,17 +528,17 @@
     var wordEdits = isObject(edits.words) ? edits.words : {};
     var senseEdits = isObject(edits.senses) ? edits.senses : {};
     var list = (Array.isArray(o.words) ? o.words : []).map(function (w) { return typeof w === 'string' ? w : w && w.word; }).map(normalizeWord).filter(Boolean);
-    var seen = {};
+    var seen = Object.create(null);
     list = list.filter(function (w) { var k = keyOf(w); if (seen[k]) return false; seen[k] = true; return true; }).slice(0, MAX_WORDS);
     var rows = list.map(function (word) {
-      var key = keyOf(word), mine = isObject(wordEdits[key]) ? wordEdits[key] : {};
+      var key = keyOf(word), mine = own(wordEdits, key) && isObject(wordEdits[key]) ? wordEdits[key] : {};
       var asName = nameReadAs(bank, word);
       var senses = asName ? [] : sensesOf(bank, word);
       var sense = senses.filter(function (s) { return s.id === mine.sense; })[0] || senses[0] || null;
       var row = { word: word, key: key, inBank: senses.length > 0, senses: senses, sense: sense, own: !sense, base: '' };
       if (asName) row.asName = asName;
       if (sense) {
-        var changed = isObject(senseEdits[sense.id]) ? senseEdits[sense.id] : {};
+        var changed = own(senseEdits, sense.id) && isObject(senseEdits[sense.id]) ? senseEdits[sense.id] : {};
         row.senseId = sense.id;
         // The word the meaning is written for, when the list has another form of it ("cats": the meaning of "cat").
         if (line(sense.word, 60) && keyOf(sense.word) !== key) row.base = line(sense.word, 60);
@@ -582,7 +628,7 @@
   // picture already used, no meaning close to one of the word's, neither word in the other's meaning.
   // Words for a group of things (food, animal, toy...): in a picture question more than one picture could show one
   // (an orange is food), so they are never asked and never one of the other pictures. A form of one counts too (toys).
-  var GROUP_WORDS = {};
+  var GROUP_WORDS = Object.create(null);
   ('animal pet food fruit vegetable plant flower insect bug mammal reptile amphibian creature vehicle transport toy tool clothes clothing '
     + 'furniture drink meat snack meal dessert sweet candy shape color number letter sport game job person people family '
     + 'building place weather instrument machine container thing object baby child kid adult grown-up animal home').split(' ').forEach(function (w) { GROUP_WORDS[w] = true; });
@@ -758,9 +804,11 @@
     // Recordings made ahead of time (o.clips: word in lower case -> data:audio address, the word store's clip as WAV):
     // played for the word itself, only with Read aloud on and o.voices not false. The device voice reads the rest.
     var clips = read && o.voices !== false && isObject(o.clips) ? o.clips : {};
-    var audio = {}, images = {}, recorded = [], pictured = {};
+    var audio = {}, images = {}, recorded = [], pictured = Object.create(null);
+    var MAX_CLIP_CHARS = 2 * 1024 * 1024;
     var clipOf = function (word) {
-      var k = keyOf(word), uri = own(clips, k) && typeof clips[k] === 'string' && /^data:audio\/(?:wav|x-wav|wave|mpeg|mp3)[;,]/i.test(clips[k]) ? clips[k] : '';
+      var k = keyOf(word), rawUri = own(clips, k) && typeof clips[k] === 'string' ? clips[k] : '';
+      var uri = rawUri && rawUri.length <= MAX_CLIP_CHARS && /^data:audio\/(?:wav|x-wav|wave|mpeg|mp3);base64,[A-Za-z0-9+/]+={0,2}$/i.test(rawUri) ? rawUri : '';
       if (!uri) return null;
       var cid = 'w' + fnv('clip|' + k);
       if (!audio[cid]) { audio[cid] = uri; recorded.push(line(word, 60)); }
@@ -770,7 +818,7 @@
     // o.art: word_sounds_packet_builder.js, whose svgRefusal tests each drawing as it goes into the file).
     var pics = o.pictures && typeof o.pictures.get === 'function' ? o.pictures : null, art = o.art && typeof o.art.svgRefusal === 'function' ? o.art : null;
     var matcher = o.diagrams === true && o.matcher && typeof o.matcher.getDiagram === 'function' ? o.matcher : null;
-    var rowByWord = {};
+    var rowByWord = Object.create(null);
     rows.forEach(function (r) { if (r && r.key) rowByWord[r.key] = r; });
     var imageOf = function (word) {
       var wk = keyOf(word), r = own(rowByWord, wk) ? rowByWord[wk] : null;
@@ -838,7 +886,7 @@
         return ok;
       });
       if (!list.length) return;
-      asked[id] = {};
+      asked[id] = Object.create(null);
       list.forEach(function (item, i) { asked[id][item.row.key] = i; });
       // A check opens with one sample question, not scored (as a math check does): see sampleFor.
       var sample = check && !blocks.length ? sampleFor(id, rows, o.bank, imageOf) : null;
@@ -880,6 +928,30 @@
     var content = JSON.stringify([types, check, read, rows.map(function (r) { return [r.senseId, r.def]; }), blocks]);
     var lesson = { schema: LESSON_SCHEMA, player: PLAYER, lessonId: 'vocab-' + fnv(content) + (check ? '-check' : '-practice'), revision: '', language: 'en', title: title, showLetters: false,
       mode: check ? 'probe' : 'practice', activityTitles: titles, blocks: blocks, feedback: { correct: [], retry: null }, audio: audio, images: images, submit: null };
+    if (o.syllables && (typeof o.syllables === 'function' || typeof o.syllables.lookup === 'function')) {
+      var sylLookup = typeof o.syllables === 'function' ? o.syllables : function (w) { return o.syllables.lookup(w); };
+      var sylMap = Object.create(null);
+      var collectWords = function (s) {
+        if (typeof s !== 'string' || !s) return;
+        var re = /[A-Za-z]{4,}/g, m;
+        while ((m = re.exec(s))) {
+          var low = m[0].toLowerCase();
+          if (own(sylMap, low)) continue;
+          var found = null;
+          try { found = sylLookup(low); } catch (_) { found = null; }
+          var parts = Array.isArray(found) ? found : (found && !found.check && Array.isArray(found.parts) ? found.parts : null);
+          if (parts && parts.length > 1 && parts.join('').length === low.length) sylMap[low] = parts.join('\u00b7');
+        }
+      };
+      blocks.forEach(function (b) {
+        (b.items || []).forEach(function (it) {
+          collectWords(it.word);
+          collectWords(it.ask);
+          (it.choices || []).forEach(function (c) { collectWords(typeof c === 'string' ? c : (c && c.text)); });
+        });
+      });
+      if (Object.keys(sylMap).length) lesson.syllables = sylMap;
+    }
     if (check) { lesson.form = 'custom'; lesson.timeLimitS = null; lesson.check = Object.assign({}, MEASURE); }
     lesson.revision = 'r' + fnv(JSON.stringify([lesson.title, lesson.form || '', lesson.check || null, lesson.blocks]));
     // What the file's credits name (buildVocabPacket): the words with a recording, and the words whose picture is used, by set.
@@ -931,8 +1003,10 @@
     var at = html.indexOf(open);
     if (at < 0) return html;
     var from = at + open.length, to = html.indexOf('</script>', from);
+    if (to < 0) return html;
     var manifest;
-    try { manifest = JSON.parse(html.slice(from, to)); } catch (_) { return html; }
+    try { manifest = JSON.parse(html.slice(from, to), function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; }); } catch (_) { return html; }
+    if (!isObject(manifest)) return html;
     Object.keys(extra).forEach(function (k) { manifest[k] = extra[k]; });
     return html.slice(0, from) + safeJson(manifest) + html.slice(to);
   }

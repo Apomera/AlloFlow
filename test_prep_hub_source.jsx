@@ -172,7 +172,7 @@ async function testPrepReadRepoJsonResponse(response, expectedSha256) {
   const expected = /^[a-f0-9]{64}$/.test(String(expectedSha256 || '').trim())
     ? String(expectedSha256).trim()
     : '';
-  if (!expected) return response.json();
+  if (!expected) return testPrepStripUnsafeKeys(await response.json());
   if (!response || typeof response.arrayBuffer !== 'function') {
     throw testPrepNamedError('TestPrepIntegrityUnavailableError', 'Test prep asset integrity verification requires access to the exact response bytes.');
   }
@@ -191,7 +191,7 @@ async function testPrepReadRepoJsonResponse(response, expectedSha256) {
     throw testPrepNamedError('TestPrepIntegrityError', 'Test prep asset is not valid UTF-8 JSON.');
   }
   try {
-    return JSON.parse(text);
+    return testPrepSafeJsonParse(text);
   } catch (_) {
     throw testPrepNamedError('TestPrepIntegrityError', 'Test prep asset passed its digest check but is not valid JSON.');
   }
@@ -250,7 +250,7 @@ function testPrepNormalizeManifestEntry(value, index) {
     portfolioCategories,
     blueprintLabel: String(input.blueprintLabel || '').trim().slice(0, 180),
     blueprintEffective: String(input.blueprintEffective || '').trim().slice(0, 240),
-    officialBlueprintUrl: /^https:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9_./?=&%#-]*$/.test(String(input.officialBlueprintUrl || '').trim()) ? String(input.officialBlueprintUrl).trim() : '',
+    officialBlueprintUrl: testPrepSafeHttpsUrl(input.officialBlueprintUrl),
     itemCount: Math.max(0, Math.min(10000, Math.floor(testPrepFinite(input.itemCount, 0)))),
     domainCount: Math.max(0, Math.min(100, Math.floor(testPrepFinite(input.domainCount, 0)))),
     itemSchemaVersion: Math.max(1, Math.min(20, Math.floor(testPrepFinite(input.itemSchemaVersion, 1)))),
@@ -358,7 +358,7 @@ function testPrepAssertManifestPackMatch(entry, pack) {
   }
   if (String(pack.version || '0.1.0') !== entry.version) throw new Error('Loaded test prep pack version does not match its manifest entry.');
   if (String(pack.visibility || 'public') !== entry.visibility) throw new Error('Loaded test prep pack visibility does not match its manifest entry.');
-  if (Math.max(1, Math.floor(testPrepFinite(pack.itemSchemaVersion, pack.schemaVersion || 1))) !== entry.itemSchemaVersion) throw new Error('Loaded test prep pack item schema does not match its manifest entry.');
+  if (Math.max(1, Math.floor(testPrepFinite(pack.itemSchemaVersion, testPrepFinite(pack.schemaVersion, 1)))) !== entry.itemSchemaVersion) throw new Error('Loaded test prep pack item schema does not match its manifest entry.');
   if (pack.items.length !== entry.itemCount) throw new Error('Loaded test prep pack item count does not match its manifest entry.');
   if (entry.learningLibraryUrl && testPrepNormalizeRepoAssetUrl(pack.learningLibraryUrl) !== entry.learningLibraryUrl) {
     throw new Error('Loaded test prep pack learning-library URL does not match its manifest entry.');
@@ -540,18 +540,60 @@ const TEST_PREP_RESEARCH_LANES = [
   },
 ];
 
-const _testPrepPackRegistry = {};
+const _testPrepPackRegistry = Object.create(null);
 const _testPrepPackLoadPromises = new Map();
 const _testPrepManifestPackProvenance = new Map();
+const TEST_PREP_MAX_TIMESTAMP_MS = 8640000000000000;
+
+function testPrepUnsafeKey(key) {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
+
+function testPrepSafeJsonParse(raw) {
+  return JSON.parse(raw, (key, value) => (testPrepUnsafeKey(key) ? undefined : value));
+}
+
+function testPrepStripUnsafeKeys(value, depth) {
+  const level = Number(depth) || 0;
+  if (value == null || typeof value !== 'object' || level > 32) return value;
+  if (Array.isArray(value)) return value.map((item) => testPrepStripUnsafeKeys(item, level + 1));
+  const out = {};
+  Object.keys(value).forEach((key) => {
+    if (testPrepUnsafeKey(key)) return;
+    out[key] = testPrepStripUnsafeKeys(value[key], level + 1);
+  });
+  return out;
+}
+
+function testPrepClampTimestamp(value, fallback) {
+  const raw = testPrepFinite(value, testPrepFinite(fallback, 0));
+  if (!Number.isFinite(raw) || raw < 0) return 0;
+  return Math.min(TEST_PREP_MAX_TIMESTAMP_MS, Math.floor(raw));
+}
+
+function testPrepNormalizeConfidenceMap(value) {
+  const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const out = {};
+  Object.keys(input).slice(0, 500).forEach((rawId) => {
+    const id = testPrepSlug(rawId, '');
+    if (!id) return;
+    const rating = input[rawId];
+    if (rating === 'sure' || rating === 'unsure' || rating === 'guess') out[id] = rating;
+  });
+  return out;
+}
 
 function testPrepSlug(value, fallback) {
   const clean = String(value || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
-  return clean || fallback;
+  if (!clean || testPrepUnsafeKey(clean)) return fallback;
+  return clean;
 }
 
 function testPrepFinite(value, fallback) {
   const number = Number(value);
-  return Number.isFinite(number) ? number : fallback;
+  if (Number.isFinite(number)) return number;
+  const fb = Number(fallback);
+  return Number.isFinite(fb) ? fb : 0;
 }
 
 const TEST_PREP_REFERENCE_DETAILS = {
@@ -649,8 +691,9 @@ function testPrepReferencePageLabel(url) {
 }
 
 function testPrepDescribeReference(reference) {
-  if (typeof TEST_PREP_REFERENCE_CATALOG !== 'undefined' && TEST_PREP_REFERENCE_CATALOG[reference]) return TEST_PREP_REFERENCE_CATALOG[reference];
-  if (TEST_PREP_REFERENCE_DETAILS[reference]) return TEST_PREP_REFERENCE_DETAILS[reference];
+  const refKey = String(reference || '');
+  if (typeof TEST_PREP_REFERENCE_CATALOG !== 'undefined' && Object.prototype.hasOwnProperty.call(TEST_PREP_REFERENCE_CATALOG, refKey)) return TEST_PREP_REFERENCE_CATALOG[refKey];
+  if (Object.prototype.hasOwnProperty.call(TEST_PREP_REFERENCE_DETAILS, refKey)) return TEST_PREP_REFERENCE_DETAILS[refKey];
   try {
     const url = new URL(reference, window.location.href);
     const hostname = url.hostname.toLowerCase().replace(/^www\./, '');
@@ -663,7 +706,7 @@ function testPrepDescribeReference(reference) {
         credibility: 'A DOI is a persistent identifier that makes the cited scholarly work and its publisher metadata traceable. A DOI is not a quality rating; the publication and study methods still determine evidentiary strength.',
       };
     }
-    const organization = TEST_PREP_REFERENCE_ORGANIZATIONS[hostname];
+    const organization = Object.prototype.hasOwnProperty.call(TEST_PREP_REFERENCE_ORGANIZATIONS, hostname) ? TEST_PREP_REFERENCE_ORGANIZATIONS[hostname] : null;
     const pageLabel = testPrepReferencePageLabel(url);
     if (organization) return { title: pageLabel + ' — ' + organization[0], organization: organization[0], summary: 'This resource addresses ' + pageLabel.toLowerCase() + ' and provides source context for the answer explanation.', credibility: organization[1] };
     return {
@@ -702,7 +745,8 @@ function normalizeTestPrepItem(item, index, domainIds) {
     .slice(0, 8).map((rationale) => String(rationale || '').trim().slice(0, 1600));
   const choiceRationales = requestedChoiceRationales.length === choices.length && requestedChoiceRationales.every(Boolean)
     ? requestedChoiceRationales : [];
-  const answerIndex = Math.floor(testPrepFinite(input.answerIndex, input.answer));
+  const rawAnswerIdx = input.answerIndex != null && input.answerIndex !== '' ? Number(input.answerIndex) : (input.answer != null && input.answer !== '' ? Number(input.answer) : -1);
+  const answerIndex = Number.isFinite(rawAnswerIdx) ? Math.floor(rawAnswerIdx) : -1;
   const requestedDomain = testPrepSlug(input.domainId, '');
   const references = (Array.isArray(input.references) ? input.references : [])
     .slice(0, 8).map((reference) => String(reference || '').trim().slice(0, 500)).filter(Boolean);
@@ -831,7 +875,7 @@ function normalizeTestPrepPack(pack) {
   });
   return {
     schemaVersion: Math.floor(testPrepFinite(input.schemaVersion, TEST_PREP_SCHEMA_VERSION)),
-    itemSchemaVersion: Math.max(1, Math.min(20, Math.floor(testPrepFinite(input.itemSchemaVersion, input.schemaVersion || 1)))),
+    itemSchemaVersion: Math.max(1, Math.min(20, Math.floor(testPrepFinite(input.itemSchemaVersion, testPrepFinite(input.schemaVersion, 1))))),
     visibility: TEST_PREP_PACK_VISIBILITIES.includes(input.visibility) ? input.visibility : 'public',
     released: input.released === true,
     calibrated: input.calibrated === true,
@@ -861,17 +905,17 @@ function normalizeTestPrepPack(pack) {
     diagnosticBatchCountSemantics: String(input.diagnosticBatchCountSemantics || '').trim().slice(0, 100),
     sourceDiagnosticBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.sourceDiagnosticBatchCount, 0)))),
     assistantAuthoredIndependentBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.assistantAuthoredIndependentBatchCount, 0)))),
-    independentDiagnosticBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.independentDiagnosticBatchCount, input.sourceDiagnosticBatchCount || 0)))),
+    independentDiagnosticBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.independentDiagnosticBatchCount, testPrepFinite(input.sourceDiagnosticBatchCount, 0))))),
     guidedReviewBatchCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.guidedReviewBatchCount, 0)))),
     learningActivityBankCount: Math.max(0, Math.min(20, Math.round(testPrepFinite(input.learningActivityBankCount, 0)))),
     sourceQuestionItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.sourceQuestionItems, 200)))),
     assistantAuthoredIndependentItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantAuthoredIndependentItems, 0)))),
-    independentPracticeItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.independentPracticeItems, input.sourceQuestionItems || 200)))),
+    independentPracticeItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.independentPracticeItems, testPrepFinite(input.sourceQuestionItems, 200))))),
     guidedReviewItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.guidedReviewItems, 0)))),
     distinctSourceContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.distinctSourceContentKernels, 0)))),
     parallelSourceVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.parallelSourceVariants, 0)))),
-    distinctIndependentContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.distinctIndependentContentKernels, input.distinctSourceContentKernels || 0)))),
-    parallelIndependentVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.parallelIndependentVariants, input.parallelSourceVariants || 0)))),
+    distinctIndependentContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.distinctIndependentContentKernels, testPrepFinite(input.distinctSourceContentKernels, 0))))),
+    parallelIndependentVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.parallelIndependentVariants, testPrepFinite(input.parallelSourceVariants, 0))))),
     newIndependentItemsNeeded: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.newIndependentItemsNeeded, 0)))),
     expansionVersion: String(input.expansionVersion || '').trim().slice(0, 100),
     assistantReviewVerdict: String(input.assistantReview && input.assistantReview.verdict || '').trim().slice(0, 100),
@@ -880,11 +924,11 @@ function normalizeTestPrepPack(pack) {
       structurallyReviewedItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.structurallyReviewedItems, 0)))),
       sourceItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.sourceItems, 0)))),
       assistantAuthoredIndependentItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.assistantAuthoredIndependentItems, 0)))),
-      independentPracticeItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.independentPracticeItems, input.assistantReview.sourceItems || 0)))),
+      independentPracticeItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.independentPracticeItems, testPrepFinite(input.assistantReview.sourceItems, 0))))),
       distinctSourceContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.distinctSourceContentKernels, 0)))),
       parallelSourceVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.parallelSourceVariants, 0)))),
-      distinctIndependentContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.distinctIndependentContentKernels, input.assistantReview.distinctSourceContentKernels || 0)))),
-      parallelIndependentVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.parallelIndependentVariants, input.assistantReview.parallelSourceVariants || 0)))),
+      distinctIndependentContentKernels: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.distinctIndependentContentKernels, testPrepFinite(input.assistantReview.distinctSourceContentKernels, 0))))),
+      parallelIndependentVariants: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.parallelIndependentVariants, testPrepFinite(input.assistantReview.parallelSourceVariants, 0))))),
       guidedReviewItems: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.guidedReviewItems, 0)))),
       independentQuestionTarget: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.independentQuestionTarget, 0)))),
       newIndependentItemsNeeded: Math.max(0, Math.min(10000, Math.round(testPrepFinite(input.assistantReview.newIndependentItemsNeeded, 0)))),
@@ -918,9 +962,9 @@ function normalizeTestPrepPack(pack) {
     learningLibraryQaUrl: testPrepNormalizeRepoAssetUrl(input.learningLibraryQaUrl),
     blueprintLabel: String(input.blueprintLabel || '').trim().slice(0, 180),
     blueprintEffective: String(input.blueprintEffective || '').trim().slice(0, 240),
-    officialBlueprintUrl: /^https:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9_./?=&%#-]*$/.test(String(input.officialBlueprintUrl || '').trim()) ? String(input.officialBlueprintUrl).trim() : '',
-    clarificationsUrl: /^https:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9_./?=&%#-]*$/.test(String(input.clarificationsUrl || '').trim()) ? String(input.clarificationsUrl).trim() : '',
-    officialExamUrl: /^https:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9_./?=&%#-]*$/.test(String(input.officialExamUrl || '').trim()) ? String(input.officialExamUrl).trim() : '',
+    officialBlueprintUrl: testPrepSafeHttpsUrl(input.officialBlueprintUrl),
+    clarificationsUrl: testPrepSafeHttpsUrl(input.clarificationsUrl),
+    officialExamUrl: testPrepSafeHttpsUrl(input.officialExamUrl),
     capabilities: input.capabilities && typeof input.capabilities === 'object' && !Array.isArray(input.capabilities) ? {
       currentEngineSchemaVersion: Math.max(1, Math.min(20, Math.floor(testPrepFinite(input.capabilities.currentEngineSchemaVersion, 1)))),
       itemSchemaVersion: Math.max(1, Math.min(20, Math.floor(testPrepFinite(input.capabilities.itemSchemaVersion, 1)))),
@@ -977,7 +1021,7 @@ function normalizeTestPrepPack(pack) {
       releaseBlocked: input.expertReviewGate.releaseBlocked === true,
     } : null,
     transitionNotice: String(input.transitionNotice || '').trim().slice(0, 800),
-    transitionUrl: /^https:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9_./?=&%#-]*$/.test(String(input.transitionUrl || '').trim()) ? String(input.transitionUrl).trim() : '',
+    transitionUrl: testPrepSafeHttpsUrl(input.transitionUrl),
     domains,
     sections,
     items,
@@ -1012,7 +1056,7 @@ function validateTestPrepPack(pack) {
   normalized.items.forEach((item, index) => {
     if (!item.prompt) errors.push('Item ' + (index + 1) + ' is missing a prompt.');
     if (item.choices.length < 2) errors.push('Item ' + (index + 1) + ' needs at least two choices.');
-    if (item.answerIndex < 0 || item.answerIndex >= item.choices.length) errors.push('Item ' + (index + 1) + ' has an invalid answer index.');
+    if (!Number.isInteger(item.answerIndex) || item.answerIndex < 0 || item.answerIndex >= item.choices.length) errors.push('Item ' + (index + 1) + ' has an invalid answer index.');
     if (seen.has(item.id)) errors.push('Duplicate item id: ' + item.id + '.');
     seen.add(item.id);
   });
@@ -1405,11 +1449,11 @@ function recordTestPrepBatchAttempt(progress, pack, diagnostic, confidence, now,
     packId: normalizedPack.id,
     packVersion: meta.packVersion,
     packContentFingerprint: meta.packContentFingerprint,
-    completedAt: Math.max(0, testPrepFinite(now, Date.now())),
+    completedAt: testPrepClampTimestamp(now, Date.now()),
     correct: diagnostic.correct,
     total: diagnostic.total,
     percent: diagnostic.percent,
-    confidence: confidence && typeof confidence === 'object' && !Array.isArray(confidence) ? confidence : {},
+    confidence: testPrepNormalizeConfidenceMap(confidence),
     confidenceSummary: testPrepNormalizeConfidenceSummary(diagnostic.confidenceSummary),
     itemResults: testPrepNormalizeItemResults(diagnostic.itemResults),
     byDomain: testPrepNormalizeBreakdown(diagnostic.byDomain),
@@ -1424,10 +1468,10 @@ function recordTestPrepBatchAttempt(progress, pack, diagnostic, confidence, now,
     timedOut: meta.timedOut,
     itemIds: meta.itemIds,
     assistedItemIds: meta.assistedItemIds,
-    batchNumber: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceBatchNumber, diagnostic.batchNumber))),
-    batchCount: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceBatchCount, diagnostic.batchCount))),
-    firstQuestion: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceFirstQuestion, diagnostic.firstQuestion))),
-    lastQuestion: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceLastQuestion, diagnostic.lastQuestion))),
+    batchNumber: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceBatchNumber, testPrepFinite(diagnostic.batchNumber, 1)))),
+    batchCount: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceBatchCount, testPrepFinite(diagnostic.batchCount, 1)))),
+    firstQuestion: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceFirstQuestion, testPrepFinite(diagnostic.firstQuestion, 1)))),
+    lastQuestion: Math.max(1, Math.floor(testPrepFinite(diagnostic.sourceLastQuestion, testPrepFinite(diagnostic.lastQuestion, 1)))),
   });
   return writeTestPrepProgress(next);
 }
@@ -1439,11 +1483,11 @@ function normalizeTestPrepProgress(value) {
     packId: testPrepSlug(attempt && attempt.packId, ''),
     packVersion: testPrepNormalizeContentIdentity(attempt).packVersion,
     packContentFingerprint: testPrepNormalizeContentIdentity(attempt).packContentFingerprint,
-    completedAt: Math.max(0, testPrepFinite(attempt && attempt.completedAt, 0)),
+    completedAt: testPrepClampTimestamp(attempt && attempt.completedAt, 0),
     correct: Math.max(0, Math.floor(testPrepFinite(attempt && attempt.correct, 0))),
     total: Math.max(0, Math.floor(testPrepFinite(attempt && attempt.total, 0))),
     percent: Math.max(0, Math.min(100, Math.round(testPrepFinite(attempt && attempt.percent, 0)))),
-    confidence: attempt && attempt.confidence && typeof attempt.confidence === 'object' && !Array.isArray(attempt.confidence) ? attempt.confidence : {},
+    confidence: testPrepNormalizeConfidenceMap(attempt && attempt.confidence),
     confidenceSummary: testPrepNormalizeConfidenceSummary(attempt && attempt.confidenceSummary),
     itemResults: testPrepNormalizeItemResults(attempt && attempt.itemResults),
     byDomain: testPrepNormalizeBreakdown(attempt && attempt.byDomain),
@@ -1467,7 +1511,7 @@ function normalizeTestPrepProgress(value) {
 }
 
 function readTestPrepProgress() {
-  try { return normalizeTestPrepProgress(JSON.parse(localStorage.getItem(TEST_PREP_STORAGE_KEY) || '{}')); }
+  try { return normalizeTestPrepProgress(testPrepSafeJsonParse(localStorage.getItem(TEST_PREP_STORAGE_KEY) || '{}')); }
   catch (_) { return { attempts: [] }; }
 }
 
@@ -1524,7 +1568,7 @@ function testPrepSetReviewItemsForPack(value, packId, contentIdentity, itemIds) 
 }
 
 function readTestPrepReviewItems() {
-  try { return normalizeTestPrepReviewItems(JSON.parse(localStorage.getItem(TEST_PREP_REVIEW_STORAGE_KEY) || '{}')); }
+  try { return normalizeTestPrepReviewItems(testPrepSafeJsonParse(localStorage.getItem(TEST_PREP_REVIEW_STORAGE_KEY) || '{}')); }
   catch (_) { return normalizeTestPrepReviewItems({}); }
 }
 
@@ -1553,8 +1597,8 @@ function normalizeTestPrepAnnotations(value) {
       kind: entry.kind === 'highlight' ? 'highlight' : 'note',
       color: ['yellow', 'blue', 'green', 'pink'].includes(entry.color) ? entry.color : 'yellow',
       text,
-      createdAt: Math.max(0, Math.floor(testPrepFinite(entry.createdAt, 0))),
-      updatedAt: Math.max(0, Math.floor(testPrepFinite(entry.updatedAt, 0))),
+      createdAt: testPrepClampTimestamp(entry.createdAt, 0),
+      updatedAt: testPrepClampTimestamp(entry.updatedAt, 0),
     };
   }).filter(Boolean);
   return { records };
@@ -1595,7 +1639,7 @@ function testPrepDeleteAnnotation(value, annotationId) {
 }
 
 function readTestPrepAnnotations() {
-  try { return normalizeTestPrepAnnotations(JSON.parse(localStorage.getItem(TEST_PREP_ANNOTATIONS_STORAGE_KEY) || '{}')); }
+  try { return normalizeTestPrepAnnotations(testPrepSafeJsonParse(localStorage.getItem(TEST_PREP_ANNOTATIONS_STORAGE_KEY) || '{}')); }
   catch (_) { return { records: [] }; }
 }
 
@@ -1628,7 +1672,7 @@ function testPrepStudyPlanForPack(value, packId) {
 }
 
 function readTestPrepStudyPlans() {
-  try { return normalizeTestPrepStudyPlans(JSON.parse(localStorage.getItem(TEST_PREP_STUDY_PLANS_STORAGE_KEY) || '{}')); }
+  try { return normalizeTestPrepStudyPlans(testPrepSafeJsonParse(localStorage.getItem(TEST_PREP_STUDY_PLANS_STORAGE_KEY) || '{}')); }
   catch (_) { return { byPack: {} }; }
 }
 
@@ -1645,33 +1689,35 @@ function testPrepBuildStudyPlanStatus(progress, studyPlans, packId, now, content
   const restrictToIdentity = contentIdentity !== undefined;
   const belongsToCurrentRevision = (attempt) => !restrictToIdentity || testPrepContentIdentityStatus(attempt, currentIdentity) === 'current';
   const plan = testPrepStudyPlanForPack(studyPlans, safePackId);
-  const timestamp = Math.max(0, Math.floor(testPrepFinite(now, Date.now())));
+  const timestamp = testPrepClampTimestamp(now, Date.now());
   const date = new Date(timestamp);
-  const today = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  const year = date.getFullYear(), month = date.getMonth(), dayOfMonth = date.getDate();
+  const todayDayIndex = Math.floor(Date.UTC(year, month, dayOfMonth) / 86400000);
   const mondayOffset = (date.getDay() + 6) % 7;
-  const weekStart = today - mondayOffset * 24 * 60 * 60 * 1000;
+  const weekStart = new Date(year, month, dayOfMonth - mondayOffset).getTime();
+  const weekEnd = new Date(year, month, dayOfMonth - mondayOffset + 7).getTime() - 1;
   const attempts = normalizedProgress.attempts.filter((attempt) => attempt.packId === safePackId && belongsToCurrentRevision(attempt) && attempt.completedAt >= weekStart && attempt.completedAt <= timestamp);
   const questionsCompleted = attempts.reduce((sum, attempt) => sum + attempt.total, 0);
   const activeDayValues = Array.from(new Set(attempts.map((attempt) => {
-    const completed = new Date(attempt.completedAt);
-    return new Date(completed.getFullYear(), completed.getMonth(), completed.getDate()).getTime();
+    const completed = new Date(testPrepClampTimestamp(attempt.completedAt, 0));
+    return Math.floor(Date.UTC(completed.getFullYear(), completed.getMonth(), completed.getDate()) / 86400000);
   })));
   const allActivityDays = Array.from(new Set(normalizedProgress.attempts.filter((attempt) => attempt.packId === safePackId && belongsToCurrentRevision(attempt)).map((attempt) => {
-    const completed = new Date(attempt.completedAt);
-    return new Date(completed.getFullYear(), completed.getMonth(), completed.getDate()).getTime();
+    const completed = new Date(testPrepClampTimestamp(attempt.completedAt, 0));
+    return Math.floor(Date.UTC(completed.getFullYear(), completed.getMonth(), completed.getDate()) / 86400000);
   }))).sort((left, right) => right - left);
   let activityStreakDays = 0;
-  if (allActivityDays.length && allActivityDays[0] >= today - 24 * 60 * 60 * 1000) {
+  if (allActivityDays.length && allActivityDays[0] >= todayDayIndex - 1) {
     let cursor = allActivityDays[0];
-    allActivityDays.forEach((day) => {
-      if (day === cursor) { activityStreakDays += 1; cursor -= 24 * 60 * 60 * 1000; }
+    allActivityDays.forEach((dayIdx) => {
+      if (dayIdx === cursor) { activityStreakDays += 1; cursor -= 1; }
     });
   }
   const percent = (value, goal) => Math.min(100, Math.round(value / Math.max(1, goal) * 100));
   return {
     packId: safePackId,
     weekStart,
-    weekEnd: weekStart + 7 * 24 * 60 * 60 * 1000 - 1,
+    weekEnd,
     plan,
     questionsCompleted,
     setsCompleted: attempts.length,
@@ -1687,8 +1733,8 @@ function scoreTestPrepAttempt(pack, answers) {
   const normalized = normalizeTestPrepPack(pack);
   const responseMap = answers && typeof answers === 'object' && !Array.isArray(answers) ? answers : {};
   let correct = 0;
-  const byDomain = {};
-  const bySkill = {};
+  const byDomain = Object.create(null);
+  const bySkill = Object.create(null);
   normalized.items.forEach((item) => {
     const domain = item.domainId || 'general';
     if (!byDomain[domain]) byDomain[domain] = { correct: 0, total: 0 };
@@ -1705,7 +1751,7 @@ function scoreTestPrepAttempt(pack, answers) {
     }
   });
   const total = normalized.items.length;
-  return { correct, total, percent: total ? Math.round(correct / total * 100) : 0, byDomain, bySkill };
+  return { correct, total, percent: total ? Math.round(correct / total * 100) : 0, byDomain: Object.assign({}, byDomain), bySkill: Object.assign({}, bySkill) };
 }
 
 function testPrepConfidenceForAttempt(pack, answers, confidence) {
@@ -1746,11 +1792,11 @@ function recordTestPrepAttempt(progress, pack, answers, confidence, now, metadat
     packId: normalizedPack.id,
     packVersion: meta.packVersion,
     packContentFingerprint: meta.packContentFingerprint,
-    completedAt: Math.max(0, testPrepFinite(now, Date.now())),
+    completedAt: testPrepClampTimestamp(now, Date.now()),
     correct: score.correct,
     total: score.total,
     percent: score.percent,
-    confidence: confidence && typeof confidence === 'object' && !Array.isArray(confidence) ? confidence : {},
+    confidence: testPrepNormalizeConfidenceMap(confidence),
     confidenceSummary: testPrepConfidenceForAttempt(pack, answers, confidence),
     itemResults: testPrepItemResultsForAttempt(pack, answers, confidence),
     byDomain: score.byDomain,
@@ -2382,7 +2428,7 @@ function testPrepStudyPlanLayers(learningLibrary) {
     id: testPrepSlug(source.id, ''),
     title: testPrepStudyPlanText(source.title, 240) || 'Source',
     organization: testPrepStudyPlanText(source.organization, 160),
-    url: /^https:\/\//i.test(String(source.url || '')) ? String(source.url).slice(0, 500) : '',
+    url: testPrepSafeHttpsUrl(source.url).slice(0, 500),
     credibility: testPrepStudyPlanText(source.credibility, 400),
     sourceType: humanize(source.sourceType),
     reviewedAt: testPrepStudyPlanText(source.reviewedAt, 40),
@@ -2461,7 +2507,7 @@ function testPrepNormalizeWorkshop(workshop) {
     calculatorUse: humanize(input.calculatorUse),
     reviewNote: text(input.reviewNote || input.scoreMeaning, 1000),
     reviewStatus: text(input.reviewStatus, 80) || 'source-reviewed-editorial-pass',
-    references: (Array.isArray(input.references) ? input.references : []).map((reference) => text(reference, 500)).filter((reference) => /^https:\/\//i.test(reference)),
+    references: (Array.isArray(input.references) ? input.references : []).map((reference) => testPrepSafeHttpsUrl(reference).slice(0, 500)).filter(Boolean),
   };
 }
 
@@ -2484,7 +2530,7 @@ function testPrepSearchPack(pack, learningLibrary, query, options) {
       reviewStatus: String(reviewStatus || '').slice(0, 120),
     });
   };
-  normalizedPack.items.forEach((item) => add('question', item.id, item.prompt, item.explanation, item.domainId, [item.prompt].concat(item.choices, item.optionFeedback, testPrepItemSkillIds(item), item.chapterIds, item.explanation).join(' '), item.reviewStatus));
+  normalizedPack.items.forEach((item) => add('question', item.id, item.prompt, item.rationale, item.domainId, [item.prompt].concat(item.choices, item.choiceRationales, testPrepItemSkillIds(item), item.chapterIds, item.rationale).join(' '), item.reviewStatus));
   (Array.isArray(library.chapters) ? library.chapters : []).forEach((chapter) => add('chapter', chapter.id, chapter.title, (chapter.sections || []).map((section) => section.heading).join(' · '), chapter.domain, testPrepNativeChapterSearchText(chapter), chapter.reviewStatus));
   const indexedDiagramIds = new Set();
   const indexDiagram = (diagram) => {
@@ -2516,7 +2562,11 @@ function testPrepSearchPack(pack, learningLibrary, query, options) {
   });
   (Array.isArray(library.glossary) ? library.glossary : []).forEach((term) => add('glossary', term.id, term.term, term.definition, '', [term.term, term.definition].concat(term.aliases || []).join(' '), term.reviewStatus));
   (Array.isArray(library.flashcards) ? library.flashcards : []).filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').forEach((card) => add('flashcard', card.id, card.front, card.back, card.domain, [card.front, card.back, card.domain].join(' '), card.reviewStatus));
-  (Array.isArray(library.memoryAids) ? library.memoryAids : []).filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').forEach((aid) => add('memory-aid', aid.id, aid.title, aid.content, aid.domain, [aid.title, aid.content].concat(aid.tags || []).join(' '), aid.reviewStatus));
+  (Array.isArray(library.memoryAids) ? library.memoryAids : []).filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').forEach((aid) => {
+    const aidText = aid.content || aid.text || '';
+    const aidDomain = aid.domain || aid.domainId || '';
+    add('memory-aid', aid.id, aid.title, aidText, aidDomain, [aid.title, aidText].concat(Array.isArray(aid.tags) ? aid.tags : []).join(' '), aid.reviewStatus);
+  });
   (Array.isArray(library.constructedResponseWorkshops) ? library.constructedResponseWorkshops : []).map(testPrepNormalizeWorkshop).filter((workshop) => workshop.id).forEach((workshop) => add('constructed-response', workshop.id, workshop.title, workshop.prompt, workshop.taskType, JSON.stringify(workshop), workshop.reviewStatus));
   (Array.isArray(library.foundationalDocumentRoutes) ? library.foundationalDocumentRoutes : []).forEach((route) => add('foundational-document', route.id, route.title, route.studyMove || route.accessNote, 'Foundational document', [route.title, route.documentId, route.topicIds, route.studyMove, route.accessNote].join(' '), route.reviewStatus || 'source-reviewed-editorial-pass'));
   const studyPlan = testPrepStudyPlanLayers(library);
@@ -2549,8 +2599,8 @@ function normalizeTestPrepFlashcardSchedule(value) {
       rating,
       repetitions: Math.max(0, Math.min(100, Math.floor(testPrepFinite(raw.repetitions, 0)))),
       intervalDays: Math.max(0, Math.min(3650, testPrepFinite(raw.intervalDays, 0))),
-      lastReviewedAt: Math.max(0, Math.floor(testPrepFinite(raw.lastReviewedAt, 0))),
-      dueAt: Math.max(0, Math.floor(testPrepFinite(raw.dueAt, 0))),
+      lastReviewedAt: testPrepClampTimestamp(raw.lastReviewedAt, 0),
+      dueAt: testPrepClampTimestamp(raw.dueAt, 0),
     };
   });
   return output;
@@ -2606,7 +2656,7 @@ function testPrepFlashcardStorageKey(packId) {
 }
 
 function readTestPrepFlashcardStore(packId) {
-  try { return normalizeTestPrepFlashcardStore(JSON.parse(localStorage.getItem(testPrepFlashcardStorageKey(packId)) || '{}'), packId); }
+  try { return normalizeTestPrepFlashcardStore(testPrepSafeJsonParse(localStorage.getItem(testPrepFlashcardStorageKey(packId)) || '{}'), packId); }
   catch (_) { return normalizeTestPrepFlashcardStore({}, packId); }
 }
 
@@ -2713,7 +2763,8 @@ function testPrepExportProgress(progress, reviewItems, now, extras) {
 function testPrepImportProgress(value) {
   let input = value;
   if (typeof input === 'string') {
-    input = JSON.parse(input, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
+    if (input.length > 10 * 1024 * 1024) throw new Error('Progress import file exceeds the 10 MB limit.');
+    input = testPrepSafeJsonParse(input);
   }
   if (!input || typeof input !== 'object' || Array.isArray(input) || ![1, 2, 3, 4].includes(input.schemaVersion) || input.kind !== 'alloflow-test-prep-progress') {
     throw new Error('Unsupported AlloFlow test-prep progress file.');
@@ -2740,12 +2791,14 @@ function testPrepNormalizeSession(value) {
   const meta = testPrepAttemptMetadata(input);
   const answers = {};
   Object.keys(input.answers && typeof input.answers === 'object' && !Array.isArray(input.answers) ? input.answers : {}).slice(0, 500).forEach((id) => {
+    const slugId = testPrepSlug(id, '');
     const answer = Math.floor(testPrepFinite(input.answers[id], -1));
-    if (answer >= 0 && answer <= 7) answers[testPrepSlug(id, '')] = answer;
+    if (slugId && answer >= 0 && answer <= 7) answers[slugId] = answer;
   });
   const confidence = {};
   Object.keys(input.confidence && typeof input.confidence === 'object' && !Array.isArray(input.confidence) ? input.confidence : {}).slice(0, 500).forEach((id) => {
-    if (['sure', 'unsure', 'guess'].includes(input.confidence[id])) confidence[testPrepSlug(id, '')] = input.confidence[id];
+    const slugId = testPrepSlug(id, '');
+    if (slugId && ['sure', 'unsure', 'guess'].includes(input.confidence[id])) confidence[slugId] = input.confidence[id];
   });
   return {
     packId: testPrepSlug(input.packId, ''),
@@ -2764,13 +2817,14 @@ function testPrepNormalizeSession(value) {
     answers,
     confidence,
     assistedItemIds: meta.assistedItemIds,
-    updatedAt: Math.max(0, Math.floor(testPrepFinite(input.updatedAt, 0))),
+    practiceSeed: typeof input.practiceSeed === 'string' ? input.practiceSeed.slice(0, 120) : '',
+    updatedAt: testPrepClampTimestamp(input.updatedAt, 0),
   };
 }
 
 function readTestPrepSession() {
   try {
-    const session = testPrepNormalizeSession(JSON.parse(localStorage.getItem(TEST_PREP_SESSION_STORAGE_KEY) || '{}'));
+    const session = testPrepNormalizeSession(testPrepSafeJsonParse(localStorage.getItem(TEST_PREP_SESSION_STORAGE_KEY) || '{}'));
     return session.packId && session.itemIds.length ? session : null;
   } catch (_) { return null; }
 }
@@ -3390,7 +3444,7 @@ function testPrepNativeChapterSearchText(chapter) {
   return parts.map((part) => String(part || '').trim()).filter(Boolean).join('\n');
 }
 
-const TEST_PREP_NATIVE_VECTOR_PRIMITIVES = Object.freeze({
+const TEST_PREP_NATIVE_VECTOR_PRIMITIVES = Object.freeze(Object.assign(Object.create(null), {
   group: 'g',
   rect: 'rect',
   circle: 'circle',
@@ -3412,31 +3466,31 @@ const TEST_PREP_NATIVE_VECTOR_PRIMITIVES = Object.freeze({
   'gaussian-blur': 'feGaussianBlur',
   composite: 'feComposite',
   'drop-shadow': 'feDropShadow',
-});
+}));
 
-const TEST_PREP_NATIVE_VECTOR_ATTRIBUTE_MAP = Object.freeze({
-  group: Object.freeze({ id: 'id', transform: 'transform', fill: 'fill', filter: 'filter', 'font-family': 'fontFamily', 'font-size': 'fontSize', 'font-weight': 'fontWeight', 'marker-end': 'markerEnd', opacity: 'opacity', stroke: 'stroke', 'stroke-dasharray': 'strokeDasharray', 'stroke-width': 'strokeWidth', 'text-anchor': 'textAnchor' }),
-  rect: Object.freeze({ id: 'id', x: 'x', y: 'y', width: 'width', height: 'height', rx: 'rx', fill: 'fill', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', opacity: 'opacity', filter: 'filter', transform: 'transform' }),
-  circle: Object.freeze({ id: 'id', cx: 'cx', cy: 'cy', r: 'r', fill: 'fill', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', opacity: 'opacity', filter: 'filter', transform: 'transform' }),
-  ellipse: Object.freeze({ id: 'id', cx: 'cx', cy: 'cy', rx: 'rx', ry: 'ry', fill: 'fill', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', opacity: 'opacity', filter: 'filter', transform: 'transform' }),
-  line: Object.freeze({ id: 'id', x1: 'x1', x2: 'x2', y1: 'y1', y2: 'y2', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', 'stroke-linecap': 'strokeLinecap', opacity: 'opacity', 'marker-start': 'markerStart', 'marker-end': 'markerEnd', transform: 'transform' }),
-  path: Object.freeze({ id: 'id', d: 'd', fill: 'fill', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', 'stroke-linecap': 'strokeLinecap', opacity: 'opacity', 'marker-start': 'markerStart', 'marker-end': 'markerEnd', 'clip-path': 'clipPath', filter: 'filter', transform: 'transform' }),
-  polygon: Object.freeze({ id: 'id', points: 'points', fill: 'fill', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', opacity: 'opacity', transform: 'transform' }),
-  text: Object.freeze({ id: 'id', x: 'x', y: 'y', fill: 'fill', 'fill-opacity': 'fillOpacity', 'font-family': 'fontFamily', 'font-size': 'fontSize', 'font-weight': 'fontWeight', 'font-style': 'fontStyle', 'text-anchor': 'textAnchor', opacity: 'opacity', transform: 'transform' }),
-  'accessibility-title': Object.freeze({ id: 'id' }),
-  'accessibility-description': Object.freeze({ id: 'id' }),
-  use: Object.freeze({ id: 'id', href: 'href', x: 'x', y: 'y', fill: 'fill', stroke: 'stroke', opacity: 'opacity', transform: 'transform' }),
-  definitions: Object.freeze({ id: 'id' }),
-  'linear-gradient': Object.freeze({ id: 'id', x1: 'x1', x2: 'x2', y1: 'y1', y2: 'y2', gradientunits: 'gradientUnits', gradienttransform: 'gradientTransform' }),
-  'radial-gradient': Object.freeze({ id: 'id', cx: 'cx', cy: 'cy', r: 'r', fx: 'fx', fy: 'fy', gradientunits: 'gradientUnits', gradienttransform: 'gradientTransform' }),
-  'gradient-stop': Object.freeze({ id: 'id', offset: 'offset', 'stop-color': 'stopColor', 'stop-opacity': 'stopOpacity' }),
-  marker: Object.freeze({ id: 'id', markerwidth: 'markerWidth', markerheight: 'markerHeight', refx: 'refX', refy: 'refY', orient: 'orient', viewbox: 'viewBox', markerunits: 'markerUnits' }),
-  'clip-path': Object.freeze({ id: 'id', clippathunits: 'clipPathUnits', transform: 'transform' }),
-  filter: Object.freeze({ id: 'id', x: 'x', y: 'y', width: 'width', height: 'height', filterunits: 'filterUnits' }),
-  'gaussian-blur': Object.freeze({ id: 'id', in: 'in', stddeviation: 'stdDeviation', result: 'result' }),
-  composite: Object.freeze({ id: 'id', in: 'in', in2: 'in2', operator: 'operator', k1: 'k1', k2: 'k2', k3: 'k3', k4: 'k4', result: 'result' }),
-  'drop-shadow': Object.freeze({ id: 'id', dx: 'dx', dy: 'dy', stddeviation: 'stdDeviation', 'flood-color': 'floodColor', 'flood-opacity': 'floodOpacity', result: 'result' }),
-});
+const TEST_PREP_NATIVE_VECTOR_ATTRIBUTE_MAP = Object.freeze(Object.assign(Object.create(null), {
+  group: Object.freeze(Object.assign(Object.create(null), { id: 'id', transform: 'transform', fill: 'fill', filter: 'filter', 'font-family': 'fontFamily', 'font-size': 'fontSize', 'font-weight': 'fontWeight', 'marker-end': 'markerEnd', opacity: 'opacity', stroke: 'stroke', 'stroke-dasharray': 'strokeDasharray', 'stroke-width': 'strokeWidth', 'text-anchor': 'textAnchor' })),
+  rect: Object.freeze(Object.assign(Object.create(null), { id: 'id', x: 'x', y: 'y', width: 'width', height: 'height', rx: 'rx', fill: 'fill', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', opacity: 'opacity', filter: 'filter', transform: 'transform' })),
+  circle: Object.freeze(Object.assign(Object.create(null), { id: 'id', cx: 'cx', cy: 'cy', r: 'r', fill: 'fill', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', opacity: 'opacity', filter: 'filter', transform: 'transform' })),
+  ellipse: Object.freeze(Object.assign(Object.create(null), { id: 'id', cx: 'cx', cy: 'cy', rx: 'rx', ry: 'ry', fill: 'fill', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', opacity: 'opacity', filter: 'filter', transform: 'transform' })),
+  line: Object.freeze(Object.assign(Object.create(null), { id: 'id', x1: 'x1', x2: 'x2', y1: 'y1', y2: 'y2', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', 'stroke-linecap': 'strokeLinecap', opacity: 'opacity', 'marker-start': 'markerStart', 'marker-end': 'markerEnd', transform: 'transform' })),
+  path: Object.freeze(Object.assign(Object.create(null), { id: 'id', d: 'd', fill: 'fill', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', 'stroke-linecap': 'strokeLinecap', opacity: 'opacity', 'marker-start': 'markerStart', 'marker-end': 'markerEnd', 'clip-path': 'clipPath', filter: 'filter', transform: 'transform' })),
+  polygon: Object.freeze(Object.assign(Object.create(null), { id: 'id', points: 'points', fill: 'fill', stroke: 'stroke', 'stroke-width': 'strokeWidth', 'stroke-dasharray': 'strokeDasharray', opacity: 'opacity', transform: 'transform' })),
+  text: Object.freeze(Object.assign(Object.create(null), { id: 'id', x: 'x', y: 'y', fill: 'fill', 'fill-opacity': 'fillOpacity', 'font-family': 'fontFamily', 'font-size': 'fontSize', 'font-weight': 'fontWeight', 'font-style': 'fontStyle', 'text-anchor': 'textAnchor', opacity: 'opacity', transform: 'transform' })),
+  'accessibility-title': Object.freeze(Object.assign(Object.create(null), { id: 'id' })),
+  'accessibility-description': Object.freeze(Object.assign(Object.create(null), { id: 'id' })),
+  use: Object.freeze(Object.assign(Object.create(null), { id: 'id', href: 'href', x: 'x', y: 'y', fill: 'fill', stroke: 'stroke', opacity: 'opacity', transform: 'transform' })),
+  definitions: Object.freeze(Object.assign(Object.create(null), { id: 'id' })),
+  'linear-gradient': Object.freeze(Object.assign(Object.create(null), { id: 'id', x1: 'x1', x2: 'x2', y1: 'y1', y2: 'y2', gradientunits: 'gradientUnits', gradienttransform: 'gradientTransform' })),
+  'radial-gradient': Object.freeze(Object.assign(Object.create(null), { id: 'id', cx: 'cx', cy: 'cy', r: 'r', fx: 'fx', fy: 'fy', gradientunits: 'gradientUnits', gradienttransform: 'gradientTransform' })),
+  'gradient-stop': Object.freeze(Object.assign(Object.create(null), { id: 'id', offset: 'offset', 'stop-color': 'stopColor', 'stop-opacity': 'stopOpacity' })),
+  marker: Object.freeze(Object.assign(Object.create(null), { id: 'id', markerwidth: 'markerWidth', markerheight: 'markerHeight', refx: 'refX', refy: 'refY', orient: 'orient', viewbox: 'viewBox', markerunits: 'markerUnits' })),
+  'clip-path': Object.freeze(Object.assign(Object.create(null), { id: 'id', clippathunits: 'clipPathUnits', transform: 'transform' })),
+  filter: Object.freeze(Object.assign(Object.create(null), { id: 'id', x: 'x', y: 'y', width: 'width', height: 'height', filterunits: 'filterUnits' })),
+  'gaussian-blur': Object.freeze(Object.assign(Object.create(null), { id: 'id', in: 'in', stddeviation: 'stdDeviation', result: 'result' })),
+  composite: Object.freeze(Object.assign(Object.create(null), { id: 'id', in: 'in', in2: 'in2', operator: 'operator', k1: 'k1', k2: 'k2', k3: 'k3', k4: 'k4', result: 'result' })),
+  'drop-shadow': Object.freeze(Object.assign(Object.create(null), { id: 'id', dx: 'dx', dy: 'dy', stddeviation: 'stdDeviation', 'flood-color': 'floodColor', 'flood-opacity': 'floodOpacity', result: 'result' })),
+}));
 
 const TEST_PREP_NATIVE_VECTOR_SAFE_ID = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
 const TEST_PREP_NATIVE_VECTOR_LOCAL_HREF = /^#([A-Za-z_][A-Za-z0-9_.:-]*)$/;
@@ -3496,13 +3550,14 @@ function testPrepPrepareNativeDiagram(payload, namespace) {
       if (!Array.isArray(nodes) || depth > 24) throw new Error('Native vector nesting is invalid.');
       nodes.forEach((node) => {
         nodeCount += 1;
-        if (nodeCount > 5000 || !testPrepNativePlainObject(node) || !TEST_PREP_NATIVE_VECTOR_PRIMITIVES[node.type]) throw new Error('Unknown native vector primitive.');
+        if (nodeCount > 5000 || !testPrepNativePlainObject(node) || !Object.prototype.hasOwnProperty.call(TEST_PREP_NATIVE_VECTOR_PRIMITIVES, node.type)) throw new Error('Unknown native vector primitive.');
         if (Object.keys(node).some((key) => !['nodeId', 'type', 'attributes', 'children', 'text'].includes(key))) throw new Error('Unknown native vector node field.');
         if (!TEST_PREP_NATIVE_VECTOR_SAFE_ID.test(String(node.nodeId || '')) || sourceNodeIds.has(node.nodeId)) throw new Error('Invalid native vector node ID.');
         sourceNodeIds.add(node.nodeId);
         const attributes = node.attributes === undefined ? {} : node.attributes;
         if (!testPrepNativePlainObject(attributes)) throw new Error('Invalid native vector attributes.');
-        const attributeMap = TEST_PREP_NATIVE_VECTOR_ATTRIBUTE_MAP[node.type];
+        const attributeMap = Object.prototype.hasOwnProperty.call(TEST_PREP_NATIVE_VECTOR_ATTRIBUTE_MAP, node.type) ? TEST_PREP_NATIVE_VECTOR_ATTRIBUTE_MAP[node.type] : null;
+        if (!attributeMap) throw new Error('Unknown native vector primitive.');
         Object.keys(attributes).forEach((name) => {
           if (!Object.prototype.hasOwnProperty.call(attributeMap, name)) throw new Error('Unknown native vector attribute.');
         });
@@ -3639,10 +3694,12 @@ function testPrepPrepareConceptDiagram(payload) {
 
 function testPrepRenderNativeVectorNodes(nodes, keyPrefix) {
   return (Array.isArray(nodes) ? nodes : []).map((node, index) => {
+    const tag = node && Object.prototype.hasOwnProperty.call(TEST_PREP_NATIVE_VECTOR_PRIMITIVES, node.type) ? TEST_PREP_NATIVE_VECTOR_PRIMITIVES[node.type] : null;
+    if (!tag) return null;
     const key = String(keyPrefix || 'vector') + '-' + String(node.nodeId || index);
     const children = testPrepRenderNativeVectorNodes(node.children, key);
     if (node.text) children.push(node.text);
-    return React.createElement(TEST_PREP_NATIVE_VECTOR_PRIMITIVES[node.type], Object.assign({ key }, node.attributes), children);
+    return React.createElement(tag, Object.assign({ key }, node.attributes), children);
   });
 }
 
@@ -3771,7 +3828,7 @@ function testPrepNativeChapterSpeechText(catalog, chapter) {
 function normalizeTestPrepNativeChapterProgress(value) {
   const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   return Object.fromEntries(Object.entries(input).filter(([id, complete]) =>
-    complete === true && /^[a-zA-Z0-9_-]{1,140}$/.test(id)).map(([id]) => [id, true]));
+    complete === true && !testPrepUnsafeKey(id) && /^[a-zA-Z0-9_-]{1,140}$/.test(id)).map(([id]) => [id, true]));
 }
 
 function normalizeTestPrepNativeChapterProgressStore(value) {
@@ -3820,7 +3877,7 @@ function testPrepSetNativeChapterProgressForPack(value, packId, contentIdentity,
 }
 
 function readTestPrepNativeChapterProgressStore() {
-  try { return normalizeTestPrepNativeChapterProgressStore(JSON.parse(localStorage.getItem(TEST_PREP_EPPP_TEXTBOOK_PROGRESS_KEY) || '{}')); }
+  try { return normalizeTestPrepNativeChapterProgressStore(testPrepSafeJsonParse(localStorage.getItem(TEST_PREP_EPPP_TEXTBOOK_PROGRESS_KEY) || '{}')); }
   catch (_) { return normalizeTestPrepNativeChapterProgressStore({}); }
 }
 
@@ -4177,6 +4234,14 @@ function TestPrepHub(props) {
   const currentItemIdRef = React.useRef('');
   const [chapterCheckAnswers, setChapterCheckAnswers] = React.useState({});
   const [chapterCheckRevealed, setChapterCheckRevealed] = React.useState({});
+  const [eliminatedChoices, setEliminatedChoices] = React.useState({});
+  const [scratchpadOpen, setScratchpadOpen] = React.useState(false);
+  const [scratchpadNotes, setScratchpadNotes] = React.useState({});
+  const [practiceRefOpen, setPracticeRefOpen] = React.useState(false);
+  const [practiceRefShowAll, setPracticeRefShowAll] = React.useState(false);
+  const [workshopDrafts, setWorkshopDrafts] = React.useState({});
+  const [workshopChecks, setWorkshopChecks] = React.useState({});
+  const [workshopTimerState, setWorkshopTimerState] = React.useState({ workshopId: '', remainingSeconds: 0, running: false });
   catalogIsOpenRef.current = isOpen;
 
   const internalQaAllowedPackIds = new Set(
@@ -4647,7 +4712,8 @@ function TestPrepHub(props) {
   }, [selectedLearningLibraryIdentity]);
 
   React.useEffect(() => {
-    if (!isOpen || tab !== 'library' || !selectedPack) return undefined;
+    const needsLibraryInPractice = tab === 'practice' && practiceRefOpen && practiceMode !== 'simulation';
+    if (!isOpen || (tab !== 'library' && !needsLibraryInPractice) || !selectedPack) return undefined;
     const libraryUrl = selectedPack.learningLibraryUrl;
     const libraryEntry = selectedLearningLibraryEntry;
     const expectedDigest = libraryEntry && libraryEntry.learningLibrarySha256 || '';
@@ -4697,6 +4763,8 @@ function TestPrepHub(props) {
   }, [
     isOpen,
     tab,
+    practiceRefOpen,
+    practiceMode,
     selectedLearningLibraryIdentity,
     packManifestStatus,
     learningLibraryRetry,
@@ -4724,9 +4792,10 @@ function TestPrepHub(props) {
       answers,
       confidence,
       assistedItemIds,
+      practiceSeed,
       updatedAt: Date.now(),
     }));
-  }, [practiceStarted, selectedPackId, selectedPackContentIdentity.packVersion, selectedPackContentIdentity.packContentFingerprint, practiceMode, practiceLabel, targetSkillId, targetDomainId, targetDifficultyFilter, sourceStartIndex, activeItemIds, questionIndex, timeRemainingSeconds, answers, confidence, assistedItemIds, result, checkpoint]);
+  }, [practiceStarted, selectedPackId, selectedPackContentIdentity.packVersion, selectedPackContentIdentity.packContentFingerprint, practiceMode, practiceLabel, targetSkillId, targetDomainId, targetDifficultyFilter, sourceStartIndex, activeItemIds, questionIndex, timeRemainingSeconds, answers, confidence, assistedItemIds, practiceSeed, result, checkpoint]);
 
   React.useEffect(() => {
     if (!practiceStarted || practiceMode !== 'simulation' || result || checkpoint || timeRemainingSeconds <= 0) return undefined;
@@ -4737,6 +4806,18 @@ function TestPrepHub(props) {
   React.useEffect(() => {
     if (practiceStarted && practiceMode === 'simulation' && !result && !checkpoint && activeItemIds.length && timeRemainingSeconds === 0) finishPractice(true);
   }, [practiceStarted, practiceMode, result, checkpoint, activeItemIds.length, timeRemainingSeconds]);
+
+  React.useEffect(() => {
+    if (!workshopTimerState.running || workshopTimerState.remainingSeconds <= 0) return undefined;
+    const timer = setInterval(() => {
+      setWorkshopTimerState((current) => {
+        if (!current.running) return current;
+        if (current.remainingSeconds <= 1) return { ...current, remainingSeconds: 0, running: false };
+        return { ...current, remainingSeconds: current.remainingSeconds - 1 };
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [workshopTimerState.running, workshopTimerState.remainingSeconds > 0]);
 
   React.useEffect(() => {
     if (isOpen) return undefined;
@@ -4876,6 +4957,77 @@ function TestPrepHub(props) {
     setClarificationHistory([]);
     setResult(null);
     setCheckpoint(null);
+    setEliminatedChoices({});
+    setScratchpadOpen(false);
+    setScratchpadNotes({});
+    setPracticeRefOpen(false);
+    setPracticeRefShowAll(false);
+    setWorkshopTimerState({ workshopId: '', remainingSeconds: 0, running: false });
+  }
+
+  function toggleEliminatedChoice(itemId, choiceIndex) {
+    if (!itemId || checked) return;
+    setEliminatedChoices((current) => {
+      const list = Array.isArray(current[itemId]) ? current[itemId] : [];
+      const exists = list.includes(choiceIndex);
+      const nextList = exists ? list.filter((entry) => entry !== choiceIndex) : list.concat(choiceIndex);
+      return { ...current, [itemId]: nextList };
+    });
+    if (selectedChoice === choiceIndex) setSelectedChoice(null);
+  }
+
+  function clearEliminatedChoice(itemId, choiceIndex) {
+    if (!itemId) return;
+    setEliminatedChoices((current) => {
+      const list = Array.isArray(current[itemId]) ? current[itemId] : [];
+      if (!list.includes(choiceIndex)) return current;
+      return { ...current, [itemId]: list.filter((entry) => entry !== choiceIndex) };
+    });
+  }
+
+  function saveInlineAnnotation(record) {
+    if (!selectedPack || !record || !String(record.text || '').trim()) {
+      announce('Write a note before saving to study notes.', 'info');
+      return false;
+    }
+    const next = testPrepUpsertAnnotation(annotations, {
+      packId: selectedPack.id,
+      packVersion: selectedLearnerDataIdentity.packVersion,
+      packContentFingerprint: selectedLearnerDataIdentity.packContentFingerprint,
+      targetType: ['question', 'chapter', 'flashcard', 'memory-aid', 'constructed-response'].includes(record.targetType) ? record.targetType : 'general',
+      targetId: record.targetId || '',
+      targetLabel: record.targetLabel || 'Study note',
+      kind: 'note',
+      color: 'yellow',
+      text: String(record.text || '').trim(),
+    }, Date.now());
+    setAnnotations(writeTestPrepAnnotations(next));
+    announce('Saved to study notes.', 'success');
+    return true;
+  }
+
+  function toggleWorkshopCheck(workshopId, key) {
+    setWorkshopChecks((current) => {
+      const existing = current[workshopId] && typeof current[workshopId] === 'object' ? current[workshopId] : {};
+      return { ...current, [workshopId]: { ...existing, [key]: !existing[key] } };
+    });
+  }
+
+  function toggleWorkshopTimer(workshop) {
+    if (!workshop || !workshop.id) return;
+    const defaultSeconds = Math.max(1, Number(workshop.estimatedMinutes) || 15) * 60;
+    setWorkshopTimerState((current) => {
+      if (current.workshopId !== workshop.id || current.remainingSeconds <= 0) {
+        return { workshopId: workshop.id, remainingSeconds: defaultSeconds, running: true };
+      }
+      return { ...current, running: !current.running };
+    });
+  }
+
+  function resetWorkshopTimer(workshop) {
+    if (!workshop || !workshop.id) return;
+    const defaultSeconds = Math.max(1, Number(workshop.estimatedMinutes) || 15) * 60;
+    setWorkshopTimerState({ workshopId: workshop.id, remainingSeconds: defaultSeconds, running: false });
   }
 
   function openPack(pack, nextTab) {
@@ -5250,25 +5402,29 @@ function TestPrepHub(props) {
     setStudyPlans(writeTestPrepStudyPlans(next));
   }
   function exportPracticeProgress() {
+    let url = '';
     try {
       const payload = testPrepExportProgress(progress, reviewItems, Date.now(), { annotations, studyPlans, flashcardStores: readAllTestPrepFlashcardStores(packs.map((pack) => pack.id)), chapterProgress: nativeChapterProgressStore });
       if (typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') throw new Error('File export is unavailable in this browser.');
-      const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+      url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
       const anchor = document.createElement('a');
       anchor.href = url;
       anchor.download = 'alloflow-test-prep-progress.json';
       anchor.click();
-      setTimeout(() => URL.revokeObjectURL(url), 0);
       announce('Test-prep progress backup created.', 'success');
     } catch (error) { announce(error && error.message ? error.message : 'Progress export failed.', 'warning'); }
+    finally {
+      if (url) setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+    }
   }
 
   function importPracticeProgressFile(event) {
-    const file = event && event.target && event.target.files && event.target.files[0];
+    const inputEl = event && event.target;
+    const file = inputEl && inputEl.files && inputEl.files[0];
     if (!file || typeof FileReader === 'undefined') return;
     if (typeof file.size === 'number' && file.size > 10 * 1024 * 1024) {
       announce('Progress import file exceeds the 10 MB limit.', 'warning');
-      if (event.target) event.target.value = '';
+      if (inputEl) inputEl.value = '';
       return;
     }
     const reader = new FileReader();
@@ -5286,9 +5442,10 @@ function TestPrepHub(props) {
         if (imported.chapterProgress) setNativeChapterProgressStore(writeTestPrepNativeChapterProgressStore(imported.chapterProgress));
         announce('Test-prep progress, notes, plans, flashcards, and chapter completion restored.', 'success');
       } catch (error) { announce(error && error.message ? error.message : 'Progress import failed.', 'warning'); }
-      if (event.target) event.target.value = '';
+      if (inputEl) inputEl.value = '';
     };
-    reader.onerror = () => announce('Progress import failed.', 'warning');
+    reader.onerror = () => { if (inputEl) inputEl.value = ''; announce('Progress import failed.', 'warning'); };
+    reader.onabort = () => { if (inputEl) inputEl.value = ''; announce('Progress import failed.', 'warning'); };
     reader.readAsText(file);
   }
   function startDomainTargetedPractice() {
@@ -5343,6 +5500,16 @@ function TestPrepHub(props) {
     if (!ids.length) { setSavedSession(null); clearTestPrepSession(); return; }
     const safeIndex = Math.min(savedSession.questionIndex, ids.length - 1);
     const resumedAnswer = savedSession.answers[ids[safeIndex]];
+    const resumedSeed = savedSession.practiceSeed || practiceSeed;
+    if (savedSession.practiceSeed) setPracticeSeed(savedSession.practiceSeed);
+    const resumedItemSeed = pack.choicePresentation === 'fixed' ? '' : resumedSeed;
+    const resumedSourceItem = lookup.get(ids[safeIndex]);
+    const resumedPresented = resumedSourceItem ? testPrepPresentItem(resumedSourceItem, resumedItemSeed) : null;
+    const resumedDisplayChoice = resumedAnswer == null
+      ? null
+      : (resumedPresented && Array.isArray(resumedPresented.choiceOrder) && resumedPresented.choiceOrder.includes(resumedAnswer)
+          ? resumedPresented.choiceOrder.indexOf(resumedAnswer)
+          : resumedAnswer);
     setSelectedPackId(pack.id);
     setPracticeMode(savedSession.mode);
     setPracticeLabel(savedSession.label);
@@ -5356,7 +5523,7 @@ function TestPrepHub(props) {
     setAnswers(savedSession.answers);
     setConfidence(savedSession.confidence);
     setAssistedItemIds(savedSession.assistedItemIds);
-    setSelectedChoice(resumedAnswer == null ? null : resumedAnswer);
+    setSelectedChoice(resumedDisplayChoice);
     setChecked(resumedAnswer != null);
     setResult(null);
     setCheckpoint(null);
@@ -5680,8 +5847,9 @@ function TestPrepHub(props) {
     } catch (_) {}
     const generation = handsFreeCacheGenerationRef.current;
     for (let offset = 1; offset <= 3; offset += 1) {
-      const item = activePack.items[questionIndex + offset];
-      if (!item || !testPrepHandsFreeCompatibility(activePack, item).allowed) continue;
+      const rawItem = activePack.items[questionIndex + offset];
+      if (!rawItem || !testPrepHandsFreeCompatibility(activePack, rawItem).allowed) continue;
+      const item = testPrepPresentItem(rawItem, currentItemSeed);
       const text = testPrepQuestionSpeechText(item, questionIndex + offset, activePack.items.length, handsFreePromptModeRef.current);
       const key = testPrepAudioCacheKey(text);
       if (handsFreeAudioCacheRef.current.has(key)) continue;
@@ -5873,7 +6041,7 @@ function TestPrepHub(props) {
 
   function toggleNativeChapterSection(section) {
     const sectionId = String(section && (section.runtimeSectionId || section.id) || '');
-    if (!/^[a-zA-Z0-9_-]{1,140}$/.test(sectionId)) return;
+    if (!sectionId || testPrepUnsafeKey(sectionId) || !/^[a-zA-Z0-9_-]{1,140}$/.test(sectionId)) return;
     setNativeChapterProgressStore((previousStore) => {
       const nextProgress = testPrepNativeChapterProgressForPack(previousStore, selectedPackContextId, selectedLearnerDataIdentity);
       if (nextProgress[sectionId]) delete nextProgress[sectionId];
@@ -6896,9 +7064,69 @@ function TestPrepHub(props) {
                     <p id="test-prep-hands-free-explanations-help" className="sr-only">When on, checking an answer reads the full explanation aloud. When off, you hear the result and the supported answer, and can say explain to hear the reasoning.</p>
                     {currentItem.examItemStatus !== 'not-approved-as-independent-exam-item' && <button type="button" aria-pressed={currentItemSavedForReview} onClick={() => toggleSavedForReview(currentItem.id)} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-600 ' + (currentItemSavedForReview ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : 'border-indigo-400 bg-indigo-50 text-indigo-900')}>{currentItemSavedForReview ? 'Remove from review' : 'Save for review'}</button>}
                     <button type="button" onClick={() => beginAnnotation({ targetType: 'question', targetId: currentItem.id, targetLabel: 'Question: ' + currentItem.prompt })} className="min-h-11 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 focus:ring-2 focus:ring-amber-600">Add note or highlight</button>
+                    <button type="button" aria-expanded={scratchpadOpen} aria-controls="test-prep-practice-scratchpad" onClick={() => setScratchpadOpen((value) => !value)} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-600 ' + (scratchpadOpen ? 'border-slate-800 bg-slate-800 text-white' : 'border-slate-400 bg-slate-50 text-slate-900')}>{scratchpadOpen ? 'Hide scratchpad' : 'Scratchpad'}{String(scratchpadNotes[currentItem.id] || '').trim() ? ' (draft)' : ''}</button>
+                    {practiceMode !== 'simulation' && Boolean(selectedPack.learningLibraryUrl) && <button type="button" aria-expanded={practiceRefOpen} aria-controls="test-prep-practice-reference-drawer" onClick={() => setPracticeRefOpen((value) => !value)} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-amber-700 ' + (practiceRefOpen ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-500 bg-amber-50 text-amber-950')}>{practiceRefOpen ? 'Hide reference aid' : 'Reference aid'}</button>}
                     <button type="button" onClick={() => { try { window.AlloModules && window.AlloModules.ItemCorrection && window.AlloModules.ItemCorrection.openFor({ packId: selectedPack.id, packTitle: selectedPack.title, itemId: currentItem.id, prompt: currentItem.prompt, domain: currentItem.domainId, reviewTier: currentItem.examItemStatus === 'not-approved-as-independent-exam-item' ? 'guided-review' : 'source-reviewed', currentAnswer: currentItem.choices[currentItem.answerIndex] }); } catch (_) {} }} className="min-h-11 rounded-lg border border-teal-400 bg-teal-50 px-3 py-2 text-sm font-bold text-teal-900 focus:ring-2 focus:ring-teal-600">Suggest a correction</button>
                     <button type="button" onClick={chooseAnotherPracticeSet} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600">Practice options</button>
                   </div>
+                  {scratchpadOpen && (
+                    <section id="test-prep-practice-scratchpad" className="mt-4 rounded-xl border border-slate-300 bg-slate-50 p-4" aria-label="Question scratchpad">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <label htmlFor="test-prep-scratchpad-input" className="text-sm font-black text-slate-900">Scratchpad for this question</label>
+                        <div className="flex flex-wrap gap-2">
+                          {practiceMode !== 'simulation' && <button type="button" disabled={!String(scratchpadNotes[currentItem.id] || '').trim()} onClick={() => saveInlineAnnotation({ targetType: 'question', targetId: currentItem.id, targetLabel: 'Question: ' + currentItem.prompt, text: scratchpadNotes[currentItem.id] })} className="min-h-11 rounded-lg border border-amber-500 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-950 disabled:opacity-50 focus:ring-2 focus:ring-amber-600">Save to study notes</button>}
+                          <button type="button" disabled={!String(scratchpadNotes[currentItem.id] || '').trim()} onClick={() => setScratchpadNotes((current) => ({ ...current, [currentItem.id]: '' }))} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 disabled:opacity-50 focus:ring-2 focus:ring-indigo-600">Clear</button>
+                        </div>
+                      </div>
+                      <textarea id="test-prep-scratchpad-input" rows={3} value={scratchpadNotes[currentItem.id] || ''} onChange={(event) => { const nextText = event.target.value; setScratchpadNotes((current) => ({ ...current, [currentItem.id]: nextText })); }} placeholder="Work out steps, formulas, or why options can be eliminated..." className="mt-2 w-full rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-900 focus:ring-2 focus:ring-indigo-600" />
+                    </section>
+                  )}
+                  {practiceRefOpen && practiceMode !== 'simulation' && (() => {
+                    if (learningLibraryStatus === 'loading' || (!learningLibrary && learningLibraryStatus === 'idle')) {
+                      return <section id="test-prep-practice-reference-drawer" className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm font-bold text-amber-950" role="status">Loading quick reference and memory aids…</section>;
+                    }
+                    if (!learningLibrary) {
+                      return <section id="test-prep-practice-reference-drawer" className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="status">Reference aids could not be loaded right now. Practice questions remain available.</section>;
+                    }
+                    const quickRefs = Array.isArray(learningLibrary.quickReference) ? learningLibrary.quickReference : [];
+                    const releasedAids = (Array.isArray(learningLibrary.memoryAids) ? learningLibrary.memoryAids : []).filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass');
+                    const useQuickRefs = quickRefs.length > 0;
+                    const itemDomain = testPrepSlug(currentItem.domainId, '');
+                    const matchedRefs = useQuickRefs
+                      ? quickRefs.filter((ref) => testPrepSlug(ref.domainId || ref.unitId || '', '') === itemDomain)
+                      : releasedAids.filter((aid) => testPrepSlug(aid.domainId || aid.domain || '', '') === itemDomain);
+                    const displayedRefs = (practiceRefShowAll || !matchedRefs.length)
+                      ? (useQuickRefs ? quickRefs : releasedAids).slice(0, 6)
+                      : matchedRefs.slice(0, 4);
+                    if (!displayedRefs.length) {
+                      return <section id="test-prep-practice-reference-drawer" className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="status">No quick-reference cards or source-reviewed memory aids are included in this pack.</section>;
+                    }
+                    return <section id="test-prep-practice-reference-drawer" className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4" aria-label="In-practice quick reference">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-wide text-amber-900">{useQuickRefs ? 'Quick reference study aid' : 'Memory-aid reference'} · locked in timed simulation</p>
+                          <p className="text-xs text-amber-950">Unofficial study aid for practice recall; not an official exam reference sheet.</p>
+                        </div>
+                        {matchedRefs.length > 0 && (useQuickRefs ? quickRefs.length : releasedAids.length) > matchedRefs.length && (
+                          <button type="button" onClick={() => setPracticeRefShowAll((value) => !value)} className="min-h-11 rounded-lg border border-amber-500 bg-white px-3 py-1.5 text-xs font-black text-amber-950 focus:ring-2 focus:ring-amber-700">{practiceRefShowAll ? 'Show current topic only' : 'Show more units'}</button>
+                        )}
+                      </div>
+                      <div className="mt-3 grid gap-3 md:grid-cols-2">
+                        {displayedRefs.map((entry) => useQuickRefs ? (
+                          <article key={entry.id} className="rounded-lg border border-amber-200 bg-white p-3 text-xs text-slate-800">
+                            <p className="font-black text-slate-900">{entry.title}</p>
+                            {Array.isArray(entry.formulas) && entry.formulas.length > 0 && <ul className="mt-2 list-disc space-y-1 pl-4">{entry.formulas.map((formula) => <li key={formula}>{formula}</li>)}</ul>}
+                            {Array.isArray(entry.cautions) && entry.cautions.length > 0 && <p className="mt-2 font-semibold text-rose-900">Watch for: {entry.cautions[0]}</p>}
+                          </article>
+                        ) : (
+                          <article key={entry.id} className="rounded-lg border border-amber-200 bg-white p-3 text-xs text-slate-800">
+                            <p className="font-black text-slate-900">{entry.title}</p>
+                            <p className="mt-1 whitespace-pre-line leading-relaxed">{entry.content || entry.text || ''}</p>
+                          </article>
+                        ))}
+                      </div>
+                    </section>;
+                  })()}
                   <p id="test-prep-hands-free-privacy" className="mt-3 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-700"><strong>Hands-free privacy:</strong> Recognition follows the global Voice Input setting. On-device Whisper keeps audio on this device; a browser speech service may use its provider; Gemini sends one completed spoken turn to Gemini only when Gemini cloud transcription is explicitly selected. Auto never selects Gemini. The configured text-to-speech provider may process the current and next three question texts, and the configured AI provider may process clarification requests. Do not speak or enter personally identifiable information. Voice recognition currently listens for English (United States) commands, and narration is requested in English. When the browser supplies a meaningful score, answer choices below 60 percent confidence wait for a yes or no confirmation; other state-changing commands below 60 percent are not carried out. Whisper and Gemini do not supply a calibrated confidence score, so consequential commands retain the existing confirmation safeguards.</p>
                   <p id="test-prep-hands-free-quick-help" className="mt-2 text-xs leading-relaxed text-slate-700"><strong>Quick prompts:</strong> Questions and answer choices are still read aloud, but repeated command coaching is skipped. Say a letter such as B or a number such as 2; saying “choose” is optional.</p>
                   {!currentHandsFreeCompatibility.allowed && <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950" role="status" aria-live="polite">{currentHandsFreeCompatibility.message}</p>}
@@ -6920,13 +7148,20 @@ function TestPrepHub(props) {
                     <div className="mt-4 space-y-3">
                       {currentItem.choices.map((choice, index) => {
                         const inputId = 'test-prep-choice-' + currentItem.id + '-' + index;
+                        const optionLetter = String.fromCharCode(65 + index);
                         const correctChoice = checked && index === currentItem.answerIndex;
                         const incorrectChoice = checked && index === selectedChoice && index !== currentItem.answerIndex;
+                        const isEliminated = !checked && Array.isArray(eliminatedChoices[currentItem.id]) && eliminatedChoices[currentItem.id].includes(index);
                         return (
-                          <label key={inputId} htmlFor={inputId} className={'flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3 text-sm font-semibold focus-within:ring-2 focus-within:ring-indigo-600 ' + (correctChoice ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : incorrectChoice ? 'border-rose-600 bg-rose-50 text-rose-950' : selectedChoice === index ? 'border-indigo-600 bg-indigo-50 text-indigo-950' : 'border-slate-300 bg-white text-slate-900 hover:border-indigo-400')}>
-                            <input id={inputId} type="radio" name={'answer-' + currentItem.id} checked={selectedChoice === index} onChange={() => setSelectedChoice(index)} className="mt-0.5 h-4 w-4 accent-indigo-700" />
-                            <span><span className="mr-2 font-black">{String.fromCharCode(65 + index)}.</span>{choice}</span>
-                          </label>
+                          <div key={inputId} className="flex items-stretch gap-2">
+                            <label htmlFor={inputId} className={'flex flex-1 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 text-sm font-semibold focus-within:ring-2 focus-within:ring-indigo-600 ' + (correctChoice ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : incorrectChoice ? 'border-rose-600 bg-rose-50 text-rose-950' : selectedChoice === index ? 'border-indigo-600 bg-indigo-50 text-indigo-950' : isEliminated ? 'border-slate-200 bg-slate-50 text-slate-500' : 'border-slate-300 bg-white text-slate-900 hover:border-indigo-400')}>
+                              <input id={inputId} type="radio" name={'answer-' + currentItem.id} checked={selectedChoice === index} onChange={() => { clearEliminatedChoice(currentItem.id, index); setSelectedChoice(index); }} className="mt-0.5 h-4 w-4 accent-indigo-700" />
+                              <span className={isEliminated ? 'line-through opacity-75' : ''}><span className="mr-2 font-black">{optionLetter}.</span>{choice}</span>
+                            </label>
+                            {!checked && (
+                              <button type="button" aria-pressed={isEliminated} aria-label={(isEliminated ? 'Restore option ' : 'Strike out option ') + optionLetter} onClick={() => toggleEliminatedChoice(currentItem.id, index)} className={'min-h-11 shrink-0 rounded-xl border px-3 py-2 text-xs font-black focus:ring-2 focus:ring-indigo-600 ' + (isEliminated ? 'border-slate-500 bg-slate-200 text-slate-900' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100')}>{isEliminated ? 'Restore' : 'Strike out'}</button>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
@@ -6965,7 +7200,8 @@ function TestPrepHub(props) {
                           <ul className="mt-2 space-y-3">
                             {currentItem.references.map((reference) => {
                               const source = (currentItem.sourceDetails || []).find((detail) => detail.url === reference) || testPrepDescribeReference(reference);
-                              return <li key={reference} className="rounded-lg border border-slate-200 bg-white p-3"><a href={reference} target="_blank" rel="noopener noreferrer" className="font-black text-indigo-800 underline">{source.title}</a>{source.organization && <p className="mt-1 font-bold text-slate-800">{source.organization}</p>}<p className="mt-1 leading-relaxed"><strong>Brief source summary:</strong> {source.summary || 'This source provides context for the related answer explanation; open it to review the complete scope and limitations.'}</p><p className="mt-1 leading-relaxed"><strong>Why this source is credible:</strong> {source.credibility}</p></li>;
+                              const safeHref = testPrepSafeHttpsUrl(reference);
+                              return <li key={reference} className="rounded-lg border border-slate-200 bg-white p-3">{safeHref ? <a href={safeHref} target="_blank" rel="noopener noreferrer" className="font-black text-indigo-800 underline">{source.title}</a> : <span className="font-black text-slate-900">{source.title}</span>}{source.organization && <p className="mt-1 font-bold text-slate-800">{source.organization}</p>}<p className="mt-1 leading-relaxed"><strong>Brief source summary:</strong> {source.summary || 'This source provides context for the related answer explanation; open it to review the complete scope and limitations.'}</p><p className="mt-1 leading-relaxed"><strong>Why this source is credible:</strong> {source.credibility}</p></li>;
                             })}
                           </ul>
                         </div>
@@ -7147,7 +7383,7 @@ function TestPrepHub(props) {
                         {routeWorkshopRecords.length > 0 && <div className="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3"><p className="text-xs font-black uppercase tracking-wide text-sky-800">Linked response workshop{routeWorkshopRecords.length === 1 ? '' : 's'}</p><div className="mt-2 flex flex-wrap gap-2">{routeWorkshopRecords.map((workshop) => <button key={workshop.id} data-test-prep-foundational-route-workshop-id={workshop.id} type="button" onClick={() => { setLibraryMode('constructed-response'); setLibrarySearch(workshop.title || ''); setLibraryChapterId(''); }} className="rounded-lg border border-sky-500 bg-white px-3 py-2 text-left text-xs font-black text-sky-950 hover:bg-sky-100 focus:ring-2 focus:ring-sky-600">Open linked workshop: {workshop.title}</button>)}</div></div>}
                         <div data-test-prep-foundational-route-progress={routeProgress.status} className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3"><div className="flex items-center justify-between gap-3 text-xs"><span className="font-black uppercase tracking-wide text-emerald-900">Route progress</span><strong className="text-emerald-950">{routeProgressLabel}</strong></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-emerald-100" role="progressbar" aria-label={route.title + ' route progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={routeProgress.attemptedPercent}><div className="h-full rounded-full bg-emerald-700" style={{ width: routeProgress.attemptedPercent + '%' }} /></div><p className="mt-2 text-xs font-bold text-emerald-950">{routeProgress.attemptedItemCount} of {routeProgress.totalItemCount} linked questions practiced{routeProgressScore}</p></div>
                         <p className="mt-4 flex-1 rounded-lg bg-slate-50 p-3 text-xs leading-relaxed text-slate-700">{route.accessNote}</p>
-                        <div className="mt-4 flex flex-wrap items-center gap-3"><div className="flex flex-wrap gap-2"><button type="button" disabled={!Array.isArray(route.itemIds) || !route.itemIds.length} onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title })} className="rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start document route</button>{routeSlices.map((slice) => <button key={slice.id} type="button" onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title + ' · ' + slice.label + ' set', itemIds: slice.itemIds })} className="rounded-xl border border-emerald-700 bg-white px-3 py-2 text-xs font-black text-emerald-900 hover:bg-emerald-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start {slice.label.toLowerCase()} set <span className="font-bold">({slice.itemIds.length})</span></button>)}</div><ul className="flex flex-wrap gap-3 text-xs">{(route.references || []).map((reference) => { const source = testPrepDescribeReference(reference); return <li key={reference}><a href={reference} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a></li>; })}</ul></div>
+                        <div className="mt-4 flex flex-wrap items-center gap-3"><div className="flex flex-wrap gap-2"><button type="button" disabled={!Array.isArray(route.itemIds) || !route.itemIds.length} onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title })} className="rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start document route</button>{routeSlices.map((slice) => <button key={slice.id} type="button" onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title + ' · ' + slice.label + ' set', itemIds: slice.itemIds })} className="rounded-xl border border-emerald-700 bg-white px-3 py-2 text-xs font-black text-emerald-900 hover:bg-emerald-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start {slice.label.toLowerCase()} set <span className="font-bold">({slice.itemIds.length})</span></button>)}</div><ul className="flex flex-wrap gap-3 text-xs">{(route.references || []).map((reference) => { const source = testPrepDescribeReference(reference); const safeHref = testPrepSafeHttpsUrl(reference); return <li key={reference}>{safeHref ? <a href={safeHref} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a> : <span className="font-bold text-slate-700">{source.title}</span>}</li>; })}</ul></div>
                       </article>;
                     })}
                   </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No foundational-document routes match that search.</p>}
@@ -7324,7 +7560,7 @@ function TestPrepHub(props) {
                       <p className="text-xs font-black uppercase tracking-wide text-slate-700">{source.sourceType || 'Source'}{source.organization ? ' · ' + source.organization : ''}</p>
                       <h5 className="mt-1 text-lg font-black text-slate-900">{source.title}</h5>
                       {source.credibility && <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{source.credibility}</p>}
-                      <p className="mt-3 flex flex-wrap items-center gap-3 text-xs font-bold text-slate-600">{source.reviewedAt && <span>Reviewed {source.reviewedAt}</span>}{source.url && <a href={source.url} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">Open source (new tab)</a>}</p>
+                      <p className="mt-3 flex flex-wrap items-center gap-3 text-xs font-bold text-slate-600">{source.reviewedAt && <span>Reviewed {source.reviewedAt}</span>}{(() => { const safeHref = testPrepSafeHttpsUrl(source.url); return safeHref ? <a href={safeHref} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">Open source (new tab)</a> : null; })()}</p>
                     </li>)}
                   </ul>
                 </section>;
@@ -7335,12 +7571,12 @@ function TestPrepHub(props) {
                 return <section className="space-y-4" aria-labelledby="library-quick-reference-title">
                   <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5">
                     <p className="text-xs font-black uppercase tracking-wide text-amber-800">Original internal study aid</p>
-                    <h4 id="library-quick-reference-title" className="mt-1 text-xl font-black text-slate-900">AP Statistics quick reference</h4>
-                    <p className="mt-2 text-sm leading-relaxed text-amber-950">Use these unit cards to retrieve method choices, relationships, and interpretation boundaries before practicing. This is not the official AP exam reference sheet and is not a substitute for current course materials.</p>
+                    <h4 id="library-quick-reference-title" className="mt-1 text-xl font-black text-slate-900">{(selectedPack.shortTitle || selectedPack.title || 'Pack') + ' quick reference'}</h4>
+                    <p className="mt-2 text-sm leading-relaxed text-amber-950">Use these unit cards to retrieve method choices, relationships, and interpretation boundaries before practicing. This is not the official exam reference sheet and is not a substitute for current course materials.</p>
                   </div>
                   {references.length > 0 ? <div className="grid gap-4 lg:grid-cols-2">
                     {references.map((reference) => <article key={reference.id} className="space-y-4 rounded-2xl border border-amber-300 bg-white p-5 shadow-sm">
-                      <div><p className="text-xs font-black uppercase tracking-wide text-amber-800">{reference.domainId || 'AP Statistics'}</p><h5 className="mt-1 text-lg font-black text-slate-900">{reference.title}</h5><p className="mt-2 text-sm leading-relaxed text-slate-700">{reference.purpose}</p><button type="button" aria-pressed={readAloudActive} onClick={() => { if (readAloudActive) stopReadAloud(); else speakTestPrepText([reference.title, reference.purpose, 'Before calculating: ' + (reference.checklist || []).join('. '), 'Relationships: ' + (reference.formulas || []).join('. '), 'Decision rules: ' + (reference.decisionRules || []).join('. '), 'Cautions: ' + (reference.cautions || []).join('. ')].join('. ')); }} className="mt-3 rounded-lg border border-amber-500 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700">{readAloudActive ? 'Stop reading' : 'Read reference aloud'}</button></div>
+                      <div><p className="text-xs font-black uppercase tracking-wide text-amber-800">{reference.domainId || selectedPack.shortTitle || 'Quick reference'}</p><h5 className="mt-1 text-lg font-black text-slate-900">{reference.title}</h5><p className="mt-2 text-sm leading-relaxed text-slate-700">{reference.purpose}</p><button type="button" aria-pressed={readAloudActive} onClick={() => { if (readAloudActive) stopReadAloud(); else speakTestPrepText([reference.title, reference.purpose, 'Before calculating: ' + (reference.checklist || []).join('. '), 'Relationships: ' + (reference.formulas || []).join('. '), 'Decision rules: ' + (reference.decisionRules || []).join('. '), 'Cautions: ' + (reference.cautions || []).join('. ')].join('. ')); }} className="mt-3 rounded-lg border border-amber-500 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700">{readAloudActive ? 'Stop reading' : 'Read reference aloud'}</button></div>
                       <div className="grid gap-4 sm:grid-cols-2">
                         <section><h6 className="font-black text-slate-900">Before calculating</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.checklist || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></section>
                         <section><h6 className="font-black text-slate-900">Relationships</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.formulas || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></section>
@@ -7410,15 +7646,15 @@ function TestPrepHub(props) {
               {learningLibrary && libraryMode === 'memory-aids' && (() => {
                 const query = librarySearch.trim().toLowerCase();
                 const releasedMemoryAids = learningLibrary.memoryAids.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass');
-                const aids = releasedMemoryAids.filter((aid) => (libraryDomain === 'all' || aid.domain === libraryDomain) && (!query || (aid.title + ' ' + aid.content + ' ' + aid.tags.join(' ')).toLowerCase().includes(query)));
+                const aids = releasedMemoryAids.filter((aid) => (libraryDomain === 'all' || (aid.domain || aid.domainId || '') === libraryDomain) && (!query || (aid.title + ' ' + (aid.content || aid.text || '') + ' ' + (Array.isArray(aid.tags) ? aid.tags : []).join(' ')).toLowerCase().includes(query)));
                 return <section className="space-y-4" aria-labelledby="memory-aids-title">
                   <div><h4 id="memory-aids-title" className="text-lg font-black text-slate-900">Memory-aid library</h4><p className="text-sm text-slate-700">Use these retrieval cues after learning the underlying concept. They support recall but do not replace worked reasoning, current guidance, or classroom judgment.</p><p className="mt-1 text-xs font-bold text-emerald-800">{learningLibrary.summary.sourceReviewedMemoryAids || 0} source reviewed · {learningLibrary.summary.editorialReviewedSourcePendingMemoryAids || 0} editorial pass/source pending</p></div>
                   <div className="grid gap-3 rounded-xl border border-slate-300 bg-white p-4 sm:grid-cols-[1fr_260px]">
                     <label className="text-sm font-bold text-slate-800">Search titles, content, and tags<input value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 min-h-11 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600" /></label>
-                    <label className="text-sm font-bold text-slate-800">Domain<select value={libraryDomain} onChange={(event) => setLibraryDomain(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600"><option value="all">All domains</option>{Array.from(new Set(releasedMemoryAids.map((item) => item.domain))).sort().map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select></label>
+                    <label className="text-sm font-bold text-slate-800">Domain<select value={libraryDomain} onChange={(event) => setLibraryDomain(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600"><option value="all">All domains</option>{Array.from(new Set(releasedMemoryAids.map((item) => item.domain || item.domainId || '').filter(Boolean))).sort().map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select></label>
                   </div>
                   <p className="text-sm font-bold text-slate-700" role="status">Showing {aids.length} of {releasedMemoryAids.length} source-reviewed memory aids</p>
-                  <div className="grid gap-3 md:grid-cols-2">{aids.map((aid) => { const open = memoryAidOpen === aid.id; return <article key={aid.id} className="rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{aid.domain} · {aid.type}</p><h5 className="mt-1 font-black text-slate-900">{aid.title}</h5></div><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'border-sky-300 bg-sky-50 text-sky-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'Editorial pass · source pending' : 'Review required'}</span></div><button type="button" aria-expanded={open} onClick={() => setMemoryAidOpen(open ? '' : aid.id)} className="mt-3 min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">{open ? 'Hide aid' : 'Show aid'}</button>{open && <><p className="mt-4 whitespace-pre-line rounded-lg bg-slate-50 p-4 text-sm leading-relaxed text-slate-800">{aid.content}</p>{Array.isArray(aid.sourceDetails) && aid.sourceDetails.length > 0 && <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3"><h6 className="text-xs font-black uppercase tracking-wide text-slate-800">Sources</h6><ul className="mt-2 space-y-3">{aid.sourceDetails.map((source) => <li key={source.url} className="text-xs leading-relaxed text-slate-700"><a href={source.url} target="_blank" rel="noopener noreferrer" className="font-black text-indigo-800 underline">{source.title}</a>{source.organization && <span className="font-bold"> - {source.organization}</span>}<p className="mt-1">Why this source is reputable: {source.whyReputable}</p></li>)}</ul></div>}<div className="mt-3 flex flex-wrap gap-1">{aid.tags.slice(0, 10).map((tag) => <span key={tag} className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{tag}</span>)}</div></>}</article>; })}</div>
+                  <div className="grid gap-3 md:grid-cols-2">{aids.map((aid) => { const open = memoryAidOpen === aid.id; const aidText = aid.content || aid.text || ''; const aidTags = Array.isArray(aid.tags) ? aid.tags : []; return <article key={aid.id} className="rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{aid.domain || aid.domainId || 'Study aid'}{aid.type ? ' · ' + aid.type : ''}</p><h5 className="mt-1 font-black text-slate-900">{aid.title}</h5></div><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'border-sky-300 bg-sky-50 text-sky-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'Editorial pass · source pending' : 'Review required'}</span></div><button type="button" aria-expanded={open} onClick={() => setMemoryAidOpen(open ? '' : aid.id)} className="mt-3 min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">{open ? 'Hide aid' : 'Show aid'}</button>{open && <><p className="mt-4 whitespace-pre-line rounded-lg bg-slate-50 p-4 text-sm leading-relaxed text-slate-800">{aidText}</p>{Array.isArray(aid.sourceDetails) && aid.sourceDetails.length > 0 && <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3"><h6 className="text-xs font-black uppercase tracking-wide text-slate-800">Sources</h6><ul className="mt-2 space-y-3">{aid.sourceDetails.map((source) => { const safeHref = testPrepSafeHttpsUrl(source && source.url); return <li key={source.url || source.title} className="text-xs leading-relaxed text-slate-700">{safeHref ? <a href={safeHref} target="_blank" rel="noopener noreferrer" className="font-black text-indigo-800 underline">{source.title}</a> : <span className="font-black text-slate-900">{source.title}</span>}{source.organization && <span className="font-bold"> - {source.organization}</span>}<p className="mt-1">Why this source is reputable: {source.whyReputable}</p></li>; })}</ul></div>}{aidTags.length > 0 && <div className="mt-3 flex flex-wrap gap-1">{aidTags.slice(0, 10).map((tag) => <span key={tag} className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{tag}</span>)}</div>}</>}</article>; })}</div>
                   {!aids.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No memory aids match those filters.</p>}
                 </section>;
               })()}
@@ -7456,18 +7692,45 @@ function TestPrepHub(props) {
                           <ol className="mt-2 space-y-3 text-sm leading-relaxed text-slate-800">{workshop.planningFrame.map((step, stepIndex) => <li key={stepIndex}><strong>{stepIndex + 1}. {step.label}:</strong> {step.guidance}</li>)}</ol>
                         </section>}
                       </div>}
-                      {(workshop.successCriteria.length > 0 || workshop.commonPitfalls.length > 0 || workshop.sampleOutline.length > 0 || workshop.selfCheck.length > 0) && <details className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
-                        <summary className="cursor-pointer font-black text-amber-950 focus:ring-2 focus:ring-amber-700">Open self-check criteria{workshop.sampleOutline.length > 0 ? ' and sample outline' : ''}</summary>
-                        <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                          {workshop.successCriteria.length > 0 && <section><h6 className="font-black text-emerald-950">Success criteria</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.successCriteria.map((criterion, criterionIndex) => <li key={criterionIndex}>{criterion}</li>)}</ul></section>}
-                          {workshop.commonPitfalls.length > 0 && <section><h6 className="font-black text-rose-950">Common pitfalls</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.commonPitfalls.map((pitfall, pitfallIndex) => <li key={pitfallIndex}>{pitfall}</li>)}</ul></section>}
-                          {workshop.selfCheck.length > 0 && <section><h6 className="font-black text-slate-900">Self-check questions</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.selfCheck.map((question, questionIndex) => <li key={questionIndex}>{question}</li>)}</ul></section>}
-                        </div>
-                        {workshop.sampleOutline.length > 0 && <section className="mt-4 rounded-lg bg-white p-4"><h6 className="font-black text-slate-900">Sample outline</h6><ol className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.sampleOutline.map((point, pointIndex) => <li key={pointIndex}>{point}</li>)}</ol></section>}
-                      </details>}
+                      {(() => {
+                        const draftText = workshopDrafts[workshop.id] || '';
+                        const wordTotal = draftText.trim() ? draftText.trim().split(/\s+/).length : 0;
+                        const activeTimer = workshopTimerState.workshopId === workshop.id;
+                        const timerSeconds = activeTimer ? workshopTimerState.remainingSeconds : Math.max(1, Number(workshop.estimatedMinutes) || 15) * 60;
+                        const timerRunning = activeTimer && workshopTimerState.running;
+                        const checkMap = workshopChecks[workshop.id] || {};
+                        const totalCheckItems = workshop.successCriteria.length + workshop.selfCheck.length;
+                        const checkedCount = workshop.successCriteria.filter((_, idx) => Boolean(checkMap['c-' + idx])).length + workshop.selfCheck.filter((_, idx) => Boolean(checkMap['s-' + idx])).length;
+                        return <>
+                          <section className="mt-4 rounded-xl border border-slate-300 bg-slate-50 p-4" aria-label={'Drafting workspace for ' + workshop.title}>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <div>
+                                <label htmlFor={'workshop-draft-' + workshop.id} className="text-sm font-black text-slate-900">Your practice draft (unscored)</label>
+                                <p className="text-xs text-slate-700">{wordTotal} word{wordTotal === 1 ? '' : 's'}{totalCheckItems > 0 ? ' · ' + checkedCount + ' of ' + totalCheckItems + ' self-check items marked' : ''}</p>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-black text-slate-900" role="timer" aria-label="Optional unscored workshop pacing timer">{formatPracticeTime(timerSeconds)}</span>
+                                <button type="button" onClick={() => toggleWorkshopTimer(workshop)} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-xs font-black text-indigo-950 focus:ring-2 focus:ring-indigo-600">{timerRunning ? 'Pause pacing timer' : 'Start pacing timer'}</button>
+                                <button type="button" onClick={() => resetWorkshopTimer(workshop)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600">Reset timer</button>
+                                <button type="button" disabled={!draftText.trim()} onClick={() => saveInlineAnnotation({ targetType: 'constructed-response', targetId: workshop.id, targetLabel: 'Workshop: ' + workshop.title, text: draftText + (totalCheckItems > 0 ? '\n\n[Self-check: ' + checkedCount + '/' + totalCheckItems + ' criteria marked — unscored]' : '') })} className="min-h-11 rounded-lg border border-amber-500 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-950 disabled:opacity-50 focus:ring-2 focus:ring-amber-600">Save draft to study notes</button>
+                              </div>
+                            </div>
+                            <textarea id={'workshop-draft-' + workshop.id} rows={5} value={draftText} onChange={(event) => { const nextVal = event.target.value; setWorkshopDrafts((current) => ({ ...current, [workshop.id]: nextVal })); }} placeholder="Draft your response or structured outline here, then open the self-check criteria below to compare..." className="mt-3 w-full rounded-lg border border-slate-400 bg-white p-3 text-sm leading-relaxed text-slate-900 focus:ring-2 focus:ring-indigo-600" />
+                          </section>
+                          {(workshop.successCriteria.length > 0 || workshop.commonPitfalls.length > 0 || workshop.sampleOutline.length > 0 || workshop.selfCheck.length > 0) && <details className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
+                            <summary className="cursor-pointer font-black text-amber-950 focus:ring-2 focus:ring-amber-700">Open self-check criteria{workshop.sampleOutline.length > 0 ? ' and sample outline' : ''}{totalCheckItems > 0 ? ' (' + checkedCount + '/' + totalCheckItems + ' checked)' : ''}</summary>
+                            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                              {workshop.successCriteria.length > 0 && <section><h6 className="font-black text-emerald-950">Success criteria (self-check)</h6><ul className="mt-2 space-y-2 text-sm leading-relaxed text-slate-800">{workshop.successCriteria.map((criterion, criterionIndex) => <li key={criterionIndex}><label className="flex cursor-pointer items-start gap-2"><input type="checkbox" checked={Boolean(checkMap['c-' + criterionIndex])} onChange={() => toggleWorkshopCheck(workshop.id, 'c-' + criterionIndex)} className="mt-1 h-4 w-4 rounded border-slate-400 text-emerald-700 focus:ring-emerald-600" /><span>{criterion}</span></label></li>)}</ul></section>}
+                              {workshop.commonPitfalls.length > 0 && <section><h6 className="font-black text-rose-950">Common pitfalls</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.commonPitfalls.map((pitfall, pitfallIndex) => <li key={pitfallIndex}>{pitfall}</li>)}</ul></section>}
+                              {workshop.selfCheck.length > 0 && <section><h6 className="font-black text-slate-900">Self-check questions</h6><ul className="mt-2 space-y-2 text-sm leading-relaxed text-slate-800">{workshop.selfCheck.map((question, questionIndex) => <li key={questionIndex}><label className="flex cursor-pointer items-start gap-2"><input type="checkbox" checked={Boolean(checkMap['s-' + questionIndex])} onChange={() => toggleWorkshopCheck(workshop.id, 's-' + questionIndex)} className="mt-1 h-4 w-4 rounded border-slate-400 text-indigo-700 focus:ring-indigo-600" /><span>{question}</span></label></li>)}</ul></section>}
+                            </div>
+                            {workshop.sampleOutline.length > 0 && <section className="mt-4 rounded-lg bg-white p-4"><h6 className="font-black text-slate-900">Sample outline</h6><ol className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.sampleOutline.map((point, pointIndex) => <li key={pointIndex}>{point}</li>)}</ol></section>}
+                          </details>}
+                        </>;
+                      })()}
                       <footer className="mt-4 border-t border-slate-200 pt-4">
                         {workshop.reviewNote && <p className="text-xs leading-relaxed text-slate-700">{workshop.reviewNote}</p>}
-                        <ul className="mt-2 flex flex-wrap gap-3 text-xs">{(workshop.references || []).map((reference) => { const source = testPrepDescribeReference(reference); return <li key={reference}><a href={reference} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a></li>; })}</ul>
+                        <ul className="mt-2 flex flex-wrap gap-3 text-xs">{(workshop.references || []).map((reference) => { const source = testPrepDescribeReference(reference); const safeHref = testPrepSafeHttpsUrl(reference); return <li key={reference}>{safeHref ? <a href={safeHref} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a> : <span className="font-bold text-slate-700">{source.title}</span>}</li>; })}</ul>
                       </footer>
                     </article>)}
                   </div>
@@ -7634,7 +7897,7 @@ function TestPrepHub(props) {
                   <label htmlFor="test-prep-progress-import" className="inline-flex min-h-11 cursor-pointer items-center rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 focus-within:ring-2 focus-within:ring-indigo-600">Import progress<input id="test-prep-progress-import" type="file" accept="application/json,.json" onChange={importPracticeProgressFile} className="sr-only" /></label>
                 </div>
               </div>
-              {progressAnalytics.retainedAttemptCount > 0 && <aside aria-label="Earlier content-revision results retained" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="status"><p className="font-black">Earlier content-revision results retained</p><p className="mt-1 leading-relaxed">{progressAnalytics.retainedAttemptCount} practice result{progressAnalytics.retainedAttemptCount === 1 ? '' : 's'} from an earlier or unidentified content revision remain stored and included in backups. They are excluded from current-revision analytics, smart review, study goals, and recent practice.</p></aside>}
+              {progressAnalytics.retainedAttemptCount > 0 && <aside aria-labelledby="test-prep-retained-results-title" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="status"><p id="test-prep-retained-results-title" className="font-black">Earlier content-revision results retained</p><p className="mt-1 leading-relaxed">{progressAnalytics.retainedAttemptCount} practice result{progressAnalytics.retainedAttemptCount === 1 ? '' : 's'} from an earlier or unidentified content revision remain stored and included in backups. They are excluded from current-revision analytics, smart review, study goals, and recent practice.</p></aside>}
               {studyPlanStatus && <section className="rounded-2xl border border-teal-300 bg-white p-5 shadow-sm" aria-labelledby="weekly-study-plan-title">
                 <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-teal-800">Activity goals only</p><h4 id="weekly-study-plan-title" className="mt-1 text-lg font-black text-slate-900">Weekly study plan</h4><p className="mt-1 max-w-3xl text-sm text-slate-700">Set retrieval-practice targets for the current Monday–Sunday week. Goals and streaks describe activity; they do not estimate ability, readiness, an official score, or passing.</p></div><div className="rounded-lg bg-teal-50 px-3 py-2 text-center"><p className="text-2xl font-black text-teal-950">{studyPlanStatus.activityStreakDays}</p><p className="text-xs font-bold text-teal-800">day activity streak</p></div></div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">

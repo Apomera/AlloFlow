@@ -39,19 +39,33 @@ function ensure(value, minimum, suffix) {
 
 function itemFromSpec(skill, spec, batchNumber, batchPosition) {
   const answerIndex = (batchPosition - 1) % 4;
-  const variantRationale = batchNumber === 2 && spec.rationaleB ? spec.rationaleB : spec.rationale;
+  const useVariantB = batchNumber === 2 && spec.variantB && typeof spec.variantB === 'object';
+  const activeCorrect = useVariantB && spec.variantB.correct ? spec.variantB.correct : spec.correct;
+  const activeDistractors = useVariantB && Array.isArray(spec.variantB.distractors) ? spec.variantB.distractors : spec.distractors;
+  const activeNotes = useVariantB && Array.isArray(spec.variantB.distractorNotes) ? spec.variantB.distractorNotes : spec.distractorNotes;
+  if (!Array.isArray(activeNotes) || activeNotes.length !== 3) {
+    throw new Error(skill.id + ' item ' + batchPosition + ' is missing authored distractorNotes.');
+  }
+  const variantRationale = useVariantB && spec.variantB.rationale
+    ? spec.variantB.rationale
+    : (batchNumber === 2 && spec.rationaleB ? spec.rationaleB : spec.rationale);
   const rationale = ensure(variantRationale, 120, 'Work only from the stated passage, writing purpose, quantitative relationships, and requested unit or claim; then verify that the selected response answers the exact question without adding unsupported assumptions.');
   const choices = [];
   const choiceRationales = [];
   let distractorIndex = 0;
   for (let choiceIndex = 0; choiceIndex < 4; choiceIndex += 1) {
     if (choiceIndex === answerIndex) {
-      choices.push(spec.correct);
+      choices.push(activeCorrect);
       choiceRationales.push(ensure('Correct. ' + rationale, 100, 'It matches the controlling reading, writing, or mathematical relationship and the scope of the evidence.'));
     } else {
-      const distractor = spec.distractors[distractorIndex++];
+      const distractor = activeDistractors[distractorIndex];
+      const note = String(activeNotes[distractorIndex] || '').trim();
+      distractorIndex += 1;
+      if (note.length < 100) {
+        throw new Error(skill.id + ' item ' + batchPosition + ' distractor note is shorter than 100 chars: ' + note);
+      }
       choices.push(distractor);
-      choiceRationales.push(ensure('Not the best answer. "' + distractor + '" does not satisfy the complete task. ' + rationale, 100, 'Check the passage evidence, language convention, research boundary, computation, unit, and requested conclusion.'));
+      choiceRationales.push(note);
     }
   }
   if (new Set(choices).size !== 4) throw new Error(skill.id + ' contains duplicate choices.');

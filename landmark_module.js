@@ -77,9 +77,17 @@
     ] }
   };
 
-  var KEYS = Object.keys(LANDMARKS);
+  var hasOwn = Object.prototype.hasOwnProperty;
+  function deepFreeze(obj) {
+    if (!obj || typeof obj !== 'object' || Object.isFrozen(obj)) return obj;
+    Object.keys(obj).forEach(function (k) { deepFreeze(obj[k]); });
+    return Object.freeze(obj);
+  }
+  deepFreeze(LANDMARKS);
 
-  function isNum(v) { return typeof v === 'number' && !isNaN(v); }
+  var KEYS = Object.freeze(Object.keys(LANDMARKS));
+
+  function isSafeUnit(v) { return typeof v === 'number' && Number.isFinite(v) && v > 0 && v <= 10000; }
 
   function listLandmarks() {
     return KEYS.map(function (k) { return { key: k, name: LANDMARKS[k].name }; });
@@ -87,8 +95,8 @@
 
   // Deep-ish clone so a caller can't mutate the shared catalog.
   function getLandmark(key) {
+    if (typeof key !== 'string' || !hasOwn.call(LANDMARKS, key)) return null;
     var l = LANDMARKS[key];
-    if (!l) return null;
     return {
       name: l.name,
       parts: l.parts.map(function (p) { return Object.assign({}, p, { size: p.size.slice(), position: p.position.slice(), rotation: (p.rotation || [0, 0, 0]).slice() }); })
@@ -98,7 +106,7 @@
   // Deterministic pick from a seed (string or number) — a room's "signature"
   // landmark stays stable across sessions without any stored state.
   function _hash(seed) {
-    var s = String(seed == null ? '' : seed), h = 0;
+    var s = String(seed == null ? '' : seed).slice(0, 500), h = 0;
     for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; }
     return h;
   }
@@ -109,21 +117,21 @@
 
   // Convenience: key → giant THREE.Group via Prim3D (null if Prim3D absent).
   function buildLandmark(THREE, key, opts) {
-    opts = opts || {};
+    opts = (opts && typeof opts === 'object') ? opts : {};
     var P3D = window.AlloModules && window.AlloModules.Prim3D;
     var recipe = getLandmark(key);
-    if (!THREE || !P3D || !recipe) return null;
-    return P3D.buildObject(THREE, recipe, { unit: isNum(opts.unit) ? opts.unit : DEFAULT_UNIT });
+    if (!THREE || !P3D || typeof P3D.buildObject !== 'function' || !recipe) return null;
+    return P3D.buildObject(THREE, recipe, { unit: isSafeUnit(opts.unit) ? opts.unit : DEFAULT_UNIT });
   }
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.Landmark = {
+  window.AlloModules.Landmark = Object.freeze({
     version: VERSION,
     DEFAULT_UNIT: DEFAULT_UNIT,
     listLandmarks: listLandmarks,
     getLandmark: getLandmark,
     pickLandmark: pickLandmark,
     buildLandmark: buildLandmark
-  };
+  });
   console.log('[Landmark] Registered (landmark/1 — ' + KEYS.length + ' giant primitive structures)');
 })();

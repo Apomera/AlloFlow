@@ -719,20 +719,468 @@
             setTimeout(function () { if (canvas.isConnected) { setGlLost(true); setStatus('failed'); } }, 0);
           });
           renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-          renderer.setClearColor(0x07111f, 1);
+          var isContrastView = !!props.isContrast;
+          renderer.setClearColor(isContrastView ? 0x000000 : 0x060e1c, 1);
           if (THREE.sRGBEncoding !== undefined) renderer.outputEncoding = THREE.sRGBEncoding;
+          if (!isContrastView && THREE.ACESFilmicToneMapping !== undefined) {
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.08;
+          }
+          var wantShadow = !isContrastView && renderer.shadowMap && THREE.PCFSoftShadowMap !== undefined;
+          if (wantShadow) {
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+          }
           scene = new THREE.Scene();
+          if (!isContrastView && typeof THREE.Fog === 'function') {
+            scene.fog = new THREE.Fog(0x060e1c, 420, 1800);
+          }
           var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100000);
-          scene.add(new THREE.HemisphereLight(0xdbeafe, 0x172033, 1.15));
-          var key = new THREE.DirectionalLight(0xffffff, 0.82); key.position.set(5, 8, 6); scene.add(key);
-          var grid = new THREE.GridHelper(220, 22, 0x38bdf8, 0x334155); grid.position.y = -0.02; scene.add(grid);
+          var hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x0f172a, isContrastView ? 1.1 : 0.95);
+          scene.add(hemiLight);
+          var key = new THREE.DirectionalLight(0xfff7ed, isContrastView ? 0.85 : 1.05);
+          key.position.set(160, 260, 180);
+          if (wantShadow) {
+            key.castShadow = true;
+            key.shadow.mapSize.width = 1024;
+            key.shadow.mapSize.height = 1024;
+            key.shadow.bias = -0.0008;
+          }
+          scene.add(key);
+          var rimLight = new THREE.DirectionalLight(0x38bdf8, isContrastView ? 0.2 : 0.56);
+          rimLight.position.set(-180, 140, -170);
+          scene.add(rimLight);
+          var warmBounce = new THREE.DirectionalLight(0xfdba74, isContrastView ? 0 : 0.24);
+          warmBounce.position.set(60, 40, -140);
+          scene.add(warmBounce);
+
           model = makeModelObject(THREE, props.format, props.recipe, props.bytes, props.glbRoot, props.unitMm);
           if (!model) { setStatus('empty'); return; }
+          if (wantShadow && model.traverse) {
+            model.traverse(function (node) {
+              if (node && node.isMesh) { node.castShadow = true; node.receiveShadow = true; }
+            });
+          }
           scene.add(model);
           var bounds = centerAndGround(THREE, model);
           if (!bounds) { setStatus('empty'); return; }
           var size = bounds.getSize(new THREE.Vector3()), center = bounds.getCenter(new THREE.Vector3());
           var radius = Math.max(1, size.length() * 0.55);
+
+          // ── Printer profile, heated PEI build plate, brushed-aluminum gantry & hotend ──
+          var prof = props.profile || DEFAULT_PRINTER_PROFILE;
+          var bedW = Math.max(80, Math.min(480, Number(prof.bedWidthMm) || 220));
+          var bedD = Math.max(80, Math.min(480, Number(prof.bedDepthMm) || 220));
+          var bedH = Math.max(80, Math.min(500, Number(prof.bedHeightMm) || 250));
+          var clearMm = Math.max(0, Math.min(30, Number(prof.planningClearanceMm) || 5));
+          var bedSpan = Math.max(bedW, bedD, Math.max(size.x, size.z) * 1.45);
+          if (wantShadow && key.shadow && key.shadow.camera) {
+            var sHalf = Math.max(bedSpan * 0.72, radius * 1.6);
+            key.shadow.camera.left = -sHalf; key.shadow.camera.right = sHalf;
+            key.shadow.camera.top = sHalf; key.shadow.camera.bottom = -sHalf;
+            key.shadow.camera.near = 10; key.shadow.camera.far = sHalf * 6;
+            key.position.set(sHalf * 0.9, sHalf * 1.55, sHalf * 1.05);
+          }
+
+          var hasStd = typeof THREE.MeshStandardMaterial === 'function';
+          var hasPhys = typeof THREE.MeshPhysicalMaterial === 'function';
+          var hasDataTex = typeof THREE.DataTexture === 'function';
+          var hasShaders = !isContrastView && typeof THREE.ShaderMaterial === 'function';
+          var printShaderTime = { value: 2.2 };
+          var activePrintY = Math.max(0.5, size.y * 0.72);
+          var filamentUniforms = {
+            uTime: printShaderTime,
+            uActiveY: { value: activePrintY },
+            uModelHeight: { value: Math.max(1.0, size.y) },
+            uLayerFreq: { value: Math.max(1.4, Math.min(8.0, 26.0 / Math.max(4.0, size.y))) },
+            uNozzlePos: { value: new THREE.Vector3(Math.max(size.x * 0.35, 8), activePrintY, 0) }
+          };
+
+          // GLSL ES 1.00 molten-to-cooled FDM layer-line & thermal gradient shader on 3D printed model
+          if (hasShaders && model && model.traverse) {
+            var patchedMats = [];
+            model.traverse(function (node) {
+              if (!node || !node.isMesh || !node.material) return;
+              var mList = Array.isArray(node.material) ? node.material : [node.material];
+              mList.forEach(function (mat) {
+                if (!mat || mat.isShaderMaterial || patchedMats.indexOf(mat) !== -1) return;
+                patchedMats.push(mat);
+                mat.onBeforeCompile = function (shader) {
+                  shader.uniforms.uTime = filamentUniforms.uTime;
+                  shader.uniforms.uActiveY = filamentUniforms.uActiveY;
+                  shader.uniforms.uModelHeight = filamentUniforms.uModelHeight;
+                  shader.uniforms.uLayerFreq = filamentUniforms.uLayerFreq;
+                  shader.uniforms.uNozzlePos = filamentUniforms.uNozzlePos;
+                  shader.vertexShader = shader.vertexShader
+                    .replace('#include <common>', '#include <common>\nvarying vec3 vPrintWorldPos;\nvarying vec3 vPrintWorldN;')
+                    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvPrintWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvPrintWorldN = normalize(mat3(modelMatrix) * objectNormal);');
+                  shader.fragmentShader = shader.fragmentShader
+                    .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uActiveY;\nuniform float uModelHeight;\nuniform float uLayerFreq;\nuniform vec3 uNozzlePos;\nvarying vec3 vPrintWorldPos;\nvarying vec3 vPrintWorldN;')
+                    .replace('#include <dithering_fragment>', [
+                      'vec3 pN = normalize(vPrintWorldN);',
+                      'vec3 pV = normalize(cameraPosition - vPrintWorldPos);',
+                      'float pFres = pow(1.0 - clamp(abs(dot(pN, pV)), 0.0, 1.0), 2.8);',
+                      'float pSide = 1.0 - step(0.92, abs(pN.y));',
+                      'float pLayer = sin(vPrintWorldPos.y * uLayerFreq * 6.2831853);',
+                      'gl_FragColor.rgb *= (1.0 + pLayer * 0.065 * pSide);',
+                      'float bandSpan = max(1.8, uModelHeight * 0.14);',
+                      'float distY = abs(vPrintWorldPos.y - uActiveY);',
+                      'float layerHeat = exp(-pow(distY / bandSpan, 2.0));',
+                      'float coolTail = smoothstep(uActiveY - bandSpan * 2.6, uActiveY, vPrintWorldPos.y) * step(vPrintWorldPos.y, uActiveY + bandSpan * 0.65);',
+                      'float nozzleDist = length(vPrintWorldPos - uNozzlePos);',
+                      'float nozzleHot = exp(-pow(nozzleDist / max(4.0, uModelHeight * 0.35), 2.0));',
+                      'float thermal = clamp(layerHeat * 0.72 + coolTail * 0.24 + nozzleHot * 0.65, 0.0, 1.25);',
+                      'vec3 ember = mix(vec3(0.92, 0.28, 0.05), vec3(1.0, 0.72, 0.18), clamp(thermal, 0.0, 1.0));',
+                      'ember = mix(ember, vec3(1.0, 0.96, 0.76), smoothstep(0.75, 1.2, thermal));',
+                      'float pulse = 0.88 + 0.12 * sin(uTime * 3.8 + vPrintWorldPos.x * 0.18);',
+                      'gl_FragColor.rgb += ember * thermal * 0.42 * pulse + vec3(0.60, 0.85, 1.0) * pFres * 0.18;',
+                      '#include <dithering_fragment>'
+                    ].join('\n'));
+                };
+                mat.customProgramCacheKey = function () { return 'printlab-fdm-thermal-v1'; };
+              });
+            });
+          }
+
+          // Procedural brushed-aluminum texture for anodized gantry extrusions
+          var brushedTex = null;
+          if (!isContrastView && hasDataTex) {
+            var bSz = 64, bBuf = new Uint8Array(bSz * bSz * 4);
+            for (var by = 0; by < bSz; by++) {
+              var streak = ((by * 41 + (by % 7) * 13) % 24) - 12;
+              for (var bx = 0; bx < bSz; bx++) {
+                var grain = (((bx * 17 + by * 31) ^ (bx * 5)) & 15) - 7;
+                var bv = Math.max(178, Math.min(255, 220 + streak + Math.round(grain * 0.6)));
+                var bi = (by * bSz + bx) * 4;
+                bBuf[bi] = bv; bBuf[bi + 1] = Math.min(255, bv + 3); bBuf[bi + 2] = Math.min(255, bv + 8); bBuf[bi + 3] = 255;
+              }
+            }
+            brushedTex = new THREE.DataTexture(bBuf, bSz, bSz, THREE.RGBAFormat);
+            brushedTex.wrapS = THREE.RepeatWrapping; brushedTex.wrapT = THREE.RepeatWrapping;
+            brushedTex.repeat.set(3, 3);
+            brushedTex.needsUpdate = true;
+          }
+
+          // Procedural heated PEI build-plate texture (calibrated 10mm grid + PEI micro-speckle)
+          var bedTex = null;
+          if (!isContrastView && hasDataTex) {
+            var pSz = 128, pBuf = new Uint8Array(pSz * pSz * 4);
+            for (var py = 0; py < pSz; py++) {
+              for (var px = 0; px < pSz; px++) {
+                var major = (px % 32 === 0 || py % 32 === 0);
+                var minor = (px % 8 === 0 || py % 8 === 0);
+                var speck = (((px * 73 ^ py * 137) + px * py) & 7) - 3;
+                var pi = (py * pSz + px) * 4;
+                if (major) { pBuf[pi] = 56; pBuf[pi + 1] = 175; pBuf[pi + 2] = 228; }
+                else if (minor) { pBuf[pi] = 38; pBuf[pi + 1] = 66; pBuf[pi + 2] = 96; }
+                else { pBuf[pi] = Math.max(10, 18 + speck); pBuf[pi + 1] = Math.max(16, 26 + speck); pBuf[pi + 2] = Math.max(24, 39 + speck); }
+                pBuf[pi + 3] = 255;
+              }
+            }
+            bedTex = new THREE.DataTexture(pBuf, pSz, pSz, THREE.RGBAFormat);
+            bedTex.wrapS = THREE.RepeatWrapping; bedTex.wrapT = THREE.RepeatWrapping;
+            bedTex.repeat.set(Math.max(2, Math.round(bedW / 40)), Math.max(2, Math.round(bedD / 40)));
+            bedTex.needsUpdate = true;
+          }
+
+          // Soft radial shadow texture for grounded contact beneath the model
+          var contactTex = null;
+          if (!isContrastView && hasDataTex) {
+            var cSz = 64, cBuf = new Uint8Array(cSz * cSz * 4), cHalf = (cSz - 1) / 2;
+            for (var cy = 0; cy < cSz; cy++) {
+              for (var cx = 0; cx < cSz; cx++) {
+                var cd = Math.min(1, Math.sqrt(Math.pow((cx - cHalf) / cHalf, 2) + Math.pow((cy - cHalf) / cHalf, 2)));
+                var ca = Math.pow(Math.max(0, 1 - cd), 2.1);
+                var ci = (cy * cSz + cx) * 4;
+                cBuf[ci] = 2; cBuf[ci + 1] = 6; cBuf[ci + 2] = 18; cBuf[ci + 3] = Math.round(ca * 170);
+              }
+            }
+            contactTex = new THREE.DataTexture(cBuf, cSz, cSz, THREE.RGBAFormat);
+            contactTex.needsUpdate = true;
+          }
+
+          var plateMat = hasPhys && !isContrastView
+            ? new THREE.MeshPhysicalMaterial({ color: 0xdbeafe, map: bedTex, roughness: 0.42, metalness: 0.34, clearcoat: 0.35, clearcoatRoughness: 0.35 })
+            : (hasStd && !isContrastView
+              ? new THREE.MeshStandardMaterial({ color: 0xdbeafe, map: bedTex, roughness: 0.46, metalness: 0.32 })
+              : new THREE.MeshBasicMaterial({ color: isContrastView ? 0x111111 : 0x1e293b }));
+          if (hasShaders && plateMat && !plateMat.isMeshBasicMaterial) {
+            var bedHalfVec = new THREE.Vector2(bedW * 0.5, bedD * 0.5);
+            plateMat.onBeforeCompile = function (shader) {
+              shader.uniforms.uTime = printShaderTime;
+              shader.uniforms.uBedHalf = { value: bedHalfVec };
+              shader.vertexShader = shader.vertexShader
+                .replace('#include <common>', '#include <common>\nvarying vec3 vPeiWorldPos;\nvarying vec3 vPeiWorldN;')
+                .replace('#include <begin_vertex>', '#include <begin_vertex>\nvPeiWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvPeiWorldN = normalize(mat3(modelMatrix) * objectNormal);');
+              shader.fragmentShader = shader.fragmentShader
+                .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform vec2 uBedHalf;\nvarying vec3 vPeiWorldPos;\nvarying vec3 vPeiWorldN;\nfloat peiHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }')
+                .replace('#include <dithering_fragment>', [
+                  'vec3 bN = normalize(vPeiWorldN);',
+                  'float topMask = step(0.7, bN.y);',
+                  'vec2 bNorm = vPeiWorldPos.xz / max(uBedHalf, vec2(1.0));',
+                  'float bRad = length(bNorm);',
+                  'float heatCore = smoothstep(1.08, 0.08, bRad);',
+                  'float heatRipple = 0.86 + 0.14 * sin(bRad * 9.0 - uTime * 1.4);',
+                  'vec3 bV = normalize(cameraPosition - vPeiWorldPos);',
+                  'float bFres = pow(1.0 - clamp(dot(bN, bV), 0.0, 1.0), 3.2);',
+                  'float speckle = peiHash(floor(vPeiWorldPos.xz * 2.6));',
+                  'vec3 thermalGlow = mix(vec3(0.45, 0.12, 0.03), vec3(0.95, 0.42, 0.10), heatCore) * heatCore * heatRipple * 0.24;',
+                  'vec3 peiSheen = vec3(0.55, 0.82, 0.98) * bFres * (0.18 + 0.14 * speckle);',
+                  'gl_FragColor.rgb += (thermalGlow + peiSheen) * topMask;',
+                  '#include <dithering_fragment>'
+                ].join('\n'));
+            };
+            plateMat.customProgramCacheKey = function () { return 'printlab-pei-heat-v1'; };
+          }
+          var plateThick = Math.max(2.4, bedSpan * 0.018);
+          var buildPlate = new THREE.Mesh(new THREE.BoxGeometry(bedW, plateThick, bedD), plateMat);
+          buildPlate.position.set(0, -plateThick / 2 - 0.06, 0);
+          if (wantShadow) buildPlate.receiveShadow = true;
+          scene.add(buildPlate);
+
+          // Warm heated-bed perimeter glow frame (visualizes heated bed thermal rim)
+          var heaterRim = new THREE.Mesh(
+            new THREE.BoxGeometry(bedW + 2.4, plateThick * 0.55, bedD + 2.4),
+            hasStd && !isContrastView
+              ? new THREE.MeshStandardMaterial({ color: 0x334155, emissive: new THREE.Color(0x7c2d12), emissiveIntensity: 0.65, roughness: 0.35, metalness: 0.72 })
+              : new THREE.MeshBasicMaterial({ color: isContrastView ? 0xffff00 : 0x9a3412 })
+          );
+          heaterRim.position.set(0, -plateThick * 0.78 - 0.06, 0);
+          scene.add(heaterRim);
+
+          // Grounded contact shadow directly beneath the model
+          if (contactTex) {
+            var contactShadow = new THREE.Mesh(
+              new THREE.PlaneGeometry(Math.max(size.x * 1.55, 24), Math.max(size.z * 1.55, 24)),
+              new THREE.MeshBasicMaterial({ map: contactTex, transparent: true, opacity: 0.62, depthWrite: false })
+            );
+            contactShadow.rotation.x = -Math.PI / 2;
+            contactShadow.position.set(0, 0.03, 0);
+            scene.add(contactShadow);
+          }
+
+          // Luminous laser bed-leveling calibration grid + clearance border
+          var grid = new THREE.GridHelper(bedSpan, Math.max(10, Math.round(bedSpan / 10)), isContrastView ? 0xffff00 : 0x38bdf8, isContrastView ? 0x555555 : 0x1e3a5f);
+          grid.position.y = 0.02;
+          if (grid.material && !Array.isArray(grid.material)) {
+            grid.material.transparent = true;
+            grid.material.opacity = isContrastView ? 0.75 : 0.42;
+          }
+          scene.add(grid);
+
+          var laserPts = [];
+          var cw = Math.max(10, bedW / 2 - clearMm), cd = Math.max(10, bedD / 2 - clearMm);
+          laserPts.push(
+            new THREE.Vector3(-cw, 0.08, -cd), new THREE.Vector3(cw, 0.08, -cd),
+            new THREE.Vector3(cw, 0.08, -cd), new THREE.Vector3(cw, 0.08, cd),
+            new THREE.Vector3(cw, 0.08, cd), new THREE.Vector3(-cw, 0.08, cd),
+            new THREE.Vector3(-cw, 0.08, cd), new THREE.Vector3(-cw, 0.08, -cd)
+          );
+          var clearanceLine = null;
+          if (typeof THREE.BufferGeometry === 'function' && typeof THREE.LineSegments === 'function') {
+            var clGeo = new THREE.BufferGeometry().setFromPoints(laserPts);
+            var clMat = new THREE.LineBasicMaterial({
+              color: isContrastView ? 0x00ffff : 0x22d3ee,
+              transparent: true, opacity: isContrastView ? 0.95 : 0.78,
+              blending: isContrastView ? THREE.NormalBlending : THREE.AdditiveBlending
+            });
+            clearanceLine = new THREE.LineSegments(clGeo, clMat);
+            scene.add(clearanceLine);
+          }
+
+          // Anodized brushed-aluminum extrusion gantry & hotend assembly (frames bed cleanly behind model)
+          var aluMat = hasStd && !isContrastView
+            ? new THREE.MeshStandardMaterial({ color: 0xb8c4d4, map: brushedTex, roughness: 0.30, metalness: 0.84 })
+            : new THREE.MeshBasicMaterial({ color: isContrastView ? 0xffffff : 0x94a3b8 });
+          var darkSlotMat = hasStd && !isContrastView
+            ? new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.55, metalness: 0.60 })
+            : new THREE.MeshBasicMaterial({ color: 0x1e293b });
+          var brassMat = hasStd && !isContrastView
+            ? new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.24, metalness: 0.88, emissive: new THREE.Color(0x7c2d12), emissiveIntensity: 0.45 })
+            : new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+
+          var gantryH = Math.max(size.y + Math.max(28, radius * 0.65), Math.min(bedH * 0.78, 175));
+          var railThick = Math.max(4.5, bedSpan * 0.028);
+          var postX = bedW / 2 + railThick * 1.1;
+          var gantryZ = -bedD * 0.36;
+          var gantryGroup = new THREE.Group();
+          [-postX, postX].forEach(function (px) {
+            var post = new THREE.Mesh(new THREE.BoxGeometry(railThick, gantryH, railThick), aluMat);
+            post.position.set(px, gantryH / 2 - plateThick * 0.4, gantryZ);
+            gantryGroup.add(post);
+            var vSlot = new THREE.Mesh(new THREE.BoxGeometry(railThick * 0.28, gantryH * 0.94, railThick * 1.04), darkSlotMat);
+            vSlot.position.set(px, gantryH / 2 - plateThick * 0.4, gantryZ);
+            gantryGroup.add(vSlot);
+          });
+          var topBridge = new THREE.Mesh(new THREE.BoxGeometry(postX * 2 + railThick, railThick, railThick), aluMat);
+          topBridge.position.set(0, gantryH - plateThick * 0.4, gantryZ);
+          gantryGroup.add(topBridge);
+
+          // X-carriage rail & warm glowing hotend nozzle hovering near active print layer
+          var xRailY = Math.min(gantryH - railThick * 2.2, Math.max(size.y + railThick * 2.1, 28));
+          var xRail = new THREE.Mesh(new THREE.BoxGeometry(postX * 2, railThick * 0.75, railThick * 0.75), aluMat);
+          xRail.position.set(0, xRailY, gantryZ + railThick * 0.6);
+          gantryGroup.add(xRail);
+
+          var hotendGroup = new THREE.Group();
+          var nozzleStartX = Math.min(postX - railThick * 2.2, Math.max(size.x * 0.42, 14));
+          hotendGroup.position.set(nozzleStartX, xRailY, gantryZ + railThick * 1.15);
+          var carriageBlock = new THREE.Mesh(new THREE.BoxGeometry(railThick * 2.2, railThick * 1.8, railThick * 1.4), darkSlotMat);
+          hotendGroup.add(carriageBlock);
+          var heatsink = new THREE.Mesh(new THREE.CylinderGeometry(railThick * 0.55, railThick * 0.55, railThick * 1.3, 14), aluMat);
+          heatsink.position.y = -railThick * 1.15;
+          hotendGroup.add(heatsink);
+          var nozzleCone = new THREE.Mesh(new THREE.ConeGeometry(railThick * 0.36, railThick * 0.85, 14), brassMat);
+          nozzleCone.rotation.x = Math.PI;
+          nozzleCone.position.y = -railThick * 2.1;
+          hotendGroup.add(nozzleCone);
+          var moltenTipMat = hasShaders
+            ? new THREE.ShaderMaterial({
+                uniforms: { uTime: printShaderTime },
+                vertexShader: [
+                  'varying vec3 vWorldPos;',
+                  'varying vec3 vWorldN;',
+                  'void main() {',
+                  '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+                  '  vWorldPos = wp.xyz;',
+                  '  vWorldN = normalize(mat3(modelMatrix) * normal);',
+                  '  gl_Position = projectionMatrix * viewMatrix * wp;',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uTime;',
+                  'varying vec3 vWorldPos;',
+                  'varying vec3 vWorldN;',
+                  'void main() {',
+                  '  vec3 N = normalize(vWorldN);',
+                  '  vec3 V = normalize(cameraPosition - vWorldPos);',
+                  '  float core = clamp(dot(N, V), 0.0, 1.0);',
+                  '  float pulse = 0.85 + 0.15 * sin(uTime * 5.2);',
+                  '  vec3 col = mix(vec3(1.0, 0.36, 0.06), vec3(1.0, 0.94, 0.72), pow(core, 1.4));',
+                  '  gl_FragColor = vec4(col * (1.15 * pulse), 0.96);',
+                  '}'
+                ].join('\n'),
+                transparent: true
+              })
+            : new THREE.MeshBasicMaterial({ color: isContrastView ? 0xffff00 : 0xffa94d });
+          var moltenTip = new THREE.Mesh(new THREE.SphereGeometry(railThick * 0.22, 14, 10), moltenTipMat);
+          moltenTip.position.y = -railThick * 2.55;
+          hotendGroup.add(moltenTip);
+          var nozzleLight = !isContrastView && typeof THREE.PointLight === 'function'
+            ? new THREE.PointLight(0xff8a2b, 1.35, Math.max(120, bedSpan * 0.95))
+            : null;
+          if (nozzleLight) {
+            nozzleLight.position.set(0, -railThick * 2.9, railThick * 0.6);
+            hotendGroup.add(nozzleLight);
+          }
+          gantryGroup.add(hotendGroup);
+          scene.add(gantryGroup);
+
+          // Luminous active toolpath slice contour loop & laser leveling scan bar
+          var sliceLoop = null;
+          var sliceY = Math.max(0.5, size.y * 0.72);
+          if (typeof THREE.BufferGeometry === 'function' && typeof THREE.LineLoop === 'function') {
+            var sx = Math.max(4, size.x * 0.52), sz = Math.max(4, size.z * 0.52);
+            var loopPts = [
+              new THREE.Vector3(-sx, 0, -sz), new THREE.Vector3(sx, 0, -sz),
+              new THREE.Vector3(sx, 0, sz), new THREE.Vector3(-sx, 0, sz)
+            ];
+            sliceLoop = new THREE.LineLoop(
+              new THREE.BufferGeometry().setFromPoints(loopPts),
+              new THREE.LineBasicMaterial({
+                color: isContrastView ? 0xffff00 : 0xfb923c,
+                transparent: true, opacity: isContrastView ? 0.9 : 0.72,
+                blending: isContrastView ? THREE.NormalBlending : THREE.AdditiveBlending
+              })
+            );
+            sliceLoop.position.y = sliceY;
+            scene.add(sliceLoop);
+          }
+          var laserSweep = null;
+          if (!isContrastView) {
+            var laserMat = hasShaders
+              ? new THREE.ShaderMaterial({
+                  uniforms: {
+                    uTime: printShaderTime,
+                    uScanColor: { value: new THREE.Color(0x22d3ee) },
+                    uCoreColor: { value: new THREE.Color(0xecfeff) },
+                    uOpacity: { value: 0.72 }
+                  },
+                  vertexShader: [
+                    'varying vec2 vUv;',
+                    'void main() {',
+                    '  vUv = uv;',
+                    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                    '}'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform float uTime;',
+                    'uniform vec3 uScanColor;',
+                    'uniform vec3 uCoreColor;',
+                    'uniform float uOpacity;',
+                    'varying vec2 vUv;',
+                    'void main() {',
+                    '  float dist = abs(vUv.y - 0.5) * 2.0;',
+                    '  float beamCore = exp(-pow(dist * 6.5, 2.0));',
+                    '  float softAura = exp(-dist * 3.2);',
+                    '  float probeDots = pow(0.5 + 0.5 * sin(vUv.x * 56.548 - uTime * 2.8), 10.0);',
+                    '  float scanDash = 0.65 + 0.35 * sin(vUv.x * 113.0 + uTime * 6.0);',
+                    '  float edgeFade = smoothstep(0.0, 0.05, vUv.x) * smoothstep(1.0, 0.95, vUv.x);',
+                    '  vec3 col = mix(uScanColor, uCoreColor, clamp(beamCore * 0.85 + probeDots * 0.55, 0.0, 1.0));',
+                    '  float alpha = clamp((beamCore * 0.92 + softAura * 0.38 * scanDash + probeDots * softAura * 0.45) * edgeFade * uOpacity, 0.0, 0.95);',
+                    '  gl_FragColor = vec4(col * (1.0 + beamCore * 0.55), alpha);',
+                    '}'
+                  ].join('\n'),
+                  transparent: true,
+                  side: THREE.DoubleSide,
+                  depthWrite: false,
+                  blending: THREE.AdditiveBlending
+                })
+              : new THREE.MeshBasicMaterial({
+                  color: 0x38bdf8, transparent: true, opacity: 0.22,
+                  side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
+                });
+            laserSweep = new THREE.Mesh(
+              new THREE.PlaneGeometry(bedW - clearMm * 2, hasShaders ? Math.max(12, bedD * 0.14) : Math.max(2.2, bedD * 0.018)),
+              laserMat
+            );
+            laserSweep.rotation.x = -Math.PI / 2;
+            laserSweep.position.set(0, 0.14, 0);
+            if (hasShaders) {
+              var curtainH = Math.max(16, Math.min(48, size.y * 0.45));
+              var curtainMat = new THREE.ShaderMaterial({
+                uniforms: { uTime: printShaderTime },
+                vertexShader: [
+                  'varying vec2 vUv;',
+                  'void main() {',
+                  '  vUv = uv;',
+                  '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uTime;',
+                  'varying vec2 vUv;',
+                  'void main() {',
+                  '  float vFade = pow(1.0 - vUv.y, 2.4);',
+                  '  float hFade = smoothstep(0.0, 0.06, vUv.x) * smoothstep(1.0, 0.94, vUv.x);',
+                  '  float rays = 0.65 + 0.35 * sin(vUv.x * 44.0 + uTime * 3.5);',
+                  '  vec3 col = mix(vec3(0.08, 0.78, 0.95), vec3(0.85, 0.99, 1.0), pow(1.0 - vUv.y, 4.0));',
+                  '  gl_FragColor = vec4(col, clamp(vFade * hFade * rays * 0.34, 0.0, 0.48));',
+                  '}'
+                ].join('\n'),
+                transparent: true,
+                side: THREE.DoubleSide,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+              });
+              var laserCurtain = new THREE.Mesh(new THREE.PlaneGeometry(bedW - clearMm * 2, curtainH), curtainMat);
+              laserCurtain.rotation.x = Math.PI / 2;
+              laserCurtain.position.set(0, 0, curtainH * 0.5);
+              laserSweep.add(laserCurtain);
+            }
+            scene.add(laserSweep);
+          }
+
           var viewDirection=new THREE.Vector3(1.35,0.9,1.6).normalize();
           function fitCamera(){
             var vertical=camera.fov*Math.PI/360, horizontal=Math.atan(Math.tan(vertical)*camera.aspect);
@@ -741,7 +1189,7 @@
             if(controls){controls.target.copy(center);controls.update();}
           }
           fitCamera();
-          camera.near = Math.max(0.01, radius / 1000); camera.far = radius * 30 + 100; camera.lookAt(center); camera.updateProjectionMatrix();
+          camera.near = Math.max(0.01, radius / 1000); camera.far = Math.max(radius * 30 + 100, bedSpan * 12); camera.lookAt(center); camera.updateProjectionMatrix();
           if (THREE.OrbitControls) {
             controls = new THREE.OrbitControls(camera, canvas);
             controls.enableDamping = true; controls.dampingFactor = 0.08; controls.enablePan = false;
@@ -755,8 +1203,33 @@
           resize();
           if (typeof ResizeObserver === 'function') { resizeObserver = new ResizeObserver(resize); resizeObserver.observe(canvas); }
           var prefersReducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var animStart = performance.now();
           function renderOnce() {
             if (!alive || !renderer || document.hidden) return;
+            if (!prefersReducedMotion) {
+              var elapsedSec = (performance.now() - animStart) / 1000;
+              printShaderTime.value = 2.2 + elapsedSec;
+              var travelLim = Math.max(8, Math.min(postX - railThick * 2.2, size.x * 0.55 + 10));
+              hotendGroup.position.x = Math.sin(elapsedSec * 0.85) * travelLim;
+              if (nozzleLight) nozzleLight.intensity = 1.2 + Math.sin(elapsedSec * 4.2) * 0.25;
+              var curSliceY = activePrintY;
+              if (sliceLoop) {
+                curSliceY = 0.4 + ((elapsedSec * 0.16) % 1) * Math.max(1, size.y - 0.6);
+                sliceLoop.position.y = curSliceY;
+              }
+              filamentUniforms.uActiveY.value = curSliceY;
+              filamentUniforms.uNozzlePos.value.set(hotendGroup.position.x * 0.65, curSliceY, Math.cos(elapsedSec * 0.85) * Math.max(2, size.z * 0.28));
+              if (laserSweep) {
+                laserSweep.position.z = Math.sin(elapsedSec * 0.65) * (bedD * 0.42);
+                if (laserSweep.material && laserSweep.material.uniforms && laserSweep.material.uniforms.uOpacity) {
+                  laserSweep.material.uniforms.uOpacity.value = 0.52 + Math.abs(Math.cos(elapsedSec * 0.65)) * 0.34;
+                } else if (laserSweep.material) {
+                  laserSweep.material.opacity = 0.14 + Math.abs(Math.cos(elapsedSec * 0.65)) * 0.14;
+                }
+              }
+            } else if (laserSweep) {
+              laserSweep.visible = false;
+            }
             if (controls) controls.update();
             renderer.render(scene, camera);
           }
@@ -799,11 +1272,21 @@
         if (controls && controls.dispose) { try { controls.dispose(); } catch (_) {} }
         if (model) disposeObject(model, false);
         if (scene) {
+          var _plTex = [];
           scene.traverse(function (node) {
             if (node === model) return;
             if (node.geometry && node.geometry.dispose) { try { node.geometry.dispose(); } catch (_) {} }
-            if (node.material && node.material.dispose) { try { node.material.dispose(); } catch (_) {} }
+            var mats = node.material ? (Array.isArray(node.material) ? node.material : [node.material]) : [];
+            mats.forEach(function (m) {
+              if (!m) return;
+              ['map', 'bumpMap', 'roughnessMap', 'metalnessMap', 'alphaMap', 'emissiveMap', 'normalMap'].forEach(function (k) {
+                var tx = m[k];
+                if (tx && tx.dispose && _plTex.indexOf(tx) === -1) _plTex.push(tx);
+              });
+              if (m.dispose) { try { m.dispose(); } catch (_) {} }
+            });
           });
+          _plTex.forEach(function (tx) { try { tx.dispose(); } catch (_) {} });
         }
         if (renderer) {
           try { renderer.dispose(); } catch (_) {}
@@ -2576,7 +3059,7 @@
             )
           ),
           h('div', { className: 'space-y-4' },
-            h(PrintPreview, { React: React, ready: runtimeReady, format: format, recipe: recipe, bytes: currentTurnPreview ? currentTurnPreview.copy.bytes : fileBytes, glbRoot: glbRoot, unitMm: unitMm, revision: currentTurnPreview ? revision+'-turn-preview' : revision }),
+            h(PrintPreview, { React: React, ready: runtimeReady, format: format, recipe: recipe, bytes: currentTurnPreview ? currentTurnPreview.copy.bytes : fileBytes, glbRoot: glbRoot, unitMm: unitMm, revision: currentTurnPreview ? revision+'-turn-preview' : revision, profile: profile, isContrast: isContrast }),
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4' },
               h('h2', { className: 'text-sm font-black text-white' }, 'Physical scale'),
               sourceContext && (sourceContext.sourceTool === 'geometryWorld' || sourceContext.sourceTool === 'archStudio') && h('div', { className: 'mt-3', 'aria-label': sourceContext.sourceTool === 'archStudio' ? __alloT('stem.printlab.a11y_architecture_studio_scale_presets', 'Architecture Studio scale presets') : __alloT('stem.printlab.a11y_geometry_world_scale_presets', 'Geometry World scale presets') },
@@ -3169,23 +3652,48 @@
             }),
             /* Divider */
             h('line', { x1: 424, y1: 12, x2: 424, y2: 82, stroke: isContrast ? '#ffff00' : '#1e293b', strokeWidth: 1.2 }),
-            /* Right: Build Plate Envelope Schematic */
-            h('text', { x: 438, y: 20, fill: isContrast ? '#ffff00' : '#e2e8f0', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'BUILD PLATE'),
-            h('rect', { x: 438, y: 28, width: 58, height: 54, rx: 4, fill: isContrast ? '#000000' : '#0f172a', stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 1.5 }),
+            /* Right: Build Plate Envelope & 2D Layer-Slicer Cross-Section Schematic */
+            h('text', { x: 438, y: 20, fill: isContrast ? '#ffff00' : '#e2e8f0', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'LAYER SLICE / BED'),
+            h('rect', { x: 438, y: 28, width: 58, height: 54, rx: 4, fill: isContrast ? '#000000' : '#081120', stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 1.5 }),
+            /* Calibrated build-plate millimeter grid lines */
+            h('g', { stroke: isContrast ? 'rgba(255,255,0,0.28)' : 'rgba(56,189,248,0.16)', strokeWidth: 0.6 },
+              [448, 458, 467, 476, 486].map(function (gx) { return h('line', { key: 'gx' + gx, x1: gx, y1: 29, x2: gx, y2: 81 }); }),
+              [38, 47, 55, 63, 72].map(function (gy) { return h('line', { key: 'gy' + gy, x1: 439, y1: gy, x2: 495, y2: gy }); })
+            ),
             /* Planning clearance dashed inner box */
-            h('rect', { x: 443, y: 33, width: 48, height: 44, rx: 2, fill: 'none', stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.75 }),
-            /* Scaled model footprint (or schematic placeholder) */
+            h('rect', { x: 443, y: 33, width: 48, height: 44, rx: 2, fill: 'none', stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.8 }),
+            /* Scaled 2D layer-slicer cross-section with perimeter contour + infill hatch + hotend nozzle pip */
             (function () {
-              var fw = dimW != null ? Math.min(48, Math.max(8, Math.round((dimW / bedW) * 48))) : 24;
-              var fd = dimD != null ? Math.min(44, Math.max(8, Math.round((dimD / bedD) * 44))) : 22;
+              var fw = dimW != null ? Math.min(48, Math.max(10, Math.round((dimW / bedW) * 48))) : 26;
+              var fd = dimD != null ? Math.min(44, Math.max(10, Math.round((dimD / bedD) * 44))) : 22;
               var fx = 467 - Math.round(fw / 2);
               var fy = 55 - Math.round(fd / 2);
-              return h('rect', {
-                x: fx, y: fy, width: fw, height: fd, rx: 2,
-                fill: isContrast ? (fitsBed ? '#00ff00' : '#ff6b6b') : (fitsBed ? 'rgba(34,211,238,0.42)' : 'rgba(251,113,133,0.5)'),
-                stroke: isContrast ? '#ffff00' : (fitsBed ? '#22d3ee' : '#fb7185'),
-                strokeWidth: 1.5
-              });
+              var hatchLines = [];
+              for (var hi = -fd; hi < fw; hi += 6) {
+                var hx1 = Math.max(fx + 2, fx + hi);
+                var hy1 = fy + Math.max(2, 2 - hi);
+                var hx2 = Math.min(fx + fw - 2, fx + hi + fd - 4);
+                var hy2 = fy + Math.min(fd - 2, fd - 2 - (fx + hi + fd - 4 - hx2));
+                if (hx2 > hx1 && hy2 > hy1) {
+                  hatchLines.push(h('line', { key: 'h' + hi, x1: hx1, y1: hy1, x2: hx2, y2: hy2, stroke: isContrast ? '#00ffff' : (fitsBed ? 'rgba(103,232,249,0.55)' : 'rgba(253,164,175,0.6)'), strokeWidth: 0.85 }));
+                }
+              }
+              return h('g', null,
+                h('rect', {
+                  x: fx, y: fy, width: fw, height: fd, rx: 2,
+                  fill: isContrast ? (fitsBed ? '#003300' : '#330000') : (fitsBed ? 'rgba(6,182,212,0.22)' : 'rgba(244,63,94,0.28)'),
+                  stroke: isContrast ? '#ffff00' : (fitsBed ? '#22d3ee' : '#fb7185'),
+                  strokeWidth: 1.6
+                }),
+                h('rect', {
+                  x: fx + 2.2, y: fy + 2.2, width: Math.max(4, fw - 4.4), height: Math.max(4, fd - 4.4), rx: 1,
+                  fill: 'none',
+                  stroke: isContrast ? '#00ff00' : (fitsBed ? '#fb923c' : '#fda4af'),
+                  strokeWidth: 0.9, strokeDasharray: '2 1.5'
+                }),
+                hatchLines,
+                h('circle', { cx: fx + fw - 2.5, cy: fy + 2.5, r: 2.2, fill: isContrast ? '#ffff00' : '#fb923c' })
+              );
             })(),
             h('text', { x: 508, y: 40, fill: isContrast ? '#ffffff' : '#f8fafc', fontSize: 10.5, fontWeight: 800, fontFamily: 'monospace' }, bedW + '\u00D7' + bedD + ' mm'),
             h('text', { x: 508, y: 56, fill: isContrast ? '#00ffff' : '#cbd5e1', fontSize: 10, fontWeight: 700, fontFamily: 'system-ui, sans-serif' },

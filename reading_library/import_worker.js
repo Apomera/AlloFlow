@@ -114,15 +114,19 @@ async function readBoundedBuffer(res, maxBytes) {
   const reader = res.body.getReader();
   const chunks = [];
   let total = 0;
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > maxBytes) {
-      try { await reader.cancel(); } catch (_) {}
-      throw new Error('Book text exceeds maximum supported size.');
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        try { await reader.cancel(); } catch (_) {}
+        throw new Error('Book text exceeds maximum supported size.');
+      }
+      chunks.push(value);
     }
-    chunks.push(value);
+  } finally {
+    try { reader.releaseLock(); } catch (_) {}
   }
   const out = new Uint8Array(total);
   let offset = 0;
@@ -220,8 +224,9 @@ function splitIntoReadingPages(paragraphs) {
 }
 
 function bookLanguage(metadata) {
-  const code = (Array.isArray(metadata.languages) && metadata.languages[0]) || 'en';
-  return { langCode: code, language: GUTENBERG_LANG_NAMES[code] || code.toUpperCase(), isRtl: RTL_LANG_CODES.has(code) };
+  const code = String((Array.isArray(metadata.languages) && metadata.languages[0]) || 'en').toLowerCase();
+  const language = Object.prototype.hasOwnProperty.call(GUTENBERG_LANG_NAMES, code) ? GUTENBERG_LANG_NAMES[code] : code.toUpperCase();
+  return { langCode: code, language, isRtl: RTL_LANG_CODES.has(code) };
 }
 
 async function fetchGutendexMetadata(id) {
@@ -310,15 +315,31 @@ async function buildBook(id) {
 }
 
 export default {
-  async fetch(request) {
-    if (request.method === 'OPTIONS') return new Response(null, { headers: corsHeaders() });
+  async fetch(request, env, ctx) {
+    if (request.method === 'OPTIONS') {
+      const headers = corsHeaders();
+      headers['Cache-Control'] = 'no-store';
+      delete headers['Content-Type'];
+      return new Response(null, { status: 204, headers });
+    }
     if (request.method !== 'GET') return json({ error: 'Use GET.' }, 405);
     try {
       const url = new URL(request.url);
       const id = Number(url.searchParams.get('id'));
-      if (!Number.isInteger(id) || id <= 0) return json({ error: 'Pass a Project Gutenberg id, e.g. ?id=1342.' }, 400);
+      if (!Number.isInteger(id) || id <= 0 || id > 9999999) return json({ error: 'Pass a Project Gutenberg id, e.g. ?id=1342.' }, 400);
+      const cache = typeof caches !== 'undefined' && caches && caches.default ? caches.default : null;
+      const cacheKey = cache ? new Request(url.origin + '/?id=' + id, { method: 'GET' }) : null;
+      if (cache && cacheKey) {
+        const cached = await cache.match(cacheKey);
+        if (cached) return cached;
+      }
       const book = await buildBook(id);
-      return json({ book });
+      const res = json({ book });
+      if (cache && cacheKey) {
+        const putPromise = cache.put(cacheKey, res.clone()).catch(() => {});
+        if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(putPromise);
+      }
+      return res;
     } catch (_) {
       return json({ error: 'Could not import that Project Gutenberg book right now.' }, 502);
     }

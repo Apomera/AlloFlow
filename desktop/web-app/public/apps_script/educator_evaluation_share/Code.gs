@@ -24,14 +24,17 @@ var EE_PACKET_RENDERER = 'allowlisted-server-renderer-v1';
 var EE_PACKET_RESPONSE_SCRIPT = [
   '(function(){',
   'var node=document.getElementById("allo-evaluation-packet");',
-  'if(!node)return;',
-  'var packet=JSON.parse(node.textContent);',
+  'var sendBtn=document.getElementById("ae-send");',
+  'if(!node||!sendBtn)return;',
+  'var packet=null;',
+  'try{packet=JSON.parse(node.textContent||"",function(k,v){return(k==="__proto__"||k==="constructor"||k==="prototype")?undefined:v;});}catch(_){return;}',
+  'if(!packet||typeof packet!=="object")return;',
   'var status=document.getElementById("ae-status");',
-  'document.getElementById("ae-send").addEventListener("click",function(){',
+  'sendBtn.addEventListener("click",function(){',
   '  var now=new Date().toISOString();',
   '  var statementNode=document.getElementById("ae-statement");',
   '  var statement=statementNode?(statementNode.value||"").trim():"";',
-  '  var records=[];var keyed={};',
+  '  var records=[];var keyed=Object.create(null);',
   '  function sourceFor(collection,id){var list=packet[collection]||[];for(var i=0;i<list.length;i++){if(list[i].id===id)return list[i];}return null;}',
   '  function responseFor(collection,id){var key=collection+":"+id;if(!keyed[key]){var src=sourceFor(collection,id);keyed[key]={collection:collection,recordId:id,sourceUpdatedAt:src&&src.sourceUpdatedAt?src.sourceUpdatedAt:null};records.push(keyed[key]);}return keyed[key];}',
   '  var areas=document.querySelectorAll("textarea[data-record]");',
@@ -47,7 +50,8 @@ var EE_PACKET_RESPONSE_SCRIPT = [
   '  var blob=new Blob([JSON.stringify(response,null,2)],{type:"application/json"});',
   '  var url=URL.createObjectURL(blob);',
   '  var link=document.createElement("a");',
-  '  link.href=url;link.download="evaluation-response-"+(packet.teacherId||"educator")+".json";',
+  '  var safeTid=String(packet.teacherId||"educator").replace(/[^A-Za-z0-9._-]/g,"_").replace(/^\\.+/,"")||"educator";',
+  '  link.href=url;link.download="evaluation-response-"+safeTid+".json";',
   '  document.body.appendChild(link);link.click();document.body.removeChild(link);',
   '  setTimeout(function(){URL.revokeObjectURL(url);},1000);',
   '  status.textContent="Response downloaded. Send that file back to your evaluator as an email attachment.";',
@@ -57,9 +61,13 @@ var EE_PACKET_RESPONSE_SCRIPT = [
 
 function doGet() {
   eeRequireManagedOwner_();
-  return HtmlService.createHtmlOutputFromFile('Index')
+  var out = HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('AlloFlow evaluation share helper')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  if (out && typeof out.setXFrameOptionsMode === 'function' && HtmlService.XFrameOptionsMode) {
+    out.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+  }
+  return out;
 }
 
 function eeIdentityState_() {
@@ -91,7 +99,7 @@ function eeString_(value, max, label) {
 
 function eeEmail_(value, label) {
   var email = eeString_(value, 254, label).toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error(label + ' is not a valid email address.');
+  if (!/^[A-Za-z0-9.!#$%&'*+/=?^_{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(email)) throw new Error(label + ' is not a valid email address.');
   return email;
 }
 
@@ -157,6 +165,7 @@ function eeRecordLedgerEvent_(event) {
   var indexKey = 'EE_LEDGER_V3_INDEX';
   var index = [];
   try { index = JSON.parse(properties.getProperty(indexKey) || '[]'); } catch (error) { index = []; }
+  if (!Array.isArray(index)) index = [];
   var suffix = String(new Date().getTime()) + '-' + String(Math.floor(Math.random() * 1000000));
   var key = 'EE_LEDGER_V3_' + suffix;
   properties.setProperty(key, JSON.stringify(event));
@@ -172,9 +181,13 @@ function eeRecordLedgerEvent_(event) {
 function eeExpiryDate_(raw) {
   if (!raw) return null;
   var text = String(raw).trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) throw new Error('Expiry must look like 2026-11-30.');
+  var parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text);
+  if (!parts) throw new Error('Expiry must look like 2026-11-30.');
+  var y = Number(parts[1]), m = Number(parts[2]), d = Number(parts[3]);
   var when = new Date(text + 'T23:59:59');
-  if (isNaN(when.getTime())) throw new Error('That expiry date is not a real date.');
+  if (isNaN(when.getTime()) || when.getFullYear() !== y || when.getMonth() !== m - 1 || when.getDate() !== d) {
+    throw new Error('That expiry date is not a real date.');
+  }
   var now = new Date();
   if (when.getTime() <= now.getTime()) throw new Error('That expiry date is already in the past.');
   var maxOut = new Date(now.getTime());
@@ -545,11 +558,11 @@ function eePacketPayload_(html) {
   }
   if (executable.length) remainder = remainder.replace(executable[0], '');
   if (/<\/?script\b/i.test(remainder)
-      || /\son[a-z0-9_-]+\s*=/i.test(remainder)
+      || /[\s"'\/]on[a-z0-9_-]+\s*=/i.test(remainder)
       || /javascript\s*:/i.test(remainder)
-      || /<\s*(?:iframe|object|embed|base|link|form)\b/i.test(remainder)
+      || /<\s*(?:iframe|frame|frameset|object|embed|base|link|form|svg|math|template|noscript)\b/i.test(remainder)
       || /<meta\b[^>]*http-equiv\s*=/i.test(remainder)
-      || /\sstyle\s*=/i.test(remainder)) {
+      || /[\s"'\/]style\s*=/i.test(remainder)) {
     throw new Error('The packet contains untrusted active markup. Export a fresh packet from AlloFlow.');
   }
 
@@ -758,7 +771,7 @@ function eePermissionsFor_(fileId) {
   if (!eeDriveApiReady_()) throw new Error('Drive API v3 is required to verify permissions.');
   var all = [];
   var pageToken = null;
-  var seenPages = {};
+  var seenPages = Object.create(null);
   do {
     if (pageToken && seenPages[pageToken]) throw new Error('Drive returned a repeated permission page; access could not be verified.');
     if (pageToken) seenPages[pageToken] = true;
@@ -986,17 +999,26 @@ function revokeEvaluationAccess(request) {
 
 function revokeEvaluationAccessLocked_(request) {
   request = request || {};
-  eeRequireManagedOwner_();
+  var owner = eeRequireManagedOwner_();
   if (!eeDriveApiReady_()) throw new Error('Drive API v3 is required to prove that access was removed.');
   var fileId = eeString_(request.fileId, 240, 'File id');
   if (!/^[A-Za-z0-9_-]{4,240}$/.test(fileId)) throw new Error('File id is not valid.');
   var educatorEmail = eeEmail_(request.educatorEmail, 'Educator email');
   var file = DriveApp.getFileById(fileId);
+  if (!file || (typeof file.isTrashed === 'function' && file.isTrashed())) {
+    throw new Error('This evaluation file is trashed or unavailable. Access was not changed.');
+  }
+  if (typeof file.getOwner === 'function') {
+    var fileOwner = String((file.getOwner() && file.getOwner().getEmail && file.getOwner().getEmail()) || '').trim().toLowerCase();
+    if (!fileOwner || fileOwner !== owner) {
+      throw new Error('This file is not owned by the managed deployment account. Access was not changed.');
+    }
+  }
   var meta = eeReadShareDescription_(file);
   if (!meta || !meta.packetId || !meta.sharedWith) {
     throw new Error('This file is not a helper-recorded evaluation share. Access was not changed.');
   }
-  if (meta.fileId && String(meta.fileId) !== fileId) throw new Error('The helper record does not match this Drive file. Access was not changed.');
+  if (!meta.fileId || String(meta.fileId) !== fileId) throw new Error('The helper record does not match this Drive file. Access was not changed.');
   if (String(meta.sharedWith).toLowerCase() !== educatorEmail) {
     throw new Error('That recipient does not match the share recorded for this file.');
   }
@@ -1035,17 +1057,22 @@ function listSharedEvaluations(academicYear) {
   var year = eeFolderPart_(academicYear, 40, 'Academic year');
   var roots = DriveApp.getRootFolder().getFoldersByName(EE_ROOT_FOLDER);
   if (!roots.hasNext()) return { academicYear: year, educators: [] };
-  var years = roots.next().getFoldersByName(year);
+  var rootFolder = roots.next();
+  if (roots.hasNext()) throw new Error('Multiple folders named ' + EE_ROOT_FOLDER + ' exist in Drive. Resolve the duplicate folder before listing.');
+  var years = rootFolder.getFoldersByName(year);
   if (!years.hasNext()) return { academicYear: year, educators: [] };
   var yearFolder = years.next();
+  if (years.hasNext()) throw new Error('Multiple academic-year folders named ' + year + ' exist in Drive. Resolve the duplicate folder before listing.');
   var educators = [];
   var folders = yearFolder.getFolders();
   while (folders.hasNext()) {
     var educatorFolder = folders.next();
+    if (typeof educatorFolder.isTrashed === 'function' && educatorFolder.isTrashed()) continue;
     var files = educatorFolder.getFiles();
     var packets = [];
     while (files.hasNext()) {
       var file = files.next();
+      if (typeof file.isTrashed === 'function' && file.isTrashed()) continue;
       var meta = eeReadShareDescription_(file) || {};
       var matching = [];
       var checkError = '';

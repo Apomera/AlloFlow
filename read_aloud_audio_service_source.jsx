@@ -65,10 +65,21 @@ const createReadAloudAudioService = (dependencies = {}) => {
     const getSynthesisProfile = typeof dependencies.getSynthesisProfile === 'function'
         ? dependencies.getSynthesisProfile
         : () => ({});
+    const _isLocalTtsRequest = (request) => {
+        const profile = (request && request.profile) || {};
+        const provider = String(profile.requestedProvider || profile.provider || '').toLowerCase();
+        const voice = String(profile.voice || '');
+        if (provider === 'gemini' || provider === 'cloud') return false;
+        if (provider === 'local' || provider === 'kokoro' || provider === 'piper' || provider === 'kokoro-word-shard' || provider === 'browser') return true;
+        if (/^(?:af|am|bf|bm|ef|em|ff|hf|hm|if|im|jf|jm|pf|pm|zf|zm)_/i.test(voice)) return true;
+        if (typeof window !== 'undefined' && (window._kokoroTTS?.ready || window._piperTTS)) return true;
+        return false;
+    };
     const rawSynthesize = typeof dependencies.synthesize === 'function' ? dependencies.synthesize : null;
     const synthesize = rawSynthesize
         ? async (request) => {
-            if (rawSynthesize._alloQrBlocked === true || (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('tts', rawSynthesize))))) {
+            const isLocal = _isLocalTtsRequest(request);
+            if (rawSynthesize._alloQrBlocked === true || (typeof window !== 'undefined' && !isLocal && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('tts', rawSynthesize))))) {
                 throw serviceError('synthesize-unavailable', 'Cloud read-aloud synthesis is disabled in this session.');
             }
             return rawSynthesize(request);
@@ -116,7 +127,9 @@ const createReadAloudAudioService = (dependencies = {}) => {
     function bytesToBase64(input) {
         const bytes = input instanceof Uint8Array
             ? input
-            : new Uint8Array(input.buffer || input, input.byteOffset || 0, input.byteLength || undefined);
+            : (ArrayBuffer.isView(input)
+                ? new Uint8Array(input.buffer, input.byteOffset, input.byteLength)
+                : new Uint8Array(input));
         let binary = '';
         const chunkSize = 0x8000;
         for (let offset = 0; offset < bytes.length; offset += chunkSize) {
@@ -707,7 +720,13 @@ const createReadAloudAudioService = (dependencies = {}) => {
             if (preparation) {
                 if (options.signal === preparationOptions.signal &&
                     JSON.stringify([options.profile, options.source, options.storeOptions, options.metadata]) ===
-                    JSON.stringify([preparationOptions.profile, preparationOptions.source, preparationOptions.storeOptions, preparationOptions.metadata])) return preparation;
+                    JSON.stringify([preparationOptions.profile, preparationOptions.source, preparationOptions.storeOptions, preparationOptions.metadata])) {
+                    if (typeof options.onProgress === 'function') {
+                        const unsubJoin = subscribe('progress', options.onProgress);
+                        preparation.finally(() => { try { unsubJoin(); } catch (_) {} }).catch(() => {});
+                    }
+                    return preparation;
+                }
                 return Promise.reject(serviceError('preparation-in-progress', 'Stop the current preparation before starting a different request.'));
             }
             preparationOptions = options;
@@ -917,10 +936,21 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
     const getProfile = typeof dependencies.getProfile === 'function'
         ? dependencies.getProfile
         : () => ({});
+    const _isLocalBridgeRequest = (request) => {
+        const profile = (request && request.profile) || {};
+        const provider = String(profile.requestedProvider || profile.provider || '').toLowerCase();
+        const voice = String(profile.voice || '');
+        if (provider === 'gemini' || provider === 'cloud') return false;
+        if (provider === 'local' || provider === 'kokoro' || provider === 'piper' || provider === 'kokoro-word-shard' || provider === 'browser') return true;
+        if (/^(?:af|am|bf|bm|ef|em|ff|hf|hm|if|im|jf|jm|pf|pm|zf|zm)_/i.test(voice)) return true;
+        if (typeof window !== 'undefined' && (window._kokoroTTS?.ready || window._piperTTS)) return true;
+        return false;
+    };
     const rawBridgeSynthesize = typeof dependencies.synthesize === 'function' ? dependencies.synthesize : null;
     const synthesize = rawBridgeSynthesize
         ? async (request) => {
-            if (rawBridgeSynthesize._alloQrBlocked === true || (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('tts', rawBridgeSynthesize))))) {
+            const isLocal = _isLocalBridgeRequest(request);
+            if (rawBridgeSynthesize._alloQrBlocked === true || (typeof window !== 'undefined' && !isLocal && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('tts', rawBridgeSynthesize))))) {
                 throw new Error('Cloud read-aloud synthesis is disabled in this session.');
             }
             return rawBridgeSynthesize(request);
@@ -1297,7 +1327,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             readAloudTrace('bridge:resolve-error', {
                 segmentId: segment.segmentId,
                 ms: Date.now() - resolveStartedAt,
-                error: String((error && error.message) || error).substring(0, 140),
+                error: String((error && (error.code || error.name)) || 'read-aloud-error').substring(0, 80),
             });
             return null;
         } finally {
@@ -1379,16 +1409,25 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         const cancellationGetter = typeof options.isCancelled === 'function'
             ? options.isCancelled
             : defaultIsCancelled;
-        const dynamicSignal = {};
-        Object.defineProperty(dynamicSignal, 'aborted', {
-            enumerable: true,
-            get: () => !!((options.signal && options.signal.aborted) ||
-                safeCall(cancellationGetter, false, [])),
-        });
-        Object.defineProperty(dynamicSignal, 'reason', {
-            enumerable: true,
-            get: () => options.signal && options.signal.reason,
-        });
+        const prepController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const forwardUpstreamAbort = () => {
+            try { if (prepController && !prepController.signal.aborted) prepController.abort(options.signal && options.signal.reason); } catch (_) {}
+        };
+        if (prepController) {
+            if ((options.signal && options.signal.aborted) || safeCall(cancellationGetter, false, [])) {
+                forwardUpstreamAbort();
+            } else if (options.signal && typeof options.signal.addEventListener === 'function') {
+                try { options.signal.addEventListener('abort', forwardUpstreamAbort, { once: true }); } catch (_) {}
+            }
+        }
+        const cancelPollTimer = (prepController && !prepController.signal.aborted && typeof setInterval === 'function')
+            ? setInterval(() => {
+                if (safeCall(cancellationGetter, false, [])) {
+                    try { prepController.abort(); } catch (_) {}
+                }
+            }, 150)
+            : null;
+        const dynamicSignal = prepController ? prepController.signal : options.signal;
 
         function legacyProgress(event) {
             if (!event || event.phase !== 'segment' || event.status === 'skipped') return;
@@ -1402,12 +1441,15 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             if (typeof onProgress === 'function') {
                 try { onProgress(attempted, total, event.segment && event.segment.spokenText); } catch (_) {}
             }
+            if (prepController && !prepController.signal.aborted && safeCall(cancellationGetter, false, [])) {
+                try { prepController.abort(); } catch (_) {}
+            }
         }
 
         let cancelled = false;
         try {
             const result = await controller.prepareAll({
-                signal: options.signal || dynamicSignal,
+                signal: dynamicSignal,
                 onProgress: legacyProgress,
                 profile: options.profile,
                 source: options.source,
@@ -1426,6 +1468,11 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
                 failed += 1;
                 lastFailure = failureDetail(error);
                 recordFailure(error, null, null);
+            }
+        } finally {
+            if (cancelPollTimer !== null) clearInterval(cancelPollTimer);
+            if (options.signal && typeof options.signal.removeEventListener === 'function') {
+                try { options.signal.removeEventListener('abort', forwardUpstreamAbort); } catch (_) {}
             }
         }
         const finalSummary = controller.summary({ profile: options.profile });
@@ -1449,23 +1496,32 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         if (!sentence || !url) return false;
         const provenance = readAloudProvenanceForUrl(url);
         const hasOccurrence = Number.isInteger(options.occurrence) && options.occurrence >= 0;
-        const binding = bindingFor([sentence], 'reference', options.occurrence);
-        if (!binding) return false;
+        let binding = null;
         let segment = null;
         if (!hasOccurrence && provenance && provenance.segmentId != null) {
             // No explicit occurrence: trust the URL's own resolution record
             // over first-text-match so a duplicated sentence still captures
             // into the segment that actually requested this clip.
-            try {
-                segment = binding.controller.segments().find((candidate) => (
-                    String(candidate.segmentId) === String(provenance.segmentId)
-                )) || null;
-            } catch (_) { segment = null; }
+            const fullBinding = bindingFor(null, 'reference');
+            if (fullBinding) {
+                try {
+                    const matched = fullBinding.controller.segments().find((candidate) => (
+                        String(candidate.segmentId) === String(provenance.segmentId)
+                    )) || null;
+                    if (matched) {
+                        binding = fullBinding;
+                        segment = matched;
+                    }
+                } catch (_) { segment = null; }
+            }
         }
+        if (!binding) binding = bindingFor([sentence], 'reference', options.occurrence);
+        if (!binding) return false;
         if (!segment) segment = firstSegment(binding);
         if (!segment) return false;
         try {
-            if (binding.controller.inspect(segment).status === 'ready') return false;
+            const captureProfile = options.profile || (provenance && provenance.profile) || undefined;
+            if (binding.controller.inspect(segment, { profile: captureProfile }).status === 'ready') return false;
             notifyStatus(binding, segment.spokenText, 'saving');
             let durable = false;
             const unsubscribe = binding.controller.subscribe((event) => {
@@ -1476,7 +1532,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
                 // The resolution-time profile travels with the URL; without it
                 // a mid-flight settings change relabels the clip (Puck audio
                 // stored as Kore) and later compatible lookups accept it.
-                profile: options.profile || (provenance && provenance.profile) || undefined,
+                profile: captureProfile,
                 signal: options.signal,
                 metadata: options.metadata,
                 storeOptions: options.storeOptions,

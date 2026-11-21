@@ -81,11 +81,18 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
       if (learnerScope) localStorage.setItem(`allo_display_name:${learnerScope}`, clean);else localStorage.setItem('allo_display_name', clean);
     } catch (_) {}
   }, [learnerScope]);
+  const [armStartFresh, setArmStartFresh] = React.useState(false);
+  React.useEffect(() => {
+    setArmStartFresh(false);
+  }, [scope]);
   const handleQuestionBoardStartFresh = React.useCallback(() => {
-    if (!transport || isTeacher) return;
+    if (!transport || isTeacher || mutationRef.current) return;
+    setArmStartFresh(false);
     rememberName('');
     setDraft('');
-    mutate(() => typeof transport.startFresh === 'function' ? transport.startFresh() : transport.load());
+    if (typeof mutateRef.current === 'function') {
+      mutateRef.current(() => typeof transport.startFresh === 'function' ? transport.startFresh() : transport.load());
+    }
   }, [transport, isTeacher, rememberName]);
   React.useEffect(() => {
     setBoard(null);
@@ -193,6 +200,8 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
       }
     }
   }, [transport, refresh, report, addToast]);
+  const mutateRef = React.useRef(mutate);
+  mutateRef.current = mutate;
   const post = React.useCallback(text => mutate(() => transport.addItem(text), true), [transport, mutate]);
   const moderate = React.useCallback((item, status) => mutate(() => transport.setStatus(item.uid, item.id, status)), [transport, mutate]);
   const toggleAnswered = React.useCallback((item, next) => mutate(() => transport.setAnswered(item.uid, item.id, next === true, '')), [transport, mutate]);
@@ -201,7 +210,7 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
       className: "rounded border border-slate-300 bg-slate-50 p-3 text-xs text-slate-700"
     }, "The questions board is still loading. Give it a moment, then reopen this panel.");
   }
-  if (!board) {
+  if (!transport || !board) {
     return /*#__PURE__*/React.createElement("div", {
       className: "space-y-2 p-3"
     }, /*#__PURE__*/React.createElement("p", {
@@ -236,11 +245,28 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
   }, /*#__PURE__*/React.createElement("label", {
     htmlFor: `qb-name-${activityId}`,
     className: "text-xs font-bold text-slate-700"
-  }, "Your name"), (displayName || actor?.uid) && /*#__PURE__*/React.createElement("button", {
+  }, "Your name"), (displayName || actor?.uid) && (armStartFresh ? /*#__PURE__*/React.createElement("span", {
+    className: "inline-flex items-center gap-1",
+    onKeyDown: e => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        setArmStartFresh(false);
+      }
+    }
+  }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleQuestionBoardStartFresh,
-    className: "text-[11px] font-bold text-sky-700 underline hover:text-sky-900"
-  }, "Not you? Start fresh")), /*#__PURE__*/React.createElement("input", {
+    className: "min-h-11 rounded border border-rose-300 bg-rose-50 px-2.5 text-xs font-bold text-rose-900 hover:bg-rose-100"
+  }, "Confirm start fresh"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setArmStartFresh(false),
+    className: "min-h-11 rounded border border-slate-300 bg-white px-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
+  }, "Cancel")) : /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setArmStartFresh(true),
+    className: "min-h-11 px-2 inline-flex items-center text-xs font-bold text-sky-700 underline hover:text-sky-900"
+  }, "Not you? Start fresh"))), /*#__PURE__*/React.createElement("input", {
     id: `qb-name-${activityId}`,
     type: "text",
     value: displayName,
@@ -660,7 +686,8 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
     addToast('None of the selected resources can be shared with students. Choose a different History resource.', 'info');
     return null;
   }
-  const expiresAt = new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString();
+  const safeExpiryDays = Math.max(1, Math.min(365, Number.isFinite(Number(homeworkExpiryDays)) ? Number(homeworkExpiryDays) : 7));
+  const expiresAt = new Date(Date.now() + safeExpiryDays * 24 * 60 * 60 * 1000).toISOString();
   const ALLO_ACTIVITY_TYPES = ['rating', 'availability', 'signup', 'word_cloud', 'survey'];
   const sharedActivityType = ALLO_ACTIVITY_TYPES.indexOf(sharedAssignmentActivity.type) >= 0 ? sharedAssignmentActivity.type : 'word_cloud';
   // One label per line is the whole authoring story for slots. A suffix such
@@ -761,6 +788,16 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
       return null;
     }
   }
+  if (sharedActivity && (sharedActivity.type === 'availability' || sharedActivity.type === 'signup')) {
+    if (!pollOptions.length) {
+      addToast('Add at least one option first.', 'info');
+      return null;
+    }
+    if (!sharedActivity.identityMode) {
+      addToast('Pick who is answering before you share this activity.', 'info');
+      return null;
+    }
+  }
   const sharedActivities = sharedActivity ? [sharedActivity] : [];
   const packet = stripUndefined({
     v: 1,
@@ -841,24 +878,25 @@ function alloNormalizeCredentialStore(raw) {
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {
     v: ALLO_ACTIVITY_CRED_VERSION,
     active: '',
-    slots: {}
+    slots: Object.create(null)
   };
   if (parsed.uid && parsed.pt) {
+    const s = Object.create(null);
+    s.s1 = {
+      uid: String(parsed.uid),
+      pt: String(parsed.pt),
+      label: ''
+    };
     return {
       v: ALLO_ACTIVITY_CRED_VERSION,
       active: 's1',
-      slots: {
-        s1: {
-          uid: String(parsed.uid),
-          pt: String(parsed.pt),
-          label: ''
-        }
-      }
+      slots: s
     };
   }
-  const slots = {};
+  const slots = Object.create(null);
   const rawSlots = parsed.slots && typeof parsed.slots === 'object' && !Array.isArray(parsed.slots) ? parsed.slots : {};
   Object.keys(rawSlots).forEach(key => {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
     const slot = rawSlots[key];
     if (!slot || !slot.uid || !slot.pt) return;
     slots[key] = {
@@ -867,7 +905,8 @@ function alloNormalizeCredentialStore(raw) {
       label: String(slot.label || '')
     };
   });
-  const active = slots[parsed.active] ? String(parsed.active) : Object.keys(slots)[0] || '';
+  const activeKey = typeof parsed.active === 'string' ? parsed.active : '';
+  const active = activeKey && Object.prototype.hasOwnProperty.call(slots, activeKey) ? activeKey : Object.keys(slots)[0] || '';
   return {
     v: ALLO_ACTIVITY_CRED_VERSION,
     active,
@@ -881,28 +920,29 @@ function alloNormalizeCredentialStore(raw) {
 function alloCredentialSlotKey(identityMode, label, store) {
   const cleaned = String(label || '').trim().toLowerCase().slice(0, 40);
   if (identityMode !== 'anonymous' && cleaned) return 'n:' + cleaned;
-  const taken = store && store.slots ? store.slots : {};
+  const taken = store && store.slots && typeof store.slots === 'object' ? store.slots : {};
   let n = 1;
-  while (taken['s' + n]) n++;
+  while (Object.prototype.hasOwnProperty.call(taken, 's' + n)) n++;
   return 's' + n;
 }
 function alloCredentialStoreWith(store, slotKey, credential, label) {
   const base = alloNormalizeCredentialStore(store);
-  const slots = Object.assign({}, base.slots);
-  slots[slotKey] = {
+  const slots = Object.assign(Object.create(null), base.slots);
+  const safeKey = slotKey === '__proto__' || slotKey === 'constructor' || slotKey === 'prototype' ? 's1' : String(slotKey || 's1');
+  slots[safeKey] = {
     uid: String(credential.uid),
     pt: String(credential.pt),
     label: String(label || '')
   };
   return {
     v: ALLO_ACTIVITY_CRED_VERSION,
-    active: slotKey,
+    active: safeKey,
     slots
   };
 }
 function alloActiveCredential(store) {
   const base = alloNormalizeCredentialStore(store);
-  const slot = base.slots[base.active];
+  const slot = base.active && Object.prototype.hasOwnProperty.call(base.slots, base.active) ? base.slots[base.active] : null;
   return slot && slot.uid && slot.pt ? {
     uid: slot.uid,
     pt: slot.pt,
@@ -978,6 +1018,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   const [error, setError] = React.useState('');
   const [lastUpdatedAt, setLastUpdatedAt] = React.useState(0);
   const [credVersion, setCredVersion] = React.useState(0);
+  const [armStartFresh, setArmStartFresh] = React.useState(false);
   activeActivityScopeRef.current = activityScope;
   const learnerScope = typeof window !== 'undefined' && typeof window.__alloActiveLearnerKey === 'string' ? window.__alloActiveLearnerKey.trim().slice(0, 64) : '';
   const storageKey = learnerScope ? `allo_shared_activity_v1:${learnerScope}:${packId}:${activityId}` : `allo_shared_activity_v1:${packId}:${activityId}`;
@@ -991,6 +1032,12 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       return null;
     }
   }, [useSessionOnlyCredStore]);
+  React.useEffect(() => {
+    if (!useSessionOnlyCredStore) return;
+    try {
+      if (typeof localStorage !== 'undefined') localStorage.removeItem(storageKey);
+    } catch (_) {}
+  }, [useSessionOnlyCredStore, storageKey]);
   React.useEffect(() => {
     credentialRef.current = null;
     credentialRequestRef.current = null;
@@ -1017,6 +1064,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     setBusy(false);
     setLastUpdatedAt(0);
     setCredVersion(v => v + 1);
+    setArmStartFresh(false);
     return () => {
       if (scopeTokenRef.current === scopeToken) scopeTokenRef.current = null;
     };
@@ -1075,12 +1123,45 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     }, slotKey, label);
   }, [activityId, getCredStorage, mailboxUrl, packId, packSecret, rememberCredential, storageKey]);
   const clearCredential = React.useCallback(() => {
+    const droppedUid = credentialRef.current && credentialRef.current.uid;
     credentialRef.current = null;
+    const pruneStore = storeApi => {
+      if (!storeApi) return;
+      try {
+        const store = alloNormalizeCredentialStore(storeApi.getItem(storageKey));
+        if (!store || !store.slots || typeof store.slots !== 'object') {
+          storeApi.removeItem(storageKey);
+          return;
+        }
+        const nextSlots = {
+          ...store.slots
+        };
+        const activeKey = store.active;
+        if (activeKey && Object.prototype.hasOwnProperty.call(nextSlots, activeKey)) {
+          delete nextSlots[activeKey];
+        }
+        if (droppedUid) {
+          Object.keys(nextSlots).forEach(k => {
+            if (nextSlots[k] && nextSlots[k].uid === droppedUid) delete nextSlots[k];
+          });
+        }
+        const remainingKeys = Object.keys(nextSlots);
+        if (remainingKeys.length === 0) {
+          storeApi.removeItem(storageKey);
+        } else {
+          storeApi.setItem(storageKey, JSON.stringify({
+            ...store,
+            active: '',
+            slots: nextSlots
+          }));
+        }
+      } catch (_) {}
+    };
     try {
-      localStorage.removeItem(storageKey);
+      pruneStore(typeof localStorage !== 'undefined' ? localStorage : null);
     } catch (_) {}
     try {
-      if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem(storageKey);
+      pruneStore(typeof sessionStorage !== 'undefined' ? sessionStorage : null);
     } catch (_) {}
     setCredVersion(v => v + 1);
   }, [storageKey]);
@@ -1156,10 +1237,12 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, [scopeToken]);
   const refresh = React.useCallback(async ({
     quiet = false,
-    retryCredential = true
+    retryCredential = true,
+    allowDuringMutation = false
   } = {}) => {
-    if (!mailboxUrl || !packId || !activityId || mutationRef.current || scopeTokenRef.current !== scopeToken) return null;
+    if (isQuestionBoard || !mailboxUrl || !packId || !activityId || !allowDuringMutation && mutationRef.current || scopeTokenRef.current !== scopeToken) return null;
     const requestSequence = ++requestSequenceRef.current;
+    let requestedUid = null;
     if (!quiet) setBusy(true);
     try {
       let result;
@@ -1172,6 +1255,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         });
       } else {
         const credential = await ensureCredential();
+        requestedUid = credential && credential.uid ? credential.uid : null;
         try {
           result = await _alloMailboxCallWithRetry(mailboxUrl, {
             a: 'getactivitysummary',
@@ -1184,6 +1268,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           if (scopeTokenRef.current !== scopeToken || !retryCredential || !String(requestError?.code || '').includes('denied')) throw requestError;
           clearCredential();
           const retry = await ensureCredential();
+          requestedUid = retry && retry.uid ? retry.uid : null;
           result = await _alloMailboxCallWithRetry(mailboxUrl, {
             a: 'getactivitysummary',
             id: packId,
@@ -1192,6 +1277,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
             pt: retry.pt
           });
         }
+        if (requestedUid && credentialRef.current && credentialRef.current.uid !== requestedUid) return null;
       }
       const applied = applySharedActivitySummary(result, requestSequence, activityScope);
       if (applied) {
@@ -1211,8 +1297,9 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     } finally {
       if (!quiet && !mutationRef.current && activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) setBusy(false);
     }
-  }, [activityId, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId, scopeToken]);
+  }, [activityId, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isQuestionBoard, isTeacher, mailboxUrl, packId, scopeToken]);
   React.useEffect(() => {
+    if (isQuestionBoard) return undefined;
     let cancelled = false;
     let timer = null;
     const tick = async quiet => {
@@ -1246,9 +1333,20 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         window.removeEventListener('online', wake);
       } catch (_) {}
     };
-  }, [refresh]);
+  }, [isQuestionBoard, refresh]);
   const handleSwitchRespondent = React.useCallback(async (targetMode, targetLabel = '') => {
-    if (isTeacher || scopeTokenRef.current !== scopeToken) return;
+    if (isTeacher || busy || mutationRef.current || scopeTokenRef.current !== scopeToken) return;
+    const mutation = {
+      scopeToken,
+      kind: 'switch-respondent'
+    };
+    mutationRef.current = mutation;
+    const switchSeq = ++requestSequenceRef.current;
+    lastAppliedSummaryRef.current = {
+      scope: activityScope,
+      sequence: switchSeq,
+      version: -1
+    };
     setBusy(true);
     setError('');
     setSaveNotice('');
@@ -1264,77 +1362,107 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     setRatingValue(null);
     try {
       await startNewRespondent(targetMode || identityModeHint || 'anonymous', targetLabel);
-      await refresh({
-        quiet: false,
-        retryCredential: false
-      });
+      if (mutationRef.current === mutation) {
+        await refresh({
+          quiet: false,
+          retryCredential: false,
+          allowDuringMutation: true
+        });
+      }
     } catch (_) {
       if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) {
         setError('Could not start a fresh session on this device. Check the connection and try again.');
       }
     } finally {
+      if (mutationRef.current === mutation) mutationRef.current = null;
       if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) setBusy(false);
     }
-  }, [activityScope, identityModeHint, isTeacher, refresh, scopeToken, startNewRespondent]);
+  }, [activityScope, busy, identityModeHint, isTeacher, refresh, scopeToken, startNewRespondent]);
   const submitTerm = async event => {
     event?.preventDefault?.();
-    if (busy) return;
+    if (busy || mutationRef.current || scopeTokenRef.current !== scopeToken) return;
     const polling = window.AlloModules?.LivePolling;
     const normalized = polling?.normalizeWordCloudTerm ? polling.normalizeWordCloudTerm(term) : String(term || '').replace(/\s+/g, ' ').trim().slice(0, 60);
     if (!normalized) {
       setError('Enter one word or a short phrase first.');
       return;
     }
+    const mutation = {
+      scopeToken
+    };
+    mutationRef.current = mutation;
     setBusy(true);
     const requestSequence = ++requestSequenceRef.current;
     try {
       const result = await callStudentUpdate({
         term: normalized
       });
+      if (scopeTokenRef.current !== scopeToken || mutationRef.current !== mutation) return;
+      if (!result || result.ok === false) throw Object.assign(new Error('Word not saved'), {
+        code: result?.e
+      });
       if (applySharedActivitySummary(result, requestSequence, activityScope)) {
         setTerm(result?.own?.text || normalized);
         setError('');
       }
-      addToast(result?.own?.status === 'approved' ? 'Your word is now part of the anonymous class cloud.' : 'Your word was saved and is waiting for teacher review.', 'success');
+      if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) {
+        addToast(result?.own?.status === 'approved' ? 'Your word is now part of the anonymous class cloud.' : 'Your word was saved and is waiting for teacher review.', 'success');
+      }
     } catch (requestError) {
       if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) {
         setError('Your word was not saved. Check the connection and use Save again.');
       }
     } finally {
+      if (mutationRef.current === mutation) mutationRef.current = null;
       if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) setBusy(false);
     }
   };
   const submitRating = async event => {
     event?.preventDefault?.();
-    if (busy) return;
+    if (busy || mutationRef.current || scopeTokenRef.current !== scopeToken) return;
     if (!Number.isInteger(ratingValue) || ratingValue < ratingActivity.minValue || ratingValue > ratingActivity.maxValue) {
       setError('Choose one rating before saving.');
       return;
     }
+    const mutation = {
+      scopeToken
+    };
+    mutationRef.current = mutation;
     setBusy(true);
     const requestSequence = ++requestSequenceRef.current;
     try {
       const result = await callStudentUpdate({
         value: ratingValue
       });
+      if (scopeTokenRef.current !== scopeToken || mutationRef.current !== mutation) return;
+      if (!result || result.ok === false) throw Object.assign(new Error('Rating not saved'), {
+        code: result?.e
+      });
       if (applySharedActivitySummary(result, requestSequence, activityScope)) {
         setRatingValue(Number.isInteger(result?.own?.value) ? result.own.value : ratingValue);
         setError('');
       }
-      addToast('Your rating was saved anonymously. You can update it while the assignment is open.', 'success');
+      if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) {
+        addToast('Your rating was saved anonymously. You can update it while the assignment is open.', 'success');
+      }
     } catch (requestError) {
       if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) {
         setError('Your rating was not saved. Check the connection and use Save again.');
       }
     } finally {
+      if (mutationRef.current === mutation) mutationRef.current = null;
       if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) setBusy(false);
     }
   };
   const moderate = async (uid, status) => {
-    if (!isTeacher || isRating || !uid || busy) return;
+    if (!isTeacher || isRating || !uid || busy || mutationRef.current || scopeTokenRef.current !== scopeToken) return;
+    const mutation = {
+      scopeToken
+    };
+    mutationRef.current = mutation;
     setBusy(true);
     try {
-      await _alloMailboxCallWithRetry(mailboxUrl, {
+      const result = await _alloMailboxCallWithRetry(mailboxUrl, {
         a: 'moderateactivity',
         admin,
         id: packId,
@@ -1342,6 +1470,11 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         uid,
         status
       });
+      if (scopeTokenRef.current !== scopeToken || mutationRef.current !== mutation) return;
+      if (!result || result.ok === false) throw Object.assign(new Error('Moderation not saved'), {
+        code: result?.e
+      });
+      mutationRef.current = null;
       const refreshed = await refresh({
         quiet: true
       });
@@ -1353,6 +1486,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         setError('That moderation change did not save. Please try again.');
       }
     } finally {
+      if (mutationRef.current === mutation) mutationRef.current = null;
       if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) setBusy(false);
     }
   };
@@ -1460,23 +1594,26 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-sm font-black text-slate-900"
   }, activityMeta.title), /*#__PURE__*/React.createElement("span", {
-    className: "rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-sky-800"
+    className: "rounded-full bg-sky-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-sky-800"
   }, "Shared assignment"), isRating && /*#__PURE__*/React.createElement("span", {
-    className: "rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-800"
+    className: "rounded-full bg-violet-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-violet-800"
   }, "Not scored")), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-sm font-bold leading-snug text-slate-800"
   }, effectiveActivity?.prompt || summary?.prompt), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] leading-relaxed text-slate-600"
+    className: "mt-1 text-xs leading-relaxed text-slate-600"
   }, isPoll || isSignup || isSurvey ? isTeacher ? 'Review responses here as participants complete this assignment.' : 'Answer in your own time. Saved responses remain available when you reopen this assignment.' : isRating ? 'Anonymous class totals update while this assignment is open. Ratings are formative and never marked correct or incorrect.' : 'Anonymous class totals update while this assignment is open. The teacher does not need to be logged in.'))), !summary && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "mt-3 text-sm text-slate-700"
   }, busy ? 'Loading activity…' : 'Activity unavailable. Use Refresh to try again.'), saveNotice && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "mt-3 rounded-lg bg-emerald-50 p-3 text-sm font-bold text-emerald-800"
-  }, saveNotice), (isPoll || isSignup || isSurvey) && summary && /*#__PURE__*/React.createElement("p", {
-    className: "mt-3 text-xs text-slate-600"
-  }, summary.identityMode === 'real_name' ? isTeacher ? 'Names are shown with individual responses.' : 'The organizer can see your name and responses.' : summary.identityMode === 'codename' ? isTeacher ? 'Individual responses are shown under assigned codenames.' : 'The organizer can see responses under your assigned codename.' : 'The organizer sees anonymous combined results.', summary.closesAt ? ' Closes ' + new Date(summary.closesAt).toLocaleString() + '.' : ''), !isTeacher && summary && (credentialRoster.length > 0 || summary?.own) && /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white/80 px-2.5 py-1.5 text-[11px] text-slate-700"
+  }, saveNotice), (isPoll || isSignup || isSurvey) && summary && (() => {
+    const closesMs = summary.closesAt ? Date.parse(summary.closesAt) : NaN;
+    return /*#__PURE__*/React.createElement("p", {
+      className: "mt-3 text-xs text-slate-600"
+    }, summary.identityMode === 'real_name' ? isTeacher ? 'Names are shown with individual responses.' : 'The organizer can see your name and responses.' : summary.identityMode === 'codename' ? isTeacher ? 'Individual responses are shown under assigned codenames.' : 'The organizer can see responses under your assigned codename.' : 'The organizer sees anonymous combined results.', Number.isFinite(closesMs) ? ' Closes ' + new Date(closesMs).toLocaleString() + '.' : '');
+  })(), !isTeacher && summary && (credentialRoster.length > 0 || summary?.own) && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white/80 px-2.5 py-1.5 text-xs text-slate-700"
   }, /*#__PURE__*/React.createElement("span", null, activeCredentialSlot?.label ? `Responding as ${activeCredentialSlot.label}` : summary?.identityMode === 'anonymous' || isRating || !isPoll && !isSignup && !isSurvey ? 'Active session on this device (clears when tab closes)' : 'Active session saved on this device'), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-1.5"
   }, credentialRoster.filter(item => item.label && !item.active).slice(0, 4).map(item => /*#__PURE__*/React.createElement("button", {
@@ -1484,12 +1621,34 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     type: "button",
     disabled: busy,
     onClick: () => handleSwitchRespondent(summary?.identityMode || 'real_name', item.label),
-    className: "rounded border border-sky-300 bg-sky-50 px-2 py-0.5 font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-50"
-  }, item.label)), /*#__PURE__*/React.createElement("button", {
+    className: "min-h-11 rounded border border-sky-300 bg-sky-50 px-3 py-1 font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-50"
+  }, item.label)), armStartFresh ? /*#__PURE__*/React.createElement("span", {
+    className: "inline-flex items-center gap-1",
+    onKeyDown: e => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        setArmStartFresh(false);
+      }
+    }
+  }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: busy,
-    onClick: () => handleSwitchRespondent(summary?.identityMode || identityModeHint || 'anonymous', ''),
-    className: "rounded border border-slate-300 bg-slate-50 px-2 py-0.5 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-50"
+    onClick: () => {
+      setArmStartFresh(false);
+      handleSwitchRespondent(summary?.identityMode || identityModeHint || 'anonymous', '');
+    },
+    className: "min-h-11 rounded border border-rose-300 bg-rose-50 px-3 py-1 font-bold text-rose-900 hover:bg-rose-100 disabled:opacity-50"
+  }, "Confirm start fresh"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: busy,
+    onClick: () => setArmStartFresh(false),
+    className: "min-h-11 rounded border border-slate-300 bg-white px-3 py-1 font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+  }, "Cancel")) : /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: busy,
+    onClick: () => setArmStartFresh(true),
+    className: "min-h-11 rounded border border-slate-300 bg-slate-50 px-3 py-1 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-50"
   }, "Not you? Start fresh"))), !isTeacher && isRating && /*#__PURE__*/React.createElement("form", {
     onSubmit: submitRating,
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3"
@@ -1505,7 +1664,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     const selected = ratingValue === value;
     return /*#__PURE__*/React.createElement("label", {
       key: value,
-      className: `flex min-h-14 cursor-pointer flex-col items-center justify-center rounded-lg border-2 px-2 py-2 text-center transition-colors ${selected ? 'border-violet-600 bg-violet-50 text-violet-950' : 'border-slate-200 bg-white text-slate-700 hover:border-violet-300'}`
+      className: `flex min-h-14 cursor-pointer flex-col items-center justify-center rounded-lg border-2 px-2 py-2 text-center transition-colors focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-1 ${selected ? 'border-violet-600 bg-violet-50 text-violet-950' : 'border-slate-200 bg-white text-slate-700 hover:border-violet-300'}`
     }, /*#__PURE__*/React.createElement("input", {
       type: "radio",
       name: `shared-rating-${activityId}`,
@@ -1519,14 +1678,14 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     }), /*#__PURE__*/React.createElement("span", {
       className: "text-base font-black"
     }, value), label !== String(value) && /*#__PURE__*/React.createElement("span", {
-      className: "mt-0.5 text-[10px] font-bold leading-tight"
+      className: "mt-0.5 text-xs font-bold leading-tight"
     }, label));
   }))), /*#__PURE__*/React.createElement("button", {
     type: "submit",
     disabled: busy || !Number.isInteger(ratingValue),
     className: "mt-3 min-h-11 w-full rounded-lg bg-violet-700 px-4 py-2 text-sm font-black text-white hover:bg-violet-800 disabled:cursor-wait disabled:opacity-60"
   }, busy ? 'Saving...' : summary?.own ? 'Update my rating' : 'Save my rating'), /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[11px] font-bold text-slate-600"
+    className: "mt-2 text-xs font-bold text-slate-600"
   }, statusText)), isPoll && !isTeacher && /*#__PURE__*/React.createElement("form", {
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3",
     onChangeCapture: markDraftChanged,
@@ -1559,14 +1718,14 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, /*#__PURE__*/React.createElement("legend", {
     className: "block text-xs font-black text-slate-800"
   }, summary?.closed ? 'This poll has closed' : 'Which of these could you make?'), summary?.identityMode === 'real_name' && /*#__PURE__*/React.createElement("label", {
-    className: "mt-2 block text-[11px] font-black text-slate-700"
+    className: "mt-2 block text-xs font-black text-slate-700"
   }, "Your name", /*#__PURE__*/React.createElement("input", {
     type: "text",
     value: pollName,
     onChange: event => setPollName(event.target.value.slice(0, 40)),
     className: "mt-1 w-full rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
   })), summary?.identityMode === 'anonymous' && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] font-bold text-slate-600"
+    className: "mt-1 text-xs font-bold text-slate-600"
   }, "You are answering anonymously. The organizer sees totals only."), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 space-y-2"
   }, (summary?.options || []).map(opt => /*#__PURE__*/React.createElement("div", {
@@ -1596,7 +1755,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       next[opt.id] = mark;
       return next;
     }),
-    className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-[11px] font-black ${pollPicks[opt.id] === mark ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
+    className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-xs font-black ${pollPicks[opt.id] === mark ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
   }, mark === 'yes' ? 'Yes' : mark === 'maybe' ? 'Maybe' : 'No')))))), /*#__PURE__*/React.createElement("button", {
     type: "submit",
     className: "mt-3 min-h-11 w-full rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
@@ -1605,7 +1764,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-black text-slate-800"
   }, summary?.participantCount || 0, " ", summary?.participantCount === 1 ? 'response' : 'responses', summary?.closed ? ' - closed' : ''), !(summary?.tally || []).length && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[11px] font-bold text-slate-600"
+    className: "mt-2 text-xs font-bold text-slate-600"
   }, summary?.identityMode === 'anonymous' ? `Totals appear once ${summary?.minParticipants || 3} people have answered, so no single answer can be picked out.` : 'No responses yet.'), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 space-y-1"
   }, (summary?.tally || []).map(opt => {
@@ -1616,14 +1775,14 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-xs font-bold text-slate-800"
     }, opt.label, isBest ? ' - best so far' : ''), /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] font-black text-slate-700"
+      className: "text-xs font-black text-slate-700"
     }, opt.yes, " yes / ", opt.maybe, " maybe / ", opt.no, " no"));
   })), (summary?.best || []).length > 1 && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[11px] font-bold text-amber-700"
+    className: "mt-2 text-xs font-bold text-amber-700"
   }, "Those options are tied. Pick whichever suits you."), !!(summary?.rows || []).length && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 overflow-x-auto"
   }, /*#__PURE__*/React.createElement("table", {
-    className: "w-full text-left text-[11px]"
+    className: "w-full text-left text-xs"
   }, /*#__PURE__*/React.createElement("caption", {
     className: "sr-only"
   }, "Who chose what"), /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
@@ -1652,7 +1811,10 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     onSubmit: async event => {
       event.preventDefault();
       if (busy) return;
-      const formItems = summary?.items && summary.items.length ? summary.items : effectiveActivity?.items || [];
+      const formItems = (summary?.items && summary.items.length ? summary.items : effectiveActivity?.items || []).map((rawItem, idx) => rawItem && rawItem.id ? rawItem : {
+        ...(rawItem || {}),
+        id: `q${idx + 1}`
+      });
       const payload = {};
       formItems.forEach(formItem => {
         const value = surveyAnswers[formItem.id];
@@ -1697,99 +1859,105 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, /*#__PURE__*/React.createElement("legend", {
     className: "block text-xs font-black text-slate-800"
   }, summary?.closed ? 'This survey has closed' : 'A few quick questions'), (summary?.info || effectiveActivity?.info) && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 rounded-lg bg-slate-50 px-2 py-1.5 text-[11px] leading-relaxed text-slate-700"
+    className: "mt-2 rounded-lg bg-slate-50 px-2 py-1.5 text-xs leading-relaxed text-slate-700"
   }, String(summary?.info || effectiveActivity?.info).slice(0, 600)), summary?.identityMode === 'real_name' && /*#__PURE__*/React.createElement("label", {
-    className: "mt-2 block text-[11px] font-black text-slate-700"
+    className: "mt-2 block text-xs font-black text-slate-700"
   }, "Your name", /*#__PURE__*/React.createElement("input", {
     type: "text",
     value: surveyName,
     onChange: event => setSurveyName(event.target.value.slice(0, 40)),
     className: "mt-1 w-full rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
   })), summary?.identityMode === 'anonymous' && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] font-bold text-slate-600"
+    className: "mt-1 text-xs font-bold text-slate-600"
   }, "You are answering anonymously. The organizer sees combined results only."), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 space-y-3"
-  }, (summary?.items && summary.items.length ? summary.items : effectiveActivity?.items || []).map(formItem => /*#__PURE__*/React.createElement("div", {
-    key: formItem.id,
-    "data-survey-item": formItem.id,
-    className: "rounded-lg border border-slate-200 px-2 py-2"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-slate-800"
-  }, formItem.text, formItem.required && /*#__PURE__*/React.createElement("span", {
-    className: "ml-1 text-rose-600",
-    title: "Required"
-  }, "*")), formItem.type === 'likert' && /*#__PURE__*/React.createElement("div", {
-    className: "mt-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    role: "group",
-    "aria-label": formItem.text,
-    className: "flex flex-wrap gap-1"
-  }, Array.from({
-    length: formItem.steps || 5
-  }, (_, at) => at + 1).map(tick => /*#__PURE__*/React.createElement("button", {
-    key: tick,
-    type: "button",
-    "aria-label": `${tick}${formItem.labels?.[tick - 1] ? ": " + formItem.labels[tick - 1] : ""}`,
-    "aria-pressed": surveyAnswers[formItem.id] === tick,
-    onClick: () => setSurveyAnswers(previous => ({
-      ...previous,
-      [formItem.id]: tick
-    })),
-    className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-xs font-black ${surveyAnswers[formItem.id] === tick ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
-  }, tick))), ((formItem.labels || [])[0] || (formItem.labels || [])[(formItem.steps || 5) - 1]) && /*#__PURE__*/React.createElement("div", {
-    className: "mt-1 flex justify-between text-[10px] font-bold text-slate-500"
-  }, /*#__PURE__*/React.createElement("span", null, (formItem.labels || [])[0] || ''), /*#__PURE__*/React.createElement("span", null, (formItem.labels || [])[(formItem.steps || 5) - 1] || ''))), formItem.type === 'choice' && /*#__PURE__*/React.createElement("div", {
-    role: "group",
-    "aria-label": formItem.text,
-    className: "mt-2 flex flex-col gap-1"
-  }, (formItem.options || []).map(option => /*#__PURE__*/React.createElement("button", {
-    key: option.id,
-    type: "button",
-    "aria-pressed": surveyAnswers[formItem.id] === option.id,
-    onClick: () => setSurveyAnswers(previous => ({
-      ...previous,
-      [formItem.id]: option.id
-    })),
-    className: `min-h-11 rounded-md px-2 py-1.5 text-left text-xs font-bold ${surveyAnswers[formItem.id] === option.id ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
-  }, option.label))), formItem.type === 'freetext' && /*#__PURE__*/React.createElement("textarea", {
-    "aria-label": formItem.text,
-    "aria-required": formItem.required || undefined,
-    "aria-invalid": surveyInvalidId === formItem.id || undefined,
-    value: String(surveyAnswers[formItem.id] || ''),
-    onChange: event => setSurveyAnswers(previous => ({
-      ...previous,
-      [formItem.id]: event.target.value.slice(0, 500)
-    })),
-    rows: 2,
-    maxLength: 500,
-    className: "mt-2 w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-800"
-  }), formItem.type === 'numeric' && /*#__PURE__*/React.createElement("input", {
-    type: "number",
-    step: "any",
-    "aria-required": formItem.required || undefined,
-    "aria-invalid": surveyInvalidId === formItem.id || undefined,
-    "aria-label": formItem.text,
-    value: surveyAnswers[formItem.id] ?? '',
-    min: formItem.min ?? undefined,
-    max: formItem.max ?? undefined,
-    onChange: event => setSurveyAnswers(previous => ({
-      ...previous,
-      [formItem.id]: event.target.value
-    })),
-    className: "mt-2 w-32 rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-800"
-  }), !formItem.required && surveyAnswers[formItem.id] !== undefined && String(surveyAnswers[formItem.id]).trim() !== '' && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "mt-2 min-h-11 rounded border border-slate-300 px-3 text-xs font-bold text-slate-700",
-    "aria-label": `Clear answer: ${formItem.text}`,
-    onClick: () => setSurveyAnswers(previous => {
-      const next = {
-        ...previous
-      };
-      delete next[formItem.id];
-      return next;
-    })
-  }, "Clear answer")))), summary?.own && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[11px] font-bold text-emerald-700"
+  }, (summary?.items && summary.items.length ? summary.items : effectiveActivity?.items || []).map((rawItem, itemIdx) => {
+    const formItem = rawItem && rawItem.id ? rawItem : {
+      ...(rawItem || {}),
+      id: `q${itemIdx + 1}`
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      key: formItem.id,
+      "data-survey-item": formItem.id,
+      className: "rounded-lg border border-slate-200 px-2 py-2"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xs font-bold text-slate-800"
+    }, formItem.text, formItem.required && /*#__PURE__*/React.createElement("span", {
+      className: "ml-1 text-rose-600",
+      title: "Required"
+    }, "*")), formItem.type === 'likert' && /*#__PURE__*/React.createElement("div", {
+      className: "mt-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      role: "group",
+      "aria-label": formItem.text,
+      className: "flex flex-wrap gap-1"
+    }, Array.from({
+      length: formItem.steps || 5
+    }, (_, at) => at + 1).map(tick => /*#__PURE__*/React.createElement("button", {
+      key: tick,
+      type: "button",
+      "aria-label": `${tick}${formItem.labels?.[tick - 1] ? ": " + formItem.labels[tick - 1] : ""}`,
+      "aria-pressed": surveyAnswers[formItem.id] === tick,
+      onClick: () => setSurveyAnswers(previous => ({
+        ...previous,
+        [formItem.id]: tick
+      })),
+      className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-xs font-black ${surveyAnswers[formItem.id] === tick ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
+    }, tick))), ((formItem.labels || [])[0] || (formItem.labels || [])[(formItem.steps || 5) - 1]) && /*#__PURE__*/React.createElement("div", {
+      className: "mt-1 flex justify-between text-xs font-bold text-slate-600"
+    }, /*#__PURE__*/React.createElement("span", null, (formItem.labels || [])[0] || ''), /*#__PURE__*/React.createElement("span", null, (formItem.labels || [])[(formItem.steps || 5) - 1] || ''))), formItem.type === 'choice' && /*#__PURE__*/React.createElement("div", {
+      role: "group",
+      "aria-label": formItem.text,
+      className: "mt-2 flex flex-col gap-1"
+    }, (formItem.options || []).map(option => /*#__PURE__*/React.createElement("button", {
+      key: option.id,
+      type: "button",
+      "aria-pressed": surveyAnswers[formItem.id] === option.id,
+      onClick: () => setSurveyAnswers(previous => ({
+        ...previous,
+        [formItem.id]: option.id
+      })),
+      className: `min-h-11 rounded-md px-2 py-1.5 text-left text-xs font-bold ${surveyAnswers[formItem.id] === option.id ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
+    }, option.label))), formItem.type === 'freetext' && /*#__PURE__*/React.createElement("textarea", {
+      "aria-label": formItem.text,
+      "aria-required": formItem.required || undefined,
+      "aria-invalid": surveyInvalidId === formItem.id || undefined,
+      value: String(surveyAnswers[formItem.id] || ''),
+      onChange: event => setSurveyAnswers(previous => ({
+        ...previous,
+        [formItem.id]: event.target.value.slice(0, 500)
+      })),
+      rows: 2,
+      maxLength: 500,
+      className: "mt-2 w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-800"
+    }), formItem.type === 'numeric' && /*#__PURE__*/React.createElement("input", {
+      type: "number",
+      step: "any",
+      "aria-required": formItem.required || undefined,
+      "aria-invalid": surveyInvalidId === formItem.id || undefined,
+      "aria-label": formItem.text,
+      value: surveyAnswers[formItem.id] ?? '',
+      min: formItem.min ?? undefined,
+      max: formItem.max ?? undefined,
+      onChange: event => setSurveyAnswers(previous => ({
+        ...previous,
+        [formItem.id]: event.target.value
+      })),
+      className: "mt-2 w-32 rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-800"
+    }), !formItem.required && surveyAnswers[formItem.id] !== undefined && String(surveyAnswers[formItem.id]).trim() !== '' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "mt-2 min-h-11 rounded border border-slate-300 px-3 text-xs font-bold text-slate-700",
+      "aria-label": `Clear answer: ${formItem.text}`,
+      onClick: () => setSurveyAnswers(previous => {
+        const next = {
+          ...previous
+        };
+        delete next[formItem.id];
+        return next;
+      })
+    }, "Clear answer"));
+  })), summary?.own && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-xs font-bold text-emerald-700"
   }, draftDirtyRef.current ? 'You have unsaved changes. Save to replace your recorded answers.' : 'Your answers are recorded. Submitting again replaces them.'), /*#__PURE__*/React.createElement("button", {
     type: "submit",
     className: "mt-3 min-h-11 w-full rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
@@ -1798,7 +1966,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-black text-slate-800"
   }, summary?.participantCount || 0, " ", summary?.participantCount === 1 ? 'response' : 'responses', summary?.closed ? ' - closed' : ''), !summary?.revealed && summary?.identityMode === 'anonymous' && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[11px] font-bold text-slate-600"
+    className: "mt-2 text-xs font-bold text-slate-600"
   }, `Results appear once ${summary?.minParticipants || 3} people have answered, so no single answer can be picked out.`), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 space-y-2"
   }, (summary?.items || []).map(resultItem => /*#__PURE__*/React.createElement("div", {
@@ -1807,21 +1975,21 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-slate-800"
   }, resultItem.text), resultItem.aggregate && resultItem.type === 'likert' && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] font-black text-slate-700"
+    className: "mt-1 text-xs font-black text-slate-700"
   }, `Mean ${resultItem.aggregate.mean ?? '-'} of ${resultItem.steps} · ` + (resultItem.aggregate.counts || []).map((tickCount, at) => `${at + 1}: ${tickCount}`).join('  ')), resultItem.aggregate && resultItem.type === 'choice' && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] font-black text-slate-700"
+    className: "mt-1 text-xs font-black text-slate-700"
   }, (resultItem.options || []).map(option => `${option.label}: ${(resultItem.aggregate.counts || {})[option.id] || 0}`).join('  ·  ')), resultItem.aggregate && resultItem.type === 'numeric' && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] font-black text-slate-700"
+    className: "mt-1 text-xs font-black text-slate-700"
   }, `n ${resultItem.aggregate.n} · mean ${resultItem.aggregate.mean ?? '-'} · min ${resultItem.aggregate.min ?? '-'} · max ${resultItem.aggregate.max ?? '-'}`), resultItem.type === 'freetext' && Array.isArray(resultItem.texts) && /*#__PURE__*/React.createElement("ul", {
-    className: "mt-1 list-disc pl-4 text-[11px] text-slate-700"
+    className: "mt-1 list-disc pl-4 text-xs text-slate-700"
   }, resultItem.texts.map((answerText, at) => /*#__PURE__*/React.createElement("li", {
     key: at
   }, answerText))), resultItem.type === 'freetext' && !Array.isArray(resultItem.texts) && resultItem.aggregate && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] font-bold text-slate-600"
+    className: "mt-1 text-xs font-bold text-slate-600"
   }, resultItem.aggregate.n, " written ", resultItem.aggregate.n === 1 ? 'answer' : 'answers')))), !!(summary?.rows || []).length && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 overflow-x-auto"
   }, /*#__PURE__*/React.createElement("table", {
-    className: "w-full text-left text-[11px]"
+    className: "w-full text-left text-xs"
   }, /*#__PURE__*/React.createElement("caption", {
     className: "sr-only"
   }, "Individual responses"), /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
@@ -1868,7 +2036,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, /*#__PURE__*/React.createElement("legend", {
     className: "block text-xs font-black text-slate-800"
   }, summary?.closed ? 'Sign-ups have closed' : 'Choose a slot'), summary?.identityMode === 'real_name' && /*#__PURE__*/React.createElement("label", {
-    className: "mt-2 block text-[11px] font-black text-slate-700"
+    className: "mt-2 block text-xs font-black text-slate-700"
   }, "Your name", /*#__PURE__*/React.createElement("input", {
     type: "text",
     value: signupName,
@@ -1887,7 +2055,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     }, /*#__PURE__*/React.createElement("span", {
       className: `text-xs font-bold ${gone ? 'text-slate-600 line-through' : 'text-slate-800'}`
     }, slot.label, /*#__PURE__*/React.createElement("span", {
-      className: "ml-2 text-[10px] font-black uppercase tracking-wide"
+      className: "ml-2 text-xs font-black uppercase tracking-wide"
     }, gone ? 'Full' : slot.remaining + ' of ' + slot.capacity + ' left')), /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: gone && !mine,
@@ -1899,7 +2067,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         const next = previous.concat([slot.id]);
         return next.length > limit ? next.slice(next.length - limit) : next;
       }),
-      className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-[11px] font-black disabled:opacity-40 ${mine ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700'}`
+      className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-xs font-black disabled:opacity-40 ${mine ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700'}`
     }, mine ? reserved ? 'Reserved · deselect' : 'Selected · remove' : reserved ? 'Keep reservation' : gone ? 'Full' : 'Select slot'));
   })), /*#__PURE__*/React.createElement("button", {
     type: "submit",
@@ -1918,11 +2086,11 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold text-slate-800"
   }, slot.label), /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] font-black text-slate-700"
+    className: "text-xs font-black text-slate-700"
   }, slot.taken, " of ", slot.capacity, " taken")), !!(slot.who || []).length && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] text-slate-600"
+    className: "mt-1 text-xs text-slate-600"
   }, slot.who.map(person => person.label || 'Someone').join(', '))))), summary?.identityMode === 'anonymous' && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[10px] text-slate-500"
+    className: "mt-2 text-xs text-slate-600"
   }, "This sheet is anonymous, so you see counts but not names.")), !isTeacher && !isRating && !isPoll && !isSignup && !isSurvey && /*#__PURE__*/React.createElement("form", {
     onSubmit: submitTerm,
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3"
@@ -1944,11 +2112,11 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     disabled: busy,
     className: "min-h-11 rounded-lg bg-sky-700 px-4 py-2 text-sm font-black text-white hover:bg-sky-800 disabled:cursor-wait disabled:opacity-60"
   }, busy ? 'Saving...' : summary?.own ? 'Update my word' : 'Add my word')), /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px]"
+    className: "mt-2 flex flex-wrap items-center justify-between gap-2 text-xs"
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-600"
   }, statusText || 'Submit before viewing the class cloud.'), /*#__PURE__*/React.createElement("span", {
-    className: "text-slate-500"
+    className: "text-slate-600"
   }, term.length, "/60"))), !isPoll && !isSignup && !isSurvey && /*#__PURE__*/React.createElement("div", {
     className: "mt-4",
     "aria-live": "polite"
@@ -1974,13 +2142,13 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       width: `${item.percent}%`
     }
   })), /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] font-black text-violet-900"
+    className: "text-xs font-black text-violet-900"
   }, item.count)))) : /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl border border-dashed border-violet-300 bg-white p-4 text-center"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-black text-violet-900"
   }, `${summary?.participantCount || 0} of ${threshold} ratings needed before the class distribution appears.`), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] text-slate-600"
+    className: "mt-1 text-xs text-slate-600"
   }, "Only the aggregate is revealed; individual ratings are not shown to the teacher or class.")) : summary?.revealed && terms.length > 0 ? typeof renderer === 'function' ? renderer(terms, 'Anonymous shared class word cloud') : /*#__PURE__*/React.createElement("ul", {
     className: "flex min-h-28 list-none flex-wrap items-center justify-center gap-3 rounded-xl border border-sky-100 bg-white p-4"
   }, terms.map(item => /*#__PURE__*/React.createElement("li", {
@@ -1991,17 +2159,17 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-black text-sky-900"
   }, summary?.participantCount >= threshold ? 'No responses are published yet.' : `${summary?.participantCount || 0} of ${threshold} responses needed before the cloud appears.`), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] text-slate-600"
+    className: "mt-1 text-xs text-slate-600"
   }, "The participation threshold helps prevent singling out one student's response."))), isTeacher && isRating && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 rounded-xl border border-violet-200 bg-white p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-black text-violet-950"
   }, "Aggregate-only formative rating"), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] leading-relaxed text-slate-600"
+    className: "mt-1 text-xs leading-relaxed text-slate-600"
   }, summary?.participantCount || 0, " responses recorded. Individual ratings and identities are not listed, and this activity has no correctness or score.")), isTeacher && !isRating && !isPoll && !isSignup && !isSurvey && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 rounded-xl border border-slate-200 bg-white p-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-2 text-[11px] font-black"
+    className: "flex flex-wrap gap-2 text-xs font-black"
   }, /*#__PURE__*/React.createElement("span", {
     className: "rounded-full bg-amber-100 px-2 py-1 text-amber-900"
   }, "Held ", heldCount), /*#__PURE__*/React.createElement("span", {
@@ -2009,13 +2177,13 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, "Approved ", approvedCount), /*#__PURE__*/React.createElement("span", {
     className: "rounded-full bg-slate-100 px-2 py-1 text-slate-700"
   }, "Hidden ", hiddenCount)), /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[11px] text-slate-600"
+    className: "mt-2 text-xs text-slate-600"
   }, "Entries are pseudonymous and stored in your Class Mailbox Drive folder. Expiration blocks access; revoking the homework link removes the stored activity."), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 max-h-64 space-y-2 overflow-y-auto",
     role: "list",
     "aria-label": "Word cloud moderation queue"
   }, responses.length === 0 && /*#__PURE__*/React.createElement("p", {
-    className: "rounded-lg bg-slate-50 p-3 text-center text-xs text-slate-500"
+    className: "rounded-lg bg-slate-50 p-3 text-center text-xs text-slate-600"
   }, "Waiting for student responses."), responses.map((row, index) => /*#__PURE__*/React.createElement("div", {
     key: row.uid,
     role: "listitem",
@@ -2025,13 +2193,13 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, /*#__PURE__*/React.createElement("div", {
     className: "truncate text-xs font-black text-slate-900"
   }, row.text), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] text-slate-500"
+    className: "text-xs text-slate-600"
   }, "Anonymous entry ", responses.length - index)), /*#__PURE__*/React.createElement("select", {
     value: row.status,
     disabled: busy,
     onChange: event => moderate(row.uid, event.target.value),
     "aria-label": `Moderation status for ${row.text}`,
-    className: "rounded-md border border-slate-300 bg-white px-2 py-1.5 text-[11px] font-bold text-slate-800"
+    className: "min-h-11 rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-800"
   }, /*#__PURE__*/React.createElement("option", {
     value: "pending"
   }, "Hold"), /*#__PURE__*/React.createElement("option", {
@@ -2039,20 +2207,21 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, "Approve"), /*#__PURE__*/React.createElement("option", {
     value: "hidden"
   }, "Hide")))))), error && /*#__PURE__*/React.createElement("div", {
-    role: "alert",
     className: "mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 p-2 text-xs font-bold text-rose-800"
-  }, /*#__PURE__*/React.createElement("span", null, error), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", {
+    role: "alert"
+  }, error), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => refresh(),
     disabled: busy,
-    className: "rounded-md border border-rose-300 bg-white px-2 py-1 text-[10px] font-black text-rose-800 disabled:opacity-50"
+    className: "min-h-11 rounded-md border border-rose-300 bg-white px-3 py-2 text-xs font-black text-rose-800 disabled:opacity-50"
   }, "Refresh status")), /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 flex items-center justify-between gap-2 text-[10px] text-slate-500"
+    className: "mt-3 flex items-center justify-between gap-2 text-xs text-slate-600"
   }, /*#__PURE__*/React.createElement("span", null, isPoll || isSignup || isSurvey ? summary?.closed ? 'Closed for responses' : isTeacher ? 'Results update automatically' : draftDirtyRef.current ? 'Unsaved changes · save to confirm' : 'Changes take effect when you save' : isRating ? 'Anonymous aggregate only · not scored' : summary?.revealPolicy === 'auto_publish' ? 'Automatic publishing with basic contact/profanity holds' : 'Teacher review required before publishing'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => refresh(),
     disabled: busy,
-    className: "rounded-md border border-slate-300 bg-white px-2 py-1 font-bold text-slate-700 hover:border-sky-400 disabled:opacity-50"
+    className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 py-2 font-bold text-slate-700 hover:border-sky-400 disabled:opacity-50"
   }, "Refresh", lastUpdatedAt ? ` at ${new Date(lastUpdatedAt).toLocaleTimeString([], {
     hour: 'numeric',
     minute: '2-digit'

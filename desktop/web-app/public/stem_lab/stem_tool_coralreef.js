@@ -3253,7 +3253,7 @@
     // Fills {name}-style placeholders, so a translation can reorder them.
     var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
     var d = jr11SafeSaved((ctx.toolData && ctx.toolData.coralReef) || {});
-    var theme = ctx.theme || (ctx.isContrast ? 'contrast' : ctx.isDark ? 'dark' : 'light');
+    var theme = typeof ctx.theme === 'string' ? ctx.theme : (ctx.isContrast ? 'contrast' : ctx.isDark ? 'dark' : 'light');
     var P = palette(theme);
     function set(patch) {
       if (typeof ctx.setToolData === 'function') {
@@ -3308,14 +3308,33 @@
       h(Hs11Host, { React: React, t: __alloT }),
       h('style', null, PF11_ROOT_CSS),
       h('style', null, RD12_LANG_CSS),
-      h('header', { className: 'cr-masthead' },
+      h('header', {
+        className: 'cr-masthead',
+        'data-coralreef-masthead': 'true',
+        style: {
+          background: P.card,
+          border: (theme === 'contrast' ? '2px solid ' : '1px solid ') + P.border,
+          borderLeft: '4px solid ' + P.accent,
+          borderRadius: 16,
+          padding: '12px 16px'
+        }
+      },
         h('div', { className: 'cr-brand' },
-          h('span', { className: 'cr-brand-mark' }, reefIcon(h, 'hub', 29)),
+          h('span', { className: 'cr-brand-mark', style: { position: 'relative' } }, reefIcon(h, 'hub', 29)),
           h('div', { style: { minWidth: 0 } },
             h('h2', { ref: headingRef, tabIndex: -1, style: { margin: 0, fontSize: 'clamp(18px,2.2vw,26px)', letterSpacing: '-0.035em', lineHeight: 1.2, color: P.text } }, __alloT('stem.coralreef.lab_title', 'Coral Reef Survey Lab'), h('span', { style: SR_ONLY }, ': ', names[section])),
             h('p', { className: 'cr-tagline', style: mutedStyle(P, { fontSize: 13, margin: '5px 0 0' }) }, __alloT('stem.coralreef.lab_tagline', 'Survey a reef the way reef monitors do, then test what could happen to it over 30 years.')))),
-        canLeave ? h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { ctx.setStemLabTool(null); say(__alloT('stem.coralreef.sr_returned', 'Returned to the STEM Lab tools.')); } },
-          __alloT('stem.coralreef.back', 'Back to tools')) : null),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 } },
+          h('span', {
+            'data-coralreef-section-pill': section,
+            style: {
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '5px 10px', borderRadius: 999, fontSize: 12, fontWeight: 700,
+              background: P.cardAlt, color: P.text, border: '1px solid ' + P.border
+            }
+          }, reefIcon(h, section, 14), names[section]),
+          canLeave ? h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { ctx.setStemLabTool(null); say(__alloT('stem.coralreef.sr_returned', 'Returned to the STEM Lab tools.')); } },
+            __alloT('stem.coralreef.back', 'Back to tools')) : null)),
       h('nav', { className: 'cr-nav', 'aria-label': __alloT('stem.coralreef.nav_label', 'Coral Reef Survey Lab sections') },
         h('ul', null,
           SECTIONS.map(function (id) {
@@ -3593,6 +3612,34 @@
         h('div', { className: 'cr-stat' }, h('strong', null, speciesTotal), h('span', null, __alloT('stem.coralreef.hero_species', 'species to discover'))),
         h('div', { className: 'cr-stat' }, h('strong', null, '20 m'), h('span', null, __alloT('stem.coralreef.hero_transect', 'of reef to survey'))),
         h('div', { className: 'cr-stat' }, h('strong', null, '30'), h('span', null, __alloT('stem.coralreef.hero_years', 'years of change to explore')))),
+      (function () {
+        var siteCopy = exploreSiteText(__alloT);
+        var quickSites = ['healthy', 'restoration', 'heatwave', 'damaged'];
+        return h('div', {
+          'data-coralreef-quick-sites': 'true',
+          role: 'group',
+          'aria-label': __alloT('stem.coralreef.nav_explore', 'Dive and explore'),
+          style: cardStyle(P, { marginBottom: 18, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 })
+        },
+          h('svg', { width: '100%', height: 8, viewBox: '0 0 240 8', preserveAspectRatio: 'none', 'aria-hidden': 'true', style: { display: 'block', borderRadius: 4, overflow: 'hidden', border: '1px solid ' + P.border } },
+            h('rect', { x: 0, y: 0, width: 72, height: 8, fill: P.coralLine }),
+            h('rect', { x: 72, y: 0, width: 56, height: 8, fill: P.accent }),
+            h('rect', { x: 128, y: 0, width: 56, height: 8, fill: P.heatBar }),
+            h('rect', { x: 184, y: 0, width: 56, height: 8, fill: P.algaeLine })
+          ),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 } },
+            h('span', { style: { fontSize: 12, fontWeight: 800, color: P.muted, marginRight: 4 } }, __alloT('stem.coralreef.nav_explore', 'Dive and explore')),
+            quickSites.map(function (sid) {
+              return h('button', {
+                key: 'cr-qs-' + sid,
+                type: 'button',
+                style: btnStyle(P, false, { borderRadius: 999, minHeight: 44, padding: '8px 14px', fontSize: 13 }),
+                onClick: function () { env.set({ diveSiteId: sid }); env.go('explore'); }
+              }, siteCopy[sid].name);
+            })
+          )
+        );
+      })(),
       h('section', { className: 'cr-journey', 'aria-labelledby': 'cr-w2-path-title' },
         h('h3', { id: 'cr-w2-path-title', style: h3Style(P) }, __alloT('stem.coralreef.hub_path_title', 'Your investigation')),
         nextCard,
@@ -21715,7 +21762,256 @@
     var camera, scene, bounds, initialTheta, initialPhi, theta, phi, scale = 1, panX = 0, panY = 0, angle = 'portrait', lighting = 'reef', background = 'match', appearance = 'natural', sessile = false;
     var hemisphere, sun, reefBackground, studioBackground, detailBackground, lightBackground, darkBackground;
     var silhouetteMaterials = new Map(), silhouetteMeshes = [], silhouetteTint = null;
+    var reefAtmosphereGroup = null, reefAtmosphereDisposables = [], reefShaderTime = 2.4;
+    var reefCausticUniforms = null, reefCurtainUniforms = null, reefPlanktonUniforms = null;
+    var reefSubsurfaceUniforms = { uBoost: { value: 0.32 }, uColor: { value: new THREE.Color(0x38e8d4) } };
     var aim = new THREE.Vector3(), direction = new THREE.Vector3(), right = new THREE.Vector3(), up = new THREE.Vector3();
+    function isReefSpecimenHighContrast(el) {
+      try {
+        if (el && el.closest && (el.closest('.theme-contrast') || el.closest('[data-theme="contrast"]') || el.closest('[data-theme="high-contrast"]'))) return true;
+        var rootEl = document.documentElement;
+        if (rootEl && (rootEl.classList.contains('theme-contrast') || rootEl.getAttribute('data-theme') === 'contrast' || rootEl.getAttribute('data-theme') === 'high-contrast')) return true;
+        if (document.body && document.body.classList.contains('theme-contrast')) return true;
+      } catch (e) {}
+      return false;
+    }
+    function syncReefAtmosphere() {
+      var hc = isReefSpecimenHighContrast(canvas);
+      var showAtmosphere = !hc && lighting === 'reef' && background !== 'light' && appearance !== 'silhouette';
+      if (reefAtmosphereGroup) reefAtmosphereGroup.visible = showAtmosphere;
+      var tVal = (motionQuery && motionQuery.matches && !turning) ? 2.4 : reefShaderTime;
+      if (reefCausticUniforms) {
+        reefCausticUniforms.uTime.value = tVal;
+        reefCausticUniforms.uStrength.value = showAtmosphere ? (background === 'dark' ? 0.56 : 0.44) : 0.0;
+      }
+      if (reefCurtainUniforms) {
+        reefCurtainUniforms.uTime.value = tVal;
+        reefCurtainUniforms.uStrength.value = showAtmosphere ? (background === 'dark' ? 0.24 : 0.20) : 0.0;
+      }
+      if (reefPlanktonUniforms) {
+        reefPlanktonUniforms.uTime.value = tVal;
+        reefPlanktonUniforms.uOpacity.value = showAtmosphere ? 0.58 : 0.0;
+      }
+      reefSubsurfaceUniforms.uBoost.value = showAtmosphere ? (sessile ? 0.36 : 0.22) : 0.0;
+    }
+    function attachSpecimenSubsurfaceRim(rootNode) {
+      if (!rootNode || typeof rootNode.traverse !== 'function') return;
+      var seenMats = typeof Set === 'function' ? new Set() : null;
+      rootNode.traverse(function (node) {
+        if (!node || !node.isMesh || !node.material) return;
+        var mats = Array.isArray(node.material) ? node.material : [node.material];
+        for (var mi = 0; mi < mats.length; mi++) {
+          var mat = mats[mi];
+          if (!mat || !(mat.isMeshStandardMaterial || mat.isMeshPhysicalMaterial || mat.isMeshPhongMaterial)) continue;
+          if (seenMats && seenMats.has(mat)) continue;
+          if (seenMats) seenMats.add(mat);
+          if (mat.userData && mat.userData.reefSubsurfaceRimApplied) continue;
+          if (!mat.userData) mat.userData = {};
+          mat.userData.reefSubsurfaceRimApplied = true;
+          var prevCompile = mat.onBeforeCompile, prevKey = mat.customProgramCacheKey;
+          mat.onBeforeCompile = function (shader, ownedRenderer) {
+            if (typeof prevCompile === 'function') prevCompile.call(this, shader, ownedRenderer);
+            shader.uniforms.uReefSubsurfaceBoost = reefSubsurfaceUniforms.uBoost;
+            shader.uniforms.uReefSubsurfaceColor = reefSubsurfaceUniforms.uColor;
+            shader.fragmentShader = shader.fragmentShader
+              .replace('#include <common>', '#include <common>\nuniform float uReefSubsurfaceBoost;\nuniform vec3 uReefSubsurfaceColor;')
+              .replace('#include <dithering_fragment>', [
+                'vec3 rfN = normalize(normal);',
+                'vec3 rfV = normalize(vViewPosition);',
+                'float rfRim = pow(1.0 - clamp(dot(rfN, rfV), 0.0, 1.0), 2.5);',
+                'float rfTop = 0.45 + 0.55 * clamp(rfN.y * 0.5 + 0.5, 0.0, 1.0);',
+                'gl_FragColor.rgb += uReefSubsurfaceColor * rfRim * rfTop * uReefSubsurfaceBoost;',
+                '#include <dithering_fragment>'
+              ].join('\n'));
+          };
+          mat.customProgramCacheKey = function () {
+            var base = typeof prevKey === 'function' ? prevKey.call(this) : '';
+            return (base ? base + '|' : '') + 'reef-coral-subsurface-rim-v1';
+          };
+        }
+      });
+    }
+    function buildReefAtmosphere(center, radius) {
+      if (typeof THREE.ShaderMaterial !== 'function') return null;
+      var group = new THREE.Group();
+      group.name = 'reef-specimen-glsl-atmosphere';
+      var r = Math.max(0.08, radius);
+
+      // 1. Animated underwater Voronoi caustics pool below specimen (WebGL1 / GLSL ES 1.00)
+      if (typeof THREE.CircleGeometry === 'function') {
+        reefCausticUniforms = { uTime: { value: reefShaderTime }, uStrength: { value: 0.44 } };
+        var caustGeo = new THREE.CircleGeometry(r * 2.45, 36);
+        var caustMat = new THREE.ShaderMaterial({
+          uniforms: reefCausticUniforms,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uStrength;',
+            'varying vec2 vUv;',
+            'vec2 rfHash2(vec2 p) {',
+            '  p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));',
+            '  return fract(sin(p) * 43758.5453);',
+            '}',
+            'float rfVoronoiCaustic(vec2 x, float t) {',
+            '  vec2 n = floor(x);',
+            '  vec2 f = fract(x);',
+            '  float md = 8.0;',
+            '  float md2 = 8.0;',
+            '  for (int j = -1; j <= 1; j++) {',
+            '    for (int i = -1; i <= 1; i++) {',
+            '      vec2 g = vec2(float(i), float(j));',
+            '      vec2 o = rfHash2(n + g);',
+            '      o = 0.5 + 0.42 * sin(t * 0.9 + 6.283185 * o);',
+            '      vec2 r = g + o - f;',
+            '      float d = dot(r, r);',
+            '      if (d < md) { md2 = md; md = d; } else if (d < md2) { md2 = d; }',
+            '    }',
+            '  }',
+            '  float edge = sqrt(md2) - sqrt(md);',
+            '  return pow(clamp(1.0 - smoothstep(0.0, 0.28, edge), 0.0, 1.0), 2.2);',
+            '}',
+            'void main() {',
+            '  vec2 p = (vUv - 0.5) * 2.0;',
+            '  float radial = smoothstep(1.0, 0.12, length(p));',
+            '  float c1 = rfVoronoiCaustic(p * 3.2 + vec2(uTime * 0.08, -uTime * 0.06), uTime);',
+            '  float c2 = rfVoronoiCaustic(p * 4.8 - vec2(uTime * 0.06, uTime * 0.07), uTime * 1.15);',
+            '  float caustic = clamp(c1 * 0.65 + c2 * 0.5, 0.0, 1.0);',
+            '  vec3 col = mix(vec3(0.10, 0.72, 0.88), vec3(0.76, 0.98, 0.96), caustic);',
+            '  float a = radial * (0.14 + caustic * 0.86) * uStrength;',
+            '  if (a < 0.004) discard;',
+            '  gl_FragColor = vec4(col, a);',
+            '}'
+          ].join('\n')
+        });
+        var caustMesh = new THREE.Mesh(caustGeo, caustMat);
+        caustMesh.rotation.x = -Math.PI / 2;
+        caustMesh.position.set(center.x, center.y - r * 0.92, center.z);
+        group.add(caustMesh);
+        reefAtmosphereDisposables.push(caustGeo, caustMat);
+      }
+
+      // 2. Softly swaying volumetric underwater sunlight curtains (WebGL1 / GLSL ES 1.00)
+      if (typeof THREE.PlaneGeometry === 'function') {
+        reefCurtainUniforms = { uTime: { value: reefShaderTime }, uStrength: { value: 0.20 } };
+        var curtainGeo = new THREE.PlaneGeometry(r * 1.35, r * 3.8, 3, 10);
+        var curtainMat = new THREE.ShaderMaterial({
+          uniforms: reefCurtainUniforms,
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending,
+          vertexShader: [
+            'uniform float uTime;',
+            'varying vec2 vRayUv;',
+            'varying float vRayPhase;',
+            'void main() {',
+            '  vRayUv = uv;',
+            '  vRayPhase = position.x * 2.1 + position.z * 1.7;',
+            '  vec3 p = position;',
+            '  p.x += sin(uv.y * 3.8 - uTime * 0.85 + vRayPhase) * 0.08 * (1.0 - uv.y);',
+            '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uStrength;',
+            'varying vec2 vRayUv;',
+            'varying float vRayPhase;',
+            'void main() {',
+            '  float horiz = pow(max(0.0, sin(clamp(vRayUv.x, 0.0, 1.0) * 3.14159265)), 2.0);',
+            '  float vert = smoothstep(0.0, 0.82, vRayUv.y) * smoothstep(1.0, 0.86, vRayUv.y);',
+            '  float band = 0.62 + 0.38 * sin(vRayUv.x * 11.0 + sin(vRayUv.y * 4.5 - uTime * 0.9) + vRayPhase);',
+            '  vec3 col = mix(vec3(0.14, 0.76, 0.90), vec3(0.84, 0.99, 0.96), vRayUv.y);',
+            '  float a = horiz * vert * band * uStrength;',
+            '  if (a < 0.003) discard;',
+            '  gl_FragColor = vec4(col, a);',
+            '}'
+          ].join('\n')
+        });
+        reefAtmosphereDisposables.push(curtainGeo, curtainMat);
+        var curtainSpecs = [
+          [-r * 1.15, r * 0.55, -r * 1.65, -0.22, 0.25],
+          [ r * 0.15, r * 0.70, -r * 1.95, -0.14, -0.18],
+          [ r * 1.25, r * 0.50, -r * 1.50, -0.26, -0.42]
+        ];
+        for (var csi = 0; csi < curtainSpecs.length; csi++) {
+          var cs = curtainSpecs[csi];
+          var cMesh = new THREE.Mesh(curtainGeo, curtainMat);
+          cMesh.position.set(center.x + cs[0], center.y + cs[1], center.z + cs[2]);
+          cMesh.rotation.set(0, cs[4], cs[3]);
+          group.add(cMesh);
+        }
+      }
+
+      // 3. Drifting reef plankton / bioluminescent marine snow motes (Points ShaderMaterial)
+      if (typeof THREE.BufferGeometry === 'function' && typeof THREE.Float32BufferAttribute === 'function' && typeof THREE.Points === 'function') {
+        var pCount = 36;
+        var pPos = new Float32Array(pCount * 3);
+        var pSeed = new Float32Array(pCount * 3);
+        for (var pi = 0; pi < pCount; pi++) {
+          var pAng = pi * 2.3999632;
+          var pRad = r * (1.12 + ((pi * 17) % 11) * 0.095);
+          var pY = (((pi * 29) % 100) / 100 - 0.5) * r * 2.4;
+          pPos[pi * 3] = center.x + Math.cos(pAng) * pRad;
+          pPos[pi * 3 + 1] = center.y + pY;
+          pPos[pi * 3 + 2] = center.z + Math.sin(pAng) * pRad;
+          pSeed[pi * 3] = (pi * 0.61803398875) % 1;
+          pSeed[pi * 3 + 1] = 0.7 + (pi % 4) * 0.2;
+          pSeed[pi * 3 + 2] = pi * 0.83;
+        }
+        var pGeo = new THREE.BufferGeometry();
+        pGeo.setAttribute('position', new THREE.Float32BufferAttribute(pPos, 3));
+        pGeo.setAttribute('aPlankton', new THREE.Float32BufferAttribute(pSeed, 3));
+        reefPlanktonUniforms = { uTime: { value: reefShaderTime }, uOpacity: { value: 0.58 }, uRadius: { value: r } };
+        var pMat = new THREE.ShaderMaterial({
+          uniforms: reefPlanktonUniforms,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          vertexShader: [
+            'attribute vec3 aPlankton;',
+            'uniform float uTime;',
+            'uniform float uRadius;',
+            'varying float vPlankTint;',
+            'varying float vPlankPulse;',
+            'void main() {',
+            '  vec3 p = position;',
+            '  p.x += sin(uTime * 0.48 + aPlankton.z) * uRadius * 0.10;',
+            '  p.y += cos(uTime * 0.36 + aPlankton.z * 1.3) * uRadius * 0.12;',
+            '  p.z += cos(uTime * 0.42 + aPlankton.z * 0.8) * uRadius * 0.10;',
+            '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+            '  gl_PointSize = clamp((16.0 * aPlankton.y) / max(0.45, -mv.z / max(0.1, uRadius)), 1.8, 6.5);',
+            '  vPlankTint = aPlankton.x;',
+            '  vPlankPulse = 0.55 + 0.45 * sin(uTime * 1.6 + aPlankton.z * 2.1);',
+            '  gl_Position = projectionMatrix * mv;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uOpacity;',
+            'varying float vPlankTint;',
+            'varying float vPlankPulse;',
+            'void main() {',
+            '  float d = length(gl_PointCoord - vec2(0.5));',
+            '  if (d > 0.5) discard;',
+            '  float glow = pow(1.0 - d * 2.0, 2.0);',
+            '  vec3 col = mix(vec3(0.46, 0.96, 0.98), vec3(0.98, 0.95, 0.72), vPlankTint);',
+            '  float a = glow * vPlankPulse * uOpacity;',
+            '  if (a < 0.004) discard;',
+            '  gl_FragColor = vec4(col, a);',
+            '}'
+          ].join('\n')
+        });
+        var pPoints = new THREE.Points(pGeo, pMat);
+        pPoints.name = 'reef-specimen-plankton-motes';
+        group.add(pPoints);
+        reefAtmosphereDisposables.push(pGeo, pMat);
+      }
+
+      return group;
+    }
     function dispose() {
       if (dead) return; dead = true; scaleGuide = null; scaleGuideInputs = null;
       if (captureResolve) { var cancelCapture = captureResolve; captureResolve = null; cancelCapture(null); }
@@ -21732,6 +22028,9 @@
       if (observer) { observer.disconnect(); observer = null; }
       silhouetteMeshes.forEach(function (entry) { entry.node.material = entry.original; }); silhouetteMeshes = [];
       silhouetteMaterials.forEach(function (material) { try { material.dispose(); } catch (e) {} }); silhouetteMaterials.clear(); silhouetteTint = null;
+      reefAtmosphereDisposables.forEach(function (res) { try { if (res && res.dispose) res.dispose(); } catch (e) {} });
+      reefAtmosphereDisposables = []; reefAtmosphereGroup = null;
+      reefCausticUniforms = null; reefCurtainUniforms = null; reefPlanktonUniforms = null;
       if (model) { try { model.dispose(); } catch (e) {} model = null; }
       if (look) { try { look.dispose(); } catch (e) {} look = null; }
       if (renderer) {
@@ -21758,7 +22057,8 @@
       if (turnTime == null) turnTime = time;
       var elapsed = time - turnTime;
       if (elapsed >= 1000 / 30) {
-        theta += Math.min(elapsed, 100) / 1000 * .18; turnTime = time; render();
+        var stepSec = Math.min(elapsed, 100) / 1000;
+        theta += stepSec * .18; reefShaderTime += stepSec; turnTime = time; render();
       }
       if (turning && !dead) turnFrame = window.requestAnimationFrame(turntableFrame);
     }
@@ -21892,6 +22192,7 @@
           sun.position.copy(bounds.center).addScaledVector(direction, 3).addScaledVector(right, -2.6).addScaledVector(up, 1.8);
           sun.target.position.copy(bounds.center); sun.target.updateMatrixWorld();
         }
+        syncReefAtmosphere();
         renderer.render(scene, camera);
         updateScaleGuide(distance);
       } catch (e) { fail(); }
@@ -21941,6 +22242,11 @@
       camera = new THREE.PerspectiveCamera(35, 1, .01, 100);
       var info = window.Reef3DSpecies.info(id) || {}, portrait = info.portrait;
       sessile = info.group === 'coral' || info.group === 'structure' || info.habit === 'sessile';
+      if (sessile) reefSubsurfaceUniforms.uColor.value.setHex(0x52f2d6);
+      else reefSubsurfaceUniforms.uColor.value.setHex(0x38bdf8);
+      attachSpecimenSubsurfaceRim(model.root);
+      reefAtmosphereGroup = buildReefAtmosphere(bounds.center, bounds.radius);
+      if (reefAtmosphereGroup) scene.add(reefAtmosphereGroup);
       var portraitDirection = portrait && Array.isArray(portrait.dir) ? new THREE.Vector3(portrait.dir[0], portrait.dir[1] - (portrait.lookY || 0), portrait.dir[2]) : new THREE.Vector3(sessile ? 1.6 : 0, sessile ? 1 : .3, 3.2);
       if (!portraitDirection.lengthSq()) portraitDirection.set(0, .3, 3.2);
       portraitDirection.normalize(); theta = initialTheta = Math.atan2(portraitDirection.x, portraitDirection.z); phi = initialPhi = Math.acos(clamp(portraitDirection.y, -.99, .99));

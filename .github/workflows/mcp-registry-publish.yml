@@ -17,11 +17,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: mcp-registry-publish
+  cancel-in-progress: false
+
 jobs:
   verify:
     name: Verify tagged release without publishing credentials
     if: github.event_name == 'workflow_dispatch' && github.repository == 'Apomera/AlloFlow' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     env:
@@ -43,7 +48,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          ref: ${{ inputs.release_tag }}
+          ref: refs/tags/${{ inputs.release_tag }}
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
@@ -95,6 +100,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && github.repository == 'Apomera/AlloFlow' && github.ref == 'refs/heads/main'
     needs: verify
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write
@@ -118,7 +124,7 @@ jobs:
       - name: Install checksum-pinned official MCP publisher
         shell: bash
         run: |
-          curl --fail --silent --show-error --location "https://github.com/modelcontextprotocol/registry/releases/download/$PUBLISHER_VERSION/mcp-publisher_linux_amd64.tar.gz" --output mcp-publisher.tgz
+          curl --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 60 --fail --silent --show-error --location "https://github.com/modelcontextprotocol/registry/releases/download/$PUBLISHER_VERSION/mcp-publisher_linux_amd64.tar.gz" --output mcp-publisher.tgz
           echo "$PUBLISHER_SHA256  mcp-publisher.tgz" | sha256sum --check
           tar -xzf mcp-publisher.tgz mcp-publisher
           ./mcp-publisher validate registry-metadata/server.json
@@ -128,7 +134,7 @@ jobs:
         shell: bash
         run: |
           version="$(printf '%s' "$RELEASE_TAG" | sed 's/^mcpb-v//')"
-          curl --fail --silent --show-error --get --data-urlencode "search=$MCP_NAME" https://registry.modelcontextprotocol.io/v0.1/servers > registry-before.json
+          curl --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 60 --fail --silent --show-error --get --data-urlencode "search=$MCP_NAME" https://registry.modelcontextprotocol.io/v0.1/servers > registry-before.json
           if jq -e --arg name "$MCP_NAME" --arg version "$version" '.servers[]? | select(.server.name == $name and .server.version == $version)' registry-before.json >/dev/null; then
             echo "published=true" >> "$GITHUB_OUTPUT"
             echo "$MCP_NAME@$version is already present; publication is idempotently complete."
@@ -146,7 +152,7 @@ jobs:
         run: |
           version="$(printf '%s' "$RELEASE_TAG" | sed 's/^mcpb-v//')"
           for attempt in 1 2 3 4 5 6; do
-            curl --fail --silent --show-error --get --data-urlencode "search=$MCP_NAME" https://registry.modelcontextprotocol.io/v0.1/servers > registry-after.json
+            curl --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 60 --fail --silent --show-error --get --data-urlencode "search=$MCP_NAME" https://registry.modelcontextprotocol.io/v0.1/servers > registry-after.json
             if jq -e --arg name "$MCP_NAME" --arg version "$version" '.servers[]? | select(.server.name == $name and .server.version == $version)' registry-after.json >/dev/null; then
               echo "Published and discoverable: $MCP_NAME@$version"
               exit 0

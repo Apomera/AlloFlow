@@ -20,7 +20,7 @@
   function rowOf(word) { try { return wordlist ? wordlist.get(word) : null; } catch (_) { return null; } }
   function builtIn(word) { var row = rowOf(word); return !!(row && (row.kokoro || row.shards)); }
   function notUsed(word) { var row = rowOf(word); return !!(row && row.blocked); }
-  var state = { words: [], entries: {}, ready: false, getting: false, making: false, stop: null, makeRun: 0, storage: true, playing: null };
+  var state = { words: [], entries: Object.create(null), ready: false, getting: false, making: false, stop: null, makeRun: 0, storage: true, playing: null };
   function makeController() {
     if (typeof win.AbortController === 'function') return new win.AbortController();
     var ctrl = { signal: { aborted: false }, abort: function () { ctrl.signal.aborted = true; } };
@@ -45,7 +45,7 @@
   // The words in the box: letters only, 2 to 24 of them, each once, at most MAX_WORDS.
   // Tolerates pasted lists: UTF-8 BOM, leading numbering/bullets per line, and outer quotes or punctuation.
   function readWords() {
-    var seen = {}, words = [], refused = [];
+    var seen = Object.create(null), words = [], refused = [];
     String($('f-words').value || '').replace(/^\uFEFF/, '').split(/\r?\n/).forEach(function (line) {
       var cleanedLine = line.replace(/^\s*(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '');
       cleanedLine.split(/[\s,;]+/).forEach(function (raw) {
@@ -67,8 +67,8 @@
   }
 
   function refreshEntries() {
-    if (!myWords || !state.storage || !state.words.length) { state.entries = {}; return Promise.resolve(); }
-    return myWords.getMany(state.words).then(function (found) { state.entries = found || {}; }, function () { state.entries = {}; });
+    if (!myWords || !state.storage || !state.words.length) { state.entries = Object.create(null); return Promise.resolve(); }
+    return myWords.getMany(state.words).then(function (found) { state.entries = Object.assign(Object.create(null), found || {}); }, function () { state.entries = Object.create(null); });
   }
   function clipOf(word) { var entry = state.entries[word]; return entry && entry.clip ? entry.clip : null; }
   // The words "Make recordings for the words that have none" makes: none in My words, none made ahead of time, and a word the makers use.

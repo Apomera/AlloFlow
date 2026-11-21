@@ -287,7 +287,7 @@ function CanvasRecoveryDialogView(props) {
   }, canvasRecoveryDialogMode === 'checking' ? _crCopy('canvas_recovery.title_checking', 'Checking this device…') : canvasRecoveryDialogMode === 'vault-locked' ? _crCopy('canvas_recovery.title_vault_locked', 'Unlock protected saved work') : canvasRecoveryDialogMode === 'error' ? _crCopy('canvas_recovery.title_error', 'Device recovery needs attention') : canvasRecoveryDialogMode === 'manage' ? _crCopy('canvas_recovery.title_manage', 'Storage and recovery manager') : _crCopy('canvas_recovery.title_default', 'Continue where you left off?')), /*#__PURE__*/React.createElement("p", {
     id: "canvas-recovery-description",
     className: "mt-2 text-sm leading-relaxed text-slate-600"
-  }, canvasRecoveryDialogMode === 'checking' ? _crCopy('canvas_recovery.desc_checking', 'AlloFlow is securely checking this browser for earlier resource-pack work.') : canvasRecoveryDialogMode === 'vault-locked' ? _crCopy('canvas_recovery.desc_vault_locked', 'Recovery-workspace contents are encrypted on this device. Unlock to restore or save protected work.') : canvasRecoveryDialogMode === 'error' ? _crCopy('canvas_recovery.desc_error', 'No saved work will be overwritten unless AlloFlow can first read the device store.') : canvasRecoveryDialogMode === 'manage' ? _crCopy('canvas_recovery.desc_manage', 'Review approximate usage, choose a retention policy, and manage recoverable work kept by this browser.') : _crCopy('canvas_recovery.desc_default', 'AlloFlow found saved resource history and authoring state from an earlier Gemini Canvas session.'))), canvasRecoveryDecisionMade && canvasRecoveryVaultForm.mode !== 'confirm-recovery-code' && /*#__PURE__*/React.createElement("button", {
+  }, canvasRecoveryDialogMode === 'checking' ? _crCopy('canvas_recovery.desc_checking', 'AlloFlow is securely checking this browser for earlier resource-pack work.') : canvasRecoveryDialogMode === 'vault-locked' ? _crCopy('canvas_recovery.desc_vault_locked', 'Recovery-workspace contents are encrypted on this device. Unlock to restore or save protected work.') : canvasRecoveryDialogMode === 'error' ? _crCopy('canvas_recovery.desc_error', 'No saved work will be overwritten unless AlloFlow can first read the device store.') : canvasRecoveryDialogMode === 'manage' ? _crCopy('canvas_recovery.desc_manage', 'Review approximate usage, choose a retention policy, and manage recoverable work kept by this browser.') : _crCopy('canvas_recovery.desc_default', 'AlloFlow found saved resource history and authoring state from an earlier Gemini Canvas session.'))), canvasRecoveryDecisionMade && canvasRecoveryVaultForm?.mode !== 'confirm-recovery-code' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => closeCanvasRecoveryDialog(null),
     className: "min-h-11 min-w-11 rounded-xl border border-slate-200 text-xl text-slate-600 hover:bg-slate-100",
@@ -371,7 +371,7 @@ function CanvasRecoveryDialogView(props) {
       onClick: () => canvasRecoveryImportInputRef.current?.click(),
       className: "min-h-12 rounded-xl border border-slate-300 px-4 py-3 text-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60"
     }, t('storage.import_project') || 'Import project file')), /*#__PURE__*/React.createElement("p", {
-      className: "mt-3 text-xs text-slate-500"
+      className: "mt-3 text-xs text-slate-600"
     }, t('storage.retention_note', {
       max: choiceRetention.maxSnapshots,
       policy: choiceRetention.effectivePolicyId,
@@ -422,19 +422,19 @@ function CanvasRecoveryDialogView(props) {
     }, /*#__PURE__*/React.createElement("div", {
       className: "rounded-xl bg-slate-50 p-3"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] font-black uppercase tracking-wide text-slate-500"
+      className: "text-xs font-black uppercase tracking-wide text-slate-600"
     }, isCanvas ? 'Durable device total' : 'Browser-reported total'), /*#__PURE__*/React.createElement("div", {
       className: "mt-1 font-black text-slate-900"
     }, Number.isFinite(physicalFacts.usage) ? _alloFormatWorkspaceBytes(physicalFacts.usage) + (Number.isFinite(physicalFacts.quota) && physicalFacts.quota > 0 ? ' of ' + _alloFormatWorkspaceBytes(physicalFacts.quota) : '') : 'Unavailable')), /*#__PURE__*/React.createElement("div", {
       className: "rounded-xl bg-slate-50 p-3"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] font-black uppercase tracking-wide text-slate-500"
+      className: "text-xs font-black uppercase tracking-wide text-slate-600"
     }, t('storage.persistence_label') || 'Persistence'), /*#__PURE__*/React.createElement("div", {
       className: "mt-1 font-black text-slate-900"
     }, persistence === true ? 'Protected from automatic eviction' : persistence === false ? 'Best effort' : 'Status unavailable')), /*#__PURE__*/React.createElement("div", {
       className: "rounded-xl bg-slate-50 p-3"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] font-black uppercase tracking-wide text-slate-500"
+      className: "text-xs font-black uppercase tracking-wide text-slate-600"
     }, t('storage.recovery_workspaces_label') || 'Recovery workspaces'), /*#__PURE__*/React.createElement("div", {
       className: "mt-1 font-black text-slate-900"
     }, t('storage.recovery_target', {
@@ -471,18 +471,18 @@ function CanvasRecoveryDialogView(props) {
     }, /*#__PURE__*/React.createElement("span", {
       className: "font-semibold text-slate-700"
     }, m.label), /*#__PURE__*/React.createElement("span", {
-      className: "block text-xs font-normal text-slate-500"
+      className: "block text-xs font-normal text-slate-600"
     }, m.desc)), m.have ? /*#__PURE__*/React.createElement("span", {
       className: "shrink-0 rounded-md bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-800"
     }, '✓ ', t('storage.model_on_device') || 'On this device') : /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: m.onGet,
       disabled: !!alloModelStatus.busy,
-      className: "shrink-0 rounded-md border border-indigo-300 bg-white px-2 py-1 text-xs font-black text-indigo-800 disabled:opacity-50"
+      className: "shrink-0 min-h-11 rounded-md border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-800 disabled:opacity-50"
     }, alloModelStatus.busy === m.key ? t('storage.model_downloading') || 'Downloading…' : t('storage.model_download', {
       size: m.size
     }) || 'Download ' + m.size)))), alloModelStatus.bytes > 0 && /*#__PURE__*/React.createElement("p", {
-      className: "mt-1 text-[11px] text-slate-500"
+      className: "mt-1 text-xs text-slate-600"
     }, t('storage.model_cache', {
       size: _alloFormatWorkspaceBytes(alloModelStatus.bytes)
     }) || 'Model cache on this device: ~' + _alloFormatWorkspaceBytes(alloModelStatus.bytes))), storageManagerInventory.managed.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -497,7 +497,7 @@ function CanvasRecoveryDialogView(props) {
     }, /*#__PURE__*/React.createElement("span", {
       className: "font-semibold text-slate-700"
     }, row.label, " ", /*#__PURE__*/React.createElement("span", {
-      className: "text-xs font-normal text-slate-500"
+      className: "text-xs font-normal text-slate-600"
     }, "(", row.count, ")")), /*#__PURE__*/React.createElement("span", {
       className: "font-bold text-slate-900"
     }, "~", _alloFormatWorkspaceBytes(row.approximateBytes)))))), isCanvas && storageManagerInventory.deviceNamespaces.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -512,11 +512,11 @@ function CanvasRecoveryDialogView(props) {
     }, /*#__PURE__*/React.createElement("span", {
       className: "font-semibold text-slate-700"
     }, row.ns, " ", /*#__PURE__*/React.createElement("span", {
-      className: "text-xs font-normal text-slate-500"
+      className: "text-xs font-normal text-slate-600"
     }, "(", row.count, ")")), /*#__PURE__*/React.createElement("span", {
       className: "font-bold text-slate-900"
     }, "~", _alloFormatWorkspaceBytes(row.bytes)))))), storageManagerInventory.error && /*#__PURE__*/React.createElement("p", {
-      role: "status",
+      role: "alert",
       className: "mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs font-semibold text-amber-900"
     }, storageManagerInventory.error)), /*#__PURE__*/React.createElement("section", {
       "aria-labelledby": "storage-policy-title",
@@ -567,7 +567,7 @@ function CanvasRecoveryDialogView(props) {
   }, t('storage.local_documents_title') || 'Local documents'), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 max-w-2xl text-xs leading-relaxed text-slate-700"
   }, t('storage.local_documents_hint') || 'Accessibility remediations can be resumed independently below. Document Hub drafts are marked in their saved workspaces and can be opened directly. Nothing new is retained merely by viewing this list.')), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-wide"
+    className: "flex flex-wrap gap-2 text-xs font-black uppercase tracking-wide"
   }, (pdfRemediationCacheEntries.length > 0 || pdfFixResult || lastPdfAuditResultRef.current) && /*#__PURE__*/React.createElement("span", {
     className: "rounded-full bg-emerald-200 px-2.5 py-1 text-emerald-950"
   }, pdfRemediationCacheEntries.length || 1, " remediation", (pdfRemediationCacheEntries.length || 1) === 1 ? '' : 's'), canvasRecoveryStore.snapshots.some(snapshot => snapshot?.workspace?.builderDraft) && /*#__PURE__*/React.createElement("span", {
@@ -588,7 +588,7 @@ function CanvasRecoveryDialogView(props) {
     }, /*#__PURE__*/React.createElement("h4", {
       className: "break-words text-sm font-black text-slate-900"
     }, entry.documentName), isActive && /*#__PURE__*/React.createElement("span", {
-      className: "rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-emerald-900"
+      className: "rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-emerald-900"
     }, "Current")), /*#__PURE__*/React.createElement("p", {
       className: "mt-1 text-xs text-slate-600"
     }, entry.savedAt ? new Date(entry.savedAt).toLocaleString() : 'Saved on this device', entry.pageCount ? ` · ${entry.pageCount} page${entry.pageCount === 1 ? '' : 's'}` : '', entry.approximateBytes > 0 ? ' · ~' + _alloFormatWorkspaceBytes(entry.approximateBytes) : ''), /*#__PURE__*/React.createElement("p", {
@@ -665,15 +665,15 @@ function CanvasRecoveryDialogView(props) {
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-2 font-black text-slate-900"
   }, /*#__PURE__*/React.createElement("span", null, snapshot.title), snapshot.pinned && /*#__PURE__*/React.createElement("span", {
-    className: "rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-800"
+    className: "rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-indigo-800"
   }, "Pinned"), snapshot.resourceCount === 0 && /*#__PURE__*/React.createElement("span", {
-    className: "rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-slate-700"
+    className: "rounded-full bg-slate-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-slate-700"
   }, "Draft only"), snapshot?.workspace?.builderDraft && /*#__PURE__*/React.createElement("span", {
-    className: "rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-900"
+    className: "rounded-full bg-violet-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-violet-900"
   }, "Document Hub draft")), /*#__PURE__*/React.createElement("div", {
     className: "mt-1 text-xs text-slate-600"
   }, snapshot.resourceCount, " ", snapshot.resourceCount === 1 ? 'resource' : 'resources', " \xB7 ", new Date(snapshot.savedAt).toLocaleString(), snapshot.approximateBytes > 0 && ' · ' + _alloFormatWorkspaceBytes(snapshot.approximateBytes)), /*#__PURE__*/React.createElement("div", {
-    className: 'mt-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ' + (snapshot.assetPolicy === 'full' ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900')
+    className: 'mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-bold ' + (snapshot.assetPolicy === 'full' ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900')
   }, snapshot.assetPolicy === 'full' ? 'Resource pack saved with supported media' : 'Resource history and settings saved; omissions recorded')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, snapshot?.workspace?.builderDraft && /*#__PURE__*/React.createElement("button", {

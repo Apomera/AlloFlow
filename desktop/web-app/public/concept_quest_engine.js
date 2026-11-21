@@ -584,7 +584,7 @@
         heal += ability.heal || 0;
         shield += ability.shield || 0;
         correctAbilityIds.push(ability.id);
-        var committedRole = typeof action.roleId === 'string' ? action.roleId : roles && roles[uid];
+        var committedRole = typeof action.roleId === 'string' ? action.roleId : (roles && Object.prototype.hasOwnProperty.call(roles, uid) ? roles[uid] : undefined);
         var role = ROLES.find(function(entry) { return entry.id === committedRole; });
         if (role && role.abilityId === ability.id) { damage += 1; synergyCount += 1; }
       } else {
@@ -595,7 +595,7 @@
     Object.keys(actions || {}).sort().forEach(function(uid) {
       var action = actions[uid] || {};
       var targetUid = cleanText(action.supportTargetUid, '', 128);
-      if (!targetUid || targetUid === uid || !actions[targetUid]) return;
+      if (!targetUid || targetUid === uid || !Object.prototype.hasOwnProperty.call(actions, targetUid) || !actions[targetUid]) return;
       var helperCorrect = action.answerIndex === challenge.correctIndex;
       if (!helperCorrect) return;
       var supportId = action.supportId;

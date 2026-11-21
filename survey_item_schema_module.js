@@ -59,14 +59,25 @@
     const RESEARCH_MIN_ITEMS = 2;
 
     const TYPES = ['likert', 'choice', 'freetext', 'numeric'];
+    const MAX_STEPS = 50;
+    const MAX_CELLS = 50;
+    const MAX_INSTRUMENT_ITEMS = 200;
+    const MAX_IMAGE_DATA_CHARS = 750 * 1024;
 
     function text(value, limit) {
         if (value === null || value === undefined) return '';
-        return String(value).replace(/\s+/g, ' ').trim().slice(0, limit || 240);
+        return String(value).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit || 240);
     }
 
     function isObject(value) {
         return value !== null && typeof value === 'object' && !Array.isArray(value);
+    }
+
+    function safeRasterDataUrl(raw) {
+        if (typeof raw !== 'string') return null;
+        const trimmed = raw.trim();
+        if (!trimmed || trimmed.length > MAX_IMAGE_DATA_CHARS) return null;
+        return /^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\r\n]+$/i.test(trimmed) ? trimmed : null;
     }
 
     // A cell is a label or an option: text plus an optional image data URL.
@@ -76,7 +87,7 @@
         if (!isObject(value)) return { text: '', image: null };
         return {
             text: text(value.text != null ? value.text : value.label, 120),
-            image: typeof value.image === 'string' && value.image ? value.image : null
+            image: safeRasterDataUrl(value.image)
         };
     }
 
@@ -84,7 +95,7 @@
     // meaningful data ("Quiz never stored a middle label") and must keep its
     // slot. Options are a list, where an empty entry is just noise.
     function cells(value, keepEmpty) {
-        const out = (Array.isArray(value) ? value : []).map(cell);
+        const out = (Array.isArray(value) ? value.slice(0, MAX_CELLS) : []).map(cell);
         return keepEmpty ? out : out.filter((c) => c.text || c.image);
     }
 
@@ -111,8 +122,9 @@
             const declared = parseInt(source.steps, 10);
             // Labels are the stronger signal: if an author wrote five of them,
             // the scale has five steps whatever a stale `steps` field says.
-            item.steps = labels.length >= 2 ? labels.length
+            const rawSteps = labels.length >= 2 ? labels.length
                 : (isFinite(declared) && declared >= 2 ? declared : 5);
+            item.steps = Math.min(MAX_STEPS, Math.max(2, rawSteps));
             item.labels = labels;
         } else if (type === 'choice') {
             item.options = cells(source.options);
@@ -126,7 +138,7 @@
     }
 
     function normalizeInstrument(raw) {
-        const list = Array.isArray(raw) ? raw : (raw == null ? [] : [raw]);
+        const list = Array.isArray(raw) ? raw.slice(0, MAX_INSTRUMENT_ITEMS) : (raw == null ? [] : [raw]);
         return list.map(normalizeItem).filter((item) => item.text);
     }
 
@@ -170,7 +182,7 @@
                 text: source.text,
                 type: kind,
                 labels: kind === 'likert' ? source.labels : undefined,
-                options: kind === 'choice' ? (source.options && source.options.length ? source.options : source.labels) : undefined
+                options: kind === 'choice' ? (Array.isArray(source.options) && source.options.length ? source.options : source.labels) : undefined
             };
         }));
     }
@@ -231,11 +243,12 @@
     }
 
     function fromQuizItems(questions) {
-        return normalizeInstrument((Array.isArray(questions) ? questions : []).map((q) => {
+        return normalizeInstrument((Array.isArray(questions) ? questions.slice(0, MAX_INSTRUMENT_ITEMS) : []).map((q) => {
             const source = isObject(q) ? q : {};
             if (source.itemType === 'likert') {
                 const scale = isObject(source.scale) ? source.scale : {};
-                const steps = parseInt(scale.steps, 10) || 5;
+                const parsedSteps = parseInt(scale.steps, 10);
+                const steps = Math.min(MAX_STEPS, Math.max(2, isFinite(parsedSteps) && parsedSteps >= 2 ? parsedSteps : 5));
                 // Only the endpoints were ever stored, so the middle comes
                 // back blank rather than invented.
                 const labels = [];
@@ -298,14 +311,14 @@
         if (source.type === 'survey') {
             // The server generated the item ids; keep them so answers can be
             // joined back to the instrument.
-            return normalizeInstrument((Array.isArray(source.items) ? source.items : []).map((item) => ({
+            return normalizeInstrument((Array.isArray(source.items) ? source.items.slice(0, MAX_INSTRUMENT_ITEMS) : []).map((item) => ({
                 id: item && item.id,
                 text: item && item.text,
                 type: item && item.type,
                 required: item && item.required === true,
                 steps: item && item.steps,
                 labels: item && item.labels,
-                options: item && item.options ? item.options.map((o) => o && o.label) : undefined,
+                options: item && Array.isArray(item.options) ? item.options.slice(0, MAX_CELLS).map((o) => o && o.label) : undefined,
                 min: item && item.min,
                 max: item && item.max
             })));
@@ -319,12 +332,12 @@
                 id: source.activityId,
                 text: source.prompt,
                 type: 'likert',
-                steps: Math.max(2, hi - lo + 1),
+                steps: Math.min(MAX_STEPS, Math.max(2, hi - lo + 1)),
                 labels: Array.isArray(source.labels) && source.labels.length ? source.labels : undefined
             }, 0);
         }
         if (source.type === 'availability' || source.type === 'signup') {
-            return normalizeItem({ id: source.activityId, text: source.prompt, type: 'choice', options: (source.options || []).map((o) => o && o.label) }, 0);
+            return normalizeItem({ id: source.activityId, text: source.prompt, type: 'choice', options: (Array.isArray(source.options) ? source.options.slice(0, MAX_CELLS) : []).map((o) => o && o.label) }, 0);
         }
         return normalizeItem({ id: source.activityId, text: source.prompt, type: 'freetext' }, 0);
     }

@@ -64,18 +64,48 @@
   var setReportLoadStatus = _reportLoad[1];
   var runLaunchTransition = function (work, event) {
     // Keep the pre-rendered workspace concealed for this input frame. The host
-    // effect reveals it when the transition commits.
+    // effect reveals it when the transition commits. Always restore the button
+    // if work() returns early (e.g., educator gate opened or validation failed)
+    // so controls can never be permanently stranded disabled.
     var button = event && event.currentTarget;
+    var restoreButton = function () {
+      if (!button || !button.isConnected) return;
+      if (!mountedRef.current || !button.isConnected) return;
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+      button.style.opacity = '';
+    };
     if (button) {
       button.disabled = true;
       button.setAttribute('aria-busy', 'true');
       button.style.opacity = '0.72';
     }
     setTimeout(function () {
-      if (typeof React.startTransition === 'function') React.startTransition(work);else work();
+      var run = function () {
+        try {
+          return work();
+        } finally {
+          setTimeout(restoreButton, 300);
+        }
+      };
+      if (typeof React.startTransition === 'function') React.startTransition(run);else run();
     }, 40);
   };
   var launchPadRef = React.useRef(null);
+  var mountedRef = React.useRef(true);
+  var activeVoiceUnsubRef = React.useRef(null);
+  React.useEffect(function () {
+    mountedRef.current = true;
+    return function () {
+      mountedRef.current = false;
+      if (typeof activeVoiceUnsubRef.current === 'function') {
+        try {
+          activeVoiceUnsubRef.current();
+        } catch (_) {}
+        activeVoiceUnsubRef.current = null;
+      }
+    };
+  }, []);
   function ensureLaunchPadUtilityModule(moduleName, filename, exportName, promiseKey, scriptAttribute) {
     function registered() {
       return window.AlloModules && window.AlloModules[exportName];
@@ -367,6 +397,7 @@
     };
   }, [currentUiLanguage]);
   function updateVoiceSetup(engine, patch, message) {
+    if (!mountedRef.current) return;
     setVoiceSetup(function (previous) {
       var next = Object.assign({}, previous);
       next[engine] = Object.assign({}, previous[engine] || {}, patch || {});
@@ -387,6 +418,7 @@
     var unsubscribe = function () {};
     if (typeof voice.subscribeToVoiceProgress === 'function') {
       unsubscribe = voice.subscribeToVoiceProgress(function (progress) {
+        if (!mountedRef.current) return;
         if (!progress || !/^model-|^transformers-fetch$/.test(String(progress.phase || ''))) return;
         var percent = typeof progress.progress === 'number' ? Math.max(0, Math.min(100, Math.round(progress.progress))) : null;
         var detail = percent == null ? 'Preparing the Whisper speech model…' : 'Downloading Whisper speech recognition: ' + percent + '%.';
@@ -395,6 +427,7 @@
           progress: percent
         }, detail);
       });
+      activeVoiceUnsubRef.current = unsubscribe;
     }
     updateVoiceSetup('whisper', {
       phase: 'loading',
@@ -414,6 +447,7 @@
         progress: null
       }, 'Whisper could not be downloaded. Check the connection or school network filter, then try again.');
     } finally {
+      if (activeVoiceUnsubRef.current === unsubscribe) activeVoiceUnsubRef.current = null;
       try {
         unsubscribe();
       } catch (_) {}
@@ -955,20 +989,58 @@
   React.useEffect(function () {
     if (!langMenuOpen || typeof document === 'undefined') return;
     var list = langListRef.current;
+    var trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    var trap = {
+      root: list
+    };
+    trapStack.push(trap);
+    var isTopTrap = function () {
+      return trapStack[trapStack.length - 1] === trap;
+    };
     var selectedButton = list && list.querySelector('button[aria-pressed="true"]');
     var firstButton = list && list.querySelector('button:not([disabled])');
     var focusTarget = selectedButton || firstButton;
     if (focusTarget) focusTarget.focus();
     var handleLanguageKeyDown = function (event) {
-      if (event.isComposing || event.keyCode === 229) return;
+      if (event.defaultPrevented || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+      if (!isTopTrap()) return;
       if (event.key === 'Escape') {
         event.preventDefault();
+        event.stopPropagation();
         closeLanguageMenu();
+        return;
+      }
+      var listEl = langListRef.current;
+      if (!listEl) return;
+      var items = Array.prototype.slice.call(listEl.querySelectorAll('button:not([disabled])'));
+      if (!items.length) return;
+      var currentIdx = items.indexOf(document.activeElement);
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        items[currentIdx < 0 ? 0 : (currentIdx + 1) % items.length].focus();
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        items[currentIdx <= 0 ? items.length - 1 : currentIdx - 1].focus();
+      } else if (event.key === 'Home') {
+        event.preventDefault();
+        items[0].focus();
+      } else if (event.key === 'End') {
+        event.preventDefault();
+        items[items.length - 1].focus();
+      } else if (event.key === 'Tab') {
+        event.preventDefault();
+        if (event.shiftKey) {
+          items[currentIdx <= 0 ? items.length - 1 : currentIdx - 1].focus();
+        } else {
+          items[currentIdx < 0 ? 0 : (currentIdx + 1) % items.length].focus();
+        }
       }
     };
     document.addEventListener('keydown', handleLanguageKeyDown);
     return function () {
       document.removeEventListener('keydown', handleLanguageKeyDown);
+      var idx = trapStack.indexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
     };
   }, [langMenuOpen]);
   React.useEffect(function () {
@@ -976,9 +1048,8 @@
     var body = document.body;
     var html = document.documentElement;
     if (!body || !html) return;
-    // Ref-counted shared body scroll lock (window.__alloScrollLockState):
-    // save/restore of body.style.overflow strands the page at
-    // overflow:hidden when two modules interleave open/close non-LIFO.
+    // Ref-counted shared body & html scroll locks: save/restore without ref-counting
+    // strands the page at overflow:hidden when two modules interleave open/close non-LIFO.
     var scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = {
       count: 0,
       prev: ''
@@ -987,14 +1058,21 @@
       scrollLock.prev = body.style.overflow;
       body.style.overflow = 'hidden';
     }
-    var previousHtmlOverflow = html.style.overflow;
+    var htmlLock = window.__alloHtmlScrollLockState || (window.__alloHtmlScrollLockState = {
+      count: 0,
+      prev: ''
+    });
+    if (++htmlLock.count === 1) {
+      htmlLock.prev = html.style.overflow;
+      html.style.overflow = 'hidden';
+    }
     body.classList.add('alloflow-launchpad-active');
-    html.style.overflow = 'hidden';
     return function () {
       body.classList.remove('alloflow-launchpad-active');
       scrollLock.count = Math.max(0, scrollLock.count - 1);
       if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
-      html.style.overflow = previousHtmlOverflow;
+      htmlLock.count = Math.max(0, htmlLock.count - 1);
+      if (htmlLock.count === 0) html.style.overflow = htmlLock.prev;
     };
   }, []);
   function LaunchPadIcon(iconProps) {

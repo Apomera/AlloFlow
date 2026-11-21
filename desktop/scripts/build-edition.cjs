@@ -26,8 +26,9 @@
 // Usage: node scripts/build-edition.cjs <desktop|admin> [win-x64|win|mac] (default win-x64)
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 
 const DESKTOP_ROOT = path.resolve(__dirname, '..');
 const BASE_CONFIG = path.join(DESKTOP_ROOT, 'electron-builder.json');
@@ -70,27 +71,38 @@ const EDITIONS = {
 };
 
 const TARGETS = {
-  'win-x64': '--win nsis --x64',
-  'win': '--win nsis --x64 --arm64',
-  'mac': '--mac dmg zip --x64 --arm64',
+  'win-x64': ['--win', 'nsis', '--x64'],
+  'win': ['--win', 'nsis', '--x64', '--arm64'],
+  'mac': ['--mac', 'dmg', 'zip', '--x64', '--arm64'],
   // Apple-silicon-only build — Tyler's local test loop (2026-08-06): no Intel
   // Macs in play right now, and skipping x64 halves build time and artifact bulk.
-  'mac-arm64': '--mac dmg zip --arm64',
+  'mac-arm64': ['--mac', 'dmg', 'zip', '--arm64'],
 };
 
 const edition = String(process.argv[2] || '').toLowerCase();
 const target = String(process.argv[3] || 'win-x64').toLowerCase();
-if (!EDITIONS[edition]) {
-  console.error(`[build-edition] Unknown edition "${edition}". Use: desktop | admin`);
+if (!Object.prototype.hasOwnProperty.call(EDITIONS, edition)) {
+  console.error(`[build-edition] Unknown edition "${edition}". Use: ${Object.keys(EDITIONS).join(' | ')}`);
   process.exit(1);
 }
-if (!TARGETS[target]) {
+if (!Object.prototype.hasOwnProperty.call(TARGETS, target)) {
   console.error(`[build-edition] Unknown target "${target}". Use: ${Object.keys(TARGETS).join(' | ')}`);
   process.exit(1);
 }
 
 const spec = EDITIONS[edition];
-const EFFECTIVE_CONFIG = path.join(DESKTOP_ROOT, `electron-builder.${edition}.effective.json`);
+const tempConfigDir = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-edition-'));
+const EFFECTIVE_CONFIG = path.join(tempConfigDir, `electron-builder.${edition}.effective.json`);
+
+const cleanupTempConfig = () => {
+  try { fs.rmSync(tempConfigDir, { recursive: true, force: true }); } catch (_) {}
+};
+const handleSignal = (sig) => {
+  cleanupTempConfig();
+  process.exit(sig === 'SIGINT' ? 130 : 143);
+};
+process.once('SIGINT', handleSignal);
+process.once('SIGTERM', handleSignal);
 
 const config = JSON.parse(fs.readFileSync(BASE_CONFIG, 'utf8'));
 config.appId = spec.appId;
@@ -116,15 +128,26 @@ reprefix(config);
 fs.writeFileSync(EFFECTIVE_CONFIG, JSON.stringify(config, null, 2));
 console.log(`[build-edition] Edition: ${edition} (${spec.productName}) → ${spec.outputDir}`);
 
-function run(cmd) {
-  console.log(`\n$ ${cmd}`);
-  execSync(cmd, { cwd: DESKTOP_ROOT, stdio: 'inherit' });
+function runNode(scriptPath, args) {
+  console.log(`\n$ node ${path.relative(DESKTOP_ROOT, scriptPath)} ${args.join(' ')}`);
+  const result = spawnSync(process.execPath, [scriptPath, ...args], {
+    cwd: DESKTOP_ROOT,
+    stdio: 'inherit',
+    windowsHide: true,
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`Command failed with exit code ${result.status}`);
+  }
 }
 
 try {
-  run('npm run web:build');
-  run(`npx electron-builder --config ${path.basename(EFFECTIVE_CONFIG)} ${TARGETS[target]} --publish never`);
+  runNode(path.join(__dirname, 'build-desktop-web.cjs'), []);
+  const builderCli = require.resolve('electron-builder/cli.js', { paths: [DESKTOP_ROOT] });
+  runNode(builderCli, ['--config', EFFECTIVE_CONFIG, ...TARGETS[target], '--publish', 'never']);
   console.log(`\n[build-edition] ${spec.productName} build complete.`);
 } finally {
-  try { if (fs.existsSync(EFFECTIVE_CONFIG)) fs.unlinkSync(EFFECTIVE_CONFIG); } catch (_) {}
+  process.removeListener('SIGINT', handleSignal);
+  process.removeListener('SIGTERM', handleSignal);
+  cleanupTempConfig();
 }

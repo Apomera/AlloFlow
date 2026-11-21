@@ -18698,25 +18698,28 @@ test('no a11y violations', async () => {
       // The header paints no ground of its own, so it sits on the HOST surface -
       // white in light and dark, pure BLACK in the contrast theme, where these
       // hardcoded slate hexes measured 1.44:1 and 2.77:1.
-      var isContrast = !!ctx.isContrast;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+      var isDark = ctx.theme === 'dark';
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
       var useCallback = React.useCallback;
       var useRef = React.useRef;
-      var d = (ctx.toolData && ctx.toolData.appLab) || {};
+      var d = (ctx.toolData && typeof ctx.toolData === 'object' && ctx.toolData.appLab && typeof ctx.toolData.appLab === 'object') ? ctx.toolData.appLab : {};
       // Accepts a value OR an updater. The updater form lets counters derive
       // from the previous value instead of from `d`, which is a render-time
       // snapshot: reading it inside an async callback was both a stale read
       // and the reason `d` had to sit in every dep array, churning the
       // callback identity on every single toolData write.
       var upd = function(key, val) {
+        if (typeof ctx.setToolData !== 'function') return;
         ctx.setToolData(function(prev) {
-          var td = Object.assign({}, (prev && prev.appLab) || {});
+          var base = (prev && typeof prev === 'object') ? prev : {};
+          var td = Object.assign({}, (base.appLab && typeof base.appLab === 'object') ? base.appLab : {});
           td[key] = (typeof val === 'function') ? val(td[key]) : val;
           var patch = {};
           patch.appLab = td;
-          return Object.assign({}, prev, patch);
+          return Object.assign({}, base, patch);
         });
       };
       var bump = function(key) { upd(key, function(v) { return (v || 0) + 1; }); };
@@ -18727,7 +18730,7 @@ test('no a11y violations', async () => {
       var awardXP = ctx.awardXP;
       var gradeLevel = ctx.gradeLevel || '5th Grade';
       var announceToSR = ctx.announceToSR;
-      var ArrowLeft = ctx.icons.ArrowLeft;
+      var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
 
       // ── Pipeline Agent Definitions (configurable) ──
       var PIPELINE_AGENTS = [
@@ -19728,31 +19731,36 @@ test('no a11y violations', async () => {
       var renderSplit = function(tab, topics, defaultId) {
         var current = getTopic(tab, defaultId || (topics[0] && topics[0].id));
         var active = topics.find(function(t) { return t.id === current; }) || topics[0];
-        return h('div', { style: { display: 'flex', gap: '12px', flex: 1, minHeight: 0 } },
+        var splitSurface = isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff');
+        var splitAside = isContrast ? '#000000' : (isDark ? '#1e293b' : '#f8fafc');
+        var splitBorder = isContrast ? '#ffff00' : (isDark ? '#334155' : '#cbd5e1');
+        var splitInk = isContrast ? '#ffffff' : (isDark ? '#f1f5f9' : '#1e293b');
+        var splitMuted = isContrast ? '#e5e7eb' : (isDark ? '#cbd5e1' : '#475569');
+        return h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '12px', flex: 1, minHeight: 0, minWidth: 0 } },
           // Sidebar
           h('nav', { 'aria-label': tab + ' topics',
-            style: { width: '220px', flexShrink: 0, overflowY: 'auto', background: '#f9fafb', borderRadius: '12px', padding: '8px', border: '1px solid #e5e7eb' } },
+            style: { flex: '0 1 220px', minWidth: '180px', maxHeight: '640px', overflowY: 'auto', background: splitAside, borderRadius: '12px', padding: '8px', border: '1px solid ' + splitBorder } },
             topics.map(function(t) {
               var isActive = t.id === active.id;
-              return h('button', { key: t.id, onClick: function() { setTopic(tab, t.id); },
+              return h('button', { key: t.id, type: 'button', onClick: function() { setTopic(tab, t.id); },
                 'aria-current': isActive ? 'page' : undefined,
-                style: { display: 'flex', alignItems: 'center', gap: '6px', width: '100%', padding: '8px 10px', marginBottom: '2px',
-                  borderRadius: '8px', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: isActive ? 700 : 500,
-                  background: isActive ? PURPLE : 'transparent', color: isActive ? '#fff' : '#374151', transition: 'all 0.1s' } },
-                h('span', { style: { fontSize: '14px' } }, t.icon || '📄'),
-                h('span', { style: { flex: 1 } }, t.label)
+                style: { display: 'flex', alignItems: 'center', gap: '6px', width: '100%', minHeight: '40px', padding: '8px 10px', marginBottom: '2px',
+                  borderRadius: '8px', border: isContrast && isActive ? '2px solid #ffff00' : '1px solid transparent', cursor: 'pointer', textAlign: 'left', fontSize: '12px', fontWeight: isActive ? 700 : 500,
+                  background: isActive ? (isContrast ? '#ffff00' : PURPLE) : 'transparent', color: isActive ? (isContrast ? '#000000' : '#ffffff') : splitInk, transition: 'all 0.1s' } },
+                h('span', { style: { fontSize: '14px' }, 'aria-hidden': true }, t.icon || '📄'),
+                h('span', { style: { flex: 1, minWidth: 0 } }, t.label)
               );
             })
           ),
           // Content
           h('article', { 'aria-label': active.label,
-            style: { flex: 1, overflowY: 'auto', background: '#fff', borderRadius: '12px', padding: '20px', border: '1px solid #e5e7eb' } },
-            h('header', { style: { marginBottom: '16px', paddingBottom: '12px', borderBottom: '2px solid #f3f4f6' } },
-              h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' } },
-                h('span', null, active.icon || '📄'),
+            style: { flex: '1 1 320px', minWidth: 0, overflowY: 'auto', background: splitSurface, color: splitInk, borderRadius: '12px', padding: '20px', border: '1px solid ' + splitBorder } },
+            h('header', { style: { marginBottom: '16px', paddingBottom: '12px', borderBottom: '2px solid ' + splitBorder } },
+              h('h3', { style: { fontSize: '18px', fontWeight: 800, color: splitInk, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' } },
+                h('span', { 'aria-hidden': true }, active.icon || '📄'),
                 h('span', null, active.label)
               ),
-              active.subtitle && h('p', { style: { fontSize: '12px', color: '#6b7280', marginTop: '4px', marginBottom: 0 } }, active.subtitle)
+              active.subtitle && h('p', { style: { fontSize: '12px', color: splitMuted, marginTop: '4px', marginBottom: 0 } }, active.subtitle)
             ),
             active.render ? active.render() : h('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.no_content_yet', 'No content yet.'))
           )
@@ -19769,11 +19777,16 @@ test('no a11y violations', async () => {
         // "entries.map is not a function".
         var list = Array.isArray(entries) ? entries
           : (entries && typeof entries === 'object' ? Object.values(entries).flat() : []);
+        var entryBg = isContrast ? '#000000' : (isDark ? '#1e293b' : '#f8fafc');
+        var entryBorder = isContrast ? '#ffffff' : (isDark ? '#334155' : '#cbd5e1');
+        var entryTitle = isContrast ? '#ffff00' : (isDark ? '#c4b5fd' : '#5b21b6');
+        var entryInk = isContrast ? '#ffffff' : (isDark ? '#f1f5f9' : '#1e293b');
+        var entryMuted = isContrast ? '#e5e7eb' : (isDark ? '#cbd5e1' : '#475569');
         return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
           list.map(function(entry, i) {
             var title = entry[opts.titleKey || 'name'] || entry.title || entry.concept || entry.command || entry.category || entry.api || entry.pattern || entry.topic || ('Entry ' + (i + 1));
-            return h('section', { key: i, style: { background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px 14px' } },
-              h('h4', { style: { fontSize: '14px', fontWeight: 800, color: PURPLE, margin: '0 0 6px 0' } }, title),
+            return h('section', { key: i, style: { background: entryBg, border: '1px solid ' + entryBorder, borderRadius: '10px', padding: '12px 14px' } },
+              h('h4', { style: { fontSize: '14px', fontWeight: 800, color: entryTitle, margin: '0 0 6px 0' } }, title),
               Object.keys(entry).map(function(key) {
                 if (key === (opts.titleKey || 'name') || key === 'title' || key === 'concept' || key === 'command' || key === 'category' || key === 'api' || key === 'pattern' || key === 'topic') return null;
                 var val = entry[key];
@@ -19786,21 +19799,21 @@ test('no a11y violations', async () => {
                   // plain inline monospace on the light card.
                   var _isCode = /example|code|query|syntax/i.test(key);
                   return h('div', { key: key, style: { marginBottom: '6px' } },
-                    h('strong', { style: { fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', display: _isCode ? 'block' : 'inline', marginBottom: _isCode ? '3px' : 0 } }, labelStr + (_isCode ? '' : ': ')),
+                    h('strong', { style: { fontSize: '10px', color: entryMuted, textTransform: 'uppercase', letterSpacing: '0.5px', display: _isCode ? 'block' : 'inline', marginBottom: _isCode ? '3px' : 0 } }, labelStr + (_isCode ? '' : ': ')),
                     _isCode
-                      ? h('pre', { style: { margin: 0, fontSize: '12px', color: '#e2e8f0', background: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '8px 10px', whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, Menlo, monospace', overflowX: 'auto' } }, val)
-                      : h('span', { style: { fontSize: '12px', color: '#1e293b', whiteSpace: 'pre-wrap', fontFamily: 'inherit' } }, val)
+                      ? h('pre', { style: { margin: 0, fontSize: '12px', color: '#e2e8f0', background: isContrast ? '#000000' : '#0f172a', border: '1px solid ' + (isContrast ? '#ffff00' : '#334155'), borderRadius: '6px', padding: '8px 10px', whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, Menlo, monospace', overflowX: 'auto' } }, val)
+                      : h('span', { style: { fontSize: '12px', color: entryInk, whiteSpace: 'pre-wrap', fontFamily: 'inherit' } }, val)
                   );
                 }
                 if (Array.isArray(val)) {
                   return h('div', { key: key, style: { marginBottom: '6px' } },
-                    h('div', { style: { fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, marginBottom: '4px' } }, labelStr),
+                    h('div', { style: { fontSize: '10px', color: entryMuted, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, marginBottom: '4px' } }, labelStr),
                     h('ul', { style: { margin: 0, paddingLeft: '20px' } },
                       val.map(function(item, ii) {
-                        if (typeof item === 'string') return h('li', { key: ii, style: { fontSize: '12px', color: '#1e293b', marginBottom: '2px' } }, item);
+                        if (typeof item === 'string') return h('li', { key: ii, style: { fontSize: '12px', color: entryInk, marginBottom: '2px' } }, item);
                         if (item && typeof item === 'object') {
                           var summary = Object.keys(item).map(function(k) { return k + ': ' + String(item[k]).slice(0, 200); }).join(' • ');
-                          return h('li', { key: ii, style: { fontSize: '11px', color: '#374151', marginBottom: '4px' } }, summary);
+                          return h('li', { key: ii, style: { fontSize: '11px', color: entryInk, marginBottom: '4px' } }, summary);
                         }
                         return null;
                       })
@@ -19809,11 +19822,11 @@ test('no a11y violations', async () => {
                 }
                 if (val && typeof val === 'object') {
                   return h('div', { key: key, style: { marginBottom: '6px' } },
-                    h('div', { style: { fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, marginBottom: '4px' } }, labelStr),
-                    h('div', { style: { fontSize: '11px', color: '#374151', paddingLeft: '12px' } },
+                    h('div', { style: { fontSize: '10px', color: entryMuted, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700, marginBottom: '4px' } }, labelStr),
+                    h('div', { style: { fontSize: '11px', color: entryInk, paddingLeft: '12px' } },
                       Object.keys(val).map(function(subKey) {
                         return h('div', { key: subKey, style: { marginBottom: '2px' } },
-                          h('strong', { style: { color: '#6b7280' } }, subKey + ': '),
+                          h('strong', { style: { color: entryMuted } }, subKey + ': '),
                           h('span', null, String(val[subKey]))
                         );
                       })
@@ -20303,55 +20316,133 @@ test('no a11y violations', async () => {
           nextTab.click();
         }
       };
+      var activeAgentCount = pipelineConfig.filter(function(c) { return c.enabled && agentRuns(c.id); }).length;
+      var presetsLocked = !!(ctx.quizMode || ctx.teacherLock || d._teacherLocked);
       var tabBar = h('div', { role: 'tablist', 'aria-label': __alloT('stem.applab.applab_sections', 'AppLab sections'),
-        style: { display: 'flex', gap: '4px', flexShrink: 0, borderBottom: '2px solid #e5e7eb', paddingBottom: '6px', overflowX: 'auto' } },
+        style: { display: 'flex', gap: '6px', flexShrink: 0, borderBottom: '2px solid ' + (isContrast ? '#ffff00' : (isDark ? '#334155' : '#cbd5e1')), paddingBottom: '8px', overflowX: 'auto' } },
         TABS.map(function(t, ti) {
           var isActive = t.id === activeTab;
-          return h('button', { key: t.id, id: 'applab-tab-' + t.id, role: 'tab', 'aria-selected': isActive ? 'true' : 'false',
+          return h('button', { key: t.id, type: 'button', id: 'applab-tab-' + t.id, role: 'tab', 'aria-selected': isActive ? 'true' : 'false',
             'aria-controls': 'applab-panel-' + t.id, tabIndex: isActive ? 0 : -1, title: t.desc,
             onKeyDown: function(e) { appLabTabKeyDown(e, ti); },
             onClick: function() { goToTab(t.id); },
-            style: { padding: '8px 14px', border: 'none', background: isActive ? PURPLE : 'transparent',
-              color: isActive ? '#fff' : '#6b7280', borderRadius: '10px', fontSize: '12px', fontWeight: isActive ? 800 : 600,
+            style: { minHeight: '44px', padding: '8px 14px', border: isContrast ? ('2px solid ' + (isActive ? '#ffff00' : '#ffffff')) : ('1px solid ' + (isActive ? '#6d28d9' : (isDark ? '#334155' : '#cbd5e1'))),
+              background: isActive ? (isContrast ? '#ffff00' : PURPLE) : (isContrast ? '#000000' : (isDark ? '#1e293b' : '#f8fafc')),
+              color: isActive ? (isContrast ? '#000000' : '#ffffff') : (isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#1e293b')),
+              borderRadius: '10px', fontSize: '12px', fontWeight: isActive ? 800 : 600,
               cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, transition: 'all 0.1s',
-              boxShadow: isActive ? '0 2px 10px rgba(124,58,237,0.35)' : 'none' } },
-            h('span', { style: { fontSize: '14px' } }, t.icon),
+              boxShadow: isActive && !isContrast ? '0 2px 10px rgba(124,58,237,0.35)' : 'none' } },
+            h('span', { style: { fontSize: '14px' }, 'aria-hidden': true }, t.icon),
             h('span', null, t.label)
           );
         })
       );
 
-      return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', gap: '10px' } },
+      // Build live SVG architecture diagram for the agent pipeline (non-spoiler visual stage)
+      var pipelineSvgStages = [
+        { id: 'prompt', label: 'Prompt', active: true, running: false, color: '#38bdf8' },
+        { id: 'architect', label: 'Architect', active: agentRuns('architect'), running: pipelineLive === 'architect', color: '#818cf8' },
+        { id: 'builder', label: 'Builder', active: agentRuns('builder'), running: pipelineLive === 'builder', color: '#34d399' },
+        { id: 'reviewer', label: 'Reviewer', active: agentRuns('reviewer'), running: pipelineLive === 'reviewer', color: '#fbbf24' },
+        { id: 'fixer', label: 'Fixer', active: agentRuns('fixer'), running: pipelineLive === 'fixer', color: '#f87171' },
+        { id: 'app', label: 'Live App', active: true, running: !!html, color: '#22c55e' }
+      ];
 
-        // ── Header / Back ──
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
-          h('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': __alloT('stem.applab.back_to_stem_lab', 'Back to STEAM Lab'), style: btn('#f1f5f9', '#374151', false) }, h(ArrowLeft, { size: 14 })),
-          h('h2', { style: { fontSize: '18px', fontWeight: 900, color: isContrast ? '#ffffff' : '#1e293b', margin: 0 } }, __alloT('stem.applab.applab', '\uD83D\uDCA1 AppLab')),
-          h('span', { style: { fontSize: '11px', color: isContrast ? '#ffffff' : '#475569' } }, __alloT('stem.applab.ai_mini_app_generator_coding_curriculu', 'AI Mini-App Generator + Coding Curriculum')),
-          activeTab === 'build' && html && h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' } },
-            h('button', { onClick: undo, disabled: !canUndo, style: btn('#f1f5f9', '#374151', !canUndo), title: __alloT('stem.applab.undo', 'Undo') }, '↩'),
-            h('button', { onClick: redo, disabled: !canRedo, style: btn('#f1f5f9', '#374151', !canRedo), title: __alloT('stem.applab.redo', 'Redo') }, '↪'),
-            h('button', { onClick: function() { setShowCode(!showCode); }, style: btn(showCode ? PURPLE : '#f1f5f9', showCode ? '#fff' : '#374151', false), 'aria-label': __alloT('stem.applab.toggle_code_view', 'Toggle code view') }, showCode ? '</> Hide Code' : '</> View Code'),
+      return h('div', { 'data-applab-workbench': 'true', style: { display: 'flex', flexDirection: 'column', height: '100%', gap: '10px', minWidth: 0 } },
+
+        // ── Hero Workbench Header ──
+        h('div', {
+          'data-applab-hero': 'true',
+          style: {
+            borderRadius: '14px',
+            padding: '12px 16px',
+            flexShrink: 0,
+            backgroundColor: isContrast ? '#000000' : '#1e1b4b',
+            backgroundImage: isContrast ? 'none' : 'linear-gradient(128deg, #0f172a 0%, #312e81 52%, #4c1d95 100%)',
+            border: (isContrast ? '2px' : '1px') + ' solid ' + (isContrast ? '#ffff00' : 'rgba(167,139,250,0.45)'),
+            color: '#ffffff',
+            boxShadow: isContrast ? 'none' : '0 10px 26px -12px rgba(49, 46, 129, 0.55)'
+          }
+        },
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', minWidth: 0 } },
+            h('button', {
+              type: 'button',
+              onClick: function() { if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool(null); },
+              'aria-label': __alloT('stem.applab.back_to_stem_lab', 'Back to STEAM Lab'),
+              style: {
+                minHeight: '44px', padding: '8px 12px', borderRadius: '10px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px',
+                background: isContrast ? '#000000' : 'rgba(15,23,42,0.72)',
+                color: isContrast ? '#ffff00' : '#ffffff',
+                border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(199,210,254,0.42)'),
+                fontSize: '12px', fontWeight: 700
+              }
+            }, ArrowLeft ? h(ArrowLeft, { size: 15 }) : null, h('span', null, __alloT('stem.applab.back', 'Back'))),
+
+            // Bespoke inline SVG AppLab emblem (wireframe window + code brackets + luminous spark)
+            h('svg', { width: 44, height: 44, viewBox: '0 0 48 48', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+              !isContrast && h('defs', null,
+                h('radialGradient', { id: 'applabEmblemBg', cx: '35%', cy: '25%', r: '75%' },
+                  h('stop', { offset: '0%', stopColor: '#1e293b' }),
+                  h('stop', { offset: '100%', stopColor: '#090e1a' })
+                )
+              ),
+              h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : 'url(#applabEmblemBg)', stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 1.6 }),
+              h('rect', { x: 9, y: 10, width: 30, height: 28, rx: 5, fill: isContrast ? 'none' : 'rgba(56,189,248,0.08)', stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 1.6 }),
+              h('line', { x1: 9, y1: 17, x2: 39, y2: 17, stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 1.3 }),
+              h('circle', { cx: 13.5, cy: 13.5, r: 1.2, fill: isContrast ? '#ffff00' : '#fb7185' }),
+              h('circle', { cx: 17.5, cy: 13.5, r: 1.2, fill: isContrast ? '#00ffff' : '#fbbf24' }),
+              h('circle', { cx: 21.5, cy: 13.5, r: 1.2, fill: isContrast ? '#66ff66' : '#34d399' }),
+              h('polyline', { points: '20,23 15,28 20,33', fill: 'none', stroke: isContrast ? '#ffff00' : '#c084fc', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              h('polyline', { points: '28,23 33,28 28,33', fill: 'none', stroke: isContrast ? '#ffff00' : '#c084fc', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              h('line', { x1: 25, y1: 22, x2: 23, y2: 34, stroke: isContrast ? '#66ff66' : '#34d399', strokeWidth: 1.9, strokeLinecap: 'round' })
+            ),
+
+            h('div', { style: { minWidth: 0, flex: '1 1 220px' } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' } },
+                h('span', { style: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: '999px', background: isContrast ? '#000000' : 'rgba(139,92,246,0.34)', color: isContrast ? '#ffff00' : '#ede9fe', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(221,214,254,0.45)') } },
+                  __alloT('stem.applab.subject_badge', 'Computer Science · Prototyping Lab')),
+                h('span', { style: { fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: isContrast ? '#000000' : 'rgba(15,23,42,0.72)', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255,255,255,0.28)') } },
+                  String(gradeLevel))
+              ),
+              h('h2', { style: { fontSize: '18px', fontWeight: 900, color: '#ffffff', margin: '3px 0 0 0', lineHeight: 1.2 } }, __alloT('stem.applab.applab', '\uD83D\uDCA1 AppLab')),
+              h('span', { style: { fontSize: '11px', color: isContrast ? '#ffffff' : '#ddd6fe' } }, __alloT('stem.applab.ai_mini_app_generator_coding_curriculu', 'AI Mini-App Generator + Coding Curriculum'))
+            ),
+
+            // Live non-spoiler telemetry pills
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px', marginLeft: 'auto' } },
+              h('span', { style: { fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px', background: isContrast ? '#000000' : 'rgba(15,23,42,0.74)', color: isContrast ? '#ffff00' : '#c4b5fd', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(196,181,253,0.4)') } },
+                activeAgentCount + '/' + PIPELINE_AGENTS.length + ' ' + __alloT('stem.applab.pill_agents', 'Agents Active')),
+              h('span', { style: { fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px', background: isContrast ? '#000000' : 'rgba(15,23,42,0.74)', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255,255,255,0.26)') } },
+                __alloT('stem.applab.pill_gallery', 'Saved: ') + gallery.length),
+              html && h('span', { style: { fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px', background: isContrast ? '#000000' : 'rgba(16,185,129,0.25)', color: isContrast ? '#66ff66' : '#a7f3d0', border: '1px solid ' + (isContrast ? '#66ff66' : 'rgba(110,231,183,0.45)') } },
+                'v' + (historyIdx + 1) + '/' + Math.max(1, history.length))
+            )
+          ),
+
+          activeTab === 'build' && html && h('div', { style: { marginTop: '10px', paddingTop: '10px', borderTop: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(255,255,255,0.18)'), display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+            h('button', { type: 'button', onClick: undo, disabled: !canUndo, style: btn('#f1f5f9', '#374151', !canUndo), title: __alloT('stem.applab.undo', 'Undo') }, '↩'),
+            h('button', { type: 'button', onClick: redo, disabled: !canRedo, style: btn('#f1f5f9', '#374151', !canRedo), title: __alloT('stem.applab.redo', 'Redo') }, '↪'),
+            h('button', { type: 'button', onClick: function() { setShowCode(!showCode); }, style: btn(showCode ? PURPLE : '#f1f5f9', showCode ? '#fff' : '#374151', false), 'aria-label': __alloT('stem.applab.toggle_code_view', 'Toggle code view') }, showCode ? '</> Hide Code' : '</> View Code'),
             // Shows what the last Enhance/Fix actually changed.
-            h('button', { onClick: function() { setShowDiff(!showDiff); }, disabled: !canDiff,
+            h('button', { type: 'button', onClick: function() { setShowDiff(!showDiff); }, disabled: !canDiff,
               style: btn(showDiff ? PURPLE : '#f1f5f9', showDiff ? '#fff' : '#374151', !canDiff),
               'aria-pressed': showDiff,
               title: canDiff
                 ? __alloT('stem.applab.show_what_changed', 'Show what changed in the last step')
                 : __alloT('stem.applab.no_earlier_version_yet', 'No earlier version to compare against yet'),
               'aria-label': __alloT('stem.applab.toggle_changes_view', 'Toggle changes view') }, '± Changes'),
-            h('button', { onClick: saveToGallery, style: btn('#f1f5f9', '#374151', false), title: __alloT('stem.applab.save_to_gallery', 'Save to gallery'), 'aria-label': __alloT('stem.applab.save_to_gallery_2', 'Save to gallery') }, '💾'),
-            h('button', { onClick: exportHtml, style: btn('#f1f5f9', '#374151', false), title: __alloT('stem.applab.export_as_html_file', 'Export as HTML file'), 'aria-label': __alloT('stem.applab.export_as_html_file_2', 'Export as HTML file') }, '📥'),
+            h('button', { type: 'button', onClick: saveToGallery, style: btn('#f1f5f9', '#374151', false), title: __alloT('stem.applab.save_to_gallery', 'Save to gallery'), 'aria-label': __alloT('stem.applab.save_to_gallery_2', 'Save to gallery') }, '💾'),
+            h('button', { type: 'button', onClick: exportHtml, style: btn('#f1f5f9', '#374151', false), title: __alloT('stem.applab.export_as_html_file', 'Export as HTML file'), 'aria-label': __alloT('stem.applab.export_as_html_file_2', 'Export as HTML file') }, '📥'),
             // Import was a <label> wrapping a display:none file input. A label
             // is not in the tab order, and display:none removes the input from
             // the accessibility tree entirely — so the control was mouse-only
             // and had no accessible name. Use a real button that forwards to a
             // hidden input.
-            h('button', { onClick: function() { importInputRef.current && importInputRef.current.click(); },
+            h('button', { type: 'button', onClick: function() { importInputRef.current && importInputRef.current.click(); },
               style: btn('#f1f5f9', '#374151', false),
               title: __alloT('stem.applab.import_html_file', 'Import HTML file'),
               'aria-label': __alloT('stem.applab.import_html_file_2', 'Import HTML file') }, '📂'),
-            h('button', { onClick: function() { setFullscreen(!fullscreen); if (typeof window.__alloStemFS === 'function') window.__alloStemFS(appFsRef.current); }, style: btn('#f1f5f9', '#374151', false), 'aria-pressed': fullscreen, 'aria-label': fullscreen
+            h('button', { type: 'button', onClick: function() { setFullscreen(!fullscreen); if (typeof window.__alloStemFS === 'function') window.__alloStemFS(appFsRef.current); }, style: btn('#f1f5f9', '#374151', false), 'aria-pressed': fullscreen, 'aria-label': fullscreen
                 ? __alloT('stem.applab.exit_fullscreen', 'Exit fullscreen preview (Escape)')
                 : __alloT('stem.applab.enter_fullscreen', 'View the preview fullscreen') },
               h('span', { 'aria-hidden': 'true' }, fullscreen ? '🗗' : '⛶'))
@@ -20389,7 +20480,106 @@ test('no a11y violations', async () => {
 
         // ── BUILD tab: No app yet — show prompt input ──
         activeTab === 'build' && h('div', { id: 'applab-panel-build', role: 'tabpanel', 'aria-labelledby': 'applab-tab-build', tabIndex: 0, style: { flex: 1, minHeight: 0, overflowY: 'auto' } },
-          !html && h('div', { style: { maxWidth: '700px', margin: '0 auto', width: '100%' } },
+          !html && h('div', { style: { maxWidth: '760px', margin: '0 auto', width: '100%' } },
+
+          // ── Visual Stage: Live Multi-Agent Pipeline Topology SVG ──
+          h('div', {
+            'data-applab-pipeline-stage': 'true',
+            style: {
+              marginBottom: '12px',
+              padding: '12px 14px',
+              borderRadius: '14px',
+              background: isContrast ? '#000000' : '#0b1120',
+              border: '1px solid ' + (isContrast ? '#ffff00' : '#312e81'),
+              color: '#f8fafc'
+            }
+          },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
+              h('span', { style: { fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: isContrast ? '#ffff00' : '#c4b5fd' } },
+                __alloT('stem.applab.svg_stage_title', 'Build Pipeline Architecture')),
+              h('span', { style: { fontSize: '11px', fontWeight: 600, color: '#cbd5e1' } },
+                assemblerRuns
+                  ? __alloT('stem.applab.svg_stage_sectioned', 'Sectioned Multi-Agent Mode')
+                  : __alloT('stem.applab.svg_stage_single', 'Direct Single-Pass Mode'))
+            ),
+            h('svg', {
+              viewBox: '0 0 660 88',
+              style: { width: '100%', height: 'auto', display: 'block' },
+              role: 'img',
+              'aria-label': __alloT('stem.applab.svg_pipeline_aria', 'Diagram of active AI build pipeline stages from prompt to live app')
+            },
+              !isContrast && h('defs', null,
+                h('linearGradient', { id: 'applabStageBg', x1: '0', y1: '0', x2: '1', y2: '1' },
+                  h('stop', { offset: '0%', stopColor: '#090e1c' }),
+                  h('stop', { offset: '55%', stopColor: '#111936' }),
+                  h('stop', { offset: '100%', stopColor: '#090e1c' })
+                ),
+                h('linearGradient', { id: 'applabBusGrad', x1: '0', y1: '0', x2: '1', y2: '0' },
+                  h('stop', { offset: '0%', stopColor: '#38bdf8' }),
+                  h('stop', { offset: '50%', stopColor: '#a78bfa' }),
+                  h('stop', { offset: '100%', stopColor: '#34d399' })
+                ),
+                h('pattern', { id: 'applabGridPat', width: 22, height: 22, patternUnits: 'userSpaceOnUse' },
+                  h('path', { d: 'M 22 0 L 0 0 0 22', fill: 'none', stroke: 'rgba(148,163,184,0.08)', strokeWidth: 0.75 })
+                )
+              ),
+              h('rect', { x: 1, y: 1, width: 658, height: 86, rx: 10, fill: isContrast ? '#000000' : 'url(#applabStageBg)', stroke: isContrast ? '#666666' : 'rgba(99,102,241,0.22)', strokeWidth: 1 }),
+              !isContrast && h('rect', { x: 2, y: 2, width: 656, height: 84, rx: 9, fill: 'url(#applabGridPat)' }),
+              // Subtle stage signal spine behind nodes
+              !isContrast && h('line', { x1: 24, y1: 42, x2: 636, y2: 42, stroke: 'url(#applabBusGrad)', strokeWidth: 1, opacity: 0.2 }),
+              pipelineSvgStages.map(function(st, idx) {
+                var x = 10 + idx * 108;
+                var nextX = x + 92;
+                var nextStage = pipelineSvgStages[idx + 1];
+                var linkActive = st.active && nextStage && nextStage.active;
+                var strokeCol = isContrast
+                  ? (st.running ? '#66ff66' : st.active ? '#ffff00' : '#666666')
+                  : (st.running ? '#34d399' : st.active ? st.color : '#475569');
+                return h(React.Fragment, { key: st.id },
+                  idx < pipelineSvgStages.length - 1 && h('g', null,
+                    linkActive && !isContrast && h('line', {
+                      x1: nextX, y1: 42, x2: nextX + 16, y2: 42,
+                      stroke: st.color, strokeWidth: 5, opacity: 0.24, strokeLinecap: 'round'
+                    }),
+                    h('line', {
+                      x1: nextX, y1: 42, x2: nextX + 14, y2: 42,
+                      stroke: linkActive ? (isContrast ? '#ffff00' : st.color) : '#475569',
+                      strokeWidth: linkActive ? 2.2 : 1.6,
+                      strokeDasharray: linkActive ? undefined : '3 3'
+                    }),
+                    h('polygon', {
+                      points: (nextX + 11) + ',38.5 ' + (nextX + 16) + ',42 ' + (nextX + 11) + ',45.5',
+                      fill: linkActive ? (isContrast ? '#ffff00' : st.color) : '#475569'
+                    }),
+                    linkActive && !isContrast && h('circle', {
+                      cx: nextX + 6, cy: 42, r: st.running ? 2.6 : 1.8,
+                      fill: '#ffffff', opacity: st.running ? 0.95 : 0.72
+                    })
+                  ),
+                  (st.running || st.active) && !isContrast && h('rect', {
+                    x: x - 2, y: 12, width: 96, height: 60, rx: 12,
+                    fill: 'none', stroke: strokeCol, strokeWidth: st.running ? 3 : 1.5,
+                    opacity: st.running ? 0.42 : 0.16
+                  }),
+                  h('rect', {
+                    x: x, y: 14, width: 92, height: 56, rx: 10,
+                    fill: isContrast ? '#000000' : (st.active ? '#16203a' : '#0d1426'),
+                    stroke: strokeCol,
+                    strokeWidth: st.running ? 2.4 : 1.6
+                  }),
+                  !isContrast && st.active && h('rect', {
+                    x: x + 10, y: 14.5, width: 72, height: 2.5, rx: 1.25,
+                    fill: strokeCol, opacity: st.running ? 0.95 : 0.65
+                  }),
+                  !isContrast && st.active && h('circle', { cx: x + 16, cy: 31, r: 8, fill: st.running ? '#22c55e' : strokeCol, opacity: 0.2 }),
+                  h('circle', { cx: x + 16, cy: 31, r: 4.5, fill: st.running ? '#22c55e' : (st.active ? strokeCol : '#475569') }),
+                  h('text', { x: x + 26, y: 35, fill: st.active ? '#ffffff' : '#94a3b8', fontSize: 11, fontWeight: 700 }, st.label),
+                  h('text', { x: x + 12, y: 55, fill: st.active ? (isContrast ? '#ffff00' : '#cbd5e1') : '#94a3b8', fontSize: 10 },
+                    st.running ? 'ACTIVE' : (st.active ? 'READY' : 'SKIPPED'))
+                );
+              })
+            )
+          ),
 
           // ── Visual Pipeline Configurator ──
           // Surfaces and text both come from theme vars. The old version mixed
@@ -20571,17 +20761,18 @@ test('no a11y violations', async () => {
             )
           ),
 
-          // Templates (they only fill the AI build prompt)
-          _aiOn && h('div', { style: card },
+          // Templates (they only fill the AI build prompt; hidden when teacher/quiz locked)
+          _aiOn && !presetsLocked && h('div', { style: card },
             h('h3', { style: { fontSize: '13px', fontWeight: 700, color: 'var(--allo-stem-text, #374151)', marginBottom: '8px' } }, __alloT('stem.applab.quick_templates', '\uD83D\uDCCB Quick Templates')),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
               TEMPLATES.map(function(cat) {
                 return h('div', { key: cat.cat },
-                  h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', marginBottom: '4px' } }, cat.cat),
-                  h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' } },
+                  h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', marginBottom: '5px' } }, cat.cat),
+                  h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '4px' } },
                     cat.items.map(function(t) {
-                      return h('button', { key: t.title, onClick: function() { setPrompt(t.prompt); },
-                        style: { padding: '4px 10px', borderRadius: '8px', border: '1px solid var(--allo-stem-border, #e5e7eb)', background: 'var(--allo-stem-deeper, #f9fafb)', cursor: 'pointer', fontSize: '11px', fontWeight: 600, color: 'var(--allo-stem-text, #374151)' }
+                      var isSelected = prompt === t.prompt;
+                      return h('button', { key: t.title, type: 'button', 'aria-pressed': isSelected ? 'true' : 'false', onClick: function() { setPrompt(t.prompt); },
+                        style: { minHeight: '44px', padding: '6px 12px', borderRadius: '10px', border: '1px solid ' + (isSelected ? (isContrast ? '#ffff00' : PURPLE) : 'var(--allo-stem-border, #e5e7eb)'), background: isSelected ? (isContrast ? '#ffff00' : 'rgba(124,58,237,0.14)') : 'var(--allo-stem-deeper, #f9fafb)', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: isSelected && isContrast ? '#000000' : 'var(--allo-stem-text, #374151)' }
                       }, t.title);
                     })
                   )
@@ -20812,25 +21003,69 @@ test('no a11y violations', async () => {
 
         // \u2550\u2550 PROMPT-CRAFT INQUIRY widget (H7b'') \u2550\u2550
         !isGenerating && !html && (function() {
-          var iq = (d.promptIQ && typeof d.promptIQ === 'object' && !Array.isArray(d.promptIQ))
-                ? Object.assign({}, { specificity: 5, constraints: 5, examples: 0, persona: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, d.promptIQ) : { specificity: 5, constraints: 5, examples: 0, persona: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }
+          var rawIq = (d.promptIQ && typeof d.promptIQ === 'object' && !Array.isArray(d.promptIQ)) ? d.promptIQ : {};
+          var iq = {
+            specificity: Math.min(10, Math.max(1, Number(rawIq.specificity) || 5)),
+            constraints: Math.min(10, Math.max(1, Number(rawIq.constraints) || 5)),
+            examples: Math.min(5, Math.max(0, isNaN(Number(rawIq.examples)) ? 0 : Number(rawIq.examples))),
+            persona: Math.min(10, Math.max(1, Number(rawIq.persona) || 5)),
+            hypothesis: typeof rawIq.hypothesis === 'string' ? rawIq.hypothesis : '',
+            stuckRevealed: !!rawIq.stuckRevealed,
+            understood: !!rawIq.understood,
+            explanation: typeof rawIq.explanation === 'string' ? rawIq.explanation : '',
+            log: Array.isArray(rawIq.log) ? rawIq.log : []
+          };
           function setIQ(patch) { upd('promptIQ', Object.assign({}, iq, patch)); }
           function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
           var promptQuality = (iq.specificity + iq.constraints + iq.persona) / 3 + iq.examples * 0.5;
           var brittleness = Math.max(0, 10 - iq.specificity - iq.constraints * 0.5);
           var state = promptQuality > 8 ? 'precise' : promptQuality > 6 ? 'targeted' : promptQuality > 4 ? 'vague' : brittleness > 5 ? 'underspecified' : 'minimal';
           var sm = ({
-            precise: { label: __alloT('stem.applab.precise_prompt', 'Precise prompt'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.applab.specificity_constraints_examples_perso', 'Specificity + constraints + examples + persona aligned. Output highly predictable across runs.') },
-            targeted: { label: __alloT('stem.applab.targeted', 'Targeted'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.applab.mostly_clear_ask_may_need_one_revision', 'Mostly clear ask. May need one revision pass.') },
-            vague: { label: __alloT('stem.applab.vague_re_runs_vary', 'Vague \u2014 re-runs vary'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.applab.open_ended_ask_same_prompt_yields_diff', 'Open-ended ask. Same prompt yields different outputs run-to-run. Acceptable for brainstorming.') },
-            underspecified: { label: 'Under-specified', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.applab.ai_will_fill_gaps_with_plausible_but_w', 'AI will fill gaps with plausible-but-wrong defaults. Common cause of "AI hallucinations".') },
-            minimal: { label: __alloT('stem.applab.minimal_prompt', 'Minimal prompt'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.applab.roll_the_dice_sometimes_the_model_surp', 'Roll the dice. Sometimes the model surprises you; usually it produces generic output.') }
+            precise: { label: __alloT('stem.applab.precise_prompt', 'Precise prompt'), color: isContrast ? '#66ff66' : '#4ade80', bg: isContrast ? '#000000' : '#0a2e1a', border: isContrast ? '#ffff00' : '#16a34a', desc: __alloT('stem.applab.specificity_constraints_examples_perso', 'Specificity + constraints + examples + persona aligned. Output highly predictable across runs.') },
+            targeted: { label: __alloT('stem.applab.targeted', 'Targeted'), color: isContrast ? '#00ffff' : '#22d3ee', bg: isContrast ? '#000000' : '#0a1f2e', border: isContrast ? '#ffff00' : '#0891b2', desc: __alloT('stem.applab.mostly_clear_ask_may_need_one_revision', 'Mostly clear ask. May need one revision pass.') },
+            vague: { label: __alloT('stem.applab.vague_re_runs_vary', 'Vague \u2014 re-runs vary'), color: '#ffff00', bg: isContrast ? '#000000' : '#2a2410', border: isContrast ? '#ffff00' : '#eab308', desc: __alloT('stem.applab.open_ended_ask_same_prompt_yields_diff', 'Open-ended ask. Same prompt yields different outputs run-to-run. Acceptable for brainstorming.') },
+            underspecified: { label: 'Under-specified', color: isContrast ? '#ffff00' : '#fb923c', bg: isContrast ? '#000000' : '#2a1a0a', border: isContrast ? '#ffff00' : '#ea580c', desc: __alloT('stem.applab.ai_will_fill_gaps_with_plausible_but_w', 'AI will fill gaps with plausible-but-wrong defaults. Common cause of "AI hallucinations".') },
+            minimal: { label: __alloT('stem.applab.minimal_prompt', 'Minimal prompt'), color: isContrast ? '#ffff00' : '#f87171', bg: isContrast ? '#000000' : '#2a0a0a', border: isContrast ? '#ffff00' : '#dc2626', desc: __alloT('stem.applab.roll_the_dice_sometimes_the_model_surp', 'Roll the dice. Sometimes the model surprises you; usually it produces generic output.') }
           })[state];
-          return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5', maxWidth: 720, margin: '20px auto' } },
+          var qualBarW = Math.round(Math.min(1, promptQuality / 12.5) * 190);
+          var britBarW = Math.round(Math.min(1, brittleness / 10) * 190);
+          return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: (isContrast ? '2px' : '1px') + ' solid ' + sm.border, color: '#f8fafc', maxWidth: 760, margin: '20px auto' } },
             h('h3', { style: { margin: '0 0 4px', fontSize: 14, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.applab.prompt_craft_inquiry_predict_the_outpu', '\uD83D\uDD2C Prompt-Craft Inquiry \u2014 Explore Output Variance')),
-            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.applab.set_how_much_specificity_constraints_e', 'Adjust prompt specificity, constraints, examples, and persona, then observe how modeled reliability changes. The result updates live; record a hypothesis or pattern you notice.')),
-            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' \u00B7 quality ' + promptQuality.toFixed(1) + ' \u00B7 brittleness ' + brittleness.toFixed(1)),
-            h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, color: '#e2e8f0', lineHeight: 1.45 } }, __alloT('stem.applab.set_how_much_specificity_constraints_e', 'Adjust prompt specificity, constraints, examples, and persona, then observe how modeled reliability changes. The result updates live; record a hypothesis or pattern you notice.')),
+            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000000', fontSize: 11, fontWeight: 800, marginBottom: 8 } }, sm.label + ' \u00B7 quality ' + promptQuality.toFixed(1) + ' \u00B7 brittleness ' + brittleness.toFixed(1)),
+            h('svg', {
+              viewBox: '0 0 460 56',
+              style: { width: '100%', height: 'auto', display: 'block', marginBottom: 8 },
+              role: 'img',
+              'aria-label': __alloT('stem.applab.svg_inquiry_aria', 'Modeled prompt reliability and brittleness meter bars')
+            },
+              !isContrast && h('defs', null,
+                h('linearGradient', { id: 'applabQualGrad', x1: '0', y1: '0', x2: '1', y2: '0' },
+                  h('stop', { offset: '0%', stopColor: '#38bdf8' }),
+                  h('stop', { offset: '100%', stopColor: sm.color })
+                ),
+                h('linearGradient', { id: 'applabBritGrad', x1: '0', y1: '0', x2: '1', y2: '0' },
+                  h('stop', { offset: '0%', stopColor: '#fbbf24' }),
+                  h('stop', { offset: '100%', stopColor: '#f87171' })
+                )
+              ),
+              h('rect', { x: 0.5, y: 0.5, width: 459, height: 55, rx: 8, fill: isContrast ? '#000000' : 'rgba(2,6,23,0.45)', stroke: isContrast ? '#666666' : 'rgba(148,163,184,0.18)', strokeWidth: 1 }),
+              [0.25, 0.5, 0.75].map(function(f, gi) {
+                var gx = 86 + 190 * f;
+                return h('line', { key: 'gt' + gi, x1: gx, y1: 6, x2: gx, y2: 48, stroke: isContrast ? '#333333' : 'rgba(148,163,184,0.16)', strokeWidth: 1, strokeDasharray: '2 2' });
+              }),
+              h('text', { x: 8, y: 18, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'Reliability'),
+              h('rect', { x: 86, y: 8, width: 190, height: 12, rx: 6, fill: '#0f172a', stroke: '#475569', strokeWidth: 1 }),
+              h('rect', { x: 86, y: 8, width: Math.max(4, qualBarW), height: 12, rx: 6, fill: isContrast ? sm.color : 'url(#applabQualGrad)' }),
+              !isContrast && h('circle', { cx: 86 + Math.max(6, qualBarW), cy: 14, r: 4, fill: '#ffffff', stroke: sm.color, strokeWidth: 1.6 }),
+              h('text', { x: 288, y: 18, fill: sm.color, fontSize: 11, fontWeight: 700 }, promptQuality.toFixed(1) + ' / 12.5'),
+              h('text', { x: 8, y: 42, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'Brittleness'),
+              h('rect', { x: 86, y: 32, width: 190, height: 12, rx: 6, fill: '#0f172a', stroke: '#475569', strokeWidth: 1 }),
+              h('rect', { x: 86, y: 32, width: Math.max(4, britBarW), height: 12, rx: 6, fill: isContrast ? '#00ffff' : 'url(#applabBritGrad)' }),
+              !isContrast && h('circle', { cx: 86 + Math.max(6, britBarW), cy: 38, r: 4, fill: '#ffffff', stroke: '#fb923c', strokeWidth: 1.6 }),
+              h('text', { x: 288, y: 42, fill: isContrast ? '#00ffff' : '#fdba74', fontSize: 11, fontWeight: 700 }, brittleness.toFixed(1) + ' / 10.0')
+            ),
+            h('p', { style: { margin: '0 0 10px', fontSize: 11, color: '#e2e8f0' } }, sm.desc),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
               h('label', { style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.applab.specificity_1_10', 'Specificity (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.specificity)),
@@ -20850,19 +21085,19 @@ test('no a11y violations', async () => {
               )
             ),
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-              h('button', { onClick: function() {
+              h('button', { type: 'button', onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, sp: iq.specificity, c: iq.constraints, ex: iq.examples, pe: iq.persona, q: promptQuality.toFixed(1), state: sm.label }]) });
-              }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.applab.log_this_prompt_craft_profile', '\uD83D\uDCCB Log this prompt-craft profile')),
-              h('button', { onClick: function() { setIQ({ specificity: 5, constraints: 5, examples: 0, persona: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.applab.reset_3', 'Reset'))
+              }, style: { flex: 1, minHeight: 40, padding: '8px 10px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.applab.log_this_prompt_craft_profile', '\uD83D\uDCCB Log this prompt-craft profile')),
+              h('button', { type: 'button', onClick: function() { setIQ({ specificity: 5, constraints: 5, examples: 0, persona: 5 }); }, style: { minHeight: 40, padding: '8px 12px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: '1px solid ' + (isContrast ? '#ffffff' : '#475569'), background: '#0a0a1a', color: '#e2e8f0', cursor: 'pointer' } }, __alloT('stem.applab.reset_3', 'Reset'))
             ),
-            iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+            iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #334155', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4, color: '#e2e8f0' } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 sp' + e.sp + ' c' + e.c + ' ex' + e.ex + ' pe' + e.pe + ' \u2192 ' + e.q); })
             ),
-            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.applab.your_hypothesis_do_examples_or_constra', 'Your hypothesis (do examples or constraints reduce variance more?)')),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.applab.hypothesis_input', 'Prompt variance hypothesis'), placeholder: __alloT('stem.applab.e_g_one_well_chosen_example_beats_five', 'e.g., one well-chosen example beats five vague constraints because it pins down style + structure simultaneously...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.applab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
-            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+            h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, __alloT('stem.applab.your_hypothesis_do_examples_or_constra', 'Your hypothesis (do examples or constraints reduce variance more?)')),
+            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.applab.hypothesis_input', 'Prompt variance hypothesis'), placeholder: __alloT('stem.applab.e_g_one_well_chosen_example_beats_five', 'e.g., one well-chosen example beats five vague constraints because it pins down style + structure simultaneously...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#f8fafc', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { minHeight: 40, padding: '8px 12px', fontSize: 11, fontWeight: 700, borderRadius: 8, border: '1px solid ' + (isContrast ? '#ffff00' : '#475569'), background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.applab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
+            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5, color: '#f8fafc' } },
               h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.applab.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
                 h('li', null, __alloT('stem.applab.why_does_adding_one_good_example_often', 'Why does adding one good example often beat adding five constraints?')),
@@ -20871,12 +21106,12 @@ test('no a11y violations', async () => {
                 h('li', null, __alloT('stem.applab.when_is_brittleness_actually_good_hint', 'When is brittleness actually GOOD? (Hint: reproducible scientific outputs.)'))
               )
             ),
-            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 6, color: '#f8fafc' } },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, __alloT('stem.applab.i_can_explain_why_this_prompt_craft_pr', 'I can explain why this prompt-craft profile yields this output variance.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.applab.explanation_input', 'Prompt variance explanation'), placeholder: __alloT('stem.applab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.applab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Quality/brittleness indices are heuristics; real prompt engineering depends on model, temperature, system message, and task type. See OpenAI/Anthropic prompt-engineering docs.'))
+            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.applab.explanation_input', 'Prompt variance explanation'), placeholder: __alloT('stem.applab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#f8fafc', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 11, fontStyle: 'italic', color: '#cbd5e1' } }, __alloT('stem.applab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Quality/brittleness indices are heuristics; real prompt engineering depends on model, temperature, system message, and task type. See OpenAI/Anthropic prompt-engineering docs.'))
           );
         })()
         )

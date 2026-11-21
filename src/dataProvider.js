@@ -161,6 +161,7 @@ class FirebaseAdapter {
         const sdk = this._getSDK();
         const resolved = {};
         for (const [key, value] of Object.entries(data)) {
+            if (_PB_DANGEROUS_KEYS.has(key)) continue;
             if (value && value.__op) {
                 switch (value.__op) {
                     case 'serverTimestamp': resolved[key] = sdk.serverTimestamp(); break;
@@ -274,10 +275,12 @@ class PocketBaseAdapter {
                 signal: options.signal || (controller ? controller.signal : undefined),
             });
             if (!res.ok) {
-                const err = await res.json().catch(() => ({ message: res.statusText }));
-                throw new Error(`PocketBase ${res.status}: ${err.message || JSON.stringify(err)}`);
+                const errData = await res.json().catch(() => ({ message: res.statusText }));
+                const err = new Error(`PocketBase ${res.status}: ${errData.message || JSON.stringify(errData)}`);
+                err.status = res.status;
+                throw err;
             }
-            return res.status === 204 ? null : res.json();
+            return res.status === 204 ? null : await res.json();
         } finally {
             if (timer) clearTimeout(timer);
         }
@@ -287,18 +290,42 @@ class PocketBaseAdapter {
     _col(collectionPath) { return _pbSafeSegment(collectionPath, 'collection'); }
     _doc(docId) { return _pbSafeSegment(docId, 'record id'); }
 
+    _withOwnerField(collectionPath, resolved) {
+        if (!resolved || typeof resolved !== 'object' || Array.isArray(resolved)) return resolved;
+        if (!this._userId || String(this._userId).startsWith('local_')) return resolved;
+        const colName = String(collectionPath || '').trim();
+        if (colName === 'teacher_history') {
+            if (!Object.prototype.hasOwnProperty.call(resolved, 'user_id') || !resolved.user_id) {
+                resolved.user_id = this._userId;
+            }
+        } else if (!Object.prototype.hasOwnProperty.call(resolved, 'owner_id') || !resolved.owner_id) {
+            resolved.owner_id = this._userId;
+        }
+        return resolved;
+    }
+
     async setDoc(collectionPath, docId, data, options = {}) {
-        const resolved = this._resolveFieldOps(data);
+        const resolved = this._withOwnerField(
+            collectionPath,
+            this._resolveFieldOps(data && typeof data === 'object' && !Array.isArray(data) ? data : {})
+        );
         resolved.id = docId; // PocketBase uses 'id' field
         const col = this._col(collectionPath);
         const safeId = this._doc(docId);
+        // The `images` collection forbids updates (updateRule: null); create directly.
+        if (String(collectionPath || '').trim() === 'images') {
+            await this._fetch(`/api/collections/${col}/records`, {
+                method: 'POST', body: JSON.stringify(resolved),
+            });
+            return;
+        }
         try {
-            // Try update first, create if not exists
+            // Try update first; create only when the record does not exist (404)
             await this._fetch(`/api/collections/${col}/records/${safeId}`, {
                 method: 'PATCH', body: JSON.stringify(resolved),
             });
-        } catch {
-            // Record doesn't exist, create it
+        } catch (err) {
+            if (err && err.status !== 404) throw err;
             await this._fetch(`/api/collections/${col}/records`, {
                 method: 'POST', body: JSON.stringify(resolved),
             });
@@ -315,7 +342,10 @@ class PocketBaseAdapter {
     }
 
     async updateDoc(collectionPath, docId, data) {
-        const resolved = this._resolveFieldOps(data);
+        const resolved = this._withOwnerField(
+            collectionPath,
+            this._resolveFieldOps(data && typeof data === 'object' && !Array.isArray(data) ? data : {})
+        );
         return this._fetch(`/api/collections/${this._col(collectionPath)}/records/${this._doc(docId)}`, {
             method: 'PATCH', body: JSON.stringify(resolved),
         });
@@ -357,64 +387,78 @@ class PocketBaseAdapter {
     }
 
     onSnapshot(collectionPath, docId, callback) {
+        // Validate collection and record id BEFORE opening EventSource or polling
+        const topic = docId
+            ? `${this._col(collectionPath)}/${this._doc(docId)}`
+            : this._col(collectionPath);
         // PocketBase supports SSE (Server-Sent Events) for real-time
         const url = `${this.baseUrl}/api/realtime`;
-        let eventSource;
+        let eventSource = null;
+        let active = true;
 
         try {
             eventSource = new EventSource(url);
-            const topic = docId
-                ? `${this._col(collectionPath)}/${this._doc(docId)}`
-                : this._col(collectionPath);
 
             eventSource.addEventListener('PB_CONNECT', (e) => {
+                if (!active) return;
                 const data = _pbSafeJsonParse(e.data, null);
-                if (!data || !data.id) return;
+                const clientId = (data && (data.clientId || data.id)) || e.lastEventId;
+                if (!clientId) return;
                 // Subscribe to the specific topic
                 this._fetch('/api/realtime', {
                     method: 'POST',
-                    body: JSON.stringify({ clientId: data.id, subscriptions: [topic] }),
+                    body: JSON.stringify({ clientId, subscriptions: [topic] }),
                 }).catch(err => this.warnLog('[DataProvider] SSE subscribe error:', err));
             });
 
             eventSource.addEventListener(topic, (e) => {
+                if (!active) return;
                 const data = _pbSafeJsonParse(e.data, null);
                 if (!data) return;
                 if (docId) {
-                    callback(data.record ? { id: data.record.id, ...data.record } : null);
+                    if (data.action === 'delete') {
+                        callback(null);
+                    } else {
+                        callback(data.record ? { id: data.record.id, ...data.record } : null);
+                    }
                 } else {
                     // For collection subscriptions, re-fetch the full list
-                    this.getDocs(collectionPath).then(callback).catch(err =>
+                    this.getDocs(collectionPath).then((docs) => {
+                        if (active) callback(docs);
+                    }).catch(err =>
                         this.warnLog('[DataProvider] SSE collection refresh error:', err)
                     );
                 }
             });
 
             eventSource.onerror = () => {
-                this.warnLog('[DataProvider] SSE connection error — will auto-reconnect');
+                if (active) this.warnLog('[DataProvider] SSE connection error — will auto-reconnect');
             };
         } catch (err) {
+            if (eventSource) { try { eventSource.close(); } catch (_) {} eventSource = null; }
             this.warnLog('[DataProvider] SSE not available, falling back to polling');
             // Fallback: poll every 3 seconds
             const interval = setInterval(async () => {
+                if (!active) return;
                 try {
                     if (docId) {
                         const doc = await this.getDoc(collectionPath, docId);
-                        callback(doc);
+                        if (active) callback(doc);
                     } else {
                         const docs = await this.getDocs(collectionPath);
-                        callback(docs);
+                        if (active) callback(docs);
                     }
                 } catch (err) {
                     this.warnLog('[DataProvider] Polling error:', err);
                 }
             }, 3000);
-            return () => clearInterval(interval);
+            return () => { active = false; clearInterval(interval); };
         }
 
         // Return unsubscribe function
         return () => {
-            if (eventSource) eventSource.close();
+            active = false;
+            if (eventSource) { try { eventSource.close(); } catch (_) {} eventSource = null; }
         };
     }
 
@@ -453,8 +497,9 @@ class PocketBaseAdapter {
             return { user: { uid: this._userId, isAnonymous: true } };
         } catch (err) {
             this.warnLog('[DataProvider] Anonymous sign-in failed:', err);
-            // Fallback: use a local-only ID
-            this._userId = 'local_' + Date.now();
+            // Fallback: clear any prior auth token and use a CSPRNG local-only ID
+            this._authToken = null;
+            this._userId = 'local_' + _secureToken(12);
             this._notifyAuthCallbacks({ uid: this._userId, isAnonymous: true });
             return { user: { uid: this._userId, isAnonymous: true } };
         }
@@ -522,6 +567,8 @@ class PocketBaseAdapter {
 // ═══════════════════════════════════════════════════════════════════════════
 // LocalStorage Adapter — fully offline, no server needed
 // ═══════════════════════════════════════════════════════════════════════════
+const _LOCAL_DELETE_FIELD = Symbol('deleteField');
+
 class LocalStorageAdapter {
     constructor({ debugLog, warnLog }) {
         this.debugLog = debugLog || console.log;
@@ -532,11 +579,11 @@ class LocalStorageAdapter {
         this._subscriptions = new Map();
     }
 
-    _key(collection, docId) { return `${this._prefix}${collection}__${docId}`; }
-    _collPrefix(collection) { return `${this._prefix}${collection}__`; }
+    _key(collection, docId) { return `${this._prefix}${encodeURIComponent(String(collection))}/${docId}`; }
+    _collPrefix(collection) { return `${this._prefix}${encodeURIComponent(String(collection))}/`; }
 
     async setDoc(collectionPath, docId, data) {
-        const resolved = this._resolveFieldOps(data, collectionPath, docId);
+        const resolved = this._resolveFieldOps(data, collectionPath, docId, false);
         localStorage.setItem(this._key(collectionPath, docId), JSON.stringify(resolved));
         this._notifySubscribers(collectionPath, docId);
     }
@@ -551,8 +598,19 @@ class LocalStorageAdapter {
     async updateDoc(collectionPath, docId, data) {
         const existing = await this.getDoc(collectionPath, docId);
         if (!existing) throw new Error(`Document ${collectionPath}/${docId} not found`);
-        const resolved = this._resolveFieldOps(data, collectionPath, docId);
-        const merged = { ...existing, ...resolved, id: docId };
+        const resolved = this._resolveFieldOps(data, collectionPath, docId, true);
+        const merged = { ...existing };
+        if (resolved && typeof resolved === 'object') {
+            for (const [k, v] of Object.entries(resolved)) {
+                if (_PB_DANGEROUS_KEYS.has(k)) continue;
+                if (v === _LOCAL_DELETE_FIELD) {
+                    delete merged[k];
+                } else {
+                    merged[k] = v;
+                }
+            }
+        }
+        merged.id = docId;
         localStorage.setItem(this._key(collectionPath, docId), JSON.stringify(merged));
         this._notifySubscribers(collectionPath, docId);
     }
@@ -608,23 +666,30 @@ class LocalStorageAdapter {
 
     onSnapshot(collectionPath, docId, callback) {
         const key = docId ? `${collectionPath}/${docId}` : collectionPath;
+        let active = true;
         const handler = async () => {
+            if (!active) return;
             if (docId) {
-                callback(await this.getDoc(collectionPath, docId));
+                const doc = await this.getDoc(collectionPath, docId);
+                if (active) callback(doc);
             } else {
-                callback(await this.getDocs(collectionPath));
+                const docs = await this.getDocs(collectionPath);
+                if (active) callback(docs);
             }
         };
         // Initial call
-        handler();
+        handler().catch(err => this.warnLog('[DataProvider] Local snapshot callback error:', err));
         // Store subscription
         if (!this._subscriptions.has(key)) this._subscriptions.set(key, []);
         this._subscriptions.get(key).push(handler);
         // Return unsubscribe
         return () => {
+            active = false;
             const subs = this._subscriptions.get(key);
             if (subs) {
-                this._subscriptions.set(key, subs.filter(h => h !== handler));
+                const remaining = subs.filter(h => h !== handler);
+                if (remaining.length) this._subscriptions.set(key, remaining);
+                else this._subscriptions.delete(key);
             }
         };
     }
@@ -632,9 +697,9 @@ class LocalStorageAdapter {
     _notifySubscribers(collectionPath, docId) {
         // Notify document-level subscribers
         const docKey = `${collectionPath}/${docId}`;
-        (this._subscriptions.get(docKey) || []).forEach(h => h());
+        (this._subscriptions.get(docKey) || []).forEach(h => h().catch(err => this.warnLog('[DataProvider] Local snapshot notify error:', err)));
         // Notify collection-level subscribers
-        (this._subscriptions.get(collectionPath) || []).forEach(h => h());
+        (this._subscriptions.get(collectionPath) || []).forEach(h => h().catch(err => this.warnLog('[DataProvider] Local snapshot notify error:', err)));
     }
 
     async writeBatch(operations) {
@@ -668,7 +733,7 @@ class LocalStorageAdapter {
         for (const cb of this._authCallbacks) { try { cb(user); } catch { } }
     }
 
-    _resolveFieldOps(data, collectionPath, docId) {
+    _resolveFieldOps(data, collectionPath, docId, preserveDeletes = false) {
         if (!data || typeof data !== 'object') return data;
         const resolved = {};
         for (const [key, value] of Object.entries(data)) {
@@ -696,13 +761,15 @@ class LocalStorageAdapter {
                         resolved[key] = (typeof prevVal3 === 'number' ? prevVal3 : 0) + value.value;
                         break;
                     }
-                    case 'deleteField': break; // Omit from result
+                    case 'deleteField':
+                        if (preserveDeletes) resolved[key] = _LOCAL_DELETE_FIELD;
+                        break;
                     default: resolved[key] = value;
                 }
             } else if (Array.isArray(value)) {
                 resolved[key] = value;
             } else if (typeof value === 'object' && value !== null) {
-                resolved[key] = this._resolveFieldOps(value, collectionPath, docId);
+                resolved[key] = this._resolveFieldOps(value, collectionPath, docId, false);
             } else {
                 resolved[key] = value;
             }
@@ -854,4 +921,7 @@ class DataProvider {
 // Make available both as module export and inline
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { DataProvider, _FIELD_OPS, _queryConstraint };
+}
+if (typeof window !== 'undefined') {
+    window.DataProvider = DataProvider;
 }

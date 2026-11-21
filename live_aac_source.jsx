@@ -72,12 +72,18 @@ const _alloAacLocale = (value) => {
 };
 const _alloAacIsRtlLocale = (locale) => /^(?:ar|fa|he|ur|ps|sd|ug)(?:-|$)/i.test(locale);
 const _alloAacTimestamp = (value) => {
-  if (value instanceof Date) return value.getTime();
-  if (value && typeof value.toMillis === 'function') return Number(value.toMillis());
-  const number = Number(value);
-  if (Number.isFinite(number)) return number;
-  const parsed = Date.parse(String(value || String()));
-  return Number.isFinite(parsed) ? parsed : 0;
+  let ms = NaN;
+  if (value instanceof Date) ms = value.getTime();
+  else if (value && typeof value.toMillis === 'function') ms = Number(value.toMillis());
+  else if (typeof value === 'number') ms = value;
+  else if (typeof value === 'string' && value.trim()) {
+    const num = Number(value);
+    ms = Number.isFinite(num) ? num : Date.parse(value);
+  } else {
+    const num = Number(value);
+    ms = Number.isFinite(num) ? num : Date.parse(String(value || String()));
+  }
+  return Number.isFinite(ms) && Math.abs(ms) <= 8640000000000000 ? ms : 0;
 };
 // A picture's credit (Mulberry is CC BY-SA, Commons photos their own licence)
 // travels with the picture it names; text only, links only when https.
@@ -98,11 +104,12 @@ const _alloAacSafeImage = (value, remaining, perItemLimit = ALLO_AAC_MAX_IMAGE_C
   try {
     const svg = atob(match[1]);
     if (svg.length > perItemLimit || !/<svg(?:\s|>)/i.test(svg)) return null;
-    const unsafe = /<\s*(?:script|foreignObject|iframe|object|embed|link|style|image|audio|video)\b/i.test(svg)
+    const unsafe = /<\s*(?:script|foreignObject|iframe|object|embed|link|style|image|audio|video|a|use|animate|animateTransform|animateMotion|set|feImage|handler|mpath)\b/i.test(svg)
       || /<!\s*(?:DOCTYPE|ENTITY)\b|<\?xml-stylesheet\b/i.test(svg)
+      || /&#(?:x[0-9a-f]+|\d+);/i.test(svg)
       || /\son[a-z]+\s*=/i.test(svg)
-      || /(?:href|xlink:href)\s*=\s*['"]\s*(?:https?:|\/\/|blob:|data:|javascript:)/i.test(svg)
-      || /(?:url\s*\(|@import|javascript:|expression\s*\()/i.test(svg);
+      || /(?:href|xlink:href)\s*=\s*(?:['"]\s*(?!#)|[^\s'">#])/i.test(svg)
+      || /(?:url\s*\(|@import|javascript:|vbscript:|expression\s*\()/i.test(svg);
     return unsafe ? null : value;
   } catch (_) {
     return null;
@@ -184,8 +191,10 @@ const _alloNormalizePortableAacBoardPackage = (value, options = {}) => {
   const allowAudio = options.allowAudio === true;
   const preparedOnly = options.preparedOnly === true;
   const privacy = source.metadata && source.metadata.privacy && typeof source.metadata.privacy === 'object' ? source.metadata.privacy : {};
-  let remainingImages = Math.max(0, Number(options.maxImageChars) || ALLO_AAC_PACK_IMAGE_CHARS);
-  let remainingAudio = Math.max(0, Number(options.maxAudioChars) || ALLO_AAC_PACK_AUDIO_CHARS);
+  const hasMaxImg = options.maxImageChars !== undefined && options.maxImageChars !== null && options.maxImageChars !== '' && Number.isFinite(Number(options.maxImageChars));
+  const hasMaxAud = options.maxAudioChars !== undefined && options.maxAudioChars !== null && options.maxAudioChars !== '' && Number.isFinite(Number(options.maxAudioChars));
+  let remainingImages = Math.max(0, hasMaxImg ? Number(options.maxImageChars) : ALLO_AAC_PACK_IMAGE_CHARS);
+  let remainingAudio = Math.max(0, hasMaxAud ? Number(options.maxAudioChars) : ALLO_AAC_PACK_AUDIO_CHARS);
   const imageItemLimit = Math.max(1, Number(options.maxImageItemChars) || ALLO_AAC_MAX_IMAGE_CHARS);
   const audioItemLimit = Math.max(1, Number(options.maxAudioItemChars) || ALLO_AAC_MAX_AUDIO_CHARS);
   let cellCount = 0;
@@ -458,17 +467,19 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
             source: source || undefined
         });
     }
-    let cleaned = item;
+    if (typeof sanitizeHistoryForCloud !== 'function') return null;
+    let cleaned;
     try {
         const viaCloud = sanitizeHistoryForCloud([item]);
-        if (!Array.isArray(viaCloud) || viaCloud.length === 0) return null; // private item — never packs
-        cleaned = viaCloud[0] || item;
-    } catch (_) {}
-    try {
-        if (typeof window !== 'undefined' && typeof window.sanitizeSessionValue === 'function') {
+        if (!Array.isArray(viaCloud) || !viaCloud[0] || typeof viaCloud[0] !== 'object') return null; // private item — never packs
+        cleaned = viaCloud[0];
+    } catch (_) { return null; }
+    if (typeof window !== 'undefined' && typeof window.sanitizeSessionValue === 'function') {
+        try {
             cleaned = window.sanitizeSessionValue(cleaned, 'resource');
-        }
-    } catch (_) {}
+        } catch (_) { return null; }
+        if (!cleaned || typeof cleaned !== 'object') return null;
+    }
     // Lesson-path planning data (seed text, parents, roles) stays with the teacher,
     // and a "Start blank" resource that is still unfilled never packs.
     const blankDraftMinimum = item.lessonPath && item.lessonPath.seed && item.lessonPath.seed.kind === 'blank'
@@ -792,15 +803,15 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     // per-option correctness, explanations, answer guides, fact checks and
     // rubrics stay on the teacher's copy, which live quizzes grade against.
     // Mirrors withholdGradedQuizKeys in firestore_sync_module.js.
-    const gradedKeyFields = ['correctAnswer', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits',
-        'expectedAnswer', 'expectedFill', 'acceptableAlternatives', 'rubric', 'sampleAnswer', 'exemplarAnswer', 'modelAnswer', 'answer', 'answerKey',
+    const gradedKeyFields = ['correctAnswer', 'correctAnswers', 'correctIndex', 'correctIndices', 'correct', 'correctEvidence', 'expectedEvidence', 'correctValue', 'tolerance', 'acceptableUnits',
+        'expectedAnswer', 'expectedFill', 'acceptableAlternatives', 'rubric', 'sampleAnswer', 'exemplarAnswer', 'modelAnswer', 'referenceAnswer', 'answer', 'answerKey',
         'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality', 'sourceEvidence', 'contentReview',
         'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence'];
     const gradedOptionFields = ['isCorrect', 'correct', 'isAnswer', 'feedback', 'explanation', 'rationale'];
     // Sequence Sense items in their displayed order: canonical order is the key.
     // Mirrors QuizLiveAggregators.sequenceDisplayForm.
     const sequenceDisplayOrder = (question) => {
-        const items = question.type === 'sequence-sense' && Array.isArray(question.items) ? question.items : null;
+        const items = (question.type || question.itemType) === 'sequence-sense' && Array.isArray(question.items) ? question.items : null;
         const order = question.presentedOrder;
         if (!items || !Array.isArray(order) || order.length !== items.length || new Set(order).size !== items.length || !order.every(value => Number.isInteger(value) && value >= 0 && value < items.length)) return question;
         const out = { ...question, presentedOrder: order.map((_, index) => index), itemsInDisplayOrder: true };
@@ -873,8 +884,19 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
             || Array.isArray(value.items) && value.sourceDecisions && Array.isArray(value.activity));
         if (report) return undefined;
         if (seen.has(value)) return seen.get(value);
-        const out = Array.isArray(value) ? [] : {};
+        const out = Array.isArray(value) ? [] : (prototype === null ? Object.create(null) : {});
         seen.set(value, out);
+        if (Array.isArray(value)) {
+            for (let i = 0; i < value.length; i++) {
+                const nested = value[i];
+                if (typeof nested === 'string') out.push(publicText(nested, null));
+                else {
+                    const safe = sanitizeResearch(nested, seen);
+                    if (safe !== undefined) out.push(safe);
+                }
+            }
+            return out;
+        }
         // defineProperty keeps a "__proto__" word key (restored above) as an own key.
         const put = (key, nested) => Object.defineProperty(out, key, { value: nested, enumerable: true, configurable: true, writable: true });
         let reading = typeof value.data === 'string' ? value.data : typeof value.text === 'string' ? value.text : null;
@@ -1094,6 +1116,8 @@ const _alloUseMailboxImageDelivery = ({ resource, enabled, sessionKey, assignmen
     return { ...(state.key === key ? state : { key, status: enabled && (manifest.sources.length || manifest.omitted) ? 'loading' : 'idle', ready: 0, total: manifest.sources.length + manifest.omitted, omitted: manifest.omitted }), revision: manifest.revision };
 };
 
+const _alloAacFallbackLangCtx = typeof React !== 'undefined' && typeof React.createContext === 'function' ? React.createContext(null) : null;
+
 const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
   const portable = payload && payload.package;
   const pages = portable && Array.isArray(portable.pages) ? portable.pages : [];
@@ -1102,10 +1126,11 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
   const [scanning, setScanning] = useState(false);
   const [scanIndex, setScanIndex] = useState(0);
   const dialogRef = useRef(null);
+  const backdropDownRef = useRef(null);
   const openerRef = useRef(null);
   const onDismissRef = useRef(onDismiss);
   onDismissRef.current = onDismiss;
-  const langCtx = typeof React.useContext === 'function' && window.AlloLanguageContext ? React.useContext(window.AlloLanguageContext) : null;
+  const langCtx = React.useContext((typeof window !== 'undefined' && window.AlloLanguageContext) || _alloAacFallbackLangCtx);
   const tFn = typeof t === 'function' ? t : (langCtx && typeof langCtx.t === 'function' ? langCtx.t : null);
   const tr = (k, fb) => {
     try {
@@ -1124,16 +1149,26 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
   const speakTapRef = useRef(0);
   const speak = React.useCallback((text, cell) => {
     const phrase = _alloAacText(text, 2000);
-    if (!phrase || typeof onSpeak !== 'function') return;
+    if (!phrase) return;
     const tap = ++speakTapRef.current;
+    if (typeof onSpeak !== 'function') {
+      _alloAacStudentDeviceVoice(phrase, locale);
+      return;
+    }
     try {
       const result = onSpeak(phrase, cell || null);
       if (result && typeof result.then === 'function') {
         result.then((played) => {
           if (!played && tap === speakTapRef.current) _alloAacStudentDeviceVoice(phrase, locale);
-        }, () => {});
+        }, () => {
+          if (tap === speakTapRef.current) _alloAacStudentDeviceVoice(phrase, locale);
+        });
+      } else if (result === false) {
+        _alloAacStudentDeviceVoice(phrase, locale);
       }
-    } catch (_) {}
+    } catch (_) {
+      if (tap === speakTapRef.current) _alloAacStudentDeviceVoice(phrase, locale);
+    }
   }, [onSpeak, locale]);
   const activateCell = React.useCallback((cell) => {
     if (!cell) return;
@@ -1145,6 +1180,9 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
   useEffect(() => {
     openerRef.current = document.activeElement;
     return () => {
+      speakTapRef.current += 1;
+      try { if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop(); } catch (_) {}
+      try { if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (_) {}
       const opener = openerRef.current;
       try {
         if (opener && typeof opener.focus === 'function' && document.contains(opener)) opener.focus();
@@ -1152,6 +1190,7 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
     };
   }, []);
   useEffect(() => {
+    speakTapRef.current += 1;
     setPageIndex(0);
     setSentence([]);
     setScanning(false);
@@ -1162,6 +1201,10 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
     return () => clearTimeout(timer);
   }, [payload && payload.payloadId]);
   useEffect(() => {
+    if (scanning && interactiveCells.length < 1) {
+      setScanning(false);
+      return undefined;
+    }
     if (!scanning || interactiveCells.length < 1) return undefined;
     const timer = setInterval(() => setScanIndex((current) => (current + 1) % interactiveCells.length), 1400);
     return () => clearInterval(timer);
@@ -1169,6 +1212,8 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
   useEffect(() => {
     setScanIndex(0);
   }, [safePageIndex]);
+  const keyboardStateRef = useRef({ activateCell, interactiveCells, scanIndex, scanning, pageCount: pages.length, direction });
+  keyboardStateRef.current = { activateCell, interactiveCells, scanIndex, scanning, pageCount: pages.length, direction };
   useEffect(() => {
     const dialog = dialogRef.current;
     const stack = typeof window !== 'undefined'
@@ -1176,6 +1221,36 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
       : null;
     const trap = { root: dialog };
     if (stack) stack.push(trap);
+    const lockState = typeof window !== 'undefined'
+      ? (window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, prev: '' })
+      : null;
+    if (lockState && typeof document !== 'undefined' && document.body) {
+      if (lockState.count === 0) lockState.prev = document.body.style.overflow;
+      lockState.count += 1;
+      document.body.style.overflow = 'hidden';
+    }
+    const hiddenNodes = [];
+    const liveSel = '[aria-live], [role="status"], [role="alert"], [role="log"], [data-toast-region]';
+    if (typeof document !== 'undefined' && dialog) {
+      const seenHidden = new Set();
+      let cur = dialog;
+      while (cur && cur !== document.body && cur.parentElement) {
+        const parent = cur.parentElement;
+        Array.from(parent.children || []).forEach((node) => {
+          if (!node || node === cur || node === dialog || node.contains(dialog) || seenHidden.has(node)) return;
+          if (/^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(node.tagName)) return;
+          if (node.matches?.(liveSel) || node.querySelector?.(liveSel)) return;
+          seenHidden.add(node);
+          const hadInert = node.hasAttribute('inert');
+          const prevHidden = node.getAttribute('aria-hidden');
+          if (!hadInert) node.setAttribute('inert', '');
+          try { node.inert = true; } catch (_) {}
+          node.setAttribute('aria-hidden', 'true');
+          hiddenNodes.push({ node, hadInert, prevHidden });
+        });
+        cur = parent;
+      }
+    }
     const isTopTrap = () => {
       if (!stack || !stack.length) return true;
       const top = stack[stack.length - 1];
@@ -1189,10 +1264,18 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
     const handleKey = (event) => {
       if (event.defaultPrevented || event.isComposing || event.keyCode === 229 || !isTopTrap()) return;
       const currentDialog = dialogRef.current;
+      const kb = keyboardStateRef.current;
       if (event.key === 'Tab') {
         const focusable = currentDialog
-          ? Array.from(currentDialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
-              .filter((el) => !el.disabled && !el.hidden && !el.closest('[inert]') && el.getAttribute('aria-hidden') !== 'true')
+          ? Array.from(currentDialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'))
+              .filter((el) => {
+                if (!el || el.disabled || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]') || el.getAttribute('aria-hidden') === 'true') return false;
+                if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+                  const cs = window.getComputedStyle(el);
+                  if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+                }
+                return true;
+              })
           : [];
         if (!focusable.length) {
           event.preventDefault();
@@ -1218,45 +1301,69 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
         return;
       }
       if (isEditableTarget(event.target)) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key === 'Backspace') {
         event.preventDefault();
         setSentence((previous) => previous.slice(0, -1));
         return;
       }
-      if (event.key === 'ArrowLeft' && pages.length > 1) {
+      if (event.key === 'ArrowLeft' && kb.pageCount > 1) {
         event.preventDefault();
-        setPageIndex((current) => Math.max(0, current - 1));
+        const delta = kb.direction === 'rtl' ? 1 : -1;
+        setPageIndex((current) => Math.max(0, Math.min(kb.pageCount - 1, current + delta)));
         return;
       }
-      if (event.key === 'ArrowRight' && pages.length > 1) {
+      if (event.key === 'ArrowRight' && kb.pageCount > 1) {
         event.preventDefault();
-        setPageIndex((current) => Math.min(pages.length - 1, current + 1));
+        const delta = kb.direction === 'rtl' ? -1 : 1;
+        setPageIndex((current) => Math.max(0, Math.min(kb.pageCount - 1, current + delta)));
         return;
       }
-      if (scanning && (event.key === 'Enter' || event.key === ' ')) {
+      if (kb.scanning && (event.key === 'Enter' || event.key === ' ') && !(event.target && event.target.closest && event.target.closest('button:not([data-aac-cell="true"]), a[href], summary, [role="button"]:not([data-aac-cell="true"])'))) {
         event.preventDefault();
-        activateCell(interactiveCells[scanIndex % Math.max(1, interactiveCells.length)]);
+        kb.activateCell(kb.interactiveCells[kb.scanIndex % Math.max(1, kb.interactiveCells.length)]);
         return;
       }
       if (/^[1-9]$/.test(event.key)) {
         const index = Number(event.key) - 1;
-        if (interactiveCells[index]) {
+        if (kb.interactiveCells[index]) {
           event.preventDefault();
-          activateCell(interactiveCells[index]);
+          kb.activateCell(kb.interactiveCells[index]);
         }
       }
     };
     document.addEventListener('keydown', handleKey);
     return () => {
       document.removeEventListener('keydown', handleKey);
+      hiddenNodes.forEach(({ node, hadInert, prevHidden }) => {
+        try {
+          if (!hadInert) {
+            node.removeAttribute('inert');
+            node.inert = false;
+          }
+          if (prevHidden === null) node.removeAttribute('aria-hidden');
+          else node.setAttribute('aria-hidden', prevHidden);
+        } catch (_) {}
+      });
+      if (lockState && typeof document !== 'undefined' && document.body) {
+        lockState.count = Math.max(0, lockState.count - 1);
+        if (lockState.count === 0) {
+          document.body.style.overflow = lockState.prev !== undefined ? lockState.prev : (lockState.overflow || '');
+        }
+      }
       if (stack) {
         const idx = stack.lastIndexOf(trap);
         if (idx >= 0) stack.splice(idx, 1);
       }
     };
-  }, [activateCell, interactiveCells, scanIndex, scanning, pages.length]);
+  }, []);
   const sentenceText = sentence.join(' ');
-  const cellColors = { noun: '#fef9c3', verb: '#dcfce7', adjective: '#dbeafe', other: '#f3f4f6' };
+  const cellClasses = {
+    noun: 'bg-yellow-100 text-slate-900',
+    verb: 'bg-green-100 text-slate-900',
+    adjective: 'bg-blue-100 text-slate-900',
+    other: 'bg-slate-100 text-slate-900'
+  };
   return (
     <div
       role='dialog'
@@ -1266,57 +1373,79 @@ const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak, t }) => {
       dir={direction}
       ref={dialogRef}
       tabIndex={-1}
-      onClick={(event) => { if (event.target === event.currentTarget) onDismiss(); }}
+      onMouseDown={(event) => { backdropDownRef.current = (event.target === event.currentTarget); }}
+      onClick={(event) => {
+        const allowClose = backdropDownRef.current !== false;
+        backdropDownRef.current = null;
+        if (event.target === event.currentTarget && allowClose && typeof onDismiss === 'function') onDismiss();
+      }}
       style={{ position: 'fixed', inset: 0, zIndex: 99998, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.58)', padding: 12 }}
     >
-      <div onClick={(event) => event.stopPropagation()} style={{ background: '#fff', borderRadius: 20, width: 'min(900px,96vw)', maxHeight: '94vh', overflowY: 'auto', boxShadow: '0 25px 60px rgba(0,0,0,0.24)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 18px', borderBottom: '1px solid #e2e8f0' }}>
+      <div className='allo-docsuite bg-white text-slate-900 rounded-[20px] shadow-2xl border border-slate-200' onClick={(event) => event.stopPropagation()} style={{ width: 'min(900px,96vw)', maxHeight: '94vh', overflowY: 'auto' }}>
+        <div className='border-b border-slate-200' style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 18px' }}>
           <div>
-            <h2 style={{ margin: 0, color: '#3730a3', fontSize: 20 }}>{portable && portable.board ? portable.board.title : 'AAC Board'}</h2>
-            <div style={{ color: '#64748b', fontSize: 12 }}>Shared by Teacher</div>
+            <h2 className='text-indigo-800 font-bold' style={{ margin: 0, fontSize: 20 }}>{portable && portable.board ? portable.board.title : tr('live_aac.default_title', 'AAC Board')}</h2>
+            <div className='text-slate-600' style={{ fontSize: 12 }}>{tr('live_aac.shared_by_teacher', 'Shared by Teacher')}</div>
           </div>
-          <button type='button' onClick={onDismiss} aria-label={tr('live_aac.close_board', 'Close AAC Board')} style={{ border: 0, borderRadius: 10, minWidth: 44, minHeight: 44, width: 44, height: 44, cursor: 'pointer', fontSize: 18 }}>x</button>
+          <button type='button' onClick={() => { if (typeof onDismiss === 'function') onDismiss(); }} aria-label={tr('live_aac.close_board', 'Close AAC Board')} className='bg-slate-100 text-slate-800 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600' style={{ border: 0, borderRadius: 10, minWidth: 44, minHeight: 44, width: 44, height: 44, cursor: 'pointer', fontSize: 18 }}>x</button>
         </div>
         <div style={{ padding: '14px 18px' }}>
           {pages.length > 1 && (
             <div role="group" aria-label={tr('live_aac.board_pages', 'AAC Board pages')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
-              <button type='button' onClick={() => setPageIndex((current) => Math.max(0, current - 1))} disabled={safePageIndex === 0} style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>Previous page</button>
-              <strong>{page.title} ({safePageIndex + 1} of {pages.length})</strong>
-              <button type='button' onClick={() => setPageIndex((current) => Math.min(pages.length - 1, current + 1))} disabled={safePageIndex === pages.length - 1} style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>Next page</button>
+              <button type='button' onClick={() => setPageIndex((current) => Math.max(0, current - 1))} disabled={safePageIndex === 0} className='rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50' style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>{tr('live_aac.previous_page', 'Previous page')}</button>
+              <strong>{page.title} ({safePageIndex + 1} / {pages.length})</strong>
+              <button type='button' onClick={() => setPageIndex((current) => Math.min(pages.length - 1, current + 1))} disabled={safePageIndex === pages.length - 1} className='rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50' style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>{tr('live_aac.next_page', 'Next page')}</button>
             </div>
           )}
-          <div role='status' aria-live='polite' aria-label='Sentence strip' style={{ minHeight: 48, border: '2px solid #c7d2fe', borderRadius: 12, padding: 10, marginBottom: 10, background: '#eef2ff', fontWeight: 700 }}>
-            {sentenceText || 'Select symbols to build a sentence.'}
+          <div role='status' aria-live='polite' aria-label='Sentence strip' className='bg-indigo-50 text-slate-900 border-2 border-indigo-200 rounded-xl font-bold' style={{ minHeight: 48, padding: 10, marginBottom: 10 }}>
+            {sentenceText || tr('live_aac.select_symbols_prompt', 'Select symbols to build a sentence.')}
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
-            <button type='button' onClick={() => speak(sentenceText)} disabled={!sentenceText} aria-keyshortcuts='Enter' style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>Speak sentence</button>
-            <button type='button' onClick={() => setSentence((previous) => previous.slice(0, -1))} disabled={!sentence.length} aria-keyshortcuts='Backspace' style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>Undo</button>
-            <button type='button' onClick={() => setSentence([])} disabled={!sentence.length} style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>Clear</button>
-            <button type='button' aria-pressed={scanning} onClick={() => setScanning((current) => !current)} style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>{scanning ? 'Stop scanning' : 'Start scanning'}</button>
+            <button type='button' onClick={() => speak(sentenceText)} disabled={!sentenceText} className='rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50' style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>{tr('live_aac.speak_sentence', 'Speak sentence')}</button>
+            <button type='button' onClick={() => setSentence((previous) => previous.slice(0, -1))} disabled={!sentence.length} aria-keyshortcuts='Backspace' className='rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50' style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>{tr('live_aac.undo', 'Undo')}</button>
+            <button type='button' onClick={() => setSentence([])} disabled={!sentence.length} className='rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50' style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>{tr('live_aac.clear', 'Clear')}</button>
+            <button type='button' aria-pressed={scanning} disabled={interactiveCells.length === 0} onClick={() => setScanning((current) => !current)} className='rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50' style={{ minHeight: 44, minWidth: 44, padding: '8px 12px' }}>{scanning ? tr('live_aac.stop_scanning', 'Stop scanning') : tr('live_aac.start_scanning', 'Start scanning')}</button>
           </div>
-          <div role='grid' aria-label={page.title || 'AAC Board symbols'} style={{ display: 'grid', gridTemplateColumns: 'repeat(' + Math.max(1, Math.min(12, page.cols || 4)) + ', minmax(76px,1fr))', gap: 9 }}>
-            {cells.map((cell, index) => {
-              const isScanning = scanning && cell === interactiveCells[scanIndex % Math.max(1, interactiveCells.length)];
-              const category = cell.category && cellColors[cell.category] ? cell.category : 'other';
-              const isBlank = !(cell.displayLabel || cell.vocalLabel || cell.originalLabel || cell.image);
-              return (
-                <button
-                  type='button'
-                  role='gridcell'
-                  key={cell.id || index}
-                  onClick={() => activateCell(cell)}
-                  disabled={isBlank}
-                  aria-label={isBlank ? 'Empty AAC slot' : (cell.displayLabel || cell.vocalLabel || 'Symbol') + (index < 9 ? ', shortcut ' + (index + 1) : String())}
-                  aria-current={isScanning ? 'true' : undefined}
-                  style={{ minHeight: 104, border: isScanning ? '4px solid #7c3aed' : '2px solid rgba(15,23,42,0.15)', borderRadius: 12, background: cellColors[category], padding: 8, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: isScanning ? '0 0 0 3px #ddd6fe' : 'none' }}
-                >
-                  {cell.image ? <img src={cell.image} alt={String()} style={{ width: 64, height: 64, objectFit: 'contain' }} /> : <span aria-hidden='true' style={{ fontSize: 28 }}>Aa</span>}
-                  <span style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', overflowWrap: 'anywhere' }}>{cell.displayLabel || cell.vocalLabel}</span>
-                </button>
-              );
-            })}
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 4 }}>
+          {(() => {
+            const colCount = Math.max(1, Math.min(12, page.cols || 4));
+            const rows = [];
+            for (let i = 0; i < cells.length; i += colCount) rows.push(cells.slice(i, i + colCount));
+            return (
+          <div role='grid' aria-label={page.title || tr('live_aac.board_symbols', 'AAC Board symbols')} style={{ display: 'grid', gridTemplateColumns: 'repeat(' + colCount + ', minmax(76px,1fr))', gap: 9 }}>
+            {rows.map((rowCells, rowIndex) => (
+              <div key={rowIndex} role='row' style={{ display: 'contents' }}>
+                {rowCells.map((cell, colIndex) => {
+                  const index = rowIndex * colCount + colIndex;
+                  const isScanning = scanning && cell === interactiveCells[scanIndex % Math.max(1, interactiveCells.length)];
+                  const category = cell.category && cellClasses[cell.category] ? cell.category : 'other';
+                  const isBlank = !(cell.displayLabel || cell.vocalLabel || cell.originalLabel || cell.image);
+                  const shortcutIndex = isBlank ? -1 : interactiveCells.indexOf(cell);
+                  return (
+                    <div key={cell.id || index} role='gridcell' style={{ display: 'flex' }}>
+                      <button
+                        type='button'
+                        data-aac-cell='true'
+                        onClick={() => activateCell(cell)}
+                        disabled={isBlank}
+                        aria-label={isBlank ? tr('live_aac.empty_slot', 'Empty AAC slot') : (cell.displayLabel || cell.vocalLabel || tr('live_aac.symbol', 'Symbol')) + (shortcutIndex >= 0 && shortcutIndex < 9 ? ', ' + tr('live_aac.shortcut', 'shortcut') + ' ' + (shortcutIndex + 1) : String())}
+                        aria-current={isScanning ? 'true' : undefined}
+                        className={'rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + cellClasses[category]}
+                        style={{ flex: 1, width: '100%', minHeight: 104, border: isScanning ? '4px solid #7c3aed' : '2px solid rgba(15,23,42,0.2)', padding: 8, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: isScanning ? '0 0 0 3px #ddd6fe' : 'none' }}
+                      >
+                        {cell.image ? <img src={cell.image} alt={String()} style={{ width: 64, height: 64, objectFit: 'contain' }} /> : <span aria-hidden='true' style={{ fontSize: 28 }}>Aa</span>}
+                        <span className='font-extrabold text-slate-900' style={{ fontSize: 14, overflowWrap: 'anywhere' }}>{cell.displayLabel || cell.vocalLabel}</span>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
-          {scanning && <p style={{ margin: '12px 0 0', color: '#5b21b6', fontWeight: 700 }}>Press Enter or Space to choose the highlighted symbol.</p>}
+            );
+          })()}
+          </div>
+          {scanning && <p role='status' className='text-violet-800 font-bold' style={{ margin: '12px 0 0' }}>{tr('live_aac.scan_hint', 'Press Enter or Space to choose the highlighted symbol.')}</p>}
         </div>
       </div>
     </div>
@@ -1349,8 +1478,8 @@ const MailboxImageDeliveryMonitor = ({ resource, enabled, sessionKey, assignment
     if (!enabled || (!receiveError && (state.status === 'idle' || state.status === 'ready'))) return null;
     const failed = receiveError || state.status === 'failed';
     const failure = _alloMailboxImageFailure(state);
-    return <div role={failed ? 'alert' : 'status'} aria-live="polite" className="no-print" style={{ position: 'fixed', bottom: 92, left: 12, zIndex: 145, width: 'min(430px, calc(100vw - 24px))', boxSizing: 'border-box', padding: 12, borderRadius: 10, border: '1px solid ' + (failed ? '#be123c' : '#0369a1'), background: failed ? '#fff1f2' : '#f0f9ff', color: failed ? '#881337' : '#075985', fontSize: 14 }}>
-        <span>{receiveError ? 'A class resource could not be opened. Retry to download it again.'
+    return <div className="no-print" style={{ position: 'fixed', bottom: 92, left: 12, zIndex: 145, width: 'min(430px, calc(100vw - 24px))', boxSizing: 'border-box', padding: 12, borderRadius: 10, border: '1px solid ' + (failed ? '#be123c' : '#0369a1'), background: failed ? '#fff1f2' : '#f0f9ff', color: failed ? '#881337' : '#075985', fontSize: 14 }}>
+        <span role={failed ? 'alert' : 'status'} aria-live="polite">{receiveError ? 'A class resource could not be opened. Retry to download it again.'
             : failed ? failure.text
                 : 'Loading class images: ' + state.ready + ' of ' + state.total + '.'}</span>
         {(receiveError || (failed && failure.retry)) && <button type="button" onClick={() => { if (receiveError) onRetryResource?.(); setRetryEpoch(value => value + 1); }} style={{ minHeight: 44, marginTop: 8, padding: '8px 12px', display: 'block', border: '1px solid #9f1239', borderRadius: 6, background: 'white', color: '#881337', fontWeight: 700 }}>{receiveError ? 'Retry resource' : 'Retry images'}</button>}

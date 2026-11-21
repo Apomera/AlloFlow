@@ -10,11 +10,19 @@ function atomicWriteFile(filename, bytes, io = fs) {
   const temporary = target + '.tmp-' + crypto.randomUUID();
   const existing = io.lstatSync(target, { throwIfNoEntry: false });
   if (existing && (!existing.isFile() || existing.isSymbolicLink())) throw new Error('Unsafe generated file destination: ' + target);
+  let primaryError = null;
   try {
     io.writeFileSync(temporary, bytes, { encoding: 'utf8', flag: 'wx', mode: 0o600, flush: true });
     io.renameSync(temporary, target);
+  } catch (error) {
+    primaryError = error;
+    throw error;
   } finally {
-    try { io.unlinkSync(temporary); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    try {
+      io.unlinkSync(temporary);
+    } catch (cleanupError) {
+      if (cleanupError.code !== 'ENOENT' && !primaryError) throw cleanupError;
+    }
   }
 }
 module.exports = { atomicWriteFile };

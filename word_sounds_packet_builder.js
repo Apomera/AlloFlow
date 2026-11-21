@@ -170,25 +170,25 @@
     // A browser ignores spaces and control characters inside an address.
     var packed = plain.replace(/[\x00-\x20]+/g, '');
     var bare = function (value) { return String(value || '').replace(/[\x00-\x20]+/g, ''); };
-    if (/<\s*(?:[\w-]+:)?script\b/i.test(plain)) return 'a script';
-    if (/<\s*(?:[\w-]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject';
-    if (/<\s*(?:[\w-]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a drawing';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?script\b/i.test(plain)) return 'a script';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a drawing';
     if (/[\s"'\/]on[a-z]+\s*=/i.test(plain)) return 'an event handler';
     if (/(?:java|vb|live)script:/i.test(packed)) return 'a script address';
     if (/xml:base\s*=/i.test(plain)) return 'a base address';
     // Every link must point inside the drawing itself ("#name"): no other file, no site, no data: address.
-    var m, href = /(?:[\s"'\/])(?:[\w-]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    var m, href = /(?:[\s"'\/])(?:[^\s<>"'=/:]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
     while ((m = href.exec(plain))) {
       if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
     }
-    if (/[\s"'\/]src\s*=/i.test(plain)) return 'a link to something outside the drawing';
+    if (/[\s"'\/]src(?:doc)?\s*=/i.test(plain)) return 'a link to something outside the drawing';
     // A style block may not load anything: no @import, no url(), no font.
-    var style = /<\s*(?:[\w-]+:)?style\b[^>]*>/gi;
+    var style = /<\s*(?:[^\s<>"'=/:]+:)?style\b(?:"[^"]*"|'[^']*'|[^>"'])*>/gi;
     while ((m = style.exec(plain))) {
       if (/\/\s*>$/.test(m[0])) continue;
-      var end = plain.slice(style.lastIndex).search(/<\s*\/\s*(?:[\w-]+:)?style\s*>/i);
+      var end = plain.slice(style.lastIndex).search(/<\s*\/\s*(?:[^\s<>"'=/:]+:)?style\s*>/i);
       var css = end < 0 ? plain.slice(style.lastIndex) : plain.slice(style.lastIndex, style.lastIndex + end);
-      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
+      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|image-set\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
     }
     // Anywhere else, url(...) may only name something inside the drawing: fill="url(#a)".
     var url = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
@@ -322,7 +322,7 @@
   }
   // opts.own, checked, for the words asked: { byWord: { word: { sounds, spelling, clip, picture } }, refused, words }.
   function readOwn(given, asked, labels) {
-    var out = { byWord: {}, refused: [], words: [] };
+    var out = { byWord: Object.create(null), refused: [], words: [] };
     if (!isPlainObject(given)) return out;
     var inventory = Array.isArray(labels) && labels.length ? labels : SOUND_LABELS;
     var refuse = function (word, part, reason) { out.refused.push({ word: word, part: part, reason: reason }); };
@@ -559,7 +559,7 @@
   }
   var familiarTables = [];
   function answerTools(core, wordlist) {
-    var prons = {};
+    var prons = Object.create(null);
     var pron = function (word) {
       var w = String(word == null ? '' : word).trim().toLowerCase();
       if (own(prons, w)) return prons[w];
@@ -581,7 +581,7 @@
     };
     var rhymes = function (a, b) { return rhymePair(pron(a), pron(b)); };
     // Every way the dictionary says a word: a recording says one of them (bow, read, just), so a wrong choice is judged by all.
-    var every = {};
+    var every = Object.create(null);
     var pronsOf = function (word) {
       var w = String(word == null ? '' : word).trim().toLowerCase();
       if (own(every, w)) return every[w];
@@ -600,12 +600,13 @@
       if (!familiar) {
         for (var t = 0; t < familiarTables.length; t++) if (familiarTables[t].wordlist === wordlist && familiarTables[t].core === core) familiar = familiarTables[t].byKey;
         if (!familiar) {
-          familiar = {};
+          familiar = Object.create(null);
           wordlist.rows().forEach(function (row) {
             if (!row || row.blocked || row.nearBlocked || row.british || !(row.known || (row.zipf >= DEFAULT_MIN_ZIPF && row.books >= DEFAULT_MIN_BOOKS))) return;
             var k = key(row.word);
             if (k) (familiar[k] = familiar[k] || []).push(row.word);
           });
+          if (familiarTables.length >= 8) familiarTables.shift();
           familiarTables.push({ wordlist: wordlist, core: core, byKey: familiar });
         }
       }
@@ -627,7 +628,7 @@
     };
     // Put candidates not currently shown first so each click surfaces fresh wrong answers when available.
     var freshFirst = function (candidates, prev) {
-      var seen = {};
+      var seen = Object.create(null);
       (prev || []).forEach(function (v) { seen[String(v).toLowerCase()] = true; });
       return shuffle(candidates.filter(function (v) { return !seen[String(v).toLowerCase()]; }))
         .concat(shuffle(candidates.filter(function (v) { return seen[String(v).toLowerCase()]; })));
@@ -647,7 +648,7 @@
         if (!s || core.soundAnswerMatches(s, board.correctSound) || soundOf(s) === soundOf(board.correctSound)) return false;
         return core.phonemeBankCandidates(s).some(function (k) { return ctx.audio.hasClip('phonemes', k); });
       };
-      var isoPool = [], seenS = {};
+      var isoPool = [], seenS = Object.create(null);
       REROLL_SOUNDS.forEach(function (s) {
         var norm = soundOf(s);
         if (!seenS[norm] && okSound(s)) { seenS[norm] = true; isoPool.push(s); }
@@ -1153,13 +1154,20 @@
     var header = 'RIFF' + u32(36 + n) + 'WAVEfmt ' + u32(16) + u16(1) + u16(1) + u32(rate) + u32(rate * 2) + u16(2) + u16(16) + 'data' + u32(n);
     return 'data:audio/wav;base64,' + btoa(header + pcm);
   }
+  var MAX_AUDIO_URI_CHARS = 2 * 1024 * 1024;
   // A bank entry as { uri } (a data: address) or null. PCM entries ({ base64, sampleRate }) become WAV here.
   function entryUri(entry) {
     if (!entry) return null;
-    if (typeof entry === 'string') return AUDIO_URI.test(entry) ? entry : null;
+    if (typeof entry === 'string') return entry.length <= MAX_AUDIO_URI_CHARS && AUDIO_URI.test(entry) ? entry : null;
     if (typeof entry === 'object' && typeof entry.base64 === 'string' && entry.base64) {
-      if (typeof entry.mime === 'string' && /^audio\//i.test(entry.mime)) return 'data:' + entry.mime.trim().toLowerCase() + ';base64,' + entry.base64.replace(/\s+/g, '');
-      try { return pcmToWavUri(entry.base64, entry.sampleRate); } catch (_) { return null; }
+      var cleaned = entry.base64.replace(/\s+/g, '');
+      if (!cleaned || cleaned.length > MAX_AUDIO_URI_CHARS || cleaned.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(cleaned)) return null;
+      if (typeof entry.mime === 'string') {
+        var mime = entry.mime.trim().toLowerCase();
+        if (!/^audio\/[a-z0-9.+-]+$/.test(mime)) return null;
+        return 'data:' + mime + ';base64,' + cleaned;
+      }
+      try { return pcmToWavUri(cleaned, entry.sampleRate); } catch (_) { return null; }
     }
     return null;
   }
@@ -1309,8 +1317,8 @@
     var askedActivities = (Array.isArray(opts.activities) && opts.activities.length ? opts.activities : ['isolation']).map(String).filter(function (id, i, all) { return all.indexOf(id) === i; });
     var adapters = loader.ADAPTERS || {};
     var activities = askedActivities.filter(function (id) {
-      if (SUPPORTED.indexOf(id) >= 0 && adapters[id]) return true;
-      except(null, id, adapters[id] ? 'this activity cannot be built without AI or a teacher yet' : 'unknown activity');
+      if (SUPPORTED.indexOf(id) >= 0 && own(adapters, id)) return true;
+      except(null, id, own(adapters, id) ? 'this activity cannot be built without AI or a teacher yet' : 'unknown activity');
       return false;
     });
     var blocked = function (word) { return !!wordlist && typeof wordlist.isBlocked === 'function' && wordlist.isBlocked(word); };
@@ -1328,7 +1336,7 @@
     } } });
     var known = opts.knownWords || (wordlist ? wordlist.rows().filter(function (row) { return row.known; }).map(function (row) { return row.word; }) : []);
     var probeLogic = createPackLogic({ core: core, knownWords: known, seed: seed });
-    var limit = typeof opts.length === 'number' ? opts.length : LENGTHS[opts.length] || 40;
+    var limit = typeof opts.length === 'number' && Number.isFinite(opts.length) && opts.length > 0 ? Math.floor(opts.length) : (own(LENGTHS, opts.length) ? LENGTHS[opts.length] : 40);
     var words = [];
     asked.forEach(function (word) {
       if (words.indexOf(word) >= 0) return;
@@ -1367,10 +1375,11 @@
     // pictures: true puts each word's symbol in the file, where `symbols` has one, or the teacher's own
     // picture in its place. Off (the default) leaves the rows without an image, and the file is what it
     // was before pictures existed.
-    var wantPictures = opts.pictures === true && !!opts.symbols && typeof opts.symbols.get === 'function';
-    var pictureFiles = {}, pictureSets = {}, pictureRefused = [];
+    var hasMatcher = !!(opts.matcher && typeof opts.matcher.matchWord === 'function');
+    var wantPictures = opts.pictures === true && ((!!opts.symbols && typeof opts.symbols.get === 'function') || hasMatcher);
+    var pictureFiles = Object.create(null), pictureSets = Object.create(null), pictureRefused = [];
     var teacherPicture = function (word) { return opts.pictures === true && own(mine.byWord, word) && mine.byWord[word].picture ? mine.byWord[word].picture : null; };
-    var ownPictureShown = {};
+    var ownPictureShown = Object.create(null);
     // The teacher's letters for each sound, where they gave them: Sound Mapping uses these, not the aligner's.
     var spelledByTeacher = function (word) { var set = ownSounds(word); return set && set.spelling ? set.spelling : null; };
 
@@ -1392,10 +1401,10 @@
         var picture = teacherPicture(item.word);
         if (picture) { item.image = picture.uri; ownPictureShown[item.word] = picture; }
       });
-      var omitItems = {};
+      var omitItems = Object.create(null);
       if (Array.isArray(opts.omitItems)) opts.omitItems.forEach(function (k) { if (typeof k === 'string' && k) omitItems[k.toLowerCase()] = true; });
       else if (isPlainObject(opts.omitItems)) Object.keys(opts.omitItems).forEach(function (k) { if (opts.omitItems[k]) omitItems[String(k).toLowerCase()] = true; });
-      var itemSeeds = {};
+      var itemSeeds = Object.create(null);
       if (isPlainObject(opts.itemSeeds)) Object.keys(opts.itemSeeds).forEach(function (k) {
         var b = opts.itemSeeds[k];
         if (b != null && b !== '' && b !== 0 && b !== false) itemSeeds[String(k).toLowerCase()] = String(b);
@@ -1403,13 +1412,19 @@
       if (wantPictures) rows.forEach(function (item) {
         if (ownPictureShown[item.word] || (own(mine.byWord, item.word) && mine.byWord[item.word].noPicture)) return;
         var symbol = null;
-        try { symbol = opts.symbols.get(item.word); } catch (_) { symbol = null; }
+        if (opts.symbols && typeof opts.symbols.get === 'function') {
+          try { symbol = opts.symbols.get(item.word); } catch (_) { symbol = null; }
+        }
+        if ((!symbol || typeof symbol.svg !== 'string') && hasMatcher) {
+          var symReady = !!(opts.symbols && typeof opts.symbols.get === 'function' && (typeof opts.symbols.ready !== 'function' || opts.symbols.ready()));
+          try { symbol = opts.matcher.matchWord({ word: item.word }, { symbols: symReady ? opts.symbols : null, preferDiagrams: true }); } catch (_) { symbol = null; }
+        }
         if (!symbol || typeof symbol.svg !== 'string') return;
         var why = svgRefusal(symbol.svg);
         if (why) { pictureRefused.push({ word: item.word, file: String(symbol.file || ''), reason: why }); return; }
         item.image = svgDataUri(symbol.svg);
-        pictureFiles[item.word] = String(symbol.file || '');
-        pictureSets[item.word] = symbol.set === 'openmoji' ? 'openmoji' : 'mulberry';
+        pictureFiles[item.word] = String(symbol.file || (symbol.matchType === 'diagram' ? 'diagram:' + item.word : ''));
+        pictureSets[item.word] = symbol.set === 'openmoji' ? 'openmoji' : ((symbol.matchType === 'diagram' || symbol.set === 'diagram') ? 'diagram' : 'mulberry');
       });
       var tools = answerTools(soundCore, wordlist);
       var rerollCtx = Object.keys(itemSeeds).length ? { core: choiceCore, tools: tools, audio: audio, seed: seed, pool: choicePool.concat(words) } : null;
@@ -1430,12 +1445,13 @@
         // of the words the teacher gave (their own word may sit among the choices of another of their words).
         activities.forEach(function (id) {
           var shown = boardWords(id, item.activityItems[id]);
-          if (shown.some(blocked)) { delete item.activityItems[id]; except(item.word, id, 'an answer choice is on the blocklist'); }
-          else if (shown.some(function (word) { return softWord(word) && words.indexOf(word) < 0; })) { delete item.activityItems[id]; except(item.word, id, 'an answer choice is a word the picker does not offer'); }
+          if (shown.some(blocked)) { delete item.activityItems[id]; guarded[id + '|' + item.word] = true; except(item.word, id, 'an answer choice is on the blocklist'); }
+          else if (shown.some(function (word) { return softWord(word) && words.indexOf(word) < 0; })) { delete item.activityItems[id]; guarded[id + '|' + item.word] = true; except(item.word, id, 'an answer choice is a word the picker does not offer'); }
         });
         // A split the teacher gave is theirs to judge.
         if (item.activityItems.mapping && !spelledByTeacher(item.word) && suspectSplit(wordUnits(core, item.word, item.phonemes))) {
           delete item.activityItems.mapping;
+          guarded['mapping|' + item.word] = true;
           except(item.word, 'mapping', 'the spelling split for this word needs checking');
         }
       });
@@ -1534,15 +1550,20 @@
       // Each set is credited, and its notice carried, only when one of its pictures is in the file. A file
       // with pictures of both sets names the words of each; a file with one set's is what it always was.
       var withOpenMoji = withSymbol.filter(function (word) { return pictureSets[word] === 'openmoji'; });
-      var withMulberry = withSymbol.filter(function (word) { return pictureSets[word] !== 'openmoji'; });
+      var withDiagram = withSymbol.filter(function (word) { return pictureSets[word] === 'diagram'; });
+      var withMulberry = withSymbol.filter(function (word) { return pictureSets[word] !== 'openmoji' && pictureSets[word] !== 'diagram'; });
       var omVersion = opts.symbols && opts.symbols.credits && opts.symbols.credits.openmoji && /^[\w.]{1,16}$/.test(String(opts.symbols.credits.openmoji.version || '')) ? String(opts.symbols.credits.openmoji.version) : '';
+      var namedOthers = withOpenMoji.length || withDiagram.length;
       if (withMulberry.length) {
-        attributions.push(withOpenMoji.length ? pictureCredit(withMulberry) : pictureCredit());
-        notices.push({ id: 'mulberry', name: MULBERRY_CREDIT.set, text: withOpenMoji.length ? mulberryNotice(withMulberry) : MULBERRY_NOTICE });
+        attributions.push(namedOthers ? pictureCredit(withMulberry) : pictureCredit());
+        notices.push({ id: 'mulberry', name: MULBERRY_CREDIT.set, text: namedOthers ? mulberryNotice(withMulberry) : MULBERRY_NOTICE });
       }
       if (withOpenMoji.length) {
         attributions.push(openMojiCredit(withOpenMoji));
         notices.push({ id: 'openmoji', name: OPENMOJI_CREDIT.set, text: openMojiNotice(withOpenMoji, omVersion) });
+      }
+      if (withDiagram.length) {
+        attributions.push('Curriculum diagrams: AlloFlow Curriculum Diagrams (AGPL-3.0) (' + withDiagram.join(', ') + ')');
       }
       // The teacher's own material: which words carry it, in About this file, and each picture's credit.
       var ownFacts = null, ownManifest = null;
@@ -1604,6 +1625,12 @@
           pictureFacts.openmoji = { set: omFacts.set, version: omVersion, license: omFacts.license, words: withOpenMoji.length };
           if (!withMulberry.length) { delete pictureFacts.set; delete pictureFacts.version; delete pictureFacts.license; }
         }
+        if (withDiagram.length) {
+          manifest.pictures.diagram = { set: 'AlloFlow Curriculum Diagrams', license: 'AGPL-3.0', words: withDiagram };
+          manifest.pictures.counts.diagram = withDiagram.length;
+          pictureFacts.diagram = { set: 'AlloFlow Curriculum Diagrams', license: 'AGPL-3.0', words: withDiagram.length };
+          if (!withMulberry.length) { delete pictureFacts.set; delete pictureFacts.version; delete pictureFacts.license; }
+        }
       }
       // noFile: everything but the file itself (trialBuild asks only which questions there would be).
       if (!lesson || opts.noFile === true) return { html: '', lesson: lesson, manifest: manifest, exceptions: exceptions, sha256: '' };
@@ -1649,11 +1676,11 @@
   function compileStages(table) {
     if (!table || !Array.isArray(table.frameworks)) return null;
     for (var k = 0; k < compiledTables.length; k++) if (compiledTables[k].table === table) return compiledTables[k].compiled;
-    var compiled = { byId: {}, list: [] };
+    var compiled = { byId: Object.create(null), list: [] };
     table.frameworks.forEach(function (framework) {
-      var units = {}, anyUnit = false;
+      var units = Object.create(null), anyUnit = false;
       (framework.stages || []).forEach(function (stage) {
-        var bases = {}, sources = 0;
+        var bases = Object.create(null), sources = 0;
         (stage.groups || []).concat(stage.limits ? [stage.limits] : []).forEach(function (group) {
           if (group.basis) bases[group.basis] = true;
           sources += (group.sources || []).length;
@@ -1661,7 +1688,7 @@
         (stage.groups || []).forEach(function (group) {
           String(group.units || '').split(' ').forEach(function (u) { if (u === '*') anyUnit = true; else if (u) units[u] = true; });
         });
-        var limits = stage.limits || {}, avoidFinal = {}, mine = {};
+        var limits = stage.limits || {}, avoidFinal = Object.create(null), mine = Object.create(null);
         String(limits.avoidFinal || '').split(' ').forEach(function (s) { if (s) avoidFinal[s] = true; });
         Object.keys(units).forEach(function (u) { mine[u] = true; });
         var verified = stage.verified === true;
@@ -1679,6 +1706,7 @@
         compiled.list.push(one);
       });
     });
+    if (compiledTables.length >= 8) compiledTables.shift();
     compiledTables.push({ table: table, compiled: compiled });
     return compiled;
   }
@@ -1788,7 +1816,7 @@
     var target = c.targetSound ? String(c.targetSound).replace(/^\/|\/$/g, '').trim().toLowerCase() : '';
     var spelling = c.spellingPattern ? String(c.spellingPattern).trim().toLowerCase() : '';
     var position = c.position || 'any';
-    var exclude = {};
+    var exclude = Object.create(null);
     (c.exclude || []).forEach(function (w) { exclude[String(w).trim().toLowerCase()] = true; });
     var soundsOf = function (word) {
       var found = dictionary && typeof dictionary.lookup === 'function' ? dictionary.lookup(word)[0] : null;
@@ -1800,7 +1828,7 @@
     var reasons = { fitsTheCriteria: 0, blocked: 0, soundsLikeABlockedWord: 0, oneDroppedSoundFromABlockedWord: 0, usedOnlyWhenTyped: 0, britishSpellingOrWord: 0, notFamiliarEnough: 0, noRecording: 0, excluded: 0 };
     // Counted only when a wider level is asked for, so the answer for a grade level is what it always was.
     if (level) { reasons.inTheGradeLevels = 0; reasons.notReadForTheWiderLevels = 0; reasons.inTheOtherWiderLevel = 0; }
-    var pool = [], commonness = {}, soundCount = {};
+    var pool = [], commonness = Object.create(null), soundCount = Object.create(null);
     wordlist.rows().forEach(function (row) {
       if (!/^[a-z]+$/.test(row.word) || row.word.length < 2 || row.word.length > (level ? MAX_LETTERS : GRADE_MAX_LETTERS) || !/[aeiouy]/.test(row.word)) return;
       if (c.sounds > 0 && row.sounds !== c.sounds) return;

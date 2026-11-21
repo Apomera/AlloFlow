@@ -85,6 +85,20 @@ for (const item of pack.items) {
   if (!expectedDomains[item.domainId]) add(item, 'blueprint-alignment', 'Domain is outside the Praxis Core diagnostic blueprint.');
   if (item.type !== 'single-choice' || !Array.isArray(item.choices) || item.choices.length !== 4 || new Set(item.choices).size !== 4 || !Number.isInteger(item.answerIndex) || item.answerIndex < 0 || item.answerIndex > 3) add(item, 'one-best-answer', 'Single-choice structure is invalid.');
   if (String(item.rationale || '').length < 100 || !Array.isArray(item.choiceRationales) || item.choiceRationales.length !== 4 || item.choiceRationales.some((entry) => String(entry).length < 100)) add(item, 'rationale-quality', 'General or option-specific feedback is not substantive.');
+  {
+    const distractorNotes = (item.choiceRationales || []).filter((_, index) => index !== item.answerIndex).map((entry) => String(entry || '').replace(/\s+/g, ' ').trim());
+    const keyNote = String(item.rationale || '').replace(/\s+/g, ' ').trim();
+    const specific = distractorNotes.length === 3
+      && new Set(distractorNotes).size === 3
+      && distractorNotes.every((note) => note.length >= 100 && note !== keyNote && !/does not satisfy the complete task/i.test(note));
+    if (!specific) add(item, 'feedback-specificity', 'Every distractor must carry a unique, non-generic explanation of at least 100 characters.');
+  }
+  {
+    const choiceLengths = (item.choices || []).map((choice) => String(choice || '').length);
+    const keyLength = choiceLengths[item.answerIndex] || 0;
+    const longestDistractor = choiceLengths.filter((_, index) => index !== item.answerIndex).reduce((max, value) => Math.max(max, value), 0);
+    if (!(longestDistractor > 0 && keyLength < longestDistractor * 1.25)) add(item, 'choice-length-parity', 'Keyed option exceeds 1.25x the longest distractor length.');
+  }
   if (!Array.isArray(item.references) || item.references.length < 2 || !item.references.some((url) => Object.values(blueprintUrls).includes(url)) || item.references.some((url) => { try { return !allowedHosts.has(new URL(url).hostname); } catch (_) { return true; } })) add(item, 'authoritative-source', 'References are missing an official subtest blueprint or include a non-allowlisted host.');
   if (item.reviewStatus !== 'source-reviewed' || item.qaStatus !== 'qa-passed' || !/^\d{4}-\d{2}-\d{2}$/.test(item.qaReviewedAt || '')) add(item, 'provenance', 'Review metadata is incomplete.');
   if (!Array.isArray(item.skillIds) || item.skillIds.length !== 1 || !Array.isArray(item.chapterIds) || item.chapterIds.length !== 1) add(item, 'learning-linkage', 'Exactly one skill and chapter link are required.');

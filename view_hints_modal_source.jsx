@@ -56,8 +56,8 @@ function HintsModal({
   handleGenerateLessonIdeas,
   handleSaveExtensionToHistory,
   handleSetShowHintsModalToFalse,
-  hintHistory,
-  history,
+  hintHistory: rawHintHistory,
+  history: rawHistory,
   isGeneratingExtension,
   renderFormattedText,
   t,
@@ -74,6 +74,8 @@ function HintsModal({
   const hintsAiOff = !!(hintsAiDoor && (hintsAiDoor.disabled || hintsAiDoor.available === false));
   const hintsAiTitle = hintsAiOff ? (hintsAiDoor.title || (typeof t === 'function' && t('ai.setup_required')) || 'Set up AI to use this feature') : undefined;
   const dialogRef = React.useRef(null);
+  const hintHistory = Array.isArray(rawHintHistory) ? rawHintHistory : [];
+  const history = Array.isArray(rawHistory) ? rawHistory : [];
   const messages = Array.isArray(toastHistory) ? toastHistory : [];
   const [tab, setTab] = React.useState(initialTab === 'messages' && messages.length ? 'messages' : 'hints');
   const hintStatus = isGeneratingExtension
@@ -270,6 +272,7 @@ function HintsModal({
             onClick={handleGenerateLessonIdeas}
             disabled={isGeneratingExtension || history.length === 0 || hintsAiOff}
             aria-busy={isGeneratingExtension}
+            aria-describedby={(hintsAiOff || history.length === 0) ? 'hints-generate-disabled-reason' : undefined}
             title={hintsAiTitle}
             className="w-full min-h-11 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center justify-center gap-2"
             data-help-key="hints_generate_extension"
@@ -277,6 +280,13 @@ function HintsModal({
             {isGeneratingExtension ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Sparkles size={16} className="text-yellow-400 fill-current" aria-hidden="true"/>}
             {isGeneratingExtension ? t('hints.synthesizing') : t('hints.generate_extensions')}
           </button>
+          {(hintsAiOff || history.length === 0) && (
+            <p id="hints-generate-disabled-reason" className="mt-2 text-center text-xs font-medium text-slate-600">
+              {hintsAiOff
+                ? (hintsAiTitle || t?.('hints.ai_unavailable') || 'AI lesson ideas are unavailable right now. Connect an AI provider to generate new ideas.')
+                : (t?.('hints.need_history_reason') || 'Create or open a lesson resource first to generate extension ideas.')}
+            </p>
+          )}
         </div>
         </>)}
         <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{hintStatus}</div>

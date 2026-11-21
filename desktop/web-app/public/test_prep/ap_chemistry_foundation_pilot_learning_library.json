@@ -11327,11 +11327,483 @@
       "foundationPrototype": true
     }
   ],
+  "diagrams": [
+    {
+      "id": "ap-chem-flow-01",
+      "domainId": "atomic-structure-and-properties",
+      "title": "Coulombic attraction, electron configuration, and periodic trend flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "evidence",
+            "label": "Mass spec & PES reveal isotopes and subshell energies"
+          },
+          {
+            "id": "config",
+            "label": "Write electron configuration & valence shell"
+          },
+          {
+            "id": "coulomb",
+            "label": "Compare effective nuclear charge & shell distance"
+          },
+          {
+            "id": "trends",
+            "label": "Justify radius, ionization energy, and electronegativity"
+          }
+        ],
+        "edges": [
+          {
+            "from": "evidence",
+            "to": "config"
+          },
+          {
+            "from": "config",
+            "to": "coulomb"
+          },
+          {
+            "from": "coulomb",
+            "to": "trends"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Mass spectra establish isotopic abundance and average atomic mass, while photoelectron spectra show subshell binding energies and electron counts.",
+          "Ground-state electron configurations identify occupied shells, valence electrons, and core shielding.",
+          "Coulomb law links stronger attraction to higher effective nuclear charge across a period and weaker attraction to greater shell distance down a group.",
+          "Those electrostatic comparisons explain atomic and ionic radii, ionization-energy jumps, electron affinity, and periodic reactivity."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-flow-02",
+      "domainId": "compound-structure-and-properties",
+      "title": "Bonding model, Lewis structure, and VSEPR geometry flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "bonding",
+            "label": "Classify ionic, metallic, or covalent by electronegativity"
+          },
+          {
+            "id": "lewis",
+            "label": "Draw Lewis structure, formal charges, & resonance"
+          },
+          {
+            "id": "vsepr",
+            "label": "Determine electron domains, hybridization, & shape"
+          },
+          {
+            "id": "polarity",
+            "label": "Combine bond dipoles & symmetry to predict polarity"
+          }
+        ],
+        "edges": [
+          {
+            "from": "bonding",
+            "to": "lewis"
+          },
+          {
+            "from": "lewis",
+            "to": "vsepr"
+          },
+          {
+            "from": "vsepr",
+            "to": "polarity"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Electronegativity differences and elemental classes distinguish ionic lattices, delocalized metallic bonding, and localized covalent sharing.",
+          "Lewis structures minimize formal charges and represent delocalized bonding with equivalent resonance forms of fractional bond order.",
+          "VSEPR counts bonding and nonbonding electron domains around central atoms to assign molecular geometry, bond angles, and hybridization.",
+          "Vector addition of bond dipoles across the 3D geometry determines whether the molecule has a net dipole moment."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-flow-03",
+      "domainId": "properties-of-substances-and-mixtures",
+      "title": "Intermolecular forces, gas behavior, and solution-spectroscopy flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "imf",
+            "label": "Rank LDF, dipole-dipole, H-bonding, & ion-dipole forces"
+          },
+          {
+            "id": "macro",
+            "label": "Connect IMF strength to boiling point, vapor pressure, & solubility"
+          },
+          {
+            "id": "gases",
+            "label": "Apply KMT, PV=nRT, Dalton partial pressures, & deviations"
+          },
+          {
+            "id": "beer",
+            "label": "Use Beer-Lambert law A=ebc & chromatography for mixtures"
+          }
+        ],
+        "edges": [
+          {
+            "from": "imf",
+            "to": "macro"
+          },
+          {
+            "from": "macro",
+            "to": "gases"
+          },
+          {
+            "from": "gases",
+            "to": "beer"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Molecular polarizability, permanent dipoles, and N/O/F-H donors determine the intermolecular forces acting between particles.",
+          "Stronger intermolecular attractions raise boiling points, lower vapor pressures, and govern like-dissolves-like solubility and chromatography retention.",
+          "Kinetic molecular theory links temperature to average kinetic energy, while real gases deviate from PV=nRT at high pressure and low temperature.",
+          "Spectrophotometry relates absorbance linearly to molar concentration (A=ebc) when path length and wavelength are held constant."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-flow-04",
+      "domainId": "chemical-reactions",
+      "title": "Net ionic equation, stoichiometry, and redox balancing flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "classify",
+            "label": "Identify precipitation, acid-base, or oxidation-reduction"
+          },
+          {
+            "id": "netionic",
+            "label": "Write balanced net ionic equation without spectators"
+          },
+          {
+            "id": "limiting",
+            "label": "Convert masses/molarities to moles & find limiting reactant"
+          },
+          {
+            "id": "yield",
+            "label": "Predict product amounts, excess left, or titration equivalence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "classify",
+            "to": "netionic"
+          },
+          {
+            "from": "netionic",
+            "to": "limiting"
+          },
+          {
+            "from": "limiting",
+            "to": "yield"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Compare reactants and oxidation states to classify the reaction as precipitation, proton transfer, or electron-transfer redox.",
+          "Dissociate strong electrolytes and remove unchanged spectator ions to write a charge- and atom-balanced net ionic equation.",
+          "Convert given masses, volumes, or gas measurements to moles and divide by stoichiometric coefficients to identify the limiting reactant.",
+          "Use mole ratios from the limiting reactant to calculate theoretical yield, remaining excess reactant, or unknown titration molarity."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-flow-05",
+      "domainId": "kinetics",
+      "title": "Rate law determination, collision theory, and mechanism validation flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "data",
+            "label": "Use initial-rate ratios or integrated linear plots for order"
+          },
+          {
+            "id": "ratelaw",
+            "label": "Write rate = k[A]^m[B]^n with consistent units for k"
+          },
+          {
+            "id": "collision",
+            "label": "Link temperature & catalysts to activation energy Ea"
+          },
+          {
+            "id": "mechanism",
+            "label": "Verify elementary steps sum to overall & match rate law"
+          }
+        ],
+        "edges": [
+          {
+            "from": "data",
+            "to": "ratelaw"
+          },
+          {
+            "from": "ratelaw",
+            "to": "collision"
+          },
+          {
+            "from": "collision",
+            "to": "mechanism"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Initial-rate experiments isolate each reactant order, while linear plots of [A], ln[A], or 1/[A] vs. time identify 0th, 1st, or 2nd order.",
+          "Combine experimentally determined orders into the rate law and match the units of rate constant k to the overall order.",
+          "Higher temperature increases collision frequency and the fraction of molecules exceeding Ea, whereas a catalyst provides an alternate lower-Ea pathway.",
+          "A valid mechanism sums to the overall balanced equation and its slow step (after substituting any fast-equilibrium intermediate) reproduces the experimental rate law."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-flow-06",
+      "domainId": "thermochemistry",
+      "title": "Energy conservation, calorimetry, and enthalpy-calculation flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "system",
+            "label": "Define system vs. surroundings & track sign of q"
+          },
+          {
+            "id": "calorimetry",
+            "label": "Compute q = mc delta T & phase-change heat"
+          },
+          {
+            "id": "enthalpy",
+            "label": "Calculate delta H via Hess law, formations, or bond energies"
+          },
+          {
+            "id": "molar",
+            "label": "Scale delta H by limiting moles & verify endo/exothermic"
+          }
+        ],
+        "edges": [
+          {
+            "from": "system",
+            "to": "calorimetry"
+          },
+          {
+            "from": "calorimetry",
+            "to": "enthalpy"
+          },
+          {
+            "from": "enthalpy",
+            "to": "molar"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Separate the reacting system from the surrounding water or calorimeter so heat lost by one equals heat gained by the other (q_sys = -q_surr).",
+          "Apply q = m c delta T during temperature changes and use molar enthalpy of fusion or vaporization during constant-temperature phase transitions.",
+          "Determine reaction enthalpy via Hess law, standard enthalpies of formation (products minus reactants), or bond energies (broken minus formed).",
+          "Divide measured heat by moles of limiting reactant to report molar delta H with the correct sign and kilojoules-per-mole units."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-flow-07",
+      "domainId": "equilibrium",
+      "title": "Reaction quotient Q vs. K, ICE tables, and Le Chatelier flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "expression",
+            "label": "Write Q and K excluding pure solids and liquids"
+          },
+          {
+            "id": "compare",
+            "label": "Compare Q to K to predict forward or reverse shift"
+          },
+          {
+            "id": "ice",
+            "label": "Set up ICE table with stoichiometry & solve for x"
+          },
+          {
+            "id": "stress",
+            "label": "Distinguish concentration/pressure shifts from T changing K"
+          }
+        ],
+        "edges": [
+          {
+            "from": "expression",
+            "to": "compare"
+          },
+          {
+            "from": "compare",
+            "to": "ice"
+          },
+          {
+            "from": "ice",
+            "to": "stress"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Write the mass-action expression Q or K using aqueous concentrations or partial pressures raised to stoichiometric coefficients, omitting pure solids and liquids.",
+          "Compare initial Q to K: Q < K shifts forward toward products, Q > K shifts reverse toward reactants, and Q = K is at dynamic equilibrium.",
+          "Use an ICE table (and verify any small-x approximation) to compute equilibrium concentrations or molar solubility from Ksp.",
+          "Concentration, volume, and common-ion stresses change Q while K stays constant; only changing temperature alters the equilibrium constant K itself."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-flow-08",
+      "domainId": "acids-and-bases",
+      "title": "Acid-base strength, titration curve, and buffer-capacity flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "species",
+            "label": "Identify strong vs. weak acid/base & conjugate pair"
+          },
+          {
+            "id": "stoich",
+            "label": "Run limiting-reactant neutralization in moles first"
+          },
+          {
+            "id": "equil",
+            "label": "Select Ka/Kb ICE, Henderson-Hasselbalch, or hydrolysis"
+          },
+          {
+            "id": "curve",
+            "label": "Check half-equivalence (pH=pKa), equivalence pH, & buffer range"
+          }
+        ],
+        "edges": [
+          {
+            "from": "species",
+            "to": "stoich"
+          },
+          {
+            "from": "stoich",
+            "to": "equil"
+          },
+          {
+            "from": "equil",
+            "to": "curve"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Distinguish strong acids and bases that dissociate completely from weak conjugate pairs governed by Ka, Kb, and Kw = Ka Kb.",
+          "When acid and base mix, perform stoichiometric neutralization in moles first before applying equilibrium expressions.",
+          "Use Henderson-Hasselbalch (pH = pKa + log([A-]/[HA])) inside the buffer region, and conjugate hydrolysis ICE tables at the equivalence point.",
+          "Verify that pH equals pKa at half-equivalence, equivalence pH reflects the surviving conjugate ion, and higher conjugate concentrations raise buffer capacity."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-flow-09",
+      "domainId": "thermodynamics-and-electrochemistry",
+      "title": "Entropy, Gibbs free energy, equilibrium K, and electrochemical cell flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "deltaG",
+            "label": "Combine delta H and delta S via delta G = delta H - T delta S"
+          },
+          {
+            "id": "linkK",
+            "label": "Connect delta G° = -RT ln K to thermodynamic favorability"
+          },
+          {
+            "id": "cell",
+            "label": "Compute E°_cell = E°_cathode - E°_anode & delta G° = -nFE°"
+          },
+          {
+            "id": "faraday",
+            "label": "Use Nernst trends for Q and I*t = nF for electrolysis"
+          }
+        ],
+        "edges": [
+          {
+            "from": "deltaG",
+            "to": "linkK"
+          },
+          {
+            "from": "linkK",
+            "to": "cell"
+          },
+          {
+            "from": "cell",
+            "to": "faraday"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Evaluate enthalpy and entropy signs in delta G = delta H - T delta S to decide whether a process is favorable at all, high, low, or no temperatures.",
+          "Link standard free energy to equilibrium via delta G° = -RT ln K (delta G° < 0 corresponds to K > 1), while recognizing kinetics still controls rate.",
+          "In galvanic cells, reduction occurs at the cathode and oxidation at the anode with positive E°_cell and negative delta G° = -nFE°.",
+          "Use Q vs. 1 to predict Nernst voltage shifts under nonstandard concentrations, and use charge Q = I t with Faraday constant F for electrolytic stoichiometry."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    }
+  ],
   "flashcards": [
     {
       "id": "ap-chem-card-01",
       "chapterId": "ap-chem-ch-01",
+      "sectionId": "ap-chem-ch-01-section-01",
       "domainId": "atomic-structure-and-properties",
+      "domain": "Atomic Structure and Properties",
       "front": "What is the central reasoning move for Unit 1: Atomic Structure and Properties?",
       "back": "Connect moles, isotopes, electron configurations, and periodic trends to observable chemical properties.",
       "references": [
@@ -11343,9 +11815,43 @@
       "releaseEligible": false
     },
     {
+      "id": "ap-chem-card-01-s2",
+      "chapterId": "ap-chem-ch-01",
+      "sectionId": "ap-chem-ch-01-section-02",
+      "domainId": "atomic-structure-and-properties",
+      "domain": "Atomic Structure and Properties",
+      "front": "What key chemical principle and boundary govern Atomic structure and electron configuration?",
+      "back": "The quantum model places electrons in shells and subshells of increasing energy. Electron configurations fill lower-energy subshells first, and the outermost, or valence, electrons determine most chemical behavior.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-card-01-s3",
+      "chapterId": "ap-chem-ch-01",
+      "sectionId": "ap-chem-ch-01-section-03",
+      "domainId": "atomic-structure-and-properties",
+      "domain": "Atomic Structure and Properties",
+      "front": "What key chemical principle and boundary govern Periodic trends and valence electrons?",
+      "back": "Periodic trends follow from electron configuration and Coulomb’s law. Across a period, effective nuclear charge rises while the outer shell stays the same, so atomic radius decreases and ionization energy and electronegativity generally increase.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
       "id": "ap-chem-card-02",
       "chapterId": "ap-chem-ch-02",
+      "sectionId": "ap-chem-ch-02-section-01",
       "domainId": "compound-structure-and-properties",
+      "domain": "Compound Structure and Properties",
       "front": "What is the central reasoning move for Unit 2: Compound Structure and Properties?",
       "back": "Use Lewis, resonance, VSEPR, and bonding-energy models to predict compound structure and behavior.",
       "references": [
@@ -11357,9 +11863,43 @@
       "releaseEligible": false
     },
     {
+      "id": "ap-chem-card-02-s2",
+      "chapterId": "ap-chem-ch-02",
+      "sectionId": "ap-chem-ch-02-section-02",
+      "domainId": "compound-structure-and-properties",
+      "domain": "Compound Structure and Properties",
+      "front": "What key chemical principle and boundary govern Types of bonds and bond energy?",
+      "back": "Bond type depends on the electronegativity of the atoms involved. Large differences give ionic bonds in which electrons transfer and ions attract; small differences give covalent bonds in which electrons are shared, polar when the sharing is unequal.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-card-02-s3",
+      "chapterId": "ap-chem-ch-02",
+      "sectionId": "ap-chem-ch-02-section-03",
+      "domainId": "compound-structure-and-properties",
+      "domain": "Compound Structure and Properties",
+      "front": "What key chemical principle and boundary govern Ionic and metallic solids, and alloys?",
+      "back": "In an ionic solid, cations and anions occupy a repeating lattice held by electrostatic attraction in every direction. Lattice energy grows with ion charge and shrinks as ion size increases, which explains high melting points and brittleness: shifting the lattice brings like charges together and it fractures.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
       "id": "ap-chem-card-03",
       "chapterId": "ap-chem-ch-03",
+      "sectionId": "ap-chem-ch-03-section-01",
       "domainId": "properties-of-substances-and-mixtures",
+      "domain": "Properties of Substances and Mixtures",
       "front": "What is the central reasoning move for Unit 3: Properties of Substances and Mixtures?",
       "back": "Translate among particle, mathematical, and macroscopic representations of substances and mixtures.",
       "references": [
@@ -11371,9 +11911,43 @@
       "releaseEligible": false
     },
     {
+      "id": "ap-chem-card-03-s2",
+      "chapterId": "ap-chem-ch-03",
+      "sectionId": "ap-chem-ch-03-section-02",
+      "domainId": "properties-of-substances-and-mixtures",
+      "domain": "Properties of Substances and Mixtures",
+      "front": "What key chemical principle and boundary govern Gases: the ideal gas law and kinetic molecular theory?",
+      "back": "The ideal gas law, PV equals nRT, relates pressure, volume, amount, and temperature for a gas whose particles are treated as points that do not attract one another. Kinetic molecular theory supplies the picture: particles move randomly, collisions with the walls create pressure, and average kinetic energy depends only on temperature, so at a given temperature lighter particles move faster.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-card-03-s3",
+      "chapterId": "ap-chem-ch-03",
+      "sectionId": "ap-chem-ch-03-section-03",
+      "domainId": "properties-of-substances-and-mixtures",
+      "domain": "Properties of Substances and Mixtures",
+      "front": "What key chemical principle and boundary govern Solutions, separations, and spectroscopy?",
+      "back": "A solution is a homogeneous mixture whose composition is expressed as molarity, moles of solute per liter of solution. Particle-level pictures show solvent molecules surrounding dissolved ions or molecules; solubility depends on whether solute-solvent attractions compete with the attractions each had before mixing, which is why polar solutes dissolve in polar solvents.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
       "id": "ap-chem-card-04",
       "chapterId": "ap-chem-ch-04",
+      "sectionId": "ap-chem-ch-04-section-01",
       "domainId": "chemical-reactions",
+      "domain": "Chemical Reactions",
       "front": "What is the central reasoning move for Unit 4: Chemical Reactions?",
       "back": "Balance and interpret reaction equations, net ionic equations, stoichiometric ratios, titrations, and redox changes.",
       "references": [
@@ -11385,9 +11959,43 @@
       "releaseEligible": false
     },
     {
+      "id": "ap-chem-card-04-s2",
+      "chapterId": "ap-chem-ch-04",
+      "sectionId": "ap-chem-ch-04-section-02",
+      "domainId": "chemical-reactions",
+      "domain": "Chemical Reactions",
+      "front": "What key chemical principle and boundary govern Stoichiometry and titration?",
+      "back": "A balanced equation gives mole ratios between reactants and products, and stoichiometry uses those ratios with molar masses and molarities to convert between masses, moles, volumes of solution, and volumes of gas. When reactants are not present in the exact ratio, the limiting reactant is consumed first and sets the maximum product; the other reactant is in excess.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-card-04-s3",
+      "chapterId": "ap-chem-ch-04",
+      "sectionId": "ap-chem-ch-04-section-03",
+      "domainId": "chemical-reactions",
+      "domain": "Chemical Reactions",
+      "front": "What key chemical principle and boundary govern Reaction types: acid-base and redox?",
+      "back": "Chemical reactions are classified by what is transferred or rearranged. Precipitation reactions form an insoluble product from dissolved ions.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
       "id": "ap-chem-card-05",
       "chapterId": "ap-chem-ch-05",
+      "sectionId": "ap-chem-ch-05-section-01",
       "domainId": "kinetics",
+      "domain": "Kinetics",
       "front": "What is the central reasoning move for Unit 5: Kinetics?",
       "back": "Use rate data and energy profiles to infer rate laws, mechanisms, catalysts, and controlling steps.",
       "references": [
@@ -11399,9 +12007,43 @@
       "releaseEligible": false
     },
     {
+      "id": "ap-chem-card-05-s2",
+      "chapterId": "ap-chem-ch-05",
+      "sectionId": "ap-chem-ch-05-section-02",
+      "domainId": "kinetics",
+      "domain": "Kinetics",
+      "front": "What key chemical principle and boundary govern Collision model and reaction energy profiles?",
+      "back": "An elementary reaction happens in a single step, and its rate law follows directly from its molecularity: a unimolecular step is first order and a bimolecular step is second order overall. The collision model explains why: reaction requires particles to collide with enough energy to overcome the activation barrier and with a suitable orientation.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-card-05-s3",
+      "chapterId": "ap-chem-ch-05",
+      "sectionId": "ap-chem-ch-05-section-03",
+      "domainId": "kinetics",
+      "domain": "Kinetics",
+      "front": "What key chemical principle and boundary govern Reaction mechanisms and catalysis?",
+      "back": "A mechanism is a sequence of elementary steps that adds up to the overall reaction. Species that appear in one step and are consumed in a later one are intermediates; they never appear in the overall equation.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
       "id": "ap-chem-card-06",
       "chapterId": "ap-chem-ch-06",
+      "sectionId": "ap-chem-ch-06-section-01",
       "domainId": "thermochemistry",
+      "domain": "Thermochemistry",
       "front": "What is the central reasoning move for Unit 6: Thermochemistry?",
       "back": "Calculate and explain heat and enthalpy changes using multiple consistent representations.",
       "references": [
@@ -11413,9 +12055,43 @@
       "releaseEligible": false
     },
     {
+      "id": "ap-chem-card-06-s2",
+      "chapterId": "ap-chem-ch-06",
+      "sectionId": "ap-chem-ch-06-section-02",
+      "domainId": "thermochemistry",
+      "domain": "Thermochemistry",
+      "front": "What key chemical principle and boundary govern Calorimetry and the energy of phase changes?",
+      "back": "Heat capacity is the energy needed to raise the temperature of an object by one kelvin, and specific heat capacity is the same quantity per gram. The heat transferred in a temperature change is the mass times the specific heat times the temperature change, q equals mcΔT.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-card-06-s3",
+      "chapterId": "ap-chem-ch-06",
+      "sectionId": "ap-chem-ch-06-section-03",
+      "domainId": "thermochemistry",
+      "domain": "Thermochemistry",
+      "front": "What key chemical principle and boundary govern Enthalpy of reaction: bond enthalpies, formation, and Hess’s law?",
+      "back": "The enthalpy change of a reaction is the energy transferred as heat at constant pressure, negative for exothermic and positive for endothermic reactions, and it scales with the amount of reaction that occurs. It can be estimated from bond enthalpies: energy is required to break the bonds in the reactants and released when the bonds in the products form, so ΔH is approximately the sum of bonds broken minus the sum of bonds formed.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
       "id": "ap-chem-card-07",
       "chapterId": "ap-chem-ch-07",
+      "sectionId": "ap-chem-ch-07-section-01",
       "domainId": "equilibrium",
+      "domain": "Equilibrium",
       "front": "What is the central reasoning move for Unit 7: Equilibrium?",
       "back": "Use reaction quotients, equilibrium constants, ICE reasoning, and Le Chatelier models to analyze reversible systems.",
       "references": [
@@ -11427,9 +12103,43 @@
       "releaseEligible": false
     },
     {
+      "id": "ap-chem-card-07-s2",
+      "chapterId": "ap-chem-ch-07",
+      "sectionId": "ap-chem-ch-07-section-02",
+      "domainId": "equilibrium",
+      "domain": "Equilibrium",
+      "front": "What key chemical principle and boundary govern Calculating and interpreting the equilibrium constant?",
+      "back": "The equilibrium constant K is the ratio of product concentrations to reactant concentrations at equilibrium, each raised to its coefficient, with pure solids and liquids omitted. A very large K means the reaction goes nearly to completion and a very small K means it barely proceeds; a K near 1 means substantial amounts of both remain.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-card-07-s3",
+      "chapterId": "ap-chem-ch-07",
+      "sectionId": "ap-chem-ch-07-section-03",
+      "domainId": "equilibrium",
+      "domain": "Equilibrium",
+      "front": "What key chemical principle and boundary govern Solubility equilibria and the common-ion effect?",
+      "back": "A sparingly soluble ionic solid establishes an equilibrium with its dissolved ions, described by the solubility product Ksp, which is the product of the ion concentrations raised to their coefficients. Ksp can be found from a measured solubility and, in reverse, molar solubility can be calculated from Ksp using the stoichiometry of dissolution.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
       "id": "ap-chem-card-08",
       "chapterId": "ap-chem-ch-08",
+      "sectionId": "ap-chem-ch-08-section-01",
       "domainId": "acids-and-bases",
+      "domain": "Acids and Bases",
       "front": "What is the central reasoning move for Unit 8: Acids and Bases?",
       "back": "Analyze pH, pKa, conjugate pairs, titration regions, buffers, and acid-base solubility effects.",
       "references": [
@@ -11441,11 +12151,77 @@
       "releaseEligible": false
     },
     {
+      "id": "ap-chem-card-08-s2",
+      "chapterId": "ap-chem-ch-08",
+      "sectionId": "ap-chem-ch-08-section-02",
+      "domainId": "acids-and-bases",
+      "domain": "Acids and Bases",
+      "front": "What key chemical principle and boundary govern Acid-base titrations and the molecular structure of acids?",
+      "back": "Neutralization between an acid and a base produces water and a salt, and the pH of the resulting solution depends on whether the reactants were strong or weak. A titration curve of pH against volume of titrant reveals this: a strong acid with a strong base gives an equivalence point at pH 7, while a weak acid gives an equivalence point above 7 because its conjugate base remains.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-card-08-s3",
+      "chapterId": "ap-chem-ch-08",
+      "sectionId": "ap-chem-ch-08-section-03",
+      "domainId": "acids-and-bases",
+      "domain": "Acids and Bases",
+      "front": "What key chemical principle and boundary govern Buffers: pKa, Henderson-Hasselbalch, capacity, and solubility?",
+      "back": "A buffer is a solution of a weak acid and its conjugate base, or a weak base and its conjugate acid, that resists changes in pH. Added acid is consumed by the conjugate base and added base by the weak acid, so the ratio of the two changes only slightly.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
       "id": "ap-chem-card-09",
       "chapterId": "ap-chem-ch-09",
+      "sectionId": "ap-chem-ch-09-section-01",
       "domainId": "thermodynamics-and-electrochemistry",
+      "domain": "Thermodynamics and Electrochemistry",
       "front": "What is the central reasoning move for Unit 9: Thermodynamics and Electrochemistry?",
       "back": "Use thermodynamic and electrochemical relationships to analyze spontaneity, cell potentials, nonstandard conditions, and electrolysis.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-card-09-s2",
+      "chapterId": "ap-chem-ch-09",
+      "sectionId": "ap-chem-ch-09-section-02",
+      "domainId": "thermodynamics-and-electrochemistry",
+      "domain": "Thermodynamics and Electrochemistry",
+      "front": "What key chemical principle and boundary govern Free energy, equilibrium, and coupled reactions?",
+      "back": "A reaction can be thermodynamically favorable yet proceed imperceptibly slowly if its activation energy is large, so favorability and rate are separate questions: thermodynamic control asks whether products are lower in free energy, and kinetic control asks whether the barrier can be crossed. The standard free energy change is related to the equilibrium constant by ΔG° equals −RT ln K, so a negative ΔG° means K is greater than 1 and products are favored at equilibrium, while ΔG° of zero means K equals 1.",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-chemistry",
+        "https://openstax.org/details/books/chemistry-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-card-09-s3",
+      "chapterId": "ap-chem-ch-09",
+      "sectionId": "ap-chem-ch-09-section-03",
+      "domainId": "thermodynamics-and-electrochemistry",
+      "domain": "Thermodynamics and Electrochemistry",
+      "front": "What key chemical principle and boundary govern Electrochemical cells and electrolysis?",
+      "back": "An electrochemical cell separates the oxidation and reduction halves of a redox reaction so that electrons flow through an external circuit. In a galvanic cell the reaction is favorable and produces electrical energy: oxidation occurs at the anode, reduction at the cathode, electrons flow from anode to cathode, and a salt bridge keeps the solutions electrically neutral.",
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
         "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -11460,8 +12236,17 @@
       "id": "ap-chem-aid-01",
       "chapterId": "ap-chem-ch-01",
       "domainId": "atomic-structure-and-properties",
+      "domain": "Atomic Structure and Properties",
+      "type": "reasoning cue",
       "title": "Atomic Structure and Properties reasoning cue",
-      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports.",
+      "content": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: mole, isotope, electron configuration.",
+      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: mole, isotope, electron configuration.",
+      "tags": [
+        "mole",
+        "isotope",
+        "electron configuration",
+        "photoelectron spectrum"
+      ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
         "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -11474,8 +12259,17 @@
       "id": "ap-chem-aid-02",
       "chapterId": "ap-chem-ch-02",
       "domainId": "compound-structure-and-properties",
+      "domain": "Compound Structure and Properties",
+      "type": "reasoning cue",
       "title": "Compound Structure and Properties reasoning cue",
-      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports.",
+      "content": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: Lewis diagram, formal charge, resonance.",
+      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: Lewis diagram, formal charge, resonance.",
+      "tags": [
+        "Lewis diagram",
+        "formal charge",
+        "resonance",
+        "VSEPR"
+      ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
         "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -11488,8 +12282,17 @@
       "id": "ap-chem-aid-03",
       "chapterId": "ap-chem-ch-03",
       "domainId": "properties-of-substances-and-mixtures",
+      "domain": "Properties of Substances and Mixtures",
+      "type": "reasoning cue",
       "title": "Properties of Substances and Mixtures reasoning cue",
-      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports.",
+      "content": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: intermolecular force, ideal gas, molarity.",
+      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: intermolecular force, ideal gas, molarity.",
+      "tags": [
+        "intermolecular force",
+        "ideal gas",
+        "molarity",
+        "solubility"
+      ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
         "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -11502,8 +12305,17 @@
       "id": "ap-chem-aid-04",
       "chapterId": "ap-chem-ch-04",
       "domainId": "chemical-reactions",
+      "domain": "Chemical Reactions",
+      "type": "reasoning cue",
       "title": "Chemical Reactions reasoning cue",
-      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports.",
+      "content": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: net ionic equation, stoichiometry, limiting reactant.",
+      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: net ionic equation, stoichiometry, limiting reactant.",
+      "tags": [
+        "net ionic equation",
+        "stoichiometry",
+        "limiting reactant",
+        "titration"
+      ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
         "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -11516,8 +12328,17 @@
       "id": "ap-chem-aid-05",
       "chapterId": "ap-chem-ch-05",
       "domainId": "kinetics",
+      "domain": "Kinetics",
+      "type": "reasoning cue",
       "title": "Kinetics reasoning cue",
-      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports.",
+      "content": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: rate law, reaction order, activation energy.",
+      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: rate law, reaction order, activation energy.",
+      "tags": [
+        "rate law",
+        "reaction order",
+        "activation energy",
+        "elementary step"
+      ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
         "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -11530,8 +12351,17 @@
       "id": "ap-chem-aid-06",
       "chapterId": "ap-chem-ch-06",
       "domainId": "thermochemistry",
+      "domain": "Thermochemistry",
+      "type": "reasoning cue",
       "title": "Thermochemistry reasoning cue",
-      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports.",
+      "content": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: enthalpy, calorimetry, specific heat.",
+      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: enthalpy, calorimetry, specific heat.",
+      "tags": [
+        "enthalpy",
+        "calorimetry",
+        "specific heat",
+        "Hess law"
+      ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
         "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -11544,8 +12374,17 @@
       "id": "ap-chem-aid-07",
       "chapterId": "ap-chem-ch-07",
       "domainId": "equilibrium",
+      "domain": "Equilibrium",
+      "type": "reasoning cue",
       "title": "Equilibrium reasoning cue",
-      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports.",
+      "content": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: dynamic equilibrium, reaction quotient, equilibrium constant.",
+      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: dynamic equilibrium, reaction quotient, equilibrium constant.",
+      "tags": [
+        "dynamic equilibrium",
+        "reaction quotient",
+        "equilibrium constant",
+        "ICE table"
+      ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
         "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -11558,8 +12397,17 @@
       "id": "ap-chem-aid-08",
       "chapterId": "ap-chem-ch-08",
       "domainId": "acids-and-bases",
+      "domain": "Acids and Bases",
+      "type": "reasoning cue",
       "title": "Acids and Bases reasoning cue",
-      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports.",
+      "content": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: Brønsted-Lowry acid, pH, pKa.",
+      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: Brønsted-Lowry acid, pH, pKa.",
+      "tags": [
+        "Brønsted-Lowry acid",
+        "pH",
+        "pKa",
+        "buffer"
+      ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
         "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -11572,8 +12420,17 @@
       "id": "ap-chem-aid-09",
       "chapterId": "ap-chem-ch-09",
       "domainId": "thermodynamics-and-electrochemistry",
+      "domain": "Thermodynamics and Electrochemistry",
+      "type": "reasoning cue",
       "title": "Thermodynamics and Electrochemistry reasoning cue",
-      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports.",
+      "content": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: entropy, Gibbs free energy, galvanic cell.",
+      "text": "Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: entropy, Gibbs free energy, galvanic cell.",
+      "tags": [
+        "entropy",
+        "Gibbs free energy",
+        "galvanic cell",
+        "cell potential"
+      ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
         "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -11583,7 +12440,80 @@
       "releaseEligible": false
     }
   ],
-  "diagramPlacements": [],
+  "diagramPlacements": [
+    {
+      "id": "ap-chem-placement-01",
+      "diagramId": "ap-chem-flow-01",
+      "sectionId": "ap-chem-ch-01-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-placement-02",
+      "diagramId": "ap-chem-flow-02",
+      "sectionId": "ap-chem-ch-02-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-placement-03",
+      "diagramId": "ap-chem-flow-03",
+      "sectionId": "ap-chem-ch-03-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-placement-04",
+      "diagramId": "ap-chem-flow-04",
+      "sectionId": "ap-chem-ch-04-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-placement-05",
+      "diagramId": "ap-chem-flow-05",
+      "sectionId": "ap-chem-ch-05-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-placement-06",
+      "diagramId": "ap-chem-flow-06",
+      "sectionId": "ap-chem-ch-06-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-placement-07",
+      "diagramId": "ap-chem-flow-07",
+      "sectionId": "ap-chem-ch-07-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-placement-08",
+      "diagramId": "ap-chem-flow-08",
+      "sectionId": "ap-chem-ch-08-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chem-placement-09",
+      "diagramId": "ap-chem-flow-09",
+      "sectionId": "ap-chem-ch-09-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    }
+  ],
   "constructedResponseWorkshops": [
     {
       "id": "ap-chem-workshop-01",
@@ -12337,15 +13267,15 @@
     "chapters": 9,
     "sections": 27,
     "knowledgeChecks": 27,
-    "flashcards": 9,
+    "flashcards": 27,
     "memoryAids": 9,
-    "diagrams": 0,
-    "diagramPlacements": 0,
+    "diagrams": 9,
+    "diagramPlacements": 9,
     "constructedResponseWorkshops": 9,
     "sourceReviewedConstructedResponseWorkshops": 9,
     "richLessonPrototypes": 9,
     "sourceReviewedChapters": 9,
-    "sourceReviewedFlashcards": 9,
+    "sourceReviewedFlashcards": 27,
     "sourceReviewedMemoryAids": 9,
     "releaseEligibleRecords": 0
   },

@@ -2458,7 +2458,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // that is not true. It is labelled as compressed.
     var dy = function(m) { return TOP + Math.sqrt(Math.max(0, m) / MAXM) * (BOT - TOP); };
     var LIGHT_SHADE = { 'bright': 0.0, 'bright to dim': 0.22, 'dim': 0.45, 'twilight': 0.68, 'dark': 0.88 };
-    var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: 640, height: 420, fill: '#0a2540' })];
+    var kids = [
+      h('defs', { key: 'defs' }, [
+        h('linearGradient', { key: 'og', id: 'flWaterColGrad', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+          h('stop', { key: 's0', offset: '0%', stopColor: '#0e4c73' }),
+          h('stop', { key: 's1', offset: '26%', stopColor: '#0a3052' }),
+          h('stop', { key: 's2', offset: '64%', stopColor: '#061a33' }),
+          h('stop', { key: 's3', offset: '100%', stopColor: '#020b18' })
+        ]),
+        h('linearGradient', { key: 'cs', id: 'flColShaft', x1: '0%', y1: '0%', x2: '18%', y2: '100%' }, [
+          h('stop', { key: 'c0', offset: '0%', stopColor: 'rgba(186,230,253,0.34)' }),
+          h('stop', { key: 'c1', offset: '55%', stopColor: 'rgba(56,189,248,0.10)' }),
+          h('stop', { key: 'c2', offset: '100%', stopColor: 'rgba(56,189,248,0)' })
+        ]),
+        h('linearGradient', { key: 'bg2', id: 'flBedGrad', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+          h('stop', { key: 'b0', offset: '0%', stopColor: '#635342' }),
+          h('stop', { key: 'b1', offset: '100%', stopColor: '#2d251d' })
+        ])
+      ]),
+      h('rect', { key: 'bg', x: 0, y: 0, width: 640, height: 420, fill: 'url(#flWaterColGrad)' }),
+      // Sunlit surface caustic shafts penetrating the photic zone
+      h('g', { key: 'shafts', opacity: 0.85 }, [
+        h('polygon', { key: 'sh1', points: (X0 + 36) + ',' + TOP + ' ' + (X0 + 122) + ',' + TOP + ' ' + (X0 + 82) + ',200 ' + (X0 + 12) + ',200', fill: 'url(#flColShaft)' }),
+        h('polygon', { key: 'sh2', points: (X0 + 205) + ',' + TOP + ' ' + (X0 + 305) + ',' + TOP + ' ' + (X0 + 265) + ',220 ' + (X0 + 175) + ',220', fill: 'url(#flColShaft)' }),
+        h('polygon', { key: 'sh3', points: (X0 + 385) + ',' + TOP + ' ' + (X0 + 478) + ',' + TOP + ' ' + (X0 + 438) + ',195 ' + (X0 + 356) + ',195', fill: 'url(#flColShaft)' }),
+        h('path', { key: 'surf', d: 'M' + X0 + ' ' + (TOP + 2) + ' Q' + (X0 + 90) + ' ' + (TOP - 4) + ' ' + (X0 + 180) + ' ' + (TOP + 2) + ' T' + (X0 + 360) + ' ' + (TOP + 2) + ' T' + X1 + ' ' + (TOP + 1), fill: 'none', stroke: 'rgba(186,230,253,0.52)', strokeWidth: 1.8 })
+      ])
+    ];
 
     zones.forEach(function(z, i) {
       var band = getCoreZoneDepths(z);
@@ -2485,7 +2511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // Seabed, carrying the benthic zone.
     var benthic = zones.filter(function(z) { return !getCoreZoneDepths(z); })[0];
     kids.push(h('path', { key: 'floor', d: 'M' + X0 + ' ' + BOT + ' Q' + (X0 + 140) + ' ' + (BOT - 12) + ' ' + (X0 + 260) + ' ' + (BOT - 3) + ' T' + X1 + ' ' + (BOT - 8) + ' L' + X1 + ' 414 L' + X0 + ' 414 Z',
-      fill: '#4a3f34', stroke: 'rgba(226,232,240,0.35)', strokeWidth: 1 }));
+      fill: 'url(#flBedGrad)', stroke: 'rgba(226,232,240,0.40)', strokeWidth: 1.2 }));
     if (benthic) {
       kids.push(h('text', { key: 'bn', x: X0 + 10, y: BOT + 14, fontSize: 11, fontWeight: 800, fill: '#fde68a' }, benthic.zone));
     }
@@ -3218,12 +3244,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // whole point.
     var W = 760, SURF = 84, BED = 288, LANE = BED + 26;
     var k = [];
-    k.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: SURF, fill: 'rgba(12,42,66,0.55)' }));
-    k.push(h('rect', { key: 'sea', x: 0, y: SURF, width: W, height: BED - SURF, fill: 'rgba(30,86,124,0.45)' }));
+    k.push(h('defs', { key: 'defs' }, [
+      h('linearGradient', { key: 'sk', id: 'flGearSky', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+        h('stop', { key: 'a', offset: '0%', stopColor: '#0b2239' }),
+        h('stop', { key: 'b', offset: '100%', stopColor: '#19496e' })
+      ]),
+      h('linearGradient', { key: 'se', id: 'flGearSea', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+        h('stop', { key: 'a', offset: '0%', stopColor: '#125078' }),
+        h('stop', { key: 'b', offset: '52%', stopColor: '#0b3252' }),
+        h('stop', { key: 'c', offset: '100%', stopColor: '#05192e' })
+      ]),
+      h('linearGradient', { key: 'sh', id: 'flGearShaft', x1: '0%', y1: '0%', x2: '20%', y2: '100%' }, [
+        h('stop', { key: 'a', offset: '0%', stopColor: 'rgba(186,230,253,0.28)' }),
+        h('stop', { key: 'b', offset: '100%', stopColor: 'rgba(56,189,248,0)' })
+      ]),
+      h('linearGradient', { key: 'bd', id: 'flGearBed', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+        h('stop', { key: 'a', offset: '0%', stopColor: '#5c4d3c' }),
+        h('stop', { key: 'b', offset: '100%', stopColor: '#2c241b' })
+      ])
+    ]));
+    k.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: SURF, fill: 'url(#flGearSky)' }));
+    k.push(h('rect', { key: 'sea', x: 0, y: SURF, width: W, height: BED - SURF, fill: 'url(#flGearSea)' }));
+    // Sunlit surface caustic shafts & subtle pelagic schooling shimmer
+    k.push(h('g', { key: 'caust', opacity: 0.75 }, [
+      h('polygon', { key: 'cs1', points: '150,' + SURF + ' 225,' + SURF + ' 185,' + BED + ' 118,' + BED, fill: 'url(#flGearShaft)' }),
+      h('polygon', { key: 'cs2', points: '355,' + SURF + ' 442,' + SURF + ' 398,' + BED + ' 318,' + BED, fill: 'url(#flGearShaft)' }),
+      h('polygon', { key: 'cs3', points: '575,' + SURF + ' 660,' + SURF + ' 618,' + BED + ' 542,' + BED, fill: 'url(#flGearShaft)' }),
+      // Subtle schooling baitfish silhouettes shimmering mid-water
+      [[312, 148], [326, 155], [340, 145], [442, 198], [456, 206], [468, 194]].map(function(fp, fi) {
+        return h('path', { key: 'sf' + fi, d: 'M' + fp[0] + ' ' + fp[1] + ' q-6 -3 -12 0 q6 3 12 0 Z', fill: 'rgba(186,230,253,0.28)' });
+      })
+    ]));
     // The bottom shelves up toward the beach, which is what makes wading a
     // gear at all.
     var bedPath = 'M0 ' + (SURF + 26) + ' Q120 ' + (SURF + 40) + ' 208 ' + BED + ' L' + W + ' ' + (BED - 3);
-    k.push(h('path', { key: 'bed', d: bedPath + ' L' + W + ' 344 L0 344 Z', fill: '#4a3f34', stroke: 'rgba(226,232,240,0.3)', strokeWidth: 1 }));
+    k.push(h('path', { key: 'bed', d: bedPath + ' L' + W + ' 344 L0 344 Z', fill: 'url(#flGearBed)', stroke: 'rgba(226,232,240,0.34)', strokeWidth: 1.1 }));
     k.push(h('path', { key: 'shore', d: 'M0 ' + (SURF + 26) + ' L0 26 L34 30 Q58 44 68 ' + (SURF + 2) + ' Q76 ' + (SURF + 16) + ' 62 ' + (SURF + 30) + ' Z', fill: 'rgba(46,84,54,0.85)' }));
     k.push(h('line', { key: 'sl', x1: 0, y1: SURF, x2: W, y2: SURF, stroke: 'rgba(125,211,252,0.7)', strokeWidth: 2 }));
     k.push(h('text', { key: 'st', x: W - 6, y: SURF - 8, textAnchor: 'end', fontSize: 10, fill: '#7dd3fc' }, 'sea surface'));
@@ -3783,9 +3838,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var fishY = SURF + 26 + t * 74;
 
     var kids = [];
-    kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: SURF, fill: 'rgba(12,42,66,0.55)' }));
-    kids.push(h('rect', { key: 'sea', x: 0, y: SURF, width: W, height: H - SURF, fill: 'rgba(24,74,110,0.55)' }));
-    kids.push(h('line', { key: 'sl', x1: 0, y1: SURF, x2: W, y2: SURF, stroke: 'rgba(125,211,252,0.7)', strokeWidth: 2 }));
+    kids.push(h('defs', { key: 'defs' }, [
+      h('linearGradient', { key: 'sk', id: 'flFightSky', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+        h('stop', { key: 'a', offset: '0%', stopColor: '#0b2239' }),
+        h('stop', { key: 'b', offset: '100%', stopColor: '#1b4f75' })
+      ]),
+      h('linearGradient', { key: 'se', id: 'flFightSea', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+        h('stop', { key: 'a', offset: '0%', stopColor: '#145a82' }),
+        h('stop', { key: 'b', offset: '55%', stopColor: '#0b3456' }),
+        h('stop', { key: 'c', offset: '100%', stopColor: '#04172b' })
+      ]),
+      h('linearGradient', { key: 'sh', id: 'flFightShaft', x1: '0%', y1: '0%', x2: '18%', y2: '100%' }, [
+        h('stop', { key: 'a', offset: '0%', stopColor: 'rgba(186,230,253,0.30)' }),
+        h('stop', { key: 'b', offset: '100%', stopColor: 'rgba(56,189,248,0)' })
+      ])
+    ]));
+    kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: SURF, fill: 'url(#flFightSky)' }));
+    kids.push(h('rect', { key: 'sea', x: 0, y: SURF, width: W, height: H - SURF, fill: 'url(#flFightSea)' }));
+    kids.push(h('polygon', { key: 'sh1', points: '175,' + SURF + ' 240,' + SURF + ' 206,' + H + ' 150,' + H, fill: 'url(#flFightShaft)' }));
+    kids.push(h('polygon', { key: 'sh2', points: '298,' + SURF + ' 356,' + SURF + ' 328,' + H + ' 276,' + H, fill: 'url(#flFightShaft)' }));
+    kids.push(h('line', { key: 'sl', x1: 0, y1: SURF, x2: W, y2: SURF, stroke: 'rgba(125,211,252,0.78)', strokeWidth: 2 }));
     // Gunwale the angler is standing behind.
     kids.push(h('path', { key: 'hull', d: 'M0 ' + (SURF - 2) + ' L104 ' + (SURF - 6) + ' L92 ' + (SURF + 20) + ' L0 ' + (SURF + 20) + ' Z', fill: '#dfe7ef', stroke: '#0f172a', strokeWidth: 1.2 }));
     kids.push(h('path', { key: 'rail', d: 'M0 ' + (SURF - 2) + ' L104 ' + (SURF - 6), fill: 'none', stroke: '#35506b', strokeWidth: 3, strokeLinecap: 'round' }));
@@ -3804,11 +3876,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       kids.push(h('path', { key: 'thrum', d: 'M' + tipX + ' ' + (tipY + 2) + ' Q' + midX + ' ' + (midY + 3) + ' ' + fishX + ' ' + fishY,
         fill: 'none', stroke: 'rgba(239,68,68,0.4)', strokeWidth: 1.2 }));
     }
-    // Fish, nose toward the boat, tail kicked over so it reads as fighting.
+    // Fish, nose toward the boat, tail kicked over with specular shimmer, sonar echo ring & wake bubbles.
     kids.push(h('g', { key: 'fish', transform: 'translate(' + fishX.toFixed(1) + ',' + fishY.toFixed(1) + ')' },
-      h('path', { d: 'M0 0 q-16 -11 -34 0 q18 11 34 0 Z', fill: '#7d8ea0', stroke: '#0b1a29', strokeWidth: 1 }),
-      h('path', { d: 'M-34 0 l-12 -8 l4 8 l-4 8 z', fill: '#63758a', stroke: '#0b1a29', strokeWidth: 1 }),
-      h('circle', { cx: -6, cy: -2, r: 1.7, fill: '#0b1a29' })));
+      h('ellipse', { cx: -18, cy: 0, rx: 28, ry: 12, fill: 'none', stroke: 'rgba(56,189,248,0.28)', strokeWidth: 1, strokeDasharray: '3 3' }),
+      h('path', { d: 'M0 0 q-16 -11 -34 0 q18 11 34 0 Z', fill: '#8ba4ba', stroke: '#0b1a29', strokeWidth: 1 }),
+      h('path', { d: 'M-4 -2 q-12 -5 -24 -1', fill: 'none', stroke: 'rgba(224,242,254,0.65)', strokeWidth: 1.4, strokeLinecap: 'round' }),
+      h('path', { d: 'M-34 0 l-12 -8 l4 8 l-4 8 z', fill: '#6b8299', stroke: '#0b1a29', strokeWidth: 1 }),
+      h('circle', { cx: -6, cy: -2, r: 1.7, fill: '#0b1a29' }),
+      h('circle', { cx: -48, cy: -4, r: 2, fill: 'rgba(186,230,253,0.45)' }),
+      h('circle', { cx: -55, cy: 3, r: 1.4, fill: 'rgba(186,230,253,0.35)' })));
     // Depth ticks, so "closer" is legible rather than merely felt.
     [0.33, 0.66].forEach(function(d, i) {
       var y = SURF + (H - SURF) * d;
@@ -5416,8 +5492,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // radar. A real screen shows you only what is inside the range you set.
     defs.push(h('clipPath', { key: 'cp', id: 'flRadarFace' },
       h('circle', { cx: cx, cy: cy, r: R - 1 })));
+    defs.push(h('radialGradient', { key: 'rfg', id: 'flRadarGlow', cx: '50%', cy: '50%', r: '52%' }, [
+      h('stop', { key: 'g0', offset: '0%', stopColor: '#0c3b52' }),
+      h('stop', { key: 'g1', offset: '62%', stopColor: '#052030' }),
+      h('stop', { key: 'g2', offset: '100%', stopColor: '#02101a' })
+    ]));
+    defs.push(h('linearGradient', { key: 'swg', id: 'flSonarSweep', x1: '0%', y1: '100%', x2: '100%', y2: '0%' }, [
+      h('stop', { key: 's0', offset: '0%', stopColor: 'rgba(34,211,238,0.03)' }),
+      h('stop', { key: 's1', offset: '100%', stopColor: 'rgba(34,211,238,0.28)' })
+    ]));
     kids.push(h('defs', { key: 'defs' }, defs));
-    kids.push(h('circle', { key: 'face', cx: cx, cy: cy, r: R, fill: 'rgba(6,30,44,0.95)', stroke: 'rgba(125,211,252,0.7)', strokeWidth: 1.6 }));
+    kids.push(h('circle', { key: 'face', cx: cx, cy: cy, r: R, fill: 'url(#flRadarGlow)', stroke: 'rgba(125,211,252,0.78)', strokeWidth: 1.8 }));
+    // Glowing phosphor sonar sweep sector clipped to scope face
+    kids.push(h('path', { key: 'swp', clipPath: 'url(#flRadarFace)',
+      d: 'M' + cx + ' ' + cy + ' L' + cx + ' ' + (cy - R) + ' A' + R + ' ' + R + ' 0 0 1 ' + (cx + R * 0.707).toFixed(1) + ' ' + (cy - R * 0.707).toFixed(1) + ' Z',
+      fill: 'url(#flSonarSweep)' }));
     // Range rings, labelled. An unlabelled ring tells you a contact is "out
     // there somewhere"; a labelled one tells you how far, which is the number
     // the give-way decision actually turns on.
@@ -5478,10 +5567,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       plotted.push(h('circle', { key: 'p' + i, cx: cx + d.x * scale, cy: cy + d.y * scale, r: 3.4,
         fill: '#7dd3fc', stroke: 'rgba(2,14,24,0.8)', strokeWidth: 0.8, opacity: d.opacity == null ? 0.65 : d.opacity }));
     });
-    // The live contact, ringed so it reads apart from its own history trail.
+    // The live contact, ringed with a luminous heat-echo halo so it reads apart from its history trail.
     if (contact) {
       var tx = cx + contact.x * scale, ty = cy + contact.y * scale;
-      plotted.push(h('circle', { key: 'cth', cx: tx, cy: ty, r: 10, fill: 'none', stroke: ink, strokeWidth: 1, opacity: 0.45 }));
+      plotted.push(h('circle', { key: 'ctb', cx: tx, cy: ty, r: 16, fill: ink, opacity: 0.16 }));
+      plotted.push(h('circle', { key: 'cth', cx: tx, cy: ty, r: 10, fill: 'none', stroke: ink, strokeWidth: 1.2, opacity: 0.55 }));
       plotted.push(h('circle', { key: 'ct', cx: tx, cy: ty, r: 6, fill: ink, stroke: '#020617', strokeWidth: 1.4 }));
     }
     kids.push(h('g', { key: 'plot', clipPath: 'url(#flRadarFace)' }, plotted));
@@ -14488,17 +14578,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // opaque pass (boat, buoys, land) still runs first and still occludes.
     waterMat.depthWrite = false;
     waterMat.vertexColors = true;
-    // A restrained sky reflection at grazing angles keeps dusk water readable.
+    // A restrained sky reflection + directional Gerstner swell + Schlick Fresnel & foam crest highlights.
     // The ripple-perturbed normal drives the reflection, so it follows the sea.
+    var fisherIsHighContrast = function() {
+      try {
+        if (canvas && typeof canvas.closest === 'function' && canvas.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+        var de = document.documentElement;
+        if (de && (de.classList.contains('theme-contrast') || de.getAttribute('data-theme') === 'high-contrast' || de.getAttribute('data-theme') === 'contrast')) return true;
+        if (document.body && document.body.classList.contains('theme-contrast')) return true;
+        if (typeof window !== 'undefined' && window.matchMedia && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+      } catch (eHc) {}
+      return false;
+    };
     var seaSkyTint = { value: new THREE.Color(0x366d8d) };
+    var seaCausticTime = { value: 4.2 };
+    var seaWaveChop = { value: 1.0 };
+    var seaSunDir = { value: new THREE.Vector3(60, 80, 40).normalize() };
+    var seaNightFactor = { value: 0.0 };
+    var seaHighContrast = { value: fisherIsHighContrast() ? 1.0 : 0.0 };
+    waterMat.customProgramCacheKey = function() { return 'fisherlab-gerstner-sea:v2'; };
     waterMat.onBeforeCompile = function(shader) {
       shader.uniforms.fisherSeaSky = seaSkyTint;
+      shader.uniforms.fisherCausticTime = seaCausticTime;
+      shader.uniforms.fisherWaveChop = seaWaveChop;
+      shader.uniforms.fisherSunDir = seaSunDir;
+      shader.uniforms.fisherNight = seaNightFactor;
+      shader.uniforms.fisherHighContrast = seaHighContrast;
       var output = shader.fragmentShader.indexOf('#include <output_fragment>') !== -1 ? '#include <output_fragment>' : 'gl_FragColor = vec4( outgoingLight, diffuseColor.a );';
       waterMat.userData.skyReflection = shader.fragmentShader.indexOf(output) !== -1;
       if (!waterMat.userData.skyReflection) return;
-      shader.fragmentShader = 'uniform vec3 fisherSeaSky;\n' + shader.fragmentShader.replace(output,
-        'float seaReflection = 0.03 + 0.60 * pow(1.0 - clamp(abs(dot(normal, normalize(vViewPosition))), 0.0, 1.0), 5.0);\n' +
-        'outgoingLight = mix(outgoingLight, fisherSeaSky, seaReflection);\n' + output);
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', [
+          '#include <common>',
+          'uniform float fisherCausticTime;',
+          'uniform float fisherWaveChop;',
+          'uniform float fisherHighContrast;',
+          'varying vec2 vFlSeaPos;',
+          'varying float vFlCrest;',
+          'varying vec3 vFlWorldPos;'
+        ].join('\n'))
+        .replace('#include <begin_vertex>', [
+          '#include <begin_vertex>',
+          'vFlSeaPos = position.xy;',
+          'float flSwell1 = sin(position.x * 0.17 + position.y * 0.09 - fisherCausticTime * 1.45);',
+          'float flSwell2 = sin(position.x * 0.11 - position.y * 0.21 + fisherCausticTime * 1.15);',
+          'float flSwell3 = cos((position.x + position.y) * 0.29 - fisherCausticTime * 2.15);',
+          'float flGerstner = (flSwell1 * 0.52 + flSwell2 * 0.30 + flSwell3 * 0.18);',
+          'if (fisherHighContrast < 0.5) {',
+          '  float flAmp = clamp(fisherWaveChop, 0.25, 2.2) * 0.09;',
+          '  transformed.z += flGerstner * flAmp;',
+          '  transformed.x += cos(position.x * 0.17 + position.y * 0.09 - fisherCausticTime * 1.45) * flAmp * 0.45;',
+          '}',
+          'vFlCrest = clamp(0.5 + 0.5 * flGerstner, 0.0, 1.0);',
+          'vFlWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;'
+        ].join('\n'));
+      shader.fragmentShader = [
+        'uniform vec3 fisherSeaSky;',
+        'uniform float fisherCausticTime;',
+        'uniform float fisherWaveChop;',
+        'uniform vec3 fisherSunDir;',
+        'uniform float fisherNight;',
+        'uniform float fisherHighContrast;',
+        'varying vec2 vFlSeaPos;',
+        'varying float vFlCrest;',
+        'varying vec3 vFlWorldPos;',
+        'float flSeaHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }',
+        'float flSeaNoise(vec2 p) {',
+        '  vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);',
+        '  return mix(mix(flSeaHash(i), flSeaHash(i + vec2(1.0, 0.0)), u.x), mix(flSeaHash(i + vec2(0.0, 1.0)), flSeaHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+        '}',
+        'float flSeaFbm(vec2 p) {',
+        '  float v = 0.0; float a = 0.5;',
+        '  for (int i = 0; i < 3; i++) { v += a * flSeaNoise(p); p = p * 2.07 + vec2(13.7, 29.1); a *= 0.5; }',
+        '  return v;',
+        '}'
+      ].join('\n') + '\n' + shader.fragmentShader.replace(output, [
+        'if (fisherHighContrast < 0.5) {',
+        '  vec3 flViewV = normalize(vViewPosition);',
+        '  float flNdotV = clamp(abs(dot(normalize(normal), flViewV)), 0.0, 1.0);',
+        '  float seaReflection = 0.03 + 0.64 * pow(1.0 - flNdotV, 5.0);',
+        '  vec2 flUv = vFlSeaPos * 0.19;',
+        '  float flCap1 = sin(vFlSeaPos.x * 0.42 + fisherCausticTime * 1.35) * cos(vFlSeaPos.y * 0.36 - fisherCausticTime * 1.05);',
+        '  float flCap2 = flSeaFbm(flUv + vec2(fisherCausticTime * 0.14, -fisherCausticTime * 0.09));',
+        '  float caust = pow(clamp(0.5 + 0.5 * flCap1, 0.0, 1.0), 3.6) * 0.11 * (1.0 - fisherNight * 0.72);',
+        '  // Subsurface emerald-turquoise glow through backlit Gerstner wave crests',
+        '  vec3 flSssCol = vec3(0.08, 0.48, 0.54) * pow(vFlCrest, 2.2) * (1.0 - flNdotV * 0.65) * 0.24 * (1.0 - fisherNight * 0.75);',
+        '  // Crisp FBM foam lace along wind-steepened Gerstner crests',
+        '  float flFoamMask = smoothstep(0.66 - min(fisherWaveChop, 2.0) * 0.06, 0.94, vFlCrest + flCap2 * 0.24);',
+        '  float flFoamWeb = smoothstep(0.46, 0.78, flSeaFbm(vFlSeaPos * 0.52 + vec2(fisherCausticTime * 0.22, -fisherCausticTime * 0.16)));',
+        '  float flFoam = flFoamMask * flFoamWeb * (0.28 + 0.34 * clamp(fisherWaveChop, 0.0, 1.5));',
+        '  vec3 flFoamCol = mix(vec3(0.90, 0.96, 1.0), vec3(0.42, 0.52, 0.68), fisherNight);',
+        '  // Sun/moon specular ripple glint',
+        '  vec3 flWView = normalize(cameraPosition - vFlWorldPos);',
+        '  vec3 flWNorm = normalize(vec3(flCap1 * 0.16, 1.0, (flCap2 - 0.5) * 0.22));',
+        '  float flSpec = pow(max(dot(reflect(-normalize(fisherSunDir), flWNorm), flWView), 0.0), 42.0) * (0.22 + 0.28 * (1.0 - fisherNight));',
+        '  vec3 flGlintCol = mix(vec3(1.0, 0.95, 0.82), vec3(0.76, 0.86, 1.0), fisherNight);',
+        '  outgoingLight = mix(outgoingLight + vec3(0.28, 0.76, 0.90) * caust + flSssCol, fisherSeaSky, seaReflection);',
+        '  outgoingLight = mix(outgoingLight, flFoamCol, clamp(flFoam, 0.0, 0.58)) + flGlintCol * flSpec;',
+        '}',
+        output
+      ].join('\n'));
     };
     // Small repeating normal texture adds capillary-scale highlights without
     // another mesh, draw call, remote asset, or extra floating-body displacement.
@@ -14559,6 +14738,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function updateWaterSurface(t, chop) {
       water.userData.seaTime = t;
       water.userData.waveScale = chop;
+      seaCausticTime.value = reducedMotion ? 4.2 : t;
+      seaWaveChop.value = chop;
+      seaHighContrast.value = fisherIsHighContrast() ? 1.0 : 0.0;
       var a1 = 0.15 * chop, a2 = 0.06 * chop, a3 = 0.035 * chop;
       var i, px, py, u, arg;
       for (i = 0; i < WSEG1; i++) {
@@ -15223,6 +15405,200 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           gulls.push(gs);
         }
 
+        // ── 9. Subsurface glowing fish-finder sonar pulse ring + Volumetric 3D Sonar Cone,
+        //    Sunlit Underwater Caustic God-Rays & Bioluminescent Plankton Motes ──
+        var fisherNoRaycast = function() {};
+        var sonarRing = null, sonarMat = null;
+        if (!lowPower && typeof THREE.RingGeometry === 'function') {
+          sonarMat = keep(new THREE.MeshBasicMaterial({
+            color: 0x38bdf8, transparent: true, opacity: 0.22,
+            side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
+          }));
+          sonarRing = add(new THREE.Mesh(keep(new THREE.RingGeometry(1.4, 2.0, 32)), sonarMat));
+          sonarRing.rotation.x = -Math.PI / 2;
+          sonarRing.position.set(0, -0.18, 0);
+          sonarRing.renderOrder = 1;
+          sonarRing.raycast = fisherNoRaycast;
+        }
+        var sonarCone = null, sonarConeMat = null;
+        var godRayGroup = null, godRayMat = null;
+        var planktonPts = null, planktonMat = null;
+        if (typeof THREE.ShaderMaterial === 'function') {
+          // 9a. Sweeping volumetric 3D fish-finder sonar cone beneath vessel hull
+          if (typeof THREE.CylinderGeometry === 'function') {
+            sonarConeMat = keep(new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 4.2 },
+                uNight: { value: 0.0 },
+                uHighContrast: { value: fisherIsHighContrast() ? 1.0 : 0.0 }
+              },
+              vertexShader: [
+                'varying vec2 vUv;',
+                'varying vec3 vLocal;',
+                'varying vec3 vNormalView;',
+                'varying vec3 vViewPos;',
+                'void main() {',
+                '  vUv = uv;',
+                '  vLocal = position;',
+                '  vNormalView = normalize(normalMatrix * normal);',
+                '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                '  vViewPos = -mv.xyz;',
+                '  gl_Position = projectionMatrix * mv;',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uTime;',
+                'uniform float uNight;',
+                'uniform float uHighContrast;',
+                'varying vec2 vUv;',
+                'varying vec3 vLocal;',
+                'varying vec3 vNormalView;',
+                'varying vec3 vViewPos;',
+                'void main() {',
+                '  if (uHighContrast > 0.5) discard;',
+                '  float depthT = 1.0 - vUv.y;',
+                '  float ang = atan(vLocal.z, vLocal.x);',
+                '  float sweep = mod(ang - uTime * 2.15 + 6.2831853, 6.2831853);',
+                '  float beam = exp(-sweep * 2.2) * 0.85 + 0.15;',
+                '  // Downward-propagating acoustic depth ping shells',
+                '  float ping = fract(depthT * 4.5 - uTime * 0.72);',
+                '  float shell = exp(-pow((ping - 0.5) * 9.0, 2.0));',
+                '  // Subtle submerged thermocline / fish-school echo shimmer',
+                '  float schoolArch = exp(-pow((depthT - 0.56) * 14.0, 2.0)) * (0.45 + 0.55 * sin(ang * 5.0 + uTime * 1.4));',
+                '  float fres = pow(1.0 - abs(dot(normalize(vNormalView), normalize(vViewPos))), 1.35);',
+                '  float topFade = smoothstep(0.0, 0.12, depthT);',
+                '  float botFade = smoothstep(1.0, 0.25, depthT);',
+                '  vec3 sonarCyan = vec3(0.14, 0.82, 0.96);',
+                '  vec3 sonarMint = vec3(0.28, 0.96, 0.78);',
+                '  vec3 col = mix(sonarCyan, sonarMint, clamp(shell * 0.6 + schoolArch * 0.8, 0.0, 1.0));',
+                '  float alpha = (0.08 + 0.28 * shell + 0.24 * fres + 0.16 * schoolArch) * beam * topFade * botFade * mix(0.68, 1.05, uNight);',
+                '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.52));',
+                '}'
+              ].join('\n'),
+              transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+            }));
+            sonarCone = add(new THREE.Mesh(keep(new THREE.CylinderGeometry(0.45, 7.2, 13.5, 36, 1, true)), sonarConeMat));
+            sonarCone.name = 'fisherlab-sonar-cone';
+            sonarCone.position.set(0, -6.95, 0);
+            sonarCone.renderOrder = 2;
+            sonarCone.raycast = fisherNoRaycast;
+          }
+
+          // 9b. Sunlit underwater caustic god-ray shafts
+          godRayMat = keep(new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: { value: 4.2 },
+              uSunStrength: { value: 1.0 },
+              uHighContrast: { value: fisherIsHighContrast() ? 1.0 : 0.0 }
+            },
+            vertexShader: [
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vUv = uv;',
+              '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime;',
+              'uniform float uSunStrength;',
+              'uniform float uHighContrast;',
+              'varying vec2 vUv;',
+              'void main() {',
+              '  if (uHighContrast > 0.5 || uSunStrength < 0.04) discard;',
+              '  float shafts = pow(0.5 + 0.5 * sin(vUv.x * 22.0 + uTime * 0.65 + sin(vUv.x * 7.0 - uTime * 0.4)), 3.2);',
+              '  float fine = pow(0.5 + 0.5 * sin(vUv.x * 46.0 - uTime * 1.1), 4.0) * 0.45;',
+              '  float edgeX = smoothstep(0.0, 0.20, vUv.x) * smoothstep(1.0, 0.80, vUv.x);',
+              '  float depthAtten = smoothstep(0.0, 0.85, vUv.y) * smoothstep(1.0, 0.88, vUv.y);',
+              '  vec3 col = mix(vec3(0.18, 0.72, 0.86), vec3(0.74, 0.98, 1.0), vUv.y * 0.75);',
+              '  float alpha = (shafts * 0.75 + fine) * edgeX * depthAtten * 0.24 * uSunStrength;',
+              '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.32));',
+              '}'
+            ].join('\n'),
+            transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+          }));
+          godRayGroup = add(new THREE.Group());
+          godRayGroup.name = 'fisherlab-underwater-godrays';
+          var rayGeo = keep(new THREE.PlaneGeometry(7.2, 15.0));
+          var rayOffsets = [
+            { x: -5.5, z: -4.2, ry: 0.35 },
+            { x: 6.2,  z: -3.5, ry: -0.45 },
+            { x: -3.2, z: 5.8,  ry: 1.15 },
+            { x: 4.8,  z: 5.2,  ry: 2.10 }
+          ];
+          for (var rgi = 0; rgi < rayOffsets.length; rgi++) {
+            var rMesh = new THREE.Mesh(rayGeo, godRayMat);
+            rMesh.position.set(rayOffsets[rgi].x, -7.8, rayOffsets[rgi].z);
+            rMesh.rotation.set(0.24, rayOffsets[rgi].ry, -0.18);
+            rMesh.renderOrder = 1;
+            rMesh.raycast = fisherNoRaycast;
+            godRayGroup.add(rMesh);
+          }
+
+          // 9c. Subtle bioluminescent plankton motes beneath the surface
+          var PLANKTON_N = lowPower ? 40 : 88;
+          var plGeo = keep(new THREE.BufferGeometry());
+          var plPos = new Float32Array(PLANKTON_N * 3);
+          var plPhase = new Float32Array(PLANKTON_N);
+          for (var pki = 0; pki < PLANKTON_N; pki++) {
+            var h1 = ((Math.sin(pki * 127.1 + 31.7) * 43758.5453) % 1 + 1) % 1;
+            var h2 = ((Math.sin(pki * 269.5 + 17.3) * 28001.8384) % 1 + 1) % 1;
+            var h3 = ((Math.sin(pki * 419.2 + 53.9) * 19381.1234) % 1 + 1) % 1;
+            plPos[pki * 3] = (h1 - 0.5) * 44.0;
+            plPos[pki * 3 + 1] = -0.45 - h2 * 7.2;
+            plPos[pki * 3 + 2] = (h3 - 0.5) * 44.0;
+            plPhase[pki] = h1 * 6.283185;
+          }
+          plGeo.setAttribute('position', new THREE.BufferAttribute(plPos, 3));
+          plGeo.setAttribute('aPhase', new THREE.BufferAttribute(plPhase, 1));
+          planktonMat = keep(new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: { value: 4.2 },
+              uNight: { value: 0.0 },
+              uHighContrast: { value: fisherIsHighContrast() ? 1.0 : 0.0 }
+            },
+            vertexShader: [
+              'attribute float aPhase;',
+              'uniform float uTime;',
+              'uniform float uNight;',
+              'varying float vGlow;',
+              'varying float vHue;',
+              'void main() {',
+              '  vec3 p = position;',
+              '  p.x += sin(uTime * 0.55 + aPhase) * 0.65;',
+              '  p.y += cos(uTime * 0.72 + aPhase * 1.3) * 0.28;',
+              '  p.z += cos(uTime * 0.48 + aPhase * 0.9) * 0.65;',
+              '  vGlow = 0.45 + 0.55 * sin(uTime * 2.1 + aPhase * 2.4);',
+              '  vHue = fract(aPhase * 0.37);',
+              '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+              '  float dist = max(-mv.z, 3.0);',
+              '  gl_PointSize = clamp((38.0 + 26.0 * uNight) / dist, 2.5, 11.0);',
+              '  gl_Position = projectionMatrix * mv;',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uNight;',
+              'uniform float uHighContrast;',
+              'varying float vGlow;',
+              'varying float vHue;',
+              'void main() {',
+              '  if (uHighContrast > 0.5) discard;',
+              '  vec2 uv = gl_PointCoord - vec2(0.5);',
+              '  float r = length(uv) * 2.0;',
+              '  if (r > 1.0) discard;',
+              '  float soft = exp(-r * r * 5.2);',
+              '  vec3 col = mix(vec3(0.18, 0.90, 0.96), vec3(0.32, 0.96, 0.72), vHue);',
+              '  float alpha = soft * vGlow * mix(0.24, 0.72, uNight);',
+              '  gl_FragColor = vec4(col, alpha);',
+              '}'
+            ].join('\n'),
+            transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+          }));
+          planktonPts = add(new THREE.Points(plGeo, planktonMat));
+          planktonPts.name = 'fisherlab-biolum-plankton';
+          planktonPts.renderOrder = 2;
+          planktonPts.raycast = fisherNoRaycast;
+        }
+
         // ── env-driven targets (opacities lerp toward these each frame) ──
         var T_ = { disc: 1, glow: 0, glitter: 0.6, rain: 0, stars: 0 };
         var C_ = { disc: 1, glow: 0, glitter: 0, rain: 0, stars: 0 };
@@ -15293,6 +15669,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             T_.glitter = (tod === 'night') ? 0 : (weather === 'foggy') ? 0.06 : (weather === 'rainy') ? 0.1 : (tod === 'sunset') ? 0.5 : 0.6;
             T_.rain = (weather === 'rainy') ? 0.8 : 0;
             T_.stars = (tod === 'night' && weather !== 'foggy' && weather !== 'rainy') ? 1 : 0;
+            // Sync ocean Gerstner / sonar / underwater god-ray / plankton shader uniforms with environment
+            seaNightFactor.value = tod === 'night' ? 1.0 : tod === 'sunset' ? 0.42 : 0.0;
+            seaSunDir.value.copy(sun.position).normalize();
+            if (sonarConeMat) sonarConeMat.uniforms.uNight.value = seaNightFactor.value;
+            if (planktonMat) planktonMat.uniforms.uNight.value = seaNightFactor.value;
+            if (godRayMat) {
+              var rayVis = tod === 'night' ? 0.0 : tod === 'sunset' ? 0.48 : 1.0;
+              if (weather === 'foggy') rayVis *= 0.22;
+              else if (weather === 'rainy') rayVis *= 0.30;
+              godRayMat.uniforms.uSunStrength.value = rayVis;
+            }
             // Independent training sea preset feeds the wave amplitude.
             AF.seaChop = getCoreSeaState(boatState && boatState.seaState).waveScale;
           } catch (_) {}
@@ -15305,6 +15692,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             C_.glitter += (T_.glitter - C_.glitter) * k; C_.rain += (T_.rain - C_.rain) * k; C_.stars += (T_.stars - C_.stars) * k;
             discMat.opacity = C_.disc; glowMat.opacity = C_.glow;
             if (glitter) { glitter.position.x = boat.position.x + glOffX; glitter.position.z = boat.position.z + glOffZ; glMat.opacity = C_.glitter * (0.82 + 0.18 * Math.sin(elapsed * 2.3)); }
+            var flHCNow = fisherIsHighContrast();
+            var flShaderT = reducedMotion ? 4.2 : elapsed;
+            seaHighContrast.value = flHCNow ? 1.0 : 0.0;
+            if (sonarRing && sonarMat) {
+              sonarRing.visible = !flHCNow;
+              var sCycle = reducedMotion ? 0.35 : ((elapsed * 0.38) % 1);
+              sonarRing.position.set(boat.position.x, -0.18, boat.position.z);
+              sonarRing.scale.setScalar(1.0 + sCycle * 5.2);
+              sonarMat.opacity = (1 - sCycle) * 0.24;
+            }
+            if (sonarCone && sonarConeMat) {
+              sonarCone.visible = !flHCNow;
+              sonarCone.position.set(boat.position.x, -6.95, boat.position.z);
+              sonarConeMat.uniforms.uTime.value = flShaderT;
+              sonarConeMat.uniforms.uHighContrast.value = flHCNow ? 1.0 : 0.0;
+            }
+            if (godRayGroup && godRayMat) {
+              godRayGroup.visible = !flHCNow && godRayMat.uniforms.uSunStrength.value > 0.04;
+              godRayGroup.position.set(boat.position.x, 0, boat.position.z);
+              godRayMat.uniforms.uTime.value = flShaderT;
+              godRayMat.uniforms.uHighContrast.value = flHCNow ? 1.0 : 0.0;
+            }
+            if (planktonPts && planktonMat) {
+              planktonPts.visible = !flHCNow;
+              planktonPts.position.set(boat.position.x, 0, boat.position.z);
+              planktonMat.uniforms.uTime.value = flShaderT;
+              planktonMat.uniforms.uHighContrast.value = flHCNow ? 1.0 : 0.0;
+            }
             if (stars) { stars.visible = C_.stars > 0.01; starMat.opacity = C_.stars * (0.72 + 0.28 * Math.sin(elapsed * 1.3)); }
             if (rain) {
               rain.visible = C_.rain > 0.01; rain.material.opacity = C_.rain;

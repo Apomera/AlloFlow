@@ -619,6 +619,142 @@ function bur3dBand(THREE, parent, y, hex, emphatic) {
     { radius: BUR3D.R + 0.026 });
 }
 
+// WebGL1 / GLSL ES 1.00 borosilicate Fresnel & meniscus caustic shaders for burette & glassware bench
+function titrPatchBorosilicateGlass(THREE, mat, opts) {
+  if (!mat || (opts && opts.contrast) || typeof THREE.ShaderMaterial !== 'function') return mat;
+  var tint = new THREE.Color((opts && opts.tint) || 0xbae6fd);
+  var edgeHex = new THREE.Color((opts && opts.edge) || 0x5eead4);
+  var strength = (opts && opts.strength != null) ? opts.strength : 0.85;
+  mat.onBeforeCompile = function (shader) {
+    shader.uniforms.uGlassTint = { value: tint };
+    shader.uniforms.uGlassEdge = { value: edgeHex };
+    shader.uniforms.uGlassStrength = { value: strength };
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vBoroWorldPos;\nvarying vec3 vBoroWorldNormal;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBoroWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvBoroWorldNormal = normalize(mat3(modelMatrix) * objectNormal);');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform vec3 uGlassTint;\nuniform vec3 uGlassEdge;\nuniform float uGlassStrength;\nvarying vec3 vBoroWorldPos;\nvarying vec3 vBoroWorldNormal;')
+      .replace('#include <dithering_fragment>', [
+        'vec3 boroN = normalize(vBoroWorldNormal);',
+        'if (!gl_FrontFacing) boroN = -boroN;',
+        'vec3 boroV = normalize(cameraPosition - vBoroWorldPos);',
+        'float boroNdV = clamp(abs(dot(boroN, boroV)), 0.0, 1.0);',
+        'float boroFresnel = pow(1.0 - boroNdV, 3.1);',
+        'vec3 boroL1 = normalize(vec3(0.48, 0.85, 0.72));',
+        'vec3 boroL2 = normalize(vec3(-0.62, 0.35, -0.55));',
+        'float boroSpec1 = pow(max(dot(reflect(-boroL1, boroN), boroV), 0.0), 42.0);',
+        'float boroSpec2 = pow(max(dot(reflect(-boroL2, boroN), boroV), 0.0), 22.0);',
+        'vec3 boroRefract = mix(uGlassTint, uGlassEdge, smoothstep(0.45, 0.98, boroFresnel));',
+        'gl_FragColor.rgb += (boroRefract * boroFresnel * 0.62 + vec3(0.95, 0.99, 1.0) * (boroSpec1 * 0.75 + boroSpec2 * 0.32)) * uGlassStrength;',
+        'gl_FragColor.a = clamp(gl_FragColor.a + boroFresnel * 0.42 * uGlassStrength + boroSpec1 * 0.25, 0.0, 0.92);',
+        '#include <dithering_fragment>'
+      ].join('\n'));
+  };
+  mat.customProgramCacheKey = function () { return 'titr-boro-glass-v1-' + strength.toFixed(2); };
+  return mat;
+}
+
+function titrMakeGlassRimShader(THREE, opts) {
+  opts = opts || {};
+  if (opts.contrast || typeof THREE.ShaderMaterial !== 'function') {
+    return new THREE.MeshBasicMaterial({
+      color: opts.contrast ? 0xffffff : (opts.color || 0xbfdbfe),
+      transparent: true, opacity: opts.opacity != null ? opts.opacity : 0.26,
+      side: THREE.BackSide, depthWrite: false
+    });
+  }
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uRimColor: { value: new THREE.Color(opts.color || 0x93e5ff) },
+      uCoreEdge: { value: new THREE.Color(opts.edge || 0x67e8f9) },
+      uOpacity: { value: opts.opacity != null ? opts.opacity : 0.48 }
+    },
+    vertexShader: [
+      'varying vec3 vWorldPos;',
+      'varying vec3 vWorldNormal;',
+      'void main() {',
+      '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+      '  vWorldPos = wp.xyz;',
+      '  vWorldNormal = normalize(mat3(modelMatrix) * normal);',
+      '  gl_Position = projectionMatrix * viewMatrix * wp;',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform vec3 uRimColor;',
+      'uniform vec3 uCoreEdge;',
+      'uniform float uOpacity;',
+      'varying vec3 vWorldPos;',
+      'varying vec3 vWorldNormal;',
+      'void main() {',
+      '  vec3 N = normalize(vWorldNormal);',
+      '  if (!gl_FrontFacing) N = -N;',
+      '  vec3 V = normalize(cameraPosition - vWorldPos);',
+      '  float ndv = clamp(abs(dot(N, V)), 0.0, 1.0);',
+      '  float rim = pow(1.0 - ndv, 2.8);',
+      '  float causticBand = pow(max(0.0, 1.0 - abs(N.x * 0.72 + N.z * 0.28 - 0.55) * 3.8), 4.0) * 0.35;',
+      '  vec3 col = mix(uRimColor, uCoreEdge, rim) * (rim * 1.15 + causticBand);',
+      '  float alpha = clamp((rim * 0.95 + causticBand * 0.5) * uOpacity, 0.0, 0.85);',
+      '  gl_FragColor = vec4(col, alpha);',
+      '}'
+    ].join('\n'),
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending
+  });
+}
+
+function titrMakeMeniscusRingShader(THREE, opts) {
+  opts = opts || {};
+  if (opts.contrast || typeof THREE.ShaderMaterial !== 'function') {
+    return new THREE.MeshBasicMaterial({
+      color: opts.color || 0x67e8f9, transparent: true, opacity: opts.opacity || 0.46,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    });
+  }
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: opts.time != null ? opts.time : 2.1 },
+      uColor: { value: new THREE.Color(opts.color || 0x67e8f9) },
+      uOpacity: { value: opts.opacity != null ? opts.opacity : 0.68 }
+    },
+    vertexShader: [
+      'varying vec2 vUv;',
+      'varying vec3 vWorldPos;',
+      'varying vec3 vWorldNormal;',
+      'void main() {',
+      '  vUv = uv;',
+      '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+      '  vWorldPos = wp.xyz;',
+      '  vWorldNormal = normalize(mat3(modelMatrix) * normal);',
+      '  gl_Position = projectionMatrix * viewMatrix * wp;',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform float uTime;',
+      'uniform vec3 uColor;',
+      'uniform float uOpacity;',
+      'varying vec2 vUv;',
+      'varying vec3 vWorldPos;',
+      'varying vec3 vWorldNormal;',
+      'void main() {',
+      '  vec3 N = normalize(vWorldNormal);',
+      '  vec3 V = normalize(cameraPosition - vWorldPos);',
+      '  float fres = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 2.0);',
+      '  float ang = vUv.x * 6.2831853;',
+      '  float glint1 = pow(0.5 + 0.5 * sin(ang * 3.0 + uTime * 1.3), 8.0);',
+      '  float glint2 = pow(0.5 + 0.5 * sin(ang * 7.0 - uTime * 2.1 + 1.4), 12.0);',
+      '  float sparkle = 0.45 + 0.55 * fres + glint1 * 0.55 + glint2 * 0.45;',
+      '  vec3 col = mix(uColor, vec3(0.96, 0.99, 1.0), clamp(glint1 * 0.6 + glint2 * 0.5, 0.0, 1.0));',
+      '  gl_FragColor = vec4(col * sparkle, clamp(uOpacity * (0.55 + 0.45 * sparkle), 0.0, 0.92));',
+      '}'
+    ].join('\n'),
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+}
+
 function buildBuretteScene(THREE, S, m) {
   var R = BUR3D.R, H = BUR3D.H;
   // Release the previous build's label textures. disposeGroup() upstream frees
@@ -634,9 +770,14 @@ function buildBuretteScene(THREE, S, m) {
 
   // Glass barrel. Rendered from inside as well so the meniscus stays visible
   // through the front wall instead of being culled behind it.
+  var burPhysical = !m.contrast && typeof THREE.MeshPhysicalMaterial === 'function';
   var glass = new THREE.Mesh(
     new THREE.CylinderGeometry(R, R, H, 40, 1, true),
-    new THREE.MeshPhongMaterial({
+    titrPatchBorosilicateGlass(THREE, burPhysical ? new THREE.MeshPhysicalMaterial({
+      color: 0xa5d8ff, transparent: true, opacity: 0.17,
+      roughness: 0.07, metalness: 0.06, clearcoat: 1.0, clearcoatRoughness: 0.05,
+      reflectivity: 0.96, side: THREE.DoubleSide, depthWrite: false
+    }) : new THREE.MeshPhongMaterial({
       color: m.contrast ? 0xffffff : 0x93c5fd, transparent: true,
       opacity: m.contrast ? 0.30 : 0.16, side: THREE.DoubleSide, shininess: 90,
       specular: m.contrast ? 0x888888 : 0x2b4a72,
@@ -645,7 +786,7 @@ function buildBuretteScene(THREE, S, m) {
       // the graduations behind it depending on orbit angle — the contents are the
       // whole point of looking into a burette.
       depthWrite: false
-    })
+    }), { contrast: m.contrast, strength: 0.78 })
   );
   glass.position.y = yM - H / 2 + H * 0.62;
   S.model.add(glass);
@@ -653,9 +794,8 @@ function buildBuretteScene(THREE, S, m) {
 
   // Silhouette shell — see benchVessel for why lighting cannot do this job at this
   // opacity. Shares the barrel geometry.
-  var barrelShell = new THREE.Mesh(glass.geometry, new THREE.MeshBasicMaterial({
-    color: m.contrast ? 0xffffff : 0xbfdbfe,
-    transparent: true, opacity: 0.26, side: THREE.BackSide, depthWrite: false
+  var barrelShell = new THREE.Mesh(glass.geometry, titrMakeGlassRimShader(THREE, {
+    contrast: m.contrast, color: 0xbfdbfe, edge: 0x67e8f9, opacity: 0.42
   }));
   barrelShell.position.copy(glass.position);
   barrelShell.scale.setScalar(1.035);
@@ -694,11 +834,25 @@ function buildBuretteScene(THREE, S, m) {
   // scale face, which is the entire cause of the error.
   var men = new THREE.Mesh(
     new THREE.SphereGeometry(R * 0.93, 36, 14, 0, Math.PI * 2, 0, Math.PI * 0.42),
-    new THREE.MeshPhongMaterial({ color: m.contrast ? 0xffffff : 0x22d3ee, shininess: 90, side: THREE.DoubleSide })
+    new THREE.MeshPhongMaterial({
+      color: m.contrast ? 0xffffff : 0x22d3ee,
+      emissive: m.contrast ? 0x000000 : 0x0891b2,
+      emissiveIntensity: m.contrast ? 0 : 0.32,
+      shininess: 110, side: THREE.DoubleSide
+    })
   );
   men.position.y = yM + R * 0.30;
   men.scale.y = -0.62;                         // flip into a bowl
   S.model.add(men);
+  if (!m.contrast) {
+    var menGlow = new THREE.Mesh(
+      new THREE.TorusGeometry(R * 0.91, 0.016, 8, 36),
+      titrMakeMeniscusRingShader(THREE, { color: 0x67e8f9, opacity: 0.62, time: 2.1 })
+    );
+    menGlow.rotation.x = Math.PI / 2;
+    menGlow.position.y = yM + R * 0.02;
+    S.model.add(menGlow);
+  }
   S.meniscusY = yM;
 
   // Front scale face, carrying the graduations. This is the plane the student
@@ -873,7 +1027,13 @@ function benchVessel(THREE, S, m, g, x, selected) {
   var grp = new THREE.Group();
   var r = (g.boreMm / 2) / BENCH.MM_PER_UNIT;
   var H = BENCH.H;
-  var glassMat = new THREE.MeshPhongMaterial({
+  var benchPhysical = !m.contrast && typeof THREE.MeshPhysicalMaterial === 'function';
+  var glassMat = titrPatchBorosilicateGlass(THREE, benchPhysical ? new THREE.MeshPhysicalMaterial({
+    color: selected ? 0x7dd3fc : 0xa5d8ff,
+    transparent: true, opacity: selected ? 0.25 : 0.17,
+    roughness: 0.07, metalness: 0.06, clearcoat: 1.0, clearcoatRoughness: 0.05,
+    reflectivity: 0.95, side: THREE.DoubleSide, depthWrite: false
+  }) : new THREE.MeshPhongMaterial({
     color: m.contrast ? 0xffffff : (selected ? 0x7dd3fc : 0x93c5fd),
     // The selection ring below carries "this one" now, so the selected vessel no
     // longer has to shout it with opacity — at 0.34 the beaker went nearly solid
@@ -886,7 +1046,7 @@ function benchVessel(THREE, S, m, g, x, selected) {
     // the wide vessels, which are exactly the ones whose slice is thinnest and
     // hardest to see.
     depthWrite: false
-  });
+  }), { contrast: m.contrast, strength: selected ? 0.92 : 0.72 });
 
   // Body profile. Only the READING bore has to be right; the reservoir below it is
   // shaped for recognition.
@@ -934,10 +1094,11 @@ function benchVessel(THREE, S, m, g, x, selected) {
   //
   // Geometry is SHARED with the body rather than rebuilt — disposeGroup collects
   // geometries into a de-duplicated list, so the shared buffer is released once.
-  var rimMat = new THREE.MeshBasicMaterial({
-    color: m.contrast ? 0xffffff : (selected ? 0x67e8f9 : 0x7dd3fc),
-    transparent: true, opacity: selected ? 0.34 : 0.22,
-    side: THREE.BackSide, depthWrite: false
+  var rimMat = titrMakeGlassRimShader(THREE, {
+    contrast: m.contrast,
+    color: selected ? 0x67e8f9 : 0x7dd3fc,
+    edge: selected ? 0xa5f3fc : 0x5eead4,
+    opacity: selected ? 0.52 : 0.36
   });
   var bodies = grp.children.slice();
   for (var bi = 0; bi < bodies.length; bi++) {
@@ -1099,16 +1260,19 @@ var BENCH_GL = (typeof window !== 'undefined' && window.StemLab && typeof window
       // See the note on relighting at the top of pass 4 in the burette lights below:
       // ambient down, key and rim up, total DOWN. Glass needs a direction to catch.
       lights: function (THREE, scene) {
-        scene.add(new THREE.AmbientLight(0xffffff, 0.42));
-        var key = new THREE.DirectionalLight(0xffffff, 0.80);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.38));
+        if (typeof THREE.HemisphereLight === 'function') {
+          scene.add(new THREE.HemisphereLight(0xe0f2fe, 0x16233a, 0.38));
+        }
+        var key = new THREE.DirectionalLight(0xfffbeb, 0.88);
         key.position.set(0.4, 1, 0.8);
         scene.add(key);
-        var rim = new THREE.DirectionalLight(0xbfdbfe, 0.62);
+        var rim = new THREE.DirectionalLight(0x93c5fd, 0.72);
         rim.position.set(-0.6, 0.35, -0.5);
         scene.add(rim);
         // Behind and low, so the far wall of a wide vessel separates from the near
         // one. Without it the 250 mL beaker had no interior at all.
-        var back = new THREE.DirectionalLight(0x7dd3fc, 0.34);
+        var back = new THREE.DirectionalLight(0x67e8f9, 0.45);
         back.position.set(0.15, -0.25, -1);
         scene.add(back);
       },
@@ -1142,14 +1306,17 @@ var BURETTE_GL = (typeof window !== 'undefined' && window.StemLab && typeof wind
       fitSlack: 1.10,
       failMessage: '3D burette view unavailable — the eye-height control and readings below still work.',
       lights: function (THREE, scene) {
-        scene.add(new THREE.AmbientLight(0xffffff, 0.44));
-        var key = new THREE.DirectionalLight(0xffffff, 0.82);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.38));
+        if (typeof THREE.HemisphereLight === 'function') {
+          scene.add(new THREE.HemisphereLight(0xe0f2fe, 0x16233a, 0.36));
+        }
+        var key = new THREE.DirectionalLight(0xfffbeb, 0.88);
         key.position.set(0.5, 0.9, 0.8);
         scene.add(key);
-        var rim = new THREE.DirectionalLight(0xbfdbfe, 0.60);
+        var rim = new THREE.DirectionalLight(0x93c5fd, 0.70);
         rim.position.set(-0.6, 0.3, -0.5);
         scene.add(rim);
-        var back = new THREE.DirectionalLight(0x7dd3fc, 0.30);
+        var back = new THREE.DirectionalLight(0x67e8f9, 0.42);
         back.position.set(0.15, -0.2, -1);
         scene.add(back);
       },
@@ -1294,18 +1461,51 @@ function titrAnimCanvasRef(cvEl) {
               if (paused && !reducedMotion) t = pausedT;
               var cyc = (t * 0.10) % 1; // 0 = no base added, 1 = excess base
               var pH = titrationReferencePH(cyc);
-              c2.fillStyle = '#020210';
+              // Backlit lab bench backdrop gradient
+              var bgGrad = c2.createRadialGradient(W * 0.22, H * 0.65, 10, W * 0.45, H * 0.5, Math.max(W, H) * 0.82);
+              bgGrad.addColorStop(0, '#0f2740');
+              bgGrad.addColorStop(0.55, '#071426');
+              bgGrad.addColorStop(1, '#020612');
+              c2.fillStyle = bgGrad;
               c2.fillRect(0, 0, W, H);
               // LEFT: beaker + burette
               var lftW = W * 0.35;
               var burX = lftW * 0.5;
               var burY = 20;
               var burH = 80;
+              // Subtle backlit ceramic bench shelf reflection beneath the flask
+              var bkY = H * 0.55;
+              var bkW = 70, neckW = 16, shoulder = 14, bkH = 60;
+              var benchGlow = c2.createRadialGradient(burX, bkY + bkH + 2, 4, burX, bkY + bkH + 2, bkW * 0.85);
+              benchGlow.addColorStop(0, 'rgba(125,211,252,0.22)');
+              benchGlow.addColorStop(1, 'rgba(125,211,252,0)');
+              c2.fillStyle = benchGlow;
+              c2.fillRect(burX - bkW, bkY + bkH - 6, bkW * 2, 18);
               // Burette, draining from the top as titrant leaves it
-              c2.fillStyle = '#7dd3fc';
-              c2.fillRect(burX - 6, burY + burH * cyc, 12, burH * (1 - cyc));
+              var burLiqY = burY + burH * cyc;
+              var burLiqH = Math.max(0, burH * (1 - cyc));
+              var burGrad = c2.createLinearGradient(burX - 6, 0, burX + 6, 0);
+              burGrad.addColorStop(0, 'rgba(56,189,248,0.65)');
+              burGrad.addColorStop(0.35, 'rgba(186,230,253,0.92)');
+              burGrad.addColorStop(1, 'rgba(14,165,233,0.60)');
+              c2.fillStyle = burGrad;
+              c2.fillRect(burX - 6, burLiqY, 12, burLiqH);
+              // Curved meniscus highlight on the burette column
+              if (burLiqH > 2) {
+                c2.save();
+                c2.strokeStyle = 'rgba(224,242,254,0.95)';
+                c2.lineWidth = 1.4;
+                c2.beginPath();
+                c2.moveTo(burX - 5.5, burLiqY - 1);
+                c2.quadraticCurveTo(burX, burLiqY + 2.5, burX + 5.5, burLiqY - 1);
+                c2.stroke();
+                c2.restore();
+              }
               c2.strokeStyle = '#cbd5e1'; c2.lineWidth = 1.5;
               c2.strokeRect(burX - 6, burY, 12, burH);
+              // Borosilicate specular streak along left wall of burette
+              c2.fillStyle = 'rgba(224,242,254,0.28)';
+              c2.fillRect(burX - 4.5, burY + 2, 2, burH - 4);
               c2.beginPath();
               for (var gr = 1; gr < 10; gr++) {
                 var gy = burY + burH * gr / 10;
@@ -1326,18 +1526,17 @@ function titrAnimCanvasRef(cvEl) {
               c2.fillText('NaOH', burX + 13, burY + 12);
               // Drip — glowing NaOH beads
               c2.save();
-              c2.shadowColor = 'rgba(125,211,252,0.9)'; c2.shadowBlur = 6;
+              c2.shadowColor = 'rgba(125,211,252,0.9)'; c2.shadowBlur = 7;
               for (var dr = 0; dr < 3; dr++) {
-                var drY = burY + burH + 22 + ((t * 50 + dr * 18) % 34);
-                c2.fillStyle = '#7dd3fc';
+                var drProg = ((t * 1.45 + dr * 0.333) % 1);
+                var drY = burY + burH + 22 + drProg * 34;
+                c2.fillStyle = '#bae6fd';
                 c2.beginPath();
-                c2.arc(burX, drY, 2, 0, Math.PI * 2);
+                c2.ellipse(burX, drY, 1.8, 2.5, 0, 0, Math.PI * 2);
                 c2.fill();
               }
               c2.restore();
               // Conical flask, matching the 3D bench rather than a plain rectangle
-              var bkY = H * 0.55;
-              var bkW = 70, neckW = 16, shoulder = 14, bkH = 60;
               function flaskPath() {
                 c2.beginPath();
                 c2.moveTo(burX - neckW / 2, bkY);
@@ -1347,24 +1546,59 @@ function titrAnimCanvasRef(cvEl) {
                 c2.lineTo(burX + neckW / 2, bkY + shoulder);
                 c2.lineTo(burX + neckW / 2, bkY);
               }
-              // Solution color shifts with pH (colorless \u2192 pink for phenolphthalein)
-              var solColor = pH < 8.3 ? 'rgba(252, 165, 165, 0.6)' : 'rgba(217, 70, 239, 0.7)';
+              // Smooth phenolphthalein pH indicator transition (clear-ice -> blush -> vivid fuchsia)
+              var indMix = Math.max(0, Math.min(1, (pH - 7.8) / 2.2));
+              var rCol = Math.round(186 + (217 - 186) * indMix);
+              var gCol = Math.round(230 + (70 - 230) * indMix);
+              var bCol = Math.round(253 + (239 - 253) * indMix);
+              var aCol = (0.30 + 0.46 * indMix).toFixed(2);
+              var solColor = 'rgba(' + rCol + ',' + gCol + ',' + bCol + ',' + aCol + ')';
               var surfaceY = bkY + shoulder + 12;
               c2.save();
               flaskPath();
               c2.clip();
               c2.fillStyle = solColor;
               c2.fillRect(burX - bkW / 2, surfaceY, bkW, bkH);
+              // Live drop-impact pH indicator swirl/plume diffusion inside the flask
+              var plumePhase = (t * 1.45) % 1;
+              var plumeR = 5 + plumePhase * 24;
+              var plumeAlpha = (1 - plumePhase) * (0.32 + 0.42 * Math.min(1, Math.max(0.15, 1 - Math.abs(cyc - 0.5) * 3)));
+              var plumeX = burX + (reducedMotion ? 0 : Math.sin(t * 2.8) * 5 * plumePhase);
+              var plumeY = surfaceY + 3 + plumePhase * 15;
+              var plumeGrad = c2.createRadialGradient(plumeX, plumeY, 1, plumeX, plumeY, plumeR);
+              plumeGrad.addColorStop(0, 'rgba(244,114,182,' + (plumeAlpha * 0.95).toFixed(3) + ')');
+              plumeGrad.addColorStop(0.55, 'rgba(217,70,239,' + (plumeAlpha * 0.45).toFixed(3) + ')');
+              plumeGrad.addColorStop(1, 'rgba(217,70,239,0)');
+              c2.fillStyle = plumeGrad;
+              c2.beginPath();
+              c2.arc(plumeX, plumeY, plumeR, 0, Math.PI * 2);
+              c2.fill();
               // Depth, not a pH signal: the pool darkens away from the surface.
               var solShade = c2.createLinearGradient(0, surfaceY, 0, bkY + bkH);
-              solShade.addColorStop(0, 'rgba(255,255,255,0.26)');
+              solShade.addColorStop(0, 'rgba(255,255,255,0.28)');
               solShade.addColorStop(0.4, 'rgba(255,255,255,0)');
-              solShade.addColorStop(1, 'rgba(0,0,0,0.16)');
+              solShade.addColorStop(1, 'rgba(0,0,0,0.20)');
               c2.fillStyle = solShade;
               c2.fillRect(burX - bkW / 2, surfaceY, bkW, bkH);
               c2.restore();
-              c2.strokeStyle = 'rgba(226,232,240,0.85)'; c2.lineWidth = 1;
-              c2.beginPath(); c2.moveTo(burX - bkW / 2 + 8, surfaceY); c2.lineTo(burX + bkW / 2 - 8, surfaceY); c2.stroke();
+              // Luminous concave meniscus line on the flask solution
+              c2.save();
+              c2.strokeStyle = 'rgba(224,242,254,0.92)'; c2.lineWidth = 1.4;
+              c2.shadowColor = 'rgba(125,211,252,0.7)'; c2.shadowBlur = 4;
+              c2.beginPath();
+              c2.moveTo(burX - bkW / 2 + 12, surfaceY);
+              c2.quadraticCurveTo(burX, surfaceY + 2.5, burX + bkW / 2 - 12, surfaceY);
+              c2.stroke();
+              c2.restore();
+              // Borosilicate glassware specular reflection edge along conical flask shoulder
+              c2.save();
+              c2.strokeStyle = 'rgba(224,242,254,0.34)'; c2.lineWidth = 2.2;
+              c2.beginPath();
+              c2.moveTo(burX - neckW / 2 + 2.5, bkY + 3);
+              c2.lineTo(burX - neckW / 2 + 2.5, bkY + shoulder);
+              c2.lineTo(burX - bkW / 2 + 5, bkY + bkH - 4);
+              c2.stroke();
+              c2.restore();
               c2.strokeStyle = '#cbd5e1'; c2.lineWidth = 2;
               flaskPath();
               c2.stroke();
@@ -1373,10 +1607,10 @@ function titrAnimCanvasRef(cvEl) {
               // RIGHT: pH vs volume plot
               var plotX = lftW + 30, plotY = 20;
               var plotW = W - plotX - 20, plotH = H - 60;
-              c2.fillStyle = 'rgba(255,255,255,0.04)';
+              c2.fillStyle = 'rgba(15,23,42,0.55)';
               c2.fillRect(plotX, plotY, plotW, plotH);
               c2.strokeStyle = '#475569'; c2.lineWidth = 1; c2.strokeRect(plotX, plotY, plotW, plotH);
-              c2.strokeStyle = 'rgba(71,85,105,0.55)';
+              c2.strokeStyle = 'rgba(71,85,105,0.48)';
               c2.beginPath();
               for (var gl = 2; gl <= 12; gl += 2) {
                 var gy = plotY + (1 - gl / 14) * plotH;
@@ -1387,32 +1621,81 @@ function titrAnimCanvasRef(cvEl) {
               c2.fillText('14', plotX - 4, plotY + 8);
               c2.fillText('7', plotX - 4, plotY + plotH / 2);
               c2.fillText('0', plotX - 4, plotY + plotH);
-              // Equivalence line
-              c2.strokeStyle = 'rgba(251, 191, 36, 0.4)'; c2.setLineDash([3, 3]);
+              // Equivalence line + glowing inflection marker at (0.50, pH 7.0)
+              var eqX = plotX + plotW * 0.50;
+              var eqY = plotY + plotH * 0.50;
+              var eqGlowGrad = c2.createLinearGradient(eqX - 10, 0, eqX + 10, 0);
+              eqGlowGrad.addColorStop(0, 'rgba(251,191,36,0)');
+              eqGlowGrad.addColorStop(0.5, 'rgba(251,191,36,0.16)');
+              eqGlowGrad.addColorStop(1, 'rgba(251,191,36,0)');
+              c2.fillStyle = eqGlowGrad;
+              c2.fillRect(eqX - 10, plotY, 20, plotH);
+              c2.strokeStyle = 'rgba(251, 191, 36, 0.55)'; c2.setLineDash([3, 3]);
               c2.beginPath();
-              c2.moveTo(plotX + plotW * 0.50, plotY); c2.lineTo(plotX + plotW * 0.50, plotY + plotH);
+              c2.moveTo(eqX, plotY); c2.lineTo(eqX, plotY + plotH);
               c2.stroke();
               c2.setLineDash([]);
               c2.font = '10px monospace'; c2.fillStyle = '#fbbf24'; c2.textAlign = 'center';
-              c2.fillText('Equivalence', plotX + plotW * 0.50, plotY + plotH - 4);
+              c2.fillText('Equivalence', eqX, plotY + plotH - 4);
+              // Shaded area fill under titration curve
+              var curveEndPx = cyc * plotW;
+              if (curveEndPx > 1) {
+                var areaGrad = c2.createLinearGradient(plotX, plotY, plotX, plotY + plotH);
+                areaGrad.addColorStop(0, 'rgba(217,70,239,0.22)');
+                areaGrad.addColorStop(0.5, 'rgba(16,185,129,0.14)');
+                areaGrad.addColorStop(1, 'rgba(16,185,129,0.02)');
+                c2.fillStyle = areaGrad;
+                c2.beginPath();
+                c2.moveTo(plotX, plotY + plotH);
+                for (var apx = 0; apx <= curveEndPx; apx += 2) {
+                  var apy = plotY + (1 - titrationReferencePH(apx / plotW) / 14) * plotH;
+                  c2.lineTo(plotX + apx, apy);
+                }
+                c2.lineTo(plotX + curveEndPx, plotY + plotH);
+                c2.closePath();
+                c2.fill();
+              }
               // Plot curve up to current cyc — neon glow on the key data trace
               c2.save();
-              c2.shadowColor = 'rgba(16,185,129,0.85)'; c2.shadowBlur = 8;
-              c2.strokeStyle = '#10b981'; c2.lineWidth = 2;
+              var curveStroke = c2.createLinearGradient(plotX, plotY + plotH, plotX, plotY);
+              curveStroke.addColorStop(0, '#34d399');
+              curveStroke.addColorStop(0.52, '#38bdf8');
+              curveStroke.addColorStop(1, '#e879f9');
+              c2.shadowColor = 'rgba(56,189,248,0.85)'; c2.shadowBlur = 9;
+              c2.strokeStyle = curveStroke; c2.lineWidth = 2.4;
               c2.beginPath();
-              for (var px = 0; px <= cyc * plotW; px++) {
+              for (var px = 0; px <= curveEndPx; px++) {
                 var py = plotY + (1 - titrationReferencePH(px / plotW) / 14) * plotH;
                 if (px === 0) c2.moveTo(plotX + px, py);
                 else c2.lineTo(plotX + px, py);
               }
               c2.stroke();
               c2.restore();
-              // Current marker — glowing pulse so the eye tracks the titration point
+              // Glowing equivalence-point diamond marker at (0.50, pH 7.0)
+              var nearEq = Math.abs(cyc - 0.50) < 0.08;
+              var eqR = nearEq ? (5.5 + (reducedMotion ? 0 : Math.sin(t * 7) * 1.3)) : 4;
+              c2.save();
+              c2.shadowColor = 'rgba(251,191,36,0.95)';
+              c2.shadowBlur = nearEq ? 14 : 7;
+              c2.fillStyle = cyc >= 0.49 ? '#fbbf24' : 'rgba(251,191,36,0.55)';
+              c2.beginPath();
+              c2.moveTo(eqX, eqY - eqR);
+              c2.lineTo(eqX + eqR, eqY);
+              c2.lineTo(eqX, eqY + eqR);
+              c2.lineTo(eqX - eqR, eqY);
+              c2.closePath();
+              c2.fill();
+              c2.restore();
+              // Current marker — dual-ring glowing beacon so the eye tracks the titration point
               var cpX = plotX + cyc * plotW;
               var cpY = plotY + (1 - pH / 14) * plotH;
-              var cpPulse = 5 + Math.sin(t * 4) * 1.2;
+              var cpPulse = 4.6 + (reducedMotion ? 0 : Math.sin(t * 4) * 1.1);
               c2.save();
-              c2.shadowColor = 'rgba(253,224,71,0.95)'; c2.shadowBlur = 12;
+              c2.strokeStyle = 'rgba(253,224,71,0.55)'; c2.lineWidth = 1.5;
+              c2.beginPath();
+              c2.arc(cpX, cpY, cpPulse + 3.5, 0, Math.PI * 2);
+              c2.stroke();
+              c2.shadowColor = 'rgba(253,224,71,0.95)'; c2.shadowBlur = 13;
               c2.fillStyle = '#fde047';
               c2.beginPath();
               c2.arc(cpX, cpY, cpPulse, 0, Math.PI * 2);
@@ -1610,11 +1893,272 @@ function titrationRippleFrame(elapsed,index,radius) {
   var age=elapsed-650-index*140,k=Math.max(0,Math.min(1,age/650));
   return {visible:age>=0&&age<650&&radius>0,scale:radius*(0.12+0.80*k),opacity:0.48*(1-k)*(1-k)};
 }
+// WebGL1 / GLSL ES 1.00 custom shader helpers (self-contained for isolated bench builds).
+function titrationApplyBorosilicateShader(THREE, mat, contrast, strength) {
+  if (!mat || contrast || typeof THREE.ShaderMaterial !== 'function') return mat;
+  var k = strength != null ? strength : 0.88;
+  mat.onBeforeCompile = function (shader) {
+    shader.uniforms.uBoroTint = { value: new THREE.Color(0xb8ecff) };
+    shader.uniforms.uBoroEdge = { value: new THREE.Color(0x5eead4) };
+    shader.uniforms.uBoroK = { value: k };
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vExpGlassPos;\nvarying vec3 vExpGlassN;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvExpGlassPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvExpGlassN = normalize(mat3(modelMatrix) * objectNormal);');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform vec3 uBoroTint;\nuniform vec3 uBoroEdge;\nuniform float uBoroK;\nvarying vec3 vExpGlassPos;\nvarying vec3 vExpGlassN;')
+      .replace('#include <dithering_fragment>', [
+        'vec3 gN = normalize(vExpGlassN);',
+        'if (!gl_FrontFacing) gN = -gN;',
+        'vec3 gV = normalize(cameraPosition - vExpGlassPos);',
+        'float gNdV = clamp(abs(dot(gN, gV)), 0.0, 1.0);',
+        'float gFres = pow(1.0 - gNdV, 3.2);',
+        'vec3 gL1 = normalize(vec3(0.45, 0.82, 0.68));',
+        'vec3 gL2 = normalize(vec3(-0.55, 0.35, -0.60));',
+        'float gSpec1 = pow(max(dot(reflect(-gL1, gN), gV), 0.0), 48.0);',
+        'float gSpec2 = pow(max(dot(reflect(-gL2, gN), gV), 0.0), 24.0);',
+        'vec3 gCol = mix(uBoroTint, uBoroEdge, smoothstep(0.42, 0.96, gFres));',
+        'gl_FragColor.rgb += (gCol * gFres * 0.68 + vec3(0.95, 0.99, 1.0) * (gSpec1 * 0.80 + gSpec2 * 0.34)) * uBoroK;',
+        'gl_FragColor.a = clamp(gl_FragColor.a + gFres * 0.44 * uBoroK + gSpec1 * 0.24, 0.0, 0.92);',
+        '#include <dithering_fragment>'
+      ].join('\n'));
+  };
+  mat.customProgramCacheKey = function () { return 'titr-exp-boro-v1-' + k.toFixed(2); };
+  return mat;
+}
+function titrationApplySolutionShader(THREE, mat, contrast) {
+  if (!mat || contrast || typeof THREE.ShaderMaterial !== 'function') return mat;
+  mat.onBeforeCompile = function (shader) {
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vSolWorldPos;\nvarying vec3 vSolWorldN;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSolWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvSolWorldN = normalize(mat3(modelMatrix) * objectNormal);');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vSolWorldPos;\nvarying vec3 vSolWorldN;')
+      .replace('#include <dithering_fragment>', [
+        'vec3 sN = normalize(vSolWorldN);',
+        'if (!gl_FrontFacing) sN = -sN;',
+        'vec3 sV = normalize(cameraPosition - vSolWorldPos);',
+        'float sFres = pow(1.0 - clamp(abs(dot(sN, sV)), 0.0, 1.0), 2.4);',
+        'float depthShade = mix(0.84, 1.12, smoothstep(0.18, 1.45, vSolWorldPos.y));',
+        'gl_FragColor.rgb = gl_FragColor.rgb * depthShade + vec3(0.76, 0.95, 1.0) * sFres * 0.22;',
+        '#include <dithering_fragment>'
+      ].join('\n'));
+  };
+  mat.customProgramCacheKey = function () { return 'titr-exp-sol-v1'; };
+  return mat;
+}
+function titrationMakeFresnelRimMat(THREE, opts) {
+  opts = opts || {};
+  if (opts.contrast || typeof THREE.ShaderMaterial !== 'function') {
+    return new THREE.MeshPhongMaterial({
+      color: 0xbfe9ff, transparent: true, opacity: opts.contrast ? 0.34 : 0.20,
+      side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending
+    });
+  }
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uRimColor: { value: new THREE.Color(opts.color || 0xa5e8ff) },
+      uEdgeTint: { value: new THREE.Color(opts.edge || 0x5eead4) },
+      uOpacity: { value: opts.opacity != null ? opts.opacity : 0.56 }
+    },
+    vertexShader: [
+      'varying vec3 vWorldPos;',
+      'varying vec3 vWorldNormal;',
+      'void main() {',
+      '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+      '  vWorldPos = wp.xyz;',
+      '  vWorldNormal = normalize(mat3(modelMatrix) * normal);',
+      '  gl_Position = projectionMatrix * viewMatrix * wp;',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform vec3 uRimColor;',
+      'uniform vec3 uEdgeTint;',
+      'uniform float uOpacity;',
+      'varying vec3 vWorldPos;',
+      'varying vec3 vWorldNormal;',
+      'void main() {',
+      '  vec3 N = normalize(vWorldNormal);',
+      '  if (!gl_FrontFacing) N = -N;',
+      '  vec3 V = normalize(cameraPosition - vWorldPos);',
+      '  float ndv = clamp(abs(dot(N, V)), 0.0, 1.0);',
+      '  float fres = pow(1.0 - ndv, 2.9);',
+      '  float studioRib = pow(max(0.0, 1.0 - abs(N.x * 0.78 + N.z * 0.22 - 0.52) * 4.2), 4.0) * 0.42;',
+      '  vec3 col = mix(uRimColor, uEdgeTint, fres) * (fres * 1.18 + studioRib);',
+      '  gl_FragColor = vec4(col, clamp((fres * 0.92 + studioRib * 0.55) * uOpacity, 0.0, 0.88));',
+      '}'
+    ].join('\n'),
+    transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+  });
+}
+function titrationMakeVortexMat(THREE, opts) {
+  opts = opts || {};
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: opts.time != null ? opts.time : 2.4 },
+      uPh: { value: opts.pH != null ? opts.pH : 7.0 },
+      uColor: { value: new THREE.Color(opts.color || '#c8dcff') },
+      uFlashColor: { value: new THREE.Color(opts.flashColor || opts.color || '#ec4899') },
+      uSwirl: { value: opts.swirl != null ? opts.swirl : 0.35 },
+      uAlpha: { value: opts.alpha != null ? opts.alpha : 0.42 }
+    },
+    vertexShader: [
+      'varying vec2 vUv;',
+      'varying vec3 vLocalPos;',
+      'varying vec3 vWorldPos;',
+      'varying vec3 vWorldNormal;',
+      'void main() {',
+      '  vUv = uv;',
+      '  vLocalPos = position;',
+      '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+      '  vWorldPos = wp.xyz;',
+      '  vWorldNormal = normalize(mat3(modelMatrix) * normal);',
+      '  gl_Position = projectionMatrix * viewMatrix * wp;',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform float uTime;',
+      'uniform float uPh;',
+      'uniform vec3 uColor;',
+      'uniform vec3 uFlashColor;',
+      'uniform float uSwirl;',
+      'uniform float uAlpha;',
+      'varying vec2 vUv;',
+      'varying vec3 vLocalPos;',
+      'varying vec3 vWorldPos;',
+      'varying vec3 vWorldNormal;',
+      'float vHash(vec2 p) {',
+      '  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);',
+      '}',
+      'float vNoise(vec2 p) {',
+      '  vec2 i = floor(p);',
+      '  vec2 f = fract(p);',
+      '  vec2 u = f * f * (3.0 - 2.0 * f);',
+      '  return mix(mix(vHash(i), vHash(i + vec2(1.0, 0.0)), u.x), mix(vHash(i + vec2(0.0, 1.0)), vHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+      '}',
+      'float vFbm(vec2 p) {',
+      '  float v = 0.0;',
+      '  float a = 0.5;',
+      '  for (int k = 0; k < 3; k++) {',
+      '    v += a * vNoise(p);',
+      '    p = p * 2.03 + vec2(17.1, 31.7);',
+      '    a *= 0.5;',
+      '  }',
+      '  return v;',
+      '}',
+      'void main() {',
+      '  float phNorm = clamp(uPh / 14.0, 0.0, 1.0);',
+      '  float ang = vUv.x * 6.2831853;',
+      '  float h = vUv.y;',
+      '  float twist = ang + h * (4.2 + uSwirl * 4.8) - uTime * (1.25 + uSwirl * 2.1);',
+      '  float helix = 0.5 + 0.5 * sin(twist * 2.0 + sin(h * 7.5 - uTime * 1.4));',
+      '  float plume = vFbm(vec2(cos(twist) * 1.8 + uTime * 0.25, h * 3.8 - uTime * 0.55));',
+      '  float filament = smoothstep(0.36, 0.86, helix * 0.55 + plume * 0.58);',
+      '  float topMask = smoothstep(0.02, 0.22, h) * smoothstep(1.0, 0.78, h);',
+      '  vec3 phTint = mix(vec3(0.45, 0.86, 1.0), vec3(0.98, 0.42, 0.78), smoothstep(0.45, 0.72, phNorm));',
+      '  vec3 swirlCol = mix(uColor, mix(phTint, uFlashColor, 0.65), clamp(0.30 + uSwirl * 0.58, 0.0, 0.92));',
+      '  vec3 N = normalize(vWorldNormal);',
+      '  if (!gl_FrontFacing) N = -N;',
+      '  vec3 V = normalize(cameraPosition - vWorldPos);',
+      '  float edgeSoft = 0.35 + 0.65 * clamp(abs(dot(N, V)), 0.0, 1.0);',
+      '  float alpha = filament * topMask * edgeSoft * uAlpha * (0.45 + 0.55 * uSwirl);',
+      '  gl_FragColor = vec4(swirlCol * (0.85 + 0.45 * filament), clamp(alpha, 0.0, 0.72));',
+      '}'
+    ].join('\n'),
+    transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+  });
+}
+function titrationMakeMeniscusCausticMat(THREE, opts) {
+  opts = opts || {};
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: opts.time != null ? opts.time : 2.4 },
+      uColor: { value: new THREE.Color(opts.color || 0xbaf2ff) },
+      uOpacity: { value: opts.opacity != null ? opts.opacity : 0.62 }
+    },
+    vertexShader: [
+      'varying vec2 vUv;',
+      'varying vec3 vWorldPos;',
+      'varying vec3 vWorldNormal;',
+      'void main() {',
+      '  vUv = uv;',
+      '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+      '  vWorldPos = wp.xyz;',
+      '  vWorldNormal = normalize(mat3(modelMatrix) * normal);',
+      '  gl_Position = projectionMatrix * viewMatrix * wp;',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform float uTime;',
+      'uniform vec3 uColor;',
+      'uniform float uOpacity;',
+      'varying vec2 vUv;',
+      'varying vec3 vWorldPos;',
+      'varying vec3 vWorldNormal;',
+      'void main() {',
+      '  vec3 N = normalize(vWorldNormal);',
+      '  vec3 V = normalize(cameraPosition - vWorldPos);',
+      '  float fres = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 1.8);',
+      '  float a = vUv.x * 6.2831853;',
+      '  float s1 = pow(0.5 + 0.5 * sin(a * 4.0 + uTime * 1.6), 9.0);',
+      '  float s2 = pow(0.5 + 0.5 * sin(a * 9.0 - uTime * 2.4 + 0.9), 14.0);',
+      '  float intensity = 0.45 + 0.50 * fres + s1 * 0.65 + s2 * 0.55;',
+      '  vec3 col = mix(uColor, vec3(0.97, 0.99, 1.0), clamp(s1 * 0.55 + s2 * 0.60, 0.0, 1.0));',
+      '  gl_FragColor = vec4(col * intensity, clamp(uOpacity * (0.48 + 0.52 * intensity), 0.0, 0.92));',
+      '}'
+    ].join('\n'),
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+  });
+}
+function titrationMakeStirCausticsMat(THREE, opts) {
+  opts = opts || {};
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: opts.time != null ? opts.time : 2.4 },
+      uColor: { value: new THREE.Color(opts.color || 0x7dd3fc) },
+      uSwirl: { value: opts.swirl != null ? opts.swirl : 0.35 }
+    },
+    vertexShader: [
+      'varying vec2 vUv;',
+      'void main() {',
+      '  vUv = uv;',
+      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform float uTime;',
+      'uniform vec3 uColor;',
+      'uniform float uSwirl;',
+      'varying vec2 vUv;',
+      'void main() {',
+      '  vec2 p = (vUv - 0.5) * 2.0;',
+      '  float r = length(p);',
+      '  if (r > 1.0) discard;',
+      '  float ang = atan(p.y, p.x);',
+      '  float ring1 = 0.5 + 0.5 * sin(r * 22.0 - uTime * (2.6 + uSwirl * 3.4) + ang * 2.0);',
+      '  float ring2 = 0.5 + 0.5 * sin(r * 15.0 + uTime * 1.9 - ang * 3.0);',
+      '  float caustic = pow(ring1 * ring2, 2.2);',
+      '  float edgeFade = smoothstep(1.0, 0.62, r) * smoothstep(0.06, 0.24, r);',
+      '  vec3 col = mix(uColor, vec3(0.92, 0.98, 1.0), caustic * 0.65);',
+      '  float alpha = caustic * edgeFade * (0.34 + 0.42 * uSwirl);',
+      '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.68));',
+      '}'
+    ].join('\n'),
+    transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+  });
+}
 function buildTitrationExperimentScene(THREE, S, m) {
   var previewMs=titrationBenchPreviewTime(m.previewMs);
+  var expPhysical = !m.contrast && typeof THREE.MeshPhysicalMaterial === 'function';
+  var expStandard = !m.contrast && typeof THREE.MeshStandardMaterial === 'function';
   function material(color, extra) { return new THREE.MeshPhongMaterial(Object.assign({ color: color, shininess: 65 }, extra || {})); }
-  var steel = material(0x71869b), dark = material(0x17293e), white = material(0xe5edf5);
-  var glass = material(0xa9dcf2, { transparent: true, opacity: m.contrast ? 0.30 : 0.17, side: THREE.DoubleSide, depthWrite: false });
+  var steel = expStandard ? new THREE.MeshStandardMaterial({ color: 0x8299b0, metalness: 0.74, roughness: 0.24 }) : material(0x71869b);
+  var dark = expStandard ? new THREE.MeshStandardMaterial({ color: 0x17293e, metalness: 0.20, roughness: 0.56 }) : material(0x17293e);
+  var white = material(0xeef4f9, { shininess: 90 });
+  var glass = titrationApplyBorosilicateShader(THREE, expPhysical ? new THREE.MeshPhysicalMaterial({
+    color: 0xb8e6ff, transparent: true, opacity: 0.18,
+    roughness: 0.06, metalness: 0.06, clearcoat: 1.0, clearcoatRoughness: 0.04,
+    reflectivity: 0.96, side: THREE.DoubleSide, depthWrite: false
+  }) : material(0xa9dcf2, { transparent: true, opacity: m.contrast ? 0.30 : 0.17, side: THREE.DoubleSide, depthWrite: false }), m.contrast, 0.88);
   function mesh(name, geometry, mat, x, y, z) {
     var obj = new THREE.Mesh(geometry, mat); obj.name = name; obj.position.set(x || 0, y || 0, z || 0); S.model.add(obj); return obj;
   }
@@ -1676,6 +2220,12 @@ function buildTitrationExperimentScene(THREE, S, m) {
   // flask whose glass starts at 0.165, so it floated at both ends. Now its underside
   // meets the bench and its face meets the foot of the flask.
   box('white-endpoint-tile',2.22,0.175,2.12,white,fx,0.0775,0.08);
+  if (!m.contrast) {
+    var tileBacklight = stage('stage-tile-backlight', new THREE.RingGeometry(1.12, 1.48, 48),
+      new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.14, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }),
+      fx, 0.002, 0.08);
+    tileBacklight.rotation.x = -Math.PI / 2;
+  }
   contact('stage-shadow-tile',1.42,-0.004,0.30,fx,0.08);
   contact('stage-shadow-flask',1.02,0.168,0.40,fx,0);
   tube('flask-body',0.27,0.94,1.7,glass,fx,1.015,0,true);
@@ -1690,11 +2240,34 @@ function buildTitrationExperimentScene(THREE, S, m) {
   var rgba=/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$/.exec(m.color || '');
   var color=rgba ? 'rgb('+rgba[1]+','+rgba[2]+','+rgba[3]+')' : m.color || '#c8dcff';
   var alpha=rgba && rgba[4] !== undefined ? Number(rgba[4]) : 0.80;
-  var solution=material(color,{transparent:true,opacity:Math.max(0.20,alpha),depthWrite:false,side:THREE.DoubleSide,shininess:100});
+  var solution=titrationApplySolutionShader(THREE, material(color,{transparent:true,opacity:Math.max(0.20,alpha),depthWrite:false,side:THREE.DoubleSide,shininess:100}), m.contrast);
   // Open-ended: the closed bottom cap was lit as brightly as the meniscus above it,
   // so the flask showed two equally convincing surfaces. A dedicated darker floor
   // disc reads as liquid pooled on glass and leaves exactly one bright ellipse.
   if(profile.height>0.0001) tube('flask-liquid',profile.radius,0.90,profile.height,solution,fx,0.18+profile.height/2,0,true);
+  var shaderUniforms = [];
+  var vortexMat = null, stirCausticsMat = null;
+  var hasShaders = !m.contrast && typeof THREE.ShaderMaterial === 'function';
+  var phVal = isFinite(Number(m.pH)) ? Number(m.pH) : 7.0;
+  var baseSwirl = m.animating ? 0.65 : (0.28 + Math.max(0, Math.min(1, Number(m.flashHold) || 0)) * 0.25);
+  if (hasShaders && profile.height > 0.0001) {
+    vortexMat = titrationMakeVortexMat(THREE, {
+      time: 2.4, pH: phVal, color: color, flashColor: m.flashColor || color,
+      swirl: baseSwirl, alpha: Math.max(0.28, Math.min(0.62, 0.24 + alpha * 0.48))
+    });
+    var vortex = mesh('liquid-vortex',
+      new THREE.CylinderGeometry(Math.max(0.05, profile.radius * 0.94), 0.85, Math.max(0.01, profile.height * 0.94), 36, 12, true),
+      vortexMat, fx, 0.18 + profile.height * 0.5, 0);
+    vortex.renderOrder = 2;
+    shaderUniforms.push(vortexMat.uniforms);
+    stirCausticsMat = titrationMakeStirCausticsMat(THREE, {
+      time: 2.4, color: m.flashColor || color, swirl: baseSwirl
+    });
+    var stirCaustics = mesh('liquid-stir-caustics', new THREE.CircleGeometry(0.84, 48), stirCausticsMat, fx, 0.175, 0);
+    stirCaustics.rotation.x = -Math.PI / 2;
+    stirCaustics.renderOrder = 1;
+    shaderUniforms.push(stirCausticsMat.uniforms);
+  }
   var deep=new THREE.Color(color).multiplyScalar(0.45);
   // Opacity follows the solution's own alpha: a colourless flask must not grow an
   // opaque black pool just because the shading maths ran.
@@ -1705,16 +2278,22 @@ function buildTitrationExperimentScene(THREE, S, m) {
   surface.visible=profile.height>0.0001;
   var surfaceRim=ring('liquid-surface-rim',profile.radius,material(0xd5f4ff,{transparent:true,opacity:0.28,depthWrite:false}),fx,0.18+profile.height,0);
   surfaceRim.scale.set(1,1,0.42);surfaceRim.visible=profile.height>0.0001;
+  if (!m.contrast) {
+    var menGlowMat = hasShaders
+      ? titrationMakeMeniscusCausticMat(THREE, { time: 2.4, color: 0xbaf2ff, opacity: 0.62 })
+      : new THREE.MeshBasicMaterial({ color: 0xbaf2ff, transparent: true, opacity: 0.36, depthWrite: false, blending: THREE.AdditiveBlending });
+    if (hasShaders && menGlowMat.uniforms) shaderUniforms.push(menGlowMat.uniforms);
+    var meniscusGlow = ring('liquid-meniscus-glow', Math.max(0.05, profile.radius * 0.96), menGlowMat, fx, 0.184 + profile.height, 0);
+    meniscusGlow.scale.set(1, 1, 0.35);
+    meniscusGlow.visible = profile.height > 0.0001;
+  }
   var ripples=[0,1,2].map(function(index){
     var ripple=mesh('liquid-ripple-'+index,new THREE.TorusGeometry(1,0.014,6,64),new THREE.MeshBasicMaterial({color:0x173e54,transparent:true,opacity:0,depthWrite:false}),fx,0.199+profile.height,0);
     var highlight=new THREE.Mesh(new THREE.TorusGeometry(1,0.005,6,64),new THREE.MeshBasicMaterial({color:0xe2f6ff,transparent:true,opacity:0,depthWrite:false}));highlight.renderOrder=5;ripple.add(highlight);
     ripple.rotation.x=Math.PI/2;ripple.visible=false;ripple.renderOrder=4;return ripple;
   });
-  // A back-facing shell just outside the glass lights only where the surface turns
-  // away from the camera, which is a cheap fresnel: it puts a rim back on the wall
-  // in FRONT of the liquid. Both meshes write no depth, so previously the solution
-  // had a hard edge against nothing and the flask stopped reading as glass at all.
-  var sheen=material(0xbfe9ff,{transparent:true,opacity:m.contrast?0.34:0.20,side:THREE.BackSide,depthWrite:false,blending:THREE.AdditiveBlending});
+  // Borosilicate Fresnel rim shell on the Erlenmeyer wall & neck in front of the liquid.
+  var sheen = titrationMakeFresnelRimMat(THREE, { contrast: m.contrast, color: 0xbfe9ff, edge: 0x5eead4, opacity: 0.56 });
   mesh('flask-glow',new THREE.CylinderGeometry(0.278,0.968,1.751,40,1,true),sheen,fx,1.015,0);
   mesh('flask-glow-neck',new THREE.CylinderGeometry(0.278,0.278,0.484,32,1,true),sheen,fx,2.1,0);
   // Seated on the flask floor and no longer pure white: at full brightness inside a
@@ -1722,6 +2301,9 @@ function buildTitrationExperimentScene(THREE, S, m) {
   var stir=box('stir-bar',0.49,0.075,0.105,material(0xb7c6d6,{shininess:18}),fx,0.212,0);
   var bottom=3.12, length=3.12, top=bottom+length;
   tube('burette-glass',0.155,0.155,length,glass,fx,bottom+length/2,0,true);
+  if (hasShaders) {
+    tube('burette-fresnel-rim',0.159,0.159,length,titrationMakeFresnelRimMat(THREE,{contrast:false,color:0xa5e8ff,edge:0x67e8f9,opacity:0.46}),fx,bottom+length/2,0,true);
+  }
   box('burette-highlight',0.011,length,0.008,material(0xe2f6ff,{transparent:true,opacity:0.42,depthWrite:false}),fx-0.13,bottom+length/2,0.08);
   ring('burette-rim',0.155,white,fx,top,0);
   var reading=Math.max(0,Math.min(50,Number(m.reading)||0));
@@ -1729,6 +2311,14 @@ function buildTitrationExperimentScene(THREE, S, m) {
   var titrant=material(m.redox ? 0x9333ea : 0x86d3ed,{transparent:true,opacity:m.redox?0.8:0.45,depthWrite:false});
   var column=tube('burette-liquid',0.13,0.13,Math.max(0.001,liquidHeight),titrant,fx,bottom+liquidHeight/2,0);column.visible=liquidHeight>0;
   var meniscus=ring('burette-meniscus',0.13,white,fx,bottom+liquidHeight,0);meniscus.visible=liquidHeight>0;
+  if (!m.contrast) {
+    var burMenMat = hasShaders
+      ? titrationMakeMeniscusCausticMat(THREE, { time: 2.4, color: m.redox ? 0xe879f9 : 0x7dd3fc, opacity: 0.66 })
+      : new THREE.MeshBasicMaterial({ color: m.redox ? 0xe879f9 : 0x7dd3fc, transparent: true, opacity: 0.48, depthWrite: false, blending: THREE.AdditiveBlending });
+    if (hasShaders && burMenMat.uniforms) shaderUniforms.push(burMenMat.uniforms);
+    var burMeniscusGlow = ring('burette-meniscus-glow', 0.125, burMenMat, fx, bottom + liquidHeight, 0);
+    burMeniscusGlow.visible = liquidHeight > 0;
+  }
   for(var mark=0;mark<=50;mark++) box('graduation-'+mark,mark%10===0?0.20:0.10,0.012,0.014,white,fx-0.04,top-mark/50*length,0.158);
   var scaleInk=new THREE.LineBasicMaterial({color:0xe2f4ff});
   for(var number=0;number<=50;number+=10){
@@ -1754,6 +2344,19 @@ function buildTitrationExperimentScene(THREE, S, m) {
     material(m.flashColor||color,{transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}),
     fx,0.18+profile.height,0);
   flash.visible=false;
+  var plumes = [0, 1].map(function (pIdx) {
+    var plumeMat = new THREE.MeshBasicMaterial({
+      color: m.flashColor || color,
+      transparent: true, opacity: 0, depthWrite: false,
+      blending: THREE.AdditiveBlending, side: THREE.DoubleSide
+    });
+    var plume = mesh('titrant-plume-' + pIdx,
+      new THREE.TorusGeometry(Math.max(0.06, profile.radius * (0.28 + pIdx * 0.16)), 0.032, 8, 32),
+      plumeMat, fx, 0.18 + profile.height * 0.72, 0);
+    plume.rotation.x = Math.PI / 2 + (pIdx ? -0.18 : 0.18);
+    plume.visible = false;
+    return plume;
+  });
   // Animation is a brief cue for an addition, not a fluid-dynamics model or a drop counter.
   var started=null;
   S.tick=function(now){ if(!m.animating && previewMs===null)return; if(started===null)started=now;var elapsed=previewMs===null?Math.max(0,now-started):previewMs;var phase=Math.min(1,elapsed/650);drop.position.y=2.20-phase*(2.20-(0.18+profile.height));drop.visible=elapsed<650 && m.focus!=='burette';stir.rotation.y=Math.min(elapsed,700)*0.013;handle.rotation.z=elapsed<650?0:Math.PI/2;
@@ -1765,7 +2368,27 @@ function buildTitrationExperimentScene(THREE, S, m) {
       flash.scale.set(grow,Math.min(grow,0.34+k*1.05),grow);
       flash.material.opacity=0.8*(1-k)*(1-k);
       flash.position.y=0.18+profile.height-Math.min(profile.height*0.6,k*0.46);
-    } else flash.visible=false;
+      plumes.forEach(function (plume, pIdx) {
+        var pk = Math.max(0, Math.min(1, (k - pIdx * 0.10) / (1 - pIdx * 0.10)));
+        plume.visible = pk > 0 && pk < 1;
+        var pScale = 0.45 + pk * 1.15;
+        plume.scale.set(pScale, pScale, 0.7 + pk * 0.5);
+        plume.rotation.z = (pIdx ? -1 : 1) * pk * Math.PI * 1.4;
+        plume.position.y = 0.18 + profile.height - Math.min(profile.height * 0.65, pk * (0.34 + pIdx * 0.18));
+        plume.material.opacity = 0.42 * (1 - pk) * (1 - pk);
+      });
+    } else {
+      flash.visible=false;
+      plumes.forEach(function (plume) { plume.visible = false; });
+    }
+    if (shaderUniforms.length) {
+      var shaderT = previewMs !== null ? (1.6 + previewMs * 0.0014) : (1.6 + elapsed * 0.0022);
+      var swirlBoost = (fe >= 0 && fe < flashLife) ? (1.0 - (fe / flashLife) * 0.65) : 0.35;
+      for (var su = 0; su < shaderUniforms.length; su++) {
+        if (shaderUniforms[su].uTime) shaderUniforms[su].uTime.value = shaderT;
+        if (shaderUniforms[su].uSwirl) shaderUniforms[su].uSwirl.value = swirlBoost;
+      }
+    }
   };
   S.target=new THREE.Vector3(0,3.15,0);S.half=new THREE.Vector3(2.8,3.55,1.55);
   // Close-ups frame the selected apparatus, not an arbitrary zoom of the whole bench.
@@ -2471,7 +3094,8 @@ function TitrationBenchTools(props) {
 function buildTitrationDilutionScene(THREE,S,m) {
   var ratio=Math.max(0.000001,Math.min(1,m.fraction));
   function mesh(name,geometry,material,x,y,z){var o=new THREE.Mesh(geometry,material);o.name=name;o.position.set(x,y,z);S.model.add(o);return o;}
-  var glass=new THREE.MeshPhongMaterial({color:0xbce7ff,transparent:true,opacity:0.17,side:THREE.DoubleSide,depthWrite:false,shininess:100});
+  var dilPhysical = !m.contrast && typeof THREE.MeshPhysicalMaterial === 'function';
+  var glass=titrationApplyBorosilicateShader(THREE, dilPhysical ? new THREE.MeshPhysicalMaterial({color:0xc4ebff,transparent:true,opacity:0.18,roughness:0.06,metalness:0.05,clearcoat:1.0,clearcoatRoughness:0.05,reflectivity:0.95,side:THREE.DoubleSide,depthWrite:false}) : new THREE.MeshPhongMaterial({color:0xbce7ff,transparent:true,opacity:0.17,side:THREE.DoubleSide,depthWrite:false,shininess:100}), m.contrast, 0.78);
   var edge=new THREE.MeshStandardMaterial({color:0xbce7ff,metalness:0.25,roughness:0.28});
   var liquid=new THREE.MeshPhongMaterial({color:0x22d3ee,transparent:true,opacity:0.22,depthWrite:false,shininess:90});
   var solute=new THREE.MeshStandardMaterial({color:0xfbbf24,emissive:0x513000,roughness:0.3,metalness:0.05});
@@ -3931,9 +4555,14 @@ function TitrationExperimentBench(props) {
       attr:'data-titration-experiment-gl',clearColor:0x071422,fov:38,fitSlack:1.04,
       build:buildTitrationExperimentScene,
       lights:function(THREE,scene){
-        scene.add(new THREE.HemisphereLight(0xe9f6ff,0x253347,0.75));
-        var key=new THREE.DirectionalLight(0xffffff,0.85);key.position.set(4,8,6);scene.add(key);
-        var rim=new THREE.DirectionalLight(0x8bddff,0.65);rim.position.set(-4,4,-3);scene.add(rim);
+        scene.add(new THREE.HemisphereLight(0xe9f6ff,0x1d2d44,0.80));
+        var key=new THREE.DirectionalLight(0xfffbeb,0.92);key.position.set(4,8,6);scene.add(key);
+        var rim=new THREE.DirectionalLight(0x67e8f9,0.78);rim.position.set(-4,4,-3);scene.add(rim);
+        if(typeof THREE.PointLight==='function'){
+          var benchBacklight=new THREE.PointLight(0xbae6fd,0.55,10,2);
+          benchBacklight.position.set(0.42,1.6,-2.2);
+          scene.add(benchBacklight);
+        }
       },
       debug:function(S){var flash=S.model.getObjectByName('titrant-flash');return Object.assign({objects:S.model.children.length,flashVisible:!!(flash&&flash.visible),flashOpacity:flash?flash.material.opacity:0,ripples:S.model.children.filter(function(o){return /^liquid-ripple-/.test(o.name)&&o.visible;}).length},S.experiment||{});}
     });
@@ -4600,79 +5229,27 @@ function calcPH(vol) {
     return (lowPH + highPH) / 2;
   }
 
-  var Ca = preset.concAcid, Va = preset.volAcid, Cb = preset.concBase, Vb = vol;
-
+  var Ca = preset.concAcid, Va = preset.volAcid, Cb = preset.concBase, Vb = Math.max(0, vol);
   var Ka = preset.Ka, Kb = preset.Kb;
-
-  var molesAcid = Ca * Va / 1000;
-
-  var molesBase = Cb * Vb / 1000;
-
-  var totalVolL = (Va + Vb) / 1000;
-
-  if (Vb <= 0.001) {
-
-    if (Ka) return Math.max(0, Math.min(14, -Math.log10(Math.sqrt(Ka * Ca))));
-
-    return Math.max(0, Math.min(14, -Math.log10(Ca)));
-
+  var totalVolL = Math.max(1e-12, (Va + Vb) / 1000);
+  var cAcid = (Ca * Va / 1000) / totalVolL;
+  var cBase = (Cb * Vb / 1000) / totalVolL;
+  // Exact aqueous charge-balance bisection for monoprotic strong/weak acid-base systems
+  // (strictly monotonic through equivalence for sa_sb, wa_sb, sa_wb, and wa_wb).
+  function monoChargeResidual(pHguess) {
+    var h = Math.pow(10, -pHguess);
+    var oh = Kw / h;
+    var aMinus = Ka ? (cAcid * Ka / (h + Ka)) : cAcid;
+    var bhPlus = Kb ? (cBase * h / (h + Kw / Kb)) : cBase;
+    return h + bhPlus - oh - aMinus;
   }
-
-  var excess = molesAcid - molesBase;
-
-  if (excess > 1e-7) {
-
-    // Before equivalence: excess acid
-
-    if (!Ka && !Kb) return Math.max(0, Math.min(14, -Math.log10(excess / totalVolL)));
-
-    if (Ka) {
-
-      if (molesBase < 1e-7) return Math.max(0, Math.min(14, -Math.log10(Math.sqrt(Ka * (excess / totalVolL)))));
-
-      var pKa = -Math.log10(Ka);
-
-      // Henderson–Hasselbalch governs the buffer region, but very near the start
-      // (only a trace of base added) it dips below the pure-weak-acid pH because
-      // it ignores the acid's own dissociation. Take the higher (physically
-      // correct) of the two so the curve rises monotonically from the initial pH.
-      var hh = pKa + Math.log10(molesBase / excess);
-
-      var weakAcidAlonePH = -Math.log10(Math.sqrt(Ka * (excess / totalVolL)));
-
-      return Math.max(0, Math.min(14, Math.max(hh, weakAcidAlonePH)));
-
-    }
-
-    return Math.max(0, Math.min(14, -Math.log10(excess / totalVolL)));
-
+  var loPH = 0, hiPH = 14;
+  for (var bi = 0; bi < 80; bi++) {
+    var mid = (loPH + hiPH) / 2;
+    if (monoChargeResidual(mid) > 0) loPH = mid;
+    else hiPH = mid;
   }
-
-  if (excess > -1e-7) {
-
-    // At equivalence
-
-    if (!Ka && !Kb) return 7;
-
-    if (Ka && !Kb) { var CbC = molesAcid / totalVolL; return Math.max(0, Math.min(14, 14 + Math.log10(Math.sqrt((Kw / Ka) * CbC)))); }
-
-    if (!Ka && Kb) { var CaC = molesAcid / totalVolL; return Math.max(0, Math.min(14, -Math.log10(Math.sqrt((Kw / Kb) * CaC)))); }
-
-    return Math.max(0, Math.min(14, 7 + 0.5 * (-Math.log10(Ka) + Math.log10(Kb))));
-
-  }
-
-  // After equivalence: excess base
-
-  var excessBase = -excess;
-
-  if (!Kb) return Math.max(0, Math.min(14, 14 + Math.log10(excessBase / totalVolL)));
-
-  var pKb = -Math.log10(Kb);
-
-  var pOH = pKb + Math.log10(molesAcid / excessBase);
-
-  return Math.max(0, Math.min(14, 14 - pOH));
+  return Math.max(0, Math.min(14, (loPH + hiPH) / 2));
 
 }
 
@@ -6441,7 +7018,7 @@ return React.createElement("div", {
     currentReading: {preset:presetId,setup:preset.acidName+' + '+preset.baseName,axis:yAxis.mode,value:Number(yAxis.readout(currentY)),volume:Number(volumeAdded.toFixed(1)),observation:indicatorStatus,indicator:isPotentiometric?'KMnO₄':indicator.label},
     curve: { points: curveData, volume: volumeAdded, value: currentY, maxVolume: curveMaxVol, equivalence: Veq, min: yAxis.min, max: yAxis.max, tick: yAxis.tick, label: yAxis.label, readout: yAxis.speech(currentY), description: volumeAdded.toFixed(1) + ' mL. ' + yAxis.speech(currentY) + '. ' + indicatorStatus },
     colorReference: {identity:isPotentiometric?presetId:indicatorId,redox:isPotentiometric,universal:indicatorId==='universal',label:isPotentiometric?'KMnO₄':indicator.label,low:indicator.low,high:indicator.high,max:isPotentiometric?curveMaxVol:14,value:isPotentiometric?volumeAdded:currentPH,equivalence:Veq,readout:yAxis.speech(currentY),observation:indicatorStatus,colorAt:isPotentiometric?function(v){return getRedoxFlaskColor(redoxFraction(v));}:getIndicatorColor},
-    model: { reading: physicalBuretteReading, delivered: volumeAdded, fill: flaskFillFrac, color: currentColor, redox: isPotentiometric, contrast: !!ctx.isContrast, animating: additionAnimating, pulse: d.additionPulse || 0,
+    model: { reading: physicalBuretteReading, delivered: volumeAdded, fill: flaskFillFrac, color: currentColor, pH: isFinite(Number(currentPH)) ? Number(currentPH) : 7, redox: isPotentiometric, contrast: !!ctx.isContrast, animating: additionAnimating, pulse: d.additionPulse || 0,
       flashColor: endpointBloomColor, flashHold: endpointBloomHold },
     description: __alloT('stem.titration.burette_flask', 'BURETTE & FLASK') + '. ' + volumeAdded.toFixed(1) + ' mL. ' + yAxis.speech(currentY) + '. ' + indicatorStatus,
     readings: [

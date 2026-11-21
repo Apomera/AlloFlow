@@ -955,8 +955,9 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         var maxBytes = Math.max(1024, Number(options && options.maxBytes) || DEFAULT_MAX_BYTES);
         var maxClipBytes = Math.max(1024, Number(options && options.maxClipBytes) || DEFAULT_MAX_CLIP_BYTES);
         var currentBytes = _estimateBytes();
+        var identityHumanProtected = !identity && _identityEntriesForText(target).some(isHuman);
         if (!incomingIsHuman && !allowReplaceHuman &&
-            (isHuman(previous) || isHuman(legacyReplacement))) {
+            (isHuman(previous) || isHuman(legacyReplacement) || identityHumanProtected)) {
           lastPutError = {
             code: 'human-recording-protected', clipBytes: clipBytes, currentBytes: currentBytes,
             maxBytes: maxBytes, maxClipBytes: maxClipBytes
@@ -1074,7 +1075,15 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         if (identity) {
           var identityKey = portableKeyForIdentity(identity);
           _revoke(identities.get(identityKey));
-          if (identities.delete(identityKey)) _changed('remove');
+          var deletedAny = identities.delete(identityKey);
+          if (target.allowLegacyText !== false && identity.spokenText) {
+            var idLegacyKey = keyFor(identity.spokenText);
+            if (legacy.has(idLegacyKey)) {
+              _revoke(legacy.get(idLegacyKey));
+              if (legacy.delete(idLegacyKey)) deletedAny = true;
+            }
+          }
+          if (deletedAny) _changed('remove');
           return;
         }
         var legacyKey = keyFor(target);

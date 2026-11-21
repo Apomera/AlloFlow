@@ -230,10 +230,10 @@
           "id": "read5302-ch-01-check-01",
           "prompt": "How should a reading specialist use a developmental literacy continuum?",
           "choices": [
-            "Use the continuum to anticipate relationships and prerequisites while assessing the individual learner rather than treating stages as fixed gates.",
-            "Require every learner to master skills at the same age.",
-            "Skip foundational evidence when comprehension is weak.",
-            "Use grade placement as the only indicator of instructional need."
+            "Use the continuum to anticipate prerequisites while assessing each learner, not treating stages as fixed gates.",
+            "Expect every learner to master each continuum skill at the same chronological age before moving to new instruction.",
+            "Skip foundational word-level evidence whenever comprehension appears weak, since higher skills reveal lower ones.",
+            "Use current grade placement as the main indicator of instructional need and select materials only from that level."
           ],
           "answerIndex": 0,
           "rationale": "Literacy components develop in related and partly overlapping ways; a continuum organizes assessment and instruction but does not erase individual, linguistic, cultural, disability, or opportunity differences.",
@@ -250,10 +250,10 @@
           "id": "read5302-ch-01-check-02",
           "prompt": "Which relationship is central to reading comprehension?",
           "choices": [
-            "Comprehension depends only on reading rate.",
-            "Reading comprehension depends on both efficient word recognition and language comprehension, so each component should be assessed.",
-            "Listening comprehension makes decoding unnecessary.",
-            "Word recognition alone guarantees text understanding."
+            "Comprehension depends mainly on reading rate, so faster oral reading is the clearest sign that understanding is secure.",
+            "Comprehension depends on efficient word recognition and language comprehension, so each component should be assessed.",
+            "Strong listening comprehension makes decoding instruction unnecessary because readers can infer words from meaning.",
+            "Accurate word recognition by itself ensures text understanding once a reader can pronounce every printed word."
           ],
           "answerIndex": 1,
           "rationale": "Word recognition and language comprehension make distinct, interacting contributions; instructional planning should locate the learner’s relative strengths and needs rather than infer one from the other.",
@@ -270,10 +270,10 @@
           "id": "read5302-ch-01-check-03",
           "prompt": "What is the instructional value of oral-language assessment?",
           "choices": [
-            "It replaces direct assessment of print skills.",
-            "It establishes intelligence from conversation.",
-            "Oral-language evidence helps explain comprehension and expression and guides language-rich reading and writing instruction.",
-            "It is relevant only before kindergarten."
+            "Oral-language evidence can replace direct assessment of print skills such as decoding, spelling, and word recognition.",
+            "Conversation samples establish a learner’s intelligence level, which then sets expectations for reading instruction.",
+            "Oral-language evidence helps explain comprehension and expression and guides language-rich literacy teaching.",
+            "Oral-language assessment matters mainly before kindergarten and adds little once formal reading instruction begins."
           ],
           "answerIndex": 2,
           "rationale": "Oral language supports vocabulary, syntax, discourse, inference, comprehension, and written expression across grades, but it must be integrated with direct print and writing evidence.",
@@ -290,10 +290,10 @@
           "id": "read5302-ch-01-check-04",
           "prompt": "How should a specialist interpret a diverse literacy profile?",
           "choices": [
-            "Assign identical intervention from the total score.",
-            "Assume both students have dyslexia.",
-            "Select the lowest-grade workbook for both students.",
-            "Analyze component skills and contexts separately because the same overall score can reflect different instructional needs."
+            "Assign the same intervention to both students because their identical total scores indicate the same instructional need.",
+            "Assume both students have dyslexia because their composite reading scores fall below the expected benchmark range.",
+            "Select the lowest-grade workbook for both students so the materials match their shared overall performance level.",
+            "Analyze component skills and contexts separately, because the same overall score can reflect very different needs."
           ],
           "answerIndex": 3,
           "rationale": "Composite performance can conceal different mechanisms; disaggregating word recognition, language, fluency, knowledge, writing, opportunity, and task conditions supports more precise instruction.",
@@ -310,10 +310,10 @@
           "id": "read5302-ch-01-check-05",
           "prompt": "Which pattern is commonly associated with dyslexia?",
           "choices": [
-            "A word-level reading difficulty involving accurate or fluent recognition, decoding, and spelling, evaluated comprehensively and under current criteria.",
-            "A disorder defined by reversing letters.",
-            "Low motivation as the necessary cause.",
-            "A comprehension problem that never affects word reading."
+            "A word-level difficulty in accurate or fluent recognition, decoding, and spelling, evaluated comprehensively.",
+            "A visual disorder defined mainly by reversing letters and numbers when reading or writing beyond the first grade.",
+            "A reading problem caused primarily by low motivation, which improves once students receive engaging reading choices.",
+            "A comprehension difficulty that leaves word reading intact while making inferences and main ideas hard to identify."
           ],
           "answerIndex": 0,
           "rationale": "Dyslexia is not established by reversals or a single score; evaluation considers persistent word-level patterns, instruction, language, development, functional impact, and exclusionary and co-occurring factors.",
@@ -430,10 +430,10 @@
           "id": "read5302-ch-02-check-01",
           "prompt": "How do phonological awareness and phonemic awareness differ?",
           "choices": [
-            "Phonological awareness covers spoken sound structures broadly; phonemic awareness focuses specifically on individual phonemes.",
-            "Both require printed letters.",
-            "Phonics is the broader oral category.",
-            "Phonemic awareness concerns word meanings."
+            "Phonological awareness spans spoken units such as syllables and rimes; phonemic awareness targets individual phonemes.",
+            "Both phonological and phonemic awareness require printed letters, so neither can be practiced through oral activities.",
+            "Phonics is the broader oral category, and phonological awareness is one narrower part of letter-sound instruction.",
+            "Phonemic awareness concerns the meanings of words, while phonological awareness concerns how sentences are built."
           ],
           "answerIndex": 0,
           "rationale": "Phonological awareness includes words, syllables, onset-rime, and phonemes; phonemic awareness is the most specific level and can be practiced orally before or alongside graphemes.",
@@ -450,10 +450,10 @@
           "id": "read5302-ch-02-check-02",
           "prompt": "Which task measures phoneme segmentation?",
           "choices": [
-            "Combining phonemes to form a word.",
-            "Separating a spoken word into its individual phonemes.",
-            "Naming the letters in a word.",
-            "Identifying the meaning of a morpheme."
+            "Combining a sequence of spoken phonemes into a whole word, such as hearing /s/ /u/ /n/ and saying sun.",
+            "Separating a spoken word into each of its individual phonemes, such as saying /m/ /a/ /p/ for map.",
+            "Naming each printed letter in a written word in order, such as reading the letters m, a, p aloud from a card.",
+            "Identifying the meaning of a morpheme within a word, such as explaining that un- in unhappy means not."
           ],
           "answerIndex": 1,
           "rationale": "Segmentation requires identifying the sequence of phonemes in a spoken word; the number of sounds need not equal the number of printed letters.",
@@ -470,10 +470,10 @@
           "id": "read5302-ch-02-check-03",
           "prompt": "Which task measures phoneme manipulation?",
           "choices": [
-            "Print-directionality knowledge.",
-            "Syllable counting only.",
-            "Phoneme substitution, a form of phoneme manipulation.",
-            "Vocabulary categorization."
+            "Print-directionality knowledge, such as tracking text from left to right and returning to the next line correctly.",
+            "Counting the syllables in multisyllable spoken words by clapping each beat without isolating individual sounds.",
+            "Phoneme substitution, such as changing the /k/ in cat to /h/ to say hat, which is a form of phoneme manipulation.",
+            "Sorting picture cards into vocabulary categories such as animals, foods, and tools based on their meanings."
           ],
           "answerIndex": 2,
           "rationale": "Deleting, adding, or substituting phonemes requires deliberate manipulation of the sound sequence and is more complex than recognition alone.",
@@ -488,12 +488,12 @@
         },
         {
           "id": "read5302-ch-02-check-04",
-          "prompt": "What is the alphabetic principle?",
+          "prompt": "Which statement best describes the alphabetic principle that beginning readers must learn?",
           "choices": [
-            "Every letter always represents one sound.",
-            "Word meaning can be derived from letter shape alone.",
-            "Print is memorized only as whole visual pictures.",
-            "Letters and letter patterns represent the phonemes in spoken language in systematic ways."
+            "Every letter in English represents exactly one sound, so each word can be decoded letter by letter in sequence.",
+            "Word meaning can be derived from the visual shape of the letters, so readers rely mainly on word outlines.",
+            "Print is learned as whole visual pictures, so each new word is memorized separately from letter-sound knowledge.",
+            "Letters and letter patterns represent the phonemes of spoken language in systematic, learnable ways."
           ],
           "answerIndex": 3,
           "rationale": "The alphabetic principle links phonology and orthography; English correspondences vary, so teaching progresses from common transparent patterns to more complex ones.",
@@ -510,10 +510,10 @@
           "id": "read5302-ch-02-check-05",
           "prompt": "Which activity addresses concepts of print?",
           "choices": [
-            "Understanding how print is organized and functions in books and written language.",
-            "Advanced morphological analysis.",
-            "Silent-reading rate.",
-            "Norm-referenced interpretation."
+            "Understanding how print works in books, such as directionality, word boundaries, and the parts of a book.",
+            "Analyzing advanced morphological structure, such as identifying Greek and Latin roots in academic vocabulary.",
+            "Measuring silent-reading rate on grade-level passages to estimate how quickly students process connected text.",
+            "Interpreting norm-referenced scores to compare a learner’s reading performance with a national reference group."
           ],
           "answerIndex": 0,
           "rationale": "Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction.",
@@ -630,10 +630,10 @@
           "id": "read5302-ch-03-check-01",
           "prompt": "What is the best initial approach to teaching a new phonics pattern?",
           "choices": [
-            "Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text.",
-            "Ask students to infer the pattern from an unrelated story without guidance.",
-            "Have students memorize definitions only.",
-            "Teach several conflicting exceptions before the common pattern."
+            "Teach the sound–spelling link explicitly, guide blending and spelling, then apply it in words and connected text.",
+            "Ask students to infer the new pattern from an unrelated story during independent reading without teacher guidance.",
+            "Have students memorize written definitions of the phonics rule and recite them before any word-reading practice.",
+            "Introduce several conflicting spelling exceptions first so students see the full complexity before the main pattern."
           ],
           "answerIndex": 0,
           "rationale": "Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence.",
@@ -650,10 +650,10 @@
           "id": "read5302-ch-03-check-02",
           "prompt": "Why use decodable text during early phonics application?",
           "choices": [
-            "It permanently limits students to one text type.",
-            "It gives students a high opportunity to practice applying taught decoding patterns in connected reading.",
-            "It measures listening comprehension without print.",
-            "It replaces language-rich read-alouds and knowledge building."
+            "It keeps beginning readers in one controlled text type for the rest of the elementary grades to build confidence.",
+            "It offers many chances to apply recently taught decoding patterns accurately while reading connected text.",
+            "It measures listening comprehension without print so teachers can separate language skills from decoding.",
+            "It replaces read-alouds and knowledge-building discussions because controlled text covers those goals as well."
           ],
           "answerIndex": 1,
           "rationale": "Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing.",
@@ -670,10 +670,10 @@
           "id": "read5302-ch-03-check-03",
           "prompt": "How should irregular high-frequency words be taught?",
           "choices": [
-            "Treat every letter as arbitrary.",
-            "Require visual memorization without sound analysis.",
-            "Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning.",
-            "Avoid the word until every exception is taught."
+            "Treat every letter in an irregular word as arbitrary so students learn the full word as one unanalyzed unit.",
+            "Require visual memorization from flash cards without any analysis of the sounds represented by the letters.",
+            "Map the regular sound-letter parts, flag the unexpected part, and connect pronunciation with meaning.",
+            "Avoid teaching the word until students have learned every exception pattern that could appear in later texts."
           ],
           "answerIndex": 2,
           "rationale": "Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape.",
@@ -690,10 +690,10 @@
           "id": "read5302-ch-03-check-04",
           "prompt": "What supports accurate multisyllabic word reading?",
           "choices": [
-            "Counting letters and choosing the shortest pronunciation.",
-            "Using context to replace word analysis.",
-            "Memorizing one pronunciation for every prefix.",
-            "Cumulative instruction in syllable patterns, vowel and consonant correspondences, morphology, flexible division, and meaning checks."
+            "Counting the letters in each long word and choosing the shortest familiar pronunciation that seems to fit.",
+            "Using sentence context to replace word analysis so students can skip long words and keep reading smoothly.",
+            "Memorizing one fixed pronunciation for every prefix and suffix and applying it the same way in each word.",
+            "Cumulative work on syllable patterns, vowel teams, morphology, flexible division, and meaning checks."
           ],
           "answerIndex": 3,
           "rationale": "Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context.",
@@ -708,12 +708,12 @@
         },
         {
           "id": "read5302-ch-03-check-05",
-          "prompt": "Why teach morphology?",
+          "prompt": "Why should literacy instruction include explicit teaching of morphology?",
           "choices": [
-            "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words.",
-            "It is useful only for grammar labels.",
-            "It eliminates the need for phonics.",
-            "It applies only to words of Anglo-Saxon origin."
+            "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related word families.",
+            "Morphology is useful mainly for labeling grammar terms during isolated parts-of-speech worksheets.",
+            "Morphology instruction removes the need for phonics because word parts cover all decoding demands.",
+            "Morphology applies only to short Anglo-Saxon base words rather than to academic Latin and Greek roots."
           ],
           "answerIndex": 0,
           "rationale": "Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge.",
@@ -831,9 +831,9 @@
           "prompt": "What are the central dimensions of oral-reading fluency?",
           "choices": [
             "Accuracy, appropriate rate or automaticity, and prosody, interpreted with text difficulty and comprehension.",
-            "Vocabulary breadth alone.",
-            "Silent-reading preference only.",
-            "Handwriting speed and spelling."
+            "Vocabulary breadth measured on a standardized test, since knowing word meanings determines reading fluency.",
+            "A preference for silent rather than oral reading, recorded through interest surveys completed by students.",
+            "Handwriting speed and spelling accuracy on timed dictation tasks, which reflect overall literacy automaticity."
           ],
           "answerIndex": 0,
           "rationale": "Fluency coordinates accurate, increasingly automatic word reading with phrasing and expression; rate without accuracy, meaning, text context, or prosody is incomplete.",
@@ -850,10 +850,10 @@
           "id": "read5302-ch-04-check-02",
           "prompt": "Which practice is most likely to improve fluency?",
           "choices": [
-            "Require faster independent reading without feedback.",
-            "Use modeled and repeated oral reading of suitable text with specific feedback, phrasing support, and comprehension checks.",
-            "Move immediately to much harder text.",
-            "Replace connected reading with word definitions only."
+            "Timed independent reading in which students try to read faster each day without receiving feedback on errors.",
+            "Modeled, repeated oral reading of suitable text with feedback, phrasing support, and meaning checks.",
+            "Moving students promptly to much harder text so the challenge pushes them to build speed and stamina.",
+            "Replacing connected reading time with practice defining vocabulary words drawn from upcoming passages."
           ],
           "answerIndex": 1,
           "rationale": "Purposeful repeated reading and guided oral practice can build automaticity and prosody when the text is accessible and feedback preserves accuracy and meaning.",
@@ -870,10 +870,10 @@
           "id": "read5302-ch-04-check-03",
           "prompt": "What makes vocabulary instruction robust?",
           "choices": [
-            "One dictionary-copying exercise.",
-            "A single pretest followed by no instruction.",
-            "Student-friendly explanations, morphology and semantic relationships, varied meaningful contexts, active use, and cumulative review.",
-            "Teaching every unknown word with equal intensity."
+            "A single dictionary-copying exercise in which students write definitions for each word on the weekly list.",
+            "A vocabulary pretest at the start of the unit followed by independent reading with no further word teaching.",
+            "Student-friendly explanations, word relationships, varied contexts, active use, and cumulative review.",
+            "Equal teaching time for every unfamiliar word in a text, regardless of how useful the word is across subjects."
           ],
           "answerIndex": 2,
           "rationale": "Vocabulary grows through explicit instruction, word analysis, rich language and reading, multiple exposures, retrieval, and application across speaking, reading, and writing.",
@@ -890,10 +890,10 @@
           "id": "read5302-ch-04-check-04",
           "prompt": "How should context be used to infer word meaning?",
           "choices": [
-            "Assume the nearest word is always a synonym.",
-            "Ignore morphology and syntax.",
-            "Treat the first guess as final.",
-            "Form a tentative meaning, analyze word parts when useful, and verify it against the broader text and a reliable source when needed."
+            "Assume the nearest familiar word in the sentence is a synonym and substitute it for the unknown word.",
+            "Set morphology and sentence structure aside and rely on the general topic of the passage to choose a meaning.",
+            "Treat the first meaning that comes to mind as final so reading can continue without further interruption.",
+            "Form a tentative meaning, analyze word parts when useful, and verify it against the text or a reliable source."
           ],
           "answerIndex": 3,
           "rationale": "Context clues vary in quality; strategic readers combine syntax, discourse, morphology, knowledge, and verification rather than relying on an isolated cue.",
@@ -910,10 +910,10 @@
           "id": "read5302-ch-04-check-05",
           "prompt": "What is effective comprehension-strategy instruction?",
           "choices": [
-            "Explain and model the strategy, guide practice in authentic texts, prompt metacognitive monitoring, and gradually release responsibility.",
-            "Assign more summaries without modeling.",
-            "Teach a mnemonic as the final outcome.",
-            "Use only texts students already memorized."
+            "Model the strategy, guide practice in real texts, prompt self-monitoring, and gradually release control.",
+            "Assign more written summaries each week so students improve through repeated independent practice alone.",
+            "Teach a catchy strategy mnemonic and treat students’ ability to recite it as the final learning outcome.",
+            "Use passages that students have already memorized so they can focus attention on the strategy steps."
           ],
           "answerIndex": 0,
           "rationale": "Strategies are purposeful routines for constructing and monitoring meaning; instruction should make decisions visible and then support flexible independent use.",
@@ -1030,10 +1030,10 @@
           "id": "read5302-ch-05-check-01",
           "prompt": "How are reading and writing instruction related?",
           "choices": [
-            "Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning.",
-            "Writing practice automatically fixes every decoding need.",
-            "Reading and writing share no underlying knowledge.",
-            "Composition should begin only after reading is mastered."
+            "Reading supplies models and knowledge for writing, and writing deepens analysis of language and evidence.",
+            "Frequent writing practice resolves most decoding difficulties, so separate word-level instruction becomes unneeded.",
+            "Reading and writing draw on no shared knowledge, so each should be scheduled and assessed in an unrelated block.",
+            "Composition should begin after students have mastered reading, since writing depends on finished reading skill."
           ],
           "answerIndex": 0,
           "rationale": "Reading and writing are reciprocal but not identical; effective instruction connects them while directly teaching the distinct transcription, language, comprehension, and composition skills learners need.",
@@ -1050,10 +1050,10 @@
           "id": "read5302-ch-05-check-02",
           "prompt": "What should writing assessment distinguish?",
           "choices": [
-            "Treat total word count as the only writing construct.",
-            "Transcription fluency and accuracy separately from planning, language, organization, revision, and purpose.",
-            "Assume limited output means limited knowledge.",
-            "Score handwriting appearance as reading comprehension."
+            "Total word count on timed essays, treated as the main measure of a student’s overall writing ability.",
+            "Transcription fluency and accuracy, kept separate from planning, language, organization, and revision.",
+            "Overall length of output, since short pieces reliably indicate that a student lacks knowledge of the topic.",
+            "Handwriting appearance, scored as part of reading comprehension when students answer written questions."
           ],
           "answerIndex": 1,
           "rationale": "Writing performance reflects interacting transcription and composition demands; separating components reveals whether instruction should address mechanics, language, strategy, access, or several areas.",
@@ -1068,12 +1068,12 @@
         },
         {
           "id": "read5302-ch-05-check-03",
-          "prompt": "What is disciplinary literacy?",
+          "prompt": "Which statement best explains what disciplinary literacy requires of readers?",
           "choices": [
-            "Every subject uses identical text conventions.",
-            "Content teachers should avoid literacy instruction.",
-            "Disciplines use characteristic purposes, evidence, vocabulary, representations, and reasoning that should be taught explicitly.",
-            "Disciplinary literacy means simplifying all texts."
+            "Every school subject uses identical text conventions, so general reading strategies transfer without adjustment.",
+            "Content-area teachers should leave literacy instruction to language arts so subject lessons stay focused on facts.",
+            "Each discipline uses distinct purposes, evidence, vocabulary, and reasoning that need explicit teaching.",
+            "Disciplinary literacy means simplifying science and history texts into short summaries for all readers."
           ],
           "answerIndex": 2,
           "rationale": "Students need general literacy skills and instruction in how experts in a discipline build claims, read sources, interpret representations, and communicate knowledge.",
@@ -1090,10 +1090,10 @@
           "id": "read5302-ch-05-check-04",
           "prompt": "How should a specialist support digital-text reading?",
           "choices": [
-            "Assume digital familiarity equals critical literacy.",
-            "Ban all hyperlinks without teaching evaluation.",
-            "Judge credibility by visual design alone.",
-            "Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention."
+            "Assume students’ everyday device use already provides the critical skills needed to read and evaluate online texts.",
+            "Block hyperlinks and online sources during lessons instead of teaching students how to evaluate digital information.",
+            "Teach students to judge a website’s credibility mainly by its visual design, graphics, and professional appearance.",
+            "Teach navigation, source evaluation, lateral checking, synthesis across modes, and monitoring of purpose and focus."
           ],
           "answerIndex": 3,
           "rationale": "Digital literacy includes comprehension plus navigation, authorship and evidence checks, multimodal integration, privacy awareness, and strategic control of distraction.",
@@ -1108,12 +1108,12 @@
         },
         {
           "id": "read5302-ch-05-check-05",
-          "prompt": "Why use coherent text sets?",
+          "prompt": "Why should a reading specialist recommend coherent text sets for content units?",
           "choices": [
-            "Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives.",
-            "Every text must use the same difficulty and viewpoint.",
-            "A text set eliminates the need for explicit instruction.",
-            "Students should memorize facts without discussing sources."
+            "Connected texts build vocabulary and knowledge while allowing comparison of claims, evidence, and perspectives.",
+            "A text set requires every selection to share the same difficulty level and viewpoint so comparisons stay simple.",
+            "Organizing texts around one topic removes the need for explicit vocabulary and comprehension instruction.",
+            "Students should memorize isolated facts from one chapter rather than comparing claims across several sources."
           ],
           "answerIndex": 0,
           "rationale": "Purposefully sequenced text sets support cumulative knowledge and language while creating opportunities for synthesis and critical examination.",
@@ -1235,10 +1235,10 @@
           "id": "read5302-ch-06-check-01",
           "prompt": "What characterizes explicit literacy instruction?",
           "choices": [
-            "State the goal, model the thinking and procedure, guide responsive practice with feedback, and move toward independent application.",
-            "Give the answer before every attempt indefinitely.",
-            "Use discovery alone for students with persistent difficulty.",
-            "Remove cumulative review once a skill is introduced."
+            "State the goal, model the thinking, guide practice with feedback, and move toward independent use.",
+            "Provide the answer before each student attempt throughout the year so learners never practice an error.",
+            "Rely on open discovery alone for students with persistent difficulty so they construct strategies themselves.",
+            "Drop cumulative review once a skill has been introduced so lessons can cover more new content each week."
           ],
           "answerIndex": 0,
           "rationale": "Explicit instruction makes the target and decision process visible, provides many successful responses and feedback, and fades support according to performance.",
@@ -1254,12 +1254,12 @@
         },
         {
           "id": "read5302-ch-06-check-02",
-          "prompt": "What makes grouping flexible?",
+          "prompt": "Which practice makes small-group reading instruction genuinely flexible?",
           "choices": [
-            "Group permanently by a single composite score.",
-            "Group for a specific, assessed purpose and change membership as skills, texts, and instructional needs change.",
-            "Use only whole-class instruction regardless of need.",
-            "Change groups randomly every day without data."
+            "Group students permanently using a single composite reading score gathered at the start of the school year.",
+            "Group for a specific, assessed purpose and change membership as skills, texts, and instructional needs shift.",
+            "Use whole-class instruction for every lesson regardless of assessment evidence about differing student needs.",
+            "Reassign groups randomly each day without reference to data so students work with many different peers."
           ],
           "answerIndex": 1,
           "rationale": "Flexible grouping is temporary and purpose driven; it preserves access to rich instruction while allowing targeted teaching and response-based regrouping.",
@@ -1277,10 +1277,10 @@
           "id": "read5302-ch-06-check-03",
           "prompt": "How should differentiation preserve rigor?",
           "choices": [
-            "Replace the task with unrelated easy worksheets.",
-            "Remove all complex ideas from the unit.",
-            "Maintain the important content and thinking goal while adding explicit vocabulary, chunking, accessible formats, guided reading, and response supports.",
-            "Grade the student on a different hidden goal."
+            "Replace the grade-level task with unrelated easier worksheets that students can complete independently.",
+            "Remove complex ideas from the unit so students who need support can finish assignments more quickly.",
+            "Keep the core thinking goal while adding vocabulary support, chunking, accessible formats, and guidance.",
+            "Grade students who receive supports on a different goal that is not shared with them in advance."
           ],
           "answerIndex": 2,
           "rationale": "Differentiation changes access, scaffolding, intensity, materials, grouping, or response options while keeping the intended construct and meaningful learning visible.",
@@ -1298,10 +1298,10 @@
           "id": "read5302-ch-06-check-04",
           "prompt": "Which support is appropriate for multilingual learners?",
           "choices": [
-            "Prohibit use of the home language.",
-            "Wait for conversational fluency before literacy instruction.",
-            "Assume every English error is a disability.",
-            "Build on linguistic knowledge, teach English language forms and vocabulary explicitly, provide comprehensible interaction, and coordinate content and language goals."
+            "Prohibit use of the home language during literacy lessons so students practice English more consistently.",
+            "Wait for conversational English fluency before beginning grade-level literacy and content instruction.",
+            "Treat each English language error in reading or writing as a likely sign of an underlying disability.",
+            "Build on home-language knowledge, teach English forms explicitly, and pair content with language goals."
           ],
           "answerIndex": 3,
           "rationale": "Responsive instruction treats multilingualism as an asset and provides explicit access to the language of disciplinary texts without lowering intellectual demand.",
@@ -1319,10 +1319,10 @@
           "id": "read5302-ch-06-check-05",
           "prompt": "How can an intervention be intensified responsibly?",
           "choices": [
-            "Use diagnostic evidence to adjust dimensions such as explicitness, dosage, group size, practice, feedback, linguistic support, or skill focus and monitor the change.",
-            "Change several unknown elements without documentation.",
-            "Repeat the same plan indefinitely.",
-            "Attribute nonresponse to motivation without evidence."
+            "Use diagnostic data to adjust explicitness, dosage, group size, or focus, then monitor the change.",
+            "Change several program elements at once without documenting which adjustments were made or when.",
+            "Repeat the same intervention plan indefinitely because consistency matters more than student response.",
+            "Attribute limited progress to low motivation and keep the plan unchanged without gathering evidence."
           ],
           "answerIndex": 0,
           "rationale": "Data-based intensification begins with fidelity and diagnostic review, makes a reasoned adaptation, documents it, and evaluates whether the change improves growth.",
@@ -1445,10 +1445,10 @@
           "id": "read5302-ch-07-check-01",
           "prompt": "How do screening and diagnostic assessment differ?",
           "choices": [
-            "It identifies elevated risk and need for timely follow-up; diagnostic evidence is needed to specify skills and instruction.",
-            "It establishes a disability by itself.",
-            "It dictates one commercial intervention.",
-            "It proves the student received inadequate instruction."
+            "It flags risk and the need for timely follow-up; diagnostic evidence then specifies skills to teach.",
+            "It establishes a reading disability by itself, so a positive screen leads directly to formal eligibility.",
+            "It dictates which commercial intervention program the student should receive for the rest of the year.",
+            "It proves that the student received inadequate classroom instruction during the previous school year."
           ],
           "answerIndex": 0,
           "rationale": "Screening prioritizes efficient risk identification, whereas diagnostic assessment samples components and error patterns to guide hypotheses and teaching.",
@@ -1466,10 +1466,10 @@
           "id": "read5302-ch-07-check-02",
           "prompt": "What is the purpose of progress monitoring?",
           "choices": [
-            "To rediagnose the student every week.",
-            "To estimate change toward a defined goal and support decisions about continuing, adjusting, or intensifying instruction.",
-            "To replace instruction with testing.",
-            "To compare unrelated skills at each administration."
+            "To rediagnose the student every week so the team can update eligibility categories as scores change.",
+            "To estimate growth toward a defined goal and guide decisions to continue, adjust, or intensify teaching.",
+            "To replace a portion of daily instruction with testing time so the team collects as much data as possible.",
+            "To compare performance on a different, unrelated skill at each administration across the school year."
           ],
           "answerIndex": 1,
           "rationale": "Progress monitoring uses repeated technically adequate measures of the same broad outcome or defined skill to evaluate responsiveness over time.",
@@ -1487,10 +1487,10 @@
           "id": "read5302-ch-07-check-03",
           "prompt": "What does reliability mean in assessment?",
           "choices": [
-            "The cultural relevance of the book list only.",
-            "The instructional intensity of the intervention.",
-            "The consistency or precision of the scores for the intended use.",
-            "The face attractiveness of the report."
+            "The cultural relevance of the passages selected for the assessment and the classroom book collection.",
+            "The instructional intensity of the intervention that students receive after the assessment is scored.",
+            "The consistency or precision of scores for the intended use across occasions, forms, or raters.",
+            "The visual attractiveness and readability of the score report that is shared with families and staff."
           ],
           "answerIndex": 2,
           "rationale": "Reliability concerns score consistency and measurement error; it is necessary but does not by itself establish that an interpretation is valid or fair.",
@@ -1506,12 +1506,12 @@
         },
         {
           "id": "read5302-ch-07-check-04",
-          "prompt": "What does validity mean?",
+          "prompt": "A screener yields consistent scores but samples skills unrelated to the decision being made. What validity problem exists?",
           "choices": [
-            "The test is invalid only because it is reliable.",
-            "The student must retake it until the score rises.",
-            "Validity is a permanent property independent of purpose.",
-            "Evidence does not support the intended interpretation and use of the scores."
+            "The test must be invalid simply because it produces consistent, reliable scores across administrations.",
+            "The student should retake the same test repeatedly until the score rises to the expected benchmark level.",
+            "Validity is a permanent property of the test itself and stays the same regardless of the purpose of use.",
+            "The evidence does not support the intended interpretation and use of the scores for this purpose."
           ],
           "answerIndex": 3,
           "rationale": "Validity concerns evidence for a particular interpretation and use in a defined population and context, not a universal label attached to an instrument.",
@@ -1529,10 +1529,10 @@
           "id": "read5302-ch-07-check-05",
           "prompt": "Why do sensitivity and specificity matter in screening?",
           "choices": [
-            "Correct identification of students with risk and correct exclusion of students without the target risk.",
-            "Interrater reliability and handwriting speed.",
-            "Percentile rank and grade equivalent.",
-            "Treatment fidelity and social validity."
+            "Correctly identifying students who have the risk and correctly excluding students who do not.",
+            "Interrater reliability among scorers and the handwriting speed of students on written responses.",
+            "The percentile rank and grade-equivalent score that the screener reports for each individual student.",
+            "Treatment fidelity during intervention and the social validity ratings collected from teachers afterward."
           ],
           "answerIndex": 0,
           "rationale": "Sensitivity and specificity describe classification accuracy; thresholds should reflect prevalence, consequences, resources, equity, and the follow-up pathway.",
@@ -1660,10 +1660,10 @@
           "id": "read5302-ch-08-check-01",
           "prompt": "What does a phoneme-analysis error reveal?",
           "choices": [
-            "Explicit supported phoneme segmentation linked to the letters once the oral task is understood.",
-            "Advanced figurative language.",
-            "Silent-reading endurance.",
-            "Dictionary guide words."
+            "Explicit, supported phoneme segmentation linked to letters once the oral task is understood.",
+            "Instruction in advanced figurative language such as metaphor and idiom within grade-level poetry.",
+            "Longer silent-reading sessions designed to build stamina with self-selected chapter books each day.",
+            "Practice locating entries with dictionary guide words to strengthen alphabetical order and reference skills."
           ],
           "answerIndex": 0,
           "rationale": "The contrast between blending and segmentation identifies a specific sound-analysis need that can be taught directly and connected to encoding and decoding.",
@@ -1682,10 +1682,10 @@
           "id": "read5302-ch-08-check-02",
           "prompt": "Why use unfamiliar or pseudoword decoding tasks?",
           "choices": [
-            "Background knowledge of the story.",
-            "Application of phoneme?grapheme and word-analysis knowledge without relying only on stored word familiarity.",
-            "Writing organization.",
-            "Listening comprehension only."
+            "Background knowledge of the story topic and the student’s ability to predict events from earlier pages.",
+            "Applying sound-letter and word-analysis knowledge without relying on stored familiarity with real words.",
+            "Writing organization, including paragraph structure, transitions, and the sequencing of ideas in essays.",
+            "Listening comprehension of short passages read aloud by the examiner without any printed text present."
           ],
           "answerIndex": 1,
           "rationale": "Novel-word tasks can sample generative decoding, but interpretation still requires appropriate language, pattern legality, instruction, and comparison with real-word and spelling evidence.",
@@ -1704,10 +1704,10 @@
           "id": "read5302-ch-08-check-03",
           "prompt": "What can an informal reading inventory contribute?",
           "choices": [
-            "As a single standardized diagnosis.",
-            "As proof of an exact independent grade level.",
-            "As descriptive task evidence about accuracy, fluency, and comprehension, integrated with more reliable measures and authentic performance.",
-            "As a replacement for word-level analysis."
+            "A single standardized diagnosis that determines the student’s reading disability status without other data.",
+            "Proof of an exact independent reading level that remains accurate across texts, genres, and topics.",
+            "Descriptive task evidence about accuracy, fluency, and comprehension, combined with more reliable measures.",
+            "A replacement for word-level analysis, since passage reading already shows each decoding skill needed."
           ],
           "answerIndex": 2,
           "rationale": "Passage inventories reveal strategies and errors in context but their level labels and comprehension scores can be unstable; decisions need converging evidence.",
@@ -1726,10 +1726,10 @@
           "id": "read5302-ch-08-check-04",
           "prompt": "How should spelling errors be analyzed?",
           "choices": [
-            "Treat both words as random visual failures.",
-            "Assess comprehension instead of spelling.",
-            "Correct the words without identifying patterns.",
-            "Examine phoneme representation, orthographic conventions, inflectional morphology, and doubling patterns rather than count errors only."
+            "Treat the misspelled words as random visual memory failures that do not reveal any spelling pattern.",
+            "Assess reading comprehension instead of spelling, since comprehension better explains writing difficulties.",
+            "Correct each misspelled word on the paper without identifying which spelling patterns caused the errors.",
+            "Examine sound representation, conventions, inflected endings, and doubling patterns, not just error counts."
           ],
           "answerIndex": 3,
           "rationale": "Feature analysis shows what the learner represents and which phonological, orthographic, syllabic, or morphological patterns need explicit instruction.",
@@ -1748,10 +1748,10 @@
           "id": "read5302-ch-08-check-05",
           "prompt": "How should an oral-reading-fluency score be interpreted?",
           "choices": [
-            "Rate is one indicator; accuracy, prosody, text conditions, language, and comprehension show that fluent meaningful reading is not yet established.",
-            "The student is fully fluent because rate is high.",
-            "The passage was understood because few words were missed.",
-            "Prosody is unrelated to syntax or meaning."
+            "Rate is one indicator; accuracy, prosody, and comprehension show fluent reading is not yet secure.",
+            "The student is fully fluent because the words-correct-per-minute score meets the grade-level benchmark.",
+            "The passage was understood because the student missed very few words during the timed oral reading.",
+            "Prosody is unrelated to syntax or meaning, so phrasing problems can be set aside when interpreting scores."
           ],
           "answerIndex": 0,
           "rationale": "A fluency decision integrates rate with accuracy, phrasing, expression, difficulty, and understanding rather than using a speed cutoff in isolation.",
@@ -1875,10 +1875,10 @@
           "id": "read5302-ch-09-check-01",
           "prompt": "What makes progress-monitoring scores comparable over time?",
           "choices": [
-            "Measures should sample the same outcome with equivalent forms, consistent administration and scoring, and documented conditions.",
-            "Every probe should assess a different construct.",
-            "The highest weekly score should replace the trend.",
-            "Comparability matters only for norm-referenced tests."
+            "Measures should sample the same outcome with equivalent forms and consistent administration and scoring.",
+            "Each weekly probe should assess a different construct so the team builds a broad profile of the student.",
+            "The highest weekly score should replace the overall trend because it shows what the student can achieve.",
+            "Comparability matters mainly for norm-referenced tests and is less important for curriculum-based probes."
           ],
           "answerIndex": 0,
           "rationale": "Growth interpretation depends on technical adequacy and comparable measurement; uncontrolled changes can create score differences unrelated to learning.",
@@ -1896,10 +1896,10 @@
           "id": "read5302-ch-09-check-02",
           "prompt": "How should a baseline be established?",
           "choices": [
-            "Select the lowest score to show maximum growth.",
-            "Use multiple valid observations or the measure?s recommended baseline procedure to reduce the influence of an atypical score.",
-            "Use a score from an unrelated skill.",
-            "Wait until intervention ends to define the baseline."
+            "Select the lowest available score as the baseline so later results show the largest possible growth.",
+            "Use several valid observations or the measure’s baseline procedure to limit one atypical score.",
+            "Use a score from an unrelated skill area because it is already available in the student’s records.",
+            "Wait until the intervention ends to define the baseline so it reflects the student’s final performance."
           ],
           "answerIndex": 1,
           "rationale": "A representative baseline anchors level and growth decisions; multiple observations and standardized procedures reduce random error and reactivity.",
@@ -1917,10 +1917,10 @@
           "id": "read5302-ch-09-check-03",
           "prompt": "What makes a progress goal defensible?",
           "choices": [
-            "Use the same numerical goal for every grade.",
-            "Choose a goal after seeing the final data.",
-            "Set a time-bound goal using the baseline, meaningful outcome expectations, measure guidance, available evidence, and individualized team judgment.",
-            "Base the goal only on student preference."
+            "Use the same numerical goal for every grade level so goals are easy to compare across the school.",
+            "Choose the goal after reviewing the final data so it matches the growth the student actually made.",
+            "Set a time-bound goal from baseline, outcome expectations, measure guidance, evidence, and team judgment.",
+            "Base the goal mainly on the student’s stated preference for how much progress feels comfortable."
           ],
           "answerIndex": 2,
           "rationale": "Goals should be ambitious and attainable enough to guide action, with their rationale, timeline, measure, and decision rules explicit.",
@@ -1938,10 +1938,10 @@
           "id": "read5302-ch-09-check-04",
           "prompt": "How should level and slope be interpreted together?",
           "choices": [
-            "Ignore the trend because the last score is below goal.",
-            "Declare success from one increase.",
-            "Change the outcome measure immediately.",
-            "Current performance level, rate and stability of growth, remaining time, goal relevance, fidelity, and diagnostic evidence before deciding."
+            "Disregard the trend line because the most recent score falls below the goal established for the student.",
+            "Declare that the intervention has succeeded after a single score increase between consecutive probes.",
+            "Change the outcome measure immediately whenever the level and slope appear to tell different stories.",
+            "Current level, rate and stability of growth, remaining time, goal relevance, fidelity, and diagnostic data together."
           ],
           "answerIndex": 3,
           "rationale": "Level describes current performance and slope describes change; a sound decision uses the full series and preestablished rules rather than one point.",
@@ -1959,10 +1959,10 @@
           "id": "read5302-ch-09-check-05",
           "prompt": "Why check intervention fidelity before interpreting nonresponse?",
           "choices": [
-            "Determine whether the planned content, dosage, grouping, and instructional procedures were delivered adequately and accessibly.",
-            "Assume the student cannot learn the skill.",
-            "Intensify an unknown program without review.",
-            "Exclude attendance from the data discussion."
+            "Determine whether the planned content, dosage, grouping, and procedures were delivered adequately.",
+            "Conclude that the student cannot learn the target skill because the planned intervention did not work.",
+            "Intensify the current program without reviewing what was actually delivered during the intervention.",
+            "Leave attendance records out of the data discussion because absences are outside instructional control."
           ],
           "answerIndex": 0,
           "rationale": "Response data cannot be attributed confidently to an intervention that was not implemented as planned; fidelity review precedes causal claims and guides next steps.",
@@ -2090,10 +2090,10 @@
           "id": "read5302-ch-10-check-01",
           "prompt": "What is an asset-based approach to multilingual literacy?",
           "choices": [
-            "Identify linguistic, cultural, literacy, and knowledge resources that can support English development while explicitly teaching new forms.",
-            "Ignore English instructional needs.",
-            "Require English-only thinking.",
-            "Assume transfer is identical across all languages."
+            "Identify linguistic, cultural, and knowledge resources that support English growth while teaching new forms.",
+            "Set aside English instructional needs so learners can focus mainly on developing their home language first.",
+            "Require students to think and plan in English during literacy tasks so translation habits fade quickly.",
+            "Assume that literacy skills transfer identically across all languages without examining specific differences."
           ],
           "answerIndex": 0,
           "rationale": "Asset-based practice recognizes transferable knowledge and identity while examining language-specific differences, opportunity, explicit instruction, and individual performance.",
@@ -2112,10 +2112,10 @@
           "id": "read5302-ch-10-check-02",
           "prompt": "How can cross-linguistic analysis support instruction?",
           "choices": [
-            "Count it as proof of disability.",
-            "Determine whether the pattern reflects predictable transfer, teach the relevant English contrast explicitly, and monitor growth across languages when possible.",
-            "Ignore it because all transfer disappears automatically.",
-            "Discourage use of both languages."
+            "Count the cross-language spelling pattern as evidence of a disability that should be referred for evaluation.",
+            "Determine whether the pattern reflects predictable transfer, teach the English contrast, and monitor growth.",
+            "Disregard the pattern because cross-language influences fade over time without any targeted instruction.",
+            "Discourage the student from using both languages so the cross-language influence stops appearing in writing."
           ],
           "answerIndex": 1,
           "rationale": "Cross-linguistic analysis helps distinguish developing language from persistent difficulty and turns contrastive patterns into explicit instructional opportunities.",
@@ -2134,10 +2134,10 @@
           "id": "read5302-ch-10-check-03",
           "prompt": "How should teams distinguish language difference from disability?",
           "choices": [
-            "An English-only cutoff score.",
-            "Family accent or immigration history.",
-            "Quality and duration of instruction, language development, performance across languages and contexts, opportunity, valid measures, and response to targeted teaching.",
-            "A translated test with unchanged norms."
+            "A single English-only cutoff score applied to every student regardless of language background or schooling history.",
+            "The family’s accent, country of origin, or immigration history as described in enrollment records and interviews.",
+            "Instruction quality, language development, performance across languages and contexts, and response to teaching.",
+            "A translated version of a standardized test that keeps the original English norms for score interpretation."
           ],
           "answerIndex": 2,
           "rationale": "Differential decisions require converging evidence that difficulty is not explained primarily by language development, culture, instruction, mobility, or access.",
@@ -2156,10 +2156,10 @@
           "id": "read5302-ch-10-check-04",
           "prompt": "What makes family literacy engagement reciprocal?",
           "choices": [
-            "Require one standardized home activity.",
-            "Judge engagement by school-event attendance only.",
-            "Use children as interpreters for confidential meetings.",
-            "Learn family goals, languages, knowledge, texts, routines, and access; co-design feasible supports and communicate in preferred accessible ways."
+            "Assign one standardized home reading activity to every family so expectations remain consistent across homes.",
+            "Judge family engagement mainly by attendance at school events such as open houses and literacy nights.",
+            "Ask students to interpret confidential meetings for family members who prefer a language other than English.",
+            "Learn family goals, languages, and routines; co-design feasible supports and communicate in preferred ways."
           ],
           "answerIndex": 3,
           "rationale": "Reciprocal partnership values family expertise and shared decisions rather than treating families as passive implementers of school-selected practices.",
@@ -2178,10 +2178,10 @@
           "id": "read5302-ch-10-check-05",
           "prompt": "How should text selection support equity?",
           "choices": [
-            "Build sustained access to accurate, varied authors, identities, genres, languages, complexity, and perspectives while examining representation and stereotypes.",
-            "Lower text complexity whenever culture is unfamiliar.",
-            "Select texts only by cover images.",
-            "Avoid discussing contested perspectives."
+            "Build access to accurate, varied authors, identities, genres, and perspectives while examining stereotypes.",
+            "Lower text complexity whenever a selection features cultures that are unfamiliar to most students in the class.",
+            "Select classroom texts mainly by their cover images so the library looks diverse to visitors and families.",
+            "Avoid texts that present contested perspectives so classroom discussions stay calm and focused on content."
           ],
           "answerIndex": 0,
           "rationale": "Equitable text systems combine representation, authenticity, quality, access, challenge, and critical examination throughout the curriculum.",
@@ -2305,10 +2305,10 @@
           "id": "read5302-ch-11-check-01",
           "prompt": "What should be clarified before a coaching cycle begins?",
           "choices": [
-            "Clarify role, purpose, confidentiality limits, goals, data use, decision authority, and how feedback will be shared.",
-            "Begin recording the lesson secretly.",
-            "Promise absolute confidentiality regardless of policy.",
-            "Let administrators and teachers assume different purposes."
+            "Clarify role, purpose, confidentiality limits, goals, data use, authority, and how feedback is shared.",
+            "Begin recording the teacher’s lessons without discussing the purpose so instruction appears natural on video.",
+            "Promise the teacher complete confidentiality for every observation regardless of district policy or duties.",
+            "Let administrators and the teacher hold different assumptions about whether coaching is evaluative."
           ],
           "answerIndex": 0,
           "rationale": "Role clarity and informed agreements build trust and prevent coaching evidence from being used in ways participants did not understand.",
@@ -2324,12 +2324,12 @@
         },
         {
           "id": "read5302-ch-11-check-02",
-          "prompt": "What makes coaching job embedded?",
+          "prompt": "Which set of practices makes literacy coaching genuinely job embedded?",
           "choices": [
-            "Send a generic article only.",
-            "Use collaborative goal setting, co-planning, modeling or co-teaching, observation, feedback, rehearsal, and student evidence in the actual context.",
-            "Wait until annual evaluation.",
-            "Require implementation without materials or practice."
+            "Send teachers a generic research article and assume they will translate it into classroom practice.",
+            "Use collaborative goals, co-planning, modeling or co-teaching, observation, feedback, rehearsal, and student evidence.",
+            "Wait until the annual evaluation cycle to discuss literacy practice so feedback is formally documented.",
+            "Require teachers to implement a new practice without materials, modeling, or opportunities to rehearse."
           ],
           "answerIndex": 1,
           "rationale": "Job-embedded professional learning connects evidence and explanation with supported enactment, reflection, feedback, and iterative refinement.",
@@ -2347,10 +2347,10 @@
           "id": "read5302-ch-11-check-03",
           "prompt": "When is modeling most effective in coaching?",
           "choices": [
-            "An unannounced performance with no debrief.",
-            "A script the teacher must copy regardless of students.",
+            "An unannounced demonstration lesson taught by the coach with no planning conversation or debrief afterward.",
+            "A detailed script that the teacher must copy word for word regardless of the needs of the students present.",
             "A shared focus, explanation of key decisions, observable look-fors, debriefing, teacher rehearsal, and follow-up evidence.",
-            "Feedback limited to whether the lesson was entertaining."
+            "Feedback limited to whether the demonstration lesson felt entertaining and engaging for the students."
           ],
           "answerIndex": 2,
           "rationale": "Modeling supports transfer when the instructional reasoning is visible and the teacher can analyze, practice, adapt, and receive feedback.",
@@ -2368,10 +2368,10 @@
           "id": "read5302-ch-11-check-04",
           "prompt": "How should professional learning be evaluated?",
           "choices": [
-            "Satisfaction ratings are sufficient.",
-            "One student score proves causation.",
-            "Attendance guarantees implementation.",
-            "Changes in educator knowledge and practice, implementation conditions, student opportunity and outcomes, and unintended effects over time."
+            "End-of-session satisfaction ratings, which indicate whether teachers enjoyed and valued the training.",
+            "A single student’s improved score after training, which demonstrates that the training caused learning.",
+            "Attendance records for each session, since participation shows that teachers implemented the practice.",
+            "Changes in educator knowledge and practice, implementation conditions, student opportunity and outcomes, and side effects."
           ],
           "answerIndex": 3,
           "rationale": "Professional learning evaluation moves beyond reaction to learning, enactment, system support, and relevant student evidence without overclaiming causality.",
@@ -2389,10 +2389,10 @@
           "id": "read5302-ch-11-check-05",
           "prompt": "What is a constructive response to instructional disagreement?",
           "choices": [
-            "Define the shared student goal, surface assumptions and evidence, examine data and standards, agree on a testable plan, and set a review point.",
-            "Choose the loudest position.",
-            "Avoid the issue until conflict disappears.",
-            "Frame disagreement as personal resistance."
+            "Define the shared student goal, surface assumptions and evidence, examine data, agree on a testable plan, and review it.",
+            "Adopt the position argued most forcefully during the meeting so the team can reach a decision quickly.",
+            "Avoid raising the disagreement until the conflict fades on its own and the team returns to routine work.",
+            "Frame the colleague’s disagreement as personal resistance to change rather than examining their evidence."
           ],
           "answerIndex": 0,
           "rationale": "Collaborative conflict resolution preserves relationships while making the instructional question, evidence, decision process, and follow-up explicit.",
@@ -2525,10 +2525,10 @@
           "id": "read5302-ch-12-check-01",
           "prompt": "What is the reading specialist?s role in MTSS leadership?",
           "choices": [
-            "Coordinate evidence-based core instruction, screening, timely support, progress monitoring, collaborative decisions, intensification, and movement based on need; MTSS must not delay or deny an evaluation when one is warranted.",
-            "Assign students permanently to tiers.",
-            "Use intervention as a substitute for special-education evaluation.",
-            "Make the specialist solely responsible for all struggling readers."
+            "Coordinate core instruction, screening, support, monitoring, and team decisions; MTSS must not delay or deny an evaluation.",
+            "Assign students permanently to intervention tiers based on fall screening results so building schedules and staffing remain stable.",
+            "Use tiered intervention as a substitute for special-education evaluation whenever families submit a written request for an evaluation.",
+            "Make the reading specialist solely responsible for every struggling reader in the school, including planning core classroom instruction."
           ],
           "answerIndex": 0,
           "rationale": "MTSS is a prevention and support framework involving system quality and increasingly intensive response, not a static placement or reason to delay required evaluation.",
@@ -2548,10 +2548,10 @@
           "id": "read5302-ch-12-check-02",
           "prompt": "How should a literacy program be evaluated?",
           "choices": [
-            "The vendor?s testimonials only.",
-            "Implementation and opportunity, component outcomes and growth, subgroup access, educator learning, materials, intervention coherence, stakeholder experience, and unintended effects.",
-            "One grade?s highest score.",
-            "Teacher compliance without student evidence."
+            "Vendor testimonials and marketing materials describing results achieved in other districts and schools.",
+            "Implementation, component outcomes, growth, subgroup access, educator learning, coherence, and unintended effects.",
+            "The highest average score earned by a single grade level during the most recent assessment window.",
+            "Teacher compliance with the program schedule, measured without reference to student learning evidence."
           ],
           "answerIndex": 1,
           "rationale": "Program evaluation examines whether the design was enacted, for whom it worked, under what conditions, and what should be sustained, adapted, or discontinued.",
@@ -2571,10 +2571,10 @@
           "id": "read5302-ch-12-check-03",
           "prompt": "How should leaders select literacy materials or programs?",
           "choices": [
-            "Select the most colorful materials.",
-            "Treat a citation list as proof of effectiveness.",
-            "Examine independent evidence quality and fit, content and instructional design, assessment alignment, population, implementation demands, accessibility, cost, and monitoring plan.",
-            "Ignore local capacity and learner profiles."
+            "Choose the most colorful and visually appealing materials so students feel motivated to use them daily.",
+            "Treat a long list of research citations in the vendor brochure as proof that the program is effective.",
+            "Independent evidence and fit, instructional design, alignment, population, implementation demands, access, and cost.",
+            "Disregard local staffing capacity and learner profiles because strong programs work in every setting."
           ],
           "answerIndex": 2,
           "rationale": "Responsible adoption combines evidence appraisal with curricular quality, contextual fit, equity, feasibility, professional learning, and an explicit evaluation plan.",
@@ -2594,10 +2594,10 @@
           "id": "read5302-ch-12-check-04",
           "prompt": "How should identifiable literacy data be shared?",
           "choices": [
-            "Share because all employees work for the district.",
-            "Remove the name but leave uniquely identifying details.",
-            "Post the profile in the staff room.",
-            "Verify legitimate educational interest, applicable FERPA and local policy, consent or authority, secure method, and the minimum information needed."
+            "Share the data freely by email because every district employee works on behalf of students and needs full access to records.",
+            "Remove the student’s name but keep other uniquely identifying details so colleagues can still understand the full context.",
+            "Post the literacy profile on the staff room bulletin board so all teachers can review it while planning their instruction.",
+            "Verify legitimate educational interest, FERPA and policy, consent, a secure method, and minimum information needed."
           ],
           "answerIndex": 3,
           "rationale": "Education records require role-based, purpose-limited, secure handling under current law and policy; professional curiosity is not the same as legitimate educational interest.",
@@ -2617,10 +2617,10 @@
           "id": "read5302-ch-12-check-05",
           "prompt": "How should a specialist handle a financial conflict?",
           "choices": [
-            "Disclose the conflict, follow ethics and procurement rules, present objective evidence and alternatives, and recuse when impartial judgment cannot be preserved.",
-            "Hide the relationship if the program is popular.",
-            "Use student data in marketing without authorization.",
-            "Guarantee results to justify the purchase."
+            "Disclose the conflict, follow ethics and procurement rules, present objective evidence, and recuse when needed.",
+            "Keep the financial relationship private because the program is popular with teachers and families.",
+            "Use student data in vendor marketing materials without authorization to help demonstrate results.",
+            "Guarantee specific student outcomes to administrators so the purchase decision can move forward."
           ],
           "answerIndex": 0,
           "rationale": "Transparency and independent evidence protect students, schools, and professional trust when personal interests could influence recommendations.",

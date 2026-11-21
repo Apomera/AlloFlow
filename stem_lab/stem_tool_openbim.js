@@ -1,6 +1,7 @@
 // stem_tool_openbim.js - accessible OpenBIM planning and Bonsai companion
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
 
   window.StemLab = window.StemLab || {
     _registry: {}, _order: [],
@@ -32,6 +33,9 @@
     block: true, slab: true, door: true, window: true, roof: true,
     column: true, arch: true, pyramid: true, ramp: true, cylinder: true
   };
+  var hasOwn = Object.prototype.hasOwnProperty;
+  function isAllowedClass(cls) { return typeof cls === 'string' && hasOwn.call(ALLOWED_CLASSES, cls); }
+  function isAllowedShape(shape) { return typeof shape === 'string' && hasOwn.call(ALLOWED_ARCHITECTURE_SHAPES, shape); }
   var SAMPLE_BRIEFS = [
     'Plan an accessible one-storey science classroom with two exits, daylight, flexible work areas, and quiet space.',
     'Create a small two-storey community library with a reading room, makerspace, welcome desk, and inclusive circulation.',
@@ -58,7 +62,7 @@
   }
 
   function uniqueStrings(values, fallback, limit) {
-    var seen = {};
+    var seen = Object.create(null);
     var output = [];
     (Array.isArray(values) ? values : []).forEach(function (value) {
       var clean = plain(value, 180);
@@ -80,7 +84,7 @@
         x: clamp(block.x, -100, 100),
         y: clamp(block.y, -100, 100),
         z: clamp(block.z, -100, 100),
-        shape: ALLOWED_ARCHITECTURE_SHAPES[shape] ? shape : 'block',
+        shape: isAllowedShape(shape) ? shape : 'block',
         material: plain(block.material || 'unclassified', 40) || 'unclassified',
         rotation: clamp(block.rotation || 0, 0, 3)
       });
@@ -94,7 +98,7 @@
     var xs = list.map(function (b) { return Number(b.x); });
     var ys = list.map(function (b) { return Number(b.y); });
     var zs = list.map(function (b) { return Number(b.z); });
-    var materials = {};
+    var materials = Object.create(null);
     list.forEach(function (block) { materials[plain(block.material || 'unclassified', 40)] = true; });
     return {
       blockCount: list.length,
@@ -246,12 +250,12 @@
     var storeyNames = storeys.map(function (storey) { return storey.name; });
     var elements = (Array.isArray(parsed.elements) ? parsed.elements : []).slice(0, 20).map(function (item) {
       var ifcClass = plain(item && item.ifcClass, 60);
-      if (!ALLOWED_CLASSES[ifcClass]) return null;
+      if (!isAllowedClass(ifcClass)) return null;
       var requestedStorey = plain(item && item.storey, 80);
       return {
         ifcClass: ifcClass,
         name: plain(item && item.name, 100) || ALLOWED_CLASSES[ifcClass],
-        count: clamp(item && item.count, 1, 40),
+        count: Math.round(clamp(item && item.count, 1, 40)),
         storey: requestedStorey === 'All storeys' || storeyNames.indexOf(requestedStorey) !== -1 ? requestedStorey : storeyNames[0],
         reason: plain(item && item.reason, 220) || 'Included in the proposed semantic model.'
       };
@@ -275,8 +279,9 @@
     if (!plan || !Array.isArray(plan.storeys) || !plan.storeys.length) issues.push('At least one storey is required.');
     if (!plan || !Array.isArray(plan.elements) || !plan.elements.length) issues.push('At least one building element is required.');
     (plan && Array.isArray(plan.elements) ? plan.elements : []).forEach(function (item) {
-      if (!ALLOWED_CLASSES[item.ifcClass]) issues.push('Unsupported IFC class: ' + plain(item.ifcClass, 60));
-      if (Number(item.count) < 1 || Number(item.count) > 40) issues.push('Element counts must be between 1 and 40.');
+      if (!item || !isAllowedClass(item.ifcClass)) issues.push('Unsupported IFC class: ' + plain(item && item.ifcClass, 60));
+      var countNum = item ? Number(item.count) : NaN;
+      if (!Number.isInteger(countNum) || countNum < 1 || countNum > 40) issues.push('Element counts must be whole numbers between 1 and 40.');
     });
     return issues;
   }
@@ -288,8 +293,11 @@
     var brief = plain(plan && plan.brief, 1200).toLowerCase();
     var storeys = plan && Array.isArray(plan.storeys) ? plan.storeys : [];
     var elements = plan && Array.isArray(plan.elements) ? plan.elements : [];
-    var totals = {};
-    elements.forEach(function (item) { totals[item.ifcClass] = (totals[item.ifcClass] || 0) + Number(item.count || 0); });
+    var totals = Object.create(null);
+    elements.forEach(function (item) {
+      if (!item || !isAllowedClass(item.ifcClass)) return;
+      totals[item.ifcClass] = (totals[item.ifcClass] || 0) + (Number.isFinite(Number(item.count)) ? Number(item.count) : 0);
+    });
     if (!issues.length) checks.push('The recipe has a supported schema, spatial tree, and allowlisted semantic inventory.');
     if (plan && plan.architectureStudio && plan.architectureStudio.blockCount) {
       checks.push(plan.architectureStudio.blockCount + ' Architecture Studio ' + (plan.architectureStudio.blockCount === 1 ? 'block can' : 'blocks can') + ' export as approximate, unclassified proxy geometry.');
@@ -367,7 +375,7 @@
     if (!before || !after) return [];
     var changes = [], a = normalizeDesignStudy(before.designStudy), b = normalizeDesignStudy(after.designStudy);
     Object.keys(a).forEach(function(key) { if (a[key] !== b[key]) changes.push(key + ': ' + a[key] + ' m → ' + b[key] + ' m'); });
-    function totals(plan) { var out = {}; (plan.elements || []).forEach(function(e) { var key = e.ifcClass + ' / ' + e.storey; out[key] = (out[key] || 0) + Number(e.count || 0); }); return out; }
+    function totals(plan) { var out = Object.create(null); (plan.elements || []).forEach(function(e) { if (!e) return; var key = String(e.ifcClass) + ' / ' + String(e.storey); out[key] = (out[key] || 0) + Number(e.count || 0); }); return out; }
     var oldTotals = totals(before), newTotals = totals(after);
     Array.from(new Set(Object.keys(oldTotals).concat(Object.keys(newTotals)))).forEach(function(key) {
       if ((oldTotals[key] || 0) !== (newTotals[key] || 0)) changes.push(key + ': ' + (oldTotals[key] || 0) + ' → ' + (newTotals[key] || 0));
@@ -388,7 +396,7 @@
     if (parsed.schema !== RECIPE_SCHEMA || parsed.version !== RECIPE_VERSION) return { plan: null, warnings: [], errors: ['Only AlloFlow OpenBIM recipe version 1 can be imported.'] };
     if (!Array.isArray(parsed.storeys) || !parsed.storeys.length) return { plan: null, warnings: [], errors: ['The imported recipe needs at least one storey.'] };
     var supportedElements = (Array.isArray(parsed.elements) ? parsed.elements : []).filter(function (item) {
-      return item && ALLOWED_CLASSES[plain(item.ifcClass, 60)];
+      return item && isAllowedClass(plain(item.ifcClass, 60));
     });
     if (!supportedElements.length) return { plan: null, warnings: [], errors: ['The imported recipe has no supported IFC building elements.'] };
     if (supportedElements.length !== (Array.isArray(parsed.elements) ? parsed.elements.length : 0)) warnings.push('Unsupported IFC classes were removed.');
@@ -419,8 +427,8 @@
     recipe.schema = RECIPE_SCHEMA;
     recipe.version = RECIPE_VERSION;
     recipe.status = 'approved-concept';
-    recipe.designStudy = normalizeDesignStudy(plan.designStudy);
-    recipe.designTrials = normalizeDesignTrials(plan.designTrials);
+    recipe.designStudy = normalizeDesignStudy(recipe.designStudy);
+    recipe.designTrials = normalizeDesignTrials(recipe.designTrials);
     recipe.approvedAt = new Date().toISOString();
     recipe.reviewQuestions = analyzePlan(recipe).questions;
     recipe.interoperability = {
@@ -479,9 +487,10 @@
     });
     lines.push('');
     lines.push('# Add the approved semantic element inventory. Geometry and placement come next in Bonsai.');
+    var validStoreyNames = recipe.storeys.map(function (st) { return st.name; });
     recipe.elements.forEach(function (item, itemIndex) {
-      var count = clamp(item.count, 1, 40);
-      var target = item.storey === 'All storeys' ? recipe.storeys[0].name : item.storey;
+      var count = Math.round(clamp(item.count, 1, 40));
+      var target = (item.storey !== 'All storeys' && validStoreyNames.indexOf(item.storey) !== -1) ? item.storey : recipe.storeys[0].name;
       lines.push('for index in range(' + count + '):');
       lines.push('    element = ifcopenshell.api.root.create_entity(model, ifc_class=' + pyString(item.ifcClass) + ', name=' + pyString(item.name) + ' + " " + str(index + 1))');
       lines.push('    ifcopenshell.api.spatial.assign_container(model, relating_structure=storeys[' + pyString(target) + '], products=[element])');
@@ -555,7 +564,7 @@
     var popup = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700');
     try { if (popup) popup.opener = null; } catch (_) {}
     if (!popup) return false;
-    var escape = function (value) { return String(value || '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
+    var escape = function (value) { return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
     var storeys = recipe.storeys.map(function (storey) {
       return '<section><h2>' + escape(storey.name) + '</h2><p>' + escape(storey.spaces.join(' | ')) + '</p></section>';
     }).join('');
@@ -604,7 +613,16 @@
       var React = ctx.React;
       var el = React.createElement;
       var state = (ctx.toolData && ctx.toolData.openBim) || {};
-      var update = function (patch) { ctx.updateMulti('openBim', patch); };
+      var update = function (patch) { if (typeof ctx.updateMulti === 'function') ctx.updateMulti('openBim', patch); };
+      var draftSeqRef = React.useRef(0);
+      var mountedRef = React.useRef(true);
+      React.useEffect(function () {
+        mountedRef.current = true;
+        return function () {
+          mountedRef.current = false;
+          draftSeqRef.current += 1;
+        };
+      }, []);
       var brief = state.brief || SAMPLE_BRIEFS[0];
       var requestedStoreys = clamp(state.requestedStoreys || 1, 1, 3);
       var proposal = state.proposal || null;
@@ -658,6 +676,7 @@
         var primaryInk = isContrast ? '#00ff00' : '#ffffff';
         var primaryBorder = isContrast ? '2px solid #00ff00' : '1px solid #0f766e';
         return el('button', {
+          key: opts.key,
           type: 'button', onClick: onClick, disabled: !!opts.disabled,
           'aria-label': opts.ariaLabel || label,
           style: {
@@ -677,15 +696,18 @@
         return el.apply(null, ['section', { style: { minWidth: 0, background: colors.panel, border: (isContrast ? '2px solid #ffff00' : '1px solid ' + colors.border), borderRadius: 14, padding: 16, boxShadow: isContrast ? 'none' : '0 8px 24px rgba(15,23,42,.07)' } }].concat(children));
       };
 
-      function setSample(value) { update({ brief: value, stage: 'brief', proposal: null, approvedRecipe: null }); }
+      function setSample(value) { draftSeqRef.current += 1; update({ brief: value, stage: 'brief', proposal: null, approvedRecipe: null, aiBusy: false }); }
 
       function saveProposal(next, message) {
-        update({designDraft:null,selectedDesignTrial:'',removedDesignTrial:null,designTrialLabel:''});
-        update({ proposal: next, approvedRecipe: null, stage: 'review', aiBusy: false, statusMessage: message });
+        update({
+          designDraft: null, selectedDesignTrial: '', removedDesignTrial: null, designTrialLabel: '',
+          proposal: next, approvedRecipe: null, stage: 'review', aiBusy: false, statusMessage: message
+        });
         announce(message);
       }
 
       function draft(useAi) {
+        var seq = ++draftSeqRef.current;
         var options = { storeys: requestedStoreys, architecture: arch };
         var fallback = buildFallbackPlan(brief, options);
         if (!useAi || !aiAvailable) {
@@ -701,17 +723,21 @@
             : ctx.callGemini(aiPrompt(brief, requestedStoreys, arch), true);
         } catch (_) { request = Promise.reject(new Error('AI request could not start.')); }
         Promise.resolve(request).then(function (result) {
+          if (!mountedRef.current || draftSeqRef.current !== seq) return;
           saveProposal(normalizeAiPlan(result, brief, options), 'Gemini proposal passed the IFC allowlist and is ready for your review.');
         }).catch(function () {
+          if (!mountedRef.current || draftSeqRef.current !== seq) return;
           saveProposal(fallback, 'Gemini was unavailable, so AlloFlow prepared a rules-based proposal for review.');
         });
       }
 
       function changeCount(index, delta) {
-        if (!proposal) return;
+        if (!proposal || !Array.isArray(proposal.elements) || !proposal.elements[index]) return;
         var next = JSON.parse(JSON.stringify(proposal));
-        next.elements[index].count = clamp(next.elements[index].count + delta, 1, 40);
-        next.proposalSource = proposal.proposalSource + '; counts reviewed by user';
+        next.elements[index].count = Math.round(clamp(next.elements[index].count + delta, 1, 40));
+        var suffix = '; counts reviewed by user';
+        var src = String(proposal.proposalSource || '');
+        next.proposalSource = src.indexOf(suffix) === -1 ? (src + suffix) : src;
         update({ proposal: next, approvedRecipe: null });
         announce(next.elements[index].name + ' count is now ' + next.elements[index].count + '.');
       }
@@ -761,13 +787,15 @@
         }
         var reader = new FileReader();
         reader.onload = function () {
+          if (!mountedRef.current) return;
+          draftSeqRef.current += 1;
           var result = normalizeImportedRecipe(String(reader.result || ''));
           if (!result.plan) {
             update({ statusMessage: 'Import stopped: ' + result.errors.join(' ') });
             toast('That file is not a supported AlloFlow OpenBIM recipe.', 'error');
           } else {
             var message = 'Recipe imported locally and normalized. ' + result.warnings.join(' ');
-            update({ designDraft: null, designNotice: '' });
+            update({ designNotice: '' });
             saveProposal(result.plan, message);
             toast('OpenBIM recipe imported for fresh review.', 'success');
           }
@@ -799,6 +827,24 @@
             'aria-label': 'Architectural schematic elevation of ' + planObj.name + ' with ' + count + (count === 1 ? ' storey' : ' storeys') + ' and ' + totalSpacesCount + ' planned spaces.',
             style: { display: 'block', width: '100%', height: 'auto' }
           },
+            el('defs', null,
+              el('radialGradient', { id: 'ob-elev-bg', cx: '52%', cy: '48%', r: '65%' },
+                el('stop', { offset: '0%', stopColor: '#0c2742' }),
+                el('stop', { offset: '68%', stopColor: '#081a30' }),
+                el('stop', { offset: '100%', stopColor: '#040e1d' })
+              ),
+              el('linearGradient', { id: 'ob-roof-grad', x1: '0', y1: '0', x2: '0', y2: '1' },
+                el('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0.34 }),
+                el('stop', { offset: '100%', stopColor: '#0e7490', stopOpacity: 0.14 })
+              ),
+              el('linearGradient', { id: 'ob-storey-grad', x1: '0', y1: '0', x2: '0', y2: '1' },
+                el('stop', { offset: '0%', stopColor: '#1e3a5f', stopOpacity: 0.56 }),
+                el('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0.78 })
+              )
+            ),
+            // Architectural blueprint board & corner registration marks
+            el('rect', { x: 4, y: 4, width: 452, height: 184, rx: 8, fill: isContrast ? '#000000' : 'url(#ob-elev-bg)', stroke: isContrast ? '#ffff00' : 'rgba(56,189,248,0.28)', strokeWidth: 1 }),
+            !isContrast && el('path', { d: 'M12 20 V12 H20 M448 20 V12 H440 M12 172 V180 H20 M448 172 V180 H440', fill: 'none', stroke: 'rgba(125,211,252,0.42)', strokeWidth: 1.1 }),
             // Blueprint coordinate grid
             [24, 52, 80, 108, 136, 166].map(function (gy) {
               return el('line', { key: 'h-' + gy, x1: 14, y1: gy, x2: 446, y2: gy, stroke: colors.bpGrid, strokeWidth: 1 });
@@ -809,12 +855,27 @@
             // Title tag inside blueprint
             el('text', { x: 20, y: 22, fill: colors.bpMuted, fontSize: 9, fontWeight: '800', letterSpacing: '0.08em' }, 'SCHEMATIC SECTION · IFC4 · METRES'),
             el('text', { x: 440, y: 22, textAnchor: 'end', fill: colors.bpInk, fontSize: 9.5, fontWeight: '800' }, plain(planObj.name, 30)),
-            // Ground line
+            // Ground datum line with luminous laser glow & earth hatch ticks
+            !isContrast && el('line', { x1: 24, y1: groundY, x2: 440, y2: groundY, stroke: '#38bdf8', strokeWidth: 6, opacity: 0.16 }),
             el('line', { x1: 24, y1: groundY, x2: 440, y2: groundY, stroke: colors.bpStroke, strokeWidth: 2 }),
-            // Roof profile
+            !isContrast && [40, 88, 136, 184, 232, 280, 328, 376, 424].map(function (tx) {
+              return el('line', { key: 'gt-' + tx, x1: tx, y1: groundY, x2: tx - 5, y2: groundY + 6, stroke: 'rgba(56,189,248,0.38)', strokeWidth: 1 });
+            }),
+            // Right-side overall height clearance laser callout
+            el('g', null,
+              !isContrast && el('line', { x1: 432, y1: Math.max(30, roofTopY), x2: 432, y2: groundY, stroke: '#2dd4bf', strokeWidth: 4.5, opacity: 0.18 }),
+              el('line', { x1: 432, y1: Math.max(30, roofTopY), x2: 432, y2: groundY, stroke: isContrast ? '#00ff00' : '#2dd4bf', strokeWidth: 1.2, strokeDasharray: '3 2' }),
+              el('line', { x1: 427, y1: Math.max(30, roofTopY), x2: 437, y2: Math.max(30, roofTopY), stroke: isContrast ? '#00ff00' : '#2dd4bf', strokeWidth: 1.3 }),
+              el('line', { x1: 427, y1: groundY, x2: 437, y2: groundY, stroke: isContrast ? '#00ff00' : '#2dd4bf', strokeWidth: 1.3 })
+            ),
+            // Roof profile with dual-pass structural highlight glow
+            !isContrast && el('polygon', {
+              points: (bldgLeft - 8) + ',' + (groundY - count * floorH) + ' ' + (bldgLeft + bldgW / 2) + ',' + Math.max(30, roofTopY) + ' ' + (bldgRight + 8) + ',' + (groundY - count * floorH),
+              fill: 'none', stroke: '#38bdf8', strokeWidth: 5.5, opacity: 0.2
+            }),
             el('polygon', {
               points: (bldgLeft - 8) + ',' + (groundY - count * floorH) + ' ' + (bldgLeft + bldgW / 2) + ',' + Math.max(30, roofTopY) + ' ' + (bldgRight + 8) + ',' + (groundY - count * floorH),
-              fill: colors.bpFill, stroke: colors.bpStroke, strokeWidth: 1.8
+              fill: isContrast ? colors.bpFill : 'url(#ob-roof-grad)', stroke: colors.bpStroke, strokeWidth: 1.8
             }),
             // Stacked storeys from bottom up
             stList.slice(0, 3).map(function (st, idx) {
@@ -823,20 +884,26 @@
               var rooms = (st.spaces && st.spaces.length ? st.spaces : ['Flexible Space']).slice(0, 4);
               var roomW = bldgW / rooms.length;
               return el('g', { key: st.id || idx },
-                // Elevation callout on left
-                el('line', { x1: 28, y1: yBottom, x2: bldgLeft - 4, y2: yBottom, stroke: colors.bpMuted, strokeWidth: 1, strokeDasharray: '3 3' }),
+                // Luminous elevation datum callout on left
+                el('line', { x1: 24, y1: yBottom, x2: bldgLeft - 4, y2: yBottom, stroke: isContrast ? '#00ff00' : '#38bdf8', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.78 }),
+                el('circle', { cx: bldgLeft - 4, cy: yBottom, r: 2.2, fill: isContrast ? '#00ff00' : '#38bdf8' }),
                 el('text', { x: 64, y: yBottom - 4, textAnchor: 'end', fill: colors.bpMuted, fontSize: 8.5, fontWeight: '700' }, '+' + Number(st.elevationMetres || 0).toFixed(1) + 'm'),
-                // Floor plate & wall envelope
-                el('rect', { x: bldgLeft, y: yTop, width: bldgW, height: floorH, fill: 'rgba(15,23,42,0.52)', stroke: colors.bpStroke, strokeWidth: 1.8 }),
-                // Interior partitions + space labels
+                // Dual-pass BIM structural envelope glow + floor plate
+                !isContrast && el('rect', { x: bldgLeft, y: yTop, width: bldgW, height: floorH, fill: 'none', stroke: '#38bdf8', strokeWidth: 5, opacity: 0.16 }),
+                el('rect', { x: bldgLeft, y: yTop, width: bldgW, height: floorH, fill: isContrast ? 'rgba(0,0,0,0.85)' : 'url(#ob-storey-grad)', stroke: colors.bpStroke, strokeWidth: 1.8 }),
+                // Floor slab thickness poché bar
+                el('rect', { x: bldgLeft, y: yBottom - 3.5, width: bldgW, height: 3.5, fill: isContrast ? '#ffff00' : 'rgba(56,189,248,0.45)' }),
+                // Interior partitions + glazed window mullions + space labels
                 rooms.map(function (sp, rIdx) {
                   var rx = bldgLeft + rIdx * roomW;
+                  var winW = Math.min(22, Math.max(10, roomW - 14));
                   var shortSp = plain(sp, rooms.length >= 4 ? 11 : (rooms.length === 3 ? 15 : 22));
                   return el('g', { key: sp + '-' + rIdx },
-                    rIdx > 0 ? el('line', { x1: rx, y1: yTop, x2: rx, y2: yBottom, stroke: colors.bpStroke, strokeWidth: 1.1, strokeDasharray: '4 2' }) : null,
-                    // Schematic window mullion
-                    el('rect', { x: rx + 6, y: yTop + 6, width: Math.min(20, Math.max(10, roomW - 14)), height: 8, rx: 1, fill: colors.bpFill, stroke: colors.bpMuted, strokeWidth: 0.9 }),
-                    el('text', { x: rx + roomW / 2, y: yBottom - Math.max(8, floorH * 0.28), textAnchor: 'middle', fill: colors.bpInk, fontSize: rooms.length >= 4 ? 8 : 9, fontWeight: '700' }, shortSp)
+                    rIdx > 0 ? el('line', { x1: rx, y1: yTop, x2: rx, y2: yBottom - 3, stroke: colors.bpStroke, strokeWidth: 1.1, strokeDasharray: '4 2' }) : null,
+                    // Schematic window mullion with subtle glazing sheen
+                    el('rect', { x: rx + 6, y: yTop + 6, width: winW, height: 8, rx: 1.5, fill: colors.bpFill, stroke: colors.bpMuted, strokeWidth: 0.9 }),
+                    !isContrast && el('line', { x1: rx + 9, y1: yTop + 13, x2: rx + 14, y2: yTop + 7, stroke: '#e0f2fe', strokeWidth: 0.8, opacity: 0.5 }),
+                    el('text', { x: rx + roomW / 2, y: yBottom - Math.max(9, floorH * 0.28), textAnchor: 'middle', fill: colors.bpInk, fontSize: rooms.length >= 4 ? 8 : 9, fontWeight: '700' }, shortSp)
                   );
                 })
               );
@@ -1079,6 +1146,7 @@
         var floorPxW = dims.width * scale, floorPxH = dims.depth * scale;
         var workPxW = dims.workWidth * scale, workPxH = dims.workDepth * scale;
         var workStroke = !model.fits ? colors.danger : (model.meetsBrief ? colors.teal : colors.gold);
+        var cadWorkStroke = isContrast ? '#ffff00' : (!model.fits ? '#f87171' : (model.meetsBrief ? '#5eead4' : '#fcd34d'));
         var utilizationPct = model.area > 0 ? Math.round((model.workArea / model.area) * 100) : 0;
         var STUDY_PRESETS = [
           { label: 'Compact 8×6 / 6×4 m', d: { width: 8, depth: 6, workWidth: 6, workDepth: 4 } },
@@ -1166,7 +1234,7 @@
                 var next = JSON.parse(JSON.stringify(plan));
                 next.designStudy = normalizeDesignStudy(preset.d);
                 update({ proposal: next, approvedRecipe: null, stage: 'review', designDraft: null, designNotice: 'Applied preset: ' + preset.label + '.' });
-              }, { compact: true });
+              }, { key: preset.label, compact: true });
             })
           ),
           el('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10,marginBottom:10}},fields.map(function(f){
@@ -1178,31 +1246,53 @@
           el('div', { style: { margin: '12px 0', padding: 10, borderRadius: 12, background: colors.bpBg, border: isContrast ? '2px solid #ffff00' : '1px solid rgba(56,189,248,0.28)' } },
             el('svg',{viewBox:'0 0 440 264',role:'img','aria-label':'Dimensioned floor study. Floor '+dims.width+' by '+dims.depth+' metres; work area '+dims.workWidth+' by '+dims.workDepth+' metres. '+(model.fits?'Work area fits.':'Work area extends beyond the floor.'),style:{display:'block',width:'100%',maxWidth:640,margin:'0 auto'}},
               el('defs', null,
+                el('radialGradient', { id: 'ob-plan-bg', cx: '50%', cy: '48%', r: '68%' },
+                  el('stop', { offset: '0%', stopColor: '#0c2742' }),
+                  el('stop', { offset: '68%', stopColor: '#07182c' }),
+                  el('stop', { offset: '100%', stopColor: '#030c18' })
+                ),
+                el('linearGradient', { id: 'ob-work-grad', x1: '0', y1: '0', x2: '1', y2: '1' },
+                  el('stop', { offset: '0%', stopColor: cadWorkStroke, stopOpacity: 0.24 }),
+                  el('stop', { offset: '100%', stopColor: cadWorkStroke, stopOpacity: 0.08 })
+                ),
                 el('pattern', { id: 'ob-hatch', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
-                  el('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: workStroke, strokeWidth: 1.4, strokeOpacity: 0.35 })
+                  el('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: cadWorkStroke, strokeWidth: 1.4, strokeOpacity: 0.38 })
                 )
               ),
+              // Blueprint drafting chassis + registration brackets
+              el('rect', { x: 4, y: 4, width: 432, height: 256, rx: 8, fill: isContrast ? '#000000' : 'url(#ob-plan-bg)', stroke: isContrast ? '#ffff00' : 'rgba(56,189,248,0.28)', strokeWidth: 1 }),
+              !isContrast && el('path', { d: 'M12 20 V12 H20 M428 20 V12 H420 M12 244 V252 H20 M428 244 V252 H420', fill: 'none', stroke: 'rgba(125,211,252,0.42)', strokeWidth: 1.1 }),
               // Blueprint grid
               [44, 84, 124, 164, 204].map(function (gy) { return el('line', { key: 'bg-h-' + gy, x1: 16, y1: gy, x2: 424, y2: gy, stroke: colors.bpGrid, strokeWidth: 1 }); }),
               [56, 126, 196, 266, 336, 406].map(function (gx) { return el('line', { key: 'bg-v-' + gx, x1: gx, y1: 18, x2: gx, y2: 228, stroke: colors.bpGrid, strokeWidth: 1 }); }),
               // Header callout
               el('text', { x: 20, y: 18, fill: colors.bpMuted, fontSize: 9, fontWeight: '800', letterSpacing: '0.08em' }, 'CAD FLOOR FOOTPRINT STUDY (PLAN VIEW)'),
               el('text', { x: 420, y: 18, textAnchor: 'end', fill: colors.bpInk, fontSize: 9.5, fontWeight: '800' }, 'Scale 1m = ' + scale.toFixed(0) + 'px'),
-              // Top width dimension witness line
-              el('line', { x1: 56, y1: 34, x2: 56 + floorPxW, y2: 34, stroke: colors.bpMuted, strokeWidth: 1 }),
-              el('line', { x1: 56, y1: 30, x2: 56, y2: 39, stroke: colors.bpMuted, strokeWidth: 1 }),
-              el('line', { x1: 56 + floorPxW, y1: 30, x2: 56 + floorPxW, y2: 39, stroke: colors.bpMuted, strokeWidth: 1 }),
-              el('text', { x: 56 + floorPxW / 2, y: 31, textAnchor: 'middle', fill: colors.bpInk, fontSize: 10.5, fontWeight: '800' }, 'Floor width: ' + dims.width + ' m'),
-              // Left depth witness line
-              el('line', { x1: 42, y1: 48, x2: 42, y2: 48 + floorPxH, stroke: colors.bpMuted, strokeWidth: 1 }),
-              el('line', { x1: 37, y1: 48, x2: 47, y2: 48, stroke: colors.bpMuted, strokeWidth: 1 }),
-              el('line', { x1: 37, y1: 48 + floorPxH, x2: 47, y2: 48 + floorPxH, stroke: colors.bpMuted, strokeWidth: 1 }),
-              el('text', { x: 28, y: 48 + floorPxH / 2, textAnchor: 'middle', fill: colors.bpInk, fontSize: 10, fontWeight: '800', transform: 'rotate(-90 28 ' + (48 + floorPxH / 2) + ')' }, dims.depth + ' m'),
-              // Outer floor footprint
-              el('rect',{x:56,y:48,width:floorPxW,height:floorPxH,fill:'rgba(15,23,42,0.55)',stroke:colors.bpInk,strokeWidth:2.5}),
-              // Inner work zone
-              el('rect',{x:56,y:48,width:workPxW,height:workPxH,fill:'url(#ob-hatch)',stroke:workStroke,strokeWidth:2.8,strokeDasharray:'7 4'}),
-              // Work zone centered readout
+              // Top width luminous dimension laser line with CAD arrows
+              !isContrast && el('line', { x1: 56, y1: 34, x2: 56 + floorPxW, y2: 34, stroke: '#38bdf8', strokeWidth: 4.5, opacity: 0.16 }),
+              el('line', { x1: 56, y1: 34, x2: 56 + floorPxW, y2: 34, stroke: colors.bpMuted, strokeWidth: 1.1 }),
+              el('line', { x1: 56, y1: 29, x2: 56, y2: 39, stroke: colors.bpMuted, strokeWidth: 1.2 }),
+              el('line', { x1: 56 + floorPxW, y1: 29, x2: 56 + floorPxW, y2: 39, stroke: colors.bpMuted, strokeWidth: 1.2 }),
+              el('path', { d: 'M56 34 L62 31.5 V36.5 Z M' + (56 + floorPxW) + ' 34 L' + (50 + floorPxW) + ' 31.5 V36.5 Z', fill: colors.bpMuted }),
+              el('text', { x: 56 + floorPxW / 2, y: 30, textAnchor: 'middle', fill: colors.bpInk, fontSize: 10.5, fontWeight: '800' }, 'Floor width: ' + dims.width + ' m'),
+              // Left depth luminous witness line with CAD arrows
+              !isContrast && el('line', { x1: 42, y1: 48, x2: 42, y2: 48 + floorPxH, stroke: '#38bdf8', strokeWidth: 4.5, opacity: 0.16 }),
+              el('line', { x1: 42, y1: 48, x2: 42, y2: 48 + floorPxH, stroke: colors.bpMuted, strokeWidth: 1.1 }),
+              el('line', { x1: 37, y1: 48, x2: 47, y2: 48, stroke: colors.bpMuted, strokeWidth: 1.2 }),
+              el('line', { x1: 37, y1: 48 + floorPxH, x2: 47, y2: 48 + floorPxH, stroke: colors.bpMuted, strokeWidth: 1.2 }),
+              el('path', { d: 'M42 48 L39.5 54 H44.5 Z M42 ' + (48 + floorPxH) + ' L39.5 ' + (42 + floorPxH) + ' H44.5 Z', fill: colors.bpMuted }),
+              el('text', { x: 26, y: 48 + floorPxH / 2, textAnchor: 'middle', fill: colors.bpInk, fontSize: 10, fontWeight: '800', transform: 'rotate(-90 26 ' + (48 + floorPxH / 2) + ')' }, dims.depth + ' m'),
+              // Outer floor footprint with dual-pass structural glow & corner columns
+              !isContrast && el('rect',{x:56,y:48,width:floorPxW,height:floorPxH,fill:'none',stroke:'#38bdf8',strokeWidth:6,opacity:0.16}),
+              el('rect',{x:56,y:48,width:floorPxW,height:floorPxH,fill:isContrast ? '#000000' : 'rgba(15,23,42,0.62)',stroke:colors.bpInk,strokeWidth:2.4}),
+              [[56,48],[56+floorPxW,48],[56,48+floorPxH],[56+floorPxW,48+floorPxH]].map(function (pt, ci) {
+                return el('rect', { key: 'col-' + ci, x: pt[0] - 3, y: pt[1] - 3, width: 6, height: 6, fill: colors.bpInk });
+              }),
+              // Inner work zone with gradient + hatch + luminous perimeter laser
+              !isContrast && el('rect',{x:56,y:48,width:workPxW,height:workPxH,fill:'url(#ob-work-grad)'}),
+              !isContrast && el('rect',{x:56,y:48,width:workPxW,height:workPxH,fill:'none',stroke:cadWorkStroke,strokeWidth:6.5,opacity:0.22}),
+              el('rect',{x:56,y:48,width:workPxW,height:workPxH,fill:'url(#ob-hatch)',stroke:cadWorkStroke,strokeWidth:2.6,strokeDasharray:'7 4'}),
+              // Work zone centered readout pill
               el('text', { x: 56 + Math.max(36, workPxW / 2), y: 48 + Math.max(18, workPxH / 2 + 3), textAnchor: 'middle', fill: colors.bpInk, fontSize: 10.5, fontWeight: '800' }, dims.workWidth + '×' + dims.workDepth + 'm (' + model.workArea + ' m²)'),
               // Footer legend safely inside 440x264
               el('text',{x:20,y:248,fill:colors.bpMuted,fontSize:10,fontWeight:'700'},'Solid = Floor (' + model.area + ' m² / 60 m² max)  ·  Dashed = Work zone (' + model.workArea + ' m² / 24 m² min)'))
@@ -1231,7 +1321,7 @@
 
       return el('div', { className: 'openbim-root', style: { height: '100%', overflowY: 'auto', overflowX: 'hidden', background: colors.surface, color: colors.ink } },
         el('style', null, '.openbim-root *{box-sizing:border-box}.openbim-root .ob-shell{max-width:1180px;margin:0 auto;padding:20px}.openbim-root .ob-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(310px,.92fr);gap:14px;align-items:start}.openbim-root button:focus-visible,.openbim-root input:focus-visible,.openbim-root textarea:focus-visible,.openbim-root select:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}@media(max-width:820px){.openbim-root .ob-grid{grid-template-columns:1fr}.openbim-root .ob-shell{padding:14px}}@media(prefers-reduced-motion:reduce){.openbim-root *{scroll-behavior:auto!important;transition:none!important}}'),
-        el('main', { className: 'ob-shell' },
+        el('section', { className: 'ob-shell', 'aria-label': 'OpenBIM Companion' },
           header,
           nav,
           state.statusMessage && el('div', { role: 'status', 'aria-live': 'polite', style: { marginBottom: 12, borderLeft: '4px solid ' + colors.teal, background: colors.chipBg, color: colors.chipInk, borderRadius: 7, padding: '9px 11px', fontSize: 12, fontWeight: 750 } }, state.statusMessage),

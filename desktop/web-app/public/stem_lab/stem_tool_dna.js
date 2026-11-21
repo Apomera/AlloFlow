@@ -840,6 +840,24 @@ window.StemLab = window.StemLab || {
         };
       }, []);
 
+      function dnaSafeRoundRect(ctx, x, y, w, h, r) {
+        var rad = Math.max(0, Math.min(Number(r) || 0, Math.abs(w) / 2, Math.abs(h) / 2));
+        if (typeof ctx.roundRect === 'function') {
+          ctx.roundRect(x, y, w, h, rad);
+          return;
+        }
+        ctx.moveTo(x + rad, y);
+        ctx.lineTo(x + w - rad, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + rad);
+        ctx.lineTo(x + w, y + h - rad);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+        ctx.lineTo(x + rad, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - rad);
+        ctx.lineTo(x, y + rad);
+        ctx.quadraticCurveTo(x, y, x + rad, y);
+        ctx.closePath();
+      }
+
       function sizeDnaCanvas(cv, ctx2d) {
         var rect = typeof cv.getBoundingClientRect === 'function' ? cv.getBoundingClientRect() : { width: 0, height: 0 };
         var cssWidth = Math.max(1, Math.round(cv.offsetWidth || rect.width || 1));
@@ -1316,6 +1334,7 @@ window.StemLab = window.StemLab || {
 
       function classifyMutationEffect(mutation) {
         if (!mutation) return '';
+        if (mutation.effect) return mutation.effect;
         if (mutation.type === 'Insertion' || mutation.type === 'Deletion') {
           return ((mutation.length || 1) % 3 === 0) ? 'In-frame indel' : 'Frameshift';
         }
@@ -1323,7 +1342,8 @@ window.StemLab = window.StemLab || {
           var beforeSeq = dnaSeq.substring(0, mutation.pos) + (mutation.from || '') + dnaSeq.substring(mutation.pos + 1);
           var beforeProtein = translateMRNA(beforeSeq.split('').map(function(b) { return CODING_TO_RNA[b] || 'N'; }).join(''));
           if (proteinSignature(beforeProtein) === proteinSignature(fullProtein) && !!beforeProtein.stop === !!fullProtein.stop) return 'Silent';
-          if (!beforeProtein.stop && fullProtein.stop) return 'Nonsense';
+          if (fullProtein.stop && (!beforeProtein.stop || fullProtein.stop.pos < beforeProtein.stop.pos)) return 'Nonsense';
+          if (beforeProtein.stop && !fullProtein.stop) return 'Nonstop';
           return 'Missense';
         }
         return 'Unknown';
@@ -1621,35 +1641,78 @@ window.StemLab = window.StemLab || {
         var currentAnimStep = tab === 'transcribe' ? txStep : animStep;
         var hoveredIndex = -1;
 
-        function draw3DSphere(ctx, x, y, r, baseChar) {
-          if (tab === 'transcribe') {
-            ctx.fillStyle = BASE_COLORS[baseChar] || '#94a3b8';
-            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#0f172a'; ctx.font = 'bold ' + Math.max(9, r * 1.2) + 'px monospace';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(baseChar, x, y);
-            return;
-          }
+        function draw3DSphere(ctx, x, y, r, baseChar, depthCue) {
+          var safeR = Math.max(2, r);
+          var zScale = typeof depthCue === 'number' ? (0.91 + 0.12 * ((depthCue + 1) * 0.5)) : 1;
+          var dr = safeR * zScale;
           var baseColor = BASE_COLORS[baseChar] || '#888';
           var darkColor = BASE_DARK_COLORS[baseChar] || '#444';
-          var grad = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r);
+          var grad = ctx.createRadialGradient(x - dr * 0.34, y - dr * 0.34, dr * 0.08, x, y, dr);
           grad.addColorStop(0, '#ffffff');
-          grad.addColorStop(0.3, baseColor);
-          grad.addColorStop(1, darkColor);
+          grad.addColorStop(0.28, baseColor);
+          grad.addColorStop(0.84, darkColor);
+          grad.addColorStop(1, '#090d16');
           ctx.fillStyle = grad;
           ctx.beginPath();
-          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.arc(x, y, dr, 0, Math.PI * 2);
           ctx.fill();
-          
+          // Crisp specular highlight dot & subtle rim
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.52)';
+          ctx.beginPath();
+          ctx.ellipse(x - dr * 0.30, y - dr * 0.32, dr * 0.24, dr * 0.14, -0.55, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.arc(x, y, dr - 0.4, 0, Math.PI * 2);
+          ctx.stroke();
+
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold ' + Math.max(9, r * 1.2) + 'px monospace';
+          ctx.font = 'bold ' + Math.max(9, dr * 1.16) + 'px monospace';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
           ctx.shadowBlur = 3;
-          ctx.fillText(baseChar, x, y);
+          ctx.fillText(baseChar, x, y + 0.5);
           ctx.shadowColor = 'transparent';
           ctx.shadowBlur = 0;
+        }
+
+        function drawBackboneRibbon(ctx, pts, gradColors) {
+          if (pts.length < 2) return;
+          function traceSmooth(offsetY) {
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y + offsetY);
+            for (var k = 1; k < pts.length; k++) {
+              var prev = pts[k - 1], curr = pts[k];
+              var mx = (prev.x + curr.x) * 0.5;
+              var my = (prev.y + curr.y) * 0.5 + offsetY;
+              ctx.quadraticCurveTo(prev.x, prev.y + offsetY, mx, my);
+            }
+            var last = pts[pts.length - 1];
+            ctx.lineTo(last.x, last.y + offsetY);
+          }
+          var g = ctx.createLinearGradient(pts[0].x, 0, pts[pts.length - 1].x, 0);
+          g.addColorStop(0, gradColors[0]);
+          g.addColorStop(0.5, gradColors[1]);
+          g.addColorStop(1, gradColors[2]);
+          ctx.save();
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          // Outer luminous depth aura + 3D ribbon core
+          ctx.strokeStyle = g;
+          ctx.lineWidth = 6.2;
+          ctx.shadowColor = gradColors[1];
+          ctx.shadowBlur = 9;
+          traceSmooth(0);
+          ctx.stroke();
+          // Specular sugar-phosphate top highlight sheen
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+          ctx.lineWidth = 1.6;
+          traceSmooth(-1.35);
+          ctx.stroke();
+          ctx.restore();
         }
 
         cv.onmousemove = function(e) {
@@ -1723,78 +1786,77 @@ window.StemLab = window.StemLab || {
           var midY = hh / 2;
           var helixAmp = 18;
 
-          // Draw template strand backbone
-          ctx2d.strokeStyle = '#94a3b8'; ctx2d.lineWidth = 2.5;
-          ctx2d.shadowColor = 'rgba(148, 163, 184, 0.45)'; ctx2d.shadowBlur = 6;
-          ctx2d.beginPath();
-          for (var i = 0; i < canvasSequence.length; i++) {
-            var x = startX + i * baseW + baseW / 2;
-            var yOff = Math.sin((i * 0.5) + _tick * 0.02) * helixAmp;
-            if (i === 0) ctx2d.moveTo(x, midY - 25 + yOff); else ctx2d.lineTo(x, midY - 25 + yOff);
+          var phaseTick = prefersReducedMotion ? 0 : _tick;
+          // Depth-cued 3D-shaded sugar-phosphate backbone ribbons with specular sheen
+          var topRibbonPts = [], botRibbonPts = [], rnaRibbonPts = [];
+          for (var ri = 0; ri < canvasSequence.length; ri++) {
+            var rx = startX + ri * baseW + baseW / 2;
+            var rOff = Math.sin((ri * 0.5) + phaseTick * 0.02) * helixAmp;
+            topRibbonPts.push({ x: rx, y: midY - 25 + rOff });
+            if (tab === 'transcribe' && ri < currentAnimStep) {
+              rnaRibbonPts.push({ x: rx, y: midY + 40 - rOff });
+            } else {
+              botRibbonPts.push({ x: rx, y: midY + 25 - rOff });
+            }
           }
-          ctx2d.stroke();
+          drawBackboneRibbon(ctx2d, topRibbonPts, ['#38bdf8', '#6366f1', '#38bdf8']);
+          if (rnaRibbonPts.length > 1) drawBackboneRibbon(ctx2d, rnaRibbonPts, ['#f472b6', '#c084fc', '#a855f7']);
+          drawBackboneRibbon(ctx2d, botRibbonPts, ['#14b8a6', '#22d3ee', '#38bdf8']);
 
-          // Draw coding/mRNA strand backbone
-          ctx2d.beginPath();
+          // Draw glowing hydrogen-bond base-pair rungs and depth-cued 3D base spheres
           for (var i = 0; i < canvasSequence.length; i++) {
             var x = startX + i * baseW + baseW / 2;
-            var yOff = Math.sin((i * 0.5) + _tick * 0.02) * helixAmp;
-            if (tab === 'transcribe' && i < currentAnimStep) continue;
-            if (i === 0 || (tab === 'transcribe' && i === currentAnimStep)) ctx2d.moveTo(x, midY + 25 - yOff);
-            else ctx2d.lineTo(x, midY + 25 - yOff);
-          }
-          ctx2d.stroke();
-          ctx2d.shadowColor = 'transparent'; ctx2d.shadowBlur = 0;
-
-          // Draw bonds and base spheres
-          for (var i = 0; i < canvasSequence.length; i++) {
-            var x = startX + i * baseW + baseW / 2;
-            var yOff = Math.sin((i * 0.5) + _tick * 0.02) * helixAmp;
+            var phaseAngle = (i * 0.5) + phaseTick * 0.02;
+            var yOff = Math.sin(phaseAngle) * helixAmp;
+            var zCue = Math.cos(phaseAngle);
             var base = canvasSequence[i]; var comp = canvasComplement[i];
             var topY = midY - 25 + yOff;
             var bottomY = midY + 25 - yOff;
 
-            // Draw hydrogen bonds
+            // Draw glowing multi-strand hydrogen bonds (3 for G≡C, 2 for A=T)
             if (!(tab === 'transcribe' && i < currentAnimStep)) {
-              var pulseDashOffset = -_tick * 0.5;
+              var pulseDashOffset = prefersReducedMotion ? 0 : (-phaseTick * 0.45);
+              var isGC = (base === 'G' && comp === 'C') || (base === 'C' && comp === 'G');
+              var bY = tab === 'transcribe' ? bottomY + 15 : bottomY;
+              var bondCount = isGC ? 3 : 2;
+              var bondSpan = isGC ? 4.4 : 2.8;
+              ctx2d.save();
               ctx2d.setLineDash([3, 3]);
               ctx2d.lineDashOffset = pulseDashOffset;
-              var isGC = (base === 'G' && comp === 'C') || (base === 'C' && comp === 'G');
-              ctx2d.strokeStyle = isGC ? 'rgba(34, 197, 94, 0.8)' : 'rgba(59, 130, 246, 0.8)';
-              ctx2d.lineWidth = isGC ? 2.5 : 1.5;
-              ctx2d.shadowColor = isGC ? '#22c55e' : '#3b82f6';
-              ctx2d.shadowBlur = 8;
-
-              var bY = tab === 'transcribe' ? bottomY + 15 : bottomY;
-              ctx2d.beginPath();
-              ctx2d.moveTo(x, topY + baseW * 0.38);
-              ctx2d.lineTo(x, bY - baseW * 0.38);
-              ctx2d.stroke();
-
-              ctx2d.shadowColor = 'transparent';
-              ctx2d.shadowBlur = 0;
-              ctx2d.setLineDash([]);
-              ctx2d.lineDashOffset = 0;
+              ctx2d.strokeStyle = isGC ? 'rgba(52, 211, 153, 0.88)' : 'rgba(96, 165, 250, 0.86)';
+              ctx2d.lineWidth = isGC ? 1.6 : 1.5;
+              ctx2d.shadowColor = isGC ? '#10b981' : '#38bdf8';
+              ctx2d.shadowBlur = 9;
+              for (var hb = 0; hb < bondCount; hb++) {
+                var offsetX = bondCount === 1 ? 0 : (-bondSpan / 2 + (hb / (bondCount - 1)) * bondSpan);
+                ctx2d.beginPath();
+                ctx2d.moveTo(x + offsetX, topY + baseW * 0.36);
+                ctx2d.lineTo(x + offsetX, bY - baseW * 0.36);
+                ctx2d.stroke();
+              }
+              ctx2d.restore();
             }
 
-            // Draw 3D base spheres
-            draw3DSphere(ctx2d, x, topY, baseW * 0.38, tab === 'transcribe' ? comp : base);
-
-            if (tab === 'transcribe' && i < currentAnimStep) {
-              var rnaBase = CODING_TO_RNA[base] || base; // match the mRNA string (coding strand, T→U) — not the complement
-              draw3DSphere(ctx2d, x, bottomY + 15, baseW * 0.38, rnaBase);
+            // Draw 3D base spheres in painter's depth order
+            var topChar = tab === 'transcribe' ? comp : base;
+            var botChar = (tab === 'transcribe' && i < currentAnimStep) ? (CODING_TO_RNA[base] || base) : (tab === 'transcribe' ? base : comp);
+            var botRenderY = (tab === 'transcribe' && i < currentAnimStep) ? (bottomY + 15) : bottomY;
+            if (zCue >= 0) {
+              draw3DSphere(ctx2d, x, botRenderY, baseW * 0.38, botChar, -zCue);
+              draw3DSphere(ctx2d, x, topY, baseW * 0.38, topChar, zCue);
             } else {
-              draw3DSphere(ctx2d, x, bottomY, baseW * 0.38, tab === 'transcribe' ? base : comp);
+              draw3DSphere(ctx2d, x, topY, baseW * 0.38, topChar, zCue);
+              draw3DSphere(ctx2d, x, botRenderY, baseW * 0.38, botChar, -zCue);
             }
 
             // Draw hover rings
             if (i === hoveredIndex) {
-              var pulse = 1 + 0.15 * Math.sin(_tick * 0.15);
-              ctx2d.strokeStyle = 'rgba(234, 179, 8, 0.95)';
+              var pulse = prefersReducedMotion ? 1.08 : (1 + 0.14 * Math.sin(_tick * 0.15));
+              ctx2d.strokeStyle = 'rgba(250, 204, 21, 0.95)';
               ctx2d.lineWidth = 2.5;
-              ctx2d.shadowColor = '#eab308';
-              ctx2d.shadowBlur = 8;
-              
+              ctx2d.shadowColor = '#facc15';
+              ctx2d.shadowBlur = 10;
+
               ctx2d.beginPath();
               ctx2d.arc(x, topY, baseW * 0.38 * pulse, 0, Math.PI * 2);
               ctx2d.stroke();
@@ -1808,17 +1870,26 @@ window.StemLab = window.StemLab || {
               ctx2d.shadowBlur = 0;
             }
 
-            // Draw RNA Polymerase
+            // Draw luminous RNA Polymerase energy halo
             if (tab === 'transcribe' && i === currentAnimStep && currentAnimStep < canvasSequence.length) {
-              ctx2d.fillStyle = 'rgba(168, 85, 247, 0.15)';
-              ctx2d.strokeStyle = 'rgba(168, 85, 247, 0.4)';
-              ctx2d.lineWidth = 1.5;
-              ctx2d.shadowColor = 'rgba(168, 85, 247, 0.5)'; ctx2d.shadowBlur = 12;
-              ctx2d.beginPath(); ctx2d.arc(x, midY, baseW * 1.6, 0, Math.PI * 2); ctx2d.fill(); ctx2d.stroke();
-              ctx2d.shadowColor = 'transparent'; ctx2d.shadowBlur = 0;
-              ctx2d.fillStyle = '#c4b5fd'; ctx2d.font = 'bold 9px sans-serif';
+              var polR = baseW * 1.72;
+              var polPulse = prefersReducedMotion ? 1 : (1 + 0.06 * Math.sin(_tick * 0.12));
+              ctx2d.save();
+              var polHalo = ctx2d.createRadialGradient(x, midY, polR * 0.15, x, midY, polR * 1.45 * polPulse);
+              polHalo.addColorStop(0, 'rgba(216, 180, 254, 0.36)');
+              polHalo.addColorStop(0.55, 'rgba(168, 85, 247, 0.20)');
+              polHalo.addColorStop(1, 'rgba(168, 85, 247, 0)');
+              ctx2d.fillStyle = polHalo;
+              ctx2d.beginPath(); ctx2d.arc(x, midY, polR * 1.45 * polPulse, 0, Math.PI * 2); ctx2d.fill();
+              ctx2d.strokeStyle = 'rgba(216, 180, 254, 0.78)';
+              ctx2d.lineWidth = 1.8;
+              ctx2d.shadowColor = '#a855f7'; ctx2d.shadowBlur = 14;
+              ctx2d.beginPath(); ctx2d.arc(x, midY, polR * polPulse, 0, Math.PI * 2); ctx2d.stroke();
+              ctx2d.shadowBlur = 0;
+              ctx2d.fillStyle = '#e9d5ff'; ctx2d.font = 'bold 9px sans-serif';
               ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
-              ctx2d.fillText('RNA Pol', x, midY - baseW * 1.9);
+              ctx2d.fillText('RNA Pol', x, midY - polR - 10);
+              ctx2d.restore();
             }
           }
 
@@ -2015,12 +2086,23 @@ window.StemLab = window.StemLab || {
             }
 
             if (i === currentReplStep && currentReplStep < replSequence.length) {
-              ctx2d.fillStyle = 'rgba(168, 85, 247, 0.25)';
-              ctx2d.beginPath(); ctx2d.arc(x, midY, baseW * 2, 0, Math.PI * 2); ctx2d.fill();
-              ctx2d.fillStyle = '#c4b5fd'; ctx2d.font = 'bold 9px sans-serif'; ctx2d.textAlign = 'center';
+              var heliR = baseW * 2.1;
+              var heliGrad = ctx2d.createRadialGradient(x, midY, heliR * 0.12, x, midY, heliR * 1.35);
+              heliGrad.addColorStop(0, 'rgba(216, 180, 254, 0.36)');
+              heliGrad.addColorStop(0.55, 'rgba(168, 85, 247, 0.22)');
+              heliGrad.addColorStop(1, 'rgba(168, 85, 247, 0)');
+              ctx2d.save();
+              ctx2d.fillStyle = heliGrad;
+              ctx2d.beginPath(); ctx2d.arc(x, midY, heliR * 1.35, 0, Math.PI * 2); ctx2d.fill();
+              ctx2d.strokeStyle = 'rgba(192, 132, 252, 0.72)'; ctx2d.lineWidth = 1.6;
+              ctx2d.shadowColor = '#a855f7'; ctx2d.shadowBlur = 12;
+              ctx2d.beginPath(); ctx2d.arc(x, midY, heliR * 0.88, 0, Math.PI * 2); ctx2d.stroke();
+              ctx2d.shadowBlur = 0;
+              ctx2d.fillStyle = '#e9d5ff'; ctx2d.font = 'bold 9px sans-serif'; ctx2d.textAlign = 'center';
               ctx2d.fillText('Helicase', x, midY - baseW * 2.2);
-              ctx2d.fillStyle = '#059669'; ctx2d.font = 'bold 7px sans-serif';
+              ctx2d.fillStyle = '#34d399'; ctx2d.font = 'bold 7.5px sans-serif';
               ctx2d.fillText('DNA Pol III', x, midY + baseW * 2.5);
+              ctx2d.restore();
             }
           }
 
@@ -2117,13 +2199,24 @@ window.StemLab = window.StemLab || {
           var midY = hh / 2 + 10;
           var yChannel = midY + 15;
 
-          // ─── 1. DRAW RIBOSOME ENVELOPE ───
-          ctx2d.shadowColor = 'rgba(16, 185, 129, 0.2)';
-          ctx2d.shadowBlur = 10;
+          // ─── 1. DRAW RIBOSOME ENVELOPE (luminous bioluminescent subunits) ───
+          ctx2d.save();
+          var riboAura = ctx2d.createRadialGradient(w / 2, yChannel - 16, 12, w / 2, yChannel - 16, 118);
+          riboAura.addColorStop(0, 'rgba(52, 211, 153, 0.24)');
+          riboAura.addColorStop(0.6, 'rgba(16, 185, 129, 0.08)');
+          riboAura.addColorStop(1, 'rgba(16, 185, 129, 0)');
+          ctx2d.fillStyle = riboAura;
+          ctx2d.beginPath(); ctx2d.arc(w / 2, yChannel - 16, 118, 0, Math.PI * 2); ctx2d.fill();
 
-          // Large Subunit (top green dome)
-          ctx2d.fillStyle = 'rgba(16, 185, 129, 0.12)';
-          ctx2d.strokeStyle = 'rgba(16, 185, 129, 0.6)';
+          ctx2d.shadowColor = 'rgba(16, 185, 129, 0.42)';
+          ctx2d.shadowBlur = 14;
+
+          // Large Subunit (top emerald-teal molecular dome with specular gradient)
+          var lgGrad = ctx2d.createLinearGradient(w / 2, yChannel - 85, w / 2, yChannel - 5);
+          lgGrad.addColorStop(0, 'rgba(52, 211, 153, 0.28)');
+          lgGrad.addColorStop(1, 'rgba(16, 185, 129, 0.12)');
+          ctx2d.fillStyle = lgGrad;
+          ctx2d.strokeStyle = 'rgba(52, 211, 153, 0.78)';
           ctx2d.lineWidth = 2;
           ctx2d.beginPath();
           ctx2d.moveTo(w / 2 - 90, yChannel - 5);
@@ -2132,14 +2225,17 @@ window.StemLab = window.StemLab || {
           ctx2d.fill();
           ctx2d.stroke();
 
-          // Small Subunit (bottom green capsule)
-          ctx2d.fillStyle = 'rgba(52, 211, 153, 0.15)';
-          ctx2d.strokeStyle = 'rgba(52, 211, 153, 0.6)';
+          // Small Subunit (bottom capsule using safe rounded rect)
+          var smGrad = ctx2d.createLinearGradient(w / 2, yChannel + 5, w / 2, yChannel + 35);
+          smGrad.addColorStop(0, 'rgba(52, 211, 153, 0.26)');
+          smGrad.addColorStop(1, 'rgba(6, 182, 212, 0.14)');
+          ctx2d.fillStyle = smGrad;
+          ctx2d.strokeStyle = 'rgba(52, 211, 153, 0.72)';
           ctx2d.beginPath();
-          ctx2d.roundRect(w / 2 - 80, yChannel + 5, 160, 30, 10);
+          dnaSafeRoundRect(ctx2d, w / 2 - 80, yChannel + 5, 160, 30, 10);
           ctx2d.fill();
           ctx2d.stroke();
-          ctx2d.shadowBlur = 0;
+          ctx2d.restore();
 
           // E, P, A Site Boxes
           var xP = w / 2;
@@ -2720,24 +2816,39 @@ window.StemLab = window.StemLab || {
       // ═══ MUTATION HELPERS ═══
       function applyMutation(type) {
         var bases = 'ATGC'; var seq = dnaSeq.split('');
-        var pos = Math.floor(Math.random() * (seq.length - 6)) + 3;
+        if (type === 'deletion' && seq.length <= 6) {
+          addToast('Keep at least 6 bases before deleting further.', 'info');
+          return;
+        }
+        if (type === 'substitution' && seq.length === 0) {
+          addToast('Build a DNA sequence before mutating.', 'info');
+          return;
+        }
+        var pos = seq.length >= 7 ? (Math.floor(Math.random() * (seq.length - 6)) + 3) : Math.floor(Math.random() * Math.max(1, seq.length));
         var original = seq[pos]; var mutated;
         var newLog = (Array.isArray(d.mutationLog) ? d.mutationLog : []).slice();
         if (type === 'substitution') {
           do { mutated = bases[Math.floor(Math.random() * 4)]; } while (mutated === original);
           seq[pos] = mutated;
-          newLog.push({ type: 'Substitution', pos: pos, from: original, to: mutated });
-          updMulti({ dnaSequence: seq.join(''), mRNA: '', protein: [], animStep: 0, mutationLog: newLog });
+          var afterSeqSub = seq.join('');
+          var beforeProtSub = translateMRNA(dnaSeq.split('').map(function(b) { return CODING_TO_RNA[b] || 'N'; }).join(''));
+          var afterProtSub = translateMRNA(afterSeqSub.split('').map(function(b) { return CODING_TO_RNA[b] || 'N'; }).join(''));
+          var subEffect = 'Missense';
+          if (proteinSignature(beforeProtSub) === proteinSignature(afterProtSub) && !!beforeProtSub.stop === !!afterProtSub.stop) subEffect = 'Silent';
+          else if (afterProtSub.stop && (!beforeProtSub.stop || afterProtSub.stop.pos < beforeProtSub.stop.pos)) subEffect = 'Nonsense';
+          else if (beforeProtSub.stop && !afterProtSub.stop) subEffect = 'Nonstop';
+          newLog.push({ type: 'Substitution', pos: pos, from: original, to: mutated, effect: subEffect });
+          updMulti({ dnaSequence: afterSeqSub, mRNA: '', protein: [], animStep: 0, mutationLog: newLog });
           addToast('\uD83E\uDDEC Substitution at pos ' + (pos + 1) + ': ' + original + ' \u2192 ' + mutated, 'success');
         } else if (type === 'insertion') {
           mutated = bases[Math.floor(Math.random() * 4)];
           seq.splice(pos, 0, mutated);
-          newLog.push({ type: 'Insertion', pos: pos, to: mutated });
+          newLog.push({ type: 'Insertion', pos: pos, to: mutated, effect: 'Frameshift' });
           updMulti({ dnaSequence: seq.join(''), mRNA: '', protein: [], animStep: 0, mutationLog: newLog });
           addToast('\uD83E\uDDEC Insertion at pos ' + (pos + 1) + ': +' + mutated, 'success');
         } else {
           var removed = seq.splice(pos, 1)[0];
-          newLog.push({ type: 'Deletion', pos: pos, from: removed });
+          newLog.push({ type: 'Deletion', pos: pos, from: removed, effect: 'Frameshift' });
           updMulti({ dnaSequence: seq.join(''), mRNA: '', protein: [], animStep: 0, mutationLog: newLog });
           addToast('\uD83E\uDDEC Deletion at pos ' + (pos + 1) + ': -' + removed, 'success');
         }
@@ -2912,7 +3023,7 @@ window.StemLab = window.StemLab || {
       }
       var crisprStageLabel = crisprAttemptStale ? 'Review the changed target' : crisprPhase === 'design' ? 'Design: choose a PAM target' : crisprPhase === 'scanning' ? (crisprPaused ? 'Scan paused: explore at your pace' : 'Scanning for the selected target') : crisprPhase === 'cut' ? 'Target found: choose a repair pathway' : 'Repair complete: compare the DNA';
       var crisprTargetText = selectedPAMSite ? 'Schematic guide window: pos ' + (selectedPAMSite.guideStart + 1) + '-' + selectedPAMSite.guideEnd + ' | cut near pos ' + (selectedPAMSite.cutSite + 1) + ' | PAM: ' + dnaSeq.substring(selectedPAMSite.pamStart, selectedPAMSite.pamStart + 3) + ' at pos ' + (selectedPAMSite.pamStart + 1) : 'No forward-strand NGG site has enough upstream sequence for this model. Choose a longer preset in Build.';
-      var crisprGuideRNA = selectedPAMSite ? dnaSeq.substring(selectedPAMSite.guideStart, selectedPAMSite.guideEnd).split('').map(function(base) { return DNA_TO_RNA[base] || base; }).join('') : '';
+      var crisprGuideRNA = selectedPAMSite ? dnaSeq.substring(selectedPAMSite.guideStart, selectedPAMSite.guideEnd).split('').map(function(base) { return CODING_TO_RNA[base] || base; }).join('') : '';
       if (crisprPhase === 'done' && crisprResult) crisprTargetText = 'Completed edit at the original target. ' + crisprResult.desc;
       dnaCrisprRef.current.latest = { tab: tab, phase: crisprPhase, key: crisprTargetKey, paused: crisprPaused, stale: crisprAttemptStale, pos: crisprScanPos };
       React.useEffect(function() {
@@ -3225,28 +3336,42 @@ window.StemLab = window.StemLab || {
             }
           }
 
-          // ─── CAS9 ENVELOPE MOLECULAR GRAPHICS ───
+          // ─── CAS9 ENVELOPE MOLECULAR GRAPHICS (luminous CRISPR energy halo) ───
           var cas9Pos = crisprPhase === 'scanning' ? crisprScanPos : (selectedPAMSite ? selectedPAMSite.cutSite : 0);
           if (crisprPhase === 'scanning' || crisprPhase === 'cut') {
             var cas9X = startX + cas9Pos * baseW + baseW / 2;
             var cas9Y = midY;
             var lobeR = baseW * 2.8;
+            var cas9Pulse = prefersReducedMotion ? 1 : (1 + 0.05 * Math.sin(_tick * 0.14));
 
-            ctx2d.fillStyle = 'rgba(139, 92, 246, 0.12)';
-            ctx2d.strokeStyle = 'rgba(139, 92, 246, 0.6)';
-            ctx2d.lineWidth = 1.5;
+            ctx2d.save();
+            var cas9Halo = ctx2d.createRadialGradient(cas9X, cas9Y, lobeR * 0.15, cas9X, cas9Y, lobeR * 1.55 * cas9Pulse);
+            cas9Halo.addColorStop(0, crisprPhase === 'cut' ? 'rgba(244, 114, 182, 0.30)' : 'rgba(167, 139, 250, 0.28)');
+            cas9Halo.addColorStop(0.55, 'rgba(139, 92, 246, 0.14)');
+            cas9Halo.addColorStop(1, 'rgba(139, 92, 246, 0)');
+            ctx2d.fillStyle = cas9Halo;
             ctx2d.beginPath();
-            ctx2d.ellipse(cas9X - baseW * 0.8, cas9Y, lobeR, 28, 0, 0, Math.PI * 2);
-            ctx2d.ellipse(cas9X + baseW * 0.8, cas9Y, lobeR, 28, 0, 0, Math.PI * 2);
+            ctx2d.arc(cas9X, cas9Y, lobeR * 1.55 * cas9Pulse, 0, Math.PI * 2);
+            ctx2d.fill();
+
+            ctx2d.fillStyle = 'rgba(139, 92, 246, 0.16)';
+            ctx2d.strokeStyle = crisprPhase === 'cut' ? 'rgba(232, 121, 249, 0.85)' : 'rgba(167, 139, 250, 0.78)';
+            ctx2d.lineWidth = 1.8;
+            ctx2d.shadowColor = crisprPhase === 'cut' ? '#e879f9' : '#8b5cf6';
+            ctx2d.shadowBlur = 14;
+            ctx2d.beginPath();
+            ctx2d.ellipse(cas9X - baseW * 0.8, cas9Y, lobeR * cas9Pulse, 29, 0, 0, Math.PI * 2);
+            ctx2d.ellipse(cas9X + baseW * 0.8, cas9Y, lobeR * cas9Pulse, 29, 0, 0, Math.PI * 2);
             ctx2d.fill();
             ctx2d.stroke();
+            ctx2d.restore();
 
-            ctx2d.fillStyle = '#8b5cf6'; ctx2d.font = 'bold 9px sans-serif'; ctx2d.textAlign = 'center';
-            ctx2d.fillText('Cas9 Protein Lobe', cas9X, cas9Y - 33);
-            
+            ctx2d.fillStyle = '#c4b5fd'; ctx2d.font = 'bold 9px sans-serif'; ctx2d.textAlign = 'center';
+            ctx2d.fillText('Cas9 Protein Lobe', cas9X, cas9Y - 34);
+
             if (crisprPhase === 'cut') {
-              ctx2d.fillStyle = '#60a5fa'; ctx2d.font = 'bold 7px sans-serif';
-              ctx2d.fillText('gRNA guide', cas9X - baseW * 1.8, cas9Y + 36);
+              ctx2d.fillStyle = '#93c5fd'; ctx2d.font = 'bold 7.5px sans-serif';
+              ctx2d.fillText('gRNA guide', cas9X - baseW * 1.8, cas9Y + 37);
             }
           }
 
@@ -3445,22 +3570,33 @@ window.StemLab = window.StemLab || {
           
           var progress = prefersReducedMotion ? 1 : Math.min(1, (Date.now() - start) / 3000); // 3 seconds migration duration
 
-          // Gel background (high-contrast dark indigo)
-          ctx2d.fillStyle = '#0c1322';
+          // UV-transilluminator agarose gel chamber (deep UV indigo with subtle chamber glow)
+          var gelBg = ctx2d.createLinearGradient(15, 10, 15, h2 - 10);
+          gelBg.addColorStop(0, '#0b1026');
+          gelBg.addColorStop(0.5, '#121536');
+          gelBg.addColorStop(1, '#090e20');
+          ctx2d.fillStyle = gelBg;
           ctx2d.beginPath();
-          ctx2d.roundRect(15, 10, w - 30, h2 - 20, 8);
+          dnaSafeRoundRect(ctx2d, 15, 10, w - 30, h2 - 20, 8);
           ctx2d.fill();
-          ctx2d.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+          ctx2d.strokeStyle = 'rgba(56, 189, 248, 0.42)';
           ctx2d.lineWidth = 1.5;
           ctx2d.stroke();
 
-          // Electrode labels
+          // Subtle UV transilluminator background bloom & lane dividers
+          var uvGlow = ctx2d.createRadialGradient(w / 2, h2 / 2, 10, w / 2, h2 / 2, Math.max(w, h2) * 0.55);
+          uvGlow.addColorStop(0, 'rgba(99, 102, 241, 0.14)');
+          uvGlow.addColorStop(1, 'rgba(15, 23, 42, 0)');
+          ctx2d.fillStyle = uvGlow;
+          ctx2d.fillRect(16, 11, w - 32, h2 - 22);
+
+          // Electrode labels & platinum rails
           ctx2d.font = 'bold 7px sans-serif';
           ctx2d.textAlign = 'center';
           ctx2d.textBaseline = 'middle';
-          ctx2d.fillStyle = '#991b1b';
+          ctx2d.fillStyle = '#f87171';
           ctx2d.fillText('- (cathode)', w / 2, 6);
-          ctx2d.fillStyle = '#166534';
+          ctx2d.fillStyle = '#4ade80';
           ctx2d.fillText('+ (anode)', w / 2, h2 - 6);
 
           var wellY = 18;
@@ -3471,18 +3607,23 @@ window.StemLab = window.StemLab || {
           var bandWidth = Math.max(14, Math.min(22, sampleLaneWidth * 0.55));
           var wellWidth = Math.max(16, Math.min(24, sampleLaneWidth * 0.62));
 
-          // Draw responsive wells (ladder + one lane per sample)
-          ctx2d.fillStyle = '#1e293b';
+          // Draw faint agarose lane tracks + sample wells
           [ladderX].concat(currentCase.samples.map(function(sample, index) { return sampleLaneX(index); })).forEach(function(centerX) {
+            ctx2d.fillStyle = 'rgba(56, 189, 248, 0.04)';
+            ctx2d.fillRect(centerX - wellWidth / 2, wellY + 5, wellWidth, h2 - wellY - 22);
+            ctx2d.fillStyle = '#1e293b';
             ctx2d.fillRect(centerX - wellWidth / 2, wellY, wellWidth, 5);
+            ctx2d.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+            ctx2d.lineWidth = 0.7;
+            ctx2d.strokeRect(centerX - wellWidth / 2, wellY, wellWidth, 5);
           });
 
           // Draw Ladder label
-          ctx2d.fillStyle = '#94a3b8';
+          ctx2d.fillStyle = '#fde68a';
           ctx2d.font = 'bold 6.5px sans-serif';
           ctx2d.fillText('Ladder', ladderX, 13);
 
-          // Draw Ladder bands
+          // Draw UV-fluorescent Ladder bands
           var ladderSizes = [100, 200, 300, 400, 500, 600, 700];
           ladderSizes.forEach(function(size) {
             var finalY = bandY(size);
@@ -3491,24 +3632,32 @@ window.StemLab = window.StemLab || {
             var speedFactor = 1.8 - (logSize - logMin) / (logMax - logMin);
             var currentY = wellY + (finalY - wellY) * Math.min(1, progress * speedFactor);
 
-            ctx2d.fillStyle = 'rgba(245, 158, 11, 0.9)';
+            ctx2d.save();
+            ctx2d.shadowColor = '#f59e0b';
+            ctx2d.shadowBlur = 8;
+            ctx2d.fillStyle = 'rgba(251, 191, 36, 0.94)';
             ctx2d.beginPath();
-            ctx2d.roundRect(ladderX - bandWidth / 2, currentY, bandWidth, 2.5, 0.5);
+            dnaSafeRoundRect(ctx2d, ladderX - bandWidth / 2, currentY, bandWidth, 2.8, 1);
             ctx2d.fill();
+            // Bright UV fluorescence core
+            ctx2d.shadowBlur = 0;
+            ctx2d.fillStyle = 'rgba(254, 249, 195, 0.85)';
+            ctx2d.fillRect(ladderX - bandWidth * 0.42, currentY + 0.7, bandWidth * 0.84, 1.1);
+            ctx2d.restore();
 
             // Label text
             ctx2d.fillStyle = '#94a3b8';
             ctx2d.font = '5px sans-serif';
             ctx2d.textAlign = 'left';
-            ctx2d.fillText(size + 'bp', ladderX + bandWidth / 2 + 4, currentY + 1.25);
+            ctx2d.fillText(size + 'bp', ladderX + bandWidth / 2 + 4, currentY + 1.4);
           });
 
-          // Draw Sample lanes
+          // Draw UV-fluorescent Sample lanes
           currentCase.samples.forEach(function(s, si) {
             var laneX = sampleLaneX(si);
 
             // Lane label text
-            ctx2d.fillStyle = s.isRef ? '#22d3ee' : '#94a3b8';
+            ctx2d.fillStyle = s.isRef ? '#67e8f9' : '#cbd5e1';
             ctx2d.font = 'bold 6.5px sans-serif';
             ctx2d.textAlign = 'center';
             ctx2d.fillText(s.label, laneX, 13);
@@ -3520,18 +3669,23 @@ window.StemLab = window.StemLab || {
               var speedFactor = 1.8 - (logSize - logMin) / (logMax - logMin);
               var currentY = wellY + (finalY - wellY) * Math.min(1, progress * speedFactor);
 
-              ctx2d.fillStyle = s.isRef ? '#22d3ee' : '#3b82f6';
-              ctx2d.shadowColor = s.isRef ? '#22d3ee' : '#3b82f6';
-              ctx2d.shadowBlur = 4;
+              ctx2d.save();
+              ctx2d.fillStyle = s.isRef ? '#22d3ee' : '#60a5fa';
+              ctx2d.shadowColor = s.isRef ? '#06b6d4' : '#3b82f6';
+              ctx2d.shadowBlur = 10;
               ctx2d.beginPath();
-              ctx2d.roundRect(laneX - bandWidth / 2, currentY, bandWidth, 2.5, 0.5);
+              dnaSafeRoundRect(ctx2d, laneX - bandWidth / 2, currentY, bandWidth, 3.0, 1.1);
               ctx2d.fill();
+              // UV-excited fluorescent core line
               ctx2d.shadowBlur = 0;
+              ctx2d.fillStyle = s.isRef ? 'rgba(236, 254, 255, 0.92)' : 'rgba(219, 234, 254, 0.86)';
+              ctx2d.fillRect(laneX - bandWidth * 0.42, currentY + 0.8, bandWidth * 0.84, 1.2);
+              ctx2d.restore();
             });
           });
 
-          // Draw rising bubbles in gel lanes
-          if (progress < 1) {
+          // Draw rising bubbles in gel lanes (gated on reduced motion)
+          if (progress < 1 && !prefersReducedMotion) {
             ctx2d.fillStyle = 'rgba(255, 255, 255, 0.25)';
             for (var b = 0; b < 24; b++) {
               var laneIdx = b % (currentCase.samples.length + 1);
@@ -5301,8 +5455,8 @@ window.StemLab = window.StemLab || {
             ),
             h("div", { className: "text-xs text-slate-600" }, "Complement: ", h("span", { className: "font-mono font-bold text-slate-600" }, complementStrand), " | Coding: ", h("span", { className: "font-mono font-bold text-slate-600" }, dnaSeq)),
             h("div", { className: "flex gap-2 text-[0.6875rem] text-slate-600 pt-2 border-t border-slate-100" },
-              h("span", null, "GC: " + Math.round((dnaSeq.split('').filter(function(b) { return b === 'G' || b === 'C'; }).length / dnaSeq.length) * 100) + "%"),
-              h("span", null, "AT: " + Math.round((dnaSeq.split('').filter(function(b) { return b === 'A' || b === 'T'; }).length / dnaSeq.length) * 100) + "%")
+              h("span", null, "GC: " + Math.round((dnaSeq.split('').filter(function(b) { return b === 'G' || b === 'C'; }).length / Math.max(1, dnaSeq.length)) * 100) + "%"),
+              h("span", null, "AT: " + Math.round((dnaSeq.split('').filter(function(b) { return b === 'A' || b === 'T'; }).length / Math.max(1, dnaSeq.length)) * 100) + "%")
             ),
             h("div", { className: "flex flex-wrap gap-x-4 gap-y-1 text-[0.6875rem] text-slate-600 pt-2 border-t border-slate-100" },
               ['A', 'T', 'G', 'C'].map(function(b) { var names = { A: 'Adenine', T: 'Thymine', G: 'Guanine', C: 'Cytosine' }; return h("span", { key: b, className: "flex items-center gap-1" }, h("span", { className: "w-3 h-3 rounded-full", style: { background: BASE_COLORS[b] } }), b + "=" + names[b] + " \u2194 " + BASE_COMPLEMENT[b]); })
@@ -5613,7 +5767,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex gap-2 flex-wrap" },
               h("button", { onClick: function() { applyMutation('substitution'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.substitution', "\uD83D\uDD04 Substitution")),
               h("button", { onClick: function() { applyMutation('insertion'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.insertion', "\u2795 Insertion")),
-              h("button", { onClick: function() { applyMutation('deletion'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-red-700 text-white hover:bg-red-600 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.deletion', "\u2796 Deletion")),
+              h("button", { onClick: function() { applyMutation('deletion'); }, disabled: dnaSeq.length <= 6, className: "px-3 py-2 rounded-xl text-xs font-bold bg-red-700 text-white hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.deletion', "\u2796 Deletion")),
               h("button", { onClick: function() { updMulti({ dnaSequence: 'ATGCGTACCTGAAACTGA', mRNA: '', protein: [], animStep: 0, mutationLog: [] }); addToast('\u21BA Reset to original', 'success'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-200 text-slate-600 hover:bg-slate-300 transition-all active:scale-[0.97]" }, t('stem.dna.reset_4', "\u21BA Reset")),
               h("button", { onClick: undoLatestMutation, disabled: !(d.mutationLog && d.mutationLog.length), className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 transition-all active:scale-[0.97]" }, "Undo last"),
               h("button", { type: "button", id: "dna-save-experiment", "data-dna-checkpoint-controls": true, "aria-describedby": "dna-checkpoint-save-help", onClick: saveDnaExperiment, className: "px-3 py-2 rounded-xl text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-all active:scale-[0.97]" }, "Save experiment")

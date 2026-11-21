@@ -11,9 +11,12 @@
 
   var SCHEMA_VERSION = '1.0';
   var ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
-  var SECRET_FIELD_RE = /(?:^|[_-])(?:api)?key$|token|secret|password|credential/i;
+  var SECRET_FIELD_RE = /(?:^|[_-])(?:api)?key$|token|secret|password|credential|passphrase|(?:^|[_-])(?:authorization|cookie)$/i;
+  var CAMEL_SECRET_FIELD_RE = /(?:^|[a-z])(?:Access|Refresh|Session|Auth|Bearer|Id|Api|Client|Private|Signing|Encryption)Key$|^(?:access|refresh|session|auth|bearer|id|api|client|private|signing|encryption)Key$|(?:^|[a-z])(?:Client|Api|App|Jwt|Webhook|Signing)Secret$|^(?:client|api|app|jwt|webhook|signing)Secret$|^privateKey$/;
   var ABSOLUTE_PATH_RE = /^(?:[A-Za-z]:[\\/]|\\\\|\/)/;
   var MAX_ITEMS = 500;
+  var MAX_SCAN_NODES = 10000;
+  var MAX_SCAN_ERRORS = 100;
 
   function plannerError(code, path, message) {
     return { code: code, path: path, message: message };
@@ -25,26 +28,46 @@
       ? window.AlloModules.AgentCoreMediaContracts : null;
   }
 
-  function scanUnsafe(value, path, errors, depth) {
+  function scanUnsafe(value, path, errors, depth, state) {
     if (!value || typeof value !== 'object') return;
+    var ctx = state || { visited: new Set(), nodes: 0, limitReported: false };
+    if (errors.length >= MAX_SCAN_ERRORS) return;
     if (depth > 8) {
       errors.push(plannerError('payload-too-deep', path, 'Media plans may not exceed eight levels of nesting.'));
       return;
     }
+    if (ctx.visited.has(value)) {
+      errors.push(plannerError('cyclic-payload', path, 'Media plans must be acyclic JSON data.'));
+      return;
+    }
+    if (++ctx.nodes > MAX_SCAN_NODES) {
+      if (!ctx.limitReported) {
+        ctx.limitReported = true;
+        errors.push(plannerError('payload-too-large', path, 'Media plan exceeds the node traversal budget.'));
+      }
+      return;
+    }
+    ctx.visited.add(value);
     var keys = Array.isArray(value) ? value.map(function (_, i) { return i; }) : Object.keys(value);
-    keys.forEach(function (key) {
+    for (var i = 0; i < keys.length && errors.length < MAX_SCAN_ERRORS; i++) {
+      var key = keys[i];
       var childPath = path ? path + '.' + key : String(key);
-      if (typeof key === 'string' && SECRET_FIELD_RE.test(key)) {
+      if (typeof key === 'string' && (key === '__proto__' || key === 'constructor' || key === 'prototype')) {
+        errors.push(plannerError('unsafe-key', childPath, 'Prototype-polluting key "' + key + '" is not allowed in media plans.'));
+        continue;
+      }
+      if (typeof key === 'string' && (SECRET_FIELD_RE.test(key) || CAMEL_SECRET_FIELD_RE.test(key))) {
         errors.push(plannerError('secret-like-field', childPath, 'Credentials are runtime-only and may not appear in a media plan.'));
-        return;
+        continue;
       }
       var child = value[key];
       if (typeof child === 'string' && ABSOLUTE_PATH_RE.test(child)) {
         errors.push(plannerError('unsafe-path-value', childPath, 'Use an opaque managed asset handle, not a filesystem path.'));
       } else if (child && typeof child === 'object') {
-        scanUnsafe(child, childPath, errors, depth + 1);
+        scanUnsafe(child, childPath, errors, depth + 1, ctx);
       }
-    });
+    }
+    ctx.visited.delete(value);
   }
 
   function validateBatch(input, contracts) {
@@ -68,7 +91,7 @@
       errors.push(plannerError('bad-batch-operation-limit', 'batchPolicy.maxOperations', 'maxOperations must be from 1 to 10000.'));
     }
     var requests = [];
-    var seen = {};
+    var seen = Object.create(null);
     (Array.isArray(input.requests) ? input.requests : []).forEach(function (request, index) {
       var report = contracts.validateMediaRequest(request);
       if (!report.ok) {
@@ -293,7 +316,7 @@
   }
 
   function slug(value, fallback) {
-    var result = String(value || '').trim().replace(/[^A-Za-z0-9._:-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+    var result = String(value || '').trim().replace(/[^A-Za-z0-9._:-]+/g, '-').replace(/^[^A-Za-z0-9]+|-+$/g, '').slice(0, 80);
     return result || fallback;
   }
 
@@ -303,19 +326,32 @@
     var entries = Array.isArray(source.entries) ? source.entries : [];
     var providerPolicy = source.providerPolicy || {};
     var output = source.output || { width: 1024, height: 1024, mimeType: 'image/png', quality: 'standard' };
+    var usedRequestIds = Object.create(null);
     return {
       schemaVersion: SCHEMA_VERSION,
       planId: planId,
       batchPolicy: source.batchPolicy || { maxCostUsd: 0, maxOperations: Math.max(1, entries.length * 2) },
       requests: entries.map(function (entry, index) {
         var itemId = slug(entry && (entry.id || entry.term), 'item-' + (index + 1));
+        var baseReqId = slug(planId + ':' + itemId, 'glossary-item-' + (index + 1));
+        var reqId = baseReqId;
+        if (usedRequestIds[reqId]) {
+          var suffix = '-' + (index + 1);
+          reqId = baseReqId.slice(0, Math.max(1, 80 - suffix.length)) + suffix;
+          var n = 2;
+          while (usedRequestIds[reqId]) {
+            var extra = '-' + (index + 1) + '-' + (n++);
+            reqId = baseReqId.slice(0, Math.max(1, 80 - extra.length)) + extra;
+          }
+        }
+        usedRequestIds[reqId] = true;
         var term = String(entry && entry.term || '').trim();
         var definition = String(entry && entry.definition || '').trim();
         var suppliedPrompt = String(entry && entry.prompt || '').trim();
         var prompt = suppliedPrompt || ('Create a clear, age-appropriate instructional illustration for the glossary term "' + term + '". Definition: ' + definition + '. Avoid decorative text and make the central concept visually unambiguous.');
         var request = {
           schemaVersion: SCHEMA_VERSION,
-          requestId: slug(planId + ':' + itemId, 'glossary-item-' + (index + 1)),
+          requestId: reqId,
           operation: entry && entry.sourceAsset ? 'edit' : 'generate',
           prompt: prompt.slice(0, 8000),
           purpose: 'glossary-illustration:' + term.slice(0, 150),

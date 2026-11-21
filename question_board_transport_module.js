@@ -37,6 +37,32 @@
     'use strict';
 
     const VERSION = '1.0.0';
+    const hasOwn = Object.prototype.hasOwnProperty;
+    const MAX_SAVED_CRED_CHARS = 4096;
+    const MAX_BOARD_ITEMS = 500;
+    const MAX_ITEM_TEXT_CHARS = 2000;
+    const MAX_NOTE_CHARS = 1000;
+    const ALLOWED_STATUSES = { 'held': 1, 'approved': 1, 'hidden': 1 };
+
+    function stripCtrl(value) {
+        return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
+    }
+
+    function safeJsonParse(raw, maxChars) {
+        if (typeof raw !== 'string' || !raw) return null;
+        if (maxChars && raw.length > maxChars) return null;
+        try {
+            return JSON.parse(raw, function (key, val) {
+                return (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : val;
+            });
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function finiteNum(value, fallback) {
+        return (typeof value === 'number' && Number.isFinite(value)) ? value : fallback;
+    }
 
     // Server code → contract reason. Anything unlisted surfaces as 'error',
     // which the UI renders as a generic retry rather than inventing a cause.
@@ -57,7 +83,7 @@
 
     function reasonFor(code) {
         const key = String(code || '');
-        return REASONS[key] || (key ? 'error' : 'error');
+        return hasOwn.call(REASONS, key) ? REASONS[key] : 'error';
     }
 
     /**
@@ -80,36 +106,46 @@
      * this function must not paper over it by re-adding anything.
      */
     function boardFromSummary(summary) {
-        if (!summary || summary.ok === false) return null;
-        const items = Array.isArray(summary.items) ? summary.items : [];
+        if (!summary || typeof summary !== 'object' || summary.ok === false) return null;
+        const items = Array.isArray(summary.items) ? summary.items.slice(0, MAX_BOARD_ITEMS) : [];
         return {
             config: {
-                activityId: summary.activityId || '',
+                activityId: stripCtrl(summary.activityId || '').slice(0, 128),
                 type: 'question_board',
-                prompt: summary.prompt || '',
-                revealPolicy: summary.revealPolicy || 'auto_publish',
-                minParticipants: summary.minParticipants || 3,
-                itemsPerStudent: summary.itemsPerStudent || 0,
-                boardCap: summary.boardCap || 0,
-                expiresAt: summary.expiresAt || ''
+                prompt: stripCtrl(summary.prompt || '').slice(0, 1000),
+                revealPolicy: stripCtrl(summary.revealPolicy || 'auto_publish').slice(0, 64),
+                minParticipants: finiteNum(summary.minParticipants, 3),
+                itemsPerStudent: finiteNum(summary.itemsPerStudent, 5),
+                boardCap: finiteNum(summary.boardCap, 400),
+                expiresAt: stripCtrl(summary.expiresAt || '').slice(0, 64)
             },
-            items: items.map(function (it) {
+            items: items.filter(function (it) { return it && typeof it === 'object'; }).map(function (it) {
+                const rawStatus = it.status === 'pending' ? 'held' : String(it.status || 'held');
+                const safeStatus = hasOwn.call(ALLOWED_STATUSES, rawStatus) ? rawStatus : 'held';
                 return {
-                    id: String(it.id || ''),
-                    uid: String(it.uid || ''),
-                    displayName: it.displayName ? String(it.displayName) : '',
-                    text: String(it.text || ''),
+                    id: stripCtrl(it.id || '').slice(0, 128),
+                    uid: stripCtrl(it.uid || '').slice(0, 128),
+                    displayName: it.displayName ? stripCtrl(it.displayName).slice(0, 64) : '',
+                    text: stripCtrl(it.text || '').slice(0, MAX_ITEM_TEXT_CHARS),
                     // 'pending' is the mailbox's word for the contract's 'held'.
                     // Translating at the boundary is the adapter's job; the
                     // storage vocabulary must not leak into the view.
-                    status: it.status === 'pending' ? 'held' : (it.status || 'held'),
-                    answered: it.answered || false,
-                    createdAt: it.createdAt || 0
+                    status: safeStatus,
+                    answered: (it.answered && typeof it.answered === 'object' && !Array.isArray(it.answered))
+                        ? Object.assign(
+                            {},
+                            typeof it.answered.at === 'number' && Number.isFinite(it.answered.at) ? { at: it.answered.at } : {},
+                            typeof it.answered.by === 'string' && it.answered.by ? { by: stripCtrl(it.answered.by).slice(0, 64) } : {},
+                            typeof it.answered.note === 'string' && it.answered.note ? { note: stripCtrl(it.answered.note).slice(0, MAX_NOTE_CHARS) } : {},
+                            typeof it.answered.resourceId === 'string' && it.answered.resourceId ? { resourceId: stripCtrl(it.answered.resourceId).slice(0, 128) } : {}
+                        )
+                        : (it.answered === true),
+                    createdAt: finiteNum(it.createdAt, 0)
                 };
             }),
-            version: summary.version || 0,
-            updatedAt: summary.updatedAt || 0,
-            participantCount: summary.participantCount || 0
+            version: finiteNum(summary.version, 0),
+            updatedAt: finiteNum(summary.updatedAt, 0),
+            participantCount: finiteNum(summary.participantCount, 0)
         };
     }
 
@@ -130,41 +166,65 @@
         const call = opts.call;
         if (typeof call !== 'function') throw new Error('createMailboxTransport requires options.call');
 
-        const url = String(opts.url || '');
+        const url = stripCtrl(opts.url || '').trim();
+        const hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url);
+        const safeScheme = /^https:\/\/[^\s]+$|^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/[^\s]*)?$/i.test(url);
+        if (!url || /^\/\//.test(url) || (hasScheme && !safeScheme)) {
+            throw new Error('createMailboxTransport rejected unsafe URL scheme');
+        }
         const packId = String(opts.packId || '');
         const activityId = String(opts.activityId || '');
         const admin = String(opts.admin || '');
         const packSecret = String(opts.packSecret || '');
         const isTeacher = !!opts.isTeacher;
-        const storage = opts.storage || null;
         const learnerScope = String(
             opts.storageKeyScope ||
             (typeof globalThis !== 'undefined' && typeof globalThis.__alloActiveLearnerKey === 'string' ? globalThis.__alloActiveLearnerKey : '') ||
             ''
         ).trim().slice(0, 64);
+        let storage = opts.storage || null;
+        if (!learnerScope && typeof globalThis !== 'undefined' && globalThis.__alloQrStudentMode) {
+            try {
+                if (typeof window !== 'undefined' && window.localStorage && storage === window.localStorage) {
+                    storage = window.sessionStorage || null;
+                }
+            } catch (_) {
+                storage = null;
+            }
+        }
         const storageKey = learnerScope
             ? ('allo_question_board_v1:' + learnerScope + ':' + packId + ':' + activityId)
             : ('allo_question_board_v1:' + packId + ':' + activityId);
 
         let credential = null;
-        let displayName = String(opts.displayName || '').slice(0, 40);
+        let joinPromise = null;
+        let displayName = stripCtrl(opts.displayName || '').slice(0, 40);
+
+        function validCred(value) {
+            return !!(value && typeof value === 'object'
+                && typeof value.uid === 'string' && value.uid.length > 0 && value.uid.length <= 200
+                && typeof value.pt === 'string' && value.pt.length > 0 && value.pt.length <= 512);
+        }
 
         function readSaved() {
             if (!storage) return null;
             try {
-                const saved = JSON.parse(storage.getItem(storageKey) || 'null');
-                return (saved && saved.uid && saved.pt) ? saved : null;
+                const raw = storage.getItem(storageKey);
+                const saved = safeJsonParse(raw, MAX_SAVED_CRED_CHARS);
+                return validCred(saved) ? { uid: saved.uid, pt: saved.pt } : null;
             } catch (e) { return null; }
         }
 
         function remember(next) {
-            credential = next;
-            if (storage) { try { storage.setItem(storageKey, JSON.stringify(next)); } catch (e) {} }
-            return next;
+            if (!validCred(next)) return null;
+            credential = { uid: next.uid, pt: next.pt };
+            if (storage) { try { storage.setItem(storageKey, JSON.stringify(credential)); } catch (e) {} }
+            return credential;
         }
 
         function forget() {
             credential = null;
+            joinPromise = null;
             if (storage) { try { storage.removeItem(storageKey); } catch (e) {} }
         }
 
@@ -176,18 +236,26 @@
          */
         async function ensureCredential() {
             if (isTeacher) return null;
-            if (credential && credential.uid && credential.pt) return credential;
+            if (validCred(credential)) return credential;
             const saved = readSaved();
             if (saved) { credential = saved; return saved; }
-            const joined = await call(url, {
-                a: 'joinactivity', id: packId, k: packSecret, aid: activityId
-            });
-            if (!joined || joined.ok === false) {
-                const err = new Error('join-failed');
-                err.code = String((joined && joined.e) || 'denied');
-                throw err;
+            if (joinPromise) return joinPromise;
+            joinPromise = (async function () {
+                const joined = await call(url, {
+                    a: 'joinactivity', id: packId, k: packSecret, aid: activityId
+                });
+                if (!joined || joined.ok === false || !validCred(joined)) {
+                    const err = new Error('join-failed');
+                    err.code = String((joined && joined.e) || 'denied');
+                    throw err;
+                }
+                return remember({ uid: joined.uid, pt: joined.pt });
+            })();
+            try {
+                return await joinPromise;
+            } finally {
+                joinPromise = null;
             }
-            return remember({ uid: joined.uid, pt: joined.pt });
         }
 
         // A stale token survives a pack re-key or a cleared server cache and
@@ -196,7 +264,13 @@
         async function withCredential(build) {
             let cred = await ensureCredential();
             try {
-                return await call(url, build(cred));
+                const res = await call(url, build(cred));
+                if (res && res.ok === false && String(res.e || '').includes('denied')) {
+                    forget();
+                    cred = await ensureCredential();
+                    return call(url, build(cred));
+                }
+                return res;
             } catch (e) {
                 if (!String((e && e.code) || '').includes('denied')) throw e;
                 forget();
@@ -211,7 +285,7 @@
             isTeacher: isTeacher,
             get uid() { return isTeacher ? '' : ((credential && credential.uid) || ''); },
 
-            setDisplayName(next) { displayName = String(next || '').slice(0, 40); },
+            setDisplayName(next) { displayName = stripCtrl(next || '').slice(0, 40); },
 
             /** Clears the cached participant credential on shared devices and joins fresh. */
             async startFresh() {
@@ -219,14 +293,11 @@
                 forget();
                 displayName = '';
                 try {
-                    const joined = await call(url, {
-                        a: 'joinactivity', id: packId, k: packSecret, aid: activityId
-                    });
-                    if (!joined || joined.ok === false) return refusal((joined && joined.e) || 'denied', false);
-                    remember({ uid: joined.uid, pt: joined.pt });
+                    await ensureCredential();
                     return this.load();
                 } catch (e) {
-                    return refusal((e && e.code) || 'unreachable', true);
+                    const isJoinRefusal = e && e.message === 'join-failed';
+                    return refusal((e && e.code) || (isJoinRefusal ? 'denied' : 'unreachable'), !isJoinRefusal);
                 }
             },
 
@@ -268,7 +339,7 @@
              */
             async addItem(text) {
                 if (isTeacher) return { ok: false, reason: 'host-cannot-post', code: '', transport: false };
-                const trimmed = String(text || '').trim();
+                const trimmed = stripCtrl(text || '').trim().slice(0, MAX_ITEM_TEXT_CHARS);
                 if (!trimmed) return { ok: false, reason: 'empty-text', code: '', transport: false };
                 try {
                     const result = await withCredential(function (cred) {
@@ -294,16 +365,21 @@
              */
             async setStatus(authorUid, itemId, status) {
                 if (!isTeacher || !admin) return { ok: false, reason: 'host-only', code: '', transport: false };
+                const rawStatus = String(status || '');
+                const wireStatus = rawStatus === 'held' ? 'pending' : rawStatus;
+                if (wireStatus !== 'pending' && wireStatus !== 'approved' && wireStatus !== 'hidden') {
+                    return refusal('error', false);
+                }
                 try {
                     const result = await call(url, {
                         a: 'moderateactivity', admin: admin, id: packId, aid: activityId,
                         uid: String(authorUid || ''), itemId: String(itemId || ''),
                         // The view speaks the contract's vocabulary; the wire
                         // speaks the mailbox's.
-                        status: status === 'held' ? 'pending' : String(status || '')
+                        status: wireStatus
                     });
                     if (!result || result.ok === false) return refusal((result && result.e) || 'error', false);
-                    return { ok: true, version: result.version || 0 };
+                    return { ok: true, version: finiteNum(result.version, 0) };
                 } catch (e) {
                     return refusal((e && e.code) || 'unreachable', true);
                 }
@@ -314,7 +390,7 @@
              * is what turns a wall of questions into a record of which ones the
              * unit actually answered.
              */
-            async setAnswered(authorUid, itemId, answered, note) {
+            async setAnswered(authorUid, itemId, answered, note, resourceId) {
                 if (!isTeacher || !admin) return { ok: false, reason: 'host-only', code: '', transport: false };
                 try {
                     const payload = {
@@ -322,10 +398,11 @@
                         uid: String(authorUid || ''), itemId: String(itemId || ''),
                         answered: answered === true
                     };
-                    if (answered === true && note) payload.note = String(note);
+                    if (answered === true && note) payload.note = stripCtrl(note).slice(0, MAX_NOTE_CHARS);
+                    if (answered === true && resourceId) payload.resourceId = stripCtrl(resourceId).slice(0, 128);
                     const result = await call(url, payload);
                     if (!result || result.ok === false) return refusal((result && result.e) || 'error', false);
-                    return { ok: true, version: result.version || 0 };
+                    return { ok: true, version: finiteNum(result.version, 0) };
                 } catch (e) {
                     return refusal((e && e.code) || 'unreachable', true);
                 }

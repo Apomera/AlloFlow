@@ -1211,24 +1211,24 @@
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "aaea2d5e118c9625c2f3e336ed1c9e931da91ae95e83fea74ff407de146965ee",
-      "learningLibrarySha256": "bc1b3e35b00400c65a35fbc430b2dead0ead11df6e1582958cd546b74c4575d4"
+      "sourceItemsSha256": "10cbd8127267ba4150273084e5fa7c1cf7d05d3b8fc26921249cbf90004acf2e",
+      "learningLibrarySha256": "0be97d0052f8a7526b808cef8f52c072641fa62d199fda5f4fb75513f3d58f99"
     },
     {
       "stem": "plt_7_12_5624",
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "1637b6974434dda31d9b724eb8bc034ce955e8ce37a596e0017954b3e447ff4b",
-      "learningLibrarySha256": "d2c283da9d654dc414367785fbe2de52d3aa7607784127c02a608b53d42676ea"
+      "sourceItemsSha256": "17a7f810af7342c2a0bc1aee8df86bcf25ee92c8e02642de7783c0fdb506267a",
+      "learningLibrarySha256": "22912f154cff2e3474efa837582d62c3546c7bc3fb40ca2281e345f187f17646"
     },
     {
       "stem": "plt_early_childhood_5621",
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "8f8d382820fce1c1d6c4cecd1291910cf5ed7ce7f62580aa718e6f1623b8908b",
-      "learningLibrarySha256": "b86523780637ce6ae14214beca6e3a99645a6685c4aa48692835369361901fd4"
+      "sourceItemsSha256": "6ba54c4dcf7e61501a229ab921f8c0a5d1a62ef2e860fe83b9b4f096866b1e04",
+      "learningLibrarySha256": "ebe27d95cc0197ec048160100d2c44d425fad4f8a747083c3fcf396edef9d5e5"
     }
   ]
 }

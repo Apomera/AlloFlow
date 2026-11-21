@@ -1056,12 +1056,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     failMessage: 'The 3D landscape could not start. The 2D forest view and all simulation results remain available.',
     lights: function(THREE, scene) {
       scene.add(new THREE.HemisphereLight(0xdbeafe, 0x2b2118, 0.95));
-      var sun = new THREE.DirectionalLight(0xfff1cf, 1.05);
+      var sun = new THREE.DirectionalLight(0xfff1cf, 1.12);
       sun.position.set(-5, 9, 6);
       scene.add(sun);
-      var fill = new THREE.DirectionalLight(0x93c5fd, 0.32);
+      var fill = new THREE.DirectionalLight(0x93c5fd, 0.34);
       fill.position.set(7, 4, -6);
       scene.add(fill);
+      var rim = new THREE.DirectionalLight(0xffb870, 0.42);
+      rim.position.set(6, 7, 8);
+      scene.add(rim);
     },
     build: function(THREE, S, model) {
       var event = model.visualEvent || null;
@@ -1069,14 +1072,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       var after = event ? event.after : model.current;
       var kind = event ? event.kind : 'none';
       var dummy = new THREE.Object3D();
-      var TREE_MAX = 36, SHRUB_MAX = 54, FUEL_MAX = 70, FLAME_MAX = 32, SMOKE_MAX = 36;
+      var TREE_MAX = 36, SHRUB_MAX = 54, FUEL_MAX = 70, FLAME_MAX = 32, SMOKE_MAX = 36, EMBER_MAX = 42, SPROUT_MAX = 36;
       var smokeData = new Float32Array(SMOKE_MAX * 3);
+      var emberData = new Float32Array(EMBER_MAX * 3);
 
       function unit(v) { return Math.max(0, Math.min(1, v)); }
       function mix(a, b, t) { return a + (b - a) * t; }
       function smooth(v) { v = unit(v); return v * v * (3 - 2 * v); }
-      function groundY() { return -0.08; }
+      function groundY(x, z) { return Math.sin((x || 0) * 0.34) * 0.14 + Math.cos((z || 0) * 0.48) * 0.08 - 0.08; }
       function add(mesh) { S.model.add(mesh); return mesh; }
+      function makePuffTex(innerRgba, midRgba) {
+        try {
+          if (typeof document === 'undefined' || !document.createElement) return null;
+          var cv = document.createElement('canvas');
+          cv.width = 64; cv.height = 64;
+          var g = cv.getContext && cv.getContext('2d');
+          if (!g) return null;
+          var rg = g.createRadialGradient(32, 32, 2, 32, 32, 30);
+          rg.addColorStop(0, innerRgba);
+          rg.addColorStop(0.5, midRgba);
+          rg.addColorStop(1, 'rgba(0,0,0,0)');
+          g.fillStyle = rg;
+          g.fillRect(0, 0, 64, 64);
+          var tx = new THREE.CanvasTexture(cv);
+          tx.needsUpdate = true;
+          return tx;
+        } catch (e) { return null; }
+      }
       function batch(geometry, material, count) {
         var mesh = new THREE.InstancedMesh(geometry, material, count);
         if (THREE.DynamicDrawUsage) mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -1125,17 +1147,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       var terrain = add(new THREE.Mesh(terrainGeo,
         new THREE.MeshStandardMaterial({ color: 0x506b37, roughness: 0.98, flatShading: true })));
 
+      // Shared WebGL1/GLSL ES 1.00 uniforms driving wildfire flame-front FBM curtain,
+      // crackling smoldering coal-bed, under-lit volumetric smoke, and canopy firelight rim.
+      function isHighContrast() {
+        try {
+          if (typeof document === 'undefined') return false;
+          var de = document.documentElement, bd = document.body;
+          return !!((de && de.classList && de.classList.contains('theme-contrast')) ||
+            (bd && bd.classList && bd.classList.contains('theme-contrast')));
+        } catch (e) { return false; }
+      }
+      var hasShaderMat = typeof THREE.ShaderMaterial === 'function';
+      var fireShaderUniforms = {
+        uTime: { value: 2.4 },
+        uFrontZ: { value: -4.0 },
+        uFireActive: { value: 0.0 },
+        uSeverity: { value: 0.6 },
+        uPatchy: { value: 0.0 },
+        uCoverage: { value: 0.0 },
+        uSmolder: { value: 0.0 },
+        uWildfire: { value: 0.0 },
+        uHC: { value: isHighContrast() ? 1.0 : 0.0 }
+      };
+
+      function applyCanopyFireShader(mat, swayAmp, isCrown) {
+        if (!mat || typeof mat.onBeforeCompile !== 'function') return mat;
+        mat.customProgramCacheKey = function() { return isCrown ? 'fe-pine-crown-v1' : 'fe-pine-trunk-v1'; };
+        mat.onBeforeCompile = function(shader) {
+          shader.uniforms.uTime = fireShaderUniforms.uTime;
+          shader.uniforms.uFrontZ = fireShaderUniforms.uFrontZ;
+          shader.uniforms.uFireActive = fireShaderUniforms.uFireActive;
+          shader.uniforms.uSeverity = fireShaderUniforms.uSeverity;
+          shader.uniforms.uHC = fireShaderUniforms.uHC;
+          shader.vertexShader = shader.vertexShader
+            .replace('#include <common>', [
+              '#include <common>',
+              'uniform float uTime;',
+              'uniform float uFrontZ;',
+              'uniform float uFireActive;',
+              'uniform float uSeverity;',
+              'uniform float uHC;',
+              'varying vec3 vFeWorldPos;',
+              'varying vec3 vFeWorldNorm;',
+              'varying float vFeLocalY;'
+            ].join('\n'))
+            .replace('#include <begin_vertex>', [
+              '#include <begin_vertex>',
+              'vFeLocalY = position.y;',
+              'vec4 feInstPos = vec4(transformed, 1.0);',
+              'vec3 feNorm = objectNormal;',
+              '#ifdef USE_INSTANCING',
+              '  feInstPos = instanceMatrix * feInstPos;',
+              '  feNorm = mat3(instanceMatrix) * feNorm;',
+              '#endif',
+              'vec4 feWorld = modelMatrix * feInstPos;',
+              'float feFrontDist = abs(feWorld.z - uFrontZ);',
+              'float feDraft = exp(-feFrontDist * 0.45) * uFireActive * (0.45 + uSeverity * 0.42);',
+              'float fePhase = feWorld.x * 0.72 + feWorld.z * 0.58;',
+              'float feLift = clamp((position.y + 0.85) * 0.55, 0.0, 1.4);',
+              'float feSway = (1.0 - uHC) * ' + swayAmp.toFixed(4) + ' * feLift * (1.0 + feDraft * 1.65);',
+              'transformed.x += sin(uTime * 1.45 + fePhase) * feSway;',
+              'transformed.z += cos(uTime * 1.18 + fePhase * 1.3) * feSway * 0.65;',
+              'vFeWorldPos = feWorld.xyz;',
+              'vFeWorldNorm = normalize(mat3(modelMatrix) * feNorm);'
+            ].join('\n'));
+          shader.fragmentShader = shader.fragmentShader
+            .replace('#include <common>', [
+              '#include <common>',
+              'uniform float uTime;',
+              'uniform float uFrontZ;',
+              'uniform float uFireActive;',
+              'uniform float uSeverity;',
+              'uniform float uHC;',
+              'varying vec3 vFeWorldPos;',
+              'varying vec3 vFeWorldNorm;',
+              'varying float vFeLocalY;'
+            ].join('\n'))
+            .replace('#include <dithering_fragment>', [
+              'if (uFireActive > 0.01 && uHC < 0.5) {',
+              '  float feDz = vFeWorldPos.z - uFrontZ;',
+              '  float feProx = exp(-abs(feDz) * (0.42 - min(0.18, uSeverity * 0.06)));',
+              '  vec3 feN = normalize(vFeWorldNorm);',
+              '  vec3 feV = normalize(cameraPosition - vFeWorldPos);',
+              '  float feUnder = clamp(-feN.y * 0.65 + 0.52, 0.0, 1.0);',
+              '  float feRim = pow(1.0 - clamp(abs(dot(feN, feV)), 0.0, 1.0), 2.1);',
+              '  float feFlicker = 0.84 + 0.16 * sin(uTime * 9.5 + vFeWorldPos.x * 2.1 + vFeWorldPos.z * 1.7);',
+              '  float feGlow = feProx * uFireActive * feFlicker * (feUnder * 0.62 + feRim * 0.78) * (' + (isCrown ? '0.46' : '0.32') + ' + uSeverity * 0.24);',
+              '  vec3 feFireTint = mix(vec3(1.0, 0.34, 0.05), vec3(1.0, 0.76, 0.28), clamp(feRim * 0.8 + feProx * 0.35, 0.0, 1.0));',
+              '  gl_FragColor.rgb += feFireTint * feGlow;',
+              '}',
+              '#include <dithering_fragment>'
+            ].join('\n'));
+        };
+        return mat;
+      }
 
       var trunks = batch(new THREE.CylinderGeometry(0.11, 0.16, 1, 6),
-        new THREE.MeshStandardMaterial({ color: 0x65452d, roughness: 1 }), TREE_MAX);
+        applyCanopyFireShader(new THREE.MeshStandardMaterial({ color: 0x65452d, roughness: 1 }), 0.016, false), TREE_MAX);
       var crowns = batch(new THREE.ConeGeometry(0.62, 1.65, 7),
-        new THREE.MeshStandardMaterial({ color: 0x2f6f3e, roughness: 0.92, flatShading: true }), TREE_MAX);
+        applyCanopyFireShader(new THREE.MeshStandardMaterial({ color: 0x2f6f3e, roughness: 0.92, flatShading: true }), 0.055, true), TREE_MAX);
       var shrubs = batch(new THREE.ConeGeometry(0.25, 0.38, 5),
         new THREE.MeshStandardMaterial({ color: 0x4d7c3d, roughness: 1, flatShading: true }), SHRUB_MAX);
       var litter = batch(new THREE.BoxGeometry(0.42, 0.035, 0.12),
         new THREE.MeshStandardMaterial({ color: 0x8a5b2c, roughness: 1 }), FUEL_MAX);
       var ash = batch(new THREE.BoxGeometry(0.48, 0.025, 0.38),
         new THREE.MeshStandardMaterial({ color: 0x292524, roughness: 1 }), 48);
+      var sprouts = batch(new THREE.ConeGeometry(0.14, 0.30, 5),
+        new THREE.MeshStandardMaterial({ color: 0x84cc16, roughness: 0.82, flatShading: true }), SPROUT_MAX);
       var refugia = batch(new THREE.CylinderGeometry(0.72, 0.72, 0.055, 14),
         new THREE.MeshStandardMaterial({ color: 0x3f7d3c, roughness: 1 }), 3);
       var flames = batch(new THREE.ConeGeometry(0.17, 0.72, 7),
@@ -1144,10 +1262,283 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.96, depthWrite: false }), FLAME_MAX);
       var crownFire = batch(new THREE.ConeGeometry(0.24, 1.25, 7),
         new THREE.MeshBasicMaterial({ color: 0xef4444, transparent: true, opacity: 0.88, depthWrite: false }), 18);
+
+      // GLSL ES 1.00 shared 2D value-noise + FBM block for flame curtain, coal bed & smoke plume
+      var FE_GLSL_FBM = [
+        'float feHash(vec2 p) {',
+        '  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);',
+        '}',
+        'float feNoise(vec2 p) {',
+        '  vec2 i = floor(p);',
+        '  vec2 f = fract(p);',
+        '  vec2 u = f * f * (3.0 - 2.0 * f);',
+        '  float a = feHash(i);',
+        '  float b = feHash(i + vec2(1.0, 0.0));',
+        '  float c = feHash(i + vec2(0.0, 1.0));',
+        '  float d = feHash(i + vec2(1.0, 1.0));',
+        '  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);',
+        '}',
+        'float feFbm(vec2 p) {',
+        '  float v = 0.0;',
+        '  float amp = 0.5;',
+        '  for (int i = 0; i < 4; i++) {',
+        '    v += amp * feNoise(p);',
+        '    p = p * 2.03 + vec2(17.3, 9.7);',
+        '    amp *= 0.5;',
+        '  }',
+        '  return v;',
+        '}'
+      ].join('\n');
+
+      // 1) Advancing turbulent FBM wildfire flame-front curtain (primary + angled depth ribbon)
+      var flameCurtain = null;
+      var flameCurtainBack = null;
+      if (hasShaderMat) {
+        var flameRibbonGeo = new THREE.PlaneGeometry(15.2, 2.35, 44, 12);
+        var flameRibbonMat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: fireShaderUniforms.uTime,
+            uFrontZ: fireShaderUniforms.uFrontZ,
+            uFireActive: fireShaderUniforms.uFireActive,
+            uSeverity: fireShaderUniforms.uSeverity,
+            uPatchy: fireShaderUniforms.uPatchy,
+            uHC: fireShaderUniforms.uHC
+          },
+          vertexShader: [
+            'uniform float uTime;',
+            'uniform float uFrontZ;',
+            'uniform float uSeverity;',
+            'varying vec2 vUv;',
+            'varying float vWorldX;',
+            'void main() {',
+            '  vUv = uv;',
+            '  vec3 pos = position;',
+            '  float hScale = clamp(0.45 + uSeverity * 0.58, 0.45, 1.85);',
+            '  pos.y = (uv.y) * 2.15 * hScale;',
+            '  float wx = pos.x;',
+            '  float gy = sin(wx * 0.34) * 0.14 + cos(uFrontZ * 0.48) * 0.08 - 0.08;',
+            '  pos.y += gy;',
+            '  float billow = sin(wx * 1.45 + uTime * 3.8 + uv.y * 4.2) * 0.22 * uv.y;',
+            '  float gust = cos(wx * 0.85 - uTime * 2.9 + uv.y * 3.0) * 0.14 * uv.y;',
+            '  pos.z += billow + gust;',
+            '  pos.x += sin(uTime * 2.4 + uv.y * 5.0 + wx * 0.6) * 0.09 * uv.y;',
+            '  vWorldX = wx;',
+            '  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uFireActive;',
+            'uniform float uSeverity;',
+            'uniform float uPatchy;',
+            'uniform float uHC;',
+            'varying vec2 vUv;',
+            'varying float vWorldX;',
+            FE_GLSL_FBM,
+            'void main() {',
+            '  if (uFireActive < 0.01 || uHC > 0.5) discard;',
+            '  vec2 uv = vUv;',
+            '  float speed = 1.85 + uSeverity * 0.65;',
+            '  vec2 warp = vec2(feFbm(vec2(uv.x * 6.0 + uTime * 0.45, uv.y * 2.6 - uTime * speed * 0.65)),',
+            '                   feFbm(vec2(uv.x * 8.5 - uTime * 0.35, uv.y * 3.2 - uTime * speed * 0.85)));',
+            '  float n = feFbm(vec2(uv.x * 9.5 + (warp.x - 0.5) * 1.6, uv.y * 3.4 - uTime * speed + (warp.y - 0.5) * 1.2));',
+            '  float detail = feNoise(vec2(uv.x * 22.0, uv.y * 9.0 - uTime * (speed * 1.6)));',
+            '  float tongue = n * 0.78 + detail * 0.22;',
+            '  float heightMask = smoothstep(0.96, 0.12, uv.y + (0.46 - tongue) * 0.78);',
+            '  float baseMask = smoothstep(0.0, 0.10, uv.y);',
+            '  float edgeX = smoothstep(0.0, 0.06, uv.x) * smoothstep(1.0, 0.94, uv.x);',
+            '  float patchMask = 1.0;',
+            '  if (uPatchy > 0.5) {',
+            '    float mosaic = sin(vWorldX * 1.05 + 0.6) * 0.5 + 0.5;',
+            '    patchMask = smoothstep(0.24, 0.62, mosaic);',
+            '  }',
+            '  float core = smoothstep(0.28, 0.86, tongue * heightMask * (1.18 - uv.y * 0.72));',
+            '  vec3 crimson = vec3(0.78, 0.08, 0.02);',
+            '  vec3 orange = vec3(1.0, 0.44, 0.05);',
+            '  vec3 whiteGold = vec3(1.0, 0.96, 0.76);',
+            '  vec3 col = mix(crimson, orange, smoothstep(0.15, 0.55, core));',
+            '  col = mix(col, whiteGold, smoothstep(0.58, 0.94, core) * (1.0 - uv.y * 0.55));',
+            '  float alpha = clamp(heightMask * baseMask * edgeX * patchMask * smoothstep(0.20, 0.68, tongue) * uFireActive * (0.72 + uSeverity * 0.12), 0.0, 0.92);',
+            '  if (alpha < 0.02) discard;',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending || THREE.NormalBlending
+        });
+        flameCurtain = add(new THREE.Mesh(flameRibbonGeo, flameRibbonMat));
+        flameCurtain.renderOrder = 4;
+        flameCurtain.visible = false;
+        flameCurtainBack = add(new THREE.Mesh(flameRibbonGeo, flameRibbonMat));
+        flameCurtainBack.renderOrder = 3;
+        flameCurtainBack.rotation.y = 0.05;
+        flameCurtainBack.visible = false;
+      }
+
+      // 2) Glowing crackling smoldering ash/ember coal-bed shader behind the advancing fire front
+      var coalBed = null;
+      if (hasShaderMat) {
+        var coalGeo = new THREE.PlaneGeometry(15.6, 9.6, 36, 22);
+        var coalPos = coalGeo.attributes.position;
+        for (var cp = 0; cp < coalPos.count; cp++) {
+          coalPos.setZ(cp, groundY(coalPos.getX(cp), -coalPos.getY(cp)) + 0.032);
+        }
+        coalGeo.rotateX(-Math.PI / 2);
+        var coalMat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: fireShaderUniforms.uTime,
+            uFrontZ: fireShaderUniforms.uFrontZ,
+            uCoverage: fireShaderUniforms.uCoverage,
+            uSmolder: fireShaderUniforms.uSmolder,
+            uPatchy: fireShaderUniforms.uPatchy,
+            uHC: fireShaderUniforms.uHC
+          },
+          vertexShader: [
+            'varying vec3 vWorldPos;',
+            'varying vec2 vUv;',
+            'void main() {',
+            '  vUv = uv;',
+            '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+            '  vWorldPos = wp.xyz;',
+            '  gl_Position = projectionMatrix * viewMatrix * wp;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uFrontZ;',
+            'uniform float uCoverage;',
+            'uniform float uSmolder;',
+            'uniform float uPatchy;',
+            'uniform float uHC;',
+            'varying vec3 vWorldPos;',
+            'varying vec2 vUv;',
+            FE_GLSL_FBM,
+            'void main() {',
+            '  if (uCoverage < 0.01 || uHC > 0.5) discard;',
+            '  float behindFront = smoothstep(uFrontZ + 0.55, uFrontZ - 0.55, vWorldPos.z);',
+            '  float tailCool = smoothstep(uFrontZ - 6.8, uFrontZ - 0.65, vWorldPos.z);',
+            '  float edgeFade = smoothstep(0.0, 0.06, vUv.x) * smoothstep(1.0, 0.94, vUv.x) * smoothstep(0.0, 0.06, vUv.y) * smoothstep(1.0, 0.94, vUv.y);',
+            '  float mosaic = 1.0;',
+            '  if (uPatchy > 0.5) {',
+            '    float mNoise = feFbm(vWorldPos.xz * 0.58 + vec2(2.1, -1.3));',
+            '    mosaic = smoothstep(0.32, 0.62, mNoise);',
+            '  }',
+            '  // Keep wildlife refugia pockets visibly cool and uncharred',
+            '  float ref1 = smoothstep(0.75, 1.15, length(vWorldPos.xz - vec2(-4.8, 1.8)));',
+            '  float ref2 = smoothstep(0.75, 1.15, length(vWorldPos.xz - vec2(0.5, -1.7)));',
+            '  float ref3 = smoothstep(0.75, 1.15, length(vWorldPos.xz - vec2(5.1, 2.3)));',
+            '  float refMask = mix(1.0, ref1 * ref2 * ref3, step(0.1, uPatchy));',
+            '  float charArea = behindFront * edgeFade * mosaic * refMask * uCoverage;',
+            '  if (charArea < 0.02) discard;',
+            '  vec2 p = vWorldPos.xz * 2.1;',
+            '  float f1 = feFbm(p);',
+            '  float f2 = feNoise(p * 3.8 + vec2(f1 * 1.4, -f1 * 1.2));',
+            '  float crack = smoothstep(0.60, 0.86, 1.0 - abs(f1 - 0.5) * 2.2) * smoothstep(0.35, 0.78, f2);',
+            '  float breathe = 0.62 + 0.38 * sin(uTime * 3.1 + f1 * 12.0 + vWorldPos.x * 1.4);',
+            '  float heat = clamp((0.35 + 0.65 * tailCool) * uSmolder * breathe, 0.0, 1.0);',
+            '  vec3 ashCrust = vec3(0.08, 0.065, 0.06);',
+            '  vec3 emberRed = vec3(0.95, 0.24, 0.03);',
+            '  vec3 emberGold = vec3(1.0, 0.78, 0.22);',
+            '  vec3 col = mix(ashCrust, emberRed, crack * heat * 0.95);',
+            '  col = mix(col, emberGold, smoothstep(0.55, 0.95, crack * heat));',
+            '  float alpha = clamp(charArea * (0.58 + crack * heat * 0.42), 0.0, 0.90);',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false
+        });
+        coalBed = add(new THREE.Mesh(coalGeo, coalMat));
+        coalBed.renderOrder = 2;
+        coalBed.visible = false;
+      }
+
+      // 3) Warm under-lit volumetric FBM smoke plume curtain rising behind the fire front
+      var smokeCurtain = null;
+      if (hasShaderMat) {
+        var smokeCurtainGeo = new THREE.PlaneGeometry(15.4, 3.6, 26, 10);
+        var smokeCurtainMat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: fireShaderUniforms.uTime,
+            uFrontZ: fireShaderUniforms.uFrontZ,
+            uFireActive: fireShaderUniforms.uFireActive,
+            uSeverity: fireShaderUniforms.uSeverity,
+            uWildfire: fireShaderUniforms.uWildfire,
+            uPatchy: fireShaderUniforms.uPatchy,
+            uHC: fireShaderUniforms.uHC
+          },
+          vertexShader: [
+            'uniform float uTime;',
+            'uniform float uFrontZ;',
+            'varying vec2 vUv;',
+            'varying float vWorldX;',
+            'void main() {',
+            '  vUv = uv;',
+            '  vec3 pos = position;',
+            '  float gy = sin(pos.x * 0.34) * 0.14 + cos(uFrontZ * 0.48) * 0.08 - 0.08;',
+            '  pos.y = gy + 0.35 + uv.y * 3.45;',
+            '  pos.z += -0.45 - uv.y * 1.15 + sin(pos.x * 0.65 + uTime * 0.9 + uv.y * 2.5) * 0.28 * uv.y;',
+            '  pos.x += sin(uTime * 0.55 + uv.y * 2.4) * 0.32 * uv.y;',
+            '  vWorldX = pos.x;',
+            '  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uFireActive;',
+            'uniform float uSeverity;',
+            'uniform float uWildfire;',
+            'uniform float uPatchy;',
+            'uniform float uHC;',
+            'varying vec2 vUv;',
+            'varying float vWorldX;',
+            FE_GLSL_FBM,
+            'void main() {',
+            '  if (uFireActive < 0.01 || uHC > 0.5) discard;',
+            '  vec2 uv = vUv;',
+            '  float drift = uTime * 0.42;',
+            '  float n1 = feFbm(vec2(uv.x * 4.5 - drift * 0.22, uv.y * 2.2 - drift));',
+            '  float n2 = feFbm(vec2(uv.x * 8.0 + n1 * 0.9, uv.y * 3.8 - drift * 1.35));',
+            '  float billow = smoothstep(0.28, 0.78, n1 * 0.58 + n2 * 0.42);',
+            '  float vMask = smoothstep(0.0, 0.22, uv.y) * smoothstep(1.0, 0.28, uv.y);',
+            '  float hMask = smoothstep(0.0, 0.10, uv.x) * smoothstep(1.0, 0.90, uv.x);',
+            '  float patchMask = uPatchy > 0.5 ? smoothstep(0.20, 0.60, sin(vWorldX * 1.05 + 0.6) * 0.5 + 0.5) : 1.0;',
+            '  float underLit = pow(1.0 - uv.y, 2.2) * (0.55 + 0.45 * n2);',
+            '  vec3 coolSmoke = mix(vec3(0.84, 0.80, 0.75), vec3(0.28, 0.22, 0.20), uWildfire);',
+            '  vec3 fireScatter = mix(vec3(0.98, 0.48, 0.14), vec3(1.0, 0.30, 0.06), uWildfire);',
+            '  vec3 col = mix(coolSmoke, fireScatter, clamp(underLit * (0.75 + uSeverity * 0.22), 0.0, 0.88));',
+            '  float density = mix(0.32, 0.56, uWildfire);',
+            '  float alpha = clamp(billow * vMask * hMask * patchMask * uFireActive * density, 0.0, 0.68);',
+            '  if (alpha < 0.015) discard;',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide
+        });
+        smokeCurtain = add(new THREE.Mesh(smokeCurtainGeo, smokeCurtainMat));
+        smokeCurtain.renderOrder = 3;
+        smokeCurtain.visible = false;
+      }
+      var smokeTex = makePuffTex('rgba(255,232,200,0.85)', 'rgba(180,170,165,0.45)');
       var smokeGeo = new THREE.BufferGeometry();
       smokeGeo.setAttribute('position', new THREE.BufferAttribute(smokeData, 3));
-      var smoke = add(new THREE.Points(smokeGeo,
-        new THREE.PointsMaterial({ color: 0xcbd5e1, size: 0.30, transparent: true, opacity: 0, depthWrite: false })));
+      var smokeMatOpts = { color: 0xcbd5e1, size: 0.42, transparent: true, opacity: 0, depthWrite: false };
+      if (smokeTex) smokeMatOpts.map = smokeTex;
+      var smoke = add(new THREE.Points(smokeGeo, new THREE.PointsMaterial(smokeMatOpts)));
+      if (smokeTex) smoke.dispose = function() { if (smokeTex.dispose) smokeTex.dispose(); };
+      var emberTex = makePuffTex('rgba(255,250,210,1)', 'rgba(251,146,60,0.55)');
+      var emberGeo = new THREE.BufferGeometry();
+      emberGeo.setAttribute('position', new THREE.BufferAttribute(emberData, 3));
+      var emberMatOpts = { color: 0xfbbf24, size: 0.20, transparent: true, opacity: 0, depthWrite: false };
+      if (THREE.AdditiveBlending) emberMatOpts.blending = THREE.AdditiveBlending;
+      if (emberTex) emberMatOpts.map = emberTex;
+      var embers = add(new THREE.Points(emberGeo, new THREE.PointsMaterial(emberMatOpts)));
+      if (emberTex) embers.dispose = function() { if (emberTex.dispose) emberTex.dispose(); };
+      var fireFrontLight = THREE.PointLight ? add(new THREE.PointLight(0xff7a22, 0, 14)) : null;
 
       var host = S.renderer.domElement.parentNode;
       var phaseNode = host.querySelector('.fireecology-sim-phase');
@@ -1239,6 +1630,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         }
         hide(ash, ashCount, 48);
 
+        // Post-burn emerald regrowth sprouts emerging across nutrient-rich ash beds
+        var regrowthU = isBurn && progress >= 0.70 ? smooth((progress - 0.70) / 0.30) : 0;
+        var sproutCount = regrowthU > 0.05 ? Math.round(SPROUT_MAX * regrowthU * (kind === 'wildfire' ? 0.45 : 0.92)) : 0;
+        for (var spI = 0; spI < sproutCount; spI++) {
+          var spt = fuelPos((spI * 7 + 3) % FUEL_MAX);
+          var spH = 0.55 + regrowthU * 0.85 + ((spI * 13) % 5) * 0.08;
+          place(sprouts, spI, spt.x, groundY(spt.x, spt.z) + 0.15 * spH, spt.z, 0.85, spH, 0.85, spt.turn);
+        }
+        hide(sprouts, sproutCount, SPROUT_MAX);
+
         var refugeCount = progress >= 0.11 ? (kind === 'culturalBurn' ? 3 : (kind === 'prescribedBurn' ? 2 : 0)) : 0;
         var refugeSpots = [{ x: -4.8, z: 1.8 }, { x: 0.5, z: -1.7 }, { x: 5.1, z: 2.3 }];
         for (var ri = 0; ri < refugeCount; ri++) {
@@ -1267,16 +1668,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         }
         hide(crownFire, crownCount, 18);
 
+        var smokeNow = (S.data && (S.data.static || S.data.paused)) ? 0 : now;
         for (var sm = 0; sm < SMOKE_MAX; sm++) {
           var visible = active && (kind !== 'culturalBurn' || sm % 4 !== 0);
-          smokeData[sm * 3] = visible ? -7 + (sm % 12) * 1.27 + Math.sin(now * 0.001 + sm) * 0.12 : 0;
-          smokeData[sm * 3 + 1] = visible ? 0.65 + Math.floor(sm / 12) * 0.58 + Math.sin(now * 0.0015 + sm * 0.4) * 0.16 : -20;
-          smokeData[sm * 3 + 2] = visible ? frontZ + Math.floor(sm / 12) * 0.12 : 0;
+          smokeData[sm * 3] = visible ? -7 + (sm % 12) * 1.27 + Math.sin(smokeNow * 0.001 + sm) * 0.14 : 0;
+          smokeData[sm * 3 + 1] = visible ? 0.65 + Math.floor(sm / 12) * 0.62 + Math.sin(smokeNow * 0.0015 + sm * 0.4) * 0.16 : -20;
+          smokeData[sm * 3 + 2] = visible ? frontZ + Math.floor(sm / 12) * 0.14 : 0;
         }
         smoke.geometry.attributes.position.needsUpdate = true;
-        smoke.material.color.setHex(kind === 'wildfire' ? 0x57534e : 0xcbd5e1);
-        smoke.material.opacity = active ? (kind === 'wildfire' ? 0.62 : 0.34) : 0;
-        smoke.material.size = kind === 'wildfire' ? 0.48 : 0.30;
+        smoke.material.color.setHex(kind === 'wildfire' ? 0x785648 : 0xe8d9c8);
+        smoke.material.opacity = active ? (kind === 'wildfire' ? 0.68 : 0.40) : 0;
+        smoke.material.size = kind === 'wildfire' ? 0.62 : 0.42;
+
+        // Rising glowing ember sparks & warm fire-front point light
+        for (var emb = 0; emb < EMBER_MAX; emb++) {
+          var eVis = active && (kind !== 'culturalBurn' || emb % 3 !== 0);
+          var eLift = ((smokeNow * 0.00055 + emb * 0.17) % 1);
+          emberData[emb * 3] = eVis ? -7.2 + ((emb * 41) % 100) / 100 * 14.4 + Math.sin(smokeNow * 0.002 + emb) * 0.22 : 0;
+          emberData[emb * 3 + 1] = eVis ? 0.35 + eLift * (kind === 'wildfire' ? 3.8 : 2.1) : -20;
+          emberData[emb * 3 + 2] = eVis ? frontZ + Math.cos(emb * 1.7) * 0.65 : 0;
+        }
+        embers.geometry.attributes.position.needsUpdate = true;
+        embers.material.opacity = active ? (kind === 'wildfire' ? 0.92 : 0.72) : 0;
+        embers.material.size = kind === 'wildfire' ? 0.24 : 0.17;
+        if (fireFrontLight) {
+          fireFrontLight.position.set(0, kind === 'wildfire' ? 2.4 : 1.15, frontZ);
+          fireFrontLight.intensity = active ? (kind === 'wildfire' ? 3.2 : 1.85) + Math.sin(smokeNow * 0.014) * 0.35 : 0;
+        }
+        // Update WebGL1/GLSL shader uniforms & visibility (frozen beauty frame on static/reduced-motion; bypassed in High-Contrast)
+        var hc = isHighContrast();
+        var staticMode = !!(S.data && (S.data.static || S.data.paused || S.data.reducedMotion));
+        fireShaderUniforms.uTime.value = staticMode ? 2.4 : (now * 0.001) % 1000.0;
+        fireShaderUniforms.uFrontZ.value = frontZ;
+        fireShaderUniforms.uFireActive.value = active ? 1.0 : 0.0;
+        fireShaderUniforms.uSeverity.value = severity;
+        fireShaderUniforms.uPatchy.value = kind === 'culturalBurn' ? 1.0 : 0.0;
+        fireShaderUniforms.uWildfire.value = kind === 'wildfire' ? 1.0 : 0.0;
+        fireShaderUniforms.uCoverage.value = isBurn ? (progress < 0.11 ? 0.0 : coverage) : 0.0;
+        var smolderAmt = 0.0;
+        if (isBurn && progress >= 0.11) {
+          if (progress < 0.68) smolderAmt = 1.0;
+          else if (progress < 0.84) smolderAmt = 1.0 - smooth((progress - 0.68) / 0.16);
+          else smolderAmt = 0.08;
+        }
+        fireShaderUniforms.uSmolder.value = smolderAmt;
+        fireShaderUniforms.uHC.value = hc ? 1.0 : 0.0;
+        if (flameCurtain) {
+          flameCurtain.visible = !hc && active;
+          flameCurtain.position.set(0, 0, frontZ);
+        }
+        if (flameCurtainBack) {
+          flameCurtainBack.visible = !hc && active;
+          flameCurtainBack.position.set(0, 0, frontZ - 0.24);
+        }
+        if (coalBed) {
+          coalBed.visible = !hc && isBurn && progress >= 0.11 && coverage > 0.01;
+        }
+        if (smokeCurtain) {
+          smokeCurtain.visible = !hc && active;
+          smokeCurtain.position.set(0, 0, frontZ);
+        }
         phaseNode.textContent = phaseText(progress);
       }
 
@@ -4076,7 +4527,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 'aria-label': t('stem.fireecology.ai_question_input', 'Ask the AI fire ecology tutor'),
                 style: {
                   flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #334155)',
-                  background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, outline: 'none'
+                  background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, outline: '2px solid transparent'
                 },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #f97316'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
               }),
@@ -4773,25 +5224,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             cx.save();
             cx.scale(dpr, dpr);
 
-            // Sky gradient (changes with conditions)
+            // Sky gradient (changes with conditions) + warm horizon atmospheric scattering
+            var motionPhase = (reduceMotion || playbackPaused) ? 0 : tick;
             var skyGrad = cx.createLinearGradient(0, 0, 0, ht);
             if (severeBurn) {
-              skyGrad.addColorStop(0, '#7f1d1d');
-              skyGrad.addColorStop(0.5, '#dc2626');
+              skyGrad.addColorStop(0, '#450a0a');
+              skyGrad.addColorStop(0.45, '#b91c1c');
+              skyGrad.addColorStop(0.75, '#ea580c');
               skyGrad.addColorStop(1, '#451a03');
+            } else if (controlledBurn) {
+              skyGrad.addColorStop(0, '#2c5f94');
+              skyGrad.addColorStop(0.50, '#7eb4db');
+              skyGrad.addColorStop(0.85, '#f6d5a8');
+              skyGrad.addColorStop(1, '#e8b982');
             } else {
-              skyGrad.addColorStop(0, '#3b82c4');
-              skyGrad.addColorStop(0.55, '#8ec5ea');
-              skyGrad.addColorStop(1, '#d9ecf7');
+              skyGrad.addColorStop(0, '#2563a6');
+              skyGrad.addColorStop(0.52, '#7ec0ea');
+              skyGrad.addColorStop(0.86, '#d9effb');
+              skyGrad.addColorStop(1, '#fef3c7');
             }
             cx.fillStyle = skyGrad;
             cx.fillRect(0, 0, w, ht);
 
-            // Ground
+            // Distant sunlit conifer ridgelines for atmospheric forest depth
             var groundY = ht * 0.65;
+            cx.fillStyle = severeBurn ? 'rgba(92,28,18,0.45)' : 'rgba(54,96,118,0.28)';
+            cx.beginPath();
+            cx.moveTo(0, groundY);
+            for (var rx = 0; rx <= w; rx += 10) {
+              cx.lineTo(rx, groundY - 26 - Math.sin(rx * 0.018 + 0.5) * 14 - Math.cos(rx * 0.045) * 5);
+            }
+            cx.lineTo(w, groundY); cx.closePath(); cx.fill();
+            cx.fillStyle = severeBurn ? 'rgba(68,20,14,0.58)' : 'rgba(34,76,68,0.34)';
+            cx.beginPath();
+            cx.moveTo(0, groundY);
+            for (var rx2 = 0; rx2 <= w; rx2 += 8) {
+              cx.lineTo(rx2, groundY - 14 - Math.sin(rx2 * 0.029 + 2.1) * 9 - Math.abs(Math.sin(rx2 * 0.09)) * 4);
+            }
+            cx.lineTo(w, groundY); cx.closePath(); cx.fill();
+
+            // Ground
             var groundGrad = cx.createLinearGradient(0, groundY, 0, ht);
-            groundGrad.addColorStop(0, fuel > 50 ? '#854d0e' : '#365314');
-            groundGrad.addColorStop(1, '#1e1b0f');
+            groundGrad.addColorStop(0, fuel > 50 ? '#854d0e' : '#3f6212');
+            groundGrad.addColorStop(0.45, fuel > 50 ? '#5c3309' : '#2a4111');
+            groundGrad.addColorStop(1, '#1a160c');
             cx.fillStyle = groundGrad;
             cx.fillRect(0, groundY, w, ht - groundY);
 
@@ -4812,16 +5288,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }
             }
 
-            // A darkened trail remains behind the moving treatment front.
+            // A darkened mineral-ash trail remains behind the moving treatment front,
+            // with glowing ember coals while active and emerald regrowth sprouts in outcome.
             if (isBurnEvent && burnProgress > 0.08) {
               var ashCoverage = burnKind === 'culturalBurn' ? 0.62 : (burnKind === 'prescribedBurn' ? 0.82 : 1);
               var ashWidth = w * Math.min(1, burnProgress / 0.70) * ashCoverage;
-              cx.fillStyle = burnKind === 'wildfire' ? 'rgba(28,25,23,0.82)' : 'rgba(41,37,36,0.62)';
-              cx.fillRect(0, groundY - 3, ashWidth, 8);
+              var ashGrad = cx.createLinearGradient(0, groundY - 4, 0, groundY + 7);
+              ashGrad.addColorStop(0, burnKind === 'wildfire' ? 'rgba(24,21,19,0.88)' : 'rgba(41,37,36,0.70)');
+              ashGrad.addColorStop(1, 'rgba(28,25,23,0.18)');
+              cx.fillStyle = ashGrad;
+              cx.fillRect(0, groundY - 4, ashWidth, 11);
+              if (burning) {
+                cx.fillStyle = 'rgba(251,146,60,' + (0.55 + Math.sin(motionPhase * 0.08) * 0.22).toFixed(2) + ')';
+                for (var coal = 0; coal < 14; coal++) {
+                  var coalX = ((coal * 43 + 17) % Math.max(10, ashWidth));
+                  cx.beginPath(); cx.arc(coalX, groundY + (coal % 3) - 1, 1.3 + (coal % 2) * 0.6, 0, Math.PI * 2); cx.fill();
+                }
+              }
               if (burnKind === 'culturalBurn') {
-                cx.fillStyle = 'rgba(63,125,60,0.85)';
+                cx.fillStyle = 'rgba(63,125,60,0.88)';
                 for (var refuge = 0; refuge < 3; refuge++) {
                   cx.fillRect(ashWidth * (0.2 + refuge * 0.27), groundY - 4, 12, 9);
+                }
+              }
+              if (!burning && outcomeMix > 0.25) {
+                var sproutDensity = burnKind === 'wildfire' ? 12 : 24;
+                for (var sp = 0; sp < sproutDensity; sp++) {
+                  var spX = (sp + 0.5) / sproutDensity * ashWidth;
+                  var spH = (4 + (sp % 4) * 2.2) * outcomeMix;
+                  cx.strokeStyle = sp % 3 === 0 ? '#a3e635' : '#4ade80';
+                  cx.lineWidth = 1.4;
+                  cx.beginPath();
+                  cx.moveTo(spX, groundY + 1);
+                  cx.quadraticCurveTo(spX - 2, groundY - spH * 0.6, spX - 3, groundY - spH);
+                  cx.moveTo(spX, groundY + 1);
+                  cx.quadraticCurveTo(spX + 2, groundY - spH * 0.6, spX + 3, groundY - spH * 0.9);
+                  cx.stroke();
+                  if (sp % 5 === 0 && burnKind !== 'wildfire') {
+                    cx.fillStyle = '#fb923c';
+                    cx.beginPath(); cx.arc(spX, groundY - spH - 1, 1.6, 0, Math.PI * 2); cx.fill();
+                  }
                 }
               }
             }
@@ -4877,31 +5383,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }
             }
 
-            // Trees (number based on canopy)
+            // Trees (number based on canopy) with sunlit canopy depth & firelight under-rim
             var treeCount = Math.floor(canopy / 7) + 2;
             for (var ti = 0; ti < treeCount; ti++) {
               var tx = (ti / treeCount) * w + (w / treeCount) * 0.5;
               var treeH = 30 + (canopy / 100) * 50 + Math.sin(ti * 3.7) * 10;
               var trunkW = 3 + (canopy / 100) * 4;
 
-              // Trunk
-              cx.fillStyle = '#5C4033';
+              // Grounded contact shadow
+              cx.fillStyle = 'rgba(15,23,42,0.22)';
+              cx.beginPath();
+              cx.ellipse(tx, groundY + 1.5, trunkW * 2.2, 2.5, 0, 0, Math.PI * 2);
+              cx.fill();
+
+              // Shaded bark trunk
+              var tGrad = cx.createLinearGradient(tx - trunkW / 2, 0, tx + trunkW / 2, 0);
+              tGrad.addColorStop(0, '#442c21');
+              tGrad.addColorStop(0.65, '#6b4836');
+              tGrad.addColorStop(1, '#3b2419');
+              cx.fillStyle = tGrad;
               cx.fillRect(tx - trunkW / 2, groundY - treeH, trunkW, treeH);
 
-              // Canopy
+              // Canopy with sunlit top-right crown & warm firelight under-glow when burning
               var crownR = 10 + (canopy / 100) * 18 + Math.sin(ti * 2.3) * 5;
               var crownY = groundY - treeH - crownR * 0.3;
-              cx.fillStyle = severeBurn ? 'rgba(220,38,38,0.7)' : (bio > 60 ? '#166534' : bio > 30 ? '#a16207' : '#78716c');
+              var crownGrad = cx.createRadialGradient(tx + crownR * 0.28, crownY - crownR * 0.32, crownR * 0.12, tx, crownY, crownR);
+              if (severeBurn) {
+                crownGrad.addColorStop(0, 'rgba(251,146,60,0.88)');
+                crownGrad.addColorStop(0.55, 'rgba(220,38,38,0.78)');
+                crownGrad.addColorStop(1, 'rgba(69,10,10,0.82)');
+              } else if (bio > 60) {
+                crownGrad.addColorStop(0, '#4ade80');
+                crownGrad.addColorStop(0.45, '#166534');
+                crownGrad.addColorStop(1, '#0f3d21');
+              } else if (bio > 30) {
+                crownGrad.addColorStop(0, '#ca8a04');
+                crownGrad.addColorStop(0.5, '#854d0e');
+                crownGrad.addColorStop(1, '#422006');
+              } else {
+                crownGrad.addColorStop(0, '#a8a29e');
+                crownGrad.addColorStop(0.55, '#57534e');
+                crownGrad.addColorStop(1, '#292524');
+              }
+              cx.fillStyle = crownGrad;
               cx.beginPath();
               cx.arc(tx, crownY, crownR, 0, Math.PI * 2);
               cx.fill();
 
-              // Darker crown center
-              cx.fillStyle = severeBurn ? 'rgba(234,88,12,0.5)' : 'rgba(0,0,0,0.15)';
+              // Deeper interior foliage cluster
+              cx.fillStyle = severeBurn ? 'rgba(234,88,12,0.45)' : 'rgba(0,0,0,0.16)';
               cx.beginPath();
-              cx.arc(tx - 2, crownY + 2, crownR * 0.6, 0, Math.PI * 2);
+              cx.arc(tx - crownR * 0.16, crownY + crownR * 0.16, crownR * 0.56, 0, Math.PI * 2);
               cx.fill();
 
+              // Warm firelight reflection on lower canopy rim during active burns
+              if (burning) {
+                var underFire = cx.createRadialGradient(tx, crownY + crownR * 0.72, 1, tx, crownY + crownR * 0.72, crownR * 0.85);
+                underFire.addColorStop(0, 'rgba(251,146,60,' + (severeBurn ? 0.52 : 0.28) + ')');
+                underFire.addColorStop(1, 'rgba(251,146,60,0)');
+                cx.fillStyle = underFire;
+                cx.beginPath();
+                cx.arc(tx, crownY, crownR, 0, Math.PI * 2);
+                cx.fill();
+              }
             }
 
             // The teaching caption the picture needs: what the shrub height MEANS.
@@ -4964,26 +5508,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }
               cx.restore();
 
-              // Smoke columns — rising, expanding, fading
-              var smokeTotal = severeBurn ? 20 : 9;
+              // Warm backlit smoke columns — amber-lit underside rising into slate billows
+              var smokeTotal = severeBurn ? 20 : 10;
               for (var si = 0; si < smokeTotal; si++) {
-                var sx = severeBurn ? (si * 53 + tick * 0.2) % w : glowX - 20 + (si % 6) * 8;
-                var sy = groundY - (severeBurn ? 45 : 24) - si * (severeBurn ? 6 : 4) - Math.sin(tick * 0.015 + si) * 8;
-                var sr = (severeBurn ? 6 : 3) + si * (severeBurn ? 3.5 : 1.5);
-                var smokeAlpha = Math.max(0, (severeBurn ? 0.18 : 0.11) - si * 0.007);
-                cx.fillStyle = 'rgba(80,80,80,' + smokeAlpha + ')';
+                var sx = (severeBurn ? (si * 53 + motionPhase * 0.2) % w : glowX - 22 + (si % 6) * 8) + Math.sin(motionPhase * 0.01 + si * 0.5) * 4;
+                var sy = groundY - (severeBurn ? 44 : 22) - si * (severeBurn ? 6 : 4) - Math.sin(motionPhase * 0.015 + si) * 7;
+                var sr = (severeBurn ? 7 : 4) + si * (severeBurn ? 3.8 : 1.7);
+                var smokeAlpha = Math.max(0, (severeBurn ? 0.28 : 0.18) - si * 0.01);
+                var smGrad = cx.createRadialGradient(sx, sy + sr * 0.45, sr * 0.1, sx, sy, sr);
+                smGrad.addColorStop(0, 'rgba(251,146,60,' + (smokeAlpha * (si < 6 ? 0.85 : 0.35)).toFixed(3) + ')');
+                smGrad.addColorStop(0.45, 'rgba(100,94,90,' + (smokeAlpha * 0.92).toFixed(3) + ')');
+                smGrad.addColorStop(1, 'rgba(60,58,56,0)');
+                cx.fillStyle = smGrad;
                 cx.beginPath();
-                cx.arc(sx + Math.sin(tick * 0.01 + si * 0.5) * 4, sy, sr, 0, Math.PI * 2);
+                cx.arc(sx, sy, sr, 0, Math.PI * 2);
                 cx.fill();
               }
 
-              // Flying sparks — bright orange dots rising fast
-              for (var ski = 0; ski < (severeBurn ? 12 : 5); ski++) {
-                var spx = (ski * 73 + tick * 1.5) % w;
-                var spy = groundY - 20 - ((tick * 0.8 + ski * 30) % 80);
+              // Flying sparks — glowing amber-gold embers with soft radiance halos
+              for (var ski = 0; ski < (severeBurn ? 14 : 6); ski++) {
+                var spx = (ski * 73 + motionPhase * 1.5) % w;
+                var spy = groundY - 20 - ((motionPhase * 0.8 + ski * 30) % 80);
                 if (spy > 0) {
-                  cx.fillStyle = 'rgba(251,146,60,' + (0.6 + Math.random() * 0.3) + ')';
-                  cx.fillRect(spx, spy, 1.5, 1.5);
+                  var spGlow = cx.createRadialGradient(spx, spy, 0.4, spx, spy, 5.5);
+                  spGlow.addColorStop(0, 'rgba(254,240,138,0.95)');
+                  spGlow.addColorStop(0.4, 'rgba(251,146,60,0.45)');
+                  spGlow.addColorStop(1, 'rgba(251,146,60,0)');
+                  cx.fillStyle = spGlow;
+                  cx.beginPath(); cx.arc(spx, spy, 5.5, 0, Math.PI * 2); cx.fill();
                 }
               }
 

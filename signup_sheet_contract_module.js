@@ -38,9 +38,13 @@
     };
 
     function capacityFor(config, optionId) {
-        const options = (config && config.options) || [];
+        const options = Array.isArray(config && config.options) ? config.options : [];
         for (let i = 0; i < options.length; i++) {
-            if (options[i].id === optionId) return parseInt(options[i].capacity, 10) || 1;
+            if (options[i] && options[i].id === optionId) {
+                const parsed = parseInt(options[i].capacity, 10);
+                if (!Number.isFinite(parsed)) return 1;
+                return Math.max(0, parsed);
+            }
         }
         return 0;
     }
@@ -50,27 +54,42 @@
     // existing claim against them makes editing a claim fail as "full", so a
     // respondent loses their seat to themselves.
     function takenCounts(config, responses, exceptUid) {
-        const counts = {};
-        ((config && config.options) || []).forEach(function (opt) { counts[opt.id] = 0; });
+        const counts = Object.create(null);
+        const options = Array.isArray(config && config.options) ? config.options : [];
+        options.forEach(function (opt) {
+            if (opt && typeof opt.id === 'string' && opt.id && opt.id !== '__proto__' && opt.id !== 'constructor' && opt.id !== 'prototype') {
+                counts[opt.id] = 0;
+            }
+        });
         const rows = responses && typeof responses === 'object' ? responses : {};
         Object.keys(rows).forEach(function (uid) {
             if (exceptUid != null && uid === exceptUid) return;
             const claims = rows[uid] && rows[uid].claims;
             if (!Array.isArray(claims)) return;
-            claims.forEach(function (id) { if (counts[id] != null) counts[id]++; });
+            const seenForUser = new Set();
+            claims.forEach(function (id) {
+                if (typeof id !== 'string' || seenForUser.has(id)) return;
+                if (Object.prototype.hasOwnProperty.call(counts, id)) {
+                    seenForUser.add(id);
+                    counts[id]++;
+                }
+            });
         });
         return counts;
     }
 
     function remainingFor(config, counts) {
-        return ((config && config.options) || []).map(function (opt) {
-            const taken = parseInt(counts[opt.id], 10) || 0;
+        const safeCounts = counts && typeof counts === 'object' ? counts : Object.create(null);
+        const options = Array.isArray(config && config.options) ? config.options : [];
+        return options.filter(function (opt) { return opt && typeof opt === 'object'; }).map(function (opt) {
+            const cap = capacityFor(config, opt.id);
+            const taken = Object.prototype.hasOwnProperty.call(safeCounts, opt.id) ? (parseInt(safeCounts[opt.id], 10) || 0) : 0;
             return {
                 id: opt.id,
                 label: opt.label,
-                capacity: opt.capacity,
+                capacity: cap,
                 taken: taken,
-                remaining: Math.max(0, opt.capacity - taken)
+                remaining: Math.max(0, cap - taken)
             };
         });
     }
@@ -82,12 +101,22 @@
     function evaluateClaim(config, responses, uid, wanted) {
         const requested = Array.isArray(wanted) ? wanted : null;
         if (!requested) return { ok: false, reason: 'bad-claims', full: [] };
-        if (requested.length > (parseInt(config.maxPerPerson, 10) || 1)) {
+        const parsedMax = parseInt(config && config.maxPerPerson, 10);
+        const maxPerPerson = Number.isFinite(parsedMax) && parsedMax >= 1 ? parsedMax : 1;
+        if (requested.length > maxPerPerson) {
             return { ok: false, reason: 'too-many', full: [] };
+        }
+        const seenWanted = new Set();
+        for (let i = 0; i < requested.length; i++) {
+            const id = requested[i];
+            if (typeof id !== 'string' || seenWanted.has(id)) {
+                return { ok: false, reason: 'bad-claims', full: [] };
+            }
+            seenWanted.add(id);
         }
         const counts = takenCounts(config, responses, uid);
         const full = requested.filter(function (id) {
-            return counts[id] == null || counts[id] >= capacityFor(config, id);
+            return !Object.prototype.hasOwnProperty.call(counts, id) || counts[id] >= capacityFor(config, id);
         });
         if (full.length) return { ok: false, reason: 'slot-full', full: full };
         return { ok: true, reason: '', full: [] };
@@ -105,7 +134,7 @@
         const namesExist = !retentionDue(config, now);
         return {
             counts: true,
-            who: namesExist && !!isHost && config.identityMode !== 'anonymous'
+            who: namesExist && !!isHost && (!config || config.identityMode !== 'anonymous')
         };
     }
 

@@ -355,31 +355,80 @@
     if (!canvas) return; var ctx = canvas.getContext('2d'); if (!ctx) return;
     var pixelRatio=Math.min(2,root.devicePixelRatio||1);canvas.width=Math.round(900*pixelRatio);canvas.height=Math.round(560*pixelRatio);ctx.setTransform(pixelRatio,0,0,pixelRatio,0,0);
     canvas.dataset.pixelRatio=String(pixelRatio);
+    var reducedMotion=!!(root.matchMedia&&root.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var animTime=reducedMotion?0:s.world.minutes;
     var wetSky=!!(s.run&&!s.run.complete&&s.world.minutes-s.run.start.minutes<s.run.forcing.duration);
-    var sky = ctx.createLinearGradient(0,0,0,560); sky.addColorStop(0,wetSky?'#adc7cc':'#bcdfe2'); sky.addColorStop(0.65,wetSky?'#dce7df':'#f2f2df'); sky.addColorStop(1,'#b8ceba');
+    var sky = ctx.createLinearGradient(0,0,0,560);
+    sky.addColorStop(0,wetSky?'#89a8b4':'#8cc6d4');
+    sky.addColorStop(0.28,wetSky?'#aec6cc':'#c0e2e3');
+    sky.addColorStop(0.65,wetSky?'#d7e3dc':'#f3f3e1');
+    sky.addColorStop(1,wetSky?'#a6bdb4':'#b4ccb7');
     ctx.fillStyle=sky;ctx.fillRect(0,0,900,560);
-    var light=ctx.createRadialGradient(720,62,5,720,62,235);light.addColorStop(0,wetSky?'rgba(246,248,228,.18)':'rgba(255,249,211,.68)');light.addColorStop(1,'rgba(255,249,211,0)');ctx.fillStyle=light;ctx.fillRect(0,0,900,300);
-    // Background atmosphere is illustrative; it does not drive the water model.
-    [[140,93,125],[690,66,155]].forEach(function(v){oval(ctx,v[0],v[1],v[2],14,wetSky?'rgba(110,144,150,.16)':'rgba(255,255,240,.24)');});
-    // Distant ridges provide scale without competing with the editable valley.
-    polygon(ctx,[{x:0,y:195},{x:65,y:140},{x:110,y:164},{x:225,y:61},{x:335,y:150},{x:405,y:98},{x:530,y:204}], '#abc9bf');
-    polygon(ctx,[{x:370,y:208},{x:515,y:118},{x:573,y:147},{x:680,y:80},{x:814,y:161},{x:900,y:135},{x:900,y:252}], '#b3d0c7');
-    for(var shadow=5;shadow>0;shadow--)oval(ctx,518,411,285+shadow*10,77+shadow*5,'rgba(36,68,51,.025)');
+    var light=ctx.createRadialGradient(720,62,5,720,62,260);
+    light.addColorStop(0,wetSky?'rgba(246,248,228,.22)':'rgba(255,252,222,.82)');
+    light.addColorStop(0.42,wetSky?'rgba(220,235,232,.08)':'rgba(255,248,205,.30)');
+    light.addColorStop(1,'rgba(255,249,211,0)');
+    ctx.fillStyle=light;ctx.fillRect(0,0,900,320);
+    // Translucent sun-caustic light shafts descending across the valley sky.
+    ctx.save();
+    [[690,54,48,385,115],[755,68,38,530,96],[620,60,34,250,86]].forEach(function(beam, bi){
+      var sway=reducedMotion?0:Math.sin(animTime*0.35+bi*1.7)*10;
+      var shaft=ctx.createLinearGradient(beam[0],beam[1],beam[3]+sway,365);
+      shaft.addColorStop(0,wetSky?'rgba(225,240,242,.08)':'rgba(255,252,224,.17)');
+      shaft.addColorStop(0.65,wetSky?'rgba(210,232,236,.03)':'rgba(255,250,218,.05)');
+      shaft.addColorStop(1,'rgba(255,250,218,0)');
+      polygon(ctx,[
+        {x:beam[0]-beam[2]*0.5,y:beam[1]},
+        {x:beam[0]+beam[2]*0.5,y:beam[1]},
+        {x:beam[3]+beam[4]+sway,y:375},
+        {x:beam[3]-beam[4]*0.6+sway,y:375}
+      ],shaft);
+    });
+    ctx.restore();
+    // Layered volumetric clouds (illustrative atmosphere; does not drive the water model).
+    [[142,88,118,16],[470,56,96,13],[702,68,142,17]].forEach(function(v){
+      oval(ctx,v[0]+4,v[1]+6,v[2],v[3]*.8,wetSky?'rgba(95,126,136,.18)':'rgba(164,196,198,.16)');
+      oval(ctx,v[0],v[1],v[2]*.96,v[3],wetSky?'rgba(216,229,232,.36)':'rgba(255,255,244,.42)');
+      oval(ctx,v[0]-v[2]*.28,v[1]-v[3]*.5,v[2]*.48,v[3]*.85,wetSky?'rgba(228,238,240,.34)':'rgba(255,255,248,.52)');
+      oval(ctx,v[0]+v[2]*.22,v[1]-v[3]*.38,v[2]*.42,v[3]*.76,wetSky?'rgba(222,234,237,.30)':'rgba(255,254,244,.44)');
+    });
+    // Three-tier atmospheric ridges provide depth without competing with the editable valley.
+    var farRidge=ctx.createLinearGradient(0,55,0,210);
+    farRidge.addColorStop(0,wetSky?'#9bb4b8':'#b2d2cb'); farRidge.addColorStop(1,wetSky?'#c2d4d2':'#d7e8dc');
+    polygon(ctx,[{x:0,y:170},{x:95,y:112},{x:190,y:138},{x:315,y:68},{x:430,y:126},{x:560,y:76},{x:695,y:134},{x:825,y:86},{x:900,y:115},{x:900,y:230},{x:0,y:230}], farRidge);
+    var leftRidge=ctx.createLinearGradient(0,61,0,215);
+    leftRidge.addColorStop(0,wetSky?'#8ca8a9':'#98beb4'); leftRidge.addColorStop(1,wetSky?'#b6cbc6':'#c5dcd1');
+    polygon(ctx,[{x:0,y:195},{x:65,y:140},{x:110,y:164},{x:225,y:61},{x:335,y:150},{x:405,y:98},{x:530,y:204}], leftRidge);
+    polygon(ctx,[{x:225,y:61},{x:268,y:96},{x:246,y:122},{x:205,y:92}], 'rgba(255,252,232,.20)');
+    var rightRidge=ctx.createLinearGradient(0,80,0,255);
+    rightRidge.addColorStop(0,wetSky?'#93b0b0':'#a3c7be'); rightRidge.addColorStop(1,wetSky?'#bccfc9':'#cfe2d6');
+    polygon(ctx,[{x:370,y:208},{x:515,y:118},{x:573,y:147},{x:680,y:80},{x:814,y:161},{x:900,y:135},{x:900,y:252}], rightRidge);
+    polygon(ctx,[{x:680,y:80},{x:726,y:108},{x:706,y:134},{x:660,y:105}], 'rgba(255,252,232,.22)');
+    for(var shadow=6;shadow>0;shadow--)oval(ctx,516,414,284+shadow*11,76+shadow*5.5,'rgba(24,54,42,.028)');
     var cells=s.world.cells.slice().sort(function(a,b){return (a.x+a.y)-(b.x+b.y);});
     cells.forEach(function(c){
       var p=projection(c),pts=corners(c);
       function soilFace(a,b,dark){
-        polygon(ctx,[a,b,{x:b.x,y:b.y+32},{x:a.x,y:a.y+32}],dark?'#88705b':'#a48b68');
-        polygon(ctx,[a,b,{x:b.x,y:b.y+7},{x:a.x,y:a.y+7}],dark?'#5c6145':'#70754c');
-        ctx.strokeStyle=dark?'#ad9374':'#c7ad83';ctx.lineWidth=1;
-        [15,24].forEach(function(depth){ctx.beginPath();ctx.moveTo(a.x,a.y+depth);ctx.lineTo(b.x,b.y+depth);ctx.stroke();});
+        var faceGrad=ctx.createLinearGradient(0,a.y,0,a.y+34);
+        faceGrad.addColorStop(0,dark?'#585d42':'#6e744b');
+        faceGrad.addColorStop(0.24,dark?'#866d56':'#a48a66');
+        faceGrad.addColorStop(0.68,dark?'#6e5c4c':'#8a7459');
+        faceGrad.addColorStop(1,dark?'#4c565c':'#626d70');
+        polygon(ctx,[a,b,{x:b.x,y:b.y+32},{x:a.x,y:a.y+32}],faceGrad);
+        // Subtle subsurface saturation sheen reflects live soil & delayed groundwater storage.
+        var satAlpha=Math.min(0.42,(c.soil/120)*0.22+Math.min(1,c.ground/40)*0.24);
+        if(satAlpha>0.03){
+          polygon(ctx,[{x:a.x,y:a.y+19},{x:b.x,y:b.y+19},{x:b.x,y:b.y+32},{x:a.x,y:a.y+32}],'rgba(32,124,158,'+satAlpha.toFixed(3)+')');
+        }
+        ctx.strokeStyle=dark?'rgba(182,158,128,.55)':'rgba(212,188,148,.62)';ctx.lineWidth=1;
+        [14,23].forEach(function(depth){ctx.beginPath();ctx.moveTo(a.x,a.y+depth);ctx.lineTo(b.x,b.y+depth);ctx.stroke();});
       }
       if(c.x===K.cols-1)soilFace(pts[1],pts[2],true);
       if(c.y===K.rows-1)soilFace(pts[2],pts[3],false);
       var base=K.covers[c.cover].color,analytic=s.lens==='soil'||s.lens==='difference';
       polygon(ctx,pts,base,analytic?'rgba(36,68,55,.19)':null);
       if(!analytic){
-        polygon(ctx,pts,c.x<6?'rgba(241,235,180,.13)':'rgba(22,64,44,.07)');
+        polygon(ctx,pts,c.x<6?'rgba(245,240,190,.15)':'rgba(18,58,40,.085)');
         ctx.save();polygon(ctx,pts);ctx.clip();
         for(var speck=0;speck<12;speck++){
           var sx=p.x+(variation(c,speck*2)-.5)*70,sy=p.y+(variation(c,speck*2+1)-.5)*34;
@@ -396,31 +445,63 @@
       else {
         if(c.soil>55) polygon(ctx,pts,'rgba(9,48,37,'+Math.min(.3,(c.soil-55)/170)+')');
         if(c.cover==='stream'){
-          polygon(ctx,pts,'#a8ac97');
+          polygon(ctx,pts,'#a2a894');
           ctx.save();polygon(ctx,pts);ctx.clip();
-          for(var stone=0;stone<8;stone++)oval(ctx,p.x+(variation(c,stone+41)-.5)*58,p.y+(variation(c,stone+71)-.5)*23,2.4,1.2,stone%2?'#c6c6af':'#86988b');
+          for(var stone=0;stone<8;stone++){
+            var stX=p.x+(variation(c,stone+41)-.5)*58, stY=p.y+(variation(c,stone+71)-.5)*23;
+            oval(ctx,stX,stY,2.5,1.3,stone%2?'#c8c9b2':'#7d9084');
+            if(stone%3===0)oval(ctx,stX-.6,stY-.4,1.1,.45,'rgba(245,252,248,.35)');
+          }
           ctx.restore();
         }
         if(c.cover==='paved'){
           ctx.save();polygon(ctx,pts);ctx.clip();ctx.strokeStyle='rgba(236,236,222,.48)';ctx.lineWidth=1;
-          [-.25,.25].forEach(function(f){ctx.beginPath();ctx.moveTo(p.x-40,p.y-20+f*32);ctx.lineTo(p.x+40,p.y+20+f*32);ctx.stroke();});ctx.restore();
+          [-.25,.25].forEach(function(f){ctx.beginPath();ctx.moveTo(p.x-40,p.y-20+f*32);ctx.lineTo(p.x+40,p.y+20+f*32);ctx.stroke();});
+          polygon(ctx,pts,'rgba(255,255,255,.04)','rgba(58,68,72,.22)');
+          ctx.restore();
         }
         if(c.cover==='basin'){
-          oval(ctx,p.x,p.y,27,12,'#477a60');oval(ctx,p.x,p.y-1,22,9,'#799563');
-          ctx.strokeStyle='#d2c697';ctx.lineWidth=1.6;ctx.beginPath();ctx.ellipse(p.x,p.y,27,12,0,0,Math.PI);ctx.stroke();
+          oval(ctx,p.x,p.y+1,28,12.5,'rgba(24,58,44,.22)');
+          oval(ctx,p.x,p.y,27,12,'#44785e');oval(ctx,p.x,p.y-1,22,9,'#759361');
+          ctx.strokeStyle='#dbd0a2';ctx.lineWidth=1.7;ctx.beginPath();ctx.ellipse(p.x,p.y,27,12,0,0,Math.PI);ctx.stroke();
         }
         if(c.surface>.15){
           var f=Math.min(1,.24+c.surface/13),channel=c.cover==='stream';
+          var depthNorm=Math.min(1,c.surface/22);
           ctx.save();polygon(ctx,pts);ctx.clip();
           if(channel||f===1)polygon(ctx,pts);else shore(ctx,pts,p,f);
-          var water=channel?ctx.createLinearGradient(420,110,420,490):ctx.createLinearGradient(p.x-15,p.y-18,p.x+18,p.y+20);
-          water.addColorStop(0,'rgba(78,178,186,'+(channel?.88:Math.min(.84,.36+c.surface/35))+')');
-          water.addColorStop(1,'rgba(20,113,151,'+(channel?.94:Math.min(.9,.42+c.surface/30))+')');
+          var water=channel?ctx.createLinearGradient(420,110,420,490):ctx.createLinearGradient(p.x-16,p.y-18,p.x+18,p.y+20);
+          water.addColorStop(0,'rgba(98,202,206,'+(channel?.90:Math.min(.88,.40+depthNorm*.46)).toFixed(3)+')');
+          water.addColorStop(0.52,'rgba(36,144,174,'+(channel?.92:Math.min(.90,.44+depthNorm*.44)).toFixed(3)+')');
+          water.addColorStop(1,'rgba(15,92,134,'+(channel?.96:Math.min(.94,.48+depthNorm*.44)).toFixed(3)+')');
           ctx.fillStyle=water;ctx.fill();ctx.clip();
-          ctx.strokeStyle='rgba(218,250,238,.65)';ctx.lineWidth=1;
+          // Soft translucent sky-reflection ribbon and underwater caustic glint across water surface.
+          var reflectGrad=ctx.createLinearGradient(p.x-22,p.y-14,p.x+16,p.y+12);
+          reflectGrad.addColorStop(0,'rgba(232,253,252,.28)');
+          reflectGrad.addColorStop(0.45,'rgba(196,246,244,.08)');
+          reflectGrad.addColorStop(1,'rgba(255,255,255,0)');
+          oval(ctx,p.x-5,p.y-4,24*f,8.5*f,reflectGrad);
+          ctx.strokeStyle='rgba(222,252,244,.68)';ctx.lineWidth=1.05;
+          var rPhase=reducedMotion?0:Math.sin(animTime*1.4+c.x+c.y)*2.4;
           for(var ripple=0;ripple<3;ripple++){
-            var rx=p.x-18+variation(c,ripple+91)*25,ry=p.y-8+ripple*7;
+            var rx=p.x-18+variation(c,ripple+91)*25+rPhase,ry=p.y-8+ripple*7;
             ctx.beginPath();ctx.moveTo(rx,ry);ctx.quadraticCurveTo(rx+5,ry+3,rx+12,ry+2);ctx.stroke();
+          }
+          // Subtle ambient micro-bubbles / foam speckles on active stream cells.
+          if(channel||c.surface>4){
+            for(var bub=0;bub<3;bub++){
+              var bx=p.x+(variation(c,bub+141)-.5)*34, by=p.y+(variation(c,bub+151)-.5)*14;
+              oval(ctx,bx,by,1.5,.75,'rgba(236,255,252,.52)');
+            }
+          }
+          // Concentric raindrop rings on water surfaces while storm rain falls.
+          if(wetSky){
+            var ringProgress=(variation(c,181)+(reducedMotion?0.35:(animTime*0.35)))%1;
+            ctx.strokeStyle='rgba(232,254,252,'+((1-ringProgress)*0.55).toFixed(3)+')';
+            ctx.lineWidth=0.9;
+            ctx.beginPath();
+            ctx.ellipse(p.x+(variation(c,191)-.5)*22,p.y+(variation(c,197)-.5)*10,3+ringProgress*10,1.4+ringProgress*4.4,0,0,Math.PI*2);
+            ctx.stroke();
           }
           ctx.restore();
         }
@@ -447,8 +528,10 @@
         var a=projection(s.world.cells[route.from]),b=route.to<0?{x:a.x-39,y:a.y+24}:projection(s.world.cells[route.to]);
         var dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy),ux=dx/length,uy=dy/length;
         var start={x:a.x+dx*.13,y:a.y+dy*.13},end={x:a.x+dx*.76,y:a.y+dy*.76};
-        ctx.lineCap='round';ctx.lineWidth=5;ctx.strokeStyle='#153d38';ctx.beginPath();ctx.moveTo(start.x,start.y);ctx.lineTo(end.x,end.y);ctx.stroke();
-        ctx.lineWidth=2;ctx.strokeStyle='#fff8b5';ctx.beginPath();ctx.moveTo(start.x,start.y);ctx.lineTo(end.x,end.y);ctx.stroke();
+        ctx.lineCap='round';
+        ctx.lineWidth=8;ctx.strokeStyle='rgba(255,248,181,.22)';ctx.beginPath();ctx.moveTo(start.x,start.y);ctx.lineTo(end.x,end.y);ctx.stroke();
+        ctx.lineWidth=5;ctx.strokeStyle='#153d38';ctx.beginPath();ctx.moveTo(start.x,start.y);ctx.lineTo(end.x,end.y);ctx.stroke();
+        ctx.lineWidth=2.2;ctx.strokeStyle='#fff8b5';ctx.beginPath();ctx.moveTo(start.x,start.y);ctx.lineTo(end.x,end.y);ctx.stroke();
         polygon(ctx,[end,{x:end.x-ux*9-uy*4,y:end.y-uy*9+ux*4},{x:end.x-ux*9+uy*4,y:end.y-uy*9-ux*4}],'#fff8b5','#153d38');count++;
       });canvas.dataset.flowArrows=String(count);ctx.lineCap='butt';
     } else canvas.dataset.flowArrows='0';
@@ -460,7 +543,14 @@
     var selected=s.world.cells[s.selected],ps=corners(selected);ctx.lineWidth=5;polygon(ctx,ps,null,'#245148');ctx.lineWidth=2.5;polygon(ctx,ps,null,'#fff3a3');ctx.lineWidth=1;
     var sp=projection(selected);ctx.fillStyle='#133e39';ctx.beginPath();ctx.arc(sp.x,sp.y-36,11,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.beginPath();ctx.moveTo(sp.x,sp.y-42);ctx.lineTo(sp.x,sp.y-30);ctx.moveTo(sp.x-6,sp.y-36);ctx.lineTo(sp.x+6,sp.y-36);ctx.stroke();
     var raining=s.run&&!s.run.complete&&s.world.minutes-s.run.start.minutes<s.run.forcing.duration;
-    if(raining){ctx.strokeStyle='rgba(35,91,113,.35)';ctx.lineWidth=1.4;for(var i=0;i<Math.min(100,15+K.rainAt(s.run.forcing,s.world.minutes-s.run.start.minutes));i++){var rx=165+(i*97)%650,ry=85+(i*67+(s.world.minutes*5))%320;ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx-4,ry+11);ctx.stroke();}}
+    if(raining){ctx.strokeStyle='rgba(35,91,113,.38)';ctx.lineWidth=1.4;for(var i=0;i<Math.min(100,15+K.rainAt(s.run.forcing,s.world.minutes-s.run.start.minutes));i++){var rx=165+(i*97)%650,ry=85+(i*67+(animTime*5))%320;ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx-4,ry+11);ctx.stroke();}}
+    ctx.save();
+    ctx.fillStyle='rgba(248,252,248,.78)';
+    ctx.beginPath();ctx.rect(14,12,336,52);ctx.fill();
+    ctx.strokeStyle='rgba(23,72,63,.16)';ctx.lineWidth=1;ctx.strokeRect(14,12,336,52);
+    ctx.fillStyle='rgba(248,252,248,.74)';
+    ctx.fillRect(14,520,382,26);
+    ctx.restore();
     ctx.fillStyle='#17483f';ctx.font='700 15px system-ui';ctx.fillText(s.lens==='difference'?'WATER DIFFERENCE · SAME MINUTE':s.lens==='soil'?'SOIL MOISTURE':s.lens==='flow'?'FOLLOW THE FLOW':'A LIVING WATERSHED',25,32);
     ctx.font='12px system-ui';ctx.fillText(raining?'Rain reaches the valley · '+n(K.rainAt(s.run.forcing,s.world.minutes-s.run.start.minutes),1)+' mm/hour':'Prescribed weather · '+(s.run?'rain has stopped':'ready to explore'),25,54);
     ctx.fillStyle='#214d45';ctx.font='12px system-ui';ctx.fillText('20 m per cell · heights and water depth exaggerated for visibility',25,538);
@@ -511,7 +601,12 @@
     React.useEffect(function(){if(save.current)save.current(s);},[s]);
     React.useEffect(function(){var sceneRun=inspecting?Object.assign({},s.run,{complete:inspectTime>=s.run.forcing.duration+60}):s.run;draw(canvas.current,Object.assign({},s,{world:shown,run:sceneRun,showChanges:showChanges,showGrid:showGrid,lens:effectiveLens,spatial:spatial,plannedCells:!inspecting&&effectiveLens!=='difference'&&K.landPlan(s,s.selected,chosenCover,editScope==='patch').canApply?K.landPlan(s,s.selected,chosenCover,editScope==='patch').indices:[]}));},[s,shown,inspecting,inspectTime,showChanges,showGrid,effectiveLens,spatial,chosenCover,editScope]);
     React.useEffect(function(){if(!s.running)return;var id=setInterval(function(){set(function(old){return old.running?K.advance(old,1):old;});},250);return function(){clearInterval(id);};},[s.running]);
-    React.useEffect(function(){if(s.run&&s.run.complete)say('Run complete. Water is still stored in the valley. Pin a baseline or start another storm.');},[s.run&&s.run.complete]);
+    var prevRunRef=React.useRef({start:s.run?s.run.start:null,complete:!!(s.run&&s.run.complete)});
+    React.useEffect(function(){
+      var prev=prevRunRef.current,curStart=s.run?s.run.start:null,curComplete=!!(s.run&&s.run.complete);
+      if(curStart&&prev.start===curStart&&!prev.complete&&curComplete)say('Run complete. Water is still stored in the valley. Pin a baseline or start another storm.');
+      prevRunRef.current={start:curStart,complete:curComplete};
+    },[s.run,s.run&&s.run.complete]);
     var active=!!(s.run&&!s.run.complete),m=K.measure(shown),cell=shown.cells[s.selected];
     var elapsed=s.run?shown.minutes-s.run.start.minutes:0,raining=!!(s.run&&(active||inspecting)&&elapsed<s.run.forcing.duration);
     var nextRain=raining?K.rainDuring(s.run.forcing,elapsed,.25):0,budget=K.cellBudget(shown,nextRain,s.selected),comparison=K.comparison(s);

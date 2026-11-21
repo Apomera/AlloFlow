@@ -136,6 +136,13 @@ function ImageView(props) {
   React.useEffect(() => { setFindOpen(false); }, [generatedContent && generatedContent.id]);
   const latestImageRef = React.useRef(null);
   latestImageRef.current = generatedContent && generatedContent.data && generatedContent.data.imageUrl;
+  const latestResourceIdRef = React.useRef(null);
+  latestResourceIdRef.current = generatedContent && generatedContent.id;
+  const imageViewMountedRef = React.useRef(true);
+  React.useEffect(() => {
+    imageViewMountedRef.current = true;
+    return () => { imageViewMountedRef.current = false; };
+  }, []);
   // Choosing or closing removes the focused control; return focus to the Find button that opened the panel.
   const findOpenerRef = React.useRef(null), refocusFind = React.useRef(false);
   const toggleFind = (event) => { findOpenerRef.current = event.currentTarget; setFindOpen(open => !open); };
@@ -151,14 +158,16 @@ function ImageView(props) {
   const [findBusy, setFindBusy] = React.useState(false);
   const chooseClassroomImage = async (choice) => {
     const A = window.AlloModules && window.AlloModules.AltText;
+    const previousResourceId = generatedContent && generatedContent.id;
     const previousImageUrl = generatedContent && generatedContent.data && generatedContent.data.imageUrl;
     if (!A || !choice || findBusy) return;
     setFindBusy(true);
     try {
       const baked = await A.bakeCreditBand(choice.dataUrl, choice.creditLine, { kind: choice.source === 'mulberry' ? 'symbol' : 'photo', attribution: choice.attribution });
+      if (!imageViewMountedRef.current) return;
       const imageUrl = baked.dataUrl;
-      // The picture may have changed while this one was checked (a Regenerate, another item).
-      const applied = latestImageRef.current === previousImageUrl && updateImageResource(item => item.data && item.data.imageUrl === previousImageUrl ? replaceSingleImage(item, imageUrl, {
+      // The picture or active resource may have changed while this one was checked (a Regenerate, another item).
+      const applied = latestResourceIdRef.current === previousResourceId && latestImageRef.current === previousImageUrl && updateImageResource(item => item.data && item.data.imageUrl === previousImageUrl ? replaceSingleImage(item, imageUrl, {
         imageSource: choice.source, altText: choice.alt || '', altSource: choice.alt ? choice.altSource : '',
         altHash: choice.alt ? A.hashImage(imageUrl) : '', imageAttribution: choice.attribution || null, imageCreditBand: baked.bandHeight,
       }) : item) !== false;
@@ -169,9 +178,9 @@ function ImageView(props) {
       closeFind();
       if (typeof addToast === 'function') addToast(t('visuals.picture_added'), 'success');
     } catch (_) {
-      if (typeof addToast === 'function') addToast(t('visuals.picture_add_failed'), 'error');
+      if (imageViewMountedRef.current && typeof addToast === 'function') addToast(t('visuals.picture_add_failed'), 'error');
     } finally {
-      setFindBusy(false);
+      if (imageViewMountedRef.current) setFindBusy(false);
     }
   };
   const uploadImage = (event) => {
@@ -204,6 +213,70 @@ function ImageView(props) {
     };
     reader.readAsDataURL(file);
   };
+  const descPanelId = altFieldId + '-desc-panel';
+  const [showDescription, setShowDescription] = React.useState(false);
+  const [speakingDesc, setSpeakingDesc] = React.useState(false);
+  const speakingDescRef = React.useRef(false);
+  speakingDescRef.current = speakingDesc;
+  const stopDescSpeech = () => {
+    try { if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop(); } catch (_) {}
+    try { if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (_) {}
+    setSpeakingDesc(false);
+  };
+  React.useEffect(() => {
+    setShowDescription(false);
+    if (speakingDescRef.current) stopDescSpeech();
+  }, [generatedContent?.id, generatedContent?.data?.imageUrl]);
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const onSpeechState = (e) => {
+      if (speakingDescRef.current && e && e.detail && e.detail.isPlaying === false) setSpeakingDesc(false);
+    };
+    window.addEventListener('allo-speech-state', onSpeechState);
+    return () => {
+      window.removeEventListener('allo-speech-state', onSpeechState);
+      if (speakingDescRef.current) {
+        try { if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop(); } catch (_) {}
+        try { if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (_) {}
+      }
+    };
+  }, []);
+  const hasReadableDescription = !usesVisualPanelGrid && Boolean(generatedContent?.data?.imageUrl) && !descriptionNeedsAttention && generatedContent?.data?.decorative !== true && Boolean(String(imageDescription || '').trim());
+  const canSpeakDescription = Boolean(
+    typeof handleSpeak === 'function' ||
+    (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') ||
+    (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function')
+  );
+  const showVisualToolsBar = hasReadableDescription && (canSpeakDescription || !isTeacherMode);
+  const toggleSpeakDescription = () => {
+    const clean = String(imageDescription || '').trim();
+    if (!clean) return;
+    if (speakingDesc) {
+      stopDescSpeech();
+      return;
+    }
+    try {
+      if (typeof handleSpeak === 'function') {
+        handleSpeak(clean, 'visual-desc-' + (generatedContent?.id || 'single'), 0, false, leveledTextLanguage || null);
+        return;
+      }
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+        setSpeakingDesc(true);
+        Promise.resolve(window.AlloSpeechPlayer.speak(clean, { language: leveledTextLanguage || 'English' })).catch(() => setSpeakingDesc(false));
+        return;
+      }
+      if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+        window.speechSynthesis.cancel();
+        const u = new window.SpeechSynthesisUtterance(clean);
+        u.onend = () => setSpeakingDesc(false);
+        u.onerror = () => setSpeakingDesc(false);
+        setSpeakingDesc(true);
+        window.speechSynthesis.speak(u);
+      }
+    } catch (_) {
+      setSpeakingDesc(false);
+    }
+  };
   return (
                   <div className="space-y-3">
                     {isTeacherMode && <input type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" ref={singleImageFileRef} className="hidden" aria-label={t('common.upload_replacement_image') || 'Upload replacement image'} onChange={uploadImage} />}
@@ -216,15 +289,15 @@ function ImageView(props) {
                                 <VisualPanelGrid
                                     key={(generatedContent?.id || "default") + (isTeacherMode ? ':teacher' : ':learner')}
                                     visualPlan={generatedContent?.data.visualPlan}
-                                    onRefinePanel={handleRefinePanel}
-                                    onAnimatePanel={handleAnimatePanel}
-                                    onRegenerateFrame={handleRegeneratePanelFrame}
-                                    onDeleteFrame={handleDeletePanelFrame}
-                                    onDuplicateFrame={handleDuplicatePanelFrame}
-                                    onReorderFrame={handleReorderPanelFrame}
-                                    onSetPanelFps={handleSetPanelFps}
-                                    onUpdateLabel={handleUpdateVisualLabel}
-                                    onUpdatePanel={typeof handleUpdateVisualPanel === 'function' ? ((panelIdx, patch, expect) => handleUpdateVisualPanel(panelIdx, patch, { ...(expect || {}), resourceId: generatedContent?.id })) : undefined}
+                                    onRefinePanel={isTeacherMode && !imageEditDoor?.disabled ? handleRefinePanel : undefined}
+                                    onAnimatePanel={isTeacherMode && !imageEditDoor?.disabled ? handleAnimatePanel : undefined}
+                                    onRegenerateFrame={isTeacherMode && !imageEditDoor?.disabled ? handleRegeneratePanelFrame : undefined}
+                                    onDeleteFrame={isTeacherMode ? handleDeletePanelFrame : undefined}
+                                    onDuplicateFrame={isTeacherMode ? handleDuplicatePanelFrame : undefined}
+                                    onReorderFrame={isTeacherMode ? handleReorderPanelFrame : undefined}
+                                    onSetPanelFps={isTeacherMode ? handleSetPanelFps : undefined}
+                                    onUpdateLabel={isTeacherMode ? handleUpdateVisualLabel : undefined}
+                                    onUpdatePanel={isTeacherMode && typeof handleUpdateVisualPanel === 'function' ? ((panelIdx, patch, expect) => handleUpdateVisualPanel(panelIdx, patch, { ...(expect || {}), resourceId: generatedContent?.id })) : undefined}
                                     language={leveledTextLanguage}
                                     onSpeak={handleSpeak}
                                     t={t}
@@ -259,7 +332,7 @@ function ImageView(props) {
                                 <div style={{position:'relative'}}>
                                 <img src={generatedContent?.data.imageUrl} alt={imageDescription} aria-describedby={descriptionNeedsAttention ? descriptionId : undefined} role={generatedContent?.data.decorative ? 'presentation' : undefined} className="w-full h-auto rounded" loading="lazy" decoding="async"/>
                                 {isTeacherMode && (
-                                  <div style={{position:'absolute',top:'8px',right:'8px',display:'flex',gap:'6px'}}>
+                                  <div style={{position:'absolute',top:'8px',right:'8px',display:'flex',flexWrap:'wrap',justifyContent:'flex-end',gap:'6px',maxWidth:'calc(100% - 16px)'}}>
                                     <button
                                       type="button"
                                       aria-label={t('visuals.upload_image') || 'Upload your own image'}
@@ -291,6 +364,40 @@ function ImageView(props) {
                                     {window.AlloModules.AltText.openImageCreditLine(generatedContent.data.imageAttribution)}
                                     {/^https:\/\//i.test(generatedContent.data.imageAttribution.url || '') && <> · <a href={generatedContent.data.imageAttribution.url} target="_blank" rel="noopener noreferrer" className="underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{t('visuals.image_source_link') || 'Source'}</a></>}
                                   </p>
+                                )}
+                                {showVisualToolsBar && (
+                                  <div data-visual-learner-tools className="mt-2.5 flex flex-wrap items-center gap-2 no-print">
+                                    {canSpeakDescription && (
+                                      <button
+                                        type="button"
+                                        data-visual-listen
+                                        aria-pressed={speakingDesc}
+                                        onClick={toggleSpeakDescription}
+                                        className="min-h-11 inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-800 hover:bg-indigo-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                      >
+                                        <span aria-hidden="true">{speakingDesc ? '⏹' : '🔊'}</span>
+                                        <span>{speakingDesc ? imageText('common.stop', 'Stop') : imageText('visuals.listen_description', 'Listen to description')}</span>
+                                      </button>
+                                    )}
+                                    {!isTeacherMode && (
+                                      <button
+                                        type="button"
+                                        data-visual-description-toggle
+                                        aria-expanded={showDescription}
+                                        aria-controls={descPanelId}
+                                        onClick={() => setShowDescription(prev => !prev)}
+                                        className="min-h-11 inline-flex items-center gap-1.5 rounded-lg border border-slate-400 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                      >
+                                        <span aria-hidden="true">📝</span>
+                                        <span>{showDescription ? imageText('visuals.hide_description', 'Hide description') : imageText('visuals.show_description', 'Show description')}</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                                {hasReadableDescription && !isTeacherMode && showDescription && (
+                                  <div id={descPanelId} data-visual-description-text className="mt-2 rounded-lg border border-slate-300 bg-white p-3 text-sm leading-relaxed text-slate-800 shadow-sm">
+                                    {imageDescription}
+                                  </div>
                                 )}
                                 {descriptionNeedsAttention && <div id={descriptionId} role="status" className="mt-3 rounded-xl border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950">
                                   <p>{isTeacherMode
@@ -396,7 +503,7 @@ function ImageView(props) {
                             <button type="button" onClick={closeFind} className="mt-2 min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">{t('common.close') || 'Close'}</button>
                           </section>
                         )}
-                        {isTeacherMode && <div className="w-full max-w-2xl bg-white p-4 rounded-lg border border-slate-400 shadow-sm mb-6" data-help-key="visuals_prompt">
+                        {isTeacherMode && Boolean(String(generatedContent?.data?.prompt || '').trim()) && <div className="w-full max-w-2xl bg-white p-4 rounded-lg border border-slate-400 shadow-sm mb-6" data-help-key="visuals_prompt">
                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('visuals.prompt_label')}</h4>
                             <p className="text-slate-700 italic bg-slate-50 p-3 rounded border border-slate-100 text-sm">"{generatedContent?.data.prompt}"</p>
                         </div>}
@@ -424,7 +531,7 @@ function ImageView(props) {
                                 />
                                 <button type="button"
                                     onClick={handleRefineImage}
-                                    disabled={!imageRefinementInput.trim() || isProcessing || !!imageEditDoor?.disabled} aria-busy={isProcessing}
+                                    disabled={!String(imageRefinementInput || '').trim() || isProcessing || !!imageEditDoor?.disabled} aria-busy={isProcessing}
                                     className="min-h-11 min-w-11 shrink-0 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
                                     title={imageEditDoor?.title || t('common.apply_nano_edit')}
                                     aria-label={t('common.apply_nano_edit')}
@@ -432,17 +539,28 @@ function ImageView(props) {
                                     {isProcessing ? <RefreshCw size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none"/> : <Send size={16} aria-hidden="true"/>}
                                 </button>
                              </div>
-                             <span className="text-[11px] text-slate-600 italic mt-0.5 block">{t('visuals.nano_active_status')}</span>
+                             {!imageEditDoor?.disabled && <span className="text-[11px] text-slate-600 italic mt-0.5 block">{t('visuals.nano_active_status')}</span>}
                              {imageEditDoor?.disabled && typeof window.AlloAiSetupNotice === 'function' && <div className="mt-2"><window.AlloAiSetupNotice t={t} kind="imageEdit" /></div>}
                         </div>
                         )}
+                        {isTeacherMode && (
                         <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg text-sm text-red-800 mb-6">
                             <div>
                                 <p className="font-bold mb-1">{t('visuals.warning.title')}</p>
-                                <p className="mb-2" dangerouslySetInnerHTML={{ __html: t('visuals.warning.desc') }}></p>
-                                <p dangerouslySetInnerHTML={{ __html: t('visuals.warning.tip') }}></p>
+                                {typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function' ? (
+                                  <>
+                                    <p className="mb-2" dangerouslySetInnerHTML={{ __html: window.sanitizeHtml(t('visuals.warning.desc') || '') }}></p>
+                                    <p dangerouslySetInnerHTML={{ __html: window.sanitizeHtml(t('visuals.warning.tip') || '') }}></p>
+                                  </>
+                                ) : (
+                                  <>
+                                    <p className="mb-2">{String(t('visuals.warning.desc') || '').replace(/<[^>]+>/g, '')}</p>
+                                    <p>{String(t('visuals.warning.tip') || '').replace(/<[^>]+>/g, '')}</p>
+                                  </>
+                                )}
                             </div>
                         </div>
+                        )}
                         {isTeacherMode && (
                         <div className="flex gap-3 w-full max-w-2xl" style={{flexWrap:'wrap'}}>
                             <button type="button" onClick={handleDownloadImage} data-help-key="visuals_download" style={{flexBasis:'16rem'}} className="min-w-0 min-h-11 flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors motion-reduce:transition-none font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><Download size={18} aria-hidden="true" /> {t('visuals.download')}</button>

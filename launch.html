@@ -459,16 +459,22 @@
           var requested = new URLSearchParams(window.location.search || '').get('tool');
           if (!requested) return;
           var pretty = String(requested)
+            .replace(/[\u0000-\u001f\u007f]/g, ' ')
             .replace(/[_-]+/g, ' ')
             .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
             .replace(/\s+/g, ' ')
             .trim()
+            .slice(0, 120)
             .split(' ').map(function (word) { return word ? word.charAt(0).toUpperCase() + word.slice(1) : word; }).join(' ');
           if (!pretty) return;
           var note = document.getElementById('tool-note');
           if (!note) return;
-          note.innerHTML = 'You followed a link to <strong>' + pretty.replace(/[<>&]/g, '') + '</strong>. '
-            + 'Open AlloFlow below, then pick it from the tool list once it loads.';
+          note.textContent = '';
+          note.appendChild(document.createTextNode('You followed a link to '));
+          var strong = document.createElement('strong');
+          strong.textContent = pretty;
+          note.appendChild(strong);
+          note.appendChild(document.createTextNode('. Open AlloFlow below, then pick it from the tool list once it loads.'));
           note.hidden = false;
         } catch (error) { /* the launcher must still work if this ever throws */ }
       }());
@@ -514,7 +520,10 @@
       function isSafeCanvasUrl(u) {
         try {
           const parsed = new URL(String(u || '').trim());
-          return parsed.protocol === 'https:' && parsed.hostname === 'gemini.google.com' && parsed.pathname.startsWith('/share/');
+          if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return false;
+          if (parsed.hostname === 'gemini.google.com') return /^\/share\/[A-Za-z0-9_-]+$/.test(parsed.pathname);
+          if (parsed.hostname === 'share.gemini.google') return /^\/[A-Za-z0-9_-]+$/.test(parsed.pathname);
+          return false;
         } catch (_) {
           return false;
         }
@@ -545,7 +554,11 @@
       // directory keeps it correct under the subpath, at the domain root, and locally.
       function loadRelease() {
         const url = new URL('release.json', window.location.href).href + '?t=' + Date.now();
-        fetch(url, { cache: 'no-store' })
+        const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+        const timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 6000) : null;
+        const opts = { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' };
+        if (ctrl) opts.signal = ctrl.signal;
+        fetch(url, opts)
           .then(function (r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
@@ -554,7 +567,8 @@
           .catch(function (err) {
             console.warn('[launch] release.json fetch failed, using fallback:', err);
             applyRelease({ canvas_url: FALLBACK_CANVAS_URL, version: FALLBACK_VERSION }, 'fallback');
-          });
+          })
+          .finally(function () { if (timer !== null) clearTimeout(timer); });
       }
       loadRelease();
 

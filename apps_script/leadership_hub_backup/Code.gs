@@ -50,7 +50,7 @@ function lhbJson_(payload) {
 function lhbTimingSafeTokenEq(suppliedRaw, expectedRaw) {
   var supplied = String(suppliedRaw || '');
   var expected = String(expectedRaw || '');
-  if (!supplied || !expected) return false;
+  if (!supplied || !expected || supplied.length > 256) return false;
   var d1 = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, supplied, Utilities.Charset.UTF_8);
   var d2 = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, expected, Utilities.Charset.UTF_8);
   if (d1.length !== d2.length) return false;
@@ -59,18 +59,17 @@ function lhbTimingSafeTokenEq(suppliedRaw, expectedRaw) {
   return diff === 0;
 }
 
-/** Run ONCE from the editor after pasting: mints the token stored in Script Properties. */
-function setup() {
+function lhbSetup_(rotate) {
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) throw new Error('Leadership Hub backup setup is busy. Retry.');
   try {
     var props = lhbProps_();
     var token = props.getProperty(LHB_PROP_TOKEN);
-    if (!token) {
+    if (!token || rotate) {
       token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
       props.setProperty(LHB_PROP_TOKEN, token);
     }
-    var folder = lhbFolder_();
+    var folder = lhbFolder_(true);
     Logger.log('Leadership Hub backup token configured in Project Settings > Script Properties (' + LHB_PROP_TOKEN + ').');
     Logger.log('Backup folder ready: ' + folder.getName() + ' (' + folder.getId() + ')');
     return 'Setup complete. Copy ' + LHB_PROP_TOKEN + ' from Project Settings > Script Properties into AlloFlow.';
@@ -79,31 +78,40 @@ function setup() {
   }
 }
 
-/** Run from the editor to invalidate a leaked token; mints a fresh one in Script Properties. */
-function rotateToken() {
-  lhbProps_().deleteProperty(LHB_PROP_TOKEN);
-  return setup();
+/** Run ONCE from the editor after pasting: mints the token stored in Script Properties. */
+function setup() {
+  return lhbSetup_(false);
 }
 
-function lhbFolder_() {
+/** Run from the editor to invalidate a leaked token; mints a fresh one in Script Properties. */
+function rotateToken() {
+  return lhbSetup_(true);
+}
+
+function lhbActiveFolder_(id) {
+  if (!id) return null;
+  try {
+    var f = DriveApp.getFolderById(id);
+    if (f && (typeof f.isTrashed !== 'function' || !f.isTrashed())) return f;
+  } catch (ignore) {}
+  return null;
+}
+
+function lhbFolder_(alreadyLocked) {
   var props = lhbProps_();
-  var id = props.getProperty(LHB_PROP_FOLDER);
-  if (id) {
-    try { return DriveApp.getFolderById(id); } catch (ignore) { /* recreated below */ }
-  }
-  var lock = (typeof LockService !== 'undefined' && LockService && LockService.getScriptLock) ? LockService.getScriptLock() : null;
+  var existing = lhbActiveFolder_(props.getProperty(LHB_PROP_FOLDER));
+  if (existing) return existing;
+  var lock = !alreadyLocked && (typeof LockService !== 'undefined' && LockService && LockService.getScriptLock) ? LockService.getScriptLock() : null;
   var locked = false;
   if (lock) {
     if (!lock.tryLock(10000)) throw new Error('Backup folder setup is busy.');
     locked = true;
   }
   try {
-    var freshId = props.getProperty(LHB_PROP_FOLDER);
-    if (freshId) {
-      try { return DriveApp.getFolderById(freshId); } catch (ignore2) { /* recreated below */ }
-    }
+    var fresh = lhbActiveFolder_(props.getProperty(LHB_PROP_FOLDER));
+    if (fresh) return fresh;
     var folder = DriveApp.createFolder(LHB_FOLDER_NAME);
-    // Restricted is Drive's default for a new folder; nothing here shares it.
+    // Restricted is Drive's default for a new folder; nothing here opens access.
     props.setProperty(LHB_PROP_FOLDER, folder.getId());
     return folder;
   } finally {
@@ -112,9 +120,13 @@ function lhbFolder_() {
 }
 
 function doPost(e) {
+  var rawContents = (e && e.postData && e.postData.contents) || '{}';
+  if (typeof rawContents === 'string' && rawContents.length > LHB_MAX_BYTES + 4096) {
+    return lhbJson_({ ok: false, error: 'too-large' });
+  }
   var data;
   try {
-    data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    data = JSON.parse(rawContents);
   } catch (err) {
     return lhbJson_({ ok: false, error: 'bad-json' });
   }
@@ -135,45 +147,49 @@ function doPost(e) {
   }
 
   var action = String(data.action || '');
-  if (action === 'ping') {
-    return lhbJson_({ ok: true, service: LHB_SERVICE, version: LHB_VERSION, folder: lhbFolder_().getName() });
-  }
-  if (action === 'save') {
-    var payload = data.payload;
-    if (!payload || typeof payload !== 'object' || payload.format !== LHB_FORMAT) {
-      return lhbJson_({ ok: false, error: 'not-a-hub-backup' });
+  try {
+    if (action === 'ping') {
+      return lhbJson_({ ok: true, service: LHB_SERVICE, version: LHB_VERSION, folder: lhbFolder_(false).getName() });
     }
-    var text = JSON.stringify(payload);
-    if (text.length > LHB_MAX_BYTES) return lhbJson_({ ok: false, error: 'too-large' });
-    var saveCount = parseInt((cache && cache.get('lhb_save_rate')) || '0', 10) || 0;
-    if (saveCount >= 10) return lhbJson_({ ok: false, error: 'rate-limited' });
-    if (cache) cache.put('lhb_save_rate', String(saveCount + 1), 60);
-
-    var lock = (typeof LockService !== 'undefined' && LockService && LockService.getScriptLock) ? LockService.getScriptLock() : null;
-    if (lock && !lock.tryLock(10000)) return lhbJson_({ ok: false, error: 'busy' });
-    try {
-      var folder = lhbFolder_();
-      var now = new Date();
-      var tz = Session.getScriptTimeZone();
-      var stamp = Utilities.formatDate(now, tz, "yyyy-MM-dd-HHmm");
-      var basePrefix = 'alloflow-leadership-hub-backup-' + stamp;
-      var name = basePrefix + '.json';
-      if (folder.getFilesByName && folder.getFilesByName(name).hasNext()) {
-        name = basePrefix + '-' + Utilities.formatDate(now, tz, "ssSSS") + '.json';
-        var seq = 2;
-        while (folder.getFilesByName(name).hasNext() && seq < 50) {
-          name = basePrefix + '-' + Utilities.formatDate(now, tz, "ssSSS") + '-' + seq + '.json';
-          seq++;
-        }
+    if (action === 'save') {
+      var payload = data.payload;
+      if (!payload || typeof payload !== 'object' || payload.format !== LHB_FORMAT) {
+        return lhbJson_({ ok: false, error: 'not-a-hub-backup' });
       }
-      folder.createFile(name, text, 'application/json');
-      var pruned = lhbPrune_(folder);
-      return lhbJson_({ ok: true, saved: name, kept: LHB_KEEP, pruned: pruned });
-    } finally {
-      if (lock) { try { lock.releaseLock(); } catch (ignore) {} }
+      var text = JSON.stringify(payload);
+      if (text.length > LHB_MAX_BYTES) return lhbJson_({ ok: false, error: 'too-large' });
+      var saveCount = parseInt((cache && cache.get('lhb_save_rate')) || '0', 10) || 0;
+      if (saveCount >= 10) return lhbJson_({ ok: false, error: 'rate-limited' });
+      if (cache) cache.put('lhb_save_rate', String(saveCount + 1), 60);
+
+      var lock = (typeof LockService !== 'undefined' && LockService && LockService.getScriptLock) ? LockService.getScriptLock() : null;
+      if (lock && !lock.tryLock(10000)) return lhbJson_({ ok: false, error: 'busy' });
+      try {
+        var folder = lhbFolder_(true);
+        var now = new Date();
+        var tz = Session.getScriptTimeZone();
+        var stamp = Utilities.formatDate(now, tz, "yyyy-MM-dd-HHmm");
+        var basePrefix = 'alloflow-leadership-hub-backup-' + stamp;
+        var name = basePrefix + '.json';
+        if (folder.getFilesByName && folder.getFilesByName(name).hasNext()) {
+          name = basePrefix + '-' + Utilities.formatDate(now, tz, "ssSSS") + '.json';
+          var seq = 2;
+          while (folder.getFilesByName(name).hasNext() && seq < 50) {
+            name = basePrefix + '-' + Utilities.formatDate(now, tz, "ssSSS") + '-' + seq + '.json';
+            seq++;
+          }
+        }
+        folder.createFile(name, text, 'application/json');
+        var pruned = lhbPrune_(folder);
+        return lhbJson_({ ok: true, saved: name, kept: LHB_KEEP, pruned: pruned });
+      } finally {
+        if (lock) { try { lock.releaseLock(); } catch (ignore) {} }
+      }
     }
+    return lhbJson_({ ok: false, error: 'unknown-action' });
+  } catch (err) {
+    return lhbJson_({ ok: false, error: 'server' });
   }
-  return lhbJson_({ ok: false, error: 'unknown-action' });
 }
 
 /** Keep the newest LHB_KEEP backup files; trash the rest. Only files this
@@ -193,7 +209,7 @@ function lhbPrune_(folder) {
   });
   var pruned = 0;
   var kept = [];
-  var seenMinute = {};
+  var seenMinute = Object.create(null);
   var burstDupes = [];
   for (var i = 0; i < files.length; i++) {
     var minuteKey = files[i].getName().slice(0, 46); // alloflow-leadership-hub-backup-YYYY-MM-DD-HHmm

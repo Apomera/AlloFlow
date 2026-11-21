@@ -205,8 +205,8 @@ const handleRefineImage = async (deps) => {
             Instruction: ${imageRefinementInput}.
             Maintain the clear, vector-art style suitable for a worksheet.
         `;
-        if (generatedContent?.data.visualPlan && generatedContent?.data.visualPlan.panels.length > 1) {
-            const plan = generatedContent?.data.visualPlan;
+        if (Array.isArray(generatedContent?.data?.visualPlan?.panels) && generatedContent.data.visualPlan.panels.length > 1) {
+            const plan = generatedContent.data.visualPlan;
             setGenerationStep(t('visual_director.refining_all_panels') || 'Applying edit to all panels...');
             const updatedPanels = await Promise.all(
                 plan.panels.map(async (panel, idx) => {
@@ -246,9 +246,17 @@ const handleRefineImage = async (deps) => {
             const pickedCredit = generatedContent?.data?.imageAttribution || null;
             const creditBand = Number(generatedContent?.data?.imageCreditBand) || 0;
             const redrawCredit = !!(pickedCredit && creditBand > 0 && AltText && AltText.cropImageBottom && AltText.bakeCreditBand);
-            const editSource = redrawCredit ? await AltText.cropImageBottom(generatedContent.data.imageUrl, creditBand) : generatedContent?.data.imageUrl;
+            const editSource = redrawCredit ? await AltText.cropImageBottom(generatedContent.data.imageUrl, creditBand) : generatedContent?.data?.imageUrl;
+            if (typeof editSource !== 'string' || !editSource.includes(',')) {
+                addToast(t('visuals.actions.refinement_failed'), "error");
+                return;
+            }
             const currentImageBase64 = editSource.split(',')[1];
             const newImageBase64 = await callGeminiImageEdit(refinementPrompt, currentImageBase64);
+            if (!newImageBase64) {
+                addToast(t('visuals.actions.refinement_failed'), "error");
+                return;
+            }
             const editedCredit = pickedCredit ? { ...pickedCredit, modified: true } : null;
             const recredited = redrawCredit && typeof newImageBase64 === 'string' && /^data:image\//i.test(newImageBase64)
                 ? await AltText.bakeCreditBand(newImageBase64, AltText.openImageCreditLine(editedCredit), { kind: generatedContent.data.imageSource === 'mulberry' ? 'symbol' : 'photo', attribution: editedCredit })
@@ -275,6 +283,7 @@ const handleRefineImage = async (deps) => {
         addToast(t('visuals.actions.refinement_failed'), "error");
     } finally {
         setIsProcessing(false);
+        setGenerationStep('');
     }
   }
   const handleGenerateGuide = async (index) => {
@@ -2227,8 +2236,9 @@ const handleExecuteBlueprint = async (deps) => {
                 warnLog('[Blueprint] ALL ' + total + ' steps failed — this is systemic, not per-resource.'
                     + ' Distinct reasons: ' + (reasons.length ? reasons.join(' | ') : '(none captured)'));
             }
-            setBlueprintExecutionResult(prev => prev && prev.runId === _blueprintRunId ? Object.assign({}, prev, { status: 'partial', finishedAt: new Date().toISOString() }) : prev);
-            commandResult = { ok: false, status: _landedItems.length ? 'partial' : 'failed', partial: _landedItems.length > 0, narration: warnMsg, count: _landedItems.length };
+            const _finalBpStatus = _landedItems.length ? 'partial' : 'failed';
+            setBlueprintExecutionResult(prev => prev && prev.runId === _blueprintRunId ? Object.assign({}, prev, { status: _finalBpStatus, finishedAt: new Date().toISOString() }) : prev);
+            commandResult = { ok: false, status: _finalBpStatus, partial: _landedItems.length > 0, narration: warnMsg, count: _landedItems.length };
             addToast(warnMsg, "warning");
             setUdlMessages(prev => [...prev, { role: 'model', text: warnMsg }]);
         } else {

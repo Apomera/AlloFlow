@@ -5,10 +5,19 @@ export function useRoomDialog(dialogRef, closeRef) {
     const stack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : [];
     const trap = { root: dialog };
     stack.push(trap);
+    const lockState = typeof window !== 'undefined'
+      ? (window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, overflow: '' })
+      : null;
+    if (lockState && typeof document !== 'undefined' && document.body) {
+      if (lockState.count === 0) lockState.overflow = document.body.style.overflow;
+      lockState.count += 1;
+      document.body.style.overflow = 'hidden';
+    }
     const isTopTrap = () => !Array.isArray(window.__alloFocusTrapStack) || window.__alloFocusTrapStack.length === 0 || window.__alloFocusTrapStack[window.__alloFocusTrapStack.length - 1] === trap;
+    const liveSel = '[aria-live], [role="status"], [role="alert"], [role="log"], [data-toast-region]';
     const isolate = () => {
       for (let branch = dialog; branch?.parentElement && branch !== document.body; branch = branch.parentElement) {
-        for (const sibling of branch.parentElement.children) if (sibling !== branch && !changed.has(sibling) && !['SCRIPT', 'STYLE'].includes(sibling.tagName)) { changed.set(sibling, sibling.inert); sibling.inert = true; }
+        for (const sibling of branch.parentElement.children) if (sibling !== branch && !changed.has(sibling) && !['SCRIPT', 'STYLE'].includes(sibling.tagName) && !sibling.matches?.(liveSel) && !sibling.querySelector?.(liveSel)) { changed.set(sibling, sibling.inert); sibling.inert = true; }
       }
     };
     isolate();
@@ -31,6 +40,6 @@ export function useRoomDialog(dialogRef, closeRef) {
       if (!dialog.contains(event.target)) (focusable()[0] || dialog).focus();
     };
     dialog.addEventListener('keydown', key); document.addEventListener('focusin', contain);
-    return () => { observer.disconnect(); dialog.removeEventListener('keydown', key); document.removeEventListener('focusin', contain); const idx = stack.lastIndexOf(trap); if (idx !== -1) stack.splice(idx, 1); changed.forEach((value, el) => { el.inert = value; }); if (previous?.isConnected && typeof previous.focus === 'function') previous.focus(); };
+    return () => { observer.disconnect(); dialog.removeEventListener('keydown', key); document.removeEventListener('focusin', contain); const idx = stack.lastIndexOf(trap); if (idx !== -1) stack.splice(idx, 1); changed.forEach((value, el) => { el.inert = value; }); if (lockState && typeof document !== 'undefined' && document.body) { lockState.count = Math.max(0, lockState.count - 1); if (lockState.count === 0) document.body.style.overflow = lockState.overflow; } if (previous?.isConnected && typeof previous.focus === 'function') previous.focus(); };
   }, []);
 }

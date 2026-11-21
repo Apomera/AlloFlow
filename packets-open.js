@@ -181,7 +181,7 @@
       bytes = all.subarray(from, all.length - enc.encode(tail).length);
     } else bytes = enc.encode(html.slice(open + 8, close).replace(/\r\n?/g, '\n'));
     var base64 = function (buffer) { var b = new Uint8Array(buffer), s = ''; for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); };
-    var slow = function () { try { return verify.sha256(bytes).base64 === pin[1]; } catch (_) { return true; } };
+    var slow = function () { try { return verify.sha256(bytes).base64 === pin[1]; } catch (_) { return false; } };
     var subtle = window.crypto && window.crypto.subtle;
     if (!subtle || typeof subtle.digest !== 'function') return Promise.resolve(slow());
     return Promise.resolve().then(function () { return subtle.digest('SHA-256', bytes); }).then(function (d) { return base64(d) === pin[1]; }, slow);
@@ -357,8 +357,20 @@
     }
   }
 
+  var activeDownloadUrls = new Set();
+  function revokeDownloadUrl(url) {
+    if (!url) return;
+    activeDownloadUrls.delete(url);
+    try { URL.revokeObjectURL(url); } catch (_) {}
+  }
+  function revokeAllDownloadUrls() {
+    activeDownloadUrls.forEach(function (url) { try { URL.revokeObjectURL(url); } catch (_) {} });
+    activeDownloadUrls.clear();
+  }
   function download(file) {
+    revokeAllDownloadUrls();
     var url = URL.createObjectURL(new Blob([file.text], { type: file.type }));
+    activeDownloadUrls.add(url);
     var a = doc.createElement('a');
     a.href = url;
     a.download = file.name;
@@ -366,7 +378,7 @@
     doc.body.appendChild(a);
     a.click();
     a.remove();
-    window.setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+    window.setTimeout(function () { revokeDownloadUrl(url); }, 60000);
   }
   function shareableFile(file) {
     if (!file || typeof window.File !== 'function' || !navigator || typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') return null;
@@ -490,6 +502,7 @@
       return;
     }
     wire();
+    window.addEventListener('pagehide', revokeAllDownloadUrls);
   }
   begin();
 })();

@@ -60,12 +60,38 @@ function _adminHubEvalInSampleMode() {
   } catch (_) { return true; }
 }
 
+const ADMIN_HUB_VAULT_FEATURES = [
+  { prefix: 'allo_mtss_', feature: 'mtss-triage' },
+  { prefix: 'allo_sped_', feature: 'sped-timelines' },
+  { prefix: 'allo_educator_evaluation_', feature: 'educator-evaluation' },
+];
+
+function _adminHubVaultInfo() {
+  try {
+    const sw = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SensitiveWorkspace;
+    if (!sw || typeof sw.getStatus !== 'function') return { active: false, phase: 'none', sw: null };
+    const phase = (sw.getStatus() || {}).phase || 'locked';
+    return { active: phase !== 'new', phase, sw };
+  } catch (_) {
+    return { active: true, phase: 'locked', sw: null };
+  }
+}
+
+function _adminHubVaultFeatureFor(key) {
+  if (typeof key !== 'string') return null;
+  const hit = ADMIN_HUB_VAULT_FEATURES.find((entry) => key.indexOf(entry.prefix) === 0);
+  return hit ? hit.feature : null;
+}
+
 function _adminHubCollectBackup() {
   const keys = {};
   let count = 0;
+  const vault = _adminHubVaultInfo();
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (!_adminHubKeyAllowed(key)) continue;
+    // Never leak SensitiveWorkspace-protected prefixes out of plaintext localStorage while the vault is active.
+    if (vault.active && _adminHubVaultFeatureFor(key)) continue;
     if (key === 'allo_educator_evaluation_real_stash_v1' && _adminHubEvalInSampleMode()) continue;
     let value = localStorage.getItem(key);
     if (typeof value !== 'string') continue;
@@ -136,7 +162,7 @@ async function _adminHubDrivePost(url, body) {
       body: JSON.stringify(body),
       ...(controller ? { signal: controller.signal } : {})
     });
-    if (!res.ok) throw new Error('Drive backup request failed (HTTP ' + res.status + ').');
+    if (res && res.ok === false) throw new Error('Drive backup request failed (HTTP ' + res.status + ').');
     return await res.json();
   } finally {
     if (timer) clearTimeout(timer);
@@ -163,7 +189,10 @@ async function _adminHubMaybeDriveBackup(opts) {
     if (!force && cfg.lastHash === hash) return { status: 'unchanged', lastSavedAt: cfg.lastSavedAt };
     const reply = await _adminHubDrivePost(cfg.url, { token: cfg.token, action: 'save', payload: backup });
     if (!reply || reply.ok !== true) return { status: 'error', error: String((reply && reply.error) || 'save-failed') };
-    const next = { ...cfg, lastSavedAt: new Date().toISOString(), lastHash: hash };
+    // Verify the Drive connection was not disconnected or replaced while the POST was in flight.
+    const latest = _adminHubDriveCfg();
+    if (!latest || latest.url !== cfg.url || latest.token !== cfg.token) return { status: 'cancelled' };
+    const next = { ...latest, lastSavedAt: new Date().toISOString(), lastHash: hash };
     try { localStorage.setItem(ADMIN_HUB_DRIVE_CFG_KEY, JSON.stringify(next)); } catch (_) {}
     return { status: 'saved', keyCount: backup.keyCount, lastSavedAt: next.lastSavedAt };
   } catch (err) {
@@ -178,6 +207,8 @@ function AdminHubDriveBackup({ tt, addToast }) {
   const [tokenInput, setTokenInput] = React.useState('');
   const [busy, setBusy] = React.useState(false);
   const [autoNote, setAutoNote] = React.useState('');
+  const mountedRef = React.useRef(true);
+  React.useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; }; }, []);
 
   const writeCfg = (next) => {
     try {
@@ -192,6 +223,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
   // data actually changes). This wrapper maps outcomes to UI.
   const saveToDrive = React.useCallback(async ({ auto, force } = {}) => {
     const result = await _adminHubMaybeDriveBackup({ force: !!force });
+    if (!mountedRef.current || result.status === 'cancelled') return result;
     if (result.status === 'saved') {
       setCfg(_adminHubDriveCfg());
       setAutoNote('');
@@ -220,19 +252,19 @@ function AdminHubDriveBackup({ tt, addToast }) {
       <div className="mt-2 border-t border-slate-200 pt-2" data-help-key="adminhub_drive_section">
         {!setupOpen ? (
           <button type="button" data-help-key="adminhub_drive_setup_open" onClick={() => setSetupOpen(true)}
-            className="min-h-11 inline-flex items-center text-[11px] font-bold text-indigo-700 underline underline-offset-2 hover:text-indigo-900">
+            className="min-h-11 inline-flex items-center text-xs font-bold text-indigo-700 underline underline-offset-2 hover:text-indigo-900">
             {tt('adminhub.drive_setup_open', 'Set up automatic Drive backup (school Google account)')}
             <span aria-hidden="true">{' →'}</span>
           </button>
         ) : (
           <div>
-            <p className="text-[11px] text-slate-600">{tt('adminhub.drive_setup_intro', 'A 3-minute script on your school-managed Google account saves this hub to your Drive automatically — covered by your district’s data agreement. Follow the setup steps in the leader’s guide, then paste the web-app URL and token here.')}</p>
+            <p className="text-xs text-slate-600">{tt('adminhub.drive_setup_intro', 'A 3-minute script on your school-managed Google account saves this hub to your Drive automatically — covered by your district’s data agreement. Follow the setup steps in the leader’s guide, then paste the web-app URL and token here.')}</p>
             {/* Visible <label for>, not placeholder-only naming: this form is
                 filled once, under mild stress, from a README in another window
                 — and a placeholder disappears the moment typing starts. */}
             <div className="mt-2 flex flex-col sm:flex-row gap-2 sm:items-end">
               <div className="flex-1 min-w-0">
-                <label htmlFor="adminhub-drive-url" className="block text-[11px] font-bold text-slate-700 mb-0.5">
+                <label htmlFor="adminhub-drive-url" className="block text-xs font-bold text-slate-700 mb-0.5">
                   {tt('adminhub.drive_url_label', 'Web app URL')}
                 </label>
                 <input id="adminhub-drive-url" type="url" value={urlInput} onChange={(e) => setUrlInput(e.target.value)}
@@ -240,7 +272,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
                   className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs" />
               </div>
               <div className="w-full sm:w-40">
-                <label htmlFor="adminhub-drive-token" className="block text-[11px] font-bold text-slate-700 mb-0.5">
+                <label htmlFor="adminhub-drive-token" className="block text-xs font-bold text-slate-700 mb-0.5">
                   {tt('adminhub.drive_token_label', 'Backup token')}
                 </label>
                 <input id="adminhub-drive-token" type="password" autoComplete="current-password" value={tokenInput} onChange={(e) => setTokenInput(e.target.value)}
@@ -253,6 +285,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
                   try {
                     const url = urlInput.trim();
                     const reply = await _adminHubDrivePost(url, { token: tokenInput.trim(), action: 'ping' });
+                    if (!mountedRef.current) return;
                     if (!reply || reply.ok !== true) throw new Error((reply && reply.error) || 'no-reply');
                     const next = { url, token: tokenInput.trim(), folder: String(reply.folder || ''), lastSavedAt: null, lastHash: null };
                     writeCfg(next);
@@ -260,8 +293,8 @@ function AdminHubDriveBackup({ tt, addToast }) {
                     addToast(tt('adminhub.drive_connected', 'Drive backup connected. Saving a first backup now…'), 'success');
                     await saveToDrive({ force: true });
                   } catch (err) {
-                    addToast(tt('adminhub.drive_connect_failed', 'Could not connect: ') + String((err && err.message) || err) + tt('adminhub.drive_connect_hint', ' — check the URL ends in /exec, the token matches setup(), and the deployment allows Anyone.'), 'error');
-                  } finally { setBusy(false); }
+                    if (mountedRef.current) addToast(tt('adminhub.drive_connect_failed', 'Could not connect: ') + String((err && err.message) || err) + tt('adminhub.drive_connect_hint', ' — check the URL ends in /exec, the token matches setup(), and the deployment allows Anyone.'), 'error');
+                  } finally { if (mountedRef.current) setBusy(false); }
                 }}
                 className="min-h-11 px-3 rounded-lg border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-50">
                 {busy ? tt('adminhub.drive_connecting', 'Connecting…') : tt('adminhub.drive_connect', 'Connect & test')}
@@ -278,7 +311,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
       {/* role=status + polite: a backup that happens silently is invisible to
           a screen-reader user, who otherwise has no way to know the save
           occurred. The text changes, so the change is the announcement. */}
-      <p role="status" aria-live="polite" className="text-[11px] text-slate-600 min-w-0" data-help-key="adminhub_drive_status">
+      <p role="status" aria-live="polite" className="text-xs text-slate-600 min-w-0" data-help-key="adminhub_drive_status">
         <span className="font-bold text-emerald-800">{tt('adminhub.drive_on', 'Drive auto-backup on')}</span>
         {cfg.folder ? ' · ' + cfg.folder : ''}
         {' · '}
@@ -291,19 +324,24 @@ function AdminHubDriveBackup({ tt, addToast }) {
         <button type="button" data-help-key="adminhub_drive_save_now" disabled={busy}
           onClick={async () => {
             setBusy(true);
-            try { await saveToDrive({ force: true }); } finally { setBusy(false); }
+            try { await saveToDrive({ force: true }); } finally { if (mountedRef.current) setBusy(false); }
           }}
-          className="min-h-11 px-3 rounded-lg border border-emerald-300 bg-white text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50">
+          className="min-h-11 px-3 rounded-lg border border-emerald-300 bg-white text-xs font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50">
           {busy ? tt('adminhub.drive_saving', 'Saving…') : tt('adminhub.drive_save_now', 'Back up to Drive now')}
         </button>
         <button type="button" data-help-key="adminhub_drive_disconnect"
-          onClick={() => {
-            if (window.confirm(tt('adminhub.drive_disconnect_confirm', 'Stop backing up to Drive? Existing backups stay in your Drive folder; only the connection on this device is removed.'))) {
+          onClick={async () => {
+            const msg = tt('adminhub.drive_disconnect_confirm', 'Stop backing up to Drive? Existing backups stay in your Drive folder; only the connection on this device is removed.');
+            const ok = (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.confirm === 'function')
+              ? await window.AlloFlowUX.confirm(msg, { title: tt('adminhub.drive_disconnect', 'Disconnect'), confirmText: tt('adminhub.drive_disconnect', 'Disconnect'), cancelText: tt('common.cancel', 'Cancel'), tone: 'warning' }).catch(() => false)
+              : (typeof window !== 'undefined' && typeof window.confirm === 'function' ? window.confirm(msg) : false);
+            if (!mountedRef.current) return;
+            if (ok) {
               writeCfg(null);
               addToast(tt('adminhub.drive_disconnected', 'Drive backup disconnected.'), 'info');
             }
           }}
-          className="min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-100">
+          className="min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100">
           {tt('adminhub.drive_disconnect', 'Disconnect')}
         </button>
       </div>
@@ -337,9 +375,8 @@ function AdminHubPanel(props) {
       return;
     }
     try {
-      const popup = window.open(portalUrl, '_blank', 'noopener,noreferrer');
-      if (!popup) { addToast(tt('adminhub.rewards_popup_blocked', 'School Rewards was blocked. Allow pop-ups and try again.'), 'error'); return; }
-      popup.opener = null;
+      // window.open(..., 'noopener,noreferrer') always returns null per HTML spec even on success.
+      window.open(portalUrl, '_blank', 'noopener,noreferrer');
       onClose();
     } catch (_) { addToast(tt('adminhub.rewards_open_failed', 'School Rewards could not open.'), 'error'); }
   }, [addToast, onClose, onOpenSchoolRewards, openTool, tt]);
@@ -391,8 +428,14 @@ function AdminHubPanel(props) {
       if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest('details:not([open])');
       if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
-      const st = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
-      return !st || (st.display !== 'none' && st.visibility !== 'hidden');
+      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+        for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+          if (cur === dialog) break;
+        }
+      }
+      return true;
     });
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();
@@ -509,8 +552,15 @@ function AdminHubPanel(props) {
     },
   ];
 
+  const backdropDownRef = React.useRef(false);
   return (
-    <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4"
+      style={{ zIndex: 260 }}
+      role="presentation"
+      onMouseDown={(e) => { backdropDownRef.current = (e.target === e.currentTarget); }}
+      onClick={(e) => { const allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget) onClose(); }}
+    >
       <div ref={dialogRef} tabIndex={-1} data-help-key="adminhub_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="adminhub-title" aria-describedby="adminhub-subtitle" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -557,7 +607,7 @@ function AdminHubPanel(props) {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
               <h3 className="text-xs font-black uppercase tracking-wide text-slate-700">{tt('adminhub.backup_title', 'Back up this hub')}</h3>
-              <p className="text-[11px] text-slate-600 mt-0.5">{tt('adminhub.backup_desc', 'Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe.')}</p>
+              <p className="text-xs text-slate-600 mt-0.5">{tt('adminhub.backup_desc', 'Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe.')}</p>
             </div>
             <div className="flex gap-2 shrink-0">
               <button type="button" data-help-key="adminhub_backup_export"
@@ -591,7 +641,7 @@ function AdminHubPanel(props) {
                       return;
                     }
                     const reader = new FileReader();
-                    reader.onload = () => {
+                    reader.onload = async () => {
                       try {
                         const _safeReviver = (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
                         const data = JSON.parse(String(reader.result || ''), _safeReviver);
@@ -609,34 +659,58 @@ function AdminHubPanel(props) {
                           .map((g) => '· ' + g.tool + ': ' + g.count
                             + ' ' + (g.count === 1 ? tt('adminhub.restore_item_one', 'item') : tt('adminhub.restore_item_many', 'items')))
                           .join('\n');
-                        const ok = window.confirm(
+                        const restoreMsg =
                           tt('adminhub.restore_confirm', 'Restore this backup, dated {date}?')
                             .replace('{date}', stamp)
                           + '\n\n' + breakdown + '\n\n'
-                          + tt('adminhub.restore_confirm_effect', 'Data for these tools on this device will be replaced by the backup. Tools not listed are left alone, and nothing outside the Leadership Hub is touched.'));
+                          + tt('adminhub.restore_confirm_effect', 'Data for these tools on this device will be replaced by the backup. Tools not listed are left alone, and nothing outside the Leadership Hub is touched.');
+                        const ok = (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.confirm === 'function')
+                          ? await window.AlloFlowUX.confirm(restoreMsg, { title: tt('adminhub.restore_backup_title', 'Restore Leadership Hub backup?'), confirmText: tt('adminhub.restore_confirm_btn', 'Restore backup'), cancelText: tt('common.cancel', 'Cancel'), tone: 'warning' }).catch(() => false)
+                          : (typeof window !== 'undefined' && typeof window.confirm === 'function' ? window.confirm(restoreMsg) : false);
                         if (!ok) return;
+                        const vault = _adminHubVaultInfo();
+                        let restoredCount = 0;
+                        let vaultSkipped = 0;
                         for (const [k, v] of entries) {
+                          const vaultFeature = _adminHubVaultFeatureFor(k);
+                          if (vault.active && vaultFeature) {
+                            const sess = vault.phase === 'ready' && vault.sw && typeof vault.sw.getSession === 'function'
+                              ? vault.sw.getSession(vaultFeature)
+                              : null;
+                            if (sess && sess.storage && typeof sess.storage.setItem === 'function') {
+                              sess.storage.setItem(k, v);
+                              try { localStorage.removeItem(k); } catch (_) {}
+                              restoredCount += 1;
+                            } else {
+                              vaultSkipped += 1;
+                            }
+                            continue;
+                          }
                           if (k === 'allo_wcop_delivery_v1') {
                             try {
-                              const incoming = JSON.parse(v);
-                              const current = JSON.parse(localStorage.getItem(k) || 'null');
+                              const incoming = JSON.parse(v, _safeReviver);
+                              const current = JSON.parse(localStorage.getItem(k) || 'null', _safeReviver);
                               if (incoming && typeof incoming === 'object' && !incoming.token && current && current.token && (!incoming.execUrl || incoming.execUrl === current.execUrl)) {
                                 incoming.token = current.token;
                                 localStorage.setItem(k, JSON.stringify(incoming));
+                                restoredCount += 1;
                                 continue;
                               }
                             } catch (_) {}
                           }
                           localStorage.setItem(k, v);
+                          restoredCount += 1;
                         }
+                        const totalSkipped = rejected + vaultSkipped;
                         addToast(
-                          (rejected > 0
-                            ? tt('adminhub.restore_done_skipped', 'Restored {count} items; {skipped} entries outside the hub were ignored. Reopen a tool to see its data.').replace('{skipped}', String(rejected))
+                          (totalSkipped > 0
+                            ? tt('adminhub.restore_done_skipped', 'Restored {count} items; {skipped} entries outside the hub or locked in the vault were ignored. Reopen a tool to see its data.').replace('{skipped}', String(totalSkipped))
                             : tt('adminhub.restore_done', 'Restored {count} items. Reopen a tool to see its data.'))
-                            .replace('{count}', String(entries.length)),
-                          'success');
+                            .replace('{count}', String(restoredCount)),
+                          vaultSkipped > 0 ? 'warning' : 'success');
                       } catch (err) { addToast(tt('adminhub.restore_failed', 'Restore failed: ') + String((err && err.message) || err), 'error'); }
                     };
+                    reader.onerror = () => addToast(tt('adminhub.restore_failed', 'Restore failed: ') + 'read error', 'error');
                     reader.readAsText(file);
                   };
                   input.click();
@@ -646,10 +720,10 @@ function AdminHubPanel(props) {
               </button>
             </div>
           </div>
-          <p className="text-[11px] text-amber-800 mt-2">{tt('adminhub.backup_caveat', 'The file contains whatever the tools store — codes, notes, and settings. Treat it like the confidential records it may describe, and delete old copies per your retention policy.')}</p>
+          <p className="text-xs text-amber-800 mt-2">{tt('adminhub.backup_caveat', 'The file contains whatever the tools store — codes, notes, and settings. Treat it like the confidential records it may describe, and delete old copies per your retention policy.')}</p>
           <AdminHubDriveBackup tt={tt} addToast={addToast} />
         </div>
-        <p className="mt-3 text-[11px] text-slate-600 border-t border-slate-200 pt-3">
+        <p className="mt-3 text-xs text-slate-600 border-t border-slate-200 pt-3">
           {/* Revised 2026-08-17 (Aaron's call, and he is right): the old text
               forbade real personnel or student information on-device. That was
               written as if the risk were a shared machine. On a managed 1:1
@@ -667,7 +741,7 @@ function AdminHubPanel(props) {
             sessions, the integrity boundaries, and a year-rhythm. Absolute URL
             on purpose — the guide lives at the origin root, the app under
             /app/, and the desktop build serves neither (it_coach precedent). */}
-        <p className="mt-2 text-[11px]">
+        <p className="mt-2 text-xs">
           <a href="https://alloflow-cdn.pages.dev/guide/for-school-leaders.html" target="_blank" rel="noopener noreferrer"
             data-help-key="adminhub_guide_link"
             /* The accessible name says where it goes: a link that silently

@@ -40,6 +40,7 @@ const key = v => typeof v === 'string' && /^[a-z][a-z0-9_-]{0,39}$/.test(v) && !
 const token = v => typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(v) && !['constructor', 'prototype', '__proto__'].includes(v);
 const text = (v, max) => typeof v === 'string' && v.trim().length > 0 && v.length <= max;
 const object = v => !!v && typeof v === 'object' && !Array.isArray(v);
+const own = (obj, prop) => !!obj && Object.prototype.hasOwnProperty.call(obj, prop);
 const pair = (v, max) => Array.isArray(v) && v.length === 2 && v.every(x => Number.isInteger(x) && x >= 0 && x <= max) && v[0] + v[1] > 0;
 const normalized = v => String(v || '').normalize('NFC').replace(/\s+/g, ' ').trim();
 export function validateBoard(board, source) {
@@ -341,8 +342,8 @@ export function compactAdvance(board, run) {
   const known = Array.isArray(run.members) ? run.members.filter(token) : [], members = known.slice();
   for (const uid of [...Object.keys(result.marks || {}), ...Object.keys(result.attempts || {})]) if (token(uid) && !members.includes(uid)) members.push(uid);
   const compact = { ...result }; delete compact.marks; delete compact.attempts;
-  compact.mk = members.map(uid => typeof result.marks?.[uid] === 'boolean' ? (result.marks[uid] ? '1' : '0') : '-').join('').replace(/-+$/, '');
-  if (object(result.attempts)) compact.ak = members.map(uid => { const a = result.attempts[uid]; return object(a) ? [a.answered, a.correct, a.firstCorrect ? 1 : 0, a.lastCorrect ? 1 : 0].join('.') : ''; }).join(',').replace(/,+$/, '');
+  compact.mk = members.map(uid => own(result.marks, uid) && typeof result.marks[uid] === 'boolean' ? (result.marks[uid] ? '1' : '0') : '-').join('').replace(/-+$/, '');
+  if (object(result.attempts)) compact.ak = members.map(uid => { const a = own(result.attempts, uid) ? result.attempts[uid] : null; return object(a) ? [a.answered, a.correct, a.firstCorrect ? 1 : 0, a.lastCorrect ? 1 : 0].join('.') : ''; }).join(',').replace(/,+$/, '');
   return { ...patch, [key]: { ...done, result: compact }, ...(members.length !== known.length ? { members } : {}) };
 }
 const objectiveMet = (board, visited, built, concepts) => built.length >= (goalOf(board) === 'architect' ? 3 : 2) && board.concepts.every(c => concepts.includes(c.id)) && (goalOf(board) !== 'expedition' || visited.length === board.locations.length);
@@ -425,7 +426,7 @@ function replay(board, run) {
       }
     }
     if (!result) continue;
-    if (node) { for (const [uid, stats] of Object.entries(attemptRecords(step, run.members))) if (token(uid)) { const record = performance[uid] || (performance[uid] = { answered: 0, correct: 0 }); record.answered += stats.answered; record.correct += stats.correct; }
+    if (node) { for (const [uid, stats] of Object.entries(attemptRecords(step, run.members))) if (token(uid)) { const record = own(performance, uid) ? performance[uid] : (performance[uid] = { answered: 0, correct: 0 }); record.answered += stats.answered; record.correct += stats.correct; }
       const freshLocation = !visited.includes(node.id);
       if (result.success && freshLocation) {
         visited.push(node.id);
@@ -508,7 +509,7 @@ function replay(board, run) {
         fieldRelay = stage === 2 ? null : { ...fieldRelay, stage, targetId: fieldRelay.stops[stage].targetId, reward: fieldRelay.stops[stage].reward.slice() };
       }
       if (requirementsBefore && usedProjects.length > 0 && result.success && node.id === board.starts[0]) returned = true;
-    } else if (project && step.route === undefined && result.success && !built.includes(project.id)) {
+    } else if (project && step.route === undefined && result.success && !built.includes(project.id) && (!tabletop || (buildSite(board, project) === position && visited.includes(position)))) {
       const payment = fundingForProgress(board, { visited, built, balance, bonus, kitCount, usedProjects, fieldCrew, fieldCommission }, project).find(option => option.id === (step.funding === undefined ? 'standard' : step.funding));
       if (payment?.legal) {
         built.push(project.id); balance.forEach((v, i) => balance[i] = v - payment.cost[i]); if (project.effect.kind === 'yield') bonus[project.effect.resource]++; else opened.push(project.effect.targetId);
@@ -600,20 +601,20 @@ export function validAction(action, attemptId, turn, retryRound = 0) {
 export function processAction(board, run, action, uid, context) {
   const step = stepOf(run);
   if (!token(uid) || !validAction(action, context.attemptId, run.turn, step.retryRound || 0)) return {};
-  const prefix = 'steps.t' + run.turn + '.', responsePrefix = prefix + (step.retryRound > 0 ? 'responseRounds.r' + step.retryRound + '.' : ''), previous = step.seen?.[uid]; if (previous?.requestId === action.requestId) return {};
+  const prefix = 'steps.t' + run.turn + '.', responsePrefix = prefix + (step.retryRound > 0 ? 'responseRounds.r' + step.retryRound + '.' : ''), previous = own(step.seen, uid) ? step.seen[uid] : undefined; if (previous?.requestId === action.requestId) return {};
   let code = 'closed', patch = {};
   if (context.active && !context.paused && !derive(board, run).complete) {
     if (action.kind === 'vote' && step.phase === 'choose' && action.value === '' && targets(board, run).some(n => n.id === action.targetId)) { patch[prefix + 'votes.' + uid] = action.targetId; code = 'vote-recorded'; }
     if (action.kind === 'answer' && step.phase === 'answer' && action.targetId === step.targetId && (!(step.retryRound > 0) || action.requestId.startsWith('r' + step.retryRound + '_'))) {
       const node = board.locations.find(n => n.id === step.targetId);
-      if (step.answers?.[uid]) code = 'already-answered';
+      if (own(step.answers, uid) && step.answers[uid]) code = 'already-answered';
       else if (node && validValue(node, action.value)) { patch[responsePrefix + 'answers.' + uid] = { value: action.value, correct: action.value === solution(node) }; code = 'answer-recorded'; }
       else code = 'invalid';
     }
   }
   patch[responsePrefix + 'seen.' + uid] = { requestId: action.requestId, code }; return patch;
 }
-export function merge(run, patch) { const next = JSON.parse(JSON.stringify(run)); for (const [path, value] of Object.entries(patch)) { const keys = path.split('.'); if (keys.some(k => ['__proto__', 'constructor', 'prototype'].includes(k))) throw Error('Unsafe board path.'); let at = next; for (const key of keys.slice(0, -1)) at = at[key] || (at[key] = {}); at[keys.at(-1)] = value; } return next; }
+export function merge(run, patch) { const next = JSON.parse(JSON.stringify(run)); for (const [path, value] of Object.entries(patch)) { const keys = path.split('.'); if (keys.some(k => ['__proto__', 'constructor', 'prototype'].includes(k))) throw Error('Unsafe board path.'); let at = next; for (const key of keys.slice(0, -1)) at = (own(at, key) && at[key] && typeof at[key] === 'object') ? at[key] : (at[key] = {}); at[keys.at(-1)] = value; } return next; }
 export function begin(board, run, targetId, funding = 'standard', route = 'shortest') {
   if (stepOf(run).phase !== 'choose' || !targets(board, run).some(n => n.id === targetId)) throw Error('That move is no longer available.');
   const project = board.projects.find(p => p.id === targetId), travel = isTabletop(board) && derive(board, run).visited.includes(targetId), prefix = 'steps.t' + run.turn + '.';
@@ -630,7 +631,7 @@ export function resolve(board, run, roster, options = {}) {
   const result = { success: values.filter(Boolean).length >= Math.ceil(values.length / 2), marks };
   if (step.retryRound > 0) {
     const attempts = JSON.parse(JSON.stringify(step.retryStats || {}));
-    for (const [uid, correct] of Object.entries(marks)) { const previous = attempts[uid]; attempts[uid] = { answered: (previous?.answered || 0) + 1, correct: (previous?.correct || 0) + Number(correct), firstCorrect: previous?.firstCorrect ?? correct, lastCorrect: correct }; }
+    for (const [uid, correct] of Object.entries(marks)) { const previous = own(attempts, uid) ? attempts[uid] : undefined; attempts[uid] = { answered: (previous?.answered || 0) + 1, correct: (previous?.correct || 0) + Number(correct), firstCorrect: previous?.firstCorrect ?? correct, lastCorrect: correct }; }
     result.attempts = attempts;
   }
   // Callers roll two dice; momentum decides whether the second one counts.

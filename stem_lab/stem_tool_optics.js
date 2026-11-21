@@ -978,6 +978,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     var group = S && S.model;
     if (!group) return;
     if (!S.retired) S.retired = [];
+    S.shaderMats = [];
+    S.fxMeshes = [];
     for (var i = group.children.length - 1; i >= 0; i--) {
       var c = group.children[i];
       if (c.geometry) c.geometry.dispose();
@@ -990,6 +992,359 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     var list = S.retired;
     S.retired = [];
     list.forEach(function (m) { try { m.dispose(); } catch (e) {} });
+  }
+  // Cinema-grade WebGL1 / GLSL ES 1.00 shader kit for Optics 3D benches:
+  // coherent volumetric laser beams, chromatic prism/refraction caustics,
+  // Fresnel optical-glass rim iridescence, and sunlit bench dust scattering.
+  function _opIsHighContrast(el) {
+    try {
+      if (el && typeof el.closest === 'function' &&
+        el.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+      var de = typeof document !== 'undefined' ? document.documentElement : null;
+      if (de && (de.classList.contains('theme-contrast') ||
+        de.getAttribute('data-theme') === 'high-contrast' ||
+        de.getAttribute('data-theme') === 'contrast')) return true;
+      var bd = typeof document !== 'undefined' ? document.body : null;
+      if (bd && (bd.classList.contains('theme-contrast') ||
+        bd.getAttribute('data-theme') === 'high-contrast' ||
+        bd.getAttribute('data-theme') === 'contrast')) return true;
+    } catch (e) {}
+    return false;
+  }
+  function _opPrefersReducedMotion() {
+    try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    catch (e) { return false; }
+  }
+  function _opTrackShader(S, mat, decorativeMesh) {
+    if (!S) return;
+    if (!S.shaderMats) S.shaderMats = [];
+    if (mat) S.shaderMats.push(mat);
+    if (decorativeMesh) {
+      if (!S.fxMeshes) S.fxMeshes = [];
+      S.fxMeshes.push(decorativeMesh);
+    }
+  }
+  function _opUpdateShaders(S, now, frozen) {
+    if (!S) return false;
+    var el = S.renderer && S.renderer.domElement;
+    var hc = _opIsHighContrast(el);
+    var rm = _opPrefersReducedMotion();
+    var t;
+    if (rm || frozen) {
+      t = (S.lastFxTime != null && frozen && !rm) ? S.lastFxTime : 1.35; // Static beauty frame when reduced motion or paused
+    } else {
+      var ts = typeof now === 'number' && isFinite(now) ? now : (typeof performance !== 'undefined' ? performance.now() : 0);
+      if (!S.fxT0) S.fxT0 = ts;
+      t = (ts - S.fxT0) * 0.001;
+      S.lastFxTime = t;
+    }
+    if (S.shaderMats) {
+      for (var i = 0; i < S.shaderMats.length; i++) {
+        var u = S.shaderMats[i] && S.shaderMats[i].uniforms;
+        if (!u) continue;
+        if (u.uTime) u.uTime.value = t;
+        if (u.uHc) u.uHc.value = hc ? 1.0 : 0.0;
+      }
+    }
+    if (S.fxMeshes) {
+      for (var j = 0; j < S.fxMeshes.length; j++) {
+        var m = S.fxMeshes[j];
+        if (m) m.visible = !hc;
+      }
+    }
+    return !rm && !hc;
+  }
+  function _opAttachBenchObserver(S, host, scheduleFrame) {
+    if (!S || !host || typeof IntersectionObserver !== 'function') return;
+    S.inView = true;
+    S.io = new IntersectionObserver(function (entries) {
+      if (!S) return;
+      S.inView = entries[entries.length - 1].isIntersecting;
+      if (S.inView) scheduleFrame();
+    });
+    S.io.observe(host);
+  }
+  function _opCreateLaserBeamMat(THREE, colorHex, opacity, speed, hc) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 1.35 },
+        uColor: { value: new THREE.Color(colorHex) },
+        uOpacity: { value: opacity == null ? 0.55 : opacity },
+        uSpeed: { value: speed == null ? 4.2 : speed },
+        uHc: { value: hc ? 1.0 : 0.0 }
+      },
+      vertexShader: [
+        'varying vec2 vUv;',
+        'varying vec3 vNormalV;',
+        'varying vec3 vViewPos;',
+        'void main() {',
+        '  vUv = uv;',
+        '  vNormalV = normalize(normalMatrix * normal);',
+        '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+        '  vViewPos = -mv.xyz;',
+        '  gl_Position = projectionMatrix * mv;',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform vec3 uColor;',
+        'uniform float uOpacity;',
+        'uniform float uSpeed;',
+        'uniform float uHc;',
+        'varying vec2 vUv;',
+        'varying vec3 vNormalV;',
+        'varying vec3 vViewPos;',
+        'void main() {',
+        '  if (uHc > 0.5) discard;',
+        '  vec3 N = normalize(vNormalV);',
+        '  vec3 V = normalize(vViewPos);',
+        '  float ndv = abs(dot(N, V));',
+        '  float core = pow(ndv, 1.45);',
+        '  float halo = pow(ndv, 0.55) * 0.42;',
+        '  float wave1 = 0.62 + 0.38 * sin(vUv.y * 28.0 - uTime * uSpeed);',
+        '  float pulse = pow(0.5 + 0.5 * sin(vUv.y * 7.5 - uTime * (uSpeed * 0.55)), 4.0);',
+        '  float ends = smoothstep(0.0, 0.06, vUv.y) * smoothstep(1.0, 0.94, vUv.y);',
+        '  float alpha = (core * 0.85 + halo) * (wave1 * 0.72 + pulse * 0.55) * ends * uOpacity;',
+        '  vec3 col = mix(uColor, vec3(1.0, 0.99, 0.95), core * (0.38 + pulse * 0.35));',
+        '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.92));',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    });
+  }
+  function _opAddLaserGlow(S, THREE, from, to, colorHex, radius, opacity, speed) {
+    if (!S || !S.model || typeof THREE.ShaderMaterial !== 'function') return null;
+    var dir = new THREE.Vector3().subVectors(to, from);
+    var len = dir.length();
+    if (!(len > 1e-4) || !isFinite(len)) return null;
+    var hc = _opIsHighContrast(S.renderer && S.renderer.domElement);
+    var mat = _opCreateLaserBeamMat(THREE, colorHex, opacity, speed, hc);
+    if (!mat) return null;
+    var geo = new THREE.CylinderGeometry(radius, radius, len, 10, 1, true);
+    var mesh = new THREE.Mesh(geo, mat);
+    mesh.position.copy(from).addScaledVector(dir, 0.5);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+    mesh.frustumCulled = false;
+    mesh.visible = !hc;
+    S.model.add(mesh);
+    _opTrackShader(S, mat, mesh);
+    return mesh;
+  }
+  function _opCreateFresnelGlassMat(THREE, tintHex, baseAlpha, iridStrength, hc) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 1.35 },
+        uTint: { value: new THREE.Color(tintHex) },
+        uBaseAlpha: { value: baseAlpha == null ? 0.24 : baseAlpha },
+        uIrid: { value: iridStrength == null ? 0.65 : iridStrength },
+        uHc: { value: hc ? 1.0 : 0.0 }
+      },
+      vertexShader: [
+        'varying vec3 vNormalV;',
+        'varying vec3 vViewPos;',
+        'varying vec3 vLocalPos;',
+        'void main() {',
+        '  vLocalPos = position;',
+        '  vNormalV = normalize(normalMatrix * normal);',
+        '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+        '  vViewPos = -mv.xyz;',
+        '  gl_Position = projectionMatrix * mv;',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform vec3 uTint;',
+        'uniform float uBaseAlpha;',
+        'uniform float uIrid;',
+        'uniform float uHc;',
+        'varying vec3 vNormalV;',
+        'varying vec3 vViewPos;',
+        'varying vec3 vLocalPos;',
+        'void main() {',
+        '  vec3 N = normalize(vNormalV);',
+        '  vec3 V = normalize(vViewPos);',
+        '  float ndv = abs(dot(N, V));',
+        '  float fresnel = pow(1.0 - ndv, 2.35);',
+        '  if (uHc > 0.5) {',
+        '    gl_FragColor = vec4(uTint, clamp(uBaseAlpha + fresnel * 0.25, 0.12, 0.55));',
+        '    return;',
+        '  }',
+        '  vec3 L = normalize(vec3(0.45, 0.72, 0.55));',
+        '  vec3 H = normalize(L + V);',
+        '  float spec = pow(max(abs(dot(N, H)), 0.0), 42.0);',
+        '  float phase = fresnel * 2.2 + vLocalPos.y * 0.35 + uTime * 0.18;',
+        '  vec3 irid = 0.5 + 0.5 * cos(6.28318 * (phase + vec3(0.0, 0.33, 0.67)));',
+        '  float sweep = 0.5 + 0.5 * sin(vLocalPos.y * 2.4 - vLocalPos.z * 1.8 - uTime * 0.85);',
+        '  vec3 col = mix(uTint, mix(uTint, irid, uIrid), fresnel * 0.82) + vec3(0.92, 0.97, 1.0) * (spec * 0.75 + fresnel * sweep * 0.22);',
+        '  float alpha = clamp(uBaseAlpha + fresnel * 0.58 + spec * 0.35, 0.08, 0.86);',
+        '  gl_FragColor = vec4(col, alpha);',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+  }
+  function _opCreateChromaticCausticMat(THREE, opacity, hc) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 1.35 },
+        uOpacity: { value: opacity == null ? 0.52 : opacity },
+        uHc: { value: hc ? 1.0 : 0.0 }
+      },
+      vertexShader: [
+        'varying vec2 vUv;',
+        'void main() {',
+        '  vUv = uv;',
+        '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform float uOpacity;',
+        'uniform float uHc;',
+        'varying vec2 vUv;',
+        'vec3 opSpectrum(float t) {',
+        '  vec3 c = 0.5 + 0.5 * cos(6.28318 * (t * 0.82 + vec3(0.02, 0.35, 0.68)));',
+        '  return clamp(c * 1.15, 0.0, 1.0);',
+        '}',
+        'void main() {',
+        '  if (uHc > 0.5) discard;',
+        '  float across = vUv.x;',
+        '  float along = vUv.y;',
+        '  float edgeX = smoothstep(0.0, 0.14, across) * smoothstep(1.0, 0.86, across);',
+        '  float edgeY = smoothstep(0.0, 0.08, along) * pow(1.0 - along, 0.75);',
+        '  float bands = 0.74 + 0.26 * sin(along * 18.0 - uTime * 2.8 + across * 6.0);',
+        '  float filament = 0.78 + 0.22 * sin(across * 22.0 + sin(along * 6.0 - uTime * 1.4));',
+        '  vec3 rainbow = opSpectrum(1.0 - across);',
+        '  vec3 col = mix(rainbow, vec3(1.0, 0.98, 0.92), (1.0 - along) * 0.35);',
+        '  float alpha = edgeX * edgeY * bands * filament * uOpacity;',
+        '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.88));',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    });
+  }
+  function _opCreateSpotCausticMat(THREE, colorHex, focused, hc) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 1.35 },
+        uColor: { value: new THREE.Color(colorHex) },
+        uFocused: { value: focused ? 1.0 : 0.0 },
+        uHc: { value: hc ? 1.0 : 0.0 }
+      },
+      vertexShader: [
+        'varying vec2 vUv;',
+        'void main() {',
+        '  vUv = uv;',
+        '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform vec3 uColor;',
+        'uniform float uFocused;',
+        'uniform float uHc;',
+        'varying vec2 vUv;',
+        'void main() {',
+        '  if (uHc > 0.5) discard;',
+        '  vec2 p = (vUv - 0.5) * 2.0;',
+        '  float r = length(p);',
+        '  if (r > 1.0) discard;',
+        '  float ang = atan(p.y, p.x);',
+        '  float airy = pow(1.0 - r, 2.2);',
+        '  float rings = 0.5 + 0.5 * sin(r * 16.0 - uTime * 2.6);',
+        '  float starburst = pow(0.5 + 0.5 * cos(ang * 6.0 + uTime * 0.4), 6.0) * (1.0 - r) * uFocused;',
+        '  vec3 chroma = 0.5 + 0.5 * cos(6.28318 * (r * 0.75 + vec3(0.0, 0.33, 0.67)));',
+        '  vec3 col = mix(uColor, vec3(1.0, 0.99, 0.94), airy * (0.45 + 0.45 * uFocused));',
+        '  col = mix(col, chroma, (1.0 - uFocused) * r * 0.28);',
+        '  float alpha = (airy * (0.52 + 0.38 * uFocused) + rings * (1.0 - r) * 0.14 + starburst * 0.45);',
+        '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.92));',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    });
+  }
+  function _opAddBenchDust(S, THREE, count, halfX, halfY, halfZ, tintHex) {
+    if (!S || !S.model || typeof THREE.ShaderMaterial !== 'function') return null;
+    var hc = _opIsHighContrast(S.renderer && S.renderer.domElement);
+    var n = Math.max(12, count || 56);
+    var pos = new Float32Array(n * 3);
+    var seeds = new Float32Array(n);
+    var sizes = new Float32Array(n);
+    // Deterministic Halton-like hash so layout & visual snapshots stay consistent
+    function hash(k) { var x = Math.sin(k * 127.1 + 311.7) * 43758.5453123; return x - Math.floor(x); }
+    for (var i = 0; i < n; i++) {
+      pos[i * 3] = (hash(i * 3 + 1) * 2 - 1) * halfX;
+      pos[i * 3 + 1] = (hash(i * 3 + 2) * 2 - 1) * halfY;
+      pos[i * 3 + 2] = (hash(i * 3 + 3) * 2 - 1) * halfZ;
+      seeds[i] = hash(i * 7 + 5);
+      sizes[i] = 2.6 + hash(i * 11 + 2) * 3.8;
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
+    geo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+    var mat = new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 1.35 },
+        uColor: { value: new THREE.Color(tintHex || 0xfef3c7) },
+        uHc: { value: hc ? 1.0 : 0.0 }
+      },
+      vertexShader: [
+        'attribute float aSeed;',
+        'attribute float aSize;',
+        'uniform float uTime;',
+        'varying float vSparkle;',
+        'void main() {',
+        '  vec3 p = position;',
+        '  p.x += sin(uTime * 0.32 + aSeed * 19.3) * 0.16;',
+        '  p.y += cos(uTime * 0.27 + aSeed * 13.7) * 0.14;',
+        '  p.z += sin(uTime * 0.24 + aSeed * 23.1) * 0.12;',
+        '  float axisBoost = exp(-0.18 * (p.y * p.y + p.z * p.z));',
+        '  float twinkle = 0.45 + 0.55 * sin(uTime * (1.2 + aSeed * 1.9) + aSeed * 41.0);',
+        '  vSparkle = (0.35 + 0.65 * axisBoost) * twinkle;',
+        '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+        '  gl_PointSize = clamp(aSize * (16.0 / max(2.0, -mv.z)), 1.5, 9.0);',
+        '  gl_Position = projectionMatrix * mv;',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform vec3 uColor;',
+        'uniform float uHc;',
+        'varying float vSparkle;',
+        'void main() {',
+        '  if (uHc > 0.5) discard;',
+        '  vec2 d = gl_PointCoord - 0.5;',
+        '  float r2 = dot(d, d);',
+        '  if (r2 > 0.25) discard;',
+        '  float soft = exp(-r2 * 18.0);',
+        '  gl_FragColor = vec4(mix(uColor, vec3(1.0), soft * 0.45), soft * vSparkle * 0.58);',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    var pts = new THREE.Points(geo, mat);
+    pts.frustumCulled = false;
+    pts.visible = !hc;
+    S.model.add(pts);
+    _opTrackShader(S, mat, pts);
+    return pts;
   }
   function _renderOptics3DToolbar(config, h) {
     var camera = config.camera || 'oblique';
@@ -1170,12 +1525,18 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       geometry.setIndex(indices);
       geometry.computeVertexNormals();
       S.surfaceRimX = positions[positions.length - 3];   // x of the outermost vertex, as built
-      var surface = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({
-        color: type === 'plane' ? 0xc7d2fe : 0xa5b4fc,
-        transparent: true, opacity: type === 'plane' ? 0.34 : 0.28,
-        shininess: 110, side: THREE.DoubleSide, depthWrite: false
-      }));
+      var mirrorHc = _opIsHighContrast(S.renderer && S.renderer.domElement);
+      var mirrorTint = type === 'plane' ? 0xc7d2fe : 0xa5b4fc;
+      var mirrorBaseAlpha = type === 'plane' ? 0.34 : 0.28;
+      var mirrorMat = _opCreateFresnelGlassMat(THREE, mirrorTint, mirrorBaseAlpha, 0.54, mirrorHc)
+        || new THREE.MeshPhongMaterial({
+          color: mirrorTint,
+          transparent: true, opacity: mirrorBaseAlpha,
+          shininess: 110, side: THREE.DoubleSide, depthWrite: false
+        });
+      var surface = new THREE.Mesh(geometry, mirrorMat);
       S.model.add(surface);
+      if (mirrorMat && mirrorMat.isShaderMaterial) _opTrackShader(S, mirrorMat, null);
 
       // Contour rings reveal curvature, while the central aperture ring keeps
       // every ideal ray intersection visibly anchored at x = 0.
@@ -1269,6 +1630,17 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       screenSpot.position.set(screenWorld - 0.012, spotY, 0);
       screenSpot.visible = !S.screenSpotMiss;
       S.model.add(screenSpot);
+      if (!S.screenSpotMiss) {
+        var spotCausticMat = _opCreateSpotCausticMat(THREE, model.screenFocused ? 0x86efac : 0x22d3ee, !!model.screenFocused, _opIsHighContrast(S.renderer && S.renderer.domElement));
+        if (spotCausticMat) {
+          var spotCaustic = new THREE.Mesh(new THREE.PlaneGeometry(spotRadius * 2.55, spotRadius * 2.55), spotCausticMat);
+          spotCaustic.rotation.y = Math.PI / 2;
+          spotCaustic.position.set(screenWorld - 0.016, spotY, 0);
+          spotCaustic.visible = !_opIsHighContrast(S.renderer && S.renderer.domElement);
+          S.model.add(spotCaustic);
+          _opTrackShader(S, spotCausticMat, spotCaustic);
+        }
+      }
       if (trueSpotRadius > 2.4 && !S.screenSpotMiss) {
         var spotRing = [];
         for (var ringStep = 0; ringStep <= 64; ringStep++) {
@@ -1305,12 +1677,16 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var rayTheta = rayIndex / 8 * Math.PI * 2;
         aperturePoints.push(new THREE.Vector3(0, Math.cos(rayTheta) * 1.74, Math.sin(rayTheta) * 1.74));
       }
-      aperturePoints.forEach(function (hit) {
+      var mirrorGlowRays = [];
+      aperturePoints.forEach(function (hit, rayIdx) {
         addLine(THREE, [objectPoint, hit], 0xfbbf24, 0.48, false);
+        var trackGlow = rayIdx === 0 || rayIdx % 2 === 1;
+        if (trackGlow) mirrorGlowRays.push({ from: objectPoint, to: hit, color: 0xfbbf24, r: rayIdx === 0 ? 0.095 : 0.068, op: rayIdx === 0 ? 0.56 : 0.34, sp: 4.4 });
         if (model.atInfinity) {
           var parallelToward = hit.clone().add(new THREE.Vector3(-1, -model.objectHeight / model.focalAbs, 0));
           var infinityEnd = pointAtBenchEdge(THREE, hit, parallelToward, leftEdge);
           addLine(THREE, [hit, infinityEnd], 0xef4444, 0.84, false);
+          if (trackGlow) mirrorGlowRays.push({ from: hit, to: infinityEnd, color: 0xf87171, r: rayIdx === 0 ? 0.105 : 0.072, op: rayIdx === 0 ? 0.62 : 0.38, sp: 4.8 });
           if (infinityEnd.x > 1e-6) S.physicalRaysStayIncidentSide = false;
           S.rayCount++;
           return;
@@ -1321,6 +1697,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // never terminates at the focus marker.
           var realEnd = pointAtBenchEdge(THREE, hit, imagePoint, leftEdge);
           addLine(THREE, [hit, realEnd], 0xef4444, 0.84, false);
+          if (trackGlow) mirrorGlowRays.push({ from: hit, to: realEnd, color: 0xf87171, r: rayIdx === 0 ? 0.105 : 0.072, op: rayIdx === 0 ? 0.62 : 0.38, sp: 4.8 });
           if (realEnd.x < imagePoint.x - 1e-6) S.realRaysContinuePastFocus = true;
           if (realEnd.x > 1e-6) S.physicalRaysStayIncidentSide = false;
         } else {
@@ -1330,6 +1707,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var virtualEnd = imageVisible ? imagePoint : pointAtBenchEdge(THREE, hit, imagePoint, rightEdge);
           addLine(THREE, [hit, reflectedEnd], 0xef4444, 0.84, false);
           addLine(THREE, [hit, virtualEnd], 0xf0abfc, 0.52, true);
+          if (trackGlow) mirrorGlowRays.push({ from: hit, to: reflectedEnd, color: 0xf87171, r: rayIdx === 0 ? 0.105 : 0.072, op: rayIdx === 0 ? 0.62 : 0.38, sp: 4.8 });
           if (reflectedEnd.x > 1e-6) S.physicalRaysStayIncidentSide = false;
           if (virtualEnd.x < -1e-6) S.virtualExtensionsBehindMirror = false;
           S.virtualExtensionCount++;
@@ -1350,6 +1728,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       S.screenFocused = !!model.screenFocused;
       S.screenCapturable = !!model.screenCapturable;
       _fitOptics3DModelBounds(THREE, S.model, S.target, S.half);
+      // Volumetric coherent laser-beam sheaths & sunlit bench dust added after
+      // camera bounds fit so framing metrics remain identical.
+      mirrorGlowRays.forEach(function (g) { _opAddLaserGlow(S, THREE, g.from, g.to, g.color, g.r, g.op, g.sp); });
+      _opAddBenchDust(S, THREE, 52, Math.min(8.2, S.half.x * 0.85), Math.min(3.4, S.half.y * 0.72), Math.min(2.4, S.half.z * 0.75), 0xfef3c7);
       // An oversized spot ring (a 380% bundle is 6.5 units across) is drawn but
       // must not set the camera distance; it shrank the whole bench to 11-70%.
       if (S.pendingRing) { addLine(THREE, S.pendingRing, 0x22d3ee, 0.6, true); S.pendingRing = null; }
@@ -1361,7 +1743,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       S.raf = requestAnimationFrame(frame);
     }
 
-    function frame() {
+    function frame(now) {
       if (!S) return;
       S.raf = 0;
       if (S.contextLost || !S.renderer) return;
@@ -1371,6 +1753,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         if (next.sig !== sig) { sig = next.sig; applyModel(next); }
         S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
       }
+      var animateFx = _opUpdateShaders(S, now);
       var el = S.renderer.domElement;
       var width = el.clientWidth || 1, height = el.clientHeight || 1;
       if (width !== S.lastW || height !== S.lastH) {
@@ -1407,6 +1790,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       S.camera.lookAt(S.target);
       try { S.renderer.render(S.scene, S.camera); } catch (e) {}
       _opFlushRetired(S);
+      if (animateFx && S.shaderMats && S.shaderMats.length && S.inView !== false) scheduleFrame();
     }
 
     function build(THREE, host) {
@@ -1470,6 +1854,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         S.wheelHost = host; S.wheelGuard = function (ev) { ev.preventDefault(); };
         host.addEventListener('wheel', S.wheelGuard, { passive: false });
       }
+      _opAttachBenchObserver(S, host, scheduleFrame);
       sig = '';
       scheduleFrame();
       return true;
@@ -2281,19 +2666,33 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         'aria-label': 'Mirror ray diagram. ' + mt + ' mirror' + (mt !== 'plane' ? ', f = ' + (f).toFixed(1) + ' cm' : '') + ', object at ' + d_o.toFixed(1) + ' cm. ' + _mirrorVT + '. ' + mirrorPathSummary + ' Sampling screen at ' + screenCm.toFixed(1) + ' cm. ' + screenStatus,
         style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, maxWidth: 460 }
       },
-        // Background grid
+        h('defs', null,
+          h('radialGradient', { id: 'op-mirror-caustic' },
+            h('stop', { offset: '0%', stopColor: '#fffbeb', stopOpacity: 0.9 }),
+            h('stop', { offset: '36%', stopColor: '#fbbf24', stopOpacity: 0.42 }),
+            h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })
+          ),
+          h('linearGradient', { id: 'op-mirror-silver', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#c7d2fe' }),
+            h('stop', { offset: '35%', stopColor: '#f8fafc' }),
+            h('stop', { offset: '65%', stopColor: '#a5b4fc' }),
+            h('stop', { offset: '100%', stopColor: '#818cf8' })
+          )
+        ),
+        // Background grid + precision bench millimeter/cm ticks along the optical axis
         (function() {
           var g = [];
           for (var gx = Math.ceil(cmMin / 5) * 5; gx <= cmMax; gx += 5) {
-            g.push(h('line', { key: 'gx' + gx, x1: sx(gx), y1: pad.t, x2: sx(gx), y2: H - pad.b, stroke: 'var(--allo-stem-border, #1e293b)', strokeWidth: 1 }));
+            g.push(h('line', { key: 'gx' + gx, x1: sx(gx), y1: pad.t, x2: sx(gx), y2: H - pad.b, stroke: 'var(--allo-stem-border, #1e293b)', strokeWidth: 1, opacity: 0.72 }));
+            g.push(h('line', { key: 'gxt' + gx, x1: sx(gx), y1: sy(0) - 3.5, x2: sx(gx), y2: sy(0) + 3.5, stroke: '#64748b', strokeWidth: 1, opacity: 0.7 }));
           }
           for (var gy = -Math.floor(yHalfCm / 3) * 3; gy <= yHalfCm; gy += 3) {
-            g.push(h('line', { key: 'gy' + gy, x1: pad.l, y1: sy(gy), x2: W - pad.r, y2: sy(gy), stroke: 'var(--allo-stem-border, #1e293b)', strokeWidth: 1 }));
+            g.push(h('line', { key: 'gy' + gy, x1: pad.l, y1: sy(gy), x2: W - pad.r, y2: sy(gy), stroke: 'var(--allo-stem-border, #1e293b)', strokeWidth: 1, opacity: 0.72 }));
           }
           return g;
         })(),
         // Optical axis
-        h('line', { x1: pad.l, y1: sy(0), x2: W - pad.r, y2: sy(0), stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
+        h('line', { x1: pad.l, y1: sy(0), x2: W - pad.r, y2: sy(0), stroke: '#64748b', strokeWidth: 1, strokeDasharray: '3 3' }),
         ghost && h('g', { className: 'opticslab-ghost-layer', 'aria-hidden': 'true' },
           h('line', { x1: sx(-ghostDo), y1: sy(0), x2: sx(-ghostDo), y2: sy(ghostH), stroke: OP_RAY.previous, strokeWidth: 2, strokeDasharray: '5 4' }),
           ghostDi != null && _isNum(ghostM) && h('line', {
@@ -2306,21 +2705,36 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }),
           h('text', { x: pad.l + 5, y: pad.t + 13 }, 'previous setup')
         ),
-        // Focal points (for curved mirrors)
-        f !== Infinity && h('circle', { cx: sx(-f), cy: sy(0), r: 3, fill: '#fbbf24', stroke: 'var(--allo-stem-deeper, #0b1220)', strokeWidth: 1 }),
+        // Focal points (for curved mirrors) with subtle luminous caustic flare
+        f !== Infinity && h('circle', { cx: sx(-f), cy: sy(0), r: 10, fill: 'url(#op-mirror-caustic)', opacity: 0.75 }),
+        f !== Infinity && h('circle', { cx: sx(-f), cy: sy(0), r: 3.2, fill: '#fbbf24', stroke: 'var(--allo-stem-deeper, #0b1220)', strokeWidth: 1 }),
         f !== Infinity && h('text', { x: sx(-f), y: sy(0) - 8, fill: '#fbbf24', fontSize: 12, textAnchor: 'middle' }, 'F'),
         f !== Infinity && h('circle', { cx: sx(-2 * f), cy: sy(0), r: 3, fill: '#94a3b8', stroke: 'var(--allo-stem-deeper, #0b1220)', strokeWidth: 1 }),
         f !== Infinity && h('text', { x: sx(-2 * f), y: sy(0) - 8, fill: '#94a3b8', fontSize: 12, textAnchor: 'middle' }, 'C'),
-        // Mirror at x = 0 (rendered as a vertical line with a curve indication for non-plane)
+        // Mirror at x = 0 with silvered specular front edge and hatched non-reflective backing
         (function() {
+          var hatches = [];
+          for (var hy = -11; hy <= 11; hy += 2.2) {
+            var hCurveX = mt === 'plane' ? 0 : (mt === 'concave' ? (1 - (hy / 12) * (hy / 12)) * 1.0 : -(1 - (hy / 12) * (hy / 12)) * 1.0);
+            hatches.push(h('line', { key: 'mh' + hy, x1: sx(hCurveX) + 1.5, y1: sy(hy), x2: sx(hCurveX) + 7, y2: sy(hy) - 4, stroke: '#64748b', strokeWidth: 1, opacity: 0.6 }));
+          }
           if (mt === 'plane') {
-            return h('line', { key: 'mir', 'data-op-mirror-surface': 'true', x1: sx(0), y1: sy(-12), x2: sx(0), y2: sy(12), stroke: '#a5b4fc', strokeWidth: 3 });
+            return h('g', { key: 'mir-grp' },
+              hatches,
+              h('line', { key: 'mir-glow', x1: sx(0), y1: sy(-12), x2: sx(0), y2: sy(12), stroke: '#818cf8', strokeWidth: 7, opacity: 0.16 }),
+              h('line', { key: 'mir', 'data-op-mirror-surface': 'true', x1: sx(0), y1: sy(-12), x2: sx(0), y2: sy(12), stroke: 'url(#op-mirror-silver)', strokeWidth: 3.2 }),
+              h('line', { key: 'mir-sheen', x1: sx(0) - 1, y1: sy(-11.5), x2: sx(0) - 1, y2: sy(11.5), stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.72 })
+            );
           }
           // Curved: bow toward (concave) or away (convex) from the object
           var curvePath = mt === 'concave'
             ? 'M ' + sx(0) + ' ' + sy(-12) + ' Q ' + sx(2) + ' ' + sy(0) + ' ' + sx(0) + ' ' + sy(12)
             : 'M ' + sx(0) + ' ' + sy(-12) + ' Q ' + sx(-2) + ' ' + sy(0) + ' ' + sx(0) + ' ' + sy(12);
-          return h('path', { key: 'mir', 'data-op-mirror-surface': 'true', d: curvePath, fill: 'none', stroke: '#a5b4fc', strokeWidth: 3 });
+          return h('g', { key: 'mir-grp' },
+            hatches,
+            h('path', { key: 'mir-glow', d: curvePath, fill: 'none', stroke: '#818cf8', strokeWidth: 7.5, opacity: 0.16 }),
+            h('path', { key: 'mir', 'data-op-mirror-surface': 'true', d: curvePath, fill: 'none', stroke: 'url(#op-mirror-silver)', strokeWidth: 3.2 })
+          );
         })(),
         // Object arrow is a slider-like handle: drag it or use Left/Right.
         h('g', {
@@ -2954,16 +3368,47 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       }
       addLine(THREE, ringPts, 0xfde68a, 1);
 
-      // The bright disc of compressed sky inside it.
+      // The bright disc of compressed sky inside it, upgraded with underwater Fresnel caustics & critical-angle chromatic rim.
+      var owHc = _opIsHighContrast(S.renderer && S.renderer.domElement);
+      var discMat = (typeof THREE.ShaderMaterial === 'function')
+        ? new THREE.ShaderMaterial({
+          uniforms: { uTime: { value: 1.35 }, uHc: { value: owHc ? 1.0 : 0.0 } },
+          vertexShader: [
+            'varying vec2 vUv;',
+            'void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uHc;',
+            'varying vec2 vUv;',
+            'void main() {',
+            '  vec2 p = (vUv - 0.5) * 2.0;',
+            '  float r = length(p);',
+            '  if (r > 1.0) discard;',
+            '  if (uHc > 0.5) { gl_FragColor = vec4(0.58, 0.77, 0.99, 0.28); return; }',
+            '  float ang = atan(p.y, p.x);',
+            '  float ripple = 0.5 + 0.5 * sin(r * 14.0 - uTime * 2.1 + sin(ang * 5.0 + uTime * 0.7));',
+            '  float rim = smoothstep(0.72, 0.98, r);',
+            '  vec3 sky = mix(vec3(0.56, 0.84, 1.0), vec3(0.99, 0.91, 0.58), rim * 0.65);',
+            '  vec3 prism = 0.5 + 0.5 * cos(6.28318 * (r * 1.4 - uTime * 0.15 + vec3(0.0, 0.33, 0.67)));',
+            '  vec3 col = mix(sky, prism, rim * 0.45) + vec3(0.18, 0.26, 0.32) * ripple * (1.0 - r * 0.6);',
+            '  float alpha = clamp(0.24 + ripple * 0.14 + rim * 0.42, 0.14, 0.82);',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true, depthWrite: false, side: THREE.DoubleSide
+        })
+        : new THREE.MeshBasicMaterial({
+          color: 0x93c5fd, transparent: true, opacity: 0.22, side: THREE.DoubleSide
+        });
       var disc = new THREE.Mesh(
         new THREE.CircleGeometry(R, 64),
-        new THREE.MeshBasicMaterial({
-          color: 0x93c5fd, transparent: true, opacity: 0.22, side: THREE.DoubleSide
-        })
+        discMat
       );
       disc.rotation.x = -Math.PI / 2;
       disc.position.y = 0.005;
       S.model.add(disc);
+      if (discMat && discMat.isShaderMaterial) _opTrackShader(S, discMat, null);
 
       // The cone from the eye out to the ring — the solid angle the sky occupies.
       var cone = new THREE.Mesh(
@@ -3032,6 +3477,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var from = new THREE.Vector3(hitT.x * 2.25, -D * 1.25, hitT.z * 2.25);
         addRay(THREE, from, hitT, 0x5eead4, 0.5);
         addRay(THREE, hitT, eye, 0x5eead4, 0.8);
+        if (tz % 2 === 0) _opAddLaserGlow(S, THREE, hitT, eye, 0x5eead4, 0.18, 0.36, 3.8);
         var inDir = hitT.clone().sub(from), outDir = eye.clone().sub(hitT);
         var inDeg = Math.acos(Math.abs(inDir.y) / inDir.length()) * 180 / Math.PI;
         var outDeg = Math.acos(Math.abs(outDir.y) / outDir.length()) * 180 / Math.PI;
@@ -3040,6 +3486,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         S.tirRays++;
       }
 
+      _opAddBenchDust(S, THREE, 48, surfaceHalf * 0.72, D * 0.44, surfaceHalf * 0.72, 0xbae6fd);
       S.target = new THREE.Vector3(0, -D * 0.45, 0);
       S.half = new THREE.Vector3(surfaceHalf, D * 0.95, surfaceHalf);
     }
@@ -3049,7 +3496,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       S.raf = requestAnimationFrame(frame);
     }
 
-    function frame() {
+    function frame(now) {
       if (!S) return;
       S.raf = 0;
       if (S.contextLost || !S.renderer) return;
@@ -3059,6 +3506,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         if (next.sig !== sig) { sig = next.sig; applyModel(next); }
         S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
       }
+      var animateFx = _opUpdateShaders(S, now);
       var el = S.renderer.domElement;
       var w = el.clientWidth || 1, hgt = el.clientHeight || 1;
       if (w !== S.lastW || hgt !== S.lastH) {
@@ -3101,6 +3549,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       S.camera.lookAt(S.target);
       try { S.renderer.render(S.scene, S.camera); } catch (e) { /* keep looping */ }
       _opFlushRetired(S);
+      if (animateFx && S.shaderMats && S.shaderMats.length && S.inView !== false) scheduleFrame();
     }
 
     function build(THREE, host) {
@@ -3156,6 +3605,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         S.wheelHost = host; S.wheelGuard = function (ev) { ev.preventDefault(); };
         host.addEventListener('wheel', S.wheelGuard, { passive: false });
       }
+      _opAttachBenchObserver(S, host, scheduleFrame);
 
       sig = '';
       scheduleFrame();
@@ -3336,12 +3786,16 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       incidencePlane.position.z = -0.01;
       S.model.add(incidencePlane);
 
+      var refrHc = _opIsHighContrast(S.renderer && S.renderer.domElement);
+      var surfaceMat = _opCreateFresnelGlassMat(THREE, 0x67e8f9, 0.18, 0.58, refrHc)
+        || new THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false });
       var surface = new THREE.Mesh(
         new THREE.PlaneGeometry(13, 9),
-        new THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false })
+        surfaceMat
       );
       surface.rotation.x = -Math.PI / 2;
       S.model.add(surface);
+      if (surfaceMat && surfaceMat.isShaderMaterial) _opTrackShader(S, surfaceMat, null);
       for (var g = -4; g <= 4; g += 2) {
         addLine(THREE, [new THREE.Vector3(-6.5, 0.015, g), new THREE.Vector3(6.5, 0.015, g)], 0x38bdf8, 0.16);
       }
@@ -3355,20 +3809,72 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var hit = new THREE.Vector3(0, 0, z);
         var incoming = new THREE.Vector3(-span * Math.sin(theta1), span * Math.cos(theta1), z);
         addLine(THREE, [incoming, hit], 0xfbbf24, opacity, 2);
-        if (index === 1) { addArrowHead(THREE, incoming, hit, 0xfbbf24, 1); S.incidentRayStart = { x: incoming.x - hit.x, y: incoming.y - hit.y }; }
+        if (index === 1) {
+          addArrowHead(THREE, incoming, hit, 0xfbbf24, 1);
+          S.incidentRayStart = { x: incoming.x - hit.x, y: incoming.y - hit.y };
+          _opAddLaserGlow(S, THREE, incoming, hit, 0xfbbf24, 0.27, 0.56, 4.6);
+        }
         if (tir) {
           var reflected = new THREE.Vector3(span * Math.sin(theta1), span * Math.cos(theta1), z);
           addLine(THREE, [hit, reflected], 0xfb7185, opacity * reflectedVisibility, 2);
-          if (index === 1) addArrowHead(THREE, hit, reflected, 0xfb7185, reflectedVisibility);
+          if (index === 1) {
+            addArrowHead(THREE, hit, reflected, 0xfb7185, reflectedVisibility);
+            _opAddLaserGlow(S, THREE, hit, reflected, 0xfb7185, 0.27, 0.58 * reflectedVisibility, 4.8);
+          }
         } else {
           var refracted = new THREE.Vector3(span * Math.sin(theta2), -span * Math.cos(theta2), z);
           addLine(THREE, [hit, refracted], 0x22d3ee, opacity * transmittedVisibility, 2);
-          if (index === 1) addArrowHead(THREE, hit, refracted, 0x22d3ee, transmittedVisibility);
+          if (index === 1) {
+            addArrowHead(THREE, hit, refracted, 0x22d3ee, transmittedVisibility);
+            _opAddLaserGlow(S, THREE, hit, refracted, 0x22d3ee, 0.27, 0.56 * transmittedVisibility, 4.4);
+          }
           var reflectedWeak = new THREE.Vector3(span * Math.sin(theta1), span * Math.cos(theta1), z);
           addLine(THREE, [hit, reflectedWeak], 0xfb7185, opacity * reflectedVisibility, 1);
-          if (index === 1) addArrowHead(THREE, hit, reflectedWeak, 0xfb7185, reflectedVisibility);
+          if (index === 1) {
+            addArrowHead(THREE, hit, reflectedWeak, 0xfb7185, reflectedVisibility);
+            if (reflectedVisibility > 0.25) _opAddLaserGlow(S, THREE, hit, reflectedWeak, 0xfb7185, 0.16, 0.42 * reflectedVisibility, 4.8);
+          }
         }
       });
+      // Chromatic dispersion caustic fan (only when outcome is revealed, never spoiling held predictions)
+      if (!m.held && !tir && typeof THREE.ShaderMaterial === 'function') {
+        var spread = clamp(Math.abs(theta1 - theta2) * 0.42 + 0.08, 0.09, 0.34);
+        var fanGeo = new THREE.BufferGeometry();
+        var fanSegs = 20, fanPos = [], fanUv = [], fanIdx = [];
+        for (var fs = 0; fs <= fanSegs; fs++) {
+          var u = fs / fanSegs;
+          var a = theta2 + (u - 0.5) * spread * 2.0;
+          var rLen = span * 0.96;
+          fanPos.push(0, 0, 0.04, Math.sin(a) * rLen, -Math.cos(a) * rLen, 0.04);
+          fanUv.push(u, 0, u, 1);
+          if (fs < fanSegs) {
+            var b0 = fs * 2;
+            fanIdx.push(b0, b0 + 1, b0 + 2, b0 + 1, b0 + 3, b0 + 2);
+          }
+        }
+        fanGeo.setAttribute('position', new THREE.Float32BufferAttribute(fanPos, 3));
+        fanGeo.setAttribute('uv', new THREE.Float32BufferAttribute(fanUv, 2));
+        fanGeo.setIndex(fanIdx);
+        var fanMat = _opCreateChromaticCausticMat(THREE, 0.48 * transmittedVisibility, refrHc);
+        if (fanMat) {
+          var fanMesh = new THREE.Mesh(fanGeo, fanMat);
+          fanMesh.frustumCulled = false;
+          fanMesh.visible = !refrHc;
+          S.model.add(fanMesh);
+          _opTrackShader(S, fanMat, fanMesh);
+        }
+      } else if (!m.held && tir) {
+        // Evanescent wave luminous caustic bloom beneath the TIR impact point
+        var evMat = _opCreateSpotCausticMat(THREE, 0xfb7185, true, refrHc);
+        if (evMat) {
+          var evMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 2.8), evMat);
+          evMesh.rotation.x = -Math.PI / 2;
+          evMesh.position.set(0, -0.04, 0);
+          evMesh.visible = !refrHc;
+          S.model.add(evMesh);
+          _opTrackShader(S, evMat, evMesh);
+        }
+      }
       addArc(THREE, theta1, true, 0xfbbf24);
       if (!tir) addArc(THREE, theta2, false, 0x22d3ee);
 
@@ -3377,6 +3883,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         new THREE.MeshBasicMaterial({ color: tir ? 0xfb7185 : 0xfef08a })
       );
       S.model.add(impact);
+      _opAddBenchDust(S, THREE, 52, 5.4, 3.4, 3.2, 0xfef08a);
       S.target.set(0, 0, 0);
       S.half.set(6.7, 4.5, 4.8);
       S.theta1Deg = +(theta1 * 180 / Math.PI).toFixed(2);
@@ -3390,7 +3897,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       if (!S || S.raf || S.contextLost) return;
       S.raf = requestAnimationFrame(frame);
     }
-    function frame() {
+    function frame(now) {
       if (!S) return;
       S.raf = 0;
       if (S.contextLost || !S.renderer || (typeof document !== 'undefined' && document.hidden)) return;
@@ -3399,6 +3906,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         if (next.sig !== sig) { sig = next.sig; applyModel(next); }
         S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
       }
+      var animateFx = _opUpdateShaders(S, now);
       var el = S.renderer.domElement;
       var width = el.clientWidth || 1, height = el.clientHeight || 1;
       if (width !== S.lastW || height !== S.lastH) {
@@ -3429,6 +3937,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       S.camera.lookAt(S.target);
       try { S.renderer.render(S.scene, S.camera); } catch (e) {}
       _opFlushRetired(S);
+      if (animateFx && S.shaderMats && S.shaderMats.length && S.inView !== false) scheduleFrame();
     }
     function build(THREE, host) {
       var renderer;
@@ -3463,6 +3972,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         S.visibilityHandler = function() { if (!document.hidden) scheduleFrame(); };
         document.addEventListener('visibilitychange', S.visibilityHandler);
       }
+      _opAttachBenchObserver(S, host, scheduleFrame);
       scheduleFrame();
       return true;
     }
@@ -4168,9 +4678,28 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
           return arcs;
         })(),
-        // Incident ray (yellow, with arrowhead at the interface)
-        h('line', { x1: inX, y1: inY, x2: cx, y2: cy, stroke: '#fde047', strokeWidth: 11, opacity: 0.18, filter: 'url(#op-ray-bloom)' }),
+        // Precision protractor ring ticks around the refraction impact point
+        (function() {
+          var ticks = [], pR = 64;
+          ticks.push(h('circle', { key: 'pr-ring', cx: cx, cy: cy, r: pR, fill: 'none', stroke: '#94a3b8', strokeWidth: 0.75, strokeDasharray: '2 4', opacity: 0.28 }));
+          for (var deg = 15; deg <= 75; deg += 15) {
+            var rad = degToRad(deg), s = Math.sin(rad), c = Math.cos(rad);
+            var len = deg % 30 === 0 ? 6 : 3.5;
+            [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(function(q, qi) {
+              ticks.push(h('line', {
+                key: 'pt-' + deg + '-' + qi,
+                x1: (cx + q[0] * pR * s).toFixed(1), y1: (cy + q[1] * pR * c).toFixed(1),
+                x2: (cx + q[0] * (pR + len) * s).toFixed(1), y2: (cy + q[1] * (pR + len) * c).toFixed(1),
+                stroke: '#cbd5e1', strokeWidth: deg % 30 === 0 ? 1 : 0.7, opacity: deg % 30 === 0 ? 0.35 : 0.2
+              }));
+            });
+          }
+          return ticks;
+        })(),
+        // Incident ray (multi-pass luminous laser beam + bright core + arrowhead at interface)
+        h('line', { x1: inX, y1: inY, x2: cx, y2: cy, stroke: '#fde047', strokeWidth: 12, opacity: 0.22, filter: 'url(#op-ray-bloom)' }),
         h('line', { x1: inX, y1: inY, x2: cx, y2: cy, stroke: '#fbbf24', strokeWidth: 2.5 }),
+        h('line', { x1: inX, y1: inY, x2: cx, y2: cy, stroke: '#fffbeb', strokeWidth: 0.9, opacity: 0.85 }),
         h('polygon', { points: (cx - 4) + ',' + (cy - 5) + ' ' + (cx + 4) + ',' + (cy - 5) + ' ' + cx + ',' + (cy + 1), fill: '#fbbf24', 'data-op-refraction-arrow-deg': (-theta1Deg).toFixed(3), transform: 'rotate(' + (-theta1Deg) + ' ' + cx + ' ' + cy + ')' }),
         // Left of the incident ray and right of the reflected one: at small θ₁
         // both rays run up the normal and the labels sat on top of each other.
@@ -4188,7 +4717,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           h('circle', { cx: inX, cy: inY, r: 10, fill: 'none', stroke: OP_RAY.incident, strokeWidth: 1, strokeDasharray: '2 2', opacity: .7 })
         ),
         // Reflected ray (solid because it is physical; emphasis follows power).
-        h('line', { x1: cx, y1: cy, x2: reflX, y2: reflY, stroke: OP_RAY.reflected, strokeWidth: 5 + 8 * reflectedVisual, opacity: 0.05 + 0.25 * reflectedVisual, filter: 'url(#op-ray-bloom)' }),
+        h('line', { x1: cx, y1: cy, x2: reflX, y2: reflY, stroke: OP_RAY.reflected, strokeWidth: 5 + 8 * reflectedVisual, opacity: 0.06 + 0.27 * reflectedVisual, filter: 'url(#op-ray-bloom)' }),
         h('line', {
           x1: cx, y1: cy, x2: reflX, y2: reflY,
           'data-op-refraction-ray': 'reflected',
@@ -4198,19 +4727,21 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           strokeWidth: 1.1 + 1.7 * reflectedVisual,
           opacity: 0.36 + 0.64 * reflectedVisual
         }),
+        h('line', { x1: cx, y1: cy, x2: reflX, y2: reflY, stroke: '#fff1f2', strokeWidth: 0.75, opacity: 0.12 + 0.65 * reflectedVisual }),
         h('text', { x: (reflX + cx) / 2 + 8, y: (reflY + cy) / 2, fill: OP_RAY.reflected, stroke: '#0b1220', strokeWidth: 3, paintOrder: 'stroke', fontSize: 12 }, refrHide ? 'reflected' : 'reflected R ' + reflectedPct + '%'),
         // Refracted (or TIR) ray
         !isTIR && theta2 != null ? [
-          h('line', { key: 'rfrglow', x1: cx, y1: cy, x2: refrX, y2: refrY, stroke: '#22d3ee', strokeWidth: 5 + 7 * transmittedVisual, opacity: 0.05 + 0.13 * transmittedVisual, filter: 'url(#op-ray-bloom)' }),
+          h('line', { key: 'rfrglow', x1: cx, y1: cy, x2: refrX, y2: refrY, stroke: '#22d3ee', strokeWidth: 5 + 8 * transmittedVisual, opacity: 0.06 + 0.16 * transmittedVisual, filter: 'url(#op-ray-bloom)' }),
           h('line', {
             key: 'rfr', x1: cx, y1: cy, x2: refrX, y2: refrY,
             'data-op-refraction-ray': 'transmitted',
             'data-power-fraction': transmittance.toFixed(6),
             'data-visual-emphasis': transmittedVisual.toFixed(6),
             stroke: '#06b6d4',
-            strokeWidth: 1.1 + 1.4 * transmittedVisual,
+            strokeWidth: 1.1 + 1.5 * transmittedVisual,
             opacity: 0.36 + 0.64 * transmittedVisual
           }),
+          h('line', { key: 'rfrcore', x1: cx, y1: cy, x2: refrX, y2: refrY, stroke: '#ecfeff', strokeWidth: 0.75, opacity: 0.14 + 0.62 * transmittedVisual }),
           h('text', { key: 'rfrlab', x: (refrX + cx) / 2 + 8, y: (refrY + cy) / 2, fill: '#06b6d4', fontSize: 12, fontWeight: 700 }, refrHide ? 'refracted' : 'refracted T ' + transmittedPct + '%')
         ] : [
           // TIR: draw the reflected ray as the strong outgoing ray (no transmitted light)
@@ -4637,11 +5168,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
       // Convex glass reads as a flattened ellipsoid; concave glass uses a thin
       // disc plus a bright rim so the two lens families remain distinguishable.
-      var lensMaterial = new THREE.MeshPhongMaterial({
-        color: model.type === 'converging' ? 0x67e8f9 : 0x818cf8,
-        transparent: true, opacity: 0.30, shininess: 90, side: THREE.DoubleSide,
-        depthWrite: false
-      });
+      var lensHc = _opIsHighContrast(S.renderer && S.renderer.domElement);
+      var lensTint = model.type === 'converging' ? 0x67e8f9 : 0x818cf8;
+      var lensMaterial = _opCreateFresnelGlassMat(THREE, lensTint, 0.28, 0.72, lensHc)
+        || new THREE.MeshPhongMaterial({
+          color: lensTint,
+          transparent: true, opacity: 0.30, shininess: 90, side: THREE.DoubleSide,
+          depthWrite: false
+        });
+      if (lensMaterial && lensMaterial.isShaderMaterial) _opTrackShader(S, lensMaterial, null);
       var lensMesh;
       if (model.type === 'converging') {
         lensMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 24), lensMaterial);
@@ -4707,6 +5242,17 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       spot.position.set(screenWorld - 0.01, lensSpotY, 0);
       spot.visible = !S.screenSpotMiss;
       S.model.add(spot);
+      if (!S.screenSpotMiss) {
+        var lensSpotCausticMat = _opCreateSpotCausticMat(THREE, model.screenFocused ? 0x86efac : 0x22d3ee, !!model.screenFocused, lensHc);
+        if (lensSpotCausticMat) {
+          var lensSpotCaustic = new THREE.Mesh(new THREE.PlaneGeometry(spotRadius * 2.55, spotRadius * 2.55), lensSpotCausticMat);
+          lensSpotCaustic.rotation.y = Math.PI / 2;
+          lensSpotCaustic.position.set(screenWorld - 0.014, lensSpotY, 0);
+          lensSpotCaustic.visible = !lensHc;
+          S.model.add(lensSpotCaustic);
+          _opTrackShader(S, lensSpotCausticMat, lensSpotCaustic);
+        }
+      }
       if (trueSpotRadius > 2.4 && !S.screenSpotMiss) {
         var lensSpotRing = [];
         for (var lensRingStep = 0; lensRingStep <= 64; lensRingStep++) {
@@ -4734,8 +5280,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var theta = a / 8 * Math.PI * 2;
         aperturePoints.push(new THREE.Vector3(0, Math.cos(theta) * 1.72, Math.sin(theta) * 1.72));
       }
-      aperturePoints.forEach(function (hit) {
+      var lensGlowRays = [];
+      aperturePoints.forEach(function (hit, rayIdx) {
         addLine(THREE, [objectPoint, hit], 0xfbbf24, 0.46, false);
+        var trackGlow = rayIdx === 0 || rayIdx % 2 === 1;
+        if (trackGlow) lensGlowRays.push({ from: objectPoint, to: hit, color: 0xfbbf24, r: rayIdx === 0 ? 0.095 : 0.068, op: rayIdx === 0 ? 0.54 : 0.32, sp: 4.3 });
         if (!imagePoint && model.atInfinity) {
           // Object point in the focal plane: every post-lens ray has the same
           // slope, so the bundle is collimated and the image is at infinity.
@@ -4744,6 +5293,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           );
           var infinityEnd = pointAtBenchEdge(THREE, hit, parallelDirection, rightEdge);
           addLine(THREE, [hit, infinityEnd], 0x22d3ee, 0.82, false);
+          if (trackGlow) lensGlowRays.push({ from: hit, to: infinityEnd, color: 0x22d3ee, r: rayIdx === 0 ? 0.105 : 0.072, op: rayIdx === 0 ? 0.60 : 0.36, sp: 4.7 });
           S.rayCount++;
           return;
         }
@@ -4754,6 +5304,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // image plane intercept the physically correct bundle.
           var realEnd = pointAtBenchEdge(THREE, hit, imagePoint, rightEdge);
           addLine(THREE, [hit, realEnd], 0x22d3ee, 0.82, false);
+          if (trackGlow) lensGlowRays.push({ from: hit, to: realEnd, color: 0x22d3ee, r: rayIdx === 0 ? 0.105 : 0.072, op: rayIdx === 0 ? 0.60 : 0.36, sp: 4.7 });
           if (realEnd.x > imagePoint.x + 1e-6) S.realRaysContinuePastFocus = true;
         } else {
           // The physical ray travels rightward away from the virtual image;
@@ -4762,6 +5313,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var virtualEnd = imageVisible ? imagePoint : pointAtBenchEdge(THREE, hit, imagePoint, leftEdge);
           addLine(THREE, [hit, outgoing], 0x22d3ee, 0.82, false);
           addLine(THREE, [hit, virtualEnd], 0xf0abfc, 0.50, true);
+          if (trackGlow) lensGlowRays.push({ from: hit, to: outgoing, color: 0x22d3ee, r: rayIdx === 0 ? 0.105 : 0.072, op: rayIdx === 0 ? 0.60 : 0.36, sp: 4.7 });
         }
         S.rayCount++;
       });
@@ -4775,6 +5327,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       S.screenFocused = !!model.screenFocused;
       S.screenCapturable = !!model.screenCapturable;
       _fitOptics3DModelBounds(THREE, S.model, S.target, S.half);
+      lensGlowRays.forEach(function (g) { _opAddLaserGlow(S, THREE, g.from, g.to, g.color, g.r, g.op, g.sp); });
+      _opAddBenchDust(S, THREE, 52, Math.min(8.2, S.half.x * 0.85), Math.min(3.4, S.half.y * 0.72), Math.min(2.4, S.half.z * 0.75), 0xe0f2fe);
       // An oversized spot ring (a 380% bundle is 6.5 units across) is drawn but
       // must not set the camera distance; it shrank the whole bench to 11-70%.
       if (S.pendingRing) { addLine(THREE, S.pendingRing, 0x22d3ee, 0.6, true); S.pendingRing = null; }
@@ -4786,7 +5340,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       S.raf = requestAnimationFrame(frame);
     }
 
-    function frame() {
+    function frame(now) {
       if (!S) return;
       S.raf = 0;
       if (S.contextLost || !S.renderer) return;
@@ -4796,6 +5350,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         if (next.sig !== sig) { sig = next.sig; applyModel(next); }
         S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
       }
+      var animateFx = _opUpdateShaders(S, now);
       var el = S.renderer.domElement;
       var width = el.clientWidth || 1, height = el.clientHeight || 1;
       if (width !== S.lastW || height !== S.lastH) {
@@ -4832,6 +5387,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       S.camera.lookAt(S.target);
       try { S.renderer.render(S.scene, S.camera); } catch (e) {}
       _opFlushRetired(S);
+      if (animateFx && S.shaderMats && S.shaderMats.length && S.inView !== false) scheduleFrame();
     }
 
     function build(THREE, host) {
@@ -4892,6 +5448,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         S.wheelHost = host; S.wheelGuard = function (ev) { ev.preventDefault(); };
         host.addEventListener('wheel', S.wheelGuard, { passive: false });
       }
+      _opAttachBenchObserver(S, host, scheduleFrame);
       sig = '';
       scheduleFrame();
       return true;
@@ -5538,19 +6095,20 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           + ' ' + lensPathSummary + ' Screen test: ' + screenStatus,
         style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, maxWidth: 460 }
       },
-        // Background grid
+        // Background grid + precision optical bench scale ticks
         (function() {
           var g = [];
           for (var gx = -45; gx <= 45; gx += 5) {
-            g.push(h('line', { key: 'gx' + gx, x1: sx(gx), y1: pad.t, x2: sx(gx), y2: H - pad.b, stroke: 'var(--allo-stem-border, #1e293b)', strokeWidth: 1 }));
+            g.push(h('line', { key: 'gx' + gx, x1: sx(gx), y1: pad.t, x2: sx(gx), y2: H - pad.b, stroke: 'var(--allo-stem-border, #1e293b)', strokeWidth: 1, opacity: 0.72 }));
+            g.push(h('line', { key: 'gxt' + gx, x1: sx(gx), y1: sy(0) - (gx % 10 === 0 ? 4.5 : 2.5), x2: sx(gx), y2: sy(0) + (gx % 10 === 0 ? 4.5 : 2.5), stroke: '#64748b', strokeWidth: 1, opacity: 0.72 }));
           }
           for (var gy = -12; gy <= 12; gy += 3) {
-            g.push(h('line', { key: 'gy' + gy, x1: pad.l, y1: sy(gy), x2: W - pad.r, y2: sy(gy), stroke: 'var(--allo-stem-border, #1e293b)', strokeWidth: 1 }));
+            g.push(h('line', { key: 'gy' + gy, x1: pad.l, y1: sy(gy), x2: W - pad.r, y2: sy(gy), stroke: 'var(--allo-stem-border, #1e293b)', strokeWidth: 1, opacity: 0.72 }));
           }
           return g;
         })(),
         // Optical axis
-        h('line', { x1: pad.l, y1: sy(0), x2: W - pad.r, y2: sy(0), stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
+        h('line', { x1: pad.l, y1: sy(0), x2: W - pad.r, y2: sy(0), stroke: '#64748b', strokeWidth: 1, strokeDasharray: '3 3' }),
         ghost && h('g', { className: 'opticslab-ghost-layer', 'aria-hidden': 'true' },
           h('line', { x1: sx(-ghostDo), y1: sy(0), x2: sx(-ghostDo), y2: sy(ghostH), stroke: OP_RAY.previous, strokeWidth: 2, strokeDasharray: '5 4' }),
           ghostDi != null && _isNum(ghostM) && h('line', {
@@ -5563,40 +6121,52 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }),
           h('text', { x: pad.l + 5, y: pad.t + 13 }, 'previous setup')
         ),
-        // Lens at x = 0 — dimensional glass profile with an accessible symbolic outline.
+        // Lens at x = 0 — dimensional glass profile with internal sheen & edge highlights.
         (function() {
           var lensX = sx(0);
           var topY = sy(10), botY = sy(-10), midY = sy(0);
           var glassPath = lt === 'converging'
             ? 'M ' + lensX + ' ' + topY + ' C ' + (lensX + 13) + ' ' + (topY + 28) + ' ' + (lensX + 13) + ' ' + (botY - 28) + ' ' + lensX + ' ' + botY + ' C ' + (lensX - 13) + ' ' + (botY - 28) + ' ' + (lensX - 13) + ' ' + (topY + 28) + ' ' + lensX + ' ' + topY + ' Z'
             : 'M ' + (lensX - 11) + ' ' + topY + ' C ' + (lensX - 3) + ' ' + (topY + 32) + ' ' + (lensX - 3) + ' ' + (botY - 32) + ' ' + (lensX - 11) + ' ' + botY + ' L ' + (lensX + 11) + ' ' + botY + ' C ' + (lensX + 3) + ' ' + (botY - 32) + ' ' + (lensX + 3) + ' ' + (topY + 32) + ' ' + (lensX + 11) + ' ' + topY + ' Z';
+          var rimLeft = lt === 'converging'
+            ? 'M ' + (lensX - 2) + ' ' + (topY + 9) + ' C ' + (lensX - 9) + ' ' + (topY + 34) + ' ' + (lensX - 9) + ' ' + (botY - 34) + ' ' + (lensX - 2) + ' ' + (botY - 9)
+            : 'M ' + (lensX - 8) + ' ' + (topY + 6) + ' C ' + (lensX - 2) + ' ' + (topY + 34) + ' ' + (lensX - 2) + ' ' + (botY - 34) + ' ' + (lensX - 8) + ' ' + (botY - 6);
           return h('g', { 'aria-hidden': 'true' },
             h('defs', null,
               h('linearGradient', { id: 'op-lens-glass', x1: '0', y1: '0', x2: '1', y2: '0' },
-                h('stop', { offset: '0%', stopColor: '#67e8f9', stopOpacity: 0.18 }),
-                h('stop', { offset: '42%', stopColor: '#e0f2fe', stopOpacity: 0.7 }),
-                h('stop', { offset: '58%', stopColor: '#ffffff', stopOpacity: 0.82 }),
-                h('stop', { offset: '100%', stopColor: '#818cf8', stopOpacity: 0.24 })
+                h('stop', { offset: '0%', stopColor: '#67e8f9', stopOpacity: 0.22 }),
+                h('stop', { offset: '36%', stopColor: '#e0f2fe', stopOpacity: 0.72 }),
+                h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0.86 }),
+                h('stop', { offset: '84%', stopColor: '#a5f3fc', stopOpacity: 0.42 }),
+                h('stop', { offset: '100%', stopColor: '#818cf8', stopOpacity: 0.26 })
               ),
               h('radialGradient', { id: 'op-lens-aura' },
-                h('stop', { offset: '0%', stopColor: '#a5f3fc', stopOpacity: 0.38 }),
+                h('stop', { offset: '0%', stopColor: '#a5f3fc', stopOpacity: 0.42 }),
                 h('stop', { offset: '100%', stopColor: '#6366f1', stopOpacity: 0 })
+              ),
+              h('radialGradient', { id: 'op-lens-focal-flare' },
+                h('stop', { offset: '0%', stopColor: '#fffbeb', stopOpacity: 0.92 }),
+                h('stop', { offset: '35%', stopColor: '#fbbf24', stopOpacity: 0.42 }),
+                h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })
               ),
               h('filter', { id: 'op-lens-soft-glow', x: '-80%', y: '-30%', width: '260%', height: '160%' },
                 h('feGaussianBlur', { stdDeviation: '8' })
               )
             ),
-            h('ellipse', { cx: lensX, cy: midY, rx: 26, ry: 94, fill: 'url(#op-lens-aura)', opacity: 0.55, filter: 'url(#op-lens-soft-glow)' }),
-            h('path', { d: glassPath, fill: 'url(#op-lens-glass)', stroke: '#a5f3fc', strokeWidth: 1.8 }),
-            h('path', { d: 'M ' + (lensX - 2) + ' ' + (topY + 8) + ' C ' + (lensX + 3) + ' ' + (topY + 38) + ' ' + (lensX + 3) + ' ' + (botY - 38) + ' ' + (lensX - 2) + ' ' + (botY - 8), fill: 'none', stroke: '#ffffff', strokeWidth: 1.2, opacity: 0.68 }),
+            h('ellipse', { cx: lensX, cy: midY, rx: 26, ry: 94, fill: 'url(#op-lens-aura)', opacity: 0.58, filter: 'url(#op-lens-soft-glow)' }),
+            h('path', { d: glassPath, fill: 'url(#op-lens-glass)', stroke: '#a5f3fc', strokeWidth: 1.85 }),
+            h('path', { d: rimLeft, fill: 'none', stroke: '#ffffff', strokeWidth: 1.4, opacity: 0.78 }),
+            h('path', { d: 'M ' + (lensX + 1.5) + ' ' + (topY + 12) + ' C ' + (lensX + 6) + ' ' + (topY + 38) + ' ' + (lensX + 6) + ' ' + (botY - 38) + ' ' + (lensX + 1.5) + ' ' + (botY - 12), fill: 'none', stroke: '#e0f2fe', strokeWidth: 0.9, opacity: 0.52 }),
             h('circle', { cx: lensX, cy: midY, r: 3.5, fill: '#e0f2fe', stroke: '#22d3ee', strokeWidth: 1 }),
             h('text', { x: lensX + 15, y: topY + 12, fill: '#bae6fd', fontSize: 12, fontWeight: 700 }, lt === 'converging' ? 'convex glass' : 'concave glass')
           );
         })(),
-        // Focal points: F at ±|f|
-        h('circle', { cx: sx(-fAbs), cy: sy(0), r: 3, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1 }),
+        // Focal points: F at ±|f| with subtle caustic glow halos
+        h('circle', { cx: sx(-fAbs), cy: sy(0), r: 9.5, fill: 'url(#op-lens-focal-flare)', opacity: 0.72 }),
+        h('circle', { cx: sx(-fAbs), cy: sy(0), r: 3.2, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1 }),
         h('text', { x: sx(-fAbs), y: sy(0) - 6, fill: '#fbbf24', fontSize: 12, textAnchor: 'middle' }, 'F'),
-        h('circle', { cx: sx(fAbs), cy: sy(0), r: 3, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1 }),
+        h('circle', { cx: sx(fAbs), cy: sy(0), r: 9.5, fill: 'url(#op-lens-focal-flare)', opacity: 0.72 }),
+        h('circle', { cx: sx(fAbs), cy: sy(0), r: 3.2, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1 }),
         h('text', { x: sx(fAbs), y: sy(0) - 6, fill: '#fbbf24', fontSize: 12, textAnchor: 'middle' }, "F'"),
         // 2F markers
         h('circle', { cx: sx(-2 * fAbs), cy: sy(0), r: 2, fill: '#94a3b8', stroke: '#0b1220', strokeWidth: 1 }),
@@ -8665,22 +9235,27 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         buildSegment(THREE, seg, src.color || 0xfacc15, 1, true);
       }
 
-      // Polarizer discs, edge-on to the beam.
+      // Polarizer discs, edge-on to the beam, with Fresnel optical-glass birefringent iridescence.
+      var polHc = _opIsHighContrast(S.renderer && S.renderer.domElement);
       S.discCount = 0;
       S.discAxes = [];
       for (var p = 0; p < m.discs.length; p++) {
         var disc = m.discs[p];
         var dx = x0 + disc.at * span;
+        var discTint = disc.plate ? 0x38bdf8 : 0x6366f1;
+        var discMat = _opCreateFresnelGlassMat(THREE, discTint, 0.16, disc.plate ? 0.85 : 0.45, polHc)
+          || new THREE.MeshBasicMaterial({
+            color: discTint,
+            transparent: true, opacity: 0.16, side: THREE.DoubleSide
+          });
         var ring = new THREE.Mesh(
           new THREE.CircleGeometry(OP_DISC_R, 40),
-          new THREE.MeshBasicMaterial({
-            color: disc.plate ? 0x38bdf8 : 0x6366f1,
-            transparent: true, opacity: 0.16, side: THREE.DoubleSide
-          })
+          discMat
         );
         ring.position.set(dx, 0, 0);
         ring.rotation.y = Math.PI / 2;
         S.model.add(ring);
+        if (discMat && discMat.isShaderMaterial) _opTrackShader(S, discMat, null);
         // The transmission axis: the line the field gets projected onto.
         var av = opAxisVec(THREE, disc.deg).multiplyScalar(OP_DISC_R * 0.96);
         var axG = new THREE.BufferGeometry().setFromPoints([
@@ -8692,6 +9267,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         S.discAxes.push({ deg: disc.deg, plate: !!disc.plate, tip: new THREE.Vector3(dx, av.y, av.z), c: new THREE.Vector3(dx, 0, 0) });
         S.discCount++;
       }
+
+      // Coherent beam-axis laser glow & optical-bench dust motes
+      _opAddLaserGlow(S, THREE, new THREE.Vector3(x0 - 0.6, 0, 0), new THREE.Vector3(x0 + span + 0.6, 0, 0), 0xfde047, 0.11, 0.28, 4.0);
+      _opAddBenchDust(S, THREE, 48, span * 0.48, OP_DISC_R * 0.85, OP_DISC_R * 0.85, 0xfef3c7);
 
       S.segCount = S.segs.length;
       writeWave(0);
@@ -8823,6 +9402,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         if (!S.t0) S.t0 = now || 0;
         writeWave(((now || 0) - S.t0) * 0.0032);
       }
+      _opUpdateShaders(S, now, !S.animate);
       var el = S.renderer.domElement;
       var w = el.clientWidth || 1, hgt = el.clientHeight || 1;
       if (w !== S.lastW || hgt !== S.lastH) {
@@ -11530,9 +12110,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       }, [d.phenoAfterPhase, d.phenoAfterStartedAt, d.phenoAfterTick]);
 
       React.useEffect(function() {
-        if (!d.phenoQuantumPlaying) return;
+        if (!d.phenoQuantumPlaying || d.mode !== 'interference') return;
         var rate = d.phenoQuantumRate || 'slow';
         var timer = setTimeout(function() {
+          if (typeof document !== 'undefined' && document.hidden) return;
           var perTick = rate === 'fast' ? 12 : 1;
           var run = _opticsQuantumRun(d);
           var combined = run.dots.slice();
@@ -11541,7 +12122,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           upd({ phenoQuantumDots: combined, phenoQuantumCount: run.count + perTick, phenoQuantumSetup: run.key });
         }, rate === 'fast' ? 50 : 120);
         return function() { clearTimeout(timer); };
-      }, [d.phenoQuantumPlaying, d.phenoQuantumRate, d.phenoQuantumDots, d.phenoQuantumCount]);
+      }, [d.mode, d.phenoQuantumPlaying, d.phenoQuantumRate, d.phenoQuantumDots, d.phenoQuantumCount]);
 
       // Build UI
       var OP_CORE_MODES = ['home', 'reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization', 'quiz', 'mastery', 'inquiry'];
@@ -22897,15 +23478,46 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       }
                       return h('div', null,
                         h('div', { style: { borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.30)' } },
-                          h('svg', { role: 'img', 'aria-label': __alloT('stem.optics.a11y_prism_dispersion_diagram_separating_white_light', 'Prism dispersion diagram separating white light into visible colors.'), viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: '#0a0a18' } },
-                            h('polygon', { points: apex.x + ',' + apex.y + ' ' + baseL.x + ',' + baseL.y + ' ' + baseR.x + ',' + baseR.y, fill: 'rgba(125,211,252,0.20)', stroke: '#7dd3fc', strokeWidth: 1.5 }),
-                            h('line', { x1: P1.x - uIn.x * 240, y1: P1.y - uIn.y * 240, x2: P1.x, y2: P1.y, stroke: '#fff', strokeWidth: 2 }),
-                            h('text', { x: P1.x - uIn.x * 150, y: P1.y - uIn.y * 150 - 8, textAnchor: 'middle', fill: '#fff', fontSize: 10 }, 'White light'),
+                          h('svg', { role: 'img', 'aria-label': __alloT('stem.optics.a11y_prism_dispersion_diagram_separating_white_light', 'Prism dispersion diagram separating white light into visible colors.'), viewBox: '0 0 500 280', style: { width: '100%', display: 'block', background: '#070a16' } },
+                            h('defs', null,
+                              h('radialGradient', { id: 'op-viz-prism-bg', cx: '50%', cy: '48%', r: '65%' },
+                                h('stop', { offset: '0%', stopColor: '#131d36' }),
+                                h('stop', { offset: '100%', stopColor: '#050811' })
+                              ),
+                              h('linearGradient', { id: 'op-viz-prism-glass', x1: '0', y1: '0', x2: '1', y2: '1' },
+                                h('stop', { offset: '0%', stopColor: '#e0f2fe', stopOpacity: 0.34 }),
+                                h('stop', { offset: '45%', stopColor: '#7dd3fc', stopOpacity: 0.16 }),
+                                h('stop', { offset: '100%', stopColor: '#818cf8', stopOpacity: 0.24 })
+                              ),
+                              h('radialGradient', { id: 'op-viz-prism-entry' },
+                                h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.95 }),
+                                h('stop', { offset: '45%', stopColor: '#bae6fd', stopOpacity: 0.4 }),
+                                h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: 0 })
+                              ),
+                              h('filter', { id: 'op-viz-prism-glow', x: '-30%', y: '-30%', width: '160%', height: '160%' },
+                                h('feGaussianBlur', { stdDeviation: '2.8', result: 'b' }),
+                                h('feMerge', null, h('feMergeNode', { in: 'b' }), h('feMergeNode', { in: 'SourceGraphic' }))
+                              )
+                            ),
+                            h('rect', { x: 0, y: 0, width: 500, height: 280, fill: 'url(#op-viz-prism-bg)' }),
+                            // Translucent internal & exiting dispersion fan ribbons
+                            h('polygon', { points: P1.x + ',' + P1.y + ' ' + red.P2.x + ',' + red.P2.y + ' ' + violet.P2.x + ',' + violet.P2.y, fill: '#ffffff', opacity: 0.10 }),
+                            // Glass prism body with facet edge highlight
+                            h('polygon', { points: apex.x + ',' + apex.y + ' ' + baseL.x + ',' + baseL.y + ' ' + baseR.x + ',' + baseR.y, fill: 'url(#op-viz-prism-glass)', stroke: '#7dd3fc', strokeWidth: 1.8 }),
+                            h('line', { x1: apex.x, y1: apex.y + 4, x2: baseL.x + 6, y2: baseL.y - 3, stroke: '#ffffff', strokeWidth: 1, opacity: 0.45 }),
+                            h('line', { x1: apex.x, y1: apex.y + 4, x2: baseR.x - 6, y2: baseR.y - 3, stroke: '#bae6fd', strokeWidth: 0.9, opacity: 0.35 }),
+                            // Multi-pass luminous incident white laser beam + entry caustic spark
+                            h('line', { x1: P1.x - uIn.x * 240, y1: P1.y - uIn.y * 240, x2: P1.x, y2: P1.y, stroke: '#e0f2fe', strokeWidth: 7.5, opacity: 0.24, filter: 'url(#op-viz-prism-glow)' }),
+                            h('line', { x1: P1.x - uIn.x * 240, y1: P1.y - uIn.y * 240, x2: P1.x, y2: P1.y, stroke: '#ffffff', strokeWidth: 2.6 }),
+                            h('circle', { cx: P1.x, cy: P1.y, r: 9, fill: 'url(#op-viz-prism-entry)' }),
+                            h('text', { x: P1.x - uIn.x * 150, y: P1.y - uIn.y * 150 - 8, textAnchor: 'middle', fill: '#fff', fontSize: 10, fontWeight: 700 }, 'White light'),
                             traces.map(function(tr, wi) {
                               var v = tr.tir ? null : exitDir(tr);
                               return h('g', { key: wi, 'data-op-viz-prism-nm': tr.w.nm, 'data-op-viz-prism-deviation': tr.tir ? 'tir' : tr.D.toFixed(3) },
-                                h('line', { x1: P1.x, y1: P1.y, x2: tr.P2.x, y2: tr.P2.y, stroke: tr.w.c, strokeWidth: 1, opacity: 0.7 }),
-                                v && h('line', { x1: tr.P2.x, y1: tr.P2.y, x2: tr.P2.x + v.x * 260, y2: tr.P2.y + v.y * 260, stroke: tr.w.c, strokeWidth: 2.5, opacity: 0.9 }));
+                                h('line', { x1: P1.x, y1: P1.y, x2: tr.P2.x, y2: tr.P2.y, stroke: tr.w.c, strokeWidth: 2.2, opacity: 0.28 }),
+                                h('line', { x1: P1.x, y1: P1.y, x2: tr.P2.x, y2: tr.P2.y, stroke: tr.w.c, strokeWidth: 1.15, opacity: 0.85 }),
+                                v && h('line', { x1: tr.P2.x, y1: tr.P2.y, x2: tr.P2.x + v.x * 260, y2: tr.P2.y + v.y * 260, stroke: tr.w.c, strokeWidth: 6.5, opacity: 0.22, filter: 'url(#op-viz-prism-glow)' }),
+                                v && h('line', { x1: tr.P2.x, y1: tr.P2.y, x2: tr.P2.x + v.x * 260, y2: tr.P2.y + v.y * 260, stroke: tr.w.c, strokeWidth: 2.6, opacity: 0.96 }));
                             }),
                             // End-anchored and clamped: centred at the ray tip they ran past x = 500.
                             !violet.tir && h('text', { 'data-op-viz-prism-label': 'violet', x: Math.min(494, violet.P2.x + exitDir(violet).x * 170 + 55), y: violet.P2.y + exitDir(violet).y * 170 + 14, textAnchor: 'end', fill: '#c4b5fd', stroke: '#0a0a18', strokeWidth: 3, paintOrder: 'stroke', fontSize: 9 }, '400 nm violet: bent most'),

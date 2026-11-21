@@ -164,9 +164,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _moiT = (ctx && ctx.theme) || {};
       var _moiHC = !!_moiT.isContrast, _moiL = !_moiHC && !_moiT.isDark;
-      var _moi_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _moi_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#3b82f6':'#000000','#0ea5e9':'#000000','#0369a1':'#000000','#a855f7':'#000000'};
-      var _moi_FGL = {'#cbd5e1':'#334155','#93c5fd':'#1e3a8a','#94a3b8':'#64748b','#bfdbfe':'#1e40af','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#fde68a':'#92400e','#e9d5ff':'#581c87','#fcd34d':'#78350f'}, _moi_FGH = {'#cbd5e1':'#ffff00','#93c5fd':'#ffff00','#94a3b8':'#ffff00','#bfdbfe':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fecaca':'#ffff00','#fde68a':'#ffff00','#e9d5ff':'#ffff00','#fcd34d':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#0ea5e9':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00'};
-      var _moi_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _moi_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#3b82f6':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#2563eb':'#ffff00','#e2e8f0':'#ffff00'};
+      var _moi_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _moi_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#3b82f6':'#000000','#1d4ed8':'#000000','#0ea5e9':'#000000','#0369a1':'#000000','#a855f7':'#000000','#7e22ce':'#000000'};
+      var _moi_FGL = {'#cbd5e1':'#334155','#93c5fd':'#1e3a8a','#94a3b8':'#475569','#bfdbfe':'#1e40af','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#fde68a':'#92400e','#e9d5ff':'#581c87','#fcd34d':'#78350f','#bbf7d0':'#166534','#0ea5e9':'#0369a1','#22c55e':'#166534','#a855f7':'#7e22ce','#f59e0b':'#92400e'}, _moi_FGH = {'#cbd5e1':'#ffff00','#93c5fd':'#ffff00','#94a3b8':'#ffff00','#bfdbfe':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fecaca':'#ffff00','#fde68a':'#ffff00','#e9d5ff':'#ffff00','#fcd34d':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#0ea5e9':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00','#f59e0b':'#ffff00'};
+      var _moi_BDL = {'#334155':'#cbd5e1','#1e293b':'#cbd5e1','#475569':'#cbd5e1'}, _moi_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#3b82f6':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#2563eb':'#ffff00','#e2e8f0':'#ffff00'};
       var _moiBg = function(h){ return _moiHC ? (_moi_BGH[h]||h) : (_moiL ? (_moi_BGL[h]||h) : h); };
       var _moiFg = function(h){ return _moiHC ? (_moi_FGH[h]||h) : (_moiL ? (_moi_FGL[h]||h) : h); };
       var _moiBd = function(h){ return _moiHC ? (_moi_BDH[h]||h) : (_moiL ? (_moi_BDL[h]||h) : h); };
@@ -177,24 +177,58 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _moiBand = (ctx && ctx.gradeBand) || 'high';
 
-      var d = labToolData.motivationalInterviewing || defaultState();
+      var rawD = labToolData.motivationalInterviewing;
+      var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : defaultState();
+      var safeRulers = (d.myRulers && typeof d.myRulers === 'object' && !Array.isArray(d.myRulers)) ? d.myRulers : {};
+      var safePersonalChange = typeof d.personalChange === 'string' ? d.personalChange : '';
+      var safeMyReflection = typeof d.myReflection === 'string' ? d.myReflection : '';
       function setMI(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.motivationalInterviewing) || defaultState();
-          var next = Object.assign({}, prior, patch);
-          next.lastUpdated = todayISO();
+          var prior = (prev && prev.motivationalInterviewing && typeof prev.motivationalInterviewing === 'object' && !Array.isArray(prev.motivationalInterviewing)) ? prev.motivationalInterviewing : defaultState();
+          var resolved = typeof patch === 'function' ? patch(prior) : patch;
+          if (!resolved || typeof resolved !== 'object') return prev;
+          var next = Object.assign({}, prior, resolved);
+          if (resolved.personalChange !== undefined || resolved.myRulers || resolved.myReflection !== undefined || resolved.practiceScenarios !== undefined) next.lastUpdated = todayISO();
           return Object.assign({}, prev, { motivationalInterviewing: next });
         });
       }
-      var view = d.view || 'home';
+      function scanMIText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'motivationalInterviewing', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'motivationalInterviewing', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setMI({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Motivational Interviewing', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
+      }
+      var VALID_VIEWS = ['home', 'oars', 'rulers', 'changetalk', 'self', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'home';
       function goto(v) { setMI({ view: v }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _moiFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _moiHC ? '#000000' : (_moiL ? '#ffffff' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _moiBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _moiFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _moiFg('#93c5fd'), fontSize: 22, fontWeight: 900 } }, '👂 Motivational Interviewing'),
             h('div', { style: { fontSize: 12, color: _moiFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A conversation style for helping someone think through a change.')
@@ -216,10 +250,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _moiBg('#3b82f6') : '#334155'),
-                background: active ? 'rgba(59,130,246,0.18)' : _moiBg('#1e293b'),
+            return h('button', { key: t.id, id: 'moi-tab-' + t.id, onClick: function() { goto(t.id); },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'moi-panel',
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _moiBd('#3b82f6') : _moiBd('#334155')),
+                background: active ? (_moiHC ? '#000000' : 'rgba(59,130,246,0.18)') : _moiBg('#1e293b'),
                 color: active ? _moiFg('#bfdbfe') : _moiFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -227,8 +261,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       }
 
       function softPointer() {
-        return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _moiFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+        return h('div', { className: 'no-print',
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _moiHC ? '#000000' : (_moiL ? '#f8fafc' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _moiBd('#334155'), fontSize: 11, color: _moiFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'MI is a peer-support and self-coaching framework, not a substitute for counseling. If a peer is talking about hurting themselves, hurting someone else, or being unsafe — that goes to an adult, not into an MI conversation. Crisis Text Line: text HOME to 741741.'
         );
@@ -239,7 +273,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       // ═══════════════════════════════════════════════════════════
       function renderHome() {
         return h('div', null,
-          h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(59,130,246,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(59,130,246,0.4)', marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 14, background: _moiHC ? '#000000' : (_moiL ? '#eff6ff' : 'linear-gradient(135deg, rgba(59,130,246,0.16) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_moiHC ? '#ffff00' : 'rgba(59,130,246,0.4)'), marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _moiFg('#bfdbfe'), marginBottom: 4 } }, 'Help comes from listening, not from advice.'),
             h('p', { style: { margin: 0, color: _moiFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
               'Most well-meaning advice fails because people who are ambivalent about a change do not need MORE reasons — they need to hear themselves think out loud, with someone who is curious about THEIR reasons. That is what MI is. Practiced well, it sounds simple. It is one of the most powerful conversation skills there is.'
@@ -247,7 +281,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
           ),
 
           // The spirit
-          h('div', { style: { padding: 14, borderRadius: 10, background: _moiBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _moiBg('#0f172a'), borderTop: '1px solid ' + _moiBd('#1e293b'), borderRight: '1px solid ' + _moiBd('#1e293b'), borderBottom: '1px solid ' + _moiBd('#1e293b'), borderLeft: '3px solid ' + _moiBd('#3b82f6'), marginBottom: 14 } },
             h('div', { style: { fontSize: 12, color: _moiFg('#93c5fd'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '🧭 The spirit of MI (the part underneath all the skills)'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _moiFg('#e2e8f0'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, h('strong', null, 'Partnership'), ' — you are walking with them, not leading them.'),
@@ -259,7 +293,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
 
           // Roadmap
           stepCard('🚣 OARS — the four core skills', 'Open questions, Affirmations, Reflections, Summaries. The vocabulary of every MI conversation.', function() { goto('oars'); }, '#0ea5e9'),
-          stepCard('📏 The three rulers', 'Importance, Confidence, Readiness. Quick diagnostic for where someone actually is.', function() { goto('rulers'); }, _moiFg('#22c55e')),
+          stepCard('📏 The three rulers', 'Importance, Confidence, Readiness. Quick diagnostic for where someone actually is.', function() { goto('rulers'); }, '#22c55e'),
           stepCard('🗣 Change talk vs sustain talk', 'Learn to hear when someone\'s words are pointing toward change. Then help them say more.', function() { goto('changetalk'); }, '#a855f7'),
           stepCard('🪞 MI on yourself', 'Use the framework to think through a change YOU are working on.', function() { goto('self'); }, '#f59e0b'),
 
@@ -269,8 +303,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _moiBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _moiFg('#e2e8f0') } },
-          h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid ' + _moiBd('#1e293b'), borderRight: '1px solid ' + _moiBd('#1e293b'), borderBottom: '1px solid ' + _moiBd('#1e293b'), borderLeft: '4px solid ' + (_moiHC ? '#ffff00' : color), background: _moiBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _moiFg('#e2e8f0') } },
+          h('div', { style: { fontSize: 14, fontWeight: 800, color: _moiFg(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _moiFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }
@@ -289,8 +323,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
             return h('div', { key: skill.id, style: { padding: 16, borderRadius: 10, background: _moiBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + skill.color, marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 26 } }, skill.icon),
-                h('span', { style: { fontSize: 22, fontWeight: 900, color: skill.color, fontFamily: 'ui-monospace, monospace' } }, skill.letter),
-                h('span', { style: { fontSize: 17, fontWeight: 800, color: skill.color } }, skill.label)
+                h('span', { style: { fontSize: 22, fontWeight: 900, color: _moiFg(skill.color), fontFamily: 'ui-monospace, monospace' } }, skill.letter),
+                h('span', { style: { fontSize: 17, fontWeight: 800, color: _moiFg(skill.color) } }, skill.label)
               ),
               h('p', { style: { margin: '0 0 12px', color: _moiFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } }, skill.blurb),
 
@@ -331,7 +365,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
             return h('div', { key: r.id, style: { padding: 16, borderRadius: 10, background: _moiBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + r.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 24 } }, r.icon),
-                h('span', { style: { fontSize: 16, fontWeight: 800, color: r.color } }, r.label + ' ruler')
+                h('span', { style: { fontSize: 16, fontWeight: 800, color: _moiFg(r.color) } }, r.label + ' ruler')
               ),
               h('div', { style: { padding: 12, borderRadius: 6, background: _moiBg('#1e293b'), marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, color: _moiFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Step 1: ask'),
@@ -412,56 +446,73 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       // ═══════════════════════════════════════════════════════════
       function renderSelf() {
         function setRuler(id, value) {
-          var r = Object.assign({}, (d.myRulers || {}));
-          r[id] = value;
-          setMI({ myRulers: r });
+          var num = Number(value);
+          if (!isFinite(num)) return;
+          var clamped = Math.max(0, Math.min(10, Math.round(num)));
+          setMI(function(prior) {
+            var pr = (prior.myRulers && typeof prior.myRulers === 'object' && !Array.isArray(prior.myRulers)) ? prior.myRulers : {};
+            var r = Object.assign({}, pr);
+            r[id] = clamped;
+            return { myRulers: r };
+          });
         }
 
-        var r = d.myRulers || {};
+        var r = safeRulers;
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: _moiFg('#fde68a'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _moiHC ? '#000000' : 'rgba(245,158,11,0.10)', borderTop: '1px solid ' + (_moiHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_moiHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_moiHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _moiBd('#f59e0b'), marginBottom: 14, fontSize: 12.5, color: _moiFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '🪞 MI on yourself. '),
             'You can use this framework to think through a change you are working on. Three rulers, then write a reflection that uses the MI move: name change talk, do not argue with sustain talk.'
           ),
 
           // What are you working on
-          h('div', { style: { padding: 14, borderRadius: 10, background: _moiBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _moiBg('#0f172a'), borderTop: '1px solid ' + _moiBd('#1e293b'), borderRight: '1px solid ' + _moiBd('#1e293b'), borderBottom: '1px solid ' + _moiBd('#1e293b'), borderLeft: '3px solid ' + _moiBd('#3b82f6'), marginBottom: 14 } },
             h('label', { htmlFor: 'mi-change', style: { display: 'block', fontSize: 12, color: _moiFg('#93c5fd'), fontWeight: 800, marginBottom: 6 } }, 'A change I am thinking about'),
-            h('input', { id: 'mi-change', type: 'text', value: d.personalChange || '',
+            h('input', { id: 'mi-change', type: 'text', value: safePersonalChange,
               placeholder: 'e.g. I want to stop scrolling at night so I can sleep.',
               onChange: function(e) { setMI({ personalChange: e.target.value }); },
-              style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid #334155', background: _moiBg('#1e293b'), color: _moiFg('#e2e8f0'), fontSize: 13.5 } })
+              onBlur: function(e) { scanMIText(e.target.value); },
+              style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid ' + _moiBd('#334155'), background: _moiBg('#1e293b'), color: _moiFg('#e2e8f0'), fontSize: 13.5 } })
           ),
 
           // Three rulers
           RULERS.map(function(rk) {
             var v = r[rk.id];
-            return h('div', { key: rk.id, style: { padding: 14, borderRadius: 10, background: _moiBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + rk.color, marginBottom: 10 } },
+            var hasVal = typeof v === 'number' && isFinite(v);
+            var lowNum = hasVal ? Math.max(0, v - 2) : 0;
+            var followText = hasVal
+              ? (rk.followUp.indexOf('[your number]') !== -1
+                  ? rk.followUp.replace('[your number]', String(v)).replace('[number - 2]', String(lowNum))
+                  : ('Why a ' + v + ' and not a ' + lowNum + '? ' + rk.followUp))
+              : '';
+            return h('div', { key: rk.id, style: { padding: 14, borderRadius: 10, background: _moiBg('#0f172a'), borderTop: '1px solid ' + _moiBd('#1e293b'), borderRight: '1px solid ' + _moiBd('#1e293b'), borderBottom: '1px solid ' + _moiBd('#1e293b'), borderLeft: '3px solid ' + (_moiHC ? '#ffff00' : rk.color), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                 h('span', { style: { fontSize: 18 } }, rk.icon),
-                h('span', { style: { fontSize: 13, fontWeight: 800, color: rk.color } }, rk.label)
+                h('span', { style: { fontSize: 13, fontWeight: 800, color: _moiFg(rk.color) } }, rk.label)
               ),
               h('div', { style: { fontSize: 12, color: _moiFg('#cbd5e1'), marginBottom: 6, fontStyle: 'italic' } }, rk.question),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
-                h('input', { type: 'range', min: 0, max: 10, value: v !== undefined ? v : 5,
+                h('input', { type: 'range', min: 0, max: 10, value: hasVal ? v : 5,
                   onChange: function(e) { setRuler(rk.id, parseInt(e.target.value, 10)); },
-                  style: { flex: 1, minWidth: 180 }, 'aria-label': rk.label + ' rating' }),
-                h('span', { style: { fontSize: 18, fontWeight: 900, color: rk.color, minWidth: 50, textAlign: 'right' } }, v !== undefined ? v + '/10' : '–')
+                  style: { flex: 1, minWidth: 180 }, 'aria-label': rk.label + ' rating',
+                  'aria-valuetext': hasVal ? (v + ' out of 10') : 'Not yet rated (default 5)' }),
+                h('span', { style: { fontSize: 18, fontWeight: 900, color: _moiFg(rk.color), minWidth: 50, textAlign: 'right' } }, hasVal ? v + '/10' : '–'),
+                !hasVal ? h('button', { type: 'button', onClick: function() { setRuler(rk.id, 5); }, 'aria-label': 'Set ' + rk.label + ' rating to 5',
+                  style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (_moiHC ? '#ffff00' : rk.color), background: 'transparent', color: _moiFg(rk.color), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Set 5') : null
               ),
-              v !== undefined ? h('div', { style: { fontSize: 11.5, color: _moiFg('#94a3b8'), marginTop: 8, lineHeight: 1.6, fontStyle: 'italic' } },
-                'Why a ' + v + ' and not a ' + Math.max(0, v - 2) + '? ' + rk.followUp.replace('[your number]', v)) : null
+              hasVal ? h('div', { style: { fontSize: 11.5, color: _moiFg('#94a3b8'), marginTop: 8, lineHeight: 1.6, fontStyle: 'italic' } }, followText) : null
             );
           }),
 
           // Reflection
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _moiHC ? '#000000' : 'rgba(245,158,11,0.10)', borderTop: '1px solid ' + (_moiHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_moiHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_moiHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _moiBd('#f59e0b'), marginBottom: 12 } },
             h('label', { htmlFor: 'mi-reflection', style: { display: 'block', fontSize: 12, color: _moiFg('#fcd34d'), fontWeight: 800, marginBottom: 6 } }, 'What I am noticing'),
             h('div', { style: { fontSize: 11, color: _moiFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'Try this structure: One sentence of WHY this matters to me. One sentence about what is making it hard. One sentence about what would be a small, doable first move.'),
-            h('textarea', { id: 'mi-reflection', value: d.myReflection || '',
+            h('textarea', { id: 'mi-reflection', value: safeMyReflection,
               placeholder: 'This matters to me because... It\'s hard because... A small first move would be...',
               onChange: function(e) { setMI({ myReflection: e.target.value }); },
-              style: { width: '100%', minHeight: 120, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _moiBg('#1e293b'), color: _moiFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
+              onBlur: function(e) { scanMIText(e.target.value); },
+              style: { width: '100%', minHeight: 120, padding: 10, borderRadius: 6, border: '1px solid ' + _moiBd('#334155'), background: _moiBg('#1e293b'), color: _moiFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
           ),
 
           softPointer()
@@ -537,38 +588,39 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       // PRINT — personal-change reflection, MI rulers + summary
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
-        var r = d.myRulers || {};
+        var r = safeRulers;
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(59,130,246,0.10)', borderRadius: 8, border: '1px solid rgba(59,130,246,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _moiHC ? '#000000' : 'rgba(59,130,246,0.10)', borderRadius: 8, border: '1px solid ' + (_moiHC ? '#ffff00' : 'rgba(59,130,246,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _moiFg('#bfdbfe'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'MI self-reflection — useful for a counselor session, peer support practice, or your own records.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)', color: _moiFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _moiHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _moiHC ? '#000000' : 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)', color: _moiFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _moiBg('#1e293b'), color: _moiFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _moiBd('#475569'), background: _moiBg('#1e293b'), color: _moiFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'mi-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _moiBg('#fff'), color: _moiFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _moiBg('#fff'), color: _moiFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _moiBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#mi-print-region, #mi-print-region * { visibility: visible !important; } ' +
-              '#mi-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#mi-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #000 !important; } ' +
+              '#mi-print-region * { background: transparent !important; color: #000 !important; border-color: #888 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
 
-            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #2563eb' } },
+            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _moiBd('#2563eb') } },
               h('div', { style: { fontSize: 10, color: _moiFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Motivational Interviewing · Self-Reflection'),
-              h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, d.personalChange || 'My MI reflection'),
+              h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, safePersonalChange || 'My MI reflection'),
               d.lastUpdated ? h('div', { style: { fontSize: 12, color: _moiFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
-            d.personalChange ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _moiBg('#3b82f6'), color: _moiFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🎯 Change I am thinking about'),
-              h('p', { style: { margin: '0 0 0 12px', color: _moiFg('#0f172a'), fontSize: 13.5, lineHeight: 1.7 } }, d.personalChange)
+            safePersonalChange ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
+              h('div', { style: { background: _moiBg('#1d4ed8'), color: _moiFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🎯 Change I am thinking about'),
+              h('p', { style: { margin: '0 0 0 12px', color: _moiFg('#0f172a'), fontSize: 13.5, lineHeight: 1.7 } }, safePersonalChange)
             ) : null,
 
             // Rulers
@@ -578,23 +630,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
                 h('tbody', null,
                   r.importance !== undefined ? h('tr', null,
                     h('td', { style: { padding: '6px 12px', fontWeight: 700, width: '40%' } }, '⭐ Importance'),
-                    h('td', { style: { padding: '6px 12px', fontWeight: 800, color: _moiFg('#0ea5e9') } }, r.importance + ' / 10')
+                    h('td', { style: { padding: '6px 12px', fontWeight: 800, color: _moiHC ? '#ffff00' : '#0369a1' } }, r.importance + ' / 10')
                   ) : null,
-                  r.confidence !== undefined ? h('tr', { style: { borderTop: '1px solid #e2e8f0' } },
+                  r.confidence !== undefined ? h('tr', { style: { borderTop: '1px solid ' + _moiBd('#e2e8f0') } },
                     h('td', { style: { padding: '6px 12px', fontWeight: 700 } }, '💪 Confidence (if I tried)'),
-                    h('td', { style: { padding: '6px 12px', fontWeight: 800, color: _moiFg('#22c55e') } }, r.confidence + ' / 10')
+                    h('td', { style: { padding: '6px 12px', fontWeight: 800, color: _moiHC ? '#ffff00' : '#166534' } }, r.confidence + ' / 10')
                   ) : null,
-                  r.readiness !== undefined ? h('tr', { style: { borderTop: '1px solid #e2e8f0' } },
+                  r.readiness !== undefined ? h('tr', { style: { borderTop: '1px solid ' + _moiBd('#e2e8f0') } },
                     h('td', { style: { padding: '6px 12px', fontWeight: 700 } }, '🚪 Readiness'),
-                    h('td', { style: { padding: '6px 12px', fontWeight: 800, color: _moiFg('#a855f7') } }, r.readiness + ' / 10')
+                    h('td', { style: { padding: '6px 12px', fontWeight: 800, color: _moiHC ? '#ffff00' : '#7e22ce' } }, r.readiness + ' / 10')
                   ) : null
                 )
               )
             ) : null,
 
-            d.myReflection ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _moiBg('#a855f7'), color: _moiFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🪞 My reflection'),
-              h('p', { style: { margin: '0 0 0 12px', color: _moiFg('#0f172a'), fontSize: 13, lineHeight: 1.75, whiteSpace: 'pre-wrap' } }, d.myReflection)
+            safeMyReflection ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
+              h('div', { style: { background: _moiBg('#7e22ce'), color: _moiFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🪞 My reflection'),
+              h('p', { style: { margin: '0 0 0 12px', color: _moiFg('#0f172a'), fontSize: 13, lineHeight: 1.75, whiteSpace: 'pre-wrap' } }, safeMyReflection)
             ) : null,
 
             h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _moiFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
@@ -619,7 +671,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Motivational Interviewing' },
         header(),
         navTabs(),
-        body
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _moiBand) : null,
+        h('div', { id: 'moi-panel', role: 'tabpanel', 'aria-labelledby': 'moi-tab-' + view }, body)
       );
     }
   });

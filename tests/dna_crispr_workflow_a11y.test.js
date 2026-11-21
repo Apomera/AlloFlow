@@ -83,7 +83,7 @@ describe('CRISPR design and scientific target information', () => {
   it('restores the design view without changing saved work, awarding points, or taking focus', async () => {
     await mount(); expect(changes).not.toHaveBeenCalled(); expect(xp).not.toHaveBeenCalled(); expect(document.activeElement).toBe(outside);
     expect(workspace().textContent).toContain('Schematic guide window: pos 4-9'); expect(workspace().textContent).toContain('cut near pos 7');
-    expect(workspace().textContent).toContain('PAM: AGG at pos 10'); expect(workspace().textContent).toContain('gRNA: UUUGGG');
+    expect(workspace().textContent).toContain('PAM: AGG at pos 10'); expect(workspace().textContent).toContain('gRNA: AAACCC');
     expect(workspace().textContent).toContain('six-base guide window is schematic'); expect(workspace().textContent).toContain('real SpCas9 spacers are typically 20 nt');
     expect(deploy().disabled).toBe(false); preserved();
   });
@@ -186,7 +186,7 @@ describe('CRISPR repair outcomes and single-action rewards', () => {
     await activate(repair('nhej')); expect(latest.dnaLab.dnaSequence).toBe(example.output); expect(latest.dnaLab.crisprRepairType).toBe('nhej'); expect(latest.dnaLab.crisprPhase).toBe('done');
     const desc = 'NHEJ: deleted ' + example.deleted + ' at pos 6 (error-prone, may cause frameshift)';
     expect(latest.dnaLab.crisprEditLog).toEqual([earlierEdit, { type: 'NHEJ', pos: 6, desc, time: Date.now() }]);
-    expect(latest.dnaLab.crisprResult).toMatchObject({ before: targetDna, after: example.output, guideRNA: 'UUUGGG', pam: 'AGG', repairType: 'nhej', desc });
+    expect(latest.dnaLab.crisprResult).toMatchObject({ before: targetDna, after: example.output, guideRNA: 'AAACCC', pam: 'AGG', repairType: 'nhej', desc });
     expect(query('[data-dna-crispr-repaired-target]').textContent).toBe('In the repaired DNA, the PAM begins at base ' + (10 - example.length) + '; the repair boundary is near base 6.');
     expect(latest.dnaLab.mRNA).toBe(''); expect(latest.dnaLab.protein).toEqual([]); expect(latest.dnaLab.animStep).toBe(0);
     expect(field('status')).toBe(live); expect(document.activeElement).toBe(field('stage-title'));
@@ -198,7 +198,7 @@ describe('CRISPR repair outcomes and single-action rewards', () => {
     const beforeEdit = latest.dnaLab.dnaSequence; await activate(repair('hdr')); expect(beforeEdit).toBe(targetDna); expect(latest.dnaLab.dnaSequence).toBe(example.output);
     const desc = 'HDR model: donor template replaced base at pos 7 with ' + example.base;
     expect(latest.dnaLab.crisprEditLog).toEqual([earlierEdit, { type: 'HDR', pos: 6, desc, time: Date.now() }]);
-    expect(latest.dnaLab.crisprResult).toMatchObject({ before: targetDna, after: example.output, guideRNA: 'UUUGGG', pam: 'AGG', repairType: 'hdr', desc });
+    expect(latest.dnaLab.crisprResult).toMatchObject({ before: targetDna, after: example.output, guideRNA: 'AAACCC', pam: 'AGG', repairType: 'hdr', desc });
     expect(query('[data-dna-crispr-repaired-target]').textContent).toBe('In the repaired DNA, the PAM begins at base 10; the repair boundary is near base 7.');
     expect(xp).toHaveBeenCalledExactlyOnceWith('dnaLab', 20, 'Completed CRISPR gene edit'); expect(celebrate).toHaveBeenCalledTimes(1); preserved();
   });
@@ -301,9 +301,9 @@ describe('CRISPR text alternatives and resilient saved results', () => {
 
   it.each([
     { before: targetDna, after: targetDna },
-    { before: targetDna, after: targetDna, site: null, guideRNA: 'UUUGGG', pam: 'AGG', desc: 'Incomplete saved result.' },
+    { before: targetDna, after: targetDna, site: null, guideRNA: 'AAACCC', pam: 'AGG', desc: 'Incomplete saved result.' },
     { before: targetDna, after: targetDna, site: { pamStart: 9 }, guideRNA: { invalid: true }, pam: 'AGG', desc: 'Invalid guide.' },
-    { before: targetDna, after: targetDna, site: { pamStart: 'invalid' }, guideRNA: 'UUUGGG', pam: 'AGG', desc: 'Invalid position.' }
+    { before: targetDna, after: targetDna, site: { pamStart: 'invalid' }, guideRNA: 'AAACCC', pam: 'AGG', desc: 'Invalid position.' }
   ])('renders a malformed saved result safely without rewriting or awarding it', async result => {
     await mount({ crisprPhase: 'done', crisprRepairType: 'hdr', crisprResult: result }); expect(workspace()).not.toBeNull(); expect(newEdit()).not.toBeNull();
     expect(query('[data-dna-crispr-result]')).toBeNull(); expect(latest.dnaLab.crisprResult).toBe(result); expect(changes).not.toHaveBeenCalled(); expect(document.activeElement).toBe(outside);
@@ -314,7 +314,7 @@ describe('CRISPR text alternatives and resilient saved results', () => {
 describe('Completed CRISPR target projection', () => {
   it.each([0, 4])('keeps saved evidence but omits an invalid %s-base NHEJ target projection', async removed => {
     const after = removed ? targetDna.slice(0, -removed) : targetDna;
-    const result = { before: targetDna, after, site: currentAttempt(), guideRNA: 'UUUGGG', pam: 'AGG', repairType: 'nhej', desc: 'Saved NHEJ repair evidence.' };
+    const result = { before: targetDna, after, site: currentAttempt(), guideRNA: 'AAACCC', pam: 'AGG', repairType: 'nhej', desc: 'Saved NHEJ repair evidence.' };
     await mount({ dnaSequence: after, crisprPhase: 'done', crisprRepairType: 'nhej', crisprResult: result });
     expect(query('[data-dna-crispr-repaired-target]')).toBeNull(); const evidence = query('[data-dna-crispr-result]'); expect(evidence).not.toBeNull();
     expect(evidence.textContent).toContain('Before repair: ' + targetDna); expect(evidence.textContent).toContain('After repair: ' + after);

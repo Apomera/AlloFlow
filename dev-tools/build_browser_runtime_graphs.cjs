@@ -67,15 +67,20 @@ function walk(node, visit, parent = null, key = null) {
 
 const EXECUTABLE_CAPABILITIES = new Set(['Worker', 'SharedWorker', 'importScripts']);
 const browserGlobal = node => node?.type === 'Identifier' && ['globalThis', 'self', 'window'].includes(node.name);
+function staticStringLiteral(node) {
+  if (!node) return null;
+  if (node.type === 'Literal' && typeof node.value === 'string') return node.value;
+  if (node.type === 'TemplateLiteral' && !node.expressions.length) return node.quasis[0].value.cooked;
+  return null;
+}
 function staticProperty(node) {
   if (!node) return null;
   if (!node.computed && node.property?.type === 'Identifier') return node.property.name;
-  if (node.computed && node.property?.type === 'Literal' && typeof node.property.value === 'string') return node.property.value;
-  if (node.computed && node.property?.type === 'TemplateLiteral' && !node.property.expressions.length) return node.property.quasis[0].value.cooked;
+  if (node.computed) return staticStringLiteral(node.property);
   return null;
 }
-function capabilityReference(node, parent, key) {
-  if (node.type === 'MemberExpression') return browserGlobal(node.object) && EXECUTABLE_CAPABILITIES.has(staticProperty(node));
+function capabilityReference(node, parent, key, isGlobalRef = browserGlobal) {
+  if (node.type === 'MemberExpression') return isGlobalRef(node.object) && EXECUTABLE_CAPABILITIES.has(staticProperty(node));
   if (node.type !== 'Identifier' || !EXECUTABLE_CAPABILITIES.has(node.name)) return false;
   // Property labels, declarations and environment probes do not acquire a
   // callable capability. Other value reads can hide construction behind an alias.
@@ -90,6 +95,20 @@ function capabilityReference(node, parent, key) {
 function inspectCode(source) {
   const tree = acorn.parse(source, { ecmaVersion: 'latest', sourceType: 'module' });
   const result = { imports: [], dynamic: [], workers: [], importScripts: [], importMetaUrls: [], capabilityReads: [] };
+  const globalAliases = new Set();
+  const isGlobalRef = node => browserGlobal(node) || (node?.type === 'Identifier' && globalAliases.has(node.name));
+  // Fixed-point pass over local identifiers initialized or assigned from browser globals.
+  for (let pass = 0; pass < 4; pass++) {
+    const before = globalAliases.size;
+    walk(tree, node => {
+      if (node.type === 'VariableDeclarator' && node.id.type === 'Identifier' && isGlobalRef(node.init)) {
+        globalAliases.add(node.id.name);
+      } else if (node.type === 'AssignmentExpression' && node.left.type === 'Identifier' && isGlobalRef(node.right)) {
+        globalAliases.add(node.left.name);
+      }
+    });
+    if (globalAliases.size === before) break;
+  }
   walk(tree, (node, parent, key) => {
     if (node.type === 'ImportDeclaration' || (node.type === 'ExportNamedDeclaration' || node.type === 'ExportAllDeclaration') && node.source) result.imports.push(node.source.value);
     if (node.type === 'ImportExpression') result.dynamic.push({ start: node.start, end: node.end,
@@ -100,13 +119,19 @@ function inspectCode(source) {
     if (node.type === 'CallExpression' && named(node.callee, 'importScripts')) result.importScripts.push({ start: node.start, end: node.end });
     if (node.type === 'MemberExpression' && node.object.type === 'MetaProperty' && node.object.meta.name === 'import'
         && node.property.type === 'Identifier' && node.property.name === 'url') result.importMetaUrls.push({ start: node.start, end: node.end });
-    if (capabilityReference(node, parent, key) && !(parent?.type === 'UnaryExpression' && parent.operator === 'typeof')) {
+    if (capabilityReference(node, parent, key, isGlobalRef) && !(parent?.type === 'UnaryExpression' && parent.operator === 'typeof')) {
+      result.capabilityReads.push({ start: node.start, end: node.end });
+    }
+    if (node.type === 'CallExpression' && node.callee.type === 'MemberExpression'
+        && node.callee.object.type === 'Identifier' && node.callee.object.name === 'Reflect'
+        && staticProperty(node.callee) === 'get' && isGlobalRef(node.arguments[0])
+        && EXECUTABLE_CAPABILITIES.has(staticStringLiteral(node.arguments[1]))) {
       result.capabilityReads.push({ start: node.start, end: node.end });
     }
     const pattern = node.type === 'VariableDeclarator' ? node.id : node.type === 'AssignmentExpression' ? node.left : null;
     const value = node.type === 'VariableDeclarator' ? node.init : node.type === 'AssignmentExpression' ? node.right : null;
-    if (pattern?.type === 'ObjectPattern' && browserGlobal(value) && pattern.properties.some(property =>
-      property.type === 'Property' && EXECUTABLE_CAPABILITIES.has(property.computed ? property.key.value : property.key.name || property.key.value))) {
+    if (pattern?.type === 'ObjectPattern' && isGlobalRef(value) && pattern.properties.some(property =>
+      property.type === 'Property' && EXECUTABLE_CAPABILITIES.has(property.computed ? staticStringLiteral(property.key) : property.key.name || property.key.value))) {
       result.capabilityReads.push({ start: node.start, end: node.end });
     }
   });
@@ -132,14 +157,30 @@ async function createAcquirer(stage, allowFetch) {
     assertPinnedCodeUrl(url);
     if (pins && !Object.hasOwn(pins.sources, url)) throw new Error('Runtime source is absent from reviewed pin file: ' + url);
     const file = path.join(cache, sha256(url));
+    const existingStat = fs.lstatSync(file, { throwIfNoEntry: false });
+    if (existingStat && (existingStat.isSymbolicLink() || !existingStat.isFile())) {
+      throw new Error('Runtime source cache path must be an ordinary file: ' + file);
+    }
     let bytes;
-    if (fs.existsSync(file)) bytes = fs.readFileSync(file);
+    let fetched = false;
+    if (existingStat) bytes = fs.readFileSync(file);
     else {
       if (!allowFetch) throw new Error('Uncached runtime source; explicit --fetch required: ' + url);
-      bytes = await download(url); fs.writeFileSync(file, bytes);
+      bytes = await download(url);
+      fetched = true;
     }
     const actual = { bytes: bytes.length, sha384: sha384(bytes) };
     if (pins) assertSourcePin(bytes, pins.sources[url]);
+    if (fetched) {
+      const temp = file + '.tmp-' + process.pid + '-' + crypto.randomBytes(6).toString('hex');
+      try {
+        fs.writeFileSync(temp, bytes, { flag: 'wx' });
+        fs.renameSync(temp, file);
+      } catch (error) {
+        try { fs.unlinkSync(temp); } catch (_) {}
+        throw error;
+      }
+    }
     records.set(url, { url, ...actual, cache: path.relative(stage, file).split(path.sep).join('/') });
     return bytes;
   };
@@ -305,13 +346,16 @@ function runtimeAssetPath(output) {
 // every source and every destination before creating any files; never replace
 // an existing asset, even if another build is running in this workspace.
 function publishGraphs({ stage = DEFAULT_STAGE, destinationRoots = [ROOT, path.join(ROOT, 'desktop/web-app/public')] } = {}) {
+  const stageStat = fs.lstatSync(stage);
+  if (stageStat.isSymbolicLink() || !stageStat.isDirectory()) throw new Error('Runtime stage must be an ordinary directory');
   const metadata = JSON.parse(fs.readFileSync(path.join(stage, 'engine_runtime_integrity.json'), 'utf8'));
   const provenance = JSON.parse(fs.readFileSync(path.join(stage, 'runtime-code-provenance.json'), 'utf8'));
-  const files = Object.fromEntries(provenance.outputs.map(output => [output.sha384, output.file]));
+  const files = new Map(provenance.outputs.map(output => [output.sha384, output.file]));
   const copies = [];
   for (const asset of Object.values(metadata.assets)) {
     if (!/^runtime_assets\/engine\/[a-z0-9.-]+\.[a-f0-9]{24}\.(?:mjs|wasm|data)$/.test(asset.path)) throw new Error('Unexpected runtime asset destination');
-    const file = files[asset.sha384];
+    if (typeof asset.sha384 !== 'string' || !/^[a-f0-9]{96}$/.test(asset.sha384)) throw new Error('Invalid runtime asset sha384 digest');
+    const file = files.get(asset.sha384);
     if (!file || path.basename(file) !== file) throw new Error('Runtime provenance source is not a local filename');
     const source = path.join(stage, file), sourceStat = fs.lstatSync(source);
     if (!sourceStat.isFile() || sourceStat.isSymbolicLink()) throw new Error('Runtime source must be an ordinary file');
@@ -321,17 +365,22 @@ function publishGraphs({ stage = DEFAULT_STAGE, destinationRoots = [ROOT, path.j
       const root = path.resolve(destinationRoot), destination = path.resolve(root, asset.path);
       if (!destination.startsWith(root + path.sep)) throw new Error('Runtime asset escaped destination root');
       for (let current = destination; ; current = path.dirname(current)) {
-        if (fs.existsSync(current) && fs.lstatSync(current).isSymbolicLink()) throw new Error('Runtime destination may not traverse symlinks');
+        const currentStat = fs.lstatSync(current, { throwIfNoEntry: false });
+        if (currentStat && currentStat.isSymbolicLink()) throw new Error('Runtime destination may not traverse symlinks');
         if (current === root) break;
       }
-      const exists = fs.existsSync(destination);
-      if (exists) assertSourcePin(fs.readFileSync(destination), asset);
-      copies.push({ source, destination, exists, ...asset });
+      const destStat = fs.lstatSync(destination, { throwIfNoEntry: false });
+      const exists = Boolean(destStat);
+      if (exists) {
+        if (!destStat.isFile()) throw new Error('Runtime destination must be an ordinary file');
+        assertSourcePin(fs.readFileSync(destination), asset);
+      }
+      copies.push({ destination, exists, content: bytes, ...asset });
     }
   }
   for (const copy of copies) if (!copy.exists) {
     fs.mkdirSync(path.dirname(copy.destination), { recursive: true });
-    fs.copyFileSync(copy.source, copy.destination, fs.constants.COPYFILE_EXCL);
+    fs.writeFileSync(copy.destination, copy.content, { flag: 'wx' });
     assertSourcePin(fs.readFileSync(copy.destination), copy);
   }
   return { assets: Object.keys(metadata.assets).length, created: copies.filter(copy => !copy.exists).length, verifiedExisting: copies.filter(copy => copy.exists).length };

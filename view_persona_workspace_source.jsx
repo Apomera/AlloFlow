@@ -41,9 +41,10 @@ function PersonaWorkspaceView({
       if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest('details:not([open])');
       if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
-      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+      const view = dialog.ownerDocument && dialog.ownerDocument.defaultView;
+      if (view && typeof view.getComputedStyle === 'function') {
         for (let cur = el; cur && cur !== dialog; cur = cur.parentElement) {
-          const st = window.getComputedStyle(cur);
+          const st = view.getComputedStyle(cur);
           if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
         }
       }
@@ -97,7 +98,28 @@ function PersonaWorkspaceView({
                             {isTeacherMode && (
                                 <label className="min-h-11 flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-[11px] font-bold text-slate-700">
                                     <span>{t('persona.resume_retention')}</span>
-                                    <select aria-label={t('persona.resume_retention')} disabled={isProcessing || isGeneratingPersona} defaultValue={(() => { try { return String(normalizePersonaResumeDays(localStorage.getItem('allo_persona_resume_days'))); } catch (_) { return '14'; } })()} onChange={async (e) => { try { const retentionDays = normalizePersonaResumeDays(e.target.value); localStorage.setItem('allo_persona_resume_days', String(retentionDays)); if (retentionDays === 0 && !(await clearPersonaResumeSnapshots())) throw new Error('clear failed'); addToast(t('persona.retention_updated'), 'success'); } catch (_) { addToast(t('persona.retention_update_failed'), 'error'); } }} className="min-h-11 rounded border border-slate-300 bg-white px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60">
+                                    <select
+                                        aria-label={t('persona.resume_retention')}
+                                        disabled={isProcessing || isGeneratingPersona}
+                                        defaultValue={(() => { try { return String(normalizePersonaResumeDays(localStorage.getItem('allo_persona_resume_days'))); } catch (_) { return '14'; } })()}
+                                        onChange={async (e) => {
+                                            const selectEl = e.currentTarget;
+                                            const prevVal = (() => { try { return String(normalizePersonaResumeDays(localStorage.getItem('allo_persona_resume_days'))); } catch (_) { return '14'; } })();
+                                            try {
+                                                const retentionDays = normalizePersonaResumeDays(e.target.value);
+                                                // Clear existing snapshots BEFORE persisting '0' so a failed clear never leaves '0' saved.
+                                                if (retentionDays === 0 && !(await clearPersonaResumeSnapshots())) {
+                                                    throw new Error('clear failed');
+                                                }
+                                                localStorage.setItem('allo_persona_resume_days', String(retentionDays));
+                                                addToast(t('persona.retention_updated'), 'success');
+                                            } catch (_) {
+                                                if (selectEl) selectEl.value = prevVal;
+                                                addToast(t('persona.retention_update_failed'), 'error');
+                                            }
+                                        }}
+                                        className="min-h-11 rounded border border-slate-300 bg-white px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
                                         <option value="0">{t('persona.retention_off')}</option>
                                         <option value="7">7 {t('persona.days')}</option>
                                         <option value="14">14 {t('persona.days')}</option>
@@ -408,10 +430,11 @@ function PersonaWorkspaceView({
                                                     </label>
                                                     <button
                                                         type="button"
+                                                        aria-label={(t('persona.remove_quest') || 'Remove') + ' ' + (t('persona.quest') || 'Quest') + ' ' + (questIndex + 1)}
                                                         onClick={() => updatePersonaTeacherEditor({
                                                             quests: personaTeacherEditor.quests.filter((_, index) => index !== questIndex)
                                                         })}
-                                                        className="min-h-11 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                                        className="min-h-11 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
                                                         {t('persona.remove_quest') || 'Remove'}
                                                     </button>
@@ -431,17 +454,17 @@ function PersonaWorkspaceView({
                                                         }]
                                                     });
                                                 }}
-                                                className="min-h-11 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                                className="min-h-11 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                                             >
                                                 + {t('persona.add_quest') || 'Add quest'}
                                             </button>
                                         </fieldset>
                                     </div>
                                     <div className="sticky bottom-0 flex justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4">
-                                        <button type="button" onClick={() => setPersonaTeacherEditor(null)} className="min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
+                                        <button type="button" onClick={() => setPersonaTeacherEditor(null)} className="min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">
                                             {t('common.cancel')}
                                         </button>
-                                        <button type="button" onClick={savePersonaTeacherEditor} className="min-h-11 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">
+                                        <button type="button" onClick={savePersonaTeacherEditor} className="min-h-11 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">
                                             {t('persona.save_changes') || t('common.save')}
                                         </button>
                                     </div>

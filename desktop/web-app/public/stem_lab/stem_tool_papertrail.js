@@ -340,11 +340,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
       var isDark = false;
 
       var d = safeObj(labToolData.paperTrail);
+      var xpSentRef = React.useRef({ decoded: false, scen: Object.create(null), work: Object.create(null) });
+      var copyTimerRef = React.useRef(null);
+      var aliveRef = React.useRef(true);
+      React.useEffect(function() {
+        aliveRef.current = true;
+        return function() {
+          aliveRef.current = false;
+          if (copyTimerRef.current) { clearTimeout(copyTimerRef.current); copyTimerRef.current = null; }
+        };
+      }, []);
+
       function setPT(patch) {
         setLabToolData(function(prev) {
           var prevSafe = safeObj(prev);
           var prior = safeObj(prevSafe.paperTrail);
-          return Object.assign({}, prevSafe, { paperTrail: Object.assign({}, prior, patch) });
+          var nextPatch = typeof patch === 'function' ? patch(prior) : patch;
+          if (!nextPatch || typeof nextPatch !== 'object') return prevSafe;
+          return Object.assign({}, prevSafe, { paperTrail: Object.assign({}, prior, nextPatch) });
         });
       }
 
@@ -368,6 +381,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
       var scenDoneCount = SCENARIOS.filter(function(s) { return !!scenDone[s.id]; }).length;
       var scenGoodCount = SCENARIOS.filter(function(s) { return scenDone[s.id] && scenDone[s.id].ok; }).length;
       var workDoneCount = WORK_SCENARIOS.filter(function(w) { return !!workDone[w.id]; }).length;
+
+      function openDoc(docId) {
+        var target = DOCS.find(function(x) { return x.id === docId; }) || DOCS[0];
+        if (!target) return;
+        var willAward = !seenDocs[target.id] && !d._xpDecoded && !xpSentRef.current.decoded && decodedDocsCount === 1;
+        if (willAward) xpSentRef.current.decoded = true;
+        setPT(function(prior) {
+          var prevSeen = safeObj(prior.seenDocs);
+          var nextSeen = prevSeen[target.id] ? prevSeen : Object.assign({}, prevSeen);
+          nextSeen[target.id] = true;
+          var patch = { view: 'doc', docId: target.id, seenDocs: nextSeen, copiedIdx: -1 };
+          if (willAward) patch._xpDecoded = true;
+          return patch;
+        });
+        if (willAward) awardXP(10, 'Decoded two documents');
+      }
+
+      React.useEffect(function() {
+        if (view !== 'doc') return;
+        var target = DOCS.find(function(x) { return x.id === d.docId; }) || DOCS[0];
+        if (!target || seenDocs[target.id]) return;
+        var willAward = !d._xpDecoded && !xpSentRef.current.decoded && decodedDocsCount === 1;
+        if (willAward) xpSentRef.current.decoded = true;
+        setPT(function(prior) {
+          var prevSeen = safeObj(prior.seenDocs);
+          if (prevSeen[target.id]) return null;
+          var nextSeen = Object.assign({}, prevSeen);
+          nextSeen[target.id] = true;
+          var patch = { seenDocs: nextSeen };
+          if (willAward) patch._xpDecoded = true;
+          return patch;
+        });
+        if (willAward) awardXP(10, 'Decoded two documents');
+      }, [view, d.docId]);
 
       // Full Light / Dark / High-Contrast WCAG 2.2 AA palette
       var pal = isContrast ? {
@@ -502,23 +549,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
         }, '← ' + label);
       }
 
-      // Bespoke inline SVG emblem: Dossier sheet + highlighted danger ribbon + magnifying glass
+      // Bespoke inline SVG emblem: Warm archival dossier sheet + risk ribbons + brass magnifying lens
       function renderHeroEmblem() {
         return h('svg', {
           width: 48, height: 48, viewBox: '0 0 48 48', role: 'img',
           'aria-label': __alloT('stem.paperTrail.emblem_alt', 'PaperTrail official document decoder emblem'),
           style: { flexShrink: 0, display: 'block' }
         },
-          h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: pal.accentBg, stroke: pal.border, strokeWidth: 1.5 }),
-          h('path', { d: 'M12 9h15l7 7v23a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z', fill: pal.svgPaper, stroke: pal.svgInk, strokeWidth: 1.5 }),
-          h('path', { d: 'M27 9v7h7', fill: 'none', stroke: pal.svgInk, strokeWidth: 1.5, strokeLinejoin: 'round' }),
-          h('rect', { x: 14, y: 17, width: 12, height: 2.5, rx: 1, fill: pal.svgMuted }),
-          h('rect', { x: 14, y: 22.5, width: 16, height: 3, rx: 1, fill: KIND.watch.bar }),
-          h('rect', { x: 14, y: 28.5, width: 14, height: 3, rx: 1, fill: KIND.danger.bar }),
-          h('line', { x1: 14, y1: 35.5, x2: 24, y2: 35.5, stroke: pal.svgInk, strokeWidth: 1.4, strokeDasharray: '2 2' }),
-          h('circle', { cx: 33, cy: 32, r: 6.5, fill: pal.svgPaper, stroke: pal.accent, strokeWidth: 2.2 }),
-          h('line', { x1: 37.8, y1: 36.8, x2: 42, y2: 41, stroke: pal.accent, strokeWidth: 2.6, strokeLinecap: 'round' }),
-          h('path', { d: 'M30.6 32.1l1.7 1.7 3.2-3.4', fill: 'none', stroke: pal.safeText, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })
+          h('defs', null,
+            h('linearGradient', { id: 'pt-emblem-plaque', x1: '0', y1: '0', x2: '1', y2: '1' },
+              h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#fffbeb' }),
+              h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#fde68a' })
+            ),
+            h('linearGradient', { id: 'pt-emblem-sheet', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#ffffff' }),
+              h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#f8f5ee' })
+            ),
+            h('linearGradient', { id: 'pt-emblem-brass', x1: '0', y1: '0', x2: '1', y2: '1' },
+              h('stop', { offset: '0%', stopColor: isContrast ? '#ffff00' : '#d97706' }),
+              h('stop', { offset: '100%', stopColor: isContrast ? '#ffff00' : '#78350f' })
+            )
+          ),
+          h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: 'url(#pt-emblem-plaque)', stroke: pal.border, strokeWidth: 1.5 }),
+          !isContrast && h('path', { d: 'M13 11h15l7 7v23a2 2 0 0 1-2 2H13a2 2 0 0 1-2-2V13a2 2 0 0 1 2-2z', fill: '#78350f', opacity: 0.12 }),
+          h('path', { d: 'M11.5 8.5h15.5l7 7v23.5a2 2 0 0 1-2 2H11.5a2 2 0 0 1-2-2V10.5a2 2 0 0 1 2-2z', fill: 'url(#pt-emblem-sheet)', stroke: pal.svgInk, strokeWidth: 1.5 }),
+          h('path', { d: 'M27 8.5v7h7', fill: isContrast ? '#000000' : '#f3ead8', stroke: pal.svgInk, strokeWidth: 1.4, strokeLinejoin: 'round' }),
+          // Left provenance chain dots + field risk ribbons
+          h('circle', { cx: 13.5, cy: 18.2, r: 1.3, fill: pal.svgMuted }),
+          h('rect', { x: 16.5, y: 17, width: 10.5, height: 2.4, rx: 1.2, fill: pal.svgMuted }),
+          h('circle', { cx: 13.5, cy: 23.8, r: 1.4, fill: KIND.watch.bar }),
+          h('rect', { x: 16.5, y: 22.3, width: 13.5, height: 3, rx: 1.4, fill: KIND.watch.bar }),
+          h('circle', { cx: 13.5, cy: 29.8, r: 1.4, fill: KIND.danger.bar }),
+          h('rect', { x: 16.5, y: 28.3, width: 11.5, height: 3, rx: 1.4, fill: KIND.danger.bar }),
+          h('line', { x1: 13, y1: 35.5, x2: 24, y2: 35.5, stroke: pal.svgInk, strokeWidth: 1.3, strokeDasharray: '2 2' }),
+          // Sculpted brass inspection loupe with active halo & specular crescent
+          !isContrast && h('circle', { cx: 33, cy: 32, r: 8.6, fill: '#f59e0b', opacity: 0.2 }),
+          h('circle', { cx: 33, cy: 32, r: 6.8, fill: pal.svgPaper, stroke: 'url(#pt-emblem-brass)', strokeWidth: 2.3 }),
+          !isContrast && h('path', { d: 'M29.4 28.5 A4.5 4.5 0 0 1 34.5 27.6', fill: 'none', stroke: '#ffffff', strokeWidth: 1.3, strokeLinecap: 'round', opacity: 0.85 }),
+          h('line', { x1: 38, y1: 37, x2: 42.4, y2: 41.4, stroke: 'url(#pt-emblem-brass)', strokeWidth: 2.8, strokeLinecap: 'round' }),
+          h('path', { d: 'M30.5 32.1l1.8 1.8 3.3-3.5', fill: 'none', stroke: pal.safeText, strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' })
         );
       }
 
@@ -581,17 +650,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           h('div', {
             role: 'tablist',
             'aria-label': __alloT('stem.paperTrail.nav_label', 'PaperTrail sections'),
-            style: { display: 'flex', flexWrap: 'wrap', gap: 6, paddingTop: 10, borderTop: '1px solid ' + pal.borderSoft }
+            style: { display: 'flex', flexWrap: 'wrap', gap: 6, paddingTop: 10, borderTop: '1px solid ' + pal.borderSoft },
+            onKeyDown: function(e) {
+              var key = e && e.key;
+              if (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End') return;
+              var curIdx = tabs.findIndex(function(tItem) { return activeTab === tItem.id || (activeTab === 'doc' && tItem.id === 'home'); });
+              if (curIdx < 0) curIdx = 0;
+              var nextIdx = key === 'Home' ? 0 : key === 'End' ? tabs.length - 1 : (curIdx + (key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+              e.preventDefault();
+              var nextTab = tabs[nextIdx];
+              setPT({ view: nextTab.id, copiedIdx: -1 });
+              try {
+                var el = document.getElementById('allo-pt-tab-' + nextTab.id);
+                if (el && typeof el.focus === 'function') el.focus();
+              } catch (_) {}
+            }
           },
             tabs.map(function(tb) {
               var selected = activeTab === tb.id || (activeTab === 'doc' && tb.id === 'home');
               return h('button', {
                 key: tb.id,
+                id: 'allo-pt-tab-' + tb.id,
                 type: 'button',
                 role: 'tab',
                 'aria-selected': selected,
+                'aria-controls': 'allo-pt-panel',
+                tabIndex: selected ? 0 : -1,
                 className: 'allo-pt-tab' + (selected ? ' allo-pt-btn-primary' : ' allo-pt-surface'),
-                onClick: function() { setPT({ view: tb.id }); },
+                onClick: function() { setPT({ view: tb.id, copiedIdx: -1 }); },
                 style: {
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '7px 12px', borderRadius: 10, fontSize: 12, fontWeight: selected ? 900 : 700,
@@ -634,82 +720,135 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
         )
       );
 
-      // Visual SVG: Home Readiness & Risk Anatomy Dashboard
+      // Visual SVG: Warm Archival Readiness & Provenance Progress Dashboard
       function renderReadinessVisual() {
-        var W = 540, H = 112;
+        var W = 540, H = 120;
         var docPct = DOCS.length ? (decodedDocsCount / DOCS.length) : 0;
         var fieldPct = totalFields ? (revealedCount / totalFields) : 0;
         var scenPct = SCENARIOS.length ? (scenDoneCount / SCENARIOS.length) : 0;
         var workPct = WORK_SCENARIOS.length ? (workDoneCount / WORK_SCENARIOS.length) : 0;
         var bars = [
-          { label: __alloT('stem.paperTrail.meter_docs', 'Documents Explored'), val: decodedDocsCount + '/' + DOCS.length, pct: docPct, color: pal.accent },
-          { label: __alloT('stem.paperTrail.meter_fields', 'Fields Decoded'), val: revealedCount + '/' + totalFields, pct: fieldPct, color: KIND.watch.bar },
-          { label: __alloT('stem.paperTrail.meter_pressure', 'Pressure Shields'), val: scenDoneCount + '/' + SCENARIOS.length, pct: scenPct, color: pal.safeText },
-          { label: __alloT('stem.paperTrail.meter_work', 'Work Rights Cases'), val: workDoneCount + '/' + WORK_SCENARIOS.length, pct: workPct, color: KIND.danger.bar }
+          { id: 'doc', label: __alloT('stem.paperTrail.meter_docs', 'Documents Explored'), val: decodedDocsCount + '/' + DOCS.length, pct: docPct, color: pal.accent, hi: isContrast ? '#ffff00' : '#b45309' },
+          { id: 'fld', label: __alloT('stem.paperTrail.meter_fields', 'Fields Decoded'), val: revealedCount + '/' + totalFields, pct: fieldPct, color: KIND.watch.bar, hi: isContrast ? '#ffff00' : '#f59e0b' },
+          { id: 'scn', label: __alloT('stem.paperTrail.meter_pressure', 'Pressure Shields'), val: scenDoneCount + '/' + SCENARIOS.length, pct: scenPct, color: pal.safeText, hi: isContrast ? '#ffff00' : '#10b981' },
+          { id: 'wrk', label: __alloT('stem.paperTrail.meter_work', 'Work Rights Cases'), val: workDoneCount + '/' + WORK_SCENARIOS.length, pct: workPct, color: KIND.danger.bar, hi: isContrast ? '#ffff00' : '#f43f5e' }
         ];
+        var trackX = 152, trackW = 304;
         return h('svg', {
           viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
           'aria-label': __alloT('stem.paperTrail.readiness_aria', 'PaperTrail readiness progress across documents, decoded fields, pressure scenarios, and work rights'),
           style: { display: 'block', maxWidth: 680, height: 'auto' }
         },
-          h('rect', { x: 1, y: 1, width: W - 2, height: H - 2, rx: 10, fill: pal.svgBg, stroke: pal.borderSoft, strokeWidth: 1 }),
+          h('defs', null,
+            h('linearGradient', { id: 'pt-ready-bg', x1: '0', y1: '0', x2: '1', y2: '1' },
+              h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#fdfbf6' }),
+              h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#f4efe3' })
+            ),
+            h('linearGradient', { id: 'pt-ready-well', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: isContrast ? '#111111' : '#dfd7c6' }),
+              h('stop', { offset: '100%', stopColor: isContrast ? '#222222' : '#ece6d9' })
+            ),
+            bars.map(function (b) {
+              return h('linearGradient', { key: b.id, id: 'pt-bar-' + b.id, x1: '0', y1: '0', x2: '1', y2: '0' },
+                h('stop', { offset: '0%', stopColor: b.color }),
+                h('stop', { offset: '100%', stopColor: b.hi })
+              );
+            })
+          ),
+          h('rect', { x: 1, y: 1, width: W - 2, height: H - 2, rx: 11, fill: 'url(#pt-ready-bg)', stroke: pal.borderSoft, strokeWidth: 1.2 }),
+          // Archival ledger gridlines at 25% / 50% / 75% / 100%
+          [0.25, 0.5, 0.75, 1].map(function (f) {
+            var gx = trackX + Math.round(trackW * f);
+            return h('line', { key: 'g' + f, x1: gx, y1: 12, x2: gx, y2: H - 12, stroke: isContrast ? '#555500' : '#d6c3a3', strokeOpacity: isContrast ? 0.65 : 0.4, strokeWidth: 1, strokeDasharray: f === 1 ? 'none' : '2 3' });
+          }),
           bars.map(function(b, idx) {
-            var y = 16 + idx * 24;
-            var trackX = 148, trackW = 312;
-            var fillW = Math.max(b.pct > 0 ? 10 : 0, Math.round(trackW * b.pct));
+            var y = 17 + idx * 25;
+            var fillW = Math.max(b.pct > 0 ? 12 : 0, Math.round(trackW * b.pct));
+            var tipX = trackX + fillW;
             return h('g', { key: idx },
-              h('text', { x: 14, y: y + 10, fontSize: 11, fontWeight: 700, fill: pal.svgInk }, b.label),
-              h('rect', { x: trackX, y: y, width: trackW, height: 12, rx: 6, fill: pal.svgTrack }),
-              fillW > 0 ? h('rect', { x: trackX, y: y, width: fillW, height: 12, rx: 6, fill: b.color }) : null,
-              h('text', { x: W - 14, y: y + 10, textAnchor: 'end', fontSize: 11, fontWeight: 800, fill: pal.svgInk }, b.val)
+              h('circle', { cx: 14, cy: y + 6.5, r: 3.2, fill: b.pct > 0 ? b.color : 'none', stroke: b.color, strokeWidth: 1.4 }),
+              h('text', { x: 24, y: y + 10.5, fontSize: 11, fontWeight: 700, fill: pal.svgInk }, b.label),
+              h('rect', { x: trackX, y: y, width: trackW, height: 13, rx: 6.5, fill: 'url(#pt-ready-well)', stroke: isContrast ? '#ffff00' : '#d6c3a3', strokeOpacity: isContrast ? 0.85 : 0.55, strokeWidth: 0.8 }),
+              fillW > 0 ? h('g', null,
+                !isContrast && h('rect', { x: trackX, y: y - 1, width: fillW, height: 15, rx: 7.5, fill: b.hi, opacity: 0.18 }),
+                h('rect', { x: trackX, y: y, width: fillW, height: 13, rx: 6.5, fill: 'url(#pt-bar-' + b.id + ')' }),
+                !isContrast && h('rect', { x: trackX + 3, y: y + 1.5, width: Math.max(0, fillW - 6), height: 3.2, rx: 1.6, fill: '#ffffff', opacity: 0.28 }),
+                // Active node endpoint halo beacon
+                !isContrast && h('circle', { cx: tipX - 5, cy: y + 6.5, r: 5.5, fill: b.hi, opacity: 0.28 }),
+                h('circle', { cx: tipX - 5, cy: y + 6.5, r: 2.8, fill: isContrast ? '#000000' : '#ffffff', stroke: b.color, strokeWidth: 1.4 })
+              ) : null,
+              h('text', { x: W - 14, y: y + 10.5, textAnchor: 'end', fontSize: 11, fontWeight: 800, fill: pal.svgInk }, b.val)
             );
           })
         );
       }
 
-      // Visual SVG: Interactive Annotated Document Facsimile for `doc` view
+      // Visual SVG: Interactive Annotated Archival Document Provenance Blueprint for `doc` view
       function renderDocBlueprintSvg(doc) {
         var fields = doc.fields;
-        var rowH = 26;
-        var headerH = 42;
-        var footH = 24;
+        var rowH = 28;
+        var headerH = 46;
+        var footH = 26;
         var W = 540;
         var H = headerH + fields.length * rowH + footH;
+        var chainX = 19;
+        var firstY = headerH + (rowH - 6) / 2;
+        var lastY = headerH + (fields.length - 1) * rowH + (rowH - 6) / 2;
         return h('svg', {
-          viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
-          'aria-label': doc.title + ' — ' + __alloT('stem.paperTrail.blueprint_aria', 'interactive field risk map showing standard, read-carefully, and high-stakes fields'),
+          viewBox: '0 0 ' + W + ' ' + H, width: '100%', 'aria-hidden': 'true', focusable: 'false',
           style: { display: 'block', height: 'auto' }
         },
-          h('rect', { x: 2, y: 2, width: W - 4, height: H - 4, rx: 12, fill: pal.svgPaper, stroke: pal.border, strokeWidth: 1.5 }),
-          h('rect', { x: 2, y: 2, width: W - 4, height: 34, rx: 10, fill: pal.accentBg }),
-          h('line', { x1: 2, y1: 36, x2: W - 2, y2: 36, stroke: pal.border, strokeWidth: 1 }),
-          h('text', { x: 16, y: 23, fontSize: 12, fontWeight: 800, fill: pal.svgInk }, doc.title.toUpperCase() + ' — ' + __alloT('stem.paperTrail.blueprint_tag', 'RISK MAP')),
-          h('text', { x: W - 16, y: 23, textAnchor: 'end', fontSize: 11, fontWeight: 700, fill: pal.svgMuted }, __alloT('stem.paperTrail.sample_stamp', 'SAMPLE: SAM RIVERA')),
+          h('defs', null,
+            h('linearGradient', { id: 'pt-doc-stage', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#ffffff' }),
+              h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#faf6ed' })
+            ),
+            h('linearGradient', { id: 'pt-doc-header', x1: '0', y1: '0', x2: '1', y2: '0' },
+              h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#fef3c7' }),
+              h('stop', { offset: '65%', stopColor: isContrast ? '#000000' : '#fdf6e4' }),
+              h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#faecc8' })
+            )
+          ),
+          // Archival paper sheet + beveled masthead
+          h('rect', { x: 2, y: 2, width: W - 4, height: H - 4, rx: 12, fill: 'url(#pt-doc-stage)', stroke: pal.border, strokeWidth: 1.5 }),
+          h('path', { d: 'M14 2 H' + (W - 14) + ' Q' + (W - 2) + ' 2 ' + (W - 2) + ' 14 V38 H2 V14 Q2 2 14 2 Z', fill: 'url(#pt-doc-header)' }),
+          h('line', { x1: 2, y1: 38, x2: W - 2, y2: 38, stroke: pal.border, strokeWidth: 1.2 }),
+          // Official archival seal medallion in header
+          h('circle', { cx: 20, cy: 20, r: 7.5, fill: isContrast ? '#000000' : '#ffffff', stroke: pal.accent, strokeWidth: 1.4 }),
+          h('circle', { cx: 20, cy: 20, r: 4, fill: pal.accent }),
+          h('text', { x: 34, y: 24, fontSize: 12, fontWeight: 900, fill: pal.svgInk }, doc.title.toUpperCase() + ' — ' + __alloT('stem.paperTrail.blueprint_tag', 'RISK MAP')),
+          // Sample provenance stamp plaque
+          h('rect', { x: W - 154, y: 10, width: 140, height: 20, rx: 10, fill: isContrast ? '#000000' : '#ffffff', stroke: pal.border, strokeWidth: 1 }),
+          h('text', { x: W - 84, y: 23.5, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: pal.svgMuted }, __alloT('stem.paperTrail.sample_stamp', 'SAMPLE: SAM RIVERA')),
+          // Vertical dual-pass field-chain spine connecting provenance nodes
+          fields.length > 1 && !isContrast && h('line', { x1: chainX, y1: firstY, x2: chainX, y2: lastY, stroke: '#d97706', strokeOpacity: 0.22, strokeWidth: 5, strokeLinecap: 'round' }),
+          fields.length > 1 && h('line', { x1: chainX, y1: firstY, x2: chainX, y2: lastY, stroke: isContrast ? '#ffff00' : '#d6c3a3', strokeWidth: 1.6, strokeDasharray: '3 2' }),
           fields.map(function(f, idx) {
             var y = headerH + idx * rowH;
+            var cy = y + (rowH - 6) / 2;
             var k = KIND[f.kind] || KIND.normal;
             var open = !!revealed[doc.id + ':' + f.id];
-            var lbl = f.label.length > 36 ? f.label.slice(0, 35) + '…' : f.label;
+            var lbl = f.label.length > 34 ? f.label.slice(0, 33) + '…' : f.label;
             return h('g', {
-              key: f.id,
-              style: { cursor: 'pointer' },
-              onClick: function() {
-                var nx = Object.assign({}, revealed);
-                nx[doc.id + ':' + f.id] = !open;
-                setPT({ revealed: nx });
-                if (!open) announceToSR(f.label + '. ' + f.asking);
-              }
+              key: f.id
             },
+              // Provenance node halo & badge on left spine
+              open && !isContrast && h('circle', { cx: chainX, cy: cy, r: 7.5, fill: k.bar, opacity: 0.24 }),
+              h('circle', { cx: chainX, cy: cy, r: open ? 4.4 : 3.4, fill: open ? k.bar : pal.svgPaper, stroke: k.bar, strokeWidth: 1.6 }),
+              // Row strip with beveled reliability edge & active highlight
+              open && !isContrast && h('rect', { x: 30, y: y - 1, width: W - 44, height: rowH - 4, rx: 7, fill: pal.accent, opacity: 0.12 }),
               h('rect', {
-                x: 14, y: y, width: W - 28, height: rowH - 5, rx: 6,
+                x: 31, y: y, width: W - 46, height: rowH - 6, rx: 6.5,
                 fill: open ? pal.accentBg : pal.svgBg,
                 stroke: open ? pal.accent : (f.kind === 'normal' ? pal.borderSoft : k.bar),
-                strokeWidth: open ? 1.8 : 1
+                strokeWidth: open ? 1.8 : 1.1
               }),
-              h('rect', { x: 14, y: y, width: 6, height: rowH - 5, rx: 3, fill: k.bar }),
-              h('text', { x: 28, y: y + 14, fontSize: 11, fontWeight: open ? 800 : 600, fill: pal.svgInk }, (idx + 1) + '. ' + lbl),
-              h('text', { x: W - 96, y: y + 14, textAnchor: 'end', fontSize: 10, fontWeight: 800, fill: k.color }, k.short.toUpperCase()),
-              h('text', { x: W - 24, y: y + 14, textAnchor: 'end', fontSize: 11, fontWeight: 800, fill: open ? pal.safeText : pal.svgMuted }, open ? '✓ ' + __alloT('stem.paperTrail.open_short', 'OPEN') : __alloT('stem.paperTrail.tap_short', 'TAP'))
+              h('rect', { x: 31, y: y, width: 6.5, height: rowH - 6, rx: 3.2, fill: k.bar }),
+              h('text', { x: 45, y: y + 14.5, fontSize: 11, fontWeight: open ? 800 : 600, fill: pal.svgInk }, (idx + 1) + '. ' + lbl),
+              // Beveled source/risk reliability pill
+              h('rect', { x: W - 154, y: y + 3, width: 72, height: rowH - 12, rx: 8, fill: isContrast ? '#000000' : (f.kind === 'normal' ? '#ffffff' : k.bg), stroke: f.kind === 'normal' ? pal.borderSoft : k.bar, strokeWidth: 0.9 }),
+              h('text', { x: W - 118, y: y + 14, textAnchor: 'middle', fontSize: 9.2, fontWeight: 800, fill: k.color }, k.short.toUpperCase()),
+              h('text', { x: W - 24, y: y + 14.5, textAnchor: 'end', fontSize: 10.5, fontWeight: 800, fill: open ? pal.safeText : pal.svgMuted }, open ? '✓ ' + __alloT('stem.paperTrail.open_short', 'OPEN') : __alloT('stem.paperTrail.tap_short', 'TAP'))
             );
           }),
           h('text', { x: 16, y: H - 8, fontSize: 10, fontWeight: 600, fill: pal.svgMuted },
@@ -717,63 +856,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
         );
       }
 
-      // Visual SVG: 4-Step Pressure Shield Protocol for `scenarios` view
+      // Visual SVG: 4-Step Pressure Shield Protocol with Dual-Pass Luminous Chain Connectors
       function renderPressureProtocolSvg() {
-        var W = 540, H = 96;
+        var W = 540, H = 104;
         var steps = [
-          { n: '1', t: __alloT('stem.paperTrail.proto_1', 'PAUSE'), sub: __alloT('stem.paperTrail.proto_1s', 'Notice urgency') },
-          { n: '2', t: __alloT('stem.paperTrail.proto_2', 'READ'), sub: __alloT('stem.paperTrail.proto_2s', 'Check blanks') },
-          { n: '3', t: __alloT('stem.paperTrail.proto_3', 'ASK'), sub: __alloT('stem.paperTrail.proto_3s', 'Buy time / copy') },
-          { n: '4', t: __alloT('stem.paperTrail.proto_4', 'DECIDE'), sub: __alloT('stem.paperTrail.proto_4s', 'Sign only ready') }
+          { n: '1', t: __alloT('stem.paperTrail.proto_1', 'PAUSE'), sub: __alloT('stem.paperTrail.proto_1s', 'Notice urgency'), col: isContrast ? '#ffff00' : '#d97706' },
+          { n: '2', t: __alloT('stem.paperTrail.proto_2', 'READ'), sub: __alloT('stem.paperTrail.proto_2s', 'Check blanks'), col: isContrast ? '#ffff00' : '#b45309' },
+          { n: '3', t: __alloT('stem.paperTrail.proto_3', 'ASK'), sub: __alloT('stem.paperTrail.proto_3s', 'Buy time / copy'), col: isContrast ? '#ffff00' : '#0f766e' },
+          { n: '4', t: __alloT('stem.paperTrail.proto_4', 'DECIDE'), sub: __alloT('stem.paperTrail.proto_4s', 'Sign only ready'), col: isContrast ? '#ffff00' : '#059669' }
         ];
         return h('svg', {
           viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
           'aria-label': __alloT('stem.paperTrail.proto_aria', 'Four-step document defense protocol: Pause, Read, Ask, Decide'),
           style: { display: 'block', height: 'auto' }
         },
-          h('rect', { x: 1, y: 1, width: W - 2, height: H - 2, rx: 12, fill: pal.svgBg, stroke: pal.borderSoft, strokeWidth: 1 }),
-          h('text', { x: 16, y: 20, fontSize: 11, fontWeight: 800, fill: pal.accent }, __alloT('stem.paperTrail.proto_head', '4-STEP PRESSURE SHIELD PROTOCOL')),
+          h('defs', null,
+            h('linearGradient', { id: 'pt-proto-bg', x1: '0', y1: '0', x2: '1', y2: '1' },
+              h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#fdfbf6' }),
+              h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#f3ede0' })
+            ),
+            h('linearGradient', { id: 'pt-proto-card', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#ffffff' }),
+              h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#faf6ec' })
+            )
+          ),
+          h('rect', { x: 1, y: 1, width: W - 2, height: H - 2, rx: 12, fill: 'url(#pt-proto-bg)', stroke: pal.borderSoft, strokeWidth: 1.2 }),
+          h('text', { x: 16, y: 21, fontSize: 10.8, fontWeight: 900, letterSpacing: '0.04em', fill: pal.accent }, __alloT('stem.paperTrail.proto_head', '4-STEP PRESSURE SHIELD PROTOCOL')),
           steps.map(function(st, i) {
             var bx = 14 + i * 130;
             return h('g', { key: i },
-              i > 0 ? h('line', { x1: bx - 14, y1: 56, x2: bx - 2, y2: 56, stroke: pal.accent, strokeWidth: 2 }) : null,
-              h('rect', { x: bx, y: 30, width: 116, height: 52, rx: 8, fill: pal.svgPaper, stroke: pal.border, strokeWidth: 1.2 }),
-              h('circle', { cx: bx + 18, cy: 48, r: 10, fill: pal.accentBg, stroke: pal.accent, strokeWidth: 1.2 }),
-              h('text', { x: bx + 18, y: 52, textAnchor: 'middle', fontSize: 11, fontWeight: 900, fill: pal.accent }, st.n),
-              h('text', { x: bx + 34, y: 51, fontSize: 11, fontWeight: 900, fill: pal.svgInk }, st.t),
-              h('text', { x: bx + 10, y: 71, fontSize: 10, fontWeight: 600, fill: pal.svgMuted }, st.sub)
+              // Dual-pass luminous chain arc + directional arrowhead between step nodes
+              i > 0 ? h('g', null,
+                !isContrast && h('path', { d: 'M' + (bx - 16) + ' 59 Q' + (bx - 8) + ' 51 ' + (bx - 3) + ' 59', fill: 'none', stroke: '#f59e0b', strokeOpacity: 0.32, strokeWidth: 5.5, strokeLinecap: 'round' }),
+                h('path', { d: 'M' + (bx - 16) + ' 59 Q' + (bx - 8) + ' 51 ' + (bx - 4) + ' 59', fill: 'none', stroke: pal.accent, strokeWidth: 1.9, strokeLinecap: 'round' }),
+                h('polygon', { points: (bx - 5) + ',55.5 ' + (bx - 0.5) + ',59 ' + (bx - 5) + ',62.5', fill: pal.accent })
+              ) : null,
+              !isContrast && h('rect', { x: bx + 1.5, y: 34.5, width: 114, height: 55, rx: 9, fill: '#78350f', opacity: 0.08 }),
+              h('rect', { x: bx, y: 32, width: 114, height: 55, rx: 9, fill: 'url(#pt-proto-card)', stroke: pal.border, strokeWidth: 1.3 }),
+              // Top beveled accent sheen
+              h('rect', { x: bx + 10, y: 32.8, width: 94, height: 2.8, rx: 1.4, fill: st.col, opacity: isContrast ? 1 : 0.72 }),
+              // Active node halo + medallion
+              !isContrast && h('circle', { cx: bx + 19, cy: 52, r: 12.5, fill: st.col, opacity: 0.16 }),
+              h('circle', { cx: bx + 19, cy: 52, r: 9.8, fill: pal.accentBg, stroke: st.col, strokeWidth: 1.5 }),
+              h('text', { x: bx + 19, y: 55.8, textAnchor: 'middle', fontSize: 11, fontWeight: 900, fill: st.col }, st.n),
+              h('text', { x: bx + 35, y: 55, fontSize: 11.2, fontWeight: 900, fill: pal.svgInk }, st.t),
+              h('text', { x: bx + 11, y: 76, fontSize: 9.8, fontWeight: 600, fill: pal.svgMuted }, st.sub)
             );
           })
         );
       }
 
-      // Visual SVG: IDEA -> ADA Transition Cliff Diagram for `work` view
+      // Visual SVG: IDEA -> ADA Transition Cliff Provenance Arc Diagram for `work` view
       function renderTransitionCliffSvg() {
-        var W = 540, H = 132;
+        var W = 540, H = 142;
         return h('svg', {
           viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
           'aria-label': __alloT('stem.paperTrail.cliff_aria', 'Comparison of School IDEA protections versus Workplace ADA Title I protections'),
           style: { display: 'block', height: 'auto' }
         },
-          h('rect', { x: 1, y: 1, width: W - 2, height: H - 2, rx: 12, fill: pal.svgBg, stroke: pal.borderSoft, strokeWidth: 1 }),
+          h('defs', null,
+            h('linearGradient', { id: 'pt-cliff-bg', x1: '0', y1: '0', x2: '1', y2: '1' },
+              h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#fdfbf6' }),
+              h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#f3ede0' })
+            ),
+            h('linearGradient', { id: 'pt-cliff-card', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#ffffff' }),
+              h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#faf6ec' })
+            )
+          ),
+          h('rect', { x: 1, y: 1, width: W - 2, height: H - 2, rx: 12, fill: 'url(#pt-cliff-bg)', stroke: pal.borderSoft, strokeWidth: 1.2 }),
           // Left card: School (IDEA)
-          h('rect', { x: 14, y: 14, width: 222, height: 104, rx: 10, fill: pal.svgPaper, stroke: pal.border, strokeWidth: 1.2 }),
-          h('text', { x: 26, y: 34, fontSize: 12, fontWeight: 900, fill: pal.svgInk }, __alloT('stem.paperTrail.cliff_school', 'SCHOOL · IDEA / IEP')),
-          h('text', { x: 26, y: 54, fontSize: 11, fill: pal.svgMuted }, '• ' + __alloT('stem.paperTrail.cliff_s1', 'School team identifies needs')),
-          h('text', { x: 26, y: 72, fontSize: 11, fill: pal.svgMuted }, '• ' + __alloT('stem.paperTrail.cliff_s2', 'Written plan follows you')),
-          h('text', { x: 26, y: 90, fontSize: 11, fill: pal.svgMuted }, '• ' + __alloT('stem.paperTrail.cliff_s3', 'Automatic class-to-class')),
-          h('text', { x: 26, y: 108, fontSize: 10, fontWeight: 800, fill: pal.accent }, __alloT('stem.paperTrail.cliff_s4', 'ENDS AT GRADUATION')),
-          // Center transition bridge
-          h('line', { x1: 242, y1: 66, x2: 294, y2: 66, stroke: pal.accent, strokeWidth: 2.5, strokeDasharray: '4 3' }),
-          h('polygon', { points: '294,61 304,66 294,71', fill: pal.accent }),
-          h('text', { x: 270, y: 54, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: pal.accent }, __alloT('stem.paperTrail.cliff_mid', 'AGE 18')),
+          !isContrast && h('rect', { x: 16, y: 17, width: 218, height: 110, rx: 11, fill: '#78350f', opacity: 0.08 }),
+          h('rect', { x: 14, y: 15, width: 218, height: 110, rx: 11, fill: 'url(#pt-cliff-card)', stroke: pal.border, strokeWidth: 1.3 }),
+          h('path', { d: 'M24 15 H222 Q232 15 232 25 V40 H14 V25 Q14 15 24 15 Z', fill: isContrast ? '#000000' : '#f4efe3' }),
+          h('line', { x1: 14, y1: 40, x2: 232, y2: 40, stroke: pal.borderSoft, strokeWidth: 1 }),
+          h('circle', { cx: 26, cy: 27.5, r: 4, fill: pal.svgMuted }),
+          h('text', { x: 36, y: 31.5, fontSize: 11.5, fontWeight: 900, fill: pal.svgInk }, __alloT('stem.paperTrail.cliff_school', 'SCHOOL · IDEA / IEP')),
+          h('text', { x: 26, y: 58, fontSize: 11, fill: pal.svgMuted }, '• ' + __alloT('stem.paperTrail.cliff_s1', 'School team identifies needs')),
+          h('text', { x: 26, y: 76, fontSize: 11, fill: pal.svgMuted }, '• ' + __alloT('stem.paperTrail.cliff_s2', 'Written plan follows you')),
+          h('text', { x: 26, y: 94, fontSize: 11, fill: pal.svgMuted }, '• ' + __alloT('stem.paperTrail.cliff_s3', 'Automatic class-to-class')),
+          h('text', { x: 26, y: 114, fontSize: 10, fontWeight: 800, fill: pal.accent }, __alloT('stem.paperTrail.cliff_s4', 'ENDS AT GRADUATION')),
+          // Center dual-pass luminous transition bridge arc & Age 18 medallion
+          !isContrast && h('path', { d: 'M234 72 Q269 44 298 72', fill: 'none', stroke: '#f59e0b', strokeOpacity: 0.28, strokeWidth: 7, strokeLinecap: 'round' }),
+          h('path', { d: 'M234 72 Q269 44 297 72', fill: 'none', stroke: pal.accent, strokeWidth: 2.3, strokeDasharray: '5 3', strokeLinecap: 'round' }),
+          h('polygon', { points: '295,66.5 305,72 295,77.5', fill: pal.accent }),
+          !isContrast && h('circle', { cx: 269, cy: 56, r: 17, fill: '#f59e0b', opacity: 0.16 }),
+          h('rect', { x: 245, y: 46, width: 48, height: 19, rx: 9.5, fill: pal.accentBg, stroke: pal.accent, strokeWidth: 1.3 }),
+          h('text', { x: 269, y: 59, textAnchor: 'middle', fontSize: 9.5, fontWeight: 900, fill: pal.accent }, __alloT('stem.paperTrail.cliff_mid', 'AGE 18')),
           // Right card: Work (ADA Title I)
-          h('rect', { x: 306, y: 14, width: 220, height: 104, rx: 10, fill: pal.svgPaper, stroke: pal.accent, strokeWidth: 1.6 }),
-          h('text', { x: 318, y: 34, fontSize: 12, fontWeight: 900, fill: pal.accent }, __alloT('stem.paperTrail.cliff_work', 'WORK · ADA TITLE I')),
-          h('text', { x: 318, y: 54, fontSize: 11, fill: pal.svgInk }, '• ' + __alloT('stem.paperTrail.cliff_w1', 'Request-driven (you ask)')),
-          h('text', { x: 318, y: 72, fontSize: 11, fill: pal.svgInk }, '• ' + __alloT('stem.paperTrail.cliff_w2', 'Disclosure is YOUR choice')),
-          h('text', { x: 318, y: 90, fontSize: 11, fill: pal.svgInk }, '• ' + __alloT('stem.paperTrail.cliff_w3', '29 CFR 1630 protections')),
-          h('text', { x: 318, y: 108, fontSize: 10, fontWeight: 800, fill: pal.safeText }, __alloT('stem.paperTrail.cliff_w4', 'TASK → BARRIER → ADJUSTMENT'))
+          !isContrast && h('rect', { x: 310, y: 17, width: 216, height: 110, rx: 11, fill: '#92400e', opacity: 0.1 }),
+          h('rect', { x: 308, y: 15, width: 216, height: 110, rx: 11, fill: 'url(#pt-cliff-card)', stroke: pal.accent, strokeWidth: 1.7 }),
+          h('path', { d: 'M318 15 H514 Q524 15 524 25 V40 H308 V25 Q308 15 318 15 Z', fill: pal.accentBg }),
+          h('line', { x1: 308, y1: 40, x2: 524, y2: 40, stroke: pal.border, strokeWidth: 1 }),
+          !isContrast && h('circle', { cx: 320, cy: 27.5, r: 6.5, fill: pal.accent, opacity: 0.2 }),
+          h('circle', { cx: 320, cy: 27.5, r: 4, fill: pal.accent }),
+          h('text', { x: 330, y: 31.5, fontSize: 11.5, fontWeight: 900, fill: pal.accent }, __alloT('stem.paperTrail.cliff_work', 'WORK · ADA TITLE I')),
+          h('text', { x: 320, y: 58, fontSize: 11, fill: pal.svgInk }, '• ' + __alloT('stem.paperTrail.cliff_w1', 'Request-driven (you ask)')),
+          h('text', { x: 320, y: 76, fontSize: 11, fill: pal.svgInk }, '• ' + __alloT('stem.paperTrail.cliff_w2', 'Disclosure is YOUR choice')),
+          h('text', { x: 320, y: 94, fontSize: 11, fill: pal.svgInk }, '• ' + __alloT('stem.paperTrail.cliff_w3', '29 CFR 1630 protections')),
+          h('text', { x: 320, y: 114, fontSize: 10, fontWeight: 800, fill: pal.safeText }, __alloT('stem.paperTrail.cliff_w4', 'TASK → BARRIER → ADJUSTMENT'))
         );
       }
 
@@ -790,13 +971,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
       // ─────────── HOME ───────────
       if (view === 'home') {
         var starters = [
-          { label: __alloT('stem.paperTrail.starter_job', 'First Job (Application)'), action: function() { setPT({ view: 'doc', docId: 'jobapp' }); } },
-          { label: __alloT('stem.paperTrail.starter_lease', 'First Apartment Lease'), action: function() { setPT({ view: 'doc', docId: 'lease' }); } },
-          { label: __alloT('stem.paperTrail.starter_iep', 'My IEP Invitation'), action: function() { setPT({ view: 'doc', docId: 'iep' }); } },
-          { label: __alloT('stem.paperTrail.starter_pressure', 'Practice Saying No to Pressure'), action: function() { setPT({ view: 'scenarios' }); } }
+          { label: __alloT('stem.paperTrail.starter_job', 'First Job (Application)'), action: function() { openDoc('jobapp'); } },
+          { label: __alloT('stem.paperTrail.starter_lease', 'First Apartment Lease'), action: function() { openDoc('lease'); } },
+          { label: __alloT('stem.paperTrail.starter_iep', 'My IEP Invitation'), action: function() { openDoc('iep'); } },
+          { label: __alloT('stem.paperTrail.starter_pressure', 'Practice Saying No to Pressure'), action: function() { setPT({ view: 'scenarios', copiedIdx: -1 }); } }
         ];
         return h('div', { className: 'allo-pt-shell animate-in fade-in duration-200', style: shellStyle },
           renderWorkbenchHeader('home'),
+          h('div', { id: 'allo-pt-panel', role: 'tabpanel', 'aria-labelledby': 'allo-pt-tab-home' },
           safetyNote,
 
           // Visual Stage: Readiness Meter + Fictional Persona Dossier
@@ -871,7 +1053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
               var pct = doc.fields.length ? Math.round((openCount / doc.fields.length) * 100) : 0;
               return h('button', {
                 key: doc.id, type: 'button',
-                onClick: function() { setPT({ view: 'doc', docId: doc.id }); },
+                onClick: function() { openDoc(doc.id); },
                 className: 'allo-pt-card allo-pt-surface',
                 style: {
                   textAlign: 'left', borderRadius: 14, padding: 14, cursor: 'pointer',
@@ -936,29 +1118,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
               h('div', { style: { fontSize: 11, fontWeight: 800, color: pal.accent } }, workDoneCount + '/' + WORK_SCENARIOS.length + ' ' + __alloT('stem.paperTrail.cases_considered', 'cases considered'))
             )
           )
+          )
         );
       }
 
       // ─────────── DOC (field decoder) ───────────
       if (view === 'doc') {
         var doc = DOCS.find(function(x) { return x.id === d.docId; }) || DOCS[0];
-        if (!seenDocs[doc.id]) {
-          var nextSeen = Object.assign({}, seenDocs); nextSeen[doc.id] = true;
-          Promise.resolve().then(function() { setPT({ seenDocs: nextSeen }); });
-          if (Object.keys(nextSeen).length === 2) awardXP(10, 'Decoded two documents');
-        }
         var visibleFields = docFilter === 'flagged'
           ? doc.fields.filter(function(f) { return f.kind !== 'normal'; })
           : doc.fields;
 
         function setAllFields(openVal) {
-          var nx = Object.assign({}, revealed);
-          doc.fields.forEach(function(f) { nx[doc.id + ':' + f.id] = openVal; });
-          setPT({ revealed: nx });
+          setPT(function(prior) {
+            var nx = Object.assign({}, safeObj(prior.revealed));
+            doc.fields.forEach(function(f) { nx[doc.id + ':' + f.id] = openVal; });
+            return { revealed: nx };
+          });
         }
 
         return h('div', { className: 'allo-pt-shell animate-in fade-in duration-200', style: shellStyle },
           renderWorkbenchHeader('doc', backBtn('home', __alloT('stem.paperTrail.documents', 'Documents'))),
+          h('div', { id: 'allo-pt-panel', role: 'tabpanel', 'aria-labelledby': 'allo-pt-tab-home' },
           safetyNote,
 
           // Document Switcher Strip
@@ -972,7 +1153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
                 key: item.id, type: 'button',
                 'aria-pressed': active,
                 className: active ? 'allo-pt-btn-primary' : 'allo-pt-surface',
-                onClick: function() { setPT({ docId: item.id }); },
+                onClick: function() { openDoc(item.id); },
                 style: {
                   fontSize: 12, fontWeight: active ? 900 : 700, padding: '6px 10px', borderRadius: 999, cursor: 'pointer',
                   background: active ? pal.btnBg : pal.panel,
@@ -1081,6 +1262,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           ),
           h('p', { style: { fontSize: 12, marginTop: 12, marginBottom: 0, color: pal.muted } },
             __alloT('stem.paperTrail.doc_foot', 'Real versions of these documents differ by employer, landlord, and state. The questions they ask are remarkably consistent.'))
+          )
         );
       }
 
@@ -1090,16 +1272,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
         var sc = SCENARIOS[idx];
         var done = sc && scenDone[sc.id];
         function pick(optId) {
-          if (!sc || done) return;
+          if (!sc || done || xpSentRef.current.scen[sc.id]) return;
           var opt = sc.options.find(function(o) { return o.id === optId; });
           if (!opt) return;
-          var nx = Object.assign({}, scenDone); nx[sc.id] = { pick: optId, ok: opt.ok };
-          setPT({ scenDone: nx });
+          xpSentRef.current.scen[sc.id] = true;
+          setPT(function(prior) {
+            var priorScen = safeObj(prior.scenDone);
+            if (priorScen[sc.id]) return null;
+            var nx = Object.assign({}, priorScen);
+            nx[sc.id] = { pick: optId, ok: opt.ok };
+            return { scenDone: nx };
+          });
           if (opt.ok) awardXP(5, 'Pressure scenario');
           announceToSR(opt.ok ? __alloT('stem.paperTrail.good_sr', 'That is the protective choice. Explanation below.') : __alloT('stem.paperTrail.risky_sr', 'That one carries risk. Explanation below.'));
         }
         return h('div', { className: 'allo-pt-shell animate-in fade-in duration-200', style: shellStyle },
           renderWorkbenchHeader('scenarios', backBtn('home', __alloT('stem.paperTrail.back_home', 'PaperTrail'))),
+          h('div', { id: 'allo-pt-panel', role: 'tabpanel', 'aria-labelledby': 'allo-pt-tab-scenarios' },
 
           // Visual Protocol Diagram
           h('div', { style: { marginBottom: 14 } }, renderPressureProtocolSvg()),
@@ -1190,6 +1379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
               )
             ) : null
           ) : null
+          )
         );
       }
 
@@ -1200,6 +1390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
         var wsPicked = ws && workDone[ws.id];
         return h('div', { className: 'allo-pt-shell animate-in fade-in duration-200', style: shellStyle },
           renderWorkbenchHeader('work', backBtn('home', __alloT('stem.paperTrail.back_home', 'PaperTrail'))),
+          h('div', { id: 'allo-pt-panel', role: 'tabpanel', 'aria-labelledby': 'allo-pt-tab-work' },
 
           // Visual Stage: IDEA -> ADA Transition Cliff SVG
           h('div', { style: { marginBottom: 14 } }, renderTransitionCliffSvg()),
@@ -1278,8 +1469,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
                 return h('button', {
                   key: o.id, type: 'button', disabled: !!wsPicked,
                   onClick: function() {
-                    var nx = Object.assign({}, workDone); nx[ws.id] = { pick: o.id };
-                    setPT({ workDone: nx });
+                    if (wsPicked || xpSentRef.current.work[ws.id]) return;
+                    xpSentRef.current.work[ws.id] = true;
+                    setPT(function(prior) {
+                      var priorWork = safeObj(prior.workDone);
+                      if (priorWork[ws.id]) return null;
+                      var nx = Object.assign({}, priorWork);
+                      nx[ws.id] = { pick: o.id };
+                      return { workDone: nx };
+                    });
                     awardXP(4, 'Disclosure decision considered');
                     announceToSR(__alloT('stem.paperTrail.considered_sr', 'Choice recorded. What follows from it is shown below.'));
                   },
@@ -1305,22 +1503,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
                   __alloT('stem.paperTrail.work_done', 'All four considered. The through-line: nothing is automatic after school, and asking early is usually cheaper than recovering later.'))
             ) : null
           )
+          )
         );
       }
 
       // ─────────── SCRIPTS ───────────
       if (view === 'scripts') {
-        function copyPhrase(text, i) {
-          try {
-            if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-              navigator.clipboard.writeText(text).catch(function() {});
-            }
-          } catch (e) {}
+        function markCopied(i) {
+          if (!aliveRef.current) return;
           setPT({ copiedIdx: i });
           announceToSR(__alloT('stem.paperTrail.copied_sr', 'Phrase copied for practice.'));
+          if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+          copyTimerRef.current = setTimeout(function() {
+            copyTimerRef.current = null;
+            if (aliveRef.current) setPT({ copiedIdx: -1 });
+          }, 2500);
+        }
+        function fallbackCopy(text) {
+          try {
+            if (typeof document === 'undefined' || !document.body) return false;
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', 'true');
+            ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+            document.body.appendChild(ta);
+            ta.select();
+            var ok = false;
+            try { ok = !!document.execCommand('copy'); } catch (_) { ok = false; }
+            document.body.removeChild(ta);
+            return ok;
+          } catch (_) { return false; }
+        }
+        function copyPhrase(text, i) {
+          var announceFail = function() {
+            if (aliveRef.current) announceToSR(__alloT('stem.paperTrail.copy_failed_sr', 'Could not copy automatically. Select the phrase text to copy.'));
+          };
+          try {
+            if (typeof window !== 'undefined' && typeof window.alloCopyText === 'function') {
+              Promise.resolve(window.alloCopyText(text)).then(function(ok) {
+                if (ok !== false) markCopied(i);
+                else if (fallbackCopy(text)) markCopied(i);
+                else announceFail();
+              }).catch(function() {
+                if (fallbackCopy(text)) markCopied(i);
+                else announceFail();
+              });
+              return;
+            }
+            if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+              navigator.clipboard.writeText(text).then(function() {
+                markCopied(i);
+              }).catch(function() {
+                if (fallbackCopy(text)) markCopied(i);
+                else announceFail();
+              });
+              return;
+            }
+          } catch (e) {}
+          if (fallbackCopy(text)) markCopied(i);
+          else announceFail();
         }
         return h('div', { className: 'allo-pt-shell animate-in fade-in duration-200', style: shellStyle },
           renderWorkbenchHeader('scripts', backBtn('home', __alloT('stem.paperTrail.back_home', 'PaperTrail'))),
+          h('div', { id: 'allo-pt-panel', role: 'tabpanel', 'aria-labelledby': 'allo-pt-tab-scripts' },
           h('p', { style: { fontSize: 13.5, lineHeight: 1.5, margin: '0 0 14px', color: pal.muted } },
             __alloT('stem.paperTrail.scripts_intro', 'Asking for time is a skill, not an admission that you cannot read. These six sentences work in almost every room. Say them plainly; you do not need to apologize.')),
           h('ul', { className: 'allo-pt-grid-2', style: { listStyle: 'none', padding: 0, margin: 0 } },
@@ -1371,6 +1616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           ),
           h('p', { style: { fontSize: 12.5, marginTop: 14, marginBottom: 0, lineHeight: 1.5, color: pal.muted } },
             __alloT('stem.paperTrail.scripts_foot', 'If someone refuses all six, that refusal is information about them, not about you.'))
+          )
         );
       }
 

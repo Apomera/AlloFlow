@@ -168,7 +168,11 @@ const graders = {
       if (actual.mode !== target.mode) return false;
       if (target.mode === 'tenFrame') return actual.tenFrameFilled === target.count;
       if (target.mode === 'counters') return actual.counters.yellow - actual.counters.red === target.value;
-      if (target.mode === 'fracBars') return (actual.fbSelected[target.denominator] || []).length === target.numerator;
+      if (target.mode === 'fracBars') {
+        if (!isRecord(actual.fbSelected)) return false;
+        const sel = hasOwn(actual.fbSelected, target.denominator) ? actual.fbSelected[target.denominator] : [];
+        return Array.isArray(sel) && sel.length === target.numerator;
+      }
       return false;
     }
     if (target.match === 'value') return ['thousands', 'hundreds', 'tens', 'ones'].reduce((sum, key, i) => sum + (actual[key] || 0) * [1000, 100, 10, 1][i], 0) === ['thousands', 'hundreds', 'tens', 'ones'].reduce((sum, key, i) => sum + (target[key] || 0) * [1000, 100, 10, 1][i], 0);
@@ -223,7 +227,12 @@ const graders = {
   },
   chemBalance(actual, target) {
     if (!isRecord(actual) || !isRecord(target)) return false;
-    return (!hasOwn(target, 'equation') || normalizeEquation(actual.equation) === normalizeEquation(target.equation)) && sameOrdered(actual.coefficients, target.coefficients, (value, expected) => finite(value) && finite(expected) && value === expected);
+    if (hasOwn(target, 'equation')) {
+      const actualEq = normalizeEquation(actual.equation);
+      const expectedEq = normalizeEquation(target.equation);
+      if (actualEq == null || expectedEq == null || actualEq !== expectedEq) return false;
+    }
+    return sameOrdered(actual.coefficients, target.coefficients, (value, expected) => finite(value) && finite(expected) && value === expected);
   },
   punnett(actual, target) {
     if (!isRecord(actual) || !isRecord(target) || !Array.isArray(target.parent1) || !Array.isArray(target.parent2)) return false;
@@ -294,8 +303,9 @@ const validHubActual = (actual, target) => {
   if (target.mode === 'tenFrame') return nonNegativeInteger(actual.tenFrameFilled) && actual.tenFrameFilled <= 20;
   if (target.mode === 'counters') return isRecord(actual.counters) && ['red','yellow'].every(k => nonNegativeInteger(actual.counters[k]));
   if (target.mode === 'fracBars') {
-    const selected = isRecord(actual.fbSelected) ? (actual.fbSelected[target.denominator] || []) : null;
-    return denseEvery(selected, part => nonNegativeInteger(part) && part < target.denominator) && new Set(selected).size === selected.length;
+    if (!isRecord(actual.fbSelected)) return false;
+    const selected = hasOwn(actual.fbSelected, target.denominator) ? actual.fbSelected[target.denominator] : [];
+    return Array.isArray(selected) && denseEvery(selected, part => nonNegativeInteger(part) && part < target.denominator) && new Set(selected).size === selected.length;
   }
   return false;
 };
@@ -348,7 +358,7 @@ const validators = {
   },
   chemBalance: {
     target: target => isRecord(target) && denseEvery(target.coefficients, positiveInteger, false) && optionalString(target, 'equation'),
-    actual: actual => isRecord(actual) && denseEvery(actual.coefficients, positiveInteger, false)
+    actual: (actual, target) => isRecord(actual) && denseEvery(actual.coefficients, positiveInteger, false) && (!hasOwn(target, 'equation') || nonEmptyString(actual.equation))
   },
   punnett: {
     target: target => isRecord(target) && denseCountIs(target.parent1, nonEmptyString, 2) &&
@@ -441,9 +451,10 @@ const workspacePaths = Object.freeze({
   coordinate: ['_coordGrid', 'gridPoints']
 });
 const readMathViewState = (tool, snapshot, target = {}) => {
+  const safeTarget = isRecord(target) ? target : {};
   const state = isRecord(snapshot) ? snapshot : {};
   const data = isRecord(state.labToolData) ? state.labToolData : {};
-  if (tool === 'base10' && target.mode && target.mode !== 'blocks') return data._manipulatives;
+  if (tool === 'base10' && safeTarget.mode && safeTarget.mode !== 'blocks') return data._manipulatives;
   const path = hasOwn(workspacePaths, tool) ? workspacePaths[tool] : null;
   if (path && hasOwn(data, path[0])) {
     const workspace = data[path[0]];

@@ -169,7 +169,7 @@ function WcopFlag(props) {
 
 function WcopFrozenNotes(props) {
   return React.createElement('div', { className: 'rounded-lg border border-stone-300 bg-stone-50 p-3' },
-    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-stone-600 font-semibold mb-2' },
+    React.createElement('p', { className: 'text-xs uppercase tracking-wider text-stone-600 font-semibold mb-2' },
       'Source notes, locked'),
     React.createElement('pre', { className: 'whitespace-pre-wrap break-words text-[13px] leading-relaxed text-stone-800 m-0 font-mono' },
       props.notes),
@@ -199,13 +199,13 @@ function WcopSuggestion(props) {
     body.push(React.createElement('p', {
       key: 'h', id: titleId, className: 'text-xs uppercase tracking-wider font-bold text-teal-700 mb-1'
     }, props.componentLabel));
-    body.push(React.createElement('p', { key: 'l1', className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'What was observed'));
+    body.push(React.createElement('p', { key: 'l1', className: 'text-xs uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'What was observed'));
     body.push(React.createElement('p', { key: 'e', className: 'text-sm text-slate-800' }, s.objectiveEvidence));
     if (s.interpretation) {
-      body.push(React.createElement('p', { key: 'l2', className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'What it might mean'));
+      body.push(React.createElement('p', { key: 'l2', className: 'text-xs uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'What it might mean'));
       body.push(React.createElement('p', { key: 'i', className: 'text-sm text-slate-700 italic' }, s.interpretation));
     }
-    body.push(React.createElement('p', { key: 'l3', className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'Cited from the notes'));
+    body.push(React.createElement('p', { key: 'l3', className: 'text-xs uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'Cited from the notes'));
     s.sourceSpans.forEach((span, i) => {
       body.push(React.createElement('blockquote', {
         key: 'q' + i,
@@ -219,7 +219,7 @@ function WcopSuggestion(props) {
   });
 
   if (s.decision === 'edited' && s.approvedText) {
-    body.push(React.createElement('p', { key: 'l4', className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'Your wording'));
+    body.push(React.createElement('p', { key: 'l4', className: 'text-xs uppercase tracking-wider text-slate-600 font-semibold mt-2' }, 'Your wording'));
     body.push(React.createElement('p', { key: 'a', className: 'text-sm text-slate-800' }, s.approvedText));
   }
 
@@ -282,11 +282,11 @@ function WcopIntro(props) {
       + 'evidence-based feedback under your framework, shows you the exact line of your notes behind '
       + 'every claim, and lets you keep, reword, or throw out each one. You write and approve the '
       + 'feedback. It never rates anyone.'),
-    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-3' }, 'Four steps'),
+    React.createElement('p', { className: 'text-xs uppercase tracking-wider text-slate-600 font-semibold mt-3' }, 'Four steps'),
     React.createElement('ol', { className: 'list-decimal ml-5 text-sm text-slate-700' },
       WCOP_STEPS.map((step) => React.createElement('li', { key: step[0], className: 'mb-1' },
         React.createElement('strong', null, step[0] + '. '), step[1]))),
-    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-3' },
+    React.createElement('p', { className: 'text-xs uppercase tracking-wider text-slate-600 font-semibold mt-3' },
       'Before using this with a real staff member'),
     React.createElement('p', { className: 'text-sm text-slate-700' },
       'Everything built in here is invented practice material, so you can explore it freely. Using it '
@@ -296,7 +296,7 @@ function WcopIntro(props) {
     React.createElement('p', { className: 'text-xs text-slate-600 mt-2' },
       'This build analyzes the practice scenarios only. Analyzing notes you write yourself needs an '
       + 'approved AI provider, which is a separate decision.'),
-    React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mt-3' },
+    React.createElement('p', { className: 'text-xs uppercase tracking-wider text-slate-600 font-semibold mt-3' },
       'Three ways this gets used'),
     React.createElement('div', { className: 'grid gap-2 sm:grid-cols-3' },
       WCOP_TIERS.map((tier) => React.createElement('div', {
@@ -307,7 +307,7 @@ function WcopIntro(props) {
               : 'border-slate-200 bg-white')
       },
         React.createElement('h4', { className: 'text-sm font-bold' }, tier.name),
-        React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold' }, tier.cost),
+        React.createElement('p', { className: 'text-xs uppercase tracking-wider text-slate-600 font-semibold' }, tier.cost),
         React.createElement('p', { className: 'text-xs text-slate-600 mt-1' }, tier.body),
         tier.key === 'deliver' && props.connected
           ? React.createElement('p', { className: 'text-xs text-emerald-800 font-semibold mt-1' },
@@ -329,7 +329,7 @@ function WcopAffirm(props) {
     React.createElement('h3', { className: 'font-bold text-slate-800 mb-1' }, 'Use this for a real observation'),
     React.createElement('p', { className: 'text-xs text-slate-600 mb-3' }, described.note),
     React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-4 mb-3' },
-      React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold mb-1' },
+      React.createElement('p', { className: 'text-xs uppercase tracking-wider text-slate-600 font-semibold mb-1' },
         'Confirm each of these'),
       described.terms.map((term) => React.createElement('label', {
         key: term.key, className: 'flex gap-2.5 items-center min-h-11 py-1 text-sm cursor-pointer'
@@ -474,8 +474,11 @@ function WcopSetup(props) {
           className: 'min-h-11 px-3 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 ' + (props.busy ? 'opacity-50' : '')
         }, props.connected ? 'Reconnect' : 'Connect'),
         props.connected ? React.createElement('button', {
-          type: 'button', className: 'min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', onClick: props.onForget
-        }, 'Forget this connection') : null),
+          type: 'button',
+          className: 'min-h-11 px-3 py-2 rounded border text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
+            + (props.armForget ? 'border-rose-600 bg-rose-50 text-rose-800 font-semibold' : 'border-slate-300'),
+          onClick: props.onForget
+        }, props.armForget ? 'Confirm forget connection' : 'Forget this connection') : null),
       props.message ? React.createElement(WcopFlag, { tone: props.tone }, props.message) : null,
       props.selfTest ? React.createElement('p', { className: 'text-xs text-slate-600 mt-2' },
         'Owner: ' + (props.selfTest.owner || 'unknown')
@@ -530,10 +533,24 @@ function WalkthroughCopilotPanel(props) {
   const [manual, setManual] = React.useState({ componentId: '', quote: '', evidence: '', interpretation: '' });
   const [manualMessage, setManualMessage] = React.useState('');
   const [realNotes, setRealNotes] = React.useState('');
+  const [armForget, setArmForget] = React.useState(false);
+  const [armClearReal, setArmClearReal] = React.useState(false);
 
   const dialogRef = React.useRef(null);
+  const backdropDownRef = React.useRef(false);
+  const mountedRef = React.useRef(true);
+  const connEpochRef = React.useRef(0);
+  const deliveringRef = React.useRef(false);
   const closeRef = React.useRef(props && props.onClose);
   closeRef.current = props && props.onClose;
+
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      connEpochRef.current += 1;
+    };
+  }, []);
 
   const componentLabels = React.useMemo(() => {
     const map = {};
@@ -551,6 +568,29 @@ function WalkthroughCopilotPanel(props) {
     const trap = { root: dialog };
     trapStack.push(trap);
     const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isolated = [];
+    const seenSiblings = new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement && typeof document !== 'undefined') {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === cursor || seenSiblings.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
+        seenSiblings.add(sibling);
+        isolated.push({ sibling, hadInert: sibling.hasAttribute('inert'), ariaHidden: sibling.getAttribute('aria-hidden') });
+        try { sibling.inert = true; } catch (_) {}
+        try { sibling.setAttribute('inert', ''); } catch (_) {}
+        try { sibling.setAttribute('aria-hidden', 'true'); } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' })) : null;
+    const body = typeof document !== 'undefined' ? document.body : null;
+    let scrollLocked = false;
+    if (body && scrollLock) {
+      scrollLocked = true;
+      if (++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
+    }
     const getFocusable = () => Array.from(dialog.querySelectorAll(
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]'
     )).filter((el) => {
@@ -605,6 +645,19 @@ function WalkthroughCopilotPanel(props) {
     document.addEventListener('keydown', onKeyDown);
     return () => {
       document.removeEventListener('keydown', onKeyDown);
+      if (scrollLocked && body && scrollLock) {
+        scrollLock.count = Math.max(0, scrollLock.count - 1);
+        if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+      }
+      isolated.forEach(({ sibling, hadInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try { sibling.inert = false; } catch (_) {}
+          try { sibling.removeAttribute('inert'); } catch (_) {}
+        }
+        if (ariaHidden == null) { try { sibling.removeAttribute('aria-hidden'); } catch (_) {} }
+        else if (ariaHidden !== 'true') { try { sibling.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
+      });
       const wasTopTrap = trapStack[trapStack.length - 1] === trap;
       const idx = trapStack.lastIndexOf(trap);
       if (idx >= 0) trapStack.splice(idx, 1);
@@ -628,9 +681,14 @@ function WalkthroughCopilotPanel(props) {
       'The Walkthrough Copilot modules did not finish loading. Close and reopen this tool.');
     if (!hasModalShell) return errPanel;
     return React.createElement('div', {
-      className: 'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4',
+      className: 'fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/60 p-4',
       role: 'presentation',
-      onClick: (e) => { if (e.target === e.currentTarget && typeof closeRef.current === 'function') closeRef.current(); }
+      onMouseDown: (e) => { backdropDownRef.current = e.target === e.currentTarget; },
+      onClick: (e) => {
+        const startedOnBackdrop = backdropDownRef.current;
+        backdropDownRef.current = false;
+        if (startedOnBackdrop && e.target === e.currentTarget && typeof closeRef.current === 'function') closeRef.current();
+      }
     }, React.createElement('div', {
       ref: dialogRef,
       role: 'dialog',
@@ -744,16 +802,20 @@ function WalkthroughCopilotPanel(props) {
   function runSelfTest(token) {
     const built = deliveryClient(token);
     if (!built.ok) return;
+    const reqEpoch = ++connEpochRef.current;
     built.value.selfTest().then((result) => {
+      if (!mountedRef.current || connEpochRef.current !== reqEpoch) return;
       setSetupState(result.ok
         ? { busy: false, message: 'Self-test passed.', tone: 'go', selfTest: result.value }
         : { busy: false, message: result.errors[0].message, tone: 'stop', selfTest: null });
     }, () => {
+      if (!mountedRef.current || connEpochRef.current !== reqEpoch) return;
       setSetupState({ busy: false, message: 'The self-test could not reach the script.', tone: 'stop', selfTest: null });
     });
   }
 
   function connect() {
+    setArmForget(false);
     const check = core.validateExecUrl(connection.execUrl);
     if (!check.ok) {
       setSetupState({ busy: false, message: check.errors[0].message, tone: 'stop', selfTest: null });
@@ -764,6 +826,7 @@ function WalkthroughCopilotPanel(props) {
       setSetupState({ busy: false, message: 'Paste the owner token from Apps Script Project Settings > Script properties.', tone: 'stop', selfTest: null });
       return;
     }
+    const reqEpoch = ++connEpochRef.current;
     setSetupState({ busy: true, message: 'Connecting...', tone: 'warn', selfTest: null });
     const built = core.createDelivery({ execUrl: check.value, token, post: wcopPost });
     if (!built.ok) {
@@ -771,6 +834,7 @@ function WalkthroughCopilotPanel(props) {
       return;
     }
     built.value.selfTest().then((result) => {
+      if (!mountedRef.current || connEpochRef.current !== reqEpoch) return;
       if (!result.ok) {
         setSetupState({ busy: false, message: result.errors[0].message, tone: 'stop', selfTest: null });
         return;
@@ -781,6 +845,7 @@ function WalkthroughCopilotPanel(props) {
       setSetupState({ busy: false, message: 'Connected to ' + (next.owner || 'your Google account') + '.', tone: 'go', selfTest: result.value });
       wcopAnnounce('Connected.');
     }, (err) => {
+      if (!mountedRef.current || connEpochRef.current !== reqEpoch) return;
       setSetupState({
         busy: false,
         message: 'Could not reach the script. Check the URL, and that the deployment is set to "Anyone". ('
@@ -792,6 +857,13 @@ function WalkthroughCopilotPanel(props) {
   }
 
   function forget() {
+    if (!armForget) {
+      setArmForget(true);
+      wcopAnnounce('Click Forget this connection again to confirm.');
+      return;
+    }
+    setArmForget(false);
+    connEpochRef.current += 1;
     try { window.localStorage.removeItem(WCOP_STORE_KEY); } catch (err) { /* nothing to clear */ }
     try { if (window.sessionStorage) window.sessionStorage.removeItem(WCOP_TOKEN_KEY); } catch (err) { /* nothing to clear */ }
     setConnection({ execUrl: '', token: '', owner: '' });
@@ -800,13 +872,18 @@ function WalkthroughCopilotPanel(props) {
   }
 
   function deliver() {
+    if (deliveringRef.current || !draft) return;
     const built = deliveryClient();
     if (!built.ok) { setSendResult({ ok: false, message: built.errors[0].message }); return; }
+    deliveringRef.current = true;
+    const reqEpoch = connEpochRef.current;
     setSetupState((current) => Object.assign({}, current, { busy: true }));
     built.value.deliver(draft, fixtures.SAMPLE_FIELD_MAP, {
       teacherEmail: sendTo,
       allowedDomain: setupState.selfTest && setupState.selfTest.allowedDomain
     }).then((result) => {
+      deliveringRef.current = false;
+      if (!mountedRef.current || connEpochRef.current !== reqEpoch) return;
       setSetupState((current) => Object.assign({}, current, { busy: false }));
       const message = result.ok
         ? 'Saved and shared with ' + result.value.sharedWith
@@ -815,6 +892,8 @@ function WalkthroughCopilotPanel(props) {
       setSendResult({ ok: result.ok, message: message });
       wcopAnnounce(message);
     }, (err) => {
+      deliveringRef.current = false;
+      if (!mountedRef.current || connEpochRef.current !== reqEpoch) return;
       setSetupState((current) => Object.assign({}, current, { busy: false }));
       setSendResult({ ok: false, message: 'Could not reach the script. Nothing was saved. (' + ((err && err.message) || 'network error') + ')' });
     });
@@ -879,10 +958,25 @@ function WalkthroughCopilotPanel(props) {
   }
 
   function clearAll() {
+    if (draft && draft.mode === 'approved' && !armClearReal) {
+      setArmClearReal(true);
+      wcopAnnounce('Click Clear and start over again to clear this observation and teacher email.');
+      return;
+    }
+    setArmClearReal(false);
+    connEpochRef.current += 1;
     core.clearDraft(draft);
     setDraft(null);
     setScenario(null);
     setNotes('');
+    setRealNotes('');
+    setSendTo('');
+    setSendResult(null);
+    setManual({ componentId: '', quote: '', evidence: '', interpretation: '' });
+    setManualMessage('');
+    setEditingId(null);
+    setEditText('');
+    setProblem('');
     setComparison(null);
     setStage('capture');
     wcopAnnounce('Cleared. Nothing was kept.');
@@ -894,7 +988,7 @@ function WalkthroughCopilotPanel(props) {
     if (id === 'capture') return true;
     if (!draft) return false;
     if (id === 'analyze') return true;
-    const decided = draft.suggestions.every((s) => s.decision !== 'pending');
+    const decided = draft.suggestions.length > 0 && draft.suggestions.every((s) => s.decision !== 'pending');
     if (id === 'feedback') return decided;
     if (id === 'copy') return !!readiness && readiness.ok;
     return false;
@@ -929,7 +1023,7 @@ function WalkthroughCopilotPanel(props) {
           + (stage === s.id ? 'border-teal-600 text-slate-800 bg-white' : 'border-slate-200 text-slate-600 bg-white')
           + (!stageReachable(s.id) && stage !== s.id ? ' opacity-50 cursor-not-allowed' : '')
       },
-        React.createElement('span', { className: 'block text-[10px] uppercase tracking-wider opacity-75' }, s.n),
+        React.createElement('span', { className: 'block text-xs uppercase tracking-wider opacity-75' }, s.n),
         React.createElement('span', null, s.label))
     ))
   );
@@ -949,6 +1043,7 @@ function WalkthroughCopilotPanel(props) {
       onToken: (value) => setConnection((current) => Object.assign({}, current, { token: value, verified: false })),
       onConnect: connect,
       onForget: forget,
+      armForget: armForget,
       onCopyScript: (text, label) => copyText(text, label || 'Script code'),
       onBack: () => setStage('capture')
     });
@@ -1080,7 +1175,8 @@ function WalkthroughCopilotPanel(props) {
       React.createElement('div', null,
         React.createElement('h3', { className: 'font-bold text-slate-800' }, 'Your call on each suggestion'),
         React.createElement('p', { className: 'text-sm font-bold text-teal-700 mb-1', role: 'status', 'aria-live': 'polite' },
-          settled === total ? 'All ' + total + ' decided. You can move on.' : settled + ' of ' + total + ' decided.'),
+          total === 0 ? '0 of 0 decided. Add at least one piece of evidence before continuing.'
+            : (settled === total ? 'All ' + total + ' decided. You can move on.' : settled + ' of ' + total + ' decided.')),
         React.createElement('p', { className: 'text-xs text-slate-600 mb-3' },
           'Nothing reaches your form until you decide on it. Keep what the notes genuinely support, reword '
           + 'anything you would put differently, and throw out the rest. Rejecting a lot is a normal outcome, '
@@ -1106,10 +1202,10 @@ function WalkthroughCopilotPanel(props) {
         draft.globalWarnings.map((w, i) => React.createElement(WcopFlag, { key: 'g' + i }, w.message)),
         React.createElement('button', {
           type: 'button',
-          disabled: settled !== total,
+          disabled: total === 0 || settled !== total,
           onClick: () => setStage('feedback'),
           className: 'mt-3 min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
-            + (settled !== total ? 'opacity-50 cursor-not-allowed' : '')
+            + (total === 0 || settled !== total ? 'opacity-50 cursor-not-allowed' : '')
         }, 'Continue to the feedback')
       )
     );
@@ -1159,11 +1255,11 @@ function WalkthroughCopilotPanel(props) {
           className: 'min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
             + (!readiness.ok ? 'opacity-50 cursor-not-allowed' : '')
         }, 'Continue to copy'),
-        React.createElement('button', {
+        scenario ? React.createElement('button', {
           type: 'button',
           onClick: compare,
           className: 'min-h-11 px-4 py-2 rounded border border-slate-300 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1'
-        }, 'Compare with the reference reading')),
+        }, 'Compare with the reference reading') : null),
       comparison ? React.createElement('div', { className: 'rounded-lg border border-slate-200 bg-white p-4 mt-3' },
         React.createElement('h4', { className: 'font-semibold text-sm' }, 'Your reading and the reference reading'),
         React.createElement('p', { className: 'text-xs text-slate-600 mb-2' }, comparison.disclaimer),
@@ -1173,7 +1269,7 @@ function WalkthroughCopilotPanel(props) {
           (d.componentId ? d.componentId + ': ' : '') + d.note)),
         comparison.referenceNote ? React.createElement('p', { className: 'text-sm text-slate-700 mt-2' }, comparison.referenceNote) : null,
         comparison.discussion.length ? React.createElement('div', { className: 'mt-2' },
-          React.createElement('p', { className: 'text-[11px] uppercase tracking-wider text-slate-600 font-semibold' }, 'Worth discussing'),
+          React.createElement('p', { className: 'text-xs uppercase tracking-wider text-slate-600 font-semibold' }, 'Worth discussing'),
           React.createElement('ul', { className: 'list-disc ml-5 text-sm text-slate-700' },
             comparison.discussion.map((p, i) => React.createElement('li', { key: i }, p)))) : null
       ) : null
@@ -1243,8 +1339,9 @@ function WalkthroughCopilotPanel(props) {
         React.createElement('button', {
           type: 'button',
           onClick: clearAll,
-          className: 'mt-3 min-h-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1'
-        }, 'Clear and start over')
+          className: 'mt-3 min-h-11 px-3 py-2 rounded border text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
+            + (armClearReal ? 'border-rose-600 bg-rose-50 text-rose-800 font-semibold' : 'border-slate-300')
+        }, armClearReal ? 'Confirm clear and start over' : 'Clear and start over')
       )
       : React.createElement(WcopFlag, { tone: 'stop' }, output.errors[0].message);
   }
@@ -1268,9 +1365,14 @@ function WalkthroughCopilotPanel(props) {
   if (!hasModalShell) return panelContent;
 
   return React.createElement('div', {
-    className: 'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4',
+    className: 'fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/60 p-4',
     role: 'presentation',
-    onClick: (e) => { if (e.target === e.currentTarget && typeof closeRef.current === 'function') closeRef.current(); }
+    onMouseDown: (e) => { backdropDownRef.current = e.target === e.currentTarget; },
+    onClick: (e) => {
+      const startedOnBackdrop = backdropDownRef.current;
+      backdropDownRef.current = false;
+      if (startedOnBackdrop && e.target === e.currentTarget && typeof closeRef.current === 'function') closeRef.current();
+    }
   },
     React.createElement('div', {
       ref: dialogRef,

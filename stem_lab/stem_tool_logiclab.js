@@ -192,6 +192,9 @@ window.StemLab = window.StemLab || {
       var llBorder = isContrast ? '#ffff00' : (isDark ? '#4c1d95' : '#ddd6fe');
 
       // ── Tool body (logicLab) ──
+      var _llAiLoadingState = React.useState(false);
+      var aiLoading = _llAiLoadingState[0], setAiLoading = _llAiLoadingState[1];
+      var _llCanvasRef = React.useRef(null);
       return (function() {
 // ── state ──
 
@@ -234,8 +237,6 @@ window.StemLab = window.StemLab || {
           var showTruthLab = !!d.showTruthLab;
 
           var userTopic = d.userTopic || '';
-
-          var aiLoading = d.aiLoading || false;
 
           var aiFallacy = d.aiFallacy || null;
 
@@ -286,7 +287,7 @@ window.StemLab = window.StemLab || {
           var aiGenerate = function(prompt, field) {
 
             if (!_aiOn) return;
-            upd({ aiLoading: true });
+            setAiLoading(true);
 
             callGemini(prompt, true).then(function(result) {
 
@@ -304,17 +305,18 @@ window.StemLab = window.StemLab || {
 
                 var parsed = JSON.parse(cleaned);
 
-                var patch = { aiLoading: false };
+                var patch = {};
 
                 patch[field] = parsed;
 
+                setAiLoading(false);
                 upd(patch);
 
               } catch(e) {
 
                 if (addToast) addToast('AI response parsing failed. Try again!', 'warning');
 
-                upd({ aiLoading: false });
+                setAiLoading(false);
 
               }
 
@@ -322,7 +324,7 @@ window.StemLab = window.StemLab || {
 
               if (addToast) addToast('AI unavailable. Using static challenges.', 'info');
 
-              upd({ aiLoading: false });
+              setAiLoading(false);
 
             });
 
@@ -333,15 +335,16 @@ window.StemLab = window.StemLab || {
           var aiExplainCall = function(prompt) {
 
             if (!_aiOn) return;
-            upd({ aiLoading: true });
+            setAiLoading(true);
 
             callGemini(prompt, true).then(function(result) {
 
-              upd({ aiExplain: result, aiLoading: false });
+              setAiLoading(false);
+              upd({ aiExplain: result });
 
             }).catch(function() {
 
-              upd({ aiLoading: false });
+              setAiLoading(false);
 
             });
 
@@ -376,27 +379,19 @@ window.StemLab = window.StemLab || {
           // ── expression parser & evaluator ──
 
           var tokenize = function(s) {
-
+            var str = String(s || '');
             var tokens = []; var i = 0;
-
-            while (i < s.length) {
-
-              var ch = s[i];
-
-              if (ch === ' ') { i++; continue; }
-
+            while (i < str.length) {
+              var ch = str[i];
+              if (/\s/.test(ch)) { i++; continue; }
               if (ch === '(' || ch === ')') { tokens.push(ch); i++; continue; }
-
               if ('∧∨¬→↔⊕'.indexOf(ch) !== -1) { tokens.push(ch); i++; continue; }
-
               if (/[A-Z]/.test(ch)) { tokens.push(ch); i++; continue; }
-
+              // Unknown non-whitespace symbol: push as-is so parser rejects invalid/foreign syntax instead of silently dropping it.
+              tokens.push(ch);
               i++;
-
             }
-
             return tokens;
-
           };
 
 
@@ -668,11 +663,12 @@ window.StemLab = window.StemLab || {
           // generic "doesn't apply" — the wrong move becomes the lesson.
           var diagnoseFallacy = function(selTexts) {
             for (var fi = 0; fi < selTexts.length; fi++) {
+              if (typeof selTexts[fi] !== 'string') continue;
               var fm = selTexts[fi].match(/^(.+)\s*→\s*(.+)$/);
               if (!fm) continue;
               var fp = fm[1].trim(), fq = fm[2].trim();
               for (var fj = 0; fj < selTexts.length; fj++) {
-                if (fi === fj) continue;
+                if (fi === fj || typeof selTexts[fj] !== 'string') continue;
                 var fOther = selTexts[fj].trim();
                 if (fOther === fq) return 'That move is AFFIRMING THE CONSEQUENT — a classic fallacy. From "' + fp + ' → ' + fq + '" and "' + fq + '" you cannot conclude "' + fp + '": something ELSE could have caused ' + fq + '. (If it rains, the ground is wet. The ground IS wet — but maybe a sprinkler did it.)';
                 if (fOther === '¬' + fp || fOther === '¬(' + fp + ')') return 'That move is DENYING THE ANTECEDENT — a classic fallacy. From "' + fp + ' → ' + fq + '" and "¬' + fp + '" you cannot conclude "¬' + fq + '": the rule only says what happens IF ' + fp + ' is true. It is silent when ' + fp + ' is false.';
@@ -980,12 +976,12 @@ window.StemLab = window.StemLab || {
           var gateOutput = evalGate(gateType, gateInputs.A, gateInputs.B);
           var GATE_TYPES = ['AND','OR','NOT','NAND','NOR','XOR','XNOR'];
 
-          // ── Symbol colors for drag palette ──
+          // ── Symbol colors for drag palette (all >= 4.5:1 with white text) ──
           var _symColor = {
-            '∧': '#7c3aed', '∨': '#2563eb', '¬': '#dc2626',
+            '∧': '#6d28d9', '∨': '#1d4ed8', '¬': '#b91c1c',
             '→': '#047857', '↔': '#b45309', '⊕': '#be185d',
-            'P': '#6366f1', 'Q': '#8b5cf6', 'R': '#a78bfa', 'S': '#c4b5fd',
-            '(': '#94a3b8', ')': '#94a3b8'
+            'P': '#4338ca', 'Q': '#6d28d9', 'R': '#7e22ce', 'S': '#9333ea',
+            '(': '#475569', ')': '#475569'
           };
 
           var solvedCount = _solvedProofCount(d);
@@ -1099,36 +1095,104 @@ window.StemLab = window.StemLab || {
                       React.createElement("linearGradient", { id: "logicStudioLine", x1: "0", x2: "1", y1: "0", y2: "0" },
                         React.createElement("stop", { offset: "0%", stopColor: isContrast ? "#ffff00" : "#a78bfa" }),
                         React.createElement("stop", { offset: "100%", stopColor: isContrast ? "#00ff00" : "#22d3ee" })
+                      ),
+                      !isContrast && React.createElement("radialGradient", { id: "ll-pcb-bg", cx: "50%", cy: "48%", r: "68%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#14223c" }),
+                        React.createElement("stop", { offset: "65%", stopColor: "#0c1528" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#070c18" })
+                      ),
+                      !isContrast && React.createElement("pattern", { id: "ll-pcb-pads", width: "24", height: "24", patternUnits: "userSpaceOnUse" },
+                        React.createElement("circle", { cx: "12", cy: "12", r: "1.1", fill: "#38bdf8", opacity: "0.22" }),
+                        React.createElement("path", { d: "M 0 12 H 24 M 12 0 V 24", stroke: "#1e293b", strokeWidth: "0.6", opacity: "0.55" })
+                      ),
+                      !isContrast && React.createElement("linearGradient", { id: "ll-gate-bevel", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#7c3aed" }),
+                        React.createElement("stop", { offset: "45%", stopColor: "#4c1d95" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#2e1065" })
+                      ),
+                      !isContrast && React.createElement("radialGradient", { id: "ll-led-on", cx: "36%", cy: "32%", r: "68%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#bbf7d0" }),
+                        React.createElement("stop", { offset: "42%", stopColor: "#22c55e" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#14532d" })
+                      ),
+                      !isContrast && React.createElement("radialGradient", { id: "ll-led-off", cx: "36%", cy: "32%", r: "68%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#fca5a5" }),
+                        React.createElement("stop", { offset: "45%", stopColor: "#dc2626" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#7f1d1d" })
+                      ),
+                      !isContrast && React.createElement("radialGradient", { id: "ll-led-halo-on", cx: "50%", cy: "50%", r: "50%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#4ade80", stopOpacity: "0.62" }),
+                        React.createElement("stop", { offset: "65%", stopColor: "#22c55e", stopOpacity: "0.14" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#22c55e", stopOpacity: "0" })
                       )
                     ),
-                    React.createElement("rect", { x: "4", y: "4", width: "512", height: "212", rx: "24", fill: isContrast ? "#000000" : "#0f172a", stroke: isContrast ? "#ffff00" : "#334155", strokeWidth: "2" }),
-                    // Subtle PCB grid lines
+                    React.createElement("rect", { x: "4", y: "4", width: "512", height: "212", rx: "24", fill: isContrast ? "#000000" : "url(#ll-pcb-bg)", stroke: isContrast ? "#ffff00" : "#334155", strokeWidth: "2" }),
+                    !isContrast && React.createElement("rect", { x: "6", y: "6", width: "508", height: "208", rx: "22", fill: "url(#ll-pcb-pads)" }),
+                    // Subtle PCB corner mounting pads
+                    !isContrast && [[24, 24], [496, 24], [24, 196], [496, 196]].map(function(pt, ci) {
+                      return React.createElement("g", { key: "mp-" + ci },
+                        React.createElement("circle", { cx: pt[0], cy: pt[1], r: "5", fill: "none", stroke: "#f59e0b", strokeWidth: "1.4", opacity: "0.45" }),
+                        React.createElement("circle", { cx: pt[0], cy: pt[1], r: "2", fill: "#0f172a" })
+                      );
+                    }),
+                    // PCB major guide buses
                     React.createElement("path", { d: "M120 12 V208 M260 12 V208 M400 12 V208 M12 72 H508 M12 148 H508", stroke: isContrast ? "#222222" : "#1e293b", strokeWidth: "1" }),
-                    // Live input/output signal wires
-                    React.createElement("path", { d: "M84 72 H188", stroke: gateInputs.A ? (isContrast ? "#00ff00" : "#22c55e") : (isContrast ? "#ffff00" : "#475569"), strokeWidth: "8", strokeLinecap: "round" }),
-                    !isUnaryGate && React.createElement("path", { d: "M84 148 H188", stroke: gateInputs.B ? (isContrast ? "#00ff00" : "#22c55e") : (isContrast ? "#ffff00" : "#475569"), strokeWidth: "8", strokeLinecap: "round" }),
-                    React.createElement("path", { d: "M336 110 H430", stroke: gateOutput ? (isContrast ? "#00ff00" : "#22c55e") : (isContrast ? "#ffff00" : "#ef4444"), strokeWidth: "9", strokeLinecap: "round" }),
-                    // Input nodes
-                    React.createElement("circle", { cx: "66", cy: "72", r: "28", fill: gateInputs.A ? (isContrast ? "#00ff00" : "#15803d") : "#1e293b", stroke: isContrast ? "#ffff00" : "#a78bfa", strokeWidth: "3.5" }),
+                    // Dual-pass luminous HIGH-signal copper/neon wires + propagation pulse orbs
+                    gateInputs.A && !isContrast && React.createElement("path", { d: "M84 72 H188", stroke: "#4ade80", strokeWidth: "15", strokeLinecap: "round", opacity: "0.24" }),
+                    React.createElement("path", { d: "M84 72 H188", stroke: gateInputs.A ? (isContrast ? "#00ff00" : "#22c55e") : (isContrast ? "#ffff00" : "#475569"), strokeWidth: "7", strokeLinecap: "round" }),
+                    gateInputs.A && !isContrast && React.createElement("path", { d: "M84 72 H188", stroke: "#dcfce7", strokeWidth: "2", strokeLinecap: "round", opacity: "0.85" }),
+                    gateInputs.A && !isContrast && React.createElement("circle", { cx: "96", cy: "72", r: "4.5", fill: "#ffffff", style: { animation: "llSignalIn 1.35s linear infinite" } }),
+                    !isUnaryGate && gateInputs.B && !isContrast && React.createElement("path", { d: "M84 148 H188", stroke: "#4ade80", strokeWidth: "15", strokeLinecap: "round", opacity: "0.24" }),
+                    !isUnaryGate && React.createElement("path", { d: "M84 148 H188", stroke: gateInputs.B ? (isContrast ? "#00ff00" : "#22c55e") : (isContrast ? "#ffff00" : "#475569"), strokeWidth: "7", strokeLinecap: "round" }),
+                    !isUnaryGate && gateInputs.B && !isContrast && React.createElement("path", { d: "M84 148 H188", stroke: "#dcfce7", strokeWidth: "2", strokeLinecap: "round", opacity: "0.85" }),
+                    !isUnaryGate && gateInputs.B && !isContrast && React.createElement("circle", { cx: "96", cy: "148", r: "4.5", fill: "#ffffff", style: { animation: "llSignalIn 1.35s linear 0.45s infinite" } }),
+                    gateOutput && !isContrast && React.createElement("path", { d: "M336 110 H430", stroke: "#4ade80", strokeWidth: "16", strokeLinecap: "round", opacity: "0.26" }),
+                    React.createElement("path", { d: "M336 110 H430", stroke: gateOutput ? (isContrast ? "#00ff00" : "#22c55e") : (isContrast ? "#ffff00" : "#ef4444"), strokeWidth: "8", strokeLinecap: "round" }),
+                    gateOutput && !isContrast && React.createElement("path", { d: "M336 110 H430", stroke: "#dcfce7", strokeWidth: "2.2", strokeLinecap: "round", opacity: "0.9" }),
+                    gateOutput && !isContrast && React.createElement("circle", { cx: "344", cy: "110", r: "4.8", fill: "#ffffff", style: { animation: "llSignalOut 1.15s linear infinite" } }),
+                    // Copper terminal solder pads at gate pins
+                    !isContrast && [[184, 72, gateInputs.A], [!isUnaryGate ? 184 : -20, 148, gateInputs.B], [338, 110, gateOutput]].map(function(pad, pi) {
+                      if (pad[0] < 0) return null;
+                      return React.createElement("circle", { key: "pad-" + pi, cx: pad[0], cy: pad[1], r: "5.5", fill: "#0f172a", stroke: pad[2] ? "#4ade80" : "#f59e0b", strokeWidth: "2.2" });
+                    }),
+                    // Input nodes with subtle outer halo when energized
+                    gateInputs.A && !isContrast && React.createElement("circle", { cx: "66", cy: "72", r: "36", fill: "url(#ll-led-halo-on)" }),
+                    React.createElement("circle", { cx: "66", cy: "72", r: "28", fill: gateInputs.A ? (isContrast ? "#00ff00" : "url(#ll-led-on)") : "#1e293b", stroke: isContrast ? "#ffff00" : (gateInputs.A ? "#86efac" : "#a78bfa"), strokeWidth: "3.2" }),
+                    !isContrast && React.createElement("path", { d: "M 48 58 A 22 22 0 0 1 78 50", fill: "none", stroke: "#ffffff", strokeWidth: "2", strokeLinecap: "round", opacity: "0.35" }),
                     React.createElement("text", { x: "66", y: "72", textAnchor: "middle", fontSize: "19", fontWeight: "900", fill: gateInputs.A && isContrast ? "#000000" : "#f8fafc" }, "P"),
                     React.createElement("text", { x: "66", y: "91", textAnchor: "middle", fontSize: "11", fontWeight: "800", fill: gateInputs.A && isContrast ? "#000000" : "#bbf7d0" }, gateInputs.A ? "1" : "0"),
-                    React.createElement("circle", { cx: "66", cy: "148", r: "28", fill: (!isUnaryGate && gateInputs.B) ? (isContrast ? "#00ff00" : "#15803d") : "#1e293b", stroke: isContrast ? "#ffff00" : "#a78bfa", strokeWidth: "3.5", opacity: isUnaryGate ? "0.35" : "1" }),
+                    !isUnaryGate && gateInputs.B && !isContrast && React.createElement("circle", { cx: "66", cy: "148", r: "36", fill: "url(#ll-led-halo-on)" }),
+                    React.createElement("circle", { cx: "66", cy: "148", r: "28", fill: (!isUnaryGate && gateInputs.B) ? (isContrast ? "#00ff00" : "url(#ll-led-on)") : "#1e293b", stroke: isContrast ? "#ffff00" : ((!isUnaryGate && gateInputs.B) ? "#86efac" : "#a78bfa"), strokeWidth: "3.2", opacity: isUnaryGate ? "0.35" : "1" }),
+                    !isContrast && !isUnaryGate && React.createElement("path", { d: "M 48 134 A 22 22 0 0 1 78 126", fill: "none", stroke: "#ffffff", strokeWidth: "2", strokeLinecap: "round", opacity: "0.35" }),
                     React.createElement("text", { x: "66", y: "148", textAnchor: "middle", fontSize: "19", fontWeight: "900", fill: (!isUnaryGate && gateInputs.B && isContrast) ? "#000000" : "#f8fafc", opacity: isUnaryGate ? "0.4" : "1" }, "Q"),
                     React.createElement("text", { x: "66", y: "167", textAnchor: "middle", fontSize: "11", fontWeight: "800", fill: (!isUnaryGate && gateInputs.B && isContrast) ? "#000000" : "#bbf7d0", opacity: isUnaryGate ? "0.4" : "1" }, gateInputs.B ? "1" : "0"),
-                    // Authentic IEEE gate body
-                    gateBase === 'and' && React.createElement("path", { d: "M186 48 L254 48 A62 62 0 0 1 254 172 L186 172 Z", fill: isContrast ? "#000000" : "#4c1d95", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "4" }),
-                    gateBase === 'or' && React.createElement("path", { d: "M182 48 Q216 110 182 172 Q264 166 322 110 Q264 54 182 48 Z", fill: isContrast ? "#000000" : "#4c1d95", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "4" }),
+                    // Authentic IEEE gate body with grounded shadow & bevel-shaded gradient
+                    gateBase === 'and' && React.createElement("g", null,
+                      !isContrast && React.createElement("path", { d: "M188 53 L256 53 A62 62 0 0 1 256 177 L188 177 Z", fill: "rgba(2,6,23,0.55)" }),
+                      React.createElement("path", { d: "M186 48 L254 48 A62 62 0 0 1 254 172 L186 172 Z", fill: isContrast ? "#000000" : "url(#ll-gate-bevel)", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "3.8" }),
+                      !isContrast && React.createElement("path", { d: "M192 54 L252 54", fill: "none", stroke: "#ffffff", strokeWidth: "1.8", strokeLinecap: "round", opacity: "0.38" })
+                    ),
+                    gateBase === 'or' && React.createElement("g", null,
+                      !isContrast && React.createElement("path", { d: "M184 53 Q218 115 184 177 Q266 171 324 115 Q266 59 184 53 Z", fill: "rgba(2,6,23,0.55)" }),
+                      React.createElement("path", { d: "M182 48 Q216 110 182 172 Q264 166 322 110 Q264 54 182 48 Z", fill: isContrast ? "#000000" : "url(#ll-gate-bevel)", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "3.8" })
+                    ),
                     gateBase === 'xor' && React.createElement("g", null,
-                      React.createElement("path", { d: "M192 48 Q226 110 192 172 Q268 166 322 110 Q268 54 192 48 Z", fill: isContrast ? "#000000" : "#4c1d95", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "4" }),
+                      !isContrast && React.createElement("path", { d: "M194 53 Q228 115 194 177 Q270 171 324 115 Q270 59 194 53 Z", fill: "rgba(2,6,23,0.55)" }),
+                      React.createElement("path", { d: "M192 48 Q226 110 192 172 Q268 166 322 110 Q268 54 192 48 Z", fill: isContrast ? "#000000" : "url(#ll-gate-bevel)", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "3.8" }),
                       React.createElement("path", { d: "M176 48 Q210 110 176 172", fill: "none", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "4" })
                     ),
-                    gateBase === 'not' && React.createElement("path", { d: "M190 50 L318 110 L190 170 Z", fill: isContrast ? "#000000" : "#4c1d95", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "4" }),
-                    invertingGate && React.createElement("circle", { cx: "328", cy: "110", r: "10", fill: isContrast ? "#000000" : "#0f172a", stroke: isContrast ? "#00ff00" : "#c4b5fd", strokeWidth: "4" }),
+                    gateBase === 'not' && React.createElement("g", null,
+                      !isContrast && React.createElement("path", { d: "M192 55 L320 115 L192 175 Z", fill: "rgba(2,6,23,0.55)" }),
+                      React.createElement("path", { d: "M190 50 L318 110 L190 170 Z", fill: isContrast ? "#000000" : "url(#ll-gate-bevel)", stroke: isContrast ? "#ffff00" : "#c4b5fd", strokeWidth: "3.8" })
+                    ),
+                    invertingGate && React.createElement("circle", { cx: "328", cy: "110", r: "10", fill: isContrast ? "#000000" : "#0f172a", stroke: isContrast ? "#00ff00" : (gateOutput ? "#4ade80" : "#c4b5fd"), strokeWidth: "3.8" }),
                     React.createElement("text", { x: "248", y: "108", textAnchor: "middle", fontSize: "24", fontWeight: "900", fill: isContrast ? "#ffff00" : "#ffffff" }, gateType),
                     React.createElement("text", { x: "248", y: "132", textAnchor: "middle", fontSize: "13", fontWeight: "800", fill: isContrast ? "#00ff00" : "#ddd6fe" }, rowCount + " rows"),
-                    // Output node
-                    React.createElement("circle", { cx: "454", cy: "110", r: "34", fill: gateOutput ? (isContrast ? "#00ff00" : "#15803d") : (isContrast ? "#000000" : "#b91c1c"), stroke: isContrast ? "#ffff00" : "#f8fafc", strokeWidth: "4" }),
-                    React.createElement("text", { x: "454", y: "117", textAnchor: "middle", fontSize: "20", fontWeight: "900", fill: gateOutput && isContrast ? "#000000" : "#ffffff" }, gateOutput ? "TRUE" : "FALSE"),
+                    // Glowing LED Output Indicator dome
+                    gateOutput && !isContrast && React.createElement("circle", { cx: "454", cy: "110", r: "46", fill: "url(#ll-led-halo-on)" }),
+                    React.createElement("circle", { cx: "454", cy: "110", r: "34", fill: gateOutput ? (isContrast ? "#00ff00" : "url(#ll-led-on)") : (isContrast ? "#000000" : "url(#ll-led-off)"), stroke: isContrast ? "#ffff00" : (gateOutput ? "#bbf7d0" : "#fca5a5"), strokeWidth: "3.6" }),
+                    !isContrast && React.createElement("path", { d: "M 432 94 A 26 26 0 0 1 468 84", fill: "none", stroke: "#ffffff", strokeWidth: "2.6", strokeLinecap: "round", opacity: "0.42" }),
+                    React.createElement("text", { x: "454", y: "117", textAnchor: "middle", fontSize: "19", fontWeight: "900", fill: gateOutput && isContrast ? "#000000" : "#ffffff" }, gateOutput ? "TRUE" : "FALSE"),
                     React.createElement("text", { x: "24", y: "203", fontSize: "13", fontWeight: "800", fill: isContrast ? "#ffff00" : "#c4b5fd" }, "Formula: " + (expr || "P \u2192 Q")),
                     React.createElement("text", { x: "496", y: "203", textAnchor: "end", fontSize: "13", fontWeight: "800", fill: isContrast ? "#00ff00" : "#67e8f9" }, truePct + "% true")
                   )
@@ -1168,10 +1232,15 @@ window.StemLab = window.StemLab || {
 
           return React.createElement("div", { className: "max-w-4xl mx-auto", "data-logiclab-root": "true", "data-ll-theme": llTheme },
 
-            // CSS animations
+            // CSS animations (pulse propagation respects prefers-reduced-motion)
             React.createElement("style", null,
               '@keyframes logicPop{0%{transform:scale(0.7);opacity:0.4}60%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:1}}' +
-              '@keyframes wrongShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}'
+              '@keyframes wrongShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}' +
+              '@keyframes llSignalIn{0%{transform:translateX(0);opacity:0}18%{opacity:0.95}82%{opacity:0.95}100%{transform:translateX(84px);opacity:0}}' +
+              '@keyframes llSignalOut{0%{transform:translateX(0);opacity:0}18%{opacity:0.95}82%{opacity:0.95}100%{transform:translateX(76px);opacity:0}}' +
+              '@keyframes llGatePulseIn{0%{transform:translateX(0);opacity:0}20%{opacity:0.95}80%{opacity:0.95}100%{transform:translateX(28px);opacity:0}}' +
+              '@keyframes llGatePulseOut{0%{transform:translateX(0);opacity:0}20%{opacity:0.95}80%{opacity:0.95}100%{transform:translateX(22px);opacity:0}}' +
+              '@media (prefers-reduced-motion: reduce){[data-logiclab-root] svg circle{animation:none!important}}'
             ),
 
             // Bespoke Formal Logic Workbench Header
@@ -1439,6 +1508,7 @@ window.StemLab = window.StemLab || {
                     if (toks.length > 0) {
 
                       var parsed = parseExpr(toks, 0);
+                      if (!parsed || !parsed.node || parsed.pos !== toks.length) return null;
 
                       return React.createElement("div", { className: "mb-3 p-3 bg-amber-50 rounded-xl border border-amber-200 text-sm text-amber-800 italic" },
 
@@ -1500,7 +1570,7 @@ window.StemLab = window.StemLab || {
                       if (addToast) addToast('\uD83C\uDF1F +'+xp+' XP for the '+_t2.type+'!', 'success');
                     },
                     className: "px-4 py-2 text-xs font-black text-white rounded-xl",
-                    style: { background: 'linear-gradient(135deg, #f59e0b, #fbbf24)', boxShadow: '0 2px 8px rgba(245,158,11,0.3)' }
+                    style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #b45309, #92400e)', color: isContrast ? '#ffff00' : '#ffffff', border: isContrast ? '2px solid #ffff00' : 'none', boxShadow: isContrast ? 'none' : '0 2px 8px rgba(180,83,9,0.3)' }
                   }, t('stem.logiclab.claim_xp_2', '\uD83C\uDF1F Claim XP'))
                 );
               })(),
@@ -1511,7 +1581,7 @@ window.StemLab = window.StemLab || {
                   var toksAst = tokenize(expr);
                   if (!toksAst || toksAst.length === 0 || tableLetterCount(expr) > 8) return null;
                   var parsedAst = parseExpr(toksAst, 0);
-                  if (!parsedAst || !parsedAst.node) return null;
+                  if (!parsedAst || !parsedAst.node || parsedAst.pos !== toksAst.length) return null;
                   var nodes = [];
                   var edges = [];
                   var maxDepth = 0;
@@ -1549,30 +1619,50 @@ window.StemLab = window.StemLab || {
                     React.createElement("svg", {
                       viewBox: "0 0 420 " + svgH,
                       width: "100%",
-                      style: { maxHeight: 190, display: 'block' },
+                      style: { maxHeight: 190, display: 'block', borderRadius: 10 },
                       role: "img",
                       "aria-label": t('stem.logiclab.ast_aria', 'Syntax parse tree for expression ') + expr
                     },
+                      !isContrast && React.createElement("defs", null,
+                        React.createElement("pattern", { id: "ll-ast-grid", width: 20, height: 20, patternUnits: "userSpaceOnUse" },
+                          React.createElement("circle", { cx: 10, cy: 10, r: 0.85, fill: isDark ? "#334155" : "#cbd5e1", opacity: isDark ? 0.45 : 0.6 })
+                        ),
+                        React.createElement("radialGradient", { id: "ll-ast-gloss", cx: "32%", cy: "26%", r: "70%" },
+                          React.createElement("stop", { offset: "0%", stopColor: "#ffffff", stopOpacity: 0.52 }),
+                          React.createElement("stop", { offset: "55%", stopColor: "#ffffff", stopOpacity: 0 }),
+                          React.createElement("stop", { offset: "100%", stopColor: "#020617", stopOpacity: 0.28 })
+                        )
+                      ),
+                      !isContrast && React.createElement("rect", { x: 0, y: 0, width: 420, height: svgH, rx: 10, fill: isDark ? "#0f172a" : "#f8fafc" }),
+                      !isContrast && React.createElement("rect", { x: 0, y: 0, width: 420, height: svgH, rx: 10, fill: "url(#ll-ast-grid)" }),
                       edges.map(function(e, ei) {
-                        return React.createElement("line", {
-                          key: "ae" + ei,
-                          x1: e.x1, y1: e.y1, x2: e.x2, y2: e.y2,
-                          stroke: isContrast ? '#ffff00' : (isDark ? '#6366f1' : '#a78bfa'),
-                          strokeWidth: 2
-                        });
+                        var midY = (e.y1 + e.y2) * 0.5;
+                        var pathD = "M " + e.x1 + " " + e.y1 + " C " + e.x1 + " " + midY + ", " + e.x2 + " " + midY + ", " + e.x2 + " " + e.y2;
+                        return React.createElement("g", { key: "ae" + ei },
+                          !isContrast && React.createElement("path", { d: pathD, fill: "none", stroke: isDark ? "#818cf8" : "#a78bfa", strokeWidth: 5, opacity: 0.18 }),
+                          React.createElement("path", {
+                            d: pathD, fill: "none",
+                            stroke: isContrast ? '#ffff00' : (isDark ? '#818cf8' : '#7c3aed'),
+                            strokeWidth: 2.2
+                          })
+                        );
                       }),
                       nodes.map(function(n) {
                         var fill = isContrast
                           ? (n.kind === 'var' ? '#000000' : '#00ff00')
                           : (_symColor[n.label] || '#6366f1');
                         var textFill = isContrast ? (n.kind === 'var' ? '#ffff00' : '#000000') : '#ffffff';
+                        var isRoot = n.id === 0;
                         return React.createElement("g", { key: "an" + n.id },
+                          isRoot && !isContrast && React.createElement("circle", { cx: n.x, cy: n.y, r: 20, fill: fill, opacity: 0.22 }),
+                          !isContrast && React.createElement("circle", { cx: n.x + 1, cy: n.y + 2, r: 14, fill: "rgba(15,23,42,0.28)" }),
                           React.createElement("circle", {
                             cx: n.x, cy: n.y, r: 14,
                             fill: fill,
                             stroke: isContrast ? '#ffff00' : '#ffffff',
-                            strokeWidth: 2
+                            strokeWidth: isRoot ? 2.4 : 1.8
                           }),
+                          !isContrast && React.createElement("circle", { cx: n.x, cy: n.y, r: 14, fill: "url(#ll-ast-gloss)" }),
                           React.createElement("text", {
                             x: n.x, y: n.y + 4.5,
                             textAnchor: "middle",
@@ -1756,11 +1846,15 @@ window.StemLab = window.StemLab || {
 
                       key: ci,
 
-                      onClick: function() { upd({ currentChallenge: ci, proofSteps: [], proofComplete: false, aiProof: null }); },
+                      onClick: function() { upd({ currentChallenge: ci, proofSteps: [], proofComplete: false, aiProof: null, selectedSteps: [], fallacyNote: null }); },
 
                       className: "p-3 rounded-xl text-center transition-all " + (isActive ? "ring-2 ring-violet-500 shadow-lg" : "hover:shadow-md"),
 
-                      style: { background: isCompleted ? 'linear-gradient(135deg, #d1fae5, #a7f3d0)' : isActive ? 'white' : '#f5f3ff', border: isCompleted ? '2px solid #6ee7b7' : '2px solid #e9d5ff' }
+                      style: isContrast
+                        ? { background: '#000000', border: isCompleted ? '2px solid #00ff00' : '2px solid #ffff00' }
+                        : isDark
+                          ? { background: isCompleted ? '#064e3b' : isActive ? '#1e293b' : '#1e1b4b', border: isCompleted ? '2px solid #34d399' : '2px solid #4c1d95' }
+                          : { background: isCompleted ? 'linear-gradient(135deg, #d1fae5, #a7f3d0)' : isActive ? 'white' : '#f5f3ff', border: isCompleted ? '2px solid #6ee7b7' : '2px solid #e9d5ff' }
 
                     },
 
@@ -1804,7 +1898,7 @@ window.StemLab = window.StemLab || {
 
                   aiProof && React.createElement("button", { "aria-label": t('stem.logiclab.clear_ai', "Clear AI"),
 
-                    onClick: function() { upd({ aiProof: null, proofSteps: [], proofComplete: false }); },
+                    onClick: function() { upd({ aiProof: null, proofSteps: [], proofComplete: false, selectedSteps: [], fallacyNote: null }); },
 
                     className: "text-xs text-red-400 hover:text-red-600 font-bold"
 
@@ -1992,17 +2086,20 @@ window.StemLab = window.StemLab || {
 
                         }
 
-                        // Gather selected statement texts
-
+                        // Gather selected statement texts (guard against stale indices)
                         var selTexts = sel.map(function(s) {
-
-                          if (s[0] === 'P') return activeCh.premises[parseInt(s.substring(1))];
-
-                          if (s[0] === 'S') return proofSteps[parseInt(s.substring(1))].result;
-
+                          if (typeof s !== 'string') return '';
+                          var idx = parseInt(s.substring(1), 10);
+                          if (!isFinite(idx) || idx < 0) return '';
+                          if (s[0] === 'P') return (activeCh && Array.isArray(activeCh.premises) && typeof activeCh.premises[idx] === 'string') ? activeCh.premises[idx] : '';
+                          if (s[0] === 'S') return (proofSteps[idx] && typeof proofSteps[idx].result === 'string') ? proofSteps[idx].result : '';
                           return '';
-
-                        });
+                        }).filter(Boolean);
+                        if (selTexts.length < rule.needs) {
+                          upd({ selectedSteps: [] });
+                          if (addToast) addToast('Select ' + rule.needs + ' statement(s) first, then click the rule.', 'info');
+                          return;
+                        }
 
                         var result = rule.check([], selTexts);
 
@@ -2102,7 +2199,7 @@ window.StemLab = window.StemLab || {
             mode === 'challenges' && React.createElement("div", { className: "space-y-4" },
 
               // Score banner
-              React.createElement("div", { className: "flex items-center gap-3 p-3 rounded-xl mb-2", style: { background: 'linear-gradient(to right, #f5f3ff, #ede9fe)' } },
+              React.createElement("div", { className: "flex items-center gap-3 p-3 rounded-xl mb-2", style: { background: isContrast ? '#000000' : (isDark ? 'linear-gradient(to right, #1e1b4b, #312e81)' : 'linear-gradient(to right, #f5f3ff, #ede9fe)'), border: isContrast ? '2px solid #ffff00' : 'none' } },
                 React.createElement("span", { className: "text-lg" }, "\uD83C\uDF1F"),
                 React.createElement("span", { className: "font-black text-violet-800 text-sm" }, "Score: " + score),
                 React.createElement("span", { className: "text-violet-300 font-bold" }, "|"),
@@ -2183,7 +2280,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.is_this_argument_valid', "Is this argument valid?")),
 
-                    React.createElement("span", { className: "ml-auto text-xs font-bold text-violet-700" }, (challengeIdx + 1) + " / " + FALLACIES.length)
+                    React.createElement("span", { className: "ml-auto text-xs font-bold text-violet-700" }, ((challengeIdx % FALLACIES.length) + 1) + " / " + FALLACIES.length)
 
                   ),
 
@@ -2284,7 +2381,7 @@ window.StemLab = window.StemLab || {
 
                 var af = aiFallacy;
 
-                return React.createElement("div", { className: "p-6 rounded-2xl border-2 border-purple-300", style: { background: 'linear-gradient(135deg, #faf5ff, #f3e8ff, #faf5ff)' } },
+                return React.createElement("div", { className: "p-6 rounded-2xl border-2 border-purple-300", style: { background: isContrast ? '#000000' : (isDark ? 'linear-gradient(135deg, #1e1b4b, #2e1065, #1e1b4b)' : 'linear-gradient(135deg, #faf5ff, #f3e8ff, #faf5ff)'), borderColor: isContrast ? '#ffff00' : undefined } },
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-4" },
 
@@ -2581,7 +2678,7 @@ window.StemLab = window.StemLab || {
 
                 var ad = aiDetective;
 
-                return React.createElement("div", { className: "p-6 rounded-2xl border-2 border-purple-300", style: { background: 'linear-gradient(135deg, #faf5ff, #f3e8ff, #faf5ff)' } },
+                return React.createElement("div", { className: "p-6 rounded-2xl border-2 border-purple-300", style: { background: isContrast ? '#000000' : (isDark ? 'linear-gradient(135deg, #1e1b4b, #2e1065, #1e1b4b)' : 'linear-gradient(135deg, #faf5ff, #f3e8ff, #faf5ff)'), borderColor: isContrast ? '#ffff00' : undefined } },
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-4" },
 
@@ -2703,36 +2800,75 @@ window.StemLab = window.StemLab || {
                       );
                     })
                   ),
-                  // Gate SVG
-                  React.createElement("svg", { role: 'img', 'aria-label': t('stem.logiclab.gate_img', 'Logic gate diagram showing the current input states'), width: "160", height: "96", viewBox: "0 0 120 80" },
-                    React.createElement("line", { x1:"0",y1:isUnaryGate?"40":"25",x2:"35",y2:isUnaryGate?"40":"25",stroke:gateInputs.A?(isContrast?"#00ff00":"#22c55e"):(isContrast?"#ffff00":"#ef4444"),strokeWidth:"3.5",strokeLinecap:"round" }),
-                    !isUnaryGate && React.createElement("line", { x1:"0",y1:"55",x2:"35",y2:"55",stroke:gateInputs.B?(isContrast?"#00ff00":"#22c55e"):(isContrast?"#ffff00":"#ef4444"),strokeWidth:"3.5",strokeLinecap:"round" }),
+                  // Gate SVG — PCB blueprint, dual-pass HIGH-signal copper/neon glow, bevel gate & glowing LED
+                  React.createElement("svg", { role: 'img', 'aria-label': t('stem.logiclab.gate_img', 'Logic gate diagram showing the current input states'), width: "176", height: "104", viewBox: "0 0 132 82" },
+                    !isContrast && React.createElement("defs", null,
+                      React.createElement("pattern", { id: "ll-mini-pcb", width: "14", height: "14", patternUnits: "userSpaceOnUse" },
+                        React.createElement("circle", { cx: "7", cy: "7", r: "0.75", fill: "#38bdf8", opacity: "0.26" })
+                      ),
+                      React.createElement("linearGradient", { id: "ll-mini-gate", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#7c3aed" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#3b0764" })
+                      ),
+                      React.createElement("radialGradient", { id: "ll-mini-led-on", cx: "35%", cy: "30%", r: "70%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#dcfce7" }),
+                        React.createElement("stop", { offset: "45%", stopColor: "#22c55e" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#14532d" })
+                      ),
+                      React.createElement("radialGradient", { id: "ll-mini-led-off", cx: "35%", cy: "30%", r: "70%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#fecaca" }),
+                        React.createElement("stop", { offset: "45%", stopColor: "#ef4444" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#7f1d1d" })
+                      )
+                    ),
+                    !isContrast && React.createElement("rect", { x: "1", y: "1", width: "130", height: "80", rx: "10", fill: "#0b1326", stroke: "#1e293b", strokeWidth: "1" }),
+                    !isContrast && React.createElement("rect", { x: "2", y: "2", width: "128", height: "78", rx: "9", fill: "url(#ll-mini-pcb)" }),
+                    // Input A wire (dual-pass glow + propagation pulse orb when HIGH)
+                    gateInputs.A && !isContrast && React.createElement("line", { x1:"4",y1:isUnaryGate?"41":"26",x2:"38",y2:isUnaryGate?"41":"26",stroke:"#4ade80",strokeWidth:"8",strokeLinecap:"round",opacity:"0.26" }),
+                    React.createElement("line", { x1:"4",y1:isUnaryGate?"41":"26",x2:"38",y2:isUnaryGate?"41":"26",stroke:gateInputs.A?(isContrast?"#00ff00":"#22c55e"):(isContrast?"#ffff00":"#ef4444"),strokeWidth:"3.5",strokeLinecap:"round" }),
+                    gateInputs.A && !isContrast && React.createElement("circle", { cx:"8",cy:isUnaryGate?"41":"26",r:"2.4",fill:"#ffffff",style:{animation:"llGatePulseIn 1.1s linear infinite"} }),
+                    // Input B wire
+                    !isUnaryGate && gateInputs.B && !isContrast && React.createElement("line", { x1:"4",y1:"56",x2:"38",y2:"56",stroke:"#4ade80",strokeWidth:"8",strokeLinecap:"round",opacity:"0.26" }),
+                    !isUnaryGate && React.createElement("line", { x1:"4",y1:"56",x2:"38",y2:"56",stroke:gateInputs.B?(isContrast?"#00ff00":"#22c55e"):(isContrast?"#ffff00":"#ef4444"),strokeWidth:"3.5",strokeLinecap:"round" }),
+                    !isUnaryGate && gateInputs.B && !isContrast && React.createElement("circle", { cx:"8",cy:"56",r:"2.4",fill:"#ffffff",style:{animation:"llGatePulseIn 1.1s linear 0.35s infinite"} }),
+                    // Copper input solder pads
+                    !isContrast && React.createElement("circle", { cx:"5",cy:isUnaryGate?"41":"26",r:"2.5",fill:"#0f172a",stroke:"#f59e0b",strokeWidth:"1.2" }),
+                    !isUnaryGate && !isContrast && React.createElement("circle", { cx:"5",cy:"56",r:"2.5",fill:"#0f172a",stroke:"#f59e0b",strokeWidth:"1.2" }),
                     (function() {
                       var inverting = gateType === 'NOT' || gateType === 'NAND' || gateType === 'NOR' || gateType === 'XNOR';
                       var base = (gateType === 'AND' || gateType === 'NAND') ? 'and'
                                : (gateType === 'OR' || gateType === 'NOR') ? 'or'
                                : (gateType === 'XOR' || gateType === 'XNOR') ? 'xor' : 'not';
-                      var fill = isContrast ? '#000000' : '#6d28d9';
+                      var fill = isContrast ? '#000000' : 'url(#ll-mini-gate)';
                       var stroke = isContrast ? '#ffff00' : '#c4b5fd';
-                      var bx = inverting ? 82 : 88;
+                      var bx = inverting ? 85 : 91;
                       var shapes = [];
                       if (base === 'and') {
                         var midx = bx - 25;
-                        shapes.push(React.createElement('path', { key: 'b', d: 'M35,15 L' + midx + ',15 A25,25 0 0 1 ' + midx + ',65 L35,65 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
+                        if (!isContrast) shapes.push(React.createElement('path', { key: 'sh', d: 'M39,18 L' + (midx + 1) + ',18 A25,25 0 0 1 ' + (midx + 1) + ',68 L39,68 Z', fill: 'rgba(2,6,23,0.55)' }));
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M38,16 L' + midx + ',16 A25,25 0 0 1 ' + midx + ',66 L38,66 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
                       } else if (base === 'or') {
-                        shapes.push(React.createElement('path', { key: 'b', d: 'M35,15 Q52,40 35,65 Q60,63 ' + bx + ',40 Q60,17 35,15 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
+                        if (!isContrast) shapes.push(React.createElement('path', { key: 'sh', d: 'M39,18 Q56,43 39,68 Q64,66 ' + (bx + 1) + ',43 Q64,20 39,18 Z', fill: 'rgba(2,6,23,0.55)' }));
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M38,16 Q55,41 38,66 Q63,64 ' + bx + ',41 Q63,18 38,16 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
                       } else if (base === 'xor') {
-                        shapes.push(React.createElement('path', { key: 'b', d: 'M39,15 Q56,40 39,65 Q64,63 ' + bx + ',40 Q64,17 39,15 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
-                        shapes.push(React.createElement('path', { key: 'x', d: 'M32,15 Q49,40 32,65', fill: 'none', stroke: stroke, strokeWidth: 2.2 }));
+                        if (!isContrast) shapes.push(React.createElement('path', { key: 'sh', d: 'M43,18 Q60,43 43,68 Q68,66 ' + (bx + 1) + ',43 Q68,20 43,18 Z', fill: 'rgba(2,6,23,0.55)' }));
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M42,16 Q59,41 42,66 Q67,64 ' + bx + ',41 Q67,18 42,16 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
+                        shapes.push(React.createElement('path', { key: 'x', d: 'M35,16 Q52,41 35,66', fill: 'none', stroke: stroke, strokeWidth: 2.2 }));
                       } else {
-                        shapes.push(React.createElement('path', { key: 'b', d: 'M38,16 L' + bx + ',40 L38,64 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
+                        if (!isContrast) shapes.push(React.createElement('path', { key: 'sh', d: 'M42,19 L' + (bx + 1) + ',43 L42,67 Z', fill: 'rgba(2,6,23,0.55)' }));
+                        shapes.push(React.createElement('path', { key: 'b', d: 'M41,17 L' + bx + ',41 L41,65 Z', fill: fill, stroke: stroke, strokeWidth: 2.2 }));
                       }
-                      if (inverting) shapes.push(React.createElement('circle', { key: 'bub', cx: bx + 5, cy: 40, r: 4, fill: isContrast ? '#000000' : '#0f172a', stroke: isContrast ? '#00ff00' : '#c4b5fd', strokeWidth: 2.2 }));
-                      shapes.push(React.createElement('text', { key: 't', x: base === 'not' ? 52 : 58, y: 44, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#ffffff', fontWeight: '900', fontSize: '9' }, gateType));
+                      if (inverting) shapes.push(React.createElement('circle', { key: 'bub', cx: bx + 5, cy: 41, r: 4.2, fill: isContrast ? '#000000' : '#0f172a', stroke: isContrast ? '#00ff00' : (gateOutput ? '#4ade80' : '#c4b5fd'), strokeWidth: 2.2 }));
+                      shapes.push(React.createElement('text', { key: 't', x: base === 'not' ? 55 : 61, y: 45, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#ffffff', fontWeight: '900', fontSize: '9' }, gateType));
                       return shapes;
                     })(),
-                    React.createElement("line", { x1:"90",y1:"40",x2:"120",y2:"40",stroke:gateOutput?(isContrast?"#00ff00":"#22c55e"):(isContrast?"#ffff00":"#ef4444"),strokeWidth:"3.5",strokeLinecap:"round" }),
-                    React.createElement("circle", { cx:"115",cy:"40",r:"5",fill:gateOutput?(isContrast?"#00ff00":"#22c55e"):(isContrast?"#ffff00":"#ef4444") })
+                    // Output trace + glowing LED dome
+                    gateOutput && !isContrast && React.createElement("line", { x1:"93",y1:"41",x2:"118",y2:"41",stroke:"#4ade80",strokeWidth:"8",strokeLinecap:"round",opacity:"0.28" }),
+                    React.createElement("line", { x1:"93",y1:"41",x2:"118",y2:"41",stroke:gateOutput?(isContrast?"#00ff00":"#22c55e"):(isContrast?"#ffff00":"#ef4444"),strokeWidth:"3.5",strokeLinecap:"round" }),
+                    gateOutput && !isContrast && React.createElement("circle", { cx:"95",cy:"41",r:"2.4",fill:"#ffffff",style:{animation:"llGatePulseOut 1.0s linear infinite"} }),
+                    gateOutput && !isContrast && React.createElement("circle", { cx:"120",cy:"41",r:"10.5",fill:"#22c55e",opacity:"0.24" }),
+                    React.createElement("circle", { cx:"120",cy:"41",r:"6",fill:gateOutput?(isContrast?"#00ff00":"url(#ll-mini-led-on)"):(isContrast?"#ffff00":"url(#ll-mini-led-off)"),stroke:isContrast?"#000000":(gateOutput?"#bbf7d0":"#fca5a5"),strokeWidth:"1.2" }),
+                    !isContrast && React.createElement("circle", { cx:"118.2",cy:"39",r:"1.6",fill:"#ffffff",opacity:"0.7" })
                   ),
                   // Output
                   React.createElement("div", { className: "flex flex-col items-center gap-1" },
@@ -2781,9 +2917,21 @@ window.StemLab = window.StemLab || {
                       role: "img",
                       "aria-label": gateType + " digital timing waveform across all input combinations"
                     },
+                      !isContrast && React.createElement("defs", null,
+                        React.createElement("linearGradient", { id: "ll-osc-active", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                          React.createElement("stop", { offset: "0%", stopColor: "#8b5cf6", stopOpacity: 0.34 }),
+                          React.createElement("stop", { offset: "100%", stopColor: "#22d3ee", stopOpacity: 0.16 })
+                        )
+                      ),
+                      // Horizontal oscilloscope voltage reference rails (HIGH / LOW)
+                      !isContrast && [14, 30, 44, 60, 74, 90].map(function(ry) {
+                        return React.createElement("line", { key: "or-" + ry, x1: 56, y1: ry, x2: 336, y2: ry, stroke: "#1e293b", strokeWidth: 0.8 });
+                      }),
                       activeIdx >= 0 && React.createElement("rect", {
                         x: 56 + activeIdx * stepW, y: 6, width: stepW, height: 92, rx: 4,
-                        fill: isContrast ? '#00ff00' : '#7c3aed', opacity: isContrast ? 0.22 : 0.26
+                        fill: isContrast ? '#00ff00' : 'url(#ll-osc-active)',
+                        opacity: isContrast ? 0.22 : 1,
+                        stroke: isContrast ? '#00ff00' : '#a78bfa', strokeWidth: 0.8, strokeOpacity: 0.45
                       }),
                       // Grid verticals
                       states.map(function(s, si) {
@@ -2793,17 +2941,26 @@ window.StemLab = window.StemLab || {
                           React.createElement("text", { x: gx + stepW / 2, y: 108, textAnchor: "middle", fontSize: 9, fontWeight: 800, fill: si === activeIdx ? (isContrast ? '#00ff00' : '#fde047') : (isContrast ? '#ffff00' : '#94a3b8') }, s.label)
                         );
                       }),
-                      // Wave A
+                      // Wave A (dual-pass phosphor glow)
                       React.createElement("text", { x: 14, y: 26, fontSize: 10, fontWeight: 900, fill: isContrast ? '#ffff00' : '#a78bfa' }, "A"),
-                      React.createElement("path", { d: buildWave(aVals, 14, 30), fill: "none", stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 2.5 }),
+                      !isContrast && React.createElement("path", { d: buildWave(aVals, 14, 30), fill: "none", stroke: '#a78bfa', strokeWidth: 6.5, opacity: 0.22, strokeLinejoin: "round" }),
+                      React.createElement("path", { d: buildWave(aVals, 14, 30), fill: "none", stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 2.5, strokeLinejoin: "round" }),
+                      activeIdx >= 0 && React.createElement("circle", { cx: 56 + activeIdx * stepW + stepW / 2, cy: aVals[activeIdx] ? 14 : 30, r: 3.4, fill: isContrast ? '#ffff00' : '#ddd6fe', stroke: '#0f172a', strokeWidth: 1 }),
                       // Wave B (for binary gates)
                       !isUnaryGate && React.createElement("g", null,
                         React.createElement("text", { x: 14, y: 56, fontSize: 10, fontWeight: 900, fill: isContrast ? '#ffff00' : '#38bdf8' }, "B"),
-                        React.createElement("path", { d: buildWave(bVals, 44, 60), fill: "none", stroke: isContrast ? '#ffff00' : '#38bdf8', strokeWidth: 2.5 })
+                        !isContrast && React.createElement("path", { d: buildWave(bVals, 44, 60), fill: "none", stroke: '#38bdf8', strokeWidth: 6.5, opacity: 0.22, strokeLinejoin: "round" }),
+                        React.createElement("path", { d: buildWave(bVals, 44, 60), fill: "none", stroke: isContrast ? '#ffff00' : '#38bdf8', strokeWidth: 2.5, strokeLinejoin: "round" }),
+                        activeIdx >= 0 && React.createElement("circle", { cx: 56 + activeIdx * stepW + stepW / 2, cy: bVals[activeIdx] ? 44 : 60, r: 3.4, fill: isContrast ? '#ffff00' : '#bae6fd', stroke: '#0f172a', strokeWidth: 1 })
                       ),
-                      // Wave OUT
+                      // Wave OUT (dual-pass emerald phosphor glow)
                       React.createElement("text", { x: 14, y: 86, fontSize: 10, fontWeight: 900, fill: isContrast ? '#00ff00' : '#34d399' }, "OUT"),
-                      React.createElement("path", { d: buildWave(oVals, 74, 90), fill: "none", stroke: isContrast ? '#00ff00' : '#34d399', strokeWidth: 3 })
+                      !isContrast && React.createElement("path", { d: buildWave(oVals, 74, 90), fill: "none", stroke: '#34d399', strokeWidth: 7.5, opacity: 0.26, strokeLinejoin: "round" }),
+                      React.createElement("path", { d: buildWave(oVals, 74, 90), fill: "none", stroke: isContrast ? '#00ff00' : '#34d399', strokeWidth: 3, strokeLinejoin: "round" }),
+                      activeIdx >= 0 && React.createElement("g", null,
+                        !isContrast && React.createElement("circle", { cx: 56 + activeIdx * stepW + stepW / 2, cy: oVals[activeIdx] ? 74 : 90, r: 7, fill: '#34d399', opacity: 0.28 }),
+                        React.createElement("circle", { cx: 56 + activeIdx * stepW + stepW / 2, cy: oVals[activeIdx] ? 74 : 90, r: 3.8, fill: isContrast ? '#00ff00' : '#a7f3d0', stroke: '#0f172a', strokeWidth: 1.2 })
+                      )
                     )
                   );
                 })(),
@@ -2881,11 +3038,22 @@ window.StemLab = window.StemLab || {
                   style: { background: isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc'), borderColor: llBorder }
                 },
                   React.createElement('svg', {
-                    viewBox: '0 0 340 104',
+                    viewBox: '0 0 340 106',
                     width: '100%',
                     role: 'img',
                     'aria-label': 'Probability bars comparing P(P), P(Q), P(P and Q), and P(P or Q) against confidence threshold ' + iq.threshold + ' percent'
                   },
+                    !isContrast && React.createElement('defs', null,
+                      React.createElement('linearGradient', { id: 'll-pbar-gloss', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        React.createElement('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.34 }),
+                        React.createElement('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0.0 }),
+                        React.createElement('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.22 })
+                      )
+                    ),
+                    !isContrast && [0, 25, 50, 75, 100].map(function(tk) {
+                      var gx = 74 + Math.round((tk / 100) * 230);
+                      return React.createElement('line', { key: 'ptk-' + tk, x1: gx, y1: 8, x2: gx, y2: 94, stroke: isDark ? 'rgba(148,163,184,0.16)' : 'rgba(148,163,184,0.28)', strokeWidth: 0.8 });
+                    }),
                     [
                       { label: 'P(P)', val: iq.pTrue, y: 12, color: isContrast ? '#ffff00' : '#7c3aed' },
                       { label: 'P(Q)', val: iq.qTrue, y: 34, color: isContrast ? '#ffff00' : '#2563eb' },
@@ -2897,11 +3065,14 @@ window.StemLab = window.StemLab || {
                         React.createElement('text', { x: 68, y: row.y + 11, textAnchor: 'end', fontSize: 10, fontWeight: 800, fill: llInk }, row.label),
                         React.createElement('rect', { x: 74, y: row.y, width: 230, height: 14, rx: 4, fill: isContrast ? '#222222' : (isDark ? '#1e293b' : '#e2e8f0') }),
                         React.createElement('rect', { x: 74, y: row.y, width: w, height: 14, rx: 4, fill: row.color }),
+                        !isContrast && React.createElement('rect', { x: 74, y: row.y, width: w, height: 14, rx: 4, fill: 'url(#ll-pbar-gloss)' }),
                         React.createElement('text', { x: 310, y: row.y + 11, fontSize: 9.5, fontWeight: 800, fill: llInk }, Math.round(row.val) + '%')
                       );
                     }),
+                    !isContrast && React.createElement('line', { x1: xThresh, y1: 6, x2: xThresh, y2: 96, stroke: '#ef4444', strokeWidth: 5.5, opacity: 0.2 }),
                     React.createElement('line', { x1: xThresh, y1: 6, x2: xThresh, y2: 96, stroke: isContrast ? '#00ff00' : '#dc2626', strokeWidth: 2, strokeDasharray: '4 2' }),
-                    React.createElement('text', { x: Math.min(295, Math.max(82, xThresh)), y: 102, textAnchor: 'middle', fontSize: 8.5, fontWeight: 900, fill: isContrast ? '#00ff00' : (isDark ? '#fca5a5' : '#b91c1c') }, 'Threshold ' + iq.threshold + '%')
+                    React.createElement('polygon', { points: xThresh + ',3 ' + (xThresh + 4) + ',8 ' + xThresh + ',13 ' + (xThresh - 4) + ',8', fill: isContrast ? '#00ff00' : '#ef4444' }),
+                    React.createElement('text', { x: Math.min(295, Math.max(82, xThresh)), y: 104, textAnchor: 'middle', fontSize: 8.5, fontWeight: 900, fill: isContrast ? '#00ff00' : (isDark ? '#fca5a5' : '#b91c1c') }, 'Threshold ' + iq.threshold + '%')
                   )
                 ),
                 React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
@@ -2945,7 +3116,7 @@ window.StemLab = window.StemLab || {
 
                 className: "w-full p-4 rounded-2xl border-2 border-violet-200 text-left transition-all hover:shadow-md flex items-center gap-3",
 
-                style: { background: showEdu ? 'linear-gradient(135deg, #f5f3ff, #ede9fe)' : 'white' }
+                style: { background: isContrast ? '#000000' : (isDark ? (showEdu ? '#1e1b4b' : '#1e293b') : (showEdu ? 'linear-gradient(135deg, #f5f3ff, #ede9fe)' : 'white')), borderColor: isContrast ? '#ffff00' : undefined }
 
               },
 
@@ -3078,41 +3249,121 @@ window.StemLab = window.StemLab || {
                   tabIndex: 0,
                   'aria-label': t('stem.logiclab.truth_table_visualization_cycling_thro', 'Truth table visualization cycling through AND, OR, XOR, and NAND logic gates.'),
                   ref: function(cvEl) {
-                    if (!cvEl) return;
-                    if (cvEl._ttAnim) return;
-                    var c2 = cvEl.getContext('2d');
+                    if (!cvEl) {
+                      var prevCv = _llCanvasRef.current;
+                      if (prevCv) {
+                        if (prevCv._ttAnim) cancelAnimationFrame(prevCv._ttAnim);
+                        if (prevCv._ttRO) prevCv._ttRO.disconnect();
+                        prevCv._ttAnim = null;
+                        prevCv._ttRO = null;
+                        prevCv._ttInit = false;
+                      }
+                      _llCanvasRef.current = null;
+                      return;
+                    }
+                    _llCanvasRef.current = cvEl;
+                    if (cvEl._ttInit) return;
+                    cvEl._ttInit = true;
+                    var c2 = cvEl.getContext && cvEl.getContext('2d');
+                    if (!c2) return;
                     var W = cvEl.offsetWidth || 600;
                     var H = cvEl.offsetHeight || 180;
                     cvEl.width = W * 2; cvEl.height = H * 2;
                     c2.scale(2, 2);
                     var start = performance.now();
-                    var lastBlink = -1;
+                    var reducedMotion = false;
+                    try {
+                      reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                    } catch (e) {}
+                    var lastFrameKey = '';
                     var ops = [
-                      { name: 'AND', sym: '\u2227', fn: function(a,b){return a&&b;}, color: '#3b82f6' },
+                      { name: 'AND', sym: '\u2227', fn: function(a,b){return a&&b;}, color: '#38bdf8' },
                       { name: 'OR', sym: '\u2228', fn: function(a,b){return a||b;}, color: '#22c55e' },
                       { name: 'XOR', sym: '\u2295', fn: function(a,b){return a!==b;}, color: '#fbbf24' },
                       { name: 'NAND', sym: '\u22bc', fn: function(a,b){return !(a&&b);}, color: '#fb7185' }
                     ];
+                    function drawWire(x1, y1, x2, y2, high, accent, pulsePos) {
+                      c2.save();
+                      c2.lineCap = 'round';
+                      if (high) {
+                        c2.strokeStyle = accent;
+                        c2.globalAlpha = 0.24;
+                        c2.lineWidth = 8;
+                        c2.beginPath(); c2.moveTo(x1, y1); c2.lineTo(x2, y2); c2.stroke();
+                        c2.globalAlpha = 1;
+                      }
+                      c2.strokeStyle = high ? accent : '#475569';
+                      c2.lineWidth = high ? 3 : 2;
+                      c2.beginPath(); c2.moveTo(x1, y1); c2.lineTo(x2, y2); c2.stroke();
+                      if (high) {
+                        c2.strokeStyle = '#ffffff';
+                        c2.globalAlpha = 0.72;
+                        c2.lineWidth = 1;
+                        c2.beginPath(); c2.moveTo(x1, y1); c2.lineTo(x2, y2); c2.stroke();
+                        c2.globalAlpha = 1;
+                        // Animated signal propagation orb (static midpoint in reduced motion)
+                        var u = reducedMotion ? 0.55 : pulsePos;
+                        var px = x1 + (x2 - x1) * u;
+                        var py = y1 + (y2 - y1) * u;
+                        if (typeof c2.createRadialGradient === 'function') {
+                          var og = c2.createRadialGradient(px, py, 0.5, px, py, 7);
+                          og.addColorStop(0, '#ffffff');
+                          og.addColorStop(0.45, accent);
+                          og.addColorStop(1, 'rgba(0,0,0,0)');
+                          c2.fillStyle = og;
+                          c2.beginPath(); c2.arc(px, py, 7, 0, Math.PI * 2); c2.fill();
+                        } else {
+                          c2.fillStyle = '#ffffff';
+                          c2.beginPath(); c2.arc(px, py, 3, 0, Math.PI * 2); c2.fill();
+                        }
+                      }
+                      // Solder pad at origin
+                      c2.fillStyle = '#0f172a';
+                      c2.strokeStyle = high ? accent : '#f59e0b';
+                      c2.lineWidth = 1.4;
+                      c2.beginPath(); c2.arc(x1, y1, 3, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                      c2.restore();
+                    }
                     function drawTt() {
                       if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ttAnim); if (cvEl._ttRO) cvEl._ttRO.disconnect(); return; }
                       var t = (performance.now() - start) / 1000;
-                      var blink = Math.floor((t * 0.5) % ops.length);
-                      // Content only changes when `blink` flips (~every 2s); skip the
-                      // full redraw on the ~119/120 frames where it's unchanged.
-                      if (blink === lastBlink) { cvEl._ttAnim = requestAnimationFrame(drawTt); return; }
-                      lastBlink = blink;
-                      c2.fillStyle = '#1e1b4b';
+                      var blink = reducedMotion ? 0 : Math.floor((t * 0.25) % ops.length);
+                      var activeRow = reducedMotion ? 4 : (1 + Math.floor((t * 1.0) % 4));
+                      var pulsePos = reducedMotion ? 0.55 : ((t * 1.35) % 1);
+                      var frameKey = reducedMotion ? 'static-' + W + 'x' + H : '';
+                      if (reducedMotion && frameKey === lastFrameKey) { return; }
+                      lastFrameKey = frameKey;
+
+                      // Crisp PCB blueprint backdrop
+                      if (typeof c2.createRadialGradient === 'function') {
+                        var bgGrad = c2.createRadialGradient(W * 0.52, H * 0.45, 16, W * 0.5, H * 0.5, Math.max(W, H) * 0.72);
+                        bgGrad.addColorStop(0, '#172554');
+                        bgGrad.addColorStop(0.6, '#0f172a');
+                        bgGrad.addColorStop(1, '#020617');
+                        c2.fillStyle = bgGrad;
+                      } else {
+                        c2.fillStyle = '#0f172a';
+                      }
                       c2.fillRect(0, 0, W, H);
+
+                      // Subtle PCB pad grid
+                      c2.fillStyle = 'rgba(56,189,248,0.16)';
+                      for (var gx0 = 16; gx0 < W; gx0 += 24) {
+                        for (var gy0 = 14; gy0 < H - 16; gy0 += 24) {
+                          c2.fillRect(gx0, gy0, 1.5, 1.5);
+                        }
+                      }
+
                       var op = ops[blink];
                       // Title
                       c2.fillStyle = op.color;
                       c2.font = 'bold 14px serif';
                       c2.textAlign = 'left';
-                      c2.fillText('A ' + op.sym + ' B  (' + op.name + ')', W * 0.06, 24);
+                      c2.fillText('A ' + op.sym + ' B  (' + op.name + ')', W * 0.06, 22);
                       // Table
-                      var tx = W * 0.06, ty = 36;
-                      var rowH = 24;
-                      var colW = W * 0.1;
+                      var tx = W * 0.06, ty = 32;
+                      var rowH = 23;
+                      var colW = Math.max(38, W * 0.095);
                       var rows = [
                         ['A', 'B', op.name],
                         [0, 0, op.fn(false, false) ? 1 : 0],
@@ -3120,81 +3371,124 @@ window.StemLab = window.StemLab || {
                         [1, 0, op.fn(true, false) ? 1 : 0],
                         [1, 1, op.fn(true, true) ? 1 : 0]
                       ];
+                      var curA = rows[activeRow][0] === 1;
+                      var curB = rows[activeRow][1] === 1;
+                      var curOut = rows[activeRow][2] === 1;
                       rows.forEach(function(r, ri) {
+                        if (ri === activeRow) {
+                          c2.fillStyle = 'rgba(139,92,246,0.28)';
+                          c2.fillRect(tx, ty + ri * rowH, colW * 3, rowH);
+                        }
                         r.forEach(function(cell, ci) {
-                          c2.strokeStyle = '#475569';
+                          c2.strokeStyle = ri === activeRow ? op.color : '#334155';
+                          c2.lineWidth = ri === activeRow ? 1.4 : 1;
                           c2.strokeRect(tx + ci * colW, ty + ri * rowH, colW, rowH);
                           c2.fillStyle = ri === 0 ? op.color : (cell === 1 ? '#86efac' : (cell === 0 ? '#cbd5e1' : '#fff'));
                           c2.font = ri === 0 ? 'bold 11px sans-serif' : 'bold 13px monospace';
                           c2.textAlign = 'center';
-                          c2.fillText(cell, tx + ci * colW + colW / 2, ty + ri * rowH + 16);
+                          c2.fillText(cell, tx + ci * colW + colW / 2, ty + ri * rowH + 15.5);
                         });
                       });
-                      // Gate symbol
-                      var gx = W * 0.55, gy = H * 0.5;
-                      c2.strokeStyle = op.color;
-                      c2.lineWidth = 2;
-                      // Gate + signal paths glow in the op colour
+
+                      // Gate symbol with dual-pass wires, bevel fill & glowing LED indicator
+                      var gx = W * 0.60, gy = H * 0.48;
+                      drawWire(gx - 72, gy - 13, gx - 22, gy - 13, curA, '#4ade80', pulsePos);
+                      drawWire(gx - 72, gy + 13, gx - 22, gy + 13, curB, '#4ade80', (pulsePos + 0.35) % 1);
+                      drawWire(gx + (op.name === 'NAND' ? 28 : 22), gy, gx + 76, gy, curOut, op.color, (pulsePos + 0.15) % 1);
+
+                      // Bevel-shaded gate body
                       c2.save();
-                      c2.shadowColor = op.color; c2.shadowBlur = 12;
-                      // Input lines
-                      c2.beginPath();
-                      c2.moveTo(gx - 60, gy - 12);
-                      c2.lineTo(gx - 20, gy - 12);
-                      c2.moveTo(gx - 60, gy + 12);
-                      c2.lineTo(gx - 20, gy + 12);
-                      c2.stroke();
-                      // Gate body (AND/OR shape)
-                      c2.fillStyle = 'rgba(167,139,250,0.28)';
+                      c2.shadowColor = op.color;
+                      c2.shadowBlur = 14;
+                      if (typeof c2.createLinearGradient === 'function') {
+                        var gg = c2.createLinearGradient(gx - 22, gy - 20, gx - 22, gy + 20);
+                        gg.addColorStop(0, '#6d28d9');
+                        gg.addColorStop(1, '#2e1065');
+                        c2.fillStyle = gg;
+                      } else {
+                        c2.fillStyle = 'rgba(109,40,217,0.75)';
+                      }
+                      c2.strokeStyle = op.color;
+                      c2.lineWidth = 2.2;
                       c2.beginPath();
                       if (op.name === 'AND' || op.name === 'NAND') {
-                        c2.moveTo(gx - 20, gy - 18);
-                        c2.lineTo(gx, gy - 18);
-                        c2.arc(gx, gy, 18, -Math.PI / 2, Math.PI / 2);
-                        c2.lineTo(gx - 20, gy + 18);
+                        c2.moveTo(gx - 22, gy - 20);
+                        c2.lineTo(gx, gy - 20);
+                        c2.arc(gx, gy, 20, -Math.PI / 2, Math.PI / 2);
+                        c2.lineTo(gx - 22, gy + 20);
                         c2.closePath();
                       } else {
-                        c2.moveTo(gx - 20, gy - 18);
-                        c2.quadraticCurveTo(gx - 5, gy - 18, gx + 18, gy);
-                        c2.quadraticCurveTo(gx - 5, gy + 18, gx - 20, gy + 18);
-                        c2.quadraticCurveTo(gx - 10, gy, gx - 20, gy - 18);
+                        c2.moveTo(gx - 22, gy - 20);
+                        c2.quadraticCurveTo(gx - 4, gy - 20, gx + 20, gy);
+                        c2.quadraticCurveTo(gx - 4, gy + 20, gx - 22, gy + 20);
+                        c2.quadraticCurveTo(gx - 11, gy, gx - 22, gy - 20);
                         c2.closePath();
                       }
                       c2.fill();
                       c2.stroke();
-                      // NAND bubble
-                      if (op.name === 'NAND') {
+                      if (op.name === 'XOR') {
                         c2.beginPath();
-                        c2.arc(gx + 22, gy, 3, 0, Math.PI * 2);
+                        c2.moveTo(gx - 27, gy - 20);
+                        c2.quadraticCurveTo(gx - 16, gy, gx - 27, gy + 20);
                         c2.stroke();
                       }
-                      // Output line
-                      c2.beginPath();
-                      c2.moveTo(gx + (op.name === 'NAND' ? 25 : 20), gy);
-                      c2.lineTo(gx + 60, gy);
-                      c2.stroke();
+                      if (op.name === 'NAND') {
+                        c2.fillStyle = '#0f172a';
+                        c2.beginPath();
+                        c2.arc(gx + 24, gy, 4, 0, Math.PI * 2);
+                        c2.fill();
+                        c2.stroke();
+                      }
                       c2.restore();
+
+                      // Glowing Output LED dome
+                      var ledX = gx + 82, ledY = gy;
+                      if (curOut && typeof c2.createRadialGradient === 'function') {
+                        var lh = c2.createRadialGradient(ledX, ledY, 2, ledX, ledY, 16);
+                        lh.addColorStop(0, 'rgba(74,222,128,0.65)');
+                        lh.addColorStop(1, 'rgba(74,222,128,0)');
+                        c2.fillStyle = lh;
+                        c2.beginPath(); c2.arc(ledX, ledY, 16, 0, Math.PI * 2); c2.fill();
+                      }
+                      if (typeof c2.createRadialGradient === 'function') {
+                        var lg = c2.createRadialGradient(ledX - 2, ledY - 2, 1, ledX, ledY, 8);
+                        lg.addColorStop(0, curOut ? '#dcfce7' : '#fca5a5');
+                        lg.addColorStop(0.5, curOut ? '#22c55e' : '#ef4444');
+                        lg.addColorStop(1, curOut ? '#14532d' : '#7f1d1d');
+                        c2.fillStyle = lg;
+                      } else {
+                        c2.fillStyle = curOut ? '#22c55e' : '#ef4444';
+                      }
+                      c2.beginPath(); c2.arc(ledX, ledY, 7.5, 0, Math.PI * 2); c2.fill();
+                      c2.strokeStyle = curOut ? '#bbf7d0' : '#fca5a5';
+                      c2.lineWidth = 1.4;
+                      c2.stroke();
+
                       // Labels
-                      c2.fillStyle = '#fef3c7';
+                      c2.fillStyle = curA ? '#86efac' : '#cbd5e1';
                       c2.font = 'bold 11px monospace';
                       c2.textAlign = 'right';
-                      c2.fillText('A', gx - 64, gy - 8);
-                      c2.fillText('B', gx - 64, gy + 16);
+                      c2.fillText('A=' + (curA ? '1' : '0'), gx - 78, gy - 9);
+                      c2.fillStyle = curB ? '#86efac' : '#cbd5e1';
+                      c2.fillText('B=' + (curB ? '1' : '0'), gx - 78, gy + 17);
                       c2.textAlign = 'left';
-                      c2.fillText('Out', gx + 64, gy + 4);
-                      c2.fillStyle = 'rgba(0,0,0,0.85)';
-                      c2.fillRect(8, H - 14, W - 16, 12);
+                      c2.fillStyle = curOut ? '#86efac' : '#fca5a5';
+                      c2.fillText('OUT=' + (curOut ? '1' : '0'), ledX + 12, gy + 4);
+
+                      c2.fillStyle = 'rgba(2,6,23,0.86)';
+                      c2.fillRect(8, H - 15, W - 16, 13);
                       c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#c4b5fd'; c2.textAlign = 'center';
-                      c2.fillText('Boole 1854. Every CPU uses these gates. NAND is universal \u2014 you can build anything from just NAND.', W / 2, H - 5);
-                      cvEl._ttAnim = requestAnimationFrame(drawTt);
+                      c2.fillText('Boole 1854. Every CPU uses these gates. NAND is universal \u2014 you can build anything from just NAND.', W / 2, H - 5.5);
+                      if (!reducedMotion) cvEl._ttAnim = requestAnimationFrame(drawTt);
                     }
                     drawTt();
                     var ro = new ResizeObserver(function() {
-                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
+                      W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 180;
                       cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
-                      lastBlink = -1; // force a repaint at the new size
+                      lastFrameKey = '';
+                      if (reducedMotion) drawTt();
                     });
-                    cvEl._ttRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
+                    cvEl._ttRO = ro;
                     ro.observe(cvEl);
                   },
                   style: { width: '100%', height: '100%', display: 'block' }

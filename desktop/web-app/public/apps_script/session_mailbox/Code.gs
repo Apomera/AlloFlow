@@ -26,12 +26,14 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 31;
+var VERSION = 32;
 // Apps Script allows 30 simultaneous runs per owner and a run waiting on the
 // script lock still counts, so live writes give up quickly and answer "busy"
 // (the app retries with backoff) instead of queueing for seconds.
 var LIVE_WRITE_LOCK_MS = 2000;
 var ACTIVITY_LOCK_MS = 3000;
+var LIVE_HOST_LEASE_TTL_MS = 90000;
+var MAX_POST_CHARS = 40 * 1024 * 1024;
 var LOAD_STAT_TTL_SEC = 15 * 60;       // per-minute action counts for the status page
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
@@ -144,11 +146,14 @@ function recentLoad() {
 }
 
 function doPost(e) {
-  var p = {};
-  try { p = JSON.parse((e && e.postData && e.postData.contents) || '{}'); } catch (err) {}
-  countAction(String((p && p.a) || ''));
+  var raw = (e && e.postData && typeof e.postData.contents === 'string') ? e.postData.contents : '{}';
+  if (raw.length > MAX_POST_CHARS) return out({ ok: false, e: 'too-big' });
+  var p = null;
+  try { p = JSON.parse(raw || '{}'); } catch (err) { p = null; }
+  if (!p || typeof p !== 'object' || Array.isArray(p)) return out({ ok: false, e: 'bad-request' });
+  countAction(String(p.a || ''));
   try {
-    return handle(p || {});
+    return handle(p);
   } catch (err) {
     if (err && err.code === 'mailbox-session-busy') return out({ ok: false, e: 'busy' });
     return out({ ok: false, e: 'server' });
@@ -167,7 +172,7 @@ function isToken(v, min, max) {
 function mbTimingSafeEq_(suppliedRaw, expectedRaw) {
   var supplied = String(suppliedRaw || '');
   var expected = String(expectedRaw || '');
-  if (!supplied || !expected) return false;
+  if (!supplied || !expected || supplied.length > 256 || expected.length > 256) return false;
   if (typeof Utilities !== 'undefined' && Utilities && typeof Utilities.computeDigest === 'function'
       && Utilities.DigestAlgorithm && Utilities.Charset) {
     var d1 = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, supplied, Utilities.Charset.UTF_8);
@@ -270,6 +275,10 @@ function handle(p) {
   var cache = CacheService.getScriptCache();
   var admin = props.getProperty('admin') || '';
   var isAdmin = !!(admin && mbTimingSafeEq_(p.admin, admin));
+  function denyAdmin_(errCode) {
+    if (!rateCheck(cache, 'r:auth:fail', 30)) return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+    return out({ ok: false, e: errCode || 'not-admin' });
+  }
 
   // Cheap ownership check so a reconnecting teacher can validate a pasted
   // admin token. On success it also (re)writes the Drive token note, so
@@ -281,24 +290,34 @@ function handle(p) {
   }
 
   if (a === 'rotateadmin') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
-    pruneExpiredSessions(props, cache);
-    var active = listSessions(props);
-    if (active.length && !p.force) return out({ ok: false, e: 'sessions-active', count: active.length });
-    if (active.length && closeAllSessions(cache, props) < 0) return out({ ok: false, e: 'busy' });
-    var rotated = newToken();
-    props.setProperty('admin', rotated);
-    saveTokenNote(rotated);
-    return out({ ok: true, admin: rotated, t: Date.now() });
+    if (!isAdmin) return denyAdmin_('not-admin');
+    var rotatedRes = withSessionLifecycleLock(function() {
+      var currentAdmin = props.getProperty('admin') || '';
+      if (!currentAdmin || !mbTimingSafeEq_(p.admin, currentAdmin)) return { ok: false, e: 'not-admin' };
+      var allProps = props.getProperties();
+      Object.keys(allProps).forEach(function(k) {
+        if (k.indexOf('sess_') !== 0 || sessionMarker(allProps[k], Date.now())) return;
+        closeSessionLocked(cache, props, k.slice(5));
+      });
+      var active = listSessions(props);
+      if (active.length && !p.force) return { ok: false, e: 'sessions-active', count: active.length };
+      active.forEach(function(s) { closeSessionLocked(cache, props, s.c); });
+      var rotated = newToken();
+      props.setProperty('admin', rotated);
+      return { ok: true, admin: rotated, t: Date.now() };
+    });
+    if (!rotatedRes) return out({ ok: false, e: 'busy' });
+    if (rotatedRes.ok) saveTokenNote(rotatedRes.admin);
+    return out(rotatedRes);
   }
   if (a === 'closeall') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (!isAdmin) return denyAdmin_('not-admin');
     var closed = closeAllSessions(cache, props);
     return closed < 0 ? out({ ok: false, e: 'busy' }) : out({ ok: true, closed: closed, t: Date.now() });
   }
 
   if (a === 'open') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (!isAdmin) return denyAdmin_('not-admin');
     var code = String(p.c || '').toUpperCase();
     if (!/^[A-Z0-9]{4,8}$/.test(code) || !isToken(p.k)) return out({ ok: false, e: 'bad-request' });
     // A reused code must not resurface messages, documents, or signaling from
@@ -318,6 +337,10 @@ function handle(p) {
 
   if (a === 'join') {
     var jcode = String(p.c || '').toUpperCase();
+    if (!/^[A-Z0-9]{4,8}$/.test(jcode)) {
+      if (!rateCheck(cache, 'r:join:bad', 120)) return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+      return out({ ok: false, e: 'no-session' });
+    }
     if (!rateCheck(cache, 'r:' + jcode + ':join', 120)) return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
     var jsecret = sessionSecretFor(jcode, cache, props);
     if (!jsecret) return out({ ok: false, e: 'no-session' });
@@ -360,7 +383,7 @@ function handle(p) {
   // the admin token (recoverable from the Drive backup note). No manual code
   // re-entry needed after a refresh.
   if (a === 'mysessions') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (!isAdmin) return denyAdmin_('not-admin');
     pruneExpiredSessions(props, cache);
     var sessions = [];
     try {
@@ -377,21 +400,21 @@ function handle(p) {
   }
 
   if (a === 'putpack') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (!isAdmin) return denyAdmin_('not-admin');
     return putPack(cache, p);
   }
   if (a === 'extendpack') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (!isAdmin) return denyAdmin_('not-admin');
     return extendPack(cache, p);
   }
   if (a === 'clonepack') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (!isAdmin) return denyAdmin_('not-admin');
     return clonePack(cache, p);
   }
   if (a === 'putsubmission') return putSubmission(cache, props, p, admin);
   // v29: the owner's AlloFlow collects submissions without opening Drive.
   if (a === 'listsubmissions' || a === 'getsubmission' || a === 'marksubmissions') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (!isAdmin) return denyAdmin_('not-admin');
     if (a === 'listsubmissions') return listSubmissions(p);
     if (a === 'getsubmission') return getSubmission(p);
     return markSubmissions(p);
@@ -405,22 +428,22 @@ function handle(p) {
   if (a === 'activityupsert') return upsertAssignmentActivity(cache, p, admin);
   if (a === 'getactivitysummary') return getAssignmentActivitySummary(cache, p, admin);
   if (a === 'getactivityadmin') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (!isAdmin) return denyAdmin_('not-admin');
     return getAssignmentActivityAdmin(cache, p);
   }
   if (a === 'moderateactivity') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (!isAdmin) return denyAdmin_('not-admin');
     return moderateAssignmentActivity(cache, p);
   }
   if (a === 'delpack') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (!isAdmin) return denyAdmin_('not-admin');
     return delPack(cache, p);
   }
   // v24 delivery: the owner's tool writes into the owner's own Drive, reads a
   // page for the owner, or builds a Google Form. Admin only: the deployment is
   // reachable by anyone, so without this gate it would be an open upload box.
   if (a === 'deliver' || a === 'deliverform' || a === 'fetchpage') {
-    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (!isAdmin) return denyAdmin_('not-admin');
     if (a === 'deliver') return deliverDocument(p);
     if (a === 'deliverform') return deliverForm(p);
     return fetchPage(cache, p);
@@ -1168,7 +1191,7 @@ function participantCanPatchSession(updates, uid, sessionData) {
       return false;
     }
     if (questState.mode === 'connected-room' && pathStarts(key, 'escapeRoomState')) {
-      if (questState.isActive !== true || !sessionData.roster || !sessionData.roster[uid]) return false;
+      if (questState.isActive !== true || !sessionData.roster || !Object.prototype.hasOwnProperty.call(sessionData.roster, uid)) return false;
       if (key === escapeTeamLeaf && updates[key] === 'All') continue;
       if (key === 'escapeRoomState.teamProgress.All.connectedActions.' + uid
           && questState.isPaused !== true && questState.teams && questState.teams[uid] === 'All'
@@ -1332,9 +1355,13 @@ function docWrite(cache, code, action, p, actor) {
     }
     if (action === 'dset') {
       var data = p.d === undefined ? null : p.d;
-      if (p.merge && current && current.d && typeof current.d === 'object' && data && typeof data === 'object') {
+      if (p.merge && current && current.d && typeof current.d === 'object' && !Array.isArray(current.d)
+          && data && typeof data === 'object' && !Array.isArray(data)) {
         var mergedData = current.d;
-        Object.keys(data).forEach(function(k) { mergedData[k] = data[k]; });
+        Object.keys(data).forEach(function(k) {
+          if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+          mergedData[k] = data[k];
+        });
         data = mergedData;
       }
       var env = { w: nextDocVersion(cache, code), d: data };
@@ -2138,7 +2165,7 @@ function computeSurveyAggregates(config, responses) {
   var rows = responses && typeof responses === 'object' ? responses : {};
   var uids = Object.keys(rows);
   var participantCount = 0;
-  var byItem = {};
+  var byItem = Object.create(null);
   for (var i = 0; i < config.items.length; i++) {
     var item = config.items[i];
     if (item.type === 'likert') {
@@ -2146,7 +2173,7 @@ function computeSurveyAggregates(config, responses) {
       for (var s = 0; s < item.steps; s++) counts.push(0);
       byItem[item.id] = { id: item.id, type: 'likert', n: 0, counts: counts, sum: 0 };
     } else if (item.type === 'choice') {
-      var optCounts = {};
+      var optCounts = Object.create(null);
       for (var oi = 0; oi < item.options.length; oi++) optCounts[item.options[oi].id] = 0;
       byItem[item.id] = { id: item.id, type: 'choice', n: 0, counts: optCounts };
     } else if (item.type === 'numeric') {
@@ -2171,7 +2198,7 @@ function computeSurveyAggregates(config, responses) {
         slot.sum += tickValue;
         slot.n++;
       } else if (target.type === 'choice') {
-        if (slot.counts[value] === undefined) continue;
+        if (typeof value !== 'string' || !Object.prototype.hasOwnProperty.call(slot.counts, value)) continue;
         slot.counts[value]++;
         slot.n++;
       } else if (target.type === 'numeric') {
@@ -2224,7 +2251,7 @@ function buildSurveySummary(state, isHost) {
   // In anonymous mode the floor guards the organizer too: with two respondents
   // a per-item distribution can still identify who said what.
   var showAggregates = config.identityMode === 'anonymous' ? revealed : (isHost || revealed);
-  var aggByItem = {};
+  var aggByItem = Object.create(null);
   for (var ai = 0; ai < aggregates.items.length; ai++) aggByItem[aggregates.items[ai].id] = aggregates.items[ai];
   var items = [];
   for (var i = 0; i < config.items.length; i++) {
@@ -2440,6 +2467,14 @@ function cacheAssignmentActivitySummary(cache, state) {
   });
 }
 
+function applyActivityRetentionByType_(state) {
+  if (!state || !state.config) return false;
+  if (state.config.type === 'survey') return applySurveyRetention(state);
+  if (state.config.type === 'availability') return applyAvailabilityRetention(state);
+  if (state.config.type === 'signup') return applySignupRetention(state);
+  return false;
+}
+
 function assignmentActivitySummaryFor(cache, context, uid) {
   if (context.config.type === 'question_board') {
     // A board summary depends on WHO is asking, so it cannot come from the
@@ -2451,38 +2486,66 @@ function assignmentActivitySummaryFor(cache, context, uid) {
     return boardSummary;
   }
   var publicKey = 'as:' + context.packId.slice(-12) + ':' + context.activityId.slice(-12);
+  var ownKey = publicKey + ':o:' + uid.slice(-24);
+  var cfgDeleteAt = Date.parse(context.config && context.config.deleteAt);
+  var pastDeleteAt = isFinite(cfgDeleteAt) && Date.now() >= cfgDeleteAt;
   var publicRaw = cache.get(publicKey);
-  var ownRaw = cache.get(publicKey + ':o:' + uid.slice(-24));
-  if (publicRaw && ownRaw) {
-    try {
-      var cached = JSON.parse(publicRaw);
-      cached.own = JSON.parse(ownRaw);
-      return cached;
-    } catch (e) {}
+  if (pastDeleteAt) {
+    cache.remove(ownKey);
+    if (publicRaw && cache.get(publicKey + ':erased') === '1') {
+      try {
+        var erasedCached = JSON.parse(publicRaw);
+        erasedCached.own = null;
+        return erasedCached;
+      } catch (e) {}
+    }
+  } else {
+    var ownRaw = cache.get(ownKey);
+    if (publicRaw && ownRaw) {
+      try {
+        var cached = JSON.parse(publicRaw);
+        cached.own = JSON.parse(ownRaw);
+        return cached;
+      } catch (e) {}
+    }
   }
   var state = readAssignmentActivityState(context);
   // Same persistence rule on the respondent read path, and BEFORE caching:
   // caching per-uid rows that retention is about to erase would hand out for
   // the cache TTL exactly what deleteAt promised was gone.
-  if (
-    (state.config.type === 'survey' && applySurveyRetention(state)) ||
-    (state.config.type === 'availability' && applyAvailabilityRetention(state)) ||
-    (state.config.type === 'signup' && applySignupRetention(state))
-  ) {
-    writeAssignmentActivityState(state);
+  if (pastDeleteAt) {
+    var rLock = LockService.getScriptLock();
+    if (rLock.tryLock(ACTIVITY_LOCK_MS)) {
+      try {
+        state = readAssignmentActivityState(context);
+        if (applyActivityRetentionByType_(state)) {
+          writeAssignmentActivityState(state);
+        }
+      } finally { rLock.releaseLock(); }
+    } else {
+      applyActivityRetentionByType_(state);
+    }
+    cacheAssignmentActivitySummary(cache, state);
+    cache.put(publicKey + ':erased', '1', ASYNC_ACTIVITY_CACHE_SEC);
+  } else {
+    if (applyActivityRetentionByType_(state)) {
+      writeAssignmentActivityState(state);
+    }
+    cacheAssignmentActivitySummary(cache, state);
   }
-  cacheAssignmentActivitySummary(cache, state);
   var summary = buildAssignmentActivityPublicSummary(state);
   summary.own = state.responses[uid] || null;
   return summary;
 }
 
 function joinAssignmentActivity(cache, p, admin) {
-  var context = assignmentActivityContext(p, true);
-  if (context.error) return out({ ok: false, e: context.error });
-  if (!rateCheck(cache, 'r:aj:' + context.packId.slice(-12), 120)) {
+  var prePackId = String(p.id || '');
+  if (!/^PK-[0-9a-f-]{36}$/i.test(prePackId)) return out({ ok: false, e: 'bad-request' });
+  if (!rateCheck(cache, 'r:aj:' + prePackId.slice(-12), 120)) {
     return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
   }
+  var context = assignmentActivityContext(p, true);
+  if (context.error) return out({ ok: false, e: context.error });
   var uid = 'ma-' + Utilities.getUuid().replace(/-/g, '').slice(-20);
   return out({
     ok: true,
@@ -2494,6 +2557,11 @@ function joinAssignmentActivity(cache, p, admin) {
 }
 
 function getAssignmentActivitySummary(cache, p, admin) {
+  var prePackId = String(p.id || '');
+  if (!/^PK-[0-9a-f-]{36}$/i.test(prePackId)) return out({ ok: false, e: 'bad-request' });
+  if (!rateCheck(cache, 'r:arp:' + prePackId.slice(-12), 300)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
   var context = assignmentActivityContext(p, false);
   if (context.error) return out({ ok: false, e: context.error });
   var actor = assignmentActivityActor(p, context, admin);
@@ -2505,6 +2573,11 @@ function getAssignmentActivitySummary(cache, p, admin) {
 }
 
 function upsertAssignmentActivity(cache, p, admin) {
+  var prePackId = String(p.id || '');
+  if (!/^PK-[0-9a-f-]{36}$/i.test(prePackId)) return out({ ok: false, e: 'bad-request' });
+  if (!rateCheck(cache, 'r:awp:' + prePackId.slice(-12), 240)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
   var context = assignmentActivityContext(p, false);
   if (context.error) return out({ ok: false, e: context.error });
   var actor = assignmentActivityActor(p, context, admin);
@@ -2703,40 +2776,29 @@ function getAssignmentActivityAdmin(cache, p) {
     return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
   }
   var state = readAssignmentActivityState(context);
-  if (context.config.type === 'survey') {
-    // Retention must PERSIST from the read path: answers stop arriving after
-    // closesAt, so if erasure only ever lived in memory the Drive file would
-    // keep the rows — free text included — forever. One write, once: the next
-    // applySurveyRetention sees empty rows + a tally and does nothing.
-    var surveyErased = applySurveyRetention(state);
-    // The organizer's endpoint. buildSurveySummary still decides what they
-    // may see: rows only outside anonymous mode, free text floor-gated.
-    var surveySummary = buildSurveySummary(state, true);
-    if (surveyErased) {
-      writeAssignmentActivityState(state);
-      cacheAssignmentActivitySummary(cache, state);
+  var adminPublicKey = 'as:' + context.packId.slice(-12) + ':' + context.activityId.slice(-12);
+  if (context.config.type === 'survey' || context.config.type === 'signup' || context.config.type === 'availability') {
+    // Retention must PERSIST from the read path under lock so a concurrent
+    // write cannot race erasure.
+    var adminDeleteAt = Date.parse(context.config.deleteAt);
+    if (isFinite(adminDeleteAt) && Date.now() >= adminDeleteAt) {
+      var aLock = LockService.getScriptLock();
+      if (aLock.tryLock(ACTIVITY_LOCK_MS)) {
+        try {
+          state = readAssignmentActivityState(context);
+          if (applyActivityRetentionByType_(state)) {
+            writeAssignmentActivityState(state);
+            cacheAssignmentActivitySummary(cache, state);
+          }
+          cache.put(adminPublicKey + ':erased', '1', ASYNC_ACTIVITY_CACHE_SEC);
+        } finally { aLock.releaseLock(); }
+      } else {
+        applyActivityRetentionByType_(state);
+      }
     }
-    return out(surveySummary);
-  }
-  if (context.config.type === 'signup') {
-    var signupErased = applySignupRetention(state);
-    var signupSummary = buildSignupSummary(state, true);
-    if (signupErased) {
-      writeAssignmentActivityState(state);
-      cacheAssignmentActivitySummary(cache, state);
-    }
-    return out(signupSummary);
-  }
-  if (context.config.type === 'availability') {
-    // The organizer is the audience for a scheduling poll, so rows come back
-    // here. buildAvailabilitySummary still withholds them in anonymous mode.
-    var availErased = applyAvailabilityRetention(state);
-    var availSummary = buildAvailabilitySummary(state, true);
-    if (availErased) {
-      writeAssignmentActivityState(state);
-      cacheAssignmentActivitySummary(cache, state);
-    }
-    return out(availSummary);
+    if (context.config.type === 'survey') return out(buildSurveySummary(state, true));
+    if (context.config.type === 'signup') return out(buildSignupSummary(state, true));
+    return out(buildAvailabilitySummary(state, true));
   }
   if (context.config.type === 'question_board') {
     // The host sees every item regardless of status — that is the whole point
@@ -2869,12 +2931,17 @@ function putSubmission(cache, props, p, admin) {
   if (priorReceipt) {
     try { return out(JSON.parse(priorReceipt)); } catch (receiptErr) { cache.remove(receiptKey); }
   }
-  var cachePrefix = 'su:' + sid + ':';
+  var cachePrefix = 'su:' + sourceKind + ':' + sourceId.slice(-12) + ':'
+    + (sourceKind === 'live' && actor && actor.uid ? actor.uid.slice(-16) + ':' : '') + sid + ':';
   cache.put(cachePrefix + part, data, UPLOAD_TTL_SEC);
   if (part < of) return out({ ok: true, part: part });
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
   try {
+    var lockedReceipt = cache.get(receiptKey);
+    if (lockedReceipt) {
+      try { return out(JSON.parse(lockedReceipt)); } catch (lockedReceiptErr) { cache.remove(receiptKey); }
+    }
     var keys = [];
     for (var i = 1; i <= of; i++) keys.push(cachePrefix + i);
     var found = cache.getAll(keys);
@@ -2895,7 +2962,8 @@ function putSubmission(cache, props, p, admin) {
     var safeName = String(payload.studentName || 'Student').replace(/[^A-Za-z0-9_-]+/g, '_').slice(0, 48) || 'Student';
     var stamp = Utilities.formatDate ? Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd-HHmmss') : String(Date.now());
     var filename = 'submission-' + safeName + '-' + stamp + '-' + sid.slice(-8) + '.json';
-    packFolder().createFile(filename, JSON.stringify(payload, null, 2), 'application/json');
+    var createdSubFile = packFolder().createFile(filename, JSON.stringify(payload, null, 2), 'application/json');
+    mbMakeDriveItemPrivate_(createdSubFile);
     // Best effort: a file the index misses is still found by a rescan.
     try {
       var sidx = readSubmissionIndex() || { v: 1, items: [] };
@@ -2936,7 +3004,7 @@ function writeSubmissionIndex(idx) {
 // Adds submission files the index does not know. Returns false when it ran
 // out of time, so the next list continues the scan.
 function scanSubmissionFiles(idx) {
-  var known = {};
+  var known = Object.create(null);
   idx.items.forEach(function(item) { known[item.n] = true; });
   var folder = packFolder();
   var files;
@@ -2991,7 +3059,7 @@ function getSubmission(p) {
 
 function markSubmissions(p) {
   var names = Array.isArray(p.names) ? p.names.slice(0, SUBMISSION_LIST_MAX) : [];
-  var wanted = {};
+  var wanted = Object.create(null);
   names.forEach(function(name) { if (SUBMISSION_NAME_RE.test(String(name))) wanted[String(name)] = true; });
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
@@ -3001,7 +3069,7 @@ function markSubmissions(p) {
     var now = Date.now();
     var marked = 0;
     idx.items.forEach(function(item) {
-      if (wanted[item.n] && !item.got) { item.got = now; marked++; }
+      if (Object.prototype.hasOwnProperty.call(wanted, item.n) && !item.got) { item.got = now; marked++; }
     });
     if (marked) writeSubmissionIndex(idx);
     return out({ ok: true, marked: marked, t: now });
@@ -3205,29 +3273,35 @@ function getPack(cache, p) {
 
 function delPack(cache, p) {
   var id = String(p.id || '');
-  var file = findPackFile(id);
-  var count = 0;
-  var activities = [];
-  if (file) {
-    try {
-      var manifest = JSON.parse(file.getBlob().getDataAsString());
-      count = parseInt(manifest.of, 10) || 0;
-      activities = assignmentActivitiesFromManifest(manifest);
-    } catch (e) {}
-    file.setTrashed(true);
-  }
-  for (var i = 1; i <= count; i++) {
-    var chunk = findNamedPackFileV7(packChunkNameV7(id, i));
-    if (chunk) chunk.setTrashed(true);
-  }
-  for (var a = 0; a < activities.length; a++) {
-    var activityId = activities[a].activityId;
-    var activityFile = findAssignmentActivityFile(id, activityId);
-    if (activityFile) activityFile.setTrashed(true);
-    cache.remove('as:' + id.slice(-12) + ':' + activityId.slice(-12));
-  }
-
-  return out({ ok: true });
+  if (!/^PK-[0-9a-f-]{36}$/i.test(id)) return out({ ok: false, e: 'bad-request' });
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
+  try {
+    var file = findPackFile(id);
+    var count = 0;
+    var activities = [];
+    if (file) {
+      try {
+        var manifest = JSON.parse(file.getBlob().getDataAsString());
+        count = Math.min(200, Math.max(0, parseInt(manifest.of, 10) || 0));
+        activities = assignmentActivitiesFromManifest(manifest);
+      } catch (e) {}
+      file.setTrashed(true);
+    }
+    for (var i = 1; i <= count; i++) {
+      var chunk = findNamedPackFileV7(packChunkNameV7(id, i));
+      if (chunk) chunk.setTrashed(true);
+    }
+    for (var a = 0; a < activities.length; a++) {
+      var activityId = activities[a].activityId;
+      var activityFile = findAssignmentActivityFile(id, activityId);
+      if (activityFile) activityFile.setTrashed(true);
+      var aKey = 'as:' + id.slice(-12) + ':' + activityId.slice(-12);
+      cache.remove(aKey);
+      cache.remove(aKey + ':erased');
+    }
+    return out({ ok: true });
+  } finally { lock.releaseLock(); }
 }
 // ---------------------------------------------------------------------------
 // v24: delivery into the OWNER's Drive, Google Forms, and page import.
@@ -3244,6 +3318,16 @@ function deliveryFolder() {
   var parent = packFolder();
   var it = parent.getFoldersByName(DELIVERY_FOLDER_NAME);
   if (it.hasNext()) return it.next();
+  var lock = LockService.getScriptLock();
+  if (lock.tryLock(5000)) {
+    try {
+      var it2 = parent.getFoldersByName(DELIVERY_FOLDER_NAME);
+      if (it2.hasNext()) return it2.next();
+      var lockedFolder = parent.createFolder(DELIVERY_FOLDER_NAME);
+      mbMakeDriveItemPrivate_(lockedFolder);
+      return lockedFolder;
+    } finally { lock.releaseLock(); }
+  }
   var folder = parent.createFolder(DELIVERY_FOLDER_NAME);
   mbMakeDriveItemPrivate_(folder);
   return folder;
@@ -3324,6 +3408,11 @@ function deliverDocument(p) {
   if (target) {
     var made = driveCreateConverted(decoded.bytes, mime, name, target, folder.getId());
     if (made.e) return out({ ok: false, e: made.e, d: made.d, status: made.status });
+    try {
+      if (typeof DriveApp !== 'undefined' && typeof DriveApp.getFileById === 'function') {
+        mbMakeDriveItemPrivate_(DriveApp.getFileById(made.id));
+      }
+    } catch (aclErr) {}
     return out({ ok: true, id: made.id, url: made.url, name: name, mime: made.mime, converted: true, t: Date.now() });
   }
   try {
@@ -3493,8 +3582,15 @@ function fetchPageBlockedIpv6_(h) {
   }
   if ((groups[0] & 0xfe00) === 0xfc00) return true; // fc00::/7 ULA
   if ((groups[0] & 0xffc0) === 0xfe80) return true; // fe80::/10 link-local
+  if ((groups[0] & 0xffc0) === 0xfec0) return true; // fec0::/10 deprecated site-local
   if ((groups[0] & 0xff00) === 0xff00) return true; // ff00::/8 multicast
+  if (groups[0] === 0x2002) return true; // 2002::/16 6to4
+  if (groups[0] === 0x2001 && (groups[1] & 0xfe00) === 0x0000) return true; // 2001::/23 IETF / Teredo
+  if (groups[0] === 0x0064 && groups[1] === 0xff9b && groups[2] === 1) return true; // 64:ff9b:1::/48 local NAT64
   if (groups[0] === 0x0064 && groups[1] === 0xff9b && groups[2] === 0 && groups[3] === 0 && groups[4] === 0 && groups[5] === 0) return true; // 64:ff9b::/96
+  if (groups[0] === 0 && groups[1] === 0 && groups[2] === 0 && groups[3] === 0 && groups[4] === 0xffff && groups[5] === 0) {
+    return fetchPageBlockedIpv4Parts_([groups[6] >>> 8, groups[6] & 255, groups[7] >>> 8, groups[7] & 255]); // ::ffff:0:0:0/96 IPv4-translated
+  }
   var firstFiveZero = groups[0] === 0 && groups[1] === 0 && groups[2] === 0 && groups[3] === 0 && groups[4] === 0;
   if (firstFiveZero) {
     if (groups[5] === 0xffff) {
@@ -3504,6 +3600,16 @@ function fetchPageBlockedIpv6_(h) {
     if (groups[5] === 0) return fetchPageBlockedIpv4Parts_([groups[6] >>> 8, groups[6] & 255, groups[7] >>> 8, groups[7] & 255]);
   }
   return false;
+}
+
+function fetchPageHeader_(headers, name) {
+  if (!headers || typeof headers !== 'object') return '';
+  var target = String(name || '').toLowerCase();
+  var keys = Object.keys(headers);
+  for (var i = 0; i < keys.length; i++) {
+    if (String(keys[i]).toLowerCase() === target) return String(headers[keys[i]] || '');
+  }
+  return '';
 }
 
 function fetchPageExtractHost_(url) {
@@ -3519,7 +3625,7 @@ function fetchPageExtractHost_(url) {
 }
 
 function fetchPageBlockedHost(host) {
-  var h = String(host || '').toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
+  var h = String(host || '').toLowerCase().replace(/^\[|\]$/g, '').replace(/\.+$/, '');
   if (!h || h === 'localhost' || h === 'metadata.google' || /\.(local|internal|localhost|metadata\.google)$/.test(h)) return true;
   if (h.indexOf(':') >= 0) return fetchPageBlockedIpv6_(h);
   var ipv4 = fetchPageParseIpv4Host_(h);
@@ -3596,7 +3702,7 @@ function fetchPage(cache, p) {
     if (status >= 300 && status < 400) {
       if (hop === 5) return out({ ok: false, e: 'too-many-redirects' });
       var redirHeaders = res.getHeaders() || {};
-      var loc = String(redirHeaders.Location || redirHeaders.location || '').trim();
+      var loc = fetchPageHeader_(redirHeaders, 'location').trim();
       if (!loc) return out({ ok: false, e: 'bad-redirect' });
       var nextUrl = '';
       if (/^https?:\/\/[^\s]+$/i.test(loc)) {
@@ -3618,7 +3724,7 @@ function fetchPage(cache, p) {
   }
   if (status < 200 || status >= 300) return out({ ok: false, e: 'fetch-error', status: status });
   var headers = res.getHeaders() || {};
-  var contentType = String(headers['Content-Type'] || headers['content-type'] || '').toLowerCase();
+  var contentType = fetchPageHeader_(headers, 'content-type').toLowerCase();
   var isHtml = /html|xml/.test(contentType);
   var isText = /^text\//.test(contentType);
   if (contentType && !isHtml && !isText) return out({ ok: false, e: 'bad-content-type', contentType: contentType.slice(0, 80) });

@@ -306,7 +306,8 @@
   function _arAiUsable(kind, fn) {
     if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
     if (typeof window !== 'undefined') {
-      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true) return false;
+      if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return false;
       if (typeof window.__alloAiUsable === 'function') {
         try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
       }
@@ -325,6 +326,7 @@
     for (var i = 0; i < claims.length; i += chunkSize) chunks.push(claims.slice(i, i + chunkSize));
     var verdicts = [];
     var offset = 0;
+    var failedChunks = 0;
     for (var c = 0; c < chunks.length; c++) {
       var chunk = chunks[c];
       var numbered = chunk.map(function (claim, idx) { return 'CLAIM ' + (idx + 1) + ': "' + String(claim).replace(/"/g, '\\"') + '"'; }).join('\n');
@@ -345,11 +347,11 @@
       try {
         var raw = await callGemini(prompt, true, true);
         var rawText = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
-        var parsed = JSON.parse(cleanJson(rawText));
-        if (Array.isArray(parsed.verdicts)) {
-          parsed.verdicts.forEach(function (v) {
+        var parsed = JSON.parse(typeof cleanJson === 'function' ? cleanJson(rawText) : rawText);
+        if (parsed && typeof parsed === 'object' && Array.isArray(parsed.verdicts)) {
+          parsed.verdicts.forEach(function (v, idx) {
             if (!v || typeof v !== 'object') return;
-            var localNum = typeof v.claimNumber === 'number' ? v.claimNumber : verdicts.length + 1;
+            var localNum = (typeof v.claimNumber === 'number' && Number.isFinite(v.claimNumber) && v.claimNumber >= 1) ? Math.floor(v.claimNumber) : (idx + 1);
             verdicts.push({
               claimNumber: offset + localNum,
               originalClaim: chunk[localNum - 1] || null,
@@ -358,11 +360,17 @@
               sources: Array.isArray(v.sources) ? v.sources.slice(0, 3) : [],
             });
           });
+        } else {
+          failedChunks += 1;
         }
       } catch (err) {
+        failedChunks += 1;
         console.warn('[Remediator] verifyClaimsBatch chunk failed:', err);
       }
       offset += chunk.length;
+    }
+    if (failedChunks > 0 && verdicts.length === 0) {
+      throw new Error('Fact-check failed for all claim batches.');
     }
     return verdicts;
   }
@@ -375,6 +383,7 @@
     var handleGenerate = props.handleGenerate;
     var setHistory = props.setHistory;
     if (typeof handleGenerate !== 'function') return { ok: false, reason: 'no-handle-generate' };
+    if (!_arAiUsable('text', handleGenerate)) return { ok: false, reason: 'ai-unavailable' };
 
     // Snapshot pre-call history IDs and item count so we ONLY merge a genuinely NEW
     // item created by this handleGenerate invocation (handling both append & prepend
@@ -410,67 +419,85 @@
     // and, when existingId is set, merge it into the existing slot while snapshotting prior data.
     var updaterRan = false;
     var foundNewItem = false;
+    var latestHistory = null;
     if (typeof setHistory === 'function') {
-      setHistory(function (prev) {
-        updaterRan = true;
-        if (!Array.isArray(prev)) return prev;
-        // Identify genuinely NEW items of action.target (works for both append & prepend).
-        var newCandidates = [];
-        for (var i = 0; i < prev.length; i++) {
-          var item = prev[i];
-          if (!item || item.type !== action.target) continue;
-          var isNew = item.id != null ? !priorIds.has(item.id) : !priorTargetItems.has(item);
-          if (isNew) newCandidates.push({ idx: i, item: item });
-        }
-        if (newCandidates.length === 0) {
-          foundNewItem = false;
-          return prev;
-        }
-        foundNewItem = true;
-        if (!existingId) return prev;
+      await new Promise(function (resolveUpdater) {
+        var settled = false;
+        var finish = function () { if (!settled) { settled = true; resolveUpdater(); } };
+        setHistory(function (prev) {
+          updaterRan = true;
+          if (!Array.isArray(prev)) { finish(); return prev; }
+          // Identify genuinely NEW items of action.target (works for both append & prepend).
+          var newCandidates = [];
+          for (var i = 0; i < prev.length; i++) {
+            var item = prev[i];
+            if (!item || item.type !== action.target) continue;
+            var isNew = item.id != null ? !priorIds.has(item.id) : !priorTargetItems.has(item);
+            if (isNew) newCandidates.push({ idx: i, item: item });
+          }
+          if (newCandidates.length === 0) {
+            foundNewItem = false;
+            latestHistory = prev;
+            finish();
+            return prev;
+          }
+          foundNewItem = true;
+          if (!existingId) {
+            latestHistory = prev;
+            finish();
+            return prev;
+          }
 
-        // Pick the newest candidate (highest timestamp if present, else last in list).
-        var picked = newCandidates[newCandidates.length - 1];
-        for (var ci = 0; ci < newCandidates.length; ci++) {
-          var candTs = Number(newCandidates[ci].item.timestamp) || 0;
-          var pickedTs = Number(picked.item.timestamp) || 0;
-          if (candTs > pickedTs) picked = newCandidates[ci];
-        }
-        var newestIdx = picked.idx;
-        var newest = picked.item;
+          // Pick the newest candidate (highest timestamp if present, else last in list).
+          var picked = newCandidates[newCandidates.length - 1];
+          for (var ci = 0; ci < newCandidates.length; ci++) {
+            var candTs = Number(newCandidates[ci].item.timestamp) || 0;
+            var pickedTs = Number(picked.item.timestamp) || 0;
+            if (candTs > pickedTs) picked = newCandidates[ci];
+          }
+          var newestIdx = picked.idx;
+          var newest = picked.item;
 
-        // Find the existing slot
-        var existingIdx = prev.findIndex(function (h) { return h && h.id === existingId; });
-        if (existingIdx === -1 || existingIdx === newestIdx) return prev;
-        // Build merged: keep existing.id, copy new.data + new.meta, snapshot old data.
-        var existingItem = prev[existingIdx];
-        var merged = Object.assign({}, existingItem, {
-          data: newest.data,
-          meta: newest.meta || existingItem.meta,
-          title: newest.title || existingItem.title,
-          previousVersions: (Array.isArray(existingItem.previousVersions) ? existingItem.previousVersions.slice() : []).concat([{
-            data: existingItem.data,
-            meta: existingItem.meta,
-            title: existingItem.title,
-            timestamp: existingItem.timestamp || Date.now(),
-            replacedAt: Date.now(),
-            remediationSource: action.dimension + ': ' + (action.label || ''),
-          }]),
-          lastRemediatedAt: Date.now(),
+          // Find the existing slot
+          var existingIdx = prev.findIndex(function (h) { return h && h.id === existingId; });
+          if (existingIdx === -1 || existingIdx === newestIdx) {
+            latestHistory = prev;
+            finish();
+            return prev;
+          }
+          // Build merged: keep existing.id, copy new.data + new.meta, snapshot old data.
+          var existingItem = prev[existingIdx];
+          var merged = Object.assign({}, existingItem, {
+            data: newest.data,
+            meta: newest.meta || existingItem.meta,
+            title: newest.title || existingItem.title,
+            previousVersions: (Array.isArray(existingItem.previousVersions) ? existingItem.previousVersions.slice() : []).concat([{
+              data: existingItem.data,
+              meta: existingItem.meta,
+              title: existingItem.title,
+              timestamp: existingItem.timestamp || Date.now(),
+              replacedAt: Date.now(),
+              remediationSource: action.dimension + ': ' + (action.label || ''),
+            }]),
+            lastRemediatedAt: Date.now(),
+          });
+          // Replace old, drop newly inserted duplicate regardless of whether it was appended or prepended.
+          var next = prev.slice();
+          next[existingIdx] = merged;
+          next.splice(newestIdx, 1);
+          latestHistory = next;
+          finish();
+          return next;
         });
-        // Replace old, drop newly inserted duplicate regardless of whether it was appended or prepended.
-        var next = prev.slice();
-        next[existingIdx] = merged;
-        next.splice(newestIdx, 1);
-        return next;
+        setTimeout(finish, 0);
       });
     }
 
     if (updaterRan && !foundNewItem) {
-      return { ok: false, reason: 'no-new-item-created', beforeSnapshot: beforeSnapshot };
+      return { ok: false, reason: 'no-new-item-created', beforeSnapshot: beforeSnapshot, nextHistory: latestHistory };
     }
 
-    return { ok: true, beforeSnapshot: beforeSnapshot };
+    return { ok: true, beforeSnapshot: beforeSnapshot, nextHistory: latestHistory };
   }
 
   // ------------------------------------------------------------------
@@ -495,6 +522,7 @@
     }, [comprehensive]);
 
     var aiUsable = _arAiUsable('text', props.callGemini);
+    var generateUsable = _arAiUsable('text', props.handleGenerate);
     var checkedSet = useState(function () {
       var s = {};
       initialActions.forEach(function (a) { if (a.target !== 'manual') s[a.id] = true; });
@@ -527,6 +555,16 @@
     var [verdicts, setVerdicts] = useState(null);
     var [errorMsg, setErrorMsg] = useState('');
     var beforeReadinessRef = useRef(initialReadiness);
+    var historyRef = useRef(props.history);
+    historyRef.current = props.history;
+    var inFlightRef = useRef(false);
+    var mountedRef = useRef(true);
+    var dialogRef = useRef(null);
+    var backdropDownRef = useRef(false);
+    useEffect(function () {
+      mountedRef.current = true;
+      return function () { mountedRef.current = false; };
+    }, []);
 
     // Reset transient remediation state whenever the modal opens so a mounted host
     // re-opening after a prior Apply never shows stale 'done'/'error' or prior readiness.
@@ -536,6 +574,7 @@
         setVerdicts(null);
         setErrorMsg('');
         setProgress({ current: 0, total: 0, label: '' });
+        setFactCheckOn(initialClaims.length > 0 && _arAiUsable('text', props.callGemini));
         beforeReadinessRef.current = initialReadiness;
       }
     }, [props.isOpen]);
@@ -547,21 +586,83 @@
       }
     }, [phase, initialReadiness]);
 
-    // WCAG modal keyboard accessibility: close on Escape when not actively mutating.
+    // WCAG modal keyboard accessibility: focus trap, #root inert, body scroll lock, Escape, focus restore.
     useEffect(function () {
       if (!props.isOpen) return;
-      var canDismiss = phase === 'confirm' || phase === 'done' || phase === 'error';
-      if (!canDismiss) return;
+      var dialog = dialogRef.current;
+      var prevFocus = typeof document !== 'undefined' ? document.activeElement : null;
+      var scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, prev: '' }) : null;
+      if (scrollLock && document.body) {
+        if (scrollLock.count === 0) {
+          scrollLock.prev = document.body.style.overflow;
+          document.body.style.overflow = 'hidden';
+        }
+        scrollLock.count += 1;
+      }
+      var hiddenSiblings = [];
+      var rootHost = (typeof document !== 'undefined' && document.getElementById('root')) || (typeof document !== 'undefined' && document.body);
+      if (rootHost && dialog) {
+        Array.prototype.slice.call(rootHost.children || []).forEach(function (child) {
+          if (!child || child === dialog || child.contains(dialog)) return;
+          var role = child.getAttribute && child.getAttribute('role');
+          if (role === 'status' || role === 'alert' || role === 'log' || (child.hasAttribute && child.hasAttribute('aria-live'))) return;
+          hiddenSiblings.push({ node: child, hadInert: child.hasAttribute('inert'), prevAriaHidden: child.getAttribute('aria-hidden') });
+          child.setAttribute('inert', '');
+          child.setAttribute('aria-hidden', 'true');
+        });
+      }
+      var getFocusables = function () {
+        if (!dialog) return [];
+        return Array.prototype.slice.call(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+          return el && !el.hidden && !el.closest('[hidden], [inert], [aria-hidden="true"]');
+        });
+      };
+      var focusTimer = setTimeout(function () {
+        var list = getFocusables();
+        var target = list[0] || dialog;
+        if (target && typeof target.focus === 'function') { try { target.focus(); } catch (_) {} }
+      }, 0);
       var onKeyDown = function (ev) {
-        if (ev && ev.key === 'Escape' && typeof props.onClose === 'function') {
-          ev.preventDefault();
-          props.onClose();
+        if (!ev) return;
+        if (ev.key === 'Escape') {
+          var canDismissNow = phase === 'confirm' || phase === 'done' || phase === 'error';
+          if (canDismissNow && typeof props.onClose === 'function') {
+            ev.preventDefault();
+            ev.stopPropagation();
+            props.onClose();
+          }
+          return;
+        }
+        if (ev.key === 'Tab' && dialog) {
+          var list = getFocusables();
+          if (!list.length) { ev.preventDefault(); dialog.focus(); return; }
+          var first = list[0], last = list[list.length - 1];
+          if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+            ev.preventDefault(); (ev.shiftKey ? last : first).focus();
+          } else if (ev.shiftKey && document.activeElement === first) {
+            ev.preventDefault(); last.focus();
+          } else if (!ev.shiftKey && document.activeElement === last) {
+            ev.preventDefault(); first.focus();
+          }
         }
       };
-      if (typeof window !== 'undefined' && window.addEventListener) {
-        window.addEventListener('keydown', onKeyDown);
-        return function () { window.removeEventListener('keydown', onKeyDown); };
-      }
+      document.addEventListener('keydown', onKeyDown);
+      return function () {
+        clearTimeout(focusTimer);
+        document.removeEventListener('keydown', onKeyDown);
+        hiddenSiblings.forEach(function (entry) {
+          if (!entry.hadInert) entry.node.removeAttribute('inert');
+          if (entry.prevAriaHidden === null) entry.node.removeAttribute('aria-hidden');
+          else entry.node.setAttribute('aria-hidden', entry.prevAriaHidden);
+        });
+        if (scrollLock && document.body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
+        }
+        if (prevFocus && prevFocus.isConnected && typeof prevFocus.focus === 'function') {
+          try { prevFocus.focus(); } catch (_) {}
+        }
+      };
     }, [props.isOpen, phase, props.onClose]);
 
     function toggleAction(id) {
@@ -571,55 +672,87 @@
     }
 
     async function handleApply() {
-      beforeReadinessRef.current = initialReadiness;
-      var runFactCheck = !!(factCheckOn && initialClaims.length > 0 && _arAiUsable('text', props.callGemini));
-      var selected = initialActions.filter(function (a) { return a.target !== 'manual' && checked[a.id]; });
-      var totalSteps = selected.length + (runFactCheck ? 1 : 0) + 1; // +1 for re-audit
-      var step = 0;
-
-      // 1. Optional fact-check
-      if (runFactCheck) {
-        step++;
-        setPhase('verifying');
-        setProgress({ current: step, total: totalSteps, label: 'Verifying ' + initialClaims.length + ' claim' + (initialClaims.length === 1 ? '' : 's') + ' with Google Search...' });
-        try {
-          var v = await verifyClaimsBatch(initialClaims, props.callGemini, props.cleanJson);
-          setVerdicts(v);
-        } catch (err) {
-          console.warn('[Remediator] Fact-check failed:', err);
-          if (props.addToast) props.addToast('Fact-check failed; continuing with other fixes.', 'warning');
-        }
-      }
-
-      // 2. Apply selected artifact actions
-      setPhase('applying');
-      for (var i = 0; i < selected.length; i++) {
-        step++;
-        var action = selected[i];
-        setProgress({ current: step, total: totalSteps, label: 'Applying: ' + action.label });
-        try {
-          var result = await applyArtifactAction(action, props);
-          if (!result.ok && props.addToast) props.addToast('Skipped: ' + action.label + ' (' + (result.reason || 'unknown') + ')', 'warning');
-        } catch (err) {
-          console.warn('[Remediator] Action failed:', action, err);
-          if (props.addToast) props.addToast('Failed: ' + action.label, 'error');
-        }
-      }
-
-      // 3. Re-audit
-      step++;
-      setPhase('reAuditing');
-      setProgress({ current: step, total: totalSteps, label: 'Re-running audit to verify fixes...' });
-      try {
-        await props.handleGenerate('alignment-report', null, false, null, {}, false);
-      } catch (err) {
-        console.warn('[Remediator] Re-audit failed:', err);
-        setErrorMsg('Re-audit failed: ' + String(err));
+      if (inFlightRef.current) return;
+      if (!_arAiUsable('text', props.handleGenerate)) {
+        setErrorMsg('AI remediation is unavailable right now.');
         setPhase('error');
         return;
       }
+      inFlightRef.current = true;
+      beforeReadinessRef.current = initialReadiness;
+      try {
+        var runFactCheck = !!(factCheckOn && initialClaims.length > 0 && _arAiUsable('text', props.callGemini));
+        var selected = initialActions.filter(function (a) { return a.target !== 'manual' && checked[a.id]; });
+        var totalSteps = selected.length + (runFactCheck ? 1 : 0) + 1; // +1 for re-audit
+        var step = 0;
 
-      setPhase('done');
+        // 1. Optional fact-check
+        if (runFactCheck) {
+          step++;
+          if (mountedRef.current) {
+            setPhase('verifying');
+            setProgress({ current: step, total: totalSteps, label: 'Verifying ' + initialClaims.length + ' claim' + (initialClaims.length === 1 ? '' : 's') + ' with Google Search...' });
+          }
+          try {
+            var v = await verifyClaimsBatch(initialClaims, props.callGemini, props.cleanJson);
+            if (!mountedRef.current) return;
+            setVerdicts(v);
+          } catch (err) {
+            console.warn('[Remediator] Fact-check failed:', err);
+            if (mountedRef.current && props.addToast) props.addToast('Fact-check failed; continuing with other fixes.', 'warning');
+          }
+        }
+
+        // 2. Apply selected artifact actions using latest rolling history
+        if (mountedRef.current) setPhase('applying');
+        var rollingHistory = Array.isArray(historyRef.current) ? historyRef.current : [];
+        for (var i = 0; i < selected.length; i++) {
+          if (!mountedRef.current) return;
+          step++;
+          var action = selected[i];
+          setProgress({ current: step, total: totalSteps, label: 'Applying: ' + action.label });
+          try {
+            var actionProps = Object.assign({}, props, { history: rollingHistory });
+            var result = await applyArtifactAction(action, actionProps);
+            if (Array.isArray(result && result.nextHistory)) {
+              rollingHistory = result.nextHistory;
+            } else if (Array.isArray(historyRef.current)) {
+              rollingHistory = historyRef.current;
+            }
+            if (!mountedRef.current) return;
+            if (!result.ok && props.addToast) props.addToast('Skipped: ' + action.label + ' (' + (result.reason || 'unknown') + ')', 'warning');
+          } catch (err) {
+            console.warn('[Remediator] Action failed:', action, err);
+            if (mountedRef.current && props.addToast) props.addToast('Failed: ' + action.label, 'error');
+          }
+        }
+
+        // 3. Re-audit
+        if (!mountedRef.current) return;
+        step++;
+        setPhase('reAuditing');
+        setProgress({ current: step, total: totalSteps, label: 'Re-running audit to verify fixes...' });
+        try {
+          var reAuditRet = await props.handleGenerate('alignment-report', null, false, null, {}, false);
+          if (!mountedRef.current) return;
+          if (reAuditRet === false || (reAuditRet && typeof reAuditRet === 'object' && reAuditRet.ok === false)) {
+            setErrorMsg('Re-audit did not complete. Please re-run the audit manually.');
+            setPhase('error');
+            return;
+          }
+        } catch (err) {
+          console.warn('[Remediator] Re-audit failed:', err);
+          if (mountedRef.current) {
+            setErrorMsg('Re-audit failed: ' + String(err));
+            setPhase('error');
+          }
+          return;
+        }
+
+        if (mountedRef.current) setPhase('done');
+      } finally {
+        inFlightRef.current = false;
+      }
     }
 
     var newReadiness = useMemo(function () {
@@ -641,24 +774,25 @@
 
     function ActionRow(action) {
       var isManual = action.target === 'manual';
-      return e('div', {
+      var Tag = isManual ? 'div' : 'label';
+      return e(Tag, {
         key: action.id,
-        className: 'flex items-start gap-3 p-3 rounded-lg border ' + (isManual ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-200 hover:border-indigo-300'),
+        className: 'flex items-start gap-3 p-3 rounded-lg border min-h-11 ' + (isManual ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-200 hover:border-indigo-300 cursor-pointer'),
       },
         !isManual && e('input', {
           type: 'checkbox',
           checked: !!checked[action.id],
           onChange: function () { toggleAction(action.id); },
-          className: 'mt-1 w-4 h-4 accent-indigo-600',
-          disabled: phase !== 'confirm',
+          className: 'mt-1 w-4 h-4 accent-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600',
+          disabled: phase !== 'confirm' || !generateUsable,
           'aria-label': action.label,
         }),
         isManual && e('div', { className: 'mt-1 w-4 h-4 flex items-center justify-center text-slate-600', 'aria-hidden': 'true' }, '⚠'),
         e('div', { className: 'flex-1 min-w-0' },
           e('div', { className: 'flex items-center gap-2 mb-1' },
             e('span', { className: 'text-base', 'aria-hidden': 'true' }, action.icon),
-            e('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500' }, action.dimension),
-            isManual && e('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800' }, 'Manual')
+            e('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600' }, action.dimension),
+            isManual && e('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900' }, 'Manual')
           ),
           e('div', { className: 'text-sm font-semibold text-slate-800' }, action.label),
           action.detail && e('div', { className: 'text-xs text-slate-600 mt-1 italic' }, action.detail)
@@ -666,13 +800,20 @@
       );
     }
 
+    var READINESS_TONES = {
+      high: { box: 'bg-emerald-50 border-emerald-300', label: 'text-emerald-800', score: 'text-emerald-900' },
+      good: { box: 'bg-teal-50 border-teal-300', label: 'text-teal-800', score: 'text-teal-900' },
+      mid: { box: 'bg-amber-50 border-amber-300', label: 'text-amber-800', score: 'text-amber-900' },
+      low: { box: 'bg-rose-50 border-rose-300', label: 'text-rose-800', score: 'text-rose-900' },
+    };
+
     function ReadinessBlock(label, r) {
       if (!r) return null;
-      var color = r.score >= 90 ? 'emerald' : r.score >= 70 ? 'lime' : r.score >= 50 ? 'amber' : 'rose';
-      return e('div', { className: 'flex-1 p-3 rounded-lg bg-' + color + '-50 border border-' + color + '-300' },
-        e('div', { className: 'text-xs font-bold uppercase tracking-wider text-' + color + '-700 mb-1' }, label),
-        e('div', { className: 'text-3xl font-black text-' + color + '-800' }, r.score),
-        e('div', { className: 'text-xs text-' + color + '-700 mt-1' }, r.label || '')
+      var tone = r.score >= 90 ? READINESS_TONES.high : r.score >= 70 ? READINESS_TONES.good : r.score >= 50 ? READINESS_TONES.mid : READINESS_TONES.low;
+      return e('div', { className: 'flex-1 p-3 rounded-lg border ' + tone.box },
+        e('div', { className: 'text-xs font-bold uppercase tracking-wider mb-1 ' + tone.label }, label),
+        e('div', { className: 'text-3xl font-black ' + tone.score }, r.score),
+        e('div', { className: 'text-xs mt-1 ' + tone.label }, r.label || '')
       );
     }
 
@@ -682,13 +823,20 @@
 
     return e('div', {
       className: 'fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4',
-      onClick: function (ev) { if (ev.target === ev.currentTarget && canDismiss && typeof props.onClose === 'function') props.onClose(); },
+      onMouseDown: function (ev) { backdropDownRef.current = ev.target === ev.currentTarget; },
+      onClick: function (ev) {
+        var shouldClose = backdropDownRef.current && ev.target === ev.currentTarget;
+        backdropDownRef.current = false;
+        if (shouldClose && canDismiss && typeof props.onClose === 'function') props.onClose();
+      },
     },
       e('div', {
+        ref: dialogRef,
+        tabIndex: -1,
         role: 'dialog',
         'aria-modal': 'true',
         'aria-labelledby': 'audit-remediator-title',
-        className: 'bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col',
+        className: 'allo-docsuite bg-white text-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col',
       },
         // Header
         e('div', { className: 'px-6 py-4 border-b border-slate-200 flex items-center justify-between' },
@@ -702,35 +850,39 @@
           ),
           canDismiss && e('button', {
             type: 'button',
-            className: 'text-slate-500 hover:text-slate-800 text-2xl leading-none px-2',
+            className: 'min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 text-2xl leading-none px-2',
             onClick: props.onClose, 'aria-label': 'Close',
           }, '×')
         ),
 
         // Body
         e('div', { className: 'flex-1 overflow-y-auto px-6 py-4 space-y-3' },
+          phase === 'confirm' && !generateUsable && e('p', {
+            role: 'status',
+            className: 'p-3 rounded-lg bg-amber-50 border border-amber-300 text-xs font-semibold text-amber-900',
+          }, 'AI remediation is unavailable while AI access is disabled or locked.'),
           phase === 'confirm' && [
             initialClaims.length > 0 && aiUsable && e('label', {
               key: 'fc',
-              className: 'flex items-start gap-3 p-3 rounded-lg bg-indigo-50 border border-indigo-200 cursor-pointer hover:bg-indigo-100',
+              className: 'flex items-start gap-3 p-3 rounded-lg bg-indigo-50 border border-indigo-200 cursor-pointer hover:bg-indigo-100 min-h-11',
             },
               e('input', {
                 type: 'checkbox',
                 checked: factCheckOn,
                 onChange: function () { setFactCheckOn(!factCheckOn); },
-                className: 'mt-1 w-4 h-4 accent-indigo-600',
+                className: 'mt-1 w-4 h-4 accent-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600',
                 'aria-label': 'Verify factual claims with Google Search',
               }),
               e('div', { className: 'flex-1' },
                 e('div', { className: 'text-sm font-bold text-indigo-900' },
                   '🔍 Verify factual claims with Google Search'),
-                e('div', { className: 'text-xs text-indigo-700 mt-0.5' },
+                e('div', { className: 'text-xs text-indigo-800 mt-0.5' },
                   initialClaims.length + ' claim' + (initialClaims.length === 1 ? '' : 's') + ' flagged. One batched search-grounded call (~5-10s, recommended).')
               )
             ),
             initialActions.length === 0 && e('div', {
               key: 'empty',
-              className: 'p-8 text-center text-slate-500 italic',
+              className: 'p-8 text-center text-slate-600 italic',
             }, 'No actionable recommendations parsed from this audit. The audit may be too thin (run more artifacts first), or all dimensions are already aligned.'),
             initialActions.map(ActionRow)
           ],
@@ -744,11 +896,11 @@
             e('div', { className: 'text-base font-bold text-slate-800 mb-2' }, progress.label),
             e('div', { className: 'w-full max-w-md mx-auto h-2 bg-slate-200 rounded-full overflow-hidden' },
               e('div', {
-                className: 'h-full bg-indigo-500 transition-all duration-300',
+                className: 'h-full bg-indigo-500 transition-all motion-reduce:transition-none duration-300',
                 style: { width: progress.total > 0 ? Math.round((progress.current / progress.total) * 100) + '%' : '0%' },
               })
             ),
-            e('div', { className: 'text-xs text-slate-500 mt-2' }, 'Step ' + progress.current + ' of ' + progress.total)
+            e('div', { className: 'text-xs text-slate-600 mt-2' }, 'Step ' + progress.current + ' of ' + progress.total)
           ),
 
           phase === 'done' && e('div', null,
@@ -765,12 +917,16 @@
               e('h3', { className: 'text-sm font-bold text-slate-800 mb-2' }, 'Fact-check verdicts'),
               e('ul', { className: 'space-y-2' },
                 verdicts.map(function (v, i) {
-                  var color = v.status === 'verified' ? 'emerald' : v.status === 'discrepancy' ? 'rose' : 'amber';
-                  return e('li', { key: i, className: 'p-2 rounded bg-' + color + '-50 border border-' + color + '-200 text-xs' },
-                    e('div', { className: 'font-bold text-' + color + '-800 mb-1' },
+                  var vTone = v.status === 'verified'
+                    ? { item: 'bg-emerald-50 border-emerald-200', title: 'text-emerald-800', body: 'text-emerald-900' }
+                    : v.status === 'discrepancy'
+                      ? { item: 'bg-rose-50 border-rose-200', title: 'text-rose-800', body: 'text-rose-900' }
+                      : { item: 'bg-amber-50 border-amber-200', title: 'text-amber-800', body: 'text-amber-900' };
+                  return e('li', { key: i, className: 'p-2 rounded border text-xs ' + vTone.item },
+                    e('div', { className: 'font-bold mb-1 ' + vTone.title },
                       (v.status === 'verified' ? '✓ Verified' : v.status === 'discrepancy' ? '⚠ Discrepancy' : '? Unclear') + ' · Claim ' + v.claimNumber),
                     v.originalClaim && e('div', { className: 'italic text-slate-700 mb-1' }, '"' + v.originalClaim + '"'),
-                    v.evidence && e('div', { className: 'text-' + color + '-900' }, v.evidence)
+                    v.evidence && e('div', { className: vTone.body }, v.evidence)
                   );
                 })
               )
@@ -787,18 +943,18 @@
         e('div', { className: 'px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3' },
           phase === 'confirm' && e('button', {
             type: 'button',
-            className: 'px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900',
+            className: 'min-h-11 px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600',
             onClick: props.onClose,
           }, 'Cancel'),
           phase === 'confirm' && e('button', {
             type: 'button',
-            className: 'px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed',
+            className: 'min-h-11 px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
             onClick: handleApply,
-            disabled: selectedCount === 0 && !factCheckReady,
+            disabled: !generateUsable || (selectedCount === 0 && !factCheckReady),
           }, 'Apply' + (selectedCount > 0 ? ' ' + selectedCount + ' fix' + (selectedCount === 1 ? '' : 'es') : '')),
           (phase === 'done' || phase === 'error') && e('button', {
             type: 'button',
-            className: 'px-4 py-2 text-sm font-bold text-white bg-slate-700 hover:bg-slate-800 rounded-lg',
+            className: 'min-h-11 px-4 py-2 text-sm font-bold text-white bg-slate-700 hover:bg-slate-800 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2',
             onClick: props.onClose,
           }, 'Close')
         )

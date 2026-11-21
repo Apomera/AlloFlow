@@ -12,14 +12,22 @@ const platformArg = process.argv.find((arg) => arg.startsWith('--platform='))
   || (process.argv.includes('--platform') ? '--platform=' + process.argv[process.argv.indexOf('--platform') + 1] : '');
 const requestedPlatform = platformArg.replace('--platform=', '').toLowerCase();
 const platform = requestedPlatform || (process.platform === 'darwin' ? 'mac' : (process.platform === 'win32' ? 'win' : ''));
+const archArg = process.argv.find((arg) => arg.startsWith('--arch='))
+  || (process.argv.includes('--arch') ? '--arch=' + process.argv[process.argv.indexOf('--arch') + 1] : '');
+const requestedArch = archArg.replace('--arch=', '').toLowerCase();
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-function assertFile(filePath, minimumBytes, label) {
-  const stats = fs.statSync(filePath, { throwIfNoEntry: false });
-  assert(stats && stats.isFile() && stats.size >= minimumBytes, label + ' is missing or unexpectedly small: ' + filePath);
+function assertFile(filePath, minimumBytes, label, { allowSymlink = false } = {}) {
+  const stats = allowSymlink
+    ? fs.statSync(filePath, { throwIfNoEntry: false })
+    : fs.lstatSync(filePath, { throwIfNoEntry: false });
+  assert(
+    stats && (!allowSymlink ? !stats.isSymbolicLink() : true) && stats.isFile() && stats.size >= minimumBytes,
+    label + ' is missing, symlinked, or unexpectedly small: ' + filePath
+  );
 }
 
 function findFiles(root, predicate) {
@@ -29,6 +37,7 @@ function findFiles(root, predicate) {
     const current = pending.pop();
     for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
       const entryPath = path.join(current, entry.name);
+      assert(!entry.isSymbolicLink(), 'Refusing symbolic link in packaged app-build: ' + entryPath);
       if (entry.isDirectory()) pending.push(entryPath);
       else if (entry.isFile() && predicate(entryPath)) matches.push(entryPath);
     }
@@ -41,11 +50,13 @@ function resourceLayouts() {
     return [
       {
         arch: 'x64',
+        rootDir: path.join(distDir, 'win-unpacked'),
         resources: path.join(distDir, 'win-unpacked', 'resources'),
         launcher: path.join(distDir, 'win-unpacked', 'AlloFlow Desktop.exe'),
       },
       {
         arch: 'arm64',
+        rootDir: path.join(distDir, 'win-arm64-unpacked'),
         resources: path.join(distDir, 'win-arm64-unpacked', 'resources'),
         launcher: path.join(distDir, 'win-arm64-unpacked', 'AlloFlow Desktop.exe'),
       },
@@ -61,13 +72,19 @@ function resourceLayouts() {
     const macLayout = (dirName, arch) => {
       const root = path.join(distDir, dirName);
       let appName = 'AlloFlow Desktop.app';
-      try {
-        const apps = fs.readdirSync(root).filter((entry) => entry.endsWith('.app'));
+      let discoveryError = '';
+      if (fs.existsSync(root)) {
+        const apps = fs.readdirSync(root, { withFileTypes: true })
+          .filter((entry) => entry.name.endsWith('.app') && entry.isDirectory() && !entry.isSymbolicLink())
+          .map((entry) => entry.name);
         if (apps.length === 1) appName = apps[0];
-      } catch (_) {}
+        else discoveryError = arch + ' packaged directory ' + root + ' must contain exactly one .app bundle (found ' + apps.length + ')';
+      }
       const contents = path.join(root, appName, 'Contents');
       return {
         arch,
+        rootDir: root,
+        discoveryError,
         resources: path.join(contents, 'Resources'),
         launcher: path.join(contents, 'MacOS', appName.replace(/\.app$/, '')),
         launcherMinBytes: 8 * 1024,
@@ -85,7 +102,7 @@ function verifyLayout(layout) {
   const schoolBox = path.join(layout.resources, 'schoolbox');
   assertFile(layout.launcher, layout.launcherMinBytes || 1024 * 1024, layout.arch + ' native launcher');
   if (layout.electronFramework) {
-    assertFile(layout.electronFramework, 50 * 1024 * 1024, layout.arch + ' Electron Framework binary');
+    assertFile(layout.electronFramework, 50 * 1024 * 1024, layout.arch + ' Electron Framework binary', { allowSymlink: true });
   }
   assertFile(appAsar, 1024 * 1024, layout.arch + ' app.asar');
   assertFile(path.join(appBuild, 'index.html'), 1024, layout.arch + ' bundled app index');
@@ -153,12 +170,24 @@ console.log('dist: ' + distDir);
 console.log('platform: ' + (platform || 'unknown'));
 
 try {
-  // Single-arch builds (e.g. the mac-arm64 target) only produce one unpacked
-  // dir — verify every arch that was actually built, require at least one.
-  const layouts = resourceLayouts();
-  const present = layouts.filter((layout) => fs.existsSync(path.dirname(layout.resources)));
+  const allLayouts = resourceLayouts();
+  const targetLayouts = (requestedArch && requestedArch !== 'all')
+    ? allLayouts.filter((layout) => layout.arch === requestedArch)
+    : allLayouts;
+  assert(targetLayouts.length > 0, 'Unknown --arch value: ' + requestedArch);
+  for (const layout of targetLayouts) {
+    if (layout.discoveryError) throw new Error(layout.discoveryError);
+    if (fs.existsSync(layout.rootDir) && !fs.existsSync(path.dirname(layout.resources))) {
+      throw new Error(layout.arch + ' packaged directory exists but is missing expected layout: ' + layout.resources);
+    }
+  }
+  const present = targetLayouts.filter((layout) => fs.existsSync(path.dirname(layout.resources)));
   assert(present.length > 0, 'no packaged app found for any architecture under ' + distDir);
-  for (const layout of layouts.filter((l) => !present.includes(l))) {
+  const missing = targetLayouts.filter((l) => !present.includes(l));
+  if (requestedArch === 'all' || (requestedArch && requestedArch !== 'auto')) {
+    assert(missing.length === 0, 'missing required packaged architecture(s): ' + missing.map((l) => l.arch).join(', '));
+  }
+  for (const layout of missing) {
     console.log('skip: ' + layout.arch + ' (not built)');
   }
   for (const layout of present) verifyLayout(layout);

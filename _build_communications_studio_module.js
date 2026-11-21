@@ -80,7 +80,7 @@ ${compiled}
     CommunicationsStudioPanel: CommunicationsStudioPanel,
     // Pure seams exposed for unit tests. Not part of the public contract.
     _testing: {
-      csScrubPII, csRosterIndex, csSummarizeDashboardStudent, csReadTeacherComments, csEvidenceLine, csBuildEvidence, csRollupLine, csNormalizeCodename: csScrubPII,
+      csScrubPII, csRosterIndex, csSummarizeDashboardStudent, csReadTeacherComments, csEvidenceLine, csBuildEvidence, csRollupLine, csNormalizeCodename: csNormalizeCodename,
       csFindLikelyNames: csFindLikelyNames,
       csReadability: csReadability,
       csParseGrid: csParseGrid,

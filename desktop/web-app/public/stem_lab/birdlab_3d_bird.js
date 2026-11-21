@@ -142,6 +142,12 @@
     // Filter each frequency in screen space so moving vanes do not shimmer.
     function vaneGrain(shader, contourFeather) {
       featherArt.applyVaneGrain(shader, { variants: 4, contourFeather: contourFeather });
+      // Subtle keratin barbule grazing-angle plumage sheen lifts feather-layer separation without altering species markings.
+      shader.fragmentShader = shader.fragmentShader.replace('#include <lights_fragment_end>', [
+        '#include <lights_fragment_end>',
+        'float blPlumeFr = pow(1.0 - clamp(abs(dot(normalize(vViewPosition), normal)), 0.0, 1.0), 3.4);',
+        'reflectedLight.indirectSpecular += vec3(0.15, 0.13, 0.10) * blPlumeFr * 0.30;'
+      ].join('\n'));
     }
     function featherMaterial(color, map) {
       var m = material({ color: color, map: map || vane, normalMap: vaneNormal, normalScale: new THREE.Vector2(0.36, 0.36),
@@ -282,6 +288,11 @@
           'float throatLine=abs(fract(throatLane)-0.5),throatAA=max(fwidth(throatLane),0.035);',
           'float throatFiber=1.0-smoothstep(0.035,0.08+throatAA,throatLine);',
           'diffuseColor.rgb*=1.0-throat*throatFiber*0.065;'
+        ].join('\n'))
+        .replace('#include <lights_fragment_end>', [
+          '#include <lights_fragment_end>',
+          'float blBodyFr = pow(1.0 - clamp(abs(dot(normalize(vViewPosition), normal)), 0.0, 1.0), 3.2);',
+          'reflectedLight.indirectSpecular += mix(vec3(0.14, 0.125, 0.105), vec3(0.18, 0.13, 0.085), smoothstep(-0.1, 0.45, vBirdBody.y / 0.096)) * blBodyFr * 0.28;'
         ].join('\n'));
     };
     bodyMaterial.customProgramCacheKey = function () { return 'birdlab-hawk-belly-band-v3'; };
@@ -328,13 +339,18 @@
         'float brow=(1.0-smoothstep(0.04,0.16,abs(h.y-0.20)))*smoothstep(0.42,0.78,abs(h.x))*(1.0-smoothstep(-0.05,0.50,h.z));',
         'float malar=(1.0-smoothstep(0.10,0.29,abs(h.z+0.22+h.y*0.28)))*smoothstep(0.45,0.82,abs(h.x))*(1.0-smoothstep(-0.15,0.12,h.y));',
         'diffuseColor.rgb*=1.0-brow*0.27-malar*0.25;'
-      ].join('\n'));
+      ].join('\n'))
+        .replace('#include <lights_fragment_end>', [
+          '#include <lights_fragment_end>',
+          'float blHeadFr = pow(1.0 - clamp(abs(dot(normalize(vViewPosition), normal)), 0.0, 1.0), 3.3);',
+          'reflectedLight.indirectSpecular += vec3(0.16, 0.135, 0.105) * blHeadFr * 0.26;'
+        ].join('\n'));
     };
     headMaterial.customProgramCacheKey = function () { return 'birdlab-hawk-crown-feathers-v5'; };
     addMesh(head, headGeo, headMaterial, 'sculpted-small-hawk-head');
     var eyeGeo = geometry(new THREE.SphereGeometry(1, 20, 14));
     var orbitMat = material({ color: 0x302b24, roughness: 0.85 });
-    var irisMat = material({ color: 0x967749, roughness: 0.43 });
+    var irisMat = material({ color: 0x967749, roughness: 0.34 });
     irisMat.extensions = { derivatives: true };
     irisMat.onBeforeCompile = function (shader) {
       shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vHawkIris;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvHawkIris=position.xy;');
@@ -352,10 +368,27 @@
         'diffuseColor.rgb*=vec3(1.0+warmCore,1.0+warmCore*0.18,1.0-warmCore*0.38)*(1.0+fibers);',
         'diffuseColor.rgb*=1.0-collar*0.12;',
         'diffuseColor.rgb*=1.0-smoothstep(0.80,0.99,radius)*0.36;'
+      ].join('\n')).replace('#include <lights_fragment_end>', [
+        '#include <lights_fragment_end>',
+        // Wet corneal grazing sky-sheen over the amber iris.
+        'float blIrisFr = pow(1.0 - clamp(abs(dot(normalize(vViewPosition), normal)), 0.0, 1.0), 2.6);',
+        'reflectedLight.indirectSpecular += vec3(0.24, 0.27, 0.30) * blIrisFr * 0.42;'
       ].join('\n'));
     };
     irisMat.customProgramCacheKey = function () { return 'birdlab-hawk-radial-iris-v2'; };
-    var pupilMat = material({ color: 0x0b0c0b, roughness: 0.11 });
+    var pupilMat = material({ color: 0x0b0c0b, roughness: 0.07, metalness: 0.04 });
+    pupilMat.onBeforeCompile = function (shader) {
+      shader.fragmentShader = shader.fragmentShader.replace('#include <lights_fragment_end>', [
+        '#include <lights_fragment_end>',
+        // Crisp wet-cornea sky catchlight glint gives the hawk eye natural depth from every viewing angle.
+        'vec3 blEyeV = normalize(vViewPosition);',
+        'vec3 blEyeR = reflect(-blEyeV, normal);',
+        'float blCatch = pow(max(0.0, dot(blEyeR, normalize(vec3(-0.35, 0.78, 0.52)))), 48.0);',
+        'float blEyeFr = pow(1.0 - clamp(abs(dot(blEyeV, normal)), 0.0, 1.0), 3.0);',
+        'reflectedLight.indirectSpecular += vec3(0.82, 0.88, 0.94) * blCatch * 0.55 + vec3(0.18, 0.22, 0.26) * blEyeFr * 0.32;'
+      ].join('\n'));
+    };
+    pupilMat.customProgramCacheKey = function () { return 'birdlab-hawk-wet-pupil-v1'; };
     var browMat = material({ color: 0x604839, map: headRelief, bumpMap: headRelief, bumpScale: 0.00024, roughness: 0.97 });
     var eyes = [], eyelids = [], blinkClosure = { value: 0 };
     // The lower lid travels over a fixed globe. Its curved surface is sampled

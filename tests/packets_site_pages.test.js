@@ -393,7 +393,7 @@ describe('the pages as files', () => {
     expect(doc.body.textContent).not.toContain('!');
     // What the page says about the file is what the file says about itself.
     const loaderSource = read('word_sounds_take_home_loader.js');
-    for (const text of ["about_button: 'About this file'", "never: (mailbox ? [] : ['internet connection']).concat(['microphone', 'camera', 'cookies', 'AI'])", 'manifest-src \'none\'; connect-src " + connect',
+    for (const text of ["about_button: 'About this file'", "never: (mailbox ? [] : ['internet connection']).concat(hasStudentMic ? ['camera', 'cookies', 'AI'] : ['microphone', 'camera', 'cookies', 'AI'])", 'manifest-src \'none\'; connect-src " + connect',
       'download this file and open it in Chrome, Edge or Safari', "save_csv: 'Save results as a spreadsheet file (CSV)'", '(?:^#|&)learner=']) expect(loaderSource, text).toContain(text);
     expect(read('LICENSE')).toContain('GNU AFFERO GENERAL PUBLIC LICENSE');
   });

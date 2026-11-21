@@ -194,7 +194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       s = String(s).replace(/!important/i, '').trim().toLowerCase();
       if (!s) return null;
       if (s === 'transparent') return [0, 0, 0, 0];
-      if (NAMED[s]) return NAMED[s].concat([1]);
+      if (Object.prototype.hasOwnProperty.call(NAMED, s)) return NAMED[s].concat([1]);
       var m = s.match(/^#([0-9a-f]{3,4})$/);
       if (m) { var a = m[1]; return [parseInt(a[0] + a[0], 16), parseInt(a[1] + a[1], 16), parseInt(a[2] + a[2], 16), a.length === 4 ? parseInt(a[3] + a[3], 16) / 255 : 1]; }
       m = s.match(/^#([0-9a-f]{6}|[0-9a-f]{8})$/);
@@ -368,7 +368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
       // 2.4.4 links (only <a href> is a link) and 4.1.2 buttons.
       var links = _all(doc, 'a[href]').filter(function (a) { return !_hidden(a); });
-      var emptyLinks = 0, generic = [], byText = {};
+      var emptyLinks = 0, generic = [], byText = Object.create(null);
       links.forEach(function (a) {
         var r = accessibleName(a, doc, { content: true }); noteMissing(r);
         var nm = r.name;
@@ -376,7 +376,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         var norm = nm.toLowerCase().replace(/[\s.,:;!?…>›»→-]+$/g, '').replace(/^[\s«<-]+/, '').trim();
         if (GENERIC_LINK_TEXT.indexOf(norm) >= 0) generic.push(nm);
         var href = (a.getAttribute('href') || '').trim();
-        (byText[norm] = byText[norm] || {})[href] = true;
+        (byText[norm] = byText[norm] || Object.create(null))[href] = true;
       });
       if (emptyLinks) add('lint_link_empty', 'Links with no text', '2.4.4', 'serious', emptyLinks + ' link(s) with no discernible text');
       if (generic.length) add('lint_link_generic', 'Vague link text', '2.4.4', 'moderate', generic.length + ' link(s) say only "' + generic.slice(0, 3).join('", "') + '". In a list of links this tells a screen-reader user nothing. WCAG 2.4.4 allows the surrounding sentence to explain a link; descriptive link text is the reliable fix.');
@@ -641,8 +641,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             var audit = sanitizeAudit(JSON.parse(cleaned));
             if (!audit || audit.score < 0) throw new Error('no score');
             var newHistory = auditHistory.concat([{ input: label, type: 'vision', score: audit.score, grade: audit.grade, date: new Date().toISOString() }]);
+            var newWorst = Math.min(worstScore === 999 ? audit.score : worstScore, audit.score);
             setAuditLoading(false);
-            updMulti({ auditResult: audit, auditSource: { type: 'vision', label: label }, auditHistory: newHistory.slice(-20), auditsCompleted: auditsCompleted + 1 });
+            updMulti({ auditResult: audit, auditSource: { type: 'vision', label: label }, auditHistory: newHistory.slice(-20), auditsCompleted: auditsCompleted + 1, worstScore: newWorst });
             if (awardStemXP) awardStemXP(12);
             if (announceToSR) announceToSR('Audit complete. Score: ' + audit.score + ' out of 100.');
           } catch (e) {
@@ -666,10 +667,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           return;
         }
         var reader = new FileReader();
-        reader.onloadend = function() {
+        reader.onerror = function() {
+          if (typeof addToast === 'function') addToast('Could not read the selected file.', 'error');
+        };
+        reader.onload = function() {
+          if (typeof reader.result !== 'string' || reader.result.indexOf(',') === -1) {
+            if (typeof addToast === 'function') addToast('Could not read the selected file.', 'error');
+            return;
+          }
           var base64 = reader.result.split(',')[1];
           var mime = file.type || 'application/pdf';
-          var label = file.type.startsWith('image/') ? 'screenshot (' + file.name + ')' : 'PDF document (' + file.name + ')';
+          var label = (file.type || '').startsWith('image/') ? 'screenshot (' + file.name + ')' : 'PDF document (' + file.name + ')';
           runVisionAudit(base64, mime, label);
         };
         reader.readAsDataURL(file);
@@ -722,8 +730,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             // History keeps the platform, not the post text: the post is kept for this visit only.
             var srcLabel = 'Social media post (' + socialPlatform + ')';
             var newHistory = auditHistory.concat([{ input: srcLabel, type: 'social', score: audit.score, grade: audit.grade, date: new Date().toISOString() }]);
+            var newWorst = Math.min(worstScore === 999 ? audit.score : worstScore, audit.score);
             setAuditLoading(false);
-            updMulti({ auditResult: audit, auditSource: { type: 'social', label: srcLabel }, auditHistory: newHistory.slice(-20), auditsCompleted: auditsCompleted + 1, socialAudits: socialAudits + 1 });
+            updMulti({ auditResult: audit, auditSource: { type: 'social', label: srcLabel }, auditHistory: newHistory.slice(-20), auditsCompleted: auditsCompleted + 1, socialAudits: socialAudits + 1, worstScore: newWorst });
             if (awardStemXP) awardStemXP(10);
             if (announceToSR) announceToSR('Social media audit complete. Score: ' + audit.score);
           } catch(e) {
@@ -800,8 +809,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             var audit = sanitizeAudit(JSON.parse(cleaned));
             if (!audit || audit.score < 0) throw new Error('no score');
             var newHistory = auditHistory.concat([{ input: govUrl.substring(0, 100), type: 'gov', score: audit.score, grade: audit.grade, date: new Date().toISOString() }]);
+            var newWorst = Math.min(worstScore === 999 ? audit.score : worstScore, audit.score);
             setAuditLoading(false);
-            updMulti({ auditResult: audit, auditSource: { type: 'gov', label: 'Government / school website: ' + govUrl.substring(0, 150) }, auditHistory: newHistory.slice(-20), auditsCompleted: auditsCompleted + 1, govAudits: govAudits + 1 });
+            updMulti({ auditResult: audit, auditSource: { type: 'gov', label: 'Government / school website: ' + govUrl.substring(0, 150) }, auditHistory: newHistory.slice(-20), auditsCompleted: auditsCompleted + 1, govAudits: govAudits + 1, worstScore: newWorst });
             if (awardStemXP) awardStemXP(15);
             if (announceToSR) announceToSR('Title II audit complete. Score: ' + audit.score);
           } catch(e) {
@@ -817,8 +827,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
       // ── Triangulated accessibility audit (3 parallel passes) ──
       var parseAuditJson = function(result) {
-        var cleaned = result.trim();
-        if (cleaned.indexOf('`' + '') !== -1) { var parts = cleaned.split('`' + ''); cleaned = parts[1] || parts[0]; if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n'); if (cleaned.lastIndexOf('`' + '') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('`' + '')); }
+        var cleaned = String(result || '').trim();
+        if (cleaned.indexOf('```') !== -1) {
+          var parts = cleaned.split('```');
+          cleaned = parts[1] || parts[0];
+          if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n');
+          if (cleaned.lastIndexOf('```') !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf('```'));
+        }
         return JSON.parse(cleaned);
       };
 
@@ -852,7 +867,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           try {
             var audits = results.map(function(r) { try { return sanitizeAudit(parseAuditJson(String(r == null ? '' : r))); } catch(e) { return null; } }).filter(function (a) { return a && a.score >= 0; });
             if (audits.length === 0) throw new Error('All passes failed');
-            var allIssues = []; var seenKeys = {};
+            var allIssues = []; var seenKeys = Object.create(null);
             audits.forEach(function(a) { (a.issues || []).forEach(function(iss) {
               var key = (iss.criterion || '') + ':' + (iss.issue || '').substring(0, 40);
               if (!seenKeys[key]) { seenKeys[key] = { count: 1, issue: iss }; allIssues.push(iss); }
@@ -864,7 +879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               var vals = audits.map(function(a) { return a.score_breakdown && a.score_breakdown[k]; }).filter(function(v) { return v != null; });
               mergedBreakdown[k] = vals.length > 0 ? Math.round(vals.reduce(function(a,b){return a+b;},0) / vals.length) : null;
             });
-            var allStrengths = []; var seenStr = {};
+            var allStrengths = []; var seenStr = Object.create(null);
             audits.forEach(function(a) { (a.strengths || []).forEach(function(s) { if (!seenStr[s]) { seenStr[s] = true; allStrengths.push(s); } }); });
             var avgScore = Math.round(audits.reduce(function(s,a){return s+(a.score||0);},0) / audits.length);
             var grade = avgScore >= 90 ? 'A' : avgScore >= 80 ? 'B' : avgScore >= 70 ? 'C' : avgScore >= 60 ? 'D' : 'F';
@@ -978,12 +993,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               );
             })
           ),
-          h('svg', { viewBox: '0 0 320 12', className: 'w-full h-3 block rounded-full overflow-hidden', role: 'img', 'aria-label': nFail + ' failures, ' + nWarn + ' warnings, ' + nBp + ' best practice, ' + nPass + ' passed checks' },
-            h('rect', { x: 0, y: 0, width: 320, height: 12, fill: '#e2e8f0' }),
-            wFail > 0 && h('rect', { x: 0, y: 0, width: wFail, height: 12, fill: '#dc2626' }),
-            wWarn > 0 && h('rect', { x: wFail, y: 0, width: wWarn, height: 12, fill: '#d97706' }),
-            wBp > 0 && h('rect', { x: wFail + wWarn, y: 0, width: wBp, height: 12, fill: '#64748b' }),
-            wPass > 0 && h('rect', { x: wFail + wWarn + wBp, y: 0, width: wPass, height: 12, fill: '#059669' })
+          h('svg', { viewBox: '0 0 320 18', className: 'w-full h-4 block rounded-full overflow-hidden', role: 'img', 'aria-label': nFail + ' failures, ' + nWarn + ' warnings, ' + nBp + ' best practice, ' + nPass + ' passed checks' },
+            h('defs', null,
+              h('linearGradient', { id: 'a11y-mbar-well', x1: '0', y1: '0', x2: '0', y2: '1' },
+                h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#cbd5e1' }),
+                h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#e2e8f0' })
+              ),
+              h('linearGradient', { id: 'a11y-mbar-fail', x1: '0', y1: '0', x2: '0', y2: '1' },
+                h('stop', { offset: '0%', stopColor: isContrast ? '#fde047' : '#ef4444' }),
+                h('stop', { offset: '100%', stopColor: isContrast ? '#facc15' : '#b91c1c' })
+              ),
+              h('linearGradient', { id: 'a11y-mbar-warn', x1: '0', y1: '0', x2: '0', y2: '1' },
+                h('stop', { offset: '0%', stopColor: isContrast ? '#ffffff' : '#f59e0b' }),
+                h('stop', { offset: '100%', stopColor: isContrast ? '#e2e8f0' : '#b45309' })
+              ),
+              h('linearGradient', { id: 'a11y-mbar-bp', x1: '0', y1: '0', x2: '0', y2: '1' },
+                h('stop', { offset: '0%', stopColor: isContrast ? '#94a3b8' : '#64748b' }),
+                h('stop', { offset: '100%', stopColor: isContrast ? '#64748b' : '#475569' })
+              ),
+              h('linearGradient', { id: 'a11y-mbar-pass', x1: '0', y1: '0', x2: '0', y2: '1' },
+                h('stop', { offset: '0%', stopColor: isContrast ? '#38bdf8' : '#10b981' }),
+                h('stop', { offset: '100%', stopColor: isContrast ? '#0ea5e9' : '#047857' })
+              )
+            ),
+            h('rect', { x: 0.5, y: 1, width: 319, height: 16, rx: 8, fill: 'url(#a11y-mbar-well)', stroke: isContrast ? '#fde047' : '#94a3b8', strokeOpacity: isContrast ? 1 : 0.45, strokeWidth: 1 }),
+            wFail > 0 && h('rect', { x: 1, y: 1.5, width: Math.max(0, wFail - 1), height: 15, rx: 4, fill: 'url(#a11y-mbar-fail)' }),
+            wWarn > 0 && h('rect', { x: wFail, y: 1.5, width: wWarn, height: 15, fill: 'url(#a11y-mbar-warn)' }),
+            wBp > 0 && h('rect', { x: wFail + wWarn, y: 1.5, width: wBp, height: 15, fill: 'url(#a11y-mbar-bp)' }),
+            wPass > 0 && h('rect', { x: wFail + wWarn + wBp, y: 1.5, width: Math.max(0, wPass - 1), height: 15, rx: 4, fill: 'url(#a11y-mbar-pass)' }),
+            !isContrast && h('rect', { x: 4, y: 2.5, width: 312, height: 4, rx: 2, fill: '#ffffff', opacity: 0.24 }),
+            [80, 160, 240].map(function (tx) {
+              return h('line', { key: tx, x1: tx, y1: 2, x2: tx, y2: 16, stroke: isContrast ? '#000000' : '#ffffff', strokeOpacity: isContrast ? 0.85 : 0.35, strokeWidth: 1 });
+            })
           ),
           h('p', { className: 'text-[0.6875rem] text-slate-700' }, t('stem.a11yauditor.measured_hint_v2', 'Counted directly from your HTML by code (DOMParser and the WCAG contrast formula), not by AI. Code can prove some failures; it cannot judge everything.')),
           h('div', null,
@@ -1031,12 +1072,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             }, a11yClick(function() { ctx.setStemLabTool(null); })),
               h(ArrowLeft, { size: 18 })
             ),
-            // Bespoke SVG Accessibility Inspection Shield Emblem
-            h('div', { className: 'w-11 h-11 rounded-xl bg-teal-700 flex items-center justify-center shadow-sm shrink-0', 'aria-hidden': 'true' },
-              h('svg', { viewBox: '0 0 32 32', width: 26, height: 26, focusable: 'false' },
-                h('path', { d: 'M16 3 L27 7 V15 C27 21.8 22.3 26.8 16 29 C9.7 26.8 5 21.8 5 15 V7 Z', fill: '#f0fdfa', stroke: '#99f6e4', strokeWidth: 1.4 }),
-                h('circle', { cx: 16, cy: 11, r: 2.2, fill: '#0f766e' }),
-                h('path', { d: 'M10.5 15.2 H21.5 M16 15.2 V20.5 M16 20.5 L12.8 24.8 M16 20.5 L19.2 24.8', stroke: '#0f766e', strokeWidth: 2, strokeLinecap: 'round' })
+            // Bespoke SVG Optical Accessibility Reticle & Sculpted Shield Emblem
+            h('div', { className: 'w-11 h-11 rounded-xl flex items-center justify-center shadow-sm shrink-0 ' + (isContrast ? 'bg-black border-2 border-yellow-300' : 'bg-teal-800'), 'aria-hidden': 'true' },
+              h('svg', { viewBox: '0 0 40 40', width: 34, height: 34, focusable: 'false' },
+                h('defs', null,
+                  h('radialGradient', { id: 'a11y-emblem-aura', cx: '50%', cy: '38%', r: '56%' },
+                    h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#2dd4bf', stopOpacity: isContrast ? 0 : 0.34 }),
+                    h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#0f766e', stopOpacity: 0 })
+                  ),
+                  h('linearGradient', { id: 'a11y-shield-face', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#ffffff' }),
+                    h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#ccfbf1' })
+                  )
+                ),
+                h('circle', { cx: 20, cy: 20, r: 18, fill: 'url(#a11y-emblem-aura)' }),
+                // Outer optical inspection reticle ticks
+                h('circle', { cx: 20, cy: 20, r: 16.5, fill: 'none', stroke: isContrast ? '#fde047' : '#5eead4', strokeWidth: 0.9, strokeDasharray: '3 3', opacity: isContrast ? 0.95 : 0.65 }),
+                h('path', { d: 'M20 1.5 V4.5 M20 35.5 V38.5 M1.5 20 H4.5 M35.5 20 H38.5', stroke: isContrast ? '#fde047' : '#99f6e4', strokeWidth: 1.4, strokeLinecap: 'round' }),
+                // Sculpted shield
+                h('path', { d: 'M20 5.5 L31.5 9.8 V19 C31.5 26.2 26.6 31.6 20 34 C13.4 31.6 8.5 26.2 8.5 19 V9.8 Z', fill: 'url(#a11y-shield-face)', stroke: isContrast ? '#fde047' : '#5eead4', strokeWidth: 1.5 }),
+                !isContrast && h('path', { d: 'M20 7.2 L29.5 10.8 V15.5 C25 13.8 15 13.8 10.5 15.5 V10.8 Z', fill: '#ffffff', opacity: 0.55 }),
+                // Universal access emblem
+                h('circle', { cx: 20, cy: 13.8, r: 2.3, fill: isContrast ? '#fde047' : '#0f766e' }),
+                h('path', { d: 'M14 18.2 H26 M20 18.2 V24.2 M20 24.2 L16.4 29 M20 24.2 L23.6 29', stroke: isContrast ? '#ffffff' : '#0f766e', strokeWidth: 2.1, strokeLinecap: 'round', strokeLinejoin: 'round' })
               )
             ),
             h('div', { className: 'flex-1 min-w-[200px]' },
@@ -1372,14 +1430,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             // Score header. White text needs the 700-level colours: white on green-500 / amber-500 measured about 2.2:1.
             h('div', { className: 'bg-gradient-to-r ' + (auditResult.score >= 80 ? 'from-green-700 to-emerald-800' : auditResult.score >= 60 ? 'from-amber-700 to-orange-800' : auditResult.score >= 40 ? 'from-orange-700 to-red-700' : 'from-red-700 to-rose-800') + ' text-white rounded-2xl p-6 text-center' },
               h('div', { className: 'flex flex-col items-center justify-center' },
-                h('svg', { viewBox: '0 0 120 120', width: 108, height: 108, className: 'mb-2', 'aria-hidden': 'true', focusable: 'false' },
-                  h('circle', { cx: 60, cy: 60, r: 50, fill: 'rgba(0,0,0,0.18)', stroke: 'rgba(255,255,255,0.25)', strokeWidth: 9 }),
-                  h('circle', { cx: 60, cy: 60, r: 50, fill: 'none', stroke: '#ffffff', strokeWidth: 9, strokeLinecap: 'round',
-                    strokeDasharray: (Math.max(0, Math.min(100, auditResult.score)) * 3.1416).toFixed(1) + ' 314.2',
-                    transform: 'rotate(-90 60 60)' }),
-                  h('text', { x: 60, y: 64, textAnchor: 'middle', fill: '#ffffff', fontSize: 28, fontWeight: 900 }, auditResult.score),
-                  h('text', { x: 60, y: 80, textAnchor: 'middle', fill: 'rgba(255,255,255,0.88)', fontSize: 10, fontWeight: 700 }, '/ 100')
-                ),
+                (function () {
+                  var clamped = Math.max(0, Math.min(100, auditResult.score));
+                  var rRing = 48;
+                  var circ = 2 * Math.PI * rRing;
+                  var arcLen = (clamped / 100) * circ;
+                  var tipAngle = (-90 + (clamped / 100) * 360) * Math.PI / 180;
+                  var tipX = 60 + rRing * Math.cos(tipAngle);
+                  var tipY = 60 + rRing * Math.sin(tipAngle);
+                  var ticks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+                  return h('svg', { viewBox: '0 0 120 120', width: 116, height: 116, className: 'mb-2', 'aria-hidden': 'true', focusable: 'false' },
+                    h('defs', null,
+                      h('radialGradient', { id: 'a11y-dial-well', cx: '50%', cy: '40%', r: '60%' },
+                        h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : 'rgba(15,23,42,0.18)' }),
+                        h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : 'rgba(15,23,42,0.42)' })
+                      ),
+                      h('linearGradient', { id: 'a11y-score-arc', x1: '0', y1: '0', x2: '1', y2: '1' },
+                        h('stop', { offset: '0%', stopColor: isContrast ? '#fde047' : '#ffffff' }),
+                        h('stop', { offset: '100%', stopColor: isContrast ? '#ffffff' : '#ccfbf1' })
+                      )
+                    ),
+                    // Outer recessed dial bezel
+                    h('circle', { cx: 60, cy: 60, r: 56, fill: 'url(#a11y-dial-well)', stroke: isContrast ? '#fde047' : 'rgba(255,255,255,0.28)', strokeWidth: 1.2 }),
+                    h('circle', { cx: 60, cy: 60, r: rRing, fill: 'none', stroke: isContrast ? 'rgba(253,224,71,0.3)' : 'rgba(255,255,255,0.18)', strokeWidth: 8.5 }),
+                    // Inner calibration reticle ring & 12 ticks
+                    h('circle', { cx: 60, cy: 60, r: 38.5, fill: 'none', stroke: isContrast ? '#fde047' : 'rgba(255,255,255,0.22)', strokeWidth: 0.8, strokeDasharray: '2 4' }),
+                    ticks.map(function (idx) {
+                      var a = (-90 + idx * 30) * Math.PI / 180;
+                      var major = idx % 3 === 0;
+                      var r1 = major ? 34.5 : 36.2, r2 = 38.5;
+                      return h('line', {
+                        key: idx,
+                        x1: (60 + r1 * Math.cos(a)).toFixed(1), y1: (60 + r1 * Math.sin(a)).toFixed(1),
+                        x2: (60 + r2 * Math.cos(a)).toFixed(1), y2: (60 + r2 * Math.sin(a)).toFixed(1),
+                        stroke: isContrast ? '#fde047' : 'rgba(255,255,255,0.48)', strokeWidth: major ? 1.5 : 0.9, strokeLinecap: 'round'
+                      });
+                    }),
+                    // Dual-pass luminous arc: outer soft glow + crisp inner arc
+                    clamped > 0 && !isContrast && h('circle', { cx: 60, cy: 60, r: rRing, fill: 'none', stroke: '#ffffff', strokeOpacity: 0.28, strokeWidth: 13.5, strokeLinecap: 'round',
+                      strokeDasharray: arcLen.toFixed(1) + ' ' + circ.toFixed(1), transform: 'rotate(-90 60 60)' }),
+                    clamped > 0 && h('circle', { cx: 60, cy: 60, r: rRing, fill: 'none', stroke: 'url(#a11y-score-arc)', strokeWidth: 8.5, strokeLinecap: 'round',
+                      strokeDasharray: arcLen.toFixed(1) + ' ' + circ.toFixed(1), transform: 'rotate(-90 60 60)' }),
+                    // Calibrated endpoint beacon
+                    clamped > 0 && h('g', null,
+                      !isContrast && h('circle', { cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 6.5, fill: '#ffffff', opacity: 0.28 }),
+                      h('circle', { cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 3.6, fill: isContrast ? '#fde047' : '#ffffff', stroke: isContrast ? '#000000' : 'rgba(15,23,42,0.35)', strokeWidth: 1.2 })
+                    ),
+                    h('text', { x: 60, y: 65, textAnchor: 'middle', fill: '#ffffff', fontSize: 28, fontWeight: 900 }, auditResult.score),
+                    h('text', { x: 60, y: 80, textAnchor: 'middle', fill: isContrast ? '#fde047' : 'rgba(255,255,255,0.88)', fontSize: 10, fontWeight: 700 }, '/ 100')
+                  );
+                })(),
                 h('div', { className: 'text-3xl font-black mt-1' }, 'Grade: ', auditResult.grade),
                 h('div', { className: 'text-[0.8125rem] font-semibold mt-2 mx-auto', style: { maxWidth: '44ch' } },
                   t('stem.a11yauditor.this_score_is_generated_by_an_ai_model', 'This score is generated by an AI model reasoning over what it can see — not an automated WCAG test. Verify real contrast ratios, keyboard order, and focus with tools like axe, WAVE, or Lighthouse.')),
@@ -1483,19 +1583,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           // ── POUR 4-Pillar Visual Diagram SVG ──
           h('div', { className: 'al-panel rounded-2xl border-2 border-indigo-200 bg-white p-4' },
             h('div', { className: 'text-xs font-black text-indigo-900 uppercase tracking-wider mb-2 text-center' }, t('stem.a11yauditor.pour_diagram_title', 'The 4 WCAG POUR Principles')),
-            h('svg', { viewBox: '0 0 440 78', className: 'w-full h-auto block max-w-2xl mx-auto', role: 'img', 'aria-label': t('stem.a11yauditor.pour_diagram_aria', 'The four WCAG principles: Perceivable, Operable, Understandable, Robust') },
+            h('svg', { viewBox: '0 0 440 86', className: 'w-full h-auto block max-w-2xl mx-auto', role: 'img', 'aria-label': t('stem.a11yauditor.pour_diagram_aria', 'The four WCAG principles: Perceivable, Operable, Understandable, Robust') },
+              h('defs', null,
+                h('linearGradient', { id: 'a11y-pour-rail', x1: '0', y1: '0', x2: '1', y2: '0' },
+                  h('stop', { offset: '0%', stopColor: isContrast ? '#fde047' : '#0f766e' }),
+                  h('stop', { offset: '35%', stopColor: isContrast ? '#fde047' : '#1d4ed8' }),
+                  h('stop', { offset: '68%', stopColor: isContrast ? '#fde047' : '#7c3aed' }),
+                  h('stop', { offset: '100%', stopColor: isContrast ? '#fde047' : '#b45309' })
+                )
+              ),
+              // Subtle connecting alignment rail behind pillars
+              h('line', { x1: 55, y1: 27, x2: 385, y2: 27, stroke: 'url(#a11y-pour-rail)', strokeWidth: 2, strokeDasharray: '4 3', opacity: isContrast ? 0.9 : 0.45 }),
               [
-                { x: 6, c: '#0f766e', bg: '#f0fdfa', ltr: 'P', name: 'Perceivable', sub: 'Alt text · Contrast' },
-                { x: 116, c: '#1d4ed8', bg: '#eff6ff', ltr: 'O', name: 'Operable', sub: 'Keyboard · Focus' },
-                { x: 226, c: '#7c3aed', bg: '#f5f3ff', ltr: 'U', name: 'Understandable', sub: 'Labels · Language' },
-                { x: 336, c: '#b45309', bg: '#fffbeb', ltr: 'R', name: 'Robust', sub: 'Name · Role · Value' }
+                { x: 6, c: '#0f766e', c2: '#14b8a6', bg: '#f0fdfa', ltr: 'P', name: 'Perceivable', sub: 'Alt text · Contrast' },
+                { x: 116, c: '#1d4ed8', c2: '#3b82f6', bg: '#eff6ff', ltr: 'O', name: 'Operable', sub: 'Keyboard · Focus' },
+                { x: 226, c: '#7c3aed', c2: '#a78bfa', bg: '#f5f3ff', ltr: 'U', name: 'Understandable', sub: 'Labels · Language' },
+                { x: 336, c: '#b45309', c2: '#f59e0b', bg: '#fffbeb', ltr: 'R', name: 'Robust', sub: 'Name · Role · Value' }
               ].map(function(pl) {
+                var strokeCol = isContrast ? '#fde047' : pl.c;
+                var cardFill = isContrast ? '#000000' : pl.bg;
                 return h('g', { key: pl.ltr },
-                  h('rect', { x: pl.x, y: 4, width: 98, height: 70, rx: 10, fill: pl.bg, stroke: pl.c, strokeWidth: 1.5 }),
-                  h('circle', { cx: pl.x + 49, cy: 22, r: 11, fill: pl.c }),
-                  h('text', { x: pl.x + 49, y: 26, textAnchor: 'middle', fill: '#ffffff', fontSize: 12, fontWeight: 900 }, pl.ltr),
-                  h('text', { x: pl.x + 49, y: 48, textAnchor: 'middle', fill: '#0f172a', fontSize: 10, fontWeight: 800 }, pl.name),
-                  h('text', { x: pl.x + 49, y: 63, textAnchor: 'middle', fill: '#334155', fontSize: 8.5, fontWeight: 600 }, pl.sub)
+                  !isContrast && h('rect', { x: pl.x + 1.5, y: 7.5, width: 98, height: 73, rx: 11, fill: pl.c, opacity: 0.1 }),
+                  h('rect', { x: pl.x, y: 5, width: 98, height: 73, rx: 11, fill: cardFill, stroke: strokeCol, strokeWidth: 1.6 }),
+                  // Top specular accent bar
+                  h('rect', { x: pl.x + 12, y: 5.8, width: 74, height: 3, rx: 1.5, fill: isContrast ? '#fde047' : pl.c2, opacity: isContrast ? 0.95 : 0.72 }),
+                  // Dual-ring luminous emblem medallion
+                  !isContrast && h('circle', { cx: pl.x + 49, cy: 27, r: 14.5, fill: pl.c2, opacity: 0.18 }),
+                  h('circle', { cx: pl.x + 49, cy: 27, r: 11.5, fill: isContrast ? '#fde047' : pl.c, stroke: isContrast ? '#ffffff' : '#ffffff', strokeWidth: 1.4 }),
+                  h('text', { x: pl.x + 49, y: 31.2, textAnchor: 'middle', fill: isContrast ? '#000000' : '#ffffff', fontSize: 12.5, fontWeight: 900 }, pl.ltr),
+                  h('text', { x: pl.x + 49, y: 53, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#0f172a', fontSize: 10.5, fontWeight: 800 }, pl.name),
+                  h('text', { x: pl.x + 49, y: 68, textAnchor: 'middle', fill: isContrast ? '#fde047' : '#334155', fontSize: 8.5, fontWeight: 600 }, pl.sub)
                 );
               })
             )
@@ -1552,24 +1669,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   h('div', { className: 'text-sm' }, t('stem.a11yauditor.sample_text', 'Sample text')),
                   h('div', { className: 'text-2xl font-bold' }, t('stem.a11yauditor.large_heading', 'Large heading')))
               ),
-              // Real-time WCAG Contrast Ratio Scale Meter SVG (1:1 to 21:1)
-              h('svg', { viewBox: '0 0 360 46', className: 'w-full h-auto block', role: 'img', 'aria-label': 'Contrast ratio gauge showing ' + ratio.toFixed(2) + ' to 1 on a 1 to 21 scale' },
-                h('rect', { x: 18, y: 12, width: xOf(3) - 18, height: 10, rx: 3, fill: '#fca5a5' }),
-                h('rect', { x: xOf(3), y: 12, width: xOf(4.5) - xOf(3), height: 10, fill: '#fcd34d' }),
-                h('rect', { x: xOf(4.5), y: 12, width: xOf(7) - xOf(4.5), height: 10, fill: '#86efac' }),
-                h('rect', { x: xOf(7), y: 12, width: 342 - xOf(7), height: 10, rx: 3, fill: '#34d399' }),
-                // Threshold ticks
+              // Calibrated Optical WCAG Contrast Ratio Gauge & AA/AAA Threshold Laser Markers (1:1 to 21:1)
+              h('svg', { viewBox: '0 0 360 62', className: 'w-full h-auto block', role: 'img', 'aria-label': 'Contrast ratio gauge showing ' + ratio.toFixed(2) + ' to 1 on a 1 to 21 scale' },
+                h('defs', null,
+                  h('linearGradient', { id: 'a11y-cc-housing', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#f1f5f9' }),
+                    h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#ffffff' })
+                  ),
+                  h('linearGradient', { id: 'a11y-cc-fail', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: isContrast ? '#475569' : '#f87171' }),
+                    h('stop', { offset: '100%', stopColor: isContrast ? '#334155' : '#dc2626' })
+                  ),
+                  h('linearGradient', { id: 'a11y-cc-lg', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: isContrast ? '#94a3b8' : '#fbbf24' }),
+                    h('stop', { offset: '100%', stopColor: isContrast ? '#64748b' : '#d97706' })
+                  ),
+                  h('linearGradient', { id: 'a11y-cc-aa', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: isContrast ? '#fde047' : '#34d399' }),
+                    h('stop', { offset: '100%', stopColor: isContrast ? '#eab308' : '#059669' })
+                  ),
+                  h('linearGradient', { id: 'a11y-cc-aaa', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: isContrast ? '#ffffff' : '#14b8a6' }),
+                    h('stop', { offset: '100%', stopColor: isContrast ? '#e2e8f0' : '#0f766e' })
+                  )
+                ),
+                // Recessed optical instrument housing
+                h('rect', { x: 6, y: 4, width: 348, height: 54, rx: 10, fill: 'url(#a11y-cc-housing)', stroke: isContrast ? '#fde047' : '#cbd5e1', strokeWidth: 1.1 }),
+                // Recessed meter rail well
+                h('rect', { x: 17, y: 17, width: 326, height: 14, rx: 5, fill: isContrast ? '#000000' : '#0f172a', fillOpacity: isContrast ? 1 : 0.08, stroke: isContrast ? '#fde047' : '#94a3b8', strokeOpacity: isContrast ? 0.9 : 0.45, strokeWidth: 0.9 }),
+                // Calibrated optical zone segments
+                h('rect', { x: 18, y: 18, width: xOf(3) - 18, height: 12, rx: 4, fill: 'url(#a11y-cc-fail)' }),
+                h('rect', { x: xOf(3), y: 18, width: xOf(4.5) - xOf(3), height: 12, fill: 'url(#a11y-cc-lg)' }),
+                h('rect', { x: xOf(4.5), y: 18, width: xOf(7) - xOf(4.5), height: 12, fill: 'url(#a11y-cc-aa)' }),
+                h('rect', { x: xOf(7), y: 18, width: 342 - xOf(7), height: 12, rx: 4, fill: 'url(#a11y-cc-aaa)' }),
+                // Top glass specular sheen across the optical bar
+                !isContrast && h('rect', { x: 20, y: 19, width: 320, height: 3.5, rx: 1.75, fill: '#ffffff', opacity: 0.28 }),
+                // Minor logarithmic calibration ticks
+                [2, 10, 15].map(function (mr) {
+                  var mx = xOf(mr);
+                  return h('line', { key: 'm' + mr, x1: mx.toFixed(1), y1: 30, x2: mx.toFixed(1), y2: 34, stroke: isContrast ? '#fde047' : '#64748b', strokeWidth: 0.9, opacity: 0.7 });
+                }),
+                // Major threshold ticks + WCAG AA / AAA laser markers
                 [
-                  { r: 1, lbl: '1:1' }, { r: 3, lbl: '3:1' }, { r: 4.5, lbl: '4.5 AA' }, { r: 7, lbl: '7:1 AAA' }, { r: 21, lbl: '21:1' }
+                  { r: 1, lbl: '1:1', laser: false },
+                  { r: 3, lbl: '3:1', laser: false },
+                  { r: 4.5, lbl: '4.5 AA', laser: true, col: isContrast ? '#fde047' : '#047857' },
+                  { r: 7, lbl: '7:1 AAA', laser: true, col: isContrast ? '#ffffff' : '#0f766e' },
+                  { r: 21, lbl: '21:1', laser: false }
                 ].map(function(tk) {
                   var tx = xOf(tk.r);
                   return h('g', { key: tk.lbl },
-                    h('line', { x1: tx, y1: 10, x2: tx, y2: 26, stroke: '#334155', strokeWidth: 1 }),
-                    h('text', { x: tx, y: 39, textAnchor: tk.r === 1 ? 'start' : tk.r === 21 ? 'end' : 'middle', fontSize: 9, fontWeight: 700, fill: '#334155' }, tk.lbl)
+                    tk.laser && !isContrast && h('line', { x1: tx.toFixed(1), y1: 12, x2: tx.toFixed(1), y2: 36, stroke: tk.col, strokeOpacity: 0.24, strokeWidth: 5, strokeLinecap: 'round' }),
+                    h('line', { x1: tx.toFixed(1), y1: tk.laser ? 13 : 16, x2: tx.toFixed(1), y2: 37, stroke: tk.laser ? tk.col : (isContrast ? '#fde047' : '#334155'), strokeWidth: tk.laser ? 1.8 : 1.1 }),
+                    tk.laser && h('circle', { cx: tx.toFixed(1), cy: 13, r: 2.2, fill: tk.col }),
+                    h('text', { x: tx.toFixed(1), y: 50, textAnchor: tk.r === 1 ? 'start' : tk.r === 21 ? 'end' : 'middle', fontSize: 9, fontWeight: tk.laser ? 800 : 700, fill: tk.laser ? tk.col : (isContrast ? '#ffffff' : '#334155') }, tk.lbl)
                   );
                 }),
-                // Live pointer triangle
-                h('polygon', { points: curX.toFixed(1) + ',11 ' + (curX - 6).toFixed(1) + ',2 ' + (curX + 6).toFixed(1) + ',2', fill: '#0f172a' })
+                // Live optical inspection reticle pointer
+                (function () {
+                  var zoneCol = isContrast ? '#fde047' : (ratio >= 7 ? '#0f766e' : ratio >= 4.5 ? '#047857' : ratio >= 3 ? '#b45309' : '#dc2626');
+                  return h('g', null,
+                    !isContrast && h('line', { x1: curX.toFixed(1), y1: 11, x2: curX.toFixed(1), y2: 35, stroke: zoneCol, strokeOpacity: 0.3, strokeWidth: 6, strokeLinecap: 'round' }),
+                    h('line', { x1: curX.toFixed(1), y1: 12, x2: curX.toFixed(1), y2: 35, stroke: isContrast ? '#ffffff' : '#0f172a', strokeWidth: 2 }),
+                    h('polygon', { points: curX.toFixed(1) + ',16 ' + (curX - 6).toFixed(1) + ',7 ' + (curX + 6).toFixed(1) + ',7', fill: isContrast ? '#fde047' : '#0f172a', stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1 }),
+                    h('circle', { cx: curX.toFixed(1), cy: 24, r: 4.2, fill: '#ffffff', stroke: zoneCol, strokeWidth: 2 })
+                  );
+                })()
               ),
               h('div', { className: 'flex flex-wrap items-center gap-2' },
                 h('div', { className: 'text-xl font-black text-slate-800' }, ratio.toFixed(2) + ':1'),
@@ -1708,7 +1873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               t('stem.a11yauditor.knowbility_site_link', 'Read about AccessU and AIR at knowbility.org'), h('span', { className: 'sr-only' }, t('stem.a11yauditor.opens_new_tab', ' (opens in a new tab)')))
           ),
           // Get Involved
-          h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-5 space-y-3' },
+          h('div', { className: (isContrast ? 'bg-black border-2 border-yellow-300' : 'bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200') + ' rounded-2xl p-5 space-y-3' },
             h('h4', { className: 'text-sm font-black text-amber-800 uppercase tracking-widest' }, t('stem.a11yauditor.how_to_get_involved', '\uD83E\uDD1D How to Get Involved')),
             h('div', { className: 'space-y-2' },
               [{ id: 'volunteer', icon: '\uD83D\uDE4B', title: t('stem.a11yauditor.volunteer_at_accessu', 'Volunteer at AccessU'), desc: t('stem.a11yauditor.help_with_registration_room_hosting_an', 'Help with registration, room hosting, and support. Earn free conference access for a 4-8 hour shift.') },

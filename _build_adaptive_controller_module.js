@@ -6,7 +6,7 @@
  * runs the gamepad initialization once when the module loads. Safe to load
  * multiple times (init is guarded by window._alloGamepadGlobal).
  */
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -46,7 +46,7 @@ try {
 }
 
 try {
-  execSync('node -c "' + OUTPUT + '"', { stdio: 'pipe' });
+  execFileSync(process.execPath, ['-c', OUTPUT], { stdio: 'pipe' });
 } catch (e) {
   console.error('[AdaptiveController] Syntax check failed:');
   console.error((e.stderr && e.stderr.toString()) || e.message);

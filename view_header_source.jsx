@@ -268,7 +268,10 @@ function HeaderBar(props) {
     setRunTour(true);
   };
   const toggleViewMode = () => {
-    if (!isTeacherMode && APP_CONFIG._cfg_validation_key) {
+    const educatorGateRequired = typeof window !== 'undefined' && typeof window._alloEducatorAccessCodeRequired === 'function'
+      ? Boolean(window._alloEducatorAccessCodeRequired())
+      : Boolean(APP_CONFIG && APP_CONFIG._cfg_validation_key);
+    if (!isTeacherMode && educatorGateRequired) {
       setPendingRole('toggle_view');
       setIsGateOpen(true);
     } else {
@@ -301,6 +304,11 @@ function HeaderBar(props) {
       button.style.opacity = '0.72';
     }
     setTimeout(() => {
+      if (button && button.isConnected) {
+        button.disabled = false;
+        button.removeAttribute('aria-busy');
+        button.style.opacity = '';
+      }
       const toggle = () => setHeaderCollapsed(previous => {
         const next = !previous;
         try { localStorage.setItem('allo_header_collapsed', String(next)); } catch (_) {}
@@ -522,7 +530,7 @@ function HeaderBar(props) {
   const _livePanel = _liveDark ? _skin.panel : 'bg-white border-slate-200 text-slate-800';
   const _liveDivider = _liveDark ? _skin.divider : 'border-slate-200';
   const _liveLabel = _liveDark ? _skin.label : 'text-slate-600';
-  const _liveMuted = _liveDark ? _skin.muted : 'text-slate-500';
+  const _liveMuted = _liveDark ? _skin.muted : 'text-slate-600';
   const _liveSurface = _liveDark ? _skin.surface : 'bg-slate-50 border-slate-200';
   const _liveChoice = _liveDark ? _skin.field : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100';
   const _liveSignalCurrent = (liveStatus && liveStatus.signals && liveStatus.signals.current && Array.isArray(liveStatus.signals.options))
@@ -679,10 +687,12 @@ function HeaderBar(props) {
   try { speechProvider = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider || 'auto'; } catch (_) {}
   // Choosing a Kokoro voice, or "Get the voice", IS the consent to download it.
   // Nothing else on a phone may start this fetch; see the off-desktop guard in callTTS.
+  const [kokoroDownloading, setKokoroDownloading] = React.useState(() => !!window.__kokoroTTSDownloading);
   const startKokoroVoiceDownload = () => {
     if (!canUseKokoroVoicePicker || window._kokoroTTS?.ready || window.__kokoroTTSDownloading || !window.__loadKokoroTTS) return;
     window.__kokoroTTSDownloading = true;
     window.__kokoroLoadUserInitiated = true;
+    setKokoroDownloading(true);
     addToast(
       kokoroCapability.isIOS
         ? (t('header.voice_kokoro_downloading_ios') || 'Getting the on-device voice (88 MB). It reads offline afterwards, though this browser may ask for it again after a few weeks unused.')
@@ -697,6 +707,7 @@ function HeaderBar(props) {
     }).finally(() => {
       window.__kokoroTTSDownloading = false;
       window.__kokoroLoadUserInitiated = false;
+      setKokoroDownloading(false);
       setKokoroSavedOnDevice(!!window._kokoroTTS?.ready);
     });
   };
@@ -787,6 +798,56 @@ function HeaderBar(props) {
     };
   }, [showReadThisPage, theme]);
   const selectedAppThemeLabel = t('theme.' + (theme === 'contrast' ? 'high_contrast' : theme)) || theme;
+  const [syllablesOn, setSyllablesOnState] = React.useState(() => {
+    try { return typeof window !== 'undefined' && typeof window.__alloIsSyllablesOn === 'function' ? !!window.__alloIsSyllablesOn() : false; } catch (_) { return false; }
+  });
+  const [readingRulerOn, setReadingRulerOnState] = React.useState(() => {
+    try { return typeof window !== 'undefined' && window.__alloReadingSettings && typeof window.__alloReadingSettings.get === 'function' ? !!window.__alloReadingSettings.get().readingRuler : false; } catch (_) { return false; }
+  });
+  const [rulerLines, setRulerLinesState] = React.useState(() => {
+    try {
+      const v = typeof window !== 'undefined' && window.__alloReadingSettings && typeof window.__alloReadingSettings.get === 'function' ? Number(window.__alloReadingSettings.get().rulerLines) : 3;
+      return [1, 3, 5].includes(v) ? v : 3;
+    } catch (_) { return 3; }
+  });
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const syncSyllables = () => {
+      try { setSyllablesOnState(typeof window.__alloIsSyllablesOn === 'function' ? !!window.__alloIsSyllablesOn() : false); } catch (_) {}
+    };
+    const syncRuler = (ev) => {
+      try {
+        const src = (ev && ev.detail && typeof ev.detail === 'object')
+          ? ev.detail
+          : (window.__alloReadingSettings && typeof window.__alloReadingSettings.get === 'function' ? window.__alloReadingSettings.get() : null);
+        if (src && typeof src.readingRuler === 'boolean') setReadingRulerOnState(!!src.readingRuler);
+        if (src && [1, 3, 5].includes(Number(src.rulerLines))) setRulerLinesState(Number(src.rulerLines));
+      } catch (_) {}
+    };
+    syncSyllables();
+    syncRuler();
+    window.addEventListener('alloflow:syllables-changed', syncSyllables);
+    window.addEventListener('alloflow:reading-settings-changed', syncRuler);
+    return () => {
+      window.removeEventListener('alloflow:syllables-changed', syncSyllables);
+      window.removeEventListener('alloflow:reading-settings-changed', syncRuler);
+    };
+  }, []);
+  const handleToggleSyllables = () => {
+    const next = !syllablesOn;
+    setSyllablesOnState(next);
+    try { if (typeof window !== 'undefined' && typeof window.__alloSetSyllables === 'function') window.__alloSetSyllables(next); } catch (_) {}
+  };
+  const handleToggleHeaderRuler = () => {
+    const next = !readingRulerOn;
+    setReadingRulerOnState(next);
+    try { if (typeof window !== 'undefined' && window.__alloReadingSettings && typeof window.__alloReadingSettings.set === 'function') window.__alloReadingSettings.set({ readingRuler: next }); } catch (_) {}
+  };
+  const handleSetHeaderRulerLines = (lines) => {
+    const n = [1, 3, 5].includes(Number(lines)) ? Number(lines) : 3;
+    setRulerLinesState(n);
+    try { if (typeof window !== 'undefined' && window.__alloReadingSettings && typeof window.__alloReadingSettings.set === 'function') window.__alloReadingSettings.set({ rulerLines: n }); } catch (_) {}
+  };
   const selectedOverlayLabel = ({ none: t('header.overlay_none') || 'None', blue: t('header.reading_theme_blue') || 'Blue', peach: t('header.overlay_peach') || 'Peach', yellow: t('header.overlay_yellow') || 'Yellow' })[colorOverlay] || colorOverlay;
   const notebookLabel = t('cmd.open_notebook') || 'Open my notebook';
   const personalAIConnectLabel = t('header.personal_ai_connect') || 'Connect personal AI';
@@ -981,17 +1042,17 @@ function HeaderBar(props) {
               {!headerCollapsed && <div aria-hidden="true" className={`hidden 2xl:flex items-center gap-1 ml-1 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                   <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-green-200'}`}>
                       <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
-                      <span className="text-[11px] font-black uppercase tracking-widest opacity-90">{t('header.equitable')}</span>
+                      <span className="text-xs font-black uppercase tracking-widest opacity-90">{t('header.equitable')}</span>
                   </div>
                   <div className={`w-px h-3 ${theme === 'contrast' ? 'bg-yellow-400' : 'bg-white/10'}`}></div>
                   <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-teal-200'}`}>
                       <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
-                      <span className="text-[11px] font-black uppercase tracking-widest opacity-90">{t('header.accessible')}</span>
+                      <span className="text-xs font-black uppercase tracking-widest opacity-90">{t('header.accessible')}</span>
                   </div>
                   <div className={`w-px h-3 ${theme === 'contrast' ? 'bg-yellow-400' : 'bg-white/10'}`}></div>
                   <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-purple-200'}`}>
                       <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
-                      <span className="text-[11px] font-black uppercase tracking-widest opacity-90">{t('header.scaffolded')}</span>
+                      <span className="text-xs font-black uppercase tracking-widest opacity-90">{t('header.scaffolded')}</span>
                   </div>
               </div>}
               </div>
@@ -1005,16 +1066,16 @@ function HeaderBar(props) {
                   <span className={`allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
                     {compactRoleLabel} <span aria-hidden="true">/</span> {compactContextLabel}
                   </span>
-                  <span className={`allo-premium-pii-row mt-1 flex min-w-0 items-start gap-1 text-[11px] font-medium ${theme === 'contrast' ? 'text-red-400' : 'text-orange-100'}`} title={piiWarningText}>
+                  <span className={`allo-premium-pii-row mt-1 flex min-w-0 items-start gap-1 text-xs font-medium ${theme === 'contrast' ? 'text-red-400' : 'text-orange-100'}`} title={piiWarningText}>
                     <AlertCircle size={11} className="mt-px shrink-0" aria-hidden="true" />
                     <span className="allo-premium-pii-text">{piiWarningText}</span>
                   </span>
                 </div>
               ) : <div className="flex flex-wrap items-center gap-2 mt-2">
-                <span className={`inline-flex items-center gap-1 text-[11px] ${theme === 'contrast' ? 'text-yellow-400' : 'px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100'}`}>
+                <span className={`inline-flex items-center gap-1 text-xs ${theme === 'contrast' ? 'text-yellow-400' : 'px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100'}`}>
                   {t('header.rights')}
                 </span>
-                <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${theme === 'contrast' ? 'text-red-400' : 'px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100'}`}>
+                <span className={`inline-flex items-center gap-1 text-xs font-medium ${theme === 'contrast' ? 'text-red-400' : 'px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100'}`}>
                   <AlertCircle size={10} aria-hidden="true" /> {piiWarningText}
                 </span>
                 {/* Explicit and remembered. No scroll-driven shrinking: moving
@@ -1025,7 +1086,7 @@ function HeaderBar(props) {
                   onClick={toggleHeaderCollapsed}
                   data-help-key="header_settings_toggle"
                   aria-expanded={!headerCollapsed}
-                  className="inline-flex items-center gap-1 rounded-xl border border-white/25 bg-white/10 px-2.5 py-0.5 text-[11px] font-bold text-white/90 hover:bg-white/20"
+                  className="inline-flex items-center gap-1 rounded-xl border border-white/25 bg-white/10 px-2.5 py-0.5 text-xs font-bold text-white/90 hover:bg-white/20"
                 >
                   {headerCollapsed ? (t('common.more_information') || 'More') : (t('common.collapse') || 'Less')}
                 </button>
@@ -1102,7 +1163,10 @@ function HeaderBar(props) {
                   {isTeacherMode && !isIndependentMode && !isParentMode && (
                     <button type="button"
                       onClick={() => {
-                        if (APP_CONFIG._cfg_validation_key) { setPendingRole('educator_hub'); setIsGateOpen(true); }
+                        const needsGate = (typeof window !== 'undefined' && typeof window._alloEducatorAccessCodeRequired === 'function')
+                          ? window._alloEducatorAccessCodeRequired()
+                          : !!(APP_CONFIG && APP_CONFIG._cfg_validation_key);
+                        if (needsGate) { setPendingRole('educator_hub'); setIsGateOpen(true); }
                         else setShowEducatorHub(true);
                       }}
                       data-help-key="header_educator_hub"
@@ -1173,12 +1237,13 @@ function HeaderBar(props) {
                       {theme === 'contrast' && !_isHomeworkStatus && <span className="font-bold">· {_liveConnectionLabel}</span>}
                       <span className="sr-only">{_isHomeworkStatus ? ((liveStatus && liveStatus.nickname) || 'Student') : _liveConnectionLabel}{_liveSignalCurrent ? '. Signal sent: ' + _liveSignalCurrent.label : ''}</span>
                     </button>
-                    {isLiveStatusOpen && (
+                    {isLiveStatusOpen && _headerPortal(
                       <>
-                        <div ref={_liveStatusRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-live-status-title" data-live-status-dialog="" className={`absolute top-full right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl shadow-2xl border p-3 z-[100] text-left ${_livePanel}`}>
+                        <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleCloseLiveStatus}></div>
+                        <div ref={_liveStatusRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-live-status-title" data-live-status-dialog="" className={`fixed top-16 right-4 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl shadow-2xl border p-3 z-[10001] text-left ${_livePanel}`}>
                           <div className={`flex items-center justify-between gap-2 border-b pb-2 mb-2 ${_liveDivider}`}>
                             <h2 id="header-live-status-title" className="text-sm font-black">{_isHomeworkStatus ? 'Homework' : 'Live session'}</h2>
-                            <button type="button" data-autofocus onClick={handleCloseLiveStatus} aria-label={t('common.close') || 'Close'} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 ${_liveDark ? _skin.dismiss : 'text-slate-500 hover:text-red-700'}`}>✕</button>
+                            <button type="button" data-autofocus onClick={handleCloseLiveStatus} aria-label={t('common.close') || 'Close'} style={{ minWidth: '44px', minHeight: '44px' }} className={`min-w-6 min-h-6 inline-flex items-center justify-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 ${_liveDark ? _skin.dismiss : 'text-slate-600 hover:text-red-700'}`}>✕</button>
                           </div>
                           <div className="space-y-1.5 text-xs">
                             {!_isHomeworkStatus && <div className="flex items-baseline justify-between gap-3"><span className={`font-bold ${_liveLabel}`}>{t('session.code') || 'Class code'}</span><span className="font-mono font-bold">{activeSessionCode}</span></div>}
@@ -1188,7 +1253,7 @@ function HeaderBar(props) {
                           </div>
                           {liveStatus && liveStatus.signals && Array.isArray(liveStatus.signals.options) && liveStatus.signals.options.length > 0 && (
                             <fieldset className={`mt-3 rounded-lg border p-2 ${_liveSurface}`} data-live-signals="">
-                              <legend className={`px-1 text-[11px] font-bold uppercase tracking-wide ${_liveLabel}`}>{t('live_signals.title') || 'Send your teacher a signal'}</legend>
+                              <legend className={`px-1 text-xs font-bold uppercase tracking-wide ${_liveLabel}`}>{t('live_signals.title') || 'Send your teacher a signal'}</legend>
                               <div className="flex flex-col gap-1.5">
                                 {liveStatus.signals.options.map((opt) => (
                                   <button key={opt.id} type="button" aria-pressed={_liveSignalCurrent ? _liveSignalCurrent.id === opt.id : false} onClick={() => { liveStatus.signals.send(opt.id); handleCloseLiveStatus(); }} className={`min-h-9 rounded-lg border px-2.5 py-1.5 text-left text-xs font-semibold leading-tight ${_liveSignalCurrent && _liveSignalCurrent.id === opt.id ? (_liveDark ? _skin.accent : 'border-amber-400 bg-amber-100 text-amber-900') : _liveChoice}`}>
@@ -1197,9 +1262,9 @@ function HeaderBar(props) {
                                 ))}
                               </div>
                               {_liveSignalCurrent && (
-                                <button type="button" onClick={() => liveStatus.signals.clear()} className={`mt-1.5 text-[11px] font-bold ${_liveDark ? _skin.action : 'text-indigo-700 hover:text-indigo-900'}`}>{t('live_signals.clear') || 'Clear my signal'}</button>
+                                <button type="button" onClick={() => liveStatus.signals.clear()} className={`mt-1.5 text-xs font-bold ${_liveDark ? _skin.action : 'text-indigo-700 hover:text-indigo-900'}`}>{t('live_signals.clear') || 'Clear my signal'}</button>
                               )}
-                              <p className={`mt-1.5 text-[10px] leading-snug ${_liveMuted}`}>{liveStatus.signals.privacyNote}</p>
+                              <p className={`mt-1.5 text-xs leading-snug ${_liveMuted}`}>{liveStatus.signals.privacyNote}</p>
                             </fieldset>
                           )}
                           <div className="mt-3 flex flex-wrap gap-2">
@@ -1214,7 +1279,6 @@ function HeaderBar(props) {
                             )}
                           </div>
                         </div>
-                        <div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleCloseLiveStatus}></div>
                       </>
                     )}
                   </div>
@@ -1296,8 +1360,8 @@ function HeaderBar(props) {
                             {globalLevel}
                         </div>
                         <div className="flex flex-col items-start min-w-[70px]">
-                             <span className="text-[11px] font-bold uppercase tracking-widest opacity-80 leading-none mb-1">{t('header.next_level')}</span>
-                             <div className="w-full flex justify-between text-[11px] font-mono leading-none mb-1 font-bold opacity-90">
+                             <span className="text-xs font-bold uppercase tracking-widest opacity-80 leading-none mb-1">{t('header.next_level')}</span>
+                             <div className="w-full flex justify-between text-xs font-mono leading-none mb-1 font-bold opacity-90">
                                 <span><AnimatedNumber value={currentLevelXP} /></span>
                                 <span className="text-yellow-100">/{globalXPNext}</span>
                              </div>
@@ -1349,7 +1413,7 @@ function HeaderBar(props) {
                                             <div className={`flex justify-between items-center border-b ${_skin.divider} pb-2`}>
                                                 <h4 id="header-text-settings-title" className="font-bold text-sm">{t('settings.text.header')}</h4>
                                                 <div className="flex items-center gap-2">
-                                                    <button type="button" onClick={resetFontSize} data-help-key="header_settings_text_reset" className={`text-[11px] font-bold flex items-center gap-1 ${_skin.action}`}><RefreshCw size={10}/> {t('header.reset_size_spacing') || 'Reset size & spacing'}</button>
+                                                    <button type="button" onClick={resetFontSize} data-help-key="header_settings_text_reset" className={`text-xs font-bold flex items-center gap-1 ${_skin.action}`}><RefreshCw size={10}/> {t('header.reset_size_spacing') || 'Reset size & spacing'}</button>
                                                     <button type="button" onClick={handleSetShowTextSettingsToFalse} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close text settings'}>&times;</button>
                                                 </div>
                                             </div>
@@ -1365,7 +1429,7 @@ function HeaderBar(props) {
                                                         <option key={font.id} value={font.id}>{font.label}</option>
                                                     ))}
                                                 </select>
-                                                <p className={`text-[11px] p-2 rounded ${_skin.surface} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}>
+                                                <p className={`text-xs p-2 rounded ${_skin.surface} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}>
                                                     {t('settings.text.font_preview')} {t('settings.text.font_preview_sample')}
                                                 </p>
                                             </div>
@@ -1382,18 +1446,80 @@ function HeaderBar(props) {
                                                     </div>
                                                     <div className="text-left">
                                                         <span className="block text-xs font-bold">{t('settings.text.bionic')}</span>
-                                                        <span className="block text-[11px]">{t('settings.text.bionic_sub')}</span>
-                                                        <span id="header-bionic-scope" className="block text-[11px] mt-1">{t('header.bionic_scope') || 'Applies to supported reading passages.'}</span>
+                                                        <span className="block text-xs">{t('settings.text.bionic_sub')}</span>
+                                                        <span id="header-bionic-scope" className="block text-xs mt-1">{t('header.bionic_scope') || 'Applies across reading passages, quizzes, glossaries, study guides, lessons, library books, and activities.'}</span>
                                                     </div>
                                                 </div>
                                                 <div className={`w-10 h-5 rounded-full relative transition-colors ${focusMode ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
                                                     <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${focusMode ? 'left-6' : 'left-1'}`}></div>
                                                 </div>
                                             </button>
+                                            <button type="button"
+                                                onClick={handleToggleSyllables}
+                                                data-help-key="header_settings_text_syllables"
+                                                aria-pressed={syllablesOn}
+                                                aria-describedby="header-syllables-scope"
+                                                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${syllablesOn ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-1.5 rounded-md min-w-[28px] text-center ${syllablesOn ? 'bg-indigo-600 text-white' : _skin.chip}`}>
+                                                        <span aria-hidden="true" className="text-[11px] font-extrabold leading-none">a·b</span>
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <span className="block text-xs font-bold">{t('settings.text.syllables') || 'Syllable Breaks (a·b·c)'}</span>
+                                                        <span className="block text-xs">{t('settings.text.syllables_sub') || 'Splits multi-syllable words offline (no AI needed)'}</span>
+                                                        <span id="header-syllables-scope" className="block text-xs mt-1">{t('header.syllables_scope') || 'Applies across reading passages, quizzes, glossaries, study guides, lessons, library books, and activities.'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className={`shrink-0 w-10 h-5 rounded-full relative transition-colors ${syllablesOn ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
+                                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${syllablesOn ? 'left-6' : 'left-1'}`}></div>
+                                                </div>
+                                            </button>
+                                            <button type="button"
+                                                onClick={handleToggleHeaderRuler}
+                                                data-help-key="header_settings_text_ruler"
+                                                aria-pressed={readingRulerOn}
+                                                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${readingRulerOn ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-1.5 rounded-md min-w-[28px] text-center ${readingRulerOn ? 'bg-indigo-600 text-white' : _skin.chip}`}>
+                                                        <span aria-hidden="true" className="text-xs font-extrabold leading-none">═</span>
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <span className="block text-xs font-bold">{t('reading_settings.ruler') || 'Reading ruler'}</span>
+                                                        <span className="block text-xs">{t('header.reading_ruler_sub') || 'Highlights the line you are reading across any view (no AI needed)'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className={`shrink-0 w-10 h-5 rounded-full relative transition-colors ${readingRulerOn ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
+                                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${readingRulerOn ? 'left-6' : 'left-1'}`}></div>
+                                                </div>
+                                            </button>
+                                            {readingRulerOn && (
+                                                <div className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg border ${_skin.surface}`} data-help-key="header_settings_text_ruler_lines" role="group" aria-label={t('reading_settings.ruler_lines') || 'Ruler height'}>
+                                                    <span className={`text-xs font-bold ${_skin.label}`}>{t('reading_settings.ruler_lines') || 'Ruler height'}</span>
+                                                    <div className="flex items-center gap-1">
+                                                        {[
+                                                            [1, t('reading_settings.ruler_1') || '1 line'],
+                                                            [3, t('reading_settings.ruler_3') || '3 lines'],
+                                                            [5, t('reading_settings.ruler_5') || '5 lines']
+                                                        ].map(([n, lbl]) => (
+                                                            <button
+                                                                key={n}
+                                                                type="button"
+                                                                onClick={() => handleSetHeaderRulerLines(n)}
+                                                                aria-pressed={rulerLines === n}
+                                                                className={`px-2 py-1 rounded-md text-xs font-bold border transition-colors ${rulerLines === n ? 'bg-indigo-600 text-white border-indigo-600' : `${_skin.ghost} border-transparent`}`}
+                                                            >
+                                                                {lbl}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                             <div>
                                                 <div className="flex justify-between items-center mb-2">
                                                     <label htmlFor="header-text-font-size" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.size')}</label>
-                                                    <span className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{baseFontSize}px</span>
+                                                    <span className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{baseFontSize}px</span>
                                                 </div>
                                             <div className="flex items-center gap-3" data-help-key="header_settings_text_size">
                                                     <button type="button" aria-label={t('settings.text.decrease_size') || 'Decrease text size'} onClick={() => setSliderFontSize(Math.max(10, baseFontSize - 1))} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Minimize size={16} aria-hidden="true"/></button>
@@ -1409,7 +1535,7 @@ function HeaderBar(props) {
                                             <div className={`border-t ${_skin.divider} pt-3 mt-3`}>
                                                 <div className="flex justify-between items-center mb-2">
                                                     <label htmlFor="header-text-line-height" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.line_height')}</label>
-                                                    <span className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{lineHeight}</span>
+                                                    <span className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{lineHeight}</span>
                                                 </div>
                                                 <input id="header-text-line-height"
                                                     type="range" min="1.0" max="2.5" step="0.1"
@@ -1422,7 +1548,7 @@ function HeaderBar(props) {
                                             <div>
                                                 <div className="flex justify-between items-center mb-2">
                                                     <label htmlFor="header-text-letter-spacing" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.spacing')}</label>
-                                                    <span className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{letterSpacing}em</span>
+                                                    <span className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{letterSpacing}em</span>
                                                 </div>
                                                 <input id="header-text-letter-spacing"
                                                     type="range" min="0" max="0.2" step="0.01"
@@ -1436,9 +1562,9 @@ function HeaderBar(props) {
                                             <div>
                                                 <div className="flex justify-between items-center mb-2">
                                                     <label className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.reading_theme') || '🎨 Reading Theme'}</label>
-                                                    <span aria-live="polite" className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{selectedReadingThemeLabel}</span>
+                                                    <span aria-live="polite" className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{selectedReadingThemeLabel}</span>
                                                 </div>
-                                                <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mb-2`}>{t('settings.reading_theme_desc') || 'Background & text color for all content views'} {t('settings.reading_theme_scope') || 'Changes lesson colors only; your app theme stays the same.'}</p>
+                                                <p className={`text-xs ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mb-2`}>{t('settings.reading_theme_desc') || 'Background & text color for all content views'} {t('settings.reading_theme_scope') || 'Changes lesson colors only; your app theme stays the same.'}</p>
                                                 <div className="allo-reading-theme-grid grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t('header.reading_theme_aria') || 'Reading theme'}>
                                                     {[
                                                         { id: 'default', label: t('header.reading_theme_default') || 'Default', bg: '#ffffff', fg: '#1e293b', border: '#64748b', focus: '#4f46e5', emoji: '○' },
@@ -1471,7 +1597,7 @@ function HeaderBar(props) {
                                                             }}
                                                         >
                                                             <span className="text-sm leading-none">{th.emoji}</span>
-                                                            <span className="text-[11px] font-bold leading-none">{th.label}</span>
+                                                            <span className="text-xs font-bold leading-none">{th.label}</span>
                                                         </button>;
                                                     })}
                                                 </div>
@@ -1484,7 +1610,7 @@ function HeaderBar(props) {
                                                         >
                                                             {selectedReadingThemeIsFavorite ? '★ Favorite' : '☆ Favorite this theme'}
                                                         </button>
-                                                        <span aria-live="polite" className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
+                                                        <span aria-live="polite" className={`text-xs ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
                                                             {readingThemePreferenceScope
                                                                 ? `Saved for ${readingThemePreferenceScope} when this live class syncs.`
                                                                 : (normalizedReadingThemeFavorites.length ? `${normalizedReadingThemeFavorites.length} favorite${normalizedReadingThemeFavorites.length === 1 ? '' : 's'} saved on this device.` : 'Favorites appear first in this picker.')}
@@ -1495,7 +1621,7 @@ function HeaderBar(props) {
                                             {/* Beside Reading Theme on purpose: the theme colors lessons, the overlay tints everything. */}
                                             <fieldset data-header-color-overlay aria-describedby="header-color-overlay-desc">
                                                 <legend className={`text-xs font-bold mb-1 ${_skin.label}`}>{t('settings.overlay') || 'Color Overlay'}</legend>
-                                                <p id="header-color-overlay-desc" className={`text-[11px] mb-2 ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>{t('reading_settings.overlay_desc') || 'Tints the whole screen, like a colored reading sheet.'}</p>
+                                                <p id="header-color-overlay-desc" className={`text-xs mb-2 ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>{t('reading_settings.overlay_desc') || 'Tints the whole screen, like a colored reading sheet.'}</p>
                                                 <div className="flex flex-wrap gap-1.5">
                                                     {[['none', t('header.overlay_none') || 'None'], ['blue', t('header.reading_theme_blue') || 'Blue'], ['peach', t('header.overlay_peach') || 'Peach'], ['yellow', t('header.overlay_yellow') || 'Yellow']].map(([id, label]) => (
                                                         <label key={id} className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold cursor-pointer ${colorOverlay === id ? _skin.accent : _skin.surface}`}>
@@ -1517,7 +1643,7 @@ function HeaderBar(props) {
                                                 >
                                                     <span className="text-left">
                                                         <span className="block text-xs font-bold">{t('settings.text.single_key_shortcuts') || 'Single-key shortcuts'}</span>
-                                                        <span id="header-single-key-shortcuts-desc" className="block text-[11px] mt-0.5">{t('settings.text.single_key_shortcuts_sub') || 'Press ? to turn Help Mode on or off. Turn this off if you use speech input or often press keys by accident. The Help Mode button in the toolbar still works.'}</span>
+                                                        <span id="header-single-key-shortcuts-desc" className="block text-xs mt-0.5">{t('settings.text.single_key_shortcuts_sub') || 'Press ? to turn Help Mode on or off. Turn this off if you use speech input or often press keys by accident. The Help Mode button in the toolbar still works.'}</span>
                                                     </span>
                                                     <span aria-hidden="true" className={`shrink-0 w-10 h-5 rounded-full relative transition-colors ${singleKeyShortcuts ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
                                                         <span className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${singleKeyShortcuts ? 'left-6' : 'left-1'}`}></span>
@@ -1553,40 +1679,40 @@ function HeaderBar(props) {
                                                 <button type="button" onClick={handleSetShowVoiceSettingsToFalse} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close voice and audio settings'}>&times;</button>
                                             </div>
                                             <div className={`rounded-lg border p-2 ${_skin.surface}`}>
-                                                <label htmlFor="header-voice-input-engine" className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_input') || 'Voice input'}</label>
+                                                <label htmlFor="header-voice-input-engine" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_input') || 'Voice input'}</label>
                                                 <select
                                                     id="header-voice-input-engine"
                                                     aria-describedby="header-voice-input-engine-help"
-                                                    value={voiceInputEngine === 'webspeech' && voiceLocalOnly ? 'auto' : voiceInputEngine}
+                                                    value={((voiceInputEngine === 'webspeech' && voiceLocalOnly) || (voiceInputEngine === 'gemini' && (studentDeviceVoiceOnly || voiceLocalOnly))) ? 'auto' : voiceInputEngine}
                                                     onChange={(event) => chooseVoiceInputEngine(event.target.value)}
                                                     className={`w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`}
                                                 >
                                                     <option value="auto">{t('header.voice_engine_auto') || 'Auto (private-first)'}</option>
                                                     <option value="whisper">{t('header.voice_engine_whisper') || 'On-device Whisper'}</option>
                                                     {!voiceLocalOnly && <option value="webspeech">{t('header.voice_engine_webspeech') || 'Browser speech service'}</option>}
-                                                    <option value="gemini">{t('header.voice_engine_gemini') || 'Gemini cloud transcription'}</option>
+                                                    {!(studentDeviceVoiceOnly || voiceLocalOnly) && <option value="gemini">{t('header.voice_engine_gemini') || 'Gemini cloud transcription'}</option>}
                                                     <option value="off">{t('header.voice_engine_off') || 'Off'}</option>
                                                 </select>
-                                                <p id="header-voice-input-engine-help" className={`mt-1 text-[11px] leading-tight ${_skin.label}`}>{voiceInputDescriptions[voiceInputEngine === 'webspeech' && voiceLocalOnly ? 'auto' : voiceInputEngine]}</p>
+                                                <p id="header-voice-input-engine-help" className={`mt-1 text-xs leading-tight ${_skin.label}`}>{voiceInputDescriptions[((voiceInputEngine === 'webspeech' && voiceLocalOnly) || (voiceInputEngine === 'gemini' && (studentDeviceVoiceOnly || voiceLocalOnly))) ? 'auto' : voiceInputEngine]}</p>
                                                 {window.__alloSpeechSetupHost === true && (
-                                                  <button type="button" onClick={() => { handleSetShowVoiceSettingsToFalse(); window.dispatchEvent(new window.CustomEvent('alloflow:open-speech-setup')); }} className={`mt-2 w-full rounded-md border px-2 py-1 text-[11px] font-bold ${_skin.field}`}>
+                                                  <button type="button" onClick={() => { handleSetShowVoiceSettingsToFalse(); window.dispatchEvent(new window.CustomEvent('alloflow:open-speech-setup')); }} className={`mt-2 w-full min-h-11 rounded-md border px-2 py-1 text-xs font-bold ${_skin.field}`}>
                                                     {t('speech_setup.open') || 'Speech setup: download, size, mic test'}
                                                   </button>
                                                 )}
                                                 {voiceInputEngine === 'gemini' && !geminiAudioCapability.available && (
-                                                  <div role="status" aria-live="polite" className={`mt-2 rounded-lg border p-2 ${_skin.note}`}>
-                                                    <p className={`text-[11px] font-bold leading-tight ${_skin.noteHead}`}>
+                                                  <div className={`mt-2 rounded-lg border p-2 ${_skin.note}`}>
+                                                    <p role="status" aria-live="polite" className={`text-xs font-bold leading-tight ${_skin.noteHead}`}>
                                                       {canConfigureGeminiAudio
                                                          ? (t('header.gemini_key_missing') || 'Gemini transcription is selected, but no Gemini cloud-services key is configured.')
                                                          : (t('header.gemini_unavailable_activity') || 'Gemini cloud transcription is unavailable in this activity.')}
                                                     </p>
                                                     <div className="mt-2 flex flex-wrap gap-1.5">
                                                       {canConfigureGeminiAudio && (
-                                                        <button type="button" onClick={openGeminiAudioConfiguration} data-help-key="header_voice_configure_gemini" className="rounded-md bg-sky-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                                                        <button type="button" onClick={openGeminiAudioConfiguration} data-help-key="header_voice_configure_gemini" className="min-h-11 rounded-md bg-sky-700 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
                                                           {t('header.configure_gemini_access') || 'Configure Gemini access'}
                                                         </button>
                                                       )}
-                                                      <button type="button" onClick={() => chooseVoiceInputEngine('auto')} className={`rounded-md border px-2 py-1 text-[11px] font-bold ${_skin.field}`}>
+                                                      <button type="button" onClick={() => chooseVoiceInputEngine('auto')} className={`min-h-11 rounded-md border px-2.5 py-1.5 text-xs font-bold ${_skin.field}`}>
                                                          {t('header.use_auto_instead') || 'Use Auto instead'}
                                                       </button>
                                                     </div>
@@ -1594,7 +1720,7 @@ function HeaderBar(props) {
                                                 )}
                                             </div>
                                             <div>
-                                                <label htmlFor="header-spoken-output-voice" className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.spoken_output_voice') || 'Spoken-output voice'}</label>
+                                                <label htmlFor="header-spoken-output-voice" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.spoken_output_voice') || 'Spoken-output voice'}</label>
                                                 <select id="header-spoken-output-voice"
                                                     value={studentDeviceVoiceOnly ? studentVoiceValue : selectedVoice}
                                                     onChange={(e) => {
@@ -1657,18 +1783,18 @@ function HeaderBar(props) {
                                                     sounds worse, and benched no faster on wasm CPU. One honest
                                                     tier now: q8, ~88MB, downloaded once + cached on device. ── */}
                                                 {canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes('_') && (
-                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`} data-kokoro-model-status={window._kokoroTTS?.ready ? 'ready' : window.__kokoroTTSDownloading ? 'preparing' : kokoroSavedOnDevice ? 'saved' : 'missing'}>
-                                                        <p className="text-[11px] m-0">
+                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`} data-kokoro-model-status={window._kokoroTTS?.ready ? 'ready' : (kokoroDownloading || window.__kokoroTTSDownloading) ? 'preparing' : kokoroSavedOnDevice ? 'saved' : 'missing'}>
+                                                        <p className="text-xs m-0">
                                                             <span className="font-bold">{t('header.voice_model_label') || 'Voice model'}:</span>{' '}
                                                             {window._kokoroTTS?.ready
                                                                 ? (t('header.voice_model_ready') || 'Kokoro (~88MB) — ready on this device. Downloaded once; reads offline.')
-                                                                : window.__kokoroTTSDownloading
+                                                                : (kokoroDownloading || window.__kokoroTTSDownloading)
                                                                     ? (t('header.voice_model_preparing') || 'Kokoro (~88MB) is preparing. Try reading again when the voice is ready.')
                                                                     : kokoroSavedOnDevice
                                                                         ? (t('header.voice_model_saved') || 'Kokoro (~88MB) is saved on this device. It starts when reading begins.')
                                                                         : (t('header.voice_model_missing') || "Kokoro (~88MB) is not on this device yet. Get the voice to read aloud with it.")}
                                                         </p>
-                                                        {!window._kokoroTTS?.ready && !window.__kokoroTTSDownloading && !kokoroSavedOnDevice && window.__loadKokoroTTS && (
+                                                        {!window._kokoroTTS?.ready && !(kokoroDownloading || window.__kokoroTTSDownloading) && !kokoroSavedOnDevice && window.__loadKokoroTTS && (
                                                             <button type="button" onClick={() => { startKokoroVoiceDownload(); setKokoroSavedOnDevice(null); }} data-kokoro-get-voice className={`mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}`}>
                                                                 {t('header.voice_model_get') || 'Get the voice (88 MB)'}
                                                             </button>
@@ -1698,7 +1824,7 @@ function HeaderBar(props) {
                                                             }}
                                                             aria-label={t('header.browser_tts_fallback_aria') || 'Use browser voice as fallback when Gemini TTS refuses or fails'}
                                                         />
-                                                        <span className="text-[11px] leading-tight">
+                                                        <span className="text-xs leading-tight">
                                                             <span className="font-bold block">{t('header.browser_tts_fallback_label') || 'Browser-voice fallback'}</span>
                                                             <span className="opacity-80">{t('header.browser_tts_fallback_desc') || 'Read refused/failed sentences with the system voice instead of skipping.'}</span>
                                                         </span>
@@ -1717,20 +1843,20 @@ function HeaderBar(props) {
                                                     separately instead. */}
                                                 {!studentDeviceVoiceOnly && leveledTextLanguage && leveledTextLanguage !== 'English' && (
                                                     <div className={`mt-2 p-2 rounded-lg border ${_skin.note}`}>
-                                                        <div className={`text-[11px] uppercase font-bold ${_skin.noteHead}`}>{t('header.voice_active_language') || 'Reading language'}: {leveledTextLanguage}</div>
-                                                        <div className={`text-[11px] ${_skin.noteBody} mt-0.5`}>
+                                                        <div className={`text-xs uppercase font-bold ${_skin.noteHead}`}>{t('header.voice_active_language') || 'Reading language'}: {leveledTextLanguage}</div>
+                                                        <div className={`text-xs ${_skin.noteBody} mt-0.5`}>
                                                             {!window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage))
                                                                 ? (t('header.voice_lang_no_offline') || 'Cloud voice, then the device voice. There is no offline voice for this language yet.')
                                                                 : window._piperTTS?.isLanguageReady?.(languageToTTSCode(leveledTextLanguage))
                                                                     ? (t('header.voice_lang_offline_ready') || 'An offline voice for this language is saved on this device.')
                                                                     : (t('header.voice_lang_offline_on_demand') || 'Cloud voice first. An offline voice for this language downloads the first time it is needed.')}
                                                         </div>
-                                                        <div className={`text-[11px] ${_skin.noteHead} mt-0.5`}>{t('header.kokoro_english_only') || 'Kokoro voice applies to English content'}</div>
+                                                        <div className={`text-xs ${_skin.noteHead} mt-0.5`}>{t('header.kokoro_english_only') || 'Kokoro voice applies to English content'}</div>
                                                     </div>
                                                 )}
                                                 <div className="flex gap-2 mt-3">
                                                     <div className="flex-1">
-                                                        <label htmlFor="header-voice-speed" className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_speed') || 'Speed'}: {voiceSpeed}x</label>
+                                                        <label htmlFor="header-voice-speed" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_speed') || 'Speed'}: {voiceSpeed}x</label>
                                                         <input id="header-voice-speed"
                                                             type="range"
                                                             min="0.5"
@@ -1743,7 +1869,7 @@ function HeaderBar(props) {
                                                         />
                                                     </div>
                                                     <div className="flex-1">
-                                                        <label htmlFor="header-voice-volume" className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_volume') || 'Volume'}: {Math.round(voiceVolume * 100)}%</label>
+                                                        <label htmlFor="header-voice-volume" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_volume') || 'Volume'}: {Math.round(voiceVolume * 100)}%</label>
                                                         <input id="header-voice-volume"
                                                             type="range"
                                                             min="0"
@@ -1768,7 +1894,7 @@ function HeaderBar(props) {
                                                 >
                                                     {t('header.voice_test') || 'Test voice'}
                                                 </button>
-                                                <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mt-2 italic leading-tight`}>
+                                                <p className={`text-xs ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mt-2 italic leading-tight`}>
                                                     {t('settings.voice.helper')}
                                                 </p>
                                             </div>
@@ -1872,7 +1998,7 @@ function HeaderBar(props) {
                                         aria-label={`${notebookLabel} (${notebookEntryCount})`}
                                     >
                                         <BookOpen size={20} />
-                                        <span className="text-[10px] font-bold leading-none bg-white/20 rounded-full px-1.5 py-0.5 min-w-[18px] text-center">{notebookEntryCount}</span>
+                                        <span className="text-xs font-bold leading-none bg-white/20 rounded-full px-1.5 py-0.5 min-w-[18px] text-center">{notebookEntryCount}</span>
                                     </button>
                                 )}
                             </>
@@ -1883,7 +2009,7 @@ function HeaderBar(props) {
                         <button type='button'
                           onClick={() => setShowAIBackendModal(true)}
                           data-help-key='header_student_ai_setup'
-                          className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider border ${window.__alloStudentAiConfigured ? 'bg-emerald-700 text-white border-emerald-300' : 'bg-amber-100 text-amber-950 border-amber-300 hover:bg-amber-50'}`}
+                          className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider border ${window.__alloStudentAiConfigured ? 'bg-emerald-700 text-white border-emerald-300' : 'bg-amber-100 text-amber-950 border-amber-300 hover:bg-amber-50'}`}
                           title={window.__alloStudentAiConfigured ? personalAIConnectedLabel : personalAIConnectLabel}
                           aria-label={window.__alloStudentAiConfigured ? personalAIConnectedLabel : personalAIConnectLabel}
                         >
@@ -1895,7 +2021,7 @@ function HeaderBar(props) {
                         <button type='button'
                           onClick={() => { if (typeof window.__alloDisconnectStudentAi === 'function') window.__alloDisconnectStudentAi(); }}
                           data-help-key='header_student_ai_disconnect'
-                          className='px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider border bg-slate-900/40 text-white border-white/30 hover:bg-rose-700'
+                          className='px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider border bg-slate-900/40 text-white border-white/30 hover:bg-rose-700'
                           title={personalAIDisconnectDetail}
                           aria-label={personalAIDisconnectLabel}
                         >
@@ -1984,7 +2110,7 @@ function HeaderBar(props) {
                 <div className="w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0">
                     <div id="tour-header-actions" className={`w-full sm:w-auto sm:ml-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                         <div className="w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10">
-                            <span className="text-[11px] font-bold text-white uppercase tracking-wider hidden md:block text-right leading-tight">
+                            <span className="text-xs font-bold text-white uppercase tracking-wider hidden md:block text-right leading-tight">
                                 {t('header.app_language')}
                             </span>
                             <div className="max-w-full scale-90 origin-left sm:origin-center" data-help-key="header_language">
@@ -2027,7 +2153,7 @@ function HeaderBar(props) {
                             </button>
                             {showExportMenu && _headerPortal(
                                 <>
-                                <div ref={_exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-documents-dialog-title" className={`fixed top-4 right-4 bottom-4 w-56 max-w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain rounded-xl shadow-2xl p-2 border z-[100] animate-in fade-in zoom-in-95 motion-reduce:animate-none flex flex-col gap-1 ${_skin.panel}`}>
+                                <div ref={_exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-documents-dialog-title" className={`fixed top-4 right-4 bottom-4 w-56 max-w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain rounded-xl shadow-2xl p-2 border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none flex flex-col gap-1 ${_skin.panel}`}>
                                     <div className="flex items-center justify-between gap-2 px-2 py-1">
                                       <h2 id="header-documents-dialog-title" className={`text-xs font-black flex items-center gap-1.5 ${_skin.label}`}>{"\ud83d\udcc4"} {t('export_menu.section_documents') || 'Documents'}</h2>
                                       <button type="button" onClick={handleSetShowExportMenuToFalse} className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close'}><X size={18} aria-hidden="true" /></button>
@@ -2039,10 +2165,10 @@ function HeaderBar(props) {
                                         className={`w-full px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex flex-col items-center justify-center gap-0.5 mb-1 ${theme === 'contrast' ? 'bg-yellow-400 text-black border-2 border-yellow-400 hover:bg-yellow-300' : 'bg-indigo-600 bg-gradient-to-r from-indigo-700 to-violet-700 hover:from-indigo-800 hover:to-violet-800 text-white'}`}
                                     >
                                         <span className="flex items-center gap-1.5">{"\ud83d\udee0\ufe0f"} {t('export_menu.document_builder') || 'Document Builder'}</span>
-                                        <span className={`text-[10px] font-medium ${theme === 'contrast' ? 'text-black' : 'text-indigo-100'}`}>{t('export_menu.pdf_slash_print', { print: t('export_menu.print') }) || `PDF / ${t('export_menu.print')}`} · {t('export_menu.document_builder_subtitle') || 'Edit, style & preview all formats'}</span>
+                                        <span className={`text-xs font-medium ${theme === 'contrast' ? 'text-black' : 'text-indigo-100'}`}>{t('export_menu.pdf_slash_print', { print: t('export_menu.print') }) || `PDF / ${t('export_menu.print')}`} · {t('export_menu.document_builder_subtitle') || 'Edit, style & preview all formats'}</span>
                                     </button>
-                                    {customExportCSS && <div className={`text-[11px] font-medium px-2 mb-1 ${theme === 'dark' ? 'text-emerald-300' : theme === 'contrast' ? 'text-yellow-400' : 'text-green-700'}`}>✓ {t('export_menu.custom_style_active') || 'Custom style active'}</div>}
-                                    <div className={`text-[11px] font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83d\udcc4"} {t('export_menu.section_print') || 'Print & PDF'}</div>
+                                    {customExportCSS && <div className={`text-xs font-medium px-2 mb-1 ${theme === 'dark' ? 'text-emerald-300' : theme === 'contrast' ? 'text-yellow-400' : 'text-green-700'}`}>✓ {t('export_menu.custom_style_active') || 'Custom style active'}</div>}
+                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83d\udcc4"} {t('export_menu.section_print') || 'Print & PDF'}</div>
                                     <button type="button"
                                         onClick={() => openExportPreview('worksheet')}
                                         className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-slate-50 text-slate-700' : _skin.ghost}`}
@@ -2050,7 +2176,7 @@ function HeaderBar(props) {
                                     >
                                         <FileText size={14} aria-hidden="true" /> {t('export_menu.worksheet')}
                                     </button>
-                                    <div className={`text-[11px] font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83d\udcbb"} {t('export_menu.section_digital') || 'Digital Formats'}</div>
+                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83d\udcbb"} {t('export_menu.section_digital') || 'Digital Formats'}</div>
                                     <button type="button"
                                         onClick={() => openExportPreview('html')}
                                         className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-indigo-50 text-indigo-700' : _skin.ghost}`}
@@ -2069,7 +2195,7 @@ function HeaderBar(props) {
                                     </button>
                                     {/* Sharing to a class is not part of learning on your own. */}
                                     {!isIndependentMode && (<>
-                                    <div className={`text-[11px] font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{t('export_menu.section_student_qr') || 'Student QR'}</div>
+                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{t('export_menu.section_student_qr') || 'Student QR'}</div>
                                     <button type="button"
                                         onClick={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); setShowExportMenu(false); }}
                                         className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-cyan-50 text-cyan-700' : _skin.ghost}`}
@@ -2078,7 +2204,7 @@ function HeaderBar(props) {
                                         <Share2 size={14} aria-hidden="true" /> {t('export_menu.homework_qr') || 'Homework QR'}
                                     </button>
                                     <div className="px-3 pb-2">
-                                      <label className={`block text-[11px] font-bold ${_skin.label}`} htmlFor="homework-qr-expiry">{t('export_menu.homework_link_length') || 'Homework link length'}</label>
+                                      <label className={`block text-xs font-bold ${_skin.label}`} htmlFor="homework-qr-expiry">{t('export_menu.homework_link_length') || 'Homework link length'}</label>
                                       <select id="homework-qr-expiry" value={homeworkExpiryDays || 14} onChange={event => setHomeworkExpiryDays(Number(event.target.value) || 14)} className={`mt-1 w-full rounded-md border px-2 py-1.5 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-cyan-500 ${_skin.field}`}>
                                         <option value={1}>{t('export_menu.expiry_1_day') || '1 day'}</option>
                                         <option value={7}>{t('export_menu.expiry_1_week') || '1 week'}</option>
@@ -2094,13 +2220,13 @@ function HeaderBar(props) {
                                         <History size={14} aria-hidden="true" /> {t('export_menu.shared_links') || 'Polls, sign-ups & shared links'}{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
                                       </button>
                                     </div>
-                                    <p className={`px-3 pb-2 text-[11px] leading-snug ${theme === 'light' ? 'text-slate-600' : _skin.muted}`}>{studentAiPolicyForShare === 'student-byok' ? (t('export_menu.share_policy_byok') || 'Teacher-prepared resources open with optional personal AI. Students supply and test their own provider.') : (t('export_menu.share_policy_ai_off') || 'Teacher-prepared resources open for students with AI generation off.')}</p>
+                                    <p className={`px-3 pb-2 text-xs leading-snug ${theme === 'light' ? 'text-slate-600' : _skin.muted}`}>{studentAiPolicyForShare === 'student-byok' ? (t('export_menu.share_policy_byok') || 'Teacher-prepared resources open with optional personal AI. Students supply and test their own provider.') : (t('export_menu.share_policy_ai_off') || 'Teacher-prepared resources open for students with AI generation off.')}</p>
                                     </>)}
                                     {/* Section label shares the buttons' gate \u2014 an excluded mode
                                         must not see an empty "LMS Integration" heading (independent
                                         mode did, before parent exclusions were added). */}
                                     {!isIndependentMode && !isParentMode && (
-                                    <div className={`text-[11px] font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83c\udfeb"} {t('export_menu.section_lms') || 'LMS Integration'}</div>
+                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83c\udfeb"} {t('export_menu.section_lms') || 'LMS Integration'}</div>
                                     )}
                                     {activeView === 'quiz' && !isIndependentMode && !isParentMode && (
                                         <button type="button"
@@ -2121,7 +2247,7 @@ function HeaderBar(props) {
                                     </button>
                                     )}
                                 </div>
-                                <div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleSetShowExportMenuToFalse}></div>
+                                <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowExportMenuToFalse}></div>
                                 </>
                             )}
                         </div>
@@ -2172,7 +2298,7 @@ function HeaderBar(props) {
                         <button type="button"
                           onClick={() => setShowAIBackendModal(true)}
                           data-help-key="header_ai_backend"
-                          className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider ${
+                          className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider ${
                             (() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').backend && JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').backend !== 'gemini'; } catch { return false; } })()
                               ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/50'
                               : 'hover:bg-white/10 text-white/80 hover:text-white border border-white/10'
@@ -2188,7 +2314,7 @@ function HeaderBar(props) {
                         <button type="button"
                           onClick={openHomeBehaviorTools}
                           data-help-key="header_home_behavior_tools"
-                          className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
+                          className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-xs hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
                           title={homeBehaviorToolsTooltip}
                           aria-label={homeBehaviorToolsLabel}
                         >
@@ -2199,7 +2325,10 @@ function HeaderBar(props) {
                         {isTeacherMode && !isIndependentMode && !isParentMode && (
                         <button type="button"
                           onClick={() => {
-                            if (APP_CONFIG._cfg_validation_key) {
+                            const needsGate = (typeof window !== 'undefined' && typeof window._alloEducatorAccessCodeRequired === 'function')
+                              ? window._alloEducatorAccessCodeRequired()
+                              : !!(APP_CONFIG && APP_CONFIG._cfg_validation_key);
+                            if (needsGate) {
                               setPendingRole('educator_hub');
                               setIsGateOpen(true);
                             } else {
@@ -2207,7 +2336,7 @@ function HeaderBar(props) {
                             }
                           }}
                           data-help-key="header_educator_hub"
-                          className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
+                          className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
                           title={t('header.educator_tools_aria') || 'Educator Tools'}
                           aria-label={t('header.educator_tools_aria') || 'Educator Tools'}
                         >
@@ -2220,7 +2349,7 @@ function HeaderBar(props) {
                         <button type="button"
                           onClick={() => setShowLearningHub(true)}
                           data-help-key="header_learning_hub"
-                          className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
+                          className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
                           title={t('header.learning_tools_tooltip') || 'Learning Tools (STEAM Lab, SEL Hub, Research Hub, LitLab, PoetTree, StoryForge)'}
                           aria-label={t('header.learning_tools_aria') || 'Learning Tools'}
                         >
@@ -2232,7 +2361,7 @@ function HeaderBar(props) {
                         <button type="button"
                           onClick={() => setBridgeSendOpen(true)}
                           data-help-key="header_bridge"
-                          className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
+                          className="px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10"
                           title={t('header.bridge_tooltip') || 'Family Bridge: live translation to talk with multilingual families & students'}
                           aria-label={t('header.bridge_aria') || 'Family Bridge translation'}
                         >
@@ -2266,11 +2395,17 @@ function HeaderBar(props) {
                                                 title={t('common.disconnect') || 'Disconnect'}
                                                 data-help-key="header_session_status"
                                                 onClick={() => {
-                                                    if(sessionUnsubscribeRef.current) sessionUnsubscribeRef.current();
+                                                    if (liveStatus && typeof liveStatus.leave === 'function') {
+                                                        liveStatus.leave();
+                                                        return;
+                                                    }
+                                                    if (sessionUnsubscribeRef.current) {
+                                                        sessionUnsubscribeRef.current();
+                                                        sessionUnsubscribeRef.current = null;
+                                                    }
                                                     setActiveSessionCode(null);
                                                     setSessionData(null);
                                                     hasConnectedRef.current = false;
-                                                    setHistory([]);
                                                     addToast(t('session.toast_disconnected'), "info");
                                                 }}
                                                 className="ml-2 p-0.5 hover:bg-white/20 rounded"
@@ -2291,16 +2426,18 @@ function HeaderBar(props) {
                                             >
                                                 <WifiOff size={14} aria-hidden="true" /> <span>{t('session.join')}</span>
                                             </button>
-                                            {isJoinPopoverOpen && (
-                                                <div ref={_joinPopoverRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-join-session-title" className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[100] animate-in fade-in zoom-in-95 motion-reduce:animate-none">
+                                            {isJoinPopoverOpen && _headerPortal(
+                                                <>
+                                                <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetIsJoinPopoverOpenToFalse}></div>
+                                                <div ref={_joinPopoverRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-join-session-title" className="fixed top-16 right-4 w-64 max-w-[calc(100vw-1.5rem)] bg-white rounded-xl shadow-2xl p-3 border border-slate-400 z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none">
                                                     <div className="space-y-2">
                                                         <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-2">
                                                             <h2 id="header-join-session-title" className="text-sm font-black text-slate-800">{t('session.join')}</h2>
-                                                            <button type="button" onClick={handleSetIsJoinPopoverOpenToFalse} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={t('common.close') || 'Close join session'}>&times;</button>
+                                                            <button type="button" onClick={handleSetIsJoinPopoverOpenToFalse} style={{ minWidth: '44px', minHeight: '44px' }} className="min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={t('common.close') || 'Close join session'}>&times;</button>
                                                         </div>
                                                         <p id="header-join-instructions" className="text-xs text-slate-600">{t('session.join_instructions')}</p>
                                                         <div>
-                                                            <label htmlFor="header-join-host-id" className="block text-[11px] font-bold text-slate-600 mb-1 uppercase">{t('session.host_id_optional')}</label>
+                                                            <label htmlFor="header-join-host-id" className="block text-xs font-bold text-slate-600 mb-1 uppercase">{t('session.host_id_optional')}</label>
                                                             <input
                                                                 id="header-join-host-id"
                                                                 type="text"
@@ -2311,7 +2448,7 @@ function HeaderBar(props) {
                                                             />
                                                         </div>
                                                         <div>
-                                                            <label htmlFor="header-join-code" className="block text-[11px] font-bold text-slate-600 mb-1 uppercase">{t('session.code')}</label>
+                                                            <label htmlFor="header-join-code" className="block text-xs font-bold text-slate-600 mb-1 uppercase">{t('session.code')}</label>
                                                             <div className="flex gap-1">
                                                                 <input
                                                                     id="header-join-code"
@@ -2320,7 +2457,13 @@ function HeaderBar(props) {
                                                                     type="text"
                                                                     value={joinCodeInput}
                                                                     onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
-                                                                    onKeyDown={(e) => e.key === 'Enter' && joinClassSession(joinCodeInput)}
+                                                                    onKeyDown={(e) => {
+                                                                      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                                                                      if (e.key === 'Enter' && String(joinCodeInput || '').replace(/[^A-Z0-9]/gi, '').length === 5) {
+                                                                        e.preventDefault();
+                                                                        joinClassSession(joinCodeInput);
+                                                                      }
+                                                                    }}
                                                                     placeholder={t('session.code_placeholder')}
                                                                     maxLength={5}
                                                                     className="w-full text-center font-mono font-bold text-lg border border-slate-400 rounded p-1 uppercase focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800"
@@ -2330,7 +2473,7 @@ function HeaderBar(props) {
                                                                     data-header-join-submit
                                                                     disabled={String(joinCodeInput || '').replace(/[^A-Z0-9]/gi, '').length !== 5}
                                                                     onClick={() => joinClassSession(joinCodeInput)}
-                                                                    className="bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                    className="min-w-11 min-h-11 inline-flex items-center justify-center bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                                 >
                                                                     <ArrowRight size={16}/>
                                                                 </button>
@@ -2338,9 +2481,7 @@ function HeaderBar(props) {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            )}
-                                            {isJoinPopoverOpen && (
-                                                <div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleSetIsJoinPopoverOpenToFalse}></div>
+                                                </>
                                             )}
                                         </>
                                     )}
@@ -2356,10 +2497,10 @@ function HeaderBar(props) {
             )}
           </div>
         </div>
-        {showSetupPathMenu && (
+        {showSetupPathMenu && _headerPortal(
           <div
             className="fixed inset-0 z-[12000] bg-slate-950/70 backdrop-blur-sm flex items-start justify-end p-4 md:p-8"
-            onClick={() => setShowSetupPathMenu(false)}
+            onMouseDown={(e) => { if (e.target === e.currentTarget) setShowSetupPathMenu(false); }}
           >
             <div
               ref={_setupMenuRef}
@@ -2368,7 +2509,7 @@ function HeaderBar(props) {
               aria-modal="true"
               aria-labelledby="header-setup-options-title"
               className="w-full max-w-sm rounded-2xl border border-white/15 bg-slate-950 text-white shadow-2xl overflow-hidden outline-none"
-              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
             >
               <div className="px-5 py-4 border-b border-white/10 flex items-start justify-between gap-3">
                 <div>
@@ -2378,7 +2519,7 @@ function HeaderBar(props) {
                 <button
                   type="button"
                   onClick={() => setShowSetupPathMenu(false)}
-                  className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                  className="min-w-11 min-h-11 inline-flex items-center justify-center p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
                   aria-label={t('common.close') || 'Close'}
                 >
                   <span aria-hidden="true">✕</span>

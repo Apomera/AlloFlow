@@ -375,7 +375,7 @@
       ? input
       : text(input).split(/[\s,;|/\r\n]+/);
     var out = [];
-    var seen = {};
+    var seen = Object.create(null);
     for (var i = 0; i < parts.length && out.length < 40; i++) {
       var norm = normalizeItem(parts[i]);
       if (!norm) continue;
@@ -414,7 +414,7 @@
     for (var pi = 0; pi < pool.length; pi++) {
       if (item.category && pool[pi].category === item.category) inPool[pool[pi].answer] = pool[pi].answer;
     }
-    var alikes = LOOK_ALIKES[item.answer] || [];
+    var alikes = Object.prototype.hasOwnProperty.call(LOOK_ALIKES, item.answer) ? LOOK_ALIKES[item.answer] : [];
     for (var ai = 0; ai < alikes.length && choices.length < 6; ai++) {
       var alike = alikes[ai];
       if (inPool[alike] && !seen[alike]) {
@@ -469,7 +469,7 @@
     var knownSymbols = [];
 
     if (rehearsal) {
-      var knownMap = {};
+      var knownMap = Object.create(null);
       if (Array.isArray(o.known)) {
         o.known.forEach(function (k) { knownMap[text(k).trim().toLowerCase()] = true; });
       } else if (typeof o.known === 'string' && o.known.trim()) {
@@ -658,7 +658,7 @@
     var subtype = m[1].toLowerCase();
     var params = m[2] || '';
     var body = m[3] || '';
-    var isBase64 = /;base64(?:$|;)/i.test(params);
+    var isBase64 = /;base64$/i.test(params);
     if (isBase64) {
       var cleaned = body.replace(/\s+/g, '');
       if (!cleaned || cleaned.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(cleaned)) return '';
@@ -672,15 +672,29 @@
       return 'data:image/' + subtype + ';base64,' + cleaned;
     }
     if (subtype !== 'svg+xml') return '';
+    if (!body || body.length > SVG_MAX * 3) return '';
     var utf8 = '';
     try { utf8 = decodeURIComponent(body); } catch (_) { return ''; }
     if (!utf8 || utf8.length > SVG_MAX || svgRefusal(utf8)) return '';
     return s;
   }
 
+  var AUDIO_MAX_CHARS = 2 * 1024 * 1024;
   function safeDataAudio(src) {
     var s = text(src).trim();
-    return /^data:audio\/[a-z0-9.+-]+;/i.test(s) ? s : '';
+    if (!s || s.length > AUDIO_MAX_CHARS) return '';
+    var m = /^data:audio\/([a-z0-9.+-]+);base64,([A-Za-z0-9+/]+={0,2})$/i.exec(s);
+    if (!m || m[2].length % 4 !== 0) return '';
+    return 'data:audio/' + m[1].toLowerCase() + ';base64,' + m[2];
+  }
+
+  function cleanCredit(value) {
+    return text(value)
+      .replace(/https?:\/\//gi, '')
+      .replace(/\bopen\s*\(/gi, 'open [')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 240);
   }
 
   function lessonFromSymbolRunner(input) {
@@ -693,10 +707,10 @@
     var adapter = loader.CHECK_ADAPTERS.symbol_runner;
     var images = {};
     var audio = {};
-    var picByAns = {};
-    var audByAns = {};
-    var seenCredits = {};
-    var pictureMeta = {};
+    var picByAns = Object.create(null);
+    var audByAns = Object.create(null);
+    var seenCredits = Object.create(null);
+    var pictureMeta = Object.create(null);
     var attributions = [];
     var hasMulberry = false;
     var hasOpenMoji = false;
@@ -705,17 +719,18 @@
 
     var picMap = o.pictures && typeof o.pictures === 'object' ? o.pictures : {};
     var clipMap = o.clips && typeof o.clips === 'object' ? o.clips : {};
+    var hasOwn = Object.prototype.hasOwnProperty;
 
     plan.pool.forEach(function (sym) {
       if (!picByAns[sym.answer]) {
-        var rawPic = picMap[sym.answer] || picMap[sym.word];
+        var rawPic = hasOwn.call(picMap, sym.answer) ? picMap[sym.answer] : (hasOwn.call(picMap, sym.word) ? picMap[sym.word] : null);
         var imgData = safeDataImage(rawPic && typeof rawPic === 'object' ? (rawPic.src || rawPic.dataUri) : rawPic);
         if (imgData) {
           var pid = 'p' + (nextImgId++);
           images[pid] = imgData;
           picByAns[sym.answer] = pid;
           if (rawPic && typeof rawPic === 'object') {
-            var creditLine = text(rawPic.credit).trim();
+            var creditLine = cleanCredit(rawPic.credit);
             if (creditLine && !seenCredits[creditLine]) {
               seenCredits[creditLine] = true;
               attributions.push(creditLine);
@@ -724,13 +739,13 @@
             if (rawPic.set === 'openmoji' || /OpenMoji/i.test(creditLine)) hasOpenMoji = true;
             var metaKey = text(sym.answer).trim().toLowerCase();
             if (metaKey && (creditLine || rawPic.set)) {
-              pictureMeta[metaKey] = { credit: creditLine.slice(0, 240), set: text(rawPic.set).trim().slice(0, 32) };
+              pictureMeta[metaKey] = { credit: creditLine, set: text(rawPic.set).trim().slice(0, 32) };
             }
           }
         }
       }
       if (!audByAns[sym.answer]) {
-        var rawClip = clipMap[sym.answer] || clipMap[sym.word];
+        var rawClip = hasOwn.call(clipMap, sym.answer) ? clipMap[sym.answer] : (hasOwn.call(clipMap, sym.word) ? clipMap[sym.word] : null);
         var audData = safeDataAudio(rawClip && typeof rawClip === 'object' ? rawClip.dataUri : rawClip);
         if (audData) {
           var aid = 'a' + (nextAudId++);
@@ -890,9 +905,9 @@
           var rawPic = o.pictures[k];
           if (!rawPic || typeof rawPic !== 'object') return;
           var mk = text(k).trim().toLowerCase();
-          var cl = text(rawPic.credit).trim();
+          var cl = cleanCredit(rawPic.credit);
           var st = text(rawPic.set).trim();
-          if (mk && (cl || st)) pictureMeta[mk] = { credit: cl.slice(0, 240), set: st.slice(0, 32) };
+          if (mk && (cl || st)) pictureMeta[mk] = { credit: cl, set: st.slice(0, 32) };
         });
       }
     }
@@ -932,9 +947,10 @@
     if (at < 0) return html;
     var from = at + open.length;
     var to = html.indexOf('</script>', from);
+    if (to < 0) return html;
     var manifest;
-    try { manifest = JSON.parse(html.slice(from, to)); } catch (_) { return html; }
-    if (!manifest || typeof manifest !== 'object') return html;
+    try { manifest = JSON.parse(html.slice(from, to), function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; }); } catch (_) { return html; }
+    if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return html;
     Object.keys(extra).forEach(function (k) { manifest[k] = extra[k]; });
     return html.slice(0, from) + safeJson(manifest) + html.slice(to);
   }
@@ -955,9 +971,10 @@
     if (at < 0) return html;
     var from = at + open.length;
     var to = html.indexOf('</script>', from);
+    if (to < 0) return html;
     var manifest;
-    try { manifest = JSON.parse(html.slice(from, to)); } catch (_) { return html; }
-    if (!manifest || typeof manifest !== 'object') return html;
+    try { manifest = JSON.parse(html.slice(from, to), function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; }); } catch (_) { return html; }
+    if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return html;
     manifest.learner = clean;
     return html.slice(0, from) + safeJson(manifest) + html.slice(to);
   }
@@ -1012,7 +1029,7 @@
     if (sr && Array.isArray(sr.items)) {
       out.items = sr.items.map(function (s) { return text(s).trim(); }).filter(Boolean).slice(0, 40);
     } else if (out.mode === 'custom' && srBlock) {
-      var seenW = {};
+      var seenW = Object.create(null);
       srBlock.items.forEach(function (it) {
         var w = it && text(it.word || it.answer).trim();
         if (w && !seenW[w]) { seenW[w] = true; out.items.push(w); }
@@ -1022,7 +1039,7 @@
     if (sr && Array.isArray(sr.known)) {
       out.known = sr.known.map(function (s) { return text(s).trim().toLowerCase(); }).filter(Boolean).slice(0, 40);
     } else if (out.rehearsal && srBlock) {
-      var seenK = {};
+      var seenK = Object.create(null);
       srBlock.items.forEach(function (it) {
         var k = it && it.role === 'known' ? text(it.answer || it.word).trim().toLowerCase() : '';
         if (k && !seenK[k]) { seenK[k] = true; out.known.push(k); }
@@ -1030,16 +1047,18 @@
     }
 
     if (!isCheck && srBlock && lesson.images && typeof lesson.images === 'object') {
+      var hasOwn = Object.prototype.hasOwnProperty;
       var picMeta = sr && sr.pictureMeta && typeof sr.pictureMeta === 'object' ? sr.pictureMeta : null;
       var picAttribs = Array.isArray(m.attributions) ? m.attributions.filter(function (line) {
         return typeof line === 'string' && line.trim() && !/Machine-made recordings:/i.test(line);
       }) : [];
       srBlock.items.forEach(function (it) {
         if (!it || !it.image) return;
-        var src = safeDataImage(lesson.images[it.image]);
+        var src = hasOwn.call(lesson.images, it.image) ? safeDataImage(lesson.images[it.image]) : '';
         var ans = text(it.answer || it.word).trim().toLowerCase();
-        if (src && ans && !out.pictures[ans]) {
-          var meta = picMeta ? (picMeta[ans] || picMeta[text(it.answer || it.word).trim()] || null) : null;
+        if (src && ans && ans !== '__proto__' && !hasOwn.call(out.pictures, ans)) {
+          var rawAns = text(it.answer || it.word).trim();
+          var meta = picMeta ? (hasOwn.call(picMeta, ans) ? picMeta[ans] : (hasOwn.call(picMeta, rawAns) ? picMeta[rawAns] : null)) : null;
           var credit = (meta && text(meta.credit).trim()) || (picAttribs.length === 1 ? picAttribs[0].trim() : 'Restored from file');
           var set = (meta && text(meta.set).trim()) || (/Mulberry/i.test(credit) ? 'mulberry' : /OpenMoji/i.test(credit) ? 'openmoji' : /AlloFlow Curriculum Diagram/i.test(credit) ? 'diagram' : 'custom');
           out.pictures[ans] = { src: src, alt: text(it.word || ans), credit: credit, set: set };

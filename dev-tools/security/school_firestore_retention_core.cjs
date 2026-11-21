@@ -48,7 +48,13 @@ function instant(value) {
   let ms;
   if (value instanceof Date) ms = value.getTime();
   else if (value && typeof value.toMillis === 'function') ms = value.toMillis();
-  else if (object(value) && Number.isSafeInteger(Number(value.seconds)) && Number.isInteger(value.nanoseconds ?? value.nanos)) ms = Number(value.seconds) * 1000 + (value.nanoseconds ?? value.nanos) / 1e6;
+  else if (object(value)) {
+    const nanos = value.nanoseconds ?? value.nanos;
+    if (typeof value.seconds === 'number' && Number.isSafeInteger(value.seconds)
+      && Number.isInteger(nanos) && nanos >= 0 && nanos <= 999999999) {
+      ms = value.seconds * 1000 + nanos / 1e6;
+    }
+  }
   // Strings and bare numbers are deliberately NOT Firestore timestamp values.
   if (!Number.isFinite(ms) || ms < 0 || ms > 253402300799999) return null;
   return ms;
@@ -190,16 +196,35 @@ function validatePlanShape(plan, options, now) {
     || !Array.isArray(manifest.structuralPaths) || manifest.structuralPaths.length > LIMITS.structuralPaths
     || !Array.isArray(manifest.collectionPaths) || manifest.collectionPaths.length > LIMITS.collections) fail('RETENTION_PLAN_INVALID');
   const roots = rootPaths(plan.scope), seen = new Set();
+  const inAnyRoot = (p) => inTree(p, roots.session) || roots.signaling.some(tree => inTree(p, tree)) || p.startsWith(roots.assets + '/');
   for (const entry of manifest.documents) {
-    exact(entry, ['path', 'version', 'role']); pathParts(entry.path); version(entry.version);
-    if (seen.has(entry.path) || !['session', 'session-child', 'asset', 'asset-child', 'signaling', 'signaling-child'].includes(entry.role)) fail('RETENTION_PLAN_INVALID');
+    exact(entry, ['path', 'version', 'role']);
+    const parts = pathParts(entry.path);
+    version(entry.version);
+    if (parts.length % 2 !== 0 || seen.has(entry.path) || !['session', 'session-child', 'asset', 'asset-child', 'signaling', 'signaling-child'].includes(entry.role)) fail('RETENTION_PLAN_INVALID');
     seen.add(entry.path);
-    const sessionTree = inTree(entry.path, roots.session);
-    const signalingTree = roots.signaling.some(tree => inTree(entry.path, tree));
-    const assetTree = entry.path.startsWith(roots.assets + '/');
-    if (!sessionTree && !signalingTree && !assetTree) fail('RETENTION_PATH_INVALID');
+    const sessionRoot = entry.path === roots.session;
+    const sessionChild = entry.path.startsWith(roots.session + '/');
+    const signalingRoot = roots.signaling.includes(entry.path);
+    const signalingChild = roots.signaling.some(tree => entry.path.startsWith(tree + '/'));
+    const assetRoot = entry.path.startsWith(roots.assets + '/') && parts.length === 6;
+    const assetChild = entry.path.startsWith(roots.assets + '/') && parts.length > 6;
+    const roleMatches = (entry.role === 'session' && sessionRoot)
+      || (entry.role === 'session-child' && sessionChild)
+      || (entry.role === 'asset' && assetRoot)
+      || (entry.role === 'asset-child' && assetChild)
+      || (entry.role === 'signaling' && signalingRoot)
+      || (entry.role === 'signaling-child' && signalingChild);
+    if (!roleMatches) fail('RETENTION_PATH_INVALID');
   }
-  for (const p of [...manifest.structuralPaths, ...manifest.collectionPaths]) pathParts(p);
+  for (const p of manifest.structuralPaths) {
+    const parts = pathParts(p);
+    if (parts.length % 2 !== 0 || !inAnyRoot(p)) fail('RETENTION_PATH_INVALID');
+  }
+  for (const p of manifest.collectionPaths) {
+    const parts = pathParts(p);
+    if (parts.length % 2 !== 1 || !inAnyRoot(p)) fail('RETENTION_PATH_INVALID');
+  }
   if (!seen.has(roots.session)) fail('RETENTION_PLAN_INVALID');
   if (options.confirmProject !== plan.scope.projectId) fail('RETENTION_PROJECT_CONFIRMATION_REQUIRED');
   if (typeof plan.planHash !== 'string' || !/^[a-f0-9]{64}$/.test(plan.planHash) || options.reviewedHash !== plan.planHash || hashPlan(plan) !== plan.planHash) fail('RETENTION_PLAN_HASH_MISMATCH');

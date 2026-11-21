@@ -77,13 +77,30 @@
         return Math.max(min, Math.min(max, n));
     }
 
+    function safeJsonParse(raw, maxChars) {
+        if (typeof raw !== 'string' || !raw || (maxChars && raw.length > maxChars)) return null;
+        try {
+            return JSON.parse(raw, function (key, val) {
+                return (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : val;
+            });
+        } catch (e) { return null; }
+    }
+
+    function safeAssign(target, source) {
+        if (!source || typeof source !== 'object' || Array.isArray(source)) return target;
+        Object.keys(source).forEach(function (key) {
+            if (key !== '__proto__' && key !== 'constructor' && key !== 'prototype') target[key] = source[key];
+        });
+        return target;
+    }
+
     // ── Config ──────────────────────────────────────────────────────────────
     // Returns null for an unusable config, matching normalizeAssignmentActivityConfig's
     // contract (Code.gs:919) so the mailbox adapter can delegate to this directly.
     function normalizeBoardConfig(raw) {
         let source = raw;
         if (typeof source === 'string') {
-            try { source = JSON.parse(source); } catch (e) { return null; }
+            source = safeJsonParse(source, LIMITS.DOC_BYTES);
         }
         if (!source || typeof source !== 'object' || Array.isArray(source)) return null;
         if (source.type !== 'question_board') return null;
@@ -93,6 +110,9 @@
 
         const prompt = sanitizeText(source.prompt, LIMITS.PROMPT_CHARS);
         if (!prompt) return null;
+
+        const rawExpires = sanitizeText(source.expiresAt, 64);
+        const safeExpires = (rawExpires && isFinite(Date.parse(rawExpires))) ? rawExpires : '';
 
         return {
             v: VERSION,
@@ -106,7 +126,7 @@
             minParticipants: clampInt(source.minParticipants, 3, 10, 3),
             itemsPerStudent: clampInt(source.itemsPerStudent, 1, LIMITS.ITEMS_PER_STUDENT_MAX, 5),
             boardCap: clampInt(source.boardCap, 1, 5000, 400),
-            expiresAt: String(source.expiresAt || '')
+            expiresAt: safeExpires
         };
     }
 
@@ -115,7 +135,7 @@
     // (spec §8.1). A board is not anonymous: uid identifies, displayName is the
     // nickname peers see.
     function normalizeActor(raw) {
-        const uid = String((raw && raw.uid) || '').trim();
+        const uid = sanitizeText((raw && raw.uid) || '', 128);
         if (!uid) return null;
         return {
             uid,
@@ -149,7 +169,10 @@
 
         const config = (board && board.config) || {};
         const floor = clampInt(config.minParticipants, 3, 10, 3);
-        const floorMet = distinctAuthorCount(items) >= floor;          // K_ANONYMITY_FLOOR
+        const reportedParticipants = (board && typeof board.participantCount === 'number' && Number.isFinite(board.participantCount))
+            ? Math.max(0, Math.floor(board.participantCount))
+            : 0;
+        const floorMet = Math.max(distinctAuthorCount(items), reportedParticipants) >= floor; // K_ANONYMITY_FLOOR
 
         return items.filter((it) => {
             if (!it) return false;
@@ -171,6 +194,7 @@
 
         if (op === 'setStatus' || op === 'setAnswered' || op === 'configure') {
             if (!isHost(a)) return { ok: false, reason: 'host-only', invariant: 'STATUS_IS_HOST_ONLY' };
+            if (isExpired(board)) return { ok: false, reason: 'expired', invariant: 'EXPIRY_IS_READ_ONLY' };
             return { ok: true };
         }
 
@@ -196,7 +220,8 @@
 
         const cap = clampInt(config.boardCap, 1, 5000, 400);
         if (items.length >= cap) return { ok: false, reason: 'board-full', invariant: 'BOARD_CAP' };
-        if (estimateBoardBytes(board) >= LIMITS.DOC_BYTES) {
+        const projectedItem = normalizeItem(payload, { uid: claimedUid, role: a.role, displayName: a.displayName });
+        if (estimateBoardBytes(board) >= LIMITS.DOC_BYTES || (projectedItem && estimateBoardBytes({ config: config, items: items.concat([projectedItem]) }) > LIMITS.DOC_BYTES)) {
             return { ok: false, reason: 'board-bytes', invariant: 'BOARD_CAP' };
         }
 
@@ -215,8 +240,10 @@
         const a = normalizeActor(actor);
         const text = sanitizeText(raw && raw.text, LIMITS.ITEM_CHARS);   // TEXT_IS_SANITIZED
         if (!text || !a) return null;
+        const rawTs = Number(raw && raw.createdAt);
+        const createdAt = (Number.isFinite(rawTs) && rawTs > 0) ? rawTs : Date.now();
         return {
-            id: String((raw && raw.id) || ''),
+            id: sanitizeText((raw && raw.id) || '', 128),
             uid: a.uid,
             displayName: a.displayName,
             text,
@@ -225,17 +252,20 @@
             // 'held' explicitly for anything it flags.
             status: raw && raw.status === 'held' ? 'held' : 'approved',
             answered: false,
-            createdAt: Number((raw && raw.createdAt) || Date.now())
+            createdAt: createdAt
         };
     }
 
     function markAnswered(item, patch) {
         const note = sanitizeText(patch && patch.note, LIMITS.ANSWER_NOTE_CHARS);
-        return Object.assign({}, item, {
+        const rawAt = Number(patch && patch.at);
+        const at = (Number.isFinite(rawAt) && rawAt > 0) ? rawAt : Date.now();
+        const resourceId = (patch && patch.resourceId) ? sanitizeText(patch.resourceId, 128) : undefined;
+        return safeAssign(safeAssign({}, item), {
             answered: {
-                at: Number((patch && patch.at) || Date.now()),
+                at: at,
                 note: note || undefined,
-                resourceId: (patch && patch.resourceId) ? String(patch.resourceId) : undefined
+                resourceId: resourceId || undefined
             }
         });
     }
@@ -363,7 +393,10 @@
             addItem(board, actor, payload) {
                 const verdict = authorize(actor, 'create', board, payload);
                 if (!verdict.ok) return verdict;
-                const item = normalizeItem(payload, actor);
+                const effectivePayload = (board && board.config && board.config.revealPolicy === 'teacher_review' && !(payload && payload.status))
+                    ? safeAssign(safeAssign({}, payload), { status: 'held' })
+                    : payload;
+                const item = normalizeItem(effectivePayload, actor);
                 if (!item) return { ok: false, reason: 'empty-text' };
                 item.id = 'Q-' + (board.items.length + 1);
                 board.items.push(item);
@@ -374,7 +407,7 @@
                 if (!verdict.ok) return verdict;
                 const item = board.items.filter((i) => i.id === itemId)[0];
                 if (!item) return { ok: false, reason: 'no-item' };
-                item.status = status === 'approved' ? 'approved' : (status === 'rejected' ? 'rejected' : 'held');
+                item.status = status === 'approved' ? 'approved' : (status === 'hidden' ? 'hidden' : (status === 'rejected' ? 'rejected' : 'held'));
                 return { ok: true };
             }
         };

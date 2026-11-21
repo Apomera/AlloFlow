@@ -67,19 +67,42 @@ function createPathFork() {
     if (typeof t !== 'function') t = noText;
     const [remember, setRemember] = React.useState(false);
     const boxRef = React.useRef(null);
+    const backdropDownRef = React.useRef(null);
+    const trapRef = React.useRef(null);
     const restoreFocus = React.useRef(true);
     const id = 'path-fork-' + (React.useId ? React.useId().replace(/[^\w-]/g, '') : 'dialog');
     React.useEffect(() => {
+      const box = boxRef.current;
       const returnTo = document.activeElement;
-      const first = boxRef.current && boxRef.current.querySelector('button');
+      const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+      const trap = { root: box };
+      trapRef.current = trap;
+      trapStack.push(trap);
+      const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+      const alloScrollLocked = !!document.body;
+      if (alloScrollLocked && ++alloScrollLock.count === 1) {
+        alloScrollLock.prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+      }
+      const first = box && box.querySelector('button');
       if (first) first.focus();
       return () => {
+        if (alloScrollLocked) {
+          alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
+          if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+        }
+        const wasTop = trapStack[trapStack.length - 1] === trap;
+        const idx = trapStack.indexOf(trap);
+        if (idx !== -1) trapStack.splice(idx, 1);
+        if (trapRef.current === trap) trapRef.current = null;
         // Quick Start opens its own wizard; pulling focus back here would steal it.
-        if (!restoreFocus.current) return;
+        if (!restoreFocus.current || !wasTop) return;
         try { if (returnTo && returnTo.isConnected && typeof returnTo.focus === 'function') returnTo.focus(); } catch (_) {}
       };
     }, []);
     const onKeyDown = (event) => {
+      const trapStack = window.__alloFocusTrapStack;
+      if (Array.isArray(trapStack) && trapStack.length > 0 && trapRef.current && trapStack[trapStack.length - 1] !== trapRef.current) return;
       if (event.key === 'Escape') {
         if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault(); event.stopPropagation(); onCancel(); return;
@@ -101,7 +124,13 @@ function createPathFork() {
     const action = 'inline-flex min-h-11 w-full items-center justify-center rounded-lg border px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
     const dialog = (
       <div data-path-fork className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 p-4"
-        onKeyDown={onKeyDown} onClick={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
+        onKeyDown={onKeyDown}
+        onMouseDown={(event) => { backdropDownRef.current = (event.target === event.currentTarget); }}
+        onClick={(event) => {
+          const allow = backdropDownRef.current !== false;
+          backdropDownRef.current = null;
+          if (event.target === event.currentTarget && allow) onCancel();
+        }}>
         <div ref={boxRef} role="dialog" aria-modal="true" aria-labelledby={id + '-title'} aria-describedby={id + '-body'}
           className="w-full max-w-md rounded-2xl border border-slate-300 bg-white p-5 text-slate-900 shadow-xl">
           <h2 id={id + '-title'} className="m-0 text-lg font-bold">{say(t('sidebar.path_fork_title'), 'Two roads diverged in a wood')}</h2>
@@ -515,7 +544,7 @@ Return only JSON: {"terms": ["term"]}`;
             <label className="block text-xs font-bold" htmlFor={id + '-word-suggest'}>{say(t('source_start.suggest_label'), 'Need ideas? Suggest words for a topic')}
               <input id={id + '-word-suggest'} data-source-word-suggest-topic type="text" value={topic} maxLength={300} disabled={blocked}
                 aria-describedby={id + '-word-suggest-help'} onChange={event => { setTopic(event.target.value); setSuggestNote(''); }}
-                onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); suggestWords(); } }} className={fieldClass} />
+                onKeyDown={event => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; if (event.key === 'Enter') { event.preventDefault(); suggestWords(); } }} className={fieldClass} />
             </label>
             <p id={id + '-word-suggest-help'} className="m-0 mt-1 text-xs leading-relaxed text-slate-700">{suggestRoom < 1
               ? say(t('source_start.suggest_full'), 'Your list already has 40 entries.')
@@ -647,10 +676,10 @@ const UNIVERSAL_GRADE_CHOICES = [
 const SIDEBAR_PANEL_UI = Object.freeze({
   settingsSurface: 'border-b border-slate-200/80 bg-slate-50/70 p-3.5 flex flex-col gap-3.5',
   settingsGroup: 'space-y-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm',
-  label: 'block mb-1.5 text-[11px] font-semibold leading-4 tracking-wide text-slate-700',
+  label: 'block mb-1.5 text-xs font-semibold leading-4 tracking-wide text-slate-700',
   control: 'w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-500 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none',
   textarea: 'w-full min-h-20 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-500 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none',
-  help: 'mt-1.5 text-[11px] leading-relaxed text-slate-500',
+  help: 'mt-1.5 text-xs leading-relaxed text-slate-600',
   checkbox: 'h-4 w-4 rounded border-slate-300 text-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50',
   disclosure: 'flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs font-semibold transition-colors motion-reduce:transition-none focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 disabled:opacity-70',
   primaryAction: 'group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left transition-colors motion-reduce:transition-none hover:bg-indigo-50/60 focus-visible:z-10 focus-visible:bg-indigo-50/60 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-50',
@@ -726,7 +755,7 @@ function ToolCatalogControls(props) {
       {(filterActive || canHide) && (
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           {filterActive ? (
-            <p className="min-w-0 flex-1 rounded-lg bg-slate-100 px-2 py-1.5 text-[11px] font-semibold leading-snug text-slate-700">
+            <p className="min-w-0 flex-1 rounded-lg bg-slate-100 px-2 py-1.5 text-xs font-semibold leading-snug text-slate-700">
               {filterNote}
             </p>
           ) : <span aria-hidden="true" />}
@@ -750,7 +779,7 @@ function ToolCatalogControls(props) {
           <span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700" aria-live="polite">{(translate('sidebar.tool_finder_shown') || '{n} shown').replace('{n}', String(shownCount))}</span>
         </div>
         <div className="relative mt-1">
-          <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
           <input id="tool-catalog-search" type="search" value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder={translate('sidebar.tool_finder_search_placeholder') || 'Search glossary, visuals, assessment...'} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white py-2 ps-9 pe-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 sm:text-sm" />
         </div>
         <div role="group" aria-label={translate('sidebar.tool_finder_group_aria') || 'Narrow the tool list by purpose'} className="mt-3 flex flex-wrap gap-2">
@@ -829,7 +858,7 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
         <span className="flex items-center gap-1.5 min-w-0">
           {hasValue
             ? <CheckCircle2 size={12} className="text-indigo-600 shrink-0" />
-            : <Plus size={12} className="text-slate-500 shrink-0" />}
+            : <Plus size={12} className="text-slate-600 shrink-0" />}
           <span className="truncate">
             {hasValue ? `${label}: "${preview}${String(value).trim().length > 48 ? '…' : ''}"` : label}
             {!hasValue && optional && <span className="text-slate-600 font-normal"> {t('common.optional')}</span>}
@@ -1043,7 +1072,7 @@ function SurpriseMeCompare(props) {
             {DIMENSIONS.map(function (dimension) {
               const value = dimension[1](direction);
               return value ? <div key={dimension[0]} className="mt-1">
-                <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{dimension[0]}</div>
+                <div className="text-xs font-bold uppercase tracking-wide text-slate-600">{dimension[0]}</div>
                 <div>{value}</div>
               </div> : null;
             })}
@@ -1054,7 +1083,7 @@ function SurpriseMeCompare(props) {
           </div>;
         })}
       </div>
-      {hood && hood.prerequisites.length > 0 && <div className="mt-1 text-[10px] text-slate-600">{sfText('prereq_line', 'Prerequisites (from source data): {codes} — shared by all three directions.', { codes: hood.prerequisites.map(function (p) { return p.code; }).filter(Boolean).join(', ') })}</div>}
+      {hood && hood.prerequisites.length > 0 && <div className="mt-1 text-xs text-slate-600">{sfText('prereq_line', 'Prerequisites (from source data): {codes} — shared by all three directions.', { codes: hood.prerequisites.map(function (p) { return p.code; }).filter(Boolean).join(', ') })}</div>}
       {pinnedIndex !== null && (
         <div className="mt-2 rounded border border-violet-300 bg-white p-2">
           <div className="font-bold text-violet-950">{sfText('edit_before_using', 'Edit before using — your judgment wins over the proposal')}</div>
@@ -1070,6 +1099,7 @@ function SurpriseMeCompare(props) {
 }
 
 function UniversalSettingsPanel(props) {
+  const aiTextAvailable = useAiTextAvailable();
   const {
     InfoTooltip, addInterest, addToast, aiStandardQuery,
     dokLevel, gradeLevel, handleAddStandard, handleFindStandards, handleUseResolvedStandard,
@@ -1172,7 +1202,8 @@ function UniversalSettingsPanel(props) {
   // props.callGemini is null when the host hides student AI; only fall back to
   // the window global when the host passed nothing at all (undefined), and
   // never to a blocked one.
-  const surpriseAi = props.callGemini !== undefined ? props.callGemini : (typeof window !== 'undefined' && typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked ? window.callGemini : null);
+  const _rawSurpriseAi = props.callGemini !== undefined ? props.callGemini : (typeof window !== 'undefined' && typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked ? window.callGemini : null);
+  const surpriseAi = aiTextAvailable && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) ? _rawSurpriseAi : null;
   const runSurpriseMe = async () => {
     const match = localResolution && localResolution.match;
     if (!match || !localStandardsProvider || !surpriseAi) return;
@@ -1257,7 +1288,7 @@ function UniversalSettingsPanel(props) {
                   <span className="text-sm font-bold text-indigo-900 flex gap-2 items-center">
                     <Settings2 size={16} className="shrink-0" aria-hidden="true"/> {t('universal.title') || 'Universal Settings'}
                   </span>
-                  <span className="block text-[11px] text-indigo-700/80 mt-0.5 truncate">{isOpen ? (t('universal.subtitle') || 'Apply to most resources you generate') : summaryBits.join(' · ')}</span>
+                  <span className="block text-xs text-indigo-700/80 mt-0.5 truncate">{isOpen ? (t('universal.subtitle') || 'Apply to most resources you generate') : summaryBits.join(' · ')}</span>
                 </span>
                 <ChevronDown size={16} aria-hidden="true" className={`text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`}/>
               </button>
@@ -1265,7 +1296,7 @@ function UniversalSettingsPanel(props) {
                 <div className="animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     {/* One sentence on what these do (2026-10-19). Analyze Source now compares its own
                         measurement with the grade and Depth of Knowledge targets, so no exception is stated. */}
-                    <p className="text-[11px] leading-relaxed text-slate-600">
+                    <p className="text-xs leading-relaxed text-slate-600">
                       {t('universal.scope_note') || 'These steer what AlloFlow writes for you.'}
                     </p>
                     {/* One column at every width: the panel lives in the sidebar, and viewport
@@ -1443,21 +1474,22 @@ function UniversalSettingsPanel(props) {
                             </div>
                             {standardMode === 'ai' ? (
                                 <div className="space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">
+                                    {!aiTextAvailable && <AiSetupNotice t={t} />}
                                     <div className="flex gap-2">
                                         <input aria-label={t('common.enter_ai_standard_query')}
                                             type="text"
                                             value={aiStandardQuery}
                                             onChange={(e) => setAiStandardQuery(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(gradeLevel)}
+                                            onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && aiTextAvailable) handleFindStandards(gradeLevel); }}
                                             placeholder={(t('standards.describe_skill_placeholder', { grade: gradeLevel }) || `Describe skill (e.g. "identify main idea") for ${gradeLevel}...`)}
                                             className={`${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow text-xs`}
                                         />
                                         <button type="button"
-                                            aria-label={t('common.refresh')}
+                                            aria-label={t('common.find_relevant_standards') || 'Find relevant standards'}
                                             onClick={() => handleFindStandards(gradeLevel)}
-                                            disabled={!aiStandardQuery.trim() || isFindingStandards}
+                                            disabled={!aiStandardQuery.trim() || isFindingStandards || !aiTextAvailable}
                                             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-indigo-600 bg-indigo-600 text-white shadow-sm transition-colors motion-reduce:transition-none hover:border-indigo-700 hover:bg-indigo-700 focus-visible:ring-4 focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none"
-                                            title={t('common.find_relevant_standards')}
+                                            title={!aiTextAvailable ? (t('sidebar.needs_ai_setup') || 'Needs AI setup') : t('common.find_relevant_standards')}
                                         >
                                             {isFindingStandards ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Search size={14}/>}
                                         </button>
@@ -1479,10 +1511,10 @@ function UniversalSettingsPanel(props) {
                                                     className="w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
                                                 >
                                                     <span className="flex justify-between items-start gap-1">
-                                                        <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">{std.code}</span>
-                                                        <span className="text-[11px] text-slate-600 uppercase">{std.framework}</span>
+                                                        <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">{std.code}</span>
+                                                        <span className="text-xs text-slate-600 uppercase">{std.framework}</span>
                                                     </span>
-                                                    <span className="block text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900">
+                                                    <span className="block text-xs text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900">
                                                         {std.description}
                                                     </span>
                                                 </button>
@@ -1490,7 +1522,7 @@ function UniversalSettingsPanel(props) {
                                         </div>
                                     )}
                                     {suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && (
-                                        <div className="text-[11px] text-slate-600 italic text-center p-1">
+                                        <div className="text-xs text-slate-600 italic text-center p-1">
                                             {t('standards.press_search_hint')}
                                         </div>
                                     )}
@@ -1505,7 +1537,7 @@ function UniversalSettingsPanel(props) {
                                                 setStandardInputValue(e.target.value);
                                                 setLocalResolution(null);
                                             }}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
+                                            onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') handleAddStandard(); }}
                                             placeholder={t('standards.manual_placeholder')}
                                             className={`${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`}
                                         />
@@ -1524,12 +1556,12 @@ function UniversalSettingsPanel(props) {
                                                 <button type="button"
                                                     onClick={resolveFromLocalSnapshot}
                                                     disabled={!standardInputValue.trim() || isResolvingLocal}
-                                                    className="inline-flex items-center gap-1 rounded bg-cyan-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    className="inline-flex items-center gap-1 rounded bg-cyan-700 px-2 py-1 text-xs font-bold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
                                                 >
                                                     {isResolvingLocal ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Search size={12}/>} {t('standards_finder.resolve_local') || 'Resolve from local snapshot'}
                                                 </button>
                                                 {localStandardsManifest && (
-                                                    <span className="text-[10px] text-cyan-900" title={localStandardsManifest.attribution || localStandardsManifest.provider}>
+                                                    <span className="text-xs text-cyan-900" title={localStandardsManifest.attribution || localStandardsManifest.provider}>
                                                         {localStandardsManifest.datasetVersion || localStandardsManifest.provider}
                                                     </span>
                                                 )}
@@ -1537,18 +1569,18 @@ function UniversalSettingsPanel(props) {
                                             {/* Usage boundary from the dataset manifest review: visible, not a tooltip.
                                                 Graph matches support educator judgment; presenting them as official
                                                 certification or using them for high-stakes decisions is out of bounds. */}
-                                            <p className="text-[10px] leading-snug text-cyan-900/80">
+                                            <p className="text-xs leading-snug text-cyan-900/80">
                                                 {(localStandardsManifest && localStandardsManifest.attribution) || 'Standards data: Learning Commons Knowledge Graph (CC BY 4.0).'}{' '}
                                                 {t('standards_finder.evidence_disclaimer') || 'Matches are alignment evidence to support educator judgment, not official certification, and not for grading, placement, or evaluation.'}
                                             </p>
                                             {localResolution && localResolution.status === 'resolved' && localResolution.match && (
-                                                <div role="status" className="rounded border border-emerald-200 bg-white p-2 text-[11px] text-slate-700">
-                                                    <div className="font-bold text-emerald-800">{t('standards_finder.exact_match', { code: localResolution.match.code }) || ('Exact local match: ' + localResolution.match.code)}</div>
+                                                <div className="rounded border border-emerald-200 bg-white p-2 text-xs text-slate-700">
+                                                    <div role="status" className="font-bold text-emerald-800">{t('standards_finder.exact_match', { code: localResolution.match.code }) || ('Exact local match: ' + localResolution.match.code)}</div>
                                                     <div className="mt-0.5">{localResolution.match.label || localResolution.match.text}</div>
                                                     <button type="button"
                                                         onClick={() => handleUseResolvedStandard && handleUseResolvedStandard(localResolution)}
                                                         disabled={targetStandards.length > 0 || typeof handleUseResolvedStandard !== 'function'}
-                                                        className="mt-2 rounded bg-emerald-700 px-2 py-1 font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                                        className="mt-2 min-h-11 rounded bg-emerald-700 px-3 py-1.5 font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
                                                         {t('standards_finder.use_resolved') || 'Use resolved standard'}
                                                     </button>
@@ -1556,7 +1588,7 @@ function UniversalSettingsPanel(props) {
                                                 </div>
                                             )}
                                             {localResolution && localResolution.status === 'resolved' && localResolution.match && surpriseAi && (
-                                                <div className="rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700">
+                                                <div className="rounded border border-violet-200 bg-violet-50/70 p-2 text-xs text-slate-700">
                                                     <div className="flex items-center justify-between gap-2">
                                                         <span className="font-bold text-violet-900">{t('standards_finder.surprise_heading') || 'Surprise me: lessons in this learning space'}</span>
                                                         <button type="button" onClick={runSurpriseMe} disabled={surpriseState === 'loading'}
@@ -1571,8 +1603,8 @@ function UniversalSettingsPanel(props) {
                                                 </div>
                                             )}
                                             {localResolution && localResolution.status === 'ambiguous' && (
-                                                <div role="status" className="rounded border border-amber-200 bg-white p-2 text-[11px] text-slate-700">
-                                                    <div className="font-bold text-amber-800">{t('standards_finder.ambiguous_framework') || 'Multiple exact matches. Choose the intended framework.'}</div>
+                                                <div className="rounded border border-amber-200 bg-white p-2 text-xs text-slate-700">
+                                                    <div role="status" className="font-bold text-amber-800">{t('standards_finder.ambiguous_framework') || 'Multiple exact matches. Choose the intended framework.'}</div>
                                                     <div className="mt-1 flex flex-wrap gap-1">
                                                         {(localResolution.candidates || []).map((candidate) => (
                                                             <button type="button" key={candidate.id}
@@ -1586,7 +1618,7 @@ function UniversalSettingsPanel(props) {
                                                 </div>
                                             )}
                                             {localResolution && localResolution.status === 'not-found' && (
-                                                <div role="status" className="rounded border border-slate-300 bg-white p-2 text-[11px] text-slate-700">
+                                                <div role="status" className="rounded border border-slate-300 bg-white p-2 text-xs text-slate-700">
                                                     <div className="font-bold">{t('standards_finder.no_exact_match') || 'No exact local match.'}</div>
                                                     {(localResolution.candidates || []).length > 0 && (
                                                         <div className="mt-1">{t('standards_finder.possible_codes') || 'Possible codes to review:'}{' '}{(localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(', ')}. They were not selected automatically.</div>
@@ -1594,7 +1626,7 @@ function UniversalSettingsPanel(props) {
                                                 </div>
                                             )}
                                             {localResolution && localResolution.status === 'error' && (
-                                                <div role="alert" className="rounded border border-red-200 bg-white p-2 text-[11px] text-red-700">{t('standards_finder.resolve_error') || 'The local snapshot could not resolve this entry.'}</div>
+                                                <div role="alert" className="rounded border border-red-200 bg-white p-2 text-xs text-red-700">{t('standards_finder.resolve_error') || 'The local snapshot could not resolve this entry.'}</div>
                                             )}
                                         </div>
                                     )}
@@ -1603,7 +1635,7 @@ function UniversalSettingsPanel(props) {
                         {targetStandards.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                                 {targetStandards.map((std, idx) => (
-                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full">
+                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full">
                                         <span className="truncate" title={std}>{std}</span>
                                         <button type="button"
                                             aria-label={t('common.close')}
@@ -1683,7 +1715,7 @@ function UniversalSettingsPanel(props) {
                             </select>
                             {differentiationRange === 'Custom' && (
                               <div className="mt-2">
-                                <p className="mb-1.5 text-[11px] leading-relaxed text-slate-500">
+                                <p className="mb-1.5 text-xs leading-relaxed text-slate-600">
                                   {t('universal.diff_custom_hint') || 'Pick any mix. Your target grade is always included.'}
                                 </p>
                                 <div className="flex flex-wrap gap-1">
@@ -1707,7 +1739,7 @@ function UniversalSettingsPanel(props) {
                             )}
                             {differentiationRange !== 'None' && (
                               <div className="mt-2">
-                                <p className="mb-1.5 text-[11px] leading-relaxed text-slate-500">
+                                <p className="mb-1.5 text-xs leading-relaxed text-slate-600">
                                   {t('universal.diff_types_hint') || 'Generate a differentiated set for:'}
                                 </p>
                                 <div className="flex flex-wrap gap-1">
@@ -1725,7 +1757,7 @@ function UniversalSettingsPanel(props) {
                                   })}
                                 </div>
                                 {/* One generation is an ordinary run: no extra cost to flag, and no "1 generations". */}
-                                {diffRunCount > 1 && <p className="mt-1.5 text-[11px] leading-relaxed text-amber-800">
+                                {diffRunCount > 1 && <p className="mt-1.5 text-xs leading-relaxed text-amber-800">
                                   {(t('universal.diff_cost') || 'About {n} generations per run.').replace('{n}', String(diffRunCount))}
                                 </p>}
                               </div>
@@ -1810,7 +1842,7 @@ function AdventurePanel(props) {
                                     style={{ width: `${Math.min(100, (globalPoints / studentProjectSettings.adventureUnlockXP) * 100)}%` }}
                                 ></div>
                             </div>
-                            <p className="text-[11px] mt-1 font-mono opacity-70">{globalPoints} / {studentProjectSettings.adventureUnlockXP} XP</p>
+                            <p className="text-xs mt-1 font-mono opacity-70">{globalPoints} / {studentProjectSettings.adventureUnlockXP} XP</p>
                             <p className="text-xs mt-3 text-purple-200 font-medium">{t('adventure.locked_tip')}</p>
                         </div>
                     ) : (
@@ -1828,7 +1860,7 @@ function AdventurePanel(props) {
                             {isTeacherMode && adventureState.currentScene && !adventureState.isGameOver && <details>
                               <summary className="min-h-11 py-3 cursor-pointer text-sm font-bold text-slate-800">{learningText('teacher_controls', 'Teacher story controls')}</summary>
                                 <div className="bg-slate-50 p-2 rounded border border-slate-100 flex flex-col gap-2">
-                                    <div className="flex justify-between text-[11px] text-slate-600">
+                                    <div className="flex justify-between text-xs text-slate-600">
                                         <div className="flex flex-col items-center">
                                             <span>{learningText('decisions', 'Decisions')}</span>
                                             <span className={`font-bold ${completedDecisions >= (manualFinaleMinimum) ? 'text-green-600' : 'text-slate-600'}`}>
@@ -1866,7 +1898,7 @@ function AdventurePanel(props) {
                                             addToast(t('adventure.climax.toast_initiated'), "success");
                                         }}
                                         disabled={adventureState.climax?.isActive || adventureState.isLoading || isProcessing}
-                                        className={`w-full py-1.5 rounded text-[11px] font-bold uppercase tracking-wider transition-colors motion-reduce:transition-none ${
+                                        className={`w-full py-1.5 rounded text-xs font-bold uppercase tracking-wider transition-colors motion-reduce:transition-none ${
                                             adventureState.climax?.isActive
                                             ? 'bg-slate-100 text-slate-600 cursor-not-allowed'
                                             : 'bg-white border border-purple-200 text-purple-600 hover:bg-purple-50'
@@ -2193,7 +2225,7 @@ function MathPanel(props) {
                                     >
                                         {t('fluency_maze.open_button') || '🚪 Open Maze (full view)'}
                                     </button>
-                                    <p className="text-[10px] text-amber-700 mt-2 italic">{t('fluency_maze.saved_note') || 'Saved to history so you can re-enter later.'}</p>
+                                    <p className="text-xs text-amber-700 mt-2 italic">{t('fluency_maze.saved_note') || 'Saved to history so you can re-enter later.'}</p>
                                 </div>
                             );
                         })()}
@@ -2207,12 +2239,12 @@ function MathPanel(props) {
 })}
                         {(mathMode === 'Problem Set Generator' || mathMode === 'Spiral Review' || mathMode === 'Difficulty Ladder' || mathMode === 'Word Problems from Source' || mathMode === 'Freeform Builder') && (
                             <div>
-                                <label className={SIDEBAR_PANEL_UI.label}>{t('math.quantity')}</label>
+                                <label htmlFor="math-quantity-input" className={SIDEBAR_PANEL_UI.label}>{t('math.quantity')}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
                                         <ListOrdered size={12} className="text-slate-600" />
                                     </div>
-                                    <CountInput aria-label={t('common.text_field')}
+                                    <CountInput id="math-quantity-input" aria-label={t('math.quantity') || 'Number of problems'}
                                         data-help-key="math_quantity"
                                         type="number"
                                         min="1"
@@ -2224,8 +2256,10 @@ function MathPanel(props) {
                                 </div>
                             </div>
                         )}
+                        {mathMode !== 'Fluency Maze' && mathMode !== 'Fluency Probes' && (
+                        <>
                         <div>
-                            <label className={SIDEBAR_PANEL_UI.label}>
+                            <label htmlFor="math-problem-input" className={SIDEBAR_PANEL_UI.label}>
                                 {(mathMode === 'Problem Set Generator' || mathMode === 'Spiral Review' || mathMode === 'Difficulty Ladder')
                                     ? t('math.labels.topic_skill')
                                     : mathMode === 'Word Problems from Source'
@@ -2238,6 +2272,7 @@ function MathPanel(props) {
                                     <Calculator size={14} className="text-slate-600" />
                                 </div>
                                 <textarea
+                                    id="math-problem-input"
                                     aria-label={t('math.labels.problem_question') || 'Math problem input'}
                                     data-help-key="math_input"
                                     value={mathInput}
@@ -2292,13 +2327,15 @@ function MathPanel(props) {
                                 <FileText size={12} className="text-blue-500"/> {t('math.customize_label')}
                             </label>
                         </div>
+                        </>
+                        )}
                     </div>
-                    {!aiTextAvailable && <AiSetupNotice t={t} />}
+                    {mathMode !== 'Fluency Maze' && mathMode !== 'Fluency Probes' && !aiTextAvailable && <AiSetupNotice t={t} />}
                     <button data-guided-primary type="button"
                         data-help-key="math_generate_button"
                         onClick={handleGenerateMath}
-                        disabled={!mathInput.trim() || isProcessing || mathMode === 'Fluency Probe' || !aiTextAvailable}
-                        style={mathMode === 'Fluency Probe' ? { display: 'none' } : {}}
+                        disabled={!mathInput.trim() || isProcessing || mathMode === 'Fluency Probes' || mathMode === 'Fluency Maze' || !aiTextAvailable}
+                        style={(mathMode === 'Fluency Probes' || mathMode === 'Fluency Maze') ? { display: 'none' } : {}}
                          className={SIDEBAR_PANEL_UI.primaryAction}
                      >
                         <span className="text-sm font-bold flex items-center gap-2">{t('math.solve')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -2327,8 +2364,8 @@ function DbqPanel(props) {
                             placeholderKey="common.custom_instructions_placeholder" />
                         {/* DBQ Mode Selector */}
                         <div>
-                            <div id="dbq-analysis-mode-label" className="text-[11px] font-bold text-slate-600 uppercase mb-1">{t('dbq.analysis_mode') || 'Analysis Mode'}</div>
-                            <div role="group" aria-labelledby="dbq-analysis-mode-label" className="flex gap-1">
+                            <div id="dbq-analysis-mode-label" className="text-xs font-bold text-slate-600 uppercase mb-1">{t('dbq.analysis_mode') || 'Analysis Mode'}</div>
+                            <div role="group" aria-labelledby="dbq-analysis-mode-label" className="flex flex-wrap gap-1.5">
                                 {[['standard', t('dbq.mode_standard_label') || '📄 Standard DBQ', t('dbq.mode_standard_desc') || 'Extract documents from your source text'],
                                   ['perspectives', t('dbq.mode_perspectives_label') || '⚔️ Competing Perspectives', t('dbq.mode_perspectives_desc') || 'AI finds 2+ viewpoints that agree and disagree'],
                                   ['search', t('dbq.mode_search_label') || '🔍 Web-Enhanced', t('dbq.mode_search_desc') || 'Find real primary sources from archives (LOC, NARA, etc.)'],
@@ -2336,7 +2373,7 @@ function DbqPanel(props) {
                                   ['custom', t('dbq.mode_custom_label') || '✏️ Teacher Docs', t('dbq.mode_custom_desc') || 'Paste your own document text directly']
                                 ].map(([mode, label, desc]) => (
                                     <button type="button" key={mode} data-help-key={'dbq_mode_' + mode} aria-pressed={(window._dbqMode || 'standard') === mode} onClick={() => { window._dbqMode = mode; setExpandedTools(prev => [...prev]); }}
-                                        className={`flex-1 text-left p-2 rounded-lg text-[11px] font-bold transition-all motion-reduce:transition-none border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-rose-50'}`}>
+                                        className={`flex-1 min-w-[7.5rem] min-h-11 text-left p-2 rounded-lg text-xs font-bold transition-all motion-reduce:transition-none border ${(window._dbqMode || 'standard') === mode ? 'border-rose-400 bg-rose-100 text-rose-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-rose-50'}`}>
                                         <div>{label}</div>
                                         <div className="font-normal mt-0.5 opacity-70">{desc}</div>
                                     </button>
@@ -2346,7 +2383,7 @@ function DbqPanel(props) {
                         {/* Optional: Focus topic for search/perspectives/links modes */}
                         {(window._dbqMode === 'search' || window._dbqMode === 'perspectives' || window._dbqMode === 'links') && (
                             <div>
-                                <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">
+                                <label className="text-xs font-bold text-slate-600 uppercase block mb-1">
                                     {window._dbqMode === 'search' ? (t('dbq.focus_label_search') || 'Search Topic (optional — refines source hunting)') : window._dbqMode === 'links' ? (t('dbq.focus_label_links') || 'Topic Context (helps AI understand the links)') : (t('dbq.focus_label_perspectives') || 'Perspectives to Compare (optional)')}
                                 </label>
                                 <input type="text" placeholder={window._dbqMode === 'search' ? (t('dbq.focus_placeholder_search') || 'e.g. "Japanese internment primary sources"') : window._dbqMode === 'links' ? (t('dbq.focus_placeholder_links') || 'e.g. "Civil Rights Movement"') : (t('dbq.focus_placeholder_perspectives') || 'e.g. "Federalists vs Anti-Federalists"')}
@@ -2358,33 +2395,34 @@ function DbqPanel(props) {
                         {/* Teacher Links mode — paste URLs */}
                         {window._dbqMode === 'links' && (
                             <div>
-                                <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">{t('dbq.urls_label') || 'Document URLs (one per line)'}</label>
+                                <label className="text-xs font-bold text-slate-600 uppercase block mb-1">{t('dbq.urls_label') || 'Document URLs (one per line)'}</label>
                                 <textarea
                                     id="dbq-teacher-links"
                                     placeholder={"https://www.loc.gov/item/example-document/\nhttps://founders.archives.gov/documents/...\nhttps://www.archives.gov/milestone-documents/..."}
                                     className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 h-20 font-mono"
                                     aria-label={t('dbq.urls_aria') || 'Document URLs for DBQ'} />
-                                <p className="text-[11px] text-slate-600 mt-1">{t('dbq.urls_help') || 'Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.'}</p>
+                                <p className="text-xs text-slate-600 mt-1">{t('dbq.urls_help') || 'Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.'}</p>
                             </div>
                         )}
                         {/* Teacher Documents mode — paste your own documents */}
                         {window._dbqMode === 'custom' && (
                             <div className="space-y-2">
                                 <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
-                                    <p className="text-[11px] text-indigo-700 mb-2"><strong>{t('dbq.custom_paste_intro_strong') || 'Paste each document below.'}</strong> {t('dbq.custom_paste_intro_part1') || 'Separate documents with'} <code className="bg-indigo-100 px-1 rounded">---</code> {t('dbq.custom_paste_intro_part2') || "on its own line. Or use the import buttons to fetch from a URL or upload an image of a document."}</p>
-                                    <p className="text-[11px] text-indigo-500">{t('dbq.custom_title_source_hint') || 'For each document, optionally include a title and source on the first lines:'}</p>
-                                    <pre className="text-[11px] bg-white border border-indigo-100 rounded p-2 mt-1 text-indigo-600 whitespace-pre-wrap">Title: Letter from Abigail Adams to John Adams{'\n'}Source: March 31, 1776{'\n'}Remember the Ladies, and be more generous and favourable to them than your ancestors...{'\n'}---{'\n'}Title: Declaration of Independence (excerpt){'\n'}Source: Thomas Jefferson, July 4, 1776{'\n'}We hold these truths to be self-evident, that all men are created equal...</pre>
+                                    <p className="text-xs text-indigo-700 mb-2"><strong>{t('dbq.custom_paste_intro_strong') || 'Paste each document below.'}</strong> {t('dbq.custom_paste_intro_part1') || 'Separate documents with'} <code className="bg-indigo-100 px-1 rounded">---</code> {t('dbq.custom_paste_intro_part2') || "on its own line. Or use the import buttons to fetch from a URL or upload an image of a document."}</p>
+                                    <p className="text-xs text-indigo-500">{t('dbq.custom_title_source_hint') || 'For each document, optionally include a title and source on the first lines:'}</p>
+                                    <pre className="text-xs bg-white border border-indigo-100 rounded p-2 mt-1 text-indigo-600 whitespace-pre-wrap">Title: Letter from Abigail Adams to John Adams{'\n'}Source: March 31, 1776{'\n'}Remember the Ladies, and be more generous and favourable to them than your ancestors...{'\n'}---{'\n'}Title: Declaration of Independence (excerpt){'\n'}Source: Thomas Jefferson, July 4, 1776{'\n'}We hold these truths to be self-evident, that all men are created equal...</pre>
                                 </div>
                                 {/* Import tools — URL fetch + image upload */}
                                 <div className="flex gap-2 flex-wrap items-end">
                                     <div className="flex-1 min-w-[200px]">
-                                        <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">{t('dbq.import_from_url_label') || 'Import from URL'}</label>
+                                        <label className="text-xs font-bold text-slate-600 uppercase block mb-1">{t('dbq.import_from_url_label') || 'Import from URL'}</label>
                                         <div className="flex gap-1">
                                             <input type="text" id="dbq-import-url"
                                                 className="flex-1 text-xs border border-indigo-600 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-300"
                                                 placeholder={t('dbq.import_url_placeholder') || 'https://... (article, speech, primary source)'}
                                                 aria-label={t('dbq.import_url_aria') || 'URL to import as document'} />
-                                            <button type="button" onClick={async () => {
+                                            <button type="button" disabled={!aiTextAvailable} onClick={async () => {
+                                                if (!aiTextAvailable) return;
                                                 const urlInput = document.getElementById('dbq-import-url');
                                                 const docArea = document.getElementById('dbq-custom-docs');
                                                 const url = urlInput?.value?.trim();
@@ -2399,18 +2437,18 @@ function DbqPanel(props) {
                                                         addToast && addToast(t("toasts.document_imported"), 'success');
                                                     }
                                                 } catch (e) { addToast && addToast(t("errors.import_failed_prefix") + e.message, 'error'); }
-                                            }} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none shrink-0"
+                                            }} className="min-h-11 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition-all motion-reduce:transition-none shrink-0"
                                                 aria-label={t('dbq.fetch_url_aria') || 'Fetch URL'}>{t('dbq.fetch_url_button') || '🔗 Fetch'}</button>
                                         </div>
                                     </div>
                                     <div>
-                                        <label htmlFor="dbq-import-image" className="text-[11px] font-bold text-slate-600 uppercase block mb-1">{t('dbq.upload_image_label') || 'Upload Document Image'}</label>
+                                        <label htmlFor="dbq-import-image" className="text-xs font-bold text-slate-600 uppercase block mb-1">{t('dbq.upload_image_label') || 'Upload Document Image'}</label>
                                         <div className="flex gap-1">
                                             <input type="file" id="dbq-import-image" accept="image/*,.pdf" className="hidden"
                                                 onChange={async (e) => {
                                                     const file = e.target.files?.[0];
                                                     const docArea = document.getElementById('dbq-custom-docs');
-                                                    if (!file || !docArea || !callGeminiVision) return;
+                                                    if (!file || !docArea || !aiTextAvailable || !callGeminiVision) return;
                                                     if (Number(file.size) > 20 * 1024 * 1024) {
                                                         addToast && addToast('File is too large for OCR (max 20 MB).', 'error');
                                                         e.target.value = '';
@@ -2419,9 +2457,10 @@ function DbqPanel(props) {
                                                     addToast && addToast(t("toasts.extracting_text_image"), 'info');
                                                     try {
                                                         const reader = new FileReader();
+                                                        reader.onerror = () => { addToast && addToast(t("errors.file_read_failed") + (reader.error?.message || 'Unable to read image'), 'error'); };
                                                         reader.onload = async () => {
                                                             try {
-                                                                const base64 = reader.result.split(',')[1];
+                                                                const base64 = String(reader.result || '').split(',')[1];
                                                                 const mimeType = file.type || 'image/png';
                                                                 const ocrPrompt = `You are an OCR expert. Extract ALL readable text from this document image. Preserve the original wording exactly. Maintain paragraph structure. If there are handwritten portions, do your best to transcribe them. Return ONLY the extracted text.`;
                                                                 const text = await callGeminiVision(ocrPrompt, base64, mimeType);
@@ -2438,12 +2477,12 @@ function DbqPanel(props) {
                                                     } catch (err) { addToast && addToast(t("errors.file_read_failed") + err.message, 'error'); }
                                                     e.target.value = '';
                                                 }} />
-                                            <button type="button" onClick={() => document.getElementById('dbq-import-image')?.click()}
-                                                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1"
+                                            <button type="button" disabled={!aiTextAvailable || !callGeminiVision} onClick={() => document.getElementById('dbq-import-image')?.click()}
+                                                className="min-h-11 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1"
                                                 aria-label={t('dbq.upload_image_aria') || 'Upload document image'}>{t('dbq.upload_image_button') || '📷 Upload Image'}</button>
-                                            <button type="button" onClick={async () => {
+                                            <button type="button" disabled={!aiTextAvailable || !callGeminiVision} onClick={async () => {
                                                 const docArea = document.getElementById('dbq-custom-docs');
-                                                if (!docArea || !callGeminiVision) return;
+                                                if (!docArea || !aiTextAvailable || !callGeminiVision) return;
                                                 try {
                                                     const items = await navigator.clipboard.read();
                                                     for (const item of items) {
@@ -2456,6 +2495,7 @@ function DbqPanel(props) {
                                                                 return;
                                                             }
                                                             const reader = new FileReader();
+                                                            reader.onerror = () => { addToast && addToast(t("errors.file_read_failed") + (reader.error?.message || 'Unable to read clipboard image'), 'error'); };
                                                             reader.onload = async () => {
                                                                 try {
                                                                     const base64 = reader.result.split(',')[1];
@@ -2473,7 +2513,7 @@ function DbqPanel(props) {
                                                     }
                                                     addToast && addToast(t("toasts.no_clipboard_image"), 'info');
                                                 } catch (err) { addToast && addToast(t("toasts.clipboard_access_failed"), 'info'); }
-                                            }} className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1"
+                                            }} className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1"
                                                 aria-label={t('dbq.paste_clipboard_aria') || 'Paste image from clipboard'}>{t('dbq.paste_clipboard_button') || '📋 Paste Image'}</button>
                                         </div>
                                     </div>
@@ -2489,29 +2529,40 @@ function DbqPanel(props) {
                             </div>
                         )}
                         <div className="bg-white rounded-lg p-2 border border-rose-100">
-                            <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">{t('dbq.includes') || 'DBQ Packet Includes'}</div>
+                            <div className="text-xs font-bold text-slate-600 uppercase mb-1">{t('dbq.includes') || 'DBQ Packet Includes'}</div>
                             <div className="flex flex-wrap gap-1">
-                                <span className="text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">📄 Document Excerpts</span>
-                                <span className="text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">🔍 HAPP Sourcing</span>
-                                <span className="text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">🔗 Corroboration</span>
-                                <span className="text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">✍️ Essay Prompt</span>
-                                <span className="text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">📊 4-Point Rubric</span>
-                                {(window._dbqMode === 'perspectives') && <span className="text-[11px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 font-medium">⚔️ POV Comparison</span>}
-                                {(window._dbqMode === 'search') && <span className="text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-medium">🌐 Web Sources</span>}
-                                {(window._dbqMode === 'custom') && <span className="text-[11px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200 font-medium">✏️ Teacher Docs</span>}
+                                <span className="text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">📄 Document Excerpts</span>
+                                <span className="text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">🔍 HAPP Sourcing</span>
+                                <span className="text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">🔗 Corroboration</span>
+                                <span className="text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">✍️ Essay Prompt</span>
+                                <span className="text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium">📊 4-Point Rubric</span>
+                                {(window._dbqMode === 'perspectives') && <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 font-medium">⚔️ POV Comparison</span>}
+                                {(window._dbqMode === 'search') && <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-medium">🌐 Web Sources</span>}
+                                {(window._dbqMode === 'custom') && <span className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200 font-medium">✏️ Teacher Docs</span>}
                             </div>
                         </div>
                     </div>
                     {!hasSourceOrAnalysis && window._dbqMode !== 'custom' && (
                         <div className="px-3 pb-2">
-                            <p className="text-[11px] text-rose-700 italic flex items-center gap-1">{t('dbq.need_source_hint') || '⬆️ Paste a source text above first — the DBQ will be built from it.'}</p>
+                            <p className="text-xs text-rose-700 italic flex items-center gap-1">{t('dbq.need_source_hint') || '⬆️ Paste a source text above first — the DBQ will be built from it.'}</p>
                         </div>
                     )}
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button data-guided-primary type="button"
                         data-help-key="dbq_generate_button"
-                        onClick={() => handleGenerate('dbq')}
-                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                        onClick={() => {
+                            if (!hasSourceOrAnalysis && window._dbqMode === 'custom') {
+                                const customDocs = document.getElementById('dbq-custom-docs')?.value?.trim() || '';
+                                if (!customDocs) {
+                                    if (addToast) addToast(t('dbq.need_custom_docs_hint') || 'Paste or import at least one document in Teacher Docs first.', 'info');
+                                    return;
+                                }
+                                handleGenerate('dbq', null, false, customDocs);
+                                return;
+                            }
+                            handleGenerate('dbq');
+                        }}
+                        disabled={(!hasSourceOrAnalysis && window._dbqMode !== 'custom') || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-rose-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('dbq.generate') || 'Generate DBQ Packet'} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -2715,19 +2766,31 @@ function SourceView(props) {
   const format = (kind) => { if (!readOnly && typeof handleFormatText === 'function') handleFormatText(kind, editorRef, text, setInputText); };
   const pasteImage = (event) => {
     const items = event.clipboardData && event.clipboardData.items;
-    if (!items || typeof callGeminiVision !== 'function') return;
+    if (!items || typeof callGeminiVision !== 'function' || !aiReady) return;
     for (const item of items) {
       if (!item.type || !item.type.startsWith('image/')) continue;
       event.preventDefault();
       const blob = item.getAsFile();
       if (!blob) return;
+      if (typeof blob.size === 'number' && blob.size > 20 * 1024 * 1024) {
+        if (addToast) addToast(t('errors.image_too_large') || 'Image is too large (max 20 MB).', 'error');
+        return;
+      }
       setIsExtracting(true);
       setGenerationStep(say('source_view.extracting_image', 'Extracting text from the pasted image...'));
       if (addToast) addToast(t('toasts.image_detected_extracting'), 'info');
       const reader = new window.FileReader();
+      const finishFailedRead = () => {
+        if (addToast) addToast(t('errors.image_ocr_failed') || 'Could not read the pasted image.', 'error');
+        setIsExtracting(false);
+        setGenerationStep('');
+      };
+      reader.onerror = finishFailedRead;
+      reader.onabort = finishFailedRead;
       reader.onload = async () => {
         try {
-          const base64 = String(reader.result).split(',')[1];
+          const base64 = String(reader.result || '').split(',')[1];
+          if (!base64) throw new Error('Empty image data');
           const extracted = await callGeminiVision('You are an OCR expert for educators. Extract all readable text from this image. Preserve structure (headers, paragraphs) using markdown. If there are tables, preserve them as markdown tables. Return ONLY the extracted text.', base64, item.type);
           if (extracted && extracted.trim().length > 10) {
             setInputText((previous) => previous ? previous + '\n\n' + extracted.trim() : extracted.trim());
@@ -2736,7 +2799,11 @@ function SourceView(props) {
         } catch (error) { if (addToast) addToast(t('errors.image_ocr_failed') + (error && error.message ? error.message : ''), 'error'); }
         setIsExtracting(false); setGenerationStep('');
       };
-      reader.readAsDataURL(blob);
+      try {
+        reader.readAsDataURL(blob);
+      } catch (_) {
+        finishFailedRead();
+      }
       return;
     }
   };
@@ -2811,7 +2878,7 @@ function SourceView(props) {
               data-help-key="input_area"
               className="block h-[50vh] min-h-[240px] w-full resize-y border-0 bg-white p-4 text-sm leading-relaxed focus:outline-none focus:ring-0"
             />
-            {(isDraftSaving || (text && !isCanvas)) && <div className="flex justify-end border-t border-slate-100 px-4 py-1.5 text-[11px] font-medium text-slate-600">{isDraftSaving ? say('status.saving_draft', 'Saving draft…') : say('status.saved_device', 'Saved on this device')}</div>}
+            {(isDraftSaving || (text && !isCanvas)) && <div className="flex justify-end border-t border-slate-100 px-4 py-1.5 text-xs font-medium text-slate-600">{isDraftSaving ? say('status.saving_draft', 'Saving draft…') : say('status.saved_device', 'Saved on this device')}</div>}
           </div>
         </div>
       )}
@@ -2856,7 +2923,7 @@ function SourceView(props) {
           <h3 id="source-refine-title" className="font-bold text-slate-900">{say('source_view.refine_title', 'Ask AI to adjust this text')}</h3>
           <p className="mt-1 text-xs text-slate-600">{say('source_view.refine_desc', 'You get a suggested rewrite to review. Your text changes only if you use it.')}</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <input type="text" data-source-refine-input value={refineInstruction} onChange={(event) => setRefineInstruction(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); suggestRewrite(); } }} aria-label={say('source_view.refine_label', 'What should change?')} placeholder={say('source_view.refine_placeholder', 'For example: shorten to about 300 words')} className="min-h-11 min-w-[12rem] flex-1 rounded-lg border border-slate-400 px-3" />
+            <input type="text" data-source-refine-input value={refineInstruction} onChange={(event) => setRefineInstruction(event.target.value)} onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; if (event.key === 'Enter') { event.preventDefault(); suggestRewrite(); } }} aria-label={say('source_view.refine_label', 'What should change?')} placeholder={say('source_view.refine_placeholder', 'For example: shorten to about 300 words')} className="min-h-11 min-w-[12rem] flex-1 rounded-lg border border-slate-400 px-3" />
             <button type="button" data-source-refine-go disabled={refining || !refineInstruction.trim()} onClick={suggestRewrite} className="min-h-11 rounded-lg border border-violet-700 bg-white px-3 font-bold text-violet-800 hover:bg-violet-50 disabled:opacity-60">{refining ? say('source_view.refining', 'Writing a suggestion…') : say('source_view.refine_go', 'Suggest a rewrite')}</button>
           </div>
         </section>
@@ -2867,6 +2934,7 @@ function SourceView(props) {
 
 // ── SourceInputPanel: expandedTools.includes('source-input') panel from L22146-L22320 ──
 function SourceInputPanel(props) {
+  const aiTextAvailable = useAiTextAvailable();
   const {
     addToast, aiStandardQuery, aiStandardRegion, callGeminiVision,
     expandedTools, generationStep, gradeLevel, handleAddStandard,
@@ -2917,6 +2985,7 @@ function SourceInputPanel(props) {
                       </div>
                       {isUrlSearchMode ? (
                           <div className="animate-in motion-reduce:animate-none fade-in slide-in-from-right-2">
+                              {!aiTextAvailable && <div className="mb-2"><AiSetupNotice t={t} /></div>}
                               <label className="block text-xs font-medium text-indigo-900 mb-1">{t('wizard.topic_find_label')}</label>
                               <div className="flex gap-2 mb-2">
                                   <input aria-label={t('common.enter_url_search_query')}
@@ -2925,12 +2994,13 @@ function SourceInputPanel(props) {
                                       onChange={(e) => setUrlSearchQuery(e.target.value)}
                                       placeholder={`e.g. Photosynthesis for ${gradeLevel}...`}
                                       className="flex-grow text-sm p-2 border border-indigo-600 rounded-md focus:ring-2 focus:ring-indigo-200"
-                                      onKeyDown={(e) => e.key === 'Enter' && handleAiUrlSearch()}
+                                      onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && aiTextAvailable) handleAiUrlSearch(); }}
                                       autoFocus
                                   />
                                   <button type="button"
                                       onClick={handleAiUrlSearch}
-                                      disabled={!urlSearchQuery.trim() || isExtracting}
+                                      disabled={!urlSearchQuery.trim() || isExtracting || !aiTextAvailable}
+                                      title={!aiTextAvailable ? (t('sidebar.needs_ai_setup') || 'Needs AI setup') : undefined}
                                       className="bg-teal-700 text-white text-sm font-medium px-4 rounded-md hover:bg-teal-700 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
                                   >
                                       {isExtracting ? <RefreshCw className="animate-spin motion-reduce:animate-none" size={14} /> : <Search size={14} />}
@@ -2939,7 +3009,7 @@ function SourceInputPanel(props) {
                               </div>
                               {!isExtracting && searchOptions.length > 0 && (
                                   <div className="space-y-2 mt-3 animate-in motion-reduce:animate-none slide-in-from-bottom-2">
-                                      <h4 className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">{t('wizard.select_resource')}</h4>
+                                      <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-wider">{t('wizard.select_resource')}</h4>
                                       {searchOptions.map((opt, idx) => (
                                           <div key={idx} className="relative group">
                                             <button type="button"
@@ -2947,30 +3017,40 @@ function SourceInputPanel(props) {
                                                 className="w-full text-left p-3 pr-10 rounded-lg border border-indigo-100 hover:border-teal-500 hover:bg-teal-50 transition-all motion-reduce:transition-none bg-white shadow-sm"
                                             >
                                                 <div className="font-bold text-slate-700 group-hover:text-teal-800 mb-0.5 text-xs">{opt.title || "Untitled Resource"}</div>
-                                                <div className="text-[11px] text-slate-600 group-hover:text-teal-600 line-clamp-2 leading-snug">{opt.description || "No description available."}</div>
-                                                <div className="text-[11px] text-slate-600 mt-1 truncate max-w-[200px]">{opt.url}</div>
+                                                <div className="text-xs text-slate-600 group-hover:text-teal-600 line-clamp-2 leading-snug">{opt.description || "No description available."}</div>
+                                                <div className="text-xs text-slate-600 mt-1 truncate max-w-[200px]">{opt.url}</div>
                                             </button>
-                                            <a
-                                                href={opt.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setIsUrlSearchMode(false);
-                                                    setSearchOptions([]);
-                                                    setUrlToFetch('');
-                                                    addToast(t('common.link_opened_copy_paste'), "info");
-                                                }}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-800 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20"
-                                                title={t('common.open_link_paste_mode')}
-                                            >
-                                                <ExternalLink size={14} />
-                                            </a>
+                                            {(() => {
+                                              let safeHref = '';
+                                              try {
+                                                const u = new URL(String(opt.url || ''));
+                                                if ((u.protocol === 'https:' || u.protocol === 'http:') && !u.username && !u.password) safeHref = u.href;
+                                              } catch (_) {}
+                                              return safeHref ? (
+                                              <a
+                                                  href={safeHref}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  aria-label={`${t('common.open_link_paste_mode') || 'Open link in new tab'}: ${opt.title || safeHref}`}
+                                                  onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setIsUrlSearchMode(false);
+                                                      setSearchOptions([]);
+                                                      setUrlToFetch('');
+                                                      addToast(t('common.link_opened_copy_paste'), "info");
+                                                  }}
+                                                  className="absolute right-2 top-1/2 -translate-y-1/2 min-w-11 min-h-11 inline-flex items-center justify-center p-2 text-slate-600 hover:text-teal-800 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20"
+                                                  title={t('common.open_link_paste_mode')}
+                                              >
+                                                  <ExternalLink size={14} aria-hidden="true" />
+                                              </a>
+                                              ) : null;
+                                            })()}
                                           </div>
                                       ))}
                                   </div>
                               )}
-                              <p className="text-[11px] text-indigo-600 mt-2">{t('wizard.ai_search_note')}</p>
+                              <p className="text-xs text-indigo-600 mt-2">{t('wizard.ai_search_note')}</p>
                           </div>
                       ) : (
                           <div className="animate-in motion-reduce:animate-none fade-in slide-in-from-left-2">
@@ -2983,7 +3063,7 @@ function SourceInputPanel(props) {
                                   onChange={(e) => setUrlToFetch(e.target.value)}
                                   placeholder={t('common.url_placeholder')}
                                   className="flex-grow text-sm p-2 border border-indigo-600 rounded-md focus:ring-2 focus:ring-indigo-200"
-                                  onKeyDown={(e) => e.key === 'Enter' && handleUrlFetch()}
+                                  onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') handleUrlFetch(); }}
                                   autoFocus
                                 />
                                 <button type="button"
@@ -2995,7 +3075,7 @@ function SourceInputPanel(props) {
                                     {t('wizard.fetch_action')}
                                 </button>
                             </div>
-                            <p className="text-[11px] text-indigo-600 mt-1">{t('wizard.fetch_note')}</p>
+                            <p className="text-xs text-indigo-600 mt-1">{t('wizard.fetch_note')}</p>
                           </div>
                       )}
                   </div>
@@ -3043,12 +3123,31 @@ function GlossaryPanel(props) {
     leveledTextLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
     setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count,
     setIncludeEtymology, t, nativeLanguageDefaultsVersion, appLanguage, currentUiLanguage,
-    translationMode, resolveTranslationPolicy, translationTargetChoices
+    translationMode, resolveTranslationPolicy, translationTargetChoices, analyzedGlossaryCounts
   } = props;
   if (!expandedTools || !expandedTools.includes('glossary')) return null;
+  const _hasAnalyzedGlossary = !!(analyzedGlossaryCounts && analyzedGlossaryCounts.total > 0);
+  const _glossaryMatchesAnalysis = _hasAnalyzedGlossary
+    && Number(glossaryTier2Count) === analyzedGlossaryCounts.tier2
+    && Number(glossaryTier3Count) === analyzedGlossaryCounts.tier3;
+  const _sidebarLabel = (key, fallback) => { try { const v = typeof t === 'function' ? t(key) : ''; return v && v !== key ? v : fallback; } catch (_) { return fallback; } };
   return (
               <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 <div className={`${SIDEBAR_PANEL_UI.settingsSurface} !gap-0`} data-help-key="tour-glossary-settings">
+                    {_hasAnalyzedGlossary && (
+                        <div data-glossary-analysis-sync={_glossaryMatchesAnalysis ? 'matched' : 'custom'} className={`mb-3 rounded-lg border px-2.5 py-2 text-xs leading-snug ${_glossaryMatchesAnalysis ? 'border-teal-200 bg-teal-50 text-teal-900' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
+                            {_glossaryMatchesAnalysis ? (
+                                <span>{_sidebarLabel('glossary.analysis_counts_matched', `Matched to Source Analysis (${analyzedGlossaryCounts.total} terms: ${analyzedGlossaryCounts.tier2} Tier 2, ${analyzedGlossaryCounts.tier3} Tier 3). Edit below to adjust.`)}</span>
+                            ) : (
+                                <div className="flex flex-wrap items-center justify-between gap-1.5">
+                                    <span>{_sidebarLabel('glossary.analysis_counts_custom', `Custom count (${(Number(glossaryTier2Count) || 0) + (Number(glossaryTier3Count) || 0)} terms). Source Analysis found ${analyzedGlossaryCounts.total}.`)}</span>
+                                    <button type="button" data-glossary-match-analysis onClick={() => { setGlossaryTier2Count(analyzedGlossaryCounts.tier2); setGlossaryTier3Count(analyzedGlossaryCounts.tier3); }} className="rounded border border-teal-600 bg-white px-2 py-0.5 text-xs font-semibold text-teal-800 hover:bg-teal-50">
+                                        {_sidebarLabel('glossary.match_analysis', `Use ${analyzedGlossaryCounts.tier2} / ${analyzedGlossaryCounts.tier3}`)}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                     <div className="grid grid-cols-2 gap-2 mb-3">
                         <div data-help-key="glossary_tier2_count">
                             <label className={`${SIDEBAR_PANEL_UI.label} flex items-center`}>
@@ -3179,7 +3278,7 @@ function GlossaryPanel(props) {
                                 className={SIDEBAR_PANEL_UI.checkbox}
                             />
                             <span className="flex items-center gap-1">
-                                <Ban size={12} className="text-red-600"/> {t('glossary.auto_remove')} <span className="text-[11px] text-slate-600 font-normal">{t('glossary.slower')}</span>
+                                <Ban size={12} className="text-red-600"/> {t('glossary.auto_remove')} <span className="text-xs text-slate-600 font-normal">{t('glossary.slower')}</span>
                             </span>
                         </label>
                     </div>
@@ -3276,6 +3375,8 @@ function QuizPanel(props) {
     { key: 'short-answer', label: qzText('format_short_answer_label', 'Brief Written Response'), emoji: '💬', desc: qzText('format_short_answer_desc', 'Demonstrate understanding in 1–2 sentences'), minutes: 3 },
     { key: 'self-explanation', label: qzText('format_self_explanation_label', 'Explain Your Reasoning'), emoji: '🧠', desc: qzText('format_self_explanation_desc', 'Explain a concept against a rubric'), minutes: 5 },
     { key: 'numeric-response', label: qzText('format_numeric_response_label', 'Numeric Response'), emoji: '#', desc: qzText('format_numeric_response_desc', 'Enter a value with optional units'), minutes: 2 },
+    { key: 'likert', label: 'Rating Scale (1–5)', emoji: '📊', desc: 'Gauge comfort, agreement, or confidence (ungraded)', minutes: 0.5 },
+    { key: 'opinion-mcq', label: 'Opinion Poll', emoji: '🗣️', desc: 'Gather student perspectives (no right/wrong key)', minutes: 0.5 },
   ];
   const DIAGNOSTIC_TYPES = [
     { key: 'sequence-sense', label: qzText('format_sequence_sense_label', 'Sequence Sense'), emoji: '↕', desc: qzText('format_sequence_sense_desc', 'Diagnose an order and its principle'), minutes: 2.5 },
@@ -3430,7 +3531,7 @@ function QuizPanel(props) {
     <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
       <div className="p-3 border-b border-slate-100 bg-teal-50/50 space-y-3">
         <div className="rounded-xl border border-teal-200 bg-white p-3">
-          <label htmlFor="quiz-mode-select" className="block text-[10px] font-black uppercase tracking-wider text-teal-700 mb-1">{qzText('section_purpose', '1. Assessment purpose')}</label>
+          <label htmlFor="quiz-mode-select" className="block text-xs font-black uppercase tracking-wider text-teal-700 mb-1">{qzText('section_purpose', '1. Assessment purpose')}</label>
           <select
             id="quiz-mode-select"
             value={quizMode}
@@ -3444,8 +3545,9 @@ function QuizPanel(props) {
             <option value="pre-check">{t('quiz.mode_pre_check') || '🎯 Pre-Check (Readiness)'}</option>
             <option value="formative">{t('quiz.mode_formative') || '🌡️ Formative Check'}</option>
             <option value="review">{t('quiz.mode_review') || '🔁 Spaced Review'}</option>
+            <option value="poll">{'🗣️ Student-Voice Poll'}</option>
           </select>
-          {_modeStrategy && <p className="text-[11px] leading-snug text-slate-600 mt-1.5">{_modeStrategy.description} {qzText('recipe_hint', 'This loads a recommended recipe that you can customize.')}</p>}
+          {_modeStrategy && <p className="text-xs leading-snug text-slate-600 mt-1.5">{_modeStrategy.description} {qzText('recipe_hint', 'This loads a recommended recipe that you can customize.')}</p>}
           <label htmlFor="quiz-duration-preset" className="block text-xs font-semibold text-slate-700 mt-3 mb-1">{qzText('duration_label', 'Time and depth')}</label>
           <select id="quiz-duration-preset" data-help-key="quiz_duration_preset" value={durationPreset} onChange={event => applyDuration(event.target.value)} disabled={isProcessing} className="w-full rounded-lg border-slate-300 text-sm">
             <option value="recommended">{qzText('duration_recommended', 'Recommended recipe')}</option>
@@ -3458,35 +3560,51 @@ function QuizPanel(props) {
 
         {quizMode === 'review' && <fieldset className="rounded-xl border border-indigo-200 bg-white p-3 space-y-2">
           <legend className="px-1 text-xs font-bold text-indigo-900">{qzText('review_sources', 'Earlier lessons to revisit')}</legend>
-          <p className="text-[11px] text-slate-600">{qzText('review_sources_help', 'Select up to four analyzed lesson sources. Keep concepts checked to include them in the review.')}</p>
-          <div className="max-h-40 overflow-auto space-y-2">{availableReviewSources.map(source => <label key={source.id} className="flex gap-2 text-xs text-slate-800"><input type="checkbox" checked={reviewSourceIds.includes(source.id)} disabled={isProcessing || (!reviewSourceIds.includes(source.id) && reviewSourceIds.length >= 4)} onChange={event => { setReviewSourceIds(previous => event.target.checked ? previous.concat(source.id) : previous.filter(id => id !== source.id)); setReviewConcepts(null); }} /><span>{source.title}{source.date && <span className="block text-[10px] text-slate-600">{source.date}</span>}</span></label>)}</div>
+          <p className="text-xs text-slate-600">{qzText('review_sources_help', 'Select up to four analyzed lesson sources. Keep concepts checked to include them in the review.')}</p>
+          <div className="max-h-40 overflow-auto space-y-2">{availableReviewSources.map(source => <label key={source.id} className="flex gap-2 text-xs text-slate-800"><input type="checkbox" checked={reviewSourceIds.includes(source.id)} disabled={isProcessing || (!reviewSourceIds.includes(source.id) && reviewSourceIds.length >= 4)} onChange={event => { setReviewSourceIds(previous => event.target.checked ? previous.concat(source.id) : previous.filter(id => id !== source.id)); setReviewConcepts(null); }} /><span>{source.title}{source.date && <span className="block text-xs text-slate-600">{source.date}</span>}</span></label>)}</div>
           {reviewSelection.sources.length > 0 && <div className="max-h-36 overflow-auto space-y-1">{Array.from(new Set(reviewSelection.sources.flatMap(source => source.concepts))).map(concept => <label key={concept} className="flex gap-2 text-xs"><input type="checkbox" checked={reviewSelection.concepts.includes(concept)} onChange={event => setReviewConcepts(event.target.checked ? reviewSelection.concepts.concat(concept) : reviewSelection.concepts.filter(value => value !== concept))} />{concept}</label>)}</div>}
           <p role="status" className={'text-xs font-semibold ' + (reviewSelection.fallback ? 'text-amber-900' : 'text-indigo-900')}>{reviewSelection.fallback ? qzText('review_source_fallback', 'No earlier lesson selected. This will review the current source; it will not demonstrate retention over time.') : qzText('review_source_selected', '{count} earlier lesson sources selected. Choose sources students have already studied.', { count: reviewSelection.sources.length })}</p>
         </fieldset>}
 
         {availableCriteria.length > 0 && quizMode !== 'review' && <fieldset className="rounded-xl border border-slate-200 bg-white p-3 space-y-2">
           <legend className="px-1 text-xs font-bold text-slate-800">{qzText('criteria_sample', 'Success criteria to sample')}</legend>
-          <p className="text-[11px] text-slate-600">{qzText('criteria_sample_help', 'A short check samples up to one criterion per question. Unselected criteria remain outside this check; the question count stays unchanged.')}</p>
+          <p className="text-xs text-slate-600">{qzText('criteria_sample_help', 'A short check samples up to one criterion per question. Unselected criteria remain outside this check; the question count stays unchanged.')}</p>
           {availableCriteria.map((criterion, index) => { const selected = criterionIds || availableCriteria.slice(0, assessedTotal).map(item => item.id); return <label key={criterion.id} className="flex gap-2 text-xs"><input type="checkbox" checked={selected.includes(criterion.id)} disabled={isProcessing || (!selected.includes(criterion.id) && selected.length >= assessedTotal)} onChange={event => setCriterionIds(event.target.checked ? selected.concat(criterion.id) : selected.filter(id => id !== criterion.id))} /><span>{criterion.statement}</span></label>; })}
-          <p className="text-[11px] text-slate-700">{qzText('criteria_sample_count', '{selected} of {total} criteria selected.', { selected: Math.min(assessedTotal, (criterionIds || availableCriteria).length), total: availableCriteria.length })}</p>
+          <p className="text-xs text-slate-700">{qzText('criteria_sample_count', '{selected} of {total} criteria selected.', { selected: Math.min(assessedTotal, (criterionIds || availableCriteria).length), total: availableCriteria.length })}</p>
         </fieldset>}
 
         <div className="rounded-xl border border-teal-200 bg-white p-3" role="status" aria-live="polite">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className={'text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ' + (isCustomized ? 'bg-indigo-100 text-indigo-700' : 'bg-teal-100 text-teal-700')}>
+            <span className={'text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full ' + (isCustomized ? 'bg-indigo-100 text-indigo-700' : 'bg-teal-100 text-teal-700')}>
               {isCustomized ? qzText('badge_customized', 'Customized') : qzText('badge_recommended', 'Recommended preset')}
             </span>
             <span className="text-xs font-semibold text-slate-700">
-              {qzText(assessedTotal === 1 ? 'summary_scored_one' : 'summary_scored_other',
-                assessedTotal === 1 ? '{count} scored question' : '{count} scored questions', { count: assessedTotal })
+              {(quizMode === 'poll'
+                ? (assessedTotal === 1 ? '1 ungraded poll item' : assessedTotal + ' ungraded poll items')
+                : qzText(assessedTotal === 1 ? 'summary_scored_one' : 'summary_scored_other',
+                  assessedTotal === 1 ? '{count} scored question' : '{count} scored questions', { count: assessedTotal }))
                 + (reflectionTotal
                   ? qzText(reflectionTotal === 1 ? 'summary_reflection_one' : 'summary_reflection_other',
                     reflectionTotal === 1 ? ' + {count} unscored reflection' : ' + {count} unscored reflections', { count: reflectionTotal })
                   : '')}
             </span>
-            {isCustomized && <button type="button" data-help-key="quiz_reset_mix" onClick={handleResetMix} className="ml-auto text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold">{t('common.reset') || 'Reset'}</button>}
+            {isCustomized && <button type="button" data-help-key="quiz_reset_mix" onClick={handleResetMix} className="ml-auto text-xs text-indigo-600 hover:text-indigo-800 font-semibold">{t('common.reset') || 'Reset'}</button>}
           </div>
-          <div className="mt-2 flex items-center gap-2 flex-wrap text-[11px]">
+          {visibleTypes.some(item => clampCount(effectiveMix[item.key] || 0, item.key === 'mcq' ? 20 : 5) > 0) && (
+            <div data-quiz-active-mix-chips className="mt-2 flex items-center gap-1.5 flex-wrap">
+              {visibleTypes.map(item => {
+                const count = clampCount(effectiveMix[item.key] || 0, item.key === 'mcq' ? 20 : 5);
+                if (count <= 0) return null;
+                return (
+                  <span key={item.key} className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50/80 px-2 py-0.5 text-xs font-semibold text-teal-900">
+                    <span aria-hidden="true">{item.emoji}</span>
+                    <span>{count} {item.label}</span>
+                  </span>
+                );
+              })}
+            </div>
+          )}
+          <div className="mt-2 flex items-center gap-2 flex-wrap text-xs">
             <span className="rounded bg-slate-100 px-2 py-1 font-semibold text-slate-700">{qzText('estimate_minutes', 'About {low}–{high} minutes', { low: estimatedLow, high: estimatedHigh })}</span>
             {estimatedHigh > 30 && <span className="rounded bg-amber-100 px-2 py-1 font-semibold text-amber-800">{qzText('long_warning', 'Long assessment—consider reducing the mix.')}</span>}
           </div>
@@ -3505,36 +3623,62 @@ function QuizPanel(props) {
             <span className="flex items-center gap-1.5"><Settings2 size={13} />{qzText('section_customize', '2. Customize questions')}</span>
             <ChevronDown size={14} className={'transition-transform motion-reduce:transition-none ' + (itemMixOpen ? 'rotate-180' : '')} />
           </button>
-          {itemMixOpen && (
+          {itemMixOpen && (() => {
+            const hasFillBlank = clampCount(effectiveMix['fill-blank'] || 0, 5) > 0;
+            const hasSequence = clampCount(effectiveMix['sequence-sense'] || 0, 5) > 0;
+            const hasNumeric = clampCount(effectiveMix['numeric-response'] || 0, 5) > 0;
+            const hasReasoningPair = clampCount(effectiveMix['relation-mismatch'] || 0, 5) > 0 || clampCount(effectiveMix['answer-evidence'] || 0, 5) > 0;
+            const hasAnyFormatRules = hasFillBlank || hasSequence || hasNumeric || hasReasoningPair;
+            return (
             <div id="quiz-item-mix-panel" className="px-3 pb-3 pt-1 space-y-3 bg-slate-50/60">
-              <p className="text-[11px] text-slate-600">{qzText('mix_help', 'Set the exact number of every scored format. No format is treated as an “extra.”')}</p>
+              <p className="text-xs text-slate-600">{qzText('mix_help', 'Set the exact number of every scored format. No format is treated as an “extra.”')}</p>
               {groups.map(group => (
                 <div key={group.id} className="space-y-1.5">
-                  <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">{group.label}</div>
+                  <div className="text-xs font-black uppercase tracking-wider text-slate-600">{group.label}</div>
                   {group.types.map(item => {
-                    const count = clampCount(effectiveMix[item.key] || 0, item.key === 'mcq' ? 20 : 5);
+                    const maxVal = item.key === 'mcq' ? 20 : 5;
+                    const count = clampCount(effectiveMix[item.key] || 0, maxVal);
                     return (
-                      <div key={item.key} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2">
+                      <div key={item.key} className={'flex items-center gap-2 rounded-lg border p-2 transition-colors motion-reduce:transition-none ' + (count > 0 ? 'border-indigo-300 bg-indigo-50/40' : 'border-slate-200 bg-white')}>
                         <span className="text-sm flex-shrink-0 w-5 text-center" aria-hidden="true">{item.emoji}</span>
                         <div className="flex-1 min-w-0">
                           <span className="text-xs font-semibold text-slate-700">{item.label}</span>
-                          <span className="block text-[10px] text-slate-600 leading-tight">{item.desc}</span>
+                          <span className="block text-xs text-slate-600 leading-tight">{item.desc}</span>
                         </div>
-                        <input
-                          type="number"
-                          min="0"
-                          max={item.key === 'mcq' ? 20 : 5}
-                          value={count}
-                          onChange={(event) => handleMixChange(item.key, event.target.value)}
-                          aria-label={qzText('format_count_aria', '{format} count', { format: item.label })}
-                          className="w-14 text-center text-sm border border-slate-300 rounded-md p-1.5 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
-                        />
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleMixChange(item.key, count - 1)}
+                            disabled={isProcessing || count <= 0}
+                            aria-label={'Decrease ' + item.label}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 transition-colors motion-reduce:transition-none"
+                          >−</button>
+                          <input
+                            type="number"
+                            min="0"
+                            max={maxVal}
+                            value={count}
+                            onChange={(event) => handleMixChange(item.key, event.target.value)}
+                            aria-label={qzText('format_count_aria', '{format} count', { format: item.label })}
+                            className="w-11 text-center text-sm border border-slate-300 rounded-md p-1 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleMixChange(item.key, count + 1)}
+                            disabled={isProcessing || count >= maxVal}
+                            aria-label={'Increase ' + item.label}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 transition-colors motion-reduce:transition-none"
+                          >+</button>
+                        </div>
                       </div>
                     );
                   })}
                 </div>
               ))}
-              <div className="border-t border-slate-200 pt-3 space-y-3">
+              {hasAnyFormatRules && (
+              <div data-quiz-context-format-options className="border-t border-slate-200 pt-3 space-y-3">
+                <div className="text-xs font-black uppercase tracking-wider text-slate-600">Options for selected formats</div>
+                {hasFillBlank && (
                 <label className="block text-xs font-semibold text-slate-800">{qzText('fill_policy', 'Fill-in-the-blank: what matters?')}
                   <select value={assessmentOptions.fillBlankPolicy} onChange={event => setAssessmentOptions({ ...assessmentOptions, fillBlankPolicy: event.target.value })} className="block w-full mt-1 text-xs rounded border-slate-300">
                     <option value="normalized">{qzText('fill_normalized', 'Concept recall — ignore case and surrounding spaces')}</option>
@@ -3542,23 +3686,36 @@ function QuizPanel(props) {
                     <option value="review-variants">{qzText('fill_review', 'Concept recall — send other variants for teacher review')}</option>
                   </select>
                 </label>
-                <label className="block text-xs font-semibold text-slate-800">{qzText('sequence_mode', 'Sequence activity')}
-                  <select value={assessmentOptions.sequenceMode} onChange={event => setAssessmentOptions({ ...assessmentOptions, sequenceMode: event.target.value })} className="block w-full mt-1 text-xs rounded border-slate-300">
-                    <option value="diagnostic">{qzText('sequence_diagnostic', 'Diagnose, arrange, and identify the principle')}</option>
-                    <option value="arrange-explain">{qzText('sequence_short', 'Arrange and identify the principle')}</option>
-                  </select>
-                </label>
-                <label className="flex gap-2 text-xs text-slate-800"><input type="checkbox" checked={assessmentOptions.sequenceMaxSteps === 3} onChange={event => setAssessmentOptions({ ...assessmentOptions, sequenceMaxSteps: event.target.checked ? 3 : 6 })} />{qzText('sequence_three', 'Keep sequences to three steps')}</label>
-                <label className="block text-xs font-semibold text-slate-800">{qzText('numeric_weight', 'Numeric partial credit: value / units')}
-                  <select value={assessmentOptions.numericSettings.valueWeight} onChange={event => setAssessmentOptions({ ...assessmentOptions, numericSettings: { ...assessmentOptions.numericSettings, valueWeight: Number(event.target.value) } })} className="block w-full mt-1 text-xs rounded border-slate-300">
-                    <option value="0.5">50% / 50%</option><option value="0.75">75% / 25%</option><option value="1">100% / 0%</option>
-                  </select>
-                </label>
-                <label className="flex gap-2 text-xs text-slate-800"><input type="checkbox" checked={assessmentOptions.numericSettings.allowEquivalentUnits} onChange={event => setAssessmentOptions({ ...assessmentOptions, numericSettings: { ...assessmentOptions.numericSettings, allowEquivalentUnits: event.target.checked } })} />{qzText('numeric_convert', 'Accept supported equivalent units after conversion')}</label>
+                )}
+                {hasSequence && (
+                <>
+                  <label className="block text-xs font-semibold text-slate-800">{qzText('sequence_mode', 'Sequence activity')}
+                    <select value={assessmentOptions.sequenceMode} onChange={event => setAssessmentOptions({ ...assessmentOptions, sequenceMode: event.target.value })} className="block w-full mt-1 text-xs rounded border-slate-300">
+                      <option value="diagnostic">{qzText('sequence_diagnostic', 'Diagnose, arrange, and identify the principle')}</option>
+                      <option value="arrange-explain">{qzText('sequence_short', 'Arrange and identify the principle')}</option>
+                    </select>
+                  </label>
+                  <label className="flex gap-2 text-xs text-slate-800"><input type="checkbox" checked={assessmentOptions.sequenceMaxSteps === 3} onChange={event => setAssessmentOptions({ ...assessmentOptions, sequenceMaxSteps: event.target.checked ? 3 : 6 })} />{qzText('sequence_three', 'Keep sequences to three steps')}</label>
+                </>
+                )}
+                {hasNumeric && (
+                <>
+                  <label className="block text-xs font-semibold text-slate-800">{qzText('numeric_weight', 'Numeric partial credit: value / units')}
+                    <select value={assessmentOptions.numericSettings.valueWeight} onChange={event => setAssessmentOptions({ ...assessmentOptions, numericSettings: { ...assessmentOptions.numericSettings, valueWeight: Number(event.target.value) } })} className="block w-full mt-1 text-xs rounded border-slate-300">
+                      <option value="0.5">50% / 50%</option><option value="0.75">75% / 25%</option><option value="1">100% / 0%</option>
+                    </select>
+                  </label>
+                  <label className="flex gap-2 text-xs text-slate-800"><input type="checkbox" checked={assessmentOptions.numericSettings.allowEquivalentUnits} onChange={event => setAssessmentOptions({ ...assessmentOptions, numericSettings: { ...assessmentOptions.numericSettings, allowEquivalentUnits: event.target.checked } })} />{qzText('numeric_convert', 'Accept supported equivalent units after conversion')}</label>
+                </>
+                )}
+                {hasReasoningPair && (
                 <label className="flex gap-2 text-xs text-slate-800"><input type="checkbox" checked={assessmentOptions.requireReasoning} onChange={event => setAssessmentOptions({ ...assessmentOptions, requireReasoning: event.target.checked })} />{qzText('require_reasoning', 'Ask for a brief explanation in Relation Mismatch and Answer + Evidence (unscored)')}</label>
+                )}
               </div>
+              )}
             </div>
-          )}
+            );
+          })()}
         </div>
 
         <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-3">
@@ -3568,19 +3725,35 @@ function QuizPanel(props) {
                 {qzText('section_reflection', '3. Closing reflection')} <span className="font-semibold text-indigo-700">{qzText('reflection_unscored', '(unscored)')}</span>
                 <InfoTooltip text={qzText('reflection_tooltip', 'Optional prompts shown after the assessment. They never affect the score.')} />
               </label>
-              <p className="text-[10px] text-indigo-700 mt-0.5">{qzText('reflection_help', 'Use 1 for a quick close; choose 0 to omit it.')}</p>
+              <p className="text-xs text-indigo-700 mt-0.5">{qzText('reflection_help', 'Use 1 for a quick close; choose 0 to omit it.')}</p>
             </div>
-            <input
-              id="quiz-reflection-count"
-              data-help-key="quiz_reflection_count"
-              aria-label={qzText('reflection_count_aria', 'Closing reflection count')}
-              type="number"
-              min="0"
-              max="2"
-              value={quizReflectionCount}
-              onChange={(event) => handleReflectionCountChange(event.target.value)}
-              className="w-14 text-center text-sm border-indigo-300 rounded-md p-1.5 focus:ring-indigo-200 focus:border-indigo-400 bg-white"
-            />
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => handleReflectionCountChange(reflectionTotal - 1)}
+                disabled={isProcessing || reflectionTotal <= 0}
+                aria-label="Decrease closing reflections"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-indigo-300 bg-white text-sm font-bold text-indigo-900 hover:bg-indigo-100 disabled:opacity-40 transition-colors motion-reduce:transition-none"
+              >−</button>
+              <input
+                id="quiz-reflection-count"
+                data-help-key="quiz_reflection_count"
+                aria-label={qzText('reflection_count_aria', 'Closing reflection count')}
+                type="number"
+                min="0"
+                max="2"
+                value={quizReflectionCount}
+                onChange={(event) => handleReflectionCountChange(event.target.value)}
+                className="w-11 text-center text-sm border-indigo-300 rounded-md p-1 focus:ring-indigo-200 focus:border-indigo-400 bg-white"
+              />
+              <button
+                type="button"
+                onClick={() => handleReflectionCountChange(reflectionTotal + 1)}
+                disabled={isProcessing || reflectionTotal >= 2}
+                aria-label={qzText('increase_closing_reflections', 'Increase closing reflections')}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-indigo-300 bg-white text-sm font-bold text-indigo-900 hover:bg-indigo-100 disabled:opacity-40 transition-colors motion-reduce:transition-none"
+              >+</button>
+            </div>
           </div>
         </div>
 
@@ -3592,7 +3765,7 @@ function QuizPanel(props) {
           {scoringOpen && <div className="px-3 pb-3 pt-1 space-y-3 bg-slate-50/60">
             <label className="flex items-start gap-2 text-xs text-slate-700">
               <input type="checkbox" checked={scoringPolicy.partialCredit} onChange={(event) => setScoringPolicy(Object.assign({}, scoringPolicy, { partialCredit: event.target.checked }))} className="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400" />
-              <span><strong>{qzText('partial_credit_label', 'Allow partial credit')}</strong><span className="block text-[10px] text-slate-600">{qzText('partial_credit_desc', 'Applies to multi-select, multi-step diagnostics, answer + evidence, and numeric value/unit checks.')}</span></span>
+              <span><strong>{qzText('partial_credit_label', 'Allow partial credit')}</strong><span className="block text-xs text-slate-600">{qzText('partial_credit_desc', 'Applies to multi-select, multi-step diagnostics, answer + evidence, and numeric value/unit checks.')}</span></span>
             </label>
             <div>
               <label htmlFor="quiz-live-response-policy" className="block text-xs font-semibold text-slate-700 mb-1">{qzText('live_policy_label', 'Live session response policy')}</label>
@@ -3608,7 +3781,7 @@ function QuizPanel(props) {
                 <option value="accuracy">{qzText('policy_accuracy', 'Accuracy — correctness, never speed')}</option>
                 <option value="confidence">{qzText('policy_confidence', 'Confidence check — accuracy + learner certainty')}</option>
               </select>
-              <p className="text-[10px] text-slate-600 mt-1">{scoringPolicy.confidence
+              <p className="text-xs text-slate-600 mt-1">{scoringPolicy.confidence
                 ? qzText('policy_confidence_desc', 'Learners report how sure they were after answering. Confidence never changes correctness or points.')
                 : qzText('policy_accuracy_desc', 'Uses the answer key and configured partial credit. Response speed never changes points.')}</p>
             </div>
@@ -3618,7 +3791,7 @@ function QuizPanel(props) {
                 <option value="ai-provisional">{qzText('written_ai', 'Immediate AI feedback (provisional)')}</option>
                 <option value="teacher-review">{qzText('written_teacher', 'Submit for teacher review')}</option>
               </select>
-              <p className="text-[10px] text-slate-600 mt-1">{scoringPolicy.writtenResponseMode === 'ai-provisional'
+              <p className="text-xs text-slate-600 mt-1">{scoringPolicy.writtenResponseMode === 'ai-provisional'
                 ? qzText('written_ai_desc', 'Students receive immediate guidance; teachers can override it.')
                 : qzText('written_teacher_desc', 'Written responses are collected without an automatic correctness judgment.')}</p>
             </div>
@@ -3639,10 +3812,10 @@ function QuizPanel(props) {
               <button type="button" onClick={deleteSelectedPreset} disabled={!selectedPresetId} className="px-2 text-xs font-semibold rounded border border-rose-200 text-rose-700 bg-white disabled:opacity-40">{qzText('presets_delete', 'Delete')}</button>
             </div>}
             <div className="flex gap-2">
-              <input aria-label={qzText('preset_name_aria', 'New preset name')} value={presetName} onChange={(event) => setPresetName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); savePreset(); } }} maxLength="50" placeholder={qzText('preset_name_placeholder', 'e.g. Friday concept check')} className="flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" />
+              <input aria-label={qzText('preset_name_aria', 'New preset name')} value={presetName} onChange={(event) => setPresetName(event.target.value)} onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; if (event.key === 'Enter') { event.preventDefault(); savePreset(); } }} maxLength="50" placeholder={qzText('preset_name_placeholder', 'e.g. Friday concept check')} className="flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" />
               <button type="button" onClick={savePreset} disabled={assessedTotal <= 0} className="px-3 text-xs font-bold rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40">{qzText('preset_save', 'Save')}</button>
             </div>
-            {presetStatus && <p role="status" className="text-[10px] text-slate-600">{presetStatus}</p>}
+            {presetStatus && <p role="status" className="text-xs text-slate-600">{presetStatus}</p>}
           </div>}
         </div>
 
@@ -3656,7 +3829,7 @@ function QuizPanel(props) {
       </div>
 
       <div className="px-3 pt-2 pb-1 flex items-center gap-2">
-        <label htmlFor="quiz-visuals-select" className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0">{t('quiz.visuals_label') || 'Visuals:'}</label>
+        <label htmlFor="quiz-visuals-select" className="text-xs font-bold uppercase tracking-wider text-slate-600 flex-shrink-0">{t('quiz.visuals_label') || 'Visuals:'}</label>
         <select id="quiz-visuals-select" value={mcqVisualMode} onChange={(event) => setMcqVisualMode(event.target.value)} disabled={isProcessing} data-help-key="quiz_visual_mode_select" className="flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white disabled:opacity-50" aria-label={t('quiz.visuals_aria') || 'MCQ visual mode'}>
           <option value="none">{t('quiz.visuals_none') || '∅ None (text only)'}</option>
           <option value="question">{t('quiz.visuals_question') || 'Question images'}</option>
@@ -3685,7 +3858,7 @@ function QuizPanel(props) {
         aria-busy={isProcessing}
         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{quizMode === 'exit-ticket' ? t('quiz.generate') : quizMode === 'pre-check' ? (t('quiz.generate_pre_check') || 'Generate Pre-Check') : quizMode === 'formative' ? (t('quiz.generate_formative') || 'Generate Formative Check') : (t('quiz.generate_review') || 'Generate Spaced Review')} <Sparkles size={14} className="text-yellow-600" /></span>
+        <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{quizMode === 'exit-ticket' ? t('quiz.generate') : quizMode === 'pre-check' ? (t('quiz.generate_pre_check') || 'Generate Pre-Check') : quizMode === 'formative' ? (t('quiz.generate_formative') || 'Generate Formative Check') : quizMode === 'poll' ? 'Generate Student-Voice Poll' : (t('quiz.generate_review') || 'Generate Spaced Review')} <Sparkles size={14} className="text-yellow-600" /></span>
         <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
       </button>
     </div>
@@ -3706,7 +3879,7 @@ function TimelinePanel(props) {
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className={SIDEBAR_PANEL_UI.settingsSurface}>
                         <div>
-                            <label className={SIDEBAR_PANEL_UI.label}>{t('timeline.topic')} <span className="font-normal text-slate-500">{t('common.optional')}</span></label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('timeline.topic')} <span className="font-normal text-slate-600">{t('common.optional')}</span></label>
                             <input aria-label={t('common.enter_timeline_topic')}
                                 data-help-key="timeline_topic"
                                 type="text"
@@ -3717,7 +3890,7 @@ function TimelinePanel(props) {
                             />
                         </div>
                         <div>
-                            <label className={SIDEBAR_PANEL_UI.label}>{t('timeline.count')} <span className="font-normal text-slate-500">{t('common.optional')}</span></label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('timeline.count')} <span className="font-normal text-slate-600">{t('common.optional')}</span></label>
                             <input aria-label={t('common.text_field')}
                                 data-help-key="timeline_count"
                                 type="number"
@@ -3807,7 +3980,7 @@ function ConceptSortPanel(props) {
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className={SIDEBAR_PANEL_UI.settingsSurface}>
                         <div>
-                            <label className={SIDEBAR_PANEL_UI.label}>{t('concept_sort.categories')} {t('concept_sort.max_categories')} <span className="font-normal text-slate-500">{t('common.optional')}</span></label>
+                            <label className={SIDEBAR_PANEL_UI.label}>{t('concept_sort.categories')} {t('concept_sort.max_categories')} <span className="font-normal text-slate-600">{t('common.optional')}</span></label>
                             <div className="flex gap-2 mb-2">
                                 <input aria-label={t('common.enter_concept_input')}
                                     data-help-key="concept_sort_categories"
@@ -3948,7 +4121,7 @@ function BrainstormPanel(props) {
                                 </button>
                             ))}
                         </div>
-                        <p className="text-[11px] text-slate-600 italic mt-1.5 leading-tight">{modeDesc(activityMode)}</p>
+                        <p className="text-xs text-slate-600 italic mt-1.5 leading-tight">{modeDesc(activityMode)}</p>
                     </div>
                     {activityMode !== 'simulation' && (
                     <div className={SIDEBAR_PANEL_UI.settingsSurface}>
@@ -4017,7 +4190,7 @@ function BrainstormPanel(props) {
                                         </option>
                                     ))}
                                 </select>
-                                <p className="text-[11px] text-violet-800 mt-1 italic leading-tight">
+                                <p className="text-xs text-violet-800 mt-1 italic leading-tight">
                                     {t(`bridge.modes.${bridgeSimType}_desc`)}
                                 </p>
                              </div>
@@ -4026,7 +4199,7 @@ function BrainstormPanel(props) {
                                     <label htmlFor="brainstorm-step-count" className="block text-xs font-bold text-violet-900">
                                        {t('bridge.iterative_steps')}
                                     </label>
-                                    <span className="text-[11px] font-mono bg-white px-1.5 rounded border border-violet-200 text-violet-800 font-bold">
+                                    <span className="text-xs font-mono bg-white px-1.5 rounded border border-violet-200 text-violet-800 font-bold">
                                         {bridgeStepCount} {t('bridge.prompts_count')}
                                     </span>
                                 </div>
@@ -4041,15 +4214,17 @@ function BrainstormPanel(props) {
                                     onChange={(e) => setBridgeStepCount(parseInt(e.target.value))}
                                     className="w-full h-1.5 bg-violet-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
                                 />
-                                <p className="text-[11px] text-slate-700 mt-1">
+                                <p className="text-xs text-slate-700 mt-1">
                                     {t('bridge.step_desc')}
                                 </p>
                              </div>
                         </div>
+                        {!aiTextAvailable && <AiSetupNotice t={t} />}
                         <button data-guided-primary type="button"
                             data-help-key="brainstorm_generate_button"
                             onClick={() => handleGenerate('gemini-bridge')}
-                            disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                            disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                            title={!aiTextAvailable ? (t('sidebar.needs_ai_setup') || 'Needs AI setup') : undefined}
                             className="w-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-2 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         >
                             {isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Terminal size={14}/>}
@@ -4105,13 +4280,13 @@ function ImagePanel(props) {
                                     className={SIDEBAR_PANEL_UI.checkbox}
                                 />
                                 <MonitorPlay size={12} className="text-slate-600" /> {t('visuals.low_quality_label')}
-                                <span className="text-[11px] text-slate-600 ml-1">{t('visuals.low_quality_hint')}</span>
+                                <span className="text-xs text-slate-600 ml-1">{t('visuals.low_quality_hint')}</span>
                             </label>
                         </div>
                         <div>
                         <label className={SIDEBAR_PANEL_UI.label}>Image style</label>
                         <select
-                            aria-label="Image style source"
+                            aria-label={t('visuals.image_style_source_aria') || 'Image style source'}
                             value={visualStyleMode}
                             onChange={(e) => setVisualStyle(e.target.value === 'inherit' ? 'Default' : 'Isometric Diagram')}
                             className={`${SIDEBAR_PANEL_UI.control} text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`}
@@ -4197,6 +4372,7 @@ function ImagePanel(props) {
 
 // ── PersonaPanel: expandedTools.includes('persona') panel from L23279-L23341 ──
 function PersonaPanel(props) {
+  const aiTextAvailable = useAiTextAvailable();
   const {
     ListChecks, MessageCircleQuestion, activeView, expandedTools,
     generatedContent, handleGeneratePersonas, handleSetActiveViewToPersona, hasSourceOrAnalysis,
@@ -4242,13 +4418,15 @@ function PersonaPanel(props) {
                             <ArrowRight size={16} className="text-slate-600 group-hover:text-indigo-600" />
                         </button>
                     )}
+                    {!aiTextAvailable && <div className="px-3 pt-2"><AiSetupNotice t={t} /></div>}
                     <button type="button"
                         data-help-key="persona_generate_button"
                         onClick={() => {
                             handleGeneratePersonas();
                             setActiveView('persona');
                         }}
-                        disabled={!hasSourceOrAnalysis || isGeneratingPersona || isProcessing} aria-busy={isProcessing}
+                        disabled={!hasSourceOrAnalysis || isGeneratingPersona || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
+                        title={!aiTextAvailable ? (t('sidebar.needs_ai_setup') || 'Needs AI setup') : undefined}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors motion-reduce:transition-none flex items-center gap-2">
@@ -4800,6 +4978,7 @@ function GeneratorActionsView(props) {
     useEmojis, useLowQualityVisuals, useMathSourceContext, visualCustomInstructions, visualCustomStyle,
     visualLayoutMode, visualStyle, sourceRecord, openSourceView,
   } = props;
+  const aiTextAvailable = useAiTextAvailable();
   // Start blank is offered only for tools the host says can be filled in by hand.
   const canStartBlank = (id) => Array.isArray(window.__alloBlankStartTypes) && window.__alloBlankStartTypes.includes(id);
   const startBlank = (id) => handleGenerate(id, null, false, null, { seed: { kind: 'blank' } });
@@ -4811,7 +4990,7 @@ function GeneratorActionsView(props) {
       if (!panel) return;
       const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       try { panel.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); } catch (_) {}
-      const field = panel.querySelector('textarea, input[type="text"], input:not([type])');
+      const field = panel.querySelector('textarea, input[type="text"], input:not([type]), [data-source-paste], [data-source-open], button:not([disabled])');
       if (field) try { field.focus({ preventScroll: true }); } catch (_) {}
     }, 60);
   };
@@ -4852,7 +5031,7 @@ function GeneratorActionsView(props) {
               // guarantee you can see is worth more than one you have to trust.
               if (ToolCatalogControls && isToolCatalogHidden) return (
                 <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                  <span className="text-[11px] font-semibold text-slate-600">
+                  <span className="text-xs font-semibold text-slate-600">
                     {_catalogFiltered
                       ? (t('sidebar.tool_finder_hidden_filtered') || 'A tool filter is on: showing {shown} of {total} tools.').replace('{shown}', String(_catalogShown)).replace('{total}', String(TOOL_CATALOG_GROUPS.all.length))
                       : (t('sidebar.tool_finder_hidden') || 'Showing all tools.')}
@@ -4943,7 +5122,27 @@ function GeneratorActionsView(props) {
           leveledTextLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
           setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setIncludeEtymology,
           t, nativeLanguageDefaultsVersion, appLanguage, currentUiLanguage,
-          translationMode, resolveTranslationPolicy, translationTargetChoices
+          translationMode, resolveTranslationPolicy, translationTargetChoices,
+          analyzedGlossaryCounts: (() => {
+            const normSrc = s => String(s || '').replace(/\s+/g, ' ').trim();
+            const curSrc = normSrc(inputText);
+            const candidates = Array.isArray(history) ? history.slice().reverse() : [];
+            const activeAnalysis = generatedContent?.type === 'analysis' ? generatedContent : null;
+            const match = [activeAnalysis, ...candidates].find(item => {
+              if (!item || item.type !== 'analysis' || !item.data) return false;
+              if (item.data.analysisNeedsRecheck || item.data.analysisIncomplete) return false;
+              const v = item.data.vocabulary || item.data.tier2Words;
+              if (!Array.isArray(v) || !v.length) return false;
+              if (!curSrc) return true;
+              const orig = normSrc(item.data.originalText);
+              return !orig || orig === curSrc;
+            });
+            if (!match) return null;
+            const vocab = match.data.vocabulary || match.data.tier2Words;
+            const tier2 = Math.min(20, Array.isArray(match.data.vocabularyTiers?.tier2) ? match.data.vocabularyTiers.tier2.length : Math.floor(vocab.length / 2));
+            const tier3 = Math.min(20, Array.isArray(match.data.vocabularyTiers?.tier3) ? match.data.vocabularyTiers.tier3.length : (vocab.length - tier2));
+            return { total: tier2 + tier3, tier2, tier3 };
+          })()
                 })}
             </div>
             <div style={{display: isGuidedToolVisible('simplified') ? undefined : 'none'}} id="ui-tool-simplified" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
@@ -5249,7 +5448,7 @@ function GeneratorActionsView(props) {
                   <button
                     type="button"
                     onClick={() => { selectToolFromCatalog('math'); setShowStemLab(true); setStemLabTab('explore'); }}
-                    className="group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all motion-reduce:transition-none hover:shadow-sm"
+                    className="group flex items-center gap-1 px-2 py-0.5 me-3 text-xs font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all motion-reduce:transition-none hover:shadow-sm"
                     aria-label={t('sidebar.open_stem_lab_explore_aria') || 'Open STEAM Lab Explore'}
                   >
                     🧪 <span className="group-hover:tracking-wide transition-all motion-reduce:transition-none">{t('sidebar.stem_lab_explore') || 'Explore'}</span>
@@ -5398,7 +5597,7 @@ function GeneratorActionsView(props) {
                     the directions, not something you can do. Now plain text plus the same
                     chevron every other openable card uses, so the whole card reads as one
                     affordance. Nothing else changes; the string keeps its key. */}
-                <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-bold text-amber-700">
+                <span className="flex shrink-0 items-center gap-1.5 text-xs font-bold text-amber-700">
                   {t('directions.badge') || 'you write it'}
                   <ChevronRight size={14} className="text-amber-600" aria-hidden="true" />
                 </span>
@@ -5428,16 +5627,16 @@ function GeneratorActionsView(props) {
                 <button type="button"
                     data-help-key="tool_alignment"
                     onClick={() => { selectToolFromCatalog('alignment'); handleGenerate('alignment-report'); }}
-                    disabled={!hasSourceOrAnalysis || isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable}
                     className="w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
-                    title={t('alignment.generate')}
+                    title={!aiTextAvailable ? (t('sidebar.needs_ai_setup') || 'Needs AI setup') : t('alignment.generate')}
                 >
                     <div>
                         <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-700 to-emerald-700 group-hover:from-teal-600 group-hover:to-emerald-600 flex items-center gap-2">
                             {isProcessing && activeView === 'alignment-report' ? <RefreshCw className="animate-spin motion-reduce:animate-none text-teal-600" size={18} /> : <ShieldCheck size={18} className="text-emerald-500 fill-emerald-100" />}
                             {isIndependentMode ? (t('alignment.skill_check') || "Skill Check") : t(isParentMode ? 'sidebar.tool_alignment_parent' : 'sidebar.tool_alignment')}
                         </span>
-                        <span className="text-[11px] text-slate-600 block mt-0.5">
+                        <span className="text-xs text-slate-600 block mt-0.5">
                             {standardsInput ? (isIndependentMode ? (t('alignment.desc_skill_check') || "Verify your mastery against standards.") : (isParentMode ? (t('alignment.desc_parent') || "See how this matches school goals") : (t('alignment.desc_6dim') || "Audits curriculum across 6 dimensions"))) : (t('alignment.desc_5dim') || "Audits curriculum across 5 dimensions (add standards for full audit)")}
                         </span>
                     </div>
@@ -5507,6 +5706,7 @@ function SourceShellWatch({ inputText, sourceStatus, sourceReplacement, setSourc
 
 // Host owns state, refs and actions; this view preserves the existing DOM structure.
 function SourceInputShellView(props) {
+  const aiTextAvailable = useAiTextAvailable();
   const {
     BookOpen, CheckSquare, ChevronDown, ChevronUp, ClipboardList, FileDown, FileText, Globe, Layout,
     Link, RefreshCw, Sparkles, Upload, X, activeView, addToast, aiStandardQuery, aiStandardRegion,
@@ -5535,6 +5735,15 @@ function SourceInputShellView(props) {
   // Once there is text, the ways in are replaced by Change source, which asks
   // first; the new text replaces the old with Undo, and the source in use
   // stays in use until the new text is used.
+  const [dismissedTranscriptKey, setDismissedTranscriptKey] = React.useState(null);
+  const transcriptBannerKey = videoTranscriptSourceContext
+    ? `${videoTranscriptSourceContext.title || ''}:${videoTranscriptSourceContext.wordCount || 0}`
+    : null;
+  const showTranscriptShortcuts = Boolean(
+    expandedTools.includes('source-input')
+    && videoTranscriptSourceContext
+    && dismissedTranscriptKey !== transcriptBannerKey
+  );
   const sourceStatus = SourceRecord.status(sourceRecord, inputText);
   const changeOpen = !!(sourceReplacement && sourceReplacement.status === 'change-pending');
   const showWaysIn = sourceStatus === 'empty' || changeOpen;
@@ -5724,7 +5933,7 @@ function SourceInputShellView(props) {
                          id="tour-upload-source"
                          data-help-key="source_upload_btn"
                          aria-label={t('common.upload_file') || 'Upload file'}
-                        onClick={() => fileInputRef.current.click()}
+                        onClick={() => fileInputRef?.current?.click()}
                         disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
                         className={sourcePillClass}
                         title={t('input.upload_tooltip')}
@@ -5773,9 +5982,9 @@ function SourceInputShellView(props) {
                         {t('input.reading_catalog') || 'Reading catalog'}
                      </button>
                      {/* Opens only PDF Accessibility work; lesson projects open from Class & Materials. */}
-                     <label data-source-open-pdf-project="true" data-help-key="source_open_pdf_project_btn" className={sourcePillClass + ' cursor-pointer'} title={t('input.open_pdf_project_tooltip') || 'Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials.'}>
-                        <FileDown size={12} /> {t('input.open_pdf_project') || 'Open PDF project'}
-                        <input type="file" accept=".json" className="hidden" onChange={(e) => {
+                     <label data-source-open-pdf-project="true" data-help-key="source_open_pdf_project_btn" className={sourcePillClass + ' cursor-pointer focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-1'} title={t('input.open_pdf_project_tooltip') || 'Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials.'}>
+                        <FileDown size={12} aria-hidden="true" /> {t('input.open_pdf_project') || 'Open PDF project'}
+                        <input type="file" accept=".json" className="sr-only" onChange={(e) => {
                           const file = e.target.files?.[0];
                           e.target.value = '';
                           openPdfProjectFile(file);
@@ -5787,27 +5996,30 @@ function SourceInputShellView(props) {
             </div>
             <SourceShellWatch inputText={inputText} sourceStatus={sourceStatus} sourceReplacement={sourceReplacement} setSourceReplacement={setSourceReplacement} openSourceView={openSourceView} />
             {/* ── SourceInputPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-            {expandedTools.includes('source-input') && videoTranscriptSourceContext && (
+            {showTranscriptShortcuts && (
               <div className="mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800">
+                    <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wide text-emerald-800">
                       <FileText size={13} />
                       Video transcript loaded
                     </div>
                     <div className="mt-1 truncate text-sm font-bold text-slate-800">
                       {videoTranscriptSourceContext.title}
                     </div>
-                    <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600">
-                      <span>{videoTranscriptSourceContext.wordCount.toLocaleString()} words</span>
-                      {videoTranscriptSourceContext.cueCount > 0 && <span>{videoTranscriptSourceContext.cueCount.toLocaleString()} caption lines</span>}
-                      {videoTranscriptSourceContext.chapterCount > 0 && <span>{videoTranscriptSourceContext.chapterCount} chapters</span>}
-                      {videoTranscriptSourceContext.durationLabel && <span>{videoTranscriptSourceContext.durationLabel}</span>}
+                    <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs font-semibold text-slate-600">
+                      <span>{Number(videoTranscriptSourceContext?.wordCount || 0).toLocaleString()} words</span>
+                      {Number(videoTranscriptSourceContext?.cueCount || 0) > 0 && <span>{Number(videoTranscriptSourceContext.cueCount).toLocaleString()} caption lines</span>}
+                      {Number(videoTranscriptSourceContext?.chapterCount || 0) > 0 && <span>{Number(videoTranscriptSourceContext.chapterCount)} chapters</span>}
+                      {videoTranscriptSourceContext?.durationLabel && <span>{videoTranscriptSourceContext.durationLabel}</span>}
                     </div>
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleTranscriptSourceAction('dismiss')}
+                    onClick={() => {
+                      setDismissedTranscriptKey(transcriptBannerKey);
+                      handleTranscriptSourceAction('dismiss');
+                    }}
                     className="shrink-0 rounded-full border border-emerald-200 bg-white p-1.5 text-slate-600 hover:bg-emerald-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     aria-label={t('a11y.hide_transcript_shortcuts') || 'Hide transcript shortcuts'}
                     title={t('a11y.hide_transcript_shortcuts') || 'Hide transcript shortcuts'}
@@ -5827,7 +6039,8 @@ function SourceInputShellView(props) {
                       key={item.action}
                       type="button"
                       onClick={() => handleTranscriptSourceAction(item.action)}
-                      disabled={isProcessing}
+                      disabled={isProcessing || !aiTextAvailable}
+                      title={!aiTextAvailable ? (t('sidebar.needs_ai_setup') || 'Needs AI setup') : undefined}
                       className="flex min-h-[34px] items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 transition-colors motion-reduce:transition-none hover:bg-emerald-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {item.icon}

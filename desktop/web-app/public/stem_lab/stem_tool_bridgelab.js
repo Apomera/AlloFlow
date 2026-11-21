@@ -1843,13 +1843,217 @@
     return bay * Math.max(1, Math.min(nBays, braceEvery || 1));
   }
 
+  // ── Cinema-grade WebGL1 / GLSL ES 1.00 Structural & Canyon Shaders ──
+  // Purely visual enhancement: axial tension/compression stress-tensor energy
+  // flow + harmonic yield-warning shimmer, canyon river water advection,
+  // golden-hour atmospheric sky & valley mist dome, and live-load deck shimmer.
+  // Strictly bypassed in High-Contrast mode and frozen under prefers-reduced-motion.
+  var BRIDGE_GLSL_NOISE =
+    'float blHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }\n' +
+    'float blNoise(vec2 p){\n' +
+    '  vec2 i = floor(p); vec2 f = fract(p);\n' +
+    '  vec2 u = f * f * (3.0 - 2.0 * f);\n' +
+    '  return mix(mix(blHash(i), blHash(i + vec2(1.0, 0.0)), u.x),\n' +
+    '             mix(blHash(i + vec2(0.0, 1.0)), blHash(i + vec2(1.0, 1.0)), u.x), u.y);\n' +
+    '}\n' +
+    'float blFbm(vec2 p){\n' +
+    '  float v = 0.0; float a = 0.5;\n' +
+    '  for (int i = 0; i < 4; i++) { v += a * blNoise(p); p *= 2.03; a *= 0.5; }\n' +
+    '  return v;\n' +
+    '}\n';
+
+  function bridgeIsHighContrast(m) {
+    if (m && typeof m.contrast === 'boolean') return m.contrast;
+    try {
+      if (typeof document !== 'undefined') {
+        var de = document.documentElement, bd = document.body;
+        if ((de && de.classList && de.classList.contains('theme-contrast')) ||
+            (bd && bd.classList && bd.classList.contains('theme-contrast'))) return true;
+      }
+      if (typeof window !== 'undefined' && window.matchMedia &&
+          (window.matchMedia('(forced-colors: active)').matches ||
+           window.matchMedia('(prefers-contrast: more)').matches)) return true;
+    } catch (e) {}
+    return false;
+  }
+
+  function applyBridgeStressShader(THREE, material, opts, sharedUniforms) {
+    if (!material || !opts || opts.contrast || typeof material.onBeforeCompile !== 'function') return material;
+    var sign = opts.sign || 0;
+    var stress = opts.stress != null ? opts.stress : 0.35;
+    var yieldLevel = opts.yieldLevel != null ? opts.yieldLevel : 0.0;
+    var isBowed = !!opts.bowed;
+    material.customProgramCacheKey = function () { return 'bl-stress-' + (isBowed ? 'b' : (sign > 0 ? 't' : sign < 0 ? 'c' : 'n')); };
+    material.onBeforeCompile = function (shader) {
+      shader.uniforms.uBlTime = sharedUniforms.uBlTime;
+      shader.uniforms.uBlQuake = sharedUniforms.uBlQuake;
+      shader.uniforms.uBlLoadX = sharedUniforms.uBlLoadX;
+      shader.uniforms.uBlSign = { value: sign };
+      shader.uniforms.uBlStress = { value: stress };
+      shader.uniforms.uBlYield = { value: yieldLevel };
+      shader.uniforms.uBlBowed = { value: isBowed ? 1.0 : 0.0 };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vBlLocalPos;\nvarying vec3 vBlWorldPos;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBlLocalPos = position;\nvBlWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>',
+          '#include <common>\n' +
+          'uniform float uBlTime;\n' +
+          'uniform float uBlQuake;\n' +
+          'uniform float uBlLoadX;\n' +
+          'uniform float uBlSign;\n' +
+          'uniform float uBlStress;\n' +
+          'uniform float uBlYield;\n' +
+          'uniform float uBlBowed;\n' +
+          'varying vec3 vBlLocalPos;\n' +
+          'varying vec3 vBlWorldPos;'
+        )
+        .replace('#include <tonemapping_fragment>',
+          'vec3 blN = normalize(normal);\n' +
+          'vec3 blV = normalize(vViewPosition);\n' +
+          'float blFresnel = pow(1.0 - max(dot(blN, blV), 0.0), 2.6);\n' +
+          'float blAxis = uBlBowed > 0.5 ? (vBlWorldPos.x * 0.7) : abs(vBlLocalPos.z);\n' +
+          'float blDir = uBlSign >= 0.0 ? -1.0 : 1.0;\n' +
+          'float blPhase = fract(blAxis * 0.48 + blDir * uBlTime * (0.95 + 0.85 * uBlStress));\n' +
+          'float blPulse = smoothstep(0.12, 0.76, blPhase) * smoothstep(1.0, 0.80, blPhase);\n' +
+          'vec3 blFlowCol = uBlSign > 0.5 ? vec3(1.0, 0.42, 0.36) : (uBlSign < -0.5 ? vec3(0.32, 0.72, 1.0) : vec3(0.76, 0.84, 0.92));\n' +
+          'float blFlowAmt = (abs(uBlSign) > 0.5 ? (0.10 + 0.34 * uBlStress) : 0.04) * blPulse;\n' +
+          'float blHarmonic = pow(0.5 + 0.5 * sin(blAxis * 3.1 - uBlTime * 3.8), 3.0);\n' +
+          'vec3 blWarnCol = vec3(1.0, 0.78, 0.22) * uBlYield * (0.18 + 0.46 * blHarmonic + 0.24 * blFresnel);\n' +
+          'float blNearLoad = exp(-abs(vBlWorldPos.x - uBlLoadX) * 0.22);\n' +
+          'float blLiveShimmer = (0.06 * blNearLoad + 0.14 * uBlQuake) * (0.6 + 0.4 * sin(vBlWorldPos.x * 0.65 - uBlTime * 2.8));\n' +
+          'gl_FragColor.rgb += blFlowCol * (blFlowAmt + blFresnel * 0.12 * uBlStress + blLiveShimmer) + blWarnCol;\n' +
+          '#include <tonemapping_fragment>'
+        );
+    };
+    return material;
+  }
+
+  function applyBridgeRiverShader(THREE, material, opts, sharedUniforms) {
+    if (!material || !opts || opts.contrast || typeof material.onBeforeCompile !== 'function') return material;
+    var span = opts.span || 36;
+    material.customProgramCacheKey = function () { return 'bl-canyon-river-v1'; };
+    material.onBeforeCompile = function (shader) {
+      shader.uniforms.uBlTime = sharedUniforms.uBlTime;
+      shader.uniforms.uBlSpan = { value: Math.max(10.0, span) };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vBlWorldPos;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBlWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>',
+          '#include <common>\n' +
+          'uniform float uBlTime;\n' +
+          'uniform float uBlSpan;\n' +
+          'varying vec3 vBlWorldPos;\n' +
+          BRIDGE_GLSL_NOISE
+        )
+        .replace('#include <tonemapping_fragment>',
+          'vec3 rwN = normalize(normal);\n' +
+          'vec3 rwV = normalize(vViewPosition);\n' +
+          'vec2 rwUv1 = vec2(vBlWorldPos.x * 0.14, vBlWorldPos.z * 0.11 - uBlTime * 0.42);\n' +
+          'vec2 rwUv2 = vec2(vBlWorldPos.x * 0.27 + 2.3, vBlWorldPos.z * 0.19 - uBlTime * 0.68);\n' +
+          'float rwWave1 = blFbm(rwUv1);\n' +
+          'float rwWave2 = blFbm(rwUv2);\n' +
+          'float rwCurrent = 0.55 * rwWave1 + 0.45 * rwWave2;\n' +
+          'float rwCaustic = pow(smoothstep(0.46, 0.86, rwCurrent), 2.4);\n' +
+          'float rwGlint = pow(max(0.0, sin(vBlWorldPos.z * 0.52 - uBlTime * 2.1 + rwWave1 * 4.5)), 8.0) * smoothstep(0.42, 0.78, rwWave2);\n' +
+          'float rwShore = smoothstep(0.68, 0.98, abs(vBlWorldPos.x) / max(1.0, uBlSpan * 0.52));\n' +
+          'float rwFoam = rwShore * smoothstep(0.48, 0.76, rwWave2) * 0.34;\n' +
+          'float rwFresnel = pow(1.0 - max(dot(rwN, rwV), 0.0), 3.0);\n' +
+          'vec3 rwSkyReflect = vec3(0.82, 0.90, 0.94) * rwFresnel * 0.32;\n' +
+          'vec3 rwSunSpec = vec3(1.0, 0.92, 0.74) * (rwCaustic * 0.24 + rwGlint * 0.42);\n' +
+          'gl_FragColor.rgb = mix(gl_FragColor.rgb, gl_FragColor.rgb * (0.88 + 0.24 * rwCurrent), 0.65) + rwSunSpec + rwSkyReflect + vec3(0.88, 0.95, 0.96) * rwFoam;\n' +
+          '#include <tonemapping_fragment>'
+        );
+    };
+    return material;
+  }
+
+  function applyBridgeDeckShimmerShader(THREE, material, opts, sharedUniforms) {
+    if (!material || !opts || opts.contrast || typeof material.onBeforeCompile !== 'function') return material;
+    material.customProgramCacheKey = function () { return 'bl-deck-shimmer-v1'; };
+    material.onBeforeCompile = function (shader) {
+      shader.uniforms.uBlTime = sharedUniforms.uBlTime;
+      shader.uniforms.uBlQuake = sharedUniforms.uBlQuake;
+      shader.uniforms.uBlLoadX = sharedUniforms.uBlLoadX;
+      shader.uniforms.uBlLoadActive = sharedUniforms.uBlLoadActive;
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vBlWorldPos;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBlWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>',
+          '#include <common>\n' +
+          'uniform float uBlTime;\n' +
+          'uniform float uBlQuake;\n' +
+          'uniform float uBlLoadX;\n' +
+          'uniform float uBlLoadActive;\n' +
+          'varying vec3 vBlWorldPos;'
+        )
+        .replace('#include <tonemapping_fragment>',
+          'float dkDist = abs(vBlWorldPos.x - uBlLoadX);\n' +
+          'float dkRipple = 0.5 + 0.5 * sin(dkDist * 1.4 - uBlTime * 3.2);\n' +
+          'float dkWave = exp(-dkDist * 0.16) * dkRipple * 0.12 * uBlLoadActive;\n' +
+          'float dkQuake = uBlQuake * (0.5 + 0.5 * sin(vBlWorldPos.x * 0.55 + uBlTime * 5.0)) * 0.16;\n' +
+          'gl_FragColor.rgb += vec3(0.55, 0.82, 1.0) * dkWave + vec3(1.0, 0.76, 0.36) * dkQuake;\n' +
+          '#include <tonemapping_fragment>'
+        );
+    };
+    return material;
+  }
+
+  function makeBridgeSkyShaderMaterial(THREE, sharedUniforms) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: sharedUniforms.uBlTime,
+        uSunDir: { value: new THREE.Vector3(-0.35, 0.34, 0.55).normalize() }
+      },
+      vertexShader:
+        'varying vec3 vDir;\n' +
+        'void main(){\n' +
+        '  vDir = normalize(position);\n' +
+        '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n' +
+        '}',
+      fragmentShader:
+        'uniform float uTime;\n' +
+        'uniform vec3 uSunDir;\n' +
+        'varying vec3 vDir;\n' +
+        BRIDGE_GLSL_NOISE +
+        'void main(){\n' +
+        '  vec3 n = normalize(vDir);\n' +
+        '  float h = clamp(n.y, 0.0, 1.0);\n' +
+        '  vec3 zenith = vec3(0.20, 0.45, 0.68);\n' +
+        '  vec3 midSky = vec3(0.54, 0.74, 0.84);\n' +
+        '  vec3 horizon = vec3(0.92, 0.85, 0.74);\n' +
+        '  vec3 col = mix(horizon, midSky, smoothstep(0.0, 0.24, h));\n' +
+        '  col = mix(col, zenith, smoothstep(0.18, 0.82, h));\n' +
+        '  float sunDot = max(dot(n, uSunDir), 0.0);\n' +
+        '  float sunDisc = pow(sunDot, 260.0) * 1.15;\n' +
+        '  float sunHalo = pow(sunDot, 7.0) * 0.36;\n' +
+        '  col += vec3(1.0, 0.84, 0.58) * (sunDisc + sunHalo);\n' +
+        '  vec2 cloudUv = n.xz / max(0.16, n.y + 0.14) * 1.15 + vec2(uTime * 0.015, uTime * 0.006);\n' +
+        '  float cNoise = blFbm(cloudUv);\n' +
+        '  float cMask = smoothstep(0.46, 0.78, cNoise) * smoothstep(0.04, 0.24, h) * smoothstep(0.88, 0.32, h);\n' +
+        '  vec3 cloudTint = mix(vec3(0.94, 0.96, 0.97), vec3(1.0, 0.89, 0.72), pow(sunDot, 2.5));\n' +
+        '  col = mix(col, cloudTint, cMask * 0.58);\n' +
+        '  float valleyMist = exp(-abs(n.y) * 13.5);\n' +
+        '  vec3 mistCol = mix(vec3(0.80, 0.88, 0.89), vec3(0.98, 0.88, 0.74), pow(sunDot, 2.0) * 0.72);\n' +
+        '  col = mix(col, mistCol, valleyMist * 0.72);\n' +
+        '  gl_FragColor = vec4(col, 1.0);\n' +
+        '}',
+      side: THREE.BackSide,
+      depthWrite: false,
+      fog: false
+    });
+  }
+
   /** One member as a thin box stretched between two points. */
   function bridgeAddMember(THREE, group, p1, p2, colorHex, thick) {
     var dir = new THREE.Vector3().subVectors(p2, p1);
     var len = dir.length();
     if (!(len > 1e-6)) return null;
     var geo = new THREE.BoxGeometry(thick, thick, len);
-    var mat = new THREE.MeshLambertMaterial({ color: colorHex });
+    var mat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.42, metalness: 0.32 });
     var mesh = new THREE.Mesh(geo, mat);
     mesh.position.copy(p1).add(p2).multiplyScalar(0.5);
     mesh.lookAt(p2);
@@ -1886,7 +2090,7 @@
     }
     var curve = new THREE.CatmullRomCurve3(pts);
     var geo = new THREE.TubeGeometry(curve, SEG * 2, thick * 0.6, 6, false);
-    var mat = new THREE.MeshLambertMaterial({ color: colorHex });
+    var mat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.36, metalness: 0.34 });
     var mesh = new THREE.Mesh(geo, mat);
     group.add(mesh);
     return mesh;
@@ -1998,6 +2202,14 @@
     build: function (THREE, S, m) {
       var span = m.span, height = m.height, nBays = m.nBays;
       var halfW = bridgeHalfWidth(span);
+      var contrast = bridgeIsHighContrast(m);
+      var blShaderUniforms = {
+        uBlTime: { value: 1.65 },
+        uBlQuake: { value: 0.0 },
+        uBlLoadX: { value: m.loadMode === 'vehicle' ? ((m.vehiclePos || 0.5) - 0.5) * span : 0.0 },
+        uBlLoadActive: { value: m.loadMode === 'vehicle' ? 1.0 : 0.35 }
+      };
+      S.blShaderUniforms = blShaderUniforms;
       S.bridgeBuilds = (S.bridgeBuilds || 0) + 1;
       var maxF = 1;
       var i, k;
@@ -2075,6 +2287,17 @@
             mesh.userData.trussPlane = pi;
             mesh.userData.illustrativeBow = !!(intervalChord || (m.bowedId && mem.id === m.bowedId));
             if (mesh.userData.illustrativeBow && bowedMembers.indexOf(mem.id) === -1) bowedMembers.push(mem.id);
+            if (!contrast && mesh.material) {
+              var forceSign = (f == null || Math.abs(f) < 0.001) ? 0 : (isTension ? 1 : -1);
+              var yieldLvl = mesh.userData.illustrativeBow ? 1.0 : Math.max(0, (ratio - 0.72) / 0.28);
+              applyBridgeStressShader(THREE, mesh.material, {
+                contrast: contrast,
+                sign: forceSign,
+                stress: ratio,
+                yieldLevel: yieldLvl,
+                bowed: mesh.userData.illustrativeBow
+              }, blShaderUniforms);
+            }
           }
           memberCount++;
         }
@@ -2089,7 +2312,7 @@
       // Visible connection plates clarify the joints at walking distance. Their
       // geometry follows the same illustrative bow as the attached members.
       var plateGeometry = new THREE.CylinderGeometry(0.19 * Math.max(1, span / 40), 0.19 * Math.max(1, span / 40), 0.06, 6);
-      var plateMaterial = new THREE.MeshLambertMaterial({ color: 0xb6c5d1 });
+      var plateMaterial = new THREE.MeshStandardMaterial({ color: 0xb6c5d1, roughness: 0.34, metalness: 0.56 });
       planes.forEach(function(z) {
         m.joints.forEach(function(joint) {
           var plate = new THREE.Mesh(plateGeometry, plateMaterial);
@@ -2182,6 +2405,9 @@
       S.model.add(structure);
       S.structure = structure;
       S.roadway = box(structure, 0, deckSurface + 0.008, 0, span, 0.015, Math.max(1, halfW * 2 - 1.5), 0x243344);
+      if (!contrast && S.roadway && S.roadway.material) {
+        applyBridgeDeckShimmerShader(THREE, S.roadway.material, { contrast: contrast }, blShaderUniforms);
+      }
       box(structure, 0, deckSurface + 0.025, halfW - 0.62, span, 0.035, 0.92, 0xa5adb0);
       [-1, 1].forEach(function(side) {
         box(structure, 0, deckSurface + 0.09, side * (halfW - 0.20), span, 0.16, 0.18, 0xc5ced0);
@@ -2324,7 +2550,11 @@
         waterColors.push(waterColor.r, waterColor.g, waterColor.b);
       }
       waterGeometry.setAttribute('color', new THREE.Float32BufferAttribute(waterColors, 3));
-      S.water = new THREE.Mesh(waterGeometry, new THREE.MeshPhongMaterial({ vertexColors: true, specular: 0x152f37, shininess: 42 }));
+      var waterMat = new THREE.MeshPhongMaterial({ vertexColors: true, specular: 0x152f37, shininess: 42 });
+      if (!contrast) {
+        applyBridgeRiverShader(THREE, waterMat, { contrast: contrast, span: span }, blShaderUniforms);
+      }
+      S.water = new THREE.Mesh(waterGeometry, waterMat);
       S.water.position.y = -4.17; S.water.receiveShadow = true; S.model.add(S.water);
       var rippleVertices = [], rippleColors = [];
       var rippleColor = new THREE.Color(0xb5d4cf);
@@ -2386,7 +2616,8 @@
         skyColors[skyIndex * 3 + 2] = skyColor.b;
       }
       skyGeometry.setAttribute('color', new THREE.BufferAttribute(skyColors, 3));
-      S.sky = new THREE.Mesh(skyGeometry, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false, fog: false }));
+      var skyShaderMat = !contrast ? makeBridgeSkyShaderMaterial(THREE, blShaderUniforms) : null;
+      S.sky = new THREE.Mesh(skyGeometry, skyShaderMat || new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false, fog: false }));
       S.sky.renderOrder = -1000;
       S.model.add(S.sky);
       function sceneryColorRange(attribute) {
@@ -2518,12 +2749,21 @@
         Math.max((height + 4) / 2 + 0.5, 3),
         halfW * 1.7
       );
-      S.tick = function() {
+      S.tick = function(now) {
         var current = S.data || m;
         var quake = current.quake || {};
         function valid(value) { return typeof value === 'number' && isFinite(value) ? value : 0; }
         var groundM = quake.enabled ? valid(quake.groundM) : 0;
         var deckM = quake.enabled ? valid(quake.deckM) : 0;
+        var isReduced = !!current.reduced;
+        var isHC = bridgeIsHighContrast(current);
+        if (blShaderUniforms) {
+          blShaderUniforms.uBlTime.value = (isReduced || isHC) ? 1.65 : ((typeof now === 'number' && isFinite(now)) ? now * 0.001 : 1.65);
+          var quakeAmp = quake.enabled ? Math.min(1.0, Math.abs(deckM - groundM) * 6.5) : 0.0;
+          blShaderUniforms.uBlQuake.value = quakeAmp;
+          blShaderUniforms.uBlLoadX.value = current.loadMode === 'vehicle' ? ((valid(current.vehiclePos) || 0.5) - 0.5) * span : 0.0;
+          blShaderUniforms.uBlLoadActive.value = current.loadMode === 'vehicle' ? 1.0 : 0.35;
+        }
         // Fixed tenfold displacement magnification is shared with the visible
         // scale label. Time, eye height, and the bridge dimensions stay unscaled.
         var groundZ = groundM * 10, deckZ = deckM * 10;
@@ -6940,19 +7180,32 @@
             } else ratio = 0.4;
             var stroke = stressColor(forceKn, m.kind, ratio);
             var sw = 2 + ratio * 4;
+            var isWoodMat = d.materialId === 'wood';
+            var glowCol = forceKn != null && Math.abs(forceKn) < 0.001 ? null : (forceKn != null ? forceKn > 0 : m.kind === 'tension') ? '#f87171' : '#38bdf8';
             var ariaLabel = forceKn != null ? mid + ': ' + (Math.abs(forceKn) < 0.001 ? 'Zero force ' : forceKn > 0 ? 'Tension ' : 'Compression ') + Math.abs(forceKn).toFixed(2) + ' kN' : '';
             var selectedId = d.inspectedMember && spec && spec.members.some(function(member) { return member.id === d.inspectedMember; }) ? d.inspectedMember : governingCompression.id;
             if (useExact && !spec.members.some(function(member) { return member.id === selectedId; })) selectedId = spec.members[0].id;
             var selected = useExact && mid === selectedId;
             return h('g', { key: kindForStress + '_' + idx, 'data-bridge-member': mid || undefined },
               selected ? h('line', { x1: tx(m.j1.x), y1: ty(m.j1.y), x2: tx(m.j2.x), y2: ty(m.j2.y), stroke: '#f8fafc', strokeWidth: sw + 5, strokeLinecap: 'round', opacity: 0.8 }) : null,
+              glowCol && ratio > 0.35 ? h('line', {
+                x1: tx(m.j1.x), y1: ty(m.j1.y), x2: tx(m.j2.x), y2: ty(m.j2.y),
+                stroke: glowCol, strokeWidth: sw + 4.5, strokeLinecap: 'round',
+                opacity: (0.08 + (ratio - 0.35) * 0.34).toFixed(3), filter: 'url(#stressGlow)'
+              }) : null,
               h('line', {
-              x1: tx(m.j1.x), y1: ty(m.j1.y), x2: tx(m.j2.x), y2: ty(m.j2.y),
-              stroke: stroke, strokeWidth: sw, strokeLinecap: 'round',
-              style: useExact && ratio >= 0.999 ? { filter: 'drop-shadow(0 0 4px ' + stroke + ')' } : undefined
-            },
-              ariaLabel ? h('title', null, ariaLabel) : null
+                x1: tx(m.j1.x), y1: ty(m.j1.y), x2: tx(m.j2.x), y2: ty(m.j2.y),
+                stroke: stroke, strokeWidth: sw, strokeLinecap: 'round',
+                style: useExact && ratio >= 0.999 ? { filter: 'drop-shadow(0 0 4px ' + stroke + ')' } : undefined
+              },
+                ariaLabel ? h('title', null, ariaLabel) : null
               ),
+              // Metallic or timber centerline sheen highlight along each truss beam
+              h('line', {
+                x1: tx(m.j1.x), y1: ty(m.j1.y), x2: tx(m.j2.x), y2: ty(m.j2.y),
+                stroke: isWoodMat ? '#fde68a' : '#f8fafc', strokeWidth: Math.max(0.7, sw * 0.22), strokeLinecap: 'round',
+                opacity: isWoodMat ? 0.24 : 0.28, pointerEvents: 'none'
+              }),
               selected ? h('text', { x: (tx(m.j1.x) + tx(m.j2.x)) / 2, y: (ty(m.j1.y) + ty(m.j2.y)) / 2 - 10,
                 textAnchor: 'middle', fill: '#fff', stroke: '#0f172a', strokeWidth: 4, paintOrder: 'stroke', fontSize: 12, fontWeight: 800 }, mid) : null
             );
@@ -6962,28 +7215,48 @@
             h('title', { id: 'trussSvgT' }, styleLabel + ' truss diagram'),
             h('desc', { id: 'trussSvgD' }, styleLabel + ' truss with ' + n + ' bays, span ' + d.span + ' meters, height ' + d.height + ' meters. Red members are in tension; blue members are in compression. Thickness shows magnitude of force.'),
             h('defs', null,
-              h('linearGradient', { id: 'riverGrad', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
-                h('stop', { offset: '0%', stopColor: '#0284c7', stopOpacity: 0.2 }),
-                h('stop', { offset: '50%', stopColor: '#38bdf8', stopOpacity: 0.45 }),
-                h('stop', { offset: '100%', stopColor: '#0284c7', stopOpacity: 0.2 })
+              h('linearGradient', { id: 'bridgeSkyGrad', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#071122' }),
+                h('stop', { offset: '55%', stopColor: '#10243d' }),
+                h('stop', { offset: '100%', stopColor: '#1b3552' })
+              ),
+              h('linearGradient', { id: 'valleyBankGrad', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#2c3d52' }),
+                h('stop', { offset: '100%', stopColor: '#111b2a' })
+              ),
+              h('linearGradient', { id: 'riverGrad', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#0ea5e9', stopOpacity: 0.42 }),
+                h('stop', { offset: '45%', stopColor: '#0369a1', stopOpacity: 0.54 }),
+                h('stop', { offset: '100%', stopColor: '#082f49', stopOpacity: 0.78 })
               ),
               h('linearGradient', { id: 'headlightGrad', x1: '0%', y1: '50%', x2: '100%', y2: '50%' },
-                h('stop', { offset: '0%', stopColor: '#fef08a', stopOpacity: 0.7 }),
+                h('stop', { offset: '0%', stopColor: '#fef08a', stopOpacity: 0.78 }),
                 h('stop', { offset: '100%', stopColor: '#fef08a', stopOpacity: 0 })
+              ),
+              h('filter', { id: 'stressGlow', x: '-25%', y: '-25%', width: '150%', height: '150%' },
+                h('feGaussianBlur', { stdDeviation: '2.8' })
               ),
               h('filter', { id: 'nodeGlow', x: '-20%', y: '-20%', width: '140%', height: '140%' },
                 h('feGaussianBlur', { stdDeviation: '2', result: 'blur' }),
                 h('feComposite', { in: 'SourceGraphic', in2: 'blur', operator: 'over' })
               )
             ),
-            // Background Environment (Valley & River)
-            h('path', { d: 'M 0,' + ty(0) + ' L ' + (tx(0) - 15) + ',' + ty(0) + ' L ' + (tx(0) - 40) + ',' + svgH + ' L 0,' + svgH + ' Z', fill: '#1e293b' }),
-            h('path', { d: 'M ' + svgW + ',' + ty(0) + ' L ' + (tx(d.span) + 15) + ',' + ty(0) + ' L ' + (tx(d.span) + 40) + ',' + svgH + ' L ' + svgW + ',' + svgH + ' Z', fill: '#1e293b' }),
+            // Scenic Sky, Distant Valley Ridges, Canyon Banks & Shimmering River Reflection
+            h('rect', { x: 0, y: 0, width: svgW, height: ty(0), fill: 'url(#bridgeSkyGrad)' }),
+            h('path', { d: 'M 0,' + ty(0) + ' L 85,' + (ty(0) - 56) + ' L 185,' + (ty(0) - 24) + ' L 305,' + (ty(0) - 72) + ' L 430,' + (ty(0) - 34) + ' L 555,' + (ty(0) - 64) + ' L 650,' + (ty(0) - 30) + ' L ' + svgW + ',' + (ty(0) - 44) + ' L ' + svgW + ',' + ty(0) + ' Z', fill: '#0d2036', opacity: 0.65 }),
+            h('path', { d: 'M 0,' + ty(0) + ' L 125,' + (ty(0) - 28) + ' L 245,' + (ty(0) - 12) + ' L 385,' + (ty(0) - 36) + ' L 515,' + (ty(0) - 18) + ' L 635,' + (ty(0) - 34) + ' L ' + svgW + ',' + (ty(0) - 16) + ' L ' + svgW + ',' + ty(0) + ' Z', fill: '#152c44', opacity: 0.72 }),
             h('rect', { x: tx(0) - 15, y: ty(0), width: d.span * scale + 30, height: svgH - ty(0), fill: 'url(#riverGrad)' }),
-            // Water ripples
-            h('path', { d: 'M ' + tx(0) + ',' + (ty(0) + 18) + ' Q ' + (tx(d.span*0.25)) + ',' + (ty(0) + 14) + ' ' + (tx(d.span*0.5)) + ',' + (ty(0) + 18) + ' T ' + tx(d.span) + ',' + (ty(0) + 18), stroke: 'rgba(56,189,248,0.3)', strokeWidth: 1, fill: 'none' }),
+            // Soft inverted bridge silhouette reflection in the river below
+            h('line', { x1: tx(0), y1: ty(0) + 10, x2: tx(d.span), y2: ty(0) + 10, stroke: '#7dd3fc', strokeWidth: 2.5, opacity: 0.16 }),
+            h('line', { x1: tx(d.span * 0.12), y1: ty(0) + 20, x2: tx(d.span * 0.88), y2: ty(0) + 20, stroke: '#bae6fd', strokeWidth: 1.5, strokeDasharray: '12 8', opacity: 0.14 }),
+            // Water ripples & shimmering highlights
+            h('path', { d: 'M ' + tx(0) + ',' + (ty(0) + 15) + ' Q ' + (tx(d.span*0.25)) + ',' + (ty(0) + 12) + ' ' + (tx(d.span*0.5)) + ',' + (ty(0) + 15) + ' T ' + tx(d.span) + ',' + (ty(0) + 15), stroke: 'rgba(186,230,253,0.34)', strokeWidth: 1.1, fill: 'none' }),
+            h('path', { d: 'M ' + (tx(0) + 18) + ',' + (ty(0) + 26) + ' Q ' + (tx(d.span*0.35)) + ',' + (ty(0) + 23) + ' ' + (tx(d.span*0.6)) + ',' + (ty(0) + 26) + ' T ' + (tx(d.span) - 12) + ',' + (ty(0) + 26), stroke: 'rgba(125,211,252,0.24)', strokeWidth: 1, fill: 'none' }),
+            // Left and right canyon abutment banks with concrete seating ledges
+            h('path', { d: 'M 0,' + ty(0) + ' L ' + (tx(0) - 12) + ',' + ty(0) + ' L ' + (tx(0) - 38) + ',' + svgH + ' L 0,' + svgH + ' Z', fill: 'url(#valleyBankGrad)' }),
+            h('path', { d: 'M ' + svgW + ',' + ty(0) + ' L ' + (tx(d.span) + 12) + ',' + ty(0) + ' L ' + (tx(d.span) + 38) + ',' + svgH + ' L ' + svgW + ',' + svgH + ' Z', fill: 'url(#valleyBankGrad)' }),
             // Ground line
-            h('line', { x1: 0, y1: ty(0), x2: svgW, y2: ty(0), stroke: '#475569', strokeWidth: 1.5, strokeDasharray: '4 4' }),
+            h('line', { x1: 0, y1: ty(0), x2: svgW, y2: ty(0), stroke: '#64748b', strokeWidth: 1.5, strokeDasharray: '4 4' }),
             // Members — pass member id so MOJ-exact coloring works
             bottomChord.map(function(m, i) { return renderMember(m, i, bottomChord.length, 'chord', 'BC' + i); }),
             topChord.map(function(m, i) { return renderMember(m, i, topChord.length, 'chord', 'TC' + i); }),
@@ -7000,11 +7273,21 @@
               }
               return renderMember(m, i, diagonals.length, 'diag', midDiag);
             }),
-            // Joints with metallic glow
+            // Gusset-plate joints with metallic center pin & corner rivet studs
             bottoms.concat(tops).map(function(j, i) {
+              var jx = tx(j.x), jy = ty(j.y), gr = 6.2;
+              var hexPts = [0,1,2,3,4,5].map(function(k) {
+                var aHex = k * Math.PI / 3;
+                return (jx + Math.cos(aHex) * gr).toFixed(1) + ',' + (jy + Math.sin(aHex) * gr).toFixed(1);
+              }).join(' ');
               return h('g', { key: 'jt_' + i, filter: 'url(#nodeGlow)' },
-                h('circle', { cx: tx(j.x), cy: ty(j.y), r: 4.5, fill: '#fbbf24', stroke: '#78350f', strokeWidth: 1.2 }),
-                h('circle', { cx: tx(j.x), cy: ty(j.y), r: 1.5, fill: '#ffffff' })
+                h('polygon', { points: hexPts, fill: '#334155', stroke: '#94a3b8', strokeWidth: 1 }),
+                h('circle', { cx: jx - 3.2, cy: jy - 2.4, r: 0.85, fill: '#e2e8f0' }),
+                h('circle', { cx: jx + 3.2, cy: jy - 2.4, r: 0.85, fill: '#e2e8f0' }),
+                h('circle', { cx: jx - 3.2, cy: jy + 2.4, r: 0.85, fill: '#e2e8f0' }),
+                h('circle', { cx: jx + 3.2, cy: jy + 2.4, r: 0.85, fill: '#e2e8f0' }),
+                h('circle', { cx: jx, cy: jy, r: 3.1, fill: '#fbbf24', stroke: '#78350f', strokeWidth: 1 }),
+                h('circle', { cx: jx - 0.8, cy: jy - 0.8, r: 1.1, fill: '#ffffff' })
               );
             }),
             // Support symbols at B0 and Bn
@@ -7026,20 +7309,27 @@
               var vTop = ty(d.height) - 14;
               return h('g', { key: 'vehicle' },
                 // Headlight Beam Cone
-                h('polygon', { points: (vxScreen + 18) + ',' + (vTop - 3) + ' ' + (vxScreen + 60) + ',' + (vTop - 12) + ' ' + (vxScreen + 60) + ',' + (vTop + 8), fill: 'url(#headlightGrad)' }),
-                // Truck Body
+                h('polygon', { points: (vxScreen + 18) + ',' + (vTop - 3) + ' ' + (vxScreen + 66) + ',' + (vTop - 13) + ' ' + (vxScreen + 66) + ',' + (vTop + 9), fill: 'url(#headlightGrad)' }),
+                // Subtle deck shadow
+                h('ellipse', { cx: vxScreen - 1, cy: vTop + 6, rx: 19, ry: 2.4, fill: 'rgba(2,6,23,0.55)' }),
+                // Truck Body + metallic roof sheen + taillight/clearance lamps
                 h('rect', { x: vxScreen - 20, y: vTop - 12, width: 38, height: 14, rx: 3, fill: '#10b981', stroke: '#34d399', strokeWidth: 1.2 }),
+                h('rect', { x: vxScreen - 18, y: vTop - 11, width: 34, height: 3, rx: 1.5, fill: '#d1fae5', opacity: 0.45 }),
+                h('rect', { x: vxScreen - 20.5, y: vTop - 6, width: 2.2, height: 4, rx: 1, fill: '#fb7185' }),
+                h('circle', { cx: vxScreen + 17.5, cy: vTop - 3, r: 1.8, fill: '#fef08a' }),
                 // Cab window
-                h('rect', { x: vxScreen + 2, y: vTop - 9, width: 14, height: 6, rx: 1, fill: '#38bdf8', opacity: 0.9 }),
+                h('rect', { x: vxScreen + 2, y: vTop - 9, width: 14, height: 6, rx: 1, fill: '#38bdf8', opacity: 0.92 }),
+                h('line', { x1: vxScreen + 4, y1: vTop - 8, x2: vxScreen + 9, y2: vTop - 4, stroke: '#ffffff', strokeWidth: 1, opacity: 0.55 }),
                 // Metallic Wheels
                 h('g', null,
-                  h('circle', { cx: vxScreen - 12, cy: vTop + 4, r: 3.5, fill: '#0f172a', stroke: '#94a3b8', strokeWidth: 1 }),
-                  h('circle', { cx: vxScreen - 12, cy: vTop + 4, r: 1, fill: '#ffffff' }),
-                  h('circle', { cx: vxScreen + 12, cy: vTop + 4, r: 3.5, fill: '#0f172a', stroke: '#94a3b8', strokeWidth: 1 }),
-                  h('circle', { cx: vxScreen + 12, cy: vTop + 4, r: 1, fill: '#ffffff' })
+                  h('circle', { cx: vxScreen - 12, cy: vTop + 4, r: 3.5, fill: '#0f172a', stroke: '#cbd5e1', strokeWidth: 1.1 }),
+                  h('circle', { cx: vxScreen - 12, cy: vTop + 4, r: 1.1, fill: '#ffffff' }),
+                  h('circle', { cx: vxScreen + 12, cy: vTop + 4, r: 3.5, fill: '#0f172a', stroke: '#cbd5e1', strokeWidth: 1.1 }),
+                  h('circle', { cx: vxScreen + 12, cy: vTop + 4, r: 1.1, fill: '#ffffff' })
                 ),
-                // Load line down to bridge deck
+                // Load transfer arrow down to bridge deck
                 h('line', { x1: vxScreen, y1: vTop + 4, x2: vxScreen, y2: ty(d.height) - 2, stroke: '#facc15', strokeWidth: 2, strokeDasharray: '3 2' }),
+                h('polygon', { points: (vxScreen - 3.5) + ',' + (ty(d.height) - 6) + ' ' + (vxScreen + 3.5) + ',' + (ty(d.height) - 6) + ' ' + vxScreen + ',' + (ty(d.height) - 1), fill: '#facc15' }),
                 // Load Badge
                 h('g', null,
                   h('rect', { x: vxScreen - 30, y: vTop - 28, width: 60, height: 16, rx: 8, fill: '#047857', stroke: '#34d399', strokeWidth: 1 }),
@@ -7120,13 +7410,18 @@
             if (sceneOverlayActive) bridgeGlAlt += ' Both earthquake responses are shown at the same time. A dashed outline shows '
               + (sceneShowsReference ? 'B, the current experiment' : 'A, the reference')
               + '. Colored trails mark the deck edge over the previous second. Both use the displayed bridge shape.';
+            var bridgeHighContrast = !!(ctx.isContrast || bridgeIsHighContrast());
             BridgeGL.push({
-              // Explicit pushes update poses. The viewer sleeps between updates;
-              // camera and earthquake frames never rebuild the member geometry.
-              static: true,
+              // Explicit pushes update poses. Continuous shader ticks run for
+              // river advection & stress energy flow when motion is allowed;
+              // sleeps cleanly under prefers-reduced-motion or High-Contrast.
+              static: !!(bridgeReducedMotion || bridgeHighContrast),
+              contrast: bridgeHighContrast,
+              reduced: !!bridgeReducedMotion,
               sig: [trussStyle, d.span, d.height, d.nBays, braceEvery, loadMode,
                     d.loadPerJoint, d.vehiclePos, d.vehicleLoad, bowedId,
                     governingCompression.braceStartM, governingCompression.braceEndM,
+                    bridgeHighContrast ? 'hc' : 'std',
                     moj.ok ? Object.keys(moj.memberForces).map(function (k) {
                       return k + ':' + moj.memberForces[k].toFixed(1);
                     }).join(',') : 'approx'].join('|'),

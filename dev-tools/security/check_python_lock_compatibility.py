@@ -7,12 +7,16 @@ Run after installing the selected lock with --require-hashes in a clean environm
 import argparse
 import importlib.metadata
 import pathlib
+import re
 import sys
 
 from packaging.markers import default_environment
 from packaging.requirements import Requirement
 from packaging.specifiers import SpecifierSet
 from packaging.utils import canonicalize_name
+from packaging.version import Version
+
+HASH_TOKEN_RE = re.compile(r"^--hash=sha256:[a-f0-9]{64}$")
 
 
 def read_lock(source):
@@ -20,7 +24,14 @@ def read_lock(source):
     for line in source.replace("\\\r\n", " ").replace("\\\n", " ").splitlines():
         if not line.strip() or line.lstrip().startswith("#"):
             continue
-        requirement = Requirement(line.split("--hash=", 1)[0].strip())
+        if "--hash=" in line:
+            req_part, hash_tail = line.split("--hash=", 1)
+            hash_tokens = ("--hash=" + hash_tail).split()
+            if not hash_tokens or any(not HASH_TOKEN_RE.match(tok) for tok in hash_tokens):
+                raise ValueError("Invalid hash option in lock entry: " + req_part.strip())
+        else:
+            req_part = line
+        requirement = Requirement(req_part.strip())
         pins = list(requirement.specifier)
         if len(pins) != 1 or pins[0].operator != "==" or "*" in pins[0].version:
             raise ValueError("Expected an exact lock entry: " + requirement.name)
@@ -44,7 +55,7 @@ def check_lock(entries, metadata, environment):
             if package is None:
                 errors.add("Missing installed metadata: " + name)
                 continue
-            if package["version"] != version:
+            if Version(package["version"]) != Version(version):
                 errors.add("Installed version differs from lock: " + name)
             if package.get("requires_python") and not SpecifierSet(package["requires_python"]).contains(environment["python_full_version"]):
                 errors.add(name + " does not support Python " + environment["python_version"])
@@ -70,6 +81,9 @@ def main():
     parser.add_argument("lock", nargs="?", type=pathlib.Path, default=pathlib.Path(__file__).with_name("requirements.txt"))
     args = parser.parse_args()
     entries = read_lock(args.lock.read_text(encoding="utf-8"))
+    if not entries:
+        print("Lockfile contains no dependency entries", file=sys.stderr)
+        return 1
     metadata = {}
     for name in entries:
         try:

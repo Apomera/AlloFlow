@@ -36,6 +36,8 @@
 
   function normalizeWord(w) {
     return String(w == null ? '' : w)
+      .replace(/[\u0000-\u001F\u007F]/g, '')
+      .slice(0, 120)
       .toLowerCase()
       .trim()
       .replace(/[\u2018\u2019\u02BC]/g, "'")
@@ -44,20 +46,42 @@
       .replace(/^['-]+|['-]+$/g, '');
   }
 
-  function dictionaryText(value) { return typeof value === 'string' ? value.trim() : ''; }
+  function dictionaryText(value) {
+    if (typeof value !== 'string') return '';
+    return value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, 2000);
+  }
   function dictionaryRecord(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
   function dictionaryList(value) { return Array.isArray(value) ? value : []; }
   function dictionarySourceUrl(value) {
     var url = dictionaryText(value), lower = url.toLowerCase();
     return lower.startsWith('https://') || lower.startsWith('http://') ? url : '';
   }
+  function dictionaryAudioUrl(value) {
+    var url = dictionaryText(value);
+    if (!url) return '';
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url)) {
+      var lower = url.toLowerCase();
+      if (lower.startsWith('https://') || lower.startsWith('http://') || lower.startsWith('blob:') || lower.startsWith('data:audio/')) {
+        return url;
+      }
+      return '';
+    }
+    return url;
+  }
   function dictionaryPronunciations(value) {
     var variants = [];
     dictionaryList(value).filter(dictionaryRecord).forEach(function (record) {
-      var pair = { phonetic: dictionaryText(record.phonetic), audio: dictionaryText(record.audio) };
+      var pair = { phonetic: dictionaryText(record.phonetic), audio: dictionaryAudioUrl(record.audio) };
       if ((pair.phonetic || pair.audio) && !variants.some(p => p.phonetic === pair.phonetic && p.audio === pair.audio)) variants.push(pair);
     });
     return variants.slice(0, 12);
+  }
+  function safeJsonParse(raw) {
+    if (typeof raw !== 'string' || raw.length > 256 * 1024) return undefined;
+    return JSON.parse(raw, function (key, value) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
+      return value;
+    });
   }
   // Cache data crosses a persistence boundary. Recover useful fields without
   // trusting a stale/corrupt shape, mutating storage, or inventing pronunciation pairs.
@@ -78,7 +102,7 @@
       word: word,
       // Legacy independent fields stay separate when no per-record variants exist.
       phonetic: primary ? primary.phonetic : dictionaryText(value.phonetic),
-      audio: primary ? primary.audio : dictionaryText(value.audio),
+      audio: primary ? primary.audio : dictionaryAudioUrl(value.audio),
       pronunciations: pronunciations, meanings: meanings,
       synonyms: Array.from(new Set(dictionaryList(value.synonyms).map(dictionaryText).filter(Boolean).map(s => s.toLowerCase()))).slice(0, 8),
       source: dictionaryText(value.source) || 'Wiktionary (via dictionaryapi.dev)',
@@ -90,7 +114,7 @@
     try {
       var raw = localStorage.getItem(CACHE_PREFIX + word);
       if (!raw) return undefined; // undefined = not cached; null = cached "not found"
-      return normalizeCachedEntry(JSON.parse(raw), word);
+      return normalizeCachedEntry(safeJsonParse(raw), word);
     } catch (_) { return undefined; }
   }
   function writeCache(word, value) {
@@ -206,7 +230,7 @@
         row[1].forEach(function (r) {
           if (!Array.isArray(r) || typeof r[0] !== 'string' || typeof r[1] !== 'string') return;
           var p = r[0].charAt(0);
-          list.push({ pos: VOCAB_POS[p] || '', def: r[1], example: typeof r[2] === 'string' ? r[2] : '' });
+          list.push({ pos: ownKey(VOCAB_POS, p) ? VOCAB_POS[p] : '', def: r[1], example: typeof r[2] === 'string' ? r[2] : '' });
         });
         heads[w] = list;
       });
@@ -251,12 +275,13 @@
     return !!getActiveVocabBank();
   }
   function withEntryAudio(entry, clip) {
-    if (!entry || !clip || typeof clip !== 'string' || entry.audio) return entry;
+    var safeClip = dictionaryAudioUrl(clip);
+    if (!entry || !safeClip || entry.audio) return entry;
     var existing = Array.isArray(entry.pronunciations) ? entry.pronunciations.slice() : [];
     var updated = existing.length
-      ? existing.map(function (p, i) { return (i === 0 && p && !p.audio) ? { phonetic: p.phonetic || '', audio: clip } : p; })
-      : [{ phonetic: entry.phonetic || '', audio: clip }];
-    return Object.assign({}, entry, { audio: clip, pronunciations: updated });
+      ? existing.map(function (p, i) { return (i === 0 && p && !p.audio) ? { phonetic: p.phonetic || '', audio: safeClip } : p; })
+      : [{ phonetic: entry.phonetic || '', audio: safeClip }];
+    return Object.assign({}, entry, { audio: safeClip, pronunciations: updated });
   }
   async function attachWordShardAudio(entry, word, headword, options) {
     if (!entry || entry.audio || (options && options.useWordShardAudio === false)) return entry;
@@ -450,7 +475,12 @@
         return result(hit.entry);
       }
     };
-    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+    if (typeof window !== 'undefined' && (
+      window._isDesktopBundledApp === true ||
+      window.__alloOfflineOnly === true ||
+      window.__alloQrStudentMode === true ||
+      window._alloQrBlocked === true
+    )) {
       const localHit = await ensureAndLookupBank();
       if (localHit === 'cancelled') return result(null, 'cancelled');
       if (localHit) return finishBankHit(localHit);
@@ -543,7 +573,7 @@
     }
   }
 
-  window.AlloDictionary = {
+  window.AlloDictionary = Object.freeze({
     /** True if we have a cached or loaded offline bank entry for this word. */
     hasOffline: function (word) { var nw = normalizeWord(word); return readCache(nw) !== undefined || !!lookupFromVocabBank(nw); },
     /** Synchronous read from the loaded AlloVocabBank (if ready), or null. */
@@ -567,7 +597,7 @@
     lookup: function (word, options) { return lookupDetailed(word, options || {}).then(result => result.entry); },
     _normalizeWord: normalizeWord,
     _normalizeEntry: normalizeEntry
-  };
+  });
 
   console.log('[AlloDictionary] dictionary_loader.js ready — window.AlloDictionary.lookup(word) (authoritative + offline-cached)');
 })();

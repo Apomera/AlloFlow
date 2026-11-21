@@ -160,8 +160,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       var _beaBg = function(h){ return _beaHC ? (_bea_BGH[h]||h) : (_beaL ? (_bea_BGL[h]||h) : (_bea_BGD[h]||h)); };
       var _beaFg = function(h){ return _beaHC ? (_bea_FGH[h]||h) : (_beaL ? (_bea_FGL[h]||h) : h); };
       var _beaBd = function(h){ return _beaHC ? (_bea_BDH[h]||h) : (_beaL ? (_bea_BDL[h]||h) : h); };
-      // white text needs a 700-weight fill (1.4.3)
-      var _beaSolid = function(c){ return _beaHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
+      // white text needs a 700-weight fill (1.4.3); High Contrast uses black fill + yellow border/ink
+      var _beaSolid = function(c){ return _beaHC ? '#000000' : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -169,6 +169,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _baBand = ctx.gradeBand || 'middle';
 
       var d = labToolData.behavioralActivation || defaultState();
       function setBA(patch) {
@@ -205,11 +207,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
         ];
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Behavioral Activation sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _beaBg('#10b981') : '#334155'),
+            return h('button', {
+              id: 'ba-tab-' + t.id,
+              key: t.id,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(ev) {
+                var nextIdx = idx;
+                if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+                else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                else if (ev.key === 'Home') nextIdx = 0;
+                else if (ev.key === 'End') nextIdx = tabs.length - 1;
+                else return;
+                ev.preventDefault();
+                goto(tabs[nextIdx].id);
+                setTimeout(function() {
+                  var nextBtn = document.getElementById('ba-tab-' + tabs[nextIdx].id);
+                  if (nextBtn) nextBtn.focus();
+                }, 0);
+              },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'ba-panel-' + t.id, tabIndex: active ? 0 : -1,
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _beaBd('#10b981') : '#334155'),
                 background: active ? 'rgba(16,185,129,0.18)' : _beaBg('#1e293b'),
                 color: active ? _beaFg('#a7f3d0') : _beaFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -296,7 +315,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       function renderPlan() {
         function addActivity(label, category, energy) {
           if (!label || !label.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
-          var entry = { id: uid(), label: label.trim(), category: category, day: todayISO(), done: false, energy: energy || d.energyLevel || null };
+          var trimmed = label.trim();
+          try {
+            if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+              var safety = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'behavioralactivation', onSafetyFlag: onSafetyFlag });
+              if (safety && safety.action === 'block') {
+                setBA({ _crisisTier: 3 });
+                if (typeof window.SelHub.showCrisisModal === 'function') {
+                  window.SelHub.showCrisisModal({ toolName: 'Behavioral Activation', contentSnippet: trimmed });
+                }
+                if (typeof addToast === 'function') addToast('Support resources are shown on this screen.', 'info');
+                return;
+              }
+            }
+          } catch (_) {}
+          var entry = { id: uid(), label: trimmed, category: category, day: todayISO(), done: false, energy: energy || d.energyLevel || null };
           setBA({ plannedActivities: ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).concat([entry]), focusActivityId: entry.id });
           if (announceToSR) announceToSR('Activity added and set as your next action.');
         }
@@ -315,7 +348,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
 
         function finishFocused() {
           if (!focused) return;
-          var nx = ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).map(function(a) { return a.id === focused.id ? Object.assign({}, a, { done: true }) : a; });
+          var nx = ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).map(function(a) {
+            return a.id === focused.id ? Object.assign({}, a, {
+              done: true,
+              mastery: a.mastery !== undefined ? a.mastery : 5,
+              pleasure: a.pleasure !== undefined ? a.pleasure : 5
+            }) : a;
+          });
           setBA({ plannedActivities: nx, focusActivityId: null, view: 'log' });
           if (announceToSR) announceToSR('Action marked done. Recheck and rate how it went.');
         }
@@ -423,8 +462,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
                 h('input', { id: inputId, type: 'text', placeholder: 'Add a small ' + cat.label.toLowerCase() + ' activity...',
                   onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
                   style: { flex: 1, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _beaBg('#1e293b'), color: _beaFg('#e2e8f0'), fontSize: 13 } }),
-                h('button', { onClick: submit, 'aria-label': 'Add activity',
-                  style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _beaSolid(cat.color), color: _beaFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                h('button', { onClick: submit, 'aria-label': 'Add ' + cat.label + ' activity',
+                  style: { padding: '8px 14px', borderRadius: 6, border: _beaHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _beaSolid(cat.color), color: _beaFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
               ),
               h('details', null,
                 h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _beaFg('#94a3b8') } }, 'Need ideas? Tap a starter'),
@@ -475,8 +514,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 18 } }, cat.icon),
                 h('span', { style: { flex: 1, minWidth: 180, fontSize: 13, color: _beaFg('#e2e8f0'), fontWeight: 700 } }, a.label),
-                h('button', { onClick: function() { update(a.id, { done: !a.done }); }, 'aria-label': a.done ? 'Mark not done' : 'Mark done', 'aria-pressed': a.done,
-                  style: { padding: '4px 10px', borderRadius: 6, border: '1px solid ' + (a.done ? _beaFg('#22c55e') : _beaFg('#475569')), background: a.done ? _beaFg('#22c55e') : 'transparent', color: a.done ? '#fff' : _beaFg('#94a3b8'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, a.done ? '✓ Done' : '○ Not done')
+                h('button', { onClick: function() {
+                    var nextDone = !a.done;
+                    var patch = { done: nextDone };
+                    if (nextDone) {
+                      if (a.mastery === undefined) patch.mastery = 5;
+                      if (a.pleasure === undefined) patch.pleasure = 5;
+                    }
+                    update(a.id, patch);
+                  }, 'aria-label': a.done ? 'Mark not done' : 'Mark done', 'aria-pressed': a.done,
+                  style: { padding: '4px 10px', borderRadius: 6, border: '1px solid ' + (a.done ? (_beaHC ? '#ffff00' : '#15803d') : _beaFg('#475569')), background: a.done ? (_beaHC ? '#000000' : '#15803d') : 'transparent', color: a.done ? (_beaHC ? '#ffff00' : '#ffffff') : _beaFg('#94a3b8'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, a.done ? '✓ Done' : '○ Not done')
               ),
               a.done ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
                 h('div', null,
@@ -618,13 +665,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
               var inCat = acts.filter(function(a) { return a.category === catId; });
               if (inCat.length === 0) return null;
               return h('div', { key: catId, style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 6, background: _beaSolid(cat.color), color: _beaFg('#fff') } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 6, background: _beaSolid(cat.color), border: _beaHC ? '1px solid #ffff00' : 'none', color: _beaFg('#fff') } },
                   h('span', { style: { fontSize: 16 } }, cat.icon),
                   h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, cat.label)
                 ),
                 h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _beaFg('#0f172a'), fontSize: 12.5, lineHeight: 1.7 } },
                   inCat.map(function(a) {
-                    var ratings = (a.done && a.mastery !== undefined) ? '  (Mastery ' + a.mastery + ' / Pleasure ' + (a.pleasure !== undefined ? a.pleasure : '–') + ')' : '';
+                    var ratings = (a.done && (a.mastery !== undefined || a.pleasure !== undefined)) ? '  (Mastery ' + (a.mastery !== undefined ? a.mastery : '–') + ' / Pleasure ' + (a.pleasure !== undefined ? a.pleasure : '–') + ')' : '';
                     return h('li', { key: a.id }, (a.done ? '✓ ' : '☐ ') + a.label + ratings);
                   })
                 )
@@ -716,7 +763,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Behavioral Activation' },
         header(),
         navTabs(),
-        body
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _baBand))
+          : null,
+        h('div', { id: 'ba-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'ba-tab-' + view }, body)
       );
     }
   });

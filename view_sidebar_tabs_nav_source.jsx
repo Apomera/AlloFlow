@@ -54,7 +54,7 @@ function SidebarTabsNav({
   };
 
   return (
-    <nav
+    <div
       aria-label={translatedLabel('common.content_tabs', 'Content tabs')}
       aria-orientation="horizontal"
       role="tablist"
@@ -102,6 +102,6 @@ function SidebarTabsNav({
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white" aria-hidden="true" />
         )}
       </button>
-    </nav>
+    </div>
   );
 }

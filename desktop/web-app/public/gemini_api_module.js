@@ -199,13 +199,22 @@ const createGeminiAPI = (deps) => {
       const captured = Object.freeze({ apiKey: String(_resolveApiKey() || ''), models: Object.freeze(models), requestControls });
       _requestSnapshots.add(captured); return captured;
     };
-    const _authorizeRequest = async (request, operation = 'text', search = false) => {
+    const _assertAiSessionAllowed = request => {
       if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) {
         const disabledErr = new Error('AI is unavailable in this mode.');
         disabledErr.code = 'allo/ai-disabled';
         disabledErr.isConfig = true;
         throw disabledErr;
       }
+      if (request && request.apiKey && _pastedKeyFenced()) {
+        const fencedErr = new Error('AI is unavailable in this mode.');
+        fencedErr.code = 'allo/ai-disabled';
+        fencedErr.isConfig = true;
+        throw fencedErr;
+      }
+    };
+    const _authorizeRequest = async (request, operation = 'text', search = false) => {
+      _assertAiSessionAllowed(request);
       _runRequestControls(request.requestControls);
       let guard = _requestGuards.get(request);
       if (!guard) {
@@ -214,12 +223,13 @@ const createGeminiAPI = (deps) => {
         if (typeof guard !== 'function') throw managedAIError();
         _requestGuards.set(request, guard);
       }
+      _assertAiSessionAllowed(request);
       guard(); _runRequestControls(request.requestControls); guard(); return guard;
     };
     const _guardRequest = request => {
       const guard = _requestGuards.get(request);
       if (typeof guard !== 'function') throw managedAIError();
-      const composed = () => { guard(); _runRequestControls(request.requestControls); guard(); };
+      const composed = () => { _assertAiSessionAllowed(request); guard(); _runRequestControls(request.requestControls); guard(); };
       composed(); return composed;
     };
     const _requestUrl = model => {
@@ -556,12 +566,18 @@ const createGeminiAPI = (deps) => {
           closeBtn.type = 'button';
           closeBtn.textContent = 'Dismiss ×';
           closeBtn.setAttribute('aria-label', 'Dismiss AI service notice');
-          closeBtn.style.cssText = 'background:rgba(255,255,255,0.18);color:#fff;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;font:600 13px system-ui,sans-serif';
+          closeBtn.style.cssText = 'background:rgba(255,255,255,0.18);color:#fff;border:0;min-height:44px;min-width:44px;flex-shrink:0;padding:10px 14px;border-radius:6px;cursor:pointer;font:600 13px system-ui,sans-serif';
+          closeBtn.onfocus = () => { closeBtn.style.outline = '2px solid #ffffff'; closeBtn.style.outlineOffset = '2px'; };
+          closeBtn.onblur = () => { closeBtn.style.outline = ''; closeBtn.style.outlineOffset = ''; };
           closeBtn.onclick = () => {
+            if (_recoveryNoticeTimer) { clearTimeout(_recoveryNoticeTimer); _recoveryNoticeTimer = null; }
             // A3 (2026-06-28): don't swallow a sessionStorage QuotaExceededError silently — on a storage-full
             // device the dismissal can't persist and the banner re-appears each load; a warn makes it diagnosable.
-            try { if (window.sessionStorage) sessionStorage.setItem('__alloflowQuotaBannerDismissed', '1'); }
-            catch (e) { try { console.warn('[AlloFlow] could not persist quota-banner dismissal (sessionStorage full/blocked):', _diagnosticErrorSummary(e)); } catch (_) {} }
+            // Only persist dismissal when an active failure banner is being dismissed, not a transient recovery notice.
+            if (window.__alloflowQuotaState && window.__alloflowQuotaState.active === true) {
+              try { if (window.sessionStorage) sessionStorage.setItem('__alloflowQuotaBannerDismissed', '1'); }
+              catch (e) { try { console.warn('[AlloFlow] could not persist quota-banner dismissal (sessionStorage full/blocked):', _diagnosticErrorSummary(e)); } catch (_) {} }
+            }
             banner.remove();
           };
           banner.appendChild(msgEl);
@@ -615,6 +631,7 @@ const createGeminiAPI = (deps) => {
           bannerEl.setAttribute('aria-live', 'polite');
           const msgEl = document.getElementById('alloflow-quota-banner-msg');
           if (msgEl) msgEl.textContent = 'The AI service is responding again. The latest request succeeded; review any earlier failed steps before retrying them.';
+          if (_recoveryNoticeTimer) { clearTimeout(_recoveryNoticeTimer); _recoveryNoticeTimer = null; }
           _recoveryNoticeTimer = setTimeout(() => {
             _recoveryNoticeTimer = null;
             try {
@@ -961,6 +978,8 @@ const createGeminiAPI = (deps) => {
               _modelUsed = _models.fallback;
             } catch (fbErr) {
               if (_managedRequestDenied(fbErr)) throw fbErr;
+              if (fbErr && fbErr.name === 'AbortError') throw fbErr;
+              if (_signal && _signal.aborted) throw _abortError();
               // Both models failed — the original error is more informative
               // for classification (the fallback's error is usually the same
               // type cascading), so keep the primary in case of quota/auth.
@@ -1048,8 +1067,16 @@ const createGeminiAPI = (deps) => {
                      """,
                      TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, trailing commas) and return ONLY the valid JSON. Do not explain or add any text.
                  `;
-                 const repairRequest = _request ? Object.assign({}, _request, { _jsonRepairAttempted: true }) : { _jsonRepairAttempted: true };
-                 return await callGemini(repairPrompt, true, false, 0.1, null, signal, false, telemetry, null, repairRequest);
+                 const repairRequest = Object.freeze({
+                     apiKey: _request.apiKey,
+                     models: _request.models,
+                     requestControls: _request.requestControls,
+                     _jsonRepairAttempted: true,
+                 });
+                 _requestSnapshots.add(repairRequest);
+                 const existingGuard = _requestGuards.get(_request);
+                 if (existingGuard) _requestGuards.set(repairRequest, existingGuard);
+                 return await _callGeminiAttempt(repairPrompt, true, false, 0.1, null, _signal, false, telemetry, null, deferBanner, feedbackContext, repairRequest);
              }
              else if (reason !== 'STOP') {
                  throw new Error(`Generation Stopped: ${reason}`);
@@ -1093,6 +1120,7 @@ const createGeminiAPI = (deps) => {
         _guardRequest(_request);
         if (_managedRequestDenied(err)) throw err;
         if (err && err.name === 'AbortError') throw err;
+        if (err && err.classification) throw err;
         const cls = _classifyGeminiError(err);
         // Transient/other errors are usually recovered by the retry layers —
         // log as warnings so they don't flood the user-facing error report
@@ -1159,6 +1187,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       let terminalFeedbackEmitted = false;
       try {
         if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
+        _assertAiSessionAllowed(_request);
         if (!_request.apiKey && !_isCanvasEnv) {
           const missingKey = new Error('No AI API key is configured. Open AI setup and check the approved connection, then retry.');
           missingKey.code = 'allo/no-api-key';
@@ -1216,6 +1245,12 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       if (!imageAllowed()) return null;
       await _authorizeRequest(_request, 'media');
       if (!imageAllowed()) return null;
+      if (!_request.apiKey && !_isCanvasEnv) {
+        const missingKey = new Error('No AI API key is configured. Open AI setup and check the approved connection, then retry.');
+        missingKey.code = 'allo/no-api-key';
+        missingKey.isConfig = true;
+        throw missingKey;
+      }
       const url = _requestUrl(_request.models.image);
       const _explicitSignal = options && options.signal
         ? options.signal
@@ -1274,9 +1309,13 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
         }
         const data = await response.json();
         _guardRequest(_request);
-        const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+        const imagePart = data.candidates?.[0]?.content?.parts?.find(
+          p => p && p.inlineData && typeof p.inlineData.data === 'string' && p.inlineData.data.length > 0
+        );
         if (!imagePart) throw new Error("No image generated in response");
-        const rawUrl = `data:image/png;base64,${imagePart.inlineData.data}`;
+        const rawMime = String(imagePart.inlineData.mimeType || '').toLowerCase();
+        const safeMime = /^image\/(png|jpeg|webp)$/.test(rawMime) ? rawMime : 'image/png';
+        const rawUrl = `data:${safeMime};base64,${imagePart.inlineData.data}`;
         const optimized = await optimizeImage(rawUrl, width, qual);
         _guardRequest(_request);
         if (!imageAllowed()) return null;
@@ -1381,6 +1420,8 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
               modelUsed = fallbackModel;
             } catch (fbErr) {
               if (_managedRequestDenied(fbErr)) throw fbErr;
+              _throwIfVisionAborted();
+              if (fbErr && fbErr.name === 'AbortError') throw fbErr;
               console.error(`[Vision] Fallback ${fallbackModel} also failed:`, _diagnosticErrorSummary(fbErr));
               throw (cls.kind === 'quota' || cls.kind === 'auth' || cls.kind === 'config') ? primaryErr : fbErr;
             }
@@ -1412,26 +1453,35 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
         } catch (parseErr) {
           _emitResponseMeta(_innerTelemetry, { model: modelUsed, bodyBytes: rawText.length, finishReason: null, malformed: true });
           warnLog("[Vision] Response JSON truncated — attempting partial extraction", _diagnosticErrorSummary(parseErr));
-          const partialMatch = rawText.match(/"text"\s*:\s*"([\s\S]*?)(?:"|$)/);
+          const partialMatch = rawText.match(/"text"\s*:\s*"((?:\\[\s\S]|[^"\\])*)(?:"|$)/);
           if (partialMatch) {
-            const partial = partialMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
+            const partial = partialMatch[1].replace(/\\(["\\/bfnrt])/g, (_, ch) => ({
+              '"': '"', '\\': '\\', '/': '/', b: '\b', f: '\f', n: '\n', r: '\r', t: '\t'
+            }[ch]));
             warnLog("[Vision] Recovered partial text:", partial.length + ' chars'); // H-3 (audit 2026-06-23): log LENGTH only — this is OCR'd document text (potential student PII) and warnLog feeds the copyable in-app diagnostics buffer (FERPA: egress to Gemini is permitted, replication into a sharable artifact is not)
             _guardRequest(_request);
             return partial + '\n\n[Note: Document was partially extracted. Some content may be missing due to document size.]';
           }
           throw new Error("Vision API returned invalid response. The document may be too large — try a shorter PDF.");
         }
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!text) {
-          const blockReason = data.candidates?.[0]?.finishReason;
-          if (blockReason === 'MAX_TOKENS') {
-            const partial = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            _guardRequest(_request);
-            return partial + '\n\n[Note: Document was partially extracted due to length. Some content may be missing.]';
-          }
-          throw new Error("No text generated from vision." + (blockReason ? ` Reason: ${blockReason}` : ''));
+        if (data?.promptFeedback?.blockReason) {
+          warnLog("[Vision] Prompt Blocked:", { blockReason: data.promptFeedback.blockReason });
+          throw new Error(`Content Blocked: ${data.promptFeedback.blockReason}`);
         }
-        if (typeof text !== 'string' || !text.trim()) throw new Error('Empty response text from Gemini Vision. Retry the failed step.');
+        const _visionParts = Array.isArray(data?.candidates?.[0]?.content?.parts) ? data.candidates[0].content.parts : [];
+        const text = _visionParts
+          .filter(p => p && typeof p.text === 'string' && p.thought !== true)
+          .map(p => p.text)
+          .join('');
+        const finishReason = data?.candidates?.[0]?.finishReason;
+        if (!text || !text.trim()) {
+          throw new Error("No text generated from vision." + (finishReason ? ` Reason: ${finishReason}` : ''));
+        }
+        if (finishReason === 'MAX_TOKENS') {
+          _noteApiSuccess();
+          _guardRequest(_request);
+          return text + '\n\n[Note: Document was partially extracted due to length. Some content may be missing.]';
+        }
         _noteApiSuccess(); // usable Vision text clears the connection notice
         _guardRequest(_request);
         return text;
@@ -1439,6 +1489,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
         _guardRequest(_request);
         if (_managedRequestDenied(err)) throw err;
         if (err && err.name === 'AbortError') throw err;
+        if (err && err.classification) throw err;
         const cls = _classifyGeminiError(err);
         console.error(`[Vision] ${modelUsed} error (${cls.kind}):`, _diagnosticErrorSummary(err));
         if (cls.kind === 'quota' || cls.kind === 'auth' || cls.kind === 'config') {

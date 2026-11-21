@@ -5979,9 +5979,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         }
 
         // Pull persistent state, merged with defaults for forward-compatibility
-        var rawState = (ctx.toolData && ctx.toolData['typingPractice']) || {};
+        var rawTP = (ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData['typingPractice'] : null;
+        var rawState = (rawTP && typeof rawTP === 'object' && !Array.isArray(rawTP)) ? rawTP : {};
         var state = Object.assign({}, DEFAULT_STATE, rawState);
-        state.accommodations = Object.assign({}, DEFAULT_STATE.accommodations, rawState.accommodations || {});
+        var rawAcc = (rawState.accommodations && typeof rawState.accommodations === 'object' && !Array.isArray(rawState.accommodations)) ? rawState.accommodations : {};
+        state.accommodations = Object.assign({}, DEFAULT_STATE.accommodations, rawAcc);
+        if (!Array.isArray(state.sessions)) state.sessions = [];
+        if (!Array.isArray(state.favoriteDrills)) state.favoriteDrills = [];
+        if (!Array.isArray(state.accommodationBadges)) state.accommodationBadges = [];
+        if (!Array.isArray(state.customDrillLibrary)) state.customDrillLibrary = [];
+        if (!Array.isArray(state.masteryChecks)) state.masteryChecks = [];
+        if (typeof state.studentName !== 'string') state.studentName = '';
+        if (typeof state.theme !== 'string') state.theme = 'default';
+        if (typeof state.masteryLevel !== 'number' || !isFinite(state.masteryLevel)) state.masteryLevel = 0;
         // Older saves have no lesson fields; existing tier progress is kept.
         state.keyStats = typingPracticeNormalizeKeyStats(rawState.keyStats);
         state.lessonsDone = typingPracticeNormalizeLessonsDone(rawState.lessonsDone);
@@ -6025,8 +6035,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         };
         var addToast = ctx.addToast || function(msg) { console.log('[TypingPractice]', msg); };
 
-        var palette = getPalette(state.accommodations, state.accentColor, state.theme);
-        var fontFamily = getFontFamily(state.accommodations, state.theme);
+        var hostContrast = !!ctx.isContrast || (typeof ctx.theme === 'string' && ctx.theme.indexOf('contrast') !== -1) || (typeof document !== 'undefined' && document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast'));
+        var effectiveAccommodations = hostContrast ? Object.assign({}, state.accommodations, { highContrast: true }) : state.accommodations;
+        var palette = getPalette(effectiveAccommodations, state.accentColor, state.theme);
+        var fontFamily = getFontFamily(effectiveAccommodations, state.theme);
         var rootBackground = getThemeBackgroundTexture(palette, state.theme);
 
         // ── Drill-local state (hooks must be called unconditionally every render) ──
@@ -7660,81 +7672,332 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               minHeight: '60vh'
             }
           },
-            // Header — theme-flavored title decoration. Same core text
-            // ('Typing Practice') but theme-specific ornamental framing
-            // around it. Keeps the identity while letting the theme speak.
-            h('div', { style: { marginBottom: '24px' } },
-              (function() {
-                var tm = state.theme || 'default';
-                var core = h('span', { style: { color: palette.text } }, __alloT('stem.typingpractice.typing_practice', ' Typing Practice '));
-                var titleStyle = {
-                  margin: '0 0 6px 0',
-                  fontSize: '24px',
-                  fontWeight: 700,
-                  color: palette.text,
-                  letterSpacing: '-0.01em'
-                };
-                if (tm === 'cyberpunk') {
-                  // [ NEON BRACKETS ]
-                  return h('h2', { style: Object.assign({}, titleStyle, { letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '20px' }) },
-                    h('span', { style: { color: palette.accent, fontWeight: 700 } }, '[ '),
-                    __alloT('stem.typingpractice.typing_practice_2', '⌨ TYPING_PRACTICE'),
-                    h('span', { style: { color: palette.accent, fontWeight: 700 } }, ' ]')
-                  );
-                }
-                if (tm === 'steampunk') {
-                  // ornamental flourishes on either side
-                  return h('h2', { style: titleStyle },
-                    h('span', { style: { color: palette.accent, fontSize: '18px', marginRight: '6px' } }, __alloT('stem.typingpractice.str', '❦ ⚙')),
-                    __alloT('stem.typingpractice.typing_practice_3', '⌨  Typing Practice'),
-                    h('span', { style: { color: palette.accent, fontSize: '18px', marginLeft: '6px' } }, __alloT('stem.typingpractice.str_2', '⚙ ❦'))
-                  );
-                }
-                if (tm === 'kawaii') {
-                  // sparkles + heart (feel like a stickered badge)
-                  return h('h2', { style: Object.assign({}, titleStyle, { fontSize: '26px' }) },
-                    h('span', { style: { color: palette.accent, fontSize: '22px' } }, '✨ '),
-                    __alloT('stem.typingpractice.typing_practice_4', '⌨️  Typing Practice'),
-                    h('span', { style: { color: palette.accent, fontSize: '22px' } }, ' ✨')
-                  );
-                }
-                if (tm === 'oceanic') {
-                  // tilde-waves on either side, deep-sea field-guide tone
-                  return h('h2', { style: titleStyle },
-                    h('span', { style: { color: palette.accent, fontSize: '20px', marginRight: '8px' } }, __alloT('stem.typingpractice.str_3', '~ 🌊')),
-                    __alloT('stem.typingpractice.typing_practice_5', '⌨  Typing Practice'),
-                    h('span', { style: { color: palette.accent, fontSize: '20px', marginLeft: '8px' } }, __alloT('stem.typingpractice.str_4', '🌊 ~'))
-                  );
-                }
-                if (tm === 'neutral') {
-                  // minimal — no decoration, just tighter tracking
-                  return h('h2', { style: Object.assign({}, titleStyle, { fontWeight: 500 }) }, __alloT('stem.typingpractice.typing_practice_6', 'Typing Practice'));
-                }
-                return h('h2', { style: titleStyle }, __alloT('stem.typingpractice.typing_practice_7', '⌨️  Typing Practice'));
-              })(),
-              h('p', {
+            // Header — Keyboarding Studio Hero Workbench with bespoke SVG
+            // emblem, discipline badge, live non-spoiler telemetry pills,
+            // theme-flavored title decoration, and Home-Row tactile strip.
+            h('div', {
+              className: 'tp-menu-hero',
+              style: {
+                marginBottom: '22px',
+                padding: '18px 20px',
+                background: effectiveAccommodations.highContrast
+                  ? palette.surface
+                  : ('radial-gradient(ellipse 65% 110% at 0% 0%, ' + palette.accent + '1E, transparent 68%), ' + palette.surface),
+                border: '1px solid ' + palette.border,
+                borderLeft: '4px solid ' + palette.accent,
+                borderRadius: '16px',
+                boxShadow: effectiveAccommodations.highContrast ? 'none' : '0 8px 24px rgba(0,0,0,0.14)'
+              }
+            },
+              h('div', {
                 style: {
-                  margin: 0,
-                  fontSize: '13px',
-                  color: palette.textMute,
-                  lineHeight: '1.5',
-                  maxWidth: '640px'
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  gap: '14px',
+                  flexWrap: 'wrap'
                 }
-              }, (function() {
-                // UDL framing: describe how the tool behaves, not who it
-                // was "built for." Naming conditions others students who
-                // do have those labels and excludes students who don't —
-                // opposite of inclusion. The accessibility is in the
-                // design (toggles, no timers, no leaderboards). The blurb
-                // just confirms that.
-                var tm = state.theme || 'default';
-                if (tm === 'steampunk') return 'Self-paced practice at the workshop bench. The hourglass stays still; rankings do not exist; the ledger never punishes a missed day.';
-                if (tm === 'cyberpunk') return '[SELF-PACED] :: no timers :: no leaderboards :: no streak-penalty :: user-pace always';
-                if (tm === 'kawaii')    return 'Practice at YOUR pace 💕 No timers, no rankings, no streak guilt — just you, being you ✨';
-                if (tm === 'oceanic')   return 'Move at your own depth. No clocks, no rankings, no penalty for surfacing when you need to.';
-                if (tm === 'neutral')   return 'Self-paced. No timers, rankings, or streak penalties.';
-                return 'Self-paced typing practice. No timers, leaderboards, or streak penalties.';
-              })())
+              },
+                h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '14px', minWidth: 0, flex: '1 1 280px' } },
+                  // Bespoke inline SVG emblem: ergonomic keyboard with sculpted beveled keycaps & F/J tactile bumps
+                  h('svg', {
+                    width: 48, height: 48, viewBox: '0 0 48 48', 'aria-hidden': 'true',
+                    style: { flexShrink: 0, borderRadius: '12px', background: palette.surface2, border: '1px solid ' + palette.border }
+                  },
+                    !effectiveAccommodations.highContrast ? h('defs', null,
+                      h('linearGradient', { id: 'tp-emb-chassis', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: palette.surface2 }),
+                        h('stop', { offset: '100%', stopColor: palette.bg })
+                      ),
+                      h('linearGradient', { id: 'tp-emb-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.28 }),
+                        h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                      ),
+                      h('radialGradient', { id: 'tp-emb-glow', cx: '50%', cy: '50%', r: '50%' },
+                        h('stop', { offset: '0%', stopColor: palette.accent, stopOpacity: 0.45 }),
+                        h('stop', { offset: '100%', stopColor: palette.accent, stopOpacity: 0 })
+                      )
+                    ) : null,
+                    h('rect', { x: 4.5, y: 9.5, width: 39, height: 29, rx: 5.5, fill: effectiveAccommodations.highContrast ? palette.bg : 'url(#tp-emb-chassis)', stroke: palette.accent, strokeWidth: 1.8 }),
+                    !effectiveAccommodations.highContrast ? h('line', { x1: 8, y1: 11, x2: 40, y2: 11, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.35 }) : null,
+                    // Subtle anchor beacon glow behind F & J keys
+                    !effectiveAccommodations.highContrast ? h('circle', { cx: 18.25, cy: 23, r: 5.2, fill: 'url(#tp-emb-glow)' }) : null,
+                    !effectiveAccommodations.highContrast ? h('circle', { cx: 30.75, cy: 23, r: 5.2, fill: 'url(#tp-emb-glow)' }) : null,
+                    // Top key row with top-bevel highlight
+                    [
+                      { x: 9, w: 5 }, { x: 15.5, w: 5 }, { x: 22, w: 5 }, { x: 28.5, w: 5 }, { x: 35, w: 4 }
+                    ].map(function(k, ki) {
+                      return h('g', { key: 'tr-' + ki },
+                        h('rect', { x: k.x, y: 14, width: k.w, height: 4.5, rx: 1, fill: palette.surface2, stroke: palette.border, strokeWidth: 0.9 }),
+                        !effectiveAccommodations.highContrast ? h('rect', { x: k.x + 0.6, y: 14.5, width: k.w - 1.2, height: 1.6, rx: 0.5, fill: 'url(#tp-emb-sheen)' }) : null
+                      );
+                    }),
+                    // Home row (highlighted F & J anchors with sculpted bevel)
+                    h('rect', { x: 9, y: 20.5, width: 5, height: 5, rx: 1, fill: palette.surface2, stroke: palette.border, strokeWidth: 0.9 }),
+                    h('rect', { x: 15.5, y: 20.5, width: 5.5, height: 5, rx: 1.1, fill: palette.accent }),
+                    !effectiveAccommodations.highContrast ? h('rect', { x: 16.2, y: 21.1, width: 4.1, height: 1.8, rx: 0.6, fill: 'url(#tp-emb-sheen)' }) : null,
+                    h('line', { x1: 16.8, y1: 24.4, x2: 19.7, y2: 24.4, stroke: palette.onAccent, strokeWidth: 1.1, strokeLinecap: 'round' }),
+                    h('rect', { x: 22.5, y: 20.5, width: 4, height: 5, rx: 1, fill: palette.surface2, stroke: palette.border, strokeWidth: 0.9 }),
+                    h('rect', { x: 28, y: 20.5, width: 5.5, height: 5, rx: 1.1, fill: palette.accent }),
+                    !effectiveAccommodations.highContrast ? h('rect', { x: 28.7, y: 21.1, width: 4.1, height: 1.8, rx: 0.6, fill: 'url(#tp-emb-sheen)' }) : null,
+                    h('line', { x1: 29.3, y1: 24.4, x2: 32.2, y2: 24.4, stroke: palette.onAccent, strokeWidth: 1.1, strokeLinecap: 'round' }),
+                    h('rect', { x: 35, y: 20.5, width: 4, height: 5, rx: 1, fill: palette.surface2, stroke: palette.border, strokeWidth: 0.9 }),
+                    // Sculpted spacebar row
+                    h('rect', { x: 14, y: 28.5, width: 20, height: 5, rx: 1.6, fill: palette.success, opacity: effectiveAccommodations.highContrast ? 1 : 0.92 }),
+                    !effectiveAccommodations.highContrast ? h('rect', { x: 15, y: 29.2, width: 18, height: 1.8, rx: 0.8, fill: 'url(#tp-emb-sheen)' }) : null
+                  ),
+                  h('div', { style: { minWidth: 0, flex: 1 } },
+                    h('div', {
+                      style: {
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '3px 10px',
+                        marginBottom: '6px',
+                        borderRadius: '999px',
+                        background: palette.surface2,
+                        border: '1px solid ' + palette.border,
+                        color: palette.accent,
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        letterSpacing: '0.03em'
+                      }
+                    }, __alloT('stem.typingpractice.studio_badge', 'Applied Skills · Adaptive Keyboarding Studio')),
+                    (function() {
+                      var tm = state.theme || 'default';
+                      var core = h('span', { style: { color: palette.text } }, __alloT('stem.typingpractice.typing_practice', ' Typing Practice '));
+                      var titleStyle = {
+                        margin: '0 0 6px 0',
+                        fontSize: '24px',
+                        fontWeight: 700,
+                        color: palette.text,
+                        letterSpacing: '-0.01em'
+                      };
+                      if (tm === 'cyberpunk') {
+                        // [ NEON BRACKETS ]
+                        return h('h2', { style: Object.assign({}, titleStyle, { letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '20px' }) },
+                          h('span', { style: { color: palette.accent, fontWeight: 700 } }, '[ '),
+                          __alloT('stem.typingpractice.typing_practice_2', '⌨ TYPING_PRACTICE'),
+                          h('span', { style: { color: palette.accent, fontWeight: 700 } }, ' ]')
+                        );
+                      }
+                      if (tm === 'steampunk') {
+                        // ornamental flourishes on either side
+                        return h('h2', { style: titleStyle },
+                          h('span', { style: { color: palette.accent, fontSize: '18px', marginRight: '6px' } }, __alloT('stem.typingpractice.str', '❦ ⚙')),
+                          __alloT('stem.typingpractice.typing_practice_3', '⌨  Typing Practice'),
+                          h('span', { style: { color: palette.accent, fontSize: '18px', marginLeft: '6px' } }, __alloT('stem.typingpractice.str_2', '⚙ ❦'))
+                        );
+                      }
+                      if (tm === 'kawaii') {
+                        // sparkles + heart (feel like a stickered badge)
+                        return h('h2', { style: Object.assign({}, titleStyle, { fontSize: '26px' }) },
+                          h('span', { style: { color: palette.accent, fontSize: '22px' } }, '✨ '),
+                          __alloT('stem.typingpractice.typing_practice_4', '⌨️  Typing Practice'),
+                          h('span', { style: { color: palette.accent, fontSize: '22px' } }, ' ✨')
+                        );
+                      }
+                      if (tm === 'oceanic') {
+                        // tilde-waves on either side, deep-sea field-guide tone
+                        return h('h2', { style: titleStyle },
+                          h('span', { style: { color: palette.accent, fontSize: '20px', marginRight: '8px' } }, __alloT('stem.typingpractice.str_3', '~ 🌊')),
+                          __alloT('stem.typingpractice.typing_practice_5', '⌨  Typing Practice'),
+                          h('span', { style: { color: palette.accent, fontSize: '20px', marginLeft: '8px' } }, __alloT('stem.typingpractice.str_4', '🌊 ~'))
+                        );
+                      }
+                      if (tm === 'neutral') {
+                        // minimal — no decoration, just tighter tracking
+                        return h('h2', { style: Object.assign({}, titleStyle, { fontWeight: 500 }) }, __alloT('stem.typingpractice.typing_practice_6', 'Typing Practice'));
+                      }
+                      return h('h2', { style: titleStyle }, __alloT('stem.typingpractice.typing_practice_7', '⌨️  Typing Practice'));
+                    })(),
+                    h('p', {
+                      style: {
+                        margin: 0,
+                        fontSize: '13px',
+                        color: palette.textMute,
+                        lineHeight: '1.5',
+                        maxWidth: '640px'
+                      }
+                    }, (function() {
+                      // UDL framing: describe how the tool behaves, not who it
+                      // was "built for." Naming conditions others students who
+                      // do have those labels and excludes students who don't —
+                      // opposite of inclusion. The accessibility is in the
+                      // design (toggles, no timers, no leaderboards). The blurb
+                      // just confirms that.
+                      var tm = state.theme || 'default';
+                      if (tm === 'steampunk') return 'Self-paced practice at the workshop bench. The hourglass stays still; rankings do not exist; the ledger never punishes a missed day.';
+                      if (tm === 'cyberpunk') return '[SELF-PACED] :: no timers :: no leaderboards :: no streak-penalty :: user-pace always';
+                      if (tm === 'kawaii')    return 'Practice at YOUR pace 💕 No timers, no rankings, no streak guilt — just you, being you ✨';
+                      if (tm === 'oceanic')   return 'Move at your own depth. No clocks, no rankings, no penalty for surfacing when you need to.';
+                      if (tm === 'neutral')   return 'Self-paced. No timers, rankings, or streak penalties.';
+                      return 'Self-paced typing practice. No timers, leaderboards, or streak penalties.';
+                    })())
+                  )
+                ),
+                // Live non-spoiler telemetry pills
+                (function() {
+                  var activeLayoutLabel = String(state.keyboardLayout || 'qwerty').toUpperCase();
+                  var tierNum = Math.min(TIER_ORDER.length, Math.max(1, (state.masteryLevel || 0) + 1));
+                  var pillStyle = {
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '5px 10px',
+                    borderRadius: '999px',
+                    background: palette.surface2,
+                    border: '1px solid ' + palette.border,
+                    color: palette.text,
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    fontVariantNumeric: 'tabular-nums'
+                  };
+                  return h('div', {
+                    'aria-label': __alloT('stem.typingpractice.studio_telemetry', 'Keyboarding studio summary'),
+                    style: { display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }
+                  },
+                    h('span', { style: Object.assign({}, pillStyle, { color: palette.accent }) }, activeLayoutLabel),
+                    h('span', { style: pillStyle }, __alloT('stem.typingpractice.pill_tier', 'Tier') + ' ' + tierNum + '/' + TIER_ORDER.length),
+                    h('span', { style: pillStyle }, sessionCount + ' ' + __alloT('stem.typingpractice.pill_sessions', sessionCount === 1 ? 'session' : 'sessions')),
+                    badgeCount > 0 ? h('span', { style: Object.assign({}, pillStyle, { color: palette.success }) }, badgeCount + ' ' + __alloT('stem.typingpractice.pill_badges', 'badges')) : null
+                  );
+                })()
+              ),
+              // Upgraded Visual Stage: Home-Row Tactile Anchor & Finger-Zone Strip + 44px Quick-Start Chips
+              (function() {
+                var layoutId = state.keyboardLayout || 'qwerty';
+                var homeKeys = layoutId === 'dvorak'
+                  ? ['A', 'O', 'E', 'U', 'I', 'D', 'H', 'T', 'N', 'S']
+                  : layoutId === 'colemak'
+                    ? ['A', 'R', 'S', 'T', 'D', 'H', 'N', 'E', 'I', 'O']
+                    : ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';'];
+                var fingerLabels = ['L4', 'L3', 'L2', 'L1', 'L1', 'R1', 'R1', 'R2', 'R3', 'R4'];
+                var fingerCodes = ['LP', 'LR', 'LM', 'LI', 'LI', 'RI', 'RI', 'RM', 'RR', 'RP'];
+                var hcHr = !!effectiveAccommodations.highContrast;
+                return h('div', {
+                  style: {
+                    marginTop: '14px',
+                    paddingTop: '12px',
+                    borderTop: '1px solid ' + palette.border,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
+                  }
+                },
+                  h('svg', {
+                    viewBox: '0 0 640 76', width: '100%', role: 'img',
+                    'aria-label': __alloT('stem.typingpractice.homerow_svg_aria', 'Home-row tactile reference diagram showing the ten anchor keys with tactile bumps on the left and right index-finger keys'),
+                    style: { display: 'block', maxHeight: '84px' }
+                  },
+                    !hcHr ? h('defs', null,
+                      h('linearGradient', { id: 'tp-hr-deck', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: palette.bg }),
+                        h('stop', { offset: '100%', stopColor: palette.surface })
+                      ),
+                      h('linearGradient', { id: 'tp-hr-cap-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.24 }),
+                        h('stop', { offset: '52%', stopColor: '#ffffff', stopOpacity: 0.04 }),
+                        h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.08 })
+                      ),
+                      h('radialGradient', { id: 'tp-hr-anchor-halo', cx: '50%', cy: '50%', r: '50%' },
+                        h('stop', { offset: '0%', stopColor: palette.accent, stopOpacity: 0.34 }),
+                        h('stop', { offset: '100%', stopColor: palette.accent, stopOpacity: 0 })
+                      )
+                    ) : null,
+                    // Recessed studio keyboard deck
+                    h('rect', { x: 2, y: 2, width: 636, height: 72, rx: 10, fill: hcHr ? palette.bg : 'url(#tp-hr-deck)', stroke: palette.border, strokeWidth: 1.2 }),
+                    !hcHr ? h('rect', { x: 4, y: 4, width: 632, height: 68, rx: 8.5, fill: 'none', stroke: palette.border, strokeWidth: 0.7, opacity: 0.4 }) : null,
+                    // Ergonomic left-hand / right-hand tactile posture guide arches & split divider
+                    !hcHr ? h('g', { opacity: 0.35 },
+                      h('path', { d: 'M 28 69 Q 160 51 294 69', fill: 'none', stroke: palette.accent, strokeWidth: 1.2, strokeDasharray: '4 3' }),
+                      h('path', { d: 'M 332 69 Q 466 51 604 69', fill: 'none', stroke: palette.accent, strokeWidth: 1.2, strokeDasharray: '4 3' }),
+                      h('line', { x1: 313, y1: 12, x2: 313, y2: 64, stroke: palette.border, strokeWidth: 1, strokeDasharray: '3 3' })
+                    ) : null,
+                    homeKeys.map(function(k, idx) {
+                      var gapOffset = idx >= 5 ? 24 : 0;
+                      var kx = 26 + idx * 56 + gapOffset;
+                      var isAnchor = idx === 3 || idx === 6;
+                      var fColor = FINGER_COLOR[fingerCodes[idx]] || palette.accent;
+                      return h('g', { key: k + '-' + idx },
+                        // Soft beacon halo under anchor F / J keycaps
+                        (isAnchor && !hcHr) ? h('ellipse', { cx: kx + 23, cy: 30, rx: 28, ry: 22, fill: 'url(#tp-hr-anchor-halo)' }) : null,
+                        // Keycap base skirt (3D depth shadow)
+                        !hcHr ? h('rect', {
+                          x: kx, y: 12.5, width: 46, height: 37.5, rx: 7.5,
+                          fill: isAnchor ? palette.accent : palette.border,
+                          opacity: isAnchor ? 0.38 : 0.45
+                        }) : null,
+                        // Sculpted keycap body
+                        h('rect', {
+                          x: kx, y: 9.5, width: 46, height: 38, rx: 7,
+                          fill: isAnchor ? palette.accent : palette.surface2,
+                          stroke: isAnchor ? palette.accent : palette.border,
+                          strokeWidth: isAnchor ? 2 : 1.2
+                        }),
+                        // Sculpted concave top-bevel face & specular catchlight
+                        !hcHr ? h('rect', {
+                          x: kx + 3, y: 11.5, width: 40, height: 30, rx: 5,
+                          fill: 'url(#tp-hr-cap-sheen)',
+                          stroke: isAnchor ? '#ffffff' : palette.border,
+                          strokeOpacity: isAnchor ? 0.35 : 0.25,
+                          strokeWidth: 0.7
+                        }) : null,
+                        // Grounded finger-zone color guide bar at keycap front lip
+                        !hcHr ? h('rect', {
+                          x: kx + 8, y: 44, width: 30, height: 2.5, rx: 1.25,
+                          fill: isAnchor ? palette.onAccent : fColor,
+                          opacity: isAnchor ? 0.55 : 0.85
+                        }) : null,
+                        h('text', {
+                          x: kx + 23, y: 29.5, fontSize: 14, fontWeight: 800, textAnchor: 'middle',
+                          fill: isAnchor ? palette.onAccent : palette.text
+                        }, k),
+                        isAnchor ? h('line', { x1: kx + 15, y1: 39.5, x2: kx + 31, y2: 39.5, stroke: palette.onAccent, strokeWidth: 2, strokeLinecap: 'round' }) : null,
+                        h('text', {
+                          x: kx + 23, y: 63, fontSize: 10.5, fontWeight: 700, textAnchor: 'middle',
+                          fill: isAnchor ? palette.accent : palette.textMute
+                        }, fingerLabels[idx])
+                      );
+                    })
+                  ),
+                  h('div', {
+                    role: 'group',
+                    'aria-label': __alloT('stem.typingpractice.quick_start_group', 'Quick-start studio drills'),
+                    style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }
+                  },
+                    h('span', { style: { fontSize: '11px', fontWeight: 800, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+                      __alloT('stem.typingpractice.quick_launch', 'Quick start')),
+                    h('button', {
+                      type: 'button',
+                      onClick: function() { startDrill('home-row'); },
+                      style: {
+                        minHeight: '44px', padding: '8px 14px', borderRadius: '10px',
+                        border: '1px solid ' + palette.accent, background: palette.accent, color: palette.onAccent,
+                        fontSize: '12px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit'
+                      }
+                    }, __alloT('stem.typingpractice.qs_homerow', 'Home Row Warmup')),
+                    h('button', {
+                      type: 'button',
+                      onClick: function() { go('lessons'); },
+                      style: {
+                        minHeight: '44px', padding: '8px 14px', borderRadius: '10px',
+                        border: '1px solid ' + palette.border, background: palette.surface2, color: palette.text,
+                        fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit'
+                      }
+                    }, __alloT('stem.typingpractice.qs_lessons', 'Lesson Path')),
+                    h('button', {
+                      type: 'button',
+                      onClick: function() { go('progress'); },
+                      style: {
+                        minHeight: '44px', padding: '8px 14px', borderRadius: '10px',
+                        border: '1px solid ' + palette.border, background: palette.surface2, color: palette.text,
+                        fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit'
+                      }
+                    }, __alloT('stem.typingpractice.qs_progress', 'Progress & IEP'))
+                  )
+                );
+              })()
             ),
 
             // Menu theme quick-switcher — fast-path for the 5-palette chooser
@@ -13672,6 +13935,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 title: __alloT('stem.typingpractice.probe_chart_title', 'Benchmark checks: net WPM over time'),
                 yLabel: __alloT('stem.typingpractice.net_wpm_unit', 'net WPM'),
                 keyText: __alloT('stem.typingpractice.probe_chart_key', 'Dots: checks. Solid line: trend. Dashed line: aim line.'),
+                highContrast: !!effectiveAccommodations.highContrast,
                 colors: { text: palette.text, mute: palette.textMute, grid: palette.border, point: palette.accent, trend: palette.success, aim: palette.warn, bg: palette.surface }
               }),
               h('p', { style: { margin: '8px 0 10px', fontSize: '13px', color: palette.textDim, lineHeight: '1.55' } }, summaryText),
@@ -19081,19 +19345,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 ),
                 // SVG scatter
                 h('div', { style: { padding: 10, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', marginBottom: 12 } },
-                  h('svg', { role: 'img', 'aria-label': 'Typing target tradeoff chart. Current zone: ' + sm.label + '.', viewBox: '0 0 320 150', style: { width: '100%', height: 160 } },
-                    h('line', { x1: 20, y1: 130, x2: 300, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),
-                    h('line', { x1: 20, y1: 10, x2: 20, y2: 130, stroke: '#94a3b8', strokeWidth: 1 }),
-                    h('path', { d: pathStr, stroke: '#7c3aed', strokeWidth: 2, fill: 'none', strokeDasharray: '4 4' }),
-                    h('circle', { cx: currentX, cy: currentY, r: 8, fill: sm.color, stroke: '#fff', strokeWidth: 2 }),
-                    h('line', { x1: currentX - 12, y1: currentY, x2: currentX + 12, y2: currentY, stroke: sm.color, strokeWidth: 1 }),
-                    h('line', { x1: currentX, y1: currentY - 12, x2: currentX, y2: currentY + 12, stroke: sm.color, strokeWidth: 1 }),
-                    // 14 user units stays >= 12px when the 320-wide viewBox shrinks to phone width.
-                    h('text', { x: 160, y: 146, textAnchor: 'middle', fontSize: 14, fill: '#475569' }, __alloT('stem.typingpractice.wpm_target', 'WPM target →')),
-                    h('text', { x: 10, y: 75, textAnchor: 'middle', fontSize: 14, fill: '#475569', transform: 'rotate(-90 10 75)' }, __alloT('stem.typingpractice.accuracy_floor', 'Accuracy floor')),
-                    h('text', { x: 300, y: 24, textAnchor: 'end', fontSize: 14, fill: '#7c3aed' }, __alloT('stem.typingpractice.pareto_frontier', '── Pareto frontier')),
-                    h('text', { x: Math.min(currentX + 12, 280), y: Math.max(currentY - 6, 14), fontSize: 14, fill: sm.color, fontWeight: 'bold' }, 'YOU')
-                  ),
+                  (function() {
+                    var areaPath = pathStr + ' L ' + scatterPoints[scatterPoints.length - 1][0].toFixed(1) + ',130 L ' + scatterPoints[0][0].toFixed(1) + ',130 Z';
+                    var hcTrade = !!effectiveAccommodations.highContrast;
+                    return h('svg', { role: 'img', 'aria-label': 'Typing target tradeoff chart. Current zone: ' + sm.label + '.', viewBox: '0 0 320 150', style: { width: '100%', height: 160 } },
+                      !hcTrade ? h('defs', null,
+                        h('linearGradient', { id: 'tp-tr-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                          h('stop', { offset: '0%', stopColor: '#f1f5f9' }),
+                          h('stop', { offset: '100%', stopColor: '#ffffff' })
+                        ),
+                        h('linearGradient', { id: 'tp-tr-pareto-area', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                          h('stop', { offset: '0%', stopColor: '#7c3aed', stopOpacity: 0.22 }),
+                          h('stop', { offset: '100%', stopColor: '#7c3aed', stopOpacity: 0.02 })
+                        ),
+                        h('radialGradient', { id: 'tp-tr-beacon', cx: '50%', cy: '50%', r: '50%' },
+                          h('stop', { offset: '0%', stopColor: sm.color, stopOpacity: 0.45 }),
+                          h('stop', { offset: '100%', stopColor: sm.color, stopOpacity: 0 })
+                        )
+                      ) : null,
+                      // Recessed studio chart well & calibrated reference gridlines
+                      h('rect', { x: 20, y: 10, width: 280, height: 120, rx: 4, fill: hcTrade ? '#ffffff' : 'url(#tp-tr-well)', stroke: '#e2e8f0', strokeWidth: 1 }),
+                      [40, 70, 100].map(function(gy) {
+                        return h('line', { key: 'gy-' + gy, x1: 20, y1: gy, x2: 300, y2: gy, stroke: '#cbd5e1', strokeWidth: 0.75, strokeDasharray: '2 4', opacity: 0.7 });
+                      }),
+                      [90, 160, 230].map(function(gx) {
+                        return h('line', { key: 'gx-' + gx, x1: gx, y1: 10, x2: gx, y2: 130, stroke: '#cbd5e1', strokeWidth: 0.75, strokeDasharray: '2 4', opacity: 0.7 });
+                      }),
+                      // Gradient feasible growth envelope beneath Pareto frontier
+                      !hcTrade ? h('path', { d: areaPath, fill: 'url(#tp-tr-pareto-area)' }) : null,
+                      h('line', { x1: 20, y1: 130, x2: 300, y2: 130, stroke: '#64748b', strokeWidth: 1.2 }),
+                      h('line', { x1: 20, y1: 10, x2: 20, y2: 130, stroke: '#64748b', strokeWidth: 1.2 }),
+                      // Dual-pass luminous Pareto frontier curve
+                      !hcTrade ? h('path', { d: pathStr, stroke: '#7c3aed', strokeWidth: 6, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16 }) : null,
+                      h('path', { d: pathStr, stroke: '#7c3aed', strokeWidth: 2.2, fill: 'none', strokeDasharray: '5 3.5', strokeLinecap: 'round' }),
+                      // Glowing target beacon reticle
+                      !hcTrade ? h('circle', { cx: currentX, cy: currentY, r: 16, fill: 'url(#tp-tr-beacon)' }) : null,
+                      h('line', { x1: currentX - 13, y1: currentY, x2: currentX + 13, y2: currentY, stroke: sm.color, strokeWidth: 1.1, opacity: 0.85 }),
+                      h('line', { x1: currentX, y1: currentY - 13, x2: currentX, y2: currentY + 13, stroke: sm.color, strokeWidth: 1.1, opacity: 0.85 }),
+                      h('circle', { cx: currentX, cy: currentY, r: 8, fill: sm.color, stroke: '#fff', strokeWidth: 2 }),
+                      !hcTrade ? h('circle', { cx: currentX - 2.3, cy: currentY - 2.3, r: 2.1, fill: '#ffffff', opacity: 0.55 }) : null,
+                      // 14 user units stays >= 12px when the 320-wide viewBox shrinks to phone width.
+                      h('text', { x: 160, y: 146, textAnchor: 'middle', fontSize: 14, fill: '#475569' }, __alloT('stem.typingpractice.wpm_target', 'WPM target →')),
+                      h('text', { x: 10, y: 75, textAnchor: 'middle', fontSize: 14, fill: '#475569', transform: 'rotate(-90 10 75)' }, __alloT('stem.typingpractice.accuracy_floor', 'Accuracy floor')),
+                      h('text', { x: 300, y: 24, textAnchor: 'end', fontSize: 14, fill: '#7c3aed' }, __alloT('stem.typingpractice.pareto_frontier', '── Pareto frontier')),
+                      h('text', { x: Math.min(currentX + 12, 280), y: Math.max(currentY - 6, 14), fontSize: 14, fill: sm.color, fontWeight: 'bold' }, 'YOU')
+                    );
+                  })(),
                   h('div', { style: { fontSize: 12, color: '#64748b', textAlign: 'center', fontStyle: 'italic', marginTop: 4 } },
                     __alloT('stem.typingpractice.pareto_curve_best_accuracy_achievable_', 'Pareto curve = best accuracy achievable at each WPM. Above = unrealistic; below = room to grow.'))
                 ),
@@ -21091,24 +21388,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   function typingPracticeRenderProbeChart(el, model, opts) {
     opts = opts || {};
     var c = opts.colors || {};
+    var hc = !!opts.highContrast;
     var ink = c.text || '#1f2937', mute = c.mute || '#6b7280', grid = c.grid || '#d1d5db';
     var pointColor = c.point || '#1d4ed8', trendColor = c.trend || '#047857', aimColor = c.aim || '#b45309';
+    var gradPrefix = (opts.titleId || 'tp-probe').replace(/[^a-zA-Z0-9_-]/g, '');
+    var areaId = gradPrefix + '-area';
+    var wellId = gradPrefix + '-well';
     var children = [
       el('title', { key: 'title', id: opts.titleId }, opts.title || 'Benchmark checks: net WPM over time'),
       el('desc', { key: 'desc', id: opts.descId }, opts.desc || '')
     ];
+    if (!hc) {
+      children.push(el('defs', { key: 'defs' },
+        el('linearGradient', { key: 'g-well', id: wellId, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+          el('stop', { key: 'w0', offset: '0%', stopColor: pointColor, stopOpacity: 0.04 }),
+          el('stop', { key: 'w1', offset: '100%', stopColor: pointColor, stopOpacity: 0 })
+        ),
+        el('linearGradient', { key: 'g-area', id: areaId, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+          el('stop', { key: 'a0', offset: '0%', stopColor: pointColor, stopOpacity: 0.2 }),
+          el('stop', { key: 'a1', offset: '100%', stopColor: pointColor, stopOpacity: 0.01 })
+        )
+      ));
+      children.push(el('rect', {
+        key: 'well', x: model.left, y: model.top,
+        width: model.right - model.left, height: model.bottom - model.top,
+        rx: 5, fill: 'url(#' + wellId + ')', stroke: grid, strokeWidth: 0.8, opacity: 0.85
+      }));
+    }
     model.ticks.forEach(function(tick) {
-      children.push(el('line', { key: 'g' + tick.value, x1: model.left, y1: tick.y, x2: model.right, y2: tick.y, stroke: grid, strokeWidth: 1 }));
+      children.push(el('line', { key: 'g' + tick.value, x1: model.left, y1: tick.y, x2: model.right, y2: tick.y, stroke: grid, strokeWidth: 1, strokeDasharray: tick.value === 0 ? undefined : '3 3', opacity: tick.value === 0 ? 1 : 0.75 }));
       children.push(el('text', { key: 'gt' + tick.value, x: model.left - 6, y: tick.y + 4, textAnchor: 'end', fontSize: 12, fill: mute }, String(tick.value)));
     });
-    children.push(el('line', { key: 'xa', x1: model.left, y1: model.bottom, x2: model.right, y2: model.bottom, stroke: ink, strokeWidth: 1 }));
+    children.push(el('line', { key: 'xa', x1: model.left, y1: model.bottom, x2: model.right, y2: model.bottom, stroke: ink, strokeWidth: 1.2 }));
     children.push(el('text', { key: 'x0', x: model.left, y: model.bottom + 18, fontSize: 12, fill: mute }, model.startLabel));
     children.push(el('text', { key: 'x1', x: model.right, y: model.bottom + 18, textAnchor: 'end', fontSize: 12, fill: mute }, model.endLabel));
     children.push(el('text', { key: 'yl', x: 4, y: model.top + 2, fontSize: 12, fill: mute }, opts.yLabel || 'net WPM'));
-    if (model.aim) children.push(el('line', { key: 'aim', x1: model.aim.x1, y1: model.aim.y1, x2: model.aim.x2, y2: model.aim.y2, stroke: aimColor, strokeWidth: 2, strokeDasharray: '8 5' }));
-    if (model.trend) children.push(el('line', { key: 'trend', x1: model.trend.x1, y1: model.trend.y1, x2: model.trend.x2, y2: model.trend.y2, stroke: trendColor, strokeWidth: 3 }));
+    if (model.points.length >= 2) {
+      var lineD = 'M ' + model.points.map(function(p) { return p.x + ',' + p.y; }).join(' L ');
+      if (!hc) {
+        var areaD = lineD + ' L ' + model.points[model.points.length - 1].x + ',' + model.bottom + ' L ' + model.points[0].x + ',' + model.bottom + ' Z';
+        children.push(el('path', { key: 'pace-area', d: areaD, fill: 'url(#' + areaId + ')' }));
+        children.push(el('path', { key: 'pace-glow', d: lineD, fill: 'none', stroke: pointColor, strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.14 }));
+      }
+      children.push(el('path', { key: 'pace-line', d: lineD, fill: 'none', stroke: pointColor, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: hc ? 1 : 0.8 }));
+    }
+    if (model.aim) {
+      children.push(el('line', { key: 'aim', x1: model.aim.x1, y1: model.aim.y1, x2: model.aim.x2, y2: model.aim.y2, stroke: aimColor, strokeWidth: 2, strokeDasharray: '8 5', strokeLinecap: 'round' }));
+      children.push(el('circle', { key: 'aim-end', cx: model.aim.x2, cy: model.aim.y2, r: 4, fill: c.bg || '#ffffff', stroke: aimColor, strokeWidth: 2 }));
+    }
+    if (model.trend) {
+      if (!hc) children.push(el('line', { key: 'trend-glow', x1: model.trend.x1, y1: model.trend.y1, x2: model.trend.x2, y2: model.trend.y2, stroke: trendColor, strokeWidth: 7, strokeLinecap: 'round', opacity: 0.18 }));
+      children.push(el('line', { key: 'trend', x1: model.trend.x1, y1: model.trend.y1, x2: model.trend.x2, y2: model.trend.y2, stroke: trendColor, strokeWidth: 3, strokeLinecap: 'round' }));
+    }
     model.points.forEach(function(p, i) {
+      if (!hc) children.push(el('circle', { key: 'ph' + i, cx: p.x, cy: p.y, r: 8, fill: pointColor, opacity: 0.14 }));
       children.push(el('circle', { key: 'p' + i, cx: p.x, cy: p.y, r: 5, fill: pointColor, stroke: c.bg || '#ffffff', strokeWidth: 2 }));
+      if (!hc) children.push(el('circle', { key: 'ps' + i, cx: p.x - 1.4, cy: p.y - 1.4, r: 1.3, fill: '#ffffff', opacity: 0.6 }));
     });
     // Line key, drawn as text so it survives forced colors and print.
     var keyY = model.height - 6;

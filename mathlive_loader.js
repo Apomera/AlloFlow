@@ -126,7 +126,17 @@
     }
     script.src = candidate.script;
     script.async = true;
+    var settled = false;
+    var timer = setTimeout(function () {
+      if (settled) return;
+      settled = true;
+      try { script.remove(); } catch (_) {}
+      loadAt(sources, index + 1, resolve, reject);
+    }, 15000);
     script.onload = function () {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
       configureRuntime(candidate.fonts);
       var deadline = Date.now() + 5000;
       (function poll() {
@@ -140,6 +150,9 @@
       })();
     };
     script.onerror = function () {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
       try { script.remove(); } catch (_) {}
       loadAt(sources, index + 1, resolve, reject);
     };
@@ -324,10 +337,15 @@
 
     function commit() {
       insert.disabled = true;
-      collectFormats(field, options, false).then(function (formats) {
+      Promise.resolve().then(function () {
+        return collectFormats(field, options, false);
+      }).then(function (formats) {
         insert.disabled = false;
-        if (!formats.latex) { status.textContent = 'Enter an equation first.'; return; }
+        if (!formats || !formats.latex) { status.textContent = 'Enter an equation first.'; return; }
         done(formats);
+      }).catch(function () {
+        insert.disabled = false;
+        status.textContent = 'Could not read this equation right now.';
       });
     }
 
@@ -391,9 +409,14 @@
         document.body.appendChild(field);
         return new Promise(function (resolve) {
           setTimeout(function () {
-            collectFormats(field, options, false).then(function (formats) {
+            Promise.resolve().then(function () {
+              return collectFormats(field, options, false);
+            }).then(function (formats) {
               try { field.remove(); } catch (_) {}
-              resolve(formats.latex ? formats : null);
+              resolve(formats && formats.latex ? formats : null);
+            }).catch(function () {
+              try { field.remove(); } catch (_) {}
+              resolve(null);
             });
           }, 0);
         });

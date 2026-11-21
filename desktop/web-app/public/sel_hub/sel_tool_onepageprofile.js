@@ -133,6 +133,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _opBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.onePageProfile || defaultState();
       function setOPP(patch) {
@@ -145,6 +147,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           }
           return Object.assign({}, prev, { onePageProfile: next });
         });
+      }
+      function scanProfileText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'onePageProfile', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'onePageProfile', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setOPP({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'One-Page Profile', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
       }
       var view = d.view || 'profile';
       function goto(v) { setOPP({ view: v }); }
@@ -324,7 +351,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
               h('label', { htmlFor: inputId, className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add to ' + title),
               h('input', { id: inputId, type: 'text',
                 placeholder: 'Type and press Enter, or pick a starter below...',
-                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submitInput(); } },
+                onBlur: function(e) { scanProfileText(e.target.value); },
+                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); scanProfileText(e.target.value); submitInput(); } },
                 style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } }),
               h('button', { onClick: submitInput, 'aria-label': 'Add item',
                 style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _opSolid(color), color: _opFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
@@ -555,6 +583,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'One-Page Profile' },
         header(),
         navTabs(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _opBand) : null,
         body
       );
     }

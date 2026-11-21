@@ -265,7 +265,7 @@ describe('the print view', () => {
     expect([...root.querySelectorAll('legend, label, button, summary')].map((node) => node.textContent.trim())).toEqual([
       'Print', 'Back to the maker', 'Card options', 'Card size', 'Big: 4 on a page', 'Medium: 6 on a page', 'Small: 12 on a page',
       'Each card shows', 'The word and its picture', 'Only the word', 'Only the picture, for matching games', 'Lines to cut along',
-      'What to print', 'The cards and a word list', 'Only the cards', 'Only the word list']);
+      'Show syllable breaks (a·b·c)', 'What to print', 'The cards and a word list', 'Only the cards', 'Only the word list']);
   });
 });
 

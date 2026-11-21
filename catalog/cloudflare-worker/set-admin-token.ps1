@@ -1,4 +1,4 @@
-# Generate a strong ADMIN_TOKEN, store it on the Worker, and show it to you once.
+﻿# Generate a strong ADMIN_TOKEN, store it on the Worker, and show it to you once.
 #
 #   powershell -ExecutionPolicy Bypass -File catalog\cloudflare-worker\set-admin-token.ps1
 #
@@ -48,12 +48,28 @@ Start-Sleep -Seconds 5
 
 Write-Host ''
 Write-Host 'Verifying the reader endpoint...' -ForegroundColor Cyan
-$Check = & curl.exe --silent --show-error --max-time 45 "$Base/bugs?token=$Token&limit=1"
+$Check = ''
+try {
+    $CheckResp = Invoke-WebRequest -UseBasicParsing -Method Get -Uri "$Base/pdSubmissions?limit=1" `
+        -Headers @{ Authorization = "Bearer $Token" } -TimeoutSec 45 -MaximumRedirection 0 -ErrorAction Stop
+    $Check = $CheckResp.Content
+}
+catch {
+    if ($_.Exception.Response) {
+        try {
+            $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+            $Check = $reader.ReadToEnd()
+            $reader.Dispose()
+        } catch {}
+    } else {
+        $Check = $_.Exception.Message
+    }
+}
 
 if ($Check -match '"ok"\s*:\s*true') {
     Write-Host 'Queue readers are now unlocked.' -ForegroundColor Green
 } elseif ($Check -match 'Admin read disabled') {
-    Write-Host 'Secret not propagated yet — wait a minute and retry the URL below.' -ForegroundColor Yellow
+    Write-Host 'Secret not propagated yet — wait a minute and retry with Authorization: Bearer <token>.' -ForegroundColor Yellow
 } else {
     Write-Host 'Unexpected response:' -ForegroundColor Yellow
     Write-Host $Check
@@ -68,10 +84,12 @@ Write-Host 'Put it in your password manager. It is shown once and cannot be'
 Write-Host 'retrieved from Cloudflare afterwards (only overwritten by re-running'
 Write-Host 'this script).'
 Write-Host ''
-Write-Host 'Your queue URLs:'
-Write-Host "  $Base/bugs?token=YOURTOKEN"
-Write-Host "  $Base/pdSubmissions?token=YOURTOKEN"
-Write-Host "  $Base/pluginSubmissions?token=YOURTOKEN"
+Write-Host 'Queue endpoints (send via Authorization: Bearer <token>; query ?token= is disabled):'
+Write-Host "  $Base/pdSubmissions"
+Write-Host "  $Base/pluginSubmissions"
+Write-Host "  $Base/bug-inbox   (browser login for bug reports)"
 Write-Host ''
+[Array]::Clear($Bytes, 0, $Bytes.Length)
+$Token = $null
 Write-Host 'Close this window when you have saved the token.'
 Write-Host ''

@@ -77,9 +77,21 @@ const _protectSentenceSplitLinks = (text, linkMap) => {
         const open = input.indexOf('[', cursor);
         if (open < 0) { output += input.slice(cursor); break; }
         output += input.slice(cursor, open);
-        const labelEnd = input.indexOf('](', open + 1);
-        if (labelEnd < 0) { output += input.slice(open); break; }
-        let pos = labelEnd + 2;
+        let scan = open + 1;
+        let close = -1;
+        while (scan < input.length) {
+            const ch = input[scan];
+            if (ch === '\\') { scan += 2; continue; }
+            if (ch === '[' || ch === '\n') break;
+            if (ch === ']') { close = scan; break; }
+            scan += 1;
+        }
+        if (close < 0 || input[close + 1] !== '(') {
+            output += '[';
+            cursor = open + 1;
+            continue;
+        }
+        let pos = close + 2;
         let depth = 1;
         while (pos < input.length && depth > 0) {
             if (input[pos] === '\\') { pos += 2; continue; }
@@ -144,7 +156,7 @@ const splitTextToSentences = (text, deps) => {
       // became "-3" and "= 3"), and a chart directive is not speakable.
       let protectedText = _protectSentenceSplitLinks(String(text).replace(/\r\n?/g, '\n').replace(/\[\[CHART:[\s\S]*?\]\]/g, '\n\n').replace(/\|/g, '{{PIPE}}'), linkMap);
       const latexMap = [];
-      protectedText = protectedText.replace(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$)/g, (match) => {
+      protectedText = protectedText.replace(/(\$\$[\s\S]+?\$\$|\$[^\s$\n](?:[^$\n]*[^\s$\n])?\$)/g, (match) => {
           latexMap.push(match);
           return `{{LATEX_${latexMap.length - 1}}}`;
       });
@@ -318,8 +330,8 @@ const _applyTextSurgery = (prevHtml, effectiveText) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(prevHtml, 'text/html');
     if (!doc || !doc.body) throw new Error('HTML failed to parse');
-    const rejectParents = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT']);
-    const walker = doc.createTreeWalker(doc.documentElement, NodeFilter.SHOW_TEXT, {
+    const rejectParents = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'HEAD', 'TITLE']);
+    const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, {
         acceptNode: (n) => {
             let p = n.parentElement;
             while (p) {
@@ -459,7 +471,7 @@ const _compactBlueprintRunForStorage = (run, diagnosticsOnly = false, deps = {})
       assignFailure(compact, 'failReason', row.failReason, row.failureCode);
       return [storageKey, compact];
     }
-    const allowed = Object.keys(row).filter(field => field !== 'failureCode' && !isSensitiveField(field));
+    const allowed = Object.keys(row).filter(field => field !== 'failureCode' && field !== '__proto__' && field !== 'constructor' && field !== 'prototype' && !isSensitiveField(field));
     const compact = {};
     allowed.forEach(field => {
       if (row[field] === undefined) return;
@@ -492,7 +504,7 @@ const _compactBlueprintRunForStorage = (run, diagnosticsOnly = false, deps = {})
   }
   const compact = {};
   Object.keys(run).forEach(field => {
-    if (field === 'rows' || field === 'failureCode' || isSensitiveField(field) || run[field] === undefined) return;
+    if (field === 'rows' || field === 'failureCode' || field === '__proto__' || field === 'constructor' || field === 'prototype' || isSensitiveField(field) || run[field] === undefined) return;
     if (field === 'failReason' || field === 'reason') assignFailure(compact, field, run[field], run.failureCode);
     else compact[field] = run[field];
   });
@@ -519,7 +531,7 @@ const _compactFullPackRunForStorage = (run, diagnosticsOnly = false, deps = {}) 
     const omit = new Set(omitted);
     const out = {};
     Object.keys(value).forEach(field => {
-      if (field === 'failureCode' || omit.has(field) || isSensitiveField(field) || value[field] === undefined) return;
+      if (field === 'failureCode' || field === '__proto__' || field === 'constructor' || field === 'prototype' || omit.has(field) || isSensitiveField(field) || value[field] === undefined) return;
       out[field] = value[field];
     });
     return out;

@@ -88,11 +88,18 @@
     function policyStatus() {
       if (typeof window !== 'undefined') {
         if (window._isDesktopBundledApp === true) return 'desktop-bundled-cloud-disabled';
-        if (window.__alloStudentAiDisabled === true || window.__alloStudentView === true || window.__alloAiSecretsLocked === true) {
+        if (window.__alloStudentAiDisabled === true || window.__alloStudentView === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true) {
           return 'student-or-locked-ai-disabled';
         }
         if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) {
           return 'managed-ai-policy-disabled';
+        }
+        if (typeof window.__alloAiUsable === 'function') {
+          try {
+            if (!window.__alloAiUsable('images')) return 'student-or-locked-ai-disabled';
+          } catch (_) {
+            return 'student-or-locked-ai-disabled';
+          }
         }
       }
       var current = now();
@@ -117,6 +124,12 @@
     }
 
     async function boundedSuccessfulResponse(response) {
+      var declaredLength = response && response.headers && typeof response.headers.get === 'function'
+        ? Number(response.headers.get('content-length')) : NaN;
+      var maxJsonBytes = Math.ceil(maxDecodedBytes * 4 / 3) + 65536;
+      if (Number.isFinite(declaredLength) && declaredLength > maxJsonBytes) {
+        throw guardError('openai-image-response-too-large', 'OpenAI returned image data larger than the configured managed-asset limit.');
+      }
       var body;
       try { body = await response.json(); }
       catch (_) { throw guardError('openai-invalid-response', 'OpenAI returned an unreadable image response.'); }
@@ -220,7 +233,8 @@
 
     async function execute(requestInput) {
       if (inFlight) throw guardError('production-adapter-busy', 'This production media adapter permits only one execution at a time.');
-      var plan = prepare(requestInput);
+      var snapshotInput = requestInput && typeof requestInput === 'object' ? JSON.parse(JSON.stringify(requestInput)) : requestInput;
+      var plan = prepare(snapshotInput);
       if (!plan.ready) throw guardError(plan.code, 'Production OpenAI media preflight did not authorize execution.');
       if (opts.authorizeProductionExecution({
         request: plan.request, provider: plan.provider, estimate: plan.estimate,
@@ -233,11 +247,16 @@
       inFlight = true;
       executionState = { imageAttempts: 0, altActualCostUsd: 0, altOperations: 0 };
       try {
-        var result = await inner.execute(requestInput);
+        var result = await inner.execute(snapshotInput);
         var totalCost = result.usage.actualCostUsd + executionState.altActualCostUsd;
         var totalOperations = executionState.imageAttempts + executionState.altOperations;
         var usage = { operations: totalOperations, actualCostUsd: totalCost, currency: 'USD' };
         if (totalCost > plan.request.providerPolicy.maxCostUsd || totalOperations > plan.request.providerPolicy.maxOperations) {
+          try {
+            if (result && result.asset && result.asset.handle && opts.assetStore && typeof opts.assetStore.remove === 'function') {
+              opts.assetStore.remove(result.asset.handle);
+            }
+          } catch (_) {}
           throw guardError('aggregate-actual-budget-exceeded', 'Aggregate media usage exceeded the approved request budget.', usage);
         }
         result.usage = usage;

@@ -411,14 +411,14 @@ function sanitizeLiveActivitySnapshot(input) {
     (Array.isArray(input.audienceUids) ? input.audienceUids : []).map((uid) => boundedLiveActivityText(uid, 128)).filter(Boolean)
   )).slice(0, 250);
   const audienceSet = new Set(audienceUids);
-  const participantStatus = {};
+  const participantStatus = /* @__PURE__ */ Object.create(null);
   Object.entries(input.participantStatus && typeof input.participantStatus === "object" ? input.participantStatus : {}).slice(0, 250).forEach(([rawUid, rawStatus]) => {
     const uid = boundedLiveActivityText(rawUid, 128);
     if (!uid || !audienceSet.has(uid)) return;
     participantStatus[uid] = normalizeLiveActivityParticipantStatus(rawStatus);
   });
   audienceUids.forEach((uid) => {
-    if (!participantStatus[uid]) participantStatus[uid] = "waiting";
+    if (!Object.prototype.hasOwnProperty.call(participantStatus, uid) || !participantStatus[uid]) participantStatus[uid] = "waiting";
   });
   const statuses = Object.values(participantStatus);
   const counts = {
@@ -766,7 +766,7 @@ function buildLiveAttentionQueue(input) {
       if (seenAge >= 2e5) addReason("presence_disconnected", 94);
       else if (seenAge >= 95e3) addReason("presence_quiet", 58);
     }
-    const activityStatus = activityPulse && activityPulse.participantStatus[uid];
+    const activityStatus = activityPulse && activityPulse.participantStatus && Object.prototype.hasOwnProperty.call(activityPulse.participantStatus, uid) ? activityPulse.participantStatus[uid] : void 0;
     if (activityPulse && activityPulse.phase === "collecting") {
       if (activityStatus === "waiting" && activityElapsed >= LIVE_ATTENTION_WAIT_GRACE_MS) {
         addReason("activity_waiting", 76);
@@ -787,7 +787,7 @@ function buildLiveAttentionQueue(input) {
       const viewingResourceAt = boundedLiveActivityCount(entry.viewingResourceAt, Number.MAX_SAFE_INTEGER);
       const statusMatchesAssignment = hasAssignmentNonce && viewingResourceAt === target.assignedAt;
       const deliveryStatus = statusMatchesAssignment ? entry.viewingResourceStatus : null;
-      const assignmentAcknowledged = statusMatchesAssignment ? deliveryStatus !== "loading" && deliveryStatus !== "failed" && entry.viewingResourceId === target.resourceId : viewingAt >= target.assignedAt;
+      const assignmentAcknowledged = hasAssignmentNonce ? statusMatchesAssignment && deliveryStatus !== "loading" && deliveryStatus !== "failed" && entry.viewingResourceId === target.resourceId : viewingAt >= target.assignedAt;
       const assignmentIsLate = now - target.assignedAt >= LIVE_ATTENTION_RESOURCE_GRACE_MS;
       if (deliveryStatus === "failed") {
         addReason("resource_failed", 116);
@@ -810,7 +810,9 @@ function buildLiveAttentionQueue(input) {
       targetResourceId: target.resourceId
     });
   });
-  return queue.sort((a, b) => b.score - a.score || a.uid.localeCompare(b.uid)).slice(0, 12);
+  const sortedQueue = queue.sort((a, b) => b.score - a.score || a.uid.localeCompare(b.uid));
+  const limit = Number.isFinite(Number(input && input.limit)) && Number(input.limit) > 0 ? Math.trunc(Number(input.limit)) : 12;
+  return sortedQueue.slice(0, limit);
 }
 function buildLiveAttentionCohorts(queue, roster, groups, limit = 6) {
   const safeRoster = roster && typeof roster === "object" ? roster : {};
@@ -822,7 +824,7 @@ function buildLiveAttentionCohorts(queue, roster, groups, limit = 6) {
     const uid = boundedLiveActivityText(item.uid, 128);
     if (!uid || seenUids.has(uid)) return;
     seenUids.add(uid);
-    const entry = safeRoster[uid] && typeof safeRoster[uid] === "object" ? safeRoster[uid] : null;
+    const entry = Object.prototype.hasOwnProperty.call(safeRoster, uid) && safeRoster[uid] && typeof safeRoster[uid] === "object" ? safeRoster[uid] : null;
     const groupId = boundedLiveActivityText(entry && entry.groupId, 128);
     if (!groupId || !Object.prototype.hasOwnProperty.call(safeGroups, groupId) || !safeGroups[groupId] || typeof safeGroups[groupId] !== "object") return;
     const reasons = Array.from(new Set(
@@ -842,7 +844,7 @@ function buildLiveAttentionCohorts(queue, roster, groups, limit = 6) {
     });
     buckets.set(groupId, bucket);
   });
-  const memberCounts = {};
+  const memberCounts = /* @__PURE__ */ Object.create(null);
   Object.values(safeRoster).slice(0, 250).forEach((rawEntry) => {
     const entry = rawEntry && typeof rawEntry === "object" ? rawEntry : {};
     const groupId = boundedLiveActivityText(entry.groupId, 128);
@@ -852,7 +854,7 @@ function buildLiveAttentionCohorts(queue, roster, groups, limit = 6) {
   });
   const safeLimit = Math.max(1, Math.min(12, boundedLiveActivityCount(limit, 12) || 6));
   return Array.from(buckets.values()).filter((bucket) => bucket.uids.length >= 2).map((bucket) => {
-    const memberCount = memberCounts[bucket.groupId] || bucket.uids.length;
+    const memberCount = Object.prototype.hasOwnProperty.call(memberCounts, bucket.groupId) ? memberCounts[bucket.groupId] : bucket.uids.length;
     const topReasonCodes = Object.entries(bucket.reasonCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([code]) => code).slice(0, 3);
     return {
       groupId: bucket.groupId,
@@ -901,13 +903,13 @@ function buildLiveQuizActivitySnapshot(input) {
   );
   const rawPhase = boundedLiveActivityText(quizState.phase, 40);
   const questionIsLive = rawPhase === "answering" || rawPhase === "revealed" || rawPhase === "boss-defeated" || rawPhase === "class-defeated";
-  const participantStatus = {};
+  const participantStatus = /* @__PURE__ */ Object.create(null);
   audienceUids.forEach((uid) => {
-    const bucket = allResponses[uid] && typeof allResponses[uid] === "object" ? allResponses[uid] : {};
+    const bucket = Object.prototype.hasOwnProperty.call(allResponses, uid) && allResponses[uid] && typeof allResponses[uid] === "object" ? allResponses[uid] : {};
     const records = Object.values(bucket);
     const completion = records.some((record) => record && typeof record === "object" && record.itemType === "assessment-complete") || questionCount > 0 && bucket[questionCount] && bucket[questionCount].itemType === "assessment-complete";
     const hasCurrentAnswer = Object.prototype.hasOwnProperty.call(currentResponses, uid) || Object.prototype.hasOwnProperty.call(bucket, String(currentQuestionIndex));
-    const receipt = responseReceipts[uid] && typeof responseReceipts[uid] === "object" ? responseReceipts[uid] : null;
+    const receipt = Object.prototype.hasOwnProperty.call(responseReceipts, uid) && responseReceipts[uid] && typeof responseReceipts[uid] === "object" ? responseReceipts[uid] : null;
     const receiptKeys = receipt ? Object.keys(receipt) : [];
     const validReceipt = !!receipt && receiptKeys.length === 4 && receiptKeys.every((key) => ["activityId", "questionIndex", "submittedAt", "flow"].includes(key)) && boundedLiveActivityText(receipt.activityId, 120) === activityId && Number.isInteger(receipt.questionIndex) && receipt.questionIndex >= 0 && receipt.questionIndex <= 9999 && Number.isFinite(Number(receipt.submittedAt)) && Number(receipt.submittedAt) > 0 && (receipt.flow === "assessment" || receipt.flow === "presentation");
     const receiptCompletesAssessment = validReceipt && receipt.flow === "assessment" && questionCount > 0 && receipt.questionIndex === questionCount;
@@ -1012,6 +1014,14 @@ function LiveLessonRunPanel(props) {
     review: { border: "#fcd34d", background: "#fffbeb", text: "#854d0e" },
     needs_attention: { border: "#fca5a5", background: "#fef2f2", text: "#991b1b" }
   }[liveRunReadiness.status];
+  const [readinessOpen, setReadinessOpen] = React.useState(() => liveRunReadiness.status !== "ready");
+  const prevReadinessStatusRef = React.useRef(liveRunReadiness.status);
+  React.useEffect(() => {
+    if (prevReadinessStatusRef.current !== liveRunReadiness.status) {
+      prevReadinessStatusRef.current = liveRunReadiness.status;
+      setReadinessOpen(liveRunReadiness.status !== "ready");
+    }
+  }, [liveRunReadiness.status]);
   const audiences = React.useMemo(
     () => buildLiveLessonAudiences(groups, roster, {
       classLabel: t("live_lesson.whole_class") || "Whole class",
@@ -1036,7 +1046,7 @@ function LiveLessonRunPanel(props) {
   const teacherPaced = sessionMode === "sync";
   const focusIsCurrent = currentIndex >= 0 && focusIndex === currentIndex;
   const presenterCue = normalizeLivePresenterCue(
-    focusItem && presenterCuesByResourceId && presenterCuesByResourceId[focusItem.id]
+    focusItem && presenterCuesByResourceId && Object.prototype.hasOwnProperty.call(presenterCuesByResourceId, focusItem.id) ? presenterCuesByResourceId[focusItem.id] : null
   );
   const hasPresenterCue = LIVE_PRESENTER_CUE_FIELDS.some((field) => presenterCue[field].trim());
   const preparedCheckpoint = presenterCue.checkpoint;
@@ -1044,7 +1054,7 @@ function LiveLessonRunPanel(props) {
   const preparedCheckpointLaunchBlocked = preparedCheckpoint.kind === "live_quiz" && (!focusItem || focusItem.type !== "quiz");
   const nextItem = nextIndex >= 0 ? steps[nextIndex] : null;
   const nextPresenterCue = normalizeLivePresenterCue(
-    nextItem && presenterCuesByResourceId && presenterCuesByResourceId[nextItem.id]
+    nextItem && presenterCuesByResourceId && Object.prototype.hasOwnProperty.call(presenterCuesByResourceId, nextItem.id) ? presenterCuesByResourceId[nextItem.id] : null
   );
   const nextHasPresenterCue = LIVE_PRESENTER_CUE_FIELDS.some(
     (field) => nextPresenterCue[field].trim()
@@ -1090,15 +1100,18 @@ function LiveLessonRunPanel(props) {
     () => buildLiveCompanionModel({ activitySnapshots, roster }),
     [activitySnapshots, roster]
   );
-  const attentionQueue = React.useMemo(() => buildLiveAttentionQueue({
+  const fullAttentionQueue = React.useMemo(() => buildLiveAttentionQueue({
     roster,
     groups,
     activitySnapshots,
     currentResourceId,
     sessionMode,
     now,
-    signalFreshMs
+    signalFreshMs,
+    limit: 250
   }), [roster, groups, activitySnapshots, currentResourceId, sessionMode, now, signalFreshMs]);
+  const attentionQueue = React.useMemo(() => fullAttentionQueue.slice(0, 12), [fullAttentionQueue]);
+  const attentionOverflowCount = Math.max(0, fullAttentionQueue.length - attentionQueue.length);
   const attentionCohorts = React.useMemo(
     () => buildLiveAttentionCohorts(attentionQueue, roster, groups, 6),
     [attentionQueue, roster, groups]
@@ -1167,11 +1180,12 @@ function LiveLessonRunPanel(props) {
       return { activityId, byStatus };
     });
   };
+  const anySendBusy = Boolean(debriefSendingId || attentionSending || attentionReleasing || attentionSendingUid);
   const sendDebriefFinding = async (finding) => {
-    if (!finding || !focusItem || debriefSendingId) return;
+    if (!finding || !focusItem || anySendBusy) return;
     const currentUids = Array.from(new Set(
       (Array.isArray(finding.uids) ? finding.uids : []).filter((uid) => Object.prototype.hasOwnProperty.call(roster, uid))
-    )).slice(0, 25);
+    )).slice(0, 250);
     if (currentUids.length === 0) {
       setDebriefSendStatus("Those students are no longer connected. Use the saved finding to plan the next lesson.");
       return;
@@ -1181,6 +1195,10 @@ function LiveLessonRunPanel(props) {
     try {
       if (typeof onSendToStudents === "function") {
         const result = await onSendToStudents(currentUids, focusItem);
+        if (result && result.pendingConfirmation) {
+          setDebriefSendStatus("Confirm the audio readiness prompt to send " + attentionResourceTitle + ".");
+          return;
+        }
         const sent = result && Number.isFinite(Number(result.sent)) ? Number(result.sent) : currentUids.length;
         const failed = result && Number.isFinite(Number(result.failed)) ? Number(result.failed) : 0;
         const disconnected = Math.max(0, currentUids.length - sent - failed);
@@ -1197,7 +1215,7 @@ function LiveLessonRunPanel(props) {
   };
   const sendAttentionSelection = async () => {
     const selectedUids = validSelectedUids;
-    if (!focusItem || attentionSending || attentionReleasing || attentionSendingUid) return;
+    if (!focusItem || anySendBusy) return;
     if (selectedUids.length === 0) {
       const hasStoredCompanionSelection = Object.values(companionSelection.byStatus || {}).some((uids) => Array.isArray(uids) && uids.length > 0);
       if (attentionSelectedUids.length > 0 || hasStoredCompanionSelection) {
@@ -1212,6 +1230,10 @@ function LiveLessonRunPanel(props) {
     try {
       if (typeof onSendToStudents === "function") {
         const result = await onSendToStudents(selectedUids, focusItem);
+        if (result && result.pendingConfirmation) {
+          setAttentionSendStatus("Confirm the audio readiness prompt to send " + attentionResourceTitle + ".");
+          return;
+        }
         const sent = result && Number.isFinite(Number(result.sent)) ? Number(result.sent) : selectedUids.length;
         const failed = result && Number.isFinite(Number(result.failed)) ? Number(result.failed) : 0;
         const noLongerConnected = Math.max(0, selectedUids.length - sent - failed);
@@ -1235,13 +1257,17 @@ function LiveLessonRunPanel(props) {
     }
   };
   const sendAttentionStudent = async (uid) => {
-    if (!focusItem || !uid || attentionSending || attentionReleasing || attentionSendingUid || typeof onSendToStudent !== "function") return;
+    if (!focusItem || !uid || anySendBusy || typeof onSendToStudent !== "function") return;
     const entry = roster[uid] && typeof roster[uid] === "object" ? roster[uid] : {};
     const name = String(entry.name || "Student");
     setAttentionSendingUid(uid);
     setAttentionSendStatus("");
     try {
       const result = await onSendToStudent(uid, focusItem);
+      if (result && result.pendingConfirmation) {
+        setAttentionSendStatus(`Confirm audio readiness before assigning ${attentionResourceTitle || "that resource"} to ${name}.`);
+        return;
+      }
       const failed = result && Number.isFinite(Number(result.failed)) ? Number(result.failed) : 0;
       setAttentionSendStatus(failed > 0 ? `Could not assign ${attentionResourceTitle || "that resource"} to ${name}. Please try again.` : `Assigned ${attentionResourceTitle || "the selected resource"} to ${name}.`);
     } catch (error) {
@@ -1251,7 +1277,7 @@ function LiveLessonRunPanel(props) {
     }
   };
   const releaseAcknowledgedResources = async () => {
-    if (acknowledgedResourceOverrideUids.length === 0 || attentionReleasing || attentionSending || attentionSendingUid || typeof onReleaseStudentResources !== "function") return;
+    if (acknowledgedResourceOverrideUids.length === 0 || anySendBusy || typeof onReleaseStudentResources !== "function") return;
     setAttentionReleasing(true);
     setAttentionReleaseStatus("");
     try {
@@ -1415,7 +1441,8 @@ function LiveLessonRunPanel(props) {
       {
         "data-live-run-readiness": liveRunReadiness.status,
         "data-live-run-readiness-privacy": "resource-metadata-only",
-        open: liveRunReadiness.status !== "ready",
+        open: readinessOpen,
+        onToggle: (e) => setReadinessOpen(e.currentTarget.open),
         style: {
           marginTop: 7,
           padding: "0.42rem 0.48rem",
@@ -1644,7 +1671,7 @@ function LiveLessonRunPanel(props) {
           background: attentionQueue.length ? "#fffbeb" : "#f0fdf4"
         }
       },
-      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, attentionQueue.length ? "!" : "OK"), /* @__PURE__ */ React.createElement("strong", { style: { color: attentionQueue.length ? "#92400e" : "#166534", fontSize: "0.72rem" } }, t("live_lesson.needs_attention") || "Needs attention"), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "auto", fontSize: "0.62rem", fontWeight: 900, color: attentionQueue.length ? "#92400e" : "#166534" } }, attentionQueue.length)),
+      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, attentionQueue.length ? "!" : "OK"), /* @__PURE__ */ React.createElement("strong", { style: { color: attentionQueue.length ? "#92400e" : "#166534", fontSize: "0.72rem" } }, t("live_lesson.needs_attention") || "Needs attention"), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "auto", fontSize: "0.62rem", fontWeight: 900, color: attentionQueue.length ? "#92400e" : "#166534" } }, attentionOverflowCount > 0 ? `${attentionQueue.length} (+${attentionOverflowCount} more)` : attentionQueue.length)),
       attentionQueue.length === 0 ? /* @__PURE__ */ React.createElement("p", { role: "status", style: { margin: "0.35rem 0 0", color: "#166534", fontSize: "0.64rem" } }, t("live_lesson.no_attention_signals") || "No immediate attention signals.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 5 } }, /* @__PURE__ */ React.createElement("span", { style: { color: "#78350f", fontSize: "0.6rem" } }, t("live_lesson.attention_ranked_hint") || "Ranked from signals, presence, activity status, and delivery."), /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1715,7 +1742,7 @@ function LiveLessonRunPanel(props) {
               }
             },
             /* @__PURE__ */ React.createElement("span", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("span", { style: { display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "0.62rem", fontWeight: 900 } }, groupName), /* @__PURE__ */ React.createElement("span", { style: { display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "0.56rem" } }, reason)),
-            /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.58rem", fontWeight: 900, whiteSpace: "nowrap" } }, cohortSelected ? t("common.selected") || "Selected" : "Select " + cohort.count, " ? ", cohort.count, "/", cohort.memberCount)
+            /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.58rem", fontWeight: 900, whiteSpace: "nowrap" } }, cohortSelected ? t("common.selected") || "Selected" : "Select " + cohort.count, " \xB7 ", cohort.count, "/", cohort.memberCount)
           );
         }))
       ), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("live_lesson.students_needing_attention") || "Students needing attention", style: { display: "flex", flexDirection: "column", gap: 4, marginTop: 4, maxHeight: 190, overflowY: "auto" } }, attentionQueue.map((item) => {
@@ -1828,16 +1855,16 @@ function LiveLessonRunPanel(props) {
           ready: { border: "#86efac", background: "#f0fdf4", text: "#166534" }
         }[finding.tone] || { border: "#cbd5e1", background: "white", text: "#334155" };
         const currentTargetCount = finding.uids.filter((uid) => Object.prototype.hasOwnProperty.call(roster, uid)).length;
-        const activityItem = activityTimeline.find((item) => item.activityId === finding.activityId) || finding;
+        const activityItem = activityTimeline.find((item) => item.activityId === finding.activityId) || { ...finding, kind: finding.activityKind };
         const canSend = currentTargetCount > 0 && !!focusItem && (typeof onSendToStudents === "function" || typeof onSendToStudent === "function");
         return /* @__PURE__ */ React.createElement("article", { key: finding.id, "data-live-debrief-kind": finding.kind, style: { border: "1px solid " + tone.border, borderRadius: 8, background: tone.background, padding: "0.42rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: tone.text, fontSize: "0.64rem" } }, finding.label), /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "auto", color: tone.text, fontSize: "0.56rem", fontWeight: 900 } }, liveActivityKindLabel(finding.activityKind))), /* @__PURE__ */ React.createElement("p", { style: { margin: "0.2rem 0 0", color: tone.text, fontSize: "0.58rem", lineHeight: 1.35 } }, finding.detail), (canSend || finding.canOpenActivity && typeof onOpenActivity === "function") && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5 } }, finding.canOpenActivity && typeof onOpenActivity === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onOpenActivity(activityItem), "aria-label": "Open " + liveActivityKindLabel(finding.activityKind) + " review from class debrief", style: { ...buttonBase, minHeight: 44, minWidth: 44, borderColor: tone.border, color: tone.text, fontSize: "0.57rem" } }, t("live_lesson.open_review") || "Open review"), canSend && /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
-            disabled: !!debriefSendingId,
+            disabled: anySendBusy,
             onClick: () => sendDebriefFinding(finding),
             "aria-label": "Send " + attentionResourceTitle + " to " + currentTargetCount + " debrief student" + (currentTargetCount === 1 ? "" : "s"),
-            style: { ...buttonBase, minHeight: 44, minWidth: 44, borderColor: tone.border, background: "white", color: tone.text, fontSize: "0.57rem", opacity: debriefSendingId ? 0.65 : 1 }
+            style: { ...buttonBase, minHeight: 44, minWidth: 44, borderColor: tone.border, background: "white", color: tone.text, fontSize: "0.57rem", opacity: anySendBusy ? 0.65 : 1 }
           },
           debriefSendingId === finding.id ? t("common.sending") || "Sending..." : (t("live_lesson.send_follow_up") || "Send selected follow-up") + " (" + currentTargetCount + ")"
         )));

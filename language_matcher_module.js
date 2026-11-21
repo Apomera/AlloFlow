@@ -388,22 +388,43 @@
     'asl': 'American Sign Language (ASL)',
     'american sign language': 'American Sign Language (ASL)'
   };
+  Object.freeze(ALIASES);
 
   // Manifest — populated at load time from /lang/manifest.json. Until then,
   // we have only ALIASES to work with. Once the manifest loads, fuzzy
   // matching falls back to Levenshtein over the actual available packs.
-  let _MANIFEST = { available: [], by_slug: {} };
+  let _MANIFEST = { available: [], by_slug: Object.create(null) };
   let _manifestReady = null;
+  const MAX_INPUT_LEN = 120;
+  const MAX_MANIFEST_ENTRIES = 500;
+  const MAX_MANIFEST_BYTES = 512 * 1024;
 
+  function _stripControl(s) {
+    return String(s == null ? '' : s).replace(/[\u0000-\u001F\u007F]/g, '');
+  }
   function _slugify(s) {
-    return s.toLowerCase().replace(/[()]/g, '').replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    return _stripControl(s).slice(0, 160).toLowerCase().replace(/[()]/g, '').replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
   }
   function _normalize(s) {
-    return (s || '').toLowerCase().trim().replace(/[\s\-_]+/g, ' ').replace(/[^\p{L}\p{N}\s]/gu, '');
+    return _stripControl(s).slice(0, 160).toLowerCase().trim().replace(/[\s\-_]+/g, ' ').replace(/[^\p{L}\p{N}\s]/gu, '');
+  }
+  function _isRemoteManifestBlocked() {
+    try {
+      return typeof window !== 'undefined' && (
+        window._isDesktopBundledApp === true ||
+        window.__alloOfflineOnly === true ||
+        window.__alloQrStudentMode === true ||
+        window._alloQrBlocked === true
+      );
+    } catch (_) {
+      return true;
+    }
   }
 
   // Levenshtein distance (iterative, O(mn)). Used as fallback ranker.
   function _lev(a, b) {
+    a = String(a == null ? '' : a).slice(0, MAX_INPUT_LEN);
+    b = String(b == null ? '' : b).slice(0, MAX_INPUT_LEN);
     if (a === b) return 0;
     if (!a.length) return b.length;
     if (!b.length) return a.length;
@@ -421,7 +442,16 @@
     return v0[b.length];
   }
 
+  function _parseManifestJson(raw) {
+    if (typeof raw !== 'string' || raw.length > MAX_MANIFEST_BYTES) return null;
+    return JSON.parse(raw, function (key, value) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
+      return value;
+    });
+  }
+
   async function _loadManifest() {
+    if (_isRemoteManifestBlocked()) return;
     if (_manifestReady) return _manifestReady;
     const pending = (async () => {
       const URLS = [
@@ -429,20 +459,31 @@
         'https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/manifest.json'
       ];
       for (const u of URLS) {
+        if (_isRemoteManifestBlocked()) return;
         const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
         const timer = ctrl ? setTimeout(() => ctrl.abort(), 8000) : null;
         try {
-          const r = await fetch(u, ctrl ? { signal: ctrl.signal } : undefined);
-          if (!r.ok) continue;
-          const m = await r.json();
+          const init = { credentials: 'omit', referrerPolicy: 'no-referrer' };
+          if (ctrl) init.signal = ctrl.signal;
+          const r = await fetch(u, init);
+          if (!r || !r.ok) continue;
+          const m = typeof r.text === 'function' ? _parseManifestJson(await r.text()) : await r.json();
           if (m && Array.isArray(m.available)) {
             const bySlug = Object.create(null);
-            m.available.forEach((entry) => {
-              if (entry && typeof entry.slug === 'string' && entry.slug && entry.slug !== '__proto__' && entry.slug !== 'constructor' && entry.slug !== 'prototype') {
-                bySlug[entry.slug] = entry;
+            const cleanAvailable = [];
+            const capped = m.available.slice(0, MAX_MANIFEST_ENTRIES);
+            capped.forEach((entry) => {
+              if (entry && typeof entry === 'object' && typeof entry.slug === 'string') {
+                const slug = _slugify(entry.slug);
+                if (slug && slug !== '__proto__' && slug !== 'constructor' && slug !== 'prototype' && !bySlug[slug]) {
+                  const display = typeof entry.display === 'string' ? _stripControl(entry.display).trim().slice(0, MAX_INPUT_LEN) : '';
+                  const cleanEntry = { slug: slug, display: display || slug };
+                  bySlug[slug] = cleanEntry;
+                  cleanAvailable.push(cleanEntry);
+                }
               }
             });
-            _MANIFEST = { available: m.available, by_slug: bySlug };
+            _MANIFEST = { available: cleanAvailable, by_slug: bySlug };
             return;
           }
         } catch (_) {}
@@ -461,7 +502,7 @@
   async function match(userInput) {
     if (!userInput || typeof userInput !== 'string') return null;
     const own = Object.prototype.hasOwnProperty;
-    const raw = userInput.trim();
+    const raw = _stripControl(userInput).trim().slice(0, MAX_INPUT_LEN);
     const norm = _normalize(raw);
     if (!norm) return null;
 
@@ -541,7 +582,7 @@
     return Object.keys(_MANIFEST.by_slug);
   }
 
-  window.AlloLangMatcher = {
+  window.AlloLangMatcher = Object.freeze({
     match: match,
     knownDisplayNames: knownDisplayNames,
     availableSlugs: availableSlugs,
@@ -549,7 +590,7 @@
     _slugify: _slugify,
     _normalize: _normalize,
     _lev: _lev
-  };
+  });
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.LanguageMatcher = window.AlloLangMatcher;
   console.log('[AlloFlow] Language matcher ready (' + Object.keys(ALIASES).length + ' aliases)');

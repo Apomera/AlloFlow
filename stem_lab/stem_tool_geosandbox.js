@@ -96,7 +96,7 @@ window.StemLab = window.StemLab || {
       '#allo-geo-sandbox .geo-triad { position:absolute; left:14px; top:58px; width:64px; height:64px; z-index:4; pointer-events:none; overflow:visible; }',
       '#allo-geo-sandbox .geo-triad .geo-triad-ring { fill:rgba(15,32,53,0.62); stroke:rgba(62,86,113,0.55); stroke-width:1; }',
       '#allo-geo-sandbox .geo-triad line { stroke-width:2.4; stroke-linecap:round; }',
-      '#allo-geo-sandbox .geo-triad text { font:700 9px system-ui, sans-serif; text-anchor:middle; dominant-baseline:central; fill:#eaf2fc; paint-order:stroke; stroke:#0f2035; stroke-width:2.5px; }',
+      '#allo-geo-sandbox .geo-triad text { font:700 10px system-ui, sans-serif; text-anchor:middle; dominant-baseline:central; fill:#eaf2fc; paint-order:stroke; stroke:#0f2035; stroke-width:2.5px; }',
       '#allo-geo-sandbox .geo-triad [data-axis="x"] line { stroke:#f87171; } #allo-geo-sandbox .geo-triad [data-axis="y"] line { stroke:#4ade80; } #allo-geo-sandbox .geo-triad [data-axis="z"] line { stroke:#60a5fa; }',
       '#allo-geo-sandbox .geo-viewport[data-background=paper] .geo-triad .geo-triad-ring { fill:rgba(255,255,255,0.72); stroke:#94a3b8; } #allo-geo-sandbox .geo-viewport[data-background=paper] .geo-triad text { fill:#1e293b; stroke:#ffffff; } #allo-geo-sandbox .geo-viewport[data-background=paper] .geo-triad [data-axis="x"] line { stroke:#dc2626; } #allo-geo-sandbox .geo-viewport[data-background=paper] .geo-triad [data-axis="y"] line { stroke:#16a34a; } #allo-geo-sandbox .geo-viewport[data-background=paper] .geo-triad [data-axis="z"] line { stroke:#2563eb; }',
       '#allo-geo-sandbox #geo-sandbox-canvas[data-geo-hover="1"] { cursor:pointer !important; }',
@@ -122,6 +122,31 @@ window.StemLab = window.StemLab || {
       // controls a learner tabbed to (WCAG 2.4.11), so let it scroll away there.
       '@media (max-width:760px) and (max-height:540px) { #allo-geo-sandbox #geo-viewport-shell { position:relative !important; top:auto !important; } }',
       '@media (forced-colors: active) { #allo-geo-sandbox button, #allo-geo-sandbox input, #allo-geo-sandbox select, #allo-geo-sandbox textarea, #allo-geo-sandbox canvas { forced-color-adjust: auto; border: 1px solid CanvasText !important; } #allo-geo-sandbox button:focus-visible, #allo-geo-sandbox input:focus-visible, #allo-geo-sandbox select:focus-visible, #allo-geo-sandbox textarea:focus-visible, #allo-geo-sandbox canvas:focus-visible { outline: 3px solid Highlight !important; box-shadow: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
+  // Bespoke Geometry Sandbox studio identity, dimensional schematic, starter chips & High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-geosandbox-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-geosandbox-studio-css';
+    st.textContent = [
+      '#allo-geo-sandbox .geo-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(56,189,248,0.18); border: 1px solid rgba(125,211,252,0.48); color: #bae6fd; font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 4px; }',
+      '#allo-geo-sandbox .geo-hero-deck { background: linear-gradient(135deg, #0b182a 0%, #122742 54%, #10203a 100%); border: 1px solid rgba(125,211,252,0.34); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; box-shadow: 0 12px 28px -18px rgba(2,10,24,0.85); }',
+      '#allo-geo-sandbox .geo-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; min-width: 0; }',
+      '#allo-geo-sandbox .geo-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(8,18,32,0.82); border: 1px solid rgba(125,211,252,0.36); color: #e0f2fe; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '#allo-geo-sandbox .geo-dim-schematic { padding: 6px 10px; border-radius: 11px; background: rgba(7,15,28,0.78); border: 1px solid rgba(125,211,252,0.26); }',
+      '#allo-geo-sandbox .geo-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 8px; border-top: 1px solid rgba(125,211,252,0.22); }',
+      '#allo-geo-sandbox .geo-starter-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #bae6fd; }',
+      '#allo-geo-sandbox .geo-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(9,20,36,0.86); border: 1px solid rgba(125,211,252,0.40); color: #e0f2fe; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '#allo-geo-sandbox .geo-starter-chip:hover:not(:disabled) { background: rgba(14,116,144,0.42); border-color: #7dd3fc; color: #ffffff; }',
+      '#allo-geo-sandbox .geo-starter-chip[data-active="true"] { background: #0369a1; border-color: #bae6fd; color: #ffffff; }',
+      '.theme-contrast #allo-geo-sandbox, .theme-contrast #allo-geo-sandbox.geo-studio { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast #allo-geo-sandbox .geo-hero-deck, .theme-contrast #allo-geo-sandbox .geo-brand-mark, .theme-contrast #allo-geo-sandbox .geo-subject-badge, .theme-contrast #allo-geo-sandbox .geo-telemetry-pill, .theme-contrast #allo-geo-sandbox .geo-dim-schematic, .theme-contrast #allo-geo-sandbox #geo-control-sidebar.geo-sidebar, .theme-contrast #allo-geo-sandbox .geo-panel-content > div, .theme-contrast #allo-geo-sandbox .geo-panel-content > .geo-section, .theme-contrast #allo-geo-sandbox .geo-panel-content > details, .theme-contrast #allo-geo-sandbox .geo-measure-strip, .theme-contrast #allo-geo-sandbox .geo-lesson-guide { background: #000000 !important; background-image: none !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast #allo-geo-sandbox .geo-brand h2, .theme-contrast #allo-geo-sandbox .geo-brand p, .theme-contrast #allo-geo-sandbox .geo-starter-label, .theme-contrast #allo-geo-sandbox .geo-section h3, .theme-contrast #allo-geo-sandbox .geo-section p { color: #ffff00 !important; }',
+      '.theme-contrast #allo-geo-sandbox .geo-starter-chip, .theme-contrast #allo-geo-sandbox .geo-header-actions > button, .theme-contrast #allo-geo-sandbox .geo-more-tools > summary, .theme-contrast #allo-geo-sandbox .geo-engine-tabs button, .theme-contrast #allo-geo-sandbox .geo-panel-tabs button { background: #000000 !important; background-image: none !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast #allo-geo-sandbox .geo-starter-chip[data-active="true"], .theme-contrast #allo-geo-sandbox .geo-engine-tabs button[aria-selected="true"], .theme-contrast #allo-geo-sandbox .geo-panel-tabs button[aria-selected="true"], .theme-contrast #allo-geo-sandbox .geo-path-switch button[aria-pressed="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -185,6 +210,131 @@ window.StemLab = window.StemLab || {
     } catch (e) { cb(false); }
   }
 
+  // ── WebGL1 / GLSL ES 1.00 Studio Shaders (Crystal Fresnel, Holographic Laser Slice, Calibration Rings) ──
+  var _geoShaderTime = { value: 2.4 };
+  function geoIsContrastMode() {
+    try { return !!(typeof document !== 'undefined' && document.querySelector && document.querySelector('.theme-contrast')); } catch (e) { return false; }
+  }
+  function geoApplyCrystalShader(THREE, mat, opts) {
+    opts = opts || {};
+    if (!THREE || !mat || opts.wireframe || geoIsContrastMode() || typeof THREE.ShaderMaterial !== 'function') return mat;
+    var contourStrength = opts.contourStrength != null ? opts.contourStrength : 0.24;
+    var fresnelStrength = opts.fresnelStrength != null ? opts.fresnelStrength : 0.56;
+    mat.onBeforeCompile = function (shader) {
+      shader.uniforms.uGeoFresnel = { value: fresnelStrength };
+      shader.uniforms.uGeoContour = { value: contourStrength };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vGeoWorldPos;\nvarying vec3 vGeoWorldN;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvGeoWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvGeoWorldN = normalize(mat3(modelMatrix) * objectNormal);');
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform float uGeoFresnel;\nuniform float uGeoContour;\nvarying vec3 vGeoWorldPos;\nvarying vec3 vGeoWorldN;')
+        .replace('#include <dithering_fragment>', [
+          'vec3 gN = normalize(vGeoWorldN);',
+          'if (!gl_FrontFacing) gN = -gN;',
+          'vec3 gV = normalize(cameraPosition - vGeoWorldPos);',
+          'float gNdV = clamp(abs(dot(gN, gV)), 0.0, 1.0);',
+          'float gFres = pow(1.0 - gNdV, 2.75);',
+          'float gSpec = pow(max(dot(reflect(-normalize(vec3(0.45, 0.85, 0.55)), gN), gV), 0.0), 36.0);',
+          'float gTopo = 1.0 - smoothstep(0.0, 0.055, abs(fract(vGeoWorldPos.y * 2.0 + 0.001) - 0.5));',
+          'float gTopoMajor = 1.0 - smoothstep(0.0, 0.065, abs(fract(vGeoWorldPos.y * 0.5 + 0.001) - 0.5));',
+          'float gSideMask = 1.0 - step(0.92, abs(gN.y));',
+          'vec3 gCrystalRim = mix(vec3(0.55, 0.88, 1.0), vec3(0.96, 0.99, 1.0), gFres);',
+          'gl_FragColor.rgb += gCrystalRim * gFres * uGeoFresnel + vec3(0.94, 0.98, 1.0) * gSpec * 0.24;',
+          'gl_FragColor.rgb += vec3(0.74, 0.92, 1.0) * (gTopo * 0.55 + gTopoMajor * 0.85) * gSideMask * uGeoContour;',
+          '#include <dithering_fragment>'
+        ].join('\n'));
+    };
+    mat.customProgramCacheKey = function () { return 'geo-crystal-topo-v1-' + fresnelStrength.toFixed(2); };
+    return mat;
+  }
+  function geoMakeLaserSliceShader(THREE, opts) {
+    opts = opts || {};
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: _geoShaderTime,
+        uColor: { value: new THREE.Color(opts.color || 0xfacc15) },
+        uScanColor: { value: new THREE.Color(opts.scanColor || 0x38bdf8) },
+        uOpacity: { value: opts.opacity != null ? opts.opacity : 0.60 }
+      },
+      vertexShader: [
+        'varying vec3 vWorldPos;',
+        'void main() {',
+        '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+        '  vWorldPos = wp.xyz;',
+        '  gl_Position = projectionMatrix * viewMatrix * wp;',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform vec3 uColor;',
+        'uniform vec3 uScanColor;',
+        'uniform float uOpacity;',
+        'varying vec3 vWorldPos;',
+        'void main() {',
+        '  vec2 g = abs(fract(vWorldPos.xz * 2.5 - 0.5) - 0.5);',
+        '  float gridLine = 1.0 - smoothstep(0.02, 0.075, min(g.x, g.y));',
+        '  float sweep = 0.5 + 0.5 * sin(dot(vWorldPos.xz, vec2(4.2, 3.1)) - uTime * 3.2);',
+        '  float laserWave = pow(sweep, 7.0);',
+        '  float fineScan = 0.5 + 0.5 * sin((vWorldPos.x - vWorldPos.z) * 18.0 + uTime * 4.5);',
+        '  vec3 col = mix(uColor, uScanColor, clamp(gridLine * 0.45 + laserWave * 0.65, 0.0, 1.0));',
+        '  col += vec3(0.98, 0.99, 1.0) * laserWave * 0.35;',
+        '  float alpha = clamp(uOpacity * (0.62 + 0.34 * gridLine + 0.38 * laserWave + 0.08 * fineScan), 0.0, 0.92);',
+        '  gl_FragColor = vec4(col, alpha);',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      depthTest: false
+    });
+  }
+  function geoMakeCalibrationDiscShader(THREE, isLight) {
+    var uniforms = {
+      uTime: _geoShaderTime,
+      uIsLight: { value: isLight ? 1.0 : 0.0 }
+    };
+    var mat = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: [
+        'varying vec2 vLocal;',
+        'void main() {',
+        '  vLocal = position.xy;',
+        '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform float uIsLight;',
+        'varying vec2 vLocal;',
+        'void main() {',
+        '  float r = length(vLocal);',
+        '  if (r > 10.0) discard;',
+        '  float ang = atan(vLocal.y, vLocal.x);',
+        '  float ring2 = 1.0 - smoothstep(0.015, 0.065, abs(r - 2.0));',
+        '  float ring4 = 1.0 - smoothstep(0.018, 0.075, abs(r - 4.0));',
+        '  float ring6 = 1.0 - smoothstep(0.015, 0.065, abs(r - 6.0));',
+        '  float ring8 = 1.0 - smoothstep(0.020, 0.085, abs(r - 8.0));',
+        '  float rings = max(max(ring2 * 0.65, ring4), max(ring6 * 0.65, ring8 * 0.9));',
+        '  float degTick = 1.0 - smoothstep(0.012, 0.045, abs(fract((ang / 6.2831853) * 24.0 + 0.5) - 0.5));',
+        '  float tickBand = degTick * (smoothstep(3.72, 3.88, r) * smoothstep(4.28, 4.12, r) + smoothstep(7.72, 7.88, r) * smoothstep(8.28, 8.12, r));',
+        '  float pulseR = fract(uTime * 0.14) * 9.5;',
+        '  float pulseWave = (1.0 - smoothstep(0.0, 0.45, abs(r - pulseR))) * (1.0 - pulseR / 9.5);',
+        '  float radialFade = smoothstep(10.0, 7.5, r) * smoothstep(0.25, 0.7, r);',
+        '  vec3 darkCol = vec3(0.32, 0.72, 0.92);',
+        '  vec3 lightCol = vec3(0.24, 0.42, 0.58);',
+        '  vec3 col = mix(darkCol, lightCol, uIsLight);',
+        '  float intensity = (rings * 0.68 + tickBand * 0.48 + pulseWave * 0.34) * radialFade;',
+        '  if (intensity < 0.01) discard;',
+        '  gl_FragColor = vec4(col * (1.0 + pulseWave * 0.45), clamp(intensity * (uIsLight > 0.5 ? 0.52 : 0.62), 0.0, 0.78));',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+    return { material: mat, uniforms: uniforms };
+  }
+
   // ── Scene management ──
   function loadGeometryEngine(setData, addToast) {
     setData(function(p) { return Object.assign({}, p, { _geoEngineError: false }); });
@@ -242,43 +392,105 @@ window.StemLab = window.StemLab || {
       });
     })();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    if (THREE.ACESFilmicToneMapping) { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.06; }
+    if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
     var prefersRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     // ── Soft real shadow — grounds the solid on the grid ──
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    // Lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-    var dir = new THREE.DirectionalLight(0xfff1dd, 1.0); // warm key vs the existing cool fill — solids read 3D
-    dir.position.set(5, 10, 7.5);
+    // Architectural studio 3-point + hemisphere + rim lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 0.42));
+    var hemi = THREE.HemisphereLight ? new THREE.HemisphereLight(isDarkBg ? 0xcbe0ff : 0xf0f7ff, isDarkBg ? 0x1e2b3e : 0xb8c7d9, 0.48) : null;
+    if (hemi) scene.add(hemi);
+    var dir = new THREE.DirectionalLight(0xfff1dd, 1.08); // warm key vs the existing cool fill — solids read 3D
+    dir.position.set(5.5, 10.5, 7.5);
     dir.castShadow = true;
     dir.shadow.mapSize.set(1024, 1024);
     dir.shadow.camera.left = -12; dir.shadow.camera.right = 12;
     dir.shadow.camera.top = 12; dir.shadow.camera.bottom = -12;
     dir.shadow.camera.near = 0.5; dir.shadow.camera.far = 40;
+    dir.shadow.bias = -0.0005;
     dir.shadow.radius = 4;
     scene.add(dir);
-    var fill = new THREE.DirectionalLight(0xc7d2fe, 0.3);
-    fill.position.set(-5, 3, -5);
+    var fill = new THREE.DirectionalLight(0xc7d2fe, 0.36);
+    fill.position.set(-5.5, 3.5, -5);
     scene.add(fill);
-    // Violet rim light from behind — a jewel-case sheen along top edges
-    var rim = new THREE.DirectionalLight(0x8b5cf6, 0.3);
-    rim.position.set(0, 6, -10);
+    // Crisp studio rim light from behind — luminous sheen along polyhedron edges
+    var rim = new THREE.DirectionalLight(0x8b5cf6, 0.42);
+    rim.position.set(-2, 7.5, -10);
     scene.add(rim);
+    // Vertex-colored architectural studio sky gradient dome (no CanvasTexture, cool slate g >= r)
+    var studioSkyDome = null;
+    function paintStudioSkyDome(isLight, bgMode) {
+      if (!studioSkyDome || !studioSkyDome.geometry || !studioSkyDome.geometry.attributes.position) return;
+      var zenithHex = isLight ? 0xdbeafe : (bgMode === 'midnight' ? 0x050a16 : 0x0b162a);
+      var horizonHex = isLight ? 0xf1f5f9 : (bgMode === 'midnight' ? 0x0d1b33 : 0x1a2e4a);
+      var nadirHex = isLight ? 0xe2e8f0 : (bgMode === 'midnight' ? 0x04070f : 0x09111f);
+      var posAttr = studioSkyDome.geometry.attributes.position;
+      var colAttr = studioSkyDome.geometry.attributes.color;
+      var cZen = new THREE.Color(zenithHex), cHor = new THREE.Color(horizonHex), cNad = new THREE.Color(nadirHex), tmpC = new THREE.Color();
+      for (var si = 0; si < posAttr.count; si++) {
+        var hy = posAttr.getY(si) / 180;
+        if (hy >= 0) tmpC.copy(cHor).lerp(cZen, Math.pow(Math.min(1, hy), 0.55));
+        else tmpC.copy(cHor).lerp(cNad, Math.min(1, -hy * 2.2));
+        colAttr.setXYZ(si, tmpC.r, tmpC.g, tmpC.b);
+      }
+      colAttr.needsUpdate = true;
+    }
+    try {
+      if (THREE.SphereGeometry && THREE.BufferAttribute) {
+        var domeGeo = new THREE.SphereGeometry(180, 24, 16);
+        domeGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(domeGeo.attributes.position.count * 3), 3));
+        var domeMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false, fog: false });
+        studioSkyDome = new THREE.Mesh(domeGeo, domeMat);
+        studioSkyDome.name = 'geo-studio-sky-dome';
+        studioSkyDome.renderOrder = -20;
+        studioSkyDome.frustumCulled = false;
+        studioSkyDome.raycast = function() {};
+        paintStudioSkyDome(!isDarkBg, isDarkBg ? 'slate' : 'paper');
+        scene.add(studioSkyDome);
+      }
+    } catch (e) {}
     // Ground
     var grid = new THREE.GridHelper(20,20,0x526681,0x273950); grid.name='geo-floor-grid'; if(grid.material){grid.material.transparent=true;grid.material.opacity=.55;} scene.add(grid);
-    // Origin cross — the X and Z lines through (0,0,0) read brighter than the rest
-    // of the grid, so a student can see where the construction is anchored and
-    // which way it faces. They are CHILDREN of the grid so "Show grid" hides them
-    // too. Neutral slate on purpose: tests/e2e/19-geosandbox-gl.spec.ts isolates
-    // solids from scene furniture with "r > g", so floor furniture must stay g >= r.
+    // Origin cross + soft architectural drafting calibration rings (children of grid so
+    // "Show grid" toggles them cleanly). Strictly neutral/cool slate (g >= r) so solid
+    // isolation tests remain intact.
     var originLines = [];
+    var draftingRings = [];
     try {
       [[[-10, 0.002, 0], [10, 0.002, 0]], [[0, 0.002, -10], [0, 0.002, 10]]].forEach(function(pts) {
         var lg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3().fromArray(pts[0]), new THREE.Vector3().fromArray(pts[1])]);
-        var ln = new THREE.Line(lg, new THREE.LineBasicMaterial({ color: 0x7f97b5, transparent: true, opacity: 0.5, depthWrite: false }));
+        var ln = new THREE.Line(lg, new THREE.LineBasicMaterial({ color: 0x7f97b5, transparent: true, opacity: 0.52, depthWrite: false }));
         ln.name = 'geo-origin-line'; ln.renderOrder = 1;
         grid.add(ln); originLines.push(ln);
       });
+      [4, 8].forEach(function(rad, idx) {
+        var ringPts = [];
+        for (var ri = 0; ri <= 64; ri++) {
+          var ra = (ri / 64) * Math.PI * 2;
+          ringPts.push(new THREE.Vector3(Math.cos(ra) * rad, 0.002, Math.sin(ra) * rad));
+        }
+        var rg = new THREE.BufferGeometry().setFromPoints(ringPts);
+        var rMat = new THREE.LineBasicMaterial({ color: 0x647d9c, transparent: true, opacity: idx === 0 ? 0.28 : 0.18, depthWrite: false });
+        var rLine = new THREE.Line(rg, rMat);
+        rLine.name = 'geo-drafting-ring-' + rad; rLine.renderOrder = 1;
+        grid.add(rLine); draftingRings.push(rLine);
+      });
+    } catch (e) {}
+    var calibrationDisc = null, calibrationUniforms = null;
+    try {
+      if (!geoIsContrastMode() && typeof THREE.ShaderMaterial === 'function' && THREE.PlaneGeometry) {
+        var calObj = geoMakeCalibrationDiscShader(THREE, !isDarkBg);
+        calibrationUniforms = calObj.uniforms;
+        calibrationDisc = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), calObj.material);
+        calibrationDisc.rotation.x = -Math.PI / 2;
+        calibrationDisc.position.y = 0.0025;
+        calibrationDisc.name = 'geo-calibration-rings';
+        calibrationDisc.renderOrder = 1;
+        calibrationDisc.raycast = function() {};
+        grid.add(calibrationDisc);
+      }
     } catch (e) {}
     grid.userData.geoOriginLines = originLines;
     // Shadow catcher — invisible plane that only shows the soft shadow.
@@ -299,9 +511,14 @@ window.StemLab = window.StemLab || {
     scene.add(shadowPlane);
     // Paper (light) backgrounds need darker floor furniture and a lighter shadow;
     // the React effect calls this whenever the background preference changes.
-    function setSceneTheme(isLight) {
+    function setSceneTheme(isLight, bgMode) {
       try {
-        originLines.forEach(function(ln) { if (ln.material && ln.material.color) { ln.material.color.setHex(isLight ? 0x64748b : 0x7f97b5); ln.material.opacity = isLight ? 0.7 : 0.5; } });
+        originLines.forEach(function(ln) { if (ln.material && ln.material.color) { ln.material.color.setHex(isLight ? 0x64748b : 0x7f97b5); ln.material.opacity = isLight ? 0.7 : 0.52; } });
+        draftingRings.forEach(function(rn, idx) { if (rn.material && rn.material.color) { rn.material.color.setHex(isLight ? 0x64748b : 0x647d9c); rn.material.opacity = isLight ? (idx === 0 ? 0.32 : 0.20) : (idx === 0 ? 0.28 : 0.18); } });
+        if (hemi) { hemi.color.setHex(isLight ? 0xf0f7ff : 0xcbe0ff); hemi.groundColor.setHex(isLight ? 0xb8c7d9 : 0x1e2b3e); }
+        paintStudioSkyDome(isLight, bgMode);
+        if (calibrationUniforms) calibrationUniforms.uIsLight.value = isLight ? 1.0 : 0.0;
+        if (calibrationDisc) calibrationDisc.visible = !geoIsContrastMode();
         if (shadowPlane.material) shadowPlane.material.opacity = isLight ? 0.2 : 0.32;
       } catch (e) {}
     }
@@ -539,6 +756,7 @@ window.StemLab = window.StemLab || {
     renderer.domElement.addEventListener('pointercancel', function() { _pick.down=false; _pick.handle=null; if(controls)controls.enabled=true; if(window._geoEndSculptDrag)window._geoEndSculptDrag(); });
     // Animate
     var animId;
+    var geoShaderStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
     var animate = function() {
       // While an immersive session drives frames, the HEADSET owns the camera —
       // skip OrbitControls + the bloom composer (mono) and just render stereo. The
@@ -548,6 +766,10 @@ window.StemLab = window.StemLab || {
       if (!renderer.domElement.isConnected) { cancelAnimationFrame(animId); return; }
       animId = requestAnimationFrame(animate);
       renderer._geoAnimId = animId; // live handle — cleanupScene must cancel the CURRENT frame, not the stale first-frame id captured in the returned object
+      if (!prefersRM && !geoIsContrastMode()) {
+        var nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        _geoShaderTime.value = 2.4 + (nowMs - geoShaderStart) * 0.001;
+      }
       if (controls) controls.update();
       if (window._geoTriadUpdate) { try { window._geoTriadUpdate(camera); } catch (e) {} }
       var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
@@ -742,26 +964,32 @@ window.StemLab = window.StemLab || {
       }
       default: geometry = new THREE.BoxGeometry(dims.w || 3, dims.h || 3, dims.d || 3); break;
     }
-    var material = new THREE.MeshPhongMaterial({
-      color: new THREE.Color(shapeColor),
+    var baseColor = new THREE.Color(shapeColor);
+    var material = geoApplyCrystalShader(THREE, new THREE.MeshPhongMaterial({
+      color: baseColor,
+      specular: new THREE.Color(0xfff4e0),
+      emissive: baseColor,
+      emissiveIntensity: opacity < 1 ? 0.14 : 0.08,
       wireframe: wireframe,
       transparent: opacity < 1,
       opacity: opacity,
-      shininess: 80,
+      side: opacity < 1 ? THREE.DoubleSide : THREE.FrontSide,
+      shininess: 112,
       flatShading: false
-    });
+    }), { wireframe: wireframe, fresnelStrength: 0.58, contourStrength: 0.24 });
     var mesh = new THREE.Mesh(geometry, material);
     mesh.castShadow = true;
-    // Subtle edge overlay — makes faces, edges and vertices legible at a glance
+    // Luminous crisp edge overlay — makes faces, edges and vertices legible at a glance
     // (this is a geometry tool: the edge skeleton IS the content). Skipped in
     // wireframe mode, where the whole mesh already renders as lines.
     if (!wireframe) {
       var bgColor = gs.scene && gs.scene.background && gs.scene.background.isColor ? gs.scene.background : null;
       var edgeLuma = bgColor ? (0.299 * bgColor.r + 0.587 * bgColor.g + 0.114 * bgColor.b) : 0.1;
-      var edgeColor = edgeLuma < 0.45 ? 0xffffff : 0x0f172a;
-      var edgeOpacity = edgeLuma < 0.45 ? 0.36 : 0.42;
+      var edgeColor = edgeLuma < 0.45 ? 0xf8fafc : 0x0f172a;
+      var edgeOpacity = edgeLuma < 0.45 ? 0.50 : 0.48;
+      var edgeThreshold = (shapeType === 'box' || shapeType === 'pyramid' || shapeType === 'prism') ? 16 : 25;
       var edgeLines = new THREE.LineSegments(
-        new THREE.EdgesGeometry(geometry, 25),
+        new THREE.EdgesGeometry(geometry, edgeThreshold),
         new THREE.LineBasicMaterial({ color: edgeColor, transparent: true, opacity: edgeOpacity, depthWrite: false })
       );
       mesh.add(edgeLines);
@@ -3012,14 +3240,41 @@ window.StemLab = window.StemLab || {
     anchor.position.set(pos[0] || 0, pos[1] || 0, pos[2] || 0);
     anchor.rotation.set((rot[0] || 0) * Math.PI / 180, (rot[1] || 0) * Math.PI / 180, (rot[2] || 0) * Math.PI / 180);
     anchor.userData = anchor.userData || {}; anchor.userData.isGeoSculptSliceGuide = true;
-    var material = new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.48, side: THREE.DoubleSide, depthTest: false, depthWrite: false });
+    var material = (!geoIsContrastMode() && typeof THREE.ShaderMaterial === 'function')
+      ? geoMakeLaserSliceShader(THREE, { color: 0xfacc15, scanColor: 0x38bdf8, opacity: 0.56 })
+      : new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.48, side: THREE.DoubleSide, depthTest: false, depthWrite: false });
     var plane = new THREE.Mesh(geometry, material);
     if (study.shape === 'torus') { plane.position.z = study.offset || 0; }
     else { plane.position.y = study.offset || 0; plane.rotation.x = -Math.PI / 2; }
     plane.renderOrder = 9996;
     plane.userData = plane.userData || {}; plane.userData.isGeoSculptSliceGuide = true; plane.userData.geoSculptSliceArea = study.area;
     plane.raycast = function() {};
-    anchor.add(plane); group.add(anchor);
+    anchor.add(plane);
+    // Vivid outer glow halo + luminous laser rim around the live sculpt cross-section plane
+    try {
+      var haloMat = new THREE.MeshBasicMaterial({ color: 0xfef08a, transparent: true, opacity: 0.20, side: THREE.DoubleSide, depthTest: false, depthWrite: false });
+      var haloPlane = new THREE.Mesh(geometry.clone ? geometry.clone() : geometry, haloMat);
+      haloPlane.position.copy(plane.position);
+      haloPlane.rotation.copy(plane.rotation);
+      haloPlane.scale.set(1.045, 1.045, 1.045);
+      haloPlane.renderOrder = 9995;
+      haloPlane.userData = { isGeoSculptSliceGuide: true };
+      haloPlane.raycast = function() {};
+      anchor.add(haloPlane);
+      if (THREE.EdgesGeometry && THREE.LineSegments && THREE.LineBasicMaterial) {
+        var sliceRim = new THREE.LineSegments(
+          new THREE.EdgesGeometry(geometry),
+          new THREE.LineBasicMaterial({ color: 0xfef9c3, transparent: true, opacity: 0.94, depthTest: false, depthWrite: false })
+        );
+        sliceRim.position.copy(plane.position);
+        sliceRim.rotation.copy(plane.rotation);
+        sliceRim.renderOrder = 9997;
+        sliceRim.userData = { isGeoSculptSliceGuide: true };
+        sliceRim.raycast = function() {};
+        anchor.add(sliceRim);
+      }
+    } catch (e) {}
+    group.add(anchor);
     return anchor;
   }
   // ── Transparent-sort fix (PURE transform, world position unchanged) ──────────
@@ -3122,6 +3377,7 @@ window.StemLab = window.StemLab || {
         // depthTest off — so it stays findable without fighting for pixels.
         mesh = new THREE.Mesh(rectGeo, new THREE.MeshStandardMaterial({
           color: color, side: THREE.DoubleSide, transparent: !solidSurfaces, opacity: solidSurfaces ? 1 : 0.75,
+          roughness: 0.28, metalness: 0.08, emissive: color, emissiveIntensity: isSel ? 0.16 : 0.06,
           polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1
         }));
         // Border
@@ -3162,7 +3418,7 @@ window.StemLab = window.StemLab || {
         prismGeo.computeVertexNormals();
         // side: DoubleSide to match every other solid here — a student looking up at
         // the base from under the grid should see a face, not straight through it.
-        mesh = new THREE.Mesh(prismGeo, new THREE.MeshStandardMaterial({ color: color, transparent: !solidSurfaces, opacity: solidSurfaces ? 1 : 0.7, side: THREE.DoubleSide }));
+        mesh = new THREE.Mesh(prismGeo, geoApplyCrystalShader(THREE, new THREE.MeshStandardMaterial({ color: color, transparent: !solidSurfaces, opacity: solidSurfaces ? 1 : 0.7, side: THREE.DoubleSide, roughness: 0.28, metalness: 0.08, emissive: color, emissiveIntensity: isSel ? 0.16 : 0.06 }), { fresnelStrength: 0.48, contourStrength: 0.18 }));
         var prismGroup = new THREE.Group();
         prismGroup.add(mesh); prismGroup.add(edgeLines(prismGeo, isSel));
         mesh = prismGroup;
@@ -3180,7 +3436,7 @@ window.StemLab = window.StemLab || {
         var pyGeo = new THREE.BufferGeometry();
         pyGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertsPy), 3));
         pyGeo.computeVertexNormals();
-        mesh = new THREE.Mesh(pyGeo, new THREE.MeshStandardMaterial({ color: color, transparent: !solidSurfaces, opacity: solidSurfaces ? 1 : 0.72, side: THREE.DoubleSide }));
+        mesh = new THREE.Mesh(pyGeo, geoApplyCrystalShader(THREE, new THREE.MeshStandardMaterial({ color: color, transparent: !solidSurfaces, opacity: solidSurfaces ? 1 : 0.72, side: THREE.DoubleSide, roughness: 0.28, metalness: 0.08, emissive: color, emissiveIntensity: isSel ? 0.16 : 0.06 }), { fresnelStrength: 0.48, contourStrength: 0.18 }));
         var pyGroup = new THREE.Group();
         pyGroup.add(mesh); pyGroup.add(edgeLines(pyGeo, isSel));
         mesh = pyGroup;
@@ -3190,7 +3446,7 @@ window.StemLab = window.StemLab || {
         var rvGeo = new THREE.BufferGeometry();
         rvGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(rvTris), 3));
         rvGeo.computeVertexNormals();
-        mesh = new THREE.Mesh(rvGeo, new THREE.MeshStandardMaterial({ color: color, transparent: !solidSurfaces, opacity: solidSurfaces ? 1 : 0.72, side: THREE.DoubleSide, flatShading: false }));
+        mesh = new THREE.Mesh(rvGeo, new THREE.MeshStandardMaterial({ color: color, transparent: !solidSurfaces, opacity: solidSurfaces ? 1 : 0.72, side: THREE.DoubleSide, flatShading: false, roughness: 0.26, metalness: 0.10, emissive: color, emissiveIntensity: isSel ? 0.16 : 0.06 }));
         var rvGroup = new THREE.Group();
         rvGroup.add(mesh);
         if (isSel && customColor != null) rvGroup.add(edgeLines(rvGeo, true));
@@ -3259,7 +3515,10 @@ window.StemLab = window.StemLab || {
     // rejected by the prism's own front face whenever the prism happened to draw
     // first, and the cross-section simply didn't appear. Reading it THROUGH the
     // translucent solid is the whole point of the visual, so it draws on top.
-    var sliceFill = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false, depthTest: false }));
+    var sliceFillMat = (!geoIsContrastMode() && typeof THREE.ShaderMaterial === 'function')
+      ? geoMakeLaserSliceShader(THREE, { color: 0xfacc15, scanColor: 0x38bdf8, opacity: 0.60 })
+      : new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
+    var sliceFill = new THREE.Mesh(geo, sliceFillMat);
     sliceFill.renderOrder = 4000;
     group.add(sliceFill);
     // bright outline loop
@@ -3267,6 +3526,17 @@ window.StemLab = window.StemLab || {
     var sliceLine = new THREE.Line(loop, new THREE.LineBasicMaterial({ color: 0xfde047, transparent: true, depthTest: false }));
     sliceLine.renderOrder = 4001;
     group.add(sliceLine);
+    // Vivid inner laser-caliper perimeter glow & diagonal cross-hair cues
+    var innerMid = vec3Scale(vec3Add(c0, c2), 0.5);
+    var insetPt = function(pt) { return vec3Add(innerMid, vec3Scale(vec3Sub(pt, innerMid), 0.94)); };
+    var innerLoop = new THREE.BufferGeometry().setFromPoints([V(insetPt(c0)), V(insetPt(c1)), V(insetPt(c2)), V(insetPt(c3)), V(insetPt(c0))]);
+    var sliceInnerGlow = new THREE.Line(innerLoop, new THREE.LineBasicMaterial({ color: 0xfef9c3, transparent: true, opacity: 0.88, depthTest: false, depthWrite: false }));
+    sliceInnerGlow.renderOrder = 4002;
+    group.add(sliceInnerGlow);
+    var diagGeo = new THREE.BufferGeometry().setFromPoints([V(c0), V(c2), V(c1), V(c3)]);
+    var sliceDiags = new THREE.LineSegments(diagGeo, new THREE.LineBasicMaterial({ color: 0xfef08a, transparent: true, opacity: 0.34, depthTest: false, depthWrite: false }));
+    sliceDiags.renderOrder = 4001;
+    group.add(sliceDiags);
     return group;
   }
 
@@ -3442,7 +3712,8 @@ window.StemLab = window.StemLab || {
       return (function() {
 
       // ── State ──
-      var gd = (labToolData && labToolData.geoSandbox) || {};
+      var _rawGd = labToolData && labToolData.geoSandbox;
+      var gd = (_rawGd && typeof _rawGd === 'object' && !Array.isArray(_rawGd)) ? _rawGd : {};
       var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox || {}, (function() { var o = {}; o[key] = val; return o; })()) }); }); };
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
@@ -3486,14 +3757,15 @@ window.StemLab = window.StemLab || {
         }
       };
 
-      var shape = gd.shape || 'box';
+      var shape = (typeof gd.shape === 'string' && gd.shape.trim()) ? gd.shape : 'box';
       var dims = geoNormalizeShapeDims(shape, gd.dims);
-      var shapeColor = gd.color || '#60a5fa';
-      var wireframe = gd.wireframe || false;
-      var opacity = gd.opacity != null ? gd.opacity : 1;
+      var shapeColor = (typeof gd.color === 'string' && gd.color.trim()) ? gd.color : '#60a5fa';
+      var wireframe = !!gd.wireframe;
+      var opacity = (typeof gd.opacity === 'number' && isFinite(gd.opacity)) ? Math.max(0.1, Math.min(1, gd.opacity)) : 1;
 
       // v2 additions ─────────────────────────────────────────────
-      var mode = gd.mode || 'single';
+      var mode = ['single','stretch','sculpt'].indexOf(gd.mode) >= 0 ? gd.mode : 'single';
+      var isGeoLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
       var workspacePath = gd.workspacePath === 'lesson' && mode === 'stretch' ? 'lesson' : 'free';
       var workspacePanel = ['build','learn','settings'].indexOf(gd.workspacePanel) >= 0 ? gd.workspacePanel : 'build';
       var focusView = !!gd.focusView;
@@ -5651,7 +5923,7 @@ window.StemLab = window.StemLab || {
         } catch(e) {}
         themeBg = gd.canvasBackground === 'paper' ? '#e9eef4' : gd.canvasBackground === 'midnight' ? '#080f1e' : '#122034';
         if(window._geoScene.grid)window._geoScene.grid.visible=gd.showGrid!==false;
-        if (typeof window._geoScene.setSceneTheme === 'function') window._geoScene.setSceneTheme(gd.canvasBackground === 'paper');
+        if (typeof window._geoScene.setSceneTheme === 'function') window._geoScene.setSceneTheme(gd.canvasBackground === 'paper', gd.canvasBackground);
         if (window._geoScene && window._geoScene.scene) {
           if (window._geoScene.scene.background && window._geoScene.scene.background.isColor) {
             window._geoScene.scene.background.setStyle(themeBg);
@@ -5820,7 +6092,14 @@ window.StemLab = window.StemLab || {
       return h('div', { id: 'allo-geo-sandbox', className: 'geo-studio', 'data-density':gd.controlDensity==='compact'?'compact':'comfortable' },
 
         // Header row
-        h('header',{className:'geo-studio-header'},h('div',{className:'geo-brand'},h('span',{className:'geo-brand-mark','aria-hidden':'true'},'◇'),h('div',null,h('h2',null,t('stem.geosandbox.studio_title','Geometry Sandbox')),h('p',null,t('stem.geosandbox.studio_subtitle','A little space for big spatial ideas.')))),h('div',{className:'geo-header-actions'},h('button', { 'aria-label': t('stem.geosandbox.challenge', 'Challenge'),
+        h('header',{className:'geo-studio-header'},h('div',{className:'geo-brand'},h('span',{className:'geo-brand-mark','aria-hidden':'true'},
+          h('svg',{width:28,height:28,viewBox:'0 0 36 36',fill:'none'},
+            h('polygon',{points:'18,4 31,11 31,25 18,32 5,25 5,11',stroke:'#7dd3fc',strokeWidth:2,fill:'rgba(56,189,248,0.16)'}),
+            h('polyline',{points:'5,11 18,18 31,11',stroke:'#bae6fd',strokeWidth:1.8,fill:'none'}),
+            h('line',{x1:18,y1:18,x2:18,y2:32,stroke:'#38bdf8',strokeWidth:1.8}),
+            h('circle',{cx:18,cy:18,r:2.3,fill:'#fde047'})
+          )
+        ),h('div',null,h('span',{className:'geo-subject-badge'},t('stem.geosandbox.subject_badge','3D Solid Geometry & Spatial Modeling')),h('h2',null,t('stem.geosandbox.studio_title','Geometry Sandbox')),h('p',null,t('stem.geosandbox.studio_subtitle','A little space for big spatial ideas.')))),h('div',{className:'geo-header-actions'},h('button', { 'aria-label': t('stem.geosandbox.challenge', 'Challenge'),
               onClick: generateChallenge,
               title: t('stem.geosandbox.challenge_mode_c', 'Challenge Mode [C]'),
               className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-700 to-orange-800 shadow-md shadow-amber-700/20 hover:from-amber-800 hover:to-orange-900' : 'text-amber-100 bg-amber-700/30 border border-amber-300/70 hover:bg-amber-700/40')
@@ -5887,6 +6166,82 @@ window.StemLab = window.StemLab || {
               onClick: function() { cleanupScene(); setStemLabTool(null); },
               className: 'px-3 py-1.5 text-xs font-bold text-slate-300 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
             }, t('stem.geosandbox.back_2', '\u2190 Back')))),
+
+        // ── Spatial Workbench Telemetry & Dimensional Escalation Deck ──
+        (function() {
+          var selStretchObj = (construction && Array.isArray(construction.objects))
+            ? construction.objects.find(function(o) { return o && o.id === construction.selection; })
+            : null;
+          var activeDimStage = mode === 'stretch'
+            ? (selStretchObj ? (selStretchObj.type === 'point' ? 0 : selStretchObj.type === 'segment' ? 1 : selStretchObj.type === 'rect' ? 2 : 3) : 0)
+            : 3;
+          var objCount = mode === 'stretch'
+            ? ((construction && Array.isArray(construction.objects)) ? construction.objects.length : 0)
+            : (mode === 'sculpt' ? ((sculptRecipe && Array.isArray(sculptRecipe.parts)) ? sculptRecipe.parts.length : 0) : 1);
+          var modeLabel = mode === 'stretch'
+            ? t('stem.geosandbox.mode_label_stretch', 'Dimensional Stretch')
+            : (mode === 'sculpt' ? t('stem.geosandbox.mode_label_sculpt', '3D Sculpt Studio') : t('stem.geosandbox.mode_label_single', 'Single Solid'));
+          var switchGeoMode = setGeoMode;
+          var geoStarters = [
+            { id: 'starter_box', label: t('stem.geosandbox.starter_cube', 'Starter: Cube Explorer'), active: mode === 'single' && shape === 'box', run: function() { switchGeoMode('single'); upd('shape', 'box'); } },
+            { id: 'starter_cyl', label: t('stem.geosandbox.starter_cylinder', 'Starter: Cylinder Lab'), active: mode === 'single' && shape === 'cylinder', run: function() { switchGeoMode('single'); upd('shape', 'cylinder'); } },
+            { id: 'starter_stretch', label: t('stem.geosandbox.starter_stretch', 'Starter: Stretch 0D→3D'), active: mode === 'stretch', run: function() { switchGeoMode('stretch'); } },
+            { id: 'starter_sculpt', label: t('stem.geosandbox.starter_sculpt', 'Starter: Sculpt Studio'), active: mode === 'sculpt', run: function() { if (!(window.AlloModules && window.AlloModules.Prim3D)) ensurePrim3d(function(ok) { if (ok) setPrim3dReady(true); }); switchGeoMode('sculpt'); } }
+          ];
+          return h('section', { className: 'geo-hero-deck', 'aria-label': t('stem.geosandbox.studio_overview_aria', 'Geometry Sandbox live workspace summary') },
+            h('div', { className: 'geo-telemetry-strip', role: 'group', 'aria-label': t('stem.geosandbox.telemetry_aria', 'Active geometry telemetry') },
+              h('span', { className: 'geo-telemetry-pill' }, t('stem.geosandbox.pill_mode', 'Mode:') + ' ' + modeLabel),
+              h('span', { className: 'geo-telemetry-pill' }, mode === 'single'
+                ? (t('stem.geosandbox.pill_solid', 'Solid:') + ' ' + String(shape).toUpperCase())
+                : (t('stem.geosandbox.pill_elements', 'Elements:') + ' ' + objCount)),
+              h('span', { className: 'geo-telemetry-pill' }, t('stem.geosandbox.pill_units', 'Units:') + ' ' + unitId),
+              h('span', { className: 'geo-telemetry-pill' }, wireframe ? t('stem.geosandbox.pill_wireframe', 'Mesh: Wireframe') : t('stem.geosandbox.pill_shaded', 'Mesh: Shaded'))
+            ),
+            h('div', { className: 'geo-dim-schematic' },
+              h('svg', {
+                viewBox: '0 0 580 54',
+                style: { width: '100%', height: 'auto', maxHeight: 56, display: 'block' },
+                role: 'img',
+                'aria-label': t('stem.geosandbox.dim_schematic_aria', 'Dimensional geometry progression from 0D point to 1D segment, 2D plane, and 3D solid')
+              },
+                h('line', { x1: 126, y1: 27, x2: 156, y2: 27, stroke: '#7dd3fc', strokeWidth: 2, strokeDasharray: '4 3' }),
+                h('line', { x1: 272, y1: 27, x2: 302, y2: 27, stroke: '#7dd3fc', strokeWidth: 2, strokeDasharray: '4 3' }),
+                h('line', { x1: 418, y1: 27, x2: 448, y2: 27, stroke: '#7dd3fc', strokeWidth: 2, strokeDasharray: '4 3' }),
+                [
+                  { x: 10, w: 116, tag: '0D', name: t('stem.geosandbox.dim_point', 'Point'), idx: 0 },
+                  { x: 156, w: 116, tag: '1D', name: t('stem.geosandbox.dim_segment', 'Segment'), idx: 1 },
+                  { x: 302, w: 116, tag: '2D', name: t('stem.geosandbox.dim_plane', 'Plane'), idx: 2 },
+                  { x: 448, w: 122, tag: '3D', name: t('stem.geosandbox.dim_solid', 'Solid'), idx: 3 }
+                ].map(function(node) {
+                  var on = activeDimStage === node.idx;
+                  return h('g', { key: node.tag },
+                    h('rect', {
+                      x: node.x, y: 6, width: node.w, height: 42, rx: 9,
+                      fill: on ? 'rgba(56,189,248,0.28)' : 'rgba(13,23,39,0.85)',
+                      stroke: on ? '#bae6fd' : 'rgba(125,211,252,0.38)',
+                      strokeWidth: on ? 2 : 1.2
+                    }),
+                    h('text', { x: node.x + node.w / 2, y: 22, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, node.tag),
+                    h('text', { x: node.x + node.w / 2, y: 38, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, node.name)
+                  );
+                })
+              )
+            ),
+            (!gd.challengeMode && workspacePath !== 'lesson' && !isGeoLocked) && h('div', { className: 'geo-starter-bar', role: 'group', 'aria-label': t('stem.geosandbox.starters_aria', 'Quick solid geometry starters') },
+              h('span', { className: 'geo-starter-label' }, t('stem.geosandbox.starters_label', 'Quick Starters:')),
+              geoStarters.map(function(st) {
+                return h('button', {
+                  key: st.id,
+                  type: 'button',
+                  className: 'geo-starter-chip',
+                  'data-active': st.active ? 'true' : 'false',
+                  'aria-pressed': st.active ? 'true' : 'false',
+                  onClick: st.run
+                }, st.label);
+              })
+            )
+          );
+        })(),
 
         // ── Badge panel ──
         showBadges && h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/30 backdrop-blur-md rounded-xl p-4 border border-purple-500/30' },

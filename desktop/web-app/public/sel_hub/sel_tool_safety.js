@@ -71,9 +71,13 @@ window.SelHub = window.SelHub || {
     if (!_audioCtx) {
       try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
     }
+    if (_audioCtx && _audioCtx.state === 'suspended') {
+      try { _audioCtx.resume(); } catch(e) {}
+    }
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
       var osc = ac.createOscillator();
@@ -655,8 +659,8 @@ window.SelHub = window.SelHub || {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _safT = (ctx && ctx.theme) || {};
       var _safHC = !!_safT.isContrast, _safL = !_safHC && !_safT.isDark;
-      var _saf_BGL = {'#1e293b':'#ffffff','#7f1d1d':'#fee2e2','#0f172a':'#f8fafc'}, _saf_BGH = {'#1e293b':'#000000','#7f1d1d':'#000000','#1e3a5f':'#000000','#3b82f6':'#000000','#0f172a':'#000000','#dc2626':'#000000','#fff':'#000000','#fef2f2':'#000000'};
-      var _saf_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#fca5a5':'#991b1b','#818cf8':'#4338ca','#4ade80':'#15803d','#93c5fd':'#1e3a8a','#e2e8f0':'#1e293b','#f87171':'#b91c1c','#fbbf24':'#854d0e'}, _saf_FGH = {'#ef4444':'#ffff00','#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#fca5a5':'#ffff00','#fde2e2':'#ffff00','#818cf8':'#ffff00','#4ade80':'#ffff00','#93c5fd':'#ffff00','#60a5fa':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#f87171':'#ffff00','#fbbf24':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#7f1d1d':'#ffff00'};
+      var _saf_BGL = {'#1e293b':'#ffffff','#7f1d1d':'#fee2e2','#0f172a':'#f8fafc','#1e3a5f':'#dbeafe'}, _saf_BGH = {'#1e293b':'#000000','#7f1d1d':'#000000','#1e3a5f':'#000000','#3b82f6':'#000000','#0f172a':'#000000','#dc2626':'#000000','#fff':'#000000','#fef2f2':'#000000'};
+      var _saf_FGL = {'#94a3b8':'#475569','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#fca5a5':'#991b1b','#fecaca':'#991b1b','#fde2e2':'#7f1d1d','#818cf8':'#4338ca','#4ade80':'#15803d','#22c55e':'#15803d','#93c5fd':'#1e3a8a','#e2e8f0':'#1e293b','#f87171':'#b91c1c','#ef4444':'#b91c1c','#fbbf24':'#854d0e','#f59e0b':'#92400e'}, _saf_FGH = {'#ef4444':'#ffff00','#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#fca5a5':'#ffff00','#fecaca':'#ffff00','#fde2e2':'#ffff00','#818cf8':'#ffff00','#4ade80':'#ffff00','#22c55e':'#ffff00','#93c5fd':'#ffff00','#60a5fa':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#f87171':'#ffff00','#fbbf24':'#ffff00','#f59e0b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#7f1d1d':'#ffff00','#334155':'#ffff00'};
       var _saf_BDL = {'#334155':'#e2e8f0','#0f172a':'#cbd5e1','#475569':'#cbd5e1'}, _saf_BDH = {'#334155':'#ffff00','#dc2626':'#ffff00','#3b82f6':'#ffff00','#0f172a':'#ffff00','#fecaca':'#ffff00','#475569':'#ffff00'};
       var _safBg = function(h){ return _safHC ? (_saf_BGH[h]||h) : (_safL ? (_saf_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
@@ -798,8 +802,24 @@ window.SelHub = window.SelHub || {
         var emViewed         = d.emViewed || {};
         var emExpanded       = d.emExpanded || null;
 
-        // Tab visits tracking for Safety Educator badge
-        var tabsVisited      = d.tabsVisited || {};
+        // Tab visits tracking for Safety Educator badge (seed initial 'learn' tab)
+        var tabsVisited      = Object.assign({ learn: true }, d.tabsVisited || {});
+
+        var _checkSafetyText = function(text, scope) {
+          if (!text || typeof text !== 'string') return false;
+          var res = (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function')
+            ? window.SelHub.safeRehearseCheck(text, { toolId: 'safety_' + (scope || 'reflection'), onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+            : { action: 'continue' };
+          if (res && res.action === 'block') {
+            upd('_lastTier', 3);
+            if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+              try { window.SelHub.showCrisisModal({ toolName: 'Safety & Wellbeing', contentSnippet: text }); } catch (_) {}
+            }
+            announceCrisis('Support resources are shown. Call or text 988 or talk to a trusted adult right now.');
+            return true;
+          }
+          return false;
+        };
 
         // ── Helpers ──
         var ACCENT = '#ef4444';
@@ -819,11 +839,11 @@ window.SelHub = window.SelHub || {
             addToast(badge.icon + ' Badge earned: ' + badge.name + '!', 'success');
             awardXP(25);
           }
-          // Check safety champion (7+ badges)
+          // Check safety champion (7+ badges) synchronously
           if (badgeId !== 'safety_champion') {
             var count = Object.keys(newBadges).length;
             if (count >= 7 && !newBadges.safety_champion) {
-              setTimeout(function() { tryAwardBadge('safety_champion'); }, 3200);
+              tryAwardBadge('safety_champion');
             }
           }
         }
@@ -852,15 +872,16 @@ window.SelHub = window.SelHub || {
           var next = tabs.filter(function(tab) { return tab.id === tabId; })[0];
           if (!next) return;
           var patch = { activeTab: next.id };
+          var newVisited = tabsVisited;
           if (!tabsVisited[next.id]) {
-            var newVisited = Object.assign({}, tabsVisited);
+            newVisited = Object.assign({}, tabsVisited);
             newVisited[next.id] = true;
             patch.tabsVisited = newVisited;
-            if (Object.keys(newVisited).length >= 10) {
-              setTimeout(function() { tryAwardBadge('safety_educator'); }, 0);
-            }
           }
           upd(patch);
+          if (Object.keys(newVisited).length >= tabs.length) {
+            tryAwardBadge('safety_educator');
+          }
           if (soundEnabled) sfxClick();
           if (announceToSR) announceToSR(next.label + ' tab selected');
         }
@@ -927,23 +948,23 @@ window.SelHub = window.SelHub || {
             digital:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83D\uDD10', title: 'Digital \u2014 online has different rules',              hint: 'Things to never share: address, school name, photos with location, real-time location. Strangers age + claim friends; \u201Cdon\u2019t tell your parents\u201D = the loudest red flag. NCMEC + Common Sense Media research-backed.' },
             circle:    { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDC9A', title: 'My Circle \u2014 trusted adults are EVERYTHING',          hint: 'Pick 5 adults you can go to. List them BEFORE you need them \u2014 finding someone in crisis is too late. The Circle of Trust idea (Ross Greene) underpins most safe-school programs.' },
             scenarios: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 walk through it before it happens',     hint: 'Behavioral rehearsal (Bandura) lowers in-the-moment freezing. Going through what-ifs with a trusted adult \u2014 lost in store, separated from group, online stranger \u2014 builds the script you\u2019ll use under stress.' },
-            assertive: { accent: _safBg('#dc2626'), soft: 'rgba(220,38,38,0.14)',  icon: '\uD83D\uDCAA', title: 'Assertive \u2014 your NO matters',                       hint: 'Passive (\u201Cmaybe\u201D), aggressive (\u201Cback off!\u201D), assertive (\u201CI\u2019m not okay with that\u201D). Assertive is the only one that reliably keeps both safety and relationships intact. Practice loud + neutral.' },
+            assertive: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\uD83D\uDCAA', title: 'Assertive \u2014 your NO matters',                       hint: 'Passive (\u201Cmaybe\u201D), aggressive (\u201Cback off!\u201D), assertive (\u201CI\u2019m not okay with that\u201D). Assertive is the only one that reliably keeps both safety and relationships intact. Practice loud + neutral.' },
             quiz:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83E\uDDE0', title: 'Quiz \u2014 self-knowledge check',                       hint: 'When do you tend to override gut feelings? When do you tend to go along to be polite? Both are normal responses; both have safer alternatives. The pattern recognition is the work.' },
             flags:     { accent: '#ef4444', soft: 'rgba(239,68,68,0.14)',  icon: '\uD83D\uDEA9', title: 'Flags \u2014 the patterns that mean LEAVE',              hint: 'Isolation, secrets, age gaps, gifts that come with strings, \u201Cnobody understands you like I do.\u201D Naming patterns lets the gut feeling become a checklist. Trust the discomfort even before you can articulate why.' },
             emergency: { accent: '#b91c1c', soft: 'rgba(185,28,28,0.14)',  icon: '\uD83D\uDE92', title: 'Emergency \u2014 what to do RIGHT NOW',                  hint: '911 (US), 988 (Suicide + Crisis Lifeline), text HOME to 741741 (Crisis Text Line), 1-800-422-4453 (Childhelp). Knowing the number IS half the work \u2014 the other half is permission to dial.' },
             plan:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDCCB', title: 'Plan \u2014 your written safety steps',                  hint: 'Pre-commit (Gollwitzer 1999): \u201CIf X happens, I\u2019ll do Y, then call Z.\u201D Doubles follow-through over good intentions alone. Suicide-prevention safety plans use the same template (Stanley + Brown 2012).' },
             badges:    { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones in self-protection',           hint: 'Skill-of-the-week, scenarios completed, trusted-adult conversations had. Acknowledges competence without coercion (Deci + Ryan 1985). The badges are the side effect; the conversations are the point.' }
           };
-          var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
+          var _selHdrInk = function(c) { if (_safHC) return '#ffff00'; if (_safL) return _safFg(c); if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
           var meta = TAB_META[activeTab] || TAB_META.learn;
           return h('div', {
             style: {
               margin: '8px 12px 12px',
               padding: '12px 14px',
               borderRadius: 12,
-              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
-              border: '1px solid ' + meta.accent + '55',
-              borderLeft: '4px solid ' + meta.accent,
+              background: _safHC ? '#000000' : (_safL ? ('linear-gradient(135deg, ' + meta.soft + ' 0%, #f8fafc 100%)') : ('linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a')),
+              border: '1px solid ' + (_safHC ? '#ffff00' : (meta.accent + '55')),
+              borderLeft: '4px solid ' + (_safHC ? '#ffff00' : meta.accent),
               display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
             }
           },
@@ -1082,7 +1103,7 @@ window.SelHub = window.SelHub || {
               h('button', {
                 type: 'button',
                 onClick: function() { upd('showBadgePopup', null); },
-                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.14)', color: '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: _safHC ? '1px solid #ffff00' : 'none', background: _safHC ? '#000000' : _safSolid(ACCENT), color: _safHC ? '#ffff00' : '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
               }, 'Nice')
               )
             );
@@ -1102,7 +1123,6 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontWeight: 700, color: _safFg('#fca5a5'), fontSize: 13, marginBottom: 6 } }, '\uD83D\uDCDE If you need help RIGHT NOW:'),
             _safeRows('crisis', CRISIS_RESOURCES).map(function(cr, i) {
               return h('div', { key: i, style: { padding: '4px 0', fontSize: 12, color: _safFg('#fde2e2') } },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
                 h('span', { style: { fontWeight: 600 } }, cr.icon + ' ' + cr.name + ': '),
                 h('span', null, cr.contact)
               );
@@ -1121,9 +1141,12 @@ window.SelHub = window.SelHub || {
                   newViewed[topic.id] = true;
                   upd('viewedTopics', newViewed);
                   if (soundEnabled) sfxReveal();
-                  // Check safety scholar badge
+                  // Check safety scholar & topics explorer badges
                   var viewedCount = Object.keys(newViewed).length;
-                  if (viewedCount >= topics.length) tryAwardBadge('safety_scholar');
+                  if (viewedCount >= topics.length) {
+                    tryAwardBadge('safety_scholar');
+                    if (Object.keys(viewedBoundaryTypes).length >= BOUNDARY_TYPES.length) tryAwardBadge('topics_explorer');
+                  }
                   // Check safe online badge
                   if (band === 'elementary' && (topic.id === 'online_safety' || newViewed.online_safety)) tryAwardBadge('safe_online');
                   if (band === 'middle' && (topic.id === 'digital_safety' || newViewed.digital_safety)) tryAwardBadge('safe_online');
@@ -1131,7 +1154,7 @@ window.SelHub = window.SelHub || {
               },
               style: {
                 margin: '0 16px 10px', padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
-                background: isExpanded ? _safBg('#1e293b') : '#0f172a', border: '1px solid ' + (isExpanded ? ACCENT_MED : _safBg('#1e293b')),
+                background: isExpanded ? _safBg('#1e293b') : _safBg('#0f172a'), border: '1px solid ' + (isExpanded ? ACCENT_MED : _safBg('#1e293b')),
                 transition: 'all 0.2s'
               }
             },
@@ -1187,7 +1210,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: {
                   margin: '0 16px 10px', padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
-                  background: isExpanded ? _safBg('#1e293b') : '#0f172a', border: '1px solid ' + (isExpanded ? '#6366f155' : _safBg('#1e293b')),
+                  background: isExpanded ? _safBg('#1e293b') : _safBg('#0f172a'), border: '1px solid ' + (isExpanded ? '#6366f155' : _safBg('#1e293b')),
                   transition: 'all 0.2s'
                 }
               },
@@ -1255,8 +1278,8 @@ window.SelHub = window.SelHub || {
               h('span', null, '\uD83E\uDDE0 Already knew: ' + dsKnewCount),
               h('span', null, '\uD83D\uDCA1 Learned something new: ' + dsLearnedCount)
             ),
-            h('div', { style: { height: 6, borderRadius: 3, background: _safBg('#1e293b') } },
-              h('div', { style: { height: '100%', borderRadius: 3, background: _safBg('#3b82f6'), width: Math.round((dsViewedCount / 8) * 100) + '%', transition: 'width 0.3s' } })
+            h('div', { role: 'progressbar', 'aria-label': 'Digital safety cards explored', 'aria-valuemin': 0, 'aria-valuemax': 8, 'aria-valuenow': dsViewedCount, style: { height: 6, borderRadius: 3, background: _safBg('#1e293b') } },
+              h('div', { style: { height: '100%', borderRadius: 3, background: _safHC ? '#ffff00' : '#3b82f6', width: Math.round((dsViewedCount / 8) * 100) + '%', transition: 'width 0.3s' } })
             )
           );
 
@@ -1278,7 +1301,7 @@ window.SelHub = window.SelHub || {
               },
               style: {
                 margin: '0 16px 10px', padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
-                background: isExpanded ? _safBg('#1e293b') : '#0f172a', border: '1px solid ' + (isExpanded ? '#3b82f655' : _safBg('#1e293b')),
+                background: isExpanded ? _safBg('#1e293b') : _safBg('#0f172a'), border: '1px solid ' + (isExpanded ? '#3b82f655' : _safBg('#1e293b')),
                 transition: 'all 0.2s'
               }
             },
@@ -1369,7 +1392,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: i, style: { padding: '6px 0', borderBottom: i < CRISIS_RESOURCES.length - 1 ? '1px solid #991b1b' : 'none' } },
                 h('div', { style: { fontWeight: 600, fontSize: 13, color: _safFg('#fde2e2') } }, cr.icon + ' ' + cr.name),
                 h('div', { style: { fontSize: 12, color: _safFg('#fca5a5') } }, cr.contact),
-                h('div', { style: { fontSize: 11, color: '#fecaca' } }, cr.desc)
+                h('div', { style: { fontSize: 11, color: _safFg('#fecaca') } }, cr.desc)
               );
             }),
             !crisisViewed && h('button', { 'aria-label': 'I have seen these resources',
@@ -1405,7 +1428,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
               categories.filter(function(c) { return c !== 'hotline'; }).map(function(cat) {
                 var isActive = newAdultCat === cat;
-                return h('button', { 'aria-label': 'Add to My Circle',
+                return h('button', { 'aria-label': 'Category: ' + catLabels[cat], 'aria-pressed': isActive,
                   key: cat,
                   onClick: function() { upd('newAdultCat', cat); },
                   style: {
@@ -1420,10 +1443,12 @@ window.SelHub = window.SelHub || {
                 if (!newAdultName.trim()) { if (typeof addToast === 'function') addToast('Add a name first, then press the button again.', 'info'); return; }
                 var entry = { name: newAdultName.trim(), role: newAdultRole.trim(), category: newAdultCat, timestamp: Date.now() };
                 var updated = trustedAdults.concat([entry]);
-                upd({ trustedAdults: updated, newAdultName: '', newAdultRole: '' });
+                var xpCount = d.adultXpCount || 0;
+                var patch = { trustedAdults: updated, newAdultName: '', newAdultRole: '' };
+                if (xpCount < 3) { patch.adultXpCount = xpCount + 1; awardXP(10); }
+                upd(patch);
                 if (soundEnabled) sfxCorrect();
                 addToast('\uD83D\uDC9A Added ' + entry.name + ' to your Circle of Trust!', 'success');
-                awardXP(10);
                 // Circle of Trust badge
                 if (updated.length >= 3) tryAwardBadge('circle_trust');
               },
@@ -1452,7 +1477,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: i, style: { padding: '8px 12px', borderRadius: 8, background: _safBg('#0f172a'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
                   h('span', { style: { fontSize: 12, color: _safFg('#f1f5f9'), fontWeight: 500 } }, adult.name),
                   adult.role && h('span', { style: { fontSize: 11, color: _safFg('#94a3b8') } }, '(' + adult.role + ')'),
-                  h('button', { 'aria-label': 'elementary',
+                  h('button', { 'aria-label': 'Remove ' + adult.name,
                     onClick: function() {
                       var filtered = trustedAdults.filter(function(_, idx) { return idx !== trustedAdults.indexOf(adult); });
                       upd('trustedAdults', filtered);
@@ -1484,6 +1509,10 @@ window.SelHub = window.SelHub || {
             }),
             !circleSaved && circleReflect.trim().length > 10 && h('button', { 'aria-label': 'Save Reflection',
               onClick: function() {
+                if (_checkSafetyText(circleReflect, 'circle_reflection')) {
+                  upd('circleSaved', true);
+                  return;
+                }
                 upd('circleSaved', true);
                 if (soundEnabled) sfxResolve();
                 addToast('\uD83D\uDC9A Reflection saved!', 'success');
@@ -1528,13 +1557,13 @@ window.SelHub = window.SelHub || {
             h('button', { 'aria-label': 'Prev',
               onClick: function() { upd({ scenIdx: Math.max(0, scenIdx - 1), scenChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: scenIdx === 0,
-              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: _safFg(scenIdx) === 0 ? '#334155' : _safFg('#94a3b8'), cursor: scenIdx === 0 ? 'default' : 'pointer', fontSize: 12 }
+              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: scenIdx === 0 ? _safFg('#334155') : _safFg('#94a3b8'), cursor: scenIdx === 0 ? 'default' : 'pointer', fontSize: 12 }
             }, '\u25C0 Prev'),
             h('span', { style: { fontSize: 12, color: _safFg('#94a3b8') } }, (scenIdx + 1) + ' / ' + scenarios.length),
             h('button', { 'aria-label': 'Next',
               onClick: function() { upd({ scenIdx: Math.min(scenarios.length - 1, scenIdx + 1), scenChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: scenIdx === scenarios.length - 1,
-              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: _safFg(scenIdx) === scenarios.length - 1 ? '#334155' : _safFg('#94a3b8'), cursor: scenIdx === scenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
+              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: scenIdx === scenarios.length - 1 ? _safFg('#334155') : _safFg('#94a3b8'), cursor: scenIdx === scenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
             }, 'Next \u25B6'),
             h('span', { role: 'status', style: { marginLeft: 'auto', fontSize: 11, color: _safFg('#94a3b8') } }, '\u2705 ' + completedCount + '/' + scenarios.length + ' completed')
           );
@@ -1549,7 +1578,8 @@ window.SelHub = window.SelHub || {
             }, '\uD83D\uDD0A Read aloud'),
             h('div', { style: { fontWeight: 600, color: _safFg('#94a3b8'), fontSize: 12, marginBottom: 8 } }, 'What would you do?'),
             scen.choices.map(function(choice, i) {
-              var isSelected = scenChoice === i;
+              var activeChoice = scenChoice !== null ? scenChoice : (scenCompleted[scen.id] ? scenCompleted[scen.id].choice : null);
+              var isSelected = activeChoice === i;
               var isCompleted = scenCompleted[scen.id] != null;
               var ratingColors = { 1: '#ef4444', 2: '#f59e0b', 3: '#22c55e' };
               return h('div', { key: i },
@@ -1577,15 +1607,15 @@ window.SelHub = window.SelHub || {
                     upd('scenTopRatings', topCount);
                     // Badge: brave voice (3 top ratings)
                     if (topCount >= 3) tryAwardBadge('brave_voice');
-                    // Badge: ally (bystander/advocacy scenarios)
-                    var allyIds = ['ms3', 'es2', 'ms5', 'ms7', 'ms8'];
+                    // Badge: ally (bystander/advocacy scenarios across elementary & middle)
+                    var allyIds = ['es2', 'es4', 'es5', 'ms3', 'ms5', 'ms7', 'ms8'];
                     var hasAlly = allyIds.some(function(aid) { return newCompleted[aid] && newCompleted[aid].rating >= 2; });
                     if (hasAlly) tryAwardBadge('ally');
                   },
                   style: {
                     width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6, borderRadius: 8, cursor: isCompleted ? 'default' : 'pointer',
                     border: '1px solid ' + (isSelected ? ratingColors[choice.rating] + '66' : '#334155'),
-                    background: isSelected ? ratingColors[choice.rating] + '15' : '#0f172a',
+                    background: isSelected ? ratingColors[choice.rating] + '15' : _safBg('#0f172a'),
                     color: _safFg('#e2e8f0'), fontSize: 13, lineHeight: '1.4',
                     transition: 'all 0.2s'
                   }
@@ -1593,7 +1623,7 @@ window.SelHub = window.SelHub || {
                 isSelected && h('div', {                   style: { padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: ratingColors[choice.rating] + '15', border: '1px solid ' + ratingColors[choice.rating] + '44' }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                    h('span', { style: { fontSize: 11, fontWeight: 700, color: _safFg(ratingColors)[choice.rating] } },
+                    h('span', { style: { fontSize: 11, fontWeight: 700, color: _safFg(ratingColors[choice.rating]) } },
                       choice.rating === 3 ? '\u2B50 Great choice!' : choice.rating === 2 ? '\uD83D\uDCA1 Good thinking, but...' : '\u26A0\uFE0F Let\u2019s think about this...'
                     )
                   ),
@@ -1687,13 +1717,13 @@ window.SelHub = window.SelHub || {
             h('button', { 'aria-label': 'Prev',
               onClick: function() { upd({ assertIdx: Math.max(0, assertIdx - 1), assertChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: assertIdx === 0,
-              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: _safFg(assertIdx) === 0 ? '#334155' : _safFg('#94a3b8'), cursor: assertIdx === 0 ? 'default' : 'pointer', fontSize: 12 }
+              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: assertIdx === 0 ? _safFg('#334155') : _safFg('#94a3b8'), cursor: assertIdx === 0 ? 'default' : 'pointer', fontSize: 12 }
             }, '\u25C0 Prev'),
             h('span', { style: { fontSize: 12, color: _safFg('#94a3b8') } }, (assertIdx + 1) + ' / ' + assertScenarios.length),
             h('button', { 'aria-label': 'Next',
               onClick: function() { upd({ assertIdx: Math.min(assertScenarios.length - 1, assertIdx + 1), assertChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: assertIdx === assertScenarios.length - 1,
-              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: _safFg(assertIdx) === assertScenarios.length - 1 ? '#334155' : _safFg('#94a3b8'), cursor: assertIdx === assertScenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
+              style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: assertIdx === assertScenarios.length - 1 ? _safFg('#334155') : _safFg('#94a3b8'), cursor: assertIdx === assertScenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
             }, 'Next \u25B6'),
             h('span', { role: 'status', style: { marginLeft: 'auto', fontSize: 11, color: _safFg('#94a3b8') } }, '\u2705 ' + assertCompletedCount + '/' + assertScenarios.length + ' completed')
           );
@@ -1708,7 +1738,8 @@ window.SelHub = window.SelHub || {
             }, '\uD83D\uDD0A Read aloud'),
             h('div', { style: { fontWeight: 600, color: _safFg('#94a3b8'), fontSize: 12, marginBottom: 8 } }, 'How would you respond?'),
             assertScen.responses.map(function(resp, i) {
-              var isSelected = assertChoice === i;
+              var activeAssertChoice = assertChoice !== null ? assertChoice : (assertCompleted[assertScen.id] ? assertCompleted[assertScen.id].choice : null);
+              var isSelected = activeAssertChoice === i;
               var isCompleted = assertCompleted[assertScen.id] != null;
               var styleColors = { passive: '#ef4444', assertive: '#22c55e', aggressive: '#f59e0b' };
               var rColor = styleColors[resp.style] || _safFg('#94a3b8');
@@ -1735,7 +1766,7 @@ window.SelHub = window.SelHub || {
                   style: {
                     width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6, borderRadius: 8, cursor: isCompleted ? 'default' : 'pointer',
                     border: '1px solid ' + (isSelected ? rColor + '66' : '#334155'),
-                    background: isSelected ? rColor + '15' : '#0f172a',
+                    background: isSelected ? rColor + '15' : _safBg('#0f172a'),
                     color: _safFg('#e2e8f0'), fontSize: 13, lineHeight: '1.4',
                     transition: 'all 0.2s'
                   }
@@ -1840,23 +1871,26 @@ window.SelHub = window.SelHub || {
                     var newAnswered = Object.assign({}, quizAnswered);
                     newAnswered[quizIdx] = { picked: val, correct: correct };
                     var newScore = quizScore + (correct ? 1 : 0);
-                    upd({ quizAnswered: newAnswered, quizAnswer: val, quizScore: newScore });
+                    var qPatch = { quizAnswered: newAnswered, quizAnswer: val, quizScore: newScore };
                     if (soundEnabled) { correct ? sfxCorrect() : sfxReveal(); }
-                    awardXP(correct ? 10 : 3);
+                    if (!d.quizXpAwarded) awardXP(correct ? 10 : 3);
                     // Check if all questions answered
                     if (Object.keys(newAnswered).length >= totalQ) {
-                      upd('quizDone', true);
-                      var newBest = Math.max(quizBest, newScore);
-                      upd('quizBest', newBest);
+                      qPatch.quizDone = true;
+                      qPatch.quizXpAwarded = true;
+                      qPatch.quizBest = Math.max(quizBest, newScore);
+                      upd(qPatch);
                       if (newScore >= 8) tryAwardBadge('quiz_master');
                       if (announceToSR) announceToSR('Safety quiz complete. Score ' + newScore + ' of ' + totalQ);
+                    } else {
+                      upd(qPatch);
                     }
                   },
                   style: {
                     flex: 1, padding: '12px 16px', borderRadius: 10, cursor: isAnsweredQ ? 'default' : 'pointer',
                     border: '2px solid ' + btnColor,
-                    background: isSelected ? btnColor + '22' : '#0f172a',
-                    color: _safFg(showResult) && isCorrectAnswer ? '#22c55e' : (showResult && isSelected && !isCorrectAnswer ? '#ef4444' : _safFg('#e2e8f0')),
+                    background: isSelected ? btnColor + '22' : _safBg('#0f172a'),
+                    color: showResult && isCorrectAnswer ? _safFg('#22c55e') : (showResult && isSelected && !isCorrectAnswer ? _safFg('#ef4444') : _safFg('#e2e8f0')),
                     fontSize: 14, fontWeight: 600, transition: 'all 0.2s'
                   }
                 }, val ? '\u2705 TRUE' : '\u274C FALSE');
@@ -1876,22 +1910,25 @@ window.SelHub = window.SelHub || {
                     var newAnswered = Object.assign({}, quizAnswered);
                     newAnswered[quizIdx] = { picked: i, correct: correct };
                     var newScore = quizScore + (correct ? 1 : 0);
-                    upd({ quizAnswered: newAnswered, quizAnswer: i, quizScore: newScore });
+                    var qPatch = { quizAnswered: newAnswered, quizAnswer: i, quizScore: newScore };
                     if (soundEnabled) { correct ? sfxCorrect() : sfxReveal(); }
-                    awardXP(correct ? 10 : 3);
+                    if (!d.quizXpAwarded) awardXP(correct ? 10 : 3);
                     if (Object.keys(newAnswered).length >= totalQ) {
-                      upd('quizDone', true);
-                      var newBest = Math.max(quizBest, newScore);
-                      upd('quizBest', newBest);
+                      qPatch.quizDone = true;
+                      qPatch.quizXpAwarded = true;
+                      qPatch.quizBest = Math.max(quizBest, newScore);
+                      upd(qPatch);
                       if (newScore >= 8) tryAwardBadge('quiz_master');
                       if (announceToSR) announceToSR('Safety quiz complete. Score ' + newScore + ' of ' + totalQ);
+                    } else {
+                      upd(qPatch);
                     }
                   },
                   style: {
                     width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6, borderRadius: 8, cursor: isAnsweredQ ? 'default' : 'pointer',
                     border: '1px solid ' + btnColor,
-                    background: isSelected ? btnColor + '22' : '#0f172a',
-                    color: _safFg(showResult) && isCorrectAnswer ? '#22c55e' : (showResult && isSelected && !isCorrectAnswer ? '#ef4444' : _safFg('#e2e8f0')),
+                    background: isSelected ? btnColor + '22' : _safBg('#0f172a'),
+                    color: showResult && isCorrectAnswer ? _safFg('#22c55e') : (showResult && isSelected && !isCorrectAnswer ? _safFg('#ef4444') : _safFg('#e2e8f0')),
                     fontSize: 13, fontWeight: isSelected ? 600 : 400, transition: 'all 0.2s'
                   }
                 }, ch);
@@ -1912,7 +1949,7 @@ window.SelHub = window.SelHub || {
               // Explanation after answering
               isAnsweredQ && h('div', {                 style: { marginTop: 12, padding: '12px 14px', borderRadius: 8, background: quizAnswered[quizIdx].correct ? '#22c55e15' : '#ef444415', border: '1px solid ' + (quizAnswered[quizIdx].correct ? '#22c55e44' : '#ef444444') }
               },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: _safFg(quizAnswered)[quizIdx].correct ? _safFg('#4ade80') : _safFg('#f87171'), marginBottom: 4 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: quizAnswered[quizIdx].correct ? _safFg('#4ade80') : _safFg('#f87171'), marginBottom: 4 } },
                   quizAnswered[quizIdx].correct ? '\u2B50 Correct!' : '\uD83D\uDCA1 Not quite \u2014 here is why:'
                 ),
                 h('p', { style: { fontSize: 12, color: _safFg('#cbd5e1'), lineHeight: '1.5', margin: 0 } }, currentQ.explain)
@@ -1982,7 +2019,7 @@ window.SelHub = window.SelHub || {
                 : 'Identify whether each behavior is a safe (green flag) or an unsafe (red flag). Trust your instincts.'
             ),
             !flagDone && h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-              h('div', { style: { flex: 1, height: 6, borderRadius: 3, background: _safBg('#1e293b') } },
+              h('div', { role: 'progressbar', 'aria-label': 'Red and green flags progress', 'aria-valuemin': 0, 'aria-valuemax': totalFlags, 'aria-valuenow': Object.keys(flagAnswered).length, style: { flex: 1, height: 6, borderRadius: 3, background: _safBg('#1e293b') } },
                 h('div', { style: { height: '100%', borderRadius: 3, background: ACCENT, width: Math.round((Object.keys(flagAnswered).length / totalFlags) * 100) + '%', transition: 'width 0.3s' } })
               ),
               h('span', { style: { fontSize: 11, color: _safFg('#94a3b8') } }, Object.keys(flagAnswered).length + '/' + totalFlags)
@@ -2014,20 +2051,24 @@ window.SelHub = window.SelHub || {
                       var newAnswered = Object.assign({}, flagAnswered);
                       newAnswered[flagIdx] = { picked: flag, correct: correct };
                       var newCorrect = flagCorrect + (correct ? 1 : 0);
-                      upd({ flagAnswered: newAnswered, flagChoice: flag, flagCorrect: newCorrect });
+                      var fPatch = { flagAnswered: newAnswered, flagChoice: flag, flagCorrect: newCorrect };
                       if (soundEnabled) { correct ? sfxCorrect() : sfxReveal(); }
                       announceSR((correct ? 'You got it. ' : 'Actually, this is a ' + (currentFlag.flag === 'red' ? 'red flag, unsafe. ' : 'green flag, safe. ')) + currentFlag.explain);
-                      awardXP(correct ? 10 : 3);
+                      if (!d.flagXpAwarded) awardXP(correct ? 10 : 3);
                       if (Object.keys(newAnswered).length >= totalFlags) {
-                        upd('flagDone', true);
+                        fPatch.flagDone = true;
+                        fPatch.flagXpAwarded = true;
+                        upd(fPatch);
                         tryAwardBadge('flag_sorter');
+                      } else {
+                        upd(fPatch);
                       }
                     },
                     style: {
                       flex: 1, padding: '14px 16px', borderRadius: 10, cursor: isFlagAnswered ? 'default' : 'pointer',
                       border: '2px solid ' + borderColor,
-                      background: isSelected ? bgColor + '22' : '#0f172a',
-                      color: _safFg(showResult) && isCorrectAnswer ? bgColor : _safFg('#e2e8f0'),
+                      background: isSelected ? bgColor + '22' : _safBg('#0f172a'),
+                      color: showResult && isCorrectAnswer ? _safFg(bgColor) : _safFg('#e2e8f0'),
                       fontSize: 14, fontWeight: 600, transition: 'all 0.2s'
                     }
                   }, flag === 'green' ? '\uD83D\uDFE2 Safe' : '\uD83D\uDD34 Unsafe');
@@ -2041,7 +2082,7 @@ window.SelHub = window.SelHub || {
                   border: '1px solid ' + (flagAnswered[flagIdx].correct ? '#22c55e44' : '#f59e0b44')
                 }
               },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: _safFg(flagAnswered)[flagIdx].correct ? _safFg('#4ade80') : _safFg('#fbbf24'), marginBottom: 4 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: flagAnswered[flagIdx].correct ? _safFg('#4ade80') : _safFg('#fbbf24'), marginBottom: 4 } },
                   flagAnswered[flagIdx].correct ? '\u2705 You got it!' : '\uD83D\uDCA1 Actually, this is a ' + (currentFlag.flag === 'red' ? 'RED flag (unsafe)' : 'GREEN flag (safe)') + ':'
                 ),
                 h('p', { style: { fontSize: 12, color: _safFg('#cbd5e1'), lineHeight: '1.5', margin: 0 } }, currentFlag.explain)
@@ -2110,8 +2151,8 @@ window.SelHub = window.SelHub || {
               )
             ),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 } },
-              h('div', { style: { flex: 1, height: 6, borderRadius: 3, background: _safBg('#1e293b') } },
-                h('div', { style: { height: '100%', borderRadius: 3, background: _safBg('#dc2626'), width: Math.round((emViewedCount / emTopics.length) * 100) + '%', transition: 'width 0.3s' } })
+              h('div', { role: 'progressbar', 'aria-label': 'Emergency topics explored', 'aria-valuemin': 0, 'aria-valuemax': emTopics.length, 'aria-valuenow': emViewedCount, style: { flex: 1, height: 6, borderRadius: 3, background: _safBg('#1e293b') } },
+                h('div', { style: { height: '100%', borderRadius: 3, background: _safHC ? '#ffff00' : '#dc2626', width: Math.round((emViewedCount / emTopics.length) * 100) + '%', transition: 'width 0.3s' } })
               ),
               h('span', { style: { fontSize: 11, color: _safFg('#fca5a5') } }, emViewedCount + '/' + emTopics.length + ' topics')
             )
@@ -2135,7 +2176,7 @@ window.SelHub = window.SelHub || {
               },
               style: {
                 margin: '0 16px 10px', padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
-                background: isExpanded ? _safBg('#1e293b') : '#0f172a', border: '1px solid ' + (isExpanded ? '#dc262644' : _safBg('#1e293b')),
+                background: isExpanded ? _safBg('#1e293b') : _safBg('#0f172a'), border: '1px solid ' + (isExpanded ? '#dc262644' : _safBg('#1e293b')),
                 transition: 'all 0.2s'
               }
             },
@@ -2289,12 +2330,15 @@ window.SelHub = window.SelHub || {
 
             // Save and export
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-              !safetyPlanSaved && safetyPlanStep1.trim() && h('button', { 'aria-label': 'Save My Plan',
+              !safetyPlanSaved && safetyPlanStep1.trim() && h('button', { 'aria-label': __alloT('sel.safety.save_my_plan_aria', 'Save My Plan'),
                 onClick: function() {
-                  upd('safetyPlanSaved', true);
+                  var allPlanText = [safetyPlanStep1, safetyPlanStep2, safetyPlanStep3, safetyPlanPlace, safetyPlanCode, safetyPlanNums].join(' ');
+                  _checkSafetyText(allPlanText, 'safety_plan');
+                  var planPatch = { safetyPlanSaved: true };
+                  if (!d.planXpAwarded) { planPatch.planXpAwarded = true; awardXP(25); }
+                  upd(planPatch);
                   if (soundEnabled) sfxResolve();
                   addToast('\uD83D\uDCCB Safety Plan saved! You are prepared.', 'success');
-                  awardXP(25);
                   tryAwardBadge('safety_planner');
                   if (announceToSR) announceToSR('Safety plan saved');
                 },
@@ -2307,7 +2351,7 @@ window.SelHub = window.SelHub || {
                   style: { background: 'none', border: 'none', color: _safFg('#94a3b8'), fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
                 }, 'Edit')
               ),
-              (safetyPlanStep1.trim() || safetyPlanPlace.trim()) && h('button', { 'aria-label': 'Safety resources',
+              (safetyPlanStep1.trim() || safetyPlanPlace.trim()) && h('button', { 'aria-label': __alloT('sel.safety.export_safety_plan_aria', 'Export safety plan'),
                 onClick: function() {
                   var planText = 'MY SAFETY PLAN\n' +
                     '==============\n\n' +
@@ -2333,10 +2377,14 @@ window.SelHub = window.SelHub || {
                     addToast('\uD83D\uDCBE Safety Plan downloaded!', 'success');
                   } catch(e) {
                     // Fallback: copy to clipboard
-                    try {
-                      window.SelHub.copyText(planText).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
-                      addToast('\uD83D\uDCCB Safety Plan copied to clipboard!', 'success');
-                    } catch(e2) {
+                    if (window.SelHub && typeof window.SelHub.copyText === 'function') {
+                      window.SelHub.copyText(planText).then(function(ok) {
+                        if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE || 'Clipboard unavailable', 'info'); return; }
+                        addToast('\uD83D\uDCCB Safety Plan copied to clipboard!', 'success');
+                      }).catch(function() {
+                        addToast('Could not export. Try copying your plan manually.', 'error');
+                      });
+                    } else {
                       addToast('Could not export. Try copying your plan manually.', 'error');
                     }
                   }
@@ -2420,6 +2468,7 @@ window.SelHub = window.SelHub || {
             '@media print { body * { visibility: hidden !important; } ' +
             '#safety-print-region, #safety-print-region * { visibility: visible !important; } ' +
             '#safety-print-region { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; padding: 24px !important; background: #fff !important; color: #0f172a !important; } ' +
+            '#safety-print-region * { color: #0f172a !important; background: transparent !important; border-color: #888 !important; } ' +
             '.no-print { display: none !important; } }'
           );
 
@@ -2454,7 +2503,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 12, color: _safFg('#94a3b8'), marginTop: 4 } }, earnedCount === 0 ? 'Start exploring to earn badges!' : earnedCount >= 7 ? 'You are a Safety Champion!' : 'Keep going \u2014 you are doing great!')
             ),
             // Progress bar
-            h('div', { style: { height: 6, borderRadius: 3, background: _safBg('#1e293b'), marginBottom: 20 } },
+            h('div', { role: 'progressbar', 'aria-label': __alloT('sel.safety.badges_earned_aria', 'Safety badges earned'), 'aria-valuemin': 0, 'aria-valuemax': BADGES.length, 'aria-valuenow': earnedCount, style: { height: 6, borderRadius: 3, background: _safBg('#1e293b'), marginBottom: 20 } },
               h('div', { style: { height: '100%', borderRadius: 3, background: ACCENT, width: Math.round((earnedCount / BADGES.length) * 100) + '%', transition: 'width 0.3s' } })
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
@@ -2462,7 +2511,7 @@ window.SelHub = window.SelHub || {
                 var earned = !!earnedBadges[b.id];
                 return h('div', {
                   key: b.id,
-                  style: { padding: 14, borderRadius: 12, background: earned ? '#0f172a' : '#0f172a88', border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT_MED : _safBg('#475569')), textAlign: 'center', transition: 'all 0.2s' }
+                  style: { padding: 14, borderRadius: 12, background: earned ? _safBg('#0f172a') : (_safL ? '#f1f5f9' : (_safHC ? '#000000' : '#0f172a88')), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT_MED : _safBg('#475569')), textAlign: 'center', transition: 'all 0.2s' }
                 },
                   h('div', { style: { fontSize: 30 } }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? _safFg('#f1f5f9') : _safFg('#94a3b8'), marginTop: 6 } }, b.name),
@@ -2490,6 +2539,7 @@ window.SelHub = window.SelHub || {
 
         return h('div', { className: 'selh-safety', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
+          (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('safety', h, ctx) : null),
           tabBar,
           heroBand,

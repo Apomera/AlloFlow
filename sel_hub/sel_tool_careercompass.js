@@ -180,13 +180,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       var _carT = (ctx && ctx.theme) || {};
       var _carHC = !!_carT.isContrast, _carL = !_carHC && !_carT.isDark;
       var _car_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _car_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#f8fafc':'#000000'};
-      var _car_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#e0e7ff':'#3730a3','#bfdbfe':'#1e40af','#e2e8f0':'#1e293b','#fde68a':'#92400e','#818cf8':'#4338ca','#fecaca':'#b91c1c','#86efac':'#166534','#fcd34d':'#78350f'}, _car_FGH = {'#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#bfdbfe':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#fff':'#ffff00','#fde68a':'#ffff00','#818cf8':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00','#86efac':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
-      var _car_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _car_BDH = {'#334155':'#ffff00','#818cf8':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00'};
+      var _car_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#e0e7ff':'#3730a3','#bfdbfe':'#1e40af','#e2e8f0':'#1e293b','#fde68a':'#92400e','#818cf8':'#4338ca','#fecaca':'#b91c1c','#bbf7d0':'#166534','#86efac':'#166534','#fcd34d':'#78350f','#22c55e':'#15803d','#ef4444':'#b91c1c'}, _car_FGH = {'#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#bfdbfe':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#fff':'#ffff00','#fde68a':'#ffff00','#818cf8':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00','#86efac':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
+      var _car_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _car_BDH = {'#334155':'#ffff00','#818cf8':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00'};
       var _carBg = function(h){ return _carHC ? (_car_BGH[h]||h) : (_carL ? (_car_BGL[h]||h) : h); };
       var _carFg = function(h){ return _carHC ? (_car_FGH[h]||h) : (_carL ? (_car_FGL[h]||h) : h); };
-      var _carBd = function(h){ return _carHC ? (_car_BDH[h]||h) : (_carL ? (_car_BDL[h]||h) : h); };
-      // accent text on the dark shell needs the 300/400 weight (1.4.3)
-      var _carInk = function(c){ return _carHC || _carL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
+      var _carBd = function(h){ return _carHC ? (_car_BDH[h]||'#ffff00') : (_carL ? (_car_BDL[h]||h) : h); };
+      // accent text needs AA contrast in Dark, Light, and High Contrast (WCAG 1.4.3)
+      var _carInk = function(c){
+        if (_carHC) return '#ffff00';
+        var lc = String(c).toLowerCase();
+        if (_carL) return {'#0ea5e9':'#0369a1','#a855f7':'#7e22ce','#22c55e':'#15803d','#f59e0b':'#b45309','#d97706':'#b45309','#ef4444':'#b91c1c','#6366f1':'#4338ca','#3b82f6':'#1d4ed8','#818cf8':'#4338ca'}[lc] || c;
+        return {'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24','#d97706':'#fbbf24'}[lc] || c;
+      };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -204,8 +209,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           return Object.assign({}, prev, { careerCompass: next });
         });
       }
-      var view = d.view || 'home';
-      function goto(v) { setCC({ view: v }); }
+      var VALID_VIEWS = ['home', 'screener', 'results', 'careers', 'clusters', 'nextsteps', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'home';
+      function goto(v) { setCC({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'home' }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       var scores = computeScores(d.ratings);
@@ -216,7 +222,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _carFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _carHC ? '#000000' : (_carL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _carBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _carFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _carFg('#a5b4fc'), fontSize: 22, fontWeight: 900 } }, '🧭 Career Compass'),
             h('div', { style: { fontSize: 12, color: _carFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Explore careers through your interests. Holland\'s RIASEC framework.')
@@ -239,10 +245,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _carFg('#818cf8') : '#334155'),
-                background: active ? 'rgba(129,140,248,0.18)' : _carBg('#1e293b'),
+            return h('button', { key: t.id, id: 'cc-tab-' + t.id, onClick: function() { goto(t.id); },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'cc-panel-' + t.id, tabIndex: active ? 0 : -1,
+              style: { padding: '6px 12px', borderRadius: 8, border: (_carHC ? '2px' : '1px') + ' solid ' + _carBd(active ? '#818cf8' : '#334155'),
+                background: active ? (_carHC ? '#000000' : (_carL ? '#e0e7ff' : 'rgba(129,140,248,0.18)')) : _carBg('#1e293b'),
                 color: active ? _carFg('#e0e7ff') : _carFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -250,7 +256,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       }
 
       function authoritativeBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.4)', borderRight: '1px solid rgba(129,140,248,0.4)', borderBottom: '1px solid rgba(129,140,248,0.4)', borderLeft: '3px solid #818cf8', marginBottom: 12, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _carHC ? '#000000' : (_carL ? '#eef2ff' : 'rgba(129,140,248,0.10)'), borderTop: '1px solid ' + (_carHC ? '#ffff00' : 'rgba(129,140,248,0.4)'), borderRight: '1px solid ' + (_carHC ? '#ffff00' : 'rgba(129,140,248,0.4)'), borderBottom: '1px solid ' + (_carHC ? '#ffff00' : 'rgba(129,140,248,0.4)'), borderLeft: '3px solid ' + _carBd('#818cf8'), marginBottom: 12, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.65 } },
           h('strong', null, '🔗 The authoritative version: '),
           'the US Department of Labor\'s O*NET Interest Profiler at ',
           h('a', { href: 'https://www.mynextmove.org/explore/ip', target: '_blank', rel: 'noopener noreferrer',
@@ -261,7 +267,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _carFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _carHC ? '#000000' : (_carL ? '#f8fafc' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _carBd('#334155'), fontSize: 11, color: _carFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'A Holland code is a starting point, not a prediction. Many people thrive in careers that do not match their dominant type. If career conversations are stirring family pressure, financial worry, or identity questions, that is worth a counselor session. Crisis Text Line: text HOME to 741741.'
         );
@@ -271,10 +277,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       // HOME — roadmap + summary
       // ═══════════════════════════════════════════════════════════
       function renderHome() {
-        var rated = Object.keys(d.ratings || {}).filter(function(k) { return d.ratings[k] !== null && d.ratings[k] !== undefined; }).length;
+        var ratingsMap = d.ratings || {};
+        var rated = ITEMS.filter(function(item) { return Object.prototype.hasOwnProperty.call(ratingsMap, item.id) && ratingsMap[item.id] !== null && ratingsMap[item.id] !== undefined; }).length;
 
         return h('div', null,
-          h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(129,140,248,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(129,140,248,0.4)', marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 14, background: _carHC ? '#000000' : (_carL ? '#eef2ff' : 'linear-gradient(135deg, rgba(129,140,248,0.16) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_carHC ? '#ffff00' : 'rgba(129,140,248,0.4)'), marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _carFg('#e0e7ff'), marginBottom: 4 } }, 'What kind of work fits me?'),
             h('p', { style: { margin: 0, color: _carFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
               'Career exploration starts with interests, not job titles. The Holland RIASEC framework asks "what activities would I enjoy?" rather than "what should I be?" Most people are a blend of three of the six types; that combination points toward careers where they thrive.'
@@ -286,9 +293,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           // Roadmap
           stepCard(1, '✏️ Take the self-check (36 items, ~5 minutes)', 'Mark each activity as "Like", "Not sure", or "Don\'t like." No right answers.', rated + ' / 36 rated', function() { goto('screener'); }, '#0ea5e9'),
           stepCard(2, '⭐ See your Holland code', 'Your top 3 types out of R-I-A-S-E-C, plus what each means about how you might work.', complete ? '✓ Ready' : 'Take the screener first', function() { complete ? goto('results') : goto('screener'); }, '#a855f7'),
-          stepCard(3, '💼 Browse careers by your code', '~15 careers per Holland type. Education paths, related work, places to look further.', complete ? 'Explore' : 'Take screener first', function() { complete ? goto('careers') : goto('screener'); }, _carFg('#22c55e')),
+          stepCard(3, '💼 Browse careers by your code', '~15 careers per Holland type. Education paths, related work, places to look further.', complete ? 'Explore' : 'Take screener first', function() { complete ? goto('careers') : goto('screener'); }, '#22c55e'),
           stepCard(4, '🗂️ Or browse by the 16 Career Clusters', 'Another way in: the US Department of Education\'s 16 career groups.', 'Browse', function() { goto('clusters'); }, '#f59e0b'),
-          stepCard(5, '🚶 Take a concrete next step', 'Shadow day, info interview, CTE program, apprenticeship, summer job. Small moves beat a perfect plan.', 'Explore', function() { goto('nextsteps'); }, _carFg('#ef4444')),
+          stepCard(5, '🚶 Take a concrete next step', 'Shadow day, info interview, CTE program, apprenticeship, summer job. Small moves beat a perfect plan.', 'Explore', function() { goto('nextsteps'); }, '#ef4444'),
 
           softPointer()
         );
@@ -296,9 +303,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
 
       function stepCard(stepNum, title, blurb, status, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': 'Step ' + stepNum + ': ' + title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _carBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _carFg('#e2e8f0') } },
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid ' + _carBd('#1e293b'), borderRight: '1px solid ' + _carBd('#1e293b'), borderBottom: '1px solid ' + _carBd('#1e293b'), borderLeft: '4px solid ' + _carBd(color), background: _carBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _carFg('#e2e8f0') } },
           h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
-            h('span', { style: { fontSize: 14, fontWeight: 800, color: color, flex: 1 } }, title),
+            h('span', { style: { fontSize: 14, fontWeight: 800, color: _carInk(color), flex: 1 } }, title),
             h('span', { style: { fontSize: 11, color: _carInk(color), fontWeight: 700 } }, status)
           ),
           h('div', { style: { fontSize: 12, color: _carFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
@@ -310,16 +317,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       // ═══════════════════════════════════════════════════════════
       function renderScreener() {
         function setRating(itemId, val) {
-          var r = Object.assign({}, (d.ratings || {}));
-          r[itemId] = val;
-          setCC({ ratings: r });
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.careerCompass) || defaultState();
+            var r = Object.assign({}, prior.ratings || {});
+            r[itemId] = val;
+            return Object.assign({}, prev, { careerCompass: Object.assign({}, prior, { ratings: r, lastUpdated: todayISO() }) });
+          });
         }
         function clearAll() {
           setCC({ ratings: {} });
           if (addToast) addToast('Cleared. Start fresh.', 'info');
         }
 
-        var ratedCount = Object.keys(d.ratings || {}).filter(function(k) { return d.ratings[k] !== null && d.ratings[k] !== undefined; }).length;
+        var ratingsMap = d.ratings || {};
+        var ratedCount = ITEMS.filter(function(item) { return Object.prototype.hasOwnProperty.call(ratingsMap, item.id) && ratingsMap[item.id] !== null && ratingsMap[item.id] !== undefined; }).length;
         var pct = Math.round((ratedCount / ITEMS.length) * 100);
 
         // Group items by type for cleaner display
@@ -366,11 +377,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
                   h('div', { style: { flex: 1, minWidth: 200, fontSize: 13, color: _carFg('#e2e8f0'), lineHeight: 1.5 } }, item.text),
                   h('div', { style: { display: 'flex', gap: 4 }, role: 'radiogroup', 'aria-label': 'Rate: ' + item.text },
                     h('button', { onClick: function() { setRating(item.id, -1); }, role: 'radio', 'aria-checked': current === -1, 'aria-label': 'Don\'t like',
-                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (current === -1 ? _carFg('#ef4444') : _carFg('#475569')), background: current === -1 ? _carFg('#ef4444') : 'transparent', color: current === -1 ? '#fff' : _carFg('#ef4444'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕'),
+                      style: { padding: '4px 10px', borderRadius: 4, border: (_carHC ? '2px' : '1px') + ' solid ' + (current === -1 ? (_carHC ? '#ffff00' : '#dc2626') : _carBd('#475569')), background: current === -1 ? (_carHC ? '#ffff00' : '#dc2626') : 'transparent', color: current === -1 ? (_carHC ? '#000000' : '#ffffff') : _carInk('#ef4444'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕'),
                     h('button', { onClick: function() { setRating(item.id, 0); }, role: 'radio', 'aria-checked': current === 0, 'aria-label': 'Not sure',
-                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (current === 0 ? _carFg('#94a3b8') : _carFg('#475569')), background: current === 0 ? _carFg('#475569') : 'transparent', color: _carFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '?'),
+                      style: { padding: '4px 10px', borderRadius: 4, border: (_carHC ? '2px' : '1px') + ' solid ' + (current === 0 ? (_carHC ? '#ffff00' : '#94a3b8') : _carBd('#475569')), background: current === 0 ? (_carHC ? '#ffff00' : '#475569') : 'transparent', color: current === 0 ? (_carHC ? '#000000' : '#ffffff') : _carFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '?'),
                     h('button', { onClick: function() { setRating(item.id, 1); }, role: 'radio', 'aria-checked': current === 1, 'aria-label': 'Like',
-                      style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (current === 1 ? _carFg('#22c55e') : _carFg('#475569')), background: current === 1 ? _carFg('#22c55e') : 'transparent', color: current === 1 ? '#fff' : _carFg('#22c55e'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✓')
+                      style: { padding: '4px 10px', borderRadius: 4, border: (_carHC ? '2px' : '1px') + ' solid ' + (current === 1 ? (_carHC ? '#ffff00' : '#15803d') : _carBd('#475569')), background: current === 1 ? (_carHC ? '#ffff00' : '#15803d') : 'transparent', color: current === 1 ? (_carHC ? '#000000' : '#ffffff') : _carInk('#22c55e'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✓')
                   )
                 );
               })
@@ -380,7 +391,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           // See results button when complete
           complete ? h('div', { style: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('results'); }, 'aria-label': 'See my Holland code',
-              style: { padding: '12px 24px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '12px 24px', borderRadius: 10, border: _carHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _carHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '⭐ See my Holland code')
           ) : null,
 
@@ -394,11 +405,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       function renderResults() {
         if (!complete) {
           return h('div', null,
-            h('div', { style: { padding: 20, borderRadius: 12, background: _carBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
+            h('div', { style: { padding: 20, borderRadius: 12, background: _carBg('#0f172a'), border: '1px solid ' + _carBd('#1e293b'), textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '✏️'),
               h('div', { style: { color: _carFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Take the self-check first'),
               h('div', { style: { color: _carFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Rate all 36 items to see your Holland code.'),
-              h('button', { onClick: function() { goto('screener'); }, style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: _carFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Take the self-check')
+              h('button', { onClick: function() { goto('screener'); }, style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _carBd('#818cf8'), background: _carHC ? '#000000' : (_carL ? '#e0e7ff' : 'rgba(129,140,248,0.18)'), color: _carFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Take the self-check')
             )
           );
         }
@@ -407,15 +418,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
 
         return h('div', null,
           // The code
-          h('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(129,140,248,0.20) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(129,140,248,0.4)', textAlign: 'center', marginBottom: 14 } },
+          h('div', { style: { padding: 24, borderRadius: 14, background: _carHC ? '#000000' : (_carL ? '#eef2ff' : 'linear-gradient(135deg, rgba(129,140,248,0.20) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_carHC ? '#ffff00' : 'rgba(129,140,248,0.4)'), textAlign: 'center', marginBottom: 14 } },
             h('div', { style: { fontSize: 12, color: _carFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 6 } }, 'Your Holland code'),
             h('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
               topThree.map(function(t, i) {
                 var type = TYPES[t];
-                return h('div', { key: t, style: { padding: 14, borderRadius: 12, background: type.color + '22', border: '2px solid ' + type.color, minWidth: 100 } },
+                return h('div', { key: t, style: { padding: 14, borderRadius: 12, background: _carHC ? '#000000' : type.color + '22', border: '2px solid ' + _carBd(type.color), minWidth: 100 } },
                   h('div', { style: { fontSize: 10, color: _carFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, '#' + (i + 1)),
                   h('div', { style: { fontSize: 36, marginBottom: 2 } }, type.icon),
-                  h('div', { style: { fontSize: 24, fontWeight: 900, color: type.color, fontFamily: 'ui-monospace, monospace' } }, t),
+                  h('div', { style: { fontSize: 24, fontWeight: 900, color: _carInk(type.color), fontFamily: 'ui-monospace, monospace' } }, t),
                   h('div', { style: { fontSize: 11, color: _carFg('#e2e8f0'), fontWeight: 700 } }, type.label),
                   h('div', { style: { fontSize: 10, color: _carFg('#94a3b8') } }, type.shortName)
                 );
@@ -430,12 +441,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           // Per-type descriptions
           topThree.map(function(t, i) {
             var type = TYPES[t];
-            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + type.color, marginBottom: 10 } },
+            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), borderTop: '1px solid ' + _carBd('#1e293b'), borderRight: '1px solid ' + _carBd('#1e293b'), borderBottom: '1px solid ' + _carBd('#1e293b'), borderLeft: '4px solid ' + _carBd(type.color), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                 h('span', { style: { fontSize: 30 } }, type.icon),
                 h('div', null,
                   h('div', { style: { fontSize: 10, color: _carFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, '#' + (i + 1) + ' · ' + t),
-                  h('div', { style: { fontSize: 18, fontWeight: 800, color: type.color } }, type.label + ' — ' + type.shortName)
+                  h('div', { style: { fontSize: 18, fontWeight: 800, color: _carInk(type.color) } }, type.label + ' — ' + type.shortName)
                 )
               ),
               h('p', { style: { margin: '0 0 8px', color: _carFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, type.summary),
@@ -444,17 +455,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           }),
 
           // All 6 scores (so the student can see the full picture)
-          h('div', { style: { padding: 12, borderRadius: 10, background: _carBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 10 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _carBg('#0f172a'), border: '1px solid ' + _carBd('#1e293b'), marginBottom: 10 } },
             h('div', { style: { fontSize: 11, color: _carFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, 'All six types, ranked'),
             ranking.map(function(t, i) {
               var type = TYPES[t];
               var s = scores[t];
               var pct = Math.round(((s + 6) / 12) * 100);  // map -6..+6 to 0..100
               return h('div', { key: t, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                h('span', { style: { fontSize: 14, fontWeight: 800, color: type.color, fontFamily: 'ui-monospace, monospace', minWidth: 20 } }, t),
+                h('span', { style: { fontSize: 14, fontWeight: 800, color: _carInk(type.color), fontFamily: 'ui-monospace, monospace', minWidth: 20 } }, t),
                 h('span', { style: { fontSize: 12, color: _carFg('#cbd5e1'), minWidth: 100 } }, type.label),
-                h('div', { style: { flex: 1, height: 8, borderRadius: 4, background: _carBg('#1e293b'), overflow: 'hidden' }, role: 'meter', 'aria-valuenow': pct, 'aria-label': type.label + ' score' },
-                  h('div', { style: { height: '100%', width: pct + '%', background: type.color } })
+                h('div', { style: { flex: 1, height: 8, borderRadius: 4, background: _carBg('#1e293b'), border: _carHC ? '1px solid #ffff00' : 'none', overflow: 'hidden' }, role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': type.label + ' score' },
+                  h('div', { style: { height: '100%', width: pct + '%', background: _carHC ? '#ffff00' : type.color } })
                 ),
                 h('span', { style: { fontSize: 11, color: _carFg('#94a3b8'), minWidth: 30, textAlign: 'right' } }, (s > 0 ? '+' : '') + s)
               );
@@ -463,12 +474,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('careers'); }, 'aria-label': 'Browse careers',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: _carHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _carHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '💼 Browse careers'),
             h('button', { onClick: function() { goto('nextsteps'); }, 'aria-label': 'Next steps',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🚶 Next steps'),
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _carBd('#475569'), background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🚶 Next steps'),
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _carBd('#475569'), background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -483,7 +494,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
         var orderedTypes = complete ? topThree.concat(ranking.slice(3)) : ['R', 'I', 'A', 'S', 'E', 'C'];
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', marginBottom: 14, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _carHC ? '#000000' : (_carL ? '#eef2ff' : 'rgba(129,140,248,0.10)'), borderTop: '1px solid ' + (_carHC ? '#ffff00' : 'rgba(129,140,248,0.3)'), borderRight: '1px solid ' + (_carHC ? '#ffff00' : 'rgba(129,140,248,0.3)'), borderBottom: '1px solid ' + (_carHC ? '#ffff00' : 'rgba(129,140,248,0.3)'), borderLeft: '3px solid ' + _carBd('#818cf8'), marginBottom: 14, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.65 } },
             h('strong', null, '💼 Careers by Holland type. '),
             complete ? 'Your top three are listed first. ' : '',
             'These are sample careers, not complete lists. For depth + salary + education paths, check the linked O*NET pages for each.'
@@ -492,11 +503,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
           orderedTypes.map(function(t, idx) {
             var type = TYPES[t];
             var isTop = complete && topThree.indexOf(t) !== -1;
-            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), border: '1px solid ' + (isTop ? type.color : _carBg('#1e293b')), borderLeft: '4px solid ' + type.color, marginBottom: 10 } },
+            return h('div', { key: t, style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), border: '1px solid ' + _carBd(isTop ? type.color : '#1e293b'), borderLeft: '4px solid ' + _carBd(type.color), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 22 } }, type.icon),
                 h('span', { style: { fontSize: 15, fontWeight: 800, color: _carInk(type.color), flex: 1 } }, type.label + ' (' + t + ') — ' + type.shortName),
-                isTop ? h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 4, background: type.color, color: _carFg('#fff'), fontWeight: 800, letterSpacing: 0.5 } }, '★ YOUR CODE') : null,
+                isTop ? h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 4, background: _carHC ? '#000000' : '#312e81', border: '1px solid ' + _carBd(type.color), color: _carHC ? '#ffff00' : '#ffffff', fontWeight: 800, letterSpacing: 0.5 } }, '★ YOUR CODE') : null,
                 h('a', { href: 'https://www.onetonline.org/find/quick?s=' + t, target: '_blank', rel: 'noopener noreferrer',
                   style: { fontSize: 11, color: _carInk(type.color), textDecoration: 'underline', fontWeight: 700 } }, 'O*NET careers ↗')
               ),
@@ -507,7 +518,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
                     href: 'https://www.onetonline.org/find/quick?s=' + encodeURIComponent(c),
                     target: '_blank', rel: 'noopener noreferrer',
                     'aria-label': 'Look up ' + c + ' on O*NET',
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + type.color + '66', background: 'rgba(15,23,42,0.6)', color: _carFg('#cbd5e1'), textDecoration: 'none', fontSize: 12 } }, c + ' ↗');
+                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + (_carHC ? '#ffff00' : type.color + '66'), background: _carBg('#0f172a'), color: _carFg('#cbd5e1'), textDecoration: 'none', fontSize: 12 } }, c + ' ↗');
                 })
               )
             );
@@ -554,7 +565,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
                 h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
                   c.codes.map(function(code) {
                     var type = TYPES[code];
-                    return h('span', { key: code, style: { padding: '2px 6px', borderRadius: 4, background: type.color + '22', color: type.color, fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' } }, code);
+                    return h('span', { key: code, style: { padding: '2px 6px', borderRadius: 4, background: _carHC ? '#000000' : type.color + '22', border: _carHC ? '1px solid #ffff00' : 'none', color: _carInk(type.color), fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' } }, code);
                   })
                 )
               );
@@ -623,8 +634,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       }
 
       function stepGroup(title, color, items) {
-        return h('div', { style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: color, marginBottom: 8 } }, title),
+        return h('div', { style: { padding: 14, borderRadius: 10, background: _carBg('#0f172a'), borderTop: '1px solid ' + _carBd('#1e293b'), borderRight: '1px solid ' + _carBd('#1e293b'), borderBottom: '1px solid ' + _carBd('#1e293b'), borderLeft: '3px solid ' + _carBd(color), marginBottom: 10 } },
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: _carInk(color), marginBottom: 8 } }, title),
           h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _carFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
             items.map(function(it, i) { return h('li', { key: i, style: { marginBottom: 4 } }, it); })
           )
@@ -636,22 +647,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(129,140,248,0.10)', borderRadius: 8, border: '1px solid rgba(129,140,248,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _carHC ? '#000000' : (_carL ? '#eef2ff' : 'rgba(129,140,248,0.10)'), borderRadius: 8, border: '1px solid ' + (_carHC ? '#ffff00' : 'rgba(129,140,248,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _carHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _carHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _carHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _carBd('#475569'), background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'cc-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _carBg('#fff'), color: _carFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _carBg('#fff'), color: _carFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _carBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
-              '#cc-print-region, #cc-print-region * { visibility: visible !important; } ' +
+              '#cc-print-region, #cc-print-region * { visibility: visible !important; background: #fff !important; color: #0f172a !important; border-color: #cbd5e1 !important; } ' +
               '#cc-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
@@ -807,7 +818,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Career Compass' },
         header(),
         navTabs(),
-        body
+        h('div', { role: 'tabpanel', id: 'cc-panel-' + view, 'aria-labelledby': 'cc-tab-' + view }, body)
       );
     }
   });

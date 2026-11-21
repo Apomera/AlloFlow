@@ -85,11 +85,11 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
                         style={{ width: `${proficiency}%` }}
                     ></div>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1.5 leading-snug">
+                <p className="text-xs text-slate-400 mt-1.5 leading-snug">
                     {t('adventure.mission_report.ai_estimate_note') || 'Estimated by AI from story decisions — a reflection prompt, not a formal assessment.'}
                 </p>
                 {Number(climax?.attempts) > 0 && (
-                    <p className="text-[10px] text-slate-300 mt-1 font-bold">
+                    <p className="text-xs text-slate-300 mt-1 font-bold">
                         {(t('adventure.mission_report.climax_attempts') || 'Final challenge attempts') + ': ' + climax.attempts}
                     </p>
                 )}
@@ -99,28 +99,28 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
                 dragging "Efficiency" down. All three bands now show. */}
             <div className="grid grid-cols-3 gap-2 relative z-20">
                 <div className="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
-                    <span className="text-[10px] font-bold uppercase text-green-400">{t('adventure.mission_report.band_strong') || 'Strong moves'}</span>
+                    <span className="text-xs font-bold uppercase text-green-400">{t('adventure.mission_report.band_strong') || 'Strong moves'}</span>
                     <span className="text-xl font-black text-white">{safeStats.successes || 0}</span>
                 </div>
                 <div className="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
-                    <span className="text-[10px] font-bold uppercase text-yellow-400">{t('adventure.mission_report.band_partial') || 'Partial credit'}</span>
+                    <span className="text-xs font-bold uppercase text-yellow-400">{t('adventure.mission_report.band_partial') || 'Partial credit'}</span>
                     <span className="text-xl font-black text-white">{safeStats.partials || 0}</span>
                 </div>
                 <div className="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
-                    <span className="text-[10px] font-bold uppercase text-rose-400">{t('adventure.mission_report.band_misconception') || 'Misconceptions'}</span>
+                    <span className="text-xs font-bold uppercase text-rose-400">{t('adventure.mission_report.band_misconception') || 'Misconceptions'}</span>
                     <span className="text-xl font-black text-white">{safeStats.failures || 0}</span>
                 </div>
             </div>
             <div className="grid grid-cols-2 gap-4 relative z-20">
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center" title={t('adventure.mission_report.efficiency_formula') || 'Strong moves count fully, partial credit counts half, out of all decisions.'}>
                     <div className="flex items-center gap-2 mb-2 text-yellow-400">
-                        <Zap size={16} aria-hidden="true" /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.efficiency')}</span>
+                        <Zap size={16} aria-hidden="true" /> <span className="text-xs font-bold uppercase">{t('adventure.mission_report.efficiency')}</span>
                     </div>
                     <div className="text-3xl font-black">{efficiency}%</div>
                 </div>
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2 mb-2 text-green-400">
-                        <Key size={16} aria-hidden="true" /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.concepts')}</span>
+                        <Key size={16} aria-hidden="true" /> <span className="text-xs font-bold uppercase">{t('adventure.mission_report.concepts')}</span>
                     </div>
                     <div className="text-3xl font-black">{safeStats.conceptsFound.length}</div>
                 </div>
@@ -1241,7 +1241,7 @@ const getAdventureAudioEngine = () => {
         resume,
         runDiagnostics: runAdventureAudioDiagnostics,
         setEnabled: value => { enabled = value !== false; },
-        setPreferences: value => applyPreferences(value, true),
+        setPreferences: (value, opts) => applyPreferences(value, !opts || opts.persist !== false),
         stopAmbience,
         stopPreview
     };
@@ -1537,7 +1537,7 @@ const ClimaxProgressBar = React.memo(({ climaxState }) => {
         <div className="absolute top-0 bottom-0 left-[25%] w-px bg-white/10 z-0" aria-hidden="true"></div>
         <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0" aria-hidden="true"></div>
       </div>
-      <div className="flex justify-between text-[11px] font-bold uppercase mt-1.5 px-1">
+      <div className="flex justify-between text-xs font-bold uppercase mt-1.5 px-1">
         <span className="text-red-300">{leftLabel} (0%)</span>
         <span className="text-green-400">{rightLabel} (100%)</span>
       </div>
@@ -1588,7 +1588,7 @@ const AdventureAmbience = React.memo(({ sceneText, soundParams, themeSeed, activ
             holdTimerRef.current = null;
             engine.stopAmbience(ADVENTURE_AMBIENCE_OUTRO_FADE_S);
         }, ADVENTURE_AMBIENCE_INTRO_HOLD_MS);
-    }, [sceneText, soundParams, themeSeed, active, volume]);
+    }, [sceneText, soundParams, themeSeed, active, sfxEnabled, volume]);
 
     // TTS beats ambience: if speech starts during the intro hold, fade out early instead of
     // ducking-then-returning. Mount-scoped listener so same-scene effect re-runs can't drop it.
@@ -1709,7 +1709,7 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
             try { next = JSON.parse(event.newValue || 'null'); } catch (_) {}
             adventureAudioPreferencesCache = normalizeAdventureAudioPreferences(next);
             setPreferences(adventureAudioPreferencesCache);
-            getAdventureAudioEngine().setPreferences(adventureAudioPreferencesCache);
+            getAdventureAudioEngine().setPreferences(adventureAudioPreferencesCache, { persist: false });
         };
         window.addEventListener('alloflow-adventure-audio-preferences', onPreferences);
         window.addEventListener('alloflow-adventure-audio-preview', onPreview);
@@ -1746,14 +1746,14 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
                 <div className="mb-3 flex items-start justify-between gap-3">
                     <div>
                         <div id="adventure-audio-dialog-title" className="pr-10 font-black text-indigo-950">{label}</div>
-                        <div className="text-[11px] leading-snug text-slate-600">{soundEnabled ? translate('adventure.audio_local_note', 'Created on this device with procedural audio.') : translate('adventure.audio_muted_note', 'App sound is currently muted.')}</div>
+                        <div className="text-xs leading-snug text-slate-600">{soundEnabled ? translate('adventure.audio_local_note', 'Created on this device with procedural audio.') : translate('adventure.audio_muted_note', 'App sound is currently muted.')}</div>
                     </div>
                     <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${audioAvailable ? 'bg-emerald-500' : 'bg-slate-400'}`} aria-hidden="true"></span>
                 </div>
                 <label className="mb-3 block text-xs font-bold" htmlFor="adventure-ambience-level">
                     <span className="mb-1 flex justify-between"><span>{translate('adventure.audio_ambience', 'Ambience')}</span><output>{ambiencePercent}%</output></span>
                     <input id="adventure-ambience-level" type="range" min="0" max="100" step="10" value={ambiencePercent} onChange={event => update({ ambience: Number(event.target.value) / 100 })} className="min-h-11 w-full accent-indigo-700" />
-                    <span className="mt-1 block text-[10px] font-normal leading-snug text-slate-600">{translate('adventure.audio_ambience_hint', 'Scene sound plays at the start of each scene, then fades out so reading and narration stay clear.')}</span>
+                    <span className="mt-1 block text-xs font-normal leading-snug text-slate-600">{translate('adventure.audio_ambience_hint', 'Scene sound plays at the start of each scene, then fades out so reading and narration stay clear.')}</span>
                 </label>
                 <label className="mb-3 block text-xs font-bold" htmlFor="adventure-effects-level">
                     <span className="mb-1 flex justify-between"><span>{translate('adventure.audio_effects', 'Effects')}</span><output>{effectsPercent}%</output></span>
@@ -1768,7 +1768,7 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
                         {translate('adventure.audio_sound_lab', 'Adventure Sound Lab')}
                     </summary>
                     <div className="mt-2 space-y-3 border-t border-violet-200 pt-3">
-                        <p className="text-[11px] leading-snug text-violet-900">{translate('adventure.audio_sound_lab_note', 'Audition procedural scene profiles without replacing the live adventure ambience.')}</p>
+                        <p className="text-xs leading-snug text-violet-900">{translate('adventure.audio_sound_lab_note', 'Audition procedural scene profiles without replacing the live adventure ambience.')}</p>
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <label className="text-xs font-bold text-slate-800" htmlFor="adventure-lab-atmosphere">
                                 <span className="mb-1 block">{translate('adventure.audio_atmosphere', 'Atmosphere')}</span>
@@ -1804,12 +1804,12 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
                             <button type="button" disabled={!previewActive} onClick={() => getAdventureAudioEngine().stopPreview(0.2)} className="min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-xs font-black text-violet-900 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">{translate('adventure.audio_stop_preview', 'Stop preview')}</button>
                         </div>
                         <div role="group" aria-label={translate('adventure.audio_event_previews', 'Event cue previews')} className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                            {[['transition', 'Transition'], ['success', 'Success'], ['critical_success', 'Big win'], ['failure', 'Failure'], ['item_get', 'Item']].map(([type, text]) => <button key={type} type="button" disabled={!soundEnabled} onClick={() => previewLabEvent(type)} className="min-h-11 rounded-lg border border-violet-300 bg-white px-2 py-2 text-[11px] font-bold text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">{text}</button>)}
+                            {[['transition', 'Transition'], ['success', 'Success'], ['critical_success', 'Big win'], ['failure', 'Failure'], ['item_get', 'Item']].map(([type, text]) => <button key={type} type="button" disabled={!soundEnabled} onClick={() => previewLabEvent(type)} className="min-h-11 rounded-lg border border-violet-300 bg-white px-2 py-2 text-xs font-bold text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">{text}</button>)}
                         </div>
-                        <div role="status" aria-live="polite" className="min-h-5 text-[11px] font-bold text-violet-900">{previewActive ? translate('adventure.audio_preview_active', 'Preview playing for up to 8 seconds.') : translate('adventure.audio_preview_idle', 'Preview stopped.')}</div>
+                        <div role="status" aria-live="polite" className="min-h-5 text-xs font-bold text-violet-900">{previewActive ? translate('adventure.audio_preview_active', 'Preview playing for up to 8 seconds.') : translate('adventure.audio_preview_idle', 'Preview stopped.')}</div>
                         <div className="rounded-lg border border-slate-300 bg-white p-2">
                             <button type="button" disabled={diagnostic.status === 'running'} onClick={runLabDiagnostic} className="min-h-11 w-full rounded-lg border border-slate-400 px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-100 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">{diagnostic.status === 'running' ? translate('adventure.audio_check_running', 'Rendering audio check…') : translate('adventure.audio_run_check', 'Run waveform check')}</button>
-                            {diagnostic.status === 'complete' && diagnostic.result && <div role="status" aria-live="polite" className={`mt-2 rounded-md px-2 py-1.5 text-[11px] font-bold ${diagnostic.result.passed ? 'bg-emerald-50 text-emerald-900' : 'bg-amber-50 text-amber-950'}`}>{diagnostic.result.supported === false ? diagnostic.result.reason : diagnostic.result.passed ? `Passed · peak ${diagnostic.result.peak} · RMS ${diagnostic.result.rms} · quiet tail ${diagnostic.result.tailPeak}` : `Needs review${diagnostic.result.reason ? ` · ${diagnostic.result.reason}` : ` · peak ${diagnostic.result.peak} · step ${diagnostic.result.maxStep} · tail ${diagnostic.result.tailPeak}`}`}</div>}
+                            {diagnostic.status === 'complete' && diagnostic.result && <div role="status" aria-live="polite" className={`mt-2 rounded-md px-2 py-1.5 text-xs font-bold ${diagnostic.result.passed ? 'bg-emerald-50 text-emerald-900' : 'bg-amber-50 text-amber-950'}`}>{diagnostic.result.supported === false ? diagnostic.result.reason : diagnostic.result.passed ? `Passed · peak ${diagnostic.result.peak} · RMS ${diagnostic.result.rms} · quiet tail ${diagnostic.result.tailPeak}` : `Needs review${diagnostic.result.reason ? ` · ${diagnostic.result.reason}` : ` · peak ${diagnostic.result.peak} · step ${diagnostic.result.maxStep} · tail ${diagnostic.result.tailPeak}`}`}</div>}
                         </div>
                     </div>
                 </details>
@@ -1945,7 +1945,7 @@ const InventoryGrid = React.memo(({ inventory, onSelect }) => {
               ) : item.isLoading ? (
                 <RefreshCw size={16} className="text-indigo-200 animate-spin motion-reduce:animate-none" aria-hidden="true"/>
               ) : (
-                <span className="text-sm font-bold text-indigo-200" aria-hidden="true">{item.name.charAt(0)}</span>
+                <span className="text-sm font-bold text-indigo-200" aria-hidden="true">{String(item?.name || '?').charAt(0)}</span>
               )}
             </button>
             <div className={dismissedTooltip === idx ? 'hidden' : 'absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:flex group-focus-within:flex flex-col items-center z-50 w-36'} role="tooltip">
@@ -2155,11 +2155,11 @@ const AdventureShop = React.memo(({ gold, globalXP, energy = 100, inventory = []
                         </div>
                         <div className="text-right flex flex-col items-end gap-1">
                             <div className="text-yellow-400 font-black text-lg">{item.cost} G</div>
-                            <span className="inline-block max-w-36 truncate whitespace-nowrap text-[11px] font-bold uppercase text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700" title={t(`adventure.effects.${item.effectType}_label`) || t(`adventure.effects.${item.effectType}`) || item.effectType}>
+                            <span className="inline-block max-w-36 truncate whitespace-nowrap text-xs font-bold uppercase text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700" title={t(`adventure.effects.${item.effectType}_label`) || t(`adventure.effects.${item.effectType}`) || item.effectType}>
                                 {t(`adventure.effects.${item.effectType}_label`) || t(`adventure.effects.${item.effectType}`) || item.effectType}
                             </span>
                             {ownedCount > 0 && (
-                                <span className="inline-block text-[11px] font-bold text-emerald-200 bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-600">
+                                <span className="inline-block text-xs font-bold text-emerald-200 bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-600">
                                     {(t('adventure.shop_owned') || 'Owned')}: {ownedCount}
                                 </span>
                             )}
@@ -2450,14 +2450,14 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                 <button type="button" onClick={() => startFieldEdit(i, 'role')} className="min-w-11 min-h-11 px-2 text-xs text-violet-700 font-medium cursor-pointer hover:text-violet-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_role')} aria-label={(t('adventure.edit_role') || 'Edit character role') + ': ' + char.role}>{char.role}</button>
                             )}
                             {editingField?.idx === i && editingField?.field === 'appearance' ? (
-                                <textarea aria-label={t('adventure.edit_appearance') || 'Edit character appearance'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveFieldEdit(); } if (e.key === 'Escape') { e.stopPropagation(); setEditingField(null); setEditFieldValue(''); }}} autoFocus rows={3} className="text-[11px] text-slate-600 mt-1 leading-relaxed w-full px-2 py-1 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white resize-none"/>
+                                <textarea aria-label={t('adventure.edit_appearance') || 'Edit character appearance'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveFieldEdit(); } if (e.key === 'Escape') { e.stopPropagation(); setEditingField(null); setEditFieldValue(''); }}} autoFocus rows={3} className="text-xs text-slate-600 mt-1 leading-relaxed w-full px-2 py-1 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white resize-none"/>
                             ) : (
-                                <button type="button" onClick={() => startFieldEdit(i, 'appearance')} className="min-w-11 min-h-11 px-2 text-[11px] text-slate-700 mt-1 leading-relaxed cursor-pointer hover:text-slate-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_appearance')} aria-label={(t('adventure.edit_appearance') || 'Edit character appearance') + ': ' + char.appearance}>{char.appearance}</button>
+                                <button type="button" onClick={() => startFieldEdit(i, 'appearance')} className="min-w-11 min-h-11 px-2 text-xs text-slate-700 mt-1 leading-relaxed cursor-pointer hover:text-slate-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_appearance')} aria-label={(t('adventure.edit_appearance') || 'Edit character appearance') + ': ' + char.appearance}>{char.appearance}</button>
                             )}
                             {char.portrait && !char.isGenerating && (
                                 <div className="mt-2 flex flex-wrap gap-1.5 justify-center">
                                     {char.isUserUploaded && (
-                                        <span className="text-[11px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-600 font-medium">📷 User Photo</span>
+                                        <span className="text-xs px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-600 font-medium">📷 User Photo</span>
                                     )}
                                     <button type="button" onClick={() => enqueuePortrait(i, { force: true })} className="min-h-11 px-3 py-2 bg-violet-700 text-white rounded-full hover:bg-violet-800 transition-all font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.regen_portrait')}>
                                         🔄 {char.isUserUploaded ? 'AI Generate' : 'Regenerate'}
@@ -2524,13 +2524,13 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                 </div>
                             )}
                             {sanitizingPortraitIdx === i && (
-                                <p id="adventure-portrait-sanitizing-status" className="mt-2 text-[11px] text-sky-800 font-semibold" role="status" aria-live="polite">Preparing image securely…</p>
+                                <p id="adventure-portrait-sanitizing-status" className="mt-2 text-xs text-sky-800 font-semibold" role="status" aria-live="polite">Preparing image securely…</p>
                             )}
                             {isPortraitQueued(i) && !char.isGenerating && (
-                                <p className="mt-2 text-[11px] text-violet-700 font-medium" role="status" aria-live="polite">Waiting its turn…</p>
+                                <p className="mt-2 text-xs text-violet-700 font-medium" role="status" aria-live="polite">Waiting its turn…</p>
                             )}
                             {char.isGenerating && (
-                                <p className="mt-2 text-[11px] text-violet-700 animate-pulse motion-reduce:animate-none font-medium" role="status" aria-live="polite">Creating portrait…</p>
+                                <p className="mt-2 text-xs text-violet-700 animate-pulse motion-reduce:animate-none font-medium" role="status" aria-live="polite">Creating portrait…</p>
                             )}
                         </div>
                     ))}
@@ -2549,7 +2549,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                         <button type="button" onClick={() => setIsAdding(true)} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border-2 border-dashed border-violet-600 p-4 flex flex-col items-center justify-center text-center transition-all motion-reduce:transition-none hover:shadow-lg hover:border-violet-700 hover:from-violet-50 hover:to-indigo-50 min-h-[180px] cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
                             <span className="text-4xl mb-2 group-hover:scale-110 transition-transform" aria-hidden="true">➕</span>
                             <span className="font-bold text-sm text-violet-600">{t('adventure.add_character')}</span>
-                            <span className="text-[11px] text-slate-600 mt-0.5">{t('adventure.create_cast_member')}</span>
+                            <span className="text-xs text-slate-600 mt-0.5">{t('adventure.create_cast_member')}</span>
                         </button>
                     )}
                 </div>
@@ -2561,7 +2561,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                     <div className="h-2.5 overflow-hidden rounded-full bg-slate-200 border border-slate-300" role="progressbar" aria-label="Cast portraits ready" aria-valuemin={0} aria-valuemax={Math.max(1, portraitTotal)} aria-valuenow={portraitReadyCount}>
                         <div className="h-full bg-gradient-to-r from-violet-600 to-indigo-600 transition-all duration-500 motion-reduce:transition-none" style={{ width: portraitProgressPercent + '%' }}></div>
                     </div>
-                    <p className="mt-1.5 text-[11px] text-slate-600 text-center">
+                    <p className="mt-1.5 text-xs text-slate-600 text-center">
                         {portraitReadyCount === portraitTotal ? 'Your cast is ready.' : isPortraitQueueBusy ? 'Creating up to two portraits at a time. You can begin whenever you are ready.' : 'You can begin now or generate the remaining portraits for stronger visual consistency.'}
                     </p>
                 </div>

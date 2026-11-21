@@ -143,9 +143,11 @@ function meetdocsExpandMaskPairs(pairs) {
       .filter(Boolean);
     if (parts.length < 2) return;
     let subIdx = 0;
+    const shortStop = new Set(['of', 'in', 'to', 'on', 'at', 'by', 'or', 'an', 'as', 'is', 'it', 'be', 'do', 'go', 'no', 'so', 'up', 'us', 'we', 'he', 'me', 'my', 'la', 'de', 'el', 'al', 'jr', 'sr', 'ii', 'iv', 'dr', 'mr', 'ms']);
     parts.forEach((part) => {
       const lower = part.toLowerCase();
-      if (!/^\p{L}{3,}$/u.test(part) || MEETDOCS_HONORIFICS.has(lower) || seenNames.has(lower)) return;
+      const letterCount = (part.match(/\p{L}/gu) || []).length;
+      if (letterCount < 2 || !/^\p{L}[\p{L}'’]*\p{L}$/u.test(part) || MEETDOCS_HONORIFICS.has(lower) || shortStop.has(lower) || seenNames.has(lower)) return;
       seenNames.add(lower);
       subIdx += 1;
       expanded.push({ name: part, code: p.code + '-' + subIdx });
@@ -158,6 +160,8 @@ function meetdocsScrubStructuredPii(text) {
   return String(text == null ? '' : text)
     .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[REDACTED-ID]')
     .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[REDACTED-EMAIL]')
+    .replace(/(?:\+?1[\s.-]?)?(?:\(\d{3}\)|\b\d{3})[\s.-]\d{3}[\s.-]\d{4}\b/g, '[REDACTED-PHONE]')
+    .replace(/\b(?:dob|date\s+of\s+birth|birth\s*date|born)\s*[:#-]?\s*(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}-\d{2}-\d{2}|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4})\b/gi, '[REDACTED-DOB]')
     .replace(/\b(?:student\s*id|ssid|iep\s*id|state\s*id|pupil\s*id)\s*[:#-]?\s*[A-Z0-9-]{4,}\b/gi, '[REDACTED-STUDENT-ID]')
     .replace(/\b(?:AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9_-]{20,}|Bearer\s+[A-Za-z0-9._-]{20,})\b/g, '[REDACTED-SECRET]');
 }
@@ -423,8 +427,14 @@ function MeetingDocsPanel(props) {
       if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest('details:not([open])');
       if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
-      const st = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
-      return !st || (st.display !== 'none' && st.visibility !== 'hidden');
+      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+        for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+          if (cur === dialog) break;
+        }
+      }
+      return true;
     });
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();
@@ -472,10 +482,22 @@ function MeetingDocsPanel(props) {
     };
   }, []);
 
+  const mountedRef = React.useRef(true);
+  const aiReqRef = React.useRef(0);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      aiReqRef.current += 1;
+    };
+  }, []);
+
   const allTemplates = [...MEETDOCS_BUILTIN_TEMPLATES, ...customTemplates];
   const templateById = (id) => allTemplates.find((x) => x.id === id) || null;
 
   const startDraft = (templateId) => {
+    aiReqRef.current += 1;
+    setAiBusy(false);
     setDraft({
       stage: 'input',
       templateId,
@@ -508,6 +530,8 @@ function MeetingDocsPanel(props) {
   const convertManual = () => {
     const template = templateById(draft.templateId);
     if (!template) return;
+    aiReqRef.current += 1;
+    setAiBusy(false);
     const sections = {};
     template.sections.forEach((s) => { sections[s.id] = ''; });
     toReview({ sections, decisions: [], actionItems: [] }, false);
@@ -517,11 +541,20 @@ function MeetingDocsPanel(props) {
     const template = templateById(draft.templateId);
     if (!template || !_meetdocsAiUsable('text', callGemini)) return;
     if (draft.rawText.trim().length < 40) { addToast(tt('meetdocs.too_short', 'Paste the notes or transcript first (a few sentences at minimum).'), 'warning'); return; }
-    const pairs = meetdocsMaskPairs(Array.isArray(draft.maskNames) ? draft.maskNames : []);
+    const reqId = ++aiReqRef.current;
+    const pendingName = String(nameInput || '').trim();
+    const baseMaskNames = Array.isArray(draft.maskNames) ? draft.maskNames.slice() : [];
+    if (pendingName && !baseMaskNames.some((n) => String(n).toLowerCase() === pendingName.toLowerCase())) {
+      baseMaskNames.push(pendingName);
+      setDraft((d) => (d ? { ...d, maskNames: baseMaskNames } : d));
+      setNameInput('');
+    }
+    const pairs = meetdocsMaskPairs(baseMaskNames);
     const masked = meetdocsScrubStructuredPii(meetdocsMask(draft.rawText, pairs));
     setAiBusy(true);
     try {
       const raw = await callGemini(meetdocsAiPrompt(template, masked), true);
+      if (!mountedRef.current || aiReqRef.current !== reqId) return;
       const parsed = meetdocsParseAiJson(raw);
       if (!parsed) { addToast(tt('meetdocs.ai_unparseable', 'The AI response could not be read — try again, or use manual mode.'), 'error'); return; }
       const built = meetdocsBuildFromAi(parsed, template, masked, pairs);
@@ -529,9 +562,10 @@ function MeetingDocsPanel(props) {
       toReview(built, true);
       if (unverified > 0) addToast(unverified + ' ' + tt('meetdocs.unverified_toast', 'item(s) could not be matched to your notes — review the flagged ones.'), 'warning');
     } catch (e) {
+      if (!mountedRef.current || aiReqRef.current !== reqId) return;
       addToast(tt('meetdocs.ai_failed', 'Conversion failed: ') + String((e && e.message) || e), 'error');
     } finally {
-      setAiBusy(false);
+      if (mountedRef.current && aiReqRef.current === reqId) setAiBusy(false);
     }
   };
 
@@ -585,9 +619,17 @@ function MeetingDocsPanel(props) {
   ];
 
   const draftTemplate = draft ? templateById(draft.templateId) : null;
+  const [armDiscard, setArmDiscard] = React.useState(false);
+  const backdropDownRef = React.useRef(false);
 
   return (
-    <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4"
+      style={{ zIndex: 260 }}
+      role="presentation"
+      onMouseDown={(e) => { backdropDownRef.current = (e.target === e.currentTarget); }}
+      onClick={(e) => { const allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget) onClose(); }}
+    >
       <div ref={dialogRef} tabIndex={-1} data-help-key="meetdocs_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="meetdocs-title" onClick={(e) => e.stopPropagation()}>
         {/* Solid, not /95: the host dark theme restyles bg-slate-50 only, so a translucent header stayed light under light text. */}
         <div className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl">
@@ -625,12 +667,12 @@ function MeetingDocsPanel(props) {
         </div>
 
           {typeof onOpenEligibility === 'function' && (
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="mt-2 px-4 flex flex-wrap items-center gap-2">
               <button type="button" onClick={() => onOpenEligibility('elig-prep-title')}
                 className="min-h-11 px-3 py-2 rounded-lg border border-violet-300 bg-violet-50 text-violet-800 text-xs font-bold hover:bg-violet-100">
                 {tt('meetdocs.eligibility_link', 'Open the meeting-preparation guide')}
               </button>
-              <span className="text-[10px] text-slate-500">{tt('meetdocs.eligibility_link_note', 'Opens generic prompts only; no meeting record is transferred.')}</span>
+              <span className="text-xs text-slate-600">{tt('meetdocs.eligibility_link_note', 'Opens generic prompts only; no meeting record is transferred.')}</span>
             </div>
           )}
         <div className="p-4" role="tabpanel" id="meetdocs-tabpanel" aria-labelledby={'meetdocs-tab-' + tab} tabIndex={-1}>
@@ -642,13 +684,13 @@ function MeetingDocsPanel(props) {
                   <button key={tpl.id} type="button" onClick={() => startDraft(tpl.id)}
                     className="min-h-11 p-3 rounded-xl border border-indigo-300 bg-white hover:bg-indigo-50 text-left">
                     <span className="block font-bold text-sm text-indigo-800">{tpl.name}</span>
-                    <span className="block text-[10px] text-slate-500">{tpl.sections.length} {tt('meetdocs.sections_short', 'sections')}{tpl.builtin ? '' : (' · ' + tt('meetdocs.custom_badge', 'custom'))}</span>
+                    <span className="block text-xs text-slate-600">{tpl.sections.length} {tt('meetdocs.sections_short', 'sections')}{tpl.builtin ? '' : (' · ' + tt('meetdocs.custom_badge', 'custom'))}</span>
                   </button>
                 ))}
                 <button type="button" onClick={() => setTplDraft({ name: '', sectionsText: '' })}
                   className="min-h-11 p-3 rounded-xl border border-dashed border-slate-400 bg-white hover:bg-slate-100 text-left">
                   <span className="block font-bold text-sm text-slate-700">+ {tt('meetdocs.new_template', 'New custom format')}</span>
-                  <span className="block text-[10px] text-slate-500">{tt('meetdocs.new_template_hint', 'Model your district’s own form once, reuse it forever')}</span>
+                  <span className="block text-xs text-slate-600">{tt('meetdocs.new_template_hint', 'Model your district’s own form once, reuse it forever')}</span>
                 </button>
               </div>
             </div>
@@ -691,7 +733,18 @@ function MeetingDocsPanel(props) {
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
                 <p className="text-sm font-bold text-slate-800">{draftTemplate.name}</p>
-                <button type="button" onClick={() => setDraft(null)} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100">{tt('meetdocs.back_templates', 'Change format')}</button>
+                <button type="button" disabled={aiBusy} onClick={() => {
+                  const hasWork = !!(String(draft.rawText || '').trim() || (Array.isArray(draft.maskNames) && draft.maskNames.length > 0));
+                  if (hasWork && !armDiscard) {
+                    setArmDiscard(true);
+                    meetdocsAnnounce(tt('meetdocs.discard_arm_announce', 'Activate Change format again to discard your pasted notes.'));
+                    return;
+                  }
+                  setArmDiscard(false);
+                  aiReqRef.current += 1;
+                  setAiBusy(false);
+                  setDraft(null);
+                }} className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold disabled:opacity-50 ' + (armDiscard ? 'bg-rose-600 text-white border-rose-700' : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-100')}>{armDiscard ? tt('meetdocs.discard_confirm', 'Tap again to discard notes') : tt('meetdocs.back_templates', 'Change format')}</button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
                 <div>
@@ -715,7 +768,7 @@ function MeetingDocsPanel(props) {
 
               <div className="mt-2 bg-white border border-slate-300 rounded-xl p-3">
                 <h4 className="text-xs font-bold text-slate-700">{tt('meetdocs.mask_title', 'Names to mask before the AI call')}</h4>
-                <p className="text-[10px] text-slate-500">{tt('meetdocs.mask_note', 'Each name is replaced with a code (Person A, Person B…) on this device before anything is sent, and restored locally in the result. Add every student, family, and staff name that appears in your notes.')}</p>
+                <p className="text-xs text-slate-600">{tt('meetdocs.mask_note', 'Each name is replaced with a code (Person A, Person B…) on this device before anything is sent, and restored locally in the result. Add every student, family, and staff name that appears in your notes.')}</p>
                 <div className="mt-1.5 flex gap-2">
                   <input type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)}
                     onKeyDown={(e) => { if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); addMaskName(); } }}
@@ -730,7 +783,7 @@ function MeetingDocsPanel(props) {
                       <li key={p.name}>
                         <button type="button" onClick={() => setDraft((d) => ({ ...d, maskNames: d.maskNames.filter((n) => n !== p.name) }))}
                           aria-label={tt('meetdocs.mask_remove_aria', 'Stop masking') + ' ' + p.name}
-                          className="min-h-11 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-300 text-[11px] text-slate-700 hover:bg-rose-50 hover:border-rose-300">
+                          className="min-h-11 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-300 text-xs text-slate-700 hover:bg-rose-50 hover:border-rose-300">
                           {p.name} → {p.code} <span aria-hidden="true">✕</span>
                         </button>
                       </li>
@@ -746,25 +799,32 @@ function MeetingDocsPanel(props) {
                     {aiBusy ? tt('meetdocs.converting', 'Converting…') : (tt('meetdocs.convert_ai', 'Convert with AI') + ' ✨')}
                   </button>
                 )}
-                <button type="button" onClick={convertManual} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100">{tt('meetdocs.convert_manual', 'Fill in manually (no AI)')}</button>
+                <button type="button" disabled={aiBusy} onClick={convertManual} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100 disabled:opacity-50">{tt('meetdocs.convert_manual', 'Fill in manually (no AI)')}</button>
               </div>
-              {!_meetdocsAiUsable('text', callGemini) && <p className="mt-1 text-[10px] text-slate-500">{tt('meetdocs.no_ai', 'AI conversion is unavailable in this host — manual mode uses the same templates.')}</p>}
+              {!_meetdocsAiUsable('text', callGemini) && <p className="mt-1 text-xs text-slate-600">{tt('meetdocs.no_ai', 'AI conversion is unavailable in this host — manual mode uses the same templates.')}</p>}
+            </div>
+          )}
+
+          {tab === 'new' && draft && (!draftTemplate || (draft.stage !== 'input' && draft.stage !== 'review')) && (
+            <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 space-y-2">
+              <p className="text-sm font-bold text-amber-900">{tt('meetdocs.missing_template_draft', 'This saved draft references a template that is no longer available.')}</p>
+              <button type="button" onClick={() => { aiReqRef.current += 1; setAiBusy(false); setDraft(null); }} className="min-h-11 px-3 py-2 rounded-lg bg-amber-700 text-white text-sm font-bold hover:bg-amber-800">{tt('meetdocs.discard_broken_draft', 'Discard draft and choose a format')}</button>
             </div>
           )}
 
           {tab === 'new' && draft && draft.stage === 'review' && draftTemplate && (
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
-                <p className="text-sm font-bold text-slate-800">{draftTemplate.name} <span className="font-normal text-xs text-slate-500">— {tt('meetdocs.review_hint', 'review and edit before saving')}</span></p>
+                <p className="text-sm font-bold text-slate-800">{draftTemplate.name} <span className="font-normal text-xs text-slate-600">— {tt('meetdocs.review_hint', 'review and edit before saving')}</span></p>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => setDraft((d) => ({ ...d, stage: 'input' }))} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100">{tt('meetdocs.back_input', 'Back to notes')}</button>
                   <button type="button" onClick={saveMeeting} className="min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800">{tt('meetdocs.save', 'Save record')}</button>
                 </div>
               </div>
-              {draft.aiUsed && <p className="text-[10px] text-slate-500 mb-2">{tt('meetdocs.certify_note', 'AI drafted this from your notes. You are certifying the final record — verify flagged items and edit anything that is wrong before saving.')}</p>}
+              {draft.aiUsed && <p className="text-xs text-slate-600 mb-2">{tt('meetdocs.certify_note', 'AI drafted this from your notes. You are certifying the final record — verify flagged items and edit anything that is wrong before saving.')}</p>}
               {draftTemplate.sections.map((sec) => (
                 <div key={sec.id} className="mb-2">
-                  <label htmlFor={'meetdocs-sec-' + sec.id} className="block text-xs font-bold text-slate-700 mb-0.5">{sec.title}{sec.hint ? <span className="font-normal text-slate-500"> — {sec.hint}</span> : null}</label>
+                  <label htmlFor={'meetdocs-sec-' + sec.id} className="block text-xs font-bold text-slate-700 mb-0.5">{sec.title}{sec.hint ? <span className="font-normal text-slate-600"> — {sec.hint}</span> : null}</label>
                   <textarea id={'meetdocs-sec-' + sec.id} rows={2} value={(draft.sections && draft.sections[sec.id]) || ''}
                     onChange={(e) => setDraft((d) => ({ ...d, sections: { ...d.sections, [sec.id]: e.target.value } }))}
                     className="w-full text-sm border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
@@ -781,19 +841,19 @@ function MeetingDocsPanel(props) {
                           <div className="min-w-0 flex-1">
                             <input type="text" value={item.text} aria-label={label + ' ' + (i + 1)}
                               onChange={(e) => setDraft((d) => ({ ...d, [listKey]: d[listKey].map((x, xi) => xi === i ? { ...x, text: e.target.value } : x) }))}
-                              className="w-full min-h-9 border border-slate-200 rounded px-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                              className="w-full min-h-11 border border-slate-200 rounded px-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                             {listKey === 'actionItems' && (
-                              <div className="mt-1 flex gap-1.5">
+                              <div className="mt-1 flex flex-wrap gap-1.5">
                                 <input type="text" value={item.owner || ''} placeholder={tt('meetdocs.owner', 'Owner')} aria-label={tt('meetdocs.owner_aria', 'Owner for action item') + ' ' + (i + 1)}
                                   onChange={(e) => setDraft((d) => ({ ...d, actionItems: d.actionItems.map((x, xi) => xi === i ? { ...x, owner: e.target.value } : x) }))}
-                                  className="w-32 min-h-9 border border-slate-200 rounded px-2 bg-white text-[11px] focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                  className="w-32 min-h-11 border border-slate-200 rounded px-2 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                                 <input type="date" value={item.due || ''} aria-label={tt('meetdocs.due_aria', 'Due date for action item') + ' ' + (i + 1)}
                                   onChange={(e) => setDraft((d) => ({ ...d, actionItems: d.actionItems.map((x, xi) => xi === i ? { ...x, due: e.target.value } : x) }))}
-                                  className="min-h-9 border border-slate-200 rounded px-2 bg-white text-[11px] focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                  className="min-h-11 border border-slate-200 rounded px-2 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                               </div>
                             )}
-                            {item.verified === false && <p className="mt-1 text-[10px] font-bold text-amber-800">{tt('meetdocs.unverified', '⚠ Not found in your notes — verify or delete.')}</p>}
-                            {item.source && item.verified !== false && <p className="mt-1 text-[10px] text-slate-500">“{item.source}”</p>}
+                            {item.verified === false && <p className="mt-1 text-xs font-bold text-amber-800">{tt('meetdocs.unverified', '⚠ Not found in your notes — verify or delete.')}</p>}
+                            {item.source && item.verified !== false && <p className="mt-1 text-xs text-slate-600">“{item.source}”</p>}
                           </div>
                           <button type="button" aria-label={tt('meetdocs.remove_item_aria', 'Remove item') + ' ' + (i + 1)}
                             onClick={() => setDraft((d) => ({ ...d, [listKey]: d[listKey].filter((_, xi) => xi !== i) }))}
@@ -803,7 +863,7 @@ function MeetingDocsPanel(props) {
                     ))}
                   </ul>
                   <button type="button" onClick={() => setDraft((d) => ({ ...d, [listKey]: [...(d[listKey] || []), { id: meetdocsNextId('mi'), text: '', source: '', verified: true, ...(listKey === 'actionItems' ? { owner: '', due: '', done: false } : {}) }] }))}
-                    className="mt-1.5 min-h-11 px-2 py-1 rounded border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-100">+ {tt('meetdocs.add_item', 'Add')}</button>
+                    className="mt-1.5 min-h-11 px-2 py-1 rounded border border-slate-300 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100">+ {tt('meetdocs.add_item', 'Add')}</button>
                 </div>
               ))}
             </div>
@@ -827,7 +887,7 @@ function MeetingDocsPanel(props) {
               <div className="bg-white border border-slate-300 rounded-xl p-4">
                 <h3 className="font-bold text-slate-800">{viewMeeting.title}</h3>
                 <p className="text-xs text-slate-600">{viewMeeting.templateName} · {viewMeeting.date}{viewMeeting.aiUsed ? (' · ' + tt('meetdocs.ai_badge', 'AI-drafted, human-certified')) : ''}</p>
-                {(templateById(viewMeeting.templateId) || { sections: [] }).sections.map((sec) => {
+                {(templateById(viewMeeting.templateId) || { sections: Object.keys(viewMeeting.sections || {}).map((id) => ({ id, title: id })) }).sections.map((sec) => {
                   const body = viewMeeting.sections && viewMeeting.sections[sec.id];
                   if (!body) return null;
                   return (
@@ -851,8 +911,10 @@ function MeetingDocsPanel(props) {
                     <ul className="mt-1 space-y-1 text-xs text-slate-700">
                       {viewMeeting.actionItems.map((a) => (
                         <li key={a.id} className="flex items-center gap-2">
-                          <input type="checkbox" checked={!!a.done} onChange={(e) => setItemDone(viewMeeting.id, a.id, e.target.checked)}
-                            aria-label={tt('meetdocs.done_aria', 'Mark done:') + ' ' + a.text} className="w-4 h-4" />
+                          <label className="min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 cursor-pointer -my-2 -ml-2">
+                            <input type="checkbox" checked={!!a.done} onChange={(e) => setItemDone(viewMeeting.id, a.id, e.target.checked)}
+                              aria-label={tt('meetdocs.done_aria', 'Mark done:') + ' ' + a.text} className="w-4 h-4" />
+                          </label>
                           <span className={a.done ? 'line-through text-slate-600' : ''}>{a.text}{a.owner ? (' — ' + a.owner) : ''}{a.due ? (' (' + a.due + ')') : ''}</span>
                         </li>
                       ))}
@@ -874,14 +936,14 @@ function MeetingDocsPanel(props) {
                       className="w-full min-h-11 flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-left">
                       <span className="min-w-0">
                         <span className="block font-bold text-sm text-slate-800">{m.title}</span>
-                        <span className="block text-[10px] text-slate-500">{m.templateName} · {m.date} · {(m.actionItems || []).filter((a) => !a.done).length} {tt('meetdocs.open_short', 'open action item(s)')}</span>
+                        <span className="block text-xs text-slate-600">{m.templateName} · {m.date} · {(m.actionItems || []).filter((a) => !a.done).length} {tt('meetdocs.open_short', 'open action item(s)')}</span>
                       </span>
                       <span aria-hidden="true" className="shrink-0 text-slate-600">›</span>
                     </button>
                   </li>
                 ))}
               </ul>
-              {meetings.length > 0 && <p className="mt-3 text-[10px] text-slate-500">{tt('meetdocs.storage_note', 'Records live only in this browser’s storage — download anything you must keep (Gemini Canvas may not persist storage between sessions).')}</p>}
+              {meetings.length > 0 && <p className="mt-3 text-xs text-slate-600">{tt('meetdocs.storage_note', 'Records live only in this browser’s storage — download anything you must keep (Gemini Canvas may not persist storage between sessions).')}</p>}
             </div>
           )}
 
@@ -892,12 +954,14 @@ function MeetingDocsPanel(props) {
               <ul className="space-y-1">
                 {rollup.map((item) => (
                   <li key={item.meetingId + item.id} className={'flex items-center gap-2 p-2 rounded-xl border text-xs ' + (item.overdue ? 'bg-rose-50 border-rose-300' : 'bg-white border-slate-300')}>
-                    <input type="checkbox" checked={item.done} onChange={(e) => setItemDone(item.meetingId, item.id, e.target.checked)}
-                      aria-label={tt('meetdocs.done_aria', 'Mark done:') + ' ' + item.text} className="w-4 h-4 shrink-0" />
+                    <label className="min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 cursor-pointer -my-2 -ml-2">
+                      <input type="checkbox" checked={item.done} onChange={(e) => setItemDone(item.meetingId, item.id, e.target.checked)}
+                        aria-label={tt('meetdocs.done_aria', 'Mark done:') + ' ' + item.text} className="w-4 h-4 shrink-0" />
+                    </label>
                     <span className={'min-w-0 flex-1 ' + (item.done ? 'line-through text-slate-600' : 'text-slate-700')}>
                       {item.text}{item.owner ? (' — ' + item.owner) : ''}
                     </span>
-                    <span className="shrink-0 text-[10px] text-slate-500">
+                    <span className="shrink-0 text-xs text-slate-600">
                       {item.overdue && <span className="font-bold text-rose-700">{tt('meetdocs.overdue', 'overdue')} · </span>}
                       {item.due || tt('meetdocs.no_due', 'no date')} · {item.meetingDate}
                     </span>

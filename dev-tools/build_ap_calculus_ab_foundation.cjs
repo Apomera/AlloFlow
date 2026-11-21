@@ -6,6 +6,7 @@
 
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { distractorFeedbackFor } = require('./ap_calculus_ab_distractor_feedback/index.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_calculus_ab_foundation_pilot.json');
@@ -400,8 +401,9 @@ function makeItem(spec, index) {
   const localIndex = index % 10;
   const calculatorUse = [3, 7, 9].includes(localIndex) ? 'calculator-permitted-practice' : 'calculator-not-required';
   const learningSectionId = sectionId(spec.unit, sectionNumberForTopic(unit, spec.topicId));
+  const itemId = PACK_ID + '-item-' + String(index + 1).padStart(3, '0');
   return {
-    id: PACK_ID + '-item-' + String(index + 1).padStart(3, '0'),
+    id: itemId,
     templateVersion: 1,
     itemSchemaVersion: 2,
     type: 'single-choice',
@@ -423,9 +425,12 @@ function makeItem(spec, index) {
     choices,
     answerIndex,
     rationale: spec.rationale,
-    choiceRationales: choices.map((choice, choiceIndex) => choiceIndex === answerIndex
-      ? 'Best answer. ' + spec.rationale
-      : 'Not best. Recheck this topic move: ' + topicRoute.studyMove + ' Boundary: ' + topicRoute.boundary),
+    choiceRationales: choices.map((choice, choiceIndex) => {
+      if (choiceIndex === answerIndex) return 'Best answer. ' + spec.rationale;
+      const authored = distractorFeedbackFor(itemId, choice);
+      assert(authored, 'Missing authored distractor feedback for ' + itemId + ' :: ' + choice);
+      return authored;
+    }),
     misconceptionTags: [topicRoute.boundary],
     references: [CED_URL, COURSE_URL, EXAM_URL, OPENSTAX_URL],
     sourceDetails: sourceCatalog.map((source) => ({ title: source.title, organization: source.organization, url: source.url, credibility: source.credibility })),
@@ -1029,6 +1034,7 @@ function buildPack(library) {
       remediationPlaybooksIncluded: true,
       readinessInferenceIncluded: false,
       handsFreeContentCompatible: true,
+      optionLevelFeedback: 'authored-per-distractor',
       limitations: [
         'This expanded foundation is not a complete AP Calculus AB exam simulation and does not reproduce the official hybrid digital experience.',
         'Official free-response prompts, scoring rubrics, secure questions, and score conversions are not included or scored.',

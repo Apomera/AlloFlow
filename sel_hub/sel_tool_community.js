@@ -37,8 +37,10 @@ window.SelHub = window.SelHub || {
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    try { if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return; } catch (_) {}
     var ac = getAudioCtx(); if (!ac) return;
     try {
+      if (ac.state === 'suspended' && typeof ac.resume === 'function') ac.resume().catch(function() {});
       var osc = ac.createOscillator();
       var gain = ac.createGain();
       osc.type = type || 'sine';
@@ -605,6 +607,7 @@ window.SelHub = window.SelHub || {
       var _comBd = function(h){ return _comHC ? (_com_BDH[h]||h) : (_comL ? (_com_BDL[h]||h) : h); };
       // white text needs a 700-weight fill (1.4.3)
       var _comSolid = function(c){ return _comHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
+      var _comBtnFg = _comHC ? '#000000' : '#ffffff';
       return (function() {
         var React = ctx.React;
         var h = React.createElement;
@@ -623,7 +626,8 @@ window.SelHub = window.SelHub || {
 
         // ── Grade band detection ──
         var band = (function() {
-          var g = parseInt(gradeLevel) || 5;
+          if (ctx.gradeBand === 'elementary' || ctx.gradeBand === 'middle' || ctx.gradeBand === 'high') return ctx.gradeBand;
+          var g = parseInt(gradeLevel, 10) || 5;
           if (g <= 5) return 'elementary';
           if (g <= 8) return 'middle';
           return 'high';
@@ -647,9 +651,11 @@ window.SelHub = window.SelHub || {
         var exploredItems  = d.exploredItems || {};
         var expandedItem   = d.expandedItem || null;
         var learnCount     = d.learnCount || 0;
+        var learnedItems   = d.learnedItems || {};
 
         // Identity state
         var identityMap    = d.identityMap || {};
+        var identityXpAwarded = d.identityXpAwarded || {};
         var superpower     = d.superpower || '';
         var superpowerSaved = d.superpowerSaved || false;
 
@@ -658,6 +664,7 @@ window.SelHub = window.SelHub || {
         var scChoice       = d.scChoice != null ? d.scChoice : null;
         var scCompleted    = d.scCompleted || 0;
         var scTopRatings   = d.scTopRatings || 0;
+        var scCompletedIds = d.scCompletedIds || {};
 
         // AI Coach state
         var aiPrompt       = d.aiPrompt || '';
@@ -686,6 +693,9 @@ window.SelHub = window.SelHub || {
                   tier: _safety.tier
                 });
               }
+              if (_safety.tier >= 3 && window.SelHub && window.SelHub.showCrisisModal) {
+                try { window.SelHub.showCrisisModal({ toolName: 'Community & Belonging', contentSnippet: userInput }); } catch (_) {}
+              }
               upd({ _communityTier: _safety.tier || 0 });
             });
         };
@@ -699,6 +709,7 @@ window.SelHub = window.SelHub || {
           var msg = (window.SelHub && window.SelHub.rehearseBreakCharacterText)
             ? window.SelHub.rehearseBreakCharacterText(safety.severity)
             : 'Your safety matters. Please reach out to a trusted adult or call/text 988.';
+          upd({ _communityTier: 3 });
           if (window.SelHub && window.SelHub.showCrisisModal) {
             try { window.SelHub.showCrisisModal({ toolName: 'Community & Belonging', contentSnippet: userInput }); } catch (_) {}
           }
@@ -740,6 +751,8 @@ window.SelHub = window.SelHub || {
         // Heritage Project state
         var heritageData   = d.heritageData || {};
         var heritageSaved  = d.heritageSaved || false;
+        var heritageXpAwarded = d.heritageXpAwarded || {};
+        var heritageExportXpAwarded = !!d.heritageExportXpAwarded;
 
         // Intercultural Tips state
         var icRead         = d.icRead || {};
@@ -747,7 +760,13 @@ window.SelHub = window.SelHub || {
         // Badges & log
         var practiceLog    = d.practiceLog || [];
         var earnedBadges   = d.earnedBadges || {};
-        var shownBadges = BADGES.filter(function(b) { return (!b.retired && (_cmAiOn || !b.aiOnly)) || earnedBadges[b.id]; }); // retired, or AI-only without usable AI: shown only once earned
+        var shownBadges = BADGES.filter(function(b) {
+          if (earnedBadges[b.id]) return true;
+          if (b.retired) return false;
+          if (!_cmAiOn && b.aiOnly) return false;
+          if (band === 'elementary' && (b.id === 'privilege_aware' || b.id === 'micro_spotter')) return false;
+          return true;
+        }); // retired, AI-only without usable AI, or middle/high-only on elementary: shown only once earned
         var showBadgePopup = d.showBadgePopup || null;
         var showBadgesPanel = d.showBadgesPanel || false;
         var communityBadgeDialogRef = React.useRef(null);
@@ -838,22 +857,41 @@ window.SelHub = window.SelHub || {
           }
         }
 
-        function checkBadges() {
-          var explored = Object.keys(exploredItems).length;
+        function checkBadges(overrides) {
+          var ov = overrides || {};
+          var _exploredItems = ov.exploredItems || exploredItems;
+          var _identityMap = ov.identityMap || identityMap;
+          var _superpower = ov.superpower != null ? ov.superpower : superpower;
+          var _superpowerSaved = ov.superpowerSaved != null ? ov.superpowerSaved : superpowerSaved;
+          var _scCompleted = ov.scCompleted != null ? ov.scCompleted : scCompleted;
+          var _scTopRatings = ov.scTopRatings != null ? ov.scTopRatings : scTopRatings;
+          var _visitedTabs = ov.visitedTabs || visitedTabs;
+          var _allyActions = ov.allyActions || allyActions;
+          var _quizScore = ov.quizScore != null ? ov.quizScore : quizScore;
+          var _quizBest = ov.quizBest != null ? ov.quizBest : quizBest;
+          var _battleScore = ov.battleScore != null ? ov.battleScore : battleScore;
+          var _battleBest = ov.battleBest != null ? ov.battleBest : battleBest;
+          var _pwFinished = ov.pwFinished != null ? ov.pwFinished : pwFinished;
+          var _pwReflectionSaved = ov.pwReflectionSaved != null ? ov.pwReflectionSaved : pwReflectionSaved;
+          var _maReviewed = ov.maReviewed || maReviewed;
+          var _heritageData = ov.heritageData || heritageData;
+          var _icRead = ov.icRead || icRead;
+
+          var explored = Object.keys(_exploredItems).length;
           if (explored >= 1) tryAwardBadge('first_explorer');
           if (explored >= 5) tryAwardBadge('culture_curious');
 
           var filledIdentity = 0;
-          IDENTITY_CATEGORIES.forEach(function(cat) { if (identityMap[cat.id] && identityMap[cat.id].trim().length > 0) filledIdentity++; });
+          IDENTITY_CATEGORIES.forEach(function(cat) { if (_identityMap[cat.id] && _identityMap[cat.id].trim().length > 0) filledIdentity++; });
           if (filledIdentity >= 3) tryAwardBadge('identity_builder');
           if (filledIdentity >= 8) tryAwardBadge('identity_complete');
 
-          if (superpower && superpower.trim().length > 0 && superpowerSaved) tryAwardBadge('reflective');
-          if (scTopRatings >= 1) tryAwardBadge('ally_training');
-          if (scCompleted >= 3) tryAwardBadge('deep_listener');
-          if (scCompleted >= 8) tryAwardBadge('scenario_master');
+          if (_superpower && _superpower.trim().length > 0 && _superpowerSaved) tryAwardBadge('reflective');
+          if (_scTopRatings >= 1) tryAwardBadge('ally_training');
+          if (_scCompleted >= 3) tryAwardBadge('deep_listener');
+          if (_scCompleted >= 8) tryAwardBadge('scenario_master');
 
-          var tabsVisited = visitedTabs;
+          var tabsVisited = _visitedTabs;
           var allCoreVisited = tabsVisited.explore && tabsVisited.identity && tabsVisited.scenarios && tabsVisited.badges && tabsVisited.quiz && tabsVisited.battle;
           var allNewVisited = band === 'elementary' ? (tabsVisited.heritage && tabsVisited.commtips) : (tabsVisited.heritage && tabsVisited.commtips && tabsVisited.privilege && tabsVisited.microagg);
           if (allCoreVisited && allNewVisited) tryAwardBadge('all_tabs');
@@ -862,26 +900,26 @@ window.SelHub = window.SelHub || {
 
           var bandItems = CULTURE_ITEMS[band] || CULTURE_ITEMS.elementary;
           var allBandExplored = true;
-          bandItems.forEach(function(item) { if (!exploredItems[item.id]) allBandExplored = false; });
+          bandItems.forEach(function(item) { if (!_exploredItems[item.id]) allBandExplored = false; });
           if (allBandExplored && bandItems.length > 0) tryAwardBadge('deep_diver');
 
-          var allyDone = Object.keys(allyActions).length;
+          var allyDone = Object.keys(_allyActions).length;
           if (allyDone >= 3) tryAwardBadge('ally_action');
-          if (allyDone >= 5 && scTopRatings >= 1) tryAwardBadge('action_taker');
+          if (allyDone >= 5 && _scTopRatings >= 1) tryAwardBadge('action_taker');
 
-          if (quizBest >= 8 || quizScore >= 8) tryAwardBadge('quiz_champion');
-          if (battleBest >= 4 || battleScore >= 4) tryAwardBadge('battle_victor');
+          if (_quizBest >= 8 || _quizScore >= 8) tryAwardBadge('quiz_champion');
+          if (_battleBest >= 4 || _battleScore >= 4) tryAwardBadge('battle_victor');
 
           // New feature badges
-          if (pwFinished && pwReflectionSaved) tryAwardBadge('privilege_aware');
-          var maReviewedCount = Object.keys(maReviewed).length;
+          if (_pwFinished && _pwReflectionSaved) tryAwardBadge('privilege_aware');
+          var maReviewedCount = Object.keys(_maReviewed).length;
           if (maReviewedCount >= 8) tryAwardBadge('micro_spotter');
           var heritageFilled = 0;
-          HERITAGE_SECTIONS.forEach(function(sec) { if (heritageData[sec.id] && heritageData[sec.id].trim().length > 0) heritageFilled++; });
+          HERITAGE_SECTIONS.forEach(function(sec) { if (_heritageData[sec.id] && _heritageData[sec.id].trim().length > 0) heritageFilled++; });
           if (heritageFilled >= 4) tryAwardBadge('heritage_builder');
           var tipItems = INTERCULTURAL_TIPS[band] || INTERCULTURAL_TIPS.elementary;
           var allTipsRead = true;
-          tipItems.forEach(function(tip) { if (!icRead[tip.id]) allTipsRead = false; });
+          tipItems.forEach(function(tip) { if (!_icRead[tip.id]) allTipsRead = false; });
           if (allTipsRead && tipItems.length > 0) tryAwardBadge('cross_cultural');
 
           var badgeCount = Object.keys(earnedBadges).length;
@@ -911,12 +949,14 @@ window.SelHub = window.SelHub || {
           if (callTTS) callTTS(text);
         }
 
-        // ── Track tab visits ──
-        if (!visitedTabs[activeTab]) {
-          var newVisited = Object.assign({}, visitedTabs);
-          newVisited[activeTab] = true;
-          upd({ visitedTabs: newVisited });
-        }
+        // ── Track tab visits (in effect, never during render) ──
+        React.useEffect(function() {
+          if (!visitedTabs[activeTab]) {
+            var newVisited = Object.assign({}, visitedTabs);
+            newVisited[activeTab] = true;
+            upd({ visitedTabs: newVisited });
+          }
+        }, [activeTab]);
 
         // ══════════════════════════════════════════════════════════
         // ── Tab Bar ──
@@ -942,10 +982,12 @@ window.SelHub = window.SelHub || {
         var selectCommunityTab = function(nextTab) {
           var next = tabs.find(function(item) { return item.id === nextTab; });
           if (!next) return;
-          upd({ activeTab: next.id });
+          var nextVisited = Object.assign({}, visitedTabs);
+          nextVisited[next.id] = true;
+          upd({ activeTab: next.id, visitedTabs: nextVisited });
           if (soundEnabled) sfxClick();
           if (announceToSR) announceToSR(next.label + ' tab selected');
-          checkBadges();
+          checkBadges({ visitedTabs: nextVisited });
         };
 
         var tabBar = h('div', {
@@ -988,7 +1030,7 @@ window.SelHub = window.SelHub || {
           h('button', { 'aria-label': 'Toggle sound', 'aria-pressed': soundEnabled, onClick: function() { upd({ soundEnabled: !soundEnabled }); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _comFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
           h('button', { 'aria-label': 'Show community badges', 'aria-expanded': showBadgesPanel, onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _comFg('#94a3b8'), position: 'relative' } },
             '\uD83C\uDFC5',
-            Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: _comSolid(ACCENT), color: _comFg('#fff'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
+            Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: _comSolid(ACCENT), color: _comBtnFg, borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
           )
         );
 
@@ -1006,16 +1048,31 @@ window.SelHub = window.SelHub || {
             battle:    { accent: _comFg('#a855f7'), soft: 'rgba(168,85,247,0.14)', icon: '\u2694',         title: 'Battle \u2014 head-to-head retrieval',                  hint: 'Speed builds automaticity for the recall layer (key terms, dates, frameworks). Frees working memory for the harder layer \u2014 actually applying these ideas in the wild, where the stakes are real and the moment moves fast.' },
             badges:    { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones in cross-cultural skill',         hint: 'Acknowledges competence without coercion (Deci + Ryan 1985). The badges are the side effect; the work is the conversations + scenarios + reflections you do over weeks. Show the streak; the streak shows the practice.' }
           };
-          var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
+          var _selHdrInk = function(c) {
+            if (_comHC) return '#ffff00';
+            if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c;
+            var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); });
+            var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); };
+            var base = _comL ? [248, 250, 252] : [15, 23, 42];
+            var target = _comL ? 15 : 255;
+            var lb = L(p.map(function(v, i) { return v * 0.2 + base[i] * 0.8; }));
+            for (var m = 0; m <= 1; m += 0.04) {
+              var q = p.map(function(v) { return Math.round(v + (target - v) * m); });
+              var lq = L(q);
+              var cr = (Math.max(lq, lb) + 0.05) / (Math.min(lq, lb) + 0.05);
+              if (cr >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c;
+            }
+            return _comL ? '#0f172a' : '#ffffff';
+          };
           var meta = TAB_META[activeTab] || TAB_META.explore;
           return h('div', {
             style: {
               margin: '8px 12px 12px',
               padding: '12px 14px',
               borderRadius: 12,
-              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
-              border: '1px solid ' + meta.accent + '55',
-              borderLeft: '4px solid ' + meta.accent,
+              background: _comHC ? '#000000' : ('linear-gradient(135deg, ' + meta.soft + ' 0%, ' + (_comL ? 'rgba(248,250,252,0)' : 'rgba(15,23,42,0)') + ' 100%), ' + _comBg('#0f172a')),
+              border: '1px solid ' + (_comHC ? '#ffff00' : (meta.accent + '55')),
+              borderLeft: '4px solid ' + (_comHC ? '#ffff00' : meta.accent),
               display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
             }
           },
@@ -1050,7 +1107,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
                 shownBadges.map(function(b) {
                   var earned = !!earnedBadges[b.id];
-                  return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : '#0f172a88', border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT_MED : _comBg('#334155')), textAlign: 'center' } },
+                  return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : (_comL ? '#f1f5f9' : _comBg('#0f172a')), opacity: earned ? 1 : 0.78, border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT_MED : _comBd('#334155')), textAlign: 'center' } },
                     h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
                     h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? _comFg('#f1f5f9') : _comFg('#94a3b8'), marginTop: 4 } }, b.name),
@@ -1096,7 +1153,7 @@ window.SelHub = window.SelHub || {
                         logPractice('explore', item.id);
                         if (soundEnabled) sfxDiscover();
                         awardXP(5);
-                        checkBadges();
+                        checkBadges({ exploredItems: newExplored });
                       }
                     },
                     style: { width: '100%', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }
@@ -1112,18 +1169,22 @@ window.SelHub = window.SelHub || {
                   isExpanded && h('div', { style: { padding: '0 16px 16px 16px' } },
                     h('p', { style: { fontSize: 13, color: _comFg('#cbd5e1'), lineHeight: 1.6, marginBottom: 12 } }, item.desc),
                     h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                      h('button', { 'aria-label': 'I didn’t know that!',
+                      h('button', { 'aria-label': learnedItems[item.id] ? 'Marked as learned' : 'I didn’t know that!',
+                        disabled: !!learnedItems[item.id],
                         onClick: function() {
+                          if (learnedItems[item.id]) return;
+                          var newLearned = Object.assign({}, learnedItems);
+                          newLearned[item.id] = true;
                           var newCount = learnCount + 1;
-                          upd({ learnCount: newCount });
+                          upd({ learnCount: newCount, learnedItems: newLearned });
                           if (soundEnabled) sfxCorrect();
                           addToast('\uD83D\uDCA1 I didn\'t know that! (' + newCount + ' new things learned)', 'success');
                           awardXP(5);
                           logPractice('learn', item.id);
                           checkBadges();
                         },
-                        style: { padding: '6px 14px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 12, cursor: 'pointer', fontWeight: 600 }
-                      }, '\uD83D\uDCA1 I didn\'t know that!'),
+                        style: { padding: '6px 14px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 12, cursor: learnedItems[item.id] ? 'default' : 'pointer', fontWeight: 600, opacity: learnedItems[item.id] ? 0.65 : 1 }
+                      }, learnedItems[item.id] ? '\u2713 Learned!' : '\uD83D\uDCA1 I didn\'t know that!'),
                       callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(item.name + '. ' + item.desc); }, style: { padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _comFg('#94a3b8'), fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
                     )
                   )
@@ -1174,9 +1235,16 @@ window.SelHub = window.SelHub || {
                     },
                     onBlur: function() {
                       if (value.trim().length > 0) {
-                        logPractice('identity', cat.id);
-                        awardXP(5);
-                        checkBadges();
+                        var blockedMsg = _syncSafetyBlock(value);
+                        if (blockedMsg) { addToast(blockedMsg, 'info'); return; }
+                        if (!identityXpAwarded[cat.id]) {
+                          var nextAwarded = Object.assign({}, identityXpAwarded);
+                          nextAwarded[cat.id] = true;
+                          upd({ identityXpAwarded: nextAwarded });
+                          logPractice('identity', cat.id);
+                          awardXP(5);
+                        }
+                        checkBadges({ identityMap: identityMap });
                       }
                     },
                     placeholder: band === 'elementary' ? 'Write about this part of you...' : 'Reflect on how this shapes your experience...',
@@ -1214,15 +1282,17 @@ window.SelHub = window.SelHub || {
               h('button', { 
                 onClick: function() {
                   if (!superpower.trim()) { addToast('Write your cultural superpower first!', 'error'); return; }
+                  var blockedMsg = _syncSafetyBlock(superpower);
+                  if (blockedMsg) { addToast(blockedMsg, 'info'); return; }
                   upd({ superpowerSaved: true });
                   if (soundEnabled) sfxCorrect();
                   addToast('\u26A1 Cultural Superpower saved!', 'success');
                   awardXP(15);
                   logPractice('superpower', 'saved');
-                  checkBadges();
+                  checkBadges({ superpower: superpower, superpowerSaved: true });
                 },
                 disabled: superpowerSaved,
-                style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: superpowerSaved ? _comBg('#334155') : _comSolid(ACCENT), color: superpowerSaved ? _comFg('#94a3b8') : _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: superpowerSaved ? 'default' : 'pointer' }
+                style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: superpowerSaved ? _comBg('#334155') : _comSolid(ACCENT), color: superpowerSaved ? _comFg('#94a3b8') : _comBtnFg, fontSize: 12, fontWeight: 600, cursor: superpowerSaved ? 'default' : 'pointer' }
               }, superpowerSaved ? '\u2713 Saved' : 'Save My Superpower')
             ),
             // ── Allyship Action Cards ──
@@ -1257,7 +1327,7 @@ window.SelHub = window.SelHub || {
                         addToast('\uD83E\uDD1D Allyship action completed!', 'success');
                         awardXP(10);
                         logPractice('ally_action', card.id);
-                        checkBadges();
+                        checkBadges({ allyActions: newAlly });
                       },
                       style: { marginTop: 8, padding: '6px 14px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 11, cursor: 'pointer', fontWeight: 600 }
                     }, '\u2713 I did this!')
@@ -1307,12 +1377,19 @@ window.SelHub = window.SelHub || {
                           else if (branch.rating === 1) sfxWrong();
                           else sfxReveal();
                         }
-                        var newCompleted = scCompleted + 1;
-                        var newTopRatings = scTopRatings + (branch.rating === 3 ? 1 : 0);
-                        upd({ scCompleted: newCompleted, scTopRatings: newTopRatings });
-                        awardXP(branch.rating === 3 ? 15 : branch.rating === 2 ? 8 : 3);
-                        logPractice('scenario', scenario.id);
-                        checkBadges();
+                        var prevRec = scCompletedIds[scenario.id];
+                        var nextScIds = Object.assign({}, scCompletedIds);
+                        var isFirstCompletion = !prevRec;
+                        var isNewTop = branch.rating === 3 && !(prevRec && prevRec.top);
+                        nextScIds[scenario.id] = { done: true, top: (prevRec && prevRec.top) || branch.rating === 3 };
+                        var newCompleted = scCompleted + (isFirstCompletion ? 1 : 0);
+                        var newTopRatings = scTopRatings + (isNewTop ? 1 : 0);
+                        upd({ scCompleted: newCompleted, scTopRatings: newTopRatings, scCompletedIds: nextScIds });
+                        if (isFirstCompletion) {
+                          awardXP(branch.rating === 3 ? 15 : branch.rating === 2 ? 8 : 3);
+                          logPractice('scenario', scenario.id);
+                        }
+                        checkBadges({ scCompleted: newCompleted, scTopRatings: newTopRatings });
                       },
                       style: {
                         width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid ' + (isChosen ? (branch.rating === 3 ? _comFg('#22c55e') : branch.rating === 2 ? _comFg('#f59e0b') : _comFg('#ef4444')) : _comBg('#334155')),
@@ -1346,7 +1423,7 @@ window.SelHub = window.SelHub || {
                   upd({ scIdx: newIdx, scChoice: null });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
               }, 'Next \u2192')
             )
           );
@@ -1396,9 +1473,10 @@ window.SelHub = window.SelHub || {
                         logPractice('quiz', qKey);
                         // Check if quiz is complete
                         var answeredCount = Object.keys(newAnswered).length;
+                        var nextBest = quizBest;
                         if (answeredCount >= quizItems.length) {
-                          var best = newScore > quizBest ? newScore : quizBest;
-                          upd({ quizFinished: true, quizBest: best });
+                          nextBest = newScore > quizBest ? newScore : quizBest;
+                          upd({ quizFinished: true, quizBest: nextBest });
                           if (newScore >= 8) {
                             addToast('\uD83C\uDFC6 Amazing! Quiz Champion with ' + newScore + '/' + quizItems.length + '!', 'success');
                             if (soundEnabled) sfxBadge();
@@ -1406,7 +1484,7 @@ window.SelHub = window.SelHub || {
                             addToast('Quiz complete! Score: ' + newScore + '/' + quizItems.length, 'info');
                           }
                         }
-                        checkBadges();
+                        checkBadges({ quizScore: newScore, quizBest: nextBest });
                       },
                       style: {
                         width: '100%', padding: '12px 14px', borderRadius: 10, textAlign: 'left', fontSize: 13, cursor: isQAnswered ? 'default' : 'pointer',
@@ -1428,7 +1506,7 @@ window.SelHub = window.SelHub || {
                     upd({ quizIdx: nextIdx });
                     if (soundEnabled) sfxClick();
                   },
-                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
                 }, (quizIdx % quizItems.length) + 1 >= quizItems.length ? 'See Results' : 'Next Question \u2192')
               )
             ) : h('div', { style: { textAlign: 'center', padding: 30, borderRadius: 16, background: _comBg('#1e293b'), border: '1px solid ' + ACCENT_MED } },
@@ -1442,7 +1520,7 @@ window.SelHub = window.SelHub || {
                   upd({ quizIdx: 0, quizScore: 0, quizAnswered: {}, quizFinished: false });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 13, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDD04 Try Again')
             )
           );
@@ -1535,13 +1613,13 @@ window.SelHub = window.SelHub || {
                 h('button', { 'aria-label': 'Previous',
                   onClick: function() { if (pwIdx > 0) { upd({ pwIdx: pwIdx - 1 }); if (soundEnabled) sfxClick(); } },
                   disabled: pwIdx === 0,
-                  style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: pwIdx === 0 ? _comBg('#334155') : _comFg('#94a3b8'), fontSize: 12, cursor: pwIdx === 0 ? 'default' : 'pointer' }
+                  style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#94a3b8'), opacity: pwIdx === 0 ? 0.5 : 1, fontSize: 12, cursor: pwIdx === 0 ? 'default' : 'pointer' }
                 }, '\u2190 Previous'),
                 h('span', { style: { fontSize: 12, color: _comFg('#94a3b8') } }, answeredPWCount + '/' + totalPW + ' answered'),
                 h('button', { 'aria-label': 'Next',
                   onClick: function() { if (pwIdx < totalPW - 1) { upd({ pwIdx: pwIdx + 1 }); if (soundEnabled) sfxClick(); } },
                   disabled: pwIdx >= totalPW - 1,
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: pwIdx >= totalPW - 1 ? _comBg('#334155') : _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: pwIdx >= totalPW - 1 ? 'default' : 'pointer' }
+                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: pwIdx >= totalPW - 1 ? _comBg('#334155') : _comSolid(ACCENT), color: pwIdx >= totalPW - 1 ? _comFg('#94a3b8') : _comBtnFg, opacity: pwIdx >= totalPW - 1 ? 0.65 : 1, fontSize: 12, fontWeight: 600, cursor: pwIdx >= totalPW - 1 ? 'default' : 'pointer' }
                 }, 'Next \u2192')
               )
             ) : h('div', null,
@@ -1571,18 +1649,20 @@ window.SelHub = window.SelHub || {
                   placeholder: 'Write your reflection here. What stood out to you? What did you learn about yourself or about different experiences?',
                   style: { width: '100%', minHeight: 100, padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#e2e8f0'), fontSize: 12, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 10 }
                 }),
-                h('button', { 'aria-label': 'Walk Again',
+                h('button', { 'aria-label': pwReflectionSaved ? 'Reflection saved' : 'Save privilege walk reflection',
                   onClick: function() {
                     if (!pwReflection.trim()) { addToast('Write a reflection before saving.', 'error'); return; }
+                    var blockedMsg = _syncSafetyBlock(pwReflection);
+                    if (blockedMsg) { addToast(blockedMsg, 'info'); return; }
                     upd({ pwReflectionSaved: true });
                     if (soundEnabled) sfxCorrect();
                     addToast('\uD83D\uDCA1 Privilege Walk reflection saved!', 'success');
                     awardXP(20);
                     logPractice('privilege_reflection', 'saved');
-                    checkBadges();
+                    checkBadges({ pwFinished: true, pwReflectionSaved: true });
                   },
                   disabled: pwReflectionSaved,
-                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: pwReflectionSaved ? _comBg('#334155') : _comSolid(ACCENT), color: pwReflectionSaved ? _comFg('#94a3b8') : _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: pwReflectionSaved ? 'default' : 'pointer' }
+                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: pwReflectionSaved ? _comBg('#334155') : _comSolid(ACCENT), color: pwReflectionSaved ? _comFg('#94a3b8') : _comBtnFg, fontSize: 12, fontWeight: 600, cursor: pwReflectionSaved ? 'default' : 'pointer' }
                 }, pwReflectionSaved ? '\u2713 Reflection Saved' : 'Save Reflection')
               ),
               // Reset button
@@ -1652,14 +1732,17 @@ window.SelHub = window.SelHub || {
                       style: { width: '100%', minHeight: 60, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#e2e8f0'), fontSize: 11, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 8 }
                     }),
                     h('button', { onClick: function() {
-                        if (!(maResponses[currentMA.id] || '').trim()) { addToast('Write a response first.', 'error'); return; }
+                        var respText = (maResponses[currentMA.id] || '').trim();
+                        if (!respText) { addToast('Write a response first.', 'error'); return; }
+                        var blockedMsg = _syncSafetyBlock(respText);
+                        if (blockedMsg) { addToast(blockedMsg, 'info'); return; }
                         var newDone = Object.assign({}, maBystanderDone);
                         newDone[currentMA.id] = true;
                         upd({ maBystanderDone: newDone });
                         if (soundEnabled) sfxCorrect();
                         awardXP(8);
                       },
-                      style: { padding: '6px 14px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+                      style: { padding: '6px 14px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
                     }, 'Submit My Response')
                   ) : h('div', null,
                     h('div', { style: { padding: '8px 12px', borderRadius: 8, background: _comBg('#0f172a'), border: '1px solid #334155', fontSize: 12, color: _comFg('#cbd5e1'), marginBottom: 8, lineHeight: 1.5 } },
@@ -1682,7 +1765,7 @@ window.SelHub = window.SelHub || {
                     addToast('\uD83D\uDD0D Microaggression reviewed! (' + (Object.keys(newRev).length) + '/' + MICROAGGRESSIONS.length + ')', 'success');
                     awardXP(5);
                     logPractice('microagg', currentMA.id);
-                    checkBadges();
+                    checkBadges({ maReviewed: newRev });
                   },
                   style: { width: '100%', padding: '10px 16px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
                 }, '\uD83D\uDCA1 I understand this \u2014 mark as reviewed'),
@@ -1694,13 +1777,13 @@ window.SelHub = window.SelHub || {
               h('button', { 'aria-label': 'Previous',
                 onClick: function() { if (maIdx > 0) { upd({ maIdx: maIdx - 1 }); if (soundEnabled) sfxClick(); } },
                 disabled: maIdx === 0,
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: maIdx === 0 ? _comBg('#334155') : _comFg('#94a3b8'), fontSize: 12, cursor: maIdx === 0 ? 'default' : 'pointer' }
+                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#94a3b8'), opacity: maIdx === 0 ? 0.5 : 1, fontSize: 12, cursor: maIdx === 0 ? 'default' : 'pointer' }
               }, '\u2190 Previous'),
               h('span', { style: { fontSize: 12, color: _comFg('#94a3b8') } }, maReviewedCount + '/' + MICROAGGRESSIONS.length + ' reviewed'),
               h('button', { 'aria-label': 'Next',
                 onClick: function() { if (maIdx < MICROAGGRESSIONS.length - 1) { upd({ maIdx: maIdx + 1 }); if (soundEnabled) sfxClick(); } },
                 disabled: maIdx >= MICROAGGRESSIONS.length - 1,
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: maIdx >= MICROAGGRESSIONS.length - 1 ? _comBg('#334155') : _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: maIdx >= MICROAGGRESSIONS.length - 1 ? 'default' : 'pointer' }
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: maIdx >= MICROAGGRESSIONS.length - 1 ? _comBg('#334155') : _comSolid(ACCENT), color: maIdx >= MICROAGGRESSIONS.length - 1 ? _comFg('#94a3b8') : _comBtnFg, opacity: maIdx >= MICROAGGRESSIONS.length - 1 ? 0.65 : 1, fontSize: 12, fontWeight: 600, cursor: maIdx >= MICROAGGRESSIONS.length - 1 ? 'default' : 'pointer' }
               }, 'Next \u2192')
             )
           );
@@ -1743,9 +1826,16 @@ window.SelHub = window.SelHub || {
                     },
                     onBlur: function() {
                       if (val.trim().length > 0) {
-                        logPractice('heritage', sec.id);
-                        awardXP(5);
-                        checkBadges();
+                        var blockedMsg = _syncSafetyBlock(val);
+                        if (blockedMsg) { addToast(blockedMsg, 'info'); return; }
+                        if (!heritageXpAwarded[sec.id]) {
+                          var nextHxp = Object.assign({}, heritageXpAwarded);
+                          nextHxp[sec.id] = true;
+                          upd({ heritageXpAwarded: nextHxp });
+                          logPractice('heritage', sec.id);
+                          awardXP(5);
+                        }
+                        checkBadges({ heritageData: heritageData });
                       }
                     },
                     placeholder: band === 'elementary' ? 'Write about this here...' : 'Share your story...',
@@ -1793,10 +1883,23 @@ window.SelHub = window.SelHub || {
                   lines.push('---');
                   lines.push('Created with AlloFlow Community & Culture Tool');
                   var text = lines.join('\n');
+                  var awardExportOnce = function() {
+                    if (soundEnabled) sfxCorrect();
+                    if (!heritageExportXpAwarded) {
+                      upd({ heritageExportXpAwarded: true });
+                      awardXP(10);
+                    }
+                  };
                   try {
                     if (window.SelHub && window.SelHub.copyText) {
-                      window.SelHub.copyText(text).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
-                      addToast('\uD83D\uDCCB Heritage project copied to clipboard!', 'success');
+                      window.SelHub.copyText(text).then(function(ok) {
+                        if (ok) {
+                          addToast('\uD83D\uDCCB Heritage project copied to clipboard!', 'success');
+                          awardExportOnce();
+                        } else if (typeof addToast === 'function') {
+                          addToast(window.SelHub.COPY_UNAVAILABLE, 'info');
+                        }
+                      }).catch(function() { addToast('Could not copy. Try again.', 'error'); });
                     } else {
                       var ta = document.createElement('textarea');
                       ta.value = text;
@@ -1807,15 +1910,18 @@ window.SelHub = window.SelHub || {
                       ta.style.left = '-9999px';
                       document.body.appendChild(ta);
                       ta.select();
-                      document.execCommand('copy');
+                      var copied = document.execCommand('copy');
                       document.body.removeChild(ta);
-                      addToast('\uD83D\uDCCB Heritage project copied to clipboard!', 'success');
+                      if (copied) {
+                        addToast('\uD83D\uDCCB Heritage project copied to clipboard!', 'success');
+                        awardExportOnce();
+                      } else {
+                        addToast('Could not copy. Try again.', 'error');
+                      }
                     }
                   } catch(e) { addToast('Could not copy. Try again.', 'error'); }
-                  if (soundEnabled) sfxCorrect();
-                  awardXP(10);
                 },
-                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 13, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDCCB Export as Text (Copy)')
             )
           );
@@ -1855,7 +1961,7 @@ window.SelHub = window.SelHub || {
                       if (soundEnabled) sfxDiscover();
                       awardXP(5);
                       logPractice('commtip', tip.id);
-                      checkBadges();
+                      checkBadges({ icRead: newRead });
                     }
                   },
                   style: { padding: 16, borderRadius: 14, background: isRead ? _comBg('#1e293b') : _comBg('#0f172a'), border: '1px solid ' + (isRead ? ACCENT_MED : _comBg('#334155')), cursor: isRead ? 'default' : 'pointer', transition: 'all 0.2s' }
@@ -1920,9 +2026,10 @@ window.SelHub = window.SelHub || {
                         if (isCorrect) awardXP(8);
                         logPractice('battle', bKey);
                         var bAnsweredCount = Object.keys(newBAnswered).length;
+                        var nextBBest = battleBest;
                         if (bAnsweredCount >= battleItems.length) {
-                          var bBest = newBScore > battleBest ? newBScore : battleBest;
-                          upd({ battleFinished: true, battleBest: bBest });
+                          nextBBest = newBScore > battleBest ? newBScore : battleBest;
+                          upd({ battleFinished: true, battleBest: nextBBest });
                           if (newBScore >= 4) {
                             addToast('\u2694\uFE0F Battle Victor! ' + newBScore + '/' + battleItems.length + ' correct!', 'success');
                             if (soundEnabled) sfxBadge();
@@ -1930,7 +2037,7 @@ window.SelHub = window.SelHub || {
                             addToast('Battle complete! ' + newBScore + '/' + battleItems.length, 'info');
                           }
                         }
-                        checkBadges();
+                        checkBadges({ battleScore: newBScore, battleBest: nextBBest });
                       },
                       style: {
                         flex: currentB.options.length <= 2 ? 1 : 'none', padding: '12px 14px', borderRadius: 10, textAlign: 'center', fontSize: 13, cursor: isBAnswered ? 'default' : 'pointer',
@@ -2090,7 +2197,7 @@ window.SelHub = window.SelHub || {
                       'aria-label': aiLoading ? 'Community AI coach is responding' : 'Ask community AI coach',
                       onClick: submitCommunityCoach,
                       disabled: aiLoading,
-                      style: { padding: '10px 16px', borderRadius: 8, background: _comSolid(ACCENT), color: _comFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' }
+                      style: { padding: '10px 16px', borderRadius: 8, background: _comSolid(ACCENT), color: _comBtnFg, border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' }
                     }, aiLoading ? '\u23F3' : '\u2191')
                   ];
                 })()
@@ -2110,7 +2217,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 } },
               shownBadges.map(function(b) {
                 var earned = !!earnedBadges[b.id];
-                return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : '#0f172a88', border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT_MED : _comBg('#334155')), textAlign: 'center' } },
+                return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? _comBg('#0f172a') : (_comL ? '#f1f5f9' : _comBg('#0f172a')), opacity: earned ? 1 : 0.78, border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT_MED : _comBd('#334155')), textAlign: 'center' } },
                   h('div', { style: { fontSize: 26 } }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _comFg('#f1f5f9') : _comFg('#94a3b8'), marginTop: 4 } }, b.name),
                   h('div', { style: { fontSize: 11, color: _comFg('#94a3b8'), marginTop: 2 } }, b.desc)
@@ -2145,6 +2252,7 @@ window.SelHub = window.SelHub || {
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('community', h, ctx) : null),
           tabBar,
           heroBand,
+          (_communityTier >= 3 && activeTab !== 'badges' && window.SelHub && window.SelHub.renderCrisisResources) ? h('div', { style: { padding: '0 12px 8px' } }, window.SelHub.renderCrisisResources(h, band)) : null,
           badgePopup,
           h('div', { id: 'community-tab-panel', role: 'tabpanel', 'aria-labelledby': 'community-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, content)
         );

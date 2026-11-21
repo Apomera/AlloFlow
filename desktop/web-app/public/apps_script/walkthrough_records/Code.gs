@@ -66,7 +66,8 @@ function wrToken_() {
 }
 
 function wrEmailOk_(email) {
-  return /^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(String(email || ''));
+  var s = String(email || '');
+  return s.length <= 254 && /^[A-Za-z0-9.!#$%&'*+/=?^_{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(s);
 }
 
 function wrDomainOf_(email) {
@@ -78,16 +79,23 @@ function wrOwnerEmail_() {
   try { return String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase(); } catch (err) { return ''; }
 }
 
+function wrActiveFolder_(id) {
+  if (!id) return null;
+  try {
+    var f = DriveApp.getFolderById(id);
+    if (f && (typeof f.isTrashed !== 'function' || !f.isTrashed())) return f;
+  } catch (err) {}
+  return null;
+}
+
 /**
  * The working folder is remembered by id. It is never located by searching
  * Drive, which drive.file would not permit anyway.
  */
 function wrFolder_() {
   var props = wrProps_();
-  var id = props.getProperty(WR_PROP_FOLDER);
-  if (id) {
-    try { return DriveApp.getFolderById(id); } catch (err) { /* recreate below */ }
-  }
+  var existing = wrActiveFolder_(props.getProperty(WR_PROP_FOLDER));
+  if (existing) return existing;
   var lock = (typeof LockService !== 'undefined' && LockService && LockService.getScriptLock) ? LockService.getScriptLock() : null;
   var locked = false;
   if (lock) {
@@ -95,10 +103,8 @@ function wrFolder_() {
     locked = true;
   }
   try {
-    var freshId = props.getProperty(WR_PROP_FOLDER);
-    if (freshId) {
-      try { return DriveApp.getFolderById(freshId); } catch (err2) { /* recreate below */ }
-    }
+    var fresh = wrActiveFolder_(props.getProperty(WR_PROP_FOLDER));
+    if (fresh) return fresh;
     var folder = DriveApp.createFolder(WR_FOLDER_NAME);
     folder.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);
     if (typeof folder.setShareableByEditors === 'function') folder.setShareableByEditors(false);
@@ -110,12 +116,22 @@ function wrFolder_() {
 }
 
 function wrTimingSafeEq_(a, b) {
-  var da = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(a || ''), Utilities.Charset.UTF_8);
-  var db = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(b || ''), Utilities.Charset.UTF_8);
-  if (da.length !== db.length) return false;
-  var diff = 0;
-  for (var i = 0; i < da.length; i++) diff |= (da[i] ^ db[i]);
-  return diff === 0;
+  var sa = String(a || '');
+  var sb = String(b || '');
+  if (typeof Utilities !== 'undefined' && Utilities && Utilities.DigestAlgorithm && Utilities.DigestAlgorithm.SHA_256 && typeof Utilities.computeDigest === 'function') {
+    var da = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, sa, Utilities.Charset.UTF_8);
+    var db = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, sb, Utilities.Charset.UTF_8);
+    if (da.length !== db.length) return false;
+    var diff = 0;
+    for (var i = 0; i < da.length; i++) diff |= (da[i] ^ db[i]);
+    return diff === 0;
+  }
+  var maxLen = Math.max(sa.length, sb.length);
+  var out = sa.length ^ sb.length;
+  for (var j = 0; j < maxLen; j++) {
+    out |= (sa.charCodeAt(j) || 0) ^ (sb.charCodeAt(j) || 0);
+  }
+  return out === 0;
 }
 
 function wrRateLimited_() {
@@ -140,8 +156,8 @@ function wrAuthorize_(request) {
   var stored = wrProps_().getProperty(WR_PROP_TOKEN);
   if (!stored) return wrError_('not_claimed', 'Run setupWalkthroughOwner in the Apps Script editor, then paste the owner token into AlloFlow.');
   if (wrRateLimited_()) return wrError_('rate_limited', 'Too many failed authorization attempts. Try again in 15 minutes.');
-  var supplied = wrString_(request && request.token, 128);
-  if (!supplied || !wrTimingSafeEq_(supplied, stored)) {
+  var supplied = request && typeof request.token === 'string' ? request.token.trim() : '';
+  if (!supplied || supplied.length > 256 || !wrTimingSafeEq_(supplied, stored)) {
     wrRecordAuthFail_();
     return wrError_('denied', 'This request did not carry the connecting device token.');
   }
@@ -163,9 +179,13 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  var rawContents = (e && e.postData && e.postData.contents) || '{}';
+  if (typeof rawContents === 'string' && rawContents.length > 1024 * 1024) {
+    return wrJson_(wrError_('too_large', 'The request body exceeds the maximum allowed size.'));
+  }
   var request;
   try {
-    request = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    request = JSON.parse(rawContents);
   } catch (parseErr) {
     return wrJson_(wrError_('bad_request', 'The request body was not valid JSON.'));
   }
@@ -291,20 +311,51 @@ function wrDeliver_(request) {
     body.push('');
   }
 
+  var deliverRateLimited = false;
+  try {
+    var dCache = CacheService.getScriptCache();
+    var dCount = parseInt(dCache.get('wr:deliver_rate') || '0', 10) || 0;
+    if (dCount >= 30) deliverRateLimited = true;
+    else dCache.put('wr:deliver_rate', String(dCount + 1), 60);
+  } catch (rateErr) {}
+  if (deliverRateLimited) {
+    return wrError_('rate_limited', 'Too many walkthrough deliveries in one minute. Wait a moment and retry.');
+  }
+
   var folder = wrFolder_();
+  // Fail closed if the folder was broadened in Drive (inherited named users or link access).
+  try {
+    if (typeof folder.getSharingAccess === 'function' && folder.getSharingAccess() !== DriveApp.Access.PRIVATE) {
+      return wrError_('acl_failed', 'The walkthrough records folder is not private in Drive; delivery was aborted.');
+    }
+    if (typeof folder.getViewers === 'function' && folder.getViewers().length > 0) {
+      return wrError_('acl_failed', 'The walkthrough records folder has unexpected viewers in Drive; delivery was aborted.');
+    }
+    if (typeof folder.getEditors === 'function' && folder.getEditors().length > 0) {
+      return wrError_('acl_failed', 'The walkthrough records folder has unexpected editors in Drive; delivery was aborted.');
+    }
+  } catch (folderCheckErr) {
+    return wrError_('acl_failed', 'Could not verify privacy of the walkthrough records folder; delivery was aborted.');
+  }
+
   var rawFileName = subject + ' - ' + (teacherName || teacherEmail) + ' - ' + stamp;
   var fileName = rawFileName.replace(/[\r\n\u0000-\u001f\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 180) || ('Walkthrough feedback - ' + stamp);
-  var file = folder.createFile(fileName + '.txt', body.join('\n'), MimeType.PLAIN_TEXT);
+  var bodyText = body.join('\n');
+  // Create empty, lock down sharing first, then write body and add the single recipient.
+  var file = folder.createFile(fileName + '.txt', '', MimeType.PLAIN_TEXT);
 
-  // Restricted by construction. Fail closed if private sharing cannot be enforced.
+  // Restricted by construction. Fail closed if private sharing or recipient grant fails.
   try {
     file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);
     if (typeof file.setShareableByEditors === 'function') file.setShareableByEditors(false);
+    if (typeof file.getViewers === 'function' && file.getViewers().length > 0) throw new Error('Unexpected viewers');
+    if (typeof file.getEditors === 'function' && file.getEditors().length > 0) throw new Error('Unexpected editors');
+    if (typeof file.setContent === 'function') file.setContent(bodyText);
+    file.addViewer(teacherEmail);
   } catch (shareErr) {
     try { file.setTrashed(true); } catch (trashErr) {}
     return wrError_('acl_failed', 'Could not enforce private sharing on the walkthrough note; delivery was aborted.');
   }
-  file.addViewer(teacherEmail);
 
   var notified = false;
   if (request.notify !== false) {
@@ -359,16 +410,23 @@ function wrRevoke_(request) {
   if (!/^[A-Za-z0-9_-]{10,120}$/.test(fileId) || !wrEmailOk_(teacherEmail)) {
     return wrError_('bad_request', 'A valid file id and a teacher email are required.');
   }
-  var allowedDomain = (wrProps_().getProperty(WR_PROP_DOMAIN) || '').trim().toLowerCase();
-  if (allowedDomain && wrDomainOf_(teacherEmail) !== allowedDomain) {
-    return wrError_('outside_domain', 'That address is outside ' + allowedDomain + '.');
-  }
+  // Deliberately allow revoking any address (even outside wr_allowed_domain)
+  // so accidental or historical external shares can always be removed.
   var folder = wrFolder_();
   var file = DriveApp.getFileById(fileId);
   if (!wrFileInFolder_(file, folder.getId())) {
     return wrError_('denied', 'That file is outside the walkthrough records folder.');
   }
   file.removeViewer(teacherEmail);
+  if (typeof file.getViewers === 'function') {
+    var remaining = file.getViewers();
+    for (var vi = 0; vi < remaining.length; vi++) {
+      var vEmail = String((remaining[vi] && remaining[vi].getEmail && remaining[vi].getEmail()) || '').trim().toLowerCase();
+      if (vEmail === teacherEmail) {
+        return wrError_('revoke_unverified', 'Drive did not confirm viewer removal; remove access directly in Drive.');
+      }
+    }
+  }
   return { ok: true, fileId: fileId, revokedFor: teacherEmail };
 }
 

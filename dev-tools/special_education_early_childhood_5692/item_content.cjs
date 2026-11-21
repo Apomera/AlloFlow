@@ -20,12 +20,12 @@ function adaptText(value) {
     .replace(/\bmiddle school students?\b/gi, 'young child')
     .replace(/\bhigh school (?:students?|learners?)\b/gi, 'young child')
     .replace(/\btransition-age learners?\b/gi, 'young child')
-    .replace(/\bstudents['\u2019]/gi, "young children's")
-    .replace(/\bstudent['\u2019]s\b/gi, "young child's")
+    .replace(/\bstudents['\u2019]/gi, 'young children\u2019s')
+    .replace(/\bstudent['\u2019]s\b/gi, 'young child\u2019s')
     .replace(/\bstudents\b/gi, 'young children')
     .replace(/\bstudent\b/gi, 'young child')
-    .replace(/\blearners['\u2019]/gi, "young children's")
-    .replace(/\blearner['\u2019]s\b/gi, "young child's")
+    .replace(/\blearners['\u2019]/gi, 'young children\u2019s')
+    .replace(/\blearner['\u2019]s\b/gi, 'young child\u2019s')
     .replace(/\blearners\b/gi, 'young children')
     .replace(/\blearner\b/gi, 'young child')
     .replace(/\bclassmates\b/gi, 'same-age peers')
@@ -49,27 +49,56 @@ function repairEarlyChildhoodScope(question) {
       ...question,
       promptA: 'A young child has a documented seizure action plan. During a seizure in the program, what should trained staff do first?',
       promptB: 'A young child experiences a health event covered by an individualized emergency plan. What is the correct response?',
-      correct: 'Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified.',
-      distractors: ['Create a new response based on what seems convenient.', 'Give food or medication not authorized in the plan.', 'Delay action until a family member can be reached.'],
+      correct: 'Follow the individualized emergency plan, protect safety, and activate trained medical procedures.',
+      distractors: [
+        'Improvise a quick classroom response based on adult intuition rather than following the written health plan.',
+        'Offer water, a small snack, or an unprescribed comfort remedy to stabilize the child during the episode.',
+        'Wait to activate program emergency procedures until a family member can be reached by phone for advice.',
+      ],
       rationale: 'Health support in an early-childhood program or school must follow the individualized plan, staff training, delegation rules, and emergency procedures. Improvised treatment can create risk and exceed an educator\u2019s role.',
+      distractorNotes: [
+        'Improvising outside the individualized health plan increases medical risk and violates early-childhood nursing delegation and emergency-response protocols.',
+        'Giving unauthorized food, liquid, or medication during a seizure or acute health event can cause choking or dangerous medical complications.',
+        'Delaying emergency action until family contact is made wastes critical response time; staff must execute the written medical plan first and notify families per protocol.',
+      ],
     };
-  }  if (/places every student with a particular disability in the same separate classroom/i.test(question.promptA)) {
+  }
+  if (/places every student with a particular disability in the same separate classroom/i.test(question.promptA)) {
     return {
       ...question,
       promptA: 'A preschool program automatically places every child with a given disability in a separate class. What is the central IDEA Part B concern?',
       promptB: 'A preschooler is assigned to a separate setting solely because of a disability label. Which IDEA Part B principle is violated?',
-      correct: 'The IEP team must determine placement individually and educate the child with nondisabled peers to the maximum extent appropriate under LRE requirements.',
-      distractors: ['IDEA Part B prohibits every separate placement regardless of individual need.', 'One parent must select placement without an IEP team decision.', 'A preschool placement can never change after the initial decision.'],
+      correct: 'The IEP team must decide placement individually and educate the child with nondisabled peers under LRE.',
+      distractors: [
+        'IDEA Part B bars school districts from offering separate preschool special education classes for any child.',
+        'A parent holds unilateral authority to choose preschool placement outside the multidisciplinary IEP team.',
+        'Once an initial preschool placement is recorded on the IEP, the team cannot revise it during later reviews.',
+      ],
       rationale: 'Under IDEA Part B, the IEP team makes an individualized placement decision after developing the IEP and applies least restrictive environment requirements. A continuum must be available, but no setting is automatic for a disability category.',
+      distractorNotes: [
+        'IDEA Part B requires a full continuum of alternative placements—including separate preschool settings when needed—so separate classrooms are allowed when individualized IEP evidence justifies them.',
+        'Families are essential IEP team partners, but preschool placement under Part B is a collaborative team determination grounded in the IEP and LRE criteria rather than a unilateral choice.',
+        'Preschool placements under IDEA Part B must be reviewed at least annually and updated whenever a child’s progress or individualized needs warrant a less or more supportive setting.',
+      ],
     };
-  }  if (/when must transition content begin in the IEP/i.test(question.promptA)) {
+  }
+  if (/when must transition content begin in the IEP/i.test(question.promptA)) {
     return {
       ...question,
       promptA: 'A toddler receiving IDEA Part C services will soon turn three. Which transition-planning action best supports continuity into preschool or other appropriate services?',
       promptB: 'Before a child receiving Part C services reaches age three, which team action is most consistent with IDEA transition planning?',
-      correct: 'With family involvement and the required notice, consent, and confidentiality safeguards, plan the transition early and convene the appropriate transition conference.',
-      distractors: ['Wait until after the third birthday before discussing next services.', 'Write a goal unrelated to the child’s current routines and family priorities.', 'Transfer the child automatically without reviewing eligibility or family priorities.'],
+      correct: 'Plan transition early with family involvement, required notice and consent safeguards, and a transition conference.',
+      distractors: [
+        'Wait until after the child’s third birthday before discussing preschool eligibility or next community services.',
+        'Draft a generic preschool readiness goal unrelated to the child’s current routines and family priorities.',
+        'Transfer the child directly into a separate preschool class without evaluating Part B eligibility or family input.',
+      ],
       rationale: 'Part C transition planning is family-centered and begins before the child ages out of early intervention. The team follows required notice, approval, conference, and confidentiality procedures and coordinates next steps without presuming eligibility or placement.',
+      distractorNotes: [
+        'Waiting until after age three violates IDEA Part C transition timelines and risks an abrupt service gap when early-intervention eligibility ends.',
+        'Transition outcomes must reflect the child’s present functional routines and family priorities rather than disconnected generic readiness targets.',
+        'Part C eligibility does not automatically establish Part B preschool eligibility or placement; teams must follow evaluation, consent, and individualized LRE procedures.',
+      ],
     };
   }
   if (/Which transition goal is based on an age-appropriate transition assessment/i.test(question.promptA)) {
@@ -77,9 +106,18 @@ function repairEarlyChildhoodScope(question) {
       ...question,
       promptA: 'Which IFSP outcome is functional, measurable, and tied to a family-identified routine?',
       promptB: 'A family wants a child to communicate choices during meals. Which outcome is the strongest measurable, routine-based target?',
-      correct: 'During family meals, the child will use a word, sign, or picture to choose between two foods in four of five opportunities across two weeks.',
-      distractors: ['The child will improve communication sometime.', 'The child will pass every future class.', 'The child will explore careers before entering preschool.'],
+      correct: 'During family meals, the child will use a word, sign, or picture to choose between two foods in four of five trials.',
+      distractors: [
+        'Over the coming early-intervention cycle, the child will show noticeably stronger expressive communication skills.',
+        'During future elementary school classes, the child will pass every required core academic subject on schedule.',
+        'Before entering preschool, the child will sample varied adult workplace routines during community outings.',
+      ],
       rationale: 'A strong IFSP outcome describes participation in a meaningful routine, an observable behavior, the conditions in which it occurs, and a criterion for monitoring progress. It reflects the family’s priorities without importing requirements from later grade bands.',
+      distractorNotes: [
+        'Broad statements about stronger communication lack a natural family routine, observable response mode, and measurable criterion for monitoring IFSP progress.',
+        'Future elementary grading standards do not reflect an infant or toddler’s current family-centered routines or functional early-intervention priorities.',
+        'Importing workplace exploration into early intervention is developmentally mismatched and ignores the family’s stated mealtime communication priority.',
+      ],
     };
   }
   if (/adult-service agency representative to attend an IEP meeting/i.test(question.promptA)) {
@@ -87,9 +125,18 @@ function repairEarlyChildhoodScope(question) {
       ...question,
       promptA: 'A Part C service coordinator wants a preschool-program representative to join a child’s transition conference. What safeguard and responsibility matter?',
       promptB: 'A preschool representative may help plan a child’s move from Part C services. What should the team do before the representative participates?',
-      correct: 'Follow family-approval, notice, consent, and confidentiality requirements while the responsible agencies retain their own IDEA duties.',
-      distractors: ['Invite any outside participant without informing the family.', 'Transfer every early-intervention responsibility to the preschool representative.', 'Delay all coordination until after the child turns three.'],
+      correct: 'Follow family-approval, notice, consent, and privacy safeguards while each agency retains its IDEA duties.',
+      distractors: [
+        'Invite the outside preschool representative right away without notifying or obtaining approval from the family.',
+        'Transfer all ongoing Part C early-intervention responsibilities to the preschool representative once invited.',
+        'Postpone all interagency transition coordination until after the child celebrates a third birthday.',
+      ],
       rationale: 'Cross-agency transition coordination can support continuity, but it must follow family participation and privacy safeguards. Inviting another representative does not eliminate the lead agency’s or local education agency’s responsibilities under the applicable IDEA process.',
+      distractorNotes: [
+        'IDEA Part C transition conferences require family approval, prior notice, and confidentiality protections before inviting outside preschool or community participants.',
+        'Inviting a preschool partner supports smooth coordination, but the Part C lead agency retains its statutory service duties until transition is completed.',
+        'Waiting until after age three violates Part C transition-conference timelines and prevents timely Part B eligibility evaluation and IEP development.',
+      ],
     };
   }
   if (/What distinguishes an IFSP emphasis from a school-age IEP emphasis/i.test(question.promptA)) {
@@ -97,9 +144,18 @@ function repairEarlyChildhoodScope(question) {
       ...question,
       promptA: 'Which statement accurately distinguishes an IDEA Part C IFSP from an IDEA Part B IEP?',
       promptB: 'A team is explaining the shift from Part C early intervention to Part B preschool special education. Which comparison is accurate?',
-      correct: 'A Part C IFSP is family-centered and addresses functional outcomes and services in natural environments; a Part B IEP addresses the child\u2019s educational access, goals, services, and placement.',
-      distractors: ['A Part C IFSP is simply a Part B IEP with a different title.', 'A Part C IFSP excludes family priorities from planning.', 'A Part B IEP is a medical treatment plan written by a physician.'],
+      correct: 'A Part C IFSP centers family priorities in natural environments; a Part B IEP directs school-based educational access.',
+      distractors: [
+        'A Part C IFSP and a Part B IEP follow identical rules, differing mainly in the document label for younger children.',
+        'A Part C IFSP focuses strictly on clinical child milestones while keeping family routines outside planning.',
+        'A Part B IEP is a medical treatment prescription written by a pediatrician rather than an educational team plan.',
+      ],
       rationale: 'Part C and Part B use different plans, procedures, and service contexts. The IFSP centers family priorities, functional outcomes, service coordination, and natural environments; the IEP centers the eligible child\u2019s educational program, measurable goals, services, access, and placement.',
+      distractorNotes: [
+        'Part C IFSPs and Part B IEPs differ substantively in family-centered outcomes, natural-environment rules, review schedules, and service coordination, not just document title.',
+        'Family resources, priorities, and everyday routines sit at the heart of a Part C IFSP because early intervention builds caregiver capacity in natural environments.',
+        'A Part B IEP is an educational program developed by a multidisciplinary team including parents—not a physician-authored medical treatment order.',
+      ],
     };
   }
   if (/school copier independently/i.test(question.promptB)) {
@@ -107,9 +163,18 @@ function repairEarlyChildhoodScope(question) {
       ...question,
       promptA: 'A young child is acquiring a multistep hand-washing routine. What is the purpose of task analysis?',
       promptB: 'A preschooler is learning to put away arrival materials independently. Why would the educator begin with a task analysis?',
-      correct: 'To break the complex routine into observable, teachable steps that can be prompted, measured, and chained.',
-      distractors: ['To measure general intelligence.', 'To remove all natural variation from the routine.', 'To replace instruction with a written test.'],
+      correct: 'Break the routine into observable, teachable steps that can be prompted, tracked, and chained.',
+      distractors: [
+        'Estimate the young child’s overall cognitive ability by timing routine completion against peer norms.',
+        'Standardize the routine so every environmental variation is removed across home and preschool settings.',
+        'Replace hands-on routine practice with a formal paper-and-pencil test of sequential picture order.',
+      ],
       rationale: 'Task analysis identifies the component steps and their sequence. The educator can then select a chaining approach, teach missing steps, record performance, and fade prompts toward independent participation in the routine.',
+      distractorNotes: [
+        'Task analysis is an instructional sequencing tool for teaching functional routines, not a standardized measure of general intelligence or cognitive potential.',
+        'Strong early-childhood task analysis still plans for natural variations across sinks, cubbies, and home routines so independence generalizes beyond one setup.',
+        'Paper tests measure picture ordering rather than building fluent hands-on execution of hand-washing or arrival routines in authentic preschool settings.',
+      ],
     };
   }
   if (/What does FAPE require at a foundational level under IDEA/i.test(question.promptA)) {
@@ -117,9 +182,18 @@ function repairEarlyChildhoodScope(question) {
       ...question,
       promptA: 'Under IDEA Part B, what does FAPE require for an eligible preschool- or school-age child?',
       promptB: 'For an eligible child served under IDEA Part B, which statement distinguishes FAPE from a guarantee of a particular outcome?',
-      correct: 'Special education and related services are provided at public expense through an appropriately developed and implemented IEP that meets Part B requirements.',
-      distractors: ['The school guarantees that every child reaches the same achievement level.', 'The family pays for related services required by the IEP.', 'A disability label alone determines one standard program.'],
+      correct: 'Public special education and related services delivered through an appropriate Part B IEP at no cost.',
+      distractors: [
+        'Public agencies must ensure that every eligible young child reaches identical developmental test benchmarks.',
+        'Families contribute tuition or co-payments for related services written into the child’s Part B IEP.',
+        'An IDEA disability label determines one uniform preschool instructional package across the district.',
+      ],
       rationale: 'FAPE is an IDEA Part B requirement for eligible children and is delivered through an appropriately developed and implemented IEP; it does not guarantee a particular score. IDEA Part C separately provides eligible infants and toddlers early-intervention services through an IFSP.',
+      distractorNotes: [
+        'Under IDEA Part B, FAPE guarantees an individualized IEP reasonably calculated to enable appropriately ambitious progress—not identical developmental scores for every child.',
+        'Special education and required related services on a Part B IEP must be provided at public expense and at no charge to parents.',
+        'FAPE requires individualized IEP team decisions tailored to the child’s strengths and needs rather than a standardized category-based preschool program.',
+      ],
     };
   }
   if (/school suspects a disability in a student who is passing classes/i.test(question.promptA)) {
@@ -127,11 +201,40 @@ function repairEarlyChildhoodScope(question) {
       ...question,
       promptA: 'A preschooler participates successfully only because adults provide extensive informal support, and the team suspects a disability. Which IDEA duty remains relevant?',
       promptB: 'A highly mobile young child shows persistent disability-related needs but has not been referred. Which IDEA responsibility applies?',
-      correct: 'Child Find requires the responsible Part C or Part B agency to identify, locate, and evaluate or assess children who may be eligible; mobility or informal support does not remove that duty.',
-      distractors: ['Only families may initiate a concern about possible eligibility.', 'Successful participation with extensive informal help eliminates every evaluation or assessment duty.', 'The responsible agency may wait until the child fails an age-appropriate activity.'],
+      correct: 'Child Find requires Part C and Part B agencies to locate, identify, and evaluate potentially eligible children.',
+      distractors: [
+        'Lead agencies and districts must wait for families to submit a formal written referral before acting.',
+        'Successful daily participation with extensive informal adult help suspends IDEA evaluation responsibilities.',
+        'The responsible agency should defer referral until the young child fails core early-learning milestones.',
+      ],
       rationale: 'Child Find is an affirmative responsibility under both IDEA Part C and Part B. The responsible lead agency or public agency follows the age-applicable referral, screening, evaluation or assessment, consent, notice, and timeline procedures rather than waiting for failure.',
+      distractorNotes: [
+        'Child Find is an affirmative statutory duty under both Part C and Part B; agencies cannot wait passively for families to initiate a concern when needs are suspected.',
+        'Informal adult scaffolding can mask an underlying need for specialized services and does not relieve the public agency of its obligation to follow Child Find procedures.',
+        'Waiting for a young child to experience developmental or academic failure contradicts Child Find’s proactive early-identification purpose and delays timely intervention.',
+      ],
     };
-  }  return question;
+  }
+  if (/contribute meaningfully to an IEP meeting/i.test(question.promptA)) {
+    return {
+      ...question,
+      promptA: 'How can a young child’s voice and preferences be honored meaningfully during IEP planning?',
+      promptB: 'A team is preparing an individualized plan for a preschooler with communication needs. Which practice best supports authentic child participation?',
+      correct: 'Use accessible communication, play observations, and family insights to reflect the child’s strengths and preferences.',
+      distractors: [
+        'Have adults read a prewritten script on the child’s behalf without gathering authentic preference observations.',
+        'Plan all early-learning routines solely among professionals so child preferences do not complicate scheduling.',
+        'Expect a young child to sit silently through a formal adult meeting without visuals or play-based engagement.',
+      ],
+      rationale: 'Even in early childhood, honoring a learner’s voice supports emerging self-determination when teams gather preference data through play, family input, and accessible communication tools.',
+      distractorNotes: [
+        'Relying on an adult-scripted summary without observing the child’s actual choices and communication signals misses authentic learner preferences and strengths.',
+        'Leaving child interests and family observations out of routine planning reduces engagement and undermines developmentally appropriate, person-centered early intervention.',
+        'Requiring a young child to sit passively through adult jargon without accessible supports creates frustration rather than meaningful, age-appropriate participation.',
+      ],
+    };
+  }
+  return question;
 }
 
 function questions(parts) {
@@ -142,6 +245,7 @@ function questions(parts) {
     correct: adaptText(q.correct),
     distractors: q.distractors.map(adaptText),
     rationale: adaptText(q.rationale) + ' For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.',
+    distractorNotes: Array.isArray(q.distractorNotes) ? q.distractorNotes.map(adaptText) : undefined,
   }));
 }
 

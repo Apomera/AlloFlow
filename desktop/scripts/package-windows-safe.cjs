@@ -76,6 +76,11 @@ function writeChecksumManifest(directory, fileNames) {
   fs.writeFileSync(path.join(directory, checksumManifestName), checksumText, 'ascii');
 }
 
+function sleepMs(ms) {
+  const arr = new Int32Array(new SharedArrayBuffer(4));
+  Atomics.wait(arr, 0, 0, ms);
+}
+
 function retry(action, label, attempts = 5) {
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
@@ -84,7 +89,9 @@ function retry(action, label, attempts = 5) {
     } catch (error) {
       lastError = error;
       if (attempt < attempts) {
-        console.warn('[AlloFlow Desktop] Retrying ' + label + ' (' + attempt + '/' + attempts + ')');
+        const delayMs = Math.min(2000, 200 * attempt);
+        console.warn('[AlloFlow Desktop] Retrying ' + label + ' (' + attempt + '/' + attempts + ') after ' + delayMs + 'ms');
+        sleepMs(delayMs);
       }
     }
   }
@@ -92,25 +99,42 @@ function retry(action, label, attempts = 5) {
 }
 
 function copyVerified(sourcePath, destinationPath) {
-  const sourceStats = fs.statSync(sourcePath, { throwIfNoEntry: false });
-  if (!sourceStats || !sourceStats.isFile() || sourceStats.size === 0) {
-    throw new Error('Missing staged release file: ' + sourcePath);
+  const sourceStats = fs.lstatSync(sourcePath, { throwIfNoEntry: false });
+  if (!sourceStats || sourceStats.isSymbolicLink() || !sourceStats.isFile() || sourceStats.size === 0) {
+    throw new Error('Missing or invalid staged release file: ' + sourcePath);
+  }
+  const destStats = fs.lstatSync(destinationPath, { throwIfNoEntry: false });
+  if (destStats && destStats.isSymbolicLink()) {
+    throw new Error('Refusing to overwrite symbolic link destination: ' + destinationPath);
   }
   const expectedHash = sha256(sourcePath);
   const temporaryPath = destinationPath + '.partial-' + process.pid;
-  fs.rmSync(temporaryPath, { force: true });
-  retry(() => fs.copyFileSync(sourcePath, temporaryPath), 'copying ' + path.basename(sourcePath));
-  if (sha256(temporaryPath) !== expectedHash) {
+  try {
     fs.rmSync(temporaryPath, { force: true });
-    throw new Error('Hash changed while staging ' + path.basename(sourcePath));
+    retry(() => fs.copyFileSync(sourcePath, temporaryPath), 'copying ' + path.basename(sourcePath));
+    if (sha256(temporaryPath) !== expectedHash) {
+      throw new Error('Hash changed while staging ' + path.basename(sourcePath));
+    }
+    retry(() => {
+      try {
+        fs.renameSync(temporaryPath, destinationPath);
+      } catch (err) {
+        if (err && (err.code === 'EEXIST' || err.code === 'EPERM')) {
+          fs.rmSync(destinationPath, { force: true });
+          fs.renameSync(temporaryPath, destinationPath);
+        } else {
+          throw err;
+        }
+      }
+    }, 'publishing ' + path.basename(sourcePath));
+    if (sha256(destinationPath) !== expectedHash) {
+      throw new Error('Published hash does not match staged file: ' + path.basename(sourcePath));
+    }
+    console.log('ok: copied ' + path.basename(sourcePath) + ' (sha256 ' + expectedHash.slice(0, 16) + '...)');
+    return expectedHash;
+  } finally {
+    try { fs.rmSync(temporaryPath, { force: true }); } catch (_) {}
   }
-  retry(() => fs.copyFileSync(temporaryPath, destinationPath), 'publishing ' + path.basename(sourcePath));
-  fs.rmSync(temporaryPath, { force: true });
-  if (sha256(destinationPath) !== expectedHash) {
-    throw new Error('Published hash does not match staged file: ' + path.basename(sourcePath));
-  }
-  console.log('ok: copied ' + path.basename(sourcePath) + ' (sha256 ' + expectedHash.slice(0, 16) + '...)');
-  return expectedHash;
 }
 
 function removeStage(stageDir, stageBase) {
@@ -144,15 +168,21 @@ console.log('destination: ' + workspaceDist);
 
 try {
   const builderCli = require.resolve('electron-builder/cli.js');
+  const stagedConfigPath = path.join(stageDir, 'electron-builder.effective.json');
+  const effectiveConfig = JSON.parse(fs.readFileSync(path.join(desktopRoot, 'electron-builder.json'), 'utf8'));
+  effectiveConfig.directories = { ...(effectiveConfig.directories || {}), output: stageDist };
+  if (Array.isArray(effectiveConfig.publish)) {
+    effectiveConfig.publish = effectiveConfig.publish.map((pub) => ({ ...pub, channel }));
+  }
+  fs.writeFileSync(stagedConfigPath, JSON.stringify(effectiveConfig, null, 2));
   runNode(builderCli, [
-    '--config', path.join(desktopRoot, 'electron-builder.json'),
-    '-c.directories.output=' + stageDist,
+    '--config', stagedConfigPath,
     '--win', 'nsis', '--x64', '--arm64', '--publish', 'never',
   ], { ALLOFLOW_DESKTOP_DIST_DIR: stageDist });
 
   writeChecksumManifest(stageDist, windowsInstallers);
   const verifierEnvironment = { ALLOFLOW_DESKTOP_DIST_DIR: stageDist };
-  runNode(path.join(desktopRoot, 'scripts', 'verify-packaged-layout.cjs'), ['--platform', 'win'], verifierEnvironment);
+  runNode(path.join(desktopRoot, 'scripts', 'verify-packaged-layout.cjs'), ['--platform', 'win', '--arch', 'all'], verifierEnvironment);
   runNode(path.join(desktopRoot, 'scripts', 'verify-desktop-artifacts.cjs'), ['--platform', 'win'], verifierEnvironment);
 
   fs.mkdirSync(workspaceDist, { recursive: true });

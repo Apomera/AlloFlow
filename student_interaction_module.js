@@ -301,6 +301,15 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   const descId = "student-submit-modal-desc";
   const summaryId = "student-submit-summary-title";
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const submitInFlightRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   const [changingName, setChangingName] = useState(false);
   const [receipt, setReceipt] = useState(null);
   const receiptDoneRef = useRef(null);
@@ -308,6 +317,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     if (isOpen) {
       setChangingName(false);
       setReceipt(null);
+      setSubmitError("");
     }
   }, [isOpen]);
   useEffect(() => {
@@ -322,8 +332,10 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     }
   };
   const submitVoiceScopeRef = useRef(null);
-  const adjectives = t("codenames.adjectives", { returnObjects: true }) || [];
-  const animals = t("codenames.animals", { returnObjects: true }) || [];
+  const rawAdjectives = t("codenames.adjectives", { returnObjects: true });
+  const rawAnimals = t("codenames.animals", { returnObjects: true });
+  const adjectives = Array.isArray(rawAdjectives) ? rawAdjectives : [];
+  const animals = Array.isArray(rawAnimals) ? rawAnimals : [];
   const parseNickname = useCallback((nickname) => {
     if (!nickname || typeof nickname !== "string") return { adj: "", animal: "" };
     const parts = nickname.trim().split(" ");
@@ -359,6 +371,8 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   }, [isOpen, currentNickname, parseNickname, randomizeName]);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const submittingRef = useRef(submitting);
+  submittingRef.current = submitting;
   const focusTrapRef = useRef(null);
   useEffect(() => {
     if (!isOpen) return void 0;
@@ -368,6 +382,32 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     const trap = { root: dialog };
     focusTrapRef.current = trap;
     if (stack) stack.push(trap);
+    const lockState = typeof window !== "undefined" ? window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, overflow: "" } : null;
+    if (lockState && typeof document !== "undefined" && document.body) {
+      if (lockState.count === 0) lockState.overflow = document.body.style.overflow;
+      lockState.count += 1;
+      document.body.style.overflow = "hidden";
+    }
+    const hiddenNodes = [];
+    const liveSel = '[aria-live], [role="status"], [role="alert"], [role="log"], [data-toast-region]';
+    if (typeof document !== "undefined" && dialog) {
+      const rootEl = document.getElementById("root");
+      const siblings = rootEl ? Array.from(rootEl.children) : Array.from(document.body?.children || []);
+      siblings.forEach((node) => {
+        if (!node || node === dialog || node.contains(dialog)) return;
+        if (/^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(node.tagName)) return;
+        if (node.matches?.(liveSel) || node.querySelector?.(liveSel)) return;
+        const hadInert = node.hasAttribute("inert");
+        const prevHidden = node.getAttribute("aria-hidden");
+        if (!hadInert) node.setAttribute("inert", "");
+        try {
+          node.inert = true;
+        } catch (_) {
+        }
+        node.setAttribute("aria-hidden", "true");
+        hiddenNodes.push({ node, hadInert, prevHidden });
+      });
+    }
     const isTopTrap = () => {
       if (!stack || !stack.length) return true;
       const top = stack[stack.length - 1];
@@ -387,6 +427,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
+        if (submittingRef.current) return;
         if (typeof onCloseRef.current === "function") onCloseRef.current();
         return;
       }
@@ -421,6 +462,21 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     return () => {
       window.clearTimeout(focusTimer);
       document.removeEventListener("keydown", onDocKeyDown);
+      hiddenNodes.forEach(({ node, hadInert, prevHidden }) => {
+        try {
+          if (!hadInert) {
+            node.removeAttribute("inert");
+            node.inert = false;
+          }
+          if (prevHidden === null) node.removeAttribute("aria-hidden");
+          else node.setAttribute("aria-hidden", prevHidden);
+        } catch (_) {
+        }
+      });
+      if (lockState && typeof document !== "undefined" && document.body) {
+        lockState.count = Math.max(0, lockState.count - 1);
+        if (lockState.count === 0) document.body.style.overflow = lockState.overflow;
+      }
       if (stack) {
         const idx = stack.lastIndexOf(trap);
         if (idx >= 0) stack.splice(idx, 1);
@@ -475,15 +531,26 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   const receiptBody = !receipt ? "" : receipt.delivery === "mailbox" ? say("modals.submit_receipt_sent_body", "Your teacher has your work. You do not need to send anything else.") : receipt.delivery === "backup" ? say("modals.submit_receipt_backup_body", "The class mailbox could not take your work, so a backup file was downloaded to this device. Give that file to your teacher.") : say("modals.submit_receipt_file_body", "Your work is in a file on this device. Your teacher does not have it yet: send them the file or upload it to your LMS.");
   const handleSubmit = async () => {
     const fullName = getFullName();
-    if (!selectedAdj || !selectedAnimal || submitting || receipt) return false;
+    if (!selectedAdj || !selectedAnimal || submitInFlightRef.current || submitting || receipt) return false;
+    submitInFlightRef.current = true;
     setSubmitting(true);
+    setSubmitError("");
     try {
       const completed = await Promise.resolve(onSubmit(fullName, stats));
       const succeeded = completed !== false && !(completed && completed.ok === false);
-      if (succeeded) setReceipt({ delivery: completed && completed.delivery || (mailboxDelivery ? "mailbox" : "download"), name: fullName, time: (/* @__PURE__ */ new Date()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) });
+      if (succeeded && mountedRef.current) {
+        setReceipt({ delivery: completed && completed.delivery || (mailboxDelivery ? "mailbox" : "download"), name: fullName, time: (/* @__PURE__ */ new Date()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) });
+      } else if (!succeeded && mountedRef.current) {
+        const msg = completed && typeof completed === "object" && (completed.error || completed.message || completed.narration) || say("modals.submit_error", "Could not send your work right now. Please try again.");
+        setSubmitError(String(msg));
+      }
       return succeeded ? completed || true : false;
+    } catch (_) {
+      if (mountedRef.current) setSubmitError(say("modals.submit_error", "Could not send your work right now. Please try again."));
+      return false;
     } finally {
-      setSubmitting(false);
+      submitInFlightRef.current = false;
+      if (mountedRef.current) setSubmitting(false);
     }
   };
   submitVoiceScopeRef.current = {
@@ -547,6 +614,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     if (e.key === "Escape") {
       e.preventDefault();
       e.stopPropagation();
+      if (submittingRef.current) return;
       onClose();
       return;
     }
@@ -595,19 +663,22 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       "button",
       {
         type: "button",
-        onClick: onClose,
-        className: cx("absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors motion-reduce:transition-none", styles.secondary, styles.focusOffset),
+        disabled: submitting,
+        onClick: () => {
+          if (!submittingRef.current) onClose();
+        },
+        className: cx("absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors motion-reduce:transition-none", styles.secondary, styles.focusOffset),
         "aria-label": t("common.close")
       },
       /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })
     ),
     /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: cx("w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Send, { size: 32, className: "ml-1" })), /* @__PURE__ */ React.createElement("h2", { id: titleId, className: cx("text-2xl font-black mb-1", styles.title) }, receipt ? receiptTitle : t("modals.submit_title")), /* @__PURE__ */ React.createElement("p", { id: descId, className: cx("text-sm font-medium", styles.text) }, receipt ? receiptBody : t("modals.submit_ready"))),
-    receipt ? /* @__PURE__ */ React.createElement("div", { "data-submit-receipt": receipt.delivery }, /* @__PURE__ */ React.createElement("div", { role: "status", className: cx("rounded-xl p-4 mb-6 text-center", styles.panelSoft) }, /* @__PURE__ */ React.createElement("div", { className: cx("text-xs font-bold uppercase tracking-wider mb-1", styles.muted) }, say("modals.submit_receipt_as", "Codename")), /* @__PURE__ */ React.createElement("div", { className: cx("text-xl font-black tracking-tight break-words", styles.title) }, receipt.name), /* @__PURE__ */ React.createElement("div", { className: cx("text-sm font-medium mt-2", styles.text) }, receipt.time)), /* @__PURE__ */ React.createElement("button", { type: "button", ref: receiptDoneRef, onClick: onClose, "data-submit-receipt-done": "", className: cx("w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95", styles.primary) }, say("modals.submit_receipt_done", "Done"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("label", { className: cx("block text-xs font-bold uppercase tracking-wider mb-2 text-center", styles.muted) }, nameLabel), /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl", styles.panelSoft) }, pickingName && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
+    receipt ? /* @__PURE__ */ React.createElement("div", { "data-submit-receipt": receipt.delivery }, /* @__PURE__ */ React.createElement("div", { role: "status", className: cx("rounded-xl p-4 mb-6 text-center", styles.panelSoft) }, /* @__PURE__ */ React.createElement("div", { className: cx("text-xs font-bold uppercase tracking-wider mb-1", styles.muted) }, say("modals.submit_receipt_as", "Codename")), /* @__PURE__ */ React.createElement("div", { className: cx("text-xl font-black tracking-tight break-words", styles.title) }, receipt.name), /* @__PURE__ */ React.createElement("div", { className: cx("text-sm font-medium mt-2", styles.text) }, receipt.time)), /* @__PURE__ */ React.createElement("button", { type: "button", ref: receiptDoneRef, onClick: onClose, "data-submit-receipt-done": "", className: cx("w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95", styles.primary) }, say("modals.submit_receipt_done", "Done"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("p", { className: cx("block text-xs font-bold uppercase tracking-wider mb-2 text-center", styles.muted) }, nameLabel), /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl", styles.panelSoft) }, pickingName && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
       "select",
       {
         value: selectedAdj,
         onChange: (e) => setSelectedAdj(e.target.value),
-        className: cx("w-1/2 p-2 rounded-lg border font-bold text-sm focus:ring-2 outline-none cursor-pointer", styles.input),
+        className: cx("w-1/2 min-h-11 p-2 rounded-lg border font-bold text-sm focus:ring-2 outline-none cursor-pointer", styles.input),
         "aria-label": t("modals.entry.select_adjective"),
         "data-help-key": "entry_adjective"
       },
@@ -617,12 +688,12 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       {
         value: selectedAnimal,
         onChange: (e) => setSelectedAnimal(e.target.value),
-        className: cx("w-1/2 p-2 rounded-lg border font-bold text-sm focus:ring-2 outline-none cursor-pointer", styles.input),
+        className: cx("w-1/2 min-h-11 p-2 rounded-lg border font-bold text-sm focus:ring-2 outline-none cursor-pointer", styles.input),
         "aria-label": t("modals.entry.select_animal"),
         "data-help-key": "entry_animal"
       },
       animals.map((anim, i) => /* @__PURE__ */ React.createElement("option", { key: i, value: anim }, anim))
-    )), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center justify-between p-3 rounded-xl shadow-sm", styles.panel), role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: cx("text-xl font-black tracking-tight truncate mr-2", styles.title) }, selectedAdj, " ", selectedAnimal), pickingName ? /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center justify-between p-3 rounded-xl shadow-sm", styles.panel) }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: cx("text-xl font-black tracking-tight truncate mr-2", styles.title) }, selectedAdj, " ", selectedAnimal), pickingName ? /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -633,7 +704,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         "data-help-key": "entry_randomize_btn"
       },
       /* @__PURE__ */ React.createElement(RefreshCw, { size: 18 })
-    ) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChangingName(true), "data-submit-change-codename": "", className: cx("min-h-11 px-3 rounded-lg text-sm font-bold underline shrink-0", styles.secondary) }, say("modals.submit_change_codename", "Change"))))), /* @__PURE__ */ React.createElement("div", { role: "group", className: cx("rounded-xl p-4 mb-6", styles.panelSoft), "aria-labelledby": summaryId }, /* @__PURE__ */ React.createElement("h4", { id: summaryId, className: cx("text-xs font-bold uppercase tracking-widest mb-3 border-b pb-2", styles.muted) }, t("modals.work_summary")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 16, className: "text-teal-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.quizzes), " ", t("modals.summary_quizzes")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16, className: "text-green-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.readings), " ", t("modals.summary_readings")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, className: "text-purple-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.adventures), " ", t("modals.summary_adventures")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(Quote, { size: 16, className: "text-rose-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.scaffolds), " ", t("modals.summary_scaffolds"))), /* @__PURE__ */ React.createElement("div", { className: cx("text-xs italic text-center mt-2 pt-2 border-t", styles.muted) }, '"', getSummaryString(), '"')), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3" }, /* @__PURE__ */ React.createElement(
+    ) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChangingName(true), "data-submit-change-codename": "", className: cx("min-h-11 px-3 rounded-lg text-sm font-bold underline shrink-0", styles.secondary) }, say("modals.submit_change_codename", "Change"))))), /* @__PURE__ */ React.createElement("div", { role: "group", className: cx("rounded-xl p-4 mb-6", styles.panelSoft), "aria-labelledby": summaryId }, /* @__PURE__ */ React.createElement("h3", { id: summaryId, className: cx("text-xs font-bold uppercase tracking-widest mb-3 border-b pb-2", styles.muted) }, t("modals.work_summary")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 16, className: "text-teal-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.quizzes), " ", t("modals.summary_quizzes")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16, className: "text-green-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.readings), " ", t("modals.summary_readings")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, className: "text-purple-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.adventures), " ", t("modals.summary_adventures")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(Quote, { size: 16, className: "text-rose-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.scaffolds), " ", t("modals.summary_scaffolds"))), /* @__PURE__ */ React.createElement("div", { className: cx("text-xs italic text-center mt-2 pt-2 border-t", styles.muted) }, '"', getSummaryString(), '"')), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3" }, submitError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: cx("rounded-xl border px-3 py-2 text-xs font-bold text-center", styles.needsWork) }, submitError), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -662,7 +733,7 @@ const DraftFeedbackInterface = React.memo(({
   status = "writing",
   rubricCriteria = [],
   gradingDetails = null,
-  draftText,
+  draftText = "",
   setDraftText,
   previousDraft,
   onSubmit,
@@ -675,8 +746,10 @@ const DraftFeedbackInterface = React.memo(({
   const themeContext = useContext(window.AlloThemeContext || StudentInteractionThemeFallbackContext);
   const styles = getStudentInteractionThemeStyles(themeContext);
   const renderRubric = () => {
-    if (!gradingDetails || !gradingDetails.breakdown) return null;
-    return /* @__PURE__ */ React.createElement("div", { className: cx("rounded-xl shadow-sm overflow-hidden mb-6", styles.panel) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-4 border-b flex justify-between items-center", styles.panelSoft) }, /* @__PURE__ */ React.createElement("h3", { className: cx("font-bold", styles.title) }, t("mastery.feedback"), " & ", t("mastery.score")), /* @__PURE__ */ React.createElement("div", { className: cx("px-4 py-1 rounded-full text-sm font-black border", status === "mastery" ? styles.positive : styles.stat) }, t("mastery.score"), ": ", gradingDetails.rawScore, "/100")), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-100" }, gradingDetails.breakdown.map((grade, idx) => {
+    if (!gradingDetails || !Array.isArray(gradingDetails.breakdown)) return null;
+    const hasRawScore = typeof gradingDetails.rawScore === "number" && Number.isFinite(gradingDetails.rawScore);
+    return /* @__PURE__ */ React.createElement("div", { className: cx("rounded-xl shadow-sm overflow-hidden mb-6", styles.panel) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-4 border-b flex justify-between items-center", styles.panelSoft) }, /* @__PURE__ */ React.createElement("h3", { className: cx("font-bold", styles.title) }, t("mastery.feedback"), " & ", t("mastery.score")), hasRawScore && /* @__PURE__ */ React.createElement("div", { className: cx("px-4 py-1 rounded-full text-sm font-black border", status === "mastery" ? styles.positive : styles.stat) }, t("mastery.score"), ": ", gradingDetails.rawScore, "/100")), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-200/40" }, gradingDetails.breakdown.map((grade, idx) => {
+      if (!grade || typeof grade !== "object") return null;
       return /* @__PURE__ */ React.createElement("div", { key: idx, className: "p-4 md:p-6" }, /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex justify-between items-end" }, /* @__PURE__ */ React.createElement("h4", { className: cx("font-bold text-sm uppercase tracking-wider", styles.title) }, grade.criterion || "Criterion"), /* @__PURE__ */ React.createElement("span", { className: cx("text-xs font-medium", styles.muted) }, t("mastery.achieved_level"), ": ", grade.score, "/", grade.max || 5)), grade.reason && /* @__PURE__ */ React.createElement("div", { className: cx("mt-2 text-sm p-3 rounded-lg border-l-4", grade.score >= (grade.max || 5) * 0.8 ? styles.positive : styles.needsWork) }, /* @__PURE__ */ React.createElement("span", { className: "font-bold mr-1" }, t("mastery.feedback"), ":"), " ", grade.reason));
     })));
   };
@@ -697,7 +770,7 @@ const DraftFeedbackInterface = React.memo(({
       {
         type: "button",
         onClick: onSubmit,
-        disabled: !draftText.trim(),
+        disabled: !String(draftText || "").trim(),
         className: cx("font-bold py-3 px-8 rounded-full transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95 disabled:opacity-60 disabled:scale-100 flex items-center gap-2", styles.primary)
       },
       t("mastery.submit_feedback"),
@@ -706,12 +779,13 @@ const DraftFeedbackInterface = React.memo(({
     )))));
   }
   if (status === "grading") {
-    return /* @__PURE__ */ React.createElement("div", { className: cx("flex flex-col items-center justify-center h-96 p-8", styles.panel), role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-busy": "true" }, /* @__PURE__ */ React.createElement("div", { className: "relative", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 border-4 border-indigo-100 rounded-full" }), /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 border-4 border-t-indigo-600 border-r-indigo-600 border-b-transparent border-l-transparent rounded-full animate-spin motion-reduce:animate-none absolute top-0 left-0" }), /* @__PURE__ */ React.createElement("div", { className: cx("absolute inset-0 flex items-center justify-center", styles.title) }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24, className: "animate-spin motion-reduce:animate-none" }))), /* @__PURE__ */ React.createElement("h3", { className: cx("mt-6 text-xl font-bold animate-pulse motion-reduce:animate-none", styles.title) }, t("mastery.analyzing")), /* @__PURE__ */ React.createElement("p", { className: cx("mt-2", styles.text) }, t("mastery.criteria_check")));
+    return /* @__PURE__ */ React.createElement("div", { className: cx("flex flex-col items-center justify-center h-96 p-8", styles.panel), role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-busy": "true" }, /* @__PURE__ */ React.createElement("div", { className: "relative", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 border-4 border-indigo-100 rounded-full" }), /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 border-4 border-t-indigo-600 border-r-indigo-600 border-b-transparent border-l-transparent rounded-full animate-spin motion-reduce:animate-none absolute top-0 left-0" }), /* @__PURE__ */ React.createElement("div", { className: cx("absolute inset-0 flex items-center justify-center", styles.title) }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24, className: "animate-spin motion-reduce:animate-none" }))), /* @__PURE__ */ React.createElement("h2", { className: cx("mt-6 text-xl font-bold animate-pulse motion-reduce:animate-none", styles.title) }, t("mastery.analyzing")), /* @__PURE__ */ React.createElement("p", { className: cx("mt-2", styles.text) }, t("mastery.criteria_check")));
   }
   if (status === "revision") {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto p-4 md:p-6 space-y-8 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex justify-between items-center p-4 rounded-xl", styles.needsWork) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble) }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: cx("text-xl font-black", styles.title), role: "status", "aria-live": "polite" }, t("mastery.revision_required")), /* @__PURE__ */ React.createElement("p", { className: cx("text-sm", styles.text) }, t("mastery.revision_desc")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: cx("hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm mr-2", styles.panel) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current" }), /* @__PURE__ */ React.createElement("span", { className: cx("text-xs font-bold", styles.text) }, t("mastery.current_progress"), ": ", gradingDetails?.rawScore, "/100")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCancel, className: cx("min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full", styles.secondary), "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), renderRubric(), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.muted) }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " ", t("mastery.locked_draft", { count: draftCount })), /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-xl h-96 overflow-y-auto font-serif relative whitespace-pre-wrap", styles.panelSoft) }, /* @__PURE__ */ React.createElement("div", { className: cx("absolute top-4 right-4", styles.muted) }, /* @__PURE__ */ React.createElement(Lock, { size: 20 })), previousDraft)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.title) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 14 }), " ", t("mastery.new_draft", { count: draftCount + 1 })), /* @__PURE__ */ React.createElement("div", { className: "relative h-96" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto p-4 md:p-6 space-y-8 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex justify-between items-center p-4 rounded-xl", styles.needsWork) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble) }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: cx("text-xl font-black", styles.title) }, t("mastery.revision_required")), /* @__PURE__ */ React.createElement("span", { className: "sr-only", role: "status", "aria-live": "polite" }, t("mastery.revision_required")), /* @__PURE__ */ React.createElement("p", { className: cx("text-sm", styles.text) }, t("mastery.revision_desc")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, typeof gradingDetails?.rawScore === "number" && Number.isFinite(gradingDetails.rawScore) && /* @__PURE__ */ React.createElement("div", { className: cx("hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm mr-2", styles.panel) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: cx("text-xs font-bold", styles.text) }, t("mastery.current_progress"), ": ", gradingDetails.rawScore, "/100")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCancel, className: cx("min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full", styles.secondary), "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), renderRubric(), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { id: "mastery-locked-draft-heading", className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.muted) }, /* @__PURE__ */ React.createElement(History, { size: 14, "aria-hidden": "true" }), " ", t("mastery.locked_draft", { count: draftCount })), /* @__PURE__ */ React.createElement("div", { role: "region", "aria-labelledby": "mastery-locked-draft-heading", className: cx("p-6 rounded-xl h-96 overflow-y-auto font-serif relative whitespace-pre-wrap", styles.panelSoft) }, /* @__PURE__ */ React.createElement("div", { className: cx("absolute top-4 right-4", styles.muted) }, /* @__PURE__ */ React.createElement(Lock, { size: 20, "aria-hidden": "true" })), previousDraft)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "mastery-new-draft-textarea", className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.title) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 14, "aria-hidden": "true" }), " ", t("mastery.new_draft", { count: draftCount + 1 })), /* @__PURE__ */ React.createElement("div", { className: "relative h-96" }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
+        id: "mastery-new-draft-textarea",
         "aria-label": t("mastery.new_draft", { count: draftCount + 1 }) || "New draft",
         value: draftText,
         onChange: (e) => setDraftText(e.target.value),
@@ -723,7 +797,8 @@ const DraftFeedbackInterface = React.memo(({
       {
         type: "button",
         onClick: onSubmit,
-        className: cx("font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-3 active:scale-95", styles.primary)
+        disabled: !String(draftText || "").trim(),
+        className: cx("font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-3 active:scale-95 disabled:opacity-60 disabled:scale-100 disabled:cursor-not-allowed", styles.primary)
       },
       t("mastery.submit_revision"),
       " ",
@@ -731,7 +806,7 @@ const DraftFeedbackInterface = React.memo(({
     )));
   }
   if (status === "mastery") {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-8 text-center animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "mb-8 relative inline-block" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(Trophy, { size: 120, className: "text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -top-4 -right-12 bg-white border-2 border-amber-500 text-amber-800 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md" }, t("mastery.mastery_achieved"))), /* @__PURE__ */ React.createElement("h2", { className: cx("text-5xl font-black mb-4 tracking-tight", styles.title), role: "status", "aria-live": "polite" }, t("mastery.excellent_work")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xl mb-8 max-w-2xl mx-auto", styles.text) }, t("mastery.mastery_desc")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto" }, (typeof finalScore === "number" || typeof gradingDetails?.rawScore === "number") && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.final_score")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, typeof finalScore === "number" ? finalScore : gradingDetails.rawScore)), /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.drafts")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, draftCount)), typeof xpEarned === "number" && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.xp_earned")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, "+", xpEarned))), gradingDetails?.feedback?.strength && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl shadow-sm text-left mb-8 max-w-3xl mx-auto", styles.panel) }, /* @__PURE__ */ React.createElement("h4", { className: cx("font-bold flex items-center gap-2 mb-2", styles.title) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current" }), " ", t("mastery.teacher_feedback")), /* @__PURE__ */ React.createElement("p", { className: cx("italic", styles.text) }, '"', gradingDetails.feedback.strength, '"')), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-8 text-center animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "mb-8 relative inline-block" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(Trophy, { size: 120, className: "text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: cx("absolute -top-4 -right-12 border-2 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md", styles.stat) }, t("mastery.mastery_achieved"))), /* @__PURE__ */ React.createElement("h2", { className: cx("text-5xl font-black mb-4 tracking-tight", styles.title) }, t("mastery.excellent_work")), /* @__PURE__ */ React.createElement("span", { className: "sr-only", role: "status", "aria-live": "polite" }, t("mastery.excellent_work")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xl mb-8 max-w-2xl mx-auto", styles.text) }, t("mastery.mastery_desc")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto" }, (typeof finalScore === "number" || typeof gradingDetails?.rawScore === "number") && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.final_score")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, typeof finalScore === "number" ? finalScore : gradingDetails.rawScore)), /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.drafts")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, draftCount)), typeof xpEarned === "number" && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.xp_earned")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, "+", xpEarned))), gradingDetails?.feedback?.strength && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl shadow-sm text-left mb-8 max-w-3xl mx-auto", styles.panel) }, /* @__PURE__ */ React.createElement("h3", { className: cx("font-bold flex items-center gap-2 mb-2", styles.title) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current", "aria-hidden": "true" }), " ", t("mastery.teacher_feedback")), /* @__PURE__ */ React.createElement("p", { className: cx("italic", styles.text) }, '"', gradingDetails.feedback.strength, '"')), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",

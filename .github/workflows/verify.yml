@@ -538,7 +538,7 @@ jobs:
           python3 -c "from pathlib import Path; import re, xml.etree.ElementTree as ET; p=Path('dev-tools/verapdf_ci_autoinstall.xml'); s=p.read_text(encoding='utf-8'); assert not any('--' in body for body in re.findall(r'<!--(.*?)-->', s, re.S)), 'XML comments may not contain --'; ET.parse(p)"
           VERAPDF_URL="https://software.verapdf.org/releases/1.30/verapdf-greenfield-1.30.4-installer.zip"
           VERAPDF_SHA256="04415ef3f149526a3048b9889723e81320ddf013bd891bcc7f0f297f3eadcc23"
-          curl -fsSL -o "$RUNNER_TEMP/verapdf-installer.zip" "$VERAPDF_URL"
+          curl --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 120 -fsSL -o "$RUNNER_TEMP/verapdf-installer.zip" "$VERAPDF_URL"
           echo "$VERAPDF_SHA256  $RUNNER_TEMP/verapdf-installer.zip" | sha256sum -c -
           unzip -q "$RUNNER_TEMP/verapdf-installer.zip" -d "$RUNNER_TEMP/verapdf-installer"
           INSTALLER_JAR="$(find "$RUNNER_TEMP/verapdf-installer" -name 'verapdf-izpack-installer-*.jar' | head -1)"

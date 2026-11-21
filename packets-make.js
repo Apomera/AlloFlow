@@ -229,8 +229,8 @@
     fresh.stage = stageRow(saved.stage) || levelRow(saved.stage) ? saved.stage : '';
     if (saved.order === 'random') { fresh.order = 'random'; fresh.shuffle = shuffleCount(saved.shuffle); }
     if (typeof saved.own === 'string') fresh.own = saved.own.slice(0, 4000);
-    if (SEEDS[saved.version]) fresh.version = saved.version;
-    if (saved.length === 'custom' || (LENGTH_NAMES[saved.length] && core.LESSON_LENGTHS[saved.length])) fresh.length = saved.length;
+    if (Object.prototype.hasOwnProperty.call(SEEDS, saved.version)) fresh.version = saved.version;
+    if (saved.length === 'custom' || (Object.prototype.hasOwnProperty.call(LENGTH_NAMES, saved.length) && Object.prototype.hasOwnProperty.call(core.LESSON_LENGTHS, saved.length))) fresh.length = saved.length;
     if (wordCount(saved.count)) fresh.count = wordCount(saved.count);
     if (saved.hand === true) fresh.hand = true;
     if (saved.spread === true) fresh.spread = true;
@@ -446,7 +446,7 @@
   function pick(change) {
     var main = pickFirst(change);
     if (change || !groupsOn()) return main;
-    var total = wordsFor(state.length), room = total - 1, taken = [], labels = {}, parts = [];
+    var total = wordsFor(state.length), room = total - 1, taken = [], labels = Object.create(null), parts = [];
     state.groups.forEach(function (group, index) {
       var got = pickGroup(group, taken, index), use = got.words.slice(0, Math.max(0, Math.min(group.count, room)));
       room -= use.length;
@@ -991,7 +991,7 @@
       var item = el('li', 'chip');
       item.appendChild(el('span', '', word));
       // More than one group: each word says which group it is from (for the teacher: a file never shows it).
-      if (!state.hand && picked && picked.labels && picked.labels[word]) {
+      if (!state.hand && picked && picked.labels && Object.prototype.hasOwnProperty.call(picked.labels, word) && picked.labels[word]) {
         var tag = el('span', 'chip-tag', picked.labels[word]);
         tag.setAttribute('data-group', picked.labels[word]);
         item.appendChild(tag);
@@ -1104,7 +1104,7 @@
   }
   // Clean pasted spelling lists (numbered lines, bullets, surrounding quotes/punctuation) without mangling interior invalid characters.
   function parseWordInput(text) {
-    var seen = {}, out = [];
+    var seen = Object.create(null), out = [];
     String(text || '').toLowerCase().split(/\r?\n/).forEach(function (line) {
       var trimmedLine = line.replace(/^\s*(?:\d+[.)]\s+|[\u2022\u25e6\u25aa\u2023\u2043\u2013\u2014*\-]\s+)/, '');
       trimmedLine.split(/[\s,;\u2022\u25e6\u25aa\u2023\u2043]+/).forEach(function (raw) {
@@ -1177,8 +1177,8 @@
   // with nothing taken out to make room. Checking a word adds it to the end of state.chosen: the file's order is
   // the order of checking (the chips show it). Until the teacher changes a box, the boxes show the picker's words
   // for the length chosen. Only LIST_PAGE rows are drawn at a time.
-  var listPool = [], listKey = null, listLimit = LIST_PAGE, listNote = '', listTimer = 0, listPanel = null, addPending = {}, myPictured = {}, myNoPicture = {};
-  var previewOmit = {}, previewSeeds = {}, previewNoPicture = {}, previewOwnPic = {}, previewSession = null, inPreviewAction = false, previewContextKey = '';
+  var listPool = [], listKey = null, listLimit = LIST_PAGE, listNote = '', listTimer = 0, listPanel = null, addPending = Object.create(null), myPictured = Object.create(null), myNoPicture = Object.create(null);
+  var previewOmit = Object.create(null), previewSeeds = Object.create(null), previewNoPicture = Object.create(null), previewOwnPic = Object.create(null), previewSession = null, inPreviewAction = false, previewContextKey = '';
   var REROLL_ACTS = ['isolation', 'segmentation', 'blending', 'decoding', 'rhyming', 'missing_letter', 'word_families', 'sound_sort'];
   function stopPreviewSession() {
     if (previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
@@ -1205,7 +1205,7 @@
     state.hand = true;
     state.chosen = listChecked();
   }
-  function hasPicture(word) { return !noPicture(word) && (ownPicture(word) || !!myPictured[word] || (!!symbols && symbols.has(word))); }
+  function hasPicture(word) { return !noPicture(word) && (ownPicture(word) || !!myPictured[word] || (!!symbols && symbols.has(word)) || matcherHas(word)); }
   // Every word the picker would offer now, A to Z (the picker's rules, not its count). Worked out again only when a choice changes.
   function poolWords() {
     var asked = criteria();
@@ -1219,9 +1219,9 @@
     return listPool;
   }
   function listEntries() {
-    var seen = {}, out = [];
+    var seen = Object.create(null), out = [];
     typedNow().forEach(function (word) { seen[word] = true; out.push({ word: word, typed: true }); });
-    var pool = poolWords(), inPool = {};
+    var pool = poolWords(), inPool = Object.create(null);
     pool.forEach(function (word) { inPool[word] = true; });
     // A word chosen under other choices stays listed, so that it can be unchecked here too.
     state.chosen.forEach(function (word) { if (!seen[word] && !inPool[word]) { seen[word] = true; out.push({ word: word, earlier: true }); } });
@@ -1238,7 +1238,7 @@
     sounds = sounds || (entry ? entry.sounds : null);
     return sounds ? count(sounds.length, 'sound') + ': ' + sounds.map(soundName).join(', ') + '.' : '';
   }
-  function pictureFact(word) { return noPicture(word) ? ' Picture off.' : ownPicture(word) || myPictured[word] ? ' Your picture.' : symbols && symbols.has(word) ? ' Has a picture.' : ''; }
+  function pictureFact(word) { return noPicture(word) ? ' Picture off.' : ownPicture(word) || myPictured[word] ? ' Your picture.' : (symbols && symbols.has(word)) || matcherHas(word) ? ' Has a picture.' : ''; }
   function listRow(entry, checked, index) {
     var word = entry.word, info = entry.typed || entry.earlier ? checkWord(word) : null;
     var ok = usable(word), on = checked.indexOf(word) >= 0;
@@ -1297,7 +1297,7 @@
   var listTop = [];
   function topFirst(entries) {
     if (!listTop.length) return entries;
-    var rank = {};
+    var rank = Object.create(null);
     listTop.forEach(function (word, i) { rank[word] = i + 1; });
     var top = entries.filter(function (entry) { return rank[entry.word]; }).sort(function (a, b) { return rank[a.word] - rank[b.word]; });
     return top.concat(entries.filter(function (entry) { return !rank[entry.word]; }));
@@ -1459,10 +1459,10 @@
   // ---------------------------------------------------------------------------
   // myRows: the store's small rows (list), for the summary. mine: the whole entries of the words on the
   // lists now, for the messages and the panels. Both are read again whenever the store says it changed.
-  var myWords = null, myWordsReady = false, wordPanel = null, myRows = [], mine = {}, mineTried = {}, mineRun = 0, mineTimer = 0, clearing = false, cleared = '';
-  var ownOpen = {}, pickOpen = null;
+  var myWords = null, myWordsReady = false, wordPanel = null, myRows = [], mine = Object.create(null), mineTried = Object.create(null), mineRun = 0, mineTimer = 0, clearing = false, cleared = '';
+  var ownOpen = Object.create(null), pickOpen = null;
   // fromFile: { word: { sounds, clip, picture } } read back from a file opened with "Open a file I made" (see packets_reopen.js).
-  var fromFile = {}, OWN_PARTS = ['sounds', 'clip', 'picture'];
+  var fromFile = Object.create(null), OWN_PARTS = ['sounds', 'clip', 'picture'];
   function hasRow(word) { return myRows.some(function (row) { return row.word === word; }); }
   // A listed word the store has something for, and that has not been read yet.
   function needsEntry(word) { return hasRow(word) && !mineOf(word) && !mineTried[word]; }
@@ -1482,15 +1482,15 @@
       myWordsReady = !!both[0];
       var rows = both[1];
       myRows = Array.isArray(rows) ? rows : [];
-      myPictured = {};
-      myNoPicture = {};
+      myPictured = Object.create(null);
+      myNoPicture = Object.create(null);
       myRows.forEach(function (row) {
         if (!row) return;
         if (row.noPicture) myNoPicture[row.word] = true;
         else if (row.picture) myPictured[row.word] = true;
       });
       var words = listedWords().filter(hasRow);
-      mineTried = {};
+      mineTried = Object.create(null);
       words.forEach(function (word) { mineTried[word] = true; });
       return myWords.getMany(words).then(function (found) {
         if (run !== mineRun) return;
@@ -1547,6 +1547,8 @@
           var buttons = $('my-words-list').querySelectorAll('button');
           var next = buttons[Math.min(at, buttons.length - 1)];
           if (next) next.focus(); else $('my-words-line').focus();
+        }).catch(function () {
+          setText('my-words-said', 'Could not remove ' + row.word + '.');
         });
       });
       item.appendChild(remove);
@@ -1567,7 +1569,9 @@
       myWords.clear().then(function (n) {
         cleared = 'Removed ' + count(n, 'word') + '.';
         return readMine();
-      }).then(function () { drawMyWords(); $('my-words-line').focus(); });
+      }).then(function () { drawMyWords(); $('my-words-line').focus(); }).catch(function () {
+        setText('my-words-said', 'Could not remove your words.');
+      });
     });
     $('my-words-keep').addEventListener('click', function () { clearing = false; drawMyWords(); $('my-words-clear').focus(); });
     // Save My words as a file, and put a saved one back (2026-11-17).
@@ -1723,18 +1727,22 @@
     };
     return more();
   }
-  function fetchBounded(url, init, ms) {
-    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, ms || 15000) : null;
-    var clear = function () { if (timer !== null) { clearTimeout(timer); timer = null; } };
-    var opts = ctrl ? Object.assign({}, init || {}, { signal: ctrl.signal }) : init;
-    return window.fetch(url, opts).then(function (reply) { clear(); return reply; }, function (err) { clear(); throw err; });
+  function withTimeout(promise, ms, label) {
+    var timer = null;
+    return Promise.race([
+      promise,
+      new Promise(function (_, reject) {
+        timer = setTimeout(function () { reject(new Error((label || 'request') + ' timed out')); }, ms || 20000);
+      })
+    ]).finally(function () {
+      if (timer !== null) { clearTimeout(timer); timer = null; }
+    });
   }
   // One sound file: from the saved copy when the site still has the same one, else from the site.
   function readSoundFile(cache, file, onBytes) {
     var download = function (response) {
-      var fetched = response ? Promise.resolve(response) : fetchBounded(file.url, undefined, 20000);
-      return fetched.then(function (reply) {
+      var fetched = response ? Promise.resolve(response) : window.fetch(file.url);
+      return withTimeout(fetched.then(function (reply) {
         if (!reply.ok) throw new Error(file.url + ' answered ' + reply.status);
         return readBody(reply, onBytes).then(function (text) {
           var data = parseSounds(text);
@@ -1747,7 +1755,7 @@
           }
           return { data: data, saved: false };
         });
-      });
+      }), 20000, file.url);
     };
     var saved = cache ? cache.match(file.url).catch(function () { return undefined; }) : Promise.resolve(undefined);
     return saved.then(function (hit) {
@@ -1756,9 +1764,9 @@
       var tag = hit.headers.get('etag'), dated = hit.headers.get('last-modified');
       if (!tag && !dated) return use();
       // Ask the site whether the file changed. No answer (no internet) means the saved copy is used.
-      return fetchBounded(file.url, { headers: tag ? { 'If-None-Match': tag } : { 'If-Modified-Since': dated } }, 12000).then(function (reply) {
+      return withTimeout(window.fetch(file.url, { headers: tag ? { 'If-None-Match': tag } : { 'If-Modified-Since': dated } }).then(function (reply) {
         return reply.status === 200 ? download(reply) : use();
-      }, use);
+      }), 20000, file.url).catch(use);
     });
   }
   function loadSounds() {
@@ -1787,7 +1795,7 @@
   // The word store. One index (word -> shard, shard -> file and size), then only the files that hold the practice
   // words. Each file goes through readSoundFile, so it is saved, checked and read again exactly as the sound
   // files above are. A file that does not arrive stops the build with WORD_SOUNDS_FAILED: never a silent word.
-  var wordStore = null, wordFiles = {}, wordClips = {};
+  var wordStore = null, wordFiles = Object.create(null), wordClips = Object.create(null);
   function wordSoundsError(error) {
     var failed = new Error('word sounds: ' + String((error && error.message) || error));
     failed.wordSounds = true;
@@ -1820,7 +1828,7 @@
   function getWordSounds(words, onProgress) {
     var need = words.filter(function (word) { return inWordStore(word) && !wordClips[word]; });
     var mine = function () {
-      var out = {};
+      var out = Object.create(null);
       words.forEach(function (word) { if (wordClips[word]) out[word] = wordClips[word]; });
       return out;
     };
@@ -1913,7 +1921,10 @@
       script.onload = function () { resolve(window.AlloPacketAudioKit || null); };
       script.onerror = function () { resolve(null); };
       document.head.appendChild(script);
-    }).then(function (kit) { return kit ? kit.getMp3().then(function (ok) { mp3Kit = ok ? kit : null; mp3Done = true; return mp3Kit; }) : (mp3Done = true, null); });
+    }).then(function (kit) {
+      if (!kit || typeof kit.getMp3 !== 'function') { mp3Done = true; return null; }
+      return kit.getMp3().then(function (ok) { mp3Kit = ok ? kit : null; mp3Done = true; return mp3Kit; }, function () { mp3Kit = null; mp3Done = true; return null; });
+    });
     return mp3Ready;
   }
   function waitAudioKit() {
@@ -1929,8 +1940,11 @@
   function toMp3(uri) {
     if (mp3s && mp3s.has(uri)) return mp3s.get(uri);
     if (!mp3Kit) { audioKit(); return Promise.resolve(null); }
-    var made = Promise.resolve(mp3Kit.wavUriToMp3Uri(uri, MP3_KBPS));
-    if (mp3s) mp3s.set(uri, made);
+    var made = Promise.resolve().then(function () { return mp3Kit.wavUriToMp3Uri(uri, MP3_KBPS); });
+    if (mp3s) {
+      mp3s.set(uri, made);
+      made.catch(function () { mp3s.delete(uri); });
+    }
     return made;
   }
 
@@ -1938,20 +1952,58 @@
   // page, says which words have one. The drawings are in the files it names: the same files whatever words are
   // chosen, fetched only when a file is made with the box checked. A file made without them is the same file as before.
   // picturesChoice: '' until the teacher clicks the box (then it is on exactly when a word has a picture), 'on' or 'off' after.
-  var symbols = null, picturesChoice = '', picturesNote = '', picturesLoading = null;
+  var symbols = null, picturesChoice = '', picturesNote = '', picturesLoading = null, matcherLoading = null, matcherCache = Object.create(null);
+  function getMatcher() { return window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher) || null; }
+  function matcherMatch(word) {
+    var m = getMatcher();
+    if (!m || typeof m.matchWord !== 'function' || !word) return null;
+    var symReady = !!(symbols && typeof symbols.ready === 'function' && symbols.ready());
+    var key = (symReady ? '1:' : '0:') + String(word).toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(matcherCache, key)) return matcherCache[key];
+    var hit = null;
+    try { hit = m.matchWord({ word: word }, { symbols: symReady ? symbols : null, preferDiagrams: true }); } catch (_) { hit = null; }
+    matcherCache[key] = (hit && typeof hit.svg === 'string') ? hit : null;
+    return matcherCache[key];
+  }
+  function matcherHas(word) { return !!matcherMatch(word); }
+  function loadMatcher() {
+    if (getMatcher()) return Promise.resolve(true);
+    if (!matcherLoading) {
+      matcherLoading = new Promise(function (resolve) {
+        if (!doc || !doc.head || typeof doc.createElement !== 'function') { matcherLoading = null; resolve(false); return; }
+        var done = false;
+        var finish = function (ok) {
+          if (done) return;
+          done = true;
+          matcherCache = Object.create(null);
+          var ready = !!ok && !!getMatcher();
+          if (!ready) matcherLoading = null;
+          resolve(ready);
+        };
+        var timer = window.setTimeout(function () { finish(false); }, 4000);
+        var script = doc.createElement('script');
+        script.src = 'word_picture_matcher.js';
+        script.onload = function () { window.clearTimeout(timer); finish(true); };
+        script.onerror = function () { window.clearTimeout(timer); finish(false); };
+        doc.head.appendChild(script);
+      });
+    }
+    return matcherLoading;
+  }
   function loadPictures() {
-    if (symbols.ready()) return Promise.resolve(true);
+    var mTask = loadMatcher().catch(function () { return false; });
+    if (symbols.ready()) return mTask.then(function () { return true; });
     if (!picturesLoading) {
       picturesLoading = Promise.all(symbols.shards.map(function (shard) {
-        return fetchBounded(shard.url, undefined, 15000).then(function (reply) {
+        return withTimeout(window.fetch(shard.url).then(function (reply) {
           if (!reply.ok) throw new Error(shard.url + ' answered ' + reply.status);
           return reply.text();
         }).then(function (text) {
           symbols.add(JSON.parse(text, function (k, v) {
             return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
           }));
-        });
-      })).then(function () { picturesLoading = null; return symbols.ready(); }, function (error) { picturesLoading = null; throw error; });
+        }), 15000, shard.url);
+      })).then(function () { picturesLoading = null; matcherCache = {}; return mTask.then(function () { return symbols.ready(); }); }, function (error) { picturesLoading = null; throw error; });
     }
     return picturesLoading;
   }
@@ -1966,7 +2018,7 @@
     if (!box) return;
     var words = fileWords();
     var theirs = words.filter(ownPicture).length;
-    var have = words.filter(function (word) { return !noPicture(word) && (ownPicture(word) || (!!symbols && symbols.has(word))); }).length;
+    var have = words.filter(function (word) { return !noPicture(word) && (ownPicture(word) || (!!symbols && symbols.has(word)) || matcherHas(word)); }).length;
     var onlyPictures = !!($('f-only-pictures') && $('f-only-pictures').checked);
     box.disabled = false;
     // On when the teacher checked it, or before any click when the teacher filtered for words with pictures or most chosen words have one.
@@ -1974,12 +2026,17 @@
     box.parentNode.classList.toggle('is-on', box.checked);
     var n = inFile ? inFile.withPicture : have, of = inFile ? inFile.withPicture + inFile.withoutPicture : words.length;
     var added = inFile ? inFile.teacher || 0 : theirs;
-    // Which symbol sets these words draw on (Mulberry first, OpenMoji only where Mulberry has none).
-    var setNames = { mulberry: 'Mulberry', openmoji: 'OpenMoji' }, sets = [];
+    // Which symbol sets these words draw on (Mulberry first, OpenMoji only where Mulberry has none, then Curriculum diagrams).
+    var setNames = { mulberry: 'Mulberry', openmoji: 'OpenMoji', diagram: 'Curriculum diagrams' }, sets = [];
     words.forEach(function (word) {
-      if (!symbols || noPicture(word) || ownPicture(word) || !symbols.has(word)) return;
-      var set = typeof symbols.set === 'function' ? symbols.set(word) || 'mulberry' : 'mulberry';
-      if (sets.indexOf(set) < 0) sets.push(set);
+      if (noPicture(word) || ownPicture(word)) return;
+      var set = '';
+      if (symbols && symbols.has(word)) set = typeof symbols.set === 'function' ? symbols.set(word) || 'mulberry' : 'mulberry';
+      else {
+        var matched = matcherMatch(word);
+        if (matched) set = matched.set === 'openmoji' ? 'openmoji' : ((matched.matchType === 'diagram' || matched.set === 'diagram') ? 'diagram' : 'mulberry');
+      }
+      if (set && sets.indexOf(set) < 0) sets.push(set);
     });
     sets.sort();
     var setsSaid = (sets.length ? sets : ['mulberry']).map(function (set) { return setNames[set] || set; }).join(' and ');
@@ -1993,7 +2050,8 @@
   function picturesFor(run, words) {
     var box = $('f-pictures');
     if (!box || !box.checked) return Promise.resolve(false);
-    if (!symbols || !words.some(function (word) { return !noPicture(word) && !ownPicture(word) && symbols.has(word); })) return Promise.resolve(words.some(ownPicture));
+    var needsSymbol = !!symbols && words.some(function (word) { return !noPicture(word) && !ownPicture(word) && symbols.has(word); });
+    if (!needsSymbol) return Promise.resolve(words.some(function (word) { return !noPicture(word) && (ownPicture(word) || matcherHas(word)); }));
     if (!symbols.ready() && run === buildRun) making('Getting the pictures, about ' + megabytes(symbols.bytes) + ' MB.', null);
     var loading = loadPictures().then(function (ready) { return !!ready; }, function () { return false; });
     drawPictures();
@@ -2141,6 +2199,8 @@
   function clearBuilt() {
     buildRun++;
     built = null;
+    lastLesson = null;
+    if (typeof drawOrder === 'function') drawOrder();
     if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
     show('summary', false);
     show('summary-more', false);
@@ -2188,7 +2248,7 @@
   // plan: { words, activities, seed, title, picked }.
   function packetOptions(plan, withWords, pictures, own, learner) {
     var options = { words: plan.words, activities: plan.activities, seed: plan.seed, title: plan.title, core: core, dictionary: dictionary, banks: withWords, loader: loader,
-      wordlist: wordlist, toWav: toWav, toMp3: toMp3, picked: plan.picked, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null };
+      wordlist: wordlist, toWav: toWav, toMp3: toMp3, picked: plan.picked, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null, matcher: pictures ? getMatcher() : null };
     if (own) options.own = own;
     if (learner) options.learnerLabel = learner;
     if (state.tracing !== 'both' && plan.activities.indexOf('letter_tracing') >= 0) options.tracingCases = state.tracing;
@@ -2416,7 +2476,7 @@
           sample: false,
           label: core.activityLabel(act) + (word ? ' — ' + word : ''),
           canSwap: REROLL_ACTS.indexOf(act) >= 0,
-          canTogglePicture: !!(picOn && word && (ownPicture(word) || !!myPictured[word] || noPicture(word) || (!!symbols && symbols.has(word)))),
+          canTogglePicture: !!(picOn && word && (ownPicture(word) || !!myPictured[word] || noPicture(word) || (!!symbols && symbols.has(word)) || matcherHas(word))),
           noPicture: !!(word && noPicture(word)),
         });
       });
@@ -2545,7 +2605,10 @@
     if (!built) return;
     var link = doc.createElement('a');
     var url = fileUrl;
-    if (!url) { try { url = URL.createObjectURL(new Blob([built.html], { type: 'text/html' })); } catch (_) { url = ''; } }
+    var temporaryUrl = false;
+    if (!url) {
+      try { url = URL.createObjectURL(new Blob([built.html], { type: 'text/html' })); temporaryUrl = true; } catch (_) { url = ''; }
+    }
     if (!url) return problem('This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.', 'retry');
     link.href = url;
     link.download = built.name;
@@ -2553,6 +2616,7 @@
     doc.body.appendChild(link);
     link.click();
     doc.body.removeChild(link);
+    if (temporaryUrl) window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
     show('after-save', true);
     $('after-save').focus();
   }
@@ -2584,7 +2648,7 @@
   }
   // The code names typed, one on each line: cleaned the way a file carries them, each used once, at most MAX_STUDENTS.
   function batchList() {
-    var field = $('f-batch-names'), seen = {}, out = { names: [], twice: [], unusable: [], over: 0 };
+    var field = $('f-batch-names'), seen = Object.create(null), out = { names: [], twice: [], unusable: [], over: 0 };
     String((field && field.value) || '').split(/\r?\n/).forEach(function (line) {
       var cleaned = cleanRosterLine(line);
       if (!cleaned) return;
@@ -2700,7 +2764,7 @@
     }) : Promise.resolve();
     buildStep.then(function () {
       if (run !== batchRun) return null;
-      var zip = zipKit.create(), encoder = new TextEncoder(), used = {}, i = 0;
+      var zip = zipKit.create(), encoder = new TextEncoder(), used = Object.create(null), i = 0;
       return new Promise(function (resolve, reject) {
         var next = function () {
           if (run !== batchRun) { resolve(null); return; }
@@ -2708,7 +2772,11 @@
             if (i >= names.length) { resolve(zip); return; }
             var name = names[i], plan = plans[versions[i]];
             var file = fileName(plan.title, name), again = 2;
-            while (used[file.toLowerCase()]) file = fileName(plan.title, name + '-' + again++);
+            while (used[file.toLowerCase()]) {
+              var suffix = '-' + (again++);
+              var baseCode = String(name || '').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, Math.max(1, 40 - suffix.length));
+              file = fileName(plan.title, baseCode + suffix);
+            }
             used[file.toLowerCase()] = true;
             zip.add(file, encoder.encode(builder.withCodeName(bases[versions[i]].html, name)));
             i++;
@@ -3159,8 +3227,9 @@
     $('forget-sounds').addEventListener('click', function () {
       var done = function () {
         sounds = null; soundsLoading = null; soundsSaved = false;
-        wordStore = null; wordFiles = {}; wordClips = {};
+        wordStore = null; wordFiles = Object.create(null); wordClips = Object.create(null);
         if (wavs) wavs.clear();
+        if (mp3s) mp3s.clear();
         soundsNote();
         setText('forget-said', 'Done. The sounds are downloaded again the next time a file is made.');
       };
@@ -3309,6 +3378,11 @@
       showReopen('Loaded ' + count(rehearseWords.length, 'missed word') + ': ' + previewList + '.', [], null);
     }
     checkSavedSounds();
+    window.addEventListener('pagehide', function () {
+      if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
+      try { dropBatchFile(); } catch (_) {}
+      try { stopPreviewSession(); } catch (_) {}
+    });
   }
 
   function stopped(error) {

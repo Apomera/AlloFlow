@@ -66,6 +66,30 @@ function useCoachDialogFocus(isOpen, dialogRef, onClose, initialFocusRef, fallba
     var trap = { root: dialog };
     var stack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : [];
     stack.push(trap);
+    var scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, prev: '' }) : null;
+    if (scrollLock && document.body) {
+      if (scrollLock.count === 0) {
+        scrollLock.prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+      }
+      scrollLock.count += 1;
+    }
+    var hiddenSiblings = [];
+    var rootHost = (typeof document !== 'undefined' && document.getElementById('root')) || (typeof document !== 'undefined' && document.body);
+    if (rootHost && dialog) {
+      Array.prototype.slice.call(rootHost.children || []).forEach(function (child) {
+        if (!child || child === dialog || child.contains(dialog)) return;
+        var role = child.getAttribute && child.getAttribute('role');
+        if (role === 'status' || role === 'alert' || role === 'log' || (child.hasAttribute && child.hasAttribute('aria-live'))) return;
+        hiddenSiblings.push({
+          node: child,
+          hadInert: child.hasAttribute('inert'),
+          prevAriaHidden: child.getAttribute('aria-hidden')
+        });
+        child.setAttribute('inert', '');
+        child.setAttribute('aria-hidden', 'true');
+      });
+    }
     var isVisibleFocusable = function (el) {
       if (!el || el.disabled || el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
       if (typeof el.closest === 'function') {
@@ -82,7 +106,7 @@ function useCoachDialogFocus(isOpen, dialogRef, onClose, initialFocusRef, fallba
       }
       return true;
     };
-    var getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(isVisibleFocusable); };
+    var getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(isVisibleFocusable); };
     var initial = initialFocusRef && initialFocusRef.current;
     (initial || getFocusable()[0] || dialog).focus();
     var onKeyDown = function (event) {
@@ -103,6 +127,15 @@ function useCoachDialogFocus(isOpen, dialogRef, onClose, initialFocusRef, fallba
     document.addEventListener('keydown', onKeyDown);
     return function () {
       document.removeEventListener('keydown', onKeyDown);
+      hiddenSiblings.forEach(function (entry) {
+        if (!entry.hadInert) entry.node.removeAttribute('inert');
+        if (entry.prevAriaHidden === null) entry.node.removeAttribute('aria-hidden');
+        else entry.node.setAttribute('aria-hidden', entry.prevAriaHidden);
+      });
+      if (scrollLock && document.body) {
+        scrollLock.count = Math.max(0, scrollLock.count - 1);
+        if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
+      }
       var idx = stack.lastIndexOf(trap);
       var wasTop = stack.length > 0 && idx === stack.length - 1;
       if (idx !== -1) stack.splice(idx, 1);
@@ -196,8 +229,11 @@ function OnboardingCoach(props) {
   // Chips from the most recent bot reply (held outside AlloOnboarding's
   // text-only buffer so the helper module stays decoupled from UI shape).
   var _chips = React.useState([]); var lastChips = _chips[0]; var setLastChips = _chips[1];
+  var _confirmReset = React.useState(false); var confirmReset = _confirmReset[0]; var setConfirmReset = _confirmReset[1];
+  var _envTick = React.useState(0); var setEnvTick = _envTick[1];
 
   var abortRef = React.useRef(null);
+  var backdropDownRef = React.useRef(false);
   var thinkTimer1Ref = React.useRef(null);
   var thinkTimer2Ref = React.useRef(null);
   var scrubTimerRef = React.useRef(null);
@@ -207,6 +243,26 @@ function OnboardingCoach(props) {
   var panelRef = React.useRef(null);
   var consentRef = React.useRef(null);
   var consentDeclineRef = React.useRef(null);
+  var mountedRef = React.useRef(true);
+  var wasNearBottomRef = React.useRef(true);
+  React.useEffect(function () {
+    mountedRef.current = true;
+    var bumpEnv = function () { if (mountedRef.current) setEnvTick(function (n) { return n + 1; }); };
+    var events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed', 'online', 'offline'];
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      events.forEach(function (ev) { window.addEventListener(ev, bumpEnv); });
+    }
+    return function () {
+      mountedRef.current = false;
+      if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
+        events.forEach(function (ev) { window.removeEventListener(ev, bumpEnv); });
+      }
+      if (abortRef.current) {
+        try { abortRef.current.abort(); } catch (_) {}
+        abortRef.current = null;
+      }
+    };
+  }, []);
   // Refresh conversation buffer + usage when the panel opens or after each
   // successful turn — AlloOnboarding owns the buffer so the panel can be
   // unmounted/remounted without losing context.
@@ -219,6 +275,16 @@ function OnboardingCoach(props) {
     } catch (_) {}
   };
   React.useEffect(function () { if (isOpen) refreshCoachState(); }, [isOpen]);
+
+  // Refresh usage automatically when the post-reply cooldown expires so Send
+  // and Enter re-enable without requiring the user to close/reopen the panel.
+  React.useEffect(function () {
+    if (!isOpen || !usage.cooldownMsRemaining || usage.cooldownMsRemaining <= 0) return;
+    var timerId = setTimeout(function () {
+      if (mountedRef.current) refreshCoachState();
+    }, usage.cooldownMsRemaining + 50);
+    return function () { clearTimeout(timerId); };
+  }, [isOpen, usage.cooldownMsRemaining]);
 
   // FERPA scrub preview — debounced 300ms.
   React.useEffect(function () {
@@ -249,14 +315,16 @@ function OnboardingCoach(props) {
     };
   }, [inFlight]);
 
-  // Conditional auto-scroll — only stick to bottom when the user IS near
-  // the bottom; otherwise leave their scroll position alone.
+  // Conditional auto-scroll — track whether the user was near the bottom
+  // BEFORE new bubbles render so tall replies still scroll cleanly into view.
+  var lastConvMarker = conversation.length > 0
+    ? (String(conversation.length) + ':' + String(conversation[conversation.length - 1].ts || conversation[conversation.length - 1].text || '').slice(0, 32))
+    : '0';
   React.useEffect(function () {
     var el = chatPaneRef.current;
     if (!el) return;
-    var nearBottom = (el.scrollHeight - el.scrollTop - el.clientHeight) < 40;
-    if (nearBottom) el.scrollTop = el.scrollHeight;
-  }, [conversation.length, inFlight]);
+    if (wasNearBottomRef.current) el.scrollTop = el.scrollHeight;
+  }, [lastConvMarker, inFlight]);
 
   var coachAvailable = (function () {
     var ao = window.AlloOnboarding;
@@ -296,6 +364,7 @@ function OnboardingCoach(props) {
       layout: roleDoors ? 'roles' : 'modes',
       signal: controller ? controller.signal : null,
     })).then(function (res) {
+      if (!mountedRef.current || abortRef.current !== controller) return;
       setInFlight(false);
       abortRef.current = null;
       refreshCoachState();
@@ -325,8 +394,10 @@ function OnboardingCoach(props) {
         } catch (_) {}
       }
     }).catch(function (e) {
+      if (!mountedRef.current || abortRef.current !== controller) return;
       setInFlight(false);
       abortRef.current = null;
+      if (e && e.name === 'AbortError') return;
       setCoachError({ reason: 'network', answer: t('common.generic_error') });
     });
   };
@@ -359,15 +430,31 @@ function OnboardingCoach(props) {
     setPendingSend(null);
   };
 
-  useCoachDialogFocus(isOpen, panelRef, function () { setIsOpen(false); }, null, launcherRef);
-  useCoachDialogFocus(showConsent, consentRef, handleConsentDecline, consentDeclineRef, panelRef);
-
   var handleCancel = function () {
-    if (abortRef.current) { try { abortRef.current.abort(); } catch (_) {} }
+    if (abortRef.current) {
+      var prev = abortRef.current;
+      abortRef.current = null;
+      try { prev.abort(); } catch (_) {}
+    }
     setInFlight(false);
   };
 
+  var closePanel = function () {
+    handleCancel();
+    setConfirmReset(false);
+    setIsOpen(false);
+  };
+
+  useCoachDialogFocus(isOpen, panelRef, closePanel, null, launcherRef);
+  useCoachDialogFocus(showConsent, consentRef, handleConsentDecline, consentDeclineRef, panelRef);
+
   var handleResetConversation = function () {
+    if (!confirmReset) {
+      setConfirmReset(true);
+      return;
+    }
+    handleCancel();
+    setConfirmReset(false);
     var ao = window.AlloOnboarding;
     if (ao && typeof ao.resetCoachConversation === 'function') {
       try { ao.resetCoachConversation({ resetCounter: false }); } catch (_) {}
@@ -386,14 +473,14 @@ function OnboardingCoach(props) {
     if (chip.kind === 'pick_mode') {
       var k = chip.key;
       if (!k) return;
-      setIsOpen(false);
+      closePanel();
       if (pickMode) {
         try { pickMode(k); } catch (_) {}
       }
       return;
     }
     if (chip.kind === 'start_tour') {
-      setIsOpen(false);
+      closePanel();
       if (typeof setRunTour === 'function') setRunTour(true);
       return;
     }
@@ -404,7 +491,7 @@ function OnboardingCoach(props) {
     }
     if (chip.kind === 'open_link') {
       // Reserved for future — close the panel and let the host decide.
-      setIsOpen(false);
+      closePanel();
       return;
     }
   };
@@ -544,7 +631,7 @@ function OnboardingCoach(props) {
   };
 
   var openTour = function () {
-    setIsOpen(false);
+    closePanel();
     var ao = window.AlloOnboarding;
     if (ao && typeof ao.isOnboardingTTSEnabled === 'function' && ao.isOnboardingTTSEnabled()) {
       try { ao.speak(t('onboarding.tour_starting_speech') || 'Starting the tour.'); } catch (_) {}
@@ -573,7 +660,10 @@ function OnboardingCoach(props) {
             display: 'flex', alignItems: 'center', gap: '8px',
             transition: (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'none' : 'transform 0.15s, box-shadow 0.15s',
           }}
-          onMouseDown={function (e) { e.currentTarget.style.transform = 'scale(0.97)'; }}
+          onMouseDown={function (e) {
+            var reduce = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!reduce) e.currentTarget.style.transform = 'scale(0.97)';
+          }}
           onMouseUp={function (e) { e.currentTarget.style.transform = 'scale(1)'; }}
           onMouseLeave={function (e) { e.currentTarget.style.transform = 'scale(1)'; }}
         >
@@ -594,7 +684,8 @@ function OnboardingCoach(props) {
             background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(4px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
           }}
-          onClick={function (e) { if (e.target === e.currentTarget) setIsOpen(false); }}
+          onMouseDown={function (e) { backdropDownRef.current = e.target === e.currentTarget; }}
+          onClick={function (e) { var shouldClose = backdropDownRef.current && e.target === e.currentTarget; backdropDownRef.current = false; if (shouldClose) closePanel(); }}
         >
           <div
             ref={panelRef}
@@ -633,7 +724,7 @@ function OnboardingCoach(props) {
               </div>
               <button
                 type="button"
-                onClick={function () { setIsOpen(false); }}
+                onClick={closePanel}
                 aria-label={t('common.close') || 'Close'}
                 style={{
                   background: 'rgba(255,255,255,0.18)', color: '#fff',
@@ -856,6 +947,10 @@ function OnboardingCoach(props) {
                     {coachAvailable && conversation.length > 0 && (
                       <div role="log"
                         ref={chatPaneRef}
+                        onScroll={function (e) {
+                          var el = e.currentTarget;
+                          wasNearBottomRef.current = (el.scrollHeight - el.scrollTop - el.clientHeight) < 40;
+                        }}
                         aria-live="polite"
                         aria-label={t('onboarding.coach_conversation_aria') || 'AlloBot conversation'}
                         style={{
@@ -888,12 +983,9 @@ function OnboardingCoach(props) {
                       </div>
                     )}
 
-                    {/* Thinking indicator — 3 phases. Single AlloBot bubble. */}
+                    {/* Thinking indicator — 3 phases. Single AlloBot bubble; Cancel button stays outside aria-live. */}
                     {coachAvailable && inFlight && (
                       <div
-                        aria-live="polite"
-                        aria-busy="true"
-                        aria-atomic="true"
                         style={{
                           marginBottom: '10px', display: 'flex',
                           justifyContent: 'flex-start',
@@ -905,18 +997,20 @@ function OnboardingCoach(props) {
                           fontSize: '12px', color: '#3b0764', lineHeight: 1.5,
                           borderTopLeftRadius: '4px',
                         }}>
-                          <span aria-hidden="true" style={{ display: 'inline-block', marginRight: '6px' }}>
-                            {'\u{1F916}'}
-                          </span>
-                          <span style={{ opacity: 0.85, fontWeight: 700 }}>
-                            {t('onboarding.coach_thinking') || 'AlloBot is thinking…'}
-                          </span>
-                          {thinkingPhase >= 1 && (
-                            <div style={{ marginTop: '4px', fontSize: '11px', color: '#7c3aed' }}>
-                              {t('onboarding.coach_thinking_long') ||
-                                'Still working — Gemini is taking a moment.'}
-                            </div>
-                          )}
+                          <div aria-live="polite" aria-busy="true" aria-atomic="true">
+                            <span aria-hidden="true" style={{ display: 'inline-block', marginRight: '6px' }}>
+                              {'\u{1F916}'}
+                            </span>
+                            <span style={{ opacity: 0.9, fontWeight: 700 }}>
+                              {t('onboarding.coach_thinking') || 'AlloBot is thinking…'}
+                            </span>
+                            {thinkingPhase >= 1 && (
+                              <div style={{ marginTop: '4px', fontSize: '11px', color: '#6d28d9' }}>
+                                {t('onboarding.coach_thinking_long') ||
+                                  'Still working — Gemini is taking a moment.'}
+                              </div>
+                            )}
+                          </div>
                           {thinkingPhase >= 2 && (
                             <button
                               type="button"
@@ -995,7 +1089,7 @@ function OnboardingCoach(props) {
                                 background: '#fff', border: '1px solid #c4b5fd',
                                 color: '#5b21b6', fontSize: '12px', fontWeight: 700,
                                 cursor: 'pointer',
-                                minHeight: '40px',
+                                minHeight: '44px',
                                 display: 'inline-flex', alignItems: 'center', gap: '6px',
                               }}
                             >
@@ -1081,7 +1175,7 @@ function OnboardingCoach(props) {
                               marginTop: '3px',
                               display: 'flex', justifyContent: 'space-between',
                               fontSize: '10px',
-                              color: '#64748b',
+                              color: '#475569',
                             }}>
                               <span>
                                 {usage.remaining <= 5
@@ -1094,7 +1188,7 @@ function OnboardingCoach(props) {
                                   : ''}
                               </span>
                               <span style={{
-                                color: inputText.length > 480 ? '#b45309' : '#64748b',
+                                color: inputText.length > 480 ? '#92400e' : '#475569',
                               }}>{inputText.length}/500</span>
                             </div>
                           )}
@@ -1122,26 +1216,44 @@ function OnboardingCoach(props) {
                     )}
 
                     {coachAvailable && conversation.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleResetConversation}
-                        style={{
-                          marginTop: '8px',
-                          background: 'transparent', border: 'none', padding: '2px 0', minHeight: '44px',
-                          display: 'inline-flex', alignItems: 'center',
-                          color: '#64748b', fontSize: '11px',
-                          cursor: 'pointer', textDecoration: 'underline',
-                        }}
-                      >
-                        {t('onboarding.coach_reset_conversation') || 'Start over'}
-                      </button>
+                      <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          onClick={handleResetConversation}
+                          style={{
+                            background: 'transparent', border: 'none', padding: '2px 0', minHeight: '44px',
+                            display: 'inline-flex', alignItems: 'center',
+                            color: confirmReset ? '#991b1b' : '#475569', fontSize: '11px',
+                            fontWeight: confirmReset ? 700 : 400,
+                            cursor: 'pointer', textDecoration: 'underline',
+                          }}
+                        >
+                          {confirmReset
+                            ? (t('onboarding.coach_reset_confirm') || 'Clear conversation? Click again to confirm')
+                            : (t('onboarding.coach_reset_conversation') || 'Start over')}
+                        </button>
+                        {confirmReset && (
+                          <button
+                            type="button"
+                            onClick={function () { setConfirmReset(false); }}
+                            style={{
+                              background: 'transparent', border: 'none', padding: '2px 0', minHeight: '44px',
+                              display: 'inline-flex', alignItems: 'center',
+                              color: '#475569', fontSize: '11px',
+                              cursor: 'pointer', textDecoration: 'underline',
+                            }}
+                          >
+                            {t('common.cancel') || 'Cancel'}
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
               </div>
 
               <p style={{
-                margin: '10px 0 0', fontSize: '10px', color: '#64748b',
+                margin: '10px 0 0', fontSize: '10px', color: '#475569',
                 textAlign: 'center', fontStyle: 'italic',
               }}>
                 {t('onboarding.panel_footer') ||

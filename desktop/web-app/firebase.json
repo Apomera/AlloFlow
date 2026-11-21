@@ -113,8 +113,90 @@
         ]
       },
       {
+        "source": "/song_library/songs.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
+        "source": "/{classroom-import,classroom-import.html,data_lab/data_lab,data_lab/data_lab.html}",
+        "headers": [
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "frame-ancestors 'none'; object-src 'none'; base-uri 'self'"
+          }
+        ]
+      },
+      {
+        "source": "/{access_lens,video_studio,whiteboard,it_coach,alphafold_explorer,immersive_geometry}/**",
+        "headers": [
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "frame-ancestors 'none'; object-src 'none'; base-uri 'self'"
+          }
+        ]
+      },
+      {
+        "source": "/allo_sheet/**",
+        "headers": [
+          {
+            "key": "X-Frame-Options",
+            "value": "SAMEORIGIN"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "frame-ancestors 'self' https://alloflow-cdn.pages.dev; object-src 'none'; base-uri 'none'"
+          }
+        ]
+      },
+      {
+        "source": "/{zoom_gallery,timeline_studio,circuit_shelf,molecule_shelf,sim_shelf,life_skills_outing,text_inquiry}/**",
+        "headers": [
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          }
+        ]
+      },
+      {
+        "source": "/{educator-evaluation*,walkthrough-copilot*,school-rewards-practice*,accessibility_demo*,geometry_world_demo*,speech_device_test*}",
+        "headers": [
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          }
+        ]
+      },
+      {
         "source": "/data_lab/tutor_plugin*",
         "headers": [
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          },
           {
             "key": "Content-Security-Policy",
             "value": "frame-ancestors 'self' https://codap.concord.org https://*.concord.org; object-src 'none'; base-uri 'self'"

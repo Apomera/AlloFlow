@@ -78,7 +78,7 @@
 
   function normalizeStringList(value, limit, itemLimit) {
     var list = Array.isArray(value) ? value : (value ? [value] : []);
-    var seen = {};
+    var seen = Object.create(null);
     var out = [];
     for (var i = 0; i < list.length && out.length < (limit || LIMITS.sourcesPerItem); i++) {
       var item = cleanText(list[i], itemLimit || 320);
@@ -89,7 +89,7 @@
 
   function normalizeUrlList(value) {
     var list = Array.isArray(value) ? value : (value ? [value] : []);
-    var seen = {};
+    var seen = Object.create(null);
     var out = [];
     for (var i = 0; i < list.length && out.length < LIMITS.sourcesPerItem; i++) {
       var url = safeHttpsUrl(list[i]);
@@ -166,7 +166,7 @@
 
   function normalizeResourceRefs(raw) {
     var values = Array.isArray(raw) ? raw : [];
-    var seen = {};
+    var seen = Object.create(null);
     var out = [];
     for (var i = 0; i < values.length && out.length < LIMITS.resourcesPerItem; i++) {
       var value = typeof values[i] === 'string' ? { id: values[i] } : values[i];
@@ -314,10 +314,10 @@
 
     var nodes = [];
     var edgesPending = [];
-    var nodeIds = {};
+    var nodeIds = Object.create(null);
     var originalNodes = 0;
     var originalEdges = 0;
-    var namespaceOwners = {};
+    var namespaceOwners = Object.create(null);
     function allocateNamespace(identity, hashInput) {
       var base = 'g' + stableHash(hashInput);
       var token = base;
@@ -346,36 +346,40 @@
         resourceRefs: normalizeResourceRefs(entry.resourceRefs || entry.resources),
         provenance: normalizeProvenance(entry.provenance, graph.meta && graph.meta.provenance)
       };
-      var localIds = {};
-      graph.nodes.slice(0, Math.max(0, maxNodes - nodes.length)).sort(function (a, b) {
-        return compareText(cleanText(a && a.id, 240), cleanText(b && b.id, 240));
-      }).forEach(function (rawNode) {
-        if (nodes.length >= maxNodes || !isObject(rawNode)) return;
+      var localIds = Object.create(null);
+      var validNodes = graph.nodes.filter(function (rawNode) {
+        return isObject(rawNode) && !!cleanText(rawNode.id, 240);
+      }).sort(function (a, b) {
+        return compareText(cleanText(a.id, 240), cleanText(b.id, 240));
+      });
+      for (var ni = 0; ni < validNodes.length && nodes.length < maxNodes; ni++) {
+        var rawNode = validNodes[ni];
         var sourceId = cleanText(rawNode.id, 240);
-        if (!sourceId || localIds[sourceId]) return;
+        if (!sourceId || localIds[sourceId]) continue;
         var id = graphToken + sourceId;
-        if (nodeIds[id]) return;
+        if (nodeIds[id]) continue;
         localIds[sourceId] = id;
         nodeIds[id] = true;
         nodes.push(normalizeNode(rawNode, context, id));
-      });
-      graph.edges.slice(0, Math.max(0, maxEdges - edgesPending.length)).forEach(function (rawEdge, edgeIndex) {
-        if (!isObject(rawEdge)) return;
+      }
+      for (var ei = 0; ei < graph.edges.length && edgesPending.length < maxEdges; ei++) {
+        var rawEdge = graph.edges[ei];
+        if (!isObject(rawEdge)) continue;
         var rawFrom = cleanText(rawEdge.fromId || rawEdge.from || rawEdge.source, 240);
         var rawTo = cleanText(rawEdge.toId || rawEdge.to || rawEdge.target, 240);
         var fromId = localIds[rawFrom];
         var toId = localIds[rawTo];
-        if (!fromId || !toId) return;
+        if (!fromId || !toId) continue;
         var sourceEdgeId = cleanText(rawEdge.id, 240);
-        var edgeId = graphToken + (sourceEdgeId || ('edge-' + stableHash(rawFrom + '|' + rawTo + '|' + cleanText(rawEdge.relationType || rawEdge.type, 120) + '|' + edgeIndex)));
+        var edgeId = graphToken + (sourceEdgeId || ('edge-' + stableHash(rawFrom + '|' + rawTo + '|' + cleanText(rawEdge.relationType || rawEdge.type, 120) + '|' + ei)));
         edgesPending.push(normalizeEdge(rawEdge, context, edgeId, fromId, toId));
-      });
+      }
     });
 
     nodes.sort(nodeSort);
-    var retainedIds = {};
+    var retainedIds = Object.create(null);
     nodes.forEach(function (node) { retainedIds[node.id] = true; });
-    var edgeSeen = {};
+    var edgeSeen = Object.create(null);
     var edges = edgesPending.filter(function (edge) {
       if (!retainedIds[edge.fromId] || !retainedIds[edge.toId] || edgeSeen[edge.id]) return false;
       edgeSeen[edge.id] = true;
@@ -436,7 +440,7 @@
   }
 
   function uniqueSorted(values) {
-    var seen = {};
+    var seen = Object.create(null);
     return values.filter(function (value) {
       var key = cleanText(value, 180);
       if (!key || seen[key]) return false;
@@ -459,7 +463,7 @@
     var nodeType = cleanText(filters.nodeType, 100).toLowerCase();
     var relationType = cleanText(filters.relationType, 120).toLowerCase();
     var graphKind = cleanText(filters.graphKind, 100).toLowerCase();
-    var byId = {};
+    var byId = Object.create(null);
     graph.nodes.forEach(function (node) { byId[node.id] = node; });
 
     function nodeAllowed(node) {
@@ -468,15 +472,15 @@
       return true;
     }
 
-    var allowed = {};
-    var queryMatched = {};
+    var allowed = Object.create(null);
+    var queryMatched = Object.create(null);
     graph.nodes.forEach(function (node) {
       if (!nodeAllowed(node)) return;
       allowed[node.id] = true;
       if (!query || searchableNode(node).indexOf(query) >= 0) queryMatched[node.id] = true;
     });
 
-    var matched = {};
+    var matched = Object.create(null);
     var candidateEdges = graph.edges.filter(function (edge) {
       if (!allowed[edge.fromId] || !allowed[edge.toId]) return false;
       if (relationType && relationType !== 'all' && edge.type.toLowerCase() !== relationType) return false;
@@ -490,12 +494,12 @@
 
     if (query) Object.keys(queryMatched).forEach(function (id) { matched[id] = true; });
     if (!query && relationType && relationType !== 'all') {
-      matched = {};
+      matched = Object.create(null);
       candidateEdges.forEach(function (edge) { matched[edge.fromId] = true; matched[edge.toId] = true; });
     }
     var useMatched = !!query || (!!relationType && relationType !== 'all');
     var nodes = graph.nodes.filter(function (node) { return allowed[node.id] && (!useMatched || matched[node.id]); });
-    var visible = {};
+    var visible = Object.create(null);
     nodes.forEach(function (node) { visible[node.id] = true; });
     var edges = candidateEdges.filter(function (edge) { return visible[edge.fromId] && visible[edge.toId]; });
 
@@ -519,7 +523,7 @@
       : normalizeInput(input);
     var exactId = cleanText(nodeId, 512);
     var found = false;
-    var keep = {};
+    var keep = Object.create(null);
     graph.nodes.forEach(function (node) {
       if (node.id === exactId) { found = true; keep[node.id] = true; }
     });
@@ -530,7 +534,7 @@
       });
     }
     var nodes = found ? graph.nodes.filter(function (node) { return !!keep[node.id]; }).slice().sort(nodeSort) : [];
-    var visible = {};
+    var visible = Object.create(null);
     nodes.forEach(function (node) { visible[node.id] = true; });
     var edges = found ? graph.edges.filter(function (edge) { return !!visible[edge.fromId] && !!visible[edge.toId]; }).slice().sort(edgeSort) : [];
     return Object.assign({}, graph, {
@@ -544,7 +548,7 @@
 
   function normalizeOpenableResourceIds(values) {
     var list = Array.isArray(values) ? values : [];
-    var seen = {};
+    var seen = Object.create(null);
     var out = [];
     for (var i = 0; i < list.length && out.length < LIMITS.openableResources; i++) {
       if (typeof list[i] !== 'string') continue;
@@ -593,9 +597,9 @@
     var paddingX = 74;
     var paddingY = 64;
     var rowGap = 104;
-    var byId = {};
-    var indegree = {};
-    var adjacent = {};
+    var byId = Object.create(null);
+    var indegree = Object.create(null);
+    var adjacent = Object.create(null);
     graph.nodes.forEach(function (node) {
       byId[node.id] = node;
       indegree[node.id] = 0;
@@ -608,7 +612,7 @@
     });
     Object.keys(adjacent).forEach(function (id) { adjacent[id].sort(compareText); });
     var ready = graph.nodes.filter(function (node) { return indegree[node.id] === 0; }).map(function (node) { return node.id; }).sort(compareText);
-    var depth = {};
+    var depth = Object.create(null);
     graph.nodes.forEach(function (node) { depth[node.id] = 0; });
     while (ready.length) {
       var id = ready.shift();
@@ -619,7 +623,7 @@
       });
     }
 
-    var columns = {};
+    var columns = Object.create(null);
     graph.nodes.forEach(function (node) {
       var stage = semanticStage(node);
       var column = stage === null ? Math.min(5, depth[node.id] || 0) : stage;
@@ -635,7 +639,7 @@
     });
     var largestColumn = columnKeys.reduce(function (max, key) { return Math.max(max, columns[key].length); }, 0);
     var height = Math.max(300, paddingY * 2 + Math.max(1, largestColumn - 1) * rowGap);
-    var positions = {};
+    var positions = Object.create(null);
     columnKeys.forEach(function (key, columnIndex) {
       var list = columns[key];
       var x = columnKeys.length === 1 ? width / 2 : paddingX + columnIndex * ((width - paddingX * 2) / (columnKeys.length - 1));
@@ -707,35 +711,36 @@
     return h('rect', Object.assign({ x: position.x - 58, y: position.y - 31, width: 116, height: 62, rx: 8 }, common));
   }
 
-  function provenanceRows(h, provenance, attributionSource) {
+  function provenanceRows(h, provenance, attributionSource, tr) {
+    var tx = typeof tr === 'function' ? tr : function (_k, f) { return f; };
     var rows = [];
-    function row(label, value) {
+    function row(key, label, value) {
       if (!value) return;
-      rows.push(h('div', { key: label, style: { display: 'grid', gridTemplateColumns: 'minmax(7rem, auto) 1fr', gap: 8 } },
+      rows.push(h('div', { key: key, style: { display: 'grid', gridTemplateColumns: 'minmax(7rem, auto) 1fr', gap: 8 } },
         h('dt', { style: { fontWeight: 500 } }, label),
         h('dd', { style: { margin: 0 } }, value)
       ));
     }
-    row('Attribution source', attributionSource);
+    row('attributionSource', tx('learning_web_explorer.provenance.attribution_source', 'Attribution source'), attributionSource);
     if (provenance) {
-      row('Provider', provenance.provider);
-      row('Dataset version', provenance.datasetVersion);
-      row('Snapshot', provenance.snapshotId);
-      row('License', provenance.license);
-      row('Attribution', provenance.attribution);
-      row('Source IDs', provenance.sourceIds.join(', '));
+      row('provider', tx('learning_web_explorer.provenance.provider', 'Provider'), provenance.provider);
+      row('datasetVersion', tx('learning_web_explorer.provenance.dataset_version', 'Dataset version'), provenance.datasetVersion);
+      row('snapshotId', tx('learning_web_explorer.provenance.snapshot', 'Snapshot'), provenance.snapshotId);
+      row('license', tx('learning_web_explorer.provenance.license', 'License'), provenance.license);
+      row('attribution', tx('learning_web_explorer.provenance.attribution', 'Attribution'), provenance.attribution);
+      row('sourceIds', tx('learning_web_explorer.provenance.source_ids', 'Source IDs'), provenance.sourceIds.join(', '));
       if (provenance.sourceUrls.length) {
-        rows.push(h('div', { key: 'Source links', style: { display: 'grid', gridTemplateColumns: 'minmax(7rem, auto) 1fr', gap: 8 } },
-          h('dt', { style: { fontWeight: 500 } }, 'Source links'),
+        rows.push(h('div', { key: 'sourceUrls', style: { display: 'grid', gridTemplateColumns: 'minmax(7rem, auto) 1fr', gap: 8 } },
+          h('dt', { style: { fontWeight: 500 } }, tx('learning_web_explorer.provenance.source_links', 'Source links')),
           h('dd', { style: { margin: 0 } }, provenance.sourceUrls.map(function (url, index) {
             return h(window.React.Fragment, { key: url }, index ? ', ' : null,
-              h('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, 'Source ' + (index + 1))
+              h('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, tx('learning_web_explorer.provenance.source_n', 'Source {n}', { n: index + 1 }))
             );
           }))
         ));
       }
     }
-    return rows.length ? h('dl', { style: { display: 'grid', gap: 6, margin: '8px 0 0' } }, rows) : h('p', null, 'No provenance was supplied for this item.');
+    return rows.length ? h('dl', { style: { display: 'grid', gap: 6, margin: '8px 0 0' } }, rows) : h('p', null, tx('learning_web_explorer.provenance.none', 'No provenance was supplied for this item.'));
   }
 
   function sourceDetailsView(h, details, tr) {
@@ -895,8 +900,8 @@
       return buildViewGraph(normalized, { query: query, nodeType: nodeType, relationType: relationType, graphKind: graphKind }, props.layout);
     }, [normalized, query, nodeType, relationType, graphKind, props.layout]);
     var graph = view.graph;
-    var byId = {};
-    var edgeById = {};
+    var byId = Object.create(null);
+    var edgeById = Object.create(null);
     graph.nodes.forEach(function (node) { byId[node.id] = node; });
     graph.edges.forEach(function (edge) { edgeById[edge.id] = edge; });
     React.useEffect(function () {
@@ -957,7 +962,7 @@
 
     var explorerMeta = normalized.meta.learningWebExplorer;
     var filterActive = !!query || nodeType !== 'all' || relationType !== 'all' || graphKind !== 'all';
-    var grouped = {};
+    var grouped = Object.create(null);
     graph.nodes.forEach(function (node) {
       var group = node.graphKind || 'learning-web';
       if (!grouped[group]) grouped[group] = [];
@@ -1013,10 +1018,16 @@
     var selectedResourceId = selected && selected.kind === 'node' ? explicitResourceId(selectedItem) : '';
     if (allowlistSupplied) {
       var allowlistedNodeResourceId = selectedItem && selected.kind === 'node' ? cleanText(selectedItem.resourceId, 240) : '';
-      selectedResourceId = allowlistedNodeResourceId && openableResourceIds.indexOf(allowlistedNodeResourceId) >= 0 ? allowlistedNodeResourceId : '';
+      selectedResourceId = (selectedResourceId && allowlistedNodeResourceId === selectedResourceId && openableResourceIds.indexOf(selectedResourceId) >= 0) ? selectedResourceId : '';
     }
-    var selectedDetail = h('section', { id: ids.detail, 'aria-live': 'polite', style: { marginTop: 16 } },
+    var selectionAnnouncement = !selectedItem
+      ? ''
+      : (selected.kind === 'node'
+        ? selectedItem.label + ' — ' + humanize(selectedItem.type)
+        : (byId[selectedItem.fromId] ? byId[selectedItem.fromId].label : selectedItem.fromId) + ' → ' + (byId[selectedItem.toId] ? byId[selectedItem.toId].label : selectedItem.toId));
+    var selectedDetail = h('section', { id: ids.detail, style: { marginTop: 16 } },
       h('h3', null, tr('learning_web_explorer.selected_detail', 'Selected detail')),
+      h('p', { role: 'status', 'aria-live': 'polite', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' } }, selectionAnnouncement),
       !selectedItem ? h('p', null, tr('learning_web_explorer.select_prompt', 'Select a node or relationship from the accessible views below to inspect its details.'))
         : selected.kind === 'node'
           ? h(React.Fragment, null,
@@ -1025,6 +1036,7 @@
             selectedItem.summary ? h('p', null, selectedItem.summary) : null,
             selectedItem.evidence ? h('p', null, h('strong', null, tr('learning_web_explorer.evidence', 'Evidence: ')), selectedItem.evidence) : null,
             provenanceRows(h, selectedItem.provenance, selectedItem.attributionSource, tr),
+            sourceDetailsView(h, selectedItem.sourceDetails, tr),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } },
               h('button', {
                 type: 'button', onClick: function () { setFocusNodeId(selectedItem.id); },
@@ -1057,8 +1069,8 @@
       if (warning.indexOf('not an acg/v1') >= 0) return tr('learning_web_explorer.warning.invalid', warning);
       return tr('learning_web_explorer.warning.bounded', warning);
     });
-    var focusControls = activeFocusId ? h('div', { 'data-learning-web-focus-controls': 'true', 'aria-live': 'polite', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, margin: '12px 0' } },
-      h('p', { style: { margin: 0 } }, tr('learning_web_explorer.focus_status', 'Diagram focused on {label}: {nodes} nodes and {edges} relationships. The complete outline and table remain below.', { label: byId[activeFocusId].label, nodes: visualGraph.nodes.length, edges: visualGraph.edges.length })),
+    var focusControls = activeFocusId ? h('div', { 'data-learning-web-focus-controls': 'true', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, margin: '12px 0' } },
+      h('p', { role: 'status', 'aria-live': 'polite', style: { margin: 0 } }, tr('learning_web_explorer.focus_status', 'Diagram focused on {label}: {nodes} nodes and {edges} relationships. The complete outline and table remain below.', { label: byId[activeFocusId].label, nodes: visualGraph.nodes.length, edges: visualGraph.edges.length })),
       h('button', { type: 'button', onClick: showWholeGraph, style: { minHeight: 44 }, 'data-learning-web-show-whole': 'true' }, tr('learning_web_explorer.show_whole_graph', 'Show whole graph'))
     ) : null;
     var visual = graph.nodes.length
@@ -1102,7 +1114,7 @@
         position: 'fixed', inset: 0, width: '100%', height: '100%', maxWidth: '100vw', maxHeight: '100vh', overflowY: 'auto',
         zIndex: 2147483000, boxSizing: 'border-box', padding: '24px',
         background: '#f8fafc', color: '#0f172a'
-      } : { color: '#0f172a' }
+      } : { background: '#ffffff', color: '#0f172a' }
     },
       h('header', { style: { display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: 12 } },
         h('div', null,
@@ -1136,7 +1148,7 @@
         ) : null,
         h('button', { type: 'button', onClick: resetFilters, disabled: !filterActive, style: { minHeight: 44 } }, tr('learning_web_explorer.reset_filters', 'Reset filters'))
       ),
-      callbackStatus ? h('p', { role: 'status', 'aria-live': 'polite', 'data-learning-web-callback-status': 'true' }, callbackStatus) : null,
+      h('p', { role: 'status', 'aria-live': 'polite', 'data-learning-web-callback-status': callbackStatus ? 'true' : undefined, style: callbackStatus ? undefined : { margin: 0 } }, callbackStatus),
       h('p', { role: 'status', 'aria-live': 'polite' }, tr('learning_web_explorer.counts', '{nodes} of {totalNodes} nodes; {edges} of {totalEdges} relationships.', { nodes: graph.nodes.length, totalNodes: normalized.nodes.length, edges: graph.edges.length, totalEdges: normalized.edges.length })),
       focusControls,
       visual,

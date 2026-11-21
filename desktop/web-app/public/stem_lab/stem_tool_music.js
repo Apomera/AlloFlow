@@ -58,6 +58,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     document.head.appendChild(hc);
   })();
 
+  // Bespoke Music Theory & Synth Studio workbench polish + Light/Dark/High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-music-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-music-studio-css';
+    st.textContent = [
+      '.allo-music-tool { min-width: 0; }',
+      '.allo-music-tool .mus-back-btn { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid rgba(148,163,184,0.35); border-radius: 10px; }',
+      '.allo-music-tool .mus-tab-btn { min-height: 40px; display: inline-flex; align-items: center; gap: 4px; }',
+      '.allo-music-tool .mus-studio-hero { background: linear-gradient(135deg, #0d0821 0%, #241047 52%, #3a1149 100%); border: 1px solid rgba(216,180,254,0.36); border-radius: 18px; padding: 14px 16px; box-shadow: 0 18px 36px -22px rgba(15,8,35,0.88); min-width: 0; }',
+      '.allo-music-tool .mus-emblem-box { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, rgba(168,85,247,0.34), rgba(15,10,34,0.92)); border: 1.5px solid rgba(232,121,249,0.55); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 6px 16px rgba(10,5,28,0.55); }',
+      '.allo-music-tool .mus-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(192,132,252,0.22); border: 1px solid rgba(232,121,249,0.48); color: #f5d0fe; font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }',
+      '.allo-music-tool .mus-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(216,180,254,0.22); }',
+      '.allo-music-tool .mus-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(15,10,34,0.78); border: 1px solid rgba(216,180,254,0.34); color: #f3e8ff; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.allo-music-tool .mus-signal-strip { margin-top: 10px; padding: 7px 10px; border-radius: 12px; background: rgba(11,7,28,0.76); border: 1px solid rgba(216,180,254,0.26); }',
+      '.allo-music-tool .mus-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(216,180,254,0.22); }',
+      '.allo-music-tool .mus-starter-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #f5d0fe; }',
+      '.allo-music-tool .mus-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(15,10,34,0.82); border: 1px solid rgba(216,180,254,0.38); color: #faf5ff; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.allo-music-tool .mus-starter-chip:hover:not(:disabled) { background: rgba(147,51,234,0.38); border-color: #f0abfc; color: #ffffff; }',
+      '.allo-music-tool .mus-starter-chip[data-active="true"] { background: #7e22ce; border-color: #f0abfc; color: #ffffff; }',
+      '.allo-music-tool .mus-viz-legend { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 12px; background: #140d29; border-top: 1px solid rgba(192,132,252,0.25); color: #e9d5ff; font-size: 11px; font-weight: 600; }',
+      '.allo-music-tool button:focus-visible, .allo-music-tool select:focus-visible, .allo-music-tool input:focus-visible { outline: 2px solid #e879f9; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-studio-hero { background: #000000 !important; background-image: none !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-emblem-box, .theme-contrast [data-stem-tool-shell="musicSynth"] .mus-subject-badge, .theme-contrast [data-stem-tool-shell="musicSynth"] .mus-telemetry-pill, .theme-contrast [data-stem-tool-shell="musicSynth"] .mus-signal-strip, .theme-contrast [data-stem-tool-shell="musicSynth"] .mus-viz-legend { background: #000000 !important; background-image: none !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-tab-hero { background: #000000 !important; background-image: none !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-tab-hero h3, .theme-contrast [data-stem-tool-shell="musicSynth"] .mus-tab-hero p { color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
     if (document.getElementById('allo-live-music')) return;
@@ -1175,7 +1208,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       var gradeLevel = ctx.gradeLevel;
       var announceToSR = ctx.announceToSR;
       var isDark = !!(ctx.isDark || ctx.isContrast);
-          var d = (ctx.toolData && ctx.toolData["musicSynth"]) || {};
+          var _rawMusicD = ctx.toolData && ctx.toolData["musicSynth"];
+          var d = (_rawMusicD && typeof _rawMusicD === 'object' && !Array.isArray(_rawMusicD)) ? _rawMusicD : {};
           // A saved patch is INPUT: it can be copied between devices,
           // hand-edited, or carried across tool versions. Every synth parameter
           // is read as `d[p.k]` from a slider table and formatted with
@@ -2236,19 +2270,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
           // ═══ STATE ═══
           var synthTab = ['play','beatpad','chords','harmonypad','scales','theory','timbreHunt'].indexOf(d.synthTab) !== -1 ? d.synthTab : 'play';
-          var selectedRoot = d.selectedRoot || 'C';
-          var selectedScale = d.selectedScale || 'Major';
-          var selectedChord = d.selectedChord || 'Major';
-          var chordRoot = d.chordRoot || 'C';
-          var chordInversion = d.chordInversion || 0;
-          var scaleLock = d.scaleLock || false;
+          var selectedRoot = (typeof d.selectedRoot === 'string' && NOTE_NAMES.indexOf(d.selectedRoot) !== -1) ? d.selectedRoot : 'C';
+          var selectedScale = (typeof d.selectedScale === 'string' && SCALES[d.selectedScale]) ? d.selectedScale : 'Major';
+          var selectedChord = (typeof d.selectedChord === 'string' && CHORDS[d.selectedChord]) ? d.selectedChord : 'Major';
+          var chordRoot = (typeof d.chordRoot === 'string' && NOTE_NAMES.indexOf(d.chordRoot) !== -1) ? d.chordRoot : 'C';
+          var chordInversion = (typeof d.chordInversion === 'number' && isFinite(d.chordInversion)) ? Math.max(0, Math.min(3, Math.floor(d.chordInversion))) : 0;
+          var safeOctave = (typeof d.octave === 'number' && isFinite(d.octave)) ? Math.max(2, Math.min(6, Math.round(d.octave))) : 4;
+          var scaleLock = !!d.scaleLock;
           var looping = d.looping !== false;
-          var seqPlaying = d.seqPlaying || false;
-          var metroOn = d.metroOn || false;
-          var arpOn = d.arpOn || false;
-          var arpPattern = d.arpPattern || 'up';
-          var showFFT = d.showFFT || false;
-          var timeSig = d.timeSig || '4/4';
+          var seqPlaying = !!d.seqPlaying;
+          var metroOn = !!d.metroOn;
+          var arpOn = !!d.arpOn;
+          var arpPattern = (typeof d.arpPattern === 'string' && ['up','down','updown','random'].indexOf(d.arpPattern) !== -1) ? d.arpPattern : 'up';
+          var showFFT = !!d.showFFT;
+          var timeSig = (typeof d.timeSig === 'string' && ['2/4','3/4','4/4','5/4','6/8'].indexOf(d.timeSig) !== -1) ? d.timeSig : '4/4';
           // Single source of tempo for the metronome and arpeggiator. d.bpm was read
           // in both places and written nowhere, pinning them to 120 regardless of the
           // sequencer's BPM slider.
@@ -2271,12 +2306,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           // fractional length. Nothing in the UI changes it, so any stored
           // value is untrusted.
           var loopLen = (Number.isInteger(d.loopLen) && d.loopLen > 0 && d.loopLen <= 64) ? d.loopLen : 16;
-          var seq = d.sequence || new Array(loopLen).fill(0);
-          var drumSeq = d.drumSequence || d.drumSeq || {};
-          var intervalGame = d.intervalGame;
-          var jazzMode = d.jazzMode || false;
+          var seq = Array.isArray(d.sequence) ? d.sequence : new Array(loopLen).fill(0);
+          var _rawDrumSeq = d.drumSequence || d.drumSeq;
+          var drumSeq = (_rawDrumSeq && typeof _rawDrumSeq === 'object' && !Array.isArray(_rawDrumSeq)) ? _rawDrumSeq : {};
+          var intervalGame = (d.intervalGame && typeof d.intervalGame === 'object' && !Array.isArray(d.intervalGame)) ? d.intervalGame : null;
+          var jazzMode = !!d.jazzMode;
           var synthEngine = (['standard','fm','pad','plucked','sub','supersaw'].indexOf(d.synthEngine) !== -1 ? d.synthEngine : 'standard');
-          var vizMode = d.vizMode || 'waveform'; // waveform, lissajous, helix
+          var vizMode = (typeof d.vizMode === 'string' && ['waveform','lissajous','helix'].indexOf(d.vizMode) !== -1) ? d.vizMode : 'waveform'; // waveform, lissajous, helix
+          var isStudioLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
+          var isMusicAssess = synthTab === 'timbreHunt' || synthTab === 'theory' || !!(intervalGame && !intervalGame.answered);
 
           // Scale helpers
           var rootIdx = NOTE_NAMES.indexOf(selectedRoot);
@@ -2644,106 +2682,203 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             var W = canvasEl.width = canvasEl.offsetWidth * 2;
             var H = canvasEl.height = canvasEl.offsetHeight * 2;
             var ctx = canvasEl.getContext('2d');
+            if (!ctx) return;
+            var peakHold = null;
             function draw() {
+              if (!canvasEl.isConnected) { canvasEl._synthVizInit = false; return; }
               canvasEl._synthVizAnim = requestAnimationFrame(draw);
               var analyser = window._alloSynthAnalyser;
               var vizMode = canvasEl.dataset.vizMode || 'waveform';
-              ctx.fillStyle = '#0f0a1e'; ctx.fillRect(0, 0, W, H);
-              // Grid
-              ctx.strokeStyle = 'rgba(139,92,246,0.08)'; ctx.lineWidth = 1;
-              for (var gx = 0; gx < W; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
-              for (var gy = 0; gy < H; gy += 20) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
-              // Center line
-              ctx.strokeStyle = 'rgba(139,92,246,0.15)'; ctx.lineWidth = 1;
-              ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+              var reduced = musicReducedMotion();
+              // CRT phosphor persistence wash (or clean studio vignette under reduced motion)
+              if (!reduced && vizMode !== 'helix' && canvasEl.dataset.showFft !== 'true' && analyser) {
+                ctx.fillStyle = 'rgba(11, 7, 26, 0.36)';
+                ctx.fillRect(0, 0, W, H);
+              } else {
+                if (typeof ctx.createRadialGradient === 'function') {
+                  var crtBg = ctx.createRadialGradient(W * 0.5, H * 0.5, H * 0.08, W * 0.5, H * 0.5, W * 0.62);
+                  crtBg.addColorStop(0, '#160f33');
+                  crtBg.addColorStop(0.65, '#0e0920');
+                  crtBg.addColorStop(1, '#070412');
+                  ctx.fillStyle = crtBg;
+                } else {
+                  ctx.fillStyle = '#0f0a1e';
+                }
+                ctx.fillRect(0, 0, W, H);
+              }
+              // Crisp CRT oscilloscope graticule + center calibration ticks
+              ctx.strokeStyle = 'rgba(139,92,246,0.11)'; ctx.lineWidth = 1;
+              for (var gx = 40; gx < W; gx += 40) { ctx.beginPath(); ctx.moveTo(gx + 0.5, 0); ctx.lineTo(gx + 0.5, H); ctx.stroke(); }
+              for (var gy = 20; gy < H; gy += 20) { ctx.beginPath(); ctx.moveTo(0, gy + 0.5); ctx.lineTo(W, gy + 0.5); ctx.stroke(); }
+              // Center axis with fine tick marks
+              ctx.strokeStyle = 'rgba(167,139,250,0.26)'; ctx.lineWidth = 1;
+              ctx.beginPath(); ctx.moveTo(0, H / 2 + 0.5); ctx.lineTo(W, H / 2 + 0.5); ctx.stroke();
+              for (var tx = 20; tx < W; tx += 20) {
+                var th = tx % 80 === 0 ? 6 : 3;
+                ctx.beginPath(); ctx.moveTo(tx + 0.5, H / 2 - th); ctx.lineTo(tx + 0.5, H / 2 + th); ctx.stroke();
+              }
+              // Subtle CRT glass scanlines
+              ctx.fillStyle = 'rgba(255,255,255,0.018)';
+              for (var sl = 0; sl < H; sl += 4) ctx.fillRect(0, sl, W, 1);
               if (!analyser) return;
               var showFFTMode = canvasEl.dataset.showFft === 'true';
 
               if (vizMode === 'lissajous') {
-                // Lissajous: plot waveform against a phase-shifted version
+                // Lissajous: dual-pass CRT phosphor X-Y trace
                 var buf = new Uint8Array(analyser.frequencyBinCount);
                 analyser.getByteTimeDomainData(buf);
-                ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 2; ctx.beginPath();
                 var phaseShift = Math.floor(buf.length / 4);
+                ctx.save();
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.beginPath();
                 for (var i = 0; i < buf.length - phaseShift; i++) {
                   var x = (buf[i] / 255) * W;
                   var y = (buf[i + phaseShift] / 255) * H;
                   if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
                 }
+                ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 16;
+                ctx.strokeStyle = 'rgba(168,85,247,0.45)'; ctx.lineWidth = 5;
                 ctx.stroke();
-                // Glow
-                ctx.shadowColor = '#a855f7'; ctx.shadowBlur = 8;
-                ctx.stroke(); ctx.shadowBlur = 0;
+                ctx.shadowBlur = 6;
+                ctx.strokeStyle = '#e9d5ff'; ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
               } else if (vizMode === 'helix') {
-                // 3D helix: waveform wrapping in pseudo-3D
+                // 3D helix: glowing harmonic ribbon wrapping in pseudo-3D
                 var buf = new Uint8Array(analyser.frequencyBinCount);
                 analyser.getByteTimeDomainData(buf);
-                var turns = 3; var perspective = 0.3;
-                ctx.lineWidth = 2;
-                for (var i = 0; i < buf.length; i++) {
+                var turns = 3; var perspective = 0.32;
+                ctx.save();
+                for (var i = 0; i < buf.length; i += 2) {
                   var t = i / buf.length;
                   var angle = t * turns * Math.PI * 2;
                   var amplitude = (buf[i] / 128 - 1) * (H * 0.35);
                   var x = t * W;
                   var depth = Math.sin(angle) * perspective + 1;
                   var y = H / 2 + amplitude * Math.cos(angle) * depth;
-                  var hue = 270 + t * 60;
-                  ctx.fillStyle = 'hsla(' + hue + ', 80%, 65%, ' + (0.3 + depth * 0.35) + ')';
-                  ctx.fillRect(x, y, 2, 2);
+                  var hue = 250 + t * 90;
+                  var rDot = 1.6 + depth * 1.4;
+                  ctx.fillStyle = 'hsla(' + hue + ', 90%, 65%, ' + (0.18 + depth * 0.16) + ')';
+                  ctx.beginPath(); ctx.arc(x, y, rDot * 2.1, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = 'hsla(' + hue + ', 95%, 78%, ' + (0.45 + depth * 0.4) + ')';
+                  ctx.beginPath(); ctx.arc(x, y, rDot, 0, Math.PI * 2); ctx.fill();
                 }
+                ctx.restore();
               } else if (showFFTMode) {
-                // Frequency spectrum
+                // Glowing frequency-spectrum harmonic bars with floating LED peak-hold caps
                 var freqData = new Uint8Array(analyser.frequencyBinCount);
                 analyser.getByteFrequencyData(freqData);
-                var barW = W / freqData.length * 2.5;
-                for (var fi = 0; fi < freqData.length / 2.5; fi++) {
+                var barCount = Math.max(1, Math.floor(freqData.length / 2.5));
+                var barW = W / barCount;
+                if (!peakHold || peakHold.length !== barCount) peakHold = new Float32Array(barCount);
+                ctx.save();
+                for (var fi = 0; fi < barCount; fi++) {
                   var val = freqData[fi] / 255;
-                  var barH = val * H * 0.85;
-                  var hue = 280 - val * 60;
-                  ctx.fillStyle = 'hsla(' + hue + ', 80%, 55%, 0.8)';
-                  ctx.fillRect(fi * barW, H - barH, barW - 1, barH);
-                  // Glow top
-                  ctx.fillStyle = 'hsla(' + hue + ', 80%, 75%, 0.4)';
-                  ctx.fillRect(fi * barW, H - barH - 2, barW - 1, 3);
+                  var barH = val * H * 0.86;
+                  if (barH >= peakHold[fi]) peakHold[fi] = barH;
+                  else peakHold[fi] = Math.max(0, peakHold[fi] - (reduced ? barH : 1.4));
+                  var hue = 295 - (fi / barCount) * 115;
+                  var bx = fi * barW;
+                  var bw = Math.max(2, barW - 2);
+                  if (barH > 1) {
+                    if (typeof ctx.createLinearGradient === 'function') {
+                      var bGrad = ctx.createLinearGradient(0, H - barH, 0, H);
+                      bGrad.addColorStop(0, 'hsla(' + hue + ', 95%, 74%, 0.96)');
+                      bGrad.addColorStop(0.45, 'hsla(' + hue + ', 85%, 58%, 0.82)');
+                      bGrad.addColorStop(1, 'hsla(' + (hue + 24) + ', 75%, 34%, 0.42)');
+                      ctx.fillStyle = bGrad;
+                    } else {
+                      ctx.fillStyle = 'hsla(' + hue + ', 80%, 55%, 0.85)';
+                    }
+                    ctx.fillRect(bx, H - barH, bw, barH);
+                    // Luminous crown glow
+                    ctx.fillStyle = 'hsla(' + hue + ', 100%, 86%, 0.85)';
+                    ctx.fillRect(bx, H - barH - 2, bw, 3);
+                  }
+                  if (peakHold[fi] > 4) {
+                    ctx.fillStyle = 'hsla(' + hue + ', 100%, 90%, 0.9)';
+                    ctx.fillRect(bx, H - peakHold[fi] - 4, bw, 2);
+                  }
                 }
+                ctx.restore();
               } else {
-                // Waveform + note color glow
+                // CRT phosphor waveform + note-tinted outer bloom + bright core filament
                 var buf = new Uint8Array(analyser.frequencyBinCount);
                 analyser.getByteTimeDomainData(buf);
-                // Glow ring
                 var noteColor = canvasEl.dataset.noteColor || '#a855f7';
                 var hasSignal = false;
                 for (var ci = 0; ci < buf.length; ci++) { if (Math.abs(buf[ci] - 128) > 3) { hasSignal = true; break; } }
                 if (hasSignal) {
                   ctx.save();
-                  ctx.shadowColor = noteColor; ctx.shadowBlur = 20;
-                  ctx.strokeStyle = noteColor; ctx.lineWidth = 3;
+                  ctx.shadowColor = noteColor; ctx.shadowBlur = 18;
+                  ctx.strokeStyle = noteColor; ctx.lineWidth = 2.5;
+                  ctx.globalAlpha = 0.65;
                   ctx.strokeRect(2, 2, W - 4, H - 4);
                   ctx.restore();
                 }
-                // Waveform
-                ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 2; ctx.beginPath();
                 var sliceWidth = W / buf.length;
+                ctx.save();
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                // Translucent energy curtain between waveform and center axis
+                ctx.beginPath();
+                ctx.moveTo(0, H / 2);
+                for (var fi2 = 0; fi2 < buf.length; fi2++) {
+                  var fv = buf[fi2] / 128.0;
+                  ctx.lineTo(fi2 * sliceWidth, (fv * H) / 2);
+                }
+                ctx.lineTo(W, H / 2);
+                ctx.closePath();
+                if (typeof ctx.createLinearGradient === 'function') {
+                  var fillG = ctx.createLinearGradient(0, 0, 0, H);
+                  fillG.addColorStop(0, 'rgba(56,189,248,0.22)');
+                  fillG.addColorStop(0.5, 'rgba(168,85,247,0.04)');
+                  fillG.addColorStop(1, 'rgba(244,114,182,0.22)');
+                  ctx.fillStyle = fillG;
+                } else {
+                  ctx.fillStyle = 'rgba(168,85,247,0.12)';
+                }
+                ctx.fill();
+                // Build waveform path
+                ctx.beginPath();
                 for (var i = 0; i < buf.length; i++) {
                   var v = buf[i] / 128.0; var y = (v * H) / 2;
                   if (i === 0) ctx.moveTo(0, y); else ctx.lineTo(i * sliceWidth, y);
                 }
+                // Wide phosphor bloom
+                ctx.shadowColor = hasSignal ? noteColor : '#a855f7';
+                ctx.shadowBlur = 18;
+                ctx.strokeStyle = 'rgba(168,85,247,0.42)';
+                ctx.lineWidth = 6;
                 ctx.stroke();
-                // Bright center line glow — true neon via shadowBlur (matches lissajous mode)
-                ctx.save();
-                ctx.shadowColor = '#a855f7'; ctx.shadowBlur = 12;
-                ctx.strokeStyle = 'rgba(168,85,247,0.4)'; ctx.lineWidth = 4;
+                // Mid neon stroke
+                ctx.shadowBlur = 8;
+                if (typeof ctx.createLinearGradient === 'function') {
+                  var traceG = ctx.createLinearGradient(0, 0, W, 0);
+                  traceG.addColorStop(0, '#38bdf8');
+                  traceG.addColorStop(0.5, '#c084fc');
+                  traceG.addColorStop(1, '#f472b6');
+                  ctx.strokeStyle = traceG;
+                } else {
+                  ctx.strokeStyle = '#c084fc';
+                }
+                ctx.lineWidth = 2.6;
+                ctx.stroke();
+                // Hot CRT phosphor core filament
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+                ctx.lineWidth = 1;
                 ctx.stroke();
                 ctx.restore();
               }
 
-              // Particles
+              // Particles (respecting reduced motion)
               if (window._alloParticles && window._alloParticles.length > 0) {
                 var particles = window._alloParticles;
                 ctx.globalCompositeOperation = 'lighter'; // note bursts sum additively on the dark bg
                 for (var pi = particles.length - 1; pi >= 0; pi--) {
                   var p = particles[pi];
-                  p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life -= p.decay;
+                  if (!reduced) { p.x += p.vx; p.y += p.vy; p.vy += 0.05; }
+                  p.life -= p.decay;
                   if (p.life <= 0) { particles.splice(pi, 1); continue; }
                   ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
                   ctx.beginPath(); ctx.arc(p.x * 2, p.y * 2, p.size * 2, 0, Math.PI * 2); ctx.fill();
@@ -3074,20 +3209,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             var audio = getCtx(); var ctx = audio.ctx;
             if (!_bpAnalyserRef.current) { var an = ctx.createAnalyser(); an.fftSize = 256; audio.gain.connect(an); _bpAnalyserRef.current = an; }
             var analyser = _bpAnalyserRef.current; var cctx = canvas.getContext('2d');
+            if (!cctx) return;
             var w = canvas.width, h = canvas.height, buf = new Uint8Array(analyser.frequencyBinCount);
             function draw() {
               _bpAnimRef.current = requestAnimationFrame(draw);
               analyser.getByteTimeDomainData(buf);
               var grd = cctx.createLinearGradient(0, 0, w, 0);
-              grd.addColorStop(0, '#1e1b4b'); grd.addColorStop(0.5, '#312e81'); grd.addColorStop(1, '#1e1b4b');
+              grd.addColorStop(0, '#0f0b2e'); grd.addColorStop(0.5, '#1e1b4b'); grd.addColorStop(1, '#0f0b2e');
               cctx.fillStyle = grd; cctx.fillRect(0, 0, w, h);
-              var wg = cctx.createLinearGradient(0, 0, w, 0);
-              wg.addColorStop(0, '#a78bfa'); wg.addColorStop(0.5, '#f472b6'); wg.addColorStop(1, '#a78bfa');
-              cctx.strokeStyle = wg; cctx.lineWidth = 2; cctx.beginPath();
+              // Sleek 16-step beat graticule markers
+              cctx.strokeStyle = 'rgba(167,139,250,0.14)'; cctx.lineWidth = 1;
+              for (var s = 1; s < 16; s++) {
+                var sx = (s / 16) * w;
+                cctx.strokeStyle = s % 4 === 0 ? 'rgba(244,114,182,0.28)' : 'rgba(167,139,250,0.10)';
+                cctx.beginPath(); cctx.moveTo(sx, 0); cctx.lineTo(sx, h); cctx.stroke();
+              }
+              cctx.strokeStyle = 'rgba(167,139,250,0.22)';
+              cctx.beginPath(); cctx.moveTo(0, h / 2); cctx.lineTo(w, h / 2); cctx.stroke();
               var sw = w / buf.length;
+              // Translucent glow curtain
+              cctx.save();
+              cctx.beginPath(); cctx.moveTo(0, h / 2);
+              for (var fi = 0; fi < buf.length; fi++) cctx.lineTo(fi * sw, (buf[fi] / 128.0) * h / 2);
+              cctx.lineTo(w, h / 2); cctx.closePath();
+              cctx.fillStyle = 'rgba(167,139,250,0.16)'; cctx.fill();
+              var wg = cctx.createLinearGradient(0, 0, w, 0);
+              wg.addColorStop(0, '#38bdf8'); wg.addColorStop(0.5, '#f472b6'); wg.addColorStop(1, '#a78bfa');
+              cctx.lineCap = 'round'; cctx.lineJoin = 'round';
+              cctx.beginPath();
               for (var i = 0; i < buf.length; i++) { var y = (buf[i] / 128.0) * h / 2; if (i === 0) cctx.moveTo(0, y); else cctx.lineTo(i * sw, y); }
-              cctx.lineTo(w, h / 2); cctx.stroke();
-              cctx.shadowBlur = 8; cctx.shadowColor = '#a78bfa'; cctx.stroke(); cctx.shadowBlur = 0;
+              cctx.lineTo(w, h / 2);
+              cctx.shadowBlur = 12; cctx.shadowColor = '#c084fc';
+              cctx.strokeStyle = wg; cctx.lineWidth = 3.5; cctx.globalAlpha = 0.45; cctx.stroke();
+              cctx.globalAlpha = 1; cctx.lineWidth = 2; cctx.stroke();
+              cctx.shadowBlur = 0; cctx.strokeStyle = 'rgba(255,255,255,0.65)'; cctx.lineWidth = 0.8; cctx.stroke();
+              cctx.restore();
             }
             draw();
             return function () { if (_bpAnimRef.current) cancelAnimationFrame(_bpAnimRef.current); };
@@ -3331,8 +3487,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           }, [synthTab, d.activeKit]);
           return React.createElement("div", { className: "allo-music-tool max-w-6xl mx-auto animate-in fade-in duration-200", 'data-allo-theme': isDark ? 'dark' : 'light' },
             // ── Header ──
-            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
-              React.createElement("button", { onClick: function () { setStemLabTool(null); stopSequencer(); stopMetronome(); stopArpeggiator(); stopRhythm(); stopAllNotes(); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': __alloT('stem.music.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3", style: { minWidth: 0 } },
+              React.createElement("button", { onClick: function () { setStemLabTool(null); stopSequencer(); stopMetronome(); stopArpeggiator(); stopRhythm(); stopAllNotes(); }, className: "mus-back-btn p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': __alloT('stem.music.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
               React.createElement("h3", { className: "text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r " + (isDark ? "from-purple-400 to-pink-400" : "from-purple-700 to-pink-700") }, __alloT('stem.music.music_synthesizer', "\uD83C\uDFB9 Music Synthesizer")),
               React.createElement("span", { className: "px-2 py-0.5 bg-purple-100 text-purple-700 text-[0.6875rem] font-bold rounded-full" },
                 synthEngine === 'supersaw' ? '\u26A1 SUPERSAW' : synthEngine === 'fm' ? '\uD83C\uDF1F FM' : synthEngine === 'sub' ? '\uD83C\uDF0A SUB' : synthEngine === 'pad' ? '\u2601\uFE0F PAD' : synthEngine === 'plucked' ? '\uD83C\uDFB8 PLUCKED' : '\u223F ' + (["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine').toUpperCase()
@@ -3340,56 +3496,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               d.activePreset && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[0.6875rem] font-bold rounded-full" }, "\u2B50 " + d.activePreset),
               // Tab selector
               React.createElement("div", { role: "tablist", "aria-label": __alloT('stem.music.synth_sections', "Synth sections"), className: "flex flex-wrap gap-0.5 ml-auto bg-slate-100 rounded-lg p-0.5" },
-                [{ id: 'play', icon: '\uD83C\uDFB9', label: t('stem.synth.play', 'Play') }, { id: 'scales', icon: '\uD83C\uDFB5', label: t('stem.synth.scales', 'Scales') }, { id: 'chords', icon: '\uD83C\uDFB6', label: t('stem.synth.chords', 'Chords') }, { id: 'harmonypad', icon: '\uD83C\uDF1F', label: t('stem.synth.harmonypad', 'HarmonyPad') }, { id: 'beatpad', icon: '\uD83E\uDD41', label: t('stem.synth.beatpad', 'Beat Pad') || 'Beat Pad' }, { id: 'theory', icon: '\uD83D\uDCDA', label: t('stem.synth.theory', 'Theory') }, { id: 'timbreHunt', icon: '\u2696\uFE0F', label: __alloT('stem.music.timbre', 'Timbre') }].map(function (tab) {
+                [{ id: 'play', icon: '\uD83C\uDFB9', label: __alloT('stem.synth.play', 'Play') }, { id: 'scales', icon: '\uD83C\uDFB5', label: __alloT('stem.synth.scales', 'Scales') }, { id: 'chords', icon: '\uD83C\uDFB6', label: __alloT('stem.synth.chords', 'Chords') }, { id: 'harmonypad', icon: '\uD83C\uDF1F', label: __alloT('stem.synth.harmonypad', 'HarmonyPad') }, { id: 'beatpad', icon: '\uD83E\uDD41', label: __alloT('stem.synth.beatpad', 'Beat Pad') }, { id: 'theory', icon: '\uD83D\uDCDA', label: __alloT('stem.synth.theory', 'Theory') }, { id: 'timbreHunt', icon: '\u2696\uFE0F', label: __alloT('stem.music.timbre', 'Timbre') }].map(function (tab) {
                   return React.createElement("button", { key: tab.id, role: "tab", "aria-selected": synthTab === tab.id,
                     onClick: function () { upd('synthTab', tab.id); },
-                    className: "px-2.5 py-1 rounded-md text-[0.6875rem] font-bold transition-all " + (synthTab === tab.id ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-600 hover:text-slate-700')
+                    className: "mus-tab-btn px-2.5 py-1 rounded-md text-[0.6875rem] font-bold transition-all " + (synthTab === tab.id ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-600 hover:text-slate-700')
                   }, tab.icon + " " + tab.label);
                 })
               )
             ),
 
-            React.createElement("section", { "data-music-command": "true", "aria-label": __alloT('stem.music.music_synth_studio_command_deck', "Music Synth studio command deck"), className: "mb-3 rounded-2xl border border-purple-200 bg-gradient-to-br from-slate-950 via-purple-950 to-fuchsia-950 p-3 shadow-lg" },
-              React.createElement("div", { className: "grid gap-3 lg:grid-cols-[minmax(230px,0.9fr)_minmax(0,1.6fr)]" },
-                React.createElement("div", { className: "rounded-xl border border-white/10 bg-white/10 p-3 text-white" },
-                  React.createElement("div", { className: "text-[0.6875rem] font-black uppercase text-fuchsia-200", style: { letterSpacing: 0 } }, "Studio signal path"),
-                  React.createElement("div", { className: "mt-1 text-xl font-black leading-tight" }, "Pick a sound task, then play."),
-                  React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-purple-100" }, "The synth now starts from a studio workflow: shape a tone, learn a scale, build harmony, make a beat, or inspect the sound science."),
-                  React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-2" },
-                    [
-                      ['Engine', synthEngine === 'standard' ? (["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine') : synthEngine, 'text-cyan-200'],
-                      ['Root', selectedRoot + (d.octave || 4), 'text-amber-200'],
-                      ['Mode', synthTab, 'text-emerald-200']
-                    ].map(function(stat) {
-                      return React.createElement("div", { key: stat[0], className: "rounded-lg border border-white/10 bg-slate-950/50 p-2" },
-                        React.createElement("div", { className: "text-[0.625rem] font-bold uppercase text-purple-200", style: { letterSpacing: 0 } }, stat[0]),
-                        React.createElement("div", { className: "mt-1 text-sm font-black " + stat[2] }, stat[1])
-                      );
-                    })
+            (function () {
+              var activeWaveLabel = synthEngine === 'standard' ? (["sine","square","sawtooth","triangle"].indexOf(d.waveType) !== -1 ? d.waveType : 'sine') : synthEngine;
+              var activeStageIdx = synthTab === 'play' ? 0 : (synthTab === 'scales' || synthTab === 'chords' ? 1 : (synthTab === 'harmonypad' || synthTab === 'beatpad' ? 2 : 3));
+              var filterHzLabel = Math.round(typeof d.filterCutoff === 'number' && isFinite(d.filterCutoff) ? d.filterCutoff : 8000) + ' Hz';
+              var starterSessions = [
+                { id: 'warm_pad', label: __alloT('stem.music.starter_warm_pad', 'Ambient Pad Studio'), active: synthTab === 'play' && synthEngine === 'pad', run: function () { var p = EDM_PRESETS.find(function (x) { return x.id === 'warm_pad'; }); if (p) applyPreset(p); upd('synthTab', 'play'); } },
+                { id: 'dorian_scale', label: __alloT('stem.music.starter_scale_lab', 'Dorian Scale Explorer'), active: synthTab === 'scales' && selectedScale === 'Dorian', run: function () { upd('selectedRoot', 'D'); upd('selectedScale', 'Dorian'); upd('scaleLock', true); upd('synthTab', 'scales'); } },
+                { id: 'chord_voicing', label: __alloT('stem.music.starter_chord_lab', 'Harmony & Chords'), active: synthTab === 'harmonypad', run: function () { upd('selectedRoot', 'C'); upd('synthTab', 'harmonypad'); } },
+                { id: 'beat_120', label: __alloT('stem.music.starter_beat_lab', '120 BPM Beat Lab'), active: synthTab === 'beatpad' && tempoBPM === 120, run: function () { upd('seqBPM', 120); upd('timeSig', '4/4'); upd('synthTab', 'beatpad'); } }
+              ];
+              return React.createElement("section", { "data-music-command": "true", "aria-label": __alloT('stem.music.music_synth_studio_command_deck', "Music Synth studio command deck"), className: "mus-studio-hero mb-3" },
+                React.createElement("div", { className: "grid gap-3 lg:grid-cols-[minmax(250px,1.05fr)_minmax(0,1.45fr)]", style: { minWidth: 0 } },
+                  React.createElement("div", { className: "rounded-xl border border-white/15 bg-white/10 p-3 text-white", style: { minWidth: 0 } },
+                    React.createElement("div", { style: { display: 'flex', alignItems: 'flex-start', gap: 12, minWidth: 0 } },
+                      React.createElement("div", { className: "mus-emblem-box", "aria-hidden": "true" },
+                        React.createElement("svg", { width: 32, height: 32, viewBox: "0 0 36 36", fill: "none" },
+                          React.createElement("rect", { x: 4, y: 21, width: 5, height: 11, rx: 1.5, fill: "#f5d0fe", opacity: 0.92 }),
+                          React.createElement("rect", { x: 11, y: 21, width: 5, height: 11, rx: 1.5, fill: "#e879f9", opacity: 0.92 }),
+                          React.createElement("rect", { x: 18, y: 21, width: 5, height: 11, rx: 1.5, fill: "#c084fc", opacity: 0.92 }),
+                          React.createElement("rect", { x: 25, y: 21, width: 5, height: 11, rx: 1.5, fill: "#a855f7", opacity: 0.92 }),
+                          React.createElement("path", { d: "M4 13 Q 9 5, 14 13 T 24 13 T 32 13", stroke: "#38bdf8", strokeWidth: 2.5, strokeLinecap: "round", fill: "none" }),
+                          React.createElement("circle", { cx: 14, cy: 13, r: 2.4, fill: "#fde047" }),
+                          React.createElement("circle", { cx: 24, cy: 13, r: 2.4, fill: "#38bdf8" })
+                        )
+                      ),
+                      React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                        React.createElement("span", { className: "mus-subject-badge" }, __alloT('stem.music.subject_badge', 'Acoustic Synthesis & Music Theory')),
+                        React.createElement("div", { className: "mt-1 text-lg font-black leading-tight text-white" }, __alloT('stem.music.hero_headline', "Pick a sound task, then play.")),
+                        React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-purple-100" }, __alloT('stem.music.hero_subcopy', "Shape a synthesized tone, explore scales and chords, layer harmonies, or build beats with live waveform feedback."))
+                      )
+                    ),
+                    React.createElement("div", { className: "mus-telemetry-strip", role: "group", "aria-label": __alloT('stem.music.telemetry_label', 'Live synthesizer status') },
+                      React.createElement("span", { className: "mus-telemetry-pill" }, __alloFmt('stem.music.pill_engine', 'Engine: {v}', { v: activeWaveLabel.toUpperCase() })),
+                      React.createElement("span", { className: "mus-telemetry-pill" }, __alloFmt('stem.music.pill_key', 'Key: {k}{o}', { k: selectedRoot, o: safeOctave })),
+                      React.createElement("span", { className: "mus-telemetry-pill" }, __alloFmt('stem.music.pill_tempo', '{bpm} BPM · {sig}', { bpm: tempoBPM, sig: timeSig })),
+                      React.createElement("span", { className: "mus-telemetry-pill" }, __alloFmt('stem.music.pill_view', 'Scope: {v}', { v: showFFT ? 'FFT' : vizMode.toUpperCase() }))
+                    ),
+                    React.createElement("div", { className: "mus-signal-strip" },
+                      React.createElement("svg", {
+                        viewBox: "0 0 580 58",
+                        style: { width: '100%', height: 'auto', maxHeight: 62, display: 'block' },
+                        role: "img",
+                        "aria-label": __alloT('stem.music.signal_chain_aria', 'Synthesizer signal flow from oscillator through envelope and filter to acoustic output')
+                      },
+                        React.createElement("line", { x1: 122, y1: 29, x2: 158, y2: 29, stroke: "#c084fc", strokeWidth: 2, strokeDasharray: "4 3" }),
+                        React.createElement("line", { x1: 268, y1: 29, x2: 304, y2: 29, stroke: "#c084fc", strokeWidth: 2, strokeDasharray: "4 3" }),
+                        React.createElement("line", { x1: 414, y1: 29, x2: 450, y2: 29, stroke: "#c084fc", strokeWidth: 2, strokeDasharray: "4 3" }),
+                        [
+                          { x: 10, w: 112, tag: __alloT('stem.music.chain_osc', '1. OSC'), val: activeWaveLabel.slice(0, 10).toUpperCase(), active: activeStageIdx === 0 },
+                          { x: 158, w: 110, tag: __alloT('stem.music.chain_pitch', '2. SCALE'), val: selectedRoot + ' ' + selectedScale.slice(0, 7), active: activeStageIdx === 1 },
+                          { x: 304, w: 110, tag: __alloT('stem.music.chain_filter', '3. FILTER'), val: filterHzLabel, active: activeStageIdx === 2 },
+                          { x: 450, w: 120, tag: __alloT('stem.music.chain_output', '4. OUTPUT'), val: showFFT ? 'FFT SPEC' : vizMode.toUpperCase(), active: activeStageIdx === 3 }
+                        ].map(function (stNode) {
+                          return React.createElement("g", { key: stNode.x },
+                            React.createElement("rect", {
+                              x: stNode.x, y: 7, width: stNode.w, height: 44, rx: 9,
+                              fill: stNode.active ? 'rgba(168,85,247,0.34)' : 'rgba(15,10,34,0.85)',
+                              stroke: stNode.active ? '#f0abfc' : 'rgba(192,132,252,0.42)',
+                              strokeWidth: stNode.active ? 2 : 1.2
+                            }),
+                            React.createElement("text", { x: stNode.x + stNode.w / 2, y: 24, textAnchor: "middle", fill: "#f5d0fe", fontSize: 10.5, fontWeight: 800, fontFamily: "system-ui, sans-serif" }, stNode.tag),
+                            React.createElement("text", { x: stNode.x + stNode.w / 2, y: 41, textAnchor: "middle", fill: "#ffffff", fontSize: 11, fontWeight: 700, fontFamily: "system-ui, sans-serif" }, stNode.val)
+                          );
+                        })
+                      )
+                    )
+                  ),
+                  React.createElement("div", { className: "flex flex-col gap-2", style: { minWidth: 0 } },
+                    React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 lg:grid-cols-4", style: { minWidth: 0 } },
+                      [
+                        { id: 'play', title: __alloT('stem.music.shape_a_tone', 'Shape a tone'), body: __alloT('stem.music.route_play_body', 'Presets, engines, keyboard, envelopes, and effects.'), tone: 'border-purple-300 text-purple-100' },
+                        { id: 'scales', title: __alloT('stem.music.learn_a_scale', 'Learn a scale'), body: __alloT('stem.music.route_scales_body', 'Hear step patterns and lock the keyboard to a mode.'), tone: 'border-cyan-300 text-cyan-100' },
+                        { id: 'harmonypad', title: __alloT('stem.music.build_harmony', 'Build harmony'), body: __alloT('stem.music.route_harmony_body', 'Layer drones, pads, and chord movement.'), tone: 'border-emerald-300 text-emerald-100' },
+                        { id: 'beatpad', title: __alloT('stem.music.make_a_beat', 'Make a beat'), body: __alloT('stem.music.route_beat_body', 'Trigger drum sounds and route into production.'), tone: 'border-rose-300 text-rose-100' }
+                      ].map(function(route) {
+                        var active = synthTab === route.id;
+                        return React.createElement("button", { key: route.id, 'aria-pressed': active, onClick: function() { upd('synthTab', route.id); },
+                          className: "min-h-[108px] rounded-xl border bg-white/10 p-3 text-left transition-all hover:bg-white/15 active:scale-[0.98] " + route.tone + (active ? " ring-2 ring-white/80" : "") },
+                          React.createElement("div", { className: "text-sm font-black" }, route.title),
+                          React.createElement("div", { className: "mt-1 text-[0.6875rem] leading-relaxed text-purple-100" }, route.body),
+                          React.createElement("div", { className: "mt-2 text-[0.6875rem] font-black" }, active ? __alloT('stem.music.open_now', "Open now") : __alloT('stem.music.open_action', "Open"))
+                        );
+                      })
+                    ),
+                    (!isMusicAssess && !isStudioLocked) && React.createElement("div", { className: "mus-starter-bar", role: "group", "aria-label": __alloT('stem.music.quick_starters_aria', 'Quick studio workflow starters') },
+                      React.createElement("span", { className: "mus-starter-label" }, __alloT('stem.music.quick_starters_label', 'Quick Starters:')),
+                      starterSessions.map(function (stItem) {
+                        return React.createElement("button", {
+                          key: stItem.id,
+                          type: "button",
+                          className: "mus-starter-chip",
+                          "data-active": stItem.active ? "true" : "false",
+                          "aria-pressed": stItem.active ? "true" : "false",
+                          onClick: stItem.run
+                        }, stItem.label);
+                      })
+                    )
                   )
-                ),
-                React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 lg:grid-cols-4" },
-                  [
-                    { id: 'play', title: __alloT('stem.music.shape_a_tone', 'Shape a tone'), body: 'Presets, engines, keyboard, envelopes, and effects.', tone: 'border-purple-300 text-purple-100' },
-                    { id: 'scales', title: __alloT('stem.music.learn_a_scale', 'Learn a scale'), body: 'Hear step patterns and lock the keyboard to a mode.', tone: 'border-cyan-300 text-cyan-100' },
-                    { id: 'harmonypad', title: __alloT('stem.music.build_harmony', 'Build harmony'), body: 'Layer drones, pads, and chord movement.', tone: 'border-emerald-300 text-emerald-100' },
-                    { id: 'beatpad', title: __alloT('stem.music.make_a_beat', 'Make a beat'), body: 'Trigger drum sounds and route into production.', tone: 'border-rose-300 text-rose-100' }
-                  ].map(function(route) {
-                    var active = synthTab === route.id;
-                    return React.createElement("button", { key: route.id, 'aria-pressed': active, onClick: function() { upd('synthTab', route.id); },
-                      className: "min-h-[112px] rounded-xl border bg-white/10 p-3 text-left transition-all hover:bg-white/15 active:scale-[0.98] " + route.tone + (active ? " ring-2 ring-white/70" : "") },
-                      React.createElement("div", { className: "text-sm font-black" }, route.title),
-                      React.createElement("div", { className: "mt-1 text-[0.6875rem] leading-relaxed text-purple-100" }, route.body),
-                      React.createElement("div", { className: "mt-2 text-[0.6875rem] font-black" }, active ? "Open now" : "Open")
-                    );
-                  })
                 )
-              )
-            ),
+              );
+            })(),
 
             // ── EDM Preset Bar ──
             React.createElement("div", { className: "flex gap-1 mb-3 overflow-x-auto pb-1 bg-gradient-to-r from-slate-900 to-purple-900 rounded-xl p-2 border border-purple-500/30" },
-              React.createElement("span", { className: "text-[0.6875rem] font-bold text-purple-200 uppercase tracking-wider self-center px-1 shrink-0" }, "PRESETS"),
+              React.createElement("span", { className: "text-[0.6875rem] font-bold text-purple-200 uppercase tracking-wider self-center px-1 shrink-0" }, __alloT('stem.music.presets_heading', "PRESETS")),
               EDM_PRESETS.map(function(preset) {
                 var isActive = d.activePreset === preset.name;
                 return React.createElement("button", { key: preset.id, title: preset.desc,
@@ -3400,7 +3620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               }),
               // Engine selector
               React.createElement("div", { className: "shrink-0 ml-auto flex gap-1 items-center border-l border-purple-500/30 pl-2" },
-                React.createElement("span", { className: "text-[0.6875rem] text-purple-200 font-bold" }, "ENGINE:"),
+                React.createElement("span", { className: "text-[0.6875rem] text-purple-200 font-bold" }, __alloT('stem.music.engine_heading', "ENGINE:")),
                 [{ id: 'standard', label: __alloT('stem.music.wave', '\u223F Wave') }, { id: 'supersaw', label: __alloT('stem.music.super', '\u26A1 Super') }, { id: 'fm', label: __alloT('stem.music.fm', '\uD83C\uDF1F FM') }, { id: 'sub', label: __alloT('stem.music.sub', '\uD83C\uDF0A Sub') }, { id: 'pad', label: __alloT('stem.music.pad', '\u2601 Pad') }, { id: 'plucked', label: __alloT('stem.music.pluck_2', '\uD83C\uDFB8 Pluck') }].map(function(eng) {
                   return React.createElement("button", { key: eng.id,
                     'aria-pressed': (['standard','fm','pad','plucked','sub','supersaw'].indexOf(d.synthEngine) !== -1 ? d.synthEngine : 'standard') === eng.id,
@@ -3412,29 +3632,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             ),
 
             // ── Oscilloscope ──
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-200 bg-[#0f0a1e] mb-3", style: { height: '120px' } },
-              React.createElement("canvas", { role: "img", tabIndex: 0, "aria-label": __alloFmt('stem.music.aria_visualizer', 'Live audio visualizer showing the synth output as a {mode}', { mode: showFFT ? __alloT('stem.music.aria_freq_spectrum', 'frequency spectrum') : __alloT('stem.music.aria_waveform', 'waveform') }) + ".", ref: canvasRef, "data-show-fft": showFFT ? 'true' : 'false', "data-viz-mode": vizMode, "data-note-color": d.lastNoteColor || '#a855f7', style: { width: '100%', height: '100%' } }),
-              // Note display
-              d.lastNote && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-0.5 bg-black/40 backdrop-blur rounded text-white text-xs font-bold" }, "\u266A " + d.lastNote + (d.lastFreq ? " (" + Math.round(d.lastFreq) + " Hz)" : "")),
-              // Viz mode selector
-              React.createElement("div", { className: "absolute top-2 right-2 flex gap-1" },
-                [{ id: 'waveform', label: '\u223F', name: __alloT('stem.music.viz_waveform', 'Waveform view') },
-                 { id: 'lissajous', label: '\u221E', name: __alloT('stem.music.viz_lissajous', 'Lissajous view') },
-                 { id: 'helix', label: '\uD83C\uDF00', name: __alloT('stem.music.viz_helix', 'Helix view') }].map(function (v) {
-                  return React.createElement("button", {
-                    'aria-label': v.name,
-                    'aria-pressed': vizMode === v.id ? 'true' : 'false',
-                    key: v.id,
-                    onClick: function () { upd('vizMode', v.id); },
-                    className: "w-6 h-6 rounded text-xs flex items-center justify-center transition-all " + (vizMode === v.id ? 'bg-purple-600 text-white' : 'bg-white/10 text-white/50 hover:bg-white/20')
-                  }, v.label);
-                }),
-                React.createElement("button", {
-                  'aria-label': __alloT('stem.music.toggle_frequency_spectrum_2', "Toggle frequency spectrum"),
-                  'aria-pressed': showFFT ? 'true' : 'false',
-                  onClick: function () { upd('showFFT', !showFFT); },
-                  className: "w-6 h-6 rounded text-[0.6875rem] font-bold flex items-center justify-center transition-all " + (showFFT ? 'bg-green-700 text-white' : 'bg-white/10 text-white/50 hover:bg-white/20')
-                }, "FFT")
+            React.createElement("div", { className: "rounded-xl overflow-hidden border-2 border-purple-300/60 bg-[#0f0a1e] mb-3 shadow-md" },
+              React.createElement("div", { className: "relative", style: { height: '120px' } },
+                React.createElement("canvas", { role: "img", tabIndex: 0, "aria-label": __alloFmt('stem.music.aria_visualizer', 'Live audio visualizer showing the synth output as a {mode}', { mode: showFFT ? __alloT('stem.music.aria_freq_spectrum', 'frequency spectrum') : __alloT('stem.music.aria_waveform', 'waveform') }) + ".", ref: canvasRef, "data-show-fft": showFFT ? 'true' : 'false', "data-viz-mode": vizMode, "data-note-color": d.lastNoteColor || '#a855f7', style: { width: '100%', height: '100%', display: 'block' } }),
+                // Note display
+                d.lastNote && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-0.5 bg-slate-950/85 border border-purple-400/50 rounded text-white text-xs font-bold" }, "\u266A " + d.lastNote + (d.lastFreq ? " (" + Math.round(d.lastFreq) + " Hz)" : "")),
+                // Viz mode selector
+                React.createElement("div", { className: "absolute top-2 right-2 flex gap-1" },
+                  [{ id: 'waveform', label: '\u223F', name: __alloT('stem.music.viz_waveform', 'Waveform view') },
+                   { id: 'lissajous', label: '\u221E', name: __alloT('stem.music.viz_lissajous', 'Lissajous view') },
+                   { id: 'helix', label: '\uD83C\uDF00', name: __alloT('stem.music.viz_helix', 'Helix view') }].map(function (v) {
+                    return React.createElement("button", {
+                      'aria-label': v.name,
+                      'aria-pressed': vizMode === v.id ? 'true' : 'false',
+                      key: v.id,
+                      onClick: function () { upd('vizMode', v.id); },
+                      className: "min-w-[30px] h-7 px-1.5 rounded text-xs font-bold flex items-center justify-center transition-all border " + (vizMode === v.id ? 'bg-purple-600 text-white border-purple-300' : 'bg-slate-900/85 text-purple-100 border-purple-400/35 hover:bg-purple-800/70')
+                    }, v.label);
+                  }),
+                  React.createElement("button", {
+                    'aria-label': __alloT('stem.music.toggle_frequency_spectrum_2', "Toggle frequency spectrum"),
+                    'aria-pressed': showFFT ? 'true' : 'false',
+                    onClick: function () { upd('showFFT', !showFFT); },
+                    className: "min-w-[36px] h-7 px-1.5 rounded text-[0.6875rem] font-bold flex items-center justify-center transition-all border " + (showFFT ? 'bg-emerald-700 text-white border-emerald-300' : 'bg-slate-900/85 text-purple-100 border-purple-400/35 hover:bg-purple-800/70')
+                  }, "FFT")
+                )
+              ),
+              React.createElement("div", { className: "mus-viz-legend" },
+                React.createElement("span", null, showFFT ? __alloT('stem.music.viz_legend_fft', 'Frequency Spectrum (Hz) — harmonic energy bars') : __alloT('stem.music.viz_legend_wave', 'Oscilloscope — real-time acoustic amplitude & phase')),
+                React.createElement("span", null, d.lastNote ? __alloFmt('stem.music.viz_last_note', 'Last Note: {n}', { n: d.lastNote }) : __alloT('stem.music.viz_ready_hint', 'Play a key or pad to visualize sound waves'))
               )
             ),
 
@@ -3446,10 +3672,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 chords:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFB6', title: __alloT('stem.music.chords_stacked_thirds_inversions', 'Chords \u2014 stacked thirds + inversions'),         hint: __alloT('stem.music.triads_root_third_fifth_major_4_3_semi', 'Triads: root + third + fifth. Major (4+3 semitones), minor (3+4), diminished (3+3), augmented (4+4). 7th chords add another third. Pop music = ~6 chords on repeat; jazz uses extensions and substitutions.') },
                 harmonypad: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF1F', title: __alloT('stem.music.harmony_pad_voiced_pads_drones', 'Harmony Pad \u2014 voiced pads + drones'),          hint: __alloT('stem.music.sustained_chord_textures_the_bed_under', 'Sustained chord textures \u2014 the bed under almost every cinematic score. Try iv-V-i in minor, or i-VI-VII for that Hans Zimmer feel. Drones in fifths underpin Indian classical and bagpipe traditions.') },
                 beatpad:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83E\uDD41', title: __alloT('stem.music.beat_pad_sample_based_drums', 'Beat Pad \u2014 sample-based drums'),                hint: __alloT('stem.music.most_popular_music_sits_at_4_4_90_130_', 'Most popular music sits at 4/4, 90-130 BPM. Hip-hop ~85-95, house 120-130, drum-and-bass ~170 (half-time feel). The kick on 1+3, snare on 2+4 = backbeat \u2014 the foundation of rock + pop.') },
-                theory:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCDA', title: __alloT('stem.music.theory_the_math_behind_the_sound', 'Theory \u2014 the math behind the sound'),           hint: __alloT('stem.music.pythagoras_500_bce_discovered_consonan', 'Pythagoras (~500 BCE) discovered consonance from integer frequency ratios: octave 2:1, fifth 3:2, fourth 4:3. Helmholtz extended this in 1862. Sound = compression waves; music = patterns we agree to call beautiful.') }
+                theory:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCDA', title: __alloT('stem.music.theory_the_math_behind_the_sound', 'Theory \u2014 the math behind the sound'),           hint: __alloT('stem.music.pythagoras_500_bce_discovered_consonan', 'Pythagoras (~500 BCE) discovered consonance from integer frequency ratios: octave 2:1, fifth 3:2, fourth 4:3. Helmholtz extended this in 1862. Sound = compression waves; music = patterns we agree to call beautiful.') },
+                timbreHunt: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2696\uFE0F', title: __alloT('stem.music.timbre_hero_title', 'Timbre Lab \u2014 harmonics & waveform color'), hint: __alloT('stem.music.timbre_hero_hint', 'Compare harmonic overtone spectra to hear why instruments playing the exact same pitch sound completely different.') }
               };
               var meta = TAB_META[synthTab] || TAB_META.play;
               return React.createElement('div', {
+                className: 'mus-tab-hero',
                 style: {
                   margin: '0 0 12px',
                   padding: '12px 14px',
@@ -3741,22 +3969,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     React.createElement("span", { className: "text-xs font-bold text-slate-700" }, __alloT('stem.music.adsr_envelope', "\uD83D\uDCC8 ADSR Envelope")),
                     React.createElement("span", { className: "text-[0.6875rem] text-slate-600 cursor-help", title: EFFECT_TIPS.adsr.text }, "\u2753")
                   ),
-                  // ADSR visual
-                  React.createElement("svg", { role: 'img', 'aria-label': __alloT('stem.music.adsr_img_label', 'ADSR envelope shape'), viewBox: "0 0 200 60", className: "w-full mb-2", style: { maxHeight: '50px' } },
-                    React.createElement("rect", { width: 200, height: 60, fill: "transparent" }),
+                  // ADSR visual — luminous scope curve with phase markers & active indicator
+                  React.createElement("svg", { role: 'img', 'aria-label': __alloT('stem.music.adsr_img_label', 'ADSR envelope shape'), viewBox: "0 0 200 64", className: "w-full mb-2 rounded-lg overflow-hidden", style: { maxHeight: '56px' } },
+                    React.createElement("defs", null,
+                      React.createElement("linearGradient", { id: "adsrBgGrad", x1: "0", y1: "0", x2: "0", y2: "1" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#140e2e" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#0a0718" })
+                      ),
+                      React.createElement("linearGradient", { id: "adsrFillGrad", x1: "0", y1: "0", x2: "0", y2: "1" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#c084fc", stopOpacity: "0.48" }),
+                        React.createElement("stop", { offset: "65%", stopColor: "#7c3aed", stopOpacity: "0.22" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#38bdf8", stopOpacity: "0.02" })
+                      ),
+                      React.createElement("linearGradient", { id: "adsrStrokeGrad", x1: "0", y1: "0", x2: "1", y2: "0" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#38bdf8" }),
+                        React.createElement("stop", { offset: "45%", stopColor: "#c084fc" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#f472b6" })
+                      )
+                    ),
+                    React.createElement("rect", { width: 200, height: 64, rx: 6, fill: "url(#adsrBgGrad)" }),
+                    React.createElement("line", { x1: 0, y1: 18, x2: 200, y2: 18, stroke: "rgba(148,163,184,0.14)", strokeWidth: 0.7 }),
+                    React.createElement("line", { x1: 0, y1: 36, x2: 200, y2: 36, stroke: "rgba(148,163,184,0.14)", strokeWidth: 0.7 }),
+                    React.createElement("line", { x1: 0, y1: 54, x2: 200, y2: 54, stroke: "rgba(148,163,184,0.22)", strokeWidth: 0.8 }),
                     (function () {
                       var a = d.attack || 0.01, dec = d.decay || 0.1, s = d.sustain || 0.7, r = d.release || 0.3;
-                      var aX = Math.min(a * 200, 50), dX = aX + Math.min(dec * 100, 40), sX = 140, rX = sX + Math.min(r * 60, 50);
-                      var sY = 60 - s * 55;
-                      return React.createElement("polyline", {
-                        points: "0,60 " + aX + ",5 " + dX + "," + sY + " " + sX + "," + sY + " " + rX + ",60",
-                        fill: "none", stroke: "#7c3aed", strokeWidth: 2.5, strokeLinejoin: "round"
-                      });
+                      var aX = Math.max(6, Math.min(a * 160, 50)), dX = aX + Math.max(8, Math.min(dec * 80, 40)), sX = 140, rX = Math.min(196, sX + Math.max(8, Math.min(r * 45, 52)));
+                      var baseY = 54, topY = 8, sY = baseY - s * (baseY - topY);
+                      var pts = "4," + baseY + " " + aX + "," + topY + " " + dX + "," + sY + " " + sX + "," + sY + " " + rX + "," + baseY;
+                      var areaPts = pts + " 4," + baseY;
+                      var hasActive = !!(d.lastPlayedNote || (window._alloActiveNotes && Object.keys(window._alloActiveNotes).length > 0));
+                      return React.createElement("g", null,
+                        React.createElement("line", { x1: aX, y1: topY, x2: aX, y2: baseY, stroke: "rgba(56,189,248,0.28)", strokeDasharray: "2 2", strokeWidth: 0.9 }),
+                        React.createElement("line", { x1: dX, y1: sY, x2: dX, y2: baseY, stroke: "rgba(192,132,252,0.28)", strokeDasharray: "2 2", strokeWidth: 0.9 }),
+                        React.createElement("line", { x1: sX, y1: sY, x2: sX, y2: baseY, stroke: "rgba(244,114,182,0.28)", strokeDasharray: "2 2", strokeWidth: 0.9 }),
+                        React.createElement("polygon", { points: areaPts, fill: "url(#adsrFillGrad)" }),
+                        React.createElement("polyline", { points: pts, fill: "none", stroke: "#a855f7", strokeOpacity: 0.38, strokeWidth: 5.5, strokeLinejoin: "round", strokeLinecap: "round" }),
+                        React.createElement("polyline", { points: pts, fill: "none", stroke: "url(#adsrStrokeGrad)", strokeWidth: 2.4, strokeLinejoin: "round", strokeLinecap: "round" }),
+                        React.createElement("circle", { cx: aX, cy: topY, r: hasActive ? 4 : 3, fill: "#38bdf8", stroke: "#ffffff", strokeWidth: 1 }),
+                        React.createElement("circle", { cx: dX, cy: sY, r: 2.8, fill: "#c084fc", stroke: "#ffffff", strokeWidth: 0.9 }),
+                        React.createElement("circle", { cx: sX, cy: sY, r: 2.8, fill: "#e879f9", stroke: "#ffffff", strokeWidth: 0.9 }),
+                        React.createElement("circle", { cx: rX, cy: baseY, r: 2.5, fill: "#f472b6", stroke: "#ffffff", strokeWidth: 0.9 })
+                      );
                     })(),
-                    React.createElement("text", { x: 5, y: 58, className: "text-[0.6875rem] fill-slate-400" }, "A"),
-                    React.createElement("text", { x: 55, y: 58, className: "text-[0.6875rem] fill-slate-400" }, "D"),
-                    React.createElement("text", { x: 110, y: 58, className: "text-[0.6875rem] fill-slate-400" }, "S"),
-                    React.createElement("text", { x: 165, y: 58, className: "text-[0.6875rem] fill-slate-400" }, "R")
+                    React.createElement("text", { x: 8, y: 62, fontSize: 8, fontWeight: "bold", fill: "#7dd3fc" }, "A"),
+                    React.createElement("text", { x: 56, y: 62, fontSize: 8, fontWeight: "bold", fill: "#d8b4fe" }, "D"),
+                    React.createElement("text", { x: 110, y: 62, fontSize: 8, fontWeight: "bold", fill: "#f0abfc" }, "S"),
+                    React.createElement("text", { x: 165, y: 62, fontSize: 8, fontWeight: "bold", fill: "#fda4af" }, "R")
                   ),
                   [{ k: 'attack', label: t('stem.synth.attack', 'Attack'), min: 0.001, max: 2, step: 0.01, unit: 's' },
                   { k: 'decay', label: t('stem.synth.decay', 'Decay'), min: 0.01, max: 1, step: 0.01, unit: 's' },
@@ -4172,6 +4430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       if (!canvas || canvas._micVizInit) return;
                       canvas._micVizInit = true;
                       var ctx2 = canvas.getContext('2d');
+                      if (!ctx2) return;
                       var W = canvas.width = canvas.offsetWidth * 2;
                       var H = canvas.height = 200;
                       function drawMicViz() {
@@ -4185,37 +4444,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         var freqData = new Uint8Array(bufLen);
                         analyser.getByteTimeDomainData(timeData);
                         analyser.getByteFrequencyData(freqData);
-                        // Background
-                        ctx2.fillStyle = 'rgba(26,10,30,0.3)'; ctx2.fillRect(0, 0, W, H);
-                        // Frequency spectrum (bottom half)
-                        var barW = W / 64;
+                        // CRT phosphor backdrop wash + subtle scope divider
+                        ctx2.fillStyle = musicReducedMotion() ? '#14081e' : 'rgba(20,8,30,0.38)';
+                        ctx2.fillRect(0, 0, W, H);
+                        ctx2.strokeStyle = 'rgba(244,63,94,0.16)'; ctx2.lineWidth = 1;
+                        ctx2.beginPath(); ctx2.moveTo(0, H * 0.5); ctx2.lineTo(W, H * 0.5); ctx2.stroke();
+                        // Frequency spectrum (bottom half) with glowing harmonic caps
+                        var barW = (W - 14) / 64;
                         for (var bi = 0; bi < 64; bi++) {
                           var val = freqData[bi * 2] / 255;
-                          var barH = val * H * 0.45;
-                          var hue = bi * 4;
-                          ctx2.fillStyle = 'hsla(' + hue + ',80%,60%,' + (0.4 + val * 0.4) + ')';
-                          ctx2.fillRect(bi * barW, H - barH, barW - 1, barH);
+                          var barH = val * H * 0.44;
+                          var hue = 320 - (bi / 64) * 140;
+                          if (barH > 1) {
+                            ctx2.fillStyle = 'hsla(' + hue + ',88%,58%,' + (0.48 + val * 0.45) + ')';
+                            ctx2.fillRect(bi * barW, H - barH, Math.max(2, barW - 2), barH);
+                            ctx2.fillStyle = 'hsla(' + hue + ',100%,84%,0.85)';
+                            ctx2.fillRect(bi * barW, H - barH - 2, Math.max(2, barW - 2), 2.5);
+                          }
                         }
-                        // Waveform (top half)
-                        ctx2.strokeStyle = '#f43f5e'; ctx2.lineWidth = 2;
+                        // Dual-pass luminous CRT waveform (top half)
+                        ctx2.save();
+                        ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
                         ctx2.beginPath();
-                        var sliceW = W / bufLen;
+                        var sliceW = (W - 14) / bufLen;
                         for (var wi = 0; wi < bufLen; wi++) {
                           var v = timeData[wi] / 128.0;
-                          var y = v * H / 4 + H * 0.15;
+                          var y = v * H / 4 + H * 0.14;
                           if (wi === 0) ctx2.moveTo(0, y); else ctx2.lineTo(wi * sliceW, y);
                         }
-                        ctx2.stroke();
-                        // Peak meter
+                        ctx2.shadowColor = '#fb7185'; ctx2.shadowBlur = 10;
+                        ctx2.strokeStyle = 'rgba(244,63,94,0.45)'; ctx2.lineWidth = 4.5; ctx2.stroke();
+                        ctx2.shadowBlur = 4; ctx2.strokeStyle = '#fda4af'; ctx2.lineWidth = 2; ctx2.stroke();
+                        ctx2.restore();
+                        // Segmented peak meter
                         var peak = 0; for (var pi = 0; pi < bufLen; pi++) { var pv = Math.abs(timeData[pi] - 128); if (pv > peak) peak = pv; }
                         var peakPct = peak / 128;
+                        ctx2.fillStyle = 'rgba(255,255,255,0.08)';
+                        ctx2.fillRect(W - 9, 4, 7, H - 8);
                         ctx2.fillStyle = peakPct > 0.8 ? '#ef4444' : peakPct > 0.5 ? '#f59e0b' : '#4ade80';
-                        ctx2.fillRect(W - 8, H * (1 - peakPct), 6, H * peakPct);
+                        ctx2.fillRect(W - 9, H - 4 - (H - 8) * peakPct, 7, (H - 8) * peakPct);
                         // Labels
-                        ctx2.fillStyle = 'rgba(255,255,255,0.3)'; ctx2.font = '10px system-ui';
-                        ctx2.fillText(__alloT('stem.music.canvas_waveform', 'WAVEFORM'), 4, 12);
-                        ctx2.fillText(__alloT('stem.music.canvas_spectrum', 'SPECTRUM'), 4, H - 4);
-                        ctx2.fillText(Math.round(peakPct * 100) + '%', W - 30, 12);
+                        ctx2.fillStyle = 'rgba(226,232,240,0.62)'; ctx2.font = 'bold 10px system-ui';
+                        ctx2.fillText(__alloT('stem.music.canvas_waveform', 'WAVEFORM'), 6, 13);
+                        ctx2.fillText(__alloT('stem.music.canvas_spectrum', 'SPECTRUM'), 6, H - 5);
+                        ctx2.fillText(Math.round(peakPct * 100) + '%', W - 36, 13);
                       }
                       drawMicViz();
                     }
@@ -5762,6 +6034,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                                 ref: function(canvas) {
                                   if (!canvas) return;
                                   var g = canvas.getContext('2d');
+                                  if (!g) return;
                                   var W = canvas.offsetWidth * 2, H = 120;
                                   // Guarded: an INLINE ref re-runs on EVERY re-render, and assigning
                                   // width/height REALLOCATES and clears the bitmap each time. The draw
@@ -5769,38 +6042,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                                   if (canvas.width !== W) canvas.width = W;
                                   if (canvas.height !== H) canvas.height = H;
                                   g.clearRect(0, 0, W, H);
+                                  // CRT phosphor scope backdrop + center graticule
+                                  if (typeof g.createLinearGradient === 'function') {
+                                    var scopeBg = g.createLinearGradient(0, 0, 0, H);
+                                    scopeBg.addColorStop(0, '#140b29');
+                                    scopeBg.addColorStop(1, '#0b0618');
+                                    g.fillStyle = scopeBg;
+                                  } else {
+                                    g.fillStyle = '#140b29';
+                                  }
+                                  g.fillRect(0, 0, W, H);
+                                  g.strokeStyle = 'rgba(167,139,250,0.16)'; g.lineWidth = 1;
+                                  g.beginPath(); g.moveTo(0, H / 2); g.lineTo(W, H / 2); g.stroke();
                                   // Draw waveform based on instrument's harmonic content
                                   var wType = inst.synth.type;
-                                  g.strokeStyle = '#a78bfa'; g.lineWidth = 2;
+                                  var waveW = Math.max(40, W - 76);
+                                  g.save();
+                                  g.lineCap = 'round'; g.lineJoin = 'round';
                                   g.beginPath();
-                                  for (var xi = 0; xi < W; xi++) {
-                                    var t2 = xi / W * Math.PI * 4;
+                                  for (var xi = 0; xi < waveW; xi++) {
+                                    var t2 = xi / waveW * Math.PI * 4;
                                     var y2 = 0;
                                     if (wType === 'sine') { y2 = Math.sin(t2); }
                                     else if (wType === 'square') { for (var hn = 1; hn <= 7; hn += 2) y2 += Math.sin(t2 * hn) / hn; }
                                     else if (wType === 'sawtooth') { for (var hn2 = 1; hn2 <= 8; hn2++) y2 += Math.sin(t2 * hn2) / hn2 * (hn2 % 2 === 0 ? -1 : 1); }
                                     else if (wType === 'triangle') { for (var hn3 = 1; hn3 <= 7; hn3 += 2) y2 += Math.sin(t2 * hn3) / (hn3 * hn3) * (((hn3 - 1) / 2) % 2 === 0 ? 1 : -1); }
-                                    else if (wType === 'plucked') { y2 = Math.sin(t2) * Math.exp(-xi / W * 3) + Math.sin(t2 * 2) * 0.3 * Math.exp(-xi / W * 4); }
+                                    else if (wType === 'plucked') { y2 = Math.sin(t2) * Math.exp(-xi / waveW * 3) + Math.sin(t2 * 2) * 0.3 * Math.exp(-xi / waveW * 4); }
                                     else { y2 = Math.sin(t2); }
-                                    var py = H / 2 - y2 * H * 0.35;
+                                    var py = H / 2 - y2 * H * 0.34;
                                     if (xi === 0) g.moveTo(xi, py); else g.lineTo(xi, py);
                                   }
-                                  g.stroke();
-                                  // Harmonic bars on the right
+                                  g.shadowColor = '#a855f7'; g.shadowBlur = 10;
+                                  g.strokeStyle = 'rgba(168,85,247,0.45)'; g.lineWidth = 4.5; g.stroke();
+                                  g.shadowBlur = 4; g.strokeStyle = '#c4b5fd'; g.lineWidth = 2; g.stroke();
+                                  g.restore();
+                                  // Glowing harmonic bars on the right
                                   var harmonicAmps = wType === 'sine' ? [1] : wType === 'square' ? [1, 0, 0.33, 0, 0.2, 0, 0.14] : wType === 'sawtooth' ? [1, 0.5, 0.33, 0.25, 0.2, 0.17, 0.14] : wType === 'triangle' ? [1, 0, 0.11, 0, 0.04] : wType === 'plucked' ? [1, 0.3, 0.15, 0.08, 0.04] : [1];
-                                  g.fillStyle = 'rgba(255,255,255,0.15)'; g.font = '8px monospace'; g.textAlign = 'center';
+                                  g.font = '8px monospace'; g.textAlign = 'center';
                                   harmonicAmps.forEach(function(amp, hi) {
-                                    var bx = W - 60 + hi * 8; var bh = amp * H * 0.4;
-                                    g.fillStyle = 'hsla(' + (hi * 40) + ',70%,60%,' + (0.3 + amp * 0.5) + ')';
-                                    g.fillRect(bx, H - bh - 5, 6, bh);
-                                    g.fillStyle = 'rgba(255,255,255,0.3)';
-                                    g.fillText(String(hi + 1), bx + 3, H - 1);
+                                    var bx = W - 64 + hi * 8.5; var bh = amp * H * 0.48;
+                                    var hHue = 280 - hi * 28;
+                                    if (bh > 0.5) {
+                                      g.fillStyle = 'hsla(' + hHue + ',85%,62%,' + (0.45 + amp * 0.5) + ')';
+                                      g.fillRect(bx, H - bh - 12, 6, bh);
+                                      g.fillStyle = 'hsla(' + hHue + ',100%,86%,0.9)';
+                                      g.fillRect(bx, H - bh - 14, 6, 2);
+                                    }
+                                    g.fillStyle = 'rgba(226,232,240,0.55)';
+                                    g.fillText(String(hi + 1), bx + 3, H - 2);
                                   });
                                   // Labels
-                                  g.fillStyle = 'rgba(255,255,255,0.3)'; g.font = '9px system-ui'; g.textAlign = 'left';
-                                  g.fillText(__alloT('stem.music.canvas_waveform', 'WAVEFORM'), 4, 10);
+                                  g.fillStyle = 'rgba(226,232,240,0.55)'; g.font = 'bold 9px system-ui'; g.textAlign = 'left';
+                                  g.fillText(__alloT('stem.music.canvas_waveform', 'WAVEFORM'), 6, 12);
                                   g.textAlign = 'right';
-                                  g.fillText(__alloT('stem.music.canvas_harmonics', 'HARMONICS'), W - 4, 10);
+                                  g.fillText(__alloT('stem.music.canvas_harmonics', 'HARMONICS'), W - 6, 12);
                                 }
                               }),
                               React.createElement("p", { className: "text-[0.6875rem] text-purple-600 leading-relaxed mt-1" }, inst.waveDesc)
@@ -5968,6 +6263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     ref: function(canvas) {
                       if (!canvas) return;
                       var g = canvas.getContext('2d');
+                      if (!g) return;
                       var W = canvas.offsetWidth * 2, H = 160;
                       // Guarded: an INLINE ref re-runs on EVERY re-render, and assigning
                       // width/height REALLOCATES and clears the bitmap each time. The draw
@@ -5975,37 +6271,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       if (canvas.width !== W) canvas.width = W;
                       if (canvas.height !== H) canvas.height = H;
                       g.clearRect(0, 0, W, H);
+                      if (typeof g.createLinearGradient === 'function') {
+                        var hBg = g.createLinearGradient(0, 0, 0, H);
+                        hBg.addColorStop(0, '#120b28'); hBg.addColorStop(1, '#090517');
+                        g.fillStyle = hBg;
+                      } else {
+                        g.fillStyle = '#0f0a1e';
+                      }
+                      g.fillRect(0, 0, W, H);
+                      g.strokeStyle = 'rgba(139,92,246,0.15)'; g.lineWidth = 1;
+                      g.beginPath(); g.moveTo(0, H / 2); g.lineTo(W, H / 2); g.stroke();
                       var harmonics = d.activeHarmonics || [1];
-                      // Draw individual harmonics (faint)
+                      // Draw individual harmonics (faint colored partials)
                       harmonics.forEach(function(hn, hi) {
-                        g.strokeStyle = 'hsla(' + (hn * 40) + ',70%,60%,0.2)';
-                        g.lineWidth = 1; g.beginPath();
+                        g.strokeStyle = 'hsla(' + (hn * 40) + ',80%,65%,0.28)';
+                        g.lineWidth = 1.2; g.beginPath();
                         for (var xi = 0; xi < W; xi++) {
                           var t3 = xi / W * Math.PI * 4;
                           var y3 = Math.sin(t3 * hn) / hn;
-                          var py2 = H / 2 - y3 * H * 0.35;
+                          var py2 = H / 2 - y3 * H * 0.34;
                           if (xi === 0) g.moveTo(xi, py2); else g.lineTo(xi, py2);
                         }
                         g.stroke();
                       });
-                      // Draw combined waveform (bright)
-                      g.strokeStyle = '#a78bfa'; g.lineWidth = 2.5; g.beginPath();
+                      // Draw combined CRT phosphor waveform (translucent curtain + neon bloom + hot core)
+                      g.save();
+                      g.lineCap = 'round'; g.lineJoin = 'round';
+                      g.beginPath(); g.moveTo(0, H / 2);
+                      for (var xf = 0; xf < W; xf++) {
+                        var tf = xf / W * Math.PI * 4;
+                        var sumF = 0;
+                        harmonics.forEach(function(hnF) { sumF += Math.sin(tf * hnF) / hnF; });
+                        g.lineTo(xf, H / 2 - sumF * H * 0.29);
+                      }
+                      g.lineTo(W, H / 2); g.closePath();
+                      g.fillStyle = 'rgba(167,139,250,0.14)'; g.fill();
+                      g.beginPath();
                       for (var xi2 = 0; xi2 < W; xi2++) {
                         var t4 = xi2 / W * Math.PI * 4;
                         var sum = 0;
                         harmonics.forEach(function(hn2) { sum += Math.sin(t4 * hn2) / hn2; });
-                        var py3 = H / 2 - sum * H * 0.3;
+                        var py3 = H / 2 - sum * H * 0.29;
                         if (xi2 === 0) g.moveTo(xi2, py3); else g.lineTo(xi2, py3);
                       }
-                      g.stroke();
+                      g.shadowColor = '#a855f7'; g.shadowBlur = 12;
+                      g.strokeStyle = 'rgba(168,85,247,0.45)'; g.lineWidth = 5; g.stroke();
+                      g.shadowBlur = 4; g.strokeStyle = '#c4b5fd'; g.lineWidth = 2.4; g.stroke();
+                      g.shadowBlur = 0; g.strokeStyle = 'rgba(255,255,255,0.75)'; g.lineWidth = 0.9; g.stroke();
+                      g.restore();
                       // Labels
-                      g.fillStyle = 'rgba(255,255,255,0.3)'; g.font = '10px system-ui';
-                      g.fillText(__alloFmt('stem.music.canvas_active_harmonics', 'Active harmonics: {list}', { list: harmonics.sort(function(a,b){return a-b;}).join(', ') }), 8, 14);
+                      g.fillStyle = 'rgba(226,232,240,0.6)'; g.font = 'bold 10px system-ui'; g.textAlign = 'left';
+                      g.fillText(__alloFmt('stem.music.canvas_active_harmonics', 'Active harmonics: {list}', { list: harmonics.slice().sort(function(a,b){return a-b;}).join(', ') }), 8, 14);
                       g.textAlign = 'right';
                       var waveType2 = harmonics.length === 1 ? 'Sine (pure)' : harmonics.every(function(h2){return h2%2===1;}) ? 'Odd harmonics (square/clarinet-like)' : 'All harmonics (sawtooth/violin-like)';
                       g.fillText(waveType2, W - 8, 14);
                       // Play combined button instruction
-                      g.fillStyle = 'rgba(167,139,250,0.4)'; g.font = '9px system-ui'; g.textAlign = 'center';
+                      g.fillStyle = 'rgba(196,181,253,0.65)'; g.font = '9px system-ui'; g.textAlign = 'center';
                       g.fillText(__alloT('stem.music.canvas_harmonics_hint', 'Click harmonics above to add/remove \u2014 watch the wave change!'), W / 2, H - 6);
                     }
                   })
@@ -6515,6 +6836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     if (!cvEl) return;
                     if (cvEl._hsAnim) return;
                     var c2 = cvEl.getContext('2d');
+                    if (!c2) return;
                     var W = cvEl.offsetWidth || 600;
                     var H = cvEl.offsetHeight || 180;
                     cvEl.width = W * 2; cvEl.height = H * 2;
@@ -6530,7 +6852,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       // ResizeObserver below still needs repaints, and a static
                       // frame conveys the harmonic series just as well.
                       var t = musicReducedMotion() ? 0 : (performance.now() - start) / 1000;
-                      c2.fillStyle = '#1e1b4b';
+                      if (typeof c2.createLinearGradient === 'function') {
+                        var bgHs = c2.createLinearGradient(0, 0, 0, H);
+                        bgHs.addColorStop(0, '#131036'); bgHs.addColorStop(1, '#0b0820');
+                        c2.fillStyle = bgHs;
+                      } else {
+                        c2.fillStyle = '#1e1b4b';
+                      }
                       c2.fillRect(0, 0, W, H);
                       var harmonics = [
                         { n: 1, name: __alloT('stem.music.f_fundamental', 'f (Fundamental)'), note: 'C', color: '#fb7185' },
@@ -6541,33 +6869,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         { n: 6, name: __alloT('stem.music.6f_fifth', '6f (Fifth)'), note: 'G3', color: '#a855f7' }
                       ];
                       var rowH = (H - 30) / harmonics.length;
+                      var waveSpan = W * 0.50;
                       harmonics.forEach(function(h, i) {
                         var y = 6 + i * rowH;
-                        c2.strokeStyle = h.color;
-                        c2.lineWidth = 1.2;
+                        var midY = y + rowH / 2;
+                        // Subtle scope lane & centerline
+                        c2.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.008)';
+                        c2.fillRect(78, y + 1, waveSpan + 6, rowH - 2);
+                        c2.strokeStyle = 'rgba(148,163,184,0.16)';
+                        c2.lineWidth = 0.7;
+                        c2.beginPath(); c2.moveTo(80, midY); c2.lineTo(80 + waveSpan, midY); c2.stroke();
+                        // Luminous harmonic standing-wave glow + crisp core
+                        c2.save();
+                        c2.lineCap = 'round';
                         c2.beginPath();
-                        var amp = (rowH - 6) / 2 * (1 / h.n);
-                        for (var x = 0; x < W * 0.55; x += 1) {
-                          var yy = y + rowH / 2 + Math.sin((x / W) * Math.PI * 4 * h.n + t * 4) * amp;
+                        var amp = (rowH - 6) / 2 * (1 / Math.sqrt(h.n));
+                        for (var x = 0; x <= waveSpan; x += 1) {
+                          var yy = midY + Math.sin((x / waveSpan) * Math.PI * 2 * h.n + t * 4) * amp;
                           if (x === 0) c2.moveTo(x + 80, yy);
                           else c2.lineTo(x + 80, yy);
                         }
-                        c2.stroke();
+                        c2.shadowColor = h.color; c2.shadowBlur = 7;
+                        c2.strokeStyle = h.color; c2.lineWidth = 2.6; c2.globalAlpha = 0.35; c2.stroke();
+                        c2.globalAlpha = 1; c2.lineWidth = 1.4; c2.stroke();
+                        c2.restore();
                         c2.fillStyle = h.color;
                         c2.font = 'bold 9px monospace';
                         c2.textAlign = 'right';
-                        c2.fillText(h.n + 'x', 75, y + rowH / 2 + 3);
-                        c2.fillStyle = '#cbd5e1';
+                        c2.fillText(h.n + 'x', 72, midY + 3);
+                        c2.fillStyle = '#e2e8f0';
                         c2.font = '8px sans-serif';
                         c2.textAlign = 'left';
-                        c2.fillText(h.name, W * 0.6, y + rowH / 2);
+                        c2.fillText(h.name, 80 + waveSpan + 10, midY + 2);
                         c2.fillStyle = h.color;
-                        c2.fillText(h.note, W * 0.88, y + rowH / 2);
+                        c2.font = 'bold 9px monospace';
+                        c2.fillText(h.note, W - 26, midY + 2);
                       });
-                      c2.fillStyle = 'rgba(0,0,0,0.85)';
-                      c2.fillRect(8, H - 14, W - 16, 12);
+                      c2.fillStyle = 'rgba(7,5,20,0.88)';
+                      c2.fillRect(8, H - 15, W - 16, 13);
                       c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#a5b4fc'; c2.textAlign = 'center';
-                      c2.fillText(__alloT('stem.music.canvas_timbre_caption', 'Timbre = which harmonics dominate. Violin vs flute play same f, but harmonic mix differs.'), W / 2, H - 5);
+                      c2.fillText(__alloT('stem.music.canvas_timbre_caption', 'Timbre = which harmonics dominate. Violin vs flute play same f, but harmonic mix differs.'), W / 2, H - 6);
                       cvEl._hsAnim = requestAnimationFrame(drawHs);
                     }
                     drawHs();

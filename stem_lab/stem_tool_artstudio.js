@@ -912,12 +912,73 @@ window.StemLab = window.StemLab || {
   function artStudioMixerPaint(ctx,model,labels) {
     if(!ctx)return;
     var a=artStudioMixerInput(model,1),b=artStudioMixerInput(model,2),result=artStudioMixerColor(model),palette=artStudioMixerPalette(model);
-    ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,960,520);ctx.textAlign='left';ctx.fillStyle='#0f172a';ctx.font='bold 22px sans-serif';ctx.fillText(labels.title,32,38);
-    [{x:32,w:208,hex:a,title:labels.a},{x:260,w:440,hex:result,title:labels.result},{x:720,w:208,hex:b,title:labels.b}].forEach(function(item){
+    var hasSave = typeof ctx.save === 'function' && typeof ctx.restore === 'function';
+    if (hasSave) ctx.save();
+    var bgGrad = typeof ctx.createLinearGradient === 'function' ? ctx.createLinearGradient(0, 0, 0, 520) : null;
+    if (bgGrad && typeof bgGrad.addColorStop === 'function') {
+      bgGrad.addColorStop(0, '#f8fafc');
+      bgGrad.addColorStop(1, '#eef2f7');
+      ctx.fillStyle = bgGrad;
+    } else {
+      ctx.fillStyle = '#f8fafc';
+    }
+    ctx.fillRect(0,0,960,520);
+    // Subtle studio paper border & header rule
+    if (typeof ctx.strokeRect === 'function') {
+      ctx.strokeStyle = 'rgba(148,163,184,0.35)';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(12, 12, 936, 496);
+    }
+    ctx.textAlign='left';ctx.fillStyle='#0f172a';ctx.font='bold 22px sans-serif';ctx.fillText(labels.title,32,40);
+    [{x:32,w:208,hex:a,title:labels.a,featured:false},{x:260,w:440,hex:result,title:labels.result,featured:true},{x:720,w:208,hex:b,title:labels.b,featured:false}].forEach(function(item){
+      if (hasSave) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(15,23,42,0.14)';
+        ctx.shadowBlur = item.featured ? 14 : 8;
+        ctx.shadowOffsetY = 4;
+      }
       ctx.fillStyle=item.hex;ctx.fillRect(item.x,64,item.w,228);
+      if (hasSave) ctx.restore();
+      // Subtle top studio sheen & crisp pigment frame
+      var sheen = typeof ctx.createLinearGradient === 'function' ? ctx.createLinearGradient(item.x, 64, item.x, 128) : null;
+      if (sheen && typeof sheen.addColorStop === 'function') {
+        sheen.addColorStop(0, 'rgba(255,255,255,0.22)');
+        sheen.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sheen;
+        ctx.fillRect(item.x, 64, item.w, 64);
+      }
+      if (typeof ctx.strokeRect === 'function') {
+        ctx.strokeStyle = item.featured ? 'rgba(15,23,42,0.34)' : 'rgba(15,23,42,0.18)';
+        ctx.lineWidth = item.featured ? 2 : 1.25;
+        ctx.strokeRect(item.x + 0.5, 64.5, item.w - 1, 227);
+      }
       ctx.fillStyle='#0f172a';ctx.font='bold 18px sans-serif';ctx.fillText(item.title,item.x,318);ctx.font='16px monospace';ctx.fillText(item.hex.toUpperCase(),item.x,342);
     });
-    palette.forEach(function(color,index){var x=32+index*128;ctx.fillStyle=color.hex;ctx.fillRect(x,368,124,100);ctx.fillStyle='#0f172a';ctx.font='14px monospace';ctx.fillText(color.hex.toUpperCase(),x,490);});
+    // Continuous studio blend bridge strip above 7-step ramp
+    var bridge = (typeof ctx.createLinearGradient === 'function' && palette.length >= 2) ? ctx.createLinearGradient(32, 354, 924, 354) : null;
+    if (bridge && typeof bridge.addColorStop === 'function') {
+      palette.forEach(function(color, idx) { bridge.addColorStop(idx / (palette.length - 1), color.hex); });
+      ctx.fillStyle = bridge;
+      ctx.fillRect(32, 354, 892, 8);
+    }
+    palette.forEach(function(color,index){
+      var x=32+index*128;
+      if (hasSave) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(15,23,42,0.1)';
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetY = 2;
+      }
+      ctx.fillStyle=color.hex;ctx.fillRect(x,368,124,100);
+      if (hasSave) ctx.restore();
+      if (typeof ctx.strokeRect === 'function') {
+        ctx.strokeStyle = 'rgba(15,23,42,0.18)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x + 0.5, 368.5, 123, 99);
+      }
+      ctx.fillStyle='#0f172a';ctx.font='14px monospace';ctx.fillText(color.hex.toUpperCase(),x,490);
+    });
+    if (hasSave) ctx.restore();
   }
   // END ART STUDIO MIXER HELPERS
 
@@ -1313,6 +1374,31 @@ window.StemLab = window.StemLab || {
     var st = document.createElement('style');
     st.id = 'allo-artstudio-hc-extra-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"artStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"artStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"artStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
+
+  // Bespoke Visual Art Studio workbench polish + Light/Dark/High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-artstudio-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-artstudio-studio-css';
+    st.textContent = [
+      '.art-emblem-box { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, rgba(236,72,153,0.30), rgba(15,23,42,0.92)); border: 1.5px solid rgba(249,168,212,0.55); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 6px 16px rgba(15,23,42,0.55); }',
+      '.art-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(236,72,153,0.22); border: 1px solid rgba(249,168,212,0.48); color: #fbcfe8; font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }',
+      '.art-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(249,168,212,0.22); min-width: 0; }',
+      '.art-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(15,23,42,0.82); border: 1px solid rgba(249,168,212,0.36); color: #fce7f3; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.art-schematic-strip { margin-top: 12px; padding: 7px 10px; border-radius: 12px; background: rgba(12,18,34,0.80); border: 1px solid rgba(249,168,212,0.26); }',
+      '.art-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(249,168,212,0.22); }',
+      '.art-starter-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #fbcfe8; }',
+      '.art-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(15,23,42,0.86); border: 1px solid rgba(249,168,212,0.40); color: #fdf2f8; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.art-starter-chip:hover:not(:disabled) { background: rgba(190,24,93,0.45); border-color: #f9a8d4; color: #ffffff; }',
+      '.art-desk-ribbon { margin-bottom: 12px; padding: 10px 12px; border-radius: 14px; background: linear-gradient(135deg, #0f172a 0%, #2b1236 55%, #16223d 100%); border: 1px solid rgba(249,168,212,0.34); color: #fdf2f8; display: flex; flex-direction: column; gap: 8px; min-width: 0; }',
+      '.art-starter-chip:focus-visible, [data-artstudio-root] button:focus-visible, [data-artstudio-home] button:focus-visible { outline: 2.5px solid #f472b6; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="artStudio"] .art-desk-ribbon, .theme-contrast [data-stem-tool-shell="artStudio"] [data-artstudio-home] section.bg-slate-950 { background: #000000 !important; background-image: none !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="artStudio"] .art-emblem-box, .theme-contrast [data-stem-tool-shell="artStudio"] .art-subject-badge, .theme-contrast [data-stem-tool-shell="artStudio"] .art-telemetry-pill, .theme-contrast [data-stem-tool-shell="artStudio"] .art-schematic-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="artStudio"] .art-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="artStudio"] .art-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }'
+    ].join('\n');
     document.head.appendChild(st);
   })();
   (function() {
@@ -2411,7 +2497,9 @@ window.StemLab.registerTool('artStudio', {
 
       // ── Tool body (artStudio) ──
       return (function() {
-const d = labToolData.artStudio || {};
+const _rawArtD = labToolData && labToolData.artStudio;
+const d = (_rawArtD && typeof _rawArtD === 'object' && !Array.isArray(_rawArtD)) ? _rawArtD : {};
+const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
 
           const ART_STUDIO_MAX_ANIM_KEYFRAMES = 12;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, [key]: val } }));
@@ -5082,16 +5170,109 @@ const d = labToolData.artStudio || {};
               canvas._wheelRing=ring;canvas._wheelRingKey=ringKey;
             }
             if(canvas._wheelSignature!==wheelSignature){
-              ctx.fillStyle='#111827';ctx.fillRect(0,0,W,H);ctx.drawImage(canvas._wheelRing,0,0);
-              ctx.beginPath();ctx.arc(cx,cy,R*.49,0,Math.PI*2);ctx.fillStyle='#111827';ctx.fill();
+              var hasSave = typeof ctx.save === 'function' && typeof ctx.restore === 'function';
+              var hasLines = typeof ctx.moveTo === 'function' && typeof ctx.lineTo === 'function';
+              if (hasSave) ctx.save();
+              var bgGrad = typeof ctx.createRadialGradient === 'function' ? ctx.createRadialGradient(cx, cy, R * 0.15, cx, cy, Math.max(W, H) * 0.62) : null;
+              if (bgGrad && typeof bgGrad.addColorStop === 'function') {
+                bgGrad.addColorStop(0, '#18243a');
+                bgGrad.addColorStop(0.58, '#0f172a');
+                bgGrad.addColorStop(1, '#070b14');
+                ctx.fillStyle = bgGrad;
+              } else {
+                ctx.fillStyle = '#111827';
+              }
+              ctx.fillRect(0,0,W,H);
+              // Luminous outer aura behind chromatic ring
+              var aura = typeof ctx.createRadialGradient === 'function' ? ctx.createRadialGradient(cx, cy, R * 0.85, cx, cy, R * 1.14) : null;
+              if (aura && typeof aura.addColorStop === 'function') {
+                aura.addColorStop(0, 'rgba(255,255,255,0.06)');
+                aura.addColorStop(0.55, 'rgba(56,189,248,0.08)');
+                aura.addColorStop(1, 'rgba(15,23,42,0)');
+                ctx.fillStyle = aura;
+                ctx.beginPath(); ctx.arc(cx, cy, R * 1.14, 0, Math.PI * 2); ctx.fill();
+              }
+              // Studio degree compass ticks around outer bezel
+              if (hasLines) {
+                for (var deg = 0; deg < 360; deg += 15) {
+                  var tr = (deg - 90) * Math.PI / 180;
+                  var isMajor = deg % 90 === 0;
+                  var isMid = deg % 30 === 0;
+                  var r0 = R + (isMajor ? 6 : 8);
+                  var r1 = R + (isMajor ? 22 : isMid ? 16 : 12);
+                  ctx.beginPath();
+                  ctx.moveTo(cx + Math.cos(tr) * r0, cy + Math.sin(tr) * r0);
+                  ctx.lineTo(cx + Math.cos(tr) * r1, cy + Math.sin(tr) * r1);
+                  ctx.strokeStyle = isMajor ? 'rgba(226,232,240,0.62)' : isMid ? 'rgba(148,163,184,0.42)' : 'rgba(148,163,184,0.22)';
+                  ctx.lineWidth = isMajor ? 2.4 : 1.3;
+                  ctx.stroke();
+                }
+              }
+              ctx.drawImage(canvas._wheelRing,0,0);
+              // Crisp outer & inner chromatic bevel highlights
+              ctx.beginPath(); ctx.arc(cx, cy, R - 1, 0, Math.PI * 2);
+              ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 2; ctx.stroke();
+              ctx.beginPath(); ctx.arc(cx, cy, R * 0.49, 0, Math.PI * 2);
+              var coreGrad = typeof ctx.createRadialGradient === 'function' ? ctx.createRadialGradient(cx, cy - R * 0.12, R * 0.04, cx, cy, R * 0.5) : null;
+              if (coreGrad && typeof coreGrad.addColorStop === 'function') {
+                coreGrad.addColorStop(0, '#1e293b');
+                coreGrad.addColorStop(1, '#0b1120');
+                ctx.fillStyle = coreGrad;
+              } else {
+                ctx.fillStyle = '#111827';
+              }
+              ctx.fill();
+              ctx.beginPath(); ctx.arc(cx, cy, R * 0.49, 0, Math.PI * 2);
+              ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 2; ctx.stroke();
+              // Luminous active hue halo ring around center medallion
+              if (hasSave) {
+                ctx.save();
+                ctx.shadowColor = wheelHex;
+                ctx.shadowBlur = 18;
+              }
               ctx.beginPath();ctx.arc(cx,cy,R*.37,0,Math.PI*2);ctx.strokeStyle=wheelHex;ctx.lineWidth=28;ctx.stroke();
+              if (hasSave) ctx.restore();
+              ctx.beginPath(); ctx.arc(cx, cy, R * 0.37 - 14, 0, Math.PI * 2);
+              ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 1.5; ctx.stroke();
+              // Luminous color-harmony geometry chords connecting swatch positions
+              if (hasLines && wheelPalette.length >= 2) {
+                var pts = wheelPalette.map(function(color) {
+                  var rad = (color.h - 90) * Math.PI / 180;
+                  return { x: cx + Math.cos(rad) * R * 0.76, y: cy + Math.sin(rad) * R * 0.76, hex: color.hex || wheelHex, base: !!color.base };
+                });
+                if (hasSave) ctx.save();
+                ctx.beginPath();
+                pts.forEach(function(pt, idx) { if (idx === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y); });
+                if (pts.length > 2 && typeof ctx.closePath === 'function') ctx.closePath();
+                ctx.fillStyle = 'rgba(255,255,255,0.06)';
+                if (pts.length > 2) ctx.fill();
+                ctx.shadowColor = wheelHex;
+                ctx.shadowBlur = 12;
+                ctx.strokeStyle = 'rgba(255,255,255,0.78)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                if (hasSave) ctx.restore();
+              }
               ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 32px sans-serif';ctx.fillText(wheelHex.toUpperCase(),cx,cy-26);
-              ctx.font='22px sans-serif';ctx.fillText('H '+wheelDisplay(wheelModel.hue)+'\u00b0',cx,cy+17);ctx.fillText('S '+wheelDisplay(wheelModel.sat)+'% / L '+wheelDisplay(wheelModel.lit)+'%',cx,cy+50);
+              ctx.fillStyle='#e2e8f0';ctx.font='22px sans-serif';ctx.fillText('H '+wheelDisplay(wheelModel.hue)+'\u00b0',cx,cy+17);
+              ctx.fillStyle='#cbd5e1';ctx.fillText('S '+wheelDisplay(wheelModel.sat)+'% / L '+wheelDisplay(wheelModel.lit)+'%',cx,cy+50);
               wheelPalette.forEach(function(color,index){
                 var radians=(color.h-90)*Math.PI/180,x=cx+Math.cos(radians)*R*.76,y=cy+Math.sin(radians)*R*.76;
-                ctx.beginPath();ctx.arc(x,y,color.base?27:21,0,Math.PI*2);ctx.fillStyle='#111827';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=color.base?6:3;ctx.stroke();
+                var nodeR = color.base ? 27 : 21;
+                var swatchHex = artStudioMixerHSLHex(color.h, color.s !== undefined ? color.s : wheelModel.sat, color.l !== undefined ? color.l : wheelModel.lit);
+                if (hasSave) {
+                  ctx.save();
+                  ctx.shadowColor = swatchHex;
+                  ctx.shadowBlur = color.base ? 18 : 10;
+                }
+                ctx.beginPath();ctx.arc(x,y,nodeR,0,Math.PI*2);ctx.fillStyle='#0f172a';ctx.fill();
+                ctx.strokeStyle='#ffffff';ctx.lineWidth=color.base?6:3.5;ctx.stroke();
+                if (hasSave) ctx.restore();
+                ctx.beginPath(); ctx.arc(x, y, nodeR - 5, 0, Math.PI * 2);
+                ctx.strokeStyle = swatchHex; ctx.lineWidth = 2.5; ctx.stroke();
                 ctx.fillStyle='#fff';ctx.font='bold 23px sans-serif';ctx.fillText(String(index+1),x,y);
               });
+              if (hasSave) ctx.restore();
               canvas._wheelSignature=wheelSignature;
             }
             function point(event){
@@ -5811,8 +5992,17 @@ const d = labToolData.artStudio || {};
                   var endY = startY + vectorY * arrowLength;
                   var perpendicularX = -vectorY;
                   var perpendicularY = vectorX;
-                  var headLength = 3.5;
-                  mainCtx.globalAlpha = 0.35 + localWater * 0.55;
+                  var headLength = 4;
+                  mainCtx.globalAlpha = 0.24 + localWater * 0.36;
+                  mainCtx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+                  mainCtx.lineWidth = Math.max(3.2, canvas.width / 220);
+                  mainCtx.beginPath();
+                  mainCtx.moveTo(startX, startY);
+                  mainCtx.lineTo(endX, endY);
+                  mainCtx.stroke();
+                  mainCtx.globalAlpha = 0.48 + localWater * 0.48;
+                  mainCtx.strokeStyle = 'rgba(8, 145, 178, 0.95)';
+                  mainCtx.lineWidth = Math.max(1.35, canvas.width / 400);
                   mainCtx.beginPath();
                   mainCtx.moveTo(startX, startY);
                   mainCtx.lineTo(endX, endY);
@@ -8427,14 +8617,30 @@ const d = labToolData.artStudio || {};
                   React.createElement('p',{'data-harmony-description':'true',className:'mx-auto mt-2 max-w-xl text-center text-xs leading-relaxed text-slate-700'},descriptions[type]),
                   React.createElement('svg',{id:'artstudio-harmony-wheel','data-harmony-wheel':'true',xmlns:'http://www.w3.org/2000/svg',viewBox:'0 0 600 600',role:'img','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.a11y_color_harmony_wheel_showing_with_colors_around','Color harmony wheel showing {value1} with {value2} colors around base hue {value3} degrees.'),{value1:label,value2:harmonyPalette.length,value3:studioColorValueLabel(angle)})},
                     React.createElement('title',null,label+' · '+studioColorValueLabel(angle)+'°'),
-                    React.createElement('rect',{width:600,height:600,rx:16,fill:'#f8fafc'}),
+                    React.createElement('defs',null,
+                      React.createElement('radialGradient',{id:'artstudio-hh-bg',cx:'50%',cy:'46%',r:'58%'},
+                        React.createElement('stop',{offset:'0%',stopColor:'#ffffff'}),
+                        React.createElement('stop',{offset:'72%',stopColor:'#f8fafc'}),
+                        React.createElement('stop',{offset:'100%',stopColor:'#e2e8f0'})),
+                      React.createElement('filter',{id:'artstudio-hh-glow',x:'-20%',y:'-20%',width:'140%',height:'140%'},
+                        React.createElement('feGaussianBlur',{stdDeviation:'4',result:'blur'}),
+                        React.createElement('feMerge',null,
+                          React.createElement('feMergeNode',{in:'blur'}),
+                          React.createElement('feMergeNode',{in:'SourceGraphic'})))),
+                    React.createElement('rect',{width:600,height:600,rx:16,fill:'url(#artstudio-hh-bg)'}),
+                    React.createElement('circle',{cx:300,cy:300,r:262,fill:'none',stroke:'#cbd5e1',strokeWidth:1,strokeDasharray:'3 5'}),
+                    React.createElement('circle',{cx:300,cy:300,r:225,fill:'none',stroke:'#cbd5e1',strokeWidth:1,opacity:0.75}),
+                    React.createElement('circle',{cx:300,cy:300,r:180,fill:'none',stroke:'#94a3b8',strokeWidth:1,strokeDasharray:'4 6',opacity:0.55}),
+                    Array.from({length:12},function(_,idx){var a=(idx*30-90)*Math.PI/180,major=idx%3===0;return React.createElement('line',{key:'t'+idx,x1:300+256*Math.cos(a),y1:300+256*Math.sin(a),x2:300+(major?270:264)*Math.cos(a),y2:300+(major?270:264)*Math.sin(a),stroke:major?'#64748b':'#94a3b8',strokeWidth:major?2:1.2});}),
                     Array.from({length:72},function(_,index){var hue=index*5,a1=(hue-92.5)*Math.PI/180,a2=(hue-87.5)*Math.PI/180,point=function(radius,a){return (300+radius*Math.cos(a))+' '+(300+radius*Math.sin(a));};return React.createElement('path',{key:index,d:'M '+point(232,a1)+' L '+point(254,a1)+' A 254 254 0 0 1 '+point(254,a2)+' L '+point(232,a2)+' A 232 232 0 0 0 '+point(232,a1)+' Z',fill:'hsl('+hue+',75%,55%)'});}),
-                    React.createElement('polygon',{points:points.map(function(p){return p.x+','+p.y;}).join(' '),fill:'none',stroke:'#64748b',strokeWidth:2}),
+                    points.map(function(p,idx){return React.createElement('line',{key:'sp'+idx,x1:300,y1:300,x2:p.x,y2:p.y,stroke:harmonyPalette[idx].css,strokeWidth:1.5,strokeDasharray:'4 4',opacity:0.45});}),
+                    React.createElement('polygon',{points:points.map(function(p){return p.x+','+p.y;}).join(' '),fill:harmonyColor.css,fillOpacity:0.12,stroke:'#475569',strokeWidth:2.4,strokeLinejoin:'round',filter:'url(#artstudio-hh-glow)'}),
                     harmonyPalette.map(function(color,index){var radius=['analogous','split','tetradic'].indexOf(harmonyRecipe.scheme)>=0&&harmonyRecipe.spread<16?12:22,p=points[index];return React.createElement('g',{key:index},
+                      index===harmonyIndex&&React.createElement('circle',{cx:p.x,cy:p.y,r:radius+11,fill:color.css,fillOpacity:0.22,stroke:'#7c3aed',strokeWidth:1.5,strokeDasharray:'3 3'}),
                       React.createElement('circle',{cx:p.x,cy:p.y,r:radius+5,fill:index===harmonyIndex?'#7c3aed':'#f8fafc'}),
                       React.createElement('circle',{cx:p.x,cy:p.y,r:radius,fill:color.css,stroke:'#334155',strokeWidth:1.5}),
                       React.createElement('text',{x:p.x,y:p.y+5,textAnchor:'middle',fontSize:radius<16?12:16,fontFamily:'sans-serif',fontWeight:'bold',fill:color.foreground},index+1));}),
-                    React.createElement('rect',{x:160,y:262,width:280,height:72,rx:8,fill:'#f8fafc'}),
+                    React.createElement('rect',{x:160,y:262,width:280,height:72,rx:12,fill:'#f8fafc',fillOpacity:0.94,stroke:'#cbd5e1',strokeWidth:1.25}),
                     React.createElement('text',{x:300,y:290,textAnchor:'middle',fontSize:20,fontFamily:'sans-serif',fontWeight:'bold',fill:'#334155'},label),
                     React.createElement('text',{x:300,y:318,textAnchor:'middle',fontSize:18,fontFamily:'sans-serif',fill:'#475569'},studioColorValueLabel(angle)+'°'),
                     React.createElement('text',{x:300,y:578,textAnchor:'middle',fontSize:15,fontFamily:'sans-serif',fill:'#475569'},__alloT('stem.artstudio.hh_wheel_caption','Digital HSL hue relationships'))),
@@ -9816,12 +10022,76 @@ const d = labToolData.artStudio || {};
               React.createElement("section", { className: "relative overflow-hidden rounded-3xl bg-slate-950 text-white p-6 sm:p-8 shadow-xl", 'aria-labelledby': "artstudio-home-title" },
                 React.createElement("div", { className: "absolute -right-16 -top-20 h-56 w-56 rounded-full bg-pink-500/25 blur-3xl", 'aria-hidden': "true" }),
                 React.createElement("div", { className: "absolute -bottom-20 left-1/3 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl", 'aria-hidden': "true" }),
-                React.createElement("div", { className: "relative max-w-2xl" },
-                  React.createElement("p", { className: "text-xs font-black uppercase tracking-[0.2em] text-pink-300" }, __alloT("stem.artstudio.learning_begin_with_an_intention_e60717f", "Begin with an intention")),
-                  React.createElement("h2", { id: "artstudio-home-title", tabIndex: -1, className: "mt-2 text-3xl sm:text-4xl font-black tracking-tight focus:outline-none" }, __alloT("stem.artstudio.learning_what_do_you_want_to_make_b89d377", "What do you want to make?")),
-                  React.createElement("p", { className: "mt-3 text-sm sm:text-base leading-relaxed text-slate-300" }, __alloT("stem.artstudio.learning_choose_a_creative_direction_the_canvas_comes_fir_c03ae38", "Choose a creative direction. The canvas comes first; techniques, artists, mathematics, and accessibility stay close when you want to look deeper.")),
-                  React.createElement("div", { className: "mt-5 flex flex-wrap gap-2", role: "group", 'aria-label': __alloT("stem.artstudio.learning_studio_lenses_25e674f", "Studio lenses") },
+                React.createElement("div", { className: "relative" },
+                  React.createElement("div", { style: { display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap', minWidth: 0 } },
+                    React.createElement("div", { className: "art-emblem-box", 'aria-hidden': "true" },
+                      React.createElement("svg", { width: 34, height: 34, viewBox: "0 0 36 36", fill: "none" },
+                        React.createElement("circle", { cx: 18, cy: 18, r: 13, stroke: "#f9a8d4", strokeWidth: 2, fill: "rgba(236,72,153,0.16)" }),
+                        React.createElement("circle", { cx: 13, cy: 13, r: 2.8, fill: "#fb7185" }),
+                        React.createElement("circle", { cx: 22, cy: 12, r: 2.6, fill: "#fbbf24" }),
+                        React.createElement("circle", { cx: 24, cy: 20, r: 2.6, fill: "#38bdf8" }),
+                        React.createElement("circle", { cx: 15, cy: 23, r: 2.6, fill: "#4ade80" }),
+                        React.createElement("path", { d: "M18 18 L27 27", stroke: "#fdf2f8", strokeWidth: 2.2, strokeLinecap: "round" })
+                      )
+                    ),
+                    React.createElement("div", { style: { flex: 1, minWidth: 220 } },
+                      React.createElement("span", { className: "art-subject-badge" }, __alloT('stem.artstudio.subject_badge', 'Color Theory · Pattern Mathematics · Visual Craft')),
+                      React.createElement("p", { className: "mt-2 text-xs font-black uppercase tracking-[0.2em] text-pink-300" }, __alloT("stem.artstudio.learning_begin_with_an_intention_e60717f", "Begin with an intention")),
+                      React.createElement("h2", { id: "artstudio-home-title", tabIndex: -1, className: "mt-1 text-3xl sm:text-4xl font-black tracking-tight focus:outline-none" }, __alloT("stem.artstudio.learning_what_do_you_want_to_make_b89d377", "What do you want to make?")),
+                      React.createElement("p", { className: "mt-2 text-sm sm:text-base leading-relaxed text-slate-300 max-w-2xl" }, __alloT("stem.artstudio.learning_choose_a_creative_direction_the_canvas_comes_fir_c03ae38", "Choose a creative direction. The canvas comes first; techniques, artists, mathematics, and accessibility stay close when you want to look deeper."))
+                    )
+                  ),
+                  React.createElement("div", { className: "mt-4 flex flex-wrap gap-2", role: "group", 'aria-label': __alloT("stem.artstudio.learning_studio_lenses_25e674f", "Studio lenses") },
                     ['\u270E Create', '\u25CE Learn', '\u2315 Inspect'].map(function (lens) { return React.createElement("span", { key: lens, className: "rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-white" }, lens); })
+                  ),
+                  React.createElement("div", { className: "art-telemetry-strip", role: "group", 'aria-label': __alloT('stem.artstudio.home_telemetry_aria', 'Art Studio inventory and status') },
+                    React.createElement("span", { className: "art-telemetry-pill" }, formatArtStudioLearningText(__alloT('stem.artstudio.pill_labs', 'Labs: {n}'), { n: ART_STUDIO_TAB_ORDER.length })),
+                    React.createElement("span", { className: "art-telemetry-pill" }, formatArtStudioLearningText(__alloT('stem.artstudio.pill_groups', 'Disciplines: {n}'), { n: ART_STUDIO_GROUPS.length })),
+                    React.createElement("span", { className: "art-telemetry-pill" }, formatArtStudioLearningText(__alloT('stem.artstudio.pill_studies', 'Saved Studies: {n}'), { n: lastCompletedProcessStudies.length })),
+                    React.createElement("span", { className: "art-telemetry-pill" }, recentTab ? formatArtStudioLearningText(__alloT('stem.artstudio.pill_last', 'Recent: {lab}'), { lab: ART_STUDIO_TAB_LABELS[recentTab] || recentTab }) : __alloT('stem.artstudio.pill_ready', 'Canvas: Ready'))
+                  ),
+                  React.createElement("div", { className: "art-schematic-strip" },
+                    React.createElement("svg", {
+                      viewBox: "0 0 580 54",
+                      style: { width: '100%', height: 'auto', maxHeight: 56, display: 'block' },
+                      role: "img",
+                      'aria-label': __alloT('stem.artstudio.process_schematic_aria', 'Three-stage creative studio cycle from color and medium selection to geometric pattern design and accessibility critique')
+                    },
+                      React.createElement("line", { x1: 182, y1: 27, x2: 208, y2: 27, stroke: "#f9a8d4", strokeWidth: 2, strokeDasharray: "4 3" }),
+                      React.createElement("line", { x1: 372, y1: 27, x2: 398, y2: 27, stroke: "#38bdf8", strokeWidth: 2, strokeDasharray: "4 3" }),
+                      [
+                        { x: 10, w: 172, k: '01 · PIGMENT', v: __alloT('stem.artstudio.pipe_color', 'Color & Medium'), stroke: '#f472b6', on: !recentTab },
+                        { x: 208, w: 164, k: '02 · FORM', v: __alloT('stem.artstudio.pipe_pattern', 'Pattern & Geometry'), stroke: '#38bdf8', on: !!recentTab && lastCompletedProcessStudies.length === 0 },
+                        { x: 398, w: 172, k: '03 · CRITIQUE', v: __alloT('stem.artstudio.pipe_contrast', 'Contrast & Export'), stroke: '#4ade80', on: lastCompletedProcessStudies.length > 0 }
+                      ].map(function (stNode) {
+                        return React.createElement("g", { key: stNode.k },
+                          React.createElement("rect", {
+                            x: stNode.x, y: 6, width: stNode.w, height: 42, rx: 9,
+                            fill: stNode.on ? 'rgba(236,72,153,0.28)' : 'rgba(15,23,42,0.88)',
+                            stroke: stNode.on ? '#fbcfe8' : stNode.stroke,
+                            strokeWidth: stNode.on ? 2 : 1.2
+                          }),
+                          React.createElement("text", { x: stNode.x + stNode.w / 2, y: 22, textAnchor: "middle", fill: "#fbcfe8", fontSize: 10.5, fontWeight: 800, fontFamily: "system-ui, sans-serif" }, stNode.k),
+                          React.createElement("text", { x: stNode.x + stNode.w / 2, y: 38, textAnchor: "middle", fill: "#ffffff", fontSize: 11, fontWeight: 700, fontFamily: "system-ui, sans-serif" }, stNode.v)
+                        );
+                      })
+                    )
+                  ),
+                  !isArtLocked && React.createElement("div", { className: "art-starter-bar", role: "group", 'aria-label': __alloT('stem.artstudio.quick_launch_aria', 'Quick creative lab launchers') },
+                    React.createElement("span", { className: "art-starter-label" }, __alloT('stem.artstudio.quick_launch_label', 'Quick Launch:')),
+                    [
+                      { id: 'colorWheel', label: __alloT('stem.artstudio.quick_color', 'Color Wheel') },
+                      { id: 'watercolor', label: __alloT('stem.artstudio.quick_watercolor', 'Watercolor') },
+                      { id: 'pixel', label: __alloT('stem.artstudio.quick_pixel', 'Pixel Art') },
+                      { id: 'symmetry', label: __alloT('stem.artstudio.quick_symmetry', 'Symmetry') }
+                    ].map(function (ql) {
+                      return React.createElement("button", {
+                        key: ql.id,
+                        type: "button",
+                        className: "art-starter-chip",
+                        onClick: function () { beginStudioPath(ql.id, ql.label); }
+                      }, ql.label);
+                    })
                   )
                 )
               ),
@@ -9930,7 +10200,16 @@ const d = labToolData.artStudio || {};
             React.createElement('style', null, "dialog[data-artstudio-inspector-shell]::backdrop{background:rgba(15,23,42,.58)} [data-artstudio-root] button,[data-artstudio-root] summary{scroll-margin-block:1rem} @media(max-width:639px){[data-artstudio-root] [data-studio-touch-description]{display:none}[data-artstudio-root] [data-studio-compact-palette]>summary{min-height:44px;display:list-item;align-content:center}[data-artstudio-root] [data-studio-compact-palette][open]>summary{margin-bottom:12px}} .theme-contrast [data-artstudio-root] :is(h1,h2,h3,summary,legend,a,small,strong,th,td,dt,dd,figcaption,time,code):not(button *){color:var(--allo-stem-text,#ffff00) !important}"),
 
             React.createElement("div", { 'data-artstudio-toolbar':'true',className: "relative z-20 mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-300 bg-white/95 p-2 shadow-sm" },
-              React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 hover:bg-slate-100 rounded-xl text-slate-700", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+              React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 hover:bg-slate-100 rounded-xl text-slate-700", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+              React.createElement("span", { className: "hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-xl bg-slate-900 border border-pink-400/50 shrink-0", 'aria-hidden': "true" },
+                React.createElement("svg", { width: 22, height: 22, viewBox: "0 0 36 36", fill: "none" },
+                  React.createElement("circle", { cx: 18, cy: 18, r: 13, stroke: "#f9a8d4", strokeWidth: 2.2, fill: "rgba(236,72,153,0.22)" }),
+                  React.createElement("circle", { cx: 13, cy: 13, r: 2.8, fill: "#fb7185" }),
+                  React.createElement("circle", { cx: 22, cy: 12, r: 2.6, fill: "#fbbf24" }),
+                  React.createElement("circle", { cx: 24, cy: 20, r: 2.6, fill: "#38bdf8" }),
+                  React.createElement("circle", { cx: 15, cy: 23, r: 2.6, fill: "#4ade80" })
+                )
+              ),
               React.createElement("div", { className: "min-w-0" },
                 React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-pink-700" }, __alloT("stem.artstudio.learning_creative_desk_a554720", "Creative desk")),
                 React.createElement("h2", { className: "truncate text-sm sm:text-base font-black " + (isContrast ? "text-white" : "text-slate-900") }, __alloT('stem.artstudio.art_design_studio', "Art & Design Studio"))
@@ -9961,6 +10240,24 @@ const d = labToolData.artStudio || {};
                     typeof onUseArtwork === 'function' && !canvasArtworkAvailable && React.createElement("p", { className: "rounded-lg bg-slate-50 px-2.5 py-2 text-[0.6875rem] text-slate-600" }, __alloT("stem.artstudio.learning_artwork_handoff_is_available_in_canvas_labs_03c1709", "Artwork handoff is available in canvas labs.")),
                     React.createElement("button", { type: "button", onClick: function () { closeArtStudio('archStudio'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-amber-800 hover:bg-amber-50", title: __alloT('stem.artstudio.launch_3d_architecture_studio', "Launch 3D Architecture Studio") }, __alloT('stem.artstudio.3d_builder', "\uD83C\uDFD7\uFE0F 3D Architecture Studio"))
                   )
+                )
+              )
+            ),
+
+            (!studioFocusView && tab !== 'harmonyHunt') && React.createElement('section', { className: 'art-desk-ribbon', 'aria-label': __alloT('stem.artstudio.desk_ribbon_aria', 'Active Art Studio lab summary') },
+              React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2', style: { minWidth: 0 } },
+                React.createElement('div', { className: 'flex flex-wrap items-center gap-2', style: { minWidth: 0 } },
+                  React.createElement('span', { className: 'art-subject-badge' }, activeArtStudioGroup.label),
+                  React.createElement('span', { className: 'art-telemetry-pill' }, formatArtStudioLearningText(__alloT('stem.artstudio.pill_active_lab', 'Lab: {lab}'), { lab: ART_STUDIO_TAB_LABELS[tab] || tab })),
+                  React.createElement('span', { className: 'art-telemetry-pill' }, formatArtStudioLearningText(__alloT('stem.artstudio.pill_band', 'Guide: {band}'), { band: resolveStudioGuideWording(d.studioGuideWording) === 'simple' ? __alloT('stem.artstudio.guide_simple', 'Simple') : __alloT('stem.artstudio.guide_detailed', 'Detailed') }))
+                ),
+                React.createElement('svg', { viewBox: '0 0 240 24', style: { width: '100%', maxWidth: 240, height: 'auto', display: 'block', flexShrink: 0 }, role: 'img', 'aria-label': __alloT('stem.artstudio.spectrum_aria', 'Visible spectral color bar from crimson through gold, emerald, cyan, and violet') },
+                  React.createElement('rect', { x: 2, y: 4, width: 38, height: 16, rx: 3, fill: '#f43f5e' }),
+                  React.createElement('rect', { x: 42, y: 4, width: 38, height: 16, rx: 3, fill: '#f59e0b' }),
+                  React.createElement('rect', { x: 82, y: 4, width: 38, height: 16, rx: 3, fill: '#10b981' }),
+                  React.createElement('rect', { x: 122, y: 4, width: 38, height: 16, rx: 3, fill: '#06b6d4' }),
+                  React.createElement('rect', { x: 162, y: 4, width: 38, height: 16, rx: 3, fill: '#6366f1' }),
+                  React.createElement('rect', { x: 202, y: 4, width: 36, height: 16, rx: 3, fill: '#c084fc' })
                 )
               )
             ),
@@ -11692,9 +11989,39 @@ const d = labToolData.artStudio || {};
                 else cnv.setAttribute('aria-label', '3D sculpture preview. ' + sculptSummary + '. Auto-rotation ' + (sculptAuto ? 'running' : 'paused') + '. Position snapping ' + (sculptSnap ? sculptSnap + ' units' : 'off') + '. Transform constraint ' + sculptTransformAxis + '.');
                 if (!cnv._p3d) {
                   var scene3 = new THREE.Scene(); scene3.background = new THREE.Color('#0f172a');
+                  var studioBgTex = null;
+                  if (typeof THREE.CanvasTexture === 'function') {
+                    try {
+                      var bgCanvas = document.createElement('canvas');
+                      bgCanvas.width = 512; bgCanvas.height = 512;
+                      var bgCtx = bgCanvas.getContext('2d');
+                      if (bgCtx && typeof bgCtx.createRadialGradient === 'function') {
+                        var bgGrad = bgCtx.createRadialGradient(256, 170, 24, 256, 260, 360);
+                        bgGrad.addColorStop(0, '#1e2f4d');
+                        bgGrad.addColorStop(0.45, '#132036');
+                        bgGrad.addColorStop(1, '#080e1c');
+                        bgCtx.fillStyle = bgGrad;
+                        bgCtx.fillRect(0, 0, 512, 512);
+                        // Subtle gallery overhead softbox halo
+                        var keyHalo = bgCtx.createRadialGradient(256, 48, 8, 256, 48, 220);
+                        keyHalo.addColorStop(0, 'rgba(186,230,253,0.16)');
+                        keyHalo.addColorStop(1, 'rgba(15,23,42,0)');
+                        bgCtx.fillStyle = keyHalo;
+                        bgCtx.fillRect(0, 0, 512, 280);
+                        studioBgTex = new THREE.CanvasTexture(bgCanvas);
+                        scene3.background = studioBgTex;
+                      }
+                    } catch (_) {}
+                  }
                   var cam = new THREE.PerspectiveCamera(45, cnv.width / cnv.height, 0.1, 100);
                   var ren = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
                   ren.setSize(cnv.width, cnv.height, false);
+                  try {
+                    if (THREE.ACESFilmicToneMapping !== undefined && 'toneMapping' in ren) {
+                      ren.toneMapping = THREE.ACESFilmicToneMapping;
+                      ren.toneMappingExposure = 1.08;
+                    }
+                  } catch (_) {}
                   // A context lost after init (GPU reset, low-memory eviction) used to
                   // leave the preview black with no way back.
                   cnv.addEventListener('webglcontextlost', function(ev) {
@@ -11713,10 +12040,11 @@ const d = labToolData.artStudio || {};
                     var st = cnv._p3d;
                     if (!st) return;
                     try {
+                      if (st.bgTex && st.bgTex.dispose) st.bgTex.dispose();
                       st.scene.traverse(function(o) {
                         if (o.geometry && o.geometry.dispose) o.geometry.dispose();
                         var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
-                        mats.forEach(function(mx) { try { if (mx.map && mx.map.dispose) mx.map.dispose(); mx.dispose(); } catch (e) {} });
+                        mats.forEach(function(mx) { try { if (mx.map && mx.map.dispose) mx.map.dispose(); if (mx.alphaMap && mx.alphaMap.dispose) mx.alphaMap.dispose(); mx.dispose(); } catch (e) {} });
                       });
                       if (st.resizeObserver) st.resizeObserver.disconnect();
                       if (st.visibilityObserver) st.visibilityObserver.disconnect();
@@ -11728,13 +12056,206 @@ const d = labToolData.artStudio || {};
                     } catch (e) {}
                     cnv._p3d = null;
                   }
-                  scene3.add(new THREE.AmbientLight(0xffffff, 0.6));
-                  var d1 = new THREE.DirectionalLight(0xffffff, 0.7); d1.position.set(2, 3, 2); scene3.add(d1);
+                  // Gallery 3-point + hemisphere studio lighting with sculpted rim highlights
+                  scene3.add(new THREE.AmbientLight(0xe2e8f0, 0.45));
+                  var d1 = new THREE.DirectionalLight(0xfff7ed, 0.88); d1.position.set(2.5, 3.8, 2.6); scene3.add(d1);
+                  if (typeof THREE.HemisphereLight === 'function') {
+                    try { scene3.add(new THREE.HemisphereLight(0xdbeafe, 0x0f172a, 0.55)); } catch (_) {}
+                  }
+                  try {
+                    var rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.72);
+                    if (rimLight.position && rimLight.position.set) rimLight.position.set(-2.8, 2.5, -2.6);
+                    scene3.add(rimLight);
+                    var fillLight = new THREE.DirectionalLight(0xf5d0fe, 0.30);
+                    if (fillLight.position && fillLight.position.set) fillLight.position.set(-2.2, 1.0, 2.4);
+                    scene3.add(fillLight);
+                  } catch (_) {}
                   var grid = new THREE.GridHelper(3, 12, 0x475569, 0x1e293b); scene3.add(grid);
-                  cnv._p3d = Object.assign({ scene: scene3, cam: cam, ren: ren, grid: grid, obj: null, json: '', auto: sculptAuto, dirty: true, hasFitted: !!d.sculptView, viewSignature: JSON.stringify(sculptView) }, sculptView);
+                  // Studio gallery pedestal disc, holographic calibration rings, vanishing-point laser shimmer & sunlit dust motes
+                  var studioStage = null;
+                  var holoPedestal = null;
+                  var dustPoints = null;
+                  var initReducedMotion = !!(typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                  var initHighContrast = !!(isContrast || (typeof document !== 'undefined' && document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')));
+                  var sculptUniforms = {
+                    uTime: { value: 1.85 },
+                    uSculptRim: { value: initHighContrast ? 0.0 : 1.0 }
+                  };
+                  var holoUniforms = {
+                    uTime: { value: 1.85 },
+                    uOpacity: { value: initHighContrast ? 0.0 : 1.0 }
+                  };
+                  var dustUniforms = {
+                    uTime: { value: 1.85 },
+                    uOpacity: { value: initHighContrast ? 0.0 : 0.72 }
+                  };
+                  if (typeof THREE.Group === 'function' && typeof THREE.Mesh === 'function') {
+                    try {
+                      studioStage = new THREE.Group();
+                      if (typeof THREE.CircleGeometry === 'function' && typeof THREE.MeshBasicMaterial === 'function') {
+                        var discTex = null;
+                        if (typeof THREE.CanvasTexture === 'function') {
+                          var dc = document.createElement('canvas'); dc.width = 256; dc.height = 256;
+                          var dctx = dc.getContext('2d');
+                          if (dctx && typeof dctx.createRadialGradient === 'function') {
+                            var dg = dctx.createRadialGradient(128, 128, 12, 128, 128, 126);
+                            dg.addColorStop(0, 'rgba(56,189,248,0.16)');
+                            dg.addColorStop(0.52, 'rgba(30,41,59,0.22)');
+                            dg.addColorStop(0.85, 'rgba(15,23,42,0.12)');
+                            dg.addColorStop(1, 'rgba(15,23,42,0)');
+                            dctx.fillStyle = dg; dctx.fillRect(0, 0, 256, 256);
+                            discTex = new THREE.CanvasTexture(dc);
+                          }
+                        }
+                        var discGeo = new THREE.CircleGeometry(1.72, 64);
+                        var discMat = new THREE.MeshBasicMaterial({ map: discTex || undefined, color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false });
+                        var discMesh = new THREE.Mesh(discGeo, discMat);
+                        if (discMesh.rotation) discMesh.rotation.x = -Math.PI / 2;
+                        if (discMesh.position) discMesh.position.y = -0.006;
+                        studioStage.add(discMesh);
+                      }
+                      if (typeof THREE.CircleGeometry === 'function' && typeof THREE.ShaderMaterial === 'function') {
+                        var holoGeo = new THREE.CircleGeometry(1.76, 72);
+                        var holoMat = new THREE.ShaderMaterial({
+                          uniforms: holoUniforms,
+                          vertexShader: [
+                            'varying vec2 vLocal;',
+                            'void main() {',
+                            '  vLocal = position.xy;',
+                            '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                            '}'
+                          ].join('\n'),
+                          fragmentShader: [
+                            'uniform float uTime;',
+                            'uniform float uOpacity;',
+                            'varying vec2 vLocal;',
+                            'void main() {',
+                            '  if (uOpacity <= 0.01) discard;',
+                            '  float r = length(vLocal);',
+                            '  if (r > 1.76) discard;',
+                            '  float ang = atan(vLocal.y, vLocal.x);',
+                            '  float outerRing = exp(-pow((r - 1.50) * 34.0, 2.0));',
+                            '  float midRing = exp(-pow((r - 0.94) * 38.0, 2.0));',
+                            '  float innerRing = exp(-pow((r - 0.44) * 42.0, 2.0));',
+                            '  float ticks = smoothstep(0.65, 0.96, cos(ang * 36.0)) * exp(-pow((r - 1.44) * 26.0, 2.0));',
+                            '  float sweepAng = mod(ang - uTime * 0.55 + 6.2831853, 6.2831853);',
+                            '  float sweep = exp(-sweepAng * 1.45) * smoothstep(0.32, 1.50, r) * (1.0 - smoothstep(1.50, 1.66, r));',
+                            '  float pulseWave = exp(-pow((r - mod(uTime * 0.42, 1.65)) * 18.0, 2.0)) * 0.28;',
+                            '  float xLaser = exp(-abs(vLocal.y) * 52.0) * (0.45 + 0.55 * sin(vLocal.x * 9.0 - uTime * 2.4)) * (1.0 - smoothstep(1.45, 1.74, r));',
+                            '  float zLaser = exp(-abs(vLocal.x) * 52.0) * (0.45 + 0.55 * sin(vLocal.y * 9.0 + uTime * 2.1)) * (1.0 - smoothstep(1.45, 1.74, r));',
+                            '  vec3 cyanCol = vec3(0.22, 0.74, 0.97);',
+                            '  vec3 indigoCol = vec3(0.51, 0.55, 0.97);',
+                            '  vec3 coralCol = vec3(0.98, 0.44, 0.52);',
+                            '  vec3 warmCol = vec3(0.99, 0.85, 0.62);',
+                            '  vec3 col = cyanCol * (outerRing * 0.85 + ticks * 0.55 + sweep * 0.42 + zLaser * 0.62)',
+                            '    + indigoCol * (midRing * 0.68 + pulseWave * 0.75)',
+                            '    + warmCol * (innerRing * 0.48)',
+                            '    + coralCol * (xLaser * 0.62);',
+                            '  float alpha = clamp((outerRing * 0.62 + midRing * 0.44 + innerRing * 0.30 + ticks * 0.36 + sweep * 0.28 + pulseWave * 0.24 + (xLaser + zLaser) * 0.34) * uOpacity, 0.0, 0.92);',
+                            '  gl_FragColor = vec4(col, alpha);',
+                            '}'
+                          ].join('\n'),
+                          transparent: true,
+                          depthWrite: false,
+                          side: THREE.DoubleSide || 2,
+                          blending: THREE.AdditiveBlending || 2
+                        });
+                        holoPedestal = new THREE.Mesh(holoGeo, holoMat);
+                        if (holoPedestal.rotation) holoPedestal.rotation.x = -Math.PI / 2;
+                        if (holoPedestal.position) holoPedestal.position.y = -0.001;
+                        holoPedestal.visible = !initHighContrast;
+                        studioStage.add(holoPedestal);
+                      } else if (typeof THREE.RingGeometry === 'function' && typeof THREE.MeshBasicMaterial === 'function') {
+                        var outerRing = new THREE.Mesh(new THREE.RingGeometry(1.48, 1.515, 72), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.42, side: THREE.DoubleSide || 2, depthWrite: false }));
+                        if (outerRing.rotation) outerRing.rotation.x = -Math.PI / 2;
+                        if (outerRing.position) outerRing.position.y = -0.002;
+                        studioStage.add(outerRing);
+                        var innerRing = new THREE.Mesh(new THREE.RingGeometry(0.92, 0.938, 64), new THREE.MeshBasicMaterial({ color: 0x818cf8, transparent: true, opacity: 0.28, side: THREE.DoubleSide || 2, depthWrite: false }));
+                        if (innerRing.rotation) innerRing.rotation.x = -Math.PI / 2;
+                        if (innerRing.position) innerRing.position.y = -0.002;
+                        studioStage.add(innerRing);
+                      }
+                      if (typeof THREE.BufferGeometry === 'function' && typeof THREE.Float32BufferAttribute === 'function' && typeof THREE.LineSegments === 'function' && typeof THREE.LineBasicMaterial === 'function') {
+                        var addGuide = function(coords, hex, alpha) {
+                          var g = new THREE.BufferGeometry();
+                          g.setAttribute('position', new THREE.Float32BufferAttribute(coords, 3));
+                          studioStage.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: hex, transparent: true, opacity: alpha })));
+                        };
+                        // Perspective X / Z vanishing laser rails & diagonal sightlines
+                        addGuide([-1.72, 0.003, 0, 1.72, 0.003, 0], 0xfb7185, 0.55);
+                        addGuide([0, 0.003, -1.72, 0, 0.003, 1.72], 0x38bdf8, 0.55);
+                        addGuide([-1.18, 0.002, -1.18, 1.18, 0.002, 1.18, -1.18, 0.002, 1.18, 1.18, 0.002, -1.18], 0x94a3b8, 0.22);
+                      }
+                      scene3.add(studioStage);
+                    } catch (_) { studioStage = null; }
+                  }
+                  if (typeof THREE.Points === 'function' && typeof THREE.BufferGeometry === 'function' && typeof THREE.Float32BufferAttribute === 'function' && typeof THREE.ShaderMaterial === 'function') {
+                    try {
+                      var moteCount = 64;
+                      var motePos = new Float32Array(moteCount * 3);
+                      var moteSeed = new Float32Array(moteCount);
+                      for (var mi = 0; mi < moteCount; mi++) {
+                        var angM = ((mi * 137.508) % 360) * Math.PI / 180;
+                        var radM = 0.65 + ((mi * 29) % 100) * 0.018;
+                        motePos[mi * 3] = Math.cos(angM) * radM;
+                        motePos[mi * 3 + 1] = 0.18 + ((mi * 53) % 100) * 0.026;
+                        motePos[mi * 3 + 2] = Math.sin(angM) * radM;
+                        moteSeed[mi] = (mi * 0.6180339) % 1;
+                      }
+                      var moteGeo = new THREE.BufferGeometry();
+                      moteGeo.setAttribute('position', new THREE.Float32BufferAttribute(motePos, 3));
+                      moteGeo.setAttribute('aSeed', new THREE.Float32BufferAttribute(moteSeed, 1));
+                      var moteMat = new THREE.ShaderMaterial({
+                        uniforms: dustUniforms,
+                        vertexShader: [
+                          'uniform float uTime;',
+                          'attribute float aSeed;',
+                          'varying float vSeed;',
+                          'varying float vTwinkle;',
+                          'void main() {',
+                          '  vSeed = aSeed;',
+                          '  vec3 p = position;',
+                          '  float ph = aSeed * 6.2831853;',
+                          '  p.x += sin(uTime * 0.28 + ph) * 0.14;',
+                          '  p.y += mod(uTime * (0.045 + aSeed * 0.035) + aSeed * 2.4, 2.5) - 1.15;',
+                          '  p.z += cos(uTime * 0.24 + ph * 1.3) * 0.14;',
+                          '  vTwinkle = 0.55 + 0.45 * sin(uTime * (1.2 + aSeed * 1.6) + ph);',
+                          '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);',
+                          '  gl_PointSize = clamp((16.0 + aSeed * 14.0) / max(1.1, -mvPos.z), 2.0, 9.0);',
+                          '  gl_Position = projectionMatrix * mvPos;',
+                          '}'
+                        ].join('\n'),
+                        fragmentShader: [
+                          'uniform float uOpacity;',
+                          'varying float vSeed;',
+                          'varying float vTwinkle;',
+                          'void main() {',
+                          '  if (uOpacity <= 0.01) discard;',
+                          '  float d = length(gl_PointCoord - vec2(0.5));',
+                          '  if (d > 0.5) discard;',
+                          '  float core = smoothstep(0.5, 0.06, d);',
+                          '  vec3 warmSun = vec3(1.0, 0.91, 0.72);',
+                          '  vec3 skyDust = vec3(0.73, 0.90, 0.99);',
+                          '  vec3 col = mix(warmSun, skyDust, step(0.62, vSeed));',
+                          '  gl_FragColor = vec4(col, core * core * vTwinkle * uOpacity);',
+                          '}'
+                        ].join('\n'),
+                        transparent: true,
+                        depthWrite: false,
+                        blending: THREE.AdditiveBlending || 2
+                      });
+                      dustPoints = new THREE.Points(moteGeo, moteMat);
+                      dustPoints.visible = !initHighContrast;
+                      scene3.add(dustPoints);
+                    } catch (_) { dustPoints = null; }
+                  }
+                  cnv._p3d = Object.assign({ scene: scene3, cam: cam, ren: ren, grid: grid, studioStage: studioStage, holoPedestal: holoPedestal, dustPoints: dustPoints, sculptUniforms: sculptUniforms, holoUniforms: holoUniforms, dustUniforms: dustUniforms, shaderTime: 1.85, reducedMotion: initReducedMotion, isContrast: initHighContrast, bgTex: studioBgTex, obj: null, json: '', auto: sculptAuto, dirty: true, hasFitted: !!d.sculptView, viewSignature: JSON.stringify(sculptView) }, sculptView);
                   function renderSculptView() {
                     var st = cnv._p3d;
                     if (!st) return;
+                    if (st.sculptUniforms) st.sculptUniforms.uTime.value = st.shaderTime;
+                    if (st.holoUniforms) st.holoUniforms.uTime.value = st.shaderTime;
+                    if (st.dustUniforms) st.dustUniforms.uTime.value = st.shaderTime;
                     var view = artStudioSculptView(st), target = view.target, R = view.distance;
                     st.cam.position.set(target[0] + Math.sin(view.yaw) * Math.cos(view.pitch) * R, target[1] + Math.sin(view.pitch) * R, target[2] + Math.cos(view.yaw) * Math.cos(view.pitch) * R);
                     st.cam.lookAt(target[0], target[1], target[2]);
@@ -12075,7 +12596,11 @@ const d = labToolData.artStudio || {};
                     var delta = st.lastFrame === undefined ? 16 : Math.max(0, Math.min(40, time - st.lastFrame));
                     st.lastFrame = time;
                     if (!document.hidden && st.inView !== false) {
-                      if (st.auto) { st.yaw += delta * 0.00036; st.dirty = true; }
+                      if (st.auto) {
+                        st.yaw += delta * 0.00036;
+                        if (!st.reducedMotion) st.shaderTime += delta * 0.001;
+                        st.dirty = true;
+                      }
                       if (st.dirty) renderSculptView();
                     }
                     cnv._p3dAnim = requestAnimationFrame(loop);
@@ -12094,7 +12619,22 @@ const d = labToolData.artStudio || {};
                     Object.assign(liveState, sculptView);
                     liveState.viewSignature = viewSignature; liveState.hasFitted = !!d.sculptView; liveState.dirty = true;
                   }
-                  if (liveState.grid.visible !== (d.sculptGrid !== false)) { liveState.grid.visible = d.sculptGrid !== false; liveState.dirty = true; }
+                  if (liveState.grid.visible !== (d.sculptGrid !== false)) {
+                    liveState.grid.visible = d.sculptGrid !== false;
+                    if (liveState.studioStage) liveState.studioStage.visible = liveState.grid.visible;
+                    liveState.dirty = true;
+                  }
+                  var nextHc = !!(isContrast || (typeof document !== 'undefined' && document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')));
+                  if (liveState.isContrast !== nextHc) {
+                    liveState.isContrast = nextHc;
+                    if (liveState.sculptUniforms) liveState.sculptUniforms.uSculptRim.value = nextHc ? 0.0 : 1.0;
+                    if (liveState.holoUniforms) liveState.holoUniforms.uOpacity.value = nextHc ? 0.0 : 1.0;
+                    if (liveState.dustUniforms) liveState.dustUniforms.uOpacity.value = nextHc ? 0.0 : 0.72;
+                    if (liveState.holoPedestal) liveState.holoPedestal.visible = !nextHc;
+                    if (liveState.dustPoints) liveState.dustPoints.visible = !nextHc;
+                    liveState.dirty = true;
+                  }
+                  liveState.reducedMotion = !!(typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
                   liveState.selectPart = function(index) { upd('sculptSel', index); };
                   liveState.snap = sculptSnap;
                   liveState.transformAxis = sculptTransformAxis;
@@ -12114,7 +12654,52 @@ const d = labToolData.artStudio || {};
                     } catch (e) {}
                     st2.obj = null;
                   }
-                  if (recipe) { try { st2.obj = P3D.buildObject(window.THREE, recipe, { unit: 1, surfaceQuality: 'smooth' }); if (st2.obj) st2.scene.add(st2.obj); } catch (e) {} }
+                  if (recipe) {
+                    try {
+                      st2.obj = P3D.buildObject(window.THREE, recipe, { unit: 1, surfaceQuality: 'smooth' });
+                      if (st2.obj) {
+                        if (typeof st2.obj.traverse === 'function') {
+                          st2.obj.traverse(function(node) {
+                            var m = node && node.material;
+                            if (m && typeof m.roughness === 'number' && typeof m.metalness === 'number') {
+                              if (m.roughness > 0.55) m.roughness = 0.44;
+                              if (m.metalness < 0.08) m.metalness = 0.08;
+                              if (typeof m.clearcoat === 'number' && m.clearcoat === 0) { m.clearcoat = 0.22; m.clearcoatRoughness = 0.32; }
+                              if (!m._alloSculptClayShader && st2.sculptUniforms && typeof m.onBeforeCompile === 'function') {
+                                m._alloSculptClayShader = true;
+                                m.customProgramCacheKey = function() { return 'allo_artstudio_clay_marble_v1'; };
+                                m.onBeforeCompile = function(shader) {
+                                  shader.uniforms.uTime = st2.sculptUniforms.uTime;
+                                  shader.uniforms.uSculptRim = st2.sculptUniforms.uSculptRim;
+                                  shader.vertexShader = shader.vertexShader
+                                    .replace('#include <common>', '#include <common>\nvarying vec3 vSculptObjPos;')
+                                    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSculptObjPos = transformed;');
+                                  shader.fragmentShader = shader.fragmentShader
+                                    .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uSculptRim;\nvarying vec3 vSculptObjPos;')
+                                    .replace('#include <lights_fragment_end>', [
+                                      '#include <lights_fragment_end>',
+                                      'if (uSculptRim > 0.01) {',
+                                      '  vec3 scN = normalize(normal);',
+                                      '  vec3 scV = normalize(geometry.viewDir);',
+                                      '  float scNdotV = clamp(dot(scN, scV), 0.0, 1.0);',
+                                      '  float scRim = pow(1.0 - scNdotV, 2.55);',
+                                      '  float scWrap = clamp(scN.y * 0.45 + 0.55, 0.0, 1.0);',
+                                      '  float chiselBand = 0.5 + 0.5 * sin(vSculptObjPos.y * 24.0 + sin(vSculptObjPos.x * 8.5 + vSculptObjPos.z * 8.5) * 1.35 + uTime * 0.42);',
+                                      '  vec3 claySss = mix(diffuseColor.rgb, vec3(1.0, 0.84, 0.67), 0.54) * (0.20 * scRim * (0.65 + 0.35 * scWrap));',
+                                      '  vec3 galleryKeyRim = vec3(0.76, 0.90, 1.0) * (pow(1.0 - scNdotV, 3.4) * (0.10 + 0.14 * chiselBand));',
+                                      '  totalEmissiveRadiance += (claySss + galleryKeyRim) * uSculptRim;',
+                                      '}'
+                                    ].join('\n'));
+                                };
+                                m.needsUpdate = true;
+                              }
+                            }
+                          });
+                        }
+                        st2.scene.add(st2.obj);
+                      }
+                    } catch (e) {}
+                  }
                   st2.dirty = true;
                   if (!st2.obj) st2.hasFitted = false;
                   if (st2.obj && !st2.hasFitted) { st2.fitView(); st2.saveView(false); }

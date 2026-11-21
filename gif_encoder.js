@@ -39,6 +39,13 @@
   'use strict';
 
   var MIN_CODE_SIZE = 8;
+  var MAX_DIMENSION = 4096;
+  var MAX_FRAME_PIXELS = 16777216;
+  var MAX_FRAMES = 240;
+  var MAX_TOTAL_PIXELS = 67108864;
+  var MAX_FRAME_SRC_CHARS = 10 * 1024 * 1024;
+  var SAFE_RASTER_DATA_RE = /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i;
+  var BARE_B64_RE = /^[A-Za-z0-9+/=\s]+$/;
 
   function buildGlobalColorTable() {
     // 6x6x6 RGB cube (216) + 40 greys.
@@ -62,11 +69,12 @@
   }
 
   function lzwEncode(indexStream) {
+    if (!indexStream || !indexStream.length) throw new Error('AlloGif: empty pixel stream');
     var clearCode = 1 << MIN_CODE_SIZE;
     var eoiCode = clearCode + 1;
     var codeSize = MIN_CODE_SIZE + 1;
     var nextCode = eoiCode + 1;
-    var dict = {};
+    var dict = Object.create(null);
     for (var di = 0; di < clearCode; di++) dict[String(di)] = di;
     var out = [];
     var bitBuf = 0, bitCount = 0;
@@ -90,7 +98,7 @@
         } else {
           // Dictionary full — emit clear, reset.
           writeBits(clearCode, codeSize);
-          dict = {};
+          dict = Object.create(null);
           for (var dj = 0; dj < clearCode; dj++) dict[String(dj)] = dj;
           nextCode = eoiCode + 1;
           codeSize = MIN_CODE_SIZE + 1;
@@ -104,11 +112,29 @@
     return new Uint8Array(out);
   }
 
+  function validateDimensions(width, height, frameCount) {
+    var rawW = Number(width), rawH = Number(height);
+    if (!Number.isFinite(rawW) || !Number.isFinite(rawH) || rawW <= 0 || rawH <= 0) {
+      throw new Error('AlloGif: invalid canvas dimensions');
+    }
+    var W = Math.max(1, Math.round(rawW)), H = Math.max(1, Math.round(rawH));
+    if (W > MAX_DIMENSION || H > MAX_DIMENSION || W > Math.floor(MAX_FRAME_PIXELS / H)) {
+      throw new Error('AlloGif: canvas dimensions exceed safety limit');
+    }
+    if (frameCount > MAX_FRAMES || W * H * frameCount > MAX_TOTAL_PIXELS) {
+      throw new Error('AlloGif: frame count or total pixels exceed safety limit');
+    }
+    return { W: W, H: H };
+  }
+
   // Core: canvases (or anything with a 2d context) -> GIF bytes.
   function encodeCanvasesToBytes(canvases, width, height, fps) {
     if (!canvases || !canvases.length) throw new Error('AlloGif: need at least one frame');
-    var W = Math.max(1, Math.round(width)), H = Math.max(1, Math.round(height));
-    var delay = Math.max(2, Math.round(100 / (Number(fps) || 3))); // centiseconds
+    var dims = validateDimensions(width, height, canvases.length);
+    var W = dims.W, H = dims.H;
+    var safeFps = Number(fps);
+    safeFps = (Number.isFinite(safeFps) && safeFps > 0) ? safeFps : 3;
+    var delay = Math.max(2, Math.min(65535, Math.round(100 / safeFps))); // centiseconds
     var parts = [];
 
     parts.push(new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61])); // "GIF89a"
@@ -130,7 +156,11 @@
       imgDesc[7] = H & 0xFF; imgDesc[8] = (H >> 8) & 0xFF;
       parts.push(imgDesc);
 
-      var fData = canvases[fi].getContext('2d').getImageData(0, 0, W, H).data;
+      var canvas = canvases[fi];
+      var ctx = canvas && typeof canvas.getContext === 'function' ? canvas.getContext('2d') : null;
+      if (!ctx || typeof ctx.getImageData !== 'function') throw new Error('AlloGif: frame lacks 2d canvas context');
+      var fData = ctx.getImageData(0, 0, W, H).data;
+      if (!fData || fData.length < W * H * 4) throw new Error('AlloGif: incomplete frame pixel buffer');
       var indices = new Uint8Array(W * H);
       for (var pi = 0; pi < W * H; pi++) {
         indices[pi] = nearestColor(fData[pi * 4], fData[pi * 4 + 1], fData[pi * 4 + 2]);
@@ -167,14 +197,27 @@
 
   function loadImageToCanvas(src, width, height) {
     return new Promise(function (resolve, reject) {
-      var url = String(src || '');
-      if (url.indexOf('data:') !== 0) url = 'data:image/png;base64,' + url;
+      var raw = typeof src === 'string' ? src.trim() : '';
+      if (!raw || raw.length > MAX_FRAME_SRC_CHARS) {
+        reject(new Error('Invalid or oversized frame data'));
+        return;
+      }
+      var url = raw;
+      if (url.indexOf('data:') !== 0) {
+        if (!BARE_B64_RE.test(url)) { reject(new Error('Unsupported frame encoding')); return; }
+        url = 'data:image/png;base64,' + url;
+      } else if (!SAFE_RASTER_DATA_RE.test(url)) {
+        reject(new Error('Unsupported frame data URL type'));
+        return;
+      }
       var img = new Image();
       img.onload = function () {
         var c = document.createElement('canvas');
         c.setAttribute('aria-hidden', 'true');
         c.width = width; c.height = height;
-        c.getContext('2d').drawImage(img, 0, 0, width, height);
+        var ctx = c.getContext('2d');
+        if (!ctx) { reject(new Error('2d canvas unavailable')); return; }
+        ctx.drawImage(img, 0, 0, width, height);
         resolve(c);
       };
       img.onerror = function () { reject(new Error('Frame load failed')); };
@@ -182,7 +225,7 @@
     });
   }
 
-  var AlloGif = {
+  var AlloGif = Object.freeze({
     /** Frames already on canvases -> Blob. No base64 round-trip. */
     encodeCanvasesToBlob: function (canvases, width, height, fps) {
       return new Blob([encodeCanvasesToBytes(canvases, width, height, fps)], { type: 'image/gif' });
@@ -194,14 +237,17 @@
      * base64 (or data:) frames in, data:image/gif URL out.
      */
     encodeFramesToGif: function (framesBase64, width, height, fps) {
-      if (!framesBase64 || !framesBase64.length) {
+      if (!Array.isArray(framesBase64) || !framesBase64.length) {
         return Promise.reject(new Error('encodeFramesToGif: need at least one frame'));
       }
-      return Promise.all(framesBase64.map(function (b64) { return loadImageToCanvas(b64, width, height); }))
-        .then(function (canvases) { return bytesToDataUrl(encodeCanvasesToBytes(canvases, width, height, fps || 3)); });
+      var dims;
+      try { dims = validateDimensions(width, height, framesBase64.length); }
+      catch (e) { return Promise.reject(e); }
+      return Promise.all(framesBase64.map(function (b64) { return loadImageToCanvas(b64, dims.W, dims.H); }))
+        .then(function (canvases) { return bytesToDataUrl(encodeCanvasesToBytes(canvases, dims.W, dims.H, fps || 3)); });
     },
     bytesToDataUrl: bytesToDataUrl
-  };
+  });
 
   if (typeof module !== 'undefined' && module.exports) module.exports = AlloGif;
   if (global) global.AlloGif = AlloGif;

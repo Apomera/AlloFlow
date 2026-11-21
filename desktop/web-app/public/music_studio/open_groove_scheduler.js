@@ -13,33 +13,55 @@
     return core;
   }
 
+  var MAX_LOOP_SPANS = 256;
+  var MAX_ARRANGEMENT_REPEATS = 1024;
+  var MAX_LOOKAHEAD_TICKS = 1000000;
+
+  function finiteOr(value, fallback) {
+    var n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function safeClone(value) {
+    if (!value || typeof value !== 'object') return null;
+    try {
+      return JSON.parse(JSON.stringify(value), function (k, v) {
+        return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v;
+      });
+    } catch (_) {
+      return null;
+    }
+  }
+
   function ogTicksToSeconds(ticks, bpm, ppq) {
-    var safeBpm = Math.max(1, Number(bpm) || 120);
-    var safePpq = Math.max(1, Number(ppq) || 960);
-    return (Number(ticks) || 0) * 60 / (safeBpm * safePpq);
+    var safeBpm = Math.max(1, Math.min(1000, finiteOr(bpm, 120)));
+    var safePpq = Math.max(1, Math.min(96000, finiteOr(ppq, 960)));
+    return finiteOr(ticks, 0) * 60 / (safeBpm * safePpq);
   }
 
   function ogSecondsToTicks(seconds, bpm, ppq) {
-    var safeBpm = Math.max(1, Number(bpm) || 120);
-    var safePpq = Math.max(1, Number(ppq) || 960);
-    return Math.round((Number(seconds) || 0) * safeBpm * safePpq / 60);
+    var safeBpm = Math.max(1, Math.min(1000, finiteOr(bpm, 120)));
+    var safePpq = Math.max(1, Math.min(96000, finiteOr(ppq, 960)));
+    return Math.round(finiteOr(seconds, 0) * safeBpm * safePpq / 60);
   }
 
   function ogStepTicks(project, stepsPerBar) {
     var C = requireCore();
-    return Math.round(C.ogTicksPerMeasure(project) / Math.max(1, Math.round(Number(stepsPerBar) || 16)));
+    var steps = Math.max(1, Math.min(1024, Math.round(finiteOr(stepsPerBar, 16))));
+    var measureTicks = Math.max(1, finiteOr(C.ogTicksPerMeasure(project), 3840));
+    return Math.max(1, Math.round(measureTicks / steps));
   }
 
   function ogStepIndexAtTick(project, tick, stepsPerBar) {
-    return Math.floor(Math.max(0, Number(tick) || 0) / ogStepTicks(project, stepsPerBar));
+    return Math.floor(Math.max(0, finiteOr(tick, 0)) / ogStepTicks(project, stepsPerBar));
   }
 
   function ogSwingOffsetTicks(project, event, stepsPerBar) {
     if (!project || !event || (event.type !== 'drumHit' && event.type !== 'note')) return 0;
-    var swing = Math.max(0, Math.min(0.75, Number(project.swing) || 0));
+    var swing = Math.max(0, Math.min(0.75, finiteOr(project.swing, 0)));
     if (!swing) return 0;
     var stepTicks = ogStepTicks(project, stepsPerBar || 16);
-    var rawStep = (Number(event.startTick) || 0) / stepTicks;
+    var rawStep = finiteOr(event.startTick, 0) / stepTicks;
     var step = Math.round(rawStep);
     if (Math.abs(rawStep - step) > 0.01) return 0;
     return step % 2 === 1 ? Math.round(stepTicks * swing * 0.5) : 0;
@@ -47,8 +69,8 @@
 
   function ogEventPlaybackTick(event, project, options) {
     options = options || {};
-    var base = Number(event && event.startTick) || 0;
-    var nudge = event && event.type === 'drumHit' ? Number(event.microtimingTicks) || 0 : 0;
+    var base = finiteOr(event && event.startTick, 0);
+    var nudge = event && event.type === 'drumHit' ? finiteOr(event.microtimingTicks, 0) : 0;
     return Math.max(0, base + nudge + ogSwingOffsetTicks(project, event, options.stepsPerBar));
   }
 
@@ -58,8 +80,8 @@
       ? C.ogResolveMixerChannelAtTick(project, patternId, trackId, tick)
       : C.ogGetMixerChannel ? C.ogGetMixerChannel(project, trackId) : { gain: 1 };
     var master = C.ogGetMixerChannel ? C.ogGetMixerChannel(project, 'master') : { gain: 1 };
-    var channelGain = Math.max(0, Math.min(1.5, Number(channel && channel.gain) || 0));
-    var masterGain = Math.max(0, Math.min(1.5, Number(master && master.gain) || 0));
+    var channelGain = Math.max(0, Math.min(1.5, finiteOr(channel && channel.gain, 0)));
+    var masterGain = Math.max(0, Math.min(1.5, finiteOr(master && master.gain, 0)));
     return {
       channelGain: channelGain,
       masterGain: masterGain,
@@ -70,8 +92,9 @@
   }
 
   function ogScaledVelocity(value, outputGain) {
-    var velocity = value == null ? 0.8 : Number(value);
-    return Math.max(0, Math.min(1, velocity * Math.max(0, Number(outputGain) || 0)));
+    var velocity = Math.max(0, Math.min(1, value == null ? 0.8 : finiteOr(value, 0.8)));
+    var gain = Math.max(0, Math.min(2.25, finiteOr(outputGain, 0)));
+    return Math.max(0, Math.min(1, velocity * gain));
   }
 
   function ogBuildPlaybackPlan(project, options) {
@@ -79,15 +102,17 @@
     options = options || {};
     var pattern = C.ogFindPattern(project, options.patternId || project && project.patterns && project.patterns[0] && project.patterns[0].id);
     if (!pattern) return [];
-    var bpm = Number(options.bpm) || Number(project.bpm) || 120;
-    var ppq = Number(project.ppq) || C.OG_DEFAULT_PPQ || 960;
-    var fromTick = Math.max(0, Math.round(Number(options.fromTick) || 0));
-    var toTick = options.toTick == null ? C.ogPatternLengthTicks(project, pattern) : Math.max(fromTick, Math.round(Number(options.toTick) || 0));
-    var originTick = options.originTick == null ? fromTick : Math.round(Number(options.originTick) || 0);
-    var originTime = Number(options.originTime) || 0;
+    var bpm = Math.max(1, Math.min(1000, finiteOr(options.bpm, finiteOr(project && project.bpm, 120))));
+    var ppq = Math.max(1, Math.min(96000, finiteOr(project && project.ppq, C.OG_DEFAULT_PPQ || 960)));
+    var fromTick = Math.max(0, Math.round(finiteOr(options.fromTick, 0)));
+    var defaultLength = Math.max(1, finiteOr(C.ogPatternLengthTicks(project, pattern), 3840));
+    var toTick = options.toTick == null ? defaultLength : Math.max(fromTick, Math.round(finiteOr(options.toTick, fromTick)));
+    var originTick = options.originTick == null ? fromTick : Math.round(finiteOr(options.originTick, fromTick));
+    var originTime = finiteOr(options.originTime, 0);
     var plan = [];
 
-    (pattern.events || []).forEach(function (event) {
+    (Array.isArray(pattern.events) ? pattern.events : []).forEach(function (event) {
+      if (!event || typeof event !== 'object') return;
       var playTick = ogEventPlaybackTick(event, project, { stepsPerBar: options.stepsPerBar || 16 });
       if (playTick < fromTick || playTick >= toTick) return;
       if (event.type === 'automationPoint') {
@@ -106,12 +131,12 @@
         });
         return;
       }
-      var durationTicks = Math.max(1, Number(event.durationTicks) || 1);
+      var durationTicks = Math.max(1, finiteOr(event.durationTicks, 1));
       var track = C.ogFindTrack(project, event.trackId);
       var pad = null;
-      if (track && track.pads && event.padId) {
+      if (track && Array.isArray(track.pads) && event.padId) {
         for (var i = 0; i < track.pads.length; i++) {
-          if (track.pads[i].id === event.padId) {
+          if (track.pads[i] && track.pads[i].id === event.padId) {
             pad = track.pads[i];
             break;
           }
@@ -119,7 +144,7 @@
       }
       var mix = ogPlanMixerState(C, project, event.trackId, pattern.id, playTick);
       if (!mix || !mix.outputGain) return;
-      var eventVelocity = event.velocity == null ? 0.8 : event.velocity;
+      var eventVelocity = event.velocity == null ? 0.8 : Math.max(0, Math.min(1, finiteOr(event.velocity, 0.8)));
       var effects = C.ogResolveTrackEffectsAtTick
         ? C.ogResolveTrackEffectsAtTick(project, pattern.id, event.trackId, playTick)
         : C.ogGetTrackEffects ? C.ogGetTrackEffects(project, event.trackId) : [];
@@ -130,9 +155,9 @@
         padId: event.padId || null,
         padEngine: pad && pad.engine || null,
         assetId: event.assetId || pad && pad.assetId || null,
-        sampleRegion: pad && pad.sampleRegion ? JSON.parse(JSON.stringify(pad.sampleRegion)) : null,
-        drumVoice: pad && pad.proceduralVoice ? JSON.parse(JSON.stringify(pad.proceduralVoice)) : null,
-        instrument: event.type === 'note' && track && track.instrument ? JSON.parse(JSON.stringify(track.instrument)) : null,
+        sampleRegion: pad && pad.sampleRegion ? safeClone(pad.sampleRegion) : null,
+        drumVoice: pad && pad.proceduralVoice ? safeClone(pad.proceduralVoice) : null,
+        instrument: event.type === 'note' && track && track.instrument ? safeClone(track.instrument) : null,
         pitch: event.pitch || null,
         midi: event.midi == null ? null : event.midi,
         patternTick: event.startTick,
@@ -148,7 +173,7 @@
         effects: effects,
         muted: mix.muted,
         solo: mix.solo,
-        probability: event.probability == null ? 1 : event.probability,
+        probability: event.probability == null ? 1 : Math.max(0, Math.min(1, finiteOr(event.probability, 1))),
         repeat: event.repeat || 1,
         event: event
       });
@@ -165,20 +190,23 @@
     options = options || {};
     var pattern = C.ogFindPattern(project, options.patternId || project && project.patterns && project.patterns[0] && project.patterns[0].id);
     if (!pattern) return [];
-    var bpm = Number(options.bpm) || Number(project.bpm) || 120;
-    var ppq = Number(project.ppq) || C.OG_DEFAULT_PPQ || 960;
-    var length = Math.max(1, C.ogPatternLengthTicks(project, pattern));
-    var startTick = Math.max(0, Math.round(Number(options.transportTick) || 0));
-    var lookaheadTicks = Math.max(1, Math.round(Number(options.lookaheadTicks) || C.ogTicksPerBeat(project)));
+    var bpm = Math.max(1, Math.min(1000, finiteOr(options.bpm, finiteOr(project && project.bpm, 120))));
+    var ppq = Math.max(1, Math.min(96000, finiteOr(project && project.ppq, C.OG_DEFAULT_PPQ || 960)));
+    var length = Math.max(1, finiteOr(C.ogPatternLengthTicks(project, pattern), 3840));
+    var startTick = Math.max(0, Math.round(finiteOr(options.transportTick, 0)));
+    var defaultLookahead = Math.max(1, finiteOr(C.ogTicksPerBeat(project), 960));
+    var maxLookahead = Math.max(length * 16, MAX_LOOKAHEAD_TICKS);
+    var lookaheadTicks = Math.max(1, Math.min(maxLookahead, Math.round(finiteOr(options.lookaheadTicks, defaultLookahead))));
     var endTick = startTick + lookaheadTicks;
-    var originTime = Number(options.originTime) || 0;
+    var originTime = finiteOr(options.originTime, 0);
     var firstLoop = Math.floor(startTick / length);
-    var lastLoop = Math.floor((endTick - 1) / length);
+    var lastLoop = Math.min(firstLoop + MAX_LOOP_SPANS, Math.floor((endTick - 1) / length));
     var plan = [];
 
     for (var loop = firstLoop; loop <= lastLoop; loop++) {
       var loopStart = loop * length;
-      (pattern.events || []).forEach(function (event) {
+      (Array.isArray(pattern.events) ? pattern.events : []).forEach(function (event) {
+        if (!event || typeof event !== 'object') return;
         var patternTick = ogEventPlaybackTick(event, project, { stepsPerBar: options.stepsPerBar || 16 });
         var absoluteTick = loopStart + patternTick;
         if (absoluteTick < startTick || absoluteTick >= endTick) return;
@@ -200,12 +228,12 @@
           });
           return;
         }
-        var durationTicks = Math.max(1, Number(event.durationTicks) || 1);
+        var durationTicks = Math.max(1, finiteOr(event.durationTicks, 1));
         var track = C.ogFindTrack(project, event.trackId);
         var pad = null;
-        if (track && track.pads && event.padId) {
+        if (track && Array.isArray(track.pads) && event.padId) {
           for (var i = 0; i < track.pads.length; i++) {
-            if (track.pads[i].id === event.padId) {
+            if (track.pads[i] && track.pads[i].id === event.padId) {
               pad = track.pads[i];
               break;
             }
@@ -213,7 +241,7 @@
         }
         var mix = ogPlanMixerState(C, project, event.trackId, pattern.id, patternTick);
         if (!mix || !mix.outputGain) return;
-        var eventVelocity = event.velocity == null ? 0.8 : event.velocity;
+        var eventVelocity = event.velocity == null ? 0.8 : Math.max(0, Math.min(1, finiteOr(event.velocity, 0.8)));
         var effects = C.ogResolveTrackEffectsAtTick
           ? C.ogResolveTrackEffectsAtTick(project, pattern.id, event.trackId, patternTick)
           : C.ogGetTrackEffects ? C.ogGetTrackEffects(project, event.trackId) : [];
@@ -225,9 +253,9 @@
           padId: event.padId || null,
           padEngine: pad && pad.engine || null,
           assetId: event.assetId || pad && pad.assetId || null,
-          sampleRegion: pad && pad.sampleRegion ? JSON.parse(JSON.stringify(pad.sampleRegion)) : null,
-          drumVoice: pad && pad.proceduralVoice ? JSON.parse(JSON.stringify(pad.proceduralVoice)) : null,
-          instrument: event.type === 'note' && track && track.instrument ? JSON.parse(JSON.stringify(track.instrument)) : null,
+          sampleRegion: pad && pad.sampleRegion ? safeClone(pad.sampleRegion) : null,
+          drumVoice: pad && pad.proceduralVoice ? safeClone(pad.proceduralVoice) : null,
+          instrument: event.type === 'note' && track && track.instrument ? safeClone(track.instrument) : null,
           pitch: event.pitch || null,
           midi: event.midi == null ? null : event.midi,
           patternTick: event.startTick,
@@ -244,7 +272,7 @@
           effects: effects,
           muted: mix.muted,
           solo: mix.solo,
-          probability: event.probability == null ? 1 : event.probability,
+          probability: event.probability == null ? 1 : Math.max(0, Math.min(1, finiteOr(event.probability, 1))),
           repeat: event.repeat || 1,
           event: event
         });
@@ -260,20 +288,24 @@
   function ogBuildArrangementPlaybackPlan(project, options) {
     var C = requireCore();
     options = options || {};
-    var bpm = Number(options.bpm) || Number(project && project.bpm) || 120;
-    var ppq = Number(project && project.ppq) || C.OG_DEFAULT_PPQ || 960;
-    var originTick = Math.max(0, Math.round(Number(options.originTick) || 0));
-    var originTime = Number(options.originTime) || 0;
+    var bpm = Math.max(1, Math.min(1000, finiteOr(options.bpm, finiteOr(project && project.bpm, 120))));
+    var ppq = Math.max(1, Math.min(96000, finiteOr(project && project.ppq, C.OG_DEFAULT_PPQ || 960)));
+    var originTick = Math.max(0, Math.round(finiteOr(options.originTick, 0)));
+    var originTime = finiteOr(options.originTime, 0);
     var timeline = C.ogBuildArrangementTimeline ? C.ogBuildArrangementTimeline(project) : [];
     var plan = [];
 
-    timeline.forEach(function (section) {
-      var sectionLengthTicks = Math.max(1, section.endTick - section.startTick);
-      (section.patternIds || []).forEach(function (patternId) {
+    (Array.isArray(timeline) ? timeline : []).forEach(function (section) {
+      if (!section || typeof section !== 'object') return;
+      var sectionStart = Math.max(0, finiteOr(section.startTick, 0));
+      var sectionEnd = finiteOr(section.endTick, sectionStart + 1);
+      var sectionLengthTicks = Math.max(1, sectionEnd - sectionStart);
+      if (!Number.isFinite(sectionLengthTicks)) return;
+      (Array.isArray(section.patternIds) ? section.patternIds : []).forEach(function (patternId) {
         var pattern = C.ogFindPattern(project, patternId);
         if (!pattern) return;
-        var patternLength = Math.max(1, C.ogPatternLengthTicks(project, pattern));
-        for (var sectionOffsetTick = 0, repeatIndex = 0; sectionOffsetTick < sectionLengthTicks; sectionOffsetTick += patternLength, repeatIndex += 1) {
+        var patternLength = Math.max(1, finiteOr(C.ogPatternLengthTicks(project, pattern), 3840));
+        for (var sectionOffsetTick = 0, repeatIndex = 0; sectionOffsetTick < sectionLengthTicks && repeatIndex < MAX_ARRANGEMENT_REPEATS; sectionOffsetTick += patternLength, repeatIndex += 1) {
           var repeatLength = Math.min(patternLength, sectionLengthTicks - sectionOffsetTick);
           var items = ogBuildPlaybackPlan(project, {
             patternId: pattern.id,
@@ -285,7 +317,7 @@
             stepsPerBar: options.stepsPerBar || 16
           });
           items.forEach(function (item) {
-            var arrangementTick = section.startTick + sectionOffsetTick + item.playTick;
+            var arrangementTick = sectionStart + sectionOffsetTick + item.playTick;
             if (arrangementTick < originTick) return;
             var next = Object.assign({}, item, {
               id: section.sceneId + ':' + pattern.id + ':' + item.id + ':' + section.index + ':' + repeatIndex,

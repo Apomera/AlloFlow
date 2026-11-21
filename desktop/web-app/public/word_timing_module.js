@@ -23,9 +23,15 @@
     return;
   }
 
+  var MAX_SENTENCE_CHARS = 50000;
+  var MAX_AUDIO_SAMPLES = 48000 * 120;
+  var MAX_AUDIO_BYTES = 25 * 1024 * 1024;
+  var MIN_SAMPLE_RATE = 100;
+  var MAX_SAMPLE_RATE = 384000;
+
   // ── Tokenization + weights (single source of truth) ──
   function tokenize(sentence) {
-    return String(sentence == null ? '' : sentence).split(/(\s+)/);
+    return String(sentence == null ? '' : sentence).slice(0, MAX_SENTENCE_CHARS).split(/(\s+)/);
   }
 
   function pauseBonus(word) {
@@ -55,12 +61,20 @@
   var MIN_PART_MS = 40;
 
   function rmsEnvelope(channelData, sampleRate) {
-    var frame = Math.max(1, Math.round(sampleRate * FRAME_MS / 1000));
-    var hop = Math.max(1, Math.round(sampleRate * HOP_MS / 1000));
+    var rate = Number(sampleRate);
+    if (!Number.isFinite(rate) || rate < MIN_SAMPLE_RATE || rate > MAX_SAMPLE_RATE) {
+      return { frames: [0], hopMs: HOP_MS };
+    }
+    var len = Math.min(channelData.length || 0, MAX_AUDIO_SAMPLES);
+    var frame = Math.max(1, Math.round(rate * FRAME_MS / 1000));
+    var hop = Math.max(1, Math.round(rate * HOP_MS / 1000));
     var frames = [];
-    for (var start = 0; start + frame <= channelData.length; start += hop) {
+    for (var start = 0; start + frame <= len; start += hop) {
       var sum = 0;
-      for (var i = start; i < start + frame; i++) sum += channelData[i] * channelData[i];
+      for (var i = start; i < start + frame; i++) {
+        var sample = channelData[i];
+        if (Number.isFinite(sample)) sum += sample * sample;
+      }
       frames.push(Math.sqrt(sum / frame));
     }
     if (!frames.length) frames.push(0);
@@ -70,7 +84,7 @@
       var next = frames[index + 1] != null ? frames[index + 1] : value;
       return (prev + value + next) / 3;
     });
-    return { frames: smooth, hopMs: (hop / sampleRate) * 1000 };
+    return { frames: smooth, hopMs: (hop / rate) * 1000 };
   }
 
   function percentile(sortedAscending, fraction) {
@@ -96,9 +110,10 @@
   }
 
   function snapToValley(envelope, timeMs, windowMs) {
+    if (!envelope || !(envelope.hopMs > 0) || !Array.isArray(envelope.frames) || !envelope.frames.length) return timeMs;
     var center = Math.round(timeMs / envelope.hopMs);
     var radius = Math.max(1, Math.round(windowMs / envelope.hopMs));
-    var bestIndex = center;
+    var bestIndex = Math.max(0, Math.min(envelope.frames.length - 1, center));
     var bestValue = Infinity;
     for (var i = center - radius; i <= center + radius; i++) {
       if (i < 0 || i >= envelope.frames.length) continue;
@@ -121,9 +136,10 @@
       var provisional = boundsStartMs + (cum / model.totalWeight) * speechMs;
       var isWord = !/^\s+$/.test(model.parts[i]) && model.parts[i] !== '';
       var followedByGap = i + 1 < model.parts.length && /^\s+$/.test(model.parts[i + 1]);
-      var snapped = (envelope && isWord && followedByGap)
+      var rawSnapped = (envelope && isWord && followedByGap)
         ? snapToValley(envelope, provisional, SNAP_WINDOW_MS)
         : provisional;
+      var snapped = Math.min(boundsEndMs, Math.max(boundsStartMs, rawSnapped));
       var floor = times[times.length - 1] + (model.weights[i] > 0 ? MIN_PART_MS : 0);
       times.push(Math.max(snapped, Math.min(floor, boundsEndMs)));
     }
@@ -140,23 +156,26 @@
 
   function estimateFromChannel(input) {
     var channelData = input && input.channelData;
-    var sampleRate = input && input.sampleRate;
+    var sampleRate = Number(input && input.sampleRate);
     var sentence = input && input.sentence;
-    if (!channelData || !channelData.length || !sampleRate || !sentence) return null;
+    if (!channelData || !channelData.length || !Number.isFinite(sampleRate) || sampleRate < MIN_SAMPLE_RATE || sampleRate > MAX_SAMPLE_RATE || typeof sentence !== 'string' || !sentence) return null;
     var envelope = rmsEnvelope(channelData, sampleRate);
     var bounds = speechBounds(envelope);
     return buildMapping(sentence, bounds.startMs, bounds.endMs, envelope);
   }
 
   function proportionalMapping(sentence, totalMs) {
-    if (!sentence || !(totalMs > 0)) return null;
-    return buildMapping(sentence, 0, totalMs, null);
+    var ms = Number(totalMs);
+    if (typeof sentence !== 'string' || !sentence || !Number.isFinite(ms) || !(ms > 0)) return null;
+    return buildMapping(sentence, 0, ms, null);
   }
 
   // ── Time → sweep percentage (drives the overlay's existing word fill) ──
   function weightPctAtTime(mapping, seconds) {
-    if (!mapping || !Array.isArray(mapping.boundaryMs)) return 0;
-    var timeMs = Math.max(0, Number(seconds) * 1000);
+    if (!mapping || !Array.isArray(mapping.boundaryMs) || !Array.isArray(mapping.parts) || !Array.isArray(mapping.weights) || !(mapping.totalWeight > 0)) return 0;
+    var sec = Number(seconds);
+    if (!Number.isFinite(sec) || sec <= 0) return 0;
+    var timeMs = sec * 1000;
     if (timeMs <= mapping.boundaryMs[0]) return 0;
     var lastIndex = mapping.boundaryMs.length - 1;
     if (timeMs >= mapping.boundaryMs[lastIndex]) return 100;
@@ -179,7 +198,8 @@
   // that token.
   function weightPctAtCharIndex(sentence, charIndex) {
     var model = tokenWeights(sentence);
-    var index = Math.max(0, Number(charIndex) || 0);
+    var rawIdx = Number(charIndex);
+    var index = Number.isFinite(rawIdx) ? Math.max(0, rawIdx) : (rawIdx === Infinity ? Infinity : 0);
     var chars = 0;
     var cum = 0;
     for (var i = 0; i < model.parts.length; i++) {
@@ -189,6 +209,32 @@
       cum += model.weights[i];
     }
     return Math.max(0, Math.min(100, (cum / model.totalWeight) * 100));
+  }
+
+  function hashSentence(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0).toString(16);
+  }
+
+  function isSafeAudioUrl(raw) {
+    if (typeof raw !== 'string') return false;
+    var trimmed = raw.trim();
+    if (!trimmed || trimmed.length > 2000000) return false;
+    if (/^blob:/i.test(trimmed)) return true;
+    if (/^data:audio\/[a-z0-9.+-]+;base64,/i.test(trimmed)) return true;
+    try {
+      var base = (typeof window !== 'undefined' && window.location && window.location.href) ? window.location.href : 'https://localhost/';
+      var parsed = new URL(trimmed, base);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+      if (typeof window !== 'undefined' && window.location && window.location.origin) {
+        if (window.location.origin === 'null') return false;
+        return parsed.origin === window.location.origin;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
   }
 
   // ── URL → mapping with a bounded session cache ──
@@ -204,19 +250,26 @@
   }
 
   function timingsForUrl(url, sentence, options) {
-    if (!url || !sentence) return Promise.resolve(null);
-    var key = url + '␟' + sentence.length;
+    if (!url || typeof sentence !== 'string' || !sentence) return Promise.resolve(null);
+    if (!isSafeAudioUrl(url)) return Promise.resolve(null);
+    var boundedSentence = sentence.slice(0, MAX_SENTENCE_CHARS);
+    var key = hashSentence(url) + '␟' + url.length + '␟' + url.slice(0, 64) + '␟' + boundedSentence.length + '␟' + hashSentence(boundedSentence);
     if (_cache.has(key)) return Promise.resolve(_cache.get(key));
     var context = (options && options.audioContext) || audioContext();
     if (!context || typeof fetch !== 'function') return Promise.resolve(null);
     var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
-    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 10000) : null;
-    return fetch(url, ctrl ? { signal: ctrl.signal } : undefined)
+    var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 10000) : null;
+    var fetchInit = { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
+    if (ctrl) fetchInit.signal = ctrl.signal;
+    return fetch(url, fetchInit)
       .then(function (response) {
         if (!response || !response.ok) throw new Error('HTTP ' + (response ? response.status : 'error'));
+        var lenHdr = Number(response.headers && response.headers.get && response.headers.get('content-length'));
+        if (Number.isFinite(lenHdr) && lenHdr > MAX_AUDIO_BYTES) throw new Error('Audio exceeds size budget');
         return response.arrayBuffer();
       })
       .then(function (buffer) {
+        if (!buffer || buffer.byteLength > MAX_AUDIO_BYTES) throw new Error('Audio exceeds size budget');
         return new Promise(function (resolve, reject) {
           // Callback form: Safari's decodeAudioData promise support lags.
           context.decodeAudioData(buffer.slice(0), resolve, reject);
@@ -226,7 +279,7 @@
         var mapping = estimateFromChannel({
           channelData: decoded.getChannelData(0),
           sampleRate: decoded.sampleRate,
-          sentence: sentence,
+          sentence: boundedSentence,
         });
         _cache.set(key, mapping);
         while (_cache.size > CACHE_MAX) _cache.delete(_cache.keys().next().value);
@@ -237,7 +290,7 @@
   }
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.WordTiming = {
+  window.AlloModules.WordTiming = Object.freeze({
     tokenize: tokenize,
     tokenWeights: tokenWeights,
     pauseBonus: pauseBonus,
@@ -246,7 +299,7 @@
     weightPctAtTime: weightPctAtTime,
     weightPctAtCharIndex: weightPctAtCharIndex,
     timingsForUrl: timingsForUrl,
-  };
+  });
   window.AlloModules.WordTimingModule = true;
   console.log('[WordTiming] registered (deterministic per-word karaoke timing)');
 })();

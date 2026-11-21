@@ -689,11 +689,12 @@ function FabStack(props) {
   const dictationAnnouncement = dictationStatus?.message || (dictationPhase !== 'idle' ? dictationEngineLabel : '');
   const dictationActionLabel = isDictationMode ? t('toolbar.dictation_stop') : t('toolbar.dictation_start');
   const dictationIsActive = isDictationMode || dictationBusy;
+  const safeStudentSettings = studentProjectSettings && typeof studentProjectSettings === 'object' ? studentProjectSettings : {};
   const showInputAndPractice = (
-    (!isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor)
+    (!isTeacherMode && !studentAiFeaturesHidden && safeStudentSettings.allowSocraticTutor)
     || (activeView === 'simplified' && generatedContent)
     || isTeacherMode
-    || studentProjectSettings.allowDictation
+    || safeStudentSettings.allowDictation
     || (dictationStatus && dictationAnnouncement)
   );
 
@@ -819,11 +820,33 @@ function FabStack(props) {
   };
 
   const handlePanelKeyDown = (event) => {
-    if (event.key !== 'Escape') return;
     if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+    if (event.key === 'Tab' && panelRef.current) {
+      const isMobileSheet = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 767px)').matches;
+      if (!isMobileSheet) return;
+      const focusable = Array.from(panelRef.current.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+        .filter(el => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !panelRef.current.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+      return;
+    }
+    if (event.key !== 'Escape') return;
     event.preventDefault();
+    event.stopPropagation();
     closeStudentTools();
   };
+  const explainModeHidden = Boolean(
+    studentAiFeaturesHidden
+    || (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true))
+  );
 
   return (
       <>
@@ -992,6 +1015,15 @@ function FabStack(props) {
           }
         }
       `}</style>
+      {isFabExpanded && (
+        <div
+          aria-hidden="true"
+          data-fab-mobile-backdrop="true"
+          onClick={closeStudentTools}
+          style={{ position: 'fixed', inset: 0, zIndex: 179, backgroundColor: 'rgba(15, 23, 42, 0.35)' }}
+          className="md:hidden no-print"
+        />
+      )}
       <div
         ref={stackRef}
         data-floating-control="fab-stack"
@@ -1015,12 +1047,12 @@ function FabStack(props) {
               </span>
               <div className="min-w-0 flex-1">
                 <h2 id="alloflow-student-tools-title" className="text-sm font-black text-slate-900">{toolsTitle}</h2>
-                {!isTeacherMode && <p className="mt-0.5 text-xs font-medium text-slate-500">{t('student_tools.subtitle') || 'Read, focus, and practice your way'}</p>}
+                {!isTeacherMode && <p className="mt-0.5 text-xs font-medium text-slate-600">{t('student_tools.subtitle') || 'Read, focus, and practice your way'}</p>}
               </div>
               <button
                 type="button"
                 onClick={closeStudentTools}
-                className="alloflow-student-tools-close inline-flex items-center justify-center rounded-xl text-2xl leading-none text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 motion-reduce:transition-none"
+                className="alloflow-student-tools-close inline-flex items-center justify-center rounded-xl text-2xl leading-none text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 motion-reduce:transition-none"
                 aria-label={toolsCloseLabel}
               >
                 <span aria-hidden="true">&times;</span>
@@ -1031,8 +1063,8 @@ function FabStack(props) {
               {activeView === 'simplified' && generatedContent && (
                 <section className="alloflow-student-tools-section px-4 py-3" aria-labelledby="alloflow-student-tools-read-heading">
                   <div className="mb-2 flex items-center justify-between gap-3">
-                    <h3 id="alloflow-student-tools-read-heading" className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">{t('student_tools.read') || 'Read'}</h3>
-                    <span className="text-[10px] font-semibold text-slate-600">{t('simplified.mode_label')}</span>
+                    <h3 id="alloflow-student-tools-read-heading" className="text-xs font-black uppercase tracking-[0.16em] text-slate-600">{t('student_tools.read') || 'Read'}</h3>
+                    <span className="text-xs font-semibold text-slate-600">{t('simplified.mode_label')}</span>
                   </div>
                   <div className="alloflow-student-tools-grid">
                     {/* Same as the reader's own toolbar: these tools work in Both, so they keep it open. */}
@@ -1060,8 +1092,8 @@ function FabStack(props) {
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><Search size={18} /></span>
                       <span className="min-w-0 text-xs font-bold leading-tight">{t('simplified.define_mode')}</span>
                     </button>
-                    {/* Explain mode is all AI calls (see view_simplified); withheld when student AI is hidden. */}
-                    {!studentAiFeaturesHidden && <button type="button"
+                    {/* Explain mode is all AI calls (see view_simplified); withheld when student AI is hidden or locked. */}
+                    {!explainModeHidden && <button type="button"
                       data-student-tool="true"
                       data-help-toggle="true"
                       onClick={() => { setInteractionMode(prev => prev === 'explain' ? 'read' : 'explain'); stopPlayback(); }}
@@ -1079,7 +1111,7 @@ function FabStack(props) {
               )}
 
               <section className="alloflow-student-tools-section px-4 py-3" aria-labelledby="alloflow-student-tools-focus-heading">
-                <h3 id="alloflow-student-tools-focus-heading" className="mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">{t('student_tools.focus') || 'Focus'}</h3>
+                <h3 id="alloflow-student-tools-focus-heading" className="mb-2 text-xs font-black uppercase tracking-[0.16em] text-slate-600">{t('student_tools.focus') || 'Focus'}</h3>
                 <div className="alloflow-student-tools-grid">
                   <button type="button"
                     data-student-tool="true"
@@ -1107,7 +1139,7 @@ function FabStack(props) {
                       aria-describedby={magnifierOn ? 'student-tools-magnifier-hint student-tools-magnifier-keys' : 'student-tools-magnifier-hint'}
                     >
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><ScanSearch size={18} /></span>
-                      <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{magnifierLabel}</span><span id="student-tools-magnifier-hint" className="mt-1 block text-[11px] font-normal">{magnifierHint}</span></span>
+                      <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{magnifierLabel}</span><span id="student-tools-magnifier-hint" className="mt-1 block text-xs font-normal">{magnifierHint}</span></span>
                     </button>
                   )}
                   {magnifierSupported && magnifierOn && (
@@ -1129,7 +1161,7 @@ function FabStack(props) {
                           ))}
                         </div>
                       </div>
-                      <p id="student-tools-magnifier-keys" className="mt-1 text-[11px] text-slate-600">{magnifierKeysHint}</p>
+                      <p id="student-tools-magnifier-keys" className="mt-1 text-xs text-slate-600">{magnifierKeysHint}</p>
                     </div>
                   )}
                   <button type="button"
@@ -1155,7 +1187,7 @@ function FabStack(props) {
                     aria-describedby="student-tools-bionic-hint"
                   >
                     <span className="alloflow-student-tool-icon" aria-hidden="true"><Eye size={18} /></span>
-                    <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{t('settings.text.bionic') || 'Bionic Reading Style'}</span><span id="student-tools-bionic-hint" className="mt-1 block text-[11px] font-normal">{t('settings.text.bionic_sub') || 'Bolds the beginning of each word'}</span></span>
+                    <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{t('settings.text.bionic') || 'Bionic Reading Style'}</span><span id="student-tools-bionic-hint" className="mt-1 block text-xs font-normal">{t('settings.text.bionic_sub') || 'Bolds the beginning of each word'}</span></span>
                   </button>
                   <button type="button"
                     data-student-tool="true"
@@ -1183,7 +1215,7 @@ function FabStack(props) {
                       aria-describedby="student-tools-paragraph-focus-hint"
                     >
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><AlignJustify size={18} /></span>
-                      <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{t('student_tools.paragraph_focus') || 'Paragraph focus'}</span><span id="student-tools-paragraph-focus-hint" className="mt-1 block text-[11px] font-normal">{t('student_tools.paragraph_focus_hint') || 'Keeps the active paragraph clear'}</span></span>
+                      <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{t('student_tools.paragraph_focus') || 'Paragraph focus'}</span><span id="student-tools-paragraph-focus-hint" className="mt-1 block text-xs font-normal">{t('student_tools.paragraph_focus_hint') || 'Keeps the active paragraph clear'}</span></span>
                     </button>
                   )}
                 </div>
@@ -1191,9 +1223,9 @@ function FabStack(props) {
 
               {showInputAndPractice && (
                 <section className="alloflow-student-tools-section px-4 py-3" aria-labelledby="alloflow-student-tools-input-heading">
-                  <h3 id="alloflow-student-tools-input-heading" className="mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">{t('student_tools.input_practice') || 'Input & practice'}</h3>
+                  <h3 id="alloflow-student-tools-input-heading" className="mb-2 text-xs font-black uppercase tracking-[0.16em] text-slate-600">{t('student_tools.input_practice') || 'Input & practice'}</h3>
                   <div className="alloflow-student-tools-grid">
-                    {!isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && (
+                    {!isTeacherMode && !studentAiFeaturesHidden && safeStudentSettings.allowSocraticTutor && (
                       <button type="button"
                         data-student-tool="true"
                         onClick={handleToggleShowSocraticChat}
@@ -1220,7 +1252,7 @@ function FabStack(props) {
                         <span className="min-w-0 text-xs font-bold leading-tight">{t('games.syntax.title')}</span>
                       </button>
                     )}
-                    {(isTeacherMode || studentProjectSettings.allowDictation) && (
+                    {(isTeacherMode || safeStudentSettings.allowDictation) && (
                       <button
                         data-student-tool="true"
                         type="button"
@@ -1259,7 +1291,7 @@ function FabStack(props) {
                         className={`alloflow-student-tools-status col-span-full rounded-xl border px-3 py-2 text-xs leading-snug ${dictationPhase === 'error' ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-slate-200 bg-slate-50 text-slate-700'}`}
                       >
                         <div className="font-bold">{dictationAnnouncement}</div>
-                        {dictationStatus.privacy && <div className="mt-0.5 text-[11px] text-slate-600">{dictationStatus.privacy}</div>}
+                        {dictationStatus.privacy && <div className="mt-0.5 text-xs text-slate-600">{dictationStatus.privacy}</div>}
                       </div>
                     )}
                   </div>
@@ -1301,7 +1333,7 @@ function FabStack(props) {
           <Wrench size={20} aria-hidden="true" />
           <span className="text-sm font-black">{toolsTitle}</span>
           {dictationIsActive && (
-            <span className="flex items-center gap-1 rounded-full bg-white/20 px-2 py-1 text-[10px] font-black uppercase tracking-wide">
+            <span className="flex items-center gap-1 rounded-full bg-white/20 px-2 py-1 text-xs font-black uppercase tracking-wide">
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none" aria-hidden="true"></span>
               {dictationPhase === 'transcribing' ? 'Working' : 'Listening'}
             </span>

@@ -13,6 +13,7 @@ const ROOT = process.cwd();
 const TW = {
   'slate-400': [148, 163, 184],
   'slate-500': [100, 116, 139],
+  'slate-600': [71, 85, 105],
   'slate-100': [241, 245, 249],
   'amber-600': [217, 119, 6],
   'amber-700': [180, 83, 9],
@@ -43,7 +44,7 @@ const ICON_BUTTONS = [
   {
     file: 'view_analysis_source.jsx',
     what: 'dismiss-grammar-note X',
-    needle: 'rounded text-slate-500 hover:text-slate-700 hover:bg-slate-100',
+    needle: 'rounded text-slate-600 hover:text-slate-800 hover:bg-slate-100',
     grounds: ['white', 'slate-100'],
   },
   {
@@ -55,13 +56,13 @@ const ICON_BUTTONS = [
   {
     file: 'sped_timelines_source.jsx',
     what: 'delete-timeline trash',
-    needle: "'text-slate-500 hover:text-rose-700 hover:bg-rose-50'",
+    needle: "'text-slate-600 hover:text-rose-700 hover:bg-rose-50'",
     grounds: ['white', 'rose-50'],
   },
   {
     file: 'reading_library_module.js',
     what: 'remove-word x',
-    needle: 'text-[12px] text-slate-500 hover:text-red-600 hover:bg-red-50',
+    needle: 'text-[12px] text-slate-600 hover:text-red-700 hover:bg-red-50',
     grounds: ['white', 'red-50'],
   },
   {
@@ -85,7 +86,11 @@ describe('Icon-only buttons meet WCAG 1.4.11 (3:1 non-text contrast)', () => {
 
       // Derive the ink from the class that actually ships, so this cannot
       // pass by asserting a colour the file no longer uses.
-      const ink = /text-slate-500/.test(b.needle) ? TW['slate-500'] : TW['amber-700'];
+      const ink = /text-slate-600/.test(b.needle)
+        ? TW['slate-600']
+        : /text-slate-500/.test(b.needle)
+          ? TW['slate-500']
+          : TW['amber-700'];
       for (const g of b.grounds) {
         const r = ratio(ink, TW[g]);
         expect(r, `${b.what} is ${r.toFixed(2)}:1 on ${g}`).toBeGreaterThanOrEqual(3);

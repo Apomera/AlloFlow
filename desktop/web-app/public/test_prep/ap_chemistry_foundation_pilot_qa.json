@@ -153,10 +153,10 @@
       "chapters": 9,
       "sections": 27,
       "knowledgeChecks": 27,
-      "flashcards": 9,
+      "flashcards": 27,
       "memoryAids": 9,
-      "diagrams": 0,
-      "diagramPlacements": 0,
+      "diagrams": 9,
+      "diagramPlacements": 9,
       "glossaryTerms": 0,
       "constructedResponseWorkshops": 9,
       "topicDiagnosticRoutes": 0,
@@ -166,8 +166,6 @@
       "sourceCatalog": 3
     },
     "emptyLibraryLayers": [
-      "diagrams",
-      "diagramPlacements",
       "glossaryTerms",
       "topicDiagnosticRoutes",
       "remediationPlaybooks",
@@ -431,14 +429,14 @@
     "chapterCount": 9,
     "sectionCount": 27,
     "knowledgeCheckCount": 27,
-    "flashcardCount": 9,
+    "flashcardCount": 27,
     "memoryAidCount": 9,
     "richLessonPrototypeCount": 9,
     "nearDuplicatePairCount": 0
   },
   "inputs": {
     "packSha256": "3c617cc728b48e9cca14fb726e893bee17386464102250b4b5ec859a0080583d",
-    "learningLibrarySha256": "0f9ad6aadcbac33cabeda6be148c099067a59e55ee4970c95ebf8167ce60f7ff",
+    "learningLibrarySha256": "058d142898ee3a66abf158c0694c3f359bd34520fc6f7c6133e1f8fe99687785",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-chemistry",
     "factualCrossCheckUrl": "https://openstax.org/details/books/chemistry-2e"
@@ -455,8 +453,8 @@
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "0f9ad6aadcbac33cabeda6be148c099067a59e55ee4970c95ebf8167ce60f7ff",
-      "deploySha256": "0f9ad6aadcbac33cabeda6be148c099067a59e55ee4970c95ebf8167ce60f7ff"
+      "sourceSha256": "058d142898ee3a66abf158c0694c3f359bd34520fc6f7c6133e1f8fe99687785",
+      "deploySha256": "058d142898ee3a66abf158c0694c3f359bd34520fc6f7c6133e1f8fe99687785"
     }
   ],
   "releaseBlockers": [

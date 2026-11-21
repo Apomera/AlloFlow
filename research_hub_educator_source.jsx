@@ -80,7 +80,7 @@
       civic_policy: 'Civic & Policy Inquiry',
       creative_cultural: 'Creative & Cultural Inquiry',
     };
-    return labels[id] || id || 'no approach selected';
+    return (typeof id === 'string' && Object.prototype.hasOwnProperty.call(labels, id) ? labels[id] : id) || 'no approach selected';
   }  function clip(s, n) { if (!s || typeof s !== 'string') return ''; return s.length <= n ? s : s.slice(0, n) + '…'; }
 
   // ───────────────────────────────────────────────────────────────────────
@@ -347,7 +347,7 @@
     var byVerdict = { warrant_survives: 0, warrant_contracts: 0, warrant_fails: 0 };
     probes.forEach(function (p) { if (byVerdict.hasOwnProperty(p.verdict)) byVerdict[p.verdict]++; });
     var allSurvivesFlag = probes.length > 0 && probes.every(function (p) { return p.verdict === 'warrant_survives'; }) &&
-      !probes.every(function (p) { return p.allSurvivesJustification && p.allSurvivesJustification.length >= 120; });
+      !probes.some(function (p) { return p.allSurvivesJustification && p.allSurvivesJustification.length >= 120; });
 
     return (
       <Panel title="Warrant trajectory" subtitle={
@@ -380,7 +380,7 @@
               <div style={{ marginTop: '4px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                 {qLog.map(function (q, qi) {
                   return <Pill key={'q' + qi} color="#92400e"
-                    label={'qual v' + (qi + 2) + (q.deltaJaccard != null ? (' Δ' + (q.deltaJaccard).toFixed(2)) : '')} />;
+                    label={'qual v' + (qi + 2) + (typeof q.deltaJaccard === 'number' && Number.isFinite(q.deltaJaccard) ? (' Δ' + (q.deltaJaccard).toFixed(2)) : '')} />;
                 })}
                 {wLog.map(function (w, wi) {
                   return <Pill key={'w' + wi} color="#6b21a8"
@@ -390,7 +390,7 @@
                   var color = p.verdict === 'warrant_survives' ? '#166534' :
                               p.verdict === 'warrant_contracts' ? '#92400e' : '#991b1b';
                   return <Pill key={'p' + pi} color={color}
-                    label={p.verdict.replace('warrant_', '')} />;
+                    label={String(p.verdict || '').replace('warrant_', '')} />;
                 })}
               </div>
             </div>
@@ -421,8 +421,8 @@
             <ul style={{ margin: '4px 0 0', paddingLeft: '20px', fontSize: '11px', color: '#1e293b' }}>
               {compositions.map(function (c, i) {
                 var av = j.absentVoices || [];
-                var coda = c.foreclosureCodaText || '';
-                var avMissing = av.filter(function (a) { return a.whoseVoiceText && coda.indexOf(a.whoseVoiceText.slice(0, 20)) === -1; }).length;
+                var coda = String(c.foreclosureCodaText || '');
+                var avMissing = av.filter(function (a) { return a && typeof a.whoseVoiceText === 'string' && a.whoseVoiceText && coda.indexOf(a.whoseVoiceText.slice(0, 20)) === -1; }).length;
                 return (
                   <li key={i}>
                     v{c.v} · genre: {c.genreChoice} ·{' '}
@@ -676,7 +676,7 @@
               <div key={artifact.id} style={{ padding: '8px 10px', borderRadius: '9px', border: '1px solid ' + color, background: color + '0d' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
                   <strong style={{ fontSize: '10px', color: '#1e293b' }}>{artifact.sourceToolName || artifact.sourceToolId} · {artifact.sourceToolVersion || 'version unknown'}</strong>
-                  <span style={{ fontSize: '9px', fontWeight: 900, color: color }}>{row.health.status.replace('_', ' ')}</span>
+                  <span style={{ fontSize: '9px', fontWeight: 900, color: color }}>{String((row.health && row.health.status) || '').replace('_', ' ')}</span>
                 </div>
                 <div style={{ marginTop: '3px', fontSize: '9px', color: '#64748b' }}>
                   Contract v{contract.schemaVersion || '?'} · license: {(contract.license && (contract.license.spdx || contract.license.name)) || 'missing'} · citation: {contract.citation && contract.citation.text ? 'declared' : 'missing'} · reproducibility: {receipt.status || 'missing'}

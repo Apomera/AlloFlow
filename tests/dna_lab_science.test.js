@@ -32,7 +32,7 @@ describe('DNA Lab CRISPR schematic', () => {
     expect(html).toContain('Schematic guide window: pos 4-9');
     expect(html).toContain('cut near pos 7');
     expect(html).toContain('PAM: AGG at pos 10');
-    expect(html).toContain('gRNA: UUUGGG');
+    expect(html).toContain('gRNA: AAACCC');
   });
 
   it('falls back to a valid PAM when a previous selection is stale', () => {

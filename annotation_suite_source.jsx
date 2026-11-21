@@ -209,8 +209,10 @@ function makeDragHandler(s, hostFinder, onMove, wasDraggedRef) {
     // Preserve whatever offset the rendered element uses relative to the
     // logical (s.x, s.y). Sticker = -15, note/voice = -14. Computing from
     // current style preserves that automatically.
-    const startTop = parseFloat(el.style.top) || (s.y);
-    const startLeft = parseFloat(el.style.left) || (s.x);
+    const parsedTop = parseFloat(el.style.top);
+    const parsedLeft = parseFloat(el.style.left);
+    const startTop = Number.isFinite(parsedTop) ? parsedTop : s.y;
+    const startLeft = Number.isFinite(parsedLeft) ? parsedLeft : s.x;
     const offsetTop = startTop - s.y;
     const offsetLeft = startLeft - s.x;
     const startCX = e.clientX;
@@ -306,8 +308,10 @@ function makeKeyboardMoveHandler(annotation, hostFinder, onMove, onActivate) {
     e.preventDefault();
     e.stopPropagation();
     const step = e.shiftKey ? 40 : 10;
-    const nextX = Math.max(0, Math.min(host.clientWidth - 14, annotation.x + movement.x * step));
-    const nextY = Math.max(0, Math.min(host.clientHeight - 14, annotation.y + movement.y * step));
+    const sw = host.scrollWidth || host.clientWidth || 999999;
+    const sh = host.scrollHeight || host.clientHeight || 999999;
+    const nextX = Math.max(0, Math.min(sw - 14, annotation.x + movement.x * step));
+    const nextY = Math.max(0, Math.min(sh - 14, annotation.y + movement.y * step));
     onMove(annotation.id, nextX, nextY, true);
     announceAnnotationMove(`Annotation moved ${movement.label}${e.shiftKey ? ' by a larger step' : ''}.`);
   };
@@ -365,11 +369,10 @@ function StickerNode({ s, draggable, onMove }) {
 // stickers which are pure decoration). Drag-from-corner reposition is
 // deferred to a future polish pass.
 function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
-  if (!a) return null;
-  const palette = _ownAnno(NOTE_COLORS, a.color) || NOTE_COLORS.yellow;
-  const [expanded, setExpanded] = React.useState(!a.content);
-  const [draft, setDraft] = React.useState(a.content || '');
-  React.useEffect(function () { setDraft(a.content || ''); }, [a.content]);
+  const [expanded, setExpanded] = React.useState(!(a && a.content));
+  const [draft, setDraft] = React.useState((a && a.content) || '');
+  const noteContent = a ? a.content : '';
+  React.useEffect(function () { setDraft(noteContent || ''); }, [noteContent]);
   const taRef = React.useRef(null);
   // Drag-tracking ref hoisted to the top of the component so it's not
   // called conditionally (Rules of Hooks). Set by the drag handler when
@@ -381,6 +384,9 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
       try { taRef.current.focus(); } catch (_) {}
     }
   }, [expanded]);
+  if (!a) return null;
+  const palette = _ownAnno(NOTE_COLORS, a.color) || NOTE_COLORS.yellow;
+  const isEditable = typeof onChange === 'function';
   const title = buildStickerTitle(a) || 'Note';
   const commit = function () {
     setExpanded(false);
@@ -424,6 +430,8 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
   // handler.
   return (
     <div
+      data-allo-note-expanded="true"
+      data-allo-anno="true"
       className="absolute z-50 select-text shadow-lg rounded-lg"
       style={{
         top: a.y - 14, left: a.x - 14,
@@ -435,7 +443,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
       onClick={function (e) { e.stopPropagation(); }}
     >
       <div
-        className="flex items-center justify-between gap-2 px-2 py-1 text-[10px] font-bold uppercase tracking-wide rounded-t-lg"
+        className="flex items-center justify-between gap-2 px-2 py-1 text-xs font-bold uppercase tracking-wide rounded-t-lg"
         style={{ background: palette.border, color: palette.text }}
       >
         <span>📝 {a.author === 'teacher' ? 'Teacher note' : (a.authorName || 'Student note')}</span>
@@ -443,9 +451,9 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
           <button
             type="button"
             onClick={commit}
-            className="inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold"
+            className="inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-xs font-bold"
             aria-label={t("a11y.save_note")}
-            title="Save & close"
+            title={isEditable ? 'Save & close' : 'Close'}
           >✓</button>
           {typeof onDelete === 'function' && (
             <button
@@ -457,7 +465,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
               // deleting the annotation.
               onMouseDown={function (e) { e.preventDefault(); }}
               onClick={function () { onDelete(a.id); }}
-              className="inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold"
+              className="inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-xs font-bold"
               aria-label={t("a11y.delete_note")}
               title="Delete"
             >✕</button>
@@ -467,8 +475,16 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
       <textarea
         ref={taRef}
         value={draft}
-        onChange={function (e) { setDraft(e.target.value); }}
-        onBlur={commit}
+        readOnly={!isEditable}
+        onChange={function (e) { if (isEditable) setDraft(e.target.value); }}
+        onBlur={function (e) {
+          const box = e.currentTarget && e.currentTarget.closest && e.currentTarget.closest('[data-allo-note-expanded]');
+          if (box && e.relatedTarget && box.contains(e.relatedTarget)) return;
+          commit();
+        }}
+        onKeyDown={function (e) {
+          if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); commit(); }
+        }}
         placeholder={t("placeholders.type_note")}
         rows={3}
         className="w-full p-2 text-xs resize-y bg-transparent outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600"
@@ -484,10 +500,10 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
 // (no cloud round-trip). Render is purely local; the <audio> element is
 // pointed at a data: URL built from audioBase64 + mimeType on the fly.
 function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
-  if (!a) return null;
   const [expanded, setExpanded] = React.useState(false);
   // Drag-tracking ref hoisted (Rules of Hooks). Same pattern as NoteBubble.
   const wasDraggedRef = React.useRef(false);
+  if (!a) return null;
   const title = buildStickerTitle(a) || 'Voice note';
   const dur = typeof a.durationSec === 'number' ? Math.round(a.durationSec) : null;
   // If audio is missing (placeholder during recording, or storage error),
@@ -526,6 +542,8 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
   // inside the bubble don't bubble to host (which might drop a new note).
   return (
     <div
+      data-allo-note-expanded="true"
+      data-allo-anno="true"
       className="absolute z-50 select-text shadow-lg rounded-lg"
       style={{
         top: a.y - 14, left: a.x - 14,
@@ -537,7 +555,7 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
       onClick={function (e) { e.stopPropagation(); }}
     >
       <div
-        className="flex items-center justify-between gap-2 px-2 py-1 text-[10px] font-bold uppercase tracking-wide rounded-t-lg"
+        className="flex items-center justify-between gap-2 px-2 py-1 text-xs font-bold uppercase tracking-wide rounded-t-lg"
         style={{ background: accent, color: 'white' }}
       >
         <span>🎤 {isT ? 'Teacher voice note' : (a.authorName || 'Voice note')}{dur != null ? ' • ' + dur + 's' : ''}</span>
@@ -545,7 +563,7 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
           <button
             type="button"
             onClick={function () { setExpanded(false); }}
-            className="inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold"
+            className="inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-xs font-bold"
             style={{ color: accent }}
             aria-label={t("a11y.close_voice_note")}
             title="Close"
@@ -554,7 +572,7 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
             <button
               type="button"
               onClick={function () { onDelete(a.id); }}
-              className="inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold"
+              className="inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-xs font-bold"
               style={{ color: accent }}
               aria-label={t("a11y.delete_voice_note")}
               title="Delete"
@@ -572,7 +590,7 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
             style={{ height: 32 }}
           />
         ) : (
-          <div className="text-[11px] text-slate-500 italic px-1 py-2">No audio attached (recording may have failed).</div>
+          <div className="text-xs text-slate-600 italic px-1 py-2">No audio attached (recording may have failed).</div>
         )}
       </div>
     </div>
@@ -611,13 +629,13 @@ function RecordingOverlay({ x, y, elapsedSec, onStop, onCancel }) {
           <button
             type="button"
             onClick={onCancel}
-            className="min-h-6 px-2 py-1 rounded text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
+            className="min-h-6 px-2 py-1 rounded text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200"
             aria-label={t("a11y.cancel_recording")}
           >Cancel</button>
           <button
             type="button"
             onClick={onStop}
-            className="min-h-6 px-3 py-1 rounded text-[11px] font-bold text-white bg-red-600 hover:bg-red-700 flex items-center gap-1"
+            className="min-h-6 px-3 py-1 rounded text-xs font-bold text-white bg-red-600 hover:bg-red-700 flex items-center gap-1"
             aria-label={t("a11y.stop_save_recording")}
           ><span className="inline-block w-2 h-2 bg-white"></span> Stop</button>
         </div>
@@ -660,7 +678,7 @@ function HighlightOverlay({ a, onDelete }) {
       {/* Invisible wrapper that catches hover so the X reveals when the
           user hovers anywhere over any of the rects, not just the first. */}
       <div
-        className="absolute pointer-events-auto z-30"
+        className="group absolute pointer-events-auto z-30"
         style={{
           top: a.rects[0].y,
           left: a.rects[0].x,
@@ -668,20 +686,12 @@ function HighlightOverlay({ a, onDelete }) {
           height: a.rects[0].h,
           background: 'transparent',
         }}
-        onMouseEnter={function (e) {
-          const btn = e.currentTarget.querySelector('button'); // the wrapper's only button is the delete (✕) control; was a broken JSX-in-selector string
-          if (btn) btn.style.opacity = '1';
-        }}
-        onMouseLeave={function (e) {
-          const btn = e.currentTarget.querySelector('button'); // the wrapper's only button is the delete (✕) control; was a broken JSX-in-selector string
-          if (btn) btn.style.opacity = '0';
-        }}
       >
         {typeof onDelete === 'function' && (
           <button
             type="button"
             onClick={function (e) { e.stopPropagation(); onDelete(a.id); }}
-            className="absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none"
+            className="absolute pointer-events-auto opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 transition-opacity motion-reduce:transition-none"
             style={{
               top: -12, right: -12,
               width: 24, height: 24,
@@ -799,12 +809,13 @@ function DrawingOverlay({ a, onDelete }) {
     const ry = Math.max(1, (bbh - w * 2) / 2);
     shapeNode = <ellipse cx={localX(cx)} cy={localY(cy)} rx={rx} ry={ry} fill="none" stroke={stroke} strokeWidth={w} />;
   }
-  const title = buildStickerTitle(a) || (DRAW_SHAPE_LABELS[shape] || 'Drawing');
+  const shapeLabel = _ownAnno(DRAW_SHAPE_LABELS, shape) || 'Drawing';
+  const title = buildStickerTitle(a) || shapeLabel;
   return (
     <div role="group"
       className="absolute pointer-events-none z-40"
       style={{ top: svgY, left: svgX, width: svgW, height: svgH }}
-      aria-label={(DRAW_SHAPE_LABELS[shape] || 'Drawing') + ': ' + title}
+      aria-label={shapeLabel + ': ' + title}
       title={title}
     >
       <svg width={svgW} height={svgH} style={{ display: 'block', overflow: 'visible' }} aria-hidden="true">
@@ -814,7 +825,7 @@ function DrawingOverlay({ a, onDelete }) {
         <button
           type="button"
           onClick={function (e) { e.stopPropagation(); onDelete(a.id); }}
-          className="absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none"
+          className="absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 transition-opacity motion-reduce:transition-none"
           style={{
             top: 0, right: 0,
             width: 24, height: 24,
@@ -826,8 +837,6 @@ function DrawingOverlay({ a, onDelete }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: '#475569', lineHeight: 1,
           }}
-          onMouseEnter={function (e) { e.currentTarget.style.opacity = '1'; }}
-          onMouseLeave={function (e) { e.currentTarget.style.opacity = '0'; }}
           aria-label={t("a11y.delete_drawing")}
           title="Delete drawing"
         >✕</button>
@@ -898,11 +907,20 @@ function _annotationHit(a, px, py, radius) {
 //
 // On pointerup, drawing shapes call onCommit with the stroke; eraser
 // commits nothing (deletions happen live during the drag).
-function DrawingCapture({ active, color, width, shape, onCommit, onErase, annotations }) {
+function DrawingCapture({ active, color, width, shape, onCommit, onErase, annotations, isTeacher }) {
   const [stroke, setStroke] = React.useState(null); // active drawing shape | null
+  const strokeRef = React.useRef(null);
   const [eraseCursor, setEraseCursor] = React.useState(null); // {x,y} | null
   const hostRef = React.useRef(null);
   const drawingRef = React.useRef(false);
+  React.useEffect(function () {
+    if (!active) {
+      drawingRef.current = false;
+      strokeRef.current = null;
+      setStroke(null);
+      setEraseCursor(null);
+    }
+  }, [active]);
   const sh = shape || 'free';
   const isErase = sh === 'erase';
   if (!active) return null;
@@ -916,6 +934,8 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
     if (!Array.isArray(annotations) || typeof onErase !== 'function') return;
     for (let i = 0; i < annotations.length; i++) {
       const a = annotations[i];
+      if (!a) continue;
+      if (isTeacher === false && a.author !== 'student') continue;
       if (_annotationHit(a, x, y, ERASER_RADIUS)) {
         onErase(a.id);
       }
@@ -934,11 +954,11 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
       performErase(x, y);
       return;
     }
-    if (sh === 'free') {
-      setStroke({ shape: 'free', points: [{ x, y }], color, width });
-    } else {
-      setStroke({ shape: sh, start: { x, y }, end: { x, y }, color, width });
-    }
+    const initial = sh === 'free'
+      ? { shape: 'free', points: [{ x, y }], color, width }
+      : { shape: sh, start: { x, y }, end: { x, y }, color, width };
+    strokeRef.current = initial;
+    setStroke(initial);
   }
   function pointerMove(e) {
     if (drawingRef.current) {
@@ -957,15 +977,18 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
       return;
     }
     if (!drawingRef.current) return;
-    setStroke(function (prev) {
-      if (!prev) return prev;
-      if (prev.shape === 'free') {
-        const last = prev.points[prev.points.length - 1];
-        if (last && Math.abs(last.x - x) < 1.2 && Math.abs(last.y - y) < 1.2) return prev;
-        return Object.assign({}, prev, { points: prev.points.concat([{ x, y }]) });
-      }
-      return Object.assign({}, prev, { end: { x, y } });
-    });
+    const prev = strokeRef.current;
+    if (!prev) return;
+    let next;
+    if (prev.shape === 'free') {
+      const last = prev.points[prev.points.length - 1];
+      if (last && Math.abs(last.x - x) < 1.2 && Math.abs(last.y - y) < 1.2) return;
+      next = Object.assign({}, prev, { points: prev.points.concat([{ x, y }]) });
+    } else {
+      next = Object.assign({}, prev, { end: { x, y } });
+    }
+    strokeRef.current = next;
+    setStroke(next);
   }
   function pointerUp(e) {
     if (!drawingRef.current) {
@@ -981,12 +1004,10 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
       // Eraser deletions happen live during pointermove — nothing to commit
       return;
     }
-    // Read the finished stroke from the current closure and clear it. The
-    // commit must NOT happen inside a setStroke updater: React runs updater
-    // functions during DrawingCapture's render phase, and calling onCommit
-    // (a parent setState) from there triggers "Cannot update a component
-    // while rendering a different component". Commit as a plain side effect.
-    const prev = stroke;
+    // Read the finished stroke synchronously from strokeRef so fast strokes
+    // that finish before React commits state are never dropped.
+    const prev = strokeRef.current || stroke;
+    strokeRef.current = null;
     setStroke(null);
     if (!prev || typeof onCommit !== 'function') return;
     // Reject zero-area drawings
@@ -1087,7 +1108,8 @@ function DrawingCapture({ active, color, width, shape, onCommit, onErase, annota
 // `kind`. The parent content area must be position:relative so absolute
 // children land in the right place. Migrates legacy shape on the fly so
 // projects saved before Phase 3 still render correctly.
-function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onHighlightDelete, onVoiceDelete, onDrawDelete, onMove }) {
+function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onHighlightDelete, onVoiceDelete, onDrawDelete, onMove, t: hostT }) {
+  if (typeof hostT === 'function') _captureHostT({ t: hostT });
   if (!Array.isArray(annotations) || annotations.length === 0) return null;
   const migrated = migrateLegacyShape(annotations);
   // Drag is only enabled when no annotation-creation mode is active
@@ -1095,30 +1117,34 @@ function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onH
   // mode UX). Permission: students can drag their own; teachers can
   // drag anything.
   const dragMode = !mode || mode === 'off';
+  function canModify(a) {
+    if (isTeacher) return true;
+    return !!(a && a.author === 'student');
+  }
   function canDrag(a) {
     if (!dragMode || !onMove) return false;
-    if (isTeacher) return true;
-    return a && a.author === 'student';
+    return canModify(a);
   }
   return (
     <React.Fragment>
       {migrated.map(function (a) {
         if (!a) return null;
+        const allowed = canModify(a);
         if (a.kind === 'note') {
-          return <NoteBubble key={a.id} a={a} onChange={onNoteChange} onDelete={onNoteDelete} draggable={canDrag(a)} onMove={onMove} />;
+          return <NoteBubble key={a.id} a={a} onChange={allowed ? onNoteChange : undefined} onDelete={allowed ? onNoteDelete : undefined} draggable={canDrag(a)} onMove={onMove} />;
         }
         if (a.kind === 'highlight') {
-          return <HighlightOverlay key={a.id} a={a} onDelete={onHighlightDelete} />;
+          return <HighlightOverlay key={a.id} a={a} onDelete={allowed ? onHighlightDelete : undefined} />;
         }
         if (a.kind === 'voice') {
           // Pending voice notes (recording in progress) skip the bubble —
           // the RecordingOverlay shows in their place. Bubble appears only
           // once audio is attached.
           if (a.pending) return null;
-          return <VoiceNoteBubble key={a.id} a={a} onDelete={onVoiceDelete} draggable={canDrag(a)} onMove={onMove} />;
+          return <VoiceNoteBubble key={a.id} a={a} onDelete={allowed ? onVoiceDelete : undefined} draggable={canDrag(a)} onMove={onMove} />;
         }
         if (a.kind === 'draw') {
-          return <DrawingOverlay key={a.id} a={a} onDelete={onDrawDelete} />;
+          return <DrawingOverlay key={a.id} a={a} onDelete={allowed ? onDrawDelete : undefined} />;
         }
         // Default = sticker (kind missing on legacy data is caught by migrator).
         return <StickerNode key={a.id} s={a} draggable={canDrag(a)} onMove={onMove} />;
@@ -1294,8 +1320,8 @@ function Toolbar(props) {
           <select
             value={noteTemplate}
             onChange={function (e) { onPickTemplate(e.target.value); }}
-            className="text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 max-w-[150px]"
-            aria-label={t("a11y.note_template")}
+            className="text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 max-w-[150px]"
+            aria-label={tt("a11y.note_template")}
             title={noteTemplate ? 'Template active: next note auto-fills' : 'Pick a template to auto-fill the next note'}
             style={{ minHeight: 24 }}
           >
@@ -1309,7 +1335,7 @@ function Toolbar(props) {
             onClick={onClear}
             className="w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full"
             title="Clear all annotations"
-            aria-label={t("a11y.clear_all_annotations")}
+            aria-label={tt("a11y.clear_all_annotations")}
           >
             {Trash2 ? <Trash2 size={12} /> : <span>🗑</span>}
           </button>
@@ -1337,7 +1363,7 @@ function Toolbar(props) {
             onClick={onClear}
             className="w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full"
             title="Clear all annotations"
-            aria-label={t("a11y.clear_all_annotations")}
+            aria-label={tt("a11y.clear_all_annotations")}
           >
             {Trash2 ? <Trash2 size={12} /> : <span>🗑</span>}
           </button>
@@ -1444,7 +1470,7 @@ function Toolbar(props) {
             onClick={onClear}
             className="w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full"
             title="Clear all annotations"
-            aria-label={t("a11y.clear_all_annotations")}
+            aria-label={tt("a11y.clear_all_annotations")}
           >
             {Trash2 ? <Trash2 size={12} /> : <span>🗑</span>}
           </button>
@@ -1723,7 +1749,9 @@ function importAnnotations(existing, payload, opts) {
       ? raw.id.slice(0, 120)
       : (typeof raw.id === 'number' && Number.isFinite(raw.id) ? raw.id : null);
     if (id == null || existingIds.has(String(id))) {
-      id = Date.now() + Math.floor(Math.random() * 1000);
+      do {
+        id = Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+      } while (existingIds.has(String(id)));
     }
     existingIds.add(String(id));
     // Author rebrand: if the importer says "treat all imported as student"
@@ -1841,7 +1869,7 @@ function countByAuthor(annotations) {
 function annotationPreview(a) {
   if (!a) return '';
   const kind = a.kind || 'sticker';
-  if (kind === 'sticker') return (STICKER_ICONS[a.type] || '') + ' ' + (a.type || 'sticker');
+  if (kind === 'sticker') return (_ownAnno(STICKER_ICONS, a.type) || '') + ' ' + (a.type || 'sticker');
   if (kind === 'note') {
     const c = (a.content || '').trim();
     return '📝 ' + (c ? (c.length > 60 ? c.slice(0, 60) + '…' : c) : '(empty note)');
@@ -1853,6 +1881,9 @@ function annotationPreview(a) {
   if (kind === 'voice') {
     const d = typeof a.durationSec === 'number' ? Math.round(a.durationSec) + 's' : '';
     return '🎤 Voice note' + (d ? ' (' + d + ')' : '');
+  }
+  if (kind === 'draw') {
+    return '✏️ ' + (_ownAnno(DRAW_SHAPE_LABELS, a.shape || 'free') || 'Drawing');
   }
   return '';
 }
@@ -1877,6 +1908,7 @@ function Sidebar(props) {
   const visible = annotations.filter(function (a) {
     if (!a) return false;
     if (filter === 'teacher') return a.author === 'teacher';
+    if (filter === 'student') return a.author === 'student';
     if (filter === 'mine') {
       return isTeacher ? a.author === 'teacher' : a.author === 'student';
     }
@@ -1896,7 +1928,7 @@ function Sidebar(props) {
         key={key}
         type="button"
         onClick={function () { setFilter(key); }}
-        className={'min-h-6 px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors motion-reduce:transition-none ' + (active ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}
+        className={'min-h-6 px-2 py-0.5 rounded-full text-xs font-bold transition-colors motion-reduce:transition-none ' + (active ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}
         aria-pressed={active}
       >
         {label} {count > 0 ? '(' + count + ')' : ''}
@@ -1920,7 +1952,7 @@ function Sidebar(props) {
             <button
               type="button"
               onClick={onImport}
-              className="min-h-6 px-2 py-0.5 text-[10px] font-bold text-slate-600 hover:text-indigo-700 rounded hover:bg-white border border-slate-300"
+              className="min-h-6 px-2 py-0.5 text-xs font-bold text-slate-600 hover:text-indigo-700 rounded hover:bg-white border border-slate-300"
               aria-label="Import annotations from a saved file"
               title="Import annotations from a file (e.g., a student's downloaded annotations)"
             >📂 Import</button>
@@ -1928,7 +1960,7 @@ function Sidebar(props) {
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-6 min-w-6 items-center justify-center p-1 text-slate-500 hover:text-red-500 rounded-full hover:bg-white"
+            className="inline-flex min-h-6 min-w-6 items-center justify-center p-1 text-slate-600 hover:text-red-500 rounded-full hover:bg-white"
             aria-label="Close annotation list"
             title="Close"
           >{X ? <X size={14} /> : <span>✕</span>}</button>
@@ -1937,11 +1969,11 @@ function Sidebar(props) {
       <div className="flex items-center gap-1 px-3 py-2 border-b border-slate-200" role="group" aria-label="Filter annotations">
         {Pill('all', 'All', counts.total)}
         {Pill('teacher', 'Teacher', counts.teacher)}
-        {Pill('mine', isTeacher ? 'Teacher' : 'Mine', mineCount)}
+        {isTeacher ? Pill('student', 'Students', counts.student) : Pill('mine', 'Mine', mineCount)}
       </div>
       <div className="overflow-y-auto flex-1 px-1 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-indigo-600" style={{ minHeight: 100 }} role="list" aria-label="Annotations" tabIndex={0}>
         {visible.length === 0 && (
-          <div role="listitem" className="px-3 py-6 text-center text-[11px] text-slate-600 italic">
+          <div role="listitem" className="px-3 py-6 text-center text-xs text-slate-600 italic">
             No annotations match this filter.
           </div>
         )}
@@ -1963,7 +1995,7 @@ function Sidebar(props) {
                   aria-label={'Jump to ' + annotationPreview(a) + ' from ' + title}
                 >
                   <div className="font-medium text-slate-800 truncate">{annotationPreview(a)}</div>
-                  <div className="text-[10px] text-slate-500 mt-0.5 truncate">{title || (isTeacherAnno ? 'Teacher' : 'Student')}</div>
+                  <div className="text-xs text-slate-600 mt-0.5 truncate">{title || (isTeacherAnno ? 'Teacher' : 'Student')}</div>
                 </button>
                 {canDelete && (
                   <button
@@ -2213,6 +2245,7 @@ function Workspace(props) {
   const displayAnnotations = useCardHighlightLayout(contentEl, hostEl, annotations, recoveryCache);
   const isTeacher = props.isTeacher !== false;
   const authorName = props.authorName || '';
+  _captureHostT(props);
   const tt = typeof props.t === 'function' ? props.t : function (k) { return k; };
   const say = function (key, fallback) { let v; try { v = tt(key); } catch (_) { v = ''; } return v && v !== key ? v : fallback; };
   const toast = typeof props.onToast === 'function' ? props.onToast : function () {};
@@ -2226,10 +2259,17 @@ function Workspace(props) {
   const [drawShape, setDrawShape] = React.useState('free');
   const [showList, setShowList] = React.useState(false);
   const [recording, setRecording] = React.useState(null);
-  const history = props.historyStore || new Map();
+  const fallbackHistoryRef = React.useRef(null);
+  if (!fallbackHistoryRef.current) fallbackHistoryRef.current = new Map();
+  const history = props.historyStore || fallbackHistoryRef.current;
   if (!history.has(props.documentKey)) history.set(props.documentKey, []);
   const undoRef = React.useRef(history.get(props.documentKey));
   const [undoCount, setUndoCount] = React.useState(undoRef.current.length);
+  const onChangeRef = React.useRef(props.onChange);
+  onChangeRef.current = props.onChange;
+  const documentKeyRef = React.useRef(props.documentKey);
+  documentKeyRef.current = props.documentKey;
+  const prevDocRef = React.useRef({ key: props.documentKey, list: annotations });
   const latest = React.useRef(annotations);
   latest.current = annotations;
   const aliveRef = React.useRef(true);
@@ -2238,7 +2278,11 @@ function Workspace(props) {
   const inputRef = React.useRef(null);
   const timersRef = React.useRef({ tick: null, cap: null });
   // The key travels with every update, including asynchronous microphone cleanup.
-  const emit = function (next) { latest.current = next; if (typeof props.onChange === 'function') props.onChange(next, props.documentKey); };
+  const emit = function (next, targetKey) {
+    const key = arguments.length > 1 ? targetKey : documentKeyRef.current;
+    if (key === documentKeyRef.current) latest.current = next;
+    if (typeof onChangeRef.current === 'function') onChangeRef.current(next, key);
+  };
   const canEdit = function (a) { return !!a && (isTeacher || a.author === 'student'); };
   const commit = function (next) {
     if (next === latest.current || (next.length === latest.current.length && next.every(function (a, i) { return a === latest.current[i]; }))) return;
@@ -2261,8 +2305,30 @@ function Workspace(props) {
   const stopTracks = function (stream) { if (stream) stream.getTracks().forEach(function (track) { track.stop(); }); };
   const dropVoice = function (cur) {
     const withoutPending = function (list) { return list.filter(function (a) { return a && a.id !== cur.id; }); };
-    for (let i = 0; i < undoRef.current.length; i++) undoRef.current[i] = withoutPending(undoRef.current[i]);
-    if (latest.current.some(function (a) { return a && a.id === cur.id; })) emit(withoutPending(latest.current));
+    const bucket = cur.undoBucket || undoRef.current;
+    for (let i = 0; i < bucket.length; i++) bucket[i] = withoutPending(bucket[i]);
+    const isSameDoc = !('documentKey' in cur) || documentKeyRef.current === cur.documentKey;
+    let restored = null;
+    if (isSameDoc) {
+      restored = latest.current;
+      if (latest.current.some(function (a) { return a && a.id === cur.id; })) {
+        restored = withoutPending(latest.current);
+        emit(restored, cur.documentKey);
+      }
+    } else if (prevDocRef.current && prevDocRef.current.key === cur.documentKey && Array.isArray(prevDocRef.current.list)) {
+      restored = prevDocRef.current.list;
+      if (prevDocRef.current.list.some(function (a) { return a && a.id === cur.id; })) {
+        restored = withoutPending(prevDocRef.current.list);
+        emit(restored, cur.documentKey);
+      }
+    }
+    if (restored && bucket.length > 0) {
+      const top = bucket[bucket.length - 1];
+      if (Array.isArray(top) && top.length === restored.length && top.every(function (a, i) { return a === restored[i]; })) {
+        bucket.pop();
+      }
+    }
+    if (bucket === undoRef.current && aliveRef.current) setUndoCount(undoRef.current.length);
   };
   const stopVoice = function (cancel) {
     requestRef.current = null; // invalidate a pending permission request, too
@@ -2279,6 +2345,19 @@ function Workspace(props) {
     }
     stopTracks(cur.stream);
   };
+  React.useEffect(function () {
+    return function () { stopVoice(true); };
+  }, [props.documentKey]);
+  React.useEffect(function () {
+    const store = props.historyStore || fallbackHistoryRef.current;
+    if (!store.has(props.documentKey)) store.set(props.documentKey, []);
+    const bucket = store.get(props.documentKey);
+    undoRef.current = bucket;
+    setUndoCount(bucket.length);
+  }, [props.documentKey, props.historyStore]);
+  React.useEffect(function () {
+    prevDocRef.current = { key: props.documentKey, list: annotations };
+  }, [props.documentKey, annotations]);
   const startVoice = async function (placeholder) {
     if (recorderRef.current || requestRef.current) return;
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') { toast(say('errors.microphone_access_denied', 'The microphone is not available.'), 'error'); return; }
@@ -2292,17 +2371,17 @@ function Workspace(props) {
     let recorder;
     try { recorder = new MediaRecorder(stream); }
     catch (_) { stopTracks(stream); toast(say('errors.microphone_access_denied', 'The microphone is not available.'), 'error'); return; }
-    const cur = { recorder: recorder, stream: stream, chunks: [], id: placeholder.id, started: Date.now(), cancelled: false, stopping: false };
+    const cur = { recorder: recorder, stream: stream, chunks: [], id: placeholder.id, started: Date.now(), cancelled: false, stopping: false, documentKey: documentKeyRef.current, undoBucket: undoRef.current };
     recorderRef.current = cur;
     recorder.ondataavailable = function (event) { if (!cur.cancelled && event.data && event.data.size > 0) cur.chunks.push(event.data); };
     recorder.onerror = function () { stopVoice(true); toast(say('toasts.voice_recording_failed_audio_captured', 'The recording failed: no audio was captured.'), 'error'); };
     recorder.onstop = function () {
       stopTracks(stream);
-      if (cur.cancelled || !aliveRef.current) return;
+      if (cur.cancelled || !aliveRef.current || documentKeyRef.current !== cur.documentKey) return;
       const mimeType = recorder.mimeType || (cur.chunks[0] && cur.chunks[0].type) || 'audio/webm';
       const reader = new FileReader();
       reader.onloadend = function () {
-        if (cur.cancelled || !aliveRef.current) return;
+        if (cur.cancelled || !aliveRef.current || documentKeyRef.current !== cur.documentKey) return;
         recorderRef.current = null;
         const base64 = String(reader.result || '').split(',')[1];
         if (!base64) { dropVoice(cur); toast(say('toasts.voice_recording_failed_audio_captured', 'The recording failed: no audio was captured.'), 'error'); return; }
@@ -2310,8 +2389,9 @@ function Workspace(props) {
         const next = attachAudioToVoiceNote(latest.current, cur.id, payload);
         if (next && next.error === 'too-large') { dropVoice(cur); toast(say('toasts.voice_note_too_long_save', 'That voice note is too long to save.'), 'warning'); return; }
         // Undoing later edits must never restore an unplayable pending voice note.
-        for (let i = 0; i < undoRef.current.length; i++) undoRef.current[i] = attachAudioToVoiceNote(undoRef.current[i], cur.id, payload);
-        emit(next);
+        const bucket = cur.undoBucket || undoRef.current;
+        for (let i = 0; i < bucket.length; i++) bucket[i] = attachAudioToVoiceNote(bucket[i], cur.id, payload);
+        emit(next, cur.documentKey);
       };
       reader.readAsDataURL(new Blob(cur.chunks, { type: mimeType }));
     };
@@ -2428,7 +2508,7 @@ function Workspace(props) {
             className={'min-h-11 min-w-11 py-2 rounded-full flex items-center justify-center gap-1 text-xs font-bold px-2.5 ' + (showList ? 'bg-slate-200 text-slate-700' : 'text-slate-600 hover:bg-slate-100')}
             aria-label={say('annotation.toggle_list_aria', 'Toggle annotation list')}>
             {say('annotation.list_button', '📋 List')}
-            {total > 0 && <span className="ms-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none">{total}</span>}
+            {total > 0 && <span className="ms-0.5 bg-indigo-600 text-white text-xs font-bold rounded-full px-1.5 py-0.5 leading-none">{total}</span>}
           </button>
           <button type="button" onClick={saveAnnotations} className="min-h-11 min-w-11 px-3 py-2 text-xs font-bold rounded inline-flex items-center justify-center" aria-label={say('annotation.save_aria', 'Save annotations')}>{say('annotation.save_button', 'Save annotations')}</button>
           <button type="button" onClick={function () { if (inputRef.current) inputRef.current.click(); }} className="min-h-11 min-w-11 px-3 py-2 text-xs font-bold rounded inline-flex items-center justify-center" aria-label={say('annotation.import_aria', 'Import annotations')}>{say('annotation.import_button', 'Import')}</button>
@@ -2442,7 +2522,7 @@ function Workspace(props) {
             onNoteChange={function (id, patch) { if (canEdit(latest.current.find(function (a) { return a && a.id === id; }))) commit(updateAnnotation(latest.current, id, patch)); }}
             onNoteDelete={remove} onHighlightDelete={remove} onVoiceDelete={remove} onDrawDelete={remove} />
           {mode === 'draw' && (
-            <DrawingCapture active={true} color={drawColor} width={drawWidth} shape={drawShape} annotations={displayAnnotations}
+            <DrawingCapture active={true} color={drawColor} width={drawWidth} shape={drawShape} annotations={displayAnnotations} isTeacher={isTeacher}
               onCommit={function (stroke) { const next = createDrawingFromStroke(stroke, { isTeacher: isTeacher, authorName: authorName }); if (next) commit(latest.current.concat([next])); }}
               onErase={remove} />
           )}

@@ -155,9 +155,11 @@ function meetdocsExpandMaskPairs(pairs) {
     const parts = String(p.name).split(/[\s-]+/).map((part) => part.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, "")).filter(Boolean);
     if (parts.length < 2) return;
     let subIdx = 0;
+    const shortStop = /* @__PURE__ */ new Set(["of", "in", "to", "on", "at", "by", "or", "an", "as", "is", "it", "be", "do", "go", "no", "so", "up", "us", "we", "he", "me", "my", "la", "de", "el", "al", "jr", "sr", "ii", "iv", "dr", "mr", "ms"]);
     parts.forEach((part) => {
       const lower = part.toLowerCase();
-      if (!/^\p{L}{3,}$/u.test(part) || MEETDOCS_HONORIFICS.has(lower) || seenNames.has(lower)) return;
+      const letterCount = (part.match(/\p{L}/gu) || []).length;
+      if (letterCount < 2 || !/^\p{L}[\p{L}'’]*\p{L}$/u.test(part) || MEETDOCS_HONORIFICS.has(lower) || shortStop.has(lower) || seenNames.has(lower)) return;
       seenNames.add(lower);
       subIdx += 1;
       expanded.push({ name: part, code: p.code + "-" + subIdx });
@@ -166,7 +168,7 @@ function meetdocsExpandMaskPairs(pairs) {
   return expanded;
 }
 function meetdocsScrubStructuredPii(text) {
-  return String(text == null ? "" : text).replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[REDACTED-ID]").replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[REDACTED-EMAIL]").replace(/\b(?:student\s*id|ssid|iep\s*id|state\s*id|pupil\s*id)\s*[:#-]?\s*[A-Z0-9-]{4,}\b/gi, "[REDACTED-STUDENT-ID]").replace(/\b(?:AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9_-]{20,}|Bearer\s+[A-Za-z0-9._-]{20,})\b/g, "[REDACTED-SECRET]");
+  return String(text == null ? "" : text).replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[REDACTED-ID]").replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[REDACTED-EMAIL]").replace(/(?:\+?1[\s.-]?)?(?:\(\d{3}\)|\b\d{3})[\s.-]\d{3}[\s.-]\d{4}\b/g, "[REDACTED-PHONE]").replace(/\b(?:dob|date\s+of\s+birth|birth\s*date|born)\s*[:#-]?\s*(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}-\d{2}-\d{2}|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4})\b/gi, "[REDACTED-DOB]").replace(/\b(?:student\s*id|ssid|iep\s*id|state\s*id|pupil\s*id)\s*[:#-]?\s*[A-Z0-9-]{4,}\b/gi, "[REDACTED-STUDENT-ID]").replace(/\b(?:AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9_-]{20,}|Bearer\s+[A-Za-z0-9._-]{20,})\b/g, "[REDACTED-SECRET]");
 }
 function meetdocsMask(text, pairs) {
   let out = String(text || "");
@@ -421,8 +423,14 @@ function MeetingDocsPanel(props) {
       if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest("details:not([open])");
       if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
-      const st = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
-      return !st || st.display !== "none" && st.visibility !== "hidden";
+      if (typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
+        for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === "none" || st.visibility === "hidden")) return false;
+          if (cur === dialog) break;
+        }
+      }
+      return true;
     });
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();
@@ -495,9 +503,20 @@ function MeetingDocsPanel(props) {
       if (wasTop && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, []);
+  const mountedRef = React.useRef(true);
+  const aiReqRef = React.useRef(0);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      aiReqRef.current += 1;
+    };
+  }, []);
   const allTemplates = [...MEETDOCS_BUILTIN_TEMPLATES, ...customTemplates];
   const templateById = (id) => allTemplates.find((x) => x.id === id) || null;
   const startDraft = (templateId) => {
+    aiReqRef.current += 1;
+    setAiBusy(false);
     setDraft({
       stage: "input",
       templateId,
@@ -527,6 +546,8 @@ function MeetingDocsPanel(props) {
   const convertManual = () => {
     const template = templateById(draft.templateId);
     if (!template) return;
+    aiReqRef.current += 1;
+    setAiBusy(false);
     const sections = {};
     template.sections.forEach((s) => {
       sections[s.id] = "";
@@ -540,11 +561,20 @@ function MeetingDocsPanel(props) {
       addToast(tt("meetdocs.too_short", "Paste the notes or transcript first (a few sentences at minimum)."), "warning");
       return;
     }
-    const pairs = meetdocsMaskPairs(Array.isArray(draft.maskNames) ? draft.maskNames : []);
+    const reqId = ++aiReqRef.current;
+    const pendingName = String(nameInput || "").trim();
+    const baseMaskNames = Array.isArray(draft.maskNames) ? draft.maskNames.slice() : [];
+    if (pendingName && !baseMaskNames.some((n) => String(n).toLowerCase() === pendingName.toLowerCase())) {
+      baseMaskNames.push(pendingName);
+      setDraft((d) => d ? { ...d, maskNames: baseMaskNames } : d);
+      setNameInput("");
+    }
+    const pairs = meetdocsMaskPairs(baseMaskNames);
     const masked = meetdocsScrubStructuredPii(meetdocsMask(draft.rawText, pairs));
     setAiBusy(true);
     try {
       const raw = await callGemini(meetdocsAiPrompt(template, masked), true);
+      if (!mountedRef.current || aiReqRef.current !== reqId) return;
       const parsed = meetdocsParseAiJson(raw);
       if (!parsed) {
         addToast(tt("meetdocs.ai_unparseable", "The AI response could not be read — try again, or use manual mode."), "error");
@@ -555,9 +585,10 @@ function MeetingDocsPanel(props) {
       toReview(built, true);
       if (unverified > 0) addToast(unverified + " " + tt("meetdocs.unverified_toast", "item(s) could not be matched to your notes — review the flagged ones."), "warning");
     } catch (e) {
+      if (!mountedRef.current || aiReqRef.current !== reqId) return;
       addToast(tt("meetdocs.ai_failed", "Conversion failed: ") + String(e && e.message || e), "error");
     } finally {
-      setAiBusy(false);
+      if (mountedRef.current && aiReqRef.current === reqId) setAiBusy(false);
     }
   };
   const saveMeeting = () => {
@@ -607,278 +638,311 @@ function MeetingDocsPanel(props) {
     { id: "actions", label: tt("meetdocs.tab_actions", "Action items") + (openCount ? " (" + openCount + ")" : ""), icon: "☑️" }
   ];
   const draftTemplate = draft ? templateById(draft.templateId) : null;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "meetdocs_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "meetdocs-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "meetdocs-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "📋"), " ", tt("meetdocs.title", "Meeting Documentation")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("meetdocs.subtitle", "Notes in, your district’s format out — names masked locally before any AI call."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("meetdocs.close_aria", "Close Meeting Documentation") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("meetdocs.tabs_aria", "Meeting documentation sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
-    "button",
+  const [armDiscard, setArmDiscard] = React.useState(false);
+  const backdropDownRef = React.useRef(false);
+  return /* @__PURE__ */ React.createElement(
+    "div",
     {
-      key: tb.id,
-      type: "button",
-      role: "tab",
-      id: "meetdocs-tab-" + tb.id,
-      "aria-selected": tab === tb.id,
-      "aria-controls": "meetdocs-tabpanel",
-      tabIndex: tab === tb.id ? 0 : -1,
-      "data-help-key": "meetdocs_tab",
-      onClick: () => {
-        setTab(tb.id);
-        if (tb.id !== "meetings") setViewId(null);
+      className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4",
+      style: { zIndex: 260 },
+      role: "presentation",
+      onMouseDown: (e) => {
+        backdropDownRef.current = e.target === e.currentTarget;
       },
-      onKeyDown: (e) => {
-        let next = null;
-        if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
-        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
-        else if (e.key === "Home") next = 0;
-        else if (e.key === "End") next = tabs.length - 1;
-        if (next == null) return;
-        e.preventDefault();
-        const id = tabs[next].id;
-        setTab(id);
-        if (id !== "meetings") setViewId(null);
-        const el = document.getElementById("meetdocs-tab-" + id);
-        if (el) el.focus();
-      },
-      className: "min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 " + (tab === tb.id ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100")
+      onClick: (e) => {
+        const allow = backdropDownRef.current;
+        backdropDownRef.current = false;
+        if (allow && e.target === e.currentTarget) onClose();
+      }
     },
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, tb.icon),
-    " ",
-    tb.label
-  )))), typeof onOpenEligibility === "function" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => onOpenEligibility("elig-prep-title"),
-      className: "min-h-11 px-3 py-2 rounded-lg border border-violet-300 bg-violet-50 text-violet-800 text-xs font-bold hover:bg-violet-100"
-    },
-    tt("meetdocs.eligibility_link", "Open the meeting-preparation guide")
-  ), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500" }, tt("meetdocs.eligibility_link_note", "Opens generic prompts only; no meeting record is transferred."))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "meetdocs-tabpanel", "aria-labelledby": "meetdocs-tab-" + tab, tabIndex: -1 }, tab === "new" && !draft && !tplDraft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.pick_template", "Pick a format")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, allTemplates.map((tpl) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: tpl.id,
-      type: "button",
-      onClick: () => startDraft(tpl.id),
-      className: "min-h-11 p-3 rounded-xl border border-indigo-300 bg-white hover:bg-indigo-50 text-left"
-    },
-    /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-indigo-800" }, tpl.name),
-    /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500" }, tpl.sections.length, " ", tt("meetdocs.sections_short", "sections"), tpl.builtin ? "" : " · " + tt("meetdocs.custom_badge", "custom"))
-  )), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setTplDraft({ name: "", sectionsText: "" }),
-      className: "min-h-11 p-3 rounded-xl border border-dashed border-slate-400 bg-white hover:bg-slate-100 text-left"
-    },
-    /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-slate-700" }, "+ ", tt("meetdocs.new_template", "New custom format")),
-    /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500" }, tt("meetdocs.new_template_hint", "Model your district’s own form once, reuse it forever"))
-  ))), tab === "new" && !draft && tplDraft && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.tpl_editor_title", "New custom format")), /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-tpl-name", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("meetdocs.tpl_name", "Format name")), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      id: "meetdocs-tpl-name",
-      type: "text",
-      value: tplDraft.name,
-      onChange: (e) => setTplDraft((v) => ({ ...v, name: e.target.value })),
-      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-tpl-sections", className: "block text-xs font-bold text-slate-600 mt-2 mb-1" }, tt("meetdocs.tpl_sections", "Sections — one per line, optional hint after a colon")), /* @__PURE__ */ React.createElement(
-    "textarea",
-    {
-      id: "meetdocs-tpl-sections",
-      rows: 7,
-      value: tplDraft.sectionsText,
-      onChange: (e) => setTplDraft((v) => ({ ...v, sectionsText: e.target.value })),
-      placeholder: "Attendees\nConcerns raised: specific and observable\nDecisions\nAction items",
-      className: "w-full text-sm border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
-    const name = tplDraft.name.trim();
-    const sections = tplDraft.sectionsText.split(/\r?\n/).map((line, i) => {
-      const trimmed = line.trim();
-      if (!trimmed) return null;
-      const colon = trimmed.indexOf(":");
-      const title = colon > 0 ? trimmed.slice(0, colon).trim() : trimmed;
-      const hint = colon > 0 ? trimmed.slice(colon + 1).trim() : "";
-      return { id: "c" + i + "_" + title.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 24), title, hint };
-    }).filter(Boolean);
-    if (!name || sections.length === 0) {
-      addToast(tt("meetdocs.tpl_invalid", "A format needs a name and at least one section."), "warning");
-      return;
-    }
-    setCustomTemplates((list) => [...list, { id: meetdocsNextId("tpl"), builtin: false, name, sections }]);
-    setTplDraft(null);
-    addToast(tt("meetdocs.tpl_saved", "Custom format saved."), "success");
-  }, className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("meetdocs.tpl_save", "Save format")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setTplDraft(null), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100" }, tt("meetdocs.cancel", "Cancel")))), tab === "new" && draft && draft.stage === "input" && draftTemplate && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-800" }, draftTemplate.name), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDraft(null), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100" }, tt("meetdocs.back_templates", "Change format"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-title-input", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("meetdocs.meeting_title", "Meeting title (optional)")), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      id: "meetdocs-title-input",
-      type: "text",
-      value: draft.title,
-      onChange: (e) => setDraft((d) => ({ ...d, title: e.target.value })),
-      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-date", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("meetdocs.meeting_date", "Meeting date")), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      id: "meetdocs-date",
-      type: "date",
-      value: draft.date,
-      onChange: (e) => setDraft((d) => ({ ...d, date: e.target.value })),
-      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ))), /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-raw", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("meetdocs.raw_label", "Notes or transcript")), /* @__PURE__ */ React.createElement(
-    "textarea",
-    {
-      id: "meetdocs-raw",
-      rows: 9,
-      value: draft.rawText,
-      onChange: (e) => setDraft((d) => ({ ...d, rawText: e.target.value })),
-      placeholder: tt("meetdocs.raw_placeholder", "Paste your typed notes, bullet fragments, or a meeting transcript here…"),
-      className: "w-full text-sm border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-700" }, tt("meetdocs.mask_title", "Names to mask before the AI call")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500" }, tt("meetdocs.mask_note", "Each name is replaced with a code (Person A, Person B…) on this device before anything is sent, and restored locally in the result. Add every student, family, and staff name that appears in your notes.")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex gap-2" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "text",
-      value: nameInput,
-      onChange: (e) => setNameInput(e.target.value),
-      onKeyDown: (e) => {
-        if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
-        if (e.key === "Enter") {
+    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "meetdocs_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "meetdocs-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "meetdocs-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "📋"), " ", tt("meetdocs.title", "Meeting Documentation")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("meetdocs.subtitle", "Notes in, your district’s format out — names masked locally before any AI call."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("meetdocs.close_aria", "Close Meeting Documentation") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("meetdocs.tabs_aria", "Meeting documentation sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: tb.id,
+        type: "button",
+        role: "tab",
+        id: "meetdocs-tab-" + tb.id,
+        "aria-selected": tab === tb.id,
+        "aria-controls": "meetdocs-tabpanel",
+        tabIndex: tab === tb.id ? 0 : -1,
+        "data-help-key": "meetdocs_tab",
+        onClick: () => {
+          setTab(tb.id);
+          if (tb.id !== "meetings") setViewId(null);
+        },
+        onKeyDown: (e) => {
+          let next = null;
+          if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
+          else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
+          else if (e.key === "Home") next = 0;
+          else if (e.key === "End") next = tabs.length - 1;
+          if (next == null) return;
           e.preventDefault();
-          addMaskName();
-        }
+          const id = tabs[next].id;
+          setTab(id);
+          if (id !== "meetings") setViewId(null);
+          const el = document.getElementById("meetdocs-tab-" + id);
+          if (el) el.focus();
+        },
+        className: "min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 " + (tab === tb.id ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100")
       },
-      "aria-label": tt("meetdocs.mask_input_aria", "Name to mask"),
-      placeholder: tt("meetdocs.mask_placeholder", "e.g. Marcus Rivera"),
-      className: "flex-1 min-w-0 min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addMaskName, className: "min-h-11 px-3 py-2 rounded-lg bg-slate-700 text-white text-sm font-bold hover:bg-slate-800" }, tt("meetdocs.mask_add", "Add"))), draft.maskNames.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 flex flex-wrap gap-1.5" }, meetdocsMaskPairs(draft.maskNames).map((p) => /* @__PURE__ */ React.createElement("li", { key: p.name }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setDraft((d) => ({ ...d, maskNames: d.maskNames.filter((n) => n !== p.name) })),
-      "aria-label": tt("meetdocs.mask_remove_aria", "Stop masking") + " " + p.name,
-      className: "min-h-11 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-300 text-[11px] text-slate-700 hover:bg-rose-50 hover:border-rose-300"
-    },
-    p.name,
-    " → ",
-    p.code,
-    " ",
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "✕")
-  ))))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, _meetdocsAiUsable("text", callGemini) && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      disabled: aiBusy,
-      onClick: convertAi,
-      className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-wait"
-    },
-    aiBusy ? tt("meetdocs.converting", "Converting…") : tt("meetdocs.convert_ai", "Convert with AI") + " ✨"
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: convertManual, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, tt("meetdocs.convert_manual", "Fill in manually (no AI)"))), !_meetdocsAiUsable("text", callGemini) && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] text-slate-500" }, tt("meetdocs.no_ai", "AI conversion is unavailable in this host — manual mode uses the same templates."))), tab === "new" && draft && draft.stage === "review" && draftTemplate && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-800" }, draftTemplate.name, " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-xs text-slate-500" }, "— ", tt("meetdocs.review_hint", "review and edit before saving"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDraft((d) => ({ ...d, stage: "input" })), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100" }, tt("meetdocs.back_input", "Back to notes")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveMeeting, className: "min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800" }, tt("meetdocs.save", "Save record")))), draft.aiUsed && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, tt("meetdocs.certify_note", "AI drafted this from your notes. You are certifying the final record — verify flagged items and edit anything that is wrong before saving.")), draftTemplate.sections.map((sec) => /* @__PURE__ */ React.createElement("div", { key: sec.id, className: "mb-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-sec-" + sec.id, className: "block text-xs font-bold text-slate-700 mb-0.5" }, sec.title, sec.hint ? /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, " — ", sec.hint) : null), /* @__PURE__ */ React.createElement(
-    "textarea",
-    {
-      id: "meetdocs-sec-" + sec.id,
-      rows: 2,
-      value: draft.sections && draft.sections[sec.id] || "",
-      onChange: (e) => setDraft((d) => ({ ...d, sections: { ...d.sections, [sec.id]: e.target.value } })),
-      className: "w-full text-sm border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ))), [["decisions", tt("meetdocs.decisions", "Decisions")], ["actionItems", tt("meetdocs.action_items", "Action items")]].map(([listKey, label]) => /* @__PURE__ */ React.createElement("div", { key: listKey, className: "mb-2 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-700" }, label), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1.5" }, (draft[listKey] || []).map((item, i) => /* @__PURE__ */ React.createElement("li", { key: item.id || i, className: "p-2 rounded-lg border text-xs " + (item.verified === false ? "bg-amber-50 border-amber-300" : "bg-slate-50 border-slate-200") }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "text",
-      value: item.text,
-      "aria-label": label + " " + (i + 1),
-      onChange: (e) => setDraft((d) => ({ ...d, [listKey]: d[listKey].map((x, xi) => xi === i ? { ...x, text: e.target.value } : x) })),
-      className: "w-full min-h-9 border border-slate-200 rounded px-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ), listKey === "actionItems" && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex gap-1.5" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "text",
-      value: item.owner || "",
-      placeholder: tt("meetdocs.owner", "Owner"),
-      "aria-label": tt("meetdocs.owner_aria", "Owner for action item") + " " + (i + 1),
-      onChange: (e) => setDraft((d) => ({ ...d, actionItems: d.actionItems.map((x, xi) => xi === i ? { ...x, owner: e.target.value } : x) })),
-      className: "w-32 min-h-9 border border-slate-200 rounded px-2 bg-white text-[11px] focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "date",
-      value: item.due || "",
-      "aria-label": tt("meetdocs.due_aria", "Due date for action item") + " " + (i + 1),
-      onChange: (e) => setDraft((d) => ({ ...d, actionItems: d.actionItems.map((x, xi) => xi === i ? { ...x, due: e.target.value } : x) })),
-      className: "min-h-9 border border-slate-200 rounded px-2 bg-white text-[11px] focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  )), item.verified === false && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] font-bold text-amber-800" }, tt("meetdocs.unverified", "⚠ Not found in your notes — verify or delete.")), item.source && item.verified !== false && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] text-slate-500" }, "“", item.source, "”")), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-label": tt("meetdocs.remove_item_aria", "Remove item") + " " + (i + 1),
-      onClick: () => setDraft((d) => ({ ...d, [listKey]: d[listKey].filter((_, xi) => xi !== i) })),
-      className: "shrink-0 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-slate-600 hover:text-rose-700 hover:bg-rose-50"
-    },
-    "✕"
-  ))))), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setDraft((d) => ({ ...d, [listKey]: [...d[listKey] || [], { id: meetdocsNextId("mi"), text: "", source: "", verified: true, ...listKey === "actionItems" ? { owner: "", due: "", done: false } : {} }] })),
-      className: "mt-1.5 min-h-11 px-2 py-1 rounded border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-100"
-    },
-    "+ ",
-    tt("meetdocs.add_item", "Add")
-  )))), tab === "meetings" && viewMeeting && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setViewId(null), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "←"), " ", tt("meetdocs.back_meetings", "All meetings")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => exportHtmlFor(viewMeeting), className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("meetdocs.export", "Download")), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => {
-        if (armDelete === viewMeeting.id) {
-          setMeetings((m) => m.filter((x) => x.id !== viewMeeting.id));
-          setViewId(null);
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, tb.icon),
+      " ",
+      tb.label
+    )))), typeof onOpenEligibility === "function" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 px-4 flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => onOpenEligibility("elig-prep-title"),
+        className: "min-h-11 px-3 py-2 rounded-lg border border-violet-300 bg-violet-50 text-violet-800 text-xs font-bold hover:bg-violet-100"
+      },
+      tt("meetdocs.eligibility_link", "Open the meeting-preparation guide")
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, tt("meetdocs.eligibility_link_note", "Opens generic prompts only; no meeting record is transferred."))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "meetdocs-tabpanel", "aria-labelledby": "meetdocs-tab-" + tab, tabIndex: -1 }, tab === "new" && !draft && !tplDraft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.pick_template", "Pick a format")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, allTemplates.map((tpl) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: tpl.id,
+        type: "button",
+        onClick: () => startDraft(tpl.id),
+        className: "min-h-11 p-3 rounded-xl border border-indigo-300 bg-white hover:bg-indigo-50 text-left"
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-indigo-800" }, tpl.name),
+      /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, tpl.sections.length, " ", tt("meetdocs.sections_short", "sections"), tpl.builtin ? "" : " · " + tt("meetdocs.custom_badge", "custom"))
+    )), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => setTplDraft({ name: "", sectionsText: "" }),
+        className: "min-h-11 p-3 rounded-xl border border-dashed border-slate-400 bg-white hover:bg-slate-100 text-left"
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-slate-700" }, "+ ", tt("meetdocs.new_template", "New custom format")),
+      /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, tt("meetdocs.new_template_hint", "Model your district’s own form once, reuse it forever"))
+    ))), tab === "new" && !draft && tplDraft && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.tpl_editor_title", "New custom format")), /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-tpl-name", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("meetdocs.tpl_name", "Format name")), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "meetdocs-tpl-name",
+        type: "text",
+        value: tplDraft.name,
+        onChange: (e) => setTplDraft((v) => ({ ...v, name: e.target.value })),
+        className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ), /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-tpl-sections", className: "block text-xs font-bold text-slate-600 mt-2 mb-1" }, tt("meetdocs.tpl_sections", "Sections — one per line, optional hint after a colon")), /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        id: "meetdocs-tpl-sections",
+        rows: 7,
+        value: tplDraft.sectionsText,
+        onChange: (e) => setTplDraft((v) => ({ ...v, sectionsText: e.target.value })),
+        placeholder: "Attendees\nConcerns raised: specific and observable\nDecisions\nAction items",
+        className: "w-full text-sm border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      const name = tplDraft.name.trim();
+      const sections = tplDraft.sectionsText.split(/\r?\n/).map((line, i) => {
+        const trimmed = line.trim();
+        if (!trimmed) return null;
+        const colon = trimmed.indexOf(":");
+        const title = colon > 0 ? trimmed.slice(0, colon).trim() : trimmed;
+        const hint = colon > 0 ? trimmed.slice(colon + 1).trim() : "";
+        return { id: "c" + i + "_" + title.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 24), title, hint };
+      }).filter(Boolean);
+      if (!name || sections.length === 0) {
+        addToast(tt("meetdocs.tpl_invalid", "A format needs a name and at least one section."), "warning");
+        return;
+      }
+      setCustomTemplates((list) => [...list, { id: meetdocsNextId("tpl"), builtin: false, name, sections }]);
+      setTplDraft(null);
+      addToast(tt("meetdocs.tpl_saved", "Custom format saved."), "success");
+    }, className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("meetdocs.tpl_save", "Save format")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setTplDraft(null), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100" }, tt("meetdocs.cancel", "Cancel")))), tab === "new" && draft && draft.stage === "input" && draftTemplate && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-800" }, draftTemplate.name), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: aiBusy, onClick: () => {
+      const hasWork = !!(String(draft.rawText || "").trim() || Array.isArray(draft.maskNames) && draft.maskNames.length > 0);
+      if (hasWork && !armDiscard) {
+        setArmDiscard(true);
+        meetdocsAnnounce(tt("meetdocs.discard_arm_announce", "Activate Change format again to discard your pasted notes."));
+        return;
+      }
+      setArmDiscard(false);
+      aiReqRef.current += 1;
+      setAiBusy(false);
+      setDraft(null);
+    }, className: "min-h-11 px-3 py-2 rounded-lg border text-sm font-bold disabled:opacity-50 " + (armDiscard ? "bg-rose-600 text-white border-rose-700" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-100") }, armDiscard ? tt("meetdocs.discard_confirm", "Tap again to discard notes") : tt("meetdocs.back_templates", "Change format"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-title-input", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("meetdocs.meeting_title", "Meeting title (optional)")), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "meetdocs-title-input",
+        type: "text",
+        value: draft.title,
+        onChange: (e) => setDraft((d) => ({ ...d, title: e.target.value })),
+        className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-date", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("meetdocs.meeting_date", "Meeting date")), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "meetdocs-date",
+        type: "date",
+        value: draft.date,
+        onChange: (e) => setDraft((d) => ({ ...d, date: e.target.value })),
+        className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ))), /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-raw", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("meetdocs.raw_label", "Notes or transcript")), /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        id: "meetdocs-raw",
+        rows: 9,
+        value: draft.rawText,
+        onChange: (e) => setDraft((d) => ({ ...d, rawText: e.target.value })),
+        placeholder: tt("meetdocs.raw_placeholder", "Paste your typed notes, bullet fragments, or a meeting transcript here…"),
+        className: "w-full text-sm border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-700" }, tt("meetdocs.mask_title", "Names to mask before the AI call")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("meetdocs.mask_note", "Each name is replaced with a code (Person A, Person B…) on this device before anything is sent, and restored locally in the result. Add every student, family, and staff name that appears in your notes.")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex gap-2" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "text",
+        value: nameInput,
+        onChange: (e) => setNameInput(e.target.value),
+        onKeyDown: (e) => {
+          if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.key === "Enter") {
+            e.preventDefault();
+            addMaskName();
+          }
+        },
+        "aria-label": tt("meetdocs.mask_input_aria", "Name to mask"),
+        placeholder: tt("meetdocs.mask_placeholder", "e.g. Marcus Rivera"),
+        className: "flex-1 min-w-0 min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addMaskName, className: "min-h-11 px-3 py-2 rounded-lg bg-slate-700 text-white text-sm font-bold hover:bg-slate-800" }, tt("meetdocs.mask_add", "Add"))), draft.maskNames.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 flex flex-wrap gap-1.5" }, meetdocsMaskPairs(draft.maskNames).map((p) => /* @__PURE__ */ React.createElement("li", { key: p.name }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => setDraft((d) => ({ ...d, maskNames: d.maskNames.filter((n) => n !== p.name) })),
+        "aria-label": tt("meetdocs.mask_remove_aria", "Stop masking") + " " + p.name,
+        className: "min-h-11 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-300 text-xs text-slate-700 hover:bg-rose-50 hover:border-rose-300"
+      },
+      p.name,
+      " → ",
+      p.code,
+      " ",
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "✕")
+    ))))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, _meetdocsAiUsable("text", callGemini) && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        disabled: aiBusy,
+        onClick: convertAi,
+        className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-wait"
+      },
+      aiBusy ? tt("meetdocs.converting", "Converting…") : tt("meetdocs.convert_ai", "Convert with AI") + " ✨"
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: aiBusy, onClick: convertManual, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100 disabled:opacity-50" }, tt("meetdocs.convert_manual", "Fill in manually (no AI)"))), !_meetdocsAiUsable("text", callGemini) && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, tt("meetdocs.no_ai", "AI conversion is unavailable in this host — manual mode uses the same templates."))), tab === "new" && draft && (!draftTemplate || draft.stage !== "input" && draft.stage !== "review") && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-300 rounded-xl p-4 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-amber-900" }, tt("meetdocs.missing_template_draft", "This saved draft references a template that is no longer available.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      aiReqRef.current += 1;
+      setAiBusy(false);
+      setDraft(null);
+    }, className: "min-h-11 px-3 py-2 rounded-lg bg-amber-700 text-white text-sm font-bold hover:bg-amber-800" }, tt("meetdocs.discard_broken_draft", "Discard draft and choose a format"))), tab === "new" && draft && draft.stage === "review" && draftTemplate && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-800" }, draftTemplate.name, " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-xs text-slate-600" }, "— ", tt("meetdocs.review_hint", "review and edit before saving"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDraft((d) => ({ ...d, stage: "input" })), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100" }, tt("meetdocs.back_input", "Back to notes")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveMeeting, className: "min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800" }, tt("meetdocs.save", "Save record")))), draft.aiUsed && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, tt("meetdocs.certify_note", "AI drafted this from your notes. You are certifying the final record — verify flagged items and edit anything that is wrong before saving.")), draftTemplate.sections.map((sec) => /* @__PURE__ */ React.createElement("div", { key: sec.id, className: "mb-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "meetdocs-sec-" + sec.id, className: "block text-xs font-bold text-slate-700 mb-0.5" }, sec.title, sec.hint ? /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-600" }, " — ", sec.hint) : null), /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        id: "meetdocs-sec-" + sec.id,
+        rows: 2,
+        value: draft.sections && draft.sections[sec.id] || "",
+        onChange: (e) => setDraft((d) => ({ ...d, sections: { ...d.sections, [sec.id]: e.target.value } })),
+        className: "w-full text-sm border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ))), [["decisions", tt("meetdocs.decisions", "Decisions")], ["actionItems", tt("meetdocs.action_items", "Action items")]].map(([listKey, label]) => /* @__PURE__ */ React.createElement("div", { key: listKey, className: "mb-2 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-700" }, label), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1.5" }, (draft[listKey] || []).map((item, i) => /* @__PURE__ */ React.createElement("li", { key: item.id || i, className: "p-2 rounded-lg border text-xs " + (item.verified === false ? "bg-amber-50 border-amber-300" : "bg-slate-50 border-slate-200") }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "text",
+        value: item.text,
+        "aria-label": label + " " + (i + 1),
+        onChange: (e) => setDraft((d) => ({ ...d, [listKey]: d[listKey].map((x, xi) => xi === i ? { ...x, text: e.target.value } : x) })),
+        className: "w-full min-h-11 border border-slate-200 rounded px-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ), listKey === "actionItems" && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-1.5" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "text",
+        value: item.owner || "",
+        placeholder: tt("meetdocs.owner", "Owner"),
+        "aria-label": tt("meetdocs.owner_aria", "Owner for action item") + " " + (i + 1),
+        onChange: (e) => setDraft((d) => ({ ...d, actionItems: d.actionItems.map((x, xi) => xi === i ? { ...x, owner: e.target.value } : x) })),
+        className: "w-32 min-h-11 border border-slate-200 rounded px-2 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "date",
+        value: item.due || "",
+        "aria-label": tt("meetdocs.due_aria", "Due date for action item") + " " + (i + 1),
+        onChange: (e) => setDraft((d) => ({ ...d, actionItems: d.actionItems.map((x, xi) => xi === i ? { ...x, due: e.target.value } : x) })),
+        className: "min-h-11 border border-slate-200 rounded px-2 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    )), item.verified === false && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-bold text-amber-800" }, tt("meetdocs.unverified", "⚠ Not found in your notes — verify or delete.")), item.source && item.verified !== false && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, "“", item.source, "”")), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-label": tt("meetdocs.remove_item_aria", "Remove item") + " " + (i + 1),
+        onClick: () => setDraft((d) => ({ ...d, [listKey]: d[listKey].filter((_, xi) => xi !== i) })),
+        className: "shrink-0 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-slate-600 hover:text-rose-700 hover:bg-rose-50"
+      },
+      "✕"
+    ))))), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => setDraft((d) => ({ ...d, [listKey]: [...d[listKey] || [], { id: meetdocsNextId("mi"), text: "", source: "", verified: true, ...listKey === "actionItems" ? { owner: "", due: "", done: false } : {} }] })),
+        className: "mt-1.5 min-h-11 px-2 py-1 rounded border border-slate-300 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100"
+      },
+      "+ ",
+      tt("meetdocs.add_item", "Add")
+    )))), tab === "meetings" && viewMeeting && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setViewId(null), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "←"), " ", tt("meetdocs.back_meetings", "All meetings")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => exportHtmlFor(viewMeeting), className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("meetdocs.export", "Download")), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          if (armDelete === viewMeeting.id) {
+            setMeetings((m) => m.filter((x) => x.id !== viewMeeting.id));
+            setViewId(null);
+            setArmDelete(null);
+            addToast(tt("meetdocs.deleted_toast", "Meeting deleted."), "info");
+          } else {
+            setArmDelete(viewMeeting.id);
+            meetdocsAnnounce(tt("meetdocs.delete_arm_announce", "Activate delete again to permanently remove this meeting."));
+          }
+        },
+        className: "min-h-11 px-3 py-2 rounded-lg border text-sm font-bold " + (armDelete === viewMeeting.id ? "bg-rose-600 text-white border-rose-700" : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50")
+      },
+      armDelete === viewMeeting.id ? tt("meetdocs.delete_confirm", "Tap again to delete") : tt("meetdocs.delete", "Delete")
+    ))), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-slate-800" }, viewMeeting.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, viewMeeting.templateName, " · ", viewMeeting.date, viewMeeting.aiUsed ? " · " + tt("meetdocs.ai_badge", "AI-drafted, human-certified") : ""), (templateById(viewMeeting.templateId) || { sections: Object.keys(viewMeeting.sections || {}).map((id) => ({ id, title: id })) }).sections.map((sec) => {
+      const body = viewMeeting.sections && viewMeeting.sections[sec.id];
+      if (!body) return null;
+      return /* @__PURE__ */ React.createElement("div", { key: sec.id, className: "mt-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, sec.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 whitespace-pre-wrap" }, body));
+    }), (viewMeeting.decisions || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-green-800" }, tt("meetdocs.decisions", "Decisions")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1 text-xs text-slate-700 list-disc pl-4" }, viewMeeting.decisions.map((d, i) => /* @__PURE__ */ React.createElement("li", { key: i }, d.text)))), (viewMeeting.actionItems || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-sky-800" }, tt("meetdocs.action_items", "Action items")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1 text-xs text-slate-700" }, viewMeeting.actionItems.map((a) => /* @__PURE__ */ React.createElement("li", { key: a.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 cursor-pointer -my-2 -ml-2" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "checkbox",
+        checked: !!a.done,
+        onChange: (e) => setItemDone(viewMeeting.id, a.id, e.target.checked),
+        "aria-label": tt("meetdocs.done_aria", "Mark done:") + " " + a.text,
+        className: "w-4 h-4"
+      }
+    )), /* @__PURE__ */ React.createElement("span", { className: a.done ? "line-through text-slate-600" : "" }, a.text, a.owner ? " — " + a.owner : "", a.due ? " (" + a.due + ")" : ""))))))), tab === "meetings" && !viewMeeting && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.meetings_title", "Saved meetings")), meetings.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("meetdocs.no_meetings", "Nothing saved yet. Build a record on the New record tab.")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, meetings.map((m) => /* @__PURE__ */ React.createElement("li", { key: m.id }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          setViewId(m.id);
           setArmDelete(null);
-          addToast(tt("meetdocs.deleted_toast", "Meeting deleted."), "info");
-        } else {
-          setArmDelete(viewMeeting.id);
-          meetdocsAnnounce(tt("meetdocs.delete_arm_announce", "Activate delete again to permanently remove this meeting."));
-        }
+        },
+        className: "w-full min-h-11 flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-left"
       },
-      className: "min-h-11 px-3 py-2 rounded-lg border text-sm font-bold " + (armDelete === viewMeeting.id ? "bg-rose-600 text-white border-rose-700" : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50")
-    },
-    armDelete === viewMeeting.id ? tt("meetdocs.delete_confirm", "Tap again to delete") : tt("meetdocs.delete", "Delete")
-  ))), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-slate-800" }, viewMeeting.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, viewMeeting.templateName, " · ", viewMeeting.date, viewMeeting.aiUsed ? " · " + tt("meetdocs.ai_badge", "AI-drafted, human-certified") : ""), (templateById(viewMeeting.templateId) || { sections: [] }).sections.map((sec) => {
-    const body = viewMeeting.sections && viewMeeting.sections[sec.id];
-    if (!body) return null;
-    return /* @__PURE__ */ React.createElement("div", { key: sec.id, className: "mt-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, sec.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 whitespace-pre-wrap" }, body));
-  }), (viewMeeting.decisions || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-green-800" }, tt("meetdocs.decisions", "Decisions")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1 text-xs text-slate-700 list-disc pl-4" }, viewMeeting.decisions.map((d, i) => /* @__PURE__ */ React.createElement("li", { key: i }, d.text)))), (viewMeeting.actionItems || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-sky-800" }, tt("meetdocs.action_items", "Action items")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1 text-xs text-slate-700" }, viewMeeting.actionItems.map((a) => /* @__PURE__ */ React.createElement("li", { key: a.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: !!a.done,
-      onChange: (e) => setItemDone(viewMeeting.id, a.id, e.target.checked),
-      "aria-label": tt("meetdocs.done_aria", "Mark done:") + " " + a.text,
-      className: "w-4 h-4"
-    }
-  ), /* @__PURE__ */ React.createElement("span", { className: a.done ? "line-through text-slate-600" : "" }, a.text, a.owner ? " — " + a.owner : "", a.due ? " (" + a.due + ")" : ""))))))), tab === "meetings" && !viewMeeting && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.meetings_title", "Saved meetings")), meetings.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("meetdocs.no_meetings", "Nothing saved yet. Build a record on the New record tab.")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, meetings.map((m) => /* @__PURE__ */ React.createElement("li", { key: m.id }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => {
-        setViewId(m.id);
-        setArmDelete(null);
-      },
-      className: "w-full min-h-11 flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-left"
-    },
-    /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-slate-800" }, m.title), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500" }, m.templateName, " · ", m.date, " · ", (m.actionItems || []).filter((a) => !a.done).length, " ", tt("meetdocs.open_short", "open action item(s)"))),
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "shrink-0 text-slate-600" }, "›")
-  )))), meetings.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[10px] text-slate-500" }, tt("meetdocs.storage_note", "Records live only in this browser’s storage — download anything you must keep (Gemini Canvas may not persist storage between sessions)."))), tab === "actions" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.actions_title", "Action items across meetings")), rollup.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("meetdocs.no_actions", "No action items yet — they collect here from every saved meeting.")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, rollup.map((item) => /* @__PURE__ */ React.createElement("li", { key: item.meetingId + item.id, className: "flex items-center gap-2 p-2 rounded-xl border text-xs " + (item.overdue ? "bg-rose-50 border-rose-300" : "bg-white border-slate-300") }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "checkbox",
-      checked: item.done,
-      onChange: (e) => setItemDone(item.meetingId, item.id, e.target.checked),
-      "aria-label": tt("meetdocs.done_aria", "Mark done:") + " " + item.text,
-      className: "w-4 h-4 shrink-0"
-    }
-  ), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 " + (item.done ? "line-through text-slate-600" : "text-slate-700") }, item.text, item.owner ? " — " + item.owner : ""), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[10px] text-slate-500" }, item.overdue && /* @__PURE__ */ React.createElement("span", { className: "font-bold text-rose-700" }, tt("meetdocs.overdue", "overdue"), " · "), item.due || tt("meetdocs.no_due", "no date"), " · ", item.meetingDate))))))));
+      /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-slate-800" }, m.title), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, m.templateName, " · ", m.date, " · ", (m.actionItems || []).filter((a) => !a.done).length, " ", tt("meetdocs.open_short", "open action item(s)"))),
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "shrink-0 text-slate-600" }, "›")
+    )))), meetings.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-xs text-slate-600" }, tt("meetdocs.storage_note", "Records live only in this browser’s storage — download anything you must keep (Gemini Canvas may not persist storage between sessions)."))), tab === "actions" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("meetdocs.actions_title", "Action items across meetings")), rollup.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("meetdocs.no_actions", "No action items yet — they collect here from every saved meeting.")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, rollup.map((item) => /* @__PURE__ */ React.createElement("li", { key: item.meetingId + item.id, className: "flex items-center gap-2 p-2 rounded-xl border text-xs " + (item.overdue ? "bg-rose-50 border-rose-300" : "bg-white border-slate-300") }, /* @__PURE__ */ React.createElement("label", { className: "min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 cursor-pointer -my-2 -ml-2" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "checkbox",
+        checked: item.done,
+        onChange: (e) => setItemDone(item.meetingId, item.id, e.target.checked),
+        "aria-label": tt("meetdocs.done_aria", "Mark done:") + " " + item.text,
+        className: "w-4 h-4 shrink-0"
+      }
+    )), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 " + (item.done ? "line-through text-slate-600" : "text-slate-700") }, item.text, item.owner ? " — " + item.owner : ""), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-xs text-slate-600" }, item.overdue && /* @__PURE__ */ React.createElement("span", { className: "font-bold text-rose-700" }, tt("meetdocs.overdue", "overdue"), " · "), item.due || tt("meetdocs.no_due", "no date"), " · ", item.meetingDate)))))))
+  );
 }
 
   window.AlloModules = window.AlloModules || {};

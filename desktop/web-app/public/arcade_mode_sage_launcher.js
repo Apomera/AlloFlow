@@ -1,4 +1,13 @@
 (function () {
+  'use strict';
+  if (typeof window === 'undefined' || window.__alloArcadeSageLauncherLoaded) return;
+  window.__alloArcadeSageLauncherLoaded = true;
+
+  var ALLOWED_MINUTES = [5, 10, 15, 20, 30];
+  var SAFE_COLOR_RE = /^(?:#[0-9a-f]{3,8}|[a-z]{1,30}|(?:rgb|rgba|hsl|hsla)\([\d.,%\s]+\))$/i;
+  function safeColor(v, fallback) {
+    return (typeof v === 'string' && SAFE_COLOR_RE.test(v.trim())) ? v.trim() : fallback;
+  }
   // ═══════════════════════════════════════════
   // arcade_mode_sage_launcher.js — AlloHaven Arcade plugin (Phase 3a)
   //
@@ -67,35 +76,54 @@
     ready: true,
 
     render: function (ctx) {
+      ctx = (ctx && typeof ctx === 'object') ? ctx : {};
       var React = ctx.React || window.React;
+      if (!React || typeof React.createElement !== 'function' || typeof React.useState !== 'function') return null;
       var h = React.createElement;
-      var palette = ctx.palette || {};
-      var session = ctx.session;
-      var mpt = ctx.minutesPerToken || 5;
+      var rawPalette = (ctx.palette && typeof ctx.palette === 'object') ? ctx.palette : {};
+      var palette = {
+        surface: safeColor(rawPalette.surface, '#1e293b'),
+        border: safeColor(rawPalette.border, '#334155'),
+        text: safeColor(rawPalette.text, '#e2e8f0'),
+        textDim: safeColor(rawPalette.textDim, '#cbd5e1'),
+        textMute: safeColor(rawPalette.textMute, '#a3a3a3'),
+        bg: safeColor(rawPalette.bg, '#0f172a'),
+        accent: safeColor(rawPalette.accent, '#60a5fa'),
+        onAccent: safeColor(rawPalette.onAccent, '#0f172a')
+      };
+      var session = (ctx.session && typeof ctx.session === 'object') ? ctx.session : null;
+      var rawMpt = Number(ctx.minutesPerToken);
+      var mpt = (Number.isFinite(rawMpt) && rawMpt > 0) ? rawMpt : 5;
+      var rawTokens = Number(ctx.tokens);
+      var tokens = (Number.isFinite(rawTokens) && rawTokens > 0) ? rawTokens : 0;
 
       // Per-card state (locally scoped to this render). For a small UI
       // like this we don't need a full-fledged React component — a
       // controlled <select> handles the only choice.
       var minutesTuple = React.useState(5);
-      var minutes = minutesTuple[0];
+      var minutes = ALLOWED_MINUTES.indexOf(minutesTuple[0]) !== -1 ? minutesTuple[0] : 5;
       var setMinutes = minutesTuple[1];
 
       var tokensCost = Math.ceil(minutes / mpt);
-      var canAfford = ctx.tokens >= tokensCost;
+      var canAfford = tokens >= tokensCost;
       var sessionActiveHere = !!(session && session.modeId === 'sage-launcher');
       var sessionElsewhere = !!(session && session.modeId !== 'sage-launcher');
       var disabled = !canAfford || !!session;
 
       function handleLaunch() {
-        if (disabled) return;
-        var ok = ctx.onLaunch(minutes);
+        if (disabled || ALLOWED_MINUTES.indexOf(minutes) === -1 || typeof ctx.onLaunch !== 'function') return;
+        var ok = false;
+        try { ok = Boolean(ctx.onLaunch(minutes)); } catch (_) { return; }
         if (!ok) return;
+        var closeHub = function () {
+          if (typeof ctx.onClose === 'function') { try { ctx.onClose(); } catch (_) {} }
+        };
         // Sage lives in STEAM Lab. If the host wired setStemLabTool we
         // deep-link straight to it; otherwise give the student a clear
         // "go to STEAM Lab → AlloBot Sage" instruction.
         if (typeof ctx.setStemLabTool === 'function') {
           // Close the arcade hub first so the deep-link isn't covered.
-          ctx.onClose();
+          closeHub();
           // Best-effort — if STEAM Lab isn't already open, the student
           // may need a second click. The host module decides.
           setTimeout(function () {
@@ -104,9 +132,9 @@
         } else {
           // Fallback path — just close the hub. AlloHaven's launch
           // toast already announced the session.
-          ctx.onClose();
+          closeHub();
           if (typeof ctx.addToast === 'function') {
-            ctx.addToast('Open STEAM Lab → AlloBot Sage to start playing.');
+            try { ctx.addToast('Open STEAM Lab → AlloBot Sage to start playing.'); } catch (_) {}
           }
         }
       }
@@ -116,8 +144,8 @@
         'aria-labelledby': 'sage-launcher-title',
         style: {
           padding: '12px 14px',
-          background: palette.surface || '#1e293b',
-          border: '1px solid ' + (palette.border || '#334155'),
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
           borderRadius: '10px'
         }
       },
@@ -127,12 +155,12 @@
           h('div', { style: { flex: 1, minWidth: 0 } },
             h('h4', {
               id: 'sage-launcher-title',
-              style: { margin: 0, fontSize: '15px', fontWeight: 700, color: palette.text || '#e2e8f0' }
+              style: { margin: 0, fontSize: '15px', fontWeight: 700, color: palette.text }
             }, 'AlloBot Sage'),
             h('div', {
               style: {
                 fontSize: '11px',
-                color: palette.textDim || '#cbd5e1',
+                color: palette.textDim,
                 lineHeight: '1.45',
                 marginTop: '3px'
               }
@@ -145,11 +173,11 @@
         sessionActiveHere ? h('div', {
           style: {
             padding: '8px 12px',
-            background: (palette.bg || '#0f172a') + 'cc',
-            border: '1px solid ' + (palette.accent || '#60a5fa'),
+            background: palette.bg,
+            border: '1px solid ' + palette.accent,
             borderRadius: '8px',
             fontSize: '11px',
-            color: palette.text || '#e2e8f0',
+            color: palette.text,
             marginBottom: '10px',
             lineHeight: 1.4
           }
@@ -163,7 +191,7 @@
             htmlFor: 'sage-launcher-minutes',
             style: {
               fontSize: '11px',
-              color: palette.textMute || '#a3a3a3',
+              color: palette.textMute,
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.06em'
@@ -174,26 +202,26 @@
             className: 'ah-prominent-input',
             value: minutes,
             onChange: function (e) {
-              var n = parseInt(e.target.value, 10);
-              if (!isNaN(n)) setMinutes(n);
+              var n = parseInt(e && e.target ? e.target.value : '', 10);
+              if (ALLOWED_MINUTES.indexOf(n) !== -1) setMinutes(n);
             },
             disabled: disabled,
             style: {
               minHeight: '44px',
               minWidth: '44px',
               padding: '8px 10px',
-              background: palette.bg || '#0f172a',
-              border: '1px solid ' + (palette.border || '#334155'),
-              color: palette.text || '#e2e8f0',
+              background: palette.bg,
+              border: '1px solid ' + palette.border,
+              color: palette.text,
               borderRadius: '6px',
               fontSize: '12px',
               fontFamily: 'inherit',
               cursor: disabled ? 'not-allowed' : 'pointer'
             }
           },
-            [5, 10, 15, 20, 30].map(function (n) {
+            ALLOWED_MINUTES.map(function (n) {
               var costN = Math.ceil(n / mpt);
-              var afford = ctx.tokens >= costN;
+              var afford = tokens >= costN;
               return h('option', {
                 key: 'min-' + n,
                 value: n,
@@ -203,12 +231,13 @@
           ),
           h('div', { style: { flex: 1 } }), // spacer
           h('button', {
+            type: 'button',
             onClick: handleLaunch,
             disabled: disabled,
             'aria-label': 'Launch AlloBot Sage for ' + minutes + ' minutes (' + tokensCost + ' tokens)',
             style: {
-              background: disabled ? (palette.surface || '#1e293b') : (palette.accent || '#60a5fa'),
-              color: disabled ? (palette.textMute || '#a3a3a3') : (palette.onAccent || '#0f172a'),
+              background: disabled ? palette.surface : palette.accent,
+              color: disabled ? palette.textMute : palette.onAccent,
               border: 'none',
               borderRadius: '8px',
               minHeight: '44px',

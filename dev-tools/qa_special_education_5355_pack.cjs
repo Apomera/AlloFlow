@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { warningCodes } = require('./non_eppp_warning_checks.cjs');
 const root = path.resolve(__dirname, '..');
 const pack = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'special_education_5355_pack.json'), 'utf8'));
 const sourceItems = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'special_education_5355_items.json'), 'utf8'));
@@ -17,7 +18,16 @@ const expectedDomains = {
   assessment: { label: 'Assessment', weight: 0.23, officialQuestions: 27, diagnosticQuestions: 23 },
   'professional-practice-collaboration': { label: 'Professional Learning, Practice, and Collaboration', weight: 0.19, officialQuestions: 23, diagnosticQuestions: 19 },
 };
-const checks = ['blueprint-alignment', 'learning-linkage', 'authoritative-source', 'one-best-answer', 'distractor-quality', 'clue-resistance', 'rationale-quality', 'provenance'];
+const checks = ['blueprint-alignment', 'learning-linkage', 'authoritative-source', 'one-best-answer', 'distractor-quality', 'clue-resistance', 'choice-length-parity', 'rationale-quality', 'feedback-specificity', 'provenance'];
+const targetedFeedbackWarnings = new Set([
+  'short-prompt',
+  'severe-answer-length-clue',
+  'asymmetric-extreme-distractors',
+  'incorrect-option-feedback-detail',
+  'incorrect-option-choice-restatement',
+  'incorrect-option-full-key-echo',
+]);
+const boilerplateDistractorPattern = /\b(?:does not apply the key requirement|does not satisfy the complete task|not the best answer\.)/i;
 const findings = [];
 const itemFindings = new Map();
 const add = (item, check, message) => {
@@ -68,7 +78,22 @@ for (const item of pack.items) {
   if (item.type !== 'single-choice' || !item.prompt || choices.length !== 4 || !Number.isInteger(item.answerIndex) || item.answerIndex < 0 || item.answerIndex > 3) add(item, 'one-best-answer', 'Invalid single-choice structure or answer key.');
   if (new Set(choices.map(clean)).size !== 4 || choices.some((choice) => !clean(choice))) add(item, 'distractor-quality', 'Choices must be four unique, nonempty responses.');
   if (choices.some((choice) => /\b(?:all|none) of the above\b/i.test(choice))) add(item, 'distractor-quality', 'All/none-of-the-above is not allowed.');
+  if (choices.length === 4 && Number.isInteger(item.answerIndex) && item.answerIndex >= 0 && item.answerIndex <= 3) {
+    const lengths = choices.map((choice) => String(choice || '').length);
+    const keyLength = lengths[item.answerIndex];
+    const longestDistractor = Math.max(...lengths.filter((_, index) => index !== item.answerIndex));
+    if (longestDistractor > 0 && keyLength >= longestDistractor * 1.25) {
+      add(item, 'choice-length-parity', 'Correct choice length (' + keyLength + ') reaches or exceeds 1.25x the longest distractor (' + longestDistractor + ').');
+    }
+  }
   if (!item.rationale || item.rationale.length < 100 || !Array.isArray(item.choiceRationales) || item.choiceRationales.length !== 4 || item.choiceRationales.some((entry) => String(entry || '').length < 100)) add(item, 'rationale-quality', 'Full and answer-specific rationale floor is not met.');
+  if (Array.isArray(item.choiceRationales) && item.choiceRationales.length === 4 && Number.isInteger(item.answerIndex)) {
+    const distractorRationales = item.choiceRationales.filter((_, index) => index !== item.answerIndex).map((entry) => String(entry || '').trim());
+    if (new Set(distractorRationales).size !== 3) add(item, 'feedback-specificity', 'Distractor rationales must be three distinct option-specific explanations.');
+    if (distractorRationales.some((entry) => boilerplateDistractorPattern.test(entry))) add(item, 'feedback-specificity', 'Distractor rationales must not use generic boilerplate templates.');
+    const itemWarnings = warningCodes(item).filter((code) => targetedFeedbackWarnings.has(code));
+    if (itemWarnings.length) add(item, 'feedback-specificity', 'Targeted feedback/cue warnings remain: ' + itemWarnings.join(', ') + '.');
+  }
   if (!validReferences(item.references)) add(item, 'authoritative-source', 'Every item must cite the official ETS blueprint and only allowlisted authoritative sources.');
   if (item.reviewStatus !== 'source-reviewed' || item.qaStatus !== 'qa-passed' || !/^\d{4}-\d{2}-\d{2}$/.test(item.qaReviewedAt || '')) add(item, 'provenance', 'Source-review and QA provenance is incomplete.');
   const skillId = Array.isArray(item.skillIds) && item.skillIds.length === 1 ? item.skillIds[0] : '';

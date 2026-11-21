@@ -2,7 +2,8 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const banks = require('./teaching_reading_5205/item_content.cjs');
+const { applyChoiceOverrides } = require('./reading_choice_overrides/index.cjs');
+const banks = applyChoiceOverrides(require('./teaching_reading_5205/item_content.cjs'), 'R');
 const root = path.resolve(__dirname, '..');
 const reviewNote = 'Independently authored and source reviewed; independent elementary literacy, dyslexia, multilingual-learner, accessibility, and psychometric validation remain pending.';
 const ensure = (value, minimum, suffix) => String(value || '').trim().length >= minimum ? String(value).trim() : (String(value || '').trim() + ' ' + suffix).trim();

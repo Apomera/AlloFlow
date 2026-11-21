@@ -2,36 +2,79 @@
 // Edit this file, then rebuild its CDN module: node _build_first_wave_view_modules.js ColdPathScreens
 
 // Extracted from AlloFlowANTI.txt (gemini-bridge-view).
+function _useColdPathDialogLock(dialogRef, onEscape) {
+  const hostHook = typeof window !== 'undefined' && window.__alloHooks && typeof window.__alloHooks.useFocusTrap === 'function'
+    ? window.__alloHooks.useFocusTrap
+    : null;
+  const fallbackNoop = React.useCallback(() => {}, []);
+  // Always call the same number of hooks per render.
+  if (hostHook) {
+    hostHook(dialogRef, true, onEscape);
+  } else {
+    fallbackNoop();
+  }
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined' || !document.body) return undefined;
+    const lock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+    if (++lock.count === 1) {
+      lock.prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      lock.count = Math.max(0, lock.count - 1);
+      if (lock.count === 0 && document.body) document.body.style.overflow = lock.prev;
+    };
+  }, []);
+}
+function _coldPathAiUsable(kind, fn) {
+  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true)) return false;
+  if (fn && fn._alloQrBlocked === true) return false;
+  if ((kind === 'images' || kind === 'imageEdit') && typeof window !== 'undefined' && window.AlloImageGeneration && typeof window.AlloImageGeneration.isEnabled === 'function' && !window.AlloImageGeneration.isEnabled()) return false;
+  if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+    try { return Boolean(window.__alloAiUsable(kind, fn)); } catch (_) {}
+  }
+  return fn == null ? true : typeof fn === 'function';
+}
+
 function GeminiBridgeView(props) {
   const { Copy, Terminal, copyToClipboard, generatedContent, t } = props;
+  const rawSteps = Array.isArray(generatedContent?.data)
+    ? generatedContent.data
+    : (generatedContent?.data != null ? [generatedContent.data] : []);
+  const steps = rawSteps
+    .map((entry) => (typeof entry === 'string' ? entry : (entry && typeof entry === 'object' && typeof entry.text === 'string' ? entry.text : '')))
+    .filter((step) => step.trim().length > 0);
   return (
 <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pe-2 pb-10">
                         <div className="bg-slate-900 text-slate-100 p-6 rounded-xl border border-slate-700 shadow-lg font-mono relative">
                             <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
                                 <div className="flex items-center gap-2 text-green-300 font-bold">
-                                    <Terminal size={18} />
+                                    <Terminal size={18} aria-hidden="true" />
                                     <span>{t('bridge.prompt_header')}</span>
                                 </div>
                                 <div className="text-xs text-slate-300 font-sans">
-                                    {Array.isArray(generatedContent?.data) ? t('bridge.steps_count_label', { count: generatedContent?.data.length }) : t('bridge.single_prompt_label')}
+                                    {steps.length > 1 ? t('bridge.steps_count_label', { count: steps.length }) : t('bridge.single_prompt_label')}
                                 </div>
                             </div>
                             <div className="space-y-6">
-                                {(Array.isArray(generatedContent?.data) ? generatedContent?.data : [generatedContent?.data]).map((promptStep, idx) => (
+                                {steps.length === 0 ? (
+                                    <p role="status" className="text-sm text-slate-300 font-sans">{t('bridge.empty_steps') || 'No prompt steps are available yet.'}</p>
+                                ) : steps.map((promptStep, idx) => (
                                     <div key={idx} className="relative group">
                                         <div className="absolute -left-3 -top-3 w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold border-2 border-slate-900 shadow-sm z-10">
                                             {idx + 1}
                                         </div>
-                                        <div className="bg-slate-800 rounded-lg p-4 border border-slate-600 hover:border-slate-500 transition-colors">
+                                        <div className="bg-slate-800 rounded-lg p-4 border border-slate-600 hover:border-slate-500 transition-colors motion-reduce:transition-none">
                                             <pre className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100 overflow-x-auto font-mono mb-2">
                                                 {promptStep}
                                             </pre>
                                             <div className="flex justify-end pt-2 border-t border-slate-700/50">
                                                 <button
+                                                    type="button"
                                                     onClick={() => copyToClipboard(promptStep)}
-                                                    className="flex items-center gap-2 text-[11px] font-bold bg-slate-700 hover:bg-green-700 text-white px-3 py-1.5 rounded transition-colors uppercase tracking-wider"
+                                                    className="min-h-11 flex items-center gap-2 text-[11px] font-bold bg-slate-700 hover:bg-green-700 text-white px-3 py-1.5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 uppercase tracking-wider"
                                                 >
-                                                    <Copy size={12} /> {t('bridge.copy_step', { step: idx + 1 })}
+                                                    <Copy size={12} aria-hidden="true" /> {t('bridge.copy_step', { step: idx + 1 })}
                                                 </button>
                                             </div>
                                         </div>
@@ -105,7 +148,7 @@ function AdventureCastLobbyView(props) {
                         onAddCharacter={(newChar) => {
                             setAdventureState(prev => ({
                                 ...prev,
-                                characters: [...prev.characters, newChar]
+                                characters: [...(Array.isArray(prev.characters) ? prev.characters : []), newChar]
                             }));
                         }}
                         onRemoveCharacter={(idx) => {
@@ -126,6 +169,10 @@ function AdventureCastLobbyView(props) {
                         onGeneratePortrait={async (idx) => {
                             const targetChar = adventureState.characters?.[idx];
                             if (!targetChar) return;
+                            if (!_coldPathAiUsable('images', callImagen)) {
+                                if (typeof props.addToast === 'function') props.addToast(t('errors.ai_unavailable') || 'AI image generation is currently unavailable.', 'warning');
+                                return;
+                            }
                             const targetId = targetChar.id;
                             const genToken = `pgen_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
                             const resolveIdx = (list) => {
@@ -162,21 +209,24 @@ function AdventureCastLobbyView(props) {
                                 setAdventureState(prev => {
                                     const chars = Array.isArray(prev.characters) ? [...prev.characters] : [];
                                     const pos = resolveIdx(chars);
-                                    if (pos < 0) return prev;
-                                    if (chars[pos].portraitGenToken !== genToken) {
-                                        chars[pos] = { ...chars[pos], isGenerating: false };
-                                        return { ...prev, characters: chars };
-                                    }
-                                    chars[pos] = { ...chars[pos], portrait: url, isGenerating: false, isUserUploaded: false, portraitGenToken: null };
+                                    if (pos < 0 || chars[pos].portraitGenToken !== genToken) return prev;
+                                    chars[pos] = {
+                                        ...chars[pos],
+                                        portrait: url || chars[pos].portrait,
+                                        isGenerating: false,
+                                        isUserUploaded: url ? false : chars[pos].isUserUploaded,
+                                        portraitGenToken: null,
+                                    };
                                     return { ...prev, characters: chars };
                                 });
                             } catch (e) {
                                 warnLog("Portrait gen failed:", e);
+                                if (typeof props.addToast === 'function') props.addToast(t('adventure.portrait_failed') || 'Could not generate portrait.', 'error');
                                 setAdventureState(prev => {
                                     const chars = Array.isArray(prev.characters) ? [...prev.characters] : [];
                                     const pos = resolveIdx(chars);
-                                    if (pos < 0) return prev;
-                                    chars[pos] = { ...chars[pos], isGenerating: false };
+                                    if (pos < 0 || chars[pos].portraitGenToken !== genToken) return prev;
+                                    chars[pos] = { ...chars[pos], isGenerating: false, portraitGenToken: null };
                                     return { ...prev, characters: chars };
                                 });
                             }
@@ -184,6 +234,10 @@ function AdventureCastLobbyView(props) {
                         onRefinePortrait={async (idx, editText) => {
                             const targetChar = adventureState.characters?.[idx];
                             if (!targetChar || !targetChar.portrait) return;
+                            if (!_coldPathAiUsable('imageEdit', callGeminiImageEdit)) {
+                                if (typeof props.addToast === 'function') props.addToast(t('errors.ai_unavailable') || 'AI image editing is currently unavailable.', 'warning');
+                                return;
+                            }
                             const targetId = targetChar.id;
                             const genToken = `pref_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
                             const resolveIdx = (list) => {
@@ -206,26 +260,24 @@ function AdventureCastLobbyView(props) {
                                 const refined = rawBase64
                                     ? await callGeminiImageEdit(`Modify this character portrait: ${editText}. Keep the character recognizable. No text.`, rawBase64, 400, 0.85)
                                     : null;
-                                const newAppearance = (targetChar.appearance || '') + ', ' + editText;
                                 setAdventureState(prev => {
                                     const chars = Array.isArray(prev.characters) ? [...prev.characters] : [];
                                     const pos = resolveIdx(chars);
-                                    if (pos < 0) return prev;
-                                    if (chars[pos].portraitGenToken !== genToken) {
-                                        chars[pos] = { ...chars[pos], isGenerating: false };
-                                        return { ...prev, characters: chars };
-                                    }
-                                    chars[pos] = { ...chars[pos], portrait: refined || chars[pos].portrait, appearance: newAppearance, isGenerating: false, portraitGenToken: null };
+                                    if (pos < 0 || chars[pos].portraitGenToken !== genToken) return prev;
+                                    const nextAppearance = refined
+                                        ? ((chars[pos].appearance || '') ? `${chars[pos].appearance}, ${editText}` : editText)
+                                        : chars[pos].appearance;
+                                    chars[pos] = { ...chars[pos], portrait: refined || chars[pos].portrait, appearance: nextAppearance, isGenerating: false, portraitGenToken: null };
                                     return { ...prev, characters: chars };
                                 });
                             } catch (e) {
                                 warnLog("Portrait refine failed:", e);
-                                const newAppearance = (targetChar.appearance || '') + ', ' + editText;
+                                if (typeof props.addToast === 'function') props.addToast(t('adventure.portrait_refine_failed') || 'Could not refine portrait.', 'error');
                                 setAdventureState(prev => {
                                     const chars = Array.isArray(prev.characters) ? [...prev.characters] : [];
                                     const pos = resolveIdx(chars);
-                                    if (pos < 0) return prev;
-                                    chars[pos] = { ...chars[pos], appearance: newAppearance, isGenerating: false };
+                                    if (pos < 0 || chars[pos].portraitGenToken !== genToken) return prev;
+                                    chars[pos] = { ...chars[pos], isGenerating: false, portraitGenToken: null };
                                     return { ...prev, characters: chars };
                                 });
                             }
@@ -257,14 +309,23 @@ function StemArtworkHandoffView(props) {
   const { _alloReadVisualSupportCollection, saveStemArtworkAsVisualSupport, setStemArtworkDestination, setStemArtworkHandoff, setStemArtworkLabel, stemArtworkDestination, stemArtworkHandoff, stemArtworkLabel } = props;
   const t = typeof props.t === 'function' ? props.t : (k) => k;
   const stemArtworkHandoffRef = React.useRef(null);
-  if (typeof window !== 'undefined' && window.__alloHooks && typeof window.__alloHooks.useFocusTrap === 'function') {
-    window.__alloHooks.useFocusTrap(stemArtworkHandoffRef, true, () => setStemArtworkHandoff(null));
-  }
+  const backdropDownRef = React.useRef(null);
+  _useColdPathDialogLock(stemArtworkHandoffRef, () => setStemArtworkHandoff(null));
         const boards = _alloReadVisualSupportCollection('alloSymbolBoards');
         const schedules = _alloReadVisualSupportCollection('alloSchedules');
+        const safeLabel = String(stemArtworkLabel || '');
         return (
-          <div ref={stemArtworkHandoffRef} className="fixed inset-0 z-[9200] bg-black/70 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="stem-artwork-handoff-title" onClick={() => setStemArtworkHandoff(null)}>
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-5" onClick={event => event.stopPropagation()}>
+          <div
+            role="presentation"
+            className="fixed inset-0 z-[9200] bg-black/70 flex items-center justify-center p-4"
+            onMouseDown={(event) => { backdropDownRef.current = event.target === event.currentTarget; }}
+            onClick={(event) => {
+              const allowClose = backdropDownRef.current !== false;
+              backdropDownRef.current = null;
+              if (event.target === event.currentTarget && allowClose) setStemArtworkHandoff(null);
+            }}
+          >
+            <div ref={stemArtworkHandoffRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="stem-artwork-handoff-title" className="allo-docsuite bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5" onClick={event => event.stopPropagation()}>
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 id="stem-artwork-handoff-title" className="text-xl font-black text-slate-900">Save as a Visual Support</h2>
@@ -280,7 +341,7 @@ function StemArtworkHandoffView(props) {
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="stem-artwork-label" className="block text-sm font-bold text-slate-800">Short label</label>
-                    <input id="stem-artwork-label" type="text" value={stemArtworkLabel} maxLength={80} onChange={event => setStemArtworkLabel(event.target.value)} className="mt-1 w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-900" placeholder={t('visuals.artwork_label_placeholder') || 'For example, My spiral pattern'} autoFocus />
+                    <input id="stem-artwork-label" type="text" value={safeLabel} maxLength={80} onChange={event => setStemArtworkLabel(event.target.value)} className="mt-1 w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-900" placeholder={t('visuals.artwork_label_placeholder') || 'For example, My spiral pattern'} data-autofocus="true" />
                     <p className="text-[11px] text-slate-600 mt-1">This is the label students will see and hear.</p>
                   </div>
                   <div>
@@ -297,7 +358,7 @@ function StemArtworkHandoffView(props) {
                   </div>
                   <div className="flex justify-end gap-2">
                     <button type="button" onClick={() => setStemArtworkHandoff(null)} className="min-h-11 px-4 rounded-lg border border-slate-400 text-sm font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
-                    <button type="button" onClick={saveStemArtworkAsVisualSupport} disabled={!stemArtworkLabel.trim()} className="min-h-11 px-4 rounded-lg bg-indigo-700 text-white text-sm font-bold hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed">Save visual support</button>
+                    <button type="button" onClick={saveStemArtworkAsVisualSupport} disabled={!safeLabel.trim()} className="min-h-11 px-4 rounded-lg bg-indigo-700 text-white text-sm font-bold hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed">Save visual support</button>
                   </div>
                 </div>
               </div>
@@ -311,10 +372,20 @@ function SessionStartOptionsView(props) {
   const { X, setMbPanelOpen, setShowLiveLessonPrep, setShowSessionStartOptions, startClassSession, t } = props;
   // The dialog owns its focus trap: it starts when this view mounts and ends when it leaves.
   const sessionStartOptionsRef = React.useRef(null);
-  window.__alloHooks.useFocusTrap(sessionStartOptionsRef, true, props.onTrapEscape);
+  const backdropDownRef = React.useRef(null);
+  _useColdPathDialogLock(sessionStartOptionsRef, props.onTrapEscape || (() => setShowSessionStartOptions(false)));
   return (
-<div ref={sessionStartOptionsRef} className="fixed inset-0 bg-black/70 z-[260] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label={t('session.start_dialog_aria') || 'Teach live'} onClick={() => setShowSessionStartOptions(false)}>
-          <div className="allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative" onClick={e => e.stopPropagation()}>
+<div
+  role="presentation"
+  className="fixed inset-0 bg-black/70 z-[260] flex items-center justify-center p-4 no-print"
+  onMouseDown={(e) => { backdropDownRef.current = e.target === e.currentTarget; }}
+  onClick={(e) => {
+    const allowClose = backdropDownRef.current !== false;
+    backdropDownRef.current = null;
+    if (e.target === e.currentTarget && allowClose) setShowSessionStartOptions(false);
+  }}
+>
+          <div ref={sessionStartOptionsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={t('session.start_dialog_aria') || 'Teach live'} className="allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative" onClick={e => e.stopPropagation()}>
             <button type="button" onClick={() => setShowSessionStartOptions(false)} className="absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20} aria-hidden="true"/></button>
             <h2 className="text-xl font-black text-slate-900 mb-1">{t('share_collect.start_live_session') || 'Teach live'}</h2>
             <p className="text-xs text-slate-600 mb-3">{t('share_collect.prepare_the_lesson_flow_if_you') || 'Prepare the lesson flow if you want, then choose how student devices will connect.'}</p>
@@ -342,8 +413,11 @@ function TranslateModalView(props) {
   const { Languages, X, _alloHostHandlersOptional, currentUiLanguage, generatedContent, handleSetIsTranslateModalOpenToFalse, handleTranslateAction, headerTranslationMode, isProcessing, resolveTranslationPolicy, selectedLanguages, setHeaderTranslationMode, setTargetTranslationLang, setTranslateScope, t, targetTranslationLang, translationMode, translationTargetChoices } = props;
   // The dialog owns its focus trap: it starts when this view mounts and ends when it leaves.
   const translateModalRef = React.useRef(null);
-  window.__alloHooks.useFocusTrap(translateModalRef, true, props.onTrapEscape);
-        const primaryLanguage = targetTranslationLang.trim();
+  const backdropDownRef = React.useRef(null);
+  _useColdPathDialogLock(translateModalRef, props.onTrapEscape || handleSetIsTranslateModalOpenToFalse);
+        const safeLangInput = String(targetTranslationLang || '');
+        const primaryLanguage = safeLangInput.trim();
+        const aiTextUsable = _coldPathAiUsable('text');
         const companionChoices = translationTargetChoices(primaryLanguage, currentUiLanguage, selectedLanguages);
         const companionPolicy = resolveTranslationPolicy(headerTranslationMode ?? translationMode, primaryLanguage, currentUiLanguage, companionChoices);
         const batchHandlers = _alloHostHandlersOptional();
@@ -353,28 +427,37 @@ function TranslateModalView(props) {
           ? t('translate.action_pack', { count: batch.items.length })
           : t('translate.action_workspace', { count: batch.items.length });
         return (
-        <div ref={translateModalRef} role="presentation" onKeyDown={(e) => { if (e.key === 'Escape' && !e.isComposing && !e.nativeEvent?.isComposing && e.keyCode !== 229) handleSetIsTranslateModalOpenToFalse(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-200" onClick={handleSetIsTranslateModalOpenToFalse}>
-            <div className="allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative border-4 border-indigo-100 transition-all motion-reduce:transition-none animate-in motion-reduce:animate-none zoom-in-95 duration-200" role="dialog" aria-modal="true" aria-labelledby="header-translate-dialog-title" aria-describedby="header-translate-scope" onClick={e => e.stopPropagation()}>
+        <div
+            role="presentation"
+            className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-200"
+            onMouseDown={(e) => { backdropDownRef.current = e.target === e.currentTarget; }}
+            onClick={(e) => {
+                const allowClose = backdropDownRef.current !== false;
+                backdropDownRef.current = null;
+                if (e.target === e.currentTarget && allowClose) handleSetIsTranslateModalOpenToFalse();
+            }}
+        >
+            <div ref={translateModalRef} tabIndex={-1} className="allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative border-4 border-indigo-100 transition-all motion-reduce:transition-none animate-in motion-reduce:animate-none zoom-in-95 duration-200" role="dialog" aria-modal="true" aria-labelledby="header-translate-dialog-title" aria-describedby="header-translate-scope" onClick={e => e.stopPropagation()}>
                 <button type="button" onClick={handleSetIsTranslateModalOpenToFalse} className="absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none" aria-label={t('common.close')}><X size={20} aria-hidden="true"/></button>
-                <h3 id="header-translate-dialog-title" className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+                <h2 id="header-translate-dialog-title" className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
                     <span className="inline-flex bg-indigo-100 p-2 rounded-full text-indigo-600" aria-hidden="true"><Languages size={20} aria-hidden="true"/></span>
                     {t('header.translate_button')}
-                </h3>
+                </h2>
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="header-translate-target-language" className="block text-xs font-bold text-slate-600 mb-1">{t('translate.target_label')}</label>
                         <input id="header-translate-target-language"
                             type="text"
-                            value={targetTranslationLang}
+                            value={safeLangInput}
                             onChange={(e) => setTargetTranslationLang(e.target.value)}
-                            className="w-full text-sm border-2 border-indigo-600 rounded-xl p-2 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 transition-all motion-reduce:transition-none"
+                            className="w-full min-h-11 text-sm border-2 border-indigo-600 rounded-xl p-2 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 transition-all motion-reduce:transition-none"
                             placeholder={t('translate.placeholder')}
                             data-autofocus="true"
                         />
                     </div>
                     <div>
                         <label htmlFor="header-translate-companion" className="block text-xs font-bold text-slate-600 mb-1">{t('translate.companion_label')}</label>
-                        <select id="header-translate-companion" value={companionPolicy.mode} onChange={e => setHeaderTranslationMode(e.target.value)} aria-describedby="header-translate-companion-hint" className="w-full text-sm border-2 border-indigo-600 rounded-xl p-2 focus:ring-4 focus:ring-indigo-500/20">
+                        <select id="header-translate-companion" value={companionPolicy.mode} onChange={e => setHeaderTranslationMode(e.target.value)} aria-describedby="header-translate-companion-hint" className="w-full min-h-11 text-sm border-2 border-indigo-600 rounded-xl p-2 focus:ring-4 focus:ring-indigo-500/20">
                             <option value="auto">{(t('universal.translations_auto') || 'Automatic ({language})').replace('{language}', currentUiLanguage || 'English')}</option>
                             <option value="off">{t('universal.translations_none') || 'None'}</option>
                             {companionChoices.map(language => <option key={language} value={language}>{language}</option>)}
@@ -387,20 +470,21 @@ function TranslateModalView(props) {
                     </div>
                     <p id="header-translate-scope" className="text-xs text-slate-600">{t('translate.scope_hint')}</p>
                     {(batch.items.some(item => item.type === 'glossary') || generatedContent?.type === 'glossary') && <p className="text-xs text-slate-600">{t('translate.glossary_hint')}</p>}
+                    {!aiTextUsable && <p role="status" className="text-xs font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-2.5">{t('errors.ai_unavailable') || 'AI translation is currently unavailable.'}</p>}
                     <div className="flex gap-2">
                         <button
                             type="button"
-                            onClick={() => { setTranslateScope('single'); handleTranslateAction('single', { translationMode: companionPolicy.mode }); }}
-                            disabled={isProcessing || !currentBatch.items.length || !primaryLanguage}
-                            className="flex-1 py-3 bg-white text-indigo-700 border-2 border-indigo-200 hover:border-indigo-400 font-bold rounded-xl transition-all motion-reduce:transition-none shadow-sm active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => { if (!aiTextUsable) return; setTranslateScope('single'); handleTranslateAction('single', { translationMode: companionPolicy.mode }); }}
+                            disabled={isProcessing || !aiTextUsable || !currentBatch.items.length || !primaryLanguage}
+                            className="min-h-11 flex-1 py-3 bg-white text-indigo-700 border-2 border-indigo-200 hover:border-indigo-400 font-bold rounded-xl transition-all motion-reduce:transition-none shadow-sm active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {t('translate.action_current')}
                         </button>
                         <button
                             type="button"
-                            onClick={() => { setTranslateScope('pack'); handleTranslateAction('pack', { translationMode: companionPolicy.mode }); }}
-                            disabled={isProcessing || !batch.items.length || !primaryLanguage}
-                            className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all motion-reduce:transition-none shadow-md active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => { if (!aiTextUsable) return; setTranslateScope('pack'); handleTranslateAction('pack', { translationMode: companionPolicy.mode }); }}
+                            disabled={isProcessing || !aiTextUsable || !batch.items.length || !primaryLanguage}
+                            className="min-h-11 flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all motion-reduce:transition-none shadow-md active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {scopeLabel}
                         </button>

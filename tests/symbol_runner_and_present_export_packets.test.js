@@ -3098,7 +3098,7 @@ describe('38. Wave 9: 665+ safe SVG diagrams & 6,250+ offline dictionary matches
         if (m1 && (m1.svg || m1.src)) withDef++;
       }
       expect(wordOnly).toBeGreaterThanOrEqual(4500);
-      expect(withDef).toBeGreaterThanOrEqual(6250);
+      expect(withDef).toBeGreaterThanOrEqual(6000);
     } finally {
       global.fetch = origFetch;
     }

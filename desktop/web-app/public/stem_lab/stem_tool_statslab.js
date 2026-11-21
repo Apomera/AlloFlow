@@ -409,11 +409,13 @@ window.StemLab = window.StemLab || {
       g.forEach(function(v) { ssWithin += (v - gm) * (v - gm); });
     });
     var dfB = k - 1, dfW = grandN - k;
+    if (dfW <= 0) return { error: 'Need more observations than groups for one-way ANOVA.' };
+    if (ssWithin <= 0) return { error: 'Zero within-group variance — F is undefined.' };
     var msB = ssBetween / dfB, msW = ssWithin / dfW;
     var F = msB / msW;
     var p = _pF(F, dfB, dfW);
     var ssTotal = ssBetween + ssWithin;
-    var etaSq = ssBetween / ssTotal;
+    var etaSq = ssTotal > 0 ? ssBetween / ssTotal : 0;
     // Omega-squared (less biased)
     var omegaSq = (ssBetween - dfB * msW) / (ssTotal + msW);
     // Tukey HSD post-hoc: pairwise comparisons with q-distribution
@@ -622,6 +624,7 @@ window.StemLab = window.StemLab || {
       }
       rowTotals.push(rt);
     }
+    if (grand <= 0) return { error: 'Table total must be greater than zero.' };
     var x2 = 0;
     var expected = [];
     for (var i2 = 0; i2 < rows; i2++) {
@@ -943,19 +946,29 @@ window.StemLab = window.StemLab || {
     for (var i4 = 0; i4 < n; i4++) for (var j4 = 0; j4 < k; j4++) {
       ssTotal += Math.pow(data[i4][j4] - grandMean, 2);
     }
-    var ssError = ssTotal - ssCond - ssSubj;  // error term (subjects × conditions interaction)
+    var condMeans = condSums.map(function(s) { return s / n; });
+    var ssError = 0;  // error term (subjects × conditions interaction), direct sum avoids catastrophic cancellation
+    for (var ie = 0; ie < n; ie++) {
+      for (var je = 0; je < k; je++) {
+        var residRM = data[ie][je] - subjMeans[ie] - condMeans[je] + grandMean;
+        ssError += residRM * residRM;
+      }
+    }
+    if (ssError <= 1e-12 * Math.max(1, ssTotal)) {
+      return { error: 'Zero residual variance across subjects — F is undefined.' };
+    }
     var dfCond = k - 1, dfSubj = n - 1, dfError = dfCond * dfSubj;
     var msCond = ssCond / dfCond, msError = ssError / dfError;
     var F = msCond / msError;
     var p = _pF(F, dfCond, dfError);
-    var partialEtaSq = ssCond / (ssCond + ssError);
+    var partialEtaSq = (ssCond + ssError) > 0 ? ssCond / (ssCond + ssError) : 0;
     return {
       test: 'Repeated-measures ANOVA',
       n: n, k: k, F: F, dfCond: dfCond, dfError: dfError,
       ssCond: ssCond, ssSubj: ssSubj, ssError: ssError, ssTotal: ssTotal,
       msCond: msCond, msError: msError,
       p: p, partialEtaSquared: partialEtaSq,
-      condMeans: condSums.map(function(s) { return s / n; }),
+      condMeans: condMeans,
       formula: 'F = MS_conditions / MS_error;  MS_error from subj×cond interaction'
     };
   }
@@ -991,6 +1004,8 @@ window.StemLab = window.StemLab || {
       ssTot += (y[i2] - ymean) * (y[i2] - ymean);
       ssRes += resid[i2] * resid[i2];
     }
+    if (ssTot <= 0) return { error: 'Outcome variable has zero variance.' };
+    if (ssRes <= 1e-12 * ssTot) return { error: 'Perfect linear fit (zero residual variance) — t and F statistics are undefined.' };
     var rSq = 1 - ssRes / ssTot;
     var adjRSq = 1 - (1 - rSq) * (n - 1) / (n - p - 1);
     var dfRes = n - p - 1;
@@ -998,10 +1013,10 @@ window.StemLab = window.StemLab || {
     // SE of each coefficient
     var ses = [];
     for (var k2 = 0; k2 < beta.length; k2++) {
-      ses.push(Math.sqrt(sigma2 * XtXinv[k2][k2]));
+      ses.push(Math.sqrt(Math.max(0, sigma2 * XtXinv[k2][k2])));
     }
-    var ts = beta.map(function(b, i) { return b / ses[i]; });
-    var ps = ts.map(function(t) { return _pTwoTailedT(t, dfRes); });
+    var ts = beta.map(function(b, i) { return ses[i] > 0 ? b / ses[i] : NaN; });
+    var ps = ts.map(function(t) { return _isNum(t) ? _pTwoTailedT(t, dfRes) : NaN; });
     // Overall F
     var F = (rSq / p) / ((1 - rSq) / dfRes);
     var pF = _pF(F, p, dfRes);
@@ -1150,7 +1165,7 @@ window.StemLab = window.StemLab || {
     H = (12 / (N * (N + 1))) * H - 3 * (N + 1);
     var df = k - 1;
     var p = _pChiSq(H, df);
-    var etaSqH = (H - k + 1) / (N - k);  // approximate η²H
+    var etaSqH = N > k ? (H - k + 1) / (N - k) : 0;  // approximate η²H
     return {
       test: 'Kruskal-Wallis H test',
       k: k, N: N, H: H, df: df, p: p,
@@ -1206,15 +1221,22 @@ window.StemLab = window.StemLab || {
   }
   function powerCorrelation(opts) {
     if (!window.jStat) return { error: 'jStat library required.' };
-    var r = opts.r, alpha = opts.alpha == null ? 0.05 : opts.alpha;
-    var power = opts.power == null ? 0.8 : opts.power;
+    opts = opts || {};
+    var r = Number(opts.r), alpha = opts.alpha == null ? 0.05 : Number(opts.alpha);
+    var power = opts.power == null ? 0.8 : Number(opts.power);
     var n = opts.n;
-    if (opts.solve === 'n' || (n == null && r != null)) {
+    if (opts.solve === 'n' || (n == null && opts.r != null)) {
+      if (!isFinite(r) || !(Math.abs(r) > 0 && Math.abs(r) < 1)) {
+        return { error: __alloSLT('stem.statslab.power_err_r_range', 'Enter a correlation r with 0 < |r| < 1.') };
+      }
+      var bad = _powerInputError(Math.abs(r), alpha, power);
+      if (bad) return { error: bad };
       // Fisher z transform
       var zr = 0.5 * Math.log((1 + r) / (1 - r));
       var zAlpha = window.jStat.normal.inv(1 - alpha / 2, 0, 1);
       var zBeta = window.jStat.normal.inv(power, 0, 1);
       var n_req = Math.ceil(Math.pow((zAlpha + zBeta) / zr, 2) + 3);
+      if (!isFinite(n_req) || n_req < 4) return { error: 'Unable to compute sample size for these parameters.' };
       return { n: n_req, r: r, alpha: alpha, power: power };
     }
     return { error: 'Currently solves for n only.' };
@@ -1876,13 +1898,18 @@ window.StemLab = window.StemLab || {
           // Sensitivity analyses remove only observations used by this test.
           // Paired and repeated-measures designs always remove complete rows.
           var sensitivity = excludeOutliers ? _sensitivityData(d, testType) : null;
-          var oneColVals = sensitivity ? sensitivity.oneCol : d.oneColData.values;
-          var twoColA = sensitivity ? sensitivity.twoColA : d.twoColData.a;
-          var twoColB = sensitivity ? sensitivity.twoColB : d.twoColData.b;
-          var multiCol = sensitivity ? sensitivity.multiCol : d.multiColData.groups.map(function(g) { return g.values; });
-          var nRemoved = sensitivity ? sensitivity.removed : 0;
+          if (sensitivity && sensitivity.error) {
+            result = sensitivity;
+          }
+          var oneColVals = sensitivity && !sensitivity.error ? sensitivity.oneCol : d.oneColData.values;
+          var twoColA = sensitivity && !sensitivity.error ? sensitivity.twoColA : d.twoColData.a;
+          var twoColB = sensitivity && !sensitivity.error ? sensitivity.twoColB : d.twoColData.b;
+          var multiCol = sensitivity && !sensitivity.error ? sensitivity.multiCol : d.multiColData.groups.map(function(g) { return g.values; });
+          var nRemoved = sensitivity && !sensitivity.error ? sensitivity.removed : 0;
           try {
-            if (testType === 'ttest_oneSample') {
+            if (result) {
+              // Sensitivity pre-check already reported an error; do not overwrite with a test run.
+            } else if (testType === 'ttest_oneSample') {
               result = ttest_oneSample(oneColVals, d.oneColData.mu0);
             } else if (testType === 'ttest_paired') {
               result = ttest_paired(twoColA, twoColB);
@@ -2118,12 +2145,17 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'sl-hero-id' },
             h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, 'aria-label': __alloSLT('stem.statslab.a11y_back_to_stem_tools', 'Back to STEM tools'), 'data-sl-focusable': 'true', style: { width: 40, height: 40, borderRadius: 12, border: '1px solid rgba(99,102,241,.45)', background: 'rgba(99,102,241,.10)', color: '#c7d2fe', cursor: 'pointer', fontSize: 18, flexShrink: 0 } }, '←'),
             h('svg', { width: 46, height: 46, viewBox: '0 0 64 64', style: { flexShrink: 0 }, 'aria-hidden': 'true', focusable: 'false' },
+              _slDefs(h, 'em'),
               h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: 'var(--sl-surface)', stroke: 'var(--sl-accent-border)', strokeWidth: 2 }),
-              h('path', { d: 'M8 48 C16 48 22 14 32 14 C42 14 48 48 56 48 Z', fill: 'var(--sl-accent-soft)' }),
-              h('path', { d: 'M8 48 C13 48 16 44 18 39 L18 48 Z', fill: 'var(--sl-chart-danger)', opacity: 0.72 }),
-              h('path', { d: 'M46 39 C48 44 51 48 56 48 L46 48 Z', fill: 'var(--sl-chart-danger)', opacity: 0.72 }),
+              _slRich() && h('rect', { x: 4, y: 4, width: 56, height: 56, rx: 12, fill: 'url(#sl-well-em)' }),
+              h('path', { d: 'M8 48 C16 48 22 14 32 14 C42 14 48 48 56 48 Z', fill: _slRich() ? 'url(#sl-area-pri-em)' : 'var(--sl-accent-soft)', opacity: _slRich() ? 0.42 : 1 }),
+              h('path', { d: 'M8 48 C13 48 16 44 18 39 L18 48 Z', fill: _slRich() ? 'url(#sl-area-dan-em)' : 'var(--sl-chart-danger)', opacity: _slRich() ? 0.92 : 0.72 }),
+              h('path', { d: 'M46 39 C48 44 51 48 56 48 L46 48 Z', fill: _slRich() ? 'url(#sl-area-dan-em)' : 'var(--sl-chart-danger)', opacity: _slRich() ? 0.92 : 0.72 }),
+              _slRich() && h('path', { d: 'M8 48 C16 48 22 14 32 14 C42 14 48 48 56 48', fill: 'none', stroke: 'var(--sl-chart-primary)', strokeWidth: 6, strokeOpacity: 0.22, strokeLinecap: 'round' }),
               h('path', { d: 'M8 48 C16 48 22 14 32 14 C42 14 48 48 56 48', fill: 'none', stroke: 'var(--sl-chart-primary)', strokeWidth: 2.5, strokeLinecap: 'round' }),
+              _slRich() && h('line', { x1: 32, y1: 14, x2: 32, y2: 48, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5, strokeOpacity: 0.22 }),
               h('line', { x1: 32, y1: 14, x2: 32, y2: 48, stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.8, strokeDasharray: '3 2' }),
+              _slRich() && h('circle', { cx: 32, cy: 14, r: 2.6, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
               h('line', { x1: 8, y1: 48, x2: 56, y2: 48, stroke: 'var(--sl-chart-axis)', strokeWidth: 1.8 })
             ),
             h('div', { style: { minWidth: 0, flex: 1 } },
@@ -2153,12 +2185,27 @@ window.StemLab = window.StemLab || {
             h('aside', { className: 'rounded-xl border border-cyan-500/20 bg-black/20 p-4', 'aria-label': __alloSLT('stem.statslab.a11y_statistics_evidence_route', 'Statistics evidence route') },
               h('div', { className: 'flex items-center justify-between gap-3' }, h('span', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-cyan-300' }, 'Evidence route'), h('span', { className: 'text-lg font-black text-white' }, analysisStage + '/4')),
               h('svg', { viewBox: '0 0 260 66', width: '100%', height: 'auto', style: { display: 'block', marginTop: 8 }, 'aria-hidden': 'true', focusable: 'false' },
-                h('path', { d: 'M12 52 C48 52 84 12 130 12 C176 12 212 52 248 52 Z', fill: 'rgba(99,102,241,0.22)' }),
-                h('path', { d: 'M12 52 C28 52 40 47 48 42 L48 52 Z', fill: 'rgba(248,113,113,0.55)' }),
-                h('path', { d: 'M212 42 C220 47 232 52 248 52 L212 52 Z', fill: 'rgba(248,113,113,0.55)' }),
-                h('path', { d: 'M12 52 C48 52 84 12 130 12 C176 12 212 52 248 52', fill: 'none', stroke: '#38bdf8', strokeWidth: 2.2 }),
+                _slRich() && h('defs', null,
+                  h('linearGradient', { id: 'sl-mini-bell', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0.34 }),
+                    h('stop', { offset: '100%', stopColor: '#6366f1', stopOpacity: 0.06 })
+                  ),
+                  h('linearGradient', { id: 'sl-mini-tail', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#fb7185', stopOpacity: 0.82 }),
+                    h('stop', { offset: '100%', stopColor: '#ef4444', stopOpacity: 0.25 })
+                  )
+                ),
+                h('path', { d: 'M12 52 C48 52 84 12 130 12 C176 12 212 52 248 52 Z', fill: _slRich() ? 'url(#sl-mini-bell)' : 'rgba(99,102,241,0.22)' }),
+                h('path', { d: 'M12 52 C28 52 40 47 48 42 L48 52 Z', fill: _slRich() ? 'url(#sl-mini-tail)' : 'rgba(248,113,113,0.55)' }),
+                h('path', { d: 'M212 42 C220 47 232 52 248 52 L212 52 Z', fill: _slRich() ? 'url(#sl-mini-tail)' : 'rgba(248,113,113,0.55)' }),
+                _slRich() && h('path', { d: 'M12 52 C48 52 84 12 130 12 C176 12 212 52 248 52', fill: 'none', stroke: '#38bdf8', strokeWidth: 6.5, strokeOpacity: 0.22, strokeLinecap: 'round' }),
+                h('path', { d: 'M12 52 C48 52 84 12 130 12 C176 12 212 52 248 52', fill: 'none', stroke: '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' }),
                 h('line', { x1: 12, y1: 52, x2: 248, y2: 52, stroke: 'rgba(226,232,240,0.45)', strokeWidth: 1.4 }),
+                _slRich() && h('line', { x1: 130, y1: 10, x2: 130, y2: 52, stroke: '#34d399', strokeWidth: 5, strokeOpacity: 0.22 }),
                 h('line', { x1: 130, y1: 10, x2: 130, y2: 52, stroke: '#34d399', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+                _slRich() && h('circle', { cx: 130, cy: 12, r: 2.8, fill: '#34d399', stroke: '#0f172a', strokeWidth: 1 }),
+                _slRich() && h('circle', { cx: 48, cy: 42, r: 2.4, fill: '#fb7185', stroke: '#0f172a', strokeWidth: 0.9 }),
+                _slRich() && h('circle', { cx: 212, cy: 42, r: 2.4, fill: '#fb7185', stroke: '#0f172a', strokeWidth: 0.9 }),
                 h('text', { x: 130, y: 63, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, __alloT('stem.statslab.mini_curve_label', 'H₀ sampling distribution (two-tailed α = 0.05)'))
               ),
               h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-slate-800', role: 'progressbar', 'aria-valuemin': 1, 'aria-valuemax': 4, 'aria-valuenow': analysisStage, 'aria-label': 'Statistics analysis stage ' + analysisStage + ' of 4' }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400', style: { width: (analysisStage / 4 * 100) + '%' } })),
@@ -2412,14 +2459,22 @@ window.StemLab = window.StemLab || {
               __alloT('stem.statslab.model_boundary_copy', 'This is a two-sided, large-sample normal approximation for two independent, equal-size groups. Power is conditional on the assumed effect and alpha; it is not the probability that a hypothesis is true or a guaranteed replication rate. Small samples need a noncentral-t calculation.')
             ),
             h('svg', { role: 'img', 'aria-label': __alloT('stem.statslab.inquiry_power_curve_a11y', 'Approximate two-sided power curve across per-group sample sizes'), width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: 'var(--sl-chart-bg)', borderRadius: 6, marginBottom: 10 } },
+              _slDefs(h, 'iqp'),
+              _slWell(h, 'iqp', 36, 18, 260, 112),
+              _slRich() && [0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('line', { key: 'ig' + i, x1: 36, y1: 130 - p * 110, x2: 296, y2: 130 - p * 110, stroke: 'var(--sl-chart-grid)', strokeOpacity: 0.25, strokeDasharray: '2 4' }); }),
               h('line', { x1: 36, y1: 130, x2: 296, y2: 130, stroke: 'var(--sl-chart-axis)' }),
               h('line', { x1: 36, y1: 18, x2: 36, y2: 130, stroke: 'var(--sl-chart-axis)' }),
+              _slRich() && h('line', { x1: 36, y1: 42, x2: 296, y2: 42, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5, strokeOpacity: 0.16 }),
               h('line', { x1: 36, y1: 42, x2: 296, y2: 42, stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.5, strokeDasharray: '3 3' }),
               h('text', { x: 296, y: 39, fill: 'var(--sl-chart-secondary)', fontSize: 8, textAnchor: 'end' }, __alloT('stem.statslab.common_planning_reference', '80% planning reference')),
               [5, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: 'var(--sl-chart-label)', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
               [0, 0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('text', { key: 'py' + i, x: 30, y: 132 - p * 110, fill: 'var(--sl-chart-label)', fontSize: 8, textAnchor: 'end' }, (p * 100).toFixed(0) + '%'); }),
-              h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px ' + sm.color + ')' } }),
-              h('circle', { cx: hereX, cy: hereY, r: 5, fill: sm.color, stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.5 }),
+              _slRich() && h('polygon', { points: '36,130 ' + pts + ' 296,130', fill: sm.color, fillOpacity: _slDark() ? 0.16 : 0.12 }),
+              _slRich() && h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 6, strokeOpacity: 0.2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              _slRich() && h('line', { x1: hereX, y1: hereY, x2: hereX, y2: 130, stroke: sm.color, strokeWidth: 1.2, strokeDasharray: '2 3', strokeOpacity: 0.55 }),
+              _slRich() && h('circle', { cx: hereX, cy: hereY, r: 9.5, fill: sm.color, fillOpacity: 0.22 }),
+              h('circle', { cx: hereX, cy: hereY, r: 5, fill: sm.color, stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.5, filter: _slRich() ? 'url(#sl-sh-iqp)' : undefined }),
               h('text', { x: 160, y: 156, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, 'Power vs n at assumed d=' + iq.effect.toFixed(2) + ', two-sided alpha=' + iq.alpha.toFixed(3))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12, marginBottom: 10 } },
@@ -4473,8 +4528,19 @@ window.StemLab = window.StemLab || {
               h('div', { style: { padding: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
                 h('div', { style: { position: 'relative', width: 84, height: 84, flexShrink: 0 } },
                   h('svg', { viewBox: '0 0 100 100', width: 84, height: 84, 'aria-label': 'Score: ' + d.quizCorrect + ' out of ' + d.quizQuestions.length },
+                    _slDefs(h, 'qz'),
+                    _slRich() && h('circle', { cx: 50, cy: 50, r: 42, fill: 'url(#sl-well-qz)', stroke: 'rgba(148,163,184,0.28)', strokeWidth: 1 }),
+                    _slRich() && Array.from({ length: 12 }, function(_, ti) {
+                      var ang = (ti * 30 - 90) * Math.PI / 180;
+                      return h('line', { key: 'qt' + ti, x1: (50 + Math.cos(ang) * 41).toFixed(1), y1: (50 + Math.sin(ang) * 41).toFixed(1), x2: (50 + Math.cos(ang) * 44).toFixed(1), y2: (50 + Math.sin(ang) * 44).toFixed(1), stroke: '#94a3b8', strokeWidth: ti % 3 === 0 ? 1.5 : 0.9, strokeOpacity: 0.6 });
+                    }),
                     h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
-                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round', strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)', style: { filter: 'drop-shadow(0 0 4px ' + tierColor + ')' } })
+                    _slRich() && h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 14, strokeOpacity: 0.18, strokeLinecap: 'round', strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' }),
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round', strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' }),
+                    _slRich() && pct > 0 && (function() {
+                      var ea = ((pct / 100) * 360 - 90) * Math.PI / 180;
+                      return h('circle', { cx: (50 + Math.cos(ea) * rad).toFixed(1), cy: (50 + Math.sin(ea) * rad).toFixed(1), r: 3.4, fill: '#ffffff', stroke: tierColor, strokeWidth: 2 });
+                    })()
                   ),
                   h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                     h('div', { style: { fontSize: 20, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
@@ -4838,22 +4904,30 @@ window.StemLab = window.StemLab || {
       'aria-label': 'Type I and Type II error visualization, two-sided test. Cohen\'s d = ' + d_eff + ', n = ' + n + ', alpha = ' + alpha + '. Power = ' + power.toFixed(3),
       style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
+      _slDefs(h, 'pv'),
+      _slWell(h, 'pv', pad.l, pad.t - 6, W - pad.l - pad.r, H - pad.b - pad.t + 6),
       // Axis
-      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
+      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)', strokeWidth: 1.2 }),
       // β (Type II) region: under H₁ between −crit and +crit (failed to reject)
-      h('path', { d: pathFill(-crit, crit, ncp, 1), fill: 'var(--sl-chart-primary)', opacity: 0.78, stroke: 'var(--sl-chart-primary)', strokeWidth: 0.8 }),
+      h('path', { d: pathFill(-crit, crit, ncp, 1), fill: _slRich() ? 'url(#sl-area-pri-pv)' : 'var(--sl-chart-primary)', opacity: 0.78, stroke: 'var(--sl-chart-primary)', strokeWidth: 0.8 }),
       // Power region: under H₁ beyond either critical value (correctly rejected)
-      h('path', { d: pathFill(crit, xMax, ncp, 1), fill: 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
-      h('path', { d: pathFill(xMin, -crit, ncp, 1), fill: 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
+      h('path', { d: pathFill(crit, xMax, ncp, 1), fill: _slRich() ? 'url(#sl-area-sec-pv)' : 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
+      h('path', { d: pathFill(xMin, -crit, ncp, 1), fill: _slRich() ? 'url(#sl-area-sec-pv)' : 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
       // α (Type I) regions: under H₀ beyond either critical value, α/2 each (false alarm)
-      h('path', { d: pathFill(crit, xMax, 0, 1), fill: 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
-      h('path', { d: pathFill(xMin, -crit, 0, 1), fill: 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
-      // Curve outlines (drawn AFTER fills so they sit on top)
-      h('path', { d: curveLine(0, 1), fill: 'none', stroke: 'var(--sl-chart-label)', strokeWidth: 1.5 }),
-      h('path', { d: curveLine(ncp, 1), fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 1.5 }),
-      // Critical value vertical lines (two-sided)
-      h('line', { x1: sx(-crit), y1: pad.t - 8, x2: sx(-crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 1.5, strokeDasharray: '4 3' }),
-      h('line', { x1: sx(crit), y1: pad.t - 8, x2: sx(crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+      h('path', { d: pathFill(crit, xMax, 0, 1), fill: _slRich() ? 'url(#sl-area-dan-pv)' : 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
+      h('path', { d: pathFill(xMin, -crit, 0, 1), fill: _slRich() ? 'url(#sl-area-dan-pv)' : 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
+      // Curve outlines (dual-pass luminous PDF curves drawn AFTER fills)
+      _slRich() && h('path', { d: curveLine(0, 1), fill: 'none', stroke: 'var(--sl-chart-label)', strokeWidth: 5.5, strokeOpacity: 0.16, strokeLinecap: 'round' }),
+      h('path', { d: curveLine(0, 1), fill: 'none', stroke: 'var(--sl-chart-label)', strokeWidth: 1.9, strokeLinecap: 'round' }),
+      _slRich() && h('path', { d: curveLine(ncp, 1), fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 6, strokeOpacity: 0.22, strokeLinecap: 'round' }),
+      h('path', { d: curveLine(ncp, 1), fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 2, strokeLinecap: 'round' }),
+      // Critical value vertical laser lines (two-sided)
+      _slRich() && h('line', { x1: sx(-crit), y1: pad.t - 8, x2: sx(-crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 5.5, strokeOpacity: 0.18 }),
+      h('line', { x1: sx(-crit), y1: pad.t - 8, x2: sx(-crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 1.6, strokeDasharray: '4 3' }),
+      _slRich() && h('line', { x1: sx(crit), y1: pad.t - 8, x2: sx(crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 5.5, strokeOpacity: 0.18 }),
+      h('line', { x1: sx(crit), y1: pad.t - 8, x2: sx(crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 1.6, strokeDasharray: '4 3' }),
+      _slRich() && h('circle', { cx: sx(-crit), cy: pad.t - 6, r: 2.8, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
+      _slRich() && h('circle', { cx: sx(crit), cy: pad.t - 6, r: 2.8, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
       h('text', { x: sx(crit), y: pad.t - 12, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'crit z = ±' + crit.toFixed(2)),
       // Distribution labels
       h('text', { x: sx(0), y: sy(_normalPdf(0, 0, 1)) - 4, fill: 'var(--sl-chart-label)', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'H₀'),
@@ -4955,7 +5029,7 @@ window.StemLab = window.StemLab || {
           h('div', null,
             h('label', { htmlFor: 'sl-power-test', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, 'Test type:'),
             h('select', {
-              id: 'sl-power-test', value: p.test, onChange: function(e) { setP('test', e.target.value); },
+              id: 'sl-power-test', value: p.test, onChange: function(e) { upd('powerInputs', Object.assign({}, p, { test: e.target.value, _lastResult: null })); },
               'data-sl-focusable': 'true',
               style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-heading)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12 }
             },
@@ -5150,6 +5224,61 @@ window.StemLab = window.StemLab || {
   // INLINE SVG VISUALIZATIONS — histogram, boxplot, scatter, bar
   // No external lib. Rendered with React.createElement('svg', ...)
   // ──────────────────────────────────────────────────────────────────
+  function _slRich() { return !(__alloSLCtx && __alloSLCtx.isContrast); }
+  function _slDark() { return !!(__alloSLCtx && __alloSLCtx.isDark); }
+  function _slDefs(h, id) {
+    if (!_slRich()) return null;
+    var dk = _slDark();
+    return h('defs', { key: 'sl-defs-' + id },
+      h('linearGradient', { id: 'sl-well-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: dk ? '#020617' : '#f1f5f9', stopOpacity: dk ? 0.65 : 0.72 }),
+        h('stop', { offset: '100%', stopColor: dk ? '#1e293b' : '#f8fafc', stopOpacity: dk ? 0.25 : 0.35 })
+      ),
+      h('linearGradient', { id: 'sl-pri-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: 'var(--sl-chart-primary)', stopOpacity: 0.96 }),
+        h('stop', { offset: '100%', stopColor: 'var(--sl-chart-primary)', stopOpacity: 0.58 })
+      ),
+      h('linearGradient', { id: 'sl-sec-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: 'var(--sl-chart-secondary)', stopOpacity: 0.96 }),
+        h('stop', { offset: '100%', stopColor: 'var(--sl-chart-secondary)', stopOpacity: 0.58 })
+      ),
+      h('linearGradient', { id: 'sl-warn-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: 'var(--sl-chart-warning)', stopOpacity: 0.96 }),
+        h('stop', { offset: '100%', stopColor: 'var(--sl-chart-warning)', stopOpacity: 0.62 })
+      ),
+      h('linearGradient', { id: 'sl-dan-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: 'var(--sl-chart-danger)', stopOpacity: 0.94 }),
+        h('stop', { offset: '100%', stopColor: 'var(--sl-chart-danger)', stopOpacity: 0.52 })
+      ),
+      h('linearGradient', { id: 'sl-lbl-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: 'var(--sl-chart-label)', stopOpacity: 0.72 }),
+        h('stop', { offset: '100%', stopColor: 'var(--sl-chart-label)', stopOpacity: 0.36 })
+      ),
+      h('linearGradient', { id: 'sl-band-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: 'var(--sl-chart-secondary)', stopOpacity: dk ? 0.28 : 0.20 }),
+        h('stop', { offset: '100%', stopColor: 'var(--sl-chart-secondary)', stopOpacity: 0.04 })
+      ),
+      h('linearGradient', { id: 'sl-area-pri-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: 'var(--sl-chart-primary)', stopOpacity: 1 }),
+        h('stop', { offset: '100%', stopColor: 'var(--sl-chart-primary)', stopOpacity: dk ? 0.36 : 0.28 })
+      ),
+      h('linearGradient', { id: 'sl-area-sec-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: 'var(--sl-chart-secondary)', stopOpacity: 1 }),
+        h('stop', { offset: '100%', stopColor: 'var(--sl-chart-secondary)', stopOpacity: dk ? 0.36 : 0.28 })
+      ),
+      h('linearGradient', { id: 'sl-area-dan-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: 'var(--sl-chart-danger)', stopOpacity: 1 }),
+        h('stop', { offset: '100%', stopColor: 'var(--sl-chart-danger)', stopOpacity: dk ? 0.42 : 0.34 })
+      ),
+      h('filter', { id: 'sl-sh-' + id, x: '-20%', y: '-20%', width: '140%', height: '140%' },
+        h('feDropShadow', { dx: 0, dy: 1.5, stdDeviation: 1.8, floodColor: dk ? '#000000' : '#0f172a', floodOpacity: dk ? 0.5 : 0.18 })
+      )
+    );
+  }
+  function _slWell(h, id, x, y, w, hgt) {
+    if (!_slRich()) return null;
+    return h('rect', { key: 'sl-w-' + id, 'aria-hidden': 'true', x: x, y: y, width: w, height: hgt, rx: 5, fill: 'url(#sl-well-' + id + ')', stroke: 'var(--sl-chart-grid)', strokeOpacity: 0.32, strokeWidth: 0.8 });
+  }
   function _scaleLinear(domainMin, domainMax, rangeMin, rangeMax) {
     var span = domainMax - domainMin || 1;
     return function(v) { return rangeMin + ((v - domainMin) / span) * (rangeMax - rangeMin); };
@@ -5201,9 +5330,11 @@ window.StemLab = window.StemLab || {
       'aria-label': 'Histogram of ' + label + ', n=' + x.length + ', mean=' + m.toFixed(2) + ', median=' + md.toFixed(2),
       style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
+      _slDefs(h, 'hist'),
+      _slWell(h, 'hist', pad.l, pad.t, W - pad.l - pad.r, H - pad.b - pad.t),
       // Grid + axes
-      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)', strokeWidth: 1 }),
-      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)', strokeWidth: 1 }),
+      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)', strokeWidth: 1.2 }),
+      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)', strokeWidth: 1.2 }),
       // Bars
       bins.map(function(c, bi) {
         var x0 = sx(min + bi * binW), x1 = sx(min + (bi + 1) * binW);
@@ -5211,15 +5342,20 @@ window.StemLab = window.StemLab || {
         return h('rect', {
           key: bi,
           x: x0 + 1, y: y0, width: Math.max(1, x1 - x0 - 2), height: H - pad.b - y0,
-          fill: 'var(--sl-chart-primary)', opacity: 0.85
+          rx: _slRich() ? 2 : 0,
+          fill: _slRich() ? 'url(#sl-pri-hist)' : 'var(--sl-chart-primary)', opacity: _slRich() ? 0.94 : 0.85,
+          stroke: _slRich() ? 'var(--sl-chart-primary)' : undefined, strokeWidth: _slRich() ? 0.6 : undefined
         });
       }),
-      // Mean line
+      // Mean laser line
+      _slRich() && h('line', { x1: sx(m), y1: pad.t, x2: sx(m), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 6, strokeOpacity: 0.2 }),
       h('line', { x1: sx(m), y1: pad.t, x2: sx(m), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 2, strokeDasharray: '4 3' }),
-      h('text', { x: sx(m), y: pad.t - 4, fill: 'var(--sl-chart-warning)', fontSize: 10, textAnchor: 'middle' }, 'M=' + m.toFixed(1)),
-      // Median line — the gap between this and the mean reveals skew at a glance
+      _slRich() && h('circle', { cx: sx(m), cy: pad.t + 2, r: 2.8, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
+      h('text', { x: sx(m), y: pad.t - 4, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'M=' + m.toFixed(1)),
+      // Median laser line — the gap between this and the mean reveals skew at a glance
+      _slRich() && h('line', { x1: sx(md), y1: pad.t, x2: sx(md), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 6, strokeOpacity: 0.18 }),
       h('line', { x1: sx(md), y1: pad.t, x2: sx(md), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2, strokeDasharray: '2 3' }),
-      h('text', { x: sx(md), y: pad.t + 10, fill: 'var(--sl-chart-secondary)', fontSize: 10, textAnchor: 'middle' }, 'Mdn=' + md.toFixed(1)),
+      h('text', { x: sx(md), y: pad.t + 10, fill: 'var(--sl-chart-secondary)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'Mdn=' + md.toFixed(1)),
       // X axis ticks
       ticks.map(function(t, ti) {
         return h('g', { key: 'xt' + ti },
@@ -5262,17 +5398,23 @@ window.StemLab = window.StemLab || {
     var lineX1 = zMin - 0.3, lineX2 = zMax + 0.3;
     var lineY1 = m + sd * lineX1, lineY2 = m + sd * lineX2;
     var children = [
+      _slDefs(h, 'qq'),
+      _slWell(h, 'qq', pad.l, pad.t, W - pad.l - pad.r, H - pad.b - pad.t),
       h('line', { key: 'ax', x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       h('line', { key: 'ay', x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
-      // Reference line (where points would fall if normally distributed)
+      // Reference line (dual-pass luminous normal reference)
+      _slRich() && h('line', { key: 'ref-g',
+        x1: sx(lineX1), y1: sy(lineY1), x2: sx(lineX2), y2: sy(lineY2),
+        stroke: 'var(--sl-chart-warning)', strokeWidth: 5.5, strokeOpacity: 0.18
+      }),
       h('line', { key: 'ref',
         x1: sx(lineX1), y1: sy(lineY1), x2: sx(lineX2), y2: sy(lineY2),
-        stroke: 'var(--sl-chart-warning)', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.7
+        stroke: 'var(--sl-chart-warning)', strokeWidth: 1.7, strokeDasharray: '4 3', opacity: 0.85
       })
     ];
     // Points
     pts.forEach(function(p, pi) {
-      children.push(h('circle', { key: 'p' + pi, cx: sx(p[0]), cy: sy(p[1]), r: 3, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1, opacity: 0.85 }));
+      children.push(h('circle', { key: 'p' + pi, cx: sx(p[0]), cy: sy(p[1]), r: _slRich() ? 3.5 : 3, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.1, opacity: 0.9, filter: _slRich() ? 'url(#sl-sh-qq)' : undefined }));
     });
     // Axis ticks
     var zTicks = _niceTicks(zMin, zMax, 5);
@@ -5319,11 +5461,13 @@ window.StemLab = window.StemLab || {
       'aria-label': 'Boxplots comparing ' + validGroups.length + ' groups: ' + validGroups.map(function(g) { return g.label; }).join(', '),
       style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
+      _slDefs(h, 'bp'),
+      _slWell(h, 'bp', pad.l, pad.t, W - pad.l - pad.r, H - pad.b - pad.t),
       // Y axis
       h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       ticks.map(function(t, ti) {
         return h('g', { key: 'yt' + ti },
-          h('line', { x1: pad.l - 4, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)', strokeWidth: 1 }),
+          h('line', { x1: pad.l - 4, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)', strokeWidth: 1, strokeOpacity: _slRich() ? 0.35 : 1 }),
           h('text', { x: pad.l - 6, y: sy(t) + 3, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'end' }, '' + t)
         );
       }),
@@ -5342,13 +5486,14 @@ window.StemLab = window.StemLab || {
         var color = palette[gi % palette.length];
         return h('g', { key: gi },
           // Whiskers
-          h('line', { x1: cx, y1: sy(whiskerLow), x2: cx, y2: sy(whiskerHigh), stroke: color, strokeWidth: 1.5 }),
-          h('line', { x1: cx - bw / 4, y1: sy(whiskerLow), x2: cx + bw / 4, y2: sy(whiskerLow), stroke: color, strokeWidth: 1.5 }),
-          h('line', { x1: cx - bw / 4, y1: sy(whiskerHigh), x2: cx + bw / 4, y2: sy(whiskerHigh), stroke: color, strokeWidth: 1.5 }),
+          h('line', { x1: cx, y1: sy(whiskerLow), x2: cx, y2: sy(whiskerHigh), stroke: color, strokeWidth: 1.7, strokeLinecap: 'round' }),
+          h('line', { x1: cx - bw / 4, y1: sy(whiskerLow), x2: cx + bw / 4, y2: sy(whiskerLow), stroke: color, strokeWidth: 1.8, strokeLinecap: 'round' }),
+          h('line', { x1: cx - bw / 4, y1: sy(whiskerHigh), x2: cx + bw / 4, y2: sy(whiskerHigh), stroke: color, strokeWidth: 1.8, strokeLinecap: 'round' }),
           // Box
-          h('rect', { x: cx - bw / 2, y: sy(q.q3), width: bw, height: sy(q.q1) - sy(q.q3), fill: color, opacity: 0.30, stroke: color, strokeWidth: 1.5 }),
-          // Median line (quartiles() returns q2 as the median — q.median was undefined → NaN → the line never drew)
-          h('line', { x1: cx - bw / 2, y1: sy(q.q2), x2: cx + bw / 2, y2: sy(q.q2), stroke: 'var(--sl-chart-warning)', strokeWidth: 2 }),
+          h('rect', { x: cx - bw / 2, y: sy(q.q3), width: bw, height: Math.max(2, sy(q.q1) - sy(q.q3)), rx: _slRich() ? 4 : 0, fill: color, fillOpacity: _slRich() ? 0.28 : 0.30, stroke: color, strokeWidth: 1.7, filter: _slRich() ? 'url(#sl-sh-bp)' : undefined }),
+          // Median laser bar
+          _slRich() && h('line', { x1: cx - bw / 2, y1: sy(q.q2), x2: cx + bw / 2, y2: sy(q.q2), stroke: 'var(--sl-chart-warning)', strokeWidth: 6, strokeOpacity: 0.24, strokeLinecap: 'round' }),
+          h('line', { x1: cx - bw / 2, y1: sy(q.q2), x2: cx + bw / 2, y2: sy(q.q2), stroke: 'var(--sl-chart-warning)', strokeWidth: 2.5, strokeLinecap: 'round' }),
           // Quartile value annotations (Q3 / Md / Q1) beside the box — only when
           // there are few groups, so the labels never crowd adjacent boxes.
           validGroups.length <= 4 ? h('g', { key: 'qlab' },
@@ -5356,11 +5501,15 @@ window.StemLab = window.StemLab || {
             h('text', { x: cx + bw / 2 + 4, y: sy(q.q2) + 3, fill: 'var(--sl-chart-warning)', fontSize: 8, fontWeight: 700 }, 'Md ' + q.q2.toFixed(1)),
             h('text', { x: cx + bw / 2 + 4, y: sy(q.q1) + 3, fill: 'var(--sl-chart-label)', fontSize: 8 }, 'Q1 ' + q.q1.toFixed(1))
           ) : null,
-          // Mean dot
-          h('circle', { cx: cx, cy: sy(mean(x)), r: 3, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
+          // Mean beacon
+          _slRich() && h('circle', { cx: cx, cy: sy(mean(x)), r: 6, fill: 'var(--sl-chart-warning)', fillOpacity: 0.22 }),
+          h('circle', { cx: cx, cy: sy(mean(x)), r: 3.3, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.1 }),
           // Outliers
           outliers.map(function(o, oi) {
-            return h('circle', { key: 'o' + oi, cx: cx, cy: sy(o), r: 2.5, fill: 'var(--sl-chart-danger)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 });
+            return h('g', { key: 'o' + oi },
+              _slRich() && h('circle', { cx: cx, cy: sy(o), r: 5.5, fill: 'var(--sl-chart-danger)', fillOpacity: 0.22 }),
+              h('circle', { cx: cx, cy: sy(o), r: 2.8, fill: 'var(--sl-chart-danger)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 })
+            );
           }),
           // Group label
           h('text', { x: cx, y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, g.label.length > 14 ? g.label.slice(0, 12) + '…' : g.label),
@@ -5395,31 +5544,34 @@ window.StemLab = window.StemLab || {
     // linearRegression() reports R², not r: recover r with the slope's sign.
     var fitR = hasFit ? (lr.slope < 0 ? -1 : 1) * Math.sqrt(Math.max(0, lr.rSquared)) : null;
     var children = [
+      _slDefs(h, 'sc'),
+      _slWell(h, 'sc', pad.l, pad.t, W - pad.l - pad.r, H - pad.b - pad.t),
       // Axes
       h('line', { key: 'ax', x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       h('line', { key: 'ay', x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' })
     ];
     yTicks.forEach(function(t, ti) {
-      children.push(h('line', { key: 'gy' + ti, x1: pad.l, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)', strokeWidth: 1 }));
+      children.push(h('line', { key: 'gy' + ti, x1: pad.l, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)', strokeWidth: 1, strokeOpacity: _slRich() ? 0.35 : 1 }));
       children.push(h('text', { key: 'tyl' + ti, x: pad.l - 6, y: sy(t) + 3, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'end' }, '' + t));
     });
     xTicks.forEach(function(t, ti) {
       children.push(h('line', { key: 'gx' + ti, x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: 'var(--sl-chart-axis)' }));
       children.push(h('text', { key: 'txl' + ti, x: sx(t), y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, '' + t));
     });
-    // Regression line
+    // Regression line (dual-pass luminous trend)
     if (hasFit) {
       var lineX1 = xMin - px, lineX2 = xMax + px;
       var lineY1 = lr.intercept + lr.slope * lineX1;
       var lineY2 = lr.intercept + lr.slope * lineX2;
+      if (_slRich()) children.push(h('line', { key: 'fit-g', x1: sx(lineX1), y1: sy(lineY1), x2: sx(lineX2), y2: sy(lineY2), stroke: 'var(--sl-chart-warning)', strokeWidth: 6, strokeOpacity: 0.2 }));
       children.push(h('line', { key: 'fit',
         x1: sx(lineX1), y1: sy(lineY1), x2: sx(lineX2), y2: sy(lineY2),
-        stroke: 'var(--sl-chart-warning)', strokeWidth: 2, strokeDasharray: '5 3', opacity: 0.85
+        stroke: 'var(--sl-chart-warning)', strokeWidth: 2.2, strokeDasharray: '5 3', opacity: 0.92
       }));
     }
     // Points
     for (var pi = 0; pi < x.length; pi++) {
-      children.push(h('circle', { key: 'p' + pi, cx: sx(x[pi]), cy: sy(y[pi]), r: 3.5, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1, opacity: 0.85 }));
+      children.push(h('circle', { key: 'p' + pi, cx: sx(x[pi]), cy: sy(y[pi]), r: _slRich() ? 4 : 3.5, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.1, opacity: 0.92, filter: _slRich() ? 'url(#sl-sh-sc)' : undefined }));
     }
     // Labels
     children.push(h('text', { key: 'xl', x: W / 2, y: H - 6, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, xLabel));
@@ -5453,11 +5605,13 @@ window.StemLab = window.StemLab || {
       role: 'img', 'aria-label': 'Bar chart of observed vs expected counts across ' + k + ' categories',
       style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
+      _slDefs(h, 'bar'),
+      _slWell(h, 'bar', pad.l, pad.t, W - pad.l - pad.r, H - pad.b - pad.t),
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       ticks.map(function(t, ti) {
         return h('g', { key: 't' + ti },
-          h('line', { x1: pad.l - 4, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)' }),
+          h('line', { x1: pad.l - 4, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)', strokeOpacity: _slRich() ? 0.35 : 1 }),
           h('text', { x: pad.l - 6, y: sy(t) + 3, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'end' }, '' + t)
         );
       }),
@@ -5468,11 +5622,11 @@ window.StemLab = window.StemLab || {
         var label = (labels && labels[oi]) || ('cat ' + (oi + 1));
         return h('g', { key: oi },
           // Observed
-          h('rect', { x: cx - bw - 1, y: sy(o), width: bw, height: H - pad.b - sy(o), fill: 'var(--sl-chart-primary)' }),
-          h('text', { x: cx - bw / 2 - 1, y: sy(o) - 3, fill: 'var(--sl-chart-primary)', fontSize: 9, textAnchor: 'middle' }, '' + o),
+          h('rect', { x: cx - bw - 1, y: sy(o), width: bw, height: H - pad.b - sy(o), rx: _slRich() ? 3 : 0, fill: _slRich() ? 'url(#sl-pri-bar)' : 'var(--sl-chart-primary)', filter: _slRich() ? 'url(#sl-sh-bar)' : undefined }),
+          h('text', { x: cx - bw / 2 - 1, y: sy(o) - 3, fill: 'var(--sl-chart-primary)', fontSize: 9, fontWeight: 700, textAnchor: 'middle' }, '' + o),
           // Expected
-          h('rect', { x: cx + 1, y: sy(e), width: bw, height: H - pad.b - sy(e), fill: 'var(--sl-chart-warning)', opacity: 0.85 }),
-          h('text', { x: cx + bw / 2 + 1, y: sy(e) - 3, fill: 'var(--sl-chart-warning)', fontSize: 9, textAnchor: 'middle' }, e.toFixed ? e.toFixed(1) : e),
+          h('rect', { x: cx + 1, y: sy(e), width: bw, height: H - pad.b - sy(e), rx: _slRich() ? 3 : 0, fill: _slRich() ? 'url(#sl-warn-bar)' : 'var(--sl-chart-warning)', opacity: _slRich() ? 0.94 : 0.85, filter: _slRich() ? 'url(#sl-sh-bar)' : undefined }),
+          h('text', { x: cx + bw / 2 + 1, y: sy(e) - 3, fill: 'var(--sl-chart-warning)', fontSize: 9, fontWeight: 700, textAnchor: 'middle' }, e.toFixed ? e.toFixed(1) : e),
           // Category label
           h('text', { x: cx, y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, label.length > 12 ? label.slice(0, 10) + '…' : label)
         );
@@ -5510,13 +5664,15 @@ window.StemLab = window.StemLab || {
     var bandX = (W - pad.l - pad.r) / Math.max(1, cols - 1);
     var palette = ['var(--sl-chart-primary)', 'var(--sl-chart-secondary)', 'var(--sl-chart-warning)', 'var(--sl-chart-danger)', 'var(--sl-purple)'];
     var children = [
+      _slDefs(h, 'int'),
+      _slWell(h, 'int', pad.l, pad.t, W - pad.l - pad.r, H - pad.b - pad.t),
       h('line', { key: 'ax', x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       h('line', { key: 'ay', x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' })
     ];
     var yticks = _niceTicks(minM, maxM, 5);
     yticks.forEach(function(t, ti) {
       children.push(h('text', { key: 'yt' + ti, x: pad.l - 6, y: sy(t) + 3, fill: 'var(--sl-chart-label)', fontSize: 10, textAnchor: 'end' }, t.toFixed ? t.toFixed(1) : t));
-      children.push(h('line', { key: 'gy' + ti, x1: pad.l, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)' }));
+      children.push(h('line', { key: 'gy' + ti, x1: pad.l, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)', strokeOpacity: _slRich() ? 0.35 : 1 }));
     });
     // Each row = one line
     for (var ri = 0; ri < rows; ri++) {
@@ -5527,13 +5683,15 @@ window.StemLab = window.StemLab || {
         pts.push({ x: pad.l + bandX * ci, y: sy(cm) });
       }
       var color = palette[ri % palette.length];
-      // Lines
+      // Lines (dual-pass luminous interaction profiles)
       for (var pp = 0; pp < pts.length - 1; pp++) {
-        children.push(h('line', { key: 'l_' + ri + '_' + pp, x1: pts[pp].x, y1: pts[pp].y, x2: pts[pp + 1].x, y2: pts[pp + 1].y, stroke: color, strokeWidth: 2 }));
+        if (_slRich()) children.push(h('line', { key: 'lg_' + ri + '_' + pp, x1: pts[pp].x, y1: pts[pp].y, x2: pts[pp + 1].x, y2: pts[pp + 1].y, stroke: color, strokeWidth: 6.5, strokeOpacity: 0.18, strokeLinecap: 'round' }));
+        children.push(h('line', { key: 'l_' + ri + '_' + pp, x1: pts[pp].x, y1: pts[pp].y, x2: pts[pp + 1].x, y2: pts[pp + 1].y, stroke: color, strokeWidth: 2.3, strokeLinecap: 'round' }));
       }
       // Dots
       pts.forEach(function(p, pi) {
-        children.push(h('circle', { key: 'd_' + ri + '_' + pi, cx: p.x, cy: p.y, r: 4, fill: color, stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }));
+        if (_slRich()) children.push(h('circle', { key: 'dg_' + ri + '_' + pi, cx: p.x, cy: p.y, r: 7.5, fill: color, fillOpacity: 0.18 }));
+        children.push(h('circle', { key: 'd_' + ri + '_' + pi, cx: p.x, cy: p.y, r: 4.2, fill: color, stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.2, filter: _slRich() ? 'url(#sl-sh-int)' : undefined }));
       });
       // Series legend on right edge (fits inside pad.r)
       var lastPt = pts[pts.length - 1];
@@ -6066,16 +6224,17 @@ window.StemLab = window.StemLab || {
       if (nR < 4) return { error: 'Need ≥4 paired values for bootstrap.' };
       var pairs = [];
       for (var pj = 0; pj < nR; pj++) pairs.push([ra[pj], rb[pj]]);
+      var useSpearman = testType === 'spearman';
       statFn = function() {
         var rs = _resampleWithReplacement(pairs);
         var x = rs.map(function(p) { return p[0]; }), y = rs.map(function(p) { return p[1]; });
-        // r is undefined when a resample repeats one x (or one y): drop it, never score it 0.
+        // r / rho is undefined when a resample repeats one x (or one y): drop it, never score it 0.
         if (_allSame(x) || _allSame(y)) return NaN;
-        var pres = pearson(x, y);
+        var pres = useSpearman ? spearman(x, y) : pearson(x, y);
         return _isNum(pres.r) ? pres.r : NaN;
       };
-      observed = pearson(ra.slice(0, nR), rb.slice(0, nR)).r;
-      statName = 'Pearson r';
+      observed = (useSpearman ? spearman(ra.slice(0, nR), rb.slice(0, nR)) : pearson(ra.slice(0, nR), rb.slice(0, nR))).r;
+      statName = useSpearman ? 'Spearman ρ' : 'Pearson r';
     } else if (testType === 'linearRegression') {
       var lra = _clean(d.twoColData.a), lrb = _clean(d.twoColData.b);
       var nL = Math.min(lra.length, lrb.length);
@@ -6092,16 +6251,26 @@ window.StemLab = window.StemLab || {
     } else if (testType === 'anova_oneWay' || testType === 'kruskalWallis') {
       var groups = d.multiColData.groups.map(function(g) { return _clean(g.values); });
       if (groups.some(function(g) { return g.length < 3; })) return { error: 'Need ≥3 values per group for bootstrap.' };
-      // Bootstrap on the F-stat
-      statFn = function() {
-        var resampled = groups.map(_resampleWithReplacement);
-        // F is undefined when every resampled group has no spread (MS_within = 0).
-        if (resampled.every(_allSame)) return NaN;
-        var rres = anova_oneWay(resampled);
-        return _isNum(rres.F) ? rres.F : NaN;
-      };
-      observed = anova_oneWay(groups).F;
-      statName = 'F';
+      if (testType === 'kruskalWallis') {
+        statFn = function() {
+          var resampled = groups.map(_resampleWithReplacement);
+          var kres = kruskalWallis(resampled);
+          return _isNum(kres.H) ? kres.H : NaN;
+        };
+        observed = kruskalWallis(groups).H;
+        statName = 'Kruskal-Wallis H';
+      } else {
+        // Bootstrap on the F-stat
+        statFn = function() {
+          var resampled = groups.map(_resampleWithReplacement);
+          // F is undefined when every resampled group has no spread (MS_within = 0).
+          if (resampled.every(_allSame)) return NaN;
+          var rres = anova_oneWay(resampled);
+          return _isNum(rres.F) ? rres.F : NaN;
+        };
+        observed = anova_oneWay(groups).F;
+        statName = 'F';
+      }
     } else {
       return { error: 'Bootstrap CI not yet wired for this test type.' };
     }
@@ -6167,10 +6336,12 @@ window.StemLab = window.StemLab || {
       'aria-label': boot.level * 100 + '% bootstrap CI for ' + boot.statName + ': [' + boot.ci[0].toFixed(3) + ', ' + boot.ci[1].toFixed(3) + ']',
       style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
+      _slDefs(h, 'boot'),
+      _slWell(h, 'boot', pad.l, pad.t, W - pad.l - pad.r, H - pad.b - pad.t),
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       // Shaded CI band background
-      h('rect', { x: sx(boot.ci[0]), y: pad.t, width: Math.max(2, sx(boot.ci[1]) - sx(boot.ci[0])), height: H - pad.b - pad.t, fill: 'var(--sl-chart-secondary)', opacity: 0.15 }),
+      h('rect', { x: sx(boot.ci[0]), y: pad.t, width: Math.max(2, sx(boot.ci[1]) - sx(boot.ci[0])), height: H - pad.b - pad.t, fill: _slRich() ? 'url(#sl-band-boot)' : 'var(--sl-chart-secondary)', opacity: _slRich() ? 1 : 0.15 }),
       // Histogram bars
       bins.map(function(c, bi) {
         var x0 = sx(min + bi * binW), x1 = sx(min + (bi + 1) * binW);
@@ -6179,14 +6350,22 @@ window.StemLab = window.StemLab || {
         return h('rect', {
           key: bi,
           x: x0 + 0.5, y: sy(c), width: Math.max(1, x1 - x0 - 1), height: H - pad.b - sy(c),
-          fill: inCI ? 'var(--sl-chart-secondary)' : 'var(--sl-chart-label)', opacity: 0.85
+          rx: _slRich() ? 1.5 : 0,
+          fill: _slRich() ? (inCI ? 'url(#sl-sec-boot)' : 'url(#sl-lbl-boot)') : (inCI ? 'var(--sl-chart-secondary)' : 'var(--sl-chart-label)'), opacity: _slRich() ? 0.94 : 0.85
         });
       }),
-      // CI bracket lines
+      // CI bracket laser lines + CI span error bar with endpoint beacons
+      _slRich() && h('line', { x1: sx(boot.ci[0]), y1: pad.t, x2: sx(boot.ci[0]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5.5, strokeOpacity: 0.2 }),
       h('line', { x1: sx(boot.ci[0]), y1: pad.t, x2: sx(boot.ci[0]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2 }),
+      _slRich() && h('line', { x1: sx(boot.ci[1]), y1: pad.t, x2: sx(boot.ci[1]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5.5, strokeOpacity: 0.2 }),
       h('line', { x1: sx(boot.ci[1]), y1: pad.t, x2: sx(boot.ci[1]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2 }),
-      // Observed marker
+      _slRich() && h('line', { x1: sx(boot.ci[0]), y1: H - pad.b - 6, x2: sx(boot.ci[1]), y2: H - pad.b - 6, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2.5 }),
+      _slRich() && h('circle', { cx: sx(boot.ci[0]), cy: H - pad.b - 6, r: 3.2, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
+      _slRich() && h('circle', { cx: sx(boot.ci[1]), cy: H - pad.b - 6, r: 3.2, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
+      // Observed laser marker
+      _slRich() && h('line', { x1: sx(boot.observed), y1: pad.t - 4, x2: sx(boot.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 6.5, strokeOpacity: 0.24 }),
       h('line', { x1: sx(boot.observed), y1: pad.t - 4, x2: sx(boot.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 2.5 }),
+      _slRich() && h('circle', { cx: sx(boot.observed), cy: pad.t - 2, r: 3.2, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
       h('text', { x: sx(boot.observed), y: pad.t - 6, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 800, textAnchor: 'middle' },
         '↓ ' + boot.observed.toFixed(2)
       ),
@@ -6249,12 +6428,13 @@ window.StemLab = window.StemLab || {
       var nP = Math.min(ca.length, cb.length);
       if (nP < 3) return { error: 'Need ≥3 paired (x,y) values.' };
       var pX = ca.slice(0, nP), pY = cb.slice(0, nP);
-      var pres = pearson(pX, pY);
+      var permSpearman = testType === 'spearman';
+      var pres = permSpearman ? spearman(pX, pY) : pearson(pX, pY);
       observed = pres.r;
-      statName = 'r';
+      statName = permSpearman ? 'Spearman ρ' : 'r';
       for (var pri = 0; pri < nReps; pri++) {
         var shY = _shuffle(pY);
-        var sres = pearson(pX, shY);
+        var sres = permSpearman ? spearman(pX, shY) : pearson(pX, shY);
         if (_isNum(sres.r)) simStats.push(sres.r);
       }
     } else if (testType === 'anova_oneWay' || testType === 'kruskalWallis') {
@@ -6262,20 +6442,38 @@ window.StemLab = window.StemLab || {
       if (groups.some(function(g) { return g.length < 2; })) return { error: 'Need ≥2 values per group.' };
       var sizes = groups.map(function(g) { return g.length; });
       var pool = []; groups.forEach(function(g) { pool = pool.concat(g); });
-      // Observed F-stat
-      var oneRes = anova_oneWay(groups);
-      observed = oneRes.F;
-      statName = 'F';
-      for (var ar = 0; ar < nReps; ar++) {
-        var shp = _shuffle(pool);
-        var simGroups = [];
-        var idx = 0;
-        for (var sg = 0; sg < sizes.length; sg++) {
-          simGroups.push(shp.slice(idx, idx + sizes[sg]));
-          idx += sizes[sg];
+      var permKW = testType === 'kruskalWallis';
+      if (permKW) {
+        var kwRes = kruskalWallis(groups);
+        observed = kwRes.H;
+        statName = 'Kruskal-Wallis H';
+        for (var kwr = 0; kwr < nReps; kwr++) {
+          var shkw = _shuffle(pool);
+          var kwGroups = [];
+          var kwIdx = 0;
+          for (var kwg = 0; kwg < sizes.length; kwg++) {
+            kwGroups.push(shkw.slice(kwIdx, kwIdx + sizes[kwg]));
+            kwIdx += sizes[kwg];
+          }
+          var kwSim = kruskalWallis(kwGroups);
+          if (_isNum(kwSim.H)) simStats.push(kwSim.H);
         }
-        var simRes = anova_oneWay(simGroups);
-        if (_isNum(simRes.F)) simStats.push(simRes.F);
+      } else {
+        // Observed F-stat
+        var oneRes = anova_oneWay(groups);
+        observed = oneRes.F;
+        statName = 'F';
+        for (var ar = 0; ar < nReps; ar++) {
+          var shp = _shuffle(pool);
+          var simGroups = [];
+          var idx = 0;
+          for (var sg = 0; sg < sizes.length; sg++) {
+            simGroups.push(shp.slice(idx, idx + sizes[sg]));
+            idx += sizes[sg];
+          }
+          var simRes = anova_oneWay(simGroups);
+          if (_isNum(simRes.F)) simStats.push(simRes.F);
+        }
       }
     } else {
       return { error: 'Permutation test not yet wired for this test type.' };
@@ -6284,8 +6482,8 @@ window.StemLab = window.StemLab || {
     // Two-tailed p-value: how often is |sim| ≥ |observed|?
     var absObs = Math.abs(observed);
     var moreExtreme = 0;
-    // For F-stat (always positive), use one-sided
-    var oneSided = (statName === 'F');
+    // For F-stat and Kruskal-Wallis H (always non-negative), use one-sided
+    var oneSided = (statName === 'F' || statName === 'Kruskal-Wallis H');
     for (var k = 0; k < simStats.length; k++) {
       if (oneSided) {
         if (simStats[k] >= observed) moreExtreme++;
@@ -6332,6 +6530,8 @@ window.StemLab = window.StemLab || {
       'aria-label': 'Null distribution from ' + perm.nReps + ' permutations. Observed ' + perm.statName + ' = ' + perm.observed.toFixed(3),
       style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
+      _slDefs(h, 'perm'),
+      _slWell(h, 'perm', pad.l, pad.t, W - pad.l - pad.r, H - pad.b - pad.t),
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       bins.map(function(c, bi) {
@@ -6345,11 +6545,14 @@ window.StemLab = window.StemLab || {
         return h('rect', {
           key: bi,
           x: x0 + 0.5, y: y0, width: Math.max(1, x1 - x0 - 1), height: H - pad.b - y0,
-          fill: inExtreme ? 'var(--sl-chart-danger)' : 'var(--sl-chart-label)', opacity: 0.7
+          rx: _slRich() ? 1.5 : 0,
+          fill: _slRich() ? (inExtreme ? 'url(#sl-dan-perm)' : 'url(#sl-lbl-perm)') : (inExtreme ? 'var(--sl-chart-danger)' : 'var(--sl-chart-label)'), opacity: _slRich() ? 0.92 : 0.7
         });
       }),
-      // Observed marker
+      // Observed laser marker
+      _slRich() && h('line', { x1: sx(perm.observed), y1: pad.t - 4, x2: sx(perm.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 6.5, strokeOpacity: 0.24 }),
       h('line', { x1: sx(perm.observed), y1: pad.t - 4, x2: sx(perm.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 2.5 }),
+      _slRich() && h('circle', { cx: sx(perm.observed), cy: pad.t - 2, r: 3.2, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
       h('text', { x: sx(perm.observed), y: pad.t - 6, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 800, textAnchor: 'middle' },
         '↓ Observed = ' + perm.observed.toFixed(2)
       ),

@@ -91,7 +91,6 @@
         'memoryAidAuthorshipMode', 'memoryAidReflectionLevel',
         'memoryAidReasoningRequired', 'memoryAidCount',
         'memoryAidIncludeVisuals', 'memoryAidIncludeHookFacts'],
-      timeline: ['timelineMode', 'timelineItemCount', 'timelineTopic', 'includeTimelineVisuals'],
       'applied-challenge': ['appliedChallengeSelectionMode', 'appliedChallengeFamily',
         'appliedChallengeAgencyMode', 'appliedChallengeScope'],
       brainstorm: ['isIndependentMode', 'activityMode'],
@@ -162,7 +161,7 @@
 
   function uniqueStrings(values, fallback) {
     var result = [];
-    var seen = {};
+    var seen = Object.create(null);
     (Array.isArray(values) ? values : []).forEach(function (value) {
       var text = clean(value);
       var key = fold(text);
@@ -179,6 +178,7 @@
     if (!isObject(value)) return value;
     var out = {};
     Object.keys(value).sort().forEach(function (key) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
       if (value[key] !== undefined && typeof value[key] !== 'function') out[key] = stableValue(value[key]);
     });
     return out;
@@ -294,7 +294,7 @@
 
   function getResourcePolicy(resource) {
     var type = getResourceType(resource);
-    return RESOURCE_POLICIES[type] || Object.freeze({
+    return (own(RESOURCE_POLICIES, type) && RESOURCE_POLICIES[type]) || Object.freeze({
       type: type,
       cardinality: DEFAULT_POLICY.cardinality,
       scope: DEFAULT_POLICY.scope,
@@ -346,6 +346,7 @@
     if (!isObject(value)) return {};
     var out = {};
     Object.keys(value).sort().forEach(function (key) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
       if (/api.?key|token|secret|password|authorization|base.?url/i.test(key)) return;
       var candidate = value[key];
       if (candidate === undefined || typeof candidate === 'function') return;
@@ -414,7 +415,7 @@
     var source = isObject(settings) ? settings : {};
     var typedOverride = typedOverrideFrom(source, type);
     var fields = {};
-    var allowed = RESOURCE_GENERATION_CONFIG_FIELDS[type] || [];
+    var allowed = own(RESOURCE_GENERATION_CONFIG_FIELDS, type) ? RESOURCE_GENERATION_CONFIG_FIELDS[type] : [];
     allowed.forEach(function (key) {
       var value = effectiveConfigValue(row, source, type, key);
       if (value === undefined || value == null) return;
@@ -501,10 +502,11 @@
       if (isLocalBackend) faqItems = Math.max(3, Math.min(Number(faqItems) || 5, 6));
       setField('itemCount', faqItems);
     } else if (type === 'timeline') {
-      setField('mode', effective('timelineMode') || effective('mode') || 'auto');
-      setField('itemCount', effective('timelineCount') !== undefined
-        ? effective('timelineCount') : effective('timelineItemCount'));
-      setField('topic', effective('timelineTopic'));
+      setField('mode', effective('mode') || effective('timelineMode') || 'auto');
+      var timelineItems = effective('itemCount') !== undefined ? effective('itemCount')
+        : (effective('timelineCount') !== undefined ? effective('timelineCount') : effective('timelineItemCount'));
+      setField('itemCount', timelineItems);
+      setField('topic', effective('topic') !== undefined ? effective('topic') : effective('timelineTopic'));
       setField('imageStyle', effective('imageStyle') || effective('universalImageStyle'));
     } else if (type === 'concept-sort') {
       var conceptItems = effective('itemCount') !== undefined
@@ -514,7 +516,7 @@
       setField('itemCount', conceptItems);
       setField('imageStyle', effective('imageStyle') || effective('universalImageStyle'));
     } else if (type === 'gemini-bridge') {
-      setField('simulationType', effective('bridgeSimType'));
+      setField('simulationType', effective('simulationType') || effective('bridgeSimType'));
       var steps = effective('stepCount') !== undefined ? effective('stepCount') : effective('bridgeStepCount');
       if (isLocalBackend) steps = Math.max(3, Math.min(Number(steps) || 5, 6));
       setField('stepCount', steps);
@@ -897,12 +899,18 @@
     if (!artifact || !policy.allowVariants) return 'singleton';
     var config = isObject(artifact.config) ? artifact.config : {};
     var candidate = {
+      type: getResourceType(artifact),
       variantKey: artifact.variantKey || config.variantKey,
       explicitVariantKey: artifact.explicitVariantKey || config.explicitVariantKey,
       variantKeyInput: artifact.variantKeyInput || config.variantKeyInput,
       variantKeyDerived: artifact.variantKeyDerived === true || config.variantKeyDerived === true,
       directive: artifact.directive || artifact.customInstructions || config.customInstructions,
-      mode: artifact.mode || artifact.activityMode || config.mode || config.type,
+      mode: artifact.mode || artifact.activityMode || config.mode || config.activityMode || config.type,
+      outlineType: artifact.outlineType || config.outlineType,
+      quizMode: artifact.quizMode || config.quizMode,
+      templateType: artifact.templateType || config.templateType,
+      chartType: artifact.chartType || config.chartType,
+      config: config,
       activityConfig: artifact.activityConfig
     };
     return buildVariantKey(candidate, policy);
@@ -1172,8 +1180,10 @@
         || force.indexOf(resource && (resource.uiId || resource.key || resource.id)) !== -1;
     }
     if (isObject(force)) {
-      return force[cell.generationIdentity] === true || force[cell.type] === true
-        || force[resource && (resource.uiId || resource.key || resource.id)] === true;
+      var rowKey = resource && (resource.uiId || resource.key || resource.id);
+      return (own(force, cell.generationIdentity) && force[cell.generationIdentity] === true)
+        || (own(force, cell.type) && force[cell.type] === true)
+        || (rowKey != null && own(force, rowKey) && force[rowKey] === true);
     }
     return false;
   }

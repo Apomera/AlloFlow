@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-20T07:00:23.221Z",
+  "generatedAt": "2026-11-21T04:12:32.849Z",
   "packId": "praxis-special-education-early-childhood-5692",
   "standard": {
     "label": "AlloFlow 5692 source, blueprint, feedback, learning, linkage, and Part C/Part B semantic integrity QA v2",
@@ -37,15 +37,6 @@
     "guidedReviewBanks": 3,
     "learningActivityBanks": 5
   },
-  "contentBinding": {
-    "schemaVersion": 1,
-    "algorithm": "sha256",
-    "reviewedAt": "2026-07-18",
-    "sourceItemCount": 200,
-    "sourceItemsSha256": "af9940f8653b6d675d4c3dac5e0320ca6015dcf31ffe4ab1b3aeea8a57fd4b0c",
-    "learningLibrarySha256": "4f77d18b57081e78133c2fb1742fc805a80fd67b9ff75e6d541b5be36fe611e4",
-    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
-  },
   "expansion": {
     "independentQuestionTarget": 500,
     "totalLearningActivities": 500,
@@ -70,5 +61,14 @@
     ],
     "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
     "findings": []
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "dc77df520df8e079fe5ec36943142024f7d6af283aac61f429f93ce236f00353",
+    "learningLibrarySha256": "0c6ed207b1ddb26355c24301d9df82bc92581ad8288f518cfcc1d645ce440340",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

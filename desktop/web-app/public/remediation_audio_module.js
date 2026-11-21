@@ -17,9 +17,18 @@ if (window.AlloModules && window.AlloModules.RemediationAudioModule) { console.l
 
 var _fallbackAudioCtx = null;
 var _isMuted = function () {
-    return typeof window !== 'undefined' && typeof window.isGlobalMuted === 'function'
-        ? Boolean(window.isGlobalMuted())
-        : false;
+    try {
+        if (typeof window === 'undefined') return false;
+        if (window.__alloMuted === true) return true;
+        if (typeof window.__alloIsGlobalMuted === 'function') return Boolean(window.__alloIsGlobalMuted());
+        if (typeof window.isGlobalMuted === 'function') return Boolean(window.isGlobalMuted());
+        try {
+            if (typeof window.localStorage !== 'undefined' && window.localStorage.getItem('alloflow-global-muted') === 'true') return true;
+        } catch (_) {}
+        return false;
+    } catch (_) {
+        return true;
+    }
 };
 var _getAudioCtx = function () {
     if (typeof window !== 'undefined' && typeof window.getGlobalAudioContext === 'function') {
@@ -36,38 +45,78 @@ var _getAudioCtx = function () {
 const remediationAudio = (() => {
   let lastChunkSoundAt = 0;
   const DEBOUNCE_MS = 150;
-  const prefersReducedMotion = () => typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const MAX_PENDING_TIMERS = 24;
+  const ALLOWED_TYPES = ['sine', 'triangle', 'square', 'sawtooth'];
+  const pendingTimers = new Set();
+  const clearPendingTimers = () => {
+    pendingTimers.forEach((id) => { try { clearTimeout(id); } catch (_) {} });
+    pendingTimers.clear();
+  };
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    try {
+      window.addEventListener('alloflow-mute-changed', (ev) => {
+        if ((ev && ev.detail && ev.detail.muted === true) || _isMuted()) clearPendingTimers();
+      });
+    } catch (_) {}
+  }
+  const prefersReducedMotion = () => {
+    try {
+      return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && Boolean(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    } catch (_) {
+      return false;
+    }
+  };
   const canPlay = () => !_isMuted() && !prefersReducedMotion();
+
+  const scheduleTone = (fn, delayMs) => {
+    if (!canPlay() || pendingTimers.size >= MAX_PENDING_TIMERS) return;
+    const ms = Number.isFinite(delayMs) && delayMs >= 0 ? Math.min(2000, delayMs) : 0;
+    const id = setTimeout(() => {
+      pendingTimers.delete(id);
+      if (canPlay()) fn();
+    }, ms);
+    pendingTimers.add(id);
+  };
 
   // Generic tone generator: frequency (Hz), duration (s), type, gain, attack, release
   const playTone = (freq, duration = 0.12, type = 'sine', gain = 0.12, attack = 0.005, release = 0.08) => {
     if (!canPlay()) return;
+    const safeFreq = Number.isFinite(freq) ? Math.max(20, Math.min(20000, freq)) : 440;
+    const safeDur = Number.isFinite(duration) ? Math.max(0.01, Math.min(5, duration)) : 0.12;
+    const safeGain = Number.isFinite(gain) ? Math.max(0.0002, Math.min(0.5, gain)) : 0.12;
+    const safeAttack = Number.isFinite(attack) ? Math.max(0.001, Math.min(1, attack)) : 0.005;
+    const safeRelease = Number.isFinite(release) ? Math.max(0.005, Math.min(2, release)) : 0.08;
+    const safeType = ALLOWED_TYPES.indexOf(type) !== -1 ? type : 'sine';
     try {
       const ctx = _getAudioCtx();
-      if (!ctx) return;
-      if (ctx.state === 'suspended') { try { Promise.resolve(ctx.resume()).catch(() => {}); } catch(e) {} }
+      if (!ctx || ctx.state === 'closed') return;
+      if (ctx.state === 'suspended') {
+        try { Promise.resolve(ctx.resume()).catch(() => {}); } catch (e) {}
+        return;
+      }
+      if (ctx.state && ctx.state !== 'running') return;
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
-      osc.type = type;
-      osc.frequency.value = freq;
-      const now = ctx.currentTime;
+      osc.type = safeType;
+      osc.frequency.value = safeFreq;
+      const now = Number.isFinite(ctx.currentTime) ? ctx.currentTime : 0;
       g.gain.setValueAtTime(0.0001, now);
-      g.gain.exponentialRampToValueAtTime(gain, now + attack);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + duration + release);
+      g.gain.exponentialRampToValueAtTime(safeGain, now + safeAttack);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + safeDur + safeRelease);
       osc.connect(g); g.connect(ctx.destination);
       osc.onended = () => { try { osc.disconnect(); } catch (_) {} try { g.disconnect(); } catch (_) {} };
       osc.start(now);
-      osc.stop(now + duration + release + 0.02);
+      osc.stop(now + safeDur + safeRelease + 0.02);
     } catch(e) { /* non-blocking */ }
   };
 
   // Play a chord: array of frequencies, layered
   const playChord = (freqs, duration = 0.5, type = 'triangle', gain = 0.08) => {
-    if (!canPlay()) return;
-    freqs.forEach((f, i) => setTimeout(() => playTone(f, duration, type, gain, 0.01, 0.25), i * 50));
+    if (!canPlay() || !Array.isArray(freqs)) return;
+    freqs.slice(0, 8).forEach((f, i) => scheduleTone(() => playTone(f, duration, type, gain, 0.01, 0.25), i * 50));
   };
 
-  return {
+  return Object.freeze({
     // Chunk completed — good score (≥80): soft high tick, debounced
     chunkGood: () => {
       const now = Date.now();
@@ -93,27 +142,27 @@ const remediationAudio = (() => {
     refixStart: () => {
       if (!canPlay()) return;
       playTone(440, 0.08, 'sine', 0.07, 0.005, 0.05);
-      setTimeout(() => playTone(660, 0.08, 'sine', 0.07, 0.005, 0.05), 60);
+      scheduleTone(() => playTone(660, 0.08, 'sine', 0.07, 0.005, 0.05), 60);
     },
     // Re-fix succeeded — short rising tone
     refixSuccess: () => {
       if (!canPlay()) return;
       playTone(523, 0.1, 'sine', 0.09, 0.005, 0.08);  // C5
-      setTimeout(() => playTone(784, 0.12, 'sine', 0.09, 0.005, 0.1), 90); // G5
+      scheduleTone(() => playTone(784, 0.12, 'sine', 0.09, 0.005, 0.1), 90); // G5
     },
     // Session complete — triumphant chord (C major → G major)
     sessionComplete: () => {
       if (!canPlay()) return;
       playChord([523.25, 659.25, 783.99], 0.5, 'triangle', 0.08); // C E G
-      setTimeout(() => playChord([587.33, 739.99, 880], 0.6, 'triangle', 0.08), 300); // D F# A
+      scheduleTone(() => playChord([587.33, 739.99, 880], 0.6, 'triangle', 0.08), 300); // D F# A
     },
     // Error / pipeline failure — descending minor tone
     error: () => {
       if (!canPlay()) return;
       playTone(440, 0.15, 'sawtooth', 0.1, 0.005, 0.1);
-      setTimeout(() => playTone(311, 0.25, 'sawtooth', 0.1, 0.005, 0.2), 130);
+      scheduleTone(() => playTone(311, 0.25, 'sawtooth', 0.1, 0.005, 0.2), 130);
     },
-  };
+  });
 })();
 
 

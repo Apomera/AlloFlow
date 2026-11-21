@@ -191,12 +191,16 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
         else {
           const before = isHeading(el) ? 'level ' + levelOf(el) + ' heading' : 'paragraph';
           const n = retag(el, 'h' + op.level);
+          if (/^(?:heading|presentation|none)$/i.test(String(n.getAttribute('role') || '').trim())) n.removeAttribute('role');
+          n.removeAttribute('aria-level');
           summary = 'Changed the ' + before + ' "' + clip(textOf(n), 60) + '" to a level ' + op.level + ' heading';
         }
       } else if (op.op === 'make_paragraph') {
         const el = target(op.id);
         if (!isHeading(el)) throw new Error('that is a ' + kindName(el) + ', not a heading');
         const n = retag(el, 'p');
+        if (/^heading$/i.test(String(n.getAttribute('role') || '').trim())) n.removeAttribute('role');
+        n.removeAttribute('aria-level');
         summary = 'Changed the heading "' + clip(textOf(n), 60) + '" into an ordinary paragraph';
       } else if (op.op === 'set_alt_text') {
         const el = target(op.id);
@@ -210,6 +214,7 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
           if (dec) {
             el.setAttribute('alt', '');
             el.removeAttribute('aria-label');
+            el.removeAttribute('aria-labelledby');
             el.removeAttribute('title');
             summary = 'Marked the image ' + (el.getAttribute('src') && !/^data:/i.test(el.getAttribute('src')) ? '"' + clip(el.getAttribute('src').split(/[?#]/)[0].split('/').pop(), 40) + '" ' : '') + 'as decorative (empty alternative text)';
           } else {
@@ -261,6 +266,10 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
         if (el === ref || el.contains(ref)) throw new Error('an element cannot be moved next to itself or into its own contents');
         const te = tag(el);
         const tr = tag(ref);
+        if (te === 'MAIN' || el.querySelector('main')) throw new Error('the main landmark cannot be moved');
+        if (te === 'LI' && tr === 'LI' && el.parentElement !== ref.parentElement) throw new Error('a list item can only be moved next to another item in the same list');
+        if (te === 'TR' && tr === 'TR' && el.closest('table') !== ref.closest('table')) throw new Error('a table row can only be moved next to another row in the same table');
+        if (BLOCK.has(te) && BLOCK.has(tr) && (tr === 'MAIN' || Boolean(el.closest('main')) !== Boolean(ref.closest('main')))) throw new Error('blocks cannot be moved across the main landmark boundary');
         const compatible = (te === 'LI' && tr === 'LI') || (te === 'TR' && tr === 'TR') || (BLOCK.has(te) && BLOCK.has(tr));
         if (!compatible) throw new Error('only whole blocks can be moved (paragraphs, headings, lists, tables, figures, sections), and a list item or table row only next to another list item or row');
         const was = label(el);
@@ -269,7 +278,7 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
         summary = 'Moved the ' + was + ' to just ' + (hasB ? 'before' : 'after') + ' the ' + refName;
       } else if (op.op === 'delete_element') {
         const el = target(op.id);
-        if (tag(el) === 'MAIN') throw new Error('the main landmark cannot be deleted');
+        if (tag(el) === 'MAIN' || el.querySelector('main')) throw new Error('the main landmark cannot be deleted');
         const w = wordsIn(el);
         if (w > 400 && op.allow_large !== true) throw new Error('that ' + kindName(el) + ' holds ' + w + ' words. Check it is the right element, then repeat the operation with "allow_large": true');
         const was = label(el);
@@ -317,7 +326,9 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
         let stripped = 0;
         els.forEach((el) => {
           if (op.strip_markers === true) {
-            const first = doc.createTreeWalker(el, 4).nextNode();
+            const walker = doc.createTreeWalker(el, 4);
+            let first = walker.nextNode();
+            while (first && !String(first.nodeValue || '').trim()) first = walker.nextNode();
             if (first && marker.test(first.nodeValue)) { const before = words(first.nodeValue); first.nodeValue = first.nodeValue.replace(marker, ''); stripped += before - words(first.nodeValue); }
           }
           const li = retag(el, 'li');
@@ -331,7 +342,7 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
         if (!/^(?:UL|OL)$/.test(tag(el))) throw new Error('that is a ' + kindName(el) + ', not a list');
         const lis = Array.from(el.children);
         if (!lis.length || lis.some((c) => tag(c) !== 'LI')) throw new Error('that list has something other than list items directly inside it');
-        if (lis.some((li) => li.querySelector('ul,ol,table,p,h1,h2,h3,h4,h5,h6'))) throw new Error('an item of that list holds another list, a table or a block; only a simple list can become paragraphs');
+        if (lis.some((li) => li.querySelector('ul,ol,table,p,h1,h2,h3,h4,h5,h6,div,figure,blockquote,section,article,aside,pre,dl,hr,form'))) throw new Error('an item of that list holds another list, a table or a block; only a simple list can become paragraphs');
         const firstText = clip(textOf(lis[0]), 50);
         lis.forEach((li) => { el.before(retag(li, 'p')); });
         el.remove();

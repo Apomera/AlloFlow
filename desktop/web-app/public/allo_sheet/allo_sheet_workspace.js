@@ -556,8 +556,12 @@
       assertByteLimit(text);
       var parsed;
       try {
-        parsed = JSON.parse(text);
-      } catch (_) {
+        parsed = JSON.parse(text, function (key, value) {
+          if (key && isBlockedKey(key)) fail('AlloSheet workspace contains a blocked property name.');
+          return value;
+        });
+      } catch (error) {
+        if (error && error.code === 'allosheet-workspace-invalid') throw error;
         fail('The AlloSheet workspace file is not valid JSON.');
       }
       return normalize(parsed);
@@ -578,7 +582,8 @@
 
     function inferLocalColumnType(records, label) {
       for (var index = 0; index < records.length; index += 1) {
-        var value = records[index].fields[label];
+        var fields = records[index] && records[index].fields;
+        var value = fields && Object.prototype.hasOwnProperty.call(fields, label) ? fields[label] : null;
         if (value === null || value === '') continue;
         if (typeof value === 'number') return 'number';
         if (typeof value === 'boolean') return 'boolean';
@@ -703,6 +708,7 @@
         'Local workspace input'
       );
       if (!Array.isArray(config.tables)) fail('Local workspace tables must be an array.');
+      if (config.tables.length > LIMITS.maxTables) fail('AlloSheet workspace may include at most ' + LIMITS.maxTables + ' tables.');
       var document = {
         kind: KIND,
         version: VERSION,

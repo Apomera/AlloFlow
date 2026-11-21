@@ -430,14 +430,20 @@
     return { parsed: true, pair: pair, equivalent: equivalent, reversed: reversed, notSimplified: notSimplified, partlySimplified: partlySimplified, simplest: simplest, accepted: equivalent && !notSimplified && !partlySimplified };
   }
 
-  // Choice answers: "B.", "Option B" and "b" match; "y"/"n" read as yes/no.
+  // Choice answers: "B.", "Option B" / "Opción B" / "Choix B" and "b" match;
+  // localized yes/no/same words normalize to canonical yes/no/same tokens.
   function normalizeChoice(value) {
-    var text = normalizeAnswer(value).replace(/[.!?]+$/, '').trim();
-    var labelled = text.match(/^(?:option|printer|relationship|choice|mix|paint) ([a-z])$/);
+    var text = normalizeAnswer(value)
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[.!?¡¿]+$/g, '').replace(/^[¡¿]+/g, '').trim();
+    var labelled = text.match(/^(?:option|opcion|choix|wahl|opzione|opcao|printer|relationship|choice|mix|paint)\s+([a-z])$/);
     if (labelled) text = labelled[1];
-    if (text === 'y') return 'yes';
-    if (text === 'n') return 'no';
-    if (text === 'equal' || text === 'the same' || text === 'both' || text === 'same strength') return 'same';
+    if (text === 'y' || text === 'si' || text === 'oui' || text === 'ja' || text === 'sim') return 'yes';
+    if (text === 'n' || text === 'non' || text === 'nein' || text === 'nao') return 'no';
+    if (text === 'equal' || text === 'the same' || text === 'both' || text === 'same strength'
+      || text === 'igual' || text === 'iguales' || text === 'lo mismo' || text === 'mismo'
+      || text === 'meme' || text === 'pareil' || text === 'egal'
+      || text === 'gleich' || text === 'uguale') return 'same';
     return text;
   }
 
@@ -2970,6 +2976,7 @@
         var showUnit = !!spec.unitText && String(spec.unitText).length * charW + 2 <= unitWidth;
         var parts = spec.rows.map(function(row, rowIndex) {
           var color = colors[rowIndex % colors.length], units = Math.max(0, row.units);
+          var gradId = titleId + '-seg-' + rowIndex;
           var wrapped = wrapTapeLabel(row.label, chars, 2), lines = wrapped.lines, rowText = row.text ? String(row.text) : '';
           var inline = !!rowText && (lines[lines.length - 1].length + rowText.length) * charW + 10 <= W;
           var textLines = rowText && !inline ? wrapTapeLabel(rowText, chars, 3).lines : [];
@@ -2981,16 +2988,30 @@
             inline && h('text', { x: W - 2, y: top + 12 + (lines.length - 1) * lineH, textAnchor: 'end', fill: text, fontSize: 12, fontWeight: 700 }, rowText),
             textLines.map(function(line, i) { return h('text', { key: 't' + i, x: 2, y: top + 12 + (lines.length + i) * lineH, fill: text, fontSize: 12, fontWeight: 700 }, line); }),
             boxes ? Array.apply(null, Array(units)).map(function(_, index) {
+              var sx = 2 + index * unitWidth;
               return h('g', { key: index },
-                h('rect', { x: 2 + index * unitWidth, y: barY, width: unitWidth, height: 28, fill: soft, stroke: color, strokeWidth: unitWidth < 9 ? 1 : 2 }),
-                showUnit && h('text', { x: 2 + index * unitWidth + unitWidth / 2, y: barY + 19, textAnchor: 'middle', fill: text, fontSize: 12, fontWeight: 700 }, spec.unitText));
-            }) : h('rect', { x: 2, y: barY, width: unitWidth * units, height: 28, fill: soft, stroke: color, strokeWidth: 2 }));
+                h('rect', { x: sx, y: barY, width: unitWidth, height: 28, rx: unitWidth < 9 ? 1 : 3, fill: isContrast ? soft : 'url(#' + gradId + ')', stroke: color, strokeWidth: unitWidth < 9 ? 1 : 2 }),
+                !isContrast && unitWidth >= 8 && h('line', { x1: sx + 2.5, y1: barY + 3, x2: sx + unitWidth - 2.5, y2: barY + 3, stroke: '#ffffff', strokeWidth: 1.8, strokeLinecap: 'round', opacity: isDark ? 0.25 : 0.72 }),
+                showUnit && h('text', { x: sx + unitWidth / 2, y: barY + 19, textAnchor: 'middle', fill: text, fontSize: 12, fontWeight: 700 }, spec.unitText));
+            }) : h('g', null,
+              h('rect', { x: 2, y: barY, width: unitWidth * units, height: 28, rx: 3, fill: isContrast ? soft : 'url(#' + gradId + ')', stroke: color, strokeWidth: 2 }),
+              !isContrast && h('line', { x1: 4.5, y1: barY + 3, x2: Math.max(4.5, 2 + unitWidth * units - 2.5), y2: barY + 3, stroke: '#ffffff', strokeWidth: 1.8, strokeLinecap: 'round', opacity: isDark ? 0.25 : 0.72 })));
         });
         var totalLines = spec.totalText ? wrapTapeLabel(spec.totalText, chars, 4).lines : [], totalY = y;
         y += totalLines.length * lineH;
         return h('svg', { viewBox: '0 0 ' + W + ' ' + Math.max(1, y + 2), role: 'img', 'aria-labelledby': titleId + ' ' + descId, style: { width: '100%', maxWidth: W, display: 'block' } },
           h('title', { id: titleId }, spec.title || t('stem.ratios.tape_title', 'Tape diagram')),
           h('desc', { id: descId }, description),
+          !isContrast && h('defs', null,
+            spec.rows.map(function(_, rowIndex) {
+              var col = colors[rowIndex % colors.length];
+              return h('linearGradient', { key: 'g' + rowIndex, id: titleId + '-seg-' + rowIndex, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: col, stopOpacity: isDark ? 0.28 : 0.14 }),
+                h('stop', { offset: '55%', stopColor: soft, stopOpacity: 0.96 }),
+                h('stop', { offset: '100%', stopColor: col, stopOpacity: isDark ? 0.22 : 0.18 })
+              );
+            })
+          ),
           parts,
           totalLines.map(function(line, i) { return h('text', { key: 'total' + i, x: 2, y: totalY + 12 + i * lineH, fill: text, fontSize: 12, fontWeight: 700, 'aria-hidden': 'true' }, line); }));
       }
@@ -3022,18 +3043,36 @@
           h('svg', { viewBox: '0 0 ' + tapeW + ' ' + height, role: 'img', 'aria-labelledby': titleId + ' ' + descId, style: { width: '100%', maxWidth: 560, display: 'block' } },
             h('title', { id: titleId }, spec.title || t('stem.ratios.tape_title', 'Tape diagram')),
             h('desc', { id: descId }, description),
+            !isContrast && h('defs', null,
+              spec.rows.map(function(_, rowIndex) {
+                var col = colors[rowIndex % colors.length];
+                return h('linearGradient', { key: 'g' + rowIndex, id: idBase + '-seg-' + rowIndex, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: col, stopOpacity: isDark ? 0.28 : 0.14 }),
+                  h('stop', { offset: '55%', stopColor: soft, stopOpacity: 0.96 }),
+                  h('stop', { offset: '100%', stopColor: col, stopOpacity: isDark ? 0.22 : 0.18 })
+                );
+              })
+            ),
             spec.rows.map(function(row, rowIndex) {
               var y = 8 + rowIndex * rowHeight, color = colors[rowIndex % colors.length], units = Math.max(0, row.units);
+              var gradId = idBase + '-seg-' + rowIndex;
               var labelLines = wrapped[rowIndex].lines;
+              var barTotalW = unitWidth * units;
               return h('g', { key: rowIndex, 'aria-hidden': 'true' },
                 h('text', { x: 4, y: y + (labelLines.length > 1 ? 14 : 22), fill: text, fontSize: 12, fontWeight: 700, 'data-tape-label': rowIndex, 'data-truncated': wrapped[rowIndex].truncated ? 'true' : undefined },
                   labelLines.map(function(line, lineIndex) { return h('tspan', { key: lineIndex, x: 4, dy: lineIndex ? 14 : 0 }, line); })),
+                !isContrast && barTotalW > 4 && h('path', { d: 'M' + (barStart + 2) + ' ' + (y + 34) + ' H' + (barStart + barTotalW), stroke: 'rgba(15,23,42,0.12)', strokeWidth: 2.5, strokeLinecap: 'round' }),
                 boxes ? Array.apply(null, Array(units)).map(function(_, index) {
+                  var sx = barStart + index * unitWidth;
                   return h('g', { key: index },
-                    h('rect', { x: barStart + index * unitWidth, y: y, width: unitWidth, height: 32, fill: soft, stroke: color, strokeWidth: 2 }),
-                    unitWidth >= 22 && spec.unitText && h('text', { x: barStart + index * unitWidth + unitWidth / 2, y: y + 21, textAnchor: 'middle', fill: text, fontSize: 11, fontWeight: 700 }, spec.unitText));
-                }) : h('rect', { x: barStart, y: y, width: unitWidth * units, height: 32, fill: soft, stroke: color, strokeWidth: 2 }),
-                row.text && h('text', { x: Math.min(tapeW - 8, barStart + 4 + unitWidth * units), y: y + 22, fill: text, fontSize: 12, fontWeight: 700, textAnchor: barStart + unitWidth * units > tapeW - 40 ? 'end' : 'start' }, row.text));
+                    h('rect', { x: sx, y: y, width: unitWidth, height: 32, rx: unitWidth < 12 ? 1.5 : 3.5, fill: isContrast ? soft : 'url(#' + gradId + ')', stroke: color, strokeWidth: 2 }),
+                    !isContrast && unitWidth >= 10 && h('line', { x1: sx + 3, y1: y + 3.2, x2: sx + unitWidth - 3, y2: y + 3.2, stroke: '#ffffff', strokeWidth: 2, strokeLinecap: 'round', opacity: isDark ? 0.25 : 0.72 }),
+                    unitWidth >= 22 && spec.unitText && h('text', { x: sx + unitWidth / 2, y: y + 21, textAnchor: 'middle', fill: text, fontSize: 11, fontWeight: 700 }, spec.unitText));
+                }) : h('g', null,
+                  h('rect', { x: barStart, y: y, width: barTotalW, height: 32, rx: 3.5, fill: isContrast ? soft : 'url(#' + gradId + ')', stroke: color, strokeWidth: 2 }),
+                  !isContrast && h('line', { x1: barStart + 3, y1: y + 3.2, x2: Math.max(barStart + 3, barStart + barTotalW - 3), y2: y + 3.2, stroke: '#ffffff', strokeWidth: 2, strokeLinecap: 'round', opacity: isDark ? 0.25 : 0.72 })),
+                row.text && barTotalW > 14 && h('path', { d: 'M' + barStart + ' ' + (y + 35) + ' V' + (y + 38) + ' H' + (barStart + barTotalW) + ' V' + (y + 35), fill: 'none', stroke: color, strokeWidth: 1.2, opacity: isContrast ? 1 : 0.55 }),
+                row.text && h('text', { x: Math.min(tapeW - 8, barStart + 6 + barTotalW), y: y + 21, fill: text, fontSize: 12, fontWeight: 700, textAnchor: barStart + barTotalW > tapeW - 40 ? 'end' : 'start' }, row.text));
             }),
             spec.totalText && h('text', { x: barStart, y: height - 8, fill: text, fontSize: 12, fontWeight: 700, 'aria-hidden': 'true' }, spec.totalText)
           ),
@@ -3055,12 +3094,18 @@
         var x0 = spec.points[0][0], y0 = spec.points[0][1];
         var endX = maxX, endY = y0 + slope * (endX - x0);
         if (endY > maxY) { endY = maxY; endX = x0 + (maxY - y0) / slope; }
-        var titleId = idBase + '-title', descId = idBase + '-desc';
+        var titleId = idBase + '-title', descId = idBase + '-desc', bgId = idBase + '-bg';
         return h('figure', { className: 'space-y-2', 'data-ratio-mini-graph': idBase },
           h('svg', { viewBox: '0 0 300 220', role: 'img', 'aria-labelledby': titleId + ' ' + descId, style: { width: '100%', maxWidth: 360, display: 'block', borderRadius: 10 } },
             h('title', { id: titleId }, t('stem.ratios.mini_graph_title', 'Graph of the relationship')),
             h('desc', { id: descId }, fill(t('stem.ratios.mini_graph_desc', 'A straight line through the points {points}. The x-axis shows {x} and the y-axis shows {y}.'), { points: pointsText, x: spec.xLabel, y: spec.yLabel })),
-            h('rect', { x: 46, y: 24, width: 244, height: 156, rx: 4, fill: soft, opacity: isContrast ? 1 : 0.7, 'aria-hidden': 'true' }),
+            !isContrast && h('defs', null,
+              h('linearGradient', { id: bgId, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: accent, stopOpacity: isDark ? 0.14 : 0.08 }),
+                h('stop', { offset: '100%', stopColor: soft, stopOpacity: 0.9 })
+              )
+            ),
+            h('rect', { x: 46, y: 24, width: 244, height: 156, rx: 6, fill: isContrast ? soft : 'url(#' + bgId + ')', stroke: border, strokeWidth: 0.8, opacity: isContrast ? 1 : 0.92, 'aria-hidden': 'true' }),
             ticks.map(function(f, index) {
               return h('g', { key: index, 'aria-hidden': 'true' },
                 h('line', { x1: sx(f * maxX), y1: 30, x2: sx(f * maxX), y2: 180, stroke: border, strokeWidth: 1, strokeDasharray: '3 4' }),
@@ -3069,14 +3114,20 @@
                 h('text', { x: 40, y: sy(f * maxY) + 3, textAnchor: 'end', fill: muted, fontSize: 10 }, formatSignificantNumber(f * maxY, 3)));
             }),
             h('line', { x1: 46, y1: 180, x2: 290, y2: 180, stroke: text, strokeWidth: 2, 'aria-hidden': 'true' }),
+            h('path', { d: 'M285 176 L292 180 L285 184', fill: 'none', stroke: text, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' }),
             h('line', { x1: 46, y1: 180, x2: 46, y2: 24, stroke: text, strokeWidth: 2, 'aria-hidden': 'true' }),
+            h('path', { d: 'M42 29 L46 22 L50 29', fill: 'none', stroke: text, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' }),
             h('text', { x: 290, y: 214, textAnchor: 'end', fill: muted, fontSize: 10, fontWeight: 700, 'aria-hidden': 'true' }, spec.xLabel),
             h('text', { x: 6, y: 16, fill: muted, fontSize: 10, fontWeight: 700, 'aria-hidden': 'true' }, spec.yLabel),
-            spec.line !== false && slope > 0 && h('line', { x1: sx(x0), y1: sy(y0), x2: sx(endX), y2: sy(endY), stroke: success, strokeWidth: 3, 'aria-hidden': 'true' }),
+            spec.line !== false && slope > 0 && !isContrast && h('line', { x1: sx(x0), y1: sy(y0), x2: sx(endX), y2: sy(endY), stroke: success, strokeWidth: 8, strokeLinecap: 'round', opacity: 0.2, 'aria-hidden': 'true' }),
+            spec.line !== false && slope > 0 && h('line', { x1: sx(x0), y1: sy(y0), x2: sx(endX), y2: sy(endY), stroke: success, strokeWidth: 3, strokeLinecap: 'round', 'aria-hidden': 'true' }),
             spec.points.map(function(pt, index) {
+              var px = sx(pt[0]), py = sy(pt[1]);
               return h('g', { key: index, 'aria-hidden': 'true' },
-                h('circle', { cx: sx(pt[0]), cy: sy(pt[1]), r: 5, fill: accentStrong, stroke: panel, strokeWidth: 2 }),
-                h('text', { x: sx(pt[0]) + 7, y: sy(pt[1]) - 7, fill: text, fontSize: 10, fontWeight: 700 }, '(' + num(pt[0]) + ', ' + num(pt[1]) + ')'));
+                !isContrast && h('circle', { cx: px, cy: py, r: 9, fill: accentStrong, opacity: 0.18 }),
+                h('circle', { cx: px, cy: py, r: 5.2, fill: accentStrong, stroke: panel, strokeWidth: 2 }),
+                !isContrast && h('circle', { cx: px - 1.4, cy: py - 1.4, r: 1.4, fill: '#ffffff', opacity: 0.8 }),
+                h('text', { x: px + 7, y: py - 7, fill: text, fontSize: 10, fontWeight: 700 }, '(' + num(pt[0]) + ', ' + num(pt[1]) + ')'));
             })
           ),
           h('table', { style: srOnlyStyle },
@@ -3129,10 +3180,9 @@
                   return h('button', {
                     key: tag, type: 'button', 'aria-pressed': active,
                     onClick: function() {
-                      update(function(cur) {
-                        var drafts = Object.assign({}, cur.numericDrafts || {});
-                        delete drafts.ratioA; delete drafts.ratioB; delete drafts.ratioFactor;
-                        return { ratioA: pr.a, ratioB: pr.b, ratioFactor: pr.f, numericDrafts: drafts };
+                      update({
+                        ratioA: pr.a, ratioB: pr.b, ratioFactor: pr.f,
+                        ratioADraft: null, ratioBDraft: null, ratioFactorDraft: null
                       });
                     },
                     className: 'rounded-full px-3 py-1.5 text-xs font-extrabold',
@@ -3234,24 +3284,42 @@
                 h('desc', { id: 'ratio-line-desc' }, revealed
                   ? fill(t('stem.ratios.line_desc', 'The top line increases by {top} per interval and the bottom line increases by {bottom} per interval for {steps} intervals.'), { top: formatNumber(topUnit), bottom: formatNumber(bottomUnit), steps: steps })
                   : fill(t('stem.ratios.line_desc_hidden', 'The top line increases by {top} per interval for {steps} intervals. The bottom line shows 0 and {bottom}; the other bottom values are hidden until you check your prediction.'), { top: formatNumber(topUnit), bottom: formatNumber(bottomUnit), steps: steps })),
+                !isContrast && h('defs', null,
+                  h('linearGradient', { id: 'ratio-dnl-laser', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: accent, stopOpacity: 0.45 }),
+                    h('stop', { offset: '50%', stopColor: accentStrong, stopOpacity: 0.14 }),
+                    h('stop', { offset: '100%', stopColor: success, stopOpacity: 0.45 })
+                  )
+                ),
                 h('text', { x: linePhone ? 4 : 12, y: linePhone ? 14 : 55, style: { fill: text, fontSize: '12px', fontWeight: 'bold' } }, t('stem.ratios.top', 'Top')),
                 h('text', { x: linePhone ? 4 : 12, y: linePhone ? bottomNameY : 135, style: { fill: text, fontSize: '12px', fontWeight: 'bold' } }, t('stem.ratios.bottom', "Bottom")),
-                h('line', { x1: lineX0, y1: lineTopY, x2: lineX1, y2: lineTopY, stroke: accent, strokeWidth: 4, strokeLinecap: 'round' }),
-                h('line', { x1: lineX0, y1: lineBottomY, x2: lineX1, y2: lineBottomY, stroke: success, strokeWidth: 4, strokeLinecap: 'round' }),
+                // Luminous track glows & sculpted rails with directional end arrowheads
+                !isContrast && h('line', { x1: lineX0, y1: lineTopY, x2: lineX1 + 6, y2: lineTopY, stroke: accent, strokeWidth: 9, strokeLinecap: 'round', opacity: 0.16 }),
+                h('line', { x1: lineX0, y1: lineTopY, x2: lineX1 + 6, y2: lineTopY, stroke: accent, strokeWidth: 4, strokeLinecap: 'round' }),
+                h('path', { d: 'M' + (lineX1 + 2) + ' ' + (lineTopY - 4) + ' L' + (lineX1 + 8) + ' ' + lineTopY + ' L' + (lineX1 + 2) + ' ' + (lineTopY + 4), fill: 'none', stroke: accent, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                !isContrast && h('line', { x1: lineX0, y1: lineBottomY, x2: lineX1 + 6, y2: lineBottomY, stroke: success, strokeWidth: 9, strokeLinecap: 'round', opacity: 0.16 }),
+                h('line', { x1: lineX0, y1: lineBottomY, x2: lineX1 + 6, y2: lineBottomY, stroke: success, strokeWidth: 4, strokeLinecap: 'round' }),
+                h('path', { d: 'M' + (lineX1 + 2) + ' ' + (lineBottomY - 4) + ' L' + (lineX1 + 8) + ' ' + lineBottomY + ' L' + (lineX1 + 2) + ' ' + (lineBottomY + 4), fill: 'none', stroke: success, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                 ticks.map(function(tick) {
                   var x = lineX0 + tick * (lineSpan / steps);
                   var topRow = tick % topRows, bottomRow = tick % bottomRows;
                   var topY = linePhone ? lineTopY - 14 - topRow * rowGap : 42;
                   var bottomY = linePhone ? lineBottomY + 24 + bottomRow * rowGap : 170;
                   var halo = linePhone ? { paintOrder: 'stroke', stroke: panel, strokeWidth: 3 } : {};
+                  var isTargetTick = tick === steps;
                   return h('g', { key: 'tick-' + tick },
-                    h('line', { x1: x, y1: lineTopY - 9, x2: x, y2: lineTopY + 9, stroke: text, strokeWidth: 2 }),
-                    h('line', { x1: x, y1: lineBottomY - 9, x2: x, y2: lineBottomY + 9, stroke: text, strokeWidth: 2 }),
-                    h('line', { x1: x, y1: lineTopY + 10, x2: x, y2: lineBottomY - 10, stroke: border, strokeWidth: 1, strokeDasharray: '3 4' }),
+                    // Luminous alignment laser guide between equivalent values
+                    !isContrast && h('line', { x1: x, y1: lineTopY + 8, x2: x, y2: lineBottomY - 8, stroke: 'url(#ratio-dnl-laser)', strokeWidth: isTargetTick ? 6 : 3.5 }),
+                    h('line', { x1: x, y1: lineTopY + 10, x2: x, y2: lineBottomY - 10, stroke: isTargetTick ? accent : border, strokeWidth: isTargetTick ? 1.5 : 1, strokeDasharray: '3 4' }),
+                    h('line', { x1: x, y1: lineTopY - 8, x2: x, y2: lineTopY + 8, stroke: text, strokeWidth: 2 }),
+                    h('line', { x1: x, y1: lineBottomY - 8, x2: x, y2: lineBottomY + 8, stroke: text, strokeWidth: 2 }),
+                    // Glossy alignment beads on top & bottom tracks
+                    h('circle', { cx: x, cy: lineTopY, r: isTargetTick ? 4.5 : 3.4, fill: accentStrong, stroke: panel, strokeWidth: 1.5 }),
+                    h('circle', { cx: x, cy: lineBottomY, r: isTargetTick ? 4.5 : 3.4, fill: success, stroke: panel, strokeWidth: 1.5 }),
                     topRow > 0 && h('line', { x1: x, y1: topY + 3, x2: x, y2: lineTopY - 9, stroke: border, strokeWidth: 1 }),
                     bottomRow > 0 && bottomLabel(tick) && h('line', { x1: x, y1: lineBottomY + 9, x2: x, y2: bottomY - 11, stroke: border, strokeWidth: 1 }),
-                    h('text', Object.assign({ x: x, y: topY, textAnchor: 'middle', style: Object.assign({ fill: text, fontSize: lineFont }, halo) }), topLabel(tick)),
-                    h('text', Object.assign({ x: x, y: bottomY, textAnchor: 'middle', style: Object.assign({ fill: text, fontSize: lineFont }, halo) }), bottomLabel(tick))
+                    h('text', Object.assign({ x: x, y: topY, textAnchor: 'middle', style: Object.assign({ fill: text, fontSize: lineFont, fontWeight: isTargetTick ? '800' : '600' }, halo) }), topLabel(tick)),
+                    h('text', Object.assign({ x: x, y: bottomY, textAnchor: 'middle', style: Object.assign({ fill: text, fontSize: lineFont, fontWeight: isTargetTick ? '800' : '600' }, halo) }), bottomLabel(tick))
                   );
                 }));
         };
@@ -3505,6 +3573,7 @@
           var drawPercentTape = function(boxWidth) {
             var pctW = pctPhone ? Math.max(100, Math.min(420, boxWidth)) : 500, pctCell = pctW / 10;
             var pctEvery = pctCell * 2 >= 40 ? 2 : 5;
+            var pctSheenId = 'ratio-pct-sheen-' + tapeIndex;
             return h('svg', {
               viewBox: '0 0 ' + pctW + ' 62',
               className: 'w-full min-h-[62px]',
@@ -3515,21 +3584,29 @@
             },
               h('title', { id: titleId }, fill(t('stem.ratios.tape_percent_title', 'Whole {n} percent tape: {p}% filled'), { n: wholeNumber, p: formatNumber(tape.percent) })),
               h('desc', { id: descId }, description),
+              !isContrast && h('defs', null,
+                h('linearGradient', { id: pctSheenId, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.42 }),
+                  h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                )
+              ),
               tape.fills.map(function(amount, segmentIndex) {
                 var x = segmentIndex * pctCell + 1;
+                var segW = roundTo((pctCell - 2) * amount, 3);
                 return h('g', { key: 'percent-segment-' + segmentIndex, 'data-percent-segment': segmentIndex + 1 },
-                  h('rect', { x: x, y: 8, width: pctCell - 2, height: 32, rx: 2, fill: soft }),
+                  h('rect', { x: x, y: 8, width: pctCell - 2, height: 32, rx: 3, fill: soft }),
                   amount > 0 && h('rect', {
                     x: x,
                     y: 8,
-                    width: roundTo((pctCell - 2) * amount, 3),
+                    width: segW,
                     height: 32,
-                    rx: amount === 1 ? 2 : 0,
+                    rx: amount === 1 ? 3 : 0,
                     fill: accentStrong,
                     'data-fill-fraction': formatNumber(amount, 6),
                     'aria-hidden': 'true'
                   }),
-                  h('rect', { x: x, y: 8, width: pctCell - 2, height: 32, rx: 2, fill: 'none', stroke: border, strokeWidth: 1.5, 'aria-hidden': 'true' }),
+                  !isContrast && amount > 0 && segW > 3 && h('rect', { x: x + 1, y: 9, width: Math.max(0, segW - 2), height: 11, rx: amount === 1 ? 2 : 0, fill: 'url(#' + pctSheenId + ')', 'aria-hidden': 'true' }),
+                  h('rect', { x: x, y: 8, width: pctCell - 2, height: 32, rx: 3, fill: 'none', stroke: border, strokeWidth: 1.5, 'aria-hidden': 'true' }),
                   // Phone: a readable size only fits every second label.
                   (!pctPhone || (segmentIndex + 1) % pctEvery === 0) && h('text', { x: pctPhone && segmentIndex === 9 ? x + pctCell - 2 : x + (pctCell - 2) / 2, y: 55, textAnchor: pctPhone && segmentIndex === 9 ? 'end' : 'middle', fontSize: pctPhone ? 12 : 8, fontWeight: '700', fill: muted, 'aria-hidden': 'true' }, (segmentIndex + 1) * 10 + '%')
                 );
@@ -3687,6 +3764,13 @@
               h('svg', { viewBox: '0 0 360 220', className: 'w-full min-h-[220px]', role: 'img', 'aria-labelledby': 'ratio-graph-title ratio-graph-desc', 'data-axis-max-x': formatNumber(maxX, 6), 'data-axis-max-y': formatNumber(maxY, 6) },
                 h('title', { id: 'ratio-graph-title' }, t('stem.ratios.relationship_graph', "Relationship graph")),
                 h('desc', { id: 'ratio-graph-desc' }, graphDesc),
+                !isContrast && h('defs', null,
+                  h('linearGradient', { id: 'ratio-prop-stage', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: accent, stopOpacity: isDark ? 0.14 : 0.07 }),
+                    h('stop', { offset: '100%', stopColor: soft, stopOpacity: 0.85 })
+                  )
+                ),
+                !isContrast && h('rect', { x: 42, y: 28, width: 298, height: 157, rx: 6, fill: 'url(#ratio-prop-stage)', stroke: border, strokeWidth: 0.7 }),
                 xTicks.map(function(value, index) {
                   return h('g', { key: 'x-tick-' + index },
                     h('line', { x1: scaleX(value), y1: 40, x2: scaleX(value), y2: 185, stroke: border, strokeWidth: 1, strokeDasharray: '3 4' }),
@@ -3700,14 +3784,22 @@
                   );
                 }),
                 h('line', { x1: 42, y1: 185, x2: 340, y2: 185, stroke: text, strokeWidth: 2 }),
+                h('path', { d: 'M335 181 L342 185 L335 189', fill: 'none', stroke: text, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                 h('line', { x1: 42, y1: 185, x2: 42, y2: 28, stroke: text, strokeWidth: 2 }),
+                h('path', { d: 'M38 33 L42 26 L46 33', fill: 'none', stroke: text, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                 h('text', { x: 340, y: 216, textAnchor: 'end', style: { fill: muted, fontSize: '10px', fontWeight: 'bold' } }, t('stem.ratios.x_quantity', "x quantity")),
                 h('text', { x: 8, y: 24, style: { fill: muted, fontSize: '10px', fontWeight: 'bold' } }, t('stem.ratios.y_quantity', "y quantity")),
-                revealed && validForDecision && proportional && analysis.constant !== null && h('line', { x1: scaleX(0), y1: scaleY(0), x2: scaleX(maxX), y2: scaleY(analysis.constant * maxX), stroke: success, strokeWidth: 3, 'data-proportional-ray': 'true' }),
+                revealed && validForDecision && proportional && analysis.constant !== null && !isContrast && h('line', { x1: scaleX(0), y1: scaleY(0), x2: scaleX(maxX), y2: scaleY(analysis.constant * maxX), stroke: success, strokeWidth: 9, strokeLinecap: 'round', opacity: 0.2 }),
+                revealed && validForDecision && proportional && analysis.constant !== null && h('line', { x1: scaleX(0), y1: scaleY(0), x2: scaleX(maxX), y2: scaleY(analysis.constant * maxX), stroke: success, strokeWidth: 3, strokeLinecap: 'round', 'data-proportional-ray': 'true' }),
+                revealed && validForDecision && proportional && analysis.constant !== null && h('circle', { cx: scaleX(0), cy: scaleY(0), r: 6.5, fill: 'none', stroke: success, strokeWidth: 1.8, strokeDasharray: '2 2' }),
                 graphPairs.map(function(pair, index) {
+                  var px = scaleX(pair.x), py = scaleY(pair.y);
+                  var flipLeft = px > 280;
                   return h('g', { key: index },
-                    h('circle', { cx: scaleX(pair.x), cy: scaleY(pair.y), r: 5, fill: accentStrong, stroke: panel, strokeWidth: 2 }, h('title', null, '(' + pair.x + ', ' + pair.y + ')')),
-                    h('text', { x: scaleX(pair.x) + 6, y: scaleY(pair.y) - 7, style: { fill: text, fontSize: '9px' } }, '(' + formatSignificantNumber(pair.x, 6) + ',' + formatSignificantNumber(pair.y, 6) + ')')
+                    !isContrast && h('circle', { cx: px, cy: py, r: 9.5, fill: accentStrong, opacity: 0.18 }),
+                    h('circle', { cx: px, cy: py, r: 5.2, fill: accentStrong, stroke: panel, strokeWidth: 2 }, h('title', null, '(' + pair.x + ', ' + pair.y + ')')),
+                    !isContrast && h('circle', { cx: px - 1.4, cy: py - 1.4, r: 1.4, fill: '#ffffff', opacity: 0.8 }),
+                    h('text', { x: flipLeft ? px - 7 : px + 7, y: py - 7, textAnchor: flipLeft ? 'end' : 'start', style: { fill: text, fontSize: '9px', fontWeight: 'bold' } }, '(' + formatSignificantNumber(pair.x, 6) + ',' + formatSignificantNumber(pair.y, 6) + ')')
                   );
                 })
               )
@@ -4330,19 +4422,35 @@
         var ys = [65, 170 + extra + hintRoom];
         return h('svg', { viewBox: '0 0 ' + W + ' ' + (220 + 2 * extra + hintRoom), role: 'img', 'aria-labelledby': titleId, style: phone ? { width: '100%', maxWidth: W, display: 'block' } : { width: '100%', minWidth: 240, maxWidth: 560, display: 'block' }, 'data-linked-ratio-line': dataId },
           h('title', { id: titleId }, titleText),
+          !isContrast && h('defs', null,
+            h('linearGradient', { id: titleId + '-laser', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: accent, stopOpacity: 0.42 }),
+              h('stop', { offset: '50%', stopColor: accentStrong, stopOpacity: 0.12 }),
+              h('stop', { offset: '100%', stopColor: success, stopOpacity: 0.42 })
+            )
+          ),
+          marks.map(function(row, index) {
+            var x = xAt(row);
+            return h('g', { key: 'guide-' + index },
+              !isContrast && h('line', { x1: x, x2: x, y1: ys[0] + 6, y2: ys[1] - 6, stroke: 'url(#' + titleId + '-laser)', strokeWidth: 4 }),
+              h('line', { x1: x, x2: x, y1: 99 + extra, y2: 130 + extra + hintRoom, stroke: muted, strokeWidth: 1.3, strokeDasharray: '4 4' })
+            );
+          }),
           [0, 1].map(function(axis) {
-            var y = ys[axis];
+            var y = ys[axis], railCol = axis === 0 ? accent : success;
             return h('g', { key: axis },
               h('text', { x: phone ? 4 : 25, y: y - 25, fill: text, fontSize: nameFont, fontWeight: 700 }, labels[axis]),
-              h('line', { x1: 25, y1: y, x2: W - 15, y2: y, stroke: accent, strokeWidth: 3 }),
+              !isContrast && h('line', { x1: 25, y1: y, x2: W - 15, y2: y, stroke: railCol, strokeWidth: 8, strokeLinecap: 'round', opacity: 0.15 }),
+              h('line', { x1: 25, y1: y, x2: W - 15, y2: y, stroke: railCol, strokeWidth: 3.5, strokeLinecap: 'round' }),
+              h('path', { d: 'M' + (W - 20) + ' ' + (y - 4) + ' L' + (W - 13) + ' ' + y + ' L' + (W - 20) + ' ' + (y + 4), fill: 'none', stroke: railCol, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
               marks.map(function(row, index) {
                 var x = xAt(row), half = widthOf(row[axis]) / 2;
                 return h('g', { key: index },
-                  h('line', { x1: x, x2: x, y1: y - 8, y2: y + 8, stroke: accent, strokeWidth: 2 }),
+                  h('line', { x1: x, x2: x, y1: y - 8, y2: y + 8, stroke: railCol, strokeWidth: 2 }),
+                  h('circle', { cx: x, cy: y, r: 3.8, fill: railCol, stroke: panel, strokeWidth: 1.5 }),
                   h('text', { x: Math.max(half, Math.min(W - half, x)), y: y + 28 + rowOf[index] * rowH, fill: text, textAnchor: 'middle', fontSize: valueFont, fontWeight: 700 }, cell(row[axis])));
               }));
           }),
-          marks.map(function(row, index) { var x = xAt(row); return h('line', { key: index, x1: x, x2: x, y1: 99 + extra, y2: 130 + extra + hintRoom, stroke: muted, strokeDasharray: '4 4' }); }),
           scaffoldLines.length > 0 && h('text', { x: W / 2, y: (phone ? 120 : 118) + extra, textAnchor: 'middle', fill: text, fontSize: phone ? 12 : 13, fontWeight: 700, 'data-line-scaffold': true },
             scaffoldLines.length === 1 ? scaffoldLines[0] : scaffoldLines.map(function(line, i) { return h('tspan', { key: i, x: W / 2, dy: i ? 16 : 0 }, line); })));
       }
@@ -4822,16 +4930,19 @@
             y = barY + 28 + 10;
             return h('g', { key: mix.id, 'aria-hidden': 'true' }, label.node,
               Array.apply(null, Array(mix.a + mix.b)).map(function(_, i) {
-                var isFirst = i < mix.a;
-                return h('rect', { key: i, x: 2 + i * mixUnit, y: barY, width: mixUnit, height: 28, fill: isFirst ? fillStrong : soft, stroke: isFirst ? panel : muted, strokeWidth: mixUnit < 9 ? 1 : 1.5 });
+                var isFirst = i < mix.a, sx = 2 + i * mixUnit;
+                return h('g', { key: i },
+                  h('rect', { x: sx, y: barY, width: mixUnit, height: 28, rx: mixUnit < 9 ? 1 : 2.5, fill: isFirst ? fillStrong : soft, stroke: isFirst ? panel : muted, strokeWidth: mixUnit < 9 ? 1 : 1.5 }),
+                  !isContrast && mixUnit >= 7 && h('rect', { x: sx + 1, y: barY + 1.5, width: Math.max(0, mixUnit - 2), height: 9, rx: 1.5, fill: '#ffffff', opacity: isFirst ? 0.28 : 0.4 }));
               }));
           });
           var shares = showShares ? mixes.map(function(mix) {
             var top = y, label = nameLines(mix.name, top, fracText(mix.a, mix.a + mix.b)), barY = top + label.height, share = mix.a / (mix.a + mix.b);
             y = barY + 24 + 8;
             return h('g', { key: 'share-' + mix.id, 'aria-hidden': 'true' }, label.node, label.right,
-              h('rect', { x: 2, y: barY, width: W - 4, height: 24, fill: soft, stroke: muted, strokeWidth: 1.5 }),
-              h('rect', { x: 2, y: barY, width: (W - 4) * share, height: 24, fill: fillStrong }));
+              h('rect', { x: 2, y: barY, width: W - 4, height: 24, rx: 3, fill: soft, stroke: muted, strokeWidth: 1.5 }),
+              h('rect', { x: 2, y: barY, width: (W - 4) * share, height: 24, rx: 3, fill: fillStrong }),
+              !isContrast && h('rect', { x: 3, y: barY + 1.5, width: Math.max(0, (W - 4) * share - 2), height: 8, rx: 2, fill: '#ffffff', opacity: 0.26 }));
           }) : null;
           return h('svg', { viewBox: '0 0 ' + W + ' ' + Math.max(1, y), role: 'img', 'aria-labelledby': 'ratio-mix-title ratio-mix-desc', style: { width: '100%', maxWidth: W, display: 'block' } },
             h('title', { id: 'ratio-mix-title' }, t('stem.ratios.ms_mix_title', 'Tape diagrams of the two mixes')),
@@ -4845,13 +4956,21 @@
           h('svg', { viewBox: '0 0 ' + mixW + ' ' + (showShares ? 210 : 110), role: 'img', 'aria-labelledby': 'ratio-mix-title ratio-mix-desc', style: { width: '100%', maxWidth: 560, display: 'block' } },
             h('title', { id: 'ratio-mix-title' }, t('stem.ratios.ms_mix_title', 'Tape diagrams of the two mixes')),
             h('desc', { id: 'ratio-mix-desc' }, desc + (showShares ? ' ' + shareDesc : '')),
+            !isContrast && h('defs', null,
+              h('linearGradient', { id: 'ratio-mix-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.36 }),
+                h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+              )
+            ),
             mixes.map(function(mix, row) {
               var y = 10 + row * 48;
               return h('g', { key: mix.id, 'aria-hidden': 'true' },
                 mixLabel(mix.name, 4, y + 22),
                 Array.apply(null, Array(mix.a + mix.b)).map(function(_, i) {
-                  var isFirst = i < mix.a;
-                  return h('rect', { key: i, x: 90 + i * unit, y: y, width: unit, height: 32, fill: isFirst ? fillStrong : soft, stroke: isFirst ? panel : muted, strokeWidth: 1.5 });
+                  var isFirst = i < mix.a, sx = 90 + i * unit;
+                  return h('g', { key: i },
+                    h('rect', { x: sx, y: y, width: unit, height: 32, rx: unit < 12 ? 1.5 : 3, fill: isFirst ? fillStrong : soft, stroke: isFirst ? panel : muted, strokeWidth: 1.5 }),
+                    !isContrast && unit >= 8 && h('rect', { x: sx + 1.5, y: y + 1.5, width: Math.max(0, unit - 3), height: 11, rx: 2, fill: 'url(#ratio-mix-sheen)' }));
                 }));
             }),
             !mixPhone && showShares && h('text', { x: 4, y: 118, fill: muted, fontSize: 11, fontWeight: 700, 'aria-hidden': 'true' }, t('stem.ratios.ms_same_length', 'Each mix stretched to the same length: compare the shares')),
@@ -4859,8 +4978,9 @@
               var y = 128 + row * 38, share = mix.a / (mix.a + mix.b);
               return h('g', { key: 'share-' + mix.id, 'aria-hidden': 'true' },
                 mixLabel(mix.name, 4, y + 18),
-                h('rect', { x: 90, y: y, width: mixBar, height: 26, fill: soft, stroke: muted, strokeWidth: 1.5 }),
-                h('rect', { x: 90, y: y, width: mixBar * share, height: 26, fill: fillStrong }),
+                h('rect', { x: 90, y: y, width: mixBar, height: 26, rx: 3.5, fill: soft, stroke: muted, strokeWidth: 1.5 }),
+                h('rect', { x: 90, y: y, width: mixBar * share, height: 26, rx: 3.5, fill: fillStrong }),
+                !isContrast && h('rect', { x: 91, y: y + 1.5, width: Math.max(0, mixBar * share - 2), height: 9, rx: 2, fill: 'url(#ratio-mix-sheen)' }),
                 h('text', { x: 96 + mixBar, y: y + 18, fill: text, fontSize: 12, fontWeight: 700 }, fracText(mix.a, mix.a + mix.b)));
             })),
           h('p', { className: 'text-xs', style: { color: muted } }, fill(t('stem.ratios.ms_mix_key', 'Filled boxes are {first}; open boxes are {second}. Each box is 1 cup.'), { first: first, second: second })));
@@ -4874,21 +4994,25 @@
         var cell = Math.max(4, Math.min(22, 440 / widthUnits, 220 / heightUnits));
         var ox = 20, oy = 26, nx = ox + (mission.l + 2) * cell;
         var grid = [];
-        for (var gx = 0; gx <= Math.floor(460 / cell); gx++) grid.push(h('line', { key: 'gx' + gx, x1: gx * cell, y1: 16, x2: gx * cell, y2: 16 + (heightUnits + 1) * cell, stroke: border, strokeWidth: 0.5 }));
-        for (var gy = 0; gy <= heightUnits + 1; gy++) grid.push(h('line', { key: 'gy' + gy, x1: 0, y1: 16 + gy * cell, x2: 460, y2: 16 + gy * cell, stroke: border, strokeWidth: 0.5 }));
+        for (var gx = 0; gx <= Math.floor(460 / cell); gx++) grid.push(h('line', { key: 'gx' + gx, x1: gx * cell, y1: 16, x2: gx * cell, y2: 16 + (heightUnits + 1) * cell, stroke: border, strokeWidth: gx % 5 === 0 ? 0.9 : 0.45, opacity: gx % 5 === 0 ? 0.85 : 0.55 }));
+        for (var gy = 0; gy <= heightUnits + 1; gy++) grid.push(h('line', { key: 'gy' + gy, x1: 0, y1: 16 + gy * cell, x2: 460, y2: 16 + gy * cell, stroke: border, strokeWidth: gy % 5 === 0 ? 0.9 : 0.45, opacity: gy % 5 === 0 ? 0.85 : 0.55 }));
         var desc = fill(t('stem.ratios.ms_plan_desc', 'On a centimeter grid, the old plan is a rectangle {l} cm long and {w} cm wide, at 1 cm to {k1} m.'), { l: num(mission.l), w: num(mission.w), k1: num(mission.k1) }) + ' ' + (hasRedraw
           ? fill(t('stem.ratios.ms_plan_desc_new', 'Your new plan, at 1 cm to {k2} m, is {L} cm long and {W} cm wide.'), { k2: num(mission.k2), L: num(L2), W: num(W2) })
           : fill(t('stem.ratios.ms_plan_desc_none', 'Your new plan at 1 cm to {k2} m appears when you enter its length and width.'), { k2: num(mission.k2) }));
         var bothDone = !!(solved.redrawL && solved.redrawW);
         var r = mission.k1 / mission.k2;
+        var svgPlanH = Math.round(26 + (heightUnits + 1) * cell);
         return h('figure', { className: 'space-y-2', 'data-ratio-scale-plan': mission.id },
-          h('svg', { viewBox: '0 0 460 ' + Math.round(26 + (heightUnits + 1) * cell), role: 'img', 'aria-labelledby': 'ratio-plan-title ratio-plan-desc', style: { width: '100%', maxWidth: 620, display: 'block' } },
+          h('svg', { viewBox: '0 0 460 ' + svgPlanH, role: 'img', 'aria-labelledby': 'ratio-plan-title ratio-plan-desc', style: { width: '100%', maxWidth: 620, display: 'block', borderRadius: 8 } },
             h('title', { id: 'ratio-plan-title' }, t('stem.ratios.ms_plan_title', 'Floor plan and your redraw')),
             h('desc', { id: 'ratio-plan-desc' }, desc),
+            !isContrast && h('rect', { x: 0, y: 16, width: 460, height: svgPlanH - 16, rx: 4, fill: soft, opacity: 0.65, 'aria-hidden': 'true' }),
             h('g', { 'aria-hidden': 'true' }, grid),
             h('text', { x: ox, y: 12, fill: text, fontSize: 11, fontWeight: 700, 'aria-hidden': 'true' }, fill(t('stem.ratios.ms_plan_old', 'Old plan, 1 cm to {k} m'), { k: num(mission.k1) })),
+            !isContrast && h('rect', { x: ox, y: oy, width: mission.l * cell, height: mission.w * cell, fill: accentStrong, fillOpacity: 0.14, 'aria-hidden': 'true' }),
             h('rect', { x: ox, y: oy, width: mission.l * cell, height: mission.w * cell, fill: 'none', stroke: accentStrong, strokeWidth: 3, 'aria-hidden': 'true' }),
             hasRedraw && h('text', { x: nx, y: 12, fill: text, fontSize: 11, fontWeight: 700, 'aria-hidden': 'true' }, fill(t('stem.ratios.ms_plan_new', 'Your plan, 1 cm to {k} m'), { k: num(mission.k2) })),
+            hasRedraw && !isContrast && h('rect', { x: nx, y: oy, width: L2 * cell, height: W2 * cell, fill: bothDone ? success : warning, fillOpacity: 0.14, 'aria-hidden': 'true' }),
             hasRedraw && h('rect', { x: nx, y: oy, width: L2 * cell, height: W2 * cell, fill: 'none', stroke: bothDone ? success : warning, strokeWidth: 3, strokeDasharray: bothDone ? undefined : '6 4', 'data-ratio-redraw': 'true', 'aria-hidden': 'true' })),
           h('table', { className: 'text-sm border-collapse', 'data-ratio-scale-table': true },
             h('caption', { className: 'text-left text-xs mb-1', style: { color: muted } }, t('stem.ratios.ms_plan_table', 'The plans as numbers')),
@@ -4976,18 +5100,53 @@
             h('svg', { viewBox: '0 0 360 210', role: 'img', 'aria-labelledby': 'ratio-pour-title ratio-pour-desc', style: { width: '100%', maxWidth: 420, display: 'block' } },
               h('title', { id: 'ratio-pour-title' }, t('stem.ratios.ms_pour_title', 'The two mixes poured and stirred')),
               h('desc', { id: 'ratio-pour-desc' }, desc),
+              !isContrast && h('defs', null,
+                h('linearGradient', { id: 'ratio-beaker-glass', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                  h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: isDark ? 0.22 : 0.42 }),
+                  h('stop', { offset: '18%', stopColor: '#ffffff', stopOpacity: 0.04 }),
+                  h('stop', { offset: '84%', stopColor: '#ffffff', stopOpacity: 0.02 }),
+                  h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0.14 })
+                ),
+                h('linearGradient', { id: 'ratio-beaker-depth', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.18 }),
+                  h('stop', { offset: '75%', stopColor: '#0f172a', stopOpacity: 0 }),
+                  h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0.18 })
+                )
+              ),
               mixes.map(function(mix, i) {
                 var x = 40 + i * 170, w = 110, top = 16, bottom = 160;
                 var cups = mix.a + mix.b, liquid = (bottom - top) * 0.92 * cups / maxCups;
                 var hA = liquid * mix.a / cups * p1, hB = liquid * mix.b / cups * p2;
+                var totalLiqH = hA + hB;
+                var surfY = bottom - totalLiqH;
                 var mixed = mixColor(mix.a / cups, strong, weak);
+                var colA = mixColor(p3, mixed, strong), colB = mixColor(p3, mixed, weak);
+                var gradTicks = [];
+                for (var gt = 1; gt <= Math.min(maxCups, 10); gt++) {
+                  var ty = bottom - (bottom - top) * 0.92 * (gt / Math.min(maxCups, 10));
+                  gradTicks.push(h('line', { key: 'gt' + gt, x1: x + w - (gt % 2 === 0 ? 12 : 7), y1: ty, x2: x + w - 2, y2: ty, stroke: text, strokeWidth: 1, opacity: isContrast ? 0.85 : 0.35 }));
+                }
                 return h('g', { key: mix.id, 'aria-hidden': 'true', 'data-pour-glass': mix.id, 'data-mixed-color': mixed },
-                  hA > 0 && h('rect', { x: x, y: bottom - hA, width: w, height: hA, fill: mixColor(p3, mixed, strong) }),
-                  hB > 0 && h('rect', { x: x, y: bottom - hA - hB, width: w, height: hB, fill: mixColor(p3, mixed, weak) }),
-                  hA + hB > 0 && h('line', { x1: x, x2: x + w, y1: bottom - hA - hB, y2: bottom - hA - hB, stroke: text, strokeWidth: 2, 'data-pour-surface': mix.id }),
-                  h('path', { d: 'M' + x + ' ' + top + ' L' + x + ' ' + bottom + ' L' + (x + w) + ' ' + bottom + ' L' + (x + w) + ' ' + top, fill: 'none', stroke: text, strokeWidth: 3 }),
-                  h('text', { x: x + w / 2, y: 180, textAnchor: 'middle', fill: text, fontSize: 13, fontWeight: 700 }, mix.name),
-                  h('text', { x: x + w / 2, y: 198, textAnchor: 'middle', fill: text, fontSize: 12 }, fill(t('stem.ratios.ms_pour_share', '{frac} of the mix'), { frac: fracText(mix.a, cups) })));
+                  // Soft grounded contact shadow beneath borosilicate beaker
+                  !isContrast && h('ellipse', { cx: x + w / 2, cy: bottom + 4, rx: w * 0.52, ry: 5, fill: 'rgba(15,23,42,0.16)' }),
+                  // Subtle glass cavity tint (path, preserving liquid-only <rect> contract)
+                  !isContrast && h('path', { d: 'M' + (x + 1) + ' ' + top + ' H' + (x + w - 1) + ' V' + bottom + ' H' + (x + 1) + ' Z', fill: soft, opacity: 0.45 }),
+                  hA > 0 && h('rect', { x: x + 1.5, y: bottom - hA, width: w - 3, height: hA, fill: colA }),
+                  hB > 0 && h('rect', { x: x + 1.5, y: surfY, width: w - 3, height: hB, fill: colB }),
+                  // Smooth vertical liquid depth + gentle swirl ribbon
+                  !isContrast && totalLiqH > 4 && h('path', { d: 'M' + (x + 1.5) + ' ' + surfY + ' H' + (x + w - 1.5) + ' V' + bottom + ' H' + (x + 1.5) + ' Z', fill: 'url(#ratio-beaker-depth)' }),
+                  !isContrast && totalLiqH > 18 && p3 > 0.05 && h('path', { d: 'M' + (x + 14) + ' ' + (surfY + totalLiqH * 0.45) + ' Q' + (x + w * 0.42) + ' ' + (surfY + totalLiqH * 0.25) + ' ' + (x + w * 0.62) + ' ' + (surfY + totalLiqH * 0.55) + ' T' + (x + w - 14) + ' ' + (surfY + totalLiqH * 0.48), fill: 'none', stroke: '#ffffff', strokeWidth: 3.5, strokeLinecap: 'round', opacity: 0.24 * (1 - p3 * 0.45) }),
+                  // Curved liquid meniscus ellipse + crisp surface line
+                  !isContrast && totalLiqH > 3 && h('ellipse', { cx: x + w / 2, cy: surfY, rx: (w - 4) / 2, ry: 4.5, fill: '#ffffff', opacity: 0.36 }),
+                  totalLiqH > 0 && h('line', { x1: x, x2: x + w, y1: surfY, y2: surfY, stroke: text, strokeWidth: 2, 'data-pour-surface': mix.id }),
+                  // Cylindrical glass specular shading + left reflection highlight
+                  !isContrast && h('path', { d: 'M' + (x + 1) + ' ' + top + ' H' + (x + w - 1) + ' V' + bottom + ' H' + (x + 1) + ' Z', fill: 'url(#ratio-beaker-glass)' }),
+                  !isContrast && h('line', { x1: x + 11, y1: top + 8, x2: x + 11, y2: bottom - 10, stroke: '#ffffff', strokeWidth: 3.5, strokeLinecap: 'round', opacity: 0.36 }),
+                  gradTicks,
+                  // Sculpted borosilicate beaker wall with pouring lip
+                  h('path', { d: 'M' + (x - 5) + ' ' + top + ' L' + x + ' ' + (top + 3) + ' L' + x + ' ' + (bottom - 6) + ' Q' + x + ' ' + bottom + ' ' + (x + 6) + ' ' + bottom + ' L' + (x + w - 6) + ' ' + bottom + ' Q' + (x + w) + ' ' + bottom + ' ' + (x + w) + ' ' + (bottom - 6) + ' L' + (x + w) + ' ' + (top + 3) + ' L' + (x + w + 5) + ' ' + top, fill: 'none', stroke: text, strokeWidth: 2.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                  h('text', { x: x + w / 2, y: 181, textAnchor: 'middle', fill: text, fontSize: 13, fontWeight: 700 }, mix.name),
+                  h('text', { x: x + w / 2, y: 199, textAnchor: 'middle', fill: text, fontSize: 12 }, fill(t('stem.ratios.ms_pour_share', '{frac} of the mix'), { frac: fracText(mix.a, cups) })));
               })),
             h('div', { className: 'flex flex-wrap items-center gap-2' },
               h('p', { className: 'text-xs flex-1', style: { color: muted, minWidth: 180 } }, t('stem.ratios.ms_pour_caption', 'Both glasses use the same cup scale. The colour comes from the share of the whole, not from the number of cups.')),
@@ -5107,15 +5266,24 @@
         width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true',
         style: { flexShrink: 0, display: 'block' }
       },
-        h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 10, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.44)', stroke: isContrast ? '#ffff00' : 'rgba(199,210,254,0.48)', strokeWidth: 1.5 }),
-        h('line', { x1: 8, y1: 15, x2: 34, y2: 15, stroke: isContrast ? '#ffff00' : '#a5b4fc', strokeWidth: 2, strokeLinecap: 'round' }),
-        h('line', { x1: 8, y1: 27, x2: 34, y2: 27, stroke: isContrast ? '#00ff66' : '#34d399', strokeWidth: 2, strokeLinecap: 'round' }),
-        h('line', { x1: 14, y1: 12, x2: 14, y2: 30, stroke: isContrast ? '#ffffff' : 'rgba(255,255,255,0.55)', strokeWidth: 1.2, strokeDasharray: '2 2' }),
-        h('line', { x1: 26, y1: 12, x2: 26, y2: 30, stroke: isContrast ? '#ffffff' : 'rgba(255,255,255,0.55)', strokeWidth: 1.2, strokeDasharray: '2 2' }),
-        h('circle', { cx: 14, cy: 15, r: 3, fill: isContrast ? '#ffff00' : '#818cf8' }),
-        h('circle', { cx: 26, cy: 15, r: 3, fill: isContrast ? '#ffff00' : '#c7d2fe' }),
-        h('circle', { cx: 14, cy: 27, r: 3, fill: isContrast ? '#00ff66' : '#34d399' }),
-        h('circle', { cx: 26, cy: 27, r: 3, fill: isContrast ? '#00ff66' : '#6ee7b7' })
+        !isContrast && h('defs', null,
+          h('radialGradient', { id: 'ratio-emblem-bg', cx: '32%', cy: '26%', r: '78%' },
+            h('stop', { offset: '0%', stopColor: '#312e81' }),
+            h('stop', { offset: '100%', stopColor: '#0f172a' })
+          )
+        ),
+        h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 10, fill: isContrast ? '#000000' : 'url(#ratio-emblem-bg)', stroke: isContrast ? '#ffff00' : 'rgba(199,210,254,0.58)', strokeWidth: 1.5 }),
+        !isContrast && h('line', { x1: 9, y1: 4.5, x2: 33, y2: 4.5, stroke: '#ffffff', strokeWidth: 1, opacity: 0.35 }),
+        !isContrast && h('line', { x1: 14, y1: 12, x2: 14, y2: 30, stroke: '#818cf8', strokeWidth: 4.5, opacity: 0.2 }),
+        !isContrast && h('line', { x1: 26, y1: 12, x2: 26, y2: 30, stroke: '#34d399', strokeWidth: 4.5, opacity: 0.2 }),
+        h('line', { x1: 8, y1: 15, x2: 34, y2: 15, stroke: isContrast ? '#ffff00' : '#a5b4fc', strokeWidth: 2.2, strokeLinecap: 'round' }),
+        h('line', { x1: 8, y1: 27, x2: 34, y2: 27, stroke: isContrast ? '#00ff66' : '#34d399', strokeWidth: 2.2, strokeLinecap: 'round' }),
+        h('line', { x1: 14, y1: 12, x2: 14, y2: 30, stroke: isContrast ? '#ffffff' : 'rgba(255,255,255,0.68)', strokeWidth: 1.2, strokeDasharray: '2 2' }),
+        h('line', { x1: 26, y1: 12, x2: 26, y2: 30, stroke: isContrast ? '#ffffff' : 'rgba(255,255,255,0.68)', strokeWidth: 1.2, strokeDasharray: '2 2' }),
+        h('circle', { cx: 14, cy: 15, r: 3.3, fill: isContrast ? '#ffff00' : '#818cf8', stroke: '#ffffff', strokeWidth: 0.7 }),
+        h('circle', { cx: 26, cy: 15, r: 3.3, fill: isContrast ? '#ffff00' : '#c7d2fe', stroke: '#ffffff', strokeWidth: 0.7 }),
+        h('circle', { cx: 14, cy: 27, r: 3.3, fill: isContrast ? '#00ff66' : '#34d399', stroke: '#ffffff', strokeWidth: 0.7 }),
+        h('circle', { cx: 26, cy: 27, r: 3.3, fill: isContrast ? '#00ff66' : '#6ee7b7', stroke: '#ffffff', strokeWidth: 0.7 })
       );
       var heroPillStyle = isContrast
         ? { background: '#000000', color: '#ffff00', border: '1px solid #ffff00', fontVariantNumeric: 'tabular-nums' }

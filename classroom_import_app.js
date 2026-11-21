@@ -9,11 +9,16 @@
   let generation = 0, busy = false, authReady = false, courses = [], result = null;
   let missingNames = false;
   const downloadUrls = new Set();
+  if (location.hash || location.search) {
+    try { history.replaceState(null, '', location.pathname); } catch (_) {}
+  }
+  const hasRealOrigin = !!(location.origin && location.origin !== 'null');
   // In-app handoff (2026-09-25): when AlloFlow opened this helper as a same-origin window, the
   // codename-only JSON can be posted straight back instead of downloaded. Nothing about the
   // private preview, token or snapshot is ever posted. A cross-origin opener is ignored.
   const handoff = (() => {
     try {
+      if (!hasRealOrigin) return null;
       const opener = window.opener;
       if (!opener || opener === window || opener.closed) return null;
       return opener.location.origin === location.origin ? opener : null;
@@ -129,7 +134,7 @@
         try {
           const ids = await service.linkedClassIds(linkContext.syncKey, courses.map(course => course.id));
           if (epoch !== generation) return;
-          const match = courses.find(course => ids[course.id] === linkContext.classId);
+          const match = courses.find(course => Object.prototype.hasOwnProperty.call(ids, course.id) && ids[course.id] === linkContext.classId);
           if (match) { $('classroom-course').value = match.id; say('Connected. The Classroom class linked to this AlloFlow class is selected.'); }
           else say('None of the classes this account teaches is the one linked to this AlloFlow class. Sign in with the teacher account that linked it.');
         } catch (_) { /* Selection stays manual; the read still refuses a mismatched class. */ }
@@ -234,6 +239,10 @@
   };
   $('send-classroom').onclick = function () {
     if (!handoff || busy || !result || missingNames || !$('confirm-new-class').checked) return;
+    if (handoff.closed) {
+      say('The AlloFlow tab is no longer open. Download the roster instead.');
+      return;
+    }
     const epoch = ++handoffEpoch;
     try {
       handoff.postMessage({ type: 'alloflow-classroom-roster', protocol: 1, json: result.json, mode: linkMode() }, location.origin);
@@ -251,7 +260,7 @@
     }, 20000);
   };
   window.addEventListener('message', event => {
-    if (!handoff || event.origin !== location.origin || event.source !== handoff) return;
+    if (!handoff || !hasRealOrigin || event.origin !== location.origin || event.source !== handoff) return;
     const data = event.data;
     if (data && typeof data === 'object' && data.type === 'alloflow-classroom-context') {
       // Version 1 is the only protocol this helper speaks; a context without one is version 1.
@@ -262,11 +271,16 @@
       const existing = data.existing;
       const reserved = data.reservedCodenames === undefined ? [] : data.reservedCodenames;
       const valid = (data.mode === 'link' || data.mode === 'sync') && typeof data.syncKey === 'string' && /^[A-Za-z0-9_-]{43}$/.test(data.syncKey) &&
-        existing && typeof existing === 'object' && !Array.isArray(existing) &&
+        existing && typeof existing === 'object' && !Array.isArray(existing) && Object.prototype.toString.call(existing) === '[object Object]' &&
         Array.isArray(reserved) && reserved.length <= 1000 && reserved.every(name => typeof name === 'string') &&
         (data.mode === 'link' ? data.classId === null && Object.keys(existing).length === 0 : typeof data.classId === 'string' && data.classId.length <= 60);
       if (!valid) return;
-      linkContext = Object.freeze({ mode: data.mode, syncKey: data.syncKey, classId: data.classId, existing: Object.freeze({ ...existing }), reservedCodenames: Object.freeze(reserved.slice()) });
+      const cleanExisting = Object.create(null);
+      for (const key of Object.keys(existing)) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+        cleanExisting[key] = existing[key];
+      }
+      linkContext = Object.freeze({ mode: data.mode, syncKey: data.syncKey, classId: data.classId, existing: Object.freeze(cleanExisting), reservedCodenames: Object.freeze(reserved.slice()) });
       if (result) { clearPreview(); say('AlloFlow updated this helper’s class link. Read the roster again.'); }
       describeMode(); controls();
       return;
@@ -292,7 +306,11 @@
       });
     } catch (_) { say('Session data is cleared, but revocation was not confirmed. Review third-party access in your Google account.'); }
   };
-  window.addEventListener('pagehide', () => clearSession());
+  window.addEventListener('pagehide', () => {
+    if (handoffTimer) { clearTimeout(handoffTimer); handoffTimer = null; }
+    linkContext = null;
+    clearSession();
+  });
   describeMode();
   if (handoff) { try { handoff.postMessage({ type: 'alloflow-classroom-hello', protocol: 1 }, location.origin); } catch (_) { /* Download remains available. */ } }
   if (!configured()) {

@@ -1417,23 +1417,14 @@ window.StemLab = window.StemLab || {
 
       // ── Tool body (funcGrapher) ──
       return (function() {
-          // State initialization guard — ensure funcGrapher state exists
-          if (!labToolData || !labToolData.funcGrapher) {
-            setLabToolData(function(prev) {
-              return Object.assign({}, prev, { funcGrapher: {
-                type: 'linear', a: 1, b: 0, c: 0,
-                showDeriv: false, showArea: false,
-                traceX: 0, showTable: false, showLearn: false,
-                compare: false, compareType: 'linear', compareA: 1, compareB: 0, compareC: 0,
-                aiExplain: '', aiExplainLoading: false
-              }});
-            });
-            // This transient state owns a stable AA pair because dark theme tokens
-            // can otherwise resolve to light ink over the host's white tool card.
-            return React.createElement('div', { className: 'p-8 text-center', style: { color: '#475569', backgroundColor: '#ffffff' } }, 'Loading...');
-          }
-
-          const d = labToolData.funcGrapher;
+          var DEFAULT_FG = {
+            type: 'linear', a: 1, b: 0, c: 0,
+            showDeriv: false, showArea: false,
+            traceX: 0, showTable: false, showLearn: false,
+            compare: false, compareType: 'linear', compareA: 1, compareB: 0, compareC: 0,
+            aiExplain: '', aiExplainLoading: false
+          };
+          const d = Object.assign({}, DEFAULT_FG, (labToolData && labToolData.funcGrapher && typeof labToolData.funcGrapher === 'object') ? labToolData.funcGrapher : {});
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -1444,7 +1435,7 @@ window.StemLab = window.StemLab || {
             }, { debounce: 800 });
           }
 
-          const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...prev.funcGrapher, [key]: val } }));
+          const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...DEFAULT_FG, ...(prev && prev.funcGrapher), [key]: val } }));
 
           // ── Theme + grade band (shared pattern with waterCycle) ──
           var isContrast = !!ctx.isContrast;
@@ -1610,12 +1601,13 @@ window.StemLab = window.StemLab || {
 
           // Critical points (extrema): where f'(x) changes sign — local max/min
           var critPts = [];
-          for (var cx2 = xR.xMin; cx2 < xR.xMax; cx2 += 0.05) {
-            var d1 = evalDeriv(cx2), d2 = evalDeriv(cx2 + 0.05);
+          var critStep = Math.max(0.05, (xR.xMax - xR.xMin) / 400);
+          for (var cx2 = xR.xMin; cx2 < xR.xMax; cx2 += critStep) {
+            var d1 = evalDeriv(cx2), d2 = evalDeriv(cx2 + critStep);
             if (d1 * d2 < 0) {
               // Bisect on the sign of f': linear interpolation put the |x| corner 0.025 off,
               // labelled "min (-0.0, 0.03)" instead of (0, 0).
-              var fgBisLo = cx2, fgBisHi = cx2 + 0.05;
+              var fgBisLo = cx2, fgBisHi = cx2 + critStep;
               for (var fgBisI = 0; fgBisI < 60; fgBisI++) { var fgBisMid = (fgBisLo + fgBisHi) / 2; if (evalDeriv(fgBisMid) * d1 > 0) fgBisLo = fgBisMid; else fgBisHi = fgBisMid; }
               var cpX = (fgBisLo + fgBisHi) / 2;
               if (Math.abs(cpX) < 1e-9) cpX = 0;
@@ -1824,9 +1816,10 @@ window.StemLab = window.StemLab || {
           // Merge a patch into one object-valued key of this tool's state.
           function fgSet(key, patch) {
             setLabToolData(function(prev) {
-              var cur = prev.funcGrapher && prev.funcGrapher[key], next = {};
+              var baseFg = Object.assign({}, DEFAULT_FG, prev && prev.funcGrapher);
+              var cur = baseFg[key], next = {};
               next[key] = Object.assign({}, cur && typeof cur === 'object' && !Array.isArray(cur) ? cur : {}, patch);
-              return Object.assign({}, prev, { funcGrapher: Object.assign({}, prev.funcGrapher, next) });
+              return Object.assign({}, prev, { funcGrapher: Object.assign({}, baseFg, next) });
             });
           }
           var fgIsTeacher = !!ctx.isTeacherMode;
@@ -1842,7 +1835,9 @@ window.StemLab = window.StemLab || {
             if (!node || typeof node.getBoundingClientRect !== 'function') return;
             var r = node.getBoundingClientRect();
             if (!r || !r.width || !r.height) return;
-            var s = Math.min(r.width / W, r.height / H), want = s > 0 && s < 1 ? Math.round(100 / s) / 100 : 1;
+            var s = Math.min(r.width / W, r.height / H);
+            var rawWant = s > 0 && s < 1 ? Math.round(100 / s) / 100 : 1;
+            var want = Math.max(1, Math.min(2.5, rawWant));
             if (Math.abs(want - fgTextScale) > 0.04) upd('_svgScale', want);
           }
           // Average rate of change between two points (shared core), dragged on the graph or set by keys.
@@ -2134,8 +2129,9 @@ window.StemLab = window.StemLab || {
           };
           function setTf(patch) {
             setLabToolData(function(prev) {
-              var cur = fgTfNormalize(prev.funcGrapher && prev.funcGrapher.tf);
-              return Object.assign({}, prev, { funcGrapher: Object.assign({}, prev.funcGrapher, { tf: Object.assign({}, cur, patch) }) });
+              var baseFg = Object.assign({}, DEFAULT_FG, prev && prev.funcGrapher);
+              var cur = fgTfNormalize(baseFg.tf);
+              return Object.assign({}, prev, { funcGrapher: Object.assign({}, baseFg, { tf: Object.assign({}, cur, patch) }) });
             });
           }
           function resultText(last) {
@@ -2224,16 +2220,26 @@ window.StemLab = window.StemLab || {
                 fgFill(__alloT('stem.funcgrapher.tf_hint_answer', 'Set a = {a}, b = {b}, h = {h} and k = {k}: {eq}.'), { a: fgTfNum(tgt.a), b: fgTfNum(tgt.b), h: fgTfNum(tgt.h), k: fgTfNum(tgt.k), eq: fgTfEquation(tgt) })] }) : null) : null,
             h('p', { 'data-tf-equation': true, style: { fontFamily: 'monospace', fontSize: 16, fontWeight: 700, margin: '10px 0 6px' } }, eq),
             h('svg', { viewBox: '0 0 ' + TW + ' ' + TH, role: 'img', 'aria-label': fgFill(__alloT('stem.funcgrapher.tf_graph_label', 'Transformation Lab graph. Dashed parent: {parent}. Solid transformed graph: {eq}.'), { parent: parent.label, eq: eq }) + (imgDesc ? ' ' + imgDesc.short : '') + (tgtDesc ? ' ' + fgFill(__alloT('stem.funcgrapher.tf_target_desc', 'Dotted target: {desc}'), { desc: tgtDesc.short }) : ''), style: { width: '100%', maxHeight: 320, display: 'block', background: surface, borderRadius: 8 } },
-              h('defs', null, h('clipPath', { id: 'fg-tf-clip' }, h('rect', { x: TP, y: TP, width: TW - 2 * TP, height: TH - 2 * TP }))),
+              h('defs', null,
+                h('clipPath', { id: 'fg-tf-clip' }, h('rect', { x: TP, y: TP, width: TW - 2 * TP, height: TH - 2 * TP, rx: 5 })),
+                h('linearGradient', { id: 'fg-tf-well', x1: '0', y1: '0', x2: '0', y2: '1' },
+                  h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : isDark ? '#070d1e' : '#f8fafc' }),
+                  h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : isDark ? '#0f172a' : '#ffffff' })
+                )
+              ),
+              h('rect', { x: TP, y: TP, width: TW - 2 * TP, height: TH - 2 * TP, rx: 5, fill: isContrast ? '#000000' : 'url(#fg-tf-well)', stroke: isContrast ? '#facc15' : isDark ? 'rgba(129,140,248,0.28)' : 'rgba(99,102,241,0.22)', strokeWidth: 1 }),
               ticks.map(function(v) { return h('g', { key: 'g' + v }, h('line', { x1: sx(v), x2: sx(v), y1: TP, y2: TH - TP, stroke: v === 0 ? axis : grid, strokeWidth: v === 0 ? 2 : 1 }), h('line', { x1: TP, x2: TW - TP, y1: sy(v), y2: sy(v), stroke: v === 0 ? axis : grid, strokeWidth: v === 0 ? 2 : 1 })); }),
               [-8, -4, 4, 8].map(function(v) { return h('g', { key: 't' + v }, h('text', { x: sx(v), y: sy(0) + 16, textAnchor: 'middle', fill: ink, style: { fontSize: fgFs(12) } }, fgTfNum(v)), h('text', { x: sx(0) - 5, y: sy(v) + 4, textAnchor: 'end', fill: ink, style: { fontSize: fgFs(12) } }, fgTfNum(v))); }),
               h('path', { 'data-tf-parent': true, d: pathOf(par), fill: 'none', stroke: ghost, strokeWidth: 2.5, strokeDasharray: '7 5', clipPath: 'url(#fg-tf-clip)' }),
               tgt ? h('path', { 'data-tf-target': true, d: pathOf(function(x) { return fgTfImage(tgt, x); }), fill: 'none', stroke: fgPal ? fgPal.curve(2).color : '#047857', strokeWidth: 3.5, strokeDasharray: '2 6', strokeLinecap: 'round', clipPath: 'url(#fg-tf-clip)' }) : null,
+              !isContrast && h('path', { d: pathOf(img), fill: 'none', stroke: curve, strokeWidth: 7.5, strokeLinecap: 'round', opacity: isDark ? 0.26 : 0.14, clipPath: 'url(#fg-tf-clip)' }),
               h('path', { 'data-tf-image': true, d: pathOf(img), fill: 'none', stroke: curve, strokeWidth: 3, strokeLinecap: 'round', clipPath: 'url(#fg-tf-clip)' }),
+              !isContrast && h('path', { d: pathOf(img), fill: 'none', stroke: isDark ? '#e0e7ff' : '#ffffff', strokeWidth: 0.95, strokeLinecap: 'round', opacity: isDark ? 0.65 : 0.45, clipPath: 'url(#fg-tf-clip)' }),
               rows.map(function(r, i) {
                 return h('g', { key: 'p' + i },
                   inWin(r.px, r.py) && h('circle', { cx: sx(r.px), cy: sy(r.py), r: 4, fill: surface, stroke: ghost, strokeWidth: 2 }),
-                  inWin(r.ix, r.iy) && h('circle', { cx: sx(r.ix), cy: sy(r.iy), r: 5, fill: curve }));
+                  inWin(r.ix, r.iy) && !isContrast && h('circle', { cx: sx(r.ix), cy: sy(r.iy), r: 8.5, fill: curve, opacity: 0.2 }),
+                  inWin(r.ix, r.iy) && h('circle', { cx: sx(r.ix), cy: sy(r.iy), r: 5, fill: curve, stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1.2 }));
               })),
             h('p', { style: { fontSize: 12, margin: '4px 0 8px' } }, __alloT('stem.funcgrapher.tf_window', 'Fixed window: x and y from −8 to 8. Hollow dots: parent points. Filled dots: where they move.')),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, fontSize: 14 } },
@@ -2376,7 +2382,7 @@ window.StemLab = window.StemLab || {
                     className: "allo-fg-preset-chip px-2.5 py-1 rounded-full text-xs font-mono font-bold border border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100",
                     onClick: function() {
                       setLabToolData(function(prev) {
-                        var fg = Object.assign({}, prev && prev.funcGrapher);
+                        var fg = Object.assign({}, DEFAULT_FG, prev && prev.funcGrapher);
                         fg.type = pr.type; fg.a = pr.a; fg.b = pr.b; fg.c = pr.c;
                         fg.familiesTried = Object.assign({}, fg.familiesTried);
                         fg.familiesTried[pr.type] = true;
@@ -2395,16 +2401,61 @@ window.StemLab = window.StemLab || {
             React.createElement("svg", { role: "img", "data-funcgrapher-graph": true, ref: fgMeasure, "aria-label": __alloT('stem.funcgrapher.a11y_function_graph_showing_the_configured_curve', 'Function graph showing the configured curve') + (fgDesc ? '. ' + fgDesc.short : '') + (rocPts && rocPts.rate !== null ? ' ' + fgRocLabel : ''), viewBox: "0 0 " + W + " " + H, className: "w-full rounded-xl border-2 shadow-sm " + (isDark ? "bg-slate-900 border-indigo-800" : "bg-white border-indigo-200"), style: { maxHeight: "340px", touchAction: rocOn ? "none" : undefined },
               onPointerDown: function(e) { fgRocPointer(e, 'down'); }, onPointerMove: function(e) { fgRocPointer(e, 'move'); }, onPointerUp: function(e) { fgRocPointer(e, 'up'); }, onPointerCancel: function(e) { fgRocPointer(e, 'up'); } },
 
+              // Studio coordinate well defs (gradients, clipPath, luminous area fill)
+              React.createElement("defs", null,
+                React.createElement("linearGradient", { id: "fg-studio-well-bg", x1: "0", y1: "0", x2: "0", y2: "1" },
+                  React.createElement("stop", { offset: "0%", stopColor: isContrast ? "#000000" : isDark ? "#070d1e" : "#f8fafc" }),
+                  React.createElement("stop", { offset: "52%", stopColor: isContrast ? "#000000" : isDark ? "#0d162d" : "#ffffff" }),
+                  React.createElement("stop", { offset: "100%", stopColor: isContrast ? "#000000" : isDark ? "#070d1e" : "#f1f5f9" })
+                ),
+                React.createElement("linearGradient", { id: "fg-area-grad", x1: "0", y1: "0", x2: "0", y2: "1" },
+                  React.createElement("stop", { offset: "0%", stopColor: isDark ? "#818cf8" : "#4f46e5", stopOpacity: isDark ? 0.34 : 0.2 }),
+                  React.createElement("stop", { offset: "100%", stopColor: isDark ? "#38bdf8" : "#6366f1", stopOpacity: 0.03 })
+                ),
+                React.createElement("clipPath", { id: "fg-main-plot-clip" },
+                  React.createElement("rect", { x: pad, y: pad, width: W - 2 * pad, height: H - 2 * pad, rx: 6 })
+                )
+              ),
+
+              // Recessed studio coordinate well frame
+              React.createElement("rect", { x: pad, y: pad, width: W - 2 * pad, height: H - 2 * pad, rx: 6, fill: isContrast ? "#000000" : "url(#fg-studio-well-bg)", stroke: isContrast ? "#facc15" : isDark ? "rgba(129,140,248,0.28)" : "rgba(99,102,241,0.22)", strokeWidth: 1.2 }),
+
               // Rate of change: the secant through A and B with its slope triangle (drawn under the labels).
               fgRocOverlay(),
 
-              // Grid lines (rendered first, behind curves)
+              // Grid lines: crisp minor subdivision path + major grid hierarchy (rendered behind curves)
 
               (function () {
 
                 var gridLines = [];
 
-                var xStep = (xR.xMax - xR.xMin) <= 10 ? 1 : (xR.xMax - xR.xMin) <= 30 ? 5 : 10;
+                var fgNiceStep = function(span) {
+                  var raw = Math.max(1, span / 10);
+                  var pow = Math.pow(10, Math.floor(Math.log10(raw)));
+                  var frac = raw / pow;
+                  var nice = frac <= 1 ? 1 : frac <= 2 ? 2 : frac <= 5 ? 5 : 10;
+                  return Math.max(1, nice * pow);
+                };
+                var xSpanG = Math.max(1e-6, xR.xMax - xR.xMin);
+                var ySpanG = Math.max(1e-6, yR.yMax - yR.yMin);
+                var xStep = xSpanG <= 10 ? 1 : xSpanG <= 30 ? 5 : fgNiceStep(xSpanG);
+                var yStep = ySpanG <= 10 ? 1 : ySpanG <= 30 ? 5 : fgNiceStep(ySpanG);
+
+                if (!isContrast) {
+                  var minorD = '';
+                  var xHalf = xStep / 2, yHalf = yStep / 2;
+                  for (var mgx = Math.ceil(xR.xMin / xHalf) * xHalf; mgx <= xR.xMax; mgx += xHalf) {
+                    if (Math.abs((mgx / xStep) - Math.round(mgx / xStep)) < 1e-6) continue;
+                    var msx = toSX(mgx);
+                    if (msx > pad && msx < W - pad) minorD += 'M' + msx.toFixed(1) + ' ' + pad + 'V' + (H - pad);
+                  }
+                  for (var mgy = Math.ceil(yR.yMin / yHalf) * yHalf; mgy <= yR.yMax; mgy += yHalf) {
+                    if (Math.abs((mgy / yStep) - Math.round(mgy / yStep)) < 1e-6) continue;
+                    var msy = toSY(mgy);
+                    if (msy > pad && msy < H - pad) minorD += 'M' + pad + ' ' + msy.toFixed(1) + 'H' + (W - pad);
+                  }
+                  if (minorD) gridLines.push(React.createElement("path", { key: 'minorGrid', d: minorD, fill: "none", stroke: fgGridInk, strokeWidth: 0.65, opacity: isDark ? 0.32 : 0.42 }));
+                }
 
                 for (var gx = Math.ceil(xR.xMin / xStep) * xStep; gx <= xR.xMax; gx += xStep) {
 
@@ -2417,8 +2468,6 @@ window.StemLab = window.StemLab || {
                   }
 
                 }
-
-                var yStep = (yR.yMax - yR.yMin) <= 10 ? 1 : (yR.yMax - yR.yMin) <= 30 ? 5 : 10;
 
                 for (var gy = Math.ceil(yR.yMin / yStep) * yStep; gy <= yR.yMax; gy += yStep) {
 
@@ -2436,13 +2485,22 @@ window.StemLab = window.StemLab || {
 
               })(),
 
-              // Axes + origin reticle + subtle quadrant indicators
+              // Glowing principal axes + origin reticle + precision arrows + subtle quadrant indicators
+
+              !isContrast && toSY(0) >= pad && toSY(0) <= H - pad && React.createElement("line", { x1: pad, y1: toSY(0), x2: W - pad, y2: toSY(0), stroke: isDark ? "rgba(129,140,248,0.28)" : "rgba(79,70,229,0.14)", strokeWidth: 5 }),
+              !isContrast && toSX(0) >= pad && toSX(0) <= W - pad && React.createElement("line", { x1: toSX(0), y1: pad, x2: toSX(0), y2: H - pad, stroke: isDark ? "rgba(129,140,248,0.28)" : "rgba(79,70,229,0.14)", strokeWidth: 5 }),
 
               React.createElement("line", { x1: pad, y1: toSY(0), x2: W - pad, y2: toSY(0), stroke: fgAxisInk, strokeWidth: 2 }),
 
               React.createElement("line", { x1: toSX(0), y1: pad, x2: toSX(0), y2: H - pad, stroke: fgAxisInk, strokeWidth: 2 }),
 
-              (0 > xR.xMin && 0 < xR.xMax && 0 > yR.yMin && 0 < yR.yMax) && React.createElement("circle", { cx: toSX(0), cy: toSY(0), r: 3.5, fill: "none", stroke: fgAxisInk, strokeWidth: 1.5, opacity: 0.55 }),
+              !isContrast && toSY(0) >= pad && toSY(0) <= H - pad && React.createElement("path", { d: "M" + (W - pad - 6) + " " + (toSY(0) - 3.5) + "L" + (W - pad) + " " + toSY(0) + "L" + (W - pad - 6) + " " + (toSY(0) + 3.5), fill: "none", stroke: fgAxisInk, strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round" }),
+              !isContrast && toSX(0) >= pad && toSX(0) <= W - pad && React.createElement("path", { d: "M" + (toSX(0) - 3.5) + " " + (pad + 6) + "L" + toSX(0) + " " + pad + "L" + (toSX(0) + 3.5) + " " + (pad + 6), fill: "none", stroke: fgAxisInk, strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round" }),
+
+              (0 > xR.xMin && 0 < xR.xMax && 0 > yR.yMin && 0 < yR.yMax) && React.createElement("g", { "aria-hidden": "true" },
+                !isContrast && React.createElement("circle", { cx: toSX(0), cy: toSY(0), r: 6.5, fill: isDark ? "rgba(129,140,248,0.14)" : "rgba(79,70,229,0.08)", stroke: fgAxisInk, strokeWidth: 0.8, opacity: 0.55 }),
+                React.createElement("circle", { cx: toSX(0), cy: toSY(0), r: 3.5, fill: "none", stroke: fgAxisInk, strokeWidth: 1.5, opacity: 0.7 })
+              ),
 
               React.createElement("g", { "aria-hidden": "true", opacity: isContrast ? 0.85 : 0.45 },
                 React.createElement("text", { x: W - pad - 10, y: pad + 14, textAnchor: "end", fill: fgLabelInk, style: { fontSize: fgFs(12), fontWeight: '700' } }, "I"),
@@ -2457,82 +2515,128 @@ window.StemLab = window.StemLab || {
 
               React.createElement("text", { x: toSX(0) + 5, y: pad - 5, fill: fgLabelInk, style: { fontSize: fgFs(13), fontWeight: 'bold' } }, "y"),
 
-              // Area under curve (positive x)
+              // Area under curve (positive x) with luminous gradient wash
 
               d.showArea && integralDefined && areaPts.length > 1 && React.createElement("polygon", {
                 "data-function-area": true,
                 points: toSX(0) + ',' + toSY(0) + ' ' + areaPts.map(p => p.sx + ',' + p.sy).join(' ') + ' ' + areaPts[areaPts.length - 1].sx + ',' + toSY(0),
-
-                fill: isDark ? "rgba(129,140,248,0.16)" : "rgba(79,70,229,0.08)", stroke: "none"
-
+                fill: isContrast ? "rgba(250,204,21,0.22)" : "url(#fg-area-grad)", stroke: "none", clipPath: "url(#fg-main-plot-clip)"
               }),
 
-              // Derivative trace
+              // Dashed luminous asymptotes (vertical & horizontal for rational / log / exponential)
 
-              d.showDeriv && derivSegs.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'dseg' + si, points: seg.join(" "), "data-function-curve": "derivative", fill: "none", stroke: fgDerivCurve.color, strokeWidth: 2.5, strokeDasharray: fgDerivCurve.dash.join(' ') || "6 3" }) : null; }),
+              d.type === 'rational' && (-d.b) > xR.xMin && (-d.b) < xR.xMax && React.createElement("g", null,
+                !isContrast && React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isDark ? "rgba(251,113,133,0.28)" : "rgba(225,29,72,0.18)", strokeWidth: 5 }),
+                React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isContrast ? "#facc15" : isDark ? "#fb7185" : "#e11d48", strokeWidth: 1.4, strokeDasharray: "6 4", "aria-label": "vertical asymptote at x = " + (-d.b) })
+              ),
+              d.type === 'rational' && d.c > yR.yMin && d.c < yR.yMax && React.createElement("g", { "aria-hidden": "true" },
+                !isContrast && React.createElement("line", { x1: pad, y1: toSY(d.c), x2: W - pad, y2: toSY(d.c), stroke: isDark ? "rgba(56,189,248,0.24)" : "rgba(14,165,233,0.16)", strokeWidth: 4.5 }),
+                React.createElement("line", { x1: pad, y1: toSY(d.c), x2: W - pad, y2: toSY(d.c), stroke: isContrast ? "#00ffff" : isDark ? "#38bdf8" : "#0284c7", strokeWidth: 1.3, strokeDasharray: "6 4" })
+              ),
+              d.type === 'log' && (-d.b) > xR.xMin && (-d.b) < xR.xMax && React.createElement("g", { "aria-hidden": "true" },
+                !isContrast && React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isDark ? "rgba(251,191,36,0.24)" : "rgba(217,119,6,0.16)", strokeWidth: 4.5 }),
+                React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isContrast ? "#facc15" : isDark ? "#fbbf24" : "#d97706", strokeWidth: 1.3, strokeDasharray: "6 4" })
+              ),
+              d.type === 'exponential' && d.a !== 0 && d.b !== 0 && d.c > yR.yMin && d.c < yR.yMax && React.createElement("g", { "aria-hidden": "true" },
+                !isContrast && React.createElement("line", { x1: pad, y1: toSY(d.c), x2: W - pad, y2: toSY(d.c), stroke: isDark ? "rgba(56,189,248,0.22)" : "rgba(14,165,233,0.14)", strokeWidth: 4 }),
+                React.createElement("line", { x1: pad, y1: toSY(d.c), x2: W - pad, y2: toSY(d.c), stroke: isContrast ? "#00ffff" : isDark ? "#38bdf8" : "#0284c7", strokeWidth: 1.25, strokeDasharray: "6 4" })
+              ),
 
-              // Main curve
+              // Derivative trace (dual-pass luminous glow + accessible dash)
 
-              d.type === 'rational' && (-d.b) > xR.xMin && (-d.b) < xR.xMax && React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: "#94a3b8", strokeWidth: 1, strokeDasharray: "5 4", "aria-label": "vertical asymptote at x = " + (-d.b) }),
-              segments.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'seg' + si, points: seg.join(" "), "data-function-curve": "main", fill: "none", stroke: fgCurve.color, strokeWidth: 3, strokeLinecap: "round", style: { filter: 'drop-shadow(0 0 3px rgba(' + (isDark ? '129,140,248,0.6' : '79,70,229,0.45') + '))' } }) : null; }),
+              d.showDeriv && derivSegs.map(function (seg, si) {
+                if (seg.length <= 1) return null;
+                var pts = seg.join(" ");
+                return React.createElement("g", { key: 'dseg' + si, clipPath: "url(#fg-main-plot-clip)" },
+                  !isContrast && React.createElement("polyline", { points: pts, fill: "none", stroke: fgDerivCurve.color, strokeWidth: 6.5, strokeLinecap: "round", opacity: isDark ? 0.24 : 0.14 }),
+                  React.createElement("polyline", { points: pts, "data-function-curve": "derivative", fill: "none", stroke: fgDerivCurve.color, strokeWidth: 2.5, strokeLinecap: "round", strokeDasharray: fgDerivCurve.dash.join(' ') || "6 3" })
+                );
+              }),
 
-              // Comparison curve (orange)
-              d.compare && compareSegs.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'cseg' + si, points: seg.join(" "), "data-function-curve": "compare", fill: "none", stroke: fgCompareCurve.color, strokeWidth: 2.5, strokeDasharray: fgCompareCurve.dash.join(' ') || "8 4" }) : null; }),
+              // Main curve: dual-pass luminous phosphor bloom + primary 3px stroke + crisp specular core filament
 
-              // Tangent line at traceX
+              segments.map(function (seg, si) {
+                if (seg.length <= 1) return null;
+                var pts = seg.join(" ");
+                return React.createElement("g", { key: 'seg' + si, clipPath: "url(#fg-main-plot-clip)" },
+                  !isContrast && React.createElement("polyline", { points: pts, fill: "none", stroke: fgCurve.color, strokeWidth: 8, strokeLinecap: "round", strokeLinejoin: "round", opacity: isDark ? 0.26 : 0.16 }),
+                  React.createElement("polyline", { points: pts, "data-function-curve": "main", fill: "none", stroke: fgCurve.color, strokeWidth: 3, strokeLinecap: "round", strokeLinejoin: "round", style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 4px rgba(' + (isDark ? '129,140,248,0.72' : '79,70,229,0.45') + '))' } }),
+                  !isContrast && React.createElement("polyline", { points: pts, fill: "none", stroke: isDark ? "#e0e7ff" : "#ffffff", strokeWidth: 1, strokeLinecap: "round", strokeLinejoin: "round", opacity: isDark ? 0.72 : 0.52 })
+                );
+              }),
+
+              // Comparison curve (dual-pass glow + accessible dash)
+              d.compare && compareSegs.map(function (seg, si) {
+                if (seg.length <= 1) return null;
+                var pts = seg.join(" ");
+                return React.createElement("g", { key: 'cseg' + si, clipPath: "url(#fg-main-plot-clip)" },
+                  !isContrast && React.createElement("polyline", { points: pts, fill: "none", stroke: fgCompareCurve.color, strokeWidth: 6.5, strokeLinecap: "round", opacity: isDark ? 0.22 : 0.13 }),
+                  React.createElement("polyline", { points: pts, "data-function-curve": "compare", fill: "none", stroke: fgCompareCurve.color, strokeWidth: 2.5, strokeLinecap: "round", strokeDasharray: fgCompareCurve.dash.join(' ') || "8 4" })
+                );
+              }),
+
+              // Tangent line at traceX (luminous laser tangent + crosshair reticle)
               tangentInRange && (function() {
                 var tLen = 3;
                 var x1 = traceX - tLen, x2 = traceX + tLen;
                 var y1t = traceY + traceSlope * (x1 - traceX);
                 var y2t = traceY + traceSlope * (x2 - traceX);
+                var txPx = toSX(traceX), tyPx = toSY(traceY);
                 return React.createElement('g', null,
-                  React.createElement('line', { x1: toSX(x1), y1: toSY(y1t), x2: toSX(x2), y2: toSY(y2t), stroke: '#ec4899', strokeWidth: 2, strokeDasharray: '4 2' }),
-                  React.createElement('circle', { cx: toSX(traceX), cy: toSY(traceY), r: 9, fill: '#ec4899', opacity: 0.2 }),
-                  React.createElement('circle', { cx: toSX(traceX), cy: toSY(traceY), r: 5, fill: '#ec4899', stroke: 'white', strokeWidth: 1.5 }),
-                  !fgTraceHidden && React.createElement('text', { x: toSX(traceX) + 10, y: toSY(traceY) - 6, fill: '#ec4899', style: { fontSize: fgFs(12), fontWeight: 'bold' } }, '(' + traceX.toFixed(1) + ', ' + traceY.toFixed(2) + ') m=' + traceSlope.toFixed(2))
+                  !isContrast && React.createElement('line', { x1: toSX(x1), y1: toSY(y1t), x2: toSX(x2), y2: toSY(y2t), stroke: 'rgba(236,72,153,0.28)', strokeWidth: 5.5, clipPath: 'url(#fg-main-plot-clip)' }),
+                  React.createElement('line', { x1: toSX(x1), y1: toSY(y1t), x2: toSX(x2), y2: toSY(y2t), stroke: '#ec4899', strokeWidth: 2, strokeDasharray: '4 2', clipPath: 'url(#fg-main-plot-clip)' }),
+                  !isContrast && React.createElement('path', { d: 'M' + (txPx - 11) + ' ' + tyPx + 'H' + (txPx + 11) + 'M' + txPx + ' ' + (tyPx - 11) + 'V' + (tyPx + 11), stroke: 'rgba(236,72,153,0.55)', strokeWidth: 1 }),
+                  React.createElement('circle', { cx: txPx, cy: tyPx, r: 10, fill: '#ec4899', opacity: 0.2 }),
+                  React.createElement('circle', { cx: txPx, cy: tyPx, r: 5, fill: '#ec4899', stroke: 'white', strokeWidth: 1.6 }),
+                  !isContrast && React.createElement('circle', { cx: txPx - 1.3, cy: tyPx - 1.3, r: 1.4, fill: '#ffffff', opacity: 0.85 }),
+                  !fgTraceHidden && React.createElement('text', { x: txPx + 10, y: tyPx - 6, fill: '#ec4899', style: { fontSize: fgFs(12), fontWeight: 'bold' } }, '(' + traceX.toFixed(1) + ', ' + traceY.toFixed(2) + ') m=' + traceSlope.toFixed(2))
                 );
               })(),
 
-              // Roots
+              // Roots — glowing crosshair beacons
 
               roots.map(function (r, i) {
-
+                var rxPx = toSX(r), ryPx = toSY(0);
                 return React.createElement("g", { key: 'root' + i },
-
-                  React.createElement("circle", { cx: toSX(r), cy: toSY(0), r: 8, fill: "#ef4444", opacity: 0.2 }),
-
-                  React.createElement("circle", { cx: toSX(r), cy: toSY(0), r: 4.5, fill: "#ef4444", stroke: "white", strokeWidth: 1.5 }),
-
-                  !hideRootAnswer && React.createElement("text", { x: toSX(r), y: toSY(0) - 9, textAnchor: "middle", fill: "#ef4444", style: { fontSize: fgFs(12), fontWeight: 'bold' } }, r.toFixed(2))
-
+                  !isContrast && React.createElement("path", { d: "M" + (rxPx - 10) + " " + ryPx + "H" + (rxPx + 10) + "M" + rxPx + " " + (ryPx - 10) + "V" + (ryPx + 10), stroke: "rgba(239,68,68,0.55)", strokeWidth: 1 }),
+                  React.createElement("circle", { cx: rxPx, cy: ryPx, r: 9.5, fill: "#ef4444", opacity: isDark ? 0.24 : 0.16 }),
+                  React.createElement("circle", { cx: rxPx, cy: ryPx, r: 4.5, fill: "#ef4444", stroke: "white", strokeWidth: 1.5, style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 3px rgba(239,68,68,0.75))' } }),
+                  !isContrast && React.createElement("circle", { cx: rxPx - 1.2, cy: ryPx - 1.2, r: 1.3, fill: "#ffffff", opacity: 0.85 }),
+                  !hideRootAnswer && React.createElement("text", { x: rxPx, y: ryPx - 11, textAnchor: "middle", fill: isDark ? "#fca5a5" : "#dc2626", style: { fontSize: fgFs(12), fontWeight: 'bold' } }, r.toFixed(2))
                 );
 
               }),
 
-              // Y-intercept
+              // Y-intercept — glowing emerald crosshair beacon
 
-              yIntercept >= yR.yMin && yIntercept <= yR.yMax && React.createElement("g", null,
+              yIntercept >= yR.yMin && yIntercept <= yR.yMax && (function() {
+                var yxPx = toSX(0), yyPx = toSY(yIntercept);
+                return React.createElement("g", null,
+                  !isContrast && React.createElement("path", { d: "M" + (yxPx - 10) + " " + yyPx + "H" + (yxPx + 10) + "M" + yxPx + " " + (yyPx - 10) + "V" + (yyPx + 10), stroke: "rgba(34,197,94,0.55)", strokeWidth: 1 }),
+                  React.createElement("circle", { cx: yxPx, cy: yyPx, r: 9.5, fill: "#22c55e", opacity: isDark ? 0.24 : 0.16 }),
+                  React.createElement("circle", { cx: yxPx, cy: yyPx, r: 4.5, fill: "#22c55e", stroke: "white", strokeWidth: 1.5, style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 3px rgba(34,197,94,0.75))' } }),
+                  !isContrast && React.createElement("circle", { cx: yxPx - 1.2, cy: yyPx - 1.2, r: 1.3, fill: "#ffffff", opacity: 0.85 }),
+                  !hideYIntAnswer && React.createElement("text", { x: yxPx + 10, y: yyPx + 4, fill: isDark ? "#4ade80" : "#15803d", style: { fontSize: fgFs(12), fontWeight: 'bold' } }, "(0, " + yIntercept.toFixed(1) + ")")
+                );
+              })(),
 
-                React.createElement("circle", { cx: toSX(0), cy: toSY(yIntercept), r: 8, fill: "#22c55e", opacity: 0.2 }),
-
-                React.createElement("circle", { cx: toSX(0), cy: toSY(yIntercept), r: 4.5, fill: "#22c55e", stroke: "white", strokeWidth: 1.5 }),
-
-                !hideYIntAnswer && React.createElement("text", { x: toSX(0) + 9, y: toSY(yIntercept) + 4, fill: isDark ? "#4ade80" : "#15803d", style: { fontSize: fgFs(12), fontWeight: 'bold' } }, "(0, " + yIntercept.toFixed(1) + ")")
-
-              ),
-
-              // Critical points (local max / min) — violet markers with kind label
+              // Critical points (local max / min) — glowing violet/cyan extremum crosshair beacons
               critPts.map(function (cp, i) {
                 var isMax = cp.kind === 'max';
-                var color = isMax ? '#a855f7' : '#0891b2';
+                var color = isMax ? (isDark ? '#c084fc' : '#a855f7') : (isDark ? '#22d3ee' : '#0891b2');
+                var cxPx = toSX(cp.x), cyPx = toSY(cp.y);
                 return React.createElement("g", { key: 'cp' + i },
+                  !isContrast && React.createElement("path", { d: "M" + (cxPx - 10) + " " + cyPx + "H" + (cxPx + 10) + "M" + cxPx + " " + (cyPx - 10) + "V" + (cyPx + 10), stroke: color, strokeWidth: 1, opacity: 0.5 }),
+                  !isContrast && React.createElement("circle", { cx: cxPx, cy: cyPx, r: 9, fill: color, opacity: 0.18 }),
                   React.createElement("circle", {
-                    cx: toSX(cp.x), cy: toSY(cp.y), r: 5,
-                    fill: 'none', stroke: color, strokeWidth: 2
+                    cx: cxPx, cy: cyPx, r: 5,
+                    fill: isDark ? '#0f172a' : '#ffffff', stroke: color, strokeWidth: 2,
+                    style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 3px ' + color + ')' }
                   }),
+                  React.createElement("circle", { cx: cxPx, cy: cyPx, r: 2, fill: color }),
                   // A turning point on the y-axis would label the y-intercept.
                   !(hideYIntAnswer && cp.x === 0) && React.createElement("text", {
-                    x: toSX(cp.x), y: toSY(cp.y) + (isMax ? -10 : 16),
+                    x: cxPx, y: cyPx + (isMax ? -11 : 17),
                     textAnchor: 'middle', fill: color,
                     style: { fontSize: fgFs(12), fontWeight: 'bold' }
                   }, (isMax ? '▲ max ' : '▼ min ') + '(' + cp.x.toFixed(1) + ', ' + cp.y.toFixed(2) + ')')
@@ -2612,8 +2716,8 @@ window.StemLab = window.StemLab || {
             // ── Zoom / Pan Controls ──
             React.createElement("div", { className: "flex items-center gap-1.5 mt-2 mb-1 flex-wrap" },
               React.createElement("span", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mr-1" + onHostInk }, __alloT('stem.funcgrapher.view', "\uD83D\uDD0D View")),
-              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin) / 4, hh = (yR.yMax - yR.yMin) / 4; upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[0.6875rem] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.zoom_in', 'Zoom in') }, __alloT('stem.funcgrapher.zoom_in_2', "\u2795 Zoom In")),
-              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = (xR.xMax - xR.xMin), hh = (yR.yMax - yR.yMin); upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[0.6875rem] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.zoom_out', 'Zoom out') }, __alloT('stem.funcgrapher.zoom_out_2', "\u2796 Zoom Out")),
+              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = Math.max(0.5, (xR.xMax - xR.xMin) / 4), hh = Math.max(0.5, (yR.yMax - yR.yMin) / 4); upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[0.6875rem] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.zoom_in', 'Zoom in') }, __alloT('stem.funcgrapher.zoom_in_2', "\u2795 Zoom In")),
+              React.createElement("button", { onClick: function() { var cx = (xR.xMin + xR.xMax) / 2, cy = (yR.yMin + yR.yMax) / 2, hw = Math.min(500, (xR.xMax - xR.xMin)), hh = Math.min(500, (yR.yMax - yR.yMin)); upd('range', { xMin: cx - hw, xMax: cx + hw, yMin: cy - hh, yMax: cy + hh }); }, className: "px-2 py-1 rounded-md text-[0.6875rem] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.zoom_out', 'Zoom out') }, __alloT('stem.funcgrapher.zoom_out_2', "\u2796 Zoom Out")),
               React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin - dx, xMax: xR.xMax - dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[0.6875rem] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.pan_left', 'Pan left') }, "\u2B05"),
               React.createElement("button", { onClick: function() { var dx = (xR.xMax - xR.xMin) * 0.25; upd('range', { xMin: xR.xMin + dx, xMax: xR.xMax + dx, yMin: yR.yMin, yMax: yR.yMax }); }, className: "px-2 py-1 rounded-md text-[0.6875rem] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.pan_right', 'Pan right') }, "\u27A1"),
               React.createElement("button", { onClick: function() { var dy = (yR.yMax - yR.yMin) * 0.25; upd('range', { xMin: xR.xMin, xMax: xR.xMax, yMin: yR.yMin + dy, yMax: yR.yMax + dy }); }, className: "px-2 py-1 rounded-md text-[0.6875rem] font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 border border-slate-400 transition-all", 'aria-label': __alloT('stem.funcgrapher.pan_up', 'Pan up') }, "\u2B06"),
@@ -2695,7 +2799,9 @@ window.StemLab = window.StemLab || {
                 React.createElement("tbody", null,
                   (function() {
                     var rows = [], xs = [];
-                    for (var tx0 = Math.ceil(xR.xMin); tx0 <= Math.floor(xR.xMax); tx0++) xs.push(tx0);
+                    var txStart = Math.ceil(xR.xMin), txEnd = Math.floor(xR.xMax);
+                    var txStep = Math.max(1, Math.ceil(Math.max(1, txEnd - txStart) / 40));
+                    for (var tx0 = txStart; tx0 <= txEnd; tx0 += txStep) xs.push(tx0);
                     // Differences and ratios from the shared core (equal steps of 1 in x).
                     var diffs = d.showDiffs && GA ? GA.differencesTable(xs.map(function(x) { var v = evalF(x); return { x: x, y: isFinite(v) ? v : null }; })) : null;
                     function cell(v) { return typeof v === 'number' && isFinite(v) ? String(Number(v.toPrecision(6))) : '\u2014'; }
@@ -2715,7 +2821,7 @@ window.StemLab = window.StemLab || {
                 )
               ),
               d.showDiffs && GA && React.createElement("p", { "data-funcgrapher-diff-summary": true, className: "mt-2 text-xs font-semibold text-cyan-900" },
-                GA.differencesSummary(GA.differencesTable((function() { var out = []; for (var sx2 = Math.ceil(xR.xMin); sx2 <= Math.floor(xR.xMax); sx2++) { var sv = evalF(sx2); out.push({ x: sx2, y: isFinite(sv) ? sv : null }); } return out; })()), __alloT))
+                GA.differencesSummary(GA.differencesTable((function() { var out = []; var sxStart = Math.ceil(xR.xMin), sxEnd = Math.floor(xR.xMax); var sxStep = Math.max(1, Math.ceil(Math.max(1, sxEnd - sxStart) / 40)); for (var sx2 = sxStart; sx2 <= sxEnd; sx2 += sxStep) { var sv = evalF(sx2); out.push({ x: sx2, y: isFinite(sv) ? sv : null }); } return out; })()), __alloT))
             ),
 
             // ── Educational Learn Panel (collapsible) ──
@@ -2806,7 +2912,7 @@ window.StemLab = window.StemLab || {
               var current=d.secantResult&&d.secantResultKey===key,study=current?d.secantResult:null;
               var ink=ctx.isContrast?'#ffffff':ctx.isDark?'#e2e8f0':'#0f172a',surface=ctx.isContrast?'#000000':ctx.isDark?'#0f172a':'#ffffff',border=ctx.isContrast?'#facc15':'#64748b';
               var field={padding:10,minHeight:44,border:'1px solid '+border,borderRadius:6,background:surface,color:ink,maxWidth:'100%',boxSizing:'border-box'};
-              function set(patch){setLabToolData(function(prev){return Object.assign({},prev,{funcGrapher:Object.assign({},prev.funcGrapher,patch)});});}
+              function set(patch){setLabToolData(function(prev){return Object.assign({},prev,{funcGrapher:Object.assign({},DEFAULT_FG,prev&&prev.funcGrapher,patch)});});}
               function number(value){return typeof value==='number'&&Number.isFinite(value)?Number(value.toPrecision(9)).toString():'Unavailable';}
               return h('details',{'data-secant-investigation':true,style:{marginTop:16,padding:14,border:'1px solid '+border,borderRadius:12,color:ink,background:surface,overflowWrap:'anywhere'}},
                 h('summary',{style:{fontSize:16,fontWeight:700,cursor:'pointer'}},'From secant slopes to a tangent'),
@@ -2851,7 +2957,7 @@ window.StemLab = window.StemLab || {
               var sample=fgTruncatedIntegral(power,epsilon);
               var ink=ctx.isContrast?'#ffffff':ctx.isDark?'#e2e8f0':'#0f172a',surface=ctx.isContrast?'#000000':ctx.isDark?'#0f172a':'#ffffff',border=ctx.isContrast?'#facc15':'#64748b';
               var field={padding:10,border:'1px solid '+border,borderRadius:6,background:surface,color:ink,maxWidth:'100%',boxSizing:'border-box'};
-              function set(patch){setLabToolData(function(prev){return Object.assign({},prev,{funcGrapher:Object.assign({},prev.funcGrapher,patch)});});}
+              function set(patch){setLabToolData(function(prev){return Object.assign({},prev,{funcGrapher:Object.assign({},DEFAULT_FG,prev&&prev.funcGrapher,patch)});});}
               return h('details',{'data-improper-investigation':true,style:{marginTop:16,padding:14,border:'1px solid '+border,borderRadius:12,color:ink,background:surface}},
                 h('summary',{style:{fontSize:16,fontWeight:700,cursor:'pointer'}},'Can an unbounded function have finite area?'),
                 h('p',null,'Compare 1/√x, 1/x, and 1/x² from 0 to 1. All are undefined at zero. Start at a positive cutoff ε and move it toward zero to investigate the missing endpoint.'),
@@ -3312,7 +3418,15 @@ window.StemLab = window.StemLab || {
               }
 
 
+              function clearFgAutoNext() {
+                if (typeof window !== 'undefined' && window._fgAutoNextTimer) {
+                  clearTimeout(window._fgAutoNextTimer);
+                  window._fgAutoNextTimer = null;
+                }
+              }
+
               function startChallenge() {
+                clearFgAutoNext();
 
                 var q;
 
@@ -3381,6 +3495,8 @@ window.StemLab = window.StemLab || {
 
               // One answer path for every mode; the match cards call it too.
               function answerQuiz(opt) {
+                if (!fgQuiz || fgQuiz.answered) return;
+                clearFgAutoNext();
                 // Root questions can have TWO correct answers (either root of a quadratic)
                 var correct = fgQuiz.answers ? fgQuiz.answers.indexOf(opt) >= 0 : opt === fgQuiz.answer;
 
@@ -3400,11 +3516,23 @@ window.StemLab = window.StemLab || {
 
                 if (typeof announceToSR === 'function') announceToSR((correct ? 'Correct. ' : 'Not quite. ') + fb);
 
+                var scheduleAutoNext = function() {
+                  if (fgQuiz.mode === 'myth' || fgQuiz.mode === 'match') return;
+                  clearFgAutoNext();
+                  if (typeof window !== 'undefined') {
+                    window._fgAutoNextTimer = setTimeout(function () {
+                      window._fgAutoNextTimer = null;
+                      if (typeof document !== 'undefined' && !document.querySelector('[data-function-options]')) return;
+                      startChallenge();
+                    }, 2200);
+                  }
+                };
+
                 if (correct && answerShown) {
 
                   addToast('\u2705 ' + __alloT('stem.funcgrapher.correct_no_xp', 'Correct (no XP: the answer was shown)'), 'success');
 
-                  if (fgQuiz.mode !== 'myth' && fgQuiz.mode !== 'match') setTimeout(function () { startChallenge(); }, 2200);
+                  scheduleAutoNext();
 
                 } else if (correct) {
 
@@ -3419,7 +3547,7 @@ window.StemLab = window.StemLab || {
                   }
 
                   // Auto-advance \u2014 except in myth and match modes, where the "why" deserves a read
-                  if (fgQuiz.mode !== 'myth' && fgQuiz.mode !== 'match') setTimeout(function () { startChallenge(); }, 2200);
+                  scheduleAutoNext();
 
                 } else {
 
@@ -3439,7 +3567,7 @@ window.StemLab = window.StemLab || {
 
                     var isActive = challengeMode === cm.id;
 
-                    return React.createElement("button", { key: cm.id, "aria-pressed": isActive, onClick: function () { upd('fgChallengeMode', cm.id); upd('fgQuiz', null); },
+                    return React.createElement("button", { key: cm.id, "aria-pressed": isActive, onClick: function () { clearFgAutoNext(); upd('fgChallengeMode', cm.id); upd('fgQuiz', null); },
 
                       className: "px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (isActive ? (({ indigo: 'bg-indigo-700', violet: 'bg-violet-700', red: 'bg-red-700', emerald: 'bg-emerald-700', amber: 'bg-amber-700' }[cm.color]) || 'bg-indigo-700') + ' text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
@@ -3458,7 +3586,7 @@ window.StemLab = window.StemLab || {
                     var active = gradeBand === gb;
                     return React.createElement("button", {
                       key: gb,
-                      onClick: function () { upd('fgGradeOverride', gb); upd('fgQuiz', null); },
+                      onClick: function () { clearFgAutoNext(); upd('fgGradeOverride', gb); upd('fgQuiz', null); },
                       "aria-pressed": active,
                       className: "px-2 py-0.5 rounded-full text-[0.625rem] font-bold transition-all " + (active ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50')
                     }, gb);
@@ -3634,17 +3762,43 @@ window.StemLab = window.StemLab || {
                     if (cvEl._fzAnim) { if (cvEl._fzTheme !== fgZooPal.theme && typeof cvEl._fzDraw === 'function') { cvEl._fzTheme = fgZooPal.theme; cvEl._fzDraw(); } return; }
                     cvEl._fzTheme = fgZooPal.theme;
                     var c2 = cvEl.getContext('2d');
+                    if (!c2) return;
                     var W = cvEl.offsetWidth || 600;
                     var H = cvEl.offsetHeight || 220;
                     cvEl.width = W * 2; cvEl.height = H * 2;
                     c2.scale(2, 2);
                     var start = performance.now();
+                    var fzReduce = false;
+                    try { fzReduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (_) {}
+                    function rrect(ctx2, x, y, w, h2, rad) {
+                      var r = Math.min(rad, w / 2, h2 / 2);
+                      ctx2.beginPath();
+                      ctx2.moveTo(x + r, y);
+                      ctx2.lineTo(x + w - r, y);
+                      ctx2.quadraticCurveTo(x + w, y, x + w, y + r);
+                      ctx2.lineTo(x + w, y + h2 - r);
+                      ctx2.quadraticCurveTo(x + w, y + h2, x + w - r, y + h2);
+                      ctx2.lineTo(x + r, y + h2);
+                      ctx2.quadraticCurveTo(x, y + h2, x, y + h2 - r);
+                      ctx2.lineTo(x, y + r);
+                      ctx2.quadraticCurveTo(x, y, x + r, y);
+                      ctx2.closePath();
+                    }
                     function drawFz() {
                       if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._fzAnim); return; }
-                      var t = (performance.now() - start) / 1000;
+                      var t = fzReduce ? 1.8 : (performance.now() - start) / 1000;
                       var ZP = cvEl._fzPal || fgZooPal;
                       c2.fillStyle = ZP.bg;
                       c2.fillRect(0, 0, W, H);
+                      if (ZP.theme !== 'contrast' && typeof c2.createLinearGradient === 'function') {
+                        var bgG = c2.createLinearGradient(0, 0, 0, H);
+                        if (bgG && typeof bgG.addColorStop === 'function') {
+                          bgG.addColorStop(0, ZP.theme === 'dark' ? '#070b1e' : '#f8fafc');
+                          bgG.addColorStop(1, ZP.theme === 'dark' ? '#020410' : '#eef2ff');
+                          c2.fillStyle = bgG;
+                          c2.fillRect(0, 0, W, H);
+                        }
+                      }
                       var funcs = [
                         { name: __alloT('stem.funcgrapher.linear', 'Linear'), f: function(x) { return x; }, color: '#7dd3fc' },
                         { name: __alloT('stem.funcgrapher.quadratic', 'Quadratic'), f: function(x) { return x * x / 4; }, color: '#fbbf24' },
@@ -3658,39 +3812,93 @@ window.StemLab = window.StemLab || {
                       funcs.forEach(function(fn, fi) {
                         var col = fi % cols;
                         var row = Math.floor(fi / cols);
-                        var ox = col * cellW + cellW / 2;
-                        var oy = row * cellH + cellH / 2;
-                        // Axes
-                        c2.strokeStyle = ZP.axis; c2.lineWidth = 1;
-                        c2.beginPath();
-                        c2.moveTo(ox - cellW * 0.4, oy); c2.lineTo(ox + cellW * 0.4, oy);
-                        c2.moveTo(ox, oy - cellH * 0.4); c2.lineTo(ox, oy + cellH * 0.4);
+                        var cx0 = col * cellW, cy0 = row * cellH;
+                        var ox = cx0 + cellW / 2;
+                        var oy = cy0 + cellH / 2 - 4;
+                        // Recessed studio tile well
+                        rrect(c2, cx0 + 5, cy0 + 5, Math.max(8, cellW - 10), Math.max(8, cellH - 10), 8);
+                        c2.fillStyle = ZP.theme === 'contrast' ? '#000000' : (ZP.theme === 'dark' ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.92)');
+                        c2.fill();
+                        c2.strokeStyle = ZP.theme === 'contrast' ? '#ffffff' : (ZP.theme === 'dark' ? 'rgba(129,140,248,0.22)' : 'rgba(148,163,184,0.34)');
+                        c2.lineWidth = 1;
                         c2.stroke();
-                        // Curve — neon glow per function color + a light bead tracing it
+                        // Subtle minor grid inside tile
+                        if (ZP.theme !== 'contrast') {
+                          c2.strokeStyle = ZP.theme === 'dark' ? 'rgba(148,163,184,0.12)' : 'rgba(148,163,184,0.22)';
+                          c2.lineWidth = 0.7;
+                          c2.beginPath();
+                          var gxStep = cellW * 0.2, gyStep = cellH * 0.2;
+                          c2.moveTo(ox - gxStep, oy - cellH * 0.34); c2.lineTo(ox - gxStep, oy + cellH * 0.34);
+                          c2.moveTo(ox + gxStep, oy - cellH * 0.34); c2.lineTo(ox + gxStep, oy + cellH * 0.34);
+                          c2.moveTo(ox - cellW * 0.38, oy - gyStep); c2.lineTo(ox + cellW * 0.38, oy - gyStep);
+                          c2.moveTo(ox - cellW * 0.38, oy + gyStep); c2.lineTo(ox + cellW * 0.38, oy + gyStep);
+                          c2.stroke();
+                        }
+                        // Principal axes
+                        c2.strokeStyle = ZP.axis; c2.lineWidth = 1.1;
+                        c2.beginPath();
+                        c2.moveTo(ox - cellW * 0.38, oy); c2.lineTo(ox + cellW * 0.38, oy);
+                        c2.moveTo(ox, oy - cellH * 0.34); c2.lineTo(ox, oy + cellH * 0.34);
+                        c2.stroke();
+                        // Curve — dual-pass luminous glow + specular core filament + light bead
                         c2.save();
                         var ink = ZP.curves[fi] || fn.color;
-                        c2.shadowColor = ink; c2.shadowBlur = ZP.glow ? 7 : 0;
-                        c2.strokeStyle = ink; c2.lineWidth = ZP.glow ? 2 : 2.5;
-                        c2.beginPath();
-                        for (var x = -cellW * 0.4; x <= cellW * 0.4; x++) {
+                        var pts = [];
+                        var xSpan = Math.floor(cellW * 0.36);
+                        for (var x = -xSpan; x <= xSpan; x += 2) {
                           var xv = x / 12;
                           var yv = fn.f(xv);
-                          var py = oy - yv * 8;
-                          if (x === -Math.floor(cellW * 0.4)) c2.moveTo(ox + x, py);
-                          else c2.lineTo(ox + x, py);
+                          var py = oy - yv * 7.5;
+                          if (isFinite(py) && py >= cy0 + 8 && py <= cy0 + cellH - 20) pts.push([ox + x, py]);
+                          else pts.push(null);
                         }
-                        c2.stroke();
-                        // Light bead sweeping along the curve (stays within the cell)
-                        var beadX = -cellW * 0.4 + ((t * 0.22 + fi * 0.13) % 1) * cellW * 0.8;
-                        var beadY = oy - fn.f(beadX / 12) * 8;
-                        if (beadY > oy - cellH * 0.46 && beadY < oy + cellH * 0.46) {
-                          c2.shadowBlur = ZP.glow ? 10 : 0; c2.fillStyle = ZP.bead;
-                          c2.beginPath(); c2.arc(ox + beadX, beadY, 2.3, 0, Math.PI * 2); c2.fill();
+                        function tracePts() {
+                          c2.beginPath();
+                          var open = false;
+                          for (var pi = 0; pi < pts.length; pi++) {
+                            if (!pts[pi]) { open = false; continue; }
+                            if (!open) { c2.moveTo(pts[pi][0], pts[pi][1]); open = true; }
+                            else c2.lineTo(pts[pi][0], pts[pi][1]);
+                          }
+                        }
+                        c2.lineCap = 'round'; c2.lineJoin = 'round';
+                        if (ZP.theme !== 'contrast') {
+                          c2.save();
+                          c2.globalAlpha = ZP.glow ? 0.24 : 0.14;
+                          c2.strokeStyle = ink; c2.lineWidth = 6.5;
+                          tracePts(); c2.stroke();
+                          c2.restore();
+                        }
+                        c2.shadowColor = ink; c2.shadowBlur = ZP.glow ? 8 : 0;
+                        c2.strokeStyle = ink; c2.lineWidth = ZP.glow ? 2.2 : 2.5;
+                        tracePts(); c2.stroke();
+                        c2.shadowBlur = 0;
+                        if (ZP.theme !== 'contrast') {
+                          c2.strokeStyle = ZP.glow ? 'rgba(255,255,255,0.68)' : 'rgba(255,255,255,0.45)';
+                          c2.lineWidth = 0.85;
+                          tracePts(); c2.stroke();
+                        }
+                        // Light bead with soft radial halo (static when reduced motion is active)
+                        var beadX = -xSpan + ((t * 0.22 + fi * 0.13) % 1) * (xSpan * 2);
+                        var beadY = oy - fn.f(beadX / 12) * 7.5;
+                        if (beadY > cy0 + 10 && beadY < cy0 + cellH - 22) {
+                          if (ZP.theme !== 'contrast' && typeof c2.createRadialGradient === 'function') {
+                            var halo = c2.createRadialGradient(ox + beadX, beadY, 0.5, ox + beadX, beadY, 9);
+                            if (halo && typeof halo.addColorStop === 'function') {
+                              halo.addColorStop(0, ink);
+                              halo.addColorStop(1, 'rgba(0,0,0,0)');
+                              c2.save(); c2.globalAlpha = ZP.glow ? 0.55 : 0.3;
+                              c2.fillStyle = halo; c2.beginPath(); c2.arc(ox + beadX, beadY, 9, 0, Math.PI * 2); c2.fill();
+                              c2.restore();
+                            }
+                          }
+                          c2.fillStyle = ZP.bead;
+                          c2.beginPath(); c2.arc(ox + beadX, beadY, 2.5, 0, Math.PI * 2); c2.fill();
                         }
                         c2.restore();
                         // Label
                         c2.font = 'bold 12px sans-serif'; c2.fillStyle = ink; c2.textAlign = 'center';
-                        c2.fillText(fn.name, ox, oy + cellH * 0.45);
+                        c2.fillText(fn.name, ox, cy0 + cellH - 10);
                       });
                     }
                     cvEl._fzAnim = 1;

@@ -1,223 +1,5 @@
 // Generated journey pilot. Run dev-tools/campaign-adventure-pilot/build-in-app.cjs.
 (() => {
-  var __defProp = Object.defineProperty;
-  var __getOwnPropNames = Object.getOwnPropertyNames;
-  var __esm = (fn, res, err) => function __init() {
-    if (err) throw err[0];
-    try {
-      return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-    } catch (e) {
-      throw err = [e], e;
-    }
-  };
-  var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
-  };
-
-  // dev-tools/campaign-adventure-pilot/response-records.mjs
-  function responseText(value) {
-    if (typeof value !== "string" || !value.trim() || value.trim().length > 1200) throw Error("Write a response of 1 to 1,200 characters.");
-    return value.trim();
-  }
-  function validateResponses(raw, commands) {
-    if (!Array.isArray(raw) || raw.length > 100) throw Error("Invalid saved written responses.");
-    let prior = 0, total = 0;
-    const responses = raw.map((r) => {
-      if (!r || !Number.isInteger(r.revision) || r.revision <= prior || r.revision > commands.length || r.actionId !== commands[r.revision - 1]) throw Error("Written response does not match its saved decision.");
-      const text = responseText(r.text);
-      prior = r.revision;
-      total += text.length;
-      return { revision: r.revision, actionId: r.actionId, text };
-    });
-    if (total > 36e3) throw Error("This journey has reached its written-response limit. Download the journal or continue using choices.");
-    return responses;
-  }
-  var init_response_records = __esm({
-    "dev-tools/campaign-adventure-pilot/response-records.mjs"() {
-    }
-  });
-
-  // dev-tools/campaign-adventure-pilot/core.mjs
-  var core_exports = {};
-  __export(core_exports, {
-    MAX_COMMANDS: () => MAX_COMMANDS,
-    PREFIX: () => PREFIX,
-    addNote: () => addNote,
-    dispatch: () => dispatch,
-    forkRun: () => forkRun,
-    listRuns: () => listRuns,
-    makeRun: () => makeRun,
-    materialize: () => materialize,
-    narrate: () => narrate,
-    readRun: () => readRun,
-    saveKey: () => saveKey,
-    saveRun: () => saveRun,
-    validateRun: () => validateRun
-  });
-  function makeRun(adapter, { seed = "FIELD-01", runId, config = {} } = {}) {
-    if (typeof seed !== "string" || !seed.trim() || seed.length > 32) throw new Error("Use a world seed of 1 to 32 characters.");
-    const id = runId || globalThis.crypto.randomUUID();
-    if (!/^[a-zA-Z0-9-]{1,64}$/.test(id)) throw new Error("Invalid run ID.");
-    const initial = adapter.start(seed.trim(), config);
-    return {
-      version: 1,
-      campaignId: adapter.id,
-      runId: id,
-      seed: seed.trim(),
-      config: adapter.config(initial),
-      commands: [],
-      notes: [],
-      createdAt: (/* @__PURE__ */ new Date()).toISOString()
-    };
-  }
-  function materialize(adapter, run) {
-    if (run.campaignId !== adapter.id) throw new Error("This save belongs to a different campaign.");
-    let model = adapter.start(run.seed, run.config);
-    for (const id of run.commands) {
-      const action = adapter.actions(model).find((a) => a.id === id);
-      if (!action || action.disabled) throw new Error("Saved action is no longer valid: " + id);
-      model = adapter.step(model, id);
-    }
-    return model;
-  }
-  function dispatch(adapter, run, actionId, expectedRevision = run.commands.length) {
-    if (expectedRevision !== run.commands.length) throw new Error("That decision has already been handled.");
-    if (run.commands.length >= MAX_COMMANDS) throw new Error("This pilot run has reached its decision limit.");
-    const model = materialize(adapter, run);
-    const action = adapter.actions(model).find((a) => a.id === actionId);
-    if (!action || action.disabled) throw new Error("That action is unavailable in the current situation.");
-    const next = { ...copy(run), commands: [...run.commands, actionId] };
-    materialize(adapter, next);
-    return next;
-  }
-  function validateRun(adapter, raw) {
-    if (!raw || ![1, 2].includes(raw.version) || raw.campaignId !== adapter.id || !/^[a-zA-Z0-9-]{1,64}$/.test(raw.runId || "")) throw new Error("Unrecognized pilot save.");
-    if (typeof raw.seed !== "string" || !raw.seed.trim() || raw.seed.length > 32) throw new Error("Invalid saved world seed.");
-    if (!Array.isArray(raw.commands) || raw.commands.length > MAX_COMMANDS || raw.commands.some((c) => typeof c !== "string" || c.length > 120)) throw new Error("Invalid saved decisions.");
-    if (!Array.isArray(raw.notes) || raw.notes.length > 100 || raw.notes.some((n) => !n || !Number.isInteger(n.revision) || n.revision < 0 || n.revision > raw.commands.length || typeof n.text !== "string" || n.text.length > 1200)) throw new Error("Invalid saved field notes.");
-    if (typeof raw.createdAt !== "string" || !Number.isFinite(Date.parse(raw.createdAt))) throw new Error("Invalid saved date.");
-    const run = {
-      version: raw.version,
-      campaignId: raw.campaignId,
-      runId: raw.runId,
-      seed: raw.seed,
-      config: copy(raw.config),
-      commands: raw.commands.slice(),
-      notes: copy(raw.notes),
-      createdAt: raw.createdAt
-    };
-    if (raw.version === 2) run.responses = validateResponses(raw.responses, run.commands);
-    else if (raw.responses !== void 0) throw Error("Written responses require save version 2.");
-    materialize(adapter, run);
-    return run;
-  }
-  function saveKey(run) {
-    return PREFIX + run.campaignId + ":" + run.runId;
-  }
-  function saveRun(storage, run) {
-    try {
-      const key = saveKey(run), existing = storage.getItem?.(key);
-      if (existing) {
-        let old;
-        try {
-          old = JSON.parse(existing);
-        } catch {
-          return { ok: false, message: "The existing saved journey needs recovery and was left untouched. Download this journey to keep your work." };
-        }
-        if (![1, 2].includes(old.version) || old.version === 2 && run.version !== 2 || old.campaignId !== run.campaignId || old.runId !== run.runId || old.seed !== run.seed || !Array.isArray(old.commands) || !Array.isArray(old.notes) || old.commands.some((id, i) => run.commands[i] !== id) || old.notes.some((note, i) => JSON.stringify(run.notes[i]) !== JSON.stringify(note)) || old.version === 2 && (!Array.isArray(old.responses) || old.responses.some((r, i) => JSON.stringify(run.responses?.[i]) !== JSON.stringify(r)))) {
-          return { ok: false, message: "Another version of this journey is already saved. It was left untouched. Download your journal before reopening the saved version." };
-        }
-      }
-      storage.setItem(key, JSON.stringify(run));
-      return { ok: true };
-    } catch (error) {
-      return { ok: false, message: "This browser could not save the journey. Keep this page open and download your journal." };
-    }
-  }
-  function readRun(storage, key, adapters) {
-    if (!key.startsWith(PREFIX)) throw new Error("Only pilot saves can be opened here.");
-    const text = storage.getItem(key);
-    if (!text || text.length > 18e4) throw new Error("This pilot save cannot be read. It has been left untouched.");
-    const raw = JSON.parse(text);
-    const adapter = adapters.find((a) => a.id === raw.campaignId);
-    if (!adapter) throw new Error("This save needs a campaign that is not available in this pilot.");
-    const run = validateRun(adapter, raw);
-    if (saveKey(run) !== key) throw new Error("Saved journey identity does not match its storage key.");
-    return run;
-  }
-  function listRuns(storage, adapters) {
-    const result = [];
-    for (let i = 0; i < storage.length; i++) {
-      const key = storage.key(i);
-      if (!key || !adapters.some((a) => key.startsWith(PREFIX + a.id + ":"))) continue;
-      try {
-        const run = readRun(storage, key, adapters);
-        result.push({ key, run });
-      } catch (error) {
-        result.push({ key, error: "Saved journey needs recovery; original data retained." });
-      }
-    }
-    return result.sort((a, b) => (b.run?.createdAt || "").localeCompare(a.run?.createdAt || ""));
-  }
-  function addNote(run, text) {
-    const value = String(text).trim();
-    if (!value || value.length > 1200 || run.notes.length >= 100) throw new Error("Write a field note of 1 to 1,200 characters (up to 100 notes per journey).");
-    return { ...copy(run), notes: [...run.notes, { revision: run.commands.length, text: value }] };
-  }
-  function forkRun(run, revision, runId = globalThis.crypto.randomUUID()) {
-    if (!Number.isInteger(revision) || revision < 0 || revision > run.commands.length) throw new Error("Invalid replay point.");
-    return {
-      ...copy(run),
-      runId,
-      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-      commands: run.commands.slice(0, revision),
-      notes: run.notes.filter((n) => n.revision <= revision),
-      ...run.version === 2 ? { responses: (run.responses || []).filter((r) => r.revision <= revision) } : {}
-    };
-  }
-  async function narrate(scene, provider, { timeoutMs = 1800, signal } = {}) {
-    if (!provider) return { text: scene.body, status: "authored" };
-    if (signal?.aborted) return { text: scene.body, status: "fallback" };
-    const controller = new AbortController();
-    const abort = () => controller.abort();
-    signal?.addEventListener("abort", abort, { once: true });
-    if (signal?.aborted) controller.abort();
-    let timer;
-    try {
-      const result = await Promise.race([
-        Promise.resolve().then(() => provider(copy({ title: scene.title, body: scene.body, evidence: scene.evidence }), { signal: controller.signal })),
-        new Promise((_, reject) => {
-          timer = setTimeout(() => {
-            controller.abort();
-            reject(new Error("timeout"));
-          }, timeoutMs);
-        }),
-        new Promise((_, reject) => {
-          controller.signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
-        })
-      ]);
-      if (controller.signal.aborted) throw new Error("aborted");
-      if (typeof result !== "string" || !result.trim() || result.length > 1800) throw new Error("Invalid narration.");
-      return { text: result.trim(), status: "optional" };
-    } catch {
-      return { text: scene.body, status: "fallback" };
-    } finally {
-      clearTimeout(timer);
-      controller.abort();
-      signal?.removeEventListener("abort", abort);
-    }
-  }
-  var PREFIX, MAX_COMMANDS, copy;
-  var init_core = __esm({
-    "dev-tools/campaign-adventure-pilot/core.mjs"() {
-      init_response_records();
-      PREFIX = "alloflow-campaign-pilot:v1:";
-      MAX_COMMANDS = 500;
-      copy = (x) => JSON.parse(JSON.stringify(x));
-    }
-  });
-
   // dev-tools/campaign-adventure-pilot/watershed-source.mjs
   function createWatershedRuntime() {
     const window2 = { StemLab: { findById: (items, id) => items.find((item) => item.id === id) } };
@@ -898,6 +680,7 @@
       intro: "Follow the water from forest to mainstem. Choose where to put your effort, then return each year to see what changed.",
       disclosure: "An educational watershed model, not a forecast. Quality, connectivity, and support are 0\u2013100 model indices. Regional context recognizes Indigenous-led restoration; the narrator does not speak for a Tribal Nation.",
       start(seed, config = {}) {
+        if (!config || typeof config !== "object" || Array.isArray(config)) throw new Error("Unsupported watershed settings.");
         const difficulty = config.difficulty || "coordinator";
         if (!Object.hasOwn(water.difficulties, difficulty) || Object.keys(config).some((k) => k !== "difficulty")) throw new Error("Unsupported watershed settings.");
         return water.start({ seed, difficulty });
@@ -965,6 +748,7 @@
       intro: "Three trees. Nine habitat patches. Guide a grove through weather and renewal, and see which descendants take root.",
       disclosure: "An educational grove scenario using Tree Life Lab\u2019s existing physiology and seeded events. Shared priorities are a game abstraction. A new arrival counts as established only after surviving a later annual update.",
       start(seed, config = {}) {
+        if (!config || typeof config !== "object" || Array.isArray(config)) throw new Error("Unsupported grove settings.");
         const mode = config.mode || "deck";
         if (!["deck", "generated"].includes(mode) || Object.keys(config).some((k) => k !== "mode")) throw new Error("Unsupported grove settings.");
         return tree.groveStart({ version: 1, seed, mode, choices: [] });
@@ -1032,8 +816,197 @@
     return [watershed, grove];
   }
 
-  // dev-tools/campaign-adventure-pilot/app.mjs
-  init_core();
+  // dev-tools/campaign-adventure-pilot/response-records.mjs
+  function responseText(value) {
+    if (typeof value !== "string" || !value.trim() || value.trim().length > 1200) throw Error("Write a response of 1 to 1,200 characters.");
+    return value.trim();
+  }
+  function validateResponses(raw, commands) {
+    if (!Array.isArray(raw) || raw.length > 100) throw Error("Invalid saved written responses.");
+    let prior = 0, total = 0;
+    const responses = raw.map((r) => {
+      if (!r || !Number.isInteger(r.revision) || r.revision <= prior || r.revision > commands.length || r.actionId !== commands[r.revision - 1]) throw Error("Written response does not match its saved decision.");
+      const text = responseText(r.text);
+      prior = r.revision;
+      total += text.length;
+      return { revision: r.revision, actionId: r.actionId, text };
+    });
+    if (total > 36e3) throw Error("This journey has reached its written-response limit. Download the journal or continue using choices.");
+    return responses;
+  }
+
+  // dev-tools/campaign-adventure-pilot/core.mjs
+  var PREFIX = "alloflow-campaign-pilot:v1:";
+  var MAX_COMMANDS = 500;
+  var copy = (x) => JSON.parse(JSON.stringify(x));
+  function makeRunId() {
+    if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
+      return globalThis.crypto.randomUUID();
+    }
+    if (globalThis.crypto && typeof globalThis.crypto.getRandomValues === "function") {
+      const bytes = new Uint8Array(16);
+      globalThis.crypto.getRandomValues(bytes);
+      bytes[6] = bytes[6] & 15 | 64;
+      bytes[8] = bytes[8] & 63 | 128;
+      const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+      return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+    }
+    return "run-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+  }
+  function makeRun(adapter, { seed = "FIELD-01", runId, config = {} } = {}) {
+    if (typeof seed !== "string" || !seed.trim() || seed.length > 32) throw new Error("Use a world seed of 1 to 32 characters.");
+    const id = runId || makeRunId();
+    if (!/^[a-zA-Z0-9-]{1,64}$/.test(id)) throw new Error("Invalid run ID.");
+    const initial = adapter.start(seed.trim(), config);
+    return {
+      version: 1,
+      campaignId: adapter.id,
+      runId: id,
+      seed: seed.trim(),
+      config: adapter.config(initial),
+      commands: [],
+      notes: [],
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+  }
+  function materialize(adapter, run) {
+    if (run.campaignId !== adapter.id) throw new Error("This save belongs to a different campaign.");
+    let model = adapter.start(run.seed, run.config);
+    for (const id of run.commands) {
+      const action = adapter.actions(model).find((a) => a.id === id);
+      if (!action || action.disabled) throw new Error("Saved action is no longer valid: " + id);
+      model = adapter.step(model, id);
+    }
+    return model;
+  }
+  function dispatch(adapter, run, actionId, expectedRevision = run.commands.length) {
+    if (expectedRevision !== run.commands.length) throw new Error("That decision has already been handled.");
+    if (run.commands.length >= MAX_COMMANDS) throw new Error("This pilot run has reached its decision limit.");
+    const model = materialize(adapter, run);
+    const action = adapter.actions(model).find((a) => a.id === actionId);
+    if (!action || action.disabled) throw new Error("That action is unavailable in the current situation.");
+    const next = { ...copy(run), commands: [...run.commands, actionId] };
+    materialize(adapter, next);
+    return next;
+  }
+  function validateRun(adapter, raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw) || ![1, 2].includes(raw.version) || raw.campaignId !== adapter.id || !/^[a-zA-Z0-9-]{1,64}$/.test(raw.runId || "")) throw new Error("Unrecognized pilot save.");
+    if (typeof raw.seed !== "string" || !raw.seed.trim() || raw.seed.length > 32) throw new Error("Invalid saved world seed.");
+    if (!raw.config || typeof raw.config !== "object" || Array.isArray(raw.config)) throw new Error("Invalid saved campaign settings.");
+    if (!Array.isArray(raw.commands) || raw.commands.length > MAX_COMMANDS || raw.commands.some((c) => typeof c !== "string" || c.length > 120)) throw new Error("Invalid saved decisions.");
+    if (!Array.isArray(raw.notes) || raw.notes.length > 100 || raw.notes.some((n) => !n || !Number.isInteger(n.revision) || n.revision < 0 || n.revision > raw.commands.length || typeof n.text !== "string" || n.text.length > 1200)) throw new Error("Invalid saved field notes.");
+    if (typeof raw.createdAt !== "string" || !Number.isFinite(Date.parse(raw.createdAt))) throw new Error("Invalid saved date.");
+    const run = {
+      version: raw.version,
+      campaignId: raw.campaignId,
+      runId: raw.runId,
+      seed: raw.seed,
+      config: copy(raw.config),
+      commands: raw.commands.slice(),
+      notes: copy(raw.notes),
+      createdAt: raw.createdAt
+    };
+    if (raw.version === 2) run.responses = validateResponses(raw.responses, run.commands);
+    else if (raw.responses !== void 0) throw Error("Written responses require save version 2.");
+    materialize(adapter, run);
+    return run;
+  }
+  function saveKey(run) {
+    return PREFIX + run.campaignId + ":" + run.runId;
+  }
+  function saveRun(storage, run) {
+    try {
+      const key = saveKey(run), existing = storage.getItem?.(key);
+      if (existing) {
+        let old;
+        try {
+          old = JSON.parse(existing);
+        } catch {
+          return { ok: false, message: "The existing saved journey needs recovery and was left untouched. Download this journey to keep your work." };
+        }
+        if (![1, 2].includes(old.version) || old.version === 2 && run.version !== 2 || old.campaignId !== run.campaignId || old.runId !== run.runId || old.seed !== run.seed || !Array.isArray(old.commands) || !Array.isArray(old.notes) || old.commands.some((id, i) => run.commands[i] !== id) || old.notes.some((note, i) => JSON.stringify(run.notes[i]) !== JSON.stringify(note)) || old.version === 2 && (!Array.isArray(old.responses) || old.responses.some((r, i) => JSON.stringify(run.responses?.[i]) !== JSON.stringify(r)))) {
+          return { ok: false, message: "Another version of this journey is already saved. It was left untouched. Download your journal before reopening the saved version." };
+        }
+      }
+      storage.setItem(key, JSON.stringify(run));
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, message: "This browser could not save the journey. Keep this page open and download your journal." };
+    }
+  }
+  function readRun(storage, key, adapters) {
+    if (!key.startsWith(PREFIX)) throw new Error("Only pilot saves can be opened here.");
+    const text = storage.getItem(key);
+    if (!text || text.length > 18e4) throw new Error("This pilot save cannot be read. It has been left untouched.");
+    const raw = JSON.parse(text);
+    const adapter = adapters.find((a) => a.id === raw.campaignId);
+    if (!adapter) throw new Error("This save needs a campaign that is not available in this pilot.");
+    const run = validateRun(adapter, raw);
+    if (saveKey(run) !== key) throw new Error("Saved journey identity does not match its storage key.");
+    return run;
+  }
+  function listRuns(storage, adapters) {
+    const result = [];
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
+      if (!key || !adapters.some((a) => key.startsWith(PREFIX + a.id + ":"))) continue;
+      try {
+        const run = readRun(storage, key, adapters);
+        result.push({ key, run });
+      } catch (error) {
+        result.push({ key, error: "Saved journey needs recovery; original data retained." });
+      }
+    }
+    return result.sort((a, b) => (b.run?.createdAt || "").localeCompare(a.run?.createdAt || ""));
+  }
+  function addNote(run, text) {
+    const value = String(text).trim();
+    if (!value || value.length > 1200 || run.notes.length >= 100) throw new Error("Write a field note of 1 to 1,200 characters (up to 100 notes per journey).");
+    return { ...copy(run), notes: [...run.notes, { revision: run.commands.length, text: value }] };
+  }
+  function forkRun(run, revision, runId = makeRunId()) {
+    if (!Number.isInteger(revision) || revision < 0 || revision > run.commands.length) throw new Error("Invalid replay point.");
+    return {
+      ...copy(run),
+      runId,
+      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+      commands: run.commands.slice(0, revision),
+      notes: run.notes.filter((n) => n.revision <= revision),
+      ...run.version === 2 ? { responses: (run.responses || []).filter((r) => r.revision <= revision) } : {}
+    };
+  }
+  async function narrate(scene, provider, { timeoutMs = 1800, signal } = {}) {
+    if (!provider) return { text: scene.body, status: "authored" };
+    if (signal?.aborted) return { text: scene.body, status: "fallback" };
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    signal?.addEventListener("abort", abort, { once: true });
+    if (signal?.aborted) controller.abort();
+    let timer;
+    try {
+      const result = await Promise.race([
+        Promise.resolve().then(() => provider(copy({ title: scene.title, body: scene.body, evidence: scene.evidence }), { signal: controller.signal })),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => {
+            controller.abort();
+            reject(new Error("timeout"));
+          }, timeoutMs);
+        }),
+        new Promise((_, reject) => {
+          controller.signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+        })
+      ]);
+      if (controller.signal.aborted) throw new Error("aborted");
+      if (typeof result !== "string" || !result.trim() || result.length > 1800) throw new Error("Invalid narration.");
+      return { text: result.trim(), status: "optional" };
+    } catch {
+      return { text: scene.body, status: "fallback" };
+    } finally {
+      clearTimeout(timer);
+      controller.abort();
+      signal?.removeEventListener("abort", abort);
+    }
+  }
 
   // dev-tools/campaign-adventure-pilot/scene-art.mjs
   var NS = "http://www.w3.org/2000/svg";
@@ -1044,87 +1017,41 @@
   };
   function treeSymbol(parent, x, y, size, aspen = false, small = false, deciduous = false) {
     const g = svg("g", { transform: "translate(" + x + " " + y + ") scale(" + size + ")" });
-    g.append(svg("ellipse", { cx: 2, cy: 1, rx: small ? 9 : 13, ry: 4, fill: "rgba(25,61,50,0.16)" }));
-    g.append(svg("path", { d: "M0 0v-18", stroke: "#5c4f3b", "stroke-width": small ? 2.2 : 3.2, "stroke-linecap": "round" }));
+    g.append(svg("path", { d: "M0 0v-18", stroke: "#655943", "stroke-width": small ? 2 : 3 }));
     if (aspen) {
-      g.append(svg("ellipse", { cx: 0, cy: -25, rx: 12, ry: 16, fill: small ? "#d0dd83" : "#a8c67a" }));
-      g.append(svg("ellipse", { cx: -3, cy: -28, rx: 5, ry: 8, fill: "#dce89a", opacity: 0.65 }));
+      g.append(svg("ellipse", { cx: 0, cy: -25, rx: 12, ry: 16, fill: small ? "#d0dd83" : "#aec783" }));
     } else if (deciduous) {
-      g.append(svg("path", { d: "M-14-13C-24-20-14-34-7-31C-10-48 11-48 12-32C27-34 28-14 14-12Z", fill: small ? "#8ebc9c" : "#2f5f49" }));
-      g.append(svg("circle", { cx: -4, cy: -27, r: 7, fill: small ? "#b7d8be" : "#4b8568", opacity: 0.55 }));
-    } else {
-      g.append(svg("path", { d: "M0-44L-16-14H-9L-18-4H18L9-14H16Z", fill: small ? "#8ebc9c" : "#2c5a45" }));
-      g.append(svg("path", { d: "M0-44L-6-22H3L0-44Z", fill: "#5a9375", opacity: 0.5 }));
-    }
+      g.append(svg("path", { d: "M-14-13C-24-20-14-34-7-31C-10-48 11-48 12-32C27-34 28-14 14-12Z", fill: small ? "#a3c7ac" : "#376650" }));
+    } else g.append(svg("path", { d: "M0-44L-16-14H-9L-18-4H18L9-14H16Z", fill: small ? "#a3c7ac" : "#376650" }));
     parent.append(g);
   }
   function landscape(view, selectLocation, selected) {
     const shell = document.createElement("div");
     shell.className = "landscape " + view.campaignId;
     const drawing = svg("svg", { viewBox: "0 0 640 455", "aria-hidden": "true", focusable: "false", preserveAspectRatio: "xMidYMid slice" });
-    const defs = svg("defs", {});
-    const gid = "fj-" + view.campaignId + "-" + Math.random().toString(36).slice(2, 7);
-    const skyGrad = svg("linearGradient", { id: gid + "-bg", x1: "0%", y1: "0%", x2: "100%", y2: "100%" });
-    skyGrad.append(
-      svg("stop", { offset: "0%", "stop-color": view.campaignId === "watershed" ? "#e4eed9" : "#eaecd4" }),
-      svg("stop", { offset: "55%", "stop-color": view.campaignId === "watershed" ? "#d7e5cb" : "#dfe4c5" }),
-      svg("stop", { offset: "100%", "stop-color": view.campaignId === "watershed" ? "#cbdcb9" : "#d5ddba" })
-    );
-    const riverGrad = svg("linearGradient", { id: gid + "-riv", x1: "0%", y1: "0%", x2: "0%", y2: "100%" });
-    riverGrad.append(
-      svg("stop", { offset: "0%", "stop-color": "#a8d8d6" }),
-      svg("stop", { offset: "50%", "stop-color": "#d9f3f2" }),
-      svg("stop", { offset: "100%", "stop-color": "#87bfc0" })
-    );
-    defs.append(skyGrad, riverGrad);
-    drawing.append(defs);
-    drawing.append(svg("rect", { width: 640, height: 455, fill: "url(#" + gid + "-bg)" }));
+    drawing.append(svg("rect", { width: 640, height: 455, fill: view.campaignId === "watershed" ? "#dfe8d3" : "#e5e7cd" }));
     if (view.campaignId === "watershed") {
-      // Topographic highland ridge & valley shelves
-      drawing.append(svg("path", { d: "M0 0H640V122Q492 54 349 102T0 120Z", fill: "#bdd0b2" }));
-      drawing.append(svg("path", { d: "M0 0H640V68Q460 22 310 60T0 72Z", fill: "#afc5a3", opacity: 0.7 }));
-      drawing.append(svg("path", { d: "M0 50Q164-13 269 47T640 60", fill: "none", stroke: "#9fb796", "stroke-width": 1.8 }));
-      drawing.append(svg("path", { d: "M-30 356Q146 229 275 318T690 351V470H-30Z", fill: "#bfd5b1" }));
-      for (let i = 0; i < 7; i++) drawing.append(svg("path", { d: "M-30 " + (130 + i * 38) + "Q100 " + (40 + i * 40) + " 223 " + (100 + i * 37) + "T680 " + (100 + i * 44), fill: "none", stroke: "#c1d0b5", "stroke-width": 1.4, opacity: 0.85 }));
-      // Wetland pools near floodplain
-      drawing.append(svg("ellipse", { cx: 235, cy: 274, rx: 52, ry: 22, fill: "#a9cec4", opacity: 0.55 }));
-      drawing.append(svg("ellipse", { cx: 295, cy: 292, rx: 34, ry: 14, fill: "#a9cec4", opacity: 0.45 }));
-      // River channel: outer bank, main channel, highlight current
-      drawing.append(svg("path", { d: "M354-25C369 75 198 78 243 170S421 195 354 290S204 357 250 475", fill: "none", stroke: "#7eaead", "stroke-width": 50, "stroke-linecap": "round" }));
-      drawing.append(svg("path", { d: "M354-25C369 75 198 78 243 170S421 195 354 290S204 357 250 475", fill: "none", stroke: "url(#" + gid + "-riv)", "stroke-width": 32, "stroke-linecap": "round" }));
-      drawing.append(svg("path", { d: "M350-25C365 75 194 78 239 170S417 195 350 290S200 357 246 475", fill: "none", stroke: "#ffffff", "stroke-width": 2.2, "stroke-dasharray": "18 14", opacity: 0.72 }));
-      // Riparian & highland conifers
-      [[70, 100, 1.1], [122, 158, 0.85], [167, 63, 0.9], [80, 277, 1.1], [126, 340, 0.78], [186, 212, 0.82], [463, 87, 0.92], [523, 142, 0.82], [573, 71, 1.1], [522, 322, 0.85], [592, 390, 0.9]].forEach((t) => treeSymbol(drawing, ...t));
-      // Agricultural contour rows
-      for (let i = 0; i < 5; i++) drawing.append(svg("path", { d: "M420 " + (207 + i * 12) + "l118 27", stroke: "#b7bd85", "stroke-width": 7, "stroke-linecap": "round" }));
-      // Town rooftops
+      drawing.append(svg("path", { d: "M0 0H640V115Q492 50 349 98T0 115Z", fill: "#c2d0b9" }));
+      drawing.append(svg("path", { d: "M0 50Q164-13 269 47T640 60", fill: "none", stroke: "#b5c5ae", "stroke-width": 2 }));
+      drawing.append(svg("path", { d: "M-30 356Q146 229 275 318T690 351V470H-30Z", fill: "#c5d8b8" }));
+      for (let i = 0; i < 7; i++) drawing.append(svg("path", { d: "M-30 " + (130 + i * 38) + "Q100 " + (40 + i * 40) + " 223 " + (100 + i * 37) + "T680 " + (100 + i * 44), fill: "none", stroke: "#c9d5bd", "stroke-width": 1.5 }));
+      drawing.append(svg("path", { d: "M354-25C369 75 198 78 243 170S421 195 354 290S204 357 250 475", fill: "none", stroke: "#95beba", "stroke-width": 46 }));
+      drawing.append(svg("path", { d: "M354-25C369 75 198 78 243 170S421 195 354 290S204 357 250 475", fill: "none", stroke: "#d5efed", "stroke-width": 28 }));
+      drawing.append(svg("path", { d: "M350-25C365 75 194 78 239 170S417 195 350 290S200 357 246 475", fill: "none", stroke: "#88babb", "stroke-width": 2, "stroke-dasharray": "20 12", opacity: 0.7 }));
+      [[70, 100, 1.1], [122, 158, 0.8], [167, 63, 0.9], [80, 277, 1.1], [126, 340, 0.75], [463, 87, 0.9], [523, 142, 0.8], [573, 71, 1.1], [522, 322, 0.85], [592, 390, 0.9]].forEach((t) => treeSymbol(drawing, ...t));
+      for (let i = 0; i < 5; i++) drawing.append(svg("path", { d: "M420 " + (207 + i * 12) + "l118 27", stroke: "#b7bd85", "stroke-width": 7 }));
       [[410, 354], [451, 364], [489, 385]].forEach(([x, y]) => {
-        drawing.append(svg("rect", { x: x + 2, y: y + 3, width: 24, height: 20, rx: 2, fill: "rgba(25,61,50,0.14)" }));
-        drawing.append(svg("rect", { x, y, width: 24, height: 20, rx: 2, fill: "#e6ddc3", stroke: "#9c947d", "stroke-width": 1 }));
-        drawing.append(svg("path", { d: "M" + (x - 4) + " " + y + "l16-12 16 12Z", fill: "#7d7b64" }));
+        drawing.append(svg("rect", { x, y, width: 24, height: 20, rx: 2, fill: "#ddd3b7" }));
+        drawing.append(svg("path", { d: "M" + (x - 4) + " " + y + "l16-12 16 12Z", fill: "#8d8b74" }));
       });
-      // Subtle naturalist compass rose (bottom-left)
-      const comp = svg("g", { transform: "translate(44 414)", opacity: 0.75 });
-      comp.append(svg("circle", { cx: 0, cy: 0, r: 16, fill: "#f6f4eb", stroke: "#5c7567", "stroke-width": 1.2 }));
-      comp.append(svg("polygon", { points: "0,-12 3.5,0 0,3 -3.5,0", fill: "#193d32" }));
-      comp.append(svg("polygon", { points: "0,12 3.5,0 0,-3 -3.5,0", fill: "#8ca192" }));
-      drawing.append(comp);
     } else {
       view.locations.forEach((patch, i) => {
         const x = 42 + i % 3 * 188, y = 29 + Math.floor(i / 3) * 135;
-        drawing.append(svg("rect", { x: x + 3, y: y + 4, width: 178, height: 125, rx: 20, fill: "rgba(25,61,50,0.1)" }));
-        drawing.append(svg("rect", { x, y, width: 178, height: 125, rx: 20, fill: patch.habitat === "damp" ? "#bed8c7" : patch.habitat === "sheltered" ? "#cadcb6" : "#e3d9b1", stroke: "#f7f4e8", "stroke-width": 3 }));
-        if (patch.habitat === "damp") {
-          drawing.append(svg("ellipse", { cx: x + 135, cy: y + 96, rx: 26, ry: 12, fill: "#9ec5bc", opacity: 0.55 }));
-        }
-        if (patch.gap) {
-          drawing.append(svg("ellipse", { cx: x + 87, cy: y + 46, rx: 60, ry: 31, fill: "#fbf4bf", opacity: 0.72 }));
-          drawing.append(svg("ellipse", { cx: x + 87, cy: y + 46, rx: 38, ry: 19, fill: "#fef9d6", opacity: 0.68 }));
-        }
-        patch.trees.forEach((t, j) => treeSymbol(drawing, x + 42 + j * 42, y + 58, t.descendant ? 0.58 : 0.92, t.species === "aspen", t.descendant, true));
+        drawing.append(svg("rect", { x, y, width: 178, height: 125, rx: 20, fill: patch.habitat === "damp" ? "#c3d9c9" : patch.habitat === "sheltered" ? "#cfddbc" : "#e2d9b5", stroke: "#f4f1e4", "stroke-width": 3 }));
+        if (patch.gap) drawing.append(svg("ellipse", { cx: x + 87, cy: y + 46, rx: 56, ry: 29, fill: "#f4eec0", opacity: 0.8 }));
+        patch.trees.forEach((t, j) => treeSymbol(drawing, x + 42 + j * 42, y + 53, t.descendant ? 0.55 : 0.9, t.species === "aspen", t.descendant, true));
       });
-      drawing.append(svg("path", { d: "M606 0q-28 93 2 158t-1 153t8 180", fill: "none", stroke: "#7eb0a8", "stroke-width": 12, "stroke-linecap": "round" }));
-      drawing.append(svg("path", { d: "M606 0q-28 93 2 158t-1 153t8 180", fill: "none", stroke: "#c8e6e1", "stroke-width": 4, "stroke-dasharray": "12 10" }));
+      drawing.append(svg("path", { d: "M606 0q-28 93 2 158t-1 153t8 180", fill: "none", stroke: "#94b9b0", "stroke-width": 9 }));
     }
     shell.append(drawing);
     const waterPositions = { headwaterStreams: [51, 17], forestBuffer: [22, 39], floodplainWetlands: [42, 60], riverMainstem: [44, 85], agriculturalWatershed: [76, 49], suburbanEdges: [76, 82] };
@@ -1135,19 +1062,14 @@
       button.className = "map-location";
       button.setAttribute("aria-label", loc.name + ", " + loc.value + " " + loc.unit);
       button.setAttribute("aria-pressed", String(selected === loc.id));
-      const health = view.campaignId === "watershed" ? (loc.value >= 70 ? "high" : loc.value >= 55 ? "mid" : "low") : (loc.value >= 2 ? "high" : loc.value === 1 ? "mid" : "low");
-      button.dataset.health = health;
       const coords = view.campaignId === "watershed" ? waterPositions[loc.id] : [20.5 + i % 3 * 29.3, 26 + Math.floor(i / 3) * 29.7];
       button.style.left = coords[0] + "%";
       button.style.top = coords[1] + "%";
-      const dot = document.createElement("span");
-      dot.className = "loc-dot " + health;
-      dot.setAttribute("aria-hidden", "true");
       const label = document.createElement("span");
       label.textContent = shortNames[loc.id] || loc.name;
       const count = document.createElement("strong");
       count.textContent = loc.value;
-      button.append(dot, label, count);
+      button.append(label, count);
       button.addEventListener("click", () => selectLocation(loc.id));
       shell.append(button);
     }
@@ -1155,8 +1077,6 @@
   }
 
   // dev-tools/campaign-adventure-pilot/responses.mjs
-  init_response_records();
-  init_core();
   var normalize = (text) => text.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
   function reviewResponse(adapter, run, value, { location } = {}) {
     const text = responseText(value), model = materialize(adapter, run), view = adapter.view(model);
@@ -1261,6 +1181,12 @@
       }
       audioGain = null;
     }
+    function syncSoundButton() {
+      const btn = $("sound-toggle");
+      if (!btn) return;
+      btn.textContent = sound ? "Sound on" : "Sound off";
+      btn.setAttribute("aria-pressed", String(sound));
+    }
     async function playSound() {
       stopSound();
       if (!sound || !view || !view.sound || document.hidden || destroyed) return;
@@ -1275,23 +1201,26 @@
           if (destroyed || serial !== soundSerial) return;
           sound = false;
           stopSound();
+          syncSoundButton();
           message("Sound could not start. The journey remains available.", true);
         });
         audioGain = audioContext.createGain();
         audioGain.gain.value = 0.15;
         audioGain.connect(audioContext.destination);
-        audioNodes = window.AlloModules.playGenerativeSoundscape(audioContext, audioGain, view.sound, { gentle: true, sceneText: view.body, themeSeed: run.seed });
+        const nodes = window.AlloModules.playGenerativeSoundscape(audioContext, audioGain, view.sound, { gentle: true, sceneText: view.body, themeSeed: run.seed });
+        audioNodes = Array.isArray(nodes) ? nodes : [];
       } catch {
         if (destroyed || serial !== soundSerial) return;
         sound = false;
         stopSound();
+        syncSoundButton();
         message("Sound is unavailable. The journey remains available.", true);
       }
     }
     function stopReading() {
       if (reading) {
-        window.speechSynthesis?.cancel();
         reading = null;
+        window.speechSynthesis?.cancel();
       }
     }
     function readScene() {
@@ -1311,8 +1240,10 @@
         if (audioGain) audioGain.gain.value = 0.15;
       };
       utterance.onend = restore;
-      utterance.onerror = () => {
+      utterance.onerror = (ev) => {
+        const stale = reading !== utterance;
         restore();
+        if (stale || ev?.error === "canceled" || ev?.error === "interrupted") return;
         message("Read aloud could not finish. The scene text is still available.", true);
       };
       window.speechSynthesis.speak(utterance);
@@ -1400,38 +1331,10 @@
     }
     function renderHome() {
       main.replaceChildren();
-      const savedCount = (() => {
-        try {
-          return storage ? listRuns(storage, adapters).length : 0;
-        } catch {
-          return 0;
-        }
-      })();
-      const hero = el("section", "station-hero");
-      const heroTop = el("div", "station-hero-top");
-      const badgeRow = el("div", "station-badges");
-      badgeRow.append(
-        el("span", "station-pill", isSEL ? "\u2726 Practice Journeys \xB7 SEL Studio" : "\u{1F33F} Ecology Field Station \xB7 Science"),
-        el("span", "station-pill soft", savedCount + (savedCount === 1 ? " saved journey" : " saved journeys"))
-      );
-      const intro = el("div", "intro");
-      intro.append(
-        badgeRow,
-        el("p", "eyebrow", "EXPLORE \xB7 CHOOSE \xB7 RETURN"),
-        el("h1", "", isSEL ? "A place for\nyour voice." : "Small choices.\nLiving worlds."),
-        el("p", "", isSEL ? "Practice asking for support through four connected encounters. Choose a response, write your own, or use both." : "Step into a place that changes with your decisions. Follow a river through ten years of restoration, or help a grove leave a next generation.")
-      );
-      const emblem = svg("svg", { viewBox: "0 0 88 88", width: 76, height: 76, "aria-hidden": "true", focusable: "false", class: "station-emblem" });
-      emblem.append(
-        svg("circle", { cx: 44, cy: 44, r: 40, fill: "#e6efe0", stroke: "#7d9b84", "stroke-width": 1.6 }),
-        svg("circle", { cx: 44, cy: 44, r: 30, fill: "none", stroke: "#9ab39d", "stroke-width": 1, "stroke-dasharray": "4 3" }),
-        svg("path", { d: "M44 18 C32 30 28 46 44 66 C60 46 56 30 44 18 Z", fill: "#2d6150" }),
-        svg("path", { d: "M44 24 V66", stroke: "#e6efe0", "stroke-width": 1.8, "stroke-linecap": "round" }),
-        svg("path", { d: "M44 40 L36 33 M44 49 L52 42", stroke: "#e6efe0", "stroke-width": 1.5, "stroke-linecap": "round" })
-      );
-      heroTop.append(intro, emblem);
-      hero.append(heroTop);
-      main.append(hero, makeNotice());
+      if (options.embedded) main.append(el("p", "embedded-label", isSEL ? "PRACTICE JOURNEYS \xB7 OPTIONAL PILOT" : "FIELD JOURNEYS \xB7 OPTIONAL PILOT"));
+      const intro = el("section", "intro");
+      intro.append(el("p", "eyebrow", "EXPLORE \xB7 CHOOSE \xB7 RETURN"), el("h1", "", isSEL ? "A place for\nyour voice." : "Small choices.\nLiving worlds."), el("p", "", isSEL ? "Practice asking for support through four connected encounters. Choose a response, write your own, or use both." : "Step into a place that changes with your decisions. Follow a river through ten years of restoration, or help a grove leave a next generation."));
+      main.append(intro, makeNotice());
       if (entryCampaign) {
         const entry = el("div", "entry-note");
         entry.append(el("p", "", "Start a separate journey or resume one below. Your original campaign stays where you left it."), button("Show all journeys", () => {
@@ -1461,19 +1364,7 @@
         seed.maxLength = 32;
         seed.spellcheck = false;
         seedLabel.append(seed);
-        if (a.kind !== "sel") {
-          body.append(seedLabel);
-          const presets = el("div", "seed-presets");
-          presets.setAttribute("aria-label", "Suggested world seeds");
-          ["FIELD-01", "PENOBSCOT", "NORTHWOODS"].forEach((code) => {
-            const chip = button(code, () => {
-              seed.value = code;
-              seed.focus();
-            }, "seed-chip");
-            presets.append(chip);
-          });
-          body.append(presets);
-        }
+        if (a.kind !== "sel") body.append(seedLabel);
         body.append(button("Begin " + a.label, () => startJourney(a, seed.value), "primary"));
         card.append(art, body);
         cards.append(card);
@@ -1510,17 +1401,22 @@
         if (!chosen) return;
         try {
           if (chosen.size > 18e4) throw new Error("Choose a pilot journal smaller than 180 KB.");
-          const raw = JSON.parse(await chosen.text());
+          const text = await chosen.text();
+          if (destroyed) return;
+          const raw = JSON.parse(text);
+          if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("This is not a recognized pilot journey.");
           const a = adapters.find((a2) => a2.id === raw.campaignId);
           if (!a) throw new Error("This is not a recognized pilot journey.");
-          const { validateRun: validateRun2 } = await Promise.resolve().then(() => (init_core(), core_exports));
-          const checked = validateRun2(a, raw), next = forkRun(checked, checked.commands.length);
+          const checked = validateRun(a, raw), next = forkRun(checked, checked.commands.length);
+          if (destroyed) return;
           run = next;
           adapter = a;
           persist();
           activate(next);
         } catch (error) {
-          message(error.message, true);
+          if (!destroyed) message(error.message, true);
+        } finally {
+          file.value = "";
         }
       });
       const tools = el("div", "footer-tools");
@@ -1589,6 +1485,9 @@
           proposal = null;
           review.replaceChildren();
         });
+        input.addEventListener("blur", () => {
+          options.onFreeText?.(input.value);
+        });
         form.append(label, input, el("p", "status-line", "Your confirmed response stays in your journal. Review the action before it runs."));
         const showReview = () => {
           review.replaceChildren();
@@ -1632,6 +1531,7 @@
           }, "primary"));
         };
         form.append(button("Review my response", () => {
+          options.onFreeText?.(input.value);
           try {
             proposal = reviewResponse(adapter, run, input.value, { location: adapter.id === "watershed" ? selected : void 0 });
             showReview();
@@ -1693,10 +1593,10 @@
       const tools = el("div", "header-actions");
       const soundButton = button(sound ? "Sound on" : "Sound off", () => {
         sound = !sound;
+        syncSoundButton();
         playSound();
-        soundButton.textContent = sound ? "Sound on" : "Sound off";
-        soundButton.setAttribute("aria-pressed", String(sound));
       });
+      soundButton.id = "sound-toggle";
       soundButton.setAttribute("aria-pressed", String(sound));
       if (view.sound) tools.append(soundButton);
       tools.append(button("Download journal", downloadJournal));
@@ -1726,16 +1626,6 @@
           const metric = el("div", "metric"), value = el("span", "metric-value", m.value);
           value.append(el("small", "", m.unit));
           metric.append(value, el("span", "metric-label", m.label));
-          const maxMatch = typeof m.unit === "string" && m.unit.match(/\/(\d+)/);
-          if (maxMatch && Number.isFinite(Number(m.value))) {
-            const pct = Math.max(0, Math.min(100, Math.round((Number(m.value) / Number(maxMatch[1])) * 100)));
-            const track = el("div", "metric-track");
-            track.setAttribute("aria-hidden", "true");
-            const fill = el("div", "metric-fill");
-            fill.style.width = pct + "%";
-            track.append(fill);
-            metric.append(track);
-          }
           metrics.append(metric);
         });
         left.append(metrics);
@@ -1851,7 +1741,11 @@
       input.value = noteDrafts.get(run.runId) || "";
       const noteRunId = run.runId;
       input.addEventListener("input", () => noteDrafts.set(noteRunId, input.value));
+      input.addEventListener("blur", () => {
+        options.onFreeText?.(input.value);
+      });
       notes.append(label, input, button("Save field note", () => {
+        options.onFreeText?.(input.value);
         try {
           run = addNote(run, input.value);
           noteDrafts.delete(run.runId);
@@ -2000,7 +1894,7 @@
     intro: "Join a fictional group project, ask for support, discuss a change and decide what to try next. Respond with choices, your own words or both.",
     disclosure: "A fictional practice story with several valid approaches. Characters\u2019 replies are authored possibilities, not predictions or a score of your social skills. You may pause or leave at any time.",
     start(seed, config = {}) {
-      if (Object.keys(config).length) throw Error("Unsupported practice settings.");
+      if (!config || typeof config !== "object" || Array.isArray(config) || Object.keys(config).length) throw Error("Unsupported practice settings.");
       return { chapter: 0, history: [] };
     },
     config: () => ({}),
@@ -2063,7 +1957,7 @@
   }
 
   // dev-tools/campaign-adventure-pilot/native-view.mjs
-  var moduleUrl = document.currentScript?.src;
+  var moduleUrl = typeof document !== "undefined" ? document.currentScript?.src : void 0;
   async function ensureSound() {
     if (typeof window.AlloModules?.playGenerativeSoundscape === "function") return;
     if (!moduleUrl) throw new Error("Sound asset location is unavailable.");
@@ -2077,61 +1971,78 @@
   }
   function JourneyHost({ ctx, kind = "stem" }) {
     const React = ctx.React, host = React.useRef(null);
+    const [crisisTier, setCrisisTier] = React.useState(0);
+    const onSafetyFlagRef = React.useRef(ctx.onSafetyFlag || null);
+    onSafetyFlagRef.current = ctx.onSafetyFlag || null;
     React.useEffect(() => {
+      const toolId = kind === "sel" ? "practiceJourneys" : "fieldJourneys";
+      const toolName = kind === "sel" ? "Practice Journeys" : "Field Journeys";
+      const onFreeText = (text) => {
+        const trimmed = String(text || "").trim();
+        if (!trimmed) return false;
+        const onFlag = typeof onSafetyFlagRef.current === "function" ? onSafetyFlagRef.current : null;
+        let blocked = false;
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === "function") {
+          const chk = window.SelHub.safeRehearseCheck(trimmed, { toolId, onSafetyFlag: onFlag });
+          if (chk && chk.action === "block") blocked = true;
+        } else {
+          const checker = window.__alloShared && window.__alloShared.SafetyContentChecker || window.SafetyContentChecker || null;
+          let flags = null;
+          try {
+            flags = checker && checker.check ? checker.check(trimmed) : null;
+          } catch (_) {
+            flags = null;
+          }
+          if (Array.isArray(flags) && flags.length) {
+            const rank = { low: 1, medium: 2, high: 3, critical: 4 };
+            const top = flags.reduce((a, f) => f && (rank[f.severity] || 0) > (rank[a.severity] || 0) ? f : a, flags[0] || {});
+            if (onFlag) {
+              try {
+                onFlag(Object.assign({}, top, { source: (kind === "sel" ? "sel_rehearse_" : "stem_") + toolId, context: trimmed.slice(0, 100), aiGenerated: false }));
+              } catch (_) {
+              }
+            }
+            if (top.severity === "critical") blocked = true;
+          }
+        }
+        if (!blocked && window.SelHub && typeof window.SelHub.scanForCrisis === "function") {
+          const scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (onFlag) {
+              try {
+                onFlag({ toolId, tier: 3, snippet: trimmed.slice(0, 120) });
+              } catch (_) {
+              }
+            }
+          }
+        }
+        if (blocked) {
+          setCrisisTier(3);
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === "function") {
+            window.SelHub.showCrisisModal({ toolName, contentSnippet: trimmed });
+          }
+        }
+        return blocked;
+      };
       const root = host.current.shadowRoot || host.current.attachShadow({ mode: "open" });
       const style = document.createElement("style");
       style.textContent = styles_default.replace(":root{", ":host{") + `
-      :host{display:block;border-radius:16px;container-type:inline-size;line-height:1.5;border:1px solid var(--line);box-shadow:0 12px 28px -18px rgba(25,61,50,0.22)}
-      main{min-height:0;padding:24px 0;margin:0 24px}
+      :host{display:block;border-radius:12px;container-type:inline-size;line-height:1.5}
+      main{min-height:0;padding:26px 0;margin:0 24px}
       .embedded-label{font-size:12px;letter-spacing:.06em;color:var(--muted);margin:0 0 20px}
-      .station-hero{background:linear-gradient(135deg,#eef5e7 0%,#f8f7ef 62%,#edf2e4 100%);border:1px solid #c6d4bd;border-radius:16px;padding:22px 24px;margin-bottom:26px}
-      .station-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
-      .station-hero .intro{margin:0;max-width:650px}
-      .station-hero .intro h1{margin-bottom:10px}
-      .station-hero .intro>p:last-child{margin-bottom:0;font-size:16px}
-      .station-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-      .station-pill{display:inline-flex;align-items:center;font-size:11px;font-weight:750;letter-spacing:.04em;padding:4px 11px;border-radius:999px;background:#193d32;color:#fffef5;border:1px solid #193d32}
-      .station-pill.soft{background:#fffef8;color:var(--ink);border:1px solid var(--control-line)}
-      .station-emblem{flex-shrink:0}
-      .campaign-card{box-shadow:0 10px 22px -16px rgba(25,61,50,0.28);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
-      .campaign-card:hover{transform:translateY(-2px);box-shadow:0 16px 28px -16px rgba(25,61,50,0.38);border-color:#8aa790}
-      .seed-presets{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
-      .seed-chip{min-height:32px;padding:4px 10px;font-size:11px;font-weight:700;letter-spacing:.05em;border-radius:999px}
-      .loc-dot{width:8px;height:8px;border-radius:999px;display:inline-block;flex-shrink:0}
-      .loc-dot.high{background:#15803d}.loc-dot.mid{background:#b45309}.loc-dot.low{background:#b91c1c}
-      .map-location{transition:transform .14s ease,box-shadow .14s ease,background-color .14s ease}
-      .map-location:hover{transform:translate(-50%,-52%);box-shadow:0 6px 14px rgba(25,61,50,0.22)}
-      .map-location[aria-pressed=true] .loc-dot{background:#fde047}
-      .metric{background:#fffef8;border:1px solid var(--line);border-radius:10px;padding:10px 11px}
-      .metric:last-child{border-right:1px solid var(--line)}
-      .metric-track{height:5px;border-radius:999px;background:#e3e7da;margin-top:8px;overflow:hidden}
-      .metric-fill{height:100%;border-radius:999px;background:var(--accent)}
-      .scene{box-shadow:0 8px 20px -16px rgba(25,61,50,0.24)}
-      .action{transition:transform .12s ease,background-color .14s ease,border-color .14s ease}
-      .action:hover:not(:disabled){transform:translateY(-1px)}
       @container(max-width:720px){
-        main{margin:0 16px;padding:20px 0}
-        .station-hero{padding:18px}.station-emblem{display:none}
+        main{margin:0 16px;padding:22px 0}
         .campaign-grid,.journey,.journal{grid-template-columns:1fr;gap:22px}
         .journey-heading{display:block}.header-actions{margin-top:16px}
         .scene,.card-body{padding:20px}.card-body>p{min-height:0}
         .map-location{font-size:10px}.grove .map-location{min-height:44px}
         .grove .map-location span{max-width:58px;white-space:normal}
-        .metrics{grid-template-columns:repeat(2,1fr)}
       }
-      :host([data-theme="dark"]){--ink:#f1f5f9;--muted:#cbd5e1;--paper:#0f172a;--line:#334155;--control-line:#475569;--accent:#34d399;color-scheme:dark}
-      :host([data-theme="dark"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art,.metric){background:#1e293b;color:#f1f5f9;border-color:#475569}
-      :host([data-theme="dark"]) .station-hero{background:linear-gradient(135deg,#0f2922 0%,#0f172a 65%,#132a24 100%);border-color:#334155;color:#f1f5f9}
-      :host([data-theme="dark"]) .station-pill{background:#065f46;color:#ecfdf5;border-color:#34d399}
-      :host([data-theme="dark"]) .station-pill.soft{background:#1e293b;color:#f1f5f9;border-color:#475569}
-      :host([data-theme="dark"]) .metric-track{background:#334155}
-      :host([data-theme="dark"]) :is(p,.scene-meta .eyebrow,.action-hint,.map-caption,.location-info p){color:#cbd5e1}
-      :host([data-theme="dark"]) button:focus-visible{outline-color:#93c5fd}
-      :host([data-theme="dark"]) .map-location{background:#1e293b;color:#f1f5f9}
       :host([data-theme="contrast"]){--ink:#fff;--muted:#eee;--paper:#000;--line:#aaa;--control-line:#aaa;--accent:#fff;color-scheme:dark}
-      :host([data-theme="contrast"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art,.station-hero,.metric,.station-pill){background:#000;color:#fff;border-color:#fff;box-shadow:none}
+      :host([data-theme="contrast"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art){background:#000;color:#fff;border-color:#fff}
       :host([data-theme="contrast"]) :is(p,.scene-meta .eyebrow,.action-hint,.map-caption,.location-info p){color:#eee}
-      :host([data-theme="contrast"]) button:focus-visible{outline-color:#ff0}
+      :host([data-theme="contrast"]) :is(button,a,input,textarea,select,summary,.receipts):focus-visible{outline:3px solid #ff0;outline-offset:4px}
       :host([data-theme="contrast"]) .map-location{background:#000;color:#fff}
       :host([data-theme="contrast"]) .map-location[aria-pressed=true]{outline:3px solid #ff0}
       @container(max-width:720px){.response-mode{align-items:start;flex-direction:column}.response-mode select{width:100%}}
@@ -2153,36 +2064,43 @@
       };
       window.addEventListener("keydown", protectTyping, true);
       const sessionStore = kind === "sel" ? createSessionStore(ctx.toolData?.practiceJourneys?.records, (records) => ctx.update("practiceJourneys", "records", records)) : void 0;
-      const journey = mountFieldJourneys(root, { embedded: true, hub: kind, storage: sessionStore, sessionOnly: kind === "sel", ensureSound, adapters: kind === "sel" ? [selfAdvocacyJourney] : void 0, initialCampaign: kind === "stem" ? ctx.journeyEntry : null, returnToSource: ctx.journeyEntry ? () => ctx.setStemLabTool("waterCycle") : null, openRelatedTool: kind === "sel" ? ctx.setSelHubTool : null });
+      const journey = mountFieldJourneys(root, { embedded: true, hub: kind, storage: sessionStore, sessionOnly: kind === "sel", ensureSound, adapters: kind === "sel" ? [selfAdvocacyJourney] : void 0, initialCampaign: kind === "stem" ? ctx.journeyEntry : null, returnToSource: ctx.journeyEntry ? () => ctx.setStemLabTool("waterCycle") : null, openRelatedTool: kind === "sel" ? ctx.setSelHubTool : null, onFreeText });
       return () => {
         journey.destroy();
         window.removeEventListener("keydown", protectTyping, true);
         root.replaceChildren();
       };
     }, []);
-    return React.createElement("div", {
-      ref: host,
-      "data-field-journeys": "true",
-      "data-journey-hub": kind,
-      "data-theme": typeof ctx.theme === "string" ? ctx.theme : ctx.isContrast ? "contrast" : ctx.isDark ? "dark" : "light",
-      style: { width: "100%", minWidth: 0 }
-    });
+    const crisisBanner = crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === "function" ? window.SelHub.renderCrisisResources(React.createElement, ctx.gradeBand || "high") : null;
+    return React.createElement(
+      React.Fragment,
+      null,
+      crisisBanner,
+      React.createElement("div", {
+        ref: host,
+        "data-field-journeys": "true",
+        "data-journey-hub": kind,
+        "data-theme": typeof ctx.theme === "string" ? ctx.theme : ctx.isContrast ? "contrast" : ctx.isDark ? "dark" : "light",
+        style: { width: "100%", minWidth: 0 }
+      })
+    );
   }
 
   // dev-tools/campaign-adventure-pilot/in-app.mjs
-  init_core();
-  init_response_records();
-  window.StemLab.registerTool("fieldJourneys", {
-    icon: "\u{1F33F}",
-    label: "Field Journeys (Pilot)",
-    category: "Ecology & Environment",
-    desc: "Try a story-led Watershed or Grove campaign. Explore the landscape, make decisions, and keep a field journal. Optional pilot with separate saves.",
-    lightBackground: true,
-    render: (ctx) => ctx.React.createElement(JourneyHost, { ctx, kind: "stem" })
-  });
+  if (typeof window !== "undefined" && window.StemLab && typeof window.StemLab.registerTool === "function") {
+    window.StemLab.registerTool("fieldJourneys", {
+      icon: "\u{1F33F}",
+      label: "Field Journeys (Pilot)",
+      category: "Ecology & Environment",
+      desc: "Try a story-led Watershed or Grove campaign. Explore the landscape, make decisions, and keep a field journal. Optional pilot with separate saves.",
+      lightBackground: true,
+      render: (ctx) => ctx.React.createElement(JourneyHost, { ctx, kind: "stem" })
+    });
+  }
   if (typeof window !== "undefined" && window.__RR_TEST_EXPORTS__) {
     window.__RR_TEST_EXPORTS__.fieldJourneys = {
       makeRun,
+      makeRunId,
       dispatch,
       materialize,
       validateRun,

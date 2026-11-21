@@ -276,19 +276,19 @@ const openLessonRevisionPreview = async resourceId => {
   const ids = Array.isArray(resolved) ? resolved.filter(Boolean).map(item => String(item.id)) : [];
   if (!ids.length || ids.length > 25 || new Set(ids).size !== ids.length || requestedIds.some(id => !ids.includes(id))
       || ids.some(id => resources.filter(item => item && String(item.id) === id).length !== 1)) {
-    __d.addToast('This lesson preview is unavailable or too large. Choose one revised resource to preview.', 'info');
+    __d.addToast((tr => tr('host.toast.this_lesson_preview_is_unavailable_or_too_la', 'This lesson preview is unavailable or too large. Choose one revised resource to preview.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
     return false;
   }
   const selected = ids.map(id => resources.find(item => item && String(item.id) === id));
   const previewSerial = session.serial;
   const safe = __d._alloStudentSafeResources(selected);
-  if (safe.length !== selected.length) { __d.addToast('These resources do not have a student activity preview.', 'info'); return false; }
+  if (safe.length !== selected.length) { __d.addToast((tr => tr('host.toast.these_resources_do_not_have_a_student_activi', 'These resources do not have a student activity preview.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info'); return false; }
   let preview;
   try {
     const url = new URL(window.location.href);
     if (!['http:', 'https:', 'file:', 'blob:'].includes(url.protocol)) throw new Error('Unsupported preview host');
     preview = window.open('about:blank', '_blank');
-    if (!preview) { __d.addToast('Allow pop-ups to open the student preview.', 'info'); return false; }
+    if (!preview) { __d.addToast((tr => tr('host.toast.allow_pop_ups_to_open_the_student_preview', 'Allow pop-ups to open the student preview.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info'); return false; }
     preview.opener = null;
     const packet = {
       v: 1, kind: 'assignment', title: 'Lesson revision — student preview',
@@ -308,11 +308,11 @@ const openLessonRevisionPreview = async resourceId => {
     }
     url.hash = 'allo_pack=' + encoded;
     preview.location.replace(url.toString());
-    __d.addToast('Student preview opened in a new tab. Your teacher lesson stays here.', 'success');
+    __d.addToast((tr => tr('host.toast.student_preview_opened_in_a_new_tab_your_tea', 'Student preview opened in a new tab. Your teacher lesson stays here.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
     return true;
   } catch (_) {
     try { if (preview) preview.close(); } catch (_) {}
-    __d.addToast('The student preview could not open from this host. Your lesson is unchanged.', 'warning');
+    __d.addToast((tr => tr('host.toast.the_student_preview_could_not_open_from_this', 'The student preview could not open from this host. Your lesson is unchanged.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'warning');
     return false;
   }
 };
@@ -532,12 +532,12 @@ Return ONLY JSON in this shape:
           ? dispatcher.stampActivityDerivative(next, __d.generatedContent && __d.generatedContent.id, index, 'rubric', { status: 'ready', attempts: generation.attempts, lastError: null, bumpVersion: true, updatedAt: new Date().toISOString() })
           : next;
       });
-      __d.addToast('Activity rubric created. Review and adapt it before assigning.', 'success');
+      __d.addToast((tr => tr('host.toast.activity_rubric_created_review_and_adapt_it_', 'Activity rubric created. Review and adapt it before assigning.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       return true;
     } catch (e) {
       __d.warnLog('Unhandled error in handleGenerateBrainstormRubric:', e);
       __d._alloStampBrainstormDerivative(index, 'rubric', { status: 'failed', lastError: 'Generation failed; retry available.' });
-      __d.addToast('The activity rubric could not be created. Please try again.', 'error');
+      __d.addToast((tr => tr('host.toast.the_activity_rubric_could_not_be_created_ple', 'The activity rubric could not be created. Please try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       return false;
     } finally {
       __d.setIsGeneratingBrainstormRubric(prev => ({ ...prev, [index]: false }));
@@ -633,7 +633,7 @@ function returnToReadingPassage(citation) {
       const item = __d.history.find(item => String(item.id) === String(anchor.resourceId));
       if (item) __d.handleRestoreView(item, { suppressLiveFollow: true });
       else if (String(__d.generatedContent && __d.generatedContent.id || __d.sourceTopic || 'adapted') !== String(anchor.resourceId)) {
-        __d.addToast('This reading is no longer in the resource list. Its saved passage is still available in Lumen.', 'info'); return;
+        __d.addToast((tr => tr('host.toast.this_reading_is_no_longer_in_the_resource_li', 'This reading is no longer in the resource list. Its saved passage is still available in Lumen.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info'); return;
       }
       __d.setShowStemLab(false); __d.setActiveView('simplified');
       setTimeout(() => {
@@ -648,7 +648,7 @@ function returnToReadingPassage(citation) {
           || Array.from(document.querySelectorAll('[data-simplified-reading-body] p, [data-simplified-reading-body] [data-sentence-idx]')).find(el => plain(el).includes(snippet))
           || (lines.find((line, i) => line.text && snippet.startsWith(line.text) && normalize(lines.slice(i, i + 40).map(next => next.text).join(' ')).startsWith(snippet)) || {}).el;
         if (match) { match.setAttribute('tabindex', '-1'); match.focus(); match.scrollIntoView({ block: 'center' }); }
-        else __d.addToast('Reading reopened. The passage may have changed; the original remains in your Lumen note.', 'info');
+        else __d.addToast((tr => tr('host.toast.reading_reopened_the_passage_may_have_change', 'Reading reopened. The passage may have changed; the original remains in your Lumen note.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
       }, 300);
     }
   }
@@ -922,7 +922,7 @@ const _alloPersistCurrentAlignmentGraph = (graph, originalGraph) => {
                   provenance: normalized.graph?.meta?.alignmentAudit || {},
               });
               if (registrySaved && registrySaved.storagePersisted === false) {
-                  __d.addToast('The audit was saved, but the Learning Web index is session-only because device storage is unavailable.', 'warning');
+                  __d.addToast((tr => tr('host.toast.the_audit_was_saved_but_the_learning_web_ind', 'The audit was saved, but the Learning Web index is session-only because device storage is unavailable.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'warning');
               }
           }
       } catch (_) {}
@@ -933,12 +933,12 @@ const handleConfirmAlignmentAttribution = (payload) => {
       const edgeId = String(payload?.edgeId || '').trim();
       const engine = window.AlloModules && window.AlloModules.ConceptGraphEngine;
       if (!edgeId || !__d._alloIsAlignmentGraph(graph) || !engine || typeof engine.confirmExplicitAttributions !== 'function') {
-          __d.addToast('That graph relationship could not be confirmed. Reload the audit and try again.', 'error');
+          __d.addToast((tr => tr('host.toast.that_graph_relationship_could_not_be_confirm', 'That graph relationship could not be confirmed. Reload the audit and try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
           return false;
       }
       const targetEdge = graph.edges.find(edge => String(edge?.id || '') === edgeId);
       if (targetEdge?.attributionSource === 'teacher') {
-          __d.addToast('That source was already confirmed or is not an explicit evidence relationship.', 'info');
+          __d.addToast((tr => tr('host.toast.that_source_was_already_confirmed_or_is_not_', 'That source was already confirmed or is not an explicit evidence relationship.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return false;
       }
       const existingOriginal = __d.generatedContent?.data?.comprehensive?.alignmentMapGraphOriginal;
@@ -950,14 +950,14 @@ const handleConfirmAlignmentAttribution = (payload) => {
       }]);
       const changedIds = derived?.meta?.alignmentAudit?.attributionConfirmations?.edgeIds || [];
       if (!changedIds.includes(edgeId)) {
-          __d.addToast('That source was already confirmed or is not an explicit evidence relationship.', 'info');
+          __d.addToast((tr => tr('host.toast.that_source_was_already_confirmed_or_is_not__2', 'That source was already confirmed or is not an explicit evidence relationship.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return false;
       }
       if (!_alloPersistCurrentAlignmentGraph(derived, originalGraph)) {
-          __d.addToast('The confirmation could not be saved to this audit resource.', 'error');
+          __d.addToast((tr => tr('host.toast.the_confirmation_could_not_be_saved_to_this_', 'The confirmation could not be saved to this audit resource.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
           return false;
       }
-      __d.addToast('Source confirmed and saved with this audit.', 'success');
+      __d.addToast((tr => tr('host.toast.source_confirmed_and_saved_with_this_audit', 'Source confirmed and saved with this audit.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       return true;
   };
 const handleExportAlignmentGraph = (payload) => {
@@ -970,14 +970,14 @@ const handleExportAlignmentGraph = (payload) => {
           audit: __d._alloAlignmentAuditSummary(__d.generatedContent, graph),
       });
       if (!normalized) {
-          __d.addToast('This alignment graph is not a valid AlloFlow graph export.', 'error');
+          __d.addToast((tr => tr('host.toast.this_alignment_graph_is_not_a_valid_alloflow', 'This alignment graph is not a valid AlloFlow graph export.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
           return false;
       }
       // Export is also a deliberate save affordance for an unconfirmed base
       // graph. The graph is stored on the audit resource before download.
       const persisted = _alloPersistCurrentAlignmentGraph(normalized.graph, normalized.originalGraph);
       if (!persisted) {
-          __d.addToast('The graph is valid, but it could not be saved to the current audit resource.', 'error');
+          __d.addToast((tr => tr('host.toast.the_graph_is_valid_but_it_could_not_be_saved', 'The graph is valid, but it could not be saved to the current audit resource.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
           return false;
       }
       const exportPayload = {
@@ -990,7 +990,7 @@ const handleExportAlignmentGraph = (payload) => {
       const safeTitle = String(__d.generatedContent?.title || 'alignment')
           .normalize('NFC').replace(/[^\p{L}\p{M}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'alignment';
       __d.safeDownloadBlob(new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' }), safeTitle + '-learning-web.json');
-      __d.addToast('Alignment graph saved and exported.', 'success');
+      __d.addToast((tr => tr('host.toast.alignment_graph_saved_and_exported', 'Alignment graph saved and exported.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       return true;
   };
 const handleImportAlignmentGraph = (payload) => {
@@ -1178,20 +1178,20 @@ const submitMathSelfGrade = (resourceId, problemsOverride) => {
           ?.filter(problem => problem && typeof problem === 'object' && !Array.isArray(problem)) || [];
       const mathHelpers = window.AlloModules && window.AlloModules.MathHelpers;
       if (typeof mathHelpers?.gradeMathSelfAssessment !== 'function') {
-          __d.addToast('Assessment grading tools are still loading. Try again in a moment.', 'error');
+          __d.addToast((tr => tr('host.toast.assessment_grading_tools_are_still_loading_t', 'Assessment grading tools are still loading. Try again in a moment.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
           return;
       }
       if (problems.some(problem => problem._verification?.reviewRequired)) {
-          __d.addToast('Review every flagged question and answer before submitting this assessment.', 'error');
+          __d.addToast((tr => tr('host.toast.review_every_flagged_question_and_answer_bef', 'Review every flagged question and answer before submitting this assessment.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
           return;
       }
       const grade = mathHelpers.gradeMathSelfAssessment(problems, __d.mathStudentAnswers);
       if (!grade.total) {
-          __d.addToast('This assessment has no valid problems to grade.', 'error');
+          __d.addToast((tr => tr('host.toast.this_assessment_has_no_valid_problems_to_gra', 'This assessment has no valid problems to grade.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
           return;
       }
       if (grade.results.some(problem => !problem.response.trim())) {
-          __d.addToast('Answer every problem before submitting.', 'error');
+          __d.addToast((tr => tr('host.toast.answer_every_problem_before_submitting', 'Answer every problem before submitting.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
           return;
       }
       const gradedProblems = grade.results;
@@ -1486,6 +1486,14 @@ const sendEndSessionEvidenceCohort = async (cohort) => {
       } : prev);
       try {
           const result = await handleSetStudentsResource(uids, resourceId);
+          if (result && result.pendingConfirmation) {
+              __d.setEndSessionPreview(prev => prev ? {
+                  ...prev,
+                  followUpBusy: '',
+                  followUpStatus: 'Confirm audio readiness in the prompt before assigning this follow-up resource.',
+              } : prev);
+              return;
+          }
           const sent = Number(result?.sent) || 0;
           const failed = Number(result?.failed) || 0;
           __d.setEndSessionPreview(prev => prev ? {
@@ -1939,7 +1947,7 @@ function _playReadThisPageText(text, runId, language) {
           const failBeforeStart = () => {
             if (settled || browserStarted) return;
             __d.rtpStopRef.current = true;
-            try { __d.addToast("I couldn't start spoken playback. Check Voice volume and your device audio output.", 'warning'); } catch (_) {}
+            try { __d.addToast((tr => tr('host.toast.i_couldn_t_start_spoken_playback_check_voice', "I couldn't start spoken playback. Check Voice volume and your device audio output."))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'warning'); } catch (_) {}
             try { window.speechSynthesis.cancel(); } catch (_) {}
             finish();
           };
@@ -1975,12 +1983,12 @@ async function _runReadThisPage(startIndex = 0, continueThrough = true) {
 
     if (typeof __d.isGlobalMuted === 'function' && __d.isGlobalMuted()) {
       __d.stopReadThisPage();
-      try { __d.addToast('Audio is muted. Unmute audio before starting Read This Page.', 'info'); } catch (_) {}
+      try { __d.addToast((tr => tr('host.toast.audio_is_muted_unmute_audio_before_starting_', 'Audio is muted. Unmute audio before starting Read This Page.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info'); } catch (_) {}
       return false;
     }
     if (Number.isFinite(Number(__d.voiceVolume)) && Number(__d.voiceVolume) <= 0) {
       __d.stopReadThisPage();
-      try { __d.addToast('Spoken reply volume is set to zero. Raise Voice volume in Settings before starting Read This Page.', 'warning'); } catch (_) {}
+      try { __d.addToast((tr => tr('host.toast.spoken_reply_volume_is_set_to_zero_raise_voi', 'Spoken reply volume is set to zero. Raise Voice volume in Settings before starting Read This Page.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'warning'); } catch (_) {}
       return false;
     }
     __d.stopReadThisPage();
@@ -2859,7 +2867,7 @@ const createTeachingScriptAudio = (planId, versionId) => {
 const handleSavePrivatePersonaSession = async () => {
       const runtime = window.AlloModules && window.AlloModules.PersonaSessionArtifact;
       if (!runtime || typeof runtime.buildPrivateSessionArtifact !== 'function') {
-          __d.addToast('Private Persona session tools are still loading. Please try again.', 'error');
+          __d.addToast((tr => tr('host.toast.private_persona_session_tools_are_still_load', 'Private Persona session tools are still loading. Please try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
           return null;
       }
       const chatHistory = Array.isArray(__d.personaState && __d.personaState.chatHistory)
@@ -2897,7 +2905,7 @@ const handleSavePrivatePersonaSession = async () => {
           personaState: __d.personaState,
       };
       __d.setIsProcessing(true);
-      __d.addToast('Preparing a private Persona session and its narration...', 'info');
+      __d.addToast((tr => tr('host.toast.preparing_a_private_persona_session_and_its_', 'Preparing a private Persona session and its narration...'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
       try {
           const runtimeOptions = {
               maxChunkChars: 280,
@@ -3001,7 +3009,7 @@ const handleSavePrivatePersonaSession = async () => {
   };
 const handleRecognizeStudent = async (uid) => {
       if (!__d.havenRecognitionConfig.enabled) {
-          __d.addToast('Enable AlloHaven recognition for this session before sending an award.', 'info');
+          __d.addToast((tr => tr('host.toast.enable_allohaven_recognition_for_this_sessio', 'Enable AlloHaven recognition for this session before sending an award.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       if (__d.havenRewardSendLockRef.current || !__d.activeSessionCode || !uid || !__d.ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(__d.havenRewardReasonId)) return;
@@ -3024,7 +3032,7 @@ const handleRecognizeStudent = async (uid) => {
       if (tokensUsed + amount > __d.havenRecognitionConfig.perStudentTokenCap) {
           __d.havenRewardSendLockRef.current = false;
           __d.setHavenRewardBusy(false);
-          __d.addToast('This student has reached the session recognition limit for the selected token amount.', 'info');
+          __d.addToast((tr => tr('host.toast.this_student_has_reached_the_session_recogni', 'This student has reached the session recognition limit for the selected token amount.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       const byId = new Map();
@@ -3057,7 +3065,7 @@ const handleRecognizeStudent = async (uid) => {
           );
       } catch (error) {
           __d.warnLog('Could not send AlloHaven classroom recognition.', error);
-          __d.addToast('Could not send the AlloHaven recognition. Please try again.', 'error');
+          __d.addToast((tr => tr('host.toast.could_not_send_the_allohaven_recognition_ple', 'Could not send the AlloHaven recognition. Please try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       } finally {
           __d.havenRewardSendLockRef.current = false;
           __d.setHavenRewardBusy(false);
@@ -3070,7 +3078,7 @@ const handleRecognizeStudents = async (uids, scopeLabel = 'students', overrides 
       const effectiveReasonId = (overrides && __d.ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(overrides.reasonId))
           ? overrides.reasonId : __d.havenRewardReasonId;
       if (!__d.havenRecognitionConfig.enabled) {
-          __d.addToast('Enable AlloHaven recognition for this session before sending an award.', 'info');
+          __d.addToast((tr => tr('host.toast.enable_allohaven_recognition_for_this_sessio_2', 'Enable AlloHaven recognition for this session before sending an award.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       if (__d.havenRewardSendLockRef.current || __d.havenRewardBusy || !__d.activeSessionCode || !__d.ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS.has(effectiveReasonId)) return;
@@ -3078,7 +3086,7 @@ const handleRecognizeStudents = async (uids, scopeLabel = 'students', overrides 
       const targetUids = Array.from(new Set(Array.isArray(uids) ? uids : []))
           .filter(uid => uid && roster[uid]);
       if (!targetUids.length) {
-          __d.addToast('No connected students are available for this recognition.', 'info');
+          __d.addToast((tr => tr('host.toast.no_connected_students_are_available_for_this', 'No connected students are available for this recognition.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       const amount = (overrides ? Number(overrides.amount) : __d.havenRewardAmount) === 2 ? 2 : 1;
@@ -3111,7 +3119,7 @@ const handleRecognizeStudents = async (uids, scopeLabel = 'students', overrides 
           };
       }).filter(Boolean);
       if (!prepared.length) {
-          __d.addToast('All selected students are at the session recognition limit for this token amount.', 'info');
+          __d.addToast((tr => tr('host.toast.all_selected_students_are_at_the_session_rec', 'All selected students are at the session recognition limit for this token amount.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       const batches = [];
@@ -3473,7 +3481,7 @@ const handleStartLiveSession = async (resourceOverride = null) => {
           __d.addToast(__d.t('quiz.live_activated'), "success");
       } catch(e) {
           __d.warnLog('Firestore sync failed:', e);
-          __d.addToast('Could not launch the live quiz. Please try again.', 'error');
+          __d.addToast((tr => tr('host.toast.could_not_launch_the_live_quiz_please_try_ag', 'Could not launch the live quiz. Please try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       }
   };
 const getGroupDifferentiationContext = () => {
@@ -3828,7 +3836,7 @@ const restoreCanvasWorkspaceSnapshot = async (candidate) => {
           __d.setCanvasRecoveryDialogMode(null);
           __d.setCanvasRecoverySaveStatus(snapshotWasStored ? 'saved' : 'idle');
           __d.setCanvasRecoveryRevision(value => value + 1);
-          __d.addToast('Previous workspace restored from this device.', 'success');
+          __d.addToast((tr => tr('host.toast.previous_workspace_restored_from_this_device', 'Previous workspace restored from this device.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
           return true;
       } catch (error) {
           if (!isCurrentRestore()) return false;
@@ -3979,7 +3987,7 @@ const commitCanvasRecoveryVaultEnable = async (password, recoveryCode) => {
           __d.clearCanvasRecoveryVaultSecrets('idle');
           __d.setCanvasRecoveryError('');
           __d.setCanvasRecoverySaveStatus(__d.canvasRecoveryStoreRef.current.snapshots.length ? 'saved' : 'idle');
-          __d.addToast('Recovery workspaces are now encrypted on this device.', 'success');
+          __d.addToast((tr => tr('host.toast.recovery_workspaces_are_now_encrypted_on_thi', 'Recovery workspaces are now encrypted on this device.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       } catch (error) {
           if (committed) {
               try { controller?.lock(); } catch (_) {}
@@ -4847,7 +4855,7 @@ const handleSubmitAssignment = async (confirmedName, summaryStats) => {
           } catch (mailboxSubmitErr) {
               __d.warnLog('Mailbox submission upload failed; downloading a backup instead:', mailboxSubmitErr?.message);
               __d.downloadSubmissionBackup(submissionData, filename);
-              __d.addToast('The mailbox could not receive the submission, so a backup file was downloaded. Send that file to your teacher or LMS.', 'warning');
+              __d.addToast((tr => tr('host.toast.the_mailbox_could_not_receive_the_submission', 'The mailbox could not receive the submission, so a backup file was downloaded. Send that file to your teacher or LMS.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'warning');
               __d.setIsSaveActionPulsing(false);
               return { ok: true, delivery: 'backup' };
           }
@@ -4920,7 +4928,7 @@ const handleOpenLearningWebResource = (payload) => {
       const item = [context.current].concat(context.history)
           .find(candidate => String(candidate?.id || '') === resourceId);
       if (!item) {
-          __d.addToast('That Learning Web resource is no longer available in this project.', 'info');
+          __d.addToast((tr => tr('host.toast.that_learning_web_resource_is_no_longer_avai', 'That Learning Web resource is no longer available in this project.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return false;
       }
       const requestedScopeId = __d._alloLearningWebScopeId();
@@ -4934,7 +4942,7 @@ const handleOpenLearningWebResource = (payload) => {
               .find(candidate => String(candidate?.id || '') === resourceId);
           const restore = __d.learningWebRestoreViewRef.current;
           if (!latestItem || typeof restore !== 'function') {
-              __d.addToast('That Learning Web resource is no longer available in this project.', 'info');
+              __d.addToast((tr => tr('host.toast.that_learning_web_resource_is_no_longer_avai_2', 'That Learning Web resource is no longer available in this project.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
               return;
           }
           restore(latestItem);
@@ -6376,11 +6384,11 @@ const saveUDLAdvice = async (text, contextQuery = '', evidence = null) => {
          __d.setGeneratedContent({ ...newItem });
          __d.setActiveView('udl-advice');
          __d.setShowUDLGuide(false);
-         __d.addToast('Advice copied to History without another AI request.', 'success');
+         __d.addToast((tr => tr('host.toast.advice_copied_to_history_without_another_ai_', 'Advice copied to History without another AI request.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
          return { ok: true };
      } catch (_) {
          __d.warnLog('Allobot advice save failed', { code: 'save-failed' });
-         __d.addToast('Advice could not be saved. The conversation is still available; try again.', 'error');
+         __d.addToast((tr => tr('host.toast.advice_could_not_be_saved_the_conversation_i', 'Advice could not be saved. The conversation is still available; try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
          return { ok: false };
      } finally {
          __d.setIsSavingAdvice(false);
@@ -6449,7 +6457,7 @@ const handleRemoveFromMapList = (index) => {
     let synchronizedData = newData;
     if (Array.isArray(__d.generatedContent.data?.nodes)) {
       const synchronize = window.AlloModules?.UtilsPure?.synchronizeSavedOutline;
-      if (typeof synchronize !== 'function') { __d.addToast('Organizer tools are still loading. Please try the edit again.', 'error'); return; }
+      if (typeof synchronize !== 'function') { __d.addToast((tr => tr('host.toast.organizer_tools_are_still_loading_please_try', 'Organizer tools are still loading. Please try the edit again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error'); return; }
       synchronizedData = synchronize(__d.generatedContent.data, newData, { type: 'remove-branch', index });
     }
     const updatedContent = { ...__d.generatedContent, data: synchronizedData };
@@ -6464,42 +6472,67 @@ const handleOutlineChange = (branchIndex, field, value, itemIndex = null, isEn =
         if (field === 'main') {
             if (isEn) newData.main_en = value;
             else newData.main = value;
+        } else if (field === 'add-branch') {
+            const currentBranches = Array.isArray(newData.branches) ? [...newData.branches] : [];
+            currentBranches.push({ title: (typeof value === 'string' && value.trim()) ? value.trim() : 'New Section', items: [''] });
+            newData.branches = currentBranches;
         }
     } else {
-        const newBranches = [...newData.branches];
-        const branch = { ...newBranches[branchIndex] };
-        if (field === 'title') {
-            if (isEn) branch.title_en = value;
-            else branch.title = value;
-        } else if (field === 'connections') {
-            const seenTargets = new Set();
-            const newConnections = (Array.isArray(value) ? value : []).reduce((valid, connection) => {
-                const target = Number(connection?.target);
-                if (!Number.isInteger(target) || target < 0 || target >= newBranches.length || target === branchIndex || seenTargets.has(target)) return valid;
-                seenTargets.add(target);
-                valid.push({ target, label: String(connection?.label || '').slice(0, 40) });
-                return valid;
-            }, []);
-            branch.connections = newConnections;
-            branch.connectsTo = newConnections.map(connection => connection.target);
-        } else if (field === 'item') {
-            if (isEn) {
-                const newItemsEn = [...(branch.items_en || [])];
-                newItemsEn[itemIndex] = value;
-                branch.items_en = newItemsEn;
-            } else {
-                const newItems = [...branch.items];
-                newItems[itemIndex] = value;
-                branch.items = newItems;
+        const newBranches = Array.isArray(newData.branches) ? [...newData.branches] : [];
+        if (field === 'remove-branch') {
+            if (newBranches.length > 1 && branchIndex >= 0 && branchIndex < newBranches.length) {
+                newBranches.splice(branchIndex, 1);
+                newData.branches = newBranches;
             }
+        } else {
+            const branch = { ...(newBranches[branchIndex] || { title: '', items: [] }) };
+            if (field === 'title') {
+                if (isEn) branch.title_en = value;
+                else branch.title = value;
+            } else if (field === 'connections') {
+                const seenTargets = new Set();
+                const newConnections = (Array.isArray(value) ? value : []).reduce((valid, connection) => {
+                    const target = Number(connection?.target);
+                    if (!Number.isInteger(target) || target < 0 || target >= newBranches.length || target === branchIndex || seenTargets.has(target)) return valid;
+                    seenTargets.add(target);
+                    valid.push({ target, label: String(connection?.label || '').slice(0, 40) });
+                    return valid;
+                }, []);
+                branch.connections = newConnections;
+                branch.connectsTo = newConnections.map(connection => connection.target);
+            } else if (field === 'add-item') {
+                branch.items = [...(Array.isArray(branch.items) ? branch.items : []), typeof value === 'string' ? value : ''];
+                if (Array.isArray(branch.items_en)) branch.items_en = [...branch.items_en, ''];
+            } else if (field === 'remove-item') {
+                const curItems = Array.isArray(branch.items) ? [...branch.items] : [];
+                if (Number.isInteger(itemIndex) && itemIndex >= 0 && itemIndex < curItems.length) {
+                    curItems.splice(itemIndex, 1);
+                    branch.items = curItems;
+                    if (Array.isArray(branch.items_en)) {
+                        const curEn = [...branch.items_en];
+                        curEn.splice(itemIndex, 1);
+                        branch.items_en = curEn;
+                    }
+                }
+            } else if (field === 'item') {
+                if (isEn) {
+                    const newItemsEn = [...(branch.items_en || [])];
+                    newItemsEn[itemIndex] = value;
+                    branch.items_en = newItemsEn;
+                } else {
+                    const newItems = [...(Array.isArray(branch.items) ? branch.items : [])];
+                    newItems[itemIndex] = value;
+                    branch.items = newItems;
+                }
+            }
+            newBranches[branchIndex] = branch;
+            newData.branches = newBranches;
         }
-        newBranches[branchIndex] = branch;
-        newData.branches = newBranches;
     }
     let synchronizedData = newData;
     if (Array.isArray(__d.generatedContent.data?.nodes)) {
       const synchronize = window.AlloModules?.UtilsPure?.synchronizeSavedOutline;
-      if (typeof synchronize !== 'function') { __d.addToast('Organizer tools are still loading. Please try the edit again.', 'error'); return; }
+      if (typeof synchronize !== 'function') { __d.addToast((tr => tr('host.toast.organizer_tools_are_still_loading_please_try_2', 'Organizer tools are still loading. Please try the edit again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error'); return; }
       synchronizedData = synchronize(__d.generatedContent.data, newData, { type: 'edit', branchIndex, field, itemIndex, isEn });
     }
     const updatedContent = { ...__d.generatedContent, data: synchronizedData };
@@ -6942,7 +6975,7 @@ const handleSaveGeneratedArtifact = (payload) => {
       : (activity.derivatives && activity.derivatives.worksheet) || {};
     const expectedRevision = priorMeta.contentHash || priorMeta.sourceRevision || String(priorMeta.version || 0);
     if (payload.sourceRevision != null && String(payload.sourceRevision) !== String(expectedRevision)) {
-      __d.addToast('This worksheet changed in Activities while Page Designer was open. Reopen it before saving.', 'error');
+      __d.addToast((tr => tr('host.toast.this_worksheet_changed_in_activities_while_p', 'This worksheet changed in Activities while Page Designer was open. Reopen it before saving.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       return false;
     }
     const nextActivityBase = { ...activity, worksheet: String(payload.content || '').trim() };
@@ -6963,7 +6996,7 @@ const handleSaveGeneratedArtifact = (payload) => {
     const updatedContent = { ...source, data: source.data.map((item, itemIndex) => itemIndex === index ? nextActivity : item) };
     __d.setHistory(prev => prev.map(item => item && item.id === parentId ? updatedContent : item));
     __d.setGeneratedContent(prev => prev && prev.id === parentId ? updatedContent : prev);
-    __d.addToast('Worksheet saved back to Activities.', 'success');
+    __d.addToast((tr => tr('host.toast.worksheet_saved_back_to_activities', 'Worksheet saved back to Activities.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
     return { ok: true, sourceRevision: String(nextRevision), version: nextMeta.version || 0 };
   };
 const handleGenerateRubric = async () => {
@@ -8033,12 +8066,12 @@ const handleOpenPrincipalEvaluationFromSettings = () => {
       try {
         const portalWindow = window.open(portalUrl, '_blank', 'noopener,noreferrer');
         if (!portalWindow) {
-          if (!__d._isDesktopBundledApp) __d.addToast('The district portal was blocked. Allow pop-ups for AlloFlow and try again.', 'error');
+          if (!__d._isDesktopBundledApp) __d.addToast((tr => tr('host.toast.the_district_portal_was_blocked_allow_pop_up', 'The district portal was blocked. Allow pop-ups for AlloFlow and try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
           return;
         }
         portalWindow.opener = null;
       } catch (_) {
-        __d.addToast('The district portal could not open. Check your pop-up settings and try again.', 'error');
+        __d.addToast((tr => tr('host.toast.the_district_portal_could_not_open_check_you', 'The district portal could not open. Check your pop-up settings and try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       }
       return;
     }
@@ -8049,16 +8082,16 @@ const handleOpenPrincipalEvaluationFromSettings = () => {
   };
 const handleOpenSchoolRewardsPortal = (recognitionView = false) => {
     const portalUrl = __d.normalizeAlloEvaluationPortalUrl(__d.schoolRewardsPortalUrl);
-    if (!portalUrl) { __d.addToast('Connect School Rewards first: paste the deployment URL in the panel.', 'info'); return false; }
+    if (!portalUrl) { __d.addToast((tr => tr('host.toast.connect_school_rewards_first_paste_the_deplo', 'Connect School Rewards first: paste the deployment URL in the panel.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info'); return false; }
     let portalWindow;
     try {
       portalWindow = window.open(portalUrl + (recognitionView === true ? '?view=recognition' : ''), '_blank', 'noopener,noreferrer');
     } catch (_) {
-      __d.addToast('The School Rewards opening request could not be sent. Use the direct link in the Store launcher to try again.', 'error');
+      __d.addToast((tr => tr('host.toast.the_school_rewards_opening_request_could_not', 'The School Rewards opening request could not be sent. Use the direct link in the Store launcher to try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       return false;
     }
     // noopener may return null even after dispatching the request; it is not an open-status check.
-    if (!portalWindow) __d.addToast('Opening requested. If no tab appears, use the direct link in the Store launcher.', 'info');
+    if (!portalWindow) __d.addToast((tr => tr('host.toast.opening_requested_if_no_tab_appears_use_the_', 'Opening requested. If no tab appears, use the direct link in the Store launcher.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
     else { try { portalWindow.opener = null; } catch (_) {} }
     return true;
   };
@@ -8071,7 +8104,7 @@ const handleSaveSchoolRewardsPortalUrl = (value) => {
         return { ok: false, error };
       }
       __d.setSchoolRewardsPortalUrl('');
-      __d.addToast('School Rewards launcher removed from this device.', 'success');
+      __d.addToast((tr => tr('host.toast.school_rewards_launcher_removed_from_this_de', 'School Rewards launcher removed from this device.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       return { ok: true, url: '', connected: false };
     }
     const normalized = __d.normalizeAlloEvaluationPortalUrl(raw);
@@ -8086,7 +8119,7 @@ const handleSaveSchoolRewardsPortalUrl = (value) => {
       return { ok: false, error };
     }
     __d.setSchoolRewardsPortalUrl(normalized);
-    __d.addToast('School Rewards launcher saved on this device.', 'success');
+    __d.addToast((tr => tr('host.toast.school_rewards_launcher_saved_on_this_device', 'School Rewards launcher saved on this device.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
     return { ok: true, url: normalized, connected: true };
   };
 const handleToggleShowExportMenu = () => {
@@ -8153,7 +8186,7 @@ const clearMathResourceState = (resourceId, clearAssessment = false, legacyProbl
 const broadcastInteractiveOrganizer = async (type, activityConfig = null) => {
     if (!__d.isTeacherMode) return { ok: false, reason: 'teacher-only' };
     if (!__d.activeSessionCode) {
-      __d.addToast('Start a live session before sending this activity to students.', 'info');
+      __d.addToast((tr => tr('host.toast.start_a_live_session_before_sending_this_act', 'Start a live session before sending this activity to students.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
       return { ok: false, reason: 'no-session' };
     }
     // Capture the clicked diagram and session before entering the write queue.
@@ -8213,12 +8246,12 @@ const broadcastInteractiveOrganizer = async (type, activityConfig = null) => {
         __d.activeInteractiveOrganizerTypeRef.current = type;
         __d._setOnlyInteractiveOrganizer(type);
         __d.setInteractiveOrganizerSync({ status: 'live', type, activityId, error: null });
-        __d.addToast('Interactive organizer is live for students.', 'success');
+        __d.addToast((tr => tr('host.toast.interactive_organizer_is_live_for_students', 'Interactive organizer is live for students.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       } else {
         __d._setOnlyInteractiveOrganizer(null);
         __d.activeInteractiveOrganizerTypeRef.current = null;
         __d.setInteractiveOrganizerSync({ status: 'idle', type: null, activityId: null, error: null });
-        __d.addToast('Interactive organizer stopped for students.', 'success');
+        __d.addToast((tr => tr('host.toast.interactive_organizer_stopped_for_students', 'Interactive organizer stopped for students.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       }
       return { ok: true, interactiveOrganizer };
     } catch (e) {
@@ -8239,7 +8272,7 @@ const broadcastInteractiveOrganizer = async (type, activityConfig = null) => {
         __d._setOnlyInteractiveOrganizer(previousType);
         __d.activeInteractiveOrganizerTypeRef.current = previousType;
         __d.setInteractiveOrganizerSync({ status: 'live', type: previousType, activityId: __d.sessionData?.interactiveOrganizer?.activityId || null, error: String(e?.message || e) });
-        __d.addToast('The activity could not be stopped and remains live. Please try again.', 'error');
+        __d.addToast((tr => tr('host.toast.the_activity_could_not_be_stopped_and_remain', 'The activity could not be stopped and remains live. Please try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       }
       return { ok: false, error: e };
     } finally {
@@ -8274,7 +8307,7 @@ const retryInteractiveOrganizerStudents = async (uids) => {
       return { ok: true, retryAt, retryUids };
     } catch (error) {
       __d.warnLog('interactiveOrganizer targeted retry failed:', error);
-      __d.addToast('Could not retry the activity for those students. The current activity remains live.', 'error');
+      __d.addToast((tr => tr('host.toast.could_not_retry_the_activity_for_those_stude', 'Could not retry the activity for those students. The current activity remains live.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       return { ok: false, error };
     } finally {
       __d.setInteractiveOrganizerRetrying(false);
@@ -8366,12 +8399,12 @@ const handleExitChallenge = () => {
   };
 const downloadKokoroModel = () => {
     if (__d._isIOSCanvasEnv) {
-      __d.addToast('Kokoro is paused inside Gemini Canvas on iPhone or iPad because loading its on-device model can restart the Canvas. Browser voice will be used instead.', 'info');
+      __d.addToast((tr => tr('host.toast.kokoro_is_paused_inside_gemini_canvas_on_iph', 'Kokoro is paused inside Gemini Canvas on iPhone or iPad because loading its on-device model can restart the Canvas. Browser voice will be used instead.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
       return;
     }
     // Kokoro has no file list of our own — loading it IS the download, and the
     // worker's cache proxy persists it into model_cache on the way through.
-    if (typeof window.__loadKokoroTTS !== 'function') { __d.addToast('The voice model loader is still starting up — try again in a moment.', 'info'); return; }
+    if (typeof window.__loadKokoroTTS !== 'function') { __d.addToast((tr => tr('host.toast.the_voice_model_loader_is_still_starting_up_', 'The voice model loader is still starting up — try again in a moment.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info'); return; }
     __d.setAlloModelStatus(prev => ({ ...prev, busy: 'kokoro' }));
     Promise.resolve(window.__loadKokoroTTS()).then((ok) => {
       __d.addToast(ok === false ? 'The voice model could not be downloaded.' : 'Natural voice model saved on this device.', ok === false ? 'error' : 'success');
@@ -8415,7 +8448,7 @@ const saveFluencyReview = (reviewedResult) => {
         }
       };
     }));
-    __d.addToast('Teacher review saved. The automated result remains in the audit trail.', 'success');
+    __d.addToast((tr => tr('host.toast.teacher_review_saved_the_automated_result_re', 'Teacher review saved. The automated result remains in the audit trail.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
   };
 const handleWordSoundsPreparedAudioRetry = async (coverage) => {
       if (__d.isTeacherMode || !__d.activeSessionCode || !__d.user || !__d.user.uid) {
@@ -8461,7 +8494,7 @@ const handleWordSoundsPreparedAudioRetry = async (coverage) => {
   };
 const exportMailboxConfig = () => {
       const payload = __d.alloMailboxConfigExportPayload(__d.mbConfig, new Date().toISOString());
-      if (!payload) { __d.addToast('Connect a mailbox first, then you can save a copy of its setup.', 'info'); return; }
+      if (!payload) { __d.addToast((tr => tr('host.toast.connect_a_mailbox_first_then_you_can_save_a_', 'Connect a mailbox first, then you can save a copy of its setup.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info'); return; }
       try {
           const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
@@ -8472,14 +8505,14 @@ const exportMailboxConfig = () => {
           link.click();
           document.body.removeChild(link);
           setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
-          __d.addToast('Saved. This file contains an access key for your mailbox, so keep it like a password.', 'success');
+          __d.addToast((tr => tr('host.toast.saved_this_file_contains_an_access_key_for_y', 'Saved. This file contains an access key for your mailbox, so keep it like a password.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       } catch (error) { __d.addToast('Could not save the file: ' + ((error && error.message) || 'unknown'), 'error'); }
   };
 const suggestPollTimes = async () => {
     const ask = String(__d.pollAsk || '').trim();
     if (!ask || __d.pollAiBusy) return;
     if (typeof window.callGemini !== 'function') {
-      __d.addToast('The assistant is not available right now. You can still type the options yourself.', 'info');
+      __d.addToast((tr => tr('host.toast.the_assistant_is_not_available_right_now_you', 'The assistant is not available right now. You can still type the options yourself.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
       return;
     }
     __d.setPollAiBusy(true);
@@ -8497,7 +8530,7 @@ const suggestPollTimes = async () => {
         .filter(Boolean)
         .slice(0, 12);
       if (!drafted.length) {
-        __d.addToast('The assistant did not suggest any options. Try describing the window you have in mind.', 'info');
+        __d.addToast((tr => tr('host.toast.the_assistant_did_not_suggest_any_options_tr', 'The assistant did not suggest any options. Try describing the window you have in mind.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
         return;
       }
       __d.setSharedAssignmentActivity(previous => ({ ...(previous || {}), optionsText: drafted.join('\n') }));
@@ -8525,14 +8558,14 @@ const extendAssignmentCenterShare = async (share) => {
       const currentExpiry = Date.parse(share.expiresAt || '');
       const now = Date.now();
       if (Number.isFinite(currentExpiry) && currentExpiry <= now) {
-          __d.addToast('Expired assignments cannot be revived. Duplicate this assignment instead.', 'info');
+          __d.addToast((tr => tr('host.toast.expired_assignments_cannot_be_revived_duplic', 'Expired assignments cannot be revived. Duplicate this assignment instead.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       const resolved = _savedShareMailboxConnection(share);
       if (!resolved) return;
       const { target, connection } = resolved;
       if (Number(connection.v || 0) < 12) {
-          __d.addToast('Update and reconnect your Class Mailbox to v12 before changing assignment deadlines.', 'info');
+          __d.addToast((tr => tr('host.toast.update_and_reconnect_your_class_mailbox_to_v', 'Update and reconnect your Class Mailbox to v12 before changing assignment deadlines.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           __d.setMbPanelOpen(true);
           return;
       }
@@ -8540,7 +8573,7 @@ const extendAssignmentCenterShare = async (share) => {
       const baseline = Number.isFinite(currentExpiry) ? Math.max(now, currentExpiry) : now;
       const nextExpiry = Math.min(ceiling, baseline + __d.homeworkExpiryDays * 24 * 60 * 60 * 1000);
       if (Number.isFinite(currentExpiry) && nextExpiry <= currentExpiry) {
-          __d.addToast('This assignment is already at the one-year expiration limit.', 'info');
+          __d.addToast((tr => tr('host.toast.this_assignment_is_already_at_the_one_year_e', 'This assignment is already at the one-year expiration limit.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [share.url]: { kind: 'extending' } }));
@@ -8550,11 +8583,11 @@ const extendAssignmentCenterShare = async (share) => {
           __d.setRecentQrShares(previous => previous.map(item => item.url === share.url ? { ...item, expiresAt } : item));
           __d.setQrShareModal(previous => previous?.url === share.url ? { ...previous, expiresAt } : previous);
           __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [share.url]: { kind: '' } }));
-          __d.addToast('Assignment deadline extended.', 'success');
+          __d.addToast((tr => tr('host.toast.assignment_deadline_extended', 'Assignment deadline extended.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       } catch (error) {
           __d.warnLog('Assignment extension failed:', error);
           __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [share.url]: { kind: '', error: 'Deadline extension failed. Reconnect the Class Mailbox and try again.' } }));
-          __d.addToast('Could not extend this assignment.', 'error');
+          __d.addToast((tr => tr('host.toast.could_not_extend_this_assignment', 'Could not extend this assignment.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       }
   };
 const duplicateAssignmentCenterShare = async (share) => {
@@ -8564,7 +8597,7 @@ const duplicateAssignmentCenterShare = async (share) => {
       if (!resolved) return;
       const { target, connection } = resolved;
       if (Number(connection.v || 0) < 12) {
-          __d.addToast('Update and reconnect your Class Mailbox to v12 before duplicating assignments.', 'info');
+          __d.addToast((tr => tr('host.toast.update_and_reconnect_your_class_mailbox_to_v_2', 'Update and reconnect your Class Mailbox to v12 before duplicating assignments.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           __d.setMbPanelOpen(true);
           return;
       }
@@ -8583,11 +8616,11 @@ const duplicateAssignmentCenterShare = async (share) => {
           __d.copyToClipboard(url);
           __d.openQrShareModal(duplicate);
           __d.setShowRecentQrShares(false);
-          __d.addToast('Fresh assignment copy created with empty student activity and a new private link.', 'success');
+          __d.addToast((tr => tr('host.toast.fresh_assignment_copy_created_with_empty_stu', 'Fresh assignment copy created with empty student activity and a new private link.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       } catch (error) {
           __d.warnLog('Assignment duplication failed:', error);
           __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [share.url]: { kind: '', error: 'Duplication failed. The original assignment was not changed.' } }));
-          __d.addToast('Could not duplicate this assignment.', 'error');
+          __d.addToast((tr => tr('host.toast.could_not_duplicate_this_assignment', 'Could not duplicate this assignment.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       }
   };
 const openHomeworkShelf = () => {
@@ -8616,7 +8649,7 @@ const openHomeworkShelf = () => {
       __d.addToast(__d.t('takehome.loaded', { title: shelf.title || 'saved pack' }) || ('Homework loaded: ' + (shelf.title || 'saved pack')), 'success');
   };
 const connectMailbox = async () => {
-      const execUrl = __d._alloCleanMailboxUrl(__d.mbUrlInput);
+      const execUrl = __d._alloCleanMailboxUrl(__d.mbUrlInput || __d.mbConfig?.url || '');
       if (!execUrl) {
           __d.setMbStatus('That does not look like an Apps Script web app URL (it should end in /exec on script.google.com).');
           return;
@@ -8627,7 +8660,8 @@ const connectMailbox = async () => {
       try {
           const t0 = Date.now();
           const mbHello = await __d._alloMailboxCall(execUrl, { a: 'hello' });
-          const pasted = String(__d.mbAdminInput || '').trim();
+          const pasted = String(__d.mbAdminInput || '').trim()
+              || ((__d.mbConfig && __d._alloCleanMailboxUrl(__d.mbConfig.url || '') === execUrl && String(__d.mbConfig.admin || '').trim()) || '');
           let stored = '';
           let storedUrl = '';
           try { stored = localStorage.getItem(__d.ALLO_MB_ADMIN_KEY) || ''; } catch (_) {}
@@ -8847,7 +8881,7 @@ const pushResourceToMailbox = async (targetItem, opts = {}) => {
       const item = __d._alloStudentSafeResources([targetItem])[0]
           || __d._alloStudentSafeResources([__d.generatedContent])[0] || candidates[candidates.length - 1];
       if (!item) {
-          if (!opts.silentTeacher) __d.addToast('Open a student-safe resource first, then push it to the class.', 'info');
+          if (!opts.silentTeacher) __d.addToast((tr => tr('host.toast.open_a_student_safe_resource_first_then_push', 'Open a student-safe resource first, then push it to the class.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       if (!opts.allowIncompleteAudio && __d.requestWordSoundsAudioConfirmation(
@@ -8893,7 +8927,7 @@ const shareFullPackToMailbox = async (resourceIds = null) => {
       if (!__d.mbLive || !__d.mbConfig?.url) return;
       const candidates = _scopePackCandidates(__d._alloStudentSafeResources(__d.history), resourceIds);
       if (!candidates.length) {
-          __d.addToast('No student-safe resources to share yet.', 'info');
+          __d.addToast((tr => tr('host.toast.no_student_safe_resources_to_share_yet', 'No student-safe resources to share yet.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       __d.setMbBusy(true);
@@ -8921,11 +8955,11 @@ const addDirectionsToPack = () => {
        const _availableChoiceIds = new Set(__d._alloDirectionsGoalResources.map(resource => resource.id));
        const _staleChoiceCount = _choiceDrafts.filter(choice => !choice || !_availableChoiceIds.has(choice.resourceRef)).length;
       if (d.choiceBoard?.enabled === true && _staleChoiceCount > 0) {
-          __d.addToast('Remove unavailable activities from the choice board before saving.', 'info');
+          __d.addToast((tr => tr('host.toast.remove_unavailable_activities_from_the_choic', 'Remove unavailable activities from the choice board before saving.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       if (d.choiceBoard?.enabled === true && _choiceDrafts.length < 2) {
-          __d.addToast('Select at least two activities before saving the choice board.', 'info');
+          __d.addToast((tr => tr('host.toast.select_at_least_two_activities_before_saving', 'Select at least two activities before saving the choice board.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       // Objectives Phase 1: structured data only when goals exist — a plain string
@@ -9048,12 +9082,12 @@ const savePortableAacResourceToHistory = (rawPackage) => {
   };
 const printQrSheet = (svg, heading, detail, modeLabel, fallbackCode = '') => {
       if (!svg || typeof window === 'undefined') {
-          __d.addToast('Wait for the QR code to finish loading before printing.', 'info');
+          __d.addToast((tr => tr('host.toast.wait_for_the_qr_code_to_finish_loading_befor', 'Wait for the QR code to finish loading before printing.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       const popup = window.open('', '_blank', 'width=720,height=900');
       if (!popup) {
-          __d.addToast('Allow pop-ups to print this QR code.', 'info');
+          __d.addToast((tr => tr('host.toast.allow_pop_ups_to_print_this_qr_code', 'Allow pop-ups to print this QR code.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
           return;
       }
       try { popup.opener = null; } catch (_) {}
@@ -9096,11 +9130,11 @@ const revokeHomeworkAssignment = async (shareOverride = null) => {
               : item));
           __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [current.url]: { kind: '' } }));
           __d.setShowRecentQrShares(true);
-          __d.addToast('Homework link revoked. Its local record remains in the Assignment Control Center.', 'success');
+          __d.addToast((tr => tr('host.toast.homework_link_revoked_its_local_record_remai', 'Homework link revoked. Its local record remains in the Assignment Control Center.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       } catch (e) {
           __d.warnLog('Homework revocation failed:', e);
           __d.setAssignmentCenterActionByUrl(previous => ({ ...previous, [current.url]: { kind: '', error: 'Revocation failed. Students can still use the existing link.' } }));
-          __d.addToast('Could not revoke this homework link. Try again while connected.', 'error');
+          __d.addToast((tr => tr('host.toast.could_not_revoke_this_homework_link_try_agai', 'Could not revoke this homework link. Try again while connected.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       }
   };
 const patchAssignmentCenterActivity = (patch) => {
@@ -9782,7 +9816,7 @@ const handleUpdateHavenRecognitionConfig = async (patch) => {
           );
       } catch (error) {
           __d.warnLog('Could not update AlloHaven recognition settings.', error);
-          __d.addToast('Could not update the recognition settings. Please try again.', 'error');
+          __d.addToast((tr => tr('host.toast.could_not_update_the_recognition_settings_pl', 'Could not update the recognition settings. Please try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error');
       } finally {
           __d.setHavenConfigBusy(false);
       }
@@ -10539,17 +10573,12 @@ const _copySanitizedDiagnostic = async diagnostic => {
 const handleTranscriptSourceAction = (action) => {
     const context = __d.videoTranscriptSourceContext;
     if (!context) {
-      __d.addToast('No video transcript is loaded in Source yet.', 'info');
+      __d.addToast((tr => tr('host.toast.no_video_transcript_is_loaded_in_source_yet', 'No video transcript is loaded in Source yet.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
       return;
     }
 
     if (action === 'dismiss') {
-      __d.setGeneratedContent(null);
-      __d.setMbJoinError(false);
-      __d.setMbJoinRetryable(false);
-      __d.setMbJoinStatus('Contacting the class mailbox…');
-      __d.setActiveView('input');
-      __d.addToast('Transcript shortcuts hidden. The source text is still available.', 'info');
+      __d.addToast((tr => tr('host.toast.transcript_shortcuts_hidden_the_source_text_', 'Transcript shortcuts hidden. The source text is still available.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
       return;
     }
 
@@ -10616,11 +10645,11 @@ const handleDownloadFullPackDiagnostics = () => {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      __d.addToast('Sanitized Full Pack diagnostic report downloaded.', 'success');
+      __d.addToast((tr => tr('host.toast.sanitized_full_pack_diagnostic_report_downlo', 'Sanitized Full Pack diagnostic report downloaded.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       return true;
     } catch (error) {
       __d.warnLog('[FullPack] could not download diagnostics:', error && (error.message || error));
-      __d.addToast('Could not download Full Pack diagnostics.', 'warning');
+      __d.addToast((tr => tr('host.toast.could_not_download_full_pack_diagnostics', 'Could not download Full Pack diagnostics.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'warning');
       return false;
     }
   };
@@ -10634,7 +10663,7 @@ const handleAddToMapList = (text) => {
     let synchronizedData = newData;
     if (Array.isArray(__d.generatedContent.data?.nodes)) {
       const synchronize = window.AlloModules?.UtilsPure?.synchronizeSavedOutline;
-      if (typeof synchronize !== 'function') { __d.addToast('Organizer tools are still loading. Please try the edit again.', 'error'); return; }
+      if (typeof synchronize !== 'function') { __d.addToast((tr => tr('host.toast.organizer_tools_are_still_loading_please_try_3', 'Organizer tools are still loading. Please try the edit again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'error'); return; }
       synchronizedData = synchronize(__d.generatedContent.data, newData, { type: 'add-branch' });
     }
     const updatedContent = { ...__d.generatedContent, data: synchronizedData };
@@ -10655,6 +10684,15 @@ const handleTimelineChange = (index, field, value, isEn = false) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'timeline') return;
     const data = __d.generatedContent.data;
     const isArrayShape = Array.isArray(data);
+    if (index === null && field === 'progressionLabel') {
+        const newData = isArrayShape
+            ? { items: data, progressionLabel: String(value || '') }
+            : { ...data, progressionLabel: String(value || '') };
+        const updatedContent = { ...__d.generatedContent, data: newData };
+        __d.setGeneratedContent(updatedContent);
+        __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+        return;
+    }
     const currentItems = isArrayShape ? data : (data?.items || []);
     const newItems = [...currentItems];
     const updatedItem = { ...newItems[index] };
@@ -11275,7 +11313,23 @@ const _shiftTextStack = (from, to, verb) => {
   };
 const handleBrainstormChange = (index, field, value) => {
     if (!__d.generatedContent || __d.generatedContent.type !== 'brainstorm') return;
-    const newData = [...__d.generatedContent?.data];
+    const newData = Array.isArray(__d.generatedContent?.data) ? [...__d.generatedContent.data] : [];
+    if (index === null && field === 'add-card') {
+      newData.push(value && typeof value === 'object' ? value : { kind: 'idea', title: 'New Activity', description: '', connection: '' });
+      const updatedContent = { ...__d.generatedContent, data: newData };
+      __d.setGeneratedContent(updatedContent);
+      __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+      return;
+    }
+    if (field === 'remove-card') {
+      if (newData.length > 1 && Number.isInteger(index) && index >= 0 && index < newData.length) {
+        newData.splice(index, 1);
+        const updatedContent = { ...__d.generatedContent, data: newData };
+        __d.setGeneratedContent(updatedContent);
+        __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
+      }
+      return;
+    }
     const current = newData[index];
     const next = { ...current, [field]: value };
     const derivativeKind = field === 'coverImage' ? 'cover' : (['guide', 'worksheet', 'rubric'].includes(field) ? field : null);
@@ -11586,7 +11640,7 @@ const closeOrganizerPreview = (type, setPlaying, setInteractive) => {
       setPlaying(false);
       if (!__d.isTeacherMode) setInteractive(false);
       else if (__d.activeInteractiveOrganizerTypeRef.current === type) {
-          __d.addToast('Teacher preview closed. The activity is still live for students; use “Stop for students” to end it.', 'info');
+          __d.addToast((tr => tr('host.toast.teacher_preview_closed_the_activity_is_still', 'Teacher preview closed. The activity is still live for students; use “Stop for students” to end it.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
       }
   // `addToast` is declared later; reading it in this dependency array crashes
   // the initial render, while resolving it when the callback runs is safe.
@@ -11721,7 +11775,7 @@ const exportAssignmentCenterCsv = () => {
       if (!__d.assignmentCenterRows.length) return;
       const csv = '\uFEFF' + __d._alloBuildAssignmentCenterCsv(__d.assignmentCenterRows);
       __d.safeDownloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), 'alloflow-assignment-summary-' + new Date().toISOString().slice(0, 10) + '.csv');
-      __d.addToast('Privacy-safe assignment summary exported.', 'success');
+      __d.addToast((tr => tr('host.toast.privacy_safe_assignment_summary_exported', 'Privacy-safe assignment summary exported.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
   };
 const downloadHomeworkShelfJson = (shelf) => {
       try {
@@ -11742,7 +11796,7 @@ const getEndSessionSummaryApi = () => {
           && typeof api.shouldSaveRosterSessionSummary === 'function'
           && typeof api.saveRosterSessionSummary === 'function') return api;
       __d.requestSessionManagementModule();
-      __d.addToast('End-session review tools are still loading. Your live session remains open; please try again.', 'warning');
+      __d.addToast((tr => tr('host.toast.end_session_review_tools_are_still_loading_y', 'End-session review tools are still loading. Your live session remains open; please try again.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'warning');
       return null;
   };
 const readSavedFollowUpLiveSessionIdentity = () => {
@@ -11815,7 +11869,7 @@ const deleteExportPreset = (key) => {
     let persisted = false;
     try { localStorage.setItem('alloflow_export_presets', JSON.stringify(updated)); persisted = true; } catch (_) {}
     __d.setExportPresets(updated);
-    if (!persisted) __d.addToast && __d.addToast('Preset removed for this session, but browser storage could not be updated.', 'info');
+    if (!persisted) __d.addToast && __d.addToast((tr => tr('host.toast.preset_removed_for_this_session_but_browser_', 'Preset removed for this session, but browser storage could not be updated.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
   };
 const applyExportPreset = (preset) => {
     // Belt-and-suspenders: merge over defaults at apply time too, in case a
@@ -12255,11 +12309,11 @@ const handleCopyBlueprintDiagnostics = async () => {
     if (!diagnostic) return false;
     try {
       if (!(await __d._copySanitizedDiagnostic(diagnostic))) throw new Error('Clipboard write was unavailable');
-      __d.addToast('Sanitized Blueprint diagnostics copied.', 'success');
+      __d.addToast((tr => tr('host.toast.sanitized_blueprint_diagnostics_copied', 'Sanitized Blueprint diagnostics copied.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       return true;
     } catch (error) {
       __d.warnLog('[Blueprint] could not copy diagnostics:', error && (error.message || error));
-      __d.addToast('Could not copy Blueprint diagnostics.', 'warning');
+      __d.addToast((tr => tr('host.toast.could_not_copy_blueprint_diagnostics', 'Could not copy Blueprint diagnostics.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'warning');
       return false;
     }
   };
@@ -12276,11 +12330,11 @@ const handleDownloadBlueprintDiagnostics = () => {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      __d.addToast('Sanitized Blueprint diagnostic report downloaded.', 'success');
+      __d.addToast((tr => tr('host.toast.sanitized_blueprint_diagnostic_report_downlo', 'Sanitized Blueprint diagnostic report downloaded.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       return true;
     } catch (error) {
       __d.warnLog('[Blueprint] could not download diagnostics:', error && (error.message || error));
-      __d.addToast('Could not download Blueprint diagnostics.', 'warning');
+      __d.addToast((tr => tr('host.toast.could_not_download_blueprint_diagnostics', 'Could not download Blueprint diagnostics.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'warning');
       return false;
     }
   };
@@ -12297,11 +12351,11 @@ const handleCopyFullPackDiagnostics = async () => {
     if (!diagnostic) return false;
     try {
       if (!(await __d._copySanitizedDiagnostic(diagnostic))) throw new Error('Clipboard write was unavailable');
-      __d.addToast('Sanitized Full Pack diagnostics copied.', 'success');
+      __d.addToast((tr => tr('host.toast.sanitized_full_pack_diagnostics_copied', 'Sanitized Full Pack diagnostics copied.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
       return true;
     } catch (error) {
       __d.warnLog('[FullPack] could not copy diagnostics:', error && (error.message || error));
-      __d.addToast('Could not copy Full Pack diagnostics.', 'warning');
+      __d.addToast((tr => tr('host.toast.could_not_copy_full_pack_diagnostics', 'Could not copy Full Pack diagnostics.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'warning');
       return false;
     }
   };
@@ -12380,6 +12434,34 @@ const handleGlossaryChange = (index, field, value, lang = null) => {
         };
     } else {
         updatedItem[field] = value;
+        if (field === 'etymology' && updatedItem.etymologyByLang && typeof updatedItem.etymologyByLang === 'object' && !Array.isArray(updatedItem.etymologyByLang)) {
+            const defLang = String(updatedItem.definitionLanguage || updatedItem.baseLanguage || updatedItem.termLanguage || __d.generatedContent?.baseLanguage || __d.generatedContent?.config?.baseLanguage || 'English').trim() || 'English';
+            const normLang = defLang.toLowerCase();
+            const resolveCode = typeof __d.getSpeechLangCode === 'function' ? __d.getSpeechLangCode : (typeof window !== 'undefined' ? window.AlloModules?.ModuleScopeExtras?.getSpeechLangCode || window.getSpeechLangCode : null);
+            const baseTag = (raw) => {
+                const s = String(raw || '').trim().toLowerCase();
+                if (!s) return '';
+                if (/^(?:en(?:[-_]|$)|english(?:\s*\(|$))/i.test(s)) return 'en';
+                if (typeof resolveCode === 'function') {
+                    try {
+                        const code = String(resolveCode(raw) || '').trim().toLowerCase().split(/[-_]/)[0];
+                        if (code && code !== 'en') return code;
+                    } catch (_) {}
+                }
+                return s;
+            };
+            const targetTag = baseTag(defLang);
+            const nextByLang = { ...updatedItem.etymologyByLang };
+            let matched = false;
+            Object.keys(nextByLang).forEach(k => {
+                const nk = String(k || '').trim().toLowerCase();
+                if (nk === normLang || (targetTag && baseTag(k) === targetTag)) {
+                    nextByLang[k] = value;
+                    matched = true;
+                }
+            });
+            if (matched) updatedItem.etymologyByLang = nextByLang;
+        }
     }
     newData[index] = updatedItem;
     const updatedContent = { ...__d.generatedContent, data: newData };
@@ -12723,7 +12805,7 @@ const connectMailboxForSetup = () => {
               return connected;
           } catch (error) {
               __d.warnLog('Mailbox setup connection failed', error);
-              __d.addToast('Could not finish connecting the mailbox. Try connecting again when you are ready.', 'warning');
+              __d.addToast((tr => tr('host.toast.could_not_finish_connecting_the_mailbox_try_', 'Could not finish connecting the mailbox. Try connecting again when you are ready.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'warning');
               return null;
           } finally {
               __d.mbSetupConnectPromiseRef.current = null;
@@ -12749,7 +12831,7 @@ const openStudentQrPreview = (url, label = 'student link') => {
             __d.setGuidedDeliveryEvidence(prev => prev?.learnerLink?.id === owned.guidedLearnerLinkId
               ? { ...prev, studentPreviewed: true } : prev);
           }
-          __d.addToast('Student preview opened. Complete the check in the new tab, then return here.', 'success');
+          __d.addToast((tr => tr('host.toast.student_preview_opened_complete_the_check_in', 'Student preview opened. Complete the check in the new tab, then return here.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'success');
           return true;
       }
       __d.addToast('Allow pop-ups to test this ' + label + '.', 'info');
@@ -13333,7 +13415,7 @@ const handleMoveAllToUnit = (itemInstanceIds, targetUnitId) => {
 const handleSimplifiedTextChange = (value) => {
     if (__d.supportDraftSessionRef.current?.blocked()) return __d.requestReadingSupportTransition(() => handleSimplifiedTextChange(value));
     if (!__d.generatedContent || __d.generatedContent.type !== 'simplified') return;
-    if (__d.generatedContent.instructionalText?.form === 'same-text-supported') { __d.addToast('The original stays unchanged. Create an adapted companion to change its wording.', 'info'); return; }
+    if (__d.generatedContent.instructionalText?.form === 'same-text-supported') { __d.addToast((tr => tr('host.toast.the_original_stays_unchanged_create_an_adapt', 'The original stays unchanged. Create an adapted companion to change its wording.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info'); return; }
     __d._recordTextChange('simplified', __d.generatedContent.id, typeof __d.generatedContent.data === 'string' ? __d.generatedContent.data : '', value);
     const changedId = __d.generatedContent.id, changedInstance = __d.getArtifactInstanceId(__d.generatedContent);
     const changeLiveText = item => item && item.id === changedId && (!changedInstance || __d._alloArtifactMatchesInstanceId(item, changedInstance)) ? __d._applySimplifiedTextMutation(item, value) : item;
@@ -13369,7 +13451,7 @@ const openReadingArtifact = (item, compare = false) => {
 const handleReadOriginal = (selected = null, options = null) => {
     if (__d.supportDraftSessionRef.current?.blocked()) return __d.requestReadingSupportTransition(() => handleReadOriginal(selected, options));
     const api = window.AlloModules?.InstructionalContext;
-    if (!api?.createSourceSnapshot || !api?.createSupportedReading || !api?.resolveReadingSource) { __d.addToast('Reading tools are still loading. Try again in a moment.', 'info'); return; }
+    if (!api?.createSourceSnapshot || !api?.createSupportedReading || !api?.resolveReadingSource) { __d.addToast((tr => tr('host.toast.reading_tools_are_still_loading_try_again_in', 'Reading tools are still loading. Try again in a moment.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info'); return; }
     let sourceItem = selected, resolved = null;
     if (!sourceItem) {
       resolved = api.resolveReadingSource({ items: __d.history, sourceArtifactId: __d._alloReadingSourceChoice(), inputText: __d.inputText, unitId: __d.activeUnitId, language: __d.leveledTextLanguage });
@@ -13382,9 +13464,9 @@ const handleReadOriginal = (selected = null, options = null) => {
     // opens its current saved prose without changing older companions.
     if (sourceItem?.type === 'analysis' && profile.form !== 'adapted' && snapshot?.text !== sourceItem.data?.originalText) snapshot = null;
     if (!snapshot) {
-      if (sourceItem?.type === 'simplified' || profile?.form === 'adapted') { __d.addToast('Original not captured. Open the matching source to read it with supports.', 'info'); return; }
+      if (sourceItem?.type === 'simplified' || profile?.form === 'adapted') { __d.addToast((tr => tr('host.toast.original_not_captured_open_the_matching_sour', 'Original not captured. Open the matching source to read it with supports.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info'); return; }
       const text = sourceItem?.type === 'analysis' ? sourceItem.data?.originalText : resolved?.text;
-      if (typeof text !== 'string' || !text.trim()) { __d.addToast('Add a source passage first.', 'info'); return; }
+      if (typeof text !== 'string' || !text.trim()) { __d.addToast((tr => tr('host.toast.add_a_source_passage_first', 'Add a source passage first.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info'); return; }
       snapshot = api.createSourceSnapshot(text, { sourceArtifactId: sourceItem?.id || null, language: sourceItem?.config?.language || __d.leveledTextLanguage || 'English', format: 'plain-text', selection: sourceItem ? 'saved-analysis' : 'input' });
     }
     const unitId = sourceItem ? (sourceItem.unitId || null) : (__d.activeUnitId && !['all', 'uncategorized'].includes(__d.activeUnitId) ? __d.activeUnitId : null);

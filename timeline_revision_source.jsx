@@ -358,11 +358,38 @@ var createTimelineRevision = function(deps) {
       if (!isCurrent()) return;
       var parsed = JSON.parse(cleanJson(result));
       var revisedItemsRaw = Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed.items : currentItems;
+      var _normMatch = function(v) { return String(v == null ? '' : v).trim().toLowerCase().replace(/\s+/g, ' '); };
+      var _matchOriginalTimelineItem = function(candidate, originals, usedIndices) {
+        if (!candidate || !Array.isArray(originals)) return null;
+        var cEvent = _normMatch(candidate.event);
+        var cDate = _normMatch(candidate.date);
+        var idx = originals.findIndex(function(o, oi) {
+          return !usedIndices.has(oi) && o && _normMatch(o.event) === cEvent && _normMatch(o.date) === cDate;
+        });
+        if (idx < 0 && cEvent) {
+          idx = originals.findIndex(function(o, oi) { return !usedIndices.has(oi) && o && _normMatch(o.event) === cEvent; });
+        }
+        if (idx < 0 && cDate) {
+          idx = originals.findIndex(function(o, oi) { return !usedIndices.has(oi) && o && _normMatch(o.date) === cDate; });
+        }
+        if (idx >= 0) { usedIndices.add(idx); return originals[idx]; }
+        return null;
+      };
+      var _preserveVisualFields = function(target, source) {
+        if (!source || !source.image) return target;
+        var next = Object.assign({}, target, { image: source.image });
+        if (typeof source.alt === 'string') next.alt = source.alt;
+        if (typeof source.altHash === 'string') next.altHash = source.altHash;
+        if (typeof source.decorative === 'boolean') next.decorative = source.decorative;
+        return next;
+      };
+      var usedReviseIndices = new Set();
       var revisedItems = revisedItemsRaw.map(function(it) {
         var rest = {};
         // Rewritten text: an echoed accuracy verdict would describe the old item.
         Object.keys(it).forEach(function(k) { if (k !== 'image' && k !== 'verification') rest[k] = it[k]; });
-        return rest;
+        var matched = _matchOriginalTimelineItem(rest, currentItems, usedReviseIndices);
+        return matched ? _preserveVisualFields(rest, matched) : rest;
       });
       var labelChanged = parsed.progressionLabel && parsed.progressionLabel !== currentProgressionLabel;
       var revisedLabelEn = parsed.progressionLabel_en
@@ -477,9 +504,36 @@ var createTimelineRevision = function(deps) {
       if (!isCurrent()) return;
       var parsed = JSON.parse(cleanJson(result));
       var newItems = Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed.items : data.items;
+      var _normAutoFix = function(v) { return String(v == null ? '' : v).trim().toLowerCase().replace(/\s+/g, ' '); };
+      var usedAutoFixIndices = new Set();
+      var _findAutoFixOriginal = function(candidate, fallbackIndex) {
+        if (!candidate || !Array.isArray(data.items)) return null;
+        var cEvent = _normAutoFix(candidate.event);
+        var cDate = _normAutoFix(candidate.date);
+        var idx = data.items.findIndex(function(o, oi) {
+          return !usedAutoFixIndices.has(oi) && o && _normAutoFix(o.event) === cEvent && _normAutoFix(o.date) === cDate;
+        });
+        if (idx < 0 && cEvent) {
+          idx = data.items.findIndex(function(o, oi) { return !usedAutoFixIndices.has(oi) && o && _normAutoFix(o.event) === cEvent; });
+        }
+        if (idx < 0 && cDate) {
+          idx = data.items.findIndex(function(o, oi) { return !usedAutoFixIndices.has(oi) && o && _normAutoFix(o.date) === cDate; });
+        }
+        if (idx < 0 && fallbackIndex >= 0 && fallbackIndex < data.items.length && !usedAutoFixIndices.has(fallbackIndex)) {
+          idx = fallbackIndex;
+        }
+        if (idx >= 0) { usedAutoFixIndices.add(idx); return data.items[idx]; }
+        return null;
+      };
       var merged = newItems.map(function(it, i) {
-        var original = data.items[i];
-        var out = original && original.image ? Object.assign({}, it, { image: original.image }) : it;
+        var original = _findAutoFixOriginal(it, i);
+        var out = it;
+        if (original && original.image) {
+          out = Object.assign({}, it, { image: original.image });
+          if (typeof original.alt === 'string') out.alt = original.alt;
+          if (typeof original.altHash === 'string') out.altHash = original.altHash;
+          if (typeof original.decorative === 'boolean') out.decorative = original.decorative;
+        }
         var same = original && ['date', 'event', 'date_en', 'event_en'].every(function (k) { return String((out && out[k]) || '') === String(original[k] || ''); });
         return same ? out : stripVerification(out);
       });

@@ -90,12 +90,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _genT = (ctx && ctx.theme) || {};
       var _genHC = !!_genT.isContrast, _genL = !_genHC && !_genT.isDark;
-      var _gen_BGL = {'#0b1220':'#f1f5f9','#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _gen_BGH = {'#0b1220':'#000000','#0f172a':'#000000','#1e293b':'#000000','#fb7185':'#000000','#fff':'#000000','#be123c':'#000000'};
-      var _gen_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fcd34d':'#78350f'}, _gen_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#16a34a':'#ffff00','#ef4444':'#ffff00','#fb7185':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
-      var _gen_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _gen_BDH = {'#334155':'#ffff00','#f59e0b':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#fb7185':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00'};
+      var _gen_BGL = {'#0b1220':'#f1f5f9','#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _gen_BGH = {'#0b1220':'#000000','#0f172a':'#000000','#1e293b':'#000000','#fb7185':'#000000','#be123c':'#000000','#fff':'#000000'};
+      var _gen_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#fb7185':'#be123c','#16a34a':'#15803d','#ef4444':'#b91c1c','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fcd34d':'#78350f'}, _gen_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#16a34a':'#ffff00','#ef4444':'#ffff00','#fb7185':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
+      var _gen_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _gen_BDH = {'#334155':'#ffff00','#f59e0b':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#fb7185':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00'};
       var _genBg = function(h){ return _genHC ? (_gen_BGH[h]||h) : (_genL ? (_gen_BGL[h]||h) : h); };
       var _genFg = function(h){ return _genHC ? (_gen_FGH[h]||h) : (_genL ? (_gen_FGL[h]||h) : h); };
-      var _genBd = function(h){ return _genHC ? (_gen_BDH[h]||h) : (_genL ? (_gen_BDL[h]||h) : h); };
+      var _genBd = function(h){ return _genHC ? (_gen_BDH[h]||'#ffff00') : (_genL ? (_gen_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -103,6 +103,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _genBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.genogram || defaultState();
       function setGEN(patch) {
@@ -113,14 +115,40 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           return Object.assign({}, prev, { genogram: next });
         });
       }
-      var view = d.view || 'tree';
-      function goto(v) { setGEN({ view: v }); }
+      function scanGenogramText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'genogram', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && (scan.hasCrisis || scan.triggered)) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'genogram', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setGEN({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Genogram', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
+      }
+      var VALID_VIEWS = ['tree', 'people', 'relationships', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'tree';
+      function goto(v) { setGEN({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'tree' }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _genFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _genHC ? '#000000' : (_genL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _genBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _genFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _genFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🌳 Genogram'),
             h('div', { style: { fontSize: 12, color: _genFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A three-generation family map for personal self-understanding.')
@@ -140,10 +168,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#fb7185' : '#334155'),
-                background: active ? 'rgba(251,113,133,0.18)' : _genBg('#1e293b'),
+            return h('button', { key: t.id, id: 'gen-tab-' + t.id, onClick: function() { goto(t.id); },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'gen-panel-' + t.id, tabIndex: active ? 0 : -1,
+              style: { padding: '6px 12px', borderRadius: 8, border: (_genHC ? '2px' : '1px') + ' solid ' + _genBd(active ? '#fb7185' : '#334155'),
+                background: active ? (_genHC ? '#000000' : (_genL ? '#ffe4e6' : 'rgba(251,113,133,0.18)')) : _genBg('#1e293b'),
                 color: active ? _genFg('#fecdd3') : _genFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -151,7 +179,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       }
 
       function safetyBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: _genFg('#fde68a'), lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _genHC ? '#000000' : (_genL ? '#fffbeb' : 'rgba(245,158,11,0.10)'), borderTop: '1px solid ' + (_genHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderRight: '1px solid ' + (_genHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderBottom: '1px solid ' + (_genHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderLeft: '3px solid ' + _genBd('#f59e0b'), marginBottom: 12, fontSize: 12.5, color: _genFg('#fde68a'), lineHeight: 1.65 } },
           h('strong', null, '⚖️ Important framing. '),
           'A genogram is a clinical family-systems tool. Used for personal self-understanding (mapping where you come from) it is generally safe and often useful. Used for deeper work (family-of-origin therapy, intergenerational trauma, addiction patterns, etc.) it should be paired with a family therapist or licensed clinician. This tool is the first kind, not the second.'
         );
@@ -159,7 +187,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _genFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _genHC ? '#000000' : (_genL ? '#f8fafc' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _genBd('#334155'), fontSize: 11, color: _genFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Family-of-origin work can stir up a lot. If a memory or pattern surfaces that feels heavy, that is real; bring it to a counselor, school psych, or family therapist. Crisis Text Line: text HOME to 741741. Crisis Companion is in this SEL Hub.'
         );
@@ -170,17 +198,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       // ═══════════════════════════════════════════════════════════
       function renderTree() {
         var people = (Array.isArray(d.people) ? d.people : []);
-        var rels = d.relationships || [];
+        var rels = Array.isArray(d.relationships) ? d.relationships : [];
 
         if (people.length === 0) {
           return h('div', null,
             safetyBanner(),
-            h('div', { style: { padding: 28, borderRadius: 14, background: 'linear-gradient(135deg, rgba(251,113,133,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(251,113,133,0.4)', textAlign: 'center', marginBottom: 14 } },
+            h('div', { style: { padding: 28, borderRadius: 14, background: _genHC ? '#000000' : (_genL ? '#fff1f2' : 'linear-gradient(135deg, rgba(251,113,133,0.18) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_genHC ? '#ffff00' : 'rgba(251,113,133,0.4)'), textAlign: 'center', marginBottom: 14 } },
               h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🌳'),
               h('h3', { style: { margin: '0 0 8px', color: _genFg('#fecdd3'), fontSize: 18 } }, 'Your genogram is empty'),
               h('p', { style: { margin: '0 0 14px', color: _genFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'A genogram is a family tree drawn with standardized symbols. Start with yourself, then add parents, then add grandparents. You can include siblings, aunts and uncles, and cousins if you want.'),
-              h('button', { onClick: function() { goto('people'); }, style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              h('button', { onClick: function() { goto('people'); }, style: { padding: '10px 22px', borderRadius: 10, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
                 '+ Start with myself')
             ),
             softPointer()
@@ -189,13 +217,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
 
         // Layout people by generation (row 0/1/2)
         var byGen = { grandparents: [], parents: [], self: [] };
-        people.forEach(function(p) { if (byGen[p.gen]) byGen[p.gen].push(p); });
+        people.forEach(function(p) { if (p && Object.prototype.hasOwnProperty.call(byGen, p.gen)) byGen[p.gen].push(p); });
 
         var svgW = 720, rowH = 130, paddingX = 60;
         var rowY = { grandparents: 60, parents: 200, self: 340 };
 
         // Assign x positions
-        var positions = {};
+        var positions = Object.create(null);
         ['grandparents', 'parents', 'self'].forEach(function(gen) {
           var list = byGen[gen];
           var step = list.length > 0 ? (svgW - 2 * paddingX) / Math.max(1, list.length - 1 + 0.0001) : 0;
@@ -208,11 +236,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
         });
 
         function drawShape(p) {
+          if (!p) return null;
           var pos = positions[p.id];
+          if (!pos) return null;
           var size = 36;
           var fill = _genBg('#1e293b');
-          var stroke = p.alive === false ? _genFg('#94a3b8') : '#fb7185';
-          var strokeDash = p.alive === false ? '' : '';
+          var stroke = _genHC ? '#ffff00' : (p.alive === false ? _genFg('#94a3b8') : '#fb7185');
           var inner;
           if (p.shape === 'circle') {
             inner = h('circle', { cx: pos.x, cy: pos.y, r: size / 2, fill: fill, stroke: stroke, strokeWidth: 2.5 });
@@ -232,15 +261,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           );
         }
 
-        function drawRel(r) {
+        function drawRel(r, idx) {
+          if (!r) return null;
           var pa = positions[r.a];
           var pb = positions[r.b];
           if (!pa || !pb) return null;
           var rt = RELATIONSHIP_TYPES.find(function(x) { return x.id === r.type; }) || RELATIONSHIP_TYPES[2];
           var dash = (r.type === 'distant' || r.type === 'estranged') ? '4 4' : '';
-          return h('line', { key: 'r_' + r.a + '_' + r.b,
+          return h('line', { key: 'r_' + idx + '_' + r.a + '_' + r.b,
             x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y,
-            stroke: rt.color, strokeWidth: rt.stroke, strokeDasharray: dash, opacity: 0.7 });
+            stroke: _genHC ? '#ffff00' : rt.color, strokeWidth: rt.stroke, strokeDasharray: dash, opacity: _genHC ? 1 : 0.85 });
         }
 
         // Accessibility description
@@ -323,12 +353,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('people'); }, 'aria-label': 'Add or edit people',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '👥 People'),
             h('button', { onClick: function() { goto('relationships'); }, 'aria-label': 'Add relationships',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🔗 Relationships'),
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🔗 Relationships'),
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
           softPointer()
         );
@@ -344,9 +374,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
         function startEdit(id) { setGEN({ editingPersonId: id, addingForGen: null }); }
         function cancel() { setGEN({ addingForGen: null, editingPersonId: null }); }
         function deletePerson(id) {
-          var nx = people.filter(function(p) { return p.id !== id; });
-          var rels = (d.relationships || []).filter(function(r) { return r.a !== id && r.b !== id; });
-          setGEN({ people: nx, relationships: rels });
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.genogram) || defaultState();
+            var prevPeople = Array.isArray(prior.people) ? prior.people : [];
+            var prevRels = Array.isArray(prior.relationships) ? prior.relationships : [];
+            var nx = prevPeople.filter(function(p) { return p && p.id !== id; });
+            var nextRels = prevRels.filter(function(r) { return r && r.a !== id && r.b !== id; });
+            var next = Object.assign({}, prior, {
+              people: nx,
+              relationships: nextRels,
+              editingPersonId: prior.editingPersonId === id ? null : prior.editingPersonId,
+              lastUpdated: todayISO()
+            });
+            return Object.assign({}, prev, { genogram: next });
+          });
         }
         function saveForm() {
           var nameEl = document.getElementById('gen-name');
@@ -362,14 +403,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
             alive: aliveEl ? aliveEl.checked : true,
             notes: notesEl ? notesEl.value.trim() : ''
           };
-          if (d.editingPersonId) {
-            var nx = people.map(function(p) { return p.id === d.editingPersonId ? Object.assign({}, p, entry) : p; });
-            setGEN({ people: nx, editingPersonId: null });
-          } else {
-            entry.id = uid();
-            entry.gen = d.addingForGen;
-            setGEN({ people: people.concat([entry]), addingForGen: null });
-          }
+          scanGenogramText([entry.name, entry.notes].filter(Boolean).join(' '));
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.genogram) || defaultState();
+            var prevPeople = Array.isArray(prior.people) ? prior.people : [];
+            var nextPeople;
+            if (prior.editingPersonId) {
+              nextPeople = prevPeople.map(function(p) { return p && p.id === prior.editingPersonId ? Object.assign({}, p, entry) : p; });
+              return Object.assign({}, prev, { genogram: Object.assign({}, prior, { people: nextPeople, editingPersonId: null, lastUpdated: todayISO() }) });
+            }
+            var created = Object.assign({}, entry, { id: uid(), gen: prior.addingForGen });
+            return Object.assign({}, prev, { genogram: Object.assign({}, prior, { people: prevPeople.concat([created]), addingForGen: null, lastUpdated: todayISO() }) });
+          });
         }
 
         function renderForm() {
@@ -377,27 +422,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           var gen = editing ? editing.gen : d.addingForGen;
           if (!gen) return null;
           var genLabel = (GENS.find(function(g) { return g.id === gen; }) || {}).label || '';
+          var formKey = d.editingPersonId ? ('edit-' + d.editingPersonId) : ('add-' + d.addingForGen);
 
-          return h('div', { style: { padding: 16, borderRadius: 12, background: _genBg('#0f172a'), border: '2px solid #fb7185', marginBottom: 14 } },
+          return h('div', { key: formKey, style: { padding: 16, borderRadius: 12, background: _genBg('#0f172a'), border: '2px solid ' + _genBd('#fb7185'), marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 10px', color: _genFg('#fda4af'), fontSize: 16, fontWeight: 800 } }, (editing ? 'Edit person' : 'Add to ') + genLabel),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
               h('div', null,
                 h('label', { htmlFor: 'gen-name', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Name or relation'),
                 h('input', { id: 'gen-name', type: 'text', defaultValue: editing ? editing.name : '',
                   placeholder: 'e.g. Mom, Pop-pop, Aunt Lin, Me',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } })
+                  onBlur: function(e) { scanGenogramText(e.target.value); },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', null,
                 h('label', { htmlFor: 'gen-shape', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Shape'),
                 h('select', { id: 'gen-shape', defaultValue: editing ? editing.shape : 'circle',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
                   SHAPES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.label); }))
               ),
               h('div', null,
                 h('label', { htmlFor: 'gen-year', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Birth year (optional)'),
                 h('input', { id: 'gen-year', type: 'text', defaultValue: editing ? editing.year : '',
                   placeholder: 'e.g. 1968',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } })
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', { style: { display: 'flex', alignItems: 'flex-end' } },
                 h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: _genFg('#cbd5e1'), cursor: 'pointer' } },
@@ -410,13 +457,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
               h('label', { htmlFor: 'gen-notes', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Notes (optional)'),
               h('textarea', { id: 'gen-notes', defaultValue: editing ? editing.notes : '',
                 placeholder: 'Anything you want to remember about this person, your relationship, or your family history.',
-                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } })
+                onBlur: function(e) { scanGenogramText(e.target.value); },
+                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } })
             ),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' } },
               h('button', { onClick: saveForm, 'aria-label': editing ? 'Save' : 'Add',
-                style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _genBg('#fb7185'), color: _genFg('#fff'), fontWeight: 800, fontSize: 13 } }, editing ? '✓ Save' : '+ Add'),
+                style: { padding: '8px 18px', borderRadius: 8, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : '#be123c', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, editing ? '✓ Save' : '+ Add'),
               h('button', { onClick: cancel, 'aria-label': 'Cancel',
-                style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, 'Cancel')
+                style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, 'Cancel')
             )
           );
         }
@@ -461,7 +509,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       // ═══════════════════════════════════════════════════════════
       function renderRelationships() {
         var people = (Array.isArray(d.people) ? d.people : []);
-        var rels = d.relationships || [];
+        var rels = Array.isArray(d.relationships) ? d.relationships : [];
 
         function nameOf(id) { var p = people.find(function(x) { return x.id === id; }); return p ? p.name : '?'; }
 
@@ -470,66 +518,75 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           var bEl = document.getElementById('rel-b');
           var tEl = document.getElementById('rel-t');
           if (!aEl || !bEl || !tEl || !aEl.value || !bEl.value || aEl.value === bEl.value) return;
-          setGEN({ relationships: rels.concat([{ a: aEl.value, b: bEl.value, type: tEl.value }]) });
+          var aVal = aEl.value, bVal = bEl.value, tVal = tEl.value;
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.genogram) || defaultState();
+            var prevRels = Array.isArray(prior.relationships) ? prior.relationships : [];
+            return Object.assign({}, prev, { genogram: Object.assign({}, prior, { relationships: prevRels.concat([{ a: aVal, b: bVal, type: tVal }]), lastUpdated: todayISO() }) });
+          });
         }
         function removeRel(i) {
-          var nx = rels.slice();
-          nx.splice(i, 1);
-          setGEN({ relationships: nx });
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.genogram) || defaultState();
+            var prevRels = Array.isArray(prior.relationships) ? prior.relationships : [];
+            var nx = prevRels.slice();
+            nx.splice(i, 1);
+            return Object.assign({}, prev, { genogram: Object.assign({}, prior, { relationships: nx, lastUpdated: todayISO() }) });
+          });
         }
 
         if (people.length < 2) {
           return h('div', null,
             safetyBanner(),
-            h('div', { style: { padding: 20, borderRadius: 12, background: _genBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
+            h('div', { style: { padding: 20, borderRadius: 12, background: _genBg('#0f172a'), border: '1px solid ' + _genBd('#1e293b'), textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '🔗'),
               h('div', { style: { color: _genFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Add at least two people first'),
               h('div', { style: { color: _genFg('#94a3b8'), fontSize: 12 } }, 'You need at least two people on your map before you can describe relationships between them.'),
               h('button', { onClick: function() { goto('people'); }, 'aria-label': 'Add people first',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #fb7185', background: 'rgba(251,113,133,0.18)', color: _genFg('#fecdd3'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Add people')
+                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _genBd('#fb7185'), background: _genHC ? '#000000' : (_genL ? '#ffe4e6' : 'rgba(251,113,133,0.18)'), color: _genFg('#fecdd3'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Add people')
             )
           );
         }
 
         return h('div', null,
           safetyBanner(),
-          h('div', { style: { padding: 14, borderRadius: 10, background: _genBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _genBg('#0f172a'), border: '1px solid ' + _genBd('#1e293b'), marginBottom: 12 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _genFg('#fda4af'), marginBottom: 10 } }, '+ Add a relationship'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 10 } },
               h('div', null,
                 h('label', { htmlFor: 'rel-a', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Between'),
                 h('select', { id: 'rel-a',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
                   h('option', { value: '' }, 'Select person...'),
                   people.map(function(p) { return h('option', { key: p.id, value: p.id }, p.name); }))
               ),
               h('div', null,
                 h('label', { htmlFor: 'rel-b', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'And'),
                 h('select', { id: 'rel-b',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
                   h('option', { value: '' }, 'Select person...'),
                   people.map(function(p) { return h('option', { key: p.id, value: p.id }, p.name); }))
               ),
               h('div', null,
                 h('label', { htmlFor: 'rel-t', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Relationship'),
                 h('select', { id: 'rel-t',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _genBd('#334155'), background: _genBg('#1e293b'), color: _genFg('#e2e8f0'), fontSize: 13 } },
                   RELATIONSHIP_TYPES.map(function(r) { return h('option', { key: r.id, value: r.id }, r.label); }))
               )
             ),
             h('button', { onClick: addRel, 'aria-label': 'Add this relationship',
-              style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _genBg('#fb7185'), color: _genFg('#fff'), fontWeight: 800, fontSize: 13 } }, '+ Add relationship')
+              style: { padding: '8px 16px', borderRadius: 8, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : '#be123c', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '+ Add relationship')
           ),
 
-          rels.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _genBg('#0f172a'), border: '1px solid #1e293b' } },
+          rels.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _genBg('#0f172a'), border: '1px solid ' + _genBd('#1e293b') } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _genFg('#fda4af'), marginBottom: 10 } }, 'Relationships (' + rels.length + ')'),
             rels.map(function(r, i) {
               var rt = RELATIONSHIP_TYPES.find(function(x) { return x.id === r.type; }) || RELATIONSHIP_TYPES[2];
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _genBg('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
-                h('span', { style: { width: 12, height: 4, background: rt.color, borderRadius: 2 } }),
+                h('span', { style: { width: 12, height: 4, background: _genHC ? '#ffff00' : rt.color, borderRadius: 2 } }),
                 h('span', { style: { flex: 1, fontSize: 12.5, color: _genFg('#e2e8f0') } }, nameOf(r.a) + '  ↔  ' + nameOf(r.b) + '  ·  ' + rt.label),
-                h('button', { onClick: function() { removeRel(i); }, 'aria-label': 'Remove relationship',
-                  style: { background: 'transparent', border: '1px solid #475569', color: _genFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                h('button', { onClick: function() { removeRel(i); }, 'aria-label': 'Remove relationship between ' + nameOf(r.a) + ' and ' + nameOf(r.b),
+                  style: { background: 'transparent', border: '1px solid ' + _genBd('#475569'), color: _genFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
               );
             })
           ) : null,
@@ -544,29 +601,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       function renderPrintView() {
         var people = (Array.isArray(d.people) ? d.people : []);
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(251,113,133,0.10)', borderRadius: 8, border: '1px solid rgba(251,113,133,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _genHC ? '#000000' : (_genL ? '#fff1f2' : 'rgba(251,113,133,0.10)'), borderRadius: 8, border: '1px solid ' + (_genHC ? '#ffff00' : 'rgba(251,113,133,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _genFg('#fecdd3'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Includes a summary list (the visual is best viewed on screen).'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _genHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _genHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _genHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('tree'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _genBd('#475569'), background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'genogram-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _genBg('#fff'), color: _genFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _genBg('#fff'), color: _genFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _genBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
-              '#genogram-print-region, #genogram-print-region * { visibility: visible !important; } ' +
+              '#genogram-print-region, #genogram-print-region * { visibility: visible !important; background: #fff !important; color: #0f172a !important; border-color: #cbd5e1 !important; } ' +
               '#genogram-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
 
-            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #be123c' } },
+            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _genBd('#be123c') } },
               h('div', { style: { fontSize: 10, color: _genFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Genogram'),
               h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, 'My Family Map'),
               d.lastUpdated ? h('div', { style: { fontSize: 12, color: _genFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
@@ -576,7 +633,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
               var genPeople = people.filter(function(p) { return p.gen === g.id; });
               if (genPeople.length === 0) return null;
               return h('div', { key: g.id, style: { marginBottom: 16, pageBreakInside: 'avoid' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: _genBg('#be123c'), color: _genFg('#fff') } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: _genBg('#be123c'), border: _genHC ? '1px solid #ffff00' : 'none', color: _genHC ? '#ffff00' : '#ffffff' } },
                   h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, g.label)
                 ),
                 genPeople.map(function(p) {
@@ -682,7 +739,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Genogram' },
         header(),
         navTabs(),
-        body
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _genBand) : null,
+        h('div', { role: 'tabpanel', id: 'gen-panel-' + view, 'aria-labelledby': 'gen-tab-' + view }, body)
       );
     }
   });

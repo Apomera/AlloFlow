@@ -33,11 +33,18 @@ const _atStripFenceBreakouts = (text, extraRegex) => {
   if (extraRegex) out = out.replace(extraRegex, ' ');
   return out.replace(/\s+/g, ' ').trim();
 };
+const _atQrStudentBlocked = () => {
+  if (typeof window === 'undefined') return false;
+  const qr = window.__alloQrStudentMode;
+  return qr === true || Boolean(qr && typeof qr === 'object' && (qr.aiDisabled === true || qr.aiPolicy === 'off'));
+};
 const _atVisionUsable = (fn) => {
+  if (_atQrStudentBlocked()) return false;
+  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
   } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+  return typeof fn === 'function' && !fn._alloQrBlocked;
 };
 const _atTranslate = (t, key, fallback, params) => {
   let text = '';
@@ -268,7 +275,12 @@ async function draftAlts(images, options) {
       // bad reply never blanks the whole set.
       for (const image of live) {
         if (opts.signal && opts.signal.aborted) throw Object.assign(new Error('Alt text drafting cancelled.'), { name: 'AbortError' });
-        await callBatch([image]);
+        try {
+          await callBatch([image]);
+        } catch (err) {
+          if (err && err.name === 'AbortError') throw err;
+          results[list.indexOf(image)] = planning(image);
+        }
       }
       return;
     }
@@ -360,7 +372,47 @@ function _oiPlainText(html, max) {
     .replace(/\s+/g, ' ').trim();
   return raw.slice(0, max || 300);
 }
-const _oiHttps = (value) => (/^https:\/\//i.test(_atString(value, 2000)) ? _atString(value, 2000) : '');
+const _oiHttps = (value) => {
+  const raw = _atString(value, 2000).trim();
+  if (!/^https:\/\//i.test(raw)) return '';
+  try {
+    const parsed = new URL(raw);
+    return parsed.protocol === 'https:' && !parsed.username && !parsed.password ? raw : '';
+  } catch (_) {
+    return '';
+  }
+};
+
+const _oiMulberryUrl = (value) => {
+  const safe = _oiHttps(value);
+  if (!safe) return '';
+  try {
+    const parsed = new URL(safe);
+    const host = String(parsed.hostname || '').toLowerCase();
+    if (!/(?:^|\.)(?:globalsymbols\.com|mulberrysymbols\.org|s3(?:\.[a-z0-9-]+)?\.amazonaws\.com|cloudfront\.net|raw\.githubusercontent\.com)$/.test(host)) {
+      return '';
+    }
+    return safe;
+  } catch (_) {
+    return '';
+  }
+};
+const _oiValidateSvgDataUrl = (dataUrl) => {
+  const raw = _atString(dataUrl, 5000000);
+  const match = raw.match(/^data:image\/svg\+xml;base64,([A-Za-z0-9+/]*={0,2})$/i);
+  if (!match) return raw;
+  if (typeof atob !== 'function') throw new Error('SVG validation is unavailable.');
+  let svg = '';
+  try { svg = atob(match[1]); } catch (_) { throw new Error('This symbol could not be decoded.'); }
+  if (!/<svg(?:\s|>|\/)/i.test(svg)) throw new Error('This symbol is not valid SVG markup.');
+  const unsafe = /<\s*(?:script|foreignObject|iframe|object|embed|link|style|image|audio|video)\b/i.test(svg)
+    || /<!\s*(?:DOCTYPE|ENTITY)\b|<\?xml-stylesheet\b/i.test(svg)
+    || /\son[a-z]+\s*=/i.test(svg)
+    || /(?:href|xlink:href)\s*=\s*['"]\s*(?:https?:|\/\/|blob:|data:|javascript:)/i.test(svg)
+    || /(?:url\s*\(|@import|javascript:|expression\s*\()/i.test(svg);
+  if (unsafe) throw new Error('This symbol contains unsafe SVG markup and was blocked.');
+  return raw;
+};
 
 function isClassroomLicense(shortName) {
   return _OPEN_LICENSE_OK.test(_atString(shortName, 120).trim());
@@ -540,6 +592,7 @@ async function screenOpenImages(candidates, query, options) {
   const vision = _atVisionUsable(rawVision) ? rawVision : null;
   if (!vision) return Object.assign(out, { unchecked: list.length, error: 'unavailable' });
   const fetchImpl = typeof opts.fetchImpl === 'function' ? opts.fetchImpl : (typeof fetch === 'function' ? fetch : null);
+  if (!fetchImpl) return Object.assign(out, { unchecked: list.length, error: 'network' });
   const batchSize = Math.max(1, Math.min(ALT_BATCH_SIZE, Number(opts.batchSize) || ALT_BATCH_SIZE));
   const cancelled = () => Object.assign(new Error('Image check cancelled.'), { name: 'AbortError' });
   // Download and check one batch at a time, so a search stopped part-way (the
@@ -567,6 +620,7 @@ async function screenOpenImages(candidates, query, options) {
     const verdictFor = [];
     for (let index = 0; index < batch.length; index++) {
       if (batchVerdicts) { verdictFor.push(batchVerdicts.get(index)); continue; }
+      if (opts.signal && opts.signal.aborted) throw cancelled();
       const single = batch.length > 1 ? await _oiScreenBatch(vision, [batch[index]], query, opts) : null;
       verdictFor.push(single && single.get(0));
     }
@@ -784,7 +838,7 @@ async function searchMulberrySymbols(query, options) {
   }
   const seen = new Set();
   const symbols = (Array.isArray(rows) ? rows : []).map(row => {
-    const svgUrl = _oiHttps(row && row.picto && row.picto.image_url);
+    const svgUrl = _oiMulberryUrl(row && row.picto && row.picto.image_url);
     if (!svgUrl || seen.has(svgUrl)) return null;
     seen.add(svgUrl);
     const label = _atString((row && row.text) || q, 120).trim();
@@ -805,20 +859,28 @@ function ClassroomImagePicker(props) {
   const [choosing, setChoosing] = React.useState('');
   const [, setAiRevision] = React.useState(0);
   const epoch = React.useRef(0);
+  const mountedRef = React.useRef(true);
   // A new search, closing the picker, or a stalled library stops the old work:
   // its downloads and AI checks, not just its result.
   const controller = React.useRef(null);
   // A choice is cancelled the same way: its check and download stop, and it is never handed on.
   const chooseController = React.useRef(null);
-  const stopWork = () => { epoch.current++; [controller, chooseController].forEach(ref => { if (ref.current) ref.current.abort(); }); };
+  const stopWork = () => {
+    epoch.current++;
+    [controller, chooseController].forEach(ref => { if (ref.current) ref.current.abort(); });
+    if (mountedRef.current) setChoosing('');
+  };
   React.useEffect(() => {
+    mountedRef.current = true;
     const onAiChange = () => setAiRevision(v => v + 1);
+    const aiEvents = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed'];
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-      window.addEventListener('alloflow:ai-config-changed', onAiChange);
+      aiEvents.forEach(ev => window.addEventListener(ev, onAiChange));
     }
     return () => {
+      mountedRef.current = false;
       if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
-        window.removeEventListener('alloflow:ai-config-changed', onAiChange);
+        aiEvents.forEach(ev => window.removeEventListener(ev, onAiChange));
       }
       stopWork();
     };
@@ -833,6 +895,10 @@ function ClassroomImagePicker(props) {
     const q = query.trim();
     if (!q) return;
     stopWork();
+    if (tab === 'photos' && !photosAiUsable) {
+      setState({ status: 'done', items: [], withheld: 0, unchecked: 0, error: 'unavailable', query: q });
+      return;
+    }
     const mine = epoch.current;
     const current = typeof AbortController === 'function' ? new AbortController() : null;
     controller.current = current;
@@ -864,23 +930,23 @@ function ClassroomImagePicker(props) {
     setState(prev => Object.assign({}, prev, { chooseError: '' }));
     try {
       const dataUrl = item.source === 'mulberry'
-        ? await _oiFetchDataUrl(item.svgUrl, fetchImpl || fetch, signal).catch(error => { if (error && error.name === 'AbortError') throw error; return item.svgUrl; })
+        ? _oiValidateSvgDataUrl(await _oiFetchDataUrl(_oiMulberryUrl(item.svgUrl), fetchImpl || fetch, signal))
         : await fetchClassroomImage(item, { fetchImpl, callGeminiVision, language, query: state.query || query, signal });
       if (timer) clearTimeout(timer);
       // Closed, searched again or switched tab while this was checked: no longer wanted.
-      if (mine !== epoch.current || (signal && signal.aborted)) return;
+      if (!mountedRef.current || mine !== epoch.current || (signal && signal.aborted)) return;
       await onChoose({ dataUrl, alt: item.alt, altSource: item.source === 'mulberry' ? 'author' : item.altSource, attribution: item.attribution, creditLine: item.creditLine, source: item.source });
     } catch (error) {
-      if (!timedOut && !(error && error.name === 'AbortError')) {
+      if (mountedRef.current && mine === epoch.current && !timedOut && !(error && error.name === 'AbortError')) {
         setState(prev => Object.assign({}, prev, { chooseError: (error && error.message) || tr('images_add_failed', 'That picture could not be added. Try another one.') }));
       }
     } finally {
       if (timer) clearTimeout(timer);
       // However the stopped download ended (an error, or a quiet return), say why.
-      if (timedOut && mine === epoch.current) {
+      if (mountedRef.current && timedOut && mine === epoch.current) {
         setState(prev => Object.assign({}, prev, { chooseError: tr('images_add_timeout', 'That picture took too long to download and check. Try again, or choose another one.') }));
       }
-      setChoosing('');
+      if (mountedRef.current && mine === epoch.current) setChoosing('');
     }
   };
   const status = state.status === 'checking' ? tr('images_checking', 'Searching and checking each photo for classroom safety...')
@@ -949,12 +1015,13 @@ function ImageAltField(props) {
   const [, setAiRevision] = React.useState(0);
   React.useEffect(() => {
     const onAiChange = () => setAiRevision(v => v + 1);
+    const aiEvents = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed'];
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-      window.addEventListener('alloflow:ai-config-changed', onAiChange);
+      aiEvents.forEach(ev => window.addEventListener(ev, onAiChange));
     }
     return () => {
       if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
-        window.removeEventListener('alloflow:ai-config-changed', onAiChange);
+        aiEvents.forEach(ev => window.removeEventListener(ev, onAiChange));
       }
     };
   }, []);
@@ -969,10 +1036,14 @@ function ImageAltField(props) {
   const fieldId = id || fallbackIdRef.current;
   const helpId = fieldId + '-help';
   const qualityId = fieldId + '-quality';
-  const aiLocked = typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true);
-  const hostDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
-  const regenerateAiBlocked = aiLocked || (hostDoor && hostDoor.disabled);
-  const SetupNotice = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AlloAiSetupNotice ? window.AlloModules.AlloAiSetupNotice : null;
+  const studentAiOff = _atQrStudentBlocked() || (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  const aiLocked = studentAiOff || (typeof window !== 'undefined' && window.__alloAiSecretsLocked === true);
+  const hostAiUsable = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function')
+    ? (() => { try { return Boolean(window.__alloAiUsable('text')); } catch (_) { return false; } })()
+    : true;
+  const hostDoor = !studentAiOff && typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
+  const regenerateAiBlocked = aiLocked || !hostAiUsable || Boolean(hostDoor && hostDoor.disabled);
+  const SetupNotice = !studentAiOff && typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AlloAiSetupNotice ? window.AlloModules.AlloAiSetupNotice : null;
   return (
     <div className="rounded-xl border border-slate-300 bg-white p-3" data-alt-source={sourceKey || undefined}>
       <div className="flex flex-wrap items-center justify-between gap-2">

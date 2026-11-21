@@ -1,5 +1,6 @@
 "use strict";
 
+const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { randomUUID } = require("node:crypto");
@@ -7,7 +8,28 @@ const { randomUUID } = require("node:crypto");
 const SERVICE_ROOT = path.resolve(__dirname, "..");
 const ADMISSION_SCRIPT = path.join(__dirname, "pilot-admission.cjs");
 const RECOVERY_COMMAND = "npm run admission:resume:staging";
-const NPM_COMMAND = process.platform === "win32" ? "npm.cmd" : "npm";
+
+function resolveNpmStep(npmArgs) {
+  const envNpmExecPath = process.env.npm_execpath;
+  if (
+    typeof envNpmExecPath === "string" &&
+    /\.(?:c|m)?js$/iu.test(envNpmExecPath) &&
+    fs.existsSync(envNpmExecPath)
+  ) {
+    return [process.execPath, [envNpmExecPath, ...npmArgs]];
+  }
+  const bundledNpmCli = path.join(
+    path.dirname(process.execPath),
+    "node_modules",
+    "npm",
+    "bin",
+    "npm-cli.js",
+  );
+  if (fs.existsSync(bundledNpmCli)) {
+    return [process.execPath, [bundledNpmCli, ...npmArgs]];
+  }
+  return ["npm", npmArgs];
+}
 
 function runCommand(command, args) {
   const result = spawnSync(command, args, {
@@ -40,8 +62,8 @@ function releaseSteps(configPath, accepted, ownership) {
       ownership.token,
     ]],
     [node, [path.join(__dirname, "stage-runner.cjs")]],
-    [NPM_COMMAND, ["run", "check"]],
-    [NPM_COMMAND, ["run", "runner:check"]],
+    resolveNpmStep(["run", "check"]),
+    resolveNpmStep(["run", "runner:check"]),
     [node, [path.join(__dirname, "pilot-preflight.cjs"), "--config", configPath, ...(accepted ? ["--allow-synthetic-acceptance"] : [])]],
     [node, [wrangler, "deploy", "--dry-run", "--config", configPath, "--outdir", ".wrangler-build/pilot"]],
     [node, [wrangler, "check", "startup", "--config", configPath, "--outfile", ".wrangler-build/pilot-startup.cpuprofile"]],
@@ -142,7 +164,14 @@ async function runPausedRelease(options) {
       }
     }
   }
-  if (resumeError) throw resumeError;
+  if (resumeError) {
+    if (releaseError) {
+      process.stderr.write(
+        `deploy: release step also failed before resume error: ${releaseError instanceof Error ? releaseError.message : "failed"}\n`,
+      );
+    }
+    throw resumeError;
+  }
   if (releaseError) throw releaseError;
 }
 
@@ -153,7 +182,7 @@ async function main(argv) {
       ? argv[configIndex + 1]
       : "wrangler.pilot.local.jsonc",
   );
-  if (/\.example\./u.test(path.basename(configPath))) {
+  if (/\.example\./iu.test(path.basename(configPath))) {
     throw new Error("refusing_to_deploy_example_configuration");
   }
   await runPausedRelease({

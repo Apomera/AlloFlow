@@ -1312,7 +1312,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       var airportDiagram = function(apt, className) {
         var centerX = apt.runways.reduce(function(sum, rwy) { return sum + rwy.x; }, 0) / apt.runways.length;
         var centerY = apt.runways.reduce(function(sum, rwy) { return sum + rwy.y; }, 0) / apt.runways.length;
+        var gradId = 'atc-diag-bg-' + String(apt.id || 'apt').replace(/[^a-z0-9_-]/gi, '') + '-' + String(className || 'card').replace(/[^a-z0-9_-]/gi, '');
         return h('svg', { className: 'atc-airport-diagram ' + (className || ''), 'data-atctower-airport-diagram': apt.id, viewBox: '0 0 240 144', 'aria-hidden': true, focusable: false },
+          h('defs', null,
+            h('radialGradient', { id: gradId, cx: '50%', cy: '50%', r: '58%' },
+              h('stop', { offset: '0%', stopColor: '#10b981', stopOpacity: 0.14 }),
+              h('stop', { offset: '62%', stopColor: '#0e7490', stopOpacity: 0.06 }),
+              h('stop', { offset: '100%', stopColor: '#04121b', stopOpacity: 0 }))),
+          h('rect', { x: 0, y: 0, width: 240, height: 144, fill: 'url(#' + gradId + ')' }),
           [24,48,72,96,120].map(function(y) { return h('line', { key: 'h' + y, className: 'atc-diagram-grid', x1: 8, x2: 232, y1: y, y2: y }); }),
           [24,48,72,96,120,144,168,192,216].map(function(x) { return h('line', { key: 'v' + x, className: 'atc-diagram-grid', x1: x, x2: x, y1: 8, y2: 136 }); }),
           h('ellipse', { className: 'atc-diagram-ring', cx: 120, cy: 72, rx: 88, ry: 60 }),
@@ -1324,12 +1331,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           apt.runways.map(function(rwy, index) {
             var x = 120 + (rwy.x - centerX) * .65, y = 72 + (rwy.y - centerY) * .65;
             var angle = toRad(rwy.hdg), dx = Math.sin(angle) * rwy.len * .6, dy = -Math.cos(angle) * rwy.len * .6;
-            var apx1 = x - dx * 1.45, apy1 = y - dy * 1.45;
+            var px = Math.cos(angle) * 6.5, py = Math.sin(angle) * 6.5;
+            var apx1 = x - dx * 1.55, apy1 = y - dy * 1.55;
             return h('g', { key: index, 'data-atctower-runway-symbol': String(index) },
-              h('line', { x1: apx1, y1: apy1, x2: x - dx, y2: y - dy, stroke: '#99f6e4', strokeWidth: 1.4, strokeDasharray: '3 3', opacity: 0.7 }),
+              h('polygon', { points: (x - dx) + ',' + (y - dy) + ' ' + (apx1 - px) + ',' + (apy1 - py) + ' ' + (apx1 + px) + ',' + (apy1 + py), fill: '#34d399', opacity: 0.14 }),
+              h('line', { x1: apx1, y1: apy1, x2: x - dx, y2: y - dy, stroke: '#5eead4', strokeWidth: 1.4, strokeDasharray: '3 3', opacity: 0.8 }),
               h('line', { className: 'atc-diagram-runway', x1: x - dx, y1: y - dy, x2: x + dx, y2: y + dy }),
               h('line', { className: 'atc-diagram-centerline', x1: x - dx, y1: y - dy, x2: x + dx, y2: y + dy }),
-              h('circle', { cx: x - dx, cy: y - dy, r: 2.5, fill: '#fbbf24' }),
+              h('circle', { cx: x - dx, cy: y - dy, r: 4.5, fill: '#34d399', opacity: 0.28 }),
+              h('circle', { cx: x - dx, cy: y - dy, r: 2.3, fill: '#fbbf24' }),
               h('text', { x: x + Math.cos(angle) * 14, y: y + Math.sin(angle) * 14 + 4, textAnchor: 'middle' }, runwayLabel(rwy, apt)));
           }));
       };
@@ -2249,27 +2259,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             conflict: hc ? '#ff0000' : '#ef4444',
           };
 
-          // Background — dark radar scope with subtle radial gradient
+          // Background — authentic phosphor-green/cyan CRT radar scope with radial depth
+          var scopeR = Math.min(W, H) * 0.48;
           var bgGrad = gfx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
-          bgGrad.addColorStop(0, hc ? '#0a0a0a' : '#0c2431');
-          bgGrad.addColorStop(0.5, hc ? '#050505' : '#071923');
-          bgGrad.addColorStop(1, hc ? '#000000' : '#050f19');
+          bgGrad.addColorStop(0, hc ? '#0a0a0a' : '#08262b');
+          bgGrad.addColorStop(0.48, hc ? '#050505' : '#061a22');
+          bgGrad.addColorStop(0.84, hc ? '#000000' : '#041019');
+          bgGrad.addColorStop(1, hc ? '#000000' : '#02080f');
           gfx.fillStyle = bgGrad;
           gfx.fillRect(0, 0, W, H);
 
-          // Subtle scanline effect (CRT phosphor look)
+          // Subtle CRT phosphor scanlines & glass vignette inside scope
           if (!reducedMotion.current && !hc) {
-            gfx.fillStyle = 'rgba(0,0,0,0.03)';
+            gfx.fillStyle = 'rgba(0,0,0,0.045)';
             for (var sl = 0; sl < H; sl += 3) { gfx.fillRect(0, sl, W, 1); }
           }
 
-          // Outer scope ring (bezel)
+          // Weather radar cell depth (NEXRAD-style multi-layered precipitation cells clipped to scope)
+          if (!hc && scopeR > 40) {
+            gfx.save();
+            gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR - 2, 0, Math.PI * 2); gfx.clip();
+            var wxWindRad = toRad((game.wind.dir + 180) % 360);
+            var wxDrift = reducedMotion.current ? 0 : (game.time * Math.max(4, game.wind.speed) * 0.14);
+            var wxStrong = game.wind.speed >= 14;
+            var wxCells = [
+              { az: 0.72, dist: 0.62, r: 0.19, intensity: 0.85 },
+              { az: 2.38, dist: 0.68, r: 0.16, intensity: 0.7 },
+              { az: 4.35, dist: 0.64, r: 0.21, intensity: 0.92 }
+            ];
+            wxCells.forEach(function(cell, ci) {
+              var baseX = W / 2 + Math.cos(cell.az) * scopeR * cell.dist;
+              var baseY = H / 2 + Math.sin(cell.az) * scopeR * cell.dist;
+              var shiftX = ((Math.sin(wxWindRad) * wxDrift + ci * 19) % 44) - 22;
+              var shiftY = ((-Math.cos(wxWindRad) * wxDrift + ci * 13) % 44) - 22;
+              var cx = baseX + shiftX * scale * 0.55;
+              var cy = baseY + shiftY * scale * 0.55;
+              var cr = scopeR * cell.r * (0.85 + Math.min(game.wind.speed, 30) / 70);
+              if (typeof gfx.createRadialGradient === 'function') {
+                // Outer green precipitation echo
+                var wxG1 = gfx.createRadialGradient(cx, cy, cr * 0.1, cx, cy, cr);
+                wxG1.addColorStop(0, 'rgba(34,197,94,' + (0.14 * cell.intensity) + ')');
+                wxG1.addColorStop(0.55, 'rgba(16,185,129,' + (0.08 * cell.intensity) + ')');
+                wxG1.addColorStop(1, 'rgba(16,185,129,0)');
+                gfx.fillStyle = wxG1;
+                gfx.beginPath(); gfx.arc(cx, cy, cr, 0, Math.PI * 2); gfx.fill();
+                // Offset lobe for organic storm cell silhouette
+                var lx = cx + cr * 0.34, ly = cy - cr * 0.22;
+                var wxG2 = gfx.createRadialGradient(lx, ly, cr * 0.08, lx, ly, cr * 0.68);
+                wxG2.addColorStop(0, 'rgba(20,184,166,' + (0.13 * cell.intensity) + ')');
+                wxG2.addColorStop(1, 'rgba(20,184,166,0)');
+                gfx.fillStyle = wxG2;
+                gfx.beginPath(); gfx.arc(lx, ly, cr * 0.68, 0, Math.PI * 2); gfx.fill();
+                // Moderate-to-heavy amber convective pocket when wind is elevated
+                if (wxStrong && ci !== 1) {
+                  var wxCore = gfx.createRadialGradient(cx - cr * 0.12, cy + cr * 0.08, 1, cx - cr * 0.12, cy + cr * 0.08, cr * 0.42);
+                  wxCore.addColorStop(0, 'rgba(245,158,11,' + (0.19 * cell.intensity) + ')');
+                  wxCore.addColorStop(0.55, 'rgba(234,179,8,' + (0.09 * cell.intensity) + ')');
+                  wxCore.addColorStop(1, 'rgba(245,158,11,0)');
+                  gfx.fillStyle = wxCore;
+                  gfx.beginPath(); gfx.arc(cx - cr * 0.12, cy + cr * 0.08, cr * 0.42, 0, Math.PI * 2); gfx.fill();
+                }
+              }
+              // Subtle reflectivity contour line
+              gfx.strokeStyle = 'rgba(52,211,153,0.14)'; gfx.lineWidth = 0.8; gfx.setLineDash([3, 4]);
+              gfx.beginPath(); gfx.arc(cx, cy, cr * 0.52, 0, Math.PI * 2); gfx.stroke();
+              gfx.setLineDash([]);
+            });
+            gfx.restore();
+          }
+
+          // Outer scope ring (CRT bezel with subtle inner phosphor rim glow)
           if (!hc) {
-            var scopeR = Math.min(W, H) * 0.48;
-            gfx.strokeStyle = 'rgba(147,194,210,0.22)'; gfx.lineWidth = 2;
+            gfx.strokeStyle = 'rgba(45,212,191,0.34)'; gfx.lineWidth = 2;
             gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR, 0, Math.PI * 2); gfx.stroke();
-            gfx.strokeStyle = 'rgba(147,194,210,0.08)'; gfx.lineWidth = 1;
-            gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR + 3, 0, Math.PI * 2); gfx.stroke();
+            gfx.strokeStyle = 'rgba(52,211,153,0.12)'; gfx.lineWidth = 5;
+            gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR - 2, 0, Math.PI * 2); gfx.stroke();
+            gfx.strokeStyle = 'rgba(147,194,210,0.14)'; gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR + 4, 0, Math.PI * 2); gfx.stroke();
           }
 
           // Focus ring on canvas (WCAG 2.4.7)
@@ -2278,29 +2344,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.strokeRect(1, 1, W - 2, H - 2);
           }
 
-          // Radar sweep effect — realistic rotating beam with phosphor decay
+          // Authentic phosphor-green/cyan CRT radar sweep cone with decaying afterglow
+          var sweepAngle = (game.time * 0.68) % (Math.PI * 2); // 0 = North (-Y), rotating clockwise
           if (!reducedMotion.current) {
-            var sweepAngle = (game.time * 0.5) % (Math.PI * 2);
-            var sweepGrad = gfx.createConicGradient(sweepAngle, W / 2, H / 2);
-            sweepGrad.addColorStop(0, colors.radar + '0.12)');
-            sweepGrad.addColorStop(0.02, colors.radar + '0.08)');
-            sweepGrad.addColorStop(0.06, colors.radar + '0.03)');
-            sweepGrad.addColorStop(0.15, colors.radar + '0.015)');
-            sweepGrad.addColorStop(0.35, colors.radar + '0)');
-            sweepGrad.addColorStop(1, 'rgba(34,197,94,0)');
-            gfx.fillStyle = sweepGrad;
-            gfx.fillRect(0, 0, W, H);
-            // Sweep line (bright leading edge)
             gfx.save();
+            gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR, 0, Math.PI * 2); gfx.clip();
+            var conicStart = sweepAngle - Math.PI / 2;
+            if (typeof gfx.createConicGradient === 'function') {
+              var sweepGrad = gfx.createConicGradient(conicStart, W / 2, H / 2);
+              // Trailing phosphor persistence cone behind the clockwise-rotating beam
+              sweepGrad.addColorStop(0, hc ? 'rgba(255,255,0,0.02)' : 'rgba(52,211,153,0)');
+              sweepGrad.addColorStop(0.62, 'rgba(16,185,129,0)');
+              sweepGrad.addColorStop(0.78, hc ? 'rgba(255,255,0,0.04)' : 'rgba(20,184,166,0.045)');
+              sweepGrad.addColorStop(0.91, hc ? 'rgba(255,255,0,0.10)' : 'rgba(45,212,191,0.12)');
+              sweepGrad.addColorStop(0.975, hc ? 'rgba(255,255,0,0.18)' : 'rgba(52,211,153,0.22)');
+              sweepGrad.addColorStop(1, hc ? 'rgba(255,255,0,0.24)' : 'rgba(153,246,228,0.28)');
+              gfx.fillStyle = sweepGrad;
+              gfx.fillRect(W / 2 - scopeR, H / 2 - scopeR, scopeR * 2, scopeR * 2);
+            } else {
+              // Fallback phosphor wedge when createConicGradient is unavailable
+              gfx.fillStyle = hc ? 'rgba(255,255,0,0.12)' : 'rgba(45,212,191,0.12)';
+              gfx.beginPath(); gfx.moveTo(W / 2, H / 2);
+              gfx.arc(W / 2, H / 2, scopeR, conicStart - 0.58, conicStart);
+              gfx.closePath(); gfx.fill();
+            }
+            // Bright dual-pass leading phosphor scan beam
             gfx.translate(W / 2, H / 2);
             gfx.rotate(sweepAngle);
-            var sweepLen = Math.max(W, H) * 0.7;
-            var lineGrad = gfx.createLinearGradient(0, 0, 0, -sweepLen);
-            lineGrad.addColorStop(0, colors.radar + '0.4)');
-            lineGrad.addColorStop(0.3, colors.radar + '0.15)');
-            lineGrad.addColorStop(1, colors.radar + '0)');
-            gfx.strokeStyle = lineGrad; gfx.lineWidth = 1.5;
-            gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(0, -sweepLen); gfx.stroke();
+            var bloomGrad = gfx.createLinearGradient(0, 0, 0, -scopeR);
+            bloomGrad.addColorStop(0, hc ? 'rgba(255,255,0,0.35)' : 'rgba(52,211,153,0.38)');
+            bloomGrad.addColorStop(0.65, hc ? 'rgba(255,255,0,0.2)' : 'rgba(45,212,191,0.24)');
+            bloomGrad.addColorStop(1, hc ? 'rgba(255,255,0,0.04)' : 'rgba(45,212,191,0.04)');
+            gfx.strokeStyle = bloomGrad; gfx.lineWidth = 5;
+            gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(0, -scopeR); gfx.stroke();
+            var lineGrad = gfx.createLinearGradient(0, 0, 0, -scopeR);
+            lineGrad.addColorStop(0, hc ? '#ffff00' : 'rgba(204,251,241,0.92)');
+            lineGrad.addColorStop(0.55, hc ? 'rgba(255,255,0,0.6)' : 'rgba(94,234,212,0.68)');
+            lineGrad.addColorStop(1, hc ? 'rgba(255,255,0,0.1)' : 'rgba(52,211,153,0.12)');
+            gfx.strokeStyle = lineGrad; gfx.lineWidth = 1.6;
+            gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(0, -scopeR); gfx.stroke();
             gfx.restore();
           }
 
@@ -2308,8 +2390,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           [40, 60, 80, 120, 160, 180].forEach(function(r2) {
             var rPx = r2 * scale;
             var isMajor = r2 % 60 === 0;
-            gfx.strokeStyle = isMajor ? (colors.radar + '0.22)') : (colors.radar + '0.08)');
-            gfx.lineWidth = isMajor ? 0.8 : 0.4;
+            gfx.strokeStyle = isMajor ? (colors.radar + '0.24)') : (colors.radar + '0.09)');
+            gfx.lineWidth = isMajor ? 0.9 : 0.45;
             if (!isMajor) { gfx.setLineDash([2, 4]); }
             gfx.beginPath(); gfx.arc(W / 2, H / 2, rPx, 0, Math.PI * 2); gfx.stroke();
             if (!isMajor) { gfx.setLineDash([]); }
@@ -2320,12 +2402,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.fillText(Math.round(r2 / ATC_UNITS_PER_NM) + 'nm', W / 2 + r2 * scale - 5, H / 2 - 3);
           });
           // Center crosshair
-          gfx.strokeStyle = colors.radar + '0.08)'; gfx.lineWidth = 0.5;
-          gfx.beginPath(); gfx.moveTo(W / 2 - 6, H / 2); gfx.lineTo(W / 2 + 6, H / 2); gfx.stroke();
-          gfx.beginPath(); gfx.moveTo(W / 2, H / 2 - 6); gfx.lineTo(W / 2, H / 2 + 6); gfx.stroke();
+          gfx.strokeStyle = colors.radar + '0.16)'; gfx.lineWidth = 0.6;
+          gfx.beginPath(); gfx.moveTo(W / 2 - 7, H / 2); gfx.lineTo(W / 2 + 7, H / 2); gfx.stroke();
+          gfx.beginPath(); gfx.moveTo(W / 2, H / 2 - 7); gfx.lineTo(W / 2, H / 2 + 7); gfx.stroke();
 
           // Compass cardinals + intercardinals
-          gfx.fillStyle = hc ? '#ffff00' : 'rgba(173,219,225,0.8)'; gfx.font = 'bold 11px monospace'; gfx.textAlign = 'center';
+          gfx.fillStyle = hc ? '#ffff00' : 'rgba(173,219,225,0.84)'; gfx.font = 'bold 11px monospace'; gfx.textAlign = 'center';
           gfx.fillText('N', W / 2, 14); gfx.fillText('S', W / 2, H - 6);
           gfx.fillText('E', W - 10, H / 2 + 4); gfx.fillText('W', 12, H / 2 + 4);
           gfx.fillStyle = hc ? '#ffff00' : 'rgba(147,194,210,0.72)'; gfx.font = '9px monospace';
@@ -2376,14 +2458,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           gfx.fillStyle = hc ? '#ffff00' : 'rgba(240,247,251,0.85)'; gfx.font = 'bold 9px monospace'; gfx.textAlign = 'center';
           gfx.fillText(String(game.wind.dir).padStart(3, '0') + '°/' + game.wind.speed + 'kt', wsX, H - 32);
 
-          // Runways — enhanced with approach lights, threshold, taxiway stubs
+          // Runways — enhanced with illuminated ILS approach vectors, sequenced rabbit lights & threshold glow
           airport.runways.forEach(function(rwy) {
             var rx = rwy.x * scale; var ry = rwy.y * scale;
             var rwyRad = toRad(rwy.hdg);
             var dx = Math.sin(rwyRad) * rwy.len * scale / 2;
             var dy = -Math.cos(rwyRad) * rwy.len * scale / 2;
-            // Runway surface (darker base)
-            gfx.strokeStyle = 'rgba(100,100,100,0.4)'; gfx.lineWidth = 6 * scale;
+            var perpX = Math.cos(rwyRad) * 3.2 * scale; var perpY = Math.sin(rwyRad) * 3.2 * scale;
+            // Subtle runway surface illumination halo
+            if (!hc) {
+              gfx.strokeStyle = 'rgba(45,212,191,0.14)'; gfx.lineWidth = 10 * scale;
+              gfx.beginPath(); gfx.moveTo(rx - dx, ry - dy); gfx.lineTo(rx + dx, ry + dy); gfx.stroke();
+            }
+            // Runway surface (darker asphalt base)
+            gfx.strokeStyle = hc ? 'rgba(255,255,255,0.28)' : 'rgba(15,35,48,0.88)'; gfx.lineWidth = 6.5 * scale;
             gfx.beginPath(); gfx.moveTo(rx - dx, ry - dy); gfx.lineTo(rx + dx, ry + dy); gfx.stroke();
             // Runway centerline
             gfx.strokeStyle = colors.rwy; gfx.lineWidth = 1.5 * scale;
@@ -2391,51 +2479,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.beginPath(); gfx.moveTo(rx - dx, ry - dy); gfx.lineTo(rx + dx, ry + dy); gfx.stroke();
             gfx.setLineDash([]);
             // Runway edge lights
-            gfx.strokeStyle = colors.rwy + (hc ? '' : '80'); gfx.lineWidth = 0.5;
-            var perpX = Math.cos(rwyRad) * 3 * scale; var perpY = Math.sin(rwyRad) * 3 * scale;
+            gfx.strokeStyle = hc ? '#ffff00' : 'rgba(153,246,228,0.58)'; gfx.lineWidth = 0.8;
             gfx.beginPath(); gfx.moveTo(rx - dx + perpX, ry - dy + perpY); gfx.lineTo(rx + dx + perpX, ry + dy + perpY); gfx.stroke();
             gfx.beginPath(); gfx.moveTo(rx - dx - perpX, ry - dy - perpY); gfx.lineTo(rx + dx - perpX, ry + dy - perpY); gfx.stroke();
-            // Threshold bars
+            // Illuminated green threshold lights (approach end) + red end lights (departure end)
             for (var tb = -2; tb <= 2; tb++) {
-              var tbOff = tb * 1.2 * scale;
-              var tbPx = perpX * (tb / 2.5); var tbPy = perpY * (tb / 2.5);
-              gfx.fillStyle = colors.rwy;
-              gfx.fillRect(rx - dx + tbPx - 1, ry - dy + tbPy - 1, 2, 2);
+              var tbPx = perpX * (tb / 2.2); var tbPy = perpY * (tb / 2.2);
+              gfx.fillStyle = hc ? '#ffff00' : '#34d399';
+              gfx.fillRect(rx - dx + tbPx - 1.2, ry - dy + tbPy - 1.2, 2.4, 2.4);
+              if (!hc && Math.abs(tb) === 2) {
+                gfx.fillStyle = 'rgba(248,113,113,0.75)';
+                gfx.beginPath(); gfx.arc(rx + dx + tbPx, ry + dy + tbPy, 1.3, 0, Math.PI * 2); gfx.fill();
+              }
             }
             // Runway label
             gfx.fillStyle = colors.rwy; gfx.font = 'bold ' + (9 * scale) + 'px monospace'; gfx.textAlign = 'center';
             var rwyNum = runwayLabel(rwy, airport);
             gfx.fillText(rwyNum, rx, ry + 16 * scale);
-            // ILS localizer cone (approach path visualization)
+            // Illuminated ILS localizer approach vector cone + glideslope distance markers
             gfx.save();
             gfx.translate(rx - dx, ry - dy);
             gfx.rotate(rwyRad);
-            var coneLen = 36 * scale;
+            var coneLen = 64 * scale;
             var coneGrad = gfx.createLinearGradient(0, 0, 0, coneLen);
-            coneGrad.addColorStop(0, colors.radar + '0.08)');
-            coneGrad.addColorStop(1, colors.radar + '0)');
+            coneGrad.addColorStop(0, hc ? 'rgba(255,255,0,0.18)' : 'rgba(52,211,153,0.18)');
+            coneGrad.addColorStop(0.55, hc ? 'rgba(255,255,0,0.07)' : 'rgba(45,212,191,0.08)');
+            coneGrad.addColorStop(1, 'rgba(45,212,191,0)');
             gfx.fillStyle = coneGrad;
             gfx.beginPath(); gfx.moveTo(0, 0);
-            gfx.lineTo(-15 * scale, coneLen);
-            gfx.lineTo(15 * scale, coneLen);
+            gfx.lineTo(-17 * scale, coneLen);
+            gfx.lineTo(17 * scale, coneLen);
             gfx.closePath(); gfx.fill();
-            // ILS centerline
-            gfx.strokeStyle = colors.radar + '0.12)'; gfx.lineWidth = 0.8; gfx.setLineDash([4, 6]);
-            gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(0, coneLen); gfx.stroke();
+            // Localizer feather edge lines
+            gfx.strokeStyle = hc ? 'rgba(255,255,0,0.3)' : 'rgba(94,234,212,0.22)'; gfx.lineWidth = 0.7;
+            gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(-16 * scale, coneLen * 0.9);
+            gfx.moveTo(0, 0); gfx.lineTo(16 * scale, coneLen * 0.9); gfx.stroke();
+            // ILS extended centerline + Outer/Middle/Inner marker cross-ticks
+            gfx.strokeStyle = hc ? 'rgba(255,255,0,0.45)' : 'rgba(153,246,228,0.34)'; gfx.lineWidth = 1; gfx.setLineDash([4, 5]);
+            gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(0, coneLen * 1.12); gfx.stroke();
             gfx.setLineDash([]);
-            // Approach lights (series of dots along centerline)
+            [18, 36, 54].forEach(function(mkDist, mi) {
+              var my = mkDist * scale, mw = (4 + mi * 2) * scale;
+              gfx.strokeStyle = hc ? '#ffff00' : (mi === 0 ? 'rgba(251,191,36,0.65)' : 'rgba(94,234,212,0.45)');
+              gfx.lineWidth = 1.1;
+              gfx.beginPath(); gfx.moveTo(-mw, my); gfx.lineTo(mw, my); gfx.stroke();
+            });
+            // Sequenced flashing ALSF-2 "Rabbit" approach lights cascading toward threshold
+            var rabbitIdx = reducedMotion.current ? -1 : (5 - (Math.floor(game.time * 7) % 6));
             for (var al = 1; al <= 5; al++) {
-              var alY = al * 12 * scale;
-              var alAlpha = (0.4 - al * 0.06) * (reducedMotion.current ? 1 : 0.65 + 0.35 * Math.max(0, Math.sin(game.time * 2.5 + al * 1.1)));
-              gfx.fillStyle = 'rgba(255,200,50,' + alAlpha + ')';
-              gfx.beginPath(); gfx.arc(0, alY, 1.5, 0, Math.PI * 2); gfx.fill();
-              // Side lights
-              gfx.beginPath(); gfx.arc(-5 * scale, alY, 1, 0, Math.PI * 2); gfx.fill();
-              gfx.beginPath(); gfx.arc(5 * scale, alY, 1, 0, Math.PI * 2); gfx.fill();
+              var alY = al * 11 * scale;
+              var isRabbit = !reducedMotion.current && al === rabbitIdx;
+              var alAlpha = isRabbit ? 0.96 : (0.45 - al * 0.05) * (reducedMotion.current ? 1 : 0.7 + 0.3 * Math.max(0, Math.sin(game.time * 2.5 + al * 1.1)));
+              if (isRabbit && !hc) {
+                gfx.fillStyle = 'rgba(254,249,195,0.35)';
+                gfx.beginPath(); gfx.arc(0, alY, 4.5, 0, Math.PI * 2); gfx.fill();
+              }
+              gfx.fillStyle = isRabbit ? '#fef9c3' : 'rgba(251,191,36,' + alAlpha + ')';
+              gfx.beginPath(); gfx.arc(0, alY, isRabbit ? 2.1 : 1.5, 0, Math.PI * 2); gfx.fill();
+              // Side approach bar lights
+              gfx.fillStyle = 'rgba(251,191,36,' + (alAlpha * 0.7) + ')';
+              gfx.beginPath(); gfx.arc(-5 * scale, alY, 1.0, 0, Math.PI * 2); gfx.fill();
+              gfx.beginPath(); gfx.arc(5 * scale, alY, 1.0, 0, Math.PI * 2); gfx.fill();
             }
             gfx.restore();
-            // Taxiway stubs (short lines perpendicular to runway ends)
-            gfx.strokeStyle = 'rgba(59,130,246,0.15)'; gfx.lineWidth = 2 * scale;
+            // Taxiway stubs with blue edge glints
+            gfx.strokeStyle = hc ? 'rgba(255,255,0,0.4)' : 'rgba(56,189,248,0.28)'; gfx.lineWidth = 2 * scale;
             gfx.beginPath(); gfx.moveTo(rx + dx, ry + dy); gfx.lineTo(rx + dx + perpX * 4, ry + dy + perpY * 4); gfx.stroke();
           });
 
@@ -2468,7 +2576,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             var isSelected = game.selected === ac.id;
             var isConflict = conflicts.some(function(c) { return c.a.id === ac.id || c.b.id === ac.id; });
 
-            // Recorded positions show the path actually flown, including turns.
+            // Sweep-pass phosphor illumination boost when radar beam sweeps across target azimuth
+            var sweepBoost = 0;
+            if (!reducedMotion.current && !hc) {
+              var acBearing = (Math.atan2(ax - W / 2, -(ay - H / 2)) + Math.PI * 2) % (Math.PI * 2);
+              var deltaSwept = (sweepAngle - acBearing + Math.PI * 2) % (Math.PI * 2);
+              if (deltaSwept < 1.15) sweepBoost = Math.pow(1 - deltaSwept / 1.15, 2);
+            }
+
+            // Recorded positions show the path actually flown, rendered as decaying CRT phosphor persistence trails.
             var blipColor = hc ? '#ffff00' : isConflict ? '#fb7185' : tag.priority ? '#fbbf24' : ac.fuel < 10 ? '#fb923c' : ac.emergency ? '#c4b5fd' : '#67e8f9';
             // Emergency aircraft: pulsing red ring + label
             if (ac.emergency) {
@@ -2480,20 +2596,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             }
             var history = ac.trackHistory || [];
             if (history.length) {
-              gfx.save(); gfx.strokeStyle = blipColor; gfx.fillStyle = blipColor; gfx.lineWidth = isSelected ? 1.8 : 1; gfx.globalAlpha = isSelected ? 0.55 : 0.28;
-              gfx.beginPath(); history.forEach(function(point,index) { if (index) gfx.lineTo(point.x * scale,point.y * scale); else gfx.moveTo(point.x * scale,point.y * scale); }); gfx.lineTo(ax,ay); gfx.stroke();
-              history.forEach(function(point,index) { if (index % 3) return; gfx.beginPath(); gfx.arc(point.x * scale,point.y * scale,isSelected ? 2 : 1.2,0,Math.PI * 2); gfx.fill(); }); gfx.restore();
+              gfx.save();
+              gfx.strokeStyle = hc ? '#ffff00' : (isSelected ? blipColor : '#34d399');
+              gfx.lineWidth = isSelected ? 1.8 : 1.1;
+              gfx.globalAlpha = isSelected ? 0.45 : 0.22;
+              gfx.beginPath();
+              history.forEach(function(point, index) { if (index) gfx.lineTo(point.x * scale, point.y * scale); else gfx.moveTo(point.x * scale, point.y * scale); });
+              gfx.lineTo(ax, ay); gfx.stroke();
+              // Decaying phosphor afterglow persistence pips along recent flight track
+              var trailSlice = history.slice(-14);
+              var trailLen = trailSlice.length;
+              trailSlice.forEach(function(point, idx) {
+                var ageFrac = (idx + 1) / (trailLen + 1); // 0 = oldest, 1 = freshest
+                var px = point.x * scale, py = point.y * scale;
+                var pipAlpha = Math.pow(ageFrac, 1.65) * (isSelected ? 0.82 : 0.58) + sweepBoost * 0.18 * ageFrac;
+                var pipR = (0.9 + ageFrac * (isSelected ? 1.8 : 1.25));
+                gfx.globalAlpha = Math.min(1, pipAlpha);
+                gfx.fillStyle = hc ? '#ffff00' : (ageFrac > 0.6 ? blipColor : '#34d399');
+                gfx.beginPath(); gfx.arc(px, py, pipR, 0, Math.PI * 2); gfx.fill();
+              });
+              gfx.restore();
             }
 
-            // Radar blip glow (bloom effect) — brighter for selected/emergency
-            var glowMult = isSelected ? 2.2 : ac.emergency ? 2.0 : 1.5;
+            // Radar blip glow (CRT phosphor bloom — flares briefly as sweep passes)
+            var glowMult = (isSelected ? 2.4 : ac.emergency ? 2.1 : 1.65) + sweepBoost * 0.85;
             var glowSize = ac.type.size * scale * glowMult;
             var glowGrad = gfx.createRadialGradient(ax, ay, 0, ax, ay, glowSize);
-            glowGrad.addColorStop(0, blipColor + (isSelected ? '60' : '40'));
-            glowGrad.addColorStop(0.5, blipColor + '15');
+            glowGrad.addColorStop(0, blipColor + (isSelected || sweepBoost > 0.4 ? '78' : '48'));
+            glowGrad.addColorStop(0.5, blipColor + '1c');
             glowGrad.addColorStop(1, blipColor + '00');
             gfx.fillStyle = glowGrad;
             gfx.fillRect(ax - glowSize, ay - glowSize, glowSize * 2, glowSize * 2);
+
+            // Crisp STARS transponder target ring + corner acquisition brackets
+            var trR = Math.max(7.5, ac.type.size * scale * 0.92);
+            gfx.save();
+            gfx.strokeStyle = hc ? '#ffff00' : blipColor;
+            gfx.globalAlpha = isSelected ? 0.82 : (0.34 + sweepBoost * 0.42);
+            gfx.lineWidth = isSelected ? 1.3 : 0.9;
+            gfx.beginPath(); gfx.arc(ax, ay, trR, 0, Math.PI * 2); gfx.stroke();
+            var brk = trR + 2.8, blen = 3.2;
+            gfx.globalAlpha = isSelected ? 0.92 : (0.42 + sweepBoost * 0.35);
+            gfx.beginPath();
+            gfx.moveTo(ax - brk, ay - brk + blen); gfx.lineTo(ax - brk, ay - brk); gfx.lineTo(ax - brk + blen, ay - brk);
+            gfx.moveTo(ax + brk - blen, ay - brk); gfx.lineTo(ax + brk, ay - brk); gfx.lineTo(ax + brk, ay - brk + blen);
+            gfx.moveTo(ax - brk, ay + brk - blen); gfx.lineTo(ax - brk, ay + brk); gfx.lineTo(ax - brk + blen, ay + brk);
+            gfx.moveTo(ax + brk - blen, ay + brk); gfx.lineTo(ax + brk, ay + brk); gfx.lineTo(ax + brk, ay + brk - blen);
+            gfx.stroke();
+            gfx.restore();
 
             // Aircraft blip (detailed silhouette with altitude-scaled size)
             var altScale = 0.7 + Math.min(ac.altitude, 10000) / 10000 * 0.6; // bigger at higher altitude
@@ -2550,21 +2700,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             }
             gfx.restore();
 
-            // Speed vector line (predicted position in 60 seconds)
-            if (isSelected || ac.state === 'approach') {
-            var predDist = ac.speed / 3600 * ATC_UNITS_PER_NM * 60 * scale;
-              var predX = ax + Math.sin(toRad(ac.heading)) * predDist;
-              var predY = ay - Math.cos(toRad(ac.heading)) * predDist;
-              gfx.strokeStyle = blipColor + '30'; gfx.lineWidth = 1;
-              gfx.beginPath(); gfx.moveTo(ax, ay); gfx.lineTo(predX, predY); gfx.stroke();
-              // 60-second position marker
-              gfx.strokeStyle = blipColor + '50'; gfx.lineWidth = 0.5;
+            // Speed vector leader line with calibrated 15s / 30s / 45s / 60s vector leader ticks
+            var fullLeader = isSelected || ac.state === 'approach';
+            var leaderSecs = fullLeader ? 60 : 30;
+            var predDist = ac.speed / 3600 * ATC_UNITS_PER_NM * leaderSecs * scale;
+            var hdgRad = toRad(ac.heading);
+            var vdx = Math.sin(hdgRad), vdy = -Math.cos(hdgRad);
+            var predX = ax + vdx * predDist, predY = ay + vdy * predDist;
+            gfx.save();
+            gfx.strokeStyle = hc ? '#ffff00' : blipColor;
+            gfx.globalAlpha = fullLeader ? 0.58 : 0.28;
+            gfx.lineWidth = fullLeader ? 1.2 : 0.85;
+            gfx.beginPath(); gfx.moveTo(ax + vdx * trR, ay + vdy * trR); gfx.lineTo(predX, predY); gfx.stroke();
+            // Perpendicular vector leader calibration ticks (every 15 seconds)
+            var tickCount = fullLeader ? 4 : 2;
+            var pvx = -vdy, pvy = vdx;
+            for (var tk = 1; tk <= tickCount; tk++) {
+              var tDist = predDist * (tk / tickCount);
+              if (tDist <= trR + 2) continue;
+              var tx2 = ax + vdx * tDist, ty2 = ay + vdy * tDist;
+              var tHalf = tk === tickCount ? 3.2 : 2.1;
+              gfx.beginPath(); gfx.moveTo(tx2 - pvx * tHalf, ty2 - pvy * tHalf); gfx.lineTo(tx2 + pvx * tHalf, ty2 + pvy * tHalf); gfx.stroke();
+            }
+            if (fullLeader) {
+              gfx.globalAlpha = 0.65; gfx.lineWidth = 0.8;
               gfx.beginPath(); gfx.arc(predX, predY, 3, 0, Math.PI * 2); gfx.stroke();
             }
+            gfx.restore();
 
             // Selection ring with rotating dashes
             if (isSelected) {
-              gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 1.5;
+              gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 1.6;
               gfx.save(); gfx.translate(ax, ay); gfx.rotate(reducedMotion.current ? 0 : game.time * 2);
               gfx.setLineDash([4, 4]);
               gfx.beginPath(); gfx.arc(0, 0, 14 * scale, 0, Math.PI * 2); gfx.stroke();
@@ -2595,21 +2761,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
           });
 
-          // Screen-sized tags with units, full callsigns, bounded placement and click targets.
+          // Screen-sized altitude datablocks with units, full callsigns, trend indicator, bounded placement and click targets.
           radarTags.forEach(function(tag) {
             var ac = game.aircraft.find(function(item) { return item.id === tag.id; });
-            var accent = hc ? '#ffff00' : tag.conflict ? '#fb7185' : tag.priority ? '#fbbf24' : tag.selected ? '#99f6e4' : '#638da5';
+            var accent = hc ? '#ffff00' : tag.conflict ? '#fb7185' : tag.priority ? '#fbbf24' : tag.selected ? '#5eead4' : '#5287a3';
+            var lx = Math.max(tag.x, Math.min(tag.x + tag.width, tag.anchorX));
+            var ly = Math.max(tag.y, Math.min(tag.y + tag.height, tag.anchorY));
             gfx.strokeStyle = accent; gfx.lineWidth = tag.selected ? 1.8 : 1;
-            gfx.beginPath(); gfx.moveTo(tag.anchorX, tag.anchorY); gfx.lineTo(Math.max(tag.x, Math.min(tag.x + tag.width, tag.anchorX)), Math.max(tag.y, Math.min(tag.y + tag.height, tag.anchorY))); gfx.stroke();
-            gfx.fillStyle = hc ? '#000000' : tag.selected ? '#15383e' : '#0e2030';
-            gfx.beginPath(); gfx.roundRect(tag.x, tag.y, tag.width, tag.height, 5); gfx.fill(); gfx.stroke();
+            gfx.beginPath(); gfx.moveTo(tag.anchorX, tag.anchorY); gfx.lineTo(lx, ly); gfx.stroke();
+            gfx.fillStyle = accent; gfx.beginPath(); gfx.arc(lx, ly, 2, 0, Math.PI * 2); gfx.fill();
+            // Glassy TRACON CRT datablock plate
+            gfx.fillStyle = hc ? '#000000' : tag.selected ? 'rgba(13,46,54,0.94)' : 'rgba(9,25,38,0.90)';
+            gfx.beginPath();
+            if (typeof gfx.roundRect === 'function') gfx.roundRect(tag.x, tag.y, tag.width, tag.height, 5);
+            else gfx.rect(tag.x, tag.y, tag.width, tag.height);
+            gfx.fill(); gfx.stroke();
+            // Subtle top specular hairline highlight inside datablock
+            if (!hc) {
+              gfx.strokeStyle = tag.selected ? 'rgba(153,246,228,0.28)' : 'rgba(148,210,225,0.12)';
+              gfx.lineWidth = 1;
+              gfx.beginPath(); gfx.moveTo(tag.x + 5, tag.y + 1.2); gfx.lineTo(tag.x + tag.width - 5, tag.y + 1.2); gfx.stroke();
+            }
             gfx.fillStyle = accent; gfx.fillRect(tag.x + 1, tag.y + 5, 3, tag.height - 10);
             gfx.textAlign = 'left'; gfx.fillStyle = '#f1f9ff'; gfx.font = 'bold 12px monospace';
             gfx.fillText(tag.callsign, tag.x + 9, tag.y + 16, tag.width - 16);
-            gfx.font = '11px monospace'; gfx.fillStyle = hc ? '#ffffff' : '#d7e8f3';
-            gfx.fillText(Math.round(ac.altitude).toLocaleString() + ' ft · ' + Math.round(ac.speed) + ' kt', tag.x + 9, tag.y + 32, tag.width - 16);
+            var altTrend = (typeof ac.targetAltitude === 'number' && Math.abs(ac.targetAltitude - ac.altitude) > 120)
+              ? (ac.targetAltitude > ac.altitude ? '↑ ' : '↓ ') : '';
+            gfx.font = '11px monospace'; gfx.fillStyle = hc ? '#ffffff' : (tag.selected ? '#ccfbf1' : '#d7e8f3');
+            gfx.fillText(altTrend + Math.round(ac.altitude).toLocaleString() + ' ft · ' + Math.round(ac.speed) + ' kt', tag.x + 9, tag.y + 32, tag.width - 16);
             var phase = ac.state === 'approach' ? (ac.approachStage === 'final' ? 'FINAL' : 'ENTRY') : ac.state === 'holding' ? 'HOLD' : ac.state === 'goAround' ? 'GO AROUND' : ac.type.id;
             var info = ac.fuel < 10 ? 'FUEL ' + Math.max(0, ac.fuel).toFixed(1) + ' min' : ac.assignedRunway ? 'RWY ' + runwayLabel(ac.assignedRunway, airport) : String(Math.round(ac.heading)).padStart(3, '0') + '°';
+            gfx.fillStyle = hc ? '#ffffff' : (ac.fuel < 10 ? '#fda4af' : '#94c5d8');
             gfx.fillText(phase + ' · ' + info, tag.x + 9, tag.y + 47, tag.width - 16);
           });
 

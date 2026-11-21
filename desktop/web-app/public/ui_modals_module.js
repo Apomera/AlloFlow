@@ -1179,9 +1179,13 @@ const StudentQuizOverlay = React.memo(({
     "data-help-key": "quiz_student_mode_header"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, styles.icon), /*#__PURE__*/React.createElement("span", null, t('quiz.modes.' + mode.replace(/-/g, '_'), {
-    defaultValue: mode.replace(/-/g, ' ')
-  }))), teamColor && /*#__PURE__*/React.createElement("span", {
+  }, styles.icon), /*#__PURE__*/React.createElement("span", null, (() => {
+    const modeKey = 'quiz.modes.' + String(mode || 'live-quiz').replace(/-/g, '_');
+    const translated = t(modeKey, {
+      defaultValue: String(mode || 'live-quiz').replace(/-/g, ' ')
+    });
+    return translated && translated !== modeKey ? translated : String(mode || 'live-quiz').replace(/-/g, ' ');
+  })())), teamColor && /*#__PURE__*/React.createElement("span", {
     className: `text-[11px] font-bold px-2 py-0.5 rounded uppercase mt-2 inline-block shadow-sm ${getTeamBadgeColor(teamColor)}`
   }, t('quiz.team_label', {
     color: teamColor
@@ -1213,11 +1217,12 @@ const StudentQuizOverlay = React.memo(({
     const canReconnect = ['retrying', 'failed', 'access', 'sign_in', 'mailbox-stalled'].includes(connectionStatus);
     const isHostNotice = connectionStatus === 'host-paused' || connectionStatus === 'host-stale';
     return /*#__PURE__*/React.createElement("div", {
-      role: "status",
-      "aria-live": "polite",
       "data-quiz-connection-notice": connectionStatus,
       className: "shrink-0 flex flex-wrap items-center justify-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-sm font-semibold text-amber-950"
-    }, /*#__PURE__*/React.createElement("span", null, noticeText), canReconnect && typeof onConnectionAction === 'function' && /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement("span", {
+      role: "status",
+      "aria-live": "polite"
+    }, noticeText), canReconnect && typeof onConnectionAction === 'function' && /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: () => onConnectionAction('reconnect'),
       className: "min-h-11 rounded-lg bg-amber-900 px-3 py-2 text-sm font-bold text-white hover:bg-amber-950"
@@ -1233,9 +1238,11 @@ const StudentQuizOverlay = React.memo(({
     "aria-label": t('quiz.live_student.battle_result') || 'Battle result',
     className: "mb-5 w-full max-w-3xl shrink-0 rounded-2xl border border-indigo-300 bg-indigo-950 p-5 text-left"
   }, /*#__PURE__*/React.createElement("h3", {
-    role: "status",
     className: "text-2xl font-black text-white"
-  }, phase === 'boss-defeated' ? t('quiz.live_student.class_victory') || 'Class victory!' : phase === 'battle-complete' ? t('quiz.live_student.battle_complete') || 'Battle complete' : t('quiz.live_student.regroup') || 'A chance to regroup'), /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("span", {
+    role: "status",
+    "aria-live": "polite"
+  }, phase === 'boss-defeated' ? t('quiz.live_student.class_victory') || 'Class victory!' : phase === 'battle-complete' ? t('quiz.live_student.battle_complete') || 'Battle complete' : t('quiz.live_student.regroup') || 'A chance to regroup')), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm leading-relaxed text-indigo-100"
   }, bossStats?.endReason === 'no-scored-items' ? t('quiz.live_student.end_no_scored') || 'These questions were for discussion or teacher review. No battle score was assigned.' : bossStats?.endReason === 'questions-complete' ? t('quiz.live_student.end_questions_complete') || 'All questions are complete. The result compares the percentage of health remaining; ties favor the class.' : phase === 'boss-defeated' ? t('quiz.live_student.end_victory') || 'Your class defeated the monster together.' : t('quiz.live_student.end_regroup') || 'Use the explanation below to plan your next attempt together.'), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm text-indigo-100"
@@ -1339,10 +1346,14 @@ const StudentQuizOverlay = React.memo(({
   }, t('concept_quest.boss_discuss_evidence'))))), /*#__PURE__*/React.createElement("div", {
     className: "shrink-0 bg-white/10 backdrop-blur-md p-5 md:p-8 rounded-3xl border border-white/10 shadow-2xl max-w-3xl w-full"
   }, currentQuestion?.imageUrl && /*#__PURE__*/React.createElement("img", {
+    key: currentQuestion.imageUrl,
     src: currentQuestion.imageUrl,
     alt: String(currentQuestion.imageAlt || currentQuestion.question || t('quiz.question_image') || 'Question image'),
     loading: "eager",
     decoding: "async",
+    onLoad: event => {
+      event.currentTarget.hidden = false;
+    },
     onError: event => {
       event.currentTarget.hidden = true;
     },
@@ -1632,7 +1643,11 @@ const TeacherGate = React.memo(({
   }, [isOpen]);
   useEffect(() => {
     if (!isOpen || blockedUntil <= Date.now()) return undefined;
-    const timer = setInterval(() => setClockNow(Date.now()), 250);
+    const timer = setInterval(() => {
+      const now = Date.now();
+      setClockNow(now);
+      if (now >= blockedUntil) clearInterval(timer);
+    }, 250);
     return () => clearInterval(timer);
   }, [isOpen, blockedUntil]);
   if (!isOpen) return null;
@@ -1753,20 +1768,38 @@ const RoleSelectionModal = React.memo(({
     t
   } = useContext(LanguageContext);
   const roleRef = useRef(null);
+  const pendingTimerRef = useRef(null);
   useFocusTrap(roleRef, true);
+  useEffect(() => () => {
+    if (pendingTimerRef.current) {
+      clearTimeout(pendingTimerRef.current);
+      pendingTimerRef.current = null;
+    }
+  }, []);
   const handleRoleClick = (role, event) => {
+    if (pendingTimerRef.current) return;
     const button = event && event.currentTarget;
     if (button) {
       button.disabled = true;
       button.setAttribute('aria-busy', 'true');
       button.style.opacity = '0.72';
     }
-    setTimeout(() => {
+    const restoreButton = () => {
+      if (button && button.isConnected) {
+        button.disabled = false;
+        button.removeAttribute('aria-busy');
+        button.style.opacity = '';
+      }
+    };
+    pendingTimerRef.current = setTimeout(() => {
+      pendingTimerRef.current = null;
       const selectRole = () => {
         const accessCodeRequired = typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key;
         if (accessCodeRequired && ['teacher', 'parent', 'independent'].includes(role)) {
+          restoreButton();
           if (onGateRequired) onGateRequired(role);
         } else {
+          restoreButton();
           onSelect(role);
         }
       };
@@ -1787,6 +1820,24 @@ const RoleSelectionModal = React.memo(({
     className: "text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 rounded-full px-2 py-0.5"
   }, t('roles.last_time') || 'Last time') : null;
   const [micStatus, setMicStatus] = useState('idle');
+  const micMountedRef = useRef(true);
+  const micRecognitionRef = useRef(null);
+  useEffect(() => {
+    micMountedRef.current = true;
+    return () => {
+      micMountedRef.current = false;
+      if (micRecognitionRef.current) {
+        try {
+          micRecognitionRef.current.abort();
+        } catch (_) {
+          try {
+            micRecognitionRef.current.stop();
+          } catch (__) {}
+        }
+        micRecognitionRef.current = null;
+      }
+    };
+  }, []);
   const handleMicCheck = async () => {
     if (micStatus === 'requesting' || micStatus === 'granted') return;
     if (typeof onStartVoiceAccess === 'function') {
@@ -1795,10 +1846,11 @@ const RoleSelectionModal = React.memo(({
         // The host-owned coordinator is the only microphone owner on this
         // path. Resolve true only after continuous command listening starts.
         const started = await onStartVoiceAccess();
+        if (!micMountedRef.current) return;
         setMicStatus(started === false ? 'denied' : 'granted');
       } catch (e) {
         warnLog("Unable to start Voice Access:", e);
-        setMicStatus('denied');
+        if (micMountedRef.current) setMicStatus('denied');
       }
       return;
     }
@@ -1810,12 +1862,23 @@ const RoleSelectionModal = React.memo(({
       return;
     }
     setMicStatus('requesting');
+    if (micRecognitionRef.current) {
+      try {
+        micRecognitionRef.current.abort();
+      } catch (_) {}
+    }
     const recognition = new SpeechRecognition();
+    micRecognitionRef.current = recognition;
     recognition.onstart = () => {
-      setMicStatus('granted');
-      recognition.stop();
+      if (micMountedRef.current) setMicStatus('granted');
+      try {
+        recognition.stop();
+      } catch (_) {}
+      if (micRecognitionRef.current === recognition) micRecognitionRef.current = null;
     };
     recognition.onerror = event => {
+      if (micRecognitionRef.current === recognition) micRecognitionRef.current = null;
+      if (!micMountedRef.current) return;
       if (event.error === 'not-allowed' || event.error === 'permission-denied') {
         setMicStatus('denied');
       } else {
@@ -1825,8 +1888,9 @@ const RoleSelectionModal = React.memo(({
     try {
       recognition.start();
     } catch (e) {
+      if (micRecognitionRef.current === recognition) micRecognitionRef.current = null;
       warnLog("Unhandled error:", e);
-      setMicStatus('denied');
+      if (micMountedRef.current) setMicStatus('denied');
     }
   };
   const roleCopy = (key, fallback) => {
@@ -1962,12 +2026,14 @@ const StudentEntryModal = React.memo(({
   const [selectedAnimal, setSelectedAnimal] = useState('');
   const entryRef = useRef(null);
   useFocusTrap(entryRef, isOpen, onClose);
-  const adjectives = t('codenames.adjectives', {
+  const rawAdjectives = t('codenames.adjectives', {
     returnObjects: true
-  }) || [];
-  const animals = t('codenames.animals', {
+  });
+  const rawAnimals = t('codenames.animals', {
     returnObjects: true
-  }) || [];
+  });
+  const adjectives = Array.isArray(rawAdjectives) ? rawAdjectives : [];
+  const animals = Array.isArray(rawAnimals) ? rawAnimals : [];
   const randomizeName = useCallback(() => {
     if (adjectives.length > 0 && animals.length > 0) {
       const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
@@ -2146,7 +2212,11 @@ const StudentEntryModal = React.memo(({
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onClose,
-    className: "absolute top-4 right-4 min-h-6 min-w-6 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors",
+    className: "absolute top-4 right-4 min-h-6 min-w-6 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors",
+    style: {
+      minHeight: '44px',
+      minWidth: '44px'
+    },
     "aria-label": t('common.close'),
     "data-alloflow-close-on-escape": "true"
   }, /*#__PURE__*/React.createElement(X, {
@@ -2168,6 +2238,7 @@ const StudentEntryModal = React.memo(({
     className: "mb-1 block"
   }, t('modals.entry.select_adjective')), /*#__PURE__*/React.createElement("select", {
     value: selectedAdj,
+    "data-autofocus": "true",
     onChange: e => setSelectedAdj(e.target.value),
     className: "w-full min-h-11 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm cursor-pointer",
     "aria-label": t('modals.entry.select_adjective'),
@@ -2200,7 +2271,11 @@ const StudentEntryModal = React.memo(({
   }, selectedAdj, " ", selectedAnimal), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: randomizeName,
-    className: "min-h-6 min-w-6 p-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 hover:scale-110 motion-reduce:hover:scale-100 transition-all shrink-0",
+    className: "min-h-6 min-w-6 inline-flex items-center justify-center p-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 hover:scale-110 motion-reduce:hover:scale-100 transition-all shrink-0",
+    style: {
+      minHeight: '44px',
+      minWidth: '44px'
+    },
     title: t('modals.entry.randomize_codename'),
     "aria-label": t('modals.entry.randomize_codename'),
     "data-help-key": "entry_randomize_btn"
@@ -2219,7 +2294,7 @@ const StudentEntryModal = React.memo(({
     type: "button",
     onClick: () => handleConfirm('new'),
     disabled: !selectedAdj || !selectedAnimal,
-    className: "w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
+    className: "w-full min-h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
     "data-help-key": "entry_start_new"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
@@ -2228,14 +2303,17 @@ const StudentEntryModal = React.memo(({
     type: "button",
     onClick: () => handleConfirm('load'),
     disabled: !selectedAdj || !selectedAnimal,
-    className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-bold py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed",
+    className: "w-full min-h-11 bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-bold py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed",
     "data-help-key": "entry_load_exist"
   }, /*#__PURE__*/React.createElement(Upload, {
     size: 16
   }), " ", t('entry.load'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onClose,
-    className: "mt-4 min-h-6 inline-flex items-center text-sm text-slate-600 hover:text-slate-900 underline rounded"
+    className: "mt-4 min-h-6 inline-flex items-center px-3 text-sm text-slate-600 hover:text-slate-900 underline rounded",
+    style: {
+      minHeight: '44px'
+    }
   }, t('common.cancel'))));
 });
 const StudentWelcomeModal = React.memo(({
@@ -2262,7 +2340,11 @@ const StudentWelcomeModal = React.memo(({
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onClose,
-    className: "absolute top-4 right-4 min-h-6 min-w-6 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors",
+    className: "absolute top-4 right-4 min-h-6 min-w-6 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors",
+    style: {
+      minHeight: '44px',
+      minWidth: '44px'
+    },
     "aria-label": t('welcome.close_aria'),
     "data-alloflow-close-on-escape": "true"
   }, /*#__PURE__*/React.createElement(X, {
@@ -2286,18 +2368,19 @@ const StudentWelcomeModal = React.memo(({
     className: "space-y-3"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "data-autofocus": "true",
     onClick: () => {
       onUpload();
       onClose();
     },
-    className: "w-full flex items-center justify-center gap-3 p-4 rounded-xl bg-teal-700 text-white font-bold hover:bg-teal-800 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95",
+    className: "w-full min-h-11 flex items-center justify-center gap-3 p-4 rounded-xl bg-teal-700 text-white font-bold hover:bg-teal-800 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95",
     "data-help-key": "welcome_load_btn"
   }, /*#__PURE__*/React.createElement(Upload, {
     size: 20
   }), " ", t('welcome.load')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onClose,
-    className: "w-full p-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100 transition-colors active:scale-95",
+    className: "w-full min-h-11 p-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100 transition-colors active:scale-95",
     "data-help-key": "welcome_skip_btn"
   }, t('welcome.skip')))));
 });

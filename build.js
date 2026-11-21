@@ -84,26 +84,9 @@ function writeWorkspaceFileAtomic(file, content, encoding = 'utf8') {
     const absolute = path.resolve(file);
     const workspacePrefix = path.resolve(ROOT) + path.sep;
     if (!absolute.startsWith(workspacePrefix)) throw new Error(`Refusing to write outside the workspace: ${absolute}`);
-    const nextFile = absolute + '.' + process.pid + '.next';
-    const previousFile = absolute + '.' + process.pid + '.previous';
-    fs.writeFileSync(nextFile, content, encoding);
-    let movedPrevious = false;
-    try {
-        if (fs.existsSync(absolute)) {
-            fs.renameSync(absolute, previousFile);
-            movedPrevious = true;
-        }
-        fs.renameSync(nextFile, absolute);
-        if (movedPrevious) fs.rmSync(previousFile, { force: true });
-    } catch (error) {
-        try {
-            if (!fs.existsSync(absolute) && movedPrevious && fs.existsSync(previousFile)) fs.renameSync(previousFile, absolute);
-            if (fs.existsSync(nextFile)) fs.rmSync(nextFile, { force: true });
-        } catch (restoreError) {
-            error.message += `; restore failed: ${restoreError.message}`;
-        }
-        throw error;
-    }
+    const writeGeneratedAtomic = require('./dev-tools/write_generated_atomic.cjs');
+    const payload = Buffer.isBuffer(content) ? content : Buffer.from(String(content), encoding);
+    writeGeneratedAtomic(absolute, payload);
 }
 
 function publishStudentShell() {
@@ -126,60 +109,94 @@ function publishStudentShell() {
         throw new Error('Student shell must have scoped relative service-worker registration before release hashing.');
     }
 
-    fs.rmSync(STUDENT_SHELL_PUBLIC_DIR, { recursive: true, force: true });
-    fs.mkdirSync(STUDENT_SHELL_PUBLIC_DIR, { recursive: true });
-
-    const shellEntries = [...new Set([...STUDENT_SHELL_ENTRIES, ...runtimeDelivery.records.map(record => record.asset)])];
-    for (const entry of shellEntries) {
-        const src = path.join(STUDENT_SHELL_BUILD_DIR, entry);
-        if (!fs.existsSync(src)) continue;
-        const dest = path.join(STUDENT_SHELL_PUBLIC_DIR, entry);
-        fs.mkdirSync(path.dirname(dest), { recursive: true });
-        if (fs.statSync(src).isDirectory()) {
-            fs.cpSync(src, dest, { recursive: true });
-        } else {
-            fs.copyFileSync(src, dest);
+    const copyNoSymlinks = (srcPath, destPath) => {
+        const st = fs.lstatSync(srcPath);
+        if (st.isSymbolicLink()) {
+            throw new Error('Student shell refuses symlink: ' + path.relative(ROOT, srcPath));
         }
-    }
-
-    const publishedIndex = path.join(STUDENT_SHELL_PUBLIC_DIR, 'index.html');
-    // postbuild normalizes paths BEFORE hashing. Never edit approved HTML here.
-    const publishedHtml = fs.readFileSync(publishedIndex, 'utf8');
-    if (publishedHtml !== html) throw new Error('Student shell HTML changed while copying the approved release.');
-
-    const publishedSw = path.join(STUDENT_SHELL_PUBLIC_DIR, 'sw.js');
-    let sw = fs.readFileSync(publishedSw, 'utf8');
-    if (!sw.includes("const CACHE_NAME = 'alloflow-v") || !sw.includes("keys.filter(k => k.startsWith('alloflow-v') && k !== CACHE_NAME)")) {
-        throw new Error('Student shell service-worker cache anchors were not found.');
-    }
-    sw = sw
-        .replace("const CACHE_NAME = 'alloflow-v", "const CACHE_NAME = 'alloflow-student-shell-v")
-        .replace("keys.filter(k => k.startsWith('alloflow-v') && k !== CACHE_NAME)", "keys.filter(k => k.startsWith('alloflow-student-shell-v') && k !== CACHE_NAME)");
-    fs.writeFileSync(publishedSw, sw, 'utf8');
-    assertReleaseDigests(STUDENT_SHELL_PUBLIC_DIR);
-    assertRuntimeAssets({ root: ROOT, buildDir: STUDENT_SHELL_PUBLIC_DIR });
-
-    let copiedFiles = 0;
-    const oversized = [];
-    const scan = (dir) => {
-        for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
-            const itemPath = path.join(dir, item.name);
-            if (item.isDirectory()) scan(itemPath);
-            else if (item.isFile()) {
-                copiedFiles += 1;
-                if (fs.statSync(itemPath).size >= CLOUDFLARE_MAX_FILE_BYTES) {
-                    oversized.push(path.relative(ROOT, itemPath));
-                }
+        if (st.isDirectory()) {
+            fs.mkdirSync(destPath, { recursive: true });
+            for (const item of fs.readdirSync(srcPath, { withFileTypes: true })) {
+                copyNoSymlinks(path.join(srcPath, item.name), path.join(destPath, item.name));
             }
+        } else if (st.isFile()) {
+            fs.mkdirSync(path.dirname(destPath), { recursive: true });
+            fs.copyFileSync(srcPath, destPath);
         }
     };
-    scan(STUDENT_SHELL_PUBLIC_DIR);
-    if (oversized.length) {
-        throw new Error('Student shell contains Cloudflare-ineligible files: ' + oversized.join(', '));
-    }
 
-    fs.rmSync(STUDENT_SHELL_CDN_DIR, { recursive: true, force: true });
-    fs.cpSync(STUDENT_SHELL_PUBLIC_DIR, STUDENT_SHELL_CDN_DIR, { recursive: true });
+    const replaceDirAtomic = (stagedPath, targetPath) => {
+        const existingStat = fs.lstatSync(targetPath, { throwIfNoEntry: false });
+        if (existingStat && existingStat.isSymbolicLink()) {
+            throw new Error('Student shell target refuses symlink: ' + path.relative(ROOT, targetPath));
+        }
+        fs.rmSync(targetPath, { recursive: true, force: true });
+        fs.renameSync(stagedPath, targetPath);
+    };
+
+    fs.mkdirSync(path.dirname(STUDENT_SHELL_PUBLIC_DIR), { recursive: true });
+    const publicStage = fs.mkdtempSync(path.join(path.dirname(STUDENT_SHELL_PUBLIC_DIR), '.app-stage-'));
+    let cdnStage = null;
+    let copiedFiles = 0;
+
+    try {
+        const shellEntries = [...new Set([...STUDENT_SHELL_ENTRIES, ...runtimeDelivery.records.map(record => record.asset)])];
+        for (const entry of shellEntries) {
+            const src = path.join(STUDENT_SHELL_BUILD_DIR, entry);
+            if (!fs.existsSync(src)) continue;
+            const dest = path.join(publicStage, entry);
+            copyNoSymlinks(src, dest);
+        }
+
+        const publishedIndex = path.join(publicStage, 'index.html');
+        // postbuild normalizes paths BEFORE hashing. Never edit approved HTML here.
+        const publishedHtml = fs.readFileSync(publishedIndex, 'utf8');
+        if (publishedHtml !== html) throw new Error('Student shell HTML changed while copying the approved release.');
+
+        const publishedSw = path.join(publicStage, 'sw.js');
+        let sw = fs.readFileSync(publishedSw, 'utf8');
+        if (!sw.includes("const CACHE_NAME = 'alloflow-v") || !sw.includes("keys.filter(k => k.startsWith('alloflow-v') && k !== CACHE_NAME)")) {
+            throw new Error('Student shell service-worker cache anchors were not found.');
+        }
+        sw = sw
+            .replace("const CACHE_NAME = 'alloflow-v", "const CACHE_NAME = 'alloflow-student-shell-v")
+            .replace("keys.filter(k => k.startsWith('alloflow-v') && k !== CACHE_NAME)", "keys.filter(k => k.startsWith('alloflow-student-shell-v') && k !== CACHE_NAME)");
+        fs.writeFileSync(publishedSw, sw, 'utf8');
+        assertReleaseDigests(publicStage);
+        assertRuntimeAssets({ root: ROOT, buildDir: publicStage });
+
+        const oversized = [];
+        const scan = (dir) => {
+            for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+                const itemPath = path.join(dir, item.name);
+                const st = fs.lstatSync(itemPath);
+                if (st.isSymbolicLink()) {
+                    throw new Error('Student shell staged output contains symlink: ' + path.relative(ROOT, itemPath));
+                }
+                if (st.isDirectory()) scan(itemPath);
+                else if (st.isFile()) {
+                    copiedFiles += 1;
+                    if (st.size >= CLOUDFLARE_MAX_FILE_BYTES) {
+                        oversized.push(path.relative(ROOT, itemPath));
+                    }
+                }
+            }
+        };
+        scan(publicStage);
+        if (oversized.length) {
+            throw new Error('Student shell contains Cloudflare-ineligible files: ' + oversized.join(', '));
+        }
+
+        fs.mkdirSync(path.dirname(STUDENT_SHELL_CDN_DIR), { recursive: true });
+        cdnStage = fs.mkdtempSync(path.join(path.dirname(STUDENT_SHELL_CDN_DIR), '.app-cdn-stage-'));
+        copyNoSymlinks(publicStage, cdnStage);
+
+        replaceDirAtomic(publicStage, STUDENT_SHELL_PUBLIC_DIR);
+        replaceDirAtomic(cdnStage, STUDENT_SHELL_CDN_DIR);
+    } finally {
+        if (fs.existsSync(publicStage)) fs.rmSync(publicStage, { recursive: true, force: true });
+        if (cdnStage && fs.existsSync(cdnStage)) fs.rmSync(cdnStage, { recursive: true, force: true });
+    }
 
     console.log('Published student shell: ' + path.relative(ROOT, STUDENT_SHELL_PUBLIC_DIR)
         + ' + ' + path.relative(ROOT, STUDENT_SHELL_CDN_DIR)
@@ -2269,25 +2286,23 @@ function compileSources(onlyNames = null) {
         const finalOutput = useCRLF ? compiled.replace(/(?<!\r)\n/g, '\r\n') : compiled;
         const changed = existing !== finalOutput;
         if (changed) {
-            fs.writeFileSync(pair.modPath, finalOutput, 'utf-8');
+            writeWorkspaceFileAtomic(pair.modPath, finalOutput, 'utf-8');
+        }
+        // Syntax-check the output before mirroring so we fail loudly on any regression.
+        try {
+            execFileSync(process.execPath, ['-c', pair.modPath], { stdio: 'pipe' });
+        } catch (e) {
+            results.push({ name: pair.name, status: 'syntax-error', reason: (e.stderr && e.stderr.toString()) || e.message });
+            continue;
         }
         if (pair.publicPath) {
             const publicExisting = fs.existsSync(pair.publicPath) ? fs.readFileSync(pair.publicPath, 'utf-8') : null;
             if (changed || publicExisting !== finalOutput) {
-                try {
-                    if (!fs.existsSync(path.dirname(pair.publicPath))) {
-                        fs.mkdirSync(path.dirname(pair.publicPath), { recursive: true });
-                    }
-                    fs.writeFileSync(pair.publicPath, finalOutput, 'utf-8');
-                } catch (e) { /* public copy is best-effort */ }
+                if (!fs.existsSync(path.dirname(pair.publicPath))) {
+                    fs.mkdirSync(path.dirname(pair.publicPath), { recursive: true });
+                }
+                writeWorkspaceFileAtomic(pair.publicPath, finalOutput, 'utf-8');
             }
-        }
-        // Syntax-check the output so we fail loudly on any regression.
-        try {
-            execSync('node -c "' + pair.modPath + '"', { stdio: 'pipe' });
-        } catch (e) {
-            results.push({ name: pair.name, status: 'syntax-error', reason: (e.stderr && e.stderr.toString()) || e.message });
-            continue;
         }
         results.push({ name: pair.name, status: changed ? 'compiled' : 'unchanged', bytes: compiled.length });
     }
@@ -2421,12 +2436,16 @@ if (mode === 'prod') {
     // uncommitted changes, the CDN URLs will point to old code.
     if (!forceFlag) {
         try {
-            const gitStatus = execSync('git status --porcelain', { cwd: ROOT, encoding: 'utf-8' }).trim();
-            if (gitStatus) {
+            const gitStatusRaw = execFileSync('git', ['status', '--porcelain=v1', '-z', '--no-renames'], {
+                cwd: ROOT,
+                encoding: 'utf-8',
+                maxBuffer: 16 * 1024 * 1024,
+            });
+            if (gitStatusRaw) {
                 const allManagedFiles = MODULES.map(m => m.filename).concat(PLUGIN_FILES);
                 const dirtyModules = [];
-                gitStatus.split('\n').forEach(line => {
-                    const filePath = line.substring(3).trim();
+                gitStatusRaw.split('\0').filter(Boolean).forEach(entry => {
+                    const filePath = entry.slice(3);
                     allManagedFiles.forEach(mf => {
                         if (filePath === mf || filePath.endsWith('/' + mf) || filePath.endsWith('\\' + mf)) {
                             dirtyModules.push(filePath);
@@ -2493,15 +2512,20 @@ if (mode === 'prod') {
                 const abs = path.join(ROOT, rel);
                 if (!fs.existsSync(abs)) continue;
                 try {
-                    const headContent = execSync(`git show HEAD:"${rel}"`, { cwd: ROOT, encoding: 'utf-8' });
+                    const headContent = execFileSync('git', ['show', `HEAD:${rel}`], {
+                        cwd: ROOT,
+                        encoding: 'utf-8',
+                        maxBuffer: 64 * 1024 * 1024,
+                    });
                     const headLines = headContent.split('\n').length;
                     const currentLines = fs.readFileSync(abs, 'utf-8').split('\n').length;
                     const loss = headLines - currentLines;
                     if (loss > SHRINK_THRESHOLD_LINES) {
                         shrunk.push({ file: rel, headLines, currentLines, loss });
                     }
-                } catch(fileErr) {
-                    // File may be new / not in HEAD — skip shrink check
+                } catch (fileErr) {
+                    // File may be new / not in HEAD (git exit 128) — skip only that case
+                    if (fileErr.status !== 128) throw fileErr;
                 }
             }
             if (shrunk.length > 0) {

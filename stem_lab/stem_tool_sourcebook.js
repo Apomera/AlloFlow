@@ -6189,7 +6189,14 @@
       canvas.height = Math.ceil(rows.length / columns) * cellHeight;
       var painter = canvas.getContext && canvas.getContext('2d');
       if (!painter) throw new Error('Contact sheet drawing is unavailable.');
-      painter.fillStyle = '#edf2ef';
+      if (typeof painter.createLinearGradient === 'function') {
+        var sheetBg = painter.createLinearGradient(0, 0, canvas.width, canvas.height);
+        sheetBg.addColorStop(0, '#f4f2ea');
+        sheetBg.addColorStop(1, '#e6ece8');
+        painter.fillStyle = sheetBg;
+      } else {
+        painter.fillStyle = '#edf2ef';
+      }
       painter.fillRect(0, 0, canvas.width, canvas.height);
       rows.forEach(function (row, index) {
         var left = (index % columns) * cellWidth;
@@ -6199,11 +6206,21 @@
         var scale = Math.min((cellWidth - 12) / imageWidth, 146 / imageHeight);
         var drawWidth = imageWidth * scale;
         var drawHeight = imageHeight * scale;
+        // Soft archival plate shadow + parchment mat
+        painter.fillStyle = 'rgba(24,59,50,0.10)';
+        painter.fillRect(left + 6, top + 6, cellWidth - 8, cellHeight - 8);
         painter.fillStyle = '#ffffff';
         painter.fillRect(left + 4, top + 4, cellWidth - 8, cellHeight - 8);
+        if (typeof painter.strokeRect === 'function') {
+          painter.strokeStyle = '#c2d0ca';
+          painter.lineWidth = 1;
+          painter.strokeRect(left + 4.5, top + 4.5, cellWidth - 9, cellHeight - 9);
+        }
         painter.drawImage(row.image, left + (cellWidth - drawWidth) / 2, top + 8 + (146 - drawHeight) / 2, drawWidth, drawHeight);
         painter.fillStyle = '#183b32';
         painter.fillRect(left + 4, top + 158, cellWidth - 8, 28);
+        painter.fillStyle = '#fbbf24';
+        painter.fillRect(left + 4, top + 158, cellWidth - 8, 2);
         painter.fillStyle = '#ffffff';
         painter.font = 'bold 15px system-ui, sans-serif';
         painter.fillText(String(index + 1), left + 12, top + 178);
@@ -6296,8 +6313,8 @@
   // Theme CSS is code, not copy: it must never pass through the translation layer.
   // Dark theme needs nothing here: the STEM shell renders tools on a light card and the host's
   // dark rules are scoped away from that card, so the authored light palette applies as-is.
-  var SOURCEBOOK_THEME_CSS = ".sourcebook-tool{--sb-ink:#18352d;--sb-paper:#f7f3e9}.sourcebook-tool input[type=range]{min-height:28px}.sourcebook-tool .sb-detail{scrollbar-gutter:stable;overscroll-behavior:contain}.sourcebook-tool .sb-subject-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:9999px;border:1px solid #2e6656;background:#183b32;color:#f7f2e7;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}.sourcebook-tool .sb-telemetry-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:9999px;border:1px solid #a7c0b5;background:rgba(255,255,255,0.88);color:#2d4f44;font-size:11px;font-weight:700}.sourcebook-tool .sb-telemetry-pill strong{color:#183b32;font-weight:800}.sourcebook-tool .sb-workflow-btn{transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}.sourcebook-tool .sb-workflow-btn:not(:disabled):hover{transform:translateY(-1px);border-color:#2e6656;box-shadow:0 4px 12px rgba(24,59,50,0.1)}@media(max-width:700px){.sourcebook-tool .sb-board{grid-template-columns:1fr!important}}@media print{.sourcebook-tool .sb-no-print{display:none!important}}"
-    + ".theme-contrast .sourcebook-tool :is(a,strong,b,em,i,legend,footer,dt,dd,summary,small,td,th,figcaption,cite,time,abbr){color:#ffff00!important}.theme-contrast .sourcebook-tool a{text-decoration:underline!important}.theme-contrast .sourcebook-tool [class*=\"bg-gradient\"]{background-image:none!important}.theme-contrast .sourcebook-tool [class*=\"border-[#\"]{border-color:#ffff00!important}.theme-contrast .sourcebook-tool [aria-pressed=\"true\"]:not([data-sourcebook-inspect]){box-shadow:inset 0 0 0 3px #ffff00!important;text-decoration:underline!important}.theme-contrast .sourcebook-tool .sb-subject-badge,.theme-contrast .sourcebook-tool .sb-telemetry-pill{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}";
+  var SOURCEBOOK_THEME_CSS = ".sourcebook-tool{--sb-ink:#18352d;--sb-paper:#f7f3e9;background-image:radial-gradient(ellipse 85% 42% at 50% 0%,rgba(232,239,233,0.75) 0%,rgba(247,244,237,0) 68%)}.sourcebook-tool header{background-image:radial-gradient(circle at 12% 14%,rgba(255,253,245,0.78) 0%,rgba(232,239,233,0.2) 52%,rgba(209,224,215,0.45) 100%)}.sourcebook-tool input[type=range]{min-height:28px}.sourcebook-tool .sb-detail{scrollbar-gutter:stable;overscroll-behavior:contain;background-image:linear-gradient(180deg,#faf7ef 0%,#f5f1e8 48%,#efe9dc 100%)}.sourcebook-tool .sb-subject-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:9999px;border:1px solid #2e6656;background:#183b32;color:#f7f2e7;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}.sourcebook-tool .sb-telemetry-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:9999px;border:1px solid #a7c0b5;background:rgba(255,255,255,0.88);color:#2d4f44;font-size:11px;font-weight:700}.sourcebook-tool .sb-telemetry-pill strong{color:#183b32;font-weight:800}.sourcebook-tool .sb-workflow-btn{transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}.sourcebook-tool .sb-workflow-btn:not(:disabled):hover{transform:translateY(-1px);border-color:#2e6656;box-shadow:0 4px 12px rgba(24,59,50,0.1)}@media(max-width:700px){.sourcebook-tool .sb-board{grid-template-columns:1fr!important}}@media print{.sourcebook-tool .sb-no-print{display:none!important}}"
+    + ".theme-contrast .sourcebook-tool,.theme-contrast .sourcebook-tool header,.theme-contrast .sourcebook-tool .sb-detail{background-image:none!important}.theme-contrast .sourcebook-tool :is(a,strong,b,em,i,legend,footer,dt,dd,summary,small,td,th,figcaption,cite,time,abbr){color:#ffff00!important}.theme-contrast .sourcebook-tool a{text-decoration:underline!important}.theme-contrast .sourcebook-tool [class*=\"bg-gradient\"]{background-image:none!important}.theme-contrast .sourcebook-tool [class*=\"border-[#\"]{border-color:#ffff00!important}.theme-contrast .sourcebook-tool [aria-pressed=\"true\"]:not([data-sourcebook-inspect]){box-shadow:inset 0 0 0 3px #ffff00!important;text-decoration:underline!important}.theme-contrast .sourcebook-tool .sb-subject-badge,.theme-contrast .sourcebook-tool .sb-telemetry-pill{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}";
 
   function sourcebookDocument() {
     if (typeof window !== 'undefined' && window.document && typeof window.document.createElement === 'function') return window.document;
@@ -6405,21 +6422,46 @@
     canvas.height = layout.height;
     var painter = canvas.getContext && canvas.getContext('2d');
     if (!painter) return '';
-    painter.fillStyle = '#f5f1e8';
+    // Tactile warm archival parchment lighting backdrop
+    if (typeof painter.createLinearGradient === 'function') {
+      var boardGrad = painter.createLinearGradient(0, 0, 0, layout.height);
+      boardGrad.addColorStop(0, '#faf6ec');
+      boardGrad.addColorStop(0.5, '#f5f1e8');
+      boardGrad.addColorStop(1, '#ebe4d5');
+      painter.fillStyle = boardGrad;
+    } else {
+      painter.fillStyle = '#f5f1e8';
+    }
     painter.fillRect(0, 0, layout.width, layout.height);
+    // Archival brass rule beneath header
     painter.fillStyle = '#183b32';
     painter.font = 'bold 40px system-ui, sans-serif';
     painter.fillText(String(opts.title || 'Reference board').slice(0, 60), 32, 64);
     painter.font = '20px system-ui, sans-serif';
     painter.fillStyle = '#4f625b';
     painter.fillText('Sourcebook reference board · rights-verified sources · credits under each image', 32, 98);
+    painter.fillStyle = '#b45309';
+    painter.fillRect(32, 110, 96, 3);
+    painter.fillStyle = '#c2d0ca';
+    painter.fillRect(136, 111, Math.max(0, layout.width - 168), 1);
     rows.forEach(function (row, index) {
       var left = (index % layout.columns) * layout.cellWidth;
       var top = layout.header + Math.floor(index / layout.columns) * layout.cellHeight;
       // A prepared entry already carries flip / grayscale / values in its pixels.
       var prep = row.prepared ? {} : (row.prep || {});
+      // Museum-gallery mat shadow & double hairline plate frame
+      painter.fillStyle = 'rgba(24,59,50,0.10)';
+      painter.fillRect(left + 16, top + 16, layout.cellWidth - 24, layout.imageHeight - 24);
       painter.fillStyle = '#ffffff';
       painter.fillRect(left + 12, top + 12, layout.cellWidth - 24, layout.imageHeight - 24);
+      if (typeof painter.strokeRect === 'function') {
+        painter.strokeStyle = '#b7c8c0';
+        painter.lineWidth = 2;
+        painter.strokeRect(left + 12, top + 12, layout.cellWidth - 24, layout.imageHeight - 24);
+        painter.strokeStyle = '#e5ece8';
+        painter.lineWidth = 1;
+        painter.strokeRect(left + 18, top + 18, layout.cellWidth - 36, layout.imageHeight - 36);
+      }
       var imageWidth = Math.max(1, Number(row.image.naturalWidth || row.image.width || 1));
       var imageHeight = Math.max(1, Number(row.image.naturalHeight || row.image.height || 1));
       var scale = Math.min((layout.cellWidth - 48) / imageWidth, (layout.imageHeight - 48) / imageHeight);
@@ -6452,6 +6494,11 @@
       swatches.forEach(function (swatch, s) {
         painter.fillStyle = swatch.hex;
         painter.fillRect(left + 12 + s * swatchWidth, swatchTop, swatchWidth, layout.swatchHeight - 12);
+        if (typeof painter.strokeRect === 'function') {
+          painter.strokeStyle = 'rgba(24,59,50,0.22)';
+          painter.lineWidth = 1;
+          painter.strokeRect(left + 12 + s * swatchWidth, swatchTop, swatchWidth, layout.swatchHeight - 12);
+        }
       });
       painter.fillStyle = '#183b32';
       painter.font = 'bold 20px system-ui, sans-serif';
@@ -8289,17 +8336,38 @@
         } catch (_) { toast(__alloT('stem.sourcebook.checkpoint_export_failed', 'The checkpoint could not be downloaded. Please try again.'), 'error'); }
       }
 
+      function _confirmSourcebookAction(question, opts, onConfirmed) {
+        var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+        var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+        if (typeof confirmModule !== 'function' || typeof confirmApi !== 'function') {
+          toast('Confirmation dialog is unavailable right now, so your Sourcebook palette was not changed.', 'warning');
+          announce('Confirmation dialog unavailable. No changes were made.');
+          return;
+        }
+        confirmApi(question, opts).then(function (confirmed) {
+          if (confirmed && typeof onConfirmed === 'function') onConfirmed();
+        }).catch(function () {
+          toast('Confirmation dialog could not open, so your Sourcebook palette was not changed.', 'warning');
+        });
+      }
+
       function deletePaletteCheckpoint(entry) {
         if (checkpointOperationRef.current) return;
-        if (!window.confirm(__alloTf('stem.sourcebook.checkpoint_delete_confirm', 'Delete checkpoint “{name}”? This cannot be undone. Your current palette will stay the same.', { name: entry.name }))) return;
-        try {
-          var next = normalizePaletteHistory(latestPaletteStateRef.current.paletteHistory).filter(function (saved) { return saved.id !== entry.id; });
-          var previousIds = paletteHistory.map(function (saved) { return saved.id; });
-          var deletedIndex = previousIds.indexOf(entry.id);
-          queueSourcebookActionFocus({ checkpointIds: previousIds.slice(deletedIndex + 1).concat(previousIds.slice(0, deletedIndex).reverse()), selectors: ['#sourcebook-checkpoint-name'] });
-          patch({ paletteHistory: next });
-          announce(__alloT('stem.sourcebook.checkpoint_deleted', 'Checkpoint deleted.'));
-        } catch (error) { toast(checkpointMessage(error), 'error'); }
+        _confirmSourcebookAction(
+          __alloTf('stem.sourcebook.checkpoint_delete_confirm', 'Delete checkpoint “{name}”? This cannot be undone. Your current palette will stay the same.', { name: entry.name }),
+          { title: 'Delete checkpoint?', confirmText: 'Delete checkpoint', cancelText: 'Keep checkpoint', tone: 'warning' },
+          function () {
+            if (checkpointOperationRef.current) return;
+            try {
+              var next = normalizePaletteHistory(latestPaletteStateRef.current.paletteHistory).filter(function (saved) { return saved.id !== entry.id; });
+              var previousIds = paletteHistory.map(function (saved) { return saved.id; });
+              var deletedIndex = previousIds.indexOf(entry.id);
+              queueSourcebookActionFocus({ checkpointIds: previousIds.slice(deletedIndex + 1).concat(previousIds.slice(0, deletedIndex).reverse()), selectors: ['#sourcebook-checkpoint-name'] });
+              patch({ paletteHistory: next });
+              announce(__alloT('stem.sourcebook.checkpoint_deleted', 'Checkpoint deleted.'));
+            } catch (error) { toast(checkpointMessage(error), 'error'); }
+          }
+        );
       }
 
       function paletteVerificationRevision(latest) {
@@ -8569,22 +8637,32 @@
           return all.map(function (entry) { return entry.id; }).indexOf(item.id) === index;
         }).slice(0, PALETTE_MAX_ASSETS);
         if (!eligible.length) return 0;
-        if (collection.length && typeof window.confirm === 'function' && !window.confirm('Replace your current Sourcebook palette with these ' + eligible.length + ' recommendations?')) return 0;
-        var nextCollection = [];
-        var nextAssets = {};
-        var nextPreparation = {};
-        eligible.forEach(function (item) {
-          if (nextCollection.indexOf(item.id) === -1) nextCollection.push(item.id);
-          if (item.live) nextAssets[item.id] = portableAsset(item);
-          if (preparation[item.id]) nextPreparation[item.id] = preparation[item.id];
-        });
-        trustCurrentSavedSmkAssets(nextAssets);
-        patch({ collection: nextCollection, savedAssets: nextAssets, preparation: nextPreparation, paletteUndo: createPaletteUndoSnapshot() });
-        setCheckedPaletteIds([]);
-        setShowingCollection(true);
-        if (message) toast(message, 'success');
-        announce(__alloTf('stem.sourcebook.msg_replaced_palette_with_recommendations', 'Replaced Sourcebook palette with {count} recommendations', { count: nextCollection.length }));
-        return nextCollection.length;
+        var applyReplacement = function () {
+          var nextCollection = [];
+          var nextAssets = {};
+          var nextPreparation = {};
+          eligible.forEach(function (item) {
+            if (nextCollection.indexOf(item.id) === -1) nextCollection.push(item.id);
+            if (item.live) nextAssets[item.id] = portableAsset(item);
+            if (preparation[item.id]) nextPreparation[item.id] = preparation[item.id];
+          });
+          trustCurrentSavedSmkAssets(nextAssets);
+          patch({ collection: nextCollection, savedAssets: nextAssets, preparation: nextPreparation, paletteUndo: createPaletteUndoSnapshot() });
+          setCheckedPaletteIds([]);
+          setShowingCollection(true);
+          if (message) toast(message, 'success');
+          announce(__alloTf('stem.sourcebook.msg_replaced_palette_with_recommendations', 'Replaced Sourcebook palette with {count} recommendations', { count: nextCollection.length }));
+          return nextCollection.length;
+        };
+        if (collection.length) {
+          _confirmSourcebookAction(
+            'Replace your current Sourcebook palette with these ' + eligible.length + ' recommendations?',
+            { title: 'Replace Sourcebook palette?', confirmText: 'Replace palette', cancelText: 'Keep current palette', tone: 'warning' },
+            applyReplacement
+          );
+          return 0;
+        }
+        return applyReplacement();
       }
 
       function requestDiscoveryPlan(value, requestedKind) {
@@ -9132,16 +9210,21 @@
 
       function clearPalette() {
         if (!collection.length) return;
-        if (typeof window.confirm === 'function' && !window.confirm(__alloT('stem.sourcebook.confirm_clear', 'Clear every saved Sourcebook asset and its crop or tile preparation?'))) return;
-        queueSourcebookActionFocus({ selectors: ['#sourcebook-search'] });
-        trustCurrentSavedSmkAssets({});
-        patch({ collection: [], savedAssets: {}, preparation: {}, paletteUndo: createPaletteUndoSnapshot() });
-        setCheckedPaletteIds([]);
-        setPaletteFilter('');
-        setPaletteAccessibilityFilter('all');
-        setShowingCollection(false);
-        toast(__alloT('stem.sourcebook.msg_sourcebook_palette_cleared', 'Sourcebook palette cleared.'), 'info');
-        announce(__alloT('stem.sourcebook.msg_sourcebook_palette_cleared_2', 'Sourcebook palette cleared'));
+        _confirmSourcebookAction(
+          __alloT('stem.sourcebook.confirm_clear', 'Clear every saved Sourcebook asset and its crop or tile preparation?'),
+          { title: 'Clear Sourcebook palette?', confirmText: 'Clear palette', cancelText: 'Keep palette', tone: 'warning' },
+          function () {
+            queueSourcebookActionFocus({ selectors: ['#sourcebook-search'] });
+            trustCurrentSavedSmkAssets({});
+            patch({ collection: [], savedAssets: {}, preparation: {}, paletteUndo: createPaletteUndoSnapshot() });
+            setCheckedPaletteIds([]);
+            setPaletteFilter('');
+            setPaletteAccessibilityFilter('all');
+            setShowingCollection(false);
+            toast(__alloT('stem.sourcebook.msg_sourcebook_palette_cleared', 'Sourcebook palette cleared.'), 'info');
+            announce(__alloT('stem.sourcebook.msg_sourcebook_palette_cleared_2', 'Sourcebook palette cleared'));
+          }
+        );
       }
 
       function movePaletteItem(id, direction) {
@@ -9319,24 +9402,29 @@
         if (!savedPaletteReadyForMerge()) return;
         var removeIds = checkedPaletteIds.filter(function (id) { return collection.indexOf(id) !== -1; });
         if (!removeIds.length) return;
-        if (typeof window.confirm === 'function' && !window.confirm(__alloTn('stem.sourcebook.confirm_remove_selected', removeIds.length, 'Remove {count} selected Sourcebook asset from this palette?', 'Remove {count} selected Sourcebook assets from this palette?'))) return;
-        queueSourcebookActionFocus({ cardIds: visible.filter(function (item) { return removeIds.indexOf(item.id) === -1; }).map(function (item) { return item.id; }) });
-        var nextAssets = Object.assign({}, savedAssets);
-        var nextPreparation = Object.assign({}, preparation);
-        removeIds.forEach(function (id) {
-          delete nextAssets[id];
-          delete nextPreparation[id];
-        });
-        trustCurrentSavedSmkAssets(nextAssets);
-        patch({
-          collection: collection.filter(function (id) { return removeIds.indexOf(id) === -1; }),
-          savedAssets: nextAssets,
-          preparation: nextPreparation,
-          paletteUndo: createPaletteUndoSnapshot()
-        });
-        setCheckedPaletteIds([]);
-        toast(__alloTn('stem.sourcebook.msg_removed_selected_assets', removeIds.length, 'Removed {count} selected asset. You can undo this change.', 'Removed {count} selected assets. You can undo this change.'), 'info');
-        announce(__alloT('stem.sourcebook.msg_removed_selected_sourcebook_palette_assets', 'Removed selected Sourcebook palette assets'));
+        _confirmSourcebookAction(
+          __alloTn('stem.sourcebook.confirm_remove_selected', removeIds.length, 'Remove {count} selected Sourcebook asset from this palette?', 'Remove {count} selected Sourcebook assets from this palette?'),
+          { title: 'Remove selected assets?', confirmText: 'Remove selected', cancelText: 'Keep selected', tone: 'warning' },
+          function () {
+            queueSourcebookActionFocus({ cardIds: visible.filter(function (item) { return removeIds.indexOf(item.id) === -1; }).map(function (item) { return item.id; }) });
+            var nextAssets = Object.assign({}, savedAssets);
+            var nextPreparation = Object.assign({}, preparation);
+            removeIds.forEach(function (id) {
+              delete nextAssets[id];
+              delete nextPreparation[id];
+            });
+            trustCurrentSavedSmkAssets(nextAssets);
+            patch({
+              collection: collection.filter(function (id) { return removeIds.indexOf(id) === -1; }),
+              savedAssets: nextAssets,
+              preparation: nextPreparation,
+              paletteUndo: createPaletteUndoSnapshot()
+            });
+            setCheckedPaletteIds([]);
+            toast(__alloTn('stem.sourcebook.msg_removed_selected_assets', removeIds.length, 'Removed {count} selected asset. You can undo this change.', 'Removed {count} selected assets. You can undo this change.'), 'info');
+            announce(__alloT('stem.sourcebook.msg_removed_selected_sourcebook_palette_assets', 'Removed selected Sourcebook palette assets'));
+          }
+        );
       }
 
       function applyPreparationToPalette(mode) {
@@ -10073,15 +10161,25 @@
           'data-sourcebook-study-grid': 'true',
           className: 'pointer-events-none absolute inset-0',
           style: {
-            backgroundImage: 'linear-gradient(to right, rgba(24,59,50,.55) 1px, transparent 1px), linear-gradient(to bottom, rgba(24,59,50,.55) 1px, transparent 1px)',
+            backgroundImage: 'linear-gradient(to right, rgba(24,59,50,.65) 1px, rgba(255,253,245,.45) 2px, transparent 2px), linear-gradient(to bottom, rgba(24,59,50,.65) 1px, rgba(255,253,245,.45) 2px, transparent 2px)',
             backgroundSize: '33.333% 33.333%',
-            boxShadow: 'inset 0 0 0 1px rgba(24,59,50,.55)'
+            boxShadow: 'inset 0 0 0 1px rgba(24,59,50,.6)'
           }
         }), onFocusPoint && h('span', {
           'aria-hidden': 'true',
-          className: 'pointer-events-none absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#183b32]/40 shadow-[0_0_0_2px_rgba(24,59,50,.8)]',
-          style: { left: Number((prep && prep.x) || 50) + '%', top: Number((prep && prep.y) || 50) + '%' }
-        }), h('span', {
+          className: 'pointer-events-none absolute h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#f59e0b] bg-white/15',
+          style: {
+            left: Number((prep && prep.x) || 50) + '%',
+            top: Number((prep && prep.y) || 50) + '%',
+            boxShadow: '0 0 0 2px rgba(24,59,50,.85), 0 0 16px rgba(245,158,11,.42), inset 0 0 8px rgba(255,255,255,.35)'
+          }
+        },
+          h('span', { className: 'absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f59e0b] border border-white' }),
+          h('span', { className: 'absolute left-1/2 -top-1.5 h-2 w-0.5 -translate-x-1/2 bg-white' }),
+          h('span', { className: 'absolute left-1/2 -bottom-1.5 h-2 w-0.5 -translate-x-1/2 bg-white' }),
+          h('span', { className: 'absolute -left-1.5 top-1/2 h-0.5 w-2 -translate-y-1/2 bg-white' }),
+          h('span', { className: 'absolute -right-1.5 top-1/2 h-0.5 w-2 -translate-y-1/2 bg-white' })
+        ), h('span', {
           'aria-hidden': 'true', className: 'pointer-events-none absolute left-3 bottom-2 max-w-[70%] truncate text-[0.625rem] font-black uppercase tracking-[.14em] px-2 py-1 rounded-full bg-white/90 text-[#29483f] shadow-sm'
         }, (cardPresentation ? cardPresentation.mark + ' · ' : '') + kindLabel(item.kind)), cardPresentation && h('span', {
           'aria-hidden': 'true', 'data-sourcebook-card-rights': item.rightsType,
@@ -10345,7 +10443,7 @@
                   (activeUsageIntent.suggested ? __alloT('stem.sourcebook.usage_suggested_by_sourcebook_prefix', 'Suggested by Sourcebook: ') : (activeUsageIntent.planId ? intentSourceLabel(activeUsageIntent) + ': ' : __alloT('stem.sourcebook.usage_planned_by_you_prefix', 'Planned by you: '))) + intentField(activeUsageIntent.id, 'label', activeUsageIntent.label) + '. ' + intentField(activeUsageIntent.id, 'description', activeUsageIntent.description)
                 )
               ),
-              h('div', { className: 'grid grid-cols-2 gap-2', 'aria-label': __alloT('stem.sourcebook.preparation_presets', 'Preparation presets') },
+              h('div', { role: 'group', className: 'grid grid-cols-2 gap-2', 'aria-label': __alloT('stem.sourcebook.preparation_presets', 'Preparation presets') },
                 h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'fit', aspect: 'original', zoom: 100, x: 50, y: 50 }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[0.6875rem] font-black text-[#294d42] hover:bg-[#eef5f1]' }, __alloT('stem.sourcebook.full_image', 'Full image')),
                 h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'crop', aspect: 'landscape', zoom: 125, x: 50, y: 50, usageIntent: 'background' }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[0.6875rem] font-black text-[#294d42] hover:bg-[#eef5f1]' }, __alloT('stem.sourcebook.page_background', 'Page background')),
                 h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'crop', aspect: 'banner', zoom: 145, x: 50, y: 35, usageIntent: 'accent' }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[0.6875rem] font-black text-[#294d42] hover:bg-[#eef5f1]' }, __alloT('stem.sourcebook.header_strip', 'Header strip')),
@@ -10358,7 +10456,7 @@
               ),
               h('fieldset', { className: 'rounded-2xl border border-[#c8d4ce] bg-[#f2f6f3] p-3', 'data-sourcebook-study-aids': 'true' },
                 h('legend', { className: 'px-1 text-[0.6875rem] font-black text-[#445950]' }, __alloT('stem.sourcebook.study_aids', 'Study aids for artists')),
-                h('div', { className: 'mt-1 flex flex-wrap gap-2', 'aria-label': __alloT('stem.sourcebook.study_aid_toggles', 'Study aid toggles') },
+                h('div', { role: 'group', className: 'mt-1 flex flex-wrap gap-2', 'aria-label': __alloT('stem.sourcebook.study_aid_toggles', 'Study aid toggles') },
                   controlButton(__alloT('stem.sourcebook.study_grayscale', 'Grayscale'), activePrep.grayscale, function () { updatePrep(item.id, { grayscale: !activePrep.grayscale, posterize: false }); }, { 'aria-pressed': activePrep.grayscale ? 'true' : 'false', 'data-sourcebook-study': 'grayscale' }),
                   controlButton(__alloT('stem.sourcebook.study_values', '5 values'), activePrep.posterize, function () { updatePrep(item.id, { posterize: !activePrep.posterize, grayscale: false }); }, { 'aria-pressed': activePrep.posterize ? 'true' : 'false', 'data-sourcebook-study': 'posterize' }),
                   controlButton(__alloT('stem.sourcebook.study_flip', 'Flip'), activePrep.flip, function () { updatePrep(item.id, { flip: !activePrep.flip }); }, { 'aria-pressed': activePrep.flip ? 'true' : 'false', 'data-sourcebook-study': 'flip' }),
@@ -10383,7 +10481,7 @@
               ),
               activePrep.mode !== 'fit' && h('fieldset', { className: 'rounded-2xl border border-[#c8d4ce] bg-[#f2f6f3] p-3' },
                 h('legend', { className: 'px-1 text-[0.6875rem] font-black text-[#445950]' }, __alloT('stem.sourcebook.output_shape', 'Output shape')),
-                h('div', { className: 'mt-1 flex flex-wrap gap-2', 'aria-label': __alloT('stem.sourcebook.prepared_image_output_shape', 'Prepared image output shape') }, Object.keys(PREPARATION_FORMATS).map(function (aspect) {
+                h('div', { role: 'group', className: 'mt-1 flex flex-wrap gap-2', 'aria-label': __alloT('stem.sourcebook.prepared_image_output_shape', 'Prepared image output shape') }, Object.keys(PREPARATION_FORMATS).map(function (aspect) {
                   return controlButton(PREPARATION_FORMATS[aspect].label, activePrep.aspect === aspect, function () { updatePrep(item.id, { aspect: aspect }); }, { key: aspect, 'aria-pressed': activePrep.aspect === aspect });
                 }))
               ),
@@ -10425,7 +10523,7 @@
                 }, accessibility.source === 'user-edited' ? __alloT('stem.sourcebook.accessibility_status_user_edited', 'User-edited') : (accessibility.decorative ? __alloT('stem.sourcebook.accessibility_status_decorative', 'Decorative') : (accessibility.reviewed ? __alloT('stem.sourcebook.accessibility_status_catalog_confirmed', 'Catalog - confirmed') : __alloT('stem.sourcebook.accessibility_status_review_needed', 'Review needed'))))
               ),
               h('p', { className: 'text-[0.6875rem] font-bold leading-relaxed text-[#4e645b]' }, __alloT('stem.sourcebook.this_is_a_metadata_grounded_starting_p', 'This is a metadata-grounded starting point, not a visual AI description. Confirm it against the full image and the context where it will be used.')),
-              h('div', { className: 'grid grid-cols-2 gap-2', 'aria-label': __alloT('stem.sourcebook.image_purpose', 'Image purpose') },
+              h('div', { role: 'group', className: 'grid grid-cols-2 gap-2', 'aria-label': __alloT('stem.sourcebook.image_purpose', 'Image purpose') },
                 h('button', {
                   type: 'button',
                   onClick: function () { updatePrep(item.id, { decorative: false }); },
@@ -10522,10 +10620,29 @@
         h('style', null, SOURCEBOOK_THEME_CSS),
         h('header', { className: 'relative overflow-hidden rounded-3xl border border-[#a9c2b8] bg-[#e8efe9] p-5 md:p-7 mb-5 shadow-sm' },
           h('div', { 'aria-hidden': 'true', className: 'absolute -right-12 -top-16 w-64 h-64 rounded-full border-[36px] border-[#c8ddd4] opacity-70' }),
-          h('svg', { 'aria-hidden': 'true', focusable: 'false', viewBox: '0 0 120 120', width: 120, height: 120, className: 'pointer-events-none absolute right-6 bottom-0 opacity-25 text-[#2e6656]' },
-            h('circle', { cx: 60, cy: 60, r: 46, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeDasharray: '4 4' }),
-            h('circle', { cx: 60, cy: 60, r: 30, fill: 'none', stroke: 'currentColor', strokeWidth: 1.2 }),
-            h('path', { d: 'M60 12V108M12 60H108M28 28L92 92M92 28L28 92', stroke: 'currentColor', strokeWidth: 1 })
+          h('svg', { 'aria-hidden': 'true', focusable: 'false', viewBox: '0 0 120 120', width: 120, height: 120, className: 'pointer-events-none absolute right-6 bottom-0 opacity-30 text-[#2e6656]' },
+            // Cartographic relief graticule rings & degree compass rose
+            h('circle', { cx: 60, cy: 60, r: 52, fill: 'none', stroke: 'currentColor', strokeWidth: 0.9, strokeDasharray: '2 3' }),
+            h('circle', { cx: 60, cy: 60, r: 44, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+            h('circle', { cx: 60, cy: 60, r: 28, fill: 'none', stroke: 'currentColor', strokeWidth: 1.1 }),
+            h('ellipse', { cx: 60, cy: 60, rx: 44, ry: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 0.8, opacity: 0.6 }),
+            h('ellipse', { cx: 60, cy: 60, rx: 18, ry: 44, fill: 'none', stroke: 'currentColor', strokeWidth: 0.8, opacity: 0.6 }),
+            // Secondary intercardinal star facets
+            h('polygon', { points: '60,60 82,38 66,54', fill: 'currentColor', opacity: 0.45 }),
+            h('polygon', { points: '60,60 82,82 66,66', fill: 'currentColor', opacity: 0.45 }),
+            h('polygon', { points: '60,60 38,82 54,66', fill: 'currentColor', opacity: 0.45 }),
+            h('polygon', { points: '60,60 38,38 54,54', fill: 'currentColor', opacity: 0.45 }),
+            // Primary 4-point shaded compass rose needles
+            h('polygon', { points: '60,12 66,54 60,60', fill: 'currentColor' }),
+            h('polygon', { points: '60,12 54,54 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
+            h('polygon', { points: '108,60 66,66 60,60', fill: 'currentColor' }),
+            h('polygon', { points: '108,60 66,54 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
+            h('polygon', { points: '60,108 54,66 60,60', fill: 'currentColor' }),
+            h('polygon', { points: '60,108 66,66 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
+            h('polygon', { points: '12,60 54,54 60,60', fill: 'currentColor' }),
+            h('polygon', { points: '12,60 54,66 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
+            h('circle', { cx: 60, cy: 60, r: 4, fill: '#f7f3e9', stroke: 'currentColor', strokeWidth: 1.4 }),
+            h('text', { x: 60, y: 9, textAnchor: 'middle', fill: 'currentColor', fontSize: 7.5, fontWeight: 900 }, 'N')
           ),
           h('div', { className: 'relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_248px] items-start' },
             h('div', { className: 'min-w-0' },
@@ -10537,13 +10654,30 @@
                 // Bespoke inline SVG Archival Folio & Brass Loupe Emblem
                 h('span', { 'aria-hidden': 'true', className: 'shrink-0 w-12 h-12 rounded-2xl bg-[#183b32] text-[#f7f2e7] inline-flex items-center justify-center shadow-lg border border-[#2f6b59]' },
                   h('svg', { viewBox: '0 0 44 44', width: 38, height: 38, 'aria-hidden': 'true', focusable: 'false' },
-                    h('path', { d: 'M8 11C13 9.5 18 10 21.5 12.5V33C18 30.8 13 30.2 8 31.8Z', fill: '#f7f2e7', stroke: '#c7ddd3', strokeWidth: 1.2, strokeLinejoin: 'round' }),
-                    h('path', { d: 'M36 11C31 9.5 26 10 22.5 12.5V33C26 30.8 31 30.2 36 31.8Z', fill: '#e8efe9', stroke: '#c7ddd3', strokeWidth: 1.2, strokeLinejoin: 'round' }),
+                    h('defs', null,
+                      h('linearGradient', { id: 'sb-folio-l', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#fffdf7' }),
+                        h('stop', { offset: '100%', stopColor: '#e8e0cc' })
+                      ),
+                      h('linearGradient', { id: 'sb-folio-r', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#efe9d8' }),
+                        h('stop', { offset: '100%', stopColor: '#d7ded8' })
+                      ),
+                      h('radialGradient', { id: 'sb-loupe-lens', cx: '34%', cy: '30%', r: '70%' },
+                        h('stop', { offset: '0%', stopColor: '#fef3c7', stopOpacity: 0.72 }),
+                        h('stop', { offset: '55%', stopColor: '#f59e0b', stopOpacity: 0.2 }),
+                        h('stop', { offset: '100%', stopColor: '#183b32', stopOpacity: 0.14 })
+                      )
+                    ),
+                    h('path', { d: 'M8 11C13 9.5 18 10 21.5 12.5V33C18 30.8 13 30.2 8 31.8Z', fill: 'url(#sb-folio-l)', stroke: '#c7ddd3', strokeWidth: 1.2, strokeLinejoin: 'round' }),
+                    h('path', { d: 'M36 11C31 9.5 26 10 22.5 12.5V33C26 30.8 31 30.2 36 31.8Z', fill: 'url(#sb-folio-r)', stroke: '#c7ddd3', strokeWidth: 1.2, strokeLinejoin: 'round' }),
                     h('line', { x1: 11, y1: 16, x2: 18, y2: 16.5, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
                     h('line', { x1: 11, y1: 20.5, x2: 18, y2: 21, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
                     h('line', { x1: 11, y1: 25, x2: 16.5, y2: 25.4, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
-                    h('circle', { cx: 29, cy: 22, r: 5.5, fill: 'rgba(217,119,6,0.18)', stroke: '#f59e0b', strokeWidth: 2 }),
-                    h('line', { x1: 33, y1: 26, x2: 37.5, y2: 30.5, stroke: '#f59e0b', strokeWidth: 2.4, strokeLinecap: 'round' })
+                    h('circle', { cx: 29, cy: 22, r: 7.4, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, opacity: 0.35 }),
+                    h('circle', { cx: 29, cy: 22, r: 5.6, fill: 'url(#sb-loupe-lens)', stroke: '#f59e0b', strokeWidth: 2 }),
+                    h('path', { d: 'M26 19.6 A 4 4 0 0 1 30.5 18.4', fill: 'none', stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.78 }),
+                    h('line', { x1: 33, y1: 26, x2: 37.5, y2: 30.5, stroke: '#f59e0b', strokeWidth: 2.5, strokeLinecap: 'round' })
                   )
                 ),
                 h('div', { className: 'min-w-0 flex-1' },
@@ -10581,22 +10715,46 @@
               var cc0W = Math.round((cc0Count / totalLoaded) * barW);
               var ccbyW = Math.max(0, barW - pdW - cc0W);
               var palRatio = Math.min(1, selectedItems.length / Math.max(1, paletteTarget));
+              var palFillW = Math.round(barW * palRatio);
               return h('div', { className: 'sb-no-print rounded-2xl border border-[#a7c0b5] bg-white/90 p-3 shadow-sm', 'aria-hidden': 'true' },
-                h('svg', { viewBox: '0 0 220 92', width: 220, height: 92, className: 'sb-curation-svg block w-full h-auto', 'aria-hidden': 'true', focusable: 'false' },
-                  h('text', { x: 12, y: 15, fill: '#183b32', fontSize: 10, fontWeight: 800, letterSpacing: '0.06em' }, __alloT('stem.sourcebook.svg_rights_ledger', 'RIGHTS LEDGER')),
-                  h('text', { x: 208, y: 15, textAnchor: 'end', fill: '#45635a', fontSize: 10, fontWeight: 700 }, combinedResults.length + ' ' + __alloT('stem.sourcebook.svg_verified', 'VERIFIED')),
-                  h('rect', { x: 12, y: 22, width: barW, height: 10, rx: 5, fill: '#e2ece7' }),
-                  pdW > 0 && h('rect', { x: 12, y: 22, width: pdW, height: 10, rx: 4, fill: '#183b32' }),
-                  cc0W > 0 && h('rect', { x: 12 + pdW, y: 22, width: cc0W, height: 10, fill: '#2e7d63' }),
-                  ccbyW > 0 && ccbyCount > 0 && h('rect', { x: 12 + pdW + cc0W, y: 22, width: ccbyW, height: 10, rx: 4, fill: '#b45309' }),
-                  h('text', { x: 12, y: 45, fill: '#183b32', fontSize: 10, fontWeight: 700 }, 'PD ' + pdCount),
-                  h('text', { x: 110, y: 45, textAnchor: 'middle', fill: '#1f5e4a', fontSize: 10, fontWeight: 700 }, 'CC0 ' + cc0Count),
-                  h('text', { x: 208, y: 45, textAnchor: 'end', fill: '#8a3f12', fontSize: 10, fontWeight: 700 }, 'CC BY ' + ccbyCount),
-                  h('line', { x1: 12, y1: 55, x2: 208, y2: 55, stroke: '#d6e3dc', strokeWidth: 1 }),
-                  h('text', { x: 12, y: 69, fill: '#183b32', fontSize: 10, fontWeight: 800 }, __alloT('stem.sourcebook.svg_palette_fill', 'PALETTE TARGET')),
-                  h('text', { x: 208, y: 69, textAnchor: 'end', fill: '#183b32', fontSize: 10, fontWeight: 800 }, selectedItems.length + ' / ' + paletteTarget),
-                  h('rect', { x: 12, y: 76, width: barW, height: 8, rx: 4, fill: '#e2ece7' }),
-                  h('rect', { x: 12, y: 76, width: Math.round(barW * palRatio), height: 8, rx: 4, fill: '#d97706' })
+                h('svg', { viewBox: '0 0 220 96', width: 220, height: 96, className: 'sb-curation-svg block w-full h-auto', 'aria-hidden': 'true', focusable: 'false' },
+                  h('defs', null,
+                    h('linearGradient', { id: 'sb-ledger-bg', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#fcfaf4' }),
+                      h('stop', { offset: '100%', stopColor: '#eef4f0' })
+                    ),
+                    h('linearGradient', { id: 'sb-bar-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.32 }),
+                      h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0 }),
+                      h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0.16 })
+                    ),
+                    h('linearGradient', { id: 'sb-pal-brass', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                      h('stop', { offset: '0%', stopColor: '#d97706' }),
+                      h('stop', { offset: '100%', stopColor: '#f59e0b' })
+                    )
+                  ),
+                  h('rect', { x: 1, y: 1, width: 218, height: 94, rx: 10, fill: 'url(#sb-ledger-bg)', stroke: '#d6e3dc', strokeWidth: 1 }),
+                  h('text', { x: 12, y: 17, fill: '#183b32', fontSize: 10, fontWeight: 800, letterSpacing: '0.06em' }, __alloT('stem.sourcebook.svg_rights_ledger', 'RIGHTS LEDGER')),
+                  h('text', { x: 208, y: 17, textAnchor: 'end', fill: '#45635a', fontSize: 10, fontWeight: 700 }, combinedResults.length + ' ' + __alloT('stem.sourcebook.svg_verified', 'VERIFIED')),
+                  h('rect', { x: 12, y: 24, width: barW, height: 11, rx: 5.5, fill: '#e2ece7' }),
+                  pdW > 0 && h('rect', { x: 12, y: 24, width: pdW, height: 11, rx: 4, fill: '#183b32' }),
+                  cc0W > 0 && h('rect', { x: 12 + pdW, y: 24, width: cc0W, height: 11, fill: '#2e7d63' }),
+                  ccbyW > 0 && ccbyCount > 0 && h('rect', { x: 12 + pdW + cc0W, y: 24, width: ccbyW, height: 11, rx: 4, fill: '#b45309' }),
+                  h('rect', { x: 12, y: 24, width: barW, height: 11, rx: 5.5, fill: 'url(#sb-bar-sheen)' }),
+                  h('text', { x: 12, y: 47, fill: '#183b32', fontSize: 10, fontWeight: 700 }, 'PD ' + pdCount),
+                  h('text', { x: 110, y: 47, textAnchor: 'middle', fill: '#1f5e4a', fontSize: 10, fontWeight: 700 }, 'CC0 ' + cc0Count),
+                  h('text', { x: 208, y: 47, textAnchor: 'end', fill: '#8a3f12', fontSize: 10, fontWeight: 700 }, 'CC BY ' + ccbyCount),
+                  h('line', { x1: 12, y1: 57, x2: 208, y2: 57, stroke: '#d6e3dc', strokeWidth: 1 }),
+                  h('text', { x: 12, y: 71, fill: '#183b32', fontSize: 10, fontWeight: 800 }, __alloT('stem.sourcebook.svg_palette_fill', 'PALETTE TARGET')),
+                  h('text', { x: 208, y: 71, textAnchor: 'end', fill: '#183b32', fontSize: 10, fontWeight: 800 }, selectedItems.length + ' / ' + paletteTarget),
+                  h('rect', { x: 12, y: 78, width: barW, height: 9, rx: 4.5, fill: '#e2ece7' }),
+                  palFillW > 0 && h('rect', { x: 12, y: 78, width: palFillW, height: 9, rx: 4.5, fill: 'url(#sb-pal-brass)' }),
+                  palFillW > 0 && h('rect', { x: 12, y: 78, width: palFillW, height: 9, rx: 4.5, fill: 'url(#sb-bar-sheen)' }),
+                  [0.25, 0.5, 0.75].map(function (q) {
+                    var qx = 12 + Math.round(barW * q);
+                    return h('line', { key: 'qt-' + q, x1: qx, y1: 78, x2: qx, y2: 87, stroke: 'rgba(255,255,255,0.55)', strokeWidth: 1 });
+                  }),
+                  palFillW > 2 && h('circle', { cx: 12 + palFillW, cy: 82.5, r: 4, fill: '#f59e0b', stroke: '#ffffff', strokeWidth: 1.4 })
                 )
               );
             })()
@@ -10629,7 +10787,7 @@
             ),
             h('button', { type: 'submit', className: 'min-h-[48px] px-6 rounded-xl bg-[#183b32] text-white text-sm font-black shadow-md hover:bg-[#245447]' }, autoCurate ? __alloTf('stem.sourcebook.find_and_save_count', 'Find & save {count}', { count: paletteTarget }) : __alloT('stem.sourcebook.search_verified_visuals', 'Search verified visuals'))
           ),
-          h('div', { className: 'flex gap-2 flex-wrap mt-3', 'aria-label': __alloT('stem.sourcebook.example_searches', 'Example searches') },
+          h('div', { role: 'group', className: 'flex gap-2 flex-wrap mt-3', 'aria-label': __alloT('stem.sourcebook.example_searches', 'Example searches') },
             h('button', {
               type: 'button',
               onClick: function () {
@@ -10644,7 +10802,7 @@
               return h('button', { key: starter, type: 'button', onClick: function () { submitSearch(starter); }, className: 'min-h-[40px] px-3 py-2 rounded-full border border-[#c2d0ca] bg-[#f4f7f5] text-[0.6875rem] font-bold text-[#456057] hover:bg-[#e7efeb]' }, starter);
             })
           ),
-          recentSearches.length > 0 && h('div', { className: 'mt-3 flex flex-wrap items-center gap-2', 'aria-label': __alloT('stem.sourcebook.recent_sourcebook_searches', 'Recent Sourcebook searches') },
+          recentSearches.length > 0 && h('div', { role: 'group', className: 'mt-3 flex flex-wrap items-center gap-2', 'aria-label': __alloT('stem.sourcebook.recent_sourcebook_searches', 'Recent Sourcebook searches') },
             h('span', { className: 'text-[0.625rem] font-black uppercase tracking-[.12em] text-[#5b7067]' }, __alloT('stem.sourcebook.recent', 'Recent')),
             recentSearches.map(function (recent) {
               return h('button', {
@@ -10805,7 +10963,7 @@
             ),
             h('span', { className: 'w-fit rounded-full border border-[#b8d7ca] bg-white px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[.08em] text-[#31584c]' }, kind === 'All' ? __alloT('stem.sourcebook.coverage_balanced', 'Balanced coverage') : __alloTf('stem.sourcebook.coverage_kind_route', '{kind} route', { kind: kindLabel(kind) }))
           ),
-          h('div', { className: 'grid grid-cols-3 gap-2 px-4 pt-3', 'aria-label': __alloT('stem.sourcebook.collection_coverage_summary', 'Collection coverage summary') },
+          h('div', { role: 'group', className: 'grid grid-cols-3 gap-2 px-4 pt-3', 'aria-label': __alloT('stem.sourcebook.collection_coverage_summary', 'Collection coverage summary') },
             h('div', { className: 'rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 py-2', 'data-sourcebook-coverage-metric': 'contributed' },
               h('strong', { className: 'block text-lg leading-none text-emerald-900' }, coverageGuide.contributedCount),
               h('span', { className: 'mt-1 block text-[0.5625rem] font-black uppercase tracking-[.08em] text-emerald-800' }, __alloT('stem.sourcebook.contributed', 'Contributed'))
@@ -10819,7 +10977,7 @@
               h('span', { className: 'mt-1 block text-[0.5625rem] font-black uppercase tracking-[.08em] text-amber-800' }, __alloT('stem.sourcebook.need_attention', 'Need attention'))
             )
           ),
-          h('div', { className: 'px-4 pt-3', 'aria-label': __alloTf('stem.sourcebook.aria_collection_reports_resolved', 'Collection reports resolved {percent} percent', { percent: coverageGuide.completionPercent }) },
+          h('div', { role: 'group', className: 'px-4 pt-3', 'aria-label': __alloTf('stem.sourcebook.aria_collection_reports_resolved', 'Collection reports resolved {percent} percent', { percent: coverageGuide.completionPercent }) },
             h('div', { className: 'flex items-center justify-between text-[0.625rem] font-black uppercase tracking-[.07em] text-[#526c62]' },
               h('span', null, coverageGuide.checkedCount + ' checked / ' + coverageGuide.totalCount + ' reporting'),
               h('span', null, coverageGuide.completionPercent + '% resolved')
@@ -10858,9 +11016,9 @@
               className: 'rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-[0.6875rem] font-bold leading-relaxed text-sky-950',
               'data-sourcebook-search-settings-note': 'true'
             }, __alloT('stem.sourcebook.changing_material_type_reuse_scope_or_', 'Changing material type, reuse scope, or search scope starts a fresh rights-checked collection search. Use Explore loaded board below for instant filtering.')),
-            h('div', { className: 'flex gap-2 flex-wrap', 'aria-label': __alloT('stem.sourcebook.material_type_filters', 'Material type filters') }, kinds.map(function (value) { return controlButton(kindLabel(value), kind === value, function () { setFilter('kind', value); }, { key: value }); })),
+            h('div', { role: 'group', className: 'flex gap-2 flex-wrap', 'aria-label': __alloT('stem.sourcebook.material_type_filters', 'Material type filters') }, kinds.map(function (value) { return controlButton(kindLabel(value), kind === value, function () { setFilter('kind', value); }, { key: value }); })),
             h('div', { className: 'flex flex-col md:flex-row md:items-center gap-3' },
-              h('div', { className: 'flex gap-2 flex-wrap flex-1 items-center', 'aria-label': __alloT('stem.sourcebook.reuse_rights_filters', 'Reuse rights filters') },
+              h('div', { role: 'group', className: 'flex gap-2 flex-wrap flex-1 items-center', 'aria-label': __alloT('stem.sourcebook.reuse_rights_filters', 'Reuse rights filters') },
                 h('span', { className: 'text-xs font-black text-[#4d645b] mr-1' }, __alloT('stem.sourcebook.reuse_scope', 'Reuse scope')),
                 controlButton(__alloT('stem.sourcebook.rights_scope_public_domain', 'Public Domain'), rightsScope === 'pd', function () { setFilter('rights', 'pd'); }),
                 controlButton(__alloT('stem.sourcebook.rights_scope_include_cc0', 'Include CC0'), rightsScope === 'pd-cc0', function () { setFilter('rights', 'pd-cc0'); }),
@@ -11054,7 +11212,7 @@
                   + (effectiveLoadedRightsFilter === 'All' ? '' : ' · ' + effectiveLoadedRightsLabel)
                   + '. No provider request was made.'
               )
-            ),            !showingCollection && combinedResults.length > 0 && h('div', {
+            ),            !showingCollection && combinedResults.length > 0 && h('div', { role: 'group',
               className: 'sb-no-print mb-3 grid gap-2 rounded-2xl border border-[#b9c9c2] bg-white p-3 sm:grid-cols-[minmax(0,1fr)_auto]',
               'aria-label': __alloT('stem.sourcebook.refine_loaded_sourcebook_results', 'Refine loaded Sourcebook results')
             },
@@ -11083,12 +11241,12 @@
                 refinedResults.length + ' of ' + loadedFacetResults.length + ' locally selected result' + (loadedFacetResults.length === 1 ? '' : 's') + ' match the text and sort controls' + (boardFilter.trim() ? ', including local filter "' + boardFilter.trim() + '"' : '') + '. ' + combinedResults.length + ' total rights-verified results are loaded. ' + visible.length + ' currently rendered.'
               )
             ),
-            !showingCollection && query && (liveResults.length > 0 || canLoadMore) && h('div', {
+            !showingCollection && query && (liveResults.length > 0 || canLoadMore) && h('div', { role: 'group',
               className: 'sb-no-print mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-[#b9c9c2] bg-[#eef4f0] p-3',
               'aria-label': __alloT('stem.sourcebook.live_result_expansion_and_curation_con', 'Live result expansion and curation controls')
             },
               h('span', { className: 'mr-auto text-[0.6875rem] font-bold text-[#476158]' }, liveResults.length + ' verified live assets across ' + (searchPage + 1) + ' search batch' + (searchPage ? 'es' : '')),
-              h('div', { className: 'flex flex-wrap items-center gap-1.5', 'aria-label': __alloT('stem.sourcebook.live_match_quality', 'Live match quality') },
+              h('div', { role: 'group', className: 'flex flex-wrap items-center gap-1.5', 'aria-label': __alloT('stem.sourcebook.live_match_quality', 'Live match quality') },
                 h('span', { className: 'rounded-full bg-emerald-100 px-2.5 py-1 text-[0.625rem] font-black text-emerald-950', title: __alloT('stem.sourcebook.catalog_metadata_directly_supports_the', 'Catalog metadata directly supports the request') }, liveMatchQuality.strong + ' strong'),
                 h('span', { className: 'rounded-full bg-sky-100 px-2.5 py-1 text-[0.625rem] font-black text-sky-950', title: __alloT('stem.sourcebook.some_catalog_metadata_supports_the_req', 'Some catalog metadata supports the request') }, liveMatchQuality.related + ' related'),
                 liveMatchQuality.broad > 0 && h('span', { className: 'rounded-full bg-slate-200 px-2.5 py-1 text-[0.625rem] font-black text-slate-700', title: __alloT('stem.sourcebook.useful_for_exploration_but_not_automat', 'Useful for exploration, but not automatically recommended') }, liveMatchQuality.broad + ' broad')
@@ -11153,14 +11311,14 @@
                   ),
                   h('button', { type: 'submit', disabled: curationBusy || !refinementDraft.trim(), className: 'min-h-[44px] self-end rounded-xl bg-[#f3ead7] px-4 text-xs font-black text-[#183b32] disabled:opacity-50' }, curationBusy ? __alloT('stem.sourcebook.refining', 'Refining…') : __alloT('stem.sourcebook.refine_picks', 'Refine picks'))
                 ),
-                h('div', { className: 'mt-2 flex flex-wrap gap-2', 'aria-label': __alloT('stem.sourcebook.quick_palette_refinements', 'Quick palette refinements') }, ['stronger linework', 'more scientific', 'more archival', 'less decorative'].map(function (suggestion) {
+                h('div', { role: 'group', className: 'mt-2 flex flex-wrap gap-2', 'aria-label': __alloT('stem.sourcebook.quick_palette_refinements', 'Quick palette refinements') }, ['stronger linework', 'more scientific', 'more archival', 'less decorative'].map(function (suggestion) {
                   return h('button', { key: suggestion, type: 'button', disabled: curationBusy, onClick: function () { refreshCuration(suggestion); }, className: 'min-h-[36px] rounded-full border border-[#75988c] bg-white/10 px-3 text-[0.625rem] font-black text-[#e3eee9] disabled:opacity-50' }, suggestion);
                 })),
                 h('p', { className: 'mt-2 text-[0.625rem] font-bold text-[#a8c9bd]' }, activePinnedRecommendationIds.length
                   ? __alloT('stem.sourcebook.refine_note_kept_picks_stay', 'Kept picks stay in the set; Sourcebook re-evaluates the remaining slots without another provider request.')
                   : __alloT('stem.sourcebook.refine_note_re_evaluates_current_board', 'This re-evaluates only the current rights-verified board, so it is fast and does not make another provider request.'))
               ),
-              h('div', { className: 'grid grid-cols-2 gap-px border-y border-[#365c50] bg-[#365c50] sm:grid-cols-3', 'aria-label': __alloT('stem.sourcebook.selected_visual_previews', 'Selected visual previews') }, recommendedItems.map(function (item, index) {
+              h('div', { role: 'group', className: 'grid grid-cols-2 gap-px border-y border-[#365c50] bg-[#365c50] sm:grid-cols-3', 'aria-label': __alloT('stem.sourcebook.selected_visual_previews', 'Selected visual previews') }, recommendedItems.map(function (item, index) {
                 var saved = collection.indexOf(item.id) !== -1;
                 var pinned = pinnedRecommendationIds.indexOf(item.id) !== -1;
                 return h('article', { key: item.id, className: 'min-w-0 bg-[#f7f4ed] text-[#18352d]' },
@@ -11195,7 +11353,7 @@
                   )
                 );
               })),
-              h('div', { className: 'flex flex-wrap items-center gap-2 p-3 md:px-5', 'aria-label': __alloT('stem.sourcebook.curated_palette_source_coverage', 'Curated palette source coverage') },
+              h('div', { role: 'group', className: 'flex flex-wrap items-center gap-2 p-3 md:px-5', 'aria-label': __alloT('stem.sourcebook.curated_palette_source_coverage', 'Curated palette source coverage') },
                 h('span', { className: 'mr-1 text-[0.625rem] font-black uppercase tracking-[.14em] text-[#a8c9bd]' }, __alloT('stem.sourcebook.source_coverage', 'Source coverage')),
                 recommendedCoverage.providers.map(function (entry) { return h('span', { key: entry.name, className: 'rounded-full border border-[#58786d] bg-white/10 px-2.5 py-1 text-[0.625rem] font-bold text-[#e3eee9]' }, entry.name + ' ' + entry.count); }),
                 h('span', { className: 'ml-auto rounded-full bg-emerald-200 px-2.5 py-1 text-[0.625rem] font-black text-emerald-950' }, __alloT('stem.sourcebook.every_pick_passed_the_reuse_rights_gat', '✓ Every pick passed the reuse-rights gate'))
@@ -11258,7 +11416,7 @@
               h('p', { className: 'mt-1 text-[0.5625rem] font-medium' }, __alloT('stem.sourcebook.no_package_is_downloaded_unless_every_', 'No package is downloaded unless every selected source image is prepared successfully.')),
               h('button', { type: 'button', onClick: function () { cancelPalettePackage('user'); }, className: 'mt-2 min-h-[44px] rounded-lg border border-sky-800 bg-white px-4 text-sm font-bold text-sky-950', 'data-sourcebook-cancel-package': 'true' }, __alloT('stem.sourcebook.cancel_package', 'Cancel package preparation'))
             ),
-            showingCollection && selectedItems.length > 0 && h('div', {
+            showingCollection && selectedItems.length > 0 && h('div', { role: 'group',
               className: 'sb-no-print mb-3 grid gap-3 rounded-2xl border border-[#b9c9c2] bg-white p-3 md:grid-cols-[minmax(0,1fr)_auto]',
               'aria-label': __alloT('stem.sourcebook.manage_sourcebook_palette_selection', 'Manage Sourcebook palette selection')
             },
@@ -11307,7 +11465,7 @@
                   )
                 )
               ),
-              h('div', { className: 'flex flex-wrap items-center gap-2 p-3', 'aria-label': __alloT('stem.sourcebook.palette_intended_use_coverage', 'Palette intended use coverage') },
+              h('div', { role: 'group', className: 'flex flex-wrap items-center gap-2 p-3', 'aria-label': __alloT('stem.sourcebook.palette_intended_use_coverage', 'Palette intended use coverage') },
                 paletteUsageSummary.entries.map(function (entry) {
                   return h('span', {
                     key: entry.id,
@@ -11593,7 +11751,7 @@
                   })
                 )
               ),
-              h('div', { className: 'flex flex-wrap gap-2 p-3', 'aria-label': __alloT('stem.sourcebook.filter_palette_by_accessibility_review', 'Filter palette by accessibility review status') }, [
+              h('div', { role: 'group', className: 'flex flex-wrap gap-2 p-3', 'aria-label': __alloT('stem.sourcebook.filter_palette_by_accessibility_review', 'Filter palette by accessibility review status') }, [
                 { id: 'all', label: 'All', count: paletteAccessibilitySummary.total },
                 { id: 'suggested', label: __alloT('stem.sourcebook.review_suggestions', 'Review suggestions'), count: paletteAccessibilitySummary.suggested },
                 { id: 'confirmed', label: __alloT('stem.sourcebook.confirmed', 'Confirmed'), count: paletteAccessibilitySummary.confirmed },
@@ -11627,7 +11785,7 @@
                 }, nextAccessibilityReviewItem ? __alloT('stem.sourcebook.review_next_suggestion', 'Review next suggestion') : __alloT('stem.sourcebook.accessibility_review_complete', 'Accessibility review complete'))
               )
             ),
-            showingCollection && selectedItems.length > 0 && h('div', {
+            showingCollection && selectedItems.length > 0 && h('div', { role: 'group',
               className: 'sb-no-print mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-[#c4d2cc] bg-[#f5f7f4] px-3 py-2',
               'aria-label': __alloT('stem.sourcebook.prepare_every_palette_asset', 'Prepare every palette asset')
             },
@@ -11677,7 +11835,7 @@
                   }, __alloT('stem.sourcebook.clear', 'Clear'))
                 )
               ),
-              h('div', { className: 'grid gap-px border-t border-sky-100 bg-sky-100 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': __alloT('stem.sourcebook.compared_candidate_previews', 'Compared candidate previews') }, comparisonItems.map(function (item, index) {
+              h('div', { role: 'group', className: 'grid gap-px border-t border-sky-100 bg-sky-100 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': __alloT('stem.sourcebook.compared_candidate_previews', 'Compared candidate previews') }, comparisonItems.map(function (item, index) {
                 return h('div', { key: item.id, className: 'flex min-w-0 items-center gap-2 bg-white p-2.5' },
                   h('div', { className: 'relative h-14 w-16 shrink-0 overflow-hidden rounded-lg bg-[#e8ece7]' },
                     sourcebookImage(item, { alt: '', loading: 'lazy', className: 'h-full w-full object-cover' }),

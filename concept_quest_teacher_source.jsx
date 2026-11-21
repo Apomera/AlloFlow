@@ -28,6 +28,7 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
   const rawQuest = escapeState?.conceptQuest;
   const engine = window.AlloModules?.ConceptQuestEngine;
   const [hostQuest, setHostQuest] = React.useState(null);
+  const [hostStatus, setHostStatus] = React.useState('idle');
   const canUseHostDoc = (() => {
     if (typeof setDoc !== 'function' || !db || !activeSessionCode || !appId) return false;
     try {
@@ -36,25 +37,35 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
     } catch (_) { return false; }
   })();
   React.useEffect(() => {
-    if (!canUseHostDoc || !rawQuest?.sessionId) { setHostQuest(null); return undefined; }
+    if (!canUseHostDoc || !rawQuest?.sessionId) { setHostQuest(null); setHostStatus('idle'); return undefined; }
+    setHostQuest(null);
+    setHostStatus('loading');
     const hostRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode, 'boardHost', 'concept-quest');
     const applySnap = snap => {
       const data = typeof snap?.data === 'function' ? snap.data() : snap;
-      if (data?.quest?.sessionId === rawQuest.sessionId) setHostQuest(data.quest);
+      if (data?.quest?.sessionId === rawQuest.sessionId) {
+        setHostQuest(data.quest);
+        setHostStatus('ready');
+      } else {
+        setHostQuest(null);
+        setHostStatus('missing');
+      }
     };
     if (typeof onSnapshot === 'function') {
-      return onSnapshot(hostRef, applySnap, () => {});
+      return onSnapshot(hostRef, applySnap, () => setHostStatus('error'));
     }
     if (typeof getDoc === 'function') {
       let alive = true;
-      Promise.resolve(getDoc(hostRef)).then(snap => { if (alive) applySnap(snap); }).catch(() => {});
+      Promise.resolve(getDoc(hostRef)).then(snap => { if (alive) applySnap(snap); }).catch(() => { if (alive) setHostStatus('error'); });
       return () => { alive = false; };
     }
+    setHostStatus('missing');
     return undefined;
   }, [canUseHostDoc, appId, activeSessionCode, rawQuest?.sessionId]);
-  const quest = (canUseHostDoc && hostQuest && rawQuest && hostQuest.sessionId === rawQuest.sessionId && (hostQuest.gmRevision || 0) >= (rawQuest.gmRevision || 0))
-    ? hostQuest
-    : rawQuest;
+  const rawLooksStripped = !!(rawQuest && Array.isArray(rawQuest.rooms) && rawQuest.rooms.some(r => r && (r.kind === 'battle' || r.kind === 'puzzle' || r.kind === 'boss') && (!Array.isArray(r.challenges) || !r.challenge || r.challenge.correctIndex === undefined)));
+  const hostReady = !!(canUseHostDoc && hostQuest && rawQuest && hostQuest.sessionId === rawQuest.sessionId && (hostQuest.gmRevision || 0) === (rawQuest.gmRevision || 0));
+  const waitingForHost = !!(canUseHostDoc && rawLooksStripped && !hostReady);
+  const quest = hostReady ? hostQuest : rawQuest;
   const progress = escapeState?.teamProgress?.All || {};
   const votes = engine?.currentVotes?.(quest, progress.questVotes, progress.questVoteTurns) || {};
   const turnKey = engine?.getTurnKey?.(quest) || quest?.turnKey || String(quest?.turn || 0);
@@ -112,11 +123,47 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
     const trap = { root: dialog };
     endTrapRef.current = trap;
     if (stack) stack.push(trap);
+    const isolated = [];
+    const seen = new Set();
+    let cursor = dialog;
+    while (cursor && cursor.parentElement && typeof document !== 'undefined') {
+      const parent = cursor.parentElement;
+      Array.from(parent.children).forEach(sibling => {
+        if (!sibling || sibling === cursor || seen.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
+        seen.add(sibling);
+        isolated.push({ sibling, hadInert: sibling.hasAttribute('inert'), ariaHidden: sibling.getAttribute('aria-hidden') });
+        try { sibling.inert = true; } catch (_) {}
+        try { sibling.setAttribute('inert', ''); } catch (_) {}
+        try { sibling.setAttribute('aria-hidden', 'true'); } catch (_) {}
+      });
+      if (parent === document.body) break;
+      cursor = parent;
+    }
+    const scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' })) : null;
+    const body = typeof document !== 'undefined' ? document.body : null;
+    let scrollLocked = false;
+    if (body && scrollLock) {
+      scrollLocked = true;
+      if (++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
+    }
     (dialog?.querySelector('button:not([disabled])') || dialog)?.focus?.();
     const onDocKeyDown = event => handleEndDialogKeyDown(event);
     document.addEventListener('keydown', onDocKeyDown);
     return () => {
       document.removeEventListener('keydown', onDocKeyDown);
+      if (scrollLocked && body && scrollLock) {
+        scrollLock.count = Math.max(0, scrollLock.count - 1);
+        if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+      }
+      isolated.forEach(({ sibling, hadInert, ariaHidden }) => {
+        if (!sibling || !sibling.isConnected) return;
+        if (!hadInert) {
+          try { sibling.inert = false; } catch (_) {}
+          try { sibling.removeAttribute('inert'); } catch (_) {}
+        }
+        if (ariaHidden == null) { try { sibling.removeAttribute('aria-hidden'); } catch (_) {} }
+        else if (ariaHidden !== 'true') { try { sibling.setAttribute('aria-hidden', ariaHidden); } catch (_) {} }
+      });
       if (stack) {
         const idx = stack.lastIndexOf(trap);
         if (idx !== -1) stack.splice(idx, 1);
@@ -128,6 +175,11 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
   }, [endConfirm]);
   const [syncError, setSyncError] = React.useState('');
   const syncRef = React.useRef(false);
+  const mountedRef = React.useRef(true);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   if (!quest || !engine || escapeState?.isActive === false) return null;
 
   const sessionRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
@@ -142,33 +194,72 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
       return true;
     } catch (error) {
       warnLog('Concept Quest sync failed:', error);
-      if (latestScopeRef.current === requestScope) setSyncError(tr('sync_failed', 'Concept Quest could not sync.'));
+      if (mountedRef.current && latestScopeRef.current === requestScope) setSyncError(tr('sync_failed', 'Concept Quest could not sync.'));
       addToast?.(tr('sync_failed', 'Concept Quest could not sync.'), 'error');
       return false;
-    } finally { syncRef.current = false; setSyncing(false); }
+    } finally { syncRef.current = false; if (mountedRef.current) setSyncing(false); }
   };
   const syncQuest = async (nextQuest, clearField) => {
+    if (waitingForHost || syncRef.current) return false;
+    const requestScope = latestScopeRef.current;
     const nextKey = engine.getTurnKey(nextQuest);
     const stampedQuest = { ...nextQuest, turnKey: nextKey, gmRevision: (quest.gmRevision || 0) + 1 };
     let publishedQuest = stampedQuest;
-    if (canUseHostDoc && typeof engine.publicQuestState === 'function') {
-      try {
-        const hostRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode, 'boardHost', 'concept-quest');
-        await setDoc(hostRef, { quest: stampedQuest, sessionId: stampedQuest.sessionId, updatedAt: Date.now(), expiresAt: new Date(Date.now() + 2 * 86400000) });
-        setHostQuest(stampedQuest);
-        publishedQuest = engine.publicQuestState(stampedQuest);
-      } catch (hostErr) {
-        warnLog('Concept Quest private host write skipped:', hostErr);
+    const buildUpdates = candidate => {
+      const updates = { 'escapeRoomState.conceptQuest': candidate, 'escapeRoomState.teamProgress.All.isEscaped': nextQuest.phase === 'complete' };
+      if (clearField) updates[`escapeRoomState.teamProgress.All.${clearField}`] = {};
+      if (nextKey !== turnKey) {
+        updates['escapeRoomState.teamProgress.All.questActions'] = {};
+        updates['escapeRoomState.teamProgress.All.questVotes'] = {};
+        updates['escapeRoomState.teamProgress.All.questVoteTurns'] = {};
       }
-    }
-    const updates = { 'escapeRoomState.conceptQuest': publishedQuest, 'escapeRoomState.teamProgress.All.isEscaped': nextQuest.phase === 'complete' };
-    if (clearField) updates[`escapeRoomState.teamProgress.All.${clearField}`] = {};
-    if (nextKey !== turnKey) {
-      updates['escapeRoomState.teamProgress.All.questActions'] = {};
-      updates['escapeRoomState.teamProgress.All.questVotes'] = {};
-      updates['escapeRoomState.teamProgress.All.questVoteTurns'] = {};
-    }
-    return sync(updates);
+      return updates;
+    };
+    syncRef.current = true; setSyncing(true); setSyncError('');
+    let hostWritten = false;
+    let hostRef = null;
+    try {
+      if (canUseHostDoc && typeof engine.publicQuestState === 'function') {
+        try {
+          hostRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode, 'boardHost', 'concept-quest');
+          await setDoc(hostRef, { quest: stampedQuest, sessionId: stampedQuest.sessionId, updatedAt: Date.now(), expiresAt: new Date(Date.now() + 2 * 86400000) });
+          hostWritten = true;
+          publishedQuest = engine.publicQuestState(stampedQuest);
+        } catch (hostErr) {
+          const isPermissionDenied = hostErr && (hostErr.code === 'permission-denied' || /permission/i.test(String(hostErr.message || '')));
+          if (!hostQuest && !rawLooksStripped && isPermissionDenied) {
+            warnLog('Concept Quest private host write skipped:', hostErr);
+          } else {
+            warnLog('Concept Quest private host write failed:', hostErr);
+            if (mountedRef.current && latestScopeRef.current === requestScope) setSyncError(tr('sync_failed', 'Concept Quest could not sync.'));
+            addToast?.(tr('sync_failed', 'Concept Quest could not sync.'), 'error');
+            return false;
+          }
+        }
+      }
+      const updates = buildUpdates(publishedQuest);
+      const signature = requestScope + ':' + (quest.gmRevision || 0) + ':' + JSON.stringify(updates);
+      if (savedWriteRef.current === signature) {
+        if (hostWritten && hostRef) {
+          try { await setDoc(hostRef, { quest, sessionId: quest.sessionId, updatedAt: Date.now(), expiresAt: new Date(Date.now() + 2 * 86400000) }); } catch (_) {}
+        }
+        return false;
+      }
+      try {
+        await updateDoc(sessionRef(), updates);
+        savedWriteRef.current = signature;
+        if (hostWritten && mountedRef.current) { setHostQuest(stampedQuest); setHostStatus('ready'); }
+        return true;
+      } catch (error) {
+        if (hostWritten && hostRef) {
+          try { await setDoc(hostRef, { quest, sessionId: quest.sessionId, updatedAt: Date.now(), expiresAt: new Date(Date.now() + 2 * 86400000) }); } catch (_) {}
+        }
+        warnLog('Concept Quest sync failed:', error);
+        if (mountedRef.current && latestScopeRef.current === requestScope) setSyncError(tr('sync_failed', 'Concept Quest could not sync.'));
+        addToast?.(tr('sync_failed', 'Concept Quest could not sync.'), 'error');
+        return false;
+      }
+    } finally { syncRef.current = false; if (mountedRef.current) setSyncing(false); }
   };
   const showEngineError = (result, tone) => {
     if (!result?.error) return false;
@@ -177,24 +268,36 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
     return true;
   };
   const resolveTravel = async roomId => {
-    if (busy || syncRef.current || escapeState.isPaused) return;
+    if (busy || syncRef.current || waitingForHost || escapeState.isPaused) return;
     setBusy(true);
-    const result = engine.resolveTravel(quest, votes, roomId);
-    if (!showEngineError(result, 'warning')) await syncQuest(result.quest, 'questVotes');
-    setBusy(false);
+    try {
+      const result = engine.resolveTravel(quest, votes, roomId);
+      if (!showEngineError(result, 'warning')) await syncQuest(result.quest, 'questVotes');
+    } catch (error) {
+      warnLog('Concept Quest travel resolution failed:', error);
+      if (mountedRef.current) setSyncError(error?.message || tr('sync_failed', 'Concept Quest could not sync.'));
+    } finally {
+      if (mountedRef.current) setBusy(false);
+    }
   };
   const resolveRound = async () => {
-    if (busy || syncRef.current || escapeState.isPaused) return;
+    if (busy || syncRef.current || waitingForHost || escapeState.isPaused) return;
     setBusy(true);
-    const result = engine.resolveBattle(quest, actions, roles);
-    if (!showEngineError(result, 'warning')) {
-      const saved = await syncQuest(result.quest, 'questActions');
-      if (saved) addToast?.(tr('checks_succeeded', '{correct}/{total} concept checks succeeded.', {
-        correct: result.summary.correct,
-        total: result.summary.total,
-      }), result.summary.enemyDefeated ? 'success' : 'info');
+    try {
+      const result = engine.resolveBattle(quest, actions, roles);
+      if (!showEngineError(result, 'warning')) {
+        const saved = await syncQuest(result.quest, 'questActions');
+        if (saved) addToast?.(tr('checks_succeeded', '{correct}/{total} concept checks succeeded.', {
+          correct: result.summary.correct,
+          total: result.summary.total,
+        }), result.summary.enemyDefeated ? 'success' : 'info');
+      }
+    } catch (error) {
+      warnLog('Concept Quest battle resolution failed:', error);
+      if (mountedRef.current) setSyncError(error?.message || tr('sync_failed', 'Concept Quest could not sync.'));
+    } finally {
+      if (mountedRef.current) setBusy(false);
     }
-    setBusy(false);
   };
   const manualDraft = () => {
     setDraftScope(latestScopeRef.current);
@@ -237,45 +340,55 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
         'Return only JSON with type, title, description. For item include item{name,emoji,description,effect{type:heal|shield|clue,amount:1-3}}. For challenge include challenge{prompt,options,correctIndex,explanation}. For enemy include enemy{name,emoji,hp:4-16,attack:1-3} and challenge. Do not determine student outcomes.'
       ].join('\n');
       const response = await callGemini(prompt, true);
+      if (!mountedRef.current) return;
+      if (requestedScope !== latestScopeRef.current) {
+        setSyncError(tr('draft_context_changed', 'The room changed while drafting. Create a draft for the current encounter.'));
+        return;
+      }
       const jsonText = String(response || '').replace(/```json\s*/gi, '').replace(/```/g, '').trim();
       setDraftScope(requestedScope);
       setGmDraft(engine.normalizeGmDraft(JSON.parse(jsonText), quest.localizedStrings));
     } catch (error) {
       warnLog('Concept Quest AI draft failed:', error);
+      if (!mountedRef.current) return;
       if (requestedScope !== latestScopeRef.current) { setSyncError(tr('draft_context_changed', 'The room changed while drafting. Create a draft for the current encounter.')); return; }
       manualDraft();
       addToast?.(tr('ai_draft_failed', 'AI draft failed; an editable manual draft is ready.'), 'warning');
     } finally {
-      setBusy(false);
+      if (mountedRef.current) setBusy(false);
     }
   };
   const publishDraft = async () => {
-    if (!gmDraft || syncing || busy || draftScope !== latestScopeRef.current) return;
+    if (!gmDraft || syncing || busy || waitingForHost || syncRef.current || draftScope !== latestScopeRef.current) return;
     try {
       const nextQuest = engine.publishGmDraft(quest, gmDraft);
       if (await syncQuest(nextQuest)) {
-        setGmDraft(null); setGmRequest('');
+        if (mountedRef.current) { setGmDraft(null); setGmRequest(''); }
         addToast?.(tr('event_published', 'GM event published to every student.'), 'success');
       }
-    } catch (error) { setSyncError(error.message || tr('sync_failed', 'Concept Quest could not sync.')); }
+    } catch (error) { if (mountedRef.current) setSyncError(error.message || tr('sync_failed', 'Concept Quest could not sync.')); }
   };
   const adjustEncounter = async (kind, amount) => {
+    if (busy || syncRef.current || waitingForHost) return;
     const result = engine.adjustEncounter(quest, kind, amount);
     if (!showEngineError(result, 'warning')) await syncQuest(result.quest);
   };
   const useSharedItem = async index => {
+    if (busy || syncRef.current || waitingForHost) return;
     const result = engine.useItem(quest, index);
     if (!showEngineError(result, 'warning') && await syncQuest(result.quest)) {
       addToast?.(tr('item_used', '{name} used.', { name: result.item.name }), 'success');
     }
   };
   const undoLastGmChange = async () => {
+    if (busy || syncRef.current || waitingForHost) return;
     const result = engine.undoLastGmChange(quest);
     if (!showEngineError(result, 'info') && await syncQuest(result.quest)) {
       addToast?.(tr('undo_success', 'Last GM change undone.'), 'success');
     }
   };
   const dismissGmEvent = async () => {
+    if (busy || syncRef.current || waitingForHost) return;
     await syncQuest(engine.dismissEvent(quest));
   };
   const participantCount = Object.keys(sessionData?.roster || {}).length;
@@ -309,7 +422,8 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
 
       {debrief.coverage && <p data-concept-quest-coverage role="status" className="mt-3 rounded-lg bg-indigo-100 p-2 text-sm text-indigo-950">{tr('assessment_coverage', '{attempted} of {total} supported assessment items explored.', debrief.coverage)}{!debrief.coverage.complete && ' ' + tr('assessment_coverage_help', 'The final barrier stays open until every supported item has been explored.')}</p>}
       {quest.excludedQuestions > 0 && <p role="status" className="mt-3 rounded-lg bg-amber-50 p-2 text-sm text-amber-900">{tr('excluded_questions_review', '{count} source question(s) were skipped because their format or answer key needs teacher review.', { count: quest.excludedQuestions })}</p>}
-      <fieldset disabled={syncing || busy} className="min-w-0">
+      {waitingForHost && <p role={hostStatus === 'error' || hostStatus === 'missing' ? 'alert' : 'status'} className="mt-3 rounded-lg bg-amber-100 p-2 text-sm text-amber-950">{hostStatus === 'error' || hostStatus === 'missing' ? tr('host_state_unavailable', 'Teacher answer keys could not be loaded yet. Wait for sync or reload before resolving turns.') : tr('host_state_loading', 'Loading teacher answer keys…')}</p>}
+      <fieldset disabled={syncing || busy || waitingForHost} className="min-w-0">
       <legend className="sr-only">{tr('teacher_heading', 'Concept Quest teacher controls')}</legend>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <section className="rounded-xl border border-indigo-200 bg-white p-3" aria-labelledby="cq-resolve-heading">
@@ -374,29 +488,29 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
           {gmType === 'item' && <label className="mt-2 block text-xs font-bold text-slate-700">{tr('item_effect', 'Item effect')}<select value={gmItemEffect} onChange={event => setGmItemEffect(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-400 p-2"><option value="heal">{tr('restore_party_hp', 'Restore party HP')}</option><option value="shield">{tr('grant_party_shield', 'Grant party shield')}</option><option value="clue">{tr('reveal_concept_clue', 'Reveal a concept clue')}</option></select></label>}
           <label className="mt-2 block text-xs font-bold text-slate-700">{tr('direction', 'Direction')}<textarea value={gmRequest} onChange={event => setGmRequest(event.target.value)} rows={3} placeholder={tr('direction_placeholder', 'Connect photosynthesis to energy transfer')} className="mt-1 w-full rounded-lg border border-slate-400 p-2 text-sm" /></label>
           <div className="mt-2 flex gap-2"><button type="button" onClick={manualDraft} className="min-h-11 flex-1 rounded-lg border border-indigo-300 px-3 text-sm font-bold text-indigo-800">{tr('manual_draft', 'Manual draft')}</button><button type="button" disabled={busy} onClick={aiDraft} className="min-h-11 flex-1 rounded-lg bg-indigo-700 px-3 text-sm font-bold text-white disabled:opacity-50">{busy ? tr('working', 'Working…') : tr('ai_draft', 'AI draft')}</button></div>
-          {gmDraft && <div role="group" className="mt-3 rounded-lg border-2 border-amber-300 bg-amber-50 p-3" aria-label={tr('draft_preview_aria', 'GM draft preview')}><h5 ref={draftHeadingRef} tabIndex={-1} className="font-black text-amber-950">{tr('draft_preview_aria', 'GM draft preview')}</h5><p className="text-xs font-black uppercase text-amber-800">{tr('preview_not_live', 'Preview — not live')}</p><label className="mt-2 block text-xs font-bold">{tr('draft_title_label', 'Title')}<input value={gmDraft.title} onChange={event => setGmDraft({ ...gmDraft, title: event.target.value })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2 text-sm" /></label><label className="mt-2 block text-xs font-bold">{tr('description', 'Description')}<textarea value={gmDraft.description} onChange={event => setGmDraft({ ...gmDraft, description: event.target.value })} rows={3} className="mt-1 w-full rounded border border-amber-300 p-2 text-sm" /></label>{draftScope !== latestScopeRef.current && <div role="status" className="mt-3 rounded-lg bg-amber-100 p-3 text-sm text-amber-950">{tr('draft_context_changed', 'The encounter changed. Review the draft before using it here.')}<button type="button" onClick={() => setDraftScope(latestScopeRef.current)} className="mt-2 block min-h-11 rounded-lg border border-amber-500 bg-white px-3 font-bold">{tr('draft_use_here', 'Use in this encounter')}</button></div>}
+          {gmDraft && <div role="group" className="mt-3 rounded-lg border-2 border-amber-300 bg-amber-50 p-3" aria-label={tr('draft_preview_aria', 'GM draft preview')}><h5 ref={draftHeadingRef} tabIndex={-1} className="font-black text-amber-950">{tr('draft_preview_aria', 'GM draft preview')}</h5><p className="text-xs font-black uppercase text-amber-800">{tr('preview_not_live', 'Preview — not live')}</p><label className="mt-2 block text-xs font-bold">{tr('draft_title_label', 'Title')}<input value={gmDraft.title} onChange={event => setGmDraft({ ...gmDraft, title: event.target.value })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2 text-sm" /></label><label className="mt-2 block text-xs font-bold">{tr('description', 'Description')}<textarea value={gmDraft.description} onChange={event => setGmDraft({ ...gmDraft, description: event.target.value })} rows={3} className="mt-1 w-full rounded border border-amber-300 p-2 text-sm" /></label>{draftScope !== latestScopeRef.current && <div className="mt-3 rounded-lg bg-amber-100 p-3 text-sm text-amber-950"><p role="status">{tr('draft_context_changed', 'The encounter changed. Review the draft before using it here.')}</p><button type="button" onClick={() => setDraftScope(latestScopeRef.current)} className="mt-2 block min-h-11 rounded-lg border border-amber-500 bg-white px-3 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('draft_use_here', 'Use in this encounter')}</button></div>}
           {gmDraft.challenge && <fieldset className="mt-3 min-w-0 space-y-2 rounded-lg border border-amber-300 p-3"><legend className="px-1 font-bold">{tr('challenge', 'Challenge')}</legend>
             <label className="block text-xs font-bold">{tr('question', 'Question')}<textarea value={gmDraft.challenge.prompt} onChange={event => setGmDraft({ ...gmDraft, challenge: { ...gmDraft.challenge, prompt: event.target.value } })} className="mt-1 w-full rounded border border-amber-300 p-2" rows={3}/></label>
             <p className="text-xs text-slate-700">{tr('draft_answer_help', 'Edit the choices and select the correct answer before publishing.')}</p>
-            {(gmDraft.challenge.options || []).map((option, index) => <label key={index} className="flex items-center gap-2 text-sm"><input type="radio" name="cq-draft-answer" aria-label={tr('draft_correct_choice', 'Correct answer: choice {number}', { number: index + 1 })} checked={gmDraft.challenge.correctIndex === index} onChange={() => setGmDraft({ ...gmDraft, challenge: { ...gmDraft.challenge, correctIndex: index } })}/><input aria-label={tr('draft_choice', 'Choice {number}', { number: index + 1 })} value={option} onChange={event => setGmDraft({ ...gmDraft, challenge: { ...gmDraft.challenge, options: gmDraft.challenge.options.map((value, i) => i === index ? event.target.value : value) } })} className="min-h-11 min-w-0 flex-1 rounded border border-amber-300 p-2"/></label>)}
+            {(gmDraft.challenge.options || []).map((option, index) => <div key={index} className="flex items-center gap-2 text-sm"><input type="radio" name="cq-draft-answer" aria-label={tr('draft_correct_choice', 'Correct answer: choice {number}', { number: index + 1 })} checked={gmDraft.challenge.correctIndex === index} onChange={() => setGmDraft({ ...gmDraft, challenge: { ...gmDraft.challenge, correctIndex: index } })}/><input aria-label={tr('draft_choice', 'Choice {number}', { number: index + 1 })} value={option} onChange={event => setGmDraft({ ...gmDraft, challenge: { ...gmDraft.challenge, options: gmDraft.challenge.options.map((value, i) => i === index ? event.target.value : value) } })} className="min-h-11 min-w-0 flex-1 rounded border border-amber-300 p-2"/></div>)}
             <label className="block text-xs font-bold">{tr('explanation', 'Explanation')}<textarea value={gmDraft.challenge.explanation} onChange={event => setGmDraft({ ...gmDraft, challenge: { ...gmDraft.challenge, explanation: event.target.value } })} rows={2} className="mt-1 w-full rounded border border-amber-300 p-2"/></label>
           </fieldset>}
-          {gmDraft.enemy && <div className="mt-3 grid grid-cols-2 gap-2"><label className="col-span-2 text-xs font-bold">{tr('enemy_name', 'Enemy name')}<input value={gmDraft.enemy.name} onChange={event => setGmDraft({ ...gmDraft, enemy: { ...gmDraft.enemy, name: event.target.value } })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"/></label><label className="text-xs font-bold">{tr('enemy_hp', 'Enemy HP')}<input type="number" min="4" max="16" value={gmDraft.enemy.hp} onChange={event => setGmDraft({ ...gmDraft, enemy: { ...gmDraft.enemy, hp: Number(event.target.value), maxHp: Number(event.target.value) } })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"/></label><label className="text-xs font-bold">{tr('enemy_attack', 'Enemy attack')}<input type="number" min="1" max="3" value={gmDraft.enemy.attack} onChange={event => setGmDraft({ ...gmDraft, enemy: { ...gmDraft.enemy, attack: Number(event.target.value) } })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"/></label></div>}
-          {gmDraft.item && <div className="mt-3 space-y-2"><p className="text-xs text-slate-700">{tr('item_award_help', 'The item goes into shared inventory. Its effect applies when you choose Use.')}</p><label className="block text-xs font-bold">{tr('item_name', 'Item name')}<input value={gmDraft.item.name} onChange={event => setGmDraft({ ...gmDraft, item: { ...gmDraft.item, name: event.target.value } })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"/></label><label className="block text-xs font-bold">{tr('item_effect', 'Item effect')}<select value={gmDraft.item.effect.type} onChange={event => setGmDraft({ ...gmDraft, item: { ...gmDraft.item, effect: { ...gmDraft.item.effect, type: event.target.value } } })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"><option value="heal">{tr('restore_party_hp', 'Restore party HP')}</option><option value="shield">{tr('grant_party_shield', 'Grant party shield')}</option><option value="clue">{tr('reveal_concept_clue', 'Reveal a concept clue')}</option></select></label><label className="block text-xs font-bold">{tr('item_amount', 'Amount')}<input type="number" min="1" max="3" value={gmDraft.item.effect.amount} onChange={event => setGmDraft({ ...gmDraft, item: { ...gmDraft.item, effect: { ...gmDraft.item.effect, amount: Number(event.target.value) } } })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"/></label></div>}
+          {gmDraft.enemy && <div className="mt-3 grid grid-cols-2 gap-2"><label className="col-span-2 text-xs font-bold">{tr('enemy_name', 'Enemy name')}<input value={gmDraft.enemy.name} onChange={event => setGmDraft({ ...gmDraft, enemy: { ...gmDraft.enemy, name: event.target.value } })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"/></label><label className="text-xs font-bold">{tr('enemy_hp', 'Enemy HP')}<input type="number" min="4" max="16" value={gmDraft.enemy.hp} onChange={event => { const raw = Number(event.target.value); const hp = Number.isFinite(raw) && event.target.value !== '' ? Math.max(4, Math.min(16, Math.round(raw))) : 4; setGmDraft({ ...gmDraft, enemy: { ...gmDraft.enemy, hp, maxHp: hp } }); }} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"/></label><label className="text-xs font-bold">{tr('enemy_attack', 'Enemy attack')}<input type="number" min="1" max="3" value={gmDraft.enemy.attack} onChange={event => { const raw = Number(event.target.value); const attack = Number.isFinite(raw) && event.target.value !== '' ? Math.max(1, Math.min(3, Math.round(raw))) : 1; setGmDraft({ ...gmDraft, enemy: { ...gmDraft.enemy, attack } }); }} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"/></label></div>}
+          {gmDraft.item && <div className="mt-3 space-y-2"><p className="text-xs text-slate-700">{tr('item_award_help', 'The item goes into shared inventory. Its effect applies when you choose Use.')}</p><label className="block text-xs font-bold">{tr('item_name', 'Item name')}<input value={gmDraft.item.name} onChange={event => setGmDraft({ ...gmDraft, item: { ...gmDraft.item, name: event.target.value } })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"/></label><label className="block text-xs font-bold">{tr('item_effect', 'Item effect')}<select value={gmDraft.item.effect.type} onChange={event => setGmDraft({ ...gmDraft, item: { ...gmDraft.item, effect: { ...gmDraft.item.effect, type: event.target.value } } })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"><option value="heal">{tr('restore_party_hp', 'Restore party HP')}</option><option value="shield">{tr('grant_party_shield', 'Grant party shield')}</option><option value="clue">{tr('reveal_concept_clue', 'Reveal a concept clue')}</option></select></label><label className="block text-xs font-bold">{tr('item_amount', 'Amount')}<input type="number" min="1" max="3" value={gmDraft.item.effect.amount} onChange={event => { const raw = Number(event.target.value); const amount = Number.isFinite(raw) && event.target.value !== '' ? Math.max(1, Math.min(3, Math.round(raw))) : 1; setGmDraft({ ...gmDraft, item: { ...gmDraft.item, effect: { ...gmDraft.item.effect, amount } } }); }} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2"/></label></div>}
           <div className="mt-2 flex gap-2"><button type="button" onClick={() => setGmDraft(null)} className="min-h-11 flex-1 rounded-lg bg-slate-200 font-bold text-slate-700">{tr('discard', 'Discard')}</button><button type="button" disabled={draftScope !== latestScopeRef.current} onClick={publishDraft} className="min-h-11 flex-1 rounded-lg bg-emerald-700 font-bold text-white">{tr('publish_to_class', 'Publish to class')}</button></div></div>}
         </section>
       </div>
 
       <p className="mt-4 text-sm font-bold text-emerald-900">{debrief.completeHistory === false ? tr('available_evidence', 'Learning evidence · {count} available saved rounds', { count: debrief.rounds }) : tr('whole_quest_evidence', 'Learning evidence · whole quest · {count} rounds', { count: debrief.rounds })}</p>
-      <details className="mt-3 rounded-xl border border-cyan-200 bg-cyan-50 p-3" data-quest-learner-evidence><summary className="cursor-pointer font-bold text-cyan-950">{tr('individual_evidence','Individual participation and practice evidence')}</summary><p className="mt-2 text-sm">{tr('individual_evidence_help','First responses and repeat responses are separate. Peer support counts game events; they do not establish whether an answer was independent or supported.')}</p>{!debrief.learnerHistoryComplete&&<p role="status" className="mt-2 text-sm text-amber-900">{tr('individual_history_limit','Earlier rounds did not record this detail. First responses below mean the first recorded response in the available evidence.')}</p>}<ul className="mt-3 space-y-2">{[...new Set([...Object.keys(sessionData?.roster||{}),...(debrief.learnerEvidence||[]).map(row=>row.uid)])].map(uid=>{const row=(debrief.learnerEvidence||[]).find(entry=>entry.uid===uid),learner=sessionData?.roster?.[uid];return <li key={uid} className="rounded-lg bg-white p-3"><strong>{learner?.displayName||learner?.name||learner?.nickname||tr('unnamed_learner','Learner')}</strong>{row?<p className="mt-1 text-sm">{tr('individual_counts','First responses: {firstCorrect}/{first} correct. Repeat responses: {repeatCorrect}/{repeat} correct. Peer support received in {supported} rounds.',{firstCorrect:row.firstCorrect,first:row.firstResponses,repeatCorrect:row.repeatCorrect,repeat:row.repeatResponses,supported:row.peerSupportReceived})}</p>:<p className="mt-1 text-sm">{tr('individual_no_response','No recorded responses in the available evidence.')}</p>}</li>;})}</ul></details>
+      <details className="mt-3 rounded-xl border border-cyan-200 bg-cyan-50 p-3" data-quest-learner-evidence><summary className="flex min-h-11 cursor-pointer items-center rounded font-bold text-cyan-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('individual_evidence','Individual participation and practice evidence')}</summary><p className="mt-2 text-sm">{tr('individual_evidence_help','First responses and repeat responses are separate. Peer support counts game events; they do not establish whether an answer was independent or supported.')}</p>{!debrief.learnerHistoryComplete&&<p role="status" className="mt-2 text-sm text-amber-900">{tr('individual_history_limit','Earlier rounds did not record this detail. First responses below mean the first recorded response in the available evidence.')}</p>}<ul className="mt-3 space-y-2">{[...new Set([...Object.keys(sessionData?.roster||{}),...(debrief.learnerEvidence||[]).map(row=>row.uid)])].map(uid=>{const row=(debrief.learnerEvidence||[]).find(entry=>entry.uid===uid),learner=sessionData?.roster?.[uid];return <li key={uid} className="rounded-lg bg-white p-3"><strong>{learner?.displayName||learner?.name||learner?.nickname||tr('unnamed_learner','Learner')}</strong>{row?<p className="mt-1 text-sm">{tr('individual_counts','First responses: {firstCorrect}/{first} correct. Repeat responses: {repeatCorrect}/{repeat} correct. Peer support received in {supported} rounds.',{firstCorrect:row.firstCorrect,first:row.firstResponses,repeatCorrect:row.repeatCorrect,repeat:row.repeatResponses,supported:row.peerSupportReceived})}</p>:<p className="mt-1 text-sm">{tr('individual_no_response','No recorded responses in the available evidence.')}</p>}</li>;})}</ul></details>
       {debrief.completeHistory === false && <p data-concept-quest-history-limit className="mt-1 text-xs text-slate-700">{tr('history_limit', 'This older save no longer contains its earliest rounds. These totals include the available saved rounds and all new rounds.')}</p>}
       <div role="group" className="mt-2 grid grid-cols-2 gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-center text-xs sm:grid-cols-6" aria-label={tr('campaign_summary_aria', 'Campaign evidence summary')}>
         <span><strong className="block text-lg text-emerald-800">{debrief.accuracy}%</strong>{tr('accuracy', 'Accuracy')}</span><span><strong className="block text-lg text-emerald-800">{debrief.combos}</strong>{tr('combos', 'Combos')}</span><span><strong className="block text-lg text-emerald-800">{debrief.roleSynergies}</strong>{tr('role_synergies', 'Role synergies')}</span><span><strong className="block text-lg text-emerald-800">{debrief.peerAssists}</strong>{tr('peer_assists', 'Peer assists')}</span><span><strong className="block text-lg text-emerald-800">{debrief.puzzlesSolved}</strong>{tr('puzzles', 'Puzzles')}</span><span><strong className="block text-lg text-emerald-800">{debrief.rounds}</strong>{tr('rounds', 'Rounds')}</span>
       </div>
-      {debrief.conceptBreakdown.length > 0 && <details className="mt-3 rounded-xl border border-cyan-200 bg-cyan-50 p-3"><summary className="cursor-pointer font-bold text-cyan-950">{tr('mastery_evidence', 'Concept mastery evidence')}</summary>{debrief.needsReview ? <p className="mt-2 text-sm text-amber-900">{tr('suggested_review', 'Suggested review: {concept} ({accuracy}% across {rounds} rounds)', { concept: debrief.needsReview.concept, accuracy: debrief.needsReview.accuracy, rounds: debrief.needsReview.rounds })}</p> : <p className="mt-2 text-sm text-emerald-800">{tr('all_above_70', 'Every measured concept is currently at or above 70%.')}</p>}<ul className="mt-2 grid gap-2 text-xs sm:grid-cols-2">{debrief.conceptBreakdown.map(entry => <li key={entry.concept} className="rounded-lg bg-white p-2"><strong>{entry.concept}</strong><span className="float-right">{entry.accuracy}%</span><span className="mt-1 block text-slate-600">{tr('checks_rounds', '{correct}/{total} checks · {rounds} rounds', { correct: entry.correct, total: entry.total, rounds: entry.rounds })}</span></li>)}</ul></details>}
-      <details className="mt-4 rounded-xl border border-slate-200 bg-white p-3"><summary className="cursor-pointer font-bold text-slate-800">{tr('quest_log_inventory', 'Quest log and shared inventory')}</summary><div className="mt-2 grid gap-3 md:grid-cols-2"><ol className="space-y-1 text-xs text-slate-600">{(quest.log || []).slice(-8).reverse().map(entry => <li key={entry.id}><strong>{tr('turn_label', 'Turn {turn}:', { turn: entry.turn })}</strong> {md.inline(entry.text)}</li>)}</ol><ul className="space-y-2 text-xs text-slate-600">{quest.inventory.length ? quest.inventory.map((item, index) => <li key={`${item.id}-${index}`} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 p-2"><span>{item.emoji} <strong>{item.name}</strong> — {item.description}</span><button type="button" onClick={() => useSharedItem(index)} className="min-h-11 shrink-0 rounded-lg bg-indigo-700 px-3 font-bold text-white">{tr('use', 'Use')}</button></li>) : <li>{tr('no_items', 'No items yet.')}</li>}</ul></div></details>
+      {debrief.conceptBreakdown.length > 0 && <details className="mt-3 rounded-xl border border-cyan-200 bg-cyan-50 p-3"><summary className="flex min-h-11 cursor-pointer items-center rounded font-bold text-cyan-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('mastery_evidence', 'Concept mastery evidence')}</summary>{debrief.needsReview ? <p className="mt-2 text-sm text-amber-900">{tr('suggested_review', 'Suggested review: {concept} ({accuracy}% across {rounds} rounds)', { concept: debrief.needsReview.concept, accuracy: debrief.needsReview.accuracy, rounds: debrief.needsReview.rounds })}</p> : <p className="mt-2 text-sm text-emerald-800">{tr('all_above_70', 'Every measured concept is currently at or above 70%.')}</p>}<ul className="mt-2 grid gap-2 text-xs sm:grid-cols-2">{debrief.conceptBreakdown.map(entry => <li key={entry.concept} className="rounded-lg bg-white p-2"><strong>{entry.concept}</strong><span className="float-right">{entry.accuracy}%</span><span className="mt-1 block text-slate-600">{tr('checks_rounds', '{correct}/{total} checks · {rounds} rounds', { correct: entry.correct, total: entry.total, rounds: entry.rounds })}</span></li>)}</ul></details>}
+      <details className="mt-4 rounded-xl border border-slate-200 bg-white p-3"><summary className="flex min-h-11 cursor-pointer items-center rounded font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('quest_log_inventory', 'Quest log and shared inventory')}</summary><div className="mt-2 grid gap-3 md:grid-cols-2"><ol className="space-y-1 text-xs text-slate-600">{(quest.log || []).slice(-8).reverse().map(entry => <li key={entry.id}><strong>{tr('turn_label', 'Turn {turn}:', { turn: entry.turn })}</strong> {md.inline(entry.text)}</li>)}</ol><ul className="space-y-2 text-xs text-slate-600">{quest.inventory.length ? quest.inventory.map((item, index) => <li key={`${item.id}-${index}`} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 p-2"><span>{item.emoji} <strong>{item.name}</strong> — {item.description}</span><button type="button" onClick={() => useSharedItem(index)} className="min-h-11 shrink-0 rounded-lg bg-indigo-700 px-3 font-bold text-white">{tr('use', 'Use')}</button></li>) : <li>{tr('no_items', 'No items yet.')}</li>}</ul></div></details>
       </fieldset>
-      {endConfirm && <div className="fixed inset-0 z-[10000] grid place-items-center bg-black/60 p-4"><div ref={endDialogRef} tabIndex={-1} role="alertdialog" aria-modal="true" aria-labelledby="cq-end-title" aria-describedby="cq-end-description" className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl" onKeyDown={handleEndDialogKeyDown}><h4 id="cq-end-title" className="text-lg font-black text-slate-950">{tr('end_quest', 'End quest')}</h4><p id="cq-end-description" className="mt-2 text-sm text-slate-700">{tr('end_quest_description', 'Close this quest for everyone? Keep playing to return to the current encounter.')}</p>{syncError && <p role="alert" className="mt-2 text-sm text-red-800">{syncError}</p>}<div className="mt-4 flex gap-2"><button type="button" disabled={syncing} onClick={() => { setEndConfirm(false); setTimeout(() => endTriggerRef.current?.focus(), 0); }} className="min-h-11 flex-1 rounded-lg bg-slate-200 px-3 font-bold text-slate-900">{tr('keep_playing', 'Keep playing')}</button><button type="button" disabled={syncing} onClick={async () => { if (await sync({ 'escapeRoomState.isActive': false, 'escapeRoomState.isPaused': false, 'escapeRoomState.isGameOver': false })) setEndConfirm(false); }} className="min-h-11 flex-1 rounded-lg bg-red-700 px-3 font-bold text-white">{tr('end_quest', 'End quest')}</button></div></div></div>}
+      {endConfirm && <div className="fixed inset-0 z-[10000] grid place-items-center bg-black/60 p-4"><div ref={endDialogRef} tabIndex={-1} role="alertdialog" aria-modal="true" aria-labelledby="cq-end-title" aria-describedby="cq-end-description" className="allo-docsuite w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl" onKeyDown={handleEndDialogKeyDown}><h4 id="cq-end-title" className="text-lg font-black text-slate-950">{tr('end_quest', 'End quest')}</h4><p id="cq-end-description" className="mt-2 text-sm text-slate-700">{tr('end_quest_description', 'Close this quest for everyone? Keep playing to return to the current encounter.')}</p>{syncError && <p role="alert" className="mt-2 text-sm text-red-800">{syncError}</p>}<div className="mt-4 flex gap-2"><button type="button" disabled={syncing} onClick={() => setEndConfirm(false)} className="min-h-11 flex-1 rounded-lg bg-slate-200 px-3 font-bold text-slate-900">{tr('keep_playing', 'Keep playing')}</button><button type="button" disabled={syncing} onClick={async () => { if (await sync({ 'escapeRoomState.isActive': false, 'escapeRoomState.isPaused': false, 'escapeRoomState.isGameOver': false }) && mountedRef.current) setEndConfirm(false); }} className="min-h-11 flex-1 rounded-lg bg-red-700 px-3 font-bold text-white">{tr('end_quest', 'End quest')}</button></div></div></div>}
     </div>
   );
 });

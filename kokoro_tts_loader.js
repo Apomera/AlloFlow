@@ -128,9 +128,10 @@
     };
 
     function resolveVoice(voiceName) {
-        if (!voiceName) return 'af_heart';
+        if (!voiceName || typeof voiceName !== 'string') return 'af_heart';
         if (voiceName.includes('_')) return voiceName;
-        const mapped = GEMINI_TO_KOKORO[voiceName.toLowerCase()];
+        const key = voiceName.toLowerCase();
+        const mapped = Object.prototype.hasOwnProperty.call(GEMINI_TO_KOKORO, key) ? GEMINI_TO_KOKORO[key] : null;
         if (mapped) return mapped;
         console.log('[Kokoro TTS] Unknown voice "' + voiceName + '", defaulting to af_heart');
         return 'af_heart';

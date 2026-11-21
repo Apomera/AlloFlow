@@ -40,7 +40,7 @@
     .trim();
   const array = value => Array.isArray(value) ? value : [];
   const clone = value => JSON.parse(JSON.stringify(value));
-  const text = value => typeof value === 'string' ? value : typeof value === 'number' ? String(value) : value && typeof value === 'object' ? string(value.en || value.text || value.title || value.label) : '';
+  const text = value => typeof value === 'string' ? value : typeof value === 'number' && Number.isFinite(value) ? String(value) : value && typeof value === 'object' ? string(value.en || value.text || value.title || value.label) : '';
   function fingerprint(value) {
     const helper = root.AlloModules?.ResourceContentFingerprint;
     if (helper?.fingerprint) return helper.fingerprint(value);
@@ -99,7 +99,7 @@
     return hits;
   }
   // Preserve complete teacher content for change detection; only prompt snapshots are truncated.
-  const fullText = value => typeof value === 'string' ? value : typeof value === 'number' ? String(value) : value && typeof value === 'object' ? string(value.en || value.text || value.title || value.label, Infinity) : '';
+  const fullText = value => typeof value === 'string' ? value : typeof value === 'number' && Number.isFinite(value) ? String(value) : value && typeof value === 'object' ? string(value.en || value.text || value.title || value.label, Infinity) : '';
   const join = values => values.map(value => string(fullText(value), Infinity)).filter(Boolean).join('\n');
   const ALLOWED_TYPES = new Set(['analysis', 'source', 'simplified', 'glossary', 'quiz', 'math', 'sentence-frames', 'anchor-chart', 'note-taking', 'timeline', 'concept-sort', 'image', 'outline']);
   function teacherMaterialText(resource) {
@@ -497,8 +497,13 @@
       const phase = string(raw?.phase, 40);
       step.phase = PHASES.includes(phase) ? phase : '';
       STEP_FIELDS.forEach(field => {
-        step[field] = string(raw?.[field], 16000);
-        if (string(raw?.[field], Infinity).length > 16000) errors.push('Step ' + (index + 1) + ' ' + field + ' exceeds the 16,000-character limit. Shorten it before saving.');
+        const fieldMax = field === 'title' ? 240 : 16000;
+        step[field] = string(raw?.[field], fieldMax);
+        if (string(raw?.[field], Infinity).length > fieldMax) {
+          errors.push(field === 'title'
+            ? 'Keep the teaching step title within 240 characters.'
+            : 'Step ' + (index + 1) + ' ' + field + ' exceeds the 16,000-character limit. Shorten it before saving.');
+        }
         if (step[field].length < (field === 'title' ? 2 : field === 'teacherSays' ? 60 : 12)) errors.push('Step ' + (index + 1) + ' needs substantive ' + field + '.');
         if (/https?:\/\/|javascript:|data:text\/html|\]\s*\(|\[(?:\d+|S\d+|R\d+|REC[-_\w]*|source[-_\w]+|recommendation[-_\w]+)\]/i.test(step[field])) errors.push('Keep citations in validated reference arrays, not teaching text.');
       });
@@ -553,7 +558,13 @@
     const rules = rulesFor(version);
     if (rules.durations ? !rules.durations.includes(version.durationMinutes) : !(Number.isInteger(version.durationMinutes) && version.durationMinutes >= rules.minMinutes && version.durationMinutes <= rules.maxMinutes)) return false;
     const result = normalizeSteps(version.steps, version.durationMinutes, new Set(array(version.inputSnapshot.materialIds)), new Set(research.sources.flatMap(source => source.recommendations.map(rec => rec.id))), rules);
-    return result.errors.length === 0 && result.steps.some(step => step.resourceIds.length) && (research.status !== 'retrieved' || result.steps.some(step => step.recommendationIds.length));
+    if (result.errors.length !== 0 || !result.steps.some(step => step.resourceIds.length) || (research.status === 'retrieved' && !result.steps.some(step => step.recommendationIds.length))) return false;
+    if (version.schemaVersion !== LEGACY_SCHEMA_VERSION && version.scope === 'lesson') {
+      if (result.steps.some(step => !step.phase)) return false;
+      const missingPhases = array(version.inputSnapshot.planPhases).filter(phase => PHASES.includes(phase) && !result.steps.some(step => step.phase === phase));
+      if (missingPhases.length) return false;
+    }
+    return true;
   }
   function appendVersion(resource, version) {
     if (resource?.type !== 'lesson-plan' || !validVersion(version, resource.id)) return resource;
@@ -639,10 +650,13 @@
     const adapter = {
       id: 'alloflow.lesson-script.read-aloud', version: 1,
       enumerate: resource => spokenSegments(resource), spokenText: segment => segment.spokenText,
-      fields: segment => ({ segmentId: segment.id, storageKey: {
-        identityVersion: 4, adapterId: 'alloflow.lesson-script.read-aloud', adapterVersion: 1,
-        scopeId: String(version.id), segmentId: segment.id, spokenText: segment.spokenText
-      } })
+      fields: segment => {
+        const current = (typeof deps.getVersion === 'function' ? deps.getVersion() : null) || version;
+        return { segmentId: segment.id, storageKey: {
+          identityVersion: 4, adapterId: 'alloflow.lesson-script.read-aloud', adapterVersion: 1,
+          scopeId: String(current?.id || ''), segmentId: segment.id, spokenText: segment.spokenText
+        } };
+      }
     };
     let persisted = store.serialize();
     const controller = deps.createService({

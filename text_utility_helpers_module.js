@@ -28,18 +28,52 @@ const GlossaryTermSpan = ({ item, artifact, leveledTextLanguage, isDarkBg, isLin
   const passageLanguage = isSourceTerm && (!isBaseTerm || leveledTextLanguage === item.sourceLanguage) ? item.sourceLanguage || leveledTextLanguage || termLanguage : isBaseTerm ? termLanguage : leveledTextLanguage || termLanguage;
   const translation = leveledTextLanguage !== definitionLanguage ? _glossaryTranslationParts(item.translations?.[leveledTextLanguage]) : null;
   const [tip, setTip] = React.useState(null);
-  const termRef = React.useRef(null), hideTimer = React.useRef(null);
+  const termRef = React.useRef(null), tipRef = React.useRef(null), hideTimer = React.useRef(null);
   const tipIdRef = React.useRef(null);
   if (!tipIdRef.current) tipIdRef.current = `allo-glossary-tip-${++_glossaryTipSeq}`;
+  const getViewportBox = () => {
+    const vp = typeof window !== "undefined" ? window.visualViewport : null;
+    const vw = vp && vp.width > 0 ? vp.width : typeof window !== "undefined" ? window.innerWidth : 1024;
+    const vh = vp && vp.height > 0 ? vp.height : typeof window !== "undefined" ? window.innerHeight : 768;
+    const ox = vp && Number.isFinite(vp.offsetLeft) ? vp.offsetLeft : 0;
+    const oy = vp && Number.isFinite(vp.offsetTop) ? vp.offsetTop : 0;
+    return { vw, vh, ox, oy };
+  };
   const show = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
+    const target = e?.currentTarget || termRef.current;
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
     if (hideTimer.current) clearTimeout(hideTimer.current);
-    const width = Math.min(256, Math.max(160, window.innerWidth - 16));
-    const margin = 8;
+    let rootPx = 16;
+    let termPx = 16;
+    try {
+      rootPx = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
+      termPx = parseFloat(window.getComputedStyle(target).fontSize) || rootPx;
+    } catch (_) {
+    }
+    const scaledPx = termPx > rootPx * 1.25 ? Math.max(rootPx, Math.min(28, Math.round(termPx * 0.85))) : null;
+    const refPx = scaledPx || rootPx;
+    const { vw, vh, ox, oy } = getViewportBox();
+    const margin = 12;
+    const gap = 10;
+    const width = Math.min(Math.round(22 * refPx), Math.max(200, Math.floor(vw - margin * 2)));
     const centerX = rect.left + rect.width / 2;
-    const left = Math.max(margin, Math.min(centerX - width / 2, window.innerWidth - width - margin));
-    const placeAbove = rect.top > 320;
-    setTip({ left, top: placeAbove ? rect.top - 10 : rect.bottom + 10, placeAbove, width });
+    const left = Math.max(ox + margin, Math.min(centerX - width / 2, ox + vw - width - margin));
+    const spaceBelow = oy + vh - rect.bottom - margin;
+    const spaceAbove = rect.top - oy - margin;
+    const placeAbove = spaceBelow < 180 && spaceAbove > spaceBelow;
+    const readingTheme = target.closest?.("[data-reading-theme]")?.getAttribute("data-reading-theme") || "";
+    const maxHeight = Math.max(120, Math.min(Math.round(vh * 0.65), Math.floor((placeAbove ? spaceAbove : spaceBelow) - gap)));
+    setTip({
+      left,
+      top: placeAbove ? Math.max(oy + margin, rect.top - gap) : rect.bottom + gap,
+      placeAbove,
+      width,
+      maxHeight,
+      readingTheme,
+      scaledPx,
+      anchorRect: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width }
+    });
   };
   const hide = () => {
     if (hideTimer.current) clearTimeout(hideTimer.current);
@@ -51,6 +85,37 @@ const GlossaryTermSpan = ({ item, artifact, leveledTextLanguage, isDarkBg, isLin
   React.useEffect(() => () => {
     if (hideTimer.current) clearTimeout(hideTimer.current);
   }, []);
+  React.useLayoutEffect(() => {
+    const el = tipRef.current;
+    if (!tip || !el || !tip.anchorRect) return;
+    const h = el.offsetHeight;
+    const w = el.offsetWidth || tip.width;
+    if (!h) return;
+    const { vw, vh, ox, oy } = getViewportBox();
+    const margin = 12;
+    const gap = 10;
+    const rect = tip.anchorRect;
+    const spaceBelow = oy + vh - rect.bottom - margin;
+    const spaceAbove = rect.top - oy - margin;
+    const placeAbove = spaceBelow < h + gap && spaceAbove > spaceBelow;
+    const left = Math.max(ox + margin, Math.min(rect.left + rect.width / 2 - w / 2, ox + vw - w - margin));
+    let top;
+    let maxHeight;
+    if (placeAbove) {
+      const avail = Math.max(120, Math.min(Math.round(vh * 0.65), Math.floor(spaceAbove - gap)));
+      const clampedH = Math.min(h, avail);
+      top = Math.max(oy + margin, rect.top - gap - clampedH);
+      maxHeight = avail;
+    } else {
+      const avail = Math.max(120, Math.min(Math.round(vh * 0.65), Math.floor(spaceBelow - gap)));
+      top = Math.max(oy + margin, Math.min(oy + vh - Math.min(h, avail) - margin, rect.bottom + gap));
+      maxHeight = Math.max(120, Math.min(Math.round(vh * 0.65), Math.floor(oy + vh - top - margin)));
+    }
+    el.style.left = Math.round(left) + "px";
+    el.style.top = Math.round(top) + "px";
+    el.style.maxHeight = maxHeight + "px";
+    el.style.transform = "none";
+  }, [tip]);
   React.useEffect(() => {
     if (!tip) return void 0;
     const close = (event) => {
@@ -120,32 +185,38 @@ const GlossaryTermSpan = ({ item, artifact, leveledTextLanguage, isDarkBg, isLin
       /* @__PURE__ */ React.createElement(
         "span",
         {
+          ref: tipRef,
           id: tipIdRef.current,
           role: "tooltip",
+          "data-glossary-tooltip": "true",
+          "data-glossary-dark": isDarkBg ? "true" : void 0,
+          "data-reading-theme": tip.readingTheme && tip.readingTheme !== "default" ? tip.readingTheme : void 0,
           ..._glossaryFieldAttributes(definitionLanguage),
           onMouseEnter: () => {
             if (hideTimer.current) clearTimeout(hideTimer.current);
           },
           onMouseLeave: leave,
-          className: "fixed block p-3 bg-slate-800 text-sm rounded shadow-xl text-left leading-relaxed",
+          className: "fixed block p-4 bg-white text-slate-800 text-base rounded-xl border border-indigo-200 border-t-[3px] border-t-indigo-600 shadow-2xl text-left leading-relaxed",
           style: {
             width: tip.width + "px",
-            maxHeight: "70vh",
+            maxHeight: tip.maxHeight + "px",
             overflowY: "auto",
+            overflowWrap: "anywhere",
             left: tip.left + "px",
             top: tip.top + "px",
             transform: tip.placeAbove ? "translateY(-100%)" : "none",
             zIndex: 300,
-            color: "#ffffff",
-            textAlign: "start"
+            textAlign: "start",
+            ...tip.scaledPx ? { fontSize: tip.scaledPx + "px" } : {}
           }
         },
         /* @__PURE__ */ React.createElement(
           "strong",
           {
             ..._glossaryFieldAttributes(termLanguage),
-            className: "block mb-1.5 pb-1.5 text-sm font-black text-center tracking-wide border-b border-slate-600/60",
-            style: { color: "#fde047" }
+            "data-glossary-tooltip-title": "true",
+            className: "block mb-2 pb-1.5 text-lg font-bold tracking-tight text-indigo-900 border-b border-indigo-100",
+            style: { textAlign: "start", ...tip.scaledPx ? { fontSize: "1.15em" } : {} }
           },
           item.term
         ),
@@ -154,25 +225,30 @@ const GlossaryTermSpan = ({ item, artifact, leveledTextLanguage, isDarkBg, isLin
           {
             src: typeof item.image === "string" ? item.image : item.image.src,
             alt: item.image.alt || item.term,
-            className: "block mb-2 w-full rounded border border-slate-600 bg-white",
-            style: { maxHeight: "115px", objectFit: "contain" },
+            className: "block mb-2.5 w-full rounded-lg border border-slate-200 bg-white",
+            style: { maxHeight: "7.5rem", objectFit: "contain" },
             loading: "lazy"
           }
         ),
-        /* @__PURE__ */ React.createElement("span", { ..._glossaryFieldAttributes(definitionLanguage), style: { color: "#ffffff", textAlign: "start" } }, item.def || item.definition || item.explanation || item.text),
-        translation && (translation.term || translation.definition) && /* @__PURE__ */ React.createElement("span", { ..._glossaryFieldAttributes(leveledTextLanguage), className: "block mt-2 pt-2 border-t border-slate-600 italic", style: { color: "#c7d2fe", textAlign: "start" } }, [translation.term, translation.definition].filter(Boolean).join(": ")),
         /* @__PURE__ */ React.createElement(
-          "svg",
+          "span",
           {
-            className: "absolute text-slate-800 h-2 w-full left-0",
-            style: tip.placeAbove ? { top: "100%" } : { bottom: "100%", transform: "scaleY(-1)" },
-            x: "0px",
-            y: "0px",
-            viewBox: "0 0 255 255",
-            xmlSpace: "preserve",
-            "aria-hidden": "true"
+            ..._glossaryFieldAttributes(definitionLanguage),
+            "data-glossary-tooltip-body": "true",
+            className: "block leading-relaxed",
+            style: { textAlign: "start" }
           },
-          /* @__PURE__ */ React.createElement("polygon", { className: "fill-current", points: "0,0 127.5,127.5 255,0" })
+          item.def || item.definition || item.explanation || item.text
+        ),
+        translation && (translation.term || translation.definition) && /* @__PURE__ */ React.createElement(
+          "span",
+          {
+            ..._glossaryFieldAttributes(leveledTextLanguage),
+            "data-glossary-tooltip-translation": "true",
+            className: "block mt-2.5 pt-2 border-t border-indigo-100 text-sm italic text-indigo-800",
+            style: { textAlign: "start", ...tip.scaledPx ? { fontSize: "0.9em" } : {} }
+          },
+          [translation.term, translation.definition].filter(Boolean).join(": ")
         )
       ),
       document.body
@@ -472,6 +548,7 @@ const generateHelpfulHint = async (type, text, shouldSpeak = false, deps) => {
       contextInstruction = `
                   Focus on formative assessment or checking for understanding (e.g., "Use this as an exit ticket...").
               `;
+    } else if (type === "adventure") {
       contextInstruction = `
                   Focus on student engagement and narrative hooks (e.g., "Use this story starter to spark a debate...").
               `;

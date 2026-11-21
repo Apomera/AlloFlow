@@ -1,8 +1,8 @@
 use_default_settings: true
 
 server:
-  secret_key: "alloflow-schoolbox-local"
-  limiter: false
+  # Set SEARXNG_SECRET in desktop/schoolbox/.env (32-byte random hex: openssl rand -hex 32).
+  limiter: true
 
 search:
   safe_search: 2

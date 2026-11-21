@@ -3,6 +3,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Permissions-Policy: camera=(self), geolocation=(), payment=(), usb=()
   Content-Security-Policy: object-src 'none'; base-uri 'self'
 /zoom_gallery/*
   X-Frame-Options: SAMEORIGIN
@@ -26,13 +27,17 @@
   Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'
 /data_lab/data_lab
   X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
   Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
 /data_lab/data_lab.html
   X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
   Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
 /data_lab/tutor_plugin
+  Referrer-Policy: no-referrer
   Content-Security-Policy: frame-ancestors 'self' https://codap.concord.org https://*.concord.org; object-src 'none'; base-uri 'self'
 /data_lab/tutor_plugin.html
+  Referrer-Policy: no-referrer
   Content-Security-Policy: frame-ancestors 'self' https://codap.concord.org https://*.concord.org; object-src 'none'; base-uri 'self'
 /allo_sheet/*
   X-Frame-Options: SAMEORIGIN
@@ -119,6 +124,8 @@
 # cross-origin. Packs and data files carry their content hash in the name; songs.json must stay revalidated.
 /song_library/*
   Access-Control-Allow-Origin: *
+/song_library/songs.json
+  Cache-Control: no-cache
 /song_library/pack-*
   Cache-Control: public, max-age=31536000, immutable
 /song_library/lyrics-*
@@ -130,6 +137,26 @@
   X-Frame-Options: SAMEORIGIN
   Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'
   Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://alloflow-cdn.pages.dev https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://cdn.sheetjs.com https://apis.google.com https://accounts.google.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://alloflow-cdn.pages.dev https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://fonts.googleapis.com; font-src 'self' data: https://alloflow-cdn.pages.dev https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; worker-src 'self' blob:; frame-src 'self' data: blob: https:; connect-src 'self' data: blob: https://alloflow-cdn.pages.dev https://alloflow.org https://alloflow.dev https://*.workers.dev https://generativelanguage.googleapis.com https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com https://*.cloudfunctions.net https://*.run.app https://www.google.com https://www.gstatic.com https://accounts.google.com https://apis.google.com https://script.google.com https://script.googleusercontent.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://cdn.sheetjs.com https://huggingface.co https://*.hf.co https://api.openai.com https://api.anthropic.com https://api.duckduckgo.com https://duckduckgo.com https://google.serper.dev https://raw.githubusercontent.com https://*.wikipedia.org https://*.wikimedia.org https://api.crossref.org https://*.ncbi.nlm.nih.gov http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:*
+/app/
+  Cache-Control: no-store
+/app/index.html
+  Cache-Control: no-store
+/app/sw.js
+  Cache-Control: no-cache
+/app/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Device storage bridge keeps frame-ancestors open for Canvas/local hosts while locking down all other directives.
+/storage_bridge
+  ! Referrer-Policy
+  ! Content-Security-Policy
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; form-action 'none'; frame-ancestors 'self' https: http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'self'
+/storage_bridge.html
+  ! Referrer-Policy
+  ! Content-Security-Policy
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; form-action 'none'; frame-ancestors 'self' https: http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'self'
 
 # Standalone OAuth import helper cannot be framed anywhere and leaks no Referer header.
 /classroom-import

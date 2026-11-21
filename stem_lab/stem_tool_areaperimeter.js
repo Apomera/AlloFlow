@@ -1392,6 +1392,86 @@
         shadow: '0 2px 12px rgba(15,118,110,0.08)'
       };
       var GRID_STROKE = isContrast ? '#ffffff' : (isDark ? '#94a3b8' : '#64748b');
+      // ── Blueprint Geoboard & Luminous Perimeter Studio SVG helpers (skipped in High-Contrast) ──
+      var apRich = !isContrast;
+      function apDefs(id, extra) {
+        if (!apRich) return extra ? h('defs', { key: 'defs-' + id }, extra) : null;
+        var dk = isDark;
+        return h('defs', { key: 'defs-' + id }, [
+          // Recessed blueprint/studio drafting mat gradient & subtle minor/major grid pattern
+          h('linearGradient', { key: 'mat', id: 'ap-mat-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+            h('stop', { key: 's0', offset: '0%', stopColor: dk ? '#0b1324' : '#f1f5f9', stopOpacity: dk ? 0.92 : 0.85 }),
+            h('stop', { key: 's1', offset: '100%', stopColor: dk ? '#111c33' : '#f8fafc', stopOpacity: dk ? 0.95 : 0.9 })
+          ]),
+          h('pattern', { key: 'grid', id: 'ap-bp-grid-' + id, width: 20, height: 20, patternUnits: 'userSpaceOnUse' }, [
+            h('path', { key: 'p', d: 'M 20 0 L 0 0 0 20', fill: 'none', stroke: dk ? '#38bdf8' : '#0f766e', strokeOpacity: dk ? 0.08 : 0.07, strokeWidth: 0.7 })
+          ]),
+          h('pattern', { key: 'gridM', id: 'ap-bp-major-' + id, width: 80, height: 80, patternUnits: 'userSpaceOnUse' }, [
+            h('path', { key: 'pm', d: 'M 80 0 L 0 0 0 80', fill: 'none', stroke: dk ? '#38bdf8' : '#0f766e', strokeOpacity: dk ? 0.14 : 0.11, strokeWidth: 1 })
+          ]),
+          // Tactile translucent gradient-filled shapes & beveled tiles
+          h('linearGradient', { key: 'teal', id: 'ap-fill-teal-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+            h('stop', { key: 's0', offset: '0%', stopColor: dk ? '#0f766e' : '#99f6e4', stopOpacity: dk ? 0.78 : 0.72 }),
+            h('stop', { key: 's1', offset: '100%', stopColor: dk ? '#134e4a' : '#ccfbf1', stopOpacity: dk ? 0.88 : 0.85 })
+          ]),
+          h('linearGradient', { key: 'tile', id: 'ap-fill-tile-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+            h('stop', { key: 's0', offset: '0%', stopColor: dk ? '#5eead4' : '#14b8a6' }),
+            h('stop', { key: 's1', offset: '100%', stopColor: dk ? '#0d9488' : '#0f766e' })
+          ]),
+          h('linearGradient', { key: 'blue', id: 'ap-fill-blue-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+            h('stop', { key: 's0', offset: '0%', stopColor: dk ? '#1d4ed8' : '#bfdbfe', stopOpacity: dk ? 0.72 : 0.78 }),
+            h('stop', { key: 's1', offset: '100%', stopColor: dk ? '#1e3a5f' : '#dbeafe', stopOpacity: dk ? 0.86 : 0.9 })
+          ]),
+          h('linearGradient', { key: 'green', id: 'ap-fill-green-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+            h('stop', { key: 's0', offset: '0%', stopColor: dk ? '#15803d' : '#bbf7d0', stopOpacity: dk ? 0.78 : 0.82 }),
+            h('stop', { key: 's1', offset: '100%', stopColor: dk ? '#14532d' : '#dcfce7', stopOpacity: dk ? 0.9 : 0.92 })
+          ]),
+          // Top-left specular sheen
+          h('linearGradient', { key: 'sheen', id: 'ap-sheen-' + id, x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, [
+            h('stop', { key: 's0', offset: '0%', stopColor: '#ffffff', stopOpacity: dk ? 0.16 : 0.42 }),
+            h('stop', { key: 's1', offset: '45%', stopColor: '#ffffff', stopOpacity: 0.03 }),
+            h('stop', { key: 's2', offset: '100%', stopColor: '#000000', stopOpacity: dk ? 0.12 : 0.03 })
+          ]),
+          // Grounded studio drop shadow
+          h('filter', { key: 'sh', id: 'ap-sh-' + id, x: '-15%', y: '-15%', width: '130%', height: '130%' }, [
+            h('feDropShadow', { key: 'ds', dx: 0, dy: 2.5, stdDeviation: 3, floodColor: dk ? '#000000' : '#0f172a', floodOpacity: dk ? 0.5 : 0.16 })
+          ]),
+          // Specular corner vertex / handle beacons
+          h('radialGradient', { key: 'bt', id: 'ap-beacon-teal-' + id, cx: '32%', cy: '28%', r: '70%' }, [
+            h('stop', { key: 's0', offset: '0%', stopColor: '#ffffff' }),
+            h('stop', { key: 's1', offset: '45%', stopColor: COLORS.teal }),
+            h('stop', { key: 's2', offset: '100%', stopColor: dk ? '#0f766e' : '#115e59' })
+          ]),
+          h('radialGradient', { key: 'bb', id: 'ap-beacon-blue-' + id, cx: '32%', cy: '28%', r: '70%' }, [
+            h('stop', { key: 's0', offset: '0%', stopColor: '#ffffff' }),
+            h('stop', { key: 's1', offset: '45%', stopColor: COLORS.blue }),
+            h('stop', { key: 's2', offset: '100%', stopColor: dk ? '#1d4ed8' : '#1e40af' })
+          ]),
+          h('radialGradient', { key: 'ba', id: 'ap-beacon-amber-' + id, cx: '32%', cy: '28%', r: '70%' }, [
+            h('stop', { key: 's0', offset: '0%', stopColor: '#ffffff' }),
+            h('stop', { key: 's1', offset: '45%', stopColor: COLORS.amber }),
+            h('stop', { key: 's2', offset: '100%', stopColor: dk ? '#d97706' : '#92400e' })
+          ])
+        ].concat(extra ? (Array.isArray(extra) ? extra : [extra]) : []));
+      }
+      function apMat(id, w, hgt) {
+        if (!apRich) return null;
+        return h('g', { key: 'mat-' + id, 'aria-hidden': 'true', pointerEvents: 'none' }, [
+          h('rect', { key: 'm0', x: 2, y: 2, width: w - 4, height: hgt - 4, rx: 12, fill: 'url(#ap-mat-' + id + ')', stroke: COLORS.border, strokeWidth: 1.1 }),
+          h('rect', { key: 'm1', x: 3, y: 3, width: w - 6, height: hgt - 6, rx: 11, fill: 'url(#ap-bp-grid-' + id + ')' }),
+          h('rect', { key: 'm2', x: 3, y: 3, width: w - 6, height: hgt - 6, rx: 11, fill: 'url(#ap-bp-major-' + id + ')' })
+        ]);
+      }
+      function apCornerBeacons(key, pts, id, kind, r) {
+        if (!apRich) return null;
+        var rr = r || 4.2, grad = 'url(#ap-beacon-' + (kind || 'teal') + '-' + id + ')';
+        return h('g', { key: key, 'aria-hidden': 'true', pointerEvents: 'none' }, pts.map(function(pt, i) {
+          return h('g', { key: 'cb' + i }, [
+            h('circle', { key: 'h', cx: pt[0], cy: pt[1], r: rr + 3, fill: kind === 'blue' ? COLORS.blue : (kind === 'amber' ? COLORS.amber : COLORS.teal), fillOpacity: isDark ? 0.24 : 0.16 }),
+            h('circle', { key: 'c', cx: pt[0], cy: pt[1], r: rr, fill: grad, stroke: COLORS.panel, strokeWidth: 1.4 })
+          ]);
+        }));
+      }
 
       function clamp(value, min, max) {
         return clampInteger(value, min, max);
@@ -2346,6 +2426,10 @@
                 },
                 style: Object.assign({ cursor: 'pointer' }, NO_PAN)
               }));
+              if (apRich && shown) {
+                var tx = originX + c * cell, ty = originY + r * cell;
+                cells.push(h('path', { key: 'bev-' + key, 'aria-hidden': 'true', pointerEvents: 'none', d: 'M ' + (tx + 1.5) + ' ' + (ty + cell - 1.5) + ' V ' + (ty + 1.5) + ' H ' + (tx + cell - 1.5), fill: 'none', stroke: '#ffffff', strokeOpacity: isDark ? 0.28 : 0.34, strokeWidth: 1.5, strokeLinecap: 'square' }));
+              }
             })(column, row);
           }
         }
@@ -2431,6 +2515,11 @@
         // Standing on this corner the walker sits under the handle: the finger
         // meant for the walker must not resize and wipe the rectangle.
         var showHandle = apResize.active || Math.hypot(walker[0] - (cornerX + 10), walker[1] - (cornerY + 10)) > 22;
+        var boundaryPts = [
+          [originX, originY], [originX + shapeW, originY], [originX + shapeW, originY + shapeH], [originX, originY + shapeH], [originX, originY]
+        ].slice(0, Math.min(4, state.boundaryStep || 0) + 1).map(function(p) { return p.join(','); }).join(' ');
+        var walkedStr = walkedPoints.map(function(p) { return p.join(','); }).join(' ');
+        var rectCorners = [[originX, originY], [originX + shapeW, originY], [originX + shapeW, originY + shapeH], [originX, originY + shapeH]];
         return h('svg', {
           key: 'rectangle-svg',
           viewBox: '0 0 640 390',
@@ -2441,8 +2530,12 @@
         }, [
           h('title', { key: 'title', id: 'ap-explore-title' }, fill(t('stem.areaperimeter.explore_title', '{w} by {h} tiled rectangle'), { w: width, h: height })),
           h('desc', { key: 'desc', id: 'ap-explore-desc' }, description),
+          apDefs('ex'),
+          apMat('ex', 640, 390),
+          // Grounded mat drop shadow under the tile grid
+          apRich ? h('rect', { key: 'shape-shadow', 'aria-hidden': 'true', pointerEvents: 'none', x: originX, y: originY, width: shapeW, height: shapeH, fill: COLORS.panel, filter: 'url(#ap-sh-ex)' }) : null,
           // Architectural dimension brackets along top & left
-          h('g', { key: 'dim-brackets', 'aria-hidden': 'true', pointerEvents: 'none', stroke: COLORS.teal, strokeWidth: 1.5, opacity: isContrast ? 1 : 0.72 }, [
+          h('g', { key: 'dim-brackets', 'aria-hidden': 'true', pointerEvents: 'none', stroke: COLORS.teal, strokeWidth: 1.5, opacity: isContrast ? 1 : 0.78 }, [
             h('line', { key: 't-bar', x1: originX, y1: originY - 22, x2: originX + shapeW, y2: originY - 22 }),
             h('line', { key: 't-l', x1: originX, y1: originY - 27, x2: originX, y2: originY - 17 }),
             h('line', { key: 't-r', x1: originX + shapeW, y1: originY - 27, x2: originX + shapeW, y2: originY - 17 }),
@@ -2453,19 +2546,23 @@
           h('text', { key: 'top', x: originX + shapeW / 2, y: originY - 32, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, nUnits(width)),
           h('text', { key: 'side', x: originX - 38, y: originY + shapeH / 2, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800, transform: 'rotate(-90 ' + (originX - 38) + ' ' + (originY + shapeH / 2) + ')' }, nUnits(height))
         ].concat(cells).concat([
-          h('polyline', { key: 'boundary-trace', points: [
-            [originX, originY], [originX + shapeW, originY], [originX + shapeW, originY + shapeH], [originX, originY + shapeH], [originX, originY]
-          ].slice(0, Math.min(4, state.boundaryStep || 0) + 1).map(function(p) { return p.join(','); }).join(' '), fill: 'none', stroke: COLORS.blue, strokeWidth: 5, pointerEvents: 'none' }),
-          h('rect', { key: 'walk-guide', x: originX - off, y: originY - off, width: shapeW + 2 * off, height: shapeH + 2 * off, fill: 'none', stroke: COLORS.muted, strokeWidth: 1.5, strokeDasharray: '5 6', pointerEvents: 'none', 'aria-hidden': 'true' }),
-          walkN > 0 ? h('polyline', { key: 'walked', 'data-ap-walked': walkN, points: walkedPoints.map(function(p) { return p.join(','); }).join(' '), fill: 'none', stroke: COLORS.amber, strokeWidth: 6, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none', 'aria-hidden': 'true' }) : null,
+          apRich ? h('rect', { key: 'tile-sheen', 'aria-hidden': 'true', pointerEvents: 'none', x: originX, y: originY, width: shapeW, height: shapeH, fill: 'url(#ap-sheen-ex)', stroke: COLORS.teal, strokeWidth: 2 }) : null,
+          apRich && (state.boundaryStep || 0) > 0 ? h('polyline', { key: 'boundary-glow', 'aria-hidden': 'true', points: boundaryPts, fill: 'none', stroke: COLORS.blue, strokeWidth: 11, strokeOpacity: isDark ? 0.28 : 0.2, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none' }) : null,
+          h('polyline', { key: 'boundary-trace', points: boundaryPts, fill: 'none', stroke: COLORS.blue, strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none' }),
+          apCornerBeacons('ex-corners', rectCorners, 'ex', (state.boundaryStep || 0) > 0 ? 'blue' : 'teal', 4),
+          h('rect', { key: 'walk-guide', x: originX - off, y: originY - off, width: shapeW + 2 * off, height: shapeH + 2 * off, rx: apRich ? 6 : 0, fill: 'none', stroke: COLORS.muted, strokeWidth: 1.5, strokeDasharray: '5 6', pointerEvents: 'none', 'aria-hidden': 'true' }),
+          apRich && walkN > 0 ? h('polyline', { key: 'walked-glow', 'aria-hidden': 'true', points: walkedStr, fill: 'none', stroke: COLORS.amber, strokeWidth: 12, strokeOpacity: isDark ? 0.28 : 0.2, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none' }) : null,
+          walkN > 0 ? h('polyline', { key: 'walked', 'data-ap-walked': walkN, points: walkedStr, fill: 'none', stroke: COLORS.amber, strokeWidth: 6, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none', 'aria-hidden': 'true' }) : null,
           h('g', { key: 'walk-marks', 'aria-hidden': 'true', pointerEvents: 'none' }, walkedPoints.slice(1).map(function(p, i) { return h('circle', { key: i, cx: p[0], cy: p[1], r: 3.5, fill: COLORS.panel, stroke: COLORS.amber, strokeWidth: 2 }); })),
-          h('circle', { key: 'walker', 'data-ap-walker': walkN, cx: walker[0], cy: walker[1], r: 11, fill: COLORS.amber, stroke: COLORS.panel, strokeWidth: 3, pointerEvents: 'none', 'aria-hidden': 'true' }),
+          apRich ? h('circle', { key: 'walker-halo', 'aria-hidden': 'true', cx: walker[0], cy: walker[1], r: 16, fill: COLORS.amber, fillOpacity: isDark ? 0.24 : 0.16, pointerEvents: 'none' }) : null,
+          h('circle', { key: 'walker', 'data-ap-walker': walkN, cx: walker[0], cy: walker[1], r: 11, fill: apRich ? 'url(#ap-beacon-amber-ex)' : COLORS.amber, stroke: COLORS.panel, strokeWidth: 3, filter: apRich ? 'url(#ap-sh-ex)' : undefined, pointerEvents: 'none', 'aria-hidden': 'true' }),
           walkN > 0 ? h('text', { key: 'walk-n', x: walker[0], y: walker[1] + 5, textAnchor: 'middle', fill: COLORS.onTeal === '#000000' ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), fontSize: 12, fontWeight: 900, pointerEvents: 'none', 'aria-hidden': 'true' }, String(walkN)) : null,
           h('rect', { key: 'walk-track', 'data-ap-walk-track': true, x: originX - off, y: originY - off, width: shapeW + 2 * off, height: shapeH + 2 * off, fill: 'none', stroke: 'transparent', strokeWidth: 26, pointerEvents: 'stroke', 'aria-hidden': 'true',
             onClick: tappable, onPointerDown: walkDown, onPointerMove: walkMove, onPointerUp: walkUp, onPointerCancel: walkUp, style: Object.assign({ cursor: 'grab' }, NO_PAN) }),
           showHandle ? h('g', { key: 'resize', 'data-ap-resize-handle': true, 'aria-hidden': 'true', onClick: tappable, onPointerDown: resizeDown, onPointerMove: resizeMove, onPointerUp: resizeUp, onPointerCancel: resizeUp, style: Object.assign({ cursor: 'nwse-resize' }, NO_PAN) }, [
             h('circle', { key: 'hit', cx: cornerX + 10, cy: cornerY + 10, r: 22, fill: 'transparent', style: NO_PAN }),
-            h('circle', { key: 'dot', cx: cornerX + 10, cy: cornerY + 10, r: 11, fill: COLORS.blue, stroke: COLORS.panel, strokeWidth: 3, style: NO_PAN }),
+            apRich ? h('circle', { key: 'halo', cx: cornerX + 10, cy: cornerY + 10, r: 16, fill: COLORS.blue, fillOpacity: isDark ? 0.24 : 0.16, pointerEvents: 'none', style: NO_PAN }) : null,
+            h('circle', { key: 'dot', cx: cornerX + 10, cy: cornerY + 10, r: 11, fill: apRich ? 'url(#ap-beacon-blue-ex)' : COLORS.blue, stroke: COLORS.panel, strokeWidth: 3, filter: apRich ? 'url(#ap-sh-ex)' : undefined, style: NO_PAN }),
             // A two-headed diagonal arrow: "drag to resize".
             h('path', { key: 'arrow', d: (function(x, y) {
               return 'M' + (x - 5) + ' ' + (y - 5) + ' L' + (x + 5) + ' ' + (y + 5) +
@@ -2527,7 +2624,7 @@
           for (var tries = 0; tries < 8 && nw === width && nh === height; tries += 1) {
             nw = 2 + Math.floor(Math.random() * 9); nh = 2 + Math.floor(Math.random() * 7);
           }
-          patch(Object.assign({ width: nw, height: nh, revealedTiles: {}, boundaryStep: 0 }, PREDICTION_RESET));
+          patch(Object.assign({ width: nw, height: nh, revealedTiles: {}, boundaryStep: 0, boundaryWalk: null }, PREDICTION_RESET));
           speak(fill(t('stem.areaperimeter.sr_new_rectangle', 'New rectangle: {w} by {h}. Make your predictions.'), { w: nw, h: nh }));
         }
         var REFLECTIONS = [
@@ -2592,7 +2689,7 @@
             ].map(function(pr) {
               var active = width === pr.w && height === pr.h;
               return actionButton(pr.tag, function() {
-                patch(Object.assign({ width: pr.w, height: pr.h, revealedTiles: {}, boundaryStep: 0, walkSteps: 0 }, PREDICTION_RESET));
+                patch(Object.assign({ width: pr.w, height: pr.h, revealedTiles: {}, boundaryStep: 0, boundaryWalk: null }, PREDICTION_RESET));
                 speak(fill(t('stem.areaperimeter.sr_resized', 'The rectangle is now {w} by {h}.'), { w: pr.w, h: pr.h }));
               }, { key: 'pre-' + pr.w + 'x' + pr.h, compact: true, primary: active, pressed: active, style: { minHeight: '44px', padding: '6px 12px', borderRadius: '999px', fontSize: '0.82rem', fontVariantNumeric: 'tabular-nums' } });
             }))),
@@ -2662,6 +2759,7 @@
         var secondH = compareHeight * unit;
         var y1 = 90 + (135 - firstH) / 2;
         var y2 = 90 + (135 - secondH) / 2;
+        var ax0 = 165 - firstW / 2, bx0 = 475 - secondW / 2;
         return h('svg', {
           key: 'compare-svg',
           viewBox: '0 0 640 310', role: 'img',
@@ -2670,12 +2768,18 @@
         }, [
           h('title', { key: 'title', id: 'ap-compare-title' }, t('stem.areaperimeter.two_rectangles_compared_by_area_and_pe', "Two rectangles compared by area and perimeter")),
           h('desc', { key: 'desc', id: 'ap-compare-desc' }, compareSummary(width, height, compareWidth, compareHeight)),
+          apDefs('cmp'),
+          apMat('cmp', 640, 310),
           h('text', { key: 'la', x: 165, y: 37, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, t('stem.areaperimeter.rectangle_a', "Rectangle A")),
-          h('rect', { key: 'a', x: 165 - firstW / 2, y: y1, width: firstW, height: firstH, rx: 3, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 }),
-          h('text', { key: 'ad', x: 165, y: 250, textAnchor: 'middle', fill: COLORS.text, fontSize: 15 }, width + ' × ' + height),
+          h('rect', { key: 'a', x: ax0, y: y1, width: firstW, height: firstH, rx: 4, fill: apRich ? 'url(#ap-fill-teal-cmp)' : COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4, filter: apRich ? 'url(#ap-sh-cmp)' : undefined }),
+          apRich ? h('rect', { key: 'as', 'aria-hidden': 'true', pointerEvents: 'none', x: ax0 + 2, y: y1 + 2, width: Math.max(0, firstW - 4), height: Math.max(0, firstH - 4), rx: 2, fill: 'url(#ap-sheen-cmp)' }) : null,
+          apCornerBeacons('ca', [[ax0, y1], [ax0 + firstW, y1], [ax0 + firstW, y1 + firstH], [ax0, y1 + firstH]], 'cmp', 'teal', 3.6),
+          h('text', { key: 'ad', x: 165, y: 250, textAnchor: 'middle', fill: COLORS.text, fontSize: 15, fontWeight: 700 }, width + ' × ' + height),
           h('text', { key: 'lb', x: 475, y: 37, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, t('stem.areaperimeter.rectangle_b', "Rectangle B")),
-          h('rect', { key: 'b', x: 475 - secondW / 2, y: y2, width: secondW, height: secondH, rx: 3, fill: COLORS.shapeB, stroke: COLORS.blue, strokeWidth: 4, strokeDasharray: '10 4' }),
-          h('text', { key: 'bd', x: 475, y: 250, textAnchor: 'middle', fill: COLORS.text, fontSize: 15 }, compareWidth + ' × ' + compareHeight),
+          h('rect', { key: 'b', x: bx0, y: y2, width: secondW, height: secondH, rx: 4, fill: apRich ? 'url(#ap-fill-blue-cmp)' : COLORS.shapeB, stroke: COLORS.blue, strokeWidth: 4, strokeDasharray: '10 4', filter: apRich ? 'url(#ap-sh-cmp)' : undefined }),
+          apRich ? h('rect', { key: 'bs', 'aria-hidden': 'true', pointerEvents: 'none', x: bx0 + 2, y: y2 + 2, width: Math.max(0, secondW - 4), height: Math.max(0, secondH - 4), rx: 2, fill: 'url(#ap-sheen-cmp)' }) : null,
+          apCornerBeacons('cb', [[bx0, y2], [bx0 + secondW, y2], [bx0 + secondW, y2 + secondH], [bx0, y2 + secondH]], 'cmp', 'blue', 3.6),
+          h('text', { key: 'bd', x: 475, y: 250, textAnchor: 'middle', fill: COLORS.text, fontSize: 15, fontWeight: 700 }, compareWidth + ' × ' + compareHeight),
           h('line', { key: 'divider', x1: 320, y1: 30, x2: 320, y2: 270, stroke: COLORS.border, strokeDasharray: '7 7' }),
           h('text', { key: 'summary', x: 320, y: 295, textAnchor: 'middle', fill: COLORS.muted, fontSize: 14 }, t('stem.areaperimeter.drawn_with_the_same_unit_scale', "Drawn with the same unit scale"))
         ]);
@@ -2738,13 +2842,14 @@
         var scale = Math.min(440 / outerWidth, 275 / outerHeight, 38);
         var x = (640 - outerWidth * scale) / 2;
         var y = 57 + (275 - outerHeight * scale) / 2;
-        var points = [
+        var ptArr = [
           [x, y], [x + leftWidth * scale, y],
           [x + leftWidth * scale, y + notchHeight * scale],
           [x + outerWidth * scale, y + notchHeight * scale],
           [x + outerWidth * scale, y + outerHeight * scale],
           [x, y + outerHeight * scale]
-        ].map(function(point) { return point[0] + ',' + point[1]; }).join(' ');
+        ];
+        var points = ptArr.map(function(point) { return point[0] + ',' + point[1]; }).join(' ');
         var grid = [];
         for (var row = 0; row < outerHeight; row += 1) {
           for (var column = 0; column < outerWidth; column += 1) {
@@ -2760,10 +2865,12 @@
           }
         }
         var overlay = decomposition === 'add' ? [
-          h('line', { key: 'split', x1: x + leftWidth * scale, y1: y + notchHeight * scale, x2: x + leftWidth * scale, y2: y + outerHeight * scale, stroke: COLORS.red, strokeWidth: 3, strokeDasharray: '8 5' }),
+          apRich ? h('line', { key: 'split-glow', 'aria-hidden': 'true', x1: x + leftWidth * scale, y1: y + notchHeight * scale, x2: x + leftWidth * scale, y2: y + outerHeight * scale, stroke: COLORS.red, strokeWidth: 9, strokeOpacity: isDark ? 0.28 : 0.2, strokeLinecap: 'round' }) : null,
+          h('line', { key: 'split', x1: x + leftWidth * scale, y1: y + notchHeight * scale, x2: x + leftWidth * scale, y2: y + outerHeight * scale, stroke: COLORS.red, strokeWidth: 3.2, strokeDasharray: '8 5', strokeLinecap: 'round' }),
           h('text', { key: 'one', x: x + leftWidth * scale / 2, y: y + outerHeight * scale / 2, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800 }, 'A'),
           h('text', { key: 'two', x: x + (leftWidth + outerWidth) * scale / 2, y: y + (notchHeight + outerHeight) * scale / 2, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800 }, 'B')
         ] : [
+          apRich ? h('rect', { key: 'cut-tint', 'aria-hidden': 'true', x: x + leftWidth * scale, y: y, width: cutWidth * scale, height: notchHeight * scale, fill: COLORS.red, fillOpacity: isDark ? 0.14 : 0.08 }) : null,
           h('rect', { key: 'cut', x: x + leftWidth * scale, y: y, width: cutWidth * scale, height: notchHeight * scale, fill: 'none', stroke: COLORS.red, strokeWidth: 3, strokeDasharray: '8 5' }),
           h('text', { key: 'minus', x: x + (leftWidth + outerWidth) * scale / 2, y: y + notchHeight * scale / 2 + 6, fill: COLORS.red, textAnchor: 'middle', fontSize: 16, fontWeight: 800 }, t('stem.areaperimeter.subtract', "subtract"))
         ];
@@ -2775,9 +2882,15 @@
         }, [
           h('title', { key: 'title', id: 'ap-composite-title' }, t('stem.areaperimeter.l_shaped_composite_figure', "L-shaped composite figure")),
           h('desc', { key: 'desc', id: 'ap-composite-desc' }, fill(t('stem.areaperimeter.composite_desc', 'An L-shape inside an outer {w} by {h} rectangle with a {cw} by {ch} top-right corner removed. Its area is {area} square units and its perimeter is {p} units.'), { w: outerWidth, h: outerHeight, cw: cutWidth, ch: notchHeight, area: compositeArea, p: compositePerimeter })),
-          h('polygon', { key: 'base', points: points, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 })
-        ].concat(grid).concat(overlay).concat([
-          h('polygon', { key: 'outline', points: points, fill: 'none', stroke: COLORS.tealDark, strokeWidth: 4 }),
+          apDefs('comp'),
+          apMat('comp', 640, 390),
+          h('polygon', { key: 'base', points: points, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4, filter: apRich ? 'url(#ap-sh-comp)' : undefined })
+        ].concat(grid).concat([
+          apRich ? h('polygon', { key: 'sheen', 'aria-hidden': 'true', pointerEvents: 'none', points: points, fill: 'url(#ap-sheen-comp)', stroke: 'none' }) : null,
+          apRich ? h('polygon', { key: 'outline-glow', 'aria-hidden': 'true', pointerEvents: 'none', points: points, fill: 'none', stroke: COLORS.teal, strokeWidth: 10, strokeOpacity: isDark ? 0.24 : 0.16, strokeLinejoin: 'round' }) : null
+        ]).concat(overlay).concat([
+          h('polygon', { key: 'outline', points: points, fill: 'none', stroke: COLORS.tealDark, strokeWidth: 4, strokeLinejoin: 'round' }),
+          apCornerBeacons('comp-c', ptArr, 'comp', 'teal', 3.8),
           h('text', { key: 'w', x: x + outerWidth * scale / 2, y: y + outerHeight * scale + 28, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800 }, nUnits(outerWidth)),
           h('text', { key: 'h', x: x - 27, y: y + outerHeight * scale / 2, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800, transform: 'rotate(-90 ' + (x - 27) + ' ' + (y + outerHeight * scale / 2) + ')' }, nUnits(outerHeight))
         ]));
@@ -2851,7 +2964,9 @@
           var least = pair.p === minP;
           shapes.push(h('g', { key: pair.w + 'x' + pair.h }, [
             h('text', { key: 'name', x: 18, y: 28 + index * rowHeight + 32, fill: COLORS.text, fontSize: 16, fontWeight: 800 }, pair.w + ' × ' + pair.h),
-            h('rect', { key: 'rect', x: 120, y: y, width: w, height: hgt, 'data-factor-pair': pair.w + 'x' + pair.h, 'data-square-unit': unit, fill: least ? (isContrast ? '#000000' : (isDark ? '#14532d' : '#dcfce7')) : COLORS.tileSoft, stroke: least ? COLORS.green : COLORS.teal, strokeWidth: 3 }),
+            apRich && least ? h('rect', { key: 'glow', 'aria-hidden': 'true', x: 117, y: y - 3, width: w + 6, height: hgt + 6, rx: 5, fill: 'none', stroke: COLORS.green, strokeWidth: 5, strokeOpacity: isDark ? 0.28 : 0.2 }) : null,
+            h('rect', { key: 'rect', x: 120, y: y, width: w, height: hgt, rx: apRich ? 3 : 0, 'data-factor-pair': pair.w + 'x' + pair.h, 'data-square-unit': unit, fill: least ? (apRich ? 'url(#ap-fill-green-fac)' : (isContrast ? '#000000' : (isDark ? '#14532d' : '#dcfce7'))) : (apRich ? 'url(#ap-fill-teal-fac)' : COLORS.tileSoft), stroke: least ? COLORS.green : COLORS.teal, strokeWidth: 3, filter: apRich ? 'url(#ap-sh-fac)' : undefined }),
+            apRich ? h('rect', { key: 'shn', 'aria-hidden': 'true', x: 121, y: y + 1, width: Math.max(0, w - 2), height: Math.max(0, hgt - 2), rx: 2, fill: 'url(#ap-sheen-fac)' }) : null,
             h('text', { key: 'p', x: 500, y: 28 + index * rowHeight + 32, fill: least ? COLORS.green : COLORS.muted, fontSize: 15, fontWeight: 700 }, least
               ? fill(t('stem.areaperimeter.p_value_least', 'P = {p} (least)'), { p: pair.p })
               : fill(t('stem.areaperimeter.p_value', 'P = {p}'), { p: pair.p }))
@@ -2865,7 +2980,9 @@
           style: { display: 'block', width: '100%', maxHeight: '480px' }
         }, [
           h('title', { key: 'title', id: 'ap-factors-title' }, fill(t('stem.areaperimeter.rectangles_with_area_n', 'Rectangles with area {n}'), { n: targetArea })),
-          h('desc', { key: 'desc', id: 'ap-factors-desc' }, pairs.map(function(pair) { return fill(t('stem.areaperimeter.factor_pair_sentence', 'A {w} by {h} rectangle has perimeter {p}.'), { w: pair.w, h: pair.h, p: pair.p }); }).concat([fill(t('stem.areaperimeter.all_have_area_n', 'All of them have area {n}.'), { n: targetArea })]).join(' '))
+          h('desc', { key: 'desc', id: 'ap-factors-desc' }, pairs.map(function(pair) { return fill(t('stem.areaperimeter.factor_pair_sentence', 'A {w} by {h} rectangle has perimeter {p}.'), { w: pair.w, h: pair.h, p: pair.p }); }).concat([fill(t('stem.areaperimeter.all_have_area_n', 'All of them have area {n}.'), { n: targetArea })]).join(' ')),
+          apDefs('fac'),
+          apMat('fac', 640, svgHeight)
         ].concat(shapes));
       }
 
@@ -2913,8 +3030,11 @@
             rangeControl(t('stem.areaperimeter.build_height', 'Build height'), ht, 1, targetArea, function(value) { patch({ buildHeight: value }); })]),
           h('div', { key: 'model', style: { overflowX: 'auto', margin: '12px 0' } },
             h('svg', { viewBox: '0 0 ' + (w * unit + 65) + ' ' + (ht * unit + 55), role: 'img', 'aria-label': equation, style: { display: 'block', width: '100%', maxHeight: 330 }, 'data-built-rectangle': true },
-              h('defs', null, h('pattern', { id: 'ap-build-grid', width: unit, height: unit, patternUnits: 'userSpaceOnUse', x: 35, y: 30 }, h('rect', { width: unit, height: unit, fill: COLORS.tileSoft, stroke: COLORS.tealDark, strokeWidth: .6 }))),
-              h('rect', { x: 35, y: 30, width: w * unit, height: ht * unit, fill: 'url(#ap-build-grid)', stroke: COLORS.tealDark, strokeWidth: 2 }),
+              apDefs('bld', h('pattern', { key: 'pgrid', id: 'ap-build-grid', width: unit, height: unit, patternUnits: 'userSpaceOnUse', x: 35, y: 30 }, h('rect', { width: unit, height: unit, fill: COLORS.tileSoft, stroke: COLORS.tealDark, strokeWidth: .6 }))),
+              apMat('bld', w * unit + 65, ht * unit + 55),
+              h('rect', { x: 35, y: 30, width: w * unit, height: ht * unit, fill: 'url(#ap-build-grid)', stroke: COLORS.tealDark, strokeWidth: 2.2, filter: apRich ? 'url(#ap-sh-bld)' : undefined }),
+              apRich && h('rect', { 'aria-hidden': 'true', x: 35, y: 30, width: w * unit, height: ht * unit, fill: 'url(#ap-sheen-bld)', pointerEvents: 'none' }),
+              apCornerBeacons('bld-c', [[35, 30], [35 + w * unit, 30], [35 + w * unit, 30 + ht * unit], [35, 30 + ht * unit]], 'bld', 'teal', 3.4),
               h('text', { x: 35 + w * unit / 2, y: 20, textAnchor: 'middle', fill: COLORS.text, fontSize: 16, fontWeight: 800 }, w),
               h('text', { x: 23, y: 35 + ht * unit / 2, textAnchor: 'end', fill: COLORS.text, fontSize: 16, fontWeight: 800 }, ht))),
           h('p', { key: 'equation', style: { color: COLORS.text, fontWeight: 800 } }, equation,
@@ -3018,15 +3138,26 @@
         } else {
           outline = [P(0, 0), P(W, 0), P(W, H), P(0, H)].join(' ');
         }
-        var edgeMarks = opts.highlight ? newEdges.map(function(edge, i) {
+        var edgeMarks = opts.highlight ? newEdges.reduce(function(acc, edge, i) {
           var a = edge[0].split(','), b = edge[1].split(',');
-          return h('line', { key: 'new-' + i, x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: COLORS.ghost, strokeWidth: 7, strokeDasharray: '10 5', strokeLinecap: 'round', 'data-ap-new-edge': true });
-        }) : [];
-        return h('svg', { key: opts.key, viewBox: '0 0 640 ' + (y0 + H * scale + 50), role: 'img', 'aria-labelledby': opts.key + '-title ' + opts.key + '-desc', style: { display: 'block', width: '100%', maxHeight: '340px' } }, [
+          if (apRich) acc.push(h('line', { key: 'new-g-' + i, 'aria-hidden': 'true', x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: COLORS.ghost, strokeWidth: 13, strokeOpacity: isDark ? 0.28 : 0.2, strokeLinecap: 'round' }));
+          acc.push(h('line', { key: 'new-' + i, x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: COLORS.ghost, strokeWidth: 7, strokeDasharray: '10 5', strokeLinecap: 'round', 'data-ap-new-edge': true }));
+          return acc;
+        }, []) : [];
+        var gsId = 'gs-' + String(opts.key || 'f').replace(/[^a-z0-9]/gi, '');
+        var gsH = y0 + H * scale + 50;
+        var gsPts = outline.split(' ').map(function(pair) { var xy = pair.split(','); return [Number(xy[0]), Number(xy[1])]; });
+        return h('svg', { key: opts.key, viewBox: '0 0 640 ' + gsH, role: 'img', 'aria-labelledby': opts.key + '-title ' + opts.key + '-desc', style: { display: 'block', width: '100%', maxHeight: '340px' } }, [
           h('title', { key: 'title', id: opts.key + '-title' }, opts.title),
-          h('desc', { key: 'desc', id: opts.key + '-desc' }, opts.desc)
+          h('desc', { key: 'desc', id: opts.key + '-desc' }, opts.desc),
+          apDefs(gsId),
+          apMat(gsId, 640, gsH),
+          apRich ? h('polygon', { key: 'sh-poly', 'aria-hidden': 'true', points: outline, fill: COLORS.panel, filter: 'url(#ap-sh-' + gsId + ')' }) : null
         ].concat(cells).concat([
-          h('polygon', { key: 'outline', points: outline, fill: 'none', stroke: COLORS.blue, strokeWidth: 4, strokeLinejoin: 'round' })
+          apRich ? h('polygon', { key: 'sheen', 'aria-hidden': 'true', pointerEvents: 'none', points: outline, fill: 'url(#ap-sheen-' + gsId + ')', stroke: 'none' }) : null,
+          apRich ? h('polygon', { key: 'outline-glow', 'aria-hidden': 'true', pointerEvents: 'none', points: outline, fill: 'none', stroke: COLORS.blue, strokeWidth: 10, strokeOpacity: isDark ? 0.26 : 0.18, strokeLinejoin: 'round' }) : null,
+          h('polygon', { key: 'outline', points: outline, fill: 'none', stroke: COLORS.blue, strokeWidth: 4, strokeLinejoin: 'round' }),
+          apCornerBeacons('gs-c', gsPts, gsId, 'blue', 3.6)
         ]).concat(edgeMarks).concat([
           h('text', { key: 'wl', x: x0 + W * scale / 2, y: y0 + H * scale + 28, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, nUnits(W)),
           h('text', { key: 'hl', x: x0 - 12, y: y0 + H * scale / 2 + 6, textAnchor: 'end', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, String(H))
@@ -3205,11 +3336,13 @@
           return h('text', Object.assign({ key: key, x: x, y: y, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, extra || {}), text);
         }
         function poly(key, pts, extra) {
-          return h('polygon', Object.assign({ key: key, points: pts.map(function(pt) { return pt[0] + ',' + pt[1]; }).join(' '), fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4, strokeLinejoin: 'round' }, extra || {}));
+          var isGhost = extra && (extra.fill === 'none' || extra['data-ap-ghost']);
+          return h('polygon', Object.assign({ key: key, points: pts.map(function(pt) { return pt[0] + ',' + pt[1]; }).join(' '), fill: apRich && !isGhost ? 'url(#ap-fill-teal-pr)' : COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4, strokeLinejoin: 'round', filter: apRich && !isGhost ? 'url(#ap-sh-pr)' : undefined }, extra || {}));
         }
         function heightMark(key, x, yTop, yBottom, text) {
           return [
-            h('line', { key: key + '-line', x1: x, y1: yTop, x2: x, y2: yBottom, stroke: COLORS.blue, strokeWidth: 3, strokeDasharray: '7 5' }),
+            apRich ? h('line', { key: key + '-glow', 'aria-hidden': 'true', x1: x, y1: yTop, x2: x, y2: yBottom, stroke: COLORS.blue, strokeWidth: 8, strokeOpacity: isDark ? 0.25 : 0.16, strokeLinecap: 'round' }) : null,
+            h('line', { key: key + '-line', x1: x, y1: yTop, x2: x, y2: yBottom, stroke: COLORS.blue, strokeWidth: 3, strokeDasharray: '7 5', strokeLinecap: 'round' }),
             h('polyline', { key: key + '-right', points: x + ',' + (yBottom - 12) + ' ' + (x + 12) + ',' + (yBottom - 12) + ' ' + (x + 12) + ',' + yBottom, fill: 'none', stroke: COLORS.blue, strokeWidth: 2 }),
             label(key + '-label', x + 16, (yTop + yBottom) / 2, text, { textAnchor: 'start', fill: COLORS.blue })
           ];
@@ -3231,7 +3364,9 @@
           if (p.type === 'frac_perimeter') { L = qVal(p.lq); Wd = qVal(p.wq); top = qText(p.lq) + ' ' + u; side = qText(p.wq) + ' ' + u; }
           var sc = Math.min(380 / L, 170 / Wd);
           var dw = L * sc, dh = Wd * sc, dx = (640 - dw) / 2, dy = 40 + (170 - dh) / 2;
-          els.push(h('rect', { key: 'r', x: dx, y: dy, width: dw, height: dh, 'data-challenge-shape': 'rectangle', 'data-square-unit': sc, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 }));
+          els.push(h('rect', { key: 'r', x: dx, y: dy, width: dw, height: dh, rx: apRich ? 3 : 0, 'data-challenge-shape': 'rectangle', 'data-square-unit': sc, fill: apRich ? 'url(#ap-fill-teal-pr)' : COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4, filter: apRich ? 'url(#ap-sh-pr)' : undefined }));
+          if (apRich) els.push(h('rect', { key: 'rs', 'aria-hidden': 'true', x: dx + 2, y: dy + 2, width: Math.max(0, dw - 4), height: Math.max(0, dh - 4), fill: 'url(#ap-sheen-pr)', pointerEvents: 'none' }));
+          els.push(apCornerBeacons('rc', [[dx, dy], [dx + dw, dy], [dx + dw, dy + dh], [dx, dy + dh]], 'pr', 'teal', 3.5));
           els.push(label('top', 320, dy - 12, top));
           els.push(label('side', dx - 14, dy + dh / 2 + 6, side, { textAnchor: 'end' }));
           if (inside) els.push(label('inside', 320, dy + dh / 2 + 6, inside, { fill: COLORS.tealDark }));
@@ -3321,7 +3456,9 @@
           style: { display: 'block', width: '100%', maxHeight: '330px' }
         }, [
           h('title', { key: 'title', id: 'ap-challenge-title' }, fill(t('stem.areaperimeter.diagram_title', 'Diagram: {topic}'), { topic: topicLabel(p.type) })),
-          h('desc', { key: 'desc', id: 'ap-challenge-desc' }, desc)
+          h('desc', { key: 'desc', id: 'ap-challenge-desc' }, desc),
+          apDefs('pr'),
+          apMat('pr', 640, Math.ceil(vbh))
         ].concat(els));
       }
 
@@ -3661,7 +3798,9 @@
         return h('div', { key: key + '-wrap' }, [
           h('svg', { key: 'svg', viewBox: '0 0 640 300', role: 'img', 'aria-labelledby': key + '-title ' + key + '-desc', 'data-ap-unit-square': 'acre_ft', 'data-ap-unit-scaled': 'strip', style: { display: 'block', width: '100%', maxHeight: '320px' } }, [
             h('title', { key: 'title', id: key + '-title' }, t('stem.areaperimeter.unit_acre_title', 'One acre, filled with square feet')),
-            h('desc', { key: 'desc', id: key + '-desc' }, desc)
+            h('desc', { key: 'desc', id: key + '-desc' }, desc),
+            apDefs('acre'),
+            apMat('acre', 640, 300)
           ].concat(els)),
           h('p', { key: 'note', 'data-ap-unit-scale-note': true, 'aria-hidden': true, style: { color: COLORS.muted, margin: '6px 0 0', fontSize: '0.92rem' } }, noteText)
         ]);
@@ -3675,7 +3814,7 @@
         var named = pairId === 'ha_m';
         var S = 250, x0 = 60, y0 = 56;
         var lines = n === 100 ? 10 : n;
-        var els = [h('rect', { key: 'sq', x: x0, y: y0, width: S, height: S, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 3 })];
+        var els = [h('rect', { key: 'sq', x: x0, y: y0, width: S, height: S, fill: apRich ? 'url(#ap-fill-teal-us)' : COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 3, filter: apRich ? 'url(#ap-sh-us)' : undefined })];
         for (var i = 1; i < lines; i += 1) {
           var pos = i * S / lines;
           els.push(h('line', { key: 'v' + i, x1: x0 + pos, y1: y0, x2: x0 + pos, y2: y0 + S, stroke: GRID_STROKE, strokeWidth: n === 100 ? 1.3 : 0.9 }));
@@ -3692,7 +3831,7 @@
         if (n === 100) {
           var ix = 410, iy = 110, IS = 160;
           els.push(h('text', { key: 'inset-h', x: ix + IS / 2, y: iy - 12, textAnchor: 'middle', fill: COLORS.text, fontSize: 14, fontWeight: 800 }, t('stem.areaperimeter.unit_inset_title', 'one block, magnified')));
-          els.push(h('rect', { key: 'inset', x: ix, y: iy, width: IS, height: IS, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 2.5 }));
+          els.push(h('rect', { key: 'inset', x: ix, y: iy, width: IS, height: IS, fill: apRich ? 'url(#ap-fill-teal-us)' : COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 2.5, filter: apRich ? 'url(#ap-sh-us)' : undefined }));
           for (var j = 1; j < 10; j += 1) {
             els.push(h('line', { key: 'iv' + j, x1: ix + j * IS / 10, y1: iy, x2: ix + j * IS / 10, y2: iy + IS, stroke: GRID_STROKE, strokeWidth: 0.8 }));
             els.push(h('line', { key: 'ih' + j, x1: ix, y1: iy + j * IS / 10, x2: ix + IS, y2: iy + j * IS / 10, stroke: GRID_STROKE, strokeWidth: 0.8 }));
@@ -3709,7 +3848,9 @@
         if (n === 100) desc += ' ' + scaleNote;
         var svg = h('svg', { key: n === 100 ? 'svg' : key, viewBox: '0 0 640 350', role: 'img', 'aria-labelledby': key + '-title ' + key + '-desc', 'data-ap-unit-square': pairId, 'data-ap-unit-scaled': n === 100 ? 'blocks' : undefined, style: { display: 'block', width: '100%', maxHeight: '360px' } }, [
           h('title', { key: 'title', id: key + '-title' }, named ? t('stem.areaperimeter.unit_square_title_ha', 'One hectare, filled with square metres') : fill(t('stem.areaperimeter.unit_square_title', 'One square {big}, filled with square {small}'), { big: big, small: small })),
-          h('desc', { key: 'desc', id: key + '-desc' }, desc)
+          h('desc', { key: 'desc', id: key + '-desc' }, desc),
+          apDefs('us'),
+          apMat('us', 640, 350)
         ].concat(els));
         if (n !== 100) return svg;
         return h('div', { key: key + '-wrap' }, [
@@ -3813,27 +3954,36 @@
         var u = unitText(p.unit);
         var cx = 320, cy = 135, R = 100;
         var els = [
-          h('circle', { key: 'c', cx: cx, cy: cy, r: R, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 }),
-          h('circle', { key: 'o', cx: cx, cy: cy, r: 4, fill: COLORS.text })
+          apRich ? h('circle', { key: 'c-glow', 'aria-hidden': 'true', cx: cx, cy: cy, r: R, fill: 'none', stroke: COLORS.teal, strokeWidth: 9, strokeOpacity: isDark ? 0.22 : 0.14 }) : null,
+          h('circle', { key: 'c', cx: cx, cy: cy, r: R, fill: apRich ? 'url(#ap-fill-teal-cd)' : COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4, filter: apRich ? 'url(#ap-sh-cd)' : undefined }),
+          apRich ? h('circle', { key: 'cs', 'aria-hidden': 'true', cx: cx, cy: cy, r: R - 2, fill: 'url(#ap-sheen-cd)' }) : null,
+          h('circle', { key: 'o', cx: cx, cy: cy, r: 4.5, fill: apRich ? 'url(#ap-beacon-blue-cd)' : COLORS.text, stroke: apRich ? COLORS.panel : undefined, strokeWidth: apRich ? 1.5 : undefined })
         ];
         var desc;
         if (p.type === 'circ_from_d' || p.type === 'area_from_d') {
-          els.push(h('line', { key: 'd', x1: cx - R, y1: cy, x2: cx + R, y2: cy, stroke: COLORS.blue, strokeWidth: 3 }));
+          if (apRich) els.push(h('line', { key: 'dg', 'aria-hidden': 'true', x1: cx - R, y1: cy, x2: cx + R, y2: cy, stroke: COLORS.blue, strokeWidth: 8, strokeOpacity: isDark ? 0.26 : 0.16, strokeLinecap: 'round' }));
+          els.push(h('line', { key: 'd', x1: cx - R, y1: cy, x2: cx + R, y2: cy, stroke: COLORS.blue, strokeWidth: 3.2, strokeLinecap: 'round' }));
+          els.push(apCornerBeacons('cd-b', [[cx - R, cy], [cx + R, cy]], 'cd', 'blue', 3.5));
           els.push(h('text', { key: 'dl', x: cx, y: cy - 12, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, fill(t('stem.areaperimeter.label_d', 'd = {d} {u}'), { d: p.d, u: u })));
           desc = fill(t('stem.areaperimeter.d_circle_d', 'A circle with a diameter of {d} {u} drawn straight across through the centre.'), { d: p.d, u: u });
         } else if (p.type === 'r_from_circ') {
-          els.push(h('line', { key: 'r', x1: cx, y1: cy, x2: cx + R, y2: cy, stroke: COLORS.blue, strokeWidth: 3, strokeDasharray: '7 5' }));
+          if (apRich) els.push(h('line', { key: 'rg', 'aria-hidden': 'true', x1: cx, y1: cy, x2: cx + R, y2: cy, stroke: COLORS.blue, strokeWidth: 8, strokeOpacity: isDark ? 0.24 : 0.15, strokeLinecap: 'round' }));
+          els.push(h('line', { key: 'r', x1: cx, y1: cy, x2: cx + R, y2: cy, stroke: COLORS.blue, strokeWidth: 3, strokeDasharray: '7 5', strokeLinecap: 'round' }));
           els.push(h('text', { key: 'rl', x: cx + R / 2, y: cy - 12, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, '?'));
           els.push(h('text', { key: 'cl', x: cx, y: cy + R + 30, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, fill(t('stem.areaperimeter.label_c', 'C = {C} {u}'), { C: numText(p.C), u: u })));
           desc = fill(t('stem.areaperimeter.d_circle_c', 'A circle whose distance around is {C} {u}. A radius from the centre to the edge is marked with a question mark.'), { C: numText(p.C), u: u });
         } else {
-          els.push(h('line', { key: 'r', x1: cx, y1: cy, x2: cx + R, y2: cy, stroke: COLORS.blue, strokeWidth: 3 }));
+          if (apRich) els.push(h('line', { key: 'rg', 'aria-hidden': 'true', x1: cx, y1: cy, x2: cx + R, y2: cy, stroke: COLORS.blue, strokeWidth: 8, strokeOpacity: isDark ? 0.26 : 0.16, strokeLinecap: 'round' }));
+          els.push(h('line', { key: 'r', x1: cx, y1: cy, x2: cx + R, y2: cy, stroke: COLORS.blue, strokeWidth: 3.2, strokeLinecap: 'round' }));
+          els.push(apCornerBeacons('cd-rb', [[cx + R, cy]], 'cd', 'blue', 3.5));
           els.push(h('text', { key: 'rl', x: cx + R / 2, y: cy - 12, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, fill(t('stem.areaperimeter.label_r', 'r = {r} {u}'), { r: p.r, u: u })));
           desc = fill(t('stem.areaperimeter.d_circle_r', 'A circle with a radius of {r} {u} drawn from the centre to the edge.'), { r: p.r, u: u });
         }
         return h('svg', { key: key, viewBox: '0 0 640 280', role: 'img', 'aria-labelledby': key + '-title ' + key + '-desc', style: { display: 'block', width: '100%', maxHeight: '300px' } }, [
           h('title', { key: 'title', id: key + '-title' }, fill(t('stem.areaperimeter.diagram_title', 'Diagram: {topic}'), { topic: topicLabel(p.type) })),
-          h('desc', { key: 'desc', id: key + '-desc' }, desc)
+          h('desc', { key: 'desc', id: key + '-desc' }, desc),
+          apDefs('cd'),
+          apMat('cd', 640, 280)
         ].concat(els));
       }
 
@@ -4127,7 +4277,9 @@
           + ' ' + fill(t('stem.areaperimeter.d_sectors_bump', 'With {n} sectors and a radius of 3 units, the bumps are {b} units high.'), { n: n, b: (sm.bump).toFixed(2) });
         return h('svg', { key: 'ap-sectors', viewBox: '0 0 640 270', role: 'img', 'aria-labelledby': 'ap-sectors-title ap-sectors-desc', 'data-ap-sectors': n, style: { display: 'block', width: '100%', maxHeight: '300px' } }, [
           h('title', { key: 'title', id: 'ap-sectors-title' }, fill(t('stem.areaperimeter.sectors_title', 'A circle cut into {n} sectors and rearranged'), { n: n })),
-          h('desc', { key: 'desc', id: 'ap-sectors-desc' }, desc)
+          h('desc', { key: 'desc', id: 'ap-sectors-desc' }, desc),
+          apDefs('sec'),
+          apMat('sec', 640, 270)
         ].concat(els));
       }
 
@@ -4313,20 +4465,27 @@
               h('path', { key: 'p', d: 'M ' + round1(markerX - 9) + ' ' + (base - 40) + ' L ' + round1(markerX + 9) + ' ' + (base - 40) + ' L ' + round1(markerX) + ' ' + (base - 26) + ' Z', fill: COLORS.ghost, stroke: COLORS.text, strokeWidth: 1, pointerEvents: 'none' })
             ])
           ] : [];
-          var svg = h('svg', { key: 'roll-svg', viewBox: '0 0 640 ' + Math.ceil(base + 70), role: measuring ? 'group' : 'img', 'aria-labelledby': 'ap-roll-title ap-roll-desc', 'data-ap-roll': done ? 'done' : (frac > 0 ? 'rolling' : 'ready'), style: { display: 'block', width: '100%', maxHeight: '300px', overflow: 'visible' } }, [
+          var rollH = Math.ceil(base + 70);
+          var svg = h('svg', { key: 'roll-svg', viewBox: '0 0 640 ' + rollH, role: measuring ? 'group' : 'img', 'aria-labelledby': 'ap-roll-title ap-roll-desc', 'data-ap-roll': done ? 'done' : (frac > 0 ? 'rolling' : 'ready'), style: { display: 'block', width: '100%', maxHeight: '300px', overflow: 'visible' } }, [
             h('title', { key: 'title', id: 'ap-roll-title' }, fill(t('stem.areaperimeter.roll_title', '{name} rolling along a ruler'), { name: objectName(obj.id) })),
             h('desc', { key: 'desc', id: 'ap-roll-desc' }, done
               ? (known
                 ? fill(t('stem.areaperimeter.d_roll_done_read', 'A circle {d} cm across has rolled one full turn along a ruler. The marked point is back at the bottom. You read the track it left as {c} cm.'), { d: obj.d, c: numText(reading) })
                 : fill(t('stem.areaperimeter.d_roll_done_measure', 'A circle {d} cm across has rolled one full turn along a ruler. The marked point is back at the bottom, and a red mark shows where the track ends. Numbered marks are every {major} cm and small marks every {minor} cm. Move the ruler marker with the arrow keys to find the end.'), { d: obj.d, major: numText(ruler.major), minor: numText(ruler.minor) }))
               : fill(t('stem.areaperimeter.d_roll_ready', 'A circle {d} cm across sits at the start of a ruler with a marked point at the bottom. Roll it one full turn to measure the distance around.'), { d: obj.d })),
+            apDefs('roll'),
+            apMat('roll', 640, rollH),
             h('line', { key: 'ground', x1: 20, y1: base, x2: 620, y2: base, stroke: GRID_STROKE, strokeWidth: 2 }),
+            apRich && frac > 0 ? h('line', { key: 'track-glow', 'aria-hidden': 'true', x1: x0, y1: base, x2: x0 + frac * C * scale, y2: base, stroke: COLORS.blue, strokeWidth: 12, strokeOpacity: isDark ? 0.28 : 0.2, strokeLinecap: 'round' }) : null,
             h('line', { key: 'track', x1: x0, y1: base, x2: x0 + frac * C * scale, y2: base, stroke: COLORS.blue, strokeWidth: 6, strokeLinecap: 'round' }),
-            h('circle', { key: 'wheel', cx: cx, cy: cy, r: R, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 3 }),
-            h('line', { key: 'spoke', x1: cx, y1: cy, x2: px, y2: py, stroke: COLORS.teal, strokeWidth: 2 }),
-            h('circle', { key: 'dot', cx: px, cy: py, r: Math.max(4, R * 0.12), fill: COLORS.red })
+            h('circle', { key: 'wheel', cx: cx, cy: cy, r: R, fill: apRich ? 'url(#ap-fill-teal-roll)' : COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 3.2, filter: apRich ? 'url(#ap-sh-roll)' : undefined }),
+            apRich ? h('circle', { key: 'wheel-s', 'aria-hidden': 'true', cx: cx, cy: cy, r: Math.max(1, R - 2), fill: 'url(#ap-sheen-roll)' }) : null,
+            h('line', { key: 'spoke', x1: cx, y1: cy, x2: px, y2: py, stroke: COLORS.teal, strokeWidth: 2.2, strokeLinecap: 'round' }),
+            apRich ? h('circle', { key: 'hub', 'aria-hidden': 'true', cx: cx, cy: cy, r: 3.2, fill: 'url(#ap-beacon-teal-roll)', stroke: COLORS.panel, strokeWidth: 1 }) : null,
+            h('circle', { key: 'dot', cx: px, cy: py, r: Math.max(4, R * 0.12), fill: COLORS.red, stroke: apRich ? COLORS.panel : undefined, strokeWidth: apRich ? 1.4 : undefined })
           ].concat(ticks).concat(done ? [
-            h('line', { key: 'end', x1: endX, y1: base - 6, x2: endX, y2: base + 18, stroke: COLORS.red, strokeWidth: 3, 'data-ap-track-end': true }),
+            apRich ? h('line', { key: 'end-g', 'aria-hidden': 'true', x1: endX, y1: base - 6, x2: endX, y2: base + 18, stroke: COLORS.red, strokeWidth: 8, strokeOpacity: isDark ? 0.3 : 0.2, strokeLinecap: 'round' }) : null,
+            h('line', { key: 'end', x1: endX, y1: base - 6, x2: endX, y2: base + 18, stroke: COLORS.red, strokeWidth: 3, strokeLinecap: 'round', 'data-ap-track-end': true }),
             known ? h('text', { key: 'end-l', x: Math.min(600, endX), y: base + 54, textAnchor: 'middle', fill: COLORS.red, fontSize: 15, fontWeight: 800 }, fill(t('stem.areaperimeter.track_label', 'track: {c} cm'), { c: numText(reading) })) : null
           ] : []).concat(markerEls));
           return h('div', { key: 'roller' }, [
@@ -4594,7 +4753,10 @@
           style: { display: 'block', width: '100%', minWidth: Math.ceil(24 * 640 / cs) + 'px', maxWidth: 'none', maxHeight: '440px' } }, [
           h('title', { key: 'title', id: 'ap-blob-title' }, t('stem.areaperimeter.blob_title', 'Curved shape on a grid of unit squares')),
           h('desc', { key: 'desc', id: 'ap-blob-desc' }, fill(t('stem.areaperimeter.blob_desc', 'A curved shape drawn over a grid of {cols} by {rows} unit squares. Each square says how much of it is inside the shape.'), { cols: blob.cols, rows: blob.rows })),
-          h('polygon', { key: 'shape', points: shapePts, fill: COLORS.teal, fillOpacity: 0.28, stroke: COLORS.teal, strokeWidth: 3, pointerEvents: 'none' })
+          apDefs('blob'),
+          apMat('blob', 640, Math.ceil(svgH)),
+          apRich ? h('polygon', { key: 'shape-glow', 'aria-hidden': 'true', points: shapePts, fill: 'none', stroke: COLORS.teal, strokeWidth: 8, strokeOpacity: isDark ? 0.24 : 0.16, pointerEvents: 'none' }) : null,
+          h('polygon', { key: 'shape', points: shapePts, fill: apRich ? 'url(#ap-fill-teal-blob)' : COLORS.teal, fillOpacity: apRich ? 0.72 : 0.28, stroke: COLORS.teal, strokeWidth: 3, filter: apRich ? 'url(#ap-sh-blob)' : undefined, pointerEvents: 'none' })
         ].concat(cellEls));
         var feedbackNode = null;
         if (check && check.empty) feedbackNode = note(t('stem.areaperimeter.blob_enter', 'Enter your estimate before checking.'), 'warn', 'blob-fb', { 'data-ap-blob-feedback': 'empty' });
@@ -4785,10 +4947,15 @@
           brief = fill(t('stem.areaperimeter.mission_garden_brief', 'Design a rectangular garden. Use exactly {F} m of fence. Fence costs {fc} per metre and soil costs {sc} per square metre. Your budget is {B}. Make the garden hold as much area as you can.'), { F: m.fence, fc: money(m.fenceCost), sc: money(m.soilCost), B: money(m.budget) });
           var sc = Math.min(420 / L, 190 / W, 40);
           var dx = (640 - L * sc) / 2, dy = 40;
-          drawing = h('svg', { key: 'garden-svg', viewBox: '0 0 640 ' + Math.ceil(dy + W * sc + 40), role: 'img', 'aria-labelledby': 'ap-garden-title ap-garden-desc', style: { display: 'block', width: '100%', maxHeight: '300px' } }, [
+          var gH = Math.ceil(dy + W * sc + 40);
+          drawing = h('svg', { key: 'garden-svg', viewBox: '0 0 640 ' + gH, role: 'img', 'aria-labelledby': 'ap-garden-title ap-garden-desc', style: { display: 'block', width: '100%', maxHeight: '300px' } }, [
             h('title', { key: 'title', id: 'ap-garden-title' }, t('stem.areaperimeter.garden_title', 'Your garden design')),
             h('desc', { key: 'desc', id: 'ap-garden-desc' }, fill(t('stem.areaperimeter.garden_desc', 'A rectangular garden {L} m long and {W} m wide.'), { L: L, W: W })),
-            h('rect', { key: 'g', x: dx, y: dy, width: L * sc, height: W * sc, fill: COLORS.tileSoft, stroke: COLORS.green, strokeWidth: 4, strokeDasharray: '2 6', strokeLinecap: 'round' }),
+            apDefs('gdn'),
+            apMat('gdn', 640, gH),
+            apRich ? h('rect', { key: 'gg', 'aria-hidden': 'true', x: dx, y: dy, width: L * sc, height: W * sc, rx: 4, fill: 'none', stroke: COLORS.green, strokeWidth: 9, strokeOpacity: isDark ? 0.24 : 0.16 }) : null,
+            h('rect', { key: 'g', x: dx, y: dy, width: L * sc, height: W * sc, rx: apRich ? 4 : 0, fill: apRich ? 'url(#ap-fill-green-gdn)' : COLORS.tileSoft, stroke: COLORS.green, strokeWidth: 4, strokeDasharray: '2 6', strokeLinecap: 'round', filter: apRich ? 'url(#ap-sh-gdn)' : undefined }),
+            apCornerBeacons('gdn-c', [[dx, dy], [dx + L * sc, dy], [dx + L * sc, dy + W * sc], [dx, dy + W * sc]], 'gdn', 'teal', 3.6),
             h('text', { key: 'lt', x: 320, y: dy - 12, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, fill(t('stem.areaperimeter.n_m', '{n} m'), { n: L })),
             h('text', { key: 'wt', x: dx - 12, y: dy + W * sc / 2 + 6, textAnchor: 'end', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, fill(t('stem.areaperimeter.n_m', '{n} m'), { n: W }))
           ]);
@@ -4809,18 +4976,27 @@
           var fx = (640 - m.W * fs) / 2, fy = 40, leftW = m.W - m.cw;
           var pts = m.cw ? [[fx, fy], [fx + leftW * fs, fy], [fx + leftW * fs, fy + m.ch * fs], [fx + m.W * fs, fy + m.ch * fs], [fx + m.W * fs, fy + m.H * fs], [fx, fy + m.H * fs]]
             : [[fx, fy], [fx + m.W * fs, fy], [fx + m.W * fs, fy + m.H * fs], [fx, fy + m.H * fs]];
-          var planEls = [h('polygon', { key: 'room', points: pts.map(function(pt) { return round1(pt[0]) + ',' + round1(pt[1]); }).join(' '), fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4 })];
+          var ptsStr = pts.map(function(pt) { return round1(pt[0]) + ',' + round1(pt[1]); }).join(' ');
+          var planEls = [
+            apRich ? h('polygon', { key: 'room-g', 'aria-hidden': 'true', points: ptsStr, fill: 'none', stroke: COLORS.teal, strokeWidth: 10, strokeOpacity: isDark ? 0.24 : 0.16, strokeLinejoin: 'round' }) : null,
+            h('polygon', { key: 'room', points: ptsStr, fill: apRich ? 'url(#ap-fill-teal-flr)' : COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4, strokeLinejoin: 'round', filter: apRich ? 'url(#ap-sh-flr)' : undefined }),
+            apRich ? h('polygon', { key: 'room-s', 'aria-hidden': 'true', points: ptsStr, fill: 'url(#ap-sheen-flr)', pointerEvents: 'none' }) : null,
+            apCornerBeacons('flr-c', pts, 'flr', 'teal', 3.6)
+          ];
           planEls.push(h('text', { key: 'w', x: fx + m.W * fs / 2, y: fy + m.H * fs + 26, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, fill(t('stem.areaperimeter.n_ft', '{n} ft'), { n: m.W })));
           planEls.push(h('text', { key: 'h', x: fx - 12, y: fy + m.H * fs / 2 + 6, textAnchor: 'end', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, fill(t('stem.areaperimeter.n_ft', '{n} ft'), { n: m.H })));
           if (m.cw) {
             planEls.push(h('text', { key: 'cw', x: fx + (leftW + m.cw / 2) * fs, y: fy + m.ch * fs - 10, textAnchor: 'middle', fill: COLORS.red, fontSize: 15, fontWeight: 800 }, fill(t('stem.areaperimeter.n_ft', '{n} ft'), { n: m.cw })));
             planEls.push(h('text', { key: 'ch', x: fx + m.W * fs + 10, y: fy + m.ch * fs / 2 + 6, textAnchor: 'start', fill: COLORS.red, fontSize: 15, fontWeight: 800 }, fill(t('stem.areaperimeter.n_ft', '{n} ft'), { n: m.ch })));
           }
-          drawing = h('svg', { key: 'floor-svg', viewBox: '0 0 640 ' + Math.ceil(fy + m.H * fs + 44), role: 'img', 'aria-labelledby': 'ap-floor-title ap-floor-desc', style: { display: 'block', width: '100%', maxHeight: '320px' } }, [
+          var fH = Math.ceil(fy + m.H * fs + 44);
+          drawing = h('svg', { key: 'floor-svg', viewBox: '0 0 640 ' + fH, role: 'img', 'aria-labelledby': 'ap-floor-title ap-floor-desc', style: { display: 'block', width: '100%', maxHeight: '320px' } }, [
             h('title', { key: 'title', id: 'ap-floor-title' }, t('stem.areaperimeter.floor_title', 'Floor plan of the room')),
             h('desc', { key: 'desc', id: 'ap-floor-desc' }, m.cw
               ? fill(t('stem.areaperimeter.floor_desc_l', 'An L-shaped room: a {W} ft by {H} ft rectangle with a {cw} ft by {ch} ft corner missing at the top right.'), { W: m.W, H: m.H, cw: m.cw, ch: m.ch })
-              : fill(t('stem.areaperimeter.floor_desc_rect', 'A rectangular room {W} ft by {H} ft.'), { W: m.W, H: m.H }))
+              : fill(t('stem.areaperimeter.floor_desc_rect', 'A rectangular room {W} ft by {H} ft.'), { W: m.W, H: m.H })),
+            apDefs('flr'),
+            apMat('flr', 640, fH)
           ].concat(planEls));
           labels = { area: t('stem.areaperimeter.mf_area', 'Floor area (ft²)'), count: m.mode === 'yard' ? t('stem.areaperimeter.mf_yards', 'Square yards to buy') : t('stem.areaperimeter.mf_boxes', 'Boxes to buy'), cost: t('stem.areaperimeter.mf_cost', 'Total cost ($)') };
         }

@@ -7,9 +7,10 @@ if(window.AlloModules&&window.AlloModules.VerificationPolicyModule){console.log(
 function _alloDeriveVerificationState(input) {
   var _sharedEvidence = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AccessibilityEvidence;
   if (_sharedEvidence && typeof _sharedEvidence.deriveVerificationState === 'function') {
-    return _sharedEvidence.deriveVerificationState(input || {});
+    return _sharedEvidence.deriveVerificationState((input && typeof input === 'object') ? input : {});
   }
-  input = input || {};
+  input = (input && typeof input === 'object') ? input : {};
+  var _stripCtl = function (v) { return String(v == null ? '' : v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ''); };
   var ai = input.ai || input.verificationAudit || null;
   var axe = input.axe || input.axeAudit || null;
   var ea = input.equalAccess || input.secondEngineAudit || null;
@@ -17,10 +18,10 @@ function _alloDeriveVerificationState(input) {
   var _finite = function (v) { return typeof v === 'number' && Number.isFinite(v); };
   var _count = function (v) { return _finite(v) ? Math.max(0, Math.floor(v)) : null; };
   var extraReasons = Array.isArray(input.extraReasons)
-    ? input.extraReasons
+    ? input.extraReasons.slice(0, 50)
     : (input.extraReasons == null || input.extraReasons === '' ? [] : [input.extraReasons]);
   var _reasonText = extraReasons.map(function (reason) {
-    return String(reason == null ? '' : reason).trim();
+    return _stripCtl(reason).trim().slice(0, 400);
   }).filter(Boolean);
   // Static source checks can completely execute while still excluding runtime
   // scripts, external CSS, responsive states, and interaction behavior. Accept
@@ -121,7 +122,10 @@ function _alloDeriveVerificationState(input) {
   _reasonText.forEach(function (reason) {
     reasons.push(reason);
   });
-  if (input.languageReviewRequired) reasons.push(String(input.languageReviewReason || 'document-language-needs-review'));
+  if (input.languageReviewRequired) {
+    var _langReason = _stripCtl(input.languageReviewReason).trim().slice(0, 400);
+    reasons.push(_langReason || 'document-language-needs-review');
+  }
 
   // B3 (2026-07-13): extraReasons are CONTEXT (e.g. the static-web scope caveat) —
   // they ride in `reasons` so "Why this status?" names them, but they no longer
@@ -157,7 +161,7 @@ function _alloDeriveVerificationState(input) {
     ai: aiStatus,
     axe: axeStatus,
     equalAccess: eaStatus,
-    pdfUaSelfCheck: input.pdfUaSelfCheck || 'not-run'
+    pdfUaSelfCheck: typeof input.pdfUaSelfCheck === 'string' && input.pdfUaSelfCheck.trim() ? _stripCtl(input.pdfUaSelfCheck).trim().slice(0, 80) : 'not-run'
   };
   var scoreEvidence = {
     ai: _finite(ai && ai.score) ? ai.score : null,
@@ -198,11 +202,13 @@ function _alloDeriveVerificationState(input) {
 }
 
 function _alloFormatVerificationReason(reason) {
-    const value = String(reason == null ? '' : reason).trim();
+    const value = String(reason == null ? '' : reason).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, 500);
     let match;
     if (!value) return '';
     if (value === 'ai-unavailable') return 'AI semantic verification was unavailable.';
     if (value === 'ai-verification-incomplete' || value === 'ai-partial-audit' || value === 'ai-score-degraded' || value === 'ai-synthesized') return 'AI semantic verification was incomplete.';
+    match = value.match(/^ai-manual-review:(\d+)$/);
+    if (match) return match[1] + ' AI semantic finding' + (match[1] === '1' ? ' needs' : 's need') + ' manual review.';
     if (value === 'axe-unavailable') return 'axe-core verification was unavailable.';
     if (value === 'axe-review-count-unknown') return 'axe-core returned findings with an unknown review count.';
     match = value.match(/^axe-incomplete:(\d+)$/);
@@ -234,7 +240,7 @@ function _alloUnavailableVerificationState(reason) {
   if (_sharedEvidence && typeof _sharedEvidence.unavailableVerificationState === 'function') {
     return _sharedEvidence.unavailableVerificationState(reason);
   }
-  var why = String(reason || 'verification-policy-module-unavailable');
+  var why = String(reason || 'verification-policy-module-unavailable').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, 400) || 'verification-policy-module-unavailable';
   var coverage = {
     standard: 'WCAG 2.2 AA',
     ai: 'unavailable',
@@ -268,11 +274,17 @@ function _alloUnavailableVerificationState(reason) {
   };
 }
 
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.VerificationPolicy = {
+var _verificationPolicyApi = Object.freeze({
   deriveVerificationState: _alloDeriveVerificationState,
   unavailableVerificationState: _alloUnavailableVerificationState,
   formatVerificationReason: _alloFormatVerificationReason,
-};
-window.AlloModules.VerificationPolicyModule = true;
+});
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = _verificationPolicyApi;
+}
+if (typeof window !== 'undefined') {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.VerificationPolicy = _verificationPolicyApi;
+  window.AlloModules.VerificationPolicyModule = true;
+}
 })();

@@ -103,6 +103,100 @@
     if (!Lab.PerceptionWalk || ['shadowGeometry', 'shadowProfile', 'shadowOutline', 'changeObjects', 'changeTarget', 'rotationObjects', 'rotationMatch', 'reliefObjects', 'reliefSurface', 'reliefLight', 'reliefShade', 'shapeObjects', 'shapePoint', 'shapeTarget', 'motionObjects', 'motionTargets', 'frameObjects', 'frameDefaults', 'weaveObjects', 'weaveOrder', 'landingObjects', 'landingLight', 'apertureObjects', 'lengthObjects', 'silhouetteObjects', 'silhouetteReference', 'silhouetteTarget', 'anamorphosisObjects', 'anamorphosisTargets'].some(function (key) { return typeof Lab.PerceptionWalk[key] !== 'function'; })) return null;
     var sceneState = null, attachedHost = null, attachment = 0;
     var layout = [], layoutSignature = '', layoutNotify = null, statusNotify = null;
+    var walkTextures = null;
+
+    function prefersReducedMotion() {
+      try {
+        return typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+          !!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (e) { return false; }
+    }
+
+    function disposeWalkTextures() {
+      if (!walkTextures) return;
+      Object.keys(walkTextures).forEach(function (k) {
+        var t = walkTextures[k];
+        if (t && typeof t.dispose === 'function') { try { t.dispose(); } catch (e) {} }
+      });
+      walkTextures = null;
+    }
+
+    function makeWalkTexture(THREE, width, height, draw, rx, ry, isColor) {
+      if (!THREE || typeof THREE.CanvasTexture !== 'function' || typeof document === 'undefined' ||
+          typeof document.createElement !== 'function') return null;
+      try {
+        var c = document.createElement('canvas'); c.width = width; c.height = height;
+        var ctx = c.getContext && c.getContext('2d');
+        if (!ctx) return null;
+        draw(ctx, width, height);
+        var tex = new THREE.CanvasTexture(c);
+        if (rx || ry) { tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(rx || 1, ry || 1); }
+        if (isColor && THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+        tex.needsUpdate = true;
+        return tex;
+      } catch (e) { return null; }
+    }
+
+    function ensureWalkTextures(THREE) {
+      if (walkTextures) return walkTextures;
+      function h2(x, y) { var n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); }
+      var floorMap = makeWalkTexture(THREE, 256, 256, function (ctx, w, h) {
+        ctx.fillStyle = '#eaede9'; ctx.fillRect(0, 0, w, h);
+        var rows = 8, cols = 4, pw = w / cols, ph = h / rows;
+        for (var r = 0; r < rows; r++) {
+          var shift = (r % 2) * (pw * 0.5);
+          for (var c = -1; c <= cols; c++) {
+            var x = c * pw + shift, y = r * ph;
+            var lum = Math.round(230 + (h2(c + 17, r + 31) - 0.5) * 14);
+            ctx.fillStyle = 'rgb(' + (lum + 2) + ',' + (lum + 2) + ',' + (lum - 4) + ')';
+            ctx.fillRect(x + 1, y + 1, pw - 2, ph - 2);
+            ctx.strokeStyle = 'rgba(130,140,134,0.10)'; ctx.lineWidth = 1;
+            for (var g = 0; g < 3; g++) {
+              var gy = y + 4 + (g + h2(c * 5 + g, r)) * (ph - 8) / 3;
+              ctx.beginPath(); ctx.moveTo(x + 1, gy); ctx.lineTo(x + pw - 1, gy); ctx.stroke();
+            }
+            ctx.strokeStyle = 'rgba(126,138,132,0.16)'; ctx.strokeRect(x + 0.5, y + 0.5, pw - 1, ph - 1);
+          }
+        }
+      }, 68, 7, true);
+      var floorBump = makeWalkTexture(THREE, 256, 256, function (ctx, w, h) {
+        ctx.fillStyle = '#888888'; ctx.fillRect(0, 0, w, h);
+        var rows = 8, cols = 4, pw = w / cols, ph = h / rows;
+        for (var r = 0; r < rows; r++) {
+          var shift = (r % 2) * (pw * 0.5);
+          for (var c = -1; c <= cols; c++) {
+            ctx.strokeStyle = '#565656'; ctx.lineWidth = 1.4;
+            ctx.strokeRect(c * pw + shift + 0.5, r * ph + 0.5, pw - 1, ph - 1);
+          }
+        }
+      }, 68, 7, false);
+      var wallMap = makeWalkTexture(THREE, 128, 128, function (ctx, w, h) {
+        ctx.fillStyle = '#f5f7f4'; ctx.fillRect(0, 0, w, h);
+        for (var i = 0; i < 360; i++) {
+          var px = h2(i, 7) * w, py = h2(i, 19) * h, r = 4 + h2(i, 29) * 12;
+          var s = Math.round(237 + (h2(i, 41) - 0.5) * 14);
+          ctx.fillStyle = 'rgba(' + s + ',' + (s + 2) + ',' + s + ',0.16)';
+          ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill();
+        }
+      }, 36, 2, true);
+      var beamMap = makeWalkTexture(THREE, 64, 128, function (ctx, w, h) {
+        var grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, 'rgba(255,250,234,0.62)');
+        grad.addColorStop(0.35, 'rgba(255,248,228,0.26)');
+        grad.addColorStop(0.78, 'rgba(255,246,222,0.06)');
+        grad.addColorStop(1, 'rgba(255,246,222,0.0)');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+      }, 1, 1, false);
+      var dustMap = makeWalkTexture(THREE, 32, 32, function (ctx, w, h) {
+        var grad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+        grad.addColorStop(0, 'rgba(255,252,238,0.92)');
+        grad.addColorStop(0.42, 'rgba(255,246,218,0.40)');
+        grad.addColorStop(1, 'rgba(255,242,208,0.0)');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+      }, 1, 1, false);
+      walkTextures = { floorMap: floorMap, floorBump: floorBump, wallMap: wallMap, beamMap: beamMap, dustMap: dustMap };
+      return walkTextures;
+    }
 
     function layoutSnapshot() {
       return layout.map(function (marker) { return Object.assign({}, marker); });
@@ -129,17 +223,29 @@
 
     function build(THREE, S, data) {
       var materials = {}, flatMaterials = {}, solids = [], parallaxLabels = [], parallaxMeshes = [], panelLabels = [], changeLabels = [], rotationLabels = [], reliefLabels = [], shapeLabels = [], motionLabels = [], weaveLabels = [], landingLabels = [], silhouetteLabels = [], referenceLabels = [], anamorphosisLabels = [];
+      var tex = ensureWalkTextures(THREE);
+      var dustPoints = null, dustBase = null, dustSeeds = null;
       var parallaxRound = Math.floor(clamp(number(data.parallaxRound, 0), 0, 2));
       var collected = Array.isArray(data.collected) ? data.collected : [];
       var activity = ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length', 'silhouette', 'anamorphosis'].indexOf(data.activity) >= 0 ? data.activity : 'ring';
 
-      function material(color) {
-        if (!materials[color]) {
-          materials[color] = new THREE.MeshStandardMaterial({ color: color, roughness: 0.72,
-            metalness: 0.06, side: THREE.DoubleSide });
-          materials[color].color.convertSRGBToLinear();
+      function material(color, extra) {
+        var tag = extra && extra.tag ? ':' + extra.tag : '';
+        var key = color + tag;
+        if (!materials[key]) {
+          var cfg = { color: color, roughness: 0.72, metalness: 0.06, side: THREE.DoubleSide };
+          if (extra) {
+            if (extra.roughness != null) cfg.roughness = extra.roughness;
+            if (extra.metalness != null) cfg.metalness = extra.metalness;
+            if (extra.map) cfg.map = extra.map;
+            if (extra.bumpMap) { cfg.bumpMap = extra.bumpMap; cfg.bumpScale = extra.bumpScale || 0.012; }
+            if (extra.emissive != null) { cfg.emissive = extra.emissive; cfg.emissiveIntensity = extra.emissiveIntensity || 0.7; }
+          }
+          materials[key] = new THREE.MeshStandardMaterial(cfg);
+          materials[key].color.convertSRGBToLinear();
+          if (extra && extra.emissive != null && materials[key].emissive) materials[key].emissive.convertSRGBToLinear();
         }
-        return materials[color];
+        return materials[key];
       }
 
       function flatMaterial(color) {
@@ -150,8 +256,8 @@
         return flatMaterials[color];
       }
 
-      function add(geometry, color, position, id, rotation) {
-        var mesh = new THREE.Mesh(geometry, material(color));
+      function add(geometry, color, position, id, rotation, matExtra) {
+        var mesh = new THREE.Mesh(geometry, material(color, matExtra));
         if (position) mesh.position.set(position.x, position.y, position.z);
         if (rotation) mesh.rotation.set(rotation.x || 0, rotation.y || 0, rotation.z || 0);
         if (id) mesh.userData.perceptionInteraction = id;
@@ -160,8 +266,8 @@
         return mesh;
       }
 
-      function box(x, y, z, width, height, depth, color, id) {
-        return add(new THREE.BoxGeometry(width, height, depth), color, { x: x, y: y, z: z }, id);
+      function box(x, y, z, width, height, depth, color, id, matExtra) {
+        return add(new THREE.BoxGeometry(width, height, depth), color, { x: x, y: y, z: z }, id, null, matExtra);
       }
 
       function flatBox(x, y, z, width, height, depth, color, id) {
@@ -225,24 +331,33 @@
       }
 
       function architecture() {
-        box(102, -0.15, 3, 244.4, 0.3, 22.4, COLORS.floor);
-        box(102, 2.8, -8.2, 244.4, 5.6, 0.4, COLORS.wall);
-        box(102, 2.8, 14.2, 244.4, 5.6, 0.4, COLORS.wall);
-        box(-20.2, 2.8, 3, 0.4, 5.6, 22.4, 0xe1e8e4);
-        box(224.2, 2.8, 3, 0.4, 5.6, 22.4, 0xe1e8e4);
+        var floorMat = { tag: 'walk-floor', map: tex.floorMap, bumpMap: tex.floorBump, bumpScale: 0.012, roughness: 0.52, metalness: 0.05 };
+        var wallMat = { tag: 'walk-wall', map: tex.wallMap, roughness: 0.86, metalness: 0.02 };
+        var skylightMat = { tag: 'walk-skylight', roughness: 0.18, metalness: 0.06, emissive: 0xfff6e2, emissiveIntensity: 0.72 };
+        var trackMat = { tag: 'walk-track', roughness: 0.34, metalness: 0.65 };
+
+        box(102, -0.15, 3, 244.4, 0.3, 22.4, tex.floorMap ? 0xf2f4f0 : COLORS.floor, null, floorMat);
+        box(102, 2.8, -8.2, 244.4, 5.6, 0.4, COLORS.wall, null, wallMat);
+        box(102, 2.8, 14.2, 244.4, 5.6, 0.4, COLORS.wall, null, wallMat);
+        box(-20.2, 2.8, 3, 0.4, 5.6, 22.4, 0xe1e8e4, null, wallMat);
+        box(224.2, 2.8, 3, 0.4, 5.6, 22.4, 0xe1e8e4, null, wallMat);
         box(102, 5.65, 3, 244.4, 0.2, 22.4, 0xf8faf7);
-        box(102, 0.12, -7.96, 244, 0.24, 0.06, 0xcbd7d0);
-        box(102, 0.12, 13.96, 244, 0.24, 0.06, 0xcbd7d0);
+        box(102, 0.12, -7.96, 244, 0.24, 0.06, 0x3b4d52, null, { tag: 'walk-baseboard', roughness: 0.54, metalness: 0.16 });
+        box(102, 0.12, 13.96, 244, 0.24, 0.06, 0x3b4d52, null, { tag: 'walk-baseboard', roughness: 0.54, metalness: 0.16 });
+        // Continuous anodized overhead gallery lighting track rails.
+        box(102, 5.50, -2.5, 242, 0.07, 0.10, 0x2d3b3f, null, trackMat);
+        box(102, 5.50, 8.5, 242, 0.07, 0.10, 0x2d3b3f, null, trackMat);
         for (var gx = -20; gx <= 224; gx += 2) box(gx, 0.003, 3, 0.012, 0.006, 22, 0xcbd6cf);
         for (var gz = -8; gz <= 14; gz += 2) box(102, 0.004, gz, 244, 0.006, 0.012, 0xcbd6cf);
         [-18, -6, 6, 18, 30, 42, 54, 66, 78, 90, 102, 114, 126, 138, 150, 162, 174, 186, 198, 210, 222].forEach(function (x) {
           box(x, 2.75, -7.76, 0.24, 5.5, 0.25, 0xd2ded6);
           box(x, 5.35, 2.8, 0.19, 0.25, 21.4, 0xd6e0da);
         });
-        [-12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216].forEach(function (x, index) {
+        var bayXs = [-12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216];
+        bayXs.forEach(function (x, index) {
           var color = [COLORS.gold, COLORS.teal, COLORS.coral, COLORS.ink, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.teal, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.gold, COLORS.teal, COLORS.coral][index];
           box(x, 3.35, -7.95, 9, 3.1, 0.045, 0xeaf0eb);
-          box(x, 4.92, -7.88, 9, 0.13, 0.11, color);
+          box(x, 4.92, -7.88, 9, 0.13, 0.11, color, null, { tag: 'walk-bay-bar-' + (index % 4), roughness: 0.42, metalness: 0.16 });
           box(x, 0.017, 5.75, 8.6, 0.018, 0.075, color);
           box(x - 4.3, 0.013, -0.9, 0.05, 0.012, 13.2, color);
           box(x + 4.3, 0.013, -0.9, 0.05, 0.012, 13.2, color);
@@ -250,11 +365,56 @@
             add(new THREE.CylinderGeometry(0.075, 0.075, 0.025, 20), color,
               { x: x + (dot - index / 2) * 0.25, y: 0.025, z: 6.25 });
           }
-          box(x, 5.48, -2.5, 6.5, 0.06, 0.55, 0xffffff);
-          box(x, 5.48, 8.5, 6.5, 0.06, 0.55, 0xffffff);
+          box(x, 5.48, -2.5, 6.5, 0.06, 0.55, 0xffffff, null, skylightMat);
+          box(x, 5.48, 8.5, 6.5, 0.06, 0.55, 0xffffff, null, skylightMat);
         });
+        // Single-draw-call instanced soft volumetric skylight washes above each bay (excluded from solids so picking stays unobstructed).
+        if (THREE.InstancedMesh && THREE.ConeGeometry && THREE.MeshBasicMaterial) {
+          var coneGeo = new THREE.ConeGeometry(2.85, 3.4, 18, 1, true);
+          var coneMat = new THREE.MeshBasicMaterial({
+            color: 0xfff8e6, map: tex.beamMap || null, transparent: true, opacity: 0.055,
+            depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending || THREE.NormalBlending
+          });
+          var cones = new THREE.InstancedMesh(coneGeo, coneMat, bayXs.length);
+          var dm = new THREE.Object3D();
+          for (var bi = 0; bi < bayXs.length; bi++) {
+            dm.position.set(bayXs[bi], 3.72, -1.8);
+            dm.rotation.set(0.16, 0, 0);
+            dm.updateMatrix();
+            cones.setMatrixAt(bi, dm.matrix);
+          }
+          cones.instanceMatrix.needsUpdate = true;
+          cones.renderOrder = 3;
+          S.model.add(cones);
+        }
+        // Subtle sunlit promenade dust motes floating in the museum air (excluded from solids; frozen in static / reduced-motion).
+        if (THREE.Points && THREE.PointsMaterial) {
+          var moteCount = 180;
+          var pos = new Float32Array(moteCount * 3);
+          dustBase = new Float32Array(moteCount * 3);
+          dustSeeds = new Float32Array(moteCount);
+          for (var mi = 0; mi < moteCount; mi++) {
+            var bayX = bayXs[mi % bayXs.length];
+            var hA = Math.sin(mi * 12.9898 + 2.31) * 43758.5453; hA -= Math.floor(hA);
+            var hB = Math.sin(mi * 78.233 + 5.17) * 43758.5453; hB -= Math.floor(hB);
+            var hC = Math.sin(mi * 39.425 + 8.43) * 43758.5453; hC -= Math.floor(hC);
+            pos[mi * 3] = dustBase[mi * 3] = bayX + (hA - 0.5) * 9.5;
+            pos[mi * 3 + 1] = dustBase[mi * 3 + 1] = 1.4 + hB * 3.6;
+            pos[mi * 3 + 2] = dustBase[mi * 3 + 2] = -3.8 + hC * 11.5;
+            dustSeeds[mi] = hA * 6.283 + hB * 3.14;
+          }
+          var dustGeo = new THREE.BufferGeometry();
+          dustGeo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+          var dustMat = new THREE.PointsMaterial({
+            color: 0xfff6dc, map: tex.dustMap || null, size: 0.065, sizeAttenuation: true,
+            transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending || THREE.NormalBlending
+          });
+          dustPoints = new THREE.Points(dustGeo, dustMat);
+          dustPoints.renderOrder = 4;
+          S.model.add(dustPoints);
+        }
         // Shallow wall reliefs keep the exhibits legible while turning around.
-        [-12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216].forEach(function (x, index) {
+        bayXs.forEach(function (x, index) {
           var color = [COLORS.gold, COLORS.teal, COLORS.coral, COLORS.ink, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.teal, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.teal, COLORS.gold, COLORS.coral, COLORS.gold, COLORS.teal, COLORS.coral][index];
           for (var bar = 0; bar < 7; bar++) {
             box(x - 2.4 + bar * 0.8, 2.5, 13.96, 0.09, 1.1 + (bar % 3) * 0.48, 0.05, color);
@@ -1244,6 +1404,19 @@
       S.walk = { ring: ring.parts, ringGeometry: ring, blocks: objects, tokens: tokens, parallax: parallax, parallaxRound: parallaxRound, parallaxMeshes: parallaxMeshes, contour: contour,
         context: context.objects, contextSwitch: context.toggle, continuity: continuity, shadow: shadow, change: change, rotation: rotation, relief: relief, shape: shape, motion: motion, frame: frame, weave: weave, landing: landing, aperture: aperture, length: length, silhouette: silhouette, anamorphosis: anamorphosis,
         labels: parallaxLabels, panelLabels: panelLabels, changeLabels: changeLabels, rotationLabels: rotationLabels, reliefLabels: reliefLabels, shapeLabels: shapeLabels, motionLabels: motionLabels, weaveLabels: weaveLabels, landingLabels: landingLabels, silhouetteLabels: silhouetteLabels, referenceLabels: referenceLabels, anamorphosisLabels: anamorphosisLabels, solids: solids };
+      S.tick = dustPoints ? function (now) {
+        if ((S.data && S.data.static) || prefersReducedMotion()) return;
+        var attr = dustPoints.geometry && dustPoints.geometry.attributes && dustPoints.geometry.attributes.position;
+        if (!attr || !dustBase || !dustSeeds) return;
+        var t = (now || 0) * 0.00042, arr = attr.array;
+        for (var i = 0; i < dustSeeds.length; i++) {
+          var s = dustSeeds[i], j = i * 3;
+          arr[j] = dustBase[j] + Math.sin(t + s) * 0.12;
+          arr[j + 1] = dustBase[j + 1] + Math.sin(t * 0.72 + s * 1.4) * 0.09;
+          arr[j + 2] = dustBase[j + 2] + Math.cos(t * 0.84 + s * 0.9) * 0.11;
+        }
+        attr.needsUpdate = true;
+      } : null;
       S.target.set(0, EYE_Y, 0);
       S.fitPts = [];
     }
@@ -1732,12 +1905,15 @@
       lights: function (THREE, scene, S) {
         S.renderer.outputEncoding = THREE.sRGBEncoding;
         S.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        S.renderer.toneMappingExposure = 0.98;
-        scene.add(new THREE.HemisphereLight(0xffffff, 0xb7c6bc, 0.83));
-        var key = new THREE.DirectionalLight(0xfff8ed, 0.62);
+        S.renderer.toneMappingExposure = 0.99;
+        if (typeof THREE.FogExp2 === 'function') scene.fog = new THREE.FogExp2(0xf2f5f2, 0.0042);
+        scene.add(new THREE.HemisphereLight(0xfefcf8, 0xb5b3a7, 0.80));
+        var key = new THREE.DirectionalLight(0xfff6e6, 0.68);
         key.position.set(3, 12, 8); scene.add(key);
-        var fill = new THREE.DirectionalLight(0xe6f3ff, 0.27);
+        var fill = new THREE.DirectionalLight(0xdcefff, 0.28);
         fill.position.set(-10, 7, -5); scene.add(fill);
+        var rim = new THREE.DirectionalLight(0xfff0da, 0.20);
+        rim.position.set(16, 6, -12); scene.add(rim);
       },
       debug: function (S) {
         if (!S.walk) return {};
@@ -2267,7 +2443,7 @@
       subscribeStatus(statusChanged);
       attach(host);
       if (!host) Promise.resolve().then(function () {
-        if (!attachedHost && attachment === generation) { layoutNotify = null; statusNotify = null; }
+        if (!attachedHost && attachment === generation) { layoutNotify = null; statusNotify = null; disposeWalkTextures(); }
       });
     };
     viewer.dispose = function () {
@@ -2277,6 +2453,7 @@
       publishLayout([]);
       layoutNotify = null;
       statusNotify = null;
+      disposeWalkTextures();
       dispose();
     };
     return viewer;

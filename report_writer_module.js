@@ -200,10 +200,19 @@
         .filter(([, v]) => v && typeof v === 'object').map(([k, v]) => [k, { options: Object.keys(v).filter(x => x !== 'default'), default: v.default }]));
     const RW_GENERIC_SYSTEM = { ss100: 'wechsler5', t50: 'bascClinical', ss50: 'bot2' };
     const RW_SCALE_STATS = { ss100: [100, 15], t50: [50, 10], ss50: [50, 10], ss10: [10, 3] };
+    const rwOwn = (obj, k) => !!(obj && typeof obj === 'object' && Object.prototype.hasOwnProperty.call(obj, k));
+    const rwFiniteScore = (v) => {
+        if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+        if (typeof v === 'string' && v.trim() !== '') {
+            const n = Number(v);
+            return Number.isFinite(n) ? n : NaN;
+        }
+        return NaN;
+    };
     const rwSystemKeyFor = (assessment, subtest, scheme) => {
-        const key = RW_INSTRUMENT_SYSTEMS[assessment];
+        const key = rwOwn(RW_INSTRUMENT_SYSTEMS, assessment) ? RW_INSTRUMENT_SYSTEMS[assessment] : null;
         if (key === 'basc') return RW_BASC_ADAPTIVE_SCALES.has(subtest) ? 'bascAdaptive' : 'bascClinical';
-        if (key && typeof key === 'object') return key[String(scheme)] || key[key.default];
+        if (key && typeof key === 'object') return (rwOwn(key, String(scheme)) ? key[String(scheme)] : null) || key[key.default];
         return key || null;
     };
     // A SUBTEST scaled score (mean 10, SD 3) is not on its instrument's composite
@@ -213,12 +222,12 @@
     // a BASC-3 row mislabelled "standard" is still a BASC-3 T-score.
     const rwOwnSystem = (scoreType, assessment, subtest, scheme) => {
         const key = rwSystemKeyFor(assessment, subtest, scheme);
-        if (!RW_SCORE_SYSTEMS[key]) return key;
+        if (!rwOwn(RW_SCORE_SYSTEMS, key)) return key;
         return normalizeReportScoreType(scoreType) === 'scaled_score' ? null : key;
     };
     const rwScoreScale = (scoreType, assessment, subtest, scheme) => {
         const key = rwOwnSystem(scoreType, assessment, subtest, scheme);
-        if (RW_SCORE_SYSTEMS[key]) return RW_SCORE_SYSTEMS[key].scale;
+        if (rwOwn(RW_SCORE_SYSTEMS, key)) return RW_SCORE_SYSTEMS[key].scale;
         const type = normalizeReportScoreType(scoreType);
         if (type === 't_score') return 't50';
         if (type === 'scaled_score') return 'ss10';
@@ -264,10 +273,10 @@
     // `scheme` picks the descriptor scale for an instrument that has two ('10' or
     // '15' for WIAT-4 and KTEA-3); anything else uses the instrument's default.
     const rwClassifyScore = (score, scoreType, assessment, subtest, scheme) => {
-        const value = Number(score);
+        const value = rwFiniteScore(score);
         const own = rwOwnSystem(scoreType, assessment, subtest, scheme);
-        const key = RW_SCORE_SYSTEMS[own] ? own : RW_GENERIC_SYSTEM[rwScoreScale(scoreType, assessment, subtest, scheme)];
-        if (!key || !Number.isFinite(value)) return { label: 'Unclassified', color: 'slate', system: null, unclassified: true };
+        const key = rwOwn(RW_SCORE_SYSTEMS, own) ? own : RW_GENERIC_SYSTEM[rwScoreScale(scoreType, assessment, subtest, scheme)];
+        if (!rwOwn(RW_SCORE_SYSTEMS, key) || !Number.isFinite(value)) return { label: 'Unclassified', color: 'slate', system: null, unclassified: true };
         const band = rwBand(key, value);
         return { label: band.label, color: band.color, system: key, systemName: RW_SCORE_SYSTEMS[key].name, generic: key !== own,
             direction: RW_SCORE_SYSTEMS[key].direction || 'low' };
@@ -280,8 +289,10 @@
         return 50 * (1 + (z < 0 ? -erf : erf));
     };
     const rwScorePercentile = (score, scoreType, assessment, subtest) => {
+        const value = rwFiniteScore(score);
+        if (!Number.isFinite(value)) return null;
         const stats = RW_SCALE_STATS[rwScoreScale(scoreType, assessment, subtest)] || RW_SCALE_STATS.ss100;
-        const pct = Math.round(rwNormalPercentile(score, stats) * 10) / 10;
+        const pct = Math.round(rwNormalPercentile(value, stats) * 10) / 10;
         return Math.min(99.5, Math.max(0.5, pct));
     };
     // The percentile shown on the badge and given to the AI. Normalised standard
@@ -292,10 +303,11 @@
     // manual's norm tables, not the normal curve, so only a clinician-entered
     // percentile is used for them.
     const rwDisplayPercentile = (score, scoreType, assessment, subtest) => {
+        const value = rwFiniteScore(score);
         const scale = rwScoreScale(scoreType, assessment, subtest);
         const stats = RW_SCALE_STATS[scale];
-        if (scale === 't50' || !stats || !Number.isFinite(Number(score))) return null;
-        const p = rwNormalPercentile(score, stats);
+        if (scale === 't50' || !stats || !Number.isFinite(value)) return null;
+        const p = rwNormalPercentile(value, stats);
         if (p < 1) return Math.max(0.1, Math.round(p * 10) / 10);
         if (p > 99) return Math.min(99.9, Math.round(p * 10) / 10);
         return Math.round(p);
@@ -389,7 +401,7 @@
     const rwSameFact = (a, b) => (a == null || a === '' ? null : String(a)) === (b == null || b === '' ? null : String(b));
     const rwStaleScoreFacts = (factChunks, scoreEntries) => {
         const key = (a, b) => a + ' :: ' + String(b).trim().toLowerCase();
-        const chunks = (Array.isArray(factChunks) ? factChunks : []).filter(c => c && c.type === 'score' && ASSESSMENT_PRESETS[c.source]);
+        const chunks = (Array.isArray(factChunks) ? factChunks : []).filter(c => c && c.type === 'score' && rwOwn(ASSESSMENT_PRESETS, c.source));
         const none = { changed: [], added: [], removed: [], count: 0 };
         if (!chunks.length) return none;
         const entries = Array.isArray(scoreEntries) ? scoreEntries : [];
@@ -414,10 +426,11 @@
     const rwScoreTableGroups = (scoreEntries) => {
         const groups = new Map();
         (Array.isArray(scoreEntries) ? scoreEntries : []).forEach(s => {
-            if (!s || typeof s.assessment !== 'string' || !Number.isFinite(Number(s.score))) return;
+            if (!s || typeof s.assessment !== 'string' || !Number.isFinite(rwFiniteScore(s.score))) return;
             const type = normalizeReportScoreType(s.scoreType);
             const hasPct = s.percentile != null && s.percentile !== '';
             if (!groups.has(s.assessment)) groups.set(s.assessment, []);
+            const sysKey = rwOwn(RW_DESCRIPTOR_SCALES, s.assessment) ? rwSystemKeyFor(s.assessment, s.subtest, s.descriptorScale) : null;
             groups.get(s.assessment).push({
                 scale: String(s.subtest || ''), score: String(s.score),
                 type: type === 't_score' ? 'T' : type === 'scaled_score' ? 'Scaled' : 'SS',
@@ -425,7 +438,7 @@
                 ci: rwHasCI(s) ? `${s.ciLevel || 95}%: ${s.ciLow}–${s.ciHigh}` : '—',
                 prior: rwPriorText(s),
                 classification: String(s.classification || ''),
-                descriptors: RW_DESCRIPTOR_SCALES[s.assessment] ? RW_SCORE_SYSTEMS[rwSystemKeyFor(s.assessment, s.subtest, s.descriptorScale)].name : '',
+                descriptors: rwOwn(RW_SCORE_SYSTEMS, sysKey) ? RW_SCORE_SYSTEMS[sysKey].name : '',
             });
         });
         return groups;
@@ -782,7 +795,7 @@
                 : (isCase ? 'Case record (no longer loaded)' : id === 'ref:truncated' ? 'Reference library (first part only)' : 'Reference passage (library not loaded)');
             if (!docs.has(title)) docs.set(title, new Map());
             const passages = docs.get(title);
-            if (!passages.has(id)) passages.set(id, { heading: node && node.locator ? node.locator.heading || '' : '', where: node ? `lines ${node.locator.lineStart}–${node.locator.lineEnd}` : '', ordinal: node ? node.ordinal : 1e9, sections: [] });
+            if (!passages.has(id)) passages.set(id, { heading: node && node.locator ? node.locator.heading || '' : '', where: node && node.locator && node.locator.lineStart != null ? `lines ${node.locator.lineStart}–${node.locator.lineEnd}` : '', ordinal: node ? node.ordinal : 1e9, sections: [] });
             const entry = passages.get(id);
             if (!entry.sections.includes(section)) entry.sections.push(section);
         }));
@@ -952,8 +965,8 @@
     // Average" for a BASC-3 T of 63 would hide that the BASC-3 calls it At-Risk.
     const rwConcernTier = (color) => ({ red: 3, orange: 2, amber: 1 })[color] || 0;
     const rwCheckClassification = (entry, citedLabel) => {
-        const score = Number(entry.score);
-        const scheme = entry.descriptorScale;
+        const score = rwFiniteScore(entry && entry.score);
+        const scheme = entry && entry.descriptorScale;
         const own = rwOwnSystem(entry.scoreType, entry.assessment, entry.subtest, scheme);
         if (!citedLabel || !Number.isFinite(score)) return { status: 'unchecked' };
         const scale = rwScoreScale(entry.scoreType, entry.assessment, entry.subtest, scheme);
@@ -961,12 +974,12 @@
         const usesLabel = Object.keys(RW_SCORE_SYSTEMS).filter(k => counts(k) && RW_SCORE_SYSTEMS[k].scale === scale && rwLabelRange(k, citedLabel));
         const expected = rwClassifyScore(score, entry.scoreType, entry.assessment, entry.subtest, scheme);
         if (usesLabel.length === 0) {
-            const elsewhere = RW_SCORE_SYSTEMS[own] && !RW_PLAIN_LABELS.has(citedLabel)
+            const elsewhere = rwOwn(RW_SCORE_SYSTEMS, own) && !RW_PLAIN_LABELS.has(citedLabel)
                 && Object.keys(RW_SCORE_SYSTEMS).some(k => counts(k) && rwLabelRange(k, citedLabel));
             return elsewhere ? { status: 'mismatch', expected } : { status: 'unchecked' };
         }
         const covering = usesLabel.filter(k => rwBand(k, score).label === citedLabel);
-        if (!RW_SCORE_SYSTEMS[own]) return covering.length > 0 ? { status: 'ok', expected } : { status: 'mismatch', expected };
+        if (!rwOwn(RW_SCORE_SYSTEMS, own)) return covering.length > 0 ? { status: 'ok', expected } : { status: 'mismatch', expected };
         if (expected.label === citedLabel) return { status: 'ok', expected };
         const ownRange = rwLabelRange(own, citedLabel);
         if (ownRange) return { status: 'mismatch', expected, citedRange: ownRange };
@@ -977,11 +990,12 @@
     // For WIAT-4 and KTEA-3: the other descriptor scale's name when IT gives this
     // score the cited label, so a mismatch can point at the Step 4 setting.
     const rwOtherDescriptorScale = (entry, citedLabel) => {
-        const d = RW_DESCRIPTOR_SCALES[entry.assessment];
+        const d = rwOwn(RW_DESCRIPTOR_SCALES, entry.assessment) ? RW_DESCRIPTOR_SCALES[entry.assessment] : null;
         const current = rwOwnSystem(entry.scoreType, entry.assessment, entry.subtest, entry.descriptorScale);
-        if (!d || !RW_SCORE_SYSTEMS[current] || !Number.isFinite(Number(entry.score))) return null;
+        const score = rwFiniteScore(entry && entry.score);
+        if (!d || !rwOwn(RW_SCORE_SYSTEMS, current) || !Number.isFinite(score)) return null;
         const other = d.options.map(o => rwSystemKeyFor(entry.assessment, entry.subtest, o))
-            .find(k => k !== current && rwBand(k, Number(entry.score)).label === citedLabel);
+            .find(k => k !== current && rwOwn(RW_SCORE_SYSTEMS, k) && rwBand(k, score).label === citedLabel);
         return other ? RW_SCORE_SYSTEMS[other].name : null;
     };
 
@@ -1015,7 +1029,7 @@
             return true;
         }
         const normal = rwNormalPercentile(score, stats);
-        const tolerance = RW_PCT_TOLERANCE[assessment] || 1;
+        const tolerance = rwOwn(RW_PCT_TOLERANCE, assessment) ? RW_PCT_TOLERANCE[assessment] : 1;
         // "<0.1", "<1", ">99", ">99.9" are bounds, compared as such.
         if (pct.sign === '<') return normal < pct.a + tolerance;
         if (pct.sign === '>') return normal > pct.a - tolerance;
@@ -1031,7 +1045,7 @@
     // Issues that leave a row unticked; the others are notes.
     const RW_PASTE_HOLD = ['unrecognised', 'no_evidence', 'score_outside_interval', 'already_entered', 'duplicate', 'entry_error'];
     const rwParseScoreReport = (text, assessment, opts = {}) => {
-        const preset = ASSESSMENT_PRESETS[assessment] || { subtests: [], scoreType: 'standard' };
+        const preset = rwOwn(ASSESSMENT_PRESETS, assessment) ? ASSESSMENT_PRESETS[assessment] : { subtests: [], scoreType: 'standard' };
         const baseType = preset.scoreType || 'standard';
         const api = typeof window !== 'undefined' ? window.AlloPsycheck : null;
         const variants = opts.variants || (api && api._subtestVariants ? api._subtestVariants(assessment) : preset.subtests.map(x => [x.toLowerCase(), x]));
@@ -2553,7 +2567,7 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         rwClassifyScore(score, scoreType, assessment, subtest, descriptorScale);
     // A descriptor scale is kept only if the instrument offers it.
     const rwValidDescriptorScale = (assessment, scheme) => {
-        const d = RW_DESCRIPTOR_SCALES[assessment];
+        const d = rwOwn(RW_DESCRIPTOR_SCALES, assessment) ? RW_DESCRIPTOR_SCALES[assessment] : null;
         return d && d.options.includes(String(scheme)) ? String(scheme) : undefined;
     };
 
@@ -2920,10 +2934,17 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
             const safeGrade = s.grade == null ? '' : escapeHtml(s.grade);
             const vals = pts.map(p => p.value);
             if (benchmark !== null) vals.push(benchmark);
-            if (aim) aim.forEach(p => { if (typeof p.value === 'number') vals.push(p.value); });
-            const maxV = Math.max.apply(null, vals) || 1;
-            const minV = Math.min.apply(null, vals.concat([0]));
-            const range = (maxV - minV) || 1;
+            if (aim) aim.forEach(p => { if (typeof p.value === 'number' && Number.isFinite(p.value)) vals.push(p.value); });
+            let maxV = vals.length ? vals[0] : 1;
+            let minV = 0;
+            for (let vi = 0; vi < vals.length; vi++) {
+                if (vals[vi] > maxV) maxV = vals[vi];
+                if (vals[vi] < minV) minV = vals[vi];
+            }
+            if (!Number.isFinite(maxV)) maxV = 1;
+            if (!Number.isFinite(minV)) minV = 0;
+            const rawRange = maxV - minV;
+            const range = (Number.isFinite(rawRange) && rawRange > 0) ? rawRange : 1;
             const x = i => PL + (pts.length === 1 ? (W - PL - PR) / 2 : i * (W - PL - PR) / (pts.length - 1));
             const y = v => H - PB - ((v - minV) / range) * (H - PT - PB);
             const poly = pts.map((p, i) => x(i).toFixed(1) + ',' + y(p.value).toFixed(1)).join(' ');
@@ -2962,7 +2983,7 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         Hindi: { code: 'hi', dir: 'ltr' },
         Urdu: { code: 'ur', dir: 'rtl' }
     });
-    const getTranslationLanguageMeta = (language) => TRANSLATION_LANGUAGE_META[language] || { code: 'en', dir: 'ltr' };
+    const getTranslationLanguageMeta = (language) => (rwOwn(TRANSLATION_LANGUAGE_META, language) ? TRANSLATION_LANGUAGE_META[language] : { code: 'en', dir: 'ltr' });
     const buildReportPrintHtml = ({
         reportTitle = 'Psychoeducational Evaluation Report',
         studentName = '[Student]',
@@ -2998,7 +3019,7 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         }).join('') + ((trendBlock && !trendInjected) ? trendBlock : '');
         const signature = '<footer><div class="signature-line"><p><strong>Clinician Signature:</strong> _____________________________ &nbsp; <strong>Date:</strong> ______________ &nbsp; <strong>License #:</strong> ______________</p><p class="document-note">Generated with AlloFlow Report Writer (AI-Assisted Draft) - Requires clinician review, approval, and signature before distribution.</p></div></footer>';
         const demoWatermark = isDemo ? '<div aria-hidden="true" class="demo-watermark">DEMO</div>' : '';
-        return '<!doctype html><html lang="' + safeLocale + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + safeTitle + '</title><style>'
+        return '<!doctype html><html lang="' + safeLocale + '"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src data:;"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + safeTitle + '</title><style>'
             + 'html{color-scheme:light}*{box-sizing:border-box}body{font-family:Georgia,serif;max-width:800px;margin:40px auto;padding:20px;line-height:1.6;color:#333;background:#fff;overflow-wrap:anywhere}'
             + 'h1{font-size:18pt;text-align:center;margin-bottom:4px}h2{font-size:14pt;color:#1e40af;border-bottom:1px solid #94a3b8;padding-bottom:4px;margin-top:24px}p{font-size:11pt;text-align:left}.report-meta{text-align:center;color:#4b5563}'
             + '.signature-line{margin-top:40px;border-top:2px solid #333;padding-top:12px}.signature-line p{font-size:10pt;color:#4b5563;margin-bottom:24px}.signature-line .document-note{font-size:9pt;color:#595959;text-align:center;margin-top:8px}'
@@ -3112,25 +3133,44 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
                 if (!name.trim() || typeof text !== 'string') throw new Error('Every report section must have a text name and value');
             }
         }
+        if (data.bgSections) {
+            Object.keys(data.bgSections).forEach(k => {
+                if (typeof data.bgSections[k] !== 'string') data.bgSections[k] = data.bgSections[k] == null ? '' : String(data.bgSections[k]);
+            });
+        }
+        if (data.clinicalObs) {
+            Object.keys(data.clinicalObs).forEach(k => {
+                const slot = data.clinicalObs[k];
+                if (isPlainObject(slot)) {
+                    data.clinicalObs[k] = {
+                        ...slot,
+                        text: typeof slot.text === 'string' ? slot.text : (slot.text == null ? '' : String(slot.text)),
+                        source: typeof slot.source === 'string' ? slot.source : ''
+                    };
+                } else {
+                    delete data.clinicalObs[k];
+                }
+            });
+        }
         if (data.scoreEntries) {
             data.scoreEntries.forEach((row, index) => {
-                if (!isPlainObject(row) || typeof row.assessment !== 'string' || typeof row.subtest !== 'string' || !Number.isFinite(Number(row.score))) {
+                if (!isPlainObject(row) || typeof row.assessment !== 'string' || typeof row.subtest !== 'string' || !Number.isFinite(rwFiniteScore(row.score))) {
                     throw new Error(`Score row ${index + 1} is invalid`);
                 }
             });
             // Labels are derived data. A saved report keeps the label from the day
             // the score was entered, so recompute it: reports saved before the
             // per-instrument bands would otherwise feed old labels to the AI.
-            const reportNumber = (v, lo, hi) => (v === '' || v == null || !Number.isFinite(Number(v)) || Number(v) < lo || Number(v) > hi) ? null : Number(v);
+            const reportNumber = (v, lo, hi) => { const n = rwFiniteScore(v); return (!Number.isFinite(n) || n < lo || n > hi) ? null : n; };
             data.scoreEntries = data.scoreEntries.map(row => {
                 const descriptorScale = rwValidDescriptorScale(row.assessment, row.descriptorScale);
-                const c = classifyDisplayScore(Number(row.score), row.scoreType, row.assessment, row.subtest, descriptorScale);
+                const c = classifyDisplayScore(rwFiniteScore(row.score), row.scoreType, row.assessment, row.subtest, descriptorScale);
                 // A percentile the clinician typed from the score report is kept;
                 // a computed one is recomputed (old reports rounded 0.4 to "0").
                 const manualPct = row.percentileSource === 'manual' ? reportNumber(row.percentile, 0.01, 99.99) : null;
                 const percentile = manualPct != null
                     ? manualPct
-                    : rwDisplayPercentile(Number(row.score), row.scoreType, row.assessment, row.subtest);
+                    : rwDisplayPercentile(rwFiniteScore(row.score), row.scoreType, row.assessment, row.subtest);
                 const ciLevel = [68, 85, 90, 95, 99].includes(Number(row.ciLevel)) ? Number(row.ciLevel) : null;
                 return { ...row, classification: c.label, classColor: c.color, percentile, descriptorScale,
                     percentileSource: manualPct != null ? 'manual' : undefined,
@@ -3141,9 +3181,10 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         }
         if (data.factChunks) {
             data.factChunks = data.factChunks.map(chunk => {
-                if (!isPlainObject(chunk) || chunk.type !== 'score' || typeof chunk.source !== 'string' || !Number.isFinite(Number(chunk.value))) return chunk;
+                const chunkVal = rwFiniteScore(chunk && chunk.value);
+                if (!isPlainObject(chunk) || chunk.type !== 'score' || typeof chunk.source !== 'string' || !Number.isFinite(chunkVal)) return chunk;
                 const descriptorScale = rwValidDescriptorScale(chunk.source, chunk.descriptorScale);
-                return { ...chunk, descriptorScale, classification: classifyDisplayScore(Number(chunk.value), chunk.scoreType, chunk.source, chunk.field, descriptorScale).label };
+                return { ...chunk, descriptorScale, classification: classifyDisplayScore(chunkVal, chunk.scoreType, chunk.source, chunk.field, descriptorScale).label };
             });
         }
         if (data.reportGenPasses != null && (!Number.isInteger(Number(data.reportGenPasses)) || Number(data.reportGenPasses) < 1 || Number(data.reportGenPasses) > 5)) {
@@ -3789,7 +3830,10 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
             if (forLock || reason === 'close') abortSensitiveWork();
             if (reason === 'backup' && hasTemporarySources) {
                 const backupEpoch = sensitiveWorkspace.captureEpoch();
-                const confirmed = typeof window.confirm === 'function' && window.confirm('This encrypted backup includes saved Report Writer records. Temporary source documents, paste previews and uncommitted imports are excluded and will remain open here. Preserve those materials separately. Continue with a saved-records backup?');
+                const backupConfirmMsg = 'This encrypted backup includes saved Report Writer records. Temporary source documents, paste previews and uncommitted imports are excluded and will remain open here. Preserve those materials separately. Continue with a saved-records backup?';
+                const confirmed = (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.confirm === 'function')
+                    ? await window.AlloFlowUX.confirm(backupConfirmMsg, { title: 'Back up saved records?', confirmText: 'Continue backup', cancelText: 'Cancel', tone: 'warning' }).catch(() => false)
+                    : (typeof window.confirm === 'function' && window.confirm(backupConfirmMsg));
                 sensitiveWorkspace.assertCurrent(backupEpoch);
                 if (!confirmed) {
                     const error = new Error('Preserve temporary Report Writer sources or confirm their exclusion before backing up saved records.');
@@ -3938,6 +3982,7 @@ if (typeof window !== 'undefined') window.AlloReportWriterTesting = Object.assig
         const generateAIDemoCase = () => confirmThen(hasReportContent, replaceCaseRequest(), runAIDemoCase);
         const runAIDemoCase = async () => {
             if (!callGemini) { if (addToast) addToast(t('toasts.ai_available'), 'error'); return; }
+            const operation = captureSensitiveOperation();
             setGeneratingDemo(true);
             try {
                 const prompt = `You are a clinical data generator for a school psychology training tool. Generate a FICTIONAL but realistic demo case for a psychoeducational evaluation.
@@ -3979,21 +4024,27 @@ Return ONLY valid JSON with this exact structure:
 Include 6-10 assessment scores using REAL subtest names from the assessment batteries listed. Make scores clinically consistent with the chosen profile. Use person-first language in all narrative sections.`;
 
                 const result = await callGen(callGemini, prompt, true);
+                if (!operationIsCurrent(operation)) return;
                 const rawResult = String(result || '');
                 const cleaned = rawResult.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
                 let parsed;
                 try { parsed = JSON.parse(cleaned); }
                 catch { const m = rawResult.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); else throw new Error('Could not parse AI response'); }
+                if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Could not parse AI response');
+                if (!operationIsCurrent(operation)) return;
 
-                // Load the generated case using the same pattern as loadDemoCase
+                // Clear the entire prior case first (including real-student caseDocuments
+                // and people) so no prior student's PII can remain attached under the demo name.
+                resetCaseState({ clearStoredDraft: false, silent: true });
                 setReportTitle(parsed.reportTitle || 'Psychoeducational Evaluation Report');
                 setStudentAge(parsed.studentAge || '');
                 setStudentGrade(parsed.studentGrade || '');
                 setManualStudentName('[AI DEMO STUDENT]');
-                if (parsed.bgSections) setBgSections(parsed.bgSections);
-                if (parsed.clinicalObs) setClinicalObs(parsed.clinicalObs);
+                setBgSections({ ...createEmptyBackground(), ...(parsed.bgSections && typeof parsed.bgSections === 'object' ? parsed.bgSections : {}) });
+                setClinicalObs({ ...createEmptyClinicalObs(), ...(parsed.clinicalObs && typeof parsed.clinicalObs === 'object' ? parsed.clinicalObs : {}) });
                 // Build score entries
-                const demoScores = (parsed.scores || []).map(s => {
+                const rawScores = Array.isArray(parsed.scores) ? parsed.scores : [];
+                const demoScores = rawScores.filter(s => s && typeof s === 'object').map(s => {
                     const preset = ASSESSMENT_PRESETS[s.assessment] || {};
                     const classification = classifyDisplayScore(s.score, s.scoreType, s.assessment, s.subtest);
                     const percentile = rwDisplayPercentile(s.score, s.scoreType, s.assessment, s.subtest);
@@ -4004,9 +4055,9 @@ Include 6-10 assessment scores using REAL subtest names from the assessment batt
                 setReportSections({});
                 setAccuracyResults([]);
                 setIsDemoLoaded(true);
-                if (addToast) addToast(rwFmt(__alloT('report_writer.toast_ai_demo_case_generated_fictional_data', 'AI demo case "{label}" generated — [FICTIONAL DATA, NOT A REAL STUDENT]'), { label: parsed.label }), 'success');
+                if (addToast) addToast(rwFmt(__alloT('report_writer.toast_ai_demo_case_generated_fictional_data', 'AI demo case "{label}" generated — [FICTIONAL DATA, NOT A REAL STUDENT]'), { label: parsed.label || 'AI Demo Case' }), 'success');
             } catch (err) {
-                if (rwIsStopped(err)) return;
+                if (rwIsStopped(err) || !operationIsCurrent(operation)) return;
                 warnLog('AI demo generation error:', err);
                 if (addToast) addToast(t('toasts.ai_demo_generation_failed_try'), 'error');
             } finally { setGeneratingDemo(false); }
@@ -4928,7 +4979,7 @@ Extract 5-20 key facts. Be precise and factual.`;
                 if (addToast) addToast(t('toasts.extraction_failed'), 'error');
             } finally { setExtracting(false); }
         };
-        const backgroundStaleNotice = () => backgroundStale && h('div', { role: 'status', className: 'rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900 flex flex-wrap items-center gap-2' },
+        const backgroundStaleNotice = () => backgroundStale && h('div', { role: 'status', className: 'rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 flex flex-wrap items-center gap-2' },
             h('span', null, bgExtractedHash
                 ? __alloT('report_writer.background_facts_stale', 'The background or observations (Steps 2 and 3) changed after the facts were extracted, so the report would not include the changes.')
                 : __alloT('report_writer.background_facts_never_extracted', 'Facts have not been extracted from the background or observations (Steps 2 and 3), so the report would not include them.')),
@@ -4952,7 +5003,7 @@ Extract 5-20 key facts. Be precise and factual.`;
             ]);
             if (addToast) addToast(rwFmt(__alloT('report_writer.toast_score_facts_updated', 'Updated {count} score fact(s). Verify them again below.'), { count: stale.count }), 'success');
         };
-        const staleFactsNotice = () => staleFacts.count > 0 && h('div', { role: 'status', className: 'rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900 flex flex-wrap items-center gap-2' },
+        const staleFactsNotice = () => staleFacts.count > 0 && h('div', { role: 'status', className: 'rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 flex flex-wrap items-center gap-2' },
             h('span', null, rwFmt(__alloT('report_writer.stale_score_facts', '{count} score fact(s) no longer match Step 4 (changed, added or removed after the facts were extracted), so the report would be written from the old ones.'), { count: staleFacts.count })),
             h('button', { type: 'button', onClick: refreshScoreFacts, className: 'px-2 py-0.5 bg-amber-700 text-white rounded hover:bg-amber-800' }, __alloT('report_writer.update_score_facts', 'Update score facts')));
         const verifyChunk = (chunkId) => {
@@ -5428,7 +5479,7 @@ Return ONLY JSON:
                         try {
                             const fixPrompt = buildSectionPrompt(secName, verifiedChunks, correctionInstructions(generated[secName], 'CONSISTENCY ISSUES INVOLVING THIS SECTION', issueList) + `\n\nIf the issue is a contradiction with another section's claim, defer to the structured input data (assessment scores, background facts) rather than averaging the two narrative claims.`);
                             const fixResult = await aiCall('sections', fixPrompt, false);
-                            const { text, usedChunks } = parseEvidenceResponse(fixResult);
+                            const { text, usedChunks } = parseEvidenceResponse(fixResult, citableFor(secName, verifiedChunks));
                             generated[secName] = text;
                             evidenceMap[secName] = usedChunks;
                         } catch(fixErr) {
@@ -5502,7 +5553,8 @@ Return ONLY JSON:
                 if (referenceLibrary.length > 0 || aiCaseDocs.length > 0) await rwEnsureLumenEvidence();
                 const prompt = buildSectionPrompt(sectionName, verifiedChunks, customInstructions || null);
                 const result = await callGemini(prompt, false);
-                let { text, usedChunks } = parseEvidenceResponse(result);
+                const knownChunkIds = citableFor(sectionName, verifiedChunks);
+                let { text, usedChunks } = parseEvidenceResponse(result, knownChunkIds);
                 // Fix #3: re-run score-verification on the regenerated section.
                 // The previous regenerate path skipped this entirely and cleared
                 // prior accuracyResults \u2014 every retry was an ungated dice roll
@@ -5519,7 +5571,7 @@ Return ONLY JSON:
                             const corrections = criticalErrs.map(e => `CORRECTION: "${e.claim}" is WRONG. The actual data shows: ${e.actual}`).join('\n');
                             const fixPrompt = buildSectionPrompt(sectionName, verifiedChunks, (customInstructions ? customInstructions + '\n\n' : '') + correctionInstructions(text, 'CRITICAL CORRECTIONS FROM SCORE VERIFICATION', corrections));
                             const fixResult = await callGemini(fixPrompt, false);
-                            const fixed = parseEvidenceResponse(fixResult);
+                            const fixed = parseEvidenceResponse(fixResult, knownChunkIds);
                             text = fixed.text;
                             usedChunks = fixed.usedChunks;
                             const postFix = await verifySectionAgainstScores(sectionName, text, allScoreData);
@@ -5735,7 +5787,11 @@ Return ONLY JSON:
         const discrepanciesBySection = useMemo(() => {
             const out = { __unattached: [] };
             if (!discrepancyReport || !Array.isArray(discrepancyReport.discrepancies)) return out;
-            const sectionEntries = Object.entries(reportSections || {});
+            const studentLabel = effectiveStudentName || '[Student]';
+            const sectionEntries = Object.entries(reportSections || {}).map(([secName, secText]) => [
+                secName,
+                typeof secText === 'string' ? secText.replace(/\[Student\]/g, () => studentLabel) : secText,
+            ]);
             for (const disc of discrepancyReport.discrepancies) {
                 let matched = null;
                 // Tier 1: span substring match
@@ -5770,7 +5826,7 @@ Return ONLY JSON:
                 }
             }
             return out;
-        }, [discrepancyReport, reportSections]);
+        }, [discrepancyReport, reportSections, effectiveStudentName]);
 
         // ── Step 5: Dual-Pass Accuracy Check ──
         // Full-coverage accuracy audit. Every section is chunked without dropping
@@ -6140,7 +6196,7 @@ Return ONLY valid JSON:
                     h('label', { htmlFor: 'rw-set-aside-reason', className: 'block text-slate-700' }, __alloT('report_writer.set_aside_reason_label', 'Why does this finding not apply here? Your reason is kept with the audit summary.')),
                     h('textarea', { id: 'rw-set-aside-reason', 'data-rw-set-aside-reason': 'true', rows: 2, value: setAsideDraft.reason,
                         onChange: (e) => setSetAsideDraft({ key, reason: e.target.value }),
-                        className: 'w-full rounded border border-slate-400 px-2 py-1 text-[11px]' }),
+                        className: 'w-full rounded border border-slate-400 px-2 py-1 text-xs' }),
                     h('div', { className: 'flex gap-2' },
                         h('button', { type: 'button', 'data-rw-set-aside': 'confirm', disabled: !ready, className: 'px-2 py-1 rounded bg-violet-600 text-white disabled:opacity-50',
                             onClick: () => { setSetAsideReasons(prev => ({ ...prev, [key]: setAsideDraft.reason.trim() })); setSetAsideDraft(null); }
@@ -6555,7 +6611,7 @@ Return ONLY valid JSON:
                             daExportPayload.modifiabilityTier ? daExportPayload.modifiabilityTier.label : __alloT('report_writer.modifiability_profile', 'modifiability profile'),
                             daExportPayload.studentNickname ? ' · ' + daExportPayload.studentNickname : '',
                             daExportPayload.isCustomBank ? (' · ' + __alloT('report_writer.custom_probe', 'custom probe')) : ' · ' + daExportPayload.domain + ' / ' + daExportPayload.difficulty),
-                        h('div', { className: 'text-[11px] text-blue-700 italic mt-1' },
+                        h('div', { className: 'text-xs text-blue-700 italic mt-1' },
                             rwFmt(__alloT('report_writer.ingest_will_add_fact_chunks_auto', 'Ingest will: add {value} fact chunks (auto-verified) + pre-draft a "Dynamic Assessment Results" section in this report. Original chunks are editable; section is editable.'), { value: daExportPayload.factChunks ? daExportPayload.factChunks.length : 0 }))
                     ),
                     h('div', { className: 'flex flex-col gap-2 flex-shrink-0' },
@@ -6566,7 +6622,7 @@ Return ONLY valid JSON:
                         }, (__alloT('report_writer.ingest', 'Ingest') + ' →')),
                         h('button', {
                             onClick: dismissDaExport,
-                            className: 'px-3 py-1 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold transition-colors',
+                            className: 'px-3 py-1 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg text-xs font-bold transition-colors',
                             'aria-label': __alloT('report_writer.aria_dismiss_for_now', 'Dismiss for now')
                         }, __alloT('report_writer.dismiss', 'Dismiss'))
                     )
@@ -6587,7 +6643,7 @@ Return ONLY valid JSON:
                             rwFmt(__alloT('report_writer.fact_chunks_2', '{value} fact chunks'), { value: rtiExportPayload.factChunks ? rtiExportPayload.factChunks.length : 0 }),
                             rtiExportPayload.rtiTier ? (rtiExportPayload.rtiTier.reviewRequired ? (' · ' + __alloT('report_writer.educator_review_required', 'Educator review required')) : (' · ' + rwFmt(__alloT('report_writer.rti_tier', 'RTI tier {tier}'), { tier: rtiExportPayload.rtiTier.tier }))) : '',
                             rtiExportPayload.studentNickname ? ' · ' + rtiExportPayload.studentNickname : ''),
-                        h('div', { className: 'text-[11px] text-emerald-700 italic mt-1' },
+                        h('div', { className: 'text-xs text-emerald-700 italic mt-1' },
                             __alloT('report_writer.ingest_switches_this_report_to_the', 'Ingest switches this report to the IEP-Ready Packet blueprint and pre-drafts the RTI/CBM, progress-monitoring, intervention, and DA sections (all editable). Screening data — not an eligibility determination.'))
                     ),
                     h('div', { className: 'flex flex-col gap-2 flex-shrink-0' },
@@ -6598,7 +6654,7 @@ Return ONLY valid JSON:
                         }, (__alloT('report_writer.ingest', 'Ingest') + ' →')),
                         h('button', {
                             onClick: dismissRtiExport,
-                            className: 'px-3 py-1 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold transition-colors',
+                            className: 'px-3 py-1 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg text-xs font-bold transition-colors',
                             'aria-label': __alloT('report_writer.aria_dismiss_for_now', 'Dismiss for now')
                         }, __alloT('report_writer.dismiss', 'Dismiss'))
                     )
@@ -6619,7 +6675,7 @@ Return ONLY valid JSON:
                 ),
                 h('button', {
                     onClick: function () { try { window.__alloOpenDynamicAssessment(); } catch (e) {} },
-                    className: 'px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-bold transition-colors flex-shrink-0',
+                    className: 'px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors flex-shrink-0',
                     'aria-label': __alloT('report_writer.aria_open_dynamic_assessment_studio', 'Open Dynamic Assessment Studio')
                 }, (__alloT('report_writer.run_a_probe', 'Run a probe') + ' →'))
             ) : null,
@@ -6634,9 +6690,9 @@ Return ONLY valid JSON:
                         )
                     ),
                     h('div', { className: 'flex items-center gap-2' },
-                        h('label', { className: 'text-[11px] text-slate-600' }, __alloT('report_writer.age', 'Age:')),
+                        h('label', { className: 'text-xs text-slate-600' }, __alloT('report_writer.age', 'Age:')),
                         h('input', { type: 'number', className: 'w-12 text-xs border rounded px-1.5 py-0.5 text-center', placeholder: __alloT('report_writer.placeholder_yrs', 'yrs'), 'aria-label': __alloT('report_writer.aria_student_age', 'Student age'), value: studentAge, onChange: e => setStudentAge(e.target.value), min: 1, max: 22 }),
-                        h('label', { className: 'text-[11px] text-slate-600 ms-2' }, __alloT('report_writer.grade', 'Grade:')),
+                        h('label', { className: 'text-xs text-slate-600 ms-2' }, __alloT('report_writer.grade', 'Grade:')),
                         h('input', { type: 'text', className: 'w-12 text-xs border rounded px-1.5 py-0.5 text-center', placeholder: __alloT('report_writer.placeholder_e_g_3', 'e.g. 3'), 'aria-label': __alloT('report_writer.aria_student_grade', 'Student grade'), value: studentGrade, onChange: e => setStudentGrade(e.target.value) })
                     )
                 ),
@@ -6654,7 +6710,7 @@ Return ONLY valid JSON:
                             // flex-shrink-0: this module's own 24px minimum-size rule lets a button
                             // shrink below its label, so the ten steps squeezed, their labels overlapped
                             // and a click on one step landed on its neighbour. The bar scrolls instead.
-                            className: `flex flex-shrink-0 items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap ${currentStep === s.num ? 'bg-violet-600 text-white shadow-md' : s.num < currentStep ? 'bg-violet-100 text-violet-700' : 'bg-white text-slate-600 border border-slate-400'}${blocked ? ' opacity-60 cursor-not-allowed' : ''}`,
+                            className: `flex flex-shrink-0 items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${currentStep === s.num ? 'bg-violet-600 text-white shadow-md' : s.num < currentStep ? 'bg-violet-100 text-violet-700' : 'bg-white text-slate-600 border border-slate-400'}${blocked ? ' opacity-60 cursor-not-allowed' : ''}`,
                             onClick: () => {
                                 if (blocked) { rwAnnounce(blocked); return; }
                                 setCurrentStep(s.num); if (s.num === 5 && factChunks.length === 0) extractFactChunks();
@@ -6667,11 +6723,11 @@ Return ONLY valid JSON:
             // ═══ STEP 1: Student Selection ═══
             currentStep === 1 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-4' },
                 h('h3', { tabIndex: -1, 'data-rw-step-heading': 'true', className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, ('👤 ' + __alloT('report_writer.student_selection', 'Student Selection'))),
-                h('p', { className: 'text-[11px] text-slate-600' }, __alloT('report_writer.use_a_privacy_safe_student_code', 'Use a privacy-safe student code name. Do not enter a real name or direct identifier; roster labels must already be pseudonymized.')),
-                isDemoLoaded && h('div', { className: 'px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-700 font-medium' }, ('⚠️ ' + __alloT('report_writer.demo_data_loaded_this_is_fictional', 'DEMO DATA LOADED — This is fictional test data, not a real student.'))),
+                h('p', { className: 'text-xs text-slate-600' }, __alloT('report_writer.use_a_privacy_safe_student_code', 'Use a privacy-safe student code name. Do not enter a real name or direct identifier; roster labels must already be pseudonymized.')),
+                isDemoLoaded && h('div', { className: 'px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700 font-medium' }, ('⚠️ ' + __alloT('report_writer.demo_data_loaded_this_is_fictional', 'DEMO DATA LOADED — This is fictional test data, not a real student.'))),
                 // Student dropdown from dashboard data
                 (dashboardData && dashboardData.length > 0) ? h('div', { className: 'space-y-2' },
-                    h('label', { className: 'text-[11px] font-medium text-slate-600 block' }, __alloT('report_writer.select_from_class_roster', 'Select from Class Roster:')),
+                    h('label', { className: 'text-xs font-medium text-slate-600 block' }, __alloT('report_writer.select_from_class_roster', 'Select from Class Roster:')),
                     h('select', {
                         className: 'w-full text-xs border rounded-lg px-3 py-2 bg-white',
                         'aria-label': __alloT('report_writer.aria_select_student_from_roster', 'Select student from roster'),
@@ -6692,20 +6748,20 @@ Return ONLY valid JSON:
                         h('option', { value: '' }, ('— ' + __alloT('report_writer.choose_a_student', 'Choose a student') + ' —')),
                         dashboardData.map((s, i) => h('option', { key: i, value: s.id || s.name || s.student }, s.name || s.student || rwFmt(__alloT('report_writer.student', 'Student {value}'), { value: i + 1 })))
                     ),
-                    h('div', { className: 'text-[11px] text-slate-600' }, __alloT('report_writer.or_enter_manually_below', 'Or enter manually below'))
+                    h('div', { className: 'text-xs text-slate-600' }, __alloT('report_writer.or_enter_manually_below', 'Or enter manually below'))
                 ) : null,
                 // Manual entry
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-medium text-slate-600 block mb-1' }, __alloT('report_writer.student_code_name', 'Student Code Name')),
+                        h('label', { className: 'text-xs font-medium text-slate-600 block mb-1' }, __alloT('report_writer.student_code_name', 'Student Code Name')),
                         h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: __alloT('report_writer.placeholder_e_g_student_a', 'e.g., Student A'), 'aria-label': __alloT('report_writer.aria_student_code_name', 'Student code name'), value: manualStudentName, onChange: e => setManualStudentName(e.target.value) })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-medium text-slate-600 block mb-1' }, __alloT('report_writer.age_2', 'Age')),
+                        h('label', { className: 'text-xs font-medium text-slate-600 block mb-1' }, __alloT('report_writer.age_2', 'Age')),
                         h('input', { type: 'number', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: __alloT('report_writer.placeholder_years', 'Years'), 'aria-label': __alloT('report_writer.aria_student_age_in_years', 'Student age in years'), value: studentAge, onChange: e => setStudentAge(e.target.value), min: 1, max: 22 })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-medium text-slate-600 block mb-1' }, __alloT('report_writer.grade_2', 'Grade')),
+                        h('label', { className: 'text-xs font-medium text-slate-600 block mb-1' }, __alloT('report_writer.grade_2', 'Grade')),
                         h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-2', placeholder: __alloT('report_writer.placeholder_e_g_3rd', 'e.g., 3rd'), 'aria-label': __alloT('report_writer.aria_student_grade_level', 'Student grade level'), value: studentGrade, onChange: e => setStudentGrade(e.target.value) })
                     )
                 ),
@@ -6713,20 +6769,20 @@ Return ONLY valid JSON:
                 h('details', { className: 'mt-3 bg-amber-50 rounded-lg border border-amber-200' },
                     h('summary', { className: 'text-xs font-medium text-amber-700 px-3 py-2 cursor-pointer hover:bg-amber-100 rounded-t-lg' }, ('🧪 ' + __alloT('report_writer.load_demo_case_for_testing', 'Load Demo Case (for testing)'))),
                     h('div', { className: 'px-3 pb-3 space-y-2' },
-                        h('p', { className: 'text-[11px] text-amber-600' }, __alloT('report_writer.load_fictional_clinical_data_to_test', 'Load fictional clinical data to test the full report pipeline. All data is clearly marked as demo.')),
+                        h('p', { className: 'text-xs text-amber-600' }, __alloT('report_writer.load_fictional_clinical_data_to_test', 'Load fictional clinical data to test the full report pipeline. All data is clearly marked as demo.')),
                         Object.entries(DEMO_CASES).map(([key, demo]) =>
-                            h('button', { 'aria-label': rwFmt(__alloT('report_writer.aria_load_demo_case_named', 'Load demo case: {name}'), { name: demo.label }), key, className: 'w-full text-start px-3 py-2 bg-white rounded-lg border border-amber-600 hover:bg-amber-50 text-[11px] transition-colors',
+                            h('button', { 'aria-label': rwFmt(__alloT('report_writer.aria_load_demo_case_named', 'Load demo case: {name}'), { name: demo.label }), key, className: 'w-full text-start px-3 py-2 bg-white rounded-lg border border-amber-600 hover:bg-amber-50 text-xs transition-colors',
                                 onClick: () => loadDemoCase(key)
                             }, h('span', { className: 'font-medium text-slate-800' }, demo.label))
                         ),
                         h('div', { className: 'border-t border-amber-200 pt-2 mt-1' },
-                            h('button', { 'aria-label': __alloT('report_writer.aria_generate_ai_demo_case', 'Generate AI demo case'), className: `w-full text-start px-3 py-2 rounded-lg border text-[11px] transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-600 cursor-wait' : 'bg-violet-50 border-violet-600 hover:bg-violet-100'}`,
+                            h('button', { 'aria-label': __alloT('report_writer.aria_generate_ai_demo_case', 'Generate AI demo case'), className: `w-full text-start px-3 py-2 rounded-lg border text-xs transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-600 cursor-wait' : 'bg-violet-50 border-violet-600 hover:bg-violet-100'}`,
                                 onClick: generateAIDemoCase,
                                 disabled: generatingDemo
                             },
                                 generatingDemo ? h('span', { className: 'inline-block motion-reduce:animate-none w-3 h-3 border border-violet-400 border-t-violet-700 rounded-full' + (reducedMotion ? '' : ' animate-spin') }) : h('span', null, '🤖'),
                                 h('span', { className: 'font-medium text-violet-800' }, generatingDemo ? __alloT('report_writer.generating_random_case', 'Generating random case...') : ('🎲 ' + __alloT('report_writer.generate_random_ai_case', 'Generate Random AI Case'))),
-                                !generatingDemo && h('span', { className: 'text-[11px] text-violet-500 ms-auto' }, __alloT('report_writer.unique_each_time', 'Unique each time'))
+                                !generatingDemo && h('span', { className: 'text-xs text-violet-500 ms-auto' }, __alloT('report_writer.unique_each_time', 'Unique each time'))
                             )
                         )
                     )
@@ -6739,9 +6795,9 @@ Return ONLY valid JSON:
             // ═══ STEP 3: Clinical Observations ═══
             currentStep === 3 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { tabIndex: -1, 'data-rw-step-heading': 'true', className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, ('🔍 ' + __alloT('report_writer.clinical_observations', 'Clinical Observations'))),
-                h('p', { className: 'text-[11px] text-slate-600' }, __alloT('report_writer.enter_clinical_observations_interview_notes_and', 'Enter clinical observations, interview notes, and collateral information. Each source is tracked for fact attribution.')),
+                h('p', { className: 'text-xs text-slate-600' }, __alloT('report_writer.enter_clinical_observations_interview_notes_and', 'Enter clinical observations, interview notes, and collateral information. Each source is tracked for fact attribution.')),
                 // BehaviorLens import
-                (abcEntries?.length > 0 || observationSessions?.length > 0) && h('button', { 'aria-label': __alloT('report_writer.aria_import_from_behaviorlens', 'Import from BehaviorLens'), className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[11px] font-medium rounded-lg border border-indigo-600 hover:bg-indigo-100 transition-colors',
+                (abcEntries?.length > 0 || observationSessions?.length > 0) && h('button', { 'aria-label': __alloT('report_writer.aria_import_from_behaviorlens', 'Import from BehaviorLens'), className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-lg border border-indigo-600 hover:bg-indigo-100 transition-colors',
                     onClick: () => {
                         let obsText = clinicalObs.behavioral.text || '';
                         if (abcEntries && abcEntries.length > 0) {
@@ -6765,14 +6821,14 @@ Return ONLY valid JSON:
                     OBS_TAB_META.map(tab =>
                         h('button', { type: 'button', key: tab.key, 'aria-pressed': activeObsTab === tab.key ? 'true' : 'false',
                             'aria-label': clinicalObs[tab.key]?.text?.trim() ? rwFmt(__alloT('report_writer.aria_observation_source_has_text', '{label} (has notes)'), { label: tab.label }) : tab.label,
-                            className: 'px-2.5 py-1.5 rounded-t-lg text-[11px] font-medium transition-all ' + (activeObsTab === tab.key ? 'bg-violet-600 text-white' : (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-50 text-green-700 border border-green-600' : 'bg-slate-50 text-slate-600 hover:bg-slate-100')),
+                            className: 'px-2.5 py-1.5 rounded-t-lg text-xs font-medium transition-all ' + (activeObsTab === tab.key ? 'bg-violet-600 text-white' : (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-50 text-green-700 border border-green-600' : 'bg-slate-50 text-slate-600 hover:bg-slate-100')),
                             onClick: () => setActiveObsTab(tab.key)
                         }, tab.icon + ' ' + tab.label + (clinicalObs[tab.key]?.text?.trim() ? ' \u2713' : ''))
                     )
                 ),
                 // Active tab content
                 h('div', { className: 'space-y-2' },
-                    h('label', { className: 'text-[11px] font-medium text-slate-600 block' },
+                    h('label', { className: 'text-xs font-medium text-slate-600 block' },
                         clinicalObs[activeObsTab]?.source || activeObsTab
                     ),
                     h('textarea', {
@@ -6785,7 +6841,7 @@ Return ONLY valid JSON:
                             [activeObsTab]: { ...prev[activeObsTab], text: e.target.value }
                         }))
                     }),
-                    h('div', { className: 'flex items-center gap-2 text-[11px] text-slate-600' },
+                    h('div', { className: 'flex items-center gap-2 text-xs text-slate-600' },
                         h('span', null, ('📎 ' + __alloT('report_writer.source_attribution', 'Source attribution:') + ' ')),
                         h('span', { className: 'font-medium text-slate-600' }, clinicalObs[activeObsTab]?.source || __alloT('report_writer.unknown', 'Unknown')),
                         h('span', null, (' — ' + __alloT('report_writer.will_be_tracked_through_fact_extraction', 'will be tracked through fact extraction')))
@@ -6795,7 +6851,7 @@ Return ONLY valid JSON:
                 h('div', { className: 'bg-slate-50 rounded-lg p-2 flex flex-wrap gap-2' },
                     OBS_TAB_META.map(tab =>
                         h('span', { key: tab.key,
-                            className: 'text-[11px] px-2 py-0.5 rounded-full ' + (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-600')
+                            className: 'text-xs px-2 py-0.5 rounded-full ' + (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-600')
                         }, tab.icon + ' ' + tab.label + (clinicalObs[tab.key]?.text?.trim() ? (' ' + rwFmt(__alloT('report_writer.chars', '({count} chars)'), { count: clinicalObs[tab.key].text.length })) : ' \u2014'))
                     )
                 ),
@@ -6808,59 +6864,61 @@ Return ONLY valid JSON:
             // ═══ STEP 4: Assessment Score Entry ═══
             currentStep === 4 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-4' },
                 h('h3', { tabIndex: -1, 'data-rw-step-heading': 'true', className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, ('📊 ' + __alloT('report_writer.assessment_score_entry', 'Assessment Score Entry'))),
-                h('p', { className: 'text-[11px] text-slate-600' }, __alloT('report_writer.select_an_assessment_and_enter_scores', 'Select an assessment and enter scores. Classifications are auto-calculated.')),
+                h('p', { className: 'text-xs text-slate-600' }, __alloT('report_writer.select_an_assessment_and_enter_scores', 'Select an assessment and enter scores. Classifications are auto-calculated.')),
                 // Assessment picker
                 h('div', { className: 'flex flex-wrap items-end gap-3' },
                     h('div', { className: 'flex-1 min-w-[140px]' },
-                        h('label', { className: 'text-[11px] font-medium text-slate-600 block mb-1' }, __alloT('report_writer.assessment', 'Assessment')),
+                        h('label', { className: 'text-xs font-medium text-slate-600 block mb-1' }, __alloT('report_writer.assessment', 'Assessment')),
                         h('select', { className: 'w-full text-xs border rounded-lg px-2 py-1.5 bg-white', 'aria-label': __alloT('report_writer.aria_select_assessment', 'Select assessment'), value: selectedAssessment, onChange: e => setSelectedAssessment(e.target.value) },
                             Object.keys(ASSESSMENT_PRESETS).map(a => h('option', { key: a, value: a }, a))
                         )
                     ),
-                    h('div', { className: 'text-[11px] text-slate-600 bg-slate-50 rounded px-2 py-1' },
-                        rwFmt(__alloT('report_writer.scores_mean_sd', '{value} scores | Mean={value2} SD={value3}'), { value: ASSESSMENT_PRESETS[selectedAssessment]?.scoreType || 'standard', value2: ASSESSMENT_PRESETS[selectedAssessment]?.mean || 100, value3: ASSESSMENT_PRESETS[selectedAssessment]?.sd || 15 })
+                    h('div', { className: 'text-xs text-slate-600 bg-slate-50 rounded px-2 py-1' },
+                        rwFmt(__alloT('report_writer.scores_mean_sd', '{value} scores | Mean={value2} SD={value3}'), { value: (rwOwn(ASSESSMENT_PRESETS, selectedAssessment) ? ASSESSMENT_PRESETS[selectedAssessment]?.scoreType : null) || 'standard', value2: (rwOwn(ASSESSMENT_PRESETS, selectedAssessment) ? ASSESSMENT_PRESETS[selectedAssessment]?.mean : null) || 100, value3: (rwOwn(ASSESSMENT_PRESETS, selectedAssessment) ? ASSESSMENT_PRESETS[selectedAssessment]?.sd : null) || 15 })
                     ),
                     // Q-global prints either descriptor set; the labels must match the report's.
-                    RW_DESCRIPTOR_SCALES[selectedAssessment] && h('div', { className: 'min-w-[160px]' },
-                        h('label', { htmlFor: 'rw-descriptor-scale', className: 'text-[11px] font-medium text-slate-600 block mb-1' }, __alloT('report_writer.descriptors_as_on_the_score_report', 'Descriptors (as on the score report)')),
+                    rwOwn(RW_DESCRIPTOR_SCALES, selectedAssessment) && h('div', { className: 'min-w-[160px]' },
+                        h('label', { htmlFor: 'rw-descriptor-scale', className: 'text-xs font-medium text-slate-600 block mb-1' }, __alloT('report_writer.descriptors_as_on_the_score_report', 'Descriptors (as on the score report)')),
                         h('select', {
                             id: 'rw-descriptor-scale', className: 'w-full text-xs border rounded-lg px-2 py-1.5 bg-white',
                             value: descriptorScaleFor(selectedAssessment),
                             onChange: e => changeDescriptorScale(selectedAssessment, e.target.value)
-                        }, RW_DESCRIPTOR_SCALES[selectedAssessment].options.map(o => h('option', { key: o, value: o },
-                            RW_SCORE_SYSTEMS[rwSystemKeyFor(selectedAssessment, '', o)].name)))
+                        }, RW_DESCRIPTOR_SCALES[selectedAssessment].options.map(o => {
+                            const sysKey = rwSystemKeyFor(selectedAssessment, '', o);
+                            return h('option', { key: o, value: o }, rwOwn(RW_SCORE_SYSTEMS, sysKey) ? RW_SCORE_SYSTEMS[sysKey].name : '');
+                        }))
                     )
                 ),
                 // Read scores from the score report instead of retyping them.
                 h('details', { className: 'bg-sky-50 rounded-lg border border-sky-200' },
                     h('summary', { className: 'text-xs font-medium text-sky-900 px-3 py-2 cursor-pointer hover:bg-sky-100 rounded-lg' }, ('📋 ' + __alloT('report_writer.paste_title', 'Paste from the score report'))),
                     h('div', { className: 'px-3 pb-3 space-y-2' },
-                        h('p', { className: 'text-[11px] text-sky-900' }, rwFmt(__alloT('report_writer.paste_help', 'Paste the {assessment} score table from its score report, or open the report file. It is read on this device, nothing is sent to the AI, and no score is added until you tick it.'), { assessment: selectedAssessment })),
-                        h('textarea', { id: 'rw-report-paste', 'aria-label': __alloT('report_writer.aria_score_report_text', 'Score report text'), className: 'w-full text-[11px] border rounded px-2 py-1 h-24 resize-y font-mono', value: reportPaste, onChange: e => setReportPaste(e.target.value) }),
+                        h('p', { className: 'text-xs text-sky-900' }, rwFmt(__alloT('report_writer.paste_help', 'Paste the {assessment} score table from its score report, or open the report file. It is read on this device, nothing is sent to the AI, and no score is added until you tick it.'), { assessment: selectedAssessment })),
+                        h('textarea', { id: 'rw-report-paste', 'aria-label': __alloT('report_writer.aria_score_report_text', 'Score report text'), className: 'w-full text-xs border rounded px-2 py-1 h-24 resize-y font-mono', value: reportPaste, onChange: e => setReportPaste(e.target.value) }),
                         h('div', { className: 'flex flex-wrap items-center gap-2' },
-                            h('button', { type: 'button', disabled: !reportPaste.trim(), onClick: () => readReportPaste(reportPaste), className: 'px-3 py-1 bg-sky-700 text-white text-[11px] rounded hover:bg-sky-800 disabled:opacity-50' }, __alloT('report_writer.paste_read', 'Read scores')),
-                            h('label', { htmlFor: 'rw-report-file', className: 'text-[11px] text-sky-900 font-medium' }, reportPasteImporting ? __alloT('report_writer.reading_file', 'Reading file…') : __alloT('report_writer.paste_or_open_file', 'Or open the report file (PDF, Word, text):')),
-                            h('input', { id: 'rw-report-file', type: 'file', accept: '.pdf,.docx,.txt,.md', disabled: reportPasteImporting, 'aria-busy': reportPasteImporting, className: 'text-[11px] max-w-full', onChange: e => importReportPasteFile(e.target) })
+                            h('button', { type: 'button', disabled: !reportPaste.trim(), onClick: () => readReportPaste(reportPaste), className: 'px-3 py-1 bg-sky-700 text-white text-xs rounded hover:bg-sky-800 disabled:opacity-50' }, __alloT('report_writer.paste_read', 'Read scores')),
+                            h('label', { htmlFor: 'rw-report-file', className: 'text-xs text-sky-900 font-medium' }, reportPasteImporting ? __alloT('report_writer.reading_file', 'Reading file…') : __alloT('report_writer.paste_or_open_file', 'Or open the report file (PDF, Word, text):')),
+                            h('input', { id: 'rw-report-file', type: 'file', accept: '.pdf,.docx,.txt,.md', disabled: reportPasteImporting, 'aria-busy': reportPasteImporting, className: 'text-xs max-w-full', onChange: e => importReportPasteFile(e.target) })
                         ),
                         reportPastePreview && (() => {
                             const p = reportPastePreview;
                             const chosen = p.rows.filter(r => r.include).length;
-                            const scaleName = (o) => RW_SCORE_SYSTEMS[rwSystemKeyFor(p.assessment, '', o)].name;
+                            const scaleName = (o) => { const sysKey = rwSystemKeyFor(p.assessment, '', o); return rwOwn(RW_SCORE_SYSTEMS, sysKey) ? RW_SCORE_SYSTEMS[sysKey].name : ''; };
                             const toggle = (i, on) => setReportPastePreview(prev => ({ ...prev, rows: prev.rows.map((x, j) => (j === i ? { ...x, include: on } : x)) }));
                             return h('div', { className: 'space-y-2' },
-                                h('p', { className: 'text-[11px] font-medium text-slate-800', role: 'status' }, p.rows.length
+                                h('p', { className: 'text-xs font-medium text-slate-800', role: 'status' }, p.rows.length
                                     ? rwFmt(__alloT('report_writer.paste_found', 'Found {count} score line(s) for {assessment}. Tick the ones to add.'), { count: p.rows.length, assessment: p.assessment })
                                     : rwFmt(__alloT('report_writer.paste_none', 'No {assessment} scores were found in that text. Check the instrument selected above.'), { assessment: p.assessment })),
-                                p.descriptorScale && p.descriptorScale !== descriptorScaleFor(p.assessment) && h('p', { className: 'text-[11px] text-amber-900' },
+                                p.descriptorScale && p.descriptorScale !== descriptorScaleFor(p.assessment) && h('p', { className: 'text-xs text-amber-900' },
                                     rwFmt(__alloT('report_writer.paste_scale_detected', 'The report\'s labels match the {scale}; it will be used for {assessment}.'), { scale: scaleName(p.descriptorScale), assessment: p.assessment })),
-                                p.rows.some(r => r.ciLow != null) && h('div', { className: 'flex flex-wrap items-center gap-2 text-[11px]' },
+                                p.rows.some(r => r.ciLow != null) && h('div', { className: 'flex flex-wrap items-center gap-2 text-xs' },
                                     h('label', { htmlFor: 'rw-paste-ci-level', className: 'font-medium text-slate-700' }, __alloT('report_writer.paste_ci_level', 'Interval level')),
-                                    h('select', { id: 'rw-paste-ci-level', className: 'text-[11px] border rounded px-1 py-0.5 bg-white', value: reportPasteLevel, onChange: e => setReportPasteLevel(Number(e.target.value)) },
+                                    h('select', { id: 'rw-paste-ci-level', className: 'text-xs border rounded px-1 py-0.5 bg-white', value: reportPasteLevel, onChange: e => setReportPasteLevel(Number(e.target.value)) },
                                         RW_PASTE_CI_LEVELS.map(l => h('option', { key: l, value: l }, l + '%'))),
                                     !p.ciLevel && h('span', { className: 'text-amber-900' }, __alloT('report_writer.paste_ci_level_not_stated', 'Not stated in the pasted text; check it on the report.'))
                                 ),
                                 p.rows.length > 0 && h('div', { className: 'overflow-x-auto' },
-                                    h('table', { className: 'w-full text-[11px] border-collapse' },
+                                    h('table', { className: 'w-full text-xs border-collapse' },
                                         h('caption', { className: 'sr-only' }, rwFmt(__alloT('report_writer.paste_table_caption', 'Scores read from the {assessment} score report'), { assessment: p.assessment })),
                                         h('thead', null, h('tr', null,
                                             [__alloT('report_writer.paste_col_add', 'Add'), __alloT('report_writer.paste_col_subtest', 'Subtest'), __alloT('report_writer.score', 'Score'), __alloT('report_writer.percentile', 'Percentile'),
@@ -6877,7 +6935,7 @@ Return ONLY valid JSON:
                                         )))
                                     )
                                 ),
-                                p.rows.length > 0 && h('button', { type: 'button', disabled: !chosen, onClick: addPastedScores, className: 'px-3 py-1 bg-sky-700 text-white text-[11px] rounded hover:bg-sky-800 disabled:opacity-50' },
+                                p.rows.length > 0 && h('button', { type: 'button', disabled: !chosen, onClick: addPastedScores, className: 'px-3 py-1 bg-sky-700 text-white text-xs rounded hover:bg-sky-800 disabled:opacity-50' },
                                     rwFmt(__alloT('report_writer.paste_add', 'Add {count} selected score(s)'), { count: chosen }))
                             );
                         })()
@@ -6885,7 +6943,7 @@ Return ONLY valid JSON:
                 ),
                 // Preset subtests
                 (ASSESSMENT_PRESETS[selectedAssessment]?.subtests || []).length > 0 && h('div', { className: 'space-y-2' },
-                    h('p', { className: 'text-[11px] font-medium text-slate-600' }, rwFmt(__alloT('report_writer.subtests', '{selectedAssessment} Subtests:'), { selectedAssessment })),
+                    h('p', { className: 'text-xs font-medium text-slate-600' }, rwFmt(__alloT('report_writer.subtests', '{selectedAssessment} Subtests:'), { selectedAssessment })),
                     h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                         (ASSESSMENT_PRESETS[selectedAssessment]?.subtests || []).map(sub => {
                             const existing = scoreEntries.find(s => s.assessment === selectedAssessment && s.subtest === sub);
@@ -6896,18 +6954,18 @@ Return ONLY valid JSON:
                             const submit = (input) => { if (input && input.value !== '' && addScoreEntry(sub, input.value)) input.value = ''; };
                             const subId = 'rw-sub-' + sub.replace(/[^A-Za-z0-9]+/g, '-');
                             return h('div', { key: sub, className: `flex items-center gap-2 ${existing ? 'opacity-50' : ''}` },
-                                h('span', { id: subId, className: 'text-[11px] text-slate-600 flex-1 truncate' }, sub),
+                                h('span', { id: subId, className: 'text-xs text-slate-600 flex-1 truncate' }, sub),
                                 !existing ? h('input', {
                                     type: 'number', inputMode: 'decimal', className: 'w-16 text-xs border rounded px-1.5 py-0.5 text-center',
                                     'aria-label': rwFmt(__alloT('report_writer.aria_score_for', 'Score for {sub}'), { sub }),
                                     placeholder: __alloT('report_writer.placeholder_score', 'Score'),
                                     onKeyDown: e => { if (e.key === 'Enter') submit(e.target); }
-                                }) : h('span', { className: `text-[11px] px-2 py-0.5 rounded-full ${cBadge(existing.classColor)}` }, `${existing.score} — ${existing.classification}`),
+                                }) : h('span', { className: `text-xs px-2 py-0.5 rounded-full ${cBadge(existing.classColor)}` }, `${existing.score} — ${existing.classification}`),
                                 // Named "Add <subtest>" from visible text (aria-labelledby), so no
                                 // new untranslatable string reaches a screen reader.
                                 !existing && h('button', {
                                     type: 'button', id: subId + '-add', 'aria-labelledby': subId + '-add ' + subId,
-                                    className: 'text-[11px] px-2 py-0.5 rounded bg-violet-100 text-violet-800 hover:bg-violet-200',
+                                    className: 'text-xs px-2 py-0.5 rounded bg-violet-100 text-violet-800 hover:bg-violet-200',
                                     onClick: e => submit(e.currentTarget.parentElement.querySelector('input'))
                                 }, __alloT('report_writer.add', 'Add'))
                             );
@@ -6917,18 +6975,18 @@ Return ONLY valid JSON:
                 // Custom subtest entry
                 h('div', { className: 'flex items-end gap-2 pt-2 border-t border-slate-100' },
                     h('div', { className: 'flex-1' },
-                        h('label', { className: 'text-[11px] font-medium text-slate-600 block mb-1' }, __alloT('report_writer.custom_subtest', 'Custom Subtest')),
+                        h('label', { className: 'text-xs font-medium text-slate-600 block mb-1' }, __alloT('report_writer.custom_subtest', 'Custom Subtest')),
                         h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-2 py-1.5', placeholder: __alloT('report_writer.placeholder_subtest_name', 'Subtest name...'), 'aria-label': __alloT('report_writer.aria_custom_subtest_name', 'Custom subtest name'), value: customSubtest, onChange: e => setCustomSubtest(e.target.value) })
                     ),
                     h('div', { className: 'w-20' },
-                        h('label', { htmlFor: 'rw-custom-score', className: 'text-[11px] font-medium text-slate-600 block mb-1' }, __alloT('report_writer.score', 'Score')),
+                        h('label', { htmlFor: 'rw-custom-score', className: 'text-xs font-medium text-slate-600 block mb-1' }, __alloT('report_writer.score', 'Score')),
                         h('input', { id: 'rw-custom-score', type: 'number', inputMode: 'decimal', className: 'w-full text-xs border rounded-lg px-2 py-1.5 text-center', placeholder: '0', value: customScore, onChange: e => setCustomScore(e.target.value) })
                     ),
                     // Subtest scores are usually SCALED scores (mean 10, SD 3), not the
                     // instrument's composite metric; without this choice a WISC-V
                     // "Block Design 7" was classified as a standard score of 7.
                     h('div', { className: 'w-32' },
-                        h('label', { htmlFor: 'rw-custom-score-type', className: 'text-[11px] font-medium text-slate-600 block mb-1' }, __alloT('report_writer.score_type', 'Score type')),
+                        h('label', { htmlFor: 'rw-custom-score-type', className: 'text-xs font-medium text-slate-600 block mb-1' }, __alloT('report_writer.score_type', 'Score type')),
                         h('select', { id: 'rw-custom-score-type', className: 'w-full text-xs border rounded-lg px-1.5 py-1.5 bg-white', value: customScoreType || (ASSESSMENT_PRESETS[selectedAssessment]?.scoreType || 'standard'), onChange: e => setCustomScoreType(e.target.value) },
                             h('option', { value: 'standard' }, __alloT('report_writer.standard_score', 'Standard score')),
                             h('option', { value: 'scaled' }, __alloT('report_writer.scaled_score_mean_10', 'Scaled score (mean 10)')),
@@ -6944,8 +7002,8 @@ Return ONLY valid JSON:
                 // Score entries table
                 scoreEntries.length > 0 && h('div', { className: 'mt-3 space-y-1' },
                     h('div', { className: 'flex items-center justify-between' },
-                        h('p', { className: 'text-[11px] font-bold text-slate-700' }, rwFmt(__alloT('report_writer.scores_entered', '{count} Scores Entered'), { count: scoreEntries.length })),
-                        h('button', { 'aria-label': __alloT('report_writer.aria_clear_all', 'Clear All'), className: 'text-[11px] text-red-500 hover:text-red-700', onClick: () => setConfirmationRequest({
+                        h('p', { className: 'text-xs font-bold text-slate-700' }, rwFmt(__alloT('report_writer.scores_entered', '{count} Scores Entered'), { count: scoreEntries.length })),
+                        h('button', { 'aria-label': __alloT('report_writer.aria_clear_all', 'Clear All'), className: 'text-xs text-red-500 hover:text-red-700', onClick: () => setConfirmationRequest({
                             title: __alloT('report_writer.confirm_clear_scores_title', 'Remove all scores?'),
                             message: rwFmt(__alloT('report_writer.confirm_clear_scores_message', 'All {count} scores entered in Step 4 are removed.'), { count: scoreEntries.length }),
                             confirmLabel: __alloT('report_writer.confirm_clear_scores', 'Remove all scores'),
@@ -6960,17 +7018,17 @@ Return ONLY valid JSON:
                                 : Number(s.ciLow) > Number(s.ciHigh) ? __alloT('report_writer.ci_low_above_high', 'The low end is above the high end.')
                                 : (s.score < Number(s.ciLow) || s.score > Number(s.ciHigh)) ? __alloT('report_writer.ci_does_not_contain_score', 'This interval does not contain the score; check it against the score report.') : null;
                             return h('div', { key: s.id, className: 'space-y-1' },
-                                h('div', { className: `flex flex-wrap items-center justify-between gap-x-2 px-3 py-1.5 rounded-lg text-[11px] ${cBg(s.classColor)} border ${cBorder(s.classColor)}` },
+                                h('div', { className: `flex flex-wrap items-center justify-between gap-x-2 px-3 py-1.5 rounded-lg text-xs ${cBg(s.classColor)} border ${cBorder(s.classColor)}` },
                                     h('span', { id: 'rw-score-name-' + s.id, className: 'font-medium text-slate-800 flex-1' }, `${s.assessment} — ${s.subtest}` + (normalizeReportScoreType(s.scoreType) === 'scaled_score' ? (' ' + __alloT('report_writer.scaled', '(scaled)')) : '')),
                                     h('span', { className: `font-bold ${cText(s.classColor)}` }, `${s.score}`),
-                                    h('span', { className: `px-2 py-0.5 rounded-full text-[11px] ${cBadge(s.classColor)}` }, s.classification),
+                                    h('span', { className: `px-2 py-0.5 rounded-full text-xs ${cBadge(s.classColor)}` }, s.classification),
                                     s.percentile != null && s.percentile !== '' && h('span', { className: 'text-slate-600' }, rwFmt(__alloT('report_writer.ile', '{percentile}%ile{value}'), { percentile: s.percentile, value: s.percentileSource === 'manual' ? (' ' + __alloT('report_writer.report', '(report)')) : '' })),
                                     rwHasCI(s) && h('span', { className: 'text-slate-600' }, rwFmt(__alloT('report_writer.ci', '{value}% CI {ciLow}–{ciHigh}'), { value: s.ciLevel || 95, ciLow: s.ciLow, ciHigh: s.ciHigh })),
                                     rwHasPrior(s) && h('span', { className: 'text-slate-600' }, rwFmt(__alloT('report_writer.prior_badge', 'prior {prior}'), { prior: rwPriorText(s) })),
                                     h('button', {
                                         type: 'button', 'aria-expanded': open, 'aria-controls': 'rw-score-details-' + s.id,
                                         id: 'rw-score-detail-btn-' + s.id, 'aria-labelledby': 'rw-score-detail-btn-' + s.id + ' rw-score-name-' + s.id,
-                                        className: 'text-[11px] text-violet-800 underline hover:text-violet-900',
+                                        className: 'text-xs text-violet-800 underline hover:text-violet-900',
                                         onClick: () => setScoreDetailId(open ? null : s.id)
                                     }, hasReportValues ? __alloT('report_writer.edit_ile_ci_prior', 'Edit %ile / CI / prior') : ('+ ' + __alloT('report_writer.ile_ci_prior', '%ile / CI / prior'))),
                                     h('button', { 'aria-label': rwFmt(__alloT('report_writer.aria_remove_score_entry_named', 'Remove score entry: {name}'), { name: s.assessment + ' — ' + s.subtest }), className: 'ms-2 text-red-600 hover:text-red-600', onClick: () => removeScoreEntry(s.id) }, '✕')
@@ -6978,7 +7036,7 @@ Return ONLY valid JSON:
                                 // Percentiles for T-scores and every confidence interval come from
                                 // the manual's tables, so the report states them only if they are
                                 // copied in here (prompt rule 6; psycheck flags any it cannot source).
-                                open && h('div', { id: 'rw-score-details-' + s.id, className: 'flex flex-wrap items-end gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 text-[11px]' },
+                                open && h('div', { id: 'rw-score-details-' + s.id, className: 'flex flex-wrap items-end gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200 text-xs' },
                                     h('p', { className: 'w-full text-slate-600' }, __alloT('report_writer.copy_these_from_the_score_report', 'Copy these from the score report. A percentile you enter replaces the computed one; leave it blank to use the computed value.')),
                                     h('div', null,
                                         h('label', { htmlFor: 'rw-pct-' + s.id, className: 'block text-slate-600 mb-0.5' }, __alloT('report_writer.percentile', 'Percentile')),
@@ -7035,7 +7093,7 @@ Return ONLY valid JSON:
             // ═══ STEP 2: Background & History ═══
             currentStep === 2 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { tabIndex: -1, 'data-rw-step-heading': 'true', className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, ('📋 ' + __alloT('report_writer.background_history', 'Background & History'))),
-                h('p', { className: 'text-[11px] text-slate-600' }, __alloT('report_writer.enter_only_information_needed_for_the', 'Enter only information needed for the report. Common identifiers (selected code name, dates, email, phone, SSN, and ID labels) are redacted before AI calls, but automated redaction is not complete—review text and do not enter direct identifiers.')),
+                h('p', { className: 'text-xs text-slate-600' }, __alloT('report_writer.enter_only_information_needed_for_the', 'Enter only information needed for the report. Common identifiers (selected code name, dates, email, phone, SSN, and ID labels) are redacted before AI calls, but automated redaction is not complete—review text and do not enter direct identifiers.')),
                 // ── Redaction disclosure ──────────────────────────────────
                 // No regex catches every identifier in free clinical text. The
                 // honest move is to show the clinician what redaction WILL and
@@ -7049,9 +7107,9 @@ Return ONLY valid JSON:
                     const scan = analyzeRedaction(combined, { studentName: effectiveStudentName, people: reportPeople });
                     const tone = scan.needsAttention ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-200';
                     return h('div', { className: 'rounded-lg p-3 border ' + tone, role: 'status', 'data-redaction-disclosure': scan.needsAttention ? 'attention' : 'clean' },
-                        h('p', { className: 'text-[11px] font-bold text-slate-800 mb-1' },
+                        h('p', { className: 'text-xs font-bold text-slate-800 mb-1' },
                             (scan.needsAttention ? '⚠️ ' : '✓ ') + __alloT('report_writer.before_this_text_is_sent_for', 'Before this text is sent for AI processing')),
-                        h('ul', { className: 'space-y-1 text-[11px] text-slate-700' },
+                        h('ul', { className: 'space-y-1 text-xs text-slate-700' },
                             h('li', null, scan.hasStudentName
                                 ? __alloT('report_writer.the_student_name_including_first_or', 'The student name (including first or last name alone), emails, phone numbers, IDs, addresses and calendar dates are replaced before sending. Ages, grade levels and scores are kept — they are clinical data.')
                                 : h('strong', null, __alloT('report_writer.no_student_name_is_set_so', 'No student name is set, so NO name redaction is applied. Enter the student name in Step 1, or remove names from the text below.'))),
@@ -7063,39 +7121,39 @@ Return ONLY valid JSON:
                                 __alloT('report_writer.add_them_below_to_redact_them', 'Add them below to redact them by role, or remove them from the text.'))
                         ),
                         h('div', { className: 'mt-2 pt-2 border-t border-slate-200' },
-                            h('p', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, __alloT('report_writer.other_people_named_in_this_text', 'Other people named in this text')),
-                            h('p', { className: 'text-[10px] text-slate-600 mb-1.5' }, __alloT('report_writer.each_is_replaced_by_their_role', 'Each is replaced by their role, so "mother reports…" and "teacher reports…" stay distinguishable in the report.')),
+                            h('p', { className: 'text-xs font-bold text-slate-700 mb-1' }, __alloT('report_writer.other_people_named_in_this_text', 'Other people named in this text')),
+                            h('p', { className: 'text-xs text-slate-600 mb-1.5' }, __alloT('report_writer.each_is_replaced_by_their_role', 'Each is replaced by their role, so "mother reports…" and "teacher reports…" stay distinguishable in the report.')),
                             (reportPeople || []).map((person, idx) => h('div', { key: idx, className: 'flex flex-wrap items-center gap-1.5 mb-1' },
                                 h('input', {
                                     type: 'text', value: person.name || '', placeholder: __alloT('report_writer.placeholder_full_name', 'Full name'),
                                     'aria-label': rwFmt(__alloT('report_writer.aria_person_name', 'Person {value} name'), { value: idx + 1 }),
                                     onChange: (e) => { const v = e.target.value; setReportPeople(prev => prev.map((p, i) => i === idx ? { ...p, name: v } : p)); },
-                                    className: 'flex-1 min-w-[120px] px-2 py-1 border border-slate-300 rounded text-[11px]'
+                                    className: 'flex-1 min-w-[120px] px-2 py-1 border border-slate-300 rounded text-xs'
                                 }),
                                 h('select', {
                                     value: person.role || 'Parent', 'aria-label': rwFmt(__alloT('report_writer.aria_person_role', 'Person {value} role'), { value: idx + 1 }),
                                     onChange: (e) => { const v = e.target.value; setReportPeople(prev => prev.map((p, i) => i === idx ? { ...p, role: v } : p)); },
-                                    className: 'px-2 py-1 border border-slate-300 rounded text-[11px] bg-white'
+                                    className: 'px-2 py-1 border border-slate-300 rounded text-xs bg-white'
                                 }, ['Parent', 'Mother', 'Father', 'Guardian', 'Sibling', 'Teacher', 'Counselor', 'Clinician', 'Relative', 'Peer'].map(r => h('option', { key: r, value: r }, r))),
                                 h('button', {
                                     type: 'button', 'aria-label': rwFmt(__alloT('report_writer.aria_remove_person', 'Remove person {value}'), { value: idx + 1 }),
                                     onClick: () => setReportPeople(prev => prev.filter((p, i) => i !== idx)),
-                                    className: 'px-2 py-1 text-[11px] text-slate-600 border border-slate-300 rounded hover:bg-slate-100'
+                                    className: 'px-2 py-1 text-xs text-slate-600 border border-slate-300 rounded hover:bg-slate-100'
                                 }, __alloT('report_writer.remove', 'Remove'))
                             )),
                             h('button', {
                                 type: 'button', 'data-add-person': 'true',
                                 onClick: () => setReportPeople(prev => [...(prev || []), { name: '', role: 'Parent' }]),
-                                className: 'px-2 py-1 bg-slate-100 text-slate-700 text-[11px] font-medium rounded border border-slate-300 hover:bg-slate-200'
+                                className: 'px-2 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded border border-slate-300 hover:bg-slate-200'
                             }, ('+ ' + __alloT('report_writer.add_a_person', 'Add a person')))
                         )
                     );
                 })(),
                 h('div', { className: 'flex flex-wrap gap-2' },
-                    (abcEntries?.length > 0 || observationSessions?.length > 0) && h('button', { className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[11px] font-medium rounded-lg border border-indigo-600 hover:bg-indigo-100 transition-colors',
+                    (abcEntries?.length > 0 || observationSessions?.length > 0) && h('button', { className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-lg border border-indigo-600 hover:bg-indigo-100 transition-colors',
                         onClick: importFromBehaviorLens
                     }, ('📥 ' + rwFmt(__alloT('report_writer.import_from_behaviorlens_abc_observations', 'Import from BehaviorLens ({value} ABC + {value2} observations)'), { value: abcEntries?.length || 0, value2: observationSessions?.length || 0 }))),
-                    longitudinalData && h('button', { 'aria-label': __alloT('report_writer.aria_import_student_progress', 'Import student progress'), className: 'px-3 py-1.5 bg-teal-50 text-teal-700 text-[11px] font-medium rounded-lg border border-teal-600 hover:bg-teal-100 transition-colors',
+                    longitudinalData && h('button', { 'aria-label': __alloT('report_writer.aria_import_student_progress', 'Import student progress'), className: 'px-3 py-1.5 bg-teal-50 text-teal-700 text-xs font-medium rounded-lg border border-teal-600 hover:bg-teal-100 transition-colors',
                         onClick: importStudentProgress
                     }, ('📈 ' + rwFmt(__alloT('report_writer.import_student_progress_activities', 'Import Student Progress ({value} activities{value2})'), { value: longitudinalData.history?.length || 0, value2: longitudinalData.mathProbeHistory?.length ? (' + ' + rwFmt(__alloT('report_writer.probes', '{count} probes'), { count: longitudinalData.mathProbeHistory.length })) : '' })))
                 ),
@@ -7109,7 +7167,7 @@ Return ONLY valid JSON:
                     { key: 'observations', label: __alloT('report_writer.field_test_session_observations', 'Test Session Observations'), placeholder: __alloT('report_writer.placeholder_how_the_student_presented_during_testing', 'How the student presented during testing...'), rows: 2 },
                 ].map(({ key, label, placeholder, rows }) =>
                     h('div', { key },
-                        h('label', { className: 'text-[11px] font-medium text-slate-600 block mb-1' }, label),
+                        h('label', { className: 'text-xs font-medium text-slate-600 block mb-1' }, label),
                         h('textarea', {
                             className: 'w-full text-xs border rounded-lg px-3 py-2 resize-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400',
                             'aria-label': label,
@@ -7122,13 +7180,13 @@ Return ONLY valid JSON:
                 h('details', { className: 'mt-3 bg-teal-50 rounded-lg border border-teal-200', open: caseDocuments.length > 0 || undefined },
                     h('summary', { className: 'text-xs font-medium text-teal-800 px-3 py-2 cursor-pointer hover:bg-teal-100 rounded-t-lg' }, ('📁 ' + __alloT('report_writer.case_documents_title', 'Case Documents (prior evaluations, IEPs)'))),
                     h('div', { className: 'px-3 pb-3 space-y-2' },
-                        h('p', { className: 'text-[11px] text-teal-900' }, __alloT('report_writer.case_documents_privacy', 'Kept for this session only: case documents are not saved with the report or stored on this device. Nothing from them reaches the AI until you turn a document on, and then only passages with the student name, listed people, emails, phone numbers, IDs, addresses and dates redacted. Scores in them are used to check prior scores the report cites.')),
-                        !effectiveStudentName && caseDocuments.length > 0 && h('p', { className: 'text-[11px] font-medium text-amber-900', role: 'status' }, __alloT('report_writer.case_documents_need_name', 'Set the student name in Step 1 before using a case document with the AI, so it can be redacted.')),
+                        h('p', { className: 'text-xs text-teal-900' }, __alloT('report_writer.case_documents_privacy', 'Kept for this session only: case documents are not saved with the report or stored on this device. Nothing from them reaches the AI until you turn a document on, and then only passages with the student name, listed people, emails, phone numbers, IDs, addresses and dates redacted. Scores in them are used to check prior scores the report cites.')),
+                        !effectiveStudentName && caseDocuments.length > 0 && h('p', { className: 'text-xs font-medium text-amber-900', role: 'status' }, __alloT('report_writer.case_documents_need_name', 'Set the student name in Step 1 before using a case document with the AI, so it can be redacted.')),
                         caseDocuments.map(doc => {
                             const scan = analyzeRedaction(doc.text, { studentName: effectiveStudentName, people: reportPeople });
                             const aiId = 'rw-case-ai-' + doc.id;
                             const titleId = 'rw-case-title-' + doc.id;
-                            return h('div', { key: doc.id, className: 'px-2 py-1.5 bg-white rounded border border-slate-400 text-[11px] space-y-1' },
+                            return h('div', { key: doc.id, className: 'px-2 py-1.5 bg-white rounded border border-slate-400 text-xs space-y-1' },
                                 h('div', { className: 'flex items-center justify-between gap-2' },
                                     h('span', { id: titleId, className: 'font-medium text-slate-800 truncate' }, doc.title),
                                     h('span', { className: 'text-slate-600 shrink-0' }, rwFmt(__alloT('report_writer.case_document_characters', '{count} characters'), { count: doc.text.length.toLocaleString() })),
@@ -7144,7 +7202,7 @@ Return ONLY valid JSON:
                                     h('label', { htmlFor: aiId, className: 'text-slate-700' }, __alloT('report_writer.case_use_with_ai', 'Use redacted passages with the AI'))
                                 ),
                                 scoreEntries.length > 0 && h('button', { type: 'button', id: 'rw-case-prior-' + doc.id, 'aria-labelledby': 'rw-case-prior-' + doc.id + ' ' + titleId,
-                                    className: 'text-[11px] text-teal-800 underline hover:text-teal-900', onClick: () => findPriorScores(doc) }, __alloT('report_writer.find_prior_scores', 'Find prior scores')),
+                                    className: 'text-xs text-teal-800 underline hover:text-teal-900', onClick: () => findPriorScores(doc) }, __alloT('report_writer.find_prior_scores', 'Find prior scores')),
                                 priorFind && priorFind.docId === doc.id && h('div', { className: 'bg-teal-50 rounded p-2 space-y-1' },
                                     h('p', { className: 'text-slate-800', role: 'status' }, priorFind.rows.length
                                         ? rwFmt(__alloT('report_writer.prior_found', 'Found {count} prior score(s) for subtests entered in Step 4. Tick the ones to record.'), { count: priorFind.rows.length })
@@ -7166,14 +7224,14 @@ Return ONLY valid JSON:
                             );
                         }),
                         h('div', { className: 'space-y-1 mt-2 bg-white rounded-lg p-2 border border-teal-100' },
-                            h('input', { type: 'text', className: 'w-full text-[11px] border rounded px-2 py-1', 'aria-label': __alloT('report_writer.aria_case_document_name', 'Case document name'), placeholder: __alloT('report_writer.placeholder_case_document_name', 'Document name (e.g., "2023 reevaluation")...'), value: newCaseTitle, onChange: e => setNewCaseTitle(e.target.value) }),
-                            h('textarea', { className: 'w-full text-[11px] border rounded px-2 py-1 h-20 resize-none font-mono', 'aria-label': __alloT('report_writer.aria_case_document_text', 'Case document text'), placeholder: __alloT('report_writer.placeholder_paste_case_document_text', 'Paste the document text here...'), value: newCaseText, onChange: e => setNewCaseText(e.target.value) }),
-                            newCaseText.trim() && h('button', { type: 'button', className: 'px-3 py-1 bg-teal-700 text-white text-[11px] rounded hover:bg-teal-800',
+                            h('input', { type: 'text', className: 'w-full text-xs border rounded px-2 py-1', 'aria-label': __alloT('report_writer.aria_case_document_name', 'Case document name'), placeholder: __alloT('report_writer.placeholder_case_document_name', 'Document name (e.g., "2023 reevaluation")...'), value: newCaseTitle, onChange: e => setNewCaseTitle(e.target.value) }),
+                            h('textarea', { className: 'w-full text-xs border rounded px-2 py-1 h-20 resize-none font-mono', 'aria-label': __alloT('report_writer.aria_case_document_text', 'Case document text'), placeholder: __alloT('report_writer.placeholder_paste_case_document_text', 'Paste the document text here...'), value: newCaseText, onChange: e => setNewCaseText(e.target.value) }),
+                            newCaseText.trim() && h('button', { type: 'button', className: 'px-3 py-1 bg-teal-700 text-white text-xs rounded hover:bg-teal-800',
                                 onClick: () => { addCaseDocument(newCaseTitle, newCaseText.trim()); setNewCaseTitle(''); setNewCaseText(''); }
                             }, ('➕ ' + __alloT('report_writer.add_case_document', 'Add Case Document'))),
                             h('div', { className: 'flex items-center gap-2 pt-1' },
-                                h('label', { htmlFor: 'rw-case-file', className: 'text-[11px] text-teal-900 font-medium' }, caseImporting ? __alloT('report_writer.reading_file', 'Reading file…') : __alloT('report_writer.or_import_a_file_pdf_word', 'Or import a file (PDF, Word, text):')),
-                                h('input', { id: 'rw-case-file', type: 'file', accept: '.pdf,.docx,.txt,.md', disabled: caseImporting, 'aria-busy': caseImporting, className: 'text-[11px] max-w-full', onChange: e => importCaseFile(e.target) })
+                                h('label', { htmlFor: 'rw-case-file', className: 'text-xs text-teal-900 font-medium' }, caseImporting ? __alloT('report_writer.reading_file', 'Reading file…') : __alloT('report_writer.or_import_a_file_pdf_word', 'Or import a file (PDF, Word, text):')),
+                                h('input', { id: 'rw-case-file', type: 'file', accept: '.pdf,.docx,.txt,.md', disabled: caseImporting, 'aria-busy': caseImporting, className: 'text-xs max-w-full', onChange: e => importCaseFile(e.target) })
                             )
                         )
                     )
@@ -7182,31 +7240,31 @@ Return ONLY valid JSON:
                 h('details', { className: 'mt-3 bg-indigo-50 rounded-lg border border-indigo-200' },
                     h('summary', { className: 'text-xs font-medium text-indigo-700 px-3 py-2 cursor-pointer hover:bg-indigo-100 rounded-t-lg' }, ('📚 ' + __alloT('report_writer.reference_library_dsm_5_tr_custom', 'Reference Library (DSM-5-TR + Custom Documents)'))),
                     h('div', { className: 'px-3 pb-3 space-y-2' },
-                        h('p', { className: 'text-[11px] text-indigo-500' }, __alloT('report_writer.add_clinical_references_e_g_muser', 'Add clinical references (e.g., MUSER, district protocols) for cross-referencing in analysis and report generation.')),
-                        h('div', { className: 'px-2 py-1.5 bg-white rounded border border-indigo-100 flex items-center justify-between text-[11px]' },
+                        h('p', { className: 'text-xs text-indigo-500' }, __alloT('report_writer.add_clinical_references_e_g_muser', 'Add clinical references (e.g., MUSER, district protocols) for cross-referencing in analysis and report generation.')),
+                        h('div', { className: 'px-2 py-1.5 bg-white rounded border border-indigo-100 flex items-center justify-between text-xs' },
                             h('span', { className: 'font-medium text-indigo-800' }, ('📖 ' + __alloT('report_writer.dsm_5_tr_paraphrased_criteria_built', 'DSM-5-TR (Paraphrased Criteria) — Built-in'))),
-                            h('span', { className: 'text-[11px] px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded-full' }, __alloT('report_writer.default', 'Default'))
+                            h('span', { className: 'text-xs px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded-full' }, __alloT('report_writer.default', 'Default'))
                         ),
                         referenceLibrary.map(ref =>
-                            h('div', { key: ref.id, className: 'px-2 py-1.5 bg-white rounded border border-slate-400 flex items-center justify-between text-[11px]' },
+                            h('div', { key: ref.id, className: 'px-2 py-1.5 bg-white rounded border border-slate-400 flex items-center justify-between text-xs' },
                                 h('div', { className: 'flex-1 min-w-0' },
                                     h('span', { className: 'font-medium text-slate-800 block truncate' }, ref.name),
-                                    h('span', { className: 'text-slate-600 text-[11px]' }, ref.text.substring(0, 80) + '...')
+                                    h('span', { className: 'text-slate-600 text-xs' }, ref.text.substring(0, 80) + '...')
                                 ),
                                 h('button', { 'aria-label': rwFmt(__alloT('report_writer.aria_remove_reference_named', 'Remove reference: {name}'), { name: ref.name }), className: 'ms-2 text-red-600 hover:text-red-600 text-xs', onClick: () => setReferenceLibrary(prev => prev.filter(r => r.id !== ref.id)) }, '\u2715')
                             )
                         ),
                         h('div', { className: 'space-y-1 mt-2 bg-white rounded-lg p-2 border border-indigo-100' },
-                            h('input', { type: 'text', className: 'w-full text-[11px] border rounded px-2 py-1', 'aria-label': __alloT('report_writer.aria_reference_name', 'Reference name'), placeholder: __alloT('report_writer.placeholder_reference_name_e_g_muser_ch', 'Reference name (e.g., "MUSER Ch. 101")...'), value: newRefName, onChange: e => setNewRefName(e.target.value) }),
-                            h('textarea', { className: 'w-full text-[11px] border rounded px-2 py-1 h-20 resize-none font-mono', 'aria-label': __alloT('report_writer.aria_reference_text', 'Reference text'), placeholder: __alloT('report_writer.placeholder_paste_reference_text_here', 'Paste reference text here...'), value: newRefText, onChange: e => setNewRefText(e.target.value) }),
-                            newRefName.trim() && newRefText.trim() && h('button', { 'aria-label': __alloT('report_writer.aria_add_reference', 'Add reference'), className: 'px-3 py-1 bg-indigo-600 text-white text-[11px] rounded hover:bg-indigo-700',
+                            h('input', { type: 'text', className: 'w-full text-xs border rounded px-2 py-1', 'aria-label': __alloT('report_writer.aria_reference_name', 'Reference name'), placeholder: __alloT('report_writer.placeholder_reference_name_e_g_muser_ch', 'Reference name (e.g., "MUSER Ch. 101")...'), value: newRefName, onChange: e => setNewRefName(e.target.value) }),
+                            h('textarea', { className: 'w-full text-xs border rounded px-2 py-1 h-20 resize-none font-mono', 'aria-label': __alloT('report_writer.aria_reference_text', 'Reference text'), placeholder: __alloT('report_writer.placeholder_paste_reference_text_here', 'Paste reference text here...'), value: newRefText, onChange: e => setNewRefText(e.target.value) }),
+                            newRefName.trim() && newRefText.trim() && h('button', { 'aria-label': __alloT('report_writer.aria_add_reference', 'Add reference'), className: 'px-3 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700',
                                 onClick: () => { setReferenceLibrary(prev => [...prev, { id: uid(), name: newRefName.trim(), text: newRefText.trim(), addedAt: new Date().toISOString() }]); setNewRefName(''); setNewRefText(''); if (addToast) addToast(t('toasts.reference_added'), 'success'); }
                             }, ('➕ ' + __alloT('report_writer.add_reference', 'Add Reference'))),
                             // Or add a reference from a file (PDF text layer by page, Word,
                             // text) through Lumen's document reader.
                             h('div', { className: 'flex items-center gap-2 pt-1' },
-                                h('label', { htmlFor: 'rw-ref-file', className: 'text-[11px] text-indigo-800 font-medium' }, refImporting ? __alloT('report_writer.reading_file', 'Reading file…') : __alloT('report_writer.or_import_a_file_pdf_word', 'Or import a file (PDF, Word, text):')),
-                                h('input', { id: 'rw-ref-file', type: 'file', accept: '.pdf,.docx,.txt,.md', disabled: refImporting, 'aria-busy': refImporting, className: 'text-[11px] max-w-full', onChange: e => importReferenceFile(e.target) })
+                                h('label', { htmlFor: 'rw-ref-file', className: 'text-xs text-indigo-800 font-medium' }, refImporting ? __alloT('report_writer.reading_file', 'Reading file…') : __alloT('report_writer.or_import_a_file_pdf_word', 'Or import a file (PDF, Word, text):')),
+                                h('input', { id: 'rw-ref-file', type: 'file', accept: '.pdf,.docx,.txt,.md', disabled: refImporting, 'aria-busy': refImporting, className: 'text-xs max-w-full', onChange: e => importReferenceFile(e.target) })
                             )
                         )
                     )
@@ -7221,14 +7279,14 @@ Return ONLY valid JSON:
                 h('h3', { tabIndex: -1, 'data-rw-step-heading': 'true', className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, ('🔒 ' + __alloT('report_writer.fact_chunk_review', 'Fact Chunk Review'))),
                 staleFactsNotice(),
                 backgroundStaleNotice(),
-                h('p', { className: 'text-[11px] text-slate-600' }, __alloT('report_writer.verify_each_fact_verified_chunks_become', 'Verify each fact. Verified chunks become immutable and serve as ground truth for the report.')),
+                h('p', { className: 'text-xs text-slate-600' }, __alloT('report_writer.verify_each_fact_verified_chunks_become', 'Verify each fact. Verified chunks become immutable and serve as ground truth for the report.')),
                 // Stats bar
                 h('div', { className: 'flex items-center gap-3 bg-slate-50 rounded-lg p-2' },
-                    h('span', { className: 'text-[11px] font-medium text-slate-600' }, rwFmt(__alloT('report_writer.total', '{totalChunks} total'), { totalChunks })),
-                    h('span', { className: 'text-[11px] font-medium text-green-600' }, ('✅ ' + rwFmt(__alloT('report_writer.verified', '{verifiedCount} verified'), { verifiedCount }))),
-                    h('span', { className: 'text-[11px] font-medium text-slate-600' }, ('⏳ ' + rwFmt(__alloT('report_writer.pending', '{value} pending'), { value: totalChunks - verifiedCount }))),
-                    deficitCount > 0 && h('span', { className: 'text-[11px] font-medium text-red-600' }, ('⚠️ ' + rwFmt(__alloT('report_writer.deficits', '{deficitCount} deficits'), { deficitCount }))),
-                    totalChunks > 0 && verifiedCount < totalChunks && h('button', { 'aria-label': __alloT('report_writer.aria_verify_all_fact_chunks', 'Verify all fact chunks'), className: 'ms-auto text-[11px] px-2 py-0.5 bg-green-700 text-white rounded-full hover:bg-green-700', onClick: verifyAllChunks
+                    h('span', { className: 'text-xs font-medium text-slate-600' }, rwFmt(__alloT('report_writer.total', '{totalChunks} total'), { totalChunks })),
+                    h('span', { className: 'text-xs font-medium text-green-600' }, ('✅ ' + rwFmt(__alloT('report_writer.verified', '{verifiedCount} verified'), { verifiedCount }))),
+                    h('span', { className: 'text-xs font-medium text-slate-600' }, ('⏳ ' + rwFmt(__alloT('report_writer.pending', '{value} pending'), { value: totalChunks - verifiedCount }))),
+                    deficitCount > 0 && h('span', { className: 'text-xs font-medium text-red-600' }, ('⚠️ ' + rwFmt(__alloT('report_writer.deficits', '{deficitCount} deficits'), { deficitCount }))),
+                    totalChunks > 0 && verifiedCount < totalChunks && h('button', { 'aria-label': __alloT('report_writer.aria_verify_all_fact_chunks', 'Verify all fact chunks'), className: 'ms-auto text-xs px-2 py-0.5 bg-green-700 text-white rounded-full hover:bg-green-700', onClick: verifyAllChunks
                     }, ('✅ ' + __alloT('report_writer.verify_all', 'Verify All')))
                 ),
                 extracting && h('div', { className: 'text-center py-6' },
@@ -7246,17 +7304,17 @@ Return ONLY valid JSON:
                             h('div', { className: 'flex items-start justify-between gap-2' },
                                 h('div', { className: 'flex-1' },
                                     h('div', { className: 'flex items-center gap-2 mb-1' },
-                                        h('span', { className: `text-[11px] px-1.5 py-0.5 rounded-full font-medium ${chunk.type === 'score' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}` }, chunk.type),
-                                        h('span', { className: 'text-[11px] text-slate-600' }, chunk.source),
-                                        chunk.verified && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-bold' }, ('🔒 ' + __alloT('report_writer.immutable', 'Immutable'))),
-                                        chunk.devNormResult && h('span', { className: `text-[11px] px-1.5 py-0.5 rounded-full font-medium ${cBadge(chunk.devNormResult.color)}` }, chunk.devNormResult.label)
+                                        h('span', { className: `text-xs px-1.5 py-0.5 rounded-full font-medium ${chunk.type === 'score' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}` }, chunk.type),
+                                        h('span', { className: 'text-xs text-slate-600' }, chunk.source),
+                                        chunk.verified && h('span', { className: 'text-xs px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-bold' }, ('🔒 ' + __alloT('report_writer.immutable', 'Immutable'))),
+                                        chunk.devNormResult && h('span', { className: `text-xs px-1.5 py-0.5 rounded-full font-medium ${cBadge(chunk.devNormResult.color)}` }, chunk.devNormResult.label)
                                     ),
                                     h('p', { className: 'text-xs font-medium text-slate-800' }, `${chunk.field}: ${chunk.type === 'score' ? chunk.value + ' (' + chunk.classification + ')' : chunk.value}`),
-                                    chunk.devNormResult?.explanation && h('p', { className: `text-[11px] mt-0.5 ${cText(chunk.devNormResult.color)}` }, chunk.devNormResult.explanation)
+                                    chunk.devNormResult?.explanation && h('p', { className: `text-xs mt-0.5 ${cText(chunk.devNormResult.color)}` }, chunk.devNormResult.explanation)
                                 ),
                                 !chunk.verified && h('div', { className: 'flex items-center gap-1' },
-                                    h('button', { 'aria-label': __alloT('report_writer.aria_verify_and_lock_this_fact_chunk', 'Verify and lock this fact chunk'), className: 'px-2 py-1 bg-green-700 text-white text-[11px] rounded hover:bg-green-700', onClick: () => verifyChunk(chunk.id), title: __alloT('report_writer.title_verify_lock', 'Verify & Lock') }, '✅'),
-                                    h('button', { 'aria-label': __alloT('report_writer.aria_reject_fact_chunk', 'Reject fact chunk'), className: 'px-2 py-1 bg-red-100 text-red-700 text-[11px] rounded hover:bg-red-200', onClick: () => rejectChunk(chunk.id), title: __alloT('report_writer.title_reject', 'Reject') }, '✕')
+                                    h('button', { 'aria-label': __alloT('report_writer.aria_verify_and_lock_this_fact_chunk', 'Verify and lock this fact chunk'), className: 'px-2 py-1 bg-green-700 text-white text-xs rounded hover:bg-green-700', onClick: () => verifyChunk(chunk.id), title: __alloT('report_writer.title_verify_lock', 'Verify & Lock') }, '✅'),
+                                    h('button', { 'aria-label': __alloT('report_writer.aria_reject_fact_chunk', 'Reject fact chunk'), className: 'px-2 py-1 bg-red-100 text-red-700 text-xs rounded hover:bg-red-200', onClick: () => rejectChunk(chunk.id), title: __alloT('report_writer.title_reject', 'Reject') }, '✕')
                                 )
                             )
                         )
@@ -7273,39 +7331,39 @@ Return ONLY valid JSON:
             // ═══ STEP 6: Diagnostic Hypotheses ═══
             currentStep === 6 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { tabIndex: -1, 'data-rw-step-heading': 'true', className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, ('🔬 ' + __alloT('report_writer.diagnostic_hypotheses', 'Diagnostic Hypotheses'))),
-                h('p', { className: 'text-[11px] text-slate-600' }, __alloT('report_writer.enter_diagnostic_hypotheses_to_evaluate_the', 'Enter diagnostic hypotheses to evaluate. The AI will organize your verified evidence for and against each hypothesis.')),
+                h('p', { className: 'text-xs text-slate-600' }, __alloT('report_writer.enter_diagnostic_hypotheses_to_evaluate_the', 'Enter diagnostic hypotheses to evaluate. The AI will organize your verified evidence for and against each hypothesis.')),
                 // Hypothesis presets
                 h('div', { className: 'space-y-2' },
-                    h('label', { className: 'text-[11px] font-medium text-slate-600' }, __alloT('report_writer.quick_add', 'Quick Add:')),
+                    h('label', { className: 'text-xs font-medium text-slate-600' }, __alloT('report_writer.quick_add', 'Quick Add:')),
                     h('div', { className: 'flex flex-wrap gap-1' },
                         HYPOTHESIS_PRESETS.filter(p => !hypotheses.includes(p)).map(preset =>
                             h('button', { 'aria-label': __alloT('report_writer.aria_add_hypothesis_preset', 'Add hypothesis preset'), key: preset,
-                                className: 'px-2 py-1 bg-violet-50 text-violet-700 text-[11px] rounded-full border border-violet-600 hover:bg-violet-100 transition-colors',
+                                className: 'px-2 py-1 bg-violet-50 text-violet-700 text-xs rounded-full border border-violet-600 hover:bg-violet-100 transition-colors',
                                 onClick: () => setHypotheses(prev => [...prev, preset])
                             }, '+ ' + preset)
                         )
                     ),
                     // Custom hypothesis
                     h('div', { className: 'flex gap-2 mt-1' },
-                        h('input', { type: 'text', className: 'flex-1 text-[11px] border rounded-lg px-2 py-1', placeholder: __alloT('report_writer.placeholder_custom_hypothesis', 'Custom hypothesis...'), 'aria-label': __alloT('report_writer.aria_custom_hypothesis', 'Custom hypothesis'), value: newHypothesis, onChange: e => setNewHypothesis(e.target.value), onKeyDown: e => { if (e.key === 'Enter' && newHypothesis.trim()) { setHypotheses(prev => [...prev, newHypothesis.trim()]); setNewHypothesis(''); } } }),
-                        h('button', { 'aria-label': __alloT('report_writer.aria_add', 'Add'), className: 'px-3 py-1 bg-violet-600 text-white text-[11px] rounded-lg hover:bg-violet-700', disabled: !newHypothesis.trim(), onClick: () => { if (newHypothesis.trim()) { setHypotheses(prev => [...prev, newHypothesis.trim()]); setNewHypothesis(''); } } }, __alloT('report_writer.add', 'Add'))
+                        h('input', { type: 'text', className: 'flex-1 text-xs border rounded-lg px-2 py-1', placeholder: __alloT('report_writer.placeholder_custom_hypothesis', 'Custom hypothesis...'), 'aria-label': __alloT('report_writer.aria_custom_hypothesis', 'Custom hypothesis'), value: newHypothesis, onChange: e => setNewHypothesis(e.target.value), onKeyDown: e => { if (e.key === 'Enter' && newHypothesis.trim()) { setHypotheses(prev => [...prev, newHypothesis.trim()]); setNewHypothesis(''); } } }),
+                        h('button', { 'aria-label': __alloT('report_writer.aria_add', 'Add'), className: 'px-3 py-1 bg-violet-600 text-white text-xs rounded-lg hover:bg-violet-700', disabled: !newHypothesis.trim(), onClick: () => { if (newHypothesis.trim()) { setHypotheses(prev => [...prev, newHypothesis.trim()]); setNewHypothesis(''); } } }, __alloT('report_writer.add', 'Add'))
                     )
                 ),
                 // Current hypotheses
                 hypotheses.length > 0 && h('div', { className: 'bg-slate-50 rounded-lg p-3 space-y-1' },
-                    h('label', { className: 'text-[11px] font-medium text-slate-600 block mb-1' }, __alloT('report_writer.active_hypotheses', 'Active Hypotheses:')),
+                    h('label', { className: 'text-xs font-medium text-slate-600 block mb-1' }, __alloT('report_writer.active_hypotheses', 'Active Hypotheses:')),
                     hypotheses.map((hyp, i) =>
-                        h('div', { key: i, className: 'flex items-center justify-between px-2 py-1.5 bg-white rounded border text-[11px] ' + (selectedHypotheses.includes(hyp) ? 'border-violet-300 bg-violet-50' : 'border-slate-200') },
+                        h('div', { key: i, className: 'flex items-center justify-between px-2 py-1.5 bg-white rounded border text-xs ' + (selectedHypotheses.includes(hyp) ? 'border-violet-300 bg-violet-50' : 'border-slate-200') },
                             h('div', { className: 'flex items-center gap-2 flex-1' },
                                 h('input', { type: 'checkbox', 'aria-label': rwFmt(__alloT('report_writer.aria_include_hypothesis', 'Include hypothesis: {hyp}'), { hyp }), checked: selectedHypotheses.includes(hyp), onChange: e => { if (e.target.checked) setSelectedHypotheses(prev => [...prev, hyp]); else setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }),
                                 h('span', { className: 'font-medium text-slate-800' }, hyp),
-                                differentialResults[hyp] && h('span', { className: 'px-1.5 py-0.5 rounded-full text-[11px] font-bold ' + (differentialResults[hyp].strengthScore >= 7 ? 'bg-green-100 text-green-700' : differentialResults[hyp].strengthScore >= 4 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700')
+                                differentialResults[hyp] && h('span', { className: 'px-1.5 py-0.5 rounded-full text-xs font-bold ' + (differentialResults[hyp].strengthScore >= 7 ? 'bg-green-100 text-green-700' : differentialResults[hyp].strengthScore >= 4 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700')
                                 }, differentialResults[hyp].strengthScore + '/10')
                             ),
                             hyp !== 'No Diagnosis / Does Not Qualify' && h('button', { 'aria-label': rwFmt(__alloT('report_writer.aria_remove_hypothesis_named', 'Remove hypothesis: {name}'), { name: hyp }), className: 'text-red-600 hover:text-red-600 ms-2', onClick: () => { setHypotheses(prev => prev.filter(h => h !== hyp)); setSelectedHypotheses(prev => prev.filter(h => h !== hyp)); } }, '\u2715')
                         )
                     ),
-                    h('p', { className: 'text-[11px] text-slate-600 mt-1' }, ('☑️ ' + __alloT('report_writer.check_hypotheses_to_include_in_report', 'Check hypotheses to include in report generation. "No Diagnosis" is always evaluated as baseline.')))
+                    h('p', { className: 'text-xs text-slate-600 mt-1' }, ('☑️ ' + __alloT('report_writer.check_hypotheses_to_include_in_report', 'Check hypotheses to include in report generation. "No Diagnosis" is always evaluated as baseline.')))
                 ),
                 // Run analysis button
                 factChunks.filter(c => c.verified).length > 0 && h('div', { className: 'pt-2' },
@@ -7314,7 +7372,7 @@ Return ONLY valid JSON:
                         onClick: runDifferentialAnalysis
                     }, runningDifferential ? ('⏳ ' + __alloT('report_writer.analyzing_evidence', 'Analyzing evidence...')) : ('🔬 ' + __alloT('report_writer.run_differential_analysis', 'Run Differential Analysis')))
                 ),
-                hypotheses.length < 2 && h('p', { className: 'text-[11px] text-amber-600 text-center' }, __alloT('report_writer.add_at_least_2_hypotheses_including', 'Add at least 2 hypotheses (including "No Diagnosis") to run analysis.')),
+                hypotheses.length < 2 && h('p', { className: 'text-xs text-amber-600 text-center' }, __alloT('report_writer.add_at_least_2_hypotheses_including', 'Add at least 2 hypotheses (including "No Diagnosis") to run analysis.')),
                 // Differential results
                 Object.keys(differentialResults).length > 0 && h('div', { className: 'space-y-2 mt-2' },
                     h('h4', { className: 'text-xs font-bold text-indigo-700' }, ('📊 ' + __alloT('report_writer.differential_evidence_summary', 'Differential Evidence Summary'))),
@@ -7322,11 +7380,11 @@ Return ONLY valid JSON:
                         h('details', { key: name, className: 'bg-slate-50 rounded-lg border border-slate-400', open: true },
                             h('summary', { className: 'text-xs font-medium text-slate-700 px-3 py-2 cursor-pointer hover:bg-slate-100 rounded-t-lg flex items-center gap-2' },
                                 h('span', {
-                                    className: 'w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white ' + (data.strengthScore >= 7 ? 'bg-green-500' : data.strengthScore >= 4 ? 'bg-amber-500' : 'bg-red-400')
+                                    className: 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ' + (data.strengthScore >= 7 ? 'bg-green-500' : data.strengthScore >= 4 ? 'bg-amber-500' : 'bg-red-400')
                                 }, data.strengthScore || '?'),
                                 name
                             ),
-                            h('div', { className: 'px-3 pb-2 space-y-1 text-[11px]' },
+                            h('div', { className: 'px-3 pb-2 space-y-1 text-xs' },
                                 data.evidenceFor && data.evidenceFor.length > 0 && h('div', null,
                                     h('p', { className: 'font-medium text-green-700' }, ('✅ ' + __alloT('report_writer.evidence_for', 'Evidence For:'))),
                                     data.evidenceFor.map((e, i) => h('p', { key: i, className: 'ms-3 text-slate-600' }, '- ' + e.fact + ' (' + e.strength + ': ' + (e.explanation || '') + ')'))
@@ -7352,10 +7410,10 @@ Return ONLY valid JSON:
             // ═══ STEP 7: Report Blueprint ═══
             currentStep === 7 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { tabIndex: -1, 'data-rw-step-heading': 'true', className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, ('📐 ' + __alloT('report_writer.report_blueprint', 'Report Blueprint'))),
-                h('p', { className: 'text-[11px] text-slate-600' }, __alloT('report_writer.customize_your_report_structure_section_order', 'Customize your report structure, section order, and add notes to guide each section\'s generation.')),
+                h('p', { className: 'text-xs text-slate-600' }, __alloT('report_writer.customize_your_report_structure_section_order', 'Customize your report structure, section order, and add notes to guide each section\'s generation.')),
                 // Report type selector
                 h('div', { className: 'flex items-center gap-2' },
-                    h('label', { className: 'text-[11px] font-medium text-slate-600' }, __alloT('report_writer.report_type', 'Report Type:')),
+                    h('label', { className: 'text-xs font-medium text-slate-600' }, __alloT('report_writer.report_type', 'Report Type:')),
                     h('select', {
                         className: 'text-xs border rounded-lg px-2 py-1',
                         'aria-label': __alloT('report_writer.aria_report_type', 'Report type'),
@@ -7381,15 +7439,15 @@ Return ONLY valid JSON:
                         h('div', { key: section.id, className: 'bg-slate-50 rounded-lg border border-slate-400 p-2 ' + (!section.enabled ? 'opacity-50' : '') },
                             h('div', { className: 'flex items-center gap-2' },
                                 h('div', { className: 'flex flex-col gap-0.5' },
-                                    h('button', { 'aria-label': rwFmt(__alloT('report_writer.aria_move_section_up_named', 'Move {name} up'), { name: section.name }), className: 'text-[11px] text-slate-600 hover:text-slate-700 leading-none', disabled: idx === 0,
+                                    h('button', { 'aria-label': rwFmt(__alloT('report_writer.aria_move_section_up_named', 'Move {name} up'), { name: section.name }), className: 'text-xs text-slate-600 hover:text-slate-700 leading-none', disabled: idx === 0,
                                         onClick: () => { const nw = [...blueprint]; const tmp = nw[idx]; nw[idx] = nw[idx - 1]; nw[idx - 1] = tmp; setBlueprint(nw); }
                                     }, '\u25B2'),
-                                    h('button', { 'aria-label': rwFmt(__alloT('report_writer.aria_move_section_down_named', 'Move {name} down'), { name: section.name }), className: 'text-[11px] text-slate-600 hover:text-slate-700 leading-none', disabled: idx === blueprint.length - 1,
+                                    h('button', { 'aria-label': rwFmt(__alloT('report_writer.aria_move_section_down_named', 'Move {name} down'), { name: section.name }), className: 'text-xs text-slate-600 hover:text-slate-700 leading-none', disabled: idx === blueprint.length - 1,
                                         onClick: () => { const nw = [...blueprint]; const tmp = nw[idx]; nw[idx] = nw[idx + 1]; nw[idx + 1] = tmp; setBlueprint(nw); }
                                     }, '\u25BC')
                                 ),
                                 h('input', { type: 'checkbox', 'aria-label': rwFmt(__alloT('report_writer.aria_enable_section', 'Enable section: {name}'), { name: section.name }), checked: section.enabled, onChange: e => { const nw = [...blueprint]; nw[idx] = { ...nw[idx], enabled: e.target.checked }; setBlueprint(nw); } }),
-                                h('span', { className: 'text-[11px] font-medium text-slate-800 flex-1' }, (idx + 1) + '. ' + section.name),
+                                h('span', { className: 'text-xs font-medium text-slate-800 flex-1' }, (idx + 1) + '. ' + section.name),
                                 h('button', { 'aria-label': rwFmt(__alloT('report_writer.aria_remove_report_section_named', 'Remove report section: {name}'), { name: section.name }), className: 'text-red-600 hover:text-red-600 text-xs', onClick: () => confirmThen(!!(String(section.notes || '').trim() || String(reportSections[section.name] || '').trim()), {
                                     title: rwFmt(__alloT('report_writer.confirm_remove_section_title', 'Remove "{name}"?'), { name: section.name }),
                                     message: __alloT('report_writer.confirm_remove_section_message', 'The section and its notes are removed from the blueprint; text already written for it is no longer part of the report.'),
@@ -7397,7 +7455,7 @@ Return ONLY valid JSON:
                             ),
                             h('input', {
                                 type: 'text',
-                                className: 'w-full text-[11px] border rounded px-2 py-0.5 mt-1 text-slate-600',
+                                className: 'w-full text-xs border rounded px-2 py-0.5 mt-1 text-slate-600',
                                 'aria-label': rwFmt(__alloT('report_writer.aria_notes_for_section', 'Notes for section: {name}'), { name: section.name }),
                                 placeholder: __alloT('report_writer.placeholder_section_notes_e_g_focus_on', 'Section notes (e.g., "focus on classroom accommodations")...'),
                                 value: section.notes,
@@ -7405,7 +7463,7 @@ Return ONLY valid JSON:
                             })
                         )
                     ),
-                    h('button', { 'aria-label': __alloT('report_writer.aria_add_report_section', 'Add report section'), className: 'w-full px-3 py-1.5 bg-slate-100 text-slate-600 text-[11px] rounded-lg hover:bg-slate-200 border border-dashed border-slate-300',
+                    h('button', { 'aria-label': __alloT('report_writer.aria_add_report_section', 'Add report section'), className: 'w-full px-3 py-1.5 bg-slate-100 text-slate-600 text-xs rounded-lg hover:bg-slate-200 border border-dashed border-slate-300',
                         onClick: () => setBlueprint(prev => [...prev, { id: uid(), name: 'New Section', notes: '', enabled: true }])
                     }, ('➕ ' + __alloT('report_writer.add_section', 'Add Section')))
                 ),
@@ -7413,9 +7471,9 @@ Return ONLY valid JSON:
                 h('details', { className: 'mt-2 bg-amber-50 rounded-lg border border-amber-200' },
                     h('summary', { className: 'text-xs font-medium text-amber-700 px-3 py-2 cursor-pointer hover:bg-amber-100 rounded-t-lg' }, ('🎨 ' + __alloT('report_writer.writing_style_paste_sample_report', 'Writing Style (paste sample report)'))),
                     h('div', { className: 'px-3 pb-3' },
-                        h('p', { className: 'text-[11px] text-amber-600 mb-1' }, __alloT('report_writer.paste_a_redacted_sample_report_to', 'Paste a redacted sample report to match your professional writing style.')),
+                        h('p', { className: 'text-xs text-amber-600 mb-1' }, __alloT('report_writer.paste_a_redacted_sample_report_to', 'Paste a redacted sample report to match your professional writing style.')),
                         h('textarea', {
-                            className: 'w-full text-[11px] border rounded-lg px-2 py-1 h-32 resize-none font-mono',
+                            className: 'w-full text-xs border rounded-lg px-2 py-1 h-32 resize-none font-mono',
                             'aria-label': __alloT('report_writer.aria_writing_style_sample_report', 'Writing style sample report'),
                             placeholder: __alloT('report_writer.placeholder_paste_a_sample_report_here_redact', 'Paste a sample report here (redact student names)...'),
                             value: styleProfile,
@@ -7423,11 +7481,11 @@ Return ONLY valid JSON:
                         }),
                         styleProfile && (() => {
                             const names = rwStyleSampleForAI(styleProfile, scrubPII).names;
-                            return h('p', { className: 'text-[11px] text-amber-900 mt-1', role: 'status' }, names.length
+                            return h('p', { className: 'text-xs text-amber-900 mt-1', role: 'status' }, names.length
                                 ? rwFmt(__alloT('report_writer.style_sample_names_replaced', 'Before this sample goes to the AI, its numbers become [#] and these names become [Name]: {names}.'), { names: names.join(', ') })
                                 : __alloT('report_writer.style_sample_numbers_replaced', 'Before this sample goes to the AI, its numbers become [#]. No names were found in it.'));
                         })(),
-                        styleProfile && h('p', { className: 'text-[11px] text-amber-500 mt-1' }, ('✅ ' + rwFmt(__alloT('report_writer.style_profile_loaded_chars_will_guide', 'Style profile loaded ({count} chars) — will guide AI writing tone and structure.'), { count: styleProfile.length })))
+                        styleProfile && h('p', { className: 'text-xs text-amber-500 mt-1' }, ('✅ ' + rwFmt(__alloT('report_writer.style_profile_loaded_chars_will_guide', 'Style profile loaded ({count} chars) — will guide AI writing tone and structure.'), { count: styleProfile.length })))
                     )
                 ),
                 h('div', { className: 'flex justify-between pt-2' },
@@ -7441,15 +7499,15 @@ Return ONLY valid JSON:
                 staleFactsNotice(),
                 h('div', { className: 'flex items-center gap-3 mb-2' },
                     h('div', { className: 'flex-1' },
-                        h('label', { className: 'text-[11px] font-medium text-slate-600 block mb-1' }, __alloT('report_writer.report_title', 'Report Title')),
+                        h('label', { className: 'text-xs font-medium text-slate-600 block mb-1' }, __alloT('report_writer.report_title', 'Report Title')),
                         h('input', { type: 'text', className: 'w-full text-xs border rounded-lg px-3 py-1.5', 'aria-label': __alloT('report_writer.aria_report_title', 'Report title'), value: reportTitle, onChange: e => setReportTitle(e.target.value) })
                     ),
                     h('div', { className: 'shrink-0 text-center' },
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-0.5' }, rwFmt(__alloT('report_writer.quality_x', 'Quality: {reportGenPasses}x'), { reportGenPasses })),
+                        h('label', { className: 'text-xs font-bold text-slate-600 uppercase block mb-0.5' }, rwFmt(__alloT('report_writer.quality_x', 'Quality: {reportGenPasses}x'), { reportGenPasses })),
                         h('input', { type: 'range', min: 1, max: 5, value: reportGenPasses, onChange: e => setReportGenPasses(parseInt(e.target.value)),
                             className: 'w-16', 'aria-label': __alloT('report_writer.aria_generation_passes_per_section', 'Generation passes per section'),
                             title: reportGenPasses === 1 ? __alloT('report_writer.title_fast_1_pass', 'Fast (1 pass)') : reportGenPasses <= 3 ? rwFmt(__alloT('report_writer.title_balanced_passes', 'Balanced ({reportGenPasses} passes)'), { reportGenPasses }) : rwFmt(__alloT('report_writer.title_research_grade_passes', 'Research-grade ({reportGenPasses} passes)'), { reportGenPasses }) }),
-                        h('div', { className: 'text-[11px] text-slate-600' }, reportGenPasses === 1 ? __alloT('report_writer.fast', 'Fast') : reportGenPasses <= 3 ? __alloT('report_writer.balanced', 'Balanced') : __alloT('report_writer.research', 'Research'))
+                        h('div', { className: 'text-xs text-slate-600' }, reportGenPasses === 1 ? __alloT('report_writer.fast', 'Fast') : reportGenPasses <= 3 ? __alloT('report_writer.balanced', 'Balanced') : __alloT('report_writer.research', 'Research'))
                     ),
                     h('button', { 'aria-label': __alloT('report_writer.aria_generate_report', 'Generate report'), className: `px-4 py-2 text-xs font-medium rounded-lg transition-colors ${generating ? 'bg-slate-300 text-slate-600 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-700'}`,
                         disabled: sectionsBusy, 'aria-busy': generating, onClick: generateReport
@@ -7462,7 +7520,7 @@ Return ONLY valid JSON:
                         'aria-label': __alloT('report_writer.aria_generation_progress', 'Generation progress'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round((genFraction || 0) * 100) },
                         h('div', { className: 'h-full bg-violet-500 rounded-full transition-all motion-reduce:transition-none', style: { width: Math.max(3, Math.round((genFraction || 0) * 100)) + '%' } })
                     ),
-                    h('p', { className: 'text-[11px] text-center text-violet-600' }, genProgress)
+                    h('p', { className: 'text-xs text-center text-violet-600' }, genProgress)
                 ),
                 // ── Automated-verification coverage disclosure ──
                 // A section the score verifier never cleared must not be visually
@@ -7475,7 +7533,7 @@ Return ONLY valid JSON:
                 },
                     h('div', { className: 'flex items-start gap-2' },
                         h('span', { className: 'text-sm', 'aria-hidden': 'true' }, '\u26a0\ufe0f'),
-                        h('div', { className: 'text-[11px] text-amber-900 space-y-1' },
+                        h('div', { className: 'text-xs text-amber-900 space-y-1' },
                             h('p', { className: 'font-bold' }, __alloT('report_writer.automated_verification_did_not_cover_this', 'Automated verification did not cover this whole draft')),
                             unverifiedSections.length > 0 && h('p', null,
                                 rwFmt(__alloT('report_writer.score_citations_were_not_automatically_checked', 'Score citations were NOT automatically checked in: {value}. Check these sections against the source data yourself.'), { value: unverifiedSections.map(u => u.section).join(', ') })),
@@ -7500,11 +7558,11 @@ Return ONLY valid JSON:
                             h('span', { className: 'text-sm' }, '🔍'),
                             h('span', { className: 'font-bold text-slate-700' }, __alloT('report_writer.psycheck_verification', 'psycheck verification')),
                             discrepancyReport
-                                ? h('span', { className: 'text-[11px] text-slate-600' },
+                                ? h('span', { className: 'text-xs text-slate-600' },
                                     rwFmt(__alloT('report_writer.discrepancy_ies_verified_omitted', '{value} discrepancy(ies), {value2} verified, {value3} omitted'), { value: Array.isArray(discrepancyReport.discrepancies) ? discrepancyReport.discrepancies.length : 0, value2: Array.isArray(discrepancyReport.verified) ? discrepancyReport.verified.length : 0, value3: Array.isArray(discrepancyReport.omitted_scores) ? discrepancyReport.omitted_scores.length : 0 }))
-                                : h('span', { className: 'text-[11px] italic text-slate-600' }, __alloT('report_writer.no_report_yet_click_verify_or', 'no report yet — click Verify or Import')),
+                                : h('span', { className: 'text-xs italic text-slate-600' }, __alloT('report_writer.no_report_yet_click_verify_or', 'no report yet — click Verify or Import')),
                             discrepancyReport && discrepancyReport._source && h('span', {
-                                className: 'text-[10px] px-1.5 py-0.5 rounded ' + (discrepancyReport._source === 'alloflow-inline' ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'),
+                                className: 'text-xs px-1.5 py-0.5 rounded ' + (discrepancyReport._source === 'alloflow-inline' ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'),
                                 title: discrepancyReport._timestamp ? (rwFmt(__alloT('report_writer.title_generated_at', 'Generated at {_timestamp}'), { _timestamp: discrepancyReport._timestamp })) : ''
                             }, discrepancyReport._source === 'alloflow-inline' ? __alloT('report_writer.inline', 'inline') : __alloT('report_writer.imported', 'imported'))
                         ),
@@ -7518,7 +7576,7 @@ Return ONLY valid JSON:
                                 const verifyDisabled = verifyBusy || Object.keys(reportSections).length === 0;
                                 return h('button', {
                                     'aria-label': __alloT('report_writer.aria_verify_the_current_report_against_the', 'Verify the current report against the structured scores using the inline psycheck port'),
-                                    className: 'text-[11px] px-2 py-1 rounded transition-colors font-medium ' + (verifyDisabled
+                                    className: 'text-xs px-2 py-1 rounded transition-colors font-medium ' + (verifyDisabled
                                         ? 'bg-slate-300 text-slate-600 cursor-not-allowed'
                                         : 'bg-emerald-700 text-white hover:bg-emerald-800'),
                                     title: verifyBusy
@@ -7533,7 +7591,7 @@ Return ONLY valid JSON:
                             // order, so the import could not be reached by keyboard.
                             h('button', {
                                 type: 'button',
-                                className: 'text-[11px] px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer transition-colors font-medium',
+                                className: 'text-xs px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer transition-colors font-medium',
                                 title: __alloT('report_writer.title_import_a_psycheck_json_discrepancy_report', 'Import a psycheck JSON discrepancy report (Architecture C)'),
                                 'aria-label': __alloT('report_writer.aria_import_psycheck_json_discrepancy_report', 'Import psycheck JSON discrepancy report'),
                                 onClick: () => { const input = document.getElementById('rw-psycheck-import'); if (input) input.click(); }
@@ -7548,14 +7606,14 @@ Return ONLY valid JSON:
                             }),
                             discrepancyReport && h('button', {
                                 'aria-label': __alloT('report_writer.aria_clear_discrepancy_report', 'Clear discrepancy report'),
-                                className: 'text-[11px] px-2 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors',
+                                className: 'text-xs px-2 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors',
                                 onClick: clearDiscrepancyReport
                             }, ('✕ ' + __alloT('report_writer.clear', 'Clear')))
                         )
                     ),
                     // Top-level summary for unattached discrepancies (no section binding)
                     discrepancyReport && Array.isArray(discrepanciesBySection.__unattached) && discrepanciesBySection.__unattached.length > 0
-                        && h('div', { className: 'mt-2 pt-2 border-t border-amber-200 text-[11px]' },
+                        && h('div', { className: 'mt-2 pt-2 border-t border-amber-200 text-xs' },
                             h('div', { className: 'font-bold text-amber-800 mb-1' },
                                 ('⚠️ ' + rwFmt(__alloT('report_writer.discrepancy_ies_could_not_be_matched', '{count} discrepancy(ies) could not be matched to a section:'), { count: discrepanciesBySection.__unattached.length }))),
                             h('ul', { className: 'list-disc list-inside space-y-0.5 text-slate-700' },
@@ -7566,7 +7624,7 @@ Return ONLY valid JSON:
                         ),
                     // Omitted scores warning — surfaces "should this be discussed?"
                     discrepancyReport && Array.isArray(discrepancyReport.omitted_scores) && discrepancyReport.omitted_scores.length > 0
-                        && h('div', { className: 'mt-2 pt-2 border-t border-amber-200 text-[11px]' },
+                        && h('div', { className: 'mt-2 pt-2 border-t border-amber-200 text-xs' },
                             h('div', { className: 'font-bold text-slate-700 mb-1' },
                                 ('🔕 ' + rwFmt(__alloT('report_writer.score_s_in_input_but_not', '{count} score(s) in input but not discussed in draft:'), { count: discrepancyReport.omitted_scores.length }))),
                             h('ul', { className: 'list-disc list-inside space-y-0.5 text-slate-700' },
@@ -7580,7 +7638,7 @@ Return ONLY valid JSON:
                     // Terminology notes: the range is right but the manual uses a
                     // different word. Informational; they do not block export.
                     discrepancyReport && Array.isArray(discrepancyReport.terminology_notes) && discrepancyReport.terminology_notes.length > 0
-                        && h('div', { className: 'mt-2 pt-2 border-t border-slate-200 text-[11px]' },
+                        && h('div', { className: 'mt-2 pt-2 border-t border-slate-200 text-xs' },
                             h('div', { className: 'font-bold text-slate-700 mb-1' },
                                 ('📖 ' + rwFmt(__alloT('report_writer.terminology_note_s_not_blocking', '{count} terminology note(s), not blocking:'), { count: discrepancyReport.terminology_notes.length }))),
                             h('ul', { className: 'list-disc list-inside space-y-0.5 text-slate-700' },
@@ -7591,7 +7649,7 @@ Return ONLY valid JSON:
                         ),
                     // A difference called significant with no critical values behind it. Advisory.
                     discrepancyReport && Array.isArray(discrepancyReport.significance_notes) && discrepancyReport.significance_notes.length > 0
-                        && h('div', { className: 'mt-2 pt-2 border-t border-slate-200 text-[11px]' },
+                        && h('div', { className: 'mt-2 pt-2 border-t border-slate-200 text-xs' },
                             h('div', { className: 'font-bold text-slate-700 mb-1' },
                                 ('⚖️ ' + rwFmt(__alloT('report_writer.significance_notes_title', '{count} difference(s) called significant, to confirm against the score report, not blocking:'), { count: discrepancyReport.significance_notes.length }))),
                             h('ul', { className: 'list-disc list-inside space-y-0.5 text-slate-700' },
@@ -7600,7 +7658,7 @@ Return ONLY valid JSON:
                         ),
                     // Eligibility stated as a finding: the IEP team decides it. Advisory.
                     discrepancyReport && Array.isArray(discrepancyReport.language_notes) && discrepancyReport.language_notes.length > 0
-                        && h('div', { className: 'mt-2 pt-2 border-t border-slate-200 text-[11px]' },
+                        && h('div', { className: 'mt-2 pt-2 border-t border-slate-200 text-xs' },
                             h('div', { className: 'font-bold text-slate-700 mb-1' },
                                 ('⚖️ ' + rwFmt(__alloT('report_writer.eligibility_statement_s_to_review_not', '{count} eligibility statement(s) to review, not blocking:'), { count: discrepancyReport.language_notes.length }))),
                             h('ul', { className: 'list-disc list-inside space-y-0.5 text-slate-700' },
@@ -7609,7 +7667,7 @@ Return ONLY valid JSON:
                         ),
                     // Age or grade statements that differ from Step 1. Advisory.
                     discrepancyReport && Array.isArray(discrepancyReport.identity_notes) && discrepancyReport.identity_notes.length > 0
-                        && h('div', { className: 'mt-2 pt-2 border-t border-slate-200 text-[11px]' },
+                        && h('div', { className: 'mt-2 pt-2 border-t border-slate-200 text-xs' },
                             h('div', { className: 'font-bold text-slate-700 mb-1' },
                                 ('⚠️ ' + rwFmt(__alloT('report_writer.identity_notes_title', '{count} age or grade statement(s) that differ from Step 1, not blocking:'), { count: discrepancyReport.identity_notes.length }))),
                             h('ul', { className: 'list-disc list-inside space-y-0.5 text-slate-700' },
@@ -7618,7 +7676,7 @@ Return ONLY valid JSON:
                         ),
                     // Quotations not found in anything the clinician supplied. Advisory.
                     discrepancyReport && Array.isArray(discrepancyReport.quote_notes) && discrepancyReport.quote_notes.length > 0
-                        && h('div', { className: 'mt-2 pt-2 border-t border-slate-200 text-[11px]' },
+                        && h('div', { className: 'mt-2 pt-2 border-t border-slate-200 text-xs' },
                             h('div', { className: 'font-bold text-slate-700 mb-1' },
                                 ('❝ ' + rwFmt(__alloT('report_writer.quotation_s_with_no_source_found', '{count} quotation(s) with no source found, not blocking:'), { count: discrepancyReport.quote_notes.length }))),
                             h('ul', { className: 'list-disc list-inside space-y-0.5 text-slate-700' },
@@ -7635,11 +7693,11 @@ Return ONLY valid JSON:
                                 h('h4', { className: 'text-xs font-bold text-indigo-700' }, section),
                                 h('div', { className: 'flex items-center gap-1' },
                                     // Edit button
-                                    editingSection !== section && h('button', { disabled: sectionsBusy, 'aria-label': __alloT('report_writer.aria_edit_section', 'Edit section'), className: 'text-[11px] px-2 py-0.5 rounded bg-slate-200 text-slate-600 hover:bg-slate-300 transition-colors', onClick: () => { setEditingSection(section); setEditSectionText(text); }
+                                    editingSection !== section && h('button', { disabled: sectionsBusy, 'aria-label': __alloT('report_writer.aria_edit_section', 'Edit section'), className: 'text-xs px-2 py-0.5 rounded bg-slate-200 text-slate-600 hover:bg-slate-300 transition-colors', onClick: () => { setEditingSection(section); setEditSectionText(text); }
                                     }, ('✏️ ' + __alloT('report_writer.edit', 'Edit'))),
                                     // Grade-level adaptation dropdown
                                     h('select', {
-                                        className: `text-[11px] px-1.5 py-0.5 rounded border transition-colors ${adaptingSection === section ? 'bg-teal-200 text-teal-800 cursor-wait border-teal-600' : 'bg-teal-50 text-teal-700 border-teal-600 hover:bg-teal-100'}`,
+                                        className: `text-xs px-1.5 py-0.5 rounded border transition-colors ${adaptingSection === section ? 'bg-teal-200 text-teal-800 cursor-wait border-teal-600' : 'bg-teal-50 text-teal-700 border-teal-600 hover:bg-teal-100'}`,
                                         'aria-label': rwFmt(__alloT('report_writer.aria_adapt_grade_level_for', 'Adapt grade level for {section}'), { section }),
                                         disabled: sectionsBusy,
                                         value: adaptChoice[section] || '',
@@ -7653,15 +7711,15 @@ Return ONLY valid JSON:
                                     ),
                                     adaptChoice[section] && h('button', { type: 'button', disabled: sectionsBusy,
                                         'aria-label': rwFmt(__alloT('report_writer.aria_adapt_section', 'Adapt {section}'), { section }),
-                                        className: 'text-[11px] px-2 py-0.5 rounded bg-teal-700 text-white hover:bg-teal-800 disabled:opacity-50',
+                                        className: 'text-xs px-2 py-0.5 rounded bg-teal-700 text-white hover:bg-teal-800 disabled:opacity-50',
                                         onClick: () => adaptSectionGradeLevel(section, text, adaptChoice[section]) }, __alloT('report_writer.adapt', 'Adapt')),
                                     (sectionHistory[section] || []).length > 0 && h('button', { type: 'button', disabled: sectionsBusy,
                                         'aria-label': rwFmt(__alloT('report_writer.aria_undo_section', 'Undo the last change to {section} ({reason})'), { section, reason: undoReasonText(sectionHistory[section][sectionHistory[section].length - 1].reason) }),
-                                        className: 'text-[11px] px-2 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 disabled:opacity-50',
+                                        className: 'text-xs px-2 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 disabled:opacity-50',
                                         onClick: () => undoSection(section) },
                                         ('\u21b6 ' + rwFmt(__alloT('report_writer.undo_section', 'Undo ({reason})'), { reason: undoReasonText(sectionHistory[section][sectionHistory[section].length - 1].reason) }))),
                                     // Regenerate button
-                                    h('button', { 'aria-label': __alloT('report_writer.aria_show_regeneration_options', 'Show regeneration options'), className: `text-[11px] px-2 py-0.5 rounded transition-colors ${regenSection === section ? 'bg-amber-200 text-amber-800 cursor-wait' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}`,
+                                    h('button', { 'aria-label': __alloT('report_writer.aria_show_regeneration_options', 'Show regeneration options'), className: `text-xs px-2 py-0.5 rounded transition-colors ${regenSection === section ? 'bg-amber-200 text-amber-800 cursor-wait' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}`,
                                         disabled: sectionsBusy,
                                         onClick: () => showRegenInput === section ? setShowRegenInput(null) : setShowRegenInput(section)
                                     }, regenSection === section ? ('⏳ ' + __alloT('report_writer.regenerating', 'Regenerating...')) : ('🔄 ' + __alloT('report_writer.regen', 'Regen')))
@@ -7680,11 +7738,11 @@ Return ONLY valid JSON:
                                             : 'bg-amber-50 border-amber-300'),
                                     'aria-label': rwFmt(__alloT('report_writer.aria_psycheck_discrepancies_for_section', 'psycheck discrepancies for section {section}'), { section })
                                 },
-                                    h('div', { className: 'text-[11px] font-bold mb-1 ' + (
+                                    h('div', { className: 'text-xs font-bold mb-1 ' + (
                                         discrepanciesBySection[section].some(d => d.kind === 'subtest_attribution')
                                             ? 'text-red-800' : 'text-amber-800') },
                                         ('🔍 ' + rwFmt(__alloT('report_writer.psycheck_flagged_issue_s_in_this', 'psycheck flagged {count} issue(s) in this section'), { count: discrepanciesBySection[section].length }))),
-                                    h('ul', { className: 'space-y-1 text-[11px] text-slate-800' },
+                                    h('ul', { className: 'space-y-1 text-xs text-slate-800' },
                                         discrepanciesBySection[section].map((d, i) =>
                                             h('li', { key: i, className: 'leading-snug' },
                                                 h('div', { className: 'flex items-start gap-1' },
@@ -7696,7 +7754,7 @@ Return ONLY valid JSON:
                                                 ),
                                                 d.span && d.span.text && h('div', { className: 'mt-0.5 pl-3 italic text-slate-600' },
                                                     '“', d.span.text.length > 140 ? d.span.text.substring(0, 140) + '…' : d.span.text, '”'),
-                                                d.confidence && d.confidence !== 'high' && h('span', { className: 'ml-2 text-[10px] text-slate-500' },
+                                                d.confidence && d.confidence !== 'high' && h('span', { className: 'ml-2 text-xs text-slate-500' },
                                                     rwFmt(__alloT('report_writer.confidence', '({confidence} confidence)'), { confidence: d.confidence }))
                                             )
                                         )
@@ -7704,18 +7762,18 @@ Return ONLY valid JSON:
                                 ),
                             // Regeneration input panel
                             showRegenInput === section && h('div', { className: 'mb-2 p-2 bg-amber-50 rounded-lg border border-amber-200 space-y-1' },
-                                h('p', { className: 'text-[11px] text-amber-700 font-medium' }, __alloT('report_writer.custom_instructions_for_regeneration_optional', 'Custom instructions for regeneration (optional):')),
+                                h('p', { className: 'text-xs text-amber-700 font-medium' }, __alloT('report_writer.custom_instructions_for_regeneration_optional', 'Custom instructions for regeneration (optional):')),
                                 h('textarea', {
-                                    className: 'w-full text-[11px] border rounded px-2 py-1 h-16 resize-none',
+                                    className: 'w-full text-xs border rounded px-2 py-1 h-16 resize-none',
                                     'aria-label': __alloT('report_writer.aria_regeneration_instructions', 'Regeneration instructions'),
                                     placeholder: __alloT('report_writer.placeholder_e_g_make_more_concise_or', 'e.g., "Make more concise" or "Emphasize processing speed findings"...'),
                                     value: regenInstructions,
                                     onChange: e => setRegenInstructions(e.target.value)
                                 }),
                                 h('div', { className: 'flex gap-1' },
-                                    h('button', { disabled: sectionsBusy, className: 'text-[11px] px-3 py-1 rounded bg-amber-700 text-white hover:bg-amber-800 font-medium disabled:opacity-50', onClick: () => regenerateSection(section, regenInstructions)
+                                    h('button', { disabled: sectionsBusy, className: 'text-xs px-3 py-1 rounded bg-amber-700 text-white hover:bg-amber-800 font-medium disabled:opacity-50', onClick: () => regenerateSection(section, regenInstructions)
                                     }, ('✨ ' + __alloT('report_writer.regenerate', 'Regenerate'))),
-                                    h('button', { 'aria-label': __alloT('report_writer.aria_cancel_regeneration', 'Cancel regeneration'), className: 'text-[11px] px-2 py-1 rounded bg-slate-200 text-slate-600 hover:bg-slate-300', onClick: () => { setShowRegenInput(null); setRegenInstructions(''); }
+                                    h('button', { 'aria-label': __alloT('report_writer.aria_cancel_regeneration', 'Cancel regeneration'), className: 'text-xs px-2 py-1 rounded bg-slate-200 text-slate-600 hover:bg-slate-300', onClick: () => { setShowRegenInput(null); setRegenInstructions(''); }
                                     }, __alloT('report_writer.cancel', 'Cancel'))
                                 )
                             ),
@@ -7723,25 +7781,25 @@ Return ONLY valid JSON:
                             editingSection === section
                                 ? h('div', { className: 'space-y-1' },
                                     h('textarea', {
-                                        className: 'w-full text-[11px] text-slate-700 leading-relaxed border rounded-lg px-2 py-1.5 h-48 resize-y font-mono',
+                                        className: 'w-full text-xs text-slate-700 leading-relaxed border rounded-lg px-2 py-1.5 h-48 resize-y font-mono',
                                         'aria-label': __alloT('report_writer.aria_edit_section_text', 'Edit section text'),
                                         value: editSectionText,
                                         onChange: e => setEditSectionText(e.target.value)
                                     }),
                                     h('div', { className: 'flex gap-1' },
-                                        h('button', { disabled: sectionsBusy, className: 'text-[11px] px-3 py-1 rounded bg-emerald-700 text-white hover:bg-emerald-800 font-medium disabled:opacity-50',
+                                        h('button', { disabled: sectionsBusy, className: 'text-xs px-3 py-1 rounded bg-emerald-700 text-white hover:bg-emerald-800 font-medium disabled:opacity-50',
                                             onClick: () => { replaceSections({ [section]: editSectionText }, 'edited'); setEditingSection(null); setAccuracyResults([]); if (addToast) addToast(rwFmt(__alloT('report_writer.toast_updated', '"{section}" updated'), { section }), 'success'); }
                                         }, ('✅ ' + __alloT('report_writer.save', 'Save'))),
-                                        h('button', { 'aria-label': __alloT('report_writer.aria_cancel_editing', 'Cancel editing'), className: 'text-[11px] px-2 py-1 rounded bg-slate-200 text-slate-600 hover:bg-slate-300', onClick: () => setEditingSection(null)
+                                        h('button', { 'aria-label': __alloT('report_writer.aria_cancel_editing', 'Cancel editing'), className: 'text-xs px-2 py-1 rounded bg-slate-200 text-slate-600 hover:bg-slate-300', onClick: () => setEditingSection(null)
                                         }, __alloT('report_writer.cancel', 'Cancel'))
                                     )
                                 )
-                                : h('div', { className: 'text-[11px] text-slate-700 leading-relaxed whitespace-pre-wrap' },
+                                : h('div', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-wrap' },
                                     text.replace(/\[Student\]/g, () => effectiveStudentName || '[Student]')
                                 ),
                             // Evidence chips
                             (sectionEvidenceMap[section] || []).length > 0 && h('div', { className: 'flex flex-wrap gap-1 mt-2 pt-1 border-t border-slate-100' },
-                                h('span', { className: 'text-[11px] text-slate-600 me-1 self-center' }, __alloT('report_writer.evidence', 'Evidence:')),
+                                h('span', { className: 'text-xs text-slate-600 me-1 self-center' }, __alloT('report_writer.evidence', 'Evidence:')),
                                 (sectionEvidenceMap[section] || []).map(chunkId => {
                                     const chunk = factChunks.find(c => c.id === chunkId);
                                     const isRef = !chunk && String(chunkId).startsWith('ref:');
@@ -7749,7 +7807,7 @@ Return ONLY valid JSON:
                                     const chipColor = chunk ? (chunk.type === 'score' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700') : isRef ? 'bg-amber-100 text-amber-800' : isCase ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-600';
                                     const chipLabel = chunk ? `${chunk.source}:${(chunk.field || '').substring(0, 15)}` : isRef ? '📖 ' + rwReferenceLabel(chunkId).substring(0, 40) : isCase ? '📁 ' + rwReferenceLabel(chunkId).substring(0, 40) : chunkId.substring(0, 8);
                                     return h('button', { type: 'button', key: chunkId, 'aria-label': rwFmt(__alloT('report_writer.aria_show_evidence', 'Show evidence {chipLabel}'), { chipLabel }),
-                                        className: `text-[11px] px-1.5 py-0.5 rounded-full font-medium cursor-pointer hover:ring-1 hover:ring-offset-1 ${chipColor}`,
+                                        className: `text-xs px-1.5 py-0.5 rounded-full font-medium cursor-pointer hover:ring-1 hover:ring-offset-1 ${chipColor}`,
                                         title: chunk ? `${chunk.source} - ${chunk.field}: ${chunk.value}` : chunkId,
                                         onClick: () => setCurrentStep(5)
                                     }, chipLabel);
@@ -7768,64 +7826,64 @@ Return ONLY valid JSON:
             // ═══ STEP 9: Accuracy Dashboard ═══
             currentStep === 9 && h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400 space-y-3' },
                 h('h3', { tabIndex: -1, 'data-rw-step-heading': 'true', className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, ('🎯 ' + __alloT('report_writer.accuracy_dashboard', 'Accuracy Dashboard'))),
-                h('p', { className: 'text-[11px] text-slate-600' }, __alloT('report_writer.full_coverage_dual_pass_verification_checks', 'Full-coverage dual-pass verification checks every report section against immutable fact chunks. Empty or unparseable responses are treated as inconclusive.')),
+                h('p', { className: 'text-xs text-slate-600' }, __alloT('report_writer.full_coverage_dual_pass_verification_checks', 'Full-coverage dual-pass verification checks every report section against immutable fact chunks. Empty or unparseable responses are treated as inconclusive.')),
                 checking ? h('div', { className: 'text-center py-8', role: 'status', 'aria-live': 'polite' },
                     h('div', { className: 'inline-block motion-reduce:animate-none w-8 h-8 border-2 border-violet-300 border-t-violet-600 rounded-full' + (reducedMotion ? '' : ' animate-spin') }),
                     h('p', { className: 'text-xs text-slate-600 mt-3' }, genProgress || __alloT('report_writer.running_accuracy_audit_against_fact_chunks', 'Running accuracy audit against fact chunks...')),
                     h('div', { className: 'mt-3' }, stopButton('sections', __alloT('report_writer.stop_accuracy_check', 'Stop the accuracy check')))
                 ) : h('div', { className: 'space-y-3' },
-                    accuracyResults.length > 0 && !auditIsCurrent && h('div', { className: 'rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-800', role: 'status' },
+                    accuracyResults.length > 0 && !auditIsCurrent && h('div', { className: 'rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800', role: 'status' },
                         __alloT('report_writer.these_findings_belong_to_an_earlier', 'These findings belong to an earlier report state. Rerun the full audit before relying on or copying them.')
                     ),
-                    auditIsCurrent && pythonCheck === 'skipped' && h('div', { 'data-rw-python-check': 'skipped', className: 'rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-800', role: 'status' },
+                    auditIsCurrent && pythonCheck === 'skipped' && h('div', { 'data-rw-python-check': 'skipped', className: 'rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800', role: 'status' },
                         __alloT('report_writer.python_check_not_run_notice', 'The separate non-AI check did not run. It needs a download that is not available in the desktop app or offline. Its date and citation checks were run in the app instead; percentiles and score labels were not checked a second time.')
                     ),
                     // Summary bar
                     accuracyResults.length > 0 && h('div', { className: 'flex items-center gap-4 bg-slate-50 rounded-lg p-3' },
                         h('div', { className: 'text-center' },
                             h('p', { className: 'text-lg font-bold text-green-600' }, accuracyResults.filter(r => r.status === 'verified').length),
-                            h('p', { className: 'text-[11px] text-slate-600' }, ('🟢 ' + __alloT('report_writer.verified_2', 'Verified')))
+                            h('p', { className: 'text-xs text-slate-600' }, ('🟢 ' + __alloT('report_writer.verified_2', 'Verified')))
                         ),
                         h('div', { className: 'text-center' },
                             h('p', { className: 'text-lg font-bold text-amber-500' }, accuracyResults.filter(r => r.status === 'unsourced').length),
-                            h('p', { className: 'text-[11px] text-slate-600' }, ('🟡 ' + __alloT('report_writer.unsourced', 'Unsourced')))
+                            h('p', { className: 'text-xs text-slate-600' }, ('🟡 ' + __alloT('report_writer.unsourced', 'Unsourced')))
                         ),
                         h('div', { className: 'text-center' },
                             h('p', { className: 'text-lg font-bold text-red-600' }, accuracyResults.filter(r => r.status === 'contradicts').length),
-                            h('p', { className: 'text-[11px] text-slate-600' }, ('🔴 ' + __alloT('report_writer.contradicts', 'Contradicts')))
+                            h('p', { className: 'text-xs text-slate-600' }, ('🔴 ' + __alloT('report_writer.contradicts', 'Contradicts')))
                         ),
                         h('div', { className: 'text-center' },
                             h('p', { className: 'text-lg font-bold text-purple-600' }, accuracyResults.filter(r => r.status === 'discrepancy').length),
-                            h('p', { className: 'text-[11px] text-slate-600' }, ('⚠️ ' + __alloT('report_writer.discrepancy', 'Discrepancy')))
+                            h('p', { className: 'text-xs text-slate-600' }, ('⚠️ ' + __alloT('report_writer.discrepancy', 'Discrepancy')))
                         ),
                         h('div', { className: 'ms-auto text-center' },
                             h('p', { className: 'text-lg font-bold text-violet-700' }, `${accuracyResults.length > 0 ? Math.round((accuracyResults.filter(r => r.status === 'verified').length / accuracyResults.length) * 100) : 0}%`),
-                            h('p', { className: 'text-[11px] text-slate-600' }, __alloT('report_writer.accuracy', 'Accuracy'))
+                            h('p', { className: 'text-xs text-slate-600' }, __alloT('report_writer.accuracy', 'Accuracy'))
                         ),
-                        h('button', { disabled: sectionsBusy, 'aria-label': __alloT('report_writer.aria_re_check_accuracy', 'Re-check accuracy'), className: 'px-3 py-1 bg-violet-100 text-violet-700 text-[11px] rounded-lg hover:bg-violet-200 disabled:opacity-50', onClick: runAccuracyCheck }, ('🔄 ' + __alloT('report_writer.re_check', 'Re-check'))),
+                        h('button', { disabled: sectionsBusy, 'aria-label': __alloT('report_writer.aria_re_check_accuracy', 'Re-check accuracy'), className: 'px-3 py-1 bg-violet-100 text-violet-700 text-xs rounded-lg hover:bg-violet-200 disabled:opacity-50', onClick: runAccuracyCheck }, ('🔄 ' + __alloT('report_writer.re_check', 'Re-check'))),
                         // Phase 4c: standalone audit-summary copy, available right here on the dashboard
                         // so the clinician can share findings with a supervisor without leaving the page.
                         accuracyResults.length > 0 && h('button', {
                             'aria-label': __alloT('report_writer.aria_copy_audit_summary', 'Copy audit summary'),
                             title: __alloT('report_writer.title_copy_a_text_summary_of_all', 'Copy a text summary of all findings grouped by provenance (Python / LLM passes)'),
-                            className: 'px-3 py-1 bg-fuchsia-100 text-fuchsia-700 text-[11px] rounded-lg hover:bg-fuchsia-200',
+                            className: 'px-3 py-1 bg-fuchsia-100 text-fuchsia-700 text-xs rounded-lg hover:bg-fuchsia-200',
                             onClick: copyAuditSummary
                         }, ('📋 ' + __alloT('report_writer.copy_audit', 'Copy Audit')))
                     ),
                     // Claim-by-claim results
                     accuracyResults.length > 0 && h('div', { className: 'space-y-1 max-h-[350px] overflow-y-auto' },
                         accuracyResults.map((r, i) =>
-                            h('div', { key: i, className: `flex items-start gap-2 px-3 py-2 rounded-lg text-[11px] border ${r.status === 'verified' ? 'bg-green-50 border-green-200' : r.status === 'unsourced' ? 'bg-amber-50 border-amber-200' : r.status === 'discrepancy' ? 'bg-purple-50 border-purple-200' : 'bg-red-50 border-red-200'}` },
+                            h('div', { key: i, className: `flex items-start gap-2 px-3 py-2 rounded-lg text-xs border ${r.status === 'verified' ? 'bg-green-50 border-green-200' : r.status === 'unsourced' ? 'bg-amber-50 border-amber-200' : r.status === 'discrepancy' ? 'bg-purple-50 border-purple-200' : 'bg-red-50 border-red-200'}` },
                                 h('span', { className: 'text-sm flex-shrink-0 mt-0.5' }, r.status === 'verified' ? '🟢' : r.status === 'unsourced' ? '🟡' : r.status === 'discrepancy' ? '\u26A0\uFE0F' : '🔴'),
                                 h('div', { className: 'flex-1 min-w-0' },
                                     h('p', { className: 'font-medium text-slate-800 break-words' }, r.claim),
                                     h('p', { className: 'text-slate-600 mt-0.5' }, r.explanation || ''),
-                                    r.confidence && h('span', { className: 'inline-block mt-0.5 text-[11px] px-1.5 py-0.5 rounded-full ' + (r.confidence === 'high' ? 'bg-green-100 text-green-700' : r.confidence === 'needs-review' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600') }, r.confidence === 'high' ? __alloT('report_writer.high_confidence', 'High Confidence') : r.confidence === 'needs-review' ? __alloT('report_writer.needs_review', 'Needs Review') : __alloT('report_writer.medium', 'Medium')),
+                                    r.confidence && h('span', { className: 'inline-block mt-0.5 text-xs px-1.5 py-0.5 rounded-full ' + (r.confidence === 'high' ? 'bg-green-100 text-green-700' : r.confidence === 'needs-review' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600') }, r.confidence === 'high' ? __alloT('report_writer.high_confidence', 'High Confidence') : r.confidence === 'needs-review' ? __alloT('report_writer.needs_review', 'Needs Review') : __alloT('report_writer.medium', 'Medium')),
                                     // Phase 4: Provenance chip — distinguishes Python (deterministic) from
                                     // LLM-A/B (semantic). Tells the clinician at-a-glance how the finding was reached.
                                     (function() {
                                         const src = r.auditSource || '';
-                                        const chip = (label, cls, title) => h('span', { title, className: 'inline-block mt-0.5 ms-1 text-[11px] px-1.5 py-0.5 rounded-full ' + cls }, label);
+                                        const chip = (label, cls, title) => h('span', { title, className: 'inline-block mt-0.5 ms-1 text-xs px-1.5 py-0.5 rounded-full ' + cls }, label);
                                         if (src === 'python')                   return chip('🐍 Python',      'bg-fuchsia-100 text-fuchsia-700', 'Deterministic check — score classification, math, or fact-chunk lookup');
                                         if (src === 'in-app')                   return chip('📅 In-app check', 'bg-fuchsia-100 text-fuchsia-700', 'Not AI: a date interval or cited source checked in the app');
                                         if (src === 'self-healed')              return chip('✨ Self-healed', 'bg-emerald-100 text-emerald-700', 'Was flagged as a contradiction; fixed by an automated regeneration pass');
@@ -7857,7 +7915,7 @@ Return ONLY valid JSON:
                 h('h3', { tabIndex: -1, 'data-rw-step-heading': 'true', className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, ('📥 ' + __alloT('report_writer.export_save', 'Export & Save'))),
                 // Progress-monitoring trendline preview (IEP packet) — same SVG the print output embeds.
                 (rtiTrendSeries && rtiTrendSeries.length) ? h('div', { className: 'rounded-lg p-3 border border-emerald-200 bg-emerald-50' },
-                    h('div', { className: 'text-[11px] font-bold text-emerald-800 mb-1' }, ('📈 ' + __alloT('report_writer.progress_monitoring_trendlines_embedded_in_the', 'Progress-monitoring trendlines (embedded in the printed packet)'))),
+                    h('div', { className: 'text-xs font-bold text-emerald-800 mb-1' }, ('📈 ' + __alloT('report_writer.progress_monitoring_trendlines_embedded_in_the', 'Progress-monitoring trendlines (embedded in the printed packet)'))),
                     h('div', { className: 'bg-white rounded overflow-x-auto p-1', dangerouslySetInnerHTML: { __html: _rwTrendSvg(rtiTrendSeries) } })
                 ) : null,
                 // Accuracy summary
@@ -7881,11 +7939,11 @@ Return ONLY valid JSON:
                                                 ? ('⚠️ ' + __alloT('report_writer.ai_audit_passed_complete_the_clinician', 'The AI passes of the accuracy audit found nothing blocking. Complete the clinician attestation to unlock formal copy and print.'))
                                                 : ('⚠️ ' + __alloT('report_writer.accuracy_audit_passed_complete_the_clinician', 'Accuracy audit passed. Complete the clinician attestation to unlock formal copy and print.'))
                     ),
-                    auditIsCurrent && setAsideCount > 0 && h('p', { 'data-rw-set-aside-count': setAsideCount, className: 'text-[11px] text-amber-800 mt-1' },
+                    auditIsCurrent && setAsideCount > 0 && h('p', { 'data-rw-set-aside-count': setAsideCount, className: 'text-xs text-amber-800 mt-1' },
                         rwFmt(__alloT('report_writer.set_aside_count', '{count} non-AI finding(s) set aside by the clinician, each with a reason.'), { count: setAsideCount }))
                 ),
                 // Placeholders left by redaction or generation, with the fixes that are safe.
-                leftovers.length > 0 && h('div', { className: 'rounded-lg border border-amber-300 bg-amber-50 p-3 text-[11px] text-amber-900 space-y-1', role: 'region', 'aria-labelledby': 'rw-placeholders-title' },
+                leftovers.length > 0 && h('div', { className: 'rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 space-y-1', role: 'region', 'aria-labelledby': 'rw-placeholders-title' },
                     h('p', { id: 'rw-placeholders-title', className: 'font-bold' }, __alloT('report_writer.placeholders_title', 'Placeholders to replace before the report is final')),
                     h('p', null, __alloT('report_writer.placeholders_help', 'Names and identifiers were replaced before any text went to the AI, and it wrote with those tokens. [Student] is filled in automatically; these are not.')),
                     h('ul', { className: 'list-disc list-inside space-y-1' },
@@ -7904,9 +7962,9 @@ Return ONLY valid JSON:
                         })
                     )
                 ),
-                notExported.length > 0 && h('p', { className: 'text-[11px] text-slate-700', role: 'status' },
+                notExported.length > 0 && h('p', { className: 'text-xs text-slate-700', role: 'status' },
                     rwFmt(__alloT('report_writer.not_exported', 'Written but not in the export (disabled or not in the blueprint): {sections}.'), { sections: notExported.join(', ') })),
-                translatedReport && translatedFingerprint !== reportFingerprint && h('p', { className: 'text-[11px] text-amber-900', role: 'status' },
+                translatedReport && translatedFingerprint !== reportFingerprint && h('p', { className: 'text-xs text-amber-900', role: 'status' },
                     __alloT('report_writer.translation_stale', 'The translated draft is of an earlier version of the report. Translate again before copying it.')),
                 // Unsourced-claim acknowledgement. Shown ONLY when the audit found
                 // claims it could not tie to a verified fact. These do not block
@@ -7917,14 +7975,14 @@ Return ONLY valid JSON:
                 unsourcedFindings.length > 0 && auditIsCurrent && h('div', {
                     className: `rounded-lg p-3 border ${unsourcedAcknowledged ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-300'}`
                 },
-                    h('p', { className: 'text-[11px] font-bold text-amber-900 mb-1' },
+                    h('p', { className: 'text-xs font-bold text-amber-900 mb-1' },
                         rwFmt(__alloT('report_writer.claim_s_could_not_be_traced', '{count} claim(s) could not be traced to a verified fact'), { count: unsourcedFindings.length })),
                     h('ul', { className: 'mb-2 max-h-32 overflow-y-auto space-y-1' },
                         unsourcedFindings.slice(0, 12).map((r, i) => h('li', {
-                            key: i, className: 'text-[11px] text-slate-700 leading-snug'
+                            key: i, className: 'text-xs text-slate-700 leading-snug'
                         }, (r.section ? `[${r.section}] ` : '') + String(r.claim || '').substring(0, 160)))
                     ),
-                    unsourcedFindings.length > 12 && h('p', { className: 'text-[10px] italic text-slate-600 mb-2' },
+                    unsourcedFindings.length > 12 && h('p', { className: 'text-xs italic text-slate-600 mb-2' },
                         rwFmt(__alloT('report_writer.and_more_see_the_audit_results', '…and {value} more — see the audit results list above.'), { value: unsourcedFindings.length - 12 })),
                     h('label', { className: 'flex items-start gap-2 cursor-pointer' },
                         h('input', {
@@ -7933,7 +7991,7 @@ Return ONLY valid JSON:
                             onChange: (e) => setUnsourcedAcknowledged(e.target.checked),
                             className: 'mt-0.5 rounded border-slate-300'
                         }),
-                        h('span', { className: 'text-[11px] text-slate-700 leading-relaxed' },
+                        h('span', { className: 'text-xs text-slate-700 leading-relaxed' },
                             h('strong', { id: 'rw-unsourced-help' }, (__alloT('report_writer.unsourced_claims_reviewed', 'Unsourced claims reviewed:') + ' ')),
                             __alloT('report_writer.i_have_read_each_statement_listed', 'I have read each statement listed above and confirm it is either clinically appropriate as written or has been corrected.')
                         )
@@ -7953,7 +8011,7 @@ Return ONLY valid JSON:
                             onChange: (e) => setPythonSkipAcknowledged(e.target.checked),
                             className: 'mt-0.5 rounded border-slate-300'
                         }),
-                        h('span', { className: 'text-[11px] text-slate-700 leading-relaxed' },
+                        h('span', { className: 'text-xs text-slate-700 leading-relaxed' },
                             h('strong', { id: 'rw-second-check-help' }, (__alloT('report_writer.second_check_not_run_label', 'Second check not run:') + ' ')),
                             __alloT('report_writer.second_check_not_run_ack', 'I understand that the separate non-AI check did not run on this device. Its date and citation checks were run in the app instead; percentiles and score labels were not checked a second time.')
                         )
@@ -7963,7 +8021,7 @@ Return ONLY valid JSON:
                 Object.keys(reportSections).length > 0 && h('div', { className: `rounded-lg p-3 border ${clinicianAttested ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}` },
                     h('label', { className: 'flex items-start gap-2 cursor-pointer' },
                         h('input', { type: 'checkbox', checked: clinicianAttested, disabled: !clinicianCanAttest, 'aria-describedby': 'rw-attestation-help', onChange: (e) => setClinicianAttested(e.target.checked), className: 'mt-0.5 rounded border-slate-300 text-green-600 focus:ring-green-400 disabled:opacity-50' }),
-                        h('span', { className: 'text-[11px] text-slate-700 leading-relaxed' },
+                        h('span', { className: 'text-xs text-slate-700 leading-relaxed' },
                             h('strong', { id: 'rw-attestation-help' }, (__alloT('report_writer.clinician_attestation', 'Clinician Attestation:') + ' ')),
                             __alloT('report_writer.i_have_independently_reviewed_the_assessment', 'I have independently reviewed the assessment data, verified all score entries match protocols, reviewed AI-generated interpretations for clinical accuracy, and I am the licensed professional responsible for this evaluation.')
                         )
@@ -7973,7 +8031,7 @@ Return ONLY valid JSON:
                 h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2' },
                     h('button', { 'aria-label': __alloT('report_writer.aria_export_as_json', 'Export as JSON'), className: 'flex flex-col items-center gap-1 px-3 py-3 bg-violet-50 border border-violet-600 rounded-lg hover:bg-violet-100 transition-colors', onClick: exportJSON },
                         h('span', { className: 'text-lg' }, '💾'),
-                        h('span', { className: 'text-[11px] font-medium text-violet-700' }, __alloT('report_writer.save_json', 'Save JSON'))
+                        h('span', { className: 'text-xs font-medium text-violet-700' }, __alloT('report_writer.save_json', 'Save JSON'))
                     ),
                     // Phase 4c: standalone audit-summary copy. Separate from "Copy Report" so the
                     // clinician can share quality-control findings with a supervisor without
@@ -7985,26 +8043,26 @@ Return ONLY valid JSON:
                         onClick: copyAuditSummary
                     },
                         h('span', { className: 'text-lg' }, '📊'),
-                        h('span', { className: 'text-[11px] font-medium text-fuchsia-700' }, __alloT('report_writer.copy_audit', 'Copy Audit'))
+                        h('span', { className: 'text-xs font-medium text-fuchsia-700' }, __alloT('report_writer.copy_audit', 'Copy Audit'))
                     ),
                     h('button', { 'aria-label': __alloT('report_writer.aria_copy_reviewed_report_to_clipboard', 'Copy reviewed report to clipboard'), className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${!formalExportReady ? 'bg-slate-100 border border-slate-400 opacity-60 cursor-not-allowed' : 'bg-indigo-50 border border-indigo-600 hover:bg-indigo-100'}`, onClick: copyFullReport, disabled: !formalExportReady },
                         h('span', { className: 'text-lg' }, '📋'),
-                        h('span', { className: 'text-[11px] font-medium text-indigo-700' }, __alloT('report_writer.copy_report', 'Copy Report'))
+                        h('span', { className: 'text-xs font-medium text-indigo-700' }, __alloT('report_writer.copy_report', 'Copy Report'))
                     ),
                     h('button', { 'aria-label': __alloT('report_writer.aria_print_report_or_save_as_pdf', 'Print report or save as PDF'), className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${!formalExportReady ? 'bg-slate-100 border border-slate-400 opacity-60 cursor-not-allowed' : 'bg-blue-50 border border-blue-600 hover:bg-blue-100'}`, onClick: printReport, disabled: !formalExportReady },
                         h('span', { className: 'text-lg' }, '🖨️'),
-                        h('span', { className: 'text-[11px] font-medium text-blue-700' }, __alloT('report_writer.print_pdf', 'Print / PDF'))
+                        h('span', { className: 'text-xs font-medium text-blue-700' }, __alloT('report_writer.print_pdf', 'Print / PDF'))
                     ),
                     h('button', { 'aria-label': __alloT('report_writer.aria_load_report_json', 'Load report JSON'), className: 'flex flex-col items-center gap-1 px-3 py-3 bg-emerald-50 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors', onClick: () => document.getElementById('rw-import-area')?.focus() },
                         h('span', { className: 'text-lg' }, '📂'),
-                        h('span', { className: 'text-[11px] font-medium text-emerald-700' }, __alloT('report_writer.load_json', 'Load JSON'))
+                        h('span', { className: 'text-xs font-medium text-emerald-700' }, __alloT('report_writer.load_json', 'Load JSON'))
                     )
                 ),
                 // ── Report Translation ──
                 Object.keys(reportSections).length > 0 && h('details', { className: 'mt-3 bg-sky-50 rounded-lg border border-sky-200' },
                     h('summary', { className: 'text-xs font-medium text-sky-700 px-3 py-2 cursor-pointer hover:bg-sky-100 rounded-t-lg' }, ('🌏 ' + __alloT('report_writer.translate_report', 'Translate Report'))),
                     h('div', { className: 'px-3 pb-3 space-y-2' },
-                        h('p', { className: 'text-[11px] text-sky-600' }, __alloT('report_writer.creates_an_ai_assisted_family_language', 'Creates an AI-assisted family-language draft after common-identifier redaction. A qualified clinician and language reviewer must validate terminology before distribution; copied translations are marked unreviewed.')),
+                        h('p', { className: 'text-xs text-sky-600' }, __alloT('report_writer.creates_an_ai_assisted_family_language', 'Creates an AI-assisted family-language draft after common-identifier redaction. A qualified clinician and language reviewer must validate terminology before distribution; copied translations are marked unreviewed.')),
                         h('div', { className: 'flex items-center gap-2' },
                             h('select', { className: 'text-xs border rounded-lg px-2 py-1.5 bg-white flex-1', 'aria-label': __alloT('report_writer.aria_translation_language', 'Translation language'), value: translationLang, onChange: e => setTranslationLang(e.target.value) },
                                 ['Spanish', 'French', 'Portuguese', 'Chinese (Simplified)', 'Chinese (Traditional)', 'Arabic', 'Vietnamese', 'Korean', 'Haitian Creole', 'Somali', 'Russian', 'German', 'Japanese', 'Tagalog', 'Hindi', 'Urdu'].map(lang => h('option', { key: lang, value: lang }, lang))
@@ -8017,37 +8075,37 @@ Return ONLY valid JSON:
                         ),
                         translatedReport && h('div', { className: 'mt-2 space-y-2' },
                             h('div', { className: 'flex items-center justify-between' },
-                                h('p', { className: 'text-[11px] font-medium text-sky-700' }, rwFmt(__alloT('report_writer.translated_report', 'Translated Report ({translationLang})'), { translationLang })),
-                                h('button', { disabled: translatedFingerprint !== reportFingerprint, 'aria-label': __alloT('report_writer.aria_copy_unreviewed_translated_draft', 'Copy unreviewed translated draft'), className: 'text-[11px] px-2 py-0.5 bg-sky-700 text-white rounded hover:bg-sky-700', onClick: copyTranslatedReport }, ('📋 ' + __alloT('report_writer.copy_draft', 'Copy Draft')))
+                                h('p', { className: 'text-xs font-medium text-sky-700' }, rwFmt(__alloT('report_writer.translated_report', 'Translated Report ({translationLang})'), { translationLang })),
+                                h('button', { disabled: translatedFingerprint !== reportFingerprint, 'aria-label': __alloT('report_writer.aria_copy_unreviewed_translated_draft', 'Copy unreviewed translated draft'), className: 'text-xs px-2 py-0.5 bg-sky-700 text-white rounded hover:bg-sky-700', onClick: copyTranslatedReport }, ('📋 ' + __alloT('report_writer.copy_draft', 'Copy Draft')))
                             ),
                             h('div', { className: 'bg-white rounded-lg border border-sky-200 p-3 max-h-[300px] overflow-y-auto' },
-                                h('pre', { lang: translationMeta.code, dir: translationMeta.dir, 'aria-label': rwFmt(__alloT('report_writer.aria_unreviewed_translated_report_draft', 'Unreviewed {translationLang} translated report draft'), { translationLang }), className: 'text-[11px] text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, translatedReport)
+                                h('pre', { lang: translationMeta.code, dir: translationMeta.dir, 'aria-label': rwFmt(__alloT('report_writer.aria_unreviewed_translated_report_draft', 'Unreviewed {translationLang} translated report draft'), { translationLang }), className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, translatedReport)
                             )
                         )
                     )
                 ),
                 // Import area
                 h('div', { className: 'mt-2' },
-                    h('label', { htmlFor: 'rw-import-area', className: 'text-[11px] font-medium text-slate-600 block mb-1' }, __alloT('report_writer.import_json_paste_previously_exported_data', 'Import JSON (paste previously exported data):')),
+                    h('label', { htmlFor: 'rw-import-area', className: 'text-xs font-medium text-slate-600 block mb-1' }, __alloT('report_writer.import_json_paste_previously_exported_data', 'Import JSON (paste previously exported data):')),
                     h('textarea', {
-                        id: 'rw-import-area', className: 'w-full text-[11px] border rounded-lg px-3 py-2 font-mono resize-none h-20',
+                        id: 'rw-import-area', className: 'w-full text-xs border rounded-lg px-3 py-2 font-mono resize-none h-20',
                         'aria-label': __alloT('report_writer.aria_import_json_data', 'Import JSON data'),
                         placeholder: __alloT('report_writer.placeholder_paste_json_data_here', 'Paste JSON data here...'), value: importText, onChange: e => setImportText(e.target.value)
                     }),
-                    importText.trim() && h('button', { 'aria-label': ('📂 ' + __alloT('report_writer.aria_import_data', 'Import Data')), className: 'mt-1 px-3 py-1 bg-emerald-700 text-white text-[11px] rounded-lg hover:bg-emerald-700', onClick: importJSON }, ('📂 ' + __alloT('report_writer.import_data', 'Import Data')))
+                    importText.trim() && h('button', { 'aria-label': ('📂 ' + __alloT('report_writer.aria_import_data', 'Import Data')), className: 'mt-1 px-3 py-1 bg-emerald-700 text-white text-xs rounded-lg hover:bg-emerald-700', onClick: importJSON }, ('📂 ' + __alloT('report_writer.import_data', 'Import Data')))
                 ),
                 // ── Saved Reports Gallery ──
                 h('div', { className: 'mt-3 bg-violet-50 rounded-lg border border-violet-200 p-3 space-y-2' },
                     h('h4', { className: 'text-xs font-bold text-violet-800 flex items-center gap-1' }, ('📚 ' + __alloT('report_writer.saved_reports', 'Saved Reports'))),
                     h('div', { className: 'rounded-lg border border-violet-200 bg-white p-2 space-y-1' },
-                        h('label', { className: 'flex items-center gap-2 text-[11px] font-medium text-slate-700' },
+                        h('label', { className: 'flex items-center gap-2 text-xs font-medium text-slate-700' },
                             h('input', { id: 'rw-persist-device', type: 'checkbox', checked: persistLocally, onChange: event => updatePersistence(event.target.checked) }),
                             __alloT('report_writer.encrypted_autosave', 'Encrypted autosave for Report Writer')
                         ),
-                        h('p', { className: 'text-[11px] text-slate-600' }, persistLocally
+                        h('p', { className: 'text-xs text-slate-600' }, persistLocally
                             ? __alloT('report_writer.encrypted_storage_description', 'Drafts, saved reports, references and style guidance are encrypted in this protected workspace. Readable exports are separate files.')
                             : __alloT('report_writer.protected_session_only_description', 'Session-only mode: clinical report data stays in memory. Save a copy or enable encrypted autosave before locking.')),
-                        h('button', { type: 'button', className: 'text-[11px] px-2 py-1 rounded bg-red-50 text-red-700 border border-red-300 hover:bg-red-100', onClick: () => {
+                        h('button', { type: 'button', className: 'text-xs px-2 py-1 rounded bg-red-50 text-red-700 border border-red-300 hover:bg-red-100', onClick: () => {
                             setConfirmationRequest({
                                 title: __alloT('report_writer.confirm_clear_stored_title', 'Clear stored clinical data?'),
                                 message: __alloT('report_writer.confirm_clear_encrypted_records_message', 'This removes Report Writer saved encrypted records from this workspace. Exported files and backups are separate. The currently open report remains visible.'),
@@ -8059,9 +8117,9 @@ Return ONLY valid JSON:
                     // Wraps on a narrow screen: with the name box taking the rest of the row,
                     // the two buttons were squeezed under their labels on a phone.
                     h('div', { className: 'flex flex-wrap items-center gap-2' },
-                        h('input', { type: 'text', className: 'flex-1 min-w-[10rem] text-[11px] border rounded-lg px-2 py-1', placeholder: __alloT('report_writer.placeholder_report_name_optional', 'Report name (optional)...'), 'aria-label': __alloT('report_writer.aria_report_name', 'Report name'), value: saveReportName, onChange: e => setSaveReportName(e.target.value) }),
-                        h('button', { className: 'flex-shrink-0 px-3 py-1 bg-violet-600 text-white text-[11px] font-medium rounded-lg hover:bg-violet-700 transition-colors whitespace-nowrap', onClick: saveReportToGallery }, ('💾 ' + __alloT('report_writer.save_report', 'Save Report'))),
-                        h('button', { 'aria-label': __alloT('report_writer.aria_start_a_new_report', 'Start a new report'), className: 'flex-shrink-0 px-3 py-1 bg-red-100 text-red-700 text-[11px] font-medium rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap', onClick: () => {
+                        h('input', { type: 'text', className: 'flex-1 min-w-[10rem] text-xs border rounded-lg px-2 py-1', placeholder: __alloT('report_writer.placeholder_report_name_optional', 'Report name (optional)...'), 'aria-label': __alloT('report_writer.aria_report_name', 'Report name'), value: saveReportName, onChange: e => setSaveReportName(e.target.value) }),
+                        h('button', { className: 'flex-shrink-0 px-3 py-1 bg-violet-600 text-white text-xs font-medium rounded-lg hover:bg-violet-700 transition-colors whitespace-nowrap', onClick: saveReportToGallery }, ('💾 ' + __alloT('report_writer.save_report', 'Save Report'))),
+                        h('button', { 'aria-label': __alloT('report_writer.aria_start_a_new_report', 'Start a new report'), className: 'flex-shrink-0 px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap', onClick: () => {
                             setConfirmationRequest({
                                 title: __alloT('report_writer.confirm_new_report_title', 'Start a new report?'),
                                 message: __alloT('report_writer.confirm_new_report_message', 'All unsaved case-specific data in the current session will be cleared. This action cannot be undone.'),
@@ -8072,7 +8130,7 @@ Return ONLY valid JSON:
                     ),
                     savedReports.length > 0 && h('div', { className: 'space-y-1 max-h-40 overflow-y-auto mt-1' },
                         savedReports.map(r =>
-                            h('div', { key: r.id, className: 'flex items-center justify-between px-2 py-1.5 bg-white rounded border border-violet-100 text-[11px]' },
+                            h('div', { key: r.id, className: 'flex items-center justify-between px-2 py-1.5 bg-white rounded border border-violet-100 text-xs' },
                                 h('div', { className: 'flex-1 min-w-0' },
                                     h('span', { className: 'font-medium text-slate-800 truncate block' }, r.name),
                                     h('span', { className: 'text-slate-600' }, rwFmt(__alloT('report_writer.scores_2', '{value} • {value2} scores'), { value: new Date(r.savedAt).toLocaleDateString(), value2: r.scoreEntries?.length || 0 }))
@@ -8084,19 +8142,19 @@ Return ONLY valid JSON:
                             )
                         )
                     ),
-                    savedReports.length === 0 && h('p', { className: 'text-[11px] text-violet-700 text-center py-2' }, __alloT('report_writer.no_saved_reports_yet_use_save', 'No saved reports yet. Use "Save Report" to keep a copy.'))
+                    savedReports.length === 0 && h('p', { className: 'text-xs text-violet-700 text-center py-2' }, __alloT('report_writer.no_saved_reports_yet_use_save', 'No saved reports yet. Use "Save Report" to keep a copy.'))
                 ),
                 // Quick report preview
                 Object.keys(reportSections).length > 0 && h('details', { className: 'mt-2 bg-slate-50 rounded-lg border border-slate-400' },
                     h('summary', { className: 'text-xs font-medium text-slate-700 px-3 py-2 cursor-pointer hover:bg-slate-100 rounded-lg' }, ('📄 ' + __alloT('report_writer.preview_full_report', 'Preview Full Report'))),
                     h('div', { className: 'px-4 py-3 space-y-3 max-h-[400px] overflow-y-auto' },
                         h('h2', { className: 'text-sm font-bold text-center text-slate-800' }, reportTitle),
-                        h('p', { className: 'text-[11px] text-center text-slate-600' }, `Student: ${effectiveStudentName || '[Student]'} | Age: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'} | Date: ${new Date().toLocaleDateString()}`),
+                        h('p', { className: 'text-xs text-center text-slate-600' }, `Student: ${effectiveStudentName || '[Student]'} | Age: ${studentAge || 'N/A'} | Grade: ${studentGrade || 'N/A'} | Date: ${new Date().toLocaleDateString()}`),
                         h('hr', { className: 'border-slate-200' }),
                         Object.entries(exportSections).map(([section, text]) =>
                             h('div', { key: section },
                                 h('h3', { className: 'text-xs font-bold text-indigo-700 mb-1' }, section),
-                                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed whitespace-pre-wrap' }, text.replace(/\[Student\]/g, () => effectiveStudentName || '[Student]'))
+                                h('p', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-wrap' }, text.replace(/\[Student\]/g, () => effectiveStudentName || '[Student]'))
                             )
                         )
                     )

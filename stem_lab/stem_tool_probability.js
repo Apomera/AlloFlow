@@ -497,9 +497,34 @@ window.StemLab = window.StemLab || {
   // hook-in-a-conditional-branch crash that kills STEM tools on navigation.
   var _v3 = {
     canvas: null, renderer: null, scene: null, camera: null, controls: null,
-    solid: null, cloud: null, boxLines: null, raf: null, ro: null,
+    solid: null, solidRim: null, cloud: null, boxLines: null, extras: [],
+    dartTex: null, shadowTex: null,
+    raf: null, ro: null,
     shapeId: null, cloudLen: -1, want: null, onStatus: null, booted: false
   };
+  function _v3MakeRadialTex(T, r, g, b, innerAlpha, power) {
+    if (!T || typeof T.DataTexture !== 'function') return null;
+    var size = 64;
+    var data = new Uint8Array(size * size * 4);
+    var half = (size - 1) * 0.5;
+    var exp = typeof power === 'number' ? power : 1.9;
+    for (var y = 0; y < size; y++) {
+      for (var x = 0; x < size; x++) {
+        var dx = (x - half) / half;
+        var dy = (y - half) / half;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var a = dist >= 1 ? 0 : Math.pow(Math.max(0, 1 - dist), exp) * innerAlpha;
+        var idx = (y * size + x) * 4;
+        data[idx] = r;
+        data[idx + 1] = g;
+        data[idx + 2] = b;
+        data[idx + 3] = Math.round(255 * Math.min(1, a));
+      }
+    }
+    var tex = new T.DataTexture(data, size, size, T.RGBAFormat);
+    tex.needsUpdate = true;
+    return tex;
+  }
   // Orbit the camera by a yaw/pitch delta, in radians, around the origin.
   // OrbitControls is pointer-only, so without this a keyboard user could never
   // turn the solid round — and turning it round is the entire point of showing
@@ -553,13 +578,29 @@ window.StemLab = window.StemLab || {
   }
   function _v3SetShape(T, id) {
     if (_v3.shapeId === id || !_v3.scene) return;
-    if (_v3.solid) { _v3.scene.remove(_v3.solid); _v3.solid.geometry.dispose(); _v3.solid.material.dispose(); }
+    if (_v3.solid) { _v3.scene.remove(_v3.solid); _v3.solid.geometry.dispose(); _v3.solid.material.dispose(); _v3.solid = null; }
+    if (_v3.solidRim) { _v3.scene.remove(_v3.solidRim); _v3.solidRim.geometry.dispose(); _v3.solidRim.material.dispose(); _v3.solidRim = null; }
     var sh = v3Shape(id);
-    _v3.solid = new T.Mesh(sh.mesh(T), new T.MeshPhongMaterial({
-      color: sh.color, transparent: true, opacity: 0.22, depthWrite: false,
-      side: T.DoubleSide, shininess: 30
-    }));
+    var geom = sh.mesh(T);
+    var solidMat = (typeof T.MeshPhysicalMaterial === 'function')
+      ? new T.MeshPhysicalMaterial({
+          color: sh.color, transparent: true, opacity: 0.24, depthWrite: false,
+          side: T.DoubleSide, roughness: 0.18, metalness: 0.08,
+          clearcoat: 0.72, clearcoatRoughness: 0.16
+        })
+      : new T.MeshPhongMaterial({
+          color: sh.color, transparent: true, opacity: 0.24, depthWrite: false,
+          side: T.DoubleSide, shininess: 68, specular: 0xe2e8f0
+        });
+    _v3.solid = new T.Mesh(geom, solidMat);
     _v3.scene.add(_v3.solid);
+    // Subtle luminous silhouette wireframe accent so the solid boundary reads clearly against dark & light backdrops
+    if (typeof T.EdgesGeometry === 'function' && typeof T.LineSegments === 'function') {
+      var rimGeo = new T.EdgesGeometry(geom, id === 'pyramid' ? 1 : 22);
+      var rimMat = new T.LineBasicMaterial({ color: sh.color, transparent: true, opacity: 0.32 });
+      _v3.solidRim = new T.LineSegments(rimGeo, rimMat);
+      _v3.scene.add(_v3.solidRim);
+    }
     _v3.shapeId = id;
   }
   function _v3SetCloud(T, flat) {
@@ -573,13 +614,22 @@ window.StemLab = window.StemLab || {
     for (var i = 0; i < n; i++) {
       pos[i * 3] = flat[i * 4]; pos[i * 3 + 1] = flat[i * 4 + 1]; pos[i * 3 + 2] = flat[i * 4 + 2];
       var hit = flat[i * 4 + 3];
-      // Hits bright, misses dim — otherwise the miss shell hides the solid.
-      col[i * 3] = hit ? 0.13 : 0.62; col[i * 3 + 1] = hit ? 0.93 : 0.65; col[i * 3 + 2] = hit ? 0.55 : 0.70;
+      // Hits luminous emerald-mint, misses cool slate-lavender — keeps the solid crisp and legible.
+      col[i * 3] = hit ? 0.16 : 0.62; col[i * 3 + 1] = hit ? 0.96 : 0.66; col[i * 3 + 2] = hit ? 0.62 : 0.78;
     }
     var g = new T.BufferGeometry();
     g.setAttribute('position', new T.BufferAttribute(pos, 3));
     g.setAttribute('color', new T.BufferAttribute(col, 3));
-    _v3.cloud = new T.Points(g, new T.PointsMaterial({ size: 0.014, vertexColors: true, transparent: true, opacity: 0.95 }));
+    if (!_v3.dartTex) _v3.dartTex = _v3MakeRadialTex(T, 255, 255, 255, 1.0, 1.35);
+    var pOpts = {
+      size: _v3.dartTex ? 0.028 : 0.015,
+      vertexColors: true, transparent: true, opacity: 0.96, depthWrite: false
+    };
+    if (_v3.dartTex) {
+      pOpts.map = _v3.dartTex;
+      pOpts.alphaTest = 0.06;
+    }
+    _v3.cloud = new T.Points(g, new T.PointsMaterial(pOpts));
     _v3.scene.add(_v3.cloud);
     _v3.cloudLen = flat.length;
   }
@@ -608,13 +658,55 @@ window.StemLab = window.StemLab || {
     _v3.camera = new T.PerspectiveCamera(42, 1, 0.05, 100);
     _v3.camera.position.set(1.45, 1.05, 1.6);
     _v3.camera.lookAt(0, 0, 0);
-    _v3.scene.add(new T.AmbientLight(0xffffff, 0.72));
-    var dir = new T.DirectionalLight(0xffffff, 0.65); dir.position.set(2, 3, 2); _v3.scene.add(dir);
+    _v3.scene.add(new T.AmbientLight(0xffffff, 0.56));
+    if (typeof T.HemisphereLight === 'function') {
+      _v3.scene.add(new T.HemisphereLight(0xe0f2fe, 0x312e81, 0.48));
+    }
+    var dir = new T.DirectionalLight(0xfff8eb, 0.85); dir.position.set(2.2, 3.2, 2.2); _v3.scene.add(dir);
+    var rim = new T.DirectionalLight(0xa78bfa, 0.52); rim.position.set(-2.4, 1.4, -2.6); _v3.scene.add(rim);
     _v3.boxLines = new T.LineSegments(
       new T.EdgesGeometry(new T.BoxGeometry(1, 1, 1)),
-      new T.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.85 })
+      new T.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.88 })
     );
     _v3.scene.add(_v3.boxLines);
+
+    // Grounded contact shadow disc + calibrated pedestal ring + 8 unit-cube corner ticks (all disposed in _v3Teardown)
+    _v3.extras = [];
+    if (!_v3.shadowTex) _v3.shadowTex = _v3MakeRadialTex(T, 15, 23, 42, 0.34, 1.8);
+    if (_v3.shadowTex && typeof T.CircleGeometry === 'function') {
+      var shadowDisc = new T.Mesh(
+        new T.CircleGeometry(0.84, 40),
+        new T.MeshBasicMaterial({ map: _v3.shadowTex, transparent: true, depthWrite: false, side: T.DoubleSide })
+      );
+      shadowDisc.rotation.x = -Math.PI / 2;
+      shadowDisc.position.y = -0.508;
+      _v3.scene.add(shadowDisc);
+      _v3.extras.push(shadowDisc);
+    }
+    if (typeof T.RingGeometry === 'function') {
+      var baseRing = new T.Mesh(
+        new T.RingGeometry(0.71, 0.728, 48),
+        new T.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.24, depthWrite: false, side: T.DoubleSide })
+      );
+      baseRing.rotation.x = -Math.PI / 2;
+      baseRing.position.y = -0.505;
+      _v3.scene.add(baseRing);
+      _v3.extras.push(baseRing);
+    }
+    if (typeof T.SphereGeometry === 'function') {
+      var cornerGeo = new T.SphereGeometry(0.018, 8, 8);
+      var cornerMat = new T.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.72 });
+      [-0.5, 0.5].forEach(function (cx) {
+        [-0.5, 0.5].forEach(function (cy) {
+          [-0.5, 0.5].forEach(function (cz) {
+            var tick = new T.Mesh(cornerGeo, cornerMat);
+            tick.position.set(cx, cy, cz);
+            _v3.scene.add(tick);
+            _v3.extras.push(tick);
+          });
+        });
+      });
+    }
     if (T.OrbitControls) {
       _v3.controls = new T.OrbitControls(_v3.camera, _v3.canvas);
       _v3.controls.enableDamping = true;
@@ -684,12 +776,16 @@ window.StemLab = window.StemLab || {
     if (_v3.raf) { window.cancelAnimationFrame(_v3.raf); _v3.raf = null; }
     if (_v3.ro) { try { _v3.ro.disconnect(); } catch (e) {} _v3.ro = null; }
     if (_v3.controls && _v3.controls.dispose) { try { _v3.controls.dispose(); } catch (e) {} }
-    [_v3.solid, _v3.cloud, _v3.boxLines].forEach(function (o) {
+    var disposedG = new Set();
+    var disposedM = new Set();
+    [_v3.solid, _v3.solidRim, _v3.cloud, _v3.boxLines].concat(_v3.extras || []).forEach(function (o) {
       if (!o) return;
       if (_v3.scene) _v3.scene.remove(o);
-      if (o.geometry) o.geometry.dispose();
-      if (o.material) o.material.dispose();
+      if (o.geometry && o.geometry.dispose && !disposedG.has(o.geometry)) { disposedG.add(o.geometry); o.geometry.dispose(); }
+      if (o.material && o.material.dispose && !disposedM.has(o.material)) { disposedM.add(o.material); o.material.dispose(); }
     });
+    if (_v3.dartTex && _v3.dartTex.dispose) { try { _v3.dartTex.dispose(); } catch (e) {} }
+    if (_v3.shadowTex && _v3.shadowTex.dispose) { try { _v3.shadowTex.dispose(); } catch (e) {} }
     if (_v3.renderer) {
       try {
         // Free the context itself once the canvas leaves the page; dispose()
@@ -700,7 +796,9 @@ window.StemLab = window.StemLab || {
       } catch (e) {}
     }
     _v3.renderer = _v3.scene = _v3.camera = _v3.controls = null;
-    _v3.solid = _v3.cloud = _v3.boxLines = _v3.canvas = null;
+    _v3.solid = _v3.solidRim = _v3.cloud = _v3.boxLines = _v3.canvas = null;
+    _v3.extras = [];
+    _v3.dartTex = _v3.shadowTex = null;
     _v3.shapeId = null; _v3.cloudLen = -1; _v3.booted = false;
   }
   // Three.js is ~600KB from a CDN. Probability Lab is a heavily used 2D tool, so
@@ -1537,7 +1635,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
           var diceFace = function (val, size, sides) {
             var s = size || 60;
             var dSides = sides || 6;
-            // Classic d6 with pips
+            // Classic d6 with beveled ceramic finish, grounded contact shadow & recessed pips
             if (dSides === 6 && val >= 1 && val <= 6) {
               var dotPositions = {
                 1: [[s/2, s/2]],
@@ -1548,14 +1646,27 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                 6: [[s*0.3, s*0.25], [s*0.7, s*0.25], [s*0.3, s/2], [s*0.7, s/2], [s*0.3, s*0.75], [s*0.7, s*0.75]]
               };
               var dots = dotPositions[val] || [];
-              return React.createElement("svg", { role: "img", 'aria-label': __alloFill(__alloT('stem.probability.a11y_d6_showing', 'd6 showing {value1}'), { value1: val }), viewBox: "0 0 " + s + " " + s, width: s, height: s },
-                React.createElement("rect", { x: 2, y: 2, width: s - 4, height: s - 4, rx: 8, fill: "white", stroke: "#94a3b8", strokeWidth: 2 }),
+              var d6GradId = 'prob-d6-face-' + val + '-' + s;
+              return React.createElement("svg", { role: "img", 'aria-label': __alloFill(__alloT('stem.probability.a11y_d6_showing', 'd6 showing {value1}'), { value1: val }), viewBox: "0 0 " + s + " " + (s + 6), width: s, height: s + 4 },
+                !isContrast && React.createElement("defs", null,
+                  React.createElement("linearGradient", { id: d6GradId, x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+                    React.createElement("stop", { offset: "0%", stopColor: "#ffffff" }),
+                    React.createElement("stop", { offset: "68%", stopColor: "#f1f5f9" }),
+                    React.createElement("stop", { offset: "100%", stopColor: "#cbd5e1" })
+                  )
+                ),
+                !isContrast && React.createElement("ellipse", { cx: s / 2, cy: s + 2.5, rx: s * 0.38, ry: 3.2, fill: isDark ? "rgba(0,0,0,0.55)" : "rgba(15,23,42,0.18)" }),
+                React.createElement("rect", { x: 2, y: 2, width: s - 4, height: s - 4, rx: 9, fill: isContrast ? "white" : "url(#" + d6GradId + ")", stroke: isContrast ? "#000000" : "#94a3b8", strokeWidth: 2 }),
+                !isContrast && React.createElement("rect", { x: 4, y: 4, width: s - 8, height: s - 8, rx: 7, fill: "none", stroke: "#ffffff", strokeWidth: 1.2, opacity: 0.85 }),
                 dots.map(function (pos, i) {
-                  return React.createElement("circle", { key: i, cx: pos[0], cy: pos[1], r: s * 0.08, fill: "#1e293b" });
+                  return React.createElement("g", { key: i },
+                    React.createElement("circle", { cx: pos[0], cy: pos[1], r: s * 0.082, fill: "#1e293b" }),
+                    !isContrast && React.createElement("circle", { cx: pos[0] - s * 0.022, cy: pos[1] - s * 0.022, r: s * 0.024, fill: "#94a3b8", opacity: 0.7 })
+                  );
                 })
               );
             }
-            // Polyhedral face for d4/d8/d10/d12/d20 (neutral hexagon for anything else)
+            // Polyhedral face for d4/d8/d10/d12/d20 (faceted specular sheen + grounded shadow)
             var shape = DIE_SHAPES[dSides] || DIE_SHAPES._;
             var ptsStr = function (pts) {
               var out = '';
@@ -1564,9 +1675,19 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
             };
             var fontSize = s * (val >= 10 ? 0.32 : 0.42) * (shape.fontScale || 1);
             var textY = s * shape.textCY + fontSize * 0.36;
-            return React.createElement("svg", { role: "img", viewBox: "0 0 " + s + " " + s, width: s, height: s, 'aria-label': __alloFill(__alloT('stem.probability.a11y_d_showing', 'd{value1} showing {value2}'), { value1: dSides, value2: val })},
-              shape.ring && React.createElement("polygon", { points: ptsStr(shape.ring(s)), fill: shape.fill, fillOpacity: 0.4, stroke: shape.stroke, strokeWidth: 2, strokeLinejoin: 'round' }),
-              React.createElement("polygon", { points: ptsStr(shape.points(s)), fill: shape.fill, stroke: shape.stroke, strokeWidth: 2.5, strokeLinejoin: 'round' }),
+            var polyGradId = 'prob-poly-' + dSides + '-' + val;
+            return React.createElement("svg", { role: "img", viewBox: "0 0 " + s + " " + (s + 6), width: s, height: s + 4, 'aria-label': __alloFill(__alloT('stem.probability.a11y_d_showing', 'd{value1} showing {value2}'), { value1: dSides, value2: val })},
+              !isContrast && React.createElement("defs", null,
+                React.createElement("radialGradient", { id: polyGradId, cx: "32%", cy: "26%", r: "78%" },
+                  React.createElement("stop", { offset: "0%", stopColor: "#ffffff", stopOpacity: 0.45 }),
+                  React.createElement("stop", { offset: "45%", stopColor: shape.fill, stopOpacity: 0.96 }),
+                  React.createElement("stop", { offset: "100%", stopColor: shape.stroke, stopOpacity: 1 })
+                )
+              ),
+              !isContrast && React.createElement("ellipse", { cx: s / 2, cy: s + 2.5, rx: s * 0.34, ry: 3, fill: isDark ? "rgba(0,0,0,0.52)" : "rgba(15,23,42,0.18)" }),
+              shape.ring && React.createElement("polygon", { points: ptsStr(shape.ring(s)), fill: shape.fill, fillOpacity: 0.38, stroke: shape.stroke, strokeWidth: 2, strokeLinejoin: 'round' }),
+              React.createElement("polygon", { points: ptsStr(shape.points(s)), fill: isContrast ? shape.fill : "url(#" + polyGradId + ")", stroke: shape.stroke, strokeWidth: 2.5, strokeLinejoin: 'round' }),
+              !isContrast && React.createElement("polygon", { points: ptsStr(shape.points(s)), fill: "none", stroke: "#ffffff", strokeWidth: 1, strokeOpacity: 0.35, strokeLinejoin: 'round' }),
               React.createElement("text", { x: s/2, y: textY, textAnchor: 'middle', fontSize: fontSize, fontWeight: 900, fill: 'white', style: { paintOrder: 'stroke', stroke: shape.stroke, strokeWidth: 0.5 } }, val)
             );
           };
@@ -1665,7 +1786,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
 
 
-          // Spinner SVG
+          // Spinner SVG — metallic bezel, specular radial sheen, grounded shadow & sculpted needle
 
           var spinnerSvg = function (result, tick) {
 
@@ -1673,11 +1794,25 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
             var keys = ['Red', 'Blue', 'Green', 'Yellow'];
 
-            var size = 100; var r = 42;
+            var size = 104; var r = 42;
 
             var arrowAngle = result ? (keys.indexOf(result) * 90 + 45) : 0;
 
-            return React.createElement("svg", { role: "img", 'aria-label': result ? 'Spinner showing ' + result : 'Four-color spinner ready', viewBox: "0 0 " + size + " " + size, width: size, height: size },
+            return React.createElement("svg", { role: "img", 'aria-label': result ? 'Spinner showing ' + result : 'Four-color spinner ready', viewBox: "0 0 104 108", width: size, height: 108 },
+              !isContrast && React.createElement("defs", null,
+                React.createElement("radialGradient", { id: "prob-spin-sheen", cx: "32%", cy: "26%", r: "70%" },
+                  React.createElement("stop", { offset: "0%", stopColor: "#ffffff", stopOpacity: 0.42 }),
+                  React.createElement("stop", { offset: "55%", stopColor: "#ffffff", stopOpacity: 0.04 }),
+                  React.createElement("stop", { offset: "100%", stopColor: "#0f172a", stopOpacity: 0.24 })
+                ),
+                React.createElement("linearGradient", { id: "prob-spin-bezel", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+                  React.createElement("stop", { offset: "0%", stopColor: "#e2e8f0" }),
+                  React.createElement("stop", { offset: "50%", stopColor: "#94a3b8" }),
+                  React.createElement("stop", { offset: "100%", stopColor: "#334155" })
+                )
+              ),
+              !isContrast && React.createElement("ellipse", { cx: 52, cy: 102, rx: 36, ry: 4.2, fill: isDark ? "rgba(0,0,0,0.52)" : "rgba(15,23,42,0.18)" }),
+              React.createElement("circle", { cx: 52, cy: 52, r: 46, fill: isContrast ? "#000000" : "url(#prob-spin-bezel)", stroke: isContrast ? "#ffff00" : "#475569", strokeWidth: 1.5 }),
 
               keys.map(function (k, i) {
 
@@ -1685,21 +1820,27 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                 var endA = ((i + 1) * 90 - 90) * Math.PI / 180;
 
-                var x1 = 50 + r * Math.cos(startA), y1 = 50 + r * Math.sin(startA);
+                var x1 = 52 + r * Math.cos(startA), y1 = 52 + r * Math.sin(startA);
 
-                var x2 = 50 + r * Math.cos(endA), y2 = 50 + r * Math.sin(endA);
+                var x2 = 52 + r * Math.cos(endA), y2 = 52 + r * Math.sin(endA);
+                var activeWedge = result === k;
 
-                return React.createElement("path", { key: k, d: "M 50 50 L " + x1 + " " + y1 + " A " + r + " " + r + " 0 0 1 " + x2 + " " + y2 + " Z", fill: colors[k], stroke: 'white', strokeWidth: 1.5, opacity: result === k ? 1 : 0.6 });
+                return React.createElement("g", { key: k },
+                  React.createElement("path", { d: "M 52 52 L " + x1 + " " + y1 + " A " + r + " " + r + " 0 0 1 " + x2 + " " + y2 + " Z", fill: colors[k], stroke: 'white', strokeWidth: 1.5, opacity: activeWedge ? 1 : 0.68 }),
+                  activeWedge && !isContrast && React.createElement("path", { d: "M " + x1 + " " + y1 + " A " + r + " " + r + " 0 0 1 " + x2 + " " + y2, fill: "none", stroke: "#ffffff", strokeWidth: 3, opacity: 0.72 })
+                );
 
               }),
+              !isContrast && React.createElement("circle", { cx: 52, cy: 52, r: r, fill: "url(#prob-spin-sheen)", style: { pointerEvents: 'none' } }),
 
-              React.createElement("g", { transform: "rotate(" + arrowAngle + ", 50, 50)" },
-
-                React.createElement("polygon", { points: "50,12 47,50 53,50", fill: "#1e293b", stroke: "white", strokeWidth: 1 })
-
+              React.createElement("g", { transform: "rotate(" + arrowAngle + ", 52, 52)" },
+                !isContrast && React.createElement("polygon", { points: "53.5,14 49,53 56.5,53", fill: "rgba(15,23,42,0.38)" }),
+                React.createElement("polygon", { points: "52,13 48.5,52 55.5,52", fill: "#1e293b", stroke: "white", strokeWidth: 1.1 }),
+                React.createElement("polygon", { points: "52,13 52,52 55.5,52", fill: "#475569", opacity: 0.55 })
               ),
 
-              React.createElement("circle", { cx: 50, cy: 50, r: 6, fill: "#1e293b", stroke: "white", strokeWidth: 1.5 })
+              React.createElement("circle", { cx: 52, cy: 52, r: 7, fill: "#1e293b", stroke: "white", strokeWidth: 1.6 }),
+              !isContrast && React.createElement("circle", { cx: 50.3, cy: 50.3, r: 2.3, fill: "#fbbf24" })
 
             );
 
@@ -1707,19 +1848,36 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
 
 
-          // Coin SVG
+          // Coin SVG — brushed metallic finish, milled edge ring, specular sheen & grounded contact shadow
 
           var coinSvg = function (result) {
 
             var isH = result === 'H';
+            var coinGrad = isH ? 'prob-coin-gold' : 'prob-coin-silver';
 
-            return React.createElement("svg", { role: "img", 'aria-label': 'Coin showing ' + (isH ? 'heads' : 'tails'), viewBox: "0 0 80 80", width: 80, height: 80 },
+            return React.createElement("svg", { role: "img", 'aria-label': 'Coin showing ' + (isH ? 'heads' : 'tails'), viewBox: "0 0 84 88", width: 84, height: 88 },
+              !isContrast && React.createElement("defs", null,
+                React.createElement("radialGradient", { id: "prob-coin-gold", cx: "32%", cy: "28%", r: "74%" },
+                  React.createElement("stop", { offset: "0%", stopColor: "#fef3c7" }),
+                  React.createElement("stop", { offset: "42%", stopColor: "#fbbf24" }),
+                  React.createElement("stop", { offset: "86%", stopColor: "#d97706" }),
+                  React.createElement("stop", { offset: "100%", stopColor: "#92400e" })
+                ),
+                React.createElement("radialGradient", { id: "prob-coin-silver", cx: "32%", cy: "28%", r: "74%" },
+                  React.createElement("stop", { offset: "0%", stopColor: "#f8fafc" }),
+                  React.createElement("stop", { offset: "45%", stopColor: "#cbd5e1" }),
+                  React.createElement("stop", { offset: "88%", stopColor: "#64748b" }),
+                  React.createElement("stop", { offset: "100%", stopColor: "#334155" })
+                )
+              ),
+              !isContrast && React.createElement("ellipse", { cx: 42, cy: 82, rx: 28, ry: 4, fill: isDark ? "rgba(0,0,0,0.52)" : "rgba(15,23,42,0.20)" }),
+              React.createElement("circle", { cx: 42, cy: 42, r: 36, fill: isContrast ? (isH ? '#fbbf24' : '#94a3b8') : 'url(#' + coinGrad + ')', stroke: isH ? '#92400e' : '#475569', strokeWidth: 3 }),
+              React.createElement("circle", { cx: 42, cy: 42, r: 30.5, fill: "none", stroke: isH ? '#fef3c7' : '#f1f5f9', strokeWidth: 1.2, strokeDasharray: "2 2.5", opacity: isContrast ? 0.9 : 0.72 }),
+              !isContrast && React.createElement("path", { d: "M 20 26 A 30 30 0 0 1 56 16", fill: "none", stroke: "#ffffff", strokeWidth: 3, strokeLinecap: "round", opacity: 0.45 }),
 
-              React.createElement("circle", { cx: 40, cy: 40, r: 36, fill: isH ? '#fbbf24' : '#94a3b8', stroke: isH ? '#92400e' : '#94a3b8', strokeWidth: 3 }),
+              React.createElement("text", { x: 42, y: 49, textAnchor: "middle", style: { fontSize: '23px', fontWeight: '900' }, fill: isH ? '#78350f' : '#1e293b' }, isH ? 'H' : 'T'),
 
-              React.createElement("text", { x: 40, y: 46, textAnchor: "middle", style: { fontSize: '22px', fontWeight: 'bold' }, fill: isH ? '#92400e' : '#f8fafc' }, isH ? 'H' : 'T'),
-
-              isH && React.createElement("text", { x: 40, y: 26, textAnchor: "middle", style: { fontSize: '10px' }, fill: '#92400e' }, '\uD83E\uDE99')
+              isH && React.createElement("text", { x: 42, y: 27, textAnchor: "middle", style: { fontSize: '10px' }, fill: '#92400e' }, '\uD83E\uDE99')
 
             );
 
@@ -1907,21 +2065,41 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                     var startX = Math.round(160 - (slotCount * slotW) / 2);
                     var expY = 74;
                     return React.createElement("svg", { viewBox: "0 0 320 156", width: "100%", height: "auto", role: "img", 'aria-label': t('stem.probability.command_visual_label', 'Probability bars showing observed results settling toward expected values'), style: { display: 'block', maxHeight: 176 } },
-                      React.createElement("rect", { x: 0, y: 0, width: 320, height: 156, rx: 16, fill: isContrast ? '#000000' : isDark ? '#172554' : '#eef2ff', stroke: isContrast ? '#00ff00' : 'none', strokeWidth: isContrast ? 2 : 0 }),
+                      !isContrast && React.createElement("defs", null,
+                        React.createElement("linearGradient", { id: "prob-cmd-bg", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+                          React.createElement("stop", { offset: "0%", stopColor: isDark ? "#0f172a" : "#eef2ff" }),
+                          React.createElement("stop", { offset: "100%", stopColor: isDark ? "#1e1b4b" : "#f5f3ff" })
+                        ),
+                        React.createElement("linearGradient", { id: "prob-cmd-bar-a", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                          React.createElement("stop", { offset: "0%", stopColor: "#a78bfa" }),
+                          React.createElement("stop", { offset: "100%", stopColor: "#6d28d9" })
+                        ),
+                        React.createElement("linearGradient", { id: "prob-cmd-bar-b", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                          React.createElement("stop", { offset: "0%", stopColor: "#2dd4bf" }),
+                          React.createElement("stop", { offset: "100%", stopColor: "#0f766e" })
+                        )
+                      ),
+                      React.createElement("rect", { x: 0, y: 0, width: 320, height: 156, rx: 16, fill: isContrast ? '#000000' : 'url(#prob-cmd-bg)', stroke: isContrast ? '#00ff00' : 'none', strokeWidth: isContrast ? 2 : 0 }),
+                      !isContrast && [48, 74, 98].map(function(gy) {
+                        return React.createElement("line", { key: 'cg-' + gy, x1: 24, y1: gy, x2: 296, y2: gy, stroke: isDark ? 'rgba(148,163,184,0.14)' : 'rgba(99,102,241,0.12)', strokeWidth: 1 });
+                      }),
                       React.createElement("text", { x: 18, y: 24, fill: isContrast ? '#ffffff' : isDark ? '#f8fafc' : '#1e1b4b', fontSize: 12, fontWeight: 900 }, t('stem.probability.observed_vs_expected', 'Observed vs. expected')),
                       React.createElement("rect", { x: 196, y: 14, width: 10, height: 10, rx: 2, fill: isContrast ? '#00ff00' : '#7c3aed' }),
                       React.createElement("text", { x: 210, y: 23, fill: isContrast ? '#ffffff' : isDark ? '#e2e8f0' : '#334155', fontSize: 10, fontWeight: 700 }, t('stem.probability.legend_obs', 'Obs')),
                       React.createElement("line", { x1: 242, y1: 19, x2: 260, y2: 19, stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 2.5, strokeDasharray: "4 3" }),
                       React.createElement("text", { x: 264, y: 23, fill: isContrast ? '#ffff00' : isDark ? '#fde68a' : '#92400e', fontSize: 10, fontWeight: 700 }, t('stem.probability.legend_exp', 'Exp')),
                       React.createElement("line", { x1: 24, y1: 122, x2: 296, y2: 122, stroke: isContrast ? '#ffffff' : isDark ? 'rgba(255,255,255,0.42)' : 'rgba(15,23,42,0.24)', strokeWidth: 2 }),
+                      !isContrast && React.createElement("line", { x1: 24, y1: expY, x2: 296, y2: expY, stroke: '#f59e0b', strokeWidth: 6, opacity: 0.16 }),
                       React.createElement("line", { x1: 24, y1: expY, x2: 296, y2: expY, stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 2, strokeDasharray: "6 5" }),
                       liveBuckets.map(function(bkt, idx) {
                         var bx = startX + idx * slotW + Math.round((slotW - barW) / 2);
                         var by = 122 - bkt.hgt;
-                        var barFill = isContrast ? (idx % 2 ? '#ffff00' : '#00ff00') : (idx % 2 ? '#14b8a6' : '#7c3aed');
+                        var barFill = isContrast ? (idx % 2 ? '#ffff00' : '#00ff00') : (idx % 2 ? 'url(#prob-cmd-bar-b)' : 'url(#prob-cmd-bar-a)');
                         return React.createElement("g", { key: 'prob-bar-' + idx },
-                          React.createElement("rect", { x: bx, y: by, width: barW, height: bkt.hgt, rx: 6, fill: barFill, opacity: isContrast ? 1 : 0.9 }),
-                          React.createElement("circle", { cx: bx + barW / 2, cy: by, r: 3.5, fill: isContrast ? '#ffffff' : '#fbbf24' }),
+                          React.createElement("rect", { x: bx, y: by, width: barW, height: bkt.hgt, rx: 6, fill: barFill, opacity: isContrast ? 1 : 0.94 }),
+                          !isContrast && React.createElement("rect", { x: bx + 2, y: by + 1.5, width: Math.max(4, barW - 4), height: 2.5, rx: 1.2, fill: "#ffffff", opacity: 0.45 }),
+                          !isContrast && React.createElement("circle", { cx: bx + barW / 2, cy: by, r: 6.5, fill: '#fbbf24', opacity: 0.24 }),
+                          React.createElement("circle", { cx: bx + barW / 2, cy: by, r: 3.5, fill: isContrast ? '#ffffff' : '#fbbf24', stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1 }),
                           React.createElement("text", { x: bx + barW / 2, y: 138, textAnchor: "middle", fill: isContrast ? '#ffffff' : isDark ? '#cbd5e1' : '#334155', fontSize: 10, fontWeight: 800 }, bkt.lbl)
                         );
                       })
@@ -2258,31 +2436,40 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                 React.createElement("div", { style: { position: 'relative', display: 'inline-block', animation: d._mbShaking ? 'mbShake 0.5s ease-in-out' : 'none' } },
 
-                  React.createElement("svg", { role: "img", 'aria-label': __alloFill(__alloT('stem.probability.a11y_marble_bag_containing_marbles_across_colors', 'Marble bag containing {value1} marbles across {value2} colors'), { value1: customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0), value2: customOutcomes.length }), viewBox: "0 0 180 200", width: 180, height: 200, style: { filter: 'drop-shadow(0 4px 12px rgba(139,92,246,0.2))' } },
+                  React.createElement("svg", { role: "img", 'aria-label': __alloFill(__alloT('stem.probability.a11y_marble_bag_containing_marbles_across_colors', 'Marble bag containing {value1} marbles across {value2} colors'), { value1: customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0), value2: customOutcomes.length }), viewBox: "0 0 180 206", width: 180, height: 206, style: { filter: 'drop-shadow(0 4px 12px rgba(139,92,246,0.2))' } },
+                    !isContrast && React.createElement("defs", null,
+                      React.createElement("linearGradient", { id: "prob-bag-fabric", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+                        React.createElement("stop", { offset: "0%", stopColor: isDark ? "#4c1d95" : "#ede9fe" }),
+                        React.createElement("stop", { offset: "55%", stopColor: isDark ? "#2e1065" : "#ddd6fe" }),
+                        React.createElement("stop", { offset: "100%", stopColor: isDark ? "#1e1b4b" : "#c4b5fd" })
+                      ),
+                      React.createElement("radialGradient", { id: "prob-marble-gloss", cx: "32%", cy: "28%", r: "65%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#ffffff", stopOpacity: 0.72 }),
+                        React.createElement("stop", { offset: "42%", stopColor: "#ffffff", stopOpacity: 0.08 }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#0f172a", stopOpacity: 0.42 })
+                      )
+                    ),
+                    // Grounded contact shadow beneath bag
+                    !isContrast && React.createElement("ellipse", { cx: 90, cy: 199, rx: 66, ry: 5, fill: isDark ? "rgba(0,0,0,0.48)" : "rgba(76,29,149,0.16)" }),
 
                     // Bag body
-
-                    React.createElement("path", { d: "M30 60 Q20 60 15 80 L10 170 Q10 195 40 195 L140 195 Q170 195 170 170 L165 80 Q160 60 150 60", fill: isDark || isContrast ? '#2d1b69' : '#ddd6fe', stroke: isDark || isContrast ? '#7c3aed' : '#a78bfa', strokeWidth: 2.5 }),
+                    React.createElement("path", { d: "M30 60 Q20 60 15 80 L10 170 Q10 195 40 195 L140 195 Q170 195 170 170 L165 80 Q160 60 150 60 Z", fill: isContrast ? '#2d1b69' : 'url(#prob-bag-fabric)', stroke: isDark || isContrast ? '#7c3aed' : '#8b5cf6', strokeWidth: 2.5 }),
+                    // Subtle bag stitch contour
+                    !isContrast && React.createElement("path", { d: "M34 68 L22 168 Q22 186 44 186 L136 186 Q158 186 158 168 L146 68", fill: "none", stroke: isDark ? "rgba(196,181,253,0.22)" : "rgba(109,40,217,0.18)", strokeWidth: 1.2, strokeDasharray: "4 4" }),
 
                     // Bag opening / drawstring
-
                     React.createElement("path", { d: "M30 60 Q55 45 90 45 Q125 45 150 60", fill: "none", stroke: isDark || isContrast ? '#a78bfa' : '#7c3aed', strokeWidth: 2, strokeDasharray: "4 3" }),
 
                     // Drawstring knot
-
                     React.createElement("ellipse", { cx: 90, cy: 48, rx: 8, ry: 5, fill: isDark || isContrast ? '#a78bfa' : '#7c3aed' }),
 
                     // Bag label
-
                     React.createElement("text", { x: 90, y: 32, textAnchor: "middle", style: { fontSize: '10px', fontWeight: 'bold', fill: isDark || isContrast ? '#c4b5fd' : '#6d28d9' } }, customOutcomes.reduce(function (s, o) { return s + (o.count || 1); }, 0) + ' marbles'),
 
-                    // Marbles inside bag
-
+                    // Glossy 3D-shaded glass marbles inside bag
                     (function () {
 
                       var allMarbles = []; customOutcomes.forEach(function (o) { for (var _mj = 0; _mj < Math.min(o.count || 1, 15); _mj++) allMarbles.push(o.color); });
-
-                      // Deterministic positioning for marbles
 
                       var positions = [];
 
@@ -2305,11 +2492,10 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                       return positions.map(function (p, idx) {
 
                         return React.createElement("g", { key: idx },
-
-                          React.createElement("circle", { cx: p.x, cy: p.y, r: 8, fill: p.color, stroke: 'rgba(0,0,0,0.15)', strokeWidth: 0.5 }),
-
-                          React.createElement("circle", { cx: p.x - 2, cy: p.y - 2, r: 3, fill: 'rgba(255,255,255,0.4)' })
-
+                          !isContrast && React.createElement("ellipse", { cx: p.x + 1.2, cy: p.y + 6.5, rx: 6.5, ry: 2.6, fill: "rgba(15,23,42,0.28)" }),
+                          React.createElement("circle", { cx: p.x, cy: p.y, r: 8, fill: p.color, stroke: 'rgba(0,0,0,0.2)', strokeWidth: 0.6 }),
+                          !isContrast && React.createElement("circle", { cx: p.x, cy: p.y, r: 8, fill: "url(#prob-marble-gloss)" }),
+                          React.createElement("circle", { cx: p.x - 2.6, cy: p.y - 2.6, r: 2.4, fill: 'rgba(255,255,255,0.72)' })
                         );
 
                       });
@@ -2906,14 +3092,27 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
               var BINOM_TOTAL = 4096; // 2^12
               function expectedCountFor(bin) { return totalDropped * BINOM_12[bin] / BINOM_TOTAL; }
 
-              // Build peg-grid SVG elements
+              // Falling balls read ahead of pegs so struck pegs emit luminous bounce-spark halos
+              var fallingNow = d.galtonFalling || [];
+              // Build peg-grid SVG elements with metallic 3D finish & bounce spark halos
               var pegs = [];
               for (var r = 0; r < GB_ROWS; r++) {
                 var pegsInRow = r + 1;
                 var rowY = 20 + (r * (pegAreaH - 30) / Math.max(1, GB_ROWS - 1));
                 for (var c = 0; c < pegsInRow; c++) {
                   var pegX = svgW / 2 + (c - (pegsInRow - 1) / 2) * pegSpacing;
-                  pegs.push(React.createElement('circle', { key: 'peg-' + r + '-' + c, cx: pegX, cy: rowY, r: 2.5, fill: '#94a3b8' }));
+                  var struck = false;
+                  for (var fi = 0; fi < fallingNow.length; fi++) {
+                    var bdx = fallingNow[fi].x - pegX;
+                    var bdy = fallingNow[fi].y - rowY;
+                    if (bdx * bdx + bdy * bdy < 210) { struck = true; break; }
+                  }
+                  pegs.push(React.createElement('g', { key: 'peg-' + r + '-' + c },
+                    struck && !isContrast && React.createElement('circle', { cx: pegX, cy: rowY, r: 9.5, fill: 'url(#gb-spark-halo)' }),
+                    struck && React.createElement('circle', { cx: pegX, cy: rowY, r: 5.2, fill: 'none', stroke: isContrast ? '#00ff00' : '#fde047', strokeWidth: 1.3, opacity: 0.85 }),
+                    !isContrast && React.createElement('circle', { cx: pegX + 0.8, cy: rowY + 1.2, r: 2.7, fill: 'rgba(2,6,23,0.45)' }),
+                    React.createElement('circle', { cx: pegX, cy: rowY, r: 2.8, fill: isContrast ? (struck ? '#00ff00' : '#ffff00') : (struck ? '#fef08a' : 'url(#gb-peg-metal)'), stroke: isContrast ? '#000000' : 'rgba(255,255,255,0.35)', strokeWidth: 0.5 })
+                  ));
                 }
               }
               // Maxbin computed from EITHER observed counts OR theoretical
@@ -2926,79 +3125,84 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
               }
               var maxBin = Math.max(maxObs, maxExp);
 
-              // Build histogram bars with theory-deviation coloring.
-              // Below 30 drops, use the original rainbow palette (deviation
-              // is too noisy to be meaningful). Above 30, color by how close
-              // each bar is to the binomial expected count.
+              // Build histogram bars with theory-deviation coloring + gradient sheen caps.
               var bars = bins.map(function(count, idx) {
                 var barH = (count / maxBin) * binAreaH;
                 var barX = idx * colW + 2;
                 var barY = binAreaY + binAreaH - barH;
                 var fillColor;
                 if (totalDropped < 30) {
-                  // Rainbow (the original) — noise is the signal at low N
                   var hue = 270 - (Math.abs(idx - (GB_BINS - 1) / 2) / ((GB_BINS - 1) / 2)) * 100;
-                  fillColor = 'hsl(' + hue + ', 70%, 55%)';
+                  fillColor = 'hsl(' + hue + ', 74%, 56%)';
                 } else {
-                  // Color by ratio to expected
-                  // `binExpected`, not `expected`: the render-scope `expected` is
-                  // the outcome→probability map, a different thing entirely.
                   var binExpected = expectedCountFor(idx);
                   if (binExpected < 0.5) {
-                    fillColor = '#cbd5e1'; // tail bin with negligible expected mass
+                    fillColor = '#cbd5e1';
                   } else {
                     var ratio = count / binExpected;
-                    if (ratio >= 0.85 && ratio <= 1.15) fillColor = '#10b981';      // green — within 15%
-                    else if (ratio >= 0.6 && ratio <= 1.4) fillColor = '#f59e0b';   // amber — within 40%
-                    else fillColor = '#ef4444';                                     // red — significant deviation
+                    if (ratio >= 0.85 && ratio <= 1.15) fillColor = '#10b981';
+                    else if (ratio >= 0.6 && ratio <= 1.4) fillColor = '#f59e0b';
+                    else fillColor = '#ef4444';
                   }
                 }
                 return React.createElement('g', { key: 'bar-' + idx },
                   React.createElement('rect', {
                     x: barX, y: barY, width: colW - 4, height: barH,
                     fill: fillColor,
-                    rx: 2
+                    rx: 2.5
+                  }),
+                  !isContrast && barH > 4 && React.createElement('rect', {
+                    x: barX, y: barY, width: colW - 4, height: barH,
+                    fill: 'url(#gb-bar-gloss)',
+                    rx: 2.5
+                  }),
+                  !isContrast && barH > 2 && React.createElement('rect', {
+                    x: barX + 1, y: barY, width: Math.max(2, colW - 6), height: 2,
+                    fill: '#ffffff', opacity: 0.5, rx: 1
                   }),
                   count > 0 && React.createElement('text', {
-                    x: barX + (colW - 4) / 2, y: barY - 2,
-                    fill: '#475569', fontSize: 9, textAnchor: 'middle', fontWeight: 'bold'
+                    x: barX + (colW - 4) / 2, y: barY - 2.5,
+                    fill: isContrast ? '#ffff00' : '#e2e8f0', fontSize: 9, textAnchor: 'middle', fontWeight: 'bold'
                   }, count)
                 );
               });
 
-              // Render falling balls (animation in-flight). Read from state.
-              var fallingNow = d.galtonFalling || [];
+              // Render falling balls (animation in-flight) with glossy metallic highlight & glow halo
               var fallingBalls = fallingNow.map(function(b) {
-                return React.createElement('circle', {
-                  key: 'fall-' + b.id,
-                  cx: b.x, cy: b.y, r: 4,
-                  fill: '#fbbf24',
-                  stroke: '#92400e',
-                  strokeWidth: 0.8,
-                  style: { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' }
-                });
+                return React.createElement('g', { key: 'fall-' + b.id },
+                  !isContrast && React.createElement('circle', { cx: b.x, cy: b.y, r: 8.5, fill: 'url(#gb-spark-halo)' }),
+                  React.createElement('circle', {
+                    cx: b.x, cy: b.y, r: 4.3,
+                    fill: isContrast ? '#00ff00' : 'url(#gb-ball-gold)',
+                    stroke: isContrast ? '#000000' : '#78350f',
+                    strokeWidth: 0.8
+                  }),
+                  !isContrast && React.createElement('circle', { cx: b.x - 1.4, cy: b.y - 1.4, r: 1.3, fill: '#ffffff', opacity: 0.85 })
+                );
               });
-              // Theoretical normal curve overlay: for each bin, expected count
-              // = totalDropped × C(n, k) / 2^n. We just sample the analytic
-              // normal-approximation curve over a denser x range.
+              // Theoretical normal curve overlay + shaded area wash
               var theoryPath = '';
+              var theoryAreaPath = '';
+              var meanX = theoryMean * colW + colW / 2;
               if (totalDropped >= 50) {
                 var pts = [];
                 for (var x = 0; x <= GB_BINS * 4; x++) {
-                  var bx = x / 4; // bin-coord
+                  var bx = x / 4;
                   var z = (bx - theoryMean) / theoryStdDev;
                   var pdfVal = Math.exp(-0.5 * z * z) / (theoryStdDev * Math.sqrt(2 * Math.PI));
-                  // Scale to histogram space: peak pdf ≈ 1/(σ√(2π)). Multiply
-                  // by totalDropped to get expected count per unit bin.
                   var expectedCount = pdfVal * totalDropped;
                   var px = bx * colW + colW / 2;
                   var py = binAreaY + binAreaH - (expectedCount / maxBin) * binAreaH;
-                  pts.push((x === 0 ? 'M' : 'L') + px + ',' + py);
+                  pts.push((x === 0 ? 'M' : 'L') + px.toFixed(1) + ',' + py.toFixed(1));
                 }
                 theoryPath = pts.join(' ');
+                var firstX = (colW / 2).toFixed(1);
+                var lastX = (GB_BINS * colW + colW / 2).toFixed(1);
+                var baseY = (binAreaY + binAreaH).toFixed(1);
+                theoryAreaPath = theoryPath + ' L' + lastX + ',' + baseY + ' L' + firstX + ',' + baseY + ' Z';
               }
 
-              return React.createElement('div', { className: 'rounded-xl p-4 mb-4', style: { background: 'linear-gradient(135deg, #0c4a6e 0%, #155e75 100%)', color: 'white' } },
+              return React.createElement('div', { className: 'rounded-xl p-4 mb-4', style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #0c4a6e 0%, #155e75 100%)', color: 'white', border: isContrast ? '2px solid #00ff00' : 'none' } },
                 React.createElement('div', { className: 'text-center mb-3' },
                   React.createElement('div', { className: 'text-lg font-bold' }, t('stem.probability.the_galton_board', '⚙️ The Galton Board')),
                   React.createElement('div', { className: 'text-[0.6875rem] text-cyan-100 mt-1 italic max-w-xl mx-auto' }, t('stem.probability.drop_balls_through_a_peg_grid_each_peg', 'Drop balls through a peg grid. Each peg deflects 50/50 left or right. After enough balls, the histogram becomes a bell curve — the Central Limit Theorem in action.'))
@@ -3008,28 +3212,87 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                   React.createElement('svg', {
                     viewBox: '0 0 ' + svgW + ' ' + svgH,
                     width: svgW, height: svgH,
-                    style: { background: 'rgba(255,255,255,0.05)', borderRadius: 8 },
+                    style: { background: isContrast ? '#000000' : 'rgba(2,6,23,0.34)', borderRadius: 10, border: isContrast ? '1px solid #ffff00' : '1px solid rgba(103,232,249,0.22)' },
                     'aria-label': __alloFill(__alloT('stem.probability.a11y_galton_board_with_peg_rows_and_histogram_bins_b', 'Galton board with {value1} peg rows and {value2} histogram bins below'), { value1: GB_ROWS, value2: GB_BINS })},
+                    !isContrast && React.createElement('defs', null,
+                      React.createElement('linearGradient', { id: 'gb-board-bg', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        React.createElement('stop', { offset: '0%', stopColor: '#082f49' }),
+                        React.createElement('stop', { offset: '58%', stopColor: '#0f172a' }),
+                        React.createElement('stop', { offset: '100%', stopColor: '#020617' })
+                      ),
+                      React.createElement('radialGradient', { id: 'gb-peg-metal', cx: '32%', cy: '28%', r: '72%' },
+                        React.createElement('stop', { offset: '0%', stopColor: '#f8fafc' }),
+                        React.createElement('stop', { offset: '55%', stopColor: '#94a3b8' }),
+                        React.createElement('stop', { offset: '100%', stopColor: '#334155' })
+                      ),
+                      React.createElement('radialGradient', { id: 'gb-ball-gold', cx: '32%', cy: '28%', r: '72%' },
+                        React.createElement('stop', { offset: '0%', stopColor: '#fef9c3' }),
+                        React.createElement('stop', { offset: '45%', stopColor: '#fbbf24' }),
+                        React.createElement('stop', { offset: '100%', stopColor: '#b45309' })
+                      ),
+                      React.createElement('radialGradient', { id: 'gb-spark-halo', cx: '50%', cy: '50%', r: '50%' },
+                        React.createElement('stop', { offset: '0%', stopColor: '#fde047', stopOpacity: 0.72 }),
+                        React.createElement('stop', { offset: '55%', stopColor: '#38bdf8', stopOpacity: 0.24 }),
+                        React.createElement('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: 0 })
+                      ),
+                      React.createElement('linearGradient', { id: 'gb-bar-gloss', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        React.createElement('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.34 }),
+                        React.createElement('stop', { offset: '38%', stopColor: '#ffffff', stopOpacity: 0.04 }),
+                        React.createElement('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.34 })
+                      ),
+                      React.createElement('linearGradient', { id: 'gb-bell-area', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        React.createElement('stop', { offset: '0%', stopColor: '#fbbf24', stopOpacity: 0.24 }),
+                        React.createElement('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0.02 })
+                      )
+                    ),
+                    !isContrast && React.createElement('rect', { x: 0, y: 0, width: svgW, height: svgH, rx: 10, fill: 'url(#gb-board-bg)' }),
+                    // Subtle top entry funnel rails
+                    React.createElement('path', {
+                      d: 'M ' + (svgW / 2 - 22) + ' 2 L ' + (svgW / 2 - 7) + ' 13 M ' + (svgW / 2 + 22) + ' 2 L ' + (svgW / 2 + 7) + ' 13',
+                      fill: 'none', stroke: isContrast ? '#00ff00' : 'rgba(103,232,249,0.55)', strokeWidth: 2, strokeLinecap: 'round'
+                    }),
+                    // Vertical bin chute dividers
+                    bins.map(function(_, idx) {
+                      if (idx === 0) return null;
+                      return React.createElement('line', {
+                        key: 'chute-' + idx,
+                        x1: idx * colW, y1: binAreaY, x2: idx * colW, y2: binAreaY + binAreaH,
+                        stroke: isContrast ? 'rgba(255,255,0,0.35)' : 'rgba(148,163,184,0.16)',
+                        strokeWidth: 1
+                      });
+                    }),
                     pegs,
                     // Divider line between pegs and bins
-                    React.createElement('line', { x1: 0, y1: binAreaY, x2: svgW, y2: binAreaY, stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }),
+                    React.createElement('line', { x1: 0, y1: binAreaY, x2: svgW, y2: binAreaY, stroke: isContrast ? '#ffff00' : 'rgba(103,232,249,0.28)', strokeWidth: 1.2 }),
+                    // Subtle mean axis guide line
+                    !isContrast && React.createElement('line', { x1: meanX, y1: binAreaY, x2: meanX, y2: binAreaY + binAreaH, stroke: 'rgba(251,191,36,0.28)', strokeWidth: 1, strokeDasharray: '2 3' }),
                     bars,
+                    theoryAreaPath && !isContrast && React.createElement('path', {
+                      d: theoryAreaPath,
+                      fill: 'url(#gb-bell-area)'
+                    }),
+                    theoryPath && !isContrast && React.createElement('path', {
+                      d: theoryPath,
+                      fill: 'none',
+                      stroke: 'rgba(251,191,36,0.28)',
+                      strokeWidth: 6,
+                      strokeLinecap: 'round'
+                    }),
                     theoryPath && React.createElement('path', {
                       d: theoryPath,
                       fill: 'none',
-                      stroke: 'rgba(251,191,36,0.85)',
-                      strokeWidth: 2,
-                      strokeDasharray: '4 3'
+                      stroke: isContrast ? '#ffff00' : 'rgba(253,224,71,0.95)',
+                      strokeWidth: 2.2,
+                      strokeDasharray: '5 3'
                     }),
-                    // Falling balls (animation in flight) — rendered LAST so
-                    // they sit on top of pegs and bars.
+                    // Falling balls (animation in flight) — rendered LAST so they sit on top of pegs and bars.
                     fallingBalls,
                     // Bin index labels
                     bins.map(function(_, idx) {
                       return React.createElement('text', {
                         key: 'lbl-' + idx,
                         x: idx * colW + colW / 2, y: svgH - 6,
-                        fill: 'rgba(255,255,255,0.5)', fontSize: 8, textAnchor: 'middle'
+                        fill: isContrast ? '#ffffff' : 'rgba(226,232,240,0.68)', fontSize: 8, textAnchor: 'middle'
                       }, idx);
                     })
                   )
@@ -3982,22 +4245,55 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                 var yHi = Math.min(100, convExpected + _pad);
                 var _span = (yHi - yLo) || 1;
                 var ymap = function (pct) { var c = Math.max(yLo, Math.min(yHi, pct)); return 100 - ((c - yLo) / _span) * 100; };
+                var expLineY = ymap(convExpected);
+                var polyPts = convHist.map(function (pt, i) { var x = (i / Math.max(convHist.length - 1, 1)) * 400; return x.toFixed(1) + ',' + ymap(pt.pct).toFixed(1); }).join(' ');
+                var lastPt = convHist[convHist.length - 1];
+                var lastY = ymap(lastPt.pct);
+                var closeToExp = Math.abs(lastPt.pct - convExpected) <= 3;
+                var beaconColor = isContrast ? '#00ff00' : (closeToExp ? '#10b981' : '#8b5cf6');
                 return React.createElement("svg", { role: "img", 'aria-label': __alloFill(__alloT('stem.probability.a11y_convergence_chart_observed_percent_expected_per', 'Convergence chart: observed {value1} percent, expected {value2} percent after {value3} trials'), { value1: convHist[convHist.length - 1].pct.toFixed(1), value2: convExpected.toFixed(1), value3: d.trials }), viewBox: "0 0 400 100", className: "w-full", style: { maxHeight: '120px' } },
-                  React.createElement("line", { x1: 0, y1: ymap(convExpected), x2: 400, y2: ymap(convExpected), stroke: "#22c55e", strokeWidth: 1, strokeDasharray: "4 2" }),
-                  React.createElement("text", { x: 2, y: Math.max(8, ymap(convExpected) - 3), fill: "#22c55e", style: { fontSize: '7px', fontWeight: 'bold' } }, convExpected.toFixed(1) + '% expected'),
-                  React.createElement("polyline", {
-                    fill: "none", stroke: "#8b5cf6", strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px rgba(139,92,246,0.55))' },
-                    // `pt`, not `h`: `h` is this render's React.createElement alias.
-                    // These two bodies happen to spell out React.createElement, so
-                    // the shadow was harmless — but it is a trap set for whoever
-                    // edits them next.
-                    points: convHist.map(function (pt, i) { var x = (i / Math.max(convHist.length - 1, 1)) * 400; return x + ',' + ymap(pt.pct); }).join(' ')
+                  !isContrast && React.createElement("defs", null,
+                    React.createElement("linearGradient", { id: "prob-conv-area", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                      React.createElement("stop", { offset: "0%", stopColor: "#8b5cf6", stopOpacity: isDark ? 0.30 : 0.20 }),
+                      React.createElement("stop", { offset: "100%", stopColor: "#8b5cf6", stopOpacity: 0.01 })
+                    )
+                  ),
+                  // Subtle studio reference gridlines
+                  !isContrast && [25, 50, 75].map(function(gy) {
+                    return React.createElement("line", { key: 'cg-' + gy, x1: 0, y1: gy, x2: 400, y2: gy, stroke: isDark ? 'rgba(148,163,184,0.14)' : 'rgba(148,163,184,0.22)', strokeWidth: 0.8 });
                   }),
+                  // Subtle convergence area wash between empirical curve and expected horizon
+                  !isContrast && React.createElement("polygon", {
+                    points: polyPts + ' 400,' + expLineY.toFixed(1) + ' 0,' + expLineY.toFixed(1),
+                    fill: "url(#prob-conv-area)"
+                  }),
+                  // Glowing expected probability horizon line
+                  !isContrast && React.createElement("line", { x1: 0, y1: expLineY, x2: 400, y2: expLineY, stroke: "#22c55e", strokeWidth: 5, opacity: 0.16 }),
+                  React.createElement("line", { x1: 0, y1: expLineY, x2: 400, y2: expLineY, stroke: isContrast ? "#00ff00" : "#22c55e", strokeWidth: 1.4, strokeDasharray: "4 2" }),
+                  React.createElement("text", { x: 2, y: Math.max(8, expLineY - 3), fill: isContrast ? "#00ff00" : "#22c55e", style: { fontSize: '7px', fontWeight: 'bold' } }, convExpected.toFixed(1) + '% expected'),
+                  // Dual-pass glowing empirical convergence trace
+                  !isContrast && React.createElement("polyline", {
+                    fill: "none", stroke: "#8b5cf6", strokeWidth: 5.5, opacity: 0.2,
+                    strokeLinejoin: "round", strokeLinecap: "round",
+                    points: polyPts
+                  }),
+                  React.createElement("polyline", {
+                    fill: "none", stroke: isContrast ? "#ffff00" : "#8b5cf6", strokeWidth: 2,
+                    strokeLinejoin: "round", strokeLinecap: "round",
+                    points: polyPts
+                  }),
+                  // Vertical delta tether between empirical endpoint and theoretical expectation
+                  React.createElement("line", { x1: 396, y1: lastY, x2: 396, y2: expLineY, stroke: beaconColor, strokeWidth: 1.4, strokeDasharray: "2 1.5", opacity: 0.8 }),
                   convHist.slice(-5).map(function (pt, i) {
                     var idx = convHist.length - 5 + i;
                     if (idx < 0) return null;
                     var x = (idx / Math.max(convHist.length - 1, 1)) * 400;
-                    return React.createElement("circle", { key: i, cx: x, cy: ymap(pt.pct), r: 2.5, fill: "#8b5cf6" });
+                    var isLatest = idx === convHist.length - 1;
+                    return React.createElement("g", { key: i },
+                      isLatest && !isContrast && React.createElement("circle", { cx: Math.min(396, x), cy: ymap(pt.pct), r: 7.5, fill: beaconColor, opacity: 0.24 }),
+                      isLatest && React.createElement("circle", { cx: Math.min(396, x), cy: ymap(pt.pct), r: 5, fill: "none", stroke: beaconColor, strokeWidth: 1.2, opacity: 0.75 }),
+                      React.createElement("circle", { cx: Math.min(396, x), cy: ymap(pt.pct), r: isLatest ? 3 : 2.2, fill: isLatest ? beaconColor : (isContrast ? "#ffff00" : "#8b5cf6"), stroke: isLatest ? "#ffffff" : "none", strokeWidth: isLatest ? 1 : 0 })
+                    );
                   }),
                   React.createElement("text", { x: 2, y: 8, fill: "#94a3b8", style: { fontSize: '6px' } }, yHi.toFixed(0) + '%'),
                   React.createElement("text", { x: 2, y: 99, fill: "#94a3b8", style: { fontSize: '6px' } }, yLo.toFixed(0) + '%'),
@@ -4316,6 +4612,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
               function beginPiSlowDrop() {
                 if (_piAnim.interval) return;
                 sfxProbClick();
+                upd('_piSlowRunning', true);
                 var dropped = 0;
                 _piAnim.interval = setInterval(function() {
                   setLabToolData(function(prev) {
@@ -4329,12 +4626,13 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                     var nextIn = (_pp._piInside != null ? _pp._piInside : (_pp._piPoints || []).filter(function(p) { return p.inside; }).length) + (inside ? 1 : 0);
                     // Slow-dropped darts are trials too: totalTrials and experimentsUsed feed the quests.
                     var piUsed = Object.assign({}, _pp.experimentsUsed || {}); piUsed[_pp.mode || 'pi'] = true;
-                    return Object.assign({}, prev, { probability: Object.assign({}, _pp, { _piPoints: nextPts, _piTotal: nextTot, _piInside: nextIn, results: nextRes, trials: nextRes.length, totalTrials: (_pp.totalTrials || 0) + 1, experimentsUsed: piUsed }) });
+                    return Object.assign({}, prev, { probability: Object.assign({}, _pp, { _piSlowRunning: true, _piPoints: nextPts, _piTotal: nextTot, _piInside: nextIn, results: nextRes, trials: nextRes.length, totalTrials: (_pp.totalTrials || 0) + 1, experimentsUsed: piUsed }) });
                   });
                   dropped++;
                   if (dropped >= 100) {
                     clearInterval(_piAnim.interval);
                     _piAnim.interval = null;
+                    upd('_piSlowRunning', false);
                     sfxProbSuccess();
                   }
                 }, 100);
@@ -4374,21 +4672,39 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                 React.createElement("div", { className: "flex gap-3 items-start flex-wrap" },
 
-                  React.createElement("svg", { role: "img", 'aria-label': __alloFill(__alloT('stem.probability.a11y_monte_carlo_pi_scatter_plot_with_of_points_insi', 'Monte Carlo pi scatter plot with {value1} of {value2} points inside the quarter circle; pi estimate {value3}'), { value1: _piInV, value2: _piTotV, value3: _piEstV.toFixed(4) }), viewBox: "0 0 200 200", width: 180, height: 180, style: { border: '1px solid '+_border, borderRadius: 8, flexShrink: 0, background: isDark||isContrast?'#1e1b4b':'#f8fafc' } },
+                  React.createElement("svg", { role: "img", 'aria-label': __alloFill(__alloT('stem.probability.a11y_monte_carlo_pi_scatter_plot_with_of_points_insi', 'Monte Carlo pi scatter plot with {value1} of {value2} points inside the quarter circle; pi estimate {value3}'), { value1: _piInV, value2: _piTotV, value3: _piEstV.toFixed(4) }), viewBox: "0 0 200 200", width: 180, height: 180, style: { border: '1px solid '+_border, borderRadius: 10, flexShrink: 0, background: isContrast?'#000000':isDark?'#0f172a':'#f8fafc' } },
+                    !isContrast && React.createElement("defs", null,
+                      React.createElement("radialGradient", { id: "prob-pi-sector", cx: "0%", cy: "100%", r: "100%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#10b981", stopOpacity: isDark ? 0.24 : 0.16 }),
+                        React.createElement("stop", { offset: "85%", stopColor: "#06b6d4", stopOpacity: isDark ? 0.12 : 0.08 }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#22c55e", stopOpacity: 0.03 })
+                      )
+                    ),
+                    !isContrast && [50, 100, 150].map(function(gpos) {
+                      return React.createElement("g", { key: 'pig-' + gpos },
+                        React.createElement("line", { x1: gpos, y1: 0, x2: gpos, y2: 200, stroke: isDark ? 'rgba(148,163,184,0.14)' : 'rgba(148,163,184,0.22)', strokeWidth: 0.8 }),
+                        React.createElement("line", { x1: 0, y1: gpos, x2: 200, y2: gpos, stroke: isDark ? 'rgba(148,163,184,0.14)' : 'rgba(148,163,184,0.22)', strokeWidth: 0.8 })
+                      );
+                    }),
+                    React.createElement("path", { d:"M 0 200 L 0 0 A 200 200 0 0 1 200 200 Z", fill: isContrast ? 'rgba(0,255,0,0.12)' : 'url(#prob-pi-sector)' }),
+                    !isContrast && React.createElement("path", { d:"M 0 0 A 200 200 0 0 1 200 200", fill: "none", stroke:'#22c55e', strokeWidth: 5, opacity: 0.22 }),
+                    React.createElement("path", { d:"M 0 0 A 200 200 0 0 1 200 200", fill: "none", stroke: isContrast ? '#00ff00' : '#22c55e', strokeWidth: 1.8, strokeDasharray:'5 3' }),
 
-                    React.createElement("path", { d:"M 0 200 A 200 200 0 0 1 200 0", fill: isDark||isContrast?'rgba(34,197,94,0.12)':'rgba(34,197,94,0.08)', stroke:'#22c55e', strokeWidth:1.5, strokeDasharray:'5 3' }),
-
-                    _piPtsV.slice(-400).map(function(pt, pidx) {
-
-                      return React.createElement("circle", { key: pidx, cx: pt.x*200, cy: (1-pt.y)*200, r: _piTotV>300?1.5:2.5, fill: pt.inside?'#22c55e':'#ef4444', opacity: 0.7 });
-
+                    _piPtsV.slice(-400).map(function(pt, pidx, arr) {
+                      var isLast = pidx === arr.length - 1;
+                      var cx = pt.x * 200, cy = (1 - pt.y) * 200;
+                      var col = pt.inside ? (isContrast ? '#00ff00' : '#22c55e') : (isContrast ? '#ffff00' : '#ef4444');
+                      return React.createElement("g", { key: pidx },
+                        isLast && React.createElement("circle", { cx: cx, cy: cy, r: 6.5, fill: "none", stroke: col, strokeWidth: 1.4, opacity: 0.85 }),
+                        React.createElement("circle", { cx: cx, cy: cy, r: isLast ? 3.2 : (_piTotV > 300 ? 1.6 : 2.5), fill: col, opacity: isLast ? 1 : 0.78 })
+                      );
                     }),
 
-                    React.createElement("text", { x:4, y:12, style:{fontSize:'7px'}, fill:'#94a3b8' }, '(0,1)'),
+                    React.createElement("text", { x:4, y:12, style:{fontSize:'7px', fontWeight:'bold'}, fill:'#94a3b8' }, '(0,1)'),
 
-                    React.createElement("text", { x:4, y:197, style:{fontSize:'7px'}, fill:'#94a3b8' }, '(0,0)'),
+                    React.createElement("text", { x:4, y:197, style:{fontSize:'7px', fontWeight:'bold'}, fill:'#94a3b8' }, '(0,0)'),
 
-                    React.createElement("text", { x:155, y:197, style:{fontSize:'7px'}, fill:'#94a3b8' }, '(1,0)')
+                    React.createElement("text", { x:176, y:197, style:{fontSize:'7px', fontWeight:'bold'}, fill:'#94a3b8' }, '(1,0)')
 
                   ),
 
@@ -4445,39 +4761,15 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                         if (_piAnim.interval) {
                           // Toggle off if already running
                           clearInterval(_piAnim.interval); _piAnim.interval = null;
+                          upd('_piSlowRunning', false);
                           return;
                         }
-                        sfxProbClick();
-                        var dropped = 0;
-                        _piAnim.interval = setInterval(function() {
-                          // Functional update: the labToolData closure captured at click
-                          // time goes stale after the first tick — read fresh state
-                          // inside setLabToolData (same pattern as runTrialAuto).
-                          setLabToolData(function(prev) {
-                            var _pp = prev.probability || {};
-                            var x = Math.random(), y = Math.random();
-                            var inside = (x * x + y * y) <= 1;
-                            var nextPts = (_pp._piPoints || []).concat([{ x: x, y: y, inside: inside }]);
-                            if (nextPts.length > 1000) nextPts = nextPts.slice(-1000);
-                            var nextRes = (_pp.results || []).concat([inside ? 'inside' : 'outside']);
-                            // Unbounded totals — see the piTotal note in render scope.
-                            var nextTot = (_pp._piTotal != null ? _pp._piTotal : (_pp._piPoints || []).length) + 1;
-                            var nextIn = (_pp._piInside != null ? _pp._piInside : (_pp._piPoints || []).filter(function (p) { return p.inside; }).length) + (inside ? 1 : 0);
-                            // Slow-dropped darts are trials too: totalTrials and experimentsUsed feed the quests.
-                            var piUsed = Object.assign({}, _pp.experimentsUsed || {}); piUsed[_pp.mode || 'pi'] = true;
-                            return Object.assign({}, prev, { probability: Object.assign({}, _pp, { _piPoints: nextPts, _piTotal: nextTot, _piInside: nextIn, results: nextRes, trials: nextRes.length, totalTrials: (_pp.totalTrials || 0) + 1, experimentsUsed: piUsed }) });
-                          });
-                          dropped++;
-                          if (dropped >= 100) {
-                            clearInterval(_piAnim.interval); _piAnim.interval = null;
-                            sfxProbSuccess();
-                          }
-                        }, 100);
+                        beginPiSlowDrop();
                       },
                       className: 'mt-2 w-full px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition',
-                      style: { background: _piAnim.interval ? '#dc2626' : '#7c3aed', color: '#fff' },
-                      'aria-label': _piAnim.interval ? 'Stop slow-drop animation' : 'Slow-drop 100 points one at a time'
-                    }, _piAnim.interval ? '⏹ Stop animation' : '🔬 Slow-drop 100 (watch them land)')
+                      style: { background: (d._piSlowRunning || _piAnim.interval) ? '#dc2626' : '#7c3aed', color: '#fff' },
+                      'aria-label': (d._piSlowRunning || _piAnim.interval) ? 'Stop slow-drop animation' : 'Slow-drop 100 points one at a time'
+                    }, (d._piSlowRunning || _piAnim.interval) ? '⏹ Stop animation' : '🔬 Slow-drop 100 (watch them land)')
 
                   )
 

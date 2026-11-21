@@ -108,11 +108,11 @@
               N('Limenitis', 'genus', { tier: 'INFO', common: 'viceroy', note: 'Tell it from a monarch by the extra black line crossing each hindwing.' })
             ]),
             N('Megalopyge', 'genus', { tier: 'CONTACT', common: 'puss caterpillar', note: 'The fuzziest, most "pettable"-looking caterpillar hides venomous spines.' })
-          ]),
-          N('Arachnida', 'class', null, [
-            N('Latrodectus', 'genus', { tier: 'CONTACT', common: 'black widow' }),
-            N('Loxosceles', 'genus', { tier: 'CONTACT', common: 'brown recluse' })
           ])
+        ]),
+        N('Arachnida', 'class', null, [
+          N('Latrodectus', 'genus', { tier: 'CONTACT', common: 'black widow' }),
+          N('Loxosceles', 'genus', { tier: 'CONTACT', common: 'brown recluse' })
         ])
       ]),
       N('Chordata', 'phylum', null, [
@@ -242,8 +242,8 @@
   var SAFETY_BANNER = 'Never eat, taste, or handle a wild organism based on this app. When in doubt, ask a human expert.';
 
   // ── Derived indexes (built once) ──────────────────────────────────────────
-  var NODE_BY_NAME = {};
-  var PARENT_OF = {};
+  var NODE_BY_NAME = Object.create(null);
+  var PARENT_OF = Object.create(null);
   var ALL_NODES = [];
 
   (function indexTree(node, parent) {
@@ -257,7 +257,7 @@
   function lineageOf(name) {
     var chain = [];
     var cursor = name;
-    while (cursor) {
+    while (cursor && NODE_BY_NAME[cursor]) {
       chain.unshift(NODE_BY_NAME[cursor]);
       cursor = PARENT_OF[cursor];
     }
@@ -781,14 +781,19 @@
         var kids = (node.kids || []).slice(0, 4);
         caption = 'Taxonomic branch overview (' + kids.length + ' shown child branch' + (kids.length === 1 ? '' : 'es') + ')';
         inner = [
+          !contrast ? h('rect', { key: 'root-sh', x: 18, y: 56, width: 88, height: 28, rx: 7, fill: col, opacity: 0.14 }) : null,
           h('rect', { key: 'root', x: 18, y: 54, width: 88, height: 28, rx: 7, fill: col, fillOpacity: 0.2, stroke: col, strokeWidth: 1.8 }),
           h('text', { key: 'rt', x: 62, y: 71, textAnchor: 'middle', fill: stroke, fontSize: 9.5, fontWeight: '800' }, node.name.slice(0, 12)),
           kids.map(function (kid, ki) {
             var ky = kids.length === 1 ? 68 : (22 + ki * (92 / Math.max(1, kids.length - 1)));
             var kcol = kid.tier ? tierColor(kid.tier) : acc;
+            var dBranch = 'M106 68 C132 68 134 ' + ky + ' 156 ' + ky;
             return h('g', { key: kid.name },
-              h('path', { d: 'M106 68 C132 68 134 ' + ky + ' 156 ' + ky, fill: 'none', stroke: kcol, strokeWidth: 1.8 }),
-              h('circle', { cx: 158, cy: ky, r: 4, fill: kcol }),
+              !contrast ? h('path', { d: dBranch, fill: 'none', stroke: kcol, strokeWidth: 5, strokeLinecap: 'round', opacity: 0.16 }) : null,
+              h('path', { d: dBranch, fill: 'none', stroke: kcol, strokeWidth: 1.9, strokeLinecap: 'round' }),
+              !contrast ? h('circle', { cx: 158, cy: ky, r: 7.5, fill: kcol, opacity: 0.18 }) : null,
+              h('circle', { cx: 158, cy: ky, r: 4.2, fill: kcol, stroke: C.panel, strokeWidth: 1.2 }),
+              !contrast ? h('circle', { cx: 156.8, cy: ky - 1.2, r: 1.1, fill: '#ffffff', opacity: 0.65 }) : null,
               h('text', { x: 168, y: ky + 3, fill: stroke, fontSize: 9.5, fontWeight: '700' }, kid.name.slice(0, 15))
             );
           }),
@@ -798,7 +803,27 @@
 
       return h('figure', { className: 'oid-plate', style: { background: C.raised, borderColor: C.border } },
         h('svg', { viewBox: '0 0 280 144', role: 'img', 'aria-label': node.name + ' morphology plate: ' + caption },
-          h('rect', { x: 1, y: 1, width: 278, height: 142, rx: 8, fill: C.panel, stroke: C.border, strokeWidth: 1 }),
+          !contrast ? h('defs', null,
+            h('radialGradient', { id: 'oid-plate-spot', cx: '50%', cy: '46%', r: '56%' },
+              h('stop', { offset: '0%', stopColor: col, stopOpacity: dark ? 0.18 : 0.12 }),
+              h('stop', { offset: '70%', stopColor: C.panel, stopOpacity: 0.04 }),
+              h('stop', { offset: '100%', stopColor: C.panel, stopOpacity: 0 })
+            ),
+            h('linearGradient', { id: 'oid-plate-bg', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: C.panel }),
+              h('stop', { offset: '100%', stopColor: C.raised })
+            )
+          ) : null,
+          h('rect', { x: 1, y: 1, width: 278, height: 142, rx: 8, fill: contrast ? C.panel : 'url(#oid-plate-bg)', stroke: C.border, strokeWidth: 1 }),
+          !contrast ? h('rect', { x: 2, y: 2, width: 276, height: 140, rx: 7, fill: 'url(#oid-plate-spot)' }) : null,
+          // Naturalist optical-loupe corner brackets & subtle plate reticle
+          !contrast ? h('g', { fill: 'none', stroke: col, strokeWidth: 1.1, opacity: 0.35 },
+            h('path', { d: 'M8 18 L8 8 L18 8' }),
+            h('path', { d: 'M262 8 L272 8 L272 18' }),
+            h('path', { d: 'M8 126 L8 136 L18 136' }),
+            h('path', { d: 'M262 136 L272 136 L272 126' }),
+            h('circle', { cx: 140, cy: 68, r: 54, strokeDasharray: '3 5', opacity: 0.55 })
+          ) : null,
           inner
         ),
         h('figcaption', { className: 'oid-plate-cap', style: { color: C.muted } }, caption)
@@ -812,13 +837,30 @@
       var isPlant = /carrot|onion|comfrey|parsnip/i.test(safeName);
       var isButterfly = /monarch/i.test(safeName);
       var isSnake = /snake/i.test(safeName);
+      var safeGradId = 'oid-la-s-' + (edge.tier || 'x') + '-' + safeName.replace(/[^a-z0-9]/gi, '').slice(0, 8);
+      var riskGradId = 'oid-la-r-' + (edge.tier || 'x') + '-' + safeName.replace(/[^a-z0-9]/gi, '').slice(0, 8);
       return h('svg', {
         className: 'oid-edge-viz',
         viewBox: '0 0 360 66',
         'aria-hidden': 'true',
         focusable: 'false'
       },
+        !contrast ? h('defs', null,
+          h('radialGradient', { id: safeGradId, cx: '20%', cy: '50%', r: '36%' },
+            h('stop', { offset: '0%', stopColor: C.accent, stopOpacity: 0.16 }),
+            h('stop', { offset: '100%', stopColor: C.accent, stopOpacity: 0 })
+          ),
+          h('radialGradient', { id: riskGradId, cx: '68%', cy: '50%', r: '36%' },
+            h('stop', { offset: '0%', stopColor: col, stopOpacity: 0.2 }),
+            h('stop', { offset: '100%', stopColor: col, stopOpacity: 0 })
+          )
+        ) : null,
         h('rect', { x: 1, y: 1, width: 358, height: 64, rx: 8, fill: C.raised, stroke: C.border, strokeWidth: 1 }),
+        !contrast ? h('rect', { x: 2, y: 2, width: 177, height: 62, rx: 7, fill: 'url(#' + safeGradId + ')' }) : null,
+        !contrast ? h('rect', { x: 181, y: 2, width: 177, height: 62, rx: 7, fill: 'url(#' + riskGradId + ')' }) : null,
+        // Optical loupe rings framing left & right specimens
+        !contrast ? h('circle', { cx: 60, cy: 33, r: 24, fill: 'none', stroke: C.accent, strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.4 }) : null,
+        !contrast ? h('circle', { cx: 236, cy: 33, r: 24, fill: 'none', stroke: col, strokeWidth: 1.2, strokeDasharray: '3 2', opacity: 0.55 }) : null,
         // Left specimen glyph
         isButterfly ? h('g', null,
           h('path', { d: 'M58 34 C44 16 26 18 32 34 C30 46 46 48 58 38 Z', fill: '#f97316', fillOpacity: 0.45, stroke: C.text, strokeWidth: 1.4 }),
@@ -914,13 +956,24 @@
           h('text', { key: 'q', x: 48, y: 47, textAnchor: 'middle', fill: stk, fontSize: 16, fontWeight: '800' }, '?')
         ];
       }
+      var exGradId = 'oid-ex-lens-' + String(exampleId || 'field').replace(/[^a-z0-9]/gi, '');
       return h('svg', {
         className: 'oid-example-svg',
         viewBox: '0 0 110 88',
         'aria-hidden': 'true',
         focusable: 'false'
       },
-        h('rect', { x: 1, y: 1, width: 108, height: 86, rx: 10, fill: C.raised, stroke: C.border, strokeWidth: 1 }),
+        !contrast ? h('defs', null,
+          h('radialGradient', { id: exGradId, cx: '46%', cy: '40%', r: '58%' },
+            h('stop', { offset: '0%', stopColor: C.panel }),
+            h('stop', { offset: '75%', stopColor: C.raised }),
+            h('stop', { offset: '100%', stopColor: C.accent, stopOpacity: 0.14 })
+          )
+        ) : null,
+        h('rect', { x: 1, y: 1, width: 108, height: 86, rx: 10, fill: contrast ? C.raised : 'url(#' + exGradId + ')', stroke: C.border, strokeWidth: 1 }),
+        // Optical loupe circular specimen bezel & specular glass arc
+        !contrast ? h('circle', { cx: 55, cy: 44, r: 36, fill: 'none', stroke: C.accent, strokeWidth: 1.1, strokeDasharray: '4 3', opacity: 0.35 }) : null,
+        !contrast ? h('path', { d: 'M 26 28 A 34 34 0 0 1 54 10', fill: 'none', stroke: '#ffffff', strokeWidth: 1.4, strokeLinecap: 'round', opacity: dark ? 0.22 : 0.6 }) : null,
         inner
       );
     }
@@ -943,14 +996,29 @@
           role: 'img',
           'aria-label': 'Visual dichotomous key flowchart showing current progress through the teaching key. Current status: ' + (route.question || route.result || 'Start')
         },
-          // Connecting horizontal "No" spine
+          !contrast ? h('defs', null,
+            h('linearGradient', { id: 'oid-key-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: C.panel }),
+              h('stop', { offset: '100%', stopColor: C.raised })
+            ),
+            h('linearGradient', { id: 'oid-key-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.32 }),
+              h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+            )
+          ) : null,
+          // Recessed naturalist key stage well
+          h('rect', { x: 2, y: 4, width: 556, height: 132, rx: 10, fill: contrast ? C.panel : 'url(#oid-key-well)', stroke: C.border, strokeWidth: 1 }),
+          // Connecting horizontal "No" spine (dual-pass luminous active pathway)
           steps.slice(0, -1).map(function (st, idx) {
             var next = steps[idx + 1];
             var q = OBSERVATION_KEY[st.id].question;
             var wentNo = answered[q] === 'no';
+            var xStart = st.x + 42, xEnd = next.x - 42;
             return h('g', { key: 'sp-' + st.id },
-              h('line', { x1: st.x + 42, y1: 42, x2: next.x - 42, y2: 42, stroke: wentNo ? C.accent : C.border, strokeWidth: wentNo ? 2.6 : 1.5 }),
-              h('text', { x: (st.x + next.x) / 2, y: 34, textAnchor: 'middle', fill: wentNo ? C.accent : C.muted, fontSize: 8.5, fontWeight: '800' }, 'No')
+              (wentNo && !contrast) ? h('line', { x1: xStart, y1: 42, x2: xEnd, y2: 42, stroke: C.accent, strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.22 }) : null,
+              h('line', { x1: xStart, y1: 42, x2: xEnd, y2: 42, stroke: wentNo ? C.accent : C.border, strokeWidth: wentNo ? 2.6 : 1.5, strokeLinecap: 'round' }),
+              h('polygon', { points: xEnd + ',42 ' + (xEnd - 6) + ',38.5 ' + (xEnd - 6) + ',45.5', fill: wentNo ? C.accent : C.border }),
+              h('text', { x: (st.x + next.x) / 2, y: 33, textAnchor: 'middle', fill: wentNo ? C.accent : C.muted, fontSize: 8.5, fontWeight: '800' }, 'No')
             );
           }),
           steps.map(function (st) {
@@ -959,19 +1027,28 @@
             var isCur = activeQ === q || (st.id === 'legs' && (activeQ === OBSERVATION_KEY.six.question || activeQ === OBSERVATION_KEY.eight.question));
             var wentYes = ans === 'yes';
             var nodeStroke = isCur ? C.accent : (ans ? C.accent : C.border);
-            var nodeFill = isCur ? C.accent : (ans ? C.panel : C.panel);
+            var nodeFill = isCur ? C.accent : C.panel;
             var labelFill = isCur ? C.accentText : C.text;
             var outActive = wentYes || (st.id === 'legs' && (route.result === 'Insect example' || route.result === 'Arachnid example'));
             var outText = st.id === 'legs' && route.result === 'Insect example' ? 'Insect'
               : st.id === 'legs' && route.result === 'Arachnid example' ? 'Arachnid'
               : st.yesOut;
             return h('g', { key: st.id },
+              // Active decision beacon halo
+              (isCur && !contrast) ? h('rect', { x: st.x - 46, y: 20, width: 92, height: 44, rx: 11, fill: C.accent, opacity: 0.18 }) : null,
+              !contrast ? h('rect', { x: st.x - 42, y: 26, width: 84, height: 36, rx: 8, fill: nodeStroke, opacity: 0.14 }) : null,
               h('rect', { x: st.x - 42, y: 24, width: 84, height: 36, rx: 8, fill: nodeFill, stroke: nodeStroke, strokeWidth: isCur ? 2.4 : 1.4 }),
+              (!contrast && isCur) ? h('rect', { x: st.x - 40, y: 25.5, width: 80, height: 14, rx: 6, fill: 'url(#oid-key-sheen)' }) : null,
               h('text', { x: st.x, y: 45, textAnchor: 'middle', fill: labelFill, fontSize: 9.5, fontWeight: '800' }, st.label),
-              // Downward Yes branch
-              h('line', { x1: st.x, y1: 60, x2: st.x, y2: 92, stroke: outActive ? C.accent : C.border, strokeWidth: outActive ? 2.6 : 1.3, strokeDasharray: outActive ? undefined : '3 3' }),
+              // Downward Yes branch (dual-pass luminous when active)
+              (outActive && !contrast) ? h('line', { x1: st.x, y1: 60, x2: st.x, y2: 92, stroke: C.accent, strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.22 }) : null,
+              h('line', { x1: st.x, y1: 60, x2: st.x, y2: 92, stroke: outActive ? C.accent : C.border, strokeWidth: outActive ? 2.6 : 1.3, strokeDasharray: outActive ? undefined : '3 3', strokeLinecap: 'round' }),
+              h('polygon', { points: st.x + ',92 ' + (st.x - 3.5) + ',86 ' + (st.x + 3.5) + ',86', fill: outActive ? C.accent : C.border }),
               h('text', { x: st.x + 12, y: 79, fill: outActive ? C.accent : C.muted, fontSize: 8.5, fontWeight: '800' }, 'Yes'),
+              // Endpoint outcome pill with glowing halo when reached
+              (outActive && !contrast) ? h('rect', { x: st.x - 40, y: 88, width: 80, height: 36, rx: 18, fill: C.accent, opacity: 0.2 }) : null,
               h('rect', { x: st.x - 36, y: 92, width: 72, height: 28, rx: 14, fill: outActive ? C.accent : C.panel, stroke: outActive ? C.accent : C.border, strokeWidth: outActive ? 2 : 1.2 }),
+              (!contrast && outActive) ? h('rect', { x: st.x - 33, y: 93.5, width: 66, height: 11, rx: 5.5, fill: 'url(#oid-key-sheen)' }) : null,
               h('text', { x: st.x, y: 109, textAnchor: 'middle', fill: outActive ? C.accentText : C.muted, fontSize: 9.5, fontWeight: '800' }, outText)
             );
           })
@@ -1490,7 +1567,7 @@
       '.oid-badge{padding:2px 7px;border:1px solid;border-radius:5px;font-size:9px;font-weight:900;letter-spacing:.08em}',
       '.oid-note{margin:10px 0 0;padding:10px 12px;border:1px solid;border-radius:9px;font-size:13px;line-height:1.5}',
       '.oid-detail-block{margin-top:14px}',
-      '.oid-detail-block h4{margin:0 0 6px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}',
+      '.oid-detail-block h3{margin:0 0 6px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}',
       '.oid-species-list{margin:0;padding:0;list-style:none;font-size:13px}',
       '.oid-species-list li{margin:4px 0}',
       '.oid-link{display:inline-flex;align-items:center;min-width:24px;min-height:24px;padding:0;border:0;background:none;font-weight:700;text-decoration:underline;text-underline-offset:2px}',
@@ -1500,7 +1577,7 @@
       '.oid-lineage-name{font-weight:650}',
       '.oid-catgrid{display:grid;gap:13px}',
       '.oid-catblock{padding:15px 16px;border:1px solid;border-left-width:5px;border-radius:12px}',
-      '.oid-catblock h3{display:flex;align-items:center;gap:9px;margin:0 0 4px;font-size:15px}',
+      '.oid-catblock h2{display:flex;align-items:center;gap:9px;margin:0 0 4px;font-size:15px}',
       '.oid-cat-desc{margin:0 0 11px;font-size:13px}',
       '.oid-chips{display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:0;list-style:none}',
       '.oid-chip{min-height:34px;padding:5px 11px;border:1px solid;border-radius:999px;font-size:12.5px}',
@@ -1526,13 +1603,13 @@
       '.oid-exp-body p{margin:0 0 10px;line-height:1.6}',
       '.oid-callout{padding:11px 13px;border:1px solid;border-left-width:4px;border-radius:9px}',
       '.oid-ladder-card{margin-top:14px;padding:15px 16px;border:1px solid;border-radius:12px}',
-      '.oid-ladder-card h3{margin:0 0 10px;font-size:15px}',
+      '.oid-ladder-card h2{margin:0 0 10px;font-size:15px}',
       '.oid-ladder{display:grid;gap:5px;margin:0 0 11px;padding:0;list-style:none}',
       '.oid-ladder li{display:flex;align-items:center;gap:10px}',
       '.oid-ladder-bar{height:13px;border-radius:4px}',
       '.oid-ladder-label{flex:0 0 auto;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}',
       '.oid-pending{padding:17px 18px;border:1px solid;border-left-width:5px;border-radius:13px}',
-      '.oid-pending h3{margin:0 0 8px;font-size:17px}',
+      '.oid-pending h2{margin:0 0 8px;font-size:17px}',
       '.oid-pending p{margin:0 0 10px;font-size:13.5px;line-height:1.6;max-width:72ch}',
       '.oid-pending-list{margin:0;padding-left:20px;font-size:13px;line-height:1.6}',
       '.oid-footer{margin:16px 0 0;text-align:center;font-size:10px}',

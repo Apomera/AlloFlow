@@ -3005,12 +3005,25 @@
             h('div', null,
               h('div', { role: 'img', 'data-area-to-scale': toScale ? 'true' : 'false', 'aria-label': fill(t('stem.arithmetic.area_model_label', 'Area model showing partial products for {a} times {b}'), { a: left, b: right }), style: { color: themeSoftText() } },
                 h('svg', { viewBox: '0 0 360 220', 'aria-hidden': true, style: { width: '100%', maxWidth: 480, display: 'block', margin: 'auto', borderRadius: 10 } },
-                  h('rect', { x: 6, y: 6, width: 348, height: 208, rx: 8, fill: isContrast ? '#000000' : (isDark ? '#1e1b4b' : '#f5f3ff'), stroke: isContrast ? '#fbbf24' : '#7c3aed', strokeWidth: 1.25, strokeDasharray: '4 3', opacity: isContrast ? 1 : 0.65 }),
+                  !isContrast && h('defs', null,
+                    h('linearGradient', { id: 'arith-area-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: isDark ? '#1e1b4b' : '#f5f3ff' }),
+                      h('stop', { offset: '100%', stopColor: isDark ? '#0f172a' : '#ede9fe' })
+                    ),
+                    h('linearGradient', { id: 'arith-area-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.42 }),
+                      h('stop', { offset: '48%', stopColor: '#ffffff', stopOpacity: 0.05 }),
+                      h('stop', { offset: '100%', stopColor: '#4c1d95', stopOpacity: 0.1 })
+                    )
+                  ),
+                  h('rect', { x: 4, y: 4, width: 352, height: 212, rx: 9, fill: isContrast ? '#000000' : 'url(#arith-area-well)', stroke: isContrast ? '#fbbf24' : '#7c3aed', strokeWidth: 1.4, opacity: isContrast ? 1 : 0.9 }),
                   partials.map(function (part, i) {
                     var ci = area.cols.indexOf(part.col), ri = area.rows.indexOf(part.row);
                     var x = 10 + colX(ci), y = 10 + rowY(ri), w = colW(ci), ht = rowH(ri);
                     return h('g', { key: part.label },
-                      h('rect', { x: x, y: y, width: w, height: ht, rx: 3, fill: fills[i % fills.length], stroke: '#4c1d95', strokeWidth: 1.5, 'data-partial-product': part.row * part.col }),
+                      h('rect', { x: x, y: y, width: w, height: ht, rx: 4, fill: isContrast ? '#ffffff' : fills[i % fills.length], stroke: isContrast ? '#000000' : '#4c1d95', strokeWidth: 1.5, 'data-partial-product': part.row * part.col }),
+                      !isContrast && w > 8 && ht > 8 && h('rect', { x: x + 1.5, y: y + 1.5, width: w - 3, height: ht - 3, rx: 3, fill: 'url(#arith-area-sheen)', pointerEvents: 'none' }),
+                      !isContrast && w > 12 && h('line', { x1: x + 4, y1: y + 2.5, x2: x + w - 4, y2: y + 2.5, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.65 }),
                       h('text', { x: x + w / 2, y: y + ht / 2, textAnchor: 'middle', dominantBaseline: 'central', fill: '#0f172a', fontSize: labelSize, fontWeight: 800, 'data-partial-label': part.label }, part.label));
                   }))),
               !toScale && h('p', { className: 'text-xs mt-1', style: { color: muted } }, t('stem.arithmetic.area_not_to_scale', 'Not drawn to scale, so every part has room for its label. The list below gives every partial product.')),
@@ -3988,18 +4001,37 @@
         function xOf(v) { return xs[vals.indexOf(v)]; }
         var finalVal = line.jumps.length ? line.jumps[line.jumps.length - 1].to : line.start;
         return h('svg', { viewBox: '0 0 360 130', 'aria-hidden': true, 'data-number-line': true, style: { width: '100%', maxWidth: 520, display: 'block', margin: 'auto' } },
-          h('line', { x1: 8, y1: 90, x2: 352, y2: 90, stroke: svgLine, strokeWidth: 2 }),
+          !isContrast && h('defs', null,
+            h('linearGradient', { id: 'arith-nl-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: isDark ? '#0f172a' : '#f8fafc' }),
+              h('stop', { offset: '100%', stopColor: isDark ? '#1e293b' : '#f1f5f9' })
+            )
+          ),
+          // Recessed studio number-line well
+          h('rect', { x: 2, y: 4, width: 356, height: 122, rx: 10, fill: isContrast ? '#000000' : 'url(#arith-nl-well)', stroke: isContrast ? '#ffffff' : border, strokeWidth: 1.1 }),
+          h('line', { x1: 12, y1: 90, x2: 348, y2: 90, stroke: svgLine, strokeWidth: 2.2, strokeLinecap: 'round' }),
           line.jumps.map(function (j, i) {
             var x1 = xOf(j.from), x2 = xOf(j.to), mid = (x1 + x2) / 2, lift = 20 + Math.min(34, Math.abs(x2 - x1) / 4), dir = x2 >= x1 ? 1 : -1;
+            var arcD = 'M' + x1 + ' 88 Q' + mid + ' ' + (88 - 2 * lift) + ' ' + x2 + ' 88';
+            var lblText = (j.delta >= 0 ? '+' : '−') + Math.abs(j.delta);
+            var lblY = 88 - lift - 6;
             return h('g', { key: 'j' + i },
-              h('path', { d: 'M' + x1 + ' 88 Q' + mid + ' ' + (88 - 2 * lift) + ' ' + x2 + ' 88', fill: 'none', stroke: svgArc, strokeWidth: 2.5 }),
+              // Dual-pass luminous jump bridge arc
+              !isContrast && h('path', { d: arcD, fill: 'none', stroke: svgArc, strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.18 }),
+              h('path', { d: arcD, fill: 'none', stroke: svgArc, strokeWidth: 2.5, strokeLinecap: 'round' }),
               h('polygon', { points: x2 + ',88 ' + (x2 - dir * 10) + ',82 ' + (x2 - dir * 3) + ',78', fill: svgArc }),
-              h('text', { x: mid, y: 88 - lift - 6, textAnchor: 'middle', fill: svgInk, fontSize: 12, fontWeight: 800 }, (j.delta >= 0 ? '+' : '−') + Math.abs(j.delta)));
+              !isContrast && h('rect', { x: mid - 18, y: lblY - 12, width: 36, height: 16, rx: 8, fill: isDark ? '#0f172a' : '#ffffff', stroke: svgArc, strokeWidth: 1, opacity: 0.92 }),
+              h('text', { x: mid, y: lblY, textAnchor: 'middle', fill: svgInk, fontSize: 12, fontWeight: 800 }, lblText));
           }),
           vals.map(function (v, i) {
+            var isFinal = v === finalVal && v !== line.start;
             return h('g', { key: 'p' + i },
               h('line', { x1: xs[i], y1: 82, x2: xs[i], y2: 98, stroke: svgLine, strokeWidth: 2 }),
-              h('text', { x: xs[i], y: 116, textAnchor: 'middle', fill: svgInk, fontSize: 12, fontWeight: 700 }, hideFinal && v === finalVal && v !== line.start ? '?' : String(v)));
+              // Glossy 3D-shaded anchor node with specular catchlight
+              !isContrast && isFinal && h('circle', { cx: xs[i], cy: 90, r: 8, fill: svgArc, opacity: 0.2 }),
+              h('circle', { cx: xs[i], cy: 90, r: isFinal ? 5 : 3.8, fill: isFinal ? svgArc : svgLine, stroke: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 1.5 }),
+              !isContrast && h('circle', { cx: xs[i] - 1.2, cy: 88.8, r: 1.1, fill: '#ffffff', opacity: 0.65 }),
+              h('text', { x: xs[i], y: 116, textAnchor: 'middle', fill: svgInk, fontSize: 12, fontWeight: 700 }, hideFinal && isFinal ? '?' : String(v)));
           }));
       }
 
@@ -4024,16 +4056,36 @@
         var off = shift.dir === 'up' ? 36 : -36;
         var gapLabel = t('stem.arithmetic.cd_gap_label', 'same gap');
         function row(y, left, right, dx) {
+          var bracketD = 'M' + (80 + dx) + ' ' + (y - 11) + ' L' + (80 + dx) + ' ' + (y - 18) + ' L' + (260 + dx) + ' ' + (y - 18) + ' L' + (260 + dx) + ' ' + (y - 11);
           return h('g', null,
-            h('line', { x1: 8, y1: y, x2: 352, y2: y, stroke: svgLine, strokeWidth: 2 }),
+            // Tinted gap-span highlight bar showing conserved distance
+            !isContrast && h('rect', { x: 80 + dx, y: y - 5, width: 180, height: 10, rx: 5, fill: svgArc, opacity: 0.15 }),
+            h('line', { x1: 12, y1: y, x2: 348, y2: y, stroke: svgLine, strokeWidth: 2, strokeLinecap: 'round' }),
             [[80 + dx, left], [260 + dx, right]].map(function (p, i) {
-              return h('g', { key: i }, h('circle', { cx: p[0], cy: y, r: 5, fill: svgArc }), h('text', { x: p[0], y: y + 22, textAnchor: 'middle', fill: svgInk, fontSize: 12, fontWeight: 700 }, String(p[1])));
+              return h('g', { key: i },
+                !isContrast && h('circle', { cx: p[0], cy: y, r: 9, fill: svgArc, opacity: 0.16 }),
+                h('circle', { cx: p[0], cy: y, r: 5.5, fill: svgArc, stroke: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 1.6 }),
+                !isContrast && h('circle', { cx: p[0] - 1.6, cy: y - 1.6, r: 1.5, fill: '#ffffff', opacity: 0.65 }),
+                h('text', { x: p[0], y: y + 22, textAnchor: 'middle', fill: svgInk, fontSize: 12, fontWeight: 700 }, String(p[1])));
             }),
-            h('path', { d: 'M' + (80 + dx) + ' ' + (y - 12) + ' L' + (80 + dx) + ' ' + (y - 18) + ' L' + (260 + dx) + ' ' + (y - 18) + ' L' + (260 + dx) + ' ' + (y - 12), fill: 'none', stroke: svgArc, strokeWidth: 2 }),
+            !isContrast && h('path', { d: bracketD, fill: 'none', stroke: svgArc, strokeWidth: 5.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16 }),
+            h('path', { d: bracketD, fill: 'none', stroke: svgArc, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
             h('text', { x: 170 + dx, y: y - 23, textAnchor: 'middle', fill: svgInk, fontSize: 11, fontWeight: 700 }, gapLabel));
         }
         return h('div', { 'data-shift-model': 'same' },
           h('svg', { viewBox: '0 0 360 150', 'aria-hidden': true, style: { width: '100%', maxWidth: 520, display: 'block', margin: 'auto' } },
+            !isContrast && h('defs', null,
+              h('linearGradient', { id: 'arith-sh-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: isDark ? '#0f172a' : '#f8fafc' }),
+                h('stop', { offset: '100%', stopColor: isDark ? '#1e293b' : '#f1f5f9' })
+              )
+            ),
+            h('rect', { x: 2, y: 2, width: 356, height: 146, rx: 10, fill: isContrast ? '#000000' : 'url(#arith-sh-well)', stroke: isContrast ? '#ffffff' : border, strokeWidth: 1.1 }),
+            // Diagonal parallel shift guide traces connecting original to shifted points
+            !isContrast && h('g', { stroke: svgArc, strokeWidth: 1.1, strokeDasharray: '3 4', opacity: 0.35 },
+              h('line', { x1: 80, y1: 45, x2: 80 + off, y2: 120 }),
+              h('line', { x1: 260, y1: 45, x2: 260 + off, y2: 120 })
+            ),
             row(45, shift.b, shift.a, 0), row(120, shift.b2, shift.a2, off)),
           h('p', { className: 'text-sm' }, fill(shift.dir === 'up'
             ? t('stem.arithmetic.cd_shift_up', 'Both numbers move up by {k}, so the distance between them does not change. {a} − {b} has the same answer as {a2} − {b2}.')
@@ -4047,8 +4099,19 @@
           var w = rc.y * s, ht = rc.x * s;
           if (w > 150 || ht > 96 || w < 12 || ht < 12) clamped = true;
           w = Math.max(12, Math.min(150, w)); ht = Math.max(12, Math.min(96, ht));
+          var sheenId = 'arith-rc-sheen-' + i;
           return h('svg', { key: i, viewBox: '0 0 160 126', width: 160, height: 126, 'aria-hidden': true, style: { maxWidth: '100%' } },
-            h('rect', { x: 5, y: 5, width: w, height: ht, fill: i % 2 ? fillB : fillA, stroke: svgArc, strokeWidth: 2 }),
+            !isContrast && h('defs', null,
+              h('linearGradient', { id: sheenId, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.42 }),
+                h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.04 }),
+                h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.08 })
+              )
+            ),
+            !isContrast && h('rect', { x: 7, y: 7, width: w, height: ht, rx: 4, fill: svgArc, opacity: 0.12 }),
+            h('rect', { x: 5, y: 5, width: w, height: ht, rx: 4, fill: i % 2 ? fillB : fillA, stroke: svgArc, strokeWidth: 2 }),
+            !isContrast && w > 8 && ht > 8 && h('rect', { x: 6.5, y: 6.5, width: w - 3, height: ht - 3, rx: 3, fill: 'url(#' + sheenId + ')' }),
+            !isContrast && w > 12 && h('line', { x1: 8, y1: 7.5, x2: 5 + w - 3, y2: 7.5, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.65 }),
             h('text', { x: 5, y: ht + 24, fill: svgInk, fontSize: 13, fontWeight: 800 }, rc.x + ' × ' + rc.y));
         });
         return h('div', { 'data-rect-model': rects.length },
@@ -4204,8 +4267,8 @@
         function dot(kind) {
           // Two counter kinds that differ in shape, not only colour: solid (in the frame) and ringed (moved in).
           return kind === 'base'
-            ? h('span', { 'aria-hidden': true, style: { display: 'block', width: 26, height: 26, borderRadius: '50%', background: baseFill } })
-            : h('span', { 'aria-hidden': true, style: { display: 'block', width: 26, height: 26, borderRadius: '50%', background: card, border: '6px solid ' + moveRing, boxSizing: 'border-box' } });
+            ? h('span', { 'aria-hidden': true, style: { display: 'block', width: 26, height: 26, borderRadius: '50%', background: isContrast ? baseFill : ('radial-gradient(circle at 34% 30%, #ffffff 0%, ' + baseFill + ' 38%, ' + (isDark ? '#1e40af' : '#1e3a8a') + ' 100%)'), boxShadow: isContrast ? 'none' : 'inset 0 -2px 4px rgba(15,23,42,0.35), 0 1px 2px rgba(15,23,42,0.22)' } })
+            : h('span', { 'aria-hidden': true, style: { display: 'block', width: 26, height: 26, borderRadius: '50%', background: card, border: '6px solid ' + moveRing, boxSizing: 'border-box', boxShadow: isContrast ? 'none' : 'inset 0 1px 2px rgba(15,23,42,0.22), 0 1px 2px rgba(15,23,42,0.2)' } });
         }
         var cells = [];
         for (var i = 0; i < 10; i++) {
@@ -4516,13 +4579,21 @@
         function num(slot) { var n = Number(values[slot]); return values[slot] !== '' && values[slot] != null && values[slot] !== '?' && isFinite(n) && n > 0 ? n : null; }
         function label(slot) { var v = values[slot]; return v == null || v === '' ? '…' : String(v); }
         function box(key, x, y, w, ht, fillColor, slot, dashed) {
+          var rw = Math.max(1, w);
           return h('g', { key: key },
-            h('rect', { x: x, y: y, width: Math.max(1, w), height: ht, fill: dashed ? 'none' : fillColor, stroke: svgArc, strokeWidth: 2, strokeDasharray: dashed ? '6 4' : undefined }),
+            !isContrast && !dashed && h('rect', { x: x + 1, y: y + 2, width: rw, height: ht, rx: 5, fill: svgArc, opacity: 0.1 }),
+            h('rect', { x: x, y: y, width: rw, height: ht, rx: 5, fill: dashed ? (isContrast ? 'none' : (isDark ? 'rgba(147,197,253,0.08)' : 'rgba(29,78,216,0.06)')) : fillColor, stroke: svgArc, strokeWidth: 2, strokeDasharray: dashed ? '6 4' : undefined }),
+            !isContrast && !dashed && rw > 8 && h('rect', { x: x + 1.5, y: y + 1.5, width: rw - 3, height: Math.max(4, ht - 3), rx: 4, fill: 'url(#arith-bar-sheen)' }),
+            !isContrast && !dashed && rw > 12 && h('line', { x1: x + 5, y1: y + 3, x2: x + rw - 5, y2: y + 3, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.6 }),
             h('text', { x: x + w / 2, y: y + ht / 2, textAnchor: 'middle', dominantBaseline: 'central', fill: svgInk, fontSize: 13, fontWeight: 800 }, label(slot)));
         }
         function brace(key, x1, x2, y, slot) {
+          var dBrace = 'M' + x1 + ' ' + (y + 8) + ' L' + x1 + ' ' + y + ' L' + x2 + ' ' + y + ' L' + x2 + ' ' + (y + 8);
           return h('g', { key: key },
-            h('path', { d: 'M' + x1 + ' ' + (y + 8) + ' L' + x1 + ' ' + y + ' L' + x2 + ' ' + y + ' L' + x2 + ' ' + (y + 8), fill: 'none', stroke: svgArc, strokeWidth: 2 }),
+            !isContrast && h('path', { d: dBrace, fill: 'none', stroke: svgArc, strokeWidth: 5.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16 }),
+            h('path', { d: dBrace, fill: 'none', stroke: svgArc, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('circle', { cx: x1, cy: y + 8, r: 2.3, fill: svgArc }),
+            h('circle', { cx: x2, cy: y + 8, r: 2.3, fill: svgArc }),
             h('text', { x: (x1 + x2) / 2, y: y - 8, textAnchor: 'middle', fill: svgInk, fontSize: 13, fontWeight: 800 }, label(slot)));
         }
         var parts = [];
@@ -4552,7 +4623,20 @@
           }
           parts.push(h('text', { key: 'g', x: 180, y: 112, textAnchor: 'middle', fill: svgInk, fontSize: 12, fontWeight: 700 }, fill(t('stem.arithmetic.bar_groups_label', 'Equal groups: {g}'), { g: label('groups') })));
         }
-        return h('svg', { viewBox: '0 0 360 124', 'aria-hidden': true, 'data-bar-svg': model, style: { width: '100%', maxWidth: 520, display: 'block', margin: 'auto' } }, parts);
+        return h('svg', { viewBox: '0 0 360 124', 'aria-hidden': true, 'data-bar-svg': model, style: { width: '100%', maxWidth: 520, display: 'block', margin: 'auto' } },
+          !isContrast && h('defs', null,
+            h('linearGradient', { id: 'arith-bar-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: isDark ? '#0f172a' : '#f8fafc' }),
+              h('stop', { offset: '100%', stopColor: isDark ? '#1e293b' : '#f1f5f9' })
+            ),
+            h('linearGradient', { id: 'arith-bar-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.4 }),
+              h('stop', { offset: '48%', stopColor: '#ffffff', stopOpacity: 0.04 }),
+              h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.08 })
+            )
+          ),
+          h('rect', { x: 2, y: 2, width: 356, height: 120, rx: 10, fill: isContrast ? '#000000' : 'url(#arith-bar-well)', stroke: isContrast ? '#ffffff' : border, strokeWidth: 1.1 }),
+          parts);
       }
 
       function renderBarModelView(model, values, title) {
@@ -4938,11 +5022,26 @@
         width: 40, height: 40, viewBox: '0 0 40 40', 'aria-hidden': 'true',
         style: { flexShrink: 0, display: 'block' }
       },
-        h('rect', { x: 2, y: 2, width: 36, height: 36, rx: 9, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.42)', stroke: isContrast ? '#fbbf24' : 'rgba(255,255,255,0.45)', strokeWidth: 1.5 }),
+        !isContrast && h('defs', null,
+          h('linearGradient', { id: 'arith-emb-bezel', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#1e293b', stopOpacity: 0.92 }),
+            h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.96 })
+          ),
+          h('linearGradient', { id: 'arith-emb-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.36 }),
+            h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+          )
+        ),
+        h('rect', { x: 2, y: 2, width: 36, height: 36, rx: 9, fill: isContrast ? '#000000' : 'url(#arith-emb-bezel)', stroke: isContrast ? '#fbbf24' : 'rgba(255,255,255,0.45)', strokeWidth: 1.5 }),
+        !isContrast && h('line', { x1: 7, y1: 3.5, x2: 33, y2: 3.5, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.35 }),
         h('rect', { x: 7, y: 7, width: 12, height: 12, rx: 3, fill: operation === 'add' ? (isContrast ? '#fbbf24' : '#3b82f6') : (isContrast ? '#000000' : 'rgba(255,255,255,0.16)'), stroke: isContrast ? '#fbbf24' : 'rgba(255,255,255,0.45)', strokeWidth: 1 }),
+        !isContrast && h('rect', { x: 7.8, y: 7.8, width: 10.4, height: 4.5, rx: 1.8, fill: 'url(#arith-emb-sheen)' }),
         h('rect', { x: 21, y: 7, width: 12, height: 12, rx: 3, fill: operation === 'subtract' ? (isContrast ? '#fbbf24' : '#ef4444') : (isContrast ? '#000000' : 'rgba(255,255,255,0.16)'), stroke: isContrast ? '#fbbf24' : 'rgba(255,255,255,0.45)', strokeWidth: 1 }),
+        !isContrast && h('rect', { x: 21.8, y: 7.8, width: 10.4, height: 4.5, rx: 1.8, fill: 'url(#arith-emb-sheen)' }),
         h('rect', { x: 7, y: 21, width: 12, height: 12, rx: 3, fill: operation === 'multiply' ? (isContrast ? '#fbbf24' : '#8b5cf6') : (isContrast ? '#000000' : 'rgba(255,255,255,0.16)'), stroke: isContrast ? '#fbbf24' : 'rgba(255,255,255,0.45)', strokeWidth: 1 }),
+        !isContrast && h('rect', { x: 7.8, y: 21.8, width: 10.4, height: 4.5, rx: 1.8, fill: 'url(#arith-emb-sheen)' }),
         h('rect', { x: 21, y: 21, width: 12, height: 12, rx: 3, fill: operation === 'divide' ? (isContrast ? '#fbbf24' : '#10b981') : (isContrast ? '#000000' : 'rgba(255,255,255,0.16)'), stroke: isContrast ? '#fbbf24' : 'rgba(255,255,255,0.45)', strokeWidth: 1 }),
+        !isContrast && h('rect', { x: 21.8, y: 21.8, width: 10.4, height: 4.5, rx: 1.8, fill: 'url(#arith-emb-sheen)' }),
         h('text', { x: 13, y: 16.5, textAnchor: 'middle', fill: operation === 'add' && isContrast ? '#000000' : '#ffffff', fontSize: 10, fontWeight: 900 }, '+'),
         h('text', { x: 27, y: 16.5, textAnchor: 'middle', fill: operation === 'subtract' && isContrast ? '#000000' : '#ffffff', fontSize: 10, fontWeight: 900 }, '−'),
         h('text', { x: 13, y: 30.5, textAnchor: 'middle', fill: operation === 'multiply' && isContrast ? '#000000' : '#ffffff', fontSize: 10, fontWeight: 900 }, '×'),

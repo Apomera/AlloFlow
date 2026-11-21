@@ -137,6 +137,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _viaBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.viaStrengths || defaultState();
       function setVS(patch) {
@@ -146,6 +148,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
           if (patch.ratings || patch.topFive || patch.reflections) next.lastUpdated = todayISO();
           return Object.assign({}, prev, { viaStrengths: next });
         });
+      }
+      function scanViaText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'viaStrengths', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'viaStrengths', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setVS({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'VIA Strengths', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
       }
       var view = d.view || 'overview';
       var VIA_VIEW_LABELS = { overview: 'Overview', sort: 'Self-Sort', reflect: 'Reflect', print: 'Print view', about: 'About' };
@@ -425,6 +452,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
               h('textarea', { id: refId, value: ref,
                 placeholder: 'When have you used this well? How will you use it more on purpose?',
                 onChange: function(e) { setReflection(id, e.target.value); },
+                onBlur: function(e) { scanViaText(e.target.value); },
                 style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _viaBg('#1e293b'), color: _viaFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' } })
             );
           }),
@@ -578,6 +606,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'VIA Character Strengths' },
         header(),
         navTabs(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _viaBand) : null,
         h('div', { id: 'via-tab-panel', role: 'tabpanel', 'aria-labelledby': 'via-tab-' + view }, body)
       );
     }

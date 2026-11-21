@@ -103,30 +103,35 @@
   }
 
   async function validatePath(path) {
-    const fis = await new FileInputStream(path);
-    const parser = await foundry.createParser(fis, ua1);
-    const validator = await foundry.createValidator(ua1, false); // logPassed=false → only failures listed
-    const result = await validator.validate(parser);
-    const compliant = await result.isCompliant();
-    const failures = [];
+    let fis = null, parser = null;
     try {
-      const assertions = await result.getTestAssertions();
-      const it = await assertions.iterator();
-      while (await it.hasNext()) {
-        const a = await it.next();
-        const rid = await a.getRuleId();
-        failures.push({ clause: '' + (await rid.getClause()), testNumber: +(await rid.getTestNumber()), message: '' + (await a.getMessage()) });
+      fis = await new FileInputStream(path);
+      parser = await foundry.createParser(fis, ua1);
+      const validator = await foundry.createValidator(ua1, false); // logPassed=false → only failures listed
+      const result = await validator.validate(parser);
+      const compliant = await result.isCompliant();
+      const failures = [];
+      try {
+        const assertions = await result.getTestAssertions();
+        const it = await assertions.iterator();
+        while (await it.hasNext()) {
+          const a = await it.next();
+          const rid = await a.getRuleId();
+          failures.push({ clause: '' + (await rid.getClause()), testNumber: +(await rid.getTestNumber()), message: '' + (await a.getMessage()) });
+        }
+      } catch (e) { /* detailed list is best-effort over the bridge */ }
+      // group repeated check failures by rule (clause+test) so the UI shows distinct rules + occurrence counts
+      const byRule = new Map();
+      for (const f of failures) {
+        const k = f.clause + '|' + f.testNumber;
+        if (byRule.has(k)) byRule.get(k).count++;
+        else byRule.set(k, { clause: f.clause, testNumber: f.testNumber, message: f.message, count: 1 });
       }
-    } catch (e) { /* detailed list is best-effort over the bridge */ }
-    try { await parser.close(); } catch (e) {}
-    // group repeated check failures by rule (clause+test) so the UI shows distinct rules + occurrence counts
-    const byRule = new Map();
-    for (const f of failures) {
-      const k = f.clause + '|' + f.testNumber;
-      if (byRule.has(k)) byRule.get(k).count++;
-      else byRule.set(k, { clause: f.clause, testNumber: f.testNumber, message: f.message, count: 1 });
+      return { compliant: !!compliant, failedChecks: failures.length, failedRules: [...byRule.values()] };
+    } finally {
+      if (parser) { try { await parser.close(); } catch (e) {} }
+      if (fis) { try { await fis.close(); } catch (e) {} }
     }
-    return { compliant: !!compliant, failedChecks: failures.length, failedRules: [...byRule.values()] };
   }
 
   async function validateBytes(bytes) {
@@ -228,13 +233,25 @@
       if (needFont) { // R-FONT: embed a WinAnsi TrueType substitute for non-embedded standard-14 fonts
         try {
           if (!_notoTtf) {
-            const fontRes = await fetch(NOTO_FONT_URL, { credentials: 'omit', referrerPolicy: 'no-referrer' });
-            if (!fontRes.ok) throw new Error('Substitute font fetch failed (HTTP ' + fontRes.status + ')');
-            const fontBuf = await fontRes.arrayBuffer();
-            if (crypto && crypto.subtle && typeof crypto.subtle.digest === 'function') {
-              const digestHex = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', fontBuf))).map(b => b.toString(16).padStart(2, '0')).join('');
-              if (digestHex !== NOTO_FONT_SHA256) throw new Error('Substitute font integrity verification failed');
+            if (!(typeof crypto !== 'undefined' && crypto && crypto.subtle && typeof crypto.subtle.digest === 'function')) {
+              throw new Error('Substitute font integrity verification unavailable');
             }
+            const MAX_NOTO_FONT_BYTES = 5 * 1024 * 1024;
+            const fontCtrl = typeof AbortController === 'function' ? new AbortController() : null;
+            const fontTimer = fontCtrl ? setTimeout(() => { try { fontCtrl.abort(); } catch (_) {} }, 15000) : 0;
+            let fontBuf;
+            try {
+              const fontRes = await fetch(NOTO_FONT_URL, { credentials: 'omit', referrerPolicy: 'no-referrer', signal: fontCtrl ? fontCtrl.signal : undefined });
+              if (!fontRes.ok) throw new Error('Substitute font fetch failed (HTTP ' + fontRes.status + ')');
+              const cl = Number(fontRes.headers && typeof fontRes.headers.get === 'function' ? fontRes.headers.get('content-length') : 0);
+              if (Number.isFinite(cl) && cl > MAX_NOTO_FONT_BYTES) throw new Error('Substitute font exceeds size limit');
+              fontBuf = await fontRes.arrayBuffer();
+              if (!fontBuf || fontBuf.byteLength === 0 || fontBuf.byteLength > MAX_NOTO_FONT_BYTES) throw new Error('Substitute font exceeds size limit');
+            } finally {
+              if (fontTimer) clearTimeout(fontTimer);
+            }
+            const digestHex = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', fontBuf))).map(b => b.toString(16).padStart(2, '0')).join('');
+            if (digestHex !== NOTO_FONT_SHA256) throw new Error('Substitute font integrity verification failed');
             _notoTtf = new Uint8Array(fontBuf);
           }
           cheerpOSAddStringFile('/str/sub.ttf', _notoTtf);
@@ -262,9 +279,14 @@
       await doc.save('/files/struct_out.pdf');
       await doc.close();
       const Files = await L.java.nio.file.Files, Base64 = await L.java.util.Base64;
-      const rb = await Files.readAllBytes(await (await new File('/files/struct_out.pdf')).toPath());
-      const b64 = await (await Base64.getEncoder()).encodeToString(rb);
-      return { bytes: Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)), applied: applied };
+      const outPath = await (await new File('/files/struct_out.pdf')).toPath();
+      try {
+        const rb = await Files.readAllBytes(outPath);
+        const b64 = await (await Base64.getEncoder()).encodeToString(rb);
+        return { bytes: Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)), applied: applied };
+      } finally {
+        try { await Files.deleteIfExists(outPath); } catch (_) {}
+      }
     } catch (e) { try { await doc.close(); } catch (_) {} throw e; }
   }
 
@@ -332,8 +354,13 @@
       else if (K) kids.push(K);
       return kids.filter((k) => k instanceof PDFDict && k.lookup(PDFName.of('S'))); // child StructElems only (skip MCR/MCID leaves)
     };
+    const visited = new Set();
+    let visitedCount = 0;
+    const MAX_VISITED = 10000;
     const walk = (node, depth) => {
-      if (!node || !node.lookup || depth > 60) return;
+      if (!node || !node.lookup || depth > 60 || visitedCount >= MAX_VISITED || visited.has(node)) return;
+      visited.add(node);
+      visitedCount += 1;
       const ch = childElems(node);
       if (ch.length) { for (const c of ch) walk(c, depth + 1); return; } // grouping element → recurse
       const role = _roName(node.lookup(PDFName.of('S')));
@@ -422,10 +449,14 @@
       // veraPDF-only so a missing/un-hosted jar can never break basic validation (CheerpJ allows one
       // library thread, so the classpath is decided ONCE here). _lib gates the structural fallback.
       let classpath = JAR_URL, pdfboxOk = false;
+      const pdfboxCtrl = typeof AbortController === 'function' ? new AbortController() : null;
+      const pdfboxTimer = pdfboxCtrl ? setTimeout(() => { try { pdfboxCtrl.abort(); } catch (_) {} }, 10000) : 0;
       try {
-        const r = await fetch(PDFBOX_JAR_URL.replace(/^\/app/, ''), { method: 'HEAD', cache: 'no-store' });
+        const r = await fetch(PDFBOX_JAR_URL.replace(/^\/app/, ''), { method: 'HEAD', cache: 'no-store', signal: pdfboxCtrl ? pdfboxCtrl.signal : undefined });
         if (_isPlausibleJarHead(r)) { classpath += ':' + PDFBOX_JAR_URL; pdfboxOk = true; }
-      } catch (e) {}
+      } catch (e) {} finally {
+        if (pdfboxTimer) clearTimeout(pdfboxTimer);
+      }
       setStatus(pdfboxOk ? 'Loading veraPDF + PDFBox…' : 'Loading veraPDF…');
       const lib = await cheerpjRunLibrary(classpath);
       if (pdfboxOk) _lib = lib; // enable the PDFBox structural fallback only when its jar loaded
@@ -459,20 +490,28 @@
     const f = e.target.files[0]; if (!f) return;
     if (Number(f.size) > MAX_VERAPDF_BYTES) { setStatus('❌ PDF exceeds the 50 MB validation limit.'); return; }
     setStatus('Validating ' + f.name + '…');
-    const t = performance.now();
-    const _b = new Uint8Array(await f.arrayBuffer());
-    const r = await validateBytes(_b);
-    render(r);
-    _lastBytes = _b; _roOfferPreview();
-    setStatus('Done in ' + Math.round(performance.now() - t) + 'ms.');
-    window.__lastResult = r; // for headless tests
+    try {
+      const t = performance.now();
+      const _b = new Uint8Array(await f.arrayBuffer());
+      const r = await validateBytes(_b);
+      render(r);
+      _lastBytes = _b; _roOfferPreview();
+      setStatus('Done in ' + Math.round(performance.now() - t) + 'ms.');
+      window.__lastResult = r; // for headless tests
+    } catch (err) {
+      setStatus('❌ Validation failed: ' + String(err && (err.message || err)));
+    }
   });
+
+  function _isOpaqueLocalOrigin() {
+    return !!(window.location && (window.location.origin === 'null' || window.location.protocol === 'file:'));
+  }
 
   function _isTrustedVeraOrigin(origin) {
     const o = String(origin || '');
-    if (o === 'null') return true;
+    if (o === 'null') return _isOpaqueLocalOrigin();
     try {
-      if (window.location && window.location.origin && o === window.location.origin) return true;
+      if (window.location && window.location.origin && window.location.origin !== 'null' && o === window.location.origin) return true;
       const u = new URL(o);
       const host = (u.hostname || '').toLowerCase();
       if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(host)) return true;
@@ -492,41 +531,65 @@
     return source === window.opener || (window.parent && window.parent !== window && source === window.parent);
   }
 
-  window.addEventListener('message', async (ev) => {
+  function _validatePdfPayload(bytes) {
+    if (!(bytes instanceof ArrayBuffer || ArrayBuffer.isView(bytes))) return { ok: false, reason: 'Invalid PDF byte payload.' };
+    const len = bytes.byteLength;
+    if (!Number.isSafeInteger(len) || len <= 0) return { ok: false, reason: 'Empty PDF payload.' };
+    if (len > MAX_VERAPDF_BYTES) return { ok: false, reason: 'PDF exceeds the 50 MB limit.' };
+    return { ok: true, length: len };
+  }
+
+  let _verifiedHostOrigin = null;
+  let _opQueue = Promise.resolve();
+
+  window.addEventListener('message', (ev) => {
     if (!_isTrustedVeraSource(ev.source) || !_isTrustedVeraOrigin(ev.origin)) return;
-    const replyTarget = ev.source || window.opener || window.parent;
-    const replyOrigin = ev.origin && ev.origin !== 'null' ? ev.origin : '*';
-    const d = ev.data || {};
-    if (d.type === 'verapdf-validate' && d.bytes && ready) {
-      if ((d.bytes.byteLength || d.bytes.length || 0) > MAX_VERAPDF_BYTES) {
-        replyTarget.postMessage({ type: 'verapdf-result', error: 'PDF exceeds the 50 MB validation limit.' }, replyOrigin);
+    if (_verifiedHostOrigin !== null && ev.origin !== _verifiedHostOrigin) return;
+    const replyTarget = ev.source;
+    const replyOrigin = ev.origin === 'null' ? (_isOpaqueLocalOrigin() ? '*' : null) : ev.origin;
+    if (!replyTarget || !replyOrigin) return;
+    const d = ev.data && typeof ev.data === 'object' ? ev.data : null;
+    if (!d || typeof d.type !== 'string') return;
+    if (_verifiedHostOrigin === null) _verifiedHostOrigin = ev.origin;
+    if (d.type === 'verapdf-validate' && d.bytes != null && ready) {
+      const check = _validatePdfPayload(d.bytes);
+      if (!check.ok) {
+        replyTarget.postMessage({ type: 'verapdf-result', error: check.reason }, replyOrigin);
         return;
       }
-      setStatus('⏳ Validating the PDF AlloFlow sent…');
-      try {
-        const r = await validateBytes(d.bytes);
-        render(r); // show the verdict in this window too (useful when it's the visible popup fallback)
-        _lastBytes = d.bytes; _roOfferPreview();
-        setStatus(r.compliant ? '✅ PDF/UA-1: conformant — result sent back to AlloFlow.' : '❌ PDF/UA-1: ' + r.failedRules.length + ' rule(s) — result sent back to AlloFlow.');
-        replyTarget.postMessage({ type: 'verapdf-result', result: r }, replyOrigin);
-      } catch (e) {
-        setStatus('❌ Validation error — reported back to AlloFlow.');
-        replyTarget.postMessage({ type: 'verapdf-result', error: String(e && (e.message || e)) }, replyOrigin);
-      }
+      const bytesCopy = d.bytes instanceof Uint8Array ? new Uint8Array(d.bytes) : new Uint8Array(d.bytes instanceof ArrayBuffer ? d.bytes : d.bytes.buffer.slice(d.bytes.byteOffset, d.bytes.byteOffset + d.bytes.byteLength));
+      _opQueue = _opQueue.then(async () => {
+        setStatus('⏳ Validating the PDF AlloFlow sent…');
+        try {
+          const r = await validateBytes(bytesCopy);
+          render(r); // show the verdict in this window too (useful when it's the visible popup fallback)
+          _lastBytes = bytesCopy; _roOfferPreview();
+          setStatus(r.compliant ? '✅ PDF/UA-1: conformant — result sent back to AlloFlow.' : '❌ PDF/UA-1: ' + r.failedRules.length + ' rule(s) — result sent back to AlloFlow.');
+          replyTarget.postMessage({ type: 'verapdf-result', result: r }, replyOrigin);
+        } catch (e) {
+          setStatus('❌ Validation error — reported back to AlloFlow.');
+          replyTarget.postMessage({ type: 'verapdf-result', error: String(e && (e.message || e)) }, replyOrigin);
+        }
+      }, () => {});
     }
     // Closed-loop remediation: validate → repair → re-validate → loop, return the green (or best-effort) PDF.
-    if (d.type === 'verapdf-remediate' && d.bytes && ready) {
-      if ((d.bytes.byteLength || d.bytes.length || 0) > MAX_VERAPDF_BYTES) {
-        replyTarget.postMessage({ type: 'verapdf-remediate-result', error: 'PDF exceeds the 50 MB remediation limit.' }, replyOrigin);
+    if (d.type === 'verapdf-remediate' && d.bytes != null && ready) {
+      const check = _validatePdfPayload(d.bytes);
+      if (!check.ok) {
+        replyTarget.postMessage({ type: 'verapdf-remediate-result', error: check.reason }, replyOrigin);
         return;
       }
       const clampedIters = Math.max(1, Math.min(10, Math.floor(Number(d.maxIters) || 5)));
-      try {
-        const r = await remediate(d.bytes, clampedIters, { allowArtifact: !!d.allowArtifact }); // Artifact-wrap stays off unless the caller explicitly opts in
-        replyTarget.postMessage({ type: 'verapdf-remediate-result', result: r }, replyOrigin);
-      } catch (e) {
-        replyTarget.postMessage({ type: 'verapdf-remediate-result', error: String(e && (e.message || e)) }, replyOrigin);
-      }
+      const allowArtifact = !!d.allowArtifact;
+      const bytesCopy = d.bytes instanceof Uint8Array ? new Uint8Array(d.bytes) : new Uint8Array(d.bytes instanceof ArrayBuffer ? d.bytes : d.bytes.buffer.slice(d.bytes.byteOffset, d.bytes.byteOffset + d.bytes.byteLength));
+      _opQueue = _opQueue.then(async () => {
+        try {
+          const r = await remediate(bytesCopy, clampedIters, { allowArtifact }); // Artifact-wrap stays off unless the caller explicitly opts in
+          replyTarget.postMessage({ type: 'verapdf-remediate-result', result: r }, replyOrigin);
+        } catch (e) {
+          replyTarget.postMessage({ type: 'verapdf-remediate-result', error: String(e && (e.message || e)) }, replyOrigin);
+        }
+      }, () => {});
     }
   });
 

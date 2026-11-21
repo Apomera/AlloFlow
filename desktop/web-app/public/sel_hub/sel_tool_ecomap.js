@@ -98,13 +98,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       var _ecoT = (ctx && ctx.theme) || {};
       var _ecoHC = !!_ecoT.isContrast, _ecoL = !_ecoHC && !_ecoT.isDark;
       var _eco_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff','#0b1220':'#f1f5f9'}, _eco_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#0b1220':'#000000','#fff':'#000000'};
-      var _eco_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#fcd34d':'#78350f','#fde68a':'#92400e'}, _eco_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
-      var _eco_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _eco_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#fb7185':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00','#f59e0b':'#ffff00'};
+      var _eco_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#fb7185':'#be123c','#f59e0b':'#b45309','#ef4444':'#b91c1c','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#fcd34d':'#78350f','#fde68a':'#92400e'}, _eco_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _eco_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _eco_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#fb7185':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00','#f59e0b':'#ffff00'};
       var _ecoBg = function(h){ return _ecoHC ? (_eco_BGH[h]||h) : (_ecoL ? (_eco_BGL[h]||h) : h); };
       var _ecoFg = function(h){ return _ecoHC ? (_eco_FGH[h]||h) : (_ecoL ? (_eco_FGL[h]||h) : h); };
-      var _ecoBd = function(h){ return _ecoHC ? (_eco_BDH[h]||h) : (_ecoL ? (_eco_BDL[h]||h) : h); };
-      // accent text on the dark shell needs the 300/400 weight (1.4.3)
-      var _ecoInk = function(c){ return _ecoHC || _ecoL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
+      var _ecoBd = function(h){ return _ecoHC ? (_eco_BDH[h]||'#ffff00') : (_ecoL ? (_eco_BDL[h]||h) : h); };
+      // accent text needs AA contrast in Dark, Light, and High Contrast (WCAG 1.4.3)
+      var _ecoInk = function(c){
+        if (_ecoHC) return '#ffff00';
+        var lc = String(c).toLowerCase();
+        if (_ecoL) return {'#fb7185':'#be123c','#0ea5e9':'#0369a1','#a855f7':'#7e22ce','#22c55e':'#15803d','#16a34a':'#15803d','#10b981':'#047857','#f59e0b':'#b45309','#eab308':'#a16207','#84cc16':'#4d7c0f','#fb923c':'#c2410c','#ef4444':'#b91c1c','#6366f1':'#4338ca','#3b82f6':'#1d4ed8','#ec4899':'#be185d','#14b8a6':'#0f766e','#06b6d4':'#0e7490'}[lc] || c;
+        return {'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[lc] || c;
+      };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -112,6 +117,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _ecoBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.ecomap || defaultState();
       function setEM(patch) {
@@ -122,14 +129,40 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           return Object.assign({}, prev, { ecomap: next });
         });
       }
-      var view = d.view || 'map';
-      function goto(v) { setEM({ view: v }); }
+      function scanEcomapText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'ecomap', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && (scan.hasCrisis || scan.triggered)) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'ecomap', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setEM({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Ecomap', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
+      }
+      var VALID_VIEWS = ['map', 'list', 'reflect', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'map';
+      function goto(v) { setEM({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'map' }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _ecoFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _ecoHC ? '#000000' : (_ecoL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _ecoBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _ecoFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _ecoFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🕸️ Ecomap'),
             h('div', { style: { fontSize: 12, color: _ecoFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A relationship map of you and the systems in your life.')
@@ -149,10 +182,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#fb7185' : '#334155'),
-                background: active ? 'rgba(251,113,133,0.18)' : _ecoBg('#1e293b'),
+            return h('button', { key: t.id, id: 'eco-tab-' + t.id, onClick: function() { goto(t.id); },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'eco-panel-' + t.id, tabIndex: active ? 0 : -1,
+              style: { padding: '6px 12px', borderRadius: 8, border: (_ecoHC ? '2px' : '1px') + ' solid ' + _ecoBd(active ? '#fb7185' : '#334155'),
+                background: active ? (_ecoHC ? '#000000' : (_ecoL ? '#ffe4e6' : 'rgba(251,113,133,0.18)')) : _ecoBg('#1e293b'),
                 color: active ? _ecoFg('#fecdd3') : _ecoFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -161,7 +194,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _ecoFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _ecoHC ? '#000000' : (_ecoL ? '#f8fafc' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _ecoBd('#334155'), fontSize: 11, color: _ecoFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Your ecomap is private to you. The patterns it shows can be intense; if seeing them stirs something heavy, that is information, bring it to a counselor or trusted adult. Crisis Text Line: text HOME to 741741.'
         );
@@ -183,12 +216,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
         // If no nodes, show empty state
         if (nodes.length === 0) {
           return h('div', null,
-            h('div', { style: { padding: 28, borderRadius: 14, background: 'linear-gradient(135deg, rgba(251,113,133,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(251,113,133,0.4)', textAlign: 'center', marginBottom: 14 } },
+            h('div', { style: { padding: 28, borderRadius: 14, background: _ecoHC ? '#000000' : (_ecoL ? '#fff1f2' : 'linear-gradient(135deg, rgba(251,113,133,0.18) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_ecoHC ? '#ffff00' : 'rgba(251,113,133,0.4)'), textAlign: 'center', marginBottom: 14 } },
               h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🕸️'),
               h('h3', { style: { margin: '0 0 8px', color: _ecoFg('#fecdd3'), fontSize: 18 } }, 'Your ecomap is empty'),
               h('p', { style: { margin: '0 0 14px', color: _ecoFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'An ecomap is a picture of you in the middle, surrounded by the systems in your life. Start by adding some of the people, places, or services that take up real space in your week. You decide how many; you decide which ones.'),
-              h('button', { onClick: function() { goto('list'); }, style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              h('button', { onClick: function() { goto('list'); }, style: { padding: '10px 22px', borderRadius: 10, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
                 '+ Add my first connection')
             ),
             softPointer()
@@ -199,6 +232,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
         var positioned = nodes.map(function(n, i) {
           var angle = (i / nodes.length) * Math.PI * 2 - Math.PI / 2;
           return Object.assign({}, n, {
+            angle: angle,
             x: cx + Math.cos(angle) * rOuter,
             y: cy + Math.sin(angle) * rOuter
           });
@@ -210,6 +244,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           return { dasharray: '', width: 2.5 };
         }
         function strokeColorFor(stress) {
+          if (_ecoHC) return '#ffff00';
           if (stress === 'stressful') return _ecoFg('#ef4444');
           if (stress === 'mixed') return _ecoFg('#f59e0b');
           return _ecoFg('#94a3b8');
@@ -230,54 +265,58 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
         var stressCount = nodes.filter(function(n) { return n.stress === 'stressful'; }).length;
         var mixCount = nodes.filter(function(n) { return n.stress === 'mixed'; }).length;
         var calmCount = nodes.filter(function(n) { return n.stress === 'calm'; }).length;
-        var svgDesc = 'Ecomap centered on ' + (d.personLabel || 'Me') + ' with ' + nodes.length +
+        var personDisplay = (d.personLabel || '').trim() || 'Me';
+        var svgDesc = 'Ecomap centered on ' + personDisplay + ' with ' + nodes.length +
           ' connection' + (nodes.length === 1 ? '' : 's') + '. Strength: ' + sCount + ' strong, ' + mCount +
           ' medium, ' + tCount + ' tenuous. Stress level: ' + calmCount + ' calm, ' + mixCount + ' mixed, ' +
           stressCount + ' stressful.';
 
         return h('div', null,
           // Person identity
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 8, background: _ecoBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12, flexWrap: 'wrap' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 8, background: _ecoBg('#0f172a'), border: '1px solid ' + _ecoBd('#1e293b'), marginBottom: 12, flexWrap: 'wrap' } },
             h('label', { htmlFor: 'em-person', style: { fontSize: 11, color: _ecoFg('#94a3b8'), fontWeight: 700 } }, 'Center label:'),
-            h('input', { id: 'em-person', type: 'text', value: d.personLabel || 'Me',
+            h('input', { id: 'em-person', type: 'text', value: d.personLabel != null ? d.personLabel : 'Me',
               onChange: function(e) { setEM({ personLabel: e.target.value }); },
-              style: { padding: 6, borderRadius: 6, border: '1px solid #334155', background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13, width: 160 } }),
+              onBlur: function(e) { scanEcomapText(e.target.value); },
+              style: { padding: 6, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13, width: 160 } }),
             h('div', { style: { marginLeft: 'auto', fontSize: 11, color: _ecoFg('#94a3b8') } }, nodes.length + ' connection' + (nodes.length === 1 ? '' : 's'))
           ),
 
           // SVG
-          h('div', { style: { padding: 10, borderRadius: 12, background: _ecoBg('#0b1220'), border: '1px solid #1e293b', marginBottom: 12, overflowX: 'auto' } },
+          h('div', { style: { padding: 10, borderRadius: 12, background: _ecoBg('#0b1220'), border: '1px solid ' + _ecoBd('#1e293b'), marginBottom: 12, overflowX: 'auto' } },
             h('svg', { width: '100%', viewBox: '0 0 640 640', style: { maxWidth: 640 }, 'aria-labelledby': 'ecomap-svg-title ecomap-svg-desc', role: 'img' },
               h('title', { id: 'ecomap-svg-title' }, 'Ecomap visualization'),
               h('desc', { id: 'ecomap-svg-desc' }, svgDesc),
-              // Lines
+              // Marker defs before lines
+              h('defs', null,
+                h('marker', { id: 'arrEnd', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' },
+                  h('path', { d: 'M0,0 L10,5 L0,10 z', fill: _ecoHC ? '#ffff00' : _ecoFg('#94a3b8') })),
+                h('marker', { id: 'arrStart', viewBox: '0 0 10 10', refX: 2, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
+                  h('path', { d: 'M0,0 L10,5 L0,10 z', fill: _ecoHC ? '#ffff00' : _ecoFg('#94a3b8') }))
+              ),
+              // Lines trimmed to circle perimeters so arrowheads remain visible
               positioned.map(function(n) {
                 var st = strokeFor(n.strength);
                 var col = strokeColorFor(n.stress);
                 var sysCol = systemColor(n.systemId);
-                // Arrowhead marker id per direction
+                var cosA = Math.cos(n.angle), sinA = Math.sin(n.angle);
+                var lx1 = cx + cosA * 62, ly1 = cy + sinA * 62;
+                var lx2 = cx + cosA * (rOuter - rNode - 2), ly2 = cy + sinA * (rOuter - rNode - 2);
                 return h('g', { key: 'g_' + n.id },
-                  h('line', { x1: cx, y1: cy, x2: n.x, y2: n.y,
+                  h('line', { x1: lx1, y1: ly1, x2: lx2, y2: ly2,
                     stroke: col, strokeWidth: st.width, strokeDasharray: st.dasharray,
                     markerEnd: n.direction === 'toMe' ? '' : (n.direction === 'fromMe' || n.direction === 'mutual' ? 'url(#arrEnd)' : ''),
                     markerStart: n.direction === 'toMe' || n.direction === 'mutual' ? 'url(#arrStart)' : '' }),
                   // Node circle
-                  h('circle', { cx: n.x, cy: n.y, r: rNode, fill: sysCol + '22', stroke: sysCol, strokeWidth: 2 }),
-                  h('text', { x: n.x, y: n.y - 6, textAnchor: 'middle', fontSize: 20, fill: sysCol }, systemIcon(n.systemId)),
+                  h('circle', { cx: n.x, cy: n.y, r: rNode, fill: _ecoHC ? '#000000' : sysCol + '22', stroke: _ecoHC ? '#ffff00' : sysCol, strokeWidth: 2 }),
+                  h('text', { x: n.x, y: n.y - 6, textAnchor: 'middle', fontSize: 20, fill: _ecoInk(sysCol) }, systemIcon(n.systemId)),
                   h('text', { x: n.x, y: n.y + 14, textAnchor: 'middle', fontSize: 11, fill: _ecoFg('#e2e8f0'), style: { fontWeight: 700 } },
                     (n.label || '').slice(0, 14))
                 );
               }),
-              // Marker defs
-              h('defs', null,
-                h('marker', { id: 'arrEnd', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' },
-                  h('path', { d: 'M0,0 L10,5 L0,10 z', fill: _ecoFg('#94a3b8') })),
-                h('marker', { id: 'arrStart', viewBox: '0 0 10 10', refX: 2, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
-                  h('path', { d: 'M0,0 L10,5 L0,10 z', fill: _ecoFg('#94a3b8') }))
-              ),
               // Center person
-              h('circle', { cx: cx, cy: cy, r: 60, fill: '#fb7185', stroke: _ecoFg('#fda4af'), strokeWidth: 3 }),
-              h('text', { x: cx, y: cy + 6, textAnchor: 'middle', fontSize: 16, fill: '#fff', style: { fontWeight: 800 } }, d.personLabel || 'Me')
+              h('circle', { cx: cx, cy: cy, r: 60, fill: _ecoHC ? '#000000' : '#be123c', stroke: _ecoHC ? '#ffff00' : _ecoFg('#fda4af'), strokeWidth: 3 }),
+              h('text', { x: cx, y: cy + 6, textAnchor: 'middle', fontSize: 16, fill: _ecoHC ? '#ffff00' : '#ffffff', style: { fontWeight: 800 } }, personDisplay)
             )
           ),
 
@@ -334,12 +373,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('list'); }, 'aria-label': 'Add or edit connections',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '✏️ Add or edit connections'),
             h('button', { onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect on patterns',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print ecomap',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -356,8 +395,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
         function startEdit(id) { setEM({ editingNodeId: id, addingForSystem: null }); }
         function cancelForm() { setEM({ addingForSystem: null, editingNodeId: null }); }
         function deleteNode(id) {
-          var nx = nodes.filter(function(n) { return n.id !== id; });
-          setEM({ nodes: nx });
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.ecomap) || defaultState();
+            var prevNodes = Array.isArray(prior.nodes) ? prior.nodes : [];
+            var nx = prevNodes.filter(function(n) { return n && n.id !== id; });
+            return Object.assign({}, prev, {
+              ecomap: Object.assign({}, prior, {
+                nodes: nx,
+                editingNodeId: prior.editingNodeId === id ? null : prior.editingNodeId,
+                lastUpdated: todayISO()
+              })
+            });
+          });
           if (announceToSR) announceToSR('Connection removed.');
         }
 
@@ -375,16 +424,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
             direction: direction ? direction.value : 'mutual',
             notes: notes ? notes.value.trim() : ''
           };
-          if (d.editingNodeId) {
-            var nx = nodes.map(function(n) { return n.id === d.editingNodeId ? Object.assign({}, n, entry) : n; });
-            setEM({ nodes: nx, editingNodeId: null });
-            if (addToast) addToast('Updated.', 'success');
-          } else {
-            entry.id = uid();
-            entry.systemId = d.addingForSystem;
-            setEM({ nodes: nodes.concat([entry]), addingForSystem: null });
-            if (addToast) addToast('Added.', 'success');
-          }
+          scanEcomapText([entry.label, entry.notes].filter(Boolean).join(' '));
+          var wasEditing = !!d.editingNodeId;
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.ecomap) || defaultState();
+            var prevNodes = Array.isArray(prior.nodes) ? prior.nodes : [];
+            if (prior.editingNodeId) {
+              var nx = prevNodes.map(function(n) { return n && n.id === prior.editingNodeId ? Object.assign({}, n, entry) : n; });
+              return Object.assign({}, prev, { ecomap: Object.assign({}, prior, { nodes: nx, editingNodeId: null, lastUpdated: todayISO() }) });
+            }
+            var created = Object.assign({}, entry, { id: uid(), systemId: prior.addingForSystem });
+            return Object.assign({}, prev, { ecomap: Object.assign({}, prior, { nodes: prevNodes.concat([created]), addingForSystem: null, lastUpdated: todayISO() }) });
+          });
+          if (addToast) addToast(wasEditing ? 'Updated.' : 'Added.', 'success');
         }
 
         function renderForm() {
@@ -392,35 +444,37 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           var sys = SYSTEMS.find(function(s) { return s.id === systemId; });
           var editing = d.editingNodeId ? nodes.find(function(n) { return n.id === d.editingNodeId; }) : null;
           if (!sys) return null;
+          var formKey = d.editingNodeId ? ('edit-' + d.editingNodeId) : ('add-' + d.addingForSystem);
 
-          return h('div', { style: { padding: 16, borderRadius: 12, background: _ecoBg('#0f172a'), border: '2px solid ' + sys.color, marginBottom: 14 } },
+          return h('div', { key: formKey, style: { padding: 16, borderRadius: 12, background: _ecoBg('#0f172a'), border: '2px solid ' + _ecoBd(sys.color), marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
               h('span', { style: { fontSize: 28 } }, sys.icon),
-              h('h3', { style: { margin: 0, color: sys.color, fontSize: 18, fontWeight: 800 } }, (editing ? 'Edit' : 'Add to ') + ' ' + sys.label)
+              h('h3', { style: { margin: 0, color: _ecoInk(sys.color), fontSize: 18, fontWeight: 800 } }, (editing ? 'Edit' : 'Add to ') + ' ' + sys.label)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 10 } },
               h('div', null,
                 h('label', { htmlFor: 'em-form-label', style: { display: 'block', fontSize: 11, color: _ecoFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Who / what is this connection?'),
                 h('input', { id: 'em-form-label', type: 'text', defaultValue: editing ? editing.label : '',
                   placeholder: 'e.g. Mom, soccer team, Dr. Singh',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } })
+                  onBlur: function(e) { scanEcomapText(e.target.value); },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', null,
                 h('label', { htmlFor: 'em-form-strength', style: { display: 'block', fontSize: 11, color: _ecoFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Strength'),
                 h('select', { id: 'em-form-strength', defaultValue: editing ? editing.strength : 'medium',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
                   STRENGTHS.map(function(s) { return h('option', { key: s.id, value: s.id }, s.label); }))
               ),
               h('div', null,
                 h('label', { htmlFor: 'em-form-stress', style: { display: 'block', fontSize: 11, color: _ecoFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Stress level'),
                 h('select', { id: 'em-form-stress', defaultValue: editing ? editing.stress : 'calm',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
                   STRESSES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.label); }))
               ),
               h('div', null,
                 h('label', { htmlFor: 'em-form-direction', style: { display: 'block', fontSize: 11, color: _ecoFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Energy direction'),
                 h('select', { id: 'em-form-direction', defaultValue: editing ? editing.direction : 'mutual',
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13 } },
                   DIRECTIONS.map(function(s) { return h('option', { key: s.id, value: s.id }, s.label); }))
               )
             ),
@@ -428,13 +482,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
               h('label', { htmlFor: 'em-form-notes', style: { display: 'block', fontSize: 11, color: _ecoFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Notes (optional)'),
               h('textarea', { id: 'em-form-notes', defaultValue: editing ? editing.notes : '',
                 placeholder: 'Anything you want to remember about this connection.',
-                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } })
+                onBlur: function(e) { scanEcomapText(e.target.value); },
+                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid ' + _ecoBd('#334155'), background: _ecoBg('#1e293b'), color: _ecoFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } })
             ),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' } },
               h('button', { onClick: saveForm, 'aria-label': editing ? 'Save changes' : 'Add connection',
-                style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: sys.color, color: _ecoFg('#fff'), fontWeight: 800, fontSize: 13 } }, editing ? '✓ Save' : '+ Add'),
+                style: { padding: '8px 18px', borderRadius: 8, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : '#be123c', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, editing ? '✓ Save' : '+ Add'),
               h('button', { onClick: cancelForm, 'aria-label': 'Cancel',
-                style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, 'Cancel')
+                style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, 'Cancel')
             )
           );
         }
@@ -542,32 +597,34 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
         var nodes = (Array.isArray(d.nodes) ? d.nodes : []);
+        var pl = (d.personLabel || '').trim();
+        var printTitle = (!pl || pl === 'Me' || pl === 'My') ? 'My Ecomap' : (pl + '’s Ecomap');
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(251,113,133,0.10)', borderRadius: 8, border: '1px solid rgba(251,113,133,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _ecoHC ? '#000000' : (_ecoL ? '#fff1f2' : 'rgba(251,113,133,0.10)'), borderRadius: 8, border: '1px solid ' + (_ecoHC ? '#ffff00' : 'rgba(251,113,133,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _ecoFg('#fecdd3'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Includes the visual map and a summary list. Use your browser\'s print dialog.'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _ecoHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _ecoHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _ecoHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('map'); }, 'aria-label': 'Back to map',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _ecoBd('#475569'), background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'ecomap-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _ecoBg('#fff'), color: _ecoFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _ecoBg('#fff'), color: _ecoFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _ecoBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
-              '#ecomap-print-region, #ecomap-print-region * { visibility: visible !important; } ' +
+              '#ecomap-print-region, #ecomap-print-region * { visibility: visible !important; background: #fff !important; color: #0f172a !important; border-color: #cbd5e1 !important; } ' +
               '#ecomap-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
 
-            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #be123c' } },
+            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _ecoBd('#be123c') } },
               h('div', { style: { fontSize: 10, color: _ecoFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Ecomap'),
-              h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, (d.personLabel || 'My') + '’s Ecomap'),
+              h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, printTitle),
               d.lastUpdated ? h('div', { style: { fontSize: 12, color: _ecoFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
@@ -576,7 +633,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
               var sysNodes = nodes.filter(function(n) { return n.systemId === sys.id; });
               if (sysNodes.length === 0) return null;
               return h('div', { key: sys.id, style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: sys.color, color: _ecoFg('#fff') } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: _ecoHC ? '#000000' : '#f1f5f9', border: _ecoHC ? '1px solid #ffff00' : '1px solid #e2e8f0', borderLeft: '4px solid ' + _ecoBd(sys.color), color: _ecoHC ? '#ffff00' : '#0f172a' } },
                   h('span', { style: { fontSize: 16 } }, sys.icon),
                   h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, sys.label)
                 ),
@@ -677,7 +734,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Ecomap' },
         header(),
         navTabs(),
-        body
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _ecoBand) : null,
+        h('div', { role: 'tabpanel', id: 'eco-panel-' + view, 'aria-labelledby': 'eco-tab-' + view }, body)
       );
     }
   });

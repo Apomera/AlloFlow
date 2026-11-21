@@ -29,6 +29,8 @@ function _alloCommandScopeToken(deps) {
 }
 const _alloCommandWorkspaceOwners = new WeakMap();
 let _alloCommandWorkspaceSequence = 0;
+let _alloBrainstormOpenGeneration = 0;
+let _alloBrainstormOpenTimer = null;
 function _alloCommandWorkspaceToken(deps) {
   const owner = deps && deps._alloCmdCtxRef;
   if (!owner || typeof owner !== 'object') return '';
@@ -215,6 +217,7 @@ function buildAlloCommandContext(deps) {
     initiateSaveTeacherProject,
     inputText,
     isAccessibilityLabOpen,
+    isAdminHubOpen,
     isAlloHavenOpen,
     isAlloStudioOpen,
     getLessonRevisionResources,
@@ -636,7 +639,7 @@ function buildAlloCommandContext(deps) {
     }
     return commandAudience === 'student' ? _alloStudentSafeResources(visible) : Array.isArray(visible) ? visible.filter(item => item && item.id && item.type) : [];
   };
-  const isLearnerResourceSurfaceBlocked = () => !!(showAIBackendModal || showTextSettings || showVoiceSettings || isTranslateModalOpen || isGateOpen || isProjectSettingsOpen || showDirectionsComposer || showAssessmentBuilder || showUDLGuide || showLivePollingPanel || showStudentSignals || showLiveDock || showExportPreview || showExportMenu || showSessionModal || showRecentQrShares || showClassAnalytics || isResearchSuiteOpen || showNotebook || showStudentEntry || showSaveModal || showSubmitModal || showReadThisPage || isTestPrepHubOpen || isLinguaPracticeOpen || isTimelineStudioOpen || isOpenGrooveOpen || showResearchHub || showLitLab || showLearningWebExplorer || showMindMap || showPoetTree || showStemLab || showStoryForge || isAlloHavenOpen || showBehaviorLens || showReportWriter || isSymbolStudioOpen || isVideoStudioOpen || isAlloStudioOpen || showCinematicStudio || isAccessibilityLabOpen || isCommunityCatalogOpen || isReadingLibraryOpen || isDynamicAssessmentOpen || showSelHub || showLearningHub || showEducatorHub || runTour || guidedMode || !hasSelectedMode || !hasSelectedRole);
+  const isLearnerResourceSurfaceBlocked = () => !!(showAIBackendModal || showTextSettings || showVoiceSettings || isTranslateModalOpen || isGateOpen || isProjectSettingsOpen || showDirectionsComposer || showAssessmentBuilder || showUDLGuide || showLivePollingPanel || showStudentSignals || showLiveDock || showExportPreview || showExportMenu || showSessionModal || showRecentQrShares || showClassAnalytics || isResearchSuiteOpen || isAdminHubOpen || showNotebook || showStudentEntry || showSaveModal || showSubmitModal || showReadThisPage || isTestPrepHubOpen || isLinguaPracticeOpen || isTimelineStudioOpen || isOpenGrooveOpen || showResearchHub || showLitLab || showLearningWebExplorer || showMindMap || showPoetTree || showStemLab || showStoryForge || isAlloHavenOpen || showBehaviorLens || showReportWriter || isSymbolStudioOpen || isVideoStudioOpen || isAlloStudioOpen || showCinematicStudio || isAccessibilityLabOpen || isCommunityCatalogOpen || isReadingLibraryOpen || isDynamicAssessmentOpen || showSelHub || showLearningHub || showEducatorHub || runTour || guidedMode || !hasSelectedMode || !hasSelectedRole);
   const isLearnerResourceDiscoveryActive = () => !isLearnerResourceSurfaceBlocked() && (activeView === 'dashboard' || activeView === 'history' || activeSidebarTab === 'history');
   const getLearnerResourceFeedbackText = content => {
     if (!content || typeof content !== 'object') return '';
@@ -761,6 +764,7 @@ function buildAlloCommandContext(deps) {
     if (showRecentQrShares) return 'Share and Collect is open with recent links, polls, surveys, and response results.';
     if (isResearchSuiteOpen && !showClassAnalytics) return 'Research Suite is open with study design, consent provenance, instruments, fidelity logs, and research exports.';
     if (showClassAnalytics) return 'Class Analytics is open with learner progress and classroom evidence.';
+    if (isAdminHubOpen) return 'Leadership Hub is open with administrative planning, coaching, and program tools.';
     if (showNotebook) return 'The Notebook is open with saved notes and entries.';
     if (!hasSelectedMode) return 'AlloFlow launch pad. Choose Full Platform, Guided Setup, Learning Tools, or Educator Tools. You can also enable Voice Access.';
     if (!hasSelectedRole) return 'Role selection. Choose Student, Teacher, Parent, or Independent Learner. Protected roles may ask for an access code.';
@@ -851,7 +855,7 @@ function buildAlloCommandContext(deps) {
           ids = ['font_bigger', 'font_smaller', 'line_spacing_more', 'line_spacing_less', 'cycle_reading_theme', 'close_current_surface', 'repeat_last_response'];
         } else if (showVoiceSettings) {
           ids = ['voice_speed_up', 'voice_speed_down', 'close_current_surface', 'repeat_last_response'];
-        } else if (isTranslateModalOpen || isGateOpen || isProjectSettingsOpen || showDirectionsComposer || showAssessmentBuilder || showUDLGuide || showLivePollingPanel || showStudentSignals || showLiveDock || showExportPreview || showExportMenu || showSessionModal || showRecentQrShares || showClassAnalytics || isResearchSuiteOpen || showNotebook) {
+        } else if (isTranslateModalOpen || isGateOpen || isProjectSettingsOpen || showDirectionsComposer || showAssessmentBuilder || showUDLGuide || showLivePollingPanel || showStudentSignals || showLiveDock || showExportPreview || showExportMenu || showSessionModal || showRecentQrShares || showClassAnalytics || isResearchSuiteOpen || isAdminHubOpen || showNotebook) {
           ids = ['describe_current_screen', 'close_current_surface', 'repeat_last_response'];
         } else if (!hasSelectedMode) {
           ids = ['onboarding_full_platform', 'onboarding_guided_setup', 'onboarding_learning_tools', 'onboarding_educator_tools'];
@@ -906,7 +910,7 @@ function buildAlloCommandContext(deps) {
     if (showExportPreview) return ['review the document', 'change document options', 'export the document', 'close the current surface'];
     if (showExportMenu) return ['list export choices', 'choose an export format', 'close the current surface'];
     if (showSessionModal) return ['start a class session', 'join a class session', 'manage the active session', 'close the current surface'];
-    if (showRecentQrShares || showClassAnalytics || isResearchSuiteOpen || showUDLGuide) return ['describe the current screen', 'list available actions', 'close the current surface'];
+    if (showRecentQrShares || showClassAnalytics || isResearchSuiteOpen || isAdminHubOpen || showUDLGuide) return ['describe the current screen', 'list available actions', 'close the current surface'];
     if (isLinguaPracticeOpen || isTimelineStudioOpen || isOpenGrooveOpen || showResearchHub || showLitLab || showLearningWebExplorer || showMindMap || showPoetTree || showStemLab || showStoryForge || isAlloHavenOpen || showBehaviorLens || showReportWriter || isSymbolStudioOpen || isVideoStudioOpen || isAlloStudioOpen || showCinematicStudio || isAccessibilityLabOpen || isCommunityCatalogOpen || isReadingLibraryOpen || isDynamicAssessmentOpen || showSelHub) {
       return ['describe the current screen', 'list available actions', 'close the current surface'];
     }
@@ -1005,13 +1009,17 @@ function buildAlloCommandContext(deps) {
       setShowRecentQrShares(false);
       return 'Share and Collect closed.';
     }
+    if (showClassAnalytics) {
+      setShowClassAnalytics(false);
+      return 'Class Analytics closed.';
+    }
     if (isResearchSuiteOpen) {
       setIsResearchSuiteOpen(false);
       return 'Research Suite closed.';
     }
-    if (showClassAnalytics) {
-      setShowClassAnalytics(false);
-      return 'Class Analytics closed.';
+    if (isAdminHubOpen && typeof setIsAdminHubOpen === 'function') {
+      setIsAdminHubOpen(false);
+      return 'Leadership Hub closed.';
     }
     if (showNotebook) {
       setShowNotebook(false);
@@ -1320,7 +1328,7 @@ function buildAlloCommandContext(deps) {
       const focus = _contextualText(option.focus, 220);
       const nextTopic = focus && baseTopic.toLowerCase().indexOf(focus.toLowerCase()) < 0 ? baseTopic + ' — ' + focus : baseTopic;
       setSourceTopic(nextTopic);
-      return handleGenerate({
+      return handleGenerateSource({
         topic: nextTopic
       });
     }
@@ -1365,7 +1373,21 @@ function buildAlloCommandContext(deps) {
     if (!actions[actionId]) throw new Error('That contextual action is not available in the current app state.');
     return actions[actionId]();
   };
+  const _ctxAiBlocked = fn => {
+    if (studentAiFeaturesHidden) return true;
+    if (fn && fn._alloQrBlocked) return true;
+    if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || !!window.__alloQrStudentMode || window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)) return true;
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+      try {
+        if (!window.__alloAiUsable('text', fn)) return true;
+      } catch (_) {
+        return true;
+      }
+    }
+    return false;
+  };
   const surpriseMeContextually = async () => {
+    if (_ctxAiBlocked(__live && __live.callGemini)) return 'AI features are currently disabled in this session.';
     const state = _contextualLessonState();
     if (!state.available || !state.actions.length) return 'I need a current topic, source, standard, or open resource before I can choose a useful surprise.';
     let option = null;
@@ -1389,6 +1411,7 @@ function buildAlloCommandContext(deps) {
     return 'Surprise me chose "' + option.title + '". ' + option.why + ' I started that next step.' + graphNote;
   };
   const suggestContextualNextSteps = async () => {
+    if (_ctxAiBlocked(__live && __live.callGemini)) return 'AI features are currently disabled in this session.';
     const state = _contextualLessonState();
     if (!state.available || !state.actions.length) return 'I need a current topic, source, standard, or open resource before I can suggest next steps.';
     let options = [];
@@ -1404,6 +1427,7 @@ function buildAlloCommandContext(deps) {
     _contextualSuggestionRef.current = {
       options,
       state,
+      workspaceToken: _alloCommandWorkspaceToken(deps),
       createdAt: Date.now()
     };
     return 'Here are three next steps. ' + options.map((option, index) => 'Option ' + (index + 1) + ': ' + option.title + '. ' + option.why).join(' ') + ' Say use option 1, 2, or 3 when you are ready.';
@@ -1411,6 +1435,16 @@ function buildAlloCommandContext(deps) {
   const useContextualSuggestion = async rawOption => {
     const packet = _contextualSuggestionRef.current || {};
     const number = Number(rawOption);
+    const currentWorkspaceToken = _alloCommandWorkspaceToken(deps);
+    if (packet.workspaceToken && currentWorkspaceToken && packet.workspaceToken !== currentWorkspaceToken) {
+      _contextualSuggestionRef.current = {
+        options: [],
+        state: null,
+        workspaceToken: '',
+        createdAt: 0
+      };
+      return 'Your workspace changed since those suggestions were made. Say suggest 3 next steps to make a fresh set.';
+    }
     if (!Array.isArray(packet.options) || !packet.options.length || !packet.createdAt || Date.now() - packet.createdAt > 30 * 60 * 1000) return 'Those suggestions have expired. Say suggest 3 next steps to make a fresh set.';
     if (!Number.isInteger(number) || number < 1 || number > packet.options.length) return 'Say use option 1, 2, or 3.';
     const option = packet.options[number - 1];
@@ -1419,6 +1453,7 @@ function buildAlloCommandContext(deps) {
     _contextualSuggestionRef.current = {
       options: [],
       state: null,
+      workspaceToken: '',
       createdAt: 0
     };
     return 'Using option ' + number + ': ' + option.title + '. I started that next step.';
@@ -1498,12 +1533,12 @@ function buildAlloCommandContext(deps) {
       }
     },
     setAdventureReadingPracticeEnabled: enabled => {
-      if (activeView !== 'adventure' || !isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) return false;
+      if (activeView !== 'adventure' || !isTeacherMode && studentProjectSettings && studentProjectSettings.adventurePermissions?.lockAllSettings) return false;
       setAdventureFluencyEnabled(!!enabled);
       return true;
     },
     setAdventureTypingPaceEnabled: enabled => {
-      if (activeView !== 'adventure' || !adventureFreeResponseEnabled || !isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) return false;
+      if (activeView !== 'adventure' || !adventureFreeResponseEnabled || !isTeacherMode && studentProjectSettings && studentProjectSettings.adventurePermissions?.lockAllSettings) return false;
       setAdventureTypingPaceEnabled(!!enabled);
       return true;
     },
@@ -1661,8 +1696,15 @@ function buildAlloCommandContext(deps) {
       setShowLearningHub(false);
       setActiveSidebarTab('create');
       setExpandedTools(prev => prev.includes('brainstorm') ? prev : ['brainstorm', ...prev]);
+      const myGeneration = ++_alloBrainstormOpenGeneration;
+      if (_alloBrainstormOpenTimer != null) {
+        clearTimeout(_alloBrainstormOpenTimer);
+        _alloBrainstormOpenTimer = null;
+      }
       let tries = 0;
       const applyMode = () => {
+        _alloBrainstormOpenTimer = null;
+        if (myGeneration !== _alloBrainstormOpenGeneration) return;
         tries += 1;
         const setModeBridge = window.__alloSetBrainstormActivityMode;
         if (typeof setModeBridge === 'function') {
@@ -1672,7 +1714,7 @@ function buildAlloCommandContext(deps) {
             } catch (_) {}
           }
         } else if (tries < 20) {
-          setTimeout(applyMode, 150);
+          _alloBrainstormOpenTimer = setTimeout(applyMode, 150);
           return;
         }
         try {
@@ -1682,7 +1724,7 @@ function buildAlloCommandContext(deps) {
           });
         } catch (_) {}
       };
-      setTimeout(applyMode, 150);
+      _alloBrainstormOpenTimer = setTimeout(applyMode, 150);
     },
     jumpToLatestLessonPlan: latestLessonPlan ? () => {
       try {
@@ -1803,8 +1845,8 @@ function buildAlloCommandContext(deps) {
     isStudentLinkMode,
     isIndependentMode,
     isParentMode,
-    allowStudentDictation: studentProjectSettings.allowDictation !== false,
-    allowStudentSocratic: studentProjectSettings.allowSocraticTutor !== false,
+    allowStudentDictation: !studentProjectSettings || studentProjectSettings.allowDictation !== false,
+    allowStudentSocratic: !studentProjectSettings || studentProjectSettings.allowSocraticTutor !== false,
     studentAiFeaturesHidden,
     // Context signals (2026-06-13, read-only) — drive contextual command surfacing/grouping
     // in the palette. Pure state mirrors beside pipelineOpen/voiceActive: no handlers, cannot
@@ -1895,10 +1937,14 @@ function buildAlloCommandContext(deps) {
     sendTeacherSignal: signal => {
       if (!activeSessionCode || !user || !user.uid || !LIVE_SIGNAL_OPTIONS.some(option => option.id === signal)) return false;
       const signalRef = __live.doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
-      writeToSession(signalRef, {
+      Promise.resolve(writeToSession(signalRef, {
         ['roster.' + user.uid + '.signal']: signal,
         ['roster.' + user.uid + '.signalAt']: Date.now()
-      }).catch(() => {});
+      })).catch(() => {
+        try {
+          if (typeof addToast === 'function') addToast('Could not send signal to teacher. Please check your connection and try again.', 'error');
+        } catch (_) {}
+      });
       setShowStudentSignals(false);
       return true;
     },
@@ -2088,8 +2134,7 @@ function buildAlloCommandContext(deps) {
       }
       try {
         if (!window.__alloVoiceLoop) window.__alloVoiceLoop = AC.createVoiceLoop(() => _alloCmdCtxRef.current || _alloCmdCtx(), {
-          voiceService: window.AlloFlowVoice,
-          callGeminiAudio
+          voiceService: window.AlloFlowVoice
         });
         const started = window.__alloVoiceLoop.start();
         return started !== false && !!(window.__alloVoiceLoop.isActive && window.__alloVoiceLoop.isActive());
@@ -2132,13 +2177,22 @@ function buildAlloCommandContext(deps) {
         } catch (_) {}
       }, 45000);
       _voiceConverseWaitersRef.current = _voiceConverseWaitersRef.current.concat([waiter]);
-      try {
-        _sendUdlToChat(clean);
-      } catch (_) {
+      const settleFailure = () => {
         try {
           clearTimeout(waiter.timer);
         } catch (__) {}
         drop();
+        try {
+          waiter.resolve(null);
+        } catch (__) {}
+      };
+      try {
+        const sendResult = _sendUdlToChat(clean);
+        if (sendResult && typeof sendResult.then === 'function') {
+          sendResult.catch(settleFailure);
+        }
+      } catch (_) {
+        settleFailure();
         return Promise.resolve(null);
       }
       return reply;
@@ -2274,6 +2328,9 @@ function buildAlloCommandContext(deps) {
         notebook: () => setShowNotebook(false),
         classAnalytics: () => setShowClassAnalytics(false),
         researchSuite: () => setIsResearchSuiteOpen(false),
+        adminHub: () => {
+          if (typeof setIsAdminHubOpen === 'function') setIsAdminHubOpen(false);
+        },
         recentQrShares: () => setShowRecentQrShares(false),
         sessionModal: () => setShowSessionModal(false),
         exportMenu: () => setShowExportMenu(false),
@@ -2374,11 +2431,13 @@ function buildAlloCommandContext(deps) {
     openLumen: () => {
       _alloRequestStemPlugin('lumen');
       setStemLabTool('lumen');
+      setStemLabTab('explore');
       setShowStemLab(true);
     },
     openFreeForms: () => {
       _alloRequestStemPlugin('freeForms');
       setStemLabTool('freeForms');
+      setStemLabTab('explore');
       setShowStemLab(true);
     },
     // Generic launcher behind the open_stem_tool command. The id is resolved
@@ -2472,7 +2531,9 @@ function buildAlloCommandContext(deps) {
       handleCloudToggleClick();
       return wasOn ? 'off' : 'consent';
     },
-    generateOutline: () => handleGenerate('outline'),
+    generateOutline: () => handleGenerate('outline', null, false, null, {
+      rethrowErrors: true
+    }),
     exportPack: () => handleExport('html'),
     // ── Round-2 coverage (2026-06-14, discovery wfi4bz28q) ── each = ONE App-scope handler.
     // Flashcards render ONLY inside GlossaryView — switch to it first (gated on glossary content

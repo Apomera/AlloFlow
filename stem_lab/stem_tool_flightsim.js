@@ -2640,26 +2640,52 @@ function getFlightLightningPulse(time) {
         gfx.strokeStyle = color; gfx.lineWidth = width;
         gfx.beginPath(); gfx.moveTo(x, y); gfx.lineTo(x + Math.sin(angle) * length, y - Math.cos(angle) * length); gfx.stroke();
       };
-      gfx.fillStyle = '#05070a'; gfx.beginPath(); gfx.arc(x, y, r + 2, 0, Math.PI * 2); gfx.fill();
-      gfx.strokeStyle = 'rgba(148,163,184,0.55)'; gfx.lineWidth = 1; gfx.beginPath(); gfx.arc(x, y, r + 1.5, 0, Math.PI * 2); gfx.stroke();
-      gfx.fillStyle = '#111827'; gfx.beginPath(); gfx.arc(x, y, r, 0, Math.PI * 2); gfx.fill();
-      gfx.strokeStyle = 'rgba(226,232,240,0.6)'; gfx.lineWidth = 1;
+      // Recessed anodized instrument housing + brushed bezel highlight
+      gfx.fillStyle = '#03060c'; gfx.beginPath(); gfx.arc(x, y, r + 2.4, 0, Math.PI * 2); gfx.fill();
+      var bezelGrad = typeof gfx.createLinearGradient === 'function' ? gfx.createLinearGradient(x - r, y - r, x + r, y + r) : null;
+      if (bezelGrad) {
+        bezelGrad.addColorStop(0, 'rgba(203,213,225,0.78)');
+        bezelGrad.addColorStop(0.5, 'rgba(100,116,139,0.52)');
+        bezelGrad.addColorStop(1, 'rgba(226,232,240,0.42)');
+        gfx.strokeStyle = bezelGrad;
+      } else {
+        gfx.strokeStyle = 'rgba(148,163,184,0.65)';
+      }
+      gfx.lineWidth = 1.25; gfx.beginPath(); gfx.arc(x, y, r + 1.5, 0, Math.PI * 2); gfx.stroke();
+      var faceGrad = typeof gfx.createRadialGradient === 'function' ? gfx.createRadialGradient(x - r * 0.25, y - r * 0.3, 1, x, y, r) : null;
+      if (faceGrad) {
+        faceGrad.addColorStop(0, '#1e293b');
+        faceGrad.addColorStop(0.75, '#0f172a');
+        faceGrad.addColorStop(1, '#050914');
+        gfx.fillStyle = faceGrad;
+      } else {
+        gfx.fillStyle = '#111827';
+      }
+      gfx.beginPath(); gfx.arc(x, y, r, 0, Math.PI * 2); gfx.fill();
       for (var tick = 0; tick < 12; tick++) {
         var tickAngle = tick * Math.PI / 6;
-        gfx.beginPath(); gfx.moveTo(x + Math.cos(tickAngle) * (r - 3), y + Math.sin(tickAngle) * (r - 3));
-        gfx.lineTo(x + Math.cos(tickAngle) * (r - 1), y + Math.sin(tickAngle) * (r - 1)); gfx.stroke();
+        var cardinal = tick % 3 === 0;
+        gfx.strokeStyle = cardinal ? 'rgba(241,245,249,0.85)' : 'rgba(148,163,184,0.48)';
+        gfx.lineWidth = cardinal ? 1.2 : 0.85;
+        gfx.beginPath(); gfx.moveTo(x + Math.cos(tickAngle) * (r - (cardinal ? 3.8 : 2.6)), y + Math.sin(tickAngle) * (r - (cardinal ? 3.8 : 2.6)));
+        gfx.lineTo(x + Math.cos(tickAngle) * (r - 0.8), y + Math.sin(tickAngle) * (r - 0.8)); gfx.stroke();
       }
       if (dial.id === 'asi') {
         // Clockwise from the lower left; the red tick is the never-exceed speed.
         var asiAngle = function(kts) { return -0.75 * Math.PI + Math.max(0, Math.min(1, kts / (vne * 1.15))) * 1.5 * Math.PI; };
+        // Subtle green normal-operating arc inside the dial rim
+        gfx.strokeStyle = 'rgba(34,197,94,0.42)'; gfx.lineWidth = 1.4;
+        gfx.beginPath(); gfx.arc(x, y, r - 2.2, -1.05 * Math.PI, -0.05 * Math.PI); gfx.stroke();
         var redline = asiAngle(vne);
         gfx.strokeStyle = '#ef4444'; gfx.lineWidth = 2;
         gfx.beginPath(); gfx.moveTo(x + Math.sin(redline) * (r - 5), y - Math.cos(redline) * (r - 5));
         gfx.lineTo(x + Math.sin(redline) * r, y - Math.cos(redline) * r); gfx.stroke();
         needle(asiAngle(ias), r - 3, 1.6, '#f8fafc');
+        gfx.fillStyle = '#cbd5e1'; gfx.beginPath(); gfx.arc(x, y, 1.7, 0, Math.PI * 2); gfx.fill();
       } else if (dial.id === 'alt') {
         needle((alt % 10000) / 10000 * Math.PI * 2, r * 0.55, 2.2, '#94a3b8');
         needle((alt % 1000) / 1000 * Math.PI * 2, r - 3, 1.4, '#f8fafc');
+        gfx.fillStyle = '#cbd5e1'; gfx.beginPath(); gfx.arc(x, y, 1.7, 0, Math.PI * 2); gfx.fill();
       } else if (dial.id === 'hdg') {
         // The compass card turns under a fixed lubber line.
         var north = -heading * Math.PI / 180;
@@ -2668,12 +2694,17 @@ function getFlightLightningPulse(time) {
         gfx.fillStyle = '#f8fafc'; gfx.beginPath(); gfx.moveTo(x, y - 5); gfx.lineTo(x + 4, y + 4); gfx.lineTo(x, y + 2); gfx.lineTo(x - 4, y + 4); gfx.closePath(); gfx.fill();
       } else {
         // Turn coordinator: the small aircraft banks with the turn.
+        gfx.strokeStyle = 'rgba(148,163,184,0.4)'; gfx.lineWidth = 0.8;
+        gfx.beginPath(); gfx.moveTo(x - r + 2, y); gfx.lineTo(x - r + 5, y); gfx.moveTo(x + r - 5, y); gfx.lineTo(x + r - 2, y); gfx.stroke();
         gfx.save(); gfx.translate(x, y); gfx.rotate(bank * Math.PI / 180 * 0.6);
         gfx.strokeStyle = '#f8fafc'; gfx.lineWidth = 2; gfx.beginPath(); gfx.moveTo(4 - r, 0); gfx.lineTo(r - 4, 0); gfx.stroke();
         gfx.fillStyle = '#f8fafc'; gfx.beginPath(); gfx.arc(0, 0, 2.5, 0, Math.PI * 2); gfx.fill();
         gfx.restore();
       }
-      gfx.fillStyle = 'rgba(203,213,225,0.85)';
+      // Subtle curved glass lens reflection sheen across upper dial dome
+      gfx.strokeStyle = 'rgba(255,255,255,0.16)'; gfx.lineWidth = 1.2;
+      gfx.beginPath(); gfx.arc(x, y, r - 2.2, -Math.PI * 0.82, -Math.PI * 0.28); gfx.stroke();
+      gfx.fillStyle = 'rgba(226,232,240,0.9)';
       gfx.fillText(labels && labels[dial.id] || dial.id.toUpperCase(), x, y + r + 9);
     });
     gfx.restore();
@@ -17508,28 +17539,37 @@ function getFlightCityLayout(city) {
           var cloudCanvas = document.createElement('canvas');
           cloudCanvas.width = 128; cloudCanvas.height = 64;
           var cgx = cloudCanvas.getContext('2d');
-          // Leave transparent padding so texture edges cannot clip a bright lobe.
-          [[64, 31, 30], [38, 34, 22], [92, 36, 20], [64, 24, 20]].forEach(function(b) {
-            var cGrad = cgx.createRadialGradient(b[0], b[1], 2, b[0], b[1], b[2]);
-            cGrad.addColorStop(0, 'rgba(255,255,255,0.85)');
-            cGrad.addColorStop(1, 'rgba(255,255,255,0)');
-            cgx.fillStyle = cGrad;
-            cgx.fillRect(0, 0, 128, 64);
-          });
-          // A cool underside gradient gives the billboard a readable volume
-          // cue when viewed against bright sky; the sprite remains transparent
-          // and cheap, so quality tiers still control the census rather than
-          // the texture cost.
-          var cloudUnderside = cgx.createLinearGradient(0, 22, 0, 64);
-          cloudUnderside.addColorStop(0, 'rgba(75,94,120,0)');
-          cloudUnderside.addColorStop(0.62, 'rgba(75,94,120,0.12)');
-          cloudUnderside.addColorStop(1, 'rgba(45,58,82,0.34)');
-          cgx.save();
-          // Shade only the existing cloud alpha; never paint a rectangular backdrop.
-          cgx.globalCompositeOperation = 'source-atop';
-          cgx.fillStyle = cloudUnderside;
-          cgx.fillRect(0, 18, 128, 46);
-          cgx.restore();
+          if (cgx) {
+            // Layered volumetric cumulus puffs with transparent padding so edges never clip.
+            [
+              [64, 34, 31, 0.78], [36, 36, 22, 0.72], [93, 37, 21, 0.72],
+              [50, 27, 22, 0.84], [76, 28, 21, 0.82], [63, 21, 18, 0.90], [26, 39, 14, 0.45]
+            ].forEach(function(b) {
+              var cGrad = cgx.createRadialGradient(b[0] - b[2] * 0.14, b[1] - b[2] * 0.22, 1.5, b[0], b[1], b[2]);
+              cGrad.addColorStop(0, 'rgba(255,254,250,' + b[3] + ')');
+              cGrad.addColorStop(0.58, 'rgba(248,250,255,' + (b[3] * 0.56).toFixed(3) + ')');
+              cGrad.addColorStop(1, 'rgba(248,250,255,0)');
+              cgx.fillStyle = cGrad;
+              cgx.fillRect(0, 0, 128, 64);
+            });
+            // Sunlit silver-ivory crown + cool atmospheric blue-slate underside
+            // give each 3D cloud deck billboard sculpted depth against bright sky.
+            cgx.save();
+            cgx.globalCompositeOperation = 'source-atop';
+            var cloudCrown = cgx.createLinearGradient(0, 4, 0, 28);
+            cloudCrown.addColorStop(0, 'rgba(255,252,240,0.44)');
+            cloudCrown.addColorStop(0.65, 'rgba(255,255,255,0.12)');
+            cloudCrown.addColorStop(1, 'rgba(255,255,255,0)');
+            cgx.fillStyle = cloudCrown;
+            cgx.fillRect(0, 0, 128, 30);
+            var cloudUnderside = cgx.createLinearGradient(0, 24, 0, 62);
+            cloudUnderside.addColorStop(0, 'rgba(72,94,124,0)');
+            cloudUnderside.addColorStop(0.55, 'rgba(66,86,116,0.16)');
+            cloudUnderside.addColorStop(1, 'rgba(38,52,78,0.40)');
+            cgx.fillStyle = cloudUnderside;
+            cgx.fillRect(0, 20, 128, 44);
+            cgx.restore();
+          }
           var cloudTex = new THREE.CanvasTexture(cloudCanvas);
 
           // Small angular discs carry the body; a separate, restrained halo
@@ -17651,8 +17691,367 @@ function getFlightCityLayout(city) {
           }
           scene.add(cloudGroup);
 
+          // ── Cinema-grade GLSL WebGL1 Atmospheric Cloud Veil, Wingtip Condensation Vortices,
+          //    Aerodynamic Airflow Sheath & Nav/Runway Halo Shimmer ──
+          var flightNoRaycast = function() {};
+          var flightIsHighContrast = function() {
+            try {
+              if (canvas && typeof canvas.closest === 'function' && canvas.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+              var de = document.documentElement;
+              if (de && (de.classList.contains('theme-contrast') || de.getAttribute('data-theme') === 'high-contrast' || de.getAttribute('data-theme') === 'contrast')) return true;
+              if (document.body && document.body.classList.contains('theme-contrast')) return true;
+              if (typeof window !== 'undefined' && window.matchMedia && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+            } catch (eHc) {}
+            return false;
+          };
+          var atmoVeilMesh = null;
+          var aeroFx = null;
+          if (typeof THREE.ShaderMaterial === 'function') {
+            var FLIGHT_FBM_GLSL = [
+              'float flHash(vec2 p) {',
+              '  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);',
+              '}',
+              'float flNoise(vec2 p) {',
+              '  vec2 i = floor(p); vec2 f = fract(p);',
+              '  vec2 u = f * f * (3.0 - 2.0 * f);',
+              '  return mix(',
+              '    mix(flHash(i), flHash(i + vec2(1.0, 0.0)), u.x),',
+              '    mix(flHash(i + vec2(0.0, 1.0)), flHash(i + vec2(1.0, 1.0)), u.x),',
+              '    u.y',
+              '  );',
+              '}',
+              'float flFbm(vec2 p) {',
+              '  float v = 0.0; float a = 0.5;',
+              '  mat2 rot = mat2(0.80, -0.60, 0.60, 0.80);',
+              '  for (int i = 0; i < 4; i++) {',
+              '    v += a * flNoise(p);',
+              '    p = rot * p * 2.04 + vec2(17.1, 31.7);',
+              '    a *= 0.5;',
+              '  }',
+              '  return v;',
+              '}'
+            ].join('\n');
+
+            // 1. Rayleigh-Mie horizon atmospheric scattering + drifting FBM cumulus cloud veil dome
+            var atmoVeilMat = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 4.2 },
+                uSunDir: { value: new THREE.Vector3(0.5, 0.6, 0.4).normalize() },
+                uHorizonColor: { value: new THREE.Color(0x88b4dc) },
+                uSunColor: { value: new THREE.Color(0xfff1d0) },
+                uDaylight: { value: 1.0 },
+                uDusk: { value: 0.0 },
+                uCloudCover: { value: 0.32 },
+                uHighContrast: { value: flightIsHighContrast() ? 1.0 : 0.0 }
+              },
+              vertexShader: [
+                'varying vec3 vAtmoDir;',
+                'void main() {',
+                '  vAtmoDir = normalize((modelMatrix * vec4(position, 0.0)).xyz);',
+                '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uTime;',
+                'uniform vec3 uSunDir;',
+                'uniform vec3 uHorizonColor;',
+                'uniform vec3 uSunColor;',
+                'uniform float uDaylight;',
+                'uniform float uDusk;',
+                'uniform float uCloudCover;',
+                'uniform float uHighContrast;',
+                'varying vec3 vAtmoDir;',
+                FLIGHT_FBM_GLSL,
+                'void main() {',
+                '  if (uHighContrast > 0.5) discard;',
+                '  vec3 d = normalize(vAtmoDir);',
+                '  float elev = d.y;',
+                '  float sunCos = max(dot(d, normalize(uSunDir)), 0.0);',
+                '  // Rayleigh limb glow & Mie solar aureole along horizon',
+                '  float horizonBelt = exp(-abs(elev - 0.015) * 9.5);',
+                '  float mieNarrow = pow(sunCos, 16.0) * (0.28 + 0.55 * uDusk) * smoothstep(-0.08, 0.14, elev);',
+                '  float mieWide = pow(sunCos, 3.0) * (0.14 + 0.36 * uDusk) * exp(-max(elev, 0.0) * 3.8);',
+                '  vec3 rayleighTint = mix(vec3(0.32, 0.58, 0.92), vec3(1.0, 0.58, 0.28), uDusk);',
+                '  vec3 scatterCol = mix(uHorizonColor, rayleighTint, 0.45) * horizonBelt * (0.20 + 0.26 * uDaylight);',
+                '  scatterCol += uSunColor * (mieNarrow + mieWide) * (0.22 + 0.78 * max(uDaylight, uDusk));',
+                '  float scatterAlpha = clamp(horizonBelt * (0.14 + 0.22 * uDaylight + 0.24 * uDusk) + (mieNarrow + mieWide) * 0.42, 0.0, 0.52);',
+                '  // Upper-hemisphere drifting FBM cumulus / cirrostratus cloud veil',
+                '  float cloudAlpha = 0.0;',
+                '  vec3 cloudCol = vec3(1.0);',
+                '  if (elev > 0.015) {',
+                '    vec2 projUv = d.xz / (elev + 0.19) * 0.58;',
+                '    vec2 drift = vec2(uTime * 0.0085, uTime * 0.0042);',
+                '    float n1 = flFbm(projUv + drift);',
+                '    float n2 = flFbm(projUv * 2.15 - drift * 1.45 + vec2(n1 * 0.65, -n1 * 0.42));',
+                '    float density = n1 * 0.62 + n2 * 0.38;',
+                '    float thresh = mix(0.60, 0.38, clamp(uCloudCover, 0.0, 1.0));',
+                '    float wisps = smoothstep(thresh, thresh + 0.28, density);',
+                '    float elevMask = smoothstep(0.015, 0.18, elev) * smoothstep(0.98, 0.58, elev);',
+                '    float silverRim = pow(sunCos, 5.0) * 0.45 + 0.12;',
+                '    vec3 litCloud = mix(vec3(0.18, 0.24, 0.36), mix(vec3(0.98, 0.97, 0.95), vec3(1.0, 0.78, 0.58), uDusk), uDaylight);',
+                '    vec3 shadeCloud = mix(vec3(0.07, 0.11, 0.19), vec3(0.56, 0.66, 0.80), uDaylight);',
+                '    cloudCol = mix(shadeCloud, litCloud, clamp(n2 * 0.85 + silverRim, 0.0, 1.0));',
+                '    cloudAlpha = wisps * elevMask * (0.18 + 0.34 * clamp(uCloudCover, 0.0, 1.0)) * (0.28 + 0.72 * max(uDaylight, uDusk * 0.85));',
+                '  }',
+                '  float outA = clamp(scatterAlpha + cloudAlpha * (1.0 - scatterAlpha * 0.5), 0.0, 0.68);',
+                '  vec3 outCol = (scatterCol + cloudCol * cloudAlpha) / max(outA, 0.001);',
+                '  gl_FragColor = vec4(outCol, outA);',
+                '}'
+              ].join('\n'),
+              transparent: true,
+              depthWrite: false,
+              fog: false,
+              side: THREE.BackSide
+            });
+            atmoVeilMesh = new THREE.Mesh(new THREE.SphereGeometry(970000, 28, 20), atmoVeilMat);
+            atmoVeilMesh.name = 'flight-atmo-veil';
+            atmoVeilMesh.renderOrder = -2;
+            atmoVeilMesh.raycast = flightNoRaycast;
+            atmoVeilMesh.visible = !flightIsHighContrast();
+            scene.add(atmoVeilMesh);
+
+            // 2. Aerodynamic FX Group (tracks aircraft pose without altering modelBounds or paintMaterials)
+            var aeroGroup = new THREE.Group();
+            aeroGroup.name = 'flight-aero-fx';
+            aeroGroup.visible = false;
+
+            // 2a. Counter-rotating Wingtip Condensation Vortex Ribbons (L + R)
+            var makeVortexRibbon = function(sideSign) {
+              var vGeo = new THREE.PlaneGeometry(1.0, 1.0, 2, 28);
+              var vMat = new THREE.ShaderMaterial({
+                uniforms: {
+                  uTime: { value: 4.2 },
+                  uSpeed: { value: 0.5 },
+                  uIntensity: { value: 0.0 },
+                  uTrailLen: { value: 34.0 },
+                  uRibbonWidth: { value: 1.35 },
+                  uSide: { value: sideSign },
+                  uColor: { value: new THREE.Color(0xe0f2fe) },
+                  uHighContrast: { value: 0.0 }
+                },
+                vertexShader: [
+                  'uniform float uTime;',
+                  'uniform float uSpeed;',
+                  'uniform float uTrailLen;',
+                  'uniform float uRibbonWidth;',
+                  'uniform float uSide;',
+                  'varying vec2 vUv;',
+                  'varying float vHelix;',
+                  'void main() {',
+                  '  vUv = uv;',
+                  '  float along = uv.y;',
+                  '  float across = (uv.x - 0.5) * 2.0;',
+                  '  float phase = along * 14.0 - uTime * (6.5 + uSpeed * 11.0);',
+                  '  float spread = (0.28 + along * 1.15) * uRibbonWidth;',
+                  '  float spiralR = along * (0.22 + 0.52 * uSpeed) * uRibbonWidth;',
+                  '  vec3 p;',
+                  '  p.x = across * spread * cos(phase * 0.55) + sin(phase) * spiralR * uSide;',
+                  '  p.y = across * spread * sin(phase * 0.55) + cos(phase) * spiralR - along * along * 1.35;',
+                  '  p.z = -along * uTrailLen;',
+                  '  vHelix = 0.5 + 0.5 * sin(phase + across * 2.4);',
+                  '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uTime;',
+                  'uniform float uSpeed;',
+                  'uniform float uIntensity;',
+                  'uniform vec3 uColor;',
+                  'uniform float uHighContrast;',
+                  'varying vec2 vUv;',
+                  'varying float vHelix;',
+                  FLIGHT_FBM_GLSL,
+                  'void main() {',
+                  '  if (uHighContrast > 0.5 || uIntensity < 0.005) discard;',
+                  '  float along = vUv.y;',
+                  '  float across = abs(vUv.x - 0.5) * 2.0;',
+                  '  float core = exp(-across * across * 3.8);',
+                  '  float noseFade = smoothstep(0.0, 0.09, along);',
+                  '  float tailFade = pow(max(1.0 - along, 0.0), 1.35);',
+                  '  float wisp = flFbm(vec2(vUv.x * 3.4, along * 7.5 - uTime * (2.6 + uSpeed * 4.5)));',
+                  '  float spiralFilament = mix(0.65, 1.18, vHelix) * smoothstep(0.18, 0.85, wisp + core * 0.45);',
+                  '  float alpha = core * noseFade * tailFade * spiralFilament * uIntensity;',
+                  '  vec3 col = mix(uColor, vec3(1.0, 1.0, 1.0), core * 0.55);',
+                  '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.78));',
+                  '}'
+                ].join('\n'),
+                transparent: true,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+                blending: THREE.AdditiveBlending
+              });
+              var vMesh = new THREE.Mesh(vGeo, vMat);
+              vMesh.frustumCulled = false;
+              vMesh.raycast = flightNoRaycast;
+              return vMesh;
+            };
+            var vortexL = makeVortexRibbon(-1.0);
+            var vortexR = makeVortexRibbon(1.0);
+            vortexL.name = 'flight-wingtip-vortex-l';
+            vortexR.name = 'flight-wingtip-vortex-r';
+            aeroGroup.add(vortexL);
+            aeroGroup.add(vortexR);
+
+            // 2b. Glowing Aerodynamic Lift / Airflow Streamline Sheath over Wings
+            var sheathGeo = new THREE.PlaneGeometry(1.0, 1.0, 28, 16);
+            var sheathMat = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 4.2 },
+                uSpeed: { value: 0.4 },
+                uLift: { value: 0.35 },
+                uStall: { value: 0.0 },
+                uIntensity: { value: 0.0 },
+                uSpan: { value: 22.0 },
+                uChord: { value: 3.4 },
+                uHighContrast: { value: 0.0 }
+              },
+              vertexShader: [
+                'uniform float uSpan;',
+                'uniform float uChord;',
+                'uniform float uLift;',
+                'uniform float uTime;',
+                'varying vec2 vUv;',
+                'varying vec3 vNormalView;',
+                'varying vec3 vViewPos;',
+                'void main() {',
+                '  vUv = uv;',
+                '  float spanT = (uv.x - 0.5) * 2.0;',
+                '  float chordT = uv.y;',
+                '  float taper = 1.0 - abs(spanT) * 0.28;',
+                '  float camber = sin(chordT * 3.14159265) * (0.48 + 0.52 * uLift) * taper;',
+                '  float flutter = sin(spanT * 10.0 + uTime * 5.0 - chordT * 8.0) * 0.04 * uLift;',
+                '  vec3 p;',
+                '  p.x = spanT * uSpan * 0.5;',
+                '  p.y = camber + 0.28 + flutter - chordT * chordT * 0.36 * uLift;',
+                '  p.z = (0.52 - chordT) * uChord * taper;',
+                '  vec3 n = normalize(vec3(spanT * 0.14, 1.0, (chordT - 0.45) * 0.65));',
+                '  vNormalView = normalize(normalMatrix * n);',
+                '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+                '  vViewPos = -mv.xyz;',
+                '  gl_Position = projectionMatrix * mv;',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uTime;',
+                'uniform float uSpeed;',
+                'uniform float uLift;',
+                'uniform float uStall;',
+                'uniform float uIntensity;',
+                'uniform float uHighContrast;',
+                'varying vec2 vUv;',
+                'varying vec3 vNormalView;',
+                'varying vec3 vViewPos;',
+                'void main() {',
+                '  if (uHighContrast > 0.5 || uIntensity < 0.005) discard;',
+                '  vec3 N = normalize(vNormalView);',
+                '  vec3 V = normalize(vViewPos);',
+                '  float fresnel = pow(1.0 - abs(dot(N, V)), 1.9);',
+                '  float spanFade = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x);',
+                '  float chordFade = smoothstep(0.0, 0.16, vUv.y) * smoothstep(1.0, 0.72, vUv.y);',
+                '  float flowSpeed = 2.0 + uSpeed * 4.8;',
+                '  float rib = pow(0.5 + 0.5 * sin(vUv.x * 56.548), 5.0);',
+                '  float pulse = pow(0.5 + 0.5 * sin(vUv.y * 18.85 - uTime * flowSpeed + sin(vUv.x * 12.0) * 0.7), 3.0);',
+                '  float streamlines = rib * (0.35 + 0.65 * pulse);',
+                '  vec3 laminarCol = vec3(0.28, 0.78, 1.0);',
+                '  vec3 highLiftCol = vec3(0.52, 0.94, 0.86);',
+                '  vec3 stallCol = vec3(0.98, 0.48, 0.24);',
+                '  vec3 col = mix(laminarCol, highLiftCol, clamp(uLift, 0.0, 1.0));',
+                '  col = mix(col, stallCol, clamp(uStall, 0.0, 1.0));',
+                '  float alpha = (streamlines * 0.72 + fresnel * 0.42) * spanFade * chordFade * uIntensity;',
+                '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.55));',
+                '}'
+              ].join('\n'),
+              transparent: true,
+              depthWrite: false,
+              side: THREE.DoubleSide,
+              blending: THREE.AdditiveBlending
+            });
+            var airflowSheath = new THREE.Mesh(sheathGeo, sheathMat);
+            airflowSheath.name = 'flight-airflow-sheath';
+            airflowSheath.frustumCulled = false;
+            airflowSheath.raycast = flightNoRaycast;
+            aeroGroup.add(airflowSheath);
+
+            // 2c. Crisp Navigation Light Optical Halo Shimmer (Points + 4-point diffraction star)
+            var navHaloMax = 4;
+            var navHaloGeo = new THREE.BufferGeometry();
+            navHaloGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(navHaloMax * 3), 3));
+            navHaloGeo.setAttribute('aColor', new THREE.BufferAttribute(new Float32Array(navHaloMax * 3), 3));
+            navHaloGeo.setAttribute('aPhase', new THREE.BufferAttribute(new Float32Array(navHaloMax), 1));
+            navHaloGeo.setAttribute('aStrobe', new THREE.BufferAttribute(new Float32Array(navHaloMax), 1));
+            navHaloGeo.setDrawRange(0, 0);
+            var navHaloMat = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 4.2 },
+                uNightFactor: { value: 0.35 },
+                uReducedMotion: { value: 0.0 },
+                uHighContrast: { value: 0.0 }
+              },
+              vertexShader: [
+                'attribute vec3 aColor;',
+                'attribute float aPhase;',
+                'attribute float aStrobe;',
+                'uniform float uTime;',
+                'uniform float uNightFactor;',
+                'uniform float uReducedMotion;',
+                'varying vec3 vColor;',
+                'varying float vPulse;',
+                'void main() {',
+                '  vColor = aColor;',
+                '  float strobeWave = uReducedMotion > 0.5 ? 0.82 : (sin(uTime * 7.0 + aPhase) > 0.72 ? 1.35 : 0.25);',
+                '  float steadyWave = uReducedMotion > 0.5 ? 0.88 : (0.82 + 0.18 * sin(uTime * 2.4 + aPhase));',
+                '  vPulse = mix(steadyWave, strobeWave, aStrobe);',
+                '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                '  float dist = max(-mv.z, 6.0);',
+                '  gl_PointSize = clamp((240.0 + 180.0 * uNightFactor) * vPulse / dist, 10.0, 44.0);',
+                '  gl_Position = projectionMatrix * mv;',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uNightFactor;',
+                'uniform float uHighContrast;',
+                'varying vec3 vColor;',
+                'varying float vPulse;',
+                'void main() {',
+                '  if (uHighContrast > 0.5) discard;',
+                '  vec2 uv = gl_PointCoord - vec2(0.5);',
+                '  float r = length(uv) * 2.0;',
+                '  if (r > 1.0) discard;',
+                '  float core = exp(-r * r * 14.0);',
+                '  float halo = exp(-r * 3.4) * 0.55;',
+                '  float crossRay = (exp(-abs(uv.x) * 32.0) * exp(-abs(uv.y) * 5.0) + exp(-abs(uv.y) * 32.0) * exp(-abs(uv.x) * 5.0)) * 0.42;',
+                '  float intensity = (core + halo + crossRay) * vPulse * (0.45 + 0.55 * uNightFactor);',
+                '  vec3 col = mix(vColor, vec3(1.0), core * 0.75);',
+                '  gl_FragColor = vec4(col, clamp(intensity, 0.0, 0.92));',
+                '}'
+              ].join('\n'),
+              transparent: true,
+              depthWrite: false,
+              fog: false,
+              blending: THREE.AdditiveBlending
+            });
+            var navHaloPoints = new THREE.Points(navHaloGeo, navHaloMat);
+            navHaloPoints.name = 'flight-nav-halo-shimmer';
+            navHaloPoints.frustumCulled = false;
+            navHaloPoints.raycast = flightNoRaycast;
+            aeroGroup.add(navHaloPoints);
+
+            scene.add(aeroGroup);
+            aeroFx = {
+              group: aeroGroup,
+              vortexL: vortexL,
+              vortexR: vortexR,
+              airflowSheath: airflowSheath,
+              navHaloPoints: navHaloPoints,
+              aircraftType: ''
+            };
+          }
+
           threeResourcesRef.current = {
             skyMesh: skyMesh,
+            atmoVeilMesh: atmoVeilMesh,
+            aeroFx: aeroFx,
+            flightIsHighContrast: flightIsHighContrast,
             ambientLight: ambientLight,
             dirLight: dirLight,
             underMesh: underMesh,
@@ -17973,9 +18372,11 @@ function getFlightCityLayout(city) {
             var tip = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.24, 2.0), cTrim);
             tip.position.set(side * 10.75, 1.88, 0.95); group.add(tip);
           });
-          // High wing on the cabin roof, with a little dihedral.
+          // High wing on the cabin roof, with a little dihedral and sunlit leading-edge sheen.
           var cWing = new THREE.Mesh(kit.surface(22, 3.1, 2.1, 0.34, 0.22, 0.25, 0.025, 14), whiteMat);
           cWing.position.set(0, 1.62, 1.0); group.add(cWing);
+          var cLeadingGlint = new THREE.Mesh(new THREE.BoxGeometry(20.6, 0.07, 0.24), paint(0xf8fafc));
+          cLeadingGlint.position.set(0, 1.80, 2.48); group.add(cLeadingGlint);
           group.add(new THREE.Mesh(kit.fin([[-6.5, 0.35], [-6.0, 2.9], [-4.9, 2.9], [-3.4, 0.9], [-2.2, 0.75], [-2.2, 0.55]], 0.16), whiteMat));
           var cFinStripe = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.32, 1.0), cTrim);
           cFinStripe.position.set(0, 2.55, -5.6); group.add(cFinStripe);
@@ -18014,7 +18415,11 @@ function getFlightCityLayout(city) {
           bShield.position.set(0, 0.95, 15.9); bShield.rotation.x = 0.55; group.add(bShield);
           var bWingMesh = new THREE.Mesh(kit.surface(34, 7.5, 2.2, 0.85, 0.3, 7.5, 0.1, 16), bWing);
           bWingMesh.position.set(0, -1.15, 0.5); group.add(bWingMesh);
+          var bCrownGlint = new THREE.Mesh(kit.band(bStations, 1.35, 1.88, 1.008, 2, -11.5, 13.5), paint(0xf8fafc));
+          group.add(bCrownGlint);
           [-1, 1].forEach(function(side) {
+            var bEdgeGlint = kit.rod([side * 1.9, -0.78, 4.15], [side * 16.5, 0.65, -2.55], 0.11, paint(0xf8fafc));
+            group.add(bEdgeGlint);
             var winglet = new THREE.Mesh(kit.fin([[-6.8, 0], [-6.2, 2.4], [-5.4, 2.4], [-5.2, 0]], 0.12), bAccent);
             winglet.position.set(side * 17, 0.55, 0); winglet.rotation.z = -side * 0.15; group.add(winglet);
             // The 737's nacelles are flattened underneath to clear the ground.
@@ -18838,7 +19243,19 @@ function getFlightCityLayout(city) {
 
         var selectedAC = d.aircraft || 'cessna172';
         if (!resources.aircraft || resources.aircraft.userData.type !== selectedAC) {
-          if (resources.aircraft) scene.remove(resources.aircraft);
+          if (resources.aircraft) {
+            scene.remove(resources.aircraft);
+            var oldGeos = new Set(), oldMats = new Set();
+            resources.aircraft.traverse(function(oldObj) {
+              if (oldObj.geometry && !oldGeos.has(oldObj.geometry)) { oldGeos.add(oldObj.geometry); oldObj.geometry.dispose(); }
+              if (oldObj.material) {
+                var oldM = Array.isArray(oldObj.material) ? oldObj.material : [oldObj.material];
+                oldM.forEach(function(m) {
+                  if (m && !oldMats.has(m)) { oldMats.add(m); if (m.map && m.map.dispose) m.map.dispose(); if (m.dispose) m.dispose(); }
+                });
+              }
+            });
+          }
           var newAC = build3DAircraft(selectedAC);
           newAC.userData.type = selectedAC;
           scene.add(newAC);
@@ -18941,6 +19358,99 @@ function getFlightCityLayout(city) {
             nav.obj.material.opacity = pulse;
             nav.obj.scale.setScalar(0.75 + pulse * 0.3);
           });
+        }
+
+        // ── Update GLSL Aerodynamic Wingtip Vortices, Lift Sheath & Nav Halo Shimmer ──
+        var flightHCNow = typeof resources.flightIsHighContrast === 'function' ? resources.flightIsHighContrast() : false;
+        var flightReducedNow = !!(skyReducedMotion && skyReducedMotion.current);
+        var shaderTimeNow = flightReducedNow ? 4.2 : (timeRef.current || 0);
+        if (resources.aeroFx) {
+          var afx = resources.aeroFx;
+          var showAero = !flightHCNow && !!d.thirdPerson && qTier < 2;
+          afx.group.visible = showAero;
+          if (showAero) {
+            afx.group.position.copy(acMesh.position);
+            afx.group.rotation.copy(acMesh.rotation);
+            var isFixedWing = !(currentAC && (currentAC.isHelicopter || currentAC.isDrone));
+            var aeroGeomMap = {
+              cessna172: { tipX: 10.9, tipY: 1.88, tipZ: 0.1, span: 21.6, chord: 3.1, wingY: 1.68, wingZ: 1.0, len: 30, width: 1.15 },
+              boeing737: { tipX: 17.0, tipY: 0.95, tipZ: -6.4, span: 33.4, chord: 6.2, wingY: -0.65, wingZ: -0.6, len: 56, width: 1.95 },
+              glider:    { tipX: 15.9, tipY: 0.92, tipZ: 1.4, span: 31.4, chord: 1.5, wingY: 0.56, wingZ: 1.9, len: 36, width: 0.85 },
+              f16:       { tipX: 5.75, tipY: -0.15, tipZ: -4.2, span: 11.2, chord: 7.4, wingY: 0.05, wingZ: -0.8, len: 34, width: 1.25 },
+              sr71:      { tipX: 9.2, tipY: 0.05, tipZ: -8.6, span: 18.0, chord: 9.2, wingY: 0.25, wingZ: -3.2, len: 48, width: 1.55 }
+            };
+            var ag = aeroGeomMap[selectedAC] || aeroGeomMap.cessna172;
+            var speedKtsNow = Math.max(0, (state.speed || 0) * 0.5924838);
+            var speedNorm = Math.min(1, speedKtsNow / Math.max(80, (currentAC && currentAC.maxSpeed) ? currentAC.maxSpeed * 0.5924838 : 160));
+            var loadFactor = Math.min(1.5, Math.abs(pitchRad) * 2.4 + Math.abs(bankRad) * 1.15 + (ctrl.flaps ? 0.35 : 0));
+            var wxTypeNow = (weatherRef.current && weatherRef.current.type) || 'clear';
+            var moistureBoost = (wxTypeNow === 'foggy' || wxTypeNow === 'stormy' || wxTypeNow === 'overcast') ? 1.28 : 1.0;
+            var vortexActive = isFixedWing && !state.onGround && speedKtsNow > 42;
+            var vortexStrength = vortexActive
+              ? Math.min(0.76, (0.14 + 0.34 * speedNorm + 0.28 * loadFactor) * moistureBoost * (0.45 + 0.55 * (dayNight.brightness != null ? dayNight.brightness : 1)))
+              : 0;
+            [afx.vortexL, afx.vortexR].forEach(function(vMesh, idx) {
+              var sgn = idx === 0 ? -1 : 1;
+              vMesh.visible = vortexStrength > 0.02;
+              vMesh.position.set(sgn * ag.tipX, ag.tipY, ag.tipZ);
+              var vu = vMesh.material.uniforms;
+              vu.uTime.value = shaderTimeNow;
+              vu.uSpeed.value = speedNorm;
+              vu.uIntensity.value = vortexStrength;
+              vu.uTrailLen.value = ag.len * (0.7 + 0.55 * speedNorm);
+              vu.uRibbonWidth.value = ag.width;
+              vu.uHighContrast.value = 0.0;
+            });
+
+            var sheathActive = isFixedWing && !state.onGround && speedKtsNow > 32;
+            var liftNorm = Math.min(1, Math.max(0.15, (pitchRad * 180 / Math.PI + 4) / 18 + speedNorm * 0.35));
+            var stallDeg = Math.abs(pitchRad * 180 / Math.PI);
+            var stallNorm = Math.min(1, Math.max(0, (stallDeg - 13) / 7));
+            var sheathIntensity = sheathActive ? (d.showForces ? 0.58 : 0.22 + 0.22 * liftNorm + 0.18 * stallNorm) : 0;
+            afx.airflowSheath.visible = sheathIntensity > 0.02;
+            afx.airflowSheath.position.set(0, ag.wingY, ag.wingZ);
+            var su = afx.airflowSheath.material.uniforms;
+            su.uTime.value = shaderTimeNow;
+            su.uSpeed.value = speedNorm;
+            su.uLift.value = liftNorm;
+            su.uStall.value = stallNorm;
+            su.uIntensity.value = sheathIntensity;
+            su.uSpan.value = ag.span;
+            su.uChord.value = ag.chord;
+            su.uHighContrast.value = 0.0;
+
+            // Sync aircraft nav-light halo shimmer positions whenever aircraft changes
+            if (afx.aircraftType !== selectedAC && acMesh.userData.navLights) {
+              afx.aircraftType = selectedAC;
+              var nlList = acMesh.userData.navLights;
+              var nhGeo = afx.navHaloPoints.geometry;
+              var nhPos = nhGeo.attributes.position.array;
+              var nhCol = nhGeo.attributes.aColor.array;
+              var nhPhase = nhGeo.attributes.aPhase.array;
+              var nhStrobe = nhGeo.attributes.aStrobe.array;
+              var nhCount = Math.min(4, nlList.length);
+              for (var ni = 0; ni < nhCount; ni++) {
+                var nRec = nlList[ni];
+                nhPos[ni * 3] = nRec.obj.position.x;
+                nhPos[ni * 3 + 1] = nRec.obj.position.y;
+                nhPos[ni * 3 + 2] = nRec.obj.position.z;
+                var nCol = nRec.obj.material.color;
+                nhCol[ni * 3] = nCol.r; nhCol[ni * 3 + 1] = nCol.g; nhCol[ni * 3 + 2] = nCol.b;
+                nhPhase[ni] = nRec.phase || 0;
+                nhStrobe[ni] = nRec.mode === 'strobe' ? 1.0 : 0.0;
+              }
+              nhGeo.attributes.position.needsUpdate = true;
+              nhGeo.attributes.aColor.needsUpdate = true;
+              nhGeo.attributes.aPhase.needsUpdate = true;
+              nhGeo.attributes.aStrobe.needsUpdate = true;
+              nhGeo.setDrawRange(0, nhCount);
+            }
+            var nu = afx.navHaloPoints.material.uniforms;
+            nu.uTime.value = shaderTimeNow;
+            nu.uNightFactor.value = dayNight.isNight ? 1.0 : dayNight.isDusk ? 0.65 : 0.28;
+            nu.uReducedMotion.value = flightReducedNow ? 1.0 : 0.0;
+            nu.uHighContrast.value = 0.0;
+          }
         }
 
         // ── The Part 107 ceiling, made visible ──
@@ -19451,6 +19961,22 @@ function getFlightCityLayout(city) {
         // the zenith. World-up shading remains level when the aircraft banks.
         if (resources.skyMesh) updateFlightSkyGradient(resources.skyMesh.material, skyPalette);
         var skyColor = resources.skyMesh ? resources.skyMesh.material.color : new THREE.Color().setRGB(skyPalette.horizon[0], skyPalette.horizon[1], skyPalette.horizon[2]);
+        if (resources.atmoVeilMesh) {
+          var veilVisible = !flightHCNow && qTier < 2;
+          resources.atmoVeilMesh.visible = veilVisible;
+          if (veilVisible) {
+            resources.atmoVeilMesh.position.copy(camera.position);
+            var avu = resources.atmoVeilMesh.material.uniforms;
+            avu.uTime.value = shaderTimeNow;
+            avu.uSunDir.value.copy(sunElev >= -0.1 ? sunDir : moonDir).normalize();
+            avu.uHorizonColor.value.copy(skyColor);
+            avu.uSunColor.value.setRGB(lightingFrame.keyColor[0], lightingFrame.keyColor[1], lightingFrame.keyColor[2]);
+            avu.uDaylight.value = lightingFrame.daylight;
+            avu.uDusk.value = lightingFrame.duskFactor;
+            avu.uCloudCover.value = Math.max(0.22, weatherAppearance.cloudCover);
+            avu.uHighContrast.value = 0.0;
+          }
+        }
 
         if (resources.ambientLight) {
           resources.ambientLight.intensity = lightingFrame.ambientIntensity * weatherAppearance.ambientTransmission;
@@ -19536,15 +20062,21 @@ function getFlightCityLayout(city) {
             var edge = new THREE.Mesh(new THREE.BoxGeometry(2, 0.2, 7800), new THREE.MeshLambertMaterial({ color: 0xffffff }));
             edge.position.set(side * 73, 1.2, 0); rwGroup.add(edge);
           });
-          var addRunwayLight = function(x, z, color, phase, kind, endSign) {
+          var addRunwayLight = function(x, z, color, phase, kind, endSign, radius) {
             var material = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.12, depthWrite: false, fog: false });
-            var light = new THREE.Mesh(new THREE.SphereGeometry(3, 6, 6), material);
-            light.position.set(x, 2.6, z); rwGroup.add(light);
-            rwGroup.userData.runwayLights.push({ obj: light, phase: phase || 0, kind: kind, endSign: endSign });
+            var light = new THREE.Mesh(new THREE.SphereGeometry(radius || 3, 6, 6), material);
+            light.position.set(x, kind === 'centerline' ? 1.8 : 2.6, z); rwGroup.add(light);
+            rwGroup.userData.runwayLights.push({ obj: light, phase: phase || 0, kind: kind, endSign: endSign, z: z });
           };
           for (var rl = 0; rl < 18; rl++) { var rlZ = 3600 - rl * 420;
             addRunwayLight(-68, rlZ, 0xffffff, rl * 0.37, 'edge');
             addRunwayLight(68, rlZ, 0xffffff, rl * 0.37 + 1.1, 'edge'); }
+          // FAA-style embedded runway centerline lights (white along main runway,
+          // transitioning to alternating red/white near the far end for distance remaining).
+          for (var cl = 0; cl < 19; cl++) {
+            var clZ = 3600 - cl * 400;
+            addRunwayLight(0, clZ, 0xfff8e1, cl * 0.25, 'centerline', 0, 2.0);
+          }
           runway.ends.forEach(function(end) {
             var localThresholdZ = -end.thresholdAlongFt;
             for (var t = 0; t < 4; t++) {
@@ -19570,8 +20102,86 @@ function getFlightCityLayout(city) {
               var alZ = localThresholdZ + end.sign * (140 + al * 180);
               addRunwayLight(-24, alZ, 0xfff4bf, al * 0.55, 'approach', end.sign);
               addRunwayLight(24, alZ, 0xfff4bf, al * 0.55 + 0.3, 'approach', end.sign);
+              // Sequenced approach centerline lead-in strobe ("rabbit" lights)
+              addRunwayLight(0, alZ, 0xe0f2fe, al, 'approach-strobe', end.sign, 3.4);
             }
           });
+          // Crisp optical runway/approach light halo shimmer (single WebGL1 Points ShaderMaterial pass)
+          if (typeof THREE.ShaderMaterial === 'function' && rwGroup.userData.runwayLights.length) {
+            var rlCount = rwGroup.userData.runwayLights.length;
+            var rlPos = new Float32Array(rlCount * 3);
+            var rlCol = new Float32Array(rlCount * 3);
+            var rlInt = new Float32Array(rlCount);
+            var rlSize = new Float32Array(rlCount);
+            for (var rli = 0; rli < rlCount; rli++) {
+              var rRec = rwGroup.userData.runwayLights[rli];
+              rlPos[rli * 3] = rRec.obj.position.x;
+              rlPos[rli * 3 + 1] = rRec.obj.position.y + 0.6;
+              rlPos[rli * 3 + 2] = rRec.obj.position.z;
+              rlCol[rli * 3] = rRec.obj.material.color.r;
+              rlCol[rli * 3 + 1] = rRec.obj.material.color.g;
+              rlCol[rli * 3 + 2] = rRec.obj.material.color.b;
+              rlInt[rli] = 0.0;
+              rlSize[rli] = rRec.kind === 'approach-strobe' ? 1.45 : rRec.kind === 'threshold' ? 1.15 : rRec.kind === 'centerline' ? 0.85 : 1.05;
+            }
+            var rlHaloGeo = new THREE.BufferGeometry();
+            rlHaloGeo.setAttribute('position', new THREE.BufferAttribute(rlPos, 3));
+            rlHaloGeo.setAttribute('aColor', new THREE.BufferAttribute(rlCol, 3));
+            rlHaloGeo.setAttribute('aIntensity', new THREE.BufferAttribute(rlInt, 1));
+            rlHaloGeo.setAttribute('aSize', new THREE.BufferAttribute(rlSize, 1));
+            var rlHaloMat = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 4.2 },
+                uHighContrast: { value: 0.0 }
+              },
+              vertexShader: [
+                'attribute vec3 aColor;',
+                'attribute float aIntensity;',
+                'attribute float aSize;',
+                'uniform float uTime;',
+                'varying vec3 vColor;',
+                'varying float vIntensity;',
+                'varying float vShimmer;',
+                'void main() {',
+                '  vColor = aColor;',
+                '  vIntensity = aIntensity;',
+                '  vShimmer = 0.88 + 0.12 * sin(uTime * 5.2 + position.z * 0.025 + position.x * 0.09);',
+                '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                '  float dist = max(-mv.z, 25.0);',
+                '  gl_PointSize = clamp((1900.0 * aSize * (0.55 + 0.65 * aIntensity)) / dist, 5.0, 34.0);',
+                '  gl_Position = projectionMatrix * mv;',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uHighContrast;',
+                'varying vec3 vColor;',
+                'varying float vIntensity;',
+                'varying float vShimmer;',
+                'void main() {',
+                '  if (uHighContrast > 0.5 || vIntensity < 0.02) discard;',
+                '  vec2 uv = gl_PointCoord - vec2(0.5);',
+                '  float r = length(uv) * 2.0;',
+                '  if (r > 1.0) discard;',
+                '  float core = exp(-r * r * 14.0);',
+                '  float glow = exp(-r * 3.2) * 0.58;',
+                '  float star = (exp(-abs(uv.x) * 28.0) * exp(-abs(uv.y) * 4.5) + exp(-abs(uv.y) * 28.0) * exp(-abs(uv.x) * 4.5)) * 0.36;',
+                '  float alpha = (core + glow + star) * vIntensity * vShimmer;',
+                '  vec3 col = mix(vColor, vec3(1.0), core * 0.7);',
+                '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.85));',
+                '}'
+              ].join('\n'),
+              transparent: true,
+              depthWrite: false,
+              fog: false,
+              blending: THREE.AdditiveBlending
+            });
+            var rlHaloPoints = new THREE.Points(rlHaloGeo, rlHaloMat);
+            rlHaloPoints.name = 'flight-runway-halo-shimmer';
+            rlHaloPoints.frustumCulled = false;
+            rlHaloPoints.raycast = function() {};
+            rwGroup.add(rlHaloPoints);
+            rwGroup.userData.runwayHaloPoints = rlHaloPoints;
+          }
           var loc = geodeticToLocal(wp.lat, wp.lon, wp.alt + 1, state.lon);
           rwGroup.position.set(loc.x, loc.y, loc.z); rwGroup.rotation.y = -runway.headingDeg * Math.PI / 180;
           scene.add(rwGroup); resources.runwayMeshes[wp.code] = rwGroup;
@@ -19603,16 +20213,54 @@ function getFlightCityLayout(city) {
         Object.keys(resources.runwayMeshes).forEach(function(code) {
           var group = resources.runwayMeshes[code], model = group.userData.runwayModel;
           var approach = getFlightRunwayApproach(state, model.airport);
-          var lightBase = dayNight.isNight ? 0.92 : dayNight.isDusk ? 0.58 : 0.12;
-          group.userData.runwayLights.forEach(function(rec) {
-            rec.obj.visible = rec.kind !== 'approach' || !!(approach && approach.available && approach.end.sign === rec.endSign);
+          var lightBase = dayNight.isNight ? 0.94 : dayNight.isDusk ? 0.64 : 0.16;
+          var reducedLightMotion = !!(skyReducedMotion && skyReducedMotion.current);
+          var activeApproachSign = (approach && approach.available && approach.end) ? approach.end.sign : 0;
+          var rabbitIdx = 6 - (Math.floor((timeRef.current || 0) * 10) % 7);
+          var haloPts = group.userData.runwayHaloPoints;
+          var haloColAttr = haloPts && haloPts.geometry && haloPts.geometry.attributes && haloPts.geometry.attributes.aColor;
+          var haloIntAttr = haloPts && haloPts.geometry && haloPts.geometry.attributes && haloPts.geometry.attributes.aIntensity;
+          group.userData.runwayLights.forEach(function(rec, rIdx) {
+            if (rec.kind === 'approach' || rec.kind === 'approach-strobe') {
+              rec.obj.visible = !!(approach && approach.available && approach.end.sign === rec.endSign);
+            } else {
+              rec.obj.visible = true;
+            }
             if (rec.kind === 'threshold' && approach) {
               var end = model.ends[rec.endSign === 1 ? 0 : 1];
               var outside = (approach.alongFt - end.thresholdAlongFt) * end.sign < 0;
               rec.obj.material.color.setHex(outside ? 0x22c55e : 0xef4444);
+            } else if (rec.kind === 'centerline') {
+              // FAA runway centerline distance-remaining coloring relative to approach direction
+              var remainingFt = activeApproachSign ? (4000 - (-rec.z) * activeApproachSign) : (4000 - Math.abs(rec.z));
+              if (activeApproachSign && remainingFt < 1000) rec.obj.material.color.setHex(0xef4444);
+              else if (activeApproachSign && remainingFt < 3000) rec.obj.material.color.setHex((Math.round(rec.z / 400) & 1) ? 0xef4444 : 0xfff8e1);
+              else rec.obj.material.color.setHex(0xfff8e1);
             }
-            rec.obj.material.opacity = Math.max(0.05, lightBase * (0.76 + Math.sin(timeRef.current * 2.6 + rec.phase) * 0.18));
+            if (rec.kind === 'approach-strobe') {
+              var strobePeak = reducedLightMotion ? 0.72 : (Math.round(rec.phase) === rabbitIdx ? 1.0 : 0.24);
+              rec.obj.material.opacity = Math.min(1, Math.max(0.14, (dayNight.isNight ? 1 : dayNight.isDusk ? 0.85 : 0.55) * strobePeak));
+            } else {
+              var pulse = reducedLightMotion ? 0.86 : (0.76 + Math.sin(timeRef.current * 2.6 + rec.phase) * 0.18);
+              rec.obj.material.opacity = Math.max(0.06, lightBase * pulse);
+            }
+            if (haloColAttr && haloIntAttr) {
+              var hc = rec.obj.material.color;
+              haloColAttr.array[rIdx * 3] = hc.r;
+              haloColAttr.array[rIdx * 3 + 1] = hc.g;
+              haloColAttr.array[rIdx * 3 + 2] = hc.b;
+              haloIntAttr.array[rIdx] = (rec.obj.visible && !flightHCNow) ? rec.obj.material.opacity : 0.0;
+            }
           });
+          if (haloPts) {
+            haloPts.visible = !flightHCNow && qTier < 2;
+            if (haloPts.material && haloPts.material.uniforms) {
+              haloPts.material.uniforms.uTime.value = shaderTimeNow;
+              haloPts.material.uniforms.uHighContrast.value = flightHCNow ? 1.0 : 0.0;
+            }
+            if (haloColAttr) haloColAttr.needsUpdate = true;
+            if (haloIntAttr) haloIntAttr.needsUpdate = true;
+          }
         });
 
         Object.keys(resources.missionMeshes).forEach(function(key) {
@@ -20467,9 +21115,19 @@ function getFlightCityLayout(city) {
 
       // ── Glass Cockpit Tape Instruments ──
       var drawSpeedTape = function(gfx, x, y, w, h2, speed, stallSpeed, rotationSpeed, label) {
-        // Background
-        gfx.fillStyle = 'rgba(0,0,0,0.7)';
-        gfx.beginPath(); gfx.roundRect(x, y, w, h2, 4); gfx.fill();
+        // Glass-cockpit smoked avionics housing + crisp cyan instrument border
+        var spdBg = typeof gfx.createLinearGradient === 'function' ? gfx.createLinearGradient(x, y, x + w, y + h2) : null;
+        if (spdBg) {
+          spdBg.addColorStop(0, 'rgba(6,13,26,0.82)');
+          spdBg.addColorStop(0.5, 'rgba(10,20,36,0.74)');
+          spdBg.addColorStop(1, 'rgba(4,10,20,0.84)');
+          gfx.fillStyle = spdBg;
+        } else {
+          gfx.fillStyle = 'rgba(0,0,0,0.74)';
+        }
+        gfx.beginPath(); gfx.roundRect(x, y, w, h2, 5); gfx.fill();
+        gfx.strokeStyle = 'rgba(56,189,248,0.34)'; gfx.lineWidth = 1;
+        gfx.beginPath(); gfx.roundRect(x + 0.5, y + 0.5, w - 1, h2 - 1, 5); gfx.stroke();
         // Tape with speed markings
         gfx.save(); gfx.beginPath(); gfx.rect(x, y, w, h2); gfx.clip();
         var pxPerKt = 2;
@@ -20483,14 +21141,14 @@ function getFlightCityLayout(city) {
           var isMajor = spd % 20 === 0;
           // Stall band (red)
           if (Number.isFinite(stallSpeed) && spd <= stallSpeed) {
-            gfx.fillStyle = 'rgba(239,68,68,0.3)';
+            gfx.fillStyle = 'rgba(239,68,68,0.32)';
             gfx.fillRect(x, tickY, w, pxPerKt * 10);
           }
-          gfx.strokeStyle = isMajor ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)';
-          gfx.lineWidth = 1;
+          gfx.strokeStyle = isMajor ? 'rgba(226,232,240,0.78)' : 'rgba(148,163,184,0.32)';
+          gfx.lineWidth = isMajor ? 1.2 : 1;
           gfx.beginPath(); gfx.moveTo(x + w - (isMajor ? 12 : 6), tickY); gfx.lineTo(x + w, tickY); gfx.stroke();
           if (isMajor) {
-            gfx.fillStyle = 'rgba(255,255,255,0.8)'; gfx.font = '9px monospace'; gfx.textAlign = 'right';
+            gfx.fillStyle = 'rgba(241,245,249,0.88)'; gfx.font = '9px monospace'; gfx.textAlign = 'right';
             gfx.fillText(spd, x + w - 14, tickY + 3);
           }
         }
@@ -20506,20 +21164,32 @@ function getFlightCityLayout(city) {
           gfx.fillText('Vr', x + 2, vrY - 2);
         }
         gfx.restore();
-        // Current value box
-        gfx.fillStyle = '#000'; gfx.strokeStyle = '#22d3ee'; gfx.lineWidth = 1.5;
+        // Current value box with avionics pointer chevron
+        gfx.fillStyle = '#030812'; gfx.strokeStyle = '#22d3ee'; gfx.lineWidth = 1.5;
         var boxH = 18; var boxY = centerY - boxH / 2;
         gfx.beginPath(); gfx.roundRect(x + 2, boxY, w - 4, boxH, 3); gfx.fill(); gfx.stroke();
-        gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 12px monospace'; gfx.textAlign = 'center';
+        gfx.fillStyle = '#22d3ee';
+        gfx.beginPath(); gfx.moveTo(x + w - 1, centerY - 4); gfx.lineTo(x + w + 4, centerY); gfx.lineTo(x + w - 1, centerY + 4); gfx.closePath(); gfx.fill();
+        gfx.fillStyle = '#38bdf8'; gfx.font = 'bold 12px monospace'; gfx.textAlign = 'center';
         gfx.fillText(Math.round(speed), x + w / 2, centerY + 4);
         // Label
-        gfx.fillStyle = 'rgba(255,255,255,0.4)'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
+        gfx.fillStyle = 'rgba(186,230,253,0.72)'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'center';
         gfx.fillText(label || 'IAS', x + w / 2, y + h2 + 10);
       };
 
       var drawAltTape = function(gfx, x, y, w, h2, alt) {
-        gfx.fillStyle = 'rgba(0,0,0,0.7)';
-        gfx.beginPath(); gfx.roundRect(x, y, w, h2, 4); gfx.fill();
+        var altBg = typeof gfx.createLinearGradient === 'function' ? gfx.createLinearGradient(x, y, x + w, y + h2) : null;
+        if (altBg) {
+          altBg.addColorStop(0, 'rgba(6,13,26,0.82)');
+          altBg.addColorStop(0.5, 'rgba(12,18,36,0.74)');
+          altBg.addColorStop(1, 'rgba(4,10,20,0.84)');
+          gfx.fillStyle = altBg;
+        } else {
+          gfx.fillStyle = 'rgba(0,0,0,0.74)';
+        }
+        gfx.beginPath(); gfx.roundRect(x, y, w, h2, 5); gfx.fill();
+        gfx.strokeStyle = 'rgba(167,139,250,0.36)'; gfx.lineWidth = 1;
+        gfx.beginPath(); gfx.roundRect(x + 0.5, y + 0.5, w - 1, h2 - 1, 5); gfx.stroke();
         gfx.save(); gfx.beginPath(); gfx.rect(x, y, w, h2); gfx.clip();
         var centerY = y + h2 / 2;
         var step = alt > 10000 ? 500 : 100;
@@ -20530,29 +21200,40 @@ function getFlightCityLayout(city) {
           var tickY = centerY - (a - alt) * (pxPerStep / step);
           if (tickY < y || tickY > y + h2) continue;
           var isMajor = a % (step * 2) === 0;
-          gfx.strokeStyle = isMajor ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)';
-          gfx.lineWidth = 1;
+          gfx.strokeStyle = isMajor ? 'rgba(226,232,240,0.78)' : 'rgba(148,163,184,0.32)';
+          gfx.lineWidth = isMajor ? 1.2 : 1;
           gfx.beginPath(); gfx.moveTo(x, tickY); gfx.lineTo(x + (isMajor ? 12 : 6), tickY); gfx.stroke();
           if (isMajor && tickY >= y + 6 && tickY <= y + h2 - 3) {
-            gfx.fillStyle = 'rgba(255,255,255,0.8)'; gfx.font = '9px monospace'; gfx.textAlign = 'left';
+            gfx.fillStyle = 'rgba(241,245,249,0.88)'; gfx.font = '9px monospace'; gfx.textAlign = 'left';
             gfx.fillText(Math.abs(a) >= 1000 ? (a / 1000).toFixed(1) + 'K' : a, x + 14, tickY + 3);
           }
         }
         gfx.restore();
-        // Current value box
-        gfx.fillStyle = '#000'; gfx.strokeStyle = '#a78bfa'; gfx.lineWidth = 1.5;
+        // Current value box with avionics pointer chevron
+        gfx.fillStyle = '#030812'; gfx.strokeStyle = '#a78bfa'; gfx.lineWidth = 1.5;
         var boxH2 = 18; var boxY2 = centerY - boxH2 / 2;
         gfx.beginPath(); gfx.roundRect(x + 2, boxY2, w - 4, boxH2, 3); gfx.fill(); gfx.stroke();
-        gfx.fillStyle = '#a78bfa'; gfx.font = 'bold 12px monospace'; gfx.textAlign = 'center';
+        gfx.fillStyle = '#a78bfa';
+        gfx.beginPath(); gfx.moveTo(x + 1, centerY - 4); gfx.lineTo(x - 4, centerY); gfx.lineTo(x + 1, centerY + 4); gfx.closePath(); gfx.fill();
+        gfx.fillStyle = '#c4b5fd'; gfx.font = 'bold 12px monospace'; gfx.textAlign = 'center';
         gfx.fillText(Math.round(alt).toLocaleString(), x + w / 2, centerY + 4);
-        gfx.fillStyle = 'rgba(255,255,255,0.4)'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
+        gfx.fillStyle = 'rgba(221,214,254,0.72)'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'center';
         gfx.fillText('FT', x + w / 2, y + h2 + 10);
       };
 
       // ── Heading Tape (top of screen, like real PFD) ──
       var drawHeadingTape = function(gfx, x, y, w2, h2, heading) {
-        gfx.fillStyle = 'rgba(0,0,0,0.6)';
-        gfx.beginPath(); gfx.roundRect(x, y, w2, h2, 4); gfx.fill();
+        var hdgBg = typeof gfx.createLinearGradient === 'function' ? gfx.createLinearGradient(x, y, x, y + h2) : null;
+        if (hdgBg) {
+          hdgBg.addColorStop(0, 'rgba(6,13,26,0.84)');
+          hdgBg.addColorStop(1, 'rgba(12,22,38,0.72)');
+          gfx.fillStyle = hdgBg;
+        } else {
+          gfx.fillStyle = 'rgba(0,0,0,0.65)';
+        }
+        gfx.beginPath(); gfx.roundRect(x, y, w2, h2, 5); gfx.fill();
+        gfx.strokeStyle = 'rgba(148,163,184,0.34)'; gfx.lineWidth = 1;
+        gfx.beginPath(); gfx.roundRect(x + 0.5, y + 0.5, w2 - 1, h2 - 1, 5); gfx.stroke();
         gfx.save(); gfx.beginPath(); gfx.rect(x, y, w2, h2); gfx.clip();
         var centerX = x + w2 / 2;
         var pxPerDeg = 3;
@@ -20562,21 +21243,21 @@ function getFlightCityLayout(city) {
           var tickX = centerX + (hdg - heading) * pxPerDeg;
           if (tickX < x || tickX > x + w2) continue;
           var isMajor = normHdg % 10 === 0;
-          gfx.strokeStyle = isMajor ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)';
-          gfx.lineWidth = 1;
+          gfx.strokeStyle = isMajor ? 'rgba(226,232,240,0.75)' : 'rgba(148,163,184,0.32)';
+          gfx.lineWidth = isMajor ? 1.15 : 0.9;
           gfx.beginPath(); gfx.moveTo(tickX, y + h2); gfx.lineTo(tickX, y + h2 - (isMajor ? 10 : 5)); gfx.stroke();
           if (dirs[normHdg]) {
-            gfx.fillStyle = normHdg === 0 ? '#ef4444' : '#fff'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'center';
+            gfx.fillStyle = normHdg === 0 ? '#f87171' : '#f8fafc'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'center';
             gfx.fillText(dirs[normHdg], tickX, y + 10);
           } else if (normHdg % 30 === 0) {
-            gfx.fillStyle = 'rgba(255,255,255,0.6)'; gfx.font = '8px monospace'; gfx.textAlign = 'center';
+            gfx.fillStyle = 'rgba(226,232,240,0.75)'; gfx.font = '8px monospace'; gfx.textAlign = 'center';
             gfx.fillText(String(normHdg).padStart(3, '0'), tickX, y + 10);
           }
         }
         gfx.restore();
-        // Center bug
-        gfx.fillStyle = '#fbbf24';
-        gfx.beginPath(); gfx.moveTo(centerX, y + h2); gfx.lineTo(centerX - 4, y + h2 + 5); gfx.lineTo(centerX + 4, y + h2 + 5); gfx.fill();
+        // Center lubber bug with dark outline for sunlit readability
+        gfx.fillStyle = '#fbbf24'; gfx.strokeStyle = 'rgba(2,6,23,0.75)'; gfx.lineWidth = 1;
+        gfx.beginPath(); gfx.moveTo(centerX, y + h2); gfx.lineTo(centerX - 4.5, y + h2 + 6); gfx.lineTo(centerX + 4.5, y + h2 + 6); gfx.closePath(); gfx.fill(); gfx.stroke();
       };
 
       // ── Flight Path Vector (FPV / velocity vector) ──
@@ -20590,11 +21271,15 @@ function getFlightCityLayout(city) {
         if (!point || point.x < 20 || point.x > W - 20 || point.y < 14 || point.y > H - 8) return;
         var fpvX = point.x, fpvY = point.y;
         (hudRef.current.flightViewCueBounds || []).push({ x: fpvX - 19, y: fpvY - 13, w: 38, h: 20 });
-        gfx.strokeStyle = '#4ade80'; gfx.lineWidth = 2;
-        gfx.beginPath(); gfx.arc(fpvX, fpvY, 6, 0, Math.PI * 2); gfx.stroke();
-        gfx.beginPath(); gfx.moveTo(fpvX - 6, fpvY); gfx.lineTo(fpvX - 18, fpvY); gfx.stroke();
-        gfx.beginPath(); gfx.moveTo(fpvX + 6, fpvY); gfx.lineTo(fpvX + 18, fpvY); gfx.stroke();
-        gfx.beginPath(); gfx.moveTo(fpvX, fpvY - 6); gfx.lineTo(fpvX, fpvY - 12); gfx.stroke();
+        var strokeFpv = function(color, width) {
+          gfx.strokeStyle = color; gfx.lineWidth = width;
+          gfx.beginPath(); gfx.arc(fpvX, fpvY, 6, 0, Math.PI * 2); gfx.stroke();
+          gfx.beginPath(); gfx.moveTo(fpvX - 6, fpvY); gfx.lineTo(fpvX - 18, fpvY); gfx.stroke();
+          gfx.beginPath(); gfx.moveTo(fpvX + 6, fpvY); gfx.lineTo(fpvX + 18, fpvY); gfx.stroke();
+          gfx.beginPath(); gfx.moveTo(fpvX, fpvY - 6); gfx.lineTo(fpvX, fpvY - 12); gfx.stroke();
+        };
+        strokeFpv('rgba(2,6,23,0.58)', 3.6);
+        strokeFpv('#4ade80', 2);
       };
 
       var drawFlightViewCues = function(gfx, W, H, state, ctrl, view) {
@@ -20606,12 +21291,12 @@ function getFlightCityLayout(city) {
         var focal = H / (2 * Math.tan(view.fov * Math.PI / 360));
         if (Math.abs(view.up.y) > 1e-6) {
           var horizonAt = function(x) { return H / 2 + (focal * view.forward.y + (x - W / 2) * view.right.y) / view.up.y; };
-          gfx.strokeStyle = 'rgba(255,255,255,0.3)'; gfx.lineWidth = 1;
+          gfx.strokeStyle = 'rgba(255,255,255,0.34)'; gfx.lineWidth = 1.1;
           gfx.beginPath(); gfx.moveTo(0, horizonAt(0)); gfx.lineTo(W, horizonAt(W)); gfx.stroke();
           cueSegments.push({ x1: 0, y1: horizonAt(0), x2: W, y2: horizonAt(W) });
         }
-        gfx.strokeStyle = 'rgba(230,240,255,0.55)'; gfx.fillStyle = 'rgba(230,240,255,0.75)';
-        gfx.font = 'bold 9px monospace'; gfx.textAlign = 'center'; gfx.textBaseline = 'middle'; gfx.lineWidth = 1.2;
+        gfx.strokeStyle = 'rgba(230,240,255,0.55)'; gfx.fillStyle = 'rgba(230,240,255,0.82)';
+        gfx.font = 'bold 9px monospace'; gfx.textAlign = 'center'; gfx.textBaseline = 'middle'; gfx.lineWidth = 1.25;
         for (var pd = -40; pd <= 40 && !view.chase; pd += 5) {
           if (pd === 0) continue;
           var isTen = pd % 10 === 0, halfAngle = isTen ? 4 : 2;
@@ -20638,6 +21323,9 @@ function getFlightCityLayout(city) {
         var nose = projectFlightDirection(getFlightDirection(state.heading, ctrl.pitch), view, W, H);
         if (nose && nose.x >= 28 && nose.x <= W - 28 && nose.y >= 8 && nose.y <= H - 8) {
           cueBounds.push({ x: nose.x - 27, y: nose.y - 3, w: 54, h: 10 });
+          gfx.strokeStyle = 'rgba(2,6,23,0.62)'; gfx.lineWidth = 4;
+          gfx.beginPath(); gfx.moveTo(nose.x - 26, nose.y); gfx.lineTo(nose.x - 8, nose.y);
+          gfx.lineTo(nose.x, nose.y + 6); gfx.lineTo(nose.x + 8, nose.y); gfx.lineTo(nose.x + 26, nose.y); gfx.stroke();
           gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2;
           gfx.beginPath(); gfx.moveTo(nose.x - 26, nose.y); gfx.lineTo(nose.x - 8, nose.y);
           gfx.lineTo(nose.x, nose.y + 6); gfx.lineTo(nose.x + 8, nose.y); gfx.lineTo(nose.x + 26, nose.y); gfx.stroke();
@@ -20652,12 +21340,14 @@ function getFlightCityLayout(city) {
         gForceRef.current = advanceFlightLoad(gForceRef.current, telemetry.loadFactor, dt);
         var g = gForceRef.current;
         gfx.save();
-        gfx.fillStyle = 'rgba(0,0,0,0.6)';
-        gfx.beginPath(); gfx.roundRect(x, y, 40, 30, 4); gfx.fill();
+        gfx.fillStyle = 'rgba(6,13,26,0.78)';
+        gfx.beginPath(); gfx.roundRect(x, y, 40, 30, 5); gfx.fill();
+        gfx.strokeStyle = 'rgba(148,163,184,0.34)'; gfx.lineWidth = 1;
+        gfx.beginPath(); gfx.roundRect(x + 0.5, y + 0.5, 39, 29, 5); gfx.stroke();
         gfx.fillStyle = g == null ? '#94a3b8' : g > 3 || g < -1 ? '#ef4444' : g > 2 || g < 0 ? '#fbbf24' : '#4ade80';
         gfx.font = 'bold 14px monospace'; gfx.textAlign = 'center'; gfx.textBaseline = 'alphabetic';
         gfx.fillText(g == null ? '—' : g.toFixed(1), x + 20, y + 16);
-        gfx.fillStyle = '#94a3b8'; gfx.font = '7px system-ui';
+        gfx.fillStyle = '#cbd5e1'; gfx.font = '7px system-ui';
         gfx.fillText('LOAD G', x + 20, y + 27);
         gfx.restore();
       };
@@ -20669,12 +21359,14 @@ function getFlightCityLayout(city) {
       var drawAoaReadout = function(gfx, x, y, state) {
         var band = getFlightAoaBand(state && state.aoa, Physics.CRITICAL_AOA);
         gfx.save();
-        gfx.fillStyle = "rgba(0,0,0,0.6)";
-        gfx.beginPath(); gfx.roundRect(x, y, 40, 30, 4); gfx.fill();
+        gfx.fillStyle = "rgba(6,13,26,0.78)";
+        gfx.beginPath(); gfx.roundRect(x, y, 40, 30, 5); gfx.fill();
+        gfx.strokeStyle = "rgba(148,163,184,0.34)"; gfx.lineWidth = 1;
+        gfx.beginPath(); gfx.roundRect(x + 0.5, y + 0.5, 39, 29, 5); gfx.stroke();
         gfx.fillStyle = band === "stall" ? "#ef4444" : band === "near" ? "#fbbf24" : band === "ok" ? "#4ade80" : "#94a3b8";
         gfx.font = "bold 14px monospace"; gfx.textAlign = "center"; gfx.textBaseline = "alphabetic";
         gfx.fillText(band === null ? "—" : Math.round(state.aoa) + "°", x + 20, y + 16);
-        gfx.fillStyle = "#94a3b8"; gfx.font = "7px system-ui";
+        gfx.fillStyle = "#cbd5e1"; gfx.font = "7px system-ui";
         gfx.fillText(__alloT("stem.flightsim.hud_aoa_label", "AoA"), x + 20, y + 27);
         gfx.restore();
       };
@@ -20686,32 +21378,79 @@ function getFlightCityLayout(city) {
         gfx.translate(cx, cy);
         gfx.rotate(-bank * Math.PI / 180);
         var offset = pitch * 2;
-        // Sky
-        gfx.fillStyle = '#1e40af'; gfx.fillRect(-r * 2, -r * 2, r * 4, r * 4);
-        // Ground
-        gfx.fillStyle = '#65a30d'; gfx.fillRect(-r * 2, offset, r * 4, Math.max(0, r * 2 - offset));
-        // Horizon line
-        gfx.strokeStyle = '#fff'; gfx.lineWidth = 2;
-        gfx.beginPath(); gfx.moveTo(-r, offset); gfx.lineTo(r, offset); gfx.stroke();
-        // Pitch ladder
-        gfx.strokeStyle = 'rgba(255,255,255,0.4)'; gfx.lineWidth = 1;
-        gfx.font = '9px system-ui'; gfx.fillStyle = 'rgba(255,255,255,0.5)'; gfx.textAlign = 'center';
-        for (var p = -30; p <= 30; p += 10) {
+        // Atmospheric glass-cockpit sky dome gradient
+        var skyG = typeof gfx.createLinearGradient === 'function' ? gfx.createLinearGradient(0, offset - r * 1.4, 0, offset) : null;
+        if (skyG) {
+          skyG.addColorStop(0, '#0a225c');
+          skyG.addColorStop(0.62, '#1d4ed8');
+          skyG.addColorStop(0.92, '#3b82f6');
+          skyG.addColorStop(1, '#93c5fd');
+          gfx.fillStyle = skyG;
+        } else {
+          gfx.fillStyle = '#1e40af';
+        }
+        gfx.fillRect(-r * 2, -r * 2, r * 4, r * 4);
+        // Sculpted terrain earth gradient
+        var gndH = Math.max(0, r * 2 - offset);
+        var gndG = typeof gfx.createLinearGradient === 'function' ? gfx.createLinearGradient(0, offset, 0, offset + r * 1.35) : null;
+        if (gndG) {
+          gndG.addColorStop(0, '#84cc16');
+          gndG.addColorStop(0.28, '#5a8f14');
+          gndG.addColorStop(1, '#2f4b10');
+          gfx.fillStyle = gndG;
+        } else {
+          gfx.fillStyle = '#65a30d';
+        }
+        gfx.fillRect(-r * 2, offset, r * 4, gndH);
+        // Soft luminous horizon scattering band + razor horizon line
+        var hGlow = typeof gfx.createLinearGradient === 'function' ? gfx.createLinearGradient(0, offset - 8, 0, offset + 5) : null;
+        if (hGlow) {
+          hGlow.addColorStop(0, 'rgba(186,230,253,0)');
+          hGlow.addColorStop(0.55, 'rgba(224,242,254,0.42)');
+          hGlow.addColorStop(1, 'rgba(255,255,255,0)');
+          gfx.fillStyle = hGlow;
+          gfx.fillRect(-r * 2, offset - 8, r * 4, 13);
+        }
+        gfx.strokeStyle = '#ffffff'; gfx.lineWidth = 2;
+        gfx.beginPath(); gfx.moveTo(-r * 1.5, offset); gfx.lineTo(r * 1.5, offset); gfx.stroke();
+        // Pitch ladder (5° minor + 10°/20°/30° hooked major bars)
+        gfx.font = 'bold 8.5px monospace'; gfx.textAlign = 'center';
+        for (var p = -30; p <= 30; p += 5) {
           if (p === 0) continue;
           var py = offset - p * 2;
-          var w = Math.abs(p) > 10 ? 20 : 30;
-          gfx.beginPath(); gfx.moveTo(-w, py); gfx.lineTo(w, py); gfx.stroke();
-          gfx.fillText(p + '°', w + 12, py + 3);
+          var majorPitch = p % 10 === 0;
+          var w = majorPitch ? (Math.abs(p) > 10 ? 18 : 26) : 10;
+          var hookDir = p > 0 ? 3.5 : -3.5;
+          gfx.strokeStyle = majorPitch ? 'rgba(248,250,252,0.78)' : 'rgba(226,232,240,0.42)';
+          gfx.lineWidth = majorPitch ? 1.25 : 0.9;
+          gfx.beginPath();
+          if (majorPitch) {
+            gfx.moveTo(-w, py + hookDir); gfx.lineTo(-w, py); gfx.lineTo(-5, py);
+            gfx.moveTo(5, py); gfx.lineTo(w, py); gfx.lineTo(w, py + hookDir);
+          } else {
+            gfx.moveTo(-w, py); gfx.lineTo(w, py);
+          }
+          gfx.stroke();
+          if (majorPitch) {
+            gfx.fillStyle = 'rgba(248,250,252,0.82)';
+            gfx.fillText(Math.abs(p) + '°', w + 12, py + 3);
+          }
         }
         gfx.restore();
-        // Aircraft symbol (fixed)
-        gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 3;
-        gfx.beginPath(); gfx.moveTo(cx - 25, cy); gfx.lineTo(cx - 8, cy); gfx.stroke();
-        gfx.beginPath(); gfx.moveTo(cx + 8, cy); gfx.lineTo(cx + 25, cy); gfx.stroke();
+        // Aircraft reference wings (fixed, dark-outlined for crisp contrast)
+        gfx.strokeStyle = 'rgba(2,6,23,0.7)'; gfx.lineWidth = 4.6;
+        gfx.beginPath(); gfx.moveTo(cx - 25, cy); gfx.lineTo(cx - 8, cy); gfx.lineTo(cx - 8, cy + 4); gfx.stroke();
+        gfx.beginPath(); gfx.moveTo(cx + 8, cy + 4); gfx.lineTo(cx + 8, cy); gfx.lineTo(cx + 25, cy); gfx.stroke();
+        gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2.6;
+        gfx.beginPath(); gfx.moveTo(cx - 25, cy); gfx.lineTo(cx - 8, cy); gfx.lineTo(cx - 8, cy + 4); gfx.stroke();
+        gfx.beginPath(); gfx.moveTo(cx + 8, cy + 4); gfx.lineTo(cx + 8, cy); gfx.lineTo(cx + 25, cy); gfx.stroke();
         gfx.beginPath(); gfx.arc(cx, cy, 3, 0, Math.PI * 2); gfx.fillStyle = '#fbbf24'; gfx.fill();
         // Bank angle arc (top of horizon)
-        gfx.strokeStyle = 'rgba(255,255,255,0.3)'; gfx.lineWidth = 1.5;
+        gfx.strokeStyle = 'rgba(226,232,240,0.45)'; gfx.lineWidth = 1.4;
         gfx.beginPath(); gfx.arc(cx, cy, r - 2, -Math.PI * 0.85, -Math.PI * 0.15); gfx.stroke();
+        // Top zero-bank index triangle
+        gfx.fillStyle = 'rgba(248,250,252,0.85)';
+        gfx.beginPath(); gfx.moveTo(cx, cy - r + 2); gfx.lineTo(cx - 3.5, cy - r + 7); gfx.lineTo(cx + 3.5, cy - r + 7); gfx.closePath(); gfx.fill();
         // Bank marks at 10, 20, 30, 45, 60 degrees
         [10, 20, 30, 45, 60].forEach(function(deg) {
           [-1, 1].forEach(function(side) {
@@ -20731,17 +21470,29 @@ function getFlightCityLayout(city) {
         gfx.lineTo(cx + Math.cos(bankPointerAngle - 0.08) * (r + 5), cy + Math.sin(bankPointerAngle - 0.08) * (r + 5));
         gfx.lineTo(cx + Math.cos(bankPointerAngle + 0.08) * (r + 5), cy + Math.sin(bankPointerAngle + 0.08) * (r + 5));
         gfx.fill();
-        // Border
-        gfx.beginPath(); gfx.arc(cx, cy, r, 0, Math.PI * 2); gfx.strokeStyle = 'rgba(255,255,255,0.3)'; gfx.lineWidth = 2; gfx.stroke();
+        // Curved glass instrument lens highlight + brushed bezel rim
+        gfx.strokeStyle = 'rgba(255,255,255,0.16)'; gfx.lineWidth = 2;
+        gfx.beginPath(); gfx.arc(cx, cy, r - 4, -Math.PI * 0.78, -Math.PI * 0.34); gfx.stroke();
+        gfx.beginPath(); gfx.arc(cx, cy, r + 1.5, 0, Math.PI * 2); gfx.strokeStyle = 'rgba(2,6,23,0.75)'; gfx.lineWidth = 2.5; gfx.stroke();
+        gfx.beginPath(); gfx.arc(cx, cy, r, 0, Math.PI * 2); gfx.strokeStyle = 'rgba(186,230,253,0.48)'; gfx.lineWidth = 1.5; gfx.stroke();
       };
 
       // ── Compass rose ──
       var drawCompass = function(gfx, cx, cy, r, heading) {
         gfx.save();
-        gfx.beginPath(); gfx.arc(cx, cy, r, 0, Math.PI * 2); gfx.fillStyle = 'rgba(0,0,0,0.6)'; gfx.fill();
+        var cmpBg = typeof gfx.createRadialGradient === 'function' ? gfx.createRadialGradient(cx - r * 0.25, cy - r * 0.25, 2, cx, cy, r) : null;
+        if (cmpBg) {
+          cmpBg.addColorStop(0, 'rgba(22,33,54,0.82)');
+          cmpBg.addColorStop(1, 'rgba(4,9,20,0.88)');
+          gfx.fillStyle = cmpBg;
+        } else {
+          gfx.fillStyle = 'rgba(0,0,0,0.68)';
+        }
+        gfx.beginPath(); gfx.arc(cx, cy, r, 0, Math.PI * 2); gfx.fill();
+        gfx.strokeStyle = 'rgba(148,163,184,0.45)'; gfx.lineWidth = 1.4; gfx.stroke();
         gfx.translate(cx, cy);
         gfx.rotate(-heading * Math.PI / 180);
-        var dirs = [['N', 0, '#ef4444'], ['E', 90, '#fff'], ['S', 180, '#fff'], ['W', 270, '#fff']];
+        var dirs = [['N', 0, '#f87171'], ['E', 90, '#f8fafc'], ['S', 180, '#f8fafc'], ['W', 270, '#f8fafc']];
         gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
         dirs.forEach(function(d) {
           var angle = d[1] * Math.PI / 180;
@@ -20751,8 +21502,9 @@ function getFlightCityLayout(city) {
         });
         for (var i = 0; i < 36; i++) {
           var a = i * 10 * Math.PI / 180;
-          var inner = i % 3 === 0 ? r - 20 : r - 15;
-          gfx.strokeStyle = 'rgba(255,255,255,0.3)'; gfx.lineWidth = 1;
+          var majorTick = i % 3 === 0;
+          var inner = majorTick ? r - 19 : r - 14;
+          gfx.strokeStyle = majorTick ? 'rgba(226,232,240,0.62)' : 'rgba(148,163,184,0.32)'; gfx.lineWidth = majorTick ? 1.2 : 0.9;
           gfx.beginPath(); gfx.moveTo(Math.sin(a) * inner, -Math.cos(a) * inner);
           gfx.lineTo(Math.sin(a) * (r - 3), -Math.cos(a) * (r - 3)); gfx.stroke();
         }
@@ -20760,7 +21512,7 @@ function getFlightCityLayout(city) {
         // Heading bug (fixed pointer)
         gfx.fillStyle = '#fbbf24';
         gfx.beginPath(); gfx.moveTo(cx, cy - r + 2); gfx.lineTo(cx - 5, cy - r - 6); gfx.lineTo(cx + 5, cy - r - 6); gfx.fill();
-        gfx.fillStyle = '#fff'; gfx.font = 'bold 12px monospace'; gfx.textAlign = 'center';
+        gfx.fillStyle = '#f8fafc'; gfx.font = 'bold 12px monospace'; gfx.textAlign = 'center';
         gfx.fillText(String(Math.round(heading)).padStart(3, '0') + '°', cx, cy + r + 14);
       };
 
@@ -26421,11 +27173,14 @@ function getFlightCityLayout(city) {
         var rectangle = function(left, right, beginning, finish, height, color) {
           return polygon([point(left, beginning, height), point(right, beginning, height), point(right, finish, height), point(left, finish, height)], color);
         };
-        var light = function(cross, along, height, color, radius) {
+        var light = function(cross, along, height, color, radius, glowColor) {
           var p = projectFlightRunwayPoint(state, runway, point(cross, along, height), view, W, H);
           if (!p || p.x < -4 || p.x > W + 4 || p.y < -4 || p.y > H + 4) return;
           var focal = view.focalLength || H / (2 * Math.tan(Math.PI / 6));
           var size = Math.max(0.65, Math.min(3.5, focal * (radius || 3) / p.depth));
+          if (glowColor && size >= 0.85) {
+            gfx.fillStyle = glowColor; gfx.beginPath(); gfx.arc(p.x, p.y, size * 2.1, 0, Math.PI * 2); gfx.fill();
+          }
           gfx.fillStyle = color; gfx.beginPath(); gfx.arc(p.x, p.y, size, 0, Math.PI * 2); gfx.fill();
         };
         var dayNight = getDayNight(state.lon || 0, timeRef.current || 0);
@@ -26473,17 +27228,36 @@ function getFlightCityLayout(city) {
         });
         var approach = getFlightRunwayApproach(state, nearWp);
         var coordinates = approach || { alongFt: 0 };
+        var rwReducedMotion = !!(skyReducedMotion && skyReducedMotion.current);
+        var rwGlowEdge = dayNight.isNight ? 'rgba(255,248,210,0.28)' : dayNight.isDusk ? 'rgba(255,248,210,0.16)' : null;
         for (var el = 0; el < 18; el++) { var along = -3600 + el * 420;
-          light(-68, along, 3.6, dayNight.isNight ? '#ffffdd' : 'rgba(255,255,230,0.45)');
-          light(68, along, 3.6, dayNight.isNight ? '#ffffdd' : 'rgba(255,255,230,0.45)'); }
+          light(-68, along, 3.6, dayNight.isNight ? '#ffffdd' : 'rgba(255,255,230,0.52)', 3, rwGlowEdge);
+          light(68, along, 3.6, dayNight.isNight ? '#ffffdd' : 'rgba(255,255,230,0.52)', 3, rwGlowEdge); }
+        // FAA-style embedded runway centerline lights (white -> alternating red/white -> red)
+        var clSign = (approach && approach.available && approach.end) ? approach.end.sign : 0;
+        for (var cl2 = 0; cl2 < 19; cl2++) {
+          var clAlong = -3600 + cl2 * 400;
+          var clRem = clSign ? (4000 - clAlong * clSign) : (4000 - Math.abs(clAlong));
+          var clRed = clSign && (clRem < 1000 || (clRem < 3000 && (cl2 & 1)));
+          var clColor = clRed
+            ? (dayNight.isNight ? '#f87171' : 'rgba(239,68,68,0.62)')
+            : (dayNight.isNight ? '#fffbeb' : 'rgba(255,251,235,0.48)');
+          var clGlow = dayNight.isNight ? (clRed ? 'rgba(239,68,68,0.24)' : 'rgba(255,251,235,0.22)') : null;
+          light(0, clAlong, 2.5, clColor, 2.1, clGlow);
+        }
+        var rabbit2D = 6 - (Math.floor((timeRef.current || 0) * 10) % 7);
         runway.ends.forEach(function(end) {
           var outside = (coordinates.alongFt - end.thresholdAlongFt) * end.sign < 0;
-          for (var th = 0; th < 8; th++) light(-52 + th * 15, end.thresholdAlongFt + end.sign * 25, 3.6, outside ? '#22c55e' : '#ef4444');
+          var thGlow = dayNight.isNight || dayNight.isDusk ? (outside ? 'rgba(34,197,94,0.26)' : 'rgba(239,68,68,0.26)') : null;
+          for (var th = 0; th < 8; th++) light(-52 + th * 15, end.thresholdAlongFt + end.sign * 25, 3.6, outside ? '#22c55e' : '#ef4444', 3, thGlow);
           if (!approach || !approach.available || approach.end.sign !== end.sign) return;
           for (var al = 0; al < 7; al++) {
-            var flash = Math.sin(timeRef.current * 4 + al * 0.7) > 0 ? 1 : 0.3;
-            light(-24, end.thresholdAlongFt - end.sign * (140 + al * 180), 3.6, 'rgba(255,250,215,' + flash + ')');
-            light(24, end.thresholdAlongFt - end.sign * (140 + al * 180), 3.6, 'rgba(255,250,215,' + flash + ')');
+            var alAlong = end.thresholdAlongFt - end.sign * (140 + al * 180);
+            var flash = rwReducedMotion ? 0.78 : (Math.sin(timeRef.current * 4 + al * 0.7) > 0 ? 1 : 0.36);
+            light(-24, alAlong, 3.6, 'rgba(255,250,215,' + flash + ')', 3, 'rgba(254,240,138,' + (flash * 0.25).toFixed(3) + ')');
+            light(24, alAlong, 3.6, 'rgba(255,250,215,' + flash + ')', 3, 'rgba(254,240,138,' + (flash * 0.25).toFixed(3) + ')');
+            var leadPeak = rwReducedMotion ? 0.72 : (al === rabbit2D ? 1 : 0.28);
+            light(0, alAlong, 3.9, 'rgba(224,242,254,' + leadPeak + ')', 3.3, 'rgba(186,230,253,' + (leadPeak * 0.3).toFixed(3) + ')');
           }
           for (var pi = 0; pi < 4; pi++) light(-end.sign * (180 - pi * 20), end.papiAlongFt, 5,
             pi < 4 - approach.papi.redCount ? '#fff' : '#ef4444');
@@ -30140,6 +30914,21 @@ function getFlightCityLayout(city) {
             });
             gfx.fillStyle = skyGrad;
             gfx.fillRect(0, 0, W, H);
+            // Soft atmospheric horizon scattering haze belt (Rayleigh/Mie glow near horizon)
+            if (Number.isFinite(horizonY) && typeof gfx.createLinearGradient === 'function') {
+              var hazeSpan = Math.max(36, Math.min(115, H * 0.14));
+              var hColor = canvasSkyPalette && canvasSkyPalette.horizon ? canvasSkyPalette.horizon : [0.7, 0.8, 0.9];
+              var hR = Math.round(Math.min(255, hColor[0] * 255 + (dayNight.isDusk ? 26 : 16)));
+              var hG = Math.round(Math.min(255, hColor[1] * 255 + (dayNight.isDusk ? 12 : 18)));
+              var hB = Math.round(Math.min(255, hColor[2] * 255 + (dayNight.isDusk ? 6 : 20)));
+              var hazeAlpha = dayNight.isNight ? 0.14 : (dayNight.isDusk ? 0.34 : 0.26);
+              var hazeBand = gfx.createLinearGradient(0, horizonY - hazeSpan, 0, horizonY + hazeSpan * 0.35);
+              hazeBand.addColorStop(0, 'rgba(' + hR + ',' + hG + ',' + hB + ',0)');
+              hazeBand.addColorStop(0.72, 'rgba(' + hR + ',' + hG + ',' + hB + ',' + hazeAlpha.toFixed(3) + ')');
+              hazeBand.addColorStop(1, 'rgba(' + hR + ',' + hG + ',' + hB + ',0)');
+              gfx.fillStyle = hazeBand;
+              gfx.fillRect(0, horizonY - hazeSpan, W, hazeSpan * 1.35);
+            }
           }
 
           if (!threeLoaded) {
@@ -30316,8 +31105,12 @@ function getFlightCityLayout(city) {
                 gfx.beginPath(); gfx.ellipse(cx2, rowY, cSize, 12 + ci * 2, 0, 0, Math.PI * 2); gfx.fill();
                 gfx.beginPath(); gfx.ellipse(cx2 + cSize * 0.4, rowY - 4, cSize * 0.6, 10, 0, 0, Math.PI * 2); gfx.fill();
                 gfx.beginPath(); gfx.ellipse(cx2 - cSize * 0.35, rowY + 2, cSize * 0.55, 9, 0, 0, Math.PI * 2); gfx.fill();
-                gfx.fillStyle = 'rgba(255,255,255,' + (alphaHere * 0.28 * cloudDaylight * canvasWeather.directTransmission) + ')';
-                gfx.beginPath(); gfx.ellipse(cx2 - cSize * 0.12, rowY - 6, cSize * 0.48, 4 + ci, 0, 0, Math.PI * 2); gfx.fill();
+                // Warm sunlit cumulus crown rim + silver-white peak highlight
+                var crownAlpha = alphaHere * (0.34 + 0.12 * cloudDaylight) * canvasWeather.directTransmission;
+                gfx.fillStyle = 'rgba(255,253,245,' + crownAlpha.toFixed(3) + ')';
+                gfx.beginPath(); gfx.ellipse(cx2 - cSize * 0.12, rowY - 6, cSize * 0.52, 4.5 + ci, 0, 0, Math.PI * 2); gfx.fill();
+                gfx.fillStyle = 'rgba(255,255,255,' + (crownAlpha * 0.65).toFixed(3) + ')';
+                gfx.beginPath(); gfx.ellipse(cx2 + cSize * 0.28, rowY - 8, cSize * 0.3, 3.2, 0, 0, Math.PI * 2); gfx.fill();
               }
             });
           }
@@ -30811,12 +31604,22 @@ function getFlightCityLayout(city) {
               // Shadow
               gfx.fillStyle = 'rgba(0,0,0,0.18)';
               gfx.beginPath(); gfx.ellipse(2, 14, 28, 5, 0, 0, Math.PI * 2); gfx.fill();
-              // Fuselage — rounded box with a window slit at front
-              gfx.fillStyle = '#1e3a5f';
+              // Fuselage — metallic sunlit gradient over rounded body
+              var heliFuseG = typeof gfx.createLinearGradient === 'function' ? gfx.createLinearGradient(-2, -7, -2, 7) : null;
+              if (heliFuseG) {
+                heliFuseG.addColorStop(0, '#3b6ea5');
+                heliFuseG.addColorStop(0.45, '#1e3a5f');
+                heliFuseG.addColorStop(1, '#0f223d');
+                gfx.fillStyle = heliFuseG;
+              } else {
+                gfx.fillStyle = '#1e3a5f';
+              }
               gfx.beginPath(); gfx.ellipse(-2, 0, 16, 7, 0, 0, Math.PI * 2); gfx.fill();
-              // Cockpit windscreen — blue-tinted window at the front
-              gfx.fillStyle = 'rgba(135,180,220,0.85)';
+              // Cockpit windscreen — blue-tinted window with sunlit sky reflection glint
+              gfx.fillStyle = 'rgba(135,180,220,0.88)';
               gfx.beginPath(); gfx.ellipse(8, -1, 6, 4.5, 0, 0, Math.PI * 2); gfx.fill();
+              gfx.strokeStyle = 'rgba(255,255,255,0.62)'; gfx.lineWidth = 0.9;
+              gfx.beginPath(); gfx.arc(8, -1, 4.2, -Math.PI * 0.85, -Math.PI * 0.22); gfx.stroke();
               gfx.strokeStyle = 'rgba(20,30,45,0.7)';
               gfx.lineWidth = 0.6;
               gfx.beginPath(); gfx.ellipse(8, -1, 6, 4.5, 0, 0, Math.PI * 2); gfx.stroke();
@@ -30981,22 +31784,50 @@ function getFlightCityLayout(city) {
               gfx.restore();
             } else {
             // Shadow on ground
-            gfx.fillStyle = 'rgba(0,0,0,0.15)';
+            gfx.fillStyle = 'rgba(0,0,0,0.16)';
             gfx.beginPath(); gfx.ellipse(2, 12, 30, 5, 0, 0, Math.PI * 2); gfx.fill();
-            // Fuselage
-            gfx.fillStyle = '#d1d5db';
+            // Fuselage — sunlit metallic sheen gradient
+            var fuseGrad = typeof gfx.createLinearGradient === 'function' ? gfx.createLinearGradient(0, -5, 0, 5) : null;
+            if (fuseGrad) {
+              fuseGrad.addColorStop(0, '#ffffff');
+              fuseGrad.addColorStop(0.45, '#e2e8f0');
+              fuseGrad.addColorStop(1, '#94a3b8');
+              gfx.fillStyle = fuseGrad;
+            } else {
+              gfx.fillStyle = '#d1d5db';
+            }
             gfx.beginPath(); gfx.ellipse(0, 0, 28, 5, 0, 0, Math.PI * 2); gfx.fill();
-            // Wings
-            gfx.fillStyle = '#e2e8f0';
+            // Sunlit upper fuselage spine specular glint
+            gfx.strokeStyle = 'rgba(255,255,255,0.75)'; gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.moveTo(-20, -2.5); gfx.lineTo(18, -2.5); gfx.stroke();
+            // Tinted cockpit canopy + reflection streak
+            gfx.fillStyle = 'rgba(30,58,95,0.88)';
+            gfx.beginPath(); gfx.ellipse(-12, -2.2, 6.5, 2.4, 0, Math.PI, Math.PI * 2); gfx.fill();
+            gfx.strokeStyle = 'rgba(186,230,253,0.72)'; gfx.lineWidth = 0.8;
+            gfx.beginPath(); gfx.moveTo(-16, -3.2); gfx.lineTo(-9, -3.6); gfx.stroke();
+            // Wings — brushed aluminum sunlit upper surface + crisp leading-edge highlight
+            var wingGrad = typeof gfx.createLinearGradient === 'function' ? gfx.createLinearGradient(-50, -8, -8, 8) : null;
+            if (wingGrad) {
+              wingGrad.addColorStop(0, '#f8fafc');
+              wingGrad.addColorStop(0.55, '#e2e8f0');
+              wingGrad.addColorStop(1, '#cbd5e1');
+              gfx.fillStyle = wingGrad;
+            } else {
+              gfx.fillStyle = '#e2e8f0';
+            }
             gfx.beginPath(); gfx.moveTo(-8, -1); gfx.lineTo(-50, -8); gfx.lineTo(-48, -2); gfx.lineTo(-8, 1); gfx.fill();
             gfx.beginPath(); gfx.moveTo(-8, -1); gfx.lineTo(-50, 8); gfx.lineTo(-48, 2); gfx.lineTo(-8, 1); gfx.fill();
+            gfx.strokeStyle = 'rgba(255,255,255,0.78)'; gfx.lineWidth = 1;
+            gfx.beginPath(); gfx.moveTo(-8, -1); gfx.lineTo(-50, -8); gfx.moveTo(-8, -1); gfx.lineTo(-50, 8); gfx.stroke();
             // Tail
             gfx.fillStyle = '#94a3b8';
             gfx.beginPath(); gfx.moveTo(22, -1); gfx.lineTo(32, -12); gfx.lineTo(28, -1); gfx.fill();
             gfx.beginPath(); gfx.moveTo(22, 1); gfx.lineTo(32, 12); gfx.lineTo(28, 1); gfx.fill();
-            // Vertical stabilizer
+            // Vertical stabilizer with sunlit leading-edge bevel
             gfx.fillStyle = '#6366f1';
             gfx.beginPath(); gfx.moveTo(25, -2); gfx.lineTo(30, -14); gfx.lineTo(28, -2); gfx.fill();
+            gfx.strokeStyle = 'rgba(199,210,254,0.75)'; gfx.lineWidth = 0.9;
+            gfx.beginPath(); gfx.moveTo(25, -2); gfx.lineTo(30, -14); gfx.stroke();
             if (currentAC.engine === 'piston') {
               // ── Propeller disc — at idle the individual blades are visible,
               // at higher RPM they blur into a translucent disc with a faint

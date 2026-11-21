@@ -100,6 +100,7 @@ jobs:
   build:
     name: Verify and package MCPB
     runs-on: windows-latest
+    timeout-minutes: 45
     steps:
       - name: Enable Git long paths before checkout
         shell: pwsh
@@ -118,7 +119,7 @@ jobs:
       - name: Verify MCP security boundaries and shared policies
         run: npm run verify:mcp-security
       - name: Install Chromium for app-to-MCP parity
-        run: npx playwright install chromium
+        run: npx --no-install playwright install chromium
       # EPUBCheck is not in git (vendor/epubcheck is fetched and hash-verified at build time), but
       # the parity smoke stages the vendor directory and verifies every manifest entry, so it must
       # exist before that step runs. mcpb-v0.11.2 failed here on the runner for exactly this reason.
@@ -128,7 +129,7 @@ jobs:
         run: npm run verify:mcp-parity
       - name: Verify MCP durability, cancellation, packaging, and release triggers
         run: >-
-          npx vitest run
+          npx --no-install vitest run
           tests/desktop_mcp_durable_jobs.test.js
           tests/desktop_mcp_residual_hardening.test.js
           tests/desktop_mcp_runtime_build_drift.test.js
@@ -178,6 +179,8 @@ jobs:
       - name: Write checksums, dependency SBOM, and vendor evidence
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
           $dist = 'desktop/dist/mcpb'
           $artifact = Get-Item "$dist/alloflow-remediation.mcpb"
           $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $artifact.FullName).Hash.ToLowerInvariant()
@@ -191,6 +194,7 @@ jobs:
           # stand-in is a copy, not a link; without the same flag npm sbom calls it invalid.
           npm sbom --prefix "$dist/staging" --omit=dev --install-links --sbom-format=cyclonedx |
             Out-File -Encoding utf8 "$dist/alloflow-remediation.cdx.json"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node -e "JSON.parse(require('fs').readFileSync('$dist/alloflow-remediation.cdx.json','utf8').replace(/^\uFEFF/,''))"
           Copy-Item desktop/mcp/vendor/manifest.json "$dist/vendor-manifest.json"
           Copy-Item desktop/mcp/vendor/THIRD_PARTY_NOTICES.md "$dist/THIRD_PARTY_NOTICES.md"
@@ -202,6 +206,7 @@ jobs:
         with:
           name: alloflow-remediation-mcpb-${{ github.sha }}
           if-no-files-found: error
+          retention-days: 14
           path: desktop/dist/mcpb/release/*
 
   # PR code and dependency installation receive only the default read token.
@@ -211,6 +216,7 @@ jobs:
     if: github.event_name == 'push' && github.repository == 'Apomera/AlloFlow' && startsWith(github.ref, 'refs/tags/mcpb-v')
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write
@@ -235,14 +241,12 @@ jobs:
     if: github.event_name == 'push' && github.repository == 'Apomera/AlloFlow' && startsWith(github.ref, 'refs/tags/mcpb-v')
     needs: [build, attest]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
     env:
       RELEASE_TAG: ${{ github.ref_name }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: alloflow-remediation-mcpb-${{ github.sha }}
@@ -256,5 +260,5 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             gh release upload $env:RELEASE_TAG release-assets/* --clobber --repo $env:GITHUB_REPOSITORY
           } else {
-            gh release create $env:RELEASE_TAG release-assets/* --verify-tag --repo $env:GITHUB_REPOSITORY --title "AlloFlow Remediation MCP $env:RELEASE_TAG" --notes-file desktop/mcp/MCPB_RELEASE.md
+            gh release create $env:RELEASE_TAG release-assets/* --verify-tag --repo $env:GITHUB_REPOSITORY --title "AlloFlow Remediation MCP $env:RELEASE_TAG" --notes-file release-assets/MCPB_RELEASE.md
           }

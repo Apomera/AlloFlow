@@ -101,7 +101,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
       var _ideT = (ctx && ctx.theme) || {};
       var _ideHC = !!_ideT.isContrast, _ideL = !_ideHC && !_ideT.isDark;
       var _ide_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _ide_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#ffffff':'#000000','#fdf2f8':'#000000'};
-      var _ide_FGL = {'#cbd5e1':'#334155','#f9a8d4':'#be185d','#94a3b8':'#64748b','#fbcfe8':'#9d174d','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#c4b5fd':'#5b21b6','#7dd3fc':'#075985','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#fde68a':'#92400e','#fcd34d':'#78350f'}, _ide_FGH = {'#cbd5e1':'#ffff00','#f9a8d4':'#ffff00','#94a3b8':'#ffff00','#fbcfe8':'#ffff00','#e2e8f0':'#ffff00','#e9d5ff':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#7dd3fc':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fde68a':'#ffff00','#fcd34d':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#831843':'#ffff00'};
+      var _ide_FGL = {'#cbd5e1':'#334155','#f9a8d4':'#be185d','#94a3b8':'#64748b','#fbcfe8':'#9d174d','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#c4b5fd':'#5b21b6','#7dd3fc':'#075985','#bae6fd':'#075985','#bbf7d0':'#166534','#dcfce7':'#14532d','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#fde68a':'#92400e','#fcd34d':'#78350f','#a855f7':'#7e22ce','#0ea5e9':'#0369a1','#22c55e':'#15803d','#ef4444':'#b91c1c','#8b5cf6':'#6d28d9'}, _ide_FGH = {'#cbd5e1':'#ffff00','#f9a8d4':'#ffff00','#94a3b8':'#ffff00','#fbcfe8':'#ffff00','#e2e8f0':'#ffff00','#e9d5ff':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#7dd3fc':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fde68a':'#ffff00','#fcd34d':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#8b5cf6':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#831843':'#ffff00'};
       var _ide_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#0f172a':'#cbd5e1'}, _ide_BDH = {'#334155':'#ffff00','#ec4899':'#ffff00','#1e293b':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#8b5cf6':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#f9a8d4':'#ffff00','#cbd5e1':'#ffff00'};
       var _ideBg = function(h){ return _ideHC ? (_ide_BGH[h]||h) : (_ideL ? (_ide_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
@@ -115,6 +115,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
       var labToolData = ctx.toolData || {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _ideBand = (ctx && ctx.gradeBand) || 'middle';
 
       var d = labToolData.identitySupport || defaultState();
       function setI(patch) {
@@ -124,6 +126,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
           next.lastUpdated = todayISO();
           return Object.assign({}, prev, { identitySupport: next });
         });
+      }
+      function scanIdentityText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'identitySupport', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'identitySupport', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setI({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Identity Support', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
       }
       var view = d.view || 'home';
       function goto(v) { setI({ view: v }); }
@@ -154,9 +181,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
         ];
         return h('div', { role: 'tablist', 'aria-label': 'Identity Support sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
+            return h('button', {
+              key: t.id,
+              id: 'id-tab-' + t.id,
+              'aria-controls': 'id-panel-' + t.id,
+              tabIndex: active ? 0 : -1,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(e) {
+                var nextIdx = idx;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                else if (e.key === 'Home') nextIdx = 0;
+                else if (e.key === 'End') nextIdx = tabs.length - 1;
+                else return;
+                e.preventDefault();
+                goto(tabs[nextIdx].id);
+                setTimeout(function() {
+                  var el = document.getElementById('id-tab-' + tabs[nextIdx].id);
+                  if (el) el.focus();
+                }, 0);
+              },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#ec4899' : '#334155'),
                 background: active ? 'rgba(236,72,153,0.18)' : _ideBg('#1e293b'),
@@ -177,7 +223,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
 
       function softPointer() {
         return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _ideFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _ideBg('#0f172a'), border: '1px solid ' + _ideBd('#334155'), fontSize: 11, color: _ideFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Identity exploration is a private process. This tool is yours; nothing here is shared with anyone. For specific help: The Trevor Project, GLSEN, PFLAG, your school counselor.'
         );
@@ -330,6 +376,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
             h('textarea', { id: 'i-notes', value: d.privateNotes || '',
               placeholder: '',
               onChange: function(e) { setI({ privateNotes: e.target.value }); },
+              onBlur: function(e) { scanIdentityText(e.target.value); },
               style: { width: '100%', minHeight: 160, padding: 12, borderRadius: 6, border: '1px solid #334155', background: _ideBg('#1e293b'), color: _ideFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.8, resize: 'vertical' } })
           ),
 
@@ -340,6 +387,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
             h('textarea', { id: 'i-need', value: d.whatINeed || '',
               placeholder: 'What I need...',
               onChange: function(e) { setI({ whatINeed: e.target.value }); },
+              onBlur: function(e) { scanIdentityText(e.target.value); },
               style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _ideBg('#1e293b'), color: _ideFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
           ),
 
@@ -392,6 +440,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
             h('textarea', { id: 'i-comm', value: d.myCommunity || '',
               placeholder: 'This month I want to try...',
               onChange: function(e) { setI({ myCommunity: e.target.value }); },
+              onBlur: function(e) { scanIdentityText(e.target.value); },
               style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _ideBg('#1e293b'), color: _ideFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
           ),
 
@@ -622,7 +671,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
       function renderPrintView() {
         var people = d.affirmingPeople || [];
         var spaces = d.affirmingSpaces || [];
-        var notes = d.notes || '';
+        var notes = d.privateNotes || d.notes || '';
         // No tab has a form for these lists, so print lines to fill in by hand.
         // Who affirms a student is not stored on a shared device.
         function identityWriteIn(title) {
@@ -639,7 +688,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
             'A private one-page reference: people in your life who affirm you, places where you feel like yourself, crisis lines you can call, and rights you have. Print only for yourself or a clinician/trusted adult you choose. Nothing is shared anywhere.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #9d174d 0%, #be185d 100%)', color: _ideFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _ideHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _ideHC ? '#000000' : 'linear-gradient(135deg, #9d174d 0%, #be185d 100%)', color: _ideFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +
@@ -724,8 +773,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('identitySupport'
 
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Identity Support' },
         header(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _ideBand))
+          : null,
         navTabs(),
-        body
+        h('div', { id: 'id-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'id-tab-' + view }, body)
       );
     }
   });

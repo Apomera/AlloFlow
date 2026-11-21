@@ -398,8 +398,8 @@ window.StemLab = window.StemLab || {
       '.fraction-lab-summary-tile span{display:block;color:#64748b;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}',
       '.fraction-lab-strip-grid{display:flex;gap:3px;min-height:46px;border-radius:14px;overflow:hidden;background:#fee2e2;padding:3px;margin-top:12px;border:1px solid #fecdd3}',
       '.fraction-lab-strip-segment{flex:1;min-width:12px;border-radius:9px;border:0;cursor:pointer;transition:transform .14s ease,background .14s ease,box-shadow .14s ease}',
-      '.fraction-lab-strip-segment.is-filled{background:#e11d48;box-shadow:inset 0 -10px 18px rgba(136,19,55,.18)}',
-      '.fraction-lab-strip-segment.is-empty{background:#fff7ed}',
+      '.fraction-lab-strip-segment.is-filled{background:#e11d48;box-shadow:inset 0 2px 0 rgba(255,255,255,.45),inset 0 -10px 18px rgba(136,19,55,.24),0 2px 6px rgba(225,29,72,.18)}',
+      '.fraction-lab-strip-segment.is-empty{background:#fff7ed;box-shadow:inset 0 1px 2px rgba(15,23,42,.08)}',
       '.fraction-lab-strip-segment:hover{transform:translateY(-1px)}',
       '.fraction-lab-strip-segment:focus-visible{outline:3px solid #0ea5e9;outline-offset:2px}',
       '.fraction-lab-mode-toggle{display:flex;gap:4px;background:#fff;border:1px solid #fecdd3;border-radius:999px;padding:3px}',
@@ -2002,6 +2002,224 @@ window.StemLab = window.StemLab || {
       var id = setInterval(tick, 1000);
       return function() { clearInterval(id); };
     }, [raceEndsAt]);
+    var efCleanupRef = React.useRef(null);
+    React.useEffect(function() {
+      return function() {
+        if (efCleanupRef.current) {
+          efCleanupRef.current();
+          efCleanupRef.current = null;
+        }
+      };
+    }, []);
+    var efCanvasRef = React.useCallback(function(cvEl) {
+      if (!cvEl) {
+        if (efCleanupRef.current) {
+          efCleanupRef.current();
+          efCleanupRef.current = null;
+        }
+        return;
+      }
+      if (cvEl._efDone) return;
+      if (efCleanupRef.current) {
+        efCleanupRef.current();
+        efCleanupRef.current = null;
+      }
+      cvEl._efDone = true;
+      var c2 = cvEl.getContext('2d');
+      if (!c2) { cvEl._efDone = false; return; }
+      var W = cvEl.offsetWidth || 600;
+      var H = cvEl.offsetHeight || 180;
+      cvEl.width = W * 2; cvEl.height = H * 2;
+      if (typeof c2.setTransform === 'function') c2.setTransform(2, 0, 0, 2, 0, 0);
+      else if (typeof c2.scale === 'function') c2.scale(2, 2);
+      var ro = null;
+      var unsubTheme = null;
+      function cleanupEf() {
+        if (ro) { try { ro.disconnect(); } catch (e) {} ro = null; }
+        if (typeof unsubTheme === 'function') { try { unsubTheme(); } catch (e) {} unsubTheme = null; }
+        cvEl._efRO = null;
+        cvEl._efThemeUnsub = null;
+        cvEl._efDone = false;
+      }
+      function drawEf() {
+        if (!cvEl.isConnected) { cleanupEf(); return; }
+        var astP2 = (window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { deeper: '#020210', panel: '#1e293b', textSoft: '#cbd5e1' };
+        var hasRad = typeof c2.createRadialGradient === 'function';
+        var hasLin = typeof c2.createLinearGradient === 'function';
+        // Studio dark backdrop with subtle radial spotlight
+        if (hasRad) {
+          var bgGrad = c2.createRadialGradient(W * 0.5, H * 0.42, 12, W * 0.5, H * 0.45, Math.max(W, H) * 0.72);
+          bgGrad.addColorStop(0, '#131633');
+          bgGrad.addColorStop(0.55, astP2.deeper || '#06081d');
+          bgGrad.addColorStop(1, '#020210');
+          c2.fillStyle = bgGrad;
+        } else {
+          c2.fillStyle = astP2.deeper || '#020210';
+        }
+        c2.fillRect(0, 0, W, H);
+        // Subtle technical studio grid lines
+        c2.save();
+        c2.strokeStyle = 'rgba(148,163,184,0.08)';
+        c2.lineWidth = 0.75;
+        for (var gx = 24; gx < W; gx += 28) {
+          c2.beginPath(); c2.moveTo(gx, 0); c2.lineTo(gx, H - 16); c2.stroke();
+        }
+        for (var gy = 20; gy < H - 16; gy += 28) {
+          c2.beginPath(); c2.moveTo(0, gy); c2.lineTo(W, gy); c2.stroke();
+        }
+        c2.restore();
+
+        var fracs = [
+          { num: 1, den: 2, color: '#f472b6', deep: '#9d174d' },
+          { num: 2, den: 4, color: '#a78bfa', deep: '#5b21b6' },
+          { num: 4, den: 8, color: '#38bdf8', deep: '#0369a1' },
+          { num: 8, den: 16, color: '#34d399', deep: '#047857' }
+        ];
+        var cellW = W / fracs.length;
+        var pieCy = H * 0.37;
+        var R = Math.min(34, Math.max(20, Math.min(cellW * 0.28, H * 0.24)));
+
+        // Luminous equivalence-alignment horizontal laser beam connecting all 4 pies
+        c2.save();
+        if (hasLin) {
+          var beamGrad = c2.createLinearGradient(cellW * 0.5, pieCy, W - cellW * 0.5, pieCy);
+          beamGrad.addColorStop(0, 'rgba(244,114,182,0.55)');
+          beamGrad.addColorStop(0.35, 'rgba(167,139,250,0.55)');
+          beamGrad.addColorStop(0.68, 'rgba(56,189,248,0.55)');
+          beamGrad.addColorStop(1, 'rgba(52,211,153,0.55)');
+          c2.strokeStyle = beamGrad;
+        } else {
+          c2.strokeStyle = 'rgba(244,114,182,0.45)';
+        }
+        c2.lineWidth = 1.6;
+        if (typeof c2.setLineDash === 'function') c2.setLineDash([4, 4]);
+        c2.beginPath();
+        c2.moveTo(cellW * 0.5, pieCy);
+        c2.lineTo(W - cellW * 0.5, pieCy);
+        c2.stroke();
+        if (typeof c2.setLineDash === 'function') c2.setLineDash([]);
+        c2.restore();
+
+        fracs.forEach(function(f, fi) {
+          var cx = fi * cellW + cellW / 2;
+          var cy = pieCy;
+          // Grounded ambient glow halo behind each pie
+          if (hasRad) {
+            c2.save();
+            var pieAura = c2.createRadialGradient(cx, cy, R * 0.3, cx, cy, R * 1.42);
+            pieAura.addColorStop(0, f.color);
+            pieAura.addColorStop(1, 'rgba(2,2,16,0)');
+            c2.globalAlpha = 0.22;
+            c2.fillStyle = pieAura;
+            c2.beginPath(); c2.arc(cx, cy, R * 1.42, 0, Math.PI * 2); c2.fill();
+            c2.restore();
+          }
+          // Bevel-shaded pie wedges
+          for (var slc = 0; slc < f.den; slc++) {
+            var a1 = (slc / f.den) * Math.PI * 2 - Math.PI / 2;
+            var a2 = ((slc + 1) / f.den) * Math.PI * 2 - Math.PI / 2;
+            var filled = slc < f.num;
+            c2.save();
+            if (filled) {
+              c2.shadowColor = f.color; c2.shadowBlur = 9;
+              if (hasRad) {
+                var wGrad = c2.createRadialGradient(cx - R * 0.22, cy - R * 0.25, 2, cx, cy, R * 1.05);
+                wGrad.addColorStop(0, '#ffffff');
+                wGrad.addColorStop(0.18, f.color);
+                wGrad.addColorStop(1, f.deep);
+                c2.fillStyle = wGrad;
+              } else {
+                c2.fillStyle = f.color;
+              }
+            } else {
+              c2.fillStyle = astP2.panel || '#1e293b';
+            }
+            c2.beginPath();
+            c2.moveTo(cx, cy);
+            c2.arc(cx, cy, R, a1, a2);
+            c2.closePath();
+            c2.fill();
+            c2.restore();
+            c2.strokeStyle = 'rgba(255,255,255,0.22)'; c2.lineWidth = 0.7; c2.stroke();
+          }
+          // Glossy glass dome specular crescent clipped to the pie
+          if (hasRad && typeof c2.clip === 'function') {
+            c2.save();
+            c2.beginPath(); c2.arc(cx, cy, R, 0, Math.PI * 2); c2.clip();
+            var glossF = c2.createRadialGradient(cx - R * 0.35, cy - R * 0.42, 1, cx - R * 0.35, cy - R * 0.42, R * 1.15);
+            glossF.addColorStop(0, 'rgba(255,255,255,0.42)');
+            glossF.addColorStop(0.35, 'rgba(255,255,255,0.12)');
+            glossF.addColorStop(0.6, 'rgba(255,255,255,0)');
+            c2.fillStyle = glossF;
+            c2.fillRect(cx - R, cy - R, R * 2, R * 2);
+            c2.restore();
+          }
+          // Outer chamfer rim + glowing 1/2 equivalence-alignment partition beacons (12 & 6 o'clock)
+          c2.strokeStyle = f.color; c2.lineWidth = 1.6;
+          c2.beginPath(); c2.arc(cx, cy, R, 0, Math.PI * 2); c2.stroke();
+          c2.save();
+          c2.strokeStyle = '#ffffff'; c2.lineWidth = 1.2; c2.shadowColor = f.color; c2.shadowBlur = 6;
+          c2.beginPath(); c2.moveTo(cx, cy - R - 2); c2.lineTo(cx, cy + R + 2); c2.stroke();
+          c2.fillStyle = '#ffffff';
+          c2.beginPath(); c2.arc(cx, cy - R, 2.4, 0, Math.PI * 2); c2.fill();
+          c2.beginPath(); c2.arc(cx, cy + R, 2.4, 0, Math.PI * 2); c2.fill();
+          c2.restore();
+
+          // Translucent glass equivalence strip bar beneath each pie with centered 1/2 laser alignment tick
+          var barW = Math.min(cellW - 22, 92);
+          var barH = 10;
+          var bx = cx - barW / 2;
+          var by = cy + R + 7;
+          c2.fillStyle = 'rgba(30,41,59,0.88)';
+          c2.fillRect(bx, by, barW, barH);
+          c2.fillStyle = f.color;
+          c2.fillRect(bx, by, barW * (f.num / f.den), barH);
+          if (hasLin) {
+            var bSheen = c2.createLinearGradient(bx, by, bx, by + barH);
+            bSheen.addColorStop(0, 'rgba(255,255,255,0.45)');
+            bSheen.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+            bSheen.addColorStop(1, 'rgba(0,0,0,0.22)');
+            c2.fillStyle = bSheen;
+            c2.fillRect(bx, by, barW * (f.num / f.den), barH);
+          }
+          c2.strokeStyle = 'rgba(255,255,255,0.28)'; c2.lineWidth = 0.6;
+          for (var seg = 1; seg < f.den; seg++) {
+            var sx = bx + (seg / f.den) * barW;
+            c2.beginPath(); c2.moveTo(sx, by); c2.lineTo(sx, by + barH); c2.stroke();
+          }
+          c2.strokeStyle = f.color; c2.lineWidth = 1;
+          c2.strokeRect(bx, by, barW, barH);
+          // Luminous midpoint alignment tick on the strip
+          c2.fillStyle = '#ffffff';
+          c2.fillRect(cx - 0.8, by - 2, 1.6, barH + 4);
+
+          c2.font = 'bold 12px monospace'; c2.fillStyle = f.color; c2.textAlign = 'center';
+          c2.fillText(f.num + '/' + f.den, cx, by + barH + 14);
+          c2.font = '8px monospace'; c2.fillStyle = astP2.textSoft || '#cbd5e1';
+          c2.fillText('= 0.5', cx, by + barH + 24);
+        });
+        c2.fillStyle = 'rgba(0,0,0,0.85)';
+        c2.fillRect(8, H - 14, W - 16, 12);
+        c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#f472b6'; c2.textAlign = 'center';
+        c2.fillText('Multiply numerator & denominator by same number \u2192 same value, different form', W / 2, H - 5);
+      }
+      drawEf();
+      if (typeof ResizeObserver === 'function') {
+        ro = new ResizeObserver(function() {
+          if (!cvEl.isConnected) { cleanupEf(); return; }
+          W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 180;
+          cvEl.width = W * 2; cvEl.height = H * 2; c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2);
+          drawEf();
+        });
+        cvEl._efRO = ro;
+        ro.observe(cvEl);
+      }
+      if (window.AlloStemTheme && window.AlloStemTheme.onChange) {
+        unsubTheme = window.AlloStemTheme.onChange(drawEf);
+        cvEl._efThemeUnsub = unsubTheme;
+      }
+      efCleanupRef.current = cleanupEf;
+    }, []);
 
     // ═══ SOUND EFFECTS ENGINE ═══
     var _audioCtx = null;
@@ -2294,15 +2512,34 @@ window.StemLab = window.StemLab || {
       }
       // Center "n/d" badge — anchors the visual to the symbolic fraction
       var centerBadge = (!unlabeled && den >= 2 && size >= 56) ? h('g', { key: 'centerBadge', pointerEvents: 'none' },
+        !isContrast && h('circle', { cx: size / 2, cy: size / 2 + 1.5, r: Math.max(10, size * 0.16), fill: 'rgba(15,23,42,0.16)' }),
         h('circle', { cx: size / 2, cy: size / 2, r: Math.max(10, size * 0.16), fill: 'white', stroke: '#e11d48', strokeWidth: 1.5 }),
+        !isContrast && h('circle', { cx: size / 2, cy: size / 2, r: Math.max(8, size * 0.16 - 2), fill: 'none', stroke: 'rgba(255,255,255,0.85)', strokeWidth: 1 }),
         h('text', {
           x: size / 2, y: size / 2 + Math.max(3, size * 0.05),
           textAnchor: 'middle',
           style: { fontSize: Math.max(9, size / 8) + 'px', fontWeight: 800, fill: '#e11d48' }
         }, num + '/' + den)
       ) : null;
+      var pieGlossId = 'frac-pie-gloss-' + size + '-' + num + '-' + den;
+      var pieRimId = 'frac-pie-rim-' + size + '-' + num + '-' + den;
       return h('svg', { viewBox: '0 0 ' + size + ' ' + size, width: size, height: size, role: unlabeled ? 'img' : undefined, 'aria-label': __alloAriaFill(__alloT('stem.fractions.a11y_out_of_parts_shaded', '{num} out of {den} parts shaded'), { num: num, den: den }) },
+        !isContrast && h('defs', null,
+          h('radialGradient', { id: pieGlossId, cx: '32%', cy: '26%', r: '72%' },
+            h('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.44)' }),
+            h('stop', { offset: '36%', stopColor: 'rgba(255,255,255,0.10)' }),
+            h('stop', { offset: '75%', stopColor: 'rgba(15,23,42,0.02)' }),
+            h('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.18)' })
+          ),
+          h('linearGradient', { id: pieRimId, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.7)' }),
+            h('stop', { offset: '55%', stopColor: 'rgba(255,255,255,0.05)' }),
+            h('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.28)' })
+          )
+        ),
         slices,
+        !isContrast && h('circle', { cx: size / 2, cy: size / 2, r: radius, fill: 'url(#' + pieGlossId + ')', pointerEvents: 'none' }),
+        !isContrast && h('circle', { cx: size / 2, cy: size / 2, r: Math.max(1, radius - 1), fill: 'none', stroke: 'url(#' + pieRimId + ')', strokeWidth: 2, pointerEvents: 'none' }),
         sliceLabels,
         centerBadge || h('circle', { cx: size / 2, cy: size / 2, r: 3, fill: unlabeled ? '#0f172a' : '#e11d48' })
       );
@@ -2314,10 +2551,17 @@ window.StemLab = window.StemLab || {
       var barHeight = options.height || 48;
       var segs = [];
       for (var i = 0; i < den; i++) {
+        var isSegFilled = i < num;
+        var segGlossBg = (!isContrast && isSegFilled)
+          ? 'linear-gradient(180deg, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.08) 44%, rgba(15,23,42,0.16) 100%)'
+          : (!isContrast ? 'linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(226,232,240,0.08) 100%)' : undefined);
+        var segShadow = (options.partLines && i < den - 1)
+          ? 'inset -1px 0 0 #ffffff, inset -3px 0 0 #0f172a'
+          : (!isContrast ? (isSegFilled ? 'inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -2px 4px rgba(15,23,42,0.18)' : 'inset 0 1px 2px rgba(15,23,42,0.08)') : undefined);
         segs.push(h('div', {
           key: i,
           // partLines: two tones, so a part can be counted on the shaded side and on the pale side.
-          style: { flex: '1 1 0%', minWidth: 0, backgroundColor: i < num ? (color || '#f43f5e') : '#e2e8f0', transition: 'background-color 0.3s', boxShadow: (options.partLines && i < den - 1) ? 'inset -1px 0 0 #ffffff, inset -3px 0 0 #0f172a' : undefined },
+          style: { flex: '1 1 0%', minWidth: 0, backgroundColor: isSegFilled ? (color || '#f43f5e') : '#e2e8f0', backgroundImage: segGlossBg, transition: 'background-color 0.3s', boxShadow: segShadow },
           className: 'border-r border-white/50'
         }));
       }
@@ -2331,7 +2575,8 @@ window.StemLab = window.StemLab || {
           maxWidth: options.maxWidth || 520,
           height: barHeight + 'px',
           minHeight: barHeight + 'px',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          boxShadow: isContrast ? undefined : '0 4px 12px rgba(15,23,42,0.12), inset 0 1px 0 rgba(255,255,255,0.5)'
         }
       }, segs);
     };
@@ -2424,34 +2669,74 @@ window.StemLab = window.StemLab || {
         }
       }
 
-      // Plot each fraction
+      // Plot each fraction with glowing partition beacons and specular markers
       (fractions || []).forEach(function(f, i) {
         var val = f.d > 0 ? f.n / f.d : 0;
         var px = margin + (val / maxVal) * (width - 2 * margin);
         var col = f.color || palMain;
         var pin = options.pinHeight || (25 + (i % 3) * 12);
-        // Vertical drop line
+        // Illuminated progress rail from 0 to plotted fraction (first fraction only)
+        if (i === 0 && !isContrast && val > 0) {
+          elements.push(h('line', {
+            key: 'p-' + i + '-rail-glow',
+            x1: margin, y1: lineY, x2: Math.min(width - margin, px), y2: lineY,
+            stroke: col, strokeWidth: 6, strokeOpacity: 0.22, strokeLinecap: 'round'
+          }));
+          elements.push(h('line', {
+            key: 'p-' + i + '-rail',
+            x1: margin, y1: lineY, x2: Math.min(width - margin, px), y2: lineY,
+            stroke: col, strokeWidth: 3, strokeLinecap: 'round'
+          }));
+        }
+        // Luminous vertical laser guide
+        if (!isContrast) {
+          elements.push(h('line', {
+            key: 'p-' + i + '-laser',
+            x1: px, y1: lineY - pin, x2: px, y2: lineY,
+            stroke: col, strokeWidth: 6, strokeOpacity: 0.16, strokeLinecap: 'round'
+          }));
+        }
         elements.push(h('line', {
           key: 'p-' + i + '-line',
           x1: px, y1: lineY - pin, x2: px, y2: lineY,
           stroke: col, strokeWidth: 2, strokeDasharray: '3,2'
         }));
-        // Dot at top
+        // Glowing beacon aura + dot at top
+        if (!isContrast) {
+          elements.push(h('circle', {
+            key: 'p-' + i + '-halo',
+            cx: px, cy: lineY - pin, r: 9.5,
+            fill: col, fillOpacity: 0.20
+          }));
+        }
         elements.push(h('circle', {
           key: 'p-' + i + '-dot',
-          cx: px, cy: lineY - pin, r: 5,
+          cx: px, cy: lineY - pin, r: 5.2,
           fill: col, stroke: '#0f172a', strokeWidth: 1.5
         }));
+        if (!isContrast) {
+          elements.push(h('circle', {
+            key: 'p-' + i + '-spec',
+            cx: px - 1.6, cy: lineY - pin - 1.6, r: 1.7,
+            fill: 'rgba(255,255,255,0.85)', pointerEvents: 'none'
+          }));
+        }
         // Label
         elements.push(h('text', {
           key: 'p-' + i + '-label',
-          x: px, y: lineY - pin - 7,
+          x: px, y: lineY - pin - 8,
           textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: col
         }, f.label || (f.n + '/' + f.d)));
-        // Dot on line
+        // Glowing partition beacon on the axis
+        if (!isContrast) {
+          elements.push(h('circle', {
+            key: 'p-' + i + '-mark-ring',
+            cx: px, cy: lineY, r: 7, fill: col, fillOpacity: 0.22
+          }));
+        }
         elements.push(h('circle', {
           key: 'p-' + i + '-mark',
-          cx: px, cy: lineY, r: 3.5, fill: col, stroke: '#fff', strokeWidth: 1.5
+          cx: px, cy: lineY, r: 3.8, fill: col, stroke: '#fff', strokeWidth: 1.5
         }));
       });
 
@@ -2484,17 +2769,35 @@ window.StemLab = window.StemLab || {
       var height = options.height || 180;
       var cellW = width / cols;
       var cellH = height / rows;
+      var areaGlossId = 'frac-area-gloss-' + rows + '-' + cols;
       var cells = [];
+      if (!isContrast) {
+        cells.push(h('defs', { key: 'defs' },
+          h('linearGradient', { id: areaGlossId, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.42)' }),
+            h('stop', { offset: '42%', stopColor: 'rgba(255,255,255,0.06)' }),
+            h('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.18)' })
+          )
+        ));
+      }
       var n = num;
       for (var r = 0; r < rows; r++) {
         for (var c = 0; c < cols; c++) {
           var filled = (r * cols + c) < n;
+          var cx = c * cellW, cy = r * cellH;
           cells.push(h('rect', {
             key: r + '-' + c,
-            x: c * cellW, y: r * cellH, width: cellW, height: cellH,
+            x: cx, y: cy, width: cellW, height: cellH,
             fill: filled ? palMain : palBg,
-            stroke: palAccent, strokeWidth: 1
+            stroke: palAccent, strokeWidth: 1.2
           }));
+          if (filled && !isContrast) {
+            cells.push(h('rect', {
+              key: 'g-' + r + '-' + c,
+              x: cx + 1, y: cy + 1, width: Math.max(0, cellW - 2), height: Math.max(0, cellH - 2),
+              fill: 'url(#' + areaGlossId + ')', pointerEvents: 'none'
+            }));
+          }
         }
       }
       return h('svg', {
@@ -2503,7 +2806,7 @@ window.StemLab = window.StemLab || {
         height: height,
         role: 'img',
         'aria-label': 'Area model showing ' + num + ' over ' + den + ' as ' + num + ' shaded cells out of ' + den + ' total cells in a ' + rows + ' by ' + cols + ' grid',
-        style: { maxWidth: width + 'px', borderRadius: '8px' }
+        style: { maxWidth: width + 'px', borderRadius: '8px', boxShadow: isContrast ? undefined : '0 4px 12px rgba(15,23,42,0.12)' }
       }, cells);
     };
 
@@ -2518,7 +2821,17 @@ window.StemLab = window.StemLab || {
       var spacing = 36;
       var radius = 14;
       var icon = options.icon || null; // emoji to render instead of circles
+      var setGlossId = 'frac-set-gloss-' + num + '-' + den;
       var elements = [];
+      if (!isContrast && !icon) {
+        elements.push(h('defs', { key: 'defs' },
+          h('radialGradient', { id: setGlossId, cx: '32%', cy: '26%', r: '72%' },
+            h('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.72)' }),
+            h('stop', { offset: '34%', stopColor: 'rgba(255,255,255,0.14)' }),
+            h('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.22)' })
+          )
+        ));
+      }
       for (var i = 0; i < den; i++) {
         var col = i % perRow;
         var row = Math.floor(i / perRow);
@@ -2531,10 +2844,16 @@ window.StemLab = window.StemLab || {
             opacity: filled ? 1 : 0.25, style: { filter: filled ? 'none' : 'grayscale(1)' }
           }, icon));
         } else {
+          if (filled && !isContrast) {
+            elements.push(h('circle', { key: 'sh-' + i, cx: cx + 1, cy: cy + 2, r: radius, fill: 'rgba(15,23,42,0.14)' }));
+          }
           elements.push(h('circle', {
             key: i, cx: cx, cy: cy, r: radius,
             fill: filled ? palMain : palBg, stroke: palAccent, strokeWidth: 2
           }));
+          if (filled && !isContrast) {
+            elements.push(h('circle', { key: 'gl-' + i, cx: cx, cy: cy, r: radius - 1, fill: 'url(#' + setGlossId + ')', pointerEvents: 'none' }));
+          }
         }
       }
       var totalW = Math.max(width, perRow * spacing + 16);
@@ -2559,7 +2878,17 @@ window.StemLab = window.StemLab || {
       // like a rectangle's vertical width in the UI.
       var length = options.length || options.width || 400;
       var height = options.height || 40;
+      var lenGlassId = 'frac-len-glass-' + length + '-' + height;
       var elements = [];
+      if (!isContrast) {
+        elements.push(h('defs', { key: 'defs' },
+          h('linearGradient', { id: lenGlassId, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.48)' }),
+            h('stop', { offset: '44%', stopColor: 'rgba(255,255,255,0.08)' }),
+            h('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.18)' })
+          )
+        ));
+      }
       // Background strip: one whole, measured horizontally.
       elements.push(h('rect', { key: 'bg', x: 0, y: 0, width: length, height: height,
         fill: palBg, stroke: palAccent, strokeWidth: 2, rx: 6 }));
@@ -2567,12 +2896,23 @@ window.StemLab = window.StemLab || {
       var fillLength = den > 0 ? (num / den) * length : 0;
       elements.push(h('rect', { key: 'fill', x: 0, y: 0, width: fillLength, height: height,
         fill: palMain, stroke: 'none', rx: 6 }));
+      if (!isContrast && fillLength > 2) {
+        elements.push(h('rect', { key: 'fill-glass', x: 1, y: 1, width: Math.max(0, fillLength - 2), height: Math.max(0, height - 2),
+          fill: 'url(#' + lenGlassId + ')', stroke: 'none', rx: 5, pointerEvents: 'none' }));
+        elements.push(h('line', { key: 'fill-spec', x1: 5, y1: 2.5, x2: Math.max(5, fillLength - 5), y2: 2.5,
+          stroke: 'rgba(255,255,255,0.62)', strokeWidth: 1.5, strokeLinecap: 'round', pointerEvents: 'none' }));
+      }
       // Tick marks at each equal-length segment boundary.
       for (var ti = 1; ti < den; ti++) {
         var x = (ti / den) * length;
         if (options.unlabeled) elements.push(h('line', { key: 'td-' + ti, x1: x, y1: 0, x2: x, y2: height, stroke: '#0f172a', strokeWidth: 3, 'data-fraction-part-line': 'true' }));
         elements.push(h('line', { key: 't-' + ti, x1: x, y1: 0, x2: x, y2: height,
-          stroke: '#fff', strokeWidth: options.unlabeled ? 1 : 1.5, strokeOpacity: options.unlabeled ? 1 : 0.8 }));
+          stroke: '#fff', strokeWidth: options.unlabeled ? 1 : 1.5, strokeOpacity: options.unlabeled ? 1 : 0.85 }));
+      }
+      // Glowing partition beacon at the shaded endpoint
+      if (!isContrast && num > 0 && num < den) {
+        elements.push(h('line', { key: 'end-glow', x1: fillLength, y1: 1, x2: fillLength, y2: height - 1,
+          stroke: '#fff', strokeWidth: 3, strokeOpacity: 0.72, pointerEvents: 'none' }));
       }
       // Fraction label stays centered on the whole length. It can sit on the fill, the pale strip or both, in any
       // palette, so it brings its own plate: white ink on the pale strip read about 1.4:1.
@@ -2607,28 +2947,64 @@ window.StemLab = window.StemLab || {
       var topY = pad;
       var leftX = pad + 6;
       var rightX = width - pad - 6;
-      // Liquid fill
-      var fillPct = den > 0 ? num / den : 0;
+      var innerW = rightX - leftX;
+      var volGlassId = 'frac-vol-glass-' + width + '-' + height;
+      var volLiqId = 'frac-vol-liq-' + width + '-' + height;
+      if (!isContrast) {
+        elements.push(h('defs', { key: 'defs' },
+          h('linearGradient', { id: volGlassId, x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+            h('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.52)' }),
+            h('stop', { offset: '22%', stopColor: 'rgba(255,255,255,0.10)' }),
+            h('stop', { offset: '78%', stopColor: 'rgba(15,23,42,0.04)' }),
+            h('stop', { offset: '100%', stopColor: 'rgba(255,255,255,0.34)' })
+          ),
+          h('linearGradient', { id: volLiqId, x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+            h('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.32)' }),
+            h('stop', { offset: '30%', stopColor: 'rgba(255,255,255,0.04)' }),
+            h('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.22)' })
+          )
+        ));
+        // Subtle borosilicate glass body fill
+        elements.push(h('rect', { key: 'glass-bg', x: leftX, y: topY, width: innerW, height: bottomY - topY, fill: 'rgba(226,232,240,0.32)' }));
+      }
+      // Liquid fill with curved translucent meniscus
+      var fillPct = den > 0 ? Math.min(1, Math.max(0, num / den)) : 0;
       var liquidH = (bottomY - topY) * fillPct;
       var liquidTopY = bottomY - liquidH;
       elements.push(h('rect', {
         key: 'liq',
         x: leftX, y: liquidTopY,
-        width: rightX - leftX, height: liquidH,
-        fill: palMain, opacity: 0.7
+        width: innerW, height: liquidH,
+        fill: palMain, opacity: 0.78
       }));
-      // Container outline
+      if (!isContrast && liquidH > 1) {
+        elements.push(h('rect', { key: 'liq-shade', x: leftX, y: liquidTopY, width: innerW, height: liquidH, fill: 'url(#' + volLiqId + ')' }));
+        elements.push(h('ellipse', {
+          key: 'meniscus', cx: leftX + innerW / 2, cy: liquidTopY, rx: innerW / 2, ry: 3.5,
+          fill: 'rgba(255,255,255,0.45)', stroke: palMain, strokeWidth: 1
+        }));
+      }
+      // Glass specular highlight streak
+      if (!isContrast) {
+        elements.push(h('rect', { key: 'glass-sheen', x: leftX, y: topY, width: innerW, height: bottomY - topY, fill: 'url(#' + volGlassId + ')', pointerEvents: 'none' }));
+        elements.push(h('rect', { key: 'glass-streak', x: leftX + 4, y: topY + 6, width: 4.5, height: Math.max(4, bottomY - topY - 12), rx: 2, fill: 'rgba(255,255,255,0.46)', pointerEvents: 'none' }));
+      }
+      // Container outline with flared beaker lip
       elements.push(h('path', {
         key: 'box',
-        d: 'M ' + leftX + ' ' + topY + ' L ' + leftX + ' ' + bottomY + ' L ' + rightX + ' ' + bottomY + ' L ' + rightX + ' ' + topY,
-        fill: 'none', stroke: palAccent, strokeWidth: 3, strokeLinejoin: 'round'
+        d: 'M ' + (leftX - 3) + ' ' + topY + ' L ' + leftX + ' ' + (topY + 4) + ' L ' + leftX + ' ' + bottomY + ' L ' + rightX + ' ' + bottomY + ' L ' + rightX + ' ' + (topY + 4) + ' L ' + (rightX + 3) + ' ' + topY,
+        fill: 'none', stroke: palAccent, strokeWidth: 3, strokeLinejoin: 'round', strokeLinecap: 'round'
       }));
       // Tick marks for each part
       for (var vi = 1; vi < den; vi++) {
         var ty = bottomY - (bottomY - topY) * (vi / den);
         elements.push(h('line', {
-          key: 'tk-' + vi, x1: leftX, y1: ty, x2: rightX, y2: ty,
-          stroke: '#fff', strokeOpacity: 0.7, strokeWidth: 1
+          key: 'tk-' + vi, x1: leftX + 2, y1: ty, x2: leftX + innerW * 0.42, y2: ty,
+          stroke: '#0f172a', strokeOpacity: 0.45, strokeWidth: 1.2
+        }));
+        elements.push(h('line', {
+          key: 'tkw-' + vi, x1: leftX, y1: ty, x2: rightX, y2: ty,
+          stroke: '#fff', strokeOpacity: 0.72, strokeWidth: 1
         }));
       }
       return h('svg', {
@@ -3346,12 +3722,22 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.fractions.compare_line_title', 'Locate both fractions on the same scale')),
           h('div', { style: { background: '#fff' } },
             h('svg', { role: 'img', 'aria-label': 'A: ' + num1 + '/' + den1 + '; B: ' + num2 + '/' + den2 + '. ' + __alloT('stem.fractions.compare_line_direction', 'Numbers increase from left to right.'), viewBox: '0 0 640 140', style: { width: '100%', display: 'block', background: '#fff' }, 'data-compare-line': true },
-              h('line', { x1: 50, y1: 65, x2: 590, y2: 65, stroke: '#475569', strokeWidth: 2 }),
+              !isContrast && Math.abs(val1 - val2) < 1e-9 && !(quiz && !quiz.answered) && (function() {
+                var eqX = 50 + (val1 - nlMin) * 540 / (nlMax - nlMin);
+                return h('g', { key: 'eq-laser', pointerEvents: 'none' },
+                  h('line', { x1: eqX, y1: 22, x2: eqX, y2: 118, stroke: '#10b981', strokeWidth: 9, strokeOpacity: 0.16, strokeLinecap: 'round' }),
+                  h('line', { x1: eqX, y1: 22, x2: eqX, y2: 118, stroke: '#059669', strokeWidth: 2, strokeDasharray: '4 3' }),
+                  h('circle', { cx: eqX, cy: 65, r: 13, fill: '#10b981', fillOpacity: 0.16 })
+                );
+              })(),
+              h('line', { x1: 50, y1: 65, x2: 590, y2: 65, stroke: '#475569', strokeWidth: 2.4, strokeLinecap: 'round' }),
               (function() { var step = Math.max(1, Math.ceil((nlMax - nlMin) / 12)), ticks = []; for(var i = nlMin; i <= nlMax; i += step) ticks.push(i); if(ticks[ticks.length-1] !== nlMax) ticks.push(nlMax);
                 return ticks.map(function(value) { var x = 50 + (value - nlMin) * 540 / (nlMax - nlMin); return h('g', { key: value }, h('line', { x1:x, y1:59, x2:x, y2:73, stroke:'#475569', strokeWidth:2 }), h('text', { x:x, y:90, textAnchor:'middle', fill:'#334155', fontSize:22 }, value)); }); })(),
               [{ value:val1, label:'A: '+num1+'/'+den1, color:'#1d4ed8', y:30 }, { value:val2, label:'B: '+num2+'/'+den2, color:'#b91c1c', y:126 }].map(function(point, index) { var x = 50 + (point.value - nlMin) * 540 / (nlMax - nlMin); return h('g', { key:index },
-                h('line', { x1:x, y1:65, x2:x, y2:index ? 108 : 35, stroke:point.color, strokeWidth:2, strokeDasharray:index ? '3 2' : undefined }),
-                index ? h('path', { d:'M '+x+' 58 l 7 7 l -7 7 l -7 -7 Z', fill:point.color, stroke:'#fff', strokeWidth:1 }) : h('circle', { cx:x, cy:65, r:7, fill:point.color, stroke:'#fff', strokeWidth:1 }),
+                !isContrast && h('line', { x1:x, y1:65, x2:x, y2:index ? 108 : 35, stroke:point.color, strokeWidth:6, strokeOpacity:0.14, strokeLinecap:'round' }),
+                h('line', { x1:x, y1:65, x2:x, y2:index ? 108 : 35, stroke:point.color, strokeWidth:2.2, strokeDasharray:index ? '3 2' : undefined }),
+                !isContrast && h('circle', { cx:x, cy:65, r:11, fill:point.color, fillOpacity:0.16 }),
+                index ? h('path', { d:'M '+x+' 57 l 8 8 l -8 8 l -8 -8 Z', fill:point.color, stroke:'#fff', strokeWidth:1.4 }) : h('circle', { cx:x, cy:65, r:7.5, fill:point.color, stroke:'#fff', strokeWidth:1.4 }),
                 h('text', { x:x, y:point.y, textAnchor:'middle', fill:point.color, fontSize:26, fontWeight:800 }, index ? 'B' : 'A')); }))
           ),
           h('p', { className:'text-sm font-bold text-slate-700 mt-2', 'data-compare-line-key':true }, 'A: '+num1+'/'+den1+'; B: '+num2+'/'+den2), h('p', { className:'text-xs text-slate-700 mt-2' }, __alloT('stem.fractions.compare_line_hint_fitted', 'A uses a circle; B uses a diamond. The fraction farther right is larger. Matching positions mean equal values.'))),
@@ -4093,7 +4479,23 @@ window.StemLab = window.StemLab || {
         ),
         // The wall
         h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-3 overflow-x-auto' },
-          h('div', { role: 'group', 'aria-label': __alloT('stem.fractions.wall_img_label', 'Interactive fraction wall comparing equivalent fraction lengths'), className: 'space-y-1', style: { minWidth: '360px' } },
+          h('div', { role: 'group', 'aria-label': __alloT('stem.fractions.wall_img_label', 'Interactive fraction wall comparing equivalent fraction lengths'), className: 'relative space-y-1', style: { minWidth: '360px' } },
+            !isContrast && wallHighlight && wallHighlight.d > 0 && wallHighlight.n > 0 && wallHighlight.n < wallHighlight.d && h('div', {
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: 'calc(40px + (100% - 40px) * ' + (wallHighlight.n / wallHighlight.d) + ')',
+                width: '3px',
+                transform: 'translateX(-1.5px)',
+                background: 'linear-gradient(180deg, #a855f7 0%, #f59e0b 50%, #a855f7 100%)',
+                boxShadow: '0 0 10px rgba(168,85,247,0.75), 0 0 4px rgba(245,158,11,0.85)',
+                borderRadius: '999px',
+                pointerEvents: 'none',
+                zIndex: 4
+              }
+            }),
             wallDenoms.map(function(den, rowIdx) {
               var pieces2 = [];
               var highlightNumerator = highlightedNumeratorFor(den);
@@ -4120,7 +4522,10 @@ window.StemLab = window.StemLab || {
                     background: fillsHighlightedLength ? '#fbbf24' : isSelected ? '#7e22ce' : colors[rowIdx % colors.length],
                     color: fillsHighlightedLength ? '#0f172a' : '#ffffff',
                     border: (endpointHighlighted || isSelected) ? '3px solid #6d28d9' : '1px solid #475569',
-                    borderRadius: '3px',
+                    borderRadius: '4px',
+                    boxShadow: isContrast ? undefined : (fillsHighlightedLength
+                      ? 'inset 0 1.5px 0 rgba(255,255,255,0.68), inset 0 -2px 4px rgba(180,83,9,0.28), 0 0 6px rgba(251,191,36,0.35)'
+                      : 'inset 0 1.5px 0 rgba(255,255,255,0.36), inset 0 -2px 4px rgba(15,23,42,0.22)'),
                     opacity: 1,
                     cursor: wallCompareB ? 'wait' : 'pointer'
                   }
@@ -6053,8 +6458,11 @@ window.StemLab = window.StemLab || {
             if (!cv) return;
             if (cv._prAnim) return;
             var c2 = cv.getContext('2d');
+            if (!c2) return;
             var W = cv.offsetWidth || 600, H = cv.offsetHeight || 96;
-            cv.width = W * 2; cv.height = H * 2; c2.scale(2, 2);
+            cv.width = W * 2; cv.height = H * 2;
+            if (typeof c2.setTransform === 'function') c2.setTransform(2, 0, 0, 2, 0, 0);
+            else if (typeof c2.scale === 'function') c2.scale(2, 2);
             cv._prActive = null; cv._prStart = performance.now(); cv._prMissed = null; cv._prWarned = null;
             function frame(now) {
               if (!cv.isConnected) { cancelAnimationFrame(cv._prAnim); cv._prAnim = 0; return; }
@@ -6336,7 +6744,29 @@ window.StemLab = window.StemLab || {
         html += '<p>Topic: ' + escapeHtml(ws.topic) + ' · Grade ' + escapeHtml(ws.grade) + '</p>';
         html += '<ol>';
         generated.forEach(function(p) {
-          html += '<li><span class="q">' + escapeHtml(p.q || '') + '</span> _____________________</li>';
+          var figHtml = '';
+          if (p && p.display && p.display.type === 'pie') {
+            var dn = Math.max(1, parseInt(p.display.d, 10) || 1);
+            var nn = Math.max(0, Math.min(dn, parseInt(p.display.n, 10) || 0));
+            var slices = '';
+            if (dn === 1) {
+              slices = '<circle cx="28" cy="28" r="24" fill="' + (nn >= 1 ? '#e11d48' : '#f1f5f9') + '" stroke="#0f172a" stroke-width="1.5"/>';
+            } else {
+              for (var s = 0; s < dn; s++) {
+                var a1 = (s / dn) * Math.PI * 2 - Math.PI / 2;
+                var a2 = ((s + 1) / dn) * Math.PI * 2 - Math.PI / 2;
+                var x1 = (28 + 24 * Math.cos(a1)).toFixed(2);
+                var y1 = (28 + 24 * Math.sin(a1)).toFixed(2);
+                var x2 = (28 + 24 * Math.cos(a2)).toFixed(2);
+                var y2 = (28 + 24 * Math.sin(a2)).toFixed(2);
+                var largeArc = (a2 - a1) > Math.PI ? 1 : 0;
+                slices += '<path d="M28,28 L' + x1 + ',' + y1 + ' A24,24 0 ' + largeArc + ',1 ' + x2 + ',' + y2 + ' Z" fill="' + (s < nn ? '#e11d48' : '#f1f5f9') + '" stroke="#0f172a" stroke-width="1.2"/>';
+              }
+              slices += '<circle cx="28" cy="28" r="24" fill="none" stroke="#0f172a" stroke-width="1.5"/>';
+            }
+            figHtml = '<svg width="56" height="56" viewBox="0 0 56 56" role="img" aria-label="Pie divided into ' + dn + ' equal parts with ' + nn + ' shaded" style="margin-right:10px;">' + slices + '</svg>';
+          }
+          html += '<li>' + figHtml + '<span class="q">' + escapeHtml(p.q || '') + '</span> _____________________</li>';
         });
         html += '</ol>';
         if (ws.includeAnswers) {
@@ -11837,7 +12267,7 @@ window.StemLab = window.StemLab || {
           score.total > 0 && h('span', { className: 'frac-telemetry-pill' }, __alloT("stem.fractions.nav_practice_score", "Practice score:"), ' ', h('strong', null, score.correct + '/' + score.total))
         ),
         h('div', { className: 'frac-preset-bar', role: 'group', 'aria-label': __alloT('stem.fractions.a11y_starter_studies', 'Quick fraction starters') },
-          h('span', { className: 'text-[11px] font-extrabold uppercase tracking-wider text-rose-200 mr-1' }, __alloT('stem.fractions.presets_label', 'Quick start:')),
+          h('span', { className: 'text-xs font-extrabold uppercase tracking-wider text-rose-200 mr-1' }, __alloT('stem.fractions.presets_label', 'Quick start:')),
           h('button', { type: 'button', className: 'frac-preset-chip', onClick: function() { sfxClick(); upd({ navMode: 'learn', tab: 'practice', pieces: { numerator: 3, denominator: 8 }, challenge: null }); } }, '🍕 ' + __alloT('stem.fractions.preset_build', 'Build 3/8')),
           h('button', { type: 'button', className: 'frac-preset-chip', onClick: function() { sfxClick(); upd({ navMode: 'learn', tab: 'numberline', pieces: { numerator: 3, denominator: 4 } }); } }, '📏 ' + __alloT('stem.fractions.preset_line', 'Number Line')),
           h('button', { type: 'button', className: 'frac-preset-chip', onClick: function() { sfxClick(); upd({ navMode: 'learn', tab: 'wall', wallHighlight: { n: 1, d: 2 } }); } }, '🧱 ' + __alloT('stem.fractions.preset_wall', 'Fraction Wall')),
@@ -12158,85 +12588,7 @@ window.StemLab = window.StemLab || {
             tabIndex: 0,
             'aria-label': __alloT('stem.fractions.a11y_equivalent_fractions_canvas_comparing_one_half', 'Equivalent fractions canvas comparing one half, two fourths, four eighths, and eight sixteenths as the same value.'),
             'data-fraction-equivalence-canvas': 'true',
-            ref: function(cvEl) {
-              if (!cvEl) return;
-              if (cvEl._efDone) return;
-              cvEl._efDone = true;
-              var c2 = cvEl.getContext('2d');
-              var W = cvEl.offsetWidth || 600;
-              var H = cvEl.offsetHeight || 180;
-              cvEl.width = W * 2; cvEl.height = H * 2;
-              c2.scale(2, 2);
-              function drawEf() {
-                var astP2 = (window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { deeper: '#020210', panel: '#1e293b', textSoft: '#cbd5e1' };
-                c2.fillStyle = astP2.deeper || '#020210';
-                c2.fillRect(0, 0, W, H);
-                var fracs = [
-                  { num: 1, den: 2, color: '#f472b6' },
-                  { num: 2, den: 4, color: '#a78bfa' },
-                  { num: 4, den: 8, color: '#7dd3fc' },
-                  { num: 8, den: 16, color: '#10b981' }
-                ];
-                var cellW = W / fracs.length;
-                fracs.forEach(function(f, fi) {
-                  var cx = fi * cellW + cellW / 2;
-                  var cy = H * 0.40;
-                  var R = 35;
-                  // Pie chart — filled slices glow softly; a glossy dome highlight on top
-                  for (var slc = 0; slc < f.den; slc++) {
-                    var a1 = (slc / f.den) * Math.PI * 2 - Math.PI / 2;
-                    var a2 = ((slc + 1) / f.den) * Math.PI * 2 - Math.PI / 2;
-                    var filled = slc < f.num;
-                    c2.save();
-                    if (filled) { c2.shadowColor = f.color; c2.shadowBlur = 10; }
-                    c2.fillStyle = filled ? f.color : (astP2.panel || '#1e293b');
-                    c2.beginPath();
-                    c2.moveTo(cx, cy);
-                    c2.arc(cx, cy, R, a1, a2);
-                    c2.closePath();
-                    c2.fill();
-                    c2.restore();
-                    c2.strokeStyle = astP2.deeper || '#020210'; c2.lineWidth = 0.5; c2.stroke();
-                  }
-                  // Glossy dome highlight (upper-left light) clipped to the pie
-                  c2.save();
-                  c2.beginPath(); c2.arc(cx, cy, R, 0, Math.PI * 2); c2.clip();
-                  var glossF = c2.createRadialGradient(cx - R * 0.35, cy - R * 0.4, 1, cx - R * 0.35, cy - R * 0.4, R * 1.2);
-                  glossF.addColorStop(0, 'rgba(255,255,255,0.28)');
-                  glossF.addColorStop(0.5, 'rgba(255,255,255,0)');
-                  c2.fillStyle = glossF;
-                  c2.fillRect(cx - R, cy - R, R * 2, R * 2);
-                  c2.restore();
-                  c2.strokeStyle = f.color; c2.lineWidth = 1.5;
-                  c2.beginPath();
-                  c2.arc(cx, cy, R, 0, Math.PI * 2);
-                  c2.stroke();
-                  c2.font = 'bold 13px monospace'; c2.fillStyle = f.color; c2.textAlign = 'center';
-                  c2.fillText(f.num + '/' + f.den, cx, cy + R + 18);
-                  c2.font = '8px monospace'; c2.fillStyle = astP2.textSoft || '#cbd5e1';
-                  c2.fillText('= 0.5', cx, cy + R + 30);
-                });
-                c2.fillStyle = 'rgba(0,0,0,0.85)';
-                c2.fillRect(8, H - 14, W - 16, 12);
-                c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#f472b6'; c2.textAlign = 'center';
-                c2.fillText('Multiply numerator & denominator by same number \u2192 same value, different form', W / 2, H - 5);
-                // Static scene (no time/phase consumed) \u2014 draw once, not a 60fps loop.
-              }
-              drawEf();
-              var ro = new ResizeObserver(function() {
-                // Disconnect on detach so this always-mounted banner's observer doesn't leak;
-                // reset the transform before re-scaling so DPR scaling can't accumulate.
-                if (!cvEl.isConnected) { ro.disconnect(); cvEl._efRO = null; return; }
-                W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                cvEl.width = W * 2; cvEl.height = H * 2; c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2);
-                drawEf();
-              });
-              cvEl._efRO = ro;
-              ro.observe(cvEl);
-              if (window.AlloStemTheme && window.AlloStemTheme.onChange) {
-                window.AlloStemTheme.onChange(drawEf);
-              }
-            }
+            ref: efCanvasRef
           })
         )
       )

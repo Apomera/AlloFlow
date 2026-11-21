@@ -1759,7 +1759,7 @@ window.StemLab = window.StemLab || {
     mesh.add(edges);
     // Rivets and straps travel with the load, not with the stationary test bed.
     if (Math.min(x, y, z) > 0.35 && Math.max(x, y, z) < 1.8) {
-      var steel = new THREE.MeshStandardMaterial({ color: contrast ? 0xffffff : 0x536477, roughness: 0.36, metalness: 0.55 });
+      var steel = new THREE.MeshStandardMaterial({ color: contrast ? 0xffffff : 0x64748b, roughness: 0.24, metalness: 0.74 });
       [-1, 1].forEach(function (side) {
         var strap = new THREE.Mesh(new THREE.BoxGeometry(x + 0.012, y + 0.012, Math.min(0.07, z * 0.08)), steel);
         strap.position.z = side * z * 0.32; mesh.add(strap);
@@ -1767,7 +1767,229 @@ window.StemLab = window.StemLab || {
     }
   }
 
+  function makeBrushedMetalTexture(THREE) {
+    return makeCanvasTexture(THREE, 128, function (g, n) {
+      g.fillStyle = '#808080';
+      g.fillRect(0, 0, n, n);
+      for (var row = 0; row < n; row++) {
+        var tone = Math.round(112 + hash01(row, 13, 401) * 34);
+        g.fillStyle = 'rgb(' + tone + ',' + tone + ',' + tone + ')';
+        g.fillRect(0, row, n, 1);
+      }
+      for (var streak = 0; streak < 140; streak++) {
+        var sx = hash01(streak, 3, 402) * n;
+        var sy = hash01(streak, 5, 403) * n;
+        var sw = 18 + hash01(streak, 7, 404) * 52;
+        g.fillStyle = streak % 2 ? 'rgba(255,255,255,0.16)' : 'rgba(15,23,42,0.14)';
+        g.fillRect(sx, sy, sw, 1);
+      }
+    });
+  }
+
+  function makePrecisionBenchTexture(THREE, dark) {
+    return makeCanvasTexture(THREE, 256, function (g, n) {
+      g.fillStyle = dark ? '#16243a' : '#eef3f8';
+      g.fillRect(0, 0, n, n);
+      for (var row = 0; row < n; row += 2) {
+        g.fillStyle = dark
+          ? (row % 4 ? 'rgba(148,163,184,0.035)' : 'rgba(2,6,23,0.07)')
+          : (row % 4 ? 'rgba(15,23,42,0.025)' : 'rgba(255,255,255,0.22)');
+        g.fillRect(0, row, n, 1);
+      }
+      g.strokeStyle = dark ? 'rgba(56,189,248,0.12)' : 'rgba(51,65,85,0.11)';
+      g.lineWidth = 1;
+      for (var step = 0; step <= n; step += 32) {
+        g.beginPath(); g.moveTo(step + 0.5, 0); g.lineTo(step + 0.5, n); g.stroke();
+        g.beginPath(); g.moveTo(0, step + 0.5); g.lineTo(n, step + 0.5); g.stroke();
+      }
+      g.strokeStyle = dark ? 'rgba(148,163,184,0.20)' : 'rgba(51,65,85,0.20)';
+      g.beginPath();
+      g.moveTo(0.5, 0); g.lineTo(0.5, n);
+      g.moveTo(0, 0.5); g.lineTo(n, 0.5);
+      g.stroke();
+    });
+  }
+
+  // ── Cinema-grade WebGL1 / GLSL ES 1.00 workshop shaders ──
+  // Purely visual enhancement: anisotropic lathe-machined steel sheen,
+  // directional mechanical power-flow ribbons, and contact-load bearing glow.
+  // Strictly bypassed in High-Contrast mode and frozen under prefers-reduced-motion.
+  function applyAnisoSteelShader(THREE, material, opts, sharedUniforms) {
+    if (!material || !opts || opts.contrast || typeof material.onBeforeCompile !== 'function') return material;
+    var mode = opts.mode || 'steel';
+    var dark = opts.dark !== false;
+    var anisoStrength = opts.aniso != null ? opts.aniso : (mode === 'steel' ? 0.42 : mode === 'frame' ? 0.26 : 0.20);
+    var rimColor = new THREE.Color(opts.rimColor != null ? opts.rimColor : (mode === 'steel' ? (dark ? 0xbce3ff : 0x64748b) : (dark ? 0x94b8d8 : 0x475569)));
+    material.customProgramCacheKey = function () { return 'ml-aniso-' + mode + '-' + (dark ? 'd' : 'l'); };
+    material.onBeforeCompile = function (shader) {
+      shader.uniforms.uMlTime = sharedUniforms.uMlTime;
+      shader.uniforms.uMlActivity = sharedUniforms.uMlActivity;
+      shader.uniforms.uMlLoad = sharedUniforms.uMlLoad;
+      shader.uniforms.uMlDark = { value: dark ? 1.0 : 0.0 };
+      shader.uniforms.uMlAniso = { value: anisoStrength };
+      shader.uniforms.uMlRimTint = { value: rimColor };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vMlLocalPos;\nvarying vec3 vMlWorldPos;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvMlLocalPos = position;\nvMlWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>',
+          '#include <common>\n' +
+          'uniform float uMlTime;\n' +
+          'uniform float uMlActivity;\n' +
+          'uniform float uMlLoad;\n' +
+          'uniform float uMlDark;\n' +
+          'uniform float uMlAniso;\n' +
+          'uniform vec3 uMlRimTint;\n' +
+          'varying vec3 vMlLocalPos;\n' +
+          'varying vec3 vMlWorldPos;'
+        )
+        .replace('#include <tonemapping_fragment>',
+          'vec3 mlN = normalize(normal);\n' +
+          'vec3 mlV = normalize(vViewPosition);\n' +
+          'vec3 mlRefAxis = abs(mlN.y) > 0.94 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);\n' +
+          'vec3 mlT = normalize(cross(mlN, mlRefAxis));\n' +
+          'float mlGroove = 0.5 + 0.5 * sin(vMlLocalPos.y * 130.0 + sin(vMlLocalPos.x * 36.0) * 1.15);\n' +
+          'float mlTurn = 0.5 + 0.5 * sin(length(vMlLocalPos.xz) * 145.0);\n' +
+          'float mlBrush = mix(0.76, 1.24, 0.62 * mlGroove + 0.38 * mlTurn);\n' +
+          'vec3 mlH1 = normalize(normalize(vec3(0.46, 0.72, 0.52)) + mlV);\n' +
+          'vec3 mlH2 = normalize(normalize(vec3(-0.60, 0.42, -0.68)) + mlV);\n' +
+          'float mlTdH1 = dot(mlT, mlH1);\n' +
+          'float mlTdH2 = dot(mlT, mlH2);\n' +
+          'float mlSpec1 = pow(sqrt(max(0.0, 1.0 - mlTdH1 * mlTdH1)), 16.0) * max(dot(mlN, mlH1), 0.0);\n' +
+          'float mlSpec2 = pow(sqrt(max(0.0, 1.0 - mlTdH2 * mlTdH2)), 12.0) * max(dot(mlN, mlH2), 0.0);\n' +
+          'float mlFresnel = pow(1.0 - max(dot(mlN, mlV), 0.0), 3.1);\n' +
+          'float mlSweep = 0.86 + 0.14 * sin(vMlWorldPos.x * 2.4 + vMlWorldPos.y * 1.8 - uMlTime * 1.4);\n' +
+          'float mlThemeGain = mix(0.46, 1.0, uMlDark);\n' +
+          'vec3 mlAnisoLight = (vec3(1.0, 0.96, 0.88) * mlSpec1 * 0.62 + uMlRimTint * mlSpec2 * 0.44) * mlBrush * uMlAniso * mlThemeGain;\n' +
+          'vec3 mlFresnelGlow = uMlRimTint * mlFresnel * (0.14 + 0.18 * uMlActivity + 0.12 * uMlLoad) * mlSweep * mlThemeGain;\n' +
+          'gl_FragColor.rgb += mlAnisoLight + mlFresnelGlow;\n' +
+          '#include <tonemapping_fragment>'
+        );
+    };
+    return material;
+  }
+
+  function makePowerFlowMaterial(THREE, opts, sharedUniforms) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    var dark = opts.dark !== false;
+    var colorA = new THREE.Color(opts.colorA != null ? opts.colorA : 0xffb020);
+    var colorB = new THREE.Color(opts.colorB != null ? opts.colorB : (opts.colorA != null ? opts.colorA : 0x38bdf8));
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: sharedUniforms.uMlTime,
+        uActivity: sharedUniforms.uMlActivity,
+        uLoad: sharedUniforms.uMlLoad,
+        uColorA: { value: colorA },
+        uColorB: { value: colorB },
+        uFreq: { value: opts.freq != null ? opts.freq : 5.0 },
+        uSpeed: { value: opts.speed != null ? opts.speed : 1.8 },
+        uAxis: { value: opts.axis != null ? opts.axis : 0.0 },
+        uOpacity: { value: opts.opacity != null ? opts.opacity : (dark ? 0.56 : 0.36) },
+        uDark: { value: dark ? 1.0 : 0.0 }
+      },
+      vertexShader:
+        'varying vec2 vUv;\n' +
+        'varying vec3 vNormal;\n' +
+        'varying vec3 vViewDir;\n' +
+        'void main() {\n' +
+        '  vUv = uv;\n' +
+        '  vNormal = normalize(normalMatrix * normal);\n' +
+        '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);\n' +
+        '  vViewDir = normalize(-mvPos.xyz);\n' +
+        '  gl_Position = projectionMatrix * mvPos;\n' +
+        '}',
+      fragmentShader:
+        'uniform float uTime;\n' +
+        'uniform float uActivity;\n' +
+        'uniform float uLoad;\n' +
+        'uniform vec3 uColorA;\n' +
+        'uniform vec3 uColorB;\n' +
+        'uniform float uFreq;\n' +
+        'uniform float uSpeed;\n' +
+        'uniform float uAxis;\n' +
+        'uniform float uOpacity;\n' +
+        'uniform float uDark;\n' +
+        'varying vec2 vUv;\n' +
+        'varying vec3 vNormal;\n' +
+        'varying vec3 vViewDir;\n' +
+        'void main() {\n' +
+        '  float flowCoord = uAxis > 0.5 ? vUv.y : (uAxis < -0.5 ? (1.0 - vUv.y) : vUv.x);\n' +
+        '  float crossCoord = abs(uAxis) > 0.5 ? vUv.x : vUv.y;\n' +
+        '  float chevron = abs(crossCoord - 0.5) * 0.45;\n' +
+        '  float phase = fract(flowCoord * uFreq - uTime * uSpeed - chevron);\n' +
+        '  float pulse = smoothstep(0.08, 0.72, phase) * smoothstep(1.0, 0.78, phase);\n' +
+        '  float harmonic = pow(0.5 + 0.5 * sin((flowCoord * uFreq * 2.0 - uTime * uSpeed * 1.45) * 6.28318), 3.0);\n' +
+        '  float edgeSoft = sin(clamp(crossCoord, 0.0, 1.0) * 3.14159);\n' +
+        '  float ndotv = abs(dot(normalize(vNormal), normalize(vViewDir)));\n' +
+        '  float fresnel = pow(1.0 - ndotv, 1.45);\n' +
+        '  vec3 baseCol = mix(uColorA, uColorB, clamp(flowCoord, 0.0, 1.0));\n' +
+        '  vec3 hotCol = mix(baseCol, vec3(1.0, 0.98, 0.90), 0.52 * pulse);\n' +
+        '  float energy = (0.28 + 0.72 * pulse + 0.25 * harmonic) * (0.65 + 0.55 * uActivity + 0.35 * uLoad);\n' +
+        '  float alpha = uOpacity * (0.35 + 0.65 * edgeSoft) * (0.48 + 0.52 * pulse + 0.28 * fresnel) * (0.65 + 0.45 * uActivity);\n' +
+        '  gl_FragColor = vec4(hotCol * mix(0.9, 1.25, uDark) * (0.8 + 0.35 * energy), clamp(alpha, 0.0, 0.88));\n' +
+        '}',
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending
+    });
+  }
+
+  function makeContactLoadMaterial(THREE, opts, sharedUniforms) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    var dark = opts.dark !== false;
+    var color = new THREE.Color(opts.color != null ? opts.color : 0xff9f1c);
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: sharedUniforms.uMlTime,
+        uActivity: sharedUniforms.uMlActivity,
+        uLoad: sharedUniforms.uMlLoad,
+        uColor: { value: color },
+        uDark: { value: dark ? 1.0 : 0.0 }
+      },
+      vertexShader:
+        'varying vec2 vUv;\n' +
+        'varying vec3 vNormal;\n' +
+        'varying vec3 vViewDir;\n' +
+        'void main() {\n' +
+        '  vUv = uv;\n' +
+        '  vNormal = normalize(normalMatrix * normal);\n' +
+        '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);\n' +
+        '  vViewDir = normalize(-mvPos.xyz);\n' +
+        '  gl_Position = projectionMatrix * mvPos;\n' +
+        '}',
+      fragmentShader:
+        'uniform float uTime;\n' +
+        'uniform float uActivity;\n' +
+        'uniform float uLoad;\n' +
+        'uniform vec3 uColor;\n' +
+        'uniform float uDark;\n' +
+        'varying vec2 vUv;\n' +
+        'varying vec3 vNormal;\n' +
+        'varying vec3 vViewDir;\n' +
+        'void main() {\n' +
+        '  float ndotv = abs(dot(normalize(vNormal), normalize(vViewDir)));\n' +
+        '  float fresnel = pow(1.0 - ndotv, 1.65);\n' +
+        '  float ringWave = 0.68 + 0.32 * sin(vUv.x * 18.8495 - uTime * 3.2);\n' +
+        '  float stress = 0.32 + 0.68 * max(uLoad, uActivity * 0.65);\n' +
+        '  vec3 col = mix(uColor, vec3(1.0, 0.92, 0.68), 0.35 * stress * ringWave);\n' +
+        '  float alpha = mix(0.20, 0.44, uDark) * stress * (0.42 + 0.58 * fresnel) * (0.78 + 0.22 * ringWave);\n' +
+        '  gl_FragColor = vec4(col * mix(0.95, 1.35, uDark), clamp(alpha, 0.0, 0.78));\n' +
+        '}',
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending
+    });
+  }
+
   function buildSimpleMachineScene(THREE, S, m) {
+    if (S._mlTexes) {
+      for (var mti = 0; mti < S._mlTexes.length; mti++) {
+        try { S._mlTexes[mti].dispose(); } catch (e) {}
+      }
+    }
+    S._mlTexes = [];
     var p = m.params || {};
     var id = m.kind || 'lever';
     var dark = m.dark !== false;
@@ -1789,18 +2011,67 @@ window.StemLab = window.StemLab || {
     }
     if (S.scene) S.scene.fog = !contrast && typeof THREE.Fog === 'function' ? new THREE.Fog(clearColor, 11, 27) : null;
     var workshopWood = contrast ? null : woodTexture(THREE);
-    var workshopSurface = contrast ? null : makeCanvasTexture(THREE,128,function(g,n) {
-      g.fillStyle='#ededed';g.fillRect(0,0,n,n);
-      for(var speck=0;speck<800;speck++) { g.fillStyle=speck%2 ? 'rgba(0,0,0,.09)' : 'rgba(255,255,255,.18)';g.fillRect(hash01(speck,7,190)*n,hash01(speck,11,191)*n,1,1); }
-    });
+    var workshopSurface = contrast ? null : makePrecisionBenchTexture(THREE, dark);
+    var brushedMetal = contrast ? null : makeBrushedMetalTexture(THREE);
+    if (workshopWood) S._mlTexes.push(workshopWood);
+    if (workshopSurface) { workshopSurface.repeat.set(4, 3); S._mlTexes.push(workshopSurface); }
+    if (brushedMetal) { brushedMetal.repeat.set(2, 2); S._mlTexes.push(brushedMetal); }
+    var usePhysical = !contrast && typeof THREE.MeshPhysicalMaterial === 'function';
+    var forceHalos = [];
+    var torqueHalos = [];
+    var mlShaderUniforms = {
+      uMlTime: { value: 1.35 },
+      uMlActivity: { value: 0.35 },
+      uMlLoad: { value: 0.0 }
+    };
+    var contactLoadMat = !contrast ? makeContactLoadMaterial(THREE, { dark: dark, color: 0xff9f1c }, mlShaderUniforms) : null;
+    function addContactRing(radius, tube, px, py, pz, axis, parent) {
+      if (!contactLoadMat) return null;
+      var ring = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 10, 28), contactLoadMat);
+      ring.position.set(px || 0, py || 0, pz || 0);
+      if (axis === 'x') ring.rotation.y = Math.PI / 2;
+      if (axis === 'y') ring.rotation.x = Math.PI / 2;
+      ring.renderOrder = 3;
+      (parent || S.model).add(ring);
+      return ring;
+    }
     function mat(color, emissive) {
-      var cfg = { color: color, roughness: 0.72, metalness: 0.08 };
-      if (color === C.platform && workshopSurface) {cfg.map=workshopSurface;cfg.roughness=0.8;}
-      if (!contrast && color === C.wood && workshopWood) { cfg.map = workshopWood; cfg.color = 0xe8c49a; cfg.roughness = 0.86; }
-      if (color === C.metal || color === C.frame) { cfg.metalness = 0.48; cfg.roughness = 0.36; }
-      if (color === C.load || color === C.effort) { cfg.roughness = 0.32; cfg.metalness = 0.22; }
-      if (emissive) { cfg.emissive = color; cfg.emissiveIntensity = 0.13; }
-      return contrast ? new THREE.MeshLambertMaterial({ color: color }) : new THREE.MeshStandardMaterial(cfg);
+      var cfg = { color: color, roughness: 0.68, metalness: 0.10 };
+      if (color === C.platform && workshopSurface) {
+        cfg.map = workshopSurface;
+        cfg.color = dark ? 0x9fb8d4 : 0xffffff;
+        cfg.roughness = dark ? 0.46 : 0.62;
+        cfg.metalness = dark ? 0.22 : 0.12;
+      }
+      if (!contrast && color === C.wood && workshopWood) { cfg.map = workshopWood; cfg.color = 0xe8c49a; cfg.roughness = 0.84; }
+      if (color === C.metal || color === C.frame) {
+        cfg.metalness = color === C.metal ? 0.78 : 0.62;
+        cfg.roughness = color === C.metal ? 0.22 : 0.30;
+        if (brushedMetal) { cfg.bumpMap = brushedMetal; cfg.bumpScale = 0.014; }
+      }
+      if (color === C.load || color === C.effort) {
+        cfg.roughness = 0.24;
+        cfg.metalness = 0.34;
+        if (brushedMetal) { cfg.bumpMap = brushedMetal; cfg.bumpScale = 0.008; }
+      }
+      if (emissive) { cfg.emissive = color; cfg.emissiveIntensity = 0.20; }
+      if (contrast) return new THREE.MeshLambertMaterial({ color: color });
+      var built;
+      if (usePhysical && (color === C.metal || color === C.load || color === C.effort)) {
+        cfg.clearcoat = color === C.metal ? 0.28 : 0.56;
+        cfg.clearcoatRoughness = color === C.metal ? 0.26 : 0.20;
+        built = new THREE.MeshPhysicalMaterial(cfg);
+      } else {
+        built = new THREE.MeshStandardMaterial(cfg);
+      }
+      if (color === C.metal) {
+        applyAnisoSteelShader(THREE, built, { contrast: contrast, dark: dark, mode: 'steel', aniso: 0.44, rimColor: dark ? 0xbce3ff : 0x64748b }, mlShaderUniforms);
+      } else if (color === C.frame) {
+        applyAnisoSteelShader(THREE, built, { contrast: contrast, dark: dark, mode: 'frame', aniso: 0.26, rimColor: dark ? 0x94b8d8 : 0x475569 }, mlShaderUniforms);
+      } else if (color === C.effort || color === C.load) {
+        applyAnisoSteelShader(THREE, built, { contrast: contrast, dark: dark, mode: 'accent', aniso: 0.18, rimColor: color }, mlShaderUniforms);
+      }
+      return built;
     }
     function finishMesh(mesh, receives) {
       mesh.castShadow = !contrast;
@@ -1835,13 +2106,22 @@ window.StemLab = window.StemLab || {
       var wheel = new THREE.Group(); wheel.position.set(px, py, 0); (parent || S.model).add(wheel);
       cylinder(radius * 0.84, 0.15, 0, 0, 0, C.frame, 'z', wheel);
       torus(radius * 0.875, 0.013, 0, 0, 0, C.metal, 'z', wheel);
-      [-1, 1].forEach(function (side) { cylinder(radius + 0.005, 0.035, 0, 0, side * 0.092, C.frame, 'z', wheel); });
+      [-1, 1].forEach(function (side) {
+        cylinder(radius + 0.005, 0.035, 0, 0, side * 0.092, C.frame, 'z', wheel);
+        if (!contrast) {
+          torus(radius * 0.96, 0.011, 0, 0, side * 0.112, C.metal, 'z', wheel);
+        }
+      });
       [-1, 1].forEach(function (side) {
         for (var spoke = 0; spoke < 4; spoke++) box(radius * 1.7, 0.035, 0.035, 0, 0, side * 0.13, contrast ? 0x000000 : C.metal, wheel, spoke * Math.PI / 4);
         if (contrast) torus(radius * 0.7, 0.012, 0, 0, side * 0.15, 0x000000, 'z', wheel);
       });
       cylinder(radius * 0.34, 0.33, 0, 0, 0, C.effort, 'z', wheel);
       cylinder(0.055, 0.48, 0, 0, 0, C.metal, 'z', wheel);
+      if (!contrast) {
+        addContactRing(radius * 0.39, 0.016, 0, 0, 0.17, 'z', wheel);
+        addContactRing(radius * 0.39, 0.016, 0, 0, -0.17, 'z', wheel);
+      }
       return wheel;
     }
     function arrow(px, top, length, color, direction) {
@@ -1854,6 +2134,33 @@ window.StemLab = window.StemLab || {
       tip.position.set(0, (up ? 1 : -1) * (length + 0.12), 0);
       tip.rotation.z = up ? 0 : Math.PI;
       group.add(tip);
+      if (!contrast) {
+        var haloBaseOpacity = dark ? 0.24 : 0.16;
+        var haloMat = new THREE.MeshBasicMaterial({
+          color: color, transparent: true, opacity: haloBaseOpacity,
+          depthWrite: false, blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending
+        });
+        var haloCone = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.44, 16), haloMat);
+        haloCone.position.copy(tip.position);
+        haloCone.rotation.z = tip.rotation.z;
+        haloCone.renderOrder = 3;
+        group.add(haloCone);
+        var haloCollar = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.022, 8, 24), haloMat);
+        haloCollar.rotation.x = Math.PI / 2;
+        haloCollar.position.set(0, (up ? 1 : -1) * length, 0);
+        haloCollar.renderOrder = 3;
+        group.add(haloCollar);
+        var flowSleeveMat = makePowerFlowMaterial(THREE, {
+          dark: dark, colorA: color, colorB: color, freq: 3.5, speed: 2.0, axis: up ? 1.0 : -1.0, opacity: dark ? 0.50 : 0.30
+        }, mlShaderUniforms);
+        if (flowSleeveMat) {
+          var flowSleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.078, 0.078, length * 0.96, 14, 1, true), flowSleeveMat);
+          flowSleeve.position.set(0, (up ? 1 : -1) * length / 2, 0);
+          flowSleeve.renderOrder = 3;
+          group.add(flowSleeve);
+        }
+        forceHalos.push({ cone: haloCone, collar: haloCollar, mat: haloMat, baseOpacity: haloBaseOpacity });
+      }
       return group;
     }
 
@@ -1867,10 +2174,11 @@ window.StemLab = window.StemLab || {
           ? new THREE.Vector3(radius * Math.cos(angle), 0, -radius * Math.sin(angle))
           : new THREE.Vector3(radius * Math.cos(angle), radius * Math.sin(angle), 0));
       }
-      var tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 60, 0.025, 6, false), mat(C.effort));
+      var guideCurve = new THREE.CatmullRomCurve3(points);
+      var tube = new THREE.Mesh(new THREE.TubeGeometry(guideCurve, 60, 0.025, 6, false), mat(C.effort, true));
       group.add(tube);
       var direction = horizontal ? new THREE.Vector3(-Math.sin(end), 0, -Math.cos(end)) : new THREE.Vector3(-Math.sin(end), Math.cos(end), 0);
-      var head = new THREE.Mesh(new THREE.ConeGeometry(0.105, 0.26, 16), mat(C.effort));
+      var head = new THREE.Mesh(new THREE.ConeGeometry(0.105, 0.26, 16), mat(C.effort, true));
       head.position.copy(points[points.length - 1]).addScaledVector(direction, 0.1);
       head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
       group.add(head); group.position.set(x, y, z); S.model.add(group);
@@ -1893,10 +2201,34 @@ window.StemLab = window.StemLab || {
       }));
       cursorEdge.scale.setScalar(1.3); cursor.add(cursorEdge);
       group.add(cursor);
+      var cursorHalo = null;
+      if (!contrast) {
+        var sheathBaseOpacity = dark ? 0.34 : 0.22;
+        var sheathMat = makePowerFlowMaterial(THREE, {
+          dark: dark, colorA: C.effort, colorB: C.load, freq: 6.0, speed: 1.9, axis: 0.0, opacity: sheathBaseOpacity
+        }, mlShaderUniforms) || new THREE.MeshBasicMaterial({
+          color: C.effort, transparent: true, opacity: sheathBaseOpacity,
+          depthWrite: false, blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending
+        });
+        var sheath = new THREE.Mesh(new THREE.TubeGeometry(guideCurve, 60, 0.052, 8, false), sheathMat);
+        sheath.renderOrder = 2;
+        group.add(sheath);
+        torqueHalos.push({ mesh: sheath, mat: sheathMat, baseOpacity: sheathBaseOpacity });
+        var cursorHaloMat = new THREE.MeshBasicMaterial({
+          color: C.effort, transparent: true, opacity: dark ? 0.30 : 0.18,
+          depthWrite: false, blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending
+        });
+        cursorHalo = new THREE.Mesh(new THREE.SphereGeometry(0.105, 14, 10), cursorHaloMat);
+        cursorHalo.renderOrder = 3;
+        group.add(cursorHalo);
+        torqueHalos.push({ mesh: cursorHalo, mat: cursorHaloMat, baseOpacity: dark ? 0.30 : 0.18 });
+      }
       group.userData.mlQuarterMarks = marks; group.userData.mlOrigin = origin; group.userData.mlCursor = cursor;
       group.userData.mlSetProgress = function (progress) {
         var a = start + Math.PI * 2 * progress;
-        cursor.position.set(radius * Math.cos(a), horizontal ? 0 : radius * Math.sin(a), horizontal ? -radius * Math.sin(a) : 0);
+        var cx = radius * Math.cos(a), cy = horizontal ? 0 : radius * Math.sin(a), cz = horizontal ? -radius * Math.sin(a) : 0;
+        cursor.position.set(cx, cy, cz);
+        if (cursorHalo) cursorHalo.position.set(cx, cy, cz);
       };
       group.userData.mlSetProgress(0);
       return group;
@@ -1907,9 +2239,30 @@ window.StemLab = window.StemLab || {
     var ground = finishMesh(new THREE.Mesh(new THREE.PlaneGeometry(18, 14), mat(C.floor)), true);
     ground.rotation.x = -Math.PI / 2;
     S.model.add(ground);
+    if (!contrast) {
+      var floorSheenCfg = {
+        color: dark ? 0x1e3a5f : 0xcbd5e1,
+        roughness: 0.16,
+        metalness: 0.62,
+        transparent: true,
+        opacity: dark ? 0.18 : 0.10,
+        depthWrite: false
+      };
+      var floorSheen = new THREE.Mesh(
+        new THREE.PlaneGeometry(10.4, 7.6),
+        usePhysical ? new THREE.MeshPhysicalMaterial(Object.assign(floorSheenCfg, { clearcoat: 0.9, clearcoatRoughness: 0.12 })) : new THREE.MeshStandardMaterial(floorSheenCfg)
+      );
+      floorSheen.rotation.x = -Math.PI / 2;
+      floorSheen.position.y = 0.004;
+      S.model.add(floorSheen);
+    }
     if (typeof THREE.GridHelper === 'function') {
-      var grid = new THREE.GridHelper(16, 16, C.frame, dark ? 0x18283e : 0xb7c4d2);
+      var grid = new THREE.GridHelper(16, 16, dark ? 0x38bdf8 : C.frame, dark ? 0x18283e : 0xb7c4d2);
       grid.position.y = 0.008;
+      if (grid.material && !contrast) {
+        grid.material.transparent = true;
+        grid.material.opacity = dark ? 0.42 : 0.55;
+      }
       S.model.add(grid);
     }
     // A real room gives the learner a horizon, depth and an intuitive sense of
@@ -2017,7 +2370,9 @@ window.StemLab = window.StemLab || {
       distanceValid: cueValid, effortTrack: effortTrack, loadTrack: loadTrack,
       effortFill: effortFill, loadFill: loadFill,
       effortEndCap: effortEndCap, loadEndCap: loadEndCap, effortEdge: effortEdge, loadEdge: loadEdge,
-      lamps: roomLamps, beacons: roomBeacons, room: workshopRoom
+      lamps: roomLamps, beacons: roomBeacons, room: workshopRoom,
+      forceHalos: forceHalos, torqueHalos: torqueHalos,
+      shaderUniforms: mlShaderUniforms
     };
     function makeMotionTrail(color, startX, z) {
       var dots = [];
@@ -2080,6 +2435,20 @@ window.StemLab = window.StemLab || {
       // Limit travel at extreme arm ratios so the beam clears the test bed.
       demo.leverTravel = Math.min(0.22, Math.asin(1.02 / (Math.max(eVis, lVis) + 0.42)) - demo.baseRotation);
       demo.leverLoad = leverLoad;
+      if (!contrast) {
+        addContactRing(0.22, 0.028, 0, pivotY, 0.65, 'z');
+        addContactRing(0.22, 0.028, 0, pivotY, -0.65, 'z');
+        var leverFlowMat = makePowerFlowMaterial(THREE, {
+          dark: dark, colorA: C.effort, colorB: C.load, freq: 5.5, speed: 1.75, axis: 0.0, opacity: dark ? 0.48 : 0.30
+        }, mlShaderUniforms);
+        if (leverFlowMat) {
+          var leverFlow = new THREE.Mesh(new THREE.PlaneGeometry(eVis + lVis, 0.14), leverFlowMat);
+          leverFlow.rotation.x = -Math.PI / 2;
+          leverFlow.position.set((lVis - eVis) / 2, 0.122, 0);
+          leverFlow.renderOrder = 3;
+          leverMotion.add(leverFlow);
+        }
+      }
       demo.effortContact = new THREE.Vector3(effortX, 0.19, 0);
       demo.loadContact = new THREE.Vector3(loadX, 0.13, 0);
       demo.effortArrow = arrow(effortX, 3.0, 0.65, C.effort);
@@ -2206,6 +2575,20 @@ window.StemLab = window.StemLab || {
       });
       var windlassDrum = cylinder(drumVis, 2.8, 0, axleY, 0, C.wood, 'z');
       cylinder(0.105,3.25,0,axleY,0,C.metal,'z');
+      if (!contrast) {
+        addContactRing(0.24, 0.030, 0, axleY, 1.43, 'z');
+        addContactRing(0.24, 0.030, 0, axleY, -1.43, 'z');
+        var shaftFlowMat = makePowerFlowMaterial(THREE, {
+          dark: dark, colorA: C.effort, colorB: C.load, freq: 5.0, speed: 1.85, axis: 1.0, opacity: dark ? 0.42 : 0.25
+        }, mlShaderUniforms);
+        if (shaftFlowMat) {
+          var shaftFlow = new THREE.Mesh(new THREE.CylinderGeometry(drumVis + 0.055, drumVis + 0.055, 2.1, 20, 1, true), shaftFlowMat);
+          shaftFlow.rotation.x = Math.PI / 2;
+          shaftFlow.position.set(0, axleY, 0);
+          shaftFlow.renderOrder = 3;
+          S.model.add(shaftFlow);
+        }
+      }
       var wheelMotion = new THREE.Group(); wheelMotion.position.set(0, axleY, 1.52); S.model.add(wheelMotion);
       torus(wheelR, 0.12, 0, 0, 0, C.effort, 'z', wheelMotion);
       box(wheelR * 2, 0.09, 0.09, 0, 0, 0, C.effort, wheelMotion, 0.58);
@@ -2259,6 +2642,19 @@ window.StemLab = window.StemLab || {
       // Deck seams and underside ribs follow the incline, including near-vertical settings.
       var rampDeck = new THREE.Group();
       rampDeck.position.set(0, 0.42 + visH / 2, 0); rampDeck.rotation.z = angle; S.model.add(rampDeck);
+      if (!contrast) {
+        var rampFlowMat = makePowerFlowMaterial(THREE, {
+          dark: dark, colorA: C.effort, colorB: C.load, freq: 6.5, speed: 1.85, axis: 0.0, opacity: dark ? 0.46 : 0.28
+        }, mlShaderUniforms);
+        if (rampFlowMat) {
+          var rampFlow = new THREE.Mesh(new THREE.PlaneGeometry(visL * 0.92, 0.24), rampFlowMat);
+          rampFlow.rotation.x = -Math.PI / 2;
+          rampFlow.position.set(0, 0.132, 0);
+          rampFlow.renderOrder = 3;
+          rampDeck.add(rampFlow);
+        }
+        addContactRing(0.46, 0.024, 0, -0.415, 0, 'y', rampCrate);
+      }
       for (var plank = -4; plank <= 4; plank++) {
         box(0.018, 0.012, 1.96, plank * 0.55, 0.126, 0, contrast ? 0x000000 : 0x533921, rampDeck);
         var ribBottom = 0.42 + visH / 2 + (plank * 0.55 - 0.06) * Math.sin(angle) - 0.22 * Math.cos(angle);
@@ -2377,6 +2773,25 @@ window.StemLab = window.StemLab || {
       wedge.position.set(0, wedgeY, 0); S.model.add(wedge);
       var strikingCap = box(wedgeHalf * 2 + 0.12, 0.12, 2.78, 0, bladeLength / 2 + 0.06, 0, C.effort, wedge);
       [-1, 1].forEach(function (end) { cylinder(Math.min(0.055, wedgeHalf * 0.6), 0.025, 0, bladeLength / 2 + 0.1325, end * 1.05, C.metal, 'y', wedge); });
+      if (!contrast) {
+        var wedgeFlowMat = makePowerFlowMaterial(THREE, {
+          dark: dark, colorA: C.effort, colorB: C.load, freq: 4.5, speed: 2.0, axis: -1.0, opacity: dark ? 0.44 : 0.26
+        }, mlShaderUniforms);
+        if (wedgeFlowMat) {
+          var slopeLen = Math.sqrt(bladeLength * bladeLength + wedgeHalf * wedgeHalf);
+          var slopeAng = Math.atan2(wedgeHalf, bladeLength);
+          [-1, 1].forEach(function (side) {
+            var ribbon = new THREE.Mesh(new THREE.PlaneGeometry(0.18, slopeLen * 0.88), wedgeFlowMat);
+            ribbon.position.set(side * (wedgeHalf * 0.5 + 0.025), 0, 0);
+            ribbon.rotation.y = side * Math.PI / 2;
+            ribbon.rotation.z = 0;
+            ribbon.rotation.x = side * slopeAng;
+            ribbon.renderOrder = 3;
+            wedge.add(ribbon);
+          });
+        }
+        addContactRing(Math.max(0.14, wedgeHalf * 0.45), 0.022, 0, -bladeLength * 0.36, 0, 'y', wedge);
+      }
       demo.motion = wedge; demo.baseY = wedgeY; demo.splitLeft = splitLeft; demo.splitRight = splitRight;
       demo.wedgeLength = bladeLength; demo.wedgeHalf = wedgeHalf; demo.wedgeTravel = wedgeTravel;
       demo.wedgeBevel = wedgeBevel; demo.wedgeStartGap = startGap; demo.woodTop = woodTop; demo.woodHalves = woodHalves; demo.strikingCap = strikingCap;
@@ -2401,6 +2816,17 @@ window.StemLab = window.StemLab || {
       }
       var thread = finishMesh(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(threadPoints), rings * 32, threadRadius, 6, false), mat(C.effort)));
       screwMotion.add(thread);
+      if (!contrast) {
+        var screwFlowMat = makePowerFlowMaterial(THREE, {
+          dark: dark, colorA: C.effort, colorB: C.load, freq: Math.max(6.0, rings * 0.9), speed: 1.9, axis: 0.0, opacity: dark ? 0.44 : 0.28
+        }, mlShaderUniforms);
+        if (screwFlowMat) {
+          var screwFlow = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(threadPoints), rings * 20, threadRadius * 1.42, 6, false), screwFlowMat);
+          screwFlow.renderOrder = 3;
+          screwMotion.add(screwFlow);
+        }
+        addContactRing(0.57, 0.028, 0, 2.68, 0, 'y');
+      }
       // One revolution advances by one rendered thread spacing, keeping the
       // helix aligned with the fixed nut at every selected pitch.
       demo.screwTravel = 1.99 / rings; demo.screwThread = thread; demo.screwShaft = screwShaft;
@@ -2548,6 +2974,35 @@ window.StemLab = window.StemLab || {
           var beaconPulse = active && !reducedMotion ? 1 + 0.10 * Math.sin(elapsed * 2 + bi * Math.PI) : 1;
           D.beacons[bi].scale.setScalar(beaconPulse);
           D.beacons[bi].material.emissiveIntensity = active ? 0.5 : 0.24;
+        }
+      }
+      if (D.forceHalos) {
+        var haloPulse = active && !reducedMotion ? (0.5 + 0.5 * Math.sin(elapsed * 4.2)) : 0;
+        for (var fhi = 0; fhi < D.forceHalos.length; fhi++) {
+          var fh = D.forceHalos[fhi];
+          fh.mat.opacity = Math.min(0.65, fh.baseOpacity + (active || inspecting ? 0.14 * k : 0) + haloPulse * 0.14);
+          var haloScale = 1 + (active && !reducedMotion ? 0.12 * haloPulse : 0);
+          fh.collar.scale.setScalar(haloScale);
+        }
+      }
+      if (D.torqueHalos) {
+        var tqPulse = active && !reducedMotion ? (0.5 + 0.5 * Math.sin(elapsed * 3.6)) : 0;
+        for (var thi = 0; thi < D.torqueHalos.length; thi++) {
+          var th = D.torqueHalos[thi];
+          var thOp = Math.min(0.68, th.baseOpacity + (active || inspecting ? 0.16 * k : 0) + tqPulse * 0.14);
+          if (th.mat && th.mat.uniforms && th.mat.uniforms.uOpacity) th.mat.uniforms.uOpacity.value = thOp;
+          else if (th.mat) th.mat.opacity = thOp;
+        }
+      }
+      if (D.shaderUniforms) {
+        if (reducedMotion) {
+          D.shaderUniforms.uMlTime.value = 1.35;
+          D.shaderUniforms.uMlActivity.value = (active || inspecting) ? 0.65 : 0.35;
+          D.shaderUniforms.uMlLoad.value = k;
+        } else {
+          D.shaderUniforms.uMlTime.value = (now || 0) * 0.001;
+          D.shaderUniforms.uMlActivity.value = active ? (0.70 + 0.30 * k) : (inspecting ? 0.58 : 0.34);
+          D.shaderUniforms.uMlLoad.value = k;
         }
       }
       if (D.kind === 'lever' && D.motion) D.motion.rotation.z = D.baseRotation + D.leverTravel * k;
@@ -2994,7 +3449,11 @@ window.StemLab = window.StemLab || {
         var p = o.geometry.parameters; detailMachineBox(THREE, o, p.width, p.height, p.depth, contrast);
       }
     });
-    var iron = new THREE.MeshStandardMaterial({color:contrast ? 0xffffff : 0x526074, roughness:0.38, metalness:0.55});
+    var iron = new THREE.MeshStandardMaterial({ color: contrast ? 0xffffff : 0x5d6e84, roughness: 0.26, metalness: 0.72 });
+    if (!contrast) {
+      var engineSteelUniforms = { uMlTime: { value: 1.35 }, uMlActivity: { value: 0.45 }, uMlLoad: { value: 0.25 } };
+      applyAnisoSteelShader(THREE, iron, { contrast: false, dark: m.dark !== false, mode: 'steel', aniso: 0.38, rimColor: 0xbce3ff }, engineSteelUniforms);
+    }
     var timberMat = contrast ? new THREE.MeshLambertMaterial({color:0xffffff}) : new THREE.MeshStandardMaterial({color:0xdfb787,map:wood,roughness:0.86});
     function beam(a, b, width, material, parent) {
       var start = new THREE.Vector3(a[0],a[1],a[2]), end = new THREE.Vector3(b[0],b[1],b[2]);
@@ -3667,16 +4126,22 @@ window.StemLab = window.StemLab || {
             S.renderer.shadowMap.enabled = true;
             S.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
           }
-          scene.add(new THREE.AmbientLight(0xffffff, 0.62));
-          var key = new THREE.DirectionalLight(0xffe2b2, 0.95);
+          scene.add(new THREE.AmbientLight(0xffffff, 0.48));
+          if (typeof THREE.HemisphereLight === 'function') {
+            scene.add(new THREE.HemisphereLight(0xdbeafe, 0x1e293b, 0.46));
+          }
+          var key = new THREE.DirectionalLight(0xffe8c2, 1.05);
           key.castShadow = true;
           key.shadow.mapSize.width = 1024; key.shadow.mapSize.height = 1024;
+          key.shadow.bias = -0.0004;
           key.shadow.camera.left = -7; key.shadow.camera.right = 7;
           key.shadow.camera.top = 7; key.shadow.camera.bottom = -3;
           key.shadow.camera.near = 0.5; key.shadow.camera.far = 24;
           key.position.set(4.5, 7, 5.5); scene.add(key);
-          var rim = new THREE.DirectionalLight(0x86c7ff, 0.45);
-          rim.position.set(-5, 3.5, -4); scene.add(rim);
+          var rim = new THREE.DirectionalLight(0x67e8f9, 0.65);
+          rim.position.set(-5.2, 4.2, -4.4); scene.add(rim);
+          var fill = new THREE.DirectionalLight(0xfde68a, 0.28);
+          fill.position.set(5.5, 2.2, -3.5); scene.add(fill);
         },
         build: buildSimpleMachineScene
       })
@@ -3719,17 +4184,21 @@ window.StemLab = window.StemLab || {
             S.renderer.shadowMap.enabled = true;
             S.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
           }
-          scene.add(new THREE.AmbientLight(0xffffff, 0.52));
-          var key = new THREE.DirectionalLight(0xfff4e0, 0.85);
+          scene.add(new THREE.AmbientLight(0xffffff, 0.44));
+          if (typeof THREE.HemisphereLight === 'function') {
+            scene.add(new THREE.HemisphereLight(0xdbeafe, 0x1e293b, 0.36));
+          }
+          var key = new THREE.DirectionalLight(0xfff4e0, 0.95);
           key.castShadow = true;
           key.shadow.mapSize.width = 1024; key.shadow.mapSize.height = 1024;
+          key.shadow.bias = -0.0004;
           key.shadow.camera.left = -8; key.shadow.camera.right = 8;
           key.shadow.camera.top = 8; key.shadow.camera.bottom = -3;
           key.shadow.camera.near = 0.5; key.shadow.camera.far = 28;
           key.position.set(2.4, 4.6, 2.8);
           scene.add(key);
-          var fill = new THREE.DirectionalLight(0xbcd4ff, 0.32);
-          fill.position.set(-2.6, 1.6, -2.0);
+          var fill = new THREE.DirectionalLight(0x93c5fd, 0.48);
+          fill.position.set(-2.6, 2.2, -2.4);
           scene.add(fill);
         },
         build: buildMachineScene

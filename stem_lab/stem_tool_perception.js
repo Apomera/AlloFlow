@@ -2834,15 +2834,16 @@
           !hasComparison && h('div', { className: 'perception-stage-telemetry', 'data-perception-stage-telemetry': 'true' },
             h('div', { className: 'perception-stage-telemetry-pills' },
               meta.controls.map(function (ctrl) {
+                var hideTarget = meta.id === 'brightness' && activeModel.matching && !activeModel.reveal && ctrl.key === 'target';
                 return h('span', { key: ctrl.key, className: 'perception-telemetry-pill' },
-                  t(meta.id + '_' + ctrl.key + '_label', ctrl.label) + ': ' + activeModel[ctrl.key] + ctrl.unit);
+                  t(meta.id + '_' + ctrl.key + '_label', ctrl.label) + ': ' + (hideTarget ? t('telemetry_hidden_until_reveal', 'Hidden until reveal') : (activeModel[ctrl.key] + ctrl.unit)));
               }),
               h('span', { className: 'perception-telemetry-pill' },
                 activeModel.context ? t('telemetry_context_on', 'Surroundings: On') : t('telemetry_context_off', 'Surroundings: Off')),
               h('span', { className: 'perception-telemetry-pill' },
                 activeModel.reveal ? t('telemetry_guides_on', 'Guides: Revealed') : t('telemetry_guides_off', 'Guides: Hidden'))
             ),
-            (!studyLocked && !studyBusy && !importBusy && !controlsBusy && !playing) && (function () {
+            (!studyLocked && !studyBusy && !importBusy && !controlsBusy && !playing && !activeModel.matching) && (function () {
               var PRESETS_BY_EXP = {
                 brightness: [
                   { id: 'strong', label: t('preset_brightness_strong', 'High contrast (95%)'), vals: { contrast: 95, target: 128, context: true } },
@@ -2866,8 +2867,8 @@
                 ],
                 necker: [
                   { id: 'deep', label: t('preset_necker_deep', 'Deep projection'), vals: { depth: 120, cue: 'none' } },
-                  { id: 'front', label: t('preset_necker_front', 'Lower-left cue'), vals: { depth: 95, cue: 'front' } },
-                  { id: 'back', label: t('preset_necker_back', 'Upper-right cue'), vals: { depth: 95, cue: 'back' } }
+                  { id: 'front', label: t('preset_necker_front', 'Lower-left cue'), vals: { context: true, depth: 95, cue: 'front' } },
+                  { id: 'back', label: t('preset_necker_back', 'Upper-right cue'), vals: { context: true, depth: 95, cue: 'back' } }
                 ],
                 moire: [
                   { id: 'fine', label: t('preset_moire_fine', 'Fine 3\u00B0 bands'), vals: { angle: 3, spacing: 10, context: true } },

@@ -75,7 +75,7 @@ const _CardSection = ({ title, hint, color = "indigo", children }) => {
     slate: { bg: "bg-slate-50/60", border: "border-slate-200", header: "text-slate-800" }
   };
   const c = colors[color] || colors.indigo;
-  return /* @__PURE__ */ React.createElement("div", { className: `${c.bg} border ${c.border} rounded-lg p-4` }, /* @__PURE__ */ React.createElement("h3", { className: `font-black text-sm uppercase tracking-wider mb-2 ${c.header}` }, title), hint ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mb-3 leading-snug" }, hint) : null, children);
+  return /* @__PURE__ */ React.createElement("div", { className: `${c.bg} border ${c.border} rounded-lg p-4` }, /* @__PURE__ */ React.createElement("h3", { className: `font-black text-sm uppercase tracking-wider mb-2 ${c.header}` }, title), hint ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic mb-3 leading-snug" }, hint) : null, children);
 };
 const _NOTE_RUBRICS = {
   "cornell-notes": {
@@ -354,7 +354,7 @@ const _NotesFeedbackPanel = ({ feedback, xpEarned, onDismiss, t, earlierDraft, e
     if (scope.status === "none") return _noteText(t, "notes_feedback.scope_none", "No source text was supplied. This feedback considers your notes only.");
     if (scope.status === "full") return _noteText(t, "notes_feedback.scope_full", "The full supplied source ({total} characters) was included for this feedback.").replace("{total}", String(scope.totalCharacters));
     return _noteText(t, "notes_feedback.scope_partial", "Only {included} of {total} source characters were included. The rest could not be checked.").replace("{included}", String(scope.includedCharacters)).replace("{total}", String(scope.totalCharacters));
-  })()), earlierSource && /* @__PURE__ */ React.createElement("p", { role: "status", "data-notes-earlier-source": true, className: "mb-3 text-sm font-semibold text-amber-950" }, _noteText(t, "notes_feedback.earlier_source", "The source text has changed since this feedback. Ask for new feedback to use the current text.")), earlierDraft ? /* @__PURE__ */ React.createElement("p", { role: "status", "data-notes-feedback-earlier-draft": "true", className: "mb-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm font-semibold text-amber-950" }, _noteText(t, "notes_feedback.earlier_draft", "Feedback on an earlier draft of your notes. Keep it in view while you revise, or ask for new feedback.")) : null, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100/70 border-l-4 border-emerald-500 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, t("notes_feedback.strength_label") || "What you did well"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, feedback.strength)), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100/70 border-l-4 border-amber-500 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-amber-900 uppercase tracking-wider mb-1" }, t("notes_feedback.growth_label") || "One thing to try next time"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, feedback.growthNudge)), feedback.sourceAlignment && feedback.sourceAlignment.message ? /* @__PURE__ */ React.createElement("div", { className: "bg-sky-100/70 border-l-4 border-sky-500 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-sky-800 uppercase tracking-wider mb-1" }, t("notes_feedback.source_label") || "About the source text"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, feedback.sourceAlignment.message)) : null, xpEarned > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 text-sm font-bold text-violet-700 bg-violet-50 border border-violet-200 rounded-full px-4 py-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2B50"), /* @__PURE__ */ React.createElement("span", null, t("notes_feedback.xp_earned", { xp: xpEarned }) || `+${xpEarned} XP`)) : /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] italic text-slate-500" }, t("notes_feedback.no_xp_hint") || "You've already earned XP from this entry before. Keep going \u2014 new improvements earn more XP."))));
+  })()), earlierSource && /* @__PURE__ */ React.createElement("p", { role: "status", "data-notes-earlier-source": true, className: "mb-3 text-sm font-semibold text-amber-950" }, _noteText(t, "notes_feedback.earlier_source", "The source text has changed since this feedback. Ask for new feedback to use the current text.")), earlierDraft ? /* @__PURE__ */ React.createElement("p", { role: "status", "data-notes-feedback-earlier-draft": "true", className: "mb-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm font-semibold text-amber-950" }, _noteText(t, "notes_feedback.earlier_draft", "Feedback on an earlier draft of your notes. Keep it in view while you revise, or ask for new feedback.")) : null, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100/70 border-l-4 border-emerald-500 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-emerald-800 uppercase tracking-wider mb-1" }, t("notes_feedback.strength_label") || "What you did well"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, feedback.strength)), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100/70 border-l-4 border-amber-500 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-amber-900 uppercase tracking-wider mb-1" }, t("notes_feedback.growth_label") || "One thing to try next time"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, feedback.growthNudge)), feedback.sourceAlignment && feedback.sourceAlignment.message ? /* @__PURE__ */ React.createElement("div", { className: "bg-sky-100/70 border-l-4 border-sky-500 rounded-r-md p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-sky-800 uppercase tracking-wider mb-1" }, t("notes_feedback.source_label") || "About the source text"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, feedback.sourceAlignment.message)) : null, xpEarned > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 text-sm font-bold text-violet-700 bg-violet-50 border border-violet-200 rounded-full px-4 py-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2B50"), /* @__PURE__ */ React.createElement("span", null, t("notes_feedback.xp_earned", { xp: xpEarned }) || `+${xpEarned} XP`)) : /* @__PURE__ */ React.createElement("div", { className: "text-center text-xs italic text-slate-600" }, t("notes_feedback.no_xp_hint") || "You've already earned XP from this entry before. Keep going \u2014 new improvements earn more XP."))));
 };
 function _notesDraftFingerprint(templateType, data) {
   const text = _serializeTemplateForFeedback(templateType, data);
@@ -466,7 +466,7 @@ function _useNotesFeedback(props, templateType) {
     props.handleNoteUpdate?.("feedback", null);
     setXpEarned(0);
   }, [props.handleNoteUpdate]);
-  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === "function", hideRequest: !props.isTeacherMode && typeof callGemini !== "function", isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft), isEarlierSource: !!feedback?.sourceScope && feedback.sourceScope.sourceFingerprint !== current.current.sourceScope.sourceFingerprint };
+  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === "function", hideRequest: !props.isTeacherMode && typeof callGemini !== "function", teacherOnlyDisabled: !!props.isTeacherMode && typeof callGemini !== "function", isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft), isEarlierSource: !!feedback?.sourceScope && feedback.sourceScope.sourceFingerprint !== current.current.sourceScope.sourceFingerprint };
 }
 const _ConnectionsSection = ({ value, onChange, hint, t }) => {
   const tt = t || ((k, d) => d || k);
@@ -500,19 +500,95 @@ const _GetFeedbackButton = ({ onClick, isLoading, disabled, hidden, t, colorClas
     rose: "bg-rose-600 hover:bg-rose-700 text-white border-rose-700",
     cyan: "bg-cyan-700 hover:bg-cyan-800 text-white border-cyan-700"
   }[colorClass] || "bg-emerald-700 hover:bg-emerald-800 text-white border-emerald-700";
-  return /* @__PURE__ */ React.createElement("div", { className: "flex justify-center pt-2" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center gap-1.5 pt-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick,
       disabled: isLoading || disabled,
-      className: `px-5 py-2 text-sm font-bold rounded-full border shadow-sm transition-all motion-reduce:transition-none ${palette} disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2`,
+      className: `min-h-11 px-5 py-2 text-sm font-bold rounded-full border shadow-sm transition-all motion-reduce:transition-none ${palette} disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2`,
       "aria-busy": isLoading,
       "data-help-key": "notes_feedback_button"
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isLoading ? "\u23F3" : "\u{1F4AC}"),
     /* @__PURE__ */ React.createElement("span", null, isLoading ? t("notes_feedback.loading") || "Reading your notes..." : t("notes_feedback.button") || "Get AI Feedback")
-  ));
+  ), disabled && !isLoading && /* @__PURE__ */ React.createElement("p", { "data-notes-feedback-disabled-note": true, className: "text-xs text-slate-600 text-center" }, typeof window !== "undefined" && typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("text", window.callGemini) ? _noteText(t, "notes_feedback.ai_unavailable_note", "AI note coaching requires AI setup.") : _noteText(t, "notes_feedback.teacher_mode_note", "Student View only \u2014 switch to Student View to try AI note coaching.")));
+};
+const _formatNoteDate = (value) => {
+  if (!value) return "";
+  const d = new Date(value);
+  return Number.isFinite(d.getTime()) ? d.toLocaleString() : "";
+};
+const _NoteListenButton = ({ getText, t, resourceId, kind }) => {
+  const [speaking, setSpeaking] = React.useState(false);
+  const listenerRef = React.useRef(null);
+  const stopListener = () => {
+    if (listenerRef.current && typeof window !== "undefined") {
+      window.removeEventListener("allo-speech-state", listenerRef.current);
+      listenerRef.current = null;
+    }
+  };
+  React.useEffect(() => {
+    stopListener();
+    setSpeaking(false);
+    return () => {
+      stopListener();
+    };
+  }, [resourceId]);
+  const handleToggleSpeak = () => {
+    const player = typeof window !== "undefined" ? window.AlloSpeechPlayer : null;
+    const finished = () => {
+      stopListener();
+      setSpeaking(false);
+    };
+    stopListener();
+    if (speaking) {
+      if (player && typeof player.stop === "function") player.stop();
+      else if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
+      setSpeaking(false);
+      return;
+    }
+    const spoken = String((typeof getText === "function" ? getText() : "") || "").replace(/\s+/g, " ").trim();
+    if (!spoken) return;
+    if (player && typeof player.speak === "function") {
+      let ourId = null;
+      const onState = (e) => {
+        const d = e.detail || {};
+        if (ourId === null) {
+          if (d.isPlaying) ourId = d.currentId;
+          return;
+        }
+        if (!d.isPlaying || d.currentId !== ourId) finished();
+      };
+      listenerRef.current = onState;
+      window.addEventListener("allo-speech-state", onState);
+      setSpeaking(true);
+      Promise.resolve(player.speak(spoken)).then((res) => {
+        if (res === null && ourId === null) finished();
+      }, finished);
+    } else if (typeof window !== "undefined" && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === "function") {
+      setSpeaking(true);
+      window.speechSynthesis.cancel();
+      const u = new window.SpeechSynthesisUtterance(spoken);
+      u.onend = finished;
+      u.onerror = finished;
+      window.speechSynthesis.speak(u);
+    }
+  };
+  return /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-notes-listen": kind || "notes",
+      "aria-pressed": speaking,
+      onClick: handleToggleSpeak,
+      className: `min-h-11 px-3 py-1 text-xs font-bold rounded-full border transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${speaking ? "bg-rose-100 text-rose-900 border-rose-300 hover:bg-rose-200" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"}`,
+      "aria-label": speaking ? _noteText(t, "note_taking.stop_reading", "Stop reading") : _noteText(t, "note_taking.listen_notes", "Listen to notes"),
+      title: speaking ? _noteText(t, "note_taking.stop_reading", "Stop reading") : _noteText(t, "note_taking.listen_notes", "Listen to notes")
+    },
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, speaking ? "\u23F9\uFE0F " : "\u{1F50A} "),
+    speaking ? _noteText(t, "note_taking.stop", "Stop") : _noteText(t, "note_taking.listen", "Listen")
+  );
 };
 const _cornellCueGuidance = (cue) => typeof cue?.guidance === "string" && cue.guidance.length <= 1e3 ? cue.guidance.trim() : "";
 const CornellNotesView = React.memo((props) => {
@@ -530,7 +606,29 @@ const CornellNotesView = React.memo((props) => {
   const guidanceId = React.useId();
   const hasGuidance = cues.some((cue) => !!_cornellCueGuidance(cue));
   const fb = _useNotesFeedback(props, "cornell-notes");
+  const [studyMode, setStudyMode] = React.useState(false);
+  const [revealedRows, setRevealedRows] = React.useState(() => /* @__PURE__ */ new Set());
+  React.useEffect(() => {
+    setStudyMode(false);
+    setRevealedRows(/* @__PURE__ */ new Set());
+  }, [generatedContent && generatedContent.id]);
   const rowCount = Math.max(cues.length, notes.length, 1);
+  const studyableRowIndices = Array.from({ length: rowCount }).map((_, i) => i).filter((i) => {
+    const c = (cues[i] && cues[i].text || "").trim();
+    const n = (notes[i] && notes[i].text || "").trim();
+    return Boolean(c && n);
+  });
+  const canStudyCues = studyableRowIndices.length > 0;
+  const effectiveStudyMode = studyMode && canStudyCues;
+  const toggleRevealRow = (idx) => {
+    setRevealedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+  const allStudyRowsRevealed = studyableRowIndices.length > 0 && studyableRowIndices.every((i) => revealedRows.has(i));
   const handleCueChange = (idx, newText) => {
     const next = cues.slice();
     while (next.length <= idx) next.push({ id: _genId("cue"), text: "" });
@@ -553,7 +651,37 @@ const CornellNotesView = React.memo((props) => {
   };
   const handleSummaryChange = (e) => handleNoteUpdate("summary", e.target.value);
   const handleTitleChange = (e) => handleNoteUpdate("title", e.target.value);
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6 space-y-4", "data-help-key": "cornell_notes_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-indigo-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_cornell", "Cornell Notes")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6 space-y-4", "data-help-key": "cornell_notes_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-indigo-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 uppercase tracking-wider" }, _noteText(t, "note_taking.heading_cornell", "Cornell Notes")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, canStudyCues ? /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-cornell-study-toggle": true,
+      "aria-pressed": effectiveStudyMode,
+      onClick: () => {
+        setStudyMode((m) => !m);
+        setRevealedRows(/* @__PURE__ */ new Set());
+      },
+      className: `min-h-11 px-3 py-1 text-xs font-bold rounded-full border transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${effectiveStudyMode ? "bg-indigo-700 text-white border-indigo-700 hover:bg-indigo-800" : "bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100"}`
+    },
+    effectiveStudyMode ? "\u270F\uFE0F " + _noteText(t, "note_taking.edit_mode", "Edit mode") : "\u{1F3AF} " + _noteText(t, "note_taking.study_cues", "Study cues")
+  ) : null, /* @__PURE__ */ React.createElement(
+    _NoteListenButton,
+    {
+      kind: "cornell",
+      t,
+      resourceId: generatedContent && generatedContent.id,
+      getText: () => {
+        const parts = [title];
+        for (let i = 0; i < rowCount; i++) {
+          const c = (cues[i] && cues[i].text || "").trim();
+          const n = (notes[i] && notes[i].text || "").trim();
+          if (c || n) parts.push([c, n].filter(Boolean).join(": "));
+        }
+        if (summary.trim()) parts.push(summary.trim());
+        return parts.filter(Boolean).join(". ");
+      }
+    }
+  ))), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -564,11 +692,29 @@ const CornellNotesView = React.memo((props) => {
       "aria-label": t("a11y.cornell_title"),
       "data-help-key": "cornell_notes_title_field"
     }
-  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), /* @__PURE__ */ React.createElement("div", { className: "border-2 border-slate-300 rounded-xl overflow-hidden bg-white", "data-help-key": "cornell_notes_two_column_grid" }, /* @__PURE__ */ React.createElement("div", { className: `${hasGuidance ? "hidden sm:grid" : "grid"} grid-cols-[35%_65%] bg-slate-100 border-b border-slate-300` }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300", "data-help-key": "cornell_notes_cue_column" }, _noteText(t, "note_taking.cues_column", "Cues / Questions")), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700", "data-help-key": "cornell_notes_notes_column" }, _noteText(t, "note_taking.notes_column", "Notes"))), Array.from({ length: rowCount }).map((_, idx) => {
+  ), _formatNoteDate(lessonRef.generatedAt) ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => _formatNoteDate(lessonRef.generatedAt))) : null), effectiveStudyMode ? /* @__PURE__ */ React.createElement("div", { "data-cornell-study-bar": true, className: "flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold" }, _noteText(t, "note_taking.cornell_study_hint", "Read each cue on the left, recall your notes, then reveal to check.")), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-cornell-reveal-all": true,
+      onClick: () => {
+        if (allStudyRowsRevealed) setRevealedRows(/* @__PURE__ */ new Set());
+        else setRevealedRows(new Set(studyableRowIndices));
+      },
+      className: "min-h-11 px-3 py-1 rounded-full border border-indigo-300 bg-white font-bold text-indigo-800 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    },
+    allStudyRowsRevealed ? _noteText(t, "note_taking.hide_all_notes", "Hide all") : _noteText(t, "note_taking.reveal_all_notes", "Reveal all"),
+    " (",
+    revealedRows.size,
+    "/",
+    studyableRowIndices.length,
+    ")"
+  )) : null, /* @__PURE__ */ React.createElement("div", { className: "border-2 border-slate-300 rounded-xl overflow-hidden bg-white", "data-help-key": "cornell_notes_two_column_grid" }, /* @__PURE__ */ React.createElement("div", { className: `${hasGuidance ? "hidden sm:grid" : "grid"} grid-cols-[35%_65%] bg-slate-100 border-b border-slate-300` }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300", "data-help-key": "cornell_notes_cue_column" }, _noteText(t, "note_taking.cues_column", "Cues / Questions")), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700", "data-help-key": "cornell_notes_notes_column" }, _noteText(t, "note_taking.notes_column", "Notes"))), Array.from({ length: rowCount }).map((_, idx) => {
     const cueText = cues[idx] && cues[idx].text || "";
     const noteText = notes[idx] && notes[idx].text || "";
     const guidance = _cornellCueGuidance(cues[idx]);
     const rowGuidanceId = guidance ? `${guidanceId}-cornell-guidance-${idx}` : void 0;
+    const isMaskedInStudy = effectiveStudyMode && cueText.trim() && noteText.trim() && !revealedRows.has(idx);
     return /* @__PURE__ */ React.createElement("div", { key: idx, "data-cornell-guided-row": guidance ? "true" : void 0, className: `grid ${guidance ? "grid-cols-1 sm:grid-cols-[35%_65%]" : "grid-cols-[35%_65%]"} border-b border-slate-200 last:border-b-0 group` }, /* @__PURE__ */ React.createElement("div", { className: `min-w-0 px-3 py-2 ${guidance ? "border-b sm:border-b-0 sm:border-r" : "border-r"} border-slate-200 relative` }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
@@ -579,7 +725,17 @@ const CornellNotesView = React.memo((props) => {
         rows: 2,
         "aria-label": _noteText(t, "note_taking.cue_n", "Cue {n}").replace("{n}", () => idx + 1)
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: `${guidance ? "min-w-0 pl-3 pr-9" : "px-3"} py-2 relative` }, guidance ? /* @__PURE__ */ React.createElement("p", { id: rowGuidanceId, "data-cornell-guidance": "true", className: "mb-2 text-sm leading-relaxed text-slate-600 whitespace-pre-wrap break-words" }, guidance) : null, /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: `${guidance ? "min-w-0 pl-3 pr-9" : "px-3"} py-2 relative` }, isMaskedInStudy ? /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-cornell-reveal-row": idx,
+        onClick: () => toggleRevealRow(idx),
+        className: "min-h-11 w-full rounded-lg border-2 border-dashed border-indigo-300 bg-indigo-50/70 px-3 py-3 text-xs font-bold text-indigo-800 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+      },
+      "\u{1F441} ",
+      _noteText(t, "note_taking.reveal_notes", "Reveal notes")
+    ) : /* @__PURE__ */ React.createElement(React.Fragment, null, guidance ? /* @__PURE__ */ React.createElement("p", { id: rowGuidanceId, "data-cornell-guidance": "true", className: "mb-2 text-sm leading-relaxed text-slate-600 whitespace-pre-wrap break-words" }, guidance) : null, /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: noteText,
@@ -590,7 +746,15 @@ const CornellNotesView = React.memo((props) => {
         "aria-label": _noteText(t, "note_taking.notes_row_n", "Notes for row {n}").replace("{n}", () => idx + 1),
         "aria-describedby": rowGuidanceId
       }
-    ), /* @__PURE__ */ React.createElement(
+    ), effectiveStudyMode && cueText.trim() && noteText.trim() ? /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => toggleRevealRow(idx),
+        className: "mt-1 text-xs font-semibold text-indigo-700 hover:underline focus-visible:ring-2 focus-visible:ring-indigo-600 rounded px-1"
+      },
+      _noteText(t, "note_taking.cover_notes", "Cover notes again")
+    ) : null, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -600,7 +764,7 @@ const CornellNotesView = React.memo((props) => {
         title: _noteText(t, "note_taking.remove_row", "Remove row")
       },
       "\u2715"
-    )));
+    ))));
   })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -623,7 +787,15 @@ const CornellNotesView = React.memo((props) => {
       "aria-label": t("a11y.cornell_summary"),
       "data-help-key": "cornell_notes_summary_section"
     }
-  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, hasGuidance ? _noteText(t, "note_taking.cornell_footer_guided", "Cornell Notes: use cues and notes together, then summarize below.") : _noteText(t, "note_taking.cornell_footer", "Cornell Notes: cues on the left, notes on the right, summary below."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  ), typeof window !== "undefined" && typeof window.AlloDictationButton === "function" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, React.createElement(window.AlloDictationButton, {
+    t,
+    language: lessonRef?.language,
+    label: _noteText(t, "note_taking.dictate_summary", "Dictate summary"),
+    onTranscript: (spoken) => {
+      const sep = summary && !/\s$/.test(summary) ? " " : "";
+      handleNoteUpdate("summary", summary + sep + spoken);
+    }
+  }))), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic text-center" }, hasGuidance ? _noteText(t, "note_taking.cornell_footer_guided", "Cornell Notes: use cues and notes together, then summarize below.") : _noteText(t, "note_taking.cornell_footer", "Cornell Notes: cues on the left, notes on the right, summary below."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const LabReportView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -657,7 +829,15 @@ const LabReportView = React.memo((props) => {
   };
   const addProcedureStep = () => handleNoteUpdate("procedure", procedure.concat([{ id: _genId("step"), text: "" }]));
   const removeProcedureStepAt = (idx) => handleNoteUpdate("procedure", procedure.filter((_, i) => i !== idx));
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-4 py-6 space-y-4", "data-help-key": "lab_report_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-sky-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-sky-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_lab", "Lab Report")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-4 py-6 space-y-4", "data-help-key": "lab_report_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-sky-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-sky-700 uppercase tracking-wider" }, _noteText(t, "note_taking.heading_lab", "Lab Report")), /* @__PURE__ */ React.createElement(
+    _NoteListenButton,
+    {
+      kind: "lab",
+      t,
+      resourceId: generatedContent && generatedContent.id,
+      getText: () => [title, question, hypothesis, dataObservations, analysis, conclusion].filter(Boolean).join(". ")
+    }
+  )), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -668,7 +848,7 @@ const LabReportView = React.memo((props) => {
       "aria-label": t("a11y.lab_report_title"),
       "data-help-key": "lab_report_title_field"
     }
-  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.research_question", "Research Question"), hint: _noteText(t, "note_taking.research_question_hint", "What are you investigating? Frame it as a question you can answer through observation."), color: "sky" }, /* @__PURE__ */ React.createElement(
+  ), _formatNoteDate(lessonRef.generatedAt) ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => _formatNoteDate(lessonRef.generatedAt))) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.research_question", "Research Question"), hint: _noteText(t, "note_taking.research_question_hint", "What are you investigating? Frame it as a question you can answer through observation."), color: "sky" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: question,
@@ -698,7 +878,7 @@ const LabReportView = React.memo((props) => {
       className: "flex-1 text-sm bg-white border border-slate-200 rounded px-2 py-1 focus:ring-2 focus:ring-amber-300",
       "aria-label": _noteText(t, "note_taking.material_n", "Material {n}").replace("{n}", () => idx + 1)
     }
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeMaterialAt(idx), className: "opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs", "aria-label": t("a11y.remove_material") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addMaterial, className: "mt-2 min-h-11 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200" }, "+ ", _noteText(t, "note_taking.add_material", "Add material"))), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.procedure", "Procedure"), hint: _noteText(t, "note_taking.procedure_hint", "Number each step. Another student should be able to follow your procedure and reproduce your experiment."), color: "emerald" }, /* @__PURE__ */ React.createElement("ol", { className: "space-y-1" }, procedure.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, _noteText(t, "note_taking.no_steps", "No steps added yet.")) : procedure.map((s, idx) => /* @__PURE__ */ React.createElement("li", { key: s.id || idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs font-bold mt-1.5 w-5 flex-shrink-0" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeMaterialAt(idx), className: "opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs", "aria-label": t("a11y.remove_material") }, "\u2715")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addMaterial, className: "mt-2 min-h-11 px-3 py-1 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200" }, "+ ", _noteText(t, "note_taking.add_material", "Add material"))), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.procedure", "Procedure"), hint: _noteText(t, "note_taking.procedure_hint", "Number each step. Another student should be able to follow your procedure and reproduce your experiment."), color: "emerald" }, /* @__PURE__ */ React.createElement("ol", { className: "space-y-1" }, procedure.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, _noteText(t, "note_taking.no_steps", "No steps added yet.")) : procedure.map((s, idx) => /* @__PURE__ */ React.createElement("li", { key: s.id || idx, className: "flex items-start gap-2 group" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs font-bold mt-1.5 w-5 flex-shrink-0" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: s.text || "",
@@ -740,7 +920,7 @@ const LabReportView = React.memo((props) => {
       "aria-label": _noteText(t, "note_taking.conclusion", "Conclusion"),
       "data-help-key": "lab_report_conclusion_field"
     }
-  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: _noteText(t, "note_taking.lab_connections_hint", "Optional \u2014 how do these results connect to the real world, another experiment, or a concept you've learned? An analogy or memory hook is welcome too."), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "sky" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.lab_footer", "Return to this Lab Report to keep adding observations across days."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: _noteText(t, "note_taking.lab_connections_hint", "Optional \u2014 how do these results connect to the real world, another experiment, or a concept you've learned? An analogy or memory hook is welcome too."), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "sky" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic text-center" }, _noteText(t, "note_taking.lab_footer", "Return to this Lab Report to keep adding observations across days."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const ReadingResponseView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -765,7 +945,15 @@ const ReadingResponseView = React.memo((props) => {
     { id: "text-to-world", label: _noteText(t, "note_taking.text_to_world", "Text to World"), hint: _noteText(t, "note_taking.text_to_world_hint", "How does this connect to something happening in the world?") }
   ];
   const activeConnType = connTypes.find((ct) => ct.id === connection.type) || connTypes[0];
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "reading_response_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-violet-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-violet-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_reading_response", "Reading Response")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "reading_response_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-violet-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-violet-700 uppercase tracking-wider" }, _noteText(t, "note_taking.heading_reading_response", "Reading Response")), /* @__PURE__ */ React.createElement(
+    _NoteListenButton,
+    {
+      kind: "reading-response",
+      t,
+      resourceId: generatedContent && generatedContent.id,
+      getText: () => [title, favoriteLine, thinkings, connection && connection.text, question].filter(Boolean).join(". ")
+    }
+  )), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -796,7 +984,7 @@ const ReadingResponseView = React.memo((props) => {
       className: "sm:w-40 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-violet-300 py-1",
       "aria-label": _noteText(t, "note_taking.pages", "Pages or chapter")
     }
-  )), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.favorite_line", "Favorite Line or Passage"), hint: _noteText(t, "note_taking.favorite_line_hint", "Pick a quote that stuck with you. Include the page number."), color: "amber" }, /* @__PURE__ */ React.createElement(
+  )), _formatNoteDate(lessonRef.generatedAt) ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => _formatNoteDate(lessonRef.generatedAt))) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.favorite_line", "Favorite Line or Passage"), hint: _noteText(t, "note_taking.favorite_line_hint", "Pick a quote that stuck with you. Include the page number."), color: "amber" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: favoriteLine,
@@ -849,7 +1037,7 @@ const ReadingResponseView = React.memo((props) => {
       "aria-label": _noteText(t, "note_taking.question", "Question"),
       "data-help-key": "reading_response_open_question_field"
     }
-  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "violet" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.reading_response_footer", "Browse your Reading Responses to build a record of your reading life."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "violet" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic text-center" }, _noteText(t, "note_taking.reading_response_footer", "Browse your Reading Responses to build a record of your reading life."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const DoubleEntryView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -872,7 +1060,15 @@ const DoubleEntryView = React.memo((props) => {
   };
   const addRow = () => handleNoteUpdate("entries", entries.concat([{ id: _genId("de"), quote: "", response: "" }]));
   const removeRow = (idx) => handleNoteUpdate("entries", entries.filter((_, i) => i !== idx));
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6 space-y-4", "data-help-key": "double_entry_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-rose-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-rose-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_double_entry", "Double-Entry Journal")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6 space-y-4", "data-help-key": "double_entry_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-rose-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-rose-700 uppercase tracking-wider" }, _noteText(t, "note_taking.heading_double_entry", "Double-Entry Journal")), /* @__PURE__ */ React.createElement(
+    _NoteListenButton,
+    {
+      kind: "double-entry",
+      t,
+      resourceId: generatedContent && generatedContent.id,
+      getText: () => [title].concat(entries.map((en) => [en && en.quote, en && en.response].filter(Boolean).join(". "))).filter(Boolean).join(". ")
+    }
+  )), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -883,9 +1079,9 @@ const DoubleEntryView = React.memo((props) => {
       "aria-label": _noteText(t, "note_taking.reading_title", "Reading title"),
       "data-help-key": "double_entry_title_field"
     }
-  ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 mt-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", value: author, onChange: (e) => handleNoteUpdate("author", e.target.value), placeholder: _noteText(t, "note_taking.author", "Author"), className: "flex-1 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 py-1", "aria-label": _noteText(t, "note_taking.author", "Author") }), /* @__PURE__ */ React.createElement("input", { type: "text", value: pageRange, onChange: (e) => handleNoteUpdate("pageRange", e.target.value), placeholder: _noteText(t, "note_taking.pages", "Pages or chapter"), className: "sm:w-40 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 py-1", "aria-label": _noteText(t, "note_taking.pages", "Pages or chapter") })), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), /* @__PURE__ */ React.createElement("div", { className: "border-2 border-slate-300 rounded-xl overflow-hidden bg-white", "data-help-key": "double_entry_grid" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 bg-slate-100 border-b border-slate-300" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300" }, _noteText(t, "note_taking.quote_column", "Quote / Passage from the text")), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700" }, _noteText(t, "note_taking.response_column", "My response / thinking"))), Array.from({ length: rowCount }).map((_, idx) => {
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 mt-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", value: author, onChange: (e) => handleNoteUpdate("author", e.target.value), placeholder: _noteText(t, "note_taking.author", "Author"), className: "flex-1 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 py-1", "aria-label": _noteText(t, "note_taking.author", "Author") }), /* @__PURE__ */ React.createElement("input", { type: "text", value: pageRange, onChange: (e) => handleNoteUpdate("pageRange", e.target.value), placeholder: _noteText(t, "note_taking.pages", "Pages or chapter"), className: "sm:w-40 text-sm text-slate-600 bg-transparent border-b border-slate-200 focus:border-rose-300 py-1", "aria-label": _noteText(t, "note_taking.pages", "Pages or chapter") })), _formatNoteDate(lessonRef.generatedAt) ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => _formatNoteDate(lessonRef.generatedAt))) : null), /* @__PURE__ */ React.createElement("div", { className: "border-2 border-slate-300 rounded-xl overflow-hidden bg-white", "data-help-key": "double_entry_grid" }, /* @__PURE__ */ React.createElement("div", { className: "hidden sm:grid grid-cols-2 bg-slate-100 border-b border-slate-300" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700 border-r border-slate-300" }, _noteText(t, "note_taking.quote_column", "Quote / Passage from the text")), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 font-black text-xs uppercase tracking-wider text-slate-700" }, _noteText(t, "note_taking.response_column", "My response / thinking"))), Array.from({ length: rowCount }).map((_, idx) => {
     const en = entries[idx] || { quote: "", response: "" };
-    return /* @__PURE__ */ React.createElement("div", { key: en && en.id || idx, className: "grid grid-cols-2 border-b border-slate-200 last:border-b-0 group" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 border-r border-slate-200" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: en && en.id || idx, className: "grid grid-cols-1 sm:grid-cols-2 border-b border-slate-200 last:border-b-0 group" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 border-b sm:border-b-0 sm:border-r border-slate-200" }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: en.quote || "",
@@ -895,7 +1091,7 @@ const DoubleEntryView = React.memo((props) => {
         rows: 3,
         "aria-label": _noteText(t, "note_taking.quote_n", "Quote {n}").replace("{n}", () => idx + 1)
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 relative" }, /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 pr-12 relative" }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: en.response || "",
@@ -905,11 +1101,12 @@ const DoubleEntryView = React.memo((props) => {
         rows: 3,
         "aria-label": _noteText(t, "note_taking.response_n", "Response {n}").replace("{n}", () => idx + 1)
       }
-    ), /* @__PURE__ */ React.createElement(
+    ), !props.learnerReadOnly && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: () => removeRow(idx),
+        style: { minWidth: "44px", minHeight: "44px" },
         className: "absolute right-1 top-1 opacity-60 hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 min-w-6 min-h-6 inline-flex items-center justify-center rounded text-slate-600 hover:text-red-500 text-xs px-1",
         "aria-label": _noteText(t, "note_taking.remove_row_n", "Remove row {n}").replace("{n}", () => idx + 1),
         title: _noteText(t, "note_taking.remove_row", "Remove row")
@@ -927,7 +1124,7 @@ const DoubleEntryView = React.memo((props) => {
     },
     "+ ",
     _noteText(t, "note_taking.add_entry", "Add entry")
-  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "rose" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.double_entry_footer", "Double-Entry Journal: quotes on the left, your thinking on the right."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "rose" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic text-center" }, _noteText(t, "note_taking.double_entry_footer", "Double-Entry Journal: quotes on the left, your thinking on the right."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const GuidedNotesView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -941,6 +1138,9 @@ const GuidedNotesView = React.memo((props) => {
   const lessonRef = data.lessonRef || {};
   const fb = _useNotesFeedback(props, "guided-notes");
   const [revealed, setRevealed] = React.useState(false);
+  React.useEffect(() => {
+    setRevealed(false);
+  }, [generatedContent && generatedContent.id]);
   const updateBlank = (idx, value) => {
     if (!blanks[idx]) return;
     const next = blanks.slice();
@@ -949,7 +1149,15 @@ const GuidedNotesView = React.memo((props) => {
   };
   const filledCount = blanks.filter((b) => b && (b.studentAnswer || "").trim()).length;
   const correctCount = blanks.filter((b) => b && _normalizeBlank(b.studentAnswer) && _normalizeBlank(b.studentAnswer) === _normalizeBlank(b.answer)).length;
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "guided_notes_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-emerald-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_guided", "Guided Notes")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "guided_notes_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-emerald-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-700 uppercase tracking-wider" }, _noteText(t, "note_taking.heading_guided", "Guided Notes")), blanks.length > 0 ? /* @__PURE__ */ React.createElement("span", { "data-guided-notes-progress": true, className: `text-xs font-bold rounded-full border px-2.5 py-0.5 ${filledCount === blanks.length ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-white text-slate-700 border-slate-300"}` }, _noteText(t, "note_taking.blanks_filled_progress", "{filled}/{total} filled").replace("{filled}", () => filledCount).replace("{total}", () => blanks.length)) : null), /* @__PURE__ */ React.createElement(
+    _NoteListenButton,
+    {
+      kind: "guided-notes",
+      t,
+      resourceId: generatedContent && generatedContent.id,
+      getText: () => [title].concat(blanks.map((b) => `${b.before || ""}${(b.studentAnswer || "").trim() || _noteText(t, "note_taking.spoken_blank", "blank")}${b.after || ""}`)).concat(notesExtra ? [notesExtra] : []).filter(Boolean).join(". ")
+    }
+  )), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -960,13 +1168,13 @@ const GuidedNotesView = React.memo((props) => {
       "aria-label": _noteText(t, "note_taking.lesson_title", "Lesson title"),
       "data-help-key": "guided_notes_title_field"
     }
-  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.fill_blanks", "Fill in the blanks"), hint: _noteText(t, "note_taking.fill_blanks_hint", "Read or listen along, then complete each key term. Use Check answers when you're done to see how you did \u2014 matching ignores capitals and punctuation."), color: "emerald" }, blanks.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, _noteText(t, "note_taking.no_blanks", "No guided notes were generated for this source. Use the notes space below to take your own.")) : /* @__PURE__ */ React.createElement("ol", { className: "space-y-3" }, blanks.map((b, idx) => {
+  ), _formatNoteDate(lessonRef.generatedAt) ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => _formatNoteDate(lessonRef.generatedAt))) : null), /* @__PURE__ */ React.createElement(_CardSection, { title: _noteText(t, "note_taking.fill_blanks", "Fill in the blanks"), hint: _noteText(t, "note_taking.fill_blanks_hint", "Read or listen along, then complete each key term. Use Check answers when you're done to see how you did \u2014 matching ignores capitals and punctuation."), color: "emerald" }, blanks.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, _noteText(t, "note_taking.no_blanks", "No guided notes were generated for this source. Use the notes space below to take your own.")) : /* @__PURE__ */ React.createElement("ol", { className: "space-y-3" }, blanks.map((b, idx) => {
     const studentAnswer = b.studentAnswer || "";
     const isCorrect = !!_normalizeBlank(studentAnswer) && _normalizeBlank(studentAnswer) === _normalizeBlank(b.answer);
     const showState = revealed && !!studentAnswer.trim();
     const inputBorder = showState ? isCorrect ? "border-emerald-500 bg-emerald-50" : "border-rose-400 bg-rose-50" : "border-slate-300 focus:ring-2 focus:ring-emerald-300";
     const sentenceId = "nt-gn-" + String(generatedContent && generatedContent.id || "notes").replace(/[^A-Za-z0-9_-]/g, "-") + "-" + idx;
-    return /* @__PURE__ */ React.createElement("li", { key: b.id || idx, className: "text-sm text-slate-700 leading-relaxed" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs font-bold mr-1" }, idx + 1, "."), /* @__PURE__ */ React.createElement("span", { id: sentenceId + "-before" }, b.before || ""), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("li", { key: b.id || idx, className: "text-sm text-slate-700 leading-relaxed" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs font-bold mr-1" }, idx + 1, "."), /* @__PURE__ */ React.createElement("span", { id: sentenceId + "-before" }, b.before || ""), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-describedby": sentenceId + "-before " + sentenceId + "-after",
@@ -977,7 +1185,7 @@ const GuidedNotesView = React.memo((props) => {
         placeholder: "________",
         className: `inline-block mx-1 px-2 py-0.5 text-sm font-semibold text-slate-800 bg-white border-b-2 rounded-sm focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 align-baseline ${inputBorder}`,
         "aria-label": _noteText(t, "note_taking.blank_n", "Blank {n}").replace("{n}", () => idx + 1),
-        style: { width: Math.max(110, ((b.answer || "").length + 4) * 9) + "px" }
+        style: { width: "min(100%, 14rem)", maxWidth: "100%" }
       }
     ), /* @__PURE__ */ React.createElement("span", { id: sentenceId + "-after" }, b.after || ""), revealed && studentAnswer.trim() && isCorrect ? /* @__PURE__ */ React.createElement("span", { role: "img", className: "ml-1 text-xs font-black text-emerald-700", "aria-label": _noteText(t, "note_taking.correct", "Correct") }, "\u2713") : null, revealed && studentAnswer.trim() && !isCorrect ? /* @__PURE__ */ React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-700" }, /* @__PURE__ */ React.createElement("span", { role: "img", className: "text-rose-700", "aria-label": _noteText(t, "note_taking.incorrect", "Incorrect") }, "\u2717 "), "\u2192 ", b.answer) : null, revealed && !studentAnswer.trim() ? /* @__PURE__ */ React.createElement("span", { className: "ml-2 text-xs italic text-slate-600" }, _noteText(t, "notes_feedback.blank_not_tried", "Try this blank first to check it.")) : null);
   })), blanks.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mt-4" }, /* @__PURE__ */ React.createElement(
@@ -1001,7 +1209,7 @@ const GuidedNotesView = React.memo((props) => {
       "aria-label": _noteText(t, "note_taking.own_notes", "My own notes"),
       "data-help-key": "guided_notes_own_notes_field"
     }
-  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.guided_footer", "The blanks are the key terms \u2014 revisit them to study."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic text-center" }, _noteText(t, "note_taking.guided_footer", "The blanks are the key terms \u2014 revisit them to study."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const QAndAView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -1015,6 +1223,14 @@ const QAndAView = React.memo((props) => {
   const fb = _useNotesFeedback(props, "q-and-a");
   const [quizMode, setQuizMode] = React.useState(false);
   const [shown, setShown] = React.useState({});
+  const [qaMarks, setQaMarks] = React.useState({});
+  const [qaFilter, setQaFilter] = React.useState("all");
+  React.useEffect(() => {
+    setQuizMode(false);
+    setShown({});
+    setQaMarks({});
+    setQaFilter("all");
+  }, [generatedContent && generatedContent.id]);
   const rowCount = Math.max(pairs.length, 1);
   const updatePair = (idx, field, value) => {
     const next = pairs.slice();
@@ -1025,19 +1241,39 @@ const QAndAView = React.memo((props) => {
   const addPair = () => handleNoteUpdate("pairs", pairs.concat([{ id: _genId("qa"), question: "", answer: "" }]));
   const removePair = (idx) => handleNoteUpdate("pairs", pairs.filter((_, i) => i !== idx));
   const toggleShown = (key) => setShown((s) => ({ ...s, [key]: !s[key] }));
+  const markQaPair = (key, status) => setQaMarks((prev) => ({ ...prev, [key]: prev[key] === status ? "" : status }));
   const hasStudyable = pairs.some((p) => p && (p.question || "").trim() && (p.answer || "").trim());
   const quizPairs = pairs.filter((p) => p && (p.question || "").trim());
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "qanda_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-cyan-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-cyan-700 uppercase tracking-wider mb-1" }, _noteText(t, "note_taking.heading_qa", "Q&A Study Notes")), hasStudyable ? /* @__PURE__ */ React.createElement(
+  const qaGotItCount = quizPairs.filter((p, idx) => qaMarks[p.id || idx] === "got-it").length;
+  const qaReviewCount = quizPairs.filter((p, idx) => qaMarks[p.id || idx] === "review").length;
+  const filteredQuizPairs = quizPairs.map((p, idx) => ({ p, idx, key: p.id || idx })).filter(({ key }) => {
+    if (qaFilter === "got-it") return qaMarks[key] === "got-it";
+    if (qaFilter === "review") return qaMarks[key] === "review";
+    return true;
+  });
+  const allQuizShown = filteredQuizPairs.length > 0 && filteredQuizPairs.every(({ key }) => !!shown[key]);
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto px-4 py-6 space-y-4", "data-help-key": "qanda_panel" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-l-4 border-cyan-600 p-3 rounded" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-cyan-700 uppercase tracking-wider" }, _noteText(t, "note_taking.heading_qa", "Q&A Study Notes")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, hasStudyable ? /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
-      onClick: () => setQuizMode((q) => !q),
+      onClick: () => {
+        setQuizMode((q) => !q);
+        setQaFilter("all");
+      },
       className: "min-h-11 px-3 py-1 text-xs font-bold rounded-full border border-cyan-300 text-cyan-800 bg-cyan-50 hover:bg-cyan-100",
       "aria-pressed": quizMode,
       "data-help-key": "qanda_quiz_toggle"
     },
     quizMode ? "\u270F\uFE0F " + _noteText(t, "note_taking.edit_mode", "Edit mode") : "\u{1F3AF} " + _noteText(t, "note_taking.quiz_me", "Quiz me")
-  ) : null), /* @__PURE__ */ React.createElement(
+  ) : null, /* @__PURE__ */ React.createElement(
+    _NoteListenButton,
+    {
+      kind: "q-and-a",
+      t,
+      resourceId: generatedContent && generatedContent.id,
+      getText: () => [title].concat(pairs.map((p) => quizMode ? p && p.question : [p && p.question, p && p.answer].filter(Boolean).join(". "))).filter(Boolean).join(". ")
+    }
+  ))), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -1048,9 +1284,41 @@ const QAndAView = React.memo((props) => {
       "aria-label": _noteText(t, "note_taking.study_set_title", "Study set title"),
       "data-help-key": "qanda_title_field"
     }
-  ), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => new Date(lessonRef.generatedAt).toLocaleString())) : null), quizMode ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3", "data-help-key": "qanda_quiz_view" }, quizPairs.map((p, idx) => {
-    const key = p.id || idx;
-    return /* @__PURE__ */ React.createElement("div", { key, className: "bg-white border border-slate-200 rounded-lg p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700 mr-1" }, _noteText(t, "note_taking.q_n", "Q{n}").replace("{n}", () => idx + 1), "."), p.question), shown[key] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 bg-cyan-50 border-l-4 border-cyan-400 rounded-r p-2" }, (p.answer || "").trim() ? p.answer : /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-600" }, _noteText(t, "note_taking.no_answer_yet", "No answer written yet."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => toggleShown(key), className: "mt-2 text-[11px] text-slate-500 hover:text-slate-700 underline" }, _noteText(t, "note_taking.hide_answer", "Hide answer"))) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => toggleShown(key), className: "min-h-11 text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full px-3 py-1 hover:bg-cyan-100" }, _noteText(t, "note_taking.show_answer", "Show answer")));
+  ), _formatNoteDate(lessonRef.generatedAt) ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1" }, _noteText(t, "note_taking.started_on", "Started: {date}").replace("{date}", () => _formatNoteDate(lessonRef.generatedAt))) : null), quizMode ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3", "data-help-key": "qanda_quiz_view" }, quizPairs.length > 0 ? /* @__PURE__ */ React.createElement("div", { "data-qanda-quiz-bar": true, className: "flex flex-wrap items-center justify-between gap-2 rounded-xl border border-cyan-200 bg-cyan-50/70 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" }, [["all", _noteText(t, "note_taking.filter_all", "All"), quizPairs.length], ["review", _noteText(t, "note_taking.filter_review", "Review again"), qaReviewCount], ["got-it", _noteText(t, "note_taking.filter_got_it", "Got it"), qaGotItCount]].map(([fKey, fLabel, count]) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key: fKey,
+      type: "button",
+      "data-qanda-filter": fKey,
+      "aria-pressed": qaFilter === fKey,
+      onClick: () => setQaFilter(fKey),
+      className: `min-h-9 px-2.5 py-1 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-cyan-600 ${qaFilter === fKey ? "bg-cyan-700 text-white border-cyan-700" : "bg-white text-cyan-900 border-cyan-200 hover:bg-cyan-100"}`
+    },
+    fLabel,
+    " (",
+    count,
+    ")"
+  ))), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-qanda-quiz-toggle-all": true,
+      onClick: () => {
+        if (allQuizShown) setShown({});
+        else {
+          const next = {};
+          filteredQuizPairs.forEach(({ key }) => {
+            next[key] = true;
+          });
+          setShown(next);
+        }
+      },
+      className: "min-h-9 px-3 py-1 rounded-full text-xs font-bold border border-cyan-300 bg-white text-cyan-800 hover:bg-cyan-100 transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-cyan-600"
+    },
+    allQuizShown ? _noteText(t, "note_taking.hide_all_answers", "Hide all") : _noteText(t, "note_taking.show_all_answers", "Show all")
+  )) : null, filteredQuizPairs.map(({ p, idx, key }) => {
+    const mark = qaMarks[key] || "";
+    return /* @__PURE__ */ React.createElement("div", { key, className: `bg-white border rounded-lg p-4 ${mark === "got-it" ? "border-emerald-400" : mark === "review" ? "border-amber-400" : "border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-800 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700 mr-1" }, _noteText(t, "note_taking.q_n", "Q{n}").replace("{n}", () => idx + 1), "."), p.question), shown[key] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 bg-cyan-50 border-l-4 border-cyan-400 rounded-r p-2" }, (p.answer || "").trim() ? p.answer : /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-600" }, _noteText(t, "note_taking.no_answer_yet", "No answer written yet."))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-qanda-mark-got-it": idx, "aria-pressed": mark === "got-it", onClick: () => markQaPair(key, "got-it"), className: `min-h-11 px-2.5 py-1 rounded-lg border text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-emerald-600 ${mark === "got-it" ? "bg-emerald-700 text-white border-emerald-700" : "bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50"}` }, "\u2713 ", _noteText(t, "note_taking.mark_got_it", "Got it")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-qanda-mark-review": idx, "aria-pressed": mark === "review", onClick: () => markQaPair(key, "review"), className: `min-h-11 px-2.5 py-1 rounded-lg border text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-amber-600 ${mark === "review" ? "bg-amber-700 text-white border-amber-700" : "bg-white text-amber-900 border-amber-300 hover:bg-amber-50"}` }, "\u21BA ", _noteText(t, "note_taking.mark_review", "Review again"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => toggleShown(key), className: "min-h-11 px-2 text-xs text-slate-600 hover:text-slate-700 underline" }, _noteText(t, "note_taking.hide_answer", "Hide answer")))) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => toggleShown(key), className: "min-h-11 text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-300 rounded-full px-3 py-1 hover:bg-cyan-100" }, _noteText(t, "note_taking.show_answer", "Show answer")));
   })) : /* @__PURE__ */ React.createElement(React.Fragment, null, Array.from({ length: rowCount }).map((_, idx) => {
     const p = pairs[idx] || { question: "", answer: "" };
     return /* @__PURE__ */ React.createElement("div", { key: p && p.id || idx, className: "bg-white border border-slate-200 rounded-lg p-3 group" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700 text-xs font-black mt-2 w-8 flex-shrink-0" }, _noteText(t, "note_taking.q_n", "Q{n}").replace("{n}", () => idx + 1)), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-2" }, /* @__PURE__ */ React.createElement(
@@ -1085,7 +1353,7 @@ const QAndAView = React.memo((props) => {
     },
     "+ ",
     _noteText(t, "note_taking.add_question", "Add question")
-  ))), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: _noteText(t, "note_taking.qa_connections_hint", "Optional \u2014 connect this topic to another subject or real life, or invent a memory hook of your own for a tricky answer."), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "cyan" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.qa_footer", "Switch to Quiz me to self-test with active recall."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  ))), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: _noteText(t, "note_taking.qa_connections_hint", "Optional \u2014 connect this topic to another subject or real life, or invent a memory hook of your own for a tricky answer."), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "cyan" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic text-center" }, _noteText(t, "note_taking.qa_footer", "Switch to Quiz me to self-test with active recall."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 function _autoGrowTextarea(el) {
   if (!el || el.tagName !== "TEXTAREA") return;
@@ -1099,19 +1367,31 @@ function _autoGrowAll(root) {
 }
 const NoteTakingView = React.memo((props) => {
   const _autoGrowRootRef = React.useRef(null);
-  React.useEffect(function() {
-    _autoGrowAll(_autoGrowRootRef.current);
-  });
   const generatedContent = props.generatedContent;
-  if (!generatedContent || generatedContent.type !== "note-taking") return null;
-  const templateType = generatedContent.data && generatedContent.data.templateType || "cornell-notes";
+  const isNoteTaking = !!(generatedContent && generatedContent.type === "note-taking");
+  const templateType = generatedContent && generatedContent.data && generatedContent.data.templateType || "cornell-notes";
+  const learnerReadOnly = !!props.learnerReadOnly;
+  React.useEffect(function() {
+    if (!isNoteTaking) return;
+    _autoGrowAll(_autoGrowRootRef.current);
+  }, [isNoteTaking, generatedContent && generatedContent.id, templateType]);
+  React.useEffect(function() {
+    const root = _autoGrowRootRef.current;
+    if (!isNoteTaking || !root || !learnerReadOnly) return;
+    root.querySelectorAll("input, textarea").forEach(function(el) {
+      el.readOnly = true;
+    });
+  }, [isNoteTaking, learnerReadOnly, generatedContent && generatedContent.id, templateType]);
+  if (!isNoteTaking) return null;
+  const viewProps = learnerReadOnly ? { ...props, handleNoteUpdate: () => {
+  } } : props;
   let _view = null;
-  if (templateType === "cornell-notes") _view = React.createElement(CornellNotesView, props);
-  else if (templateType === "lab-report") _view = React.createElement(LabReportView, props);
-  else if (templateType === "reading-response") _view = React.createElement(ReadingResponseView, props);
-  else if (templateType === "double-entry") _view = React.createElement(DoubleEntryView, props);
-  else if (templateType === "guided-notes") _view = React.createElement(GuidedNotesView, props);
-  else if (templateType === "q-and-a") _view = React.createElement(QAndAView, props);
+  if (templateType === "cornell-notes") _view = React.createElement(CornellNotesView, viewProps);
+  else if (templateType === "lab-report") _view = React.createElement(LabReportView, viewProps);
+  else if (templateType === "reading-response") _view = React.createElement(ReadingResponseView, viewProps);
+  else if (templateType === "double-entry") _view = React.createElement(DoubleEntryView, viewProps);
+  else if (templateType === "guided-notes") _view = React.createElement(GuidedNotesView, viewProps);
+  else if (templateType === "q-and-a") _view = React.createElement(QAndAView, viewProps);
   if (!_view) return null;
   return React.createElement("div", { ref: _autoGrowRootRef, className: "nt-autogrow", onInput: function(e) {
     _autoGrowTextarea(e.target);
@@ -1407,7 +1687,7 @@ const _NoteInsightsModal = ({ isOpen, onClose, insights, isLoading, t }) => {
   const dialogRef = React.useRef(null);
   _useNoteDialogFocus(isOpen, dialogRef, onClose);
   if (!isOpen) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[270] flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/70 backdrop-blur-sm", onClick: onClose, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "allo-docsuite relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:ring-4 focus:ring-inset focus:ring-indigo-500", role: "dialog", "aria-modal": "true", "aria-labelledby": "note-insights-modal-title", "aria-describedby": "note-insights-modal-subtitle" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase tracking-wider" }, "Note-Taking Insights"), /* @__PURE__ */ React.createElement("h2", { id: "note-insights-modal-title", className: "text-2xl font-black text-slate-800 mt-0.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4CA}"), " ", t("note_insights.title") || "Your note-taking patterns"), /* @__PURE__ */ React.createElement("p", { id: "note-insights-modal-subtitle", className: "text-xs text-slate-600 mt-1 leading-snug" }, t("note_insights.subtitle") || "Growth-focused observations across your saved entries. Not a grade \u2014 a mirror.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100", "aria-label": t("note_insights.close_aria") || "Close insights" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 bg-slate-50 space-y-3" }, isLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12", role: "status", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, t("note_insights.loading") || "Looking across your notebook..."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("note_insights.loading_hint") || "This takes a few seconds \u2014 patterns need a careful read.")) : !insights ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-500 text-sm" }, t("note_insights.no_data") || "No insights yet.") : /* @__PURE__ */ React.createElement(React.Fragment, null, insights.summary ? /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1" }, t("note_insights.overview_label") || "Overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.summary)) : null, Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-xl p-4 shadow-sm" }, p.title ? /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title) : null, p.observation ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation) : null, p.tryNext ? /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("note_insights.try_next_label") || "Try next:"), " ", p.tryNext) : null)), insights.celebration ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 mt-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("note_insights.celebration_label") || "Keep doing this"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration)) : null)), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 italic" }, t("note_insights.footer") || "These observations are a mirror, not a grade. Use what's useful, set aside what isn't.")));
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[270] flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/70 backdrop-blur-sm", onClick: onClose, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "allo-docsuite relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:ring-4 focus:ring-inset focus:ring-indigo-500", role: "dialog", "aria-modal": "true", "aria-labelledby": "note-insights-modal-title", "aria-describedby": "note-insights-modal-subtitle" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-700 uppercase tracking-wider" }, "Note-Taking Insights"), /* @__PURE__ */ React.createElement("h2", { id: "note-insights-modal-title", className: "text-2xl font-black text-slate-800 mt-0.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4CA}"), " ", t("note_insights.title") || "Your note-taking patterns"), /* @__PURE__ */ React.createElement("p", { id: "note-insights-modal-subtitle", className: "text-xs text-slate-600 mt-1 leading-snug" }, t("note_insights.subtitle") || "Growth-focused observations across your saved entries. Not a grade \u2014 a mirror.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100", "aria-label": t("note_insights.close_aria") || "Close insights" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 bg-slate-50 space-y-3" }, isLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12", role: "status", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, t("note_insights.loading") || "Looking across your notebook..."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("note_insights.loading_hint") || "This takes a few seconds \u2014 patterns need a careful read.")) : !insights ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600 text-sm" }, t("note_insights.no_data") || "No insights yet.") : /* @__PURE__ */ React.createElement(React.Fragment, null, insights.summary ? /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-600 uppercase tracking-wider mb-1" }, t("note_insights.overview_label") || "Overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.summary)) : null, Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-xl p-4 shadow-sm" }, p.title ? /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title) : null, p.observation ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation) : null, p.tryNext ? /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("note_insights.try_next_label") || "Try next:"), " ", p.tryNext) : null)), insights.celebration ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 mt-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("note_insights.celebration_label") || "Keep doing this"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration)) : null)), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 border-t border-slate-200 bg-white text-xs text-slate-600 italic" }, t("note_insights.footer") || "These observations are a mirror, not a grade. Use what's useful, set aside what isn't.")));
 };
 const NotebookOverlay = React.memo((props) => {
   const isOpen = !!props.isOpen;
@@ -1424,6 +1704,21 @@ const NotebookOverlay = React.memo((props) => {
   const [insightsOpen, setInsightsOpen] = React.useState(false);
   const [insights, setInsights] = React.useState(null);
   const [insightsLoading, setInsightsLoading] = React.useState(false);
+  const notebookMountedRef = React.useRef(true);
+  const insightsReqRef = React.useRef(0);
+  React.useEffect(() => {
+    notebookMountedRef.current = true;
+    return () => {
+      notebookMountedRef.current = false;
+      insightsReqRef.current += 1;
+    };
+  }, []);
+  React.useEffect(() => {
+    if (!isOpen) {
+      insightsReqRef.current += 1;
+      setInsightsLoading(false);
+    }
+  }, [isOpen]);
   const notebookDialogRef = React.useRef(null);
   _useNoteDialogFocus(isOpen, notebookDialogRef, onClose);
   const noteEntries = history.filter((h) => h && h.type === "note-taking");
@@ -1436,21 +1731,26 @@ const NotebookOverlay = React.memo((props) => {
       addToast(t("note_insights.need_more_entries"), "info");
       return;
     }
+    const reqId = ++insightsReqRef.current;
     setInsightsOpen(true);
     setInsightsLoading(true);
     setInsights(null);
     try {
       const prompt = _buildNoteInsightsPrompt(noteEntries);
       const raw = await callGemini(prompt, true);
+      if (!notebookMountedRef.current || insightsReqRef.current !== reqId) return;
       const parsed = _normalizeNoteInsights(JSON.parse(window.__alloUtils && window.__alloUtils.cleanJson ? window.__alloUtils.cleanJson(raw) : raw));
       if (!parsed) throw new Error("Insights reply had no usable text");
       setInsights(parsed);
     } catch (e) {
+      if (!notebookMountedRef.current || insightsReqRef.current !== reqId) return;
       console.warn("[NoteInsights] failed", e);
       addToast(t("note_insights.error") || "Could not generate insights right now. Try again in a moment.", "error");
       setInsightsOpen(false);
     } finally {
-      setInsightsLoading(false);
+      if (notebookMountedRef.current && insightsReqRef.current === reqId) {
+        setInsightsLoading(false);
+      }
     }
   }, [callGemini, noteEntries, addToast, t]);
   if (!isOpen) return null;
@@ -1528,14 +1828,14 @@ const NotebookOverlay = React.memo((props) => {
         "aria-hidden": "true"
       }
     ),
-    /* @__PURE__ */ React.createElement("div", { ref: notebookDialogRef, tabIndex: -1, className: "allo-docsuite nt-notebook-print relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:ring-4 focus:ring-inset focus:ring-indigo-500", role: "dialog", "aria-modal": "true", "aria-labelledby": "notebook-dialog-title", "aria-describedby": "notebook-dialog-description", inert: insightsOpen ? true : void 0, "aria-hidden": insightsOpen ? "true" : void 0 }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider" }, "My Notebook"), /* @__PURE__ */ React.createElement("h2", { id: "notebook-dialog-title", className: "text-2xl font-black text-slate-800 mt-0.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4D3}"), " Notebook"), /* @__PURE__ */ React.createElement("p", { id: "notebook-dialog-description", className: "text-xs text-slate-600 mt-1 leading-snug" }, _noteText(t, "notebook.work_shelf_description", "Find your notes, Anchor Charts, Memory Aids and Applied Challenges in one place."))), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { ref: notebookDialogRef, tabIndex: -1, className: "allo-docsuite nt-notebook-print relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:ring-4 focus:ring-inset focus:ring-indigo-500", role: "dialog", "aria-modal": "true", "aria-labelledby": "notebook-dialog-title", "aria-describedby": "notebook-dialog-description", inert: insightsOpen ? true : void 0, "aria-hidden": insightsOpen ? "true" : void 0 }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 uppercase tracking-wider" }, "My Notebook"), /* @__PURE__ */ React.createElement("h2", { id: "notebook-dialog-title", className: "text-2xl font-black text-slate-800 mt-0.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4D3}"), " Notebook"), /* @__PURE__ */ React.createElement("p", { id: "notebook-dialog-description", className: "text-xs text-slate-600 mt-1 leading-snug" }, _noteText(t, "notebook.work_shelf_description", "Find your notes, Anchor Charts, Memory Aids and Applied Challenges in one place."))), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: onClose,
         className: "nt-no-print min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100",
-        "aria-label": t("notebook.close_aria", "Close notebook") || "Close notebook",
-        title: t("notebook.close_title", "Close (Esc)") || "Close (Esc)"
+        "aria-label": _noteText(t, "notebook.close_aria", "Close notebook"),
+        title: _noteText(t, "notebook.close_title", "Close (Esc)")
       },
       "\u2715"
     )), /* @__PURE__ */ React.createElement("div", { className: "nt-no-print flex flex-wrap items-center gap-2 px-5 py-3 border-b border-slate-100 bg-white" }, filters.map((f) => {
@@ -1580,7 +1880,7 @@ const NotebookOverlay = React.memo((props) => {
       },
       "\u{1F5A8}\uFE0F ",
       _noteText(t, "notebook.print_button", "Print / PDF")
-    ))), /* @__PURE__ */ React.createElement("p", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, filtered.length, " notebook entries shown."), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto px-5 py-4 bg-slate-50" }, filtered.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 opacity-50" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold mb-1" }, sortedEntries.length === 0 ? "Your notebook is empty." : "No entries match this filter."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 max-w-sm mx-auto leading-relaxed" }, sortedEntries.length === 0 ? _noteText(t, "notebook.empty_work_hint", "Open Notes, Anchor Charts, Memory Aid or Applied Challenge from the resource tools to begin.") : "Switch filters above to see other entry types.")) : /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, filtered.map((entry) => {
+    ))), /* @__PURE__ */ React.createElement("p", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, filtered.length, " notebook entries shown."), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto px-5 py-4 bg-slate-50" }, filtered.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 opacity-50" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold mb-1" }, sortedEntries.length === 0 ? "Your notebook is empty." : "No entries match this filter."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 max-w-sm mx-auto leading-relaxed" }, sortedEntries.length === 0 ? _noteText(t, "notebook.empty_work_hint", "Open Notes, Anchor Charts, Memory Aid or Applied Challenge from the resource tools to begin.") : "Switch filters above to see other entry types.")) : /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, filtered.map((entry) => {
       const kind = _entryKind(entry) || "cornell-notes";
       const meta = NOTEBOOK_TEMPLATE_META[kind] || NOTEBOOK_TEMPLATE_META["cornell-notes"];
       const title = _entryTitle(entry);
@@ -1599,11 +1899,11 @@ const NotebookOverlay = React.memo((props) => {
           type: "button",
           onClick: () => onSelectEntry(entry),
           className: "w-full text-left bg-white border border-slate-200 rounded-lg p-3 hover:border-indigo-400 hover:shadow-md transition-all motion-reduce:transition-none group focus:ring-2 focus:ring-indigo-400",
-          "aria-label": (t("notebook.open_entry_aria", "Open {kind}: {title}") || "Open {kind}: {title}").replace("{kind}", meta.label).replace("{title}", title)
+          "aria-label": _noteText(t, "notebook.open_entry_aria", "Open {kind}: {title}").replace("{kind}", meta.label).replace("{title}", title)
         },
-        /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-1 self-stretch rounded-full ${_accentClasses(meta.accent, "bar")}`, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${_accentClasses(meta.accent, "badge")}` }, meta.icon, " ", meta.short), when ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, when) : null), /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 text-sm truncate group-hover:text-indigo-700" }, title), previewTruncated ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1 leading-snug line-clamp-2" }, previewTruncated) : /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic mt-1" }, "No notes yet \u2014 open to start writing.")))
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-1 self-stretch rounded-full ${_accentClasses(meta.accent, "bar")}`, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${_accentClasses(meta.accent, "badge")}` }, meta.icon, " ", meta.short), when ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, when) : null), /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 text-sm truncate group-hover:text-indigo-700" }, title), previewTruncated ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1 leading-snug line-clamp-2" }, previewTruncated) : /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic mt-1" }, "No notes yet \u2014 open to start writing.")))
       ));
-    }))), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", null, "Click any entry to open it. Your notebook stays with you across sessions."), /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, sortedEntries.length, " total"))),
+    }))), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 border-t border-slate-200 bg-white text-xs text-slate-600 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", null, "Click any entry to open it. Your notebook stays with you across sessions."), /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, sortedEntries.length, " total"))),
     /* @__PURE__ */ React.createElement(_NoteInsightsBoundary, { insights, onError: () => {
       setInsightsOpen(false);
       setInsights(null);
@@ -1612,7 +1912,11 @@ const NotebookOverlay = React.memo((props) => {
       _NoteInsightsModal,
       {
         isOpen: insightsOpen,
-        onClose: () => setInsightsOpen(false),
+        onClose: () => {
+          insightsReqRef.current += 1;
+          setInsightsLoading(false);
+          setInsightsOpen(false);
+        },
         insights,
         isLoading: insightsLoading,
         t

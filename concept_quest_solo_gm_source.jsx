@@ -119,8 +119,22 @@ const ConceptQuestSoloGMHelpers = (() => {
     if (/\b(?:you|your party|your character|the party)\s+(?:have\s+|has\s+)?(?:gain(?:ed)?|earn(?:ed)?|receiv(?:e|ed)|recover(?:ed)?|restor(?:e|ed)|lose|lost)\s+(?:\d+|an?|some|more)\s+(?:(?:extra|bonus|new)\s+)?(?:xp|experience|hp|health|shields?|sigils?|items?|coins?|gold|points|rewards?)\b/i.test(prose)) throw new Error('invented-effect');
     if (!ctx.attempted && ctx.quest?.phase === 'battle') {
       if (/correct (?:answer|option|choice)\s*(?:is|:)|choose (?:option|answer|choice)\s*[a-f0-9]\b/.test(prose)) throw new Error('answer-reveal');
-      for (const option of [...(ctx.room?.challenge?.options || []), ...(ctx.room?.challenge?.answerOptions || []), ...(ctx.room?.challenge?.evidenceOptions || []), ctx.room?.challenge?.expectedFill, ctx.room?.challenge?.expectedAnswer, ctx.room?.challenge?.correctPartnerForWrong].filter(value => typeof value === 'string')) {
-        const text = String(option).normalize('NFC').trim().toLocaleLowerCase();
+      const rawCandidates = [
+        ...(ctx.room?.challenge?.options || []),
+        ...(ctx.room?.challenge?.answerOptions || []),
+        ...(ctx.room?.challenge?.evidenceOptions || []),
+        ...(ctx.room?.challenge?.principleOptions || []),
+        ...(ctx.room?.challenge?.candidatePartners || []),
+        ctx.room?.challenge?.expectedFill,
+        ctx.room?.challenge?.expectedAnswer,
+        ctx.room?.challenge?.correctPartnerForWrong,
+        ctx.room?.challenge?.expectedNumber != null ? String(ctx.room.challenge.expectedNumber) : null,
+      ];
+      for (const option of rawCandidates) {
+        const extracted = typeof option === 'string'
+          ? option
+          : (option && typeof option === 'object' ? (option.text || option.label || '') : '');
+        const text = String(extracted || '').normalize('NFC').trim().toLocaleLowerCase();
         if (text.length < 3) continue;
         const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         if (new RegExp('(^|[^\\p{L}\\p{N}])' + escaped + '($|[^\\p{L}\\p{N}])', 'u').test(prose)) throw new Error('answer-reveal');
@@ -155,7 +169,7 @@ function _cqGmAiUsable(fn) {
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
   } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true));
 }
 
 function ConceptQuestSoloGM({ quest, generatedContent, inputText, callGemini, t, gmState, onChange, enabled, onEnabledChange }) {
@@ -171,16 +185,17 @@ function ConceptQuestSoloGM({ quest, generatedContent, inputText, callGemini, t,
   const [, setAiConfigRevision] = React.useState(0);
   React.useEffect(() => {
     const onAiChange = () => setAiConfigRevision(v => v + 1);
+    const events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed'];
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-      window.addEventListener('alloflow:ai-config-changed', onAiChange);
+      events.forEach(ev => window.addEventListener(ev, onAiChange));
     }
     return () => {
       if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
-        window.removeEventListener('alloflow:ai-config-changed', onAiChange);
+        events.forEach(ev => window.removeEventListener(ev, onAiChange));
       }
     };
   }, []);
-  const ctx = helpers.context(quest, generatedContent, inputText);
+  const ctx = React.useMemo(() => helpers.context(quest, generatedContent, inputText), [quest, generatedContent, inputText]);
   const current = helpers.sanitizeState(gmState, ctx.scope);
   const hasProvider = _cqGmAiUsable(callGemini);
   const aiEnabled = enabled !== false && hasProvider;
@@ -245,9 +260,9 @@ function ConceptQuestSoloGM({ quest, generatedContent, inputText, callGemini, t,
   if (!quest) return null;
   return <section data-concept-quest-solo-gm="true" aria-label={tr('solo_gm_title', 'Game master')} className="rounded-xl border-2 border-indigo-200 bg-white p-4 space-y-3">
     <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-lg font-black text-indigo-950">{tr('solo_gm_title', 'Game master')}</h3><p className="mt-1 text-sm text-slate-600">{tr('solo_gm_intro', 'Investigate the scene, talk with your guide, or explain a lesson idea.')}</p></div><label className="flex min-h-11 items-center gap-2 text-sm font-bold text-indigo-900"><input type="checkbox" checked={aiEnabled} disabled={!hasProvider} onChange={event => onEnabledChange?.(event.target.checked)} className="h-4 w-4 accent-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"/>{tr('solo_gm_ai_toggle', 'AI game master')}</label></div>
-    {!hasProvider && <><p className="text-xs text-slate-600">{tr('solo_gm_no_provider', 'The adventure guide is available now. AI narration becomes available when your AI provider is connected.')}</p>{SetupNotice && <SetupNotice t={t} kind="text" />}</>}
+    {!hasProvider && <><p className="text-xs text-slate-600">{tr('solo_gm_no_provider', 'The adventure guide is available now. AI narration becomes available when your AI provider is connected.')}</p>{SetupNotice && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) && <SetupNotice t={t} kind="text" />}</>}
     {busy && <p role="status" className="text-sm text-indigo-800">{tr('solo_gm_thinking', 'Your game master is thinking. You can keep playing while the story catches up.')}</p>}
-    {failed && <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"><p>{tr('solo_gm_failed', 'AI narration is unavailable for this moment. Your adventure guide is ready and you can keep playing.')}</p><button type="button" disabled={busy} onClick={() => run(retryRef.current)} className={controls + ' mt-2 border border-amber-400 bg-white'}>{tr('solo_gm_retry', 'Retry AI narration')}</button></div>}
+    {failed && <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"><p role="status">{tr('solo_gm_failed', 'AI narration is unavailable for this moment. Your adventure guide is ready and you can keep playing.')}</p><button type="button" disabled={busy} onClick={() => run(retryRef.current)} className={controls + ' mt-2 border border-amber-400 bg-white'}>{tr('solo_gm_retry', 'Retry AI narration')}</button></div>}
     <div data-gm-origin={current?.origin || 'scripted'} className="space-y-3"><div className="text-slate-800 leading-relaxed">{cqMd.block(shown.narrative)}</div>{shown.character?.dialogue && <div className="rounded-lg bg-indigo-50 p-3"><p className="font-bold text-indigo-950">{shown.character.name}</p><div className="mt-1 text-sm text-indigo-900">{cqMd.block(shown.character.dialogue)}</div></div>}{shown.feedback && <div className="rounded-lg border-l-4 border-teal-400 bg-teal-50 p-3 text-sm text-teal-950">{cqMd.block(shown.feedback)}</div>}{shown.evidence && <blockquote className="border-l-4 border-slate-300 pl-3 text-sm text-slate-700"><p className="font-bold">{tr('solo_gm_lesson_evidence', 'From your lesson')}</p><p className="mt-1">{cqMd.inline(shown.evidence)}</p></blockquote>}</div>
     <div role="group" className="flex flex-wrap gap-2" aria-label={tr('solo_gm_suggestions', 'Suggested actions')}>{shown.choices.map(choice => <button key={choice.id} type="button" disabled={busy} onClick={() => send({ intent: choice.intent, text: choice.prompt })} className={controls + ' border border-indigo-200 bg-indigo-50 text-indigo-900'}>{cqMd.inline(choice.label)}</button>)}</div>
     {transcript.length > 0 && <details data-gm-history className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-3"><summary className="flex min-h-11 cursor-pointer items-center rounded text-sm font-bold text-indigo-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('solo_gm_history', 'Recent conversation')}<span className="ml-2 font-normal text-slate-600">{tr('solo_gm_history_count', '{count} entries', { count: transcript.length })}</span></summary><ol className="mt-3 max-h-72 space-y-3 overflow-y-auto pr-1">{transcript.map((entry, index) => <li key={entry.role + ':' + entry.turn + ':' + index} className="min-w-0 rounded-lg border border-slate-200 bg-white p-3"><p className="flex flex-wrap gap-x-2 text-xs font-bold text-indigo-950"><span>{entry.role === 'player' ? tr('solo_gm_your_message', 'Your message') : tr('solo_gm_title', 'Game master')}</span><span className="font-normal text-slate-600">{tr('solo_gm_turn', 'Turn {turn}', { turn: entry.turn })}</span></p><div className="mt-1 break-words text-sm text-slate-700">{cqMd.block(entry.text)}</div></li>)}</ol></details>}

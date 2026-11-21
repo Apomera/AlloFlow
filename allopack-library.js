@@ -6,29 +6,54 @@
   var search = document.getElementById('pack-search');
   var subject = document.getElementById('pack-subject');
   var grade = document.getElementById('pack-grade');
-  function normalize(text) { return String(text).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[-_]/g, ' '); }
+  function normalize(text) { return String(text == null ? '' : text).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[-_]/g, ' '); }
   function matchesGrade(value, wanted) {
     if (!wanted) return true;
-    var numbers = String(value).match(/\d+/g) || [];
+    var numbers = String(value == null ? '' : value).match(/\d+/g) || [];
     return numbers.length > 1 ? Number(wanted) >= Number(numbers[0]) && Number(wanted) <= Number(numbers[1]) : numbers[0] === wanted;
   }
+  function setStatus(text) {
+    var el = document.getElementById('pack-copy-status');
+    if (el) el.textContent = text;
+  }
+  function isSafeCopyUrl(raw) {
+    var s = String(raw || '').trim();
+    return /^https?:\/\/[^\s]+$/i.test(s) || /^\/p\/[A-Za-z0-9_-]+$/.test(s);
+  }
+  function isSameOriginHttpUrl(raw) {
+    try {
+      var parsed = new URL(String(raw || ''), window.location.href);
+      return (parsed.protocol === 'https:' || parsed.protocol === 'http:') && parsed.origin === window.location.origin;
+    } catch (_) { return false; }
+  }
   function filter() {
-    var terms = normalize(search.value).trim().split(/\s+/).filter(Boolean), count = 0, versions = 0;
+    var searchVal = search ? String(search.value || '').slice(0, 200) : '';
+    var subjectVal = subject ? String(subject.value || '') : '';
+    var gradeVal = grade ? String(grade.value || '') : '';
+    var terms = normalize(searchVal).trim().split(/\s+/).filter(Boolean).slice(0, 12), count = 0, versions = 0;
     topics.forEach(function (topic) {
       var hay = normalize(topic.dataset.packSearch);
-      topic.hidden = !terms.every(function (term) { return hay.indexOf(term) !== -1; }) || (subject.value && topic.dataset.packSubject !== subject.value) || !matchesGrade(topic.dataset.packGrade, grade.value);
+      topic.hidden = !terms.every(function (term) { return hay.indexOf(term) !== -1; }) || (subjectVal && topic.dataset.packSubject !== subjectVal) || !matchesGrade(topic.dataset.packGrade, gradeVal);
       if (!topic.hidden) { count++; versions += topic.querySelectorAll('[data-pack-id]').length; }
     });
     var results = document.getElementById('pack-results');
-    var countLabel = results.dataset.packCountLabel || 'pack versions';
-    if (versions === 1) countLabel = countLabel === 'packs' ? 'pack' : 'pack version';
-    results.textContent = count + ' of ' + topics.length + ' topics · ' + versions + ' ' + countLabel;
-    document.getElementById('pack-empty').hidden = count !== 0;
+    if (results) {
+      var countLabel = results.dataset.packCountLabel || 'pack versions';
+      if (versions === 1) countLabel = countLabel === 'packs' ? 'pack' : 'pack version';
+      results.textContent = count + ' of ' + topics.length + ' topics · ' + versions + ' ' + countLabel;
+    }
+    var emptyEl = document.getElementById('pack-empty');
+    if (emptyEl) emptyEl.hidden = count !== 0;
   }
   form.hidden = false;
   form.addEventListener('input', filter);
   form.addEventListener('submit', function (event) { event.preventDefault(); filter(); });
-  form.addEventListener('reset', function () { search.value = ''; subject.value = ''; grade.value = ''; filter(); });
+  form.addEventListener('reset', function () {
+    if (search) search.value = '';
+    if (subject) subject.value = '';
+    if (grade) grade.value = '';
+    filter();
+  });
   // Retain the visitor's existing browser-app storage origin on either supported host.
   if (['https://alloflow.dev', 'https://alloflow-cdn.pages.dev'].includes(window.location.origin)) {
     document.querySelectorAll('[data-pack-alias]').forEach(function (link) {
@@ -39,17 +64,25 @@
   document.querySelectorAll('[data-copy-pack]').forEach(function (button) {
     button.hidden = false;
     button.addEventListener('click', async function () {
-      var fallback = button.closest('.pack-version').querySelector('.pack-copy-fallback');
+      var container = button.closest('.pack-version');
+      var fallback = container ? container.querySelector('.pack-copy-fallback') : null;
+      var copyValue = String(button.dataset.copyPack || '').trim();
+      if (!isSafeCopyUrl(copyValue)) {
+        setStatus('This pack link is unavailable.');
+        return;
+      }
       try {
         if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('Clipboard unavailable');
-        await navigator.clipboard.writeText(button.dataset.copyPack);
-        fallback.hidden = true;
-        document.getElementById('pack-copy-status').textContent = 'Pack link copied.';
+        await navigator.clipboard.writeText(copyValue);
+        if (fallback) fallback.hidden = true;
+        setStatus('Pack link copied.');
       } catch (_) {
-        fallback.hidden = false;
-        fallback.querySelector('input').focus();
-        fallback.querySelector('input').select();
-        document.getElementById('pack-copy-status').textContent = 'Select and copy the link below the pack.';
+        if (fallback) {
+          fallback.hidden = false;
+          var input = fallback.querySelector('input');
+          if (input) { input.focus(); input.select(); }
+        }
+        setStatus('Select and copy the link below the pack.');
       }
     });
   });
@@ -58,13 +91,12 @@
       event.preventDefault();
       if (link.getAttribute('aria-busy') === 'true') return;
       link.setAttribute('aria-busy', 'true');
-      var status = document.getElementById('pack-copy-status');
-      status.textContent = 'Preparing the JSON download…';
+      setStatus('Preparing the JSON download…');
       async function readPack(url) {
         var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-        var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 20000) : null;
+        var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 20000) : null;
         try {
-          var init = { credentials: 'omit', referrerPolicy: 'no-referrer' };
+          var init = { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
           if (ctrl) init.signal = ctrl.signal;
           var response = await fetch(url, init);
           if (!response.ok) throw new Error('Download unavailable');
@@ -75,7 +107,7 @@
           var pack = JSON.parse(new TextDecoder().decode(bytes).replace(/^\uFEFF/, ''), function (k, v) {
             return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
           });
-          if (!pack || typeof pack !== 'object' || Array.isArray(pack) || !pack.allopack || !Array.isArray(pack.history)) throw new Error('The response is not an AlloPack');
+          if (!pack || typeof pack !== 'object' || Array.isArray(pack) || !pack.allopack || typeof pack.allopack !== 'object' || Array.isArray(pack.allopack) || !Array.isArray(pack.history)) throw new Error('The response is not an AlloPack');
           return bytes;
         } finally {
           if (timer !== null) clearTimeout(timer);
@@ -83,13 +115,15 @@
       }
       try {
         var bytes;
-        try { bytes = await readPack(link.href); }
-        catch (_) {
+        try {
+          if (!isSameOriginHttpUrl(link.href)) throw new Error('Untrusted download origin');
+          bytes = await readPack(link.href);
+        } catch (_) {
           var relPath = String(link.dataset.packDownload || '').replace(/^\/+/, '');
-          if (!/^[A-Za-z0-9_./-]+\.json$/.test(relPath) || relPath.indexOf('..') !== -1) throw new Error('Invalid pack path');
+          if (!/^[A-Za-z0-9_./-]+\.json$/.test(relPath) || relPath.indexOf('..') !== -1 || relPath.indexOf('//') !== -1) throw new Error('Invalid pack path');
           bytes = await readPack('https://raw.githubusercontent.com/Apomera/AlloFlow/main/' + relPath);
         }
-        var safeDownload = String(link.download || 'allopack.json').replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '') || 'allopack.json';
+        var safeDownload = String(link.download || 'allopack.json').replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '').slice(0, 120) || 'allopack.json';
         var blobUrl = URL.createObjectURL(new Blob([bytes], {type:'application/json'}));
         var anchor = document.createElement('a');
         try {
@@ -97,10 +131,10 @@
           document.body.appendChild(anchor); anchor.click();
         } finally {
           if (anchor.parentNode) anchor.remove();
-          setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 1000);
+          setTimeout(function () { try { URL.revokeObjectURL(blobUrl); } catch (_) {} }, 1000);
         }
-        status.textContent = 'JSON download started. Use Load Project in AlloFlow to open it.';
-      } catch (_) { status.textContent = 'The download could not be prepared. Please try again.'; }
+        setStatus('JSON download started. Use Load Project in AlloFlow to open it.');
+      } catch (_) { setStatus('The download could not be prepared. Please try again.'); }
       finally { link.removeAttribute('aria-busy'); }
     });
   });

@@ -11,6 +11,7 @@ const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const { AP_FRAMEWORK_TOPIC_IDS, frameworkSourceFor } = require('./ap_framework_topics.cjs');
 const { AP_BIOLOGY_UNIT_SECTIONS } = require('./ap_biology_lesson_sections.cjs');
 const { AP_BIOLOGY_WORKSHOPS: SPECS, AP_BIOLOGY_WORKSHOP_REVIEW_NOTE } = require('./ap_biology_workshops.cjs');
+const { buildApBiologyDiagrams } = require('./ap_biology_diagrams.cjs');
 
 // Which lesson section an item routes to, by its framework topic. Section 01 is
 // the original unit lesson; sections 02 and 03 are split out by topic.
@@ -1208,17 +1209,23 @@ function buildLibrary() {
     };
   });
 
-  const flashcards = chapters.map((chapter, index) => ({
-    id: `ap-bio-card-${String(index + 1).padStart(2, '0')}`,
+  const flashcards = chapters.flatMap((chapter, index) => chapter.sections.map((section, sectionIndex) => ({
+    id: sectionIndex === 0
+      ? `ap-bio-card-${String(index + 1).padStart(2, '0')}`
+      : `ap-bio-card-${String(index + 1).padStart(2, '0')}-s${sectionIndex + 1}`,
     chapterId: chapter.id,
+    sectionId: section.id,
     domainId: chapter.domainId,
     domain: chapter.domain,
-    front: chapter.objectives[0],
-    back: chapter.sections[0].content.split('. ').slice(0, 2).join('. ') + '.',
+    front: sectionIndex === 0
+      ? chapter.objectives[0]
+      : `What key biological mechanism and boundary govern ${section.heading}?`,
+    back: (section.content || '').split('. ').slice(0, 2).join('. ').replace(/\.+$/, '') + '.',
     reviewStatus: 'source-reviewed-editorial-pass',
     references: chapter.references.slice(),
     reviewNote: 'Original foundation study card; AP Biology expert validation remains pending.',
-  }));
+  })));
+  const { diagrams, diagramPlacements } = buildApBiologyDiagrams(chapters);
 
   const memoryAids = chapters.map((chapter, index) => ({
     id: `ap-bio-memory-${String(index + 1).padStart(2, '0')}`,
@@ -1268,8 +1275,8 @@ function buildLibrary() {
     sourceCatalog,
     skills: practices,
     chapters,
-    diagrams: [],
-    diagramPlacements: [],
+    diagrams,
+    diagramPlacements,
     flashcards,
     memoryAids,
     constructedResponseWorkshops: buildWorkshops(),
@@ -1279,8 +1286,8 @@ function buildLibrary() {
       knowledgeChecks: chapters.reduce((sum, chapter) => sum + chapter.knowledgeChecks.length, 0),
       flashcards: flashcards.length,
       memoryAids: memoryAids.length,
-      diagrams: 0,
-      diagramPlacements: 0,
+      diagrams: diagrams.length,
+      diagramPlacements: diagramPlacements.length,
       constructedResponseWorkshops: SPECS.length,
       sourceReviewedConstructedResponseWorkshops: SPECS.length,
       richLessonPrototypes: chapters.filter((chapter) => chapter.foundationPrototype).length,

@@ -74,15 +74,15 @@ jobs:
           python3 -m unittest discover -s tests -p test_edge_tts_language_review.py
       - name: Test optional service requests and Compose network defaults
         run: |
-          python3 -m venv /tmp/alloflow-security-tests
-          /tmp/alloflow-security-tests/bin/python -m pip install --disable-pip-version-check --only-binary=:all: --require-hashes -r dev-tools/security/requirements.txt
-          /tmp/alloflow-security-tests/bin/python -m unittest discover -s dev-tools/security -p test_python_lock_compatibility.py
-          /tmp/alloflow-security-tests/bin/python dev-tools/security/check_python_lock_compatibility.py
-          /tmp/alloflow-security-tests/bin/python -m unittest discover -s tests -p test_optional_service_security.py
+          python3 -m venv "$RUNNER_TEMP/alloflow-security-tests"
+          "$RUNNER_TEMP/alloflow-security-tests/bin/python" -m pip install --disable-pip-version-check --only-binary=:all: --require-hashes -r dev-tools/security/requirements.txt
+          "$RUNNER_TEMP/alloflow-security-tests/bin/python" -m unittest discover -s dev-tools/security -p test_python_lock_compatibility.py
+          "$RUNNER_TEMP/alloflow-security-tests/bin/python" dev-tools/security/check_python_lock_compatibility.py
+          "$RUNNER_TEMP/alloflow-security-tests/bin/python" -m unittest discover -s tests -p test_optional_service_security.py
       - name: Audit locked Python dependencies without executing package build scripts
         run: |
-          /tmp/alloflow-security-tests/bin/python -m pip_audit --disable-pip --require-hashes -r dev-tools/security/requirements.txt
-          /tmp/alloflow-security-tests/bin/python -m pip_audit --disable-pip --require-hashes -r docker/edge-tts-server/requirements.txt
+          "$RUNNER_TEMP/alloflow-security-tests/bin/python" -m pip_audit --disable-pip --require-hashes -r dev-tools/security/requirements.txt
+          "$RUNNER_TEMP/alloflow-security-tests/bin/python" -m pip_audit --disable-pip --require-hashes -r docker/edge-tts-server/requirements.txt
       - name: Check image and Python dependency pins
         run: node --test dev-tools/security/test-dependency-pins.cjs
       - name: Verify workflow policy and changed dependency scopes

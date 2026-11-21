@@ -6,3 +6,183 @@
 .ra-rows .voice-state { flex: 1 1 10rem; align-self: center; }
 .ra-para { margin-top: 0.6rem; }
 .ra-print-opt { margin: 0.5rem 0 0; }
+.ra-rec-opt { margin: 0.5rem 0 0.75rem; }
+.ra-file-opts { margin: 0.5rem 0 0.75rem; }
+.ra-page-sep {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0.9rem 0 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.ra-page-sep:first-child { margin-top: 0.25rem; }
+.ra-split-sep {
+  list-style: none;
+  display: flex;
+  justify-content: flex-end;
+  margin: -0.1rem 0 0.15rem;
+  padding: 0 0.25rem;
+}
+.ra-split-btn {
+  font-size: 0.82rem;
+  padding: 0.2rem 0.55rem;
+  min-height: 1.9rem;
+}
+#text-said {
+  margin-top: 0.35rem;
+}
+.ra-stats {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.45rem 0 0.6rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.ra-support-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  margin: 0.5rem 0 0.85rem;
+}
+.ra-support-card {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: var(--soft);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.ra-support-card label.radio {
+  align-items: flex-start;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  min-height: 0;
+}
+.ra-support-card strong {
+  display: block;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+.ra-support-card small.hint {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+.ra-preview {
+  margin: 0.75rem 0;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--soft);
+  padding: 0.55rem 0.85rem;
+}
+.ra-preview > summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 0.15rem 0;
+}
+.ra-preview-body {
+  margin-top: 0.65rem;
+}
+.ra-preview-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.ra-preview-toggle {
+  font-size: 0.88rem;
+}
+.ra-preview-card {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 1rem 1.15rem;
+  font-size: 1.125rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.ra-preview-h {
+  margin: 0.5rem 0 0.25rem;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+.ra-preview-h:first-child { margin-top: 0; }
+.ra-preview-p { margin: 0 0 0.65rem; }
+.ra-preview-p:last-child { margin-bottom: 0; }
+.ra-preview-pos-n { border-bottom: 2px solid var(--accent); font-weight: 600; }
+.ra-preview-pos-v { border-bottom: 3px double var(--ok); }
+.ra-preview-pos-j { border-bottom: 2px dashed var(--accent); }
+.ra-preview-pos-a { border-bottom: 2px dotted var(--warn); }
+.ra-preview-def { text-decoration: underline dotted var(--accent); text-underline-offset: 0.2em; }
+.ra-preview-pics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--line);
+}
+.ra-preview-pic-chip {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--soft);
+  font-size: 0.85rem;
+}
+.ra-preview-pic-word {
+  font-weight: 600;
+}
+.ra-preview-pic-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  background: var(--surface);
+  border-radius: 0.25rem;
+}
+.ra-pic-act {
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  min-height: 1.75rem;
+  border-radius: 0.35rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.ra-pic-act:hover {
+  border-color: var(--accent);
+}
+.ra-pic-restore {
+  align-self: center;
+  border-color: var(--accent);
+  color: var(--accent);
+}

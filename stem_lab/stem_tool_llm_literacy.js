@@ -1335,6 +1335,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       var callGemini = ctx.callGemini;
       var addToast = ctx.addToast || function(){};
 
+      // Safety gate for every surface here that sends a student's own words to
+      // the AI (temperature playground, Prompt Craft live workshop, When-to-Use-AI
+      // coach). Before 2026-11-20 only the playground was checked, and only for
+      // the critical tier. Uses the shared SEL Hub gate when it is loaded (same
+      // severity mapping, fires onSafetyFlag); otherwise the same regex checker
+      // on window.__alloShared, which is present whichever hub is open.
+      // Returns { action: 'block' | 'nudge' | 'continue', severity }.
+      // Flags stay on this device; no adult is alerted (sel_safety_layer.js).
+      function aiSafetyGate(text, surface) {
+        var msg = String(text || '');
+        var onFlag = typeof ctx.onSafetyFlag === 'function' ? ctx.onSafetyFlag : null;
+        var selHub = window.SelHub;
+        if (selHub && typeof selHub.safeRehearseCheck === 'function') {
+          try {
+            var r = selHub.safeRehearseCheck(msg, { toolId: 'llmLiteracy_' + surface, onSafetyFlag: onFlag });
+            if (r && r.action) return { action: r.action, severity: r.severity };
+          } catch (_) { /* fall through to the direct checker */ }
+        }
+        var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+        var flags = null;
+        try { flags = (checker && checker.check) ? checker.check(msg) : null; } catch (_) { flags = null; }
+        if (!Array.isArray(flags) || !flags.length) return { action: 'continue', severity: 'none' };
+        var rank = { low: 1, medium: 2, high: 3, critical: 4 };
+        var top = flags.reduce(function(acc, f) { return (f && (rank[f.severity] || 0) > (rank[acc.severity] || 0)) ? f : acc; }, flags[0] || {});
+        if (onFlag) {
+          try { onFlag(Object.assign({}, top, { source: 'stem_llmLiteracy_' + surface, context: msg.substring(0, 100), aiGenerated: false })); } catch (_) { /* swallow */ }
+        }
+        if (top.severity === 'critical') return { action: 'block', severity: top.severity };
+        if (top.severity === 'high') return { action: 'nudge', severity: top.severity };
+        return { action: 'continue', severity: top.severity || 'none' };
+      }
+      var AI_SAFETY_PAUSE_TEXT = 'Hey, I want to pause before generating anything. What you just typed sounds heavy, and your wellbeing matters more than the experiment.\n\nIf any of this is real for you right now, please talk to a trusted adult, or reach out to:\n\n988 Suicide & Crisis Lifeline (call or text 988)\nCrisis Text Line (text HOME to 741741)\n\nYou are not alone.';
+      var AI_SAFETY_NUDGE_TEXT = '\n\n(If anything you typed is close to something real for you, talking to a trusted adult is always an option.)';
+
       // Declared at render scope, not inside a single view. These used to live
       // in the Prompt Craft view, where two callers elsewhere could not reach
       // them: the "copy your trap passage" button, and — worse — the fallback
@@ -2475,18 +2509,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 'aria-hidden': 'true'
               },
                 h('svg', { viewBox: '0 0 64 64', width: 48, height: 48, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block' } },
-                  // Token blocks on left
+                  !ctx.isContrast && h('defs', null,
+                    h('radialGradient', { id: 'llm-emb-bg', cx: '50%', cy: '50%', r: '55%' },
+                      h('stop', { offset: '0%', stopColor: '#7c3aed', stopOpacity: 0.32 }),
+                      h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0 })
+                    ),
+                    h('linearGradient', { id: 'llm-emb-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.36 }),
+                      h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                    ),
+                    h('linearGradient', { id: 'llm-emb-arc', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                      h('stop', { offset: '0%', stopColor: '#38bdf8' }),
+                      h('stop', { offset: '50%', stopColor: '#c4b5fd' }),
+                      h('stop', { offset: '100%', stopColor: '#a78bfa' })
+                    )
+                  ),
+                  !ctx.isContrast && h('circle', { cx: 32, cy: 32, r: 29, fill: 'url(#llm-emb-bg)' }),
+                  // Luminous multi-head Bezier attention arc ribbons (dual-pass glow + core)
+                  !ctx.isContrast && h('g', { fill: 'none', strokeLinecap: 'round', opacity: 0.28 },
+                    h('path', { d: 'M 22 17 C 30 17, 30 22, 38 22', stroke: '#38bdf8', strokeWidth: 4.5 }),
+                    h('path', { d: 'M 25 32 C 31 32, 32 28, 38 28', stroke: '#f472b6', strokeWidth: 4.5 }),
+                    h('path', { d: 'M 20 47 C 29 47, 30 39, 38 39', stroke: '#fbbf24', strokeWidth: 4.2 })
+                  ),
+                  h('g', { fill: 'none', strokeLinecap: 'round' },
+                    h('path', { d: 'M 22 17 C 30 17, 30 22, 38 22', stroke: ctx.isContrast ? '#ffff00' : 'url(#llm-emb-arc)', strokeWidth: 1.7, opacity: 0.95 }),
+                    h('path', { d: 'M 25 32 C 31 32, 32 28, 38 28', stroke: ctx.isContrast ? '#ffffff' : '#f472b6', strokeWidth: 1.8, opacity: 0.95 }),
+                    h('path', { d: 'M 20 47 C 29 47, 30 39, 38 39', stroke: ctx.isContrast ? '#67e8f9' : '#fbbf24', strokeWidth: 1.6, opacity: 0.92 }),
+                    !ctx.isContrast && h('path', { d: 'M 22 17 C 29 22, 31 35, 38 38', stroke: '#c4b5fd', strokeWidth: 1.0, strokeDasharray: '2 2', opacity: 0.55 })
+                  ),
+                  // Sculpted token blocks on left with top specular sheen
                   h('rect', { x: 6, y: 12, width: 16, height: 10, rx: 3, fill: '#38bdf8' }),
+                  !ctx.isContrast && h('rect', { x: 7, y: 12.8, width: 14, height: 3.6, rx: 1.5, fill: 'url(#llm-emb-sheen)' }),
                   h('rect', { x: 6, y: 27, width: 19, height: 10, rx: 3, fill: '#f472b6' }),
+                  !ctx.isContrast && h('rect', { x: 7, y: 27.8, width: 17, height: 3.6, rx: 1.5, fill: 'url(#llm-emb-sheen)' }),
                   h('rect', { x: 6, y: 42, width: 14, height: 10, rx: 3, fill: '#fbbf24' }),
-                  // Attention links
-                  h('line', { x1: 23, y1: 17, x2: 36, y2: 26, stroke: '#c4b5fd', strokeWidth: 1.6, opacity: 0.9 }),
-                  h('line', { x1: 26, y1: 32, x2: 36, y2: 32, stroke: '#c4b5fd', strokeWidth: 1.8, opacity: 0.95 }),
-                  h('line', { x1: 21, y1: 47, x2: 36, y2: 38, stroke: '#c4b5fd', strokeWidth: 1.6, opacity: 0.9 }),
-                  // Softmax probability bars on right
+                  !ctx.isContrast && h('rect', { x: 7, y: 42.8, width: 12, height: 3.6, rx: 1.5, fill: 'url(#llm-emb-sheen)' }),
+                  // Attention nexus beacon nodes
+                  h('circle', { cx: 31, cy: 29, r: 2.3, fill: ctx.isContrast ? '#ffff00' : '#ffffff', opacity: 0.95 }),
+                  // Beveled softmax probability bars on right
                   h('rect', { x: 38, y: 13, width: 20, height: 7, rx: 2, fill: '#a78bfa' }),
+                  !ctx.isContrast && h('rect', { x: 38.8, y: 13.7, width: 18.4, height: 2.4, rx: 1, fill: 'url(#llm-emb-sheen)' }),
                   h('rect', { x: 38, y: 24, width: 14, height: 7, rx: 2, fill: '#38bdf8' }),
+                  !ctx.isContrast && h('rect', { x: 38.8, y: 24.7, width: 12.4, height: 2.4, rx: 1, fill: 'url(#llm-emb-sheen)' }),
                   h('rect', { x: 38, y: 35, width: 9, height: 7, rx: 2, fill: '#fbbf24' }),
+                  !ctx.isContrast && h('rect', { x: 38.8, y: 35.7, width: 7.4, height: 2.4, rx: 1, fill: 'url(#llm-emb-sheen)' }),
                   h('rect', { x: 38, y: 46, width: 5, height: 7, rx: 2, fill: '#94a3b8' })
                 )
               ),
@@ -2939,18 +3005,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           // Safety pre-check: the playground explicitly invites "type any
           // prompt" \u2014 exactly the surface where a kid in distress could
           // dump real feelings and get a creative-writing response back
-          // instead of a real-help signal. SafetyContentChecker is on
-          // window.__alloShared regardless of which Hub is loaded.
-          var _checker = (window.__alloShared && window.__alloShared.SafetyContentChecker)
-            || window.SafetyContentChecker || null;
-          var _flags = (_checker && _checker.check) ? _checker.check(playPrompt) : [];
-          var _critical = _flags && _flags.some && _flags.some(function(f) { return f.severity === 'critical'; });
-          if (_critical) {
+          // instead of a real-help signal. See aiSafetyGate above.
+          var _gate = aiSafetyGate(playPrompt, 'temperature_playground');
+          if (_gate.action === 'block') {
             setPlayOut(function(prev) {
               var list = (prev || []).slice();
               list.unshift({
                 temp: playTemp,
-                text: 'Hey, I want to pause before generating anything. What you just typed sounds heavy, and your wellbeing matters more than the experiment.\n\nIf any of this is real for you right now, please talk to a trusted adult, or reach out to:\n\n988 Suicide & Crisis Lifeline (call or text 988)\nCrisis Text Line (text HOME to 741741)\n\nYou are not alone.',
+                text: AI_SAFETY_PAUSE_TEXT,
                 t: Date.now(),
                 _safety: true
               });
@@ -2962,7 +3024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           setPlayBusy(true);
           try {
             var out = await callGemini(playPrompt, false, false, playTemp);
-            var trimmed = (out || '').trim() || '(empty response)';
+            var trimmed = ((out || '').trim() || '(empty response)') + (_gate.action === 'nudge' ? AI_SAFETY_NUDGE_TEXT : '');
             setPlayOut(function(prev) {
               var list = (prev || []).slice();
               list.unshift({ temp: playTemp, text: trimmed, t: Date.now() });
@@ -3290,18 +3352,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                     'aria-label': __alloT('stem.llm_literacy.softmax_svg_aria', 'Bar chart of next-token probabilities and distribution entropy'),
                     style: { display: 'block', width: '100%', height: 'auto' }
                   },
-                    h('rect', { x: 0, y: 0, width: 640, height: 144, rx: 6, fill: svgBg }),
-                    h('line', { x1: 34, y1: 108, x2: 616, y2: 108, stroke: mutedCol, strokeWidth: 1.2, opacity: 0.55 }),
+                    !ctx.isContrast && h('defs', null,
+                      h('linearGradient', { id: 'llm-sm-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: ctx.isDark ? '#1e293b' : '#eef2ff', stopOpacity: 0.72 }),
+                        h('stop', { offset: '100%', stopColor: svgBg, stopOpacity: 1 })
+                      ),
+                      h('linearGradient', { id: 'llm-sm-bar-top', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#a855f7' }),
+                        h('stop', { offset: '100%', stopColor: '#6d28d9' })
+                      ),
+                      h('linearGradient', { id: 'llm-sm-bar-mid', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#8b5cf6', stopOpacity: 0.92 }),
+                        h('stop', { offset: '100%', stopColor: '#4f46e5', stopOpacity: 0.78 })
+                      ),
+                      h('linearGradient', { id: 'llm-sm-bar-tail', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#94a3b8', stopOpacity: 0.85 }),
+                        h('stop', { offset: '100%', stopColor: '#64748b', stopOpacity: 0.65 })
+                      ),
+                      h('linearGradient', { id: 'llm-sm-sheen', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.28 }),
+                        h('stop', { offset: '45%', stopColor: '#ffffff', stopOpacity: 0.05 }),
+                        h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.12 })
+                      )
+                    ),
+                    // Recessed studio telemetry backdrop well
+                    h('rect', { x: 0, y: 0, width: 640, height: 144, rx: 8, fill: ctx.isContrast ? svgBg : 'url(#llm-sm-well)', stroke: ctx.isContrast ? '#ffff00' : (ctx.isDark ? '#334155' : '#e2e8f0'), strokeWidth: 1 }),
+                    // Calibrated reference gridlines (25%, 50%, 75%)
+                    [25, 50, 75].map(function(pctRef) {
+                      var gy = 108 - (pctRef / 100) * 82;
+                      return h('g', { key: 'ref-' + pctRef },
+                        h('line', { x1: 34, y1: gy, x2: 616, y2: gy, stroke: mutedCol, strokeWidth: 0.75, strokeDasharray: '3 4', opacity: ctx.isContrast ? 0.45 : 0.25 }),
+                        h('text', { x: 29, y: gy + 3, textAnchor: 'end', fill: mutedCol, fontSize: 8.5, opacity: 0.7 }, pctRef + '%')
+                      );
+                    }),
+                    h('line', { x1: 34, y1: 108, x2: 616, y2: 108, stroke: mutedCol, strokeWidth: 1.4, opacity: 0.7 }),
                     cols.map(function(item, idx) {
                       var slotW = 580 / Math.max(1, cols.length);
                       var cx = 36 + idx * slotW + slotW / 2;
                       var bw = Math.min(64, slotW * 0.62);
-                      var bh = Math.max(3, (item.pct / 100) * 82);
+                      var bh = Math.max(4, (item.pct / 100) * 82);
                       var by = 108 - bh;
                       var lbl = String(item.tok).trim();
                       if (lbl.length > 10) lbl = lbl.slice(0, 9) + '\u2026';
+                      var fillVal = ctx.isContrast
+                        ? (item.isTail ? tailFill : barFill)
+                        : (item.isTail ? 'url(#llm-sm-bar-tail)' : (idx === 0 ? 'url(#llm-sm-bar-top)' : 'url(#llm-sm-bar-mid)'));
                       return h('g', { key: idx },
-                        h('rect', { x: cx - bw / 2, y: by, width: bw, height: bh, rx: 4, fill: item.isTail ? tailFill : barFill, opacity: item.isTail ? 0.75 : (idx === 0 ? 1 : 0.72) }),
+                        // Soft luminous glow aura behind top-1 predicted token bar
+                        (!ctx.isContrast && idx === 0 && !item.isTail) && h('rect', { x: cx - bw / 2 - 3, y: by - 2, width: bw + 6, height: bh + 2, rx: 6, fill: '#a855f7', opacity: 0.16 }),
+                        // Beveled softmax bar
+                        h('rect', { x: cx - bw / 2, y: by, width: bw, height: bh, rx: 4, fill: fillVal, stroke: ctx.isContrast ? '#ffffff' : (idx === 0 && !item.isTail ? '#c084fc' : 'none'), strokeWidth: ctx.isContrast ? 1 : 0.9 }),
+                        // Temperature specular sheen & top bevel highlight
+                        !ctx.isContrast && h('rect', { x: cx - bw / 2 + 1, y: by + 1, width: Math.max(2, bw - 2), height: Math.max(2, bh - 2), rx: 3, fill: 'url(#llm-sm-sheen)' }),
+                        !ctx.isContrast && bh >= 8 && h('line', { x1: cx - bw / 2 + 4, y1: by + 2, x2: cx + bw / 2 - 4, y2: by + 2, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: idx === 0 ? 0.65 : 0.35 }),
                         h('text', { x: cx, y: Math.max(14, by - 5), textAnchor: 'middle', fill: barText, fontSize: 10.5, fontWeight: 800 }, item.pct + '%'),
                         h('text', { x: cx, y: 126, textAnchor: 'middle', fill: mutedCol, fontSize: 10.5, fontFamily: 'ui-monospace, Menlo, monospace' }, lbl)
                       );
@@ -3393,26 +3496,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   'aria-label': __alloT('stem.llm_literacy.temp_curve_aria', 'Comparison of token probability curves at temperatures 0.2, 0.7, and 1.2 showing how higher temperature flattens probabilities toward less common tokens'),
                   style: { display: 'block', width: '100%', height: 'auto' }
                 },
-                  h('rect', { x: 0, y: 0, width: 640, height: 132, rx: 6, fill: svgBg }),
-                  h('line', { x1: 52, y1: 104, x2: 590, y2: 104, stroke: axisCol, strokeWidth: 1.2, opacity: 0.6 }),
-                  h('line', { x1: 52, y1: 20, x2: 52, y2: 104, stroke: axisCol, strokeWidth: 1.2, opacity: 0.6 }),
+                  !ctx.isContrast && h('defs', null,
+                    h('linearGradient', { id: 'llm-tmp-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: ctx.isDark ? '#1e293b' : '#f8fafc' }),
+                      h('stop', { offset: '100%', stopColor: svgBg })
+                    ),
+                    curves.map(function(c, ci) {
+                      return h('linearGradient', { key: 'tg-' + ci, id: 'llm-tmp-fill-' + ci, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: c.color, stopOpacity: 0.22 }),
+                        h('stop', { offset: '100%', stopColor: c.color, stopOpacity: 0.01 })
+                      );
+                    })
+                  ),
+                  h('rect', { x: 0, y: 0, width: 640, height: 132, rx: 8, fill: ctx.isContrast ? svgBg : 'url(#llm-tmp-well)', stroke: ctx.isContrast ? '#ffff00' : (ctx.isDark ? '#334155' : '#e2e8f0'), strokeWidth: 1 }),
+                  // Calibrated horizontal & vertical gridlines
+                  [0.25, 0.5, 0.75, 1].map(function(pv, pi) {
+                    var gy = yPos(pv);
+                    return h('line', { key: 'hgl-' + pi, x1: 52, y1: gy, x2: 590, y2: gy, stroke: axisCol, strokeWidth: 0.75, strokeDasharray: '3 4', opacity: ctx.isContrast ? 0.45 : 0.25 });
+                  }),
+                  logits.map(function(_, idx) {
+                    return h('line', { key: 'vgl-' + idx, x1: xPos(idx), y1: 20, x2: xPos(idx), y2: 104, stroke: axisCol, strokeWidth: 0.65, opacity: ctx.isContrast ? 0.3 : 0.14 });
+                  }),
+                  h('line', { x1: 52, y1: 104, x2: 590, y2: 104, stroke: axisCol, strokeWidth: 1.3, opacity: 0.75 }),
+                  h('line', { x1: 52, y1: 20, x2: 52, y2: 104, stroke: axisCol, strokeWidth: 1.3, opacity: 0.75 }),
                   h('text', { x: 44, y: 26, textAnchor: 'end', fill: axisCol, fontSize: 10.5 }, '100%'),
                   h('text', { x: 44, y: 66, textAnchor: 'end', fill: axisCol, fontSize: 10.5 }, '50%'),
                   h('text', { x: 44, y: 106, textAnchor: 'end', fill: axisCol, fontSize: 10.5 }, '0%'),
-                  curves.map(function(c) {
-                    var pts = c.probs.map(function(p, idx) { return xPos(idx) + ',' + yPos(p).toFixed(1); }).join(' ');
+                  curves.map(function(c, ci) {
+                    var coords = c.probs.map(function(p, idx) { return [xPos(idx), yPos(p)]; });
+                    var dCurve = coords.map(function(pt, idx) {
+                      if (idx === 0) return 'M ' + pt[0] + ',' + pt[1].toFixed(1);
+                      var prev = coords[idx - 1];
+                      var cxMid = ((prev[0] + pt[0]) / 2).toFixed(1);
+                      return 'C ' + cxMid + ',' + prev[1].toFixed(1) + ' ' + cxMid + ',' + pt[1].toFixed(1) + ' ' + pt[0] + ',' + pt[1].toFixed(1);
+                    }).join(' ');
+                    var dArea = dCurve + ' L ' + coords[coords.length - 1][0] + ',104 L ' + coords[0][0] + ',104 Z';
                     return h('g', { key: String(c.t) },
-                      h('polyline', { points: pts, fill: 'none', stroke: c.color, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-                      c.probs.map(function(p, idx) { return h('circle', { key: idx, cx: xPos(idx), cy: yPos(p), r: 3.4, fill: c.color }); })
+                      !ctx.isContrast && h('path', { d: dArea, fill: 'url(#llm-tmp-fill-' + ci + ')' }),
+                      // Dual-pass luminous softmax reshaping curve
+                      !ctx.isContrast && h('path', { d: dCurve, fill: 'none', stroke: c.color, strokeWidth: 6, strokeLinecap: 'round', opacity: 0.16 }),
+                      h('path', { d: dCurve, fill: 'none', stroke: c.color, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                      c.probs.map(function(p, idx) {
+                        var nx = xPos(idx), ny = yPos(p);
+                        return h('g', { key: idx },
+                          h('circle', { cx: nx, cy: ny, r: 4, fill: c.color, stroke: svgBg, strokeWidth: 1.5 }),
+                          !ctx.isContrast && h('circle', { cx: nx - 1.1, cy: ny - 1.1, r: 1.1, fill: '#ffffff', opacity: 0.65 })
+                        );
+                      })
                     );
                   }),
                   logits.map(function(_, idx) {
                     return h('text', { key: idx, x: xPos(idx), y: 122, textAnchor: 'middle', fill: axisCol, fontSize: 10.5 }, 'Rank #' + (idx + 1));
                   }),
+                  // Crisp studio legend capsule
+                  !ctx.isContrast && h('rect', { x: 388, y: 10, width: 196, height: 60, rx: 8, fill: ctx.isDark ? 'rgba(15,23,42,0.82)' : 'rgba(255,255,255,0.88)', stroke: ctx.isDark ? '#334155' : '#e2e8f0', strokeWidth: 1 }),
                   curves.map(function(c, ci) {
                     var lx = 398, ly = 26 + ci * 18;
                     return h('g', { key: 'leg-' + ci },
-                      h('line', { x1: lx, y1: ly - 4, x2: lx + 18, y2: ly - 4, stroke: c.color, strokeWidth: 3 }),
+                      h('line', { x1: lx, y1: ly - 4, x2: lx + 18, y2: ly - 4, stroke: c.color, strokeWidth: 3, strokeLinecap: 'round' }),
+                      h('circle', { cx: lx + 9, cy: ly - 4, r: 2.6, fill: c.color }),
                       h('text', { x: lx + 24, y: ly, fill: c.color, fontSize: 11, fontWeight: 700 }, c.label)
                     );
                   })
@@ -3902,19 +4044,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   'aria-label': __alloT('stem.llm_literacy.scatter_plot_ai_confidence_on_the_x_ax', 'Scatter plot: AI confidence on the x axis vs. accuracy on the y axis. Most answers cluster at high confidence regardless of accuracy.'),
                   style: { maxWidth: '100%', height: 'auto' }
                 },
+                  !ctx.isContrast && h('defs', null,
+                    h('linearGradient', { id: 'llm-cal-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: ctx.isDark ? '#0f172a' : '#f8fafc' }),
+                      h('stop', { offset: '100%', stopColor: ctx.isDark ? '#1e293b' : '#ffffff' })
+                    ),
+                    h('radialGradient', { id: 'llm-cal-danger', cx: '85%', cy: '80%', r: '60%' },
+                      h('stop', { offset: '0%', stopColor: COLORS.bad, stopOpacity: 0.22 }),
+                      h('stop', { offset: '100%', stopColor: COLORS.bad, stopOpacity: 0.03 })
+                    ),
+                    h('radialGradient', { id: 'llm-cal-safe', cx: '85%', cy: '15%', r: '55%' },
+                      h('stop', { offset: '0%', stopColor: COLORS.good, stopOpacity: 0.16 }),
+                      h('stop', { offset: '100%', stopColor: COLORS.good, stopOpacity: 0.01 })
+                    )
+                  ),
+                  // Recessed studio telemetry plot well
+                  h('rect', { x: padL, y: padT, width: plotW, height: plotH, rx: 6, fill: ctx.isContrast ? '#000000' : 'url(#llm-cal-well)', stroke: COLORS.border, strokeWidth: 1.1 }),
+                  // Quadrant radial semantic zones (danger bottom-right, calibrated top-right)
+                  !ctx.isContrast && h('rect', { x: padL + plotW / 2, y: padT, width: plotW / 2, height: plotH / 2, fill: 'url(#llm-cal-safe)' }),
+                  h('rect', { x: padL + plotW / 2, y: padT + plotH / 2, width: plotW / 2, height: plotH / 2, fill: ctx.isContrast ? 'none' : 'url(#llm-cal-danger)', stroke: ctx.isContrast ? COLORS.bad : 'none', strokeDasharray: ctx.isContrast ? '4 2' : undefined }),
                   // Axes
-                  h('line', { x1: padL, y1: padT, x2: padL, y2: padT + plotH, stroke: COLORS.border, strokeWidth: 1 }),
-                  h('line', { x1: padL, y1: padT + plotH, x2: padL + plotW, y2: padT + plotH, stroke: COLORS.border, strokeWidth: 1 }),
+                  h('line', { x1: padL, y1: padT, x2: padL, y2: padT + plotH, stroke: COLORS.border, strokeWidth: 1.4 }),
+                  h('line', { x1: padL, y1: padT + plotH, x2: padL + plotW, y2: padT + plotH, stroke: COLORS.border, strokeWidth: 1.4 }),
                   // Gridlines (quadrant split at 50%)
-                  h('line', { x1: padL + plotW / 2, y1: padT, x2: padL + plotW / 2, y2: padT + plotH, stroke: COLORS.border, strokeWidth: 1, strokeDasharray: '3 3' }),
-                  h('line', { x1: padL, y1: padT + plotH / 2, x2: padL + plotW, y2: padT + plotH / 2, stroke: COLORS.border, strokeWidth: 1, strokeDasharray: '3 3' }),
-                  // Quadrant tint: top-right = confident + right; top-left = unconfident + right; bottom-right = confident + WRONG (the problem zone)
-                  h('rect', { x: padL + plotW / 2, y: padT + plotH / 2, width: plotW / 2, height: plotH / 2, fill: hexToRGBA(COLORS.bad, 0.06) }),
-                  // Perfect-calibration reference line (dashed, subtle)
+                  h('line', { x1: padL + plotW / 2, y1: padT, x2: padL + plotW / 2, y2: padT + plotH, stroke: COLORS.border, strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.8 }),
+                  h('line', { x1: padL, y1: padT + plotH / 2, x2: padL + plotW, y2: padT + plotH / 2, stroke: COLORS.border, strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.8 }),
+                  // Perfect-calibration laser reference line (dual-pass luminous)
+                  !ctx.isContrast && h('line', {
+                    x1: padL, y1: padT + plotH,
+                    x2: padL + plotW, y2: padT,
+                    stroke: '#38bdf8', strokeWidth: 4.5, opacity: 0.14
+                  }),
                   h('line', {
                     x1: padL, y1: padT + plotH,
                     x2: padL + plotW, y2: padT,
-                    stroke: COLORS.muted, strokeWidth: 1, strokeDasharray: '2 4', opacity: 0.6
+                    stroke: ctx.isContrast ? '#ffff00' : COLORS.muted, strokeWidth: 1.3, strokeDasharray: '4 4', opacity: 0.78
                   }),
                   // Axis labels
                   h('text', { x: padL + plotW / 2, y: H - 8, textAnchor: 'middle', fontSize: '11', fill: COLORS.subtext, fontWeight: 700 }, __alloT('stem.llm_literacy.ai_confidence', 'AI confidence \u2192')),
@@ -3925,17 +4089,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   h('text', { x: padL - 6, y: padT + plotH + 3, textAnchor: 'end', fontSize: '9', fill: COLORS.muted }, 'wrong'),
                   h('text', { x: padL - 6, y: padT + 3, textAnchor: 'end', fontSize: '9', fill: COLORS.muted }, 'right'),
                   // Quadrant label for the dangerous zone
-                  h('text', { x: padL + plotW * 0.75, y: padT + plotH * 0.92, textAnchor: 'middle', fontSize: '10', fill: COLORS.bad, fontWeight: 700, opacity: 0.7 }, __alloT('stem.llm_literacy.confident_but_wrong', 'CONFIDENT BUT WRONG')),
-                  // Points
+                  h('text', { x: padL + plotW * 0.75, y: padT + plotH * 0.92, textAnchor: 'middle', fontSize: '10', fill: COLORS.bad, fontWeight: 800, opacity: ctx.isContrast ? 1 : 0.85 }, __alloT('stem.llm_literacy.confident_but_wrong', 'CONFIDENT BUT WRONG')),
+                  // Radial-shaded cluster nodes with specular catchlight
                   pts.map(function(pt, i) {
+                    var cx = px(pt.x), cy = py(pt.y);
                     return h('g', { key: i },
+                      !ctx.isContrast && h('circle', { cx: cx, cy: cy, r: 11, fill: pt.color, opacity: 0.16 }),
                       h('circle', {
-                        cx: px(pt.x), cy: py(pt.y),
+                        cx: cx, cy: cy,
                         r: 6,
                         fill: pt.color,
-                        stroke: '#fff',
+                        stroke: ctx.isContrast ? '#ffffff' : (ctx.isDark ? '#0f172a' : '#ffffff'),
                         strokeWidth: 2
                       }),
+                      !ctx.isContrast && h('circle', { cx: cx - 1.8, cy: cy - 1.8, r: 1.7, fill: '#ffffff', opacity: 0.65 }),
                       h('title', null, pt.label + ' \u2014 confidence ' + (pt.x * 100).toFixed(0) + '%, correct ' + (pt.y * 100).toFixed(0) + '%')
                     );
                   })
@@ -4175,13 +4342,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         var runLive = useCallback(async function() {
           if (!userPrompt.trim()) return;
           if (!hasLiveAI) { addToast('Live AI not available. Try writing the prompt out — the analysis still helps.', 'info'); return; }
+          // The student's prompt goes to the AI verbatim, so it is gated like
+          // the temperature playground (aiSafetyGate, added 2026-11-20).
+          var gate = aiSafetyGate(userPrompt, 'prompt_craft_live');
+          if (gate.action === 'block') { setLiveOutput(AI_SAFETY_PAUSE_TEXT); return; }
           setLiveBusy(true);
           setLiveOutput('');
           try {
             // jsonMode=false — we want natural language.
             var out = await callGemini(userPrompt, false, false, 0.7);
             var trimmed = (out || '').trim() || '(empty response)';
-            setLiveOutput(trimmed);
+            setLiveOutput(trimmed + (gate.action === 'nudge' ? AI_SAFETY_NUDGE_TEXT : ''));
             bump('promptIterations', 1);
             awardXP(5, 'Iterated a prompt');
             // Autosave the attempt to the journal (deduped by exact-prompt match).
@@ -4847,7 +5018,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   // Ring
                   h('div', { style: { position: 'relative', width: '104px', height: '104px', flexShrink: 0 } },
                     h('svg', { width: '104', height: '104', viewBox: '0 0 104 104', style: { transform: 'rotate(-90deg)' }, 'aria-hidden': 'true' },
-                      h('circle', { cx: '52', cy: '52', r: '44', fill: 'none', stroke: '#f1f5f9', strokeWidth: '10' }),
+                      !ctx.isContrast && h('defs', null,
+                        h('radialGradient', { id: 'llm-crit-dial', cx: '50%', cy: '50%', r: '50%' },
+                          h('stop', { offset: '0%', stopColor: ringColor, stopOpacity: 0.14 }),
+                          h('stop', { offset: '100%', stopColor: ringColor, stopOpacity: 0 })
+                        )
+                      ),
+                      !ctx.isContrast && h('circle', { cx: '52', cy: '52', r: '48', fill: 'url(#llm-crit-dial)' }),
+                      // Recessed dial track + calibrated tick ring
+                      h('circle', { cx: '52', cy: '52', r: '44', fill: 'none', stroke: ctx.isContrast ? '#334155' : '#e2e8f0', strokeWidth: '10' }),
+                      !ctx.isContrast && h('circle', { cx: '52', cy: '52', r: '36', fill: 'none', stroke: ringColor, strokeWidth: '1', strokeDasharray: '2 6', opacity: 0.35 }),
+                      // Dual-pass luminous progress arc
+                      !ctx.isContrast && pct > 0 && h('circle', {
+                        cx: '52', cy: '52', r: '44', fill: 'none',
+                        stroke: ringColor, strokeWidth: '14',
+                        strokeLinecap: 'round',
+                        strokeDasharray: C.toString(),
+                        strokeDashoffset: dashOffset.toString(),
+                        opacity: 0.18
+                      }),
                       h('circle', {
                         cx: '52', cy: '52', r: '44', fill: 'none',
                         stroke: ringColor, strokeWidth: '10',
@@ -5387,7 +5576,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   h('svg', { viewBox: '0 0 100 100', width: 88, height: 88,
                     'aria-label': 'Caught ' + hits + ' of ' + errs + ' seeded errors'
                   },
-                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                    !ctx.isContrast && h('defs', null,
+                      h('radialGradient', { id: 'llm-rec-halo', cx: '50%', cy: '50%', r: '50%' },
+                        h('stop', { offset: '0%', stopColor: tierColor, stopOpacity: 0.18 }),
+                        h('stop', { offset: '100%', stopColor: tierColor, stopOpacity: 0 })
+                      )
+                    ),
+                    !ctx.isContrast && h('circle', { cx: 50, cy: 50, r: 44, fill: 'url(#llm-rec-halo)' }),
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.28)', strokeWidth: 9 }),
+                    !ctx.isContrast && h('circle', { cx: 50, cy: 50, r: 24.5, fill: 'none', stroke: tierColor, strokeWidth: 1, strokeDasharray: '2 5', opacity: 0.35 }),
+                    !ctx.isContrast && recall > 0 && h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 13, strokeLinecap: 'round',
+                      strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)', opacity: 0.18 }),
                     h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
                       strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
                   ),
@@ -5562,6 +5761,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         function runMyCoach() {
           if (!hasLiveAI) { addToast('Live AI not available \u2014 but the heuristic below still gives you a direction.', 'info'); return; }
           if (!mySit.trim() || !mySkill.trim() || !myBarrier) { addToast('Fill in all three fields first.', 'info'); return; }
+          // The student's own situation and skill are interpolated into the
+          // prompt, so gate them first (aiSafetyGate, added 2026-11-20).
+          var gate = aiSafetyGate(mySit.trim() + '\n' + mySkill.trim(), 'udl_coach');
+          if (gate.action === 'block') { setMyCoach(AI_SAFETY_PAUSE_TEXT); return; }
           setMyCoachBusy(true);
           setMyCoach(null);
           var meta =
@@ -5574,7 +5777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             'Skill they said they need to practice: "' + mySkill.trim() + '"\n' +
             'Barrier they named: ' + myBarrier + '\n';
           callGemini(meta, false, false, 0.4).then(function(out) {
-            setMyCoach((out || '').trim() || '(no response)');
+            setMyCoach(((out || '').trim() || '(no response)') + (gate.action === 'nudge' ? AI_SAFETY_NUDGE_TEXT : ''));
           }).catch(function(err) {
             console.warn('[llmLiteracy] UDL coach failed:', err);
             var info = classifyGeminiError(err);
@@ -6478,15 +6681,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           ),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · gap ' + trustGap.toFixed(0)),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-          h('svg', { width: '100%', height: 84, viewBox: '0 0 320 84', role: 'img', 'aria-label': sm.label + ' trust calibration chart: source quality ' + (iq.sourceQuality * 10).toFixed(0) + ' versus threshold ' + trustThreshold.toFixed(0), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
-            h('rect', { x: 30, y: 28, width: 260, height: 26, fill: '#0f172a', stroke: '#1e293b' }),
-            h('rect', { x: 30, y: 28, width: Math.max(0, Math.min(260, trustThreshold * 2.6)), height: 26, fill: '#f87171', opacity: 0.5 }),
-            h('rect', { x: 30, y: 28, width: Math.max(0, Math.min(260, iq.sourceQuality * 26)), height: 26, fill: sm.color, opacity: 0.85 }),
-            h('text', { x: 160, y: 46, fill: '#fff', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, 'source quality ' + (iq.sourceQuality * 10).toFixed(0) + ' vs threshold ' + trustThreshold.toFixed(0)),
-            h('text', { x: 30, y: 22, fill: '#cbd5e1', fontSize: 10.5 }, '0'),
-            h('text', { x: 290, y: 22, fill: '#cbd5e1', fontSize: 10.5, textAnchor: 'end' }, '100'),
-            h('text', { x: 160, y: 74, fill: '#cbd5e1', fontSize: 10.5, textAnchor: 'middle' }, __alloT('stem.llm_literacy.green_red_safer_to_use', 'green > red = safer to use'))
-          ),
+          (function() {
+            var threshW = Math.max(0, Math.min(260, trustThreshold * 2.6));
+            var srcW = Math.max(0, Math.min(260, iq.sourceQuality * 26));
+            var threshX = 30 + threshW;
+            return h('svg', { width: '100%', height: 84, viewBox: '0 0 320 84', role: 'img', 'aria-label': sm.label + ' trust calibration chart: source quality ' + (iq.sourceQuality * 10).toFixed(0) + ' versus threshold ' + trustThreshold.toFixed(0), style: { background: '#0a0a1a', borderRadius: 8, marginBottom: 8 } },
+              !ctx.isContrast && h('defs', null,
+                h('linearGradient', { id: 'llm-tc-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#0f172a' }),
+                  h('stop', { offset: '100%', stopColor: '#020617' })
+                ),
+                h('linearGradient', { id: 'llm-tc-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.3 }),
+                  h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0.04 }),
+                  h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.2 })
+                )
+              ),
+              // Calibrated studio gauge well + scale ticks
+              h('rect', { x: 30, y: 28, width: 260, height: 26, rx: 5, fill: ctx.isContrast ? '#000000' : 'url(#llm-tc-well)', stroke: ctx.isContrast ? '#ffffff' : '#334155', strokeWidth: 1.2 }),
+              [25, 50, 75].map(function(tk) {
+                var tx = 30 + tk * 2.6;
+                return h('line', { key: 'tk-' + tk, x1: tx, y1: 24, x2: tx, y2: 58, stroke: '#475569', strokeWidth: 0.8, strokeDasharray: '2 2', opacity: 0.55 });
+              }),
+              // Required threshold hazard envelope
+              h('rect', { x: 30, y: 28, width: threshW, height: 26, rx: 4, fill: '#f87171', opacity: ctx.isContrast ? 0.65 : 0.42 }),
+              // Beveled source quality bar with specular highlight
+              !ctx.isContrast && srcW > 0 && h('rect', { x: 30, y: 26, width: srcW, height: 30, rx: 6, fill: sm.color, opacity: 0.16 }),
+              h('rect', { x: 30, y: 28, width: srcW, height: 26, rx: 4, fill: sm.color, opacity: 0.88 }),
+              !ctx.isContrast && srcW > 4 && h('rect', { x: 31, y: 29, width: Math.max(2, srcW - 2), height: 11, rx: 3, fill: 'url(#llm-tc-sheen)' }),
+              // Laser threshold marker pin + beacon
+              !ctx.isContrast && h('line', { x1: threshX, y1: 22, x2: threshX, y2: 60, stroke: '#fca5a5', strokeWidth: 5, opacity: 0.22 }),
+              h('line', { x1: threshX, y1: 22, x2: threshX, y2: 60, stroke: ctx.isContrast ? '#ffff00' : '#fca5a5', strokeWidth: 2, strokeLinecap: 'round' }),
+              h('circle', { cx: threshX, cy: 22, r: 3.2, fill: ctx.isContrast ? '#ffff00' : '#f87171', stroke: '#0a0a1a', strokeWidth: 1 }),
+              h('text', { x: 160, y: 45, fill: '#fff', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, 'source quality ' + (iq.sourceQuality * 10).toFixed(0) + ' vs threshold ' + trustThreshold.toFixed(0)),
+              h('text', { x: 30, y: 20, fill: '#cbd5e1', fontSize: 10.5 }, '0'),
+              h('text', { x: 290, y: 20, fill: '#cbd5e1', fontSize: 10.5, textAnchor: 'end' }, '100'),
+              h('text', { x: 160, y: 74, fill: '#cbd5e1', fontSize: 10.5, textAnchor: 'middle' }, __alloT('stem.llm_literacy.green_red_safer_to_use', 'green > red = safer to use'))
+            );
+          })(),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', { style: { fontSize: 11 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.llm_literacy.your_familiarity_1_10', 'Your familiarity (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.taskFamiliarity)),

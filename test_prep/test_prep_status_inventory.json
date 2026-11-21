@@ -4,7 +4,7 @@
   "limitation": "Records existing labels and file hashes only. Draft and pending QA items still need educational review. The historical review does not certify the current files.",
   "historicalReview": {
     "file": "test_prep_assistant_review_2026-07-16.json",
-    "sha256": "ce3e2eef71273a88dee4ea6a9225ab8a13696581fada0abb5c2f8c97bfa906a5"
+    "sha256": "ddca1cdb99b11b90f7d03ea0ffba6c5c595215536fcc5c62ca03ae750c911da0"
   },
   "perPack": [
     {
@@ -85,8 +85,8 @@
     },
     {
       "stem": "plt_5_9_5623",
-      "packSha256": "3c7161197293818b576bdf4a7ea37aa6dc292cd740e19d44b6ff556590568e0d",
-      "itemsSha256": "2d2edbb9ee1db17b8f610c99d712dd05cd36a24c2021b4ced7072e4c173d2d9d",
+      "packSha256": "e4ca8943fa42c1c73188908205be2429719ef8ce53bc019aacf4309d7ce17371",
+      "itemsSha256": "74d555be4f2953b0cd3b03174991a3147ff5679b7f9cec805fa7fc18f4f5bc02",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -99,8 +99,8 @@
     },
     {
       "stem": "plt_7_12_5624",
-      "packSha256": "231e41382c09c86d5909e58ae3e611e57be5172d7a87896eabb9ebbcf9297b57",
-      "itemsSha256": "14bbeecd01760246c6e7a086f55ab7387f31bf92f392f8d0b38e05361fd64e08",
+      "packSha256": "37d5754286ceb834b832064aabccfa64359a4baf8da5dd3d8e1e542b9c735e65",
+      "itemsSha256": "9161f6d70cb76085c34b52ab875d2dc857dace25b46f09933b76f378f13be033",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -113,8 +113,8 @@
     },
     {
       "stem": "plt_early_childhood_5621",
-      "packSha256": "e768a3de53701ff8289ef8bce37576f0c7503ca9f27a8f93ae360658cadf44d3",
-      "itemsSha256": "85ea466bae714cb43cbf466baacb4f300b6f76b9f151939da11772ae24ecc8b2",
+      "packSha256": "c1bc938fbf2c8ac71d6042cf751bddb131b0b680aa8fb41b0a08323114be1fe0",
+      "itemsSha256": "3f7938e591734b707d6c5278474fef739c0b7c9d11c5b0d9986a542c2e7b830f",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -127,8 +127,8 @@
     },
     {
       "stem": "plt_k6_5622",
-      "packSha256": "28c76392c17616db5fb6a8f95cc388f630cf143f1dd632f3dfd91d0f26c2e35d",
-      "itemsSha256": "219c1abf2abcef3cfc9753e57de84862a07ab141e4bdf0a76bc4c3bc6411e2bf",
+      "packSha256": "f18560834511a9e12e438c766bfcb77cb45cee1d29d1e32243b04c6e064b2847",
+      "itemsSha256": "83b8ffb201c6129296df23213bbfc5d8f97fe973a3ce7a78a22dc8c21ec153d6",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -141,8 +141,8 @@
     },
     {
       "stem": "praxis_core_5752",
-      "packSha256": "b7797b6cf81c3efc2dcdc7d7fc3613798f469f7e34a5be0267fbb3036b87a1fd",
-      "itemsSha256": "e123f7be99633d22441dc1668c38118e066c7bf862ebad696a8a523cd34120a3",
+      "packSha256": "f0951de67b0b28311d5d3ff301ef5ef3f1a4ffd1a7b10e517a544ad6071ec877",
+      "itemsSha256": "887a2618ea5037860a926f549275c131c73135cc227d102ba5bc995c31bc0e22",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -155,8 +155,8 @@
     },
     {
       "stem": "reading_specialist_5302",
-      "packSha256": "79ad61921c4440b6eb992c14e8f19de232499f11d0ea037b9c04d963a036a793",
-      "itemsSha256": "0115468c2347e152e8d928b2d512c7b6c4a5614cb710bd5650c38b2297651c30",
+      "packSha256": "66e590e18b9a896bcf0b989cbcde8a031e65f384fc3ace57db14270fbb91f955",
+      "itemsSha256": "fe147f3a3963513e35a8c34bad3213b42bafca0ee9bbe49365f712d00f22cf71",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -217,8 +217,8 @@
     },
     {
       "stem": "special_education_5355",
-      "packSha256": "8b16179f9013151c41c145a1a72f05f0a35132cd1961844fe27c0dd1c0d264eb",
-      "itemsSha256": "a2969b5f51ca2e6d1bfb2e823760c63dd236f0c9af9df8396ca524e49cff2f4e",
+      "packSha256": "08ee94969416d6fcc1855de1567ba99f26c566f681495a1c73da9e6fefec2fc6",
+      "itemsSha256": "b4b8e6290fabc812b683851b6c06c8dfb30d3ed8ce1bb2a9e7ea00ce714df12c",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -231,8 +231,8 @@
     },
     {
       "stem": "special_education_behavior_emotional_5372",
-      "packSha256": "d1a89bb8c7ec7016f2405e1db6c3286f7e65cc5e0c85b94d7b916554bbdd5255",
-      "itemsSha256": "c0f5f7a3aae7e12980b46ee526eaa96fe2fdc9f3e244c6194bd28dc8a6a1652b",
+      "packSha256": "9e01e5700f40d0882e9373060e50ff78dec2d269aedcade5988de565e01baf8c",
+      "itemsSha256": "451eb1d3630e1c9c4ad2145a0703dd9d7da46c147164101b7543a848fbe3d932",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -245,8 +245,8 @@
     },
     {
       "stem": "special_education_early_childhood_5692",
-      "packSha256": "7482b2707af01c9366f07acc6928ffff05d7f86de8cc3530d1f0740b68401af3",
-      "itemsSha256": "ea30f3a9e42f05ae012de4677bd47c28de6dc1dc4ef814ffaf6346dc68da63a2",
+      "packSha256": "a703936121f6edab5b08b0952d3471592ce22bb8f53de9130c5cc21691cca7c2",
+      "itemsSha256": "fb77d8ed7422ab883fc70f3baddff5f83884e62c1bea7bef15903868f479d2ed",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -259,8 +259,8 @@
     },
     {
       "stem": "special_education_intellectual_disabilities_5322",
-      "packSha256": "6ce7366cb73e71b8eb8451ffe5bea263fa8b1415f52c115c53ffa008b4623ebc",
-      "itemsSha256": "16f065d2672f580757c2ffaf4e808a3c868ea2f1ac17abeaf140bd156130a91e",
+      "packSha256": "247a3c9fe084e090fb2c7fe9d4ed2e490b04a104423809c622e7667b2b3764da",
+      "itemsSha256": "b332a02d23e573a61136a4bdd8f0dcc9eef9ee6b099c75a763da9723a6e17393",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -273,8 +273,8 @@
     },
     {
       "stem": "special_education_learning_disabilities_5383",
-      "packSha256": "a1a2d8ff7f8d6495a9033dddd2708f27b2809ca6c8deead21e7e7a4b06224980",
-      "itemsSha256": "1fc2c05caa7444a2be67bb795fae1a54a2fa69c71efe2a0a539c8a37bf06b3cb",
+      "packSha256": "b92d2978458d8962f364f4b897220f244ac556b4632a7c2fefa589520e69b44c",
+      "itemsSha256": "dd953e2cd729670026c69f5808c647e7f5063ea9883fc783bdf3c3dba29e142c",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -287,8 +287,8 @@
     },
     {
       "stem": "special_education_severe_profound_5547",
-      "packSha256": "324f0793c0f713070deea7c5420839b31900d39abdec9f21cb02783b7745cfcc",
-      "itemsSha256": "c1c2df44c284b2af4e14c5bb3d1605566ba96f651c29f521c31bf8fef5572742",
+      "packSha256": "f18366199bd94d23bb46a5bea67ed5eed94bde4b704b86375a3ea2f7d095f014",
+      "itemsSha256": "203c3c83fe680c9248f55e65b8dccd6025bc2bde42f70942bd1ccb908af244ad",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,
@@ -315,8 +315,8 @@
     },
     {
       "stem": "teaching_reading_5205",
-      "packSha256": "f2b4b59cba60964117d1bfb655d249728395590f952a914931f6329a1eb06e0d",
-      "itemsSha256": "4a19fb7e8d78e4d3d598c279a02b0cd83dde44c759437d615a4d803fe4180744",
+      "packSha256": "7c09b40204ba51ffcdb9e3dc5172cd58eb5975e6c287c540c24e2caa16611d70",
+      "itemsSha256": "0111ab0f7c7b8f8613c364f1af3e7a829c3455d46041f76cca6bacc9359d0186",
       "learningActivities": 500,
       "reviewStatus": {
         "assistant-reviewed-guided-practice-only": 300,

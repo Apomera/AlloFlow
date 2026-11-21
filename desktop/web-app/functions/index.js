@@ -26,6 +26,8 @@ const SOURCE_FETCH_REQUESTS_PER_MINUTE = 20;
 const MAX_QUERY_LENGTH = 200;
 const MAX_SOURCE_URL_LENGTH = 2048;
 const MAX_RESULTS = 10;
+const MAX_REQUEST_BODY_BYTES = 8192;
+const MAX_AUTH_HEADER_LENGTH = 8192;
 const RATE_WINDOW_MS = 60 * 1000;
 const db = admin.firestore();
 
@@ -68,6 +70,11 @@ function sendError(res, status, code) {
 
 async function verifyCaller(req) {
   const authorization = String(req.get("Authorization") || "");
+  if (authorization.length > MAX_AUTH_HEADER_LENGTH) {
+    const error = new Error("invalid-auth");
+    error.status = 401;
+    throw error;
+  }
   const match = authorization.match(/^Bearer ([A-Za-z0-9._~-]+)$/);
   if (!match) {
     const error = new Error("missing-auth");
@@ -75,7 +82,7 @@ async function verifyCaller(req) {
     throw error;
   }
   const appCheckToken = String(req.get("X-Firebase-AppCheck") || "");
-  if (!appCheckToken) {
+  if (!appCheckToken || appCheckToken.length > MAX_AUTH_HEADER_LENGTH) {
     const error = new Error("missing-app-check");
     error.status = 401;
     throw error;
@@ -138,6 +145,14 @@ async function readBoundedResponseText(response, maxBytes) {
   return new TextDecoder("utf-8").decode(combined);
 }
 
+function directIpHash(req) {
+  const xffParts = String(req.get("X-Forwarded-For") || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const candidate = xffParts.length ? xffParts[xffParts.length - 1] : String(req.ip || "").trim();
+  if (!candidate) return "";
+  const salt = String(process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "alloflow");
+  return crypto.createHash("sha256").update(salt + ":direct_ip:" + candidate).digest("hex");
+}
+
 async function enforceRateLimit(uid, scope = "search", limit = SEARCH_REQUESTS_PER_MINUTE, req = null) {
   const key = crypto.createHash("sha256").update(uid).digest("hex");
   const safeScope = String(scope || "request").replace(/[^a-z0-9_-]/gi, "_").slice(0, 32);
@@ -148,6 +163,11 @@ async function enforceRateLimit(uid, scope = "search", limit = SEARCH_REQUESTS_P
   if (ipKey) {
     // Classroom NAT allowance: 4x single-user ceiling per shared school IP.
     refs.push({ ref: db.collection("_alloflowRateLimits").doc(safeScope + "_ip_" + ipKey), max: limit * 4 });
+  }
+  const directKey = req ? directIpHash(req) : "";
+  if (directKey) {
+    // Second bucket bound to rightmost XFF / socket IP so direct Cloud Run callers cannot spoof Fastly-Client-IP.
+    refs.push({ ref: db.collection("_alloflowRateLimits").doc(safeScope + "_dip_" + directKey), max: limit * 4 });
   }
   const now = Date.now();
   await db.runTransaction(async (transaction) => {
@@ -217,6 +237,10 @@ exports.searchProxy = onRequest(
     }
     if (!req.is("application/json")) {
       sendError(res, 415, "json-required");
+      return;
+    }
+    if (req.rawBody && req.rawBody.length > MAX_REQUEST_BODY_BYTES) {
+      sendError(res, 413, "payload-too-large");
       return;
     }
 
@@ -315,6 +339,10 @@ exports.sourceFetchProxy = onRequest(
     }
     if (!req.is("application/json")) {
       sendError(res, 415, "json-required");
+      return;
+    }
+    if (req.rawBody && req.rawBody.length > MAX_REQUEST_BODY_BYTES) {
+      sendError(res, 413, "payload-too-large");
       return;
     }
 

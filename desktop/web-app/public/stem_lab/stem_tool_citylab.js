@@ -2930,7 +2930,7 @@
     out.push('<desc id="planDesc">' + esc(fmt(__alloT('stem.citylab.svg_desc', 'A {cols} by {rows} grid of one-hectare ' +
       'parcels. Each parcel carries a two-letter land use code. The table below lists every ' +
       'parcel that was changed, so nothing here depends on seeing the picture.'), { cols: N_COLS, rows: N_ROWS })) + '</desc>');
-    out.push('<rect width="' + w + '" height="' + hgt + '" fill="#ffffff"/>');
+    out.push('<rect width="' + w + '" height="' + hgt + '" fill="#f8fafc"/>');
 
     allParcelIds().forEach(function (id) {
       var t = terrainAt(id, plan);
@@ -2939,6 +2939,12 @@
       var y = PAD + (parcelRow(id) - 1) * CELL;
       out.push('<rect x="' + x + '" y="' + y + '" width="' + CELL + '" height="' + CELL +
         '" fill="' + use.fill + '" stroke="#1e293b" stroke-width="0.5"/>');
+      // Subtle waterfront specular ripple sheen & park green-corridor canopy accent
+      if (t.baseUse === 'water') {
+        out.push('<path d="M' + (x + 4) + ' ' + (y + 22) + ' q6 -3 12 0 t12 0" fill="none" stroke="rgba(224,242,254,0.55)" stroke-width="1"/>');
+      } else if (plan.uses[id] === 'park' || plan.uses[id] === 'preserve' || plan.greenInfra[id]) {
+        out.push('<circle cx="' + (x + CELL - 7) + '" cy="' + (y + CELL - 7) + '" r="3" fill="rgba(22,163,74,0.35)"/>');
+      }
       if (t.floodplain) {
         out.push('<rect x="' + (x + 1.5) + '" y="' + (y + 1.5) + '" width="' + (CELL - 3) +
           '" height="' + (CELL - 3) + '" fill="none" stroke="#0ea5e9" stroke-width="2"/>');
@@ -2959,6 +2965,10 @@
       var y1 = PAD + (parcelRow(e[0]) - 1) * CELL + CELL / 2;
       var x2 = PAD + parcelCol(e[1]) * CELL + CELL / 2;
       var y2 = PAD + (parcelRow(e[1]) - 1) * CELL + CELL / 2;
+      if (kind !== 'path') {
+        out.push('<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 +
+          '" stroke="rgba(56,189,248,0.35)" stroke-width="5.2" stroke-linecap="round"/>');
+      }
       out.push('<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 +
         '" stroke="#0f172a" stroke-width="' + (kind === 'path' ? 1.5 : 3) + '"' +
         (kind === 'path' ? ' stroke-dasharray="4 3"' : '') + ' stroke-linecap="round"/>');
@@ -4378,13 +4388,37 @@
     // W6: contrast is lit almost flat, so a white wall stays near white on
     // every face (the faces still differ a little, which is what shows depth).
     var hcScene = pal.theme === 'contrast';
-    S.model.add(new THREE.AmbientLight(0xffffff, hcScene ? 0.86 : (dark ? 0.55 : 0.66)));
-    var key = new THREE.DirectionalLight(hcScene ? 0xffffff : 0xfff4e0, hcScene ? 0.3 : (dark ? 0.85 : 0.78));
+    S.model.add(new THREE.AmbientLight(0xffffff, hcScene ? 0.86 : (dark ? 0.50 : 0.62)));
+    var key = new THREE.DirectionalLight(hcScene ? 0xffffff : 0xfff4e0, hcScene ? 0.3 : (dark ? 0.88 : 0.82));
     key.position.set(-6, 10, 7);
     S.model.add(key);
-    var fill = new THREE.DirectionalLight(0xbcd4ff, hcScene ? 0 : (dark ? 0.34 : 0.3));
+    var fill = new THREE.DirectionalLight(0xbcd4ff, hcScene ? 0 : (dark ? 0.36 : 0.32));
     fill.position.set(7, 5, -6);
     S.model.add(fill);
+    // Atmospheric sky-to-ground hemisphere & warm rooftop architectural rim light (guarded for JSDOM stubs)
+    if (!hcScene) {
+      if (typeof THREE.HemisphereLight === 'function') {
+        S.model.add(new THREE.HemisphereLight(dark ? 0x3b82f6 : 0xbae6fd, dark ? 0x1e293b : 0x64748b, dark ? 0.32 : 0.38));
+      }
+      var roofRim = new THREE.DirectionalLight(dark ? 0x38bdf8 : 0xfef3c7, dark ? 0.26 : 0.30);
+      roofRim.position.set(7, 8, 6);
+      S.model.add(roofRim);
+      // Smooth atmospheric sky gradient dome (pure GLSL, skipped in high-contrast)
+      if (typeof THREE.SphereGeometry === 'function' && typeof THREE.ShaderMaterial === 'function' && THREE.BackSide != null) {
+        var skyDomeMat = new THREE.ShaderMaterial({
+          uniforms: {
+            uZenith: { value: new THREE.Color(dark ? 0x050d1e : 0x38bdf8) },
+            uHorizon: { value: new THREE.Color(dark ? 0x162b4a : 0xe0f2fe) },
+            uGround: { value: new THREE.Color(dark ? 0x091326 : 0xcbd5e1) }
+          },
+          vertexShader: 'varying vec3 vLocal; void main() { vLocal = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+          fragmentShader: 'uniform vec3 uZenith; uniform vec3 uHorizon; uniform vec3 uGround; varying vec3 vLocal; void main() { float h = vLocal.y; vec3 col = h >= 0.0 ? mix(uHorizon, uZenith, pow(clamp(h, 0.0, 1.0), 0.65)) : mix(uHorizon, uGround, clamp(-h * 3.0, 0.0, 1.0)); gl_FragColor = vec4(col, 1.0); }',
+          side: THREE.BackSide, depthWrite: false
+        });
+        var skyDome = new THREE.Mesh(new THREE.SphereGeometry(52, 24, 14), skyDomeMat);
+        S.model.add(skyDome);
+      }
+    }
     if (S.renderer && S.renderer.setClearColor) S.renderer.setClearColor(pal.clear, 1);
 
     function addBox(x, y, z, sx, sy, sz, colour, opts) {
@@ -4399,8 +4433,129 @@
     var INST = typeof THREE.InstancedMesh === 'function' && typeof THREE.Object3D === 'function' &&
       typeof THREE.InstancedBufferAttribute === 'function';
     var lam = INST ? new THREE.MeshLambertMaterial({ color: 0xffffff }) : null;
+    var waterTimeUniform = { value: 2.2 };
+    var cityDarkUniform = { value: dark ? 1.0 : 0.0 };
+
+    // Architectural curtain-wall window shimmer, Fresnel glass facade sheen & photovoltaic
+    // solar-rooftop cobalt/gold glint (WebGL1/GLSL ES 1.00 onBeforeCompile, bypassed in HC)
+    var archMat = INST ? new THREE.MeshLambertMaterial({ color: 0xffffff }) : null;
+    if (!hcScene && archMat && typeof archMat.onBeforeCompile === 'function') {
+      archMat.customProgramCacheKey = function () { return 'city-arch-facade-solar-v1'; };
+      archMat.onBeforeCompile = function (shader) {
+        shader.uniforms.uCityT = waterTimeUniform;
+        shader.uniforms.uCityDark = cityDarkUniform;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'varying vec3 vArchWPos;',
+            'varying vec3 vArchWNorm;'
+          ].join('\n'))
+          .replace('#include <begin_vertex>', [
+            '#include <begin_vertex>',
+            'vec4 archIp = vec4(transformed, 1.0);',
+            'vec3 archIn = objectNormal;',
+            '#ifdef USE_INSTANCING',
+            '  archIp = instanceMatrix * archIp;',
+            '  archIn = mat3(instanceMatrix) * archIn;',
+            '#endif',
+            'vec4 archWp = modelMatrix * archIp;',
+            'vArchWPos = archWp.xyz;',
+            'vArchWNorm = normalize(mat3(modelMatrix) * archIn);'
+          ].join('\n'));
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'uniform float uCityT;',
+            'uniform float uCityDark;',
+            'varying vec3 vArchWPos;',
+            'varying vec3 vArchWNorm;'
+          ].join('\n'))
+          .replace('#include <dithering_fragment>', [
+            'vec3 aN = normalize(vArchWNorm);',
+            'vec3 aV = normalize(cameraPosition - vArchWPos);',
+            'float aFres = pow(1.0 - clamp(abs(dot(aN, aV)), 0.0, 1.0), 2.6);',
+            'float aElev = smoothstep(0.16, 0.28, vArchWPos.y);',
+            'if (abs(aN.y) < 0.45 && aElev > 0.02) {',
+            '  // Architectural curtain-wall window grid & Fresnel glass facade sheen',
+            '  float winU = smoothstep(0.25, 0.75, abs(sin(vArchWPos.x * 26.0 + vArchWPos.z * 26.0)));',
+            '  float winV = smoothstep(0.25, 0.78, abs(sin(vArchWPos.y * 34.0)));',
+            '  float winMask = winU * winV;',
+            '  float shimmer = 0.72 + 0.28 * sin(uCityT * 1.65 + floor(vArchWPos.x * 9.0) * 1.7 + floor(vArchWPos.y * 11.0) * 2.3 + floor(vArchWPos.z * 9.0) * 1.3);',
+            '  vec3 glassSheen = mix(vec3(0.68, 0.88, 1.0), vec3(0.22, 0.74, 0.98), uCityDark);',
+            '  float warmCue = smoothstep(0.55, 0.85, gl_FragColor.r) * (1.0 - smoothstep(0.55, 0.90, gl_FragColor.b));',
+            '  vec3 winGlow = mix(glassSheen * (0.20 + aFres * 0.34), vec3(1.0, 0.84, 0.42) * (0.28 + 0.26 * uCityDark), warmCue);',
+            '  gl_FragColor.rgb += (glassSheen * aFres * 0.22 + winGlow * winMask * shimmer * 0.36) * aElev;',
+            '} else if (aN.y > 0.85 && aElev > 0.02) {',
+            '  // Photovoltaic solar-rooftop cobalt/gold iridescent glint on elevated roofs',
+            '  vec2 pvCell = fract(vArchWPos.xz * 14.0);',
+            '  float pvGrid = step(0.10, pvCell.x) * step(0.10, pvCell.y);',
+            '  float pvSpec = pow(clamp(dot(aN, normalize(aV + normalize(vec3(0.42, 0.86, 0.34)))), 0.0, 1.0), 16.0);',
+            '  float pvWave = 0.55 + 0.45 * sin(vArchWPos.x * 3.2 - vArchWPos.z * 2.8 + uCityT * 1.15);',
+            '  vec3 pvCobalt = vec3(0.10, 0.34, 0.86);',
+            '  vec3 pvGold = vec3(1.0, 0.86, 0.42);',
+            '  vec3 pvCol = mix(pvCobalt, pvGold, clamp(pvSpec * 0.75 + aFres * 0.55, 0.0, 1.0));',
+            '  gl_FragColor.rgb += pvCol * pvGrid * (0.14 + pvSpec * 0.26 + aFres * 0.18) * pvWave * aElev;',
+            '}',
+            '#include <dithering_fragment>'
+          ].join('\n'));
+      };
+    }
+
+    // Enhanced Gerstner/FBM waterfront caustics & Fresnel shimmer (WebGL1/GLSL ES 1.00)
     var waterMat = INST ? (THREE.MeshPhongMaterial
-      ? new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 70, specular: 0x557799 }) : lam) : null;
+      ? new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: hcScene ? 0 : 112, specular: hcScene ? 0x000000 : (dark ? 0x38bdf8 : 0xe0f2fe) }) : lam) : null;
+    if (!hcScene && waterMat && typeof waterMat.onBeforeCompile === 'function') {
+      waterMat.onBeforeCompile = function (shader) {
+        shader.uniforms.uCityWaterT = waterTimeUniform;
+        shader.uniforms.uCityDark = cityDarkUniform;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', '#include <common>\nuniform float uCityWaterT;\nvarying vec3 vCityWPos;\nvarying vec3 vCityWNorm;')
+          .replace('#include <begin_vertex>', [
+            '#include <begin_vertex>',
+            'vec4 cwIp = vec4(transformed, 1.0);',
+            'vec3 cwIn = objectNormal;',
+            '#ifdef USE_INSTANCING',
+            '  cwIp = instanceMatrix * cwIp;',
+            '  cwIn = mat3(instanceMatrix) * cwIn;',
+            '#endif',
+            'vec4 cwWp = modelMatrix * cwIp;',
+            'float g1 = sin(cwWp.x * 3.8 + cwWp.z * 1.9 + uCityWaterT * 1.7);',
+            'float g2 = cos(cwWp.x * 2.4 - cwWp.z * 4.3 + uCityWaterT * 1.3);',
+            'transformed.y += (g1 + g2) * 0.0045 * step(0.0, position.y);',
+            'vCityWPos = cwWp.xyz;',
+            'vCityWNorm = normalize(mat3(modelMatrix) * cwIn);'
+          ].join('\n'));
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'uniform float uCityWaterT;',
+            'uniform float uCityDark;',
+            'varying vec3 vCityWPos;',
+            'varying vec3 vCityWNorm;',
+            'float cwHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+            'float cwNoise(vec2 p) {',
+            '  vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);',
+            '  return mix(mix(cwHash(i), cwHash(i + vec2(1.0, 0.0)), u.x),',
+            '             mix(cwHash(i + vec2(0.0, 1.0)), cwHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+            '}'
+          ].join('\n'))
+          .replace('#include <dithering_fragment>', [
+            'vec2 wp = vCityWPos.xz;',
+            'float w1 = sin(wp.x * 5.2 + wp.y * 2.6 + uCityWaterT * 1.6);',
+            'float w2 = cos(wp.x * 3.1 - wp.y * 5.8 - uCityWaterT * 1.25);',
+            'float nA = cwNoise(wp * 4.2 + vec2(uCityWaterT * 0.45, -uCityWaterT * 0.32));',
+            'float nB = cwNoise(wp * 7.8 - vec2(uCityWaterT * 0.38, uCityWaterT * 0.52) + vec2(nA * 0.8));',
+            'float caustic = pow(clamp(1.0 - abs(nA - nB) * 2.6, 0.0, 1.0), 3.0);',
+            'float ripple = pow(clamp(0.5 + 0.25 * (w1 + w2), 0.0, 1.0), 3.0);',
+            'vec3 wV = normalize(cameraPosition - vCityWPos);',
+            'float wFres = pow(1.0 - clamp(abs(dot(normalize(vCityWNorm), wV)), 0.0, 1.0), 2.5);',
+            'vec3 causticCol = mix(vec3(0.18, 0.66, 0.84), vec3(0.16, 0.74, 0.96), uCityDark);',
+            'gl_FragColor.rgb += causticCol * (caustic * 0.32 + ripple * 0.16) + vec3(0.75, 0.94, 1.0) * wFres * 0.22;',
+            '#include <dithering_fragment>'
+          ].join('\n'));
+      };
+      waterMat.customProgramCacheKey = function () { return 'city-water-gerstner-caustics-v2'; };
+    }
     var floodMat = INST ? new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.3, depthWrite: false }) : null;
     var signTex = INST ? citySignTexture(THREE, (data.labels && data.labels.noRoad) || 'no road') : null;
     if (signTex) S.cityTexes.push(signTex);
@@ -4424,7 +4579,7 @@
       };
     }
     var B = S.cityBatches = {
-      box: cityBatch(THREE, S, box, lam, parts.box),
+      box: cityBatch(THREE, S, box, archMat || lam, parts.box),
       prism: cityBatch(THREE, S, geoPrism, lam, parts.prism),
       round: cityBatch(THREE, S, geoRound, lam, parts.round),
       cone: cityBatch(THREE, S, geoCone, lam, parts.cone),
@@ -4797,6 +4952,117 @@
     }
     placeRain(S.cityClock);
 
+    // Luminous transit-corridor, green-corridor & urban energy pulse streams (WebGL1/GLSL ES 1.00, skipped in HC)
+    var gridFlowPoints = null, gridFlowPos = null, gridFlowSeeds = [];
+    if (!hcScene && INST &&
+        typeof THREE.BufferGeometry === 'function' && typeof THREE.Float32BufferAttribute === 'function' &&
+        typeof THREE.Points === 'function' && typeof THREE.ShaderMaterial === 'function') {
+      if (m.links && m.links.length) {
+        for (var li = 0; li < m.links.length; li++) {
+          var lk = m.links[li];
+          var isPath = lk.kind === 'path';
+          var halfSpan = 0.48;
+          var sx0 = lk.horizontal ? lk.x - halfSpan : lk.x;
+          var sz0 = lk.horizontal ? lk.z : lk.z - halfSpan;
+          var sx1 = lk.horizontal ? lk.x + halfSpan : lk.x;
+          var sz1 = lk.horizontal ? lk.z : lk.z + halfSpan;
+          gridFlowSeeds.push({
+            x0: sx0, z0: sz0, x1: sx1, z1: sz1, y: lk.y + 0.04,
+            phase: (li * 0.37) % 1, dir: li % 2 ? 1 : -1, speed: isPath ? 0.24 : 0.36, kind: isPath ? 1.0 : 0.0
+          });
+        }
+      }
+      // Luminous emerald green-corridor & amber transit-hub beacons
+      if (m.ground && m.ground.length) {
+        for (var ggi = 0; ggi < m.ground.length; ggi++) {
+          var gg = m.ground[ggi];
+          if (gg.use === 'park' || gg.use === 'preserve') {
+            gridFlowSeeds.push({
+              x0: gg.x - 0.28, z0: gg.z - 0.12, x1: gg.x + 0.28, z1: gg.z + 0.12, y: gg.top + 0.14,
+              phase: (ggi * 0.29) % 1, dir: ggi % 2 ? 1 : -1, speed: 0.20, kind: 1.0
+            });
+          }
+        }
+      }
+      if (m.features && m.features.length) {
+        for (var ffi = 0; ffi < m.features.length; ffi++) {
+          var ff = m.features[ffi];
+          if (ff.kind === 'stop' || ff.kind === 'gi') {
+            var isStop = ff.kind === 'stop';
+            gridFlowSeeds.push({
+              x0: ff.x - 0.18, z0: ff.z, x1: ff.x + 0.18, z1: ff.z, y: ff.base + (isStop ? 0.26 : 0.08),
+              phase: (ffi * 0.41) % 1, dir: 1, speed: isStop ? 0.48 : 0.26, kind: isStop ? 2.0 : 1.0
+            });
+          }
+        }
+      }
+      if (gridFlowSeeds.length) {
+        gridFlowPos = new Float32Array(gridFlowSeeds.length * 3);
+        var gridFlowKind = new Float32Array(gridFlowSeeds.length);
+        for (var gki = 0; gki < gridFlowSeeds.length; gki++) gridFlowKind[gki] = gridFlowSeeds[gki].kind;
+        var gfGeo = new THREE.BufferGeometry();
+        gfGeo.setAttribute('position', new THREE.Float32BufferAttribute(gridFlowPos, 3));
+        gfGeo.setAttribute('aKind', new THREE.Float32BufferAttribute(gridFlowKind, 1));
+        var gfMat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: waterTimeUniform,
+            uRoadCol: { value: new THREE.Color(dark ? 0x38bdf8 : 0x0284c7) },
+            uGreenCol: { value: new THREE.Color(dark ? 0x34d399 : 0x059669) },
+            uHubCol: { value: new THREE.Color(dark ? 0xfbbf24 : 0xd97706) },
+            uOp: { value: dark ? 0.88 : 0.68 }
+          },
+          vertexShader: [
+            'attribute float aKind;',
+            'uniform float uTime;',
+            'varying float vKind;',
+            'varying float vPulse;',
+            'void main() {',
+            '  vKind = aKind;',
+            '  vPulse = 0.72 + 0.28 * sin(uTime * 3.4 + position.x * 2.5 + position.z * 2.1);',
+            '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+            '  float baseSz = aKind > 1.5 ? 40.0 : (aKind > 0.5 ? 34.0 : 32.0);',
+            '  gl_PointSize = clamp((baseSz * vPulse) / max(1.0, -mv.z), 3.0, 11.0);',
+            '  gl_Position = projectionMatrix * mv;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform vec3 uRoadCol;',
+            'uniform vec3 uGreenCol;',
+            'uniform vec3 uHubCol;',
+            'uniform float uOp;',
+            'varying float vKind;',
+            'varying float vPulse;',
+            'void main() {',
+            '  float d = length(gl_PointCoord - vec2(0.5));',
+            '  if (d > 0.5) discard;',
+            '  float core = pow(1.0 - d * 2.0, 1.7);',
+            '  vec3 baseCol = vKind > 1.5 ? uHubCol : (vKind > 0.5 ? uGreenCol : uRoadCol);',
+            '  vec3 col = mix(baseCol, vec3(0.96, 0.99, 1.0), core * 0.55);',
+            '  gl_FragColor = vec4(col, core * uOp * vPulse);',
+            '}'
+          ].join('\n'),
+          transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+        });
+        gridFlowPoints = new THREE.Points(gfGeo, gfMat);
+        gridFlowPoints.renderOrder = 3;
+        S.model.add(gridFlowPoints);
+      }
+    }
+    function placeGridFlow(T) {
+      waterTimeUniform.value = 2.2 + T;
+      if (!gridFlowPoints || !gridFlowPos || !gridFlowSeeds.length) return;
+      for (var gi = 0; gi < gridFlowSeeds.length; gi++) {
+        var gs = gridFlowSeeds[gi];
+        var rawU = (gs.phase + T * gs.speed * gs.dir) % 1;
+        var u = rawU < 0 ? rawU + 1 : rawU;
+        gridFlowPos[gi * 3] = gs.x0 + (gs.x1 - gs.x0) * u;
+        gridFlowPos[gi * 3 + 1] = gs.y + (gs.kind > 0.5 ? Math.sin(u * Math.PI) * 0.045 : 0);
+        gridFlowPos[gi * 3 + 2] = gs.z0 + (gs.z1 - gs.z0) * u;
+      }
+      gridFlowPoints.geometry.attributes.position.needsUpdate = true;
+    }
+    placeGridFlow(S.cityClock);
+
     S.tick = function (now) {
       now = now || 0;
       var d = S.data || {};
@@ -4948,6 +5214,7 @@
         S.cityClock += Math.min(50, Math.max(0, raw)) / 1000;
         placeAgents(S.cityClock);
         placeRain(S.cityClock);
+        placeGridFlow(S.cityClock);
       }
       var active = !!(S.cityGrowing || walking || S.citySheetAnim || S.cityFw || S.cityFrameAnim);
       if (active) {
@@ -10870,6 +11137,53 @@
                     t('stem.citylab.map_key_transit_v2', 'A T at the top marks a bus stop. In the Heat, Access gaps, Walk to park, Bus and Flood lenses the lower right shows that lens\'s number or mark instead of the star.')
                   ].filter(Boolean).join(' ')),
                 mapTools(),
+                !staged && !coachStep ? (function () {
+                  var t1 = sc && sc.tier1 ? sc.tier1 : {};
+                  var bHa = Number(t1.builtAreaHa) || 0;
+                  var pHa = Number(t1.parkHa) || 0;
+                  var fHa = Number(t1.farmHa) || 0;
+                  var totHa = Math.max(1, (scen && scen.rows && scen.cols ? scen.rows * scen.cols : 36));
+                  var oHa = Math.max(0, totHa - bHa - pHa - fHa);
+                  var bw = (bHa / totHa) * 240, pw = (pHa / totHa) * 240, fw = (fHa / totHa) * 240, ow = Math.max(0, 240 - bw - pw - fw);
+                  var quickLenses = ['use', 'heat', 'rain', 'access'];
+                  return h('div', {
+                    'data-citylab-stage-telemetry': 'true',
+                    className: 'mt-2.5 rounded-xl border p-2.5 space-y-2',
+                    style: { background: onDark ? '#000000' : '#f8fafc', borderColor: onDark ? '#facc15' : panelBorder }
+                  },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-1.5' },
+                      h('span', { className: 'text-[0.6875rem] font-bold uppercase tracking-wide', style: { color: onDark ? '#facc15' : '#1e3a8a' } },
+                        t('stem.citylab.land_mix_title', 'Town land-use mix')),
+                      h('span', { className: 'text-[0.6875rem] font-semibold', style: { color: dim } },
+                        fmt(t('stem.citylab.land_mix_summary', 'Built {b} ha · Park {p} ha · Farm {f} ha'), { b: bHa, p: pHa, f: fHa }))
+                    ),
+                    h('svg', { width: '100%', height: 12, viewBox: '0 0 240 12', preserveAspectRatio: 'none', role: 'img', 'aria-label': fmt(t('stem.citylab.land_mix_aria', 'Land-use mix bar: {b} hectares built, {p} park, {f} farmland, {o} other.'), { b: bHa, p: pHa, f: fHa, o: oHa }), style: { display: 'block', borderRadius: 6, overflow: 'hidden', border: '1px solid ' + (onDark ? '#ffffff' : '#cbd5e1') } },
+                      h('rect', { x: 0, y: 0, width: bw, height: 12, fill: onDark ? '#facc15' : '#3b82f6' }),
+                      h('rect', { x: bw, y: 0, width: pw, height: 12, fill: onDark ? '#4ade80' : '#16a34a' }),
+                      h('rect', { x: bw + pw, y: 0, width: fw, height: 12, fill: onDark ? '#fb923c' : '#d97706' }),
+                      h('rect', { x: bw + pw + fw, y: 0, width: ow, height: 12, fill: onDark ? '#334155' : '#cbd5e1' })
+                    ),
+                    h('div', { role: 'group', 'aria-label': t('stem.citylab.quick_lenses_group', 'Quick analytical lenses'), className: 'flex flex-wrap items-center gap-1.5' },
+                      h('span', { className: 'text-[0.6875rem] font-bold', style: { color: dim } }, t('stem.citylab.quick_lenses_lbl', 'Quick lenses:')),
+                      quickLenses.map(function (lid) {
+                        var onL = lens === lid;
+                        return h('button', {
+                          key: 'ql-' + lid,
+                          type: 'button',
+                          'aria-pressed': onL ? 'true' : 'false',
+                          onClick: function () { chooseLens(lid); },
+                          className: 'px-2.5 py-1 rounded-full text-[0.6875rem] font-bold border transition-colors',
+                          style: {
+                            minHeight: '44px',
+                            background: onL ? (onDark ? '#facc15' : '#1f5eb0') : panelBg,
+                            color: onL ? (onDark ? '#000000' : '#ffffff') : ink,
+                            borderColor: onL ? (onDark ? '#facc15' : '#1f5eb0') : panelBorder
+                          }
+                        }, lensName(lid));
+                      })
+                    )
+                  );
+                })() : null,
                 shortcutsPanel()), undefined, true);
         var side = h('div', null,
           levelSwitch(),
@@ -10903,26 +11217,57 @@
       // W6: one compact title row (the folded Start here chip sits in it, and
       // the decorative icon steps aside on a phone so the row stays one line).
       var narrowHead = typeof window !== 'undefined' && window.innerWidth < 480;
+      var t1Head = sc && sc.tier1 ? sc.tier1 : {};
       return h('div', { className: 'w-full', onPointerDownCapture: cueGesture, onKeyDownCapture: cueGesture },
-        h('div', { className: 'flex flex-wrap items-center gap-x-2 gap-y-1 mb-1', 'data-citylab-title-row': 'true' },
-          narrowHead ? null : h('span', { className: 'text-lg', 'aria-hidden': 'true' }, '🏙️'),
-          h('h2', { className: 'text-sm font-black', style: { color: ink } },
-            fmt(t('stem.citylab.tool_title', 'City Planning Lab · {town}'), { town: scen.town })),
-          h('label', { className: 'ml-auto text-[0.6875rem] font-bold flex items-center gap-1.5',
-            style: { color: dim } }, t('stem.citylab.town', 'Town'),
-            h('select', {
-              value: plan.scenarioId,
-              disabled: !!teacher.lockTown,
-              'aria-label': teacher.lockTown ? t('stem.citylab.town_locked', 'Town, set by your teacher')
-                : t('stem.citylab.choose_which_town_to_plan', 'Choose which town to plan'),
-              onChange: function (e) { switchScenario(e.target.value); },
-              className: 'text-[0.6875rem] rounded border px-1 py-0.5',
-              style: { background: panelBg, color: ink, borderColor: panelBorder }
-            }, SCENARIO_IDS.map(function (sid) {
-              return h('option', { key: sid, value: sid }, SCENARIOS[sid].town);
-            }))),
-          startHerePanel('header')),
-        h('p', { className: 'text-[0.625rem] mb-1.5', style: { color: dim } }, scen.blurb),
+        h('section', {
+          'data-citylab-hero': 'true',
+          className: 'rounded-2xl border mb-2 px-3 py-2.5 shadow-sm',
+          style: {
+            backgroundColor: onDark ? '#000000' : '#f8fafc',
+            borderColor: onDark ? '#facc15' : '#cbd5e1',
+            borderTopWidth: '3px',
+            borderTopColor: onDark ? '#facc15' : '#1f5eb0'
+          }
+        },
+          h('div', { className: 'flex flex-wrap items-center gap-x-2 gap-y-1', 'data-citylab-title-row': 'true' },
+            narrowHead ? null : h('svg', { width: 34, height: 34, viewBox: '0 0 36 36', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+              h('rect', { x: 1, y: 1, width: 34, height: 34, rx: 9, fill: onDark ? '#000000' : '#e0f2fe', stroke: onDark ? '#facc15' : '#1f5eb0', strokeWidth: 1.5 }),
+              h('rect', { x: 6, y: 15, width: 6, height: 14, fill: onDark ? '#ffffff' : '#1e3a8a' }),
+              h('rect', { x: 14, y: 9, width: 7, height: 20, fill: onDark ? '#facc15' : '#1f5eb0' }),
+              h('rect', { x: 23, y: 17, width: 6, height: 12, fill: onDark ? '#4ade80' : '#15803d' }),
+              h('path', { d: 'M5 30 Q18 26 31 30', fill: 'none', stroke: onDark ? '#38bdf8' : '#0284c7', strokeWidth: 2 })
+            ),
+            h('div', { className: 'min-w-0' },
+              !narrowHead ? h('span', { className: 'inline-block rounded-full px-2 py-0.5 text-[0.625rem] font-black uppercase tracking-wider mb-0.5', style: { backgroundColor: onDark ? '#000000' : '#dbeafe', color: onDark ? '#facc15' : '#1e3a8a', border: '1px solid ' + (onDark ? '#facc15' : '#93c5fd') } }, t('stem.citylab.subject_badge', 'Civic Engineering · Urban Lab')) : null,
+              h('h2', { className: 'text-sm sm:text-base font-black', style: { color: ink } },
+                fmt(t('stem.citylab.tool_title', 'City Planning Lab · {town}'), { town: scen.town }))
+            ),
+            h('label', { className: 'ml-auto text-[0.6875rem] font-bold flex items-center gap-1.5',
+              style: { color: dim } }, t('stem.citylab.town', 'Town'),
+              h('select', {
+                value: plan.scenarioId,
+                disabled: !!teacher.lockTown,
+                'aria-label': teacher.lockTown ? t('stem.citylab.town_locked', 'Town, set by your teacher')
+                  : t('stem.citylab.choose_which_town_to_plan', 'Choose which town to plan'),
+                onChange: function (e) { switchScenario(e.target.value); },
+                className: 'text-[0.6875rem] rounded border px-1.5 py-1',
+                style: { background: panelBg, color: ink, borderColor: panelBorder, minHeight: '36px' }
+              }, SCENARIO_IDS.map(function (sid) {
+                return h('option', { key: sid, value: sid }, SCENARIOS[sid].town);
+              }))),
+            startHerePanel('header')),
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mt-1.5' },
+            h('p', { className: 'text-[0.6875rem] flex-1 min-w-0', style: { color: dim } }, scen.blurb),
+            !narrowHead && !staged ? h('div', { className: 'flex flex-wrap items-center gap-1.5', style: { minWidth: 0 } },
+              h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border', style: { backgroundColor: onDark ? '#000000' : '#ffffff', color: ink, borderColor: onDark ? '#facc15' : panelBorder } },
+                fmt(t('stem.citylab.hero_lens_pill', 'Lens: {lens}'), { lens: lensName(lens) })),
+              h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border', style: { backgroundColor: onDark ? '#000000' : '#ffffff', color: ink, borderColor: onDark ? '#ffffff' : panelBorder } },
+                fmt(t('stem.citylab.hero_homes_pill', '{n} homes'), { n: (Number(t1Head.totalUnitsServed) || 0).toLocaleString() })),
+              h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border', style: { backgroundColor: onDark ? '#000000' : '#ffffff', color: ink, borderColor: onDark ? '#4ade80' : panelBorder } },
+                fmt(t('stem.citylab.hero_edits_pill', '{n} edits'), { n: plan.editCount || 0 }))
+            ) : null
+          )
+        ),
 
         devicePlanNote
           ? h('div', { className: 'rounded p-2 mb-2', role: 'status', style: { background: softBlue } },

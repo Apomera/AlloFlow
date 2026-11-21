@@ -258,9 +258,9 @@
     else if (type === 'numeric-response') reviewed = { numericValue: extractNumericAnswer(response), unit: normalizePresentationUnit(extractNumericUnit(response)), unparsedText: extractNumericAnswer(response) == null ? extractTextAnswer(response) : '' };
     else if (type === 'sequence-sense') reviewed = { verifyAnswer: a.verifyAnswer || '', clickedIdx: Number.isInteger(a.clickedIdx) ? a.clickedIdx : null, orderAnswer: canonicalOrderAnswer(question, a), principleAnswer: a.principleAnswer || '' };
     else if (type === 'relation-mismatch') reviewed = { clickedPairIdx: Number.isInteger(a.clickedPairIdx) ? a.clickedPairIdx : null, partnerAnswer: a.partnerAnswer || '' };
-    else if (type === 'order') reviewed = extractOrderAnswer(response);
+    else if (type === 'order') reviewed = { order: extractOrderAnswer(response) };
     else if (type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') reviewed = { text: extractTextAnswer(response) };
-    else reviewed = answer;
+    else reviewed = (answer && typeof answer === 'object' && !Array.isArray(answer)) ? Object.assign({}, answer) : { value: answer };
     var reasoningText = typeof a.explanation === 'string' && a.explanation.trim()
       ? a.explanation
       : (typeof a.reasoning === 'string' && a.reasoning.trim() ? a.reasoning : (typeof a.explanation === 'string' ? a.explanation : ''));
@@ -855,6 +855,9 @@
       var compactSequence = question.sequenceMode === 'arrange-explain';
       if ((!compactSequence && verifyAnswer !== 'yes' && verifyAnswer !== 'no') || !principleAnswer) return result('submitted', false, null);
       var sequenceItemCount = Array.isArray(question.items) ? question.items.length : 0;
+      if (!compactSequence && verifyAnswer === 'no' && (!Number.isInteger(answerObject.clickedIdx) || answerObject.clickedIdx < 0 || answerObject.clickedIdx >= sequenceItemCount)) {
+        return result('submitted', false, null);
+      }
       var truth = sequenceSenseTruth(question.presentedOrder, question.intentionallyWrongIndex, sequenceItemCount);
       var step1Correct = verifyAnswer === 'yes' ? truth.orderIsCorrect : !truth.orderIsCorrect;
       var step2Correct = verifyAnswer === 'yes'
@@ -995,11 +998,13 @@
         .filter(Boolean);
       return fillAnswers.join(' · ');
     }
-    if (type === 'numeric-response' && Number.isFinite(Number(question.correctValue))) {
-      var numericGuide = String(question.correctValue);
+    if (type === 'numeric-response' && hasNumericAnswerKey(question)) {
+      var numericGuide = String(question.correctValue).trim();
       if (String(question.unit || '').trim()) numericGuide += ' ' + String(question.unit).trim();
-      if (Number.isFinite(Number(question.tolerance)) && Math.abs(Number(question.tolerance)) > 0) {
-        numericGuide += ' (±' + Math.abs(Number(question.tolerance)) + ')';
+      var rawTolerance = question.tolerance;
+      var parsedTolerance = (rawTolerance !== null && rawTolerance !== undefined && rawTolerance !== '' && typeof rawTolerance !== 'boolean') ? Number(rawTolerance) : NaN;
+      if (Number.isFinite(parsedTolerance) && Math.abs(parsedTolerance) > 0) {
+        numericGuide += ' (±' + Math.abs(parsedTolerance) + ')';
       }
       return numericGuide;
     }
@@ -1053,9 +1058,9 @@
     var evaluable = entries.filter(function (entry) { return entry.grade.evaluable; });
     var correctCount = evaluable.filter(function (entry) { return entry.grade.isCorrect === true; }).length;
     var partialCount = evaluable.filter(function (entry) { return entry.grade.status === 'partially-correct'; }).length;
-    var incorrectCount = evaluable.length - correctCount;
+    var incorrectCount = evaluable.filter(function (entry) { return entry.grade.status === 'incorrect'; }).length;
     var accuracyWeightTotal = evaluable.reduce(function (sum, entry) {
-      var weight = presentationAccuracyWeight(entry.grade);
+      var weight = presentationAccuracyWeight(entry.grade, null, policy);
       return sum + (weight == null ? 0 : weight);
     }, 0);
     var confidenceBuckets = {
@@ -1100,12 +1105,10 @@
       });
     } else if (type === 'multi-select') {
       kind = 'multi-select';
-      var correctTexts = question && Array.isArray(question.correctAnswers) ? question.correctAnswers : [];
+      var multiCorrectIndices = unscored ? [] : resolvePresentationCorrectIndices(question);
       rows = options.map(function (option, idx) {
         var count = distributionEntries.filter(function (entry) { return extractSelectedIndices(question, entry.response).indexOf(idx) !== -1; }).length;
-        var correct = correctTexts.some(function (value) {
-          return Number.isInteger(value) ? value === idx : String(value == null ? '' : value).trim().toLowerCase() === String(option == null ? '' : option).trim().toLowerCase();
-        });
+        var correct = multiCorrectIndices.indexOf(idx) >= 0;
         return {
           label: String.fromCharCode(65 + idx),
           text: String(option == null ? '' : option),
@@ -1117,7 +1120,7 @@
       });
     } else if (type === 'fill-blank' || type === 'short-answer' || type === 'self-explanation') {
       kind = 'text';
-      var textBuckets = {};
+      var textBuckets = Object.create(null);
       distributionEntries.forEach(function (entry) {
         var text = extractTextAnswer(entry.response);
         if (!text) return;
@@ -1142,7 +1145,7 @@
         });
     } else if (type === 'numeric-response') {
       kind = 'numeric';
-      var numericBuckets = {};
+      var numericBuckets = Object.create(null);
       var unitRequired = !!normalizePresentationUnit(question && question.unit);
       distributionEntries.forEach(function (entry) {
         var value = extractNumericAnswer(entry.response);
@@ -1212,7 +1215,7 @@
       partialCount: partialCount,
       correctRate: evaluable.length > 0 ? Math.round(correctCount / evaluable.length * 100) : null,
       unscored: unscored,
-      accuracyRate: evaluable.length > 0 ? Math.round(accuracyWeightTotal / evaluable.length * 100) : null,
+      accuracyRate: policy.accuracy && evaluable.length > 0 ? Math.round(accuracyWeightTotal / evaluable.length * 100) : null,
       scoringPolicy: policy,
       confidenceReportedCount: confidenceReportedCount,
       confidenceMissingCount: confidenceMissingCount,
@@ -1361,6 +1364,7 @@
       var submitted = assessmentCompletionIsCurrent(perStudent, completion);
       var indices = submitted ? questions.map(function (_, index) { return String(index); }) : Object.keys(perStudent);
       indices.forEach(function (qIdxKey) {
+        if (!/^(?:0|[1-9]\d*)$/.test(String(qIdxKey))) return;
         var qIdx = parseInt(qIdxKey, 10);
         if (isNaN(qIdx) || qIdx < 0 || qIdx >= questions.length) return;
         var response = perStudent[qIdxKey];
@@ -1492,10 +1496,10 @@
     var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, generatedContent && generatedContent.data && generatedContent.data.scoringPolicy);
     var rosterObj = roster && typeof roster === 'object' ? roster : {};
     // Build per-student aggregation
-    var studentMap = {};
+    var studentMap = Object.create(null);
     graded.forEach(function (g) {
       if (!studentMap[g.uid]) {
-        var rEntry = rosterObj[g.uid] || {};
+        var rEntry = (Object.prototype.hasOwnProperty.call(rosterObj, g.uid) && rosterObj[g.uid]) || {};
         studentMap[g.uid] = {
           uid: g.uid,
           displayName: rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + g.uid.slice(0, 4)),
@@ -1825,7 +1829,7 @@
 
     // For each question with a conceptLabel, build a row
     var conceptRows = [];
-    var seenConcepts = {};
+    var seenConcepts = Object.create(null);
     questions.forEach(function (q, idx) {
       var label = (q && q.conceptLabel) || '';
       if (!label) return;
@@ -1836,9 +1840,11 @@
       // Per-student mastery lookup
       var students = [];
       Object.keys(rosterObj).forEach(function (uid) {
-        var rEntry = rosterObj[uid] || {};
+        var rEntry = (Object.prototype.hasOwnProperty.call(rosterObj, uid) && rosterObj[uid]) || {};
         var displayName = rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + uid.slice(0, 4));
-        var mastery = conceptMasteryByUid[uid] && conceptMasteryByUid[uid].attempts && conceptMasteryByUid[uid].attempts[conceptId];
+        var masteryEntry = Object.prototype.hasOwnProperty.call(conceptMasteryByUid, uid) ? conceptMasteryByUid[uid] : null;
+        var attemptsObj = masteryEntry && masteryEntry.attempts && typeof masteryEntry.attempts === 'object' ? masteryEntry.attempts : null;
+        var mastery = attemptsObj && Object.prototype.hasOwnProperty.call(attemptsObj, conceptId) ? attemptsObj[conceptId] : null;
         if (!mastery) {
           students.push({
             uid: uid,
@@ -2156,12 +2162,12 @@
       var completionAtAnalyzedCount = bucket[questions.length];
       var completionAtAuthoredCount = bucket[rawQuestions.length];
       var hasCompletionMarker = [completionAtAnalyzedCount, completionAtAuthoredCount].some(function (record) {
-        return record && typeof record === 'object' && record.itemType === 'assessment-complete';
+        return assessmentCompletionIsCurrent(bucket, record);
       });
       if (!hasCompletionMarker) {
         hasCompletionMarker = Object.keys(bucket).slice(0, MAX_QUESTIONS + 20).some(function (key) {
           var record = bucket[key];
-          return record && typeof record === 'object' && record.itemType === 'assessment-complete';
+          return assessmentCompletionIsCurrent(bucket, record);
         });
       }
       participant.completed = hasCompletionMarker
@@ -2321,7 +2327,7 @@
 
   function quizAlloSheetItemType(value) {
     var normalized = String(value || '').trim().toLowerCase();
-    return QUIZ_ALLOSHEET_ITEM_TYPES[normalized] ? normalized : 'other';
+    return Object.prototype.hasOwnProperty.call(QUIZ_ALLOSHEET_ITEM_TYPES, normalized) ? normalized : 'other';
   }
 
   function quizAlloSheetMode(value) {
@@ -2403,12 +2409,12 @@
     var sourceItems = Array.isArray(snapshot.items) ? snapshot.items : [];
     var rows = sourceItems.slice(0, 100).map(function (item, index) {
       var respondents = quizAlloSheetBoundedInt(item && item.respondents, 250);
-      var earlySignal = respondents < minimumSignalSample;
+      var earlySignal = (item && item.smallSample === true) || respondents < minimumSignalSample;
       var signalCodes = earlySignal
         ? []
         : (Array.isArray(item && item.signalCodes) ? item.signalCodes : []).reduce(function (codes, value) {
           var normalized = String(value || '').trim().toLowerCase();
-          if (QUIZ_ALLOSHEET_SIGNAL_CODES[normalized] && codes.indexOf(normalized) === -1) codes.push(normalized);
+          if (Object.prototype.hasOwnProperty.call(QUIZ_ALLOSHEET_SIGNAL_CODES, normalized) && codes.indexOf(normalized) === -1) codes.push(normalized);
           return codes;
         }, []).slice(0, 5);
       return {
@@ -2518,13 +2524,14 @@
     var rosterObj = roster && typeof roster === 'object' ? roster : null;
     var aiCache = aiGradedCache && typeof aiGradedCache === 'object' ? aiGradedCache : null;
     var overrides = teacherOverrides && typeof teacherOverrides === 'object' ? teacherOverrides : null;
-    var byConcept = {};
-    var respondents = {};
+    var byConcept = Object.create(null);
+    var respondents = Object.create(null);
     Object.keys(allResponses).forEach(function (uid) {
       if (rosterObj && !Object.prototype.hasOwnProperty.call(rosterObj, uid)) return;
       var perQuestion = allResponses[uid];
       if (!perQuestion || typeof perQuestion !== 'object') return;
       Object.keys(perQuestion).forEach(function (key) {
+        if (!/^(?:0|[1-9]\d*)$/.test(String(key))) return;
         var idx = Number(key);
         if (!Number.isInteger(idx) || idx < 0) return;
         var question = questions[idx];

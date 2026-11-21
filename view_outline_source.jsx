@@ -11,6 +11,8 @@ function _outlineAiDoor(t) {
 function OutlineView(props) {
   // Pure data + state reads
   var t = props.t;
+  var bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
+  var bt = function (s) { return (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s; };
   var outlineAiDoor = _outlineAiDoor(t);
   var outlineAiOff = !!(outlineAiDoor && (outlineAiDoor.disabled || outlineAiDoor.available === false));
   var outlineAiTitle = outlineAiOff ? (outlineAiDoor.title || (typeof t === 'function' && t('ai.setup_required')) || 'Set up AI to use this feature') : undefined;
@@ -91,6 +93,60 @@ function OutlineView(props) {
   // Components
   var ErrorBoundary = props.ErrorBoundary;
   var conceptCompositionRef = React.useRef(null);
+  var _speakingOutlineState = React.useState(false);
+  var speakingOutline = _speakingOutlineState[0], setSpeakingOutline = _speakingOutlineState[1];
+  var outlineSpeechListenerRef = React.useRef(null);
+  var stopOutlineSpeechListener = function () {
+    if (outlineSpeechListenerRef.current && typeof window !== 'undefined') {
+      window.removeEventListener('allo-speech-state', outlineSpeechListenerRef.current);
+      outlineSpeechListenerRef.current = null;
+    }
+  };
+  React.useEffect(function () {
+    stopOutlineSpeechListener();
+    setSpeakingOutline(false);
+    return function () { stopOutlineSpeechListener(); };
+  }, [generatedContent && generatedContent.id]);
+  var handleListenOutline = function () {
+    var player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
+    var finished = function () { stopOutlineSpeechListener(); setSpeakingOutline(false); };
+    stopOutlineSpeechListener();
+    if (speakingOutline) {
+      if (player && typeof player.stop === 'function') player.stop();
+      else if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+      setSpeakingOutline(false);
+      return;
+    }
+    var d = generatedContent && generatedContent.data;
+    var parts = [];
+    if (d && d.main) parts.push(String(d.main));
+    (Array.isArray(d && d.branches) ? d.branches : []).forEach(function (b) {
+      if (!b) return;
+      var line = [b.title].concat(Array.isArray(b.items) ? b.items.map(function (it) { return typeof it === 'string' ? it : (it && (it.text || it.label || it.title || '')) || ''; }) : []).filter(Boolean).join('. ');
+      if (line) parts.push(line);
+    });
+    var spoken = parts.join('. ').replace(/\s+/g, ' ').trim();
+    if (!spoken) return;
+    if (player && typeof player.speak === 'function') {
+      var ourId = null;
+      var onState = function (e) {
+        var detail = e.detail || {};
+        if (ourId === null) { if (detail.isPlaying) ourId = detail.currentId; return; }
+        if (!detail.isPlaying || detail.currentId !== ourId) finished();
+      };
+      outlineSpeechListenerRef.current = onState;
+      window.addEventListener('allo-speech-state', onState);
+      setSpeakingOutline(true);
+      Promise.resolve(player.speak(spoken)).then(function (res) { if (res === null && ourId === null) finished(); }, finished);
+    } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+      setSpeakingOutline(true);
+      window.speechSynthesis.cancel();
+      var u = new window.SpeechSynthesisUtterance(spoken);
+      u.onend = finished;
+      u.onerror = finished;
+      window.speechSynthesis.speak(u);
+    }
+  };
   var controlSize = { minHeight: 44, minWidth: 44, maxWidth: '100%' };
   var canAddConcept = typeof mapAddInput === 'string' && !!mapAddInput.trim();
   function addConcept() {
@@ -135,6 +191,19 @@ function OutlineView(props) {
                                 >
                                     {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? <Layout size={14}/> : <Share2 size={14}/>}
                                     {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? tl('outline.view_diagram', 'View diagram') : tl('outline.edit_diagram_layout', 'Edit diagram layout')}
+                                </button>
+                            )}
+                            {!isInteractiveMap && !isInteractiveVenn && !isVennPlaying
+                                && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && (
+                                <button
+                                    type="button" style={controlSize} data-outline-listen
+                                    aria-pressed={speakingOutline}
+                                    onClick={handleListenOutline}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${speakingOutline ? 'bg-rose-100 text-rose-900 border border-rose-300 hover:bg-rose-200' : 'bg-white text-indigo-800 border border-indigo-200 hover:bg-indigo-50'}`}
+                                    title={speakingOutline ? tl('common.stop', 'Stop') : tl('outline.listen_hint', 'Hear this graphic organizer read aloud')}
+                                >
+                                    <span aria-hidden="true">{speakingOutline ? '⏹️' : '🔊'}</span>
+                                    {speakingOutline ? tl('common.stop', 'Stop') : tl('common.listen', 'Listen')}
                                 </button>
                             )}
                             {!isInteractiveMap && !isInteractiveVenn && !isVennPlaying
@@ -218,14 +287,14 @@ function OutlineView(props) {
                                 <div className="bg-indigo-50 p-4 rounded-full mb-4">
                                     <Layout size={48} className="text-indigo-600" />
                                 </div>
-                                <h2 className="text-3xl font-black text-indigo-900 mb-6">{generatedContent?.data.main}</h2>
+                                <h2 className="text-3xl font-black text-indigo-900 mb-6">{bt(generatedContent?.data?.main || '')}</h2>
                                 <div className="flex flex-wrap justify-center gap-3 mb-8 w-full">
-                                    {generatedContent?.data.branches && generatedContent?.data.branches.map((branch, idx) => (
+                                    {Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.map((branch, idx) => (
                                         <div key={idx} className="bg-white border-2 border-indigo-100 px-4 py-2 rounded-xl shadow-sm font-bold text-indigo-700 animate-in motion-reduce:animate-none zoom-in duration-300 flex items-center gap-2 group" style={{ animationDelay: `${idx * 50}ms` }}>
-                                            {branch.title}
+                                            {bt(branch?.title || '')}
                                             <button
                                                 type="button" style={controlSize} data-outline-remove-concept
-                                                aria-label={tl('outline.remove_concept_named', 'Remove concept {name}').replace('{name}', String(branch.title || ''))}
+                                                aria-label={tl('outline.remove_concept_named', 'Remove concept {name}').replace('{name}', String(branch?.title || ''))}
                                                 onClick={() => handleRemoveFromMapList(idx)}
                                                 className="inline-flex items-center justify-center shrink-0 text-indigo-600 hover:text-red-700 hover:bg-red-50 rounded-full p-0.5"
                                                 title={t('common.remove_concept')}
@@ -259,8 +328,7 @@ function OutlineView(props) {
                                 <button
                                     type="button" style={controlSize}
                                     onClick={handleInitializeMap}
-                                    disabled={isProcessing || outlineAiOff} aria-busy={isProcessing}
-                                    title={outlineAiTitle}
+                                    disabled={isProcessing} aria-busy={isProcessing}
                                     className="w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all motion-reduce:transform-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isProcessing ? <RefreshCw size={24} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Sparkles size={24} className="text-yellow-300 fill-current" aria-hidden="true"/>}

@@ -46,6 +46,8 @@ var _lazyIcon = function (name) {
   function AnalysisView(props) {
     // State reads
     var t = props.t;
+    var _bionicSub = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
+    void _bionicSub;
     var analysisAiDoor = _analysisAiDoor(t), analysisAiOff = !!(analysisAiDoor?.disabled || analysisAiDoor?.available === false);
     var analysisAiTitle = analysisAiOff ? (analysisAiDoor?.title || (typeof t === 'function' && t('ai.setup_required')) || 'Set up AI to use this feature') : undefined;
     var analysisLabel = function (key, fallback) {
@@ -120,10 +122,22 @@ var _lazyIcon = function (name) {
     const readingRoleLabel = readingProfile.role === 'primary' ? roleMainLabel : readingProfile.role === 'supplemental' ? roleSupportingLabel : roleNoneLabel;
     const readingFormLabel = readingProfile.form === 'adapted' ? analysisLabel('common.adapted_text', 'Adapted text') : readingProfile.form === 'same-text-supported' ? analysisLabel('analysis.form_supported', 'Original with supports') : analysisLabel('analysis.form_original', 'Original text');
     const mainNeedsReview = readingProfile.form === 'adapted' && readingProfile.role === 'primary' && !(readingProfile.replacementAuthorization?.authorized === true && readingProfile.replacementAuthorization?.source === 'educator');
-    const changeReadingRole = (nextRole) => {
+    const passageMountedRef = React.useRef(true);
+    React.useEffect(() => {
+      passageMountedRef.current = true;
+      return () => { passageMountedRef.current = false; };
+    }, []);
+    const activeResourceIdRef = React.useRef(generatedContent?.id);
+    activeResourceIdRef.current = generatedContent?.id;
+    const grammarFixInFlightRef = React.useRef(false);
+    const changeReadingRole = async (nextRole) => {
       const adaptedPrimary = readingProfile.form === 'adapted' && nextRole === 'primary';
       if (adaptedPrimary && !(readingProfile.role === 'primary' && readingProfile.replacementAuthorization?.authorized === true && readingProfile.replacementAuthorization?.source === 'educator')) {
-        if (!window.confirm(analysisLabel('analysis.confirm_adapted_main', 'Use this adapted text as a main reading for this lesson? This records your explicit teacher designation. The original will remain available.'))) return;
+        const msg = analysisLabel('analysis.confirm_adapted_main', 'Use this adapted text as a main reading for this lesson? This records your explicit teacher designation. The original will remain available.');
+        const confirmed = (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.confirm === 'function')
+          ? await window.AlloFlowUX.confirm(msg, { title: analysisLabel('analysis.confirm_adapted_main_title', 'Use adapted text as main reading?'), confirmText: analysisLabel('common.confirm', 'Confirm'), cancelText: analysisLabel('common.cancel', 'Cancel'), tone: 'warning' }).catch(() => false)
+          : (typeof window !== 'undefined' && typeof window.confirm === 'function' ? window.confirm(msg) : false);
+        if (!confirmed || !passageMountedRef.current) return;
       }
       props.onInstructionalRoleChange?.(generatedContent, nextRole, { authorizeReplacement: adaptedPrimary });
     };
@@ -141,19 +155,23 @@ var _lazyIcon = function (name) {
       recheckInFlight.current = true;
       setCheckingEditedSource(true);
       try { await props.onRecheckAnalysis(generatedContent); }
-      catch (_) { addToast?.(analysisLabel('analysis.recheck_failed', 'The check did not finish. You can retry with the edited text.'), 'error'); }
-      finally { recheckInFlight.current = false; setCheckingEditedSource(false); }
+      catch (_) { if (passageMountedRef.current) addToast?.(analysisLabel('analysis.recheck_failed', 'The check did not finish. You can retry with the edited text.'), 'error'); }
+      finally {
+        recheckInFlight.current = false;
+        if (passageMountedRef.current) setCheckingEditedSource(false);
+      }
     }
     const asText = value => typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '';
     const isUnreadableNote = value => !!value && typeof value === 'object';
     const isRecord = value => !!value && typeof value === 'object' && !Array.isArray(value);
+    const isSafeObjectKey = key => typeof key === 'string' && key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
     const pipelineApi = window.AlloModules?.TextPipelineHelpers;
     const sameLanguage = (a, b) => typeof pipelineApi?.isSameLanguage === 'function' ? pipelineApi.isSameLanguage(a, b) : asText(a).trim().toLowerCase() === asText(b).trim().toLowerCase();
     // The reader's language on THIS device: the teacher's for the report, a student's for the passage.
     const appLanguage = asText(props.currentUiLanguage).trim() || 'English';
     const baseReportLanguage = asText(analysisData.reportLanguage || generatedContent?.config?.language).trim();
     const reportTranslations = isRecord(analysisData.reportTranslations) ? analysisData.reportTranslations : {};
-    const reportLanguages = Object.keys(reportTranslations).filter(language => language.trim() && language !== baseReportLanguage && isRecord(reportTranslations[language]));
+    const reportLanguages = Object.keys(reportTranslations).filter(language => isSafeObjectKey(language) && language.trim() && language !== baseReportLanguage && isRecord(reportTranslations[language]));
     const chosenReportLanguage = analysisData.displayReportLanguage;
     const preferredReportLanguage = chosenReportLanguage && (chosenReportLanguage === baseReportLanguage || reportLanguages.includes(chosenReportLanguage)) ? chosenReportLanguage
       : [baseReportLanguage, ...reportLanguages].find(language => sameLanguage(language, appLanguage)) || baseReportLanguage;
@@ -195,6 +213,8 @@ var _lazyIcon = function (name) {
     };
     const concepts = reportData.concepts ?? analysisData.concepts;
     const conceptList = (Array.isArray(concepts) ? concepts : [concepts]).map(asText).filter(concept => concept.trim());
+    const rawVocabulary = analysisData.vocabulary ?? analysisData.tier2Words ?? reportData.vocabulary;
+    const vocabularyList = (Array.isArray(rawVocabulary) ? rawVocabulary : rawVocabulary ? [rawVocabulary] : []).map(asText).filter(term => term.trim());
     const baseReadingLevel = isRecord(analysisData.readingLevel) ? analysisData.readingLevel : null;
     const readingLevel = baseReadingLevel ? { ...baseReadingLevel, explanation: isRecord(reportData.readingLevel) ? reportData.readingLevel.explanation ?? baseReadingLevel.explanation : baseReadingLevel.explanation } : null;
     const factReader = window.AlloModules?.GenDispatcher?.getAnalysisFactRows;
@@ -205,7 +225,7 @@ var _lazyIcon = function (name) {
     // Fit to the lesson's targets. The reading-level gap comes from the local Flesch-Kincaid
     // measurement and the grade calibration table, never from the AI's estimate. Depth of
     // Knowledge is the AI's estimate, shown with its reason.
-    const fillLabel = (text, values) => String(text).replace(/\{(\w+)\}/g, (match, key) => values[key] != null ? values[key] : match);
+    const fillLabel = (text, values) => String(text).replace(/\{(\w+)\}/g, (match, key) => (values && Object.prototype.hasOwnProperty.call(values, key) && values[key] != null) ? values[key] : match);
     const savedAnalysisTargets = isRecord(analysisData.analysisTargets) ? analysisData.analysisTargets : {};
     const currentAnalysisTargets = isRecord(props.currentAnalysisTargets) ? props.currentAnalysisTargets : null;
     const targetPair = targets => [asText(targets?.grade).trim(), asText(targets?.dok).trim()];
@@ -273,7 +293,7 @@ var _lazyIcon = function (name) {
     };
     const selectIdea = (index, idea) => {
       const state = analysisIdeaDrafts.get(ideaDraftKey) || { selected: null, drafts: {} }, key = JSON.stringify([index, idea]);
-      rememberIdeaState(ideaDraftKey, { selected: state.selected === key ? null : key, drafts: { ...state.drafts, [key]: state.drafts[key] || { id: generatedContent.id, source: sourceText, index, idea, type: 'brainstorm', instructions: idea } } });
+      rememberIdeaState(ideaDraftKey, { selected: state.selected === key ? null : key, drafts: { ...state.drafts, [key]: state.drafts[key] || { id: generatedContent?.id, source: sourceText, index, idea, type: 'brainstorm', instructions: idea } } });
     };
     const setIdeaDraft = value => {
       const state = analysisIdeaDrafts.get(ideaDraftKey);
@@ -363,8 +383,8 @@ var _lazyIcon = function (name) {
       verifiedFacts: baseAccuracy.discrepancies, unsourcedFacts: [] }).some(row => row.sources.length));
     const showAiRating = !accuracyVerified && baseAccuracy.verificationNote !== 'search-unavailable' && !/^not (?:web-)?verified$/i.test(accuracyRating);
     const accuracyBadge = accuracyVerified
-      ? <span data-accuracy-verification="web-search" className={`px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border ${ratingKey(accuracyRating) === 'high' || accuracyRating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>{fillLabel(analysisLabel('analysis.accuracy_ai_rating', 'AI rating: {rating}'), { rating: accuracyRatingLabel })}</span>
-      : <span data-accuracy-verification="ai-estimate" className="flex flex-wrap items-center gap-2"><span className="px-2 py-0.5 rounded-full text-[11px] font-bold tracking-wide border bg-slate-100 text-slate-700 border-slate-300">{analysisLabel('analysis.accuracy_ai_estimate', 'AI estimate, not verified')}</span>{showAiRating && <span className="text-xs text-slate-600">{fillLabel(analysisLabel('analysis.accuracy_ai_rating', 'AI rating: {rating}'), { rating: accuracyRatingLabel })}</span>}</span>;
+      ? <span data-accuracy-verification="web-search" className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide border ${ratingKey(accuracyRating) === 'high' || accuracyRating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>{fillLabel(analysisLabel('analysis.accuracy_ai_rating', 'AI rating: {rating}'), { rating: accuracyRatingLabel })}</span>
+      : <span data-accuracy-verification="ai-estimate" className="flex flex-wrap items-center gap-2"><span className="px-2 py-0.5 rounded-full text-xs font-bold tracking-wide border bg-slate-100 text-slate-700 border-slate-300">{analysisLabel('analysis.accuracy_ai_estimate', 'AI estimate, not verified')}</span>{showAiRating && <span className="text-xs text-slate-600">{fillLabel(analysisLabel('analysis.accuracy_ai_rating', 'AI rating: {rating}'), { rating: accuracyRatingLabel })}</span>}</span>;
     const DISCREPANCY_FIXED_PREFIX = '✓ FIXED: ';
     const isFixedDiscrepancy = note => typeof note === 'string' && note.startsWith('✓ FIXED:');
     const [factualProposal, setFactualProposal] = React.useState(null);
@@ -396,11 +416,13 @@ var _lazyIcon = function (name) {
       setFactualProposal(null);
       let result = null;
       try { result = await handleAutoCorrectSource(); } catch (err) { warnLog('Factual fix failed:', err); }
+      if (!passageMountedRef.current) return;
       if (result && result.ok === true && typeof result.corrected === 'string' && typeof result.original === 'string') {
         setFactualProposal({ ...result, resourceId: result.resourceId || generatedContent?.id });
         return;
       }
-      const message = result && factualFixMessages[result.reason];
+      const message = result && typeof result.reason === 'string' && Object.prototype.hasOwnProperty.call(factualFixMessages, result.reason)
+        ? factualFixMessages[result.reason] : null;
       addToast(message ? message() : (t('process.correction_error') || 'The correction could not be prepared. Please try again.'), message ? 'warning' : 'error');
     };
     const applyFactualProposal = async () => {
@@ -411,7 +433,15 @@ var _lazyIcon = function (name) {
         addToast(t('process.grammar_fix_failed') || 'The source editor is unavailable. Please reload and try again.', 'error');
         return;
       }
-      const applied = await props.onCorrectAnalysisText(proposal.resourceId, proposal.original, proposal.corrected, []);
+      let applied;
+      try {
+        applied = await props.onCorrectAnalysisText(proposal.resourceId, proposal.original, proposal.corrected, []);
+      } catch (err) {
+        warnLog('Applying factual fix failed:', err);
+        if (passageMountedRef.current) setFactualProposal(proposal);
+        addToast(t('process.correction_error') || 'The correction could not be applied. Please try again.', 'error');
+        return;
+      }
       if (applied === false) {
         addToast(analysisLabel('analysis.factual_fix_source_changed', 'The source changed after this fix was prepared, so it was not applied. Prepare the fix again.'), 'warning');
         return;
@@ -439,12 +469,13 @@ var _lazyIcon = function (name) {
     </section>;
     const normalizedText = text => asText(text).trim().replace(/\s+/g, ' ');
     const sourceTranslationMap = isRecord(analysisData.sourceTranslations) ? analysisData.sourceTranslations : {};
-    const sourceTranslations = Object.entries(sourceTranslationMap).filter(([language, text]) => language.trim() && typeof text === 'string' && text.trim() && normalizedText(text) !== normalizedText(analysisData.originalText) && language.trim().toLowerCase() !== asText(analysisData.sourceLanguage).trim().toLowerCase());
+    const sourceTranslations = Object.entries(sourceTranslationMap).filter(([language, text]) => isSafeObjectKey(language) && language.trim() && typeof text === 'string' && text.trim() && normalizedText(text) !== normalizedText(analysisData.originalText) && language.trim().toLowerCase() !== asText(analysisData.sourceLanguage).trim().toLowerCase());
     // Passage languages. The original stays first and selected; this device's app language
     // leads the prepared versions. Only teachers add versions (students cannot run AI).
     const passageVersions = sourceTranslations.slice().sort((a, b) => (sameLanguage(b[0], appLanguage) ? 1 : 0) - (sameLanguage(a[0], appLanguage) ? 1 : 0));
     const [passageView, setPassageView] = React.useState({ id: null, language: '' });
-    const [passageBusy, setPassageBusy] = React.useState('');
+    const [passageBusy, setPassageBusy] = React.useState({ id: null, key: '' });
+    const activePassageBusy = passageBusy.id === generatedContent?.id ? passageBusy.key : '';
     const shownPassageLanguage = passageView.id === generatedContent?.id && passageVersions.some(([language]) => language === passageView.language) ? passageView.language : '';
     const shownPassage = shownPassageLanguage ? sourceTranslationMap[shownPassageLanguage] : null;
     const passageFontStyle = needsStackedMarkFont(shownPassage) || needsStackedMarkFont(analysisData.originalText) ? { fontFamily: STACKED_MARK_SERIF } : undefined;
@@ -490,31 +521,37 @@ var _lazyIcon = function (name) {
       return added ? added[0] : '';
     };
     const addPassageLanguage = async language => {
-      if (passageBusy || !generatedContent) return;
+      if (activePassageBusy || !generatedContent) return;
       const id = generatedContent.id;
-      setPassageBusy(language);
+      setPassageBusy({ id, key: language });
       try {
         const added = await translatePassageInto(language, id, analysisData.originalText);
+        if (!passageMountedRef.current) return;
         if (!added) { addToast?.(fillLabel(analysisLabel('analysis.passage_same_language', 'The passage is already in {language}.'), { language: uiName(language) }), 'info'); return; }
         setPassageView({ id, language: added });
       } catch (error) {
         warnLog?.('Passage translation failed', error);
-        addToast?.(fillLabel(analysisLabel('analysis.passage_translation_failed', 'The {language} passage did not finish. Try again.'), { language: uiName(language) }), 'error');
-      } finally { setPassageBusy(''); }
+        if (passageMountedRef.current) addToast?.(fillLabel(analysisLabel('analysis.passage_translation_failed', 'The {language} passage did not finish. Try again.'), { language: uiName(language) }), 'error');
+      } finally {
+        if (passageMountedRef.current) setPassageBusy(prev => (prev.id === id && prev.key === language ? { id: null, key: '' } : prev));
+      }
     };
     const refreshPassageVersions = async () => {
-      if (passageBusy || !generatedContent || !refreshLanguages.length) return;
+      if (activePassageBusy || !generatedContent || !refreshLanguages.length) return;
       const id = generatedContent.id;
       const expectedText = analysisData.originalText;
-      setPassageBusy('refresh');
+      setPassageBusy({ id, key: 'refresh' });
       try {
         for (const language of refreshLanguages) {
+          if (!passageMountedRef.current) break;
           try { await translatePassageInto(language, id, expectedText); } catch (error) {
             warnLog?.('Passage translation failed', error);
-            addToast?.(fillLabel(analysisLabel('analysis.passage_translation_failed', 'The {language} passage did not finish. Try again.'), { language: uiName(language) }), 'error');
+            if (passageMountedRef.current) addToast?.(fillLabel(analysisLabel('analysis.passage_translation_failed', 'The {language} passage did not finish. Try again.'), { language: uiName(language) }), 'error');
           }
         }
-      } finally { setPassageBusy(''); }
+      } finally {
+        if (passageMountedRef.current) setPassageBusy(prev => (prev.id === id && prev.key === 'refresh' ? { id: null, key: '' } : prev));
+      }
     };
     const dismissPassageRefresh = () => updateAnalysisResource(item => {
       if (!item || item.id !== generatedContent?.id || !isRecord(item.data) || !('passageVersionsToRefresh' in item.data)) return item;
@@ -533,8 +570,8 @@ var _lazyIcon = function (name) {
       {refreshLanguages.length > 0 && <div data-passage-refresh role="status" className="space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950">
         <p>{fillLabel(analysisLabel('analysis.passage_versions_removed', 'Your edit removed the passage in {languages}. Students see only the original until you update it.'), { languages: refreshLanguageList })}</p>
         <div className="flex flex-wrap gap-2">
-          <button type="button" data-refresh-passage-versions disabled={!!passageBusy || isProcessing || analysisAiOff} title={analysisAiTitle} aria-busy={passageBusy === 'refresh'} onClick={refreshPassageVersions} className="min-h-9 rounded-lg bg-indigo-700 px-3 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">{passageBusy === 'refresh' ? analysisLabel('status.translating', 'Translating…') : fillLabel(analysisLabel('analysis.update_passage_versions', 'Update the passage in {languages}'), { languages: refreshLanguageList })}</button>
-          <button type="button" data-dismiss-passage-refresh disabled={!!passageBusy} onClick={dismissPassageRefresh} className="min-h-9 rounded-lg border border-amber-400 bg-white px-3 font-bold text-amber-950 hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">{analysisLabel('analysis.passage_versions_not_needed', 'Not needed')}</button>
+          <button type="button" data-refresh-passage-versions disabled={!!activePassageBusy || isProcessing || analysisAiOff} title={analysisAiTitle} aria-busy={activePassageBusy === 'refresh'} onClick={refreshPassageVersions} className="min-h-9 rounded-lg bg-indigo-700 px-3 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">{activePassageBusy === 'refresh' ? analysisLabel('status.translating', 'Translating…') : fillLabel(analysisLabel('analysis.update_passage_versions', 'Update the passage in {languages}'), { languages: refreshLanguageList })}</button>
+          <button type="button" data-dismiss-passage-refresh disabled={!!activePassageBusy} onClick={dismissPassageRefresh} className="min-h-9 rounded-lg border border-amber-400 bg-white px-3 font-bold text-amber-950 hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50">{analysisLabel('analysis.passage_versions_not_needed', 'Not needed')}</button>
         </div>
       </div>}
       {passageVersions.length > 0 && <div role="group" aria-label={analysisLabel('analysis.passage_language', 'Read the passage in')} className="flex flex-wrap items-center gap-2">
@@ -544,13 +581,99 @@ var _lazyIcon = function (name) {
       </div>}
       {passageCandidates.length > 0 && <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-slate-700">{analysisLabel('analysis.add_passage_translation', 'Add the passage in another language:')}</span>
-        {passageCandidates.map(language => <button type="button" key={language} data-add-passage-language={language} disabled={!!passageBusy || isProcessing || analysisAiOff} title={analysisAiTitle} aria-busy={passageBusy === language} onClick={() => addPassageLanguage(language)} className="min-h-9 rounded-lg border border-dashed border-indigo-300 bg-white px-3 text-xs font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-50">{passageBusy === language ? analysisLabel('status_steps.translating', 'Translating…') : <>+ {languageLabel(language)}</>}</button>)}
+        {passageCandidates.map(language => <button type="button" key={language} data-add-passage-language={language} disabled={!!activePassageBusy || isProcessing || analysisAiOff} title={analysisAiTitle} aria-busy={activePassageBusy === language} onClick={() => addPassageLanguage(language)} className="min-h-9 rounded-lg border border-dashed border-indigo-300 bg-white px-3 text-xs font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-50">{activePassageBusy === language ? analysisLabel('status_steps.translating', 'Translating…') : <>+ {languageLabel(language)}</>}</button>)}
       </div>}
       {shownPassage && isTeacherMode && <p className="text-xs text-slate-600">{analysisLabel('analysis.source_translation_note', 'This companion translation does not replace the original source used for activities or reading-level results.')}</p>}
     </div>;
     const reportLanguageControl = reportLanguages.length > 0 && <section data-analysis-report-language className="rounded-xl border border-slate-300 bg-white p-4 text-sm text-slate-800"><label className="flex flex-wrap items-center gap-3 font-bold">{analysisLabel('analysis.report_language', 'Report language')}<select aria-label={analysisLabel('analysis.report_language', 'Report language')} value={selectedReportLanguage} onChange={event => changeReportLanguage(event.target.value)} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3"><option value={baseReportLanguage}>{baseReportLanguage ? uiName(baseReportLanguage) : analysisLabel('analysis.original_report', 'Original report')}</option>{reportLanguages.map(language => <option key={language} value={language}>{uiName(language)}</option>)}</select></label><p className="mt-2 text-xs text-slate-600">{analysisLabel('analysis.report_source_note', 'All report languages describe the original source. Reading-level results apply to that source.')}</p>{isTranslatedReport && <p role="status" className="mt-2 text-xs text-slate-700">{analysisLabel('analysis.report_correction_note', 'Select the original report language to correct or dismiss findings.')}</p>}</section>;
     const includeTitle = analysisLabel('analysis.include_in_correction', 'Include in correction');
     const ignoreTitle = analysisLabel('analysis.ignore_this_error', 'Ignore this error');
+    const [speakingPassage, setSpeakingPassage] = React.useState(false);
+    const speakingPassageRef = React.useRef(false);
+    speakingPassageRef.current = speakingPassage;
+    const stopPassageSpeech = () => {
+      try { if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop(); } catch (_) {}
+      try { if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (_) {}
+      setSpeakingPassage(false);
+    };
+    React.useEffect(() => {
+      if (speakingPassageRef.current) stopPassageSpeech();
+    }, [generatedContent?.id, shownPassageLanguage]);
+    React.useEffect(() => {
+      if (typeof window === 'undefined') return undefined;
+      const onSpeechState = (e) => {
+        if (speakingPassageRef.current && e && e.detail && e.detail.isPlaying === false) setSpeakingPassage(false);
+      };
+      window.addEventListener('allo-speech-state', onSpeechState);
+      return () => {
+        window.removeEventListener('allo-speech-state', onSpeechState);
+        if (speakingPassageRef.current) {
+          try { if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop(); } catch (_) {}
+          try { if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (_) {}
+        }
+      };
+    }, []);
+    const activePassageText = String(shownPassage && !isEditingAnalysis ? shownPassage : (generatedContent?.data?.originalText || '')).trim();
+    const canSpeakPassage = Boolean(
+      activePassageText && typeof window !== 'undefined' && (
+        (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') ||
+        (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function')
+      )
+    );
+    const toggleSpeakPassage = () => {
+      if (!activePassageText) return;
+      if (speakingPassage) { stopPassageSpeech(); return; }
+      const lang = (shownPassage && !isEditingAnalysis ? shownPassageLanguage : asText(analysisData.sourceLanguage)) || 'English';
+      try {
+        if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+          setSpeakingPassage(true);
+          Promise.resolve(window.AlloSpeechPlayer.speak(activePassageText, { language: lang })).catch(() => { if (passageMountedRef.current) setSpeakingPassage(false); });
+          return;
+        }
+        if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+          window.speechSynthesis.cancel();
+          const u = new window.SpeechSynthesisUtterance(activePassageText);
+          u.onend = () => { if (passageMountedRef.current) setSpeakingPassage(false); };
+          u.onerror = () => { if (passageMountedRef.current) setSpeakingPassage(false); };
+          setSpeakingPassage(true);
+          window.speechSynthesis.speak(u);
+        }
+      } catch (_) { if (passageMountedRef.current) setSpeakingPassage(false); }
+    };
+    const jumpToAnalysisSection = (secId) => {
+      try {
+        const el = typeof document !== 'undefined' ? document.getElementById(secId) : null;
+        if (!el) return;
+        const reduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (typeof el.scrollIntoView === 'function') el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+        if (typeof el.focus === 'function') el.focus({ preventScroll: true });
+      } catch (_) {}
+    };
+    const openGrammarBadgeCount = (Array.isArray(analysisData.grammar) ? analysisData.grammar : []).filter(g => {
+      if (typeof g !== 'string') return false;
+      if (g.startsWith('✓ FIXED:') || g.startsWith('✓ DISMISSED:')) return false;
+      const clean = g.trim().toLowerCase().replace(/[.,;!]+$/, '');
+      if (!clean || ['none', 'n/a', 'no errors', 'no issues', 'none detected', 'no grammar errors', 'no spelling errors'].includes(clean)) return false;
+      if (/^(none|no errors|no issues|no grammar|no spelling|none detected|no significant)/i.test(clean)) return false;
+      if (clean.includes('no grammar errors') || clean.includes('no spelling errors') || clean.includes('no significant errors')) return false;
+      return true;
+    }).length;
+    const renderHeaderDescription = (rawHtml) => {
+      const src = asText(rawHtml);
+      if (!src) return null;
+      const parts = [];
+      const re = /<(strong|b)>([\s\S]*?)<\/\1>/gi;
+      let last = 0;
+      let match;
+      let idx = 0;
+      while ((match = re.exec(src)) !== null) {
+        if (match.index > last) parts.push(src.slice(last, match.index).replace(/<[^>]*>/g, ''));
+        parts.push(<strong key={'hdr-' + (idx++)}>{match[2].replace(/<[^>]*>/g, '')}</strong>);
+        last = re.lastIndex;
+      }
+      if (last < src.length) parts.push(src.slice(last).replace(/<[^>]*>/g, ''));
+      return parts;
+    };
     return <div className="space-y-6">{isTeacherMode ? readingRoleControl : readWithSupportsButton}
       {isTeacherMode && needsRecheck && <section data-analysis-needs-recheck className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
         <h4 className="font-bold">{editedSource ? analysisLabel('analysis.needs_recheck', 'Needs recheck') : partial ? analysisLabel('analysis.partial', 'Partial analysis') : analysisLabel('analysis.incomplete', 'Analysis incomplete')}</h4>
@@ -566,6 +689,7 @@ var _lazyIcon = function (name) {
           <blockquote className="my-2 border-l-2 pl-2">{sourceText.slice(start, Math.min(end, start + 150))}{end - start > 150 ? '…' : ''}</blockquote>
           <p>{[rangeText(report.readingLevel?.range), report.readingLevel?.explanation].map(asText).filter(Boolean).join(' · ')}</p>
           {Array.isArray(report.concepts) && <p>{report.concepts.map(asText).filter(Boolean).join(', ')}</p>}
+          {Array.isArray(report.vocabulary) && report.vocabulary.length > 0 && <p><strong>{analysisLabel('output.analysis_vocabulary', 'Key Vocabulary')}:</strong> {report.vocabulary.map(asText).filter(Boolean).join(', ')}</p>}
           {report.depthOfKnowledge?.level && <p>DOK {asText(report.depthOfKnowledge.level)} · {asText(report.depthOfKnowledge.reason)}</p>}
           <p>{[ratingText(report.accuracy?.rating), report.accuracy?.reason].map(asText).filter(Boolean).join(' · ')}</p>
           {partial && factReader && factReader({ ...report.accuracy, verification: 'ai-estimate' }).map((row, i) =>
@@ -573,9 +697,12 @@ var _lazyIcon = function (name) {
           {Array.isArray(report.grammar) && report.grammar.map((note, i) => <p key={i}>{asText(note)}</p>)}
         </details>)}
       </section>}
-      {isTeacherMode && !needsRecheck && reportLanguageControl}{isTeacherMode && !needsRecheck && <><div className="bg-slate-50 p-4 rounded-lg border border-slate-400 mb-6"><p className="text-sm text-slate-800" dangerouslySetInnerHTML={{
-          __html: t('analysis.header_description')
-        }} /></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_complexity')}</h4>{readingLevel ? <><div className="text-2xl font-bold text-indigo-600 mb-2">{rangeText(readingLevel.range) || analysisLabel('analysis.rating_unknown', 'Not rated')}</div><div className="text-sm text-slate-600 leading-relaxed">{formatInlineText(asText(readingLevel.explanation), false)}</div></> : <div className="text-2xl font-bold text-indigo-600">{asText(analysisData.readingLevel)}</div>}{fitStats && <div className="mt-auto pt-4 border-t border-slate-100"><div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-slate-600">{t('analysis.readability.fk_score')}</span><span className="text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded cursor-help border border-indigo-100" title={`${t('analysis.readability.formula')}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n\n${t('analysis.readability.words')}: ${fitStats.words}\n${t('analysis.readability.sentences')}: ${fitStats.sentences}\n${t('analysis.readability.syllables')}: ${fitStats.syllables}\n\nASL (${t('analysis.readability.asl')}): ${(fitStats.words / fitStats.sentences).toFixed(2)}\nASW (${t('analysis.readability.asw')}): ${(fitStats.syllables / fitStats.words).toFixed(2)}`}>{fitStats.score}</span></div><div className="grid grid-cols-3 gap-2 text-[11px] text-slate-600 text-center"><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{fitStats.words}</span> {t('analysis.readability.label_words')}</div><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{fitStats.sentences}</span> {t('analysis.readability.label_sent')}</div><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{fitStats.syllables}</span> {t('analysis.readability.label_syll')}</div></div></div>}</div><div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_concepts')}</h4><div className="flex flex-wrap gap-2 content-start">{conceptList.map((concept, idx) => <span key={idx} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-medium border border-indigo-100">{formatInlineText(concept, false)}</span>)}</div></div></div>{targetFitCard}{learnerBarriersCard}<div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"><div className="flex flex-wrap items-center gap-3 mb-3"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_verification')}</h4>{accuracyBadge}</div><p className="text-sm text-slate-600 leading-relaxed">{formatInlineText(asText(accuracy.reason), false)}</p>{asText(accuracy.verificationDetails) && <div className="mt-4 pt-4 border-t border-slate-100"><h5 className="text-[11px] font-bold text-blue-700 uppercase tracking-wider mb-2 flex items-center gap-1"><Search size={10} /> {t('analysis.verification_details')}</h5><div className="text-xs text-slate-600 bg-blue-50 p-3 rounded border border-blue-100 leading-relaxed">{renderFormattedText(asText(accuracy.verificationDetails), false)}</div></div>}{(() => {
+      {isTeacherMode && !needsRecheck && reportLanguageControl}{isTeacherMode && !needsRecheck && <><div className="bg-slate-50 p-4 rounded-lg border border-slate-400 mb-6"><p className="text-sm text-slate-800">{renderHeaderDescription(t('analysis.header_description'))}</p></div><nav data-analysis-jump-nav aria-label={analysisLabel('analysis.jump_nav_aria', 'Jump to analysis section')} className="no-print mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 shadow-sm"><span className="text-xs font-bold uppercase tracking-wider text-slate-600 mr-1">{analysisLabel('common.jump_to', 'Jump to')}:</span>{[
+          { id: 'analysis-sec-complexity', label: analysisLabel('output.analysis_complexity', 'Complexity & Concepts') },
+          { id: 'analysis-sec-verification', label: analysisLabel('output.analysis_verification', 'Verification') },
+          { id: 'analysis-sec-grammar', label: analysisLabel('output.analysis_grammar', 'Grammar') + (openGrammarBadgeCount > 0 ? ` (${openGrammarBadgeCount})` : '') },
+          { id: 'analysis-sec-source', label: analysisLabel('output.common_original', 'Original Text') },
+        ].map(item => <button key={item.id} type="button" data-analysis-jump={item.id} onClick={() => jumpToAnalysisSection(item.id)} className="min-h-11 rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-800 transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2">{item.label}</button>)}</nav><div id="analysis-sec-complexity" tabIndex={-1} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_complexity')}</h4>{readingLevel ? <><div className="text-2xl font-bold text-indigo-600 mb-2">{rangeText(readingLevel.range) || analysisLabel('analysis.rating_unknown', 'Not rated')}</div><div className="text-sm text-slate-600 leading-relaxed">{formatInlineText(asText(readingLevel.explanation), false)}</div></> : <div className="text-2xl font-bold text-indigo-600">{asText(analysisData.readingLevel)}</div>}{fitStats && <div className="mt-auto pt-4 border-t border-slate-100"><div className="flex items-center justify-between mb-2"><span className="text-xs font-bold text-slate-600">{t('analysis.readability.fk_score')}</span><span className="text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded cursor-help border border-indigo-100" title={`${t('analysis.readability.formula')}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n\n${t('analysis.readability.words')}: ${fitStats.words}\n${t('analysis.readability.sentences')}: ${fitStats.sentences}\n${t('analysis.readability.syllables')}: ${fitStats.syllables}\n\nASL (${t('analysis.readability.asl')}): ${fitStats.sentences > 0 ? (fitStats.words / fitStats.sentences).toFixed(2) : '0.00'}\nASW (${t('analysis.readability.asw')}): ${fitStats.words > 0 ? (fitStats.syllables / fitStats.words).toFixed(2) : '0.00'}`}>{fitStats.score}</span></div><div className="grid grid-cols-3 gap-2 text-xs text-slate-600 text-center"><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{fitStats.words}</span> {t('analysis.readability.label_words')}</div><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{fitStats.sentences}</span> {t('analysis.readability.label_sent')}</div><div className="bg-slate-50 rounded p-1 border border-slate-100"><span className="block font-bold text-slate-700 text-xs">{fitStats.syllables}</span> {t('analysis.readability.label_syll')}</div></div></div>}</div><div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">{t('output.analysis_concepts')}</h4><div className="flex flex-wrap gap-2 content-start">{conceptList.map((concept, idx) => <span key={idx} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-medium border border-indigo-100">{formatInlineText(concept, false)}</span>)}</div>{vocabularyList.length > 0 && <div data-analysis-vocabulary className="mt-4 pt-4 border-t border-slate-100"><div className="flex flex-wrap items-center justify-between gap-2 mb-3"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{analysisLabel('output.analysis_vocabulary', 'Key Vocabulary')} ({vocabularyList.length})</h4>{(typeof props.onSendVocabToFocus === 'function' || typeof props.onGenerateGlossaryFromVocab === 'function') && <div className="flex flex-wrap items-center gap-2">{typeof props.onSendVocabToFocus === 'function' && <button type="button" data-analysis-send-vocab onClick={() => { const added = props.onSendVocabToFocus(vocabularyList); if (typeof addToast === 'function') addToast(added === 0 ? analysisLabel('analysis.vocab_already_in_focus', 'Those vocabulary terms are already in Vocabulary Focus.') : fillLabel(analysisLabel('analysis.vocab_sent_to_focus', 'Added {count} vocabulary terms to Vocabulary Focus.'), { count: typeof added === 'number' ? added : vocabularyList.length }), 'success'); }} className="min-h-8 rounded-md border border-teal-600 bg-white px-2.5 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-teal-600 focus-visible:outline-offset-2">{analysisLabel('analysis.send_vocab_focus', 'Use as Vocabulary Focus')}</button>}{typeof props.onGenerateGlossaryFromVocab === 'function' && <button type="button" data-analysis-build-glossary disabled={isProcessing || analysisAiOff} title={analysisAiTitle} onClick={() => props.onGenerateGlossaryFromVocab(vocabularyList)} className="min-h-8 rounded-md bg-teal-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-teal-800 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-teal-700 focus-visible:outline-offset-2">{analysisLabel('analysis.build_glossary_vocab', 'Build Glossary')}</button>}</div>}</div><div className="flex flex-wrap gap-2 content-start">{vocabularyList.map((term, idx) => <span key={idx} className="bg-teal-50 text-teal-800 px-3 py-1 rounded-md text-sm font-medium border border-teal-200">{formatInlineText(term, false)}</span>)}</div></div>}</div></div>{targetFitCard}{learnerBarriersCard}<div id="analysis-sec-verification" tabIndex={-1} className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"><div className="flex flex-wrap items-center gap-3 mb-3"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_verification')}</h4>{accuracyBadge}</div><p className="text-sm text-slate-600 leading-relaxed">{formatInlineText(asText(accuracy.reason), false)}</p>{asText(accuracy.verificationDetails) && <div className="mt-4 pt-4 border-t border-slate-100"><h5 className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2 flex items-center gap-1"><Search size={10} /> {t('analysis.verification_details')}</h5><div className="text-xs text-slate-600 bg-blue-50 p-3 rounded border border-blue-100 leading-relaxed">{renderFormattedText(asText(accuracy.verificationDetails), false)}</div></div>}{(() => {
           const shownDiscrepancies = Array.isArray(accuracy.discrepancies) ? accuracy.discrepancies : [];
           const baseDiscrepancies = Array.isArray(baseAccuracy.discrepancies) ? baseAccuracy.discrepancies : [];
           // A translated report keeps the fixed status of the source-language note it explains.
@@ -605,9 +732,9 @@ var _lazyIcon = function (name) {
                 <p>{row.text}</p><ul className="mt-1 flex flex-wrap gap-x-3">{row.sources.map(source => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-800 underline">{source.title}</a></li>)}</ul>
               </li>)}</ol></section>}
               {unsourcedFactList.length > 0 && <section data-analysis-facts="unsourced" className="rounded border border-amber-200 bg-amber-50 p-3"><h5 className="mb-2 text-xs font-bold text-amber-900">{analysisLabel('analysis.needs_source', 'Needs a source')}</h5>
-                <ul className="list-disc space-y-2 pl-5 text-sm">{unsourcedFactList.map((row, i) => <li key={i}>{row.text}</li>)}</ul></section>}{hasDiscrepancies && <div className="bg-red-50 p-3 rounded border border-red-100 relative"><h5 className="text-[11px] font-bold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1"><AlertCircle size={10} /> {t('analysis.discrepancies')}</h5><div className="space-y-2 mb-3">{rawDiscrepancies.map((d, i) => {
+                <ul className="list-disc space-y-2 pl-5 text-sm">{unsourcedFactList.map((row, i) => <li key={i}>{row.text}</li>)}</ul></section>}{hasDiscrepancies && <div className="bg-red-50 p-3 rounded border border-red-100 relative"><h5 className="text-xs font-bold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1"><AlertCircle size={10} /> {t('analysis.discrepancies')}</h5><div className="space-y-2 mb-3">{rawDiscrepancies.map((d, i) => {
                   if (isInvalidDiscrepancy(d)) return null;
-                  if (isFixedDiscrepancy(d)) return <div key={i} data-discrepancy-fixed className="flex items-start gap-2 p-1.5 rounded bg-green-50 border border-green-100"><CheckCircle2 size={14} className="text-green-700 mt-0.5 shrink-0" aria-hidden="true" /><div className="text-xs text-slate-700 leading-relaxed w-full"><BilingualFieldRenderer text={d.slice(DISCREPANCY_FIXED_PREFIX.length)} /> <span className="inline-block align-middle px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-200 text-green-900">{analysisLabel('analysis.factual_fixed_tag', 'Fixed in source')}</span></div></div>;
+                  if (isFixedDiscrepancy(d)) return <div key={i} data-discrepancy-fixed className="flex items-start gap-2 p-1.5 rounded bg-green-50 border border-green-100"><CheckCircle2 size={14} className="text-green-700 mt-0.5 shrink-0" aria-hidden="true" /><div className="text-xs text-slate-700 leading-relaxed w-full"><BilingualFieldRenderer text={d.slice(DISCREPANCY_FIXED_PREFIX.length)} /> <span className="inline-block align-middle px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide bg-green-200 text-green-900">{analysisLabel('analysis.factual_fixed_tag', 'Fixed in source')}</span></div></div>;
                   const isSelected = isTranslatedReport || selectedDiscrepancies.has(i);
                   return <div key={i} className={`flex items-start gap-2 p-1.5 rounded transition-colors ${isSelected ? 'bg-white/50' : 'opacity-60'}`}>{canFixFacts && <input aria-label={analysisLabel('analysis.select_factual_note', 'Include factual note in correction') + ' ' + (i + 1) + ': ' + d} type="checkbox" checked={isSelected} onChange={() => toggleDiscrepancySelection(i)} className="mt-1 w-4 h-4 text-red-600 border-red-300 rounded focus:ring-red-500 cursor-pointer shrink-0" title={isSelected ? includeTitle : ignoreTitle} />}<div className={`text-xs text-slate-700 leading-relaxed ${!isSelected ? 'line-through text-slate-600' : ''} w-full`}><BilingualFieldRenderer text={d} /></div></div>;
                 })}</div>{fixedCount > 0 && <p role="note" data-factual-fix-stale className="mb-3 text-xs text-slate-700">{analysisLabel('analysis.factual_fix_rerun_note', 'Fixed notes are marked. The rating and the other findings still describe the text before the fix; run the analysis again for a fresh check.')}</p>}{canFixFacts && hasOpenDiscrepancies && <button type="button" data-factual-fix onClick={handleProposeFactualFix} disabled={isProcessing || openSelectedCount === 0 || analysisAiOff} title={analysisAiDoor?.title || undefined} aria-busy={isProcessing} className="w-full flex items-center justify-center gap-2 bg-white border border-red-600 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Wrench size={12} />}{t('analysis.fix_button')} ({openSelectedCount})</button>}{isTeacherMode && isTranslatedDisplay && !isTranslatedReport && <p className="mt-2 text-xs text-slate-700">{analysisLabel('analysis.factual_translated_note', 'These notes describe the source text, not the translation shown here, so Fix is off.')}</p>}{factualPreview}</div>}</div></>;
@@ -646,6 +773,7 @@ var _lazyIcon = function (name) {
         // note forever, so a teacher who had dealt with all of them still saw
         // "3 Issues".
         const openGrammarErrors = realGrammarErrors.filter(g => !isResolvedNote(g));
+        const openSelectedGrammarCount = rawGrammarNotes.filter((g, i) => selectedGrammarErrors.has(i) && typeof g === 'string' && !isInvalidGrammarNote(g) && !isResolvedNote(g)).length;
         // Dismiss / restore are pure list edits: no AI call, no text rewrite.
         // Restore exists because a mis-click would otherwise silently discard a
         // real issue with no way back.
@@ -670,7 +798,9 @@ var _lazyIcon = function (name) {
         // Notes describe the source; the displayed text is a translation, so an AI fix would edit the wrong text.
         const canFixGrammar = canChangeReportNotes && !isTranslatedDisplay;
         const handleFixGrammarErrors = async () => {
-          if (!canFixGrammar || !generatedContent?.data?.originalText || selectedGrammarErrors.size === 0) return;
+          if (isProcessing || grammarFixInFlightRef.current || !canFixGrammar || !analysisData.originalText || selectedGrammarErrors.size === 0) return;
+          const targetResourceId = generatedContent?.id;
+          grammarFixInFlightRef.current = true;
           setIsProcessing(true);
           setGenerationStep(t('process.fixing_grammar') || 'Fixing grammar errors...');
           try {
@@ -679,7 +809,7 @@ var _lazyIcon = function (name) {
             // text that is correct.
             const isFixable = g => typeof g === 'string' && !isInvalidGrammarNote(g) && !isResolvedNote(g);
             const errorsToFix = rawGrammarNotes.filter((g, i) => selectedGrammarErrors.has(i) && isFixable(g));
-            const originalText = generatedContent?.data.originalText;
+            const originalText = analysisData.originalText;
             if (errorsToFix.length === 0) {
               addToast(t('process.grammar_fix_failed') || 'No errors selected to fix.', 'warning');
               return;
@@ -723,7 +853,11 @@ ${safeOriginalText}
               }
               raw = await callGemini(fixPrompt, false, false, null);
             }
-            const cleaned = (typeof raw === 'string' ? raw : raw && raw.text || '').trim().replace(/^```(?:[a-z]+)?\s*/i, '').replace(/\s*```$/, '').replace(/^["']|["']$/g, '').trim();
+            let cleaned = (typeof raw === 'string' ? raw : raw && raw.text || '').trim().replace(/^```(?:[a-z]+)?\s*/i, '').replace(/\s*```$/, '').trim();
+            const origTrimmed = String(originalText || '').trim();
+            if (cleaned.length >= 2 && ((cleaned.startsWith('"') && cleaned.endsWith('"') && !(origTrimmed.startsWith('"') && origTrimmed.endsWith('"'))) || (cleaned.startsWith("'") && cleaned.endsWith("'") && !(origTrimmed.startsWith("'") && origTrimmed.endsWith("'"))))) {
+              cleaned = cleaned.slice(1, -1).trim();
+            }
             if (!cleaned) {
               addToast(t('process.grammar_fix_failed') || 'Failed to fix grammar errors.', 'error');
               return;
@@ -742,22 +876,25 @@ ${safeOriginalText}
               addToast(t('process.grammar_fix_failed') || 'The source editor is unavailable. Please reload and try again.', 'error');
               return;
             }
-            const applied = await props.onCorrectAnalysisText(generatedContent.id, originalText, cleaned, errorsToFix);
+            const applied = await props.onCorrectAnalysisText(targetResourceId, originalText, cleaned, errorsToFix);
             if (applied === false) {
               addToast(t('analysis.grammar_source_changed') || 'The source changed while the correction was being prepared. Review it and try again.', 'warning');
               return;
             }
             addToast(t('process.grammar_fixed') || 'Grammar errors fixed!', 'success');
-            setSelectedGrammarErrors(new Set());
+            if (passageMountedRef.current && activeResourceIdRef.current === targetResourceId) {
+              setSelectedGrammarErrors(new Set());
+            }
           } catch (err) {
             warnLog('Grammar fix error:', err);
             addToast(t('process.grammar_fix_failed') || 'Failed to fix grammar errors.', 'error');
           } finally {
+            grammarFixInFlightRef.current = false;
             setIsProcessing(false);
             setGenerationStep('');
           }
         };
-        return <div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"><div className="flex items-center gap-3 mb-3"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_grammar')}</h4>{hasGrammarErrors && openGrammarErrors.length > 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border bg-amber-100 text-amber-700 border-amber-200">{openGrammarErrors.length} {openGrammarErrors.length === 1 ? analysisLabel('analysis.issue_singular', 'Issue') : analysisLabel('analysis.issue_plural', 'Issues')}</span>}{hasGrammarErrors && openGrammarErrors.length === 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border bg-green-100 text-green-700 border-green-200">{t('analysis.grammar_all_resolved') || 'All resolved'}</span>}</div>{hasGrammarErrors ? <><div className="space-y-2 mb-3">{rawGrammarNotes.map((note, idx) => {
+        return <div id="analysis-sec-grammar" tabIndex={-1} className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"><div className="flex items-center gap-3 mb-3"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_grammar')}</h4>{hasGrammarErrors && openGrammarErrors.length > 0 && <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide border bg-amber-100 text-amber-700 border-amber-200">{openGrammarErrors.length} {openGrammarErrors.length === 1 ? analysisLabel('analysis.issue_singular', 'Issue') : analysisLabel('analysis.issue_plural', 'Issues')}</span>}{hasGrammarErrors && openGrammarErrors.length === 0 && <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide border bg-green-100 text-green-700 border-green-200">{t('analysis.grammar_all_resolved') || 'All resolved'}</span>}</div>{hasGrammarErrors ? <><div className="space-y-2 mb-3">{rawGrammarNotes.map((note, idx) => {
                 if (isInvalidGrammarNote(note)) return null;
                 const isSelected = isTranslatedReport || selectedGrammarErrors.has(idx);
                 const isFixed = isFixedNote(note);
@@ -765,12 +902,12 @@ ${safeOriginalText}
                 const bareNote = isFixed ? note.replace(GRAMMAR_FIXED_PREFIX, '')
                   : isDismissed ? note.slice(GRAMMAR_DISMISSED_PREFIX.length)
                   : note;
-                return <div key={idx} className={`flex items-start gap-2 p-2 rounded transition-colors ${isFixed ? 'bg-green-50 border border-green-100' : isDismissed ? 'bg-slate-50 border border-slate-200' : isSelected ? 'bg-amber-50' : 'opacity-60'}`}>{canFixGrammar && !isFixed && !isDismissed && <input aria-label={analysisLabel('analysis.select_grammar_note', 'Include grammar note in correction') + ' ' + (idx + 1) + ': ' + bareNote} type="checkbox" checked={isSelected} onChange={() => toggleGrammarErrorSelection(idx)} className="mt-1 w-4 h-4 text-amber-600 border-amber-300 rounded focus:ring-amber-500 cursor-pointer shrink-0" title={isSelected ? includeTitle : ignoreTitle} />}{isFixed && <CheckCircle2 size={16} className="text-green-600 mt-0.5 shrink-0" aria-hidden="true" />}{isDismissed && <CheckCircle2 size={16} className="text-slate-400 mt-0.5 shrink-0" aria-hidden="true" />}<div className={`flex-1 text-sm text-slate-700 leading-relaxed ${(!isSelected && !isFixed && !isDismissed) || isDismissed ? 'line-through text-slate-600' : ''}`}>{formatInlineText(bareNote, false)}{isDismissed && <span className="ml-2 not-italic no-underline inline-block align-middle px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-slate-200 text-slate-600">{t('analysis.grammar_dismissed_tag') || 'Dismissed'}</span>}</div>{/* Dismiss = "this one is handled" WITHOUT calling the AI: the teacher
+                return <div key={idx} className={`flex items-start gap-2 p-2 rounded transition-colors ${isFixed ? 'bg-green-50 border border-green-100' : isDismissed ? 'bg-slate-50 border border-slate-200' : isSelected ? 'bg-amber-50' : 'opacity-60'}`}>{canFixGrammar && !isFixed && !isDismissed && <input aria-label={analysisLabel('analysis.select_grammar_note', 'Include grammar note in correction') + ' ' + (idx + 1) + ': ' + bareNote} type="checkbox" checked={isSelected} onChange={() => toggleGrammarErrorSelection(idx)} className="mt-1 w-4 h-4 text-amber-600 border-amber-300 rounded focus:ring-amber-500 cursor-pointer shrink-0" title={isSelected ? includeTitle : ignoreTitle} />}{isFixed && <CheckCircle2 size={16} className="text-green-600 mt-0.5 shrink-0" aria-hidden="true" />}{isDismissed && <CheckCircle2 size={16} className="text-slate-400 mt-0.5 shrink-0" aria-hidden="true" />}<div className={`flex-1 text-sm text-slate-700 leading-relaxed ${(!isSelected && !isFixed && !isDismissed) || isDismissed ? 'line-through text-slate-600' : ''}`}>{formatInlineText(bareNote, false)}{isDismissed && <span className="ml-2 not-italic no-underline inline-block align-middle px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide bg-slate-200 text-slate-600">{t('analysis.grammar_dismissed_tag') || 'Dismissed'}</span>}</div>{/* Dismiss = "this one is handled" WITHOUT calling the AI: the teacher
                      fixed it by hand, or the flag was simply wrong. Restore is the
                      undo, so a mis-click never silently buries a real issue. */}
                 {canChangeReportNotes && !isFixed && !isDismissed && <button type="button" onClick={() => dismissGrammarNote(idx)} title={t('analysis.grammar_dismiss_hint') || 'Dismiss this notice without using AI (already fixed by hand, or not a real error)'} aria-label={`${t('analysis.grammar_dismiss_one') || 'Dismiss notice'}: ${bareNote.slice(0, 80)}`} className="shrink-0 ml-1 min-h-6 min-w-6 inline-flex items-center justify-center px-1.5 py-0.5 rounded text-slate-600 hover:text-slate-800 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-slate-400 transition-colors"><X size={14} aria-hidden="true" /></button>}
-                {canChangeReportNotes && isDismissed && <button type="button" onClick={() => restoreGrammarNote(idx)} aria-label={`${t('analysis.grammar_restore_one') || 'Restore'}: ${bareNote.slice(0, 80)}`} className="shrink-0 ml-1 min-h-6 inline-flex items-center justify-center px-2 py-0.5 rounded text-[11px] font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-slate-400 transition-colors">{t('analysis.grammar_restore_one') || 'Restore'}</button>}</div>;
-              })}</div>{isTeacherMode && isTranslatedDisplay && openGrammarErrors.length > 0 && <p className="mb-3 text-xs text-slate-700">{analysisLabel('analysis.grammar_translated_note', 'These notes describe the source text, not the translation shown here, so Fix Grammar is off. Dismiss each note once you have handled it.')}</p>}{canFixGrammar && openGrammarErrors.length > 0 && <button type="button" onClick={handleFixGrammarErrors} disabled={isProcessing || selectedGrammarErrors.size === 0 || (analysisAiOff && !window.ai?.languageModel)} title={analysisAiOff && !window.ai?.languageModel ? analysisAiTitle : undefined} aria-busy={isProcessing} className="w-full flex items-center justify-center gap-2 bg-white border border-amber-700 text-amber-800 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Wand2 size={12} />}{t('analysis.fix_grammar_button') || 'Fix Grammar Errors'} ({selectedGrammarErrors.size})</button>}{/* Clearing the whole panel now unlocks once every note is RESOLVED —
+                {canChangeReportNotes && isDismissed && <button type="button" onClick={() => restoreGrammarNote(idx)} aria-label={`${t('analysis.grammar_restore_one') || 'Restore'}: ${bareNote.slice(0, 80)}`} className="shrink-0 ml-1 min-h-6 inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-slate-400 transition-colors">{t('analysis.grammar_restore_one') || 'Restore'}</button>}</div>;
+              })}</div>{isTeacherMode && isTranslatedDisplay && openGrammarErrors.length > 0 && <p className="mb-3 text-xs text-slate-700">{analysisLabel('analysis.grammar_translated_note', 'These notes describe the source text, not the translation shown here, so Fix Grammar is off. Dismiss each note once you have handled it.')}</p>}{canFixGrammar && openGrammarErrors.length > 0 && <button type="button" onClick={handleFixGrammarErrors} disabled={isProcessing || openSelectedGrammarCount === 0 || (analysisAiOff && !window.ai?.languageModel)} title={analysisAiOff && !window.ai?.languageModel ? analysisAiTitle : undefined} aria-busy={isProcessing} className="w-full flex items-center justify-center gap-2 bg-white border border-amber-700 text-amber-800 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Wand2 size={12} />}{t('analysis.fix_grammar_button') || 'Fix Grammar Errors'} ({openSelectedGrammarCount})</button>}{/* Clearing the whole panel now unlocks once every note is RESOLVED —
                   fixed by AI or dismissed by hand. It previously required all of
                   them to be AI-fixed, so a teacher who corrected anything manually
                   could never clear the list. */}
@@ -784,14 +921,14 @@ ${safeOriginalText}
               }));
               addToast(t('analysis.grammar_dismissed') || 'Grammar notices cleared.', 'success');
             }} className="w-full flex items-center justify-center gap-2 bg-green-50 border border-green-200 text-green-800 hover:bg-green-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm"><CheckCircle2 size={12} />{t('analysis.dismiss_fixed') || 'Dismiss Fixed Notices'}</button>}</> : unreadableGrammarNotes > 0 ? null : <div className="flex items-center gap-2 text-sm text-green-600"><CheckCircle2 size={16} /><span>{t('analysis.no_grammar_errors') || 'No grammar or spelling issues detected.'}</span></div>}{unreadableGrammarNotes > 0 && <p role="status" className="mt-3 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded p-2">{analysisLabel('analysis.grammar_unreadable', 'Some grammar notes could not be read. Run the analysis again to review them.')}</p>}</div>;
-      })()}</>}{analysisSourceUndo && <div data-analysis-source-undo className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-950"><p role="status" className="m-0 flex-1">{analysisLabel('analysis.source_updated_note', 'Your passage was updated in the source box too. The earlier wording is kept.')}</p><button type="button" data-analysis-source-undo-button onClick={undoAnalysisSourceEdit} className="min-h-11 rounded-full border border-violet-300 bg-white px-3 font-bold text-violet-800 hover:bg-violet-100">{analysisLabel('analysis.source_updated_undo', 'Undo this change')}</button></div>}<div className="bg-slate-50 p-6 rounded-xl border border-slate-400 relative group"><div className="flex justify-between items-center mb-3 flex-wrap gap-2"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{shownPassage && !isEditingAnalysis ? <>{analysisLabel('analysis.translated_passage', 'Translated passage')} · {languageLabel(shownPassageLanguage)}</> : t('output.common_original')}</h4>{isTeacherMode && <div className="flex items-center gap-2"><button type="button" title={t('common.download_audio')} data-help-key="analysis_download_audio" onClick={() => handleDownloadAudio && (shownPassage && !isEditingAnalysis
+      })()}</>}{analysisSourceUndo && <div data-analysis-source-undo className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-950"><p role="status" className="m-0 flex-1">{analysisLabel('analysis.source_updated_note', 'Your passage was updated in the source box too. The earlier wording is kept.')}</p><button type="button" data-analysis-source-undo-button onClick={undoAnalysisSourceEdit} className="min-h-11 rounded-full border border-violet-300 bg-white px-3 font-bold text-violet-800 hover:bg-violet-100">{analysisLabel('analysis.source_updated_undo', 'Undo this change')}</button></div>}<div id="analysis-sec-source" tabIndex={-1} className="bg-slate-50 p-6 rounded-xl border border-slate-400 relative group"><div className="flex justify-between items-center mb-3 flex-wrap gap-2"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{shownPassage && !isEditingAnalysis ? <>{analysisLabel('analysis.translated_passage', 'Translated passage')} · {languageLabel(shownPassageLanguage)}</> : t('output.common_original')}</h4><div className="flex flex-wrap items-center gap-2">{canSpeakPassage && <button type="button" data-analysis-listen aria-pressed={speakingPassage} onClick={toggleSpeakPassage} className="no-print min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-indigo-300 bg-white text-indigo-800 hover:bg-indigo-50 transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"><span aria-hidden="true">{speakingPassage ? '⏹' : '🔊'}</span><span>{speakingPassage ? analysisLabel('common.stop', 'Stop') : analysisLabel('common.listen', 'Listen')}</span></button>}{isTeacherMode && <><button type="button" title={t('common.download_audio')} data-help-key="analysis_download_audio" onClick={() => handleDownloadAudio && (shownPassage && !isEditingAnalysis
                 ? handleDownloadAudio(shownPassage, 'passage-' + (shownPassageLanguage.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'translated'), 'dl-analysis-source', shownPassageLanguage)
-                : handleDownloadAudio(generatedContent?.data?.originalText, 'original-source-text', 'dl-analysis-source'))} disabled={downloadingContentId === 'dl-analysis-source' || !generatedContent?.data?.originalText} className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed">{downloadingContentId === 'dl-analysis-source' ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Download size={14} />}{downloadingContentId === 'dl-analysis-source' ? t('common.downloading') : t('common.download_audio')}</button><button type="button" aria-pressed={!!isEditingAnalysis} onClick={handleToggleIsEditingAnalysis} className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isEditingAnalysis ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100'}`}>{isEditingAnalysis ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingAnalysis ? t('common.done') : t('common.edit')}</button></div>}</div>{isTeacherMode && analysisAiOff && typeof window.AlloAiSetupNotice === 'function' && <div data-analysis-ai-setup className="mb-2"><window.AlloAiSetupNotice t={t} /></div>}{isTeacherMode && <div className="mb-4 flex gap-2 animate-in fade-in motion-reduce:animate-none slide-in-from-top-1"><div className="relative flex-grow"><div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-indigo-600"><Sparkles size={14} /></div><input aria-label={t('common.enter_source_refine_instruction')} type="text" value={sourceRefineInstruction} onChange={e => setSourceRefineInstruction(e.target.value)} onKeyDown={e => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && !analysisAiOff) handleAiRefineSource(); }} placeholder={t('analysis.refine_placeholder')} className="w-full pl-9 pr-3 py-2 text-xs border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 transition-all shadow-sm bg-white" disabled={isProcessing} aria-busy={isProcessing} /></div><button type="button" aria-label={t('common.ai_refine_source')} onClick={handleAiRefineSource} disabled={!sourceRefineInstruction.trim() || isProcessing || analysisAiOff} title={analysisAiTitle} aria-busy={isProcessing} className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Send size={14} />}</button></div>}{isTeacherMode && isEditingAnalysis ? <div className="w-full bg-white border border-indigo-200 rounded-lg overflow-hidden shadow-sm"><div className="flex flex-wrap items-center gap-1 p-2 bg-indigo-50 border-b border-indigo-100"><button type="button" aria-label={t('formatting.bold') || 'Bold'} onClick={() => handleFormatText('bold', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" aria-label={t('formatting.italic') || 'Italic'} onClick={() => handleFormatText('italic', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" aria-label={t('formatting.highlight') || 'Highlight'} onClick={() => handleFormatText('highlight', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-indigo-200 mx-1" /><button type="button" aria-label={t('formatting.h1') || 'Heading 1'} onClick={() => handleFormatText('h1', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" aria-label={t('formatting.h2') || 'Heading 2'} onClick={() => handleFormatText('h2', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" aria-label={t('formatting.h3') || 'Heading 3'} onClick={() => handleFormatText('h3', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-indigo-200 mx-1" /><button type="button" aria-label={t('formatting.list') || 'Bulleted list'} onClick={() => handleFormatText('list', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" aria-label={t('formatting.numlist') || 'Numbered list'} onClick={() => handleFormatText('numlist', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button>{(() => { const TableChartTools = window.AlloModules && window.AlloModules.ViewRenderers && window.AlloModules.ViewRenderers.TableChartTools; return TableChartTools ? <TableChartTools t={t} textareaRef={analysisEditorRef} getText={() => generatedContent?.data.originalText} onChange={handleAnalysisTextChange} tone="indigo" /> : null; })()}</div><textarea aria-label={t('common.edit_source_text') || 'Edit source text'} data-allo-textundo="analysis" ref={analysisEditorRef} value={generatedContent?.data.originalText} onChange={e => handleAnalysisTextChange(e.target.value)} className="w-full min-h-[300px] bg-white p-4 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-sm text-slate-700 font-serif leading-relaxed resize-y" style={passageFontStyle} placeholder={t('common.edit_source_text')} spellCheck="false" /></div> : <div className="text-sm text-slate-700 font-serif leading-relaxed max-w-none" style={passageFontStyle}>{passageLanguageBar}{shownPassage ? <div data-passage-shown={shownPassageLanguage} lang={shownPassageLanguage && shownPassageLanguage !== 'English' && typeof window !== 'undefined' && typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode(shownPassageLanguage) : undefined}>{renderFormattedText(shownPassage, false)}</div> : (() => {
-            const _fullOrig = generatedContent?.data?.originalText || '';
+                : handleDownloadAudio(analysisData.originalText, 'original-source-text', 'dl-analysis-source'))} disabled={downloadingContentId === 'dl-analysis-source' || !analysisData.originalText} className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed">{downloadingContentId === 'dl-analysis-source' ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Download size={14} />}{downloadingContentId === 'dl-analysis-source' ? t('common.downloading') : t('common.download_audio')}</button><button type="button" aria-pressed={!!isEditingAnalysis} onClick={handleToggleIsEditingAnalysis} className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isEditingAnalysis ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100'}`}>{isEditingAnalysis ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingAnalysis ? t('common.done') : t('common.edit')}</button></>}</div></div>{isTeacherMode && analysisAiOff && typeof window.AlloAiSetupNotice === 'function' && <div data-analysis-ai-setup className="mb-2"><window.AlloAiSetupNotice t={t} /></div>}{isTeacherMode && <div className="mb-4 flex gap-2 animate-in fade-in motion-reduce:animate-none slide-in-from-top-1"><div className="relative flex-grow"><div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-indigo-600"><Sparkles size={14} /></div><input aria-label={t('common.enter_source_refine_instruction')} type="text" value={sourceRefineInstruction} onChange={e => setSourceRefineInstruction(e.target.value)} onKeyDown={e => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && !analysisAiOff) handleAiRefineSource(); }} placeholder={t('analysis.refine_placeholder')} className="w-full pl-9 pr-3 py-2 text-xs border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 transition-all shadow-sm bg-white" disabled={isProcessing} aria-busy={isProcessing} /></div><button type="button" aria-label={t('common.ai_refine_source')} onClick={handleAiRefineSource} disabled={!sourceRefineInstruction.trim() || isProcessing || analysisAiOff} title={analysisAiTitle} aria-busy={isProcessing} className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> : <Send size={14} />}</button></div>}{isTeacherMode && isEditingAnalysis ? <div className="w-full bg-white border border-indigo-200 rounded-lg overflow-hidden shadow-sm"><div className="flex flex-wrap items-center gap-1 p-2 bg-indigo-50 border-b border-indigo-100"><button type="button" aria-label={t('formatting.bold') || 'Bold'} onClick={() => handleFormatText('bold', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors" title={t('formatting.bold')}><Bold size={16} strokeWidth={3} /></button><button type="button" aria-label={t('formatting.italic') || 'Italic'} onClick={() => handleFormatText('italic', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors" title={t('formatting.italic')}><Italic size={16} /></button><button type="button" aria-label={t('formatting.highlight') || 'Highlight'} onClick={() => handleFormatText('highlight', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors" title={t('formatting.highlight')}><Highlighter size={16} /></button><div className="w-px h-4 bg-indigo-200 mx-1" /><button type="button" aria-label={t('formatting.h1') || 'Heading 1'} onClick={() => handleFormatText('h1', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs" title={t('formatting.h1')}>H1</button><button type="button" aria-label={t('formatting.h2') || 'Heading 2'} onClick={() => handleFormatText('h2', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs" title={t('formatting.h2')}>H2</button><button type="button" aria-label={t('formatting.h3') || 'Heading 3'} onClick={() => handleFormatText('h3', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs" title={t('formatting.h3') || 'Heading 3'}>H3</button><div className="w-px h-4 bg-indigo-200 mx-1" /><button type="button" aria-label={t('formatting.list') || 'Bulleted list'} onClick={() => handleFormatText('list', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors" title={t('formatting.list')}><List size={16} /></button><button type="button" aria-label={t('formatting.numlist') || 'Numbered list'} onClick={() => handleFormatText('numlist', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange)} className="p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors" title={t('formatting.numlist') || 'Numbered List'}><ListOrdered size={16} /></button>{(() => { const TableChartTools = window.AlloModules && window.AlloModules.ViewRenderers && window.AlloModules.ViewRenderers.TableChartTools; return TableChartTools ? <TableChartTools t={t} textareaRef={analysisEditorRef} getText={() => analysisData.originalText} onChange={handleAnalysisTextChange} tone="indigo" /> : null; })()}</div><textarea aria-label={t('common.edit_source_text') || 'Edit source text'} data-allo-textundo="analysis" ref={analysisEditorRef} value={analysisData.originalText} onChange={e => handleAnalysisTextChange(e.target.value)} className="w-full min-h-[300px] bg-white p-4 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-sm text-slate-700 font-serif leading-relaxed resize-y" style={passageFontStyle} placeholder={t('common.edit_source_text')} spellCheck={true} /></div> : <div className="text-sm text-slate-700 font-serif leading-relaxed max-w-none" style={passageFontStyle}>{passageLanguageBar}{shownPassage ? <div data-passage-shown={shownPassageLanguage} lang={shownPassageLanguage && shownPassageLanguage !== 'English' && typeof window !== 'undefined' && typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode(shownPassageLanguage) : undefined}>{renderFormattedText(shownPassage, false)}</div> : (() => {
+            const _fullOrig = analysisData.originalText || '';
             const {
               body: _bodyNoRefs,
               references: _refs
             } = splitReferencesFromBody(_fullOrig);
-            return <>{renderFormattedText(_bodyNoRefs, false)}{generatedContent?.data.rawEnglishText && generatedContent?.data.translatedText && normalizedText(generatedContent.data.rawEnglishText) !== normalizedText(_fullOrig) && <div lang="en" className="mt-8 pt-8 border-t border-slate-200 opacity-80"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2"><FileText size={14} aria-hidden="true" /> {t('output.original_source_label')}</h4>{renderFormattedText(generatedContent?.data.rawEnglishText, false)}</div>}{_refs && <SourceReferencesPanel referencesText={_refs} />}</>;
+            return <>{renderFormattedText(_bodyNoRefs, false)}{analysisData.rawEnglishText && analysisData.translatedText && normalizedText(analysisData.rawEnglishText) !== normalizedText(_fullOrig) && <div lang="en" className="mt-8 pt-8 border-t border-slate-200 opacity-80"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2"><FileText size={14} aria-hidden="true" /> {t('output.original_source_label')}</h4>{renderFormattedText(analysisData.rawEnglishText, false)}</div>}{_refs && <SourceReferencesPanel referencesText={_refs} />}</>;
           })()}</div>}</div></div>;
   }

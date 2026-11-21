@@ -314,7 +314,50 @@ return assets;
     astronomy: ['star', 'planet', 'telescope'],
     chemistry: ['beaker', 'atom', 'molecule', 'science'],
     mechanics: ['gear', 'lever', 'wheel'],
-    landforms: ['mountain', 'river', 'valley']
+    landforms: ['mountain', 'river', 'valley'],
+
+    // Everyday K-5 classroom & story cues (filling high-frequency gaps without touching pinned symbol review fixtures)
+    happy: ['smile', 'star'],
+    laughing: ['smile'],
+    mom: ['woman', 'family'],
+    dad: ['family'],
+    gran: ['grandmother', 'woman', 'family'],
+    box: ['present', 'square'],
+    boxes: ['present', 'square'],
+    hat: ['cap', 'crown'],
+    chicken: ['bird', 'egg', 'farm'],
+    chickens: ['bird', 'egg', 'farm'],
+    climb: ['ladder', 'mountain'],
+    kick: ['soccer', 'foot', 'ball'],
+    brush: ['comb', 'broom'],
+    clean: ['soap', 'broom'],
+    feed: ['eat', 'food', 'bowl'],
+    fold: ['paper', 'shirt'],
+    blood: ['heart'],
+    office: ['desk', 'computer'],
+    ride: ['horse', 'bicycle', 'car'],
+    track: ['train', 'road'],
+    pet: ['dog', 'cat'],
+    bow: ['ribbon'],
+    chimp: ['monkey'],
+    moonlight: ['moon', 'night'],
+    athletic: ['run', 'jump', 'soccer'],
+    giant: ['tall', 'monster'],
+    switch: ['button'],
+    realm: ['castle', 'crown'],
+    cross: ['plus'],
+    rich: ['crown', 'coin', 'money'],
+    crack: ['egg', 'rock'],
+    pop: ['balloon', 'corn'],
+    clap: ['music', 'smile'],
+    fight: ['fist', 'hit'],
+    struggle: ['mountain', 'ladder'],
+    gentle: ['butterfly', 'feather', 'heart'],
+    luck: ['clover', 'star'],
+    burst: ['star', 'balloon'],
+    wipe: ['soap', 'towel', 'sponge'],
+    shut: ['door', 'lock'],
+    tap: ['water', 'drum']
   };
 
   var STOP_TOKENS = {
@@ -334,6 +377,33 @@ return assets;
     were: 1, what: 1, when: 1, where: 1, which: 1, who: 1, will: 1,
     with: 1, without: 1, would: 1, you: 1, your: 1, act: 1, action: 1,
     group: 1, able: 1, about: 1, above: 1, across: 1, after: 1, again: 1
+  };
+
+  // Extra vague/generic words ignored ONLY during free-text definition fallback
+  // so abstract words do not inherit misleading concrete icons (e.g. "discrimination" -> "come", "grasp" -> "first").
+  var DEF_STOP_TOKENS = {
+    good: 1, bad: 1, hard: 1, soft: 1, first: 1, last: 1, next: 1, second: 1, third: 1,
+    right: 1, left: 1, high: 1, low: 1, long: 1, short: 1, fast: 1, slow: 1, full: 1, empty: 1,
+    open: 1, close: 1, near: 1, far: 1, early: 1, late: 1, free: 1, real: 1, true: 1, false: 1,
+    sure: 1, clear: 1, strong: 1, weak: 1, easy: 1, heavy: 1, light: 1, dark: 1, deep: 1, wide: 1,
+    flat: 1, sharp: 1, clean: 1, dirty: 1, front: 1, back: 1, top: 1, bottom: 1, side: 1, end: 1,
+    start: 1, begin: 1, come: 1, coming: 1, came: 1, get: 1, getting: 1, got: 1, take: 1, taking: 1,
+    took: 1, give: 1, giving: 1, gave: 1, go: 1, going: 1, went: 1, work: 1, works: 1, working: 1,
+    watch: 1, watching: 1, look: 1, looking: 1, carry: 1, carried: 1, carrying: 1, put: 1, putting: 1,
+    keep: 1, keeping: 1, find: 1, finding: 1, hold: 1, holding: 1, turn: 1, turning: 1, move: 1,
+    moving: 1, set: 1, setting: 1, try: 1, trying: 1, want: 1, need: 1, feel: 1, feeling: 1,
+    seem: 1, become: 1, show: 1, showing: 1, bring: 1, bringing: 1, cause: 1, causing: 1, allow: 1,
+    let: 1, help: 1, helping: 1, say: 1, saying: 1, tell: 1, telling: 1, ask: 1, asking: 1,
+    know: 1, knowing: 1, think: 1, thinking: 1, world: 1, life: 1, time: 1, year: 1, day: 1,
+    man: 1, woman: 1, people: 1, number: 1, amount: 1, level: 1, point: 1, area: 1, case: 1,
+    fact: 1, idea: 1, name: 1, order: 1, power: 1, result: 1, sense: 1, system: 1, value: 1,
+    word: 1, words: 1, change: 1, changing: 1, different: 1, similar: 1, important: 1, common: 1,
+    general: 1, special: 1, normal: 1, certain: 1, possible: 1, likely: 1, ready: 1, human: 1,
+    living: 1, natural: 1, physical: 1, social: 1, public: 1, private: 1, local: 1, national: 1,
+    modern: 1, recent: 1, current: 1, main: 1, major: 1, basic: 1, simple: 1, single: 1,
+    double: 1, whole: 1, total: 1, extra: 1, final: 1,
+    makes: 1, past: 1, future: 1, before: 1, below: 1, against: 1, higher: 1,
+    longer: 1, moved: 1, down: 1, spelling: 1, great: 1, stand: 1, fairy: 1
   };
 
   function resolveSymbols(explicit) {
@@ -577,14 +647,14 @@ return assets;
     var tokens = String(definition).toLowerCase().split(/[^a-z]+/);
     for (var t = 0; t < tokens.length; t++) {
       var tok = tokens[t];
-      if (!tok || tok === clean || STOP_TOKENS[tok]) continue;
+      if (!tok || tok === clean || STOP_TOKENS[tok] || DEF_STOP_TOKENS[tok]) continue;
       if ((tok.length >= 4 || SAFE_SHORT_DEF_NOUNS[tok]) && hasSymbol(bank, tok)) {
         return buildMatch(bank, rawWord, tok, 'definition', options);
       }
     }
     for (var t2 = 0; t2 < tokens.length; t2++) {
       var tok2 = tokens[t2];
-      if (!tok2 || tok2.length < 4 || tok2 === clean || STOP_TOKENS[tok2]) continue;
+      if (!tok2 || tok2.length < 4 || tok2 === clean || STOP_TOKENS[tok2] || DEF_STOP_TOKENS[tok2]) continue;
       if (CONCEPT_CUES[tok2]) {
         var defCue = firstCueHit(CONCEPT_CUES[tok2]);
         if (defCue) return defCue;
@@ -592,7 +662,7 @@ return assets;
       var tokStems = generateLemmaCandidates(tok2);
       for (var ts = 0; ts < tokStems.length; ts++) {
         var st = tokStems[ts];
-        if ((st.length >= 4 || SAFE_SHORT_DEF_NOUNS[st]) && !STOP_TOKENS[st] && hasSymbol(bank, st)) {
+        if ((st.length >= 4 || SAFE_SHORT_DEF_NOUNS[st]) && !STOP_TOKENS[st] && !DEF_STOP_TOKENS[st] && hasSymbol(bank, st)) {
           return buildMatch(bank, rawWord, st, 'definition', options);
         }
       }
@@ -618,6 +688,17 @@ return assets;
       }
       if (phrase && phrase !== clean && hasSymbol(bank, phrase)) {
         return buildMatch(bank, rawWord, phrase, 'exact', options);
+      }
+
+      // Exact curriculum diagram (when preferDiagrams) or curated concept cue takes priority
+      // over aggressive morphological prefix/suffix stripping (e.g., "predator" -> lion/owl/wolf, not "date").
+      if (preferDiagrams && clean && Object.prototype.hasOwnProperty.call(CURRICULUM_DIAGRAMS, clean)) {
+        var exactDiag = getDiagram(clean, lemma, rawWord);
+        if (exactDiag) return exactDiag;
+      }
+      if (clean && Object.prototype.hasOwnProperty.call(CONCEPT_CUES, clean)) {
+        var exactCue = matchConceptCue(bank, rawWord, clean, '', options);
+        if (exactCue) return exactCue;
       }
 
       // Tier 2: Explicit lemma + morphological inflections
@@ -733,35 +814,37 @@ return assets;
 
     // Optional Global Symbols online fallback (main app only)
     if (opts.allowOnlineGlobalSymbols && q && typeof fetch === 'function' && hits.length < limit) {
+      var timer = null;
       try {
         var url = 'https://globalsymbols.com/api/v1/labels/search?query=' +
           encodeURIComponent(q) +
           '&symbolset=mulberry&language=eng&language_iso_format=639-3&limit=20';
         var controller = typeof AbortController === 'function' ? new AbortController() : null;
-        var timer = controller ? setTimeout(function () { controller.abort(); }, 4500) : null;
+        timer = controller ? setTimeout(function () { controller.abort(); }, 4500) : null;
         var res = await fetch(url, controller ? { signal: controller.signal } : undefined);
-        if (timer) clearTimeout(timer);
         if (res && res.ok) {
           var payload = await res.json();
           var list = Array.isArray(payload) ? payload : (Array.isArray(payload && payload.data) ? payload.data : []);
           for (var g = 0; g < list.length && hits.length < limit; g++) {
             var item = list[g] || {};
             var pic = item.pic || item.symbol || {};
-            var imgUrl = pic.image_url || item.image_url || '';
+            var imgUrl = String(pic.image_url || item.image_url || '').trim();
             var text = item.text || pic.name || q;
-            if (!imgUrl || seen['gs:' + imgUrl]) continue;
+            if (!imgUrl || imgUrl.length > 2048 || !/^https:\/\/[^\s"'<>\\]+$/i.test(imgUrl) || seen['gs:' + imgUrl]) continue;
             seen['gs:' + imgUrl] = true;
             hits.push({
               word: String(text),
               label: String(text),
-              src: String(imgUrl),
+              src: imgUrl,
               set: 'globalsymbols',
               credit: 'Global Symbols (Mulberry)',
               matchTier: 'online'
             });
           }
         }
-      } catch (_) {}
+      } catch (_) {} finally {
+        if (timer) clearTimeout(timer);
+      }
     }
 
     return hits;
@@ -3949,7 +4032,7 @@ return assets;
         dark: ['1A1A2E', 'E2E8F0', '93C5FD', 'BCC8D8', '7979AB'],
         highContrast: ['000000', 'FFFF00', '00FFFF', 'FFFF00', 'FFFF00']
       };
-      const colors = options.cardTheme === 'paper' && reader && readingPalettes[reader.readingTheme];
+      const colors = options.cardTheme === 'paper' && reader && own(readingPalettes, reader.readingTheme);
       const palette = colors ? { background: colors[0], heading: colors[1], text: colors[1], accent: colors[2], muted: colors[3], border: colors[4] } : palettes[options.cardTheme];
       const family = options.cardFont === 'default' && reader && typeof reader.fontFamily === 'string' && reader.fontFamily.trim();
       const variant = family && reader.fontClass;
@@ -4049,10 +4132,10 @@ return assets;
       const number = n => Math.max(-100000, Math.min(100000, Number(n) || 0));
       const point = p => ({ x: number(p && p.x), y: number(p && p.y) });
       return value.filter(a => a && !a.pending && (['note', 'highlight', 'voice', 'draw', 'sticker'].includes(a.kind) || ['star','check','idea','love','question','important','fire','target','thumbsup','party','rocket','flag'].includes(a.type))).map((a, index) => {
-        const out = { id: typeof a.id === 'number' ? a.id : text(a.id, 200) || 'annotation-' + index, kind: a.kind || 'sticker', type: text(a.type, 24), author: a.author === 'student' ? 'student' : 'teacher', authorName: text(a.authorName, 160), createdAt: text(a.createdAt, 80), ...point(a) };
+        const out = { id: (typeof a.id === 'number' && Number.isFinite(a.id)) ? a.id : text(a.id, 200) || 'annotation-' + index, kind: a.kind || 'sticker', type: text(a.type, 24), author: a.author === 'student' ? 'student' : 'teacher', authorName: text(a.authorName, 160), createdAt: text(a.createdAt, 80), ...point(a) };
         if (a.recallClue === true) out.recallClue = true;
         ['w', 'h', 'width', 'durationSec'].forEach(k => { if (a[k] != null) out[k] = Math.max(0, number(a[k])); });
-        out.color = /^(#[a-f0-9]{3,8}|red|blue|green|yellow|black|pink|purple)$/i.test(a.color || '') ? a.color : 'yellow';
+        out.color = (typeof a.color === 'string' && /^(#[a-f0-9]{3,8}|red|blue|green|yellow|black|pink|purple)$/i.test(a.color)) ? a.color : 'yellow';
         out.content = text(a.content, 12000); out.text = text(a.text, 12000);
         if (a.kind === 'draw') {
           out.shape = ['free', 'line', 'arrow', 'rect', 'circle'].includes(a.shape) ? a.shape : 'free';
@@ -5371,6 +5454,7 @@ return assets;
   function safeHtmlImg(source) {
     const raw = source && typeof source === 'object' ? (source.src || source.dataUri || '') : source;
     const s = String(raw || '').trim();
+    if (/^https:\/\/[^\s"'<>\\]+$/i.test(s) && s.length <= 2048) return s;
     if (!/^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)[;,]/i.test(s)) return '';
     if (/svg\+xml/i.test(s)) {
       let decoded = s;
@@ -5383,7 +5467,7 @@ return assets;
           try { decoded = decodeURIComponent(body); } catch (_) { decoded = body; }
         }
       }
-      if (/<script|<foreignObject|\bon[a-z]+\s*=|javascript:/i.test(decoded)) return '';
+      if (/<(script|foreignObject|iframe|object|embed)\b|<!(DOCTYPE|ENTITY)|<\?xml-stylesheet|\bon[a-z]+\s*=|javascript:|(?:xlink:)?href\s*=\s*["']\s*(?:https?:|\/\/|data:|javascript:)/i.test(decoded)) return '';
     }
     return s;
   }
@@ -5417,8 +5501,12 @@ return assets;
   function blankedSentence(example, word) {
     const ex = String(example || '').trim(), w = String(word || '').trim();
     if (!ex || !w) return ex;
+    const core = getCore();
+    if (core && typeof core.maskWord === 'function') {
+      return core.maskWord(ex, w).replace(/____/g, '_______');
+    }
     const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return ex.replace(new RegExp('\\b' + escaped + '\\b', 'gi'), '_______');
+    return ex.replace(new RegExp('(?<![\\p{L}\\p{N}_])' + escaped + '(?![\\p{L}\\p{N}_])', 'giu'), '_______');
   }
   function printableCardsData(input, rawOptions = {}, fallbackTitle = 'Word Cards') {
     const core = getCore(), pack = core.normalizeInput(input);
@@ -6028,7 +6116,83 @@ return assets;
       '</html>',
     ].join('\n');
   }
-  root.AlloWordPracticeMedia = { prepareAudio, buildPptx, buildPictureSlidesPptx, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, everyDeviceAudio, needsEveryDeviceAudio };
+  let _wpSylPromise = null;
+  function ensureSyllableTableLoaded(docArg) {
+    if (root.AlloModules && root.AlloModules.SyllableTableEn && typeof root.AlloModules.SyllableTableEn.lookup === 'function') {
+      return Promise.resolve(root.AlloModules.SyllableTableEn);
+    }
+    if (_wpSylPromise) return _wpSylPromise;
+    const d = docArg || (typeof document !== 'undefined' ? document : null);
+    _wpSylPromise = new Promise(resolve => {
+      if (!d || !d.createElement) { resolve(null); return; }
+      if (d.querySelector && d.querySelector('script[data-allo-syllable-table="1"]')) {
+        resolve((root.AlloModules && root.AlloModules.SyllableTableEn) || null);
+        return;
+      }
+      const sc = d.createElement('script');
+      sc.src = 'syllable_table_en.js';
+      sc.async = true;
+      sc.setAttribute('data-allo-syllable-table', '1');
+      sc.onload = () => resolve((root.AlloModules && root.AlloModules.SyllableTableEn) || null);
+      sc.onerror = () => { _wpSylPromise = null; resolve(null); };
+      (d.head || d.documentElement).appendChild(sc);
+    });
+    return _wpSylPromise;
+  }
+  function _splitSheetSyllables(word) {
+    if (typeof word !== 'string' || word.length < 4 || !/^[A-Za-z]+$/.test(word)) return null;
+    const tbl = root.AlloModules && root.AlloModules.SyllableTableEn;
+    if (!tbl || typeof tbl.lookup !== 'function') return null;
+    const found = tbl.lookup(word.toLowerCase());
+    if (!found || found.check || !Array.isArray(found.parts) || found.parts.length < 2) return null;
+    if (found.parts.join('').length !== word.length) return null;
+    const out = []; let pos = 0;
+    for (let i = 0; i < found.parts.length; i++) {
+      out.push(word.slice(pos, pos + found.parts[i].length));
+      pos += found.parts[i].length;
+    }
+    return out;
+  }
+  function applySheetReadingSupports(html, opts) {
+    const o = opts || {};
+    const useSyl = !!o.syllables, useBold = !!o.bold;
+    if ((!useSyl && !useBold) || typeof html !== 'string' || !html) return html;
+    const dotHtml = '<span aria-hidden="true" style="user-select:none;opacity:.6">\u00b7</span>';
+    let skipDepth = 0, inBody = !/<body[\s>]/i.test(html);
+    const SKIP_OPEN = /^<(?:script|style|code|pre|svg|math|title|option|textarea)\b/i;
+    const SKIP_CLOSE = /^<\/(?:script|style|code|pre|svg|math|title|option|textarea)\b/i;
+    return html.replace(/(<[^>]+>)|([^<]+)/g, (all, tag, text) => {
+      if (tag) {
+        if (/^<body[\s>]/i.test(tag)) inBody = true;
+        else if (/^<\/body>/i.test(tag)) inBody = false;
+        if (SKIP_OPEN.test(tag) && !/\/>$/.test(tag)) skipDepth++;
+        else if (SKIP_CLOSE.test(tag) && skipDepth > 0) skipDepth--;
+        return tag;
+      }
+      if (!inBody || skipDepth > 0 || !text || !/[A-Za-z\u00C0-\u024F]{2,}/.test(text)) return text;
+      return text.replace(/(&[a-z#0-9]+;)|([A-Za-z\u00C0-\u024F]{2,})/gi, (tok, ent, w) => {
+        if (ent || !w) return tok;
+        const syls = useSyl ? _splitSheetSyllables(w) : null;
+        if (!useBold) return syls ? syls.join(dotHtml) : w;
+        const cut = w.length <= 3 ? Math.max(1, w.length - 1) : Math.ceil(w.length * 0.45);
+        if (!syls) return '<b style="font-weight:700">' + w.slice(0, cut) + '</b>' + w.slice(cut);
+        let buf = '', offset = 0;
+        for (let j = 0; j < syls.length; j++) {
+          if (j > 0) buf += dotHtml;
+          const seg = syls[j], end = offset + seg.length;
+          if (end <= cut) buf += '<b style="font-weight:700">' + seg + '</b>';
+          else if (offset >= cut) buf += seg;
+          else {
+            const partCut = cut - offset;
+            buf += '<b style="font-weight:700">' + seg.slice(0, partCut) + '</b>' + seg.slice(partCut);
+          }
+          offset = end;
+        }
+        return buf;
+      });
+    });
+  }
+  root.AlloWordPracticeMedia = { prepareAudio, buildPptx, buildPictureSlidesPptx, buildFlashcardsHtml, buildFrayerHtml, buildSortingCardsHtml, buildWorksheetHtml, buildBingoHtml, buildLoopGameHtml, buildWordWallHtml, everyDeviceAudio, needsEveryDeviceAudio, ensureSyllableTableLoaded, applySheetReadingSupports };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 
@@ -7136,6 +7300,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
             resolve(core && core.safePicture ? core.safePicture(out) : out);
           };
           img.onerror = () => { win.clearTimeout(timer); reject(new Error('decode')); };
+          if (/^https:/i.test(raw)) img.crossOrigin = 'anonymous';
           img.src = raw;
         });
         if (rendered) return rendered;
@@ -7179,7 +7344,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     const review = new Set(pack.reviewItemIds);
     const annotationStore = new Map(pack.items.map(item => [item.id, item.annotations || []]));
     const editGuard = trackWordSetEdits(review, annotationStore, core);
-    let preparedAudioRevision = 0, preparedAudioPending = false;
+    let preparedAudioRevision = 0, preparedAudioPending = false, cardContentRevision = 0;
     const audioSnapshot = value => JSON.stringify(value.items.map(item => [item.id, item.wordAudio, item.wordAudioProvenance, item.wordAudioOriginal, item.phonemes.map(sound => [sound.label, sound.audio, sound.provenance, sound.audioOriginal])]));
     const glossaryEntryIds = new Set(typeof context.onSaveCardAnnotations === 'function' ? pack.items.map(item => item.id) : []);
     function remember(current) { current.items.forEach(item => catalogue.set(item.id, item)); }
@@ -7219,11 +7384,19 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     if (!inlineHost) { dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true'); }
     dialog.setAttribute('aria-label', tx('word_practice.title', 'Present & Export')); overlay.appendChild(dialog);
     setLanguage(dialog, uiLanguage);
-    const hiddenSiblings = inlineHost ? [] : Array.from(doc.body.children).filter(node => node !== overlay && !['SCRIPT', 'STYLE'].includes(node.tagName)).map(node => ({ node, inert: node.inert }));
+    const hiddenSiblings = inlineHost ? [] : Array.from(doc.body.children).filter(node => node !== overlay && !['SCRIPT', 'STYLE'].includes(node.tagName) && !(node.matches && node.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) && !(node.querySelector && node.querySelector('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))).map(node => ({ node, inert: node.inert }));
     hiddenSiblings.forEach(({ node }) => { node.inert = true; });
-    const priorOverflow = inlineHost ? '' : doc.body.style.overflow;
+    const scrollLockState = !inlineHost ? (root.__alloScrollLockState = root.__alloScrollLockState || { count: 0, previousOverflow: '' }) : null;
+    const focusTrapStack = !inlineHost ? (root.__alloFocusTrapStack = root.__alloFocusTrapStack || []) : null;
+    const focusTrapEntry = !inlineHost ? { root: dialog } : null;
     if (inlineHost) inlineHost.replaceChildren(overlay);
-    else { doc.body.style.overflow = 'hidden'; doc.body.appendChild(overlay); }
+    else {
+      if (scrollLockState.count === 0) scrollLockState.previousOverflow = doc.body.style.overflow;
+      scrollLockState.count += 1;
+      doc.body.style.overflow = 'hidden';
+      focusTrapStack.push(focusTrapEntry);
+      doc.body.appendChild(overlay);
+    }
     const make = (tag, text, parent, cls) => { const node = doc.createElement(tag); if (text != null) { node.textContent = text; if (dialogTextLanguages.has(text)) setLanguage(node, dialogTextLanguages.get(text)); } if (cls) node.className = cls; (parent || dialog).appendChild(node); return node; };
     const header = make('div', null, dialog, 'awp-head'); make(inlineHost ? 'h2' : 'h1', tx('word_practice.title', 'Present & Export'), header);
     const headerActions = make('div', null, header, 'awp-row');
@@ -7655,6 +7828,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       const updateItem = entry => entry ? { ...entry, definition: core.text(definition, 1000), example: core.text(example, 1000), textEdited: true } : entry;
       if (catalogue.has(entryId)) catalogue.set(entryId, updateItem(catalogue.get(entryId)));
       pack = core.normalizeInput({ ...pack, words: pack.items.map(item => item.id === entryId ? updateItem(item) : item), options: options() });
+      cardContentRevision += 1;
       remember(pack); lastPictureKey = ''; previewContentKey = ''; updateCoverage();
     }
     function applyWordPicture(entryId, src, alt, attribution) {
@@ -7668,19 +7842,24 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       };
       if (catalogue.has(entryId)) catalogue.set(entryId, updateItem(catalogue.get(entryId)));
       pack = core.normalizeInput({ ...pack, words: pack.items.map(item => item.id === entryId ? updateItem(item) : item), options: options() });
+      cardContentRevision += 1;
       remember(pack); includePictures.checked = true; lastPictureKey = ''; previewContentKey = ''; updateCoverage();
     }
     function clearWordPicture(entryId) {
       const stripItem = entry => entry ? { ...entry, image: '', imageAlt: '', imageDecorative: false, imageAltHash: '', imageAttribution: null, picture: null } : entry;
       if (catalogue.has(entryId)) catalogue.set(entryId, stripItem(catalogue.get(entryId)));
       pack = core.normalizeInput({ ...pack, words: pack.items.map(item => item.id === entryId ? stripItem(item) : item), options: options() });
+      cardContentRevision += 1;
       remember(pack); lastPictureKey = ''; previewContentKey = ''; updateCoverage();
     }
     async function populateSymbolGrid(gridNode, row, query) {
+      const reqId = (Number(gridNode._awpSymReq) || 0) + 1;
+      gridNode._awpSymReq = reqId;
       gridNode.replaceChildren();
       const empty = make('p', tx('word_practice.searching_symbols', 'Loading symbols…'), gridNode, 'awp-note');
       try {
         const list = await findSymbols(query);
+        if (closed || !gridNode.isConnected || gridNode._awpSymReq !== reqId) return;
         gridNode.replaceChildren();
         if (!list.length) { make('p', tx('word_practice.no_symbols_found', 'No built-in symbols matched that search. Try Import image… to use your own picture.'), gridNode, 'awp-note'); return; }
         list.slice(0, 24).forEach(sym => {
@@ -7700,6 +7879,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
           }, btn);
         });
       } catch (err) {
+        if (closed || !gridNode.isConnected || gridNode._awpSymReq !== reqId) return;
         gridNode.replaceChildren(); empty.textContent = (err && err.message) || 'Could not load symbols.'; gridNode.appendChild(empty);
       }
     }
@@ -7964,7 +8144,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       const media = root.AlloWordPracticeMedia;
       if (opts.includeAudio !== false && media && typeof media.everyDeviceAudio === 'function' && typeof media.needsEveryDeviceAudio === 'function' && media.needsEveryDeviceAudio(current)) {
         status.textContent = tx('word_practice.preparing_audio_every_device', 'Getting the sounds ready to play on every device…');
-        const audio = await media.everyDeviceAudio(current);
+        const audio = await media.everyDeviceAudio(current, { signal: run.controller.signal });
         if (!isCurrentOperation(run)) return;
         fileInput = audio.pack;
         const left = audio.failed + audio.kept;
@@ -8091,7 +8271,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       // A file starts a new set, even when its language/word spelling matches.
       // Neither removed words nor their recordings belong to the imported set.
       review.clear(); imported.reviewItemIds?.forEach(id => review.add(id));
-      preparedAudioRevision = 0; preparedAudioPending = false;
+      preparedAudioRevision = 0; preparedAudioPending = false; cardContentRevision = 0;
       pack = imported; catalogue.clear(); annotationStore.clear(); glossaryEntryIds.clear(); pack.items.forEach(item => annotationStore.set(item.id, item.annotations || [])); remember(pack); previewId = ''; previewIndex = 0; previewMode = ''; previewRevealed = false; previewPickerKey = ''; fill(); editGuard.saved(); status.textContent = tx('word_practice.set_opened', 'Word set opened.');
     }));
     setup.addEventListener('change', event => { if (event.target === batchImageInput || event.target === rowImageInput || (event.target && event.target.classList && (event.target.classList.contains('awp-picture-alt') || event.target.classList.contains('awp-symbol-search')))) return; updateCoverage(); });
@@ -8102,8 +8282,10 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     wordsInput.addEventListener('input', scheduleCoverage); repetitions.addEventListener('input', scheduleCoverage);
     function trap(event) {
       if (inlineHost) return;
-      if (event.key === 'Escape' && !doc.fullscreenElement && !(event.isComposing || event.keyCode === 229)) { event.preventDefault(); requestClose(); return; }
+      if (focusTrapStack && focusTrapStack.length && focusTrapStack[focusTrapStack.length - 1] !== focusTrapEntry) return;
+      if (event.key === 'Escape' && !doc.fullscreenElement && !(event.isComposing || event.keyCode === 229)) { event.preventDefault(); event.stopPropagation(); requestClose(); return; }
       if (event.key !== 'Tab') return;
+      event.stopPropagation();
       const scope = doc.fullscreenElement && doc.fullscreenElement.contains(playerHost) ? doc.fullscreenElement : dialog;
       const candidates = Array.from(scope.querySelectorAll('button,input,textarea,select,summary,a[href],[tabindex="0"]')).filter(node => !node.disabled && !node.closest('[hidden]') && (!node.closest('details:not([open])') || node.tagName === 'SUMMARY') && node.getClientRects().length);
       if (!candidates.length) { event.preventDefault(); return; }
@@ -8130,11 +8312,18 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       if (context.signal) context.signal.removeEventListener('abort', close);
       closeReading(); overlay.remove();
       hiddenSiblings.forEach(({ node, inert }) => { if (node.isConnected) node.inert = inert; });
-      if (!inlineHost) doc.body.style.overflow = priorOverflow;
+      if (focusTrapStack && focusTrapEntry) {
+        const idx = focusTrapStack.lastIndexOf(focusTrapEntry);
+        if (idx >= 0) focusTrapStack.splice(idx, 1);
+      }
+      if (scrollLockState) {
+        scrollLockState.count = Math.max(0, scrollLockState.count - 1);
+        if (scrollLockState.count === 0) doc.body.style.overflow = scrollLockState.previousOverflow;
+      }
       if (previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus(); if (!inlineHost && active === controller) active = null;
     }
     overlay.addEventListener('keydown', trap); fill();
-    editGuard.watchContent(() => JSON.stringify([titleInput.value.trim(), core.parseWords(wordsInput.value, { lineSeparated: true }), preparedAudioRevision]));
+    editGuard.watchContent(() => JSON.stringify([titleInput.value.trim(), core.parseWords(wordsInput.value, { lineSeparated: true }), preparedAudioRevision, cardContentRevision]));
     if (!inlineHost) titleInput.focus();
     const controller = {
       close,

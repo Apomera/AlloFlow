@@ -158,8 +158,26 @@ if (typeof window !== 'undefined') (function () {
       s.referrerPolicy = 'no-referrer';
       s.src = src;
       s.async = true;
-      s.onload = function () { resolve(); };
-      s.onerror = function () { reject(new Error('failed to load ' + src)); };
+      var settled = false;
+      var timer = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        try { s.remove(); } catch (_) {}
+        reject(new Error('timed out loading ' + src));
+      }, 15000);
+      s.onload = function () {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve();
+      };
+      s.onerror = function () {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        try { s.remove(); } catch (_) {}
+        reject(new Error('failed to load ' + src));
+      };
       document.head.appendChild(s);
     });
   }

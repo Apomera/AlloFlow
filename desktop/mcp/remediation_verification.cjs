@@ -209,9 +209,10 @@ function explainDelivery(summary){
   const s=summary||{},items=[];
   // "tagged_pdf_delivery_unverified (ocr-text-layer-incomplete: …)" names its real cause in parentheses;
   // explain that cause, not the generic wrapper (Hebrew UDHR: "run again" for a deterministic gap).
+  const hasOwn=(o,k)=>!!(o&&typeof k==='string'&&Object.prototype.hasOwnProperty.call(o,k));
   const add=(code,detail)=>{const inner=/^tagged_pdf_delivery_unverified \(([a-z-]+)(?::\s*([^)]*))?/.exec(String(code));
-    const k=(inner&&WITHHOLD_EXPLANATIONS[inner[1]]?inner[1]:null)||Object.keys(WITHHOLD_EXPLANATIONS).find(c=>code===c||String(code).startsWith(c+' '));
-    let e=WITHHOLD_EXPLANATIONS[k];
+    const k=(inner&&hasOwn(WITHHOLD_EXPLANATIONS,inner[1])?inner[1]:null)||Object.keys(WITHHOLD_EXPLANATIONS).find(c=>code===c||String(code).startsWith(c+' '));
+    let e=hasOwn(WITHHOLD_EXPLANATIONS,k)?WITHHOLD_EXPLANATIONS[k]:undefined;
     // Inside the wrapper, validator-failed is AlloFlow's own byte check, not veraPDF; it names the
     // failed rule (English UDHR: "All page fonts embedded" was explained as veraPDF + pdfUa.failedRules).
     if(inner&&inner[1]==='validator-failed'){if(!detail&&inner[2])detail=inner[2].trim();
@@ -294,8 +295,8 @@ function explainDelivery(summary){
   const undouble=q=>{const m=q&&/^(.+?)\s+\1$/.exec(q);return m?m[1]:q;};
   // One quoted example of several flagged places reads as the only one: say "and N more" (syllabus_sie "(3 places)").
   const QUOTE_ONE={text_block_heading:1,text_quoted_correctly:1};
-  const describe=f=>{const q=undouble((f.description.match(/'([^']{1,80})'/)||f.description.match(/"([^"]{1,80})"/)||[])[1]);const n=Number(f.nodes);const base=PLAIN[f.id]?PLAIN[f.id](q,n):f.description.trim().slice(0,240);
-    return base+(n>1?(q&&QUOTE_ONE[f.id]?' (and '+(n-1)+' more '+(n-1===1?'place':'places')+')':' ('+n+' places)'):'');};
+  const describe=f=>{const q=undouble((f.description.match(/'([^']{1,80})'/)||f.description.match(/"([^"]{1,80})"/)||[])[1]);const n=Number(f.nodes);const base=hasOwn(PLAIN,f.id)?PLAIN[f.id](q,n):f.description.trim().slice(0,240);
+    return base+(n>1?(q&&hasOwn(QUOTE_ONE,f.id)?' (and '+(n-1)+' more '+(n-1===1?'place':'places')+')':' ('+n+' places)'):'');};
   const withDesc=eaReview.filter(f=>f&&typeof f.description==='string'&&f.description.trim()).slice(0,8);
   const clip=(t,n)=>{t=String(t).trim();return t.length>n?t.slice(0,n).replace(/\s+\S*$/,'')+'…':t;};
   const quickChecks=withDesc.filter(f=>aiSaysFine(f.id)).map(f=>{const d=aiSaysFine(f.id);return describe(f)+(d.reason?' (AI review found no problem: '+clip(d.reason,600)+')':'');});
@@ -307,7 +308,7 @@ function explainDelivery(summary){
   if(cues.length)quickChecks.unshift('The document uses colour to carry meaning: "'+clip(cues[0].quote,200)+'"'+(cues.length>1?' (and '+(cues.length-1)+' more '+(cues.length-1===1?'place':'places')+')':'')
     +'. Check that each colour-coded item is also marked another way (a word, symbol or pattern), so a reader who cannot see colour gets the same information.');
   const named=withDesc.filter(f=>!aiSaysFine(f.id)).slice(0,5).map(f=>{const some=aiSawSome(f.id),seen=some&&Number(some.nodesShown),total=Number(f.nodes);
-    return (PLAIN[f.id]?'':'A checker asks a person to confirm: ')+describe(f)+(some?' AI review saw '+(seen>0&&total>seen?seen+' of these '+total:'only some of these')+' and found no problem in those, so the rest still need a person.':'');});
+    return (hasOwn(PLAIN,f.id)?'':'A checker asks a person to confirm: ')+describe(f)+(some?' AI review saw '+(seen>0&&total>seen?seen+' of these '+total:'only some of these')+' and found no problem in those, so the rest still need a person.':'');});
   // (2026-11-05) An axe "could not decide" item is a real open question, and may be the only one: ballot's report told a
   // teacher "only quick checks are left" while this alone kept the verdict at review, named nowhere.
   const axeOpen=dispositions.filter(d=>d&&typeof d.key==='string'&&d.key.indexOf('axe|incomplete|')===0&&d.stillFlagged!==false).map(d=>d.key.split('|').pop());
@@ -316,8 +317,8 @@ function explainDelivery(summary){
   // pointed at "the review findings", which were empty. Name the AI's findings, most severe first.
   const SEV={critical:0,serious:1,moderate:2,minor:3};
   const aiNamed=((s.verification&&s.verification.ai&&Array.isArray(s.verification.ai.issues))?s.verification.ai.issues:[])
-    .filter(i=>i&&typeof i.issue==='string'&&i.issue.trim()).slice().sort((a,b)=>(SEV[a.severity]??4)-(SEV[b.severity]??4)).slice(0,3)
-    .map(i=>'The AI review found'+(SEV[i.severity]!==undefined?' ('+i.severity+')':'')+': '+clip(i.issue,300)+(typeof i.location==='string'&&i.location.trim()?' Near: "'+clip(i.location,80)+'".':''));
+    .filter(i=>i&&typeof i.issue==='string'&&i.issue.trim()).slice().sort((a,b)=>(hasOwn(SEV,a.severity)?SEV[a.severity]:4)-(hasOwn(SEV,b.severity)?SEV[b.severity]:4)).slice(0,3)
+    .map(i=>'The AI review found'+(hasOwn(SEV,i.severity)?' ('+i.severity+')':'')+': '+clip(i.issue,300)+(typeof i.location==='string'&&i.location.trim()?' Near: "'+clip(i.location,80)+'".':''));
   let needs=list(reasons.review);
   const generic=needs.findIndex(x=>/^The automated accessibility checkers left items/.test(x));
   if(generic>=0&&(named.length||quickChecks.length||aiNamed.length))needs=needs.slice(0,generic).concat(named,aiNamed,needs.slice(generic+1));

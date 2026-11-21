@@ -70,6 +70,7 @@ function jsonResponse(body, status = 200, extraHeaders = {}) {
     headers: {
       'Content-Type': 'application/json',
       'Cache-Control': 'no-store, private',
+      'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
       'Referrer-Policy': 'no-referrer',
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
@@ -86,6 +87,7 @@ function adminJsonResponse(body, status = 200, extraHeaders = {}) {
     headers: {
       'Content-Type': 'application/json',
       'Cache-Control': 'no-store, private',
+      'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
       'Referrer-Policy': 'no-referrer',
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
@@ -690,7 +692,7 @@ function validatePdModuleServer(m) {
         if (!isObject(c.nodes)) return bad('branching_nodes_required', `${ap}.content.nodes`, `Branching activity ${act.id} needs a content.nodes object.`);
         const nodeIds = Object.keys(c.nodes);
         if (nodeIds.length === 0 || nodeIds.length > 100) return bad('invalid_branching_nodes', `${ap}.content.nodes`, `Branching activity ${act.id} needs 1-100 nodes.`);
-        if (!isNonBlank(c.start, 128) || !c.nodes[c.start]) return bad('invalid_branching_start', `${ap}.content.start`, `Branching activity ${act.id} needs start naming an existing node.`);
+        if (!isNonBlank(c.start, 128) || !Object.prototype.hasOwnProperty.call(c.nodes, c.start)) return bad('invalid_branching_start', `${ap}.content.start`, `Branching activity ${act.id} needs start naming an existing node.`);
         let endings = 0;
         for (const nodeId of nodeIds) {
           const np = `${ap}.content.nodes.${nodeId}`;
@@ -712,7 +714,7 @@ function validatePdModuleServer(m) {
               const choiceFields = pdUnknownFields(choice, PD_BRANCHING_CHOICE_KEYS, 'unknown_branching_choice_fields', cp);
               if (choiceFields) return choiceFields;
               if (!isNonBlank(choice.label, 2000)) return bad('invalid_branching_choice', cp, 'Every choice needs a label up to 2000 chars.');
-              if (!isNonBlank(choice.to, 128) || !c.nodes[choice.to]) return bad('invalid_branching_choice', cp, 'Every choice must point to an existing node.');
+              if (!isNonBlank(choice.to, 128) || !Object.prototype.hasOwnProperty.call(c.nodes, choice.to)) return bad('invalid_branching_choice', cp, 'Every choice must point to an existing node.');
               if (choice.feedback !== undefined && !isNonBlank(choice.feedback, 4000)) return bad('invalid_branching_choice', cp, 'Choice feedback must be non-empty up to 4000 chars when supplied.');
             }
           }
@@ -721,7 +723,7 @@ function validatePdModuleServer(m) {
         const seen = new Set(); const queue = [c.start]; let endingReachable = false;
         while (queue.length) {
           const cur = queue.pop();
-          if (seen.has(cur)) continue;
+          if (seen.has(cur) || !Object.prototype.hasOwnProperty.call(c.nodes, cur)) continue;
           seen.add(cur);
           const node = c.nodes[cur];
           if (node.ending === true) { endingReachable = true; continue; }
@@ -900,6 +902,9 @@ function handleBugInbox() {
       ...BUG_RESPONSE_HEADERS,
       'Content-Type': 'text/html; charset=utf-8',
       'X-Frame-Options': 'DENY',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Resource-Policy': 'same-origin',
       'Content-Security-Policy': `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`,
     },
   });
@@ -1004,7 +1009,8 @@ async function authorizeBugAdmin(request, env) {
   if (await checkAdminAuthRateLimit(request, env, 'bug')) {
     return adminBugResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
   }
-  const authorization = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
+  const authHeader = request.headers.get('Authorization') || '';
+  const authorization = authHeader.length <= 1024 ? authHeader.match(/^Bearer\s+(\S+)$/i) : null;
   if (!authorization || !(await timingSafeTokenEq(authorization[1], expectedToken))) {
     await recordAdminAuthFailure(request, env, 'bug');
     return adminBugResponse({ ok: false, error: 'Unauthorized.' }, 401);
@@ -1012,6 +1018,8 @@ async function authorizeBugAdmin(request, env) {
   if (!env.BUG_REPORTS) return adminBugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
   return null;
 }
+
+const MAX_BUG_SCAN_PAGES = 40;
 
 async function handleBugList(request, env, url) {
   const refusal = await authorizeBugAdmin(request, env);
@@ -1023,12 +1031,13 @@ async function handleBugList(request, env, url) {
   const limit = Number.isFinite(requestedLimit) ? Math.max(1, Math.min(Math.floor(requestedLimit), 200)) : 50;
 
   try {
-    // KV lists oldest keys first. Scan every page, retaining only the newest
+    // KV lists oldest keys first. Scan every page (bounded), retaining only the newest
     // limit + 1 matching keys; the extra key tells the inbox whether more exist.
     const selected = [];
     const seenCursors = new Set();
     let storageCursor;
-    while (true) {
+    let scanComplete = false;
+    for (let pageNumber = 0; pageNumber < MAX_BUG_SCAN_PAGES; pageNumber++) {
       const listed = await env.BUG_REPORTS.list({ prefix: 'bug:', limit: 1000, ...(storageCursor ? { cursor: storageCursor } : {}) });
       if (!listed || !Array.isArray(listed.keys) || typeof listed.list_complete !== 'boolean') throw new Error('Invalid storage page');
       for (const key of listed.keys) {
@@ -1038,11 +1047,12 @@ async function handleBugList(request, env, url) {
         selected.sort();
         if (selected.length > limit + 1) selected.shift();
       }
-      if (listed.list_complete) break;
+      if (listed.list_complete) { scanComplete = true; break; }
       if (typeof listed.cursor !== 'string' || !listed.cursor || seenCursors.has(listed.cursor)) throw new Error('Invalid storage cursor');
       seenCursors.add(listed.cursor);
       storageCursor = listed.cursor;
     }
+    if (!scanComplete) throw new Error('Storage scan bound exceeded');
     selected.reverse();
     const reports = [];
     for (const key of selected.slice(0, limit)) {
@@ -1058,22 +1068,34 @@ async function handleBugList(request, env, url) {
   }
 }
 
+function parseAdminListLimit(url) {
+  const raw = url.searchParams.get('limit');
+  if (raw == null || raw === '') return 50;
+  const requested = Number(raw);
+  return Number.isFinite(requested) ? Math.max(1, Math.min(Math.floor(requested), 200)) : 50;
+}
+
 async function handlePdList(request, env, url) {
   if (!env.ADMIN_TOKEN) return adminBugResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pdSubmissions (or use `wrangler kv key list`).' }, 501);
-  if (!env.PD_SUBMISSIONS) return adminBugResponse({ ok: false, error: 'Missing PD_SUBMISSIONS KV binding.' }, 500);
   if (await checkAdminAuthRateLimit(request, env, 'admin')) return adminBugResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
-  const authorization = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
+  const pdAuthHeader = request.headers.get('Authorization') || '';
+  const authorization = pdAuthHeader.length <= 1024 ? pdAuthHeader.match(/^Bearer\s+(\S+)$/i) : null;
   const token = authorization ? authorization[1] : '';
   if (!token || !(await timingSafeTokenEq(token, env.ADMIN_TOKEN))) {
     await recordAdminAuthFailure(request, env, 'admin');
     return adminBugResponse({ ok: false, error: 'Unauthorized.' }, 401);
   }
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
-  const listed = await env.PD_SUBMISSIONS.list({ prefix: 'pd:', limit });
-  const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
-  const submissions = [];
-  for (const k of keys) { const v = await env.PD_SUBMISSIONS.get(k); if (v) { try { submissions.push({ id: k, ...JSON.parse(v) }); } catch (_) {} } }
-  return adminBugResponse({ ok: true, count: submissions.length, submissions }, 200);
+  if (!env.PD_SUBMISSIONS) return adminBugResponse({ ok: false, error: 'Missing PD_SUBMISSIONS KV binding.' }, 500);
+  const limit = parseAdminListLimit(url);
+  try {
+    const listed = await env.PD_SUBMISSIONS.list({ prefix: 'pd:', limit });
+    const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
+    const submissions = [];
+    for (const k of keys) { const v = await env.PD_SUBMISSIONS.get(k); if (v) { try { submissions.push({ ...JSON.parse(v), id: k }); } catch (_) {} } }
+    return adminBugResponse({ ok: true, count: submissions.length, submissions }, 200);
+  } catch (_) {
+    return adminBugResponse({ ok: false, error: 'Could not load submissions. Please try again.' }, 502);
+  }
 }
 
 // ── Tool Forge plugin submissions → Cloudflare KV (PRIVATE, not GitHub) ──
@@ -1103,9 +1125,12 @@ function validatePlugin(p) {
   for (const f of ['category', 'color', 'icon']) {
     if (pl[f] != null && (typeof pl[f] !== 'string' || pl[f].length > 60)) return `plugin.${f} must be a string up to 60 chars.`;
   }
+  if (p.metadata != null && !isObject(p.metadata)) return 'metadata must be an object.';
   const m = p.metadata || {};
   if (m.author != null && (typeof m.author !== 'string' || m.author.length > 80)) return 'metadata.author must be a string up to 80 chars.';
   if (m.license != null && !PLUGIN_LICENSES.has(m.license)) return 'metadata.license must be one of: ' + [...PLUGIN_LICENSES].join(', ') + '.';
+  if (m.subject != null && (typeof m.subject !== 'string' || m.subject.length > 60)) return 'metadata.subject must be a string up to 60 chars.';
+  if (m.grade_band != null && (typeof m.grade_band !== 'string' || m.grade_band.length > 20)) return 'metadata.grade_band must be a string up to 20 chars.';
   if (!p.affirmations || typeof p.affirmations !== 'object') return 'affirmations missing or not an object.';
   for (const key of ['author_or_authorized', 'no_pii', 'license_agreed', 'age_eligible', 'passes_validation', 'accuracy_attested']) {
     if (p.affirmations[key] !== true) return `affirmation "${key}" must be true.`;
@@ -1189,24 +1214,29 @@ async function handlePluginSubmit(request, env, intake) {
 
 async function handlePluginList(request, env, url) {
   if (!env.ADMIN_TOKEN) return adminBugResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pluginSubmissions (or use `wrangler kv key list`).' }, 501);
-  if (!env.PLUGIN_SUBMISSIONS) return adminBugResponse({ ok: false, error: 'Missing PLUGIN_SUBMISSIONS KV binding.' }, 500);
   if (await checkAdminAuthRateLimit(request, env, 'admin')) return adminBugResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
-  const authorization = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
+  const pdAuthHeader = request.headers.get('Authorization') || '';
+  const authorization = pdAuthHeader.length <= 1024 ? pdAuthHeader.match(/^Bearer\s+(\S+)$/i) : null;
   const token = authorization ? authorization[1] : '';
   if (!token || !(await timingSafeTokenEq(token, env.ADMIN_TOKEN))) {
     await recordAdminAuthFailure(request, env, 'admin');
     return adminBugResponse({ ok: false, error: 'Unauthorized.' }, 401);
   }
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
+  if (!env.PLUGIN_SUBMISSIONS) return adminBugResponse({ ok: false, error: 'Missing PLUGIN_SUBMISSIONS KV binding.' }, 500);
+  const limit = parseAdminListLimit(url);
   const includeSource = url.searchParams.get('source') === '1'; // omit the (large) source unless explicitly requested
-  const listed = await env.PLUGIN_SUBMISSIONS.list({ prefix: 'plugin:', limit });
-  const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
-  const submissions = [];
-  for (const k of keys) {
-    const v = await env.PLUGIN_SUBMISSIONS.get(k);
-    if (v) { try { const rec = JSON.parse(v); if (!includeSource) delete rec.source; submissions.push({ id: k, ...rec }); } catch (_) {} }
+  try {
+    const listed = await env.PLUGIN_SUBMISSIONS.list({ prefix: 'plugin:', limit });
+    const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
+    const submissions = [];
+    for (const k of keys) {
+      const v = await env.PLUGIN_SUBMISSIONS.get(k);
+      if (v) { try { const rec = JSON.parse(v); if (!includeSource) delete rec.source; submissions.push({ ...rec, id: k }); } catch (_) {} }
+    }
+    return adminBugResponse({ ok: true, count: submissions.length, submissions }, 200);
+  } catch (_) {
+    return adminBugResponse({ ok: false, error: 'Could not load submissions. Please try again.' }, 502);
   }
-  return adminBugResponse({ ok: true, count: submissions.length, submissions }, 200);
 }
 
 // PD completion credentials. Secure-by-default reviewed issuance requires BOTH
@@ -1665,9 +1695,14 @@ async function pdReadIssuanceLedger(bucket, key) {
   catch (_) { return { state: 'corrupt' }; }
 }
 
+const STRICT_JSON_CONTENT_TYPE_RE = /^\s*application\/json(?:\s*;\s*charset\s*=\s*(?:utf-?8|"utf-?8"))?\s*$/i;
+function parseJsonSafe(raw) {
+  return JSON.parse(raw, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v));
+}
+
 function pdIssuanceLedgerFailure(state) {
-  if (state === 'unavailable') return jsonResponse({ ok: false, error: 'Reviewed issuance ledger is unavailable.', code: 'issuance_ledger_unavailable' }, 503);
-  return jsonResponse({ ok: false, error: 'Reviewed issuance ledger record is corrupt.', code: 'issuance_ledger_corrupt' }, 500);
+  if (state === 'unavailable') return adminJsonResponse({ ok: false, error: 'Reviewed issuance ledger is unavailable.', code: 'issuance_ledger_unavailable' }, 503);
+  return adminJsonResponse({ ok: false, error: 'Reviewed issuance ledger record is corrupt.', code: 'issuance_ledger_corrupt' }, 500);
 }
 
 async function pdIssuanceLedgerRecordValid(record, expected, env, keyConfig) {
@@ -1698,43 +1733,44 @@ async function pdExistingIssuanceResponse(read, expected, decisionDigest, env, k
   if (read.state !== 'found') return pdIssuanceLedgerFailure(read.state);
   if (!(await pdIssuanceLedgerRecordValid(read.record, expected, env, keyConfig))) return pdIssuanceLedgerFailure('corrupt');
   if (read.record.decision_digest !== decisionDigest) {
-    return jsonResponse({ ok: false, error: 'decision_id was already used for a different reviewed decision.', code: 'decision_id_conflict' }, 409);
+    return adminJsonResponse({ ok: false, error: 'decision_id was already used for a different reviewed decision.', code: 'decision_id_conflict' }, 409);
   }
-  return jsonResponse({ ok: true, idempotent_replay: true, credential: read.record.credential }, 200);
+  return adminJsonResponse({ ok: true, idempotent_replay: true, credential: read.record.credential }, 200);
 }
 
 async function handlePdIssue(request, env) {
   const contentType = request.headers.get('Content-Type') || '';
-  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  if (!STRICT_JSON_CONTENT_TYPE_RE.test(contentType)) return adminJsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
   const boundedBody = await readBugBody(request);
-  if (boundedBody.status) return jsonResponse({ ok: false, error: boundedBody.error }, boundedBody.status);
+  if (boundedBody.status) return adminJsonResponse({ ok: false, error: boundedBody.error }, boundedBody.status);
   const rawBody = boundedBody.text;
   let p;
-  try { p = JSON.parse(rawBody); } catch (_) { return jsonResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
+  try { p = parseJsonSafe(rawBody); } catch (_) { return adminJsonResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
 
   let payload, signingPrivateKey, signingPublicKey, keyId, reviewedIssuance = null, selfPacedIntake = null;
   if (isObject(p) && p.decision != null) {
-    if (!env.PD_ISSUER_AUTH_TOKEN) return jsonResponse({ ok: false, error: 'Reviewed credential issuance is disabled: configure PD_ISSUER_AUTH_TOKEN.' }, 501);
-    if (!env.PD_ISSUER_PRIVATE_KEY || !env.PD_ISSUER_PUBLIC_KEY) return jsonResponse({ ok: false, error: 'Reviewed credential issuance requires both issuer signing keys.' }, 501);
-    if (!isNonBlank(env.PD_ISSUER_ID, 500)) return jsonResponse({ ok: false, error: 'Reviewed credential issuance requires PD_ISSUER_ID.' }, 501);
-    if (!env.PD_ISSUANCE_LEDGER || typeof env.PD_ISSUANCE_LEDGER.get !== 'function' || typeof env.PD_ISSUANCE_LEDGER.put !== 'function') {
-      return jsonResponse({ ok: false, error: 'Reviewed credential issuance requires the private PD_ISSUANCE_LEDGER R2 binding.', code: 'issuance_ledger_required' }, 501);
-    }
-    if (await checkAdminAuthRateLimit(request, env, 'pd_issuer')) return jsonResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
-    const match = (request.headers.get('Authorization') || '').match(/^Bearer\s+(.+)$/i);
+    if (!env.PD_ISSUER_AUTH_TOKEN) return adminJsonResponse({ ok: false, error: 'Reviewed credential issuance is disabled: configure PD_ISSUER_AUTH_TOKEN.' }, 501);
+    if (await checkAdminAuthRateLimit(request, env, 'pd_issuer')) return adminJsonResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
+    const issueAuthHeader = request.headers.get('Authorization') || '';
+    const match = issueAuthHeader.length <= 1024 ? issueAuthHeader.match(/^Bearer\s+(.+)$/i) : null;
     if (!match || !(await timingSafeTokenEq(match[1], env.PD_ISSUER_AUTH_TOKEN))) {
       await recordAdminAuthFailure(request, env, 'pd_issuer');
-      return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+      return adminJsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+    }
+    if (!env.PD_ISSUER_PRIVATE_KEY || !env.PD_ISSUER_PUBLIC_KEY) return adminJsonResponse({ ok: false, error: 'Reviewed credential issuance requires both issuer signing keys.' }, 501);
+    if (!isNonBlank(env.PD_ISSUER_ID, 500)) return adminJsonResponse({ ok: false, error: 'Reviewed credential issuance requires PD_ISSUER_ID.' }, 501);
+    if (!env.PD_ISSUANCE_LEDGER || typeof env.PD_ISSUANCE_LEDGER.get !== 'function' || typeof env.PD_ISSUANCE_LEDGER.put !== 'function') {
+      return adminJsonResponse({ ok: false, error: 'Reviewed credential issuance requires the private PD_ISSUANCE_LEDGER R2 binding.', code: 'issuance_ledger_required' }, 501);
     }
     const keyConfig = pdReviewedKeyConfig(env);
-    if (!keyConfig.ok) return jsonResponse({ ok: false, error: keyConfig.error, code: 'reviewed_key_configuration_invalid' }, 501);
+    if (!keyConfig.ok) return adminJsonResponse({ ok: false, error: keyConfig.error, code: 'reviewed_key_configuration_invalid' }, 501);
     const err = validateReviewedDecision(p.decision);
-    if (err) return jsonResponse({ ok: false, error: err.message, code: err.code, path: err.path }, err.status);
+    if (err) return adminJsonResponse({ ok: false, error: err.message, code: err.code, path: err.path }, err.status);
 
     keyId = keyConfig.currentKeyId;
     let binding;
     try { binding = await pdReviewedIssuanceBinding(env.PD_ISSUER_ID, p.decision); }
-    catch (_) { return jsonResponse({ ok: false, error: 'Could not derive the reviewed issuance binding.', code: 'issuance_binding_failed' }, 500); }
+    catch (_) { return adminJsonResponse({ ok: false, error: 'Could not derive the reviewed issuance binding.', code: 'issuance_binding_failed' }, 500); }
     const expected = {
       issuerId: env.PD_ISSUER_ID, decisionId: p.decision.decision_id,
       credentialId: binding.credentialId,
@@ -1761,15 +1797,16 @@ async function handlePdIssue(request, env) {
     payload = pdBuildSelfPacedCredentialPayload(p.record, env.PD_SELF_PACED_ISSUER_NAME, env.PD_SELF_PACED_ISSUER_ID, keyId, new Date().toISOString());
     signingPrivateKey = env.PD_SELF_PACED_PRIVATE_KEY;
     signingPublicKey = env.PD_SELF_PACED_PUBLIC_KEY;
-  } else return jsonResponse({ ok: false, error: 'decision (reviewed issuance) is required.', code: 'reviewed_decision_required' }, 400);
+  } else return adminJsonResponse({ ok: false, error: 'decision (reviewed issuance) is required.', code: 'reviewed_decision_required' }, 400);
 
+  const issueResp = reviewedIssuance ? adminJsonResponse : jsonResponse;
   let signature, keyPairValid;
   try {
     signature = await signPdPayload(payload, signingPrivateKey);
     keyPairValid = await verifyPdPayloadSignature(payload, signature, signingPublicKey);
   }
-  catch (_) { return jsonResponse({ ok: false, error: 'Signing failed.' }, 500); }
-  if (!keyPairValid) return jsonResponse({ ok: false, error: 'Issuer signing/public key configuration mismatch.' }, 500);
+  catch (_) { return issueResp({ ok: false, error: 'Signing failed.' }, 500); }
+  if (!keyPairValid) return issueResp({ ok: false, error: 'Issuer signing/public key configuration mismatch.' }, 500);
   const credential = {
     schema_version: payload.schema_version, payload, signature, alg: 'Ed25519',
     key_id: keyId, public_key_spki_b64: signingPublicKey,
@@ -1782,7 +1819,7 @@ async function handlePdIssue(request, env) {
   try { issuedValidation = await validateReviewedCredential(credential, env, Date.now(), reviewedIssuance.keyConfig); }
   catch (_) { issuedValidation = { ok: false }; }
   if (!issuedValidation.ok) {
-    return jsonResponse({ ok: false, error: 'The generated credential failed the reviewed credential contract.', code: 'issued_credential_invalid' }, 500);
+    return adminJsonResponse({ ok: false, error: 'The generated credential failed the reviewed credential contract.', code: 'issued_credential_invalid' }, 500);
   }
 
   const ledgerRecord = {
@@ -1810,7 +1847,7 @@ async function handlePdIssue(request, env) {
     );
     return winnerResponse || pdIssuanceLedgerFailure('unavailable');
   }
-  return jsonResponse({ ok: true, idempotent_replay: false, credential }, 201);
+  return adminJsonResponse({ ok: true, idempotent_replay: false, credential }, 201);
 }
 function handlePdIssuerKey(env) {
   if (!env.PD_ISSUER_PUBLIC_KEY) return jsonResponse({ ok: false, error: 'No issuer public key configured.' }, 501);
@@ -1819,7 +1856,7 @@ function handlePdIssuerKey(env) {
 
 async function handlePdVerify(request, env) {
   const contentType = request.headers.get('Content-Type') || '';
-  if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
+  if (!STRICT_JSON_CONTENT_TYPE_RE.test(contentType)) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
   const boundedBody = await readBugBody(request);
   if (boundedBody.status) return jsonResponse({ ok: false, error: boundedBody.error }, boundedBody.status);
   const rawBody = boundedBody.text;
@@ -1829,7 +1866,7 @@ async function handlePdVerify(request, env) {
     ok: status < 400, valid: false, credential_profile: profile || null, assurance: noAssurance,
     ...(reason ? { reason } : {}), ...(error ? { error } : {}),
   }, status);
-  try { const p = JSON.parse(rawBody); cred = (p && p.credential) || p; }
+  try { const p = parseJsonSafe(rawBody); cred = (p && p.credential) || p; }
   catch (_) { return invalid(null, 'invalid_json', 400, 'Invalid JSON.'); }
   if (!isObject(cred) || !isObject(cred.payload) || !isNonBlank(cred.signature, 1000)) {
     return invalid(null, 'malformed_credential', 400, 'credential {payload, signature} required.');
@@ -1935,11 +1972,12 @@ const SOURCE_METADATA_MAX_REDIRECTS = 2;
 const SOURCE_METADATA_CACHE_SECONDS = 3600;
 
 function sourceMetadataSafeUrl(value) {
+  if (typeof value !== 'string' || value.length > 2048) return '';
   const safe = searchSafeHttpUrl(value);
-  if (!safe) return '';
+  if (!safe || safe.length > 2048) return '';
   try {
     const parsed = new URL(safe);
-    const rawHost = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
+    const rawHost = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.+$/, '');
     if (!rawHost) return '';
     if (parsed.username || parsed.password || (parsed.port && parsed.port !== '80' && parsed.port !== '443')) return '';
     if (
@@ -1947,27 +1985,32 @@ function sourceMetadataSafeUrl(value) {
       rawHost.endsWith('.localhost') ||
       rawHost.endsWith('.local') ||
       rawHost.endsWith('.internal') ||
+      rawHost.endsWith('.home.arpa') ||
       rawHost === 'metadata.google' ||
       rawHost.endsWith('.metadata.google')
     ) return '';
-    // Block IPv6 loopback, unspecified, discard (100::/64), doc (2001:db8::/32), 6to4 (2002::/16), ULA (fc00::/7), link-local (fe80::/10), site-local (fec0::/10), multicast (ff00::/8), IPv4-mapped (::ffff:0:0/96), NAT64 (64:ff9b::/96), Teredo (2001:0::/32).
+    // Block IPv6 0000::/16 (::, ::1, ::/96 IPv4-compatible, ::ffff:0:0/96 IPv4-mapped), discard (100::/64), doc (2001:db8::/32, 3fff::/20), 6to4 (2002::/16), IETF special (2001::/23), SRv6 (5f00::/16), ULA (fc00::/7), link-local (fe80::/10), site-local (fec0::/10), multicast (ff00::/8), NAT64 (64:ff9b::/96).
     if (rawHost.includes(':')) {
+      const firstTwo = rawHost.split(':').slice(0, 2);
+      const g0 = firstTwo[0] ? parseInt(firstTwo[0], 16) : 0;
+      const g1 = firstTwo[1] ? parseInt(firstTwo[1], 16) : 0;
       if (
-        rawHost === '::1' ||
-        rawHost === '::' ||
-        /^(?:0+:){5}0*:[01]$/.test(rawHost) ||
-        /^(?:0+:){7}0*1?$/.test(rawHost) ||
+        rawHost.startsWith('::') ||
+        /^0+:/.test(rawHost) ||
         /^0*100:/.test(rawHost) ||
+        (g0 === 0x2001 && Number.isFinite(g1) && g1 <= 0x01ff) ||
         /^2001:0*db8:/i.test(rawHost) ||
         /^2002:/i.test(rawHost) ||
+        /^3fff:/i.test(rawHost) ||
+        /^5f00:/i.test(rawHost) ||
         /^f[cd][0-9a-f]{0,2}:/i.test(rawHost) ||
         /^fe[89abcdef][0-9a-f]?:/i.test(rawHost) ||
         /^ff[0-9a-f]{0,2}:/i.test(rawHost) ||
-        rawHost.startsWith('::ffff:') ||
-        rawHost.startsWith('0:0:0:0:0:ffff:') ||
-        rawHost.startsWith('64:ff9b:') ||
-        /^2001:0*:/.test(rawHost)
+        rawHost.startsWith('64:ff9b:')
       ) return '';
+    } else if (!rawHost.includes('.')) {
+      // Reject single-label internal hostnames (e.g. http://metadata/, http://intranet/).
+      return '';
     }
     if (/^(127|10|0)\./.test(rawHost) || /^192\.168\./.test(rawHost) || /^169\.254\./.test(rawHost)) return '';
     if (/^(?:192\.0\.0\.|192\.0\.2\.|192\.88\.99\.|198\.51\.100\.|203\.0\.113\.)/.test(rawHost)) return '';
@@ -2010,7 +2053,7 @@ function decodeSourceMetadata(value) {
 }
 
 function sourceMetadataAttributes(tag) {
-  const attrs = {};
+  const attrs = Object.create(null);
   const pattern = /([A-Za-z_:][A-Za-z0-9:._-]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g;
   let match;
   while ((match = pattern.exec(tag))) attrs[match[1].toLowerCase()] = decodeSourceMetadata(match[2] ?? match[3] ?? match[4]);
@@ -2043,7 +2086,7 @@ function sourceMetadataJsonLd(html) {
   let match;
   while ((match = pattern.exec(String(html || '')))) {
     try {
-      const parsed = JSON.parse(match[1].trim());
+      const parsed = parseJsonSafe(match[1].trim());
       const values = Array.isArray(parsed) ? parsed : [parsed];
       values.forEach((value) => {
         if (value && Array.isArray(value['@graph'])) items.push(...value['@graph']);
@@ -2055,7 +2098,7 @@ function sourceMetadataJsonLd(html) {
 }
 
 function sourceMetadataFromHtml(html, fallbackUrl) {
-  const found = {};
+  const found = Object.create(null);
   for (const tag of String(html || '').match(/<meta\b[^>]*>/gi) || []) {
     const attrs = sourceMetadataAttributes(tag);
     const key = String(attrs.property || attrs.name || attrs.itemprop || '').toLowerCase();
@@ -2065,17 +2108,17 @@ function sourceMetadataFromHtml(html, fallbackUrl) {
   const jsonLd = sourceMetadataJsonLd(html);
   const ldValue = (...keys) => {
     for (const item of jsonLd) {
-      for (const key of keys) if (item && item[key] != null) return sourceMetadataScalar(item[key]);
+      for (const key of keys) if (item && Object.prototype.hasOwnProperty.call(item, key) && item[key] != null) return sourceMetadataScalar(item[key]);
     }
     return '';
   };
   const titleMatch = String(html || '').match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
-  const title = decodeSourceMetadata(ldValue('name', 'headline') || found['og:title'] || found['citation_title'] || found['dc.title'] || (titleMatch && titleMatch[1]) || '');
-  const creator = decodeSourceMetadata(ldValue('author', 'creator', 'byline') || found['citation_author'] || found['dc.creator'] || found.author || found['article:author'] || found['og:author'] || '');
-  const date = decodeSourceMetadata(ldValue('datePublished', 'dateCreated', 'dateIssued', 'copyrightYear') || found['citation_publication_date'] || found['article:published_time'] || found['dc.date'] || found.date || '');
-  const description = decodeSourceMetadata(ldValue('description') || found['og:description'] || found.description || '');
-  const publisher = decodeSourceMetadata(ldValue('publisher') || found.publisher || found['dc.publisher'] || '');
-  const type = decodeSourceMetadata(ldValue('@type') || found['og:type'] || '');
+  const title = decodeSourceMetadata(ldValue('name', 'headline') || found['og:title'] || found['citation_title'] || found['dc.title'] || (titleMatch && titleMatch[1]) || '').slice(0, 500);
+  const creator = decodeSourceMetadata(ldValue('author', 'creator', 'byline') || found['citation_author'] || found['dc.creator'] || found.author || found['article:author'] || found['og:author'] || '').slice(0, 500);
+  const date = decodeSourceMetadata(ldValue('datePublished', 'dateCreated', 'dateIssued', 'copyrightYear') || found['citation_publication_date'] || found['article:published_time'] || found['dc.date'] || found.date || '').slice(0, 120);
+  const description = decodeSourceMetadata(ldValue('description') || found['og:description'] || found.description || '').slice(0, 1000);
+  const publisher = decodeSourceMetadata(ldValue('publisher') || found.publisher || found['dc.publisher'] || '').slice(0, 500);
+  const type = decodeSourceMetadata(ldValue('@type') || found['og:type'] || '').slice(0, 120);
   let canonicalUrl = '';
   for (const tag of String(html || '').match(/<link\b[^>]*>/gi) || []) {
     const attrs = sourceMetadataAttributes(tag);
@@ -2110,20 +2153,27 @@ function sourceMetadataFromHtml(html, fallbackUrl) {
 
 async function sourceMetadataText(response) {
   const declared = Number.parseInt(response.headers.get('Content-Length') || '', 10);
-  if (Number.isFinite(declared) && declared > SOURCE_METADATA_MAX_BYTES) return null;
+  if (Number.isFinite(declared) && declared > SOURCE_METADATA_MAX_BYTES) {
+    try { await response.body?.cancel?.(); } catch (_) {}
+    return null;
+  }
   if (!response.body) return (await response.text()).slice(0, SOURCE_METADATA_MAX_BYTES);
   const reader = response.body.getReader();
   const chunks = [];
   let total = 0;
-  while (true) {
-    const item = await reader.read();
-    if (item.done) break;
-    total += item.value.byteLength;
-    if (total > SOURCE_METADATA_MAX_BYTES) {
-      await reader.cancel();
-      return null;
+  try {
+    while (true) {
+      const item = await reader.read();
+      if (item.done) break;
+      total += item.value.byteLength;
+      if (total > SOURCE_METADATA_MAX_BYTES) {
+        try { await reader.cancel(); } catch (_) {}
+        return null;
+      }
+      chunks.push(item.value);
     }
-    chunks.push(item.value);
+  } finally {
+    try { reader.releaseLock(); } catch (_) {}
   }
   const bytes = new Uint8Array(total);
   let offset = 0;
@@ -2174,10 +2224,21 @@ async function handleSourceMetadata(request, env, url) {
   if (fetched.error) return jsonResponse({ ok: false, error: fetched.error }, 502);
   const upstream = fetched.response;
   const finalUrl = fetched.finalUrl;
-  if (!upstream.ok) return jsonResponse({ ok: false, error: 'metadata-upstream-error' }, 502);
+  if (!upstream.ok) {
+    try { await upstream.body?.cancel?.(); } catch (_) {}
+    return jsonResponse({ ok: false, error: 'metadata-upstream-error' }, 502);
+  }
   const contentType = String(upstream.headers.get('Content-Type') || '').toLowerCase();
-  if (contentType && !/(html|xhtml|text\/plain)/.test(contentType)) return jsonResponse({ ok: false, error: 'metadata-unsupported-content' }, 415);
-  const html = await sourceMetadataText(upstream);
+  if (contentType && !/(html|xhtml|text\/plain)/.test(contentType)) {
+    try { await upstream.body?.cancel?.(); } catch (_) {}
+    return jsonResponse({ ok: false, error: 'metadata-unsupported-content' }, 415);
+  }
+  let html;
+  try {
+    html = await sourceMetadataText(upstream);
+  } catch (_) {
+    return jsonResponse({ ok: false, error: 'metadata-upstream-error' }, 502);
+  }
   if (html == null) return jsonResponse({ ok: false, error: 'metadata-response-too-large' }, 413);
   const payload = { ok: true, accessible: true, finalUrl, metadata: sourceMetadataFromHtml(html, finalUrl), source: 'Source metadata fetch' };
   try {
@@ -2233,7 +2294,9 @@ async function searchBudgetRefusal(request, env, options = {}) {
       // 48h TTL so the day counter self-cleans with no cron.
       env.SEARCH_RATE.put(dayKey, String(dayCount + 1), { expirationTtl: 172800 }),
     ]);
-  } catch (_) { /* counting is best-effort */ }
+  } catch (_) {
+    if (options.failClosedOnError) return 'rate-limited';
+  }
   return null;
 }
 

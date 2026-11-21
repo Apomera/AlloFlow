@@ -16,9 +16,25 @@
     if (fn) { try { v = fn(key); } catch (e) { v = null; } }
     return (typeof v === 'string' && v && v !== key) ? v : fallback;
   };
+  var _selHasOwn = Object.prototype.hasOwnProperty;
+  var _selIsSafeKey = function (k) { return typeof k === 'string' && k.length > 0 && k !== '__proto__' && k !== 'constructor' && k !== 'prototype'; };
+  var _selJsonReviver = function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; };
+  var _selFallbackAudioCtx = null;
+  function _selIsGlobalMuted() {
+    try {
+      if (typeof window.__alloIsGlobalMuted === 'function') return !!window.__alloIsGlobalMuted();
+      return window._alloGlobalMute === true;
+    } catch (_) { return false; }
+  }
   // Usable AI? True for a blocked host fn too if checked by typeof alone (2026-11-03 AI-off sweep).
   var _selAiUsable = function (kind, fn) {
-    try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+    if (typeof fn !== 'function' || fn._alloQrBlocked === true) return false;
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
+    if (typeof window.__alloAiUsable === 'function') {
+      try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
+    }
+    var qr = window.__alloQrStudentMode;
+    if (qr && (qr === true || qr.aiDisabled === true || qr.aiPolicy === 'off')) return false;
     return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true;
   };
   // Student AI off: callTTS returns no cloud voice; read with the device voice instead of silence.
@@ -303,7 +319,7 @@
           strengths: {
             time: '5-10 min',
             purpose: 'Reflect on strengths and growth areas without producing a score or diagnosis.',
-            next: 'Choose a strength, connect it to a real example, and name one way to use it.'
+            next: 'Pick the strengths that feel like you, then find one real moment from this trimester that shows each one.'
           },
           viaStrengths: {
             time: '8-15 min',
@@ -375,13 +391,10 @@
           teamwork: {
             time: '8-12 min',
             next: 'Look at Roles, then write a Communication Plan for a real group: who does what, where, and by when.'
-          },
-          strengths: {
-            time: '5-10 min',
-            next: 'Pick the strengths that feel like you, then find one real moment from this trimester that shows each one.'
           }
         },
         registerTool: function(id, config) {
+          if (!_selIsSafeKey(id) || !config || typeof config !== 'object') return;
           config.id = id;
           config.ready = config.ready !== false;
           // Normalize legacy field-name aliases + defaults (see stem_lab_module.js for rationale)
@@ -395,9 +408,9 @@
         },
         getRegisteredTools: function() {
           var self = this;
-          return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
+          return this._order.map(function(id) { return (_selIsSafeKey(id) && _selHasOwn.call(self._registry, id)) ? self._registry[id] : null; }).filter(Boolean);
         },
-        isRegistered: function(id) { return !!this._registry[id]; },
+        isRegistered: function(id) { return _selIsSafeKey(id) && _selHasOwn.call(this._registry, id) && !!this._registry[id]; },
         // Exposed so the crisis-routing behaviour can be tested directly, and so
         // any future surface that takes free-text search can reuse the same list.
         matchesCrisisVocabulary: function(query) { return _selQueryIsCrisis(query); },
@@ -647,7 +660,7 @@
           try { tabs[n].focus(); } catch (err) {}
         },
         renderTool: function(id, ctx) {
-          var tool = this._registry[id];
+          var tool = (_selIsSafeKey(id) && _selHasOwn.call(this._registry, id)) ? this._registry[id] : null;
           if (!tool || !tool.render) return null;
           this._injectMotionCSS();
           var hasReact = ctx && ctx.React;
@@ -745,15 +758,16 @@
     }
     if (__alloSelHubShim && window.SelHub !== __alloSelHubShim) {
       Object.keys(__alloSelHubShim).forEach(function (key) {
-        if (key === '_registry' || key === '_order' || window.SelHub[key] !== undefined) return;
+        if (!_selIsSafeKey(key) || key === '_registry' || key === '_order' || window.SelHub[key] !== undefined) return;
         window.SelHub[key] = __alloSelHubShim[key];
       });
       var __alloSelShimRegistry = __alloSelHubShim._registry || {};
       var __alloSelShimOrder = Array.isArray(__alloSelHubShim._order) && __alloSelHubShim._order.length
         ? __alloSelHubShim._order.slice() : Object.keys(__alloSelShimRegistry);
       __alloSelShimOrder.forEach(function (id) {
+        if (!_selIsSafeKey(id) || !_selHasOwn.call(__alloSelShimRegistry, id)) return;
         var cfg = __alloSelShimRegistry[id];
-        if (cfg && !window.SelHub._registry[id]) { try { window.SelHub.registerTool(id, cfg); } catch (e) {} }
+        if (cfg && !_selHasOwn.call(window.SelHub._registry, id)) { try { window.SelHub.registerTool(id, cfg); } catch (e) {} }
       });
     }
 
@@ -780,8 +794,9 @@
         // safe to call before the hub mounts.
         get: function (toolId) {
           try {
+            if (!_selIsSafeKey(toolId)) return {};
             var all = window.__alloflowSelToolData || {};
-            return (all && all[toolId]) || {};
+            return (_selHasOwn.call(all, toolId) && all[toolId]) || {};
           } catch (e) { return {}; }
         },
         // Set one key for one tool. Writes to the window slot AND fires an
@@ -790,8 +805,9 @@
         // fallback for tools that need to persist outside a render.
         set: function (toolId, key, val) {
           try {
+            if (!_selIsSafeKey(toolId) || !_selIsSafeKey(key)) return;
             var all = window.__alloflowSelToolData || {};
-            var slot = Object.assign({}, all[toolId] || {});
+            var slot = Object.assign({}, (_selHasOwn.call(all, toolId) && all[toolId]) || {});
             slot[key] = val;
             var patch = {}; patch[toolId] = slot;
             window.__alloflowSelToolData = Object.assign({}, all, patch);
@@ -801,8 +817,12 @@
         // Same as set() but for a batch of keys.
         merge: function (toolId, obj) {
           try {
+            if (!_selIsSafeKey(toolId)) return;
             var all = window.__alloflowSelToolData || {};
-            var slot = Object.assign({}, all[toolId] || {}, obj || {});
+            var slot = Object.assign({}, (_selHasOwn.call(all, toolId) && all[toolId]) || {});
+            if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+              Object.keys(obj).forEach(function (k) { if (_selIsSafeKey(k)) slot[k] = obj[k]; });
+            }
             var patch = {}; patch[toolId] = slot;
             window.__alloflowSelToolData = Object.assign({}, all, patch);
             window.dispatchEvent(new CustomEvent('alloflow-sel-tooldata-changed', { detail: { toolId: toolId, key: '*' } }));
@@ -815,18 +835,19 @@
         // still see the restored state.
         bindLegacyKey: function (toolId, lsKey) {
           try {
+            if (!_selIsSafeKey(toolId) || typeof lsKey !== 'string' || !lsKey) return;
             var all = window.__alloflowSelToolData || {};
-            var slot = Object.assign({}, all[toolId] || {});
+            var slot = Object.assign({}, (_selHasOwn.call(all, toolId) && all[toolId]) || {});
             slot._lsKey = lsKey;
             // On bind, snapshot the current storage value so the next save picks
             // it up even if the tool hasn't dirtied state yet. Unauthenticated
             // Student Mode reads sessionStorage rather than shared localStorage.
             var _isUnauthStudent = false;
             try {
-              _isUnauthStudent = (typeof window !== 'undefined' && window.__alloStudentView === true && !(typeof window.__alloActiveLearnerKey === 'string' && window.__alloActiveLearnerKey.trim()));
+              _isUnauthStudent = (typeof window !== 'undefined' && (window.__alloStudentView === true || Boolean(window.__alloQrStudentMode)) && !(typeof window.__alloActiveLearnerKey === 'string' && window.__alloActiveLearnerKey.trim()));
             } catch (e) {}
             var _bindStore = _isUnauthStudent ? (typeof sessionStorage !== 'undefined' ? sessionStorage : null) : (typeof localStorage !== 'undefined' ? localStorage : null);
-            try { slot._lsValue = JSON.parse((_bindStore ? _bindStore.getItem(lsKey) : null) || 'null'); } catch (e) {}
+            try { slot._lsValue = JSON.parse((_bindStore ? _bindStore.getItem(lsKey) : null) || 'null', _selJsonReviver); } catch (e) {}
             var patch = {}; patch[toolId] = slot;
             window.__alloflowSelToolData = Object.assign({}, all, patch);
           } catch (e) {}
@@ -2111,16 +2132,16 @@
         // Minimal check for a host without AdventureOffline: start exists, links resolve, an ending exists.
         function basicValid(story) {
           if (!story || !Array.isArray(story.scenes) || !story.scenes.length) return false;
-          var ids = {};
-          story.scenes.forEach(function (s) { if (s && s.id) ids[s.id] = s; });
-          if (!ids[story.start]) return false;
+          var ids = Object.create(null);
+          story.scenes.forEach(function (s) { if (s && typeof s.id === 'string' && s.id) ids[s.id] = s; });
+          if (typeof story.start !== 'string' || !ids[story.start]) return false;
           return story.scenes.some(function (s) { return s && s.ending; }) && story.scenes.every(function (s) {
-            return s && s.id && String(s.text || '').trim() && (s.ending || (Array.isArray(s.choices) && s.choices.length && s.choices.every(function (c) { return c && c.label && ids[c.to]; })));
+            return s && s.id && String(s.text || '').trim() && (s.ending || (Array.isArray(s.choices) && s.choices.length && s.choices.every(function (c) { return c && c.label && typeof c.to === 'string' && ids[c.to]; })));
           });
         }
         function scenesFrom(cfg, AO) {
           var list = cfg && typeof cfg === 'object' && Array.isArray(cfg.scenes) ? cfg.scenes : [];
-          var seen = {};
+          var seen = Object.create(null);
           return list.slice(0, MAX).map(function (raw, i) {
             var src = raw && typeof raw === 'object' ? raw : {};
             var story = AO && typeof AO.normalize === 'function' ? AO.normalize(src.story) : (src.story && typeof src.story === 'object' ? src.story : null);
@@ -2131,8 +2152,7 @@
         }
         function aiUsable(ctx, fn) {
           if (ctx.aiAvailable === false) return false;
-          try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {}
-          return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true;
+          return _selAiUsable('text', fn);
         }
         // Dark-base hexes, remapped for the host theme. A tool may pass its own fg/bg/bd.
         function themeMappers(theme) {
@@ -2269,8 +2289,8 @@
             var setDraft = function (patch) { set({ tsDraft: Object.assign({}, draft, patch) }); };
             var aiFailed = function () { return tx('sel.conflicttheater.teacher.ai_failed', 'The AI draft could not be used. Write the scene yourself or try again.'); };
             var draftWithAi = function () {
-              var idea = String(draft.idea || '').trim();
-              if (!aiOn || !canEdit || typeof AO.generate !== 'function' || d.tsBusy || !idea) return;
+              var idea = String(draft.idea || '').replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_-]*[^>]*>/gi, '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ' ').trim();
+              if (!aiUsable(ctx, callGemini) || !canEdit || typeof AO.generate !== 'function' || d.tsBusy || !idea) return;
               var token = {};
               pendingDraft[toolId] = token;
               set({ tsBusy: true, tsNotice: tx('sel.conflicttheater.teacher.ai_busy', 'Drafting the scene…') });
@@ -2412,7 +2432,9 @@
           if (typeof href !== 'string') return null;
           var hash = href.indexOf('#') >= 0 ? href.slice(href.indexOf('#')) : '';
           var m = _selToolLinkRe.exec(hash.trim());
-          return m ? (m[1] || '') : null;
+          if (!m) return null;
+          if (m[1] && !_selIsSafeKey(m[1])) return null;
+          return m[1] || '';
         },
         // '#sel-hub/zones?station=sel_station_crew_launch_zones' -> that station id;
         // no query, or no station in it -> null. The id must match a station the
@@ -2426,7 +2448,7 @@
           var parts = m[2].split('&');
           for (var i = 0; i < parts.length; i++) {
             var kv = parts[i].split('=');
-            if (kv[0] === 'station' && kv[1]) return kv[1];
+            if (kv[0] === 'station' && kv[1] && _selIsSafeKey(kv[1])) return kv[1];
           }
           return null;
         },
@@ -2542,7 +2564,7 @@
       var activeSessionCode = props.activeSessionCode || null;
       // Station Builder, launch plans and station editing are for teachers. A host
       // that predates this prop passes nothing, and undefined keeps the old behavior.
-      var selTeacherView = props.isTeacherMode !== false && !props.isIndependentMode && !props.isParentMode;
+      var selTeacherView = props.isTeacherMode !== false && !props.isIndependentMode && !props.isParentMode && !(typeof window !== 'undefined' && (window.__alloStudentView === true || Boolean(window.__alloQrStudentMode)));
       var t               = props.t || function(k) { return k; };
 
       // Publish the translator for the SHARED safety layer. Its render
@@ -2603,7 +2625,7 @@
       } catch (e) {}
       var _selUnauthStudentEphemeral = !selTeacherView && !activeSessionCode && (!studentCodename || studentCodename === 'student') && !_selLearnerKey;
       function _selTargetStorage(key) {
-        if (_selUnauthStudentEphemeral && (key === 'alloflow_sel_snapshots' || key === 'alloflow_student_artifacts')) {
+        if (_selUnauthStudentEphemeral && (key === 'alloflow_sel_snapshots' || key === 'alloflow_student_artifacts' || key === 'alloflow_sel_station_progress' || key === 'alloflow_sel_tool_usage' || key === 'alloflow_sel_streak' || key === 'alloflow_sel_active_station')) {
           try { if (typeof sessionStorage !== 'undefined' && sessionStorage) return sessionStorage; } catch (e) {}
           return null;
         }
@@ -2639,7 +2661,7 @@
         } catch (e) {}
         try {
           var snapStore = _selTargetStorage('alloflow_sel_snapshots');
-          var raw = JSON.parse((snapStore ? snapStore.getItem('alloflow_sel_snapshots') : null) || '[]');
+          var raw = JSON.parse((snapStore ? snapStore.getItem('alloflow_sel_snapshots') : null) || '[]', _selJsonReviver);
           return Array.isArray(raw) ? raw : [];
         } catch (e) { return []; }
       });
@@ -2654,7 +2676,7 @@
         } catch (e) {}
         try {
           var artStore = _selTargetStorage('alloflow_student_artifacts');
-          var rawArtifacts = JSON.parse((artStore ? artStore.getItem('alloflow_student_artifacts') : null) || '[]');
+          var rawArtifacts = JSON.parse((artStore ? artStore.getItem('alloflow_student_artifacts') : null) || '[]', _selJsonReviver);
           return Array.isArray(rawArtifacts) ? rawArtifacts : [];
         } catch (e) { return []; }
       }
@@ -2678,6 +2700,7 @@
       var _pluginProgress = React.useState(0);
       var _setPluginProgressTick = _pluginProgress[1];
       React.useEffect(function() {
+        var cancelled = false;
         var handler = function(e) {
           if (e && e.detail && e.detail.label !== 'Sel') return;
           // Defer out of any in-progress React render (dispatchEvent runs
@@ -2685,10 +2708,10 @@
           // render trips "Cannot update a component while rendering". The tick
           // only refreshes the tile grid as plugins stream in — a microtask
           // defer is imperceptible and render-safe. Mirrors the StemLab fix.
-          Promise.resolve().then(function() { _setPluginProgressTick(function(t) { return t + 1; }); });
+          Promise.resolve().then(function() { if (!cancelled) _setPluginProgressTick(function(t) { return t + 1; }); });
         };
         window.addEventListener('allo-plugins-changed', handler);
-        return function() { window.removeEventListener('allo-plugins-changed', handler); };
+        return function() { cancelled = true; window.removeEventListener('allo-plugins-changed', handler); };
       }, []);
       // A tool can be selected before its module has loaded: by another tool (the Anxiety Toolkit
       // sends a student who is not safe to Crisis Companion), by the host, or by a restored session.
@@ -2767,7 +2790,13 @@
       var showEphemeralExplainer = _showEphemeralExplainer[0];
       var setShowEphemeralExplainer = _showEphemeralExplainer[1];
       var _lastActivityRef = React.useRef(Date.now());
-      var _lastExportRef = React.useRef(0);
+      var _lastExportRef = React.useRef((function() {
+        try {
+          var saved = Number(sessionStorage.getItem('alloflow_sel_last_export_at'));
+          if (saved > 0) return saved;
+        } catch (e) {}
+        return 0;
+      })());
 
       // ── CHANGE 2: Unsaved-changes indicator state ──
       // True when any tool/snapshot/xp/usage state has changed since the last
@@ -2879,7 +2908,13 @@
             else if (showForEducators) { setShowForEducators(false); alloRestoreOrFocusSelHubStart(); }
             else if (showEphemeralExplainer) {
               setShowEphemeralExplainer(false);
-              try { sessionStorage.setItem('alloflow_sel_seen_ephemeral_explainer', '1'); } catch (err) {}
+              var _dismissNow = Date.now();
+              try {
+                sessionStorage.setItem('alloflow_sel_seen_ephemeral_explainer', '1');
+                sessionStorage.setItem('alloflow_sel_last_export_at', String(_dismissNow));
+              } catch (err) {}
+              _lastActivityRef.current = _dismissNow;
+              _lastExportRef.current = _dismissNow;
               alloRestoreOrFocusSelHubStart();
             }
             return;
@@ -2904,7 +2939,7 @@
         }
         document.addEventListener('keydown', onKey);
         // Focus the primary action on open.
-        setTimeout(function() {
+        var focusTimer = setTimeout(function() {
           var modalId = showClearSelConfirm ? 'sel-clear-data-confirm-modal' : (showSharePacket ? 'sel-share-packet-modal' : (showForEducators ? 'sel-for-educators-modal' : 'sel-ephemeral-explainer-modal'));
           var modal = document.getElementById(modalId);
           if (modal) {
@@ -2912,7 +2947,7 @@
             if (primary) { try { primary.focus(); } catch (e2) {} }
           }
         }, 50);
-        return function() { document.removeEventListener('keydown', onKey); };
+        return function() { clearTimeout(focusTimer); document.removeEventListener('keydown', onKey); };
       }, [showEphemeralExplainer, showForEducators, showClearSelConfirm, showSharePacket]);
 
       function awardSelXP(amount) {
@@ -2940,7 +2975,7 @@
         // that [] back over the stations the project just loaded (the persist
         // effect below writes savedStations to the slot on mount).
         var fromStorage = null;
-        try { fromStorage = JSON.parse(localStorage.getItem('alloflow_sel_stations') || 'null'); } catch (e) { fromStorage = null; }
+        try { fromStorage = JSON.parse(localStorage.getItem('alloflow_sel_stations') || 'null', _selJsonReviver); } catch (e) { fromStorage = null; }
         if (Array.isArray(fromStorage) && fromStorage.length) return fromStorage;
         var slot = window.__alloflowSelStations;
         if (Array.isArray(slot) && slot.length) return slot;
@@ -2968,11 +3003,16 @@
         var streak = { count: 0, longest: 0, lastDate: null };
         var toolUsage = {};
         try {
-          var rawS = JSON.parse(localStorage.getItem('alloflow_sel_streak') || '{}');
-          streak = { count: rawS.count || 0, longest: rawS.longest || 0, lastDate: rawS.lastDate || null };
+          var streakStore = _selTargetStorage('alloflow_sel_streak');
+          var rawS = JSON.parse((streakStore ? streakStore.getItem('alloflow_sel_streak') : null) || '{}', _selJsonReviver);
+          if (rawS && typeof rawS === 'object' && !Array.isArray(rawS)) {
+            streak = { count: Number(rawS.count) || 0, longest: Number(rawS.longest) || 0, lastDate: rawS.lastDate || null };
+          }
         } catch (e) {}
         try {
-          toolUsage = JSON.parse(localStorage.getItem('alloflow_sel_tool_usage') || '{}') || {};
+          var usageStore = _selTargetStorage('alloflow_sel_tool_usage');
+          var parsedUsage = JSON.parse((usageStore ? usageStore.getItem('alloflow_sel_tool_usage') : null) || '{}', _selJsonReviver);
+          toolUsage = (parsedUsage && typeof parsedUsage === 'object' && !Array.isArray(parsedUsage)) ? parsedUsage : {};
         } catch (e) {}
         return { streak: streak, toolUsage: toolUsage };
       }
@@ -3066,7 +3106,7 @@
       // "Exit station", or the station's record being removed, clears it.
       var _activeStationId = React.useState(function () {
         var id = _selActiveStationMemo;
-        if (!id) { try { id = localStorage.getItem('alloflow_sel_active_station') || null; } catch (e) { id = null; } }
+        if (!id) { try { var activeStore = _selTargetStorage('alloflow_sel_active_station'); id = (activeStore ? activeStore.getItem('alloflow_sel_active_station') : null) || null; } catch (e) { id = null; } }
         if (typeof id !== 'string' || !id) return null;
         var list = _savedStations[0];
         return Array.isArray(list) && list.some(function (st) { return st && st.id === id; }) ? id : null;
@@ -3075,7 +3115,13 @@
       var _stationResumedRef = React.useRef(!!activeStationId);
       React.useEffect(function () {
         _selActiveStationMemo = activeStationId || null;
-        try { if (activeStationId) localStorage.setItem('alloflow_sel_active_station', activeStationId); else localStorage.removeItem('alloflow_sel_active_station'); } catch (e) {}
+        try {
+          var activeStore = _selTargetStorage('alloflow_sel_active_station');
+          if (activeStore) {
+            if (activeStationId) activeStore.setItem('alloflow_sel_active_station', activeStationId);
+            else activeStore.removeItem('alloflow_sel_active_station');
+          }
+        } catch (e) {}
       }, [activeStationId]);
       React.useEffect(function () {
         if (activeStationId && !savedStations.some(function (st) { return st && st.id === activeStationId; })) setActiveStationId(null);
@@ -3094,7 +3140,7 @@
         // localStorage first; the host's window slot when storage is blocked or
         // empty (misc_handlers writes both on project load; see savedStations).
         var fromStorage = null;
-        try { fromStorage = JSON.parse(localStorage.getItem('alloflow_sel_station_progress') || 'null'); } catch (e) { fromStorage = null; }
+        try { var progStore = _selTargetStorage('alloflow_sel_station_progress'); fromStorage = JSON.parse((progStore ? progStore.getItem('alloflow_sel_station_progress') : null) || 'null', _selJsonReviver); } catch (e) { fromStorage = null; }
         if (fromStorage && typeof fromStorage === 'object' && !Array.isArray(fromStorage) && Object.keys(fromStorage).length) return fromStorage;
         var slot = window.__alloflowSelProgress;
         if (slot && typeof slot === 'object' && !Array.isArray(slot) && Object.keys(slot).length) return slot;
@@ -3116,7 +3162,7 @@
 
       var _recoverableDraft = React.useState(function () {
         try {
-          var draft = JSON.parse(localStorage.getItem('alloflow_sel_builder_draft') || 'null');
+          var draft = JSON.parse(localStorage.getItem('alloflow_sel_builder_draft') || 'null', _selJsonReviver);
           if (!draft || draft.version !== 1 || typeof draft.name !== 'string' || typeof draft.note !== 'string' || !draft.tools || Array.isArray(draft.tools) || typeof draft.tools !== 'object' || !Array.isArray(draft.quests)) return null;
           if (!draft.quests.every(function (q) { return q && typeof q.qid === 'string' && typeof q.type === 'string'; })) return null;
           return draft;
@@ -3143,13 +3189,22 @@
         if (!builderOpen) return;
         draftRemovalPending.current = false;
         var draft = { version: 1, name: builderName, note: builderNote, tools: builderTools, quests: builderQuests };
-        writeLocalSel('alloflow_sel_builder_draft', draft);
-        setRecoverableDraft(draft);
+        var savedDraft = writeLocalSel('alloflow_sel_builder_draft', draft);
+        if (savedDraft) setRecoverableDraft(draft);
       }, [builderOpen, builderName, builderNote, builderTools, builderQuests]);
       function discardBuilderDraft() {
-        // Only remove the recovery prompt when storage deletion succeeds.
-        draftRemovalPending.current = !writeLocalSel('alloflow_sel_builder_draft', null, true);
-        if (!draftRemovalPending.current) setRecoverableDraft(null);
+        // Only hold the recovery prompt when a real storage backend exists and
+        // deletion actually failed; when storage is unavailable (e.g. sandboxed
+        // iframe), nothing was persisted to disk, so clearing must not trap the
+        // builder behind an undismissable banner.
+        var draftStore = _selTargetStorage('alloflow_sel_builder_draft');
+        if (draftStore) {
+          draftRemovalPending.current = !writeLocalSel('alloflow_sel_builder_draft', null, true);
+          if (!draftRemovalPending.current) setRecoverableDraft(null);
+        } else {
+          draftRemovalPending.current = false;
+          setRecoverableDraft(null);
+        }
         setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); setBuilderUndo([]);
         _builderToolConfigRef.current = null;
         // Cancelling returns to the panel the builder was opened FROM, so keep
@@ -3275,7 +3330,7 @@
         function onProgressRestore() {
           try {
             var w = window.__alloflowSelProgress;
-            if (w && typeof w === 'object') setQuestProgress(w);
+            if (w && typeof w === 'object' && !Array.isArray(w)) setQuestProgress(w);
           } catch (e) {}
         }
         window.addEventListener('alloflow-sel-progress-restored', onProgressRestore);
@@ -3291,11 +3346,15 @@
         function onToolDataRestore() {
           try {
             var w = window.__alloflowSelToolData;
-            if (w && typeof w === 'object') setSelToolData(w);
+            if (w && typeof w === 'object' && !Array.isArray(w)) setSelToolData(w);
           } catch (e) {}
         }
         window.addEventListener('alloflow-sel-tooldata-restored', onToolDataRestore);
-        return function () { window.removeEventListener('alloflow-sel-tooldata-restored', onToolDataRestore); };
+        window.addEventListener('alloflow-sel-tooldata-changed', onToolDataRestore);
+        return function () {
+          window.removeEventListener('alloflow-sel-tooldata-restored', onToolDataRestore);
+          window.removeEventListener('alloflow-sel-tooldata-changed', onToolDataRestore);
+        };
       }, []);
 
       // Mirror the hub's aggregate per-tool state into the window slot the
@@ -3316,28 +3375,28 @@
         if (selStreak.lastDate) {
           var diffMs = new Date(today).getTime() - new Date(selStreak.lastDate).getTime();
           var diffDays = Math.round(diffMs / 86400000);
-          if (diffDays === 1) newCount = (selStreak.count || 0) + 1;
+          if (diffDays === 1) newCount = (Number(selStreak.count) || 0) + 1;
         }
-        var next = { count: newCount, longest: Math.max(newCount, selStreak.longest || 0), lastDate: today };
+        var next = { count: newCount, longest: Math.max(newCount, Number(selStreak.longest) || 0), lastDate: today };
         setSelStreak(next);
-        try { localStorage.setItem('alloflow_sel_streak', JSON.stringify(next)); } catch (e) {}
+        try { var streakStore = _selTargetStorage('alloflow_sel_streak'); if (streakStore) streakStore.setItem('alloflow_sel_streak', JSON.stringify(next)); } catch (e) {}
       }, [showSelHub]);
 
       // Helper: record a tool-open event so we can surface "Continue" and
       // "New" indicators. Called from the tool-card click handler.
       function trackToolOpen(toolId) {
-        if (!toolId) return;
+        if (!_selIsSafeKey(toolId)) return;
         setSelToolUsage(function (prev) {
-          var prior = prev[toolId] || { count: 0 };
+          var prior = (_selHasOwn.call(prev, toolId) && prev[toolId]) || { count: 0 };
           var next = Object.assign({}, prev);
-          next[toolId] = { count: (prior.count || 0) + 1, lastUsed: Date.now() };
-          try { localStorage.setItem('alloflow_sel_tool_usage', JSON.stringify(next)); } catch (e) {}
+          next[toolId] = { count: (Number(prior.count) || 0) + 1, lastUsed: Date.now() };
+          try { var usageStore = _selTargetStorage('alloflow_sel_tool_usage'); if (usageStore) usageStore.setItem('alloflow_sel_tool_usage', JSON.stringify(next)); } catch (e) {}
           return next;
         });
       }
 
       function openSelToolById(toolId, label) {
-        if (!toolId || _selToolNeedsMissingAi(toolId)) return;
+        if (!_selIsSafeKey(toolId) || _selToolNeedsMissingAi(toolId)) return;
         if (window.SelHub && window.SelHub.isRegistered(toolId)) {
           _alloLastToolCardId = toolId;
           trackToolOpen(toolId);
@@ -3477,8 +3536,10 @@
         if (props.activeStation && props.activeStation.id) {
           setActiveStationId(props.activeStation.id);
           // If parent passed a station we don't have in localStorage, persist it.
-          var existing = savedStations.find(function (s) { return s.id === props.activeStation.id; });
-          if (!existing) setSavedStations(savedStations.concat([props.activeStation]));
+          setSavedStations(function (prev) {
+            var list = Array.isArray(prev) ? prev : [];
+            return list.some(function (s) { return s && s.id === props.activeStation.id; }) ? list : list.concat([props.activeStation]);
+          });
         }
       }, [props.activeStation && props.activeStation.id]);
 
@@ -3557,7 +3618,7 @@
 
       function _selQuestAutoLabel(type, toolId, params) {
         var toolName = 'this hub';
-        if (toolId && window.SelHub && window.SelHub._registry && window.SelHub._registry[toolId]) {
+        if (_selIsSafeKey(toolId) && window.SelHub && window.SelHub._registry && _selHasOwn.call(window.SelHub._registry, toolId) && window.SelHub._registry[toolId]) {
           toolName = window.SelHub._registry[toolId].name || toolId;
         }
         switch (type) {
@@ -3580,13 +3641,13 @@
         return map && typeof map === 'object' && !Array.isArray(map) ? map : {};
       }
       function _selSetStationToolConfig(stationId, toolId, cfg) {
-        if (!stationId || typeof toolId !== 'string' || !toolId) return false;
+        if (!stationId || !_selIsSafeKey(toolId)) return false;
         var clean = null;
         if (cfg != null) {
           try {
             var raw = JSON.stringify(cfg);
             if (!raw || raw.length > SEL_TOOL_CONFIG_MAX) return false;
-            clean = JSON.parse(raw);
+            clean = JSON.parse(raw, _selJsonReviver);
           } catch (e) { return false; }
           if (!clean || typeof clean !== 'object' || Array.isArray(clean)) return false;
         }
@@ -3636,7 +3697,7 @@
             selectedToolIds.forEach(function (id) { if (carriedConfig[id] && typeof carriedConfig[id] === 'object') keptConfig[id] = carriedConfig[id]; });
             if (Object.keys(keptConfig).length) station.toolConfig = keptConfig;
           }
-          setSavedStations(savedStations.concat([station]));
+          setSavedStations(function (prev) { return (Array.isArray(prev) ? prev : []).concat([station]); });
           setActiveStationId(station.id);
           // Reset builder
           discardBuilderDraft();
@@ -3674,22 +3735,25 @@
       // only because that is where the sweep put it, and both hubs are loaded
       // eagerly at boot (AlloFlowANTI.txt), so it is always present here. The
       // fallback keeps stub harnesses that define no getter working.
-      var _selFallbackAudioCtx = null;
-      function _selIsGlobalMuted() {
-        try {
-          if (typeof window.__alloIsGlobalMuted === 'function') return !!window.__alloIsGlobalMuted();
-          return window._alloGlobalMute === true;
-        } catch (_) { return false; }
-      }
       function selBeep(freq, dur, vol) {
-        if (_selIsGlobalMuted()) return;
         try {
+          var muted = (typeof _selIsGlobalMuted === 'function')
+            ? _selIsGlobalMuted()
+            : (typeof window !== 'undefined' && (typeof window.__alloIsGlobalMuted === 'function' ? !!window.__alloIsGlobalMuted() : window._alloGlobalMute === true));
+          if (muted) return;
           var ctx = (window.StemLab && typeof window.StemLab.audioContext === 'function')
             ? window.StemLab.audioContext()
-            : (_selFallbackAudioCtx && _selFallbackAudioCtx.state !== 'closed'
-                ? _selFallbackAudioCtx
-                : (_selFallbackAudioCtx = new (window.AudioContext || window.webkitAudioContext)()));
-          if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') { try { ctx.resume().catch(function () {}); } catch (_) {} }
+            : (function () {
+                var cached = (typeof _selFallbackAudioCtx !== 'undefined') ? _selFallbackAudioCtx : window.__alloSelFallbackAudioCtx;
+                if (cached && cached.state !== 'closed') return cached;
+                var created = new (window.AudioContext || window.webkitAudioContext)();
+                if (typeof _selFallbackAudioCtx !== 'undefined') _selFallbackAudioCtx = created;
+                else window.__alloSelFallbackAudioCtx = created;
+                return created;
+              })();
+          if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+            try { var res = ctx.resume(); if (res && typeof res.catch === 'function') res.catch(function () {}); } catch (_) {}
+          }
           var osc = ctx.createOscillator();
           var gain = ctx.createGain();
           osc.connect(gain); gain.connect(ctx.destination);
@@ -4669,20 +4733,26 @@
           setPacketSavedNotice('Choose at least one saved checkpoint first.');
           return;
         }
+        var url = null, a = null;
         try {
           var blob = new Blob([_selPacketPlainText(packet)], { type: 'text/plain;charset=utf-8' });
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement('a');
+          url = URL.createObjectURL(blob);
+          a = document.createElement('a');
           a.href = url;
+          a.rel = 'noopener';
           a.download = 'sel-share-packet.txt';
           document.body.appendChild(a);
           a.click();
+          var cleanupUrl = url, cleanupAnchor = a;
+          url = null; a = null;
           setTimeout(function() {
-            try { document.body.removeChild(a); } catch (e) {}
-            try { URL.revokeObjectURL(url); } catch (e2) {}
-          }, 0);
+            try { if (cleanupAnchor.parentNode) cleanupAnchor.parentNode.removeChild(cleanupAnchor); } catch (e) {}
+            try { URL.revokeObjectURL(cleanupUrl); } catch (e2) {}
+          }, 1000);
           setPacketSavedNotice('Downloaded a text copy of this packet.');
         } catch (e) {
+          try { if (a && a.parentNode) a.parentNode.removeChild(a); } catch (e2) {}
+          try { if (url) URL.revokeObjectURL(url); } catch (e3) {}
           setPacketSavedNotice('Download was not available in this browser.');
         }
       }
@@ -4702,23 +4772,29 @@
             + '<p style="white-space:pre-wrap;line-height:1.55;margin:0;">' + _selPacketEscape(sharedText) + '</p>'
             + '</section>';
         }).join('');
-        var html = '<!doctype html><html><head><meta charset="utf-8"><title>SEL Share Packet</title></head>'
+        var html = '<!doctype html><html><head><meta charset="utf-8"><meta name="referrer" content="no-referrer">'
+          + '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'none\'; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'; object-src \'none\'">'
+          + '<title>SEL Share Packet</title></head>'
           + '<body style="font-family:Arial,sans-serif;color:#0f172a;margin:28px;">'
           + '<h1 style="margin:0 0 4px;">SEL Share Packet</h1>'
           + '<p style="margin:0 0 16px;color:#475569;">Student-selected sharing choices. Created ' + _selPacketEscape(new Date(packet.createdAt).toLocaleString()) + '.</p>'
           + body
-          + '<script>window.onload=function(){setTimeout(function(){window.print();},80);};<\/script>'
           + '</body></html>';
         var win = null;
         try { win = window.open('', '_blank'); } catch (e) {}
-        if (!win) {
+        if (!win || !win.document) {
           setPacketSavedNotice('Print was blocked by the browser. Try Download text instead.');
           return;
         }
         try { win.opener = null; } catch (e) {}
-        win.document.open();
-        win.document.write(html);
-        win.document.close();
+        try {
+          win.document.open();
+          win.document.write(html);
+          win.document.close();
+          setTimeout(function() { try { win.focus(); win.print(); } catch (e) {} }, 80);
+        } catch (e) {
+          setPacketSavedNotice('Print was blocked by the browser. Try Download text instead.');
+        }
       }
 
       function _saveSelSharePacketToPortfolio(replaceExisting) {
@@ -4934,15 +5010,19 @@
               'data-primary-action': 'true',
               onClick: function() {
                 setShowEphemeralExplainer(false);
-                try { sessionStorage.setItem('alloflow_sel_seen_ephemeral_explainer', '1'); } catch (e) {}
+                var _gotItNow = Date.now();
+                try {
+                  sessionStorage.setItem('alloflow_sel_seen_ephemeral_explainer', '1');
+                  sessionStorage.setItem('alloflow_sel_last_export_at', String(_gotItNow));
+                } catch (e) {}
                 // Reset the activity timer so the 20-min re-prompt
                 // measures from this dismissal.
-                _lastActivityRef.current = Date.now();
-                _lastExportRef.current = Date.now();
+                _lastActivityRef.current = _gotItNow;
+                _lastExportRef.current = _gotItNow;
                 alloRestoreOrFocusSelHubStart();
               },
               'aria-label': __alloT('sel.hub.ui.got_it_aria', 'Got it, start using the SEL Hub'),
-              style: { padding: '10px 28px', minHeight: 44, borderRadius: 10, border: 'none', background: _t.accent, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+              style: { padding: '10px 28px', minHeight: 44, borderRadius: 10, border: 'none', background: _t.accent, color: _t.accentText, fontSize: 14, fontWeight: 700, cursor: 'pointer' }
             }, __alloT('sel.hub.ui.got_it', 'Got it'))
           )
         )
@@ -4975,8 +5055,16 @@
           }
         } catch (e) {}
         // Recovery must never bring back data after an explicit full reset.
+        _selActiveStationMemo = null;
         discardBuilderDraft(); setRemovedStations([]); setProjectSaveNotice('');
         // Reset in-memory hub state.
+        try { setActiveStationId(null); } catch (e) {}
+        try { setActivePathway(null); } catch (e) {}
+        try { setPathwayProgress({}); } catch (e) {}
+        try { setPathwayCheck({}); } catch (e) {}
+        try { setSelToolSearch(''); } catch (e) {}
+        try { setPacketSelections({}); } catch (e) {}
+        try { setActiveSharePacketArtifactId(null); } catch (e) {}
         try { setSelToolData({}); } catch (e) {}
         try { setSavedStations([]); } catch (e) {}
         try { setQuestProgress({}); } catch (e) {}
@@ -5004,10 +5092,19 @@
             window.__alloflowSelProgress = null;
             window.__alloflowSelSnapshots = [];
             window.__alloflowStudentArtifacts = keptArtifacts;
-            try {
-              var _artClearStore = _selTargetStorage('alloflow_student_artifacts');
-              if (_artClearStore) _artClearStore.setItem('alloflow_student_artifacts', JSON.stringify(keptArtifacts));
-            } catch (e2) {}
+            window.__alloSelHubPendingTool = null;
+            [typeof localStorage !== 'undefined' ? localStorage : null, typeof sessionStorage !== 'undefined' ? sessionStorage : null].forEach(function (store) {
+              if (!store) return;
+              try {
+                var rawA = store.getItem('alloflow_student_artifacts');
+                if (rawA == null) return;
+                var parsedA = JSON.parse(rawA, _selJsonReviver);
+                if (Array.isArray(parsedA)) {
+                  var filteredA = parsedA.filter(function (a) { return !(a && a.source === 'sel_hub'); });
+                  store.setItem('alloflow_student_artifacts', JSON.stringify(filteredA));
+                }
+              } catch (e2) {}
+            });
             try { window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'sel_hub-clear' } })); } catch (e3) {}
           }
         } catch (e) {}
@@ -6363,8 +6460,7 @@
                           setRemovedStations(function (prev) { return prev.concat([{ station: st, index: stationRemovalOrder.current.indexOf(st.id), order: stationRemovalOrder.current.slice() }]); });
                           announceToSR(__alloT('sel.hub.ui.station_removed_sr', 'Station removed. Undo is available until this hub closes.'));
                           setTimeout(function () { var undo = document.getElementById('sel-undo-station-' + st.id); if (undo) undo.focus(); }, 0);
-                          var keep = savedStations.filter(function (s) { return s.id !== st.id; });
-                          setSavedStations(keep);
+                          setSavedStations(function (prev) { return (Array.isArray(prev) ? prev : []).filter(function (s) { return s.id !== st.id; }); });
                           if (activeStationId === st.id) setActiveStationId(null);
                           if (typeof addToast === 'function') addToast(__alloT('sel.hub.ui.station_removed', 'Station removed'), 'info');
                         },
@@ -6410,15 +6506,25 @@
               }, __alloT('sel.hub.ui.build_station', '+ Build a Custom Station')),
               // Inline builder
               selTeacherView && builderOpen && (function () {
-                var registry = (window.SelHub && window.SelHub.getRegisteredTools) ? window.SelHub.getRegisteredTools() : [];
-                // Station Builder hardening: only offer tools that actually have a grid
-                // card. A registered-but-uncarded tool (e.g. a deprecated duplicate) would
-                // otherwise be saveable into a Station and then silently fail to render in
-                // the card-filtered grid; excluding it here keeps custom Stations reachable
-                // end-to-end and is robust to future registry drift.
+                var registeredTools = (window.SelHub && window.SelHub.getRegisteredTools) ? window.SelHub.getRegisteredTools() : [];
+                var registeredById = {};
+                registeredTools.forEach(function (tool) { if (tool && tool.id) registeredById[tool.id] = tool; });
+                // Station Builder hardening: offer all openable carded tools (including
+                // lazy-loaded tools whose modules are fetched on demand) so teachers can
+                // build custom Stations on a fresh hub open without visiting every tool first.
                 var _cardedIds = {};
-                _allSelTools.forEach(function (t) { if (t && t.id && !t.category) _cardedIds[t.id] = true; });
-                registry = registry.filter(function (tool) { return _cardedIds[tool.id]; });
+                var registry = [];
+                _allSelTools.forEach(function (t) {
+                  if (!t || !t.id || t.category) return;
+                  _cardedIds[t.id] = true;
+                  if (!_selToolIsOpenable(t.id)) return;
+                  var reg = registeredById[t.id];
+                  registry.push(Object.assign({}, t, reg || {}, {
+                    id: t.id,
+                    name: (reg && reg.name) || t.name || t.label || t.id,
+                    icon: (reg && reg.icon) || t.icon || '🔧'
+                  }));
+                });
                 var selectedBuilderToolIds = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
                 selectedBuilderToolIds.forEach(function(toolId) {
                   if (!_cardedIds[toolId]) return;
@@ -6443,7 +6549,8 @@
                 }).filter(Boolean);
                 function builderNoteLine(prefix, fallback) {
                   var text = String(builderNote || '');
-                  var match = text.match(new RegExp(prefix + ':\\s*([^\\n]+)', 'i'));
+                  var safePrefix = String(prefix || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                  var match = text.match(new RegExp(safePrefix + ':\\s*([^\\n]+)', 'i'));
                   return match ? match[1] : fallback;
                 }
                 var QUEST_PRESETS = [
@@ -6880,16 +6987,21 @@
           toolData: selToolData,
           setToolData: setSelToolData,
           update: function(toolId, key, val) {
+            if (!_selIsSafeKey(toolId) || !_selIsSafeKey(key)) return;
             setSelToolData(function(prev) {
-              var toolState = Object.assign({}, (prev && prev[toolId]) || {});
+              var toolState = Object.assign({}, (prev && _selHasOwn.call(prev, toolId) && prev[toolId]) || {});
               toolState[key] = val;
               var patch = {}; patch[toolId] = toolState;
               return Object.assign({}, prev, patch);
             });
           },
           updateMulti: function(toolId, obj) {
+            if (!_selIsSafeKey(toolId)) return;
             setSelToolData(function(prev) {
-              var toolState = Object.assign({}, (prev && prev[toolId]) || {}, obj);
+              var toolState = Object.assign({}, (prev && _selHasOwn.call(prev, toolId) && prev[toolId]) || {});
+              if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+                Object.keys(obj).forEach(function (k) { if (_selIsSafeKey(k)) toolState[k] = obj[k]; });
+              }
               var patch = {}; patch[toolId] = toolState;
               return Object.assign({}, prev, patch);
             });
@@ -6935,8 +7047,10 @@
           aiAvailable: _selAiOn,
           callTTS: typeof callTTS === 'function' ? function selSpeakTTS(text, voice, speed) {
             if (_selIsGlobalMuted()) return Promise.resolve(null);
+            if (callTTS._alloQrBlocked === true) { _selStudentDeviceVoice(text, speed); return Promise.resolve(null); }
             return callTTS(text, voice, speed).then(function(url) {
               if (_selIsGlobalMuted()) return null;
+              if (typeof url !== 'string' || !/^(?:blob:|data:audio\/|https?:)/i.test(url)) url = null;
               if (url) { var a = new Audio(url); a.play().catch(function() {}); }
               else _selStudentDeviceVoice(text, speed);
               return url;
@@ -7000,14 +7114,21 @@
           themePalette: _t,
 
           // ── Full props passthrough ──
-          props: Object.assign({}, props || {}, { onExportRequested: requestProjectSave })
+          props: Object.assign({}, props || {}, {
+            onExportRequested: requestProjectSave,
+            callGemini: _selAiOn ? callGemini : null,
+            callImagen: _selAiUsable('images', callImagen) ? callImagen : null,
+            callGeminiVision: _selAiUsable('vision', callGeminiVision) ? callGeminiVision : null
+          })
         };
 
-        console.log('[SelHub] Rendering plugin: ' + selHubTool);
+        if (window.DEBUG) console.log('[SelHub] Rendering plugin: ' + selHubTool);
         try {
           // Wrap plugin render in a stable React component per tool so hooks are isolated.
-          if (!window.__selPluginComponents) window.__selPluginComponents = {};
-          if (!window.__selPluginComponents[selHubTool]) {
+          if (!window.__selPluginComponents || Object.getPrototypeOf(window.__selPluginComponents) !== null) {
+            window.__selPluginComponents = Object.assign(Object.create(null), window.__selPluginComponents || {});
+          }
+          if (!_selHasOwn.call(window.__selPluginComponents, selHubTool)) {
             window.__selPluginComponents[selHubTool] = function SelPluginBridge(props) {
               // On unmount (or toolId change), invoke the registered tool's
               // cleanup if it defined one. Opt-in: tools without `cleanup` are
@@ -7016,7 +7137,7 @@
               // intervals so they don't keep firing after a tool switch.
               React.useEffect(function() {
                 return function() {
-                  var entry = window.SelHub && window.SelHub._registry && window.SelHub._registry[props._toolId];
+                  var entry = (_selIsSafeKey(props._toolId) && window.SelHub && window.SelHub._registry && _selHasOwn.call(window.SelHub._registry, props._toolId)) ? window.SelHub._registry[props._toolId] : null;
                   if (entry && typeof entry.cleanup === 'function') {
                     try { entry.cleanup(); } catch (e) { console.warn('[SelHub] cleanup error for ' + props._toolId, e); }
                   }
@@ -7034,7 +7155,7 @@
             h('p', { style: { fontSize: 12, color: _t.textMuted, marginBottom: 16 } }, e.message || __alloT('sel.hub.ui.unknown_error', 'Unknown error')),
             h('button', { 'data-sel-focus': 'back-error', 'aria-label': __alloT('sel.hub.ui.back_to_tools_error', 'Back to Tools'),
               onClick: function() { var fromTool = selHubTool; setSelHubTool(null); alloFocusToolCard(fromTool); },
-              style: { padding: '8px 20px', borderRadius: 8, background: _t.accent, color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
+              style: { padding: '8px 20px', borderRadius: 8, background: _t.accent, color: _t.accentText, fontWeight: 700, border: 'none', cursor: 'pointer' }
             }, '\u2190 ' + __alloT('sel.hub.ui.back_to_tools_error', 'Back to Tools'))
           );
         }

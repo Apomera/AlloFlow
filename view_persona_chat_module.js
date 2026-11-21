@@ -213,6 +213,13 @@ function PersonaRoleSwap(props) {
     if (text && active) setField(active, 'evidence', text);
     if (evidenceRef.current) evidenceRef.current.focus();
   };
+  var roleSwapMountedRef = React.useRef(true);
+  React.useEffect(function () {
+    roleSwapMountedRef.current = true;
+    return function () {
+      roleSwapMountedRef.current = false;
+    };
+  }, []);
   var save = function () {
     if (busy || !entries.length) return;
     var saveFn = typeof props.onSave === 'function' ? props.onSave : typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PersonaRoleSwap && typeof window.AlloModules.PersonaRoleSwap.save === 'function' ? window.AlloModules.PersonaRoleSwap.save : null;
@@ -237,13 +244,13 @@ function PersonaRoleSwap(props) {
         }
       });
     }).then(function (result) {
-      setStatus(result ? {
+      if (roleSwapMountedRef.current) setStatus(result ? {
         text: label('saved', 'Saved to your work. Your teacher will see it when you hand in your work.')
       } : failed);
     }).catch(function () {
-      setStatus(failed);
+      if (roleSwapMountedRef.current) setStatus(failed);
     }).finally(function () {
-      setBusy(false);
+      if (roleSwapMountedRef.current) setBusy(false);
     });
   };
   var inputClass = 'block w-full min-w-0 rounded-xl border-2 border-slate-300 bg-white p-2 text-sm leading-relaxed text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
@@ -471,6 +478,24 @@ function PersonaChatView(props) {
   var handlePersonaTopicSpark = props.handlePersonaTopicSpark;
   var handleGeneratePersonaSummary = props.handleGeneratePersonaSummary;
   var handleRetryPortraitGeneration = props.handleRetryPortraitGeneration;
+  var _aiConfigTickState = React.useState(0);
+  var setAiConfigTick = _aiConfigTickState[1];
+  React.useEffect(function () {
+    if (typeof window === 'undefined') return undefined;
+    var bump = function () {
+      setAiConfigTick(function (n) {
+        return n + 1;
+      });
+    };
+    window.addEventListener('alloflow:ai-config-changed', bump);
+    window.addEventListener('alloflow:student-ai-config-changed', bump);
+    window.addEventListener('alloflow:ai-key-lock-changed', bump);
+    return function () {
+      window.removeEventListener('alloflow:ai-config-changed', bump);
+      window.removeEventListener('alloflow:student-ai-config-changed', bump);
+      window.removeEventListener('alloflow:ai-key-lock-changed', bump);
+    };
+  }, []);
   // Learner with no usable AI: the figure cannot reply, so hide AI extras and show the stored greeting with a note.
   var personaStudentTextAiOff = !isTeacherMode && !_aiUsable('text', typeof window !== 'undefined' ? window.callGemini : undefined);
   var personaStudentImageAiOff = personaStudentTextAiOff || !isTeacherMode && !_aiUsable('images', typeof window !== 'undefined' ? window.callGeminiImageEdit : undefined);
@@ -521,6 +546,7 @@ function PersonaChatView(props) {
   };
   var renderRoleSwapToggle = function () {
     if (personaStudentTextAiOff || !roleSwapCharacters.length) return null;
+    var roleSwapShortLabel = typeof t === 'function' && t('persona.role_swap_short') && t('persona.role_swap_short') !== 'persona.role_swap_short' ? t('persona.role_swap_short') : 'Role Swap';
     return /*#__PURE__*/React.createElement("button", {
       type: "button",
       ref: roleSwapToggleRef,
@@ -531,13 +557,15 @@ function PersonaChatView(props) {
           return !open;
         });
       },
-      className: 'p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none flex items-center gap-2 ' + (_roleSwapOpenState[0] ? 'bg-indigo-100 text-indigo-900 border-indigo-300' : 'bg-white text-indigo-700 border-slate-200 hover:bg-indigo-50'),
+      className: 'min-h-11 px-3 py-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none flex items-center gap-1.5 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (_roleSwapOpenState[0] ? 'bg-indigo-100 text-indigo-900 border-indigo-300' : 'bg-white text-indigo-700 border-slate-200 hover:bg-indigo-50'),
       title: roleSwapTitle,
       "aria-label": roleSwapTitle
     }, /*#__PURE__*/React.createElement(PenTool, {
       size: 16,
       "aria-hidden": "true"
-    }));
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "hidden sm:inline"
+    }, roleSwapShortLabel));
   };
   var handleSavePersonaChat = props.handleSavePersonaChat;
   var handleListPersonaSessionArchive = props.handleListPersonaSessionArchive;
@@ -742,10 +770,24 @@ function PersonaChatView(props) {
       className: "block w-full min-w-0 min-h-20 max-h-40 resize-y rounded-xl border-2 border-slate-300 bg-white p-3 text-base leading-relaxed text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" + (busy ? ' opacity-60 cursor-wait' : '')
     }), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 flex flex-wrap items-center justify-between gap-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap items-center gap-2"
     }, /*#__PURE__*/React.createElement("p", {
       id: id + '-keys',
-      className: "text-[11px] leading-relaxed text-slate-600"
-    }, composerLabel('keyboard', 'Enter to send · Shift + Enter for a new line.')), /*#__PURE__*/React.createElement("button", {
+      className: "text-xs leading-relaxed text-slate-600"
+    }, composerLabel('keyboard', 'Enter to send · Shift + Enter for a new line.')), typeof window !== 'undefined' && (window.AlloModules?.DictationButton || window.AlloDictationButton) && React.createElement(window.AlloModules?.DictationButton || window.AlloDictationButton, {
+      t: t,
+      disabled: busy,
+      label: composerLabel('dictate', 'Dictate'),
+      onTranscript: function (spoken) {
+        var prev = String(value || '').trimEnd();
+        var merged = ((prev ? prev + ' ' : '') + spoken).slice(0, 2000);
+        setPersonaInput(merged);
+        if (personaAutoSend && merged.trim() && !busy) {
+          if (panel) handlePanelChatSubmit(merged);else handlePersonaChatSubmit(merged);
+        }
+      }
+    })), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: send,
       disabled: busy || !value.trim(),
@@ -761,6 +803,13 @@ function PersonaChatView(props) {
     }), composerLabel('send', 'Send question'))));
   };
   var _rawHandlePersonaChatSubmit = handlePersonaChatSubmit;
+  var personaChatMountedRef = React.useRef(true);
+  React.useEffect(function () {
+    personaChatMountedRef.current = true;
+    return function () {
+      personaChatMountedRef.current = false;
+    };
+  }, []);
   handlePersonaChatSubmit = function (inputOverride, fromSuggestion) {
     if (fromSuggestion) {
       var text = typeof inputOverride === 'string' ? inputOverride : '';
@@ -771,7 +820,7 @@ function PersonaChatView(props) {
         return _rawHandlePersonaChatSubmit(text, true);
       }).catch(function () {}).finally(function () {
         singleChoicePendingRef.current = false;
-        setSingleChoicePending(false);
+        if (personaChatMountedRef.current) setSingleChoicePending(false);
       });
     }
     return _rawHandlePersonaChatSubmit(inputOverride, fromSuggestion);
@@ -784,7 +833,7 @@ function PersonaChatView(props) {
       return handlePanelChatSubmit(option.text, true);
     }).catch(function () {}).finally(function () {
       panelChoicePendingRef.current = false;
-      setPanelChoicePending(false);
+      if (personaChatMountedRef.current) setPanelChoicePending(false);
     });
   };
   var _requestPersonaSummary = function (options) {
@@ -795,7 +844,7 @@ function PersonaChatView(props) {
       return handleGeneratePersonaSummary(options);
     }).catch(function () {}).finally(function () {
       summaryRequestPendingRef.current = false;
-      setSummaryRequestPending(false);
+      if (personaChatMountedRef.current) setSummaryRequestPending(false);
     });
   };
   var _openPersonaSummary = function () {
@@ -819,7 +868,7 @@ function PersonaChatView(props) {
       return handleSaveReflection();
     }).catch(function () {}).finally(function () {
       reflectionSubmitPendingRef.current = false;
-      setReflectionSubmitPending(false);
+      if (personaChatMountedRef.current) setReflectionSubmitPending(false);
     });
   };
   var _retryPersonaChoices = function (mode) {
@@ -836,7 +885,7 @@ function PersonaChatView(props) {
     };
     Promise.resolve().then(request).catch(function () {}).finally(function () {
       suggestionsRetryPendingRef.current = false;
-      setSuggestionsRetryPending(false);
+      if (personaChatMountedRef.current) setSuggestionsRetryPending(false);
     });
   };
   var _requestPersonaTopicSpark = function () {
@@ -847,7 +896,7 @@ function PersonaChatView(props) {
       return handlePersonaTopicSpark();
     }).catch(function () {}).finally(function () {
       topicSparkPendingRef.current = false;
-      setTopicSparkPending(false);
+      if (personaChatMountedRef.current) setTopicSparkPending(false);
     });
   };
   var _openPersonaReflection = function () {
@@ -903,7 +952,7 @@ function PersonaChatView(props) {
     Promise.resolve().then(function () {
       return handleListPersonaSessionArchive();
     }).then(function (result) {
-      if (_archiveRequestSeqRef.current !== seq) return;
+      if (!personaChatMountedRef.current || _archiveRequestSeqRef.current !== seq) return;
       if (result && Array.isArray(result.sessions)) {
         setPersonaArchiveRows(result);
       } else {
@@ -914,7 +963,7 @@ function PersonaChatView(props) {
         setPersonaArchiveError(true);
       }
     }).catch(function () {
-      if (_archiveRequestSeqRef.current !== seq) return;
+      if (!personaChatMountedRef.current || _archiveRequestSeqRef.current !== seq) return;
       setPersonaArchiveRows({
         sessions: [],
         unreadable: []
@@ -952,6 +1001,7 @@ function PersonaChatView(props) {
     Promise.resolve().then(request).then(function (ok) {
       // Host handlers report storage/download failures as null as well as rejects.
       if (ok !== true) throw new Error('Persona archive action failed');
+      if (!personaChatMountedRef.current) return;
       if (kind === 'delete') {
         setPersonaArchiveAction(null);
         var closeControl = personaArchiveCloseRef.current;
@@ -967,7 +1017,7 @@ function PersonaChatView(props) {
         });
       }
     }).catch(function () {
-      setPersonaArchiveAction({
+      if (personaChatMountedRef.current) setPersonaArchiveAction({
         key: row.key,
         kind: kind,
         status: 'failed'
@@ -1105,6 +1155,10 @@ function PersonaChatView(props) {
   }, [isPersonaSummaryOpen]);
 
   // Pure helpers
+  var bionicOn = typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function' ? window.__alloUseBionic() : false;
+  var bt = function (s) {
+    return bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function' ? window.__alloBionicReact(s) : s;
+  };
   var splitTextToSentences = props.splitTextToSentences;
   var formatInteractiveText = props.formatInteractiveText;
   // Components
@@ -1866,7 +1920,7 @@ function PersonaChatView(props) {
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-black text-amber-800"
   }, panelTotalXp), /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] text-slate-600"
+    className: "text-xs text-slate-600"
   }, t('common.xp')))), /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-lg px-10 sm:px-12 md:px-0 transition-all motion-reduce:transition-none duration-500"
   }, /*#__PURE__*/React.createElement(HarmonyMeter, {
@@ -2002,7 +2056,7 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 16,
     className: summaryBusy ? 'animate-pulse motion-reduce:animate-none' : ''
-  })), /*#__PURE__*/React.createElement("button", {
+  })), !personaStudentTextAiOff && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": personaState.isLoading || isGeneratingReflectionPrompt ? t('persona.finish_current_turn') : panelConcludeReady ? t('persona.conclude_button') : t('persona.conclude_locked_progress', {
       percent: panelUnlockPct
@@ -2021,7 +2075,7 @@ function PersonaChatView(props) {
   }), /*#__PURE__*/React.createElement("span", {
     className: "hidden sm:inline"
   }, t('persona.conclude_button')), !panelConcludeReady && /*#__PURE__*/React.createElement("span", {
-    className: "hidden lg:inline text-[10px] font-black opacity-80"
+    className: "hidden lg:inline text-xs font-black opacity-80"
   }, panelUnlockPct, "%"), !panelConcludeReady && /*#__PURE__*/React.createElement("span", {
     className: "absolute left-1 right-1 bottom-1 h-1 rounded-full bg-white/70 overflow-hidden"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2075,7 +2129,7 @@ function PersonaChatView(props) {
     }, char?.name || t('persona.character_fallback')), /*#__PURE__*/React.createElement("span", {
       className: "font-black tabular-nums"
     }, rapport, "%"), isActivePanelist && /*#__PURE__*/React.createElement("span", {
-      className: "inline-flex items-center gap-1 text-[10px] text-yellow-700"
+      className: "inline-flex items-center gap-1 text-xs text-yellow-700"
     }, /*#__PURE__*/React.createElement(Volume2, {
       size: 12,
       className: "animate-pulse motion-reduce:animate-none"
@@ -2153,10 +2207,10 @@ function PersonaChatView(props) {
       }, completedLabel, ": ") : isLocked ? /*#__PURE__*/React.createElement("span", {
         className: "sr-only"
       }, lockedLabel, ": ") : null, quest.text)), !quest.isCompleted && isLocked && /*#__PURE__*/React.createElement("span", {
-        className: "mt-1 block pl-4 text-[10px] font-bold opacity-70"
+        className: "mt-1 block pl-4 text-xs font-bold opacity-70"
       }, inquiryLabel('bonus', 'Optional story bonus at rapport'), " ", quest.difficulty));
     })) : /*#__PURE__*/React.createElement("p", {
-      className: "text-slate-500"
+      className: "text-slate-600"
     }, t('persona.no_objectives'))), !char?.avatarUrl && typeof handleRetryPortraitGeneration === 'function' && /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: () => handleRetryPortraitGeneration(char),
@@ -2217,7 +2271,7 @@ function PersonaChatView(props) {
       }) || 'Message from ' + speakerLabel + '. Click any sentence to hear it read aloud.' : undefined
     }, isMessagePlayingNow && /*#__PURE__*/React.createElement("div", {
       className: "absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 animate-pulse motion-reduce:animate-none"
-    }), isUser ? panelMainText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1') : (() => {
+    }), isUser ? bt(panelMainText.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1')) : (() => {
       const paragraphs = panelMainText.split(/\n{2,}/);
       let sentenceCounter = 0;
       return paragraphs.map((para, pIdx) => {
@@ -2259,7 +2313,7 @@ function PersonaChatView(props) {
             "aria-label": t('a11y.sentence_read_aloud', {
               num: currentGlobalIdx + 1
             }) || `Sentence ${currentGlobalIdx + 1}. Click to read aloud.`
-          }, formatInteractiveText(cleanText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')), " ");
+          }, formatInteractiveText(cleanText.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1')), " ");
         }));
       });
     })(), !isUser && panelTranslationText && /*#__PURE__*/React.createElement("div", {
@@ -2267,7 +2321,7 @@ function PersonaChatView(props) {
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-1"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] font-bold uppercase tracking-wider text-slate-500"
+      className: "text-xs font-bold uppercase tracking-wider text-slate-600"
     }, t('persona.translation_label') || 'Translation'), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('persona.speak_translation'),
@@ -2282,17 +2336,17 @@ function PersonaChatView(props) {
     }))), /*#__PURE__*/React.createElement("p", {
       lang: window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English'),
       dir: "auto",
-      className: "text-xs text-slate-500 leading-relaxed italic"
+      className: "text-xs text-slate-600 leading-relaxed italic"
     }, panelTranslationText)), !isUser && /*#__PURE__*/React.createElement(PersonaEvidenceNote, {
       message: msg,
       source: generatedContent?.config?.personaSource,
       t: t
     }), !isUser && /*#__PURE__*/React.createElement("span", {
-      className: "mt-2 flex items-center gap-1 text-[11px] text-slate-600 opacity-70"
+      className: "mt-2 flex items-center gap-1 text-xs text-slate-600 opacity-70"
     }, /*#__PURE__*/React.createElement(Volume2, {
       size: 11
     }), " ", t('persona.click_sentence') || 'Click any sentence to listen')), /*#__PURE__*/React.createElement("span", {
-      className: `text-[11px] mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`
+      className: `text-xs mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`
     }, speakerLabel, isMessagePlayingNow && /*#__PURE__*/React.createElement(Volume2, {
       size: 11,
       className: "animate-pulse motion-reduce:animate-none"
@@ -2330,54 +2384,77 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement(Volume2, {
     size: 12,
     className: "animate-bounce motion-reduce:animate-none"
-  }), " ", t('persona.waiting_to_speak'))), personaDefinitionData && /*#__PURE__*/React.createElement("div", {
-    "data-persona-definition-dialog": true,
-    className: "fixed z-[9999] w-[calc(100vw-1rem)] max-w-sm max-h-[calc(100dvh-1rem)] overflow-y-auto bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 animate-in motion-reduce:animate-none zoom-in-95 duration-150 sm:w-auto",
-    style: {
-      left: Math.max(8, Math.min((Number(personaDefinitionData.x) || 0) + 10, Math.max(8, window.innerWidth - 392))),
-      top: Math.max(8, Math.min((Number(personaDefinitionData.y) || 0) + 10, Math.max(8, window.innerHeight - 220)))
-    },
-    ref: personaDefinitionDialogRef,
-    role: "dialog",
-    tabIndex: -1,
-    "aria-labelledby": "persona-definition-title",
-    onKeyDown: e => {
-      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229) return;
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSetPersonaDefinitionDataToNull();
-      }
-    },
-    onClick: e => e.stopPropagation()
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between mb-2"
-  }, /*#__PURE__*/React.createElement("span", {
-    id: "persona-definition-title",
-    className: "font-bold text-lg text-indigo-600"
-  }, personaDefinitionData.word), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-definition-initial-focus": true,
-    "aria-label": t('common.close_definition'),
-    onClick: handleSetPersonaDefinitionDataToNull,
-    className: "text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded p-1 transition-colors motion-reduce:transition-none"
-  }, /*#__PURE__*/React.createElement(X, {
-    size: 16
-  }))), isPersonaDefining ? /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 text-slate-600 text-sm"
-  }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 14,
-    className: "animate-spin motion-reduce:animate-none"
-  }), t('persona.looking_up_definition')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-slate-700 leading-relaxed mb-3"
-  }, personaDefinitionData.text), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('persona.speak_definition'),
-    onClick: () => handleSpeak(personaDefinitionData.text, 'persona-definition', 0),
-    className: "flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-full"
-  }, /*#__PURE__*/React.createElement(Volume2, {
-    size: 12
-  }), " ", t('persona.speak_definition'))))), renderPersonaLatestControl(), !isPersonaFreeResponse && renderPersonaTurnError(), showRoleSwap ? /*#__PURE__*/React.createElement("div", {
+  }), " ", t('persona.waiting_to_speak'))), personaDefinitionData && (() => {
+    const vp = typeof window !== 'undefined' ? window.visualViewport : null;
+    const vw = vp && vp.width > 0 ? vp.width : typeof window !== 'undefined' ? window.innerWidth : 1024;
+    const vh = vp && vp.height > 0 ? vp.height : typeof window !== 'undefined' ? window.innerHeight : 768;
+    const ox = vp && Number.isFinite(vp.offsetLeft) ? vp.offsetLeft : 0;
+    const oy = vp && Number.isFinite(vp.offsetTop) ? vp.offsetTop : 0;
+    let rootPx = 16;
+    try {
+      rootPx = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
+    } catch (_) {}
+    const width = Math.min(Math.round(22 * rootPx), Math.max(200, Math.floor(vw - 24)));
+    const left = Math.max(ox + 12, Math.min((Number(personaDefinitionData.x) || 0) + 10, ox + vw - width - 12));
+    const top = Math.max(oy + 12, Math.min((Number(personaDefinitionData.y) || 0) + 10, Math.max(oy + 12, oy + vh - Math.min(260, Math.round(vh * 0.5)) - 12)));
+    const maxHeight = Math.max(140, Math.floor(oy + vh - top - 12));
+    return /*#__PURE__*/React.createElement("div", {
+      "data-persona-definition-dialog": true,
+      className: "fixed z-[9999] max-h-[calc(100dvh-1rem)] overflow-y-auto bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 animate-in motion-reduce:animate-none zoom-in-95 duration-150",
+      style: {
+        width: width + 'px',
+        maxWidth: Math.max(200, Math.floor(vw - 24)) + 'px',
+        left: Math.round(left) + 'px',
+        top: Math.round(top) + 'px',
+        maxHeight: maxHeight + 'px',
+        overflowWrap: 'anywhere'
+      },
+      ref: personaDefinitionDialogRef,
+      role: "dialog",
+      "aria-modal": "true",
+      tabIndex: -1,
+      "aria-labelledby": "persona-definition-title",
+      onKeyDown: e => {
+        if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229) return;
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSetPersonaDefinitionDataToNull();
+        }
+      },
+      onClick: e => e.stopPropagation()
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start justify-between gap-2 mb-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      id: "persona-definition-title",
+      className: "min-w-0 break-words font-bold text-lg text-indigo-900"
+    }, personaDefinitionData.word), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-definition-initial-focus": true,
+      "aria-label": t('common.close_definition'),
+      onClick: handleSetPersonaDefinitionDataToNull,
+      className: "min-h-11 min-w-11 shrink-0 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, /*#__PURE__*/React.createElement(X, {
+      size: 16,
+      "aria-hidden": "true"
+    }))), isPersonaDefining ? /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 text-slate-600 text-base"
+    }, /*#__PURE__*/React.createElement(RefreshCw, {
+      size: 14,
+      className: "animate-spin motion-reduce:animate-none",
+      "aria-hidden": "true"
+    }), t('persona.looking_up_definition')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+      className: "text-base text-slate-800 leading-relaxed mb-3"
+    }, personaDefinitionData.text), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-label": t('persona.speak_definition'),
+      onClick: () => handleSpeak(personaDefinitionData.text, 'persona-definition', 0),
+      className: "min-h-11 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-800 hover:text-indigo-950 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3.5 py-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, /*#__PURE__*/React.createElement(Volume2, {
+      size: 14,
+      "aria-hidden": "true"
+    }), " ", t('persona.speak_definition'))));
+  })()), renderPersonaLatestControl(), !isPersonaFreeResponse && renderPersonaTurnError(), showRoleSwap ? /*#__PURE__*/React.createElement("div", {
     className: "bg-white border-t border-slate-200 max-h-[45vh] overflow-y-auto overscroll-contain"
   }, renderPersonaRoleSwap()) : (showPersonaHints || !isPersonaFreeResponse) && (personaState.panelSuggestions || []).length > 0 && !personaState.isLoading && !panelChoicePending ? /*#__PURE__*/React.createElement("div", {
     className: "p-3 sm:p-4 bg-white border-t border-slate-200 max-h-[45vh] overflow-y-auto overscroll-contain"
@@ -2411,7 +2488,7 @@ function PersonaChatView(props) {
     className: "text-left px-3 py-2 text-xs font-medium rounded-lg border-2 transition-all motion-reduce:transition-none duration-300 shadow-sm hover:scale-[1.01] active:scale-[0.99] bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300"
   }, /*#__PURE__*/React.createElement("span", {
     className: "opacity-50 mr-2"
-  }, String.fromCharCode(65 + i), "."), opt.text))), isPersonaFreeResponse && renderPersonaComposer(true), !isPersonaFreeResponse && (personaState.panelSuggestions || []).length < 6 && /*#__PURE__*/React.createElement("div", {
+  }, String.fromCharCode(65 + i), "."), opt.text))), !isPersonaFreeResponse && (personaState.panelSuggestions || []).length < 6 && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600",
     role: "status",
     "aria-live": "polite"
@@ -2424,7 +2501,7 @@ function PersonaChatView(props) {
     disabled: suggestionsRetryPending,
     "aria-busy": suggestionsRetryPending ? 'true' : 'false',
     className: "font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
-  }, t('persona.retry_choices'))))) : panelChoicePending || personaState.isLoading ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, t('persona.retry_choices'))))) : panelChoicePending || personaState.isLoading ? /*#__PURE__*/React.createElement("div", {
     className: "p-4 bg-white border-t border-slate-200",
     role: "status",
     "aria-live": "polite",
@@ -2435,7 +2512,7 @@ function PersonaChatView(props) {
     size: 18,
     "aria-hidden": "true",
     className: "animate-spin motion-reduce:animate-none"
-  }), t('persona.waiting_for_response'))), isPersonaFreeResponse && renderPersonaComposer(true)) : isPersonaFreeResponse ? renderPersonaComposer(true) : /*#__PURE__*/React.createElement("div", {
+  }), t('persona.waiting_for_response'))) : !isPersonaFreeResponse ? /*#__PURE__*/React.createElement("div", {
     className: "p-4 bg-white border-t border-slate-200 flex flex-wrap items-center justify-center gap-3",
     role: "status",
     "aria-live": "polite"
@@ -2450,7 +2527,7 @@ function PersonaChatView(props) {
     disabled: suggestionsRetryPending,
     "aria-busy": suggestionsRetryPending ? 'true' : 'false',
     className: "text-xs font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
-  }, t('persona.retry_choices')))), /*#__PURE__*/React.createElement("div", {
+  }, t('persona.retry_choices'))) : null, !showRoleSwap && isPersonaFreeResponse && renderPersonaComposer(true)), /*#__PURE__*/React.createElement("div", {
     className: `w-1/4 min-w-[250px] border-l border-slate-200 bg-white flex flex-col p-4 overflow-hidden hidden md:flex transition-all motion-reduce:transition-none ${activeSpeakerName && activeSpeakerName === personaState.selectedCharacters?.[1]?.name ? 'ring-2 ring-yellow-200 ring-inset shadow-inner' : ''}`
   }, /*#__PURE__*/React.createElement(CharacterColumn, {
     character: personaState.selectedCharacters[1],
@@ -2512,7 +2589,7 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 12
   }), " ", t('persona.ai_feedback') || 'AI Reflection Feedback'), /*#__PURE__*/React.createElement("p", {
-    className: "mb-2 text-[11px] text-slate-500"
+    className: "mb-2 text-xs text-slate-600"
   }, t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'), /*#__PURE__*/React.createElement("div", {
     className: "break-words [overflow-wrap:anywhere] text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none",
     dangerouslySetInnerHTML: {
@@ -2566,13 +2643,23 @@ function PersonaChatView(props) {
     placeholder: t('persona.reflection_placeholder'),
     className: "w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600",
     disabled: reflectionBusy || isGeneratingReflectionPrompt
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "mt-1 flex items-center justify-between gap-2 flex-wrap"
+  }, typeof window !== 'undefined' && typeof window.AlloDictationButton === 'function' && React.createElement(window.AlloDictationButton, {
+    t,
+    disabled: reflectionBusy || isGeneratingReflectionPrompt,
+    onTranscript: spoken => {
+      const cur = String(personaReflectionText || '');
+      const sep = cur && !/\s$/.test(cur) ? ' ' : '';
+      setPersonaReflectionInput((cur + sep + spoken).slice(0, 4000));
+    }
   }), /*#__PURE__*/React.createElement("p", {
     id: "persona-reflection-count",
-    className: "mt-1 text-right text-[11px] font-medium text-slate-500"
+    className: "ml-auto text-right text-xs font-medium text-slate-600"
   }, t('persona.reflection_character_count', {
     count: personaReflectionText.length,
     limit: 4000
-  })))), /*#__PURE__*/React.createElement("div", {
+  }))))), /*#__PURE__*/React.createElement("div", {
     className: "mt-6 flex gap-3"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -2588,10 +2675,12 @@ function PersonaChatView(props) {
     className: "flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
   }, reflectionBusy ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18,
-    className: "animate-spin motion-reduce:animate-none"
+    className: "animate-spin motion-reduce:animate-none",
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
-    className: "text-yellow-700 fill-current"
+    className: "text-amber-200 fill-current",
+    "aria-hidden": "true"
   }), reflectionBusy ? t('persona.status_grading') : t('persona.submit_xp')))))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-persona-character-details": true,
@@ -2603,7 +2692,7 @@ function PersonaChatView(props) {
     className: "min-w-0"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block text-sm font-bold"
-  }, personaState.selectedCharacter.name), /*#__PURE__*/React.createElement("span", {
+  }, personaState.selectedCharacter?.name || t('persona.character_fallback') || 'Character'), /*#__PURE__*/React.createElement("span", {
     className: "block text-xs text-slate-600"
   }, navigationLabel(characterDetailsOpen ? 'hide_details' : 'show_details', characterDetailsOpen ? 'Hide character details' : 'Show character details'))), /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",
@@ -2616,7 +2705,7 @@ function PersonaChatView(props) {
   }, _safePersonaChatAvatarUrl(personaState.avatarUrl) && /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: _safePersonaChatAvatarUrl(personaState.avatarUrl),
-    alt: personaState.selectedCharacter.name,
+    alt: personaState.selectedCharacter?.name || t('persona.character_fallback') || 'Character',
     className: `w-full h-full object-cover transition-all motion-reduce:transition-none duration-500 hover:scale-105 ${personaState.isImageLoading ? 'blur-[2px] opacity-90 scale-105' : ''}`,
     style: {
       objectPosition: 'top center'
@@ -2633,7 +2722,7 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement(History, {
     size: 64,
     className: "text-yellow-300/50"
-  }), typeof handleRetryPortraitGeneration === 'function' && /*#__PURE__*/React.createElement("button", {
+  }), typeof handleRetryPortraitGeneration === 'function' && personaState.selectedCharacter && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('persona.generate_portrait_for', {
       name: personaState.selectedCharacter?.name || t('persona.character_fallback')
@@ -2647,20 +2736,20 @@ function PersonaChatView(props) {
     className: "text-xs text-amber-800 italic text-center"
   }, t('persona.portrait_retry_hint')))), /*#__PURE__*/React.createElement("h3", {
     className: "font-black text-2xl md:text-3xl text-slate-800 leading-tight mb-2"
-  }, personaState.selectedCharacter.name), /*#__PURE__*/React.createElement("div", {
+  }, personaState.selectedCharacter?.name || ''), /*#__PURE__*/React.createElement("div", {
     className: "bg-yellow-100 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-6 border border-yellow-200 shadow-sm"
-  }, personaState.selectedCharacter.role, " (", personaState.selectedCharacter.year, ")"), /*#__PURE__*/React.createElement("div", {
+  }, personaState.selectedCharacter?.role || '', personaState.selectedCharacter?.year ? ` (${personaState.selectedCharacter.year})` : ''), /*#__PURE__*/React.createElement("div", {
     className: "w-full bg-white p-4 rounded-xl border border-slate-400 text-sm text-slate-600 leading-relaxed font-serif italic shadow-sm relative"
   }, /*#__PURE__*/React.createElement(Quote, {
     size: 16,
     className: "absolute top-2 left-2 text-slate-600 fill-current",
     "aria-hidden": "true"
-  }), "\"", personaState.selectedCharacter.context, "\""), /*#__PURE__*/React.createElement("div", {
+  }), "\"", bt(personaState.selectedCharacter?.context || ''), "\""), /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-end mb-1"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest"
+    className: "text-xs font-bold text-slate-600 uppercase tracking-widest"
   }, t('persona.trust_rapport_label')), /*#__PURE__*/React.createElement("span", {
     className: `text-xs font-bold ${singleRapport >= 70 ? 'text-green-700' : singleRapport >= 30 ? 'text-yellow-800' : 'text-red-700'}`
   }, singleRapport, "%")), /*#__PURE__*/React.createElement("div", {
@@ -2675,10 +2764,10 @@ function PersonaChatView(props) {
     style: {
       width: `${singleRapport}%`
     }
-  }))), personaState.selectedCharacter.quests && personaState.selectedCharacter.quests.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }))), personaState.selectedCharacter?.quests && personaState.selectedCharacter.quests.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-6 text-left"
   }, /*#__PURE__*/React.createElement("h4", {
-    className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1"
+    className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Search, {
     size: 12,
     "aria-hidden": "true"
@@ -2710,7 +2799,7 @@ function PersonaChatView(props) {
     }, completedLabel, ": ") : isQuestLocked ? /*#__PURE__*/React.createElement("span", {
       className: "sr-only"
     }, lockedLabel, ": ") : null, quest.text), !quest.isCompleted && /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] uppercase tracking-wider font-bold text-slate-600"
+      className: "text-xs uppercase tracking-wider font-bold text-slate-600"
     }, inquiryLabel('bonus', 'Optional story bonus at rapport'), " ", quest.difficulty))));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 min-h-0 flex flex-col bg-white relative min-w-0"
@@ -2735,13 +2824,13 @@ function PersonaChatView(props) {
   }), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider"
+    className: "text-xs font-bold text-slate-600 uppercase tracking-wider"
   }, t('common.xp')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-black text-amber-800"
   }, singleXp), /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] text-slate-600"
+    className: "text-xs text-slate-600"
   }, "/ 300"))), /*#__PURE__*/React.createElement("div", {
     role: "progressbar",
     "aria-label": t('common.xp') || 'Experience points',
@@ -2873,7 +2962,7 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 16,
     className: summaryBusy ? 'animate-pulse motion-reduce:animate-none' : ''
-  })), /*#__PURE__*/React.createElement("button", {
+  })), !personaStudentTextAiOff && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": personaState.isLoading || isGeneratingReflectionPrompt ? t('persona.finish_current_turn') : singleConcludeReady ? t('persona.conclude_button') : t('persona.conclude_locked_progress', {
       percent: singleUnlockPct
@@ -2892,7 +2981,7 @@ function PersonaChatView(props) {
   }), /*#__PURE__*/React.createElement("span", {
     className: "hidden sm:inline"
   }, t('persona.conclude_button')), !singleConcludeReady && /*#__PURE__*/React.createElement("span", {
-    className: "hidden lg:inline text-[10px] font-black opacity-80"
+    className: "hidden lg:inline text-xs font-black opacity-80"
   }, singleUnlockPct, "%"), !singleConcludeReady && /*#__PURE__*/React.createElement("span", {
     className: "absolute left-1 right-1 bottom-1 h-1 rounded-full bg-white/70 overflow-hidden"
   }, /*#__PURE__*/React.createElement("span", {
@@ -2941,7 +3030,7 @@ function PersonaChatView(props) {
   })), /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-semibold text-slate-700"
   }, t('persona.empty_chat_instruction')), personaState.selectedCharacter?.name && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-xs text-slate-500"
+    className: "mt-2 text-xs text-slate-600"
   }, t('persona.character_question_placeholder', {
     name: personaState.selectedCharacter.name
   }))), personaHiddenMessageCount > 0 && /*#__PURE__*/React.createElement("div", {
@@ -2997,7 +3086,7 @@ function PersonaChatView(props) {
       const translationText = msg.translation && String(msg.translation).trim() || (_twoLang.length > 1 ? _twoLang.slice(1).join(' ').trim() : null) || null;
       const paragraphs = mainText.split(/\n{2,}/);
       let sentenceCounter = 0;
-      return /*#__PURE__*/React.createElement(React.Fragment, null, isUser ? mainText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1') : paragraphs.map((para, pIdx) => {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, isUser ? bt(mainText.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1')) : paragraphs.map((para, pIdx) => {
         const sentences = splitTextToSentences(para);
         if (sentences.length === 0) return null;
         return /*#__PURE__*/React.createElement("p", {
@@ -3044,7 +3133,7 @@ function PersonaChatView(props) {
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-2 mb-1"
       }, /*#__PURE__*/React.createElement("span", {
-        className: "text-[10px] font-bold uppercase tracking-wider text-slate-500"
+        className: "text-xs font-bold uppercase tracking-wider text-slate-600"
       }, t('persona.translation_label') || 'Translation'), /*#__PURE__*/React.createElement("button", {
         type: "button",
         "aria-label": t('persona.speak_translation'),
@@ -3060,10 +3149,10 @@ function PersonaChatView(props) {
       }))), /*#__PURE__*/React.createElement("p", {
         lang: window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English'),
         dir: "auto",
-        className: "text-xs text-slate-500 leading-relaxed italic"
+        className: "text-xs text-slate-600 leading-relaxed italic"
       }, translationText)));
     })())), /*#__PURE__*/React.createElement("span", {
-      className: `text-[11px] mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${!isUser && avatarUrl ? 'ml-11' : ''} ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`
+      className: `text-xs mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${!isUser && avatarUrl ? 'ml-11' : ''} ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`
     }, speakerName, isMessagePlayingNow && /*#__PURE__*/React.createElement(Volume2, {
       size: 11,
       className: "animate-pulse motion-reduce:animate-none"
@@ -3111,7 +3200,7 @@ function PersonaChatView(props) {
   }, showRoleSwap ? renderPersonaRoleSwap() : /*#__PURE__*/React.createElement(React.Fragment, null, !isPersonaFreeResponse && renderPersonaTurnError(), isPersonaFreeResponse && !showPersonaHints && !personaState.isLoading && /*#__PURE__*/React.createElement("div", {
     className: "px-4 pt-2 pb-0 flex justify-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 fade-in"
   }, /*#__PURE__*/React.createElement("span", {
-    className: `text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors motion-reduce:transition-none ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`
+    className: `text-xs font-bold px-3 py-1 rounded-full border shadow-sm transition-colors motion-reduce:transition-none ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`
   }, !personaTurnHintsViewed ? t('persona.hard_mode_active') : t('persona.hints_viewed_status'))), (showPersonaHints || !isPersonaFreeResponse) && (personaState.suggestions || []).length > 0 && !personaState.isLoading && /*#__PURE__*/React.createElement("div", {
     className: `px-4 pt-3 flex gap-2 ${isPersonaFreeResponse ? 'overflow-x-auto no-scrollbar pb-1' : 'flex-wrap pb-4 justify-center'}`
   }, /*#__PURE__*/React.createElement("button", {
@@ -3220,7 +3309,7 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement(MessageSquare, {
     size: 12
   }), " ", t('persona.ai_feedback') || 'AI Reflection Feedback'), /*#__PURE__*/React.createElement("p", {
-    className: "mb-2 text-[11px] text-slate-500"
+    className: "mb-2 text-xs text-slate-600"
   }, t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'), /*#__PURE__*/React.createElement("div", {
     className: "break-words [overflow-wrap:anywhere] text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none",
     dangerouslySetInnerHTML: {
@@ -3232,7 +3321,7 @@ function PersonaChatView(props) {
     type: "button",
     "data-persona-finish-interview": true,
     onClick: _handleCompleteReflection,
-    className: "w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
+    className: "w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-800 hover:to-purple-800 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 22,
     "aria-hidden": "true"
@@ -3277,13 +3366,23 @@ function PersonaChatView(props) {
     placeholder: t('persona.reflection_placeholder'),
     className: "w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600",
     disabled: reflectionBusy || isGeneratingReflectionPrompt
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "mt-1 flex items-center justify-between gap-2 flex-wrap"
+  }, typeof window !== 'undefined' && typeof window.AlloDictationButton === 'function' && React.createElement(window.AlloDictationButton, {
+    t,
+    disabled: reflectionBusy || isGeneratingReflectionPrompt,
+    onTranscript: spoken => {
+      const cur = String(personaReflectionText || '');
+      const sep = cur && !/\s$/.test(cur) ? ' ' : '';
+      setPersonaReflectionInput((cur + sep + spoken).slice(0, 4000));
+    }
   }), /*#__PURE__*/React.createElement("p", {
     id: "persona-reflection-count",
-    className: "mt-1 text-right text-[11px] font-medium text-slate-600"
+    className: "ml-auto text-right text-xs font-medium text-slate-600"
   }, t('persona.reflection_character_count', {
     count: personaReflectionText.length,
     limit: 4000
-  })))), /*#__PURE__*/React.createElement("div", {
+  }))))), /*#__PURE__*/React.createElement("div", {
     className: "mt-6 flex gap-3"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -3301,10 +3400,12 @@ function PersonaChatView(props) {
     className: "flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
   }, reflectionBusy ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18,
-    className: "animate-spin motion-reduce:animate-none"
+    className: "animate-spin motion-reduce:animate-none",
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 18,
-    className: "text-yellow-700 fill-current"
+    className: "text-amber-200 fill-current",
+    "aria-hidden": "true"
   }), reflectionBusy ? t('persona.status_grading') : t('persona.submit_xp'))))))), isPersonaArchiveOpen && /*#__PURE__*/React.createElement("div", {
     "data-persona-archive-dialog": true,
     role: "dialog",
@@ -3341,7 +3442,7 @@ function PersonaChatView(props) {
     ref: personaArchiveCloseRef,
     "aria-label": t('common.close'),
     onClick: () => setIsPersonaArchiveOpen(false),
-    className: "rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+    className: "rounded-full p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-800"
   }, /*#__PURE__*/React.createElement(X, {
     size: 18
   }))), /*#__PURE__*/React.createElement("div", {
@@ -3573,7 +3674,7 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-bold"
   }, t('persona.summary.evidence'), ":"), " ", item.evidence), item.confidence && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[11px] font-bold uppercase tracking-wide text-indigo-600"
+    className: "mt-2 text-xs font-bold uppercase tracking-wide text-indigo-600"
   }, t('persona.summary.confidence', {
     value: item.confidence
   })))))), /*#__PURE__*/React.createElement("div", {
@@ -3593,7 +3694,7 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement("h3", {
     className: "mb-1 text-xs font-black uppercase tracking-wider"
   }, t('persona.summary.verification_note')), /*#__PURE__*/React.createElement("p", null, summaryVerificationNote)), summaryGeneratedAtLabel && /*#__PURE__*/React.createElement("p", {
-    className: "text-right text-[11px] text-slate-600"
+    className: "text-right text-xs text-slate-600"
   }, t('persona.summary.generated_at', {
     date: summaryGeneratedAtLabel
   }))) : /*#__PURE__*/React.createElement("div", {

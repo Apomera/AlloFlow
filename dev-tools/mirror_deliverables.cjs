@@ -33,9 +33,9 @@ const BLOCKED_EXACT = new Set([
   '.firebaserc',
   'firebase.json',
   'firebase.live-sessions.json',
-  'AGENTS.md',
-  'CLAUDE.md',
-  'RULES.md',
+  'agents.md',
+  'claude.md',
+  'rules.md',
 ]);
 
 const BLOCKED_BASENAMES = new Set([
@@ -44,6 +44,27 @@ const BLOCKED_BASENAMES = new Set([
   '.env.production',
   '.env.development',
 ]);
+
+function assertNoSymlinkSegments(rootDir, relPath, mustExist) {
+  const resolvedRoot = path.resolve(rootDir);
+  const rootStat = fs.lstatSync(resolvedRoot);
+  if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) {
+    throw new Error(`Unsafe mirror root directory: ${resolvedRoot}`);
+  }
+  const parts = relPath.split('/').filter(Boolean);
+  let cur = resolvedRoot;
+  for (const part of parts) {
+    cur = path.join(cur, part);
+    const st = fs.lstatSync(cur, { throwIfNoEntry: false });
+    if (!st) {
+      if (mustExist) throw new Error(`Source file does not exist or is not a regular file: ${relPath}`);
+      return;
+    }
+    if (st.isSymbolicLink()) {
+      throw new Error(`Refusing to follow symbolic link while mirroring: ${cur}`);
+    }
+  }
+}
 
 function normalizeRelPath(inputPath, rootDir = ROOT) {
   if (typeof inputPath !== 'string' || !inputPath.trim()) {
@@ -54,19 +75,30 @@ function normalizeRelPath(inputPath, rootDir = ROOT) {
   if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) {
     throw new Error(`Refusing to mirror path outside repo root: ${inputPath}`);
   }
-  if (rel.startsWith('desktop/')) {
+  const lower = rel.toLowerCase();
+  if (lower.startsWith('desktop/') || lower === 'desktop') {
     throw new Error(`Refusing to mirror a desktop/ path as source: ${rel}`);
   }
-  const lower = rel.toLowerCase();
+  if (lower.startsWith('app/') || lower === 'app' || lower.startsWith('claude token/') || lower === 'claude token') {
+    throw new Error(`BLOCKED: "${rel}" must never be mirrored from root into desktop/.`);
+  }
+  const segments = rel.split('/');
+  if (segments.some((seg) => seg.startsWith('.'))) {
+    throw new Error(`BLOCKED: "${rel}" contains a hidden dotfile/dotdir segment and must not be mirrored.`);
+  }
   const baseLower = path.basename(rel).toLowerCase();
-  if (BLOCKED_EXACT.has(rel) || BLOCKED_EXACT.has(lower) || BLOCKED_BASENAMES.has(baseLower) || baseLower.startsWith('.env.')) {
+  if (BLOCKED_EXACT.has(lower) || BLOCKED_BASENAMES.has(baseLower) || baseLower.startsWith('.env.')) {
     throw new Error(`BLOCKED: "${rel}" must never be mirrored from root into desktop/ (protects CRA app shell and environment config).`);
   }
   return { abs, rel };
 }
 
+function sha256Buffer(buf) {
+  return crypto.createHash('sha256').update(buf).digest('hex');
+}
+
 function sha256File(filePath) {
-  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+  return sha256Buffer(fs.readFileSync(filePath));
 }
 
 function mirrorDeliverables(paths, { rootDir = ROOT, dryRun = false } = {}) {
@@ -75,7 +107,9 @@ function mirrorDeliverables(paths, { rootDir = ROOT, dryRun = false } = {}) {
   }
   const validated = paths.map((p) => {
     const entry = normalizeRelPath(p, rootDir);
-    if (!fs.existsSync(entry.abs) || !fs.statSync(entry.abs).isFile()) {
+    assertNoSymlinkSegments(rootDir, entry.rel, true);
+    const stat = fs.lstatSync(entry.abs, { throwIfNoEntry: false });
+    if (!stat || stat.isSymbolicLink() || !stat.isFile()) {
       throw new Error(`Source file does not exist or is not a regular file: ${entry.rel}`);
     }
     return entry;
@@ -83,14 +117,26 @@ function mirrorDeliverables(paths, { rootDir = ROOT, dryRun = false } = {}) {
 
   const results = [];
   for (const { abs, rel } of validated) {
-    const srcHash = sha256File(abs);
+    const srcBytes = fs.readFileSync(abs);
+    const srcHash = sha256Buffer(srcBytes);
     for (const mirrorDir of MIRROR_DIRS) {
+      const mirrorRel = mirrorDir.split(path.sep).join('/');
       const targetRoot = path.join(rootDir, mirrorDir);
       if (!fs.existsSync(targetRoot)) continue;
+      assertNoSymlinkSegments(rootDir, mirrorRel, true);
+      assertNoSymlinkSegments(targetRoot, rel, false);
       const dest = path.join(targetRoot, rel);
       if (!dryRun) {
         fs.mkdirSync(path.dirname(dest), { recursive: true });
-        fs.copyFileSync(abs, dest);
+        assertNoSymlinkSegments(targetRoot, rel, false);
+        const tmpDest = dest + '.mirror-' + process.pid + '-' + crypto.randomBytes(6).toString('hex');
+        try {
+          fs.writeFileSync(tmpDest, srcBytes, { flag: 'wx', flush: true });
+          fs.renameSync(tmpDest, dest);
+        } catch (err) {
+          try { fs.unlinkSync(tmpDest); } catch (_) {}
+          throw err;
+        }
         const destHash = sha256File(dest);
         if (destHash !== srcHash) {
           throw new Error(`Parity mismatch after mirroring ${rel} to ${dest}`);

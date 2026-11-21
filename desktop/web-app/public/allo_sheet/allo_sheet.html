@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src http://127.0.0.1:* http://localhost:* https:; frame-ancestors 'self' https://alloflow-cdn.pages.dev;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src http://127.0.0.1:* http://localhost:* https:;">
   <title>AlloSheet — Agentic Educator Spreadsheet</title>
   <link rel="stylesheet" href="allo_sheet.css?v=11">
 </head>
@@ -194,7 +194,7 @@ Column 3</textarea>
           <p id="editorEmptyDetail">AlloFlow will start the local spreadsheet engine and show it here. No separate setup is normally required.</p>
         </div>
         <p id="gristFrameDescription" class="sr-only">Third-party visual spreadsheet editor. For a linear keyboard and screen-reader view, use the Accessible table mirror tab.</p>
-        <iframe id="gristFrame" title="Grist spreadsheet editor" aria-describedby="gristFrameDescription" referrerpolicy="no-referrer" sandbox="allow-same-origin allow-scripts allow-forms allow-downloads allow-modals allow-popups" allow="clipboard-read; clipboard-write" hidden></iframe>
+        <iframe id="gristFrame" title="Grist spreadsheet editor" aria-describedby="gristFrameDescription" referrerpolicy="no-referrer" sandbox="allow-same-origin allow-scripts allow-forms allow-downloads allow-modals allow-popups" allow="clipboard-write" hidden></iframe>
       </section>
 
       <section id="tableView" class="work-view" role="tabpanel" aria-labelledby="tableTab" hidden>

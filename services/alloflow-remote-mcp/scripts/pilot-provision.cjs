@@ -4,9 +4,11 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 
+const { atomicWriteFile } = require("./atomic-file.cjs");
 const { readPilotConfig } = require("./pilot-preflight.cjs");
 
 const SERVICE_ROOT = path.resolve(__dirname, "..");
+const WRANGLER_SPAWN_TIMEOUT_MS = 120_000;
 const WRANGLER_BIN = path.join(
   SERVICE_ROOT,
   "node_modules",
@@ -90,6 +92,7 @@ function validateProvisioningShape(config) {
   }
   if (
     typeof desired.d1.name !== "string" ||
+    !/^[a-z0-9][a-z0-9_-]{1,62}$/u.test(desired.d1.name) ||
     !desired.d1.name.includes("staging")
   ) {
     errors.push("PILOT_DB must have a dedicated staging name");
@@ -202,23 +205,30 @@ function provisionCommands(plan, configPath) {
   return commands;
 }
 
+function stripAnsi(text) {
+  return String(text || "").replace(/\u001b\[[0-9;]*m/gu, "");
+}
+
 function parseJsonArray(output, label) {
-  const first = output.indexOf("[");
-  const last = output.lastIndexOf("]");
-  if (first < 0 || last < first) throw new Error(`invalid_${label}_inventory`);
-  let parsed;
-  try {
-    parsed = JSON.parse(output.slice(first, last + 1));
-  } catch {
-    throw new Error(`invalid_${label}_inventory`);
+  const cleaned = stripAnsi(output);
+  const last = cleaned.lastIndexOf("]");
+  if (last < 0) throw new Error(`invalid_${label}_inventory`);
+  let cursor = cleaned.indexOf("[");
+  while (cursor >= 0 && cursor < last) {
+    try {
+      const parsed = JSON.parse(cleaned.slice(cursor, last + 1));
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      // Skip bracketed log/warning prefixes like [WARNING] before the JSON payload
+    }
+    cursor = cleaned.indexOf("[", cursor + 1);
   }
-  if (!Array.isArray(parsed)) throw new Error(`invalid_${label}_inventory`);
-  return parsed;
+  throw new Error(`invalid_${label}_inventory`);
 }
 
 function parseR2List(output) {
   const buckets = [];
-  const normalized = output.replace(/\u001b\[[0-9;]*m/gu, "");
+  const normalized = stripAnsi(output);
   for (const match of normalized.matchAll(/(?:^|\n)name:\s*([^\r\n]+)\s*(?:\r?\n|$)/gu)) {
     buckets.push({ name: match[1].trim() });
   }
@@ -231,6 +241,7 @@ function runWrangler(args, options = {}) {
     cwd: SERVICE_ROOT,
     encoding: "utf8",
     windowsHide: true,
+    timeout: WRANGLER_SPAWN_TIMEOUT_MS,
     maxBuffer: 4 * 1024 * 1024,
     env: {
       ...process.env,
@@ -239,8 +250,7 @@ function runWrangler(args, options = {}) {
   });
   if (result.error) throw result.error;
   if (result.status !== 0) {
-    const detail = String(result.stderr || result.stdout || "failed")
-      .replace(/\\u001b\\[[0-9;]*m/gu, "")
+    const detail = stripAnsi(result.stderr || result.stdout || "failed")
       .trim()
       .slice(-1000);
     if (
@@ -288,9 +298,17 @@ function reconciledConfig(config, finalPlan) {
   return next;
 }
 
+function sameDir(left, right) {
+  const a = fs.realpathSync.native(left);
+  const b = fs.realpathSync.native(right);
+  return process.platform === "win32" ? a.toLowerCase() === b.toLowerCase() : a === b;
+}
+
 function assertLocalConfigPath(configPath) {
+  const dir = path.dirname(configPath);
   if (
-    path.dirname(configPath) !== SERVICE_ROOT ||
+    !fs.existsSync(dir) ||
+    !sameDir(dir, SERVICE_ROOT) ||
     path.basename(configPath) !== LOCAL_CONFIG_NAME
   ) {
     throw new Error(`apply_requires_${LOCAL_CONFIG_NAME}`);
@@ -305,24 +323,7 @@ function writeReconciledConfig(configPath, expectedRaw, config) {
   assertLocalConfigPath(configPath);
   const currentRaw = fs.readFileSync(configPath, "utf8");
   if (currentRaw !== expectedRaw) throw new Error("pilot_config_changed_during_provisioning");
-  const temporaryPath = path.join(
-    SERVICE_ROOT,
-    `.${LOCAL_CONFIG_NAME}.${process.pid}.${Date.now()}.tmp`,
-  );
-  try {
-    fs.writeFileSync(
-      temporaryPath,
-      `${JSON.stringify(config, null, 2)}\n`,
-      { encoding: "utf8", flag: "wx", mode: 0o600 },
-    );
-    fs.renameSync(temporaryPath, configPath);
-  } finally {
-    try {
-      fs.unlinkSync(temporaryPath);
-    } catch (error) {
-      if (error?.code !== "ENOENT") throw error;
-    }
-  }
+  atomicWriteFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
 }
 
 async function runProvision(options) {
@@ -370,7 +371,7 @@ async function main(argv) {
   const configPath = path.resolve(
     optionValue(argv, "--config") || LOCAL_CONFIG_NAME,
   );
-  if (/\.example\./u.test(path.basename(configPath))) {
+  if (/\.example\./iu.test(path.basename(configPath))) {
     throw new Error("refusing_to_provision_from_example_configuration");
   }
   const accountId = optionValue(argv, "--account-id") ||

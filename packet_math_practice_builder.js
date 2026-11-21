@@ -159,9 +159,12 @@
       .replace(/^(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '')
       .replace(/\s*=\s*(?:\?|_+|[\u25A1\u2B1C])?$/, '').trim();
   }
+  var MAX_PARSE_CHARS = 65536;
   function parseFacts(value) {
+    var raw = text(value).replace(/^\uFEFF/, '');
+    if (raw.length > MAX_PARSE_CHARS) throw new Error('That list is too long to read at once. Paste ' + MAX_FACTS + ' facts or fewer.');
     var shape = new RegExp('^(\\d+)\\s*([-+xX*/:' + String.fromCharCode(0x2212, 0x2013, 0x2014, 0xD7, 0xB7, 0x22C5, 0xF7) + '])\\s*(\\d+)(?:\\s*=\\s*(\\d+))?$');
-    return text(value).replace(/^\uFEFF/, '').split(/[,;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean).map(function (part, i) {
+    return raw.split(/[,;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean).map(function (part, i) {
       var clean = cleanFactLine(part);
       var m = shape.exec(clean);
       if (!m) throw new Error('Fact ' + (i + 1) + ': "' + (clean || part) + '" is not a fact. Write it like 7 x 8 or 6 + 7.');
@@ -189,7 +192,7 @@
   function knownByOrder(familyId) {
     var fam = family(text(familyId));
     if (!fam) throw new Error('Unknown fact family "' + text(familyId) + '".');
-    var seen = {};
+    var seen = Object.create(null);
     earlier(fam).forEach(function (e) { e.facts.forEach(function (f) { seen[keyOf(f)] = true; }); });
     return fam.facts.filter(function (f) { var t = turnaround(f) || related(f); return seen[keyOf(f)] || (t && seen[keyOf(t)]); }).map(keyOf);
   }
@@ -233,7 +236,7 @@
       var list = Array.isArray(o.facts) ? o.facts : typeof o.facts === 'string' ? parseFacts(o.facts) : [];
       if (list.length < 1 || list.length > MAX_FACTS) throw new Error('A list needs 1 to ' + MAX_FACTS + ' facts. This list has ' + list.length + '.');
       facts = list.map(function (f, i) { return checkFact(f, i + 1); });
-      var seen = {};
+      var seen = Object.create(null);
       facts.forEach(function (f, i) {
         if (seen[keyOf(f)]) throw new Error('Fact ' + (i + 1) + ' is in the list twice.');
         seen[keyOf(f)] = true;
@@ -248,7 +251,7 @@
       apart(out.cards);
       return out;
     }
-    var known = {};
+    var known = Object.create(null);
     var marked = o.known == null && fam ? knownByOrder(fam.id) : Array.isArray(o.known) ? o.known : [];
     marked.forEach(function (k) { known[typeof k === 'string' ? k : keyOf(k || {})] = true; });
     var fresh = facts.filter(function (f) { return !known[keyOf(f)]; });
@@ -260,13 +263,13 @@
     // not used (held, with the new fact it would give away). A known fact and its own turnaround (1 + 9 and 9 + 1 in Make
     // 10) are one known fact that takes turns: both are used, as the teacher chose, never in the same group of known
     // cards, so never side by side; it counts once toward the 3 known facts a rehearsal needs.
-    var isNew = {};
+    var isNew = Object.create(null);
     out.newFacts.forEach(function (f) { isNew[keyOf(f)] = true; });
     out.held = [];
     out.pairs = [];
-    var inFile = {};
+    var inFile = Object.create(null);
     facts.forEach(function (f) { inFile[keyOf(f)] = true; });
-    var slots = [], slotOf = {};
+    var slots = [], slotOf = Object.create(null);
     mixed(knownFacts, 'known|' + facts.map(keyOf).join(',') + '|' + knownFacts.map(keyOf).join(',')).forEach(function (f) {
       var t = turnaround(f), tk = t ? keyOf(t) : '';
       if (tk && isNew[tk]) { out.held.push({ fact: f, gives: t }); return; }
@@ -427,8 +430,9 @@
     var at = clean ? html.indexOf(open) : -1;
     if (at < 0) return html;
     var from = at + open.length, to = html.indexOf('</script>', from), manifest;
-    try { manifest = JSON.parse(html.slice(from, to)); } catch (_) { return html; }
-    if (!manifest || typeof manifest !== 'object') return html;
+    if (to < 0) return html;
+    try { manifest = JSON.parse(html.slice(from, to), function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; }); } catch (_) { return html; }
+    if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return html;
     manifest.learner = clean;
     var json = JSON.stringify(manifest).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     return html.slice(0, from) + json + html.slice(to);

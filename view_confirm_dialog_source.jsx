@@ -25,12 +25,13 @@
  *
  * Icons (read from window globals): AlertCircle, AlertTriangle, Info
  */
-function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
+function ConfirmDialog({ confirmDialog: rawConfirmDialog, setConfirmDialog, t }) {
   const AlertCircle    = (window.AlloIcons && window.AlloIcons.AlertCircle)   || window.AlertCircle   || (() => null);
   const AlertTriangle  = (window.AlloIcons && window.AlloIcons.AlertTriangle) || window.AlertTriangle || AlertCircle;
   const Info           = (window.AlloIcons && window.AlloIcons.Info)          || window.Info          || AlertCircle;
 
-  const dialogConfig = confirmDialog && typeof confirmDialog === 'object' ? confirmDialog : {};
+  const confirmDialog = rawConfirmDialog && typeof rawConfirmDialog === 'object' ? rawConfirmDialog : {};
+  const dialogConfig = confirmDialog;
   const tone = dialogConfig.tone || 'warning';
   const iconMap = { danger: AlertTriangle, warning: AlertCircle, info: Info };
   const colorMap = {
@@ -41,18 +42,25 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
   const Icon = iconMap[tone] || AlertCircle;
   const palette = colorMap[tone] || colorMap.warning;
 
+  const tx = typeof t === 'function' ? t : () => '';
   const dialogConfigRef = React.useRef(dialogConfig);
   dialogConfigRef.current = dialogConfig;
   const setConfirmDialogRef = React.useRef(setConfirmDialog);
   setConfirmDialogRef.current = setConfirmDialog;
+  const settledRef = React.useRef(false);
+  const backdropDownRef = React.useRef(null);
 
   const handleCancel = React.useCallback(() => {
+    if (settledRef.current) return;
+    settledRef.current = true;
     const cfg = dialogConfigRef.current;
     if (typeof cfg.onCancel === 'function') { try { cfg.onCancel(); } catch (_) {} }
     if (typeof setConfirmDialogRef.current === 'function') setConfirmDialogRef.current(null);
   }, []);
 
   const handleConfirm = React.useCallback(() => {
+    if (settledRef.current) return;
+    settledRef.current = true;
     const cfg = dialogConfigRef.current;
     if (typeof cfg.onConfirm === 'function') { try { cfg.onConfirm(); } catch (_) {} }
     if (typeof setConfirmDialogRef.current === 'function') setConfirmDialogRef.current(null);
@@ -64,6 +72,7 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
   const backdropRef = React.useRef(null);
   const dialogRef = React.useRef(null);
   const cancelBtnRef = React.useRef(null);
+  const didMountRef = React.useRef(false);
   React.useEffect(() => {
     const dialog = dialogRef.current;
     const backdrop = backdropRef.current;
@@ -78,7 +87,8 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
     while (branch && branch.parentElement) {
       const parent = branch.parentElement;
       Array.from(parent.children).forEach((node) => {
-        if (!node || node === branch || seenNodes.has(node) || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(node.tagName) || (typeof node.matches === 'function' && node.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
+        const liveSel = '[aria-live], [role="status"], [role="alert"], [data-toast-region]';
+        if (!node || node === branch || seenNodes.has(node) || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(node.tagName) || (typeof node.matches === 'function' && node.matches(liveSel)) || (typeof node.querySelector === 'function' && !!node.querySelector(liveSel))) return;
         seenNodes.add(node);
         backgroundState.push({
           node,
@@ -133,14 +143,10 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
     return () => {
       document.removeEventListener('keydown', onKeyDown);
       if (alloScrollLocked) { alloScrollLock.count = Math.max(0, alloScrollLock.count - 1); if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev; }
-      backgroundState.forEach(({ node, hadInert, prevInert, ariaHidden }) => {
+      backgroundState.forEach(({ node, hadInert, ariaHidden }) => {
         if (!node || !node.isConnected) return;
-        if (!hadInert) {
-          try { node.inert = false; } catch (_) {}
-          node.removeAttribute('inert');
-        } else {
-          /* already inert when this dialog opened: leave it as it is now */
-        }
+        if (!hadInert) node.removeAttribute('inert');
+        if (!hadInert) { try { node.inert = false; } catch (_) {} }
         if (ariaHidden == null) node.removeAttribute('aria-hidden');
         else if (ariaHidden !== 'true') node.setAttribute('aria-hidden', ariaHidden);
       });
@@ -152,13 +158,25 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
       }
     };
   }, []);
+  React.useEffect(() => {
+    settledRef.current = false;
+    if (!didMountRef.current) { didMountRef.current = true; return; }
+    if (cancelBtnRef.current && typeof cancelBtnRef.current.focus === 'function') {
+      try { cancelBtnRef.current.focus(); } catch (_) {}
+    }
+  }, [rawConfirmDialog]);
 
   return (
     <div
       ref={backdropRef}
       role="presentation"
-      className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none"
-      onClick={(e) => { if (e.target === e.currentTarget) handleCancel(); }}
+      className="fixed inset-0 z-[10050] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none"
+      onMouseDown={(e) => { backdropDownRef.current = (e.target === e.currentTarget); }}
+      onClick={(e) => {
+        const allowBackdropClose = backdropDownRef.current !== false;
+        backdropDownRef.current = null;
+        if (e.target === e.currentTarget && allowBackdropClose) handleCancel();
+      }}
     >
       <div
         ref={dialogRef}
@@ -166,15 +184,15 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="alloflow-confirm-title"
-        aria-describedby={dialogConfig.detail ? 'alloflow-confirm-message alloflow-confirm-detail' : 'alloflow-confirm-message'}
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-6 animate-in zoom-in-95 duration-200 motion-reduce:animate-none border-2 border-slate-200"
+        aria-describedby={confirmDialog.detail ? 'alloflow-confirm-message alloflow-confirm-detail' : 'alloflow-confirm-message'}
+        className="allo-docsuite bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-6 animate-in zoom-in-95 duration-200 motion-reduce:animate-none border-2 border-slate-200"
       >
         <div className="flex items-center gap-3 mb-4">
           <div className={`w-10 h-10 rounded-full ${palette.iconBg} flex items-center justify-center shrink-0`}>
             <Icon size={20} className={palette.iconText} aria-hidden="true" />
           </div>
           <h2 id="alloflow-confirm-title" className="text-lg font-bold text-slate-800">
-            {dialogConfig.title || t('common.confirm') || 'Confirm'}
+            {dialogConfig.title || tx('common.confirm') || 'Confirm'}
           </h2>
         </div>
         <p id="alloflow-confirm-message" className="text-sm text-slate-700 leading-relaxed mb-2 whitespace-pre-wrap">
@@ -190,14 +208,14 @@ function ConfirmDialog({ confirmDialog, setConfirmDialog, t }) {
             onClick={handleCancel}
             className="min-h-11 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-600"
           >
-            {dialogConfig.cancelText || t('common.cancel') || 'Cancel'}
+            {dialogConfig.cancelText || tx('common.cancel') || 'Cancel'}
           </button>
           <button
             type="button"
             onClick={handleConfirm}
             className={`min-h-11 px-5 py-2.5 ${palette.btn} text-white font-semibold rounded-xl transition-colors motion-reduce:transition-none shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-700`}
           >
-            {dialogConfig.confirmText || t('common.confirm_action') || 'Confirm'}
+            {dialogConfig.confirmText || tx('common.confirm_action') || 'Confirm'}
           </button>
         </div>
       </div>

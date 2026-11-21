@@ -167,13 +167,20 @@
   var PROTO = 'ds2';
   var APPROVAL_PROTO = 'ds-approval1';
   var NS_RE = /^[a-z0-9_.-]{1,64}$/i;
-  var OPS = { ping:1, probe:1, get:1, set:1, compareAndSwap:1, mutateRecovery:1, delete:1, list:1, getAll:1, clearNamespace:1, namespaces:1, wipeAll:1, estimate:1 };
+  var OPS = Object.assign(Object.create(null), { ping:1, probe:1, get:1, set:1, compareAndSwap:1, mutateRecovery:1, delete:1, list:1, getAll:1, clearNamespace:1, namespaces:1, estimate:1 });
 
   var _dbPromise = null;
   function openDb() {
     if (_dbPromise) return _dbPromise;
     _dbPromise = new Promise(function (resolve, reject) {
-      var req = indexedDB.open(DB_NAME, 1);
+      var req;
+      try {
+        req = indexedDB.open(DB_NAME, 1);
+      } catch (err) {
+        _dbPromise = null;
+        reject(err);
+        return;
+      }
       req.onupgradeneeded = function () {
         var db = req.result;
         if (!db.objectStoreNames.contains(STORE)) {
@@ -181,8 +188,23 @@
           store.createIndex('ns', 'ns', { unique: false });
         }
       };
-      req.onsuccess = function () { resolve(req.result); };
-      req.onerror = function () { reject(req.error || new Error('indexedDB open failed')); };
+      req.onsuccess = function () {
+        var db = req.result;
+        db.onversionchange = function () {
+          try { db.close(); } catch (_) {}
+          _dbPromise = null;
+        };
+        db.onclose = function () { _dbPromise = null; };
+        resolve(db);
+      };
+      req.onerror = function () {
+        _dbPromise = null;
+        reject(req.error || new Error('indexedDB open failed'));
+      };
+      req.onblocked = function () {
+        _dbPromise = null;
+        reject(new Error('indexedDB open blocked'));
+      };
     });
     return _dbPromise;
   }
@@ -367,13 +389,22 @@
       return null;
     }
     var snapshot = {};
-    Object.keys(candidate).forEach(function (key) { snapshot[key] = candidate[key]; });
+    Object.keys(candidate).forEach(function (key) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
+      snapshot[key] = candidate[key];
+    });
     snapshot.version = RECOVERY_VERSION;
     snapshot.id = id;
     snapshot.savedAt = savedAt;
     snapshot.pinned = candidate.pinned === true;
     snapshot.resourceCount = history.length;
-    snapshot.workspace = Object.assign({}, workspace, { history: history });
+    var safeWorkspace = {};
+    Object.keys(workspace).forEach(function (key) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
+      safeWorkspace[key] = workspace[key];
+    });
+    safeWorkspace.history = history;
+    snapshot.workspace = safeWorkspace;
     return snapshot;
   }
   function putRecoveryTombstone(target, id, removedAt) {
@@ -553,6 +584,7 @@
       if (prototype !== Object.prototype && prototype !== null) return value;
       var out = {};
       Object.keys(value).forEach(function (key) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
         out[key] = visit(value[key], path ? path + '.' + key : key);
       });
       return out;
@@ -758,7 +790,8 @@
           if (cursor) { cursor.delete(); removed++; cursor.continue(); }
         };
         t.oncomplete = function () { resolve(removed); };
-        t.onerror = function () { reject(t.error); };
+        t.onerror = function () { reject(t.error || new Error('tx failed')); };
+        t.onabort = function () { reject(t.error || new Error('tx aborted')); };
       });
     });
   }
@@ -812,7 +845,7 @@
   function deleteSavedWork() {
     if (!clinicalDeletionHeld()) return kvWipeAll().then(function () { return { held: false }; });
     return kvAll().then(function (rows) {
-      var names = {};
+      var names = Object.create(null);
       rows.forEach(function (row) { if (row.ns !== 'protected_clinical_records') names[row.ns] = true; });
       return Object.keys(names).reduce(function (chain, ns) {
         return chain.then(function () { return kvClearNamespace(ns); });
@@ -1018,16 +1051,20 @@
 
   function handleOp(msg) {
     var ns = msg.ns, key = msg.key;
-    var needsNs = { get:1, set:1, compareAndSwap:1, mutateRecovery:1, delete:1, list:1, getAll:1, clearNamespace:1 };
-    if (needsNs[msg.op] && !NS_RE.test(String(ns || ''))) {
+    var needsNs = Object.assign(Object.create(null), { get:1, set:1, compareAndSwap:1, mutateRecovery:1, delete:1, list:1, getAll:1, clearNamespace:1 });
+    if (needsNs[msg.op] && (typeof ns !== 'string' || !NS_RE.test(ns))) {
       return Promise.reject({ code: 'allo/bad-namespace', message: 'Invalid namespace' });
     }
     // NS_RE happily allows a leading "__", so a client could otherwise read or
     // rewrite the consent record and the probe counters through ordinary ops.
     // Those are the bridge's own bookkeeping; keep them off the client surface.
-    if (needsNs[msg.op] && RESERVED_NS_RE.test(String(ns || ''))) {
+    if (needsNs[msg.op] && RESERVED_NS_RE.test(ns)) {
       return Promise.reject({ code: 'allo/reserved-namespace',
         message: 'Namespaces beginning with "__" are reserved for the bridge.' });
+    }
+    if ((msg.op === 'delete' || msg.op === 'clearNamespace') && ns === 'protected_clinical_records' && clinicalDeletionHeld()) {
+      return Promise.reject({ code: 'allo/retention-hold',
+        message: 'Manual clinical-record deletion is blocked by retention policy or legal hold.' });
     }
     if ((msg.op === 'get' || msg.op === 'set' || msg.op === 'delete' ||
          msg.op === 'compareAndSwap' || msg.op === 'mutateRecovery') &&
@@ -1049,8 +1086,9 @@
       case 'getAll': return kvNamespace(ns, false);
       case 'clearNamespace': return kvClearNamespace(ns);
       case 'namespaces': return kvAll().then(function (rows) {
-        var by = {};
+        var by = Object.create(null);
         rows.forEach(function (r) {
+          if (RESERVED_NS_RE.test(String(r.ns || ''))) return;
           var b = by[r.ns] = by[r.ns] || { ns: r.ns, count: 0, bytes: 0 };
           b.count++;
           try {
@@ -1062,7 +1100,6 @@
         });
         return Object.keys(by).sort().map(function (k) { return by[k]; });
       });
-      case 'wipeAll': return kvWipeAll().then(function () { return true; });
       case 'estimate': return storageFacts();
       case 'probe': {
         var channel = msg.channel === 'iframe' ? 'iframe' : 'popup';
@@ -1478,13 +1515,44 @@
     for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
     return out;
   }
+  function getBridgeBackoffRetryMs() {
+    try {
+      var raw = localStorage.getItem('alloflow_educator_access_backoff_v1');
+      if (!raw) return 0;
+      var st = JSON.parse(raw);
+      var until = st && Number(st.lockedUntil);
+      return Number.isFinite(until) && until > Date.now() ? until - Date.now() : 0;
+    } catch (_) { return 0; }
+  }
+  function recordBridgeBackoffFailure() {
+    try {
+      var raw = localStorage.getItem('alloflow_educator_access_backoff_v1');
+      var st = raw ? JSON.parse(raw) : {};
+      var fails = (st && Number.isFinite(Number(st.failures)) ? Number(st.failures) : 0) + 1;
+      var delayMs = fails < 3 ? 0 : Math.min(300000, 2000 * Math.pow(2, fails - 3));
+      localStorage.setItem('alloflow_educator_access_backoff_v1', JSON.stringify({
+        failures: fails,
+        lockedUntil: delayMs > 0 ? Date.now() + delayMs : 0
+      }));
+    } catch (_) {}
+  }
+  function clearBridgeBackoff() {
+    try { localStorage.removeItem('alloflow_educator_access_backoff_v1'); } catch (_) {}
+  }
   function verifyBridgeCode(code) {
     var env = getBridgeVerifier();
     if (!env) return Promise.resolve(true);
     var text = String(code == null ? '' : code);
     if (!text || !window.crypto || !window.crypto.subtle) return Promise.resolve(false);
-    var salt = b64ToBytes(env.salt), expected = b64ToBytes(env.hash);
-    var enc = new TextEncoder().encode(text.normalize('NFC'));
+    var salt, expected;
+    try {
+      salt = b64ToBytes(env.salt);
+      expected = b64ToBytes(env.hash);
+    } catch (_) {
+      return Promise.resolve(false);
+    }
+    if (!salt.length || !expected.length) return Promise.resolve(false);
+    var enc = new TextEncoder().encode(text);
     return window.crypto.subtle.importKey('raw', enc, { name: 'PBKDF2' }, false, ['deriveBits'])
       .then(function (key) {
         return window.crypto.subtle.deriveBits({ name: 'PBKDF2', salt: salt, iterations: env.iter, hash: 'SHA-256' }, key, expected.length * 8);
@@ -1552,13 +1620,22 @@
       cancel.onclick = function () { finish(false); };
       box.onsubmit = function (ev) {
         ev.preventDefault();
+        var retryMs = getBridgeBackoffRetryMs();
+        if (retryMs > 0) {
+          err.textContent = 'Too many attempts. Try again in ' + Math.ceil(retryMs / 1000) + 's.';
+          return;
+        }
         submit.disabled = true;
         err.textContent = '';
         verifyBridgeCode(input.value).then(function (ok) {
           submit.disabled = false;
-          if (ok) { finish(true); return; }
+          if (ok) { clearBridgeBackoff(); finish(true); return; }
+          recordBridgeBackoffFailure();
           err.textContent = 'Incorrect access code.';
           input.focus();
+        }).catch(function () {
+          submit.disabled = false;
+          err.textContent = 'Could not verify access code.';
         });
       };
       try { input.focus(); } catch (_) {}
@@ -1589,7 +1666,7 @@
     document.getElementById('detail-card').hidden = true;
     Promise.all([kvAll(), storageFacts()]).then(function (res) {
       var rows = res[0], facts = res[1];
-      var byNs = {};
+      var byNs = Object.create(null);
       rows.forEach(function (r) {
         (byNs[r.ns] = byNs[r.ns] || { count: 0, size: 0 }).count++;
         byNs[r.ns].size += approxSize(r.value);
@@ -1631,13 +1708,18 @@
             if (!ok) return;
             if (isClinicalHoldActive(ns)) { alert('Manual clinical-record deletion is blocked by retention policy or legal hold.'); return; }
             if (confirm('Erase all ' + byNs[ns].count + ' record(s) in "' + ns + '" from this device?')) {
-              kvClearNamespace(ns).then(refresh);
+              kvClearNamespace(ns).then(refresh).catch(function (e) {
+                alert('Could not erase "' + ns + '": ' + String((e && e.message) || e));
+              });
             }
           });
         };
         td.appendChild(view); td.appendChild(clear); tr.appendChild(td);
         tbody.appendChild(tr);
       });
+    }).catch(function (e) {
+      var status = document.getElementById('status-card');
+      if (status) status.textContent = 'Could not read device storage: ' + String((e && e.message) || e);
     });
   }
   function showNs(ns) {
@@ -1658,6 +1740,8 @@
         body.appendChild(wrap);
       });
       document.getElementById('detail-card').hidden = false;
+    }).catch(function (e) {
+      alert('Could not open "' + ns + '": ' + String((e && e.message) || e));
     });
   }
   document.getElementById('btn-refresh').onclick = refresh;
@@ -1683,7 +1767,9 @@
       if (!ok || isClinicalHoldActive('')) return;
       if (confirm('Erase EVERYTHING AlloFlow has stored on this device? This cannot be undone.') &&
           confirm('Really erase all device storage?')) {
-        kvWipeAll().then(refresh);
+        kvWipeAll().then(refresh).catch(function (e) {
+          alert('Could not erase device storage: ' + String((e && e.message) || e));
+        });
       }
     });
   };
@@ -1702,6 +1788,8 @@
         a.download = 'alloflow_device_storage_export.json';
         a.click();
         setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+      }).catch(function (e) {
+        alert('Could not export device storage: ' + String((e && e.message) || e));
       });
     });
   };

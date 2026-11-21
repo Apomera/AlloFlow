@@ -2440,7 +2440,21 @@
               'aria-label': t('stem.trajectorycomputing.briefing_blueprint_aria', 'Aurora Test 3 launch schematic showing a 30 meter tower releasing at 215 meters per second at 38 degrees, decomposed into Vx and Vy components, arcing toward the 4.55 to 4.70 kilometer landing zone.'),
               style: { width: '100%', height: 'auto', display: 'block' }
             },
-              h('rect', { x: 0, y: 0, width: 640, height: 168, fill: isContrast ? '#000000' : '#0f2922' }),
+              !isContrast && h('defs', null,
+                h('linearGradient', { id: 'tc-br-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#0c231d' }),
+                  h('stop', { offset: '100%', stopColor: '#13332a' })
+                ),
+                h('linearGradient', { id: 'tc-br-env', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#ffbf47', stopOpacity: 0.2 }),
+                  h('stop', { offset: '100%', stopColor: '#ffbf47', stopOpacity: 0.01 })
+                ),
+                h('radialGradient', { id: 'tc-br-beacon', cx: '50%', cy: '50%', r: '50%' },
+                  h('stop', { offset: '0%', stopColor: '#ffbf47', stopOpacity: 0.45 }),
+                  h('stop', { offset: '100%', stopColor: '#ffbf47', stopOpacity: 0 })
+                )
+              ),
+              h('rect', { x: 0, y: 0, width: 640, height: 168, fill: isContrast ? '#000000' : 'url(#tc-br-well)' }),
               /* Subtle archival drafting gridlines */
               [34, 68, 102, 136].map(function (gy) {
                 return h('line', { key: 'gy-' + gy, x1: 16, y1: gy, x2: 624, y2: gy, stroke: isContrast ? '#333333' : '#1f4e42', strokeWidth: 0.8 });
@@ -2451,27 +2465,39 @@
               /* Blueprint Header */
               h('text', { x: 20, y: 24, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'FIG 1.0 // AURORA-3 BALLISTIC LAUNCH PROFILE'),
               h('text', { x: 620, y: 24, textAnchor: 'end', fill: isContrast ? '#ffffff' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'g = 9.81 m/s\u00B2'),
+              /* Gradient-shaded ballistic trajectory envelope */
+              !isContrast && h('path', { d: 'M 58 138 L 58 112 Q 290 12 518 136 L 518 138 Z', fill: 'url(#tc-br-env)' }),
               /* Ground Datum Line */
               h('line', { x1: 24, y1: 138, x2: 616, y2: 138, stroke: isContrast ? '#ffff00' : '#9ad7c0', strokeWidth: 2 }),
-              /* 30m Launch Tower */
-              h('rect', { x: 48, y: 112, width: 12, height: 26, fill: isContrast ? '#ffff00' : '#d8d0b3', stroke: isContrast ? '#000000' : '#173c32', strokeWidth: 1 }),
+              /* 30m Launch Tower with structural truss crossbars */
+              h('rect', { x: 48, y: 112, width: 12, height: 26, rx: 1, fill: isContrast ? '#ffff00' : '#d8d0b3', stroke: isContrast ? '#000000' : '#173c32', strokeWidth: 1 }),
+              !isContrast && h('path', { d: 'M 49 116 L 59 124 M 59 116 L 49 124 M 49 126 L 59 134 M 59 126 L 49 134', stroke: '#173c32', strokeWidth: 0.8, opacity: 0.55 }),
               h('text', { x: 54, y: 154, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#cce3d9', fontSize: 10, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }, 'Y0 = 30m'),
               /* Target Landing Zone Bracket (4.55 - 4.70 km) */
-              h('rect', { x: 472, y: 131, width: 92, height: 14, rx: 3, fill: isContrast ? '#000000' : 'rgba(255,191,71,0.24)', stroke: isContrast ? '#00ff00' : '#ffbf47', strokeWidth: 1.8 }),
+              !isContrast && h('rect', { x: 468, y: 127, width: 100, height: 22, rx: 6, fill: '#ffbf47', opacity: 0.12 }),
+              h('rect', { x: 472, y: 131, width: 92, height: 14, rx: 3, fill: isContrast ? '#000000' : 'rgba(255,191,71,0.28)', stroke: isContrast ? '#00ff00' : '#ffbf47', strokeWidth: 1.8 }),
               h('text', { x: 518, y: 156, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'ZONE: 4.55-4.70 km'),
-              /* Unknown Ballistic Arc (dashed — student computes exact landing range) */
-              h('path', { d: 'M 58 112 Q 290 12 518 136', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 2.6, strokeDasharray: '7 5' }),
-              /* Release Point & Decomposed Velocity Vectors */
+              /* Dual-pass luminous unknown ballistic arc (dashed — student computes exact landing range) */
+              !isContrast && h('path', { d: 'M 58 112 Q 290 12 518 136', fill: 'none', stroke: '#ffbf47', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.16 }),
+              h('path', { d: 'M 58 112 Q 290 12 518 136', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 2.6, strokeDasharray: '7 5', strokeLinecap: 'round' }),
+              /* Directional flow arrowhead along ballistic arc */
+              h('polygon', { points: '404,96 392,89 396,100', fill: isContrast ? '#ffff00' : '#ffbf47' }),
+              /* Release Point & Decomposed Velocity Vectors (dual-pass luminous) */
               h('line', { x1: 58, y1: 112, x2: 148, y2: 112, stroke: isContrast ? '#00ff00' : '#9ad7c0', strokeWidth: 2, strokeDasharray: '4 3' }),
               h('line', { x1: 148, y1: 112, x2: 148, y2: 58, stroke: isContrast ? '#00ff00' : '#9ad7c0', strokeWidth: 2, strokeDasharray: '4 3' }),
+              !isContrast && h('line', { x1: 58, y1: 112, x2: 148, y2: 58, stroke: '#ff8a5b', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.2 }),
               h('line', { x1: 58, y1: 112, x2: 148, y2: 58, stroke: isContrast ? '#ffffff' : '#ff8a5b', strokeWidth: 3, strokeLinecap: 'round' }),
+              h('polygon', { points: '150,57 138,59 144,68', fill: isContrast ? '#ffffff' : '#ff8a5b' }),
+              !isContrast && h('circle', { cx: 58, cy: 112, r: 10, fill: 'url(#tc-br-beacon)' }),
               h('circle', { cx: 58, cy: 112, r: 4.5, fill: isContrast ? '#ffff00' : '#ffbf47', stroke: '#000000', strokeWidth: 1.2 }),
               h('text', { x: 108, y: 74, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#ffcfb8', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'V0=215 m/s'),
               h('text', { x: 106, y: 126, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Vx = V cos 38\u00B0'),
               h('text', { x: 156, y: 88, fill: isContrast ? '#00ff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Vy = V sin 38\u00B0'),
-              /* Apex Callout */
-              h('circle', { cx: 288, cy: 62, r: 4, fill: isContrast ? '#ffff00' : '#ffbf47' }),
-              h('text', { x: 288, y: 49, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Compute t & R = ?')
+              /* Apex Milestone Beacon Callout */
+              !isContrast && h('circle', { cx: 288, cy: 62, r: 11, fill: 'url(#tc-br-beacon)' }),
+              h('circle', { cx: 288, cy: 62, r: 4.5, fill: isContrast ? '#ffff00' : '#ffbf47', stroke: '#0c231d', strokeWidth: 1.2 }),
+              !isContrast && h('circle', { cx: 286.8, cy: 60.8, r: 1.2, fill: '#ffffff', opacity: 0.75 }),
+              h('text', { x: 288, y: 47, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Compute t & R = ?')
             )
           ),
           h('h3', null, t('stem.trajectorycomputing.your_assignment', 'Your assignment')),
@@ -2534,17 +2560,46 @@
                 'aria-label': t('stem.trajectorycomputing.vector_triangle_aria', 'Right triangle decomposing launch velocity 215 meters per second at 38 degrees into horizontal Vx and vertical Vy components.'),
                 style: { width: '100%', maxWidth: 480, height: 'auto', display: 'block', margin: '0 auto' }
               },
-                h('rect', { x: 0, y: 0, width: 460, height: 112, fill: isContrast ? '#000000' : '#142e27' }),
-                /* Right triangle */
-                h('line', { x1: 48, y1: 88, x2: 248, y2: 88, stroke: isContrast ? '#00ff00' : (vxOk ? '#4ade80' : '#9ad7c0'), strokeWidth: 2.6 }),
-                h('line', { x1: 248, y1: 88, x2: 248, y2: 22, stroke: isContrast ? '#00ff00' : (vyOk ? '#4ade80' : '#9ad7c0'), strokeWidth: 2.6 }),
+                !isContrast && h('defs', null,
+                  h('linearGradient', { id: 'tc-wk-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#102922' }),
+                    h('stop', { offset: '100%', stopColor: '#17382f' })
+                  ),
+                  h('linearGradient', { id: 'tc-wk-tri', x1: '0%', y1: '100%', x2: '100%', y2: '0%' },
+                    h('stop', { offset: '0%', stopColor: '#ffbf47', stopOpacity: 0.16 }),
+                    h('stop', { offset: '100%', stopColor: '#9ad7c0', stopOpacity: 0.08 })
+                  )
+                ),
+                h('rect', { x: 0, y: 0, width: 460, height: 112, fill: isContrast ? '#000000' : 'url(#tc-wk-well)' }),
+                /* Subtle phase-space gridlines */
+                !isContrast && [22, 55, 88].map(function (gy) {
+                  return h('line', { key: 'wgy-' + gy, x1: 16, y1: gy, x2: 332, y2: gy, stroke: '#1f4e42', strokeWidth: 0.7, opacity: 0.7 });
+                }),
+                !isContrast && [48, 148, 248].map(function (gx) {
+                  return h('line', { key: 'wgx-' + gx, x1: gx, y1: 12, x2: gx, y2: 100, stroke: '#1f4e42', strokeWidth: 0.7, opacity: 0.7 });
+                }),
+                /* Gradient-shaded vector decomposition triangle interior */
+                !isContrast && h('polygon', { points: '48,88 248,88 248,22', fill: 'url(#tc-wk-tri)' }),
+                /* Dual-pass luminous vector sides + arrowheads */
+                !isContrast && h('line', { x1: 48, y1: 88, x2: 248, y2: 88, stroke: vxOk ? '#4ade80' : '#9ad7c0', strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.18 }),
+                h('line', { x1: 48, y1: 88, x2: 248, y2: 88, stroke: isContrast ? '#00ff00' : (vxOk ? '#4ade80' : '#9ad7c0'), strokeWidth: 2.6, strokeLinecap: 'round' }),
+                h('polygon', { points: '246,88 237,84 237,92', fill: isContrast ? '#00ff00' : (vxOk ? '#4ade80' : '#9ad7c0') }),
+                !isContrast && h('line', { x1: 248, y1: 88, x2: 248, y2: 22, stroke: vyOk ? '#4ade80' : '#9ad7c0', strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.18 }),
+                h('line', { x1: 248, y1: 88, x2: 248, y2: 22, stroke: isContrast ? '#00ff00' : (vyOk ? '#4ade80' : '#9ad7c0'), strokeWidth: 2.6, strokeLinecap: 'round' }),
+                h('polygon', { points: '248,24 244,33 252,33', fill: isContrast ? '#00ff00' : (vyOk ? '#4ade80' : '#9ad7c0') }),
+                !isContrast && h('line', { x1: 48, y1: 88, x2: 248, y2: 22, stroke: '#ffbf47', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.18 }),
                 h('line', { x1: 48, y1: 88, x2: 248, y2: 22, stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 3, strokeLinecap: 'round' }),
+                h('polygon', { points: '248,22 237,22 241,30', fill: isContrast ? '#ffff00' : '#ffbf47' }),
+                /* Origin beacon */
+                h('circle', { cx: 48, cy: 88, r: 4, fill: isContrast ? '#ffff00' : '#ffbf47', stroke: '#0c231d', strokeWidth: 1.2 }),
                 h('rect', { x: 236, y: 76, width: 12, height: 12, fill: 'none', stroke: isContrast ? '#ffffff' : '#cce3d9', strokeWidth: 1.2 }),
                 h('path', { d: 'M 88 88 A 40 40 0 0 0 84 76', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 1.8 }),
                 h('text', { x: 96, y: 82, fill: isContrast ? '#ffff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, '38\u00B0'),
                 h('text', { x: 136, y: 42, fill: isContrast ? '#ffff00' : '#ffbf47', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'V = 215 m/s'),
                 h('text', { x: 148, y: 104, textAnchor: 'middle', fill: isContrast ? '#00ff00' : (vxOk ? '#86efac' : '#e9f7f1'), fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, (vxOk ? '\u2713 ' : '') + vxDisp),
                 h('text', { x: 258, y: 58, fill: isContrast ? '#00ff00' : (vyOk ? '#86efac' : '#e9f7f1'), fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, (vyOk ? '\u2713 ' : '') + vyDisp),
+                /* Reference formula box */
+                !isContrast && h('rect', { x: 344, y: 20, width: 106, height: 72, rx: 6, fill: 'rgba(12,35,29,0.75)', stroke: '#2d6653', strokeWidth: 1 }),
                 h('text', { x: 356, y: 40, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'cos 38\u00B0 \u2192 Vx'),
                 h('text', { x: 356, y: 58, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'sin 38\u00B0 \u2192 Vy'),
                 h('text', { x: 356, y: 78, fill: isContrast ? '#ffffff' : '#cce3d9', fontSize: 10, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }, 'Check: Vx\u00B2+Vy\u00B2=V\u00B2')
@@ -2751,16 +2806,49 @@
       }
 
       function renderChart() {
+        var pts = trajectoryPath();
+        var landX = 34 + EXPECTED.range / 4900 * 624;
+        var apexX = 34 + (EXPECTED.vx * EXPECTED.peakTime / 4900) * 624;
+        var apexY = 212 - (EXPECTED.peakHeight / (EXPECTED.peakHeight * 1.14)) * 190;
+        var areaD = 'M 34,212 L ' + pts.replace(/ /g, ' L ') + ' L ' + round(landX, 1) + ',212 Z';
         return h('figure', null,
           h('p', { className: 'tc-chart-mobile-hint' }, t('stem.trajectorycomputing.scroll_chart_hint', '\u2194 Scroll the chart horizontally to keep every label readable.')),
           h('div', { className: 'tc-chart-frame', role: 'region', tabIndex: 0, 'aria-label': t('stem.trajectorycomputing.scrollable_trajectory_chart', 'Scrollable trajectory chart') },
           h('svg', { className: 'tc-chart', viewBox: '0 0 680 245', role: 'img', 'aria-labelledby': 'tc-chart-title tc-chart-desc' },
             h('title', { id: 'tc-chart-title' }, t('stem.trajectorycomputing.aurora_test_3_predicted_trajectory', 'Aurora Test 3 predicted trajectory')),
             h('desc', { id: 'tc-chart-desc' }, 'A parabolic flight path begins 30 meters above ground, reaches about ' + round(EXPECTED.peakHeight, 0) + ' meters, and lands about ' + round(EXPECTED.range, 0) + ' meters downrange inside the target zone.'),
+            !isContrast && h('defs', null,
+              h('linearGradient', { id: 'tc-ch-env', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#ffbf47', stopOpacity: 0.22 }),
+                h('stop', { offset: '100%', stopColor: '#ffbf47', stopOpacity: 0.01 })
+              ),
+              h('radialGradient', { id: 'tc-ch-beacon', cx: '50%', cy: '50%', r: '50%' },
+                h('stop', { offset: '0%', stopColor: '#ffbf47', stopOpacity: 0.55 }),
+                h('stop', { offset: '100%', stopColor: '#ffbf47', stopOpacity: 0 })
+              )
+            ),
+            /* Calibrated phase-space reference grid */
+            !isContrast && [60, 110, 160].map(function (gy) {
+              return h('line', { key: 'cgy-' + gy, x1: 34, y1: gy, x2: 658, y2: gy, stroke: '#2d6653', strokeWidth: 0.8, strokeDasharray: '3 4', opacity: 0.6 });
+            }),
+            !isContrast && [190, 346, 502].map(function (gx) {
+              return h('line', { key: 'cgx-' + gx, x1: gx, y1: 22, x2: gx, y2: 212, stroke: '#2d6653', strokeWidth: 0.8, strokeDasharray: '3 4', opacity: 0.6 });
+            }),
+            /* Gradient trajectory envelope */
+            !isContrast && h('path', { d: areaD, fill: 'url(#tc-ch-env)' }),
+            /* Apex vertical drop guideline */
+            !isContrast && h('line', { x1: apexX, y1: apexY, x2: apexX, y2: 212, stroke: '#9ad7c0', strokeWidth: 1, strokeDasharray: '3 4', opacity: 0.45 }),
             h('line', { x1: 34, y1: 212, x2: 658, y2: 212, stroke: '#9ad7c0', strokeWidth: 2 }),
-            h('rect', { x: 34 + MISSION.zoneMin / 4900 * 624, y: 201, width: (MISSION.zoneMax - MISSION.zoneMin) / 4900 * 624, height: 11, fill: '#ff8a5b' }),
-            h('polyline', { points: trajectoryPath(), fill: 'none', stroke: '#fff0b5', strokeWidth: 4, strokeLinecap: 'round' }),
-            h('circle', { cx: 34 + EXPECTED.range / 4900 * 624, cy: 212, r: 7, fill: '#ffbf47' }),
+            h('rect', { x: 34 + MISSION.zoneMin / 4900 * 624, y: 201, width: (MISSION.zoneMax - MISSION.zoneMin) / 4900 * 624, height: 11, rx: 2, fill: '#ff8a5b' }),
+            /* Dual-pass luminous predicted parabolic trajectory */
+            !isContrast && h('polyline', { points: pts, fill: 'none', stroke: '#ffbf47', strokeWidth: 9, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.2 }),
+            h('polyline', { points: pts, fill: 'none', stroke: '#fff0b5', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            /* Apex & Landing milestone beacons */
+            !isContrast && h('circle', { cx: apexX, cy: apexY, r: 10, fill: 'url(#tc-ch-beacon)' }),
+            h('circle', { cx: apexX, cy: apexY, r: 4.5, fill: '#fff0b5', stroke: '#102d27', strokeWidth: 1.5 }),
+            !isContrast && h('circle', { cx: landX, cy: 212, r: 15, fill: 'url(#tc-ch-beacon)' }),
+            h('circle', { cx: landX, cy: 212, r: 7, fill: '#ffbf47', stroke: '#102d27', strokeWidth: 1.8 }),
+            !isContrast && h('circle', { cx: landX - 2, cy: 210, r: 1.8, fill: '#ffffff', opacity: 0.7 }),
             h('text', { x: 38, y: 232, fill: '#d8eee5', fontSize: 12 }, t('stem.trajectorycomputing.0_m', '0 m')),
             h('text', { x: 563, y: 232, fill: '#d8eee5', fontSize: 12 }, t('stem.trajectorycomputing.target_zone', 'target zone'))
           )),
@@ -2784,6 +2872,10 @@
         var yTicks = [0, 0.5, 1];
         var zoneX = 34 + MISSION.zoneMin / maxRange * plotWidth;
         var zoneWidth = (MISSION.zoneMax - MISSION.zoneMin) / maxRange * plotWidth;
+        var basePts = trajectoryPathFor(MISSION, EXPECTED, { maxRange: maxRange, maxPeak: maxPeak });
+        var compPts = trajectoryPathFor(comparisonMission, comparison.result, { maxRange: maxRange, maxPeak: maxPeak });
+        var baseAreaD = 'M 34,212 L ' + basePts.replace(/ /g, ' L ') + ' L ' + round(baselineLandingX, 1) + ',212 Z';
+        var compAreaD = 'M 34,212 L ' + compPts.replace(/ /g, ' L ') + ' L ' + round(comparisonLandingX, 1) + ',212 Z';
         return h('figure', { className: 'tc-comparison-figure' },
           h('p', { className: 'tc-chart-mobile-hint' }, t('stem.trajectorycomputing.scroll_comparison_chart_hint', '\u2194 Scroll the comparison chart horizontally to keep axes and annotations readable.')),
           h('div', { className: 'tc-chart-frame', role: 'region', tabIndex: 0, 'aria-label': t('stem.trajectorycomputing.scrollable_comparison_chart', 'Scrollable baseline and comparison trajectory chart') },
@@ -2794,31 +2886,50 @@
               h('pattern', { id: 'tc-target-hatch', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
                 h('rect', { width: 8, height: 8, fill: '#6f351f' }),
                 h('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: '#ffcf70', strokeWidth: 3 })
+              ),
+              !isContrast && h('linearGradient', { id: 'tc-cmp-base-env', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#ffcf70', stopOpacity: 0.2 }),
+                h('stop', { offset: '100%', stopColor: '#ffcf70', stopOpacity: 0.01 })
+              ),
+              !isContrast && h('linearGradient', { id: 'tc-cmp-alt-env', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#9ad7c0', stopOpacity: 0.16 }),
+                h('stop', { offset: '100%', stopColor: '#9ad7c0', stopOpacity: 0.01 })
               )
             ),
             xTicks.map(function (tick, index) {
               var x = 34 + tick * plotWidth;
               return h('g', { key: 'x-tick-' + index },
-                h('line', { x1: x, y1: 22, x2: x, y2: 212, stroke: '#507268', strokeWidth: 1 }),
+                h('line', { x1: x, y1: 22, x2: x, y2: 212, stroke: '#507268', strokeWidth: 1, strokeDasharray: index === 0 ? undefined : '3 4' }),
                 h('text', { x: x, y: 231, textAnchor: index === 0 ? 'start' : (index === xTicks.length - 1 ? 'end' : 'middle'), fill: '#fff', fontSize: 11 }, Math.round(maxRange * tick).toLocaleString() + ' m')
               );
             }),
             yTicks.map(function (tick, index) {
               var y = 212 - tick * plotHeight;
               return h('g', { key: 'y-tick-' + index },
-                h('line', { x1: 34, y1: y, x2: 658, y2: y, stroke: '#507268', strokeWidth: 1 }),
+                h('line', { x1: 34, y1: y, x2: 658, y2: y, stroke: '#507268', strokeWidth: 1, strokeDasharray: index === 0 ? undefined : '3 4' }),
                 h('text', { x: 29, y: y + 4, textAnchor: 'end', fill: '#fff', fontSize: 11 }, Math.round(maxPeak * tick))
               );
             }),
             h('rect', { x: zoneX, y: 22, width: zoneWidth, height: 190, fill: 'url(#tc-target-hatch)', opacity: 0.6 }),
+            /* Gradient-shaded state envelopes under baseline & comparison trajectories */
+            !isContrast && h('path', { d: compAreaD, fill: 'url(#tc-cmp-alt-env)' }),
+            !isContrast && h('path', { d: baseAreaD, fill: 'url(#tc-cmp-base-env)' }),
             h('line', { x1: 34, y1: 212, x2: 658, y2: 212, stroke: '#d8eee5', strokeWidth: 2 }),
             h('line', { x1: 34, y1: 22, x2: 34, y2: 212, stroke: '#d8eee5', strokeWidth: 2 }),
-            h('polyline', { points: trajectoryPathFor(MISSION, EXPECTED, { maxRange: maxRange, maxPeak: maxPeak }), fill: 'none', stroke: '#ffcf70', strokeWidth: 4, strokeLinecap: 'round' }),
-            h('polyline', { points: trajectoryPathFor(comparisonMission, comparison.result, { maxRange: maxRange, maxPeak: maxPeak }), fill: 'none', stroke: '#9ad7c0', strokeWidth: 4, strokeDasharray: '10 7', strokeLinecap: 'round' }),
+            /* Dual-pass luminous trajectory curves */
+            !isContrast && h('polyline', { points: basePts, fill: 'none', stroke: '#ffcf70', strokeWidth: 9, strokeLinecap: 'round', opacity: 0.2 }),
+            h('polyline', { points: basePts, fill: 'none', stroke: '#ffcf70', strokeWidth: 4, strokeLinecap: 'round' }),
+            !isContrast && h('polyline', { points: compPts, fill: 'none', stroke: '#9ad7c0', strokeWidth: 8, strokeLinecap: 'round', opacity: 0.16 }),
+            h('polyline', { points: compPts, fill: 'none', stroke: '#9ad7c0', strokeWidth: 4, strokeDasharray: '10 7', strokeLinecap: 'round' }),
+            /* Glowing milestone beacons */
+            !isContrast && h('circle', { cx: baselinePeakX, cy: baselinePeakY, r: 11, fill: '#ffcf70', opacity: 0.2 }),
             h('circle', { cx: baselinePeakX, cy: baselinePeakY, r: 6, fill: '#ffcf70', stroke: '#102d27', strokeWidth: 2 }),
-            h('rect', { x: comparisonPeakX - 6, y: comparisonPeakY - 6, width: 12, height: 12, fill: '#9ad7c0', stroke: '#102d27', strokeWidth: 2 }),
+            !isContrast && h('rect', { x: comparisonPeakX - 9, y: comparisonPeakY - 9, width: 18, height: 18, rx: 4, fill: '#9ad7c0', opacity: 0.18 }),
+            h('rect', { x: comparisonPeakX - 6, y: comparisonPeakY - 6, width: 12, height: 12, rx: 2, fill: '#9ad7c0', stroke: '#102d27', strokeWidth: 2 }),
+            !isContrast && h('circle', { cx: baselineLandingX, cy: 212, r: 11, fill: '#ffcf70', opacity: 0.22 }),
             h('circle', { cx: baselineLandingX, cy: 212, r: 6, fill: '#ffcf70', stroke: '#102d27', strokeWidth: 2 }),
-            h('rect', { x: comparisonLandingX - 6, y: 206, width: 12, height: 12, fill: '#9ad7c0', stroke: '#102d27', strokeWidth: 2 }),
+            !isContrast && h('rect', { x: comparisonLandingX - 9, y: 203, width: 18, height: 18, rx: 4, fill: '#9ad7c0', opacity: 0.18 }),
+            h('rect', { x: comparisonLandingX - 6, y: 206, width: 12, height: 12, rx: 2, fill: '#9ad7c0', stroke: '#102d27', strokeWidth: 2 }),
             h('text', { x: baselinePeakX, y: baselinePeakY - 10, textAnchor: 'middle', fill: '#fff0b5', fontSize: 11, fontWeight: 800 }, '38\u00b0 peak ' + round(EXPECTED.peakHeight, 0) + ' m'),
             h('text', { x: comparisonPeakX, y: comparisonPeakY + 19, textAnchor: 'middle', fill: '#c9f6df', fontSize: 11, fontWeight: 800 }, comparison.angle + '\u00b0 peak ' + round(comparison.result.peakHeight, 0) + ' m'),
             h('text', { x: baselineLandingX - 5, y: 199, textAnchor: 'end', fill: '#fff0b5', fontSize: 11, fontWeight: 800 }, '38\u00b0 lands ' + round(EXPECTED.range, 0) + ' m'),
@@ -3464,20 +3575,35 @@
                   'aria-hidden': 'true',
                   style: { flexShrink: 0, display: 'block', marginTop: 2 }
                 },
+                  !isContrast && h('defs', null,
+                    h('linearGradient', { id: 'tc-emb-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#163f35' }),
+                      h('stop', { offset: '100%', stopColor: '#0a1f1b' })
+                    ),
+                    h('linearGradient', { id: 'tc-emb-env', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#ffbf47', stopOpacity: 0.25 }),
+                      h('stop', { offset: '100%', stopColor: '#ffbf47', stopOpacity: 0 })
+                    )
+                  ),
                   h('rect', {
                     x: 1, y: 1, width: 50, height: 50, rx: 11,
-                    fill: isContrast ? '#000000' : '#102d27',
+                    fill: isContrast ? '#000000' : 'url(#tc-emb-well)',
                     stroke: isContrast ? '#ffff00' : '#9ad7c0',
                     strokeWidth: 1.5
                   }),
+                  !isContrast && h('line', { x1: 10, y1: 2.5, x2: 42, y2: 2.5, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.3 }),
                   /* Punch-card top registration holes */
                   [10, 18, 26, 34, 42].map(function (hx) {
-                    return h('rect', { key: 'h-' + hx, x: hx - 2, y: 6, width: 4, height: 3, rx: 0.7, fill: isContrast ? '#ffff00' : '#9ad7c0', opacity: isContrast ? 1 : 0.75 });
+                    return h('rect', { key: 'h-' + hx, x: hx - 2, y: 6, width: 4, height: 3, rx: 0.7, fill: isContrast ? '#ffff00' : '#9ad7c0', opacity: isContrast ? 1 : 0.8 });
                   }),
-                  /* Parabolic launch arc */
+                  /* Shaded parabolic flight envelope */
+                  !isContrast && h('path', { d: 'M 9 43 L 9 39 Q 25 10 43 38 L 43 43 Z', fill: 'url(#tc-emb-env)' }),
+                  /* Dual-pass luminous parabolic launch arc */
+                  !isContrast && h('path', { d: 'M 9 39 Q 25 10 43 38', fill: 'none', stroke: '#ffbf47', strokeWidth: 5.5, strokeLinecap: 'round', opacity: 0.22 }),
                   h('path', { d: 'M 9 39 Q 25 10 43 38', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 2.5, strokeLinecap: 'round' }),
-                  /* Launch tower tick & landing reticle */
+                  /* Launch tower tick & glowing landing reticle */
                   h('line', { x1: 9, y1: 35, x2: 9, y2: 43, stroke: isContrast ? '#ffffff' : '#e9f7f1', strokeWidth: 2 }),
+                  !isContrast && h('circle', { cx: 43, cy: 38, r: 6.5, fill: '#ff8a5b', opacity: 0.24 }),
                   h('circle', { cx: 43, cy: 38, r: 3.5, fill: isContrast ? '#00ff00' : '#ff8a5b', stroke: isContrast ? '#ffff00' : '#ffffff', strokeWidth: 1.2 }),
                   /* Horizontal range baseline */
                   h('line', { x1: 7, y1: 43, x2: 45, y2: 43, stroke: isContrast ? '#ffff00' : '#9ad7c0', strokeWidth: 1.4, strokeDasharray: '3 2' })

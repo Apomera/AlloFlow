@@ -727,7 +727,7 @@ window.ORF_SCREENING_PASSAGES = {
                 "season": "Fall",
                 "level": "E",
                 "title": "Playing at the Park",
-                "wordCount": 53,
+                "wordCount": 52,
                 "text": "Today we went to the big park. The sun was hot and bright. I walked to the pond and saw a little duck. It was swimming in the cool water. Then I went to the swings. I went up high in the sky. It was a very good day at the park.",
                 "questions": [
                     {
@@ -769,7 +769,7 @@ window.ORF_SCREENING_PASSAGES = {
                 "season": "Winter",
                 "level": "G",
                 "title": "A Winter Walk",
-                "wordCount": 61,
+                "wordCount": 59,
                 "text": "We put on our thick coats and warm hats to go for a winter walk. The white snow covered the ground and crunched under our boots. We saw animal tracks near the trees. My brother said they were from a small rabbit. We followed the tracks until it started to get dark. Then we went home for hot chocolate.",
                 "questions": [
                     {
@@ -811,7 +811,7 @@ window.ORF_SCREENING_PASSAGES = {
                 "season": "Spring",
                 "level": "I",
                 "title": "The Garden",
-                "wordCount": 68,
+                "wordCount": 75,
                 "text": "In the spring, my family plants a garden. We dig in the soft brown dirt and put in tiny seeds. Every day we give them water and watch the sun shine on them. After many days, we see small green leaves poking through the soil. By summer, we have big red tomatoes and long green beans. I like to pick them and eat them for dinner. Gardening is hard work, but it makes me happy.",
                 "questions": [
                     {
@@ -855,7 +855,7 @@ window.ORF_SCREENING_PASSAGES = {
                 "season": "Fall",
                 "level": "K",
                 "title": "The Lost Kitten",
-                "wordCount": 89,
+                "wordCount": 103,
                 "text": "Maya was walking home from school when she heard a soft sound coming from behind the bushes. She bent down and saw a tiny gray kitten with bright green eyes. The kitten was shaking because it was cold and scared. Maya carefully picked up the kitten and wrapped it in her warm jacket. She carried it home and gave it a bowl of milk. Her mother said they could keep the kitten if no one came to find it. Maya named the kitten Misty and gave it a soft bed by the fireplace. Soon Misty was purring loudly and felt safe at last.",
                 "questions": [
                     {
@@ -897,7 +897,7 @@ window.ORF_SCREENING_PASSAGES = {
                 "season": "Winter",
                 "level": "L",
                 "title": "The Snow Fort",
-                "wordCount": 95,
+                "wordCount": 106,
                 "text": "After the big snowstorm, Carlos and his friends decided to build the biggest snow fort on the block. They rolled enormous snowballs and stacked them into thick walls. Carlos used a shovel to pack the snow tightly so the walls would be strong. His friend Ana made a special window so they could see outside. They even built a tunnel to crawl through to get inside. When the fort was finished, they brought out cups of hot cocoa and sat inside their snowy castle. The wind blew outside, but they were warm and cozy. They felt like real explorers who had built their very own shelter.",
                 "questions": [
                     {
@@ -939,7 +939,7 @@ window.ORF_SCREENING_PASSAGES = {
                 "season": "Spring",
                 "level": "M",
                 "title": "The Butterfly Garden",
-                "wordCount": 102,
+                "wordCount": 115,
                 "text": "Mrs. Patel's second grade class started a butterfly garden at their school. First, they learned which plants butterflies like best. They planted milkweed for the monarch butterflies and lavender for the painted ladies. Every morning, the students would check the garden for caterpillars. One exciting day, they found five tiny green caterpillars munching on the milkweed leaves. The class watched carefully as the caterpillars grew bigger each day. After two weeks, each caterpillar formed a chrysalis. The students waited patiently for ten more days. Then one bright morning, beautiful orange and black butterflies came out of the chrysalis. The whole class cheered as the butterflies spread their new wings and flew into the spring sky.",
                 "questions": [
                     {
@@ -983,7 +983,7 @@ window.ORF_SCREENING_PASSAGES = {
                 "season": "Fall",
                 "level": "O",
                 "title": "The Science Fair Project",
-                "wordCount": 128,
+                "wordCount": 142,
                 "text": "Jamal couldn't wait for the school science fair. He had been working on his project for three whole weeks. His experiment tested which type of soil helped plants grow the tallest. He used three different kinds of soil: sandy soil from the beach, dark garden soil from his backyard, and clay soil that his uncle brought from his farm. Jamal planted the same type of bean seed in each pot and gave them equal amounts of water and sunlight every day. He measured each plant carefully with a ruler and wrote down the results in his notebook. After twenty-one days, the plant in the garden soil was the tallest at twelve inches. The sandy soil plant grew to eight inches, and the clay soil plant only reached five inches. Jamal made a colorful chart showing his results and practiced explaining his conclusions.",
                 "questions": [
                     {
@@ -1025,7 +1025,7 @@ window.ORF_SCREENING_PASSAGES = {
                 "season": "Winter",
                 "level": "R",
                 "title": "The Underground Railroad",
-                "wordCount": 142,
+                "wordCount": 146,
                 "text": "In the 1800s, many brave people helped enslaved African Americans escape to freedom through a secret network called the Underground Railroad. It wasn't actually underground, and it wasn't a railroad. Instead, it was a series of safe houses, called stations, connected by secret routes. The people who guided the freedom seekers were called conductors. One of the most famous conductors was Harriet Tubman. She had escaped slavery herself and then risked her life by returning to the South nineteen times to help over three hundred people reach freedom. The journey was dangerous and could take weeks or even months. Travelers moved mostly at night, following the North Star to guide their way. Many communities in the North and in Canada provided shelter and support. The courage of both the freedom seekers and those who helped them remains one of the most important stories in American history.",
                 "questions": [
                     {
@@ -1067,7 +1067,7 @@ window.ORF_SCREENING_PASSAGES = {
                 "season": "Spring",
                 "level": "T",
                 "title": "Ocean Exploration",
-                "wordCount": 156,
+                "wordCount": 170,
                 "text": "The ocean covers more than seventy percent of Earth's surface, yet scientists estimate that we have explored less than five percent of it. The deepest part of the ocean, the Mariana Trench in the Pacific Ocean, reaches nearly seven miles below the surface. The pressure at that depth is so intense that it would crush most submarines. In 1960, two explorers named Jacques Piccard and Don Walsh became the first humans to reach the bottom of the Mariana Trench in a vessel called the Trieste. They spent only twenty minutes at the bottom before returning to the surface. More recently, filmmaker James Cameron made a solo dive to the trench floor in 2012. Scientists continue to discover remarkable creatures living in the deepest parts of the ocean, including fish that produce their own light and giant tube worms that can survive without sunlight. Each new expedition reveals something unexpected about the mysterious world beneath the waves, reminding us how much there is still left to learn about our own planet.",
                 "questions": [
                     {

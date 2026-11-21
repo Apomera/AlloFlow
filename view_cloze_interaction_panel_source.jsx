@@ -20,6 +20,8 @@ function ClozeInteractionPanel(props) {
     setClozeCompletedSet, setClozeInstanceSet, t, wordBankPosition, wordBankRef, completedBlankCount,
   } = props;
   const tx = (key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return typeof value === 'string' && value.trim() && value !== key ? value : fallback; };
+  const bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
+  const bt = s => (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s;
   const controlSize = { minHeight: 44, minWidth: 44 };
   const resetButtonRef = React.useRef(null);
   const bankHeadingRef = React.useRef(null);
@@ -42,8 +44,9 @@ function ClozeInteractionPanel(props) {
   // Tap path (WCAG 2.5.7): tap a chip to pick it up, then tap a blank. The
   // blanks (ClozeInput, misc_components) read window.__alloClozeBankPick and
   // the 'allo-cloze-bank-pick' event; a blank sends detail null once placed.
-  const bankEntries = latestGlossary.map((item) => {
-      const englishTerm = item.term;
+  const safeGlossary = Array.isArray(latestGlossary) ? latestGlossary : [];
+  const bankEntries = safeGlossary.map((item) => {
+      const englishTerm = item?.term || '';
       // A translation is usable even without the "term: definition"
       // shape — the old code only split on ':' and otherwise fell
       // back to English, which is why the bank so often looked
@@ -71,7 +74,33 @@ function ClozeInteractionPanel(props) {
   const resetScope = JSON.stringify([activityScope, contentScope]);
   const resetOpen = resetPrompt === resetScope;
   const [picked, setPicked] = React.useState(null);
+  const [bankFilter, setBankFilter] = React.useState('');
   const pickedIdx = picked && picked.activityScope === activityScope && picked.contentScope === contentScope ? picked.idx : null;
+  const pickedEntry = pickedIdx !== null && bankEntries[pickedIdx] ? bankEntries[pickedIdx] : null;
+  const bankQuery = String(bankFilter || '').trim().toLowerCase();
+  const visibleBankEntries = bankEntries
+      .map((entry, idx) => ({ ...entry, idx }))
+      .filter(({ label, payload }) => !bankQuery || String(label || '').toLowerCase().includes(bankQuery) || String(payload || '').toLowerCase().includes(bankQuery));
+  const canSpeakBankWord = Boolean(
+      typeof window !== 'undefined' && (
+          (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') ||
+          (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function')
+      )
+  );
+  const speakBankWord = (word) => {
+      const clean = String(word || '').trim();
+      if (!clean) return;
+      try {
+          if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+              Promise.resolve(window.AlloSpeechPlayer.speak(clean, { language: bankLang === 'english' ? 'English' : (leveledTextLanguage || 'English') })).catch(() => {});
+              return;
+          }
+          if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+              window.speechSynthesis.cancel();
+              window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(clean));
+          }
+      } catch (_) {}
+  };
   const sendPick = (word) => {
       window.__alloClozeBankPick = word || null;
       try { window.dispatchEvent(new CustomEvent('allo-cloze-bank-pick', { detail: word || null })); } catch (_) {}
@@ -110,7 +139,7 @@ function ClozeInteractionPanel(props) {
       return () => { window.removeEventListener('allo-cloze-bank-pick', onPick); sendPick(null); };
   }, []);
   // Clear old payloads for a new passage or a changed word bank, not equivalent rerenders.
-  React.useEffect(() => { setPicked(null); sendPick(null); setResetPrompt(null); setResetStatus(''); resetFocusRef.current = null; }, [activityScope, contentScope]);
+  React.useEffect(() => { setPicked(null); sendPick(null); setResetPrompt(null); setResetStatus(''); setBankFilter(''); resetFocusRef.current = null; }, [activityScope, contentScope]);
   return (
               <div
                   ref={wordBankRef}
@@ -133,9 +162,16 @@ function ClozeInteractionPanel(props) {
                       onMouseDown={handleBankMouseDown}
                       className="flex flex-wrap gap-2 justify-between items-center mb-2 border-b border-blue-200/50 pb-2 cursor-move select-none"
                   >
-                      <h4 ref={bankHeadingRef} tabIndex={-1} className="font-bold text-blue-800 flex items-center gap-2 text-sm uppercase tracking-wider pointer-events-none">
-                          <Globe size={16} /> {t('simplified.word_bank')}
-                      </h4>
+                      <div className="flex flex-wrap items-center gap-2 pointer-events-none">
+                        <h4 ref={bankHeadingRef} tabIndex={-1} className="font-bold text-blue-800 flex items-center gap-2 text-sm uppercase tracking-wider">
+                            <Globe size={16} /> {t('simplified.word_bank')}
+                        </h4>
+                        {Number.isInteger(completedBlankCount) && completedBlankCount > 0 && (
+                          <span data-cloze-progress-pill className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
+                            ✓ {tx('simplified.cloze_solved_count', '{count} solved').replace('{count}', String(completedBlankCount))}
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2" onMouseDown={(e) => e.stopPropagation()}>
                         <button type="button" style={controlSize}
                             data-cloze-dock-toggle="true"
@@ -161,7 +197,7 @@ function ClozeInteractionPanel(props) {
                             data-cloze-reset disabled={!hasCompletedAnswers}
                             aria-expanded={resetOpen} aria-controls={panelId + '-reset'}
                             onClick={() => { setResetStatus(''); setResetPrompt(resetScope); }}
-                            className="text-blue-800 hover:text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="text-blue-800 hover:text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                             title={t('simplified.reset_activity')}
                         >
                             <RefreshCw size={12}/> {tx('common.reset', 'Reset')}
@@ -169,7 +205,7 @@ function ClozeInteractionPanel(props) {
                         <button type="button" style={controlSize}
                             aria-label={t('common.close')}
                             onClick={handleSetInteractionModeToRead}
-                            className="text-blue-700 hover:text-blue-700 bg-blue-100/50 hover:bg-blue-100 p-1 rounded-full transition-colors"
+                            className="text-blue-700 hover:text-blue-700 bg-blue-100/50 hover:bg-blue-100 p-1 rounded-full transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                             title={t('simplified.exit_cloze')}
                         >
                             <X size={14}/>
@@ -188,8 +224,8 @@ function ClozeInteractionPanel(props) {
                     <p id={panelId + '-reset-heading'} className="font-bold text-sm text-blue-900">{tx('simplified.cloze_reset_title', 'Reset completed answers?')}</p>
                     <p id={panelId + '-reset-description'} className="mt-1 text-sm text-blue-900">{tx('simplified.cloze_reset_description', 'Completed blanks will be empty again. Your passage and word bank stay available.')}</p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <button type="button" autoFocus style={controlSize} onClick={(event) => closeReset(event, false)} className="rounded-md border border-blue-300 bg-white px-3 text-sm font-bold text-blue-800">{tx('common.cancel', 'Cancel')}</button>
-                      <button type="button" style={controlSize} data-cloze-reset-confirm disabled={!hasCompletedAnswers} onClick={(event) => closeReset(event, true)} className="rounded-md bg-blue-700 px-3 text-sm font-bold text-white">{tx('simplified.cloze_reset_confirm', 'Clear completed answers')}</button>
+                      <button type="button" autoFocus style={controlSize} onClick={(event) => closeReset(event, false)} className="rounded-md border border-blue-300 bg-white px-3 text-sm font-bold text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600">{tx('common.cancel', 'Cancel')}</button>
+                      <button type="button" style={controlSize} data-cloze-reset-confirm disabled={!hasCompletedAnswers} onClick={(event) => closeReset(event, true)} className="rounded-md bg-blue-700 px-3 text-sm font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1">{tx('simplified.cloze_reset_confirm', 'Clear completed answers')}</button>
                     </div>
                   </div>}
                   <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-blue-800" data-cloze-reset-status>{resetStatus}</p>
@@ -209,15 +245,41 @@ function ClozeInteractionPanel(props) {
                           type="button"
                           aria-pressed={bankLang === opt.id}
                           onClick={() => setBankLang(opt.id)}
-                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide border transition-colors ${bankLang === opt.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-700 border-blue-200 hover:bg-blue-100'}`}
+                          className={`min-h-11 px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wide border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${bankLang === opt.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-700 border-blue-200 hover:bg-blue-100'}`}
                         >
                           {opt.label}
                         </button>
                       ))}
                     </div>
                   )}
+                  {bankEntries.length >= 6 && (
+                    <div className="mb-2 flex items-center justify-center gap-1.5">
+                      <div className="relative w-full max-w-xs">
+                        <input
+                          type="search"
+                          data-cloze-bank-filter
+                          value={bankFilter}
+                          onChange={(e) => setBankFilter(e.target.value)}
+                          placeholder={tx('simplified.word_bank_filter_placeholder', 'Filter words...')}
+                          aria-label={tx('simplified.word_bank_filter_aria', 'Filter word bank')}
+                          className="w-full min-h-11 rounded-lg border border-blue-300 bg-white pl-3 pr-10 py-1.5 text-xs font-medium text-slate-800 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                        />
+                        {bankFilter && (
+                          <button
+                            type="button"
+                            data-cloze-bank-filter-clear
+                            onClick={() => setBankFilter('')}
+                            aria-label={tx('common.clear', 'Clear filter')}
+                            className="absolute right-0.5 top-1/2 -translate-y-1/2 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:bg-blue-50 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                          >✕</button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2 justify-center max-h-32 overflow-y-auto custom-scrollbar p-1">
-                      {bankEntries.map(({ label, payload }, idx) => {
+                      {visibleBankEntries.length === 0 ? (
+                        <p role="status" className="text-xs font-medium text-blue-800 py-2">{tx('simplified.word_bank_no_matches', 'No matching words in the word bank.')}</p>
+                      ) : visibleBankEntries.map(({ label, payload, idx }) => {
                           const isPicked = pickedIdx === idx;
                           return (
                               <span
@@ -226,19 +288,43 @@ function ClozeInteractionPanel(props) {
                                 tabIndex={0}
                                 aria-pressed={isPicked}
                                 data-cloze-bank-chip="true"
-                                className={`px-3 py-1.5 font-bold text-sm rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:scale-105 motion-reduce:transform-none hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${isPicked ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-700 ring-offset-1' : 'bg-white text-blue-700 border-blue-200'}`}
+                                className={`inline-flex items-center min-h-11 px-3 py-1.5 font-bold text-sm rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:scale-105 motion-reduce:transform-none hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${isPicked ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-700 ring-offset-1' : 'bg-white text-blue-700 border-blue-200'}`}
                                 draggable="true"
                                 onDragStart={(e) => e.dataTransfer.setData("text/plain", payload)}
                                 onClick={() => pickChip(idx, payload)}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickChip(idx, payload); } }}
+                                onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickChip(idx, payload); } }}
                               >
                                 {/* Pointer alternative to dragging: tap the chip, then tap a blank. Blanks also accept typing. */}
-                                  {label}
+                                  {bt(label)}
                               </span>
                           );
                       })}
                   </div>
-                  <p className="text-[11px] text-blue-700 mt-2 text-center font-medium pointer-events-none">{t('simplified.cloze_instructions_tap')}</p>
+                  {pickedEntry && (
+                    <div data-cloze-picked-bar className="mt-2 flex flex-wrap items-center justify-center gap-2 rounded-lg border border-blue-300 bg-white px-3 py-1.5 text-xs text-blue-900">
+                      <span className="font-bold">{tx('simplified.cloze_selected_word', 'Selected')}: {bt(pickedEntry.label)}</span>
+                      {canSpeakBankWord && (
+                        <button
+                          type="button"
+                          data-cloze-speak-picked
+                          onClick={() => speakBankWord(pickedEntry.payload)}
+                          className="min-h-11 inline-flex items-center gap-1 rounded-lg border border-blue-300 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800 hover:bg-blue-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                        >
+                          <span aria-hidden="true">🔊</span>
+                          <span>{tx('common.listen', 'Listen')}</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        data-cloze-clear-pick
+                        onClick={() => { setPicked(null); sendPick(null); }}
+                        className="min-h-11 inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                      >
+                        {tx('common.clear', 'Clear')}
+                      </button>
+                    </div>
+                  )}
+                  <p className="text-[11px] text-blue-700 mt-2 text-center font-medium pointer-events-none">{bt(t('simplified.cloze_instructions_tap'))}</p>
                     </>
                   )}
               </div>

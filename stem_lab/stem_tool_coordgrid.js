@@ -1279,6 +1279,10 @@ window.StemLab = window.StemLab || {
       '.allo-cg-bg-explore { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(8,145,178,0.10) 0%, rgba(8,145,178,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
       '.allo-cg-bg-quadrants { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(147,51,234,0.10) 0%, rgba(147,51,234,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
       '.allo-cg-bg-maps { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(16,185,129,0.10) 0%, rgba(16,185,129,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '[data-coordinate-theme="dark"] .allo-cg-bg-explore { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(34,211,238,0.14) 0%, rgba(14,116,144,0.06) 38%, rgba(15,23,42,0) 72%), linear-gradient(180deg, #0f172a 0%, #111827 100%); }',
+      '[data-coordinate-theme="dark"] .allo-cg-bg-quadrants { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(168,85,247,0.14) 0%, rgba(109,40,217,0.06) 38%, rgba(15,23,42,0) 72%), linear-gradient(180deg, #0f172a 0%, #111827 100%); }',
+      '[data-coordinate-theme="dark"] .allo-cg-bg-maps { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(52,211,153,0.14) 0%, rgba(5,150,105,0.06) 38%, rgba(15,23,42,0) 72%), linear-gradient(180deg, #0f172a 0%, #111827 100%); }',
+      '[data-coordinate-theme="contrast"] .allo-cg-bg-explore, [data-coordinate-theme="contrast"] .allo-cg-bg-quadrants, [data-coordinate-theme="contrast"] .allo-cg-bg-maps { background: #000000; }',
       '.allo-cg-walker { transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); transform-box: fill-box; transform-origin: center; }',
       '.allo-cg-pop { animation: allo-cg-pop 0.5s ease-out; transform-box: fill-box; transform-origin: center; }',
       '.allo-cg-point-pulse { animation: allo-cg-point-pulse 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }',
@@ -2553,14 +2557,9 @@ window.StemLab = window.StemLab || {
       var compileFuncRaw = function(expr) {
         var raw = (expr || '').replace(/[^0-9.+\-*\/()xX^ ]/g, '').replace(/X/g, 'x').replace(/\*\*/g, '^');
         if (!raw) return null;
-        // Unary signs: -x^2 = -(x^2), --x = x; right after ^ the sign stays so 2^-x works.
-        var safe = '', prevSig = '';
-        for (var ui = 0; ui < raw.length; ui++) {
-          var uc = raw[ui];
-          var unary = (uc === '-' || uc === '+') && (prevSig === '' || '(+-*/'.indexOf(prevSig) !== -1);
-          if (unary) { if (uc === '-') safe += '(-1)*'; } else safe += uc;
-          if (uc !== ' ') prevSig = uc;
-        }
+        // Unary +/- is handled directly by parseUnary & parsePowOperand with proper precedence
+        // so -x^2 = -(x^2), 2^-x = 2^(-x), and 1/-x = 1/(-x).
+        var safe = raw;
         // Implicit multiplication: 2x, 0.5x, )x, 2(, )(, x2, x(.
         safe = safe
           .replace(/(\d|\))(?=\s*[x(])/g, '$1*')
@@ -3394,15 +3393,47 @@ window.StemLab = window.StemLab || {
 
       // ═══ AI TUTOR ═══ (only when the host offers it and AI hints are on)
       var aiAvailable = typeof ctx.callGemini === 'function' && ctx.aiHintsEnabled !== false;
+      // The student's free-text question goes into the prompt, so it is checked
+      // first (2026-11-20 safety audit, FEATURE_INVENTORY.md §5.9.1), the same way
+      // as AI Literacy Lab: the shared SEL Hub gate when it is loaded, otherwise
+      // the regex checker on window.__alloShared. Critical wording skips the AI
+      // and shows crisis lines; high wording adds a trusted-adult note. Flags stay
+      // on this device (ctx.onSafetyFlag, when the host provides it).
+      var tutorSafetyGate = function(text) {
+        var msg = String(text || '');
+        var onFlag = typeof ctx.onSafetyFlag === 'function' ? ctx.onSafetyFlag : null;
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          try {
+            var r = window.SelHub.safeRehearseCheck(msg, { toolId: 'coordgrid_ai_tutor', onSafetyFlag: onFlag });
+            if (r && r.action) return r.action;
+          } catch (_) { /* fall through to the direct checker */ }
+        }
+        var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+        var flags = null;
+        try { flags = (checker && checker.check) ? checker.check(msg) : null; } catch (_) { flags = null; }
+        if (!Array.isArray(flags) || !flags.length) return 'continue';
+        var rank = { low: 1, medium: 2, high: 3, critical: 4 };
+        var top = flags.reduce(function(acc, f) { return (f && (rank[f.severity] || 0) > (rank[acc.severity] || 0)) ? f : acc; }, flags[0] || {});
+        if (onFlag) {
+          try { onFlag(Object.assign({}, top, { source: 'stem_coordgrid_ai_tutor', context: msg.substring(0, 100), aiGenerated: false })); } catch (_) { /* swallow */ }
+        }
+        return top.severity === 'critical' ? 'block' : (top.severity === 'high' ? 'nudge' : 'continue');
+      };
       var askAITutor = function() {
         if (!aiAvailable || !aiQuestion.trim()) return;
+        var gate = tutorSafetyGate(aiQuestion);
+        if (gate === 'block') {
+          updCG({ aiLoading: false, aiResponse: t('stem.coordgrid.ai_safety_pause', 'I want to pause the math for a second. What you typed sounds heavy, and you matter more than this question. If any of it is real for you right now, please talk to a trusted adult, or call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.') });
+          return;
+        }
         updCG({ aiLoading: true, aiResponse: '' });
         var prompt = 'You are a friendly math tutor helping a student learn about coordinate grids, graphing, and slope. ' +
           'They have ' + gridPoints.length + ' points plotted. ' +
           'Their question: "' + aiQuestion + '"\n\nExplain clearly. Keep under 150 words.';
         Promise.resolve(ctx.callGemini(prompt, false, false, 0.7)).then(function(resp) {
           var next = (_cg.aiAsked || 0) + 1;
-          updCG({ aiResponse: String(resp || ''), aiLoading: false, aiAsked: next });
+          var nudge = gate === 'nudge' ? '\n\n' + t('stem.coordgrid.ai_safety_nudge', '(If anything you typed is close to something real for you, talking to a trusted adult is always an option.)') : '';
+          updCG({ aiResponse: String(resp || '') + nudge, aiLoading: false, aiAsked: next });
           checkBadges({ aiAsked: next });
         }).catch(function() {
           updCG({ aiResponse: t('stem.coordgrid.ai_error', 'Sorry, the AI tutor could not be reached.'), aiLoading: false });
@@ -3413,38 +3444,65 @@ window.StemLab = window.StemLab || {
       // single-character shortcut: it acts only while focus is inside this tool and
       // never in a text field. (C and R were removed: R wiped the grid from any
       // focused button, with no undo.)
-      if (window._coordGridKeyHandler) {
-        window.removeEventListener('keydown', window._coordGridKeyHandler);
-      }
-      window._coordGridKeyHandler = function(e) {
-        // Window-level handler: refuse to act once the tool left the DOM.
-        // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
-        var cgRoot = document.querySelector('[data-coordinate-theme]');
-        if (!cgRoot || !e.target || !cgRoot.contains(e.target)) return;
-        if (e.ctrlKey || e.metaKey || e.altKey) return;
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-        if (e.key === '?') {
-          updCG({ showHelp: !showHelp });
-        }
-      };
-      window.addEventListener('keydown', window._coordGridKeyHandler);
+      var _cgKeyStateRef = React.useRef({ showHelp: showHelp, updCG: updCG });
+      _cgKeyStateRef.current = { showHelp: showHelp, updCG: updCG };
+      React.useEffect(function() {
+        var onCoordGridKeyDown = function(e) {
+          // Window-level handler: refuse to act once the tool left the DOM.
+          // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
+          var cgRoot = document.querySelector('[data-coordinate-theme]');
+          if (!cgRoot || !e.target || !cgRoot.contains(e.target)) return;
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+          if (e.key === '?') {
+            _cgKeyStateRef.current.updCG({ showHelp: !_cgKeyStateRef.current.showHelp });
+          }
+        };
+        window._coordGridKeyHandler = onCoordGridKeyDown;
+        window.addEventListener('keydown', onCoordGridKeyDown);
+        return function() {
+          window.removeEventListener('keydown', onCoordGridKeyDown);
+          if (window._coordGridKeyHandler === onCoordGridKeyDown) window._coordGridKeyHandler = null;
+        };
+      }, []);
 
       // ════════════════════════════════
       // ═══ RENDER ═══
       // ════════════════════════════════
 
       // Grid lines + axis labels (theme palette: lines 3:1, labels 4.5:1 on the surface)
+      // Recessed studio coordinate plane with major/minor hierarchy & glowing principal axes
       var gridElements = [];
       var labelEvery = range <= 12 ? 1 : 2;
       var axisX0 = toSvg(Math.max(viewRange.min, Math.min(viewRange.max, 0)), 'x');
       var axisY0 = toSvg(Math.max(viewRange.min, Math.min(viewRange.max, 0)), 'y');
+      if (!isContrast) {
+        gridElements.push(h('defs', { key: 'cg-defs' },
+          h('radialGradient', { id: 'cg-studio-bg', cx: '50%', cy: '50%', r: '72%' },
+            h('stop', { offset: '0%', stopColor: isDark ? '#1e293b' : '#ffffff' }),
+            h('stop', { offset: '100%', stopColor: isDark ? '#0f172a' : '#f1f5f9' })
+          ),
+          h('linearGradient', { id: 'cg-poly-grad', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: GP.poly, stopOpacity: 0.30 }),
+            h('stop', { offset: '100%', stopColor: GP.accent, stopOpacity: 0.12 })
+          )
+        ));
+        gridElements.push(h('rect', { key: 'cg-mat', x: 0, y: 0, width: gridW, height: gridH, fill: 'url(#cg-studio-bg)' }));
+      }
       for (var gi = 0; gi <= range; gi++) {
         var v = viewRange.min + gi;
         var px = toSvg(v, 'x');
         var py = toSvg(v, 'y');
+        var isMajor = v !== 0 && v % 5 === 0;
+        if (v === 0 && !isContrast) {
+          gridElements.push(
+            h('line', { key: 'vlg' + gi, x1: px, y1: 0, x2: px, y2: gridH, stroke: GP.accent, strokeWidth: 6, strokeOpacity: 0.13 }),
+            h('line', { key: 'hlg' + gi, x1: 0, y1: py, x2: gridW, y2: py, stroke: GP.accent, strokeWidth: 6, strokeOpacity: 0.13 })
+          );
+        }
         gridElements.push(
-          h('line', { key: 'vl' + gi, x1: px, y1: 0, x2: px, y2: gridH, stroke: v === 0 ? GP.axis : GP.minor, strokeWidth: v === 0 ? 2 : 0.6 }),
-          h('line', { key: 'hl' + gi, x1: 0, y1: py, x2: gridW, y2: py, stroke: v === 0 ? GP.axis : GP.minor, strokeWidth: v === 0 ? 2 : 0.6 })
+          h('line', { key: 'vl' + gi, x1: px, y1: 0, x2: px, y2: gridH, stroke: v === 0 ? GP.axis : GP.minor, strokeWidth: v === 0 ? 2.1 : (isMajor ? 1.05 : 0.55), strokeOpacity: v === 0 ? 1 : (isMajor ? 0.85 : 0.55) }),
+          h('line', { key: 'hl' + gi, x1: 0, y1: py, x2: gridW, y2: py, stroke: v === 0 ? GP.axis : GP.minor, strokeWidth: v === 0 ? 2.1 : (isMajor ? 1.05 : 0.55), strokeOpacity: v === 0 ? 1 : (isMajor ? 0.85 : 0.55) })
         );
         if (v !== 0 && v % labelEvery === 0) {
           // ★ Clamp the EDGE tick labels inside the canvas: at the range ends the tick
@@ -3460,10 +3518,19 @@ window.StemLab = window.StemLab || {
           );
         }
       }
+      // Subtle glowing origin beacon + axis arrowheads
+      if (!isContrast && viewRange.min <= 0 && viewRange.max >= 0) {
+        gridElements.push(
+          h('circle', { key: 'orig-halo', cx: axisX0, cy: axisY0, r: 5.5, fill: GP.accent, fillOpacity: 0.16 }),
+          h('circle', { key: 'orig-dot', cx: axisX0, cy: axisY0, r: 2.2, fill: GP.axis }),
+          h('polygon', { key: 'axarr-x', points: gridW + ',' + axisY0 + ' ' + (gridW - 7) + ',' + (axisY0 - 3.5) + ' ' + (gridW - 7) + ',' + (axisY0 + 3.5), fill: GP.axis }),
+          h('polygon', { key: 'axarr-y', points: axisX0 + ',0 ' + (axisX0 - 3.5) + ',7 ' + (axisX0 + 3.5) + ',7', fill: GP.axis })
+        );
+      }
       // Axis name labels (x at the right end, y at the top) — the grid had numbered ticks but no axis names
       gridElements.push(
-        h('text', { key: 'axname-x', x: gridW - 4, y: axisY0 - 6 < 12 ? axisY0 + 26 : axisY0 - 6, textAnchor: 'end', fontSize: 12, fontWeight: 'bold', fill: GP.label }, 'x'),
-        h('text', { key: 'axname-y', x: axisX0 + 8, y: 12, textAnchor: 'start', fontSize: 12, fontWeight: 'bold', fill: GP.label }, 'y')
+        h('text', { key: 'axname-x', x: gridW - 6, y: axisY0 - 6 < 15 ? axisY0 + 26 : axisY0 - 6, textAnchor: 'end', fontSize: 12, fontWeight: 'bold', fill: GP.label }, 'x'),
+        h('text', { key: 'axname-y', x: axisX0 + 8, y: 15, textAnchor: 'start', fontSize: 12, fontWeight: 'bold', fill: GP.label }, 'y')
       );
 
       // Connected lines with slope badges + equation labels (hidden while a task is
@@ -3489,7 +3556,13 @@ window.StemLab = window.StemLab || {
       });
 
       var dot = function (key, p, color, r, extra) {
-        return h('circle', Object.assign({ key: key, cx: toSvg(p.x, 'x'), cy: toSvg(p.y, 'y'), r: r || 6, fill: color, stroke: GP.pointStroke, strokeWidth: 2 }, extra || {}));
+        var cx = toSvg(p.x, 'x'), cy = toSvg(p.y, 'y'), rad = r || 6;
+        if (isContrast) return h('circle', Object.assign({ key: key, cx: cx, cy: cy, r: rad, fill: color, stroke: GP.pointStroke, strokeWidth: 2 }, extra || {}));
+        return h('g', { key: key },
+          h('circle', { cx: cx, cy: cy, r: rad + 4, fill: color, fillOpacity: 0.18, pointerEvents: 'none' }),
+          h('circle', Object.assign({ cx: cx, cy: cy, r: rad, fill: color, stroke: GP.pointStroke, strokeWidth: 2 }, extra || {})),
+          h('circle', { cx: cx - rad * 0.3, cy: cy - rad * 0.3, r: Math.max(1.2, rad * 0.25), fill: 'rgba(255,255,255,0.75)', pointerEvents: 'none' })
+        );
       };
       var tag = function (key, p, text, color, dx, dy) {
         var x = toSvg(p.x, 'x') + (dx == null ? 9 : dx), y = toSvg(p.y, 'y') + (dy == null ? -9 : dy);
@@ -3554,9 +3627,16 @@ window.StemLab = window.StemLab || {
       if (taskType === 'reflect' || taskType === 'translate') {
         var P = gridChallenge.p;
         if (taskType === 'reflect') {
-          if (gridChallenge.axis === 'x') taskElements.push(h('line', { key: 'mir', x1: 0, y1: toSvg(0, 'y'), x2: gridW, y2: toSvg(0, 'y'), stroke: GP.image, strokeWidth: 4, opacity: 0.8 }));
-          else if (gridChallenge.axis === 'y') taskElements.push(h('line', { key: 'mir', x1: toSvg(0, 'x'), y1: 0, x2: toSvg(0, 'x'), y2: gridH, stroke: GP.image, strokeWidth: 4, opacity: 0.8 }));
-          else taskElements.push(h('circle', { key: 'mir', cx: toSvg(0, 'x'), cy: toSvg(0, 'y'), r: 7, fill: 'none', stroke: GP.image, strokeWidth: 3 }));
+          if (gridChallenge.axis === 'x') {
+            if (!isContrast) taskElements.push(h('line', { key: 'mirg', x1: 0, y1: toSvg(0, 'y'), x2: gridW, y2: toSvg(0, 'y'), stroke: GP.image, strokeWidth: 10, opacity: 0.18 }));
+            taskElements.push(h('line', { key: 'mir', x1: 0, y1: toSvg(0, 'y'), x2: gridW, y2: toSvg(0, 'y'), stroke: GP.image, strokeWidth: 3.5, strokeDasharray: '8 4', opacity: 0.9 }));
+          } else if (gridChallenge.axis === 'y') {
+            if (!isContrast) taskElements.push(h('line', { key: 'mirg', x1: toSvg(0, 'x'), y1: 0, x2: toSvg(0, 'x'), y2: gridH, stroke: GP.image, strokeWidth: 10, opacity: 0.18 }));
+            taskElements.push(h('line', { key: 'mir', x1: toSvg(0, 'x'), y1: 0, x2: toSvg(0, 'x'), y2: gridH, stroke: GP.image, strokeWidth: 3.5, strokeDasharray: '8 4', opacity: 0.9 }));
+          } else {
+            if (!isContrast) taskElements.push(h('circle', { key: 'mirg', cx: toSvg(0, 'x'), cy: toSvg(0, 'y'), r: 12, fill: GP.image, fillOpacity: 0.16 }));
+            taskElements.push(h('circle', { key: 'mir', cx: toSvg(0, 'x'), cy: toSvg(0, 'y'), r: 7, fill: 'none', stroke: GP.image, strokeWidth: 3 }));
+          }
         }
         taskElements.push(dot('P', P, GP.point, 7));
         taskElements.push(tag('Pl', P, 'P ' + pairText(P), GP.point));
@@ -3569,9 +3649,10 @@ window.StemLab = window.StemLab || {
           var A = gridChallenge.answer;
           if (taskType === 'translate') {
             var mid2 = { x: A.x, y: P.y };
-            taskElements.push(h('polyline', { key: 'path', points: toSvg(P.x, 'x') + ',' + toSvg(P.y, 'y') + ' ' + toSvg(mid2.x, 'x') + ',' + toSvg(mid2.y, 'y') + ' ' + toSvg(A.x, 'x') + ',' + toSvg(A.y, 'y'), fill: 'none', stroke: GP.image, strokeWidth: 2, strokeDasharray: '6 3', className: 'allo-cg-trail' }));
+            taskElements.push(h('polyline', { key: 'path', points: toSvg(P.x, 'x') + ',' + toSvg(P.y, 'y') + ' ' + toSvg(mid2.x, 'x') + ',' + toSvg(mid2.y, 'y') + ' ' + toSvg(A.x, 'x') + ',' + toSvg(A.y, 'y'), fill: 'none', stroke: GP.image, strokeWidth: 2.2, strokeDasharray: '6 3', className: 'allo-cg-trail' }));
           } else {
-            taskElements.push(h('line', { key: 'path', x1: toSvg(P.x, 'x'), y1: toSvg(P.y, 'y'), x2: toSvg(A.x, 'x'), y2: toSvg(A.y, 'y'), stroke: GP.image, strokeWidth: 1.5, strokeDasharray: '4 3', className: 'allo-cg-trail' }));
+            if (!isContrast) taskElements.push(h('line', { key: 'pathg', x1: toSvg(P.x, 'x'), y1: toSvg(P.y, 'y'), x2: toSvg(A.x, 'x'), y2: toSvg(A.y, 'y'), stroke: GP.image, strokeWidth: 6, opacity: 0.16 }));
+            taskElements.push(h('line', { key: 'path', x1: toSvg(P.x, 'x'), y1: toSvg(P.y, 'y'), x2: toSvg(A.x, 'x'), y2: toSvg(A.y, 'y'), stroke: GP.image, strokeWidth: 1.8, strokeDasharray: '4 3', className: 'allo-cg-trail' }));
           }
           taskElements.push(dot('Pi', A, GP.image, 7, { className: 'allo-cg-pop' }));
           taskElements.push(tag('Pil', A, 'P′ ' + pairText(A), GP.image));
@@ -3579,7 +3660,9 @@ window.StemLab = window.StemLab || {
       }
       if (taskType === 'polygon') {
         var vs = gridChallenge.vertices;
-        taskElements.push(h('polygon', { key: 'poly', points: vs.map(function (q) { return toSvg(q.x, 'x') + ',' + toSvg(q.y, 'y'); }).join(' '), fill: GP.polyFill, stroke: GP.poly, strokeWidth: 2.5 }));
+        var polyPtsStr = vs.map(function (q) { return toSvg(q.x, 'x') + ',' + toSvg(q.y, 'y'); }).join(' ');
+        if (!isContrast) taskElements.push(h('polygon', { key: 'polyg', points: polyPtsStr, fill: 'none', stroke: GP.poly, strokeWidth: 7, strokeOpacity: 0.16, strokeLinejoin: 'round' }));
+        taskElements.push(h('polygon', { key: 'poly', points: polyPtsStr, fill: isContrast ? GP.polyFill : 'url(#cg-poly-grad)', stroke: GP.poly, strokeWidth: 2.5, strokeLinejoin: 'round' }));
         var cx0 = vs.reduce(function (s, q) { return s + q.x; }, 0) / vs.length, cy0 = vs.reduce(function (s, q) { return s + q.y; }, 0) / vs.length;
         vs.forEach(function (q, i) {
           taskElements.push(dot('pv' + i, q, GP.poly, 5));
@@ -3623,10 +3706,12 @@ window.StemLab = window.StemLab || {
           // The last leg stops short so its arrowhead touches the point, not covers it.
           var ex = lg.to[0] - (last ? dx * 8 : 0), ey = lg.to[1] - (last ? dy * 8 : 0);
           var ab = i === 0 ? 'a' : 'b';
+          if (!isContrast) wKids.push(h('line', { key: 'wg' + lg.id, x1: lg.from[0].toFixed(1), y1: lg.from[1].toFixed(1), x2: ex.toFixed(1), y2: ey.toFixed(1), pathLength: 1, stroke: wCol, strokeWidth: 9, strokeOpacity: 0.18, strokeLinecap: 'round', className: wAnim ? 'allo-cg-walk-' + ab : undefined }));
           wKids.push(h('path', { key: 'w' + lg.id, d: 'M' + lg.from[0].toFixed(1) + ' ' + lg.from[1].toFixed(1) + 'L' + ex.toFixed(1) + ' ' + ey.toFixed(1), pathLength: 1, fill: 'none', stroke: wCol, strokeWidth: 4, strokeLinecap: 'round', className: wAnim ? 'allo-cg-walk-' + ab : undefined }));
           var hs = 8, hw = 6;
           var head = [[ex, ey], [ex - dx * hs - dy * hw, ey - dy * hs + dx * hw], [ex - dx * hs + dy * hw, ey - dy * hs - dx * hw]];
-          wKids.push(h('polygon', { key: 'wh' + lg.id, points: head.map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' '), fill: wCol, className: wAnim ? 'allo-cg-walk-h' + ab : undefined }));
+          if (!isContrast) wKids.push(h('circle', { key: 'whg' + lg.id, cx: ex, cy: ey, r: 9, fill: wCol, fillOpacity: 0.18, className: wAnim ? 'allo-cg-walk-h' + ab : undefined }));
+          wKids.push(h('polygon', { key: 'wh' + lg.id, points: head.map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' '), fill: wCol, stroke: isContrast ? undefined : GP.surface, strokeWidth: isContrast ? 0 : 1, className: wAnim ? 'allo-cg-walk-h' + ab : undefined }));
           var wLabel = lg.id === 'x'
             ? fill(lg.n > 0 ? t('stem.coordgrid.move_right', '{n} right') : t('stem.coordgrid.move_left', '{n} left'), { n: Math.abs(lg.n) })
             : fill(lg.n > 0 ? t('stem.coordgrid.move_up', '{n} up') : t('stem.coordgrid.move_down', '{n} down'), { n: Math.abs(lg.n) });
@@ -3708,12 +3793,20 @@ window.StemLab = window.StemLab || {
         });
       }
 
-      // Plotted points (only those inside the visible range)
+      // Plotted points (only those inside the visible range) with luminous vertex beacons
       var pointElements = [], labelElements = [];
       gridPoints.forEach(function(p, i) {
         if (!inView(p)) return;
-        pointElements.push(h('circle', { key: 'pt' + p.x + '_' + p.y, cx: toSvg(p.x, 'x'), cy: toSvg(p.y, 'y'), r: 6, fill: connectFirst === i ? GP.line : GP.point, stroke: GP.pointStroke, strokeWidth: 2, className: 'cursor-pointer allo-cg-pop' }));
-        labelElements.push(h('text', { key: 'lb' + i, x: Math.min(gridW - 56, toSvg(p.x, 'x') + 8), y: Math.max(12, toSvg(p.y, 'y') - 8), fontSize: 11, fontWeight: 'bold', fill: GP.point, style: { paintOrder: 'stroke', stroke: GP.surface, strokeWidth: 3 } }, pairText(p)));
+        var ptCol = connectFirst === i ? GP.line : GP.point;
+        var pcx = toSvg(p.x, 'x'), pcy = toSvg(p.y, 'y');
+        if (!isContrast) {
+          pointElements.push(h('circle', { key: 'pth' + p.x + '_' + p.y, cx: pcx, cy: pcy, r: 10, fill: ptCol, fillOpacity: 0.18, pointerEvents: 'none' }));
+        }
+        pointElements.push(h('circle', { key: 'pt' + p.x + '_' + p.y, cx: pcx, cy: pcy, r: 6, fill: ptCol, stroke: GP.pointStroke, strokeWidth: 2, className: 'cursor-pointer allo-cg-pop' }));
+        if (!isContrast) {
+          pointElements.push(h('circle', { key: 'pts' + p.x + '_' + p.y, cx: pcx - 1.8, cy: pcy - 1.8, r: 1.6, fill: 'rgba(255,255,255,0.78)', pointerEvents: 'none' }));
+        }
+        labelElements.push(h('text', { key: 'lb' + i, x: Math.min(gridW - 56, pcx + 8), y: Math.max(12, pcy - 8), fontSize: 11, fontWeight: 'bold', fill: GP.point, style: { paintOrder: 'stroke', stroke: GP.surface, strokeWidth: 3 } }, pairText(p)));
       });
 
       // ═══ BADGES PANEL ═══
@@ -5177,31 +5270,70 @@ window.StemLab = window.StemLab || {
         var ax = b.xmin <= 0 && b.xmax >= 0 ? 0 : b.xmin, ay = b.ymin <= 0 && b.ymax >= 0 ? 0 : b.ymin;
         var nx = Math.round((b.xmax - b.xmin) / b.xstep), ny = Math.round((b.ymax - b.ymin) / b.ystep);
         var ex = nx > 12 ? 2 : 1, ey = ny > 12 ? 2 : 1, i, v;
-        out.push(h('rect', { key: 'bg', x: F.sx(b.xmin), y: F.sy(b.ymax), width: F.sx(b.xmax) - F.sx(b.xmin), height: F.sy(b.ymin) - F.sy(b.ymax), fill: GP.surface }));
+        if (!isContrast) {
+          out.push(h('defs', { key: 'fdefs' },
+            h('radialGradient', { id: 'cg-frame-bg', cx: '50%', cy: '50%', r: '72%' },
+              h('stop', { offset: '0%', stopColor: isDark ? '#1e293b' : '#ffffff' }),
+              h('stop', { offset: '100%', stopColor: isDark ? '#0f172a' : '#f1f5f9' })
+            )
+          ));
+        }
+        out.push(h('rect', { key: 'bg', x: F.sx(b.xmin), y: F.sy(b.ymax), width: F.sx(b.xmax) - F.sx(b.xmin), height: F.sy(b.ymin) - F.sy(b.ymax), fill: isContrast ? GP.surface : 'url(#cg-frame-bg)' }));
         for (i = 0; i <= nx; i++) {
           v = b.xmin + i * b.xstep;
-          out.push(h('line', { key: 'gx' + i, x1: F.sx(v), y1: F.sy(b.ymin), x2: F.sx(v), y2: F.sy(b.ymax), stroke: v === ax ? GP.axis : GP.minor, strokeWidth: v === ax ? 2 : 0.6 }));
+          var isMajorX = v !== ax && v % (b.xstep * 5) === 0;
+          if (v === ax && !isContrast) out.push(h('line', { key: 'gxg' + i, x1: F.sx(v), y1: F.sy(b.ymin), x2: F.sx(v), y2: F.sy(b.ymax), stroke: GP.accent, strokeWidth: 6, strokeOpacity: 0.13 }));
+          out.push(h('line', { key: 'gx' + i, x1: F.sx(v), y1: F.sy(b.ymin), x2: F.sx(v), y2: F.sy(b.ymax), stroke: v === ax ? GP.axis : GP.minor, strokeWidth: v === ax ? 2.1 : (isMajorX ? 1.05 : 0.55), strokeOpacity: v === ax ? 1 : (isMajorX ? 0.85 : 0.55) }));
           if (i % ex === 0 && !(v === 0 && b.xmin < 0)) out.push(h('text', { key: 'tx' + i, x: F.sx(v), y: Math.min(F.H - 4, F.sy(ay) + 15), textAnchor: 'middle', fontSize: 11, fill: GP.label }, fmt(v)));
         }
         for (i = 0; i <= ny; i++) {
           v = b.ymin + i * b.ystep;
-          out.push(h('line', { key: 'gy' + i, x1: F.sx(b.xmin), y1: F.sy(v), x2: F.sx(b.xmax), y2: F.sy(v), stroke: v === ay ? GP.axis : GP.minor, strokeWidth: v === ay ? 2 : 0.6 }));
+          var isMajorY = v !== ay && v % (b.ystep * 5) === 0;
+          if (v === ay && !isContrast) out.push(h('line', { key: 'gyg' + i, x1: F.sx(b.xmin), y1: F.sy(v), x2: F.sx(b.xmax), y2: F.sy(v), stroke: GP.accent, strokeWidth: 6, strokeOpacity: 0.13 }));
+          out.push(h('line', { key: 'gy' + i, x1: F.sx(b.xmin), y1: F.sy(v), x2: F.sx(b.xmax), y2: F.sy(v), stroke: v === ay ? GP.axis : GP.minor, strokeWidth: v === ay ? 2.1 : (isMajorY ? 1.05 : 0.55), strokeOpacity: v === ay ? 1 : (isMajorY ? 0.85 : 0.55) }));
           if (i % ey === 0 && v !== 0) out.push(h('text', { key: 'ty' + i, x: Math.max(14, F.sx(ax) - 5), y: F.sy(v) + 4, textAnchor: 'end', fontSize: 11, fill: GP.label }, fmt(v)));
         }
+        if (!isContrast) {
+          out.push(
+            h('circle', { key: 'orig-h', cx: F.sx(ax), cy: F.sy(ay), r: 5, fill: GP.accent, fillOpacity: 0.16 }),
+            h('polygon', { key: 'farr-x', points: F.sx(b.xmax) + ',' + F.sy(ay) + ' ' + (F.sx(b.xmax) - 7) + ',' + (F.sy(ay) - 3.5) + ' ' + (F.sx(b.xmax) - 7) + ',' + (F.sy(ay) + 3.5), fill: GP.axis }),
+            h('polygon', { key: 'farr-y', points: F.sx(ax) + ',' + F.sy(b.ymax) + ' ' + (F.sx(ax) - 3.5) + ',' + (F.sy(b.ymax) + 7) + ' ' + (F.sx(ax) + 3.5) + ',' + (F.sy(b.ymax) + 7), fill: GP.axis })
+          );
+        }
         out.push(h('text', { key: 'axx', x: F.W - 4, y: F.sy(ay) - 5, textAnchor: 'end', fontSize: 12, fontWeight: 'bold', fill: GP.label }, 'x'));
-        out.push(h('text', { key: 'axy', x: F.sx(ax) + 6, y: 12, textAnchor: 'start', fontSize: 12, fontWeight: 'bold', fill: GP.label }, 'y'));
+        out.push(h('text', { key: 'axy', x: F.sx(ax) + 6, y: 15, textAnchor: 'start', fontSize: 12, fontWeight: 'bold', fill: GP.label }, 'y'));
         return out;
       };
-      var fDot = function (F, key, p, color, r) { return h('circle', { key: key, cx: F.sx(p.x), cy: F.sy(p.y), r: r || 5, fill: color, stroke: GP.pointStroke, strokeWidth: 1.5 }); };
+      var fDot = function (F, key, p, color, r) {
+        var cx = F.sx(p.x), cy = F.sy(p.y), rad = r || 5;
+        if (isContrast) return h('circle', { key: key, cx: cx, cy: cy, r: rad, fill: color, stroke: GP.pointStroke, strokeWidth: 1.5 });
+        return h('g', { key: key },
+          h('circle', { cx: cx, cy: cy, r: rad + 3.5, fill: color, fillOpacity: 0.20, pointerEvents: 'none' }),
+          h('circle', { cx: cx, cy: cy, r: rad, fill: color, stroke: GP.pointStroke, strokeWidth: 1.5 }),
+          h('circle', { cx: cx - rad * 0.28, cy: cy - rad * 0.28, r: Math.max(1.1, rad * 0.24), fill: 'rgba(255,255,255,0.78)', pointerEvents: 'none' })
+        );
+      };
       var fTag = function (F, key, p, text, color, right, dy) {
-        var x = F.sx(p.x) + (right === false ? -8 : 8), y = Math.max(12, Math.min(F.H - 4, F.sy(p.y) + (dy == null ? -7 : dy)));
+        var x = F.sx(p.x) + (right === false ? -8 : 8), y = Math.max(15, Math.min(F.H - 4, F.sy(p.y) + (dy == null ? -7 : dy)));
         return h('text', { key: key, x: Math.max(2, Math.min(F.W - 2, x)), y: y, textAnchor: right === false ? 'end' : 'start', fontSize: 12, fontWeight: 'bold', fill: color, style: { paintOrder: 'stroke', stroke: GP.surface, strokeWidth: 3 } }, text);
       };
       var fLine = function (F, key, a, b2, color, dash, w) { return h('line', { key: key, x1: F.sx(a.x), y1: F.sy(a.y), x2: F.sx(b2.x), y2: F.sy(b2.y), stroke: color, strokeWidth: w || 1.5, strokeDasharray: dash || null }); };
       var fTri = function (F, key, pts, names, color, fillC, dash) {
         var cx0 = (pts[0].x + pts[1].x + pts[2].x) / 3;
-        var out = [h('polygon', { key: key + '-poly', points: pts.map(function (p) { return F.sx(p.x) + ',' + F.sy(p.y); }).join(' '), fill: fillC || 'none', stroke: color, strokeWidth: 2.5, strokeDasharray: dash || null })];
-        pts.forEach(function (p, i) { out.push(fDot(F, key + '-v' + i, p, color, 4)); out.push(fTag(F, key + '-l' + i, p, names[i], color, p.x >= cx0, p.y >= (pts[0].y + pts[1].y + pts[2].y) / 3 ? -7 : 16)); });
+        var ptsStr = pts.map(function (p) { return F.sx(p.x) + ',' + F.sy(p.y); }).join(' ');
+        var triGradId = 'cg-tri-' + key;
+        var out = [];
+        if (!isContrast) {
+          out.push(h('defs', { key: key + '-def' },
+            h('linearGradient', { id: triGradId, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: color, stopOpacity: fillC ? 0.28 : 0.16 }),
+              h('stop', { offset: '100%', stopColor: color, stopOpacity: fillC ? 0.10 : 0.04 })
+            )
+          ));
+          out.push(h('polygon', { key: key + '-glow', points: ptsStr, fill: 'none', stroke: color, strokeWidth: 6, strokeOpacity: 0.14, strokeLinejoin: 'round' }));
+        }
+        out.push(h('polygon', { key: key + '-poly', points: ptsStr, fill: isContrast ? (fillC || 'none') : ('url(#' + triGradId + ')'), stroke: color, strokeWidth: 2.5, strokeDasharray: dash || null, strokeLinejoin: 'round' }));
+        pts.forEach(function (p, i) { out.push(fDot(F, key + '-v' + i, p, color, 4.5)); out.push(fTag(F, key + '-l' + i, p, names[i], color, p.x >= cx0, p.y >= (pts[0].y + pts[1].y + pts[2].y) / 3 ? -7 : 16)); });
         return out;
       };
       var fCursor = function (F, p) {
@@ -5239,7 +5371,7 @@ window.StemLab = window.StemLab || {
           o.onPick(p);
         };
         return h('div', { role: 'application', tabIndex: 0, className: 'allo-cg-app', 'data-coordgrid-app': o.id, 'aria-label': o.label, 'aria-describedby': o.describedBy, onKeyDown: onKey,
-          onFocus: function () { setFocusApp(o.id); if (!cgQuietFocus) say(o.announce(cur)); }, onBlur: function () { setFocusApp(null); }, style: { maxWidth: 480, margin: '0 auto', borderRadius: 6 } },
+          onFocus: function () { setFocusApp(o.id); if (!cgQuietFocus) say(o.announce(cur)); }, onBlur: function () { setFocusApp(null); }, style: { maxWidth: 480, margin: '0 auto', borderRadius: 10, overflow: 'hidden', border: isContrast ? undefined : ('1px solid ' + GP.cardBorder), boxShadow: isContrast ? undefined : (isDark ? 'inset 0 2px 10px rgba(0,0,0,0.45), 0 6px 18px rgba(0,0,0,0.28)' : 'inset 0 2px 8px rgba(15,23,42,0.08), 0 6px 16px rgba(15,23,42,0.08)') } },
           h('svg', { viewBox: '0 0 ' + F.W + ' ' + F.H, width: '100%', role: 'img', focusable: 'false', 'aria-label': o.svgLabel, onClick: onClick, style: { display: 'block', height: 'auto', background: GP.surface, cursor: o.onPick ? 'crosshair' : 'default' } },
             frameEls(F), o.children, focusApp === o.id ? fCursor(F, cur) : null));
       };
@@ -5578,7 +5710,13 @@ window.StemLab = window.StemLab || {
             if (tk.c.x || tk.c.y) { kids.push(h('rect', { key: 'tfc', x: F.sx(tk.c.x) - 6, y: F.sy(tk.c.y) - 6, width: 12, height: 12, fill: GP.mystery, stroke: GP.pointStroke, strokeWidth: 1.5 })); kids.push(fTag(F, 'tfcl', tk.c, 'C ' + pairText(tk.c), GP.mystery, true, 18)); }
             else kids.push(h('circle', { key: 'tfo', cx: F.sx(0), cy: F.sy(0), r: 7, fill: 'none', stroke: GP.mystery, strokeWidth: 3 }));
             kids.push(fDot(F, 'tfp', tk.p, GP.point, 6), fTag(F, 'tfpl', tk.p, 'P ' + pairText(tk.p), GP.point));
-            if (tk.done && (tfFb.correct || tfFb.revealed)) { kids.push(fLine(F, 'tfr1', tk.c, tk.p, GP.image, '4 3'), fLine(F, 'tfr2', tk.c, tk.answer, GP.image, '4 3'), fDot(F, 'tfpi', tk.answer, GP.image, 6), fTag(F, 'tfpil', tk.answer, 'P′ ' + pairText(tk.answer), GP.image)); }
+            if (tk.done && (tfFb.correct || tfFb.revealed)) {
+              var rotR = Math.hypot(F.sx(tk.p.x) - F.sx(tk.c.x), F.sy(tk.p.y) - F.sy(tk.c.y));
+              if (!isContrast && rotR > 4) {
+                kids.push(h('circle', { key: 'tfr-orbit', cx: F.sx(tk.c.x), cy: F.sy(tk.c.y), r: rotR, fill: 'none', stroke: GP.image, strokeWidth: 1.4, strokeDasharray: '5 4', opacity: 0.55 }));
+              }
+              kids.push(fLine(F, 'tfr1', tk.c, tk.p, GP.image, '4 3', 1.8), fLine(F, 'tfr2', tk.c, tk.answer, GP.image, '4 3', 1.8), fDot(F, 'tfpi', tk.answer, GP.image, 6), fTag(F, 'tfpil', tk.answer, 'P′ ' + pairText(tk.answer), GP.image));
+            }
           } else if (tk.type === 'dilate' || tk.type === 'scale') {
             kids.push(h('circle', { key: 'tfo', cx: F.sx(0), cy: F.sy(0), r: 6, fill: GP.mystery, stroke: GP.pointStroke, strokeWidth: 1.5 }));
             kids = kids.concat(fTri(F, 'tfA', tk.A, VN1, GP.point, null));
@@ -6470,7 +6608,7 @@ window.StemLab = window.StemLab || {
               onKeyDown: gridKeyDown,
               onFocus: function () { setFocusApp('explore'); if (!cgQuietFocus) say(cursorText(coordinateInputX, coordinateInputY)); },
               onBlur: function () { setFocusApp(null); },
-              style: { maxWidth: 480, margin: '0 auto', borderRadius: 6 }
+              style: { maxWidth: 480, margin: '0 auto', borderRadius: 10, overflow: 'hidden', border: isContrast ? undefined : ('1px solid ' + GP.cardBorder), boxShadow: isContrast ? undefined : (isDark ? 'inset 0 2px 10px rgba(0,0,0,0.45), 0 6px 18px rgba(0,0,0,0.28)' : 'inset 0 2px 8px rgba(15,23,42,0.08), 0 6px 16px rgba(15,23,42,0.08)') }
             },
               h('svg', {
                 viewBox: '0 0 ' + gridW + ' ' + gridH, width: '100%', preserveAspectRatio: 'xMidYMid meet',
@@ -6501,24 +6639,70 @@ window.StemLab = window.StemLab || {
               h('button', { type: 'button', 'aria-expanded': descOpen, 'aria-controls': 'coordgrid-describe', onClick: function () { var next = !descOpen; updCG({ descOpen: next }); if (next) say(describePoints()); }, style: btnOn(descOpen) }, t('stem.coordgrid.describe_points', 'Describe my points')),
               lastCleared && h('button', { type: 'button', onClick: undoClear, style: btnStyle }, t('stem.coordgrid.undo_clear', 'Undo clear')),
               h('button', { type: 'button', 'aria-pressed': showHelp, onClick: function () { updCG({ showHelp: !showHelp }); }, style: btnOn(showHelp) }, t('stem.coordgrid.help_button', 'Keyboard help (?)'))),
+            !gridChallenge && (function () {
+              var curQ = coordinateInputX > 0 && coordinateInputY > 0 ? 'I' : coordinateInputX < 0 && coordinateInputY > 0 ? 'II' : coordinateInputX < 0 && coordinateInputY < 0 ? 'III' : coordinateInputX > 0 && coordinateInputY < 0 ? 'IV' : null;
+              var qChips = viewRange.min >= 0
+                ? [{ id: 'I', label: t('stem.coordgrid.legend_q1', 'QI (+, +)') }]
+                : [
+                    { id: 'II', label: t('stem.coordgrid.legend_q2', 'QII (−, +)') },
+                    { id: 'I', label: t('stem.coordgrid.legend_q1', 'QI (+, +)') },
+                    { id: 'III', label: t('stem.coordgrid.legend_q3', 'QIII (−, −)') },
+                    { id: 'IV', label: t('stem.coordgrid.legend_q4', 'QIV (+, −)') }
+                  ];
+              return h('div', { 'data-coordgrid-legend': 'true', style: { marginTop: 10, padding: '8px 10px', borderRadius: 10, border: '1px solid ' + GP.cardBorder, background: GP.card, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 6 } },
+                h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+                  h('line', { x1: 12, y1: 2, x2: 12, y2: 22, stroke: GP.axis, strokeWidth: 1.8 }),
+                  h('line', { x1: 2, y1: 12, x2: 22, y2: 12, stroke: GP.axis, strokeWidth: 1.8 }),
+                  h('circle', { cx: 17, cy: 7, r: 2.8, fill: GP.point }),
+                  h('circle', { cx: 7, cy: 17, r: 2.2, fill: GP.line })
+                ),
+                h('span', { style: { fontSize: 11, fontWeight: 800, color: GP.muted, textTransform: 'uppercase', letterSpacing: '0.06em' } }, t('stem.coordgrid.quad_sign_key', 'Sign key')),
+                qChips.map(function (qc) {
+                  var activeQ = curQ === qc.id;
+                  return h('span', { key: qc.id, style: { fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, border: '1px solid ' + (activeQ ? GP.accent : GP.cardBorder), background: activeQ ? (isContrast ? '#ffff00' : (isDark ? '#164e63' : '#e0f2fe')) : GP.surface, color: activeQ ? (isContrast ? '#000000' : (isDark ? '#e0f2fe' : '#0c4a6e')) : GP.ink } }, qc.label);
+                })
+              );
+            })(),
             renderDescribe()
           )),
 
-          !nameOpen && h('div', { role: 'group', 'aria-label': t('stem.coordgrid.coordinate_entry', 'Coordinate entry'), className: 'rounded-xl border border-cyan-200 bg-cyan-50 p-3' },
-            h('p', { id: 'coordgrid-coordinate-entry-help', className: 'mb-2 text-xs text-cyan-900' }, t('stem.coordgrid.coordinate_entry_help', 'Keyboard alternative: enter X and Y, then use the button to plot, remove, or select that coordinate.')),
+          !nameOpen && h('div', { role: 'group', 'aria-label': t('stem.coordgrid.coordinate_entry', 'Coordinate entry'), className: 'rounded-xl p-3', style: { background: GP.card, border: '1px solid ' + GP.cardBorder, color: GP.ink } },
+            h('p', { id: 'coordgrid-coordinate-entry-help', className: 'mb-2 text-xs', style: { color: GP.muted } }, t('stem.coordgrid.coordinate_entry_help', 'Keyboard alternative: enter X and Y, then use the button to plot, remove, or select that coordinate.')),
             h('div', { className: 'flex flex-wrap items-end gap-2' },
-              h('label', { className: 'flex min-w-24 flex-1 flex-col gap-1 text-xs font-bold text-cyan-900' },
+              h('label', { className: 'flex min-w-24 flex-1 flex-col gap-1 text-xs font-bold', style: { color: GP.ink } },
                 t('stem.coordgrid.x_coordinate', 'X coordinate'),
-                h('input', { type: 'number', min: viewRange.min, max: viewRange.max, step: 1, value: coordinateInputX, 'aria-describedby': 'coordgrid-coordinate-entry-help', onChange: function(e) { var value = parseInt(e.target.value, 10); if (Number.isFinite(value)) updCG({ coordinateInputX: clampV(value) }); }, className: 'min-h-11 rounded-lg border border-cyan-600 bg-white px-3 py-2 text-base text-slate-900' })
+                h('input', { type: 'number', min: viewRange.min, max: viewRange.max, step: 1, value: coordinateInputX, 'aria-describedby': 'coordgrid-coordinate-entry-help', onChange: function(e) { var value = parseInt(e.target.value, 10); if (Number.isFinite(value)) updCG({ coordinateInputX: clampV(value) }); }, style: Object.assign({}, inputStyle, { width: '100%' }), className: 'min-h-11 rounded-lg px-3 py-2 text-base' })
               ),
-              h('label', { className: 'flex min-w-24 flex-1 flex-col gap-1 text-xs font-bold text-cyan-900' },
+              h('label', { className: 'flex min-w-24 flex-1 flex-col gap-1 text-xs font-bold', style: { color: GP.ink } },
                 t('stem.coordgrid.y_coordinate', 'Y coordinate'),
-                h('input', { type: 'number', min: viewRange.min, max: viewRange.max, step: 1, value: coordinateInputY, 'aria-describedby': 'coordgrid-coordinate-entry-help', onChange: function(e) { var value = parseInt(e.target.value, 10); if (Number.isFinite(value)) updCG({ coordinateInputY: clampV(value) }); }, className: 'min-h-11 rounded-lg border border-cyan-600 bg-white px-3 py-2 text-base text-slate-900' })
+                h('input', { type: 'number', min: viewRange.min, max: viewRange.max, step: 1, value: coordinateInputY, 'aria-describedby': 'coordgrid-coordinate-entry-help', onChange: function(e) { var value = parseInt(e.target.value, 10); if (Number.isFinite(value)) updCG({ coordinateInputY: clampV(value) }); }, style: Object.assign({}, inputStyle, { width: '100%' }), className: 'min-h-11 rounded-lg px-3 py-2 text-base' })
               ),
               h('button', { type: 'button', onClick: function() { processGridCoordinate(coordinateInputX, coordinateInputY); }, className: 'min-h-11 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800' },
                 (taskType === 'reflect' || taskType === 'translate') ? t('stem.coordgrid.use_as_prediction', 'Use as my prediction') : connectMode ? t('stem.coordgrid.select_coordinate', 'Select coordinate') : t('stem.coordgrid.toggle_coordinate', 'Plot or remove point'))
             )
           ),
+          !gridChallenge && (function () {
+            var isQ1Only = viewRange.min >= 0;
+            var starterShapes = [
+              { id: 'right-tri', label: t('stem.coordgrid.preset_right_tri', 'Right triangle'), pts: [{ x: 1, y: 1 }, { x: 5, y: 1 }, { x: 5, y: 4 }], edges: [[0, 1], [1, 2], [2, 0]] },
+              { id: 'rect', label: t('stem.coordgrid.preset_rect', 'Rectangle'), pts: isQ1Only ? [{ x: 1, y: 1 }, { x: 7, y: 1 }, { x: 7, y: 5 }, { x: 1, y: 5 }] : [{ x: -3, y: -2 }, { x: 3, y: -2 }, { x: 3, y: 2 }, { x: -3, y: 2 }], edges: [[0, 1], [1, 2], [2, 3], [3, 0]] },
+              { id: 'diamond', label: t('stem.coordgrid.preset_diamond', 'Diamond'), pts: isQ1Only ? [{ x: 5, y: 8 }, { x: 8, y: 5 }, { x: 5, y: 2 }, { x: 2, y: 5 }] : [{ x: 0, y: 4 }, { x: 4, y: 0 }, { x: 0, y: -4 }, { x: -4, y: 0 }], edges: [[0, 1], [1, 2], [2, 3], [3, 0]] },
+              { id: 'slope2', label: t('stem.coordgrid.preset_slope2', 'Slope m = 2'), pts: isQ1Only ? [{ x: 1, y: 2 }, { x: 3, y: 6 }, { x: 4, y: 8 }] : [{ x: -2, y: -3 }, { x: 0, y: 1 }, { x: 2, y: 5 }], edges: [[0, 1], [1, 2]] }
+            ];
+            var applyStarter = function (sp) {
+              var pts = sp.pts.map(function (pt) { return { x: clampV(pt.x), y: clampV(pt.y) }; });
+              var lines = sp.edges.map(function (e) { var a = pts[e[0]], b = pts[e[1]]; return { from: a, to: b, slope: calcSlope(a, b) }; });
+              sfxClick();
+              updCG({ gridPoints: pts, gridLines: lines, connectMode: false, connectFirst: null, lastCleared: null });
+              say(fill(t('stem.coordgrid.preset_loaded', 'Loaded {name} with {n} points.'), { name: sp.label, n: pts.length }));
+            };
+            return h('div', { 'data-coordgrid-starters': 'true', role: 'group', 'aria-label': t('stem.coordgrid.starter_figures', 'Starter figures'), style: Object.assign({}, cardStyle, { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }) },
+              h('span', { style: { fontSize: 12, fontWeight: 800, color: GP.muted, textTransform: 'uppercase', letterSpacing: '0.05em' } }, t('stem.coordgrid.starter_figures_lbl', 'Starter figures:')),
+              starterShapes.map(function (sp) {
+                return h('button', { key: sp.id, type: 'button', onClick: function () { applyStarter(sp); }, style: Object.assign({}, btnStyle, { borderRadius: 999, padding: '6px 14px', fontSize: 12 }) }, sp.label);
+              })
+            );
+          })(),
           renderLevelBar(),
 
           // Core Tools
@@ -6631,17 +6815,17 @@ window.StemLab = window.StemLab || {
 
           // Stats
           h('div', { className: 'grid grid-cols-3 gap-3' },
-            h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-100 text-center' },
-              h('div', { className: 'text-xs font-bold text-cyan-800 uppercase mb-1' }, t('stem.coordgrid.points', 'Points')),
-              h('div', { className: 'text-2xl font-bold text-cyan-800' }, gridPoints.length)
+            h('div', { className: 'rounded-xl p-3 text-center', style: { background: GP.card, border: '1px solid ' + GP.cardBorder, color: GP.ink } },
+              h('div', { className: 'text-xs font-bold uppercase mb-1', style: { color: GP.muted } }, t('stem.coordgrid.points', 'Points')),
+              h('div', { className: 'text-2xl font-bold', style: { color: GP.accent } }, gridPoints.length)
             ),
-            h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-100 text-center' },
-              h('div', { className: 'text-xs font-bold text-cyan-800 uppercase mb-1' }, t('stem.coordgrid.lines', 'Lines')),
-              h('div', { className: 'text-2xl font-bold text-cyan-800' }, gridLines.length)
+            h('div', { className: 'rounded-xl p-3 text-center', style: { background: GP.card, border: '1px solid ' + GP.cardBorder, color: GP.ink } },
+              h('div', { className: 'text-xs font-bold uppercase mb-1', style: { color: GP.muted } }, t('stem.coordgrid.lines', 'Lines')),
+              h('div', { className: 'text-2xl font-bold', style: { color: GP.accent } }, gridLines.length)
             ),
-            h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-100 text-center' },
-              h('div', { className: 'text-xs font-bold text-cyan-800 uppercase mb-1' }, t('stem.coordgrid.quadrants', 'Quadrants')),
-              h('div', { className: 'text-sm font-bold text-cyan-800' },
+            h('div', { className: 'rounded-xl p-3 text-center', style: { background: GP.card, border: '1px solid ' + GP.cardBorder, color: GP.ink } },
+              h('div', { className: 'text-xs font-bold uppercase mb-1', style: { color: GP.muted } }, t('stem.coordgrid.quadrants', 'Quadrants')),
+              h('div', { className: 'text-sm font-bold', style: { color: GP.accent } },
                 gridPoints.length > 0
                   ? (function() {
                       var qs = {};
@@ -6657,18 +6841,43 @@ window.StemLab = window.StemLab || {
         );
       };
 
-      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200', 'data-coordinate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: { background: themeSurface, color: themeInk, border: '1px solid ' + themeBorder } },
+      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200', 'data-coordinate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: { background: themeSurface, color: themeInk, border: '1px solid ' + themeBorder, borderRadius: 18, padding: 12 } },
         // Header
-        h('section', { 'data-coordinate-command': 'true', className: 'overflow-hidden rounded-2xl border border-cyan-300/40 bg-gradient-to-br from-slate-950 via-cyan-950 to-indigo-950 text-white shadow-xl' },
+        h('section', {
+          'data-coordinate-command': 'true',
+          className: 'overflow-hidden rounded-2xl shadow-xl',
+          style: isContrast
+            ? { backgroundColor: '#000000', color: '#ffffff', border: '2px solid #ffff00' }
+            : { backgroundColor: '#083344', backgroundImage: 'linear-gradient(135deg, #020617 0%, #083344 52%, #1e1b4b 100%)', color: '#ffffff', border: '1px solid rgba(103, 232, 249, 0.35)' }
+        },
           h('div', { className: 'p-4 sm:p-5' },
-            h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
-              h('div', { className: 'min-w-0' },
-                h('div', { className: 'flex items-center gap-2' },
-                  h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300', 'aria-label': t('stem.coordgrid.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-                  h('span', { className: 'rounded-full bg-cyan-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30' }, t('stem.coordgrid.studio_kicker', 'Spatial reasoning studio'))
+            h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between' },
+              h('div', { className: 'min-w-0 flex items-start gap-3' },
+                h('svg', { width: 48, height: 48, viewBox: '0 0 48 48', 'aria-hidden': 'true', style: { flexShrink: 0, marginTop: 2 } },
+                  h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : 'rgba(6, 182, 212, 0.16)', stroke: isContrast ? '#ffff00' : 'rgba(103, 232, 249, 0.55)', strokeWidth: 1.5 }),
+                  h('line', { x1: 24, y1: 7, x2: 24, y2: 41, stroke: isContrast ? '#ffffff' : '#67e8f9', strokeWidth: 1.8 }),
+                  h('line', { x1: 7, y1: 24, x2: 41, y2: 24, stroke: isContrast ? '#ffffff' : '#67e8f9', strokeWidth: 1.8 }),
+                  h('line', { x1: 14, y1: 32, x2: 34, y2: 14, stroke: isContrast ? '#ffff00' : '#a5b4fc', strokeWidth: 2, strokeDasharray: '3 2' }),
+                  h('circle', { cx: 14, cy: 32, r: 3.5, fill: isContrast ? '#00ffff' : '#38bdf8', stroke: '#020617', strokeWidth: 1.2 }),
+                  h('circle', { cx: 34, cy: 14, r: 4, fill: isContrast ? '#ffff00' : '#f59e0b', stroke: '#020617', strokeWidth: 1.2 })
                 ),
-                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.coordgrid.coordinate_grid', '\uD83D\uDCCD Coordinate Grid')),
-                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-cyan-100' }, t('stem.coordgrid.studio_lede', 'Locate, compare, and communicate positions using ordered pairs across graphs and real-world maps.'))
+                h('div', { className: 'min-w-0' },
+                  h('div', { className: 'flex flex-wrap items-center gap-2' },
+                    h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/25 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300', style: { minWidth: 40, minHeight: 40 }, 'aria-label': t('stem.coordgrid.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                    h('span', { className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.16em]', style: isContrast ? { backgroundColor: '#000000', color: '#ffff00', border: '1px solid #ffff00' } : { backgroundColor: '#0c4a6e', color: '#cffafe', border: '1px solid rgba(165, 243, 252, 0.35)' } }, t('stem.coordgrid.studio_kicker', 'Spatial reasoning studio')),
+                    h('span', { className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-bold uppercase tracking-wider', style: isContrast ? { backgroundColor: '#000000', color: '#ffffff', border: '1px solid #ffffff' } : { backgroundColor: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(255, 255, 255, 0.22)' } }, t('stem.coordgrid.subject_badge', 'Math · Geometry'))
+                  ),
+                  h('h3', { className: 'mt-2.5 text-xl font-black tracking-tight sm:text-2xl', style: { color: '#ffffff' } }, t('stem.coordgrid.coordinate_grid', '\uD83D\uDCCD Coordinate Grid')),
+                  h('p', { className: 'mt-1 max-w-2xl text-sm leading-6', style: { color: isContrast ? '#ffffff' : '#cffafe' } }, t('stem.coordgrid.studio_lede', 'Locate, compare, and communicate positions using ordered pairs across graphs and real-world maps.'))
+                )
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-2 lg:justify-end', style: { minWidth: 0 } },
+                h('span', { style: { fontSize: 12, fontWeight: 700, padding: '5px 10px', borderRadius: 999, backgroundColor: isContrast ? '#000000' : '#0f172a', color: isContrast ? '#ffff00' : '#a5f3fc', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(103, 232, 249, 0.38)') } },
+                  viewRange.min >= 0 ? t('stem.coordgrid.hero_range_q1', 'Plane: QI (0..10)') : fill(t('stem.coordgrid.hero_range_all', 'Plane: {lo}..{hi}'), { lo: fmt(viewRange.min), hi: fmt(viewRange.max) })),
+                !gridChallenge && h('span', { style: { fontSize: 12, fontWeight: 700, padding: '5px 10px', borderRadius: 999, backgroundColor: isContrast ? '#000000' : '#0f172a', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255, 255, 255, 0.26)') } },
+                  fill(t('stem.coordgrid.hero_canvas_tally', '{p} pts · {l} lines'), { p: gridPoints.length, l: gridLines.length })),
+                h('span', { style: { fontSize: 12, fontWeight: 700, padding: '5px 10px', borderRadius: 999, backgroundColor: isContrast ? '#000000' : '#0f172a', color: isContrast ? '#66ff66' : '#c7d2fe', border: '1px solid ' + (isContrast ? '#66ff66' : 'rgba(165, 180, 252, 0.35)') } },
+                  LEVEL_NAMES[cgLevel])
               )
             )
           )
@@ -6739,20 +6948,27 @@ window.StemLab = window.StemLab || {
         ),
 
         // Tab bar
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(8.5rem, 1fr))' }, className: 'gap-1 bg-cyan-50 rounded-xl p-1 border border-cyan-200', role: 'tablist', 'aria-label': t('stem.coordgrid.coordinate_grid_sections', 'Coordinate Grid sections') },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(8.5rem, 1fr))', background: GP.card, border: '1px solid ' + GP.cardBorder }, className: 'gap-1.5 rounded-xl p-1.5', role: 'tablist', 'aria-label': t('stem.coordgrid.coordinate_grid_sections', 'Coordinate Grid sections') },
           coordinateTabs.map(function(t2, index) {
+            var activeTab = cgTab === t2.id;
             return h('button', {
               key: 't-' + t2.id,
               id: 'coordinate-section-tab-' + t2.id,
               onClick: function() { sfxClick(); updCG({ cgTab: t2.id }); },
               onKeyDown: function(event) { moveCoordinateTab(event, index); },
               role: 'tab',
-              'aria-selected': cgTab === t2.id,
+              'aria-selected': activeTab,
               'aria-controls': 'coordinate-section-panel',
-              tabIndex: cgTab === t2.id ? 0 : -1,
+              tabIndex: activeTab ? 0 : -1,
               'aria-describedby': 'coordgrid-tabs-note', 'data-core': t2.core ? 'true' : 'false',
-              style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere', border: '2px ' + (t2.core ? 'solid' : 'dashed') + ' ' + (t2.core ? '#0e7490' : '#64748b') }, className: 'py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
-                (cgTab === t2.id ? 'bg-white text-cyan-800 shadow-sm' : 'text-cyan-800 hover:text-cyan-900')
+              style: {
+                minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere',
+                border: '2px ' + (t2.core ? 'solid' : 'dashed') + ' ' + (activeTab ? GP.accent : (t2.core ? (isContrast ? '#ffffff' : (isDark ? '#38bdf8' : '#0e7490')) : GP.cardBorder)),
+                background: activeTab ? (isContrast ? '#ffff00' : (isDark ? '#0e7490' : '#ffffff')) : GP.surface,
+                color: activeTab ? (isContrast ? '#000000' : (isDark ? '#ffffff' : '#0c4a6e')) : GP.ink,
+                boxShadow: activeTab && !isContrast ? '0 1px 3px rgba(2, 6, 23, 0.14)' : 'none'
+              },
+              className: 'py-2 px-2 rounded-lg text-xs font-bold transition-all'
             }, t2.icon + ' ' + t2.label);
           })
         ),
@@ -6774,7 +6990,17 @@ window.StemLab = window.StemLab || {
 
         // === H7b'' inquiry widget: quadrant discovery ===
         cgTab === 'quadHunt' && (function() {
-          var iq = _cg._quadHunt || { x: 3, y: 4, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }; // `d` was undeclared here — Quadrant Hunt tab crashed on render
+          var rawIq = _cg._quadHunt && typeof _cg._quadHunt === 'object' && !Array.isArray(_cg._quadHunt) ? _cg._quadHunt : {};
+          var clampQh = function (v, fb) { var n = Math.round(Number(v)); return Number.isFinite(n) ? Math.max(-10, Math.min(10, n)) : fb; };
+          var iq = {
+            x: clampQh(rawIq.x, 3),
+            y: clampQh(rawIq.y, 4),
+            hypothesis: typeof rawIq.hypothesis === 'string' ? rawIq.hypothesis : '',
+            stuckRevealed: !!rawIq.stuckRevealed,
+            understood: !!rawIq.understood,
+            explanation: typeof rawIq.explanation === 'string' ? rawIq.explanation : '',
+            log: Array.isArray(rawIq.log) ? rawIq.log.filter(function (entry) { return entry && typeof entry === 'object' && Number.isFinite(Number(entry.x)) && Number.isFinite(Number(entry.y)); }) : []
+          };
           function setIQ(patch) { updCG({ _quadHunt: Object.assign({}, iq, patch) }); }
           var quadrant;
           if (iq.x === 0 && iq.y === 0) quadrant = 'origin';
@@ -6784,47 +7010,90 @@ window.StemLab = window.StemLab || {
           else if (iq.x < 0 && iq.y > 0) quadrant = 'q2';
           else if (iq.x < 0 && iq.y < 0) quadrant = 'q3';
           else quadrant = 'q4';
-          var qm = {
+          var qm = isContrast ? {
+            q1:     { label: t('stem.coordgrid.quadrant_i', '↗️ Quadrant I (+, +)'), color: '#66ff66', bg: '#000000', border: '#66ff66' },
+            q2:     { label: t('stem.coordgrid.quadrant_ii', '↖️ Quadrant II (−, +)'), color: '#00ffff', bg: '#000000', border: '#00ffff' },
+            q3:     { label: t('stem.coordgrid.quadrant_iii', '↙️ Quadrant III (−, −)'), color: '#ff66ff', bg: '#000000', border: '#ff66ff' },
+            q4:     { label: t('stem.coordgrid.quadrant_iv', '↘️ Quadrant IV (+, −)'), color: '#ffff00', bg: '#000000', border: '#ffff00' },
+            xAxis:  { label: t('stem.coordgrid.on_x_axis_y_0', '↔️ on X-axis (y = 0)'), color: '#ffffff', bg: '#000000', border: '#ffffff' },
+            yAxis:  { label: t('stem.coordgrid.on_y_axis_x_0', '↕️ on Y-axis (x = 0)'), color: '#ffffff', bg: '#000000', border: '#ffffff' },
+            origin: { label: t('stem.coordgrid.at_the_origin_0_0', '🎯 at the Origin (0, 0)'), color: '#ff8080', bg: '#000000', border: '#ff8080' }
+          } : isDark ? {
+            q1:     { label: t('stem.coordgrid.quadrant_i', '↗️ Quadrant I (+, +)'), color: '#86efac', bg: '#052e16', border: '#22c55e' },
+            q2:     { label: t('stem.coordgrid.quadrant_ii', '↖️ Quadrant II (−, +)'), color: '#67e8f9', bg: '#083344', border: '#06b6d4' },
+            q3:     { label: t('stem.coordgrid.quadrant_iii', '↙️ Quadrant III (−, −)'), color: '#d8b4fe', bg: '#2e1065', border: '#a855f7' },
+            q4:     { label: t('stem.coordgrid.quadrant_iv', '↘️ Quadrant IV (+, −)'), color: '#fcd34d', bg: '#451a03', border: '#f59e0b' },
+            xAxis:  { label: t('stem.coordgrid.on_x_axis_y_0', '↔️ on X-axis (y = 0)'), color: '#e2e8f0', bg: '#1e293b', border: '#64748b' },
+            yAxis:  { label: t('stem.coordgrid.on_y_axis_x_0', '↕️ on Y-axis (x = 0)'), color: '#e2e8f0', bg: '#1e293b', border: '#64748b' },
+            origin: { label: t('stem.coordgrid.at_the_origin_0_0', '🎯 at the Origin (0, 0)'), color: '#fca5a5', bg: '#450a0a', border: '#ef4444' }
+          } : {
             q1:     { label: t('stem.coordgrid.quadrant_i', '↗️ Quadrant I (+, +)'), color: '#047857', bg: '#ecfdf5', border: '#86efac' },
             q2:     { label: t('stem.coordgrid.quadrant_ii', '↖️ Quadrant II (−, +)'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9' },
             q3:     { label: t('stem.coordgrid.quadrant_iii', '↙️ Quadrant III (−, −)'), color: '#6d28d9', bg: '#f5f3ff', border: '#c4b5fd' },
             q4:     { label: t('stem.coordgrid.quadrant_iv', '↘️ Quadrant IV (+, −)'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d' },
-            xAxis:  { label: t('stem.coordgrid.on_x_axis_y_0', '↔️ on X-axis (y = 0)'),  color: '#475569', bg: '#f1f5f9', border: '#cbd5e1' },
-            yAxis:  { label: t('stem.coordgrid.on_y_axis_x_0', '↕️ on Y-axis (x = 0)'),  color: '#475569', bg: '#f1f5f9', border: '#cbd5e1' },
-            origin: { label: t('stem.coordgrid.at_the_origin_0_0', '🎯 at the Origin (0, 0)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
-          }[quadrant];
-          return h('div', { id: 'coordinate-section-panel', role: 'tabpanel', 'aria-labelledby': 'coordinate-section-tab-quadHunt', tabIndex: 0, className: 'p-4 rounded-xl bg-white border border-cyan-300 space-y-3' },
-            h('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.coordgrid.quadrant_discovery', '🎯 Quadrant discovery')),
-            h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, t('stem.coordgrid.qh_intro', 'Move x and y with the sliders and watch which region the point is in. Log a few points, then explain the sign pattern of each quadrant.')),
-            h('div', { className: 'p-3 rounded-lg text-center', style: { background: qm.bg, border: '2px solid ' + qm.border } },
-              h('div', { className: 'text-base font-black', style: { color: qm.color } }, qm.label),
-              h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1 font-mono' }, '(x, y) = (' + iq.x + ', ' + iq.y + ')')
+            xAxis:  { label: t('stem.coordgrid.on_x_axis_y_0', '↔️ on X-axis (y = 0)'),  color: '#334155', bg: '#f1f5f9', border: '#94a3b8' },
+            yAxis:  { label: t('stem.coordgrid.on_y_axis_x_0', '↕️ on Y-axis (x = 0)'),  color: '#334155', bg: '#f1f5f9', border: '#94a3b8' },
+            origin: { label: t('stem.coordgrid.at_the_origin_0_0', '🎯 at the Origin (0, 0)'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' }
+          };
+          var qInfo = qm[quadrant];
+          var qPx = 100 + iq.x * 8;
+          var qPy = 100 - iq.y * 8;
+          return h('div', { id: 'coordinate-section-panel', role: 'tabpanel', 'aria-labelledby': 'coordinate-section-tab-quadHunt', tabIndex: 0, className: 'p-4 rounded-xl space-y-3', style: { background: GP.card, border: '1px solid ' + GP.cardBorder, color: GP.ink } },
+            h('h3', { className: 'text-sm font-black', style: { color: GP.accent } }, t('stem.coordgrid.quadrant_discovery', '🎯 Quadrant discovery')),
+            h('p', { className: 'text-[0.75rem] leading-relaxed', style: { color: GP.muted } }, t('stem.coordgrid.qh_intro', 'Move x and y with the sliders and watch which region the point is in. Log a few points, then explain the sign pattern of each quadrant.')),
+            h('div', { className: 'flex flex-wrap items-center gap-4' },
+              h('svg', { viewBox: '0 0 200 200', width: 176, height: 176, role: 'img', 'aria-label': fill(t('stem.coordgrid.qh_svg_label', 'Mini coordinate plane showing point ({x}, {y}).'), { x: fmt(iq.x), y: fmt(iq.y) }), style: { flexShrink: 0, borderRadius: 12, border: '1px solid ' + GP.cardBorder, background: GP.surface } },
+                h('rect', { x: 100, y: 12, width: 88, height: 88, fill: quadrant === 'q1' ? (isContrast ? 'rgba(102,255,102,0.2)' : 'rgba(16,185,129,0.16)') : 'transparent' }),
+                h('rect', { x: 12, y: 12, width: 88, height: 88, fill: quadrant === 'q2' ? (isContrast ? 'rgba(0,255,255,0.2)' : 'rgba(6,182,212,0.16)') : 'transparent' }),
+                h('rect', { x: 12, y: 100, width: 88, height: 88, fill: quadrant === 'q3' ? (isContrast ? 'rgba(255,102,255,0.2)' : 'rgba(168,85,247,0.16)') : 'transparent' }),
+                h('rect', { x: 100, y: 100, width: 88, height: 88, fill: quadrant === 'q4' ? (isContrast ? 'rgba(255,255,0,0.2)' : 'rgba(245,158,11,0.16)') : 'transparent' }),
+                h('line', { x1: 12, y1: 100, x2: 188, y2: 100, stroke: GP.axis, strokeWidth: 1.8 }),
+                h('line', { x1: 100, y1: 12, x2: 100, y2: 188, stroke: GP.axis, strokeWidth: 1.8 }),
+                h('line', { x1: qPx, y1: 100, x2: qPx, y2: qPy, stroke: GP.rise, strokeWidth: 1.5, strokeDasharray: '3 2' }),
+                h('line', { x1: 100, y1: qPy, x2: qPx, y2: qPy, stroke: GP.run, strokeWidth: 1.5, strokeDasharray: '3 2' }),
+                h('text', { x: 146, y: 30, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: GP.label }, t('stem.coordgrid.svg_q1', 'I')),
+                h('text', { x: 54, y: 30, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: GP.label }, t('stem.coordgrid.svg_q2', 'II')),
+                h('text', { x: 54, y: 178, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: GP.label }, t('stem.coordgrid.svg_q3', 'III')),
+                h('text', { x: 146, y: 178, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: GP.label }, t('stem.coordgrid.svg_q4', 'IV')),
+                h('circle', { cx: qPx, cy: qPy, r: 6, fill: qInfo.color, stroke: GP.pointStroke, strokeWidth: 2 })
+              ),
+              h('div', { className: 'flex-1 p-3 rounded-lg text-center', style: { minWidth: '12rem', background: qInfo.bg, border: '2px solid ' + qInfo.border } },
+                h('div', { className: 'text-base font-black', style: { color: qInfo.color } }, qInfo.label),
+                h('div', { className: 'text-[0.75rem] mt-1 font-mono font-bold', style: { color: GP.ink } }, '(x, y) = (' + fmt(iq.x) + ', ' + fmt(iq.y) + ')'),
+                iq.log.length > 0 && h('div', { className: 'mt-2 flex flex-wrap justify-center gap-1' },
+                  iq.log.map(function (entry, li) {
+                    return h('span', { key: li, className: 'px-2 py-0.5 rounded font-mono text-[0.6875rem]', style: { background: GP.surface, color: GP.ink, border: '1px solid ' + GP.cardBorder } }, '(' + fmt(Number(entry.x)) + ', ' + fmt(Number(entry.y)) + ')');
+                  })
+                )
+              )
             ),
             h('div', { className: 'grid grid-cols-2 gap-3' },
               [{ k: 'x', l: t('stem.coordgrid.qh_x', 'x coordinate') }, { k: 'y', l: t('stem.coordgrid.qh_y', 'y coordinate') }].map(function(s) {
                 return h('div', { key: s.k },
-                  h('label', { htmlFor: 'qh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
+                  h('label', { htmlFor: 'qh-' + s.k, className: 'block text-[0.75rem] font-bold', style: { color: GP.ink } }, s.l + ': ', h('span', { className: 'font-mono', style: { color: GP.accent } }, fmt(iq[s.k]))),
                   h('input', { id: 'qh-' + s.k, type: 'range', min: -10, max: 10, step: 1, value: iq[s.k],
-                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                    className: 'w-full', 'aria-label': s.l }));
+                    onChange: function(e) { var p = {}; p[s.k] = clampQh(e.target.value, iq[s.k]); setIQ(p); },
+                    className: 'w-full', style: { minHeight: 36 }, 'aria-label': s.l }));
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ x: iq.x, y: iq.y, q: quadrant }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, t('stem.coordgrid.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ x: 3, y: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, t('stem.coordgrid.reset_2', '↺ Reset'))
+              h('button', { type: 'button', onClick: function() { setIQ({ log: iq.log.concat([{ x: iq.x, y: iq.y, q: quadrant }]).slice(-8) }); }, style: btnStyle }, t('stem.coordgrid.log', '📋 Log')),
+              h('button', { type: 'button', onClick: function() { setIQ({ x: 3, y: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: btnStyle }, t('stem.coordgrid.reset_2', '↺ Reset'))
             ),
-            h('textarea', { 'aria-label': t('stem.coordgrid.hypothesis_input', 'Quadrant sign hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.coordgrid.hypothesis_what_sign_combinations_defi', 'Hypothesis: What sign combinations define each quadrant?'),
-              className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.coordgrid.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
+            h('textarea', { 'aria-label': t('stem.coordgrid.hypothesis_input', 'Quadrant sign hypothesis'), value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.coordgrid.hypothesis_what_sign_combinations_defi', 'Hypothesis: What sign combinations define each quadrant?'),
+              style: { background: GP.surface, color: GP.ink, border: '1px solid ' + GP.cardBorder },
+              className: 'w-full text-[0.75rem] rounded p-2 font-mono leading-snug', rows: 3 }),
+            !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: Object.assign({}, btnStyle, { borderColor: isContrast ? '#ffff00' : (isDark ? '#f59e0b' : '#b45309'), color: isContrast ? '#ffff00' : (isDark ? '#fcd34d' : '#92400e') }) }, t('stem.coordgrid.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+            iq.stuckRevealed && h('div', { className: 'p-3 rounded text-[0.75rem] leading-relaxed', style: { background: isContrast ? '#000000' : (isDark ? '#451a03' : '#fffbeb'), border: '1px solid ' + (isContrast ? '#ffff00' : (isDark ? '#f59e0b' : '#fcd34d')), color: GP.ink } },
               h('ul', { className: 'list-disc pl-5 space-y-1' },
                 h('li', null, t('stem.coordgrid.place_a_point_in_each_quadrant_look_at', 'Place a point in each quadrant. Look at the signs.')),
                 h('li', null, t('stem.coordgrid.what_happens_exactly_on_an_axis', 'What happens exactly on an axis?')))),
-            h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+            h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold cursor-pointer', style: { color: GP.good, minHeight: 44 } },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-5 h-5' }),
               t('stem.coordgrid.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-            iq.understood && h('textarea', { 'aria-label': t('stem.coordgrid.explanation_input', 'Quadrant sign explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.coordgrid.explain_the_sign_pattern_that_defines_', 'Explain the sign pattern that defines each quadrant.'),
-              className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })
+            iq.understood && h('textarea', { 'aria-label': t('stem.coordgrid.explanation_input', 'Quadrant sign explanation'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.coordgrid.explain_the_sign_pattern_that_defines_', 'Explain the sign pattern that defines each quadrant.'),
+              style: { background: GP.surface, color: GP.ink, border: '1px solid ' + GP.good },
+              className: 'w-full text-[0.75rem] rounded p-2 font-mono leading-snug mt-2', rows: 4 })
           );
         })(),
 

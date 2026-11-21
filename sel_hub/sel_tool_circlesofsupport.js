@@ -89,6 +89,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _cirBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.circlesOfSupport || defaultState();
       function setCOS(patch) {
@@ -98,6 +100,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
           if (patch.rings || patch.personLabel !== undefined) next.lastUpdated = todayISO();
           return Object.assign({}, prev, { circlesOfSupport: next });
         });
+      }
+      function scanCirclesText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'circlesOfSupport', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'circlesOfSupport', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setCOS({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Circles of Support', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
       }
       var view = d.view || 'circles';
       function goto(v) { setCOS({ view: v }); }
@@ -362,7 +389,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
                 h('label', { htmlFor: inputId, className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add to ' + ring.label),
                 h('input', { id: inputId, type: 'text',
                   placeholder: 'Add a name to ' + ring.label + '...',
-                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
+                  onBlur: function(e) { scanCirclesText(e.target.value); },
+                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); scanCirclesText(e.target.value); submit(); } },
                   style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _cirBg('#1e293b'), color: _cirFg('#e2e8f0'), fontSize: 13 } }),
                 h('button', { onClick: submit, 'aria-label': 'Add to ' + ring.label,
                   style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _cirSolid(ring.color), color: _cirFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
@@ -554,6 +582,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Circles of Support' },
         header(),
         navTabs(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _cirBand) : null,
         body
       );
     }

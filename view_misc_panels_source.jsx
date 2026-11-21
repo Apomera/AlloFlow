@@ -130,7 +130,7 @@ function PdfDiffViewer(props) {
     diffChunks, diffGranularity, diffLibLoading,
     diffLibReady, diffSelection, diffViewOpen, pdfFixResult,
     isPdfHtmlCommitTokenCurrent, pdfDocumentEpoch,
-    setApplyingRemarkup, setDiffChunks, setDiffGranularity, setDiffSelection,
+    setApplyingRemarkup, setDiffChunks, setDiffGranularity, setDiffRebuildNonce, setDiffSelection,
     setDiffViewOpen, setPdfFixResult, setRangeRejected, toggleDiffChunk,
     warnLog
   } = props;
@@ -140,6 +140,8 @@ function PdfDiffViewer(props) {
   const diffConfirmRef = React.useRef(null);
   const diffConfirmCancelRef = React.useRef(null);
   const diffConfirmResolveRef = React.useRef(null);
+  const diffBackdropDownRef = React.useRef(null);
+  const diffTrapRef = React.useRef(null);
   const diffRemarkupManagerRef = React.useRef(null);
   if (!diffRemarkupManagerRef.current) diffRemarkupManagerRef.current = _createPdfDiffOperationManager();
 
@@ -215,6 +217,8 @@ function PdfDiffViewer(props) {
     if (!event || !container) return;
     const nestedDialog = event.target?.closest?.('[role="alertdialog"]');
     if (nestedDialog && nestedDialog !== container) return;
+    const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null;
+    if (Array.isArray(stack) && stack.length > 0 && diffTrapRef.current && container === diffDialogRef.current && stack[stack.length - 1] !== diffTrapRef.current) return;
     if (event.key === 'Escape') {
       if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
@@ -232,16 +236,24 @@ function PdfDiffViewer(props) {
     });
     if (!focusable.length) { event.preventDefault(); container.focus(); return; }
     const first = focusable[0], last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === container)) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && (document.activeElement === last || document.activeElement === container)) { event.preventDefault(); first.focus(); }
   };
   React.useEffect(() => {
     if (!(diffViewOpen && pdfFixResult)) return undefined;
     const previouslyFocused = document.activeElement;
-    const timer = setTimeout(() => diffCloseRef.current?.focus(), 0);
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: diffDialogRef.current };
+    diffTrapRef.current = trap;
+    trapStack.push(trap);
+    const timer = setTimeout(() => { trap.root = diffDialogRef.current; diffCloseRef.current?.focus(); }, 0);
     return () => {
       clearTimeout(timer);
-      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      const wasTop = trapStack[trapStack.length - 1] === trap;
+      const idx = trapStack.indexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      if (diffTrapRef.current === trap) diffTrapRef.current = null;
+      if (wasTop && previouslyFocused && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [diffViewOpen, !!pdfFixResult]);
   React.useEffect(() => {
@@ -470,17 +482,22 @@ function PdfDiffViewer(props) {
                 warnLog('[Diff] Gemini fallback remarkup failed:', gErr?.message || gErr);
               }
               if (remarkedHtml) {
-                const _stripTags = (h) => h.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
-                const newText = _stripTags(remarkedHtml);
-                const approvedTokens = _effectiveText.split(/\s+/).filter(t => t.length > 2);
-                const newLower = newText.toLowerCase();
-                let found = 0;
-                for (const tok of approvedTokens) { if (newLower.includes(tok.toLowerCase())) found++; }
-                const cov = approvedTokens.length > 0 ? found / approvedTokens.length : 1;
-                if (cov >= 0.9) {
-                  newHtml = remarkedHtml;
-                } else {
-                  warnLog('[Diff] Gemini fallback coverage too low:', Math.round(cov * 100) + '%');
+                const sanitizedRemarked = (typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function')
+                  ? window.sanitizeHtml(remarkedHtml)
+                  : '';
+                if (sanitizedRemarked) {
+                  const _stripTags = (h) => h.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+                  const newText = _stripTags(sanitizedRemarked);
+                  const approvedTokens = _effectiveText.split(/\s+/).filter(t => t.length > 2);
+                  const newLower = newText.toLowerCase();
+                  let found = 0;
+                  for (const tok of approvedTokens) { if (newLower.includes(tok.toLowerCase())) found++; }
+                  const cov = approvedTokens.length > 0 ? found / approvedTokens.length : 1;
+                  if (cov >= 0.9) {
+                    newHtml = sanitizedRemarked;
+                  } else {
+                    warnLog('[Diff] Gemini fallback coverage too low:', Math.round(cov * 100) + '%');
+                  }
                 }
               }
             }
@@ -592,7 +609,10 @@ function PdfDiffViewer(props) {
               try {
                 const raw = await callGeminiForRemarkup(_remarkupOwner, 'You are a WCAG 2.1 AA accessibility remediator. Produce a new HTML identical in STRUCTURE to CURRENT_HTML (same <img>/<table>/<figure>/<figcaption>/landmarks/ids/alt/classes/DOM layout) but whose TEXT matches APPROVED_TEXT. Do NOT add, remove, paraphrase, or reorder words beyond APPROVED_TEXT. Return ONLY the HTML — no commentary, no code fences.\n\nCURRENT_HTML:\n' + _prevHtml + '\n\nAPPROVED_TEXT:\n' + newEffective);
                 if (!remarkupOperationIsCurrent(_remarkupOwner)) return;
-                const cand = (raw || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+                const rawCand = (raw || '').replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+                const cand = rawCand && typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function'
+                  ? window.sanitizeHtml(rawCand)
+                  : '';
                 if (cand) {
                   const _strip = (h) => h.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
                   const newText = _strip(cand);
@@ -638,25 +658,26 @@ function PdfDiffViewer(props) {
             tabIndex={-1}
             onKeyDown={(event) => containDiffFocus(event, diffDialogRef.current, _closeDiff)}
             className={`fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 theme-${theme}`}
-            onClick={(e) => { if (e.target === e.currentTarget) _closeDiff(); }}
+            onMouseDown={(e) => { diffBackdropDownRef.current = (e.target === e.currentTarget); }}
+            onClick={(e) => { const allow = diffBackdropDownRef.current !== false; diffBackdropDownRef.current = null; if (e.target === e.currentTarget && allow) _closeDiff(); }}
           >
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
               <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50">
                 <span className="text-lg">{_ov ? '🤖' : '📝'}</span>
                 <div className="flex-1 min-w-0">
                   <h2 id="allo-diff-title" className="text-sm font-black text-slate-800 truncate">{_ov ? ((t('diff_view.cmd_title') || 'What your last command changed') + (_ov.label ? ' · “' + _ov.label + '”' : '')) : (t('diff_view.title') || 'Source PDF ↔ Remediated HTML · Diff')}</h2>
-                  <p className="text-[11px] text-slate-600">{_ov ? (t('diff_view.cmd_subtitle') || 'Before → after for your last Expert Workbench command. Reject a span to undo just that part, then Apply.') : (t('diff_view.subtitle') || 'Click any colored span to reject the change. Drag-select across spans to batch-reject. Del→Add paraphrase pairs toggle together.')}</p>
+                  <p className="text-xs text-slate-600">{_ov ? (t('diff_view.cmd_subtitle') || 'Before → after for your last Expert Workbench command. Reject a span to undo just that part, then Apply.') : (t('diff_view.subtitle') || 'Click any colored span to reject the change. Drag-select across spans to batch-reject. Del→Add paraphrase pairs toggle together.')}</p>
                 </div>
                 <button
                   ref={diffCloseRef}
                   type="button"
                   onClick={_closeDiff}
-                  className="shrink-0 w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center"
+                  className="shrink-0 min-w-11 min-h-11 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center"
                   aria-label={t('diff_view.close_aria') || 'Close diff view'}
                 >✕</button>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200 bg-white flex-wrap">
-                <div className="inline-flex rounded-lg border border-slate-400 overflow-hidden text-[11px]">
+                <div className="inline-flex rounded-lg border border-slate-400 overflow-hidden text-xs">
                   {['words', 'sentences', 'chars'].map(g => (
                     <button type="button"
                       key={g}
@@ -667,7 +688,7 @@ function PdfDiffViewer(props) {
                   ))}
                 </div>
                 {_chunks && (
-                  <div className="flex items-center gap-3 ml-2 text-[11px]">
+                  <div className="flex items-center gap-3 ml-2 text-xs">
                     <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400" /> <span className="font-bold text-emerald-700">{_ins.toLocaleString()}</span> added</span>
                     <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-rose-200 border border-rose-400" /> <span className="font-bold text-rose-700">{_del.toLocaleString()}</span> removed</span>
                     <span className="inline-flex items-center gap-1 text-slate-600"><span className="w-3 h-3 rounded-sm bg-slate-100 border border-slate-400" /> <span className="font-bold">{_same.toLocaleString()}</span> unchanged</span>
@@ -693,7 +714,7 @@ function PdfDiffViewer(props) {
                     )}
                   </div>
                 )}
-                <div className="ml-auto text-[11px] text-slate-500">
+                <div className="ml-auto text-xs text-slate-600">
                   <span className="font-mono">{_src.length.toLocaleString()}</span> → <span className="font-mono">{_fin.length.toLocaleString()}</span> {dvText('chars_label', 'chars')}
                 </div>
               </div>
@@ -726,9 +747,7 @@ function PdfDiffViewer(props) {
                       onClick={() => {
                         try { _lastDiffFingerprintRef.current = null; } catch (_) {}
                         setDiffChunks(null);
-                        // Touch granularity to force the build effect to re-run
-                        // (no-op state change retriggers the dep array).
-                        setDiffGranularity(g => g);
+                        if (typeof setDiffRebuildNonce === 'function') setDiffRebuildNonce(n => n + 1);
                       }}
                       className="shrink-0 px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-md font-bold text-[12px]"
                       title={t('diff_view.rebuild_tooltip') || 'Clear the diff cache and recompute chunks against the current source ↔ remediated pair.'}
@@ -745,7 +764,7 @@ function PdfDiffViewer(props) {
                           : '{count} likely-dropped tokens (both Tesseract & Vision OCR saw these)',
                         { count: _ocrHighList.length })}</span>
                     </summary>
-                    <p className="text-[11px] text-rose-800 mt-2 mb-2 leading-relaxed">
+                    <p className="text-xs text-rose-800 mt-2 mb-2 leading-relaxed">
                       {dvText('ocr_panel_help', "Click any token to jump to it in the diff. Both OCR engines saw these words in the source — they're high-confidence accidental drops, not intentional remediation removals.")}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -759,7 +778,7 @@ function PdfDiffViewer(props) {
                         >{String(item.value).trim().slice(0, 40)}{String(item.value).length > 40 ? '…' : ''}</button>
                       ))}
                       {_ocrHighList.length > 100 && (
-                        <span className="text-[11px] text-rose-700 self-center ml-1">{dvText('ocr_panel_more', '…and {count} more in the diff below', { count: _ocrHighList.length - 100 })}</span>
+                        <span className="text-xs text-rose-700 self-center ml-1">{dvText('ocr_panel_more', '…and {count} more in the diff below', { count: _ocrHighList.length - 100 })}</span>
                       )}
                     </div>
                   </details>
@@ -775,10 +794,14 @@ function PdfDiffViewer(props) {
                         return (
                           <ins
                             key={c.id}
+                            role="button"
+                            tabIndex={0}
+                            aria-pressed={!!c.rejected}
                             data-chunk-id={c.id}
                             data-pair-id={c.pairId || ''}
                             onClick={() => toggleDiffChunk(c.id)}
-                            className={`bg-emerald-100 text-emerald-900 no-underline rounded px-0.5 cursor-pointer hover:ring-2 hover:ring-emerald-400 ${baseCls}`}
+                            onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDiffChunk(c.id); } }}
+                            className={`bg-emerald-100 text-emerald-900 no-underline rounded px-0.5 cursor-pointer hover:ring-2 hover:ring-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${baseCls}`}
                             title={c.rejected ? 'Rejected — click to keep' : 'Added during remediation — click to reject'}
                           >{c.value}</ins>
                         );
@@ -801,11 +824,15 @@ function PdfDiffViewer(props) {
                         return (
                           <del
                             key={c.id}
+                            role="button"
+                            tabIndex={0}
+                            aria-pressed={!!c.rejected}
                             data-chunk-id={c.id}
                             data-pair-id={c.pairId || ''}
                             data-ocr-confidence={_ocrTag ? _ocrTag.ocrConfidence : ''}
                             onClick={() => toggleDiffChunk(c.id)}
-                            className={`${_delCls} rounded px-0.5 cursor-pointer ${baseCls}`}
+                            onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDiffChunk(c.id); } }}
+                            className={`${_delCls} rounded px-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${baseCls}`}
                             title={_delTitle}
                           >{c.value}{_ocrTag && _ocrTag.ocrConfidence === 'high' && (<sup aria-hidden="true" className="text-[8px] ml-0.5 text-rose-700">✓✓</sup>)}</del>
                         );
@@ -819,7 +846,7 @@ function PdfDiffViewer(props) {
                 )}
                 {diffSelection && (
                   <div
-                    className="fixed z-[110] bg-slate-900 text-white rounded-lg shadow-2xl px-1 py-1 flex items-center gap-1 text-[11px]"
+                    className="fixed z-[110] bg-slate-900 text-white rounded-lg shadow-2xl px-1 py-1 flex items-center gap-1 text-xs"
                     style={{ left: `${diffSelection.anchorX}px`, top: `${Math.max(8, diffSelection.anchorY - 44)}px`, transform: 'translateX(-50%)' }}
                     onMouseDown={(e) => e.preventDefault()}
                   >
@@ -845,9 +872,9 @@ function PdfDiffViewer(props) {
                   </div>
                 )}
               </div>
-              <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 flex items-center gap-3 flex-wrap">
+              <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-xs text-slate-600 flex items-center gap-3 flex-wrap">
                 <span>📚 jsdiff@5.2.0</span>
-                <span className="text-slate-500">·</span>
+                <span className="text-slate-600">·</span>
                 <span>{t('diff_view.footer_help') || 'Click spans or drag-select to edit. Pairs toggle together.'}</span>
                 {/* Revert button — only rendered when there's a snapshot
                     to restore (i.e., the user has previously clicked Apply
@@ -910,6 +937,7 @@ function GroupSessionModal(props) {
   } = props;
   const groupDialogRef = React.useRef(null);
   const groupCloseRef = React.useRef(null);
+  const [confirmDeleteGroupId, setConfirmDeleteGroupId] = React.useState('');
   // Component scope: the "Active groups" column and the per-resource group
   // chips both render this list; a narrower declaration is a ReferenceError.
   const activeSessionGroups = Object.entries(sessionData?.groups || {}).filter(([_, g]) => g !== null);
@@ -936,16 +964,23 @@ function GroupSessionModal(props) {
     });
     if (!focusable.length) { event.preventDefault(); groupDialogRef.current.focus(); return; }
     const first = focusable[0], last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === groupDialogRef.current)) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && (document.activeElement === last || document.activeElement === groupDialogRef.current)) { event.preventDefault(); first.focus(); }
   };
+  const groupBackdropDownRef = React.useRef(null);
   React.useEffect(() => {
     if (!(showGroupModal && activeSessionCode && sessionData)) return undefined;
     const previouslyFocused = document.activeElement;
-    const timer = setTimeout(() => groupCloseRef.current?.focus(), 0);
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: groupDialogRef.current };
+    trapStack.push(trap);
+    const timer = setTimeout(() => { trap.root = groupDialogRef.current; groupCloseRef.current?.focus(); }, 0);
     return () => {
       clearTimeout(timer);
-      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      const wasTop = trapStack[trapStack.length - 1] === trap;
+      const idx = trapStack.indexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      if (wasTop && previouslyFocused && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [showGroupModal, activeSessionCode, !!sessionData]);
   if (!(showGroupModal && activeSessionCode && sessionData)) return null;
@@ -1053,9 +1088,12 @@ function GroupSessionModal(props) {
             'lesson-plan': '📚', adventure: '🎮', simplified: '✨', default: '📄',
         };
         return (
-        <div role="presentation" className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-200" onClick={handleSetShowGroupModalToFalse} data-help-key="group_modal_container">
+        <div role="presentation" className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-200"
+            onMouseDown={e => { groupBackdropDownRef.current = (e.target === e.currentTarget); }}
+            onClick={e => { const allow = groupBackdropDownRef.current !== false; groupBackdropDownRef.current = null; if (e.target === e.currentTarget && allow) handleSetShowGroupModalToFalse(); }}
+            data-help-key="group_modal_container">
             <div ref={groupDialogRef} tabIndex={-1} onKeyDown={containGroupFocus} className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in motion-reduce:animate-none zoom-in-95 duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="group-session-title" aria-describedby="group-session-description">
-                <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0">
+                <div className="flex flex-wrap items-center justify-between gap-3 p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0">
                     <div className="flex items-center gap-4">
                         <div className="bg-purple-600 p-3 rounded-xl shadow-md">
                             <Users size={28} className="text-white" />
@@ -1065,26 +1103,26 @@ function GroupSessionModal(props) {
                             <p id="group-session-description" className="text-sm text-slate-600">{t('groups.modal_subtitle')}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                         <input aria-label={t('common.groups_new_group_placeholder')}
                             type="text"
                             value={newGroupName}
                             onChange={(e) => setNewGroupName(e.target.value)}
                             placeholder={t('groups.new_group_placeholder')}
-                            className="text-sm p-3 rounded-lg border border-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none w-48"
+                            className="min-h-11 text-sm p-3 rounded-lg border border-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none w-48"
                             data-help-key="group_create_input"
                         />
                         <button type="button"
                             aria-label={t('common.add')}
                             onClick={() => handleCreateGroup()}
                             disabled={!newGroupName.trim()}
-                            className="bg-purple-600 text-white px-5 py-3 rounded-lg text-sm font-bold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center gap-2"
+                            className="min-h-11 bg-purple-600 text-white px-5 py-3 rounded-lg text-sm font-bold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center gap-2"
                             data-help-key="group_create_button"
                         >
                             <Plus size={18} /> {t('groups.add_button')}
                         </button>
                     </div>
-                    <button ref={groupCloseRef} type="button" onClick={handleSetShowGroupModalToFalse} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors" aria-label={t('common.close')}>
+                    <button ref={groupCloseRef} type="button" onClick={handleSetShowGroupModalToFalse} className="min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-800 hover:bg-white/80 transition-colors" aria-label={t('common.close')}>
                         <X size={24}/>
                     </button>
                 </div>
@@ -1094,7 +1132,7 @@ function GroupSessionModal(props) {
                             <FileText size={16} className="text-indigo-600" />
                             <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider">{t('groups.resource_library')}</h3>
                             <span className="text-xs text-slate-600 ml-2">{gsText('resource_count', '({count} items)', { count: sessionData.resources?.length || 0 })}</span>
-                            <span className="text-[11px] text-purple-700 ml-auto italic flex items-center gap-1">
+                            <span className="text-xs text-purple-700 ml-auto italic flex items-center gap-1">
                                 <GripVertical size={12} /> {t('groups.drag_to_reorder') || 'Drag or use Move earlier/later'}
                             </span>
                         </div>
@@ -1130,18 +1168,18 @@ function GroupSessionModal(props) {
                                                 <div className="absolute top-1 right-1 text-slate-600 hover:text-slate-900">
                                                     <GripVertical size={14} />
                                                 </div>
-                                                <div className="absolute -top-2 -left-2 bg-slate-600 text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow">
+                                                <div className="absolute -top-2 -left-2 bg-slate-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow">
                                                     {index + 1}
                                                 </div>
                                                 <div className="flex items-start gap-2 mb-2">
                                                     <span className="text-2xl">{icon}</span>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="text-sm font-semibold text-slate-700 truncate">{res.title || 'Untitled'}</div>
-                                                        <div className="text-[11px] text-slate-600 capitalize">{res.type?.replace('-', ' ')}</div>
+                                                        <div className="text-xs text-slate-600 capitalize">{res.type?.replace('-', ' ')}</div>
                                                     </div>
                                                 </div>
                                                 {description && (
-                                                    <div className="text-[11px] text-purple-700 bg-purple-50 px-2 py-1 rounded-md mb-1" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                                    <div className="text-xs text-purple-700 bg-purple-50 px-2 py-1 rounded-md mb-1" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                                         {description}
                                                     </div>
                                                 )}
@@ -1150,31 +1188,31 @@ function GroupSessionModal(props) {
                                                         {language && (
                                                             Array.isArray(language) ? (
                                                                 language.slice(0, 5).map((lang, li) => (
-                                                                    <span key={li} className="inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-medium">
+                                                                    <span key={li} className="inline-flex items-center gap-0.5 text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-medium">
                                                                         <Globe size={8} /> {lang}
                                                                     </span>
                                                                 ))
                                                             ) : (
-                                                                <span className="inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-medium">
+                                                                <span className="inline-flex items-center gap-0.5 text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-medium">
                                                                     <Globe size={8} /> {language}
                                                                 </span>
                                                             )
                                                         )}
                                                         {dateStr && (
-                                                            <span className="inline-flex items-center gap-0.5 text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                                                            <span className="inline-flex items-center gap-0.5 text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
                                                                 <Clock size={8} /> {dateStr}
                                                             </span>
                                                         )}
                                                     </div>
                                                 )}
                                                 {assignedGroup && (
-                                                    <div className="mt-1 text-[11px] font-bold text-green-800 bg-green-100 px-2 py-1 rounded-md flex items-center gap-1">
+                                                    <div className="mt-1 text-xs font-bold text-green-800 bg-green-100 px-2 py-1 rounded-md flex items-center gap-1">
                                                         <Users size={10} /> {assignedGroup[1].name}
                                                     </div>
                                                 )}
                                                 <div role="group" aria-label={gsText('reorder_aria', 'Reorder {title}', { title: res.title || (t('common.untitled') || 'Untitled') })} className="mt-2 grid grid-cols-2 gap-1">
-                                                    <button type="button" onClick={() => moveResourceBy(res.id, -1)} disabled={index === 0} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={gsText('move_earlier_aria', 'Move {title} earlier', { title: res.title || gsText('untitled_resource', 'resource') })}>← {gsText('move_earlier', 'Earlier')}</button>
-                                                    <button type="button" onClick={() => moveResourceBy(res.id, 1)} disabled={index === sessionData.resources.length - 1} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={gsText('move_later_aria', 'Move {title} later', { title: res.title || gsText('untitled_resource', 'resource') })}>{gsText('move_later', 'Later')} →</button>
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, -1)} disabled={index === 0} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={gsText('move_earlier_aria', 'Move {title} earlier', { title: res.title || gsText('untitled_resource', 'resource') })}>← {gsText('move_earlier', 'Earlier')}</button>
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, 1)} disabled={index === sessionData.resources.length - 1} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={gsText('move_later_aria', 'Move {title} later', { title: res.title || gsText('untitled_resource', 'resource') })}>{gsText('move_later', 'Later')} →</button>
                                                 </div>
                                             </div>
                                         );
@@ -1197,17 +1235,29 @@ function GroupSessionModal(props) {
                                     <div key={gid} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow">
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="font-bold text-slate-700">{group.name}</span>
-                                            <button type="button" onClick={() => handleDeleteGroup(gid)} className="min-w-8 min-h-8 inline-flex items-center justify-center text-red-800 hover:text-red-900 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={(t('common.delete') || 'Delete') + ': ' + (group.name || '')}><X size={16} aria-hidden="true"/></button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (confirmDeleteGroupId !== gid) { setConfirmDeleteGroupId(gid); return; }
+                                                    setConfirmDeleteGroupId('');
+                                                    handleDeleteGroup(gid);
+                                                }}
+                                                onBlur={() => { if (confirmDeleteGroupId === gid) setConfirmDeleteGroupId(''); }}
+                                                className={`min-w-11 min-h-11 inline-flex items-center justify-center px-2 py-1.5 rounded-lg text-xs font-bold transition-colors ${confirmDeleteGroupId === gid ? 'bg-red-600 text-white hover:bg-red-700' : 'text-red-800 hover:text-red-900 hover:bg-red-50'}`}
+                                                aria-label={(confirmDeleteGroupId === gid ? 'Confirm delete' : (t('common.delete') || 'Delete')) + ': ' + (group.name || '')}
+                                            >
+                                                {confirmDeleteGroupId === gid ? (t('common.confirm_delete') || 'Delete?') : <X size={16} aria-hidden="true"/>}
+                                            </button>
                                         </div>
-                                        <label htmlFor={`group-resource-${gid}`} className="text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2">
+                                        <label htmlFor={`group-resource-${gid}`} className="text-xs font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2">
                                             {t('groups.assign_resource_label')}
                                             {isPushingResource[gid] === 'pushing' && (
-                                                <span role="status" aria-live="polite" className="flex items-center gap-1 text-[10px] text-purple-700 font-bold normal-case">
+                                                <span role="status" aria-live="polite" className="flex items-center gap-1 text-xs text-purple-700 font-bold normal-case">
                                                     <RefreshCw size={11} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> {t('groups.pushing') || 'Pushing…'}
                                                 </span>
                                             )}
                                             {isPushingResource[gid] === 'success' && (
-                                                <span role="status" aria-live="polite" className="flex items-center gap-1 text-[10px] text-emerald-700 font-bold normal-case">
+                                                <span role="status" aria-live="polite" className="flex items-center gap-1 text-xs text-emerald-700 font-bold normal-case">
                                                     <CheckCircle2 size={11} aria-hidden="true" /> {t('groups.pushed') || 'Sent'}
                                                 </span>
                                             )}
@@ -1249,10 +1299,10 @@ function GroupSessionModal(props) {
                                                     <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${student.connected ? 'bg-green-500 animate-pulse motion-reduce:animate-none' : 'bg-slate-300'}`}></div>
                                                     <span className="truncate font-medium text-slate-700 text-sm" title={student.name}>{student.name}</span>
                                                 </div>
-                                                <select aria-label={t('common.selection')}
+                                                <select aria-label={(t('groups.assign_student_group_aria') || 'Assign group for') + ' ' + (student.name || 'student')}
                                                     value={student.groupId || ""}
                                                     onChange={(e) => handleAssignStudent(uid, e.target.value)}
-                                                    className="text-xs p-2 rounded-lg border border-slate-400 bg-white focus:ring-2 focus:ring-purple-300 outline-none min-w-[100px]"
+                                                    className="min-h-11 text-xs p-2 rounded-lg border border-slate-400 bg-white focus:ring-2 focus:ring-purple-300 outline-none min-w-[100px]"
                                                 >
                                                     <option value="">{t('groups.unassigned')}</option>
                                                     {sessionData.groups && activeSessionGroups.map(([gid, group]) => (
@@ -1337,13 +1387,14 @@ function FluencyModePanel(props) {
     return fluencyPassageText.split(/\s+/).filter(w => /[\p{L}\p{N}]/u.test(w));
   }, [fluencyPassageText]);
   // Host Space shortcut and PhaseK refuse to open the mic while this is set.
+  const fluencyPanelActive = !!(isFluencyMode && generatedContent);
   React.useEffect(() => {
-    if (!partnerMode || typeof window === 'undefined') return undefined;
+    if (!fluencyPanelActive || !partnerMode || typeof window === 'undefined') return undefined;
     window.__alloFluencyPartnerActive = true;
     return () => { window.__alloFluencyPartnerActive = false; };
-  }, [partnerMode]);
+  }, [fluencyPanelActive, partnerMode]);
   React.useEffect(() => {
-    if (partnerPhase !== 'reading') return undefined;
+    if (!fluencyPanelActive || partnerPhase !== 'reading') return undefined;
     const id = setInterval(() => {
       const secs = (Date.now() - partnerStartRef.current) / 1000;
       if (partnerSeconds > 0 && secs >= partnerSeconds) {
@@ -1356,10 +1407,13 @@ function FluencyModePanel(props) {
       setPartnerElapsed(secs);
     }, 250);
     return () => clearInterval(id);
-  }, [partnerPhase, partnerSeconds]);
+  }, [fluencyPanelActive, partnerPhase, partnerSeconds]);
   const resetPartnerCheck = () => {
     setPartnerPhase('setup'); setPartnerErrors([]); setPartnerLastIndex(null); setPartnerTool('error'); setPartnerElapsed(0);
   };
+  React.useEffect(() => {
+    if (!fluencyPanelActive) resetPartnerCheck();
+  }, [fluencyPanelActive]);
   const startPartnerCheck = () => {
     resetPartnerCheck();
     setFluencyTranscript(''); setFluencyResult(null); setFluencyFeedback(''); setFluencyStatus('idle');
@@ -1488,7 +1542,7 @@ function FluencyModePanel(props) {
                             </div>
                         )}
                         <button type="button"
-                            onClick={() => { setIsFluencyMode(false); setFluencyStatus('idle'); setFluencyTimeRemaining(fluencyTimeLimit); setIsReviewingFluency(false); setFluencyReviewDraft(null); }}
+                            onClick={() => { resetPartnerCheck(); setIsFluencyMode(false); setFluencyStatus('idle'); setFluencyTimeRemaining(fluencyTimeLimit); setIsReviewingFluency(false); setFluencyReviewDraft(null); }}
                             className="p-1.5 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                             aria-label={t('fluency.close_label')}
                         >
@@ -1531,7 +1585,7 @@ function FluencyModePanel(props) {
                                     <div className="text-6xl font-black text-indigo-600">
                                         {fluencyResult.wcpm}
                                     </div>
-                                    <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider mt-1">{t('fluency.wcpm_label')}</div>
+                                    <div className="text-xs text-slate-600 font-bold uppercase tracking-wider mt-1">{t('fluency.wcpm_label')}</div>
                                     {!hideBenchmarkForPartner && <div className={`mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${levelColors[benchmarkResult.level]}`}>
                                         {levelLabels[benchmarkResult.level]}
                                     </div>}
@@ -1553,7 +1607,7 @@ function FluencyModePanel(props) {
                             </div>
                             {fluencyBenchmarkGrade === 'custom' && (
                                 <div className="flex justify-center gap-3 mb-4 items-center animate-in motion-reduce:animate-none slide-in-from-top duration-200">
-                                    <label className="text-[11px] font-bold text-slate-600 uppercase">{t('fluency.custom_wcpm') || 'Target WCPM'}:</label>
+                                    <label className="text-xs font-bold text-slate-600 uppercase">{t('fluency.custom_wcpm') || 'Target WCPM'}:</label>
                                     {['fall', 'winter', 'spring'].map(s => (
                                         <div key={s} className="flex flex-col items-center gap-0.5">
                                             <input
@@ -1566,7 +1620,7 @@ function FluencyModePanel(props) {
                                                 placeholder="0"
                                                 aria-label={`${s} target WCPM`}
                                             />
-                                            <span className="text-[11px] text-slate-600 font-bold uppercase">{t(`fluency.season_${s}`) || s}</span>
+                                            <span className="text-xs text-slate-600 font-bold uppercase">{t(`fluency.season_${s}`) || s}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -1584,26 +1638,26 @@ function FluencyModePanel(props) {
                                             {evidenceSummary.medianAccuracy != null ? ` | ${evidenceSummary.medianAccuracy}% accuracy` : ''}
                                         </div>
                                     </div>
-                                    <div className="text-[11px] text-slate-600 mt-1">{evidenceSummary.message}</div>
+                                    <div className="text-xs text-slate-600 mt-1">{evidenceSummary.message}</div>
                                 </div>
                             )}
                             {!(isPartnerResult && fluencyResult.review?.status !== 'reviewed') && (
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
                                     <div className="text-2xl font-black text-red-600">{rrMetrics.substitutions}</div>
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase">{t('fluency.substitutions')}</div>
+                                    <div className="text-xs font-bold text-slate-600 uppercase">{t('fluency.substitutions')}</div>
                                 </div>
                                 <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-center">
                                     <div className="text-2xl font-black text-orange-600">{rrMetrics.omissions}</div>
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase">{t('fluency.omissions')}</div>
+                                    <div className="text-xs font-bold text-slate-600 uppercase">{t('fluency.omissions')}</div>
                                 </div>
                                 <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
                                     <div className="text-2xl font-black text-purple-600">{rrMetrics.insertions}</div>
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase">{t('fluency.insertions_label')}</div>
+                                    <div className="text-xs font-bold text-slate-600 uppercase">{t('fluency.insertions_label')}</div>
                                 </div>
                                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
                                     <div className="text-2xl font-black text-blue-600">{rrMetrics.selfCorrections}</div>
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase">{t('fluency.self_corrections')}</div>
+                                    <div className="text-xs font-bold text-slate-600 uppercase">{t('fluency.self_corrections')}</div>
                                 </div>
                             </div>
                             )}
@@ -1621,12 +1675,22 @@ function FluencyModePanel(props) {
                                     ].map(({ key, label, color }) => {
                                         const val = fluencyResult.prosody[key] || 0;
                                         const pct = (val / 5) * 100;
+                                        const toneMap = {
+                                            blue: { card: 'bg-blue-50 border-blue-200', text: 'text-blue-700', bar: 'bg-blue-600' },
+                                            indigo: { card: 'bg-indigo-50 border-indigo-200', text: 'text-indigo-700', bar: 'bg-indigo-600' },
+                                            purple: { card: 'bg-purple-50 border-purple-200', text: 'text-purple-700', bar: 'bg-purple-600' },
+                                            emerald: { card: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', bar: 'bg-emerald-600' },
+                                            amber: { card: 'bg-amber-50 border-amber-200', text: 'text-amber-700', bar: 'bg-amber-600' },
+                                            rose: { card: 'bg-rose-50 border-rose-200', text: 'text-rose-700', bar: 'bg-rose-600' },
+                                            teal: { card: 'bg-teal-50 border-teal-200', text: 'text-teal-700', bar: 'bg-teal-600' },
+                                        };
+                                        const tone = toneMap[color] || toneMap.indigo;
                                         return (
-                                            <div key={key} className={`bg-${color}-50 border border-${color}-200 rounded-xl p-3 text-center`}>
-                                                <div className={`text-2xl font-black text-${color}-600`}>{val}<span className="text-sm font-bold text-slate-600">/5</span></div>
-                                                <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">{label}</div>
+                                            <div key={key} className={`${tone.card} border rounded-xl p-3 text-center`}>
+                                                <div className={`text-2xl font-black ${tone.text}`}>{val}<span className="text-sm font-bold text-slate-600">/5</span></div>
+                                                <div className="text-xs font-bold text-slate-600 uppercase mb-1.5">{label}</div>
                                                 <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                                                    <div className={`h-full bg-${color}-500 rounded-full transition-all duration-500`} style={{ width: `${pct}%` }}></div>
+                                                    <div className={`h-full ${tone.bar} rounded-full transition-all motion-reduce:transition-none duration-500`} style={{ width: `${pct}%` }}></div>
                                                 </div>
                                             </div>
                                         );
@@ -1645,14 +1709,14 @@ function FluencyModePanel(props) {
                                         </div>
                                         <div>
                                             <div className="text-xs font-bold text-slate-700">{t('fluency.ai_confidence_title') || 'AI Confidence in This Analysis'}</div>
-                                            <div className="text-[11px] text-slate-600">{fluencyResult.confidence.overall >= 7
+                                            <div className="text-xs text-slate-600">{fluencyResult.confidence.overall >= 7
                                                 ? flText('confidence_high', 'High confidence')
                                                 : fluencyResult.confidence.overall >= 4
                                                     ? flText('confidence_moderate', 'Moderate confidence — some results may be inaccurate')
                                                     : flText('confidence_low', 'Low confidence — human verification recommended')}</div>
                                         </div>
                                     </div>
-                                    <div className="flex gap-3 text-[11px] mb-2">
+                                    <div className="flex gap-3 text-xs mb-2">
                                         <span className="text-slate-600">🎙️ {flText('audio_label', 'Audio:')} {fluencyResult.confidence.audioQuality}/10</span>
                                         <span className="text-slate-600">🗣️ {flText('clarity_label', 'Clarity:')} {fluencyResult.confidence.speakerClarity}/10</span>
                                         {fluencyResult.confidence.accentDetected && <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">{t('fluency.accent_detected_badge') || 'Accent detected — scored conservatively'}</span>}
@@ -1660,11 +1724,11 @@ function FluencyModePanel(props) {
                                         {fluencyResult.confidence.dialectalPatternsDetected && <span className="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold">{t('fluency.dialectal_patterns_badge') || 'Dialectal patterns respected'}</span>}
                                     </div>
                                     {fluencyResult.confidence.lowConfidenceWordCount > 0 && (
-                                        <div className="text-[11px] text-amber-700 font-medium">⚠ {flText('low_confidence_words', '{count} word(s) marked with low confidence — look for ⚠ in the word display below', { count: fluencyResult.confidence.lowConfidenceWordCount })}</div>
+                                        <div className="text-xs text-amber-700 font-medium">⚠ {flText('low_confidence_words', '{count} word(s) marked with low confidence — look for ⚠ in the word display below', { count: fluencyResult.confidence.lowConfidenceWordCount })}</div>
                                     )}
-                                    {fluencyResult.confidence.note && <div className="text-[11px] text-slate-600 mt-1 italic">{fluencyResult.confidence.note}</div>}
+                                    {fluencyResult.confidence.note && <div className="text-xs text-slate-600 mt-1 italic">{fluencyResult.confidence.note}</div>}
                                     {fluencyResult.confidence.limitationsApplied && fluencyResult.confidence.limitationsApplied !== 'none' && fluencyResult.confidence.limitationsApplied !== 'none detected' && (
-                                        <div className="text-[11px] text-slate-600 mt-1">{flText('research_basis', 'Research basis:')} {fluencyResult.confidence.limitationsApplied}</div>
+                                        <div className="text-xs text-slate-600 mt-1">{flText('research_basis', 'Research basis:')} {fluencyResult.confidence.limitationsApplied}</div>
                                     )}
                                 </div>
                             )}
@@ -1690,10 +1754,10 @@ function FluencyModePanel(props) {
                                             : flText('record_automated', 'Automated running record - review recommended')}
                                     </div>
                                     {isPartnerResult && fluencyResult.review?.status !== 'reviewed' && (
-                                        <div className="text-[11px] text-slate-700 mt-0.5">{flText('partner_practice_note', 'Practice score from a partner check. Benchmark scoring belongs to your teacher.')}</div>
+                                        <div className="text-xs text-slate-700 mt-0.5">{flText('partner_practice_note', 'Practice score from a partner check. Benchmark scoring belongs to your teacher.')}</div>
                                     )}
                                     {fluencyResult.review?.status === 'reviewed' && (
-                                        <div className="text-[11px] text-slate-600 mt-0.5">
+                                        <div className="text-xs text-slate-600 mt-0.5">
                                             {flText('revision_line', 'Revision {revision} by {reviewer}', { revision: fluencyResult.review.revision || 1, reviewer: fluencyResult.review.reviewer || flText('default_reviewer', 'Educator') })}
                                             {fluencyResult.review.correctedWordCount ? flText('revision_corrected', ' | {count} corrected word classification(s)', { count: fluencyResult.review.correctedWordCount }) : ''}
                                         </div>
@@ -1719,12 +1783,12 @@ function FluencyModePanel(props) {
                                         {fluencyReviewDraft.wordData.map((word, index) => (
                                             <div key={index} className={`rounded-lg border p-2 ${word.lowConfidence ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-slate-50'}`}>
                                                 <div className="font-serif text-base font-bold text-slate-800 truncate" title={word.word}>{word.word}</div>
-                                                <label className="block text-[11px] font-bold text-slate-600 mt-1">
+                                                <label className="block text-xs font-bold text-slate-600 mt-1">
                                                     {flText('classification_label', 'Classification')}
                                                     <select
                                                         value={word.status}
                                                         onChange={(event) => updateFluencyReviewWord(index, 'status', event.target.value)}
-                                                        className="mt-0.5 w-full text-[11px] border border-slate-400 rounded px-1 py-1 bg-white"
+                                                        className="mt-0.5 w-full text-xs border border-slate-400 rounded px-1 py-1 bg-white"
                                                         aria-label={flText('classification_aria', 'Classification for {word}', { word: word.word })}
                                                     >
                                                         <option value="correct">{flText('status_correct', 'Correct')}</option>
@@ -1735,12 +1799,12 @@ function FluencyModePanel(props) {
                                                     </select>
                                                 </label>
                                                 {(word.status === 'mispronounced' || word.status === 'self_corrected') && (
-                                                    <label className="block text-[11px] font-bold text-slate-600 mt-1">
+                                                    <label className="block text-xs font-bold text-slate-600 mt-1">
                                                         {flText('student_said', 'Student said')}
                                                         <input
                                                             value={word.said || ''}
                                                             onChange={(event) => updateFluencyReviewWord(index, 'said', event.target.value)}
-                                                            className="mt-0.5 w-full text-[11px] border border-slate-400 rounded px-1 py-1 bg-white"
+                                                            className="mt-0.5 w-full text-xs border border-slate-400 rounded px-1 py-1 bg-white"
                                                             aria-label={flText('student_said_aria', 'What the student said for {word}', { word: word.word })}
                                                         />
                                                     </label>
@@ -1798,19 +1862,20 @@ function FluencyModePanel(props) {
                                 {fluencyResult.wordData.map((w, i) => (
                                     <span
                                         key={i}
+                                        tabIndex={w.said ? 0 : undefined}
                                         title={w.said ? `${t('fluency.said_label')}: "${w.said}"${w.lowConfidence ? ' (⚠ low confidence)' : ''}` : (w.lowConfidence ? '⚠ AI is uncertain about this word' : '')}
-                                        className={`px-1 rounded relative group cursor-default ${w.lowConfidence ? 'ring-1 ring-amber-400 ring-offset-1 ' : ''}${
-                                            w.status === 'correct' ? 'text-green-600 font-medium' :
+                                        className={`px-1 rounded relative group cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${w.lowConfidence ? 'ring-1 ring-amber-400 ring-offset-1 ' : ''}${
+                                            w.status === 'correct' ? 'text-green-700 font-medium' :
                                             w.status === 'missed' ? 'bg-red-700 text-white' :
-                                            w.status === 'stumbled' ? 'bg-yellow-100 text-yellow-700' :
-                                            w.status === 'self_corrected' ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-400' :
-                                            w.status === 'mispronounced' ? 'bg-red-100 text-red-700 border-b-2 border-red-400' :
+                                            w.status === 'stumbled' ? 'bg-yellow-100 text-yellow-800' :
+                                            w.status === 'self_corrected' ? 'bg-blue-100 text-blue-800 border-b-2 border-blue-400' :
+                                            w.status === 'mispronounced' ? 'bg-red-100 text-red-800 border-b-2 border-red-400' :
                                             'text-slate-600'
                                         }`}
                                     >
                                         {w.word}
                                         {w.said && (
-                                            <span className="absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[11px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none z-10">
+                                            <span className="absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none z-10">
                                                 {w.said}
                                             </span>
                                         )}
@@ -1818,10 +1883,10 @@ function FluencyModePanel(props) {
                                 ))}
                             </div>)}
                             <div className="mt-8 pt-6 border-t border-slate-100 w-full">
-                                <p className="text-[11px] text-slate-300 font-bold uppercase tracking-widest text-center mb-3">
+                                <p className="text-xs text-slate-600 font-bold uppercase tracking-widest text-center mb-3">
                                     {t('fluency.analysis_key')}
                                 </p>
-                                <div className="flex flex-wrap justify-center gap-3 sm:gap-5 text-xs font-medium text-slate-300">
+                                <div className="flex flex-wrap justify-center gap-3 sm:gap-5 text-xs font-medium text-slate-600">
                                     <div className="flex items-center gap-1.5">
                                         <span className="px-2 py-0.5 rounded text-green-800 font-medium bg-green-50/50">
                                             {t('fluency.legend_word')}
@@ -1915,7 +1980,7 @@ function FluencyModePanel(props) {
                                             const pressed = partnerPhase === 'marking' && partnerTool === 'last' ? isLast : isError;
                                             return (
                                                 <button key={i} type="button" aria-pressed={pressed} onClick={() => tapPartnerWord(i)}
-                                                    className={`min-h-11 min-w-11 px-2 rounded-lg border-2 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-400 ${isError ? 'bg-red-100 text-red-900 border-red-500 line-through decoration-2' : beyond ? 'border-transparent text-slate-500' : 'border-transparent text-slate-800 hover:bg-slate-100'} ${isLast ? 'ring-4 ring-indigo-500' : ''}`}>
+                                                    className={`min-h-11 min-w-11 px-2 rounded-lg border-2 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-400 ${isError ? 'bg-red-100 text-red-900 border-red-500 line-through decoration-2' : beyond ? 'border-transparent text-slate-600' : 'border-transparent text-slate-800 hover:bg-slate-100'} ${isLast ? 'ring-4 ring-indigo-500' : ''}`}>
                                                     {word}
                                                 </button>
                                             );
@@ -1924,8 +1989,8 @@ function FluencyModePanel(props) {
                                 </div>
                              ) : (<>
                              {fluencyTranscript && (
-                                <div className="mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-300 italic">
-                                    <span className="font-bold uppercase text-xs text-rose-400 block mb-1">{t('fluency.hearing_label')}</span>
+                                <div className="mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-700 italic">
+                                    <span className="font-bold uppercase text-xs text-rose-700 block mb-1">{t('fluency.hearing_label')}</span>
                                     "{fluencyTranscript}"
                                 </div>
                              )}
@@ -2241,7 +2306,7 @@ function SurpriseTopicLauncher(props) {
   };
   const resolvedMatch = resolution && resolution.status === 'resolved' && resolution.match;
   return (
-    <div className="rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700">
+    <div className="rounded border border-violet-200 bg-violet-50/70 p-2 text-xs text-slate-700">
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={rollTheDice} disabled={surpriseState === 'loading'}
           className="rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50">
@@ -2446,18 +2511,29 @@ const sourceResearchSessions = new WeakMap();
 const typedSourceTopics = new WeakMap();
 function SourceResearchDialog({ title, onClose, children, sourceText, busy, scrollBody = true }) {
   const ref = React.useRef(null);
+  const trapRef = React.useRef(null);
   React.useEffect(() => {
     const previous = document.activeElement;
     const body = document.body;
     const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
     if (body && ++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: ref.current };
+    trapRef.current = trap;
+    trapStack.push(trap);
     ref.current?.focus();
     return () => {
-      if (body && --scrollLock.count === 0) body.style.overflow = scrollLock.prev;
-      if (previous?.isConnected) previous.focus();
+      if (body) { scrollLock.count = Math.max(0, scrollLock.count - 1); if (scrollLock.count === 0) body.style.overflow = scrollLock.prev; }
+      const wasTop = trapStack[trapStack.length - 1] === trap;
+      const idx = trapStack.indexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      if (trapRef.current === trap) trapRef.current = null;
+      if (wasTop && previous?.isConnected) previous.focus();
     };
   }, []);
   const containFocus = event => {
+    const trapStack = window.__alloFocusTrapStack;
+    if (Array.isArray(trapStack) && trapStack.length > 0 && trapRef.current && trapStack[trapStack.length - 1] !== trapRef.current) return;
     if (event.key === 'Escape') { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; event.preventDefault(); event.stopPropagation(); if (!busy) onClose(); return; }
     if (event.key !== 'Tab') return;
     const controls = Array.from(ref.current.querySelectorAll('button, input, select, textarea, a[href], summary, [tabindex="0"]'))
@@ -2939,7 +3015,14 @@ function SourceResearchReviewPanel({ topic, includeWeb, includeDocuments, docume
       {group.items.every(item => item.evidenceType === 'Source-linked AI note') && <p className="text-xs text-amber-900">{sourceReviewVideoUrl(group.url) ? sourceText('input.research_video_ai_note', 'AI-linked notes, not a video transcript.') : sourceText('input.research_ai_note_preview', 'AI-linked notes, not page excerpts. Read the page to check the original wording.')}</p>}
       {group.items.some(item => item.evidenceType === 'AI video transcript') && <p className="text-xs text-amber-900">{sourceText('input.research_video_transcript_note', 'AI-generated transcript, not verified captions. It may contain transcription errors.')}</p>}
       <div className="flex flex-wrap gap-2">
-        {group.url && <a className="inline-flex items-center min-h-11 underline text-indigo-800 break-all" href={group.url} target="_blank" rel="noopener noreferrer">{sourceText('input.review_open', 'Open source')}</a>}
+        {(() => {
+          let safeGroupUrl = '';
+          try {
+            const parsed = new URL(String(group.url || ''));
+            if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && !parsed.username && !parsed.password) safeGroupUrl = parsed.href;
+          } catch (_) {}
+          return safeGroupUrl ? <a className="inline-flex items-center min-h-11 underline text-indigo-800 break-all" href={safeGroupUrl} target="_blank" rel="noopener noreferrer">{sourceText('input.review_open', 'Open source')}</a> : null;
+        })()}
         {group.url && !group.items.some(item => item.evidenceType === (sourceReviewVideoUrl(group.url) ? 'AI video transcript' : 'Page excerpt')) && <button type="button" className={button} disabled={disabled || !!sourceReviewVideoUrl(group.url) && !videoReady} onClick={() => run('url', { url: group.url })}>{sourceReviewVideoUrl(group.url) ? sourceText('input.research_read_video', 'Read video') : sourceText('input.research_read_page', 'Read page')}</button>}
         {sourceReviewVideoUrl(group.url) && Array.from(new Map(group.items.filter(item => item.evidenceType === 'AI video transcript').map(item => [sourceReviewTranscriptKey(item), item])).values()).filter(item => sourceReviewTranscriptKey(item) && !transcriptEntries.some(entry => sourceReviewTranscriptKey(entry) === sourceReviewTranscriptKey(item))).map(item => <button key={sourceReviewTranscriptKey(item)} type="button" className={button} disabled={disabled || !videoReady || !!item.videoClip && !clipReady} onClick={() => run('url', { url: group.url, ...(item.videoClip ? { videoClip: item.videoClip } : {}) })}>{item.videoClip ? sourceText('input.research_reload_clip', 'Load clip {start} to {end}', { start: sourceReviewVideoTime(item.videoClip.startSeconds), end: sourceReviewVideoTime(item.videoClip.endSeconds) }).replace('{start}', sourceReviewVideoTime(item.videoClip.startSeconds)).replace('{end}', sourceReviewVideoTime(item.videoClip.endSeconds)) : sourceText('input.research_transcript_reload', 'Load transcript for review')}</button>)}
         {sourceReviewVideoUrl(group.url) && <button type="button" className={button} disabled={disabled || !clipReady} onClick={() => chooseClip(group.url)}>{sourceText('input.research_choose_clip', 'Choose clip')}</button>}
@@ -3056,6 +3139,8 @@ function SourceGenPanel(props) {
   } = props;
   // Writing a passage replaces the source text. When there already is one, say
   // so and wait for an explicit choice; Keep my text is the default.
+  const aiTextAvailable = typeof window === 'undefined' || typeof window.__alloAiAvailable !== 'function' || window.__alloAiAvailable('text') !== false;
+  const aiDisabledTitle = !aiTextAvailable ? _mpCopy(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : undefined;
   const [confirmReplace, setConfirmReplace] = React.useState(false);
   const replaceKeepRef = React.useRef(null);
   const writeButtonRef = React.useRef(null);
@@ -3135,6 +3220,7 @@ function SourceGenPanel(props) {
   const canGenerateSource = (!!sourceTopic.trim() || targetStandards.length > 0)
     && !ownSourceControlsBusy && (!researchDocuments || researchConfig.mode !== 'sources' || researchConfig.urls.length > 0 || reviewPacket?.topic === sourceTopic.trim() && reviewPacket.items?.some(item => item.included && item.kind !== 'document') || (ownSourceCount > 0 && !ownSourceLoading && !ownSourceReadError));
   const submitSource = async (confirmed) => {
+    if (!aiTextAvailable) return;
     if (reviewBeforeWriting) { setReviewOpen(true); return; }
     if (!canGenerateSource) return;
     if (existingSourceWords > 0 && confirmed !== true) { setConfirmReplace(true); return; }
@@ -3177,7 +3263,9 @@ function SourceGenPanel(props) {
   const handleToggleOwnSource = React.useCallback((source) => {
     if (ownSourceControlsBusy) return;
     if (!source || source.allowAI === false) return;
-    if (!isSourceSelected(source)) setDraftConfig(config => config ? { ...config, enabled: true, mode: config.mode === 'web' ? 'combined' : config.mode } : config);
+    const currentSelected = selectedIdsRef.current;
+    const wasSelected = Array.isArray(currentSelected) ? currentSelected.includes(source.id) : source.active !== false;
+    if (!wasSelected) setDraftConfig(config => config ? { ...config, enabled: true, mode: config.mode === 'web' ? 'combined' : config.mode } : config);
     updateSelectedIds((current) => {
       const ids = Array.isArray(current) ? current : ownSourceList.filter((row) => row.active !== false && row.allowAI !== false).map((row) => row.id);
       return ids.includes(source.id) ? ids.filter((id) => id !== source.id) : [...ids, source.id];
@@ -3379,7 +3467,7 @@ function SourceGenPanel(props) {
                           aria-label={t('common.topic_subject_aria')}
                           aria-describedby={topicFilledEarlier ? 'allo-source-topic-origin' : undefined}
                           className="w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
-                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSource(); } }}
+                          onKeyDown={(e) => { if (e.key === 'Enter' && !e.isComposing && !e.nativeEvent?.isComposing && e.keyCode !== 229) { e.preventDefault(); submitSource(); } }}
                           autoFocus
                         />
                         {topicFilledEarlier && (
@@ -3470,13 +3558,13 @@ function SourceGenPanel(props) {
                                 <div className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
                                     <button type="button"
                                         onClick={handleSetStandardModeToAi}
-                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-900'}`}
+                                        className={`px-2 py-0.5 text-xs font-bold rounded transition-colors ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-900'}`}
                                     >
                                         {t('standards.ai_match')}
                                     </button>
                                     <button type="button"
                                         onClick={handleSetStandardModeToManual}
-                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
+                                        className={`px-2 py-0.5 text-xs font-bold rounded transition-colors ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
                                     >
                                         {t('standards.manual')}
                                     </button>
@@ -3489,7 +3577,7 @@ function SourceGenPanel(props) {
                                         which is how a 3rd grade result for a 5th grade source went
                                         unnoticed. The control that changes it is the Target Level
                                         select in this same panel, named here so the link is obvious. */}
-                                    <p className="text-[11px] text-indigo-900/80">
+                                    <p className="text-xs text-indigo-900/80">
                                       {t('standards.finder_grade_note', { grade: finderGrade }) || `Searching for ${finderGrade} standards. Change the Target Level above to search a different grade.`}
                                     </p>
                                     <div className="flex gap-2">
@@ -3504,16 +3592,16 @@ function SourceGenPanel(props) {
                                             type="text"
                                             value={aiStandardQuery}
                                             onChange={(e) => setAiStandardQuery(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(finderGrade)}
+                                            onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && aiTextAvailable) handleFindStandards(finderGrade); }}
                                             placeholder={t('standards.finder_placeholder')}
                                             className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
                                         />
                                         <button type="button"
-                                            aria-label={t('common.refresh')}
+                                            aria-label={t('standards.search_button_title') || 'Find relevant standards'}
                                             onClick={() => handleFindStandards(finderGrade)}
-                                            disabled={!aiStandardQuery.trim() || isFindingStandards}
+                                            disabled={!aiStandardQuery.trim() || isFindingStandards || !aiTextAvailable}
                                             className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                            title={t('standards.search_button_title')}
+                                            title={aiDisabledTitle || t('standards.search_button_title')}
                                         >
                                             {isFindingStandards ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Search size={14} aria-hidden="true"/>}
                                         </button>
@@ -3535,10 +3623,10 @@ function SourceGenPanel(props) {
                                                     className="w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
                                                 >
                                                     <span className="flex justify-between items-start gap-1">
-                                                        <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">{std.code}</span>
-                                                        <span className="text-[11px] text-slate-600 uppercase">{std.framework}</span>
+                                                        <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">{std.code}</span>
+                                                        <span className="text-xs text-slate-600 uppercase">{std.framework}</span>
                                                     </span>
-                                                    <span className="block text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900">
+                                                    <span className="block text-xs text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900">
                                                         {std.description}
                                                     </span>
                                                 </button>
@@ -3546,7 +3634,7 @@ function SourceGenPanel(props) {
                                         </div>
                                     )}
                                     {suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && (
-                                        <div className="text-[11px] text-slate-600 italic text-center p-1">
+                                        <div className="text-xs text-slate-600 italic text-center p-1">
                                             {t('standards.press_search_hint')}
                                         </div>
                                     )}
@@ -3557,7 +3645,7 @@ function SourceGenPanel(props) {
                                         type="text"
                                         value={standardInputValue}
                                         onChange={(e) => setStandardInputValue(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
+                                        onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') handleAddStandard(); }}
                                         placeholder={t('standards.manual_placeholder')}
                                         className="flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 p-1.5"
                                     />
@@ -3575,7 +3663,7 @@ function SourceGenPanel(props) {
                         {targetStandards.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-2 mb-2">
                                 {targetStandards.map((std, idx) => (
-                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700 border border-green-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full">
+                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full">
                                         <span className="truncate" title={std}>{std}</span>
                                         <button type="button"
                                             aria-label={t('common.close')}
@@ -3718,15 +3806,15 @@ function SourceGenPanel(props) {
                                   {/* role=status so a screen reader hears the outcome; the
                                       per-file detail matters because one unreadable scan among
                                       five documents is not "import failed". */}
-                                  {ownSourceImportMsg && <p role="status" aria-live="polite" className="text-[11px] text-purple-700 leading-relaxed">{ownSourceImportMsg}</p>}
-                                  {(ownSourceList.length > 0 || (!ownSourceLoading && !ownSourceReadError)) && <p role="status" aria-live="polite" className="text-[11px] text-purple-700 leading-relaxed">
+                                  {ownSourceImportMsg && <p role="status" aria-live="polite" className="text-xs text-purple-700 leading-relaxed">{ownSourceImportMsg}</p>}
+                                  {(ownSourceList.length > 0 || (!ownSourceLoading && !ownSourceReadError)) && <p role="status" aria-live="polite" className="text-xs text-purple-700 leading-relaxed">
                                       {ownSourceList.length > 0
                                           ? `${t('input.my_sources_stored', { count: ownSourceList.length })} ${t('input.my_sources_included', { count: ownSourceCount })}`
                                           : t('input.my_sources_empty')}
                                   </p>}
-                                  {ownSourceList.length > 0 && <p className="text-[11px] text-purple-700">{sourceText('input.my_sources_lesson_selection', 'Include or exclude documents for this lesson. Saved documents remain available in other workspaces.')}</p>}
+                                  {ownSourceList.length > 0 && <p className="text-xs text-purple-700">{sourceText('input.my_sources_lesson_selection', 'Include or exclude documents for this lesson. Saved documents remain available in other workspaces.')}</p>}
                                   {ownSourceImportFailures.length > 0 && (
-                                      <ul className="text-[11px] text-amber-900 leading-relaxed list-disc ml-4">
+                                      <ul className="text-xs text-amber-900 leading-relaxed list-disc ml-4">
                                           {ownSourceImportFailures.map((failure, index) => (
                                               <li key={index}>{failure}</li>
                                           ))}
@@ -3738,14 +3826,14 @@ function SourceGenPanel(props) {
                                       drops it from retrieval; remove deletes it. */}
                                   {ownSourceList.length > 0 && (
                                       <details className="mt-1">
-                                          <summary className="min-h-11 flex items-center cursor-pointer text-[11px] font-bold text-purple-900 select-none">
+                                          <summary className="min-h-11 flex items-center cursor-pointer text-xs font-bold text-purple-900 select-none">
                                               {t('input.my_sources_manage', { count: ownSourceList.length })}
                                           </summary>
                                           <ul className="mt-1 space-y-1">
                                               {ownSourceList.map((source) => (
-                                                  <li key={source.id} className="text-[11px]">
+                                                  <li key={source.id} className="text-xs">
                                                     <div className="flex items-center justify-between gap-2">
-                                                      <span className={'min-w-0 break-words ' + (isSourceSelected(source) ? 'text-purple-900' : 'text-slate-500')}>
+                                                      <span className={'min-w-0 break-words ' + (isSourceSelected(source) ? 'text-purple-900' : 'text-slate-600')}>
                                                           {source.title}
                                                           {source.allowAI === false && <span className="block text-amber-900">{sourceText('input.my_sources_ai_disabled', 'Unavailable for AI: permission is off in the document library.')}</span>}
                                                       </span>
@@ -3845,7 +3933,8 @@ function SourceGenPanel(props) {
                         ref={writeButtonRef}
                         data-help-key="source_generate_button"
                         onClick={submitSource}
-                        disabled={reviewBeforeWriting ? ownSourceControlsBusy || !sourceTopic.trim() : !canGenerateSource} aria-busy={isGeneratingSource}
+                        disabled={!aiTextAvailable || (reviewBeforeWriting ? ownSourceControlsBusy || !sourceTopic.trim() : !canGenerateSource)} aria-busy={isGeneratingSource}
+                        title={aiDisabledTitle}
                         className="w-full bg-violet-700 text-white text-sm font-medium py-2 rounded-md hover:bg-violet-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         {isGeneratingSource ? <RefreshCw className="animate-spin motion-reduce:animate-none" size={14} /> : <Pencil size={14} />}
@@ -3910,9 +3999,12 @@ function TourOverlay(props) {
       handleSetRunTourToFalse();
     }
   };
+  const tourTrapRef = React.useRef(null);
   const containTourFocus = (event) => {
     if (!event || !tourDialogRef.current) return;
     if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+    const stack = window.__alloFocusTrapStack;
+    if (Array.isArray(stack) && stack.length > 0 && tourTrapRef.current && stack[stack.length - 1] !== tourTrapRef.current) return;
     if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeTourOverlay(); return; }
     if (event.key !== 'Tab') return;
     const focusable = Array.from(tourDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => {
@@ -3925,24 +4017,38 @@ function TourOverlay(props) {
     });
     if (!focusable.length) { event.preventDefault(); tourDialogRef.current.focus(); return; }
     const first = focusable[0], last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === tourDialogRef.current)) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && (document.activeElement === last || document.activeElement === tourDialogRef.current)) { event.preventDefault(); first.focus(); }
   };
   React.useEffect(() => {
     if (!(runTour && tourRect)) return undefined;
     const previouslyFocused = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: tourDialogRef.current };
+    tourTrapRef.current = trap;
+    trapStack.push(trap);
     const timer = setTimeout(() => {
+      trap.root = tourDialogRef.current;
       tourDialogRef.current?.focus({ preventScroll: true });
     }, 0);
     return () => {
       clearTimeout(timer);
-      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      const wasTop = trapStack[trapStack.length - 1] === trap;
+      const idx = trapStack.indexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      if (tourTrapRef.current === trap) tourTrapRef.current = null;
+      if (wasTop && previouslyFocused && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [runTour, !!tourRect]);
   React.useEffect(() => { tourDialogRef.current?.querySelectorAll('.allo-tour-copy').forEach(el => { el.scrollTop = 0; }); }, [tourStep, spotlightMessage]);
   if (!(runTour && tourRect)) return null;
-  const tourAccessibleTitle = spotlightMessage ? (spotlightMessage.title || t('tour.spotlight_title')) : tourSteps[tourStep].title;
-  const tourAccessibleText = spotlightMessage ? (spotlightMessage.text || spotlightMessage || '') : ((tourNotice ? tourNotice + ' ' : '') + (tourSteps[tourStep].text || ''));
+  const activeTourStep = Array.isArray(tourSteps) ? tourSteps[tourStep] : null;
+  if (!spotlightMessage && !activeTourStep) return null;
+  const spotlightBodyText = typeof spotlightMessage === 'string'
+    ? spotlightMessage
+    : (spotlightMessage && typeof spotlightMessage.text === 'string' ? spotlightMessage.text : '');
+  const tourAccessibleTitle = spotlightMessage ? (spotlightMessage.title || t('tour.spotlight_title')) : (activeTourStep?.title || '');
+  const tourAccessibleText = spotlightMessage ? spotlightBodyText : ((tourNotice ? tourNotice + ' ' : '') + (activeTourStep?.text || ''));
   // ── Beam geometry, computed from where the light actually IS ──
   //
   // The old beam was `apex -> (rect.left, rect.top) -> (rect.left, rect.bottom)`:
@@ -4139,7 +4245,7 @@ function TourOverlay(props) {
                             <Sparkles size={18} className="text-yellow-500 fill-current"/> {spotlightMessage.title || t('tour.spotlight_title')}
                         </h4>
                         <div className="flex flex-col gap-2 mt-2">
-{(spotlightMessage.text || spotlightMessage || '').split(/\r?\n/).map((line, i) => {
+{spotlightBodyText.split(/\r?\n/).map((line, i) => {
                             const cleanLine = line.trim();
                             if (!cleanLine) return <div key={i} className="h-3" />;
                             const formatText = (text) => {
@@ -4199,9 +4305,9 @@ function TourOverlay(props) {
                 ) : (
                     <>
                         <div className="flex justify-between items-start shrink-0">
-                            <h4 className="font-bold text-indigo-900 text-lg">{tourSteps[tourStep].title}</h4>
+                            <h4 className="font-bold text-indigo-900 text-lg">{activeTourStep?.title || ''}</h4>
                             <span data-tour-progress className="shrink-0 text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">
-                                {tourProgress ? `${tourProgress.label} · ${tourProgress.current} / ${tourProgress.total}` : `${tourStep + 1} / ${tourSteps.length}`}
+                                {tourProgress ? `${tourProgress.label} · ${tourProgress.current} / ${tourProgress.total}` : `${tourStep + 1} / ${(Array.isArray(tourSteps) ? tourSteps.length : 0)}`}
                             </span>
                         </div>
                         {tourNavigator && (
@@ -4231,7 +4337,7 @@ function TourOverlay(props) {
                         )}
                         {tourNotice && <p data-tour-skip-note className="shrink-0 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900">{tourNotice}</p>}
                         <div className="allo-tour-copy text-slate-600 text-sm leading-relaxed flex flex-col gap-2">
-                            {(tourSteps[tourStep].text || '').split(/\r?\n/).map((line, i) => {
+                            {String(activeTourStep?.text || '').split(/\r?\n/).map((line, i) => {
                                 const cleanLine = line.trim();
                                 if (!cleanLine) return <div key={i} className="h-2" />;
                                 const formatText = (text) => {
@@ -4327,9 +4433,26 @@ function VolumeBuilderView(props) {
     setCubeShape, setCubeShowLayers, setExploreDifficulty, t
   } = props;
   const cubeDragCleanupRef = React.useRef(null);
-  React.useEffect(() => () => {
-    if (typeof cubeDragCleanupRef.current === 'function') cubeDragCleanupRef.current();
-  }, []);
+  const cubeStageRef = React.useRef(null);
+  React.useEffect(() => {
+    if (mathMode !== 'Volume Builder' && typeof cubeDragCleanupRef.current === 'function') {
+      cubeDragCleanupRef.current();
+    }
+    return () => {
+      if (typeof cubeDragCleanupRef.current === 'function') cubeDragCleanupRef.current();
+    };
+  }, [mathMode]);
+  React.useEffect(() => {
+    if (mathMode !== 'Volume Builder') return;
+    const stageEl = cubeStageRef.current;
+    if (!stageEl) return;
+    const onStageWheel = (e) => {
+      e.preventDefault();
+      setCubeScale(s => Math.max(0.4, Math.min(2.5, s + (e.deltaY > 0 ? -0.08 : 0.08))));
+    };
+    stageEl.addEventListener('wheel', onStageWheel, { passive: false });
+    return () => stageEl.removeEventListener('wheel', onStageWheel);
+  }, [mathMode, setCubeScale]);
   if (!(mathMode === 'Volume Builder')) return null;
                             const isLBlock = cubeShape === 'lblock';
                             // Clamp notch dims so they never equal or exceed the parent
@@ -4464,18 +4587,18 @@ function VolumeBuilderView(props) {
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <button type="button" onClick={() => setCubeScale(s => Math.max(0.4, s - 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label={t('volume_builder.zoom_out_aria') || 'Zoom out'}>−</button>
-                                        <span className="text-[11px] text-emerald-600 font-mono w-10 text-center">{Math.round(cubeScale * 100)}%</span>
+                                        <span className="text-xs text-emerald-600 font-mono w-10 text-center">{Math.round(cubeScale * 100)}%</span>
                                         <button type="button" onClick={() => setCubeScale(s => Math.min(2.5, s + 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label={t('volume_builder.zoom_in_aria') || 'Zoom in'}>+</button>
-                                        <button type="button" onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all" aria-label={t('volume_builder.reset_view_aria') || 'Reset view'}>↺</button>
+                                        <button type="button" onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-xs hover:bg-emerald-100 transition-all" aria-label={t('volume_builder.reset_view_aria') || 'Reset view'}>↺</button>
                                     </div>
                                 </div>
                                 <div role="group" aria-label={t('volume_builder.rotate_group_aria') || 'Rotate 3D volume'} className="flex flex-wrap items-center gap-1.5">
-                                    <span className="text-[11px] font-bold text-emerald-800 mr-1">{t('volume_builder.rotate_label') || 'Rotate:'}</span>
+                                    <span className="text-xs font-bold text-emerald-800 mr-1">{t('volume_builder.rotate_label') || 'Rotate:'}</span>
                                     <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y - 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.rotate_left_aria') || 'Rotate volume left'}>{t('volume_builder.rotate_left') || 'Left'}</button>
                                     <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y + 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.rotate_right_aria') || 'Rotate volume right'}>{t('volume_builder.rotate_right') || 'Right'}</button>
                                     <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.max(-80, prev.x - 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.tilt_up_aria') || 'Tilt volume up'}>{t('volume_builder.tilt_up') || 'Up'}</button>
                                     <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.min(10, prev.x + 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.tilt_down_aria') || 'Tilt volume down'}>{t('volume_builder.tilt_down') || 'Down'}</button>
-                                    <output className="ml-auto text-[11px] font-mono text-emerald-700" aria-live="polite">{vbText('orientation_status', 'Tilt {tilt} degrees, turn {turn} degrees, zoom {zoom} percent', { tilt: Math.round(cubeRotation.x), turn: Math.round(cubeRotation.y), zoom: Math.round(cubeScale * 100) })}</output>
+                                    <output className="ml-auto text-xs font-mono text-emerald-700" aria-live="polite">{vbText('orientation_status', 'Tilt {tilt} degrees, turn {turn} degrees, zoom {zoom} percent', { tilt: Math.round(cubeRotation.x), turn: Math.round(cubeRotation.y), zoom: Math.round(cubeScale * 100) })}</output>
                                 </div>
                                 <p className="text-xs text-emerald-700/70">{t('volume_builder.help_caption') || 'Use the rotate and zoom buttons, or drag and scroll, to inspect rectangular prisms and L-blocks (5.MD.3-5).'}</p>
                                 {/* Shape selector — toggle between a solid rectangular prism
@@ -4534,7 +4657,7 @@ function VolumeBuilderView(props) {
                                                 : (t('volume_builder.notch_aria_height') || 'Notch height');
                                             return (
                                             <div key={'notch-' + dim}>
-                                                <label className="block text-[10px] text-amber-700 mb-1 font-bold uppercase">{notchLabel}</label>
+                                                <label className="block text-xs text-amber-700 mb-1 font-bold uppercase">{notchLabel}</label>
                                                 <input type="range" min="1" max={Math.max(1, cubeDims[dim] - 1)} value={Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1))}
                                                     onChange={(e) => { setCubeNotch(prev => ({...prev, [dim]: parseInt(e.target.value)})); setCubeChallenge(null); setCubeFeedback(null); }}
                                                     className="w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
@@ -4546,12 +4669,14 @@ function VolumeBuilderView(props) {
                                     </div>
                                 )}
                                 <div
+                                    ref={cubeStageRef}
                                     role="img"
-                                    aria-label={`3D ${isLBlock ? 'L-block' : 'rectangular prism'}, ${cubeDims.l} by ${cubeDims.w} by ${cubeDims.h}, volume ${volume} cubic units`}
+                                    aria-label={vbHideAnswer
+                                      ? `3D ${isLBlock ? 'L-block' : 'rectangular prism'}, ${cubeDims.l} by ${cubeDims.w} by ${cubeDims.h}, volume hidden for challenge`
+                                      : `3D ${isLBlock ? 'L-block' : 'rectangular prism'}, ${cubeDims.l} by ${cubeDims.w} by ${cubeDims.h}, volume ${volume} cubic units`}
                                     className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none"
                                     style={{ minHeight: '400px', perspective: '900px' }}
                                     onMouseDown={(e) => { if (typeof cubeDragCleanupRef.current === 'function') cubeDragCleanupRef.current(); cubeDragRef.current = { x: e.clientX, y: e.clientY }; cubeDragCleanupRef.current = handleCubeDragEnd; window.addEventListener('mousemove', handleCubeDrag, { passive: true }); window.addEventListener('mouseup', handleCubeDragEnd); }}
-                                    onWheel={(e) => { e.preventDefault(); setCubeScale(s => Math.max(0.4, Math.min(2.5, s + (e.deltaY > 0 ? -0.08 : 0.08)))); }}
                                     onTouchStart={(e) => { if (e.touches.length === 1) cubeDragRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
                                     onTouchMove={(e) => { if (cubeDragRef.current && e.touches.length === 1) { const dx = e.touches[0].clientX - cubeDragRef.current.x; const dy = e.touches[0].clientY - cubeDragRef.current.y; setCubeRotation(prev => ({ x: Math.max(-80, Math.min(10, prev.x + dy * 0.5)), y: prev.y + dx * 0.5 })); cubeDragRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; } }}
                                     onTouchEnd={() => { cubeDragRef.current = null; }}
@@ -4590,7 +4715,7 @@ function VolumeBuilderView(props) {
                                             <div className="text-xs text-slate-600">{vbHideAnswer ? vbText('unit_cubes_hidden', 'How many unit cubes?') : vbText(volume === 1 ? 'unit_cubes_one' : 'unit_cubes_other', volume === 1 ? '{count} unit cube' : '{count} unit cubes', { count: volume })}</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-xs font-bold text-teal-700 uppercase tracking-wider mb-1">{t('stem.surface_area')}{isLBlock && <span className="ml-1 text-[10px] font-normal text-teal-700">{t('volume_builder.surface_area_approx') || '(approx — full prism)'}</span>}</div>
+                                            <div className="text-xs font-bold text-teal-700 uppercase tracking-wider mb-1">{t('stem.surface_area')}{isLBlock && <span className="ml-1 text-xs font-normal text-teal-700">{t('volume_builder.surface_area_approx') || '(approx — full prism)'}</span>}</div>
                                             <div className="text-lg font-bold text-teal-800">
                                                 SA {isLBlock ? '≈ ' : '= '}<span className="text-2xl text-teal-600">{surfaceArea}</span>
                                             </div>
@@ -4600,8 +4725,8 @@ function VolumeBuilderView(props) {
                                 </div>
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-xs font-bold text-emerald-700">{t('volume_builder.difficulty_label') || 'Difficulty:'}</span>
-                                    <div className="flex gap-0.5">
-                                        {['easy','medium','hard'].map(d => <button type="button" key={d} onClick={() => setExploreDifficulty(d)} className={"text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-emerald-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}>{t('volume_builder.difficulty_' + d) || d}</button>)}
+                                    <div role="group" aria-label={t('volume_builder.difficulty_label') || 'Difficulty'} className="flex flex-wrap gap-1">
+                                        {['easy','medium','hard'].map(d => <button type="button" key={d} aria-pressed={exploreDifficulty === d} onClick={() => setExploreDifficulty(d)} className={"min-h-11 text-xs font-bold px-3 py-1.5 rounded-full transition-all motion-reduce:transition-none " + (exploreDifficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-emerald-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}>{t('volume_builder.difficulty_' + d) || d}</button>)}
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
@@ -4643,19 +4768,19 @@ function VolumeBuilderView(props) {
                                         <div className="flex gap-2 items-center">
                                             <input type="number" value={cubeAnswer}
                                                 onChange={(e) => setCubeAnswer(e.target.value)}
-                                                onKeyDown={(e) => { if (e.key === 'Enter' && cubeAnswer) checkCubeAnswer(); }}
+                                                onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && cubeAnswer) checkCubeAnswer(); }}
                                                 placeholder={t('volume_builder.answer_placeholder') || 'Enter volume...'}
                                                 className="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-amber-400 outline-none"
                                                 aria-label={t('volume_builder.answer_aria') || 'Volume answer'}
                                                 data-help-key="volume_builder_answer_field" />
                                             <button type="button" onClick={checkCubeAnswer}
                                                 disabled={!cubeAnswer}
-                                                className="px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-40 transition-all"
+                                                className="min-h-11 px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-40 transition-all motion-reduce:transition-none"
                                                 data-help-key="volume_builder_check_btn">
                                                 {t('volume_builder.check') || 'Check'}
                                             </button>
                                         </div>
-                                        {cubeFeedback && <p className={'text-sm font-bold mt-2 ' + (cubeFeedback.correct ? 'text-green-600' : 'text-red-600')}>{cubeFeedback.msg}</p>}
+                                        {cubeFeedback && <p role="status" aria-live="polite" className={'text-sm font-bold mt-2 ' + (cubeFeedback.correct ? 'text-green-700' : 'text-red-700')}>{cubeFeedback.msg}</p>}
                                     </div>
                                 )}
                             </div>

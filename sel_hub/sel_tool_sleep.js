@@ -163,21 +163,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       var _sleT = (ctx && ctx.theme) || {};
       var _sleHC = !!_sleT.isContrast, _sleL = !_sleHC && !_sleT.isDark;
       var _sle_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _sle_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#0ea5e9':'#000000','#fff':'#000000','#4f46e5':'#000000'};
-      var _sle_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#c7d2fe':'#312e81','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#fde68a':'#92400e','#86efac':'#166534','#fcd34d':'#78350f'}, _sle_FGH = {'#0ea5e9':'#ffff00','#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#c7d2fe':'#ffff00','#e2e8f0':'#ffff00','#fca5a5':'#ffff00','#bbf7d0':'#ffff00','#fde68a':'#ffff00','#bae6fd':'#ffff00','#86efac':'#ffff00','#fff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _sle_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#c7d2fe':'#312e81','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#fde68a':'#92400e','#86efac':'#166534','#fcd34d':'#78350f','#bbf7d0':'#166534','#bae6fd':'#075985','#e9d5ff':'#581c87','#22c55e':'#15803d','#f59e0b':'#b45309','#0ea5e9':'#0369a1'}, _sle_FGH = {'#0ea5e9':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#e9d5ff':'#ffff00','#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#c7d2fe':'#ffff00','#e2e8f0':'#ffff00','#fca5a5':'#ffff00','#bbf7d0':'#ffff00','#fde68a':'#ffff00','#bae6fd':'#ffff00','#86efac':'#ffff00','#fff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
       var _sle_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _sle_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#6366f1':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#0ea5e9':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00','#e2e8f0':'#ffff00'};
       var _sleBg = function(h){ return _sleHC ? (_sle_BGH[h]||h) : (_sleL ? (_sle_BGL[h]||h) : h); };
       var _sleFg = function(h){ return _sleHC ? (_sle_FGH[h]||h) : (_sleL ? (_sle_FGL[h]||h) : h); };
       var _sleBd = function(h){ return _sleHC ? (_sle_BDH[h]||h) : (_sleL ? (_sle_BDL[h]||h) : h); };
-      // accent text on the dark shell needs the 300/400 weight (1.4.3)
-      var _sleInk = function(c){ return _sleHC || _sleL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
-      // white text needs a 700-weight fill (1.4.3)
-      var _sleSolid = function(c){ return _sleHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
+      // accent text needs 300/400 on dark, 700 on light, and #ffff00 in HC (1.4.3)
+      var _sleInk = function(c){
+        if (_sleHC) return '#ffff00';
+        var k = String(c).toLowerCase();
+        if (_sleL) return ({'#6366f1':'#4338ca','#4f46e5':'#4338ca','#a855f7':'#7e22ce','#9333ea':'#7e22ce','#7c3aed':'#6d28d9','#8b5cf6':'#6d28d9','#3b82f6':'#1d4ed8','#2563eb':'#1d4ed8','#ef4444':'#b91c1c','#dc2626':'#b91c1c','#059669':'#047857','#10b981':'#047857','#22c55e':'#15803d','#16a34a':'#15803d','#0891b2':'#0e7490','#0ea5e9':'#0369a1','#0284c7':'#0369a1','#0d9488':'#0f766e','#ec4899':'#be185d','#db2777':'#be185d','#f59e0b':'#b45309','#a16207':'#854d0e','#b45309':'#92400e','#64748b':'#475569'}[k] || c);
+        return ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[k] || c);
+      };
+      // white text needs a 700-weight fill (1.4.3); HC uses solid black + yellow border
+      var _sleSolid = function(c){ return _sleHC ? '#000000' : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
 
       var d = labToolData.sleep || defaultState();
       var _sleBand = (ctx && ctx.gradeBand) || 'high';
@@ -189,6 +195,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           next.lastUpdated = todayISO();
           return Object.assign({}, prev, { sleep: next });
         });
+      }
+      function scanSleepText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'sleep', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'sleep', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setS({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Sleep & Rest', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
       }
       var view = d.view || 'home';
       function goto(v) { setS({ view: v }); }
@@ -249,7 +280,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
 
       function softPointer() {
         return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _sleFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _sleBg('#0f172a'), border: '1px solid ' + _sleBd('#334155'), fontSize: 11, color: _sleFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Persistent sleep problems are not a willpower test. If they last 4+ weeks, or you snore/gasp, feel exhausted despite enough time in bed, or sleep problems affect safety or daily life, tell a trusted adult and ask about a doctor or sleep specialist.'
         );
@@ -332,13 +363,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         var schoolNight = sc.sc1;
         var fallAsleep = sc.sc2;
         var rested = sc.sc4;
+        var dailyFunc = sc.sc5;
         var weekendDelta = (sc.sc6 !== undefined && schoolNight !== undefined) ? sc.sc6 - schoolNight : null;
         var screens = sc.sc7;
 
         var flags = [];
         if (schoolNight !== undefined && schoolNight < _sleGuidance.minHours) flags.push({ severity: 'warning', text: 'Your school-night sleep is below the age-based guide. ' + _sleGuidance.label + ' Use this as a conversation starter, not a grade.' });
         if (fallAsleep !== undefined && fallAsleep > 30) flags.push({ severity: 'warning', text: 'Taking more than 30 minutes to fall asleep regularly is a CBT-I flag. Look at the Barriers tab — stress and screens are the usual culprits.' });
-        if (rested !== undefined && rested <= 4) flags.push({ severity: 'alert', text: 'Low rested rating + low daily function = real impact. Time to take this seriously.' });
+        if (rested !== undefined && rested <= 4 && dailyFunc !== undefined && dailyFunc <= 4) {
+          flags.push({ severity: 'alert', text: 'Low rested rating + low daily function = real impact. Time to take this seriously.' });
+        } else if (rested !== undefined && rested <= 4) {
+          flags.push({ severity: 'alert', text: 'Low rested rating — waking up unrefreshed regularly is worth discussing with a trusted adult or clinician.' });
+        } else if (dailyFunc !== undefined && dailyFunc <= 4) {
+          flags.push({ severity: 'alert', text: 'Low daytime functioning — sleep loss is affecting your focus, mood, or energy during the day.' });
+        }
         if (weekendDelta !== null && weekendDelta >= 3) flags.push({ severity: 'warning', text: 'Sleeping ' + weekendDelta + ' more hours on weekends than weekdays. Your body is paying back the debt; this is called "social jet lag." Try to narrow the gap.' });
         if (screens !== undefined && screens >= 1) flags.push({ severity: 'info', text: screens + ' hour(s) of screens in the last hour before bed is a high-impact change you could make. See the Screens barrier.' });
 
@@ -368,7 +406,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           flags.length > 0 ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Sleep check observations', style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10, marginTop: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _sleFg('#fde68a'), marginBottom: 8 } }, '🚩 What stands out'),
             flags.map(function(f, i) {
-              var color = f.severity === 'alert' ? '#ef4444' : f.severity === 'warning' ? '#f59e0b' : _sleBg('#0ea5e9');
+              var color = f.severity === 'alert' ? '#ef4444' : f.severity === 'warning' ? '#f59e0b' : _sleBd('#0ea5e9');
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _sleBg('#1e293b'), borderLeft: '3px solid ' + color, marginBottom: 4, fontSize: 12.5, color: _sleFg('#cbd5e1'), lineHeight: 1.65 } }, f.text);
             })
           ) : null,
@@ -412,18 +450,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       // ═══════════════════════════════════════════════════════════
       function renderDiary() {
         function addEntry() {
-          var date = document.getElementById('sl-date').value;
-          var bed = document.getElementById('sl-bed').value;
-          var wake = document.getElementById('sl-wake').value;
-          var hours = parseFloat(document.getElementById('sl-hours').value);
-          var quality = parseInt(document.getElementById('sl-quality').value, 10);
-          var notes = document.getElementById('sl-notes').value;
-          var experiment = document.getElementById('sl-experiment').value;
+          var dateEl = document.getElementById('sl-date');
+          var bedEl = document.getElementById('sl-bed');
+          var wakeEl = document.getElementById('sl-wake');
+          var hoursEl = document.getElementById('sl-hours');
+          var qualityEl = document.getElementById('sl-quality');
+          var notesEl = document.getElementById('sl-notes');
+          var expEl = document.getElementById('sl-experiment');
+          var date = dateEl ? dateEl.value : '';
+          var bed = bedEl ? bedEl.value : '';
+          var wake = wakeEl ? wakeEl.value : '';
+          var rawHours = parseFloat(hoursEl ? hoursEl.value : '');
+          var rawQuality = parseInt(qualityEl ? qualityEl.value : '', 10);
+          var hours = isFinite(rawHours) ? Math.max(0, Math.min(24, rawHours)) : null;
+          var quality = isFinite(rawQuality) ? Math.max(0, Math.min(10, rawQuality)) : null;
+          var notes = notesEl ? notesEl.value : '';
+          var experiment = expEl ? expEl.value : '';
           if (!date) return;
+          scanSleepText((notes || '') + ' ' + (experiment || ''));
           var entry = { date: date, bedtime: bed, waketime: wake, hours: hours, quality: quality, notes: notes, experiment: experiment };
           setS({ diary: (d.diary || []).concat([entry]) });
-          document.getElementById('sl-notes').value = '';
-          document.getElementById('sl-experiment').value = '';
+          if (notesEl) notesEl.value = '';
+          if (expEl) expEl.value = '';
         }
         function removeEntry(i) {
           var nx = (d.diary || []).slice();
@@ -432,25 +480,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         }
 
         var diary = (d.diary || []).slice().reverse();
-        var avgHours = 0;
-        var avgQuality = 0;
+        var avgHours = '–';
+        var avgQuality = '–';
         if (diary.length > 0) {
-          var validHours = diary.filter(function(e) { return !isNaN(e.hours) && e.hours > 0; });
-          var validQuality = diary.filter(function(e) { return !isNaN(e.quality); });
-          avgHours = validHours.length > 0 ? (validHours.reduce(function(s, e) { return s + e.hours; }, 0) / validHours.length).toFixed(1) : 0;
-          avgQuality = validQuality.length > 0 ? (validQuality.reduce(function(s, e) { return s + e.quality; }, 0) / validQuality.length).toFixed(1) : 0;
+          var validHours = diary.filter(function(e) { return typeof e.hours === 'number' && isFinite(e.hours); });
+          var validQuality = diary.filter(function(e) { return typeof e.quality === 'number' && isFinite(e.quality); });
+          avgHours = validHours.length > 0 ? (validHours.reduce(function(s, e) { return s + e.hours; }, 0) / validHours.length).toFixed(1) : '–';
+          avgQuality = validQuality.length > 0 ? (validQuality.reduce(function(s, e) { return s + e.quality; }, 0) / validQuality.length).toFixed(1) : '–';
         }
         var experimentGroups = {};
         diary.forEach(function(e) {
           var label = (e.experiment || '').trim();
-          if (!label) return;
-          if (!experimentGroups[label]) experimentGroups[label] = [];
+          if (!label || label === '__proto__' || label === 'constructor' || label === 'prototype') return;
+          if (!Object.prototype.hasOwnProperty.call(experimentGroups, label)) experimentGroups[label] = [];
           experimentGroups[label].push(e);
         });
         var experimentSummary = Object.keys(experimentGroups).map(function(label) {
           var rows = experimentGroups[label];
-          var qualityRows = rows.filter(function(e) { return !isNaN(e.quality); });
-          var hourRows = rows.filter(function(e) { return !isNaN(e.hours) && e.hours > 0; });
+          var qualityRows = rows.filter(function(e) { return typeof e.quality === 'number' && isFinite(e.quality); });
+          var hourRows = rows.filter(function(e) { return typeof e.hours === 'number' && isFinite(e.hours); });
           return {
             label: label,
             count: rows.length,
@@ -539,18 +587,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             h('input', { id: 'sl-experiment', type: 'text', placeholder: 'e.g. charge phone outside bedroom',
               style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 12, marginBottom: 8 } }),
             h('button', { onClick: addEntry, 'aria-label': 'Add diary entry',
-              style: { padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _sleBg(_sleSolid('#0ea5e9')), color: _sleFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add entry')
+              style: { padding: '8px 16px', borderRadius: 6, border: _sleHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sleSolid('#0ea5e9'), color: _sleFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add entry')
           ),
 
           // Entry list
           diary.length > 0 ? h('div', null,
             h('div', { style: { fontSize: 11, color: _sleFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Recent entries'),
             diary.slice(0, 14).map(function(e, i) {
+              var hasHours = typeof e.hours === 'number' && isFinite(e.hours);
+              var hasQuality = typeof e.quality === 'number' && isFinite(e.quality);
               return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: _sleBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 11, color: _sleFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', minWidth: 90 } }, e.date),
                 h('span', { style: { fontSize: 12, color: _sleFg('#cbd5e1') } }, '🛏 ' + (e.bedtime || '–') + ' → ⏰ ' + (e.waketime || '–')),
-                h('span', { style: { fontSize: 13, color: _sleFg('#c7d2fe'), fontWeight: 700 } }, e.hours + 'h'),
-                h('span', { style: { fontSize: 12, color: e.quality >= 7 ? _sleFg('#86efac') : e.quality >= 4 ? _sleFg('#fde68a') : _sleFg('#fca5a5') } }, e.quality + '/10'),
+                h('span', { style: { fontSize: 13, color: _sleFg('#c7d2fe'), fontWeight: 700 } }, hasHours ? e.hours + 'h' : '–'),
+                h('span', { style: { fontSize: 12, color: hasQuality ? (e.quality >= 7 ? _sleFg('#86efac') : e.quality >= 4 ? _sleFg('#fde68a') : _sleFg('#fca5a5')) : _sleFg('#94a3b8') } }, hasQuality ? e.quality + '/10' : '–'),
                 e.notes || e.experiment ? h('span', { style: { flex: 1, fontSize: 11, color: _sleFg('#94a3b8'), fontStyle: 'italic', minWidth: 100 } }, (e.notes ? e.notes : '') + (e.experiment ? (e.notes ? ' | ' : '') + 'Tried: ' + e.experiment : '')) : h('span', { style: { flex: 1 } }),
                 h('button', { onClick: function() { removeEntry(diary.length - 1 - i); }, 'aria-label': 'Remove entry',
                   style: { background: 'transparent', border: '1px solid #475569', color: _sleFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
@@ -634,19 +684,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       function renderPrintView() {
         var diary = (d.diary || []).slice().reverse();
         var sc = d.selfCheck || {};
-        var avgHours = 0, avgQuality = 0;
+        var avgHours = '–', avgQuality = '–';
         if (diary.length > 0) {
-          var validHours = diary.filter(function(e) { return !isNaN(e.hours) && e.hours > 0; });
-          var validQuality = diary.filter(function(e) { return !isNaN(e.quality); });
-          avgHours = validHours.length > 0 ? (validHours.reduce(function(s, e) { return s + e.hours; }, 0) / validHours.length).toFixed(1) : 0;
-          avgQuality = validQuality.length > 0 ? (validQuality.reduce(function(s, e) { return s + e.quality; }, 0) / validQuality.length).toFixed(1) : 0;
+          var validHours = diary.filter(function(e) { return typeof e.hours === 'number' && isFinite(e.hours); });
+          var validQuality = diary.filter(function(e) { return typeof e.quality === 'number' && isFinite(e.quality); });
+          avgHours = validHours.length > 0 ? (validHours.reduce(function(s, e) { return s + e.hours; }, 0) / validHours.length).toFixed(1) : '–';
+          avgQuality = validQuality.length > 0 ? (validQuality.reduce(function(s, e) { return s + e.quality; }, 0) / validQuality.length).toFixed(1) : '–';
         }
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(99,102,241,0.10)', borderRadius: 8, border: '1px solid rgba(99,102,241,0.3)' } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _sleFg('#c7d2fe'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Sleep diary + self-check summary — useful for a doctor, school nurse, or sleep clinic visit.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _sleFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _sleHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sleHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _sleFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _sleBg('#1e293b'), color: _sleFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
@@ -658,7 +708,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#sleep-print-region, #sleep-print-region * { visibility: visible !important; } ' +
-              '#sleep-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#sleep-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+              '#sleep-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
@@ -671,7 +722,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
 
             // Self-check summary
             Object.keys(sc).length > 0 ? h('div', { style: { marginBottom: 18, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _sleBg('#4f46e5'), color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Self-check'),
+              h('div', { style: { background: _sleSolid('#4f46e5'), border: _sleHC ? '1px solid #ffff00' : 'none', color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Self-check'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _sleFg('#0f172a'), fontSize: 13, lineHeight: 1.85 } },
                 SELF_CHECK.map(function(item) {
                   if (sc[item.id] === undefined || sc[item.id] === null) return null;
@@ -683,7 +734,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
 
             // Diary summary stats
             diary.length > 0 ? h('div', { style: { marginBottom: 18, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _sleBg(_sleSolid('#0ea5e9')), color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Diary summary'),
+              h('div', { style: { background: _sleSolid('#0ea5e9'), border: _sleHC ? '1px solid #ffff00' : 'none', color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Diary summary'),
               h('div', { style: { padding: '4px 12px', fontSize: 13, color: _sleFg('#0f172a'), lineHeight: 1.85 } },
                 h('div', null, h('strong', null, 'Entries: '), diary.length),
                 h('div', null, h('strong', null, 'Average hours slept: '), avgHours),
@@ -693,7 +744,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
 
             // Diary entries table
             diary.length > 0 ? h('div', { style: { marginBottom: 18 } },
-              h('div', { style: { background: _sleBg(_sleSolid('#0ea5e9')), color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Diary entries'),
+              h('div', { style: { background: _sleSolid('#0ea5e9'), border: _sleHC ? '1px solid #ffff00' : 'none', color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Diary entries'),
               h('table', { 'aria-label': 'Sleep diary entries', style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, color: _sleFg('#0f172a') } },
                 h('thead', null,
                   h('tr', { style: { borderBottom: '2px solid #cbd5e1' } },
@@ -707,12 +758,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
                 ),
                 h('tbody', null,
                   diary.map(function(e, i) {
+                    var hasH = typeof e.hours === 'number' && isFinite(e.hours);
+                    var hasQ = typeof e.quality === 'number' && isFinite(e.quality);
                     return h('tr', { key: i, style: { borderBottom: '1px solid #e2e8f0' } },
                       h('th', { scope: 'row', style: { padding: 5, fontFamily: 'ui-monospace, monospace', textAlign: 'left', fontWeight: 600 } }, e.date),
                       h('td', { style: { padding: 5 } }, e.bedtime || '–'),
                       h('td', { style: { padding: 5 } }, e.waketime || '–'),
-                      h('td', { style: { padding: 5, textAlign: 'right', fontWeight: 700 } }, e.hours || '–'),
-                      h('td', { style: { padding: 5, textAlign: 'right' } }, (e.quality !== undefined ? e.quality + '/10' : '–')),
+                      h('td', { style: { padding: 5, textAlign: 'right', fontWeight: 700 } }, hasH ? e.hours : '–'),
+                      h('td', { style: { padding: 5, textAlign: 'right' } }, hasQ ? e.quality + '/10' : '–'),
                       h('td', { style: { padding: 5, fontSize: 11, fontStyle: 'italic' } }, (e.notes ? e.notes : '') + (e.experiment ? (e.notes ? ' | ' : '') + 'Tried: ' + e.experiment : ''))
                     );
                   })
@@ -740,6 +793,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
 
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Sleep and Rest Lab' },
         header(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _sleBand))
+          : null,
         navTabs(),
         h('div', { id: 'sleep-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'sleep-tab-' + view, tabIndex: 0 }, body)
       );

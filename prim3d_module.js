@@ -28,6 +28,7 @@
   // profile becomes a solid of revolution (vase, bottle, chess piece) or a
   // pushed-out outline (cookie-cutter star, letter). Every other tool on this
   // module (Sculpt 3D, Free Forms, Geometry Sandbox) renders them for free.
+  var _has = function (obj, key) { return typeof key === 'string' && Object.prototype.hasOwnProperty.call(obj, key); };
   var SHAPES = { box: 1, sphere: 1, cylinder: 1, cone: 1, torus: 1, lathe: 1, extrude: 1 };
   var PROFILE_SHAPES = { lathe: 1, extrude: 1 };
   var PROFILE_MIN_POINTS = 3, PROFILE_MAX_POINTS = 24;
@@ -39,7 +40,7 @@
     extrude: [[0, 1], [0.28, 0.32], [0.95, 0.31], [0.45, -0.12], [0.59, -0.81], [0, -0.4], [-0.59, -0.81], [-0.45, -0.12], [-0.95, 0.31], [-0.28, 0.32]]
   };
   function normalizeProfile(shape, raw) {
-    if (!PROFILE_SHAPES[shape]) return null;
+    if (!_has(PROFILE_SHAPES, shape)) return null;
     var lathe = shape === 'lathe';
     var out = [];
     if (Array.isArray(raw)) {
@@ -59,7 +60,7 @@
   var MAX_PARTS = 24;
   var FALLBACK_COLOR = '#818cf8';
 
-  function isNum(v) { return typeof v === 'number' && !isNaN(v); }
+  function isNum(v) { return typeof v === 'number' && Number.isFinite(v); }
   function clamp(v, lo, hi, d) { return isNum(v) ? Math.max(lo, Math.min(hi, v)) : d; }
   function color(v) { return (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v.trim())) ? v.trim().toLowerCase() : FALLBACK_COLOR; }
   function color2(v) { return (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v.trim())) ? v.trim().toLowerCase() : null; }   // null when absent/invalid
@@ -84,13 +85,13 @@
       var p = rawParts[i];
       if (!p || typeof p !== 'object') continue;
       var shape = (typeof p.shape === 'string') ? p.shape.toLowerCase().trim() : '';
-      if (!SHAPES[shape]) continue;
+      if (!_has(SHAPES, shape)) continue;
       var size = Array.isArray(p.size) ? p.size : [];
       var pos = Array.isArray(p.position) ? p.position : [];
       var rot = Array.isArray(p.rotation) ? p.rotation : [];
       var stretch = Array.isArray(p.stretch) ? p.stretch : [];
       var requestedFinish = typeof p.finish === 'string' ? p.finish.toLowerCase().trim() : '';
-      var profile = PROFILE_SHAPES[shape] ? normalizeProfile(shape, p.profile) : null;
+      var profile = _has(PROFILE_SHAPES, shape) ? normalizeProfile(shape, p.profile) : null;
       parts.push({
         shape: shape,
         label: partLabel(p.label),
@@ -104,7 +105,7 @@
         position: [clamp(pos[0], -4, 4, 0), clamp(pos[1], -4, 8, 0.5), clamp(pos[2], -4, 4, 0)],
         rotation: [clamp(rot[0], -360, 360, 0), clamp(rot[1], -360, 360, 0), clamp(rot[2], -360, 360, 0)],
         color: color(p.color),
-        finish: FINISHES[requestedFinish] ? requestedFinish : 'standard',
+        finish: _has(FINISHES, requestedFinish) ? requestedFinish : 'standard',
         opacity: clamp(p.opacity, 0.15, 1, 1),
         hidden: p.hidden === true,
         locked: p.locked === true
@@ -207,7 +208,7 @@
     try { parsed = JSON.parse(_stripToJson(text)); } catch (e) { return null; }
     if (!parsed || typeof parsed !== 'object') return null;
     var action = (typeof parsed.action === 'string') ? parsed.action.toLowerCase().trim() : '';
-    if (!SCULPT_ACTIONS[action]) return null;
+    if (!_has(SCULPT_ACTIONS, action)) return null;
     return {
       action: action,
       subject: (parsed.subject != null) ? String(parsed.subject).slice(0, 120) : '',
@@ -241,9 +242,9 @@
     try { parsed = JSON.parse(_stripToJson(text)); } catch (e) { return null; }
     if (!parsed || typeof parsed !== 'object') return null;
     var action = (typeof parsed.action === 'string') ? parsed.action.toLowerCase().trim() : '';
-    if (!STRETCH_ACTIONS[action]) return null;
+    if (!_has(STRETCH_ACTIONS, action)) return null;
     var axis = (typeof parsed.axis === 'string') ? parsed.axis.toLowerCase().trim() : '';
-    return { action: action, axis: STRETCH_AXES[axis] ? axis : 'y' };   // default up
+    return { action: action, axis: _has(STRETCH_AXES, axis) ? axis : 'y' };   // default up
   }
 
   // ── PRESETS — curated, hand-authored decoration recipes ──
@@ -437,7 +438,9 @@
   }
   // newPart — a sensible starter part; color cycles the palette by index.
   function newPart(shape, index) {
-    var sh = SHAPES[shape] ? shape : 'box';
+    var sh = _has(SHAPES, shape) ? shape : 'box';
+    var rawIdx = isNum(index) ? Math.floor(index) : 0;
+    var palIdx = ((rawIdx % PART_PALETTE.length) + PART_PALETTE.length) % PART_PALETTE.length;
     return {
       shape: sh,
       label: '',
@@ -446,8 +449,8 @@
       deform: { taper: 0, twist: 0, bulge: 0 },
       position: [0, 0.5, 0],
       rotation: [0, 0, 0],
-      color: PART_PALETTE[(isNum(index) ? index : 0) % PART_PALETTE.length],
-      profile: PROFILE_SHAPES[sh] ? DEFAULT_PROFILES[sh].map(function (p) { return p.slice(); }) : undefined,
+      color: PART_PALETTE[palIdx],
+      profile: _has(PROFILE_SHAPES, sh) ? DEFAULT_PROFILES[sh].map(function (p) { return p.slice(); }) : undefined,
       finish: 'standard',
       opacity: 1,
       hidden: false,
@@ -581,7 +584,7 @@
     // produce NaN transforms. normalizeRecipe is idempotent on already-clean input.
     var r = normalizeRecipe(recipe);
     if (!THREE || !r) return null;
-    var unit = isNum(opts.unit) ? opts.unit : 1;
+    var unit = (isNum(opts.unit) && opts.unit > 0) ? opts.unit : 1;
     // Opt-in preview detail; callers without a setting retain the lightweight mesh.
     var curves = opts.surfaceQuality === 'fine' ? [64, 48, 64, 32, 96] : opts.surfaceQuality === 'smooth' ? [48, 32, 48, 24, 72] : [18, 18, 20, 12, 28];
     var group = new THREE.Group();
@@ -657,7 +660,7 @@
   function renderProfilePad(React, opts) {
     opts = opts || {};
     var part = opts.part;
-    if (!React || !part || !PROFILE_SHAPES[part.shape] || !Array.isArray(part.profile)) return null;
+    if (!React || !part || !_has(PROFILE_SHAPES, part.shape) || !Array.isArray(part.profile)) return null;
     var h = React.createElement;
     var isLathe = part.shape === 'lathe';
     var profile = part.profile.map(function (pt) { return pt.slice(); });
@@ -712,7 +715,7 @@
     }
     var padRef = function (cnv) {
       if (!cnv) return;
-      cnv._profilePad = Object.assign(cnv._profilePad || {}, { profile: profile, isLathe: isLathe, sel: sel, locked: locked, commit: commit, select: select, maxPts: maxPts, drag: (cnv._profilePad && cnv._profilePad.drag) || null });
+      cnv._profilePad = Object.assign(cnv._profilePad || {}, { profile: profile, isLathe: isLathe, sel: sel, locked: locked, commit: commit, select: select, maxPts: maxPts, toPad: toPad, fromPad: fromPad, drawPad: drawPad, drag: (cnv._profilePad && cnv._profilePad.drag) || null });
       drawPad(cnv);
       if (cnv._profilePadBound) return;
       cnv._profilePadBound = true;
@@ -721,27 +724,27 @@
         if (ev.button !== undefined && ev.button !== 0) return;
         ev.preventDefault();
         var p = padPoint(cnv, ev), best = -1, bestD = 14;
-        st.profile.forEach(function (pt, i) { var q = toPad(pt); var dd = Math.hypot(q[0] - p[0], q[1] - p[1]); if (dd < bestD) { bestD = dd; best = i; } });
+        st.profile.forEach(function (pt, i) { var q = st.toPad(pt); var dd = Math.hypot(q[0] - p[0], q[1] - p[1]); if (dd < bestD) { bestD = dd; best = i; } });
         if (best < 0) {
           if (st.profile.length >= st.maxPts) return;
-          var np = fromPad(p[0], p[1]);
+          var np = st.fromPad(p[0], p[1]);
           var at = st.profile.length;
           if (st.isLathe) { at = 0; while (at < st.profile.length && st.profile[at][1] <= np[1]) at++; }
-          else { var nearest = 0, nd = Infinity; st.profile.forEach(function (pt, i) { var q = toPad(pt); var dd = Math.hypot(q[0] - p[0], q[1] - p[1]); if (dd < nd) { nd = dd; nearest = i; } }); at = nearest + 1; }
+          else { var nearest = 0, nd = Infinity; st.profile.forEach(function (pt, i) { var q = st.toPad(pt); var dd = Math.hypot(q[0] - p[0], q[1] - p[1]); if (dd < nd) { nd = dd; nearest = i; } }); at = nearest + 1; }
           st.profile.splice(at, 0, np);
           best = at;
         }
         st.sel = best;
         st.drag = { index: best, moved: false };
         try { cnv.setPointerCapture(ev.pointerId); } catch (e) {}
-        drawPad(cnv);
+        st.drawPad(cnv);
       });
       cnv.addEventListener('pointermove', function (ev) {
         var st = cnv._profilePad; if (!st || !st.drag) return;
         var p = padPoint(cnv, ev);
-        st.profile[st.drag.index] = fromPad(p[0], p[1]);
+        st.profile[st.drag.index] = st.fromPad(p[0], p[1]);
         st.drag.moved = true;
-        drawPad(cnv);
+        st.drawPad(cnv);
       });
       function finishDrag() {
         var st = cnv._profilePad; if (!st || !st.drag) return;
@@ -757,23 +760,23 @@
     var selPt = profile[sel];
     function setCoord(axis, value) { var next = profile.map(function (pt) { return pt.slice(); }); next[sel][axis] = value / 100; commit(next); }
     var summary = (isLathe ? 'Lathe profile' : 'Outline') + ' with ' + profile.length + ' points; point ' + (sel + 1) + ' selected.';
-    var ink = dark ? 'text-slate-200' : 'text-slate-600';
-    var mini = 'min-h-[40px] min-w-[40px] rounded-lg border px-2 text-sm font-bold ' + (dark ? 'border-slate-500 bg-slate-900 text-slate-100' : 'border-slate-500 bg-white text-slate-700');
-    var field = 'rounded border px-1 py-0.5 text-[0.625rem] ' + (dark ? 'border-slate-500 bg-slate-950 text-slate-100' : 'border-slate-500 bg-white text-slate-900');
+    var ink = dark ? 'text-slate-200' : 'text-slate-700';
+    var mini = 'min-h-[44px] min-w-[44px] rounded-lg border px-2.5 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (dark ? 'border-slate-500 bg-slate-900 text-slate-100' : 'border-slate-500 bg-white text-slate-800');
+    var field = 'min-h-[44px] rounded border px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (dark ? 'border-slate-500 bg-slate-950 text-slate-100' : 'border-slate-500 bg-white text-slate-900');
     var helpId = prefix + '-profile-pad-help';
     return h('div', Object.assign({ className: 'mb-2 rounded-xl border p-2 ' + (dark ? 'border-violet-700 bg-slate-900/70' : 'border-fuchsia-200 bg-fuchsia-50'), 'data-profile-pad': part.shape }, opts.rootProps || {}),
-      h('p', { className: 'mb-1 text-[0.6875rem] font-black ' + (dark ? 'text-violet-200' : 'text-fuchsia-800') }, L.title),
-      h('p', { id: helpId, className: 'mb-1 text-[0.625rem] ' + ink }, L.help),
+      h('p', { className: 'mb-1 text-xs font-black ' + (dark ? 'text-violet-200' : 'text-fuchsia-800') }, L.title),
+      h('p', { id: helpId, className: 'mb-1 text-xs ' + ink }, L.help),
       h('div', { className: 'flex flex-wrap items-start gap-2' },
         h('canvas', { id: prefix + '-profile-pad', ref: padRef, width: PAD, height: PAD, role: 'img', 'aria-label': summary, 'aria-describedby': helpId, className: 'rounded-lg border ' + (dark ? 'border-violet-700 bg-slate-950' : 'border-fuchsia-300 bg-white'), style: { width: PAD + 'px', height: PAD + 'px', touchAction: 'none', cursor: locked ? 'not-allowed' : 'crosshair' } }),
         h('div', { className: 'flex-1 min-w-[160px]', role: 'group', 'aria-label': isLathe ? 'Lathe profile points' : 'Outline points' },
-          h('label', { className: 'grid grid-cols-[52px_1fr] items-center gap-1 text-[0.625rem] ' + ink }, L.point,
+          h('label', { className: 'grid grid-cols-[52px_1fr] items-center gap-1 text-xs ' + ink }, L.point,
             h('select', { value: sel, 'aria-label': 'Selected shape point', className: field, onChange: function (event) { select(Number(event.target.value)); } },
               profile.map(function (_, i) { return h('option', { key: i, value: i }, String(i + 1)); }))),
-          h('label', { className: 'grid grid-cols-[52px_1fr_34px] items-center gap-1 text-[0.625rem] ' + ink }, isLathe ? L.radius : L.x,
+          h('label', { className: 'grid grid-cols-[52px_1fr_34px] items-center gap-1 text-xs ' + ink }, isLathe ? L.radius : L.x,
             h('input', { type: 'range', 'data-profile-axis': 'x', min: xMin, max: 100, step: 1, value: Math.round(selPt[0] * 100), disabled: locked, 'aria-label': (isLathe ? 'Radius of point ' : 'X of point ') + (sel + 1), onChange: function (event) { setCoord(0, Number(event.target.value)); } }),
             h('output', null, Math.round(selPt[0] * 100))),
-          h('label', { className: 'grid grid-cols-[52px_1fr_34px] items-center gap-1 text-[0.625rem] ' + ink }, isLathe ? L.height : L.y,
+          h('label', { className: 'grid grid-cols-[52px_1fr_34px] items-center gap-1 text-xs ' + ink }, isLathe ? L.height : L.y,
             h('input', { type: 'range', 'data-profile-axis': 'y', min: yMin, max: 100, step: 1, value: Math.round(selPt[1] * 100), disabled: locked, 'aria-label': (isLathe ? 'Height of point ' : 'Y of point ') + (sel + 1), onChange: function (event) { setCoord(1, Number(event.target.value)); } }),
             h('output', null, Math.round(selPt[1] * 100))),
           h('div', { className: 'mt-1 flex flex-wrap gap-1' },

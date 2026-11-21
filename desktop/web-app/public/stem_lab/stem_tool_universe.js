@@ -3207,6 +3207,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       return function(){if(media && media.removeEventListener) media.removeEventListener('change',changed);};
     }, []);
     props.React.useEffect(function () {
+      if (props.needsEpochVisitSync && typeof props.syncEpochVisit === 'function') {
+        props.syncEpochVisit();
+      }
+    }, [props.epochId, props.needsEpochVisitSync]);
+    props.React.useEffect(function () {
       var id = setTimeout(props.check, 100); return function () { clearTimeout(id); };
     }, [props.check]);
     return null;
@@ -4421,9 +4426,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           }
 
           // --- Sound effects ---
-          function playBeep() {
+          function _isUniMuted() {
             try {
-              var ac = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
+              return (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) ||
+                (typeof window !== 'undefined' && !!window._alloGlobalMute);
+            } catch (e) { return false; }
+          }
+          function _uniAudioCtx() {
+            if (window.StemLab && window.StemLab.audioContext) return window.StemLab.audioContext();
+            if (!window._uniFallbackAudioCtx) {
+              var AC = window.AudioContext || window.webkitAudioContext;
+              if (AC) window._uniFallbackAudioCtx = new AC();
+            }
+            return window._uniFallbackAudioCtx || null;
+          }
+          function playBeep() {
+            if (_isUniMuted()) return;
+            try {
+              if (typeof stemBeep === 'function') { stemBeep(660, 0.08); return; }
+              var ac = _uniAudioCtx();
+              if (!ac) return;
+              if (ac.state === 'suspended' && typeof ac.resume === 'function') ac.resume().catch(function(){});
               var osc = ac.createOscillator();
               var gain = ac.createGain();
               osc.connect(gain); gain.connect(ac.destination);
@@ -4433,8 +4456,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             } catch(e) {}
           }
           function playCelebrate() {
+            if (_isUniMuted()) return;
             try {
-              var ac = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
+              if (typeof stemCelebrate === 'function') { stemCelebrate(); return; }
+              var ac = _uniAudioCtx();
+              if (!ac) return;
+              if (ac.state === 'suspended' && typeof ac.resume === 'function') ac.resume().catch(function(){});
               [440, 554, 659, 880].forEach(function(freq, i) {
                 var osc = ac.createOscillator();
                 var gain = ac.createGain();
@@ -4469,13 +4496,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           // student AI is off (it already used the device voice) or when no voice came back: only then the
           // device voice, unless stopSpeech ran meanwhile (gen).
           function speakText(text, onDevice) {
-            if (!text) return;
+            if (!text || _isUniMuted()) return;
             if (callTTS && !onDevice) {
               var req = null, gen = universeSpeech.gen;
               try { req = callTTS(text, undefined, undefined, { force: true }); } catch (e) {}
               var fallBack = function () {
-                var muted = false;
-                try { muted = (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || !!window._alloGlobalMute; } catch (e) {}
+                var muted = _isUniMuted();
                 if (gen === universeSpeech.gen && !muted && window.__alloStudentAiDisabled !== true) speakText(text, true);
               };
               Promise.resolve(req).then(function (url) { if (!url) fallBack(); }, fallBack);
@@ -4483,7 +4509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             }
             if (!onDevice && window._kokoroTTS && window._kokoroTTS.speak) {
               var kgen = universeSpeech.gen;
-              window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url&&kgen===universeSpeech.gen){var a=new Audio(url);a.playbackRate=0.95;universeSpeech.audio=a;a.play();}}).catch(function(){});
+              window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url&&kgen===universeSpeech.gen&&!_isUniMuted()){var a=new Audio(url);a.playbackRate=0.95;universeSpeech.audio=a;a.play();}}).catch(function(){});
               return;
             }
             if (window.speechSynthesis) { window.speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(text); u.rate=0.9; universeSpeech.utter=u; u.onend=u.onerror=function(){if(universeSpeech.utter===u)universeSpeech.utter=null;}; window.speechSynthesis.speak(u); }
@@ -5318,16 +5344,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           var visitedEpochIds = (Array.isArray(d.visitedEpochIds) ? d.visitedEpochIds : []).slice();
           EPOCHS.forEach(function (ep) { if (epochsVisited.indexOf(ep.name) !== -1 && visitedEpochIds.indexOf(ep.id) === -1) visitedEpochIds.push(ep.id); });
           var epoch = getCurrentEpoch(cosmicTime);
-          // Track epoch visits
+          // Track epoch visits (persisted post-render via UniverseLifecycle to avoid render-phase setState)
           var epochName = epoch ? epoch.name : '';
-          if (epochName && epochsVisited.indexOf(epochName) === -1) {
-            var newVisited = epochsVisited.concat([epochName]);
-            upd('epochsVisited', newVisited);
-            epochsVisited = newVisited;
+          var needsEpochNameSync = !!(epochName && epochsVisited.indexOf(epochName) === -1);
+          if (needsEpochNameSync) {
+            epochsVisited = epochsVisited.concat([epochName]);
           }
-
-          if (visitedEpochIds.indexOf(epoch.id) === -1) visitedEpochIds.push(epoch.id);
-          if (JSON.stringify(visitedEpochIds) !== JSON.stringify(Array.isArray(d.visitedEpochIds) ? d.visitedEpochIds : [])) upd('visitedEpochIds', visitedEpochIds);
+          if (epoch && visitedEpochIds.indexOf(epoch.id) === -1) visitedEpochIds.push(epoch.id);
+          var needsVisitedIdsSync = JSON.stringify(visitedEpochIds) !== JSON.stringify(Array.isArray(d.visitedEpochIds) ? d.visitedEpochIds : []);
+          var needsEpochVisitSync = needsEpochNameSync || needsVisitedIdsSync;
+          var syncEpochVisit = function () {
+            if (!needsEpochVisitSync) return;
+            var patch = {};
+            if (needsEpochNameSync) patch.epochsVisited = epochsVisited;
+            if (needsVisitedIdsSync) patch.visitedEpochIds = visitedEpochIds;
+            updMulti(patch);
+          };
           var epochIndex = EPOCHS.indexOf(epoch);
           var sceneStill = d.sceneMotion ? d.sceneMotion === 'still' : !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
           var epochReflections = d.epochReflections || {};
@@ -8341,6 +8373,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           // from any external trigger (e.g. parent unmount). Idempotent — clears everything that
           // could otherwise keep running after the user leaves the tool.
           window._universeCleanupAll = function() {
+            stopSpeech();
             universeScenes.forEach(function (scene) { scene.stop(); });
             var cv = document.querySelector('[data-universe-canvas]');
             if (cv) {
@@ -9037,7 +9070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           var UNIVERSE_VISUAL_POLISH_CSS = "[data-universe-tool]{--uni-edge:#bdcbe0;--uni-soft:#eaf0fa;--uni-accent:#4338ca;--uni-accent-soft:#edeaff;background:linear-gradient(145deg,#f8faff,#eff4fb 75%);border:1px solid #dce5f2;padding:22px;}\n[data-universe-tool][data-uni-theme=dark]{--uni-edge:#405370;--uni-soft:#17253b;--uni-accent:#c4b5fd;--uni-accent-soft:#28254d;background:linear-gradient(145deg,#0b1424,#101b2e 75%);border-color:#33445f;}\n[data-universe-tool] .uni-header{padding:16px 18px;margin-bottom:0;border-radius:18px;background:linear-gradient(115deg,#121c35,#1d2349 65%,#16354a)!important;box-shadow:0 6px 20px #09142616!important;}\n[data-universe-tool] .uni-brand-row{display:flex;flex-wrap:nowrap;gap:14px;align-items:center;}\n[data-universe-tool] .uni-brand-copy{flex:1;min-width:0!important;}\n[data-universe-tool] .uni-brand-copy h3{font-size:19px;font-weight:750;letter-spacing:-.02em;line-height:1.35;}\n[data-universe-tool] .uni-brand-copy>span{font-size:12px;}\n[data-universe-tool] .uni-brand-mark{width:42px;height:42px;display:grid;place-items:center;flex:none;border:1px solid #687b9b;border-radius:12px;background:#253354;color:#d6d4ff;}\n[data-universe-tool] .uni-header .uni-back-button{display:grid;place-items:center;width:40px;min-width:40px;min-height:44px;color:#eef2ff;}\n[data-universe-tool] .uni-header-status{margin-inline-start:auto;gap:8px;justify-content:flex-end;}\n[data-universe-tool] .uni-header-status>span{padding:5px 10px;font-size:11px;white-space:nowrap;}\n[data-universe-tool] .uni-header-status>span:first-child{color:#e2e8f0!important;}\n[data-universe-tool] .uni-orientation{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:'intro utilities' 'path path';column-gap:20px;padding:24px 0 22px;}\n[data-universe-tool] .uni-orientation>div:first-child{grid-area:intro;}\n[data-universe-tool] .uni-orientation h2{font-size:clamp(23px,2.5vw,30px);letter-spacing:-.035em;font-weight:750;margin:6px 0 10px;max-width:760px;}\n[data-universe-tool] .uni-orientation p{font-size:13px;line-height:1.75;max-width:72ch;}\n[data-universe-tool] .uni-orientation .uni-eyebrow{color:#5c5984;font-size:10px!important;letter-spacing:.13em;}\n[data-universe-tool][data-uni-theme=dark] .uni-orientation .uni-eyebrow{color:#bcb6e7;}\n[data-universe-tool] .uni-utilities{grid-area:utilities;align-content:start;align-items:flex-start;justify-content:flex-end;max-width:170px;gap:6px;margin:0;}\n[data-universe-tool] .uni-utilities button{min-height:36px;padding:7px 10px;text-decoration:none;border:1px solid var(--uni-edge);border-radius:8px;background:var(--uni-panel);font-size:11px;}\n[data-universe-tool] .uni-utilities button:hover{border-color:var(--uni-accent);}\n[data-universe-tool] .uni-path{grid-area:path;margin-top:18px;gap:12px;}\n[data-universe-tool] .uni-path button{display:flex;align-items:center;gap:12px;text-align:start;padding:15px;border-radius:13px;border-color:var(--uni-edge);box-shadow:0 2px 6px #0d244608;}\n[data-universe-tool] .uni-path button:first-child{background:#4338ca;border-color:#4338ca;}\n[data-universe-tool] .uni-path-icon{display:grid!important;place-items:center;width:38px;height:38px;flex:none;background:var(--uni-accent-soft);color:var(--uni-accent);border-radius:11px;}\n[data-universe-tool] .uni-path button:first-child .uni-path-icon{background:#ffffff20;color:#fff;}\n[data-universe-tool] .uni-path-copy{min-width:0;flex:1;}\n[data-universe-tool] .uni-path-copy strong{font-size:14px;font-weight:750;}\n[data-universe-tool] .uni-path-copy>span{font-size:11px;line-height:1.5;margin-top:3px;}\n[data-universe-tool] .uni-path-arrow{opacity:.8;display:flex!important;}\n[data-universe-tool] .uni-observatory{gap:18px;}\n[data-universe-tool] .uni-visual-column>.uni-timeline{padding:16px 18px;border-radius:14px;box-shadow:0 2px 8px #15304c06;border-color:var(--uni-edge);}\n[data-universe-tool] .uni-timeline label{font-size:14px;font-weight:750;}\n[data-universe-tool] .uni-timeline-hint{font-size:11px;line-height:1.6;margin:9px 0;}\n[data-universe-tool] #universe-cosmic-time{appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;height:28px;min-width:48px;}\n[data-universe-tool] #universe-cosmic-time::-webkit-slider-runnable-track{height:7px;border-radius:9px;background:linear-gradient(to right,#6557da var(--uni-position),#7587a8 var(--uni-position));}\n[data-universe-tool] #universe-cosmic-time::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#5142bc;border:3px solid #fff;box-shadow:0 1px 4px #192d5155;margin-top:-7.5px;}\n[data-universe-tool] #universe-cosmic-time::-moz-range-track{height:7px;border-radius:9px;background:#b8c5db;}\n[data-universe-tool] #universe-cosmic-time::-moz-range-progress{height:7px;border-radius:9px;background:#6557da;}\n[data-universe-tool] #universe-cosmic-time::-moz-range-thumb{width:16px;height:16px;border:3px solid #fff;border-radius:50%;background:#5142bc;}\n[data-universe-tool] .uni-scene-toolbar{margin-top:12px;}\n[data-universe-tool] .uni-scene-toolbar .uni-eyebrow{font-size:10px!important;letter-spacing:.075em;}\n[data-universe-tool] .uni-scene-toolbar button{min-height:36px;border-radius:9px;font-size:11px;border-color:var(--uni-edge);}\n[data-universe-tool] .uni-step-controls{margin:10px 0;}\n[data-universe-tool] .uni-step-controls button{border-color:var(--uni-edge);border-radius:9px;padding:8px 12px;font-size:12px;}\n[data-universe-tool] .uni-scene{border-color:#617497!important;border-radius:18px;box-shadow:0 8px 25px #06193325!important;}\n[data-universe-tool] .uni-model-note{font-size:11px;line-height:1.65;margin:12px 4px 0;}\n[data-universe-tool] .uni-observatory>.uni-epoch-card{border-radius:18px;padding:22px;border-color:#536682!important;border-top:3px solid var(--uni-epoch-accent)!important;box-shadow:0 6px 18px #0d234515!important;background:linear-gradient(160deg,#18263e,#101a2d)!important;}\n[data-universe-tool] .uni-observe-grid h3{font-size:22px;letter-spacing:-.02em;line-height:1.4;}\n[data-universe-tool] .uni-think>details{border:1px solid #4b607d;border-radius:10px;margin:8px 0;background:#15243a;padding:0 12px;}\n[data-universe-tool] .uni-think>details[open]{background:#1a2b45;border-color:#8599bb;}\n[data-universe-tool] .uni-think>details summary{font-size:12px;padding:11px 0;min-height:44px;}\n[data-universe-tool] .uni-think>details p{padding:8px 0;background:transparent;}\n[data-universe-tool] .uni-concept-help summary,[data-universe-tool] .uni-comparison summary{font-size:12px;}\n[data-universe-tool] .uni-section-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;}\n[data-universe-tool] .uni-section-heading h3{font-size:17px;line-height:1.4;letter-spacing:-.015em;font-weight:750;color:var(--uni-ink);}\n[data-universe-tool] .uni-section-heading p{font-size:12px;color:var(--uni-muted);margin-top:3px;}\n[data-universe-tool] .uni-section-count{font-size:11px;color:var(--uni-muted);background:var(--uni-soft);padding:6px 10px;border-radius:8px;white-space:nowrap;}\n[data-universe-tool] .uni-milestones{border-radius:16px;border-color:var(--uni-edge);}\n[data-universe-tool] .uni-epoch-stops{margin-top:16px;gap:12px;}\n[data-universe-tool] .uni-epoch-stops button{padding:14px;text-align:start;border-color:var(--uni-edge);border-radius:12px;box-shadow:0 1px 3px #182d4f05;}\n[data-universe-tool] .uni-epoch-stops button[aria-pressed=false]:hover{background:var(--uni-soft);border-color:var(--uni-accent);}\n[data-universe-tool] .uni-epoch-stops button[aria-pressed=true]{outline:2px solid var(--uni-ink);outline-offset:2px;box-shadow:0 4px 10px #10234014;}\n[data-universe-tool] .uni-epoch-stops .uni-stop-number{border-color:currentColor;opacity:.85;}\n[data-universe-tool] .uni-disclosure{border-radius:16px;border-color:var(--uni-edge);box-shadow:0 2px 6px #162c4b05;margin-top:20px;}\n[data-universe-tool] .uni-disclosure>summary{padding:20px 4px;font-size:18px;letter-spacing:-.015em;}\n[data-universe-tool] .uni-disclosure>summary small{font-size:12px;letter-spacing:0;}\n[data-universe-tool] .uni-investigation-nav{gap:8px;padding:0 0 16px;}\n[data-universe-tool] .uni-investigation-nav button{background:var(--uni-soft);border-color:var(--uni-edge);font-size:12px;}\n[data-universe-tool] .uni-index{padding:22px;border-radius:16px!important;border-color:var(--uni-edge)!important;box-shadow:0 3px 14px #142c4a08!important;}\n[data-universe-tool] .uni-library-heading{font-size:18px!important;letter-spacing:-.015em;color:var(--uni-ink)!important;}\n[data-universe-tool] #universe-topic-search{font-size:14px;min-height:48px;border-radius:11px;border-color:#7587a8!important;padding-inline:14px;background:var(--uni-page)!important;}\n[data-universe-tool] #universe-topic-search::placeholder{color:var(--uni-muted);opacity:1;}\n[data-universe-tool] .uni-index [aria-label='Filter topics by group']{gap:8px;margin:14px 0;}\n[data-universe-tool] .uni-index [aria-label='Filter topics by group'] button{border-radius:20px;padding:8px 12px;font-size:11px;}\n[data-universe-tool] .uni-topic-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}\n[data-universe-tool] .uni-topic-card{display:flex;align-items:center;gap:10px;text-align:start;min-width:0;min-height:74px;padding:12px!important;border-radius:11px!important;border-color:var(--uni-edge)!important;background:var(--uni-panel)!important;}\n[data-universe-tool] .uni-topic-card:hover{background:var(--uni-soft)!important;border-color:var(--uni-accent)!important;}\n[data-universe-tool] .uni-topic-card[aria-expanded=true]{background:var(--uni-accent-soft)!important;border-color:var(--uni-accent)!important;}\n[data-universe-tool] .uni-topic-icon{display:grid;place-items:center;width:30px;height:30px;flex:none;color:var(--uni-accent);background:var(--uni-soft);border-radius:9px;}\n[data-universe-tool] .uni-topic-copy{min-width:0;flex:1;}\n[data-universe-tool] .uni-topic-copy strong{display:block;font-size:12px;line-height:1.4;color:var(--uni-ink);font-weight:700;}\n[data-universe-tool] .uni-topic-copy small{display:block;font-size:10px;line-height:1.5;margin-top:4px;color:var(--uni-muted);font-weight:400;}\n[data-universe-tool] .uni-topic-arrow{color:var(--uni-muted);flex:none;display:flex;}\n@media(max-width:1050px){[data-universe-tool] .uni-topic-grid{grid-template-columns:repeat(3,minmax(0,1fr));}[data-universe-tool] .uni-header-status>span:first-child{display:none;}}\n@media(max-width:750px){[data-universe-tool] .uni-orientation{grid-template-columns:minmax(0,1fr);grid-template-areas:'intro' 'path' 'utilities';padding:20px 0;}[data-universe-tool] .uni-utilities{max-width:none;justify-content:flex-start;margin-top:12px;}[data-universe-tool] .uni-topic-grid{grid-template-columns:repeat(2,minmax(0,1fr));}[data-universe-tool] .uni-brand-mark{display:none;}}\n@media(max-width:640px){[data-universe-tool]{padding:12px;border-radius:14px;}[data-universe-tool] .uni-header{padding:13px 12px;border-radius:13px;}[data-universe-tool] .uni-brand-row{gap:10px;}[data-universe-tool] .uni-brand-copy h3{font-size:17px;}[data-universe-tool] .uni-brand-copy>span{font-size:10px;}[data-universe-tool] .uni-header-status{display:none;}[data-universe-tool] .uni-orientation h2{font-size:24px;line-height:1.25;}[data-universe-tool] .uni-path{gap:8px;margin-top:14px;}[data-universe-tool] .uni-path button{padding:11px 12px;gap:10px;}[data-universe-tool] .uni-path-copy>span{font-size:11px;margin-top:2px;}[data-universe-tool] .uni-path-icon{width:34px;height:34px;border-radius:10px;}[data-universe-tool] .uni-path-copy strong{font-size:13px;}[data-universe-tool] .uni-utilities button{min-height:40px;}[data-universe-tool] .uni-observatory>.uni-epoch-card{padding:18px;}[data-universe-tool] .uni-visual-column>.uni-timeline{padding:14px;}[data-universe-tool] .uni-section-heading{align-items:flex-start;gap:10px;}[data-universe-tool] .uni-section-heading h3{font-size:16px;}[data-universe-tool] .uni-section-heading p{font-size:11px;}[data-universe-tool] .uni-section-count{font-size:10px;padding:5px 7px;}[data-universe-tool] .uni-epoch-stops{gap:10px;}[data-universe-tool] .uni-epoch-stops button{padding:11px;}[data-universe-tool] .uni-index{padding:16px;}[data-universe-tool] .uni-topic-card{gap:8px;padding:10px!important;min-height:76px;}[data-universe-tool] .uni-topic-icon{display:none;}[data-universe-tool] .uni-topic-copy strong{font-size:12px;}[data-universe-tool] .uni-topic-arrow{display:none;}}\n@media(prefers-reduced-motion:reduce){[data-universe-tool] .uni-path button,[data-universe-tool] .uni-topic-card{transition:none!important;}}\n@media(forced-colors:active){[data-universe-tool] .uni-path-icon,[data-universe-tool] .uni-topic-icon{color:ButtonText;background:ButtonFace;}[data-universe-tool] .uni-topic-card,[data-universe-tool] .uni-epoch-stops button{border:1px solid ButtonText!important;}[data-universe-tool] #universe-cosmic-time{appearance:auto;-webkit-appearance:auto;}}\r\n";
 
           return React.createElement("div", { style: {"--uni-epoch-accent":epoch.border}, "data-universe-tool": "true", "data-scene-motion": d.sceneMotion || "system", "data-uni-theme": (isDark ? 'dark' : 'light'), className: "max-w-6xl mx-auto animate-in fade-in duration-200" },
-            React.createElement(UniverseLifecycle, { React: React, check: checkChallenges, motionChanged: function(){upd("systemMotionReduced",!!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches));} }),
+            React.createElement(UniverseLifecycle, { React: React, check: checkChallenges, epochId: epoch && epoch.id, needsEpochVisitSync: needsEpochVisitSync, syncEpochVisit: syncEpochVisit, motionChanged: function(){upd("systemMotionReduced",!!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches));} }),
 
             React.createElement("style", null, UNIVERSE_SHELL_CSS),
             h("style",null,"[data-universe-tool] .uni-measurement-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:18px;align-items:start;margin:18px 0;}[data-universe-tool] .uni-measurement-plot{padding:18px;border:1px solid #536581;border-radius:14px;background:linear-gradient(160deg,#15263d,#0b1526);min-width:0;}[data-universe-tool] .uni-measurement-layout .uni-sample-inspector{margin:0;min-width:0;}[data-universe-tool] .uni-measurement-layout .uni-sample-values{grid-template-columns:1fr;gap:8px;}[data-universe-tool] .uni-measurement-layout .uni-sample-values>div{display:grid;grid-template-columns:1fr auto;align-items:center;gap:0 8px;padding:12px;}[data-universe-tool] .uni-measurement-layout .uni-sample-values strong{grid-column:2;grid-row:1 / 3;font-size:22px;}@media(max-width:1000px){[data-universe-tool] .uni-measurement-layout{grid-template-columns:minmax(0,1fr);}}@media(max-width:400px){[data-universe-tool] .uni-measurement-plot{padding:10px;}[data-universe-tool] .uni-measurement-layout .uni-sample-values strong{font-size:20px;}}"),
@@ -9389,7 +9422,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                     key: ep.name,
 
-                    onClick: function () { visitTime(ep.t); if (typeof awardStemXP === 'function') awardStemXP('universe_explore', 5, 'Visited epoch: ' + ep.name); },
+                    onClick: function () { var isNewEpoch = visitedEpochIds.indexOf(ep.id) === -1; visitTime(ep.t); if (isNewEpoch && typeof awardStemXP === 'function') awardStemXP('universe_explore', 5, 'Visited epoch: ' + ep.name); },
                     'aria-pressed': isCurrent,
 
                     className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all hover:scale-105 " + (isCurrent ? "shadow-sm" : "bg-white text-slate-600 border border-slate-400 hover:border-violet-600"),
@@ -9576,7 +9609,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   if (cv) cv.dataset.time = String(activeCosmicMission.time);
                   updMulti(Object.assign({}, activeCosmicMission.setup || {}, { activeCosmicMission: activeCosmicMission.id, cosmicMissionsLaunched: launchList, cosmicTime: activeCosmicMission.time, cosmicEvidenceThread: activeCosmicMission.evidence, wwtTourStop: activeCosmicMission.wwtStop, isPlaying: false, showImages: true }));
                   uniTouch('guided-missions');
-                  if (typeof awardStemXP === 'function') awardStemXP('universe_guided_mission', 2, 'Launched mission: ' + activeCosmicMission.title);
+                  if (!activeMissionLaunched && typeof awardStemXP === 'function') awardStemXP('universe_guided_mission', 2, 'Launched mission: ' + activeCosmicMission.title);
                 }, className: "rounded-lg bg-rose-600 px-3 py-2 text-[0.6875rem] font-black text-white shadow-sm hover:bg-rose-700" }, activeMissionLaunched ? "Restart mission view" : "Start this mission")
               ),
               React.createElement("div", { className: "uni-investigation-choices" },
@@ -9673,8 +9706,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     type: "button",
                     "aria-pressed": selected,
                     onClick: function () {
-                      upd("wwtTourStop", stop.id);
-                      if (typeof awardStemXP === 'function') awardStemXP('universe_wwt_tour', 2, 'Selected WWT tour stop: ' + stop.title);
+                      var wwtVisited = Array.isArray(d.wwtStopsVisited) ? d.wwtStopsVisited : [];
+                      var isNewWwtStop = wwtVisited.indexOf(stop.id) === -1;
+                      if (isNewWwtStop) updMulti({ wwtTourStop: stop.id, wwtStopsVisited: wwtVisited.concat([stop.id]) });
+                      else upd("wwtTourStop", stop.id);
+                      if (isNewWwtStop && typeof awardStemXP === 'function') awardStemXP('universe_wwt_tour', 2, 'Selected WWT tour stop: ' + stop.title);
                     },
                     className: "uni-investigation-choice",
                     style: selected ? { borderColor: 'rgba(196,181,253,0.75)', background: 'linear-gradient(135deg, rgba(124,58,237,0.35), rgba(8,145,178,0.22))', color: '#ffffff' } : { borderColor: 'rgba(148,163,184,0.2)', background: 'rgba(15,23,42,0.74)', color: '#cbd5e1' }
@@ -9756,8 +9792,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       var cv = document.querySelector('[data-universe-canvas]');
                       if (cv) cv.dataset.time = String(thread.time);
                       pauseTimeline();
-                      updMulti({ cosmicEvidenceThread: thread.id, wwtTourStop: thread.wwtStop, cosmicTime: thread.time, isPlaying: false });
-                      if (typeof awardStemXP === 'function') awardStemXP('universe_evidence_thread', 2, 'Explored evidence: ' + thread.title);
+                      var threadsVisited = Array.isArray(d.evidenceThreadsVisited) ? d.evidenceThreadsVisited : [];
+                      var isNewThread = threadsVisited.indexOf(thread.id) === -1;
+                      var patch = { cosmicEvidenceThread: thread.id, wwtTourStop: thread.wwtStop, cosmicTime: thread.time, isPlaying: false };
+                      if (isNewThread) patch.evidenceThreadsVisited = threadsVisited.concat([thread.id]);
+                      updMulti(patch);
+                      if (isNewThread && typeof awardStemXP === 'function') awardStemXP('universe_evidence_thread', 2, 'Explored evidence: ' + thread.title);
                     },
                     className: "uni-investigation-choice",
                     style: selected ? { borderColor: 'rgba(125,211,252,0.8)', background: 'linear-gradient(135deg, rgba(14,165,233,0.28), rgba(16,185,129,0.16))', color: '#ffffff' } : { borderColor: 'rgba(148,163,184,0.2)', background: 'rgba(15,23,42,0.72)', color: '#cbd5e1' }
@@ -9853,14 +9893,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     var note = { key: activeEvidenceNotebookKey, kind: 'Evidence', title: activeCosmicEvidence.title, source: activeCosmicEvidence.bridge, claim: activeCosmicEvidence.claim, evidence: activeCosmicEvidence.evidence, reasoning: activeCosmicEvidence.reasoning, next: activeCosmicEvidence.move };
                     var nextNotebook = cosmicEvidenceNotebook.filter(function (item) { return item.key !== activeEvidenceNotebookKey; }).concat([note]);
                     updMulti({ cosmicEvidenceNotebook: nextNotebook, notebookFilter: "examples", notebookSearch: "" });
-                    if (typeof awardStemXP === 'function') awardStemXP('universe_notebook_evidence', 2, 'Saved evidence note: ' + activeCosmicEvidence.title);
+                    if (!activeEvidenceInNotebook && typeof awardStemXP === 'function') awardStemXP('universe_notebook_evidence', 2, 'Saved evidence note: ' + activeCosmicEvidence.title);
                   }, className: "rounded-lg border px-3 py-2 text-[0.6875rem] font-black " + (activeEvidenceInNotebook ? "border-emerald-200/30 bg-emerald-400/10 text-emerald-100" : "border-emerald-200/40 bg-emerald-400/15 text-emerald-50 hover:bg-emerald-400/25") }, activeEvidenceInNotebook ? "Update example note" : "Save example note"),
                   React.createElement("button", { type: "button", onClick: function () {
                     var missionEvidence = COSMIC_EVIDENCE_THREADS.find(function (thread) { return thread.id === activeCosmicMission.evidence; });
                     var note = { key: activeMissionNotebookKey, kind: 'Mission', title: activeCosmicMission.title, source: activeCosmicMission.bridgeLabel, claim: missionEvidence.claim, evidence: missionEvidence.evidence, reasoning: missionEvidence.reasoning, next: activeCosmicMission.checkpoints.join(' ') };
                     var nextNotebook = cosmicEvidenceNotebook.filter(function (item) { return item.key !== activeMissionNotebookKey; }).concat([note]);
                     updMulti({ cosmicEvidenceNotebook: nextNotebook, notebookFilter: "examples", notebookSearch: "" });
-                    if (typeof awardStemXP === 'function') awardStemXP('universe_notebook_mission', 2, 'Saved mission note: ' + activeCosmicMission.title);
+                    if (!activeMissionInNotebook && typeof awardStemXP === 'function') awardStemXP('universe_notebook_mission', 2, 'Saved mission note: ' + activeCosmicMission.title);
                   }, className: "rounded-lg border px-3 py-2 text-[0.6875rem] font-black " + (activeMissionInNotebook ? "border-sky-200/30 bg-sky-400/10 text-sky-100" : "border-sky-200/40 bg-sky-400/15 text-sky-50 hover:bg-sky-400/25") }, activeMissionInNotebook ? "Update mission example" : "Save mission example")
                 )
               ),
@@ -12056,7 +12096,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                               fresh.uniQuery = '';
                               fresh.uniGroup = 'all';
                               fresh.uniConfirmReset = false;
-                              updMulti(fresh);
+                              fresh.wwtStopsVisited = [];
+                              fresh.evidenceThreadsVisited = [];
+                              // Replace universe progress wholesale (preserving only display/UI prefs) so
+                              // sceneFound, storyWatched, predictions, orderPerfect, and mini-lab state
+                              // cannot survive reset or re-trigger checkChallenges.
+                              if (typeof setLabToolData === 'function') {
+                                setLabToolData(function (prev) {
+                                  var prevObj = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+                                  var prevUni = (prevObj.universe && typeof prevObj.universe === 'object' && !Array.isArray(prevObj.universe)) ? prevObj.universe : {};
+                                  var kept = {};
+                                  if (prevUni.isDark !== undefined) kept.isDark = prevUni.isDark;
+                                  if (prevUni.sceneMotion !== undefined) kept.sceneMotion = prevUni.sceneMotion;
+                                  if (prevUni.tutorialDismissed !== undefined) kept.tutorialDismissed = prevUni.tutorialDismissed;
+                                  return Object.assign({}, prevObj, { universe: Object.assign(kept, fresh) });
+                                });
+                              }
                               if (window._universeTimeLapse) { clearInterval(window._universeTimeLapse); window._universeTimeLapse = null; }
                               var zcv = document.querySelector('[data-universe-zoom]');
                               if (zcv) { zcv.dataset.playdir = '0'; zcv.dataset.powTarget = '0.23'; }

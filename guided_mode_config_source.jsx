@@ -19,21 +19,28 @@
     };
     return brief.title || brief.summary || brief.goal || Object.keys(brief.stepReasons).length ? brief : null;
   };
+  const _gmcSafeKey = (k) => typeof k === 'string' && k.length > 0 && k.length <= 160 && k !== '__proto__' && k !== 'constructor' && k !== 'prototype';
   const normalizeGuidedProgress = (raw = {}) => {
+    const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
     const valid = new Set(GUIDED_STEP_IDS);
-    const selectedIds = Array.isArray(raw.selectedIds) ? Array.from(new Set(['source-input', ...raw.selectedIds.filter(id => valid.has(id)), 'directions', 'package-deliver', '_final'])) : null;
+    const selectedIds = Array.isArray(src.selectedIds) ? Array.from(new Set(['source-input', ...src.selectedIds.filter(id => valid.has(id)), 'directions', 'package-deliver', '_final'])) : null;
     const activeIds = selectedIds ? GUIDED_STEP_IDS.filter(id => id === 'source-input' || id === 'directions' || id === 'package-deliver' || id === '_final' || selectedIds.includes(id)) : GUIDED_STEP_IDS;
-    const rawStep = typeof raw.stepId === 'string' && activeIds.includes(raw.stepId) ? activeIds.indexOf(raw.stepId) : (Number.isInteger(raw.guidedStep) ? raw.guidedStep : (Number.isInteger(raw.step) ? raw.step : 0));
+    const rawStep = typeof src.stepId === 'string' && activeIds.includes(src.stepId) ? activeIds.indexOf(src.stepId) : (Number.isInteger(src.guidedStep) ? src.guidedStep : (Number.isInteger(src.step) ? src.step : 0));
     const cleanIds = (value) => Array.isArray(value) ? Array.from(new Set(value.filter(id => valid.has(id)))) : [];
-    const rawEvidence = raw.deliveryEvidence && typeof raw.deliveryEvidence === 'object' ? raw.deliveryEvidence : {};
+    const rawEvidence = src.deliveryEvidence && typeof src.deliveryEvidence === 'object' ? src.deliveryEvidence : {};
     const deliveryEvidence = GUIDED_DELIVERY_EVIDENCE_KEYS.reduce((result, key) => {
       if (rawEvidence[key] === true) result[key] = true;
       return result;
     }, {});
-    const stamped = Object.entries(rawEvidence.learnerResourceSources || {}).filter(([id, key]) =>
-      id && id.length <= 160 && typeof key === 'string' && /^\d{1,9}:[a-f0-9]{1,8}$/.test(key));
-    if (stamped.length) deliveryEvidence.learnerResourceSources = Object.fromEntries(stamped);
-    const lessonScopes = Object.entries(rawEvidence.lessonScopes || {}).filter(([key, scope]) =>
+    const stamped = Object.entries(rawEvidence.learnerResourceSources && typeof rawEvidence.learnerResourceSources === 'object' ? rawEvidence.learnerResourceSources : {})
+      .filter(([id, key]) => _gmcSafeKey(id) && typeof key === 'string' && /^\d{1,9}:[a-f0-9]{1,8}$/.test(key))
+      .slice(0, 200);
+    if (stamped.length) {
+      const map = Object.create(null);
+      stamped.forEach(([id, key]) => { map[id] = key; });
+      deliveryEvidence.learnerResourceSources = Object.assign({}, map);
+    }
+    const lessonScopes = Object.entries(rawEvidence.lessonScopes && typeof rawEvidence.lessonScopes === 'object' ? rawEvidence.lessonScopes : {}).filter(([key, scope]) =>
       ['directionsSaved', 'exportCreated', 'liveStarted', 'math', 'ui-tool-wordsounds'].includes(key)
       && typeof scope === 'string' && /^\d{1,9}:[a-f0-9]{1,8}$/.test(scope));
     if (lessonScopes.length) deliveryEvidence.lessonScopes = Object.fromEntries(lessonScopes);
@@ -54,12 +61,12 @@
     return {
       guidedStep: Math.max(0, Math.min(rawStep, Math.max(0, activeIds.length - 1))),
       selectedIds,
-      completedSteps: cleanIds(raw.completedSteps || raw.completedIds),
-      skippedSteps: cleanIds(raw.skippedSteps || raw.skippedIds),
-      createdHistoryIds: Array.isArray(raw.createdHistoryIds) ? Array.from(new Set(raw.createdHistoryIds.filter(id => typeof id === 'string' && id))) : [],
+      completedSteps: cleanIds(src.completedSteps || src.completedIds),
+      skippedSteps: cleanIds(src.skippedSteps || src.skippedIds),
+      createdHistoryIds: Array.isArray(src.createdHistoryIds) ? Array.from(new Set(src.createdHistoryIds.filter(id => typeof id === 'string' && id && id.length <= 160))).slice(0, 200) : [],
       deliveryEvidence,
-      planBrief: normalizeGuidedPlanBrief(raw.planBrief),
-      savedAt: typeof raw.savedAt === 'string' && Number.isFinite(Date.parse(raw.savedAt)) ? raw.savedAt : null,
+      planBrief: normalizeGuidedPlanBrief(src.planBrief),
+      savedAt: typeof src.savedAt === 'string' && Number.isFinite(Date.parse(src.savedAt)) ? src.savedAt : null,
     };
   };
 
@@ -148,12 +155,20 @@
   };
 
 async function generateGuidedPlanFromGoal(rawGoal, refinementContext = null, deps = {}) {
-  const { callGemini, cleanJson, warnLog = function () {} } = deps;
+  const { callGemini, cleanJson = (s) => String(s || '').replace(/^```(?:json)?\s*|\s*```$/gi, '').trim(), warnLog = function () {} } = deps || {};
   const _gmcAiUsable = (kind, fn) => {
+    if (typeof window !== 'undefined' && (
+      window.__alloStudentAiDisabled === true ||
+      window.__alloAiSecretsLocked === true ||
+      window.__alloQrStudentMode === true ||
+      window._alloQrBlocked === true ||
+      (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)
+    )) return false;
+    if (fn && fn._alloQrBlocked === true) return false;
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
       return Boolean(window.__alloAiUsable(kind, fn));
     }
-    return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true);
+    return typeof fn === 'function';
   };
   const _gmcSanitizeUntrusted = value => String(value == null ? '' : value).replace(/<\/?UNTRUSTED_[A-Z0-9_]+>/gi, '[redacted-tag]');
   const _gmcFenceUntrusted = (tag, value) => '<' + tag + '>\n' + _gmcSanitizeUntrusted(value) + '\n</' + tag + '>';
@@ -268,14 +283,16 @@ Return ONLY JSON:
 // Compact change detection for the local Guided record. Never copy homework
 // URLs (which can contain a mailbox secret or the handout itself) into progress.
 function guidedLinkFingerprint(text) {
+  const str = String(text == null ? '' : text);
   let hash = 2166136261;
-  for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
-  return text.length + ':' + (hash >>> 0).toString(16);
+  for (let i = 0; i < str.length; i++) hash = Math.imul(hash ^ str.charCodeAt(i), 16777619);
+  return str.length + ':' + (hash >>> 0).toString(16);
 }
 function createGuidedLessonMatcher({ history, sourceText, activeUnitId, observed, normalizeDirections }) {
   sourceText = typeof sourceText === 'string' ? sourceText : '';
   const textKey = guidedLinkFingerprint(sourceText);
-  const byId = new Map(history.filter(Boolean).map(item => [item.id, item]));
+  const safeHistory = Array.isArray(history) ? history : [];
+  const byId = new Map(safeHistory.filter(Boolean).map(item => [item.id, item]));
   const snapshotText = item => item?.sourceSnapshot?.text ?? item?.config?.sourceSnapshot?.text
     ?? (item?.type === 'analysis' ? item.data?.originalText : null);
   const belongs = (candidate, justObserved = false) => {
@@ -292,20 +309,23 @@ function createGuidedLessonMatcher({ history, sourceText, activeUnitId, observed
     }
     // Manually authored directions can lack a source snapshot. Only trust an
     // ID the running lesson itself observed under this exact passage.
-    return Object.hasOwn(observed || {}, item.id) ? observed[item.id] === textKey : justObserved === true;
+    return Object.prototype.hasOwnProperty.call(observed || {}, item.id) ? observed[item.id] === textKey : justObserved === true;
   };
   return (item, justObserved) => {
     if (!belongs(item, justObserved)) return false;
     if (item.type !== 'directions' || !normalizeDirections) return true;
     const directions = normalizeDirections(item.data);
-    const entries = [...directions.objectives, ...(directions.choiceBoard?.choices || [])];
+    const objectives = Array.isArray(directions?.objectives) ? directions.objectives : [];
+    const choices = Array.isArray(directions?.choiceBoard?.choices) ? directions.choiceBoard.choices : [];
+    const entries = [...objectives, ...choices];
     return entries.every(entry => !entry?.resourceRef || belongs(byId.get(String(entry.resourceRef))));
   };
 }
 function guidedLearnerResources({ history, runIds, sourceText, activeUnitId, observed, studentSafe, resolveResources, normalizeDirections }) {
-  const belongs = createGuidedLessonMatcher({ history, sourceText, activeUnitId, observed, normalizeDirections });
+  const safeHistory = Array.isArray(history) ? history : [];
+  const belongs = createGuidedLessonMatcher({ history: safeHistory, sourceText, activeUnitId, observed, normalizeDirections });
   const run = new Set(runIds || []);
-  let ids = studentSafe(history).filter(item => run.has(item.id) && belongs(item)).map(item => item.id);
+  let ids = studentSafe(safeHistory).filter(item => run.has(item.id) && belongs(item)).map(item => item.id);
   if (!ids.length || ids.length > 25) return null;
   let resources = resolveResources(ids);
   if (resources.some(item => !belongs(item))) {
@@ -319,9 +339,16 @@ function guidedLearnerResources({ history, runIds, sourceText, activeUnitId, obs
 }
 function resolveGuidedLearnerLink(link, scope, records, now = Date.now()) {
   if (!link || !scope || link.scope !== scope || !Array.isArray(records)) return null;
+  const isValidHttpUrl = (raw) => {
+    if (typeof raw !== 'string' || raw.length > 8192) return false;
+    try {
+      const u = new URL(raw);
+      return (u.protocol === 'https:' || u.protocol === 'http:') && !u.username && !u.password;
+    } catch (_) { return false; }
+  };
   return records.find(share => share && share.guidedLearnerLinkId === link.id && !share.revokedAt
     && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(share.type)
-    && typeof share.url === 'string' && /^https?:\/\//i.test(share.url) && guidedLinkFingerprint(share.url) === link.urlKey
+    && isValidHttpUrl(share.url) && guidedLinkFingerprint(share.url) === link.urlKey
     && (!share.expiresAt || Date.parse(share.expiresAt) > now)) || null;
 }
 window.AlloModules = window.AlloModules || {};

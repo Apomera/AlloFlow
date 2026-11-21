@@ -15,7 +15,7 @@ var useContext = React.useContext; var useMemo = React.useMemo; var useCallback 
 // case and returns the human-readable fallback instead.
 const safeT = (t, key, fb) => { const r = t(key); return (r && r !== key) ? r : fb; };
 
-const isInteractiveShortcutTarget = (target) => !!(target && target.closest && target.closest('button, input, select, textarea, a[href], [contenteditable="true"]'));
+const isInteractiveShortcutTarget = (target) => !!(target && target.closest && target.closest('button, input, select, textarea, summary, a[href], [contenteditable="true"]'));
 
 const readerGraphemes = text => typeof Intl.Segmenter === 'function' ? Array.from(new Intl.Segmenter(undefined, {granularity:'grapheme'}).segment(text), part => part.segment) : Array.from(text);
 
@@ -249,6 +249,7 @@ var ArrowRight = _lazyIcon('ArrowRight');
 var BookOpen = _lazyIcon('BookOpen');
 var ChevronLeft = _lazyIcon('ChevronLeft');
 var ChevronRight = _lazyIcon('ChevronRight');
+var Ear = _lazyIcon('Ear');
 var List = _lazyIcon('List');
 var Loader2 = _lazyIcon('Loader2');
 var Pause = _lazyIcon('Pause');
@@ -569,7 +570,7 @@ function _irAiUsable(kind, fn) {
   return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
 }
 
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, chunkReaderMood, setChunkReaderMood, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, syllablesOnDevice, isFocusReaderActive, onToggleFocusReader }) => {
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, chunkReaderMood, setChunkReaderMood, onGeneratePOS, isGeneratingPOS, posReady, posOnDevice, onGenerateSyllables, isGeneratingSyllables, syllablesReady, syllablesOnDevice, isFocusReaderActive, onToggleFocusReader }) => {
   // Back-compat: if the parent hasn't upgraded to the unified Focus Mode prop
   // yet, synthesize it from the two legacy props (Speed Read and Chunk Stream).
   const focusReaderActive = (typeof isFocusReaderActive === 'boolean')
@@ -598,17 +599,24 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
   // doesn't have to click again.
   // Tagged text already present keeps the toggles; otherwise they need usable AI.
   const _irAiOk = _irAiUsable('text', typeof window !== 'undefined' ? window.callGemini : null);
-  const posAvailable = !!posReady || _irAiOk;
+  const posAvailable = !!posReady || !!posOnDevice || _irAiOk;
   const syllablesAvailable = !!syllablesReady || !!syllablesOnDevice || !!posReady || _irAiOk;
   const handlePosToggle = useCallback((settingKey) => {
+    if (!posAvailable) return;
     if (!posReady && onGeneratePOS && !isGeneratingPOS) {
-      // Fire-and-forget: we don't await because the setting toggle below should
-      // flip the color immediately. When the POS data finishes loading, the
-      // already-toggled category will light up automatically.
-      try { Promise.resolve(onGeneratePOS()).catch(err => console.warn('[Immersive] POS gen failed:', err)); } catch (err) { console.warn('[Immersive] POS gen failed:', err); }
+      // Fire-and-forget: flip the color immediately, and revert if generation rejects.
+      try {
+        Promise.resolve(onGeneratePOS()).catch(err => {
+          console.warn('[Immersive] POS gen failed:', err);
+          toggleSetting(settingKey);
+        });
+      } catch (err) {
+        console.warn('[Immersive] POS gen failed:', err);
+        return;
+      }
     }
     toggleSetting(settingKey);
-  }, [posReady, onGeneratePOS, isGeneratingPOS, toggleSetting]);
+  }, [posAvailable, posReady, onGeneratePOS, isGeneratingPOS, toggleSetting]);
   // Syllable toggle: same lazy-generation pattern as POS, but falls back to the
   // POS generator when a dedicated syllable handler isn't provided — the POS
   // Gemini prompt already adds syllable markers, so one call populates both.
@@ -617,7 +625,15 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     const ready = syllablesReady || posReady;
     const busy = isGeneratingSyllables || isGeneratingPOS;
     if (!ready && gen && !busy) {
-      try { Promise.resolve(gen()).catch(err => console.warn('[Immersive] Syllable gen failed:', err)); } catch (err) { console.warn('[Immersive] Syllable gen failed:', err); }
+      try {
+        Promise.resolve(gen()).catch(err => {
+          console.warn('[Immersive] Syllable gen failed:', err);
+          toggleSetting('showSyllables');
+        });
+      } catch (err) {
+        console.warn('[Immersive] Syllable gen failed:', err);
+        return;
+      }
     }
     toggleSetting('showSyllables');
   }, [onGenerateSyllables, onGeneratePOS, syllablesReady, posReady, isGeneratingSyllables, isGeneratingPOS, toggleSetting]);
@@ -643,18 +659,20 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
         <div className="flex flex-wrap items-center gap-2 min-w-0">
             <label className="text-xs font-bold text-slate-700">{t('immersive.text_size')}</label>
-            <div className="flex items-center gap-1">
-                <span className="text-[11px] text-slate-600">A</span>
+            <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-600" aria-hidden="true">A</span>
                 <input aria-label={safeT(t, 'immersive.text_size', 'Text size')}
                     type="range"
                     min="12"
                     max="48"
                     value={settings.textSize}
+                    aria-valuetext={`${settings.textSize}px`}
                     onChange={(e) => setSettings(prev => ({...prev, textSize: parseInt(e.target.value)}))}
-                    className="w-20 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    className="w-24 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                     title={t('immersive.text_size')}
                 />
-                <span className="text-sm font-bold text-slate-700">A</span>
+                <span className="text-sm font-bold text-slate-700" aria-hidden="true">A</span>
+                <span className="text-xs font-semibold text-slate-600 tabular-nums min-w-[2.5rem]" aria-hidden="true">{settings.textSize}px</span>
             </div>
         </div>
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
@@ -731,15 +749,15 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
         {setInteractionMode && (
           <>
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>
-          <div className="flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5" role="group" aria-label={safeT(t, 'immersive.tap_mode', 'Tap action')}>
-            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2">{safeT(t, 'immersive.tap_mode', 'Tap')}</span>
+          <div className="flex flex-wrap items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5" role="group" aria-label={safeT(t, 'immersive.tap_mode', 'Tap action')}>
+            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider px-2">{safeT(t, 'immersive.tap_mode', 'Tap')}</span>
             <button type="button"
               onClick={() => setInteractionMode('read')}
               aria-pressed={interactionMode !== 'define' && interactionMode !== 'phonics'}
               title={safeT(t, 'immersive.tap_speak', 'Tap a word to hear it')}
               className={`min-h-11 inline-flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-full transition-colors motion-reduce:transition-none ${interactionMode !== 'define' && interactionMode !== 'phonics' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
             >
-              <Volume2 size={12}/> {safeT(t, 'immersive.speak', 'Speak')}
+              <Volume2 size={12} aria-hidden="true"/> {safeT(t, 'immersive.speak', 'Speak')}
             </button>
             <button type="button"
               onClick={() => setInteractionMode('define')}
@@ -747,7 +765,15 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               title={safeT(t, 'immersive.tap_define', 'Tap a word to see its definition and picture')}
               className={`min-h-11 inline-flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-full transition-colors motion-reduce:transition-none ${interactionMode === 'define' ? 'bg-yellow-400 text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
             >
-              <BookOpen size={12}/> {safeT(t, 'immersive.define', 'Define')}
+              <BookOpen size={12} aria-hidden="true"/> {safeT(t, 'immersive.define', 'Define')}
+            </button>
+            <button type="button"
+              onClick={() => setInteractionMode('phonics')}
+              aria-pressed={interactionMode === 'phonics'}
+              title={safeT(t, 'immersive.tap_phonics', 'Tap a word to hear syllables and pronunciation')}
+              className={`min-h-11 inline-flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-full transition-colors motion-reduce:transition-none ${interactionMode === 'phonics' ? 'bg-emerald-700 text-white shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
+            >
+              <Ear size={12} aria-hidden="true"/> {safeT(t, 'immersive.sounds', 'Sounds')}
             </button>
           </div>
           </>
@@ -756,17 +782,17 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
           <>
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>
           <div className="flex flex-wrap items-center gap-2 min-w-0">
-            <button type="button" onClick={() => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1))} disabled={chunkReaderIdx <= 0} className="min-h-11 min-w-11 flex items-center justify-center p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all motion-reduce:transition-none" title={safeT(t, 'common.previous', 'Previous') + ' (← / Home)'}><ChevronLeft size={14}/></button>
-            <span className="text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center">{chunkReaderIdx + 1} / {totalSentences}</span>
-            <button type="button" onClick={() => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1))} disabled={chunkReaderIdx >= totalSentences - 1} className="min-h-11 min-w-11 flex items-center justify-center p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all motion-reduce:transition-none" title={safeT(t, 'common.next', 'Next') + ' (→ / End)'}><ChevronRight size={14}/></button>
+            <button type="button" aria-label={safeT(t, 'common.previous', 'Previous')} onClick={() => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1))} disabled={chunkReaderIdx <= 0} className="min-h-11 min-w-11 flex items-center justify-center p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all motion-reduce:transition-none" title={safeT(t, 'common.previous', 'Previous') + ' (← / Home)'}><ChevronLeft size={14} aria-hidden="true"/></button>
+            <span className="text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center">{totalSentences > 0 ? chunkReaderIdx + 1 : 0} / {totalSentences}</span>
+            <button type="button" aria-label={safeT(t, 'common.next', 'Next')} onClick={() => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1))} disabled={chunkReaderIdx >= totalSentences - 1} className="min-h-11 min-w-11 flex items-center justify-center p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all motion-reduce:transition-none" title={safeT(t, 'common.next', 'Next') + ' (→ / End)'}><ChevronRight size={14} aria-hidden="true"/></button>
             <div className="h-4 w-px bg-slate-200"></div>
             <button type="button" onClick={() => setChunkReaderAutoPlay(!chunkReaderAutoPlay)} aria-pressed={!!chunkReaderAutoPlay} aria-label={chunkReaderAutoPlay ? safeT(t, "common.pause", "Pause") : safeT(t, "common.auto_play", "Auto play")} className={`min-h-11 min-w-11 px-2 py-1 text-xs font-bold rounded-full transition-all motion-reduce:transition-none ${chunkReaderAutoPlay ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title={(chunkReaderAutoPlay ? safeT(t, 'common.pause', 'Pause') : safeT(t, 'common.auto_play', 'Auto')) + ' (Space) · Esc exits · Enter skips typewriter reveal'}>
               {chunkReaderAutoPlay ? <Pause size={12} className="inline"/> : <Play size={12} className="inline"/>}
             </button>
             <div className="flex items-center gap-1">
-              <span className="text-[11px] text-slate-600">1s</span>
+              <span className="text-xs text-slate-600">1s</span>
               <input type="range" min="1000" max="8000" step="500" value={chunkReaderSpeed} onChange={(e) => setChunkReaderSpeed(parseInt(e.target.value))} disabled={!!chunkReaderReadAlong} className={`w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500 ${chunkReaderReadAlong ? 'opacity-30' : ''}`} title={chunkReaderReadAlong ? 'Disabled while Read Along is on — audio length drives the pace' : `${(chunkReaderSpeed/1000).toFixed(1)}s`} aria-label={t('immersive.speed')}/>
-              <span className="text-[11px] text-slate-600 tabular-nums">{(chunkReaderSpeed/1000).toFixed(1)}s</span>
+              <span className="text-xs text-slate-600 tabular-nums">{(chunkReaderSpeed/1000).toFixed(1)}s</span>
             </div>
             {onToggleChunkReaderReadAlong && (
               <>
@@ -786,13 +812,13 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               <>
                 <div className="h-4 w-px bg-slate-200"></div>
                 <label className="flex items-center gap-1">
-                  <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{safeT(t, 'immersive.chunk_mood_label', 'Mood')}</span>
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{safeT(t, 'immersive.chunk_mood_label', 'Mood')}</span>
                   <select
                     aria-label={safeT(t, 'immersive.chunk_mood', 'Chunk Read animation mood')}
                     value={chunkReaderMood || 'highlight'}
                     onChange={e => setChunkReaderMood(e.target.value)}
                     title={t('immersive.chunk_mood_tooltip') || 'Animation mood for active chunk · Enter skips typewriter reveal'}
-                    className="min-h-11 text-[11px] font-bold rounded-full px-3 py-1 border border-slate-300 bg-slate-100 text-slate-700 cursor-pointer hover:bg-slate-200"
+                    className="min-h-11 text-xs font-bold rounded-full px-3 py-1 border border-slate-300 bg-slate-100 text-slate-700 cursor-pointer hover:bg-slate-200"
                     data-help-key="immersive_chunk_mood"
                   >
                     <option value="highlight">✨ Sweep</option>
@@ -900,9 +926,9 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               <option value="rose">🌸 Rose</option>
             </select>
             <div className="flex items-center gap-1.5">
-              <label className="text-[11px] text-slate-600">{safeT(t, 'immersive.bg', 'Bg')}</label>
+              <label className="text-xs text-slate-600">{safeT(t, 'immersive.bg', 'Bg')}</label>
               <input type="color" value={settings.bgColor || '#fdfbf7'} onChange={(e) => setSettings(prev => ({...prev, bgColor: e.target.value}))} className="w-6 h-6 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.bgColor}} aria-label={safeT(t, 'immersive.bg_color', 'Background color')}/>
-              <label className="text-[11px] text-slate-600">{safeT(t, 'immersive.text', 'Text')}</label>
+              <label className="text-xs text-slate-600">{safeT(t, 'immersive.text', 'Text')}</label>
               <input type="color" value={settings.fontColor || '#1e293b'} onChange={(e) => setSettings(prev => ({...prev, fontColor: e.target.value}))} className="w-6 h-6 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.fontColor}} aria-label={safeT(t, 'immersive.text_color', 'Text color')}/>
             </div>
         </div>
@@ -1065,7 +1091,13 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     // Built lazily on first "play while isOpen" so we don't synthesize audio
     // nodes for users who never open the Crawl.
     useEffect(() => {
-        if (!isOpen || !ambientOn || !isPlaying) {
+        const isGloballyMuted = (() => {
+            try {
+                if (typeof window === 'undefined') return false;
+                return typeof window.__alloIsGlobalMuted === 'function' ? !!window.__alloIsGlobalMuted() : !!window._alloGlobalMute;
+            } catch (_) { return false; }
+        })();
+        if (!isOpen || !ambientOn || !isPlaying || isGloballyMuted) {
             // fade out
             if (audioNodesRef.current) {
                 try {
@@ -1271,7 +1303,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                     </div>
                 )}
             </div>
-            <div className="h-1 w-full" style={{ background: p.text + '22' }}>
+            <div role="progressbar" aria-label={safeT(t, 'immersive.crawl_progress', 'Reading progress')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Number(progressPct) || 0)} className="h-1 w-full" style={{ background: p.text + '22' }}>
                 <div className="h-full transition-all duration-200 ease-linear motion-reduce:transition-none" style={{ width: `${progressPct}%`, backgroundColor: p.accent }} />
             </div>
             <div className="py-2 text-center text-xs" style={{ color: p.text, opacity: 0.6 }}>
@@ -2319,7 +2351,15 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
                 // to roughly [0.1, 10], so 0.95 * 0.75 = 0.7125 and 0.95 * 1.5 =
                 // 1.425 both land comfortably in range.
                 u.rate = 0.95 * (playbackSpeedRef.current || 1);
-                u.pitch = 1.0; u.volume = 0.95;
+                u.pitch = 1.0;
+                const deviceMuted = typeof window.__alloIsGlobalMuted === 'function' ? !!window.__alloIsGlobalMuted() : !!window._alloGlobalMute;
+                const voiceVol = Number(typeof window !== 'undefined' ? window.__alloVoiceVolume : NaN);
+                u.volume = deviceMuted ? 0 : (Number.isFinite(voiceVol) ? Math.max(0, Math.min(1, voiceVol)) : 0.95);
+                if (deviceMuted) {
+                    finishAudioLoad(audioLoadOwner);
+                    setIsPlaying(false);
+                    return;
+                }
                 u.onend = () => {
                     if (token !== playTokenRef.current || transportRef.current !== session || session.ended) return;
                     session.ended = true;
@@ -2363,6 +2403,8 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
             if (token !== playTokenRef.current) return;
             warmedRef.current.delete(sentenceIdx); // force a fresh fetch of the new clip
             warmPromisesRef.current.delete(sentenceIdx);
+            wordTimingsRef.current.delete(sentenceIdx);
+            failedMediaRef.current.delete(sentenceIdx);
             setSweepPct(0);
             setIsPlaying(true);
         } catch (e) { if (token === playTokenRef.current) setPlaybackFallbackNotice('Could not regenerate audio. Please try again.'); }
@@ -2480,7 +2522,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
                 recordingOnCloseRef.current();
                 return;
             }
-            if (draft.teacher) { warmedRef.current.delete(draft.index); warmPromisesRef.current.delete(draft.index); setSweepPct(0); if (!recordingTransitionRef.current) setIsPlaying(true); }
+            if (draft.teacher) { warmedRef.current.delete(draft.index); warmPromisesRef.current.delete(draft.index); wordTimingsRef.current.delete(draft.index); failedMediaRef.current.delete(draft.index); setSweepPct(0); if (!recordingTransitionRef.current) setIsPlaying(true); }
             else { setStudentTakeTick(x => x + 1); if (!recordingTransitionRef.current) playStudentTake(); }
         } catch (_) {
             if (recordingDraftRef.current === draft && draft.session === recordingSessionRef.current) setRecordingSaveState('failed');
@@ -2844,7 +2886,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
                     </button>
                     <div className="flex min-w-0 flex-col">
                         <h2 id="karaoke-reader-dialog-title" className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</h2>
-                        <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep{teacherTake?.url && teacherTake.source === 'human-teacher' ? ' · 🎤 ' + safeT(t, 'immersive.teacher_recording', 'Teacher recording') : ''}</span>
+                        <span className="text-xs" style={{ color: c.dim }}>Sentence {sentences.length > 0 ? sentenceIdx + 1 : 0} / {sentences.length} · read-along sweep{teacherTake?.url && teacherTake.source === 'human-teacher' ? ' · 🎤 ' + safeT(t, 'immersive.teacher_recording', 'Teacher recording') : ''}</span>
                         {playbackNotice ? (
                             <span className="text-xs font-semibold max-w-xl" role="status" aria-live="polite" style={{ color: c.sweep }}>
                                 {playbackNotice}
@@ -2979,7 +3021,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
                                 onClick={() => setPlaybackSpeed(rate)}
                                 aria-pressed={playbackSpeed === rate}
                                 title={`Playback speed ${rate}x`}
-                                className="min-h-11 min-w-11 px-2.5 py-1 text-[11px] rounded-full transition-all motion-reduce:transition-none tabular-nums"
+                                className="min-h-11 min-w-11 px-2.5 py-1 text-xs rounded-full transition-all motion-reduce:transition-none tabular-nums"
                                 style={{
                                     background: playbackSpeed === rate ? c.accent : 'transparent',
                                     color: playbackSpeed === rate ? c.ink : c.dim,
@@ -3091,10 +3133,20 @@ console.log('[ImmersiveReaderModule] Focus + Crawl + Karaoke + Toolbar registere
 // ─── ImmersiveWord (merged from AlloFlowANTI.txt 2026-04-21) ─────────────
 // Atomic word unit for immersive reading — POS highlights (noun/verb/adj/adv),
 // syllables-on-demand, click handler. Pure props-driven React.memo.
+const _isDarkHex = (hex) => {
+    const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex || '').trim());
+    if (!m) return false;
+    const raw = m[1].length === 3 ? m[1].split('').map(c => c + c).join('') : m[1];
+    const r = parseInt(raw.slice(0, 2), 16), g = parseInt(raw.slice(2, 4), 16), b = parseInt(raw.slice(4, 6), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) < 128;
+};
+const _IMMERSIVE_HEADER_SCALE = { 1: 1.5, 2: 1.35, 3: 1.22, 4: 1.12, 5: 1.05, 6: 1.0 };
+
 const ImmersiveWord = React.memo(({ wordData, settings, onClick, isActive }) => {
     const { t } = useContext(LanguageContext);
     const isWordInteractive = !!onClick && /[\p{L}\p{N}]/u.test(wordData.text || '');
     const isSyllableMode = settings.showSyllables && wordData.pos !== 'markdown' && wordData.pos !== 'newline';
+    const isDarkBg = _isDarkHex(settings.bgColor);
     const isPosHighlighted = (wordData.pos === 'noun' && settings.showNouns) ||
                              (wordData.pos === 'verb' && settings.showVerbs) ||
                              (wordData.pos === 'adj' && settings.showAdjectives) ||
@@ -3106,11 +3158,13 @@ const ImmersiveWord = React.memo(({ wordData, settings, onClick, isActive }) => 
     if (isSyllableMode) {
         const syllables = wordData.syllables || [wordData.text];
         if (syllables.length > 1) {
+            const altSyllableClass = isDarkBg ? "text-rose-300" : "text-rose-600";
+            const dotClass = isPosHighlighted ? 'opacity-65' : (isDarkBg ? 'text-slate-300' : 'text-slate-600');
             content = syllables.map((syl, idx) => (
                 <span key={idx}>
-                    <span className={!isPosHighlighted && idx % 2 !== 0 ? "text-rose-600" : ""}>{syl}</span>
+                    <span className={!isPosHighlighted && idx % 2 !== 0 ? altSyllableClass : ""}>{syl}</span>
                     {idx < syllables.length - 1 && (
-                        <span className={`font-black mx-[2px] ${isPosHighlighted ? 'opacity-60' : 'text-slate-600'}`}>·</span>
+                        <span className={`font-black ${dotClass}`} style={{ marginInline: '0.08em' }} aria-hidden="true">·</span>
                     )}
                 </span>
             ));
@@ -3141,19 +3195,17 @@ const ImmersiveWord = React.memo(({ wordData, settings, onClick, isActive }) => 
         return null;
     }
     const headerMatch = wordData.pos?.match?.(/^header(\d)$/);
-    const isHeader = !!headerMatch;
+    const headerLevel = headerMatch ? parseInt(headerMatch[1], 10) : 0;
     if (headerMatch) {
-        const level = parseInt(headerMatch[1]);
-        const headerSizes = {
-            1: 'text-3xl font-bold',
-            2: 'text-2xl font-bold',
-            3: 'text-xl font-bold',
-            4: 'text-lg font-semibold',
-            5: 'text-base font-semibold',
-            6: 'text-base font-semibold italic',
+        const headerWeights = {
+            1: 'font-bold',
+            2: 'font-bold',
+            3: 'font-bold',
+            4: 'font-semibold',
+            5: 'font-semibold',
+            6: 'font-semibold italic',
         };
-        const sizeClass = headerSizes[level] || 'font-bold';
-        className += ` ${sizeClass} `;
+        className += ` ${headerWeights[headerLevel] || 'font-bold'} `;
     }
     if (wordData.pos === 'bold') {
         className += ' font-bold ';
@@ -3161,6 +3213,9 @@ const ImmersiveWord = React.memo(({ wordData, settings, onClick, isActive }) => 
     if (wordData.pos === 'italic') {
         className += ' italic ';
     }
+    const computedFontSize = headerLevel
+        ? `${Math.round(settings.textSize * (_IMMERSIVE_HEADER_SCALE[headerLevel] || 1.15))}px`
+        : `${settings.textSize}px`;
     return (
         <span
             onClick={isWordInteractive ? onClick : undefined}
@@ -3170,7 +3225,7 @@ const ImmersiveWord = React.memo(({ wordData, settings, onClick, isActive }) => 
             title={isPosHighlighted ? getPosLabel(wordData.pos) : null}
             className={className + (isWordInteractive ? "" : "cursor-text ") + "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none"}
             style={{
-                fontSize: isHeader ? `${settings.textSize * 1.15}px` : `${settings.textSize}px`,
+                fontSize: computedFontSize,
                 lineHeight: settings.lineHeight,
                 whiteSpace: 'pre-wrap',
             }}

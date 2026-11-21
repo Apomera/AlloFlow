@@ -46,7 +46,44 @@
 
     function text(value, limit) {
         if (value === null || value === undefined) return '';
-        return String(value).replace(/\s+/g, ' ').trim().slice(0, limit || MAX_TEXT);
+        return String(value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, limit || MAX_TEXT);
+    }
+
+    function boundedInt(raw, fallback, min, max) {
+        if (raw === undefined || raw === null || raw === '' || typeof raw === 'boolean') return fallback;
+        const num = Number(raw);
+        if (!Number.isFinite(num)) return fallback;
+        return Math.max(min, Math.min(Math.floor(num), max));
+    }
+
+    function safeUrl(value, limit) {
+        const raw = text(value, limit || 800);
+        if (!raw || /[\s"'<>\\]/.test(raw) || !/^https:\/\//i.test(raw)) return '';
+        const afterScheme = raw.slice(8);
+        const hostPart = afterScheme.split(/[/?#]/)[0];
+        if (!hostPart || hostPart.indexOf('@') >= 0) return '';
+        if (typeof URL === 'function') {
+            try {
+                const parsed = new URL(raw);
+                if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return '';
+            } catch (_) {
+                return '';
+            }
+        }
+        return raw;
+    }
+
+    function uniqueSafeUrls(values, limit) {
+        const out = [];
+        const seen = new Set();
+        for (const value of array(values)) {
+            const next = safeUrl(value, 800);
+            if (!next || seen.has(next)) continue;
+            seen.add(next);
+            out.push(next);
+            if (out.length >= (limit || 10)) break;
+        }
+        return out;
     }
 
     function token(value) {
@@ -90,12 +127,13 @@
         for (const name of ['nodes', 'relationships']) {
             if (!isObject(value[name])) continue;
             const file = value[name];
+            const byteCount = Number(file.bytes);
             out[name] = {
-                bytes: Number.isSafeInteger(Number(file.bytes)) ? Number(file.bytes) : 0,
+                bytes: (Number.isSafeInteger(byteCount) && byteCount >= 0) ? byteCount : 0,
                 sha256: text(file.sha256, 128),
                 etag: text(file.etag, 240),
                 lastModified: text(file.lastModified, 80),
-                url: text(file.url, 800)
+                url: safeUrl(file.url, 800)
             };
         }
         return out;
@@ -119,8 +157,8 @@
             jurisdiction: text(value.jurisdiction, 160),
             grade: text(value.grade, 80),
             subject: text(value.subject, 160),
-            sourceUrl: text(value.sourceUrl, 800),
-            sourceUrls: uniqueStrings(value.sourceUrls, 10),
+            sourceUrl: safeUrl(value.sourceUrl, 800),
+            sourceUrls: uniqueSafeUrls(value.sourceUrls, 10),
             _path: path
         };
     }
@@ -170,6 +208,7 @@
         ['left', ''],           // 6 — sizing hints, no glyph
         ['right', '']           // 6
     ];
+    const TEX_SYMBOL_REGEXES = TEX_SYMBOLS.map(([name, glyph]) => [new RegExp('\\\\' + name + '(?![a-zA-Z])', 'g'), glyph]);
     // \frac{1}{2} -> 1/2. Run to a fixed point so a nested numerator resolves
     // from the inside out; the loop is bounded because each pass removes a
     // \frac, and the snapshots never nest more than one deep.
@@ -198,10 +237,10 @@
         if (out.indexOf('\\') < 0 && out.indexOf('$') < 0) return out;
         out = expandFractions(out);
         out = out.replace(/\\sqrt\s*\{([^{}]*)\}/g, (all, inner) => '\u221a' + inner.trim());
-        for (const [name, glyph] of TEX_SYMBOLS) {
+        for (const [re, glyph] of TEX_SYMBOL_REGEXES) {
             // (?![a-zA-Z]) so \circ is not eaten by a \c rule and \times does
             // not match inside a longer command name.
-            out = out.replace(new RegExp('\\\\' + name + '(?![a-zA-Z])', 'g'), glyph);
+            out = out.replace(re, glyph);
         }
         // Delimiters last: by here the content between them is already plain.
         out = out.replace(/\$/g, '');
@@ -227,7 +266,7 @@
             attribution: text(rawDataset.attribution, 600),
             contentDigest: text(rawDataset.contentDigest, 80),
             sourceIntegrity: normalizeSourceIntegrity(rawDataset.sourceIntegrity),
-            sourceUrls: uniqueStrings(rawDataset.sourceUrls, 20)
+            sourceUrls: uniqueSafeUrls(rawDataset.sourceUrls, 20)
         };
         for (const field of ['provider', 'datasetVersion', 'snapshotId']) {
             if (!dataset[field]) errors.push(issue('dataset-field-required', `$.dataset.${field}`, `${field} is required.`));
@@ -284,17 +323,18 @@
     }
 
     function cloneManifest(dataset) {
+        const safeDataset = isObject(dataset) ? dataset : {};
         return {
             schemaVersion: VERSION,
-            provider: dataset.provider,
-            datasetVersion: dataset.datasetVersion,
-            snapshotId: dataset.snapshotId,
-            generatedAt: dataset.generatedAt,
-            license: dataset.license,
-            attribution: dataset.attribution,
-            contentDigest: dataset.contentDigest,
-            sourceIntegrity: dataset.sourceIntegrity,
-            sourceUrls: dataset.sourceUrls.slice()
+            provider: safeDataset.provider,
+            datasetVersion: safeDataset.datasetVersion,
+            snapshotId: safeDataset.snapshotId,
+            generatedAt: safeDataset.generatedAt,
+            license: safeDataset.license,
+            attribution: safeDataset.attribution,
+            contentDigest: safeDataset.contentDigest,
+            sourceIntegrity: normalizeSourceIntegrity(safeDataset.sourceIntegrity),
+            sourceUrls: array(safeDataset.sourceUrls).slice()
         };
     }
 
@@ -302,7 +342,7 @@
         const input = isObject(filters) ? filters : {};
         const out = {};
         for (const field of ['framework', 'jurisdiction', 'grade', 'subject']) {
-            if (input[field] !== undefined && input[field] !== null && text(input[field], 160)) {
+            if (Object.prototype.hasOwnProperty.call(input, field) && input[field] !== undefined && input[field] !== null && text(input[field], 160)) {
                 out[field] = token(input[field]);
             }
         }
@@ -430,7 +470,7 @@
             const normalizedQuery = token(query);
             const normalizedFilters = normalizeFilters(filters);
             const inputOptions = isObject(options) ? options : {};
-            const maxResults = Math.max(1, Math.min(Number(inputOptions.maxResults) || MAX_RESULTS, MAX_RESULTS));
+            const maxResults = boundedInt(inputOptions.maxResults, MAX_RESULTS, 1, MAX_RESULTS);
             const scored = [];
             for (const record of value.standards) {
                 if (record.resolvable === false) continue;
@@ -463,6 +503,7 @@
         function contextFor(record, query) {
             const links = (adjacency.get(idToken(record.id)) || []).map((entry) => {
                 const related = getRecord(entry.otherId);
+                if (!related) return null;
                 return {
                     id: related.id,
                     code: related.code,
@@ -471,7 +512,7 @@
                     direction: entry.direction,
                     source: entry.relationship.source
                 };
-            });
+            }).filter(Boolean);
             const contextInput = {
                 inputText: text(query || record.code || record.id, MAX_TEXT),
                 promptText: text(record.text || record.label, MAX_TEXT),
@@ -479,28 +520,29 @@
                 provider: value.dataset.provider,
                 datasetVersion: value.dataset.datasetVersion,
                 snapshotId: value.dataset.snapshotId,
-                sourceUrls: uniqueStrings([].concat(value.dataset.sourceUrls, record.sourceUrls, record.sourceUrl), 20),
+                sourceUrls: uniqueSafeUrls([].concat(value.dataset.sourceUrls, record.sourceUrls, record.sourceUrl), 20),
                 attribution: value.dataset.attribution,
                 resolutionStatus: 'resolved',
                 provenance: {
                     provider: value.dataset.provider,
                     datasetVersion: value.dataset.datasetVersion,
                     snapshotId: value.dataset.snapshotId,
-                    sourceUrls: uniqueStrings([].concat(value.dataset.sourceUrls, record.sourceUrls, record.sourceUrl), 20),
+                    sourceUrls: uniqueSafeUrls([].concat(value.dataset.sourceUrls, record.sourceUrls, record.sourceUrl), 20),
                     resolutionStatus: 'resolved',
                     license: value.dataset.license,
                     attribution: value.dataset.attribution,
                     contentDigest: value.dataset.contentDigest,
-                    sourceIntegrity: value.dataset.sourceIntegrity
+                    sourceIntegrity: normalizeSourceIntegrity(value.dataset.sourceIntegrity)
                 }
             };
             const standardsContext = root && root.AlloModules && root.AlloModules.StandardsContext;
             let context = standardsContext && typeof standardsContext.resolve === 'function'
                 ? standardsContext.resolve(contextInput)
                 : contextInput;
-            context = Object.assign({}, context, {
+            const resolved = isObject(context) ? context : contextInput;
+            context = Object.assign({}, resolved, {
                 attribution: value.dataset.attribution,
-                provenance: Object.assign({}, context.provenance, { attribution: value.dataset.attribution })
+                provenance: Object.assign({}, isObject(resolved.provenance) ? resolved.provenance : contextInput.provenance, { attribution: value.dataset.attribution })
             });
             return context;
         }
@@ -545,9 +587,9 @@
             const rootRecord = getRecord(id);
             if (!rootRecord) return null;
             const inputOptions = isObject(options) ? options : {};
-            const maxDepth = Math.max(0, Math.min(Number(inputOptions.depth) || 1, MAX_DEPTH));
-            const maxNodes = Math.max(1, Math.min(Number(inputOptions.maxNodes) || MAX_NODES, MAX_NODES));
-            const maxEdges = Math.max(0, Math.min(Number(inputOptions.maxEdges) || MAX_EDGES, MAX_EDGES));
+            const maxDepth = boundedInt(inputOptions.depth, 1, 0, MAX_DEPTH);
+            const maxNodes = boundedInt(inputOptions.maxNodes, MAX_NODES, 1, MAX_NODES);
+            const maxEdges = boundedInt(inputOptions.maxEdges, MAX_EDGES, 0, MAX_EDGES);
             // Component-flooding guard. In --include-components snapshots a single standard can
             // carry dozens of LearningComponents over `supports` edges (L.1.1.h in ccss-ela has
             // 38), and an uncapped BFS spends the whole node budget on them, starving the
@@ -555,15 +597,14 @@
             // Components may take at most a third of the node budget (never fewer than 4)
             // unless the caller overrides with options.maxComponents. Skipped components mark
             // the result truncated, so callers see coverage was bounded rather than complete.
-            const maxComponents = Number.isFinite(Number(inputOptions.maxComponents))
-                ? Math.max(0, Number(inputOptions.maxComponents))
-                : Math.max(4, Math.floor(maxNodes / 3));
+            const maxComponents = boundedInt(inputOptions.maxComponents, Math.max(4, Math.floor(maxNodes / 3)), 0, MAX_NODES);
             let componentCount = 0;
             const rootId = idToken(rootRecord.id);
             const depths = new Map([[rootId, 0]]);
             const queue = [rootId];
             const nodeIds = new Set([rootId]);
             const edges = [];
+            const edgeKeys = new Set();
             let truncated = false;
             while (queue.length) {
                 const current = queue.shift();
@@ -603,7 +644,10 @@
                         break;
                     }
                     const edgeKey = `${edge.fromId}|${edge.toId}|${edge.type}`;
-                    if (!edges.some((existing) => `${existing.fromId}|${existing.toId}|${existing.type}` === edgeKey)) edges.push(edge);
+                    if (!edgeKeys.has(edgeKey)) {
+                        edgeKeys.add(edgeKey);
+                        edges.push(edge);
+                    }
                 }
             }
             const nodes = Array.from(nodeIds).map((nodeId) => publicRecord(byId.get(nodeId))).filter(Boolean);
@@ -653,7 +697,7 @@
 
         function boundedMax(options) {
             const inputOptions = isObject(options) ? options : {};
-            return Math.max(1, Math.min(Number(inputOptions.maxResults) || MAX_RESULTS, MAX_RESULTS));
+            return boundedInt(inputOptions.maxResults, MAX_RESULTS, 1, MAX_RESULTS);
         }
 
         function getPrerequisites(id, options) {
@@ -822,7 +866,7 @@
         }
         function sampleStandards(options) {
             const opts = options || {};
-            const want = Math.max(1, Math.min(20, Number(opts.count) || 1));
+            const want = boundedInt(opts.count, 1, 1, 20);
             const wanted = wantedGrade(opts.gradeLevel);
             const usable = value.standards.filter((r) => r.resolvable !== false && String(r.code || '').trim());
             // Fall back to the whole corpus rather than returning nothing: a
@@ -994,14 +1038,37 @@
         return registeredProvider;
     }
 
+    let idleRebuildHandle = null;
+    let idleRebuildKind = '';
+
+    function cancelIdleProviderRebuild() {
+        if (idleRebuildHandle == null) return;
+        try {
+            if (idleRebuildKind === 'idle' && root && typeof root.cancelIdleCallback === 'function') root.cancelIdleCallback(idleRebuildHandle);
+            else if (idleRebuildKind === 'timeout' && root && typeof root.clearTimeout === 'function') root.clearTimeout(idleRebuildHandle);
+        } catch (_) {}
+        idleRebuildHandle = null;
+        idleRebuildKind = '';
+    }
+
     function scheduleIdleProviderRebuild() {
         // Build the union index during browser idle time so the first consumer
         // usually finds it ready without anyone paying for it mid-boot. The
         // getRegisteredProvider() fallback below keeps correctness if a
         // consumer arrives first (or no idle callback exists, as in tests).
-        const run = () => { if (registeredProviderDirty) rebuildRegisteredProvider(); };
-        if (root && typeof root.requestIdleCallback === 'function') root.requestIdleCallback(run, { timeout: 10000 });
-        else if (root && typeof root.setTimeout === 'function') root.setTimeout(run, 2000);
+        if (idleRebuildHandle != null) return;
+        const run = () => {
+            idleRebuildHandle = null;
+            idleRebuildKind = '';
+            try { if (registeredProviderDirty) rebuildRegisteredProvider(); } catch (_) {}
+        };
+        if (root && typeof root.requestIdleCallback === 'function') {
+            idleRebuildKind = 'idle';
+            idleRebuildHandle = root.requestIdleCallback(run, { timeout: 10000 });
+        } else if (root && typeof root.setTimeout === 'function') {
+            idleRebuildKind = 'timeout';
+            idleRebuildHandle = root.setTimeout(run, 2000);
+        }
     }
 
     function registerLocalSnapshot(snapshot) {
@@ -1010,8 +1077,9 @@
         // built a full throwaway search index just to validate.
         const report = validateSnapshot(snapshot);
         if (!report.ok) throw makeError('Invalid local standards snapshot.', report);
-        const key = (snapshot && snapshot.dataset && snapshot.dataset.snapshotId) || ('unkeyed:' + registeredSnapshots.size);
-        registeredSnapshots.set(key, snapshot);
+        const normalized = report.value;
+        const key = (normalized && normalized.dataset && normalized.dataset.snapshotId) || ('unkeyed:' + registeredSnapshots.size);
+        registeredSnapshots.set(key, normalized);
         // No caller consumes the returned provider (snapshot module tails and
         // drainInjectedSnapshots both ignore it), so registration no longer
         // returns the eagerly built union.
@@ -1030,6 +1098,7 @@
     }
 
     function clearRegisteredProvider() {
+        cancelIdleProviderRebuild();
         registeredSnapshots.clear();
         registeredProvider = null;
         registeredProviderDirty = false;
@@ -1039,7 +1108,10 @@
         if (!root) return;
         const injected = [];
         if (root.__ALLO_LOCAL_STANDARDS_SNAPSHOT__) injected.push(root.__ALLO_LOCAL_STANDARDS_SNAPSHOT__);
-        if (Array.isArray(root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__)) injected.push(...root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__);
+        if (Array.isArray(root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__)) {
+            const list = root.__ALLO_LOCAL_STANDARDS_SNAPSHOTS__.slice(0, 32);
+            for (let i = 0; i < list.length; i += 1) injected.push(list[i]);
+        }
         for (const snapshot of injected) {
             try {
                 registerLocalSnapshot(snapshot);

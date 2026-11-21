@@ -140,7 +140,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       '@media(max-width:420px){.rr-ridealong-state{position:absolute;bottom:42px;left:50%;transform:translateX(-50%);min-height:26px!important;padding:0 7px!important}.rr-ridealong-state.rr-more-open{display:none!important}}' +
       '.rr-drive-shell .rr-more-touch{top:calc(12% + 6px)!important;bottom:auto!important;left:10px!important;right:10px!important;width:auto!important;max-height:max(96px,calc(88% - 360px))!important;overflow:auto}.rr-world-controls button{min-width:44px;min-height:44px}' +
       '@media(max-height:560px){.rr-touch-secondary{flex-direction:row!important;flex-wrap:wrap-reverse;align-items:flex-end;max-width:calc(100% - 262px)}.rr-drive-shell .rr-more-touch{max-height:max(64px,calc(88% - 222px))!important}}' +
-      '@media(max-height:560px){.rr-drive-shell{height:calc(100dvh - 42px)!important;min-height:320px!important}.rr-drive-dock{bottom:calc(96px + env(safe-area-inset-bottom, 0px))!important}.rr-drive-more{bottom:calc(140px + env(safe-area-inset-bottom, 0px))!important;max-height:150px;overflow:auto}.rr-touch-pedals{flex-direction:row!important;align-items:center}.rr-world-controls{max-height:150px;overflow:auto}}';
+      '@media(max-height:560px){.rr-drive-shell{height:calc(100dvh - 42px)!important;min-height:320px!important}.rr-drive-dock{bottom:calc(96px + env(safe-area-inset-bottom, 0px))!important}.rr-drive-more{bottom:calc(140px + env(safe-area-inset-bottom, 0px))!important;max-height:150px;overflow:auto}.rr-touch-pedals{flex-direction:row!important;align-items:center}.rr-world-controls{max-height:150px;overflow:auto}}' +
+      '.rr-hero-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;text-align:left}' +
+      '.rr-hero-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:#0f172a;border:1px solid #38bdf8;color:#7dd3fc;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}' +
+      '.rr-hero-telemetry{display:flex;flex-wrap:wrap;gap:6px;align-items:center}' +
+      '.rr-hero-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:#0f172a;border:1px solid #334155;color:#e2e8f0;font-size:11px;font-weight:700}' +
+      '.rr-hero-pill strong{color:#22d3ee;font-weight:800}' +
+      '.rr-physics-strip{margin:16px auto 0;max-width:680px;padding:12px 14px;border-radius:12px;background:#0b1c29;border:1px solid #1e3a52;text-align:left}' +
+      '.rr-physics-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:8px}' +
+      '.rr-physics-title{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#38bdf8}' +
+      '.rr-physics-sub{font-size:11px;color:#cbd5e1}' +
+      '.rr-physics-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:11px;color:#cbd5e1}' +
+      '.rr-hero-presets{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}' +
+      '.rr-hero-preset{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:9px 14px;border-radius:10px;border:1px solid #38bdf8;background:#0f172a;color:#f8fafc;font-size:12px;font-weight:800;cursor:pointer}' +
+      '@media(hover:hover){.rr-hero-preset:hover{background:#162b3d;border-color:#7dd3fc}}' +
+      '.theme-contrast .rr-hero-badge,.theme-contrast .rr-hero-pill,.theme-contrast .rr-physics-strip{background:#000000!important;border-color:#ffff00!important;color:#ffff00!important}' +
+      '.theme-contrast .rr-hero-pill strong,.theme-contrast .rr-physics-title,.theme-contrast .rr-physics-sub,.theme-contrast .rr-physics-legend{color:#ffff00!important}' +
+      '.theme-contrast .rr-hero-preset{background:#000000!important;border-color:#ffff00!important;color:#00ff00!important}';
     if (document.head) document.head.appendChild(st);
   })();
 
@@ -7764,7 +7780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (held.indexOf(mesh) >= 0 || !rrBatchPlainObject(mesh, keyCounts)) return false;
     var material = mesh.material, geometry = mesh.geometry;
     if (!material || Array.isArray(material) || held.indexOf(material) >= 0) return false;
-    if (material.type !== 'MeshLambertMaterial' && material.type !== 'MeshBasicMaterial') return false;
+    if (material.type !== 'MeshLambertMaterial' && material.type !== 'MeshPhongMaterial' && material.type !== 'MeshBasicMaterial') return false;
     if (material.vertexColors || material.wireframe || !material.visible || material.alphaTest > 0 || material.name || !material.color) return false;
     if (material.map || material.alphaMap || material.envMap || material.lightMap || material.aoMap || material.emissiveMap || material.specularMap) return false;
     if (material.clippingPlanes || material.colorWrite === false || material.onBeforeCompile !== T.Material.prototype.onBeforeCompile) return false;
@@ -7783,6 +7799,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var material = mesh.material;
     return [material.type, material.transparent ? 1 : 0, material.opacity, material.blending, material.side, material.depthTest ? 1 : 0, material.depthWrite ? 1 : 0,
       material.depthFunc, material.fog ? 1 : 0, material.flatShading ? 1 : 0, material.emissive ? material.emissive.getHex() : 0, material.emissiveIntensity,
+      material.specular ? material.specular.getHex() : 0, material.shininess || 0,
       material.polygonOffset ? material.polygonOffsetFactor + '/' + material.polygonOffsetUnits : 0, material.toneMapped ? 1 : 0, material.combine, material.reflectivity,
       mesh.receiveShadow ? 1 : 0, mesh.renderOrder, mesh.frustumCulled ? 1 : 0, mesh.layers.mask].join('|');
   }
@@ -12201,21 +12218,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillText(ob.label, ob.x + ob.w / 2, ob.y + ob.h / 2 + 4);
           }
         });
-        // Player car
+        // Player car (metallic clearcoat sheen + crisp glass glint + brake/reverse halos)
         var car = carRef.current;
         gfx.save();
         gfx.translate(car.x, car.y);
         gfx.rotate(car.heading);
-        gfx.fillStyle = '#22d3ee';
+        // Subtle ground contact shadow
+        gfx.fillStyle = 'rgba(2,6,23,0.38)';
+        gfx.fillRect(-26, -13, 52, 26);
+        // Metallic paint body gradient
+        var carPaintGrad = gfx.createLinearGradient(0, -12, 0, 12);
+        carPaintGrad.addColorStop(0, '#67e8f9');
+        carPaintGrad.addColorStop(0.28, '#22d3ee');
+        carPaintGrad.addColorStop(0.68, '#0891b2');
+        carPaintGrad.addColorStop(1, '#155e75');
+        gfx.fillStyle = carPaintGrad;
         gfx.fillRect(-25, -12, 50, 24);
-        gfx.fillStyle = '#0c4a6e';
+        // Roof highlight strip
+        gfx.fillStyle = 'rgba(224,242,254,0.28)';
+        gfx.fillRect(-16, -9, 22, 4);
+        // Windshield & rear glass with subtle sky glint
+        var glassGrad = gfx.createLinearGradient(6, -10, 20, 10);
+        glassGrad.addColorStop(0, '#0c4a6e');
+        glassGrad.addColorStop(0.45, '#1e6091');
+        glassGrad.addColorStop(1, '#082f49');
+        gfx.fillStyle = glassGrad;
         gfx.fillRect(6, -10, 14, 20);
+        gfx.fillStyle = 'rgba(186,230,253,0.34)';
+        gfx.fillRect(9, -8, 3, 16);
         var lamps = parkingLampState(car);
         if (lamps.reverse) {
+          var revGlow = gfx.createRadialGradient(-28, 0, 2, -32, 0, 18);
+          revGlow.addColorStop(0, 'rgba(248,250,252,0.42)');
+          revGlow.addColorStop(1, 'rgba(248,250,252,0)');
+          gfx.fillStyle = revGlow;
+          gfx.fillRect(-46, -16, 22, 32);
           gfx.fillStyle = '#fff';
           gfx.fillRect(-25, -10, 5, 6); gfx.fillRect(-25, 4, 5, 6);
         }
-        if (lamps.brake) { gfx.fillStyle = '#fb7185'; gfx.fillRect(-25, -12, 3, 3); gfx.fillRect(-25, 9, 3, 3); }
+        if (lamps.brake) {
+          [-10.5, 10.5].forEach(function(by) {
+            var bGlow = gfx.createRadialGradient(-25, by, 1, -25, by, 10);
+            bGlow.addColorStop(0, 'rgba(255,56,76,0.78)');
+            bGlow.addColorStop(0.5, 'rgba(239,68,68,0.28)');
+            bGlow.addColorStop(1, 'rgba(239,68,68,0)');
+            gfx.fillStyle = bGlow;
+            gfx.beginPath(); gfx.arc(-25, by, 10, 0, Math.PI * 2); gfx.fill();
+          });
+          gfx.fillStyle = '#ff4d6d'; gfx.fillRect(-25, -12, 3, 4); gfx.fillRect(-25, 8, 3, 4);
+        }
         [-12, 12].forEach(function(wheelY) {
           gfx.save(); gfx.translate(15, wheelY); gfx.rotate(car.steering);
           gfx.fillStyle = '#0f172a'; gfx.fillRect(-5, -2, 10, 4); gfx.restore();
@@ -13555,7 +13606,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // re-renders reconcile instead of remounting and restarting it.
       var CountUp = getRoadReadyCountUp(React);
 
-      var d = (ctx.toolData && ctx.toolData['roadReady']) || {};
+      var _rawRR = ctx.toolData && ctx.toolData['roadReady'];
+      var d = (_rawRR && typeof _rawRR === 'object' && !Array.isArray(_rawRR)) ? _rawRR : {};
       // Live ref to `d` for the continuous simulation loop. The main
       // useEffect's deps are [view, selectedScenario, selectedVehicle]
       // but the loop body reads d.freeExplore, d.rideshareMode, d.badges,
@@ -23791,31 +23843,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           else if (isDawn) { scene.fog = new T.Fog(0xe8875c, 15, 80); }
           else { scene.fog = new T.Fog(scene.background.getHex(), 30, 120); }
 
-          // ─── SKYDOME: inward-facing sphere with a vertex-colored zenith→horizon
-          // gradient. Replaces the flat scene.background so the sky actually has
-          // depth. fog: false keeps the gradient visible through the fog volume.
+          // ─── SKYDOME: inward-facing sphere with a 3-band zenith→mid→horizon
+          // atmospheric gradient plus directional solar/twilight/lunar Rayleigh
+          // scatter. fog: false keeps the atmospheric depth visible through fog.
           (function() {
-            var zenith, horizon;
-            if (isNight && !isDawn) { zenith = new T.Color(0x050a1a); horizon = new T.Color(0x1a2548); }
-            else if (isDawn) { zenith = new T.Color(0x3a2a5a); horizon = new T.Color(0xff9a55); }
-            else if (isFog) { zenith = new T.Color(0xa8b4c2); horizon = new T.Color(0x94a3b8); }
-            else if (isSnow) { zenith = new T.Color(0xdde3ed); horizon = new T.Color(0xcbd5e1); }
-            else if (isRain) { zenith = new T.Color(0x334155); horizon = new T.Color(0x64748b); }
-            else { zenith = new T.Color(0x4a86d4); horizon = new T.Color(0xcfe4f5); }
+            var zenith, midSky, horizon, glowCol = null, glowDir = null, glowPow = 6, glowStr = 0;
+            if (isNight && !isDawn) {
+              zenith = new T.Color(0x030714); midSky = new T.Color(0x0b1634); horizon = new T.Color(0x1c2c52);
+              glowCol = new T.Color(0x3a5a96); glowDir = RR_SKY_BODY.moon; glowPow = 8; glowStr = 0.24;
+            } else if (isDawn) {
+              zenith = new T.Color(0x1e1846); midSky = new T.Color(0xa84b6e); horizon = new T.Color(0xffa65c);
+              glowCol = new T.Color(0xffcf88); glowDir = RR_SKY_BODY.low_sun; glowPow = 5; glowStr = 0.42;
+            } else if (isFog) {
+              zenith = new T.Color(0xaab6c4); midSky = new T.Color(0x9ca9b8); horizon = new T.Color(0x94a3b8);
+            } else if (isSnow) {
+              zenith = new T.Color(0xe2e8f2); midSky = new T.Color(0xd5dde8); horizon = new T.Color(0xcbd5e1);
+            } else if (isRain) {
+              zenith = new T.Color(0x1e293b); midSky = new T.Color(0x3e5169); horizon = new T.Color(0x6b7e96);
+            } else {
+              zenith = new T.Color(0x2a69c4); midSky = new T.Color(0x74b3eb); horizon = new T.Color(0xddeefa);
+              glowCol = new T.Color(0xfff4d4); glowDir = RR_SKY_BODY.sun; glowPow = 7; glowStr = 0.22;
+            }
+            var gLen = glowDir ? (Math.sqrt(glowDir[0] * glowDir[0] + glowDir[1] * glowDir[1] + glowDir[2] * glowDir[2]) || 1) : 1;
+            var gdx = glowDir ? glowDir[0] / gLen : 0, gdy = glowDir ? glowDir[1] / gLen : 1, gdz = glowDir ? glowDir[2] / gLen : 0;
             var skyGeo = new T.SphereGeometry(180, 24, 16);
-            // Per-vertex color: interpolate by Y (altitude). Sphere vertices with
-            // positive Y are sky-top; negative Y are ground-band (we hide that
-            // half behind the ground plane anyway).
             var posAttr = skyGeo.getAttribute('position');
             var colors = new Float32Array(posAttr.count * 3);
             for (var vi = 0; vi < posAttr.count; vi++) {
-              var vy = posAttr.getY(vi);
+              var vx = posAttr.getX(vi), vy = posAttr.getY(vi), vz = posAttr.getZ(vi);
               var t = Math.max(0, Math.min(1, vy / 180)); // 0 = horizon, 1 = zenith
-              // Ease so the horizon band is tight and most of the dome is zenith color.
-              var tt = t * t * (3 - 2 * t);
-              var r = horizon.r + (zenith.r - horizon.r) * tt;
-              var g = horizon.g + (zenith.g - horizon.g) * tt;
-              var b = horizon.b + (zenith.b - horizon.b) * tt;
+              var r, g, b;
+              if (t < 0.34) {
+                var k1 = t / 0.34;
+                k1 = k1 * k1 * (3 - 2 * k1);
+                r = horizon.r + (midSky.r - horizon.r) * k1;
+                g = horizon.g + (midSky.g - horizon.g) * k1;
+                b = horizon.b + (midSky.b - horizon.b) * k1;
+              } else {
+                var k2 = (t - 0.34) / 0.66;
+                k2 = k2 * k2 * (3 - 2 * k2);
+                r = midSky.r + (zenith.r - midSky.r) * k2;
+                g = midSky.g + (zenith.g - midSky.g) * k2;
+                b = midSky.b + (zenith.b - midSky.b) * k2;
+              }
+              if (glowCol && glowStr > 0 && vy >= -8) {
+                var vLen = Math.sqrt(vx * vx + vy * vy + vz * vz) || 1;
+                var dot = Math.max(0, (vx * gdx + vy * gdy + vz * gdz) / vLen);
+                var scatter = Math.pow(dot, glowPow) * glowStr * (1 - 0.45 * t);
+                r = Math.min(1, r + glowCol.r * scatter);
+                g = Math.min(1, g + glowCol.g * scatter);
+                b = Math.min(1, b + glowCol.b * scatter);
+              }
               colors[vi * 3 + 0] = r;
               colors[vi * 3 + 1] = g;
               colors[vi * 3 + 2] = b;
@@ -24194,6 +24272,126 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // hardcoded Y values [20, 40, 56, 72]. Those collide visually with
           // the chunked road and read as zigzag / broken markings on the road
           // surface — exactly the "broken lane lines in Free Explore" report.
+          // ── RoadReady Cinema-Grade WebGL1 / GLSL ES 1.00 Shader Helpers ──
+          var rrIsHighContrast = (function() {
+            try {
+              if (typeof document !== 'undefined') {
+                if (document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) return true;
+                if (document.body && document.body.classList && document.body.classList.contains('theme-contrast')) return true;
+                if (typeof document.querySelector === 'function' && document.querySelector('.theme-contrast')) return true;
+              }
+              if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+                if (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches) return true;
+              }
+            } catch (_) {}
+            return false;
+          })();
+          var rrShaderUniforms = {
+            uTime: { value: 1.65 },
+            uWet: { value: currentScenario.weather === 'rain' ? 1.0 : 0.0 },
+            uNight: { value: isNight ? 1.0 : 0.0 },
+            uMist: { value: currentScenario.weather === 'fog' ? 1.0 : (currentScenario.weather === 'rain' ? 0.45 : (currentScenario.id === 'dawn' ? 0.35 : 0.0)) }
+          };
+          var rrShaderDisposables = [];
+          function rrApplyAsphaltReflectionShader(mat) {
+            if (!mat || rrIsHighContrast || typeof mat.onBeforeCompile !== 'function') return mat;
+            mat.customProgramCacheKey = function() { return 'rr-wet-asphalt-v1'; };
+            mat.onBeforeCompile = function(shader) {
+              shader.uniforms.uRrTime = rrShaderUniforms.uTime;
+              shader.uniforms.uRrWet = rrShaderUniforms.uWet;
+              shader.uniforms.uRrNight = rrShaderUniforms.uNight;
+              shader.vertexShader = shader.vertexShader
+                .replace('#include <common>', '#include <common>\nvarying vec3 vRrWorldPos;\nvarying vec3 vRrViewNormal;\nvarying vec3 vRrViewDir;')
+                .replace('#include <begin_vertex>', '#include <begin_vertex>\nvec4 rrWp = modelMatrix * vec4(transformed, 1.0);\nvRrWorldPos = rrWp.xyz;\nvec4 rrMv = modelViewMatrix * vec4(transformed, 1.0);\nvRrViewNormal = normalize(normalMatrix * objectNormal);\nvRrViewDir = normalize(-rrMv.xyz);');
+              shader.fragmentShader = shader.fragmentShader
+                .replace('#include <common>',
+                  '#include <common>\n' +
+                  'uniform float uRrTime;\n' +
+                  'uniform float uRrWet;\n' +
+                  'uniform float uRrNight;\n' +
+                  'varying vec3 vRrWorldPos;\n' +
+                  'varying vec3 vRrViewNormal;\n' +
+                  'varying vec3 vRrViewDir;'
+                )
+                .replace('#include <tonemapping_fragment>',
+                  'vec3 rrN = normalize(vRrViewNormal);\n' +
+                  'vec3 rrV = normalize(vRrViewDir);\n' +
+                  'float rrFresnel = pow(1.0 - clamp(dot(rrN, rrV), 0.0, 1.0), 2.6);\n' +
+                  'float rrGrain = 0.5 + 0.5 * sin(vRrWorldPos.x * 29.0 + sin(vRrWorldPos.z * 17.0) * 2.1);\n' +
+                  'float rrPuddle = smoothstep(0.32, 0.84, 0.5 + 0.5 * sin(vRrWorldPos.x * 0.65 + vRrWorldPos.z * 0.24) * cos(vRrWorldPos.z * 0.37 - vRrWorldPos.x * 0.42));\n' +
+                  'float rrRipple = 0.82 + 0.18 * sin(vRrWorldPos.z * 3.8 - uRrTime * 3.2 + rrPuddle * 5.0);\n' +
+                  'float rrGlint = rrFresnel * (0.08 + 0.42 * uRrWet * rrPuddle * rrRipple + 0.10 * uRrNight);\n' +
+                  'vec3 rrSkyRefl = mix(vec3(0.72, 0.84, 0.98), vec3(1.0, 0.88, 0.64), uRrNight * 0.65);\n' +
+                  'gl_FragColor.rgb += rrSkyRefl * rrGlint + vec3(0.025) * (rrGrain - 0.5) * (1.0 - 0.55 * uRrWet);\n' +
+                  '#include <tonemapping_fragment>'
+                );
+            };
+            return mat;
+          }
+          function rrApplyLaneSheenShader(mat, isYellow) {
+            if (!mat || rrIsHighContrast || typeof mat.onBeforeCompile !== 'function') return mat;
+            mat.customProgramCacheKey = function() { return isYellow ? 'rr-lane-sheen-y-v1' : 'rr-lane-sheen-w-v1'; };
+            mat.onBeforeCompile = function(shader) {
+              shader.uniforms.uRrTime = rrShaderUniforms.uTime;
+              shader.uniforms.uRrWet = rrShaderUniforms.uWet;
+              shader.uniforms.uRrNight = rrShaderUniforms.uNight;
+              shader.vertexShader = shader.vertexShader
+                .replace('#include <common>', '#include <common>\nvarying vec3 vRrLanePos;')
+                .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRrLanePos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+              shader.fragmentShader = shader.fragmentShader
+                .replace('#include <common>', '#include <common>\nuniform float uRrTime;\nuniform float uRrWet;\nuniform float uRrNight;\nvarying vec3 vRrLanePos;')
+                .replace('#include <dithering_fragment>',
+                  'float rrBead = pow(0.5 + 0.5 * sin(vRrLanePos.z * 9.5 + vRrLanePos.x * 13.0 - uRrTime * 1.4), 5.0);\n' +
+                  'float rrRetro = (0.06 + 0.16 * uRrNight + 0.12 * uRrWet) * (0.55 + 0.45 * rrBead);\n' +
+                  'gl_FragColor.rgb += ' + (isYellow ? 'vec3(1.0, 0.92, 0.45)' : 'vec3(0.92, 0.97, 1.0)') + ' * rrRetro;\n' +
+                  '#include <dithering_fragment>'
+                );
+            };
+            return mat;
+          }
+          function rrCreateStarburstHaloMat(hexCol) {
+            if (rrIsHighContrast || typeof T.ShaderMaterial !== 'function') return null;
+            var colObj = typeof T.Color === 'function' ? new T.Color(hexCol) : { r: 1, g: 0.7, b: 0.2 };
+            var mat = new T.ShaderMaterial({
+              uniforms: {
+                uTime: rrShaderUniforms.uTime,
+                uIntensity: { value: 0.0 },
+                uColor: { value: colObj }
+              },
+              vertexShader:
+                'varying vec2 vUv;\n' +
+                'void main() {\n' +
+                '  vUv = uv;\n' +
+                '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n' +
+                '}',
+              fragmentShader:
+                'uniform float uTime;\n' +
+                'uniform float uIntensity;\n' +
+                'uniform vec3 uColor;\n' +
+                'varying vec2 vUv;\n' +
+                'void main() {\n' +
+                '  if (uIntensity <= 0.005) discard;\n' +
+                '  vec2 p = (vUv - vec2(0.5)) * 2.0;\n' +
+                '  float r = length(p);\n' +
+                '  if (r > 1.0) discard;\n' +
+                '  float ang = atan(p.y, p.x);\n' +
+                '  float core = exp(-r * r * 7.5);\n' +
+                '  float spikes = pow(abs(cos(ang * 3.0 + uTime * 0.25)), 12.0) * smoothstep(1.0, 0.08, r);\n' +
+                '  float shimmer = 0.88 + 0.12 * sin(uTime * 5.2 + r * 6.0);\n' +
+                '  float alpha = clamp((core * 0.85 + spikes * 0.58) * uIntensity * shimmer, 0.0, 1.0);\n' +
+                '  vec3 col = mix(uColor, vec3(1.0, 0.98, 0.92), core * 0.55);\n' +
+                '  gl_FragColor = vec4(col, alpha);\n' +
+                '}',
+              transparent: true,
+              depthWrite: false,
+              side: T.DoubleSide,
+              blending: T.AdditiveBlending,
+              fog: false
+            });
+            rrShaderDisposables.push(mat);
+            return mat;
+          }
+
           if (!isStreamedWorldInit) {
           // ── Road surface ──
           var isRainScene = currentScenario.weather === 'rain';
@@ -24202,8 +24400,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // creates a specular highlight that reads as "wet shine".
           var roadColor = isSnow ? 0x8899a6 : isRainScene ? 0x1c2028 : 0x333842;
           var roadMat = isRainScene
-            ? new T.MeshPhongMaterial({ color: roadColor, specular: 0x8aa6c8, shininess: 55 })
+            ? new T.MeshPhongMaterial({ color: roadColor, specular: 0xa6c8ea, shininess: 82 })
             : new T.MeshLambertMaterial({ color: roadColor });
+          rrApplyAsphaltReflectionShader(roadMat);
           // Needed below in multiple places — hoisted here so curved helpers see it.
           var _isRuralCurve = ['rural', 'snow', 'fog', 'dawn'].indexOf(currentScenario.id) !== -1;
           var _isHwyCurve = currentScenario.id === 'highway';
@@ -24330,7 +24529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Painted yellow centerline. Width bumped 0.15 → 0.22 for visibility:
           // at Three.js rendering scale + camera distance the previous lines were
           // barely a pixel wide and read as missing markings on lower-DPI screens.
-          var dashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+          var dashMat = rrApplyLaneSheenShader(new T.MeshBasicMaterial({ color: 0xfacc15 }), true);
           var isRuralCurve = ['rural', 'snow', 'fog', 'dawn'].indexOf(currentScenario.id) !== -1;
           var isHwyCurve = currentScenario.id === 'highway';
           // US convention: rural roads usually have a SOLID yellow centerline
@@ -24382,7 +24581,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Width bumped 0.10–0.12 → 0.18 so white shoulder lines are visible
           // at default camera distance. Previous values rendered as ~1px and
           // were easy to miss, contributing to the "no demarcations" feel.
-          var edgeMat = new T.MeshBasicMaterial({ color: 0xffffff });
+          var edgeMat = rrApplyLaneSheenShader(new T.MeshBasicMaterial({ color: 0xffffff }), false);
           if (_isRoundaboutRoad) {
             // Authored with the annular road above.
           } else if (isRuralCurve || isHwyCurve) {
@@ -25688,6 +25887,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Three lamp spheres (red top, yellow middle, green bottom)
               var lampColors = [0xef4444, 0xfbbf24, 0x22c55e];
               var lampLetters = ['R', 'Y', 'G']; // colorblind-readable position-locked label
+              var sigBloomTex = rrSoftSpriteTexture(T, 'pool');
+              if (sigBloomTex) sigBloomTex._rrShared = true;
               var lamps = [];
               lampColors.forEach(function(lc, li) {
                 var lMat = new T.MeshBasicMaterial({ color: 0x111111 });
@@ -25695,16 +25896,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var lMesh = new T.Mesh(lGeo, lMat);
                 lMesh.position.set(sx, 3.95 - li * 0.28, sz + 0.14);
                 scene.add(lMesh);
-                // Halo plane behind the lens — additive bloom, off by default. The per-frame
-                // updater turns it on for the active lamp at night/fog/dusk so signals are
-                // legible from a distance the way they are in real life.
+                // Halo plane behind the lens — soft radial additive bloom sprite.
+                // Per-frame updater drives it for active lenses so signals bloom
+                // realistically in twilight/night/rain/fog and glint cleanly by day.
                 var lhMat = new T.MeshBasicMaterial({
-                  color: lc, transparent: true, opacity: 0,
-                  blending: T.AdditiveBlending, depthWrite: false
+                  color: lc, map: sigBloomTex || null, transparent: true, opacity: 0,
+                  blending: T.AdditiveBlending, depthWrite: false, fog: false
                 });
-                var lhMesh = new T.Mesh(new T.PlaneGeometry(0.45, 0.45), lhMat);
+                var lhMesh = new T.Mesh(new T.PlaneGeometry(0.62, 0.62), lhMat);
                 lhMesh.position.set(sx, 3.95 - li * 0.28, sz + 0.16);
                 scene.add(lhMesh);
+                var starMat = rrCreateStarburstHaloMat(lc);
+                var starMesh = null;
+                if (starMat) {
+                  var starGeo = new T.PlaneGeometry(0.92, 0.92);
+                  rrShaderDisposables.push(starGeo);
+                  starMesh = new T.Mesh(starGeo, starMat);
+                  starMesh.position.set(sx, 3.95 - li * 0.28, sz + 0.17);
+                  starMesh.visible = false;
+                  scene.add(starMesh);
+                }
                 // Colorblind label sprite (R/Y/G) — same approach as the
                 // mast-arm signals in the infinite world. Always faces camera.
                 try {
@@ -25725,7 +25936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   slSpr.scale.set(0.14, 0.14, 1);
                   scene.add(slSpr);
                 } catch (_) {}
-                lamps.push({ mesh: lMesh, onColor: lc, halo: lhMesh, haloColor: lc });
+                lamps.push({ mesh: lMesh, onColor: lc, halo: lhMesh, haloColor: lc, starburst: starMesh });
               });
               // Also add a second light housing on the other side for cross-street visibility
               var housing2 = new T.Mesh(housingGeo.clone(), housingMat);
@@ -25753,8 +25964,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Darken by 12% for hood
           var cr = (customColorHex >> 16) & 0xff, cg = (customColorHex >> 8) & 0xff, cb = customColorHex & 0xff;
           var darkHex = (Math.floor(cr * 0.86) << 16) | (Math.floor(cg * 0.86) << 8) | Math.floor(cb * 0.86);
-          // Main body
-          var bodyMat = new T.MeshLambertMaterial({ color: customColorHex });
+          // Main body — subtle metallic clearcoat paint sheen
+          var bodyMat = T.MeshPhongMaterial
+            ? new T.MeshPhongMaterial({ color: customColorHex, specular: 0xa4c8e2, shininess: 72 })
+            : new T.MeshLambertMaterial({ color: customColorHex });
           var bodyGeo = new T.BoxGeometry(1.9, 0.6, 0.95);
           var body = new T.Mesh(bodyGeo, bodyMat);
           body.position.y = 0.55;
@@ -25762,7 +25975,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           playerCarGroup.add(body);
           // Hood (sloped front)
           var hoodGeo = new T.BoxGeometry(0.5, 0.15, 0.9);
-          var hoodMat = new T.MeshLambertMaterial({ color: darkHex });
+          var hoodMat = T.MeshPhongMaterial
+            ? new T.MeshPhongMaterial({ color: darkHex, specular: 0x92b8d4, shininess: 62 })
+            : new T.MeshLambertMaterial({ color: darkHex });
           var hood = new T.Mesh(hoodGeo, hoodMat);
           hood.position.set(0.8, 0.78, 0);
           hood.rotation.z = -0.15;
@@ -25774,7 +25989,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           playerCarGroup.add(trunk);
           // Roof / cabin
           var roofGeo = new T.BoxGeometry(0.95, 0.42, 0.82);
-          var roofMat = new T.MeshLambertMaterial({ color: 0x1ca8c4 });
+          var roofMat = T.MeshPhongMaterial
+            ? new T.MeshPhongMaterial({ color: 0x1ca8c4, specular: 0xa8d0e8, shininess: 76 })
+            : new T.MeshLambertMaterial({ color: 0x1ca8c4 });
           var roofMesh = new T.Mesh(roofGeo, roofMat);
           roofMesh.position.set(-0.1, 0.97, 0);
           playerCarGroup.add(roofMesh);
@@ -25850,7 +26067,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           playerCarGroup.add(grille);
           // Side mirrors
           var mirGeo = new T.BoxGeometry(0.12, 0.08, 0.06);
-          var mirMat = new T.MeshLambertMaterial({ color: 0x22d3ee });
+          var mirMat = T.MeshPhongMaterial
+            ? new T.MeshPhongMaterial({ color: customColorHex, specular: 0xa4c8e2, shininess: 72 })
+            : new T.MeshLambertMaterial({ color: customColorHex });
           var mirL = new T.Mesh(mirGeo, mirMat);
           mirL.position.set(0.25, 0.85, 0.52);
           playerCarGroup.add(mirL);
@@ -25935,6 +26154,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               pool.position.set(0.95 + 2 + 9, 0.06, 0);
               pool.name = 'rr_playerBeamPool';
               playerLightGroup.add(pool);
+              // Wet-asphalt specular headlight reflection streak — elongated longitudinal
+              // reflection ribbon on rain-slicked pavement ahead of the car.
+              var wetReflMat = new T.MeshBasicMaterial({ color: 0xdceeff, map: poolTex, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, fog: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
+              var wetRefl = new T.Mesh(new T.PlaneGeometry(26, 3.4), wetReflMat);
+              wetRefl.rotation.x = -Math.PI / 2;
+              wetRefl.position.set(0.95 + 2 + 13, 0.065, 0);
+              wetRefl.name = 'rr_playerWetReflection';
+              wetRefl.visible = false;
+              playerLightGroup.add(wetRefl);
               // High beams in fog: the fog itself lights up in front of the car and hides what
               // is behind it. A soft upright sheet 5 m ahead, shown only then (the lesson:
               // low beams in fog; high beams reflect back at you).
@@ -25947,29 +26175,201 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               veil.visible = false;
               playerLightGroup.add(veil);
             }
+            // Volumetric GLSL headlight & brake glow cones + atmospheric weather mist shimmer veil
+            var volHeadlightMat = null;
+            var volBrakeMat = null;
+            var weatherMistMat = null;
+            if (!rrIsHighContrast && typeof T.ShaderMaterial === 'function') {
+              volHeadlightMat = new T.ShaderMaterial({
+                uniforms: {
+                  uTime: rrShaderUniforms.uTime,
+                  uIntensity: { value: 0.0 },
+                  uMist: rrShaderUniforms.uMist,
+                  uColor: { value: new T.Color(0xfff4cc) }
+                },
+                vertexShader:
+                  'varying vec2 vUv;\n' +
+                  'varying vec3 vViewNormal;\n' +
+                  'varying vec3 vViewDir;\n' +
+                  'void main() {\n' +
+                  '  vUv = uv;\n' +
+                  '  vec4 mv = modelViewMatrix * vec4(position, 1.0);\n' +
+                  '  vViewNormal = normalize(normalMatrix * normal);\n' +
+                  '  vViewDir = normalize(-mv.xyz);\n' +
+                  '  gl_Position = projectionMatrix * mv;\n' +
+                  '}',
+                fragmentShader:
+                  'uniform float uTime;\n' +
+                  'uniform float uIntensity;\n' +
+                  'uniform float uMist;\n' +
+                  'uniform vec3 uColor;\n' +
+                  'varying vec2 vUv;\n' +
+                  'varying vec3 vViewNormal;\n' +
+                  'varying vec3 vViewDir;\n' +
+                  'void main() {\n' +
+                  '  if (uIntensity <= 0.005) discard;\n' +
+                  '  float fres = pow(abs(dot(normalize(vViewNormal), normalize(vViewDir))), 1.65);\n' +
+                  '  float axial = smoothstep(0.0, 0.14, vUv.y) * smoothstep(1.0, 0.12, vUv.y);\n' +
+                  '  float dust = 0.78 + 0.22 * sin(vUv.y * 16.0 - uTime * 2.4 + vUv.x * 6.28318);\n' +
+                  '  float scatter = 1.0 + uMist * 0.65;\n' +
+                  '  float alpha = clamp(fres * axial * dust * uIntensity * scatter * 0.42, 0.0, 0.65);\n' +
+                  '  vec3 col = mix(uColor, vec3(0.84, 0.93, 1.0), vUv.y * 0.28);\n' +
+                  '  gl_FragColor = vec4(col, alpha);\n' +
+                  '}',
+                transparent: true,
+                depthWrite: false,
+                side: T.DoubleSide,
+                blending: T.AdditiveBlending,
+                fog: false
+              });
+              rrShaderDisposables.push(volHeadlightMat);
+              var volBeamGeo = new T.CylinderGeometry(0.11, 1.32, 10.2, 18, 1, true);
+              rrShaderDisposables.push(volBeamGeo);
+              [-0.3, 0.3].forEach(function(zOff) {
+                var vBeam = new T.Mesh(volBeamGeo, volHeadlightMat);
+                vBeam.rotation.z = Math.PI / 2 - 0.035;
+                vBeam.position.set(0.95 + 5.1, 0.38, zOff);
+                vBeam.name = 'rr_playerVolHeadlight';
+                vBeam.visible = false;
+                playerCarGroup.add(vBeam);
+              });
+
+              volBrakeMat = new T.ShaderMaterial({
+                uniforms: {
+                  uTime: rrShaderUniforms.uTime,
+                  uIntensity: { value: 0.0 },
+                  uColor: { value: new T.Color(0xff2036) }
+                },
+                vertexShader:
+                  'varying vec2 vUv;\n' +
+                  'varying vec3 vViewNormal;\n' +
+                  'varying vec3 vViewDir;\n' +
+                  'void main() {\n' +
+                  '  vUv = uv;\n' +
+                  '  vec4 mv = modelViewMatrix * vec4(position, 1.0);\n' +
+                  '  vViewNormal = normalize(normalMatrix * normal);\n' +
+                  '  vViewDir = normalize(-mv.xyz);\n' +
+                  '  gl_Position = projectionMatrix * mv;\n' +
+                  '}',
+                fragmentShader:
+                  'uniform float uTime;\n' +
+                  'uniform float uIntensity;\n' +
+                  'uniform vec3 uColor;\n' +
+                  'varying vec2 vUv;\n' +
+                  'varying vec3 vViewNormal;\n' +
+                  'varying vec3 vViewDir;\n' +
+                  'void main() {\n' +
+                  '  if (uIntensity <= 0.005) discard;\n' +
+                  '  float fres = pow(abs(dot(normalize(vViewNormal), normalize(vViewDir))), 1.55);\n' +
+                  '  float axial = smoothstep(0.0, 0.20, vUv.y) * smoothstep(1.0, 0.08, vUv.y);\n' +
+                  '  float pulse = 0.90 + 0.10 * sin(uTime * 6.0 - vUv.y * 8.0);\n' +
+                  '  float alpha = clamp(fres * axial * pulse * uIntensity * 0.48, 0.0, 0.72);\n' +
+                  '  gl_FragColor = vec4(uColor, alpha);\n' +
+                  '}',
+                transparent: true,
+                depthWrite: false,
+                side: T.DoubleSide,
+                blending: T.AdditiveBlending,
+                fog: false
+              });
+              rrShaderDisposables.push(volBrakeMat);
+              var volBrakeGeo = new T.CylinderGeometry(0.06, 0.56, 2.2, 14, 1, true);
+              rrShaderDisposables.push(volBrakeGeo);
+              [-0.3, 0.3].forEach(function(zOff) {
+                var vBrake = new T.Mesh(volBrakeGeo, volBrakeMat);
+                vBrake.rotation.z = -Math.PI / 2;
+                vBrake.position.set(-0.98 - 1.1, 0.52, zOff);
+                vBrake.name = 'rr_playerVolBrakeCone';
+                vBrake.visible = false;
+                playerCarGroup.add(vBrake);
+              });
+
+              weatherMistMat = new T.ShaderMaterial({
+                uniforms: {
+                  uTime: rrShaderUniforms.uTime,
+                  uMist: rrShaderUniforms.uMist,
+                  uWet: rrShaderUniforms.uWet,
+                  uNight: rrShaderUniforms.uNight
+                },
+                vertexShader:
+                  'varying vec2 vUv;\n' +
+                  'void main() {\n' +
+                  '  vUv = uv;\n' +
+                  '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n' +
+                  '}',
+                fragmentShader:
+                  'uniform float uTime;\n' +
+                  'uniform float uMist;\n' +
+                  'uniform float uWet;\n' +
+                  'uniform float uNight;\n' +
+                  'varying vec2 vUv;\n' +
+                  'void main() {\n' +
+                  '  float activeAmt = max(uMist, uWet * 0.45);\n' +
+                  '  if (activeAmt <= 0.02) discard;\n' +
+                  '  float edgeX = smoothstep(0.0, 0.25, vUv.x) * smoothstep(1.0, 0.75, vUv.x);\n' +
+                  '  float edgeY = smoothstep(0.0, 0.22, vUv.y) * smoothstep(1.0, 0.30, vUv.y);\n' +
+                  '  float wisp1 = 0.5 + 0.5 * sin(vUv.x * 7.5 + uTime * 0.45 + sin(vUv.y * 5.0) * 1.3);\n' +
+                  '  float wisp2 = 0.5 + 0.5 * sin(vUv.x * 13.0 - uTime * 0.62 + vUv.y * 8.0);\n' +
+                  '  float rainGlint = uWet * pow(0.5 + 0.5 * sin(vUv.x * 42.0 + vUv.y * 18.0 + uTime * 7.5), 6.0) * 0.28;\n' +
+                  '  float alpha = clamp((edgeX * edgeY * (0.45 * wisp1 + 0.55 * wisp2) * activeAmt * 0.15) + rainGlint * edgeX * edgeY * 0.22, 0.0, 0.26);\n' +
+                  '  vec3 mistCol = mix(vec3(0.84, 0.90, 0.96), vec3(0.56, 0.66, 0.80), uNight * 0.72);\n' +
+                  '  gl_FragColor = vec4(mistCol, alpha);\n' +
+                  '}',
+                transparent: true,
+                depthWrite: false,
+                side: T.DoubleSide,
+                blending: T.NormalBlending,
+                fog: false
+              });
+              rrShaderDisposables.push(weatherMistMat);
+              var mistGeo = new T.PlaneGeometry(18, 6.2);
+              rrShaderDisposables.push(mistGeo);
+              [12.5, 20.0].forEach(function(xDist) {
+                var mistMesh = new T.Mesh(mistGeo, weatherMistMat);
+                mistMesh.rotation.y = -Math.PI / 2;
+                mistMesh.position.set(xDist, 2.35, 0);
+                mistMesh.name = 'rr_weatherMistVeil';
+                mistMesh.renderOrder = 4;
+                mistMesh.visible = (currentScenario.weather === 'fog' || currentScenario.weather === 'rain' || currentScenario.id === 'dawn');
+                playerLightGroup.add(mistMesh);
+              });
+            }
           }
           // Brake lights
-          var brakeMat = new T.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.3 });
+          var brakeMat = new T.MeshBasicMaterial({ color: 0xff1e2e, transparent: true, opacity: 0.3 });
           var brakeL = new T.Mesh(new T.SphereGeometry(0.06, 6, 6), brakeMat);
           brakeL.position.set(-0.92, 0.55, -0.3);
           playerCarGroup.add(brakeL);
           var brakeR = new T.Mesh(new T.SphereGeometry(0.06, 6, 6), brakeMat);
           brakeR.position.set(-0.92, 0.55, 0.3);
           playerCarGroup.add(brakeR);
-          // Brake halo planes — additive bloom behind each lens, toggled on at night/fog
-          // when braking. Symmetry with the AI car brake halos so the player's own car
-          // shows the same realistic glow when seen via mirror/replay/cockpit-look-back.
+          // Brake halo planes — soft radial optical bloom sprite behind each lens
+          // plus a subtle crimson wet-asphalt glow beneath the rear bumper when braking.
+          var pBrakeHaloTex = rrSoftSpriteTexture(T, 'pool');
           var pBrakeHaloMat = new T.MeshBasicMaterial({
-            color: 0xff2233, transparent: true, opacity: 0,
-            blending: T.AdditiveBlending, depthWrite: false
+            color: 0xff2438, map: pBrakeHaloTex || null, transparent: true, opacity: 0,
+            blending: T.AdditiveBlending, depthWrite: false, fog: false
           });
           [-0.3, 0.3].forEach(function(zOff) {
-            var pHalo = new T.Mesh(new T.PlaneGeometry(0.55, 0.55), pBrakeHaloMat);
+            var pHalo = new T.Mesh(new T.PlaneGeometry(0.68, 0.68), pBrakeHaloMat);
             pHalo.position.set(-0.99, 0.55, zOff);
             pHalo.rotation.y = -Math.PI / 2; // face out the back
             pHalo.name = 'rr_playerBrakeHalo';
             playerCarGroup.add(pHalo);
           });
+          if (pBrakeHaloTex) {
+            var pBrakeRoadMat = new T.MeshBasicMaterial({
+              color: 0xff1e32, map: pBrakeHaloTex, transparent: true, opacity: 0,
+              blending: T.AdditiveBlending, depthWrite: false, fog: false,
+              polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2
+            });
+            var pBrakeRoad = new T.Mesh(new T.PlaneGeometry(1.5, 1.35), pBrakeRoadMat);
+            pBrakeRoad.rotation.x = -Math.PI / 2;
+            pBrakeRoad.position.set(-1.55, 0.055, 0);
+            pBrakeRoad.name = 'rr_playerBrakeRoadGlow';
+            pBrakeRoad.visible = false;
+            playerCarGroup.add(pBrakeRoad);
+          }
           // Reverse lights — white, lit only when actively reversing.
           var playerRevMat = new T.MeshBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.15 });
           var playerRevL = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), playerRevMat);
@@ -26117,6 +26517,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var blinkerMeshRR = new T.Mesh(new T.SphereGeometry(0.05, 6, 6), new T.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0 }));
           blinkerMeshRR.position.set(-0.92, 0.42, -0.45);
           playerCarGroup.add(blinkerMeshRR);
+          // Optical GLSL starburst halos for front & rear turn signals
+          var blinkerStarL = null, blinkerStarR = null;
+          if (!rrIsHighContrast && typeof T.ShaderMaterial === 'function') {
+            var bStarGeo = new T.PlaneGeometry(0.46, 0.46);
+            rrShaderDisposables.push(bStarGeo);
+            var bStarMatL = rrCreateStarburstHaloMat(0xf59e0b);
+            var bStarMatR = rrCreateStarburstHaloMat(0xf59e0b);
+            if (bStarMatL && bStarMatR) {
+              blinkerStarL = bStarMatL;
+              blinkerStarR = bStarMatR;
+              [[0.97, 0.42, 0.45, Math.PI / 2, bStarMatL], [-0.97, 0.42, 0.45, -Math.PI / 2, bStarMatL],
+               [0.97, 0.42, -0.45, Math.PI / 2, bStarMatR], [-0.97, 0.42, -0.45, -Math.PI / 2, bStarMatR]].forEach(function(cfg) {
+                var bm = new T.Mesh(bStarGeo, cfg[4]);
+                bm.position.set(cfg[0], cfg[1], cfg[2]);
+                bm.rotation.y = cfg[3];
+                bm.name = 'rr_blinkerStarburst';
+                bm.visible = false;
+                playerCarGroup.add(bm);
+              });
+            }
+          }
 
           // ── Wet road surface overlay (rain makes road shinier) ──
           if (isRain) {
@@ -26273,7 +26694,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             digitalSpeedMesh: null,
             cloudGroup: cloudGroup,
             tireSprayParticles: tireSprayParticles,
-            dustParticles: dustParticles
+            dustParticles: dustParticles,
+            rrShaderUniforms: rrShaderUniforms,
+            _rrShaderDisposables: rrShaderDisposables,
+            volHeadlightMat: volHeadlightMat,
+            volBrakeMat: volBrakeMat,
+            weatherMistMat: weatherMistMat,
+            blinkerStarL: blinkerStarL,
+            blinkerStarR: blinkerStarR
           };
         }
 
@@ -26297,6 +26725,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfxFlags.devicePixelRatio = window.devicePixelRatio;
           rrGfxFrame(s3, T, d.gfxQuality, (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now(), gfxFlags);
 
+          // Update RoadReady GLSL shader uniforms (reduced-motion freezes uTime to rich beauty frame)
+          if (s3.rrShaderUniforms) {
+            s3.rrShaderUniforms.uTime.value = reducedMotionRef.current ? 1.65 : (1.65 + ((timeRef.current || 0) % 3600.0));
+            s3.rrShaderUniforms.uWet.value = scn.weather === 'rain' ? 1.0 : 0.0;
+            s3.rrShaderUniforms.uNight.value = (scn.time === 'night' || scn.id === 'dawn') ? 1.0 : 0.0;
+            s3.rrShaderUniforms.uMist.value = scn.weather === 'fog' ? 1.0 : (scn.weather === 'rain' ? 0.45 : (scn.id === 'dawn' ? 0.35 : 0.0));
+          }
           // Position player car. Add road elevation so the car rides over hills
           // instead of phasing through them. infiniteWorldRef is null in scenario
           // mode (flat terrain), so the lookup is gated.
@@ -26413,23 +26848,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var recolorSky = function() {
             var sky = s3._skyRef || s3.scene.getObjectByName('skydome');
             if (!sky || !sky.geometry || !sky.geometry.getAttribute('color')) return;
-            var zenith, horizon;
-            if (skyState === 'dawn') { zenith = new T.Color(0x3a2a5a); horizon = new T.Color(0xff9a55); }
-            else if (isNightNow) { zenith = new T.Color(0x050a1a); horizon = new T.Color(0x1a2548); }
-            else if (isFogNow) { zenith = new T.Color(0xa8b4c2); horizon = new T.Color(0x94a3b8); }
-            else if (isSnowNow) { zenith = new T.Color(0xdde3ed); horizon = new T.Color(0xcbd5e1); }
-            else if (isRainNow) { zenith = new T.Color(0x334155); horizon = new T.Color(0x64748b); }
-            else { zenith = new T.Color(0x4a86d4); horizon = new T.Color(0xcfe4f5); }
+            var zenith, midSky, horizon, glowCol = null, glowDir = null, glowPow = 6, glowStr = 0;
+            if (skyState === 'dawn') {
+              zenith = new T.Color(0x1e1846); midSky = new T.Color(0xa84b6e); horizon = new T.Color(0xffa65c);
+              glowCol = new T.Color(0xffcf88); glowDir = RR_SKY_BODY.low_sun; glowPow = 5; glowStr = 0.42;
+            } else if (isNightNow) {
+              zenith = new T.Color(0x030714); midSky = new T.Color(0x0b1634); horizon = new T.Color(0x1c2c52);
+              glowCol = new T.Color(0x3a5a96); glowDir = RR_SKY_BODY.moon; glowPow = 8; glowStr = 0.24;
+            } else if (isFogNow) {
+              zenith = new T.Color(0xaab6c4); midSky = new T.Color(0x9ca9b8); horizon = new T.Color(0x94a3b8);
+            } else if (isSnowNow) {
+              zenith = new T.Color(0xe2e8f2); midSky = new T.Color(0xd5dde8); horizon = new T.Color(0xcbd5e1);
+            } else if (isRainNow) {
+              zenith = new T.Color(0x1e293b); midSky = new T.Color(0x3e5169); horizon = new T.Color(0x6b7e96);
+            } else {
+              zenith = new T.Color(0x2a69c4); midSky = new T.Color(0x74b3eb); horizon = new T.Color(0xddeefa);
+              glowCol = new T.Color(0xfff4d4); glowDir = RR_SKY_BODY.sun; glowPow = 7; glowStr = 0.22;
+            }
+            var gLen = glowDir ? (Math.sqrt(glowDir[0] * glowDir[0] + glowDir[1] * glowDir[1] + glowDir[2] * glowDir[2]) || 1) : 1;
+            var gdx = glowDir ? glowDir[0] / gLen : 0, gdy = glowDir ? glowDir[1] / gLen : 1, gdz = glowDir ? glowDir[2] / gLen : 0;
             var pos = sky.geometry.getAttribute('position');
             var col = sky.geometry.getAttribute('color');
             for (var vi = 0; vi < pos.count; vi++) {
-              var vy = pos.getY(vi);
+              var vx = pos.getX(vi), vy = pos.getY(vi), vz = pos.getZ(vi);
               var t = Math.max(0, Math.min(1, vy / 180));
-              var tt = t * t * (3 - 2 * t);
-              col.setXYZ(vi,
-                horizon.r + (zenith.r - horizon.r) * tt,
-                horizon.g + (zenith.g - horizon.g) * tt,
-                horizon.b + (zenith.b - horizon.b) * tt);
+              var r, g, b;
+              if (t < 0.34) {
+                var k1 = t / 0.34;
+                k1 = k1 * k1 * (3 - 2 * k1);
+                r = horizon.r + (midSky.r - horizon.r) * k1;
+                g = horizon.g + (midSky.g - horizon.g) * k1;
+                b = horizon.b + (midSky.b - horizon.b) * k1;
+              } else {
+                var k2 = (t - 0.34) / 0.66;
+                k2 = k2 * k2 * (3 - 2 * k2);
+                r = midSky.r + (zenith.r - midSky.r) * k2;
+                g = midSky.g + (zenith.g - midSky.g) * k2;
+                b = midSky.b + (zenith.b - midSky.b) * k2;
+              }
+              if (glowCol && glowStr > 0 && vy >= -8) {
+                var vLen = Math.sqrt(vx * vx + vy * vy + vz * vz) || 1;
+                var dot = Math.max(0, (vx * gdx + vy * gdy + vz * gdz) / vLen);
+                var scatter = Math.pow(dot, glowPow) * glowStr * (1 - 0.45 * t);
+                r = Math.min(1, r + glowCol.r * scatter);
+                g = Math.min(1, g + glowCol.g * scatter);
+                b = Math.min(1, b + glowCol.b * scatter);
+              }
+              col.setXYZ(vi, r, g, b);
             }
             col.needsUpdate = true;
           };
@@ -26639,21 +27104,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ~2014) do exactly this. Sub-panic braking stays steady at 0.9.
           var hardPanic = car.brake > 0.85 && Math.abs(car.speed) > 7;
           if (car.brake > 0) {
-            s3.brakeMat.opacity = hardPanic
+            s3.brakeMat.opacity = (hardPanic && !reducedMotionRef.current)
               ? (Math.sin(timeRef.current * 25) > 0 ? 0.98 : 0.45)
-              : 0.9;
+              : 0.94;
           } else {
             s3.brakeMat.opacity = 0.15;
           }
-          // Brake halo bloom — only at night/fog when actually braking, mirroring the
-          // AI car logic so the player's own brake glow looks consistent in mirrors,
-          // crash replay, and any cockpit-look-back camera.
+          // Brake halo bloom + wet-road rear crimson glow — strong in night/fog/rain/dawn,
+          // with a crisp subtle daylight lens flare when braking.
           if (s3.playerCarGroup && s3.playerCarGroup.children) {
-            var pNightLights = scn.time === 'night' || scn.weather === 'fog';
+            var pDimAmbient = scn.time === 'night' || scn.weather === 'fog' || scn.weather === 'rain' || scn.id === 'dawn';
             var pBraking = car.brake > 0.3;
+            var pEssPulse = (hardPanic && !reducedMotionRef.current) ? (Math.sin(timeRef.current * 25) > 0 ? 1.0 : 0.55) : 1.0;
             s3.playerCarGroup.children.forEach(function(pchild) {
               if (pchild.name === 'rr_playerBrakeHalo' && pchild.material) {
-                pchild.material.opacity = (pBraking && pNightLights) ? 0.55 : 0;
+                pchild.material.opacity = pBraking ? ((pDimAmbient ? 0.72 : 0.24) * pEssPulse) : 0;
+                pchild.visible = pchild.material.opacity > 0;
+              }
+              if (pchild.name === 'rr_playerBrakeRoadGlow' && pchild.material) {
+                var roadGlowAmp = pBraking && pDimAmbient ? (scn.weather === 'rain' ? 0.42 : 0.26) * pEssPulse : 0;
+                pchild.material.opacity = roadGlowAmp;
+                pchild.visible = roadGlowAmp > 0;
+              }
+              if (pchild.name === 'rr_playerVolBrakeCone') {
+                var vBrakeAmp = pBraking ? ((pDimAmbient ? 0.85 : 0.30) * pEssPulse) : 0;
+                if (s3.volBrakeMat && s3.volBrakeMat.uniforms && s3.volBrakeMat.uniforms.uIntensity) {
+                  s3.volBrakeMat.uniforms.uIntensity.value = vBrakeAmp;
+                }
+                pchild.visible = vBrakeAmp > 0.01;
               }
             });
           }
@@ -26704,14 +27182,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (child.name === 'rr_playerBeamPool') {
                 // Fog swallows the light before it reaches the road; high beams reach further in clear air.
                 var poolReach = (d && d.highBeams && scn.weather !== 'fog') ? 1.7 : 1.0;
-                child.material.opacity = beamActive ? (scn.weather === 'fog' ? 0.16 : scn.weather === 'rain' ? 0.20 : 0.26) : 0;
+                child.material.opacity = beamActive ? (scn.weather === 'fog' ? 0.16 : scn.weather === 'rain' ? 0.24 : 0.26) : 0;
                 child.material.color.setHex(beamColorHex);
                 child.scale.x = poolReach;
                 child.position.x = 0.95 + 2 + 9 * poolReach;
               }
+              if (child.name === 'rr_playerWetReflection') {
+                var wetReflActive = beamActive && scn.weather === 'rain';
+                child.visible = wetReflActive;
+                if (wetReflActive) {
+                  var wetReach = (d && d.highBeams) ? 1.45 : 1.0;
+                  var wetShimmer = (!reducedMotionRef.current && Math.abs(car.speed) > 0.5)
+                    ? (0.92 + 0.08 * Math.sin(timeRef.current * 4.2))
+                    : 1.0;
+                  child.material.opacity = (isNightNow ? 0.30 : 0.22) * wetShimmer;
+                  child.material.color.setHex(isNightNow ? 0xfff0c8 : 0xd8ecff);
+                  child.scale.x = wetReach;
+                  child.position.x = 0.95 + 2 + 13 * wetReach;
+                } else {
+                  child.material.opacity = 0;
+                }
+              }
               if (child.name === 'rr_playerFogVeil') {
                 child.visible = scn.weather === 'fog' && !!(d && d.highBeams);
                 child.material.opacity = child.visible ? 0.42 : 0;
+              }
+              if (child.name === 'rr_playerVolHeadlight') {
+                var volHlAmp = beamActive ? Math.min(1.0, beamTargetOp * 2.2) : 0;
+                if (s3.volHeadlightMat && s3.volHeadlightMat.uniforms) {
+                  s3.volHeadlightMat.uniforms.uIntensity.value = volHlAmp;
+                  if (s3.volHeadlightMat.uniforms.uColor && s3.volHeadlightMat.uniforms.uColor.value && typeof s3.volHeadlightMat.uniforms.uColor.value.setHex === 'function') {
+                    s3.volHeadlightMat.uniforms.uColor.value.setHex(beamColorHex);
+                  }
+                }
+                child.scale.x = scn.weather === 'fog' ? (hbBoost > 1.3 ? 1.65 : 1.2) : 1.0;
+                child.scale.z = scn.weather === 'fog' ? (hbBoost > 1.3 ? 1.65 : 1.2) : 1.0;
+                child.visible = volHlAmp > 0.01;
+              }
+              if (child.name === 'rr_weatherMistVeil') {
+                child.visible = (scn.weather === 'fog' || scn.weather === 'rain' || scn.id === 'dawn');
               }
             });
           }
@@ -26827,13 +27336,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
 
-          // Turn signal blinkers (3D orange spheres on car)
+          // Turn signal blinkers (3D orange spheres + GLSL optical starburst halos on car)
           var blinkOn = Math.floor(blinkerTimerRef.current * 2.5) % 2 === 0;
           var bDir = blinkerRef.current;
           s3.blinkerMeshL.material.opacity = (bDir === -1 && blinkOn) ? 0.9 : 0;
           s3.blinkerMeshR.material.opacity = (bDir === 1 && blinkOn) ? 0.9 : 0;
           s3.blinkerMeshRL.material.opacity = (bDir === -1 && blinkOn) ? 0.9 : 0;
           s3.blinkerMeshRR.material.opacity = (bDir === 1 && blinkOn) ? 0.9 : 0;
+          if (s3.blinkerStarL && s3.blinkerStarL.uniforms) s3.blinkerStarL.uniforms.uIntensity.value = (bDir === -1 && blinkOn) ? 0.92 : 0;
+          if (s3.blinkerStarR && s3.blinkerStarR.uniforms) s3.blinkerStarR.uniforms.uIntensity.value = (bDir === 1 && blinkOn) ? 0.92 : 0;
+          if (s3.playerCarGroup && s3.playerCarGroup.children) {
+            for (var bsi = 0; bsi < s3.playerCarGroup.children.length; bsi++) {
+              var bChild = s3.playerCarGroup.children[bsi];
+              if (bChild.name === 'rr_blinkerStarburst') {
+                bChild.visible = (bChild.material === s3.blinkerStarL && bDir === -1 && blinkOn) || (bChild.material === s3.blinkerStarR && bDir === 1 && blinkOn);
+              }
+            }
+          }
 
           // ── Tire marks: skidding OR hard braking ──
           // Dark strips rendered just above the road. Real cars leave marks not only
@@ -26889,10 +27408,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // for the bloom to read (night, fog, rain, dusk). Stronger glow on red
                 // and yellow — those are the safety-critical attention-getters.
                 if (lamp.halo) {
-                  var haloAmp = on && sigDimAmbient
-                    ? (li === 0 ? 0.7 : li === 1 ? 0.6 : 0.5)
+                  var haloAmp = on
+                    ? (sigDimAmbient ? (li === 0 ? 0.78 : li === 1 ? 0.68 : 0.58) : 0.22)
                     : 0;
                   lamp.halo.material.opacity = haloAmp;
+                  lamp.halo.visible = haloAmp > 0;
+                }
+                if (lamp.starburst && lamp.starburst.material && lamp.starburst.material.uniforms) {
+                  var sbAmp = on ? (sigDimAmbient ? 0.88 : 0.34) : 0;
+                  lamp.starburst.material.uniforms.uIntensity.value = sbAmp;
+                  lamp.starburst.visible = sbAmp > 0.01;
                 }
               });
             }
@@ -26920,6 +27445,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   : trafficSignalIndication(sigEntry, lamp.approachGroup || 'main');
                 var lit = lamp.state === curState;
                 lamp.mesh.material.color.setHex(lit ? lamp.onHex : lamp.offHex);
+                if (lamp.halo && lamp.halo.material) {
+                  var sigHaloAmp = lit
+                    ? (sigDimAmbient ? (lamp.state === 'red' ? 0.78 : lamp.state === 'yellow' ? 0.68 : 0.58) : 0.22)
+                    : 0;
+                  lamp.halo.material.opacity = sigHaloAmp;
+                  lamp.halo.visible = sigHaloAmp > 0;
+                }
               });
             });
           }
@@ -27117,9 +27649,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var bLen = isBus ? 3.5 : isTruck ? 2.4 : isVan ? 2.2 : isSUV ? 2.0 : 1.7;
               var bH = isBus ? 1.4 : isTruck ? 0.8 : isVan ? 1.1 : isSUV ? 0.7 : 0.55;
               var tCol = new T.Color(t.color).getHex();
-              // Body
+              // Body — subtle metallic clearcoat specular sheen (merges with cabin via rrActorMergeCar)
               var bGeo = new T.BoxGeometry(bLen, bH, 0.85);
-              var bMat = new T.MeshLambertMaterial({ color: tCol });
+              var bSpec = isBus ? 0x58626e : 0x8fb4d4;
+              var bShine = isBus ? 28 : 64;
+              var bMat = T.MeshPhongMaterial
+                ? new T.MeshPhongMaterial({ color: tCol, specular: bSpec, shininess: bShine })
+                : new T.MeshLambertMaterial({ color: tCol });
               var bdy = new T.Mesh(bGeo, bMat);
               bdy.position.y = bH / 2 + 0.2;
               bdy.castShadow = true;
@@ -27128,7 +27664,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (isBus) {
                 // School bus: tall yellow box with black stripe
                 var busRoofGeo = new T.BoxGeometry(bLen * 0.9, 0.15, 0.95);
-                var busRoofMat = new T.MeshLambertMaterial({ color: tCol });
+                var busRoofMat = T.MeshPhongMaterial
+                  ? new T.MeshPhongMaterial({ color: tCol, specular: bSpec, shininess: bShine })
+                  : new T.MeshLambertMaterial({ color: tCol });
                 var busRoof = new T.Mesh(busRoofGeo, busRoofMat);
                 busRoof.position.set(0, bH + 0.28, 0);
                 cg.add(busRoof);
@@ -27157,7 +27695,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               } else if (isVan) {
                 // Van: tall boxy roof
                 var vanRoofGeo = new T.BoxGeometry(bLen * 0.75, 0.5, 0.88);
-                var vanRoofMat = new T.MeshLambertMaterial({ color: tCol });
+                var vanRoofMat = T.MeshPhongMaterial
+                  ? new T.MeshPhongMaterial({ color: tCol, specular: bSpec, shininess: bShine })
+                  : new T.MeshLambertMaterial({ color: tCol });
                 var vanRoof = new T.Mesh(vanRoofGeo, vanRoofMat);
                 vanRoof.position.set(-bLen * 0.08, bH + 0.45, 0);
                 cg.add(vanRoof);
@@ -27165,7 +27705,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Car / SUV: normal cabin
                 var cabH = isSUV ? 0.45 : 0.35;
                 var rGeo = new T.BoxGeometry(bLen * 0.5, cabH, 0.78);
-                var rMat = new T.MeshLambertMaterial({ color: tCol });
+                var rMat = T.MeshPhongMaterial
+                  ? new T.MeshPhongMaterial({ color: tCol, specular: bSpec, shininess: bShine })
+                  : new T.MeshLambertMaterial({ color: tCol });
                 var roof = new T.Mesh(rGeo, rMat);
                 roof.position.set(-bLen * 0.05, bH + cabH / 2 + 0.18, 0);
                 cg.add(roof);
@@ -27276,14 +27818,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 bl.position.set(-bLen / 2 + 0.02, bH / 2 + 0.22, z);
                 bl.name = bi === 0 ? 'rr_brR' : 'rr_brL';
                 cg.add(bl);
-                // Halo — a slightly larger plane sitting just behind the lens.
-                // AdditiveBlending makes it bloom in dark scenes without needing a
-                // post-processing pass. Hidden by default; the per-frame brake-light
-                // updater enables it when (isBraking && nightLights).
-                var halGeo = new T.PlaneGeometry(0.55, 0.55);
+                // Halo — circular additive disc behind each lens (pairs via rrActorPairLamps).
+                // Enabled when (isBraking && nightLights) for a crisp red glow in dim conditions.
+                var halGeo = new T.CircleGeometry(0.32, 16);
                 var halMat = new T.MeshBasicMaterial({
-                  color: 0xff2233, transparent: true, opacity: 0,
-                  blending: T.AdditiveBlending, depthWrite: false
+                  color: 0xff283c, transparent: true, opacity: 0,
+                  blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide
                 });
                 var halo = new T.Mesh(halGeo, halMat);
                 halo.position.set(-bLen / 2 - 0.04, bH / 2 + 0.22, z);
@@ -27369,7 +27909,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Measure strong deceleration per simulated second so the cue
               // does not depend on render frequency or skipped frames.
               var aiHardPanic = t._brakeLightState.hardBraking;
-              var aiBrakeFlick = aiHardPanic
+              var aiBrakeFlick = (aiHardPanic && !reducedMotionRef.current)
                 ? (Math.sin(timeRef.current * 25 + ti * 0.7) > 0 ? 1.0 : 0.5)
                 : 1.0;
               var nightLights = scn.time === 'night' || scn.weather === 'fog';
@@ -30947,7 +31487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Without this, only the puddles read as wet — the road itself
               // stayed matte even though the wipers were on.
               var roadMat = scn.weather === 'rain'
-                ? new T.MeshPhongMaterial({ vertexColors: true, specular: 0x8aa6c8, shininess: 55 })
+                ? new T.MeshPhongMaterial({ vertexColors: true, specular: 0xa6c8ea, shininess: 82 })
                 : new T.MeshLambertMaterial({ vertexColors: true });
               // Snow: packed snow on the road, a shade darker than the banks (round 35: 0.8 of 0x8c9ba8...), so the edge reads.
               var asphaltBase = scn.weather === 'snow' ? [0x707c86, 0x64707b, 0x7b8690]
@@ -32211,9 +32751,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               rrBatchCut(chunkGroup, 'work_zone');
               if (scn.weather === 'rain' || scn.weather === 'fog') {
                 var puddleMat = new T.MeshBasicMaterial({
-                  color: scn.weather === 'rain' ? 0x6b8cb8 : 0x7a8ea0,
+                  color: scn.weather === 'rain' ? 0x7ba4d6 : 0x7a8ea0,
                   transparent: true,
-                  opacity: scn.weather === 'rain' ? 0.35 : 0.18,
+                  opacity: scn.weather === 'rain' ? 0.42 : 0.18,
                   blending: T.AdditiveBlending,
                   depthWrite: false
                 });
@@ -32228,11 +32768,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     roadSurfacePoseAt(iw, puddleSpec.x, puddleSpec.y).height + 0.013, pWorldZ);
                   chunkGroup.add(puddle);
                 });
-                // Rain sheen: a subtle full-road overlay that makes the asphalt look wet overall.
+                // Rain sheen: a subtle full-road overlay that makes the asphalt catch wet sky/headlight sheen.
                 var sheenMat = new T.MeshBasicMaterial({
-                  color: 0xaac0d8,
+                  color: 0xb8d0ea,
                   transparent: true,
-                  opacity: 0.09,
+                  opacity: 0.13,
                   blending: T.AdditiveBlending,
                   depthWrite: false
                 });
@@ -32546,12 +33086,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     chunkGroup.add(curb);
                   });
                 }
-                // Road-edge reflectors (cat's eyes) — small beads every 4m.
-                // Amber on the right edge, white on the left (US convention).
-                // Use MeshBasicMaterial so they glow independent of scene lighting.
+                // Road-edge & centerline retro-reflectors (cat's eyes) — crisp beads every 4m/6m.
+                // High-luminance retro-reflective tint at night, twilight, rain, or fog;
+                // plain BoxGeometry + MeshBasicMaterial so rrBatchChunk merges them at 0 extra draw calls.
                 var isNightRef = scn.time === 'night' || scn.id === 'night';
-                var amberMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffc040 : 0xbc7a1a });
-                var whiteRefMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffffff : 0xcccccc });
+                var isRetroRef = isNightRef || scn.id === 'dawn' || scn.weather === 'rain' || scn.weather === 'fog';
+                var amberMat = new T.MeshBasicMaterial({ color: isRetroRef ? 0xffd24c : 0xc88a22 });
+                var whiteRefMat = new T.MeshBasicMaterial({ color: isRetroRef ? 0xf8fdff : 0xd4dae2 });
+                var centerRefMat = new T.MeshBasicMaterial({ color: isRetroRef ? 0xffe05a : 0xd4a428 });
                 var refLineOff = roadHalfW - 0.2;
                 // Skip reflectors over the cross-street so they don't appear
                 // floating on the perpendicular asphalt at intersections.
@@ -32564,12 +33106,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var refHd = iw.spline ? iw.spline.headingAt(refZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                   var refPerpX = Math.cos(refHd);
                   var refPerpZ = -Math.sin(refHd);
-                  var amber = new T.Mesh(new T.BoxGeometry(0.12, 0.04, 0.12), amberMat);
+                  var amber = new T.Mesh(new T.BoxGeometry(0.13, 0.042, 0.13), amberMat);
                   amber.position.set(refCtr + refLineOff * refPerpX, markRoadSurfaceHeightAt(refZ, refLineOff) + 0.02, refZ + refLineOff * refPerpZ);
                   chunkGroup.add(amber);
-                  var whiteR = new T.Mesh(new T.BoxGeometry(0.12, 0.04, 0.12), whiteRefMat);
+                  var whiteR = new T.Mesh(new T.BoxGeometry(0.13, 0.042, 0.13), whiteRefMat);
                   whiteR.position.set(refCtr - refLineOff * refPerpX, markRoadSurfaceHeightAt(refZ, -refLineOff) + 0.02, refZ - refLineOff * refPerpZ);
                   chunkGroup.add(whiteR);
+                  if (!chunk.oneWay && ((Math.round(refZ) % 8) === 0 || isRetroRef)) {
+                    var ctrCatEye = new T.Mesh(new T.BoxGeometry(0.11, 0.036, 0.11), centerRefMat);
+                    ctrCatEye.position.set(refCtr, markRoadSurfaceHeightAt(refZ, 0) + 0.019, refZ);
+                    chunkGroup.add(ctrCatEye);
+                  }
                 }
               }
 
@@ -32873,6 +33420,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   crossGroup.add(brace);
                   s3.trafficLampsByChunk = s3.trafficLampsByChunk || {};
                   s3.trafficLampsByChunk[ci] = [];
+                  if (!s3._rrTexCache) s3._rrTexCache = {};
+                  if (!s3._rrTexCache.rr_signal_bloom) {
+                    var sbTex = rrSoftSpriteTexture(T, 'pool');
+                    if (sbTex) { sbTex._rrShared = true; s3._rrTexCache.rr_signal_bloom = sbTex; }
+                  }
+                  var streamSigBloomTex = s3._rrTexCache.rr_signal_bloom || null;
                   signalHeadPositions.forEach(function(sp) {
                     // The innermost lane receives a separate protected-left
                     // arrow indication. Its state is driven independently from
@@ -32892,8 +33445,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         poleLocalZ + 0.16);
                       arrowLamp.rotation.z = Math.PI / 2;
                       crossGroup.add(arrowLamp);
+                      var arrowHalo = new T.Mesh(
+                        new T.PlaneGeometry(0.68, 0.68),
+                        new T.MeshBasicMaterial({
+                          color: 0x21d762, map: streamSigBloomTex, transparent: true, opacity: 0,
+                          blending: T.AdditiveBlending, depthWrite: false, fog: false, side: T.DoubleSide
+                        })
+                      );
+                      arrowHalo.position.set(sp.x - 0.42, 4.48, poleLocalZ + 0.18);
+                      arrowHalo.visible = false;
+                      crossGroup.add(arrowHalo);
                       s3.trafficLampsByChunk[ci].push({
-                        mesh: arrowLamp, onHex: 0x21d762, offHex: 0x073316,
+                        mesh: arrowLamp, halo: arrowHalo, onHex: 0x21d762, offHex: 0x073316,
                         state: 'green_arrow', movementIntent: 'left',
                         approachGroup: 'main', chunkIdx: ci
                       });
@@ -32922,6 +33485,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var lampMesh = new T.Mesh(lampGeo, lampMat);
                       lampMesh.position.set(sp.x, 5.1 + ld.dy, poleLocalZ + housingD / 2 + 0.02);
                       crossGroup.add(lampMesh);
+                      var lampHalo = new T.Mesh(
+                        new T.PlaneGeometry(0.76, 0.76),
+                        new T.MeshBasicMaterial({
+                          color: ld.onHex, map: streamSigBloomTex, transparent: true, opacity: 0,
+                          blending: T.AdditiveBlending, depthWrite: false, fog: false, side: T.DoubleSide
+                        })
+                      );
+                      lampHalo.position.set(sp.x, 5.1 + ld.dy, poleLocalZ + housingD / 2 + 0.06);
+                      lampHalo.visible = false;
+                      crossGroup.add(lampHalo);
                       // Colorblind support: paint an R / Y / G letter sprite right
                       // in front of each lamp so red-green colorblind students
                       // (≈8% of males) can identify the state by letter, not just
@@ -32949,6 +33522,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       } catch (_) { /* sprite is non-essential; lamp colors still work */ }
                       s3.trafficLampsByChunk[ci].push({
                         mesh: lampMesh,
+                        halo: lampHalo,
                         onHex: ld.onHex,
                         offHex: ld.offHex,
                         state: ld.name,
@@ -32984,8 +33558,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         headSpec.z + (headSpec.faceNZ || 0) * 0.16
                       );
                       crossGroup.add(postLamp);
+                      var postHalo = new T.Mesh(
+                        new T.PlaneGeometry(0.72, 0.72),
+                        new T.MeshBasicMaterial({
+                          color: postLampDef.onHex, map: streamSigBloomTex, transparent: true, opacity: 0,
+                          blending: T.AdditiveBlending, depthWrite: false, fog: false, side: T.DoubleSide
+                        })
+                      );
+                      postHalo.position.set(
+                        headSpec.x + (headSpec.faceNX || 0) * 0.20,
+                        4.35 + postLampDef.dy,
+                        headSpec.z + (headSpec.faceNZ || 0) * 0.20
+                      );
+                      if (headSpec.faceNX) postHalo.rotation.y = Math.PI / 2;
+                      postHalo.visible = false;
+                      crossGroup.add(postHalo);
                       s3.trafficLampsByChunk[ci].push({
                         mesh: postLamp,
+                        halo: postHalo,
                         onHex: postLampDef.onHex,
                         offHex: postLampDef.offHex,
                         state: postLampDef.name,
@@ -36175,22 +36765,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // only the End Drive button used to stop it.
           try { stopRadio(); } catch (eRad) {}
           if (threeRef.current && threeRef.current.renderer) {
-            // Dispose all geometries and materials in the scene to free GPU memory
+            // Dispose all geometries and materials in the scene to free GPU memory (deduped for shared shaders)
+            var _rrDisposedSet = typeof Set === 'function' ? new Set() : null;
+            var _rrDisposeOnce = function(res) {
+              if (!res || typeof res.dispose !== 'function') return;
+              if (_rrDisposedSet) {
+                if (_rrDisposedSet.has(res)) return;
+                _rrDisposedSet.add(res);
+              }
+              res.dispose();
+            };
             if (threeRef.current.scene) {
               threeRef.current.scene.traverse(function(obj) {
-                if (obj.geometry) obj.geometry.dispose();
+                if (obj.geometry) _rrDisposeOnce(obj.geometry);
                 if (obj.material) {
-                  if (obj.material.map) obj.material.map.dispose();
-                  obj.material.dispose();
+                  var mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+                  for (var mi = 0; mi < mats.length; mi++) {
+                    var m = mats[mi];
+                    if (m && m.map) _rrDisposeOnce(m.map);
+                    _rrDisposeOnce(m);
+                  }
                 }
               });
             }
             try{ if(threeRef.current.renderer && threeRef.current.renderer._alloComposer){ (threeRef.current.renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); threeRef.current.renderer._alloComposer=null; } }catch(e){}
             // Graphics-level resources that are not in the scene graph: shared
-            // sign textures that no loaded chunk uses, and the mirror textures.
+            // sign textures that no loaded chunk uses, custom shader disposables, and mirror textures.
             try {
+              if (Array.isArray(threeRef.current._rrShaderDisposables)) {
+                threeRef.current._rrShaderDisposables.forEach(_rrDisposeOnce);
+                threeRef.current._rrShaderDisposables.length = 0;
+              }
               var gfxTexCache = threeRef.current._rrTexCache || {};
-              Object.keys(gfxTexCache).forEach(function(texKey) { if (gfxTexCache[texKey] && gfxTexCache[texKey].dispose) gfxTexCache[texKey].dispose(); });
+              Object.keys(gfxTexCache).forEach(function(texKey) { _rrDisposeOnce(gfxTexCache[texKey]); });
               var gfxMirrorTargets = threeRef.current._gfxMirrorTargets || {};
               Object.keys(gfxMirrorTargets).forEach(function(mirrorKey) {
                 gfxMirrorTargets[mirrorKey].target.dispose();
@@ -36456,6 +37063,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }, em);
             }) : null,
             h('div', { style: { position: 'relative', zIndex: 2 } },
+              (function() {
+                var rrAchCount = earnedBadges && typeof earnedBadges === 'object' ? Object.keys(earnedBadges).length : 0;
+                var rrTripsCount = Array.isArray(d.logbook) ? d.logbook.length : 0;
+                var rrMasteredCount = 0;
+                try {
+                  rrMasteredCount = rrPermitMasteredCount(rrIsRecord(d.permitMastery) ? d.permitMastery : {});
+                } catch (eMast) { rrMasteredCount = 0; }
+                return h('div', { className: 'rr-hero-top' },
+                  h('span', { className: 'rr-hero-badge' },
+                    h('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false' },
+                      h('circle', { cx: 12, cy: 12, r: 9 }),
+                      h('circle', { cx: 12, cy: 12, r: 2.5 }),
+                      h('path', { d: 'M12 3v6.5M4.5 15l5.3-2.2M19.5 15l-5.3-2.2' })
+                    ),
+                    __alloT('stem.roadready.workbench_discipline', "Applied Physics · Driver's Ed & Auto Science")
+                  ),
+                  h('div', { className: 'rr-hero-telemetry', role: 'group', 'aria-label': __alloT('stem.roadready.workbench_telemetry_label', 'Driver science progress summary') },
+                    h('span', { className: 'rr-hero-pill' },
+                      __alloT('stem.roadready.telemetry_achievements', 'Badges'),
+                      ' ',
+                      h('strong', null, rrAchCount + '/' + ACHIEVEMENTS.length)
+                    ),
+                    h('span', { className: 'rr-hero-pill' },
+                      __alloT('stem.roadready.telemetry_trips', 'Trips'),
+                      ' ',
+                      h('strong', null, String(rrTripsCount))
+                    ),
+                    h('span', { className: 'rr-hero-pill' },
+                      __alloT('stem.roadready.telemetry_permit', 'Permit'),
+                      ' ',
+                      h('strong', null, rrMasteredCount + '/' + PERMIT_ACTIVE_COUNT)
+                    )
+                  )
+                );
+              })(),
               h('svg', { viewBox: '0 0 320 100', width: 320, height: 100, 'aria-hidden': 'true', focusable: 'false', style: { maxWidth: '100%', margin: '0 auto 8px', display: 'block' } },
                 h('path', { d: 'M0 70 Q60 20 115 62 Q200 0 320 65 L320 100 L0 100Z', fill: '#234c4a' }),
                 h('path', { d: 'M115 100 L151 24 L170 24 L219 100Z', fill: '#1e293b' }),
@@ -36464,13 +37106,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('path', { d: 'M73 93 L73 53 M249 93 L249 50', stroke: '#cbd5e1', strokeWidth: 3 }),
                 h('path', { d: 'M63 31 L83 31 L95 43 L95 63 L83 75 L63 75 L51 63 L51 43Z', fill: '#b91c1c', stroke: '#fff', strokeWidth: 2 }),
                 h('text', { x: 73, y: 57, fill: '#fff', textAnchor: 'middle', fontSize: 11, fontWeight: 800 }, 'STOP'),
-                h('rect', { x: 233, y: 28, width: 32, height: 42, rx: 3, fill: '#fff', stroke: '#1e293b', strokeWidth: 2 }),
-                h('text', { x: 249, y: 39, fill: '#0f172a', textAnchor: 'middle', fontSize: 7, fontWeight: 800 }, 'LIMIT'),
-                h('text', { x: 249, y: 60, fill: '#0f172a', textAnchor: 'middle', fontSize: 21, fontWeight: 800 }, '25')
+                h('rect', { x: 229, y: 24, width: 40, height: 48, rx: 3, fill: '#fff', stroke: '#1e293b', strokeWidth: 2 }),
+                h('text', { x: 249, y: 37, fill: '#0f172a', textAnchor: 'middle', fontSize: 10, fontWeight: 800 }, 'LIMIT'),
+                h('text', { x: 249, y: 61, fill: '#0f172a', textAnchor: 'middle', fontSize: 21, fontWeight: 800 }, '25')
               ),
               h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '4px', color: 'var(--allo-stem-text, #e2e8f0)', letterSpacing: '-0.02em' } }, 'RoadReady'),
               h('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600 } }, __alloT('stem.roadready.driver_s_ed_automotive_science_maine_e', "Driver's Ed & Automotive Science — Maine edition")),
-              h('div', { style: { fontSize: '11px', color: 'var(--rr-violet, #a78bfa)', marginTop: '4px' } }, __alloT('stem.roadready.learn_the_physics_pass_the_test_drive_', "Learn the physics. Pass the test. Drive safer."))
+              h('div', { style: { fontSize: '11px', color: 'var(--rr-violet, #a78bfa)', marginTop: '4px' } }, __alloT('stem.roadready.learn_the_physics_pass_the_test_drive_', "Learn the physics. Pass the test. Drive safer.")),
+              h('div', { className: 'rr-physics-strip' },
+                h('div', { className: 'rr-physics-head' },
+                  h('span', { className: 'rr-physics-title' }, __alloT('stem.roadready.stopping_ref_title', 'Stopping Distance Physics Reference')),
+                  h('span', { className: 'rr-physics-sub' }, __alloT('stem.roadready.stopping_ref_formula', 'd = v·t + v² / (2μg) · dry asphalt (μ = 0.70)'))
+                ),
+                h('svg', { viewBox: '0 0 560 74', width: '100%', height: 74, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', maxWidth: '560px' } },
+                  // 25 mph: 55 ft reaction + 30 ft braking = 85 ft
+                  h('text', { x: 0, y: 16, fill: '#e2e8f0', fontSize: 11, fontWeight: 700 }, '25 mph'),
+                  h('rect', { x: 58, y: 5, width: 58, height: 14, rx: 3, fill: '#38bdf8' }),
+                  h('rect', { x: 118, y: 5, width: 32, height: 14, rx: 3, fill: '#f59e0b' }),
+                  h('text', { x: 158, y: 16, fill: '#cbd5e1', fontSize: 11, fontWeight: 700 }, '85 ft'),
+                  // 45 mph: 99 ft reaction + 97 ft braking = 196 ft
+                  h('text', { x: 0, y: 41, fill: '#e2e8f0', fontSize: 11, fontWeight: 700 }, '45 mph'),
+                  h('rect', { x: 58, y: 30, width: 104, height: 14, rx: 3, fill: '#38bdf8' }),
+                  h('rect', { x: 164, y: 30, width: 102, height: 14, rx: 3, fill: '#f59e0b' }),
+                  h('text', { x: 274, y: 41, fill: '#cbd5e1', fontSize: 11, fontWeight: 700 }, '196 ft'),
+                  // 65 mph: 143 ft reaction + 202 ft braking = 345 ft
+                  h('text', { x: 0, y: 66, fill: '#e2e8f0', fontSize: 11, fontWeight: 700 }, '65 mph'),
+                  h('rect', { x: 58, y: 55, width: 150, height: 14, rx: 3, fill: '#38bdf8' }),
+                  h('rect', { x: 210, y: 55, width: 212, height: 14, rx: 3, fill: '#f59e0b' }),
+                  h('text', { x: 430, y: 66, fill: '#cbd5e1', fontSize: 11, fontWeight: 700 }, '345 ft')
+                ),
+                h('div', { className: 'rr-physics-legend' },
+                  h('span', null, '■ ', __alloT('stem.roadready.stopping_ref_reaction', 'Reaction (1.5 s)')),
+                  h('span', null, '■ ', __alloT('stem.roadready.stopping_ref_braking', 'Braking distance (scales with v²)'))
+                )
+              ),
+              h('div', { className: 'rr-hero-presets', role: 'group', 'aria-label': __alloT('stem.roadready.quick_launch_presets', 'Quick-launch starter activities') },
+                [
+                  { id: 'res', label: __alloT('stem.roadready.preset_residential', 'Residential Drive'), act: function() { updMulti({ pendingScenario: 'residential', view: 'scenarioBriefing', freeExplore: false, freeExploreScenario: null }); } },
+                  { id: 'signs', label: __alloT('stem.roadready.preset_signs', 'Road Signs'), act: function() { upd('view', 'signsView'); } },
+                  { id: 'stop', label: __alloT('stem.roadready.preset_stopping', 'Stopping Physics'), act: function() { upd('view', 'stoppingLab'); } },
+                  { id: 'permit', label: __alloT('stem.roadready.preset_permit', 'Maine Permit Prep'), act: function() { upd('view', 'permitStart'); } }
+                ].map(function(p) {
+                  return h('button', { key: p.id, type: 'button', className: 'rr-hero-preset', 'data-rr-focusable': 'true', onClick: p.act }, p.label);
+                })
+              )
             )
           ),
           // ── Daily driving quote ──

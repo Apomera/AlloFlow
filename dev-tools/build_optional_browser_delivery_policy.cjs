@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const { createHash } = require('node:crypto');
+const writeGeneratedAtomic = require('./write_generated_atomic.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const BEGIN = '// BEGIN ALLOFLOW_OPTIONAL_BROWSER_DELIVERY_POLICY';
@@ -19,8 +20,9 @@ function canonical(value) {
   return JSON.stringify(value);
 }
 function regular(root, relative) {
-  if (!relative.split('/').every(part => /^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(part))) throw new Error('Invalid vendor path');
+  if (!relative.split('/').every(part => /^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(part) && !['__proto__', 'constructor', 'prototype'].includes(part))) throw new Error('Invalid vendor path');
   let target = path.resolve(root);
+  if (fs.lstatSync(target).isSymbolicLink()) throw new Error('Vendor root is a symbolic link: ' + target);
   for (const part of relative.split('/')) {
     target = path.join(target, part);
     if (fs.lstatSync(target).isSymbolicLink()) throw new Error('Vendor asset traverses a symbolic link: ' + relative);
@@ -40,7 +42,7 @@ function assertVendorAssets({ root = ROOT, buildDir } = {}) {
   const catalog = readCatalog(root), records = [];
   for (const [key, record] of Object.entries(catalog.libraries)) {
     if (record.asset === null) continue;
-    const bytes = regular(path.join(root, 'desktop/web-app/public'), record.asset);
+    const bytes = regular(root, 'desktop/web-app/public/' + record.asset);
     const integrity = 'sha384-' + createHash('sha384').update(bytes).digest('base64');
     if (bytes.length !== record.bytes || integrity !== record.integrity) throw new Error('Reviewed public vendor bytes differ: ' + record.asset);
     if (fs.existsSync(path.join(root, record.asset)) || !PUBLIC_ONLY.has(record.asset)) {
@@ -101,11 +103,11 @@ function run(args = process.argv.slice(2)) {
   const { catalog, records } = assertVendorAssets();
   if (host) {
     if (!HOSTS.includes(host)) throw new Error('Unknown trusted host');
-    const file = path.join(ROOT, host), before = fs.readFileSync(file, 'utf8'), after = replaceBlock(before, buildBlock(catalog));
+    const file = path.join(ROOT, host), before = regular(ROOT, host).toString('utf8'), after = replaceBlock(before, buildBlock(catalog));
     if (sync) {
       // A concurrent edit is a conflict, never authority to overwrite it.
-      if (fs.readFileSync(file, 'utf8') !== before) throw new Error('Host changed while preparing optional policy');
-      if (before !== after) fs.writeFileSync(file, after);
+      if (regular(ROOT, host).toString('utf8') !== before) throw new Error('Host changed while preparing optional policy');
+      if (before !== after) writeGeneratedAtomic(file, after);
     } else if (before !== after) throw new Error('Optional vendor policy is stale');
   } else if (sync) throw new Error('--sync requires a known host');
   console.log('Optional browser policy: ' + Object.keys(catalog.libraries).length + ' pinned libraries; ' + records.length + ' checked local assets; ' + (host || 'read-only validation'));

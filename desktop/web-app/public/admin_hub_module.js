@@ -56,12 +56,34 @@ function _adminHubEvalInSampleMode() {
     return true;
   }
 }
+const ADMIN_HUB_VAULT_FEATURES = [
+  { prefix: "allo_mtss_", feature: "mtss-triage" },
+  { prefix: "allo_sped_", feature: "sped-timelines" },
+  { prefix: "allo_educator_evaluation_", feature: "educator-evaluation" }
+];
+function _adminHubVaultInfo() {
+  try {
+    const sw = typeof window !== "undefined" && window.AlloModules && window.AlloModules.SensitiveWorkspace;
+    if (!sw || typeof sw.getStatus !== "function") return { active: false, phase: "none", sw: null };
+    const phase = (sw.getStatus() || {}).phase || "locked";
+    return { active: phase !== "new", phase, sw };
+  } catch (_) {
+    return { active: true, phase: "locked", sw: null };
+  }
+}
+function _adminHubVaultFeatureFor(key) {
+  if (typeof key !== "string") return null;
+  const hit = ADMIN_HUB_VAULT_FEATURES.find((entry) => key.indexOf(entry.prefix) === 0);
+  return hit ? hit.feature : null;
+}
 function _adminHubCollectBackup() {
   const keys = {};
   let count = 0;
+  const vault = _adminHubVaultInfo();
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (!_adminHubKeyAllowed(key)) continue;
+    if (vault.active && _adminHubVaultFeatureFor(key)) continue;
     if (key === "allo_educator_evaluation_real_stash_v1" && _adminHubEvalInSampleMode()) continue;
     let value = localStorage.getItem(key);
     if (typeof value !== "string") continue;
@@ -124,7 +146,7 @@ async function _adminHubDrivePost(url, body) {
       body: JSON.stringify(body),
       ...controller ? { signal: controller.signal } : {}
     });
-    if (!res.ok) throw new Error("Drive backup request failed (HTTP " + res.status + ").");
+    if (res && res.ok === false) throw new Error("Drive backup request failed (HTTP " + res.status + ").");
     return await res.json();
   } finally {
     if (timer) clearTimeout(timer);
@@ -141,7 +163,9 @@ async function _adminHubMaybeDriveBackup(opts) {
     if (!force && cfg.lastHash === hash) return { status: "unchanged", lastSavedAt: cfg.lastSavedAt };
     const reply = await _adminHubDrivePost(cfg.url, { token: cfg.token, action: "save", payload: backup });
     if (!reply || reply.ok !== true) return { status: "error", error: String(reply && reply.error || "save-failed") };
-    const next = { ...cfg, lastSavedAt: (/* @__PURE__ */ new Date()).toISOString(), lastHash: hash };
+    const latest = _adminHubDriveCfg();
+    if (!latest || latest.url !== cfg.url || latest.token !== cfg.token) return { status: "cancelled" };
+    const next = { ...latest, lastSavedAt: (/* @__PURE__ */ new Date()).toISOString(), lastHash: hash };
     try {
       localStorage.setItem(ADMIN_HUB_DRIVE_CFG_KEY, JSON.stringify(next));
     } catch (_) {
@@ -158,6 +182,13 @@ function AdminHubDriveBackup({ tt, addToast }) {
   const [tokenInput, setTokenInput] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [autoNote, setAutoNote] = React.useState("");
+  const mountedRef = React.useRef(true);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   const writeCfg = (next) => {
     try {
       if (next) localStorage.setItem(ADMIN_HUB_DRIVE_CFG_KEY, JSON.stringify(next));
@@ -168,6 +199,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
   };
   const saveToDrive = React.useCallback(async ({ auto, force } = {}) => {
     const result = await _adminHubMaybeDriveBackup({ force: !!force });
+    if (!mountedRef.current || result.status === "cancelled") return result;
     if (result.status === "saved") {
       setCfg(_adminHubDriveCfg());
       setAutoNote("");
@@ -192,11 +224,11 @@ function AdminHubDriveBackup({ tt, addToast }) {
         type: "button",
         "data-help-key": "adminhub_drive_setup_open",
         onClick: () => setSetupOpen(true),
-        className: "min-h-11 inline-flex items-center text-[11px] font-bold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
+        className: "min-h-11 inline-flex items-center text-xs font-bold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
       },
       tt("adminhub.drive_setup_open", "Set up automatic Drive backup (school Google account)"),
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " →")
-    ) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, tt("adminhub.drive_setup_intro", "A 3-minute script on your school-managed Google account saves this hub to your Drive automatically — covered by your district’s data agreement. Follow the setup steps in the leader’s guide, then paste the web-app URL and token here.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-col sm:flex-row gap-2 sm:items-end" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "adminhub-drive-url", className: "block text-[11px] font-bold text-slate-700 mb-0.5" }, tt("adminhub.drive_url_label", "Web app URL")), /* @__PURE__ */ React.createElement(
+    ) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("adminhub.drive_setup_intro", "A 3-minute script on your school-managed Google account saves this hub to your Drive automatically — covered by your district’s data agreement. Follow the setup steps in the leader’s guide, then paste the web-app URL and token here.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-col sm:flex-row gap-2 sm:items-end" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "adminhub-drive-url", className: "block text-xs font-bold text-slate-700 mb-0.5" }, tt("adminhub.drive_url_label", "Web app URL")), /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "adminhub-drive-url",
@@ -206,7 +238,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
         placeholder: tt("adminhub.drive_url_placeholder", "Web app URL ending in /exec"),
         className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs"
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-40" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "adminhub-drive-token", className: "block text-[11px] font-bold text-slate-700 mb-0.5" }, tt("adminhub.drive_token_label", "Backup token")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-40" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "adminhub-drive-token", className: "block text-xs font-bold text-slate-700 mb-0.5" }, tt("adminhub.drive_token_label", "Backup token")), /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "adminhub-drive-token",
@@ -228,6 +260,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
           try {
             const url = urlInput.trim();
             const reply = await _adminHubDrivePost(url, { token: tokenInput.trim(), action: "ping" });
+            if (!mountedRef.current) return;
             if (!reply || reply.ok !== true) throw new Error(reply && reply.error || "no-reply");
             const next = { url, token: tokenInput.trim(), folder: String(reply.folder || ""), lastSavedAt: null, lastHash: null };
             writeCfg(next);
@@ -237,9 +270,9 @@ function AdminHubDriveBackup({ tt, addToast }) {
             addToast(tt("adminhub.drive_connected", "Drive backup connected. Saving a first backup now…"), "success");
             await saveToDrive({ force: true });
           } catch (err) {
-            addToast(tt("adminhub.drive_connect_failed", "Could not connect: ") + String(err && err.message || err) + tt("adminhub.drive_connect_hint", " — check the URL ends in /exec, the token matches setup(), and the deployment allows Anyone."), "error");
+            if (mountedRef.current) addToast(tt("adminhub.drive_connect_failed", "Could not connect: ") + String(err && err.message || err) + tt("adminhub.drive_connect_hint", " — check the URL ends in /exec, the token matches setup(), and the deployment allows Anyone."), "error");
           } finally {
-            setBusy(false);
+            if (mountedRef.current) setBusy(false);
           }
         },
         className: "min-h-11 px-3 rounded-lg border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-50"
@@ -247,7 +280,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
       busy ? tt("adminhub.drive_connecting", "Connecting…") : tt("adminhub.drive_connect", "Connect & test")
     ))));
   }
-  return /* @__PURE__ */ React.createElement("div", { className: "mt-2 border-t border-slate-200 pt-2 flex flex-wrap items-center justify-between gap-2", "data-help-key": "adminhub_drive_section" }, /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "text-[11px] text-slate-600 min-w-0", "data-help-key": "adminhub_drive_status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, tt("adminhub.drive_on", "Drive auto-backup on")), cfg.folder ? " · " + cfg.folder : "", " · ", cfg.lastSavedAt ? tt("adminhub.drive_last_saved", "last saved {time}").replace("{time}", new Date(cfg.lastSavedAt).toLocaleString()) : tt("adminhub.drive_not_yet", "no backup saved yet"), autoNote ? " · " + autoNote : ""), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-2 border-t border-slate-200 pt-2 flex flex-wrap items-center justify-between gap-2", "data-help-key": "adminhub_drive_section" }, /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "text-xs text-slate-600 min-w-0", "data-help-key": "adminhub_drive_status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, tt("adminhub.drive_on", "Drive auto-backup on")), cfg.folder ? " · " + cfg.folder : "", " · ", cfg.lastSavedAt ? tt("adminhub.drive_last_saved", "last saved {time}").replace("{time}", new Date(cfg.lastSavedAt).toLocaleString()) : tt("adminhub.drive_not_yet", "no backup saved yet"), autoNote ? " · " + autoNote : ""), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -258,10 +291,10 @@ function AdminHubDriveBackup({ tt, addToast }) {
         try {
           await saveToDrive({ force: true });
         } finally {
-          setBusy(false);
+          if (mountedRef.current) setBusy(false);
         }
       },
-      className: "min-h-11 px-3 rounded-lg border border-emerald-300 bg-white text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50"
+      className: "min-h-11 px-3 rounded-lg border border-emerald-300 bg-white text-xs font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50"
     },
     busy ? tt("adminhub.drive_saving", "Saving…") : tt("adminhub.drive_save_now", "Back up to Drive now")
   ), /* @__PURE__ */ React.createElement(
@@ -269,13 +302,16 @@ function AdminHubDriveBackup({ tt, addToast }) {
     {
       type: "button",
       "data-help-key": "adminhub_drive_disconnect",
-      onClick: () => {
-        if (window.confirm(tt("adminhub.drive_disconnect_confirm", "Stop backing up to Drive? Existing backups stay in your Drive folder; only the connection on this device is removed."))) {
+      onClick: async () => {
+        const msg = tt("adminhub.drive_disconnect_confirm", "Stop backing up to Drive? Existing backups stay in your Drive folder; only the connection on this device is removed.");
+        const ok = typeof window !== "undefined" && window.AlloFlowUX && typeof window.AlloFlowUX.confirm === "function" ? await window.AlloFlowUX.confirm(msg, { title: tt("adminhub.drive_disconnect", "Disconnect"), confirmText: tt("adminhub.drive_disconnect", "Disconnect"), cancelText: tt("common.cancel", "Cancel"), tone: "warning" }).catch(() => false) : typeof window !== "undefined" && typeof window.confirm === "function" ? window.confirm(msg) : false;
+        if (!mountedRef.current) return;
+        if (ok) {
           writeCfg(null);
           addToast(tt("adminhub.drive_disconnected", "Drive backup disconnected."), "info");
         }
       },
-      className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-100"
+      className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100"
     },
     tt("adminhub.drive_disconnect", "Disconnect")
   )));
@@ -315,12 +351,7 @@ function AdminHubPanel(props) {
       return;
     }
     try {
-      const popup = window.open(portalUrl, "_blank", "noopener,noreferrer");
-      if (!popup) {
-        addToast(tt("adminhub.rewards_popup_blocked", "School Rewards was blocked. Allow pop-ups and try again."), "error");
-        return;
-      }
-      popup.opener = null;
+      window.open(portalUrl, "_blank", "noopener,noreferrer");
       onClose();
     } catch (_) {
       addToast(tt("adminhub.rewards_open_failed", "School Rewards could not open."), "error");
@@ -386,8 +417,14 @@ function AdminHubPanel(props) {
       if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest("details:not([open])");
       if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
-      const st = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
-      return !st || st.display !== "none" && st.visibility !== "hidden";
+      if (typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
+        for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === "none" || st.visibility === "hidden")) return false;
+          if (cur === dialog) break;
+        }
+      }
+      return true;
     });
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();
@@ -561,150 +598,188 @@ function AdminHubPanel(props) {
       descCls: "text-emerald-700"
     }
   ];
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "adminhub_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "adminhub-title", "aria-describedby": "adminhub-subtitle", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "adminhub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🏛️"), " ", tt("adminhub.title", "Leadership Hub")), /* @__PURE__ */ React.createElement("p", { id: "adminhub-subtitle", className: "text-sm text-slate-600 mt-1" }, tt("adminhub.subtitle", "Tools for principals, coaches, and student-services leaders"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": tt("adminhub.close_aria", "Close Leadership Hub") }, "✕")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, TOOLS.map((tool) => {
-    const isMaineCase = tool.id === "maineSldPractice";
-    const Card = isMaineCase ? "a" : "button";
-    return /* @__PURE__ */ React.createElement(
-      Card,
-      {
-        key: tool.id,
-        type: isMaineCase ? void 0 : "button",
-        "data-hub-id": tool.id,
-        "data-help-key": "adminhub_tool_card",
-        href: isMaineCase ? "https://alloflow-cdn.pages.dev/app/?tool=maine-sld-practice" : void 0,
-        target: isMaineCase ? "_blank" : void 0,
-        rel: isMaineCase ? "noopener noreferrer" : void 0,
-        onClick: (event) => {
-          if (isMaineCase) {
-            if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || typeof window.__alloOpenMaineSldPractice !== "function") return;
-            try {
-              if (window.__alloOpenMaineSldPractice({ fromLeadership: true }) !== false) event.preventDefault();
-            } catch (error) {
-              console.warn("[AdminHub] Maine SLD launch failed; opening the hosted activity.", error);
+  const backdropDownRef = React.useRef(false);
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4",
+      style: { zIndex: 260 },
+      role: "presentation",
+      onMouseDown: (e) => {
+        backdropDownRef.current = e.target === e.currentTarget;
+      },
+      onClick: (e) => {
+        const allow = backdropDownRef.current;
+        backdropDownRef.current = false;
+        if (allow && e.target === e.currentTarget) onClose();
+      }
+    },
+    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "adminhub_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "adminhub-title", "aria-describedby": "adminhub-subtitle", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "adminhub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🏛️"), " ", tt("adminhub.title", "Leadership Hub")), /* @__PURE__ */ React.createElement("p", { id: "adminhub-subtitle", className: "text-sm text-slate-600 mt-1" }, tt("adminhub.subtitle", "Tools for principals, coaches, and student-services leaders"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": tt("adminhub.close_aria", "Close Leadership Hub") }, "✕")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, TOOLS.map((tool) => {
+      const isMaineCase = tool.id === "maineSldPractice";
+      const Card = isMaineCase ? "a" : "button";
+      return /* @__PURE__ */ React.createElement(
+        Card,
+        {
+          key: tool.id,
+          type: isMaineCase ? void 0 : "button",
+          "data-hub-id": tool.id,
+          "data-help-key": "adminhub_tool_card",
+          href: isMaineCase ? "https://alloflow-cdn.pages.dev/app/?tool=maine-sld-practice" : void 0,
+          target: isMaineCase ? "_blank" : void 0,
+          rel: isMaineCase ? "noopener noreferrer" : void 0,
+          onClick: (event) => {
+            if (isMaineCase) {
+              if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || typeof window.__alloOpenMaineSldPractice !== "function") return;
+              try {
+                if (window.__alloOpenMaineSldPractice({ fromLeadership: true }) !== false) event.preventDefault();
+              } catch (error) {
+                console.warn("[AdminHub] Maine SLD launch failed; opening the hosted activity.", error);
+              }
+              return;
             }
-            return;
-          }
-          openHubTool(tool.id);
+            openHubTool(tool.id);
+          },
+          className: "flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left " + tool.accent
         },
-        className: "flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left " + tool.accent
-      },
-      /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, tool.icon),
-      /* @__PURE__ */ React.createElement("span", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold " + tool.titleCls }, tool.title), /* @__PURE__ */ React.createElement("span", { className: "block text-xs mt-1 " + tool.descCls }, tool.desc), isMaineCase && typeof window.__alloOpenMaineSldPractice !== "function" && /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-semibold mt-2" }, "Opens in a new tab ↗"))
-    );
-  })), /* @__PURE__ */ React.createElement("div", { className: "mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3", "data-help-key": "adminhub_backup_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-slate-700" }, tt("adminhub.backup_title", "Back up this hub")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, tt("adminhub.backup_desc", "Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe."))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-help-key": "adminhub_backup_export",
-      onClick: () => {
-        try {
-          const backup = _adminHubCollectBackup();
-          if (backup.keyCount === 0) {
-            addToast(tt("adminhub.backup_empty", "Nothing to back up yet — the hub tools have no saved data on this device."), "info");
-            return;
-          }
-          const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "alloflow-leadership-hub-backup-" + backup.exportedAt.slice(0, 10) + ".json";
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          setTimeout(() => {
-            try {
-              URL.revokeObjectURL(url);
-            } catch (_) {
+        /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, tool.icon),
+        /* @__PURE__ */ React.createElement("span", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold " + tool.titleCls }, tool.title), /* @__PURE__ */ React.createElement("span", { className: "block text-xs mt-1 " + tool.descCls }, tool.desc), isMaineCase && typeof window.__alloOpenMaineSldPractice !== "function" && /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-semibold mt-2" }, "Opens in a new tab ↗"))
+      );
+    })), /* @__PURE__ */ React.createElement("div", { className: "mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3", "data-help-key": "adminhub_backup_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-slate-700" }, tt("adminhub.backup_title", "Back up this hub")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, tt("adminhub.backup_desc", "Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe."))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-help-key": "adminhub_backup_export",
+        onClick: () => {
+          try {
+            const backup = _adminHubCollectBackup();
+            if (backup.keyCount === 0) {
+              addToast(tt("adminhub.backup_empty", "Nothing to back up yet — the hub tools have no saved data on this device."), "info");
+              return;
             }
-          }, 5e3);
-          addToast(tt("adminhub.backup_done", "Backup downloaded ({count} saved items). Keep it where you keep confidential files.").replace("{count}", String(backup.keyCount)), "success");
-        } catch (err) {
-          addToast(tt("adminhub.backup_failed", "Backup failed: ") + String(err && err.message || err), "error");
-        }
-      },
-      className: "min-h-11 px-3 rounded-lg border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50"
-    },
-    tt("adminhub.backup_export", "Download backup")
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-help-key": "adminhub_backup_restore",
-      onClick: () => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "application/json,.json";
-        input.onchange = () => {
-          const file = input.files && input.files[0];
-          if (!file) return;
-          if (file.size > 10 * 1024 * 1024) {
-            addToast(tt("adminhub.restore_too_large", "Backup file exceeds the 10 MB safety limit."), "error");
-            return;
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "alloflow-leadership-hub-backup-" + backup.exportedAt.slice(0, 10) + ".json";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => {
+              try {
+                URL.revokeObjectURL(url);
+              } catch (_) {
+              }
+            }, 5e3);
+            addToast(tt("adminhub.backup_done", "Backup downloaded ({count} saved items). Keep it where you keep confidential files.").replace("{count}", String(backup.keyCount)), "success");
+          } catch (err) {
+            addToast(tt("adminhub.backup_failed", "Backup failed: ") + String(err && err.message || err), "error");
           }
-          const reader = new FileReader();
-          reader.onload = () => {
-            try {
-              const _safeReviver = (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v;
-              const data = JSON.parse(String(reader.result || ""), _safeReviver);
-              if (!data || data.format !== ADMIN_HUB_BACKUP_FORMAT || typeof data.keys !== "object" || data.keys === null) {
-                addToast(tt("adminhub.restore_not_backup", "That file is not a Leadership Hub backup."), "error");
-                return;
-              }
-              const entries = Object.entries(data.keys).filter(([k, v]) => _adminHubKeyAllowed(k) && typeof v === "string");
-              const rejected = Object.keys(data.keys).length - entries.length;
-              if (entries.length === 0) {
-                addToast(tt("adminhub.restore_empty", "The backup contains no hub data."), "error");
-                return;
-              }
-              const stamp = typeof data.exportedAt === "string" ? data.exportedAt.slice(0, 10) : "?";
-              const breakdown = _adminHubGroupByTool(entries.map(([k]) => k)).map((g) => "· " + g.tool + ": " + g.count + " " + (g.count === 1 ? tt("adminhub.restore_item_one", "item") : tt("adminhub.restore_item_many", "items"))).join("\n");
-              const ok = window.confirm(
-                tt("adminhub.restore_confirm", "Restore this backup, dated {date}?").replace("{date}", stamp) + "\n\n" + breakdown + "\n\n" + tt("adminhub.restore_confirm_effect", "Data for these tools on this device will be replaced by the backup. Tools not listed are left alone, and nothing outside the Leadership Hub is touched.")
-              );
-              if (!ok) return;
-              for (const [k, v] of entries) {
-                if (k === "allo_wcop_delivery_v1") {
-                  try {
-                    const incoming = JSON.parse(v);
-                    const current = JSON.parse(localStorage.getItem(k) || "null");
-                    if (incoming && typeof incoming === "object" && !incoming.token && current && current.token && (!incoming.execUrl || incoming.execUrl === current.execUrl)) {
-                      incoming.token = current.token;
-                      localStorage.setItem(k, JSON.stringify(incoming));
-                      continue;
-                    }
-                  } catch (_) {
-                  }
+        },
+        className: "min-h-11 px-3 rounded-lg border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50"
+      },
+      tt("adminhub.backup_export", "Download backup")
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-help-key": "adminhub_backup_restore",
+        onClick: () => {
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "application/json,.json";
+          input.onchange = () => {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) {
+              addToast(tt("adminhub.restore_too_large", "Backup file exceeds the 10 MB safety limit."), "error");
+              return;
+            }
+            const reader = new FileReader();
+            reader.onload = async () => {
+              try {
+                const _safeReviver = (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v;
+                const data = JSON.parse(String(reader.result || ""), _safeReviver);
+                if (!data || data.format !== ADMIN_HUB_BACKUP_FORMAT || typeof data.keys !== "object" || data.keys === null) {
+                  addToast(tt("adminhub.restore_not_backup", "That file is not a Leadership Hub backup."), "error");
+                  return;
                 }
-                localStorage.setItem(k, v);
+                const entries = Object.entries(data.keys).filter(([k, v]) => _adminHubKeyAllowed(k) && typeof v === "string");
+                const rejected = Object.keys(data.keys).length - entries.length;
+                if (entries.length === 0) {
+                  addToast(tt("adminhub.restore_empty", "The backup contains no hub data."), "error");
+                  return;
+                }
+                const stamp = typeof data.exportedAt === "string" ? data.exportedAt.slice(0, 10) : "?";
+                const breakdown = _adminHubGroupByTool(entries.map(([k]) => k)).map((g) => "· " + g.tool + ": " + g.count + " " + (g.count === 1 ? tt("adminhub.restore_item_one", "item") : tt("adminhub.restore_item_many", "items"))).join("\n");
+                const restoreMsg = tt("adminhub.restore_confirm", "Restore this backup, dated {date}?").replace("{date}", stamp) + "\n\n" + breakdown + "\n\n" + tt("adminhub.restore_confirm_effect", "Data for these tools on this device will be replaced by the backup. Tools not listed are left alone, and nothing outside the Leadership Hub is touched.");
+                const ok = typeof window !== "undefined" && window.AlloFlowUX && typeof window.AlloFlowUX.confirm === "function" ? await window.AlloFlowUX.confirm(restoreMsg, { title: tt("adminhub.restore_backup_title", "Restore Leadership Hub backup?"), confirmText: tt("adminhub.restore_confirm_btn", "Restore backup"), cancelText: tt("common.cancel", "Cancel"), tone: "warning" }).catch(() => false) : typeof window !== "undefined" && typeof window.confirm === "function" ? window.confirm(restoreMsg) : false;
+                if (!ok) return;
+                const vault = _adminHubVaultInfo();
+                let restoredCount = 0;
+                let vaultSkipped = 0;
+                for (const [k, v] of entries) {
+                  const vaultFeature = _adminHubVaultFeatureFor(k);
+                  if (vault.active && vaultFeature) {
+                    const sess = vault.phase === "ready" && vault.sw && typeof vault.sw.getSession === "function" ? vault.sw.getSession(vaultFeature) : null;
+                    if (sess && sess.storage && typeof sess.storage.setItem === "function") {
+                      sess.storage.setItem(k, v);
+                      try {
+                        localStorage.removeItem(k);
+                      } catch (_) {
+                      }
+                      restoredCount += 1;
+                    } else {
+                      vaultSkipped += 1;
+                    }
+                    continue;
+                  }
+                  if (k === "allo_wcop_delivery_v1") {
+                    try {
+                      const incoming = JSON.parse(v, _safeReviver);
+                      const current = JSON.parse(localStorage.getItem(k) || "null", _safeReviver);
+                      if (incoming && typeof incoming === "object" && !incoming.token && current && current.token && (!incoming.execUrl || incoming.execUrl === current.execUrl)) {
+                        incoming.token = current.token;
+                        localStorage.setItem(k, JSON.stringify(incoming));
+                        restoredCount += 1;
+                        continue;
+                      }
+                    } catch (_) {
+                    }
+                  }
+                  localStorage.setItem(k, v);
+                  restoredCount += 1;
+                }
+                const totalSkipped = rejected + vaultSkipped;
+                addToast(
+                  (totalSkipped > 0 ? tt("adminhub.restore_done_skipped", "Restored {count} items; {skipped} entries outside the hub or locked in the vault were ignored. Reopen a tool to see its data.").replace("{skipped}", String(totalSkipped)) : tt("adminhub.restore_done", "Restored {count} items. Reopen a tool to see its data.")).replace("{count}", String(restoredCount)),
+                  vaultSkipped > 0 ? "warning" : "success"
+                );
+              } catch (err) {
+                addToast(tt("adminhub.restore_failed", "Restore failed: ") + String(err && err.message || err), "error");
               }
-              addToast(
-                (rejected > 0 ? tt("adminhub.restore_done_skipped", "Restored {count} items; {skipped} entries outside the hub were ignored. Reopen a tool to see its data.").replace("{skipped}", String(rejected)) : tt("adminhub.restore_done", "Restored {count} items. Reopen a tool to see its data.")).replace("{count}", String(entries.length)),
-                "success"
-              );
-            } catch (err) {
-              addToast(tt("adminhub.restore_failed", "Restore failed: ") + String(err && err.message || err), "error");
-            }
+            };
+            reader.onerror = () => addToast(tt("adminhub.restore_failed", "Restore failed: ") + "read error", "error");
+            reader.readAsText(file);
           };
-          reader.readAsText(file);
-        };
-        input.click();
+          input.click();
+        },
+        className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"
       },
-      className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"
-    },
-    tt("adminhub.backup_restore", "Restore from backup")
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-2" }, tt("adminhub.backup_caveat", "The file contains whatever the tools store — codes, notes, and settings. Treat it like the confidential records it may describe, and delete old copies per your retention policy.")), /* @__PURE__ */ React.createElement(AdminHubDriveBackup, { tt, addToast })), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[11px] text-slate-600 border-t border-slate-200 pt-3" }, tt("adminhub.covenant", "How this suite handles information: analysis tools use aggregate counts or de-identified codes. Everything you enter stays in your signed-in profile on this device and is never uploaded, protected by your device sign-in rather than by separate encryption. Connecting a district portal adds shared, authenticated records staff can see and acknowledge. Apply your district’s retention rules, and keep a backup so a lost device is not a lost year. Human review stays in control—never an automated verdict about a teacher or student.")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px]" }, /* @__PURE__ */ React.createElement(
-    "a",
-    {
-      href: "https://alloflow-cdn.pages.dev/guide/for-school-leaders.html",
-      target: "_blank",
-      rel: "noopener noreferrer",
-      "data-help-key": "adminhub_guide_link",
-      "aria-label": tt("adminhub.guide_link_aria", "Leader’s guide: how to use these tools (opens in a new tab)"),
-      className: "font-bold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
-    },
-    tt("adminhub.guide_link", "Leader’s guide: how to use these tools"),
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " →")
-  ))));
+      tt("adminhub.backup_restore", "Restore from backup")
+    ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-800 mt-2" }, tt("adminhub.backup_caveat", "The file contains whatever the tools store — codes, notes, and settings. Treat it like the confidential records it may describe, and delete old copies per your retention policy.")), /* @__PURE__ */ React.createElement(AdminHubDriveBackup, { tt, addToast })), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-xs text-slate-600 border-t border-slate-200 pt-3" }, tt("adminhub.covenant", "How this suite handles information: analysis tools use aggregate counts or de-identified codes. Everything you enter stays in your signed-in profile on this device and is never uploaded, protected by your device sign-in rather than by separate encryption. Connecting a district portal adds shared, authenticated records staff can see and acknowledge. Apply your district’s retention rules, and keep a backup so a lost device is not a lost year. Human review stays in control—never an automated verdict about a teacher or student.")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs" }, /* @__PURE__ */ React.createElement(
+      "a",
+      {
+        href: "https://alloflow-cdn.pages.dev/guide/for-school-leaders.html",
+        target: "_blank",
+        rel: "noopener noreferrer",
+        "data-help-key": "adminhub_guide_link",
+        "aria-label": tt("adminhub.guide_link_aria", "Leader’s guide: how to use these tools (opens in a new tab)"),
+        className: "font-bold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
+      },
+      tt("adminhub.guide_link", "Leader’s guide: how to use these tools"),
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " →")
+    )))
+  );
 }
 
   window.AlloModules = window.AlloModules || {};

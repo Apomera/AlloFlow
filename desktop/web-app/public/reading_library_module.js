@@ -1246,7 +1246,13 @@
         d.phonics.ipa ? e('div', { className: 'text-slate-500' }, 'IPA: ' + d.phonics.ipa) : null
       );
     } else {
-      body = e('div', { className: 'text-sm text-slate-700' }, d.text || tr('readinglib_no_definition', 'No definition available.'));
+      body = e('div', { className: 'text-sm text-slate-700 space-y-2' },
+        d.picture && d.picture.dataUri ? e('figure', { 'data-rl-word-picture': '1', className: 'flex flex-col items-center rounded-lg border border-indigo-100 bg-slate-50 p-2' },
+          e('img', { src: d.picture.dataUri, alt: d.picture.alt || d.word, className: 'max-h-20 w-auto object-contain rounded bg-white p-1' }),
+          d.picture.credit ? e('figcaption', { className: 'mt-1 text-xs text-slate-500' }, d.picture.credit) : null
+        ) : null,
+        e('div', null, d.text || tr('readinglib_no_definition', 'No definition available.'))
+      );
     }
     return e('div', { style: style, className: 'bg-white border border-slate-200 rounded-xl shadow-lg p-3', role: 'status', 'data-rl-word-popup': true },
       e('div', { className: 'flex items-center justify-between gap-2 mb-1' },
@@ -1373,6 +1379,7 @@
   // --------------------------------------------------------------- reader
   function BookReader(props) {
     var book = props.book;
+    var bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
     // Resume where the reader left off — long-form texts only (picture books
     // are short enough to just reopen at the start, and this keeps their
     // behavior unchanged). Lazy initializer runs once per mounted book.
@@ -1391,6 +1398,10 @@
     var _scope = useState('auto'); var sourceScope = _scope[0]; var setSourceScope = _scope[1];
     var _rs = useState(''); var rangeStartInput = _rs[0]; var setRangeStartInput = _rs[1];
     var _re = useState(''); var rangeEndInput = _re[0]; var setRangeEndInput = _re[1];
+    var _spo = useState(false); var sourcePickerOpen = _spo[0]; var setSourcePickerOpen = _spo[1];
+    var _ps = useState('whole'); var pickerScope = _ps[0]; var setPickerScope = _ps[1];
+    var _prs = useState('1'); var pickerStart = _prs[0]; var setPickerStart = _prs[1];
+    var _pre = useState('1'); var pickerEnd = _pre[0]; var setPickerEnd = _pre[1];
     // AI translation: null | {status:'loading',language} | {status:'ready',
     // language, title, pages[], isRtl, langCode}. Ephemeral — never persisted.
     var _tx = useState(null); var translation = _tx[0]; var setTranslation = _tx[1];
@@ -1415,6 +1426,7 @@
     var readerRef = useRef(null);
     var rulerViewportRef = useRef(null);
     var wordsDialogRef = useRef(null);
+    var sourcePickerDialogRef = useRef(null);
     var popupOpenerRef = useRef(null);
     var _rate = useState(1); var narrationRate = _rate[0]; var setNarrationRate = _rate[1];
     // Continuous read-aloud (auto page-turn) for text-only books; bookmarks;
@@ -1465,6 +1477,7 @@
     var txReady = !!(translation && translation.status === 'ready');
     var displayTitle = txReady && translation.title ? translation.title : book.title;
     var displayLanguage = txReady ? translation.language : book.language;
+    var bt = function (s) { return (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s, { lang: displayLanguage }) : s; };
     var displayRtl = txReady ? translation.isRtl : book.isRtl;
     var displayPageText = txReady ? cleanReadingText(translation.pages[pageIdx] || '') : pageTextForPipeline(page);
     var displayPlainText = txReady
@@ -1542,6 +1555,7 @@
       setSourceScope('auto');
       setRangeStartInput('');
       setRangeEndInput('');
+      setSourcePickerOpen(false);
       pairRequestRef.current += 1;
       setPairBook(null);
       setPairLoading('');
@@ -1844,6 +1858,27 @@
     }, [wordsOpen]);
 
     useEffect(function () {
+      if (!sourcePickerOpen || !sourcePickerDialogRef.current) return;
+      var opener = document.activeElement, dialog = sourcePickerDialogRef.current;
+      var focusable = function () { return Array.prototype.slice.call(dialog.querySelectorAll('button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')); };
+      (focusable()[0] || dialog).focus();
+      var onKey = function (ev) {
+        if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); setSourcePickerOpen(false); }
+        else if (ev.key === 'Tab') {
+          var els = focusable(), first = els[0], last = els[els.length - 1];
+          if (!first) { ev.preventDefault(); dialog.focus(); }
+          else if (!dialog.contains(document.activeElement) || (ev.shiftKey && document.activeElement === first)) { ev.preventDefault(); (ev.shiftKey ? last : first).focus(); }
+          else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+        }
+      };
+      document.addEventListener('keydown', onKey, true);
+      return function () {
+        document.removeEventListener('keydown', onKey, true);
+        if (opener && opener.isConnected) opener.focus();
+      };
+    }, [sourcePickerOpen]);
+
+    useEffect(function () {
       if (!popup) return;
       var onKey = function (ev) {
         if (ev.key !== 'Escape') return;
@@ -1903,16 +1938,87 @@
       var clean = String(word).replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
       if (!clean) return;
       if (!props.callGemini || !aiHelpOn) {
+        if (mode === 'phonics') {
+          var localParts = typeof window !== 'undefined' && typeof window.__alloSplitSyllables === 'function'
+            ? window.__alloSplitSyllables(clean, displayLanguage)
+            : null;
+          if (!localParts && typeof window !== 'undefined' && typeof window.__alloEnsureSyllableTable === 'function') {
+            try { window.__alloEnsureSyllableTable(); } catch (_) {}
+          }
+          var localSylText = Array.isArray(localParts) && localParts.length > 1 ? localParts.join('\u00b7') : clean;
+          setPopup({ type: 'phonics', word: clean, x: x, y: y, loading: false, phonics: { ipa: '', phoneticSpelling: '', syllables: localSylText } });
+          speak(clean, displayLanguage);
+          return;
+        }
+        if (mode === 'define' && (!displayLanguage || /^(?:en\b|en-|english)/i.test(String(displayLanguage).trim()))) {
+          var rlPic = typeof window !== 'undefined' && typeof window.__alloLookupWordPicture === 'function' ? window.__alloLookupWordPicture(clean) : null;
+          setPopup({ type: 'define', word: clean, x: x, y: y, loading: true, picture: rlPic });
+          Promise.resolve().then(function () {
+            if (!rlPic && typeof window !== 'undefined' && typeof window.__alloEnsureWordPictures === 'function') {
+              return window.__alloEnsureWordPictures().then(function () {
+                if (typeof window.__alloLookupWordPicture === 'function') rlPic = window.__alloLookupWordPicture(clean);
+              }, function () {});
+            }
+            return null;
+          }).then(function () {
+            if (!(window.AlloDictionary && (window.AlloDictionary.lookupDetailed || window.AlloDictionary.lookup)) && typeof window.__alloLoadPlugin === 'function') {
+              return window.__alloLoadPlugin('dictionary_loader.js');
+            }
+            return null;
+          }).then(function () {
+            if (window.AlloDictionary && typeof window.AlloDictionary.lookupDetailed === 'function') {
+              return window.AlloDictionary.lookupDetailed(clean, { autoLoadOfflineBank: true });
+            }
+            if (window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function') {
+              return Promise.resolve(window.AlloDictionary.lookup(clean, { autoLoadOfflineBank: true })).then(function (entry) { return { entry: entry }; });
+            }
+            return { entry: null };
+          }).then(function (res) {
+            var entry = res && res.entry;
+            var defText = '';
+            if (entry) {
+              if (typeof entry.definition === 'string' && entry.definition.trim()) defText = entry.definition.trim();
+              else if (Array.isArray(entry.meanings) && entry.meanings[0] && Array.isArray(entry.meanings[0].definitions) && entry.meanings[0].definitions[0] && entry.meanings[0].definitions[0].definition) {
+                defText = String(entry.meanings[0].definitions[0].definition).trim();
+              } else if (Array.isArray(entry.definitions) && entry.definitions[0]) {
+                defText = String(typeof entry.definitions[0] === 'string' ? entry.definitions[0] : (entry.definitions[0].definition || '')).trim();
+              }
+            }
+            if (defText || rlPic) {
+              setPopup(function (p) { return p && p.word === clean ? { type: 'define', word: clean, x: x, y: y, loading: false, text: defText || tr('readinglib_picture_only', 'Picture match (offline).'), picture: rlPic } : p; });
+              if (defText) {
+                setWordBank(addToWordBank({
+                  word: clean, text: defText, language: displayLanguage,
+                  bookTitle: displayTitle, slug: book.slug, page: pageIdx, passage: displayPageText, allowAI: allowsAi, ts: Date.now(),
+                }, props.readingScope));
+              }
+            } else {
+              setPopup(null);
+              props.addToast && props.addToast(tr('readinglib_ai_unavailable', 'AI help is not available right now.'), 'info');
+            }
+          }).catch(function () {
+            setPopup(null);
+            props.addToast && props.addToast(tr('readinglib_ai_unavailable', 'AI help is not available right now.'), 'info');
+          });
+          return;
+        }
         props.addToast && props.addToast(tr('readinglib_ai_unavailable', 'AI help is not available right now.'), 'info');
         return;
       }
       if (mode === 'define') {
-        setPopup({ type: 'define', word: clean, x: x, y: y, loading: true });
+        var rlAiPic = typeof window !== 'undefined' && typeof window.__alloLookupWordPicture === 'function' ? window.__alloLookupWordPicture(clean) : null;
+        setPopup({ type: 'define', word: clean, x: x, y: y, loading: true, picture: rlAiPic });
+        if (!rlAiPic && (!displayLanguage || /^(?:en\b|en-|english)/i.test(String(displayLanguage).trim())) && typeof window !== 'undefined' && typeof window.__alloEnsureWordPictures === 'function') {
+          window.__alloEnsureWordPictures().then(function () {
+            var pic = typeof window.__alloLookupWordPicture === 'function' ? window.__alloLookupWordPicture(clean) : null;
+            if (pic) setPopup(function (p) { return p && p.word === clean ? Object.assign({}, p, { picture: pic }) : p; });
+          }, function () {});
+        }
         var dPrompt = 'A student is reading a level ' + book.level + ' text written in ' + displayLanguage + '. ' +
           'In ONE short, friendly sentence written in ' + displayLanguage + ', explain what the word "' + clean + '" means in this text\'s context. Answer with only that sentence.';
         props.callGemini(dPrompt).then(function (res) {
           var textClean = String(res || '').trim();
-          setPopup(function (p) { return p && p.word === clean ? { type: 'define', word: clean, x: x, y: y, loading: false, text: textClean } : p; });
+          setPopup(function (p) { return p && p.word === clean ? { type: 'define', word: clean, x: x, y: y, loading: false, text: textClean, picture: (p && p.picture) || rlAiPic } : p; });
           // A successful lookup joins the personal word bank for later review.
           if (textClean) {
             setWordBank(addToWordBank({
@@ -1921,7 +2027,7 @@
             }, props.readingScope));
           }
         }).catch(function () {
-          setPopup(function (p) { return p && p.word === clean ? { type: 'define', word: clean, x: x, y: y, loading: false, text: null } : p; });
+          setPopup(function (p) { return p && p.word === clean ? { type: 'define', word: clean, x: x, y: y, loading: false, text: null, picture: (p && p.picture) || rlAiPic } : p; });
         });
       } else if (mode === 'phonics') {
         setPopup({ type: 'phonics', word: clean, x: x, y: y, loading: true });
@@ -1974,8 +2080,16 @@
     // Load the displayed book text as the app's source text (the host wraps
     // setInputText to also reveal the Source panel), so every pipeline tool —
     // not just the four in this menu — can work from the book.
-    var openAsDocument = function () {
+    var scopeSummaryLabel = function (scopeName, chosen) {
+      if (scopeName === 'whole' && sourcePages.length > 1) {
+        return tr('readinglib_all_pages_count', 'All {n} pages').replace('{n}', String(sourcePages.length));
+      }
+      return chosen && chosen.label ? chosen.label : tr('readinglib_scope_whole', 'Whole text');
+    };
+
+    var loadSourceScope = function (scopeName, rStart, rEnd) {
       setGenOpen(false);
+      setSourcePickerOpen(false);
       if (!allowsAi) {
         props.addToast && props.addToast(tr('readinglib_provider_ai_blocked', 'This provider requires permission for generative-AI use, so Extract to Source and AI handoffs are blocked.'), 'info');
         return;
@@ -1984,9 +2098,42 @@
         props.addToast && props.addToast(tr('readinglib_generate_unavailable', 'Generation is not available right now.'), 'error');
         return;
       }
-      props.setInputText(externalSourceText);
-      props.addToast && props.addToast('"' + displayTitle + '" (' + selectedSource.label + ') ' + tr('readinglib_loaded_doc', 'is loaded as your source text - all the create tools can use it now.'), 'success');
+      var maxPage = Math.max(1, sourcePages.length);
+      var sNum = clampIndex(Number(rStart || (pageIdx + 1)) - 1, 0, maxPage - 1) + 1;
+      var eNum = clampIndex(Number(rEnd || sNum) - 1, 0, maxPage - 1) + 1;
+      var lo = Math.min(sNum, eNum);
+      var hi = Math.max(sNum, eNum);
+      var chosen = bookPlainTextForScope(displayTitle, sourcePages, scopeName, pageIdx, lo, hi, sourceSections);
+      props.setInputText(chosen.text);
+      props.addToast && props.addToast('"' + displayTitle + '" (' + scopeSummaryLabel(scopeName, chosen) + ') ' + tr('readinglib_loaded_doc', 'is loaded as your source text - all the create tools can use it now.'), 'success');
       props.onExit && props.onExit(true);
+    };
+
+    var openAsDocument = function () {
+      loadSourceScope(selectedScopeName, rangeStartInput || (pageIdx + 1), rangeEndInput || (pageIdx + 1));
+    };
+
+    var openSourcePicker = function () {
+      closeMenus();
+      setPopup(null);
+      if (!allowsAi) {
+        props.addToast && props.addToast(tr('readinglib_provider_ai_blocked', 'This provider requires permission for generative-AI use, so Extract to Source and AI handoffs are blocked.'), 'info');
+        return;
+      }
+      if (typeof props.setInputText !== 'function') {
+        props.addToast && props.addToast(tr('readinglib_generate_unavailable', 'Generation is not available right now.'), 'error');
+        return;
+      }
+      if (sourcePages.length <= 1) {
+        loadSourceScope('whole', 1, 1);
+        return;
+      }
+      // Default multi-page selection to All pages so users get the full text
+      // unless they explicitly narrow to current page, chapter, or a range.
+      setPickerScope('whole');
+      setPickerStart(String(pageIdx + 1));
+      setPickerEnd(String(Math.min(sourcePages.length, pageIdx + 3)));
+      setSourcePickerOpen(true);
     };
 
     // Full displayed text (translation-aware) as [title, ...page texts]. Used
@@ -2262,7 +2409,7 @@
           aaOpen ? e('div', { className: 'absolute right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-3 z-20 w-72 max-h-[60vh] overflow-y-auto space-y-3', role: 'region', 'aria-label': tr('readinglib_panel_aaOpen', 'Reading supports'), 'data-rl-reader-panel': true },
             // font
             e('div', null,
-              e('div', { className: 'text-[11px] font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_font', 'Font')),
+              e('div', { className: 'text-xs font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_font', 'Font')),
               e('div', { className: 'flex flex-wrap gap-1' }, READER_FONTS.map(function (f) {
                 return e('button', {
                   key: f.id,
@@ -2275,7 +2422,7 @@
             ),
             // text size
             e('div', null,
-              e('div', { className: 'text-[11px] font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_size', 'Text size')),
+              e('div', { className: 'text-xs font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_size', 'Text size')),
               e('div', { className: 'flex items-center gap-2' },
                 e('button', {
                   className: 'px-3 py-1 rounded-lg text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700',
@@ -2292,7 +2439,7 @@
             ),
             // line + letter spacing
             e('div', null,
-              e('div', { className: 'text-[11px] font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_line', 'Line spacing')),
+              e('div', { className: 'text-xs font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_line', 'Line spacing')),
               e('div', { className: 'flex gap-1' }, [[0, tr('readinglib_aa_normal', 'Normal')], [1.9, tr('readinglib_aa_relaxed', 'Relaxed')], [2.3, tr('readinglib_aa_loose', 'Loose')]].map(function (opt) {
                 return e('button', {
                   key: String(opt[0]),
@@ -2304,7 +2451,7 @@
               }))
             ),
             e('div', null,
-              e('div', { className: 'text-[11px] font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_letter', 'Letter spacing')),
+              e('div', { className: 'text-xs font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_letter', 'Letter spacing')),
               e('div', { className: 'flex gap-1' }, [[0, tr('readinglib_aa_normal', 'Normal')], [0.06, tr('readinglib_aa_wide', 'Wide')], [0.12, tr('readinglib_aa_wider', 'Wider')]].map(function (opt) {
                 return e('button', {
                   key: String(opt[0]),
@@ -2316,7 +2463,7 @@
               }))
             ),
             e('div', null,
-              e('div', { className: 'text-[11px] font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_word', 'Word spacing')),
+              e('div', { className: 'text-xs font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_word', 'Word spacing')),
               e('div', { className: 'flex gap-1' }, [[0, tr('readinglib_aa_normal', 'Normal')], [0.16, tr('readinglib_aa_wide', 'Wide')], [0.32, tr('readinglib_aa_wider', 'Wider')]].map(function (opt) {
                 return e('button', {
                   key: String(opt[0]),
@@ -2329,7 +2476,7 @@
             ),
             // page color
             e('div', null,
-              e('div', { className: 'text-[11px] font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_theme', 'Page color')),
+              e('div', { className: 'text-xs font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_theme', 'Page color')),
               e('div', { className: 'flex flex-wrap gap-1' }, READER_THEMES.map(function (t) {
                 return e('button', {
                   key: t.id,
@@ -2380,7 +2527,7 @@
               className: 'block w-full text-left px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-teal-50',
               onClick: function () { setToolsOpen(false); stopAll(); setOverlay('crawl'); },
             }, '🎬 ' + tr('readinglib_tool_crawl', 'Story crawl')) : null,
-            longForm ? e('p', { className: 'px-3 py-1 text-[11px] text-slate-500' },
+            longForm ? e('p', { className: 'px-3 py-1 text-xs text-slate-500' },
               tr('readinglib_tools_scope_note', 'Long texts open at the current chapter.')) : null
           ) : null
         ) : null,
@@ -2394,7 +2541,7 @@
             title: tr('readinglib_translate_hint', 'AI-translate this book into any language'),
           }, '🌐 ' + (txReady ? translation.language : tr('readinglib_translate', 'Translate')) + ' ▾'),
           txMenuOpen ? e('div', { className: 'absolute right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-2 z-20 w-60', role: 'region', 'aria-label': tr('readinglib_panel_txMenuOpen', 'Translate'), 'data-rl-reader-panel': true },
-            e('p', { className: 'text-[11px] text-slate-500 px-1 pb-1' },
+            e('p', { className: 'text-xs text-slate-500 px-1 pb-1' },
               tr('readinglib_translate_note', 'AI translation — instant, any language, but not publisher-reviewed and without word-by-word narration.')),
             txReady ? e('button', {
               className: 'block w-full text-left px-2 py-1.5 rounded-lg text-sm font-semibold text-slate-700 hover:bg-purple-50',
@@ -2450,7 +2597,7 @@
           }, '✨ ' + tr('readinglib_create', 'Create') + ' ▾'),
           genOpen ? e('div', { className: 'absolute right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-1 z-20 min-w-[260px]', role: 'region', 'aria-label': tr('readinglib_panel_genOpen', 'Create'), 'data-rl-reader-panel': true },
             sourcePages.length > 1 ? e('div', { className: 'px-3 py-2 border-b border-slate-100' },
-              e('label', { className: 'block text-[11px] font-bold uppercase text-slate-500 mb-1' },
+              e('label', { className: 'block text-xs font-bold uppercase text-slate-500 mb-1' },
                 tr('readinglib_source_scope', 'Source scope')),
               e('select', {
                 className: 'w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700',
@@ -2464,7 +2611,7 @@
                 e('option', { key: 'whole', value: 'whole' }, tr('readinglib_scope_whole', longForm ? 'Whole text' : 'Whole book')),
               ]),
               selectedScopeName === 'range' ? e('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
-                e('label', { className: 'text-[11px] text-slate-500' },
+                e('label', { className: 'text-xs text-slate-500' },
                   tr('readinglib_range_from', 'From'),
                   e('input', {
                     className: 'mt-1 w-full rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-700',
@@ -2473,7 +2620,7 @@
                     onChange: function (ev) { setRangeStartInput(ev.target.value); },
                   })
                 ),
-                e('label', { className: 'text-[11px] text-slate-500' },
+                e('label', { className: 'text-xs text-slate-500' },
                   tr('readinglib_range_to', 'To'),
                   e('input', {
                     className: 'mt-1 w-full rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-700',
@@ -2483,7 +2630,7 @@
                   })
                 )
               ) : null,
-              e('div', { className: 'mt-1 text-[11px] text-slate-500' },
+              e('div', { className: 'mt-1 text-xs text-slate-500' },
                 selectedSource.label + ' - ' + selectedSource.wordCount + ' ' + tr('readinglib_words', 'words'))
             ) : null,
             genTypes.map(function (g) {
@@ -2548,14 +2695,25 @@
             title: tr('readinglib_export_hint', 'Print or download this non-AI accessible copy')
           }, '⤓ ' + tr('readinglib_export', 'Export') + ' ▾'),
           genOpen ? e('div', { className: 'absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-xl border border-slate-200 p-1 z-20', role: 'region', 'aria-label': tr('readinglib_export', 'Export'), 'data-rl-reader-panel': true },
-            e('div', { className: 'px-3 py-2 text-[11px] text-slate-600 bg-slate-50 rounded-lg mb-1' },
+            e('div', { className: 'px-3 py-2 text-xs text-slate-600 bg-slate-50 rounded-lg mb-1' },
               tr('readinglib_openstax_ai_off', 'OpenStax AI handoffs are off; non-AI accessibility and export remain available.')),
             e('button', { className: 'block w-full text-left px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-indigo-50', onClick: printBook },
               '🖨 ' + tr('readinglib_print', 'Print…')),
             e('button', { className: 'block w-full text-left px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-indigo-50', onClick: downloadText },
               '⤓ ' + tr('readinglib_download_txt', 'Download text (.txt)'))
           ) : null
-        )
+        ),
+        // Direct, prominent "Use as source text" action in the main reader bar
+        // (opens a page-scope picker for multi-page texts, defaulting to All pages).
+        (allowsAi && typeof props.setInputText === 'function') ? e('button', {
+          type: 'button',
+          className: 'px-3 py-1.5 rounded-lg text-sm font-semibold border bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700 shadow-sm',
+          'data-testid': 'readinglib-use-source-btn',
+          title: sourcePages.length > 1
+            ? tr('readinglib_use_source_multi_hint', 'Choose all pages, current page, or a page range to load into the Source panel')
+            : tr('readinglib_open_as_doc_hint', 'Loads the book text into the Source panel so any tool can use it'),
+          onClick: openSourcePicker,
+        }, '📥 ' + tr('readinglib_use_source_btn', 'Use as source text')) : null
       ),
       (hasAudioTrack || hasPageAudio) && !txReady ? e('audio', {
         ref: audioRef, src: hasAudioTrack ? book.audio.src : undefined, preload: 'none',
@@ -2570,6 +2728,150 @@
         onError: function () { if (hasPageAudio) { handleClipError(); return; } narrationFallback(); },
       }) : null,
       showPractice ? e(PracticePanel, { book: book, refText: displayPlainText, onClose: function () { setShowPractice(false); } }) : null,
+      // Use as source text — page-scope picker dialog for multi-page texts.
+      sourcePickerOpen ? (function () {
+        var totalPages = sourcePages.length;
+        var wholePreview = bookPlainTextForScope(displayTitle, sourcePages, 'whole', pageIdx, 1, totalPages, sourceSections);
+        var pagePreview = bookPlainTextForScope(displayTitle, sourcePages, 'page', pageIdx, pageIdx + 1, pageIdx + 1, sourceSections);
+        var chapterPreview = currentSection ? bookPlainTextForScope(displayTitle, sourcePages, 'chapter', pageIdx, 1, 1, sourceSections) : null;
+        var rawS = clampIndex(Number(pickerStart || (pageIdx + 1)) - 1, 0, Math.max(0, totalPages - 1)) + 1;
+        var rawE = clampIndex(Number(pickerEnd || rawS) - 1, 0, Math.max(0, totalPages - 1)) + 1;
+        var rangeLo = Math.min(rawS, rawE);
+        var rangeHi = Math.max(rawS, rawE);
+        var rangePreview = bookPlainTextForScope(displayTitle, sourcePages, 'range', pageIdx, rangeLo, rangeHi, sourceSections);
+        var confirmLabel = pickerScope === 'whole'
+          ? tr('readinglib_use_all_pages_cta', 'Use all {n} pages').replace('{n}', String(totalPages))
+          : pickerScope === 'page'
+            ? tr('readinglib_use_page_cta', 'Use page {n}').replace('{n}', String(pageIdx + 1))
+            : pickerScope === 'chapter' && chapterPreview
+              ? tr('readinglib_use_chapter_cta', 'Use current chapter')
+              : (rangeLo === rangeHi
+                ? tr('readinglib_use_page_cta', 'Use page {n}').replace('{n}', String(rangeLo))
+                : tr('readinglib_use_range_cta', 'Use pages {from}–{to}').replace('{from}', String(rangeLo)).replace('{to}', String(rangeHi)));
+        var optionCard = function (val, titleText, metaText, extraNode) {
+          var active = pickerScope === val;
+          return e('label', {
+            key: val,
+            className: 'block rounded-xl border p-3 cursor-pointer transition-colors ' +
+              (active ? 'border-indigo-600 bg-indigo-50/70 ring-1 ring-indigo-600' : 'border-slate-200 bg-white hover:bg-slate-50'),
+          },
+            e('div', { className: 'flex items-start gap-2.5' },
+              e('input', {
+                type: 'radio',
+                name: 'readinglib-source-scope-picker',
+                value: val,
+                checked: active,
+                onChange: function () { setPickerScope(val); },
+                className: 'mt-0.5 accent-indigo-600',
+              }),
+              e('div', { className: 'flex-1 min-w-0' },
+                e('div', { className: 'text-sm font-bold text-slate-800' }, titleText),
+                e('div', { className: 'text-xs text-slate-600 mt-0.5' }, metaText),
+                extraNode || null
+              )
+            )
+          );
+        };
+        return e('div', {
+          className: 'allo-docsuite fixed inset-0 z-[70] bg-black/40 flex items-center justify-center p-3',
+          onClick: function (ev) { if (ev.target === ev.currentTarget) setSourcePickerOpen(false); },
+        },
+          e('div', {
+            className: 'bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col p-4',
+            role: 'dialog',
+            'aria-modal': 'true',
+            'aria-label': tr('readinglib_source_picker_title', 'Use as source text'),
+            'data-testid': 'readinglib-source-picker',
+            ref: sourcePickerDialogRef,
+            tabIndex: -1,
+          },
+            e('div', { className: 'flex items-start justify-between gap-2 pb-2 border-b border-slate-200' },
+              e('div', { className: 'min-w-0' },
+                e('div', { className: 'font-bold text-slate-800 text-base' }, '📥 ' + tr('readinglib_source_picker_title', 'Use as source text')),
+                e('div', { className: 'text-xs text-slate-600 truncate mt-0.5', dir: 'auto', title: displayTitle }, displayTitle + ' · ' + totalPages + ' ' + tr('readinglib_pages', 'pages'))
+              ),
+              e('button', {
+                type: 'button',
+                className: 'px-2 py-1 rounded-lg text-xs font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100',
+                'aria-label': tr('readinglib_close', 'Close'),
+                onClick: function () { setSourcePickerOpen(false); },
+              }, '✕')
+            ),
+            e('p', { className: 'text-xs text-slate-600 py-2' },
+              tr('readinglib_source_picker_prompt', 'Choose how much of this reading to load into the Source panel:')),
+            e('div', { className: 'space-y-2 overflow-y-auto flex-1 min-h-0 pr-0.5' },
+              optionCard(
+                'whole',
+                tr('readinglib_picker_all_pages', 'All pages') + ' (' + totalPages + ')',
+                wholePreview.wordCount.toLocaleString() + ' ' + tr('readinglib_words', 'words'),
+                wholePreview.wordCount > 15000 ? e('div', { className: 'text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 mt-1.5' },
+                  tr('readinglib_picker_long_note', 'Long text — you can load all pages, or pick a chapter or page range for faster AI generation.')) : null
+              ),
+              optionCard(
+                'page',
+                tr('readinglib_scope_page', 'Current page') + ' (' + tr('readinglib_page_of', 'Page {p} of {n}').replace('{p}', String(pageIdx + 1)).replace('{n}', String(totalPages)) + ')',
+                pagePreview.wordCount.toLocaleString() + ' ' + tr('readinglib_words', 'words')
+              ),
+              chapterPreview ? optionCard(
+                'chapter',
+                tr('readinglib_scope_chapter', 'Current chapter'),
+                chapterPreview.label + ' · ' + chapterPreview.wordCount.toLocaleString() + ' ' + tr('readinglib_words', 'words')
+              ) : null,
+              optionCard(
+                'range',
+                tr('readinglib_scope_range', 'Page range'),
+                pickerScope === 'range'
+                  ? rangePreview.label + ' · ' + rangePreview.wordCount.toLocaleString() + ' ' + tr('readinglib_words', 'words')
+                  : tr('readinglib_picker_range_hint', 'Choose start and end pages (1–{n})').replace('{n}', String(totalPages)),
+                pickerScope === 'range' ? e('div', {
+                  className: 'grid grid-cols-2 gap-2 mt-2',
+                  onClick: function (ev) { ev.stopPropagation(); },
+                },
+                  e('label', { className: 'text-xs font-semibold text-slate-700' },
+                    tr('readinglib_range_from', 'From'),
+                    e('input', {
+                      type: 'number',
+                      min: 1,
+                      max: totalPages,
+                      'aria-label': tr('readinglib_range_from_aria', 'From page'),
+                      className: 'mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800',
+                      value: pickerStart,
+                      onChange: function (ev) { setPickerStart(ev.target.value); },
+                      onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); loadSourceScope('range', pickerStart, pickerEnd); } },
+                    })
+                  ),
+                  e('label', { className: 'text-xs font-semibold text-slate-700' },
+                    tr('readinglib_range_to', 'To'),
+                    e('input', {
+                      type: 'number',
+                      min: 1,
+                      max: totalPages,
+                      'aria-label': tr('readinglib_range_to_aria', 'To page'),
+                      className: 'mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800',
+                      value: pickerEnd,
+                      onChange: function (ev) { setPickerEnd(ev.target.value); },
+                      onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); loadSourceScope('range', pickerStart, pickerEnd); } },
+                    })
+                  )
+                ) : null
+              )
+            ),
+            e('div', { className: 'flex items-center justify-end gap-2 pt-3 mt-3 border-t border-slate-200' },
+              e('button', {
+                type: 'button',
+                className: 'px-3 py-1.5 rounded-lg text-sm font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100',
+                onClick: function () { setSourcePickerOpen(false); },
+              }, tr('readinglib_cancel', 'Cancel')),
+              e('button', {
+                type: 'button',
+                'data-testid': 'readinglib-source-picker-confirm',
+                className: 'px-4 py-1.5 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm',
+                onClick: function () { loadSourceScope(pickerScope, pickerStart, pickerEnd); },
+              }, confirmLabel)
+            )
+          )
+        );
+      })() : null,
       // My words — review panel for the personal word bank. allo-docsuite on
       // the fixed backdrop keeps host dark-theme rules applying (see docsuite
       // theme-reactivity convention for overlays outside the main modal).
@@ -2614,7 +2916,7 @@
                 className: 'px-2 py-1 rounded-lg text-[12px] font-semibold text-slate-700 border border-slate-200 hover:bg-slate-100',
                 onClick: function () { setWordsOpen(false); },
               }, tr('readinglib_close', 'Close')))),
-          e('div', { className: 'text-[11px] text-slate-500 py-1' },
+          e('div', { className: 'text-xs text-slate-500 py-1' },
             tr('readinglib_words_note', 'Words you look up in Define mode are saved here — on this device only.')),
           e('div', { className: 'flex-1 min-h-0 overflow-y-auto' },
             props.readingScope ? e('button', { type: 'button', className: 'min-h-[44px] px-3 py-2 border rounded-lg text-sm', onClick: function () {
@@ -2638,7 +2940,7 @@
                   e('div', { className: 'font-bold text-slate-800', dir: 'auto' },
                     w.word + (w.language && w.language !== book.language ? ' · ' + w.language : '')),
                   w.text ? e('div', { className: 'text-sm text-slate-600', dir: 'auto' }, w.text) : null,
-                  w.bookTitle ? e('div', { className: 'text-[11px] text-slate-400 truncate' }, w.bookTitle) : null,
+                  w.bookTitle ? e('div', { className: 'text-xs text-slate-400 truncate' }, w.bookTitle) : null,
                   w.passage && Number.isInteger(w.page) && props.onReadReflect ? e('button', { type: 'button', className: 'min-h-[44px] text-sm underline font-bold', onClick: function () { stopAll(); props.onReadReflect({ text: w.passage, title: w.bookTitle || w.word, language: w.language, allowAI: w.allowAI === true, anchor: { kind: 'library', resourceId: w.slug, slug: w.slug, section: w.page, page: w.page } }); } }, tr('readinglib_open_saved_passage', 'Open saved passage')) : null),
                 e('button', {
                   className: 'px-1.5 py-0.5 rounded-lg text-[12px] text-slate-600 hover:text-red-700 hover:bg-red-50 border border-transparent',
@@ -2751,14 +3053,14 @@
           }, page.imgCaption) : null,
           translation && translation.status === 'loading' ? e('div', { className: 'mt-6 text-center text-slate-500 italic' },
             '🌐 ' + tr('readinglib_translating_into', 'Translating into') + ' ' + translation.language + '…') : null,
-          txReady ? e('div', { className: 'mt-3 mx-auto max-w-xl text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 flex items-center justify-center gap-2 flex-wrap text-center' },
+          txReady ? e('div', { className: 'mt-3 mx-auto max-w-xl text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 flex items-center justify-center gap-2 flex-wrap text-center' },
             e('span', null, '🤖 ' + tr('readinglib_translate_caveat', 'AI translation') + ' (' + translation.language + ') — ' +
               tr('readinglib_translate_caveat_body', 'created by AI, not reviewed by the publisher. Word-by-word narration is only available on the original.')),
             // Side-by-side: keep the original visible next to the translation
             // (a dual-language family reads together; an ELL student checks
             // meaning line by line).
             e('button', {
-              className: 'px-2 py-0.5 rounded-full border text-[11px] font-semibold whitespace-nowrap ' +
+              className: 'px-2 py-0.5 rounded-full border text-xs font-semibold whitespace-nowrap ' +
                 (bilingual ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-100'),
               onClick: function () { setBilingual(!bilingual); },
               'aria-pressed': bilingual,
@@ -2775,10 +3077,10 @@
             lang: book.langCode || undefined,
             'data-testid': 'bilingual-original',
           },
-            e('div', { className: 'text-[10px] uppercase tracking-wide font-bold text-slate-600 mb-1' },
+            e('div', { className: 'text-xs uppercase tracking-wide font-bold text-slate-600 mb-1' },
               book.language + ' · ' + tr('readinglib_original', 'Original')),
             pageTextForPipeline(page).split(/\n{2,}/).map(function (par, pi) {
-              return e('p', { key: pi, className: 'mb-2 whitespace-pre-line' }, par);
+              return e('p', { key: pi, className: 'mb-2 whitespace-pre-line' }, bt(par));
             })) : null,
           e('div', {
             className: 'mt-4 mx-auto ' + (dualView ? 'lg:mx-0 ' : '') + 'max-w-xl leading-relaxed text-slate-800 ' + textLayoutClass(book.level, displayPageText) + (mode !== 'read' ? ' cursor-pointer' : '') + (fontClass ? ' ' + fontClass : ''),
@@ -2788,7 +3090,7 @@
             'data-testid': publishedPairReady ? 'published-pair-primary' : undefined,
             'data-rl-reading-text': true,
           },
-          publishedPairReady ? e('div', { className: 'text-[10px] uppercase tracking-wide font-bold text-indigo-500 mb-1' },
+          publishedPairReady ? e('div', { className: 'text-xs uppercase tracking-wide font-bold text-indigo-500 mb-1' },
             book.language + ' · ' + tr('readinglib_primary_edition', 'Primary edition') + ' · ' +
             tr('readinglib_page', 'page') + ' ' + (pageIdx + 1) + '/' + pages.length) : null,
           lines.map(function (line, li) {
@@ -2806,7 +3108,7 @@
                 tabIndex: lookupOn ? 0 : undefined,
                 'aria-label': lookupOn ? (mode === 'define' ? tr('readinglib_define', 'Define') : tr('readinglib_sounds', 'Sounds')) + ': ' + tok.w : undefined,
                 onKeyDown: lookupOn ? function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onWordClick(tok.w, ev); } } : undefined,
-              }, tok.w + (ti < line.length - 1 ? ' ' : ''));
+              }, bt(tok.w + (ti < line.length - 1 ? ' ' : '')));
             }));
           })),
           publishedPairReady ? e('div', {
@@ -2815,11 +3117,11 @@
             lang: pairBook.langCode || undefined,
             'data-testid': 'published-pair-companion',
           },
-            e('div', { className: 'text-[10px] uppercase tracking-wide font-bold text-indigo-500 mb-1' },
+            e('div', { className: 'text-xs uppercase tracking-wide font-bold text-indigo-500 mb-1' },
               pairBook.language + ' · ' + tr('readinglib_companion_edition', 'Published companion') + ' · ' +
               tr('readinglib_page', 'page') + ' ' + (pairPageIdx + 1) + '/' + pairPages.length),
             pairPageText ? pairPageText.split(/\n{2,}/).map(function (par, pi) {
-              return e('p', { key: pi, className: 'mb-2 whitespace-pre-line' }, par);
+              return e('p', { key: pi, className: 'mb-2 whitespace-pre-line' }, bt(par));
             }) : e('p', { className: 'italic text-slate-500' }, tr('readinglib_pair_page_empty', 'This edition has no text on the synchronized page.'))
           ) : null
           ) // bilingual wrapper (single-column grid-less div when not bilingual)
@@ -2894,23 +3196,23 @@
         ),
         // Saved bookmarks — jump chips with a remove (✕).
         bookmarks.length ? e('div', { className: 'flex items-center justify-center gap-1 flex-wrap mt-1.5' },
-          e('span', { className: 'text-[11px] font-semibold text-slate-600' }, tr('readinglib_bookmarks', 'Bookmarks') + ':'),
+          e('span', { className: 'text-xs font-semibold text-slate-600' }, tr('readinglib_bookmarks', 'Bookmarks') + ':'),
           bookmarks.map(function (bmIdx) {
             return e('span', { key: bmIdx, className: 'inline-flex items-center rounded-full border border-amber-200 bg-amber-50 overflow-hidden' },
               e('button', {
-                className: 'px-2 py-0.5 text-[11px] font-semibold text-amber-800 hover:bg-amber-100 tabular-nums',
+                className: 'px-2 py-0.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 tabular-nums',
                 onClick: function () { goTo(bmIdx); },
                 title: tr('readinglib_go_to_page', 'Go to page') + ' ' + (bmIdx + 1),
               }, '🔖 ' + (bmIdx + 1)),
               e('button', {
-                className: 'px-1.5 py-0.5 text-[11px] text-amber-700 hover:text-amber-800 hover:bg-amber-100',
+                className: 'px-1.5 py-0.5 text-xs text-amber-700 hover:text-amber-800 hover:bg-amber-100',
                 onClick: function () { var next = bookmarks.filter(function (n) { return n !== bmIdx; }); setBookmarks(next); saveBookmarks(book.slug, next, props.readingScope); },
                 'aria-label': tr('readinglib_remove_bookmark', 'Remove bookmark') + ' ' + (bmIdx + 1),
               }, '✕')
             );
           })
         ) : null,
-        e('p', { className: 'text-[11px] text-slate-500 text-center mt-1.5' },
+        e('p', { className: 'text-xs text-slate-500 text-center mt-1.5' },
           attributionLine(book) + (txReady ? ' · 🤖 ' + tr('readinglib_attr_ai_translated', 'AI-translated into') + ' ' + translation.language : '') + ' · ',
           e('a', { href: pageSourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
             bookSourceName),
@@ -3109,48 +3411,48 @@
           tr('readinglib_opening', 'Opening book…'))) : null,
       e('div', { className: 'font-bold text-slate-800 leading-snug', dir: 'auto' }, b.title),
       e('div', { className: 'flex flex-wrap gap-1' },
-        bookSourceId(b) !== 'storyweaver' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-semibold' },
+        bookSourceId(b) !== 'storyweaver' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold' },
           sourceLabel(bookSourceId(b))) : null,
-        bookSourceId(b) === 'openstax' && !isCardContent(b) ? e('span', { className: 'px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[11px] font-semibold' },
+        bookSourceId(b) === 'openstax' && !isCardContent(b) ? e('span', { className: 'px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold' },
           '✓ ' + tr('readinglib_mirrored_chapter', 'Mirrored chapter')) : null,
-        bookSourceId(b) === 'openstax' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-50 border border-slate-300 text-slate-700 text-[11px] font-semibold' },
+        bookSourceId(b) === 'openstax' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold' },
           'AI off') : null,
-        bookSourceId(b) === 'ck12' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-50 border border-slate-300 text-slate-700 text-[11px] font-semibold' },
+        bookSourceId(b) === 'ck12' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold' },
           '↗ ' + tr('readinglib_link_only', 'Link only · AI off')) : null,
         // Source cards carry a hardcoded audience level with no text behind
         // it — showing a Level chip there implies a measurement we never
         // made. The 🔗 Source card badge already says what these are.
-        !isCardContent(b) ? e('span', { className: 'px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-semibold' },
+        !isCardContent(b) ? e('span', { className: 'px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold' },
           tr('readinglib_level', 'Level') + ' ' + b.level) : null,
-        e('span', { className: 'px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[11px] font-semibold' }, b.language),
+        e('span', { className: 'px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-xs font-semibold' }, b.language),
         !isCardContent(b) ? e('span', {
-          className: 'px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-[11px] font-semibold',
+          className: 'px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold',
           title: tr('readinglib_in_app_hint', 'Complete readable text is available inside AlloFlow'),
         }, '✓ ' + tr('readinglib_in_app', 'In app')) : null,
         familySize > 1 ? e('span', {
-          className: 'px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 text-[11px] font-semibold',
+          className: 'px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 text-xs font-semibold',
           title: tr('readinglib_published_languages_hint', 'Verified published editions of the same work'),
         }, '🌐 ' + familySize + ' ' + tr('readinglib_languages', 'languages')) : null,
-        b.hasAudio ? e('span', { className: 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold' },
+        b.hasAudio ? e('span', { className: 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold' },
           '🔊 ' + tr('readinglib_narrated', 'Narrated')) : null,
-        reuseFacet === 'public-domain' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-lime-50 border border-lime-200 text-lime-800 text-[11px] font-semibold' },
+        reuseFacet === 'public-domain' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-lime-50 border border-lime-200 text-lime-800 text-xs font-semibold' },
           tr('readinglib_public_domain', 'Public domain')) : null,
-        reuseFacet === 'noncommercial' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-orange-800 text-[11px] font-semibold' },
+        reuseFacet === 'noncommercial' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-orange-800 text-xs font-semibold' },
           tr('readinglib_noncommercial', 'Noncommercial')) : null,
-        timeLabel ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-semibold' },
+        timeLabel ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold' },
           '⏱ ' + timeLabel) : null,
-        resumePage ? e('span', { className: 'px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[11px] font-semibold' },
+        resumePage ? e('span', { className: 'px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold' },
           '▶ ' + tr('readinglib_resume_page', 'Resume p.') + resumePage) : null,
         isCardContent(b) ? e('span', {
-          className: 'px-2 py-0.5 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-[11px] font-semibold',
+          className: 'px-2 py-0.5 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-xs font-semibold',
           title: tr('readinglib_card_badge_hint', 'A short overview that links out to the full text at the source'),
         }, '🔗 ' + tr('readinglib_card_badge', 'Source card')) : null
       ),
       subjectChips.length ? e('div', { className: 'flex flex-wrap gap-1' },
         subjectChips.map(function (s, i) {
-          return e('span', { key: 'subj-' + i, className: 'px-2 py-0.5 rounded-full bg-slate-50 border border-slate-200 text-slate-500 text-[10px]' }, s);
+          return e('span', { key: 'subj-' + i, className: 'px-2 py-0.5 rounded-full bg-slate-50 border border-slate-200 text-slate-500 text-xs' }, s);
         })) : null,
-      b.authors && b.authors.length ? e('div', { className: 'text-[11px] text-slate-500' }, b.authors.join(', ')) : null
+      b.authors && b.authors.length ? e('div', { className: 'text-xs text-slate-500' }, b.authors.join(', ')) : null
     );
   }
 
@@ -3165,12 +3467,12 @@
   }
 
   function collectionBadgeClass(collection, available) {
-    if (!available) return 'self-start px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500 text-[11px] font-semibold';
-    if (collection.accent === 'emerald') return 'self-start px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold';
-    if (collection.accent === 'sky') return 'self-start px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[11px] font-semibold';
-    if (collection.accent === 'amber') return 'self-start px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-semibold';
-    if (collection.accent === 'indigo') return 'self-start px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[11px] font-semibold';
-    return 'self-start px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-semibold';
+    if (!available) return 'self-start px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500 text-xs font-semibold';
+    if (collection.accent === 'emerald') return 'self-start px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold';
+    if (collection.accent === 'sky') return 'self-start px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-xs font-semibold';
+    if (collection.accent === 'amber') return 'self-start px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold';
+    if (collection.accent === 'indigo') return 'self-start px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold';
+    return 'self-start px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold';
   }
 
   function CollectionChooser(props) {
@@ -3213,7 +3515,7 @@
               e('div', { className: 'text-lg font-extrabold text-slate-900' }, tr('readinglib_collection_' + collection.id + '_label', collection.label)),
               e('div', { className: 'text-sm font-semibold text-slate-700' }, tr('readinglib_collection_' + collection.id + '_sources', collection.sourceLine)),
               e('p', { className: 'text-sm text-slate-600 leading-snug flex-1' }, tr('readinglib_collection_' + collection.id + '_summary', collection.summary)),
-              e('div', { className: 'text-[11px] font-semibold text-slate-600' },
+              e('div', { className: 'text-xs font-semibold text-slate-600' },
                 available ? langCount + ' ' + (langCount === 1 ? tr('readinglib_language', 'language') : tr('readinglib_languages', 'languages')) : tr('readinglib_collection_next', 'Ready for a licensed-source import'))
             );
           })
@@ -3518,7 +3820,7 @@
         (endpoint && (status === 'ok' || status === 'loadingMore') && results.length) ? (function () {
           var importable = results.filter(function (r) { return r.hasText && !haveIds[r.id] && !localIds[r.id]; }).length;
           return e('div', { className: 'flex items-center justify-between gap-2 mt-2' },
-            e('div', { className: 'text-[11px] text-slate-500' }, results.length + ' ' + tr('readinglib_results', 'results')),
+            e('div', { className: 'text-xs text-slate-500' }, results.length + ' ' + tr('readinglib_results', 'results')),
             importable ? e('button', {
               className: 'px-3 py-1 rounded-lg text-xs font-semibold ' + (adding === -1 ? 'bg-emerald-700 text-white cursor-wait' : 'bg-emerald-700 text-white hover:bg-emerald-800'),
               onClick: adding === -1 ? undefined : addAll,
@@ -3535,10 +3837,10 @@
               : e('div', { className: 'w-12 h-16 rounded bg-indigo-50 flex items-center justify-center text-xl flex-shrink-0' }, '📖'),
             e('div', { className: 'min-w-0 flex-1' },
               e('div', { className: 'font-bold text-slate-800 text-sm leading-snug' }, r.title),
-              r.authors.length ? e('div', { className: 'text-[11px] text-slate-500' }, r.authors.join(', ')) : null,
+              r.authors.length ? e('div', { className: 'text-xs text-slate-500' }, r.authors.join(', ')) : null,
               e('div', { className: 'flex flex-wrap gap-1 mt-1' },
-                r.subjects.map(function (s, i) { return e('span', { key: i, className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px]' }, String(s).slice(0, 40)); }),
-                e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px]' }, '⬇ ' + r.downloads.toLocaleString())
+                r.subjects.map(function (s, i) { return e('span', { key: i, className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs' }, String(s).slice(0, 40)); }),
+                e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs' }, '⬇ ' + r.downloads.toLocaleString())
               ),
               e('div', { className: 'flex flex-wrap items-center gap-2 mt-2' },
                 e('a', {
@@ -3547,7 +3849,7 @@
                 }, tr('readinglib_open_at_gutenberg', 'Open at Gutenberg')),
                 inLibrary ? e('span', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200' },
                   '✓ ' + tr('readinglib_in_library', 'In your library')) :
-                !r.hasText ? e('span', { className: 'text-[11px] text-slate-600 italic' }, tr('readinglib_no_inapp_text', 'No in-app text (audio/scan only)')) :
+                !r.hasText ? e('span', { className: 'text-xs text-slate-600 italic' }, tr('readinglib_no_inapp_text', 'No in-app text (audio/scan only)')) :
                 isAdding ? e('span', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200' },
                   tr('readinglib_adding', 'Adding…')) :
                 endpoint ? e('button', {
@@ -3587,8 +3889,8 @@
           ),
           e('div', { className: 'flex flex-wrap gap-1' }, requests.map(function (r) {
             return e('span', { key: r.id, className: 'inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 overflow-hidden' },
-              e('span', { className: 'px-2 py-0.5 text-[11px] text-indigo-800' }, r.title.slice(0, 32)),
-              e('button', { className: 'px-1.5 py-0.5 text-[11px] text-indigo-500 hover:text-indigo-800 hover:bg-indigo-100', onClick: function () { removeRequest(r.id); }, 'aria-label': tr('readinglib_req_remove', 'Remove request') }, '✕')
+              e('span', { className: 'px-2 py-0.5 text-xs text-indigo-800' }, r.title.slice(0, 32)),
+              e('button', { className: 'px-1.5 py-0.5 text-xs text-indigo-500 hover:text-indigo-800 hover:bg-indigo-100', onClick: function () { removeRequest(r.id); }, 'aria-label': tr('readinglib_req_remove', 'Remove request') }, '✕')
             );
           }))
         ) : null
@@ -3604,7 +3906,7 @@
       e('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50 p-4 mb-3' },
         e('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
           e('div', { className: 'min-w-0' },
-            e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-indigo-600' }, tr('readinglib_set_sequence', 'Reading sequence')),
+            e('div', { className: 'text-xs uppercase tracking-wide font-bold text-indigo-600' }, tr('readinglib_set_sequence', 'Reading sequence')),
             e('h3', { className: 'text-xl font-extrabold text-indigo-950 truncate', dir: 'auto' }, set.title || tr('readinglib_set_resource', 'Reading set')),
             e('p', { className: 'text-sm text-indigo-900/80' }, refs.length + ' ' + tr('readinglib_books', 'books') + ' · ' + tr('readinglib_set_sequence_hint', 'Open titles in order or choose your own pace.'))
           ),
@@ -3619,7 +3921,7 @@
             }, tr('readinglib_set_back_catalog', 'Back to catalog'))
           )
         ),
-        e('p', { className: 'mt-2 text-[11px] text-indigo-950/75' }, tr('readinglib_set_rights_note', 'Only title, order, source, and licence metadata are saved; the set does not copy protected text.'))
+        e('p', { className: 'mt-2 text-xs text-indigo-950/75' }, tr('readinglib_set_rights_note', 'Only title, order, source, and licence metadata are saved; the set does not copy protected text.'))
       ),
       e('ol', { className: 'flex-1 min-h-0 overflow-y-auto space-y-2 pr-1', 'aria-label': tr('readinglib_set_order', 'Reading set order') },
         refs.map(function (ref, index) {
@@ -4191,7 +4493,7 @@
       body = e('div', { className: 'flex flex-col h-full min-h-0 overflow-y-auto', 'data-testid': 'reading-catalog-scroll' },
         e('div', { className: 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3' },
           e('div', { className: 'min-w-0' },
-            e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-slate-400' }, tr('readinglib_collection_label', 'Collection')),
+            e('div', { className: 'text-xs uppercase tracking-wide font-bold text-slate-400' }, tr('readinglib_collection_label', 'Collection')),
             e('div', { className: 'text-lg font-extrabold text-slate-900 truncate' }, tr('readinglib_collection_' + selectedCollection.id + '_label', selectedCollection.label)),
             e('div', { className: 'text-sm text-slate-500 truncate' }, tr('readinglib_collection_' + selectedCollection.id + '_sources', selectedCollection.sourceLine))
           ),
@@ -4358,7 +4660,7 @@
                 onClick: function () { setSelectedSetSlugs([]); setSetPanelOpen(false); },
               }, tr('readinglib_set_clear', 'Clear selection'))
             ),
-            e('p', { className: 'text-[11px] text-indigo-900/75' }, tr('readinglib_set_rights_note', 'Only title, order, source, and licence metadata are saved; the set does not copy protected text.'))
+            e('p', { className: 'text-xs text-indigo-900/75' }, tr('readinglib_set_rights_note', 'Only title, order, source, and licence metadata are saved; the set does not copy protected text.'))
           ) : null
         ) : null,        activeFilterPills.length ? e('div', {
           className: 'flex flex-wrap items-center gap-1.5 pb-3',
@@ -4437,12 +4739,12 @@
           // catalog). Shown while browsing, opened straight from IndexedDB.
           (localImports.length && !filters.search) ? e('div', { className: 'mb-3' },
             e('div', { className: 'flex items-center justify-between gap-2 mb-1' },
-              e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-emerald-600' },
+              e('div', { className: 'text-xs uppercase tracking-wide font-bold text-emerald-600' },
                 '📥 ' + tr('readinglib_my_imports', 'My imports') + ' · ' + tr('readinglib_my_imports_note', 'on this device')),
               props.isTeacherMode ? e('div', { className: 'flex gap-1.5' },
-                e('button', { className: 'px-2 py-0.5 rounded-lg text-[11px] font-semibold text-emerald-800 border border-emerald-200 hover:bg-emerald-50', onClick: exportImports, title: tr('readinglib_backup_imports_hint', 'Save your imported books to a file (to move to another device)') },
+                e('button', { className: 'px-2 py-0.5 rounded-lg text-xs font-semibold text-emerald-800 border border-emerald-200 hover:bg-emerald-50', onClick: exportImports, title: tr('readinglib_backup_imports_hint', 'Save your imported books to a file (to move to another device)') },
                   '⤓ ' + tr('readinglib_backup_imports', 'Back up')),
-                e('button', { className: 'px-2 py-0.5 rounded-lg text-[11px] font-semibold text-emerald-800 border border-emerald-200 hover:bg-emerald-50', onClick: function () { if (restoreInputRef.current) restoreInputRef.current.click(); }, title: tr('readinglib_restore_hint', 'Restore imported books from a backup file') },
+                e('button', { className: 'px-2 py-0.5 rounded-lg text-xs font-semibold text-emerald-800 border border-emerald-200 hover:bg-emerald-50', onClick: function () { if (restoreInputRef.current) restoreInputRef.current.click(); }, title: tr('readinglib_restore_hint', 'Restore imported books from a backup file') },
                   '⤒ ' + tr('readinglib_restore', 'Restore')),
                 e('input', { ref: restoreInputRef, type: 'file', accept: 'application/json,.json', className: 'hidden', 'aria-hidden': true,
                   onChange: function (ev) { var f = ev.target.files && ev.target.files[0]; restoreImports(f); ev.target.value = ''; } })
@@ -4453,7 +4755,7 @@
                 return e('div', { key: 'local-' + c.slug, className: 'relative' },
                   e(BookCard, { coverSize: coverSize, book: c, onOpen: function () { openLocalBook(c); }, busy: loadingBook === c.slug, familySize: workFamilySizes[workIdentity(c)] || 0 }),
                   e('button', {
-                    className: 'absolute top-1 right-1 z-10 px-1.5 py-0.5 rounded-full bg-white/90 border border-slate-200 text-[11px] text-slate-500 hover:text-red-600 hover:bg-white shadow',
+                    className: 'absolute top-1 right-1 z-10 px-1.5 py-0.5 rounded-full bg-white/90 border border-slate-200 text-xs text-slate-500 hover:text-red-600 hover:bg-white shadow',
                     onClick: function (ev) { ev.stopPropagation(); removeLocalBook(c.slug); },
                     'aria-label': tr('readinglib_remove_import', 'Remove from my imports') + ': ' + c.title,
                     title: tr('readinglib_remove_import', 'Remove from my imports'),
@@ -4466,7 +4768,7 @@
           // Continue reading — books with a saved position, surfaced when
           // browsing (hidden during a search so it doesn't crowd results).
           (resumeList.length && !filters.search) ? e('div', { className: 'mb-3' },
-            e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-indigo-500 mb-1' },
+            e('div', { className: 'text-xs uppercase tracking-wide font-bold text-indigo-500 mb-1' },
               '▶ ' + tr('readinglib_continue_reading', 'Continue reading')),
             e('div', { className: 'gap-3', style: catalogGridStyle },
               resumeList.map(function (r) {
@@ -4489,7 +4791,7 @@
           ) : null,
           loadingBook ? e('div', { className: 'text-sm text-slate-500 italic py-2' }, tr('readinglib_opening', 'Opening book…')) : null
         ),
-        index.data && index.data.attribution ? e('p', { className: 'text-[11px] text-slate-500 pt-2 border-t border-slate-200' },
+        index.data && index.data.attribution ? e('p', { className: 'text-xs text-slate-500 pt-2 border-t border-slate-200' },
           index.data.attribution.text + ' ',
           e('a', { href: index.data.attribution.url, target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
             'storyweaver.org.in'),

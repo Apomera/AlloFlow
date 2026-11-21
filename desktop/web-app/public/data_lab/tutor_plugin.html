@@ -211,15 +211,21 @@
           var cases = (allRes && Array.isArray(allRes.cases)) ? allRes.cases : [];
           if (cases.length && attrNames.length) {
             var scan = cases.slice(0, MAX_SCAN_CASES);
-            var byAttr = {};
+            var byAttr = Object.create(null);
             attrNames.forEach(function (n) { byAttr[n] = []; });
             var sample = [];
             for (var c = 0; c < scan.length; c++) {
               var vals = caseValues(scan[c]) || {};
-              attrNames.forEach(function (n) { byAttr[n].push(vals[n]); });
+              attrNames.forEach(function (n) {
+                var val = Object.prototype.hasOwnProperty.call(vals, n) ? vals[n] : undefined;
+                byAttr[n].push(val);
+              });
               if (sample.length < MAX_SAMPLE_ROWS) {
-                var row = {};
-                attrNames.forEach(function (n) { row[n] = cellText(vals[n]); });
+                var row = Object.create(null);
+                attrNames.forEach(function (n) {
+                  var val = Object.prototype.hasOwnProperty.call(vals, n) ? vals[n] : undefined;
+                  row[n] = cellText(val);
+                });
                 sample.push(row);
               }
             }
@@ -250,7 +256,11 @@
   function dsText(v, max) {
     return String(v == null ? '' : v).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
   }
-  function dsName(v, max) { return dsText(v, max).replace(/[[\]`.]/g, ' ').replace(/\s+/g, ' ').trim(); }
+  function dsName(v, max) {
+    var cleaned = dsText(v, max).replace(/[[\]`.]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (cleaned === '__proto__' || cleaned === 'constructor' || cleaned === 'prototype') return 'Field';
+    return cleaned;
+  }
   function prepareDataset(input, existingNames) {
     if (!input || typeof input !== 'object') return null;
     var attrs = [];
@@ -277,7 +287,7 @@
     for (var i = 0; i < rows.length && items.length < DS_MAX_ROWS; i++) {
       var r = rows[i];
       if (!Array.isArray(r)) continue;
-      var item = {};
+      var item = Object.create(null);
       for (var j = 0; j < attrs.length; j++) {
         var v = r[cols[j]];
         item[attrs[j].name] = (typeof v === 'number') ? (isFinite(v) ? v : '') : dsText(v, DS_MAX_CELL);

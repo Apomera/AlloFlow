@@ -209,12 +209,22 @@ function FamilyAnnouncementsPanel(props) {
 
   const [config, setConfig] = React.useState(() => {
     const c = famannLoad(FAMANN_CONFIG_KEY, {});
-    return { langTags: ['es', 'fr', 'so', 'ar'], ...(c && typeof c === 'object' ? c : {}) };
+    const safeObj = c && typeof c === 'object' ? c : {};
+    const safeTags = Array.isArray(safeObj.langTags) ? safeObj.langTags.filter((x) => typeof x === 'string') : ['es', 'fr', 'so', 'ar'];
+    return { ...safeObj, langTags: safeTags };
   });
   const [saved, setSaved] = React.useState(() => { const v = famannLoad(FAMANN_SAVED_KEY, []); return Array.isArray(v) ? v : []; });
   const [draft, setDraft] = React.useState(() => {
     const d = famannLoad(FAMANN_DRAFT_KEY, null);
-    return (d && typeof d === 'object' && typeof d.text === 'string') ? d : { title: '', date: famannToday(), text: '', translations: {} };
+    if (d && typeof d === 'object' && typeof d.text === 'string') {
+      return {
+        title: typeof d.title === 'string' ? d.title : '',
+        date: typeof d.date === 'string' && d.date ? d.date : famannToday(),
+        text: d.text,
+        translations: d.translations && typeof d.translations === 'object' && !Array.isArray(d.translations) ? d.translations : {},
+      };
+    }
+    return { title: '', date: famannToday(), text: '', translations: {} };
   });
   const [tab, setTab] = React.useState('compose');
   const [viewId, setViewId] = React.useState(null);
@@ -273,8 +283,14 @@ function FamilyAnnouncementsPanel(props) {
       if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest('details:not([open])');
       if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
-      const st = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
-      return !st || (st.display !== 'none' && st.visibility !== 'hidden');
+      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+        for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+          if (cur === dialog) break;
+        }
+      }
+      return true;
     });
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();
@@ -334,42 +350,62 @@ function FamilyAnnouncementsPanel(props) {
     }));
   };
 
+  const mountedRef = React.useRef(true);
+  const runIdRef = React.useRef(0);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      runIdRef.current += 1;
+    };
+  }, []);
+
   // Sequential on purpose: Canvas throttles bursty Gemini calls (the
   // transient-401 class); one language at a time with visible progress.
   const translateAll = async () => {
     if (!_famannAiUsable('text', callGemini)) return;
-    if (draft.text.trim().length < 20) { addToast(tt('famann.too_short', 'Write the announcement first.'), 'warning'); return; }
+    const sourceText = draft.text;
+    if (sourceText.trim().length < 20) { addToast(tt('famann.too_short', 'Write the announcement first.'), 'warning'); return; }
     if (selectedLangs.length === 0) { addToast(tt('famann.no_langs', 'Pick at least one language.'), 'warning'); return; }
-    for (const lang of selectedLangs) {
-      const existing = draft.translations && draft.translations[lang.tag];
-      if (existing && existing.status === 'done' && existing.forText === draft.text) continue; // unchanged — skip
+    const runId = ++runIdRef.current;
+    const targetLangs = selectedLangs.slice();
+    const initialTranslations = draft.translations || {};
+    for (const lang of targetLangs) {
+      if (!mountedRef.current || runIdRef.current !== runId) return;
+      const existing = initialTranslations[lang.tag];
+      if (existing && existing.status === 'done' && existing.forText === sourceText) continue; // unchanged — skip
       setBusyTag(lang.tag);
       try {
-        const raw = await callGemini(famannPrompt(lang, draft.text));
+        const raw = await callGemini(famannPrompt(lang, sourceText));
+        if (!mountedRef.current || runIdRef.current !== runId) return;
         const text = famannCleanTranslation(raw);
         if (!text) throw new Error('empty response');
-        setDraft((d) => ({ ...d, translations: { ...d.translations, [lang.tag]: { text, status: 'done', forText: d.text } } }));
+        setDraft((d) => ({ ...d, translations: { ...d.translations, [lang.tag]: { text, status: 'done', forText: sourceText } } }));
       } catch (e) {
-        setDraft((d) => ({ ...d, translations: { ...d.translations, [lang.tag]: { text: (d.translations && d.translations[lang.tag] && d.translations[lang.tag].text) || '', status: 'error', forText: d.text } } }));
+        if (!mountedRef.current || runIdRef.current !== runId) return;
+        setDraft((d) => ({ ...d, translations: { ...d.translations, [lang.tag]: { text: (d.translations && d.translations[lang.tag] && d.translations[lang.tag].text) || '', status: 'error', forText: sourceText } } }));
         addToast(lang.name + ': ' + tt('famann.translate_failed', 'translation failed — retry or paste your own.') + ' ' + String((e && e.message) || e), 'error');
       }
     }
+    if (!mountedRef.current || runIdRef.current !== runId) return;
     setBusyTag(null);
     famannAnnounce(tt('famann.translated_announce', 'Translations ready for review.'));
   };
 
   const saveAnnouncement = () => {
+    if (!draft.text.trim()) { addToast(tt('famann.too_short', 'Write the announcement first.'), 'warning'); return; }
+    runIdRef.current += 1;
+    setBusyTag(null);
     const entries = entriesFor(draft);
     const record = {
       id: famannNextId(),
-      title: draft.title.trim() || (tt('famann.untitled', 'Announcement') + ' — ' + draft.date),
+      title: String(draft.title || '').trim() || (tt('famann.untitled', 'Announcement') + ' — ' + (draft.date || famannToday())),
       date: draft.date,
       text: draft.text,
       langTags: selectedLangs.map((l) => l.tag),
       translations: draft.translations || {},
       savedAt: Date.now(),
     };
-    if (!draft.text.trim()) { addToast(tt('famann.too_short', 'Write the announcement first.'), 'warning'); return; }
     setSaved((s) => [record, ...s]);
     setDraft({ title: '', date: famannToday(), text: '', translations: {} });
     setTab('saved');
@@ -379,7 +415,10 @@ function FamilyAnnouncementsPanel(props) {
   };
 
   const exportPacketFor = (a) => {
-    const entries = selectedLangs
+    const tags = (Array.isArray(a && a.langTags) && a.langTags.length) ? a.langTags : Object.keys((a && a.translations) || {});
+    const entries = tags
+      .map(famannLangByTag)
+      .filter(Boolean)
       .map((lang) => ({ lang, ...((a.translations || {})[lang.tag] || { text: '', status: 'empty' }) }))
       .filter((e) => e.text && e.status !== 'error');
     famannDownload('announcement-' + (a.date || famannToday()) + '-all-languages.html', 'text/html',
@@ -394,8 +433,15 @@ function FamilyAnnouncementsPanel(props) {
     { id: 'saved', label: tt('famann.tab_saved', 'Saved'), icon: '🗂️' },
   ];
 
+  const backdropDownRef = React.useRef(false);
   return (
-    <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4"
+      style={{ zIndex: 260 }}
+      role="presentation"
+      onMouseDown={(e) => { backdropDownRef.current = (e.target === e.currentTarget); }}
+      onClick={(e) => { const allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget) onClose(); }}
+    >
       <div ref={dialogRef} tabIndex={-1} data-help-key="famann_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="famann-title" onClick={(e) => e.stopPropagation()}>
         {/* Solid, not /95: the host dark theme restyles bg-slate-50 only, so a translucent header stayed light under light text. */}
         <div className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl">
@@ -459,7 +505,7 @@ function FamilyAnnouncementsPanel(props) {
 
               <div className="bg-white border border-slate-300 rounded-xl p-3 mb-3">
                 <h3 className="text-xs font-bold text-slate-700">{tt('famann.langs_title', 'Building languages')}</h3>
-                <p className="text-[10px] text-slate-500 mb-1.5">{tt('famann.langs_note', 'Pick every language your families use — the selection is remembered for next time.')}</p>
+                <p className="text-xs text-slate-600 mb-1.5">{tt('famann.langs_note', 'Pick every language your families use — the selection is remembered for next time.')}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {FAMANN_LANGS.map((lang) => {
                     const on = config.langTags.indexOf(lang.tag) !== -1;
@@ -480,9 +526,9 @@ function FamilyAnnouncementsPanel(props) {
                     {busyTag ? (tt('famann.translating', 'Translating') + ' ' + ((famannLangByTag(busyTag) || {}).name || '') + '…') : (tt('famann.translate_all', 'Translate all') + ' ✨')}
                   </button>
                 ) : (
-                  <p className="text-[10px] text-slate-500 self-center">{tt('famann.no_ai', 'AI translation is unavailable in this host — paste translations into each language box below.')}</p>
+                  <p className="text-xs text-slate-600 self-center">{tt('famann.no_ai', 'AI translation is unavailable in this host — paste translations into each language box below.')}</p>
                 )}
-                <button type="button" onClick={saveAnnouncement} className="min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800">{tt('famann.save', 'Save announcement')}</button>
+                <button type="button" disabled={!!busyTag} onClick={saveAnnouncement} className="min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800 disabled:opacity-60">{tt('famann.save', 'Save announcement')}</button>
               </div>
 
               {selectedLangs.length > 0 && (
@@ -494,9 +540,9 @@ function FamilyAnnouncementsPanel(props) {
                       <div key={lang.tag} className={'bg-white border rounded-xl p-3 ' + (entry.status === 'error' ? 'border-rose-300' : stale ? 'border-amber-300' : 'border-slate-300')}>
                         <div className="flex items-center justify-between gap-2">
                           <label htmlFor={'famann-tr-' + lang.tag} className="text-xs font-bold text-slate-700">
-                            {lang.native} <span className="font-normal text-slate-500">({lang.name}{lang.rtl ? ' · RTL' : ''})</span>
+                            {lang.native} <span className="font-normal text-slate-600">({lang.name}{lang.rtl ? ' · RTL' : ''})</span>
                           </label>
-                          <span className="text-[10px] font-bold">
+                          <span className="text-xs font-bold">
                             {entry.status === 'error' && <span className="text-rose-700">{tt('famann.status_error', 'failed — retry or paste')}</span>}
                             {stale && <span className="text-amber-700">{tt('famann.status_stale', 'English changed since this translation')}</span>}
                           </span>
@@ -508,7 +554,7 @@ function FamilyAnnouncementsPanel(props) {
                       </div>
                     );
                   })}
-                  <p className="text-[10px] text-slate-500">
+                  <p className="text-xs text-slate-600">
                     {tt('famann.integrity_note', 'Translations are machine-assisted; review them (ideally with bilingual staff) before sending — you certify the final text. Every exported document carries a translation disclosure with a contact-the-office line, and each language section is properly lang-tagged and direction-aware so screen readers and RTL scripts work correctly.')}
                   </p>
                 </div>
@@ -567,14 +613,14 @@ function FamilyAnnouncementsPanel(props) {
                       className="w-full min-h-11 flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-left">
                       <span className="min-w-0">
                         <span className="block font-bold text-sm text-slate-800">{a.title}</span>
-                        <span className="block text-[10px] text-slate-500">{a.date} · {(a.langTags || []).length} {tt('famann.langs_short', 'language(s)')}</span>
+                        <span className="block text-xs text-slate-600">{a.date} · {(a.langTags || []).length} {tt('famann.langs_short', 'language(s)')}</span>
                       </span>
                       <span aria-hidden="true" className="shrink-0 text-slate-600">›</span>
                     </button>
                   </li>
                 ))}
               </ul>
-              {saved.length > 0 && <p className="mt-3 text-[10px] text-slate-500">{tt('famann.storage_note', 'Announcements live only in this browser’s storage — download packets you need to keep (Gemini Canvas may not persist storage between sessions).')}</p>}
+              {saved.length > 0 && <p className="mt-3 text-xs text-slate-600">{tt('famann.storage_note', 'Announcements live only in this browser’s storage — download packets you need to keep (Gemini Canvas may not persist storage between sessions).')}</p>}
             </div>
           )}
         </div>

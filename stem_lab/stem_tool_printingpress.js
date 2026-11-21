@@ -4574,8 +4574,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('input', { id: 'pp-menu-search', type: 'search', value: menuQ, autoComplete: 'off', 'aria-describedby': 'pp-menu-search-status',
                 onChange: function(e) { setMenuQ(e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Escape' && menuQ) { e.preventDefault(); setMenuQ(''); } },
-                style: { flex: '1 1 220px', minWidth: 0, minHeight: 38, padding: '6px 10px', borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.dim, fontSize: 14 } }),
-              menuQ && h('button', { type: 'button', onClick: function() { setMenuQ(''); var box = document.getElementById('pp-menu-search'); if (box) box.focus(); }, style: btn({ padding: '7px 12px', fontSize: 12 }) }, __alloT('stem.printingpress.menu_find_clear', 'Clear search'))),
+                style: { flex: '1 1 220px', minWidth: 0, minHeight: 44, padding: '8px 12px', borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.dim, fontSize: 14 } }),
+              menuQ && h('button', { type: 'button', onClick: function() { setMenuQ(''); var box = document.getElementById('pp-menu-search'); if (box) box.focus(); }, style: btn({ minHeight: 44, padding: '8px 14px', fontSize: 12 }) }, __alloT('stem.printingpress.menu_find_clear', 'Clear search'))),
             h('p', { id: 'pp-menu-search-status', role: 'status', style: { margin: '4px 0 0', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
               !qWords.length
                 ? __alloT('stem.printingpress.menu_find_hint', 'Search titles and descriptions. Try "maps", "paper" or "Maine".')
@@ -4586,7 +4586,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     : __alloFill(__alloT('stem.printingpress.menu_find_many', '{n} modules match "{q}".'), { n: shownTiles.length, q: menuQ.trim() }))),
           h('nav', { className: 'printingpress-no-print', 'aria-label': __alloT('stem.printingpress.menu_jump_label', 'Jump to a section of the menu'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
             MENU_SECTIONS.filter(function(sec) { return shownTiles.some(function(t) { return t.section === sec.id; }); }).map(function(sec) {
-              return h('button', { key: sec.id, type: 'button', onClick: function() { var el = document.getElementById('pp-sec-' + sec.id); if (el) { el.focus(); el.scrollIntoView({ block: 'start' }); } }, style: btn({ padding: '6px 10px', fontSize: 12 }) }, '↓ ' + sec.label);
+              return h('button', { key: sec.id, type: 'button', onClick: function() { var el = document.getElementById('pp-sec-' + sec.id); if (el) { el.focus(); el.scrollIntoView({ block: 'start' }); } }, style: btn({ minHeight: 44, padding: '8px 12px', fontSize: 12 }) }, '↓ ' + sec.label);
             })),
           // ── All-modules-visited celebration banner ──
           // Parchment-style banner with the same fleuron-corner treatment as
@@ -4736,69 +4736,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           // Hero — title + tagline + miniature press SVG. The press silhouette
           // gives the menu instant visual identity: "this tool is about THE
           // press, not just a webpage about printing."
-          h('div', { style: { background: 'linear-gradient(135deg, #2a1f15 0%, #1a1410 100%)', border: '2px solid ' + T.accent, borderRadius: 14, padding: 20, marginBottom: 18, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 16, alignItems: 'center' } },
-            // Left side: title + taglines + stats
-            h('div', null,
-              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8, flexWrap: 'wrap' } },
-                h('h1', { style: { margin: 0, fontSize: 30, color: T.accentHi, fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '0.02em' } }, __alloT('stem.printingpress.printingpress', '📜 PrintingPress')),
-                h('span', { style: { fontSize: 12, color: T.muted },
-                  'aria-label': __alloFill(__alloT('stem.printingpress.a11y_modules_visited_of', 'Modules visited: {value1} of {value2}'), { value1: Math.min(visitedCount, totalModules), value2: totalModules })},
-                  __alloFill(__alloT('stem.printingpress.value1_value2_modules', '{value1} / {value2} modules'), { value1: Math.min(visitedCount, totalModules), value2: totalModules }))),
-              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 14, lineHeight: 1.6, fontStyle: 'italic' } },
-                __alloT('stem.printingpress.the_gutenberg_press_changed_who_could_', 'The Gutenberg press changed who could read, what could be known, and how fast an idea could travel. Pull the bar. Set the type. Then see the world it built.')),
-              h('p', { style: { margin: '0 0 8px', color: T.dim, fontSize: 12, lineHeight: 1.5 } },
-                __alloT('stem.printingpress.interdisciplinary_engineering_material', 'Interdisciplinary: engineering, materials science, history, economics, typography, civics. Sources cited inline.')),
-              // Quick-stat strip
-              h('div', { style: { display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 8, fontSize: 11, color: T.dim } },
-                h('span', null, h('strong', { style: { color: T.accentHi } }, String(totalModules)), __alloT('stem.printingpress.hero_stat_modules', ' modules')),
-                h('span', null, h('strong', { style: { color: T.accentHi } }, String(PP_LAB_VIEWS.length)), __alloT('stem.printingpress.hero_stat_labs', ' hands-on labs')),
-                h('span', null, h('strong', { style: { color: T.accentHi } }, String(CUMULATIVE_QUESTIONS.length)), __alloT('stem.printingpress.hero_stat_quiz', ' cumulative-quiz questions'))
+          (function () {
+            var isHC = !!(ctx.isContrast || ctx.theme === 'contrast');
+            var badgeCountPP = Object.keys(badges || {}).length;
+            return h('div', {
+              'data-printingpress-hero': 'true',
+              style: isHC ? {
+                backgroundColor: '#000000', border: '2px solid #ffff00', borderRadius: 14, padding: 20, marginBottom: 18,
+                display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 16, alignItems: 'center', color: '#ffffff'
+              } : {
+                backgroundColor: '#1a1410', backgroundImage: 'linear-gradient(135deg, #2a1f15 0%, #1a1410 100%)', border: '2px solid ' + T.accent, borderRadius: 14, padding: 20, marginBottom: 18,
+                display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 16, alignItems: 'center', boxShadow: '0 10px 28px rgba(0,0,0,0.38)'
+              }
+            },
+              // Left side: subject badge + title + taglines + live telemetry pills
+              h('div', { style: { minWidth: 0 } },
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                  h('span', { style: { fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '3px 9px', borderRadius: 999, backgroundColor: isHC ? '#000000' : '#3a2612', color: isHC ? '#ffff00' : T.accentHi, border: '1px solid ' + (isHC ? '#ffff00' : T.accent) } },
+                    __alloT('stem.printingpress.subject_badge', 'History · Engineering · Typography')),
+                  h('span', { style: { fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, backgroundColor: isHC ? '#000000' : '#13100c', color: isHC ? '#ffffff' : T.muted, border: '1px solid ' + (isHC ? '#ffffff' : T.border) },
+                    'aria-label': __alloFill(__alloT('stem.printingpress.a11y_modules_visited_of', 'Modules visited: {value1} of {value2}'), { value1: Math.min(visitedCount, totalModules), value2: totalModules })},
+                    __alloFill(__alloT('stem.printingpress.value1_value2_modules', '{value1} / {value2} modules'), { value1: Math.min(visitedCount, totalModules), value2: totalModules })),
+                  h('span', { style: { fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, backgroundColor: isHC ? '#000000' : '#13100c', color: isHC ? '#ffff00' : T.accentHi, border: '1px solid ' + (isHC ? '#ffff00' : T.border) } },
+                    __alloFill(__alloT('stem.printingpress.hero_labs_tried', '{n} / {total} labs tried'), { n: labsTriedCount, total: PP_LAB_VIEWS.length })),
+                  badgeCountPP > 0 && h('span', { style: { fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, backgroundColor: isHC ? '#000000' : '#13100c', color: isHC ? '#66ff66' : T.okText, border: '1px solid ' + (isHC ? '#66ff66' : T.ok) } },
+                    __alloFill(__alloT('stem.printingpress.hero_badges_earned', '{n} badges'), { n: badgeCountPP }))
+                ),
+                h('h1', { style: { margin: '0 0 8px', fontSize: 30, color: isHC ? '#ffff00' : T.accentHi, fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '0.02em' } }, __alloT('stem.printingpress.printingpress', '📜 PrintingPress')),
+                h('p', { style: { margin: '0 0 8px', color: isHC ? '#ffffff' : T.muted, fontSize: 14, lineHeight: 1.6, fontStyle: 'italic' } },
+                  __alloT('stem.printingpress.the_gutenberg_press_changed_who_could_', 'The Gutenberg press changed who could read, what could be known, and how fast an idea could travel. Pull the bar. Set the type. Then see the world it built.')),
+                h('p', { style: { margin: '0 0 8px', color: isHC ? '#ffffff' : T.dim, fontSize: 12, lineHeight: 1.5 } },
+                  __alloT('stem.printingpress.interdisciplinary_engineering_material', 'Interdisciplinary: engineering, materials science, history, economics, typography, civics. Sources cited inline.')),
+                // Quick-stat strip
+                h('div', { style: { display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 8, fontSize: 11, color: isHC ? '#ffffff' : T.dim } },
+                  h('span', null, h('strong', { style: { color: isHC ? '#ffff00' : T.accentHi } }, String(totalModules)), __alloT('stem.printingpress.hero_stat_modules', ' modules')),
+                  h('span', null, h('strong', { style: { color: isHC ? '#ffff00' : T.accentHi } }, String(PP_LAB_VIEWS.length)), __alloT('stem.printingpress.hero_stat_labs', ' hands-on labs')),
+                  h('span', null, h('strong', { style: { color: isHC ? '#ffff00' : T.accentHi } }, String(CUMULATIVE_QUESTIONS.length)), __alloT('stem.printingpress.hero_stat_quiz', ' cumulative-quiz questions'))
+                )
+              ),
+              // Right side: miniature press SVG (decorative, legible >=10px caption)
+              h('svg', { width: 146, height: 164, viewBox: '0 0 146 164', 'aria-hidden': 'true',
+                style: { display: 'block', flexShrink: 0 } },
+                // Frame uprights
+                h('rect', { x: 26, y: 10, width: 9, height: 128, fill: isHC ? '#ffffff' : T.wood, stroke: '#3d2914', strokeWidth: 1 }),
+                h('rect', { x: 111, y: 10, width: 9, height: 128, fill: isHC ? '#ffffff' : T.wood, stroke: '#3d2914', strokeWidth: 1 }),
+                // Crossbeam
+                h('rect', { x: 26, y: 10, width: 94, height: 9, fill: isHC ? '#ffff00' : '#5a3a1f', stroke: '#3d2914', strokeWidth: 1 }),
+                // Base
+                h('rect', { x: 20, y: 136, width: 106, height: 7, fill: isHC ? '#ffff00' : '#5a3a1f', stroke: '#3d2914', strokeWidth: 1 }),
+                // Screw shaft
+                h('rect', { x: 68, y: 19, width: 10, height: 30, fill: '#4a4a4a', stroke: '#2a2a2a', strokeWidth: 0.5 }),
+                // Screw threads
+                h('line', { x1: 68, y1: 25, x2: 78, y2: 25, stroke: '#2a2a2a', strokeWidth: 0.7 }),
+                h('line', { x1: 68, y1: 31, x2: 78, y2: 31, stroke: '#2a2a2a', strokeWidth: 0.7 }),
+                h('line', { x1: 68, y1: 37, x2: 78, y2: 37, stroke: '#2a2a2a', strokeWidth: 0.7 }),
+                h('line', { x1: 68, y1: 43, x2: 78, y2: 43, stroke: '#2a2a2a', strokeWidth: 0.7 }),
+                // Nut
+                h('circle', { cx: 73, cy: 49, r: 9, fill: '#6a6a6a', stroke: '#2a2a2a', strokeWidth: 0.8 }),
+                h('circle', { cx: 73, cy: 49, r: 6, fill: '#4a4a4a' }),
+                // Bar
+                h('rect', { x: 38, y: 47, width: 70, height: 5, rx: 2, fill: isHC ? '#ffff00' : T.wood, stroke: '#3d2914', strokeWidth: 0.8 }),
+                h('circle', { cx: 40, cy: 49.5, r: 3, fill: '#3d2914' }),
+                h('circle', { cx: 106, cy: 49.5, r: 3, fill: '#3d2914' }),
+                // Platen (held up)
+                h('rect', { x: 43, y: 58, width: 60, height: 10, fill: '#7a5a2f', stroke: '#3d2914', strokeWidth: 1 }),
+                // Bed
+                h('rect', { x: 33, y: 108, width: 80, height: 12, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 1 }),
+                // Type forme on bed (inked metal-type sort bars)
+                h('rect', { x: 41, y: 111, width: 64, height: 6, fill: T.ink }),
+                h('line', { x1: 46, y1: 114, x2: 64, y2: 114, stroke: isHC ? '#ffff00' : T.parchment, strokeWidth: 1.4, opacity: 0.7 }),
+                h('line', { x1: 68, y1: 114, x2: 86, y2: 114, stroke: isHC ? '#ffff00' : T.parchment, strokeWidth: 1.4, opacity: 0.7 }),
+                h('line', { x1: 90, y1: 114, x2: 100, y2: 114, stroke: isHC ? '#ffff00' : T.parchment, strokeWidth: 1.4, opacity: 0.7 }),
+                // Resting ink balls
+                h('line', { x1: 26, y1: 136, x2: 24, y2: 120, stroke: isHC ? '#ffffff' : T.wood, strokeWidth: 2, strokeLinecap: 'round' }),
+                h('circle', { cx: 24, cy: 120, r: 4, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 0.5 }),
+                h('line', { x1: 120, y1: 136, x2: 122, y2: 120, stroke: isHC ? '#ffffff' : T.wood, strokeWidth: 2, strokeLinecap: 'round' }),
+                h('circle', { cx: 122, cy: 120, r: 4, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 0.5 }),
+                // Caption (>=10px readable SVG typography)
+                h('text', { x: 73, y: 158, textAnchor: 'middle', fill: isHC ? '#ffffff' : T.dim, fontSize: 10, fontStyle: 'italic', fontFamily: 'Georgia, serif' }, __alloT('stem.printingpress.1450_screw_press', '~1450 screw press'))
               )
-            ),
-            // Right side: miniature press SVG (decorative, no interaction needed)
-            h('svg', { width: 130, height: 160, viewBox: '0 0 130 160', 'aria-hidden': 'true',
-              style: { display: 'block', flexShrink: 0 } },
-              // Frame uprights
-              h('rect', { x: 18, y: 12, width: 9, height: 130, fill: T.wood, stroke: '#3d2914', strokeWidth: 1 }),
-              h('rect', { x: 103, y: 12, width: 9, height: 130, fill: T.wood, stroke: '#3d2914', strokeWidth: 1 }),
-              // Crossbeam
-              h('rect', { x: 18, y: 12, width: 94, height: 9, fill: '#5a3a1f', stroke: '#3d2914', strokeWidth: 1 }),
-              // Base
-              h('rect', { x: 12, y: 138, width: 106, height: 7, fill: '#5a3a1f', stroke: '#3d2914', strokeWidth: 1 }),
-              // Screw shaft
-              h('rect', { x: 60, y: 21, width: 10, height: 30, fill: '#4a4a4a', stroke: '#2a2a2a', strokeWidth: 0.5 }),
-              // Screw threads
-              h('line', { x1: 60, y1: 27, x2: 70, y2: 27, stroke: '#2a2a2a', strokeWidth: 0.5 }),
-              h('line', { x1: 60, y1: 33, x2: 70, y2: 33, stroke: '#2a2a2a', strokeWidth: 0.5 }),
-              h('line', { x1: 60, y1: 39, x2: 70, y2: 39, stroke: '#2a2a2a', strokeWidth: 0.5 }),
-              h('line', { x1: 60, y1: 45, x2: 70, y2: 45, stroke: '#2a2a2a', strokeWidth: 0.5 }),
-              // Nut
-              h('circle', { cx: 65, cy: 51, r: 9, fill: '#6a6a6a', stroke: '#2a2a2a', strokeWidth: 0.8 }),
-              h('circle', { cx: 65, cy: 51, r: 6, fill: '#4a4a4a' }),
-              // Bar
-              h('rect', { x: 30, y: 49, width: 70, height: 5, rx: 2, fill: T.wood, stroke: '#3d2914', strokeWidth: 0.8 }),
-              h('circle', { cx: 32, cy: 51.5, r: 3, fill: '#3d2914' }),
-              h('circle', { cx: 98, cy: 51.5, r: 3, fill: '#3d2914' }),
-              // Platen (held up)
-              h('rect', { x: 35, y: 60, width: 60, height: 10, fill: '#7a5a2f', stroke: '#3d2914', strokeWidth: 1 }),
-              // Bed
-              h('rect', { x: 25, y: 110, width: 80, height: 12, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 1 }),
-              // Type forme on bed (inked)
-              h('rect', { x: 33, y: 113, width: 64, height: 6, fill: T.ink }),
-              // Tiny hint of letters
-              h('text', { x: 65, y: 118, textAnchor: 'middle', fill: T.parchment, opacity: 0.5,
-                fontSize: 5, fontFamily: 'Georgia, serif', fontWeight: 700, transform: 'translate(130 0) scale(-1 1)' }, __alloT('stem.printingpress.fiat_2', 'FIAT')),
-              // Resting ink balls
-              h('line', { x1: 18, y1: 138, x2: 16, y2: 122, stroke: T.wood, strokeWidth: 2, strokeLinecap: 'round' }),
-              h('circle', { cx: 16, cy: 122, r: 4, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 0.5 }),
-              h('line', { x1: 112, y1: 138, x2: 114, y2: 122, stroke: T.wood, strokeWidth: 2, strokeLinecap: 'round' }),
-              h('circle', { cx: 114, cy: 122, r: 4, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 0.5 }),
-              // Caption
-              h('text', { x: 65, y: 156, textAnchor: 'middle', fill: T.dim, fontSize: 7, fontStyle: 'italic', fontFamily: 'Georgia, serif' }, __alloT('stem.printingpress.1450_screw_press', '~1450 screw press'))
-            )
-          ),
+            );
+          })(),
           !qWords.length && h('section', { 'data-printingpress-command': 'true', 'aria-label': __alloT('stem.printingpress.a11y_printingpress_shop_dashboard', 'PrintingPress shop dashboard'),
-            style: { background: 'linear-gradient(135deg, rgba(254,243,199,0.10), rgba(58,38,18,0.32))', border: '1px solid ' + T.accent, borderRadius: 12, padding: 14, marginBottom: 18 } },
+            style: { background: (ctx.isContrast || ctx.theme === 'contrast') ? '#000000' : 'linear-gradient(135deg, rgba(254,243,199,0.10), rgba(58,38,18,0.32))', border: ((ctx.isContrast || ctx.theme === 'contrast') ? '2px solid #ffff00' : '1px solid ' + T.accent), borderRadius: 12, padding: 14, marginBottom: 18 } },
+            h('div', { 'data-pp-craft-pipeline': 'true', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 12, paddingBottom: 10, borderBottom: '1px dashed ' + T.border } },
+              h('span', { style: { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: T.accentHi, fontFamily: 'Georgia, serif' } }, __alloT('stem.printingpress.craft_pipeline_lbl', 'Craft sequence:')),
+              [
+                { id: 'pressMechanism', lbl: __alloT('stem.printingpress.pipe_press', '1. Press') },
+                { id: 'setType', lbl: __alloT('stem.printingpress.pipe_type', '2. Type') },
+                { id: 'broadside', lbl: __alloT('stem.printingpress.pipe_broadside', '3. Broadside') },
+                { id: 'printGlossary', lbl: __alloT('stem.printingpress.pipe_glossary', '4. Glossary') }
+              ].map(function (st) {
+                var done = !!modulesVisited[st.id];
+                return h('span', { key: 'pp-pipe-' + st.id, style: { fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: T.card, color: done ? T.okText : T.muted, border: '1px solid ' + (done ? T.ok : T.border) } }, (done ? '✓ ' : '') + st.lbl);
+              })
+            ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12, alignItems: 'stretch' } },
               h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
                 h('div', { style: { fontSize: 10, color: T.accentHi, textTransform: 'uppercase', letterSpacing: 0, fontWeight: 800, fontFamily: 'Georgia, serif', marginBottom: 4 } }, __alloT('stem.printingpress.print_shop_dashboard', 'Print shop dashboard')),
@@ -5423,6 +5455,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     h('stop', { offset: '40%', stopColor: '#5a3a1f' }),
                     h('stop', { offset: '100%', stopColor: '#2a1c0e' })
                   ),
+                  // Metallic lead-tin-antimony alloy sheen for un-inked movable type
+                  h('linearGradient', { id: 'pp-lead-type', x1: 0, y1: 0, x2: 1, y2: 1 },
+                    h('stop', { offset: '0%', stopColor: '#94a3b8' }),
+                    h('stop', { offset: '32%', stopColor: '#cbd5e1' }),
+                    h('stop', { offset: '62%', stopColor: '#64748b' }),
+                    h('stop', { offset: '100%', stopColor: '#334155' })
+                  ),
+                  // Glossy linseed-varnish lampblack ink sheen on the inked type forme
+                  h('linearGradient', { id: 'pp-ink-gloss', x1: 0, y1: 0, x2: 0, y2: 1 },
+                    h('stop', { offset: '0%', stopColor: '#3f3b37' }),
+                    h('stop', { offset: '26%', stopColor: '#120f0c' }),
+                    h('stop', { offset: '100%', stopColor: '#050403' })
+                  ),
+                  // Warm archival rag-paper/parchment surface gradient for the laid sheet
+                  h('linearGradient', { id: 'pp-rag-paper', x1: 0, y1: 0, x2: 1, y2: 1 },
+                    h('stop', { offset: '0%', stopColor: '#fcf5e3' }),
+                    h('stop', { offset: '55%', stopColor: T.parchment }),
+                    h('stop', { offset: '100%', stopColor: '#e6d2a2' })
+                  ),
+                  // Glossy oiled-leather & fresh-ink radial sheen on the ink balls
+                  h('radialGradient', { id: 'pp-inkball-gloss', cx: '32%', cy: '28%', r: '72%' },
+                    h('stop', { offset: '0%', stopColor: '#7a5c44' }),
+                    h('stop', { offset: '36%', stopColor: '#2c1e14' }),
+                    h('stop', { offset: '78%', stopColor: '#0d0a08' }),
+                    h('stop', { offset: '100%', stopColor: '#040302' })
+                  ),
                   // Pressed-paper grain filter — applied to the printed text
                   // on the paper to simulate the irregular absorption of ink
                   // into hand-pressed letterpress paper. Subtle: low-base
@@ -5615,9 +5673,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 // animation). Brown→black transition is what a real type
                 // forme looks like as it goes from clean metal to inked.
                 h('rect', { x: 140, y: 252, width: 200, height: 22,
-                  fill: typeFilled ? T.ink : '#8a7a5a',
-                  stroke: '#1a1410', strokeWidth: 1,
+                  fill: typeFilled ? 'url(#pp-ink-gloss)' : 'url(#pp-lead-type)',
+                  stroke: '#1a1410', strokeWidth: 1.2,
                   style: { transition: 'fill 0.8s ease-in-out' } }),
+                // Specular highlight across the lead-type / glossy inked forme top rim
+                h('line', { x1: 142, y1: 253.5, x2: 338, y2: 253.5, stroke: typeFilled ? 'rgba(245,215,126,0.28)' : 'rgba(255,255,255,0.55)', strokeWidth: 1.2 }),
                 // User-customizable phrase rendered on the type forme
                 // (mirror-reversed via scaleX(-1) transform). Default is
                 // "FIAT LUX" (Genesis 1:3, "Let there be light") — historically
@@ -5642,9 +5702,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 paperShown && h('rect', {
                   x: 138, y: paperPrinted ? 252 : 240,
                   width: 204, height: 26,
-                  fill: T.parchment,
-                  stroke: '#8a7a5a', strokeWidth: 1,
-                  style: { transition: 'y 0.5s ease-out', filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.3))' }
+                  fill: 'url(#pp-rag-paper)',
+                  stroke: '#8a7a5a', strokeWidth: 1.1,
+                  style: { transition: 'y 0.5s ease-out', filter: 'drop-shadow(0 1.5px 2px rgba(0,0,0,0.35))' }
+                }),
+                // Subtle letterpress impression plate-mark emboss border after press release
+                paperPrinted && h('rect', {
+                  x: 144, y: 255, width: 192, height: 20, rx: 1,
+                  fill: 'none', stroke: 'rgba(120,90,40,0.32)', strokeWidth: 0.8, 'aria-hidden': 'true'
                 }),
                 // Printed text on the paper — readable now (the type was
                 // mirrored, so the impression flips and reads correctly).
@@ -5687,12 +5752,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 // its ink balls dipped on a small ink stone next to the press,
                 // ready for the next inking pass.
                 (pressState === 'clean' || pressState === 'revealed') && h('g', { 'aria-hidden': 'true' },
-                  // Resting against left frame
+                  // Resting against left frame (glossy inked leather ball + specular glint)
                   h('line', { x1: 95, y1: 290, x2: 88, y2: 245, stroke: T.wood, strokeWidth: 5, strokeLinecap: 'round' }),
-                  h('circle', { cx: 88, cy: 245, r: 12, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 1 }),
+                  h('circle', { cx: 88, cy: 245, r: 12, fill: 'url(#pp-inkball-gloss)', stroke: '#1a1410', strokeWidth: 1 }),
+                  h('path', { d: 'M 81 241 A 9 9 0 0 1 90 236', fill: 'none', stroke: 'rgba(255,244,214,0.4)', strokeWidth: 1.5, strokeLinecap: 'round' }),
                   // Resting against right frame
                   h('line', { x1: 385, y1: 290, x2: 392, y2: 245, stroke: T.wood, strokeWidth: 5, strokeLinecap: 'round' }),
-                  h('circle', { cx: 392, cy: 245, r: 12, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 1 })
+                  h('circle', { cx: 392, cy: 245, r: 12, fill: 'url(#pp-inkball-gloss)', stroke: '#1a1410', strokeWidth: 1 }),
+                  h('path', { d: 'M 385 241 A 9 9 0 0 1 394 236', fill: 'none', stroke: 'rgba(255,244,214,0.4)', strokeWidth: 1.5, strokeLinecap: 'round' })
                 ),
                 // ── Ink balls — active inking (dab and lift) + floating ink droplets ──
                 pressState === 'inking' && (function() {
@@ -5720,11 +5787,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   return h('g', null,
                     // Floating ink droplets behind ink balls
                     h('g', { 'aria-hidden': 'true' }, droplets),
-                    // Left ink ball
-                    h('circle', { cx: leftX, cy: ballY, r: 14, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 1 }),
+                    // Left ink ball with glossy roller/dabber ink sheen
+                    h('circle', { cx: leftX, cy: ballY, r: 14, fill: 'url(#pp-inkball-gloss)', stroke: '#1a1410', strokeWidth: 1 }),
+                    h('path', { d: 'M ' + (leftX - 7) + ' ' + (ballY - 5) + ' A 10 10 0 0 1 ' + (leftX + 3) + ' ' + (ballY - 10), fill: 'none', stroke: 'rgba(255,244,214,0.45)', strokeWidth: 1.6, strokeLinecap: 'round' }),
                     h('line', { x1: leftX, y1: ballY, x2: leftX - 12, y2: ballY - 28, stroke: T.wood, strokeWidth: 5, strokeLinecap: 'round' }),
                     // Right ink ball
-                    h('circle', { cx: rightX, cy: ballY, r: 14, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 1 }),
+                    h('circle', { cx: rightX, cy: ballY, r: 14, fill: 'url(#pp-inkball-gloss)', stroke: '#1a1410', strokeWidth: 1 }),
+                    h('path', { d: 'M ' + (rightX - 7) + ' ' + (ballY - 5) + ' A 10 10 0 0 1 ' + (rightX + 3) + ' ' + (ballY - 10), fill: 'none', stroke: 'rgba(255,244,214,0.45)', strokeWidth: 1.6, strokeLinecap: 'round' }),
                     h('line', { x1: rightX, y1: ballY, x2: rightX + 12, y2: ballY - 28, stroke: T.wood, strokeWidth: 5, strokeLinecap: 'round' })
                   );
                 })(),
@@ -6828,12 +6897,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     : __alloFill(__alloT('stem.printingpress.slot_empty', 'Slot {n}: empty'), { n: i + 1 }),
                 style: {
                   width: isLigature ? 56 : 42, height: 56, borderRadius: 4,
-                  background: letter ? T.ink : T.bg,
+                  background: letter ? 'linear-gradient(145deg, #5c6473 0%, #2d333f 44%, #11141a 100%)' : T.bg,
                   border: '2px solid ' + (letter ? (isLigature ? T.danger : T.accent) : T.border),
                   color: T.parchment,
                   fontSize: 26, fontFamily: 'Georgia, serif', fontWeight: 700,
                   cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: letter ? 'inset 0 1px 0 rgba(255,255,255,0.34), inset 0 -2px 3px rgba(0,0,0,0.65), 0 2px 4px rgba(0,0,0,0.45)' : 'inset 0 1px 3px rgba(0,0,0,0.5)',
+                  textShadow: letter ? '0 1px 2px rgba(0,0,0,0.75)' : 'none'
                 }
               }, letter === ' ' ? '·' : displayChar(letter) || (st.picked !== null ? '⇣' : ''));
             })
@@ -6931,12 +7002,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 'aria-label': isLigature ? __alloT('stem.printingpress.sort_label_ligature', 'fi ligature (one sort with both letters)') : __alloFill(__alloT('stem.printingpress.sort_label', '{letter} (mirror-reversed sort)'), { letter: spokenChar(letter) }),
                 style: {
                   width: isLigature ? 56 : 42, height: 52, borderRadius: 3,
-                  background: picked ? T.accentHi : '#5a4630',
+                  background: picked ? 'linear-gradient(145deg, #fef08a 0%, #e8bd70 55%, #b88935 100%)' : 'linear-gradient(150deg, #6d665c 0%, #48423a 48%, #28241f 100%)',
                   border: '2px solid ' + (picked ? T.danger : isLigature ? T.danger : '#3d2914'),
                   color: picked ? T.ink : T.parchment,
                   fontSize: 22, fontFamily: 'Georgia, serif', fontWeight: 700,
                   cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: picked ? '0 0 0 2px rgba(245,215,126,0.45), inset 0 1px 0 rgba(255,255,255,0.6)' : 'inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -2px 3px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.45)',
                   transform: 'scaleX(-1)'  // mirror-reversed, as real type is
                 }
               }, letter === ' ' ? '·' : displayChar(letter));
@@ -11031,16 +11103,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             );
           }
           if (style === 'classical') {
-            // Classical: double rule + corner ornaments (printer's flowers)
+            // Classical: crisp woodcut double rule + corner blocks & printer's flowers
             return h('svg', { 'aria-hidden': 'true', style: Object.assign({}, common, { display: 'block' }), viewBox: '0 0 400 600', preserveAspectRatio: 'none' },
-              // Outer rule
-              h('rect', { x: 8, y: 8, width: 384, height: 584, fill: 'none', stroke: T.ink, strokeWidth: 1.5 }),
-              // Inner thin rule
-              h('rect', { x: 16, y: 16, width: 368, height: 568, fill: 'none', stroke: T.ink, strokeWidth: 0.6 }),
-              // Corner fleurons (stylized printer's flowers — diamonds with petals)
-              [[20, 20], [380, 20], [20, 580], [380, 580]].map(function(c, i) {
+              // Outer thick woodcut rule + fine companion rule
+              h('rect', { x: 8, y: 8, width: 384, height: 584, fill: 'none', stroke: T.ink, strokeWidth: 2 }),
+              h('rect', { x: 13, y: 13, width: 374, height: 574, fill: 'none', stroke: T.ink, strokeWidth: 0.7 }),
+              h('rect', { x: 18, y: 18, width: 364, height: 564, fill: 'none', stroke: T.ink, strokeWidth: 0.5, strokeDasharray: '6 3', opacity: 0.65 }),
+              // Corner fleurons (stylized printer's flowers — diamonds with petals & corner framing)
+              [[22, 22], [378, 22], [22, 578], [378, 578]].map(function(c, i) {
                 return h('g', { key: i, transform: 'translate(' + c[0] + ',' + c[1] + ')' },
-                  h('path', { d: 'M 0 -6 L 4 0 L 0 6 L -4 0 Z', fill: T.ink }),  // diamond
+                  h('rect', { x: -10, y: -10, width: 20, height: 20, fill: T.parchment, stroke: T.ink, strokeWidth: 0.9 }),
+                  h('path', { d: 'M 0 -6.5 L 4.5 0 L 0 6.5 L -4.5 0 Z', fill: T.ink }),  // diamond
                   h('circle', { cx: 0, cy: -8, r: 1.2, fill: T.ink }),
                   h('circle', { cx: 0, cy: 8, r: 1.2, fill: T.ink }),
                   h('circle', { cx: -8, cy: 0, r: 1.2, fill: T.ink }),
@@ -11297,9 +11370,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             } },
           h('div', { id: 'pp-broadside-sheet', ref: sheetRef, style: {
               position: 'relative', overflowWrap: 'anywhere', minWidth: 0,
-              background: 'radial-gradient(ellipse at 8% 12%, rgba(180,140,80,0.18) 0%, transparent 30%), radial-gradient(ellipse at 92% 88%, rgba(180,140,80,0.18) 0%, transparent 30%), radial-gradient(ellipse at 92% 12%, rgba(180,140,80,0.10) 0%, transparent 25%), radial-gradient(ellipse at 8% 88%, rgba(180,140,80,0.10) 0%, transparent 25%), ' + T.parchment,
+              background: 'radial-gradient(ellipse at 8% 12%, rgba(180,140,80,0.2) 0%, transparent 32%), radial-gradient(ellipse at 92% 88%, rgba(180,140,80,0.2) 0%, transparent 32%), radial-gradient(ellipse at 92% 12%, rgba(180,140,80,0.12) 0%, transparent 26%), radial-gradient(ellipse at 8% 88%, rgba(180,140,80,0.12) 0%, transparent 26%), linear-gradient(160deg, #faf1d8 0%, ' + T.parchment + ' 52%, #ead7ac 100%)',
               color: T.ink, padding: 36, border: '2px solid ' + T.border, borderRadius: 6, minHeight: 480, fontFamily: font, overflow: 'hidden',
-              boxShadow: 'inset 0 0 30px rgba(120,90,40,0.08)',
+              boxShadow: 'inset 0 0 38px rgba(120,90,40,0.14), inset 0 1px 0 rgba(255,252,240,0.72), inset 0 -2px 6px rgba(92,70,48,0.16)',
+              textShadow: '0 1px 0 rgba(255,252,240,0.58)',
               // Page-curl: clip-path with subtle corner bends for a hint of
               // physical paper. Modest values so the broadside still reads
               // as a rectangular page, just with slight imperfection.

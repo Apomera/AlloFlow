@@ -20,7 +20,7 @@ const tr = (t, key, fallback, params = {}) => {
 // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
 const _aiUsable = (kind, fn) => {
   try { if (typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn); } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true;
+  return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true && window.__alloQrStudentMode !== true;
 };
 // AI text uses the Assess view's light markdown when it is loaded; plain text otherwise.
 const cerMd = () => (window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown) || { inline: v => v == null ? '' : String(v), block: v => v == null ? '' : String(v), plain: v => v == null ? '' : String(v) };
@@ -37,7 +37,7 @@ function useRuntimeError(scope) {
   useEffect(() => { const listener = () => update(n => n + 1); runtime.listeners.add(listener); return () => runtime.listeners.delete(listener); }, []);
   return runtime.errors.get(scope) || '';
 }
-const css = `.cer{--control:#778198;--cb:#f6f7fc;--cp:#fff;--ci:#20243d;--cs:#535d75;--cl:#ccd2e3;--ca:#5036ab;--cf:#eeebfc;color:var(--ci);background:var(--cb);font:400 1rem/1.55 system-ui,sans-serif;overflow-wrap:anywhere}.dark .cer{--control:#8c99b5;--cb:#171b29;--cp:#232a3c;--ci:#f4f5fb;--cs:#c3cbe0;--cl:#4f5b77;--ca:#c6b9ff;--cf:#393250}.cer *{box-sizing:border-box}.cer h2{font-size:1.5em;font-weight:750;margin:0 0 8px}.cer h3{font-size:1.1em;font-weight:700;margin:0 0 10px}.cer p{margin:8px 0 14px}.cer button,.cer input,.cer select,.cer textarea{font:inherit}.cer button{min-width:44px;min-height:44px;padding:9px 13px;border:1px solid var(--cl);border-radius:10px;background:var(--cp);color:var(--ci);cursor:pointer}.cer button:hover:enabled,.cer button[aria-pressed=true]{background:var(--cf);border-color:var(--ca)}.cer button:disabled,.cer button[aria-disabled=true]{opacity:.6;cursor:default}.cer :focus-visible{outline:3px solid var(--ca);outline-offset:3px}.cer .cer-primary{background:var(--ca);color:var(--cp);font-weight:650}.dark .cer .cer-primary{color:#171b29}.cer .cer-primary:hover:enabled{background:var(--ci);color:var(--cp)}.cer input,.cer select,.cer textarea{width:100%;min-width:0;min-height:44px;border:1px solid var(--cl);border-radius:8px;border-color:var(--control);background:var(--cp);color:var(--ci);padding:8px}.cer textarea{min-height:90px}.cer label{display:block;margin:9px 0}.cer small,.cer .cer-muted{color:var(--cs);font-size:.87em}.cer .cer-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.cer .cer-between{justify-content:space-between}.cer .cer-panel{background:var(--cp);border:1px solid var(--cl);padding:18px;border-radius:14px;min-width:0}.cer .cer-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;margin-top:18px}.cer .cer-objects{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}.cer .cer-objects button{text-align:left;min-height:75px}.cer .cer-objects small{display:block;margin-top:4px}.cer .cer-journal p{border-left:3px solid var(--cl);padding-left:12px;white-space:pre-wrap}.cer .cer-journal h3{margin-top:15px}.cer .cer-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.cer .cer-sequence{list-style:none;padding:0}.cer .cer-sequence li{display:flex;align-items:center;gap:7px;margin:7px 0;padding:7px 0;border-bottom:1px solid var(--cl)}.cer .cer-sequence li span{flex:1;min-width:0}.cer .cer-alert{padding:12px;border:1px solid var(--cl);border-radius:10px;background:var(--cf);margin:12px 0}.cer .cer-error{color:#9e1d36;background:#fff1f3;border-color:#e4a1ad}.dark .cer .cer-error{color:#ffdbe1;background:#4c2031}.cer details{margin:12px 0;border-top:1px solid var(--cl);padding-top:10px}.cer summary{cursor:pointer;font-weight:650;min-height:44px;padding:10px 0}.cer .cer-progress{height:8px;border-radius:5px;background:var(--cl);overflow:hidden;margin:14px 0}.cer .cer-progress>div{height:100%;background:var(--ca)}.cer-overlay{position:fixed;inset:0;z-index:9999;overflow:auto}.cer-shell{max-width:1150px;margin:0 auto;padding:22px}.cer-modal-backdrop{position:fixed;inset:0;z-index:10000;background:#101528bb;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px 12px}.cer-modal{width:min(1050px,100%);padding:24px;border-radius:18px;box-shadow:0 15px 60px #0005}.cer-teacher{border:1px solid var(--cl);border-radius:16px;padding:20px}.cer .cer-map{display:block;width:100%;max-width:420px;margin:auto}.cer .cer-map text{font:16px system-ui;fill:var(--ci)}.cer .cer-map line{stroke:var(--control);stroke-width:1}.cer .cer-map circle{fill:var(--ca)}.cer .cer-directions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:310px;margin:10px auto}.cer .cer-directions button:first-child{grid-column:2}.cer .cer-directions button:nth-child(2){grid-column:1}.cer .cer-evidence-context{background:var(--cf);border:1px solid var(--cl);border-radius:10px;padding:14px;margin:14px 0}.cer .cer-evidence-context h4{margin:0 0 10px;font-size:1em}.cer .cer-evidence-context p{white-space:pre-wrap;margin:4px 0 12px}.cer .cer-evidence-context div:last-child p{margin-bottom:0}.cer .cer-activity-list{list-style:none;padding:0;display:grid;gap:10px}.cer .cer-activity-list li{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.cer .cer-activity-list small{flex-basis:100%}.cer .cer-activity-waiting{color:var(--ca)}.cer .cer-guide-areas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:16px}.cer .cer-guide-objects{list-style:none;margin:0;padding:0;display:grid;gap:8px}.cer .cer-guide-objects button{width:100%;text-align:left}.cer .cer-guide-objects small{display:block}.cer .cer-reading-nav{margin:14px 0}.cer .cer-debrief{margin:16px 0}.cer .cer-debrief h4{margin:12px 0 6px}.cer blockquote{margin:12px 0;border-left:3px solid var(--cl);padding-left:12px;white-space:pre-wrap}.cer .cer-library{background:var(--cp);border:1px solid var(--cl);border-radius:12px;padding:12px}.cer .cer-facts{padding-left:20px}.cer .cer-facts li{margin:8px 0}.cer [tabindex],.cer button,.cer summary{scroll-margin:16px}.cer .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(forced-colors:active){.cer button,.cer input,.cer select,.cer textarea,.cer-panel{border:1px solid ButtonText}.cer :focus-visible{outline:3px solid Highlight}.cer .cer-progress>div{background:Highlight}.cer .cer-map circle{fill:CanvasText}.cer .cer-map line{stroke:CanvasText}.cer .cer-map text{fill:CanvasText}}@media(max-width:640px){.cer .cer-layout{grid-template-columns:1fr}.cer-shell,.cer-modal{padding:15px}.cer .cer-panel{padding:14px}.cer .cer-objects{grid-template-columns:repeat(2,minmax(0,1fr))}.cer .cer-controls{grid-template-columns:1fr}.cer-modal-backdrop{padding:12px 6px}.cer input,.cer select,.cer textarea{font-size:max(1rem,16px)}}`;
+const css = `.cer{--control:#778198;--cb:#f6f7fc;--cp:#fff;--ci:#20243d;--cs:#535d75;--cl:#ccd2e3;--ca:#5036ab;--cf:#eeebfc;color:var(--ci);background:var(--cb);font:400 1rem/1.55 system-ui,sans-serif;overflow-wrap:anywhere}.dark .cer,.theme-dark .cer{--control:#8c99b5;--cb:#171b29;--cp:#232a3c;--ci:#f4f5fb;--cs:#c3cbe0;--cl:#4f5b77;--ca:#c6b9ff;--cf:#393250}.theme-contrast .cer{--control:#facc15;--cb:#000;--cp:#000;--ci:#fff;--cs:#fde047;--cl:#facc15;--ca:#facc15;--cf:#1a1a00}.cer *{box-sizing:border-box}.cer h2{font-size:1.5em;font-weight:750;margin:0 0 8px}.cer h3{font-size:1.1em;font-weight:700;margin:0 0 10px}.cer p{margin:8px 0 14px}.cer button,.cer input,.cer select,.cer textarea{font:inherit}.cer button{min-width:44px;min-height:44px;padding:9px 13px;border:1px solid var(--cl);border-radius:10px;background:var(--cp);color:var(--ci);cursor:pointer}.cer button:hover:enabled,.cer button[aria-pressed=true]{background:var(--cf);border-color:var(--ca)}.cer button:disabled,.cer button[aria-disabled=true]{opacity:.6;cursor:default}.cer :focus-visible{outline:3px solid var(--ca);outline-offset:3px}.cer .cer-primary{background:var(--ca);color:var(--cp);font-weight:650}.dark .cer .cer-primary,.theme-dark .cer .cer-primary{color:#171b29}.theme-contrast .cer .cer-primary{color:#000}.cer .cer-primary:hover:enabled{background:var(--ci);color:var(--cp)}.cer input,.cer select,.cer textarea{width:100%;min-width:0;min-height:44px;border:1px solid var(--cl);border-radius:8px;border-color:var(--control);background:var(--cp);color:var(--ci);padding:8px}.cer textarea{min-height:90px}.cer label{display:block;margin:9px 0}.cer small,.cer .cer-muted{color:var(--cs);font-size:.87em}.cer .cer-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.cer .cer-between{justify-content:space-between}.cer .cer-panel{background:var(--cp);border:1px solid var(--cl);padding:18px;border-radius:14px;min-width:0}.cer .cer-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;margin-top:18px}.cer .cer-objects{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}.cer .cer-objects button{text-align:left;min-height:75px}.cer .cer-objects small{display:block;margin-top:4px}.cer .cer-journal p{border-left:3px solid var(--cl);padding-left:12px;white-space:pre-wrap}.cer .cer-journal h3{margin-top:15px}.cer .cer-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.cer .cer-sequence{list-style:none;padding:0}.cer .cer-sequence li{display:flex;align-items:center;gap:7px;margin:7px 0;padding:7px 0;border-bottom:1px solid var(--cl)}.cer .cer-sequence li span{flex:1;min-width:0}.cer .cer-alert{padding:12px;border:1px solid var(--cl);border-radius:10px;background:var(--cf);margin:12px 0}.cer .cer-error{color:#9e1d36;background:#fff1f3;border-color:#e4a1ad}.dark .cer .cer-error,.theme-dark .cer .cer-error{color:#ffdbe1;background:#4c2031}.theme-contrast .cer .cer-error{color:#fff;background:#000;border-color:#facc15}.cer details{margin:12px 0;border-top:1px solid var(--cl);padding-top:10px}.cer summary{cursor:pointer;font-weight:650;min-height:44px;padding:10px 0}.cer .cer-progress{height:8px;border-radius:5px;background:var(--cl);overflow:hidden;margin:14px 0}.cer .cer-progress>div{height:100%;background:var(--ca)}.cer-overlay{position:fixed;inset:0;z-index:9999;overflow:auto}.cer-shell{max-width:1150px;margin:0 auto;padding:22px}.cer-modal-backdrop{position:fixed;inset:0;z-index:10000;background:#101528bb;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px 12px}.cer-modal{width:min(1050px,100%);padding:24px;border-radius:18px;box-shadow:0 15px 60px #0005}.cer-teacher{border:1px solid var(--cl);border-radius:16px;padding:20px}.cer .cer-map{display:block;width:100%;max-width:420px;margin:auto}.cer .cer-map text{font:16px system-ui;fill:var(--ci)}.cer .cer-map line{stroke:var(--control);stroke-width:1}.cer .cer-map circle{fill:var(--ca)}.cer .cer-directions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:310px;margin:10px auto}.cer .cer-directions button:first-child{grid-column:2}.cer .cer-directions button:nth-child(2){grid-column:1}.cer .cer-evidence-context{background:var(--cf);border:1px solid var(--cl);border-radius:10px;padding:14px;margin:14px 0}.cer .cer-evidence-context h4{margin:0 0 10px;font-size:1em}.cer .cer-evidence-context p{white-space:pre-wrap;margin:4px 0 12px}.cer .cer-evidence-context div:last-child p{margin-bottom:0}.cer .cer-activity-list{list-style:none;padding:0;display:grid;gap:10px}.cer .cer-activity-list li{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.cer .cer-activity-list small{flex-basis:100%}.cer .cer-activity-waiting{color:var(--ca)}.cer .cer-guide-areas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:16px}.cer .cer-guide-objects{list-style:none;margin:0;padding:0;display:grid;gap:8px}.cer .cer-guide-objects button{width:100%;text-align:left}.cer .cer-guide-objects small{display:block}.cer .cer-reading-nav{margin:14px 0}.cer .cer-debrief{margin:16px 0}.cer .cer-debrief h4{margin:12px 0 6px}.cer blockquote{margin:12px 0;border-left:3px solid var(--cl);padding-left:12px;white-space:pre-wrap}.cer .cer-library{background:var(--cp);border:1px solid var(--cl);border-radius:12px;padding:12px}.cer .cer-facts{padding-left:20px}.cer .cer-facts li{margin:8px 0}.cer [tabindex],.cer button,.cer summary{scroll-margin:16px}.cer .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(forced-colors:active){.cer button,.cer input,.cer select,.cer textarea,.cer-panel{border:1px solid ButtonText}.cer :focus-visible{outline:3px solid Highlight}.cer .cer-progress>div{background:Highlight}.cer .cer-map circle{fill:CanvasText}.cer .cer-map line{stroke:CanvasText}.cer .cer-map text{fill:CanvasText}}@media(max-width:640px){.cer .cer-layout{grid-template-columns:1fr}.cer-shell,.cer-modal{padding:15px}.cer .cer-panel{padding:14px}.cer .cer-objects{grid-template-columns:repeat(2,minmax(0,1fr))}.cer .cer-controls{grid-template-columns:1fr}.cer-modal-backdrop{padding:12px 6px}.cer input,.cer select,.cer textarea{font-size:max(1rem,16px)}}`;
 function Styles() { return <style>{css}</style>; }
 function roomStatus(t, code, solo = false) {
   const values = {
@@ -115,7 +115,7 @@ export function ConnectedSolo({ room, user, onExit, t }) {
     <div className="cer-row"><button type="button" ref={exitRef} onClick={onExit}>{tr(t, 'back_setup', 'Back to room setup')}</button><button type="button" ref={restartRef} onClick={() => setConfirm(true)}>{tr(t, 'solo_restart', 'Restart solo room')}</button></div>
     <p className="cer-muted">{tr(t, 'solo_saved', 'Play independently with the same clues and puzzles. Progress and unfinished settings resume in this browser tab; no live session is needed.')}</p>
     {storageError && <p role="alert" className="cer-alert">{tr(t, 'solo_storage_error', 'Progress could not be saved in this tab. You can keep playing, but leave this room open to preserve your progress.')}</p>}
-    {confirm && <div className="cer-alert" role="group" aria-label={tr(t, 'solo_restart', 'Restart solo room')}><p>{tr(t, 'solo_restart_confirm', 'Restart your solo attempt? Your discoveries, hints, and unfinished settings will reset.')}</p><div className="cer-row"><button type="button" onClick={restart}>{tr(t, 'solo_restart_yes', 'Reset my progress')}</button><button type="button" ref={cancelRef} onClick={() => { setConfirm(false); restartRef.current?.focus(); }}>{tr(t, 'cancel', 'Cancel')}</button></div></div>}
+    {confirm && <div className="cer-alert" role="group" aria-label={tr(t, 'solo_restart', 'Restart solo room')} onKeyDown={event => { if (event.key === 'Escape' && !(event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229)) { event.preventDefault(); event.stopPropagation(); setConfirm(false); restartRef.current?.focus(); } }}><p>{tr(t, 'solo_restart_confirm', 'Restart your solo attempt? Your discoveries, hints, and unfinished settings will reset.')}</p><div className="cer-row"><button type="button" onClick={restart}>{tr(t, 'solo_restart_yes', 'Reset my progress')}</button><button type="button" ref={cancelRef} onClick={() => { setConfirm(false); restartRef.current?.focus(); }}>{tr(t, 'cancel', 'Cancel')}</button></div></div>}
     <RoomView key={workspaceKey} room={room} progress={state.progress} workspaceKey={workspaceKey} onAction={action} notice={notice} solo t={t}/>
   </section>;
 }
@@ -167,12 +167,12 @@ export function ConnectedSetup({ callGemini, inputText, generatedContent, langua
     }
     finally { if (requestRef.current === id) setStage(''); }
   };
-  const save = () => { try { engine.prepareRoom(room, source); } catch (error) { setError(tr(t, 'review_invalid_edits', 'Check the room text before saving: ') + error.message); return false; } try { const next = saveLibraryRoom(localStorage, source, language, room); setLibrary(next); setSaved(true); setError(''); return true; } catch (error) { setError(libraryError(error)); return false; } };
+  const save = () => { let valid; try { valid = engine.prepareRoom(room, source); } catch (error) { setError(tr(t, 'review_invalid_edits', 'Check the room text before saving: ') + error.message); return false; } try { setRoom(valid); const next = saveLibraryRoom(localStorage, source, language, valid); setLibrary(next); setSaved(true); setError(''); return true; } catch (error) { setError(libraryError(error)); return false; } };
   const openSaved = id => {
     try {
       const next = readLibrary(localStorage, source, language), entry = next.entries.find(e => e.id === id);
       if (!entry) throw Error('library-missing');
-      requestRef.current++; setRoom(entry.room); setLibrary(next); setSaved(true); setReview(null); setPreview(engine.emptyProgress()); setPreviewNotice(''); setPreviewVersion(n => n + 1); setView('review'); setLibraryChoice(null); setError('');
+      requestRef.current++; setRoom(entry.room); setLibrary(next); setSaved(true); setReview(null); setPreview(engine.emptyProgress()); setPreviewNotice(''); setPreviewVersion(n => n + 1); setView(firstView); setLibraryChoice(null); setError('');
       try { setLibrary(selectLibraryRoom(localStorage, source, language, id)); } catch (_) { setError(tr(t, 'library_selection_failed', 'The room is open, but your last-opened selection could not be saved.')); }
       libraryPickerRef.current?.focus();
     } catch (error) { setLibraryChoice(null); setError(error?.message === 'library-missing' ? tr(t, 'library_missing', 'This saved room is no longer available. Reopen setup to refresh the library.') : libraryError(error)); }
@@ -214,7 +214,7 @@ export function ConnectedSetup({ callGemini, inputText, generatedContent, langua
   };
   const openImported = imported => {
     if (stage || libraryChoice) return false;
-    try { const next = engine.prepareRoom(imported, source); requestRef.current++; setRoom(next); setSaved(library.entries.some(entry => sameRoom(entry.room, next))); setReview(null); setView('review'); setPreview(engine.emptyProgress()); setPreviewNotice(''); setPreviewVersion(n => n + 1); setError(''); return true; }
+    try { const next = engine.prepareRoom(imported, source); requestRef.current++; setRoom(next); setSaved(library.entries.some(entry => sameRoom(entry.room, next))); setReview(null); setView(firstView); setPreview(engine.emptyProgress()); setPreviewNotice(''); setPreviewVersion(n => n + 1); setError(''); return true; }
     catch (error) { setError(tr(t, 'review_invalid_edits', 'Check the room text before saving: ') + error.message); return false; }
   };
   const editReviewedObject = nodeId => {
@@ -228,7 +228,7 @@ export function ConnectedSetup({ callGemini, inputText, generatedContent, langua
     catch (error) { if (requestRef.current === id) setError(error.message); }
     finally { if (requestRef.current === id) { setStage(''); setReviewStep(null); } }
   };
-  const startSolo = () => { if (stage) return; try { engine.prepareRoom(room, source); save(); setSoloOpen(true); } catch (error) { setError(error.message); } };
+  const startSolo = () => { if (stage) return; try { const valid = engine.prepareRoom(room, source); setRoom(valid); try { const next = saveLibraryRoom(localStorage, source, language, valid); setLibrary(next); setSaved(true); setError(''); } catch (error) { setError(libraryError(error)); } setSoloOpen(true); } catch (error) { setError(error.message); } };
   const previewAction = (nodeId, kind, value) => {
     const request = { attemptId: 'preview', requestId: engine.identity('preview'), nodeId, kind, value };
     const patch = engine.planRequest(room, preview, request, 'teacher', { attemptId: 'preview', active: true, paused: false });
@@ -262,7 +262,7 @@ export function ConnectedSetup({ callGemini, inputText, generatedContent, langua
         {savedEntry && <p className="cer-muted" data-saved-room-title>{md.inline(savedEntry.room.title)}</p>}
         {savedEntry && <button type="button" data-remove-saved disabled={!!stage || !!libraryChoice} onClick={() => setLibraryChoice({ kind: 'remove', id: savedEntry.id })}>{tr(t, 'remove_saved', 'Remove this saved room')}</button>}
       </>}
-      {libraryChoice && <div className="cer-alert" role="group" aria-label={tr(t, 'saved_room_change', 'Change saved room')}><p>{libraryChoice.kind === 'remove' ? tr(t, 'remove_saved_confirm', 'Remove this room from the browser library? The currently open room and solo progress in this tab will stay available.') : tr(t, 'open_saved_confirm', 'Open the saved room and discard unsaved changes to this preview?')}</p><div className="cer-row"><button type="button" onClick={() => libraryChoice.kind === 'remove' ? removeSaved(libraryChoice.id) : openSaved(libraryChoice.id)}>{libraryChoice.kind === 'remove' ? tr(t, 'confirm_remove_saved', 'Remove from library') : tr(t, 'confirm_open_saved', 'Discard changes and open')}</button><button type="button" ref={libraryCancelRef} onClick={() => { setLibraryChoice(null); libraryPickerRef.current?.focus(); }}>{tr(t, 'cancel', 'Cancel')}</button></div></div>}
+      {libraryChoice && <div className="cer-alert" role="group" aria-label={tr(t, 'saved_room_change', 'Change saved room')} onKeyDown={event => { if (event.key === 'Escape' && !(event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229)) { event.preventDefault(); event.stopPropagation(); setLibraryChoice(null); libraryPickerRef.current?.focus(); } }}><p>{libraryChoice.kind === 'remove' ? tr(t, 'remove_saved_confirm', 'Remove this room from the browser library? The currently open room and solo progress in this tab will stay available.') : tr(t, 'open_saved_confirm', 'Open the saved room and discard unsaved changes to this preview?')}</p><div className="cer-row"><button type="button" onClick={() => libraryChoice.kind === 'remove' ? removeSaved(libraryChoice.id) : openSaved(libraryChoice.id)}>{libraryChoice.kind === 'remove' ? tr(t, 'confirm_remove_saved', 'Remove from library') : tr(t, 'confirm_open_saved', 'Discard changes and open')}</button><button type="button" ref={libraryCancelRef} onClick={() => { setLibraryChoice(null); libraryPickerRef.current?.focus(); }}>{tr(t, 'cancel', 'Cancel')}</button></div></div>}
     </details>
     {!learnerNoAi && <div className="cer-controls"><label>{tr(t, 'theme', 'Setting or theme (optional)')}<input value={theme} maxLength={180} onChange={e => setTheme(e.target.value)} disabled={!!stage || !!libraryChoice}/></label><label>{tr(t, 'learner_level', 'Learner level (optional)')}<input value={level} maxLength={80} onChange={e => setLevel(e.target.value)} disabled={!!stage || !!libraryChoice}/></label><label>{tr(t, 'structure', 'Room structure')}<select value={structure} onChange={e => setStructure(e.target.value)} disabled={!!stage || !!libraryChoice}><option value="parallel">{tr(t, 'parallel', 'Parallel investigations')}</option><option value="discovery">{tr(t, 'discovery', 'Discovery opens two paths')}</option></select></label></div>}
     <div className="cer-row">{!learnerNoAi && <button type="button" className="cer-primary" disabled={!!stage || !!libraryChoice || source.trim().length < 40 || aiOff} title={aiDoor?.title || undefined} onClick={generate}>{room ? tr(t, 'generate_another', 'Generate another room') : tr(t, 'generate', 'Generate escape room')}</button>}<span role="status">{stage === 'generating' ? tr(t, 'generating', 'Creating clues and connected objects…') : stage === 'repairing' ? tr(t, 'repairing', 'Repairing the room’s puzzle connections…') : stage === 'importing' ? tr(t, 'import_reading', 'Reading and checking the room file…') : stage === 'reviewing' ? tr(t, 'review_step', 'Checking {current}/{total}: {name}', reviewStep ? { ...reviewStep, name: md.plain(reviewStep.name) } : { current: 0, total: reviewNodes(room).length, name: '' }) : stage === 'launching' ? tr(t, 'launching', 'Launching the shared room…') : saved ? tr(t, 'saved', 'Room saved in this browser') : ''}</span></div>
@@ -285,7 +285,7 @@ export function ConnectedSetup({ callGemini, inputText, generatedContent, langua
         <li>{readiness.tried ? tr(t, 'readiness_tried', 'Tried in preview: {count} of {total} objects solved.', { count: readiness.tried, total: readiness.total }) : tr(t, 'readiness_not_tried', 'Not tried yet. Choose Try the room to play it as a student would.')}</li>
         <li>{readiness.check === 'matched' ? tr(t, 'readiness_check_matched', 'AI check: every device solution matched.') : readiness.check === 'concerns' ? tr(t, 'readiness_check_concerns', 'AI check: some devices need a closer look.') : readiness.check === 'incomplete' ? tr(t, 'readiness_check_incomplete', 'AI check: incomplete.') : tr(t, 'readiness_check_none', 'AI check: not run (optional).')}</li>
       </ul></section>}
-      {confirmLaunch && <div className="cer-alert" role="group" data-launch-confirm aria-label={tr(t, 'launch_unchecked_title', 'Launch an untried room?')}><p>{tr(t, 'launch_unchecked', 'Nobody has tried this room and the AI check has not passed. Students may meet a clue that does not work. Launch anyway?')}</p><div className="cer-row"><button type="button" ref={launchConfirmRef} onClick={() => { setConfirmLaunch(false); setView('play'); }}>{tr(t, 'try_first', 'Try the room first')}</button><button type="button" data-launch-anyway disabled={!!stage} onClick={() => launch(true)}>{tr(t, 'launch_anyway', 'Launch anyway')}</button></div></div>}
+      {confirmLaunch && <div className="cer-alert" role="group" data-launch-confirm aria-label={tr(t, 'launch_unchecked_title', 'Launch an untried room?')} onKeyDown={event => { if (event.key === 'Escape' && !(event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229)) { event.preventDefault(); event.stopPropagation(); setConfirmLaunch(false); } }}><p>{tr(t, 'launch_unchecked', 'Nobody has tried this room and the AI check has not passed. Students may meet a clue that does not work. Launch anyway?')}</p><div className="cer-row"><button type="button" ref={launchConfirmRef} onClick={() => { setConfirmLaunch(false); setView('play'); }}>{tr(t, 'try_first', 'Try the room first')}</button><button type="button" data-launch-anyway disabled={!!stage} onClick={() => launch(true)}>{tr(t, 'launch_anyway', 'Launch anyway')}</button></div></div>}
       <footer className="cer-row" style={{ marginTop: 20 }}><button type="button" disabled={!!stage || !!libraryChoice} onClick={save}>{tr(t, 'save', 'Save room in this browser')}</button><button type="button" data-play-solo disabled={!!stage || !!libraryChoice} onClick={startSolo}>{tr(t, 'play_solo', 'Play solo')}</button>{allowLive && activeSessionCode && <button type="button" className="cer-primary" data-launch-connected disabled={!!stage || !!libraryChoice || !!sessionData?.escapeRoomState?.isActive || !!sessionData?.quizState?.isActive} onClick={launch}>{tr(t, 'launch', 'Launch for everyone')}</button>}</footer>
       {(sessionData?.escapeRoomState?.isActive || sessionData?.quizState?.isActive) && <p>{tr(t, 'end_activity', 'End the current live activity before launching this room. Your preview is kept.')}</p>}
     </>}
@@ -307,8 +307,9 @@ export function ConnectedHost({ sessionData, activeSessionCode, appId }) {
     if (!pending.length) return;
     if (Object.keys(progress.receipts || {}).length >= 2048) { if (!runtime.errors.has(scope)) { runtime.errors.set(scope, 'This room has reached its action limit. Restart it to continue.'); runtime.emit(); } return; }
     let patch = {};
-    for (const [uid, request] of pending.slice(0, 64)) {
+    for (const [uid, request] of pending.slice(0, 20)) {
       const next = engine.planRequest(state.connectedRoom, progress, request, uid, { attemptId: state.attemptId, active: state.isActive, paused: state.isPaused });
+      if (Object.keys(patch).length > 0 && Object.keys(patch).length + Object.keys(next).length > 50) break;
       progress = engine.mergeProgress(progress, next); patch = { ...patch, ...next };
     }
     if (!Object.keys(patch).length) return;
@@ -321,7 +322,8 @@ export function ConnectedHost({ sessionData, activeSessionCode, appId }) {
         // Keep every currently queued request, including those from offline peers.
         // Deleting older acknowledgements bounds Mailbox size without replacing
         // shared progress or deleting a teammate's outstanding confirmation.
-        if (typeof fb.deleteField === 'function') for (const id of engine.receiptKeysToPrune(progressOf(state), state.teamProgress?.All?.connectedActions, state.attemptId)) {
+        const pruneLimit = Math.max(0, 55 - Object.keys(update).length);
+        if (typeof fb.deleteField === 'function' && pruneLimit > 0) for (const id of engine.receiptKeysToPrune(progressOf(state), state.teamProgress?.All?.connectedActions, state.attemptId).slice(0, pruneLimit)) {
           update['escapeRoomState.teamProgress.All.connected.' + state.attemptId + '.receipts.' + id] = fb.deleteField();
         }
         await fb.updateDoc(ref, update); runtime.errors.delete(scope); runtime.cooldowns.set(scope, Date.now() + 200);
@@ -336,9 +338,50 @@ export function ConnectedStudent({ sessionData, user, activeSessionCode, targetA
   const state = sessionData?.escapeRoomState, room = state?.connectedRoom, progress = progressOf(state);
   const scope = targetAppId + ':' + activeSessionCode + ':' + state?.attemptId + ':' + user?.uid;
   const [pending, setPending] = useState(null), [sending, setSending] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState(''), [joining, setJoining] = useState(false), [slow, setSlow] = useState(false), [recovered, setRecovered] = useState(false);
-  const scopeRef = useRef(scope), pendingRef = useRef(null), mounted = useRef(true), joinRef = useRef(false), sendRef = useRef(null); scopeRef.current = scope;
+  const scopeRef = useRef(scope), pendingRef = useRef(null), mounted = useRef(true), joinRef = useRef(false), sendRef = useRef(null), overlayRef = useRef(null); scopeRef.current = scope;
   const storageKey = 'allo-connected-pending:' + scope, currentReceipt = matchingReceipt(progress, pending, user?.uid);
+  const overlayOpen = Boolean(room && state?.mode === 'connected-room' && state.isActive);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => {
+    if (!overlayOpen) return undefined;
+    const lockState = typeof window !== 'undefined' ? (window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, overflow: '' }) : null;
+    if (lockState && typeof document !== 'undefined' && document.body) {
+      if (lockState.count === 0) lockState.overflow = document.body.style.overflow;
+      lockState.count += 1;
+      document.body.style.overflow = 'hidden';
+    }
+    const hiddenNodes = [];
+    const liveSel = '[aria-live], [role="status"], [role="alert"], [role="log"], [data-toast-region]';
+    const overlay = overlayRef.current;
+    if (typeof document !== 'undefined' && overlay) {
+      const rootEl = document.getElementById('root');
+      const siblings = rootEl ? Array.from(rootEl.children) : Array.from(document.body?.children || []);
+      siblings.forEach((node) => {
+        if (!node || node === overlay || node.contains(overlay)) return;
+        if (/^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(node.tagName)) return;
+        if (node.matches?.(liveSel) || node.querySelector?.(liveSel)) return;
+        const hadInert = node.hasAttribute('inert');
+        const prevHidden = node.getAttribute('aria-hidden');
+        if (!hadInert) node.setAttribute('inert', '');
+        try { node.inert = true; } catch (_) {}
+        node.setAttribute('aria-hidden', 'true');
+        hiddenNodes.push({ node, hadInert, prevHidden });
+      });
+    }
+    return () => {
+      hiddenNodes.forEach(({ node, hadInert, prevHidden }) => {
+        try {
+          if (!hadInert) { node.removeAttribute('inert'); node.inert = false; }
+          if (prevHidden === null) node.removeAttribute('aria-hidden');
+          else node.setAttribute('aria-hidden', prevHidden);
+        } catch (_) {}
+      });
+      if (lockState && typeof document !== 'undefined' && document.body) {
+        lockState.count = Math.max(0, lockState.count - 1);
+        if (lockState.count === 0) document.body.style.overflow = lockState.overflow;
+      }
+    };
+  }, [overlayOpen]);
   useEffect(() => {
     pendingRef.current = null; sendRef.current = null; joinRef.current = false; setPending(null); setSending(false); setError(''); setNotice(''); setSlow(false); setJoining(false); setRecovered(false);
     try {
@@ -376,9 +419,9 @@ export function ConnectedStudent({ sessionData, user, activeSessionCode, targetA
   useEffect(() => { if (state?.isActive === false) try { sessionStorage.removeItem('allo-connected-workspace:' + scope); sessionStorage.removeItem(storageKey); } catch (_) {} }, [scope, state?.isActive]);
   if (!room || state?.mode !== 'connected-room' || !state.isActive) return null;
   const invalid = engine.validateRoom(room);
-  if (invalid.length) return <div className="cer cer-overlay"><Styles/><div className="cer-shell"><p role="alert">{tr(t, 'invalid_room', 'This room could not be opened. Ask the teacher to regenerate it.')}</p></div></div>;
+  if (invalid.length) return <div ref={overlayRef} className="cer cer-overlay"><Styles/><div className="cer-shell"><p role="alert">{tr(t, 'invalid_room', 'This room could not be opened. Ask the teacher to regenerate it.')}</p></div></div>;
   const joined = state.teams?.[user?.uid] === 'All', atLimit = Object.keys(progress.receipts || {}).length >= 2048;
-  return <div className="cer cer-overlay" role="region" aria-label={tr(t, 'live_room', 'Collaborative escape room')}><Styles/><div className="cer-shell">
+  return <div ref={overlayRef} className="cer cer-overlay" role="region" aria-label={tr(t, 'live_room', 'Collaborative escape room')}><Styles/><div className="cer-shell">
     {atLimit && <p className="cer-alert" role="status">{tr(t, 'action_limit', 'This room has reached its action limit. Ask the teacher to restart it. Your team can still review its discoveries.')}</p>}
     {!joined && <p className="cer-alert">{tr(t, 'joining', 'Joining your team…')} <button type="button" disabled={joining} onClick={join}>{tr(t, 'retry_join', 'Retry joining')}</button></p>}
     {state.isPaused && <p className="cer-alert" role="status">{tr(t, 'paused', 'Room paused. You can still inspect objects and read the journal. Your draft is kept.')}</p>}
@@ -391,7 +434,8 @@ export function ConnectedTeacher(props) {
   const { sessionData, activeSessionCode, appId, t } = props, md = cerMd();
   const state = sessionData?.escapeRoomState, room = state?.connectedRoom, progress = progressOf(state);
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [confirm, setConfirm] = useState('');
-  const busyRef = useRef(false), scopeRef = useRef(''), confirmCancelRef = useRef(null), confirmTriggerRef = useRef(null);
+  const busyRef = useRef(false), scopeRef = useRef(''), mountedRef = useRef(true), confirmCancelRef = useRef(null), confirmTriggerRef = useRef(null);
+  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; }; }, []);
   useEffect(() => { if (confirm) confirmCancelRef.current?.focus(); else if (confirmTriggerRef.current) { confirmTriggerRef.current.focus(); confirmTriggerRef.current = null; } }, [confirm]);
   const scope = appId + ':' + activeSessionCode + ':' + state?.attemptId; scopeRef.current = scope;
   const hostError = useRuntimeError(scope);
@@ -400,8 +444,8 @@ export function ConnectedTeacher(props) {
     if (scopeRef.current !== scope || busyRef.current || runtime.locks.has(scope)) return false;
     busyRef.current = true; runtime.locks.add(scope); runtime.emit(); setBusy(true); setError(''); const started = scope;
     try { const { fb, ref } = connection(appId, activeSessionCode); await fb.updateDoc(ref, patch); return true; }
-    catch (_) { if (scopeRef.current === started) setError(tr(t, 'control_failed', 'The control could not be saved. Please try again.')); return false; }
-    finally { runtime.locks.delete(started); runtime.emit(); if (scopeRef.current === started) { busyRef.current = false; setBusy(false); } }
+    catch (_) { if (mountedRef.current && scopeRef.current === started) setError(tr(t, 'control_failed', 'The control could not be saved. Please try again.')); return false; }
+    finally { runtime.locks.delete(started); runtime.emit(); if (scopeRef.current === started) { busyRef.current = false; if (mountedRef.current) setBusy(false); } }
   };
   if (!room || state?.mode !== 'connected-room' || !state.isActive) return null;
   const invalid = engine.validateRoom(room);
@@ -409,8 +453,8 @@ export function ConnectedTeacher(props) {
   const found = engine.inventory(room, progress);
   const waiting = pendingHostActions(state, sessionData?.roster, progress).length;
   const changeLifecycle = async action => {
-    if (action === 'restart') { const next = engine.createSession(room, state.hostId, sessionData.roster); if (await write({ escapeRoomState: next })) setConfirm(''); }
-    if (action === 'end' && await write({ 'escapeRoomState.isActive': false, 'escapeRoomState.isPaused': false })) setConfirm('');
+    if (action === 'restart') { const next = engine.createSession(room, state.hostId, sessionData.roster); if (await write({ escapeRoomState: next }) && mountedRef.current) setConfirm(''); }
+    if (action === 'end' && await write({ 'escapeRoomState.isActive': false, 'escapeRoomState.isPaused': false }) && mountedRef.current) setConfirm('');
   };
   return <section className="cer cer-teacher" aria-label={tr(t, 'teacher_controls', 'Escape room teacher controls')}><Styles/><ConnectedHost {...props}/>
     <header className="cer-row cer-between"><div><h2>{md.inline(room.title)}</h2><p>{tr(t, 'teacher_intro', 'Everyone investigates the same room. Discoveries and hints are shared.')}</p></div><strong>{state.isPaused ? tr(t, 'paused_short', 'Paused') : engine.complete(room, progress) ? tr(t, 'complete', 'Complete') : tr(t, 'live', 'Live')}</strong></header>

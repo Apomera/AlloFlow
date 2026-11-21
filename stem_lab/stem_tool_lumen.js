@@ -2535,11 +2535,41 @@
                     'aria-label': __alloT('stem.lumen.emblem_alt', 'Lumen optical prism emblem refracting light into evidence channels'),
                     style: { flexShrink: 0, display: 'block' }
                   },
-                    h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : (isDark ? '#0f172a' : '#fffbeb'), stroke: themeAccent, strokeWidth: 1.5 }),
+                    !isContrast ? h('defs', null,
+                      h('radialGradient', { id: 'lumen-emblem-bg', cx: '36%', cy: '28%', r: '78%' },
+                        h('stop', { offset: '0%', stopColor: isDark ? '#1e293b' : '#fef3c7' }),
+                        h('stop', { offset: '100%', stopColor: isDark ? '#020617' : '#fffbeb' })
+                      ),
+                      h('radialGradient', { id: 'lumen-prism-corona', cx: '50%', cy: '52%', r: '50%' },
+                        h('stop', { offset: '0%', stopColor: '#f59e0b', stopOpacity: isDark ? 0.36 : 0.28 }),
+                        h('stop', { offset: '100%', stopColor: '#f59e0b', stopOpacity: 0 })
+                      ),
+                      h('linearGradient', { id: 'lumen-prism-glass', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: isDark ? 0.34 : 0.78 }),
+                        h('stop', { offset: '55%', stopColor: '#fbbf24', stopOpacity: isDark ? 0.2 : 0.24 }),
+                        h('stop', { offset: '100%', stopColor: '#0e7490', stopOpacity: 0.22 })
+                      ),
+                      h('linearGradient', { id: 'lumen-beam-cone', x1: '0%', y1: '50%', x2: '100%', y2: '50%' },
+                        h('stop', { offset: '0%', stopColor: '#f59e0b', stopOpacity: 0.28 }),
+                        h('stop', { offset: '100%', stopColor: '#0e7490', stopOpacity: 0.04 })
+                      )
+                    ) : null,
+                    h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : 'url(#lumen-emblem-bg)', stroke: themeAccent, strokeWidth: 1.5 }),
+                    !isContrast ? h('circle', { cx: 24, cy: 25, r: 17, fill: 'url(#lumen-prism-corona)' }) : null,
+                    // Volumetric refracted spectrum fan
+                    !isContrast ? h('polygon', { points: '29,21 43,13 43,37 31,29', fill: 'url(#lumen-beam-cone)' }) : null,
+                    // Incident beam + soft optical bloom
+                    !isContrast ? h('line', { x1: 6, y1: 27, x2: 18, y2: 24, stroke: isDark ? '#fef08a' : '#f59e0b', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.26 }) : null,
                     h('line', { x1: 6, y1: 27, x2: 18, y2: 24, stroke: isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a'), strokeWidth: 2.2, strokeLinecap: 'round' }),
-                    h('polygon', { points: '24,10 14,34 34,34', fill: isContrast ? '#000000' : (isDark ? 'rgba(251,191,36,0.18)' : 'rgba(245,158,11,0.22)'), stroke: themeAccent, strokeWidth: 1.8, strokeLinejoin: 'round' }),
+                    // Faceted glass prism with internal specular edge
+                    h('polygon', { points: '24,10 14,34 34,34', fill: isContrast ? '#000000' : 'url(#lumen-prism-glass)', stroke: themeAccent, strokeWidth: 1.8, strokeLinejoin: 'round' }),
+                    !isContrast ? h('line', { x1: 24, y1: 12.5, x2: 17.5, y2: 31.5, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.65 }) : null,
+                    // Dispersed provenance spectrum rays (SRC teal, L3 amber, SYN violet)
+                    !isContrast ? h('line', { x1: 29, y1: 21, x2: 42, y2: 15, stroke: '#0e7490', strokeWidth: 4.5, strokeLinecap: 'round', opacity: 0.2 }) : null,
                     h('line', { x1: 29, y1: 21, x2: 42, y2: 15, stroke: isContrast ? '#ffff00' : '#0e7490', strokeWidth: 2, strokeLinecap: 'round' }),
+                    !isContrast ? h('line', { x1: 30, y1: 25, x2: 42, y2: 25, stroke: '#d97706', strokeWidth: 4.5, strokeLinecap: 'round', opacity: 0.22 }) : null,
                     h('line', { x1: 30, y1: 25, x2: 42, y2: 25, stroke: isContrast ? '#ffff00' : '#d97706', strokeWidth: 2, strokeLinecap: 'round' }),
+                    !isContrast ? h('line', { x1: 31, y1: 29, x2: 42, y2: 35, stroke: '#7c3aed', strokeWidth: 4.5, strokeLinecap: 'round', opacity: 0.2 }) : null,
                     h('line', { x1: 31, y1: 29, x2: 42, y2: 35, stroke: isContrast ? '#ffff00' : '#7c3aed', strokeWidth: 2, strokeLinecap: 'round', strokeDasharray: '2.5 2' })
                   ),
                   h('div', { className: 'flex-1', style: { minWidth: 0 } },
@@ -2567,14 +2597,35 @@
                   'aria-label': __alloT('stem.lumen.ladder_svg_aria', 'Four-level provenance ladder from L0 Observed to L1 Derived math, L2 AI-organized, and L3 AI reading'),
                   style: { display: 'block', height: 'auto' }
                 },
-                  h('rect', { x: 1, y: 1, width: 638, height: 82, rx: 10, fill: themeSub, stroke: themeBorder, strokeWidth: 1 }),
+                  !isContrast ? h('defs', null,
+                    h('linearGradient', { id: 'lumen-ladder-bg', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: isDark ? '#0f172a' : '#fffbeb' }),
+                      h('stop', { offset: '100%', stopColor: isDark ? '#1e293b' : '#f8fafc' })
+                    ),
+                    h('linearGradient', { id: 'lumen-card-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: isDark ? 0.14 : 0.72 }),
+                      h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                    )
+                  ) : null,
+                  h('rect', { x: 1, y: 1, width: 638, height: 82, rx: 10, fill: isContrast ? themeSub : 'url(#lumen-ladder-bg)', stroke: themeBorder, strokeWidth: 1 }),
                   ladderSteps.map(function (st, i) {
                     var bx = 12 + i * 156;
                     return h('g', { key: st.lvl },
-                      i > 0 ? h('line', { x1: bx - 10, y1: 42, x2: bx - 2, y2: 42, stroke: themeAccent, strokeWidth: 1.8 }) : null,
-                      h('rect', { x: bx, y: 12, width: 146, height: 60, rx: 8, fill: themeSurface, stroke: st.col, strokeWidth: 1.3, strokeDasharray: st.lvl === 'L3' ? '5 3' : undefined }),
-                      h('text', { x: bx + 12, y: 34, fontSize: 13, fontWeight: 900, fill: st.col }, st.glyph + ' ' + st.title),
-                      h('text', { x: bx + 12, y: 55, fontSize: 10.5, fontWeight: 600, fill: themeMuted }, st.desc)
+                      i > 0 ? h('g', null,
+                        !isContrast ? h('line', { x1: bx - 10, y1: 42, x2: bx - 2, y2: 42, stroke: themeAccent, strokeWidth: 5, opacity: 0.2 }) : null,
+                        h('path', { d: 'M' + (bx - 10) + ' 42 H' + (bx - 2) + ' M' + (bx - 5) + ' 38.5 L' + (bx - 1.5) + ' 42 L' + (bx - 5) + ' 45.5', fill: 'none', stroke: themeAccent, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })
+                      ) : null,
+                      !isContrast ? h('rect', { x: bx + 1.5, y: 14, width: 146, height: 60, rx: 8, fill: 'rgba(15,23,42,0.08)' }) : null,
+                      h('rect', { x: bx, y: 12, width: 146, height: 60, rx: 8, fill: themeSurface, stroke: st.col, strokeWidth: 1.4, strokeDasharray: st.lvl === 'L3' ? '5 3' : undefined }),
+                      !isContrast ? h('rect', { x: bx + 1, y: 13, width: 144, height: 22, rx: 7, fill: 'url(#lumen-card-sheen)' }) : null,
+                      h('rect', { x: bx + 1.5, y: 18, width: 3.5, height: 48, rx: 1.75, fill: st.col }),
+                      h('text', { x: bx + 13, y: 34, fontSize: 13, fontWeight: 900, fill: st.col }, st.glyph + ' ' + st.title),
+                      h('text', { x: bx + 13, y: 54, fontSize: 10.5, fontWeight: 600, fill: themeMuted }, st.desc),
+                      // Calibrated certainty gauge dots along bottom-right of each step card
+                      [0, 1, 2, 3].map(function (pip) {
+                        var active = pip <= (3 - i);
+                        return h('circle', { key: 'p' + pip, cx: bx + 108 + pip * 8, cy: 64, r: 2, fill: active ? st.col : themeBorder, opacity: active ? 0.85 : 0.45 });
+                      })
                     );
                   })
                 )
@@ -3538,32 +3589,51 @@
           }
           if (geo) {
             var b = geo.box, sk = [];
+            var chartDefs = [];
+            if (!isContrast && geo.bandPath) {
+              chartDefs.push(h('linearGradient', { key: 'bandGrad', id: 'lumenBandGrad', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: bundle.ink, stopOpacity: 0.14 }),
+                h('stop', { offset: '50%', stopColor: bundle.ink, stopOpacity: 0.08 }),
+                h('stop', { offset: '100%', stopColor: bundle.ink, stopOpacity: 0.14 })
+              ));
+            }
+            if (chartDefs.length) sk.push(h('defs', { key: 'chartdefs' }, chartDefs));
             geo.yTicks.forEach(function (t, i) {
               sk.push(h('line', { key: 'yg' + i, x1: b.padL, y1: t.sy, x2: b.w - b.padR, y2: t.sy, stroke: '#eef2f7', strokeWidth: 1 }));
-              sk.push(h('text', { key: 'yl' + i, x: b.padL - 4, y: t.sy + 3, textAnchor: 'end', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.y != null ? t.y : t.count)));
+              sk.push(h('line', { key: 'ytk' + i, x1: b.padL - 3, y1: t.sy, x2: b.padL, y2: t.sy, stroke: '#94a3b8', strokeWidth: 1 }));
+              sk.push(h('text', { key: 'yl' + i, x: b.padL - 5, y: t.sy + 3, textAnchor: 'end', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.y != null ? t.y : t.count)));
             });
+            // Calibrated L-axis frame (pure path, zero extra rect/circle marks)
+            sk.push(h('path', { key: 'axes', d: 'M ' + b.padL + ',' + b.padT + ' L ' + b.padL + ',' + (b.h - b.padB) + ' L ' + (b.w - b.padR) + ',' + (b.h - b.padB), fill: 'none', stroke: '#cbd5e1', strokeWidth: 1.25 }));
             geo.xTicks.forEach(function (t, i) {
+              sk.push(h('line', { key: 'xtk' + i, x1: t.sx, y1: b.h - b.padB, x2: t.sx, y2: b.h - b.padB + 3.5, stroke: '#94a3b8', strokeWidth: 1 }));
               sk.push(h('text', { key: 'xl' + i, x: t.sx, y: b.h - b.padB + 14, textAnchor: 'middle', style: { fontSize: '9px' }, fill: '#64748b' }, String(t.x != null ? t.x : (t.label != null ? t.label : t.value))));
             });
-            if (geo.bandPath) sk.push(h('path', { key: 'band', d: geo.bandPath, fill: bundle.ink, fillOpacity: 0.10, stroke: 'none' }));
+            if (geo.bandPath) sk.push(h('path', { key: 'band', d: geo.bandPath, fill: isContrast ? bundle.ink : 'url(#lumenBandGrad)', fillOpacity: isContrast ? 0.10 : 1, stroke: 'none' }));
             if (geo.phaseLines) geo.phaseLines.forEach(function (p, i) {
+              if (!isContrast) sk.push(h('line', { key: 'phg' + i, x1: p.sx, y1: b.padT, x2: p.sx, y2: b.h - b.padB, stroke: '#94a3b8', strokeWidth: 4.5, strokeOpacity: 0.14 }));
               sk.push(h('line', { key: 'ph' + i, x1: p.sx, y1: b.padT, x2: p.sx, y2: b.h - b.padB, stroke: '#0f172a', strokeWidth: 1.5, strokeDasharray: '2 3' }));
-              sk.push(h('text', { key: 'phl' + i, x: p.sx + 3, y: b.padT + 9, style: { fontSize: '8px' }, fill: '#0f172a' }, 'phase'));
+              sk.push(h('text', { key: 'phl' + i, x: p.sx + 4, y: b.padT + 9, style: { fontSize: '8px', fontWeight: 700 }, fill: '#0f172a' }, 'phase'));
             });
-            if (geo.trendPath) sk.push(h('path', { key: 'trend', d: geo.trendPath, fill: 'none', stroke: bundle.ink, strokeWidth: 2.25, strokeLinecap: 'round', strokeOpacity: bundle.markOpacity, strokeDasharray: bundle.strokeDasharray === 'none' ? undefined : bundle.strokeDasharray }));
+            if (geo.trendPath) {
+              if (!isContrast) sk.push(h('path', { key: 'trendGlow', d: geo.trendPath, fill: 'none', stroke: bundle.ink, strokeWidth: 6.5, strokeLinecap: 'round', strokeOpacity: 0.11 }));
+              sk.push(h('path', { key: 'trend', d: geo.trendPath, fill: 'none', stroke: bundle.ink, strokeWidth: 2.25, strokeLinecap: 'round', strokeOpacity: bundle.markOpacity, strokeDasharray: bundle.strokeDasharray === 'none' ? undefined : bundle.strokeDasharray }));
+            }
             if (geo.points) geo.points.forEach(function (p, i) {
               var pb = encode(p.level || 'L0'); // observed ● / synthetic ◇ — the MARK's own provenance, not the L1 trend line
               sk.push(h('g', { key: 'pt' + i },
-                h('circle', { cx: p.sx, cy: p.sy, r: 3.5, fill: pb.ink, fillOpacity: pb.markOpacity, stroke: '#ffffff', strokeWidth: 1.25 }),
+                h('circle', { cx: p.sx, cy: p.sy, r: 3.8, fill: pb.ink, fillOpacity: pb.markOpacity, stroke: '#ffffff', strokeWidth: 1.35 }),
                 // the per-mark BURN: each mark carries its own level glyph at full opacity
-                h('text', { x: p.sx + 4, y: p.sy - 4, style: { fontSize: '8px' }, fill: pb.ink, fillOpacity: 1, 'aria-hidden': 'true' }, pb.glyph)
+                h('text', { x: p.sx + 4.5, y: p.sy - 4, style: { fontSize: '8px' }, fill: pb.ink, fillOpacity: 1, 'aria-hidden': 'true' }, pb.glyph)
               ));
             });
             // Bar pathway: each bar is an L0 OBSERVED mark (neutral ink) carrying its level glyph above it.
             if (geo.bars) {
               var l0 = encode('L0');
               geo.bars.forEach(function (bar, i) {
-                sk.push(h('rect', { key: 'bar' + i, x: bar.bx, y: bar.by, width: bar.bw, height: Math.max(0, bar.bh), rx: 1, fill: l0.ink, fillOpacity: 0.85 }));
+                var bh = Math.max(0, bar.bh);
+                sk.push(h('rect', { key: 'bar' + i, x: bar.bx, y: bar.by, width: bar.bw, height: bh, rx: 2, fill: l0.ink, fillOpacity: 0.86 }));
+                if (!isContrast && bh > 4 && bar.bw > 4) sk.push(h('line', { key: 'bars' + i, x1: bar.bx + 2, y1: bar.by + 2, x2: bar.bx + bar.bw - 2, y2: bar.by + 2, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', strokeOpacity: 0.32 }));
                 sk.push(h('text', { key: 'barg' + i, x: bar.cx, y: bar.by - 2, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l0.ink, 'aria-hidden': 'true' }, l0.glyph));
               });
             }
@@ -3571,7 +3641,7 @@
             if (geo.dots) {
               var l0d = encode('L0');
               geo.dots.forEach(function (p, i) {
-                sk.push(h('circle', { key: 'dot' + i, cx: p.sx, cy: p.sy, r: 4, fill: l0d.ink, fillOpacity: l0d.markOpacity, stroke: '#ffffff', strokeWidth: 1.25 }));
+                sk.push(h('circle', { key: 'dot' + i, cx: p.sx, cy: p.sy, r: 4.2, fill: l0d.ink, fillOpacity: l0d.markOpacity, stroke: '#ffffff', strokeWidth: 1.35 }));
               });
             }
             // Box pathway: a five-number box+whisker per phase (L0 observed spread — q3 on top, q1 on bottom).
@@ -3579,9 +3649,12 @@
               var l0b = encode('L0');
               geo.boxes.forEach(function (bxx, i) {
                 var x0 = bxx.cx - bxx.bw / 2, x1 = bxx.cx + bxx.bw / 2;
-                sk.push(h('line', { key: 'bw' + i, x1: bxx.cx, y1: bxx.syMax, x2: bxx.cx, y2: bxx.syMin, stroke: l0b.ink, strokeWidth: 1 }));
-                sk.push(h('rect', { key: 'bb' + i, x: x0, y: bxx.syQ3, width: bxx.bw, height: Math.max(1, bxx.syQ1 - bxx.syQ3), fill: l0b.ink, fillOpacity: 0.15, stroke: l0b.ink, strokeWidth: 1 }));
-                sk.push(h('line', { key: 'bm' + i, x1: x0, y1: bxx.syMed, x2: x1, y2: bxx.syMed, stroke: l0b.ink, strokeWidth: 2 }));
+                var capW = Math.max(4, bxx.bw * 0.35);
+                sk.push(h('line', { key: 'bw' + i, x1: bxx.cx, y1: bxx.syMax, x2: bxx.cx, y2: bxx.syMin, stroke: l0b.ink, strokeWidth: 1.2 }));
+                sk.push(h('line', { key: 'bwtop' + i, x1: bxx.cx - capW, y1: bxx.syMax, x2: bxx.cx + capW, y2: bxx.syMax, stroke: l0b.ink, strokeWidth: 1.2 }));
+                sk.push(h('line', { key: 'bwbot' + i, x1: bxx.cx - capW, y1: bxx.syMin, x2: bxx.cx + capW, y2: bxx.syMin, stroke: l0b.ink, strokeWidth: 1.2 }));
+                sk.push(h('rect', { key: 'bb' + i, x: x0, y: bxx.syQ3, width: bxx.bw, height: Math.max(1, bxx.syQ1 - bxx.syQ3), rx: 2, fill: l0b.ink, fillOpacity: 0.16, stroke: l0b.ink, strokeWidth: 1.2 }));
+                sk.push(h('line', { key: 'bm' + i, x1: x0, y1: bxx.syMed, x2: x1, y2: bxx.syMed, stroke: l0b.ink, strokeWidth: 2.4 }));
                 sk.push(h('text', { key: 'bg' + i, x: bxx.cx, y: bxx.syMax - 3, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l0b.ink, 'aria-hidden': 'true' }, l0b.glyph));
               });
             }
@@ -3590,8 +3663,10 @@
             if (geo.bins) {
               var l0h = encode('L0');
               geo.bins.forEach(function (bn, i) {
-                sk.push(h('rect', { key: 'hbin' + i, x: bn.bx, y: bn.by, width: bn.bw, height: Math.max(0, bn.bh), fill: l0h.ink, fillOpacity: 0.8, stroke: '#ffffff', strokeWidth: 0.5 }));
-                if (bn.count > 0) sk.push(h('text', { key: 'hbc' + i, x: bn.bx + bn.bw / 2, y: bn.by - 2, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l0h.ink, 'aria-hidden': 'true' }, String(bn.count)));
+                var hbh = Math.max(0, bn.bh);
+                sk.push(h('rect', { key: 'hbin' + i, x: bn.bx, y: bn.by, width: bn.bw, height: hbh, rx: 1.5, fill: l0h.ink, fillOpacity: 0.82, stroke: '#ffffff', strokeWidth: 0.75 }));
+                if (!isContrast && hbh > 4 && bn.bw > 4) sk.push(h('line', { key: 'hbsh' + i, x1: bn.bx + 2, y1: bn.by + 2, x2: bn.bx + bn.bw - 2, y2: bn.by + 2, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', strokeOpacity: 0.3 }));
+                if (bn.count > 0) sk.push(h('text', { key: 'hbc' + i, x: bn.bx + bn.bw / 2, y: bn.by - 2, textAnchor: 'middle', style: { fontSize: '8px', fontWeight: 700 }, fill: l0h.ink, 'aria-hidden': 'true' }, String(bn.count)));
               });
             }
             // Scatter pathway: L0 OBSERVED pairs (x = primary measure, y = 2nd measure). The optional
@@ -3599,9 +3674,12 @@
             // (the not-causation caveat lives in the sentence). No connecting line between points.
             if (geo.scatterPoints) {
               var l0s = encode('L0'), l1s = encode('L1');
-              if (geo.fitPath) sk.push(h('path', { key: 'fit', d: geo.fitPath, fill: 'none', stroke: l1s.ink, strokeWidth: 1.5, strokeOpacity: 0.7, strokeDasharray: '4 3' }));
+              if (geo.fitPath) {
+                if (!isContrast) sk.push(h('path', { key: 'fitg', d: geo.fitPath, fill: 'none', stroke: l1s.ink, strokeWidth: 5, strokeOpacity: 0.1 }));
+                sk.push(h('path', { key: 'fit', d: geo.fitPath, fill: 'none', stroke: l1s.ink, strokeWidth: 1.6, strokeOpacity: 0.75, strokeDasharray: '4 3' }));
+              }
               geo.scatterPoints.forEach(function (p, i) {
-                sk.push(h('circle', { key: 'sc' + i, cx: p.sx, cy: p.sy, r: 3.5, fill: l0s.ink, fillOpacity: l0s.markOpacity, stroke: '#ffffff', strokeWidth: 1.25 }));
+                sk.push(h('circle', { key: 'sc' + i, cx: p.sx, cy: p.sy, r: 3.8, fill: l0s.ink, fillOpacity: l0s.markOpacity, stroke: '#ffffff', strokeWidth: 1.35 }));
               });
             }
             // Slope pathway: per-phase fitted trend segments (L1 derived); a refused phase (n<2) draws none.
@@ -3610,8 +3688,9 @@
               var l1seg = encode('L1');
               geo.segments.forEach(function (s, i) {
                 if (s.sx1 == null) return;
-                sk.push(h('line', { key: 'seg' + i, x1: s.sx1, y1: s.sy1, x2: s.sx2, y2: s.sy2, stroke: l1seg.ink, strokeWidth: 2.5, strokeOpacity: l1seg.markOpacity }));
-                sk.push(h('text', { key: 'segl' + i, x: (s.sx1 + s.sx2) / 2, y: Math.min(s.sy1, s.sy2) - 4, textAnchor: 'middle', style: { fontSize: '8px' }, fill: l1seg.ink, 'aria-hidden': 'true' }, (s.slope > 0 ? '+' : '') + s.slope + (s.small ? '*' : '')));
+                if (!isContrast) sk.push(h('line', { key: 'segg' + i, x1: s.sx1, y1: s.sy1, x2: s.sx2, y2: s.sy2, stroke: l1seg.ink, strokeWidth: 6.5, strokeLinecap: 'round', strokeOpacity: 0.12 }));
+                sk.push(h('line', { key: 'seg' + i, x1: s.sx1, y1: s.sy1, x2: s.sx2, y2: s.sy2, stroke: l1seg.ink, strokeWidth: 2.5, strokeLinecap: 'round', strokeOpacity: l1seg.markOpacity }));
+                sk.push(h('text', { key: 'segl' + i, x: (s.sx1 + s.sx2) / 2, y: Math.min(s.sy1, s.sy2) - 4, textAnchor: 'middle', style: { fontSize: '8px', fontWeight: 700 }, fill: l1seg.ink, 'aria-hidden': 'true' }, (s.slope > 0 ? '+' : '') + s.slope + (s.small ? '*' : '')));
               });
             }
             // Grouped-bar pathway: bars side-by-side per (phase × series) mean, on a 0-baseline. A small
@@ -3627,8 +3706,8 @@
                 grp.bars.forEach(function (bar, bi) {
                   if (bar.empty) return; // no fabricated bar for a missing cell
                   var gcol = seriesColor(bar.colorIdx);
-                  sk.push(h('rect', { key: 'gb' + gi + '_' + bi, x: bar.bx, y: bar.by, width: bar.bw, height: Math.max(0, bar.bh), rx: 1, fill: 'url(#' + seriesPatternId(bar.colorIdx) + ')', fillOpacity: bar.small ? 0.5 : 1, stroke: gcol, strokeWidth: bar.small ? 1 : 0.5, strokeDasharray: bar.small ? '2 2' : undefined }));
-                  if (bar.small) sk.push(h('text', { key: 'gbf' + gi + '_' + bi, x: bar.bx + bar.bw / 2, y: bar.by - 2, textAnchor: 'middle', style: { fontSize: '7px' }, fill: gcol, 'aria-hidden': 'true' }, 'n=' + bar.n));
+                  sk.push(h('rect', { key: 'gb' + gi + '_' + bi, x: bar.bx, y: bar.by, width: bar.bw, height: Math.max(0, bar.bh), rx: 1.5, fill: 'url(#' + seriesPatternId(bar.colorIdx) + ')', fillOpacity: bar.small ? 0.5 : 1, stroke: gcol, strokeWidth: bar.small ? 1 : 0.75, strokeDasharray: bar.small ? '2 2' : undefined }));
+                  if (bar.small) sk.push(h('text', { key: 'gbf' + gi + '_' + bi, x: bar.bx + bar.bw / 2, y: bar.by - 2, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: 700 }, fill: gcol, 'aria-hidden': 'true' }, 'n=' + bar.n));
                 });
               });
             }
@@ -3638,9 +3717,10 @@
             if (geo.seriesGeo) {
               geo.seriesGeo.forEach(function (s, si) {
                 var col = seriesColor(s.colorIdx), dash = seriesDash(s.colorIdx), shape = seriesShape(s.colorIdx);
-                if (s.linePath) sk.push(h('path', { key: 'msl' + si, d: s.linePath, fill: 'none', stroke: col, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round', strokeOpacity: 0.9, strokeDasharray: dash === 'none' ? undefined : dash }));
+                if (s.linePath && !isContrast) sk.push(h('path', { key: 'mslg' + si, d: s.linePath, fill: 'none', stroke: col, strokeWidth: 5.5, strokeLinejoin: 'round', strokeLinecap: 'round', strokeOpacity: 0.14 }));
+                if (s.linePath) sk.push(h('path', { key: 'msl' + si, d: s.linePath, fill: 'none', stroke: col, strokeWidth: 2.1, strokeLinejoin: 'round', strokeLinecap: 'round', strokeOpacity: 0.92, strokeDasharray: dash === 'none' ? undefined : dash }));
                 s.points.forEach(function (p, pi) {
-                  sk.push(seriesMarkerEl(shape, p.sx, p.sy, 3, col, 'msc' + si + '_' + pi)); // shape per series, not colour alone
+                  sk.push(seriesMarkerEl(shape, p.sx, p.sy, 3.2, col, 'msc' + si + '_' + pi)); // shape per series, not colour alone
                 });
               });
             }
@@ -3648,11 +3728,13 @@
             // Horizontal (y=value) for time-series charts; VERTICAL (x=value) for the histogram.
             if (geo.refLines) geo.refLines.forEach(function (rl, i) {
               if (rl.vertical) {
-                sk.push(h('line', { key: 'rl' + i, x1: rl.sx, y1: b.padT, x2: rl.sx, y2: b.h - b.padB, stroke: '#0e7490', strokeWidth: 1.5, strokeDasharray: '2 4' }));
-                sk.push(h('text', { key: 'rlg' + i, x: rl.sx + 2, y: b.padT + 9, style: { fontSize: '9px' }, fill: '#0e7490', 'aria-hidden': 'true' }, '▣'));
+                if (!isContrast) sk.push(h('line', { key: 'rlgw' + i, x1: rl.sx, y1: b.padT, x2: rl.sx, y2: b.h - b.padB, stroke: '#0e7490', strokeWidth: 5, strokeOpacity: 0.14 }));
+                sk.push(h('line', { key: 'rl' + i, x1: rl.sx, y1: b.padT, x2: rl.sx, y2: b.h - b.padB, stroke: '#0e7490', strokeWidth: 1.6, strokeDasharray: '2 4' }));
+                sk.push(h('text', { key: 'rlg' + i, x: rl.sx + 3, y: b.padT + 9, style: { fontSize: '9px' }, fill: '#0e7490', 'aria-hidden': 'true' }, '▣'));
               } else {
-                sk.push(h('line', { key: 'rl' + i, x1: b.padL, y1: rl.sy, x2: b.w - b.padR, y2: rl.sy, stroke: '#0e7490', strokeWidth: 1.5, strokeDasharray: '2 4' }));
-                sk.push(h('text', { key: 'rlg' + i, x: b.padL + 2, y: rl.sy - 3, style: { fontSize: '9px' }, fill: '#0e7490', 'aria-hidden': 'true' }, '▣'));
+                if (!isContrast) sk.push(h('line', { key: 'rlgw' + i, x1: b.padL, y1: rl.sy, x2: b.w - b.padR, y2: rl.sy, stroke: '#0e7490', strokeWidth: 5, strokeOpacity: 0.14 }));
+                sk.push(h('line', { key: 'rl' + i, x1: b.padL, y1: rl.sy, x2: b.w - b.padR, y2: rl.sy, stroke: '#0e7490', strokeWidth: 1.6, strokeDasharray: '2 4' }));
+                sk.push(h('text', { key: 'rlg' + i, x: b.padL + 3, y: rl.sy - 3, style: { fontSize: '9px' }, fill: '#0e7490', 'aria-hidden': 'true' }, '▣'));
               }
             });
             // The chart is built once as a reusable maker so the in-app Present

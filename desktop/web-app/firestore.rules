@@ -405,6 +405,17 @@ service cloud.firestore {
               && (!('misses' in nextTeam) || (nextTeam.misses is map && nextTeam.misses.keys().size() <= 100))
               && (!('revealedHints' in nextTeam) || (nextTeam.revealedHints is map && nextTeam.revealedHints.keys().size() <= 100))
               && (!('supportSteps' in nextTeam) || (nextTeam.supportSteps is map && nextTeam.supportSteps.keys().size() <= 100))
+              && (!('progressVersion' in nextTeam) || (nextTeam.progressVersion is int && nextTeam.progressVersion >= 0 && nextTeam.progressVersion <= 1000000))
+              && (!('solvedAt' in nextTeam) || (nextTeam.solvedAt is number && nextTeam.solvedAt >= 0 && nextTeam.solvedAt <= 999999999999999) || (nextTeam.solvedAt is map && nextTeam.solvedAt.keys().size() <= 100))
+              && (!('hintedAt' in nextTeam) || (nextTeam.hintedAt is number && nextTeam.hintedAt >= 0 && nextTeam.hintedAt <= 999999999999999) || (nextTeam.hintedAt is map && nextTeam.hintedAt.keys().size() <= 100))
+              && (!('lives' in nextTeam) || (nextTeam.lives is int && nextTeam.lives >= 0 && nextTeam.lives <= 100))
+              && (!('maxLives' in nextTeam) || (nextTeam.maxLives is int && nextTeam.maxLives >= 0 && nextTeam.maxLives <= 100))
+              && (!('streak' in nextTeam) || (nextTeam.streak is int && nextTeam.streak >= 0 && nextTeam.streak <= 1000))
+              && (!('wrongAttempts' in nextTeam) || (nextTeam.wrongAttempts is int && nextTeam.wrongAttempts >= 0 && nextTeam.wrongAttempts <= 10000))
+              && (!('hintsRemaining' in nextTeam) || (nextTeam.hintsRemaining is int && nextTeam.hintsRemaining >= 0 && nextTeam.hintsRemaining <= 100))
+              && (!('isGameOver' in nextTeam) || nextTeam.isGameOver is bool)
+              && (!('isEscaped' in nextTeam) || nextTeam.isEscaped is bool)
+              && (!('currentRoom' in nextTeam) || (nextTeam.currentRoom is int && nextTeam.currentRoom >= 0 && nextTeam.currentRoom <= 100) || (nextTeam.currentRoom is string && nextTeam.currentRoom.size() <= 64))
             ))
           );
         }
@@ -431,7 +442,12 @@ service cloud.firestore {
               oldEscape.get('mode', '') != 'concept-quest'
               || !('teamProgress' in changedEscape)
               || (
-                changedAll.hasOnly(['questVotes', 'questVoteTurns', 'questActions', 'questRoles'])
+                oldEscape.get('teamProgress', {}) is map
+                && nextEscape.get('teamProgress', {}) is map
+                && oldEscape.get('teamProgress', {}).diff(nextEscape.get('teamProgress', {})).affectedKeys().hasOnly(['All'])
+                && oldAll is map
+                && nextAll is map
+                && changedAll.hasOnly(['questVotes', 'questVoteTurns', 'questActions', 'questRoles'])
                 && (!('questVotes' in changedAll)
                   || (oldAll.get('questVotes', {}).diff(nextAll.get('questVotes', {})).affectedKeys().hasOnly([request.auth.uid])
                     && nextAll.get('questVotes', {}).get(request.auth.uid, '') is string
@@ -448,7 +464,8 @@ service cloud.firestore {
                     && oldQuest.get('phase', '') == 'explore'
                     && nextAll.get('questVoteTurns', {}).get(request.auth.uid, '') == oldQuest.get('turnKey', '!')))
                 && (!('questRoles' in changedAll)
-                  || (oldAll.get('questRoles', {}).diff(nextAll.get('questRoles', {})).affectedKeys().hasOnly([request.auth.uid])
+                  || (oldEscape.get('isActive', false) == true
+                    && oldAll.get('questRoles', {}).diff(nextAll.get('questRoles', {})).affectedKeys().hasOnly([request.auth.uid])
                     && nextAll.get('questRoles', {}).get(request.auth.uid, '') in ['analyst', 'explainer', 'connector', 'investigator']))
                 && (!('questActions' in changedAll)
                   || (oldAll.get('questActions', {}).diff(nextAll.get('questActions', {})).affectedKeys().hasOnly([request.auth.uid])
@@ -467,6 +484,7 @@ service cloud.firestore {
                     && nextAction.get('answerIndex', -1) <= 5
                     && nextAction.get('submittedAt', 0) is number
                     && nextAction.get('submittedAt', 0) > 0
+                    && nextAction.get('submittedAt', 0) <= 999999999999999
                     && nextAction.get('turnKey', '') is string
                     && nextAction.get('turnKey', '').size() <= 160
                     && (!turnScoped || (oldEscape.get('isActive', false) == true
@@ -479,12 +497,13 @@ service cloud.firestore {
               !('teams' in changedEscape)
               || (oldEscape.get('teams', {}).diff(nextEscape.get('teams', {})).affectedKeys().hasOnly([request.auth.uid])
                 && (oldEscape.get('mode', '') != 'concept-quest'
-                  || nextEscape.get('teams', {}).get(request.auth.uid, '') == 'All'))
+                  || (oldEscape.get('isActive', false) == true
+                    && nextEscape.get('teams', {}).get(request.auth.uid, '') == 'All')))
             );
         }
 
-        // Students need GET by code; LIST would allow code enumeration.
-        allow get: if authed() && participantSessionOpen(resource.data);
+        // Students need GET by code; LIST would allow code enumeration. Hosts retain GET after expiry.
+        allow get: if isHost() || (authed() && participantSessionOpen(resource.data));
         allow list: if false;
         allow create: if authed() && validAppId(appId) && request.resource.data.hostId == request.auth.uid
           && (request.resource.data.get('kind', '') != 'assignment'
@@ -548,7 +567,7 @@ service cloud.firestore {
               && d.uid == request.auth.uid
               && subId.matches('^' + request.auth.uid + '_[A-Za-z0-9_-]{1,64}$')
               && d.activity in ['realm', 'atlas', 'boss', 'palace']
-              && d.expiresAt is timestamp && d.expiresAt <= request.time + duration.value(31, 'd')
+              && d.expiresAt is timestamp && d.expiresAt > request.time && d.expiresAt <= request.time + duration.value(31, 'd')
               && arcadeText(d, 'submittedAt', 40) && arcadeText(d, 'subId', 80) && arcadeText(d, 'nickname', 80) && arcadeText(d, 'participantId', 128)
               && arcadeText(d, 'summary', 300) && arcadeText(d, 'justification', 4000) && arcadeText(d, 'ackText', 1000) && arcadeText(d, 'followUp', 1000) && arcadeText(d, 'selfCheckText', 600)
               && arcadeText(d, 'verb', 40) && arcadeText(d, 'verbLabel', 80)
@@ -591,14 +610,24 @@ service cloud.firestore {
         function isSessionHost() {
           return parentSessionHost(code);
         }
+        function validSdp(val) {
+          return (val is string && val.size() <= 65536)
+            || (val is map && val.keys().hasOnly(['type', 'sdp'])
+              && val.get('type', '') in ['offer', 'answer', 'pranswer', 'rollback']
+              && val.get('sdp', '') is string && val.get('sdp', '').size() <= 65536);
+        }
         allow read: if isSignaling() && authed()
           && (isSessionHost() || (request.auth.uid == peerUid && participantParentOpen(code)));
-        allow create: if isSignaling() && authed() && request.auth.uid == peerUid
+        allow create: if isSignaling() && authed() && validAppId(appId) && request.auth.uid == peerUid
           && (isSessionHost() || participantParentOpen(code))
           && request.resource.data.keys().hasOnly(['offer', 'codename', 'createdAt', 'expiresAt', 'iceFromGuest'])
           && request.resource.data.expiresAt is timestamp
           && request.resource.data.expiresAt > request.time
           && request.resource.data.expiresAt <= request.time + duration.value(1, 'd')
+          && (!('offer' in request.resource.data) || validSdp(request.resource.data.offer))
+          && (!('createdAt' in request.resource.data)
+            || request.resource.data.createdAt is timestamp
+            || (request.resource.data.createdAt is number && request.resource.data.createdAt >= 0 && request.resource.data.createdAt <= 999999999999999))
           && (!('iceFromGuest' in request.resource.data)
             || (request.resource.data.iceFromGuest is list && request.resource.data.iceFromGuest.size() <= 64))
           && (!('codename' in request.resource.data)
@@ -613,6 +642,10 @@ service cloud.firestore {
             && request.resource.data.expiresAt is timestamp
             && request.resource.data.expiresAt > request.time
             && request.resource.data.expiresAt <= request.time + duration.value(1, 'd')
+            && (!('offer' in request.resource.data) || validSdp(request.resource.data.offer))
+            && (!('createdAt' in request.resource.data)
+              || request.resource.data.createdAt is timestamp
+              || (request.resource.data.createdAt is number && request.resource.data.createdAt >= 0 && request.resource.data.createdAt <= 999999999999999))
             && (!('iceFromGuest' in request.resource.data)
               || (request.resource.data.iceFromGuest is list && request.resource.data.iceFromGuest.size() <= 64))
             && (!('codename' in request.resource.data)
@@ -620,6 +653,7 @@ service cloud.firestore {
           || (isSessionHost()
             && request.resource.data.diff(resource.data).affectedKeys()
                 .hasOnly(['answer', 'iceFromHost'])
+            && (!('answer' in request.resource.data) || validSdp(request.resource.data.answer))
             && (!('iceFromHost' in request.resource.data)
               || (request.resource.data.iceFromHost is list && request.resource.data.iceFromHost.size() <= 64)))
         );
@@ -641,6 +675,7 @@ service cloud.firestore {
         }
         function validCreate() {
           return authed()
+            && validAppId(appId)
             && request.resource.data.keys().hasAll([
               'kind', 'ownerUid', 'parentId', 'parentKind', 'createdAt', 'expiresAt'
             ])
@@ -697,6 +732,7 @@ service cloud.firestore {
         );
         allow list: if false;
         allow create: if authed()
+          && validAppId(appId)
           && request.resource.data.hostId == request.auth.uid
           && request.resource.data.expiresAt is timestamp
           && request.resource.data.expiresAt > request.time
@@ -725,13 +761,21 @@ service cloud.firestore {
           // onto a teacher_review board. TEXT_IS_SANITIZED is bounded here;
           // exact normalization stays in the contract.
           allow create: if authed()
+            && validAppId(appId)
             && boardOpen()
-            && request.resource.data.keys().size() <= 16
+            && request.resource.data.keys().hasOnly(['uid', 'text', 'status', 'answered', 'createdAt', 'expiresAt'])
             && request.resource.data.uid == request.auth.uid
             && request.resource.data.text is string
             && request.resource.data.text.size() > 0
             && request.resource.data.text.size() <= 200
             && request.resource.data.answered == false
+            && (!('createdAt' in request.resource.data)
+              || request.resource.data.createdAt is timestamp
+              || (request.resource.data.createdAt is number && request.resource.data.createdAt >= 0 && request.resource.data.createdAt <= 999999999999999))
+            && (!('expiresAt' in request.resource.data)
+              || (request.resource.data.expiresAt is timestamp
+                && request.resource.data.expiresAt > request.time
+                && request.resource.data.expiresAt <= board().expiresAt))
             && request.resource.data.status == (board().revealPolicy == "auto_publish" ? "approved" : "pending");
 
           // STATUS_IS_HOST_ONLY — status and answered are teacher-only, and a

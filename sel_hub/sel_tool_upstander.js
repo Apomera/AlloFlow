@@ -18,13 +18,17 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
-  function __alloT(key, fallback) {
-    try {
-      var fn = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null;
-      if (fn) { var v = fn(key, fallback); if (v != null && v !== key) return v; }
-    } catch (_) {}
-    return fallback != null ? fallback : key;
-  }
+  var _ctx = null;
+  var __alloT = function (key, fallback) {
+    var fn = (_ctx && typeof _ctx.t === 'function')
+      ? _ctx.t
+      : ((typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.t === 'function')
+        ? window.SelHub.t
+        : ((typeof window !== 'undefined' && typeof window.__alloT === 'function') ? window.__alloT : null));
+    var v = null;
+    if (fn) { try { v = fn(key, fallback); } catch (_) { v = null; } }
+    return (typeof v === 'string' && v && v !== key) ? v : (fallback != null ? fallback : key);
+  };
   (function() {
     if (document.getElementById('allo-live-upstander')) return;
     var lr = document.createElement('div');
@@ -35,7 +39,7 @@ window.SelHub = window.SelHub || {
 
   var _ac = null;
   function getAC() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _ac; }
-  function tone(f, d, t, v) { var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.1, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.15)); } catch(e) {} }
+  function tone(f, d, t, v) { try { if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return; } catch (_) {} var ac = getAC(); if (!ac) return; try { if (ac.state === 'suspended' && typeof ac.resume === 'function') ac.resume().catch(function() {}); var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.1, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.15)); } catch(e) {} }
   function sfxClick() { tone(880, 0.04, 'sine', 0.05); }
   function sfxBrave() { tone(330, 0.15, 'triangle', 0.06); setTimeout(function() { tone(440, 0.15, 'sine', 0.06); }, 120); setTimeout(function() { tone(554, 0.2, 'sine', 0.07); }, 240); setTimeout(function() { tone(659, 0.25, 'sine', 0.08); }, 360); }
 
@@ -7792,6 +7796,9 @@ var EXTENDED_REFLECTION_PROMPTS = [
         if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
           var r = window.SelHub.safeRehearseCheck(txt, { toolId: o.toolId, onSafetyFlag: o.onSafetyFlag || null });
           crisis = !!(r && r.action === 'block');
+          if (crisis && window.SelHub.showCrisisModal) {
+            try { window.SelHub.showCrisisModal({ toolName: 'Upstander Workshop', contentSnippet: txt }); } catch (_) {}
+          }
         }
       } catch (_) {}
       var list = (Array.isArray(d.spReflections) ? d.spReflections : []).concat([{ scenarioId: id, ending: d.spEnding, text: txt.slice(0, 2000), ts: new Date().toISOString() }]).slice(-20);
@@ -7834,6 +7841,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
     color: 'blue',
     category: 'social-awareness',
     render: function(ctx) {
+      _ctx = ctx;
       // ── Host theme remap (consumes ctx.theme) — canonical SEL light-base pattern ──
       var _upCTheme = (ctx && ctx.theme) || {};
       var _upCHC = !!_upCTheme.isContrast, _upCDark = !_upCHC && !!_upCTheme.isDark;
@@ -7841,6 +7849,10 @@ var EXTENDED_REFLECTION_PROMPTS = [
       var _UPC_HC = {'#fffaf0':'#000000','#2563eb':'#ffff00','#fff':'#000000','#f8fafc':'#000000','#fafafa':'#000000','#f1f5f9':'#000000','#fef3c7':'#000000','#fffbeb':'#000000','#fef9c3':'#000000','#fefce8':'#000000','#fff7ed':'#000000','#fef2f2':'#000000','#fee2e2':'#000000','#fff1f2':'#000000','#f0fdf4':'#000000','#ecfdf5':'#000000','#eff6ff':'#000000','#dbeafe':'#000000','#f0f9ff':'#000000','#faf5ff':'#000000','#ede9fe':'#000000','#f3e8ff':'#000000','#fdf4ff':'#000000','#0f172a':'#ffff00','#1f2937':'#ffff00','#334155':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#64748b':'#ffff00','#94a3b8':'#ffff00','#e5e7eb':'#ffff00','#e2e8f0':'#ffff00','#d1d5db':'#ffff00','#cbd5e1':'#ffff00','#92400e':'#ffff00','#78350f':'#ffff00','#854d0e':'#ffff00','#a16207':'#ffff00','#991b1b':'#ffff00','#dc2626':'#ffff00','#166534':'#ffff00','#1e3a8a':'#ffff00','#1e40af':'#ffff00','#1d4ed8':'#ffff00','#6b21a8':'#ffff00','#ecfeff':'#000000','#0e7490':'#ffff00','#9d174d':'#ffff00','#9a3412':'#ffff00'};
       var _upC = function(hex){ return _upCHC ? (_UPC_HC[hex]||hex) : (_upCDark ? (_UPC_DARK[hex]||hex) : hex); };
       var _upG = function(g, dk){ return _upCHC ? '#000000' : (_upCDark ? (dk || '#2e2410') : g); }; // pastel gradient cards follow the remap (1.4.3)
+      var _upDisabledBg = _upCHC ? '#000000' : (_upCDark ? '#334155' : '#cbd5e1');
+      var _upDisabledFg = _upCHC ? '#ffff00' : (_upCDark ? '#94a3b8' : '#334155');
+      var _upDisabledBd = _upCHC ? '1px solid #ffff00' : 'none';
+      var _upRemappedBtnFg = _upCHC ? '#000000' : (_upCDark ? '#0f172a' : '#ffffff');
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast;
@@ -7949,14 +7961,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
       var earnedBadges      = d.earnedBadges || {};
       var showBadgeToast    = d.showBadgeToast || null;
       function tryAwardBadge(badgeId, xpAmount) {
-        if (earnedBadges[badgeId]) {
-          // Re-award XP for the action even if badge already earned
-          if (awardXP && xpAmount) {
-            var b = BADGE_CATALOG[badgeId];
-            if (b) awardXP(xpAmount, b.label);
-          }
-          return;
-        }
+        if (earnedBadges[badgeId]) return;
         var badge = BADGE_CATALOG[badgeId];
         if (!badge) return;
         var nb = Object.assign({}, earnedBadges);
@@ -7989,7 +7994,13 @@ var EXTENDED_REFLECTION_PROMPTS = [
       ].filter(function (t) { return _upAiOn || t.id !== 'coach'; });
 
       var exploredTabs = d.exploredTabs || {};
-      if (!exploredTabs[activeTab]) { var ne = Object.assign({}, exploredTabs); ne[activeTab] = true; upd('exploredTabs', ne); }
+      React.useEffect(function() {
+        if (!exploredTabs[activeTab]) {
+          var ne = Object.assign({}, exploredTabs);
+          ne[activeTab] = true;
+          upd('exploredTabs', ne);
+        }
+      }, [activeTab]);
       var exploredCount = Object.keys(exploredTabs).length;
 
       // Teacher scenes from the active station (shared hub helper; an older hub has none).
@@ -7997,6 +8008,15 @@ var EXTENDED_REFLECTION_PROMPTS = [
       var upTs = (_upTsApi && typeof _upTsApi.bind === 'function') ? _upTsApi.bind({ ctx: ctx, h: h, toolId: 'upstander', d: d, set: upd, announce: announceToSR,
         aiTopic: 'a realistic moment where a student sees someone being treated badly and chooses how to help',
         aiExtra: 'Choices use upstander moves (distract, delegate, document, delay, direct); scenes show what happens next. If anyone is in danger, getting a trusted adult is always a good choice.' }) : null;
+
+      var _upBandLabel = band === 'elementary' ? 'elementary school (grades 3-5)'
+        : band === 'middle' ? 'middle school (grades 6-8)'
+        : band === 'high' ? 'high school (grades 9-12)'
+        : band === 'k2' ? 'K-2 (early elementary)'
+        : band === 'g35' ? '3-5 (upper elementary)'
+        : band === 'g68' ? '6-8 (middle school)'
+        : band === 'g912' ? '9-12 (high school)'
+        : 'middle school';
 
       var tabBar = h('div', {
         style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #bfdbfe', background: _upCHC ? '#000000' : (_upCDark ? '#0e1f3a' : 'linear-gradient(180deg, #eff6ff, #dbeafe)'), flexShrink: 0 }
@@ -8008,10 +8028,21 @@ var EXTENDED_REFLECTION_PROMPTS = [
           style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
         },
           h('div', { role: 'tablist', 'aria-label': 'Upstander sections', style: { display: 'flex', gap: '3px' } },
-            TABS.map(function(t) {
+            TABS.map(function(t, ti) {
             var a = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
-            return h('button', { key: t.id, role: 'tab', className: 'sel-tab' + (a ? ' sel-tab-active' : ''), 'aria-selected': a ? 'true' : 'false', onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
+            return h('button', { key: t.id, 'data-up-tab': t.id, role: 'tab', className: 'sel-tab' + (a ? ' sel-tab-active' : ''), 'aria-selected': a ? 'true' : 'false', tabIndex: a ? 0 : -1,
+              onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
+              onKeyDown: function(e) {
+                if (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+                e.preventDefault();
+                var nextIdx = e.key === 'Home' ? 0 : e.key === 'End' ? TABS.length - 1 : (ti + ((e.key === 'ArrowLeft' || e.key === 'ArrowUp') ? -1 : 1) + TABS.length) % TABS.length;
+                var nextTab = TABS[nextIdx];
+                upd('activeTab', nextTab.id);
+                if (soundOn) sfxClick();
+                var nextBtn = e.currentTarget && e.currentTarget.parentNode && e.currentTarget.parentNode.querySelector ? e.currentTarget.parentNode.querySelector('[data-up-tab="' + nextTab.id + '"]') : null;
+                if (nextBtn && nextBtn.focus) nextBtn.focus();
+              },
               style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? '#bfdbfe' : 'transparent'), background: a ? 'linear-gradient(135deg, ' + BLUE + ', #1d4ed8)' : explored ? 'rgba(37,99,235,0.06)' : 'transparent', color: a ? '#fff' : explored ? _upC('#1e3a8a') : _upC('#94a3b8'), fontWeight: a ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { className: a ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#60a5fa', marginLeft: '2px' } }) : null
@@ -8354,6 +8385,9 @@ var EXTENDED_REFLECTION_PROMPTS = [
                       ? window.SelHub.safeRehearseCheck(rhSituation + ' ' + rhAttempt, { toolId: 'upstander_rh', onSafetyFlag: onSafetyFlag })
                       : { action: 'continue' };
                     if (rhSafety.action === 'block') {
+                      if (window.SelHub && window.SelHub.showCrisisModal) {
+                        try { window.SelHub.showCrisisModal({ toolName: 'Upstander Workshop', contentSnippet: rhSituation + ' ' + rhAttempt }); } catch (_) {}
+                      }
                       upd({ rhLoading: false, rhFeedback: window.SelHub.rehearseBreakCharacterText(rhSafety.severity), _lastTier: 3 });
                       return;
                     }
@@ -8382,8 +8416,10 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   },
                   style: {
                     padding: '10px 16px',
-                    background: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !_upAiOn) ? _upC('#cbd5e1') : '#7c3aed',
-                    color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                    background: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !_upAiOn) ? _upDisabledBg : '#7c3aed',
+                    color: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !_upAiOn) ? _upDisabledFg : '#fff',
+                    border: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !_upAiOn) ? _upDisabledBd : 'none',
+                    borderRadius: 8, fontWeight: 700,
                     cursor: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !_upAiOn) ? 'not-allowed' : 'pointer',
                     fontSize: 13
                   }
@@ -8587,27 +8623,40 @@ var EXTENDED_REFLECTION_PROMPTS = [
                 h('strong', null, 'you are not required to put your body at risk. '),
                 'Adults are. You are not.'),
               // Section pills
-              h('div', { role: 'tablist', 'aria-label': 'De-escalation sections', style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
-                [
+              (function() {
+                var deTabs = [
                   { id: 'signals',  icon: '🚨', label: 'Read the signals' },
                   { id: 'verbal',   icon: '🗣️', label: 'Verbal tools' },
                   { id: 'physical', icon: '🧍', label: 'Physical safety' },
                   { id: 'after',    icon: '🌿', label: 'After' }
-                ].map(function(s) {
-                  var active = deSection === s.id;
-                  return h('button', {
-                    key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
-                    onClick: function() { upd('deSection', s.id); if (soundOn) sfxClick(); },
-                    style: {
-                      padding: '6px 12px',
-                      background: active ? _upC('#dc2626') : _upC('#fff'),
-                      color: active ? '#fff' : _upC('#991b1b'),
-                      border: '1px solid ' + (active ? _upC('#dc2626') : '#fecaca'),
-                      borderRadius: 999, fontWeight: active ? 700 : 500, cursor: 'pointer', fontSize: 12
-                    }
-                  }, h('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, s.icon), s.label);
-                })
-              ),
+                ];
+                return h('div', { role: 'tablist', 'aria-label': 'De-escalation sections', style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
+                  deTabs.map(function(s, si) {
+                    var active = deSection === s.id;
+                    return h('button', {
+                      key: s.id, 'data-de-tab': s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1,
+                      onClick: function() { upd('deSection', s.id); if (soundOn) sfxClick(); },
+                      onKeyDown: function(e) {
+                        if (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+                        e.preventDefault();
+                        var nextIdx = e.key === 'Home' ? 0 : e.key === 'End' ? deTabs.length - 1 : (si + ((e.key === 'ArrowLeft' || e.key === 'ArrowUp') ? -1 : 1) + deTabs.length) % deTabs.length;
+                        var nextTab = deTabs[nextIdx];
+                        upd('deSection', nextTab.id);
+                        if (soundOn) sfxClick();
+                        var nextBtn = e.currentTarget && e.currentTarget.parentNode && e.currentTarget.parentNode.querySelector ? e.currentTarget.parentNode.querySelector('[data-de-tab="' + nextTab.id + '"]') : null;
+                        if (nextBtn && nextBtn.focus) nextBtn.focus();
+                      },
+                      style: {
+                        padding: '6px 12px',
+                        background: active ? _upC('#dc2626') : _upC('#fff'),
+                        color: active ? _upRemappedBtnFg : _upC('#991b1b'),
+                        border: '1px solid ' + (active ? _upC('#dc2626') : '#fecaca'),
+                        borderRadius: 999, fontWeight: active ? 700 : 500, cursor: 'pointer', fontSize: 12
+                      }
+                    }, h('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, s.icon), s.label);
+                  })
+                );
+              })(),
               // Section content
               (function() {
                 if (deSection === 'signals') {
@@ -8762,6 +8811,9 @@ var EXTENDED_REFLECTION_PROMPTS = [
                             ? window.SelHub.safeRehearseCheck(apHurt + ' ' + apDraft, { toolId: 'upstander_ap', onSafetyFlag: onSafetyFlag })
                             : { action: 'continue' };
                           if (apSafety.action === 'block') {
+                            if (window.SelHub && window.SelHub.showCrisisModal) {
+                              try { window.SelHub.showCrisisModal({ toolName: 'Upstander Workshop', contentSnippet: apHurt + ' ' + apDraft }); } catch (_) {}
+                            }
                             upd({ apLoading: false, apFeedback: window.SelHub.rehearseBreakCharacterText(apSafety.severity), _lastTier: 3 });
                             return;
                           }
@@ -8790,8 +8842,10 @@ var EXTENDED_REFLECTION_PROMPTS = [
                         },
                         style: {
                           padding: '8px 14px',
-                          background: (apLoading || !apHurt.trim() || !apDraft.trim() || !_upAiOn) ? _upC('#cbd5e1') : _upC('#dc2626'),
-                          color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                          background: (apLoading || !apHurt.trim() || !apDraft.trim() || !_upAiOn) ? _upDisabledBg : _upC('#dc2626'),
+                          color: (apLoading || !apHurt.trim() || !apDraft.trim() || !_upAiOn) ? _upDisabledFg : _upRemappedBtnFg,
+                          border: (apLoading || !apHurt.trim() || !apDraft.trim() || !_upAiOn) ? _upDisabledBd : 'none',
+                          borderRadius: 8, fontWeight: 700,
                           cursor: (apLoading || !apHurt.trim() || !apDraft.trim() || !_upAiOn) ? 'not-allowed' : 'pointer',
                           fontSize: 13
                         }
@@ -9242,11 +9296,21 @@ var EXTENDED_REFLECTION_PROMPTS = [
             h('p', { style: { fontSize: '13px', color: _upC('#64748b'), margin: 0 } }, 'Sources cited, guidance for educators, and a glossary of key terms.')
           ),
           h('div', { role: 'tablist', 'aria-label': 'Reference sections', style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap', justifyContent: 'center' } },
-            refSections.map(function(s) {
+            refSections.map(function(s, si) {
               var active = refSection === s.id;
               return h('button', {
-                key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                key: s.id, 'data-ref-tab': s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1,
                 onClick: function() { upd({ refSection: s.id, refExpanded: null }); if (soundOn) sfxClick(); },
+                onKeyDown: function(e) {
+                  if (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+                  e.preventDefault();
+                  var nextIdx = e.key === 'Home' ? 0 : e.key === 'End' ? refSections.length - 1 : (si + ((e.key === 'ArrowLeft' || e.key === 'ArrowUp') ? -1 : 1) + refSections.length) % refSections.length;
+                  var nextSec = refSections[nextIdx];
+                  upd({ refSection: nextSec.id, refExpanded: null });
+                  if (soundOn) sfxClick();
+                  var nextBtn = e.currentTarget && e.currentTarget.parentNode && e.currentTarget.parentNode.querySelector ? e.currentTarget.parentNode.querySelector('[data-ref-tab="' + nextSec.id + '"]') : null;
+                  if (nextBtn && nextBtn.focus) nextBtn.focus();
+                },
                 style: {
                   padding: '6px 12px',
                   background: active ? BLUE : _upC('#fff'),
@@ -9286,6 +9350,8 @@ var EXTENDED_REFLECTION_PROMPTS = [
                 : 'Define who you want to be in the face of cruelty. Not who you think you should be \u2014 who you choose to be.')
             )
           ),
+          // Surface crisis resources in Pledge / Witness Log tab on Tier 3
+          (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? h('div', { style: { marginBottom: 14 } }, window.SelHub.renderCrisisResources(h, band)) : null,
           !pledgeSaved
             ? h('div', { style: { background: BL, borderRadius: '16px', padding: '20px', border: '2px solid #93c5fd' } },
                 h('div', { style: { fontSize: '13px', color: BD, fontStyle: 'italic', marginBottom: '10px' } }, 'I pledge to...'),
@@ -9294,8 +9360,23 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   style: { width: '100%', border: 'none', background: 'transparent', fontSize: '14px', fontFamily: 'Georgia, serif', lineHeight: 1.8, color: _upC('#1f2937'), resize: 'vertical', minHeight: '100px', boxSizing: 'border-box' }
                 }),
                 h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '8px' } },
-                  h('button', { onClick: function() { if (pledge.trim()) { upd('pledgeSaved', true); tryAwardBadge('pledge_sealed', 20); } }, disabled: !pledge.trim(),
-                    style: { padding: '10px 24px', background: pledge.trim() ? BLUE : _upC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '14px', cursor: pledge.trim() ? 'pointer' : 'not-allowed' }
+                  h('button', { onClick: function() {
+                      if (!pledge.trim()) return;
+                      var plSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                        ? window.SelHub.safeRehearseCheck(pledge.trim(), { toolId: 'upstander_pledge', onSafetyFlag: onSafetyFlag })
+                        : { action: 'continue' };
+                      if (plSafety && plSafety.action === 'block') {
+                        if (window.SelHub && window.SelHub.showCrisisModal) {
+                          try { window.SelHub.showCrisisModal({ toolName: 'Upstander Workshop', contentSnippet: pledge.trim() }); } catch (_) {}
+                        }
+                        upd({ _lastTier: 3 });
+                        if (addToast) addToast('Support resources are shown on this screen.', 'info');
+                        return;
+                      }
+                      upd('pledgeSaved', true);
+                      tryAwardBadge('pledge_sealed', 20);
+                    }, disabled: !pledge.trim(),
+                    style: { padding: '10px 24px', background: pledge.trim() ? BLUE : _upDisabledBg, color: pledge.trim() ? '#fff' : _upDisabledFg, border: pledge.trim() ? 'none' : _upDisabledBd, borderRadius: '10px', fontWeight: 700, fontSize: '14px', cursor: pledge.trim() ? 'pointer' : 'not-allowed' }
                   }, '\uD83E\uDDF1 Seal My Pledge')
                 )
               )
@@ -9330,7 +9411,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   fontFamily: 'Georgia, "Times New Roman", serif',
                   margin: '0 auto 18px', maxWidth: 480,
                   padding: '14px 18px',
-                  background: 'rgba(255, 255, 255, 0.6)',
+                  background: _upCHC ? '#000000' : (_upCDark ? 'rgba(15, 23, 42, 0.55)' : 'rgba(255, 255, 255, 0.6)'),
                   borderRadius: 10,
                   borderLeft: '3px solid #ca8a04',
                   borderRight: '3px solid #ca8a04'
@@ -9418,7 +9499,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                     if (soundOn) sfxClick();
                     if (na.length >= 3) tryAwardBadge('trusted_circle', 15);
                   },
-                  style: { padding: '8px 14px', background: newAdultName.trim() ? BLUE : _upC('#cbd5e1'), color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: newAdultName.trim() ? 'pointer' : 'not-allowed', fontSize: 13 }
+                  style: { padding: '8px 14px', background: newAdultName.trim() ? BLUE : _upDisabledBg, color: newAdultName.trim() ? '#fff' : _upDisabledFg, border: newAdultName.trim() ? 'none' : _upDisabledBd, borderRadius: 6, fontWeight: 700, cursor: newAdultName.trim() ? 'pointer' : 'not-allowed', fontSize: 13 }
                 }, 'Add to circle')
               ),
               h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#64748b'), fontStyle: 'italic' } },
@@ -9458,6 +9539,14 @@ var EXTENDED_REFLECTION_PROMPTS = [
                 onClick: function() {
                   var anyText = wlSaw.trim() || wlDid.trim() || wlNext.trim();
                   if (!anyText) return;
+                  var combinedWl = [wlSaw.trim(), wlDid.trim(), wlNext.trim()].filter(Boolean).join(' ');
+                  var wlSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(combinedWl, { toolId: 'upstander_witnesslog', onSafetyFlag: onSafetyFlag })
+                    : { action: 'continue' };
+                  var wlCrisis = !!(wlSafety && wlSafety.action === 'block');
+                  if (wlCrisis && window.SelHub && window.SelHub.showCrisisModal) {
+                    try { window.SelHub.showCrisisModal({ toolName: 'Upstander Workshop', contentSnippet: combinedWl }); } catch (_) {}
+                  }
                   var entry = {
                     date: new Date().toLocaleDateString(),
                     ts: Date.now(),
@@ -9465,13 +9554,15 @@ var EXTENDED_REFLECTION_PROMPTS = [
                     did: wlDid.trim(),
                     next: wlNext.trim()
                   };
-                  upd({ witnessLog: [entry].concat(witnessLog), wlSaw: '', wlDid: '', wlNext: '' });
+                  upd({ witnessLog: [entry].concat(witnessLog), wlSaw: '', wlDid: '', wlNext: '', _lastTier: wlCrisis ? 3 : d._lastTier });
                   if (soundOn) sfxClick();
                   tryAwardBadge('witness_logged', 10);
                 },
                 style: { padding: '8px 16px',
-                  background: (wlSaw.trim() || wlDid.trim() || wlNext.trim()) ? BLUE : _upC('#cbd5e1'),
-                  color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                  background: (wlSaw.trim() || wlDid.trim() || wlNext.trim()) ? BLUE : _upDisabledBg,
+                  color: (wlSaw.trim() || wlDid.trim() || wlNext.trim()) ? '#fff' : _upDisabledFg,
+                  border: (wlSaw.trim() || wlDid.trim() || wlNext.trim()) ? 'none' : _upDisabledBd,
+                  borderRadius: 8, fontWeight: 700,
                   cursor: (wlSaw.trim() || wlDid.trim() || wlNext.trim()) ? 'pointer' : 'not-allowed', fontSize: 13 }
               }, '\uD83D\uDCDD Save entry')
             ),
@@ -9595,7 +9686,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                     if (addToast) addToast('Could not open packet window: ' + (e.message || e), 'error');
                   }
                 },
-                style: { padding: '10px 16px', background: _upC('#0e7490'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                style: { padding: '10px 16px', background: _upC('#0e7490'), color: _upRemappedBtnFg, border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
               }, '🖨️ Generate packet')
             )
           ),
@@ -9630,9 +9721,9 @@ var EXTENDED_REFLECTION_PROMPTS = [
                       fontSize: 22, margin: '0 auto 6px', filter: earned ? 'none' : 'grayscale(1)',
                       boxShadow: earned ? '0 3px 8px ' + b.color + '44, inset 0 1px 0 rgba(255, 255, 255, 0.3)' : 'none'
                     } }, b.icon),
-                    h('div', { style: { fontWeight: 700, fontSize: 12, color: earned ? b.color : _upC('#475569'), lineHeight: 1.3, marginBottom: 2 } }, b.label),
+                    h('div', { style: { fontWeight: 700, fontSize: 12, color: earned ? (_upCHC ? '#ffff00' : (_upCDark ? '#e2e8f0' : b.color)) : _upC('#475569'), lineHeight: 1.3, marginBottom: 2 } }, b.label),
                     h('div', { style: { fontSize: 10, color: _upC('#64748b'), lineHeight: 1.35 } }, b.desc),
-                    earned && earnedInfo.date && h('div', { style: { fontSize: 9, color: b.color, fontWeight: 700, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 } }, '✓ ' + earnedInfo.date)
+                    earned && earnedInfo.date && h('div', { style: { fontSize: 9, color: _upCHC ? '#ffff00' : (_upCDark ? '#cbd5e1' : b.color), fontWeight: 700, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 } }, '✓ ' + earnedInfo.date)
                   );
                 })
               )
@@ -9768,7 +9859,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                 'aria-label': coachLoad ? 'Upstander coach is responding' : 'Send message to upstander coach',
                 onClick: function() { if (coachInput.trim() && !coachLoad && _upAiOn) sendSafeMessage(coachInput.trim()); },
                 disabled: coachLoad || !coachInput.trim() || !_upAiOn,
-                style: { padding: '10px 16px', background: coachInput.trim() && !coachLoad ? BLUE : _upC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoad ? 'pointer' : 'not-allowed', fontSize: '13px' }
+                style: { padding: '10px 16px', background: coachInput.trim() && !coachLoad ? BLUE : _upDisabledBg, color: coachInput.trim() && !coachLoad ? '#fff' : _upDisabledFg, border: coachInput.trim() && !coachLoad ? 'none' : _upDisabledBd, borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoad ? 'pointer' : 'not-allowed', fontSize: '13px' }
               }, coachLoad ? '\u23F3' : '\uD83E\uDDF1')
             ),
             coachHist.length === 0 && h('div', { style: { marginTop: '16px' } },
@@ -9997,8 +10088,19 @@ var EXTENDED_REFLECTION_PROMPTS = [
                     onClick: function() {
                       if (!_upAiOn) return;
                       if (!genSetting && !genRelation && !genHarmType && !genFocus.trim()) return;
+                      var genInputText = [genSetting, genRelation, genHarmType, genFocus.trim()].filter(Boolean).join(' ');
+                      var genSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                        ? window.SelHub.safeRehearseCheck(genInputText, { toolId: 'upstander_gen', onSafetyFlag: onSafetyFlag })
+                        : { action: 'continue' };
+                      if (genSafety && genSafety.action === 'block') {
+                        if (window.SelHub && window.SelHub.showCrisisModal) {
+                          try { window.SelHub.showCrisisModal({ toolName: 'Upstander Workshop', contentSnippet: genInputText }); } catch (_) {}
+                        }
+                        upd({ genLoading: false, genScenario: null, genChoice: null, genError: window.SelHub.rehearseBreakCharacterText(genSafety.severity), _lastTier: 3 });
+                        return;
+                      }
                       upd({ genLoading: true, genError: '', genScenario: null, genChoice: null });
-                      var bandLabel = band === 'k2' ? 'K-2 (early elementary)' : band === 'g35' ? '3-5 (upper elementary)' : band === 'g68' ? '6-8 (middle school)' : band === 'g912' ? '9-12 (high school)' : 'middle school';
+                      var bandLabel = _upBandLabel;
                       var ctxLines = [];
                       if (genSetting) ctxLines.push('- Setting: ' + genSetting);
                       if (genRelation) ctxLines.push('- Who is involved: ' + genRelation);
@@ -10052,8 +10154,10 @@ var EXTENDED_REFLECTION_PROMPTS = [
                     },
                     style: {
                       padding: '10px 16px',
-                      background: (genLoading || !_upAiOn || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? _upC('#cbd5e1') : '#7c3aed',
-                      color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                      background: (genLoading || !_upAiOn || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? _upDisabledBg : '#7c3aed',
+                      color: (genLoading || !_upAiOn || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? _upDisabledFg : '#fff',
+                      border: (genLoading || !_upAiOn || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? _upDisabledBd : 'none',
+                      borderRadius: 8, fontWeight: 700,
                       cursor: (genLoading || !_upAiOn || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? 'not-allowed' : 'pointer',
                       fontSize: 13
                     }
@@ -10061,6 +10165,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                 ),
                 !_upAiOn && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#6b21a8') } },
                   'AI features need a connection. Try the 9 hand-written scenarios above while offline.'),
+                (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? h('div', { style: { marginTop: 10 } }, window.SelHub.renderCrisisResources(h, band)) : null,
                 genError && h('div', { 'aria-live': 'polite', style: {
                   marginTop: 10, padding: 10, background: _upC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 8, fontSize: 13, color: _upC('#991b1b')
                 } }, genError)
@@ -10202,7 +10307,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
               var preExistingScene = (rpScene && rpScene.trim()) || '';
               upd({ rpRole: roleKey, rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: true });
               if (announceToSR) announceToSR(preExistingScene ? 'Generating role-play opener' : 'Generating fresh role-play scene');
-              var bandLabel = band === 'k2' ? 'K-2' : band === 'g35' ? '3-5' : band === 'g68' ? '6-8' : band === 'g912' ? '9-12' : 'middle school';
+              var bandLabel = _upBandLabel;
               var prompt;
               if (preExistingScene) {
                 prompt =
@@ -10407,12 +10512,15 @@ var EXTENDED_REFLECTION_PROMPTS = [
                             ? window.SelHub.safeRehearseCheck(studentTurn, { toolId: 'upstander', onSafetyFlag: ctx.onSafetyFlag })
                             : { action: 'continue' };
                           if (safety.action === 'block') {
+                            if (window.SelHub && window.SelHub.showCrisisModal) {
+                              try { window.SelHub.showCrisisModal({ toolName: 'Upstander Workshop', contentSnippet: studentTurn }); } catch (_) {}
+                            }
                             var blockedHist = rpHistory.concat([
                               { speaker: 'student', text: studentTurn },
                               { speaker: 'coach', text: window.SelHub.rehearseBreakCharacterText(safety.severity) },
                               { speaker: '_crisis', text: '' }
                             ]);
-                            upd({ rpHistory: blockedHist, rpInput: '', rpLoading: false });
+                            upd({ rpHistory: blockedHist, rpInput: '', rpLoading: false, _lastTier: 3 });
                             if (announceToSR) announceToSR('Rehearsal paused. Safety resources shown.');
                             return;
                           }
@@ -10424,7 +10532,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                             return 'PEER (' + rpRole + '): "' + t.text.replace(/"/g, '\\"') + '"';
                           }).join('\n');
                           var turnN = newHist.filter(function(t) { return t.speaker === 'student'; }).length;
-                          var bandLabel = band === 'k2' ? 'K-2' : band === 'g35' ? '3-5' : band === 'g68' ? '6-8' : band === 'g912' ? '9-12' : 'middle school';
+                          var bandLabel = _upBandLabel;
                           var _upFenceRp = function(s) { return '<UNTRUSTED_STUDENT_INPUT>\n' + String(s || '').replace(/<\/?UNTRUSTED_STUDENT_INPUT>/gi, '') + '\n</UNTRUSTED_STUDENT_INPUT>'; };
                           var prompt =
                             'You are role-playing for an SEL bullying-rehearsal tool. The student practices what to say in real life.\n\n' +
@@ -10454,8 +10562,10 @@ var EXTENDED_REFLECTION_PROMPTS = [
                         },
                         style: {
                           padding: '10px 16px',
-                          background: (rpLoading || !rpInput.trim() || !_upAiOn) ? _upC('#cbd5e1') : '#7c3aed',
-                          color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                          background: (rpLoading || !rpInput.trim() || !_upAiOn) ? _upDisabledBg : '#7c3aed',
+                          color: (rpLoading || !rpInput.trim() || !_upAiOn) ? _upDisabledFg : '#fff',
+                          border: (rpLoading || !rpInput.trim() || !_upAiOn) ? _upDisabledBd : 'none',
+                          borderRadius: 8, fontWeight: 700,
                           cursor: (rpLoading || !rpInput.trim() || !_upAiOn) ? 'not-allowed' : 'pointer',
                           fontSize: 13
                         }

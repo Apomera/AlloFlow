@@ -15,6 +15,7 @@ function createDocBuilderRenderer(deps) {
     renderWordArtHtml,
     warnLog,
   } = deps;
+  const _warnLog = typeof warnLog === 'function' ? warnLog : (...args) => console.warn(...args);
   if (!docStyle || typeof docStyle !== 'object') throw new Error('DocBuilderRenderer requires docStyle');
   for (const pair of [
     ['_accessibleHeaderColors', _accessibleHeaderColors],
@@ -224,7 +225,7 @@ const renderJsonToHtml = (blocks) => {
                     reconAttr: _recon,
                   });
                 }
-                warnLog('[Table] grid failed span-consistency (' + _gv.reason + ') — flattening grid cells to a flat table (degraded, non-empty)');
+                _warnLog('[Table] grid failed span-consistency (' + _gv.reason + ') — flattening grid cells to a flat table (degraded, non-empty)');
                 // Render-time recovery: a grid that fails RE-validation here has no
                 // image to revert to (the original image is a separate sibling block
                 // already emitted), and this block carries NO headers/rows. Falling

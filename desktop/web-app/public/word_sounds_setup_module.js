@@ -730,6 +730,7 @@ function createWordSoundsCore(options = {}) {
     if (!correct) return { answer: answer || "", options: [] };
     const data = new Map(pool.filter((p) => p && typeof p === "object").map((p) => [normalize(p.targetWord || p.word || p.term), p]));
     if (Array.isArray(phonemes) && phonemes.length) data.set(target, { ...data.get(target), phonemes });
+    if (Array.isArray(answerPhonemes) && answerPhonemes.length) data.set(correct, { ...data.get(correct), phonemes: answerPhonemes });
     const labels = (w) => ((data.get(w) || {}).phonemes || []).map(soundKey).filter(Boolean);
     const vowels = /* @__PURE__ */ new Set(["a", "e", "i", "o", "u", "ay", "ee", "ie", "oa", "oo", "oo_short", "oy", "ow", "aw", "ar", "er", "or", "air", "ear", "ure", "schwa"]);
     const rime = (w) => {
@@ -865,7 +866,7 @@ function createWordSoundsCore(options = {}) {
       const board2 = { version: VERSION, teacherEdited: true, mode, targetChar: soundKey(targetSound || target), difficulty: "medium", options: unique(matches), distractors: unique(distractors) };
       return validSoundBoard(board2, word, pool) ? board2 : null;
     }
-    const words = unique([...matches, ...pool.map((p) => typeof p === "string" ? p : p.word || p.targetWord || p.term)]).filter((w) => w !== word);
+    const words = unique([...matches, ...pool.map((p) => typeof p === "string" ? p : p && (p.word || p.targetWord || p.term))]).filter((w) => w !== word);
     const sound = (w) => edgeSound(w, mode, (data.get(w) || {}).phonemes);
     const yes = words.filter((w) => sound(w) != null && soundKey(sound(w)) === soundKey(target));
     const no = words.filter((w) => sound(w) != null && soundKey(sound(w)) !== soundKey(target));
@@ -1009,9 +1010,9 @@ function createWordSoundsCore(options = {}) {
       out.push(key);
       key = key.replace("_short", "");
     } else if (key.endsWith(" short")) key = key.replace(" short", "");
-    const special = PHONEME_BANK_SPECIAL[key] || key;
+    const special = Object.prototype.hasOwnProperty.call(PHONEME_BANK_SPECIAL, key) ? PHONEME_BANK_SPECIAL[key] : key;
     out.push(special, lower);
-    const match = PHONEME_BANK_MATCHES[lower] || PHONEME_BANK_MATCHES[special];
+    const match = Object.prototype.hasOwnProperty.call(PHONEME_BANK_MATCHES, lower) ? PHONEME_BANK_MATCHES[lower] : Object.prototype.hasOwnProperty.call(PHONEME_BANK_MATCHES, special) ? PHONEME_BANK_MATCHES[special] : "";
     if (match) out.push(match);
     return [...new Set(out.filter(Boolean))];
   };
@@ -2216,19 +2217,19 @@ function createWordSoundsCore(options = {}) {
   };
   const activityIds = () => Object.keys(ACTIVITY_SKILLS);
   const activityEnglishName = (id) => {
-    const row = ACTIVITY_SKILLS[id];
+    const row = Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id] : null;
     if (row) return row.name;
     const plain = String(id || "").replace(/_/g, " ").trim();
     return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : "";
   };
-  const activityLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, "word_sounds.activity_" + id, ACTIVITY_SKILLS[id].name) : activityEnglishName(id);
-  const activitySkillLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, "word_sounds.skill_" + id, ACTIVITY_SKILLS[id].skill) : "";
-  const activityStrand = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].strand : "";
-  const activityBig5 = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].big5.slice() : [];
+  const activityLabel = (id, translate) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? skillLookup(translate, "word_sounds.activity_" + id, ACTIVITY_SKILLS[id].name) : activityEnglishName(id);
+  const activitySkillLabel = (id, translate) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? skillLookup(translate, "word_sounds.skill_" + id, ACTIVITY_SKILLS[id].skill) : "";
+  const activityStrand = (id) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id].strand : "";
+  const activityBig5 = (id) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id].big5.slice() : [];
   const strandOrder = () => SKILL_STRANDS.map((row) => row.key);
   const strandRow = (key) => SKILL_STRANDS.find((row) => row.key === key) || null;
   const strandLabel = (key, translate) => strandRow(key) ? skillLookup(translate, "word_sounds.strand_" + key, strandRow(key).name) : "";
-  const big5Label = (key, translate) => BIG5_NAMES[key] ? skillLookup(translate, "word_sounds.big5_" + key, BIG5_NAMES[key]) : "";
+  const big5Label = (key, translate) => Object.prototype.hasOwnProperty.call(BIG5_NAMES, key) ? skillLookup(translate, "word_sounds.big5_" + key, BIG5_NAMES[key]) : "";
   const strandBig5 = (key) => strandRow(key) ? strandRow(key).big5.slice() : [];
   const strandBig5Label = (key, translate) => strandBig5(key).map((tag) => big5Label(tag, translate)).join(", ");
   const groupActivitiesByStrand = (ids) => {
@@ -2256,7 +2257,7 @@ function createWordSoundsCore(options = {}) {
   const lessonPlanItems = (entries) => planEntries(entries).reduce((sum, entry) => sum + entry.count, 0);
   const lessonPlanMinutes = (entries) => Math.ceil(lessonPlanItems(entries) * 0.5);
   const scaleLessonCounts = (entries, length) => {
-    const rows = planEntries(entries), target = LESSON_LENGTHS[length] ? LESSON_LENGTHS[length].items : 0;
+    const rows = planEntries(entries), target = Object.prototype.hasOwnProperty.call(LESSON_LENGTHS, length) ? LESSON_LENGTHS[length].items : 0;
     if (!rows.length || !target) return rows;
     const weight = rows.reduce((sum, row) => sum + row.count, 0);
     const exact = rows.map((row) => row.count / weight * target);
@@ -2281,7 +2282,7 @@ function createWordSoundsCore(options = {}) {
     if (!row) return null;
     const unavailable = Array.isArray(options2.unavailable) ? options2.unavailable : [];
     const kept = row.activities.filter(([activity]) => !unavailable.includes(activity));
-    const length = LESSON_LENGTHS[options2.length] ? options2.length : LESSON_LENGTH_DEFAULT;
+    const length = Object.prototype.hasOwnProperty.call(LESSON_LENGTHS, options2.length) ? options2.length : LESSON_LENGTH_DEFAULT;
     const activities = scaleLessonCounts(kept.map(([activity, weight]) => ({ id: activity, count: weight })), length);
     return {
       id: row.id,
@@ -2488,7 +2489,7 @@ function createWordSoundsCore(options = {}) {
   let ogTableCache = null;
   const ogTables = () => {
     if (ogTableCache) return ogTableCache;
-    const byKey = {}, byLabel = {}, pairByKey = {}, pairByLabel = {};
+    const byKey = /* @__PURE__ */ Object.create(null), byLabel = /* @__PURE__ */ Object.create(null), pairByKey = /* @__PURE__ */ Object.create(null), pairByLabel = /* @__PURE__ */ Object.create(null);
     const addLabel = (table, label, grapheme) => {
       (table[label] = table[label] || /* @__PURE__ */ new Set()).add(grapheme);
     };
@@ -2798,7 +2799,7 @@ function createWordSoundsCore(options = {}) {
     const nearVowels = { a: ["e", "u"], e: ["i", "a"], i: ["e", "a"], o: ["u", "a"], u: ["o", "a"] };
     const longer = w.length > 4 && /[aeiouy][a-z]*[^aeiou]ed$/.test(w);
     const plain = { ay: "ai", ee: "ee", ie: "ie", oa: "oa", oo: "oo", oo_short: "oo", schwa: "u", dh: "th", zh: "sh", er: "er" };
-    const bySound = keys.length && keys.every(Boolean) ? keys.map((key, index) => index === keys.length - 1 && key === "ay" ? "ay" : index === keys.length - 1 && key === "ie" ? "y" : plain[key] || key).join("") : "";
+    const bySound = keys.length && keys.every(Boolean) ? keys.map((key, index) => index === keys.length - 1 && key === "ay" ? "ay" : index === keys.length - 1 && key === "ie" ? "y" : ownKey(plain, key) ? plain[key] : key).join("") : "";
     const rules = [
       // c, k and ck for /k/.
       [...swap(/ck/, "k"), ...swap(/c(?![eiyhk])/, "k"), ...swap(/k(?=[aoulr])/, "c"), ...swap(/ck/, "c")],
@@ -3336,49 +3337,45 @@ async function cleanPhonemeClip(dataUri) {
     if (!AC || !dataUri || typeof fetch !== "function") return dataUri;
     const arr = await (await fetch(dataUri)).arrayBuffer();
     const ctx = new AC();
-    let buf;
     try {
-      buf = await ctx.decodeAudioData(arr.slice(0));
-    } catch (e) {
-      if (ctx.close) ctx.close();
-      return dataUri;
+      let buf;
+      try {
+        buf = await ctx.decodeAudioData(arr.slice(0));
+      } catch (e) {
+        return dataUri;
+      }
+      const len = buf.length, chs = buf.numberOfChannels;
+      if (!len) return dataUri;
+      const data = new Float32Array(len);
+      for (let c = 0; c < chs; c++) {
+        const cd = buf.getChannelData(c);
+        for (let i = 0; i < len; i++) data[i] += cd[i] / chs;
+      }
+      let peak = 0;
+      for (let i = 0; i < len; i++) {
+        const a = data[i] < 0 ? -data[i] : data[i];
+        if (a > peak) peak = a;
+      }
+      if (peak <= 1e-4) return dataUri;
+      const thresh = Math.max(0.015, peak * 0.08);
+      let start = 0;
+      while (start < len && (data[start] < 0 ? -data[start] : data[start]) < thresh) start++;
+      let end = len - 1;
+      while (end > start && (data[end] < 0 ? -data[end] : data[end]) < thresh) end--;
+      if (end <= start) return dataUri;
+      const pad = Math.floor(buf.sampleRate * 0.02);
+      start = Math.max(0, start - pad);
+      end = Math.min(len - 1, end + pad);
+      const outLen = end - start + 1;
+      const gain = Math.min(0.97 / peak, 6);
+      const wav = encodePhonemeWav(data, start, outLen, buf.sampleRate, gain);
+      return wav && wav.length > 64 ? wav : dataUri;
+    } finally {
+      try {
+        if (ctx.close) ctx.close();
+      } catch (e) {
+      }
     }
-    const len = buf.length, chs = buf.numberOfChannels;
-    if (!len) {
-      if (ctx.close) ctx.close();
-      return dataUri;
-    }
-    const data = new Float32Array(len);
-    for (let c = 0; c < chs; c++) {
-      const cd = buf.getChannelData(c);
-      for (let i = 0; i < len; i++) data[i] += cd[i] / chs;
-    }
-    let peak = 0;
-    for (let i = 0; i < len; i++) {
-      const a = data[i] < 0 ? -data[i] : data[i];
-      if (a > peak) peak = a;
-    }
-    if (peak <= 1e-4) {
-      if (ctx.close) ctx.close();
-      return dataUri;
-    }
-    const thresh = Math.max(0.015, peak * 0.08);
-    let start = 0;
-    while (start < len && (data[start] < 0 ? -data[start] : data[start]) < thresh) start++;
-    let end = len - 1;
-    while (end > start && (data[end] < 0 ? -data[end] : data[end]) < thresh) end--;
-    if (end <= start) {
-      if (ctx.close) ctx.close();
-      return dataUri;
-    }
-    const pad = Math.floor(buf.sampleRate * 0.02);
-    start = Math.max(0, start - pad);
-    end = Math.min(len - 1, end + pad);
-    const outLen = end - start + 1;
-    const gain = Math.min(0.97 / peak, 6);
-    const wav = encodePhonemeWav(data, start, outLen, buf.sampleRate, gain);
-    if (ctx.close) ctx.close();
-    return wav && wav.length > 64 ? wav : dataUri;
   } catch (e) {
     return dataUri;
   }
@@ -3414,6 +3411,10 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
   const recorderRef = React.useRef(null);
   const fileInputRef = React.useRef(null);
   const audioElRef = React.useRef(null);
+  const playSeqRef = React.useRef(0);
+  const playTimerRef = React.useRef(null);
+  const activeIdRef = React.useRef(lib.activeId);
+  activeIdRef.current = lib.activeId;
   const modalRootRef = React.useRef(null);
   const previouslyFocusedRef = React.useRef(null);
   const [showDeletePackConfirm, setShowDeletePackConfirm] = React.useState(false);
@@ -3545,14 +3546,25 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
       }
     };
   }, []);
-  const playPreview = (src) => {
+  const stopPreviewPlayback = (advanceSeq = true) => {
+    if (advanceSeq) playSeqRef.current += 1;
+    if (playTimerRef.current) {
+      clearTimeout(playTimerRef.current);
+      playTimerRef.current = null;
+    }
     try {
       if (audioElRef.current) {
+        audioElRef.current.onended = null;
+        audioElRef.current.onerror = null;
         audioElRef.current.pause();
         audioElRef.current = null;
       }
     } catch (e) {
     }
+  };
+  const playPreview = (src, opts) => {
+    const keepSeq = !!(opts && opts.keepSeq);
+    stopPreviewPlayback(!keepSeq);
     if (!src) return null;
     try {
       const a = new Audio(src);
@@ -3564,6 +3576,13 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
       return null;
     }
   };
+  React.useEffect(() => () => {
+    stopPreviewPlayback(true);
+    try {
+      if (recorderRef.current) recorderRef.current.stop();
+    } catch (e) {
+    }
+  }, []);
   const clips = pack.clips || {};
   const kind = pack.kind === "student-voice" ? "student-voice" : "teacher-model";
   const isStudent = kind === "student-voice";
@@ -3601,11 +3620,12 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
       setStatus(T("word_sounds.voice_pack_msg_keep_one", "Keep at least one pack. Clear individual sounds with \u{1F5D1}\uFE0F instead."));
       return;
     }
-    setLib((prev) => {
-      const rest = prev.packs.filter((p) => p.id !== prev.activeId);
-      const packs = rest.length ? rest : [normalizePhonemePack({ id: genPhonemePackId(), name: "My Voice Pack" })];
-      return { activeId: packs[0].id, packs };
-    });
+    const restNow = lib.packs.filter((p) => p.id !== lib.activeId);
+    const nextActiveNow = restNow.length ? restNow[0] : normalizePhonemePack({ id: genPhonemePackId(), name: "My Voice Pack" });
+    const nextPacks = restNow.length ? restNow : [nextActiveNow];
+    setLib({ activeId: nextActiveNow.id, packs: nextPacks });
+    applyPhonemeVoicePackToBank(nextActiveNow.clips || {});
+    applyInstrToBank(nextActiveNow.instr || {});
     setChecks({});
     setSelfChecks({});
     setStatus("");
@@ -3646,17 +3666,23 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
   };
   const runAiCheck = (key, dataUri, packId) => {
     if (!aiAvailable || !dataUri) return;
-    setChecks((prev) => Object.assign({}, prev, { [key]: { state: "checking" } }));
+    const targetPackId = packId || activeIdRef.current;
+    const isActivePack = () => !targetPackId || activeIdRef.current === targetPackId;
+    if (isActivePack()) setChecks((prev) => Object.assign({}, prev, { [key]: { state: "checking" } }));
     const ex = PHONEME_PACK_EXAMPLES[key];
     const cue = PHONEME_PACK_CUES[key];
     const prompt = aiCheckPrompt(key);
     Promise.resolve().then(() => window.callGeminiAudio(prompt, dataUri, {})).then((resp) => {
       const parsed = parsePhonemePackJsonLoose(resp);
       if (parsed) {
-        setChecks((prev) => Object.assign({}, prev, { [key]: { state: "done", match: parsed.match, clipped: parsed.clipped, note: parsed.note || "" } }));
-        updateLatestAttempt(key, { ai: { match: parsed.match, clipped: parsed.clipped } }, packId);
-      } else setChecks((prev) => Object.assign({}, prev, { [key]: { state: "done", match: null, note: "Could not analyze the clip." } }));
-    }).catch(() => setChecks((prev) => Object.assign({}, prev, { [key]: { state: "error", note: "AI check failed." } })));
+        if (isActivePack()) setChecks((prev) => Object.assign({}, prev, { [key]: { state: "done", match: parsed.match, clipped: parsed.clipped, note: parsed.note || "" } }));
+        updateLatestAttempt(key, { ai: { match: parsed.match, clipped: parsed.clipped } }, targetPackId);
+      } else if (isActivePack()) {
+        setChecks((prev) => Object.assign({}, prev, { [key]: { state: "done", match: null, note: "Could not analyze the clip." } }));
+      }
+    }).catch(() => {
+      if (isActivePack()) setChecks((prev) => Object.assign({}, prev, { [key]: { state: "error", note: "AI check failed." } }));
+    });
   };
   const aiVoiceAvailable = !isStudent && typeof window !== "undefined" && typeof window.callTTSDirect === "function" && typeof window.__alloAiUsable === "function" && !!window.__alloAiUsable("tts", window.callTTSDirect);
   const aiVoicePrompts = (key) => {
@@ -3721,12 +3747,14 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
       setAiVoiceKey(null);
     }
     if (!best) {
-      setStatus(T("word_sounds.voice_pack_msg_ai_failed", "The AI voice could not make /{key}/. Try again, or record it.", { key: phonemePackLabel(key) }));
+      if (activeIdRef.current === targetId) setStatus(T("word_sounds.voice_pack_msg_ai_failed", "The AI voice could not make /{key}/. Try again, or record it.", { key: phonemePackLabel(key) }));
       return;
     }
     setPackById(targetId, (prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: best.clip }), ai: Object.assign({}, prev.ai, { [key]: true }) }));
-    if (best.verdict) setChecks((prev) => Object.assign({}, prev, { [key]: { state: "done", match: best.verdict.match, clipped: best.verdict.clipped, note: best.verdict.note || "" } }));
-    setStatus(best.good ? T("word_sounds.voice_pack_msg_ai_done", "\u2728 Made /{key}/ with an AI voice. Tap \u{1F50A} to hear it, then Save & Use.", { key: phonemePackLabel(key) }) : T("word_sounds.voice_pack_msg_ai_unsure", "\u2728 Made /{key}/ with an AI voice. Listen before you use it: it was not confirmed as right.", { key: phonemePackLabel(key) }));
+    if (activeIdRef.current === targetId) {
+      if (best.verdict) setChecks((prev) => Object.assign({}, prev, { [key]: { state: "done", match: best.verdict.match, clipped: best.verdict.clipped, note: best.verdict.note || "" } }));
+      setStatus(best.good ? T("word_sounds.voice_pack_msg_ai_done", "\u2728 Made /{key}/ with an AI voice. Tap \u{1F50A} to hear it, then Save & Use.", { key: phonemePackLabel(key) }) : T("word_sounds.voice_pack_msg_ai_unsure", "\u2728 Made /{key}/ with an AI voice. Listen before you use it: it was not confirmed as right.", { key: phonemePackLabel(key) }));
+    }
   };
   const stopRecording = () => {
     try {
@@ -3837,12 +3865,14 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
     const ref = phonemeReferenceClip(key);
     const mine = clips[key];
     if (!ref || !mine) return;
+    const seqId = ++playSeqRef.current;
     const lbl = phonemePackLabel(key);
     setStatus(T("word_sounds.voice_pack_msg_listen_compare", "\u{1F501} Listen: the model first, then your /{lbl}/.", { lbl }));
     const playMine = () => {
-      playPreview(mine);
+      if (playSeqRef.current !== seqId) return;
+      playPreview(mine, { keepSeq: true });
     };
-    const a = playPreview(ref);
+    const a = playPreview(ref, { keepSeq: true });
     if (a) {
       a.onended = playMine;
       a.onerror = playMine;
@@ -3862,20 +3892,30 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
       setStatus(T("word_sounds.voice_pack_msg_record_all", 'Record every sound in "{word}" first.', { word: w.word }));
       return;
     }
+    const seqId = ++playSeqRef.current;
     setStatus(T("word_sounds.voice_pack_msg_blending", '\u{1F50A} Blending "{word}" in your voice...', { word: w.word }));
     let i = 0;
+    const scheduleNext = () => {
+      if (playSeqRef.current !== seqId) return;
+      playTimerRef.current = setTimeout(() => {
+        playTimerRef.current = null;
+        if (playSeqRef.current !== seqId) return;
+        next();
+      }, 240);
+    };
     const next = () => {
+      if (playSeqRef.current !== seqId) return;
       if (i >= seq.length) {
         setStatus(T("word_sounds.voice_pack_msg_built", '\u{1F389} You built "{word}" with your own sounds!', { word: w.word }));
         return;
       }
       const clip = seq[i];
       i++;
-      const a = playPreview(clip);
+      const a = playPreview(clip, { keepSeq: true });
       if (a) {
-        a.onended = () => setTimeout(next, 240);
-        a.onerror = () => setTimeout(next, 240);
-      } else setTimeout(next, 240);
+        a.onended = scheduleNext;
+        a.onerror = scheduleNext;
+      } else scheduleNext();
     };
     next();
   };
@@ -3910,15 +3950,31 @@ const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
       return false;
     }
   };
+  const persistRef = React.useRef(persist);
+  persistRef.current = persist;
+  const pendingPersistRef = React.useRef(false);
   React.useEffect(() => {
+    pendingPersistRef.current = true;
     const id = setTimeout(() => {
+      pendingPersistRef.current = false;
       try {
-        persist();
+        persistRef.current();
       } catch (e) {
       }
     }, 500);
-    return () => clearTimeout(id);
+    return () => {
+      clearTimeout(id);
+    };
   }, [lib]);
+  React.useEffect(() => () => {
+    if (pendingPersistRef.current) {
+      pendingPersistRef.current = false;
+      try {
+        persistRef.current();
+      } catch (e) {
+      }
+    }
+  }, []);
   const savePack = () => {
     const applied = applyPhonemeVoicePackToBank(pack.clips);
     const appliedInstr = applyInstrToBank(pack.instr || {}) > 0;
@@ -7088,16 +7144,22 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     setOrderBeforeRecommended(null);
     setLessonPlanReorderStatus(tf("word_sounds.lesson_plan_recommended_undone", "Your previous order is back."));
   };
+  const soundSwapAvailable = previewList.some((word, i) => selectedIndices.has(i) && WS_CORE.manipulationReady(WS_CORE.resolveManipulationTask(word, null, wordSoundsLanguage)));
   const moveLessonPlanActivity = (activityId, activityLabel, direction) => {
+    const visibleIds = lessonPlanOrder.filter((id) => id !== "manipulation" || soundSwapAvailable);
+    const visIdx = visibleIds.indexOf(activityId);
+    const targetVisIdx = direction === "up" ? visIdx - 1 : visIdx + 1;
+    if (visIdx < 0 || targetVisIdx < 0 || targetVisIdx >= visibleIds.length) return;
     const fromIndex = lessonPlanOrder.indexOf(activityId);
-    const toIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1;
-    if (fromIndex < 0 || toIndex < 0 || toIndex >= lessonPlanOrder.length) return;
-    const next = [...lessonPlanOrder];
-    [next[fromIndex], next[toIndex]] = [next[toIndex], next[fromIndex]];
-    setLessonPlanOrder(next);
+    const targetOrderIndex = lessonPlanOrder.indexOf(visibleIds[targetVisIdx]);
+    if (fromIndex < 0 || targetOrderIndex < 0) return;
+    const updatedOrder = [...lessonPlanOrder];
+    [updatedOrder[fromIndex], updatedOrder[targetOrderIndex]] = [updatedOrder[targetOrderIndex], updatedOrder[fromIndex]];
+    setLessonPlanOrder(updatedOrder);
+    const toIndex = targetVisIdx;
+    const next = visibleIds;
     setLessonPlanReorderStatus(`${activityLabel} moved to position ${toIndex + 1} of ${next.length}.`);
   };
-  const soundSwapAvailable = previewList.some((word, i) => selectedIndices.has(i) && WS_CORE.manipulationReady(WS_CORE.resolveManipulationTask(word, null, wordSoundsLanguage)));
   const lessonPlanActivityOn = (id) => !!lessonPlan[id]?.enabled && (id !== "manipulation" || soundSwapAvailable);
   const syllableBlendingSelected = sessionType === "assessment" ? probeActivitySel === "syllable_blending" : includeLessonPlan && !!lessonPlan.syllable_blending?.enabled;
   const syllableCountingSelected = sessionType === "assessment" ? probeActivitySel === "syllable_counting" : includeLessonPlan && !!lessonPlan.syllable_counting?.enabled;
@@ -8717,10 +8779,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   const aiHere = (kind, fn) => typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable(kind, fn) : typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   const textAiHere = aiHere("text", callGemini), imageAiHere = aiHere("images", callImagen);
   const isAssessmentSetup = sessionType === "assessment";
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-2 sm:p-4 animate-in motion-reduce:animate-none fade-in" }, /* @__PURE__ */ React.createElement("div", { ref: setupDialogRef, role: "dialog", "aria-modal": "true", "aria-label": tf("word_sounds.setup_dialog_label", "Word Sounds setup"), tabIndex: -1, "data-ws-setup-dialog": "true", style: { maxWidth: "min(96vw, 1500px)", maxHeight: "94vh" }, className: "bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full flex flex-col overflow-hidden border border-slate-400 focus:outline-none" }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-700 to-indigo-700 p-4 sm:p-6 flex flex-wrap justify-between items-center gap-3 text-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 p-3 rounded-2xl backdrop-blur-md" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 32, className: "text-yellow-300 animate-pulse motion-reduce:animate-none" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black tracking-tight" }, isProbeMode ? `\u{1F4CA} ${tf("word_sounds.probe_title", "{skill} Probe", { skill: probeActivityLabel })}` : tf("word_sounds.title", "Word Sounds")), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-100 font-medium opacity-90" }, tf("word_sounds.subtitle", "Design your phonics lesson"), " \u2022 ", gradeLevel || "K-2"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ws_gen_minimize", onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-2 sm:p-4 animate-in motion-reduce:animate-none fade-in" }, /* @__PURE__ */ React.createElement("div", { ref: setupDialogRef, role: "dialog", "aria-modal": "true", "aria-label": tf("word_sounds.setup_dialog_label", "Word Sounds setup"), tabIndex: -1, "data-ws-setup-dialog": "true", style: { maxWidth: "min(96vw, 1500px)", maxHeight: "94vh" }, className: "bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full flex flex-col overflow-hidden border border-slate-400 focus:outline-none" }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-700 to-indigo-700 p-4 sm:p-6 flex flex-wrap justify-between items-center gap-3 text-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 p-3 rounded-2xl backdrop-blur-md" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 32, className: "text-yellow-300 animate-pulse motion-reduce:animate-none" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black tracking-tight" }, isProbeMode ? `\u{1F4CA} ${tf("word_sounds.probe_title", "{skill} Probe", { skill: probeActivityLabel })}` : tf("word_sounds.title", "Word Sounds")), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-100 font-medium opacity-90" }, tf("word_sounds.subtitle", "Design your phonics lesson"), " \u2022 ", gradeLevel || "K-2"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": tf("word_sounds.minimize_setup", "Minimize Word Sounds setup"), "data-help-key": "ws_gen_minimize", onClick: () => {
     setIsMinimized(true);
     if (onMinimize) onMinimize();
-  }, className: "min-w-11 min-h-11 inline-flex items-center justify-center bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors motion-reduce:transition-none", title: t("common.minimize") }, /* @__PURE__ */ React.createElement(Minimize, { size: 24 })), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": tf("word_sounds.close_setup", "Close Word Sounds setup"), "data-help-key": "ws_gen_close", onClick: handleGeneratorClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors motion-reduce:transition-none", title: t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })))), syllableExitGuard.notice, preloadedWords && preloadedWords.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200 px-6 py-3 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 rounded-full p-1.5" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16, className: "text-emerald-700" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, tf("word_sounds.words_prepared_count", "{count} words prepared", { count: preloadedWords.length })), /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700 text-sm ml-2" }, preloadedWords.slice(0, 5).map((w) => w.targetWord || w.word || w).join(", "), preloadedWords.length > 5 && `, +${preloadedWords.length - 5} more`))), /* @__PURE__ */ React.createElement(
+  }, className: "min-w-11 min-h-11 inline-flex items-center justify-center bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors motion-reduce:transition-none", title: t("common.minimize") }, /* @__PURE__ */ React.createElement(Minimize, { size: 24, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": tf("word_sounds.close_setup", "Close Word Sounds setup"), "data-help-key": "ws_gen_close", onClick: handleGeneratorClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors motion-reduce:transition-none", title: t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })))), syllableExitGuard.notice, preloadedWords && preloadedWords.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200 px-6 py-3 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 rounded-full p-1.5" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16, className: "text-emerald-700" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, tf("word_sounds.words_prepared_count", "{count} words prepared", { count: preloadedWords.length })), /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700 text-sm ml-2" }, preloadedWords.slice(0, 5).map((w) => w.targetWord || w.word || w).join(", "), preloadedWords.length > 5 && `, +${preloadedWords.length - 5} more`))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -8772,7 +8834,28 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       },
       "Keep Gemini"
     )))));
-  })(), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "w-full lg:w-1/3 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 p-4 sm:p-6 flex flex-col gap-6 lg:overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.session_type", "Session Type")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-2 rounded-xl border border-slate-400 shadow-sm grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(
+  })(), /* @__PURE__ */ React.createElement("nav", { "aria-label": tf("word_sounds.setup_steps_nav", "Setup sections"), "data-ws-setup-steps": "true", className: "bg-slate-100 border-b border-slate-200 px-4 sm:px-6 py-2 flex flex-wrap items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mr-1" }, tf("word_sounds.jump_to_step", "Quick jump:")), [
+    { id: "ws-step-goals-words", label: tf("word_sounds.step_goals_words", "1. Goal & Words") },
+    { id: "ws-step-lesson", label: tf("word_sounds.step_lesson", "2. Lesson & Activities") },
+    { id: "ws-step-media", label: tf("word_sounds.step_media", "3. Audio, Images & AAC") }
+  ].map((step) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key: step.id,
+      type: "button",
+      "data-ws-step-jump": step.id,
+      onClick: () => {
+        const fallbackId = step.id === "ws-step-goals-words" ? "word-sounds-active-sources-label" : step.id;
+        const target = setupDialogRef.current?.querySelector("#" + step.id) || setupDialogRef.current?.querySelector("#" + fallbackId) || (typeof document !== "undefined" ? document.getElementById(step.id) || document.getElementById(fallbackId) : null);
+        if (target) {
+          target.scrollIntoView?.({ behavior: "smooth", block: "start" });
+          target.focus?.();
+        }
+      },
+      className: "min-h-11 px-3 py-1.5 rounded-full border border-indigo-200 bg-white hover:bg-indigo-50 text-xs font-bold text-indigo-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    },
+    step.label
+  ))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "w-full lg:w-1/3 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 p-4 sm:p-6 flex flex-col gap-6 lg:overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("h3", { id: "ws-step-lesson", tabIndex: -1, className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded" }, tf("word_sounds.session_type", "Session Type")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-2 rounded-xl border border-slate-400 shadow-sm grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -8794,9 +8877,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     },
     "\u{1F4CA} ",
     tf("word_sounds.mode_assessment", "Assessment")
-  )), sessionType === "assessment" && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-semibold text-amber-800 leading-snug" }, tf("word_sounds.assessment_note", "Timed, no hints \u2014 a single-skill probe for progress monitoring, not practice. Lesson plans are turned off in this mode.")), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-amber-900" }, tf("word_sounds.probe_skill", "Probe skill")), /* @__PURE__ */ React.createElement(
+  )), sessionType === "assessment" && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-semibold text-amber-800 leading-snug" }, tf("word_sounds.assessment_note", "Timed, no hints \u2014 a single-skill probe for progress monitoring, not practice. Lesson plans are turned off in this mode.")), /* @__PURE__ */ React.createElement("label", { htmlFor: "ws-probe-skill", className: "block text-xs font-bold text-amber-900" }, tf("word_sounds.probe_skill", "Probe skill")), /* @__PURE__ */ React.createElement(
     "select",
     {
+      id: "ws-probe-skill",
       "aria-label": tf("word_sounds.probe_skill", "Probe skill"),
       value: probeActivitySel,
       onChange: (e) => setProbeActivitySel(e.target.value),
@@ -8824,7 +8908,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       autoComplete: "off",
       className: "w-full px-2 py-1.5 rounded-lg border border-amber-300 bg-white text-sm font-semibold text-slate-700"
     }
-  ), probeStudentNames.length > 0 && /* @__PURE__ */ React.createElement("datalist", { id: "ws-probe-student-names" }, probeStudentNames.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-semibold text-amber-800 leading-snug", role: "note" }, probeStudentTrimmed ? tf("word_sounds.probe_student_saved", "Saved to the progress-monitoring record for {name}.", { name: probeStudentTrimmed }) : tf("word_sounds.probe_student_unsaved", "No student named. This run is scored on screen only, and is NOT saved to any record.")))), !isAssessmentSetup && /* @__PURE__ */ React.createElement("div", { className: "space-y-3", "data-ws-plan-card": "true" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.plan_heading", "Lesson")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-3 rounded-xl border border-slate-400 shadow-sm space-y-3" }, /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": tf("word_sounds.starting_points_label", "Starting point"), className: "grid grid-cols-2 gap-2", "data-ws-starting-points": "true" }, startingPointRows.map((row) => {
+  ), probeStudentNames.length > 0 && /* @__PURE__ */ React.createElement("datalist", { id: "ws-probe-student-names" }, probeStudentNames.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: n }))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-semibold text-amber-800 leading-snug", role: "note" }, probeStudentTrimmed ? tf("word_sounds.probe_student_saved", "Saved to the progress-monitoring record for {name}.", { name: probeStudentTrimmed }) : tf("word_sounds.probe_student_unsaved", "No student named. This run is scored on screen only, and is NOT saved to any record.")))), !isAssessmentSetup && /* @__PURE__ */ React.createElement("div", { className: "space-y-3", "data-ws-plan-card": "true" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.plan_heading", "Lesson")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-3 rounded-xl border border-slate-400 shadow-sm space-y-3" }, /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": tf("word_sounds.starting_points_label", "Starting point"), className: "grid grid-cols-2 gap-2", "data-ws-starting-points": "true" }, startingPointRows.map((row) => {
     const selected = shownPlanChoice === row.id;
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -8936,11 +9020,12 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             e.preventDefault();
             const fromId = e.dataTransfer.getData("text/plain");
             const toId = activity.id;
-            if (fromId !== toId) {
+            if (fromId && fromId !== toId) {
               setLessonPlanOrder((prev) => {
+                const fromIdx = prev.indexOf(fromId);
+                const toIdx = prev.indexOf(toId);
+                if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return prev;
                 const newOrder = [...prev];
-                const fromIdx = newOrder.indexOf(fromId);
-                const toIdx = newOrder.indexOf(toId);
                 newOrder.splice(fromIdx, 1);
                 newOrder.splice(toIdx, 0, fromId);
                 return newOrder;
@@ -8966,7 +9051,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             className: "accent-indigo-600 w-4 h-4"
           }
         ), /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("label", { id: `ws-activity-label-${activity.id}`, htmlFor: `ws-activity-check-${activity.id}`, className: "text-sm font-semibold text-slate-700 cursor-pointer" }, activity.label), skillText && /* @__PURE__ */ React.createElement("span", { id: `ws-activity-skill-${activity.id}`, "data-ws-activity-skill": "true", className: "block text-xs leading-tight text-slate-600" }, skillText), exampleText && /* @__PURE__ */ React.createElement("span", { id: `ws-activity-example-${activity.id}`, "data-ws-activity-example": "true", className: "block text-xs leading-tight italic text-slate-600" }, exampleText))), /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-1", role: "group", "aria-label": `Reorder ${activity.label}` }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "up"), disabled: activityIndex === 0, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} up` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2191")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "down"), disabled: activityIndex === lessonPlanOrder.length - 1, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} down` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2193")))),
-        lessonPlan[activity.id].enabled && planFineTuneOpen && /* @__PURE__ */ React.createElement("div", { className: "mt-1 mb-1 flex items-center gap-3" }, /* @__PURE__ */ React.createElement(
+        lessonPlan[activity.id]?.enabled && planFineTuneOpen && /* @__PURE__ */ React.createElement("div", { className: "mt-1 mb-1 flex items-center gap-3" }, /* @__PURE__ */ React.createElement(
           "input",
           {
             "aria-label": tf("word_sounds.activity_min_items", "{activity}: minimum items", { activity: activity.label }),
@@ -8984,7 +9069,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         ), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 whitespace-nowrap text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded", "data-ws-lesson-item-range": "true" }, tf("word_sounds.lesson_plan_item_range", "{min}\u2013{max} items", { min: lessonPlan[activity.id].count, max: WS_CORE.lessonItemCeiling(lessonPlan[activity.id].count, masteryThreshold) })))
       )
     ];
-  })))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.settings", "Settings")), isAssessmentSetup && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2", "data-ws-assessment-settings-note": "true" }, tf("word_sounds.assessment_settings_note", "An assessment gives each selected word once, without pictures, so the session length and picture timing settings are hidden.")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, tf("word_sounds.image_theme", "Image Style")), /* @__PURE__ */ React.createElement(Palette, { size: 18, className: "text-pink-700" })), !imageAiHere && /* @__PURE__ */ React.createElement("p", { className: "text-xs font-semibold text-amber-900 mb-2", "data-ws-image-ai-off": "true" }, tf("word_sounds.image_ai_off_note", "AI pictures are off here, so no new pictures will be made.")), /* @__PURE__ */ React.createElement(
+  })))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("h3", { id: "ws-step-media", tabIndex: -1, className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded" }, tf("word_sounds.settings", "Settings")), isAssessmentSetup && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2", "data-ws-assessment-settings-note": "true" }, tf("word_sounds.assessment_settings_note", "An assessment gives each selected word once, without pictures, so the session length and picture timing settings are hidden.")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, tf("word_sounds.image_theme", "Image Style")), /* @__PURE__ */ React.createElement(Palette, { size: 18, className: "text-pink-700" })), !imageAiHere && /* @__PURE__ */ React.createElement("p", { className: "text-xs font-semibold text-amber-900 mb-2", "data-ws-image-ai-off": "true" }, tf("word_sounds.image_ai_off_note", "AI pictures are off here, so no new pictures will be made.")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": "Image style source",
@@ -9004,11 +9089,12 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     {
       "aria-label": t("common.image_theme_input"),
       type: "text",
+      disabled: !imageAiHere,
       "data-help-key": "ws_gen_theme_input",
       value: imageTheme,
       onChange: (e) => setImageTheme(e.target.value),
       placeholder: tf("word_sounds.theme_placeholder", "e.g. cartoon, pixel art, realistic..."),
-      className: "w-full min-h-11 mt-2 p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
+      className: "w-full min-h-11 mt-2 p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none disabled:opacity-60 disabled:bg-slate-50"
     }
   ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, "Style changes apply to new Word Sounds images, not Glossary images."), /* @__PURE__ */ React.createElement("label", { className: `min-h-11 flex items-start gap-2 mt-3 ${imageAiHere ? "cursor-pointer" : "opacity-60"}` }, /* @__PURE__ */ React.createElement(
     "input",
@@ -9026,7 +9112,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       checked: aacDefaultOn,
       onChange: (e) => {
         setAacDefaultOn(e.target.checked);
-        if (e.target.checked) setIncludeAacImages(true);
+        if (e.target.checked && imageAiHere) setIncludeAacImages(true);
       },
       className: "mt-0.5 accent-teal-600"
     }
@@ -9043,9 +9129,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     /* @__PURE__ */ React.createElement("option", { value: "alwaysOn" }, tf("word_sounds.image_mode_always_on", "Always shown")),
     /* @__PURE__ */ React.createElement("option", { value: "progressive" }, tf("word_sounds.image_mode_progressive", "After the first answer")),
     /* @__PURE__ */ React.createElement("option", { value: "afterCompletion" }, tf("word_sounds.image_mode_after_completion", "After it is solved"))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, { smart: tf("word_sounds.image_mode_smart_help", "Each activity shows the picture when it helps most."), alwaysOn: tf("word_sounds.image_mode_always_on_help", "The picture shows from the start."), progressive: tf("word_sounds.image_mode_progressive_help", "The picture appears after the first answer."), afterCompletion: tf("word_sounds.image_mode_after_completion_help", "The picture appears after a right answer or a second try.") }[imageVisibilityMode] || tf("word_sounds.image_mode_smart_help", "Each activity shows the picture when it helps most."))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.syllable_range")), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold" }, syllableRange.min, " - ", syllableRange.max)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-600 block mb-1" }, "Min"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, { smart: tf("word_sounds.image_mode_smart_help", "Each activity shows the picture when it helps most."), alwaysOn: tf("word_sounds.image_mode_always_on_help", "The picture shows from the start."), progressive: tf("word_sounds.image_mode_progressive_help", "The picture appears after the first answer."), afterCompletion: tf("word_sounds.image_mode_after_completion_help", "The picture appears after a right answer or a second try.") }[imageVisibilityMode] || tf("word_sounds.image_mode_smart_help", "Each activity shows the picture when it helps most."))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.syllable_range")), /* @__PURE__ */ React.createElement("span", { className: "bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold" }, syllableRange.min, " - ", syllableRange.max)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "ws-syllable-min", className: "text-xs text-slate-600 block mb-1" }, "Min"), /* @__PURE__ */ React.createElement(
     "input",
     {
+      id: "ws-syllable-min",
       "aria-label": t("common.min"),
       type: "number",
       min: "1",
@@ -9059,9 +9146,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       },
       className: "w-full p-2 border rounded-lg text-center font-bold"
     }
-  )), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 mt-4" }, "-"), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-600 block mb-1" }, "Max"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 mt-4" }, "-"), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "ws-syllable-max", className: "text-xs text-slate-600 block mb-1" }, "Max"), /* @__PURE__ */ React.createElement(
     "input",
     {
+      id: "ws-syllable-max",
       "aria-label": t("common.max"),
       type: "number",
       min: "1",
@@ -9075,7 +9163,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       },
       className: "w-full p-2 border rounded-lg text-center font-bold"
     }
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, t("word_sounds.syllable_range_hint") || "Limit word complexity (Min/Max Syllables)"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.voice_pack_section", "Voice")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowVoicePack(true), "data-help-key": "ws_gen_voice_pack", className: "w-full min-h-11 p-3 rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors motion-reduce:transition-none flex items-center gap-3 text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl" }, "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-violet-700 text-sm" }, tf("word_sounds.voice_pack_cta", "Record your own sounds")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600" }, tf("word_sounds.voice_pack_cta_hint", "Use your voice for the phoneme bank (Orton-Gillingham)"))))), showVoicePack ? /* @__PURE__ */ React.createElement(PhonemeVoicePackEditor, { onClose: () => setShowVoicePack(false), t }) : null, /* @__PURE__ */ React.createElement("div", { className: "space-y-3", role: "group", "aria-labelledby": "word-sounds-active-sources-label" }, /* @__PURE__ */ React.createElement("div", { id: "word-sounds-active-sources-label", className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.sources", "Word sources")), /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl border-2 transition-all motion-reduce:transition-none ${includeCustom ? "bg-emerald-50 border-emerald-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("label", { className: "min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-emerald-600 focus-within:ring-offset-2", "data-help-key": "ws_gen_src_custom" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: includeCustom, onChange: (e) => setIncludeCustom(e.target.checked), className: "sr-only" }), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: `w-5 h-5 rounded border flex items-center justify-center ${includeCustom ? "bg-emerald-600 border-emerald-600" : "border-slate-300"}` }, includeCustom && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement(Edit2, { size: 18, className: "text-emerald-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, tf("word_sounds.source_custom", "My words"))), includeCustom && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex gap-2" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, t("word_sounds.syllable_range_hint") || "Limit word complexity (Min/Max Syllables)"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.voice_pack_section", "Voice")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowVoicePack(true), "data-help-key": "ws_gen_voice_pack", className: "w-full min-h-11 p-3 rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors motion-reduce:transition-none flex items-center gap-3 text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl" }, "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-violet-700 text-sm" }, tf("word_sounds.voice_pack_cta", "Record your own sounds")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600" }, tf("word_sounds.voice_pack_cta_hint", "Use your voice for the phoneme bank (Orton-Gillingham)"))))), showVoicePack ? /* @__PURE__ */ React.createElement(PhonemeVoicePackEditor, { onClose: () => setShowVoicePack(false), t }) : null, /* @__PURE__ */ React.createElement("div", { className: "space-y-3", role: "group", "aria-labelledby": "word-sounds-active-sources-label" }, /* @__PURE__ */ React.createElement("div", { id: "word-sounds-active-sources-label", className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, tf("word_sounds.sources", "Word sources")), /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl border-2 transition-all motion-reduce:transition-none ${includeCustom ? "bg-emerald-50 border-emerald-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("label", { className: "min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-emerald-600 focus-within:ring-offset-2", "data-help-key": "ws_gen_src_custom" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: includeCustom, onChange: (e) => setIncludeCustom(e.target.checked), className: "sr-only" }), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: `w-5 h-5 rounded border flex items-center justify-center ${includeCustom ? "bg-emerald-600 border-emerald-600" : "border-slate-300"}` }, includeCustom && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement(Edit2, { size: 18, className: "text-emerald-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, tf("word_sounds.source_custom", "My words"))), includeCustom && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.quick_add_word"),
@@ -9205,7 +9293,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       className: "bg-violet-700 text-white px-4 py-2 min-h-11 rounded-lg text-sm font-bold hover:bg-violet-800 transition-colors motion-reduce:transition-none disabled:opacity-50"
     },
     isAiGenerating ? "..." : tf("word_sounds.ai_go", "Go")
-  ), isAiGenerating && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: aiSuggestions.cancel, className: "min-h-11 px-3 py-1 border border-violet-400 rounded-lg text-sm" }, tf("word_sounds.ai_cancel", "Cancel generation"))), includeAI && aiSuggestions.failed && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-sm text-amber-800" }, tf("word_sounds.ai_failed", "Could not generate words. Your previous list was kept. Try again.")))), goalAiUsable && /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pt-4 mt-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, "\u{1F4CB} ", tf("word_sounds.lesson_plan_heading", "Lesson plan")), /* @__PURE__ */ React.createElement("div", { className: "p-3 rounded-xl border-2 border-indigo-300 bg-indigo-50", "data-ws-goal-plan": "true" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "ws-goal-text", className: "flex items-center gap-2 font-bold text-slate-800" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 18, className: "text-indigo-700", "aria-hidden": "true" }), tf("word_sounds.goal_heading", "Describe your goals")), /* @__PURE__ */ React.createElement("p", { id: "ws-goal-help", className: "mt-1 text-sm text-slate-700" }, tf("word_sounds.planner_help_plan", "Ask AlloBot about this lesson, or ask for changes. It starts from your words and plan. Nothing changes until you press Use this.")), planner.thread.length > 0 && /* @__PURE__ */ React.createElement("ol", { className: "mt-3 space-y-2", role: "log", "aria-live": "polite", "aria-label": tf("word_sounds.planner_log", "Planning conversation"), "data-ws-planner-log": "true" }, planner.thread.map((turn) => turn.role === "note" ? /* @__PURE__ */ React.createElement("li", { key: turn.id, className: "text-sm font-semibold text-emerald-800", "data-ws-planner-note": turn.state }, turn.state === "applied" ? tf("word_sounds.planner_applied_note", "Proposal {version} applied.", { version: turn.version }) : tf("word_sounds.planner_set_aside_note", "Proposal {version} set aside. Nothing changed.", { version: turn.version })) : /* @__PURE__ */ React.createElement("li", { key: turn.id, "data-ws-planner-turn": turn.role, className: `rounded-lg p-2 text-sm ${turn.role === "teacher" ? "ms-8 border border-indigo-200 bg-white text-slate-800" : "me-8 bg-indigo-100 text-slate-900"}` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, turn.role === "teacher" ? tf("word_sounds.planner_you", "You") : "AlloBot", ": "), turn.text, turn.version && /* @__PURE__ */ React.createElement("span", { className: "ms-2 inline-block rounded-full bg-white px-2 text-xs font-bold text-indigo-900 ring-1 ring-indigo-300" }, tf("word_sounds.planner_proposal", "Proposal {version}", { version: turn.version })))), planner.busy && /* @__PURE__ */ React.createElement("li", { className: "text-sm text-slate-700", "data-ws-planner-busy": "true" }, tf("word_sounds.goal_working", "Planning\u2026"))), /* @__PURE__ */ React.createElement(
+  ), isAiGenerating && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: aiSuggestions.cancel, className: "min-h-11 px-3 py-1 border border-violet-400 rounded-lg text-sm" }, tf("word_sounds.ai_cancel", "Cancel generation"))), includeAI && aiSuggestions.failed && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-sm text-amber-800" }, tf("word_sounds.ai_failed", "Could not generate words. Your previous list was kept. Try again.")))), goalAiUsable && /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pt-4 mt-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("h3", { id: "ws-step-goals-words", tabIndex: -1, className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded" }, "\u{1F4CB} ", tf("word_sounds.lesson_plan_heading", "Lesson plan")), /* @__PURE__ */ React.createElement("div", { className: "p-3 rounded-xl border-2 border-indigo-300 bg-indigo-50", "data-ws-goal-plan": "true" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "ws-goal-text", className: "flex items-center gap-2 font-bold text-slate-800" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 18, className: "text-indigo-700", "aria-hidden": "true" }), tf("word_sounds.goal_heading", "Describe your goals")), /* @__PURE__ */ React.createElement("p", { id: "ws-goal-help", className: "mt-1 text-sm text-slate-700" }, tf("word_sounds.planner_help_plan", "Ask AlloBot about this lesson, or ask for changes. It starts from your words and plan. Nothing changes until you press Use this.")), planner.thread.length > 0 && /* @__PURE__ */ React.createElement("ol", { className: "mt-3 space-y-2", role: "log", "aria-live": "polite", "aria-label": tf("word_sounds.planner_log", "Planning conversation"), "data-ws-planner-log": "true" }, planner.thread.map((turn) => turn.role === "note" ? /* @__PURE__ */ React.createElement("li", { key: turn.id, className: "text-sm font-semibold text-emerald-800", "data-ws-planner-note": turn.state }, turn.state === "applied" ? tf("word_sounds.planner_applied_note", "Proposal {version} applied.", { version: turn.version }) : tf("word_sounds.planner_set_aside_note", "Proposal {version} set aside. Nothing changed.", { version: turn.version })) : /* @__PURE__ */ React.createElement("li", { key: turn.id, "data-ws-planner-turn": turn.role, className: `rounded-lg p-2 text-sm ${turn.role === "teacher" ? "ms-8 border border-indigo-200 bg-white text-slate-800" : "me-8 bg-indigo-100 text-slate-900"}` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, turn.role === "teacher" ? tf("word_sounds.planner_you", "You") : "AlloBot", ": "), turn.text, turn.version && /* @__PURE__ */ React.createElement("span", { className: "ms-2 inline-block rounded-full bg-white px-2 text-xs font-bold text-indigo-900 ring-1 ring-indigo-300" }, tf("word_sounds.planner_proposal", "Proposal {version}", { version: turn.version })))), planner.busy && /* @__PURE__ */ React.createElement("li", { className: "text-sm text-slate-700", "data-ws-planner-busy": "true" }, tf("word_sounds.goal_working", "Planning\u2026"))), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       id: "ws-goal-text",
@@ -9256,17 +9344,19 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     {
       type: "button",
       "aria-label": t("common.toggle_all"),
+      disabled: isProcessing,
       onClick: toggleAll,
-      className: "min-h-11 px-2 text-xs font-bold uppercase tracking-wider text-violet-700 hover:text-violet-800 hover:underline rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600"
+      className: "min-h-11 px-2 text-xs font-bold uppercase tracking-wider text-violet-700 hover:text-violet-800 hover:underline rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600 disabled:opacity-50 disabled:cursor-not-allowed"
     },
     selectedIndices.size === previewList.length ? tf("word_sounds.deselect_all", "Deselect All") : tf("word_sounds.select_all", "Select All")
   )), assessmentTickCap != null && previewList.length > assessmentTickCap && selectedIndices.size < previewList.length && /* @__PURE__ */ React.createElement("p", { className: "mt-1 flex flex-wrap items-center gap-x-3 text-sm text-slate-700", "data-ws-assessment-cap": "true" }, /* @__PURE__ */ React.createElement("span", null, tf("word_sounds.assessment_cap_note", "A new assessment starts with the first {count} words ticked.", { count: assessmentTickCap })), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
+      disabled: isProcessing,
       onClick: () => tickAllFrom(previewList),
       "data-ws-assessment-add-all": "true",
-      className: "min-h-11 px-2 font-bold text-violet-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
+      className: "min-h-11 px-2 font-bold text-violet-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 disabled:opacity-50 disabled:cursor-not-allowed"
     },
     tf("word_sounds.ready_list_add_all", "Add all {total}", { total: previewList.length })
   ))), /* @__PURE__ */ React.createElement("div", { className: "hidden lg:flex flex-col items-end gap-1" }, /* @__PURE__ */ React.createElement(
@@ -9280,11 +9370,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     },
     isProcessing ? /* @__PURE__ */ React.createElement(Loader2, { className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(PlayCircle, { fill: "currentColor", className: "text-white/20", size: 28 }),
     startLabel
-  ), startBlocked && /* @__PURE__ */ React.createElement("p", { id: "ws-start-blocked", className: "text-sm text-slate-700 text-end max-w-xs", "data-ws-start-blocked": "true" }, startBlockedReason("font-semibold text-violet-800 underline underline-offset-2 min-h-11")))), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl p-6 border border-violet-200 animate-in motion-reduce:animate-none fade-in slide-in-from-top-2", role: "status", "aria-live": "polite", "aria-busy": "true" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(Loader2, { className: "animate-spin motion-reduce:animate-none text-violet-600", size: 24 }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-800 text-lg" }, tf("word_sounds.preparing_heading", "Getting the lesson ready..."))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-violet-700 font-black text-xl whitespace-nowrap" }, generatedCount, " / ", selectedIndices.size), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: cancelPreparation, "data-ws-cancel-preparation": "true", className: "min-h-11 rounded-lg border border-violet-400 bg-white px-4 py-2 text-sm font-bold text-violet-900 hover:bg-violet-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2" }, tf("word_sounds.prepare_cancel", "Cancel")))), /* @__PURE__ */ React.createElement("div", { className: "w-full h-4 bg-violet-200/50 rounded-full overflow-hidden", role: "progressbar", "aria-label": "Preparing Word Sounds activity", "aria-valuemin": 0, "aria-valuemax": selectedIndices.size, "aria-valuenow": generatedCount }, /* @__PURE__ */ React.createElement(
+  ), startBlocked && /* @__PURE__ */ React.createElement("p", { id: "ws-start-blocked", className: "text-sm text-slate-700 text-end max-w-xs", "data-ws-start-blocked": "true" }, startBlockedReason("font-semibold text-violet-800 underline underline-offset-2 min-h-11")))), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl p-6 border border-violet-200 animate-in motion-reduce:animate-none fade-in slide-in-from-top-2", role: "status", "aria-live": "polite", "aria-busy": "true" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(Loader2, { className: "animate-spin motion-reduce:animate-none text-violet-600", size: 24 }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-800 text-lg" }, tf("word_sounds.preparing_heading", "Getting the lesson ready..."))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-violet-700 font-black text-xl whitespace-nowrap" }, generatedCount, " / ", selectedIndices.size), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: cancelPreparation, "data-ws-cancel-preparation": "true", className: "min-h-11 rounded-lg border border-violet-400 bg-white px-4 py-2 text-sm font-bold text-violet-900 hover:bg-violet-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2" }, tf("word_sounds.prepare_cancel", "Cancel")))), /* @__PURE__ */ React.createElement("div", { className: "w-full h-4 bg-violet-200/50 rounded-full overflow-hidden", role: "progressbar", "aria-label": "Preparing Word Sounds activity", "aria-valuemin": 0, "aria-valuemax": Math.max(1, selectedIndices.size), "aria-valuenow": generatedCount }, /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none",
-      style: { width: `${generatedCount / selectedIndices.size * 100}%` }
+      style: { width: `${Math.min(100, generatedCount / Math.max(1, selectedIndices.size) * 100)}%` }
     }
   )), /* @__PURE__ */ React.createElement("p", { className: "text-violet-700 text-sm mt-2 text-center" }, generatedCount < selectedIndices.size ? tf("word_sounds.preparing_word", 'Building audio: "{word}"', { word: previewList[Array.from(selectedIndices)[generatedCount]] || "..." }) : tf("word_sounds.preparing_finishing", "Finishing up...")), prewarmTotal > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-3 border-t border-violet-200/60" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Volume2, { size: 14, className: "text-teal-700" }), /* @__PURE__ */ React.createElement("span", { className: "text-teal-700 font-bold text-xs uppercase tracking-wider" }, t("word_sounds.preloading_voices") || "Preloading voices for instant playback")), /* @__PURE__ */ React.createElement("span", { className: "text-teal-700 font-bold text-sm" }, prewarmCount, " / ", prewarmTotal)), /* @__PURE__ */ React.createElement("div", { className: "w-full h-2 bg-teal-100 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement(
     "div",
@@ -9369,10 +9459,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         title: showCount && countSource ? countSource : void 0,
         "data-ws-word-chip": word,
         key: i,
+        disabled: isProcessing,
         onClick: () => toggleSelection(i),
         "aria-pressed": isSelected,
         "aria-label": String(word) + ": " + (isSelected ? "selected" : "not selected"),
-        className: `border-2 rounded-xl min-h-11 px-4 py-3 flex items-center text-start group cursor-pointer transition-all motion-reduce:transition-none ${isSelected ? "bg-violet-50 border-violet-500 shadow-md" : "bg-slate-50 border-slate-100 hover:border-violet-200"}`
+        className: `border-2 rounded-xl min-h-11 px-4 py-3 flex items-center text-start group cursor-pointer transition-all motion-reduce:transition-none disabled:opacity-60 disabled:cursor-not-allowed ${isSelected ? "bg-violet-50 border-violet-500 shadow-md" : "bg-slate-50 border-slate-100 hover:border-violet-200"}`
       },
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 shrink-0 rounded-md border-2 flex items-center justify-center transition-colors motion-reduce:transition-none ${isSelected ? "bg-violet-600 border-violet-600" : "border-slate-300 bg-white"}` }, isSelected && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: `block font-bold text-lg capitalize ${isSelected ? "text-violet-900" : "text-slate-600"}` }, word), showCount && /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600", "data-ws-chip-syllables": countInfo.supported ? countInfo.count : "review" }, countInfo.supported ? tf(countInfo.count === 1 ? "word_sounds.chip_syllable_count_one" : "word_sounds.chip_syllable_count", countInfo.count === 1 ? "{count} syllable" : "{count} syllables", { count: countInfo.count }) : tf("word_sounds.preview_syllable_review", "Syllable count needs review"))))
     );

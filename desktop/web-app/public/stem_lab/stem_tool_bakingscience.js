@@ -628,39 +628,62 @@
                       'aria-label': tr('baking.hero_svg_aria', 'Culinary chemistry diagram showing rising dough crumb, CO2 bubbles, and thermal browning curve')
                     },
                       h('defs', null,
+                        h('radialGradient', { id: 'bkHeroOvenGlow', cx: '34%', cy: '36%', r: '58%' },
+                          h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#f59e0b', stopOpacity: isContrast ? 0 : 0.34 }),
+                          h('stop', { offset: '60%', stopColor: isContrast ? '#000000' : '#ea580c', stopOpacity: isContrast ? 0 : 0.1 }),
+                          h('stop', { offset: '100%', stopColor: '#1c1917', stopOpacity: 0 })
+                        ),
                         h('linearGradient', { id: 'bkLoafCrust', x1: '0', y1: '0', x2: '0', y2: '1' },
-                          h('stop', { offset: '0%', stopColor: isContrast ? '#ffff00' : '#d97706' }),
-                          h('stop', { offset: '60%', stopColor: isContrast ? '#ffff00' : '#92400e' }),
+                          h('stop', { offset: '0%', stopColor: isContrast ? '#ffff00' : '#f59e0b' }),
+                          h('stop', { offset: '48%', stopColor: isContrast ? '#ffff00' : '#b45309' }),
                           h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#451a03' })
                         ),
-                        h('linearGradient', { id: 'bkCrumbGrad', x1: '0', y1: '0', x2: '0', y2: '1' },
-                          h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#fef3c7' }),
-                          h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#fde68a' })
+                        h('radialGradient', { id: 'bkCrumbGrad', cx: '50%', cy: '38%', r: '62%' },
+                          h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#fffbeb' }),
+                          h('stop', { offset: '65%', stopColor: isContrast ? '#000000' : '#fde68a' }),
+                          h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#f59e0b' })
+                        ),
+                        h('radialGradient', { id: 'bkAlveoli', cx: '34%', cy: '30%', r: '70%' },
+                          h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.72 }),
+                          h('stop', { offset: '55%', stopColor: '#d97706', stopOpacity: 0.36 }),
+                          h('stop', { offset: '100%', stopColor: '#92400e', stopOpacity: 0.55 })
                         )
                       ),
-                      // Oven chamber backdrop
+                      // Oven chamber backdrop + warm radiative glow
                       h('rect', { x: 8, y: 8, width: 264, height: 100, rx: 10, fill: isContrast ? '#000000' : '#1c1917', stroke: isContrast ? '#ffff00' : '#78350f', strokeWidth: 1.5 }),
-                      // Baking deck shelf
+                      !isContrast && h('rect', { x: 9, y: 9, width: 262, height: 98, rx: 9, fill: 'url(#bkHeroOvenGlow)' }),
+                      // Subtle convection streamlines inside oven chamber
+                      !isContrast && h('g', { fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.28 },
+                        h('path', { d: 'M 22 48 Q 36 22, 92 20 Q 148 22, 162 48' }),
+                        h('path', { d: 'M 26 66 Q 32 34, 92 30 Q 152 34, 158 66' })
+                      ),
+                      // Baking deck shelf + loaf contact shadow
                       h('line', { x1: 20, y1: 92, x2: 164, y2: 92, stroke: isContrast ? '#ffff00' : '#a8a29e', strokeWidth: 3, strokeLinecap: 'round' }),
-                      // Artisan loaf dome & crumb cutaway
+                      !isContrast && h('ellipse', { cx: 91, cy: 91, rx: 64, ry: 3.5, fill: 'rgba(0,0,0,0.45)' }),
+                      // Artisan loaf dome & shaded crumb cutaway
                       h('path', { d: 'M 30 90 C 30 44, 152 44, 152 90 Z', fill: 'url(#bkLoafCrust)', stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 1.5 }),
+                      !isContrast && h('path', { d: 'M 48 56 Q 91 46, 134 56', fill: 'none', stroke: '#fef3c7', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.45 }),
                       h('path', { d: 'M 40 88 C 42 56, 140 56, 142 88 Z', fill: 'url(#bkCrumbGrad)', stroke: isContrast ? '#00ff00' : '#d97706', strokeWidth: 1 }),
-                      // Crumb CO2 alveoli
-                      h('circle', { cx: 64, cy: 76, r: 5, fill: isContrast ? '#000000' : '#f59e0b', opacity: 0.45 }),
-                      h('circle', { cx: 82, cy: 68, r: 6.5, fill: isContrast ? '#000000' : '#f59e0b', opacity: 0.4 }),
-                      h('circle', { cx: 102, cy: 74, r: 5.5, fill: isContrast ? '#000000' : '#f59e0b', opacity: 0.45 }),
-                      h('circle', { cx: 120, cy: 78, r: 4, fill: isContrast ? '#000000' : '#f59e0b', opacity: 0.4 }),
-                      h('circle', { cx: 92, cy: 81, r: 3.5, fill: isContrast ? '#000000' : '#f59e0b', opacity: 0.45 }),
+                      // Glossy CO2 alveoli bubbles inside crumb
+                      [{ cx: 64, cy: 76, r: 5 }, { cx: 82, cy: 68, r: 6.5 }, { cx: 102, cy: 74, r: 5.5 }, { cx: 120, cy: 78, r: 4 }, { cx: 92, cy: 81, r: 3.5 }].map(function(al, ai) {
+                        return h('g', { key: 'al' + ai },
+                          h('circle', { cx: al.cx, cy: al.cy, r: al.r, fill: isContrast ? '#000000' : 'url(#bkAlveoli)', stroke: isContrast ? '#ffff00' : '#b45309', strokeWidth: 0.6, opacity: isContrast ? 1 : 0.9 }),
+                          !isContrast && h('circle', { cx: al.cx - al.r * 0.28, cy: al.cy - al.r * 0.28, r: Math.max(0.9, al.r * 0.24), fill: '#ffffff', opacity: 0.72 })
+                        );
+                      }),
                       // Rising steam / CO2 wisps
                       h('path', { d: 'M 64 40 Q 60 30, 66 22', fill: 'none', stroke: isContrast ? '#00ff00' : '#fde68a', strokeWidth: 1.6, strokeLinecap: 'round' }),
                       h('path', { d: 'M 92 36 Q 88 26, 94 18', fill: 'none', stroke: isContrast ? '#00ff00' : '#fbbf24', strokeWidth: 1.8, strokeLinecap: 'round' }),
                       h('path', { d: 'M 118 40 Q 114 30, 120 22', fill: 'none', stroke: isContrast ? '#00ff00' : '#fde68a', strokeWidth: 1.6, strokeLinecap: 'round' }),
-                      // Right telemetry card inside SVG
+                      // Right telemetry card inside SVG with calibrated reaction-zone beacons
                       h('rect', { x: 174, y: 18, width: 88, height: 80, rx: 8, fill: isContrast ? '#000000' : '#292524', stroke: isContrast ? '#00ff00' : '#57534e', strokeWidth: 1 }),
                       h('text', { x: 218, y: 34, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: isContrast ? '#ffff00' : '#fde68a' }, 'LAB REACTIONS'),
-                      h('text', { x: 182, y: 51, fontSize: 9, fontWeight: 700, fill: isContrast ? '#00ff00' : '#fbbf24' }, 'CO\u2082  212\u00B0F'),
-                      h('text', { x: 182, y: 66, fontSize: 9, fontWeight: 700, fill: isContrast ? '#ffff00' : '#fb923c' }, 'Maillard 285\u00B0F'),
-                      h('text', { x: 182, y: 81, fontSize: 9, fontWeight: 700, fill: isContrast ? '#00ff00' : '#f87171' }, 'Caramel 320\u00B0F'),
+                      h('circle', { cx: 181, cy: 48, r: 2.3, fill: isContrast ? '#00ff00' : '#fbbf24' }),
+                      h('text', { x: 187, y: 51, fontSize: 8.5, fontWeight: 700, fill: isContrast ? '#00ff00' : '#fbbf24' }, 'CO\u2082  212\u00B0F'),
+                      h('circle', { cx: 181, cy: 63, r: 2.3, fill: isContrast ? '#ffff00' : '#fb923c' }),
+                      h('text', { x: 187, y: 66, fontSize: 8.5, fontWeight: 700, fill: isContrast ? '#ffff00' : '#fb923c' }, 'Maillard 285\u00B0F'),
+                      h('circle', { cx: 181, cy: 78, r: 2.3, fill: isContrast ? '#00ff00' : '#f87171' }),
+                      h('text', { x: 187, y: 81, fontSize: 8.5, fontWeight: 700, fill: isContrast ? '#00ff00' : '#f87171' }, 'Caramel 320\u00B0F'),
                       h('rect', { x: 182, y: 88, width: 72, height: 4, rx: 2, fill: isContrast ? '#333333' : '#44403c' }),
                       h('rect', { x: 182, y: 88, width: Math.max(4, Math.round(72 * (masteryPct / 100))), height: 4, rx: 2, fill: isContrast ? '#00ff00' : '#34d399' })
                     )
@@ -1025,43 +1048,61 @@
                     },
                       h('defs', null,
                         h('linearGradient', { id: 'bkDoughFill', x1: '0', y1: '0', x2: '0', y2: '1' },
-                          h('stop', { offset: '0%', stopColor: isContrast ? '#00ff00' : (overLeavened ? '#fb923c' : '#fde68a') }),
-                          h('stop', { offset: '100%', stopColor: isContrast ? '#ffff00' : (overLeavened ? '#dc2626' : '#f59e0b') })
+                          h('stop', { offset: '0%', stopColor: isContrast ? '#00ff00' : (overLeavened ? '#fdba74' : '#fef3c7') }),
+                          h('stop', { offset: '45%', stopColor: isContrast ? '#00ff00' : (overLeavened ? '#fb923c' : '#fcd34d') }),
+                          h('stop', { offset: '100%', stopColor: isContrast ? '#ffff00' : (overLeavened ? '#dc2626' : '#d97706') })
+                        ),
+                        h('radialGradient', { id: 'bkBubbleGloss', cx: '32%', cy: '28%', r: '70%' },
+                          h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.95 }),
+                          h('stop', { offset: '62%', stopColor: '#fef3c7', stopOpacity: 0.65 }),
+                          h('stop', { offset: '100%', stopColor: '#d97706', stopOpacity: 0.35 })
+                        ),
+                        h('linearGradient', { id: 'bkGlassSheen', x1: '0', y1: '0', x2: '1', y2: '0' },
+                          h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: isDark ? 0.16 : 0.36 }),
+                          h('stop', { offset: '18%', stopColor: '#ffffff', stopOpacity: 0 }),
+                          h('stop', { offset: '86%', stopColor: '#0f172a', stopOpacity: 0 }),
+                          h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0.12 })
                         )
                       ),
-                      // Beaker glass walls
-                      h('path', { d: 'M 38 16 L 38 140 Q 38 148 46 148 L 164 148 Q 172 148 172 140 L 172 16', fill: isContrast ? '#000000' : (isDark ? '#1e293b' : '#fffbeb'), stroke: isContrast ? '#ffff00' : (isDark ? '#94a3b8' : '#78716c'), strokeWidth: 2 }),
-                      // Dough fill
+                      !isContrast && h('ellipse', { cx: 105, cy: 151, rx: 66, ry: 3.5, fill: 'rgba(15,23,42,0.16)' }),
+                      // Borosilicate beaker cavity
+                      h('path', { d: 'M 38 16 L 38 140 Q 38 148 46 148 L 164 148 Q 172 148 172 140 L 172 16', fill: isContrast ? '#000000' : (isDark ? '#1e293b' : '#fffbeb'), stroke: 'none' }),
+                      // Translucent batter/dough fill
                       h('rect', { x: 41, y: topY, width: 128, height: 146 - topY, rx: 4, fill: 'url(#bkDoughFill)' }),
-                      // Foamy dome crown
+                      // Foamy dome crown + top highlight
                       yieldPct > 15 && h('path', {
                         d: 'M 41 ' + topY + ' Q 105 ' + Math.max(12, topY - (overLeavened ? 4 : 14)) + ', 169 ' + topY,
                         fill: isContrast ? '#00ff00' : (overLeavened ? '#fca5a5' : '#fef3c7'),
                         stroke: isContrast ? '#ffff00' : '#d97706',
                         strokeWidth: 1.5
                       }),
-                      // Trapped CO2 bubbles inside dough
+                      // Glossy rising CO2 bubbles trapped inside dough
                       bubbleSeeds.slice(0, visibleBubbles).map(function(b, bi) {
                         var by = 142 - Math.min(fillH - 8, b.dy);
                         if (by < topY + 4) return null;
-                        return h('circle', {
-                          key: 'sb' + bi,
-                          cx: b.cx, cy: by, r: b.r,
-                          fill: isContrast ? '#000000' : '#ffffff',
-                          opacity: isContrast ? 1 : 0.78,
-                          stroke: isContrast ? '#ffff00' : '#b45309',
-                          strokeWidth: 1
-                        });
+                        return h('g', { key: 'sb' + bi },
+                          h('circle', {
+                            cx: b.cx, cy: by, r: b.r,
+                            fill: isContrast ? '#000000' : 'url(#bkBubbleGloss)',
+                            stroke: isContrast ? '#ffff00' : '#b45309',
+                            strokeWidth: 0.9
+                          }),
+                          !isContrast && h('circle', { cx: b.cx - b.r * 0.3, cy: by - b.r * 0.3, r: Math.max(1, b.r * 0.28), fill: '#ffffff', opacity: 0.9 })
+                        );
                       }),
+                      // Cylindrical glass specular reflection + borosilicate flared lip
+                      !isContrast && h('rect', { x: 40, y: 16, width: 130, height: 131, rx: 6, fill: 'url(#bkGlassSheen)' }),
+                      !isContrast && h('line', { x1: 47, y1: 22, x2: 47, y2: 140, stroke: '#ffffff', strokeWidth: 2.5, strokeLinecap: 'round', opacity: 0.42 }),
+                      h('path', { d: 'M 33 14 L 38 17 L 38 140 Q 38 148 46 148 L 164 148 Q 172 148 172 140 L 172 17 L 177 14', fill: 'none', stroke: isContrast ? '#ffff00' : (isDark ? '#94a3b8' : '#78716c'), strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                       // Graduated mL ticks
                       [25, 50, 75, 100].map(function(pct) {
                         var ty = 140 - Math.round((pct / 100) * 116);
                         return h('g', { key: 'gt' + pct },
-                          h('line', { x1: 38, y1: ty, x2: 48, y2: ty, stroke: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#57534e'), strokeWidth: 1.5 }),
+                          h('line', { x1: 38, y1: ty, x2: 49, y2: ty, stroke: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#57534e'), strokeWidth: 1.5 }),
                           h('text', { x: 33, y: ty + 3, textAnchor: 'end', fontSize: 9, fontWeight: 700, fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#57534e') }, pct + '%')
                         );
                       }),
-                      // Status badge top-right inside beaker frame
+                      // Status readout top-right inside beaker frame
                       h('text', { x: 180, y: 30, fontSize: 9, fontWeight: 800, fill: isContrast ? '#00ff00' : (overLeavened ? '#dc2626' : (isDark ? '#fde68a' : '#9a3412')) }, overLeavened ? 'COLLAPSE' : 'LIFT'),
                       h('text', { x: 180, y: 44, fontSize: 12, fontWeight: 900, fill: isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#1e1b18') }, yieldPct + '%')
                     ),
@@ -1258,24 +1299,47 @@
                         ? tr('baking.emulsion.svg_broken_aria', 'Separated oil and water layers with no emulsifier')
                         : tr('baking.emulsion.svg_mixed_aria', 'Emulsion view showing {oil} percent oil droplets suspended in water with {yolk} percent egg yolk lecithin', { oil: oilPct, yolk: yolkPct })
                     },
+                      !isContrast && h('defs', null,
+                        h('radialGradient', { id: 'bkOilDrop', cx: '32%', cy: '28%', r: '72%' },
+                          h('stop', { offset: '0%', stopColor: '#fef08a' }),
+                          h('stop', { offset: '45%', stopColor: '#f59e0b' }),
+                          h('stop', { offset: '100%', stopColor: '#b45309' })
+                        ),
+                        h('linearGradient', { id: 'bkOilLayer', x1: '0', y1: '0', x2: '0', y2: '1' },
+                          h('stop', { offset: '0%', stopColor: '#fde047' }),
+                          h('stop', { offset: '100%', stopColor: '#f59e0b' })
+                        ),
+                        h('linearGradient', { id: 'bkWaterLayer', x1: '0', y1: '0', x2: '0', y2: '1' },
+                          h('stop', { offset: '0%', stopColor: '#bae6fd' }),
+                          h('stop', { offset: '100%', stopColor: '#38bdf8' })
+                        ),
+                        h('radialGradient', { id: 'bkEmulField', cx: '50%', cy: '45%', r: '62%' },
+                          h('stop', { offset: '0%', stopColor: stable ? '#fefce8' : '#f0f9ff' }),
+                          h('stop', { offset: '100%', stopColor: stable ? '#fde68a' : '#bae6fd' })
+                        )
+                      ),
                       broken ? h('g', null,
-                        h('rect', { x: 8, y: 8, width: 274, height: oilH, rx: 6, fill: isContrast ? '#ffff00' : '#fcd34d' }),
-                        h('rect', { x: 8, y: 8 + oilH, width: 274, height: 140 - oilH, rx: 6, fill: isContrast ? '#000000' : '#bae6fd', stroke: isContrast ? '#00ff00' : '#38bdf8', strokeWidth: 1 }),
+                        h('rect', { x: 8, y: 8, width: 274, height: oilH, rx: 6, fill: isContrast ? '#ffff00' : 'url(#bkOilLayer)' }),
+                        h('rect', { x: 8, y: 8 + oilH, width: 274, height: 140 - oilH, rx: 6, fill: isContrast ? '#000000' : 'url(#bkWaterLayer)', stroke: isContrast ? '#00ff00' : '#0284c7', strokeWidth: 1 }),
+                        !isContrast && h('line', { x1: 12, y1: 10 + oilH, x2: 278, y2: 10 + oilH, stroke: '#ffffff', strokeWidth: 2, opacity: 0.45 }),
                         h('line', { x1: 8, y1: 8 + oilH, x2: 282, y2: 8 + oilH, stroke: isContrast ? '#00ff00' : '#b45309', strokeWidth: 2, strokeDasharray: '6 4' }),
                         h('text', { x: 145, y: Math.max(24, 8 + oilH / 2 + 4), textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#000000' }, tr('baking.emulsion.oil_layer', 'Oil layer') + ' (' + oilPct + '%)'),
                         h('text', { x: 145, y: Math.min(140, 8 + oilH + (140 - oilH) / 2 + 4), textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: isContrast ? '#00ff00' : '#0c4a6e' }, tr('baking.emulsion.water_layer', 'Water layer') + ' (' + waterPct + '%)')
                       ) : h('g', null,
-                        // Continuous aqueous phase
-                        h('rect', { x: 8, y: 8, width: 274, height: 140, rx: 8, fill: isContrast ? '#000000' : (stable ? '#fef9c3' : '#e0f2fe'), stroke: isContrast ? '#ffff00' : '#ca8a04', strokeWidth: 1.5 }),
-                        // Suspended oil droplets + lecithin amphiphilic coats
+                        // Continuous aqueous phase with microscopic field gradient
+                        h('rect', { x: 8, y: 8, width: 274, height: 140, rx: 8, fill: isContrast ? '#000000' : 'url(#bkEmulField)', stroke: isContrast ? '#ffff00' : '#ca8a04', strokeWidth: 1.5 }),
+                        // Glossy 3D oil droplets + lecithin amphiphilic coats
                         droplets.slice(0, count).map(function(dr, di) {
                           var rr = Math.max(6, Math.round(dr.r * (stable ? 0.85 : 1.1)));
                           return h('g', { key: 'dr' + di },
+                            !isContrast && hasLecithin && h('circle', { cx: dr.cx, cy: dr.cy, r: rr + 6, fill: '#10b981', opacity: 0.14 }),
                             h('circle', {
                               cx: dr.cx, cy: dr.cy, r: rr,
-                              fill: isContrast ? '#ffff00' : '#f59e0b',
-                              opacity: isContrast ? 1 : 0.85
+                              fill: isContrast ? '#ffff00' : 'url(#bkOilDrop)',
+                              stroke: isContrast ? '#000000' : '#92400e',
+                              strokeWidth: 0.8
                             }),
+                            !isContrast && h('ellipse', { cx: dr.cx - rr * 0.28, cy: dr.cy - rr * 0.3, rx: rr * 0.3, ry: rr * 0.17, fill: '#ffffff', opacity: 0.72, transform: 'rotate(-26 ' + (dr.cx - rr * 0.28) + ' ' + (dr.cy - rr * 0.3) + ')' }),
                             hasLecithin && h('circle', {
                               cx: dr.cx, cy: dr.cy, r: rr + 3.5,
                               fill: 'none',
@@ -1286,7 +1350,7 @@
                           );
                         }),
                         // Compact legend bar at bottom of viewport
-                        h('rect', { x: 14, y: 126, width: 262, height: 18, rx: 5, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.78)', stroke: isContrast ? '#ffff00' : 'none' }),
+                        h('rect', { x: 14, y: 126, width: 262, height: 18, rx: 5, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.82)', stroke: isContrast ? '#ffff00' : 'none' }),
                         h('circle', { cx: 26, cy: 135, r: 4, fill: isContrast ? '#ffff00' : '#f59e0b' }),
                         h('text', { x: 34, y: 138, fontSize: 8.5, fontWeight: 700, fill: isContrast ? '#ffff00' : '#ffffff' }, 'Oil ' + oilPct + '%'),
                         h('circle', { cx: 108, cy: 135, r: 4, fill: isContrast ? '#00ff00' : '#34d399' }),
@@ -1546,15 +1610,25 @@
                       role: 'img',
                       'aria-label': tr('baking.scaler.bar_aria', 'Proportional mass chart of recipe ingredients totaling {g} grams', { g: Math.round(totalGrams * factor) })
                     },
+                      !isContrast && h('defs', null,
+                        h('linearGradient', { id: 'bkMassSheen', x1: '0', y1: '0', x2: '0', y2: '1' },
+                          h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.42 }),
+                          h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                        )
+                      ),
+                      !isContrast && h('rect', { x: 9, y: 5, width: 302, height: 20, rx: 4.5, fill: isDark ? '#0f172a' : '#f1f5f9' }),
                       activeBuckets.map(function(b) {
                         var w = Math.max(4, Math.round((b.grams / totalGrams) * barW));
-                        var seg = h('rect', {
-                          key: b.id,
-                          x: xCursor, y: 6, width: Math.min(w, 310 - xCursor), height: 18, rx: 3,
-                          fill: roleColors[b.id] || '#64748b',
-                          stroke: isContrast ? '#000000' : themeCard,
-                          strokeWidth: 1.5
-                        });
+                        var segW = Math.min(w, 310 - xCursor);
+                        var seg = h('g', { key: b.id },
+                          h('rect', {
+                            x: xCursor, y: 6, width: segW, height: 18, rx: 3.5,
+                            fill: roleColors[b.id] || '#64748b',
+                            stroke: isContrast ? '#000000' : themeCard,
+                            strokeWidth: 1.5
+                          }),
+                          !isContrast && segW > 6 && h('rect', { x: xCursor + 1.5, y: 7, width: Math.max(0, segW - 3), height: 6.5, rx: 2, fill: 'url(#bkMassSheen)' })
+                        );
                         xCursor += w;
                         return seg;
                       }),
@@ -1726,8 +1800,39 @@
                   role: 'img',
                   'aria-label': tr('baking.oven.svg_aria', 'Deck oven interior at {temp} showing heating elements and loaf browning state', { temp: formatTemp(temp) })
                 },
+                  !isContrast && h('defs', null,
+                    h('radialGradient', { id: 'bkOvenRadGlow', cx: '50%', cy: '18%', r: '68%' },
+                      h('stop', { offset: '0%', stopColor: temp >= 280 ? '#f97316' : '#fbbf24', stopOpacity: (coilGlow * 0.45).toFixed(2) }),
+                      h('stop', { offset: '60%', stopColor: '#ea580c', stopOpacity: (coilGlow * 0.14).toFixed(2) }),
+                      h('stop', { offset: '100%', stopColor: '#090d16', stopOpacity: 0 })
+                    ),
+                    h('linearGradient', { id: 'bkOvenTray', x1: '0', y1: '0', x2: '0', y2: '1' },
+                      h('stop', { offset: '0%', stopColor: '#f1f5f9' }),
+                      h('stop', { offset: '100%', stopColor: '#64748b' })
+                    ),
+                    h('radialGradient', { id: 'bkLoafHighlight', cx: '42%', cy: '28%', r: '66%' },
+                      h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.34 }),
+                      h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0 }),
+                      h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.28 })
+                    )
+                  ),
                   h('rect', { x: 10, y: 8, width: 300, height: 116, rx: 12, fill: isContrast ? '#000000' : '#090d16', stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 3 }),
-                  // Top radiant heating element
+                  // Warm golden-orange oven cavity radiative glow
+                  !isContrast && h('rect', { x: 12, y: 10, width: 296, height: 112, rx: 10, fill: 'url(#bkOvenRadGlow)' }),
+                  // Subtle convection airflow streamlines at baking temperatures
+                  !isContrast && temp >= 200 && h('g', { fill: 'none', stroke: '#fb923c', strokeWidth: 1.1, strokeDasharray: '4 4', opacity: Math.min(0.45, coilGlow * 0.45) },
+                    h('path', { d: 'M 38 78 Q 48 38, 160 36 Q 268 38, 282 78' }),
+                    h('path', { d: 'M 54 90 Q 68 50, 160 46 Q 252 50, 266 90' })
+                  ),
+                  // Top radiant heating element + glowing thermal halo
+                  !isContrast && temp >= 240 && h('path', {
+                    d: 'M 36 22 Q 70 28, 104 22 T 172 22 T 240 22 T 284 22',
+                    fill: 'none',
+                    stroke: '#f97316',
+                    strokeWidth: 10,
+                    strokeLinecap: 'round',
+                    opacity: coilGlow * 0.3
+                  }),
                   h('path', {
                     d: 'M 36 22 Q 70 28, 104 22 T 172 22 T 240 22 T 284 22',
                     fill: 'none',
@@ -1736,16 +1841,28 @@
                     strokeLinecap: 'round',
                     opacity: isContrast ? 1 : coilGlow
                   }),
+                  !isContrast && temp >= 320 && h('path', {
+                    d: 'M 36 22 Q 70 28, 104 22 T 172 22 T 240 22 T 284 22',
+                    fill: 'none',
+                    stroke: '#fef08a',
+                    strokeWidth: 1.4,
+                    strokeLinecap: 'round',
+                    opacity: coilGlow * 0.75
+                  }),
                   // Oven rack
                   h('line', { x1: 28, y1: 102, x2: 292, y2: 102, stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 3 }),
-                  // Baking tray
-                  h('rect', { x: 86, y: 95, width: 148, height: 7, rx: 2, fill: isContrast ? '#ffff00' : '#cbd5e1' }),
-                  // Rising & browning dough dome
+                  // Metallic baking tray + shadow
+                  h('rect', { x: 86, y: 95, width: 148, height: 7, rx: 2, fill: isContrast ? '#ffff00' : 'url(#bkOvenTray)' }),
+                  // Rising & browning dough dome with 3D crust shading
                   h('path', {
                     d: 'M 102 95 C 102 ' + (68 - domeRise) + ', 218 ' + (68 - domeRise) + ', 218 95 Z',
                     fill: isContrast ? '#000000' : foodColor,
                     stroke: isContrast ? '#00ff00' : '#78350f',
                     strokeWidth: 2
+                  }),
+                  !isContrast && h('path', {
+                    d: 'M 102 95 C 102 ' + (68 - domeRise) + ', 218 ' + (68 - domeRise) + ', 218 95 Z',
+                    fill: 'url(#bkLoafHighlight)'
                   }),
                   // Score mark on loaf
                   h('path', {
@@ -1767,7 +1884,7 @@
                     h('path', { d: 'M 194 54 Q 186 40, 198 30' })
                   ),
                   // Thermometer readout pill inside oven glass
-                  h('rect', { x: 228, y: 34, width: 68, height: 26, rx: 6, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.85)', stroke: isContrast ? '#00ff00' : '#fb7185', strokeWidth: 1.2 }),
+                  h('rect', { x: 228, y: 34, width: 68, height: 26, rx: 6, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.88)', stroke: isContrast ? '#00ff00' : '#fb7185', strokeWidth: 1.2 }),
                   h('text', { x: 262, y: 51, textAnchor: 'middle', fontSize: 12, fontWeight: 900, fill: isContrast ? '#00ff00' : '#fda4af' }, formatTemp(temp))
                 )
               ),
@@ -1844,13 +1961,18 @@
                         h('stop', { offset: '78%', stopColor: '#f97316' }),
                         h('stop', { offset: '100%', stopColor: '#dc2626' }))),
                     h('rect', { x: x0, y: yBar, width: x1 - x0, height: hBar, rx: 5, fill: 'url(#bakeTempGrad)' }),
+                    !isContrast && h('rect', { x: x0 + 2, y: yBar + 1.5, width: x1 - x0 - 4, height: 3, rx: 1.5, fill: '#ffffff', opacity: 0.32 }),
                     marks.map(function(m) {
+                      var reachedM = temp >= m.f;
                       return h('g', { key: m.f },
-                        h('line', { x1: sx(m.f), y1: yBar - 3, x2: sx(m.f), y2: yBar + hBar + 3, stroke: '#ffffff', strokeWidth: 1.5, opacity: 0.9 }),
-                        h('text', { x: sx(m.f), y: yBar - 7, textAnchor: 'middle', fontSize: 8.5, fill: isContrast ? '#ffff00' : '#fef3c7', fontWeight: 700 }, m.label));
+                        !isContrast && reachedM && h('circle', { cx: sx(m.f), cy: yBar + hBar / 2, r: 6.5, fill: '#fbbf24', opacity: 0.28 }),
+                        h('line', { x1: sx(m.f), y1: yBar - 3, x2: sx(m.f), y2: yBar + hBar + 3, stroke: '#ffffff', strokeWidth: 1.5, opacity: 0.92 }),
+                        h('circle', { cx: sx(m.f), cy: yBar + hBar / 2, r: 2.3, fill: reachedM ? (isContrast ? '#00ff00' : '#fef08a') : '#ffffff', stroke: '#0f172a', strokeWidth: 0.7 }),
+                        h('text', { x: sx(m.f), y: yBar - 7, textAnchor: 'middle', fontSize: 8.5, fill: isContrast ? '#ffff00' : (reachedM ? '#fde047' : '#fef3c7'), fontWeight: 700 }, m.label));
                     }),
-                    h('polygon', { points: (sx(temp) - 4) + ',' + (yBar + hBar + 4) + ' ' + (sx(temp) + 4) + ',' + (yBar + hBar + 4) + ' ' + sx(temp) + ',' + (yBar + hBar + 10), fill: isContrast ? '#00ff00' : '#ffffff' }),
-                    h('text', { x: Math.max(x0 + 18, Math.min(x1 - 18, sx(temp))), y: H - 3, textAnchor: 'middle', fontSize: 9.5, fill: isContrast ? '#00ff00' : '#ffffff', fontWeight: 800 }, formatTemp(temp))
+                    !isContrast && h('circle', { cx: sx(temp), cy: yBar + hBar + 6, r: 7, fill: '#fb7185', opacity: 0.24 }),
+                    h('polygon', { points: (sx(temp) - 4.5) + ',' + (yBar + hBar + 3) + ' ' + (sx(temp) + 4.5) + ',' + (yBar + hBar + 3) + ' ' + sx(temp) + ',' + (yBar + hBar + 10), fill: isContrast ? '#00ff00' : '#ffffff' }),
+                    h('text', { x: Math.max(x0 + 18, Math.min(x1 - 18, sx(temp))), y: H - 2, textAnchor: 'middle', fontSize: 9.5, fill: isContrast ? '#00ff00' : '#ffffff', fontWeight: 800 }, formatTemp(temp))
                   )
                 );
               })()
@@ -2015,25 +2137,38 @@
               role: 'img',
               'aria-label': meta.label + ' bake diagram'
             },
+              !isContrast && h('defs', null,
+                h('radialGradient', { id: 'bkDiagGloss', cx: '35%', cy: '28%', r: '70%' },
+                  h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.45 }),
+                  h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.16 })
+                )
+              ),
               tag === 'leavening' && h('g', null,
+                !isContrast && h('ellipse', { cx: 44, cy: 64, rx: 32, ry: 2.5, fill: 'rgba(15,23,42,0.16)' }),
                 h('rect', { x: 14, y: 44, width: 60, height: 18, rx: 4, fill: isContrast ? '#000000' : '#fde68a', stroke: stroke, strokeWidth: 2 }),
+                !isContrast && h('rect', { x: 15, y: 45, width: 58, height: 16, rx: 3, fill: 'url(#bkDiagGloss)' }),
                 h('path', { d: 'M 14 46 Q 44 56, 74 46', fill: 'none', stroke: accent, strokeWidth: 2.5 }),
                 h('path', { d: 'M 32 34 L 32 22 M 44 36 L 44 18 M 56 34 L 56 22', stroke: stroke, strokeWidth: 2, strokeDasharray: '3 2', strokeLinecap: 'round' })
               ),
               tag === 'emulsion' && h('g', null,
                 h('rect', { x: 18, y: 12, width: 52, height: 22, rx: 4, fill: isContrast ? '#ffff00' : '#fcd34d' }),
                 h('rect', { x: 18, y: 36, width: 52, height: 24, rx: 4, fill: isContrast ? '#000000' : '#bae6fd', stroke: accent, strokeWidth: 1.5 }),
+                !isContrast && h('line', { x1: 22, y1: 15, x2: 66, y2: 15, stroke: '#ffffff', strokeWidth: 1.8, opacity: 0.55 }),
                 h('line', { x1: 14, y1: 35, x2: 74, y2: 35, stroke: stroke, strokeWidth: 2, strokeDasharray: '4 3' })
               ),
               tag === 'scaler' && h('g', null,
-                h('line', { x1: 44, y1: 14, x2: 44, y2: 58, stroke: stroke, strokeWidth: 2.5 }),
+                h('line', { x1: 44, y1: 14, x2: 44, y2: 58, stroke: stroke, strokeWidth: 2.5, strokeLinecap: 'round' }),
+                h('line', { x1: 32, y1: 58, x2: 56, y2: 58, stroke: stroke, strokeWidth: 3, strokeLinecap: 'round' }),
                 h('line', { x1: 16, y1: 28, x2: 72, y2: 20, stroke: accent, strokeWidth: 3, strokeLinecap: 'round' }),
                 h('circle', { cx: 22, cy: 40, r: 9, fill: isContrast ? '#000000' : '#fdba74', stroke: stroke, strokeWidth: 1.5 }),
-                h('circle', { cx: 66, cy: 32, r: 6, fill: isContrast ? '#000000' : '#fde68a', stroke: stroke, strokeWidth: 1.5 })
+                h('circle', { cx: 66, cy: 32, r: 6, fill: isContrast ? '#000000' : '#fde68a', stroke: stroke, strokeWidth: 1.5 }),
+                !isContrast && h('circle', { cx: 19, cy: 37, r: 2.2, fill: '#ffffff', opacity: 0.65 }),
+                !isContrast && h('circle', { cx: 64, cy: 30, r: 1.6, fill: '#ffffff', opacity: 0.65 })
               ),
               tag !== 'leavening' && tag !== 'emulsion' && tag !== 'scaler' && h('g', null,
                 h('rect', { x: 14, y: 16, width: 60, height: 42, rx: 6, fill: isContrast ? '#000000' : '#1e293b', stroke: stroke, strokeWidth: 2 }),
                 h('path', { d: 'M 22 48 C 22 28, 66 28, 66 48 Z', fill: isContrast ? '#ffff00' : '#92400e', stroke: accent, strokeWidth: 1.5 }),
+                !isContrast && h('path', { d: 'M 22 48 C 22 28, 66 28, 66 48 Z', fill: 'url(#bkDiagGloss)' }),
                 h('path', { d: 'M 32 24 Q 36 18, 40 24 T 48 24 T 56 24', fill: 'none', stroke: accent, strokeWidth: 2 })
               )
             );
@@ -2400,27 +2535,37 @@
                   style: { background: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), borderColor: themeBorder }
                 },
                   h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: '150', role: 'img', 'aria-label': 'Gluten strand network, strength ' + strength + ' out of 100' },
+                    !isContrast && h('defs', null,
+                      h('radialGradient', { id: 'bkGlutenField', cx: '50%', cy: '48%', r: '62%' },
+                        h('stop', { offset: '0%', stopColor: isDark ? '#134e4a' : '#f0fdfa', stopOpacity: isDark ? 0.25 : 0.75 }),
+                        h('stop', { offset: '100%', stopColor: isDark ? '#0f172a' : '#e2e8f0', stopOpacity: 0.2 })
+                      )
+                    ),
+                    !isContrast && h('rect', { x: 2, y: 2, width: svgW - 4, height: svgH - 4, rx: 8, fill: 'url(#bkGlutenField)' }),
+                    // Elastic gluten-network strands with layered 3D depth shadow & specular filament sheen
                     strandPaths.map(function(p, i) {
-                      return h('path', {
-                        key: 'sp' + i,
-                        d: p,
-                        stroke: isContrast ? (overworked ? '#ffff00' : '#00ff00') : strokeColor,
-                        strokeWidth: thickness,
-                        fill: 'none',
-                        strokeLinecap: 'round',
-                        opacity: isContrast ? 1 : (0.4 + hydrationFactor * 0.55)
-                      });
+                      var col = isContrast ? (overworked ? '#ffff00' : '#00ff00') : strokeColor;
+                      var op = isContrast ? 1 : (0.45 + hydrationFactor * 0.5);
+                      return h('g', { key: 'sp' + i },
+                        !isContrast && h('path', { d: p, stroke: '#0f172a', strokeWidth: thickness + 2, fill: 'none', strokeLinecap: 'round', opacity: 0.1, transform: 'translate(0, 2.2)' }),
+                        h('path', { d: p, stroke: col, strokeWidth: thickness, fill: 'none', strokeLinecap: 'round', opacity: op }),
+                        !isContrast && thickness >= 2 && h('path', { d: p, stroke: '#ffffff', strokeWidth: Math.max(0.8, thickness * 0.28), fill: 'none', strokeLinecap: 'round', opacity: 0.42, transform: 'translate(0, -0.8)' })
+                      );
                     }),
+                    // Glowing disulfide (S-S) crosslinks with specular junction nodes
                     crosslinks.map(function(c, i) {
+                      var col = isContrast ? '#ffff00' : strokeColor;
                       return h('g', { key: 'cl' + i },
+                        !isContrast && h('line', { x1: c.x, y1: c.y1, x2: c.x + 5, y2: c.y2, stroke: col, strokeWidth: Math.max(3.5, thickness * 1.4), opacity: 0.18, strokeLinecap: 'round' }),
                         h('line', {
                           x1: c.x, y1: c.y1, x2: c.x + 5, y2: c.y2,
-                          stroke: isContrast ? '#ffff00' : strokeColor,
-                          strokeWidth: Math.max(1.2, thickness * 0.55),
-                          opacity: isContrast ? 1 : 0.65
+                          stroke: col,
+                          strokeWidth: Math.max(1.3, thickness * 0.58),
+                          strokeLinecap: 'round',
+                          opacity: isContrast ? 1 : 0.78
                         }),
-                        h('circle', { cx: c.x, cy: c.y1, r: 2, fill: isContrast ? '#ffff00' : strokeColor }),
-                        h('circle', { cx: c.x + 5, cy: c.y2, r: 2, fill: isContrast ? '#ffff00' : strokeColor })
+                        h('circle', { cx: c.x, cy: c.y1, r: 2.6, fill: col, stroke: '#ffffff', strokeWidth: 0.6 }),
+                        h('circle', { cx: c.x + 5, cy: c.y2, r: 2.6, fill: col, stroke: '#ffffff', strokeWidth: 0.6 })
                       );
                     }),
                     h('text', { x: 10, y: 144, fontSize: 8.5, fontWeight: 700, fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569') },
@@ -2741,32 +2886,63 @@
                       role: 'img',
                       'aria-label': tr('baking.browning.curve_aria', 'Reaction kinetics curve for {food} at {temp} degrees Fahrenheit', { food: food.label, temp: temp })
                     },
-                      // Axis lines
+                      !isContrast && h('defs', null,
+                        h('linearGradient', { id: 'bkMaillardFill', x1: '0', y1: '0', x2: '0', y2: '1' },
+                          h('stop', { offset: '0%', stopColor: '#dc2626', stopOpacity: 0.24 }),
+                          h('stop', { offset: '100%', stopColor: '#dc2626', stopOpacity: 0.01 })
+                        ),
+                        h('linearGradient', { id: 'bkCaramelFill', x1: '0', y1: '0', x2: '0', y2: '1' },
+                          h('stop', { offset: '0%', stopColor: '#f59e0b', stopOpacity: 0.24 }),
+                          h('stop', { offset: '100%', stopColor: '#f59e0b', stopOpacity: 0.01 })
+                        )
+                      ),
+                      // Calibrated axis frame
                       h('line', { x1: 24, y1: yBase, x2: 284, y2: yBase, stroke: isContrast ? '#ffff00' : (isDark ? '#64748b' : '#94a3b8'), strokeWidth: 1.2 }),
+                      h('line', { x1: 24, y1: 12, x2: 24, y2: yBase, stroke: isContrast ? '#ffff00' : (isDark ? '#475569' : '#cbd5e1'), strokeWidth: 1 }),
                       // Wet cap dashed line at 212F
                       !dry && h('g', null,
                         h('line', { x1: xAt(212), y1: 12, x2: xAt(212), y2: yBase, stroke: isContrast ? '#00ff00' : '#0284c7', strokeWidth: 1.4, strokeDasharray: '3 2' }),
                         h('text', { x: xAt(212) + 3, y: 20, fontSize: 8, fontWeight: 700, fill: isContrast ? '#00ff00' : (isDark ? '#38bdf8' : '#0369a1') }, '212\u00B0F wet cap')
                       ),
-                      // Maillard curve (285F+)
+                      // Maillard area & luminous curve (285F+)
+                      !isContrast && h('path', {
+                        d: 'M ' + xAt(285) + ' ' + yBase + ' Q ' + xAt(340) + ' ' + mPeakY + ', ' + xAt(420) + ' ' + mPeakY + ' L ' + xAt(450) + ' ' + (mPeakY + 8) + ' L ' + xAt(450) + ' ' + yBase + ' Z',
+                        fill: 'url(#bkMaillardFill)'
+                      }),
+                      !isContrast && h('path', {
+                        d: 'M ' + xAt(285) + ' ' + yBase + ' Q ' + xAt(340) + ' ' + mPeakY + ', ' + xAt(420) + ' ' + mPeakY + ' L ' + xAt(450) + ' ' + (mPeakY + 8),
+                        fill: 'none', stroke: '#ef4444', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.16
+                      }),
                       h('path', {
                         d: 'M ' + xAt(285) + ' ' + yBase + ' Q ' + xAt(340) + ' ' + mPeakY + ', ' + xAt(420) + ' ' + mPeakY + ' L ' + xAt(450) + ' ' + (mPeakY + 8),
                         fill: 'none',
                         stroke: isContrast ? '#00ff00' : '#dc2626',
-                        strokeWidth: 2.2
+                        strokeWidth: 2.3,
+                        strokeLinecap: 'round'
                       }),
-                      // Caramelization curve (320F+)
+                      // Caramelization area & luminous curve (320F+)
+                      !isContrast && h('path', {
+                        d: 'M ' + xAt(320) + ' ' + yBase + ' Q ' + xAt(365) + ' ' + cPeakY + ', ' + xAt(430) + ' ' + cPeakY + ' L ' + xAt(450) + ' ' + (cPeakY + 6) + ' L ' + xAt(450) + ' ' + yBase + ' Z',
+                        fill: 'url(#bkCaramelFill)'
+                      }),
+                      !isContrast && h('path', {
+                        d: 'M ' + xAt(320) + ' ' + yBase + ' Q ' + xAt(365) + ' ' + cPeakY + ', ' + xAt(430) + ' ' + cPeakY + ' L ' + xAt(450) + ' ' + (cPeakY + 6),
+                        fill: 'none', stroke: '#f59e0b', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.18
+                      }),
                       h('path', {
                         d: 'M ' + xAt(320) + ' ' + yBase + ' Q ' + xAt(365) + ' ' + cPeakY + ', ' + xAt(430) + ' ' + cPeakY + ' L ' + xAt(450) + ' ' + (cPeakY + 6),
                         fill: 'none',
                         stroke: isContrast ? '#ffff00' : '#d97706',
-                        strokeWidth: 2.2
+                        strokeWidth: 2.3,
+                        strokeLinecap: 'round'
                       }),
                       // Burn / pyrolysis zone (400F+)
                       h('rect', { x: xAt(400), y: 12, width: xAt(450) - xAt(400), height: yBase - 12, fill: isContrast ? '#ffff00' : '#dc2626', opacity: isContrast ? 0.18 : 0.1 }),
-                      // Live temp cursor
-                      h('line', { x1: curX, y1: 10, x2: curX, y2: yBase, stroke: isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#0f172a'), strokeWidth: 2 }),
-                      h('circle', { cx: curX, cy: yBase - Math.round(totalBrown * (yBase - yTop)), r: 4, fill: isContrast ? '#00ff00' : '#ea580c', stroke: '#ffffff', strokeWidth: 1.2 }),
+                      // Live temp cursor & concentric luminous beacon
+                      h('line', { x1: curX, y1: 10, x2: curX, y2: yBase, stroke: isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#0f172a'), strokeWidth: 1.8, strokeDasharray: '2 2' }),
+                      !isContrast && h('circle', { cx: curX, cy: yBase - Math.round(totalBrown * (yBase - yTop)), r: 7.5, fill: '#ea580c', opacity: 0.24 }),
+                      h('circle', { cx: curX, cy: yBase - Math.round(totalBrown * (yBase - yTop)), r: 4.2, fill: isContrast ? '#00ff00' : '#ea580c', stroke: '#ffffff', strokeWidth: 1.3 }),
+                      !isContrast && h('circle', { cx: curX - 1.1, cy: yBase - Math.round(totalBrown * (yBase - yTop)) - 1.1, r: 1.1, fill: '#ffffff', opacity: 0.85 }),
                       // X-axis ticks
                       [150, 285, 320, 400, 450].map(function(tk) {
                         return h('text', { key: tk, x: xAt(tk), y: 90, textAnchor: 'middle', fontSize: 8, fontWeight: 700, fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569') }, tk + '\u00B0');
@@ -3003,17 +3179,32 @@
                 role: 'img',
                 'aria-label': 'Saucepan discrete stage: ' + stage
               },
-                // Copper saucepan handle
-                h('line', { x1: 102, y1: 42, x2: 132, y2: 34, stroke: isContrast ? '#ffff00' : '#b45309', strokeWidth: 6, strokeLinecap: 'round' }),
-                // Saucepan body
-                h('ellipse', { cx: 60, cy: 48, rx: 46, ry: 22, fill: isContrast ? '#000000' : '#9a3412', stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 2.5 }),
+                !isContrast && h('defs', null,
+                  h('radialGradient', { id: 'bkCopperPan', cx: '36%', cy: '32%', r: '72%' },
+                    h('stop', { offset: '0%', stopColor: '#fb923c' }),
+                    h('stop', { offset: '55%', stopColor: '#b45309' }),
+                    h('stop', { offset: '100%', stopColor: '#451a03' })
+                  ),
+                  h('radialGradient', { id: 'bkBurnerGlow', cx: '50%', cy: '50%', r: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#f97316', stopOpacity: Math.min(0.45, Math.max(0.08, (iq.temp - 200) / 360)).toFixed(2) }),
+                    h('stop', { offset: '100%', stopColor: '#f97316', stopOpacity: 0 })
+                  )
+                ),
+                // Warm burner heat halo under copper saucepan
+                !isContrast && h('ellipse', { cx: 60, cy: 66, rx: 50, ry: 12, fill: 'url(#bkBurnerGlow)' }),
+                // Copper saucepan handle with metallic sheen
+                h('line', { x1: 102, y1: 42, x2: 132, y2: 34, stroke: isContrast ? '#ffff00' : '#9a3412', strokeWidth: 6.5, strokeLinecap: 'round' }),
+                !isContrast && h('line', { x1: 104, y1: 40.5, x2: 130, y2: 33, stroke: '#fed7aa', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.72 }),
+                // Sculpted copper saucepan body
+                h('ellipse', { cx: 60, cy: 48, rx: 46, ry: 22, fill: isContrast ? '#000000' : 'url(#bkCopperPan)', stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 2.4 }),
                 // Discrete 4-band sugar surface inside pan
                 h('ellipse', { cx: 60, cy: 46, rx: 38, ry: 16, fill: isContrast ? (stage === 'raw' ? '#000000' : (stage === 'burnt' ? '#333333' : '#ffff00')) : stageMeta.panFill, stroke: isContrast ? '#00ff00' : '#78350f', strokeWidth: 1.5 }),
+                !isContrast && stage !== 'burnt' && h('ellipse', { cx: 48, cy: 40, rx: 14, ry: 4.5, fill: '#ffffff', opacity: stage === 'raw' ? 0.35 : 0.28 }),
                 // Discrete visual cues per stage (strictly 4 states)
                 stage === 'raw' && h('g', { fill: isContrast ? '#ffff00' : '#cbd5e1' },
                   h('circle', { cx: 48, cy: 44, r: 2.2 }), h('circle', { cx: 60, cy: 48, r: 2.2 }), h('circle', { cx: 72, cy: 43, r: 2.2 }), h('circle', { cx: 56, cy: 41, r: 2 })
                 ),
-                stage === 'light' && h('path', { d: 'M 42 46 Q 60 52, 78 46', fill: 'none', stroke: isContrast ? '#000000' : '#fffbeb', strokeWidth: 2, opacity: 0.8 }),
+                stage === 'light' && h('path', { d: 'M 42 46 Q 60 52, 78 46', fill: 'none', stroke: isContrast ? '#000000' : '#fffbeb', strokeWidth: 2, opacity: 0.85 }),
                 stage === 'perfect' && h('path', { d: 'M 40 45 Q 60 37, 80 45', fill: 'none', stroke: isContrast ? '#000000' : '#fef3c7', strokeWidth: 2.5, strokeLinecap: 'round' }),
                 stage === 'burnt' && h('g', { stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' },
                   h('path', { d: 'M 46 32 Q 42 20, 48 12' }),

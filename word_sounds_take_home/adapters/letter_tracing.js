@@ -162,7 +162,7 @@ module.exports = {
     var at = 0;
     var pen = 22; // the width of the student's line and of the guide
     // A square that shrinks on a narrow phone (padding-top keeps it square without aspect-ratio).
-    var wrap = ctx.el('div', { 'data-trace-box': '', style: 'position:relative;width:' + size + 'px;max-width:100%;margin:12px auto;border:2px dashed var(--muted);border-radius:16px;background:var(--card);overflow:hidden;touch-action:none' });
+    var wrap = ctx.el('div', { 'data-trace-box': '', style: 'position:relative;width:var(--trace-sz,' + size + 'px);max-width:100%;margin:12px auto;border:2px dashed var(--muted);border-radius:16px;background:var(--card);overflow:hidden;touch-action:none' });
     wrap.appendChild(ctx.el('div', { 'aria-hidden': 'true', style: 'padding-top:100%' }));
     var guide = doc.createElement('canvas');
     var ink = doc.createElement('canvas');

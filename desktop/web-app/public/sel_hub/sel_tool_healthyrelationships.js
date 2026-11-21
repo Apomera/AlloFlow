@@ -131,6 +131,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       var labToolData = ctx.toolData || {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _hrBand = ctx.gradeBand || 'high';
 
       var d = labToolData.healthyRelationships || defaultState();
       function setHR(patch) {
@@ -140,6 +142,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           next.lastUpdated = todayISO();
           return Object.assign({}, prev, { healthyRelationships: next });
         });
+      }
+      function scanRelationshipText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed) return false;
+        try {
+          if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+            var res = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'healthyrelationships', onSafetyFlag: onSafetyFlag });
+            if (res && res.action === 'block') {
+              setHR({ _crisisTier: 3 });
+              if (typeof window.SelHub.showCrisisModal === 'function') {
+                window.SelHub.showCrisisModal({ toolName: 'Healthy Relationships', contentSnippet: trimmed });
+              }
+              return true;
+            }
+          }
+        } catch (_) {}
+        return false;
       }
       var view = d.view || 'home';
       function goto(v) { setHR({ view: v }); }
@@ -168,10 +187,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
         ];
         return h('div', { role: 'tablist', 'aria-label': 'Healthy Relationships sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
+            return h('button', {
+              id: 'hr-tab-' + t.id,
+              key: t.id,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(ev) {
+                var nextIdx = idx;
+                if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+                else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                else if (ev.key === 'Home') nextIdx = 0;
+                else if (ev.key === 'End') nextIdx = tabs.length - 1;
+                else return;
+                ev.preventDefault();
+                goto(tabs[nextIdx].id);
+                setTimeout(function() {
+                  var nextBtn = document.getElementById('hr-tab-' + tabs[nextIdx].id);
+                  if (nextBtn) nextBtn.focus();
+                }, 0);
+              },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'hr-panel-' + t.id, tabIndex: active ? 0 : -1,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#ec4899' : '#334155'),
                 background: active ? 'rgba(236,72,153,0.18)' : _hreBg('#1e293b'),
                 color: active ? _hreFg('#fbcfe8') : _hreFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
@@ -367,9 +403,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       // ═══════════════════════════════════════════════════════════
       function renderCheck() {
         function setDim(id, value) {
+          var prevVal = (d.check || {})[id];
           var ch = Object.assign({}, (d.check || {}));
           ch[id] = value;
-          setHR({ check: ch });
+          var patch = { check: ch };
+          if (value === 'abusive') {
+            patch._crisisTier = 3;
+            if (prevVal !== 'abusive' && typeof onSafetyFlag === 'function') {
+              try {
+                onSafetyFlag({
+                  category: 'harm_to_others',
+                  match: 'Healthy Relationships check: marked dimension "' + id + '" as abusive',
+                  severity: 'critical',
+                  source: 'sel_healthyRelationships',
+                  context: 'dimension ' + id,
+                  timestamp: new Date().toISOString(),
+                  aiGenerated: false,
+                  confidence: 1
+                });
+              } catch (_) {}
+            }
+          }
+          setHR(patch);
         }
 
         var check = d.check || {};
@@ -390,6 +445,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
             h('input', { id: 'hr-context', type: 'text', value: d.checkContext || '',
               placeholder: 'e.g. me and Sam (friend), me and my partner, me and my mom',
               onChange: function(e) { setHR({ checkContext: e.target.value }); },
+              onBlur: function(e) { scanRelationshipText(e.target.value); },
               style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _hreBg('#1e293b'), color: _hreFg('#e2e8f0'), fontSize: 13 } })
           ),
 
@@ -426,7 +482,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
           // Summary
           Object.keys(check).length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ec4899', marginTop: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _hreFg('#fbcfe8'), marginBottom: 8 } }, '📊 What this is showing'),
-            abuseCount >= 1 ? h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(239,68,68,0.10)', borderLeft: '3px solid #ef4444', marginBottom: 8, fontSize: 13, color: _hreFg('#fecaca'), lineHeight: 1.7 } },
+            abuseCount >= 1 ? h('div', { role: 'alert', style: { padding: 10, borderRadius: 6, background: 'rgba(239,68,68,0.10)', borderLeft: '3px solid #ef4444', marginBottom: 8, fontSize: 13, color: _hreFg('#fecaca'), lineHeight: 1.7 } },
               h('strong', null, '⚠️ ' + abuseCount + ' dimension' + (abuseCount === 1 ? '' : 's') + ' marked abusive. '),
               'This is not "working through stuff." This is harm. Please reach out: loveisrespect.org (text LOVEIS to 22522), NDVH (1-800-799-7233), or a school counselor. It is NOT your fault.'
             ) : null,
@@ -435,6 +491,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
               'The relationship is wearing you down. Two paths: have a real conversation with the other person and see if both of you can work on it, or step back. A counselor or therapist can help you think it through.'
             ) : null
           ) : null,
+
+          // Private notes (used on Home stat & Print artifact)
+          h('div', { style: { padding: 14, borderRadius: 10, background: _hreBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginTop: 12 } },
+            h('label', { htmlFor: 'hr-notes', style: { display: 'block', fontSize: 11, color: _hreFg('#d8b4fe'), fontWeight: 700, marginBottom: 4 } }, 'Private notes (optional — stays on this device)'),
+            h('textarea', { id: 'hr-notes', value: d.notes || '',
+              placeholder: 'What patterns stood out? Questions you want to bring to a trusted adult or counselor...',
+              onChange: function(e) { setHR({ notes: e.target.value }); },
+              onBlur: function(e) { scanRelationshipText(e.target.value); },
+              style: { width: '100%', minHeight: 72, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _hreBg('#1e293b'), color: _hreFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' } })
+          ),
 
           softPointer()
         );
@@ -718,7 +784,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       function renderPrintView() {
         var check = d.check || {};
         var any = Object.keys(check).length > 0;
-        var ratingColor = { healthy: '#16a34a', mixed: '#d97706', unhealthy: '#dc2626', abusive: _hreFg('#7f1d1d') };
+        var ratingColor = { healthy: '#15803d', mixed: '#b45309', unhealthy: '#b91c1c', abusive: '#7f1d1d' };
         var ratingLabel = { healthy: 'Healthy', mixed: 'Mixed', unhealthy: 'Unhealthy', abusive: 'Abusive' };
 
         return h('div', null,
@@ -762,7 +828,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
                 return h('div', { key: dim.id, style: { padding: 10, border: '1px solid #cbd5e1', borderRadius: 8, marginBottom: 6, pageBreakInside: 'avoid' } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 } },
                     h('div', { style: { fontSize: 13, fontWeight: 700, color: _hreFg('#0f172a') } }, dim.label),
-                    r ? h('div', { style: { fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, border: '1px solid ' + (ratingColor[r] || _hreFg('#475569')), color: _hreFg(ratingColor)[r] || _hreFg('#475569') } }, ratingLabel[r] || r) : h('div', { style: { fontSize: 10.5, color: _hreFg('#475569') } }, 'not rated')
+                    r ? h('div', { style: { fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, border: '1px solid ' + (_hreHC ? '#ffff00' : (ratingColor[r] || '#475569')), color: _hreHC ? '#ffff00' : (ratingColor[r] || '#475569') } }, ratingLabel[r] || r) : h('div', { style: { fontSize: 10.5, color: _hreFg('#475569') } }, 'not rated')
                   ),
                   r ? h('div', { style: { fontSize: 11.5, color: _hreFg('#475569'), lineHeight: 1.55 } }, dim[r] || '') : null
                 );
@@ -803,7 +869,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Healthy Relationships' },
         header(),
         navTabs(),
-        body
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _hrBand))
+          : null,
+        h('div', { id: 'hr-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'hr-tab-' + view }, body)
       );
     }
   });

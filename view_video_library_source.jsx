@@ -75,9 +75,116 @@ function VideoLibraryOverlay({ onClose, t }) {
 
   const [activeId, setActiveId] = React.useState(VIDEO_CATALOG.length === 1 ? VIDEO_CATALOG[0].id : null);
   const [failed, setFailed] = React.useState({});
+  const [playbackRate, setPlaybackRate] = React.useState(1);
+  const [isSpeakingTranscript, setIsSpeakingTranscript] = React.useState(false);
+  const [transcriptCopied, setTranscriptCopied] = React.useState(false);
   const rootRef = React.useRef(null);
+  const videoRef = React.useRef(null);
+  const mountedRef = React.useRef(true);
+  const speechTokenRef = React.useRef(0);
+  const copyTimerRef = React.useRef(null);
   const onCloseRef = React.useRef(onClose);
   onCloseRef.current = onClose;
+
+  const hasSpeechBackend = typeof window !== 'undefined' && (
+    (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function')
+    || (typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function')
+  );
+
+  const stopTranscriptSpeech = React.useCallback(() => {
+    speechTokenRef.current += 1;
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') {
+        window.AlloSpeechPlayer.stop();
+      } else if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    } catch (_) {}
+    if (mountedRef.current) setIsSpeakingTranscript(false);
+  }, []);
+
+  React.useEffect(() => {
+    mountedRef.current = true;
+    const onSpeechState = (event) => {
+      const detail = (event && event.detail) || {};
+      const st = detail.state;
+      if (detail.isPlaying === false || st === 'idle' || st === 'stopped' || st === 'ended' || st === 'error') {
+        if (mountedRef.current) setIsSpeakingTranscript(false);
+      }
+    };
+    if (typeof window !== 'undefined') window.addEventListener('allo-speech-state', onSpeechState);
+    return () => {
+      mountedRef.current = false;
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      if (typeof window !== 'undefined') window.removeEventListener('allo-speech-state', onSpeechState);
+      stopTranscriptSpeech();
+    };
+  }, [stopTranscriptSpeech]);
+
+  React.useEffect(() => {
+    setPlaybackRate(1);
+    setTranscriptCopied(false);
+    stopTranscriptSpeech();
+  }, [activeId, stopTranscriptSpeech]);
+
+  React.useEffect(() => {
+    const video = videoRef.current || (rootRef.current && rootRef.current.querySelector('video'));
+    if (!video) return;
+    try { video.playbackRate = playbackRate; } catch (_) {}
+  }, [activeId, playbackRate, failed]);
+
+  const jumpVideoSeconds = (delta) => {
+    const video = videoRef.current || (rootRef.current && rootRef.current.querySelector('video'));
+    if (!video) return;
+    try {
+      const current = Number(video.currentTime) || 0;
+      const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : Infinity;
+      video.currentTime = Math.max(0, Math.min(duration, current + delta));
+    } catch (_) {}
+  };
+
+  const toggleListenTranscript = (lines) => {
+    if (isSpeakingTranscript) { stopTranscriptSpeech(); return; }
+    const speechText = (Array.isArray(lines) ? lines : []).map((s) => String(s || '').trim()).filter(Boolean).join(' ');
+    if (!speechText || typeof window === 'undefined') return;
+    const token = ++speechTokenRef.current;
+    try {
+      if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+        window.AlloSpeechPlayer.stop?.();
+        setIsSpeakingTranscript(true);
+        const res = window.AlloSpeechPlayer.speak(speechText);
+        if (res && typeof res.then === 'function') {
+          res.catch(() => {}).finally(() => {
+            if (mountedRef.current && speechTokenRef.current === token) setIsSpeakingTranscript(false);
+          });
+        }
+      } else if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+        window.speechSynthesis.cancel();
+        const utter = new window.SpeechSynthesisUtterance(speechText);
+        utter.onend = () => { if (mountedRef.current && speechTokenRef.current === token) setIsSpeakingTranscript(false); };
+        utter.onerror = () => { if (mountedRef.current && speechTokenRef.current === token) setIsSpeakingTranscript(false); };
+        setIsSpeakingTranscript(true);
+        window.speechSynthesis.speak(utter);
+      }
+    } catch (_) {
+      if (mountedRef.current) setIsSpeakingTranscript(false);
+    }
+  };
+
+  const copyTranscriptText = (lines) => {
+    const text = (Array.isArray(lines) ? lines : []).map((s) => String(s || '').trim()).filter(Boolean).join('\n');
+    if (!text) return;
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        Promise.resolve(navigator.clipboard.writeText(text)).then(() => {
+          if (!mountedRef.current) return;
+          setTranscriptCopied(true);
+          if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+          copyTimerRef.current = setTimeout(() => { if (mountedRef.current) setTranscriptCopied(false); }, 2000);
+        }).catch(() => {});
+      }
+    } catch (_) {}
+  };
 
   React.useEffect(() => {
     const dialog = rootRef.current;
@@ -116,7 +223,7 @@ function VideoLibraryOverlay({ onClose, t }) {
         if (++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
       }
     } catch (_) {}
-    const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'))
+    const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, video[controls], audio[controls], [tabindex]:not([tabindex="-1"])'))
       .filter((el) => {
         if (!el || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
         let ancestor = el.parentElement;
@@ -140,8 +247,7 @@ function VideoLibraryOverlay({ onClose, t }) {
     try { (getFocusable()[0] || dialog).focus(); } catch (_) {}
     const onKey = (e) => {
       if (!dialog.isConnected || e.defaultPrevented) return;
-      const topTrap = trapStack && trapStack[trapStack.length - 1];
-      if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === 'function' && topTrap.root.contains(dialog))) return;
+      if (trapStack && trapStack[trapStack.length - 1] !== trap) return;
       if (e.key === 'Escape') {
         if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
         e.preventDefault();
@@ -229,6 +335,7 @@ function VideoLibraryOverlay({ onClose, t }) {
     return (
       <div>
         <video
+          ref={videoRef}
           key={video.id}
           src={video.src}
           controls
@@ -247,6 +354,47 @@ function VideoLibraryOverlay({ onClose, t }) {
             />
           )}
         </video>
+        <div data-video-library-controls="true" className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={tr('video_library.skip_controls_group', 'Skip playback time')}>
+            <button
+              type="button"
+              data-video-library-rewind="true"
+              onClick={() => jumpVideoSeconds(-10)}
+              aria-label={tr('video_library.rewind_10s_aria', 'Rewind 10 seconds')}
+              className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+            >
+              ↺ 10s
+            </button>
+            <button
+              type="button"
+              data-video-library-forward="true"
+              onClick={() => jumpVideoSeconds(10)}
+              aria-label={tr('video_library.forward_10s_aria', 'Skip forward 10 seconds')}
+              className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+            >
+              10s ↻
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={tr('video_library.playback_speed_group', 'Playback speed')}>
+            <span className="text-xs font-semibold text-slate-700">{tr('video_library.speed_label', 'Speed:')}</span>
+            {[0.75, 1, 1.25, 1.5].map((rate) => {
+              const selected = playbackRate === rate;
+              return (
+                <button
+                  key={rate}
+                  type="button"
+                  data-video-library-speed={String(rate)}
+                  aria-pressed={selected}
+                  aria-label={tr('video_library.speed_aria', 'Playback speed ' + rate + 'x')}
+                  onClick={() => setPlaybackRate(rate)}
+                  className={'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (selected ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100')}
+                >
+                  {rate}×
+                </button>
+              );
+            })}
+          </div>
+        </div>
         {video.silent && (
           <p className="mt-2 text-xs text-slate-600">
             {tr('video_library.silent_note', 'This video has no narration or soundtrack, so there is nothing to caption. The full on-screen text is below.')}
@@ -263,7 +411,6 @@ function VideoLibraryOverlay({ onClose, t }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="video-library-title"
-      aria-label={tr('video_library.title', 'Video library')}
     >
       <div
         ref={rootRef}
@@ -334,6 +481,27 @@ function VideoLibraryOverlay({ onClose, t }) {
                   <summary className="min-h-11 cursor-pointer select-none py-2 text-sm font-bold text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
                     {tr('video_library.transcript', 'Text version')}
                   </summary>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {hasSpeechBackend && (
+                      <button
+                        type="button"
+                        data-video-library-listen="true"
+                        aria-pressed={isSpeakingTranscript}
+                        onClick={() => toggleListenTranscript(active.transcript)}
+                        className={'min-h-11 rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isSpeakingTranscript ? 'border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800' : 'border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100')}
+                      >
+                        {isSpeakingTranscript ? tr('video_library.stop_transcript', '⏹ Stop') : tr('video_library.listen_transcript', '🔊 Listen to text version')}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      data-video-library-copy="true"
+                      onClick={() => copyTranscriptText(active.transcript)}
+                      className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                    >
+                      {transcriptCopied ? tr('video_library.copied_transcript', '✓ Copied') : tr('video_library.copy_transcript', '📋 Copy text')}
+                    </button>
+                  </div>
                   <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-slate-600">
                     {active.transcript.map((line, i) => (
                       <li key={'tr-' + i}>{line}</li>

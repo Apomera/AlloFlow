@@ -14,6 +14,27 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const MARKETING_MARKER = 'Free AI Tools for Differentiated Instruction';
 
+function readRegularShellFile(rootDir, relPath, errors) {
+  const resolvedRoot = path.resolve(rootDir);
+  const parts = relPath.split(/[\\/]+/).filter(Boolean);
+  let cur = resolvedRoot;
+  for (const part of parts) {
+    cur = path.join(cur, part);
+    const st = fs.lstatSync(cur, { throwIfNoEntry: false });
+    if (!st) return null;
+    if (st.isSymbolicLink()) {
+      errors.push(`${relPath} traverses a symbolic link and must be a regular file.`);
+      return null;
+    }
+  }
+  const finalStat = fs.lstatSync(cur, { throwIfNoEntry: false });
+  if (!finalStat || !finalStat.isFile()) {
+    errors.push(`${relPath} is not a regular file.`);
+    return null;
+  }
+  return fs.readFileSync(cur, 'utf8');
+}
+
 function checkShellBoundaries(rootDir = ROOT) {
   const errors = [];
 
@@ -22,38 +43,46 @@ function checkShellBoundaries(rootDir = ROOT) {
   if (!fs.existsSync(rootIndexPath)) {
     errors.push('Missing root index.html (marketing landing page).');
   } else {
-    const rootHtml = fs.readFileSync(rootIndexPath, 'utf8');
-    if (/<div\s+id=["']root["']/.test(rootHtml) || rootHtml.includes('%PUBLIC_URL%')) {
-      errors.push('Root index.html appears to have been overwritten by the CRA React app shell.');
+    const rootHtml = readRegularShellFile(rootDir, 'index.html', errors);
+    if (rootHtml !== null) {
+      if (/<div\s+id=["']root["']/.test(rootHtml) || rootHtml.includes('%PUBLIC_URL%')) {
+        errors.push('Root index.html appears to have been overwritten by the CRA React app shell.');
+      }
+      if (!rootHtml.includes(MARKETING_MARKER)) {
+        errors.push('Root index.html is missing the marketing landing page marker.');
+      }
     }
   }
 
   // 2. desktop/web-app/public/index.html must remain the CRA React template with pre-boot hardening.
-  const publicIndexPath = path.join(rootDir, 'desktop', 'web-app', 'public', 'index.html');
+  const publicIndexRel = path.join('desktop', 'web-app', 'public', 'index.html');
+  const publicIndexPath = path.join(rootDir, publicIndexRel);
   if (!fs.existsSync(publicIndexPath)) {
     errors.push('Missing desktop/web-app/public/index.html (CRA React shell template).');
   } else {
-    const pubHtml = fs.readFileSync(publicIndexPath, 'utf8');
-    if (pubHtml.includes(MARKETING_MARKER)) {
-      errors.push('desktop/web-app/public/index.html was overwritten with the root marketing index.html.');
-    }
-    if (!/<div\s+id=["']root["']/.test(pubHtml)) {
-      errors.push('desktop/web-app/public/index.html is missing <div id="root">.');
-    }
-    if (!pubHtml.includes('id="alloflow-ai-backend-script"')) {
-      errors.push('desktop/web-app/public/index.html is missing #alloflow-ai-backend-script.');
-    }
-    if (!pubHtml.includes('alloflow_desktop_bridge.js')) {
-      errors.push('desktop/web-app/public/index.html is missing alloflow_desktop_bridge.js.');
-    }
-    if (!pubHtml.includes('alloflow_ai_config: 1')) {
-      errors.push('desktop/web-app/public/index.html is missing pre-boot secret exclusion (alloflow_ai_config: 1).');
-    }
-    if (!pubHtml.includes('dbHasProtectedClinicalRecords(dump)')) {
-      errors.push('desktop/web-app/public/index.html is missing pre-boot protected clinical vault guard.');
-    }
-    if (!pubHtml.includes('getPrebootBackoffRetryMs()')) {
-      errors.push('desktop/web-app/public/index.html is missing pre-boot educator access-code backoff guard.');
+    const pubHtml = readRegularShellFile(rootDir, publicIndexRel, errors);
+    if (pubHtml !== null) {
+      if (pubHtml.includes(MARKETING_MARKER)) {
+        errors.push('desktop/web-app/public/index.html was overwritten with the root marketing index.html.');
+      }
+      if (!/<div\s+id=["']root["']/.test(pubHtml)) {
+        errors.push('desktop/web-app/public/index.html is missing <div id="root">.');
+      }
+      if (!pubHtml.includes('id="alloflow-ai-backend-script"')) {
+        errors.push('desktop/web-app/public/index.html is missing #alloflow-ai-backend-script.');
+      }
+      if (!pubHtml.includes('alloflow_desktop_bridge.js')) {
+        errors.push('desktop/web-app/public/index.html is missing alloflow_desktop_bridge.js.');
+      }
+      if (!pubHtml.includes('alloflow_ai_config: 1')) {
+        errors.push('desktop/web-app/public/index.html is missing pre-boot secret exclusion (alloflow_ai_config: 1).');
+      }
+      if (!pubHtml.includes('dbHasProtectedClinicalRecords(dump)')) {
+        errors.push('desktop/web-app/public/index.html is missing pre-boot protected clinical vault guard.');
+      }
+      if (!pubHtml.includes('getPrebootBackoffRetryMs()')) {
+        errors.push('desktop/web-app/public/index.html is missing pre-boot educator access-code backoff guard.');
+      }
     }
   }
 
@@ -61,11 +90,14 @@ function checkShellBoundaries(rootDir = ROOT) {
   const builtShells = [
     path.join('desktop', 'web-app', 'build', 'index.html'),
     path.join('desktop', 'app-build', 'index.html'),
+    path.join('app', 'index.html'),
+    path.join('desktop', 'web-app', 'public', 'app', 'index.html'),
   ];
   for (const rel of builtShells) {
     const abs = path.join(rootDir, rel);
     if (!fs.existsSync(abs)) continue;
-    const html = fs.readFileSync(abs, 'utf8');
+    const html = readRegularShellFile(rootDir, rel, errors);
+    if (html === null) continue;
     if (html.includes(MARKETING_MARKER)) {
       errors.push(`${rel} was overwritten with the root marketing index.html.`);
     }

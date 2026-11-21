@@ -21,10 +21,9 @@
     }
 
     function emailUrl(subject, body) {
-        var params = new URLSearchParams();
-        params.set('subject', subject);
-        params.set('body', body);
-        return 'mailto:' + CONTACT_EMAIL + '?' + params.toString();
+        return 'mailto:' + CONTACT_EMAIL
+            + '?subject=' + encodeURIComponent(subject)
+            + '&body=' + encodeURIComponent(body);
     }
 
     function setLink(link, href, accessibleLabel) {

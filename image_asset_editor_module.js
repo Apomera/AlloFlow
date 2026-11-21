@@ -25,7 +25,12 @@ if (!window.AlloImageGeneration) {
     revision++;
     if (!enabled) controller.abort();
     else if (controller.signal.aborted) controller = new AbortController();
-    listeners.forEach((fn) => fn(enabled));
+    listeners.forEach((fn) => {
+      try {
+        fn(enabled);
+      } catch (_) {
+      }
+    });
   };
   window.AlloImageGeneration = {
     isEnabled: () => enabled,
@@ -34,14 +39,23 @@ if (!window.AlloImageGeneration) {
       if (!signal) return controller.signal;
       if (typeof AbortSignal.any === "function") return AbortSignal.any([signal, controller.signal]);
       const combined = new AbortController(), policySignal = controller.signal;
-      const abort = () => {
-        combined.abort();
-        signal.removeEventListener("abort", abort);
-        policySignal.removeEventListener("abort", abort);
+      const combinedRef = typeof WeakRef === "function" ? new WeakRef(combined) : null;
+      const onPolicyAbort = () => {
+        const target = combinedRef ? combinedRef.deref() : combined;
+        if (target) target.abort();
+        signal.removeEventListener("abort", onCallerAbort);
       };
-      signal.addEventListener("abort", abort, { once: true });
-      policySignal.addEventListener("abort", abort, { once: true });
-      if (signal.aborted || policySignal.aborted) abort();
+      const onCallerAbort = () => {
+        combined.abort();
+        policySignal.removeEventListener("abort", onPolicyAbort);
+      };
+      signal.addEventListener("abort", onCallerAbort, { once: true });
+      policySignal.addEventListener("abort", onPolicyAbort, { once: true });
+      if (signal.aborted || policySignal.aborted) {
+        combined.abort();
+        signal.removeEventListener("abort", onCallerAbort);
+        policySignal.removeEventListener("abort", onPolicyAbort);
+      }
       return combined.signal;
     },
     setEnabled(value) {
@@ -315,28 +329,36 @@ async function renderImageAsset(value, settingsValue, options) {
     const attempt = attempts[index];
     const target = computeImageAssetTargetSize(decoded.width, decoded.height, settings, attempt);
     const canvas = document.createElement("canvas");
-    canvas.width = target.width;
-    canvas.height = target.height;
-    const context = canvas.getContext("2d");
-    if (!context) throw _iaeError("Image editing is unavailable in this browser.", "canvas-unavailable");
-    context.clearRect(0, 0, target.width, target.height);
-    context.imageSmoothingEnabled = true;
     try {
-      context.imageSmoothingQuality = "high";
-    } catch (_) {
-    }
-    const draw = computeImageAssetDrawRect(decoded.width, decoded.height, target.width, target.height, settings);
-    context.drawImage(decoded.image, draw.dx, draw.dy, draw.dw, draw.dh);
-    const rendered = canvas.toDataURL("image/webp", attempt.quality);
-    const dataUrl = normalizeRasterDataUrl(rendered, maxOutputChars);
-    if (dataUrl) {
-      return {
-        dataUrl,
-        mime: imageAssetMime(dataUrl),
-        width: target.width,
-        height: target.height,
-        settings
-      };
+      canvas.width = target.width;
+      canvas.height = target.height;
+      const context = canvas.getContext("2d");
+      if (!context) throw _iaeError("Image editing is unavailable in this browser.", "canvas-unavailable");
+      context.clearRect(0, 0, target.width, target.height);
+      context.imageSmoothingEnabled = true;
+      try {
+        context.imageSmoothingQuality = "high";
+      } catch (_) {
+      }
+      const draw = computeImageAssetDrawRect(decoded.width, decoded.height, target.width, target.height, settings);
+      context.drawImage(decoded.image, draw.dx, draw.dy, draw.dw, draw.dh);
+      const rendered = canvas.toDataURL("image/webp", attempt.quality);
+      const dataUrl = normalizeRasterDataUrl(rendered, maxOutputChars);
+      if (dataUrl) {
+        return {
+          dataUrl,
+          mime: imageAssetMime(dataUrl),
+          width: target.width,
+          height: target.height,
+          settings
+        };
+      }
+    } finally {
+      try {
+        canvas.width = 0;
+        canvas.height = 0;
+      } catch (_) {
+      }
     }
   }
   throw _iaeError("The edited image is still too large to save. Try a smaller source image.", "output-too-large");
@@ -350,22 +372,34 @@ function ImageAssetPicker(props) {
   const errorId = inputId + "-error";
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState("");
+  const mountedRef = React.useRef(true);
+  const pickEpochRef = React.useRef(0);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      pickEpochRef.current++;
+    };
+  }, []);
   const readFile = typeof props.readFile === "function" ? props.readFile : readImageAssetFile;
   const handleChange = async (event) => {
     const input = event.currentTarget;
     const file = input.files && input.files[0];
     if (!file) return;
+    const epoch = ++pickEpochRef.current;
     setBusy(true);
     setError("");
     try {
       const result = await readFile(file, { maxFileBytes: props.maxFileBytes || IMAGE_ASSET_MAX_FILE_BYTES });
+      if (!mountedRef.current || epoch !== pickEpochRef.current) return;
       if (typeof props.onLoaded === "function") props.onLoaded(result);
     } catch (reason) {
+      if (!mountedRef.current || epoch !== pickEpochRef.current) return;
       const message = _iaeString(reason && reason.message, 500) || "That image could not be opened.";
       setError(message);
       if (typeof props.onError === "function") props.onError(reason);
     } finally {
-      setBusy(false);
+      if (mountedRef.current && epoch === pickEpochRef.current) setBusy(false);
       try {
         input.value = "";
       } catch (_) {
@@ -391,38 +425,53 @@ function ImageAssetEditor(props) {
   const [settings, setSettings] = React.useState(() => normalizeImageAssetSettings(props.initialSettings));
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState("");
-  const source = normalizeRasterDataUrl(props.sourceDataUrl, IMAGE_ASSET_MAX_SOURCE_CHARS);
+  const mountedRef = React.useRef(true);
+  const applyEpochRef = React.useRef(0);
+  const source = React.useMemo(() => normalizeRasterDataUrl(props.sourceDataUrl, IMAGE_ASSET_MAX_SOURCE_CHARS), [props.sourceDataUrl]);
   const renderer = typeof props.renderImageAsset === "function" ? props.renderImageAsset : renderImageAsset;
   React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      applyEpochRef.current++;
+    };
+  }, []);
+  React.useEffect(() => {
+    applyEpochRef.current++;
     setSettings(normalizeImageAssetSettings(props.initialSettings));
     setError("");
+    setBusy(false);
   }, [props.sourceDataUrl]);
   const patchSettings = (patch) => setSettings((current) => normalizeImageAssetSettings(Object.assign({}, current, patch)));
   const apply = async () => {
-    if (!source) return;
+    if (!source || busy) return;
+    const epoch = ++applyEpochRef.current;
+    const snapshotSettings = normalizeImageAssetSettings(settings);
     setBusy(true);
     setError("");
     try {
-      const result = await renderer(source, settings, {
+      const result = await renderer(source, snapshotSettings, {
         maxDimension: props.maxDimension || 1280,
         maxOutputChars: props.maxOutputChars || IMAGE_ASSET_MAX_OUTPUT_CHARS
       });
+      if (!mountedRef.current || epoch !== applyEpochRef.current) return;
       const rawDataUrl = typeof result === "string" ? result : result && result.dataUrl;
       const dataUrl = normalizeRasterDataUrl(rawDataUrl, props.maxOutputChars || IMAGE_ASSET_MAX_OUTPUT_CHARS);
       if (!dataUrl) throw _iaeError("The edited image could not be saved safely.", "invalid-output");
       if (typeof props.onApply === "function") {
-        props.onApply(Object.assign({}, result && typeof result === "object" ? result : {}, {
+        await props.onApply(Object.assign({}, result && typeof result === "object" ? result : {}, {
           dataUrl,
           mime: imageAssetMime(dataUrl),
-          settings: normalizeImageAssetSettings(settings)
+          settings: snapshotSettings
         }));
       }
     } catch (reason) {
+      if (!mountedRef.current || epoch !== applyEpochRef.current) return;
       const message = _iaeString(reason && reason.message, 500) || "The image could not be edited.";
       setError(message);
       if (typeof props.onError === "function") props.onError(reason);
     } finally {
-      setBusy(false);
+      if (mountedRef.current && epoch === applyEpochRef.current) setBusy(false);
     }
   };
   if (!source) {
@@ -445,13 +494,15 @@ function ImageAssetEditor(props) {
       "aria-busy": busy,
       onKeyDown: (event) => {
         if (event.key === "Escape" && !busy && !event.isComposing && !event.nativeEvent?.isComposing && event.keyCode !== 229 && event.nativeEvent?.keyCode !== 229 && typeof props.onCancel === "function") {
+          event.preventDefault();
           event.stopPropagation();
+          event.nativeEvent?.stopPropagation?.();
           props.onCancel();
         }
       }
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: headingRef.current, className: "text-sm font-black text-fuchsia-950" }, "Position your visual"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, "Fit keeps the whole image. Crop fills a chosen frame and lets you move the point of focus.")), props.sourceName && /* @__PURE__ */ React.createElement("span", { className: "max-w-full truncate rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700" }, _iaeString(props.sourceName, 120))),
-    /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-4 md:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "overflow-hidden rounded-xl border border-slate-300 bg-slate-100", style: { aspectRatio: String(aspect) } }, /* @__PURE__ */ React.createElement("img", { src: source, alt: props.previewAlt || "Preview of the image being positioned", className: "block", style: previewImageStyle })), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("fieldset", null, /* @__PURE__ */ React.createElement("legend", { className: "text-xs font-black text-slate-800" }, "Image treatment"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: headingRef.current + "-mode", checked: settings.mode === "fit", onChange: () => patchSettings({ mode: "fit" }), className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }), "Fit whole image"), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: headingRef.current + "-mode", checked: settings.mode === "crop", onChange: () => patchSettings({ mode: "crop", aspect: "square" }), className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }), "Crop to frame"))), settings.mode === "crop" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Frame shape", /* @__PURE__ */ React.createElement("select", { value: settings.aspect, onChange: (event) => patchSettings({ aspect: event.target.value }), className: "mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }, Object.keys(IMAGE_ASSET_ASPECTS).map((key) => /* @__PURE__ */ React.createElement("option", { key, value: key }, IMAGE_ASSET_ASPECTS[key].label)))), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Zoom ", /* @__PURE__ */ React.createElement("output", { className: "font-medium" }, settings.zoom, "%"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "100", max: "250", step: "5", value: settings.zoom, onChange: (event) => patchSettings({ zoom: event.target.value }), "aria-label": "Image zoom", className: "mt-1 block min-h-11 w-full accent-fuchsia-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 rounded" })), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Horizontal focus ", /* @__PURE__ */ React.createElement("output", { className: "font-medium" }, settings.focalX, "%"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "0", max: "100", step: "5", value: settings.focalX, onChange: (event) => patchSettings({ focalX: event.target.value }), "aria-label": "Horizontal image focus", className: "mt-1 block min-h-11 w-full accent-fuchsia-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 rounded" })), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Vertical focus ", /* @__PURE__ */ React.createElement("output", { className: "font-medium" }, settings.focalY, "%"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "0", max: "100", step: "5", value: settings.focalY, onChange: (event) => patchSettings({ focalY: event.target.value }), "aria-label": "Vertical image focus", className: "mt-1 block min-h-11 w-full accent-fuchsia-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 rounded" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSettings(normalizeImageAssetSettings({ mode: "crop", aspect: settings.aspect })), className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }, "Center and reset zoom")))),
+    /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-4 md:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "overflow-hidden rounded-xl border border-slate-300 bg-slate-100", style: { aspectRatio: String(aspect) } }, /* @__PURE__ */ React.createElement("img", { src: source, alt: props.previewAlt || "Preview of the image being positioned", className: "block", style: previewImageStyle })), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("fieldset", { disabled: busy }, /* @__PURE__ */ React.createElement("legend", { className: "text-xs font-black text-slate-800" }, "Image treatment"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 grid gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: headingRef.current + "-mode", checked: settings.mode === "fit", disabled: busy, onChange: () => patchSettings({ mode: "fit" }), className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }), "Fit whole image"), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: headingRef.current + "-mode", checked: settings.mode === "crop", disabled: busy, onChange: () => patchSettings({ mode: "crop", aspect: "square" }), className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }), "Crop to frame"))), settings.mode === "crop" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Frame shape", /* @__PURE__ */ React.createElement("select", { value: settings.aspect, disabled: busy, onChange: (event) => patchSettings({ aspect: event.target.value }), className: "mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-900 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }, Object.keys(IMAGE_ASSET_ASPECTS).map((key) => /* @__PURE__ */ React.createElement("option", { key, value: key }, IMAGE_ASSET_ASPECTS[key].label)))), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Zoom ", /* @__PURE__ */ React.createElement("output", { className: "font-medium" }, settings.zoom, "%"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "100", max: "250", step: "5", value: settings.zoom, disabled: busy, onChange: (event) => patchSettings({ zoom: event.target.value }), "aria-label": "Image zoom", className: "mt-1 block min-h-11 w-full accent-fuchsia-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 rounded" })), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Horizontal focus ", /* @__PURE__ */ React.createElement("output", { className: "font-medium" }, settings.focalX, "%"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "0", max: "100", step: "5", value: settings.focalX, disabled: busy, onChange: (event) => patchSettings({ focalX: event.target.value }), "aria-label": "Horizontal image focus", className: "mt-1 block min-h-11 w-full accent-fuchsia-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 rounded" })), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Vertical focus ", /* @__PURE__ */ React.createElement("output", { className: "font-medium" }, settings.focalY, "%"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "0", max: "100", step: "5", value: settings.focalY, disabled: busy, onChange: (event) => patchSettings({ focalY: event.target.value }), "aria-label": "Vertical image focus", className: "mt-1 block min-h-11 w-full accent-fuchsia-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 rounded" })), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => setSettings(normalizeImageAssetSettings({ mode: "crop", aspect: settings.aspect })), className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }, "Center and reset zoom")))),
     error && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-800" }, error),
     /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: apply, disabled: busy, className: "min-h-11 rounded-xl bg-fuchsia-700 px-4 py-2 text-sm font-black text-white hover:bg-fuchsia-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 focus-visible:ring-offset-2" }, busy ? "Preparing image\u2026" : "Use edited image"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => typeof props.onCancel === "function" && props.onCancel(), disabled: busy, className: "min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500" }, "Cancel"))
   );
@@ -520,9 +571,10 @@ function resourceImageSlots(resource) {
     if (data?.visualPlan?.panels?.length) entries(data.visualPlan.panels, ["data", "visualPlan", "panels"], "imageUrl", "Panel");
     else add(["data", "imageUrl"], "Lesson image", "altText");
   }
-  if (resource.type === "quiz") (data?.questions || []).forEach((q, i) => {
+  if (resource.type === "quiz" && Array.isArray(data?.questions)) data.questions.forEach((q, i) => {
+    if (!q || typeof q !== "object") return;
     add(["data", "questions", i, "imageUrl"], "Question " + (i + 1), "imageAltText");
-    (q.options || []).forEach((option, j) => add(["data", "questions", i, "optionImageUrls", j], "Question " + (i + 1) + " \u2014 choice " + (j + 1)));
+    if (Array.isArray(q.options)) q.options.forEach((option, j) => add(["data", "questions", i, "optionImageUrls", j], "Question " + (i + 1) + " \u2014 choice " + (j + 1)));
   });
   if (resource.type === "adventure") {
     add(["data", "sceneImage"], "Current scene", "sceneImageAlt");
@@ -680,7 +732,7 @@ function openResourceDrawing({ scene, title, onSave, onCancel, onError, onStatus
       cleanup();
     } catch (error) {
       post({ type: "alloasset-error", message: error.message });
-      onError?.(error);
+      onError?.(error, { recoverable: true });
     } finally {
       saving = false;
       if (cancelRequested && !done) {
@@ -691,7 +743,7 @@ function openResourceDrawing({ scene, title, onSave, onCancel, onError, onStatus
   };
   window.addEventListener("message", receive);
   const closedTimer = setInterval(() => {
-    if (popup.closed) {
+    if (popup.closed && !saving) {
       cleanup();
       onCancel?.();
     }
@@ -719,7 +771,7 @@ function openResourceDrawing({ scene, title, onSave, onCancel, onError, onStatus
 }
 function ResourceImageInput({ label = "Image", value = "", scene, alt = "", disabled = false, onApply }) {
   const [editor, setEditor] = React.useState(null), [description, setDescription] = React.useState(alt);
-  const [message, setMessage] = React.useState(""), [busy, setBusy] = React.useState(false);
+  const [message, setMessage] = React.useState(""), [isError, setIsError] = React.useState(false), [busy, setBusy] = React.useState(false);
   const alive = React.useRef(true), cancelDrawing = React.useRef(null), trigger = React.useRef(null), openerRef = React.useRef(null);
   const disabledRef = React.useRef(disabled);
   disabledRef.current = disabled;
@@ -750,10 +802,13 @@ function ResourceImageInput({ label = "Image", value = "", scene, alt = "", disa
     const accepted = await onApply({ ...result, alt: descriptionRef.current });
     if (!alive.current) return accepted !== false;
     if (accepted === false) {
+      setIsError(true);
       setMessage("This image changed. Reopen its controls and try again.");
+      setBusy(false);
       return false;
     }
     setEditor(null);
+    setIsError(false);
     setMessage("Image saved.");
     setBusy(false);
     restoreOpenerFocus();
@@ -767,12 +822,17 @@ function ResourceImageInput({ label = "Image", value = "", scene, alt = "", disa
       openerRef.current = document.activeElement;
     }
     setBusy(false);
+    setIsError(false);
     setEditor(result);
     setMessage("");
-  }, onError: (error) => setMessage(error.message) }), /* @__PURE__ */ React.createElement("button", { ref: trigger, type: "button", className: button, disabled: disabled || busy, onClick: () => {
+  }, onError: (error) => {
+    setIsError(true);
+    setMessage(error.message);
+  } }), /* @__PURE__ */ React.createElement("button", { ref: trigger, type: "button", className: button, disabled: disabled || busy, onClick: () => {
     cancelDrawing.current?.();
     openerRef.current = trigger.current;
     setBusy(true);
+    setIsError(false);
     setMessage("Draw in the Whiteboard, then choose Use drawing.");
     cancelDrawing.current = openResourceDrawing({
       scene,
@@ -781,24 +841,44 @@ function ResourceImageInput({ label = "Image", value = "", scene, alt = "", disa
       onCancel: () => {
         if (alive.current) {
           setBusy(false);
+          setIsError(false);
           setMessage("Drawing closed.");
           restoreOpenerFocus();
         }
       },
-      onError: (error) => {
+      onError: (error, meta) => {
         if (alive.current) {
-          setBusy(false);
+          if (!meta?.recoverable) setBusy(false);
+          setIsError(true);
           setMessage(error.message);
         }
       },
       onStatus: (text) => {
-        if (alive.current) setMessage(text);
+        if (alive.current) {
+          setIsError(false);
+          setMessage(text);
+        }
       }
     });
-  } }, scene ? "Edit drawing" : "Draw with Excalidraw"), value && /* @__PURE__ */ React.createElement("button", { type: "button", className: button, disabled: disabled || busy, onClick: () => finish({ dataUrl: value, scene }).catch((error) => setMessage(error.message)) }, "Save description")), editor && /* @__PURE__ */ React.createElement(ImageAssetEditor, { sourceDataUrl: editor.dataUrl, onApply: (result) => finish(result).catch((error) => setMessage(error.message)), onCancel: () => {
+  } }, scene ? "Edit drawing" : "Draw with Excalidraw"), value && /* @__PURE__ */ React.createElement("button", { type: "button", className: button, disabled: disabled || busy, onClick: () => {
+    setBusy(true);
+    setIsError(false);
+    finish({ dataUrl: value, scene }).catch((error) => {
+      if (alive.current) {
+        setBusy(false);
+        setIsError(true);
+        setMessage(error?.message || "The image description could not be saved.");
+      }
+    });
+  } }, "Save description")), editor && /* @__PURE__ */ React.createElement(ImageAssetEditor, { sourceDataUrl: editor.dataUrl, onApply: (result) => finish(result).catch((error) => {
+    if (alive.current) {
+      setIsError(true);
+      setMessage(error?.message || "The image could not be saved.");
+    }
+  }), onCancel: () => {
     setEditor(null);
     restoreOpenerFocus();
-  } }), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700", role: "status" }, message));
+  } }), /* @__PURE__ */ React.createElement("p", { className: isError ? "text-sm font-semibold text-red-700" : "text-sm text-slate-700", role: isError ? "alert" : "status" }, message));
 }
 function ResourceImagesPanel({ resource, onUpdateResource, disabled = false, instanceId = "" }) {
   const [open, setOpen] = React.useState(false);

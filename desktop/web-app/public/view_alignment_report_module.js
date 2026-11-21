@@ -256,7 +256,7 @@ function ComprehensiveSection(p) {
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, p.icon), " ", p.title), /*#__PURE__*/React.createElement("span", {
-    className: 'text-[11px] uppercase font-bold px-2 py-1 rounded ' + statusBadgeClass(p.status)
+    className: 'text-xs uppercase font-bold px-2 py-1 rounded ' + statusBadgeClass(p.status)
   }, p.status || 'N/A')), p.children);
 }
 
@@ -445,7 +445,7 @@ function alignmentMapEntries(standards, graph, auditScope) {
       var contextTarget = nodeById[otherId];
       if (!contextTarget || contextTarget.type !== 'standardsContext') return;
       context = context || {
-        record: standardNode.standardsContext,
+        record: standardNode && standardNode.standardsContext || {},
         related: []
       };
       if (!context.related.some(function (item) {
@@ -525,11 +525,11 @@ function itemAttributionSource(item) {
 function attributionReviewButton(link, artifact, onConfirmAttribution) {
   if (!link || typeof onConfirmAttribution !== 'function') return null;
   if (link.attributionSource === 'teacher') return /*#__PURE__*/React.createElement("span", {
-    className: "ml-2 text-[10px] font-bold uppercase text-emerald-700"
+    className: "ml-2 text-xs font-bold uppercase text-emerald-700"
   }, atr('teacher_confirmed', 'Teacher confirmed'));
   return /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "ml-2 min-h-11 inline-flex items-center rounded border border-emerald-300 bg-white px-3 py-1.5 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700",
+    className: "ml-2 min-h-11 inline-flex items-center rounded border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700",
     "aria-label": atr('confirm_source', 'Confirm source') + ': ' + (artifact.label || artifact.artifactId),
     onClick: function () {
       onConfirmAttribution(link.edgeId);
@@ -586,7 +586,8 @@ function AlignmentFindingSources(item, onConfirmAttribution) {
 }
 function AlignmentMapScopeDetails({
   meta,
-  fallbackScope
+  fallbackScope,
+  onOpenArtifact
 }) {
   // React component: props arrive as ONE object. The positional (meta,
   // fallbackScope) signature received the props object as `meta` and
@@ -620,9 +621,18 @@ function AlignmentMapScopeDetails({
     var artifact = item && typeof item === 'object' ? item : {
       id: item
     };
+    var artLabel = artifact.title || 'Artifact ' + (index + 1);
     return /*#__PURE__*/React.createElement("li", {
-      key: String(artifact.id || index)
-    }, /*#__PURE__*/React.createElement("strong", null, artifact.title || 'Artifact ' + (index + 1)), artifact.type ? ' · ' + artifact.type : '', artifact.id ? ' · ID ' + artifact.id : '', artifact.timestamp ? ' · ' + artifact.timestamp : '');
+      key: String(artifact.id || index),
+      className: "flex flex-wrap items-center gap-1.5"
+    }, typeof onOpenArtifact === 'function' && artifact.id ? /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-alignment-open-artifact": String(artifact.id),
+      onClick: function () {
+        onOpenArtifact(artifact);
+      },
+      className: "min-h-8 inline-flex items-center font-bold text-indigo-800 underline hover:text-indigo-950 rounded px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700"
+    }, artLabel) : /*#__PURE__*/React.createElement("strong", null, artLabel), artifact.type ? /*#__PURE__*/React.createElement("span", null, ' · ' + artifact.type) : null, artifact.id ? /*#__PURE__*/React.createElement("span", null, ' · ID ' + artifact.id) : null, artifact.timestamp ? /*#__PURE__*/React.createElement("span", null, ' · ' + artifact.timestamp) : null);
   })));
 }
 function AlignmentEvidenceMap(p) {
@@ -658,18 +668,18 @@ function AlignmentEvidenceMap(p) {
     className: "text-base font-black text-indigo-950"
   }, atr('alignment_map', 'Alignment Map')), exportGraph && /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "flex-shrink-0 min-h-11 rounded border border-indigo-300 bg-white px-3 py-1.5 text-[10px] font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700",
+    className: "flex-shrink-0 min-h-11 rounded border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700",
     "aria-label": atr('export_graph_aria', 'Export alignment graph JSON'),
     onClick: exportGraph
   }, atr('export_graph', 'Export graph JSON'))), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs text-indigo-900"
   }, atr('alignment_map_intro', 'A readable graph view: each standard connects to text, activity, and assessment evidence, then to open findings and recommendations.')), meta && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[11px] text-indigo-900"
+    className: "mt-2 text-xs text-indigo-900"
   }, "Grounding: ", meta.provider || 'AlloFlow curriculum audit', meta.datasetVersion ? ' · Dataset ' + meta.datasetVersion : ''), meta && meta.attributionConfirmations && meta.attributionConfirmations.count > 0 && /*#__PURE__*/React.createElement("p", {
     role: "status",
-    className: "mt-1 text-[11px] text-emerald-800"
+    className: "mt-1 text-xs text-emerald-800"
   }, "Teacher-confirmed relationships are saved in a derived graph snapshot; the original audit declaration remains available."), meta && meta.standardsGraph && meta.standardsGraph.enabled && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] text-indigo-900"
+    className: "mt-1 text-xs text-indigo-900"
   }, 'Standards graph: ' + meta.standardsGraph.matchedTargets + '/' + entries.length + ' exact target' + (entries.length === 1 ? '' : 's') + ' connected · ' + meta.standardsGraph.contextNodes + ' context node' + (meta.standardsGraph.contextNodes === 1 ? '' : 's') + ' · ' + meta.standardsGraph.contextRelationships + ' relationship' + (meta.standardsGraph.contextRelationships === 1 ? '' : 's') + (meta.standardsGraph.truncatedTargets ? ' · bounded results truncated' : '')), prereqGaps && prereqGaps.missing.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 rounded border border-amber-300 bg-amber-50 p-2 text-xs",
     role: "note",
@@ -689,16 +699,16 @@ function AlignmentEvidenceMap(p) {
       className: "text-amber-800"
     }, ' — builds toward ' + gap.buildsToward.join(', ')));
   })), prereqGaps.unresolved.length > 0 && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] text-amber-800"
+    className: "mt-1 text-xs text-amber-800"
   }, prereqGaps.unresolved.length + ' audited standard(s) not in the local snapshots were not checked.')), prereqGaps && !prereqGaps.missing.length && prereqGaps.evaluated.length > 0 && function () {
     var edgesChecked = typeof prereqGaps.prerequisiteEdgesExamined === 'number' ? prereqGaps.prerequisiteEdgesExamined : prereqGaps.evaluated.reduce(function (n, entry) {
       return n + (entry && entry.prerequisiteCount || 0);
     }, 0);
     var unresolvedNote = prereqGaps.unresolved.length ? ' (' + prereqGaps.unresolved.length + ' not in the local snapshots)' : '';
     return edgesChecked > 0 ? /*#__PURE__*/React.createElement("p", {
-      className: "mt-2 text-[11px] text-emerald-900"
+      className: "mt-2 text-xs text-emerald-900"
     }, "Knowledge graph: no missing prerequisites among source buildsTowards edges for the audited standards", unresolvedNote, ".") : /*#__PURE__*/React.createElement("p", {
-      className: "mt-2 text-[11px] text-slate-700"
+      className: "mt-2 text-xs text-slate-700"
     }, "Knowledge graph: prerequisite check not available. The reviewed dataset carries no buildsTowards edges for these standards, so sequencing was not checked either way", unresolvedNote, ".");
   }(), componentCoverage && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 rounded border border-sky-300 bg-sky-50 p-2 text-xs",
@@ -723,12 +733,14 @@ function AlignmentEvidenceMap(p) {
     }));
   }))), /*#__PURE__*/React.createElement(AlignmentMapScopeDetails, {
     meta: meta,
-    fallbackScope: auditScope
+    fallbackScope: auditScope,
+    onOpenArtifact: p && p.onOpenArtifact
   }), /*#__PURE__*/React.createElement("ol", {
     className: "mt-3 space-y-3",
     "aria-label": "Standards alignment map"
   }, entries.map(function (entry, index) {
     var headingId = 'audit-alignment-standard-' + index;
+    var ctxRecord = entry.context && entry.context.record && typeof entry.context.record === 'object' ? entry.context.record : {};
     return /*#__PURE__*/React.createElement("li", {
       key: entry.id,
       className: "rounded-lg border border-indigo-200 bg-white p-3"
@@ -741,7 +753,7 @@ function AlignmentEvidenceMap(p) {
       className: "font-bold text-slate-900"
     }, entry.label), /*#__PURE__*/React.createElement("span", {
       role: "group",
-      className: 'flex-shrink-0 text-[10px] uppercase font-bold px-2 py-1 rounded ' + alignmentMapBadgeClass(entry.status),
+      className: 'flex-shrink-0 text-xs uppercase font-bold px-2 py-1 rounded ' + alignmentMapBadgeClass(entry.status),
       "aria-label": 'Overall status: ' + alignmentMapStatus(entry.status)
     }, alignmentMapStatus(entry.status))), entry.context && /*#__PURE__*/React.createElement("div", {
       role: "group",
@@ -749,7 +761,7 @@ function AlignmentEvidenceMap(p) {
       "aria-label": 'Standards context for ' + entry.label
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold text-indigo-900"
-    }, "Standards context: ", entry.context.record.code || entry.context.record.label || entry.label, entry.context.record.framework ? ' · ' + entry.context.record.framework : '', entry.context.record.sourceUrl ? ' · Source verified' : ''), entry.context.related.length > 0 ? /*#__PURE__*/React.createElement("ul", {
+    }, "Standards context: ", ctxRecord.code || ctxRecord.label || entry.label, ctxRecord.framework ? ' · ' + ctxRecord.framework : '', ctxRecord.sourceUrl ? ' · Source verified' : ''), entry.context.related.length > 0 ? /*#__PURE__*/React.createElement("ul", {
       className: "mt-1 list-disc ml-5 text-indigo-950"
     }, entry.context.related.slice(0, 12).map(function (item) {
       return /*#__PURE__*/React.createElement("li", {
@@ -776,7 +788,7 @@ function AlignmentEvidenceMap(p) {
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-2"
       }, /*#__PURE__*/React.createElement("strong", null, item.label), /*#__PURE__*/React.createElement("span", {
-        className: 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ' + alignmentMapBadgeClass(item.status)
+        className: 'text-xs uppercase font-bold px-1.5 py-0.5 rounded ' + alignmentMapBadgeClass(item.status)
       }, alignmentMapStatus(item.status))), /*#__PURE__*/React.createElement("p", {
         className: "mt-1 text-slate-700"
       }, item.evidence || 'No evidence recorded.'), item.notes ? /*#__PURE__*/React.createElement("p", {
@@ -833,7 +845,7 @@ function StandardsSection(p) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-slate-800 leading-tight pt-2"
   }, "Holistic Lesson Plan Audit"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] text-slate-600 mt-1"
+    className: "text-xs text-slate-600 mt-1"
   }, "text + activities + assessment"))),
   // Per-standard collapsible cards
   perStandard.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -850,7 +862,7 @@ function StandardsSection(p) {
     }, /*#__PURE__*/React.createElement("span", {
       className: "flex-1 min-w-0 break-words"
     }, report && report.standard || 'Standard ' + (idx + 1)), /*#__PURE__*/React.createElement("span", {
-      className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + (passColor ? 'bg-emerald-200 text-emerald-900' : pendingColor ? 'bg-slate-200 text-slate-900' : 'bg-rose-200 text-rose-900')
+      className: 'text-xs uppercase font-bold px-2 py-0.5 rounded ' + (passColor ? 'bg-emerald-200 text-emerald-900' : pendingColor ? 'bg-slate-200 text-slate-900' : 'bg-rose-200 text-rose-900')
     }, report && report.overallDetermination || 'Not evaluated')), /*#__PURE__*/React.createElement("div", {
       className: "px-3 pb-3 pt-2 bg-white rounded-b-lg space-y-2 text-xs"
     }, report && report.standardBreakdown && (report.standardBreakdown.cognitiveDemand || report.standardBreakdown.contentFocus) && /*#__PURE__*/React.createElement("div", {
@@ -872,7 +884,7 @@ function StandardsSection(p) {
         key: key,
         className: "flex items-start gap-2"
       }, /*#__PURE__*/React.createElement("span", {
-        className: 'flex-shrink-0 text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + statusBadgeClass(stat),
+        className: 'flex-shrink-0 text-xs uppercase font-bold px-2 py-0.5 rounded ' + statusBadgeClass(stat),
         style: {
           minWidth: '90px',
           textAlign: 'center'
@@ -883,18 +895,19 @@ function StandardsSection(p) {
     }), report && report.adminRecommendation && /*#__PURE__*/React.createElement("div", {
       className: "mt-2 pt-2 border-t border-slate-200"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] uppercase font-bold text-indigo-700"
+      className: "text-xs uppercase font-bold text-indigo-700"
     }, "Recommendation: "), /*#__PURE__*/React.createElement("span", {
       className: "text-slate-800"
     }, report.adminRecommendation))));
   })), s.notes && /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 text-[11px] text-slate-600 italic"
+    className: "mt-3 text-xs text-slate-600 italic"
   }, s.notes), AlignmentEvidenceMap({
     standards: s,
     auditScope: p.auditScope,
     alignmentMapGraph: p.alignmentMapGraph,
     onConfirmAttribution: p.onConfirmAttribution,
-    onExportAlignmentGraph: p.onExportAlignmentGraph
+    onExportAlignmentGraph: p.onExportAlignmentGraph,
+    onOpenArtifact: p.onOpenArtifact
   }));
 }
 function VocabularySection(p) {
@@ -919,7 +932,7 @@ function VocabularySection(p) {
   }, sourceWords), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Source words"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] text-slate-600 mt-1"
+    className: "text-xs text-slate-600 mt-1"
   }, auditedTextWords + ' across bundle')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
   }, auditedTextWords), /*#__PURE__*/React.createElement("div", {
@@ -931,7 +944,7 @@ function VocabularySection(p) {
   }, v.tier2Count), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-blue-700"
   }, "Tier 2 (academic)"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] text-slate-600 mt-1"
+    className: "text-xs text-slate-600 mt-1"
   }, 'expected ~' + (v.expected && v.expected.tier2) + ' ' + scaleNote)), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-purple-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
@@ -939,7 +952,7 @@ function VocabularySection(p) {
   }, v.tier3Count), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-purple-700"
   }, "Tier 3 (domain)"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] text-slate-600 mt-1"
+    className: "text-xs text-slate-600 mt-1"
   }, 'expected ~' + (v.expected && v.expected.tier3) + ' ' + scaleNote)), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
@@ -979,14 +992,15 @@ function VocabularySection(p) {
   }, "📖"), " Reading levels (from analyzed source texts)"), /*#__PURE__*/React.createElement("ul", {
     className: "space-y-1 text-sm text-slate-800"
   }, v.readingLevels.map(function (r, i) {
+    var explanationText = auditText(r && r.explanation);
     return /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "flex items-start gap-2"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-xs px-2 py-0.5 bg-slate-200 text-slate-800 rounded font-semibold whitespace-nowrap"
-    }, r.range), r.explanation && /*#__PURE__*/React.createElement("span", {
+    }, auditText(r && r.range)), explanationText && /*#__PURE__*/React.createElement("span", {
       className: "text-xs text-slate-600"
-    }, r.explanation.slice(0, 240)));
+    }, explanationText.slice(0, 240)));
   }))), v.recommendations && v.recommendations.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-amber-50 border border-amber-200 rounded mb-3"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1039,7 +1053,7 @@ function VocabularySection(p) {
       className: "text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded font-semibold"
     }, '+ ' + auditText(w));
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-600 italic"
+    className: "text-xs text-slate-600 italic"
   }, v.notes || ''));
 }
 function EngagementSection(p) {
@@ -1124,7 +1138,7 @@ function EngagementSection(p) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-slate-700 mb-1"
   }, dokHeading(e)), e.dokSource === 'llm-estimated' && /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-600 mb-1"
+    className: "text-xs text-slate-600 mb-1"
   }, atr('dok_estimate_note', 'The quiz items carry no DOK tags, so the AI estimated these levels from the question wording. Treat the chart as a rough guide.')), /*#__PURE__*/React.createElement("div", {
     role: "img",
     "aria-label": 'Quiz DOK distribution: Level 1 recall ' + (dok.L1 || 0) + ' percent; Level 2 skill and concept ' + (dok.L2 || 0) + ' percent; Level 3 strategic thinking ' + (dok.L3 || 0) + ' percent; Level 4 extended thinking ' + (dok.L4 || 0) + ' percent; unknown ' + (dok.unknown || 0) + ' percent.',
@@ -1134,35 +1148,35 @@ function EngagementSection(p) {
       width: dok.L1 + '%',
       backgroundColor: '#fde68a'
     },
-    className: "flex items-center justify-center text-[10px] font-bold text-amber-900",
+    className: "flex items-center justify-center text-xs font-bold text-amber-900",
     title: 'L1 Recall: ' + dok.L1 + '%'
   }, dok.L1 > 8 ? 'L1 ' + dok.L1 + '%' : ''), (dok.L2 || 0) > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       width: dok.L2 + '%',
       backgroundColor: '#86efac'
     },
-    className: "flex items-center justify-center text-[10px] font-bold text-green-900",
+    className: "flex items-center justify-center text-xs font-bold text-green-900",
     title: 'L2 Skill/Concept: ' + dok.L2 + '%'
   }, dok.L2 > 8 ? 'L2 ' + dok.L2 + '%' : ''), (dok.L3 || 0) > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       width: dok.L3 + '%',
       backgroundColor: '#93c5fd'
     },
-    className: "flex items-center justify-center text-[10px] font-bold text-blue-900",
+    className: "flex items-center justify-center text-xs font-bold text-blue-900",
     title: 'L3 Strategic Thinking: ' + dok.L3 + '%'
   }, dok.L3 > 8 ? 'L3 ' + dok.L3 + '%' : ''), (dok.L4 || 0) > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       width: dok.L4 + '%',
       backgroundColor: '#c4b5fd'
     },
-    className: "flex items-center justify-center text-[10px] font-bold text-purple-900",
+    className: "flex items-center justify-center text-xs font-bold text-purple-900",
     title: 'L4 Extended Thinking: ' + dok.L4 + '%'
   }, dok.L4 > 8 ? 'L4 ' + dok.L4 + '%' : ''), (dok.unknown || 0) > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       width: dok.unknown + '%',
       backgroundColor: '#cbd5e1'
     },
-    className: "flex items-center justify-center text-[10px] text-slate-700",
+    className: "flex items-center justify-center text-xs text-slate-700",
     title: 'Unknown: ' + dok.unknown + '%'
   }, dok.unknown > 8 ? '?' : ''))), /*#__PURE__*/React.createElement("div", {
     className: "mb-3 grid grid-cols-3 gap-2 text-center text-xs"
@@ -1217,7 +1231,7 @@ function EngagementSection(p) {
       key: i
     }, auditText(g));
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-600 italic"
+    className: "text-xs text-slate-600 italic"
   }, e.notes || ''));
 }
 function AccessibilitySection(p) {
@@ -1344,12 +1358,15 @@ function AccessibilitySection(p) {
       key: i
     }, auditText(f));
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-600 italic"
+    className: "text-xs text-slate-600 italic"
   }, a.notes || ''));
 }
 function UdlPillar(p) {
   var pillar = p.pillar;
   if (!pillar) return null;
+  var evidenceText = auditText(pillar.evidence);
+  var gapsText = auditText(pillar.gaps);
+  var recText = auditText(pillar.recommendation);
   return /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-white border border-slate-200 rounded mb-2"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1360,29 +1377,30 @@ function UdlPillar(p) {
     "aria-hidden": "true",
     className: "text-lg"
   }, p.icon), " ", p.title), /*#__PURE__*/React.createElement("span", {
-    className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + statusBadgeClass(pillar.status)
-  }, pillar.status || 'N/A')), pillar.evidence && /*#__PURE__*/React.createElement("div", {
+    className: 'text-xs uppercase font-bold px-2 py-0.5 rounded ' + statusBadgeClass(pillar.status)
+  }, auditText(pillar.status) || 'N/A')), evidenceText && /*#__PURE__*/React.createElement("div", {
     className: "mb-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] font-semibold text-emerald-800 uppercase tracking-wider"
+    className: "text-xs font-semibold text-emerald-800 uppercase tracking-wider"
   }, "Evidence"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
-  }, pillar.evidence)), pillar.gaps && /*#__PURE__*/React.createElement("div", {
+  }, evidenceText)), gapsText && /*#__PURE__*/React.createElement("div", {
     className: "mb-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] font-semibold text-rose-800 uppercase tracking-wider"
+    className: "text-xs font-semibold text-rose-800 uppercase tracking-wider"
   }, "Gaps"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
-  }, pillar.gaps)), pillar.recommendation && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] font-semibold text-indigo-800 uppercase tracking-wider"
+  }, gapsText)), recText && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "text-xs font-semibold text-indigo-800 uppercase tracking-wider"
   }, "Recommendation"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
-  }, pillar.recommendation)));
+  }, recText)));
 }
 function UdlSection(p) {
   var u = p.udl;
   if (!u) return null;
   var priors = u.priorsUsed || {};
+  var udlNarrative = auditText(u.overallNarrative);
   return /*#__PURE__*/React.createElement(ComprehensiveSection, {
     id: "audit-udl",
     icon: "🌐",
@@ -1406,7 +1424,7 @@ function UdlSection(p) {
     icon: "✍️"
   }),
   // Overall narrative
-  u.overallNarrative && /*#__PURE__*/React.createElement("div", {
+  udlNarrative && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-900 mb-1 flex items-center gap-2"
@@ -1414,9 +1432,9 @@ function UdlSection(p) {
     "aria-hidden": "true"
   }, "🤖"), " ", atr('ai_udl_synthesis', 'UDL specialist synthesis (AI)')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900"
-  }, u.overallNarrative)), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-600 italic mt-2"
-  }, u.notes || ''));
+  }, udlNarrative)), /*#__PURE__*/React.createElement("div", {
+    className: "text-xs text-slate-600 italic mt-2"
+  }, auditText(u.notes)));
 }
 function AccuracySection(p) {
   var a = p.acc;
@@ -1478,7 +1496,7 @@ function AccuracySection(p) {
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-1"
     }, /*#__PURE__*/React.createElement("span", {
-      className: 'text-[10px] font-bold uppercase px-2 py-0.5 rounded ' + RATING_BADGE_CLASSES[ratingColor]
+      className: 'text-xs font-bold uppercase px-2 py-0.5 rounded ' + RATING_BADGE_CLASSES[ratingColor]
     }, s.rating || 'Unknown'), /*#__PURE__*/React.createElement("span", {
       className: "text-xs text-slate-600"
     }, s.verifiedFactCount + ' verified, ' + s.discrepancyCount + ' discrepanc' + (s.discrepancyCount === 1 ? 'y' : 'ies'))), s.reason && /*#__PURE__*/React.createElement("p", {
@@ -1526,7 +1544,7 @@ function AccuracySection(p) {
       key: i
     }, auditText(f));
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-500 italic"
+    className: "text-xs text-slate-600 italic"
   }, a.notes || ''));
 }
 
@@ -1587,7 +1605,7 @@ function DifferentiationSection(p) {
     var on = flags[k];
     return /*#__PURE__*/React.createElement("div", {
       key: k,
-      className: 'flex items-center gap-2 text-xs px-2 py-1.5 rounded border ' + (on ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-500')
+      className: 'flex items-center gap-2 text-xs px-2 py-1.5 rounded border ' + (on ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-600')
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true",
       className: "flex-shrink-0"
@@ -1639,7 +1657,7 @@ function DifferentiationSection(p) {
       key: i
     }, auditText(r));
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-500 italic"
+    className: "text-xs text-slate-600 italic"
   }, d.notes || ''));
 }
 
@@ -1648,7 +1666,29 @@ function CognitiveLoadSection(p) {
   var c = p.load;
   if (!c) return null;
   var b = c.breakdown || {};
-  var ratioColor = c.ratio === null ? 'slate' : c.ratio >= 0.7 && c.ratio <= 1.4 ? 'emerald' : c.ratio >= 0.4 && c.ratio <= 2.0 ? 'amber' : 'rose';
+  var ratioTone = c.ratio === null ? 'slate' : c.ratio >= 0.7 && c.ratio <= 1.4 ? 'emerald' : c.ratio >= 0.4 && c.ratio <= 2.0 ? 'amber' : 'rose';
+  var ratioToneStyles = {
+    slate: {
+      card: 'bg-slate-50 border border-slate-200',
+      value: 'text-slate-800',
+      label: 'text-slate-700'
+    },
+    emerald: {
+      card: 'bg-emerald-50 border border-emerald-200',
+      value: 'text-emerald-800',
+      label: 'text-emerald-700'
+    },
+    amber: {
+      card: 'bg-amber-50 border border-amber-200',
+      value: 'text-amber-800',
+      label: 'text-amber-700'
+    },
+    rose: {
+      card: 'bg-rose-50 border border-rose-200',
+      value: 'text-rose-800',
+      label: 'text-rose-700'
+    }
+  }[ratioTone];
   return /*#__PURE__*/React.createElement(ComprehensiveSection, {
     id: "audit-cognitiveLoad",
     icon: "⏱️",
@@ -1669,17 +1709,17 @@ function CognitiveLoadSection(p) {
   }, c.estimatedTotalMinutes + 'm'), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
   }, "Estimated")), /*#__PURE__*/React.createElement("div", {
-    className: 'p-3 rounded text-center bg-' + ratioColor + '-50 border border-' + ratioColor + '-200'
+    className: 'p-3 rounded text-center ' + ratioToneStyles.card
   }, /*#__PURE__*/React.createElement("div", {
-    className: 'text-2xl font-bold text-' + ratioColor + '-800'
+    className: 'text-2xl font-bold ' + ratioToneStyles.value
   }, c.ratio === null ? 'n/a' : c.ratio + 'x'), /*#__PURE__*/React.createElement("div", {
-    className: 'text-xs text-' + ratioColor + '-700'
+    className: 'text-xs ' + ratioToneStyles.label
   }, "Estimated / Claimed")), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-slate-800 leading-tight pt-1"
   }, 'R: ' + b.reading + 'm · Q: ' + b.quiz + 'm · A: ' + b.activities + 'm'), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] text-slate-500 mt-1"
+    className: "text-xs text-slate-600 mt-1"
   }, 'Reading at ' + b.wpmAssumption + ' wpm'))),
   // Per-segment breakdown
   Array.isArray(c.perSegment) && c.perSegment.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -1722,7 +1762,7 @@ function CognitiveLoadSection(p) {
       key: i
     }, auditText(r));
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-500 italic"
+    className: "text-xs text-slate-600 italic"
   }, c.notes || ''));
 }
 
@@ -1774,7 +1814,7 @@ function CulturalResponsivenessSection(p) {
       key: i
     }, auditText(r));
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-500 italic mt-2"
+    className: "text-xs text-slate-600 italic mt-2"
   }, c.notes || ''));
 }
 var READINESS_DIMENSION_LABELS = {
@@ -1809,7 +1849,7 @@ function ReadinessDimensionNav(p) {
     }, /*#__PURE__*/React.createElement("a", {
       href: '#audit-' + dim,
       "aria-label": label + ': ' + status + (pct ? ', ' + pct : ''),
-      className: 'flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + chipColor
+      className: 'min-h-11 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + chipColor
     }, /*#__PURE__*/React.createElement("span", null, label), /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
     }, "·"), /*#__PURE__*/React.createElement("span", null, status), pct && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
@@ -1910,7 +1950,7 @@ function ReadinessScoreCard(p) {
       key: i
     }, /*#__PURE__*/React.createElement("span", {
       className: "font-semibold"
-    }, b.dimension + ': '), b.issue);
+    }, auditText(b && b.dimension) + ': '), auditText(b && b.issue));
   }))), o.incompleteIssues && o.incompleteIssues.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 p-2 bg-white border border-slate-300 rounded text-xs"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1922,16 +1962,16 @@ function ReadinessScoreCard(p) {
       key: i
     }, /*#__PURE__*/React.createElement("span", {
       className: "font-semibold"
-    }, b.dimension + ': '), b.issue);
-  })))), (o.scoreBasis || o.notes) && /*#__PURE__*/React.createElement("details", {
+    }, auditText(b && b.dimension) + ': '), auditText(b && b.issue));
+  })))), (auditText(o.scoreBasis) || auditText(o.notes)) && /*#__PURE__*/React.createElement("details", {
     className: "mt-3 p-2 bg-white border border-slate-300 rounded text-xs text-slate-800"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "cursor-pointer font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded"
-  }, atr('how_scoring_works', 'How scoring works')), o.scoreBasis && /*#__PURE__*/React.createElement("p", {
+  }, atr('how_scoring_works', 'How scoring works')), auditText(o.scoreBasis) && /*#__PURE__*/React.createElement("p", {
     className: "mt-2"
-  }, o.scoreBasis), o.notes && /*#__PURE__*/React.createElement("p", {
+  }, auditText(o.scoreBasis)), auditText(o.notes) && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 italic"
-  }, o.notes)));
+  }, auditText(o.notes))));
 }
 var ALL_DIMENSIONS_FOR_RENDER = ['standards', 'vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy', 'differentiation', 'cognitiveLoad', 'culturalResponsiveness'];
 
@@ -1970,13 +2010,14 @@ function extractTopRecommendations(comprehensive, n) {
   };
   if (overall && Array.isArray(overall.blockingIssues)) {
     overall.blockingIssues.forEach(function (b) {
-      if (!b || !b.issue) return;
-      var dimLabelStr = b.dimension || 'Critical';
+      var issueText = auditText(b && b.issue);
+      if (!issueText) return;
+      var dimLabelStr = auditText(b && b.dimension) || 'Critical';
       all.push({
         priority: 0,
         dimension: dimLabelStr,
         dimensionKey: labelToKey[dimLabelStr] || null,
-        text: b.issue
+        text: issueText
       });
     });
   }
@@ -2050,13 +2091,14 @@ function extractTopRecommendations(comprehensive, n) {
   if (comprehensive.udl && !comprehensive.udl.computeFailed) {
     ['representation', 'engagement', 'actionExpression'].forEach(function (pillar) {
       var p = comprehensive.udl[pillar];
-      if (p && p.recommendation && p.status !== 'Aligned') {
+      var recText = auditText(p && p.recommendation);
+      if (p && recText && p.status !== 'Aligned') {
         var pname = pillar === 'actionExpression' ? 'Action & Expression' : pillar.charAt(0).toUpperCase() + pillar.slice(1);
         all.push({
           priority: p.status === 'Not Aligned' ? 1 : 2,
           dimension: 'UDL · ' + pname,
           dimensionKey: 'udl',
-          text: p.recommendation
+          text: recText
         });
       }
     });
@@ -2137,6 +2179,67 @@ function ExecutiveSummary(p) {
   };
   var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
   var aiBusyOrBlocked = !!p.isProcessing || !!(textDoor && textDoor.disabled);
+  var _copyState = React.useState('');
+  var copyStatus = _copyState[0],
+    setCopyStatus = _copyState[1];
+  var buildAdminSummaryText = function () {
+    var lines = [];
+    lines.push('AlloFlow Curriculum Audit Summary');
+    if (score !== null && dimEvaluated > 0) lines.push('Readiness Score: ' + score + '/100' + (scoreIsProvisional ? ' (Provisional)' : '') + (overall.label ? ' — ' + overall.label : ''));
+    lines.push('Dimensions evaluated: ' + dimEvaluated + ' of ' + dimApplicable + ' applicable (' + dimTotal + ' total)' + (standardsReportCount > 0 ? ' · ' + standardsReportCount + ' standard(s) audited' : ''));
+    if (failedDims.length > 0) lines.push('Failed to compute: ' + failedDims.map(dimLabel).join(', '));
+    var dimScores = overall.perDimensionPercent || {};
+    var dimRows = ALL_DIMENSIONS_FOR_RENDER.map(function (d) {
+      var dd = c[d];
+      var pct = boundedReportPercent(dimScores[d]);
+      var st = dd && dd.status || (dd && dd.notApplicable ? 'Not applicable' : dd && dd.computeFailed ? 'Compute failed' : 'Not evaluated');
+      return '  - ' + dimLabel(d) + ': ' + st + (pct !== null ? ' (' + pct + '%)' : '');
+    });
+    if (dimRows.length) {
+      lines.push('Dimension Breakdown:');
+      lines.push.apply(lines, dimRows);
+    }
+    if (topRecs.length > 0) {
+      lines.push('Top Suggested Fixes:');
+      topRecs.forEach(function (r, idx) {
+        lines.push('  ' + (idx + 1) + '. [' + r.dimension + '] ' + r.text);
+      });
+    }
+    return lines.join('\n');
+  };
+  var handleCopyAdminSummary = function () {
+    var summary = buildAdminSummaryText();
+    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard.writeText(summary).then(function () {
+        setCopyStatus(atr('summary_copied', 'Admin summary copied.'));
+        setTimeout(function () {
+          setCopyStatus('');
+        }, 2500);
+      }).catch(function () {
+        setCopyStatus(atr('summary_copy_failed', 'Could not copy summary.'));
+      });
+    }
+  };
+  var handlePrintAuditSummary = function () {
+    if (typeof window === 'undefined' || typeof window.open !== 'function') return;
+    var esc = function (v) {
+      return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    };
+    var popup = window.open('', '_blank', 'width=850,height=700');
+    if (!popup) return;
+    try {
+      popup.opener = null;
+    } catch (_) {}
+    var summaryHtml = buildAdminSummaryText().split('\n').map(function (line) {
+      return '<p style="margin:4px 0">' + esc(line) + '</p>';
+    }).join('');
+    popup.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\';"><title>Curriculum Audit Summary</title><style>body{font-family:system-ui,-apple-system,sans-serif;max-width:800px;margin:0 auto;padding:24px;color:#0f172a;line-height:1.5}h1{font-size:20px;border-bottom:2px solid #4f46e5;padding-bottom:8px}</style></head><body><h1>Curriculum Audit Summary</h1>' + summaryHtml + '</body></html>');
+    popup.document.close();
+    try {
+      popup.focus();
+      popup.print();
+    } catch (_) {}
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "p-5 rounded-2xl border-2 mb-6 shadow-md max-w-4xl mx-auto",
     style: {
@@ -2193,7 +2296,7 @@ function ExecutiveSummary(p) {
   }, score))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 min-w-0"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] font-bold uppercase tracking-wider mb-0.5",
+    className: "text-xs font-bold uppercase tracking-wider mb-0.5",
     style: {
       color: statusClr.text
     }
@@ -2234,18 +2337,36 @@ function ExecutiveSummary(p) {
     title: textDoor && textDoor.title || atr('precheck_tip', 'Generate a Pre-Check Quiz that probes the prerequisites the audit identified as gaps. Students take the quiz before the lesson; missed concepts get just-in-time AI explainers.')
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🎯"), " ", atr('precheck_from_gaps', 'Pre-Check from gaps'))),
+  }, "🎯"), " ", atr('precheck_from_gaps', 'Pre-Check from gaps')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-alignment-copy-summary": "true",
+    onClick: handleCopyAdminSummary,
+    className: "flex-shrink-0 min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5 print:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "📋"), " ", atr('copy_admin_summary', 'Copy admin summary')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-alignment-print-report": "true",
+    onClick: handlePrintAuditSummary,
+    className: "flex-shrink-0 min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5 print:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🖨️"), " ", atr('print_summary', 'Print summary')), copyStatus && /*#__PURE__*/React.createElement("span", {
+    role: "status",
+    "aria-live": "polite",
+    className: "text-xs font-semibold text-emerald-800"
+  }, copyStatus)),
   // Failed dimensions warning
   failedDims.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 p-2 bg-amber-50 border border-amber-300 rounded text-xs text-amber-900"
   }, /*#__PURE__*/React.createElement("strong", null, '⚠ ' + failedDims.length + ' dimension' + (failedDims.length === 1 ? '' : 's') + ' failed to compute: '), failedDims.map(function (d) {
-    return c[d] && c[d].notes ? d : d;
+    return dimLabel(d);
   }).join(', '), ". The audit ran but is incomplete; try regenerating."),
   // Top recommendations
   topRecs.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-3"
   }, /*#__PURE__*/React.createElement("h3", {
-    className: "text-[11px] font-bold uppercase tracking-wider mb-2",
+    className: "text-xs font-bold uppercase tracking-wider mb-2",
     style: {
       color: statusClr.text
     }
@@ -2268,7 +2389,7 @@ function ExecutiveSummary(p) {
     }, " ↓") : null];
     var chip = r.dimensionKey ? /*#__PURE__*/React.createElement("a", {
       href: '#audit-' + r.dimensionKey,
-      className: 'flex-shrink-0 min-h-11 inline-flex items-center justify-center text-[10px] font-bold uppercase px-2.5 py-1 rounded border no-underline transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 ' + prClass,
+      className: 'flex-shrink-0 min-h-11 inline-flex items-center justify-center text-xs font-bold uppercase px-2.5 py-1 rounded border no-underline transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 ' + prClass,
       style: {
         minWidth: '90px',
         textAlign: 'center'
@@ -2297,12 +2418,12 @@ function ExecutiveSummary(p) {
         }
       }
     }, chipChildren) : /*#__PURE__*/React.createElement("span", {
-      className: 'flex-shrink-0 text-[10px] font-bold uppercase px-2 py-0.5 rounded border ' + prClass,
+      className: 'flex-shrink-0 text-xs font-bold uppercase px-2 py-0.5 rounded border ' + prClass,
       style: {
         minWidth: '90px',
         textAlign: 'center'
       }
-    }, r.dimension);
+    }, auditText(r.dimension));
     return /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "flex items-start gap-2 text-sm"
@@ -2311,7 +2432,7 @@ function ExecutiveSummary(p) {
       style: {
         color: statusClr.text
       }
-    }, r.text));
+    }, auditText(r.text)));
   }))));
 }
 function formatCoverageMetric(numerator, denominator, percent, unitLabel) {
@@ -2398,7 +2519,7 @@ function FailedDimensionCard(p) {
   }, atr('could_not_compute', '{label}: could not be computed', {
     label: label
   })), /*#__PURE__*/React.createElement("span", {
-    className: "ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900"
+    className: "ml-auto text-xs uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900"
   }, atr('badge_failed', 'Failed'))), d.notes && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-amber-900 mb-2"
   }, d.notes), d.error && /*#__PURE__*/React.createElement("details", {
@@ -2413,7 +2534,7 @@ function NotEvaluatedCard(p) {
   var d = p.data;
   var label = p.label;
   if (!d || !d.notEvaluated) return null;
-  var reason = d.reason || Array.isArray(d.recommendations) && d.recommendations[0] || d.notes || atr('not_evaluated_reason', 'Required evidence was not available for this dimension.');
+  var reason = auditText(d.reason) || Array.isArray(d.recommendations) && auditText(d.recommendations[0]) || auditText(d.notes) || atr('not_evaluated_reason', 'Required evidence was not available for this dimension.');
   var headingId = p.id ? p.id + '-heading' : undefined;
   return /*#__PURE__*/React.createElement("section", {
     id: p.id || undefined,
@@ -2429,7 +2550,7 @@ function NotEvaluatedCard(p) {
     id: headingId,
     className: "font-bold text-slate-800"
   }, label), /*#__PURE__*/React.createElement("span", {
-    className: "ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-800"
+    className: "ml-auto text-xs uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-800"
   }, atr('badge_not_evaluated', 'Not evaluated'))), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
   }, reason), Array.isArray(d.recommendations) && d.recommendations.length > 1 && /*#__PURE__*/React.createElement("ul", {
@@ -2437,7 +2558,7 @@ function NotEvaluatedCard(p) {
   }, d.recommendations.slice(1, 5).map(function (item, index) {
     return /*#__PURE__*/React.createElement("li", {
       key: index
-    }, item);
+    }, auditText(item));
   })));
 }
 function MissingDimensionCard(p) {
@@ -2474,7 +2595,7 @@ function NotApplicableCard(p) {
     id: headingId,
     className: "font-bold text-slate-700"
   }, label), /*#__PURE__*/React.createElement("span", {
-    className: "ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700"
+    className: "ml-auto text-xs uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700"
   }, atr('badge_not_applicable', 'Not applicable'))), d.reason && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600"
   }, d.reason));
@@ -2532,7 +2653,7 @@ DimensionBoundary.prototype.render = function () {
   }, atr('could_not_display', '{label} could not be displayed', {
     label: p.label
   })), /*#__PURE__*/React.createElement("span", {
-    className: "ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900"
+    className: "ml-auto text-xs uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900"
   }, atr('badge_display_error', 'Display error'))), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-amber-900 mb-2"
   }, atr('display_error_body', 'The saved data for this section could not be rendered. The other dimensions are unaffected; regenerate the audit to rebuild this one.')), /*#__PURE__*/React.createElement("details", {
@@ -2545,18 +2666,92 @@ DimensionBoundary.prototype.render = function () {
 };
 function ComprehensiveBlock(p) {
   var c = p.comp;
+  var _dimFilterState = React.useState('all');
+  var dimFilter = _dimFilterState[0],
+    setDimFilter = _dimFilterState[1];
   if (!c) return null;
+  var classifyDim = function (key) {
+    var d = c[key];
+    if (d && d.notApplicable) return 'na';
+    if (d && !d.computeFailed && !d.notEvaluated && (d.status === 'Aligned' || d.status === 'Pass')) return 'aligned';
+    return 'attention';
+  };
+  var attentionCount = ALL_DIMENSIONS_FOR_RENDER.filter(function (k) {
+    return classifyDim(k) === 'attention';
+  }).length;
+  var alignedCount = ALL_DIMENSIONS_FOR_RENDER.filter(function (k) {
+    return classifyDim(k) === 'aligned';
+  }).length;
+  var showDim = function (key) {
+    if (dimFilter === 'all') return true;
+    return classifyDim(key) === dimFilter;
+  };
+  var visibleDims = ALL_DIMENSIONS_FOR_RENDER.filter(showDim);
+  var jumpToDim = function (ev, dimKey) {
+    var el = typeof document !== 'undefined' ? document.getElementById('audit-' + dimKey) : null;
+    if (!el) return;
+    ev.preventDefault();
+    var reduceMotion = !!document.querySelector('.reduce-motion') || !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (typeof el.scrollIntoView === 'function') el.scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth',
+      block: 'start'
+    });
+    if (typeof el.focus === 'function') el.focus({
+      preventScroll: true
+    });
+  };
   return /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "audit-findings-heading",
     className: "mt-8 pt-6 border-t border-slate-200 max-w-4xl mx-auto"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "mb-6"
+    className: "mb-4"
   }, /*#__PURE__*/React.createElement("h2", {
     id: "audit-findings-heading",
     className: "text-xl font-black text-slate-800 uppercase tracking-tight mb-1"
   }, atr('findings_heading', 'Per-Dimension Findings')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600"
-  }, atr('findings_intro', 'Detailed evidence and recommendations from each comprehensive audit dimension. Apply fixes from the summary panel above.'))), c.auditScope && /*#__PURE__*/React.createElement("div", {
+  }, atr('findings_intro', 'Detailed evidence and recommendations from each comprehensive audit dimension. Apply fixes from the summary panel above.'))), /*#__PURE__*/React.createElement("div", {
+    "data-audit-dimension-nav": true,
+    className: "mb-5 rounded-xl border border-slate-300 bg-slate-50 p-3 space-y-2.5 print:hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2",
+    role: "group",
+    "aria-label": atr('filter_dimensions_aria', 'Filter audit dimensions')
+  }, [['all', atr('filter_all', 'All') + ' (' + ALL_DIMENSIONS_FOR_RENDER.length + ')'], ['attention', atr('filter_attention', 'Needs attention') + ' (' + attentionCount + ')'], ['aligned', atr('filter_aligned', 'Aligned') + ' (' + alignedCount + ')']].map(function (pair) {
+    var fKey = pair[0],
+      fLabel = pair[1];
+    return /*#__PURE__*/React.createElement("button", {
+      key: fKey,
+      type: "button",
+      "data-audit-dim-filter": fKey,
+      "aria-pressed": dimFilter === fKey,
+      onClick: function () {
+        setDimFilter(fKey);
+      },
+      className: 'min-h-11 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 ' + (dimFilter === fKey ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-indigo-50')
+    }, fLabel);
+  })), visibleDims.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-1.5",
+    role: "navigation",
+    "aria-label": atr('jump_dimensions_aria', 'Jump to dimension')
+  }, visibleDims.map(function (dimKey) {
+    var bucket = classifyDim(dimKey);
+    var tone = bucket === 'aligned' ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100' : bucket === 'na' ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100';
+    return /*#__PURE__*/React.createElement("a", {
+      key: dimKey,
+      href: '#audit-' + dimKey,
+      "data-audit-dim-jump": dimKey,
+      onClick: function (ev) {
+        jumpToDim(ev, dimKey);
+      },
+      className: 'min-h-9 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold no-underline transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 ' + tone
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, bucket === 'aligned' ? '✓' : bucket === 'na' ? '—' : '•'), /*#__PURE__*/React.createElement("span", null, dimLabel(dimKey)));
+  })), visibleDims.length === 0 && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "text-xs font-semibold text-slate-700 m-0"
+  }, atr('filter_empty', 'No dimensions match this filter.'))), c.auditScope && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 p-3 rounded border border-slate-300 bg-slate-50 text-sm text-slate-800"
   }, /*#__PURE__*/React.createElement("strong", null, atr('audit_scope_label', 'Audit scope:') + ' '), (c.auditScope.includedArtifactIds || []).length + ' artifact' + ((c.auditScope.includedArtifactIds || []).length === 1 ? '' : 's'), (c.auditScope.includedTypes || []).length > 0 ? /*#__PURE__*/React.createElement("span", null, ' · ' + c.auditScope.includedTypes.join(', ')) : null, c.auditScope.selectionMode ? /*#__PURE__*/React.createElement("span", null, ' · Selection: ' + c.auditScope.selectionMode) : null, (c.auditScope.excludedArtifactCount || 0) > 0 ? /*#__PURE__*/React.createElement("span", null, ' · ' + c.auditScope.excludedArtifactCount + ' eligible artifact' + (c.auditScope.excludedArtifactCount === 1 ? '' : 's') + ' outside scope') : null, c.auditScope.contextTruncated ? /*#__PURE__*/React.createElement("span", null, " · AI context was truncated") : null, c.auditScope.warnings && c.auditScope.warnings.length > 0 ? /*#__PURE__*/React.createElement("ul", {
     className: "list-disc ml-5 mt-1"
@@ -2571,9 +2766,8 @@ function ComprehensiveBlock(p) {
   }), c.overall && /*#__PURE__*/React.createElement(ReadinessScoreCard, {
     overall: c.overall
   }),
-  /*#__PURE__*/
   // Standards rendered first (most teacher-relevant)
-  React.createElement(DimensionBoundary, {
+  showDim('standards') && /*#__PURE__*/React.createElement(DimensionBoundary, {
     key: _dimensionBoundaryKey(c, "audit-standards"),
     id: "audit-standards",
     label: dimLabel('standards')
@@ -2590,11 +2784,12 @@ function ComprehensiveBlock(p) {
     auditScope: c.auditScope,
     alignmentMapGraph: p.alignmentMapGraph,
     onConfirmAttribution: p.onConfirmAttribution,
-    onExportAlignmentGraph: p.onExportAlignmentGraph
+    onExportAlignmentGraph: p.onExportAlignmentGraph,
+    onOpenArtifact: p.onOpenArtifact
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-standards",
     label: dimLabel('standards')
-  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+  })), showDim('vocabulary') && /*#__PURE__*/React.createElement(DimensionBoundary, {
     key: _dimensionBoundaryKey(c, "audit-vocabulary"),
     id: "audit-vocabulary",
     label: dimLabel('vocabulary')
@@ -2611,7 +2806,7 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-vocabulary",
     label: dimLabel('vocabulary')
-  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+  })), showDim('engagement') && /*#__PURE__*/React.createElement(DimensionBoundary, {
     key: _dimensionBoundaryKey(c, "audit-engagement"),
     id: "audit-engagement",
     label: dimLabel('engagement')
@@ -2628,7 +2823,7 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-engagement",
     label: dimLabel('engagement')
-  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+  })), showDim('accessibility') && /*#__PURE__*/React.createElement(DimensionBoundary, {
     key: _dimensionBoundaryKey(c, "audit-accessibility"),
     id: "audit-accessibility",
     label: dimLabel('accessibility')
@@ -2645,7 +2840,7 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-accessibility",
     label: dimLabel('accessibility')
-  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+  })), showDim('udl') && /*#__PURE__*/React.createElement(DimensionBoundary, {
     key: _dimensionBoundaryKey(c, "audit-udl"),
     id: "audit-udl",
     label: dimLabel('udl')
@@ -2662,7 +2857,7 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-udl",
     label: dimLabel('udl')
-  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+  })), showDim('accuracy') && /*#__PURE__*/React.createElement(DimensionBoundary, {
     key: _dimensionBoundaryKey(c, "audit-accuracy"),
     id: "audit-accuracy",
     label: dimLabel('accuracy')
@@ -2680,9 +2875,8 @@ function ComprehensiveBlock(p) {
     id: "audit-accuracy",
     label: dimLabel('accuracy')
   })),
-  /*#__PURE__*/
   // Plan R+ new dimensions
-  React.createElement(DimensionBoundary, {
+  showDim('differentiation') && /*#__PURE__*/React.createElement(DimensionBoundary, {
     key: _dimensionBoundaryKey(c, "audit-differentiation"),
     id: "audit-differentiation",
     label: dimLabel('differentiation')
@@ -2699,7 +2893,7 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-differentiation",
     label: dimLabel('differentiation')
-  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+  })), showDim('cognitiveLoad') && /*#__PURE__*/React.createElement(DimensionBoundary, {
     key: _dimensionBoundaryKey(c, "audit-cognitiveLoad"),
     id: "audit-cognitiveLoad",
     label: dimLabel('cognitiveLoad')
@@ -2720,7 +2914,7 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-cognitiveLoad",
     label: dimLabel('cognitiveLoad')
-  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+  })), showDim('culturalResponsiveness') && /*#__PURE__*/React.createElement(DimensionBoundary, {
     key: _dimensionBoundaryKey(c, "audit-culturalResponsiveness"),
     id: "audit-culturalResponsiveness",
     label: dimLabel('culturalResponsiveness')
@@ -2772,6 +2966,7 @@ function computeAuditFreshness(generatedContent, history) {
     unverified = 0;
   var fingerprints = comp.auditScope?.artifactFingerprints || {};
   (comp.auditScope?.includedArtifacts || []).forEach(item => {
+    if (!item || typeof item !== 'object') return;
     if (item.contentFingerprint && !fingerprints[item.id]) fingerprints = {
       ...fingerprints,
       [item.id]: item.contentFingerprint
@@ -2905,6 +3100,8 @@ function AlignmentReportView(props) {
   var freshness = computeAuditFreshness(generatedContent, props.history);
   var comprehensive = generatedContent && generatedContent.data && generatedContent.data.comprehensive;
   var reports = generatedContent && generatedContent.data && Array.isArray(generatedContent.data.reports) ? generatedContent.data.reports : [];
+  var canonicalPerStandard = comprehensive && comprehensive.standards && Array.isArray(comprehensive.standards.perStandard) ? comprehensive.standards.perStandard : [];
+  var standardsReportCount = canonicalPerStandard.length || (comprehensive && comprehensive.standards && typeof comprehensive.standards.totalStandards === 'number' ? comprehensive.standards.totalStandards : 0) || reports.length;
   var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
   // All-chrome empty state: follows the page language when its strings are translated.
   var emptyTranslated = typeof t === 'function' && typeof t('audit_report.unavailable_title') === 'string' && t('audit_report.unavailable_title') !== 'audit_report.unavailable_title';
@@ -2949,7 +3146,7 @@ function AlignmentReportView(props) {
     t: t,
     comp: comprehensive,
     isProcessing: props.isProcessing,
-    standardsReportCount: reports.length,
+    standardsReportCount: standardsReportCount,
     onApplyFixes: props.onApplyFixes,
     onGeneratePreCheck: props.onGeneratePreCheck
   }),
@@ -2960,7 +3157,13 @@ function AlignmentReportView(props) {
     alignmentMapGraph: comprehensive.alignmentMapGraph,
     onApplyFixes: props.onApplyFixes,
     onConfirmAttribution: props.onConfirmAttribution,
-    onExportAlignmentGraph: props.onExportAlignmentGraph
+    onExportAlignmentGraph: props.onExportAlignmentGraph,
+    onOpenArtifact: props.onOpenArtifact || props.onSelectArtifact || (typeof props.handleRestoreView === 'function' && Array.isArray(props.history) ? function (art) {
+      var found = props.history.find(function (h) {
+        return h && String(h.id) === String(art && art.id);
+      });
+      if (found) props.handleRestoreView(found);
+    } : undefined)
   }));
 }
 

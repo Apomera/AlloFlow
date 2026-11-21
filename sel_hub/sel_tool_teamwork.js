@@ -44,9 +44,13 @@ window.SelHub = window.SelHub || {
     if (!_audioCtx) {
       try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
     }
+    if (_audioCtx && _audioCtx.state === 'suspended') {
+      try { _audioCtx.resume(); } catch(e) {}
+    }
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
       var osc = ac.createOscillator();
@@ -572,7 +576,7 @@ window.SelHub = window.SelHub || {
     { id: 'scenario_pro', retired: true,      icon: '\uD83C\uDFAF', name: 'Scenario Pro',         desc: 'Earlier quiz: answered the teamwork scenarios' },
     { id: 'ai_coach',          icon: '\u2728',        name: 'AI Team Coach',        desc: 'Get advice from the AI team coach', aiOnly: true },
     { id: 'reflective_leader', icon: '\uD83D\uDCDD', name: 'Reflective Leader',    desc: 'Write a team role reflection' },
-    { id: 'full_explorer',     icon: '\uD83D\uDE80', name: 'Full Explorer',        desc: 'Visit all 4 tabs' },
+    { id: 'full_explorer',     icon: '\uD83D\uDE80', name: 'Full Explorer',        desc: 'Visit all 10 tabs' },
     { id: 'teamwork_champion', icon: '\uD83C\uDFC6', name: 'Teamwork Champion',    desc: 'Earn 7 or more badges' },
     { id: 'perfect_scenarios', retired: true, icon: '\u2B50',        name: 'Perfect Insight',      desc: 'Earlier quiz: received full scenario ratings' },
     { id: 'streak_3',          icon: '\uD83D\uDD25', name: 'Teamwork Streak',      desc: 'Practice 3 days in a row' },
@@ -580,12 +584,12 @@ window.SelHub = window.SelHub || {
     { id: 'contract_creator', retired: true,  icon: '\uD83D\uDCDC', name: 'Contract Creator',     desc: 'Earlier activity: built a team contract' },
     { id: 'challenge_champ',   icon: '\uD83E\uDD47', name: 'Challenge Champion',   desc: 'Complete 5 collaborative challenges' },
     { id: 'all_challenges',    icon: '\uD83C\uDF1F', name: 'All Challenges Done',  desc: 'Complete every challenge in your grade band' },
-    { id: 'teamwork_guru',     icon: '\uD83E\uDDD8', name: 'Teamwork Guru',        desc: 'Earn 12 or more badges' },
+    { id: 'teamwork_guru',     icon: '\uD83E\uDDD8', name: 'Teamwork Guru',        desc: 'Earn 10 or more badges' },
     { id: 'comm_style', retired: true,        icon: '\uD83D\uDDE3\uFE0F', name: 'Communication Style', desc: 'Earlier activity: completed the communication questionnaire' },
     { id: 'virtual_team_pro', retired: true,  icon: '\uD83D\uDCBB', name: 'Virtual Team Pro',    desc: 'Earlier activity: completed the virtual-team quiz' },
     { id: 'conflict_converter', retired: true, icon: '\u267B\uFE0F', name: 'Conflict Converter',  desc: 'Earlier activity: requested three conflict-coach responses' },
     { id: 'retro_runner', retired: true,      icon: '\uD83D\uDD04', name: 'Retrospective Runner', desc: 'Earlier activity: completed a team retrospective' },
-    { id: 'master_collaborator', icon: '\uD83C\uDF1F', name: 'Master Collaborator', desc: 'Earn 18 or more badges' },
+    { id: 'master_collaborator', icon: '\uD83C\uDF1F', name: 'Master Collaborator', desc: 'Earn 12 or more badges' },
     { id: 'virtual_scenario_1', retired: true, icon: '\uD83D\uDCF1', name: 'Remote Ready',        desc: 'Earlier activity: answered a virtual-team scenario' },
     { id: 'retro_exporter', retired: true,    icon: '\uD83D\uDCE4', name: 'Retro Exporter',      desc: 'Earlier activity: exported a retrospective as text' }
   ];
@@ -1232,10 +1236,13 @@ window.SelHub = window.SelHub || {
           };
         }, [badgeDialogOpen]);
         var showBadgesPanel = d.showBadgesPanel || false;
-        var visitedTabs    = d.visitedTabs || {};
+        var visitedTabs    = Object.assign({ roles: true }, d.visitedTabs || {});
 
         // ── Helpers ──
         var ACCENT = '#84cc16';
+        var ACCENT_BTN_BG = _teaHC ? '#000000' : ACCENT;
+        var ACCENT_BTN_FG = _teaHC ? '#ffff00' : '#0f172a';
+        var ACCENT_BTN_BD = _teaHC ? '1px solid #ffff00' : 'none';
         var ACCENT_DIM = '#84cc1622';
         var ACCENT_MED = '#84cc1644';
 
@@ -1253,16 +1260,18 @@ window.SelHub = window.SelHub || {
             if (announceToSR) announceToSR('Badge earned: ' + badge.name);
             awardXP(25);
           }
-          // Check for champion
+          // Check milestone badges synchronously (no stale-closure setTimeout)
           var totalBadges = Object.keys(newBadges).length;
-          if (totalBadges >= 7 && !newBadges.teamwork_champion) {
-            setTimeout(function() { tryAwardBadge('teamwork_champion'); }, 3200);
+          if (badgeId !== 'teamwork_champion' && totalBadges >= 7 && !newBadges.teamwork_champion) {
+            tryAwardBadge('teamwork_champion');
           }
-          if (totalBadges >= 12 && !newBadges.teamwork_guru) {
-            setTimeout(function() { tryAwardBadge('teamwork_guru'); }, 3500);
+          totalBadges = Object.keys(earnedBadges).length;
+          if (badgeId !== 'teamwork_guru' && totalBadges >= 10 && !earnedBadges.teamwork_guru) {
+            tryAwardBadge('teamwork_guru');
           }
-          if (totalBadges >= 18 && !newBadges.master_collaborator) {
-            setTimeout(function() { tryAwardBadge('master_collaborator'); }, 3800);
+          totalBadges = Object.keys(earnedBadges).length;
+          if (badgeId !== 'master_collaborator' && totalBadges >= 12 && !earnedBadges.master_collaborator) {
+            tryAwardBadge('master_collaborator');
           }
         }
 
@@ -1302,7 +1311,6 @@ window.SelHub = window.SelHub || {
         // ── Quick Reflection Prompt (reusable) ──
         function renderQuickReflection(activityType) {
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: _teaBg('#0f172a'), border: '1px solid #334155' } },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
             h('div', { style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 8 } }, '\uD83D\uDCDD Quick Reflection'),
             h('div', { style: { fontSize: 12, color: _teaFg('#94a3b8'), marginBottom: 8 } }, 'What teamwork skill did you practice?'),
             h('select', {
@@ -1335,7 +1343,7 @@ window.SelHub = window.SelHub || {
                 if (soundEnabled) sfxCorrect();
                 addToast('Reflection saved! +5 XP', 'success');
               },
-              style: { padding: '6px 14px', borderRadius: 8, border: 'none', background: ACCENT, color: _teaFg('#0f172a'), fontWeight: 600, fontSize: 11, cursor: 'pointer' }
+              style: { padding: '6px 14px', borderRadius: 8, border: ACCENT_BTN_BD, background: ACCENT_BTN_BG, color: ACCENT_BTN_FG, fontWeight: 600, fontSize: 11, cursor: 'pointer' }
             }, 'Save Reflection')
           );
         }
@@ -1416,7 +1424,7 @@ window.SelHub = window.SelHub || {
           },
             '\uD83C\uDFC5',
             Object.keys(earnedBadges).length > 0 && h('span', {
-              style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: _teaFg('#0f172a'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+              style: { position: 'absolute', top: 0, right: 0, background: ACCENT_BTN_BG, color: ACCENT_BTN_FG, border: _teaHC ? '1px solid #ffff00' : 'none', borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, Object.keys(earnedBadges).length)
           )
         );
@@ -1441,15 +1449,15 @@ window.SelHub = window.SelHub || {
               margin: '8px 12px 12px',
               padding: '12px 14px',
               borderRadius: 12,
-              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
-              border: '1px solid ' + meta.accent + '55',
-              borderLeft: '4px solid ' + meta.accent,
+              background: _teaHC ? '#000000' : (_teaL ? ('linear-gradient(135deg, ' + meta.soft + ' 0%, #f8fafc 100%)') : ('linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a')),
+              border: '1px solid ' + (_teaHC ? '#ffff00' : (meta.accent + '55')),
+              borderLeft: '4px solid ' + (_teaHC ? '#ffff00' : meta.accent),
               display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
             }
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('h3', { style: { color: _teaHC ? '#ffff00' : (_teaL ? '#0f172a' : meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
               h('p', { style: { margin: '3px 0 0', color: _teaFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
@@ -1490,7 +1498,7 @@ window.SelHub = window.SelHub || {
               h('button', {
                 type: 'button',
                 onClick: function() { upd('showBadgePopup', null); },
-                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.14)', color: '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: ACCENT_BTN_BD, background: ACCENT_BTN_BG, color: ACCENT_BTN_FG, fontSize: 14, fontWeight: 800, cursor: 'pointer' }
               }, 'Nice')
               )
             );
@@ -1505,7 +1513,7 @@ window.SelHub = window.SelHub || {
               shownBadges.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', {                   key: b.id,
-                  style: { padding: 14, borderRadius: 12, background: earned ? _teaBg('#1e293b') : '#0f172a', border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT + '66' : _teaBg('#334155')), textAlign: 'center' }
+                  style: { padding: 14, borderRadius: 12, background: earned ? _teaBg('#1e293b') : _teaBg('#0f172a'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT + '66' : _teaBg('#334155')), textAlign: 'center' }
                 },
                   h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
                   h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? _teaFg('#f1f5f9') : _teaFg('#94a3b8'), marginTop: 4 } }, b.name),
@@ -1520,7 +1528,9 @@ window.SelHub = window.SelHub || {
           );
 
           return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-            tabBar, badgePopup, h('div', { id: 'teamwork-tab-panel', role: 'tabpanel', 'aria-labelledby': 'teamwork-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, panelContent)
+            tabBar,
+            (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
+            badgePopup, h('div', { id: 'teamwork-tab-panel', role: 'tabpanel', 'aria-labelledby': 'teamwork-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, panelContent)
           );
         }
 
@@ -1568,7 +1578,7 @@ window.SelHub = window.SelHub || {
                 };
                 return h('div', {
                   key: role.id,
-                  style: { padding: 14, borderRadius: 12, background: isSelected ? _teaBg('#1e293b') : '#0f172a', border: '1px solid ' + (isSelected ? ACCENT + '88' : _teaBg('#334155')), transition: 'all 0.2s' }
+                  style: { padding: 14, borderRadius: 12, background: isSelected ? _teaBg('#1e293b') : _teaBg('#0f172a'), border: '1px solid ' + (isSelected ? ACCENT + '88' : _teaBg('#334155')), transition: 'all 0.2s' }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                     h('button', {
@@ -1632,18 +1642,23 @@ window.SelHub = window.SelHub || {
               }),
               h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
                 h('button', {
+                  disabled: roleReflectionSaved,
                   onClick: function() {
                     if (!roleReflection.trim()) { addToast('Write a reflection first!', 'info'); return; }
-                    upd('roleReflectionSaved', true);
+                    var patch = { roleReflectionSaved: true };
+                    if (!d.roleReflectionXpAwarded) {
+                      patch.roleReflectionXpAwarded = true;
+                      awardXP(15);
+                    }
+                    upd(patch);
                     logPractice('reflection', 'role');
                     tryAwardBadge('role_finder');
                     tryAwardBadge('reflective_leader');
                     if (soundEnabled) sfxCorrect();
-                    awardXP(15);
                     addToast('Reflection saved!', 'success');
                     ctx.announceToSR && ctx.announceToSR('Reflection saved');
                   },
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: roleReflectionSaved ? _teaBg('#334155') : ACCENT, color: roleReflectionSaved ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                  style: { padding: '8px 16px', borderRadius: 8, border: roleReflectionSaved ? 'none' : ACCENT_BTN_BD, background: roleReflectionSaved ? _teaBg('#334155') : ACCENT_BTN_BG, color: roleReflectionSaved ? _teaFg('#94a3b8') : ACCENT_BTN_FG, fontWeight: 600, fontSize: 12, cursor: roleReflectionSaved ? 'default' : 'pointer' }
                 }, roleReflectionSaved ? '\u2713 Saved' : 'Save Reflection'),
                 // AI Coach button
                 _teaAiOn && h('button', { 'aria-label': coachLoading ? 'Team coach is responding' : 'Ask team role coach',
@@ -1661,6 +1676,9 @@ window.SelHub = window.SelHub || {
                       ? window.SelHub.safeRehearseCheck(roleReflection, { toolId: 'teamwork_role', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
                       : { action: 'continue' };
                     if (rrSafety.action === 'block') {
+                      if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+                        try { window.SelHub.showCrisisModal({ toolName: 'Teamwork Lab', contentSnippet: roleReflection }); } catch (_) {}
+                      }
                       upd('coachResponse', window.SelHub.rehearseBreakCharacterText(rrSafety.severity));
                       upd('coachLoading', false);
                       upd('_lastTier', 3);
@@ -1785,20 +1803,26 @@ window.SelHub = window.SelHub || {
                 }, '\u2190 Previous'),
                 h('button', { 'aria-label': 'Complete & Next',
                   onClick: function() {
-                    var newCompleted = challengesCompleted + 1;
-                    upd('challengesCompleted', newCompleted);
-                    logPractice('challenge', curCh.id);
-                    awardXP(20);
-                    tryAwardBadge('challenge_accepted');
-                    if (newCompleted >= 3) tryAwardBadge('collab_expert');
-                    if (newCompleted >= 5) tryAwardBadge('challenge_champ');
-                    if (newCompleted >= chList.length) tryAwardBadge('all_challenges');
+                    var doneChIds = Object.assign({}, d.completedChallengeIds || {});
+                    var isNewCh = !doneChIds[curCh.id];
+                    if (isNewCh) doneChIds[curCh.id] = true;
+                    var newCompleted = isNewCh ? (challengesCompleted + 1) : challengesCompleted;
+                    upd({ challengesCompleted: newCompleted, completedChallengeIds: doneChIds, challengeIdx: challengeIdx + 1, challengeDiscussion: '' });
+                    if (isNewCh) {
+                      logPractice('challenge', curCh.id);
+                      awardXP(20);
+                      tryAwardBadge('challenge_accepted');
+                      if (newCompleted >= 3) tryAwardBadge('collab_expert');
+                      if (newCompleted >= 5) tryAwardBadge('challenge_champ');
+                      if (newCompleted >= chList.length) tryAwardBadge('all_challenges');
+                      addToast('Challenge completed! +20 XP', 'success');
+                    } else {
+                      addToast('Next challenge loaded!', 'info');
+                    }
                     if (soundEnabled) sfxCorrect();
-                    addToast('Challenge completed! +20 XP', 'success');
-                    upd({ challengeIdx: challengeIdx + 1, challengeDiscussion: '' });
                     ctx.announceToSR && ctx.announceToSR('Challenge completed');
                   },
-                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: ACCENT, color: _teaFg('#0f172a'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                  style: { padding: '8px 20px', borderRadius: 8, border: ACCENT_BTN_BD, background: ACCENT_BTN_BG, color: ACCENT_BTN_FG, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, 'Complete & Next \u2192')
               ),
 
@@ -1915,6 +1939,9 @@ window.SelHub = window.SelHub || {
                     ? window.SelHub.safeRehearseCheck(coachPrompt, { toolId: 'teamwork_coach', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
                     : { action: 'continue' };
                   if (cpSafety.action === 'block') {
+                    if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+                      try { window.SelHub.showCrisisModal({ toolName: 'Teamwork Lab', contentSnippet: coachPrompt }); } catch (_) {}
+                    }
                     upd('coachResponse', window.SelHub.rehearseBreakCharacterText(cpSafety.severity));
                     upd('coachLoading', false);
                     upd('_lastTier', 3);
@@ -1990,6 +2017,8 @@ window.SelHub = window.SelHub || {
                       var isSelected = rating === val;
                       return h('button', {
                         key: val,
+                        'aria-label': 'Rate ' + skill.name + ' ' + val + ' out of 5',
+                        'aria-pressed': isSelected,
                         onClick: function() {
                           if (quizSubmitted) return;
                           var newRatings = Object.assign({}, quizRatings);
@@ -1999,7 +2028,7 @@ window.SelHub = window.SelHub || {
                         },
                         style: {
                           width: 32, height: 32, borderRadius: '50%', border: '2px solid ' + (isSelected ? ACCENT : _teaBg('#334155')),
-                          background: isSelected ? ACCENT_DIM : '#0f172a', color: isSelected ? ACCENT : _teaFg('#94a3b8'),
+                          background: isSelected ? ACCENT_DIM : _teaBg('#0f172a'), color: isSelected ? ACCENT : _teaFg('#94a3b8'),
                           fontWeight: 700, fontSize: 13, cursor: quizSubmitted ? 'default' : 'pointer', transition: 'all 0.15s'
                         }
                       }, String(val));
@@ -2011,18 +2040,22 @@ window.SelHub = window.SelHub || {
             ),
 
             // Submit quiz
-            !quizSubmitted && h('button', { 'aria-label': 'Your Skills Profile',
+            !quizSubmitted && h('button', { 'aria-label': 'Submit team skills assessment',
               onClick: function() {
                 if (!quizDone) { addToast('Rate all 8 skills first!', 'info'); return; }
-                upd('quizSubmitted', true);
+                var qPatch = { quizSubmitted: true };
+                if (!d.quizXpAwarded) {
+                  qPatch.quizXpAwarded = true;
+                  awardXP(20);
+                }
+                upd(qPatch);
                 logPractice('quiz', 'skills_quiz');
                 tryAwardBadge('skills_assessor');
-                awardXP(20);
                 if (soundEnabled) sfxCorrect();
-                addToast('Skills assessment complete! +20 XP', 'success');
+                addToast('Skills assessment complete!' + (!d.quizXpAwarded ? ' +20 XP' : ''), 'success');
                 celebrate && celebrate();
               },
-              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: quizDone ? ACCENT : _teaBg('#334155'), color: quizDone ? '#0f172a' : _teaFg('#94a3b8'), fontWeight: 700, fontSize: 14, cursor: quizDone ? 'pointer' : 'default', marginBottom: 20 }
+              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: quizDone ? ACCENT_BTN_BD : 'none', background: quizDone ? ACCENT_BTN_BG : _teaBg('#334155'), color: quizDone ? ACCENT_BTN_FG : _teaFg('#94a3b8'), fontWeight: 700, fontSize: 14, cursor: quizDone ? 'pointer' : 'default', marginBottom: 20 }
             }, quizDone ? '\u2705 Submit My Assessment' : 'Rate all 8 skills to continue'),
 
             // Results visualization (bar chart)
@@ -2586,7 +2619,7 @@ window.SelHub = window.SelHub || {
                   var earned = !!earnedBadges[b.id];
                   return h('div', {
                     key: b.id,
-                    style: { padding: 10, borderRadius: 10, background: earned ? _teaBg('#1e293b') : '#0f172a', border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT + '44' : _teaBg('#475569')), textAlign: 'center' }
+                    style: { padding: 10, borderRadius: 10, background: earned ? _teaBg('#1e293b') : _teaBg('#0f172a'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT + '44' : _teaBg('#475569')), textAlign: 'center' }
                   },
                     h('div', { style: { fontSize: 22 } }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _teaFg('#f1f5f9') : _teaFg('#94a3b8'), marginTop: 2 } }, b.name)

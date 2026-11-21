@@ -373,7 +373,11 @@
         'vec2 blCloudPos = vUv * 5. * .028 + vec2(.011, .004) * blCloudClock * blCloudMotion;',
         'float blCloud = blCloudNoise(blCloudPos) * .65 + blCloudNoise(blCloudPos * 2.3 + 7.1) * .35;',
         'float blCloudShade = smoothstep(.5, .68, blCloud) * .55;',
-        'reflectedLight.directDiffuse *= 1. - blCloudShade; reflectedLight.directSpecular *= 1. - blCloudShade;',
+        // Fine canopy sun-dapple adds subtle sunlit woodland floor contrast without altering snow or season pigments.
+        'vec2 blDappleUv = vUv * 1.35 + vec2(sin(blCloudClock * .18 * blCloudMotion) * .018, cos(blCloudClock * .14 * blCloudMotion) * .014);',
+        'float blDapple = smoothstep(.42, .74, blCloudNoise(blDappleUv * 2.1) * .6 + blCloudNoise(blDappleUv * 4.7 + 3.4) * .4);',
+        'float blSunMask = (1. - blCloudShade) * (.91 + .17 * blDapple);',
+        'reflectedLight.directDiffuse *= blSunMask; reflectedLight.directSpecular *= blSunMask;',
         '#endif'
       ].join('\n'));
     };
@@ -1861,19 +1865,27 @@
       var moteGeo = geometry(new THREE.BufferGeometry());
       moteGeo.setAttribute('position', new THREE.BufferAttribute(motePositions, 3));
       moteGeo.setAttribute('blMoteSeed', new THREE.BufferAttribute(moteSeeds, 1));
-      var moteMat = keep(new THREE.PointsMaterial({ color: 0xffe9b0, size: .03, sizeAttenuation: true, transparent: true, opacity: .8, depthWrite: false, blending: THREE.AdditiveBlending }));
+      var moteMat = keep(new THREE.PointsMaterial({ color: 0xffecc0, size: .052, sizeAttenuation: true, transparent: true, opacity: .78, depthWrite: false, blending: THREE.AdditiveBlending }));
       moteMat.onBeforeCompile = function (shader) {
         shader.uniforms.blMoteClock = clock;
-        shader.vertexShader = 'uniform float blMoteClock;\nattribute float blMoteSeed;\nvarying float blMoteGlint;\n' + shader.vertexShader;
+        shader.vertexShader = 'uniform float blMoteClock;\nattribute float blMoteSeed;\nvarying float blMoteGlint;\nvarying float blMoteWarm;\n' + shader.vertexShader;
         shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', [
           '#include <begin_vertex>',
           'float blMoteT = blMoteClock + blMoteSeed * 97.;',
-          'transformed += vec3(sin(blMoteT * .21 + blMoteSeed * 6.3) * .35 + breezeSway(blMoteT), sin(blMoteT * .13 + blMoteSeed * 11.) * .22, cos(blMoteT * .17 + blMoteSeed * 4.1) * .35);',
-          'blMoteGlint = .4 + .6 * pow(max(0., sin(blMoteT * 1.7 + blMoteSeed * 30.)), 6.);'
-        ].join('\n')).replace('void main() {', 'float breezeSway(float t) { return sin(t * .05) * .4; }\nvoid main() {');
-        shader.fragmentShader = 'varying float blMoteGlint;\n' + shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.a *= blMoteGlint;');
+          'transformed += vec3(sin(blMoteT * .21 + blMoteSeed * 6.3) * .35 + breezeSway(blMoteT), sin(blMoteT * .13 + blMoteSeed * 11.) * .22 + .06 * cos(blMoteT * .09 + blMoteSeed * 5.), cos(blMoteT * .17 + blMoteSeed * 4.1) * .35);',
+          'blMoteGlint = .38 + .62 * pow(max(0., sin(blMoteT * 1.5 + blMoteSeed * 30.)), 5.);',
+          'blMoteWarm = blMoteSeed;'
+        ].join('\n')).replace('void main() {', 'float breezeSway(float t) { return sin(t * .05) * .4; }\nvoid main() {')
+          .replace('#include <logdepthbuf_vertex>', '#include <logdepthbuf_vertex>\ngl_PointSize *= .65 + .90 * blMoteSeed;');
+        shader.fragmentShader = 'varying float blMoteGlint;\nvarying float blMoteWarm;\n' + shader.fragmentShader.replace('#include <color_fragment>', [
+          '#include <color_fragment>',
+          'vec2 blMc = gl_PointCoord * 2.0 - 1.0; float blMr = dot(blMc, blMc); if (blMr > 1.0) discard;',
+          'float blHalo = pow(1.0 - blMr, 2.2); float blCore = exp(-blMr * 7.5);',
+          'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.98, 0.90), blCore * 0.65 + blMoteWarm * 0.15);',
+          'diffuseColor.a *= (blHalo * 0.72 + blCore * 0.55) * blMoteGlint;'
+        ].join('\n'));
       };
-      moteMat.customProgramCacheKey = function () { return 'birdlab-clearing-motes-v1'; };
+      moteMat.customProgramCacheKey = function () { return 'birdlab-clearing-motes-v2'; };
       var motes = new THREE.Points(moteGeo, moteMat);
       motes.name = 'drifting-clearing-motes'; motes.frustumCulled = false; root.add(motes);
     }
@@ -2138,11 +2150,15 @@
                 'vec4 mvPosition = modelViewMatrix * vec4(blMistDrift / vec3(length(modelMatrix[0].xyz), length(modelMatrix[1].xyz), length(modelMatrix[2].xyz)), 1.0);',
                 'blMistNear = smoothstep(2.5, 7., -mvPosition.z) * (1. - .9 * smoothstep(.8, 2.6, blMistEye - modelMatrix[3].y));'
               ].join('\n'));
-              shader.fragmentShader = head + shader.fragmentShader.replace('#include <alphatest_fragment>',
-                'diffuseColor.a *= blMistNear * (1. - .2 * blMistMotion * (.5 + .5 * sin(blMistClock * .11 + blMistSeed * 9.)));\n#include <alphatest_fragment>');
+              shader.fragmentShader = head + shader.fragmentShader.replace('#include <alphatest_fragment>', [
+                'float blMistGlow = smoothstep(0.15, 0.85, vUv.y) * (0.85 + 0.15 * sin(blMistClock * .08 * blMistMotion + blMistSeed * 7.0));',
+                'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.87, 0.80), blMistGlow * 0.28);',
+                'diffuseColor.a *= blMistNear * (1. - .2 * blMistMotion * (.5 + .5 * sin(blMistClock * .11 + blMistSeed * 9.)));',
+                '#include <alphatest_fragment>'
+              ].join('\n'));
             };
           }({ value: hash(i + 11, 937) }));
-          mat.customProgramCacheKey = function () { return 'birdlab-dawn-mist-v1'; };
+          mat.customProgramCacheKey = function () { return 'birdlab-dawn-mist-v2'; };
           var sprite = new THREE.Sprite(mat); sprite.name = 'dawn-mist-sheet'; sprite.onBeforeRender = setEye;
           var tall = 1.6 + hash(i + 19, 953) * .7;
           sprite.scale.set(5 + hash(i + 17, 951) * 4, tall, 1);

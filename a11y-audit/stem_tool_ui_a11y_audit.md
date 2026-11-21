@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-11-19T19:43:34.366Z
+Generated: 2026-11-21T01:00:20.780Z
 
 ## Scope
 
@@ -15,8 +15,8 @@ Generated: 2026-11-19T19:43:34.366Z
 | --- | ---: |
 | Total findings | 12 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 6 |
-| Review notices | 6 |
+| Tool-level warnings | 5 |
+| Review notices | 7 |
 | Tools with any finding | 10 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 43 |
@@ -26,8 +26,8 @@ Generated: 2026-11-19T19:43:34.366Z
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
 | warning | `no-interactive-controls` | 3 | 3 | coasterLab, geoSandbox, geometryWorld | Confirm the first screen really has no control. If it does, the audit is stuck on a placeholder and the tool is effectively unaudited. |
-| warning | `placeholder-render` | 3 | 3 | geoSandbox, geometryWorld, lawNavigator | The audit only saw a loading/gated screen. Give the harness what the tool waits on (host state, 3D loader, network stub) so the real first screen gets audited. |
-| notice | `horizontal-overflow-risk` | 5 | 5 | birdLab, consciousnessLab, coralReef, numberline, perceptionLab | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
+| warning | `placeholder-render` | 2 | 2 | geoSandbox, geometryWorld | The audit only saw a loading/gated screen. Give the harness what the tool waits on (host state, 3D loader, network stub) so the real first screen gets audited. |
+| notice | `horizontal-overflow-risk` | 6 | 6 | birdLab, consciousnessLab, coralReef, numberline, perceptionLab, spaceColony | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
 | notice | `light-background` | 1 | 1 | fieldJourneys | Confirm light-background tools still pass contrast across light, dark, and high-contrast themes. |
 
 ## Recommended Next Passes
@@ -47,7 +47,7 @@ Generated: 2026-11-19T19:43:34.366Z
 | `algebraCAS` Algebra Solver | math | standard | 15 | 2 | 0 | 0 | 0 | 0 |  |
 | `alloBotSage` AlloBot: Starbound Sage | Games | standard | 82 | 0 | 0 | 0 | 0 | 0 |  |
 | `alphaFoldExplorer` AlphaFold Explorer | science | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
-| `anatomy` Human Anatomy Explorer | science | standard | 86 | 5 | 1 | 0 | 0 | 0 |  |
+| `anatomy` Human Anatomy Explorer | science | standard | 90 | 5 | 1 | 0 | 0 | 0 |  |
 | `appLab` AppLab | technology | standard | 12 | 7 | 0 | 0 | 0 | 0 |  |
 | `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 182 | 6 | 0 | 0 | 0 | 0 |  |
 | `aquarium` Aquarium Lab | science | standard | 37 | 3 | 0 | 0 | 0 | 0 |  |
@@ -58,11 +58,11 @@ Generated: 2026-11-19T19:43:34.366Z
 | `arithmeticStudio` Arithmetic Strategy Studio | math | standard | 31 | 3 | 0 | 0 | 0 | 0 |  |
 | `artStudio` Art & Design Studio | creative | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `assessmentLiteracy` Assessment Literacy Lab | Literacy | standard | 15 | 0 | 0 | 0 | 0 | 0 |  |
-| `astronomy` Night Sky & Astronomy | science | standard | 32 | 5 | 0 | 0 | 0 | 0 |  |
+| `astronomy` Night Sky & Astronomy | science | standard | 32 | 4 | 0 | 0 | 0 | 0 |  |
 | `atcTower` ATC Tower | applied | standard | 12 | 2 | 0 | 0 | 0 | 0 |  |
 | `autoRepair` Auto Repair Shop | life-skills | standard | 61 | 1 | 0 | 0 | 0 | 0 |  |
 | `bakingScience` Baking Lab | science | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
-| `base10` Math Manipulatives | math | standard | 34 | 2 | 0 | 0 | 0 | 0 |  |
+| `base10` Math Manipulatives | math | standard | 40 | 2 | 0 | 0 | 0 | 0 |  |
 | `beehive` Beehive Simulator | science | standard | 179 | 30 | 1 | 0 | 0 | 0 |  |
 | `behaviorLab` Behavior Lab | science | standard | 21 | 5 | 0 | 0 | 0 | 0 |  |
 | `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 29 | 0 | 0 | 0 | 0 | 0 |  |
@@ -84,15 +84,15 @@ Generated: 2026-11-19T19:43:34.366Z
 | `codingPlayground` codingPlayground | creative | standard | 50 | 2 | 1 | 0 | 0 | 0 |  |
 | `companionPlanting` Companion Planting Lab | science | standard | 21 | 0 | 1 | 0 | 0 | 0 |  |
 | `consciousnessLab` Consciousness Theory Lab | science | standard | 31 | 0 | 0 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
-| `coordinate` Coordinate Grid | math | standard | 32 | 4 | 0 | 0 | 0 | 0 |  |
-| `coralReef` Coral Reef Survey Lab | science | standard | 23 | 0 | 0 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
+| `coordinate` Coordinate Grid | math | standard | 36 | 4 | 0 | 0 | 0 | 0 |  |
+| `coralReef` Coral Reef Survey Lab | science | standard | 27 | 0 | 0 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
 | `cyberDefense` Cyber Defense Lab | technology | standard | 19 | 0 | 0 | 0 | 0 | 0 |  |
 | `dataLab` Data Lab | data | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
-| `dataPlot` Data Plotter | creative | standard | 43 | 12 | 0 | 0 | 0 | 0 |  |
+| `dataPlot` Data Plotter | creative | standard | 47 | 12 | 0 | 0 | 0 | 0 |  |
 | `dataStudio` Charts & Graphs | creative | standard | 36 | 22 | 0 | 0 | 0 | 0 |  |
 | `decomposer` Material Decomposer | science | standard | 31 | 0 | 0 | 0 | 0 | 0 |  |
-| `diagnosisEligibility` Diagnosis, Evaluation & School Eligibility | applied | standard | 13 | 30 | 0 | 0 | 0 | 0 |  |
-| `dinoLab` Dino Lab | biology | standard | 55 | 7 | 0 | 0 | 0 | 0 |  |
+| `diagnosisEligibility` Diagnosis, Evaluation & School Eligibility | applied | standard | 16 | 30 | 0 | 0 | 0 | 0 |  |
+| `dinoLab` Dino Lab | biology | standard | 59 | 7 | 0 | 0 | 0 | 0 |  |
 | `dissection` Virtual Dissection Lab | science | standard | 108 | 15 | 1 | 0 | 0 | 0 |  |
 | `dnaLab` DNA Lab | biology | standard | 100 | 4 | 1 | 0 | 0 | 0 |  |
 | `echoTrainer` Echo Navigator | applied | standard | 32 | 5 | 1 | 0 | 0 | 0 |  |
@@ -105,13 +105,13 @@ Generated: 2026-11-19T19:43:34.366Z
 | `fireEcology` Fire Ecology & Indigenous Stewardship | science | standard | 28 | 0 | 0 | 0 | 0 | 0 |  |
 | `firstResponse` First Response Lab | life-skills | standard | 1 | 0 | 0 | 0 | 0 | 0 |  |
 | `fisherLab` FisherLab: Boating & Fishing Sim | science | standard | 39 | 6 | 0 | 0 | 0 | 0 |  |
-| `flightSim` SkySchool | applied | standard | 36 | 4 | 0 | 0 | 0 | 0 |  |
+| `flightSim` SkySchool | applied | standard | 37 | 4 | 0 | 0 | 0 | 0 |  |
 | `forge` Tool Forge | coding | standard | 6 | 9 | 0 | 0 | 0 | 0 |  |
 | `fractionViz` Fraction Lab | math | standard | 44 | 2 | 1 | 0 | 0 | 0 |  |
 | `fractions` Fraction Lab | math | standard | 44 | 2 | 1 | 0 | 0 | 0 |  |
 | `freeForms` Free Forms | creative | standard | 19 | 0 | 0 | 0 | 0 | 0 |  |
 | `funcGrapher` Function Grapher | math | standard | 55 | 9 | 1 | 0 | 0 | 0 |  |
-| `galaxy` Galaxy Explorer | science | standard | 82 | 11 | 1 | 0 | 0 | 0 |  |
+| `galaxy` Galaxy Explorer | science | standard | 87 | 11 | 1 | 0 | 0 | 0 |  |
 | `gameStudio` Game Design Studio | creativity | standard | 38 | 3 | 0 | 0 | 0 | 0 |  |
 | `geoQuiz` Geography Explorer | geo | standard | 17 | 2 | 0 | 0 | 0 | 0 |  |
 | `geoSandbox` Geometry Sandbox | math | standard | 0 | 0 | 0 | 0 | 2 | 0 | no-interactive-controls x1, placeholder-render x1 |
@@ -123,9 +123,9 @@ Generated: 2026-11-19T19:43:34.366Z
 | `heatLab` Heat & Thermodynamics Lab | science | standard | 327 | 73 | 9 | 0 | 0 | 0 |  |
 | `inequality` Inequality Grapher | math | standard | 44 | 9 | 0 | 0 | 0 | 0 |  |
 | `kitchenLab` Kitchen Lab | applied | standard | 13 | 0 | 0 | 0 | 0 | 0 |  |
-| `lawNavigator` Education Law Navigator | applied | standard | 1 | 0 | 0 | 0 | 1 | 0 | placeholder-render x1 |
+| `lawNavigator` Education Law Navigator | applied | standard | 1 | 0 | 0 | 0 | 0 | 0 |  |
 | `learningLab` Learning Lab | life-skills | standard | 28 | 0 | 0 | 0 | 0 | 0 |  |
-| `lifeSkills` Life Skills Lab | Life Skills | standard | 122 | 4 | 0 | 0 | 0 | 0 |  |
+| `lifeSkills` Life Skills Lab | Life Skills | standard | 126 | 4 | 0 | 0 | 0 | 0 |  |
 | `llmLiteracy` AI Literacy Lab | technology | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `logicLab` Logic Lab | math | standard | 39 | 1 | 0 | 0 | 0 | 0 |  |
 | `lumen` Lumen | data | standard | 5 | 0 | 0 | 0 | 0 | 0 |  |
@@ -136,7 +136,7 @@ Generated: 2026-11-19T19:43:34.366Z
 | `molecule` Molecule Lab | science | standard | 49 | 0 | 0 | 0 | 0 | 0 |  |
 | `moleculeShelf` Molecule Shelf | chemistry | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
 | `moneyMath` Money Math | math | standard | 27 | 2 | 0 | 0 | 0 | 0 |  |
-| `moonMission` Moon Mission | science | standard | 16 | 5 | 1 | 0 | 0 | 0 |  |
+| `moonMission` Moon Mission | science | standard | 19 | 5 | 1 | 0 | 0 | 0 |  |
 | `multtable` Multiplication Table | math | standard | 23 | 3 | 0 | 0 | 0 | 0 |  |
 | `musicSynth` Music Synthesizer | creative | standard | 94 | 22 | 2 | 0 | 0 | 0 |  |
 | `nuclearLab` Nuclear & Radiation Lab | science | standard | 13 | 0 | 0 | 0 | 0 | 0 |  |
@@ -152,20 +152,20 @@ Generated: 2026-11-19T19:43:34.366Z
 | `perceptionLab` Perception Lab | science | standard | 41 | 11 | 0 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
 | `petsLab` Science of Pets Lab | life-earth-science | standard | 39 | 1 | 0 | 0 | 0 | 0 |  |
 | `physics` Physics Simulator | science | standard | 57 | 7 | 1 | 0 | 0 | 0 |  |
-| `plateTectonics` Plate Tectonics | science | standard | 13 | 1 | 0 | 0 | 0 | 0 |  |
-| `playlab` PlayLab | science | standard | 36 | 6 | 1 | 0 | 0 | 0 |  |
+| `plateTectonics` Plate Tectonics | science | standard | 18 | 1 | 0 | 0 | 0 | 0 |  |
+| `playlab` PlayLab | science | standard | 40 | 6 | 1 | 0 | 0 | 0 |  |
 | `printLab` Print Lab | engineering | standard | 23 | 3 | 1 | 0 | 0 | 0 |  |
 | `printingPress` PrintingPress | history-engineering | standard | 30 | 1 | 0 | 0 | 0 | 0 |  |
-| `probability` Probability Lab | math | standard | 31 | 5 | 0 | 0 | 0 | 0 |  |
+| `probability` Probability Lab | math | standard | 36 | 5 | 0 | 0 | 0 | 0 |  |
 | `protractor` Angle Explorer | math | standard | 32 | 3 | 0 | 0 | 0 | 0 |  |
 | `punnett` Punnett Square Lab | science | standard | 30 | 2 | 0 | 0 | 0 | 0 |  |
-| `raptorHunt` Raptor Hunt: Predator Physics + Biology | science | standard | 59 | 1 | 0 | 0 | 0 | 0 |  |
+| `raptorHunt` Raptor Hunt: Predator Physics + Biology | science | standard | 63 | 1 | 0 | 0 | 0 | 0 |  |
 | `ratioLab` Ratios, Rates & Proportions Lab | math | standard | 27 | 9 | 0 | 0 | 0 | 0 |  |
-| `renewablesLab` Renewables Lab | physics-chemistry | standard | 19 | 0 | 0 | 0 | 0 | 0 |  |
-| `roadReady` RoadReady: Driver's Ed & Auto Science | life-skills | standard | 86 | 9 | 0 | 0 | 0 | 0 |  |
+| `renewablesLab` Renewables Lab | physics-chemistry | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
+| `roadReady` RoadReady: Driver's Ed & Auto Science | life-skills | standard | 90 | 9 | 0 | 0 | 0 | 0 |  |
 | `rockCycle` Rock Cycle | science | standard | 23 | 1 | 1 | 0 | 0 | 0 |  |
 | `rocks` Rocks & Minerals Explorer | science | standard | 19 | 1 | 1 | 0 | 0 | 0 |  |
-| `scaleExplorer` Scale Explorer | science | standard | 260 | 24 | 2 | 0 | 0 | 0 |  |
+| `scaleExplorer` Scale Explorer | science | standard | 264 | 24 | 2 | 0 | 0 | 0 |  |
 | `schoolBehaviorToolkit` School Behavior Toolkit | science | standard | 15 | 0 | 0 | 0 | 0 | 0 |  |
 | `semiconductor` Semiconductor Lab | science | standard | 28 | 9 | 1 | 0 | 0 | 0 |  |
 | `simShelf` Sim Shelf | science | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
@@ -173,10 +173,10 @@ Generated: 2026-11-19T19:43:34.366Z
 | `skatelab` Skate Lab | science | standard | 53 | 33 | 1 | 0 | 0 | 0 |  |
 | `solarSystem` Solar System Explorer | science | standard | 49 | 1 | 1 | 0 | 0 | 0 |  |
 | `sourcebook` Sourcebook | creative | standard | 119 | 14 | 0 | 0 | 0 | 0 |  |
-| `spaceColony` Kepler Colony | strategy | standard | 32 | 8 | 1 | 0 | 0 | 0 |  |
+| `spaceColony` Kepler Colony | strategy | standard | 32 | 8 | 1 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
 | `spaceExplorer` Space Explorer | Simulations | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
-| `spaceStation` Space Station | science | standard | 151 | 28 | 1 | 0 | 0 | 0 |  |
-| `statsLab` Statistics Lab | math | standard | 21 | 0 | 0 | 0 | 0 | 0 |  |
+| `spaceStation` Space Station | science | standard | 156 | 28 | 1 | 0 | 0 | 0 |  |
+| `statsLab` Statistics Lab | math | standard | 26 | 0 | 0 | 0 | 0 | 0 |  |
 | `stewardshipHub` Environmental Stewardship Campaigns | science | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
 | `swimLab` SwimLab | life-skills | standard | 16 | 0 | 0 | 0 | 0 | 0 |  |
 | `throwlab` ThrowLab | science | standard | 57 | 8 | 1 | 0 | 0 | 0 |  |
@@ -185,13 +185,13 @@ Generated: 2026-11-19T19:43:34.366Z
 | `titrationLab` Titration Lab | science | standard | 9 | 0 | 0 | 0 | 0 | 0 |  |
 | `trajectoryComputing` Trajectory Computing Lab | coding | standard | 11 | 5 | 0 | 0 | 0 | 0 |  |
 | `treeLab` Tree Life Lab | Life Science | standard | 47 | 11 | 0 | 0 | 0 | 0 |  |
-| `typingPractice` Typing Practice | life-skills | standard | 51 | 2 | 0 | 0 | 0 | 0 |  |
+| `typingPractice` Typing Practice | life-skills | standard | 54 | 2 | 0 | 0 | 0 | 0 |  |
 | `unitConvert` Unit Converter | math | standard | 34 | 7 | 0 | 0 | 0 | 0 |  |
 | `universe` Universe Explorer | science | standard | 178 | 15 | 1 | 0 | 0 | 0 |  |
 | `volume` 3D Volume Explorer | math | standard | 36 | 8 | 2 | 0 | 0 | 0 |  |
 | `waterCycle` Water Cycle | science | standard | 62 | 15 | 1 | 0 | 0 | 0 |  |
 | `wave` Wave Simulator | science | standard | 62 | 8 | 1 | 0 | 0 | 0 |  |
-| `weatherSystems` Weather Systems & Forecasting | science | standard | 47 | 10 | 1 | 0 | 0 | 0 |  |
+| `weatherSystems` Weather Systems & Forecasting | science | standard | 51 | 10 | 1 | 0 | 0 | 0 |  |
 | `weldLab` WeldLab — Welding & Metal Joining | engineering | standard | 40 | 2 | 0 | 0 | 0 | 0 |  |
 | `wheelAndFire` Wheel & Fire: Pottery Lab | creative | standard | 30 | 12 | 0 | 0 | 0 | 0 |  |
 | `worldBuilder` WriteCraft | creative | standard | 13 | 6 | 0 | 0 | 0 | 0 |  |

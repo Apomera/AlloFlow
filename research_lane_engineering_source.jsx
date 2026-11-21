@@ -392,8 +392,14 @@
           return { ok: false, reason: 'Candidates "' + (concepts[a].name || a + 1) + '" and "' + (concepts[b].name || b + 1) + '" read like the same idea — make them more genuinely different.',
                    bypass_signals: ['candidate_near_duplicate'] };
         }
-        var satA = new Set([].concat(concepts[a].constraintsSatisfied || [], concepts[a].constraintsPunted || []));
-        var satB = new Set([].concat(concepts[b].constraintsSatisfied || [], concepts[b].constraintsPunted || []));
+        var satA = new Set([].concat(
+          (concepts[a].constraintsSatisfied || []).map(function (id) { return 'S:' + id; }),
+          (concepts[a].constraintsPunted || []).map(function (id) { return 'P:' + id; })
+        ));
+        var satB = new Set([].concat(
+          (concepts[b].constraintsSatisfied || []).map(function (id) { return 'S:' + id; }),
+          (concepts[b].constraintsPunted || []).map(function (id) { return 'P:' + id; })
+        ));
         var union = new Set([].concat(Array.from(satA), Array.from(satB)));
         var inter = 0;
         satA.forEach(function (x) { if (satB.has(x)) inter++; });
@@ -519,7 +525,7 @@
     }) || crits.some(function (c) {
       if (c.kind !== 'physical-safety') return false;
       var matched = runs.filter(function (r) { return r.criterionId === c.id; });
-      return matched.length > 0 && matched.every(function (r) { return r.passed === false; });
+      return matched.length > 0 && matched[matched.length - 1].passed === false;
     });
   }
 
@@ -847,6 +853,7 @@
   function tradeoffInverterPrompt(journal) {
     var devLevel = journal.devLevel || '6_8';
     var sp = journal.stakeholderProfile || {};
+    var decl = stripUntrustedEng((((journal.stageNotes || {}).plan_test || {}).tradeOffDeclaration) || '');
     var ledger = (journal.tradeOffLedger || []).map(function (r, i) {
       var gained = ((journal.constraintMatrix || []).filter(function (c) { return c.id === r.criterion; })[0] || {}).criterion
                 || ((journal.criteria || []).filter(function (c) { return c.id === r.criterion; })[0] || {}).name
@@ -854,9 +861,9 @@
       var sac = ((journal.constraintMatrix || []).filter(function (c) { return c.id === r.sacrificedCriterion; })[0] || {}).criterion
              || ((journal.criteria || []).filter(function (c) { return c.id === r.sacrificedCriterion; })[0] || {}).name
              || r.sacrificedCriterion;
-      return (i + 1) + '. gained "' + stripUntrustedEng(gained) + '", sacrificed "' + stripUntrustedEng(sac) + '", justification: "' + stripUntrustedEng((r.justification || r.accepted || '').slice(0, 200)) + '", whoseInterestThisServes: "' + stripUntrustedEng(r.whoseInterestThisServes || '') + '"';
+      var justSource = (r.justification || r.accepted || '').trim() || decl;
+      return (i + 1) + '. gained "' + stripUntrustedEng(gained) + '", sacrificed "' + stripUntrustedEng(sac) + '", justification: "' + stripUntrustedEng(justSource.slice(0, 200)) + '", whoseInterestThisServes: "' + stripUntrustedEng(r.whoseInterestThisServes || '') + '"';
     }).join('\n');
-    var decl = stripUntrustedEng((((journal.stageNotes || {}).plan_test || {}).tradeOffDeclaration) || '');
     return [
       'SYSTEM: You are an engineering-design coach voicing a stakeholder with INVERTED priorities — the stakeholder who would have rejected the student\'s trade-off.',
       'You MUST NOT tell the student their priorities are wrong. You MUST NOT suggest a different chosen candidate. You MUST NOT propose a "correct" trade-off.',
@@ -884,7 +891,7 @@
     }
     var ledger = journal.tradeOffLedger || [];
     var declNorm = normalizeForCompare((((journal.stageNotes || {}).plan_test || {}).tradeOffDeclaration) || '');
-    var allJustText = ledger.map(function (r) { return normalizeForCompare(r.justification || r.accepted || ''); }).join(' ');
+    var allJustText = ledger.map(function (r) { return normalizeForCompare(r.justification || r.accepted || ''); }).concat(declNorm ? [declNorm] : []).join(' ');
     for (var i = 0; i < out.per_tradeoff.length; i++) {
       var pt = out.per_tradeoff[i];
       if (!pt || typeof pt.quoted_phrase !== 'string') {
@@ -904,11 +911,17 @@
         return { __rejected: true, rejectReason: 'quoted_phrase_too_long_at_' + i, attemptedShapeKeys: ['per_tradeoff','quoted_phrase'] };
       }
     }
-    // Parroting check: no 6-gram >12 chars of AI output may appear verbatim
-    // in the student's tradeOffDeclaration (anti-laundering).
-    // (Reverse leak — checking that AI didn't echo student decl back.)
-    var allAiText = JSON.stringify(out);
-    var aiNorm = normalizeForCompare(allAiText);
+    // Parroting check: no 6-gram >12 chars of AI-authored question text may appear verbatim
+    // in the student's tradeOffDeclaration (excluding quoted_phrase, which must be verbatim).
+    var questionParts = [];
+    out.per_tradeoff.forEach(function (pt) {
+      if (pt && Array.isArray(pt.inversion_questions)) questionParts = questionParts.concat(pt.inversion_questions);
+      if (pt && Array.isArray(pt.stakeholder_voice_questions)) questionParts = questionParts.concat(pt.stakeholder_voice_questions);
+    });
+    if (Array.isArray(out.what_did_you_not_consider_questions)) {
+      questionParts = questionParts.concat(out.what_did_you_not_consider_questions);
+    }
+    var aiNorm = normalizeForCompare(questionParts.join(' '));
     if (declNorm.length > 24) {
       var declWords = declNorm.split(/\s+/);
       for (var w = 0; w + 6 <= declWords.length; w++) {
@@ -1626,7 +1639,8 @@
     var _draft = useState(existing || { name: '', unit: '', target: '', direction: 'maximize', weight: 3, kind: 'measurable-other' });
     var draft = _draft[0]; var setDraft = _draft[1];
     var unitValid = isWhitelistedUnit(draft.unit);
-    var canSave = (draft.name || '').trim().length >= 4 && unitValid && (draft.target + '').length > 0;
+    var targetValid = String(draft.target != null ? draft.target : '').trim().length > 0 && Number.isFinite(parseFloat(draft.target));
+    var canSave = (draft.name || '').trim().length >= 4 && unitValid && targetValid;
     return (
       <div style={{ padding: '8px', borderRadius: '8px',
         background: '#fff', border: '1px solid #cbd5e1',
@@ -1984,7 +1998,11 @@
       crits.forEach(function (c) {
         var w = parseInt(c.weight, 10) || 1;
         var s = cell(candidateId, c.id).score;
-        if (typeof s === 'number') { total += s * w; wsum += w; }
+        if (typeof s === 'number') {
+          var effective = c.direction === 'minimize' ? (6 - s) : s;
+          total += effective * w;
+          wsum += w;
+        }
       });
       return wsum > 0 ? (total / wsum).toFixed(2) : '—';
     }
@@ -2008,7 +2026,7 @@
                   <th key={c.id} style={{ textAlign: 'left', padding: '6px', borderBottom: '1px solid #cbd5e1', minWidth: '160px' }}>
                     {c.name}
                     <div style={{ fontSize: '9px', color: '#64748b', fontWeight: 400 }}>
-                      {c.direction} {c.target} {c.unit} · w{c.weight}
+                      {c.direction} {c.target} {c.unit} · w{c.weight} ({c.direction === 'minimize' ? '1=best' : '5=best'})
                     </div>
                   </th>
                 );

@@ -301,13 +301,15 @@ const run = async () => {
   // 32. no ADMIN_TOKEN → 501
   r = await worker.fetch(req('/pdSubmissions'), ENVPD);
   ok(r.status === 501, 'GET /pdSubmissions without ADMIN_TOKEN → 501 (got ' + r.status + ')');
-  // 33. wrong token → 401; right token → 200 + count
+  // 33. query token rejected → 401; wrong Bearer → 401; right Bearer → 200 + count
   const ENVPDADMIN = { ...ENVPD, ADMIN_TOKEN: 'sekret' };
-  r = await worker.fetch(req('/pdSubmissions?token=nope'), ENVPDADMIN);
-  ok(r.status === 401, 'GET /pdSubmissions wrong token → 401 (got ' + r.status + ')');
   r = await worker.fetch(req('/pdSubmissions?token=sekret'), ENVPDADMIN);
+  ok(r.status === 401, 'GET /pdSubmissions query token rejected → 401 (got ' + r.status + ')');
+  r = await worker.fetch(req('/pdSubmissions', { headers: { Authorization: 'Bearer nope' } }), ENVPDADMIN);
+  ok(r.status === 401, 'GET /pdSubmissions wrong Bearer token → 401 (got ' + r.status + ')');
+  r = await worker.fetch(req('/pdSubmissions', { headers: { Authorization: 'Bearer sekret' } }), ENVPDADMIN);
   const pdList = await r.json();
-  ok(r.status === 200 && pdList.ok === true && pdList.count === pdCount, 'GET /pdSubmissions valid token → 200 + lists all stored (got ' + (pdList && pdList.count) + '/' + pdCount + ')');
+  ok(r.status === 200 && pdList.ok === true && pdList.count === pdCount, 'GET /pdSubmissions valid Bearer token → 200 + lists all stored (got ' + (pdList && pdList.count) + '/' + pdCount + ')');
 
   globalThis.fetch = realFetch;
   console.log((fail === 0 ? '✓' : '✗') + ' worker smoke: ' + pass + ' passed, ' + fail + ' failed');

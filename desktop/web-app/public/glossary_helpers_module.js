@@ -25,9 +25,12 @@ function beginGlossaryTask(deps, index, fields = [], channel = 'entry', resource
     const locate = resource => {
         if (!sameResource(resource)) return -1;
         if (index == null) return 0;
-        return resource.data.findIndex(item => item && (entryId
+        const exact = resource.data.findIndex(item => item && (entryId
             ? String(item.entryId || item.glossaryEntryId || item.id || '') === String(entryId)
             : item === entry));
+        if (exact >= 0 || entryId) return exact;
+        const atIndex = resource.data[index];
+        return atIndex && typeof atIndex === 'object' && atIndex.term === entry.term ? index : -1;
     };
     const matches = resource => {
         const at = locate(resource);
@@ -58,6 +61,20 @@ function beginGlossaryTask(deps, index, fields = [], channel = 'entry', resource
             return true;
         },
         busy(setter, value) {
+            if (typeof setter !== 'function') return;
+            // Always clear busy state on `false` (even after abort or resource switch) so
+            // spinners never stay stuck if the user returns to the entry.
+            if (value === false) {
+                if (!registry || registry.get(key) === token) {
+                    setter(previous => {
+                        if (!previous || !Object.prototype.hasOwnProperty.call(previous, entryKey)) return previous;
+                        const next = { ...previous };
+                        next[entryKey] = false;
+                        return next;
+                    });
+                }
+                return;
+            }
             if (displayed()) setter(previous => ({ ...previous, [entryKey]: value }));
         },
         finish() {
@@ -95,8 +112,8 @@ const applyAIConfig = (config, deps) => {
     if (!config) return [];
     const changes = [];
     if (config.gradeLevel) {
-      let mappedGrade = config.gradeLevel;
-      const input = config.gradeLevel.toLowerCase().trim();
+      let mappedGrade = String(config.gradeLevel);
+      const input = mappedGrade.toLowerCase().trim();
       if (input.includes('kinder') || input === 'k') mappedGrade = 'Kindergarten';
       else if (input.includes('1st') || input === '1') mappedGrade = '1st Grade';
       else if (input.includes('2nd') || input === '2') mappedGrade = '2nd Grade';
@@ -124,10 +141,11 @@ const applyAIConfig = (config, deps) => {
       changes.push(`Topic set to "${config.topic}"`);
     }
     if (config.language) {
-      const lang = config.language;
-      if (!selectedLanguages.includes(lang)) {
-          if (selectedLanguages.length < 4) {
-              setSelectedLanguages(prev => [...prev, lang]);
+      const lang = String(config.language);
+      const currentLangs = Array.isArray(selectedLanguages) ? selectedLanguages : [];
+      if (!currentLangs.includes(lang)) {
+          if (currentLangs.length < 4) {
+              setSelectedLanguages(prev => [...(Array.isArray(prev) ? prev : []), lang]);
               changes.push(`Added ${lang} to languages`);
           }
       }
@@ -135,10 +153,11 @@ const applyAIConfig = (config, deps) => {
       changes.push(`Output language set to ${lang}`);
     }
     if (config.interests) {
-        if (studentInterests.length < 5 && !studentInterests.includes(config.interests)) {
-            setStudentInterests(prev => [...prev, config.interests]);
+        const currentInterests = Array.isArray(studentInterests) ? studentInterests : [];
+        if (currentInterests.length < 5 && !currentInterests.includes(config.interests)) {
+            setStudentInterests(prev => [...(Array.isArray(prev) ? prev : []), config.interests]);
             changes.push(`Added interest: "${config.interests}"`);
-        } else if (studentInterests.includes(config.interests)) {
+        } else if (currentInterests.includes(config.interests)) {
             changes.push(`Interest "${config.interests}" is already selected.`);
         } else {
             changes.push(`Could not add "${config.interests}" (Max 5 interests reached).`);
@@ -240,11 +259,21 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
   const { inputText, selectedLanguages, studentInterests, generatedContent, gradeLevel, leveledTextLanguage, setGradeLevel, setSourceTopic, setInputText, setSelectedLanguages, setLeveledTextLanguage, setStudentInterests, setLeveledTextCustomInstructions, setSourceTone, setSourceLength, setTextFormat, setDokLevel, setVisualStyle, setIncludeSourceCitations, setFullPackTargetGroup, setDifferentiationRange, setTargetStandards, setVoiceSpeed, setVoiceVolume, setSelectedVoice, setIsGeneratingEtymology, setGeneratedContent, setHistory, callGemini, warnLog, addToast, t } = deps;
   try { if (window._DEBUG_GLOSSARY) console.log("[GlossaryHelpers] handleGenerateTermEtymology fired"); } catch(_) {}
     if (!generatedContent || generatedContent.type !== 'glossary') return;
-    if (typeof callGemini !== 'function' || callGemini._alloQrBlocked || (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', callGemini))))) return;
+    if (typeof callGemini !== 'function' || callGemini._alloQrBlocked || (typeof window !== 'undefined' && (
+      window.__alloStudentAiDisabled === true ||
+      window.__alloAiSecretsLocked === true ||
+      window.__alloQrStudentMode === true ||
+      window._alloQrBlocked === true ||
+      (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) ||
+      (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', callGemini))
+    ))) return;
     const task = beginGlossaryTask(deps, index, ['term', 'def', 'etymology', 'roots', 'etymologyByLang'], 'etymology');
     if (!task) return;
     task.busy(setIsGeneratingEtymology, true);
     const hangGuard = setTimeout(() => {
+        if (task.visible() && typeof addToast === 'function') {
+            addToast((typeof t === 'function' && t('glossary.actions.etymology_failed')) || "Couldn't generate word roots right now.", "error");
+        }
         task.busy(setIsGeneratingEtymology, false);
         task.cancel();
         warnLog("Etymology hang guard tripped for:", term);
@@ -253,17 +282,25 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
         const def = generatedContent?.data[index]?.def || "";
         const entry = generatedContent?.data[index];
         const languageHelpers = window.AlloModules?.TextPipelineHelpers;
-        const baseLanguage = languageHelpers?.getGlossaryBaseLanguage?.(generatedContent, entry)
-            || entry?.termLanguage || generatedContent?.baseLanguage || 'English';
+        const _safeLangKey = (L) => {
+            const s = _ghSanitizeUntrusted(L, 60).replace(/[\r\n\x00-\x1F\x7F<>"]/g, ' ').replace(/\s+/g, ' ').trim();
+            if (!s || s === '__proto__' || s === 'constructor' || s === 'prototype') return '';
+            return s;
+        };
+        const baseLanguage = _safeLangKey(languageHelpers?.getGlossaryBaseLanguage?.(generatedContent, entry)
+            || entry?.termLanguage || generatedContent?.baseLanguage || 'English') || 'English';
         const nativeGlossary = Number(generatedContent?.glossaryLanguageSchemaVersion
             || generatedContent?.config?.glossaryLanguageSchemaVersion || entry?.glossaryLanguageSchemaVersion) >= 1;
-        const isElementary = gradeLevel && /K|1st|2nd|3rd|4th|5th/.test(gradeLevel);
+        const isElementary = gradeLevel && /K|1st|2nd|3rd|4th|5th/.test(String(gradeLevel));
         const existingTranslationLangs = Object.keys(generatedContent?.data?.[index]?.translations || {});
         const targetLanguages = Array.from(new Set(
             [baseLanguage]
                 .concat(!nativeGlossary && Array.isArray(selectedLanguages) ? selectedLanguages : [])
                 .concat(existingTranslationLangs)
+                .map(_safeLangKey)
+                .filter(Boolean)
         ));
+        const allowedLangSet = new Set(targetLanguages);
         const safeTerm = _ghSanitizeUntrusted(term, 180);
         const safeDef = _ghSanitizeUntrusted(def, 600);
         const safeGrade = _ghSanitizeUntrusted(gradeLevel || 'K-12', 80);
@@ -322,12 +359,13 @@ For every root, fill langByLocale and meaningByLang for each language in ${JSON.
         const raw = await callGemini(prompt, true, false, null, null, task.signal);
         if (!task.isCurrent()) return;
         const stripped = (raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
-        let etymologyByLang = {};
+        let etymologyByLang = Object.create(null);
         let roots = [];
         try {
             const parsed = JSON.parse(stripped);
             if (parsed && parsed.prosePerLanguage && typeof parsed.prosePerLanguage === 'object') {
                 Object.keys(parsed.prosePerLanguage).forEach(lang => {
+                    if (!allowedLangSet.has(lang) || lang === '__proto__' || lang === 'constructor' || lang === 'prototype') return;
                     const val = parsed.prosePerLanguage[lang];
                     if (typeof val === 'string' && val.trim()) {
                         const cleaned = val.trim().length > 600 ? val.trim().substring(0, 597) + '…' : val.trim();
@@ -335,7 +373,8 @@ For every root, fill langByLocale and meaningByLang for each language in ${JSON.
                     }
                 });
             } else if (parsed && typeof parsed.prose === 'string') {
-                etymologyByLang[baseLanguage] = parsed.prose.trim();
+                const proseTrim = parsed.prose.trim();
+                etymologyByLang[baseLanguage] = proseTrim.length > 600 ? proseTrim.substring(0, 597) + '…' : proseTrim;
             }
             if (parsed && Array.isArray(parsed.roots)) {
                 roots = parsed.roots
@@ -349,13 +388,14 @@ For every root, fill langByLocale and meaningByLang for each language in ${JSON.
                                 .slice(0, 3)
                             : [];
                         const normalizeLocaleMap = (obj) => {
-                            if (!obj || typeof obj !== 'object') return undefined;
-                            const out = {};
+                            if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return undefined;
+                            const out = Object.create(null);
                             Object.keys(obj).forEach(k => {
+                                if (!allowedLangSet.has(k) || k === '__proto__' || k === 'constructor' || k === 'prototype') return;
                                 const v = obj[k];
                                 if (typeof v === 'string' && v.trim()) out[k] = v.trim().slice(0, 60);
                             });
-                            return Object.keys(out).length > 0 ? out : undefined;
+                            return Object.keys(out).length > 0 ? Object.assign({}, out) : undefined;
                         };
                         return {
                             root: String(r.root).trim().slice(0, 40),
@@ -369,8 +409,12 @@ For every root, fill langByLocale and meaningByLang for each language in ${JSON.
             }
         } catch (parseErr) {
             warnLog('Etymology JSON parse failed — falling back to raw prose:', parseErr?.name, 'response length:', String(stripped || '').length);
-            etymologyByLang[baseLanguage] = stripped;
+            const fallbackTrim = String(stripped || '').trim();
+            if (fallbackTrim) {
+                etymologyByLang[baseLanguage] = fallbackTrim.length > 600 ? fallbackTrim.substring(0, 597) + '…' : fallbackTrim;
+            }
         }
+        etymologyByLang = Object.assign({}, etymologyByLang);
         // Repair pass. The model routinely returns prosePerLanguage for every
         // target language but drops langByLocale/meaningByLang, and the renderer
         // then falls back to r.meaning — which is English by definition. The

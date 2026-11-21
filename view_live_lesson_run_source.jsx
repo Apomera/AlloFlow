@@ -544,7 +544,7 @@ function sanitizeLiveActivitySnapshot(input) {
       .filter(Boolean)
   )).slice(0, 250);
   const audienceSet = new Set(audienceUids);
-  const participantStatus = {};
+  const participantStatus = Object.create(null);
   Object.entries(input.participantStatus && typeof input.participantStatus === 'object'
     ? input.participantStatus
     : {})
@@ -555,7 +555,7 @@ function sanitizeLiveActivitySnapshot(input) {
       participantStatus[uid] = normalizeLiveActivityParticipantStatus(rawStatus);
     });
   audienceUids.forEach(uid => {
-    if (!participantStatus[uid]) participantStatus[uid] = 'waiting';
+    if (!Object.prototype.hasOwnProperty.call(participantStatus, uid) || !participantStatus[uid]) participantStatus[uid] = 'waiting';
   });
 
   const statuses = Object.values(participantStatus);
@@ -987,7 +987,9 @@ function buildLiveAttentionQueue(input) {
       else if (seenAge >= 95000) addReason('presence_quiet', 58);
     }
 
-    const activityStatus = activityPulse && activityPulse.participantStatus[uid];
+    const activityStatus = activityPulse && activityPulse.participantStatus && Object.prototype.hasOwnProperty.call(activityPulse.participantStatus, uid)
+      ? activityPulse.participantStatus[uid]
+      : undefined;
     if (activityPulse && activityPulse.phase === 'collecting') {
       if (activityStatus === 'waiting' && activityElapsed >= LIVE_ATTENTION_WAIT_GRACE_MS) {
         addReason('activity_waiting', 76);
@@ -1009,8 +1011,8 @@ function buildLiveAttentionQueue(input) {
       const viewingResourceAt = boundedLiveActivityCount(entry.viewingResourceAt, Number.MAX_SAFE_INTEGER);
       const statusMatchesAssignment = hasAssignmentNonce && viewingResourceAt === target.assignedAt;
       const deliveryStatus = statusMatchesAssignment ? entry.viewingResourceStatus : null;
-      const assignmentAcknowledged = statusMatchesAssignment
-        ? deliveryStatus !== 'loading' && deliveryStatus !== 'failed' && entry.viewingResourceId === target.resourceId
+      const assignmentAcknowledged = hasAssignmentNonce
+        ? statusMatchesAssignment && deliveryStatus !== 'loading' && deliveryStatus !== 'failed' && entry.viewingResourceId === target.resourceId
         : viewingAt >= target.assignedAt;
       const assignmentIsLate = now - target.assignedAt >= LIVE_ATTENTION_RESOURCE_GRACE_MS;
       // New clients bind a fixed delivery enum to the exact assignment nonce.
@@ -1039,9 +1041,11 @@ function buildLiveAttentionQueue(input) {
     });
   });
 
-  return queue
-    .sort((a, b) => b.score - a.score || a.uid.localeCompare(b.uid))
-    .slice(0, 12);
+  const sortedQueue = queue.sort((a, b) => b.score - a.score || a.uid.localeCompare(b.uid));
+  const limit = Number.isFinite(Number(input && input.limit)) && Number(input.limit) > 0
+    ? Math.trunc(Number(input.limit))
+    : 12;
+  return sortedQueue.slice(0, limit);
 }
 
 
@@ -1063,7 +1067,7 @@ function buildLiveAttentionCohorts(queue, roster, groups, limit = 6) {
     const uid = boundedLiveActivityText(item.uid, 128);
     if (!uid || seenUids.has(uid)) return;
     seenUids.add(uid);
-    const entry = safeRoster[uid] && typeof safeRoster[uid] === 'object' ? safeRoster[uid] : null;
+    const entry = Object.prototype.hasOwnProperty.call(safeRoster, uid) && safeRoster[uid] && typeof safeRoster[uid] === 'object' ? safeRoster[uid] : null;
     const groupId = boundedLiveActivityText(entry && entry.groupId, 128);
     if (!groupId
       || !Object.prototype.hasOwnProperty.call(safeGroups, groupId)
@@ -1089,7 +1093,7 @@ function buildLiveAttentionCohorts(queue, roster, groups, limit = 6) {
     buckets.set(groupId, bucket);
   });
 
-  const memberCounts = {};
+  const memberCounts = Object.create(null);
   Object.values(safeRoster).slice(0, 250).forEach(rawEntry => {
     const entry = rawEntry && typeof rawEntry === 'object' ? rawEntry : {};
     const groupId = boundedLiveActivityText(entry.groupId, 128);
@@ -1102,7 +1106,7 @@ function buildLiveAttentionCohorts(queue, roster, groups, limit = 6) {
   return Array.from(buckets.values())
     .filter(bucket => bucket.uids.length >= 2)
     .map(bucket => {
-      const memberCount = memberCounts[bucket.groupId] || bucket.uids.length;
+      const memberCount = Object.prototype.hasOwnProperty.call(memberCounts, bucket.groupId) ? memberCounts[bucket.groupId] : bucket.uids.length;
       const topReasonCodes = Object.entries(bucket.reasonCounts)
         .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
         .map(([code]) => code)
@@ -1190,10 +1194,10 @@ function buildLiveQuizActivitySnapshot(input) {
     || rawPhase === 'revealed'
     || rawPhase === 'boss-defeated'
     || rawPhase === 'class-defeated';
-  const participantStatus = {};
+  const participantStatus = Object.create(null);
 
   audienceUids.forEach(uid => {
-    const bucket = allResponses[uid] && typeof allResponses[uid] === 'object'
+    const bucket = Object.prototype.hasOwnProperty.call(allResponses, uid) && allResponses[uid] && typeof allResponses[uid] === 'object'
       ? allResponses[uid]
       : {};
     const records = Object.values(bucket);
@@ -1206,7 +1210,7 @@ function buildLiveQuizActivitySnapshot(input) {
     );
     const hasCurrentAnswer = Object.prototype.hasOwnProperty.call(currentResponses, uid)
       || Object.prototype.hasOwnProperty.call(bucket, String(currentQuestionIndex));
-    const receipt = responseReceipts[uid] && typeof responseReceipts[uid] === 'object'
+    const receipt = Object.prototype.hasOwnProperty.call(responseReceipts, uid) && responseReceipts[uid] && typeof responseReceipts[uid] === 'object'
       ? responseReceipts[uid]
       : null;
     const receiptKeys = receipt ? Object.keys(receipt) : [];
@@ -1349,6 +1353,14 @@ function LiveLessonRunPanel(props) {
     review: { border: '#fcd34d', background: '#fffbeb', text: '#854d0e' },
     needs_attention: { border: '#fca5a5', background: '#fef2f2', text: '#991b1b' },
   })[liveRunReadiness.status];
+  const [readinessOpen, setReadinessOpen] = React.useState(() => liveRunReadiness.status !== 'ready');
+  const prevReadinessStatusRef = React.useRef(liveRunReadiness.status);
+  React.useEffect(() => {
+    if (prevReadinessStatusRef.current !== liveRunReadiness.status) {
+      prevReadinessStatusRef.current = liveRunReadiness.status;
+      setReadinessOpen(liveRunReadiness.status !== 'ready');
+    }
+  }, [liveRunReadiness.status]);
   const audiences = React.useMemo(
     () => buildLiveLessonAudiences(groups, roster, {
       classLabel: t('live_lesson.whole_class') || 'Whole class',
@@ -1377,7 +1389,9 @@ function LiveLessonRunPanel(props) {
   const teacherPaced = sessionMode === 'sync';
   const focusIsCurrent = currentIndex >= 0 && focusIndex === currentIndex;
   const presenterCue = normalizeLivePresenterCue(
-    focusItem && presenterCuesByResourceId && presenterCuesByResourceId[focusItem.id]
+    focusItem && presenterCuesByResourceId && Object.prototype.hasOwnProperty.call(presenterCuesByResourceId, focusItem.id)
+      ? presenterCuesByResourceId[focusItem.id]
+      : null
   );
   const hasPresenterCue = LIVE_PRESENTER_CUE_FIELDS.some(field => presenterCue[field].trim());
   const preparedCheckpoint = presenterCue.checkpoint;
@@ -1386,7 +1400,9 @@ function LiveLessonRunPanel(props) {
     && (!focusItem || focusItem.type !== 'quiz');
   const nextItem = nextIndex >= 0 ? steps[nextIndex] : null;
   const nextPresenterCue = normalizeLivePresenterCue(
-    nextItem && presenterCuesByResourceId && presenterCuesByResourceId[nextItem.id]
+    nextItem && presenterCuesByResourceId && Object.prototype.hasOwnProperty.call(presenterCuesByResourceId, nextItem.id)
+      ? presenterCuesByResourceId[nextItem.id]
+      : null
   );
   const nextHasPresenterCue = LIVE_PRESENTER_CUE_FIELDS.some(
     field => nextPresenterCue[field].trim()
@@ -1438,7 +1454,7 @@ function LiveLessonRunPanel(props) {
     () => buildLiveCompanionModel({ activitySnapshots, roster }),
     [activitySnapshots, roster]
   );
-  const attentionQueue = React.useMemo(() => buildLiveAttentionQueue({
+  const fullAttentionQueue = React.useMemo(() => buildLiveAttentionQueue({
     roster,
     groups,
     activitySnapshots,
@@ -1446,7 +1462,10 @@ function LiveLessonRunPanel(props) {
     sessionMode,
     now,
     signalFreshMs,
+    limit: 250,
   }), [roster, groups, activitySnapshots, currentResourceId, sessionMode, now, signalFreshMs]);
+  const attentionQueue = React.useMemo(() => fullAttentionQueue.slice(0, 12), [fullAttentionQueue]);
+  const attentionOverflowCount = Math.max(0, fullAttentionQueue.length - attentionQueue.length);
   const attentionCohorts = React.useMemo(
     () => buildLiveAttentionCohorts(attentionQueue, roster, groups, 6),
     [attentionQueue, roster, groups]
@@ -1538,12 +1557,14 @@ function LiveLessonRunPanel(props) {
     });
   };
 
+  const anySendBusy = Boolean(debriefSendingId || attentionSending || attentionReleasing || attentionSendingUid);
+
   const sendDebriefFinding = async finding => {
-    if (!finding || !focusItem || debriefSendingId) return;
+    if (!finding || !focusItem || anySendBusy) return;
     const currentUids = Array.from(new Set(
       (Array.isArray(finding.uids) ? finding.uids : [])
         .filter(uid => Object.prototype.hasOwnProperty.call(roster, uid))
-    )).slice(0, 25);
+    )).slice(0, 250);
     if (currentUids.length === 0) {
       setDebriefSendStatus('Those students are no longer connected. Use the saved finding to plan the next lesson.');
       return;
@@ -1553,6 +1574,10 @@ function LiveLessonRunPanel(props) {
     try {
       if (typeof onSendToStudents === 'function') {
         const result = await onSendToStudents(currentUids, focusItem);
+        if (result && result.pendingConfirmation) {
+          setDebriefSendStatus('Confirm the audio readiness prompt to send ' + attentionResourceTitle + '.');
+          return;
+        }
         const sent = result && Number.isFinite(Number(result.sent)) ? Number(result.sent) : currentUids.length;
         const failed = result && Number.isFinite(Number(result.failed)) ? Number(result.failed) : 0;
         const disconnected = Math.max(0, currentUids.length - sent - failed);
@@ -1574,7 +1599,7 @@ function LiveLessonRunPanel(props) {
 
   const sendAttentionSelection = async () => {
     const selectedUids = validSelectedUids;
-    if (!focusItem || attentionSending || attentionReleasing || attentionSendingUid) return;
+    if (!focusItem || anySendBusy) return;
     if (selectedUids.length === 0) {
       const hasStoredCompanionSelection = Object.values(companionSelection.byStatus || {})
         .some(uids => Array.isArray(uids) && uids.length > 0);
@@ -1590,6 +1615,10 @@ function LiveLessonRunPanel(props) {
     try {
       if (typeof onSendToStudents === 'function') {
         const result = await onSendToStudents(selectedUids, focusItem);
+        if (result && result.pendingConfirmation) {
+          setAttentionSendStatus('Confirm the audio readiness prompt to send ' + attentionResourceTitle + '.');
+          return;
+        }
         const sent = result && Number.isFinite(Number(result.sent))
           ? Number(result.sent)
           : selectedUids.length;
@@ -1620,9 +1649,7 @@ function LiveLessonRunPanel(props) {
   const sendAttentionStudent = async uid => {
     if (!focusItem
       || !uid
-      || attentionSending
-      || attentionReleasing
-      || attentionSendingUid
+      || anySendBusy
       || typeof onSendToStudent !== 'function') return;
     const entry = roster[uid] && typeof roster[uid] === 'object' ? roster[uid] : {};
     const name = String(entry.name || 'Student');
@@ -1630,6 +1657,10 @@ function LiveLessonRunPanel(props) {
     setAttentionSendStatus('');
     try {
       const result = await onSendToStudent(uid, focusItem);
+      if (result && result.pendingConfirmation) {
+        setAttentionSendStatus(`Confirm audio readiness before assigning ${attentionResourceTitle || 'that resource'} to ${name}.`);
+        return;
+      }
       const failed = result && Number.isFinite(Number(result.failed)) ? Number(result.failed) : 0;
       setAttentionSendStatus(failed > 0
         ? `Could not assign ${attentionResourceTitle || 'that resource'} to ${name}. Please try again.`
@@ -1643,9 +1674,7 @@ function LiveLessonRunPanel(props) {
 
   const releaseAcknowledgedResources = async () => {
     if (acknowledgedResourceOverrideUids.length === 0
-      || attentionReleasing
-      || attentionSending
-      || attentionSendingUid
+      || anySendBusy
       || typeof onReleaseStudentResources !== 'function') return;
     setAttentionReleasing(true);
     setAttentionReleaseStatus('');
@@ -1860,7 +1889,8 @@ function LiveLessonRunPanel(props) {
         <details
           data-live-run-readiness={liveRunReadiness.status}
           data-live-run-readiness-privacy="resource-metadata-only"
-          open={liveRunReadiness.status !== 'ready'}
+          open={readinessOpen}
+          onToggle={e => setReadinessOpen(e.currentTarget.open)}
           style={{
             marginTop: 7,
             padding: '0.42rem 0.48rem',
@@ -2126,7 +2156,7 @@ function LiveLessonRunPanel(props) {
               {t('live_lesson.needs_attention') || 'Needs attention'}
             </strong>
             <span style={{ marginLeft: 'auto', fontSize: '0.62rem', fontWeight: 900, color: attentionQueue.length ? '#92400e' : '#166534' }}>
-              {attentionQueue.length}
+              {attentionOverflowCount > 0 ? `${attentionQueue.length} (+${attentionOverflowCount} more)` : attentionQueue.length}
             </span>
           </div>
           {attentionQueue.length === 0 ? (
@@ -2225,7 +2255,7 @@ function LiveLessonRunPanel(props) {
                             <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.56rem' }}>{reason}</span>
                           </span>
                           <span style={{ fontSize: '0.58rem', fontWeight: 900, whiteSpace: 'nowrap' }}>
-                            {cohortSelected ? (t('common.selected') || 'Selected') : ('Select ' + cohort.count)} ? {cohort.count}/{cohort.memberCount}
+                            {cohortSelected ? (t('common.selected') || 'Selected') : ('Select ' + cohort.count)} · {cohort.count}/{cohort.memberCount}
                           </span>
                         </button>
                       );
@@ -2380,7 +2410,7 @@ function LiveLessonRunPanel(props) {
                 ready: { border: '#86efac', background: '#f0fdf4', text: '#166534' },
               })[finding.tone] || { border: '#cbd5e1', background: 'white', text: '#334155' };
               const currentTargetCount = finding.uids.filter(uid => Object.prototype.hasOwnProperty.call(roster, uid)).length;
-              const activityItem = activityTimeline.find(item => item.activityId === finding.activityId) || finding;
+              const activityItem = activityTimeline.find(item => item.activityId === finding.activityId) || { ...finding, kind: finding.activityKind };
               const canSend = currentTargetCount > 0
                 && !!focusItem
                 && (typeof onSendToStudents === 'function' || typeof onSendToStudent === 'function');
@@ -2401,10 +2431,10 @@ function LiveLessonRunPanel(props) {
                       {canSend && (
                         <button
                           type="button"
-                          disabled={!!debriefSendingId}
+                          disabled={anySendBusy}
                           onClick={() => sendDebriefFinding(finding)}
                           aria-label={'Send ' + attentionResourceTitle + ' to ' + currentTargetCount + ' debrief student' + (currentTargetCount === 1 ? '' : 's')}
-                          style={{ ...buttonBase, minHeight: 44, minWidth: 44, borderColor: tone.border, background: 'white', color: tone.text, fontSize: '0.57rem', opacity: debriefSendingId ? 0.65 : 1 }}
+                          style={{ ...buttonBase, minHeight: 44, minWidth: 44, borderColor: tone.border, background: 'white', color: tone.text, fontSize: '0.57rem', opacity: anySendBusy ? 0.65 : 1 }}
                         >
                           {debriefSendingId === finding.id ? (t('common.sending') || 'Sending...') : (t('live_lesson.send_follow_up') || 'Send selected follow-up') + ' (' + currentTargetCount + ')'}
                         </button>

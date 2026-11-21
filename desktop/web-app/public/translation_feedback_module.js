@@ -42,12 +42,18 @@
     try {
       return Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY')
         || window._isDesktopBundledApp === true
-        || window.__alloStudentView === true;
+        || window.__alloStudentView === true
+        || window.__alloQrStudentMode === true
+        || window._alloQrBlocked === true
+        || window.__alloOfflineOnly === true;
     }
     catch (_) { return true; }
   }
+  function stripControlChars(text) {
+    return String(text == null ? '' : text).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+  }
   function scrubFeedbackText(text, maxLen) {
-    var s = String(text == null ? '' : text).trim().slice(0, maxLen || 1000);
+    var s = stripControlChars(text).trim().slice(0, maxLen || 1000);
     try {
       var ir = window.AlloModules && window.AlloModules.IdentifierRedaction;
       if (ir) {
@@ -56,6 +62,13 @@
       }
     } catch (_) {}
     return s;
+  }
+  function safeJsonParse(raw) {
+    if (typeof raw !== 'string' || raw.length > 5 * 1024 * 1024) return null;
+    return JSON.parse(raw, function (key, value) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
+      return value;
+    });
   }
   var COMMUNITY_BLOCK_MESSAGE = 'Community feedback is disabled in this managed deployment. Your draft stays in this window. Contact your school\'s support team.';
 
@@ -78,15 +91,24 @@
   // ── English-source lookup (lazy; fetched from the same public source the app uses) ──
   var EN = null, EN_LOADING = false;
   var EN_CACHE_KEY = 'alloflow_ui_strings_cache';
-  function flatten(obj, prefix, out) {
-    out = out || {}; prefix = prefix || '';
-    if (!obj || typeof obj !== 'object') return out;
+  var EN_MAX_DEPTH = 8;
+  var EN_MAX_KEYS = 50000;
+  function flatten(obj, prefix, out, depth, seen, state) {
+    out = out || Object.create(null); prefix = prefix || ''; depth = depth || 0;
+    state = state || { count: 0 };
+    if (!obj || typeof obj !== 'object' || depth > EN_MAX_DEPTH || state.count >= EN_MAX_KEYS) return out;
+    if (!seen) seen = [];
+    if (seen.indexOf(obj) >= 0) return out;
+    seen.push(obj);
     for (var k in obj) {
+      if (state.count >= EN_MAX_KEYS) break;
       if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
       var v = obj[k], f = prefix ? prefix + '.' + k : k;
-      if (v && typeof v === 'object' && !Array.isArray(v)) flatten(v, f, out);
-      else if (typeof v === 'string') out[f] = v;
+      if (v && typeof v === 'object' && !Array.isArray(v)) flatten(v, f, out, depth + 1, seen, state);
+      else if (typeof v === 'string') { out[f] = v; state.count += 1; }
     }
+    seen.pop();
     return out;
   }
   function loadEnglish() {
@@ -94,22 +116,27 @@
     EN_LOADING = true;
     try {
       var cached = localStorage.getItem(EN_CACHE_KEY);
-      if (cached) { EN = flatten(JSON.parse(cached)); return; }
+      if (cached) {
+        var parsedCache = safeJsonParse(cached);
+        if (parsedCache && typeof parsedCache === 'object') { EN = flatten(parsedCache); EN_LOADING = false; return; }
+      }
     } catch (_) {}
     try {
       var enCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
       var enTimer = enCtrl ? setTimeout(function () { try { enCtrl.abort(); } catch (_) {} }, 10000) : null;
-      var enOpts = { credentials: 'omit', cache: 'no-store' };
+      var enOpts = { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
       if (enCtrl) enOpts.signal = enCtrl.signal;
       fetch('./ui_strings.js', enOpts)
         .then(function (r) { if (!r || !r.ok) throw new Error('HTTP'); return r.text(); })
         .then(function (txt) {
+          if (typeof txt !== 'string' || txt.length > 5 * 1024 * 1024) throw new Error('Size');
           var j = txt.replace(/^[^{]*/, '').replace(/;?\s*$/, '');
-          EN = flatten(JSON.parse(j));
+          var parsed = safeJsonParse(j);
+          if (parsed && typeof parsed === 'object') EN = flatten(parsed);
         })
-        .catch(function () {})
+        .catch(function () { EN_LOADING = false; })
         .finally(function () { if (enTimer) clearTimeout(enTimer); });
-    } catch (_) {}
+    } catch (_) { EN_LOADING = false; }
   }
   function englishFor(key) {
     if (!key || !EN) return '';
@@ -121,6 +148,8 @@
   var modalOpener = null;
   var activeTrapEntry = null;
   var activeModalCleanup = null;
+  var modalTokenSeq = 0;
+  var currentModalToken = 0;
   function validOpenerEl(el) {
     return !!(el && el !== document.body && el !== document.documentElement
       && (el.isConnected === true || (el.isConnected === undefined && typeof document.contains === 'function' && document.contains(el)))
@@ -158,11 +187,16 @@
 
   // Public: called from the host's help-mode click handler.
   function offerFor(ctx) {
-    if (!ctx || !document.body || window._isDesktopBundledApp === true || window.__alloStudentView === true) return;
+    if (!ctx || !document.body
+      || window._isDesktopBundledApp === true
+      || window.__alloStudentView === true
+      || window.__alloQrStudentMode === true
+      || window._alloQrBlocked === true
+      || window.__alloOfflineOnly === true) return;
     if (validOpenerEl(document.activeElement) && document.activeElement !== pill) {
       openerBeforePill = document.activeElement;
     }
-    lastContext = { key: ctx.key || '', current: ctx.current || '', language: currentLanguage(ctx) };
+    lastContext = { key: stripControlChars(ctx.key || '').trim().slice(0, 160), current: stripControlChars(ctx.current || '').trim().slice(0, 1000), language: stripControlChars(currentLanguage(ctx)).trim().slice(0, 60) || 'English' };
     if (!communityFeedbackBlocked()) loadEnglish();
     ensurePill();
     pill.innerHTML = '<span aria-hidden="true">✎</span><span></span>';
@@ -178,9 +212,12 @@
     var activeNow = document.activeElement;
     var nextOpener = (validOpenerEl(activeNow) && activeNow !== pill) ? activeNow : openerBeforePill;
     closeModal();
+    var myToken = ++modalTokenSeq;
+    currentModalToken = myToken;
+    var inFlight = false;
     ensureA11yStyle();
     modalOpener = nextOpener;
-    var lang = currentLanguage(ctx);
+    var lang = stripControlChars(currentLanguage(ctx)).trim().slice(0, 60) || 'English';
     var english = englishFor(ctx.key);
     overlay = document.createElement('div');
     overlay.id = 'allo-tfb-overlay';
@@ -206,7 +243,7 @@
       ? '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Current ' + esc(lang) + '</div>' +
         '<div style="font:13px system-ui;color:#334155;background:#f8fafc;border-radius:6px;padding:8px;margin-bottom:10px">' + esc(ctx.current) + '</div>'
       : '<label for="allo-tfb-current" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">The text you want corrected</label>' +
-        '<textarea id="allo-tfb-current" rows="2" placeholder="Paste the exact text as it appears in the app" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>';
+        '<textarea id="allo-tfb-current" rows="2" maxlength="1000" placeholder="Paste the exact text as it appears in the app" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>';
 
     var panel = document.createElement('div');
     panel.style.cssText = [
@@ -220,12 +257,12 @@
       '</div>' +
       '<p style="margin:0 0 14px;font:13px/1.5 system-ui;color:#475569">Suggest a better translation. Your suggestion is stored privately for up to 30 days for maintainer review. Only reviewed corrections may be published. Do not include personal student details.</p>' +
       '<label for="allo-tfb-lang" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">Language</label>' +
-      '<input id="allo-tfb-lang" type="text" value="' + esc(lang) + '" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px" />' +
+      '<input id="allo-tfb-lang" type="text" maxlength="60" value="' + esc(lang) + '" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px" />' +
       keyRow + enRow + curRow +
       '<label for="allo-tfb-suggest" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">Your suggested ' + esc(lang) + ' translation <span style="color:#b91c1c" aria-hidden="true">*</span></label>' +
-      '<textarea id="allo-tfb-suggest" rows="3" required aria-required="true" aria-describedby="allo-tfb-err" placeholder="Type the corrected text" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
+      '<textarea id="allo-tfb-suggest" rows="3" maxlength="1000" required aria-required="true" aria-describedby="allo-tfb-err" placeholder="Type the corrected text" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
       '<label for="allo-tfb-note" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">Why / notes (optional)</label>' +
-      '<textarea id="allo-tfb-note" rows="2" placeholder="e.g. wrong register, regional word, sounds robotic" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:14px"></textarea>' +
+      '<textarea id="allo-tfb-note" rows="2" maxlength="500" placeholder="e.g. wrong register, regional word, sounds robotic" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:14px"></textarea>' +
       '<div id="allo-tfb-err" role="alert" aria-live="polite" style="display:' + (communityFeedbackBlocked() ? 'block' : 'none') + ';color:#b91c1c;font:13px system-ui;margin-bottom:10px">' + (communityFeedbackBlocked() ? esc(COMMUNITY_BLOCK_MESSAGE) : '') + '</div>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end">' +
         '<button id="allo-tfb-cancel" type="button" style="min-height:44px;padding:9px 16px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font:600 13px system-ui;cursor:pointer">Cancel</button>' +
@@ -320,28 +357,31 @@
 
     $('allo-tfb-send').onclick = function () {
       if (communityFeedbackBlocked()) { showManagedBlock(); return; }
+      if (inFlight) return;
       var errEl = $('allo-tfb-err');
-      var suggested = ($('allo-tfb-suggest').value || '').trim();
+      var suggested = stripControlChars($('allo-tfb-suggest').value || '').trim();
       if (!suggested) { errEl.textContent = 'Please enter your suggested translation.'; errEl.style.display = 'block'; return; }
       var curEl = panel.querySelector('#allo-tfb-current');
       var payload = {
-        language: String($('allo-tfb-lang').value || lang).trim().slice(0, 60),
-        key: String(ctx.key || '').trim().slice(0, 160),
+        language: stripControlChars($('allo-tfb-lang').value || lang).trim().slice(0, 60),
+        key: stripControlChars(ctx.key || '').trim().slice(0, 160),
         current: scrubFeedbackText(ctx.current || (curEl ? curEl.value : ''), 1000),
         suggested: scrubFeedbackText(suggested, 1000),
-        english: String(english || '').trim().slice(0, 1000),
+        english: stripControlChars(english || '').trim().slice(0, 1000),
         note: scrubFeedbackText($('allo-tfb-note').value, 500)
       };
       var sendBtn = $('allo-tfb-send');
+      inFlight = true;
       sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; errEl.style.display = 'none';
       var showSendFailure = function () {
+        inFlight = false;
         if (communityFeedbackBlocked()) { showManagedBlock(); return; }
         errEl.textContent = 'Submission was not confirmed. Your draft stays here. You can retry later or contact your support team.';
         errEl.style.display = 'block';
         sendBtn.disabled = false; sendBtn.textContent = 'Try sending again';
       };
       try {
-        if (communityFeedbackBlocked()) { showManagedBlock(); return; }
+        if (communityFeedbackBlocked()) { inFlight = false; showManagedBlock(); return; }
         if (activeSubmitCtrl) { try { activeSubmitCtrl.abort(); } catch (_) {} }
         var submitCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
         activeSubmitCtrl = submitCtrl;
@@ -351,16 +391,18 @@
         fetch(SUBMIT_URL, submitOpts)
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
           .then(function (res) {
-            if (!overlay || !overlay.isConnected) return;
-            if (res.ok && res.j && res.j.ok && res.j.storage === 'private') showThanks(); else showSendFailure();
+            if (myToken !== currentModalToken || !overlay || !overlay.isConnected) return;
+            if (res.ok && res.j && res.j.ok && res.j.storage === 'private') { inFlight = false; showThanks(); }
+            else showSendFailure();
           })
           .catch(function () {
-            if (!overlay || !overlay.isConnected) return;
+            if (myToken !== currentModalToken || !overlay || !overlay.isConnected) return;
             showSendFailure();
           })
           .finally(function () {
             if (submitTimer) clearTimeout(submitTimer);
             if (activeSubmitCtrl === submitCtrl) activeSubmitCtrl = null;
+            if (myToken === currentModalToken) inFlight = false;
           });
       } catch (_) { showSendFailure(); }
     };
@@ -368,6 +410,7 @@
   }
 
   function closeModal() {
+    currentModalToken = ++modalTokenSeq;
     if (activeModalCleanup) { try { activeModalCleanup(); } catch (_) {} activeModalCleanup = null; }
     var wasTop = true;
     if (activeTrapEntry && Array.isArray(window.__alloFocusTrapStack)) {
@@ -384,10 +427,10 @@
     if (wasTop && validOpenerEl(opener)) opener.focus();
   }
 
-  window.AlloModules.TranslationFeedback = {
+  window.AlloModules.TranslationFeedback = Object.freeze({
     offerFor: offerFor,         // host help-mode hook calls this
     openModal: openModal,       // open directly (e.g. from a menu item)
     _version: '1'
-  };
+  });
   console.log('[TranslationFeedback] loaded');
 })();

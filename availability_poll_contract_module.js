@@ -43,22 +43,31 @@
     // opened the link and left must not dilute minParticipants.
     function tally(config, responses) {
         const rows = responses && typeof responses === 'object' ? responses : {};
-        const options = (config.options || []).map(function (opt) {
+        const rawOptions = Array.isArray(config && config.options) ? config.options : [];
+        const options = rawOptions.filter(function (opt) { return opt && typeof opt === 'object' && typeof opt.id === 'string' && opt.id; }).map(function (opt) {
             return { id: opt.id, label: opt.label, yes: 0, maybe: 0, no: 0 };
         });
-        const byId = {};
-        options.forEach(function (opt) { byId[opt.id] = opt; });
+        const byId = Object.create(null);
+        options.forEach(function (opt) {
+            if (opt.id !== '__proto__' && opt.id !== 'constructor' && opt.id !== 'prototype') {
+                byId[opt.id] = opt;
+            }
+        });
         let participantCount = 0;
         Object.keys(rows).forEach(function (uid) {
             const picks = rows[uid] && rows[uid].picks;
-            if (!picks || typeof picks !== 'object') return;
-            participantCount++;
+            if (!picks || typeof picks !== 'object' || Array.isArray(picks)) return;
+            let matchedValid = false;
             Object.keys(picks).forEach(function (optionId) {
+                if (!Object.prototype.hasOwnProperty.call(byId, optionId)) return;
                 const slot = byId[optionId];
-                if (!slot) return;
                 const mark = picks[optionId];
-                if (MARKS.indexOf(mark) >= 0) slot[mark]++;
+                if (MARKS.indexOf(mark) >= 0) {
+                    slot[mark]++;
+                    matchedValid = true;
+                }
             });
+            if (matchedValid) participantCount++;
         });
         return { options: options, participantCount: participantCount };
     }
@@ -72,7 +81,9 @@
         let best = [];
         let bestYes = -1;
         let bestMaybe = -1;
-        (counted.options || []).forEach(function (opt) {
+        const opts = Array.isArray(counted && counted.options) ? counted.options : [];
+        opts.forEach(function (opt) {
+            if (!opt || typeof opt !== 'object') return;
             if (opt.yes > bestYes || (opt.yes === bestYes && opt.maybe > bestMaybe)) {
                 bestYes = opt.yes;
                 bestMaybe = opt.maybe;
@@ -90,14 +101,17 @@
     // return rows in anonymous mode then the mode is a promise the storage does
     // not keep, whatever the UI chooses to render.
     function visibilityFor(config, counted, isHost, now) {
-        const revealed = counted.participantCount >= (parseInt(config.minParticipants, 10) || 3);
+        const parsedMin = parseInt(config && config.minParticipants, 10);
+        const minParticipants = Number.isFinite(parsedMin) && parsedMin >= 1 ? parsedMin : 3;
+        const count = Number(counted && counted.participantCount) || 0;
+        const revealed = count >= minParticipants;
         // Retention outranks permission. Past deleteAt the rows do not exist, so
         // no audience can be shown them however permissive the mode is. The
         // tally survives on purpose: the decision outlives the respondents.
         // (Found by the conformance suite: the contract granted the organizer
         // rows that the Apps Script had already erased.)
         const rowsExist = !retentionDue(config, now);
-        if (config.identityMode === 'anonymous') {
+        if (config && config.identityMode === 'anonymous') {
             // Withheld from the ORGANIZER too, and the tally waits for the
             // threshold even for them: with a handful of respondents a bare
             // count still fingerprints who said what.

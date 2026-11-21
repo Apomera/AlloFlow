@@ -37,11 +37,25 @@ const PATH_PATTERNS = [
         meta: (m) => ({ app_id: m[1], code: m[2] }),
     },
     {
+        // artifacts/{appId}/public/data/sessions (collection query)
+        match: /^artifacts\/([^/]+)\/public\/data\/sessions$/,
+        collection: 'sessions',
+        docId: null,
+        meta: (m) => ({ app_id: m[1] }),
+    },
+    {
         // artifacts/{appId}/public/data/sessions/{code}/studentProgress/{studentId}
         match: /^artifacts\/([^/]+)\/public\/data\/sessions\/([^/]+)\/studentProgress\/([^/]+)$/,
         collection: 'student_progress',
         docId: (m) => `${m[2]}__${m[3]}`,
         meta: (m) => ({ session_code: m[2], student_id: m[3] }),
+    },
+    {
+        // artifacts/{appId}/public/data/sessions/{code}/studentProgress (collection query)
+        match: /^artifacts\/([^/]+)\/public\/data\/sessions\/([^/]+)\/studentProgress$/,
+        collection: 'student_progress',
+        docId: null,
+        meta: (m) => ({ session_code: m[2] }),
     },
     {
         // artifacts/{appId}/users/{uid}/data/teacherHistory
@@ -73,6 +87,33 @@ const PATH_PATTERNS = [
     },
 ];
 
+function _resolveDataProviderCtor() {
+    if (typeof DataProvider !== 'undefined') return DataProvider;
+    if (typeof globalThis !== 'undefined' && globalThis.DataProvider) return globalThis.DataProvider;
+    if (typeof require === 'function') {
+        try {
+            const mod = require('./dataProvider.js');
+            if (mod && mod.DataProvider) return mod.DataProvider;
+        } catch (_) {}
+    }
+    throw new Error('DataProvider is not loaded');
+}
+
+function _validatePathSegments(segments) {
+    if (!Array.isArray(segments) || segments.length === 0) {
+        throw new Error('DataLayer path must contain at least one segment');
+    }
+    const clean = [];
+    for (const seg of segments) {
+        const s = typeof seg === 'string' ? seg : String(seg == null ? '' : seg);
+        if (!s || s === '.' || s === '..' || s.includes('/') || s.includes('\\') || s.includes('..') || /[\u0000-\u001f\u007f]/.test(s)) {
+            throw new Error(`Invalid DataLayer path segment: ${JSON.stringify(seg)}`);
+        }
+        clean.push(s);
+    }
+    return clean;
+}
+
 /**
  * Flatten a Firestore-style path (e.g. from doc(db, ...segments)) into
  * a PocketBase-compatible { collection, docId, meta } tuple.
@@ -81,7 +122,8 @@ const PATH_PATTERNS = [
  * @returns {{ collection: string, docId: string|null, meta: Object }}
  */
 function flattenPath(...segments) {
-    const fullPath = segments.join('/');
+    const clean = _validatePathSegments(segments);
+    const fullPath = clean.join('/');
     for (const pattern of PATH_PATTERNS) {
         const m = fullPath.match(pattern.match);
         if (m) {
@@ -93,14 +135,27 @@ function flattenPath(...segments) {
         }
     }
     // Fallback: use last two segments as collection/docId
-    if (segments.length >= 2) {
+    if (clean.length >= 2) {
         return {
-            collection: segments[segments.length - 2],
-            docId: segments[segments.length - 1],
+            collection: clean[clean.length - 2],
+            docId: clean[clean.length - 1],
             meta: {},
         };
     }
-    return { collection: segments[0] || 'unknown', docId: null, meta: {} };
+    return { collection: clean[0] || 'unknown', docId: null, meta: {} };
+}
+
+function _safeHttpBaseUrl(raw) {
+    if (typeof raw !== 'string') return '';
+    try {
+        const parsed = new URL(raw.trim());
+        if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || parsed.username || parsed.password || parsed.search || parsed.hash) {
+            return '';
+        }
+        return `${parsed.origin}${parsed.pathname}`.replace(/\/+$/, '');
+    } catch {
+        return '';
+    }
 }
 
 // ─── AlloData High-Level API ─────────────────────────────────────────────────
@@ -119,6 +174,21 @@ class AlloData {
         this.backend = dataProvider?.backend || 'unknown';
     }
 
+    _resolveTarget(segments, isCollectionQuery = false) {
+        const clean = _validatePathSegments(segments);
+        if (this.backend === 'firebase') {
+            if (isCollectionQuery || clean.length % 2 === 1) {
+                return { collection: clean.join('/'), docId: null, meta: {} };
+            }
+            return {
+                collection: clean.slice(0, -1).join('/'),
+                docId: clean[clean.length - 1],
+                meta: {},
+            };
+        }
+        return flattenPath(...clean);
+    }
+
     // ── Firestore-compatible shim methods ────────────────────────────────
     // These mirror the Firebase SDK surface so refactoring is minimal.
 
@@ -128,9 +198,9 @@ class AlloData {
      *   await setDoc(ref, data, options);
      */
     async setDoc(segments, data, options) {
-        const { collection, docId, meta } = flattenPath(...segments);
+        const { collection, docId, meta } = this._resolveTarget(segments, false);
         const enriched = this.backend !== 'firebase'
-            ? { ...meta, ...data }
+            ? { ...(data && typeof data === 'object' ? data : {}), ...meta }
             : data;
         return this.dp.setDoc(collection, docId, enriched, options);
     }
@@ -141,7 +211,7 @@ class AlloData {
      *   await getDoc(ref);
      */
     async getDoc(segments) {
-        const { collection, docId } = flattenPath(...segments);
+        const { collection, docId } = this._resolveTarget(segments, false);
         return this.dp.getDoc(collection, docId);
     }
 
@@ -151,9 +221,9 @@ class AlloData {
      *   await updateDoc(ref, data);
      */
     async updateDoc(segments, data) {
-        const { collection, docId, meta } = flattenPath(...segments);
+        const { collection, docId, meta } = this._resolveTarget(segments, false);
         const enriched = this.backend !== 'firebase'
-            ? { ...meta, ...data }
+            ? { ...(data && typeof data === 'object' ? data : {}), ...meta }
             : data;
         return this.dp.updateDoc(collection, docId, enriched);
     }
@@ -164,7 +234,7 @@ class AlloData {
      *   await deleteDoc(ref);
      */
     async deleteDoc(segments) {
-        const { collection, docId } = flattenPath(...segments);
+        const { collection, docId } = this._resolveTarget(segments, false);
         return this.dp.deleteDoc(collection, docId);
     }
 
@@ -174,7 +244,7 @@ class AlloData {
      *   const unsub = onSnapshot(ref, callback);
      */
     onSnapshot(segments, callback) {
-        const { collection, docId } = flattenPath(...segments);
+        const { collection, docId } = this._resolveTarget(segments, false);
         return this.dp.onSnapshot(collection, docId, callback);
     }
 
@@ -184,7 +254,7 @@ class AlloData {
      *   const snap = await getDocs(q);
      */
     async getDocs(segments, constraints = []) {
-        const { collection } = flattenPath(...segments);
+        const { collection } = this._resolveTarget(segments, true);
         return this.dp.getDocs(collection, constraints);
     }
 
@@ -195,12 +265,14 @@ class AlloData {
         // Flatten paths in each operation
         const flatOps = operations.map(op => {
             if (op.segments) {
-                const { collection, docId, meta } = flattenPath(...op.segments);
+                const { collection, docId, meta } = this._resolveTarget(op.segments, false);
                 return {
                     ...op,
                     collection,
                     docId,
-                    data: op.data ? { ...meta, ...op.data } : undefined,
+                    data: op.data
+                        ? (this.backend !== 'firebase' ? { ...op.data, ...meta } : op.data)
+                        : undefined,
                 };
             }
             return op;
@@ -261,14 +333,14 @@ class AlloData {
 
     // ── Static field operations (re-export from DataProvider) ────────────
 
-    static get serverTimestamp() { return DataProvider.serverTimestamp; }
-    static get arrayUnion() { return DataProvider.arrayUnion; }
-    static get arrayRemove() { return DataProvider.arrayRemove; }
-    static get increment() { return DataProvider.increment; }
-    static get deleteField() { return DataProvider.deleteField; }
-    static get where() { return DataProvider.where; }
-    static get orderBy() { return DataProvider.orderBy; }
-    static get limit() { return DataProvider.limit; }
+    static get serverTimestamp() { return _resolveDataProviderCtor().serverTimestamp; }
+    static get arrayUnion() { return _resolveDataProviderCtor().arrayUnion; }
+    static get arrayRemove() { return _resolveDataProviderCtor().arrayRemove; }
+    static get increment() { return _resolveDataProviderCtor().increment; }
+    static get deleteField() { return _resolveDataProviderCtor().deleteField; }
+    static get where() { return _resolveDataProviderCtor().where; }
+    static get orderBy() { return _resolveDataProviderCtor().orderBy; }
+    static get limit() { return _resolveDataProviderCtor().limit; }
 }
 
 
@@ -289,19 +361,29 @@ async function initAlloData(config = {}) {
     } = config;
 
     let resolvedBackend = backend;
+    const safePbUrl = _safeHttpBaseUrl(pocketbaseUrl);
 
     if (backend === 'auto') {
         // Step 1: Try PocketBase
-        try {
-            const health = await fetch(`${pocketbaseUrl}/api/health`, {
-                signal: AbortSignal.timeout(2000),
-            });
-            if (health.ok) {
-                resolvedBackend = 'pocketbase';
-                debugLog('[AlloData] ✅ PocketBase detected at', pocketbaseUrl);
+        if (safePbUrl) {
+            const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const timer = controller ? setTimeout(() => controller.abort(), 2000) : null;
+            try {
+                const health = await fetch(`${safePbUrl}/api/health`, {
+                    credentials: 'omit',
+                    referrerPolicy: 'no-referrer',
+                    signal: controller ? controller.signal : undefined,
+                });
+                try { await health?.body?.cancel?.(); } catch (_) {}
+                if (health && health.ok) {
+                    resolvedBackend = 'pocketbase';
+                    debugLog('[AlloData] ✅ PocketBase detected at', safePbUrl);
+                }
+            } catch {
+                debugLog('[AlloData] PocketBase not available, checking Firebase...');
+            } finally {
+                if (timer) clearTimeout(timer);
             }
-        } catch {
-            debugLog('[AlloData] PocketBase not available, checking Firebase...');
         }
 
         // Step 2: Try Firebase
@@ -318,9 +400,10 @@ async function initAlloData(config = {}) {
     }
 
     // Create the DataProvider
-    const dp = new DataProvider({
+    const DataProviderCtor = _resolveDataProviderCtor();
+    const dp = new DataProviderCtor({
         backend: resolvedBackend,
-        baseUrl: pocketbaseUrl,
+        baseUrl: safePbUrl || pocketbaseUrl,
         firebaseApp,
         firestoreDb,
         firebaseAuth,
@@ -331,9 +414,11 @@ async function initAlloData(config = {}) {
     // Create the high-level API
     const alloData = new AlloData(dp, appId);
 
-    // Expose globally
-    window.__alloData = alloData;
-    window.__alloDataProvider = dp;
+    // Expose globally in browser environments
+    if (typeof window !== 'undefined') {
+        window.__alloData = alloData;
+        window.__alloDataProvider = dp;
+    }
 
     debugLog(`[AlloData] Initialized: backend=${resolvedBackend}`);
 

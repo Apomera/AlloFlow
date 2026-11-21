@@ -43,9 +43,38 @@ function crc32(buf) {
 const FIXED_DOS_TIME = 0x0000;           // 00:00:00
 const FIXED_DOS_DATE = ((2020 - 1980) << 9) | (1 << 5) | 1;  // 2020-01-01
 
-const MAX_ZIP32_ENTRIES = 0xFFFF;
+const MAX_ZIP32_ENTRIES = 0xFFFE;
 const MAX_ZIP32_NAME = 0xFFFF;
-const MAX_ZIP32_UINT32 = 0xFFFFFFFF;
+const MAX_ZIP32_UINT32 = 0xFFFFFFFE;
+const WINDOWS_RESERVED_SEG = /^(?:con|prn|aux|nul|clock\$|com[0-9]|lpt[0-9])(?:[ .]|$)/i;
+
+function validateArchiveEntryNames(names, caller) {
+  const seenExact = new Set();
+  const seenLower = new Set();
+  const dirPaths = new Set();
+  const filePaths = new Set();
+  for (const name of names) {
+    if (typeof name !== 'string' || !name) throw new Error(caller + ': every entry needs a name');
+    const nameBytes = Buffer.byteLength(name, 'utf8');
+    if (nameBytes > 1024 || name.startsWith('/') || /[\x00-\x1f\x7f<>:"\\|?*]/.test(name)) {
+      throw new Error(caller + ': unsafe archive entry path');
+    }
+    const segs = name.split('/');
+    if (segs.some((seg) => !seg || seg === '.' || seg === '..' || /[. ]$/.test(seg) || WINDOWS_RESERVED_SEG.test(seg))) {
+      throw new Error(caller + ': invalid relative path segment');
+    }
+    if (seenExact.has(name) || seenLower.has(name.toLowerCase())) {
+      throw new Error(caller + ': duplicate or case-colliding archive entry');
+    }
+    seenExact.add(name);
+    seenLower.add(name.toLowerCase());
+    filePaths.add(name.toLowerCase());
+    for (let i = 1; i < segs.length; i++) dirPaths.add(segs.slice(0, i).join('/').toLowerCase());
+  }
+  for (const fp of filePaths) {
+    if (dirPaths.has(fp)) throw new Error(caller + ': file and directory path conflict');
+  }
+}
 
 function toEntryBuffer(data) {
   if (Buffer.isBuffer(data)) return data;
@@ -68,9 +97,12 @@ function toEntryBuffer(data) {
  *        Order is preserved exactly. `store: true` forces no compression.
  * @returns {Buffer} the .zip / .epub bytes
  */
-function makeZip(entries) {
+function makeZip(entries, opts) {
   if (!Array.isArray(entries) || !entries.length) throw new Error('makeZip: entries must be a non-empty array');
-  if (entries.length > MAX_ZIP32_ENTRIES) throw new Error('makeZip: too many entries for ZIP32 (max 65535)');
+  if (entries.length > MAX_ZIP32_ENTRIES) throw new Error('makeZip: too many entries for ZIP32 (max 65534)');
+  if (opts && opts.validate === true) {
+    validateArchiveEntryNames(entries.map((e) => (e && typeof e.name === 'string' ? e.name : '')), 'makeZip');
+  }
   const locals = [];
   const central = [];
   let offset = 0;
@@ -119,6 +151,7 @@ function makeZip(entries) {
     cd.writeUInt32LE(body.length, 20);
     cd.writeUInt32LE(raw.length, 24);
     cd.writeUInt16LE(nameBuf.length, 28);
+    cd.writeUInt32LE((0o100644 << 16) >>> 0, 38); // UNIX regular file 0644
     cd.writeUInt32LE(offset, 42);               // relative offset of the local header
     nameBuf.copy(cd, 46);
     central.push(cd);
@@ -148,20 +181,8 @@ function makeZip(entries) {
 function zipFileMap(files, storeFirst) {
   const names = Object.keys(files || {});
   if (!names.length) throw new Error('zipFileMap: no files');
-  if (names.length > 65535) throw new Error('zipFileMap: too many files');
-  const seen = new Set();
-  for (const name of names) {
-    if (typeof name !== 'string' || !name || name.length > 1024 || name.startsWith('/')
-      || name.includes('\0') || name.includes('\\') || name.includes(':')) {
-      throw new Error('zipFileMap: unsafe archive entry path');
-    }
-    const segs = name.split('/');
-    if (segs.some((seg) => !seg || seg === '.' || seg === '..')) {
-      throw new Error('zipFileMap: invalid relative path segment');
-    }
-    if (seen.has(name)) throw new Error('zipFileMap: duplicate archive entry');
-    seen.add(name);
-  }
+  if (names.length > MAX_ZIP32_ENTRIES) throw new Error('zipFileMap: too many files');
+  validateArchiveEntryNames(names, 'zipFileMap');
   const entries = [];
   if (storeFirst) {
     if (!names.includes(storeFirst)) throw new Error("zipFileMap: storeFirst '" + storeFirst + "' is not in the file map");

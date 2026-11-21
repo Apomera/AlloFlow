@@ -257,7 +257,8 @@ function AdventureSetupEditor(props) {
   const [resourceQtyDrafts, setResourceQtyDrafts] = React.useState({});
   const pendingResourceFocus = React.useRef(null);
   const resourceEditorRef = React.useRef(null);
-  const resourcesLocked = locked() || typeof props.setAdventureState !== "function";
+  const resourceConfigLocked = !props.isTeacherMode || locked();
+  const resourcesLocked = resourceConfigLocked || typeof props.setAdventureState !== "function";
   React.useEffect(() => {
     const target = pendingResourceFocus.current;
     if (target) {
@@ -284,7 +285,7 @@ function AdventureSetupEditor(props) {
   };
   const resourceMode = props.factionResourceMode === "manual" ? "manual" : "ai";
   const setResourceMode = (value) => {
-    if (locked()) return;
+    if (resourceConfigLocked) return;
     if (typeof props.setFactionResourceMode === "function") props.setFactionResourceMode(value);
     else {
       const handler = value === "manual" ? props.handleSetFactionResourceModeToManual : props.handleSetFactionResourceModeToAi;
@@ -292,7 +293,7 @@ function AdventureSetupEditor(props) {
     }
   };
   const editResources = (update) => {
-    if (!locked() && typeof props.setAdventureState === "function") props.setAdventureState((previous) => ({ ...previous, systemResources: update(previous.systemResources || []) }));
+    if (!resourceConfigLocked && typeof props.setAdventureState === "function") props.setAdventureState((previous) => ({ ...previous, systemResources: update(previous.systemResources || []) }));
   };
   const addResource = () => {
     if (resourcesLocked || resources.length >= 24) return;
@@ -328,7 +329,7 @@ function AdventureSetupEditor(props) {
   const onOff = (value) => label(value ? "common.on" : "common.off", value ? "On" : "Off");
   return /* @__PURE__ */ React.createElement(AdventureSettingsSurface, { theme: props.theme, compact: props.compact }, !props.isTeacherMode && !props.hideNotice && !state.isLoading && !props.isProcessing && /* @__PURE__ */ React.createElement("p", { className: "as-notice" }, permissions.lockAllSettings ? label("student_locked_hint", "Your teacher has fixed this setup. You can review the settings and start your adventure.") : label("student_edit_hint", "You can adjust the settings your teacher allows. Unavailable controls are set by your teacher.")), /* @__PURE__ */ React.createElement("section", { className: "as-box", "aria-labelledby": id + "-essential-heading" }, /* @__PURE__ */ React.createElement("h3", { id: id + "-essential-heading", className: "as-title" }, label("essential_setup", "Essential setup")), /* @__PURE__ */ React.createElement("div", { className: "as-grid" }, field("input-mode", label("adventure.interaction_mode", "Interaction mode"), props.adventureInputMode || "choice", "setAdventureInputMode", modes, "allowModeSwitch", modeGuide), languageOptions.length > 1 && field("language", label("adventure.language_label", "Adventure language"), languageSelection, "setAdventureLanguageMode", languageOptions, "allowLanguageSwitch", label("translation_hint", "Story language follows this control; the translation language follows Universal Settings.")), /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-response", "data-help-key": "adventure_setting_response" }, label("response_format", "Student responses"), /* @__PURE__ */ React.createElement("select", { "aria-label": label("response_format", "Student responses"), "aria-describedby": describedBy("freeResponse", "response"), id: id + "-response", className: "as-control", value: props.adventureFreeResponseEnabled ? "written" : "choice", disabled: locked("freeResponse") || typeof props.setAdventureFreeResponseEnabled !== "function", onChange: (e) => change("setAdventureFreeResponseEnabled", e.target.value === "written", "freeResponse") }, /* @__PURE__ */ React.createElement("option", { value: "choice" }, label("response_choices", "Choose from suggestions")), /* @__PURE__ */ React.createElement("option", { value: "written" }, label("response_written", "Write or dictate"))), fixedHint("freeResponse", "response"))), props.isTeacherMode && typeof props.openUniversalSettings === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", className: "as-button", "data-help-key": "adventure_setting_manage_languages", style: { marginTop: 12 }, disabled: locked(), onClick: () => {
     if (!locked()) props.openUniversalSettings("languages");
-  } }, languageOptions.length === 1 ? label("add_languages", "Add languages in Universal Settings") : label("manage_languages", "Manage languages in Universal Settings")), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16 }, "data-help-key": "adventure_setting_episode" }, /* @__PURE__ */ React.createElement(AdventureEpisodeSettings, { state, onChange: props.setAdventureState, t: props.t, theme: props.theme, locked: locked(), id: id + "-episode-length", freeResponse: props.adventureFreeResponseEnabled, includeFinale: true })), toggle("isSocialStoryMode", "setIsSocialStoryMode", label("adventure.social_story_mode_label", "Social scenario mode"), label("social_mode_hint", "Show a target social skill in Essential setup."), "allowModeSwitch"), props.isSocialStoryMode && /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-social-focus", "data-help-key": "adventure_setting_social_focus" }, label("social_focus", "Social skill to practise"), /* @__PURE__ */ React.createElement("input", { id: id + "-social-focus", className: "as-control", type: "text", "aria-describedby": describedBy("allowModeSwitch", "social-focus"), value: props.socialStoryFocus || "", disabled: locked("allowModeSwitch") || typeof props.setSocialStoryFocus !== "function", onChange: (e) => change("setSocialStoryFocus", e.target.value, "allowModeSwitch"), placeholder: label("adventure.social_story_focus_placeholder", "e.g., Sharing toys, Dealing with frustration") }), fixedHint("allowModeSwitch", "social-focus")), props.adventureInputMode === "system" && /* @__PURE__ */ React.createElement("div", null, toggle("enableFactionResources", "setEnableFactionResources", label("adventure.system_state_label", "Track resources"), label("adventure.system_state_desc", "Track how your decisions affect the system.")), props.enableFactionResources && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-resource-mode", "data-help-key": "adventure_setting_resource_mode" }, label("resource_setup", "Resource setup"), /* @__PURE__ */ React.createElement("select", { "aria-label": label("resource_setup", "Resource setup"), className: "as-control", id: id + "-resource-mode", value: resourceMode, disabled: locked() || !(props.setFactionResourceMode || props.handleSetFactionResourceModeToManual), onChange: (e) => setResourceMode(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "ai" }, label("resources_ai", "AI-generated resources")), /* @__PURE__ */ React.createElement("option", { value: "manual" }, label("resources_manual", "Teacher-defined resources")))), resourceMode === "manual" && /* @__PURE__ */ React.createElement("div", { ref: resourceEditorRef, "data-help-key": "adventure_setting_resource_rows" }, /* @__PURE__ */ React.createElement("p", { className: "as-help" }, label("resources_manual_hint", "Give each resource a distinct name and unit. Percentages stay between 0 and 100; other values can exceed 100 and include decimals.")), resources.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "as-notice" }, label("resources_empty", "No resources yet. Add a resource such as Budget (credits), Water (litres), or Trust (%).")), /* @__PURE__ */ React.createElement("p", { className: "as-help" }, label("resource_count", "Resource rows"), ": ", resources.length, " / 24"), resources.map((resource, index) => /* @__PURE__ */ React.createElement("div", { className: "as-resource", key: index }, /* @__PURE__ */ React.createElement("div", { className: "as-grid" }, [["name", label("resource_name", "Resource name"), "text"], ["quantity", label("resource_quantity", "Starting value"), "number"], ["unit", label("resource_unit", "Unit"), "text"]].map(([key, title, type]) => {
+  } }, languageOptions.length === 1 ? label("add_languages", "Add languages in Universal Settings") : label("manage_languages", "Manage languages in Universal Settings")), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16 }, "data-help-key": "adventure_setting_episode" }, /* @__PURE__ */ React.createElement(AdventureEpisodeSettings, { state, onChange: props.setAdventureState, t: props.t, theme: props.theme, locked: locked(), id: id + "-episode-length", freeResponse: props.adventureFreeResponseEnabled, includeFinale: true })), toggle("isSocialStoryMode", "setIsSocialStoryMode", label("adventure.social_story_mode_label", "Social scenario mode"), label("social_mode_hint", "Show a target social skill in Essential setup."), "allowModeSwitch"), props.isSocialStoryMode && /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-social-focus", "data-help-key": "adventure_setting_social_focus" }, label("social_focus", "Social skill to practise"), /* @__PURE__ */ React.createElement("input", { id: id + "-social-focus", className: "as-control", type: "text", "aria-describedby": describedBy("allowModeSwitch", "social-focus"), value: props.socialStoryFocus || "", disabled: locked("allowModeSwitch") || typeof props.setSocialStoryFocus !== "function", onChange: (e) => change("setSocialStoryFocus", e.target.value, "allowModeSwitch"), placeholder: label("adventure.social_story_focus_placeholder", "e.g., Sharing toys, Dealing with frustration") }), fixedHint("allowModeSwitch", "social-focus")), props.adventureInputMode === "system" && /* @__PURE__ */ React.createElement("div", null, toggle("enableFactionResources", "setEnableFactionResources", label("adventure.system_state_label", "Track resources"), label("adventure.system_state_desc", "Track how your decisions affect the system."), "allowModeSwitch"), props.enableFactionResources && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "as-field", htmlFor: id + "-resource-mode", "data-help-key": "adventure_setting_resource_mode" }, label("resource_setup", "Resource setup"), /* @__PURE__ */ React.createElement("select", { "aria-label": label("resource_setup", "Resource setup"), className: "as-control", id: id + "-resource-mode", value: resourceMode, disabled: resourceConfigLocked || !(props.setFactionResourceMode || props.handleSetFactionResourceModeToManual), onChange: (e) => setResourceMode(e.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "ai" }, label("resources_ai", "AI-generated resources")), /* @__PURE__ */ React.createElement("option", { value: "manual" }, label("resources_manual", "Teacher-defined resources")))), resourceMode === "manual" && /* @__PURE__ */ React.createElement("div", { ref: resourceEditorRef, "data-help-key": "adventure_setting_resource_rows" }, /* @__PURE__ */ React.createElement("p", { className: "as-help" }, label("resources_manual_hint", "Give each resource a distinct name and unit. Percentages stay between 0 and 100; other values can exceed 100 and include decimals.")), resources.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "as-notice" }, label("resources_empty", "No resources yet. Add a resource such as Budget (credits), Water (litres), or Trust (%).")), /* @__PURE__ */ React.createElement("p", { className: "as-help" }, label("resource_count", "Resource rows"), ": ", resources.length, " / 24"), resources.map((resource, index) => /* @__PURE__ */ React.createElement("div", { className: "as-resource", key: index }, /* @__PURE__ */ React.createElement("div", { className: "as-grid" }, [["name", label("resource_name", "Resource name"), "text"], ["quantity", label("resource_quantity", "Starting value"), "number"], ["unit", label("resource_unit", "Unit"), "text"]].map(([key, title, type]) => {
     const isPercent = /^(%|percent|percentage)$/i.test(String(resource.unit || "").trim());
     const hasDraft = type === "number" && Object.prototype.hasOwnProperty.call(resourceQtyDrafts, index);
     return /* @__PURE__ */ React.createElement("label", { className: "as-field", key, htmlFor: id + "-resource-" + index + "-" + key }, title, " ", index + 1, /* @__PURE__ */ React.createElement("input", { id: id + "-resource-" + index + "-" + key, className: "as-control", "aria-label": title + " " + (index + 1), "aria-invalid": key === "name" && !!resourceNameIssue(index) ? true : void 0, "aria-describedby": key === "name" && resourceNameIssue(index) ? id + "-resource-" + index + "-issue" : void 0, maxLength: key === "name" ? 80 : key === "unit" ? 30 : void 0, type, min: type === "number" ? 0 : void 0, step: type === "number" ? "any" : void 0, max: type === "number" && isPercent ? 100 : void 0, value: hasDraft ? resourceQtyDrafts[index] : resource[key] ?? "", disabled: resourcesLocked, onChange: (e) => {
@@ -425,14 +426,35 @@ function createPathFork() {
     if (typeof t !== "function") t = noText;
     const [remember, setRemember] = React.useState(false);
     const boxRef = React.useRef(null);
+    const backdropDownRef = React.useRef(null);
+    const trapRef = React.useRef(null);
     const restoreFocus = React.useRef(true);
     const id = "path-fork-" + (React.useId ? React.useId().replace(/[^\w-]/g, "") : "dialog");
     React.useEffect(() => {
+      const box = boxRef.current;
       const returnTo = document.activeElement;
-      const first = boxRef.current && boxRef.current.querySelector("button");
+      const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+      const trap = { root: box };
+      trapRef.current = trap;
+      trapStack.push(trap);
+      const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+      const alloScrollLocked = !!document.body;
+      if (alloScrollLocked && ++alloScrollLock.count === 1) {
+        alloScrollLock.prev = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+      }
+      const first = box && box.querySelector("button");
       if (first) first.focus();
       return () => {
-        if (!restoreFocus.current) return;
+        if (alloScrollLocked) {
+          alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
+          if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+        }
+        const wasTop = trapStack[trapStack.length - 1] === trap;
+        const idx = trapStack.indexOf(trap);
+        if (idx !== -1) trapStack.splice(idx, 1);
+        if (trapRef.current === trap) trapRef.current = null;
+        if (!restoreFocus.current || !wasTop) return;
         try {
           if (returnTo && returnTo.isConnected && typeof returnTo.focus === "function") returnTo.focus();
         } catch (_) {
@@ -440,6 +462,8 @@ function createPathFork() {
       };
     }, []);
     const onKeyDown = (event) => {
+      const trapStack = window.__alloFocusTrapStack;
+      if (Array.isArray(trapStack) && trapStack.length > 0 && trapRef.current && trapStack[trapStack.length - 1] !== trapRef.current) return;
       if (event.key === "Escape") {
         if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault();
@@ -473,8 +497,13 @@ function createPathFork() {
         "data-path-fork": true,
         className: "fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/50 p-4",
         onKeyDown,
+        onMouseDown: (event) => {
+          backdropDownRef.current = event.target === event.currentTarget;
+        },
         onClick: (event) => {
-          if (event.target === event.currentTarget) onCancel();
+          const allow = backdropDownRef.current !== false;
+          backdropDownRef.current = null;
+          if (event.target === event.currentTarget && allow) onCancel();
         }
       },
       /* @__PURE__ */ React.createElement(
@@ -959,6 +988,7 @@ Return only JSON: {"terms": ["term"]}`;
         setSuggestNote("");
       },
       onKeyDown: (event) => {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         if (event.key === "Enter") {
           event.preventDefault();
           suggestWords();
@@ -1059,10 +1089,10 @@ const UNIVERSAL_GRADE_CHOICES = [
 const SIDEBAR_PANEL_UI = Object.freeze({
   settingsSurface: "border-b border-slate-200/80 bg-slate-50/70 p-3.5 flex flex-col gap-3.5",
   settingsGroup: "space-y-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm",
-  label: "block mb-1.5 text-[11px] font-semibold leading-4 tracking-wide text-slate-700",
+  label: "block mb-1.5 text-xs font-semibold leading-4 tracking-wide text-slate-700",
   control: "w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-500 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
   textarea: "w-full min-h-20 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-500 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
-  help: "mt-1.5 text-[11px] leading-relaxed text-slate-500",
+  help: "mt-1.5 text-xs leading-relaxed text-slate-600",
   checkbox: "h-4 w-4 rounded border-slate-300 text-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50",
   disclosure: "flex min-h-11 w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs font-semibold transition-colors motion-reduce:transition-none focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 disabled:opacity-70",
   primaryAction: "group flex min-h-12 w-full items-center justify-between border-t border-slate-200/80 bg-white px-3.5 py-3 text-left transition-colors motion-reduce:transition-none hover:bg-indigo-50/60 focus-visible:z-10 focus-visible:bg-indigo-50/60 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-50",
@@ -1083,7 +1113,7 @@ function ToolCatalogControls(props) {
   };
   const groupLabel = translate("sidebar.tool_finder_group_" + group) || (TOOL_CATALOG_PURPOSE_FILTERS.find(([id]) => id === group) || [])[1] || "";
   const filterNote = (String(query || "").trim() ? translate("sidebar.tool_finder_filtered_search") || "Showing tools that match your search: {shown} of {total}." : translate("sidebar.tool_finder_filtered_group") || "{filter}: showing {shown} of {total} tools.").replace("{filter}", groupLabel).replace("{shown}", String(shownCount)).replace("{total}", String(totalCount || shownCount));
-  return /* @__PURE__ */ React.createElement("section", { id: "tour-tool-finder", "data-testid": "tool-catalog-controls", "aria-labelledby": "tool-catalog-title", className: `rounded-2xl border border-slate-200 bg-white shadow-sm ${isExpanded ? "p-3" : "px-3 py-2"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "tool-catalog-title", className: "text-sm font-black text-slate-900" }, translate("sidebar.tool_finder_title") || "Find a tool"), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-relaxed text-slate-600", "aria-live": "polite" }, isExpanded ? translate("sidebar.tool_finder_hint") || "Narrow the list below by purpose, or search it." : selectedLabel ? /* @__PURE__ */ React.createElement(React.Fragment, null, translate("sidebar.tool_finder_selected") || "Selected", ": ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-700" }, selectedLabel)) : filterActive ? translate("sidebar.tool_finder_open_hint") || "Open this to change or clear the filter." : translate("sidebar.tool_finder_browse") || "Every tool is listed below.")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-expanded": isExpanded, "aria-controls": "tool-catalog-discovery-controls", onClick: isExpanded ? onCollapse : onOpen, className: "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 transition-colors motion-reduce:transition-none hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, isExpanded ? translate("sidebar.tool_finder_collapse") || "Collapse" : selectedLabel ? translate("sidebar.tool_finder_change") || "Change tool" : translate("sidebar.tool_finder_open") || "Find a tool", /* @__PURE__ */ React.createElement(ChevronDown, { size: 15, "aria-hidden": "true", className: isExpanded ? "rotate-180" : "" }))), (filterActive || canHide) && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2" }, filterActive ? /* @__PURE__ */ React.createElement("p", { className: "min-w-0 flex-1 rounded-lg bg-slate-100 px-2 py-1.5 text-[11px] font-semibold leading-snug text-slate-700" }, filterNote) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }), canHide && /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("section", { id: "tour-tool-finder", "data-testid": "tool-catalog-controls", "aria-labelledby": "tool-catalog-title", className: `rounded-2xl border border-slate-200 bg-white shadow-sm ${isExpanded ? "p-3" : "px-3 py-2"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "tool-catalog-title", className: "text-sm font-black text-slate-900" }, translate("sidebar.tool_finder_title") || "Find a tool"), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-relaxed text-slate-600", "aria-live": "polite" }, isExpanded ? translate("sidebar.tool_finder_hint") || "Narrow the list below by purpose, or search it." : selectedLabel ? /* @__PURE__ */ React.createElement(React.Fragment, null, translate("sidebar.tool_finder_selected") || "Selected", ": ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-700" }, selectedLabel)) : filterActive ? translate("sidebar.tool_finder_open_hint") || "Open this to change or clear the filter." : translate("sidebar.tool_finder_browse") || "Every tool is listed below.")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-expanded": isExpanded, "aria-controls": "tool-catalog-discovery-controls", onClick: isExpanded ? onCollapse : onOpen, className: "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 transition-colors motion-reduce:transition-none hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" }, isExpanded ? translate("sidebar.tool_finder_collapse") || "Collapse" : selectedLabel ? translate("sidebar.tool_finder_change") || "Change tool" : translate("sidebar.tool_finder_open") || "Find a tool", /* @__PURE__ */ React.createElement(ChevronDown, { size: 15, "aria-hidden": "true", className: isExpanded ? "rotate-180" : "" }))), (filterActive || canHide) && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2" }, filterActive ? /* @__PURE__ */ React.createElement("p", { className: "min-w-0 flex-1 rounded-lg bg-slate-100 px-2 py-1.5 text-xs font-semibold leading-snug text-slate-700" }, filterNote) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }), canHide && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1092,7 +1122,7 @@ function ToolCatalogControls(props) {
       className: "min-h-10 shrink-0 rounded-lg px-2 text-xs font-bold text-slate-700 transition-colors motion-reduce:transition-none hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-500"
     },
     filterActive ? translate("sidebar.tool_finder_show_all") || "Show all tools" : translate("sidebar.tool_finder_hide") || "Hide this panel"
-  )), /* @__PURE__ */ React.createElement("div", { id: "tool-catalog-discovery-controls", hidden: !isExpanded }, /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex items-baseline justify-between gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "tool-catalog-search", className: "text-xs font-bold text-slate-700" }, translate("sidebar.tool_finder_search_label") || "Search by name"), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700", "aria-live": "polite" }, (translate("sidebar.tool_finder_shown") || "{n} shown").replace("{n}", String(shownCount)))), /* @__PURE__ */ React.createElement("div", { className: "relative mt-1" }, /* @__PURE__ */ React.createElement(Search, { size: 16, "aria-hidden": "true", className: "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" }), /* @__PURE__ */ React.createElement("input", { id: "tool-catalog-search", type: "search", value: query, onChange: (event) => onQueryChange(event.target.value), placeholder: translate("sidebar.tool_finder_search_placeholder") || "Search glossary, visuals, assessment...", className: "min-h-11 w-full rounded-xl border border-slate-300 bg-white py-2 ps-9 pe-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 sm:text-sm" })), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": translate("sidebar.tool_finder_group_aria") || "Narrow the tool list by purpose", className: "mt-3 flex flex-wrap gap-2" }, TOOL_CATALOG_PURPOSE_FILTERS.map(([id, label]) => /* @__PURE__ */ React.createElement("button", { key: id, type: "button", "aria-pressed": !query && group === id, onClick: () => onGroupChange(id), className: `min-h-10 rounded-xl border px-3 py-2 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${!query && group === id ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50"}` }, translate("sidebar.tool_finder_group_" + id) || label))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onToggleAll, className: "min-h-10 rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500", title: toggleAllTitle }, toggleAllLabel))));
+  )), /* @__PURE__ */ React.createElement("div", { id: "tool-catalog-discovery-controls", hidden: !isExpanded }, /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex items-baseline justify-between gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "tool-catalog-search", className: "text-xs font-bold text-slate-700" }, translate("sidebar.tool_finder_search_label") || "Search by name"), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700", "aria-live": "polite" }, (translate("sidebar.tool_finder_shown") || "{n} shown").replace("{n}", String(shownCount)))), /* @__PURE__ */ React.createElement("div", { className: "relative mt-1" }, /* @__PURE__ */ React.createElement(Search, { size: 16, "aria-hidden": "true", className: "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" }), /* @__PURE__ */ React.createElement("input", { id: "tool-catalog-search", type: "search", value: query, onChange: (event) => onQueryChange(event.target.value), placeholder: translate("sidebar.tool_finder_search_placeholder") || "Search glossary, visuals, assessment...", className: "min-h-11 w-full rounded-xl border border-slate-300 bg-white py-2 ps-9 pe-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 sm:text-sm" })), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": translate("sidebar.tool_finder_group_aria") || "Narrow the tool list by purpose", className: "mt-3 flex flex-wrap gap-2" }, TOOL_CATALOG_PURPOSE_FILTERS.map(([id, label]) => /* @__PURE__ */ React.createElement("button", { key: id, type: "button", "aria-pressed": !query && group === id, onClick: () => onGroupChange(id), className: `min-h-10 rounded-xl border px-3 py-2 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${!query && group === id ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50"}` }, translate("sidebar.tool_finder_group_" + id) || label))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onToggleAll, className: "min-h-10 rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500", title: toggleAllTitle }, toggleAllLabel))));
 }
 const UNIVERSAL_DIFFERENTIABLE_TYPES = [
   "simplified",
@@ -1138,7 +1168,7 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
       disabled,
       className: premium ? `${SIDEBAR_PANEL_UI.disclosure} ${hasValue ? "border-indigo-200 bg-indigo-50/70 text-indigo-800" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"}` : `w-full flex items-center justify-between gap-2 text-left text-xs font-medium rounded-md px-2 py-1.5 border transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${hasValue ? "border-indigo-200 bg-indigo-50/60 text-indigo-800" : "border-transparent text-slate-600 hover:bg-slate-50"}`
     },
-    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5 min-w-0" }, hasValue ? /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "text-indigo-600 shrink-0" }) : /* @__PURE__ */ React.createElement(Plus, { size: 12, className: "text-slate-500 shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, hasValue ? `${label}: "${preview}${String(value).trim().length > 48 ? "\u2026" : ""}"` : label, !hasValue && optional && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-normal" }, " ", t("common.optional")))),
+    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5 min-w-0" }, hasValue ? /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "text-indigo-600 shrink-0" }) : /* @__PURE__ */ React.createElement(Plus, { size: 12, className: "text-slate-600 shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, hasValue ? `${label}: "${preview}${String(value).trim().length > 48 ? "\u2026" : ""}"` : label, !hasValue && optional && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-normal" }, " ", t("common.optional")))),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, className: `shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
   ), isOpen && /* @__PURE__ */ React.createElement(
     "textarea",
@@ -1341,7 +1371,7 @@ function SurpriseMeCompare(props) {
     const isPinned = pinnedIndex === index;
     return /* @__PURE__ */ React.createElement("div", { key: index, className: "rounded border bg-white p-2 " + (isPinned ? "border-violet-600 ring-2 ring-violet-300" : "border-violet-200") }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-violet-950" }, direction.title), DIMENSIONS.map(function(dimension) {
       const value = dimension[1](direction);
-      return value ? /* @__PURE__ */ React.createElement("div", { key: dimension[0], className: "mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wide text-slate-500" }, dimension[0]), /* @__PURE__ */ React.createElement("div", null, value)) : null;
+      return value ? /* @__PURE__ */ React.createElement("div", { key: dimension[0], className: "mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wide text-slate-600" }, dimension[0]), /* @__PURE__ */ React.createElement("div", null, value)) : null;
     }), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -1354,7 +1384,7 @@ function SurpriseMeCompare(props) {
       },
       isPinned ? "\u2713 " + sfText("pinned_button", "Pinned") : sfText("pin_button", "Pin to edit & use")
     ));
-  })), hood && hood.prerequisites.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] text-slate-600" }, sfText("prereq_line", "Prerequisites (from source data): {codes} \u2014 shared by all three directions.", { codes: hood.prerequisites.map(function(p) {
+  })), hood && hood.prerequisites.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-xs text-slate-600" }, sfText("prereq_line", "Prerequisites (from source data): {codes} \u2014 shared by all three directions.", { codes: hood.prerequisites.map(function(p) {
     return p.code;
   }).filter(Boolean).join(", ") })), pinnedIndex !== null && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded border border-violet-300 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-violet-950" }, sfText("edit_before_using", "Edit before using \u2014 your judgment wins over the proposal")), /* @__PURE__ */ React.createElement(
     "textarea",
@@ -1378,6 +1408,7 @@ function SurpriseMeCompare(props) {
   )));
 }
 function UniversalSettingsPanel(props) {
+  const aiTextAvailable = useAiTextAvailable();
   const {
     InfoTooltip,
     addInterest,
@@ -1474,7 +1505,8 @@ function UniversalSettingsPanel(props) {
   const standardsProviderApi = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.StandardsProvider : null;
   const localStandardsProvider = standardsProviderApi && typeof standardsProviderApi.getRegisteredProvider === "function" ? standardsProviderApi.getRegisteredProvider() : null;
   const localStandardsManifest = localStandardsProvider && typeof localStandardsProvider.getManifest === "function" ? localStandardsProvider.getManifest() : null;
-  const surpriseAi = props.callGemini !== void 0 ? props.callGemini : typeof window !== "undefined" && typeof window.callGemini === "function" && !window.callGemini._alloQrBlocked ? window.callGemini : null;
+  const _rawSurpriseAi = props.callGemini !== void 0 ? props.callGemini : typeof window !== "undefined" && typeof window.callGemini === "function" && !window.callGemini._alloQrBlocked ? window.callGemini : null;
+  const surpriseAi = aiTextAvailable && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) ? _rawSurpriseAi : null;
   const runSurpriseMe = async () => {
     const match = localResolution && localResolution.match;
     if (!match || !localStandardsProvider || !surpriseAi) return;
@@ -1553,9 +1585,9 @@ function UniversalSettingsPanel(props) {
       onClick: () => setIsOpen(!isOpen),
       className: "flex min-h-14 w-full items-center justify-between bg-white px-3.5 py-3 transition-colors motion-reduce:transition-none hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-indigo-500/20"
     },
-    /* @__PURE__ */ React.createElement("span", { className: "block text-left min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-indigo-900 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Settings2, { size: 16, className: "shrink-0", "aria-hidden": "true" }), " ", t("universal.title") || "Universal Settings"), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-indigo-700/80 mt-0.5 truncate" }, isOpen ? t("universal.subtitle") || "Apply to most resources you generate" : summaryBits.join(" \xB7 "))),
+    /* @__PURE__ */ React.createElement("span", { className: "block text-left min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-indigo-900 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Settings2, { size: 16, className: "shrink-0", "aria-hidden": "true" }), " ", t("universal.title") || "Universal Settings"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-700/80 mt-0.5 truncate" }, isOpen ? t("universal.subtitle") || "Apply to most resources you generate" : summaryBits.join(" \xB7 "))),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 16, "aria-hidden": "true", className: `text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
-  ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-600" }, t("universal.scope_note") || "These steer what AlloFlow writes for you."), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsGroup }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
+  ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed text-slate-600" }, t("universal.scope_note") || "These steer what AlloFlow writes for you."), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsGroup }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -1676,14 +1708,17 @@ function UniversalSettingsPanel(props) {
       className: `min-h-8 px-2.5 text-xs font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === "manual" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:bg-slate-50 hover:text-indigo-700"}`
     },
     t("standards.mode_manual") || "Manual"
-  ))), standardMode === "ai" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+  ))), standardMode === "ai" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200" }, !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_ai_standard_query"),
       type: "text",
       value: aiStandardQuery,
       onChange: (e) => setAiStandardQuery(e.target.value),
-      onKeyDown: (e) => e.key === "Enter" && handleFindStandards(gradeLevel),
+      onKeyDown: (e) => {
+        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+        if (e.key === "Enter" && aiTextAvailable) handleFindStandards(gradeLevel);
+      },
       placeholder: t("standards.describe_skill_placeholder", { grade: gradeLevel }) || `Describe skill (e.g. "identify main idea") for ${gradeLevel}...`,
       className: `${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow text-xs`
     }
@@ -1691,11 +1726,11 @@ function UniversalSettingsPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.refresh"),
+      "aria-label": t("common.find_relevant_standards") || "Find relevant standards",
       onClick: () => handleFindStandards(gradeLevel),
-      disabled: !aiStandardQuery.trim() || isFindingStandards,
+      disabled: !aiStandardQuery.trim() || isFindingStandards || !aiTextAvailable,
       className: "inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-indigo-600 bg-indigo-600 text-white shadow-sm transition-colors motion-reduce:transition-none hover:border-indigo-700 hover:bg-indigo-700 focus-visible:ring-4 focus-visible:ring-indigo-500/25 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none",
-      title: t("common.find_relevant_standards")
+      title: !aiTextAvailable ? t("sidebar.needs_ai_setup") || "Needs AI setup" : t("common.find_relevant_standards")
     },
     isFindingStandards ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Search, { size: 14 })
   )), suggestedStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100" }, suggestedStandards.map((std, idx) => /* @__PURE__ */ React.createElement(
@@ -1714,9 +1749,9 @@ function UniversalSettingsPanel(props) {
       },
       className: "w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
     },
-    /* @__PURE__ */ React.createElement("span", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 uppercase" }, std.framework)),
-    /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900" }, std.description)
-  ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("span", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 uppercase" }, std.framework)),
+    /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900" }, std.description)
+  ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_standard_input_value"),
@@ -1726,7 +1761,10 @@ function UniversalSettingsPanel(props) {
         setStandardInputValue(e.target.value);
         setLocalResolution(null);
       },
-      onKeyDown: (e) => e.key === "Enter" && handleAddStandard(),
+      onKeyDown: (e) => {
+        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+        if (e.key === "Enter") handleAddStandard();
+      },
       placeholder: t("standards.manual_placeholder"),
       className: `${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow`
     }
@@ -1747,21 +1785,21 @@ function UniversalSettingsPanel(props) {
       type: "button",
       onClick: resolveFromLocalSnapshot,
       disabled: !standardInputValue.trim() || isResolvingLocal,
-      className: "inline-flex items-center gap-1 rounded bg-cyan-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+      className: "inline-flex items-center gap-1 rounded bg-cyan-700 px-2 py-1 text-xs font-bold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
     },
     isResolvingLocal ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Search, { size: 12 }),
     " ",
     t("standards_finder.resolve_local") || "Resolve from local snapshot"
-  ), localStandardsManifest && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-cyan-900", title: localStandardsManifest.attribution || localStandardsManifest.provider }, localStandardsManifest.datasetVersion || localStandardsManifest.provider)), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] leading-snug text-cyan-900/80" }, localStandardsManifest && localStandardsManifest.attribution || "Standards data: Learning Commons Knowledge Graph (CC BY 4.0).", " ", t("standards_finder.evidence_disclaimer") || "Matches are alignment evidence to support educator judgment, not official certification, and not for grading, placement, or evaluation."), localResolution && localResolution.status === "resolved" && localResolution.match && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-emerald-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-emerald-800" }, t("standards_finder.exact_match", { code: localResolution.match.code }) || "Exact local match: " + localResolution.match.code), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, localResolution.match.label || localResolution.match.text), /* @__PURE__ */ React.createElement(
+  ), localStandardsManifest && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-cyan-900", title: localStandardsManifest.attribution || localStandardsManifest.provider }, localStandardsManifest.datasetVersion || localStandardsManifest.provider)), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-snug text-cyan-900/80" }, localStandardsManifest && localStandardsManifest.attribution || "Standards data: Learning Commons Knowledge Graph (CC BY 4.0).", " ", t("standards_finder.evidence_disclaimer") || "Matches are alignment evidence to support educator judgment, not official certification, and not for grading, placement, or evaluation."), localResolution && localResolution.status === "resolved" && localResolution.match && /* @__PURE__ */ React.createElement("div", { className: "rounded border border-emerald-200 bg-white p-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("div", { role: "status", className: "font-bold text-emerald-800" }, t("standards_finder.exact_match", { code: localResolution.match.code }) || "Exact local match: " + localResolution.match.code), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, localResolution.match.label || localResolution.match.text), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: () => handleUseResolvedStandard && handleUseResolvedStandard(localResolution),
       disabled: targetStandards.length > 0 || typeof handleUseResolvedStandard !== "function",
-      className: "mt-2 rounded bg-emerald-700 px-2 py-1 font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+      className: "mt-2 min-h-11 rounded bg-emerald-700 px-3 py-1.5 font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
     },
     t("standards_finder.use_resolved") || "Use resolved standard"
-  ), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-amber-800" }, t("standards_finder.remove_target_first") || "Remove the current target standard before using a resolved local record.")), localResolution && localResolution.status === "resolved" && localResolution.match && surpriseAi && /* @__PURE__ */ React.createElement("div", { className: "rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-900" }, t("standards_finder.surprise_heading") || "Surprise me: lessons in this learning space"), /* @__PURE__ */ React.createElement(
+  ), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-amber-800" }, t("standards_finder.remove_target_first") || "Remove the current target standard before using a resolved local record.")), localResolution && localResolution.status === "resolved" && localResolution.match && surpriseAi && /* @__PURE__ */ React.createElement("div", { className: "rounded border border-violet-200 bg-violet-50/70 p-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-900" }, t("standards_finder.surprise_heading") || "Surprise me: lessons in this learning space"), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1770,7 +1808,7 @@ function UniversalSettingsPanel(props) {
       className: "rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
     },
     surpriseState === "loading" ? t("standards_finder.proposing") || "Proposing\u2026" : surpriseState === "ready" ? t("standards_finder.propose_again") || "Propose again" : t("standards_finder.propose_3_sparkle") || "\u2728 Propose 3 directions"
-  )), surpriseState === "ready" && surpriseHood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, t("standards_finder.graph_context", { prereq: surpriseHood.prerequisites.length, next: surpriseHood.leadsTo.length, related: surpriseHood.related.length, provider: surpriseHood.dataset && surpriseHood.dataset.provider ? t("standards_finder.provider_suffix", { provider: surpriseHood.dataset.provider }) || " \u2014 " + surpriseHood.dataset.provider : "" }) || "Graph context: " + surpriseHood.prerequisites.length + " prerequisite(s), " + surpriseHood.leadsTo.length + " next, " + surpriseHood.related.length + " related. Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && surpriseDirections.length > 0 && /* @__PURE__ */ React.createElement(SurpriseMeCompare, { directions: surpriseDirections, hood: surpriseHood, onUse: useSurpriseDirection, t })), localResolution && localResolution.status === "ambiguous" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-amber-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-amber-800" }, t("standards_finder.ambiguous_framework") || "Multiple exact matches. Choose the intended framework."), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" }, (localResolution.candidates || []).map((candidate) => /* @__PURE__ */ React.createElement(
+  )), surpriseState === "ready" && surpriseHood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, t("standards_finder.graph_context", { prereq: surpriseHood.prerequisites.length, next: surpriseHood.leadsTo.length, related: surpriseHood.related.length, provider: surpriseHood.dataset && surpriseHood.dataset.provider ? t("standards_finder.provider_suffix", { provider: surpriseHood.dataset.provider }) || " \u2014 " + surpriseHood.dataset.provider : "" }) || "Graph context: " + surpriseHood.prerequisites.length + " prerequisite(s), " + surpriseHood.leadsTo.length + " next, " + surpriseHood.related.length + " related. Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && surpriseDirections.length > 0 && /* @__PURE__ */ React.createElement(SurpriseMeCompare, { directions: surpriseDirections, hood: surpriseHood, onUse: useSurpriseDirection, t })), localResolution && localResolution.status === "ambiguous" && /* @__PURE__ */ React.createElement("div", { className: "rounded border border-amber-200 bg-white p-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("div", { role: "status", className: "font-bold text-amber-800" }, t("standards_finder.ambiguous_framework") || "Multiple exact matches. Choose the intended framework."), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" }, (localResolution.candidates || []).map((candidate) => /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1781,7 +1819,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, candidate.code),
     " \xB7 ",
     candidate.framework || candidate.jurisdiction || candidate.id
-  )))), localResolution && localResolution.status === "not-found" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-slate-300 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, t("standards_finder.no_exact_match") || "No exact local match."), (localResolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, t("standards_finder.possible_codes") || "Possible codes to review:", " ", (localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(", "), ". They were not selected automatically.")), localResolution && localResolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded border border-red-200 bg-white p-2 text-[11px] text-red-700" }, t("standards_finder.resolve_error") || "The local snapshot could not resolve this entry."))), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
+  )))), localResolution && localResolution.status === "not-found" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-slate-300 bg-white p-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, t("standards_finder.no_exact_match") || "No exact local match."), (localResolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, t("standards_finder.possible_codes") || "Possible codes to review:", " ", (localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(", "), ". They were not selected automatically.")), localResolution && localResolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded border border-red-200 bg-white p-2 text-xs text-red-700" }, t("standards_finder.resolve_error") || "The local snapshot could not resolve this entry."))), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1835,7 +1873,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "2" }, t("simplified.diff_options.two")),
     /* @__PURE__ */ React.createElement("option", { value: "Both" }, t("simplified.diff_options.both")),
     /* @__PURE__ */ React.createElement("option", { value: "Custom" }, t("universal.diff_custom") || "Custom \u2014 pick exact grades")
-  ), differentiationRange === "Custom" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[11px] leading-relaxed text-slate-500" }, t("universal.diff_custom_hint") || "Pick any mix. Your target grade is always included."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, UNIVERSAL_GRADE_CHOICES.map((g) => {
+  ), differentiationRange === "Custom" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-xs leading-relaxed text-slate-600" }, t("universal.diff_custom_hint") || "Pick any mix. Your target grade is always included."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, UNIVERSAL_GRADE_CHOICES.map((g) => {
     const on = g === gradeLevel || (differentiationCustomGrades || []).includes(g);
     const locked = g === gradeLevel;
     return /* @__PURE__ */ React.createElement(
@@ -1853,7 +1891,7 @@ function UniversalSettingsPanel(props) {
       },
       g.replace(" Grade", "").replace("Kindergarten", "K")
     );
-  }))), differentiationRange !== "None" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[11px] leading-relaxed text-slate-500" }, t("universal.diff_types_hint") || "Generate a differentiated set for:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, UNIVERSAL_DIFFERENTIABLE_TYPES.map((id) => {
+  }))), differentiationRange !== "None" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-xs leading-relaxed text-slate-600" }, t("universal.diff_types_hint") || "Generate a differentiated set for:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, UNIVERSAL_DIFFERENTIABLE_TYPES.map((id) => {
     const on = (differentiationTypes || []).includes(id);
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -1868,7 +1906,7 @@ function UniversalSettingsPanel(props) {
       },
       universalToolLabel(id, t)
     );
-  })), diffRunCount > 1 && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[11px] leading-relaxed text-amber-800" }, (t("universal.diff_cost") || "About {n} generations per run.").replace("{n}", String(diffRunCount)))))), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsGroup }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "universal_image_style" }, window.AlloModules?.AiImageGenerationToggle && React.createElement(window.AlloModules.AiImageGenerationToggle), /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-indigo-500" }), " ", t("universal.image_style") || "Image Style (default)", " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
+  })), diffRunCount > 1 && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-xs leading-relaxed text-amber-800" }, (t("universal.diff_cost") || "About {n} generations per run.").replace("{n}", String(diffRunCount)))))), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsGroup }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "universal_image_style" }, window.AlloModules?.AiImageGenerationToggle && React.createElement(window.AlloModules.AiImageGenerationToggle), /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-indigo-500" }), " ", t("universal.image_style") || "Image Style (default)", " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("universal.image_style") || "Default image style",
@@ -1970,7 +2008,7 @@ function AdventurePanel(props) {
       className: "h-full bg-yellow-400 transition-all motion-reduce:transition-none duration-500",
       style: { width: `${Math.min(100, globalPoints / studentProjectSettings.adventureUnlockXP * 100)}%` }
     }
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] mt-1 font-mono opacity-70" }, globalPoints, " / ", studentProjectSettings.adventureUnlockXP, " XP"), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-3 text-purple-200 font-medium" }, t("adventure.locked_tip"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1 font-mono opacity-70" }, globalPoints, " / ", studentProjectSettings.adventureUnlockXP, " XP"), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-3 text-purple-200 font-medium" }, t("adventure.locked_tip"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
       "data-guided-primary": true,
@@ -1984,7 +2022,7 @@ function AdventurePanel(props) {
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-purple-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, adventureState.currentScene ? t("adventure.restart") : t("adventure.start"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-purple-600" })
-  ), /* @__PURE__ */ React.createElement(AdventureSetupFields, { ...props, compact: true, idPrefix: "sidebar-adventure" }), isTeacherMode && adventureState.currentScene && !adventureState.isGameOver && /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 py-3 cursor-pointer text-sm font-bold text-slate-800" }, learningText("teacher_controls", "Teacher story controls")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded border border-slate-100 flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ React.createElement("span", null, learningText("decisions", "Decisions")), /* @__PURE__ */ React.createElement("span", { className: `font-bold ${completedDecisions >= manualFinaleMinimum ? "text-green-600" : "text-slate-600"}` }, completedDecisions, "/", manualFinaleMinimum)), /* @__PURE__ */ React.createElement("div", { className: "h-full w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ React.createElement("span", null, t("adventure.climax.status_mastery")), /* @__PURE__ */ React.createElement("span", { className: `font-bold ${adventureState.climax?.masteryScore >= 80 ? "text-green-600" : "text-slate-600"}` }, adventureState.climax?.masteryScore || 0, "/80"))), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(AdventureSetupFields, { ...props, compact: true, idPrefix: "sidebar-adventure" }), isTeacherMode && adventureState.currentScene && !adventureState.isGameOver && /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 py-3 cursor-pointer text-sm font-bold text-slate-800" }, learningText("teacher_controls", "Teacher story controls")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded border border-slate-100 flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-xs text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ React.createElement("span", null, learningText("decisions", "Decisions")), /* @__PURE__ */ React.createElement("span", { className: `font-bold ${completedDecisions >= manualFinaleMinimum ? "text-green-600" : "text-slate-600"}` }, completedDecisions, "/", manualFinaleMinimum)), /* @__PURE__ */ React.createElement("div", { className: "h-full w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ React.createElement("span", null, t("adventure.climax.status_mastery")), /* @__PURE__ */ React.createElement("span", { className: `font-bold ${adventureState.climax?.masteryScore >= 80 ? "text-green-600" : "text-slate-600"}` }, adventureState.climax?.masteryScore || 0, "/80"))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2010,7 +2048,7 @@ function AdventurePanel(props) {
         addToast(t("adventure.climax.toast_initiated"), "success");
       },
       disabled: adventureState.climax?.isActive || adventureState.isLoading || isProcessing,
-      className: `w-full py-1.5 rounded text-[11px] font-bold uppercase tracking-wider transition-colors motion-reduce:transition-none ${adventureState.climax?.isActive ? "bg-slate-100 text-slate-600 cursor-not-allowed" : "bg-white border border-purple-200 text-purple-600 hover:bg-purple-50"}`
+      className: `w-full py-1.5 rounded text-xs font-bold uppercase tracking-wider transition-colors motion-reduce:transition-none ${adventureState.climax?.isActive ? "bg-slate-100 text-slate-600 cursor-not-allowed" : "bg-white border border-purple-200 text-purple-600 hover:bg-purple-50"}`
     },
     adventureState.climax?.isActive ? t("adventure.climax.active_btn") : t("adventure.climax.trigger_btn")
   ))))));
@@ -2324,7 +2362,7 @@ function MathPanel(props) {
         "aria-label": t("fluency_maze.open_aria") || "Open Fluency Maze in main view"
       },
       t("fluency_maze.open_button") || "\u{1F6AA} Open Maze (full view)"
-    ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-2 italic" }, t("fluency_maze.saved_note") || "Saved to history so you can re-enter later."));
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-2 italic" }, t("fluency_maze.saved_note") || "Saved to history so you can re-enter later."));
   })(), mathMode === "Volume Builder" && window.AlloModules && window.AlloModules.VolumeBuilderView && React.createElement(window.AlloModules.VolumeBuilderView, {
     cubeAnswer,
     cubeChallenge,
@@ -2350,10 +2388,11 @@ function MathPanel(props) {
     setCubeShowLayers,
     setExploreDifficulty,
     t
-  }), (mathMode === "Problem Set Generator" || mathMode === "Spiral Review" || mathMode === "Difficulty Ladder" || mathMode === "Word Problems from Source" || mathMode === "Freeform Builder") && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("math.quantity")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(ListOrdered, { size: 12, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
+  }), (mathMode === "Problem Set Generator" || mathMode === "Spiral Review" || mathMode === "Difficulty Ladder" || mathMode === "Word Problems from Source" || mathMode === "Freeform Builder") && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "math-quantity-input", className: SIDEBAR_PANEL_UI.label }, t("math.quantity")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(ListOrdered, { size: 12, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
     CountInput,
     {
-      "aria-label": t("common.text_field"),
+      id: "math-quantity-input",
+      "aria-label": t("math.quantity") || "Number of problems",
       "data-help-key": "math_quantity",
       type: "number",
       min: "1",
@@ -2362,9 +2401,10 @@ function MathPanel(props) {
       onValue: setMathQuantity,
       className: `${SIDEBAR_PANEL_UI.control} pl-8 focus-visible:border-blue-500 focus-visible:ring-blue-500/20`
     }
-  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, mathMode === "Problem Set Generator" || mathMode === "Spiral Review" || mathMode === "Difficulty Ladder" ? t("math.labels.topic_skill") : mathMode === "Word Problems from Source" ? t("math.labels.instructions_opt") : t("math.labels.problem_question")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-2.5 left-2 pointer-events-none" }, /* @__PURE__ */ React.createElement(Calculator, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
+  ))), mathMode !== "Fluency Maze" && mathMode !== "Fluency Probes" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "math-problem-input", className: SIDEBAR_PANEL_UI.label }, mathMode === "Problem Set Generator" || mathMode === "Spiral Review" || mathMode === "Difficulty Ladder" ? t("math.labels.topic_skill") : mathMode === "Word Problems from Source" ? t("math.labels.instructions_opt") : t("math.labels.problem_question")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-2.5 left-2 pointer-events-none" }, /* @__PURE__ */ React.createElement(Calculator, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
     "textarea",
     {
+      id: "math-problem-input",
       "aria-label": t("math.labels.problem_question") || "Math problem input",
       "data-help-key": "math_input",
       value: mathInput,
@@ -2404,15 +2444,15 @@ function MathPanel(props) {
       title: !hasSourceOrAnalysis ? "No source text or analysis available to use as context" : "Use source text to contextualize math problems",
       className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathContext", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(FileText, { size: 12, className: "text-blue-500" }), " ", t("math.customize_label")))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "mathContext", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(FileText, { size: 12, className: "text-blue-500" }), " ", t("math.customize_label"))))), mathMode !== "Fluency Maze" && mathMode !== "Fluency Probes" && !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
       "data-guided-primary": true,
       type: "button",
       "data-help-key": "math_generate_button",
       onClick: handleGenerateMath,
-      disabled: !mathInput.trim() || isProcessing || mathMode === "Fluency Probe" || !aiTextAvailable,
-      style: mathMode === "Fluency Probe" ? { display: "none" } : {},
+      disabled: !mathInput.trim() || isProcessing || mathMode === "Fluency Probes" || mathMode === "Fluency Maze" || !aiTextAvailable,
+      style: mathMode === "Fluency Probes" || mathMode === "Fluency Maze" ? { display: "none" } : {},
       className: SIDEBAR_PANEL_UI.primaryAction
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold flex items-center gap-2" }, t("math.solve"), " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
@@ -2446,7 +2486,7 @@ function DbqPanel(props) {
       onChange: setDbqCustomInstructions,
       placeholderKey: "common.custom_instructions_placeholder"
     }
-  ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { id: "dbq-analysis-mode-label", className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("dbq.analysis_mode") || "Analysis Mode"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "dbq-analysis-mode-label", className: "flex gap-1" }, [
+  ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { id: "dbq-analysis-mode-label", className: "text-xs font-bold text-slate-600 uppercase mb-1" }, t("dbq.analysis_mode") || "Analysis Mode"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "dbq-analysis-mode-label", className: "flex flex-wrap gap-1.5" }, [
     ["standard", t("dbq.mode_standard_label") || "\u{1F4C4} Standard DBQ", t("dbq.mode_standard_desc") || "Extract documents from your source text"],
     ["perspectives", t("dbq.mode_perspectives_label") || "\u2694\uFE0F Competing Perspectives", t("dbq.mode_perspectives_desc") || "AI finds 2+ viewpoints that agree and disagree"],
     ["search", t("dbq.mode_search_label") || "\u{1F50D} Web-Enhanced", t("dbq.mode_search_desc") || "Find real primary sources from archives (LOC, NARA, etc.)"],
@@ -2463,11 +2503,11 @@ function DbqPanel(props) {
         window._dbqMode = mode;
         setExpandedTools((prev) => [...prev]);
       },
-      className: `flex-1 text-left p-2 rounded-lg text-[11px] font-bold transition-all motion-reduce:transition-none border ${(window._dbqMode || "standard") === mode ? "border-rose-400 bg-rose-100 text-rose-800" : "border-slate-200 bg-white text-slate-600 hover:bg-rose-50"}`
+      className: `flex-1 min-w-[7.5rem] min-h-11 text-left p-2 rounded-lg text-xs font-bold transition-all motion-reduce:transition-none border ${(window._dbqMode || "standard") === mode ? "border-rose-400 bg-rose-100 text-rose-800" : "border-slate-200 bg-white text-slate-600 hover:bg-rose-50"}`
     },
     /* @__PURE__ */ React.createElement("div", null, label),
     /* @__PURE__ */ React.createElement("div", { className: "font-normal mt-0.5 opacity-70" }, desc)
-  )))), (window._dbqMode === "search" || window._dbqMode === "perspectives" || window._dbqMode === "links") && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, window._dbqMode === "search" ? t("dbq.focus_label_search") || "Search Topic (optional \u2014 refines source hunting)" : window._dbqMode === "links" ? t("dbq.focus_label_links") || "Topic Context (helps AI understand the links)" : t("dbq.focus_label_perspectives") || "Perspectives to Compare (optional)"), /* @__PURE__ */ React.createElement(
+  )))), (window._dbqMode === "search" || window._dbqMode === "perspectives" || window._dbqMode === "links") && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase block mb-1" }, window._dbqMode === "search" ? t("dbq.focus_label_search") || "Search Topic (optional \u2014 refines source hunting)" : window._dbqMode === "links" ? t("dbq.focus_label_links") || "Topic Context (helps AI understand the links)" : t("dbq.focus_label_perspectives") || "Perspectives to Compare (optional)"), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -2476,7 +2516,7 @@ function DbqPanel(props) {
       className: "w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300",
       id: "dbq-focus-topic"
     }
-  )), window._dbqMode === "links" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, t("dbq.urls_label") || "Document URLs (one per line)"), /* @__PURE__ */ React.createElement(
+  )), window._dbqMode === "links" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase block mb-1" }, t("dbq.urls_label") || "Document URLs (one per line)"), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       id: "dbq-teacher-links",
@@ -2484,7 +2524,7 @@ function DbqPanel(props) {
       className: "w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 h-20 font-mono",
       "aria-label": t("dbq.urls_aria") || "Document URLs for DBQ"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("dbq.urls_help") || "Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.")), window._dbqMode === "custom" && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border border-indigo-200 rounded-lg p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700 mb-2" }, /* @__PURE__ */ React.createElement("strong", null, t("dbq.custom_paste_intro_strong") || "Paste each document below."), " ", t("dbq.custom_paste_intro_part1") || "Separate documents with", " ", /* @__PURE__ */ React.createElement("code", { className: "bg-indigo-100 px-1 rounded" }, "---"), " ", t("dbq.custom_paste_intro_part2") || "on its own line. Or use the import buttons to fetch from a URL or upload an image of a document."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-500" }, t("dbq.custom_title_source_hint") || "For each document, optionally include a title and source on the first lines:"), /* @__PURE__ */ React.createElement("pre", { className: "text-[11px] bg-white border border-indigo-100 rounded p-2 mt-1 text-indigo-600 whitespace-pre-wrap" }, "Title: Letter from Abigail Adams to John Adams", "\n", "Source: March 31, 1776", "\n", "Remember the Ladies, and be more generous and favourable to them than your ancestors...", "\n", "---", "\n", "Title: Declaration of Independence (excerpt)", "\n", "Source: Thomas Jefferson, July 4, 1776", "\n", "We hold these truths to be self-evident, that all men are created equal...")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap items-end" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-[200px]" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, t("dbq.import_from_url_label") || "Import from URL"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("dbq.urls_help") || "Paste links to articles, primary sources, or documents. AI will build the DBQ scaffolding around them.")), window._dbqMode === "custom" && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border border-indigo-200 rounded-lg p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-700 mb-2" }, /* @__PURE__ */ React.createElement("strong", null, t("dbq.custom_paste_intro_strong") || "Paste each document below."), " ", t("dbq.custom_paste_intro_part1") || "Separate documents with", " ", /* @__PURE__ */ React.createElement("code", { className: "bg-indigo-100 px-1 rounded" }, "---"), " ", t("dbq.custom_paste_intro_part2") || "on its own line. Or use the import buttons to fetch from a URL or upload an image of a document."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-500" }, t("dbq.custom_title_source_hint") || "For each document, optionally include a title and source on the first lines:"), /* @__PURE__ */ React.createElement("pre", { className: "text-xs bg-white border border-indigo-100 rounded p-2 mt-1 text-indigo-600 whitespace-pre-wrap" }, "Title: Letter from Abigail Adams to John Adams", "\n", "Source: March 31, 1776", "\n", "Remember the Ladies, and be more generous and favourable to them than your ancestors...", "\n", "---", "\n", "Title: Declaration of Independence (excerpt)", "\n", "Source: Thomas Jefferson, July 4, 1776", "\n", "We hold these truths to be self-evident, that all men are created equal...")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap items-end" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-[200px]" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase block mb-1" }, t("dbq.import_from_url_label") || "Import from URL"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -2497,7 +2537,9 @@ function DbqPanel(props) {
     "button",
     {
       type: "button",
+      disabled: !aiTextAvailable,
       onClick: async () => {
+        if (!aiTextAvailable) return;
         const urlInput = document.getElementById("dbq-import-url");
         const docArea = document.getElementById("dbq-custom-docs");
         const url = urlInput?.value?.trim();
@@ -2515,11 +2557,11 @@ function DbqPanel(props) {
           addToast && addToast(t("errors.import_failed_prefix") + e.message, "error");
         }
       },
-      className: "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none shrink-0",
+      className: "min-h-11 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition-all motion-reduce:transition-none shrink-0",
       "aria-label": t("dbq.fetch_url_aria") || "Fetch URL"
     },
     t("dbq.fetch_url_button") || "\u{1F517} Fetch"
-  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "dbq-import-image", className: "text-[11px] font-bold text-slate-600 uppercase block mb-1" }, t("dbq.upload_image_label") || "Upload Document Image"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "dbq-import-image", className: "text-xs font-bold text-slate-600 uppercase block mb-1" }, t("dbq.upload_image_label") || "Upload Document Image"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "file",
@@ -2529,7 +2571,7 @@ function DbqPanel(props) {
       onChange: async (e) => {
         const file = e.target.files?.[0];
         const docArea = document.getElementById("dbq-custom-docs");
-        if (!file || !docArea || !callGeminiVision) return;
+        if (!file || !docArea || !aiTextAvailable || !callGeminiVision) return;
         if (Number(file.size) > 20 * 1024 * 1024) {
           addToast && addToast("File is too large for OCR (max 20 MB).", "error");
           e.target.value = "";
@@ -2538,9 +2580,12 @@ function DbqPanel(props) {
         addToast && addToast(t("toasts.extracting_text_image"), "info");
         try {
           const reader = new FileReader();
+          reader.onerror = () => {
+            addToast && addToast(t("errors.file_read_failed") + (reader.error?.message || "Unable to read image"), "error");
+          };
           reader.onload = async () => {
             try {
-              const base64 = reader.result.split(",")[1];
+              const base64 = String(reader.result || "").split(",")[1];
               const mimeType = file.type || "image/png";
               const ocrPrompt = `You are an OCR expert. Extract ALL readable text from this document image. Preserve the original wording exactly. Maintain paragraph structure. If there are handwritten portions, do your best to transcribe them. Return ONLY the extracted text.`;
               const text = await callGeminiVision(ocrPrompt, base64, mimeType);
@@ -2566,8 +2611,9 @@ function DbqPanel(props) {
     "button",
     {
       type: "button",
+      disabled: !aiTextAvailable || !callGeminiVision,
       onClick: () => document.getElementById("dbq-import-image")?.click(),
-      className: "px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1",
+      className: "min-h-11 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1",
       "aria-label": t("dbq.upload_image_aria") || "Upload document image"
     },
     t("dbq.upload_image_button") || "\u{1F4F7} Upload Image"
@@ -2575,9 +2621,10 @@ function DbqPanel(props) {
     "button",
     {
       type: "button",
+      disabled: !aiTextAvailable || !callGeminiVision,
       onClick: async () => {
         const docArea = document.getElementById("dbq-custom-docs");
-        if (!docArea || !callGeminiVision) return;
+        if (!docArea || !aiTextAvailable || !callGeminiVision) return;
         try {
           const items = await navigator.clipboard.read();
           for (const item of items) {
@@ -2590,6 +2637,9 @@ function DbqPanel(props) {
                 return;
               }
               const reader = new FileReader();
+              reader.onerror = () => {
+                addToast && addToast(t("errors.file_read_failed") + (reader.error?.message || "Unable to read clipboard image"), "error");
+              };
               reader.onload = async () => {
                 try {
                   const base64 = reader.result.split(",")[1];
@@ -2614,7 +2664,7 @@ function DbqPanel(props) {
           addToast && addToast(t("toasts.clipboard_access_failed"), "info");
         }
       },
-      className: "px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1",
+      className: "px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1",
       "aria-label": t("dbq.paste_clipboard_aria") || "Paste image from clipboard"
     },
     t("dbq.paste_clipboard_button") || "\u{1F4CB} Paste Image"
@@ -2636,14 +2686,25 @@ function DbqPanel(props) {
       placeholder: t("dbq.custom_essay_placeholder") || "Essay focus question (optional) \u2014 e.g. 'How did different groups define liberty in 1776?'",
       "aria-label": t("dbq.custom_essay_aria") || "Custom essay focus question"
     }
-  )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-lg p-2 border border-rose-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("dbq.includes") || "DBQ Packet Includes"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F4C4} Document Excerpts"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F50D} HAPP Sourcing"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F517} Corroboration"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u270D\uFE0F Essay Prompt"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F4CA} 4-Point Rubric"), window._dbqMode === "perspectives" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 font-medium" }, "\u2694\uFE0F POV Comparison"), window._dbqMode === "search" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-medium" }, "\u{1F310} Web Sources"), window._dbqMode === "custom" && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200 font-medium" }, "\u270F\uFE0F Teacher Docs")))), !hasSourceOrAnalysis && window._dbqMode !== "custom" && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-rose-700 italic flex items-center gap-1" }, t("dbq.need_source_hint") || "\u2B06\uFE0F Paste a source text above first \u2014 the DBQ will be built from it.")), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-lg p-2 border border-rose-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase mb-1" }, t("dbq.includes") || "DBQ Packet Includes"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F4C4} Document Excerpts"), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F50D} HAPP Sourcing"), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F517} Corroboration"), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u270D\uFE0F Essay Prompt"), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-medium" }, "\u{1F4CA} 4-Point Rubric"), window._dbqMode === "perspectives" && /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200 font-medium" }, "\u2694\uFE0F POV Comparison"), window._dbqMode === "search" && /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 font-medium" }, "\u{1F310} Web Sources"), window._dbqMode === "custom" && /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200 font-medium" }, "\u270F\uFE0F Teacher Docs")))), !hasSourceOrAnalysis && window._dbqMode !== "custom" && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-rose-700 italic flex items-center gap-1" }, t("dbq.need_source_hint") || "\u2B06\uFE0F Paste a source text above first \u2014 the DBQ will be built from it.")), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
       "data-guided-primary": true,
       type: "button",
       "data-help-key": "dbq_generate_button",
-      onClick: () => handleGenerate("dbq"),
-      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
+      onClick: () => {
+        if (!hasSourceOrAnalysis && window._dbqMode === "custom") {
+          const customDocs = document.getElementById("dbq-custom-docs")?.value?.trim() || "";
+          if (!customDocs) {
+            if (addToast) addToast(t("dbq.need_custom_docs_hint") || "Paste or import at least one document in Teacher Docs first.", "info");
+            return;
+          }
+          handleGenerate("dbq", null, false, customDocs);
+          return;
+        }
+        handleGenerate("dbq");
+      },
+      disabled: !hasSourceOrAnalysis && window._dbqMode !== "custom" || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
       className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
     },
@@ -2897,19 +2958,31 @@ function SourceView(props) {
   };
   const pasteImage = (event) => {
     const items = event.clipboardData && event.clipboardData.items;
-    if (!items || typeof callGeminiVision !== "function") return;
+    if (!items || typeof callGeminiVision !== "function" || !aiReady) return;
     for (const item of items) {
       if (!item.type || !item.type.startsWith("image/")) continue;
       event.preventDefault();
       const blob = item.getAsFile();
       if (!blob) return;
+      if (typeof blob.size === "number" && blob.size > 20 * 1024 * 1024) {
+        if (addToast) addToast(t("errors.image_too_large") || "Image is too large (max 20 MB).", "error");
+        return;
+      }
       setIsExtracting(true);
       setGenerationStep(say("source_view.extracting_image", "Extracting text from the pasted image..."));
       if (addToast) addToast(t("toasts.image_detected_extracting"), "info");
       const reader = new window.FileReader();
+      const finishFailedRead = () => {
+        if (addToast) addToast(t("errors.image_ocr_failed") || "Could not read the pasted image.", "error");
+        setIsExtracting(false);
+        setGenerationStep("");
+      };
+      reader.onerror = finishFailedRead;
+      reader.onabort = finishFailedRead;
       reader.onload = async () => {
         try {
-          const base64 = String(reader.result).split(",")[1];
+          const base64 = String(reader.result || "").split(",")[1];
+          if (!base64) throw new Error("Empty image data");
           const extracted = await callGeminiVision("You are an OCR expert for educators. Extract all readable text from this image. Preserve structure (headers, paragraphs) using markdown. If there are tables, preserve them as markdown tables. Return ONLY the extracted text.", base64, item.type);
           if (extracted && extracted.trim().length > 10) {
             setInputText((previous) => previous ? previous + "\n\n" + extracted.trim() : extracted.trim());
@@ -2921,7 +2994,11 @@ function SourceView(props) {
         setIsExtracting(false);
         setGenerationStep("");
       };
-      reader.readAsDataURL(blob);
+      try {
+        reader.readAsDataURL(blob);
+      } catch (_) {
+        finishFailedRead();
+      }
       return;
     }
   };
@@ -2957,8 +3034,9 @@ function SourceView(props) {
         "data-help-key": "input_area",
         className: "block h-[50vh] min-h-[240px] w-full resize-y border-0 bg-white p-4 text-sm leading-relaxed focus:outline-none focus:ring-0"
       }
-    ), (isDraftSaving || text && !isCanvas) && /* @__PURE__ */ React.createElement("div", { className: "flex justify-end border-t border-slate-100 px-4 py-1.5 text-[11px] font-medium text-slate-600" }, isDraftSaving ? say("status.saving_draft", "Saving draft\u2026") : say("status.saved_device", "Saved on this device"))))
+    ), (isDraftSaving || text && !isCanvas) && /* @__PURE__ */ React.createElement("div", { className: "flex justify-end border-t border-slate-100 px-4 py-1.5 text-xs font-medium text-slate-600" }, isDraftSaving ? say("status.saving_draft", "Saving draft\u2026") : say("status.saved_device", "Saved on this device"))))
   ), (isGeneratingSource || isExtracting) && /* @__PURE__ */ React.createElement("p", { "data-source-writing-status": true, role: "status", className: "text-sm font-medium text-violet-900" }, (generationStep || say("common.writing_content", "Writing content...")) + " " + say("sidebar.source_writing_keeps_text", "Your text stays here until you choose to replace it.")), pending && /* @__PURE__ */ React.createElement("p", { "data-source-lock-pending": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, sourceRecord.pending === text ? say("source_view.pending", "A resource is being made from this text. It will be used when you leave the editor.") : say("source_view.pending_changed", "You changed the text after starting a resource, so it stays a draft.")), replacement && replacement.status === "review" && /* @__PURE__ */ React.createElement("section", { "data-source-replacement-review": true, "aria-labelledby": "source-replacement-review-title", className: "rounded-xl border-2 border-amber-400 bg-amber-50 p-4 text-sm text-amber-950" }, /* @__PURE__ */ React.createElement("h3", { id: "source-replacement-review-title", className: "font-bold" }, reviewTitle), /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-1" }, reviewBody), /* @__PURE__ */ React.createElement("div", { className: "mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap rounded border border-amber-200 bg-white p-3 text-slate-800", "data-source-review-text": true }, replacement.text), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-keep": true, onClick: keepText, className: "min-h-11 rounded-md border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-50" }, say("sidebar.source_review_keep", "Keep my text")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-replace": true, onClick: usePassage, className: "min-h-11 rounded-md bg-amber-800 px-3 font-bold text-white hover:bg-amber-900" }, replacement.reason === "refine" ? say("source_view.review_use_rewrite", "Use this rewrite") : say("sidebar.source_review_replace", "Replace with the new passage")))), replacement && replacement.status === "replaced" && /* @__PURE__ */ React.createElement("div", { "data-source-replaced-notice": true, className: "flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-950" }, /* @__PURE__ */ React.createElement("p", { role: "status", className: "m-0 flex-1" }, replacement.topic ? fill(say("sidebar.source_replaced_topic", "Your source text was replaced with a new passage about \u201C{topic}\u201D."), { topic: replacement.topic }) : say("source_view.replaced", "Your source text was replaced.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-replace-undo": true, onClick: undo, className: "min-h-11 rounded-full border border-violet-300 bg-white px-3 font-bold text-violet-800 hover:bg-violet-100" }, say("sidebar.source_replace_undo", "Undo"))), replacement && replacement.status === "restored" && /* @__PURE__ */ React.createElement("p", { "data-source-restored-notice": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, say("sidebar.source_restored", "Your previous source text is back.")), /* @__PURE__ */ React.createElement("section", { id: "source-check-panel", "data-source-check": true, "data-help-key": "source_view_check", "aria-labelledby": "source-check-title", className: "rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 text-sm shadow-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-check-title", className: "font-bold text-slate-900" }, say("source_view.check_title", "Source check")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.check_desc", "Reading level, key concepts and accuracy for this text. It runs when you use the source.")), /* @__PURE__ */ React.createElement("p", { ref: checkLineRef, tabIndex: -1, "data-source-check-state": checkState, role: "status", className: "mt-3 rounded-lg px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 " + (checkState === "done" ? "bg-white font-semibold text-slate-900 ring-1 ring-indigo-100" : "bg-white/80 text-slate-800") }, checkLine), checkBusy && !!isProcessing && !!generationStep && /* @__PURE__ */ React.createElement("p", { "data-source-check-step": true, className: "mt-1 text-xs text-slate-600" }, generationStep), !checkBusy && runForText && !!checkRun.failure && /* @__PURE__ */ React.createElement("p", { "data-source-check-failure": true, role: "alert", className: "mt-1 text-red-800" }, checkRun.failure), typeof setCheckAccuracyWithSearch === "function" && /* @__PURE__ */ React.createElement("label", { className: "mt-2 inline-flex min-h-11 items-center gap-2 text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-source-web-check": true, checked: !!checkAccuracyWithSearch, onChange: (event) => setCheckAccuracyWithSearch(event.target.checked) }), say("source_view.web_check", "Check accuracy with a web search")), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2" }, (check || partial) && typeof openAnalysis === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-check-details": true, onClick: () => openAnalysis(check || incomplete), className: "min-h-11 rounded-lg bg-indigo-700 px-4 font-bold text-white shadow-sm hover:bg-indigo-800" }, partial ? say("analysis.view_partial", "View partial analysis") : say("source_view.check_details", "View analyzed source material")), aiReady && checkState !== "running" && !!text.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-run-check": true, disabled: !!isProcessing, onClick: () => runCheck(text, true), className: "min-h-11 rounded-lg px-4 font-bold disabled:opacity-60 " + (status === "draft" || (check || partial) && typeof openAnalysis === "function" ? "border border-slate-400 bg-white text-slate-800 hover:bg-slate-100" : "bg-indigo-700 text-white shadow-sm hover:bg-indigo-800") }, checkState === "done" ? say("source_view.check_again", "Analyze again") : checkState === "partial" ? partial.legacy ? say("analysis.check_all_sections", "Check all sections") : say("analysis.check_remaining", "Check remaining sections") : checkState === "failed" ? say("source_view.check_retry", "Retry") : checkState === "changed" ? say("analysis.recheck_action", "Recheck edited source") : say("source_view.check_run", "Analyze source material")))), !readOnly && aiReady && typeof refineSourceSuggestion === "function" && !!text.trim() && /* @__PURE__ */ React.createElement("section", { "data-source-refine": true, "data-help-key": "source_view_refine", "aria-labelledby": "source-refine-title", className: "rounded-xl border border-slate-200 bg-white p-4 text-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-refine-title", className: "font-bold text-slate-900" }, say("source_view.refine_title", "Ask AI to adjust this text")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.refine_desc", "You get a suggested rewrite to review. Your text changes only if you use it.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", "data-source-refine-input": true, value: refineInstruction, onChange: (event) => setRefineInstruction(event.target.value), onKeyDown: (event) => {
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
     if (event.key === "Enter") {
       event.preventDefault();
       suggestRewrite();
@@ -2966,6 +3044,7 @@ function SourceView(props) {
   }, "aria-label": say("source_view.refine_label", "What should change?"), placeholder: say("source_view.refine_placeholder", "For example: shorten to about 300 words"), className: "min-h-11 min-w-[12rem] flex-1 rounded-lg border border-slate-400 px-3" }), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-refine-go": true, disabled: refining || !refineInstruction.trim(), onClick: suggestRewrite, className: "min-h-11 rounded-lg border border-violet-700 bg-white px-3 font-bold text-violet-800 hover:bg-violet-50 disabled:opacity-60" }, refining ? say("source_view.refining", "Writing a suggestion\u2026") : say("source_view.refine_go", "Suggest a rewrite")))));
 }
 function SourceInputPanel(props) {
+  const aiTextAvailable = useAiTextAvailable();
   const {
     addToast,
     aiStandardQuery,
@@ -3078,7 +3157,7 @@ function SourceInputPanel(props) {
       className: `flex-1 text-xs font-bold py-1.5 rounded-md transition-all motion-reduce:transition-none ${isUrlSearchMode ? "bg-indigo-100 text-indigo-700 shadow-sm" : "text-slate-600 hover:text-slate-700"}`
     },
     t("wizard.find_ai_label")
-  )), isUrlSearchMode ? /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none fade-in slide-in-from-right-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("wizard.topic_find_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+  )), isUrlSearchMode ? /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none fade-in slide-in-from-right-2" }, !aiTextAvailable && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement(AiSetupNotice, { t })), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("wizard.topic_find_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_url_search_query"),
@@ -3087,7 +3166,10 @@ function SourceInputPanel(props) {
       onChange: (e) => setUrlSearchQuery(e.target.value),
       placeholder: `e.g. Photosynthesis for ${gradeLevel}...`,
       className: "flex-grow text-sm p-2 border border-indigo-600 rounded-md focus:ring-2 focus:ring-indigo-200",
-      onKeyDown: (e) => e.key === "Enter" && handleAiUrlSearch(),
+      onKeyDown: (e) => {
+        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+        if (e.key === "Enter" && aiTextAvailable) handleAiUrlSearch();
+      },
       autoFocus: true
     }
   ), /* @__PURE__ */ React.createElement(
@@ -3095,12 +3177,13 @@ function SourceInputPanel(props) {
     {
       type: "button",
       onClick: handleAiUrlSearch,
-      disabled: !urlSearchQuery.trim() || isExtracting,
+      disabled: !urlSearchQuery.trim() || isExtracting || !aiTextAvailable,
+      title: !aiTextAvailable ? t("sidebar.needs_ai_setup") || "Needs AI setup" : void 0,
       className: "bg-teal-700 text-white text-sm font-medium px-4 rounded-md hover:bg-teal-700 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
     },
     isExtracting ? /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin motion-reduce:animate-none", size: 14 }) : /* @__PURE__ */ React.createElement(Search, { size: 14 }),
     t("wizard.find_action")
-  )), !isExtracting && searchOptions.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2 mt-3 animate-in motion-reduce:animate-none slide-in-from-bottom-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-indigo-600 uppercase tracking-wider" }, t("wizard.select_resource")), searchOptions.map((opt, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: "relative group" }, /* @__PURE__ */ React.createElement(
+  )), !isExtracting && searchOptions.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2 mt-3 animate-in motion-reduce:animate-none slide-in-from-bottom-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-indigo-600 uppercase tracking-wider" }, t("wizard.select_resource")), searchOptions.map((opt, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: "relative group" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -3108,26 +3191,35 @@ function SourceInputPanel(props) {
       className: "w-full text-left p-3 pr-10 rounded-lg border border-indigo-100 hover:border-teal-500 hover:bg-teal-50 transition-all motion-reduce:transition-none bg-white shadow-sm"
     },
     /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-700 group-hover:text-teal-800 mb-0.5 text-xs" }, opt.title || "Untitled Resource"),
-    /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 group-hover:text-teal-600 line-clamp-2 leading-snug" }, opt.description || "No description available."),
-    /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 truncate max-w-[200px]" }, opt.url)
-  ), /* @__PURE__ */ React.createElement(
-    "a",
-    {
-      href: opt.url,
-      target: "_blank",
-      rel: "noopener noreferrer",
-      onClick: (e) => {
-        e.stopPropagation();
-        setIsUrlSearchMode(false);
-        setSearchOptions([]);
-        setUrlToFetch("");
-        addToast(t("common.link_opened_copy_paste"), "info");
+    /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 group-hover:text-teal-600 line-clamp-2 leading-snug" }, opt.description || "No description available."),
+    /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-1 truncate max-w-[200px]" }, opt.url)
+  ), (() => {
+    let safeHref = "";
+    try {
+      const u = new URL(String(opt.url || ""));
+      if ((u.protocol === "https:" || u.protocol === "http:") && !u.username && !u.password) safeHref = u.href;
+    } catch (_) {
+    }
+    return safeHref ? /* @__PURE__ */ React.createElement(
+      "a",
+      {
+        href: safeHref,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        "aria-label": `${t("common.open_link_paste_mode") || "Open link in new tab"}: ${opt.title || safeHref}`,
+        onClick: (e) => {
+          e.stopPropagation();
+          setIsUrlSearchMode(false);
+          setSearchOptions([]);
+          setUrlToFetch("");
+          addToast(t("common.link_opened_copy_paste"), "info");
+        },
+        className: "absolute right-2 top-1/2 -translate-y-1/2 min-w-11 min-h-11 inline-flex items-center justify-center p-2 text-slate-600 hover:text-teal-800 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20",
+        title: t("common.open_link_paste_mode")
       },
-      className: "absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-teal-800 hover:bg-teal-100 rounded-full transition-colors motion-reduce:transition-none z-20",
-      title: t("common.open_link_paste_mode")
-    },
-    /* @__PURE__ */ React.createElement(ExternalLink, { size: 14 })
-  )))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-600 mt-2" }, t("wizard.ai_search_note"))) : /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none fade-in slide-in-from-left-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("wizard.article_url_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement(ExternalLink, { size: 14, "aria-hidden": "true" })
+    ) : null;
+  })()))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-2" }, t("wizard.ai_search_note"))) : /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none fade-in slide-in-from-left-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("wizard.article_url_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.common_url_placeholder"),
@@ -3137,7 +3229,10 @@ function SourceInputPanel(props) {
       onChange: (e) => setUrlToFetch(e.target.value),
       placeholder: t("common.url_placeholder"),
       className: "flex-grow text-sm p-2 border border-indigo-600 rounded-md focus:ring-2 focus:ring-indigo-200",
-      onKeyDown: (e) => e.key === "Enter" && handleUrlFetch(),
+      onKeyDown: (e) => {
+        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+        if (e.key === "Enter") handleUrlFetch();
+      },
       autoFocus: true
     }
   ), /* @__PURE__ */ React.createElement(
@@ -3150,7 +3245,7 @@ function SourceInputPanel(props) {
     },
     isExtracting ? /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin motion-reduce:animate-none", size: 14 }) : /* @__PURE__ */ React.createElement(Download, { size: 14 }),
     t("wizard.fetch_action")
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-600 mt-1" }, t("wizard.fetch_note")))), showSourceGen && window.AlloModules && window.AlloModules.SourceGenPanel && React.createElement(window.AlloModules.SourceGenPanel, {
+  )), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("wizard.fetch_note")))), showSourceGen && window.AlloModules && window.AlloModules.SourceGenPanel && React.createElement(window.AlloModules.SourceGenPanel, {
     addToast,
     aiStandardQuery,
     aiStandardRegion,
@@ -3229,10 +3324,24 @@ function GlossaryPanel(props) {
     currentUiLanguage,
     translationMode,
     resolveTranslationPolicy,
-    translationTargetChoices
+    translationTargetChoices,
+    analyzedGlossaryCounts
   } = props;
   if (!expandedTools || !expandedTools.includes("glossary")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: `${SIDEBAR_PANEL_UI.settingsSurface} !gap-0`, "data-help-key": "tour-glossary-settings" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "glossary_tier2_count" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center` }, t("glossary.tier2"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: t("glossary.tier2_tooltip") })), /* @__PURE__ */ React.createElement(
+  const _hasAnalyzedGlossary = !!(analyzedGlossaryCounts && analyzedGlossaryCounts.total > 0);
+  const _glossaryMatchesAnalysis = _hasAnalyzedGlossary && Number(glossaryTier2Count) === analyzedGlossaryCounts.tier2 && Number(glossaryTier3Count) === analyzedGlossaryCounts.tier3;
+  const _sidebarLabel = (key, fallback) => {
+    try {
+      const v = typeof t === "function" ? t(key) : "";
+      return v && v !== key ? v : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: `${SIDEBAR_PANEL_UI.settingsSurface} !gap-0`, "data-help-key": "tour-glossary-settings" }, _hasAnalyzedGlossary && /* @__PURE__ */ React.createElement("div", { "data-glossary-analysis-sync": _glossaryMatchesAnalysis ? "matched" : "custom", className: `mb-3 rounded-lg border px-2.5 py-2 text-xs leading-snug ${_glossaryMatchesAnalysis ? "border-teal-200 bg-teal-50 text-teal-900" : "border-slate-200 bg-slate-50 text-slate-700"}` }, _glossaryMatchesAnalysis ? /* @__PURE__ */ React.createElement("span", null, _sidebarLabel("glossary.analysis_counts_matched", `Matched to Source Analysis (${analyzedGlossaryCounts.total} terms: ${analyzedGlossaryCounts.tier2} Tier 2, ${analyzedGlossaryCounts.tier3} Tier 3). Edit below to adjust.`)) : /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1.5" }, /* @__PURE__ */ React.createElement("span", null, _sidebarLabel("glossary.analysis_counts_custom", `Custom count (${(Number(glossaryTier2Count) || 0) + (Number(glossaryTier3Count) || 0)} terms). Source Analysis found ${analyzedGlossaryCounts.total}.`)), /* @__PURE__ */ React.createElement("button", { type: "button", "data-glossary-match-analysis": true, onClick: () => {
+    setGlossaryTier2Count(analyzedGlossaryCounts.tier2);
+    setGlossaryTier3Count(analyzedGlossaryCounts.tier3);
+  }, className: "rounded border border-teal-600 bg-white px-2 py-0.5 text-xs font-semibold text-teal-800 hover:bg-teal-50" }, _sidebarLabel("glossary.match_analysis", `Use ${analyzedGlossaryCounts.tier2} / ${analyzedGlossaryCounts.tier3}`)))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "glossary_tier2_count" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center` }, t("glossary.tier2"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: t("glossary.tier2_tooltip") })), /* @__PURE__ */ React.createElement(
     CountInput,
     {
       "aria-label": t("common.enter_glossary_tier2_count"),
@@ -3351,7 +3460,7 @@ function GlossaryPanel(props) {
       onChange: (e) => setAutoRemoveWords(e.target.checked),
       className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Ban, { size: 12, className: "text-red-600" }), " ", t("glossary.auto_remove"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 font-normal" }, t("glossary.slower")))))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Ban, { size: 12, className: "text-red-600" }), " ", t("glossary.auto_remove"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 font-normal" }, t("glossary.slower")))))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
       "data-guided-primary": true,
@@ -3446,7 +3555,9 @@ function QuizPanel(props) {
     { key: "fill-blank", label: qzText("format_fill_blank_label", "Fill-in-the-Blank"), emoji: "\u270F", desc: qzText("format_fill_blank_desc", "Recall a precise word or phrase"), minutes: 1 },
     { key: "short-answer", label: qzText("format_short_answer_label", "Brief Written Response"), emoji: "\u{1F4AC}", desc: qzText("format_short_answer_desc", "Demonstrate understanding in 1\u20132 sentences"), minutes: 3 },
     { key: "self-explanation", label: qzText("format_self_explanation_label", "Explain Your Reasoning"), emoji: "\u{1F9E0}", desc: qzText("format_self_explanation_desc", "Explain a concept against a rubric"), minutes: 5 },
-    { key: "numeric-response", label: qzText("format_numeric_response_label", "Numeric Response"), emoji: "#", desc: qzText("format_numeric_response_desc", "Enter a value with optional units"), minutes: 2 }
+    { key: "numeric-response", label: qzText("format_numeric_response_label", "Numeric Response"), emoji: "#", desc: qzText("format_numeric_response_desc", "Enter a value with optional units"), minutes: 2 },
+    { key: "likert", label: "Rating Scale (1\u20135)", emoji: "\u{1F4CA}", desc: "Gauge comfort, agreement, or confidence (ungraded)", minutes: 0.5 },
+    { key: "opinion-mcq", label: "Opinion Poll", emoji: "\u{1F5E3}\uFE0F", desc: "Gather student perspectives (no right/wrong key)", minutes: 0.5 }
   ];
   const DIAGNOSTIC_TYPES = [
     { key: "sequence-sense", label: qzText("format_sequence_sense_label", "Sequence Sense"), emoji: "\u2195", desc: qzText("format_sequence_sense_desc", "Diagnose an order and its principle"), minutes: 2.5 },
@@ -3576,7 +3687,7 @@ function QuizPanel(props) {
     { id: "core", label: qzText("group_core", "Core formats"), types: visibleCoreTypes },
     { id: "diagnostic", label: qzText("group_diagnostic", "Diagnostic formats"), types: visibleDiagnosticTypes }
   ].filter((group) => group.types.length > 0);
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-teal-50/50 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-teal-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-mode-select", className: "block text-[10px] font-black uppercase tracking-wider text-teal-700 mb-1" }, qzText("section_purpose", "1. Assessment purpose")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-teal-50/50 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-teal-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-mode-select", className: "block text-xs font-black uppercase tracking-wider text-teal-700 mb-1" }, qzText("section_purpose", "1. Assessment purpose")), /* @__PURE__ */ React.createElement(
     "select",
     {
       id: "quiz-mode-select",
@@ -3590,22 +3701,27 @@ function QuizPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "exit-ticket" }, t("quiz.mode_exit_ticket") || "\u{1F4DD} Exit Ticket"),
     /* @__PURE__ */ React.createElement("option", { value: "pre-check" }, t("quiz.mode_pre_check") || "\u{1F3AF} Pre-Check (Readiness)"),
     /* @__PURE__ */ React.createElement("option", { value: "formative" }, t("quiz.mode_formative") || "\u{1F321}\uFE0F Formative Check"),
-    /* @__PURE__ */ React.createElement("option", { value: "review" }, t("quiz.mode_review") || "\u{1F501} Spaced Review")
-  ), _modeStrategy && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-slate-600 mt-1.5" }, _modeStrategy.description, " ", qzText("recipe_hint", "This loads a recommended recipe that you can customize.")), /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-duration-preset", className: "block text-xs font-semibold text-slate-700 mt-3 mb-1" }, qzText("duration_label", "Time and depth")), /* @__PURE__ */ React.createElement("select", { id: "quiz-duration-preset", "data-help-key": "quiz_duration_preset", value: durationPreset, onChange: (event) => applyDuration(event.target.value), disabled: isProcessing, className: "w-full rounded-lg border-slate-300 text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "recommended" }, qzText("duration_recommended", "Recommended recipe")), /* @__PURE__ */ React.createElement("option", { value: "two" }, qzText("duration_two", "About 2 minutes \u2014 quick recall")), /* @__PURE__ */ React.createElement("option", { value: "five" }, qzText("duration_five", "About 5 minutes \u2014 explain briefly")), /* @__PURE__ */ React.createElement("option", { value: "reasoning" }, qzText("duration_reasoning", "Extended reasoning \u2014 evidence and explanation")), durationPreset === "custom" && /* @__PURE__ */ React.createElement("option", { value: "custom" }, qzText("duration_custom", "Custom question mix")))), quizMode === "review" && /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-xl border border-indigo-200 bg-white p-3 space-y-2" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-xs font-bold text-indigo-900" }, qzText("review_sources", "Earlier lessons to revisit")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, qzText("review_sources_help", "Select up to four analyzed lesson sources. Keep concepts checked to include them in the review.")), /* @__PURE__ */ React.createElement("div", { className: "max-h-40 overflow-auto space-y-2" }, availableReviewSources.map((source) => /* @__PURE__ */ React.createElement("label", { key: source.id, className: "flex gap-2 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: reviewSourceIds.includes(source.id), disabled: isProcessing || !reviewSourceIds.includes(source.id) && reviewSourceIds.length >= 4, onChange: (event) => {
+    /* @__PURE__ */ React.createElement("option", { value: "review" }, t("quiz.mode_review") || "\u{1F501} Spaced Review"),
+    /* @__PURE__ */ React.createElement("option", { value: "poll" }, "\u{1F5E3}\uFE0F Student-Voice Poll")
+  ), _modeStrategy && /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-snug text-slate-600 mt-1.5" }, _modeStrategy.description, " ", qzText("recipe_hint", "This loads a recommended recipe that you can customize.")), /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-duration-preset", className: "block text-xs font-semibold text-slate-700 mt-3 mb-1" }, qzText("duration_label", "Time and depth")), /* @__PURE__ */ React.createElement("select", { id: "quiz-duration-preset", "data-help-key": "quiz_duration_preset", value: durationPreset, onChange: (event) => applyDuration(event.target.value), disabled: isProcessing, className: "w-full rounded-lg border-slate-300 text-sm" }, /* @__PURE__ */ React.createElement("option", { value: "recommended" }, qzText("duration_recommended", "Recommended recipe")), /* @__PURE__ */ React.createElement("option", { value: "two" }, qzText("duration_two", "About 2 minutes \u2014 quick recall")), /* @__PURE__ */ React.createElement("option", { value: "five" }, qzText("duration_five", "About 5 minutes \u2014 explain briefly")), /* @__PURE__ */ React.createElement("option", { value: "reasoning" }, qzText("duration_reasoning", "Extended reasoning \u2014 evidence and explanation")), durationPreset === "custom" && /* @__PURE__ */ React.createElement("option", { value: "custom" }, qzText("duration_custom", "Custom question mix")))), quizMode === "review" && /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-xl border border-indigo-200 bg-white p-3 space-y-2" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-xs font-bold text-indigo-900" }, qzText("review_sources", "Earlier lessons to revisit")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, qzText("review_sources_help", "Select up to four analyzed lesson sources. Keep concepts checked to include them in the review.")), /* @__PURE__ */ React.createElement("div", { className: "max-h-40 overflow-auto space-y-2" }, availableReviewSources.map((source) => /* @__PURE__ */ React.createElement("label", { key: source.id, className: "flex gap-2 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: reviewSourceIds.includes(source.id), disabled: isProcessing || !reviewSourceIds.includes(source.id) && reviewSourceIds.length >= 4, onChange: (event) => {
     setReviewSourceIds((previous) => event.target.checked ? previous.concat(source.id) : previous.filter((id) => id !== source.id));
     setReviewConcepts(null);
-  } }), /* @__PURE__ */ React.createElement("span", null, source.title, source.date && /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-600" }, source.date))))), reviewSelection.sources.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "max-h-36 overflow-auto space-y-1" }, Array.from(new Set(reviewSelection.sources.flatMap((source) => source.concepts))).map((concept) => /* @__PURE__ */ React.createElement("label", { key: concept, className: "flex gap-2 text-xs" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: reviewSelection.concepts.includes(concept), onChange: (event) => setReviewConcepts(event.target.checked ? reviewSelection.concepts.concat(concept) : reviewSelection.concepts.filter((value) => value !== concept)) }), concept))), /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs font-semibold " + (reviewSelection.fallback ? "text-amber-900" : "text-indigo-900") }, reviewSelection.fallback ? qzText("review_source_fallback", "No earlier lesson selected. This will review the current source; it will not demonstrate retention over time.") : qzText("review_source_selected", "{count} earlier lesson sources selected. Choose sources students have already studied.", { count: reviewSelection.sources.length }))), availableCriteria.length > 0 && quizMode !== "review" && /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-xl border border-slate-200 bg-white p-3 space-y-2" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-xs font-bold text-slate-800" }, qzText("criteria_sample", "Success criteria to sample")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, qzText("criteria_sample_help", "A short check samples up to one criterion per question. Unselected criteria remain outside this check; the question count stays unchanged.")), availableCriteria.map((criterion, index) => {
+  } }), /* @__PURE__ */ React.createElement("span", null, source.title, source.date && /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, source.date))))), reviewSelection.sources.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "max-h-36 overflow-auto space-y-1" }, Array.from(new Set(reviewSelection.sources.flatMap((source) => source.concepts))).map((concept) => /* @__PURE__ */ React.createElement("label", { key: concept, className: "flex gap-2 text-xs" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: reviewSelection.concepts.includes(concept), onChange: (event) => setReviewConcepts(event.target.checked ? reviewSelection.concepts.concat(concept) : reviewSelection.concepts.filter((value) => value !== concept)) }), concept))), /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs font-semibold " + (reviewSelection.fallback ? "text-amber-900" : "text-indigo-900") }, reviewSelection.fallback ? qzText("review_source_fallback", "No earlier lesson selected. This will review the current source; it will not demonstrate retention over time.") : qzText("review_source_selected", "{count} earlier lesson sources selected. Choose sources students have already studied.", { count: reviewSelection.sources.length }))), availableCriteria.length > 0 && quizMode !== "review" && /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-xl border border-slate-200 bg-white p-3 space-y-2" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-xs font-bold text-slate-800" }, qzText("criteria_sample", "Success criteria to sample")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, qzText("criteria_sample_help", "A short check samples up to one criterion per question. Unselected criteria remain outside this check; the question count stays unchanged.")), availableCriteria.map((criterion, index) => {
     const selected = criterionIds || availableCriteria.slice(0, assessedTotal).map((item) => item.id);
     return /* @__PURE__ */ React.createElement("label", { key: criterion.id, className: "flex gap-2 text-xs" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: selected.includes(criterion.id), disabled: isProcessing || !selected.includes(criterion.id) && selected.length >= assessedTotal, onChange: (event) => setCriterionIds(event.target.checked ? selected.concat(criterion.id) : selected.filter((id) => id !== criterion.id)) }), /* @__PURE__ */ React.createElement("span", null, criterion.statement));
-  }), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-700" }, qzText("criteria_sample_count", "{selected} of {total} criteria selected.", { selected: Math.min(assessedTotal, (criterionIds || availableCriteria).length), total: availableCriteria.length }))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-teal-200 bg-white p-3", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full " + (isCustomized ? "bg-indigo-100 text-indigo-700" : "bg-teal-100 text-teal-700") }, isCustomized ? qzText("badge_customized", "Customized") : qzText("badge_recommended", "Recommended preset")), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, qzText(
+  }), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700" }, qzText("criteria_sample_count", "{selected} of {total} criteria selected.", { selected: Math.min(assessedTotal, (criterionIds || availableCriteria).length), total: availableCriteria.length }))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-teal-200 bg-white p-3", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full " + (isCustomized ? "bg-indigo-100 text-indigo-700" : "bg-teal-100 text-teal-700") }, isCustomized ? qzText("badge_customized", "Customized") : qzText("badge_recommended", "Recommended preset")), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, (quizMode === "poll" ? assessedTotal === 1 ? "1 ungraded poll item" : assessedTotal + " ungraded poll items" : qzText(
     assessedTotal === 1 ? "summary_scored_one" : "summary_scored_other",
     assessedTotal === 1 ? "{count} scored question" : "{count} scored questions",
     { count: assessedTotal }
-  ) + (reflectionTotal ? qzText(
+  )) + (reflectionTotal ? qzText(
     reflectionTotal === 1 ? "summary_reflection_one" : "summary_reflection_other",
     reflectionTotal === 1 ? " + {count} unscored reflection" : " + {count} unscored reflections",
     { count: reflectionTotal }
-  ) : "")), isCustomized && /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "quiz_reset_mix", onClick: handleResetMix, className: "ml-auto text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold" }, t("common.reset") || "Reset")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center gap-2 flex-wrap text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "rounded bg-slate-100 px-2 py-1 font-semibold text-slate-700" }, qzText("estimate_minutes", "About {low}\u2013{high} minutes", { low: estimatedLow, high: estimatedHigh })), estimatedHigh > 30 && /* @__PURE__ */ React.createElement("span", { className: "rounded bg-amber-100 px-2 py-1 font-semibold text-amber-800" }, qzText("long_warning", "Long assessment\u2014consider reducing the mix.")))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement(
+  ) : "")), isCustomized && /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "quiz_reset_mix", onClick: handleResetMix, className: "ml-auto text-xs text-indigo-600 hover:text-indigo-800 font-semibold" }, t("common.reset") || "Reset")), visibleTypes.some((item) => clampCount(effectiveMix[item.key] || 0, item.key === "mcq" ? 20 : 5) > 0) && /* @__PURE__ */ React.createElement("div", { "data-quiz-active-mix-chips": true, className: "mt-2 flex items-center gap-1.5 flex-wrap" }, visibleTypes.map((item) => {
+    const count = clampCount(effectiveMix[item.key] || 0, item.key === "mcq" ? 20 : 5);
+    if (count <= 0) return null;
+    return /* @__PURE__ */ React.createElement("span", { key: item.key, className: "inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50/80 px-2 py-0.5 text-xs font-semibold text-teal-900" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, item.emoji), /* @__PURE__ */ React.createElement("span", null, count, " ", item.label));
+  })), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center gap-2 flex-wrap text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "rounded bg-slate-100 px-2 py-1 font-semibold text-slate-700" }, qzText("estimate_minutes", "About {low}\u2013{high} minutes", { low: estimatedLow, high: estimatedHigh })), estimatedHigh > 30 && /* @__PURE__ */ React.createElement("span", { className: "rounded bg-amber-100 px-2 py-1 font-semibold text-amber-800" }, qzText("long_warning", "Long assessment\u2014consider reducing the mix.")))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -3618,21 +3734,59 @@ function QuizPanel(props) {
     },
     /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Settings2, { size: 13 }), qzText("section_customize", "2. Customize questions")),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (itemMixOpen ? "rotate-180" : "") })
-  ), itemMixOpen && /* @__PURE__ */ React.createElement("div", { id: "quiz-item-mix-panel", className: "px-3 pb-3 pt-1 space-y-3 bg-slate-50/60" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, qzText("mix_help", "Set the exact number of every scored format. No format is treated as an \u201Cextra.\u201D")), groups.map((group) => /* @__PURE__ */ React.createElement("div", { key: group.id, className: "space-y-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, group.label), group.types.map((item) => {
-    const count = clampCount(effectiveMix[item.key] || 0, item.key === "mcq" ? 20 : 5);
-    return /* @__PURE__ */ React.createElement("div", { key: item.key, className: "flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm flex-shrink-0 w-5 text-center", "aria-hidden": "true" }, item.emoji), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, item.label), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-600 leading-tight" }, item.desc)), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "number",
-        min: "0",
-        max: item.key === "mcq" ? 20 : 5,
-        value: count,
-        onChange: (event) => handleMixChange(item.key, event.target.value),
-        "aria-label": qzText("format_count_aria", "{format} count", { format: item.label }),
-        className: "w-14 text-center text-sm border border-slate-300 rounded-md p-1.5 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
-      }
-    ));
-  }))), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200 pt-3 space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-semibold text-slate-800" }, qzText("fill_policy", "Fill-in-the-blank: what matters?"), /* @__PURE__ */ React.createElement("select", { value: assessmentOptions.fillBlankPolicy, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, fillBlankPolicy: event.target.value }), className: "block w-full mt-1 text-xs rounded border-slate-300" }, /* @__PURE__ */ React.createElement("option", { value: "normalized" }, qzText("fill_normalized", "Concept recall \u2014 ignore case and surrounding spaces")), /* @__PURE__ */ React.createElement("option", { value: "exact" }, qzText("fill_exact", "Exact spelling and case")), /* @__PURE__ */ React.createElement("option", { value: "review-variants" }, qzText("fill_review", "Concept recall \u2014 send other variants for teacher review")))), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-semibold text-slate-800" }, qzText("sequence_mode", "Sequence activity"), /* @__PURE__ */ React.createElement("select", { value: assessmentOptions.sequenceMode, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, sequenceMode: event.target.value }), className: "block w-full mt-1 text-xs rounded border-slate-300" }, /* @__PURE__ */ React.createElement("option", { value: "diagnostic" }, qzText("sequence_diagnostic", "Diagnose, arrange, and identify the principle")), /* @__PURE__ */ React.createElement("option", { value: "arrange-explain" }, qzText("sequence_short", "Arrange and identify the principle")))), /* @__PURE__ */ React.createElement("label", { className: "flex gap-2 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: assessmentOptions.sequenceMaxSteps === 3, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, sequenceMaxSteps: event.target.checked ? 3 : 6 }) }), qzText("sequence_three", "Keep sequences to three steps")), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-semibold text-slate-800" }, qzText("numeric_weight", "Numeric partial credit: value / units"), /* @__PURE__ */ React.createElement("select", { value: assessmentOptions.numericSettings.valueWeight, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, numericSettings: { ...assessmentOptions.numericSettings, valueWeight: Number(event.target.value) } }), className: "block w-full mt-1 text-xs rounded border-slate-300" }, /* @__PURE__ */ React.createElement("option", { value: "0.5" }, "50% / 50%"), /* @__PURE__ */ React.createElement("option", { value: "0.75" }, "75% / 25%"), /* @__PURE__ */ React.createElement("option", { value: "1" }, "100% / 0%"))), /* @__PURE__ */ React.createElement("label", { className: "flex gap-2 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: assessmentOptions.numericSettings.allowEquivalentUnits, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, numericSettings: { ...assessmentOptions.numericSettings, allowEquivalentUnits: event.target.checked } }) }), qzText("numeric_convert", "Accept supported equivalent units after conversion")), /* @__PURE__ */ React.createElement("label", { className: "flex gap-2 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: assessmentOptions.requireReasoning, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, requireReasoning: event.target.checked }) }), qzText("require_reasoning", "Ask for a brief explanation in Relation Mismatch and Answer + Evidence (unscored)"))))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-reflection-count", className: "text-xs font-bold text-indigo-900 flex items-center gap-1" }, qzText("section_reflection", "3. Closing reflection"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-indigo-700" }, qzText("reflection_unscored", "(unscored)")), /* @__PURE__ */ React.createElement(InfoTooltip, { text: qzText("reflection_tooltip", "Optional prompts shown after the assessment. They never affect the score.") })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-indigo-700 mt-0.5" }, qzText("reflection_help", "Use 1 for a quick close; choose 0 to omit it."))), /* @__PURE__ */ React.createElement(
+  ), itemMixOpen && (() => {
+    const hasFillBlank = clampCount(effectiveMix["fill-blank"] || 0, 5) > 0;
+    const hasSequence = clampCount(effectiveMix["sequence-sense"] || 0, 5) > 0;
+    const hasNumeric = clampCount(effectiveMix["numeric-response"] || 0, 5) > 0;
+    const hasReasoningPair = clampCount(effectiveMix["relation-mismatch"] || 0, 5) > 0 || clampCount(effectiveMix["answer-evidence"] || 0, 5) > 0;
+    const hasAnyFormatRules = hasFillBlank || hasSequence || hasNumeric || hasReasoningPair;
+    return /* @__PURE__ */ React.createElement("div", { id: "quiz-item-mix-panel", className: "px-3 pb-3 pt-1 space-y-3 bg-slate-50/60" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, qzText("mix_help", "Set the exact number of every scored format. No format is treated as an \u201Cextra.\u201D")), groups.map((group) => /* @__PURE__ */ React.createElement("div", { key: group.id, className: "space-y-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black uppercase tracking-wider text-slate-600" }, group.label), group.types.map((item) => {
+      const maxVal = item.key === "mcq" ? 20 : 5;
+      const count = clampCount(effectiveMix[item.key] || 0, maxVal);
+      return /* @__PURE__ */ React.createElement("div", { key: item.key, className: "flex items-center gap-2 rounded-lg border p-2 transition-colors motion-reduce:transition-none " + (count > 0 ? "border-indigo-300 bg-indigo-50/40" : "border-slate-200 bg-white") }, /* @__PURE__ */ React.createElement("span", { className: "text-sm flex-shrink-0 w-5 text-center", "aria-hidden": "true" }, item.emoji), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, item.label), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600 leading-tight" }, item.desc)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 shrink-0" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => handleMixChange(item.key, count - 1),
+          disabled: isProcessing || count <= 0,
+          "aria-label": "Decrease " + item.label,
+          className: "inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 transition-colors motion-reduce:transition-none"
+        },
+        "\u2212"
+      ), /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "number",
+          min: "0",
+          max: maxVal,
+          value: count,
+          onChange: (event) => handleMixChange(item.key, event.target.value),
+          "aria-label": qzText("format_count_aria", "{format} count", { format: item.label }),
+          className: "w-11 text-center text-sm border border-slate-300 rounded-md p-1 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => handleMixChange(item.key, count + 1),
+          disabled: isProcessing || count >= maxVal,
+          "aria-label": "Increase " + item.label,
+          className: "inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 transition-colors motion-reduce:transition-none"
+        },
+        "+"
+      )));
+    }))), hasAnyFormatRules && /* @__PURE__ */ React.createElement("div", { "data-quiz-context-format-options": true, className: "border-t border-slate-200 pt-3 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black uppercase tracking-wider text-slate-600" }, "Options for selected formats"), hasFillBlank && /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-semibold text-slate-800" }, qzText("fill_policy", "Fill-in-the-blank: what matters?"), /* @__PURE__ */ React.createElement("select", { value: assessmentOptions.fillBlankPolicy, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, fillBlankPolicy: event.target.value }), className: "block w-full mt-1 text-xs rounded border-slate-300" }, /* @__PURE__ */ React.createElement("option", { value: "normalized" }, qzText("fill_normalized", "Concept recall \u2014 ignore case and surrounding spaces")), /* @__PURE__ */ React.createElement("option", { value: "exact" }, qzText("fill_exact", "Exact spelling and case")), /* @__PURE__ */ React.createElement("option", { value: "review-variants" }, qzText("fill_review", "Concept recall \u2014 send other variants for teacher review")))), hasSequence && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-semibold text-slate-800" }, qzText("sequence_mode", "Sequence activity"), /* @__PURE__ */ React.createElement("select", { value: assessmentOptions.sequenceMode, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, sequenceMode: event.target.value }), className: "block w-full mt-1 text-xs rounded border-slate-300" }, /* @__PURE__ */ React.createElement("option", { value: "diagnostic" }, qzText("sequence_diagnostic", "Diagnose, arrange, and identify the principle")), /* @__PURE__ */ React.createElement("option", { value: "arrange-explain" }, qzText("sequence_short", "Arrange and identify the principle")))), /* @__PURE__ */ React.createElement("label", { className: "flex gap-2 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: assessmentOptions.sequenceMaxSteps === 3, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, sequenceMaxSteps: event.target.checked ? 3 : 6 }) }), qzText("sequence_three", "Keep sequences to three steps"))), hasNumeric && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-semibold text-slate-800" }, qzText("numeric_weight", "Numeric partial credit: value / units"), /* @__PURE__ */ React.createElement("select", { value: assessmentOptions.numericSettings.valueWeight, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, numericSettings: { ...assessmentOptions.numericSettings, valueWeight: Number(event.target.value) } }), className: "block w-full mt-1 text-xs rounded border-slate-300" }, /* @__PURE__ */ React.createElement("option", { value: "0.5" }, "50% / 50%"), /* @__PURE__ */ React.createElement("option", { value: "0.75" }, "75% / 25%"), /* @__PURE__ */ React.createElement("option", { value: "1" }, "100% / 0%"))), /* @__PURE__ */ React.createElement("label", { className: "flex gap-2 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: assessmentOptions.numericSettings.allowEquivalentUnits, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, numericSettings: { ...assessmentOptions.numericSettings, allowEquivalentUnits: event.target.checked } }) }), qzText("numeric_convert", "Accept supported equivalent units after conversion"))), hasReasoningPair && /* @__PURE__ */ React.createElement("label", { className: "flex gap-2 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: assessmentOptions.requireReasoning, onChange: (event) => setAssessmentOptions({ ...assessmentOptions, requireReasoning: event.target.checked }) }), qzText("require_reasoning", "Ask for a brief explanation in Relation Mismatch and Answer + Evidence (unscored)"))));
+  })()), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-reflection-count", className: "text-xs font-bold text-indigo-900 flex items-center gap-1" }, qzText("section_reflection", "3. Closing reflection"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-indigo-700" }, qzText("reflection_unscored", "(unscored)")), /* @__PURE__ */ React.createElement(InfoTooltip, { text: qzText("reflection_tooltip", "Optional prompts shown after the assessment. They never affect the score.") })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-700 mt-0.5" }, qzText("reflection_help", "Use 1 for a quick close; choose 0 to omit it."))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 shrink-0" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => handleReflectionCountChange(reflectionTotal - 1),
+      disabled: isProcessing || reflectionTotal <= 0,
+      "aria-label": "Decrease closing reflections",
+      className: "inline-flex h-8 w-8 items-center justify-center rounded-md border border-indigo-300 bg-white text-sm font-bold text-indigo-900 hover:bg-indigo-100 disabled:opacity-40 transition-colors motion-reduce:transition-none"
+    },
+    "\u2212"
+  ), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "quiz-reflection-count",
@@ -3643,9 +3797,19 @@ function QuizPanel(props) {
       max: "2",
       value: quizReflectionCount,
       onChange: (event) => handleReflectionCountChange(event.target.value),
-      className: "w-14 text-center text-sm border-indigo-300 rounded-md p-1.5 focus:ring-indigo-200 focus:border-indigo-400 bg-white"
+      className: "w-11 text-center text-sm border-indigo-300 rounded-md p-1 focus:ring-indigo-200 focus:border-indigo-400 bg-white"
     }
-  ))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "quiz_scoring_section", onClick: () => setScoringOpen(!scoringOpen), "aria-expanded": scoringOpen, className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50" }, /* @__PURE__ */ React.createElement("span", null, qzText("section_scoring", "4. Scoring and feedback")), /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (scoringOpen ? "rotate-180" : "") })), scoringOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3 bg-slate-50/60" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: scoringPolicy.partialCredit, onChange: (event) => setScoringPolicy(Object.assign({}, scoringPolicy, { partialCredit: event.target.checked })), className: "mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400" }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, qzText("partial_credit_label", "Allow partial credit")), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-600" }, qzText("partial_credit_desc", "Applies to multi-select, multi-step diagnostics, answer + evidence, and numeric value/unit checks.")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-live-response-policy", className: "block text-xs font-semibold text-slate-700 mb-1" }, qzText("live_policy_label", "Live session response policy")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => handleReflectionCountChange(reflectionTotal + 1),
+      disabled: isProcessing || reflectionTotal >= 2,
+      "aria-label": qzText("increase_closing_reflections", "Increase closing reflections"),
+      className: "inline-flex h-8 w-8 items-center justify-center rounded-md border border-indigo-300 bg-white text-sm font-bold text-indigo-900 hover:bg-indigo-100 disabled:opacity-40 transition-colors motion-reduce:transition-none"
+    },
+    "+"
+  )))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "quiz_scoring_section", onClick: () => setScoringOpen(!scoringOpen), "aria-expanded": scoringOpen, className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50" }, /* @__PURE__ */ React.createElement("span", null, qzText("section_scoring", "4. Scoring and feedback")), /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (scoringOpen ? "rotate-180" : "") })), scoringOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3 bg-slate-50/60" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: scoringPolicy.partialCredit, onChange: (event) => setScoringPolicy(Object.assign({}, scoringPolicy, { partialCredit: event.target.checked })), className: "mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400" }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, qzText("partial_credit_label", "Allow partial credit")), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, qzText("partial_credit_desc", "Applies to multi-select, multi-step diagnostics, answer + evidence, and numeric value/unit checks.")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-live-response-policy", className: "block text-xs font-semibold text-slate-700 mb-1" }, qzText("live_policy_label", "Live session response policy")), /* @__PURE__ */ React.createElement(
     "select",
     {
       id: "quiz-live-response-policy",
@@ -3658,12 +3822,13 @@ function QuizPanel(props) {
     },
     /* @__PURE__ */ React.createElement("option", { value: "accuracy" }, qzText("policy_accuracy", "Accuracy \u2014 correctness, never speed")),
     /* @__PURE__ */ React.createElement("option", { value: "confidence" }, qzText("policy_confidence", "Confidence check \u2014 accuracy + learner certainty"))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, scoringPolicy.confidence ? qzText("policy_confidence_desc", "Learners report how sure they were after answering. Confidence never changes correctness or points.") : qzText("policy_accuracy_desc", "Uses the answer key and configured partial credit. Response speed never changes points."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-written-scoring", className: "block text-xs font-semibold text-slate-700 mb-1" }, qzText("written_feedback_label", "Written-response feedback")), /* @__PURE__ */ React.createElement("select", { id: "quiz-written-scoring", value: scoringPolicy.writtenResponseMode, onChange: (event) => setScoringPolicy(Object.assign({}, scoringPolicy, { writtenResponseMode: event.target.value })), className: "w-full text-xs border-slate-300 rounded-md p-2 bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "ai-provisional" }, qzText("written_ai", "Immediate AI feedback (provisional)")), /* @__PURE__ */ React.createElement("option", { value: "teacher-review" }, qzText("written_teacher", "Submit for teacher review"))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, scoringPolicy.writtenResponseMode === "ai-provisional" ? qzText("written_ai_desc", "Students receive immediate guidance; teachers can override it.") : qzText("written_teacher_desc", "Written responses are collected without an automatic correctness judgment."))))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "quiz_presets_section", onClick: () => setPresetsOpen(!presetsOpen), "aria-expanded": presetsOpen, className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50" }, /* @__PURE__ */ React.createElement("span", null, qzText("presets_title", "Save or reuse this setup")), /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (presetsOpen ? "rotate-180" : "") })), presetsOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-2 bg-slate-50/60" }, savedPresets.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("select", { "aria-label": qzText("presets_select_aria", "Saved assessment presets"), value: selectedPresetId, onChange: (event) => applyPreset(event.target.value), className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, qzText("presets_choose", "Choose a saved preset\u2026")), savedPresets.map((preset) => /* @__PURE__ */ React.createElement("option", { key: preset.id, value: preset.id }, preset.name))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: deleteSelectedPreset, disabled: !selectedPresetId, className: "px-2 text-xs font-semibold rounded border border-rose-200 text-rose-700 bg-white disabled:opacity-40" }, qzText("presets_delete", "Delete"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("input", { "aria-label": qzText("preset_name_aria", "New preset name"), value: presetName, onChange: (event) => setPresetName(event.target.value), onKeyDown: (event) => {
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, scoringPolicy.confidence ? qzText("policy_confidence_desc", "Learners report how sure they were after answering. Confidence never changes correctness or points.") : qzText("policy_accuracy_desc", "Uses the answer key and configured partial credit. Response speed never changes points."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-written-scoring", className: "block text-xs font-semibold text-slate-700 mb-1" }, qzText("written_feedback_label", "Written-response feedback")), /* @__PURE__ */ React.createElement("select", { id: "quiz-written-scoring", value: scoringPolicy.writtenResponseMode, onChange: (event) => setScoringPolicy(Object.assign({}, scoringPolicy, { writtenResponseMode: event.target.value })), className: "w-full text-xs border-slate-300 rounded-md p-2 bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "ai-provisional" }, qzText("written_ai", "Immediate AI feedback (provisional)")), /* @__PURE__ */ React.createElement("option", { value: "teacher-review" }, qzText("written_teacher", "Submit for teacher review"))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, scoringPolicy.writtenResponseMode === "ai-provisional" ? qzText("written_ai_desc", "Students receive immediate guidance; teachers can override it.") : qzText("written_teacher_desc", "Written responses are collected without an automatic correctness judgment."))))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "quiz_presets_section", onClick: () => setPresetsOpen(!presetsOpen), "aria-expanded": presetsOpen, className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50" }, /* @__PURE__ */ React.createElement("span", null, qzText("presets_title", "Save or reuse this setup")), /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (presetsOpen ? "rotate-180" : "") })), presetsOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-2 bg-slate-50/60" }, savedPresets.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("select", { "aria-label": qzText("presets_select_aria", "Saved assessment presets"), value: selectedPresetId, onChange: (event) => applyPreset(event.target.value), className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, qzText("presets_choose", "Choose a saved preset\u2026")), savedPresets.map((preset) => /* @__PURE__ */ React.createElement("option", { key: preset.id, value: preset.id }, preset.name))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: deleteSelectedPreset, disabled: !selectedPresetId, className: "px-2 text-xs font-semibold rounded border border-rose-200 text-rose-700 bg-white disabled:opacity-40" }, qzText("presets_delete", "Delete"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("input", { "aria-label": qzText("preset_name_aria", "New preset name"), value: presetName, onChange: (event) => setPresetName(event.target.value), onKeyDown: (event) => {
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
     if (event.key === "Enter") {
       event.preventDefault();
       savePreset();
     }
-  }, maxLength: "50", placeholder: qzText("preset_name_placeholder", "e.g. Friday concept check"), className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePreset, disabled: assessedTotal <= 0, className: "px-3 text-xs font-bold rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" }, qzText("preset_save", "Save"))), presetStatus && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-[10px] text-slate-600" }, presetStatus))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+  }, maxLength: "50", placeholder: qzText("preset_name_placeholder", "e.g. Friday concept check"), className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePreset, disabled: assessedTotal <= 0, className: "px-3 text-xs font-bold rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" }, qzText("preset_save", "Save"))), presetStatus && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-slate-600" }, presetStatus))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
       helpKey: "quiz_custom_instructions",
@@ -3673,7 +3838,7 @@ function QuizPanel(props) {
       onChange: setQuizCustomInstructions,
       placeholderKey: "quiz.custom_placeholder"
     }
-  )), (generatedContent?.data?.analysis || history.some((item) => item && item.type === "analysis")) && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-700 flex items-center gap-1 pt-1 border-t border-teal-100" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12 }), " ", t("quiz.context_active"))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2 pb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-visuals-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.visuals_label") || "Visuals:"), /* @__PURE__ */ React.createElement("select", { id: "quiz-visuals-select", value: mcqVisualMode, onChange: (event) => setMcqVisualMode(event.target.value), disabled: isProcessing, "data-help-key": "quiz_visual_mode_select", className: "flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white disabled:opacity-50", "aria-label": t("quiz.visuals_aria") || "MCQ visual mode" }, /* @__PURE__ */ React.createElement("option", { value: "none" }, t("quiz.visuals_none") || "\u2205 None (text only)"), /* @__PURE__ */ React.createElement("option", { value: "question" }, t("quiz.visuals_question") || "Question images"), /* @__PURE__ */ React.createElement("option", { value: "options" }, t("quiz.visuals_options") || "Option images"), /* @__PURE__ */ React.createElement("option", { value: "both" }, t("quiz.visuals_both") || "Question + option images"))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
+  )), (generatedContent?.data?.analysis || history.some((item) => item && item.type === "analysis")) && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-700 flex items-center gap-1 pt-1 border-t border-teal-100" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12 }), " ", t("quiz.context_active"))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2 pb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-visuals-select", className: "text-xs font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.visuals_label") || "Visuals:"), /* @__PURE__ */ React.createElement("select", { id: "quiz-visuals-select", value: mcqVisualMode, onChange: (event) => setMcqVisualMode(event.target.value), disabled: isProcessing, "data-help-key": "quiz_visual_mode_select", className: "flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white disabled:opacity-50", "aria-label": t("quiz.visuals_aria") || "MCQ visual mode" }, /* @__PURE__ */ React.createElement("option", { value: "none" }, t("quiz.visuals_none") || "\u2205 None (text only)"), /* @__PURE__ */ React.createElement("option", { value: "question" }, t("quiz.visuals_question") || "Question images"), /* @__PURE__ */ React.createElement("option", { value: "options" }, t("quiz.visuals_options") || "Option images"), /* @__PURE__ */ React.createElement("option", { value: "both" }, t("quiz.visuals_both") || "Question + option images"))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
       "data-guided-primary": true,
@@ -3696,7 +3861,7 @@ function QuizPanel(props) {
       "aria-busy": isProcessing,
       className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
     },
-    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, quizMode === "exit-ticket" ? t("quiz.generate") : quizMode === "pre-check" ? t("quiz.generate_pre_check") || "Generate Pre-Check" : quizMode === "formative" ? t("quiz.generate_formative") || "Generate Formative Check" : t("quiz.generate_review") || "Generate Spaced Review", " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
+    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, quizMode === "exit-ticket" ? t("quiz.generate") : quizMode === "pre-check" ? t("quiz.generate_pre_check") || "Generate Pre-Check" : quizMode === "formative" ? t("quiz.generate_formative") || "Generate Formative Check" : quizMode === "poll" ? "Generate Student-Voice Poll" : t("quiz.generate_review") || "Generate Spaced Review", " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-indigo-600" })
   ));
 }
@@ -3721,7 +3886,7 @@ function TimelinePanel(props) {
     timelineTopic
   } = props;
   if (!expandedTools || !expandedTools.includes("timeline")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("timeline.topic"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("timeline.topic"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-600" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_timeline_topic"),
@@ -3732,7 +3897,7 @@ function TimelinePanel(props) {
       placeholder: t("timeline.topic_placeholder"),
       className: `${SIDEBAR_PANEL_UI.control} focus-visible:border-teal-500 focus-visible:ring-teal-500/20`
     }
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("timeline.count"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("timeline.count"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-600" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.text_field"),
@@ -3821,7 +3986,7 @@ function ConceptSortPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("concept-sort")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("concept_sort.categories"), " ", t("concept_sort.max_categories"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("concept_sort.categories"), " ", t("concept_sort.max_categories"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-600" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_concept_input"),
@@ -3951,7 +4116,7 @@ function BrainstormPanel(props) {
       className: `min-h-9 px-2 py-1.5 rounded-lg border text-xs font-bold transition-colors motion-reduce:transition-none ${activityMode === id ? "bg-violet-600 border-violet-600 text-white shadow-sm" : "bg-white border-slate-300 text-slate-700 hover:bg-violet-50"}`
     },
     modeLabel(id)
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic mt-1.5 leading-tight" }, modeDesc(activityMode))), activityMode !== "simulation" && /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic mt-1.5 leading-tight" }, modeDesc(activityMode))), activityMode !== "simulation" && /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
       premium: true,
@@ -4004,7 +4169,7 @@ function BrainstormPanel(props) {
       className: "w-full text-xs border border-violet-600 rounded p-1.5 focus:ring-2 focus:ring-violet-500 text-violet-800"
     },
     BRIDGE_MODES.map((mode) => /* @__PURE__ */ React.createElement("option", { key: mode.id, value: mode.id }, t(`bridge.modes.${mode.id}_label`)))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-violet-800 mt-1 italic leading-tight" }, t(`bridge.modes.${bridgeSimType}_desc`))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "brainstorm-step-count", className: "block text-xs font-bold text-violet-900" }, t("bridge.iterative_steps")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono bg-white px-1.5 rounded border border-violet-200 text-violet-800 font-bold" }, bridgeStepCount, " ", t("bridge.prompts_count"))), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-800 mt-1 italic leading-tight" }, t(`bridge.modes.${bridgeSimType}_desc`))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "brainstorm-step-count", className: "block text-xs font-bold text-violet-900" }, t("bridge.iterative_steps")), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono bg-white px-1.5 rounded border border-violet-200 text-violet-800 font-bold" }, bridgeStepCount, " ", t("bridge.prompts_count"))), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "brainstorm-step-count",
@@ -4018,15 +4183,16 @@ function BrainstormPanel(props) {
       onChange: (e) => setBridgeStepCount(parseInt(e.target.value)),
       className: "w-full h-1.5 bg-violet-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-700 mt-1" }, t("bridge.step_desc")))), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 mt-1" }, t("bridge.step_desc")))), !aiTextAvailable && /* @__PURE__ */ React.createElement(AiSetupNotice, { t }), /* @__PURE__ */ React.createElement(
     "button",
     {
       "data-guided-primary": true,
       type: "button",
       "data-help-key": "brainstorm_generate_button",
       onClick: () => handleGenerate("gemini-bridge"),
-      disabled: !hasSourceOrAnalysis || isProcessing,
+      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
+      title: !aiTextAvailable ? t("sidebar.needs_ai_setup") || "Needs AI setup" : void 0,
       className: "w-full bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold py-2 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
     },
     isProcessing ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Terminal, { size: 14 }),
@@ -4079,10 +4245,10 @@ function ImagePanel(props) {
       onChange: (e) => setUseLowQualityVisuals(e.target.checked),
       className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), /* @__PURE__ */ React.createElement(MonitorPlay, { size: 12, className: "text-slate-600" }), " ", t("visuals.low_quality_label"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, t("visuals.low_quality_hint")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, "Image style"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(MonitorPlay, { size: 12, className: "text-slate-600" }), " ", t("visuals.low_quality_label"), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, t("visuals.low_quality_hint")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, "Image style"), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": "Image style source",
+      "aria-label": t("visuals.image_style_source_aria") || "Image style source",
       value: visualStyleMode,
       onChange: (e) => setVisualStyle(e.target.value === "inherit" ? "Default" : "Isometric Diagram"),
       className: `${SIDEBAR_PANEL_UI.control} text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`
@@ -4158,6 +4324,7 @@ function ImagePanel(props) {
   ));
 }
 function PersonaPanel(props) {
+  const aiTextAvailable = useAiTextAvailable();
   const {
     ListChecks,
     MessageCircleQuestion,
@@ -4208,7 +4375,7 @@ function PersonaPanel(props) {
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm transition-colors motion-reduce:transition-none flex items-center gap-2" }, /* @__PURE__ */ React.createElement(MessageCircleQuestion, { size: 14, className: "text-indigo-600" }), personaState.selectedCharacter ? t("persona.resume") : t("persona.view_candidates")),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-indigo-600" })
-  ), /* @__PURE__ */ React.createElement(
+  ), !aiTextAvailable && /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2" }, /* @__PURE__ */ React.createElement(AiSetupNotice, { t })), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -4217,8 +4384,9 @@ function PersonaPanel(props) {
         handleGeneratePersonas();
         setActiveView("persona");
       },
-      disabled: !hasSourceOrAnalysis || isGeneratingPersona || isProcessing,
+      disabled: !hasSourceOrAnalysis || isGeneratingPersona || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
+      title: !aiTextAvailable ? t("sidebar.needs_ai_setup") || "Needs AI setup" : void 0,
       className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-purple-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, isGeneratingPersona ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" }), isGeneratingPersona ? t("persona.identifying") : personaState.options.length > 0 ? t("persona.regenerate") : t("persona.find")),
@@ -5110,6 +5278,7 @@ function GeneratorActionsView(props) {
     sourceRecord,
     openSourceView
   } = props;
+  const aiTextAvailable = useAiTextAvailable();
   const canStartBlank = (id) => Array.isArray(window.__alloBlankStartTypes) && window.__alloBlankStartTypes.includes(id);
   const startBlank = (id) => handleGenerate(id, null, false, null, { seed: { kind: "blank" } });
   const openSourceInput = () => {
@@ -5122,7 +5291,7 @@ function GeneratorActionsView(props) {
         panel.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
       } catch (_) {
       }
-      const field = panel.querySelector('textarea, input[type="text"], input:not([type])');
+      const field = panel.querySelector('textarea, input[type="text"], input:not([type]), [data-source-paste], [data-source-open], button:not([disabled])');
       if (field) try {
         field.focus({ preventScroll: true });
       } catch (_) {
@@ -5155,7 +5324,7 @@ function GeneratorActionsView(props) {
     const ToolCatalogControls2 = window.AlloModules && window.AlloModules.ToolCatalogControls;
     const _catalogShown = TOOL_CATALOG_GROUPS.all.filter(isToolCatalogItemVisible).length;
     const _catalogFiltered = !!String(toolCatalogQuery || "").trim() || toolCatalogGroup !== "all";
-    if (ToolCatalogControls2 && isToolCatalogHidden) return /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-semibold text-slate-600" }, _catalogFiltered ? (t("sidebar.tool_finder_hidden_filtered") || "A tool filter is on: showing {shown} of {total} tools.").replace("{shown}", String(_catalogShown)).replace("{total}", String(TOOL_CATALOG_GROUPS.all.length)) : t("sidebar.tool_finder_hidden") || "Showing all tools."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    if (ToolCatalogControls2 && isToolCatalogHidden) return /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-600" }, _catalogFiltered ? (t("sidebar.tool_finder_hidden_filtered") || "A tool filter is on: showing {shown} of {total} tools.").replace("{shown}", String(_catalogShown)).replace("{total}", String(TOOL_CATALOG_GROUPS.all.length)) : t("sidebar.tool_finder_hidden") || "Showing all tools."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       setIsToolCatalogHidden(false);
       setIsToolCatalogExpanded(true);
     }, className: "min-h-10 shrink-0 rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-bold text-indigo-800 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" }, t("sidebar.tool_finder_title") || "Find a tool"));
@@ -5289,7 +5458,27 @@ function GeneratorActionsView(props) {
     currentUiLanguage,
     translationMode,
     resolveTranslationPolicy,
-    translationTargetChoices
+    translationTargetChoices,
+    analyzedGlossaryCounts: (() => {
+      const normSrc = (s) => String(s || "").replace(/\s+/g, " ").trim();
+      const curSrc = normSrc(inputText);
+      const candidates = Array.isArray(history) ? history.slice().reverse() : [];
+      const activeAnalysis = generatedContent?.type === "analysis" ? generatedContent : null;
+      const match = [activeAnalysis, ...candidates].find((item) => {
+        if (!item || item.type !== "analysis" || !item.data) return false;
+        if (item.data.analysisNeedsRecheck || item.data.analysisIncomplete) return false;
+        const v = item.data.vocabulary || item.data.tier2Words;
+        if (!Array.isArray(v) || !v.length) return false;
+        if (!curSrc) return true;
+        const orig = normSrc(item.data.originalText);
+        return !orig || orig === curSrc;
+      });
+      if (!match) return null;
+      const vocab = match.data.vocabulary || match.data.tier2Words;
+      const tier2 = Math.min(20, Array.isArray(match.data.vocabularyTiers?.tier2) ? match.data.vocabularyTiers.tier2.length : Math.floor(vocab.length / 2));
+      const tier3 = Math.min(20, Array.isArray(match.data.vocabularyTiers?.tier3) ? match.data.vocabularyTiers.tier3.length : vocab.length - tier2);
+      return { total: tier2 + tier3, tier2, tier3 };
+    })()
   })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("simplified") ? void 0 : "none" }, id: "ui-tool-simplified", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === "simplified" ? "border-indigo-600 shadow-xl shadow-indigo-500/20" : "border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10"}
               ` }, /* @__PURE__ */ React.createElement(
@@ -5708,7 +5897,7 @@ function GeneratorActionsView(props) {
         setShowStemLab(true);
         setStemLabTab("explore");
       },
-      className: "group flex items-center gap-1 px-2 py-0.5 me-3 text-[11px] font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all motion-reduce:transition-none hover:shadow-sm",
+      className: "group flex items-center gap-1 px-2 py-0.5 me-3 text-xs font-bold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/50 rounded-full transition-all motion-reduce:transition-none hover:shadow-sm",
       "aria-label": t("sidebar.open_stem_lab_explore_aria") || "Open STEAM Lab Explore"
     },
     "\u{1F9EA} ",
@@ -5952,7 +6141,7 @@ function GeneratorActionsView(props) {
       className: "w-full p-3 bg-slate-50 flex justify-between items-center hover:bg-amber-50 transition-colors motion-reduce:transition-none"
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 16, className: "text-amber-600" }), t("directions.title") || "Assignment Directions"),
-    /* @__PURE__ */ React.createElement("span", { className: "flex shrink-0 items-center gap-1.5 text-[10px] font-bold text-amber-700" }, t("directions.badge") || "you write it", /* @__PURE__ */ React.createElement(ChevronRight, { size: 14, className: "text-amber-600", "aria-hidden": "true" }))
+    /* @__PURE__ */ React.createElement("span", { className: "flex shrink-0 items-center gap-1.5 text-xs font-bold text-amber-700" }, t("directions.badge") || "you write it", /* @__PURE__ */ React.createElement(ChevronRight, { size: 14, className: "text-amber-600", "aria-hidden": "true" }))
   )), /* @__PURE__ */ React.createElement(
     FullPackRunView,
     {
@@ -6056,11 +6245,11 @@ function GeneratorActionsView(props) {
         selectToolFromCatalog("alignment");
         handleGenerate("alignment-report");
       },
-      disabled: !hasSourceOrAnalysis || isProcessing,
+      disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
       className: "w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed",
-      title: t("alignment.generate")
+      title: !aiTextAvailable ? t("sidebar.needs_ai_setup") || "Needs AI setup" : t("alignment.generate")
     },
-    /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-700 to-emerald-700 group-hover:from-teal-600 group-hover:to-emerald-600 flex items-center gap-2" }, isProcessing && activeView === "alignment-report" ? /* @__PURE__ */ React.createElement(RefreshCw2, { className: "animate-spin motion-reduce:animate-none text-teal-600", size: 18 }) : /* @__PURE__ */ React.createElement(ShieldCheck, { size: 18, className: "text-emerald-500 fill-emerald-100" }), isIndependentMode ? t("alignment.skill_check") || "Skill Check" : t(isParentMode ? "sidebar.tool_alignment_parent" : "sidebar.tool_alignment")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 block mt-0.5" }, standardsInput ? isIndependentMode ? t("alignment.desc_skill_check") || "Verify your mastery against standards." : isParentMode ? t("alignment.desc_parent") || "See how this matches school goals" : t("alignment.desc_6dim") || "Audits curriculum across 6 dimensions" : t("alignment.desc_5dim") || "Audits curriculum across 5 dimensions (add standards for full audit)")),
+    /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-700 to-emerald-700 group-hover:from-teal-600 group-hover:to-emerald-600 flex items-center gap-2" }, isProcessing && activeView === "alignment-report" ? /* @__PURE__ */ React.createElement(RefreshCw2, { className: "animate-spin motion-reduce:animate-none text-teal-600", size: 18 }) : /* @__PURE__ */ React.createElement(ShieldCheck, { size: 18, className: "text-emerald-500 fill-emerald-100" }), isIndependentMode ? t("alignment.skill_check") || "Skill Check" : t(isParentMode ? "sidebar.tool_alignment_parent" : "sidebar.tool_alignment")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 block mt-0.5" }, standardsInput ? isIndependentMode ? t("alignment.desc_skill_check") || "Verify your mastery against standards." : isParentMode ? t("alignment.desc_parent") || "See how this matches school goals" : t("alignment.desc_6dim") || "Audits curriculum across 6 dimensions" : t("alignment.desc_5dim") || "Audits curriculum across 5 dimensions (add standards for full audit)")),
     /* @__PURE__ */ React.createElement(ArrowRight2, { size: 16, className: "text-teal-700 group-hover:text-teal-600" })
   )));
 }
@@ -6139,6 +6328,7 @@ function SourceShellWatch({ inputText, sourceStatus, sourceReplacement, setSourc
   return null;
 }
 function SourceInputShellView(props) {
+  const aiTextAvailable = useAiTextAvailable();
   const {
     BookOpen: BookOpen2,
     CheckSquare,
@@ -6266,6 +6456,11 @@ function SourceInputShellView(props) {
       return fallback;
     }
   };
+  const [dismissedTranscriptKey, setDismissedTranscriptKey] = React.useState(null);
+  const transcriptBannerKey = videoTranscriptSourceContext ? `${videoTranscriptSourceContext.title || ""}:${videoTranscriptSourceContext.wordCount || 0}` : null;
+  const showTranscriptShortcuts = Boolean(
+    expandedTools.includes("source-input") && videoTranscriptSourceContext && dismissedTranscriptKey !== transcriptBannerKey
+  );
   const sourceStatus = SourceRecord.status(sourceRecord, inputText);
   const changeOpen = !!(sourceReplacement && sourceReplacement.status === "change-pending");
   const showWaysIn = sourceStatus === "empty" || changeOpen;
@@ -6469,7 +6664,7 @@ function SourceInputShellView(props) {
       id: "tour-upload-source",
       "data-help-key": "source_upload_btn",
       "aria-label": t("common.upload_file") || "Upload file",
-      onClick: () => fileInputRef.current.click(),
+      onClick: () => fileInputRef?.current?.click(),
       disabled: isExtracting || isGeneratingSource,
       "aria-busy": isGeneratingSource,
       className: sourcePillClass,
@@ -6525,15 +6720,18 @@ function SourceInputShellView(props) {
     },
     /* @__PURE__ */ React.createElement(BookOpen2, { size: 12, "aria-hidden": "true" }),
     t("input.reading_catalog") || "Reading catalog"
-  ), /* @__PURE__ */ React.createElement("label", { "data-source-open-pdf-project": "true", "data-help-key": "source_open_pdf_project_btn", className: sourcePillClass + " cursor-pointer", title: t("input.open_pdf_project_tooltip") || "Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials." }, /* @__PURE__ */ React.createElement(FileDown, { size: 12 }), " ", t("input.open_pdf_project") || "Open PDF project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
+  ), /* @__PURE__ */ React.createElement("label", { "data-source-open-pdf-project": "true", "data-help-key": "source_open_pdf_project_btn", className: sourcePillClass + " cursor-pointer focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-1", title: t("input.open_pdf_project_tooltip") || "Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials." }, /* @__PURE__ */ React.createElement(FileDown, { size: 12, "aria-hidden": "true" }), " ", t("input.open_pdf_project") || "Open PDF project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "sr-only", onChange: (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     openPdfProjectFile(file);
-  } })), changeOpen && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-change-cancel": true, onClick: cancelChange, className: "text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium" }, headerText("sidebar.source_change_cancel", "Keep my source"))))), /* @__PURE__ */ React.createElement(SourceShellWatch, { inputText, sourceStatus, sourceReplacement, setSourceReplacement, openSourceView }), expandedTools.includes("source-input") && videoTranscriptSourceContext && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800" }, /* @__PURE__ */ React.createElement(FileText2, { size: 13 }), "Video transcript loaded"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 truncate text-sm font-bold text-slate-800" }, videoTranscriptSourceContext.title), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.wordCount.toLocaleString(), " words"), videoTranscriptSourceContext.cueCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.cueCount.toLocaleString(), " caption lines"), videoTranscriptSourceContext.chapterCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.chapterCount, " chapters"), videoTranscriptSourceContext.durationLabel && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.durationLabel))), /* @__PURE__ */ React.createElement(
+  } })), changeOpen && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-change-cancel": true, onClick: cancelChange, className: "text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium" }, headerText("sidebar.source_change_cancel", "Keep my source"))))), /* @__PURE__ */ React.createElement(SourceShellWatch, { inputText, sourceStatus, sourceReplacement, setSourceReplacement, openSourceView }), showTranscriptShortcuts && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 text-xs font-black uppercase tracking-wide text-emerald-800" }, /* @__PURE__ */ React.createElement(FileText2, { size: 13 }), "Video transcript loaded"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 truncate text-sm font-bold text-slate-800" }, videoTranscriptSourceContext.title), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, Number(videoTranscriptSourceContext?.wordCount || 0).toLocaleString(), " words"), Number(videoTranscriptSourceContext?.cueCount || 0) > 0 && /* @__PURE__ */ React.createElement("span", null, Number(videoTranscriptSourceContext.cueCount).toLocaleString(), " caption lines"), Number(videoTranscriptSourceContext?.chapterCount || 0) > 0 && /* @__PURE__ */ React.createElement("span", null, Number(videoTranscriptSourceContext.chapterCount), " chapters"), videoTranscriptSourceContext?.durationLabel && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.durationLabel))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
-      onClick: () => handleTranscriptSourceAction("dismiss"),
+      onClick: () => {
+        setDismissedTranscriptKey(transcriptBannerKey);
+        handleTranscriptSourceAction("dismiss");
+      },
       className: "shrink-0 rounded-full border border-emerald-200 bg-white p-1.5 text-slate-600 hover:bg-emerald-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400",
       "aria-label": t("a11y.hide_transcript_shortcuts") || "Hide transcript shortcuts",
       title: t("a11y.hide_transcript_shortcuts") || "Hide transcript shortcuts"
@@ -6551,7 +6749,8 @@ function SourceInputShellView(props) {
       key: item.action,
       type: "button",
       onClick: () => handleTranscriptSourceAction(item.action),
-      disabled: isProcessing,
+      disabled: isProcessing || !aiTextAvailable,
+      title: !aiTextAvailable ? t("sidebar.needs_ai_setup") || "Needs AI setup" : void 0,
       className: "flex min-h-[34px] items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 transition-colors motion-reduce:transition-none hover:bg-emerald-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
     },
     item.icon,

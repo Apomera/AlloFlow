@@ -335,8 +335,21 @@
     // A restrained transmission lobe makes the fin web read thinner than its
     // rays; the iridescent sheen shifts hue at grazing angles.
     f = inject(f, '#include <emissivemap_fragment>', 'float reefFr=1.0-abs(dot(normalize(normal),normalize(vViewPosition)));' +
-      'totalEmissiveRadiance+=diffuseColor.rgb*(0.012+0.03*reefFr*reefFr)*reefDistal*reefWeb;' +
+      'totalEmissiveRadiance+=diffuseColor.rgb*vec3(0.94,1.04,1.08)*(0.014+0.036*reefFr*reefFr)*reefDistal*reefWeb;' +
       'float reefFr3=reefFr*reefFr*reefFr;totalEmissiveRadiance+=mix(reefSheenA,reefSheenB,reefFr3)*reefSheenK*reefFr3;');
+    // Underwater wet-marine hydro-sheen, subtle sunlit downwelling bounce on smooth
+    // scales/carapaces/skin, and angle-dependent corneal specular catchlight on eyes.
+    f = inject(f, '#include <lights_fragment_end>',
+      'vec3 reefViewN=normalize(normal);vec3 reefViewV=normalize(vViewPosition);' +
+      'float reefHydroFr=clamp(1.0-abs(dot(reefViewN,reefViewV)),0.0,1.0);' +
+      'float reefHydroSmooth=clamp(1.0-roughnessFactor*0.78,0.08,1.0);' +
+      'float reefHydroRim=reefHydroFr*reefHydroFr*reefHydroFr*reefHydroSmooth;' +
+      'float reefHydroTop=clamp(reefViewN.y*0.65+0.35,0.0,1.0)*reefHydroSmooth;' +
+      'reflectedLight.indirectSpecular+=vec3(0.065,0.145,0.185)*reefHydroRim+vec3(0.018,0.044,0.052)*reefHydroTop*reefHydroFr;' +
+      'if(reefEyeMask>0.5){vec3 reefCorneaR=reflect(-reefViewV,reefViewN);' +
+      'float reefCorneaSpec=pow(clamp(dot(reefCorneaR,normalize(vec3(0.28,0.86,0.42))),0.0,1.0),42.0);' +
+      'float reefCorneaEdge=reefHydroFr*reefHydroFr*reefHydroFr*reefHydroFr;' +
+      'reflectedLight.indirectSpecular+=vec3(0.84,0.96,1.0)*(reefCorneaSpec*0.34)+vec3(0.55,0.85,0.96)*(reefCorneaEdge*0.16);}');
     shader.vertexShader = v; shader.fragmentShader = f;
   }
   // cfg: swim/swimShape/flex uniform objects, sheen [a, b, k], rays, eye, and

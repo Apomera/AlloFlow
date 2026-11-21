@@ -6073,14 +6073,517 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             engine.movers.push(cirrus);
           }
 
-          var beaconMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.84 });
+          // ── Cinema-grade GLSL WebGL1 Atmosphere, Ocean Sun-Glint, Polar Aurora,
+          //    Geomagnetic Flux Ribbons & Flyway Beacon Halos ──
+          var migrationNoRaycast = function() {};
+          var migrationIsHighContrast = function() {
+            try {
+              if (host && typeof host.closest === 'function' && host.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+              var de = document.documentElement;
+              if (de && (de.classList.contains('theme-contrast') || de.getAttribute('data-theme') === 'high-contrast' || de.getAttribute('data-theme') === 'contrast')) return true;
+              if (document.body && document.body.classList.contains('theme-contrast')) return true;
+              if (typeof window !== 'undefined' && window.matchMedia && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+            } catch (eHc) {}
+            return false;
+          };
+          var mgHasShader = typeof THREE.ShaderMaterial === 'function';
+          var MG_FBM_GLSL = [
+            'float mgHash(vec2 p) {',
+            '  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);',
+            '}',
+            'float mgNoise(vec2 p) {',
+            '  vec2 i = floor(p); vec2 f = fract(p);',
+            '  vec2 u = f * f * (3.0 - 2.0 * f);',
+            '  return mix(',
+            '    mix(mgHash(i), mgHash(i + vec2(1.0, 0.0)), u.x),',
+            '    mix(mgHash(i + vec2(0.0, 1.0)), mgHash(i + vec2(1.0, 1.0)), u.x),',
+            '    u.y',
+            '  );',
+            '}',
+            'float mgFbm(vec2 p) {',
+            '  float v = 0.0; float a = 0.5;',
+            '  mat2 rot = mat2(0.80, -0.60, 0.60, 0.80);',
+            '  for (int i = 0; i < 4; i++) {',
+            '    v += a * mgNoise(p);',
+            '    p = rot * p * 2.03 + vec2(19.3, 27.9);',
+            '    a *= 0.5;',
+            '  }',
+            '  return v;',
+            '}'
+          ].join('\n');
+
+          var mgAtmoGroup = new THREE.Group();
+          mgAtmoGroup.name = 'migration-cinema-atmo';
+          scene.add(mgAtmoGroup);
+          engine.atmoShaderGroup = mgAtmoGroup;
+
+          var mgShaderUniforms = {
+            horizon: null,
+            cloudVeil: null,
+            waterGlint: null,
+            aurora: [],
+            flux: [],
+            beaconHalo: null,
+            routeFlux: null
+          };
+          var mgSunDirVec = new THREE.Vector3(-38, 34, -115).normalize();
+
+          // 1. Rayleigh-Mie Atmospheric Horizon Scattering Band + Drifting FBM Cloud Veil Dome
+          if (mgHasShader && typeof THREE.CylinderGeometry === 'function') {
+            var horizonBandMat = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 4.5 },
+                uSunDir: { value: mgSunDirVec.clone() },
+                uHorizonColor: { value: new THREE.Color(0x93c5fd) },
+                uZenithColor: { value: new THREE.Color(0xfef3c7) },
+                uSunColor: { value: new THREE.Color(0xfff1c9) },
+                uNight: { value: 0.0 },
+                uHighContrast: { value: 0.0 }
+              },
+              vertexShader: [
+                'varying vec2 vUv;',
+                'varying vec3 vDir;',
+                'void main() {',
+                '  vUv = uv;',
+                '  vDir = normalize((modelMatrix * vec4(position, 0.0)).xyz);',
+                '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uTime;',
+                'uniform vec3 uSunDir;',
+                'uniform vec3 uHorizonColor;',
+                'uniform vec3 uZenithColor;',
+                'uniform vec3 uSunColor;',
+                'uniform float uNight;',
+                'uniform float uHighContrast;',
+                'varying vec2 vUv;',
+                'varying vec3 vDir;',
+                'void main() {',
+                '  if (uHighContrast > 0.5) discard;',
+                '  vec3 d = normalize(vDir);',
+                '  float band = exp(-pow((vUv.y - 0.30) * 3.8, 2.0));',
+                '  float sunCos = max(dot(d, normalize(uSunDir)), 0.0);',
+                '  float mie = pow(sunCos, 9.0) * mix(0.65, 0.32, uNight) + pow(sunCos, 2.6) * mix(0.28, 0.14, uNight);',
+                '  float wave = 0.90 + 0.10 * sin(vUv.x * 18.849 + uTime * 0.25);',
+                '  vec3 rayleigh = mix(uHorizonColor, uZenithColor, clamp(vUv.y * 1.35, 0.0, 1.0));',
+                '  vec3 col = rayleigh + uSunColor * mie * 0.72;',
+                '  float alpha = clamp((band * mix(0.36, 0.24, uNight) + mie * band * 0.38) * wave, 0.0, 0.62);',
+                '  gl_FragColor = vec4(col, alpha);',
+                '}'
+              ].join('\n'),
+              transparent: true, depthWrite: false, fog: false,
+              side: THREE.BackSide, blending: THREE.AdditiveBlending
+            });
+            var horizonBand = new THREE.Mesh(new THREE.CylinderGeometry(350, 350, 130, 56, 1, true), horizonBandMat);
+            horizonBand.position.y = 18;
+            horizonBand.name = 'migration-horizon-scatter';
+            horizonBand.userData.decorative = true;
+            horizonBand.raycast = migrationNoRaycast;
+            mgAtmoGroup.add(horizonBand);
+            engine.horizonBand = horizonBand;
+            mgShaderUniforms.horizon = horizonBandMat.uniforms;
+
+            var cloudVeilMat = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 4.5 },
+                uFlown: { value: 0.0 },
+                uSunDir: { value: mgSunDirVec.clone() },
+                uNight: { value: 0.0 },
+                uHighContrast: { value: 0.0 }
+              },
+              vertexShader: [
+                'varying vec3 vDir;',
+                'void main() {',
+                '  vDir = normalize(position);',
+                '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uTime;',
+                'uniform float uFlown;',
+                'uniform vec3 uSunDir;',
+                'uniform float uNight;',
+                'uniform float uHighContrast;',
+                'varying vec3 vDir;',
+                MG_FBM_GLSL,
+                'void main() {',
+                '  if (uHighContrast > 0.5) discard;',
+                '  vec3 d = normalize(vDir);',
+                '  float elev = d.y;',
+                '  if (elev < 0.04) discard;',
+                '  vec2 uvSky = d.xz / (elev + 0.22) * 0.92;',
+                '  vec2 drift = vec2(uTime * 0.014, uTime * 0.022 + uFlown * 0.0012);',
+                '  float n1 = mgFbm(uvSky + drift);',
+                '  float n2 = mgFbm(uvSky * 2.15 - drift * 0.65 + vec2(n1 * 0.72, -n1 * 0.45));',
+                '  float wisp = smoothstep(0.46, 0.76, n1 * 0.6 + n2 * 0.4);',
+                '  float mask = smoothstep(0.04, 0.24, elev) * smoothstep(0.99, 0.55, elev);',
+                '  float sunLit = pow(max(dot(d, normalize(uSunDir)), 0.0), 4.0) * 0.45 + 0.15;',
+                '  vec3 dayCol = mix(vec3(0.76, 0.87, 0.96), vec3(1.0, 0.98, 0.93), clamp(n2 + sunLit, 0.0, 1.0));',
+                '  vec3 nightCol = mix(vec3(0.14, 0.22, 0.38), vec3(0.46, 0.58, 0.80), clamp(n2 + sunLit * 0.6, 0.0, 1.0));',
+                '  vec3 col = mix(dayCol, nightCol, uNight);',
+                '  float alpha = wisp * mask * mix(0.32, 0.19, uNight);',
+                '  gl_FragColor = vec4(col, alpha);',
+                '}'
+              ].join('\n'),
+              transparent: true, depthWrite: false, fog: false, side: THREE.BackSide
+            });
+            var cloudVeil = new THREE.Mesh(
+              new THREE.SphereGeometry(375, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.48),
+              cloudVeilMat
+            );
+            cloudVeil.name = 'migration-fbm-cloud-veil';
+            cloudVeil.userData.decorative = true;
+            cloudVeil.raycast = migrationNoRaycast;
+            mgAtmoGroup.add(cloudVeil);
+            mgShaderUniforms.cloudVeil = cloudVeilMat.uniforms;
+          }
+
+          // 2. Specular Ocean / Waterway Sun-Glint Ripples (onBeforeCompile on waterMat)
+          if (waterMat && typeof waterMat.onBeforeCompile === 'function') {
+            var waterGlintUniforms = {
+              uGlintTime: { value: 4.5 },
+              uGlintFlown: { value: 0.0 },
+              uGlintSunDir: { value: mgSunDirVec.clone() },
+              uGlintNight: { value: 0.0 },
+              uGlintHighContrast: { value: 0.0 }
+            };
+            mgShaderUniforms.waterGlint = waterGlintUniforms;
+            waterMat.customProgramCacheKey = function() { return 'migration-water-sunglint:v1'; };
+            waterMat.onBeforeCompile = function(shader) {
+              if (!shader || typeof shader.vertexShader !== 'string' || typeof shader.fragmentShader !== 'string') return;
+              if (shader.vertexShader.indexOf('#include <worldpos_vertex>') === -1 ||
+                  shader.fragmentShader.indexOf('#include <dithering_fragment>') === -1) return;
+              shader.uniforms.uGlintTime = waterGlintUniforms.uGlintTime;
+              shader.uniforms.uGlintFlown = waterGlintUniforms.uGlintFlown;
+              shader.uniforms.uGlintSunDir = waterGlintUniforms.uGlintSunDir;
+              shader.uniforms.uGlintNight = waterGlintUniforms.uGlintNight;
+              shader.uniforms.uGlintHighContrast = waterGlintUniforms.uGlintHighContrast;
+              shader.vertexShader = shader.vertexShader
+                .replace('#include <common>', '#include <common>\nvarying vec3 vMgWaterWorldPos;')
+                .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvMgWaterWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+              shader.fragmentShader = shader.fragmentShader
+                .replace('#include <common>', [
+                  '#include <common>',
+                  'varying vec3 vMgWaterWorldPos;',
+                  'uniform float uGlintTime;',
+                  'uniform float uGlintFlown;',
+                  'uniform vec3 uGlintSunDir;',
+                  'uniform float uGlintNight;',
+                  'uniform float uGlintHighContrast;'
+                ].join('\n'))
+                .replace('#include <dithering_fragment>', [
+                  'if (uGlintHighContrast < 0.5) {',
+                  '  vec2 wp = vec2(vMgWaterWorldPos.x * 0.55, (vMgWaterWorldPos.z - uGlintFlown) * 0.42);',
+                  '  float w1 = sin(wp.x * 2.1 + wp.y * 1.4 + uGlintTime * 2.2) * cos(wp.y * 2.6 - uGlintTime * 1.6);',
+                  '  float w2 = sin(wp.x * 4.7 - wp.y * 3.3 - uGlintTime * 2.9);',
+                  '  vec3 nPert = normalize(vec3(w1 * 0.14 + w2 * 0.08, 1.0, (w1 - w2) * 0.12));',
+                  '  vec3 viewDirW = normalize(cameraPosition - vMgWaterWorldPos);',
+                  '  float fres = pow(1.0 - max(dot(nPert, viewDirW), 0.0), 3.6);',
+                  '  vec3 sunL = normalize(uGlintSunDir);',
+                  '  vec3 reflL = reflect(-sunL, nPert);',
+                  '  float spec = pow(max(dot(reflL, viewDirW), 0.0), 36.0);',
+                  '  float sparkle = pow(max(0.5 + 0.5 * (w1 * w2), 0.0), 4.0);',
+                  '  vec3 skyRefl = mix(vec3(0.45, 0.78, 0.96), vec3(0.18, 0.30, 0.56), uGlintNight);',
+                  '  vec3 glintCol = mix(vec3(1.0, 0.95, 0.80), vec3(0.75, 0.86, 1.0), uGlintNight);',
+                  '  gl_FragColor.rgb = mix(gl_FragColor.rgb, skyRefl, fres * 0.42);',
+                  '  gl_FragColor.rgb += glintCol * (spec * 0.82 + sparkle * fres * 0.24) * mix(1.0, 0.65, uGlintNight);',
+                  '}',
+                  '#include <dithering_fragment>'
+                ].join('\n'));
+            };
+            waterMat.needsUpdate = true;
+          }
+
+          // 3. Luminous Animated Polar Aurora Curtains & Geomagnetic Dipole Flux Ribbons
+          if (mgHasShader) {
+            for (var ai = 0; ai < 2; ai++) {
+              var aurGeo = new THREE.PlaneGeometry(250 + ai * 40, 56 + ai * 10, 52, 8);
+              var aurPos = aurGeo.attributes.position;
+              for (var avi = 0; avi < aurPos.count; avi++) {
+                var ax = aurPos.getX(avi);
+                var ay = aurPos.getY(avi);
+                var archT = ax / (125 + ai * 20);
+                var curveZ = Math.sin(archT * 2.2 + ai * 1.1) * 26.0 - archT * archT * 38.0;
+                var curveY = ay + (1.0 - archT * archT) * (14.0 + ai * 6.0);
+                aurPos.setXYZ(avi, ax, curveY, curveZ);
+              }
+              aurPos.needsUpdate = true;
+              var aurMat = new THREE.ShaderMaterial({
+                uniforms: {
+                  uTime: { value: 4.5 },
+                  uNight: { value: 0.0 },
+                  uLayer: { value: ai * 1.0 },
+                  uHighContrast: { value: 0.0 }
+                },
+                vertexShader: [
+                  'uniform float uTime;',
+                  'uniform float uLayer;',
+                  'varying vec2 vUv;',
+                  'void main() {',
+                  '  vUv = uv;',
+                  '  vec3 p = position;',
+                  '  float sway = sin(uv.x * 7.5 + uTime * (0.42 + uLayer * 0.14) + uLayer * 2.1) * 5.2;',
+                  '  p.z += sway * uv.y;',
+                  '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uTime;',
+                  'uniform float uNight;',
+                  'uniform float uLayer;',
+                  'uniform float uHighContrast;',
+                  'varying vec2 vUv;',
+                  MG_FBM_GLSL,
+                  'void main() {',
+                  '  if (uHighContrast > 0.5) discard;',
+                  '  float t = uTime * (0.34 + uLayer * 0.09);',
+                  '  float fold = sin(vUv.x * 16.0 + t + mgNoise(vec2(vUv.x * 4.5, t * 0.4)) * 3.2);',
+                  '  float rays = pow(0.5 + 0.5 * sin(vUv.x * 58.0 + fold * 2.2 - t * 1.6), 2.6);',
+                  '  float curtain = mgFbm(vec2(vUv.x * 6.5 - t * 0.22, vUv.y * 1.45 + uLayer * 3.1));',
+                  '  float vertMask = smoothstep(0.0, 0.22, vUv.y) * pow(max(1.0 - vUv.y, 0.0), 1.35);',
+                  '  float edgeMask = smoothstep(0.0, 0.16, vUv.x) * smoothstep(1.0, 0.84, vUv.x);',
+                  '  vec3 lowerCol = mix(vec3(0.16, 0.88, 0.66), vec3(0.22, 0.82, 0.98), uLayer);',
+                  '  vec3 upperCol = mix(vec3(0.62, 0.34, 0.96), vec3(0.90, 0.38, 0.82), uLayer);',
+                  '  vec3 col = mix(lowerCol, upperCol, smoothstep(0.18, 0.86, vUv.y));',
+                  '  float vis = mix(0.18, 0.72, uNight) * (1.0 - uLayer * 0.22);',
+                  '  float alpha = (0.38 + 0.62 * rays) * smoothstep(0.24, 0.82, curtain) * vertMask * edgeMask * vis;',
+                  '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.68));',
+                  '}'
+                ].join('\n'),
+                transparent: true, depthWrite: false, fog: false,
+                side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+              });
+              var aurMesh = new THREE.Mesh(aurGeo, aurMat);
+              aurMesh.position.set(ai === 0 ? -10 : 16, 52 + ai * 14, -205 - ai * 36);
+              aurMesh.name = 'migration-geomagnetic-aurora-' + ai;
+              aurMesh.userData.decorative = true;
+              aurMesh.raycast = migrationNoRaycast;
+              mgAtmoGroup.add(aurMesh);
+              mgShaderUniforms.aurora.push(aurMat.uniforms);
+            }
+
+            // Sweeping geomagnetic dipole field-line flux arcs flanking the corridor
+            var fluxConfigs = [
+              { x: -16, h: 17, z0: -12, z1: -175, phase: 0.0 },
+              { x: 16,  h: 17, z0: -12, z1: -175, phase: 2.1 },
+              { x: 0,   h: 25, z0: -18, z1: -195, phase: 4.2 }
+            ];
+            for (var fi = 0; fi < fluxConfigs.length; fi++) {
+              var fc = fluxConfigs[fi];
+              var fPts = [];
+              for (var fp = 0; fp <= 16; fp++) {
+                var ft = fp / 16;
+                var fz = fc.z0 + (fc.z1 - fc.z0) * ft;
+                var fy = -3.8 + Math.sin(ft * Math.PI) * fc.h;
+                var fx = fc.x * (0.72 + 0.36 * Math.sin(ft * Math.PI));
+                fPts.push(new THREE.Vector3(fx, fy, fz));
+              }
+              var fCurve = new THREE.CatmullRomCurve3(fPts);
+              var fGeo = new THREE.TubeGeometry(fCurve, 44, 0.14, 6, false);
+              var fMat = new THREE.ShaderMaterial({
+                uniforms: {
+                  uTime: { value: 4.5 },
+                  uSeasonDir: { value: 1.0 },
+                  uNight: { value: 0.0 },
+                  uPhase: { value: fc.phase },
+                  uColor: { value: new THREE.Color(0x38bdf8) },
+                  uHighContrast: { value: 0.0 }
+                },
+                vertexShader: [
+                  'varying vec2 vUv;',
+                  'void main() {',
+                  '  vUv = uv;',
+                  '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uTime;',
+                  'uniform float uSeasonDir;',
+                  'uniform float uNight;',
+                  'uniform float uPhase;',
+                  'uniform vec3 uColor;',
+                  'uniform float uHighContrast;',
+                  'varying vec2 vUv;',
+                  'void main() {',
+                  '  if (uHighContrast > 0.5) discard;',
+                  '  float flow = fract(vUv.x * 3.0 - uTime * 0.38 * uSeasonDir + uPhase * 0.2);',
+                  '  float packet = exp(-pow((flow - 0.5) * 6.5, 2.0));',
+                  '  float endFade = smoothstep(0.0, 0.14, vUv.x) * smoothstep(1.0, 0.86, vUv.x);',
+                  '  vec3 col = mix(uColor, vec3(0.75, 0.96, 1.0), packet * 0.65);',
+                  '  float alpha = (0.08 + 0.42 * packet) * endFade * mix(0.45, 0.85, uNight);',
+                  '  gl_FragColor = vec4(col, alpha);',
+                  '}'
+                ].join('\n'),
+                transparent: true, depthWrite: false, fog: false,
+                blending: THREE.AdditiveBlending
+              });
+              var fMesh = new THREE.Mesh(fGeo, fMat);
+              fMesh.name = 'migration-geomagnetic-flux-' + fi;
+              fMesh.userData.decorative = true;
+              fMesh.raycast = migrationNoRaycast;
+              routeOverlay.add(fMesh);
+              mgShaderUniforms.flux.push(fMat.uniforms);
+            }
+
+            // Luminous directional flyway current sheen over routeRibbon
+            var routeFluxMat = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 4.5 },
+                uSeasonDir: { value: 1.0 },
+                uColor: { value: new THREE.Color(0x38bdf8) },
+                uNight: { value: 0.0 },
+                uHighContrast: { value: 0.0 }
+              },
+              vertexShader: [
+                'varying vec2 vUv;',
+                'void main() {',
+                '  vUv = uv;',
+                '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uTime;',
+                'uniform float uSeasonDir;',
+                'uniform vec3 uColor;',
+                'uniform float uNight;',
+                'uniform float uHighContrast;',
+                'varying vec2 vUv;',
+                'void main() {',
+                '  if (uHighContrast > 0.5) discard;',
+                '  float edge = 1.0 - abs(vUv.x - 0.5) * 2.0;',
+                '  float chev = fract(vUv.y * 28.0 - abs(vUv.x - 0.5) * 1.4 - uTime * 1.15 * uSeasonDir);',
+                '  float pulse = smoothstep(0.72, 0.96, chev) * smoothstep(1.0, 0.96, chev);',
+                '  float rail = exp(-pow((abs(vUv.x - 0.5) - 0.42) * 18.0, 2.0));',
+                '  float fade = smoothstep(0.0, 0.08, vUv.y) * smoothstep(1.0, 0.82, vUv.y);',
+                '  vec3 col = mix(uColor, vec3(0.92, 0.99, 1.0), pulse * 0.55);',
+                '  float alpha = (pulse * edge * 0.46 + rail * 0.24) * fade * mix(0.65, 1.0, uNight);',
+                '  gl_FragColor = vec4(col, alpha);',
+                '}'
+              ].join('\n'),
+              transparent: true, depthWrite: false, fog: false,
+              blending: THREE.AdditiveBlending
+            });
+            var routeFlux = new THREE.Mesh(new THREE.PlaneGeometry(5.0, 310), routeFluxMat);
+            routeFlux.rotation.x = -Math.PI / 2;
+            routeFlux.position.set(0, -5.84, -126);
+            routeFlux.name = 'migration-route-flux-sheen';
+            routeFlux.userData.decorative = true;
+            routeFlux.raycast = migrationNoRaycast;
+            routeOverlay.add(routeFlux);
+            mgShaderUniforms.routeFlux = routeFluxMat.uniforms;
+          }
+
+          var beaconMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.88 });
+          var beaconHaloMat = mgHasShader ? new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: { value: 4.5 },
+              uColor: { value: new THREE.Color(0x38bdf8) },
+              uNight: { value: 0.0 },
+              uHighContrast: { value: 0.0 }
+            },
+            vertexShader: [
+              'varying vec2 vUv;',
+              'varying vec3 vNormalView;',
+              'varying vec3 vViewPos;',
+              'void main() {',
+              '  vUv = uv;',
+              '  vNormalView = normalize(normalMatrix * normal);',
+              '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+              '  vViewPos = -mv.xyz;',
+              '  gl_Position = projectionMatrix * mv;',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime;',
+              'uniform vec3 uColor;',
+              'uniform float uNight;',
+              'uniform float uHighContrast;',
+              'varying vec2 vUv;',
+              'varying vec3 vNormalView;',
+              'varying vec3 vViewPos;',
+              'void main() {',
+              '  if (uHighContrast > 0.5) discard;',
+              '  float fres = pow(1.0 - abs(dot(normalize(vNormalView), normalize(vViewPos))), 1.5);',
+              '  float wave = 0.65 + 0.35 * sin(vUv.x * 25.1327 - uTime * 3.2);',
+              '  float pulse = 0.72 + 0.28 * sin(uTime * 2.4);',
+              '  vec3 col = mix(uColor, vec3(0.92, 0.99, 1.0), 0.35 * wave);',
+              '  float alpha = (0.34 + 0.42 * fres) * wave * pulse * mix(0.72, 1.0, uNight);',
+              '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.82));',
+              '}'
+            ].join('\n'),
+            transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending
+          }) : new THREE.MeshBasicMaterial({
+            color: 0x38bdf8, transparent: true, opacity: 0.34,
+            depthWrite: false, blending: THREE.AdditiveBlending
+          });
+          if (mgHasShader) mgShaderUniforms.beaconHalo = beaconHaloMat.uniforms;
+          engine.updateCinemaShaders = function(liveNow, reducedNow) {
+            var hcNow = migrationIsHighContrast();
+            var studyNow = !!(liveNow && liveNow.flightCamera === 'study');
+            var nightVal = (liveNow && liveNow.isDark) ? 1.0 : 0.0;
+            var tVal = reducedNow ? 4.5 : engine.time;
+            var isSpring = !!(liveNow && liveNow.flightSeason === 'spring');
+            var seasonHex = isSpring ? 0x4ade80 : 0x38bdf8;
+            var seasonDir = isSpring ? 1.0 : -1.0;
+            mgAtmoGroup.visible = !studyNow && !hcNow;
+            if (mgShaderUniforms.horizon) {
+              mgShaderUniforms.horizon.uTime.value = tVal;
+              mgShaderUniforms.horizon.uNight.value = nightVal;
+              mgShaderUniforms.horizon.uHighContrast.value = hcNow ? 1.0 : 0.0;
+              mgShaderUniforms.horizon.uHorizonColor.value.setHex(nightVal > 0.5 ? 0x3b82f6 : 0x93c5fd);
+              mgShaderUniforms.horizon.uZenithColor.value.setHex(nightVal > 0.5 ? 0x818cf8 : 0xfef3c7);
+              mgShaderUniforms.horizon.uSunColor.value.setHex(nightVal > 0.5 ? 0xbcd0ff : 0xfff1c9);
+            }
+            if (mgShaderUniforms.cloudVeil) {
+              mgShaderUniforms.cloudVeil.uTime.value = tVal;
+              mgShaderUniforms.cloudVeil.uFlown.value = reducedNow ? 0.0 : (engine.flown || 0);
+              mgShaderUniforms.cloudVeil.uNight.value = nightVal;
+              mgShaderUniforms.cloudVeil.uHighContrast.value = hcNow ? 1.0 : 0.0;
+            }
+            if (mgShaderUniforms.waterGlint) {
+              mgShaderUniforms.waterGlint.uGlintTime.value = tVal;
+              mgShaderUniforms.waterGlint.uGlintFlown.value = reducedNow ? 0.0 : (engine.flown || 0);
+              mgShaderUniforms.waterGlint.uGlintNight.value = nightVal;
+              mgShaderUniforms.waterGlint.uGlintHighContrast.value = hcNow ? 1.0 : 0.0;
+            }
+            for (var ai2 = 0; ai2 < mgShaderUniforms.aurora.length; ai2++) {
+              mgShaderUniforms.aurora[ai2].uTime.value = tVal;
+              mgShaderUniforms.aurora[ai2].uNight.value = nightVal;
+              mgShaderUniforms.aurora[ai2].uHighContrast.value = hcNow ? 1.0 : 0.0;
+            }
+            for (var fi2 = 0; fi2 < mgShaderUniforms.flux.length; fi2++) {
+              mgShaderUniforms.flux[fi2].uTime.value = tVal;
+              mgShaderUniforms.flux[fi2].uSeasonDir.value = seasonDir;
+              mgShaderUniforms.flux[fi2].uNight.value = nightVal;
+              mgShaderUniforms.flux[fi2].uColor.value.setHex(seasonHex);
+              mgShaderUniforms.flux[fi2].uHighContrast.value = hcNow ? 1.0 : 0.0;
+            }
+            if (mgShaderUniforms.routeFlux) {
+              mgShaderUniforms.routeFlux.uTime.value = tVal;
+              mgShaderUniforms.routeFlux.uSeasonDir.value = seasonDir;
+              mgShaderUniforms.routeFlux.uNight.value = nightVal;
+              mgShaderUniforms.routeFlux.uColor.value.setHex(seasonHex);
+              mgShaderUniforms.routeFlux.uHighContrast.value = hcNow ? 1.0 : 0.0;
+            }
+            if (mgShaderUniforms.beaconHalo) {
+              mgShaderUniforms.beaconHalo.uTime.value = tVal;
+              mgShaderUniforms.beaconHalo.uNight.value = nightVal;
+              mgShaderUniforms.beaconHalo.uColor.value.setHex(seasonHex);
+              mgShaderUniforms.beaconHalo.uHighContrast.value = hcNow ? 1.0 : 0.0;
+            }
+          };
+          var beaconGeo = new THREE.TorusGeometry(2.1, 0.12, 8, 32);
+          var beaconHaloGeo = new THREE.TorusGeometry(2.65, 0.06, 8, 32);
           for (var bi = 0; bi < 10; bi++) {
-            var beacon = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.12, 8, 32), beaconMat);
+            var beacon = new THREE.Mesh(beaconGeo, beaconMat);
             beacon.rotation.x = Math.PI / 2;
             beacon.position.set(0, -5.35, -20 - bi * 18);
             beacon.userData.baseZ = beacon.position.z;
             beacon.userData.drift = 1;
             beacon.userData.onGround = true;
+            var beaconHalo = new THREE.Mesh(beaconHaloGeo, beaconHaloMat);
+            beacon.add(beaconHalo);
             routeOverlay.add(beacon);
             engine.movers.push(beacon);
           }
@@ -6096,7 +6599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           streakGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(streakData), 3));
           var streaks = new THREE.LineSegments(
             streakGeometry,
-            new THREE.LineBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.34 })
+            new THREE.LineBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.44, depthWrite: false, blending: THREE.AdditiveBlending })
           );
           scene.add(streaks);
           engine.streaks = streaks;
@@ -6677,6 +7180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             engineNow.speciesId, studyBirdIndex, engineNow.camera, live.isDark, engineNow.viewHeight,
             engineNow.time * engineNow.flyers[studyBirdIndex].userData.flapRate +
               engineNow.flyers[studyBirdIndex].userData.phase + engineNow.wingStepPhase, live.flightStudyCyclePosition, followedTipSide, engineNow.viewWidth);
+          if (engineNow.updateCinemaShaders) engineNow.updateCinemaShaders(live, reducedMotionRef.current);
           engineNow.renderer.render(engineNow.scene, engineNow.camera);
           // Publish only after the selected recorded controls reached a frame.
           var inspectionOwner = _flightChallengeReflectionOwnerRef.current;
@@ -10187,32 +10691,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var simSpeed = lv.simSpeed;
             var leaderRotations = lv.vLeaderRotations;
             var isDark = lv.isDark;
-            // Sky gradient
+            // Sky gradient + sunlit atmospheric horizon scatter
             var skyGrad = c.createLinearGradient(0, 0, 0, H);
             if (isDark) {
-              skyGrad.addColorStop(0, '#0f172a');
-              skyGrad.addColorStop(0.5, '#1e293b');
-              skyGrad.addColorStop(1, '#334155');
+              skyGrad.addColorStop(0, '#091428');
+              skyGrad.addColorStop(0.52, '#162744');
+              skyGrad.addColorStop(1, '#263a5c');
             } else {
-              skyGrad.addColorStop(0, '#bae6fd');
-              skyGrad.addColorStop(0.5, '#e0f2fe');
-              skyGrad.addColorStop(1, '#f0f9ff');
+              skyGrad.addColorStop(0, '#9bd9fb');
+              skyGrad.addColorStop(0.54, '#d9f0fe');
+              skyGrad.addColorStop(1, '#f8fcff');
             }
             c.fillStyle = skyGrad;
             c.fillRect(0, 0, W, H);
 
-            // Clouds
-            c.globalAlpha = isDark ? 0.1 : 0.3;
-            c.fillStyle = isDark ? '#475569' : '#ffffff';
+            // Soft solar / lunar atmospheric halo in upper sky
+            var haloG = c.createRadialGradient(W * 0.82, H * 0.18, 4, W * 0.82, H * 0.18, W * 0.28);
+            haloG.addColorStop(0, isDark ? 'rgba(186,230,253,0.18)' : 'rgba(255,250,224,0.68)');
+            haloG.addColorStop(0.45, isDark ? 'rgba(56,189,248,0.06)' : 'rgba(254,243,199,0.22)');
+            haloG.addColorStop(1, 'rgba(0,0,0,0)');
+            c.fillStyle = haloG;
+            c.fillRect(0, 0, W, H);
+
+            // Clouds (lit crown + soft underside depth)
             var cloudOff = (time * 8) % (W + 200);
             for (var ci = 0; ci < 4; ci++) {
               var cx2 = ((ci * 180 + cloudOff) % (W + 200)) - 80;
               var cy2 = 30 + ci * 50 + Math.sin(ci * 2.1) * 20;
+              c.globalAlpha = isDark ? 0.14 : 0.42;
+              c.fillStyle = isDark ? '#64748b' : '#ffffff';
               c.beginPath();
               c.ellipse(cx2, cy2, 60 + ci * 10, 18 + ci * 3, 0, 0, Math.PI * 2);
               c.fill();
               c.beginPath();
               c.ellipse(cx2 + 30, cy2 - 8, 40, 14, 0, 0, Math.PI * 2);
+              c.fill();
+              c.globalAlpha = isDark ? 0.08 : 0.14;
+              c.fillStyle = isDark ? '#0f172a' : '#94a3b8';
+              c.beginPath();
+              c.ellipse(cx2 + 6, cy2 + 7, 52 + ci * 8, 8, 0, 0, Math.PI * 2);
               c.fill();
             }
             c.globalAlpha = 1;
@@ -10269,21 +10786,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               b.energy = Math.min(100, b.energy + 0.003 * simSpeed);
             }
 
-            // Vortex trail particles behind each bird's wingtips — additive so the wingtip
-            // vortices glow (the upwash that following birds draft on)
+            // Vortex trail ribbons & glowing particles behind each bird's wingtips — additive
+            // so the wingtip vortices glow (the upwash that following birds draft on)
             c.save();
             c.globalCompositeOperation = 'lighter';
-            c.globalAlpha = 0.22;
             for (var vbi = 0; vbi < birds.length; vbi++) {
               var vb = birds[vbi];
-              var vortCol = isDark ? 'rgba(125,211,252,0.3)' : 'rgba(56,189,248,0.15)';
+              c.globalAlpha = isDark ? 0.32 : 0.20;
+              c.strokeStyle = isDark ? 'rgba(125,211,252,0.45)' : 'rgba(14,165,233,0.30)';
+              c.lineWidth = 1.6;
+              for (var side = -1; side <= 1; side += 2) {
+                c.beginPath();
+                for (var seg = 0; seg <= 6; seg++) {
+                  var sx = vb.x - 10 - seg * 7.5;
+                  var sy = vb.y + side * (10 + seg * 0.9) + Math.sin(time * 4.2 + seg * 0.85 + vbi) * 3.2;
+                  if (seg === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
+                }
+                c.stroke();
+              }
+              c.globalAlpha = 0.28;
+              var vortCol = isDark ? 'rgba(186,230,253,0.42)' : 'rgba(56,189,248,0.24)';
               for (var trail = 0; trail < 3; trail++) {
                 var tx = vb.x - 15 - trail * 8 + Math.sin(time * 3 + trail + vbi) * 3;
                 var ty1 = vb.y - 10 + Math.cos(time * 4 + trail) * 4;
                 var ty2 = vb.y + 10 + Math.cos(time * 4 + trail + 1) * 4;
                 c.fillStyle = vortCol;
-                c.beginPath(); c.arc(tx, ty1, 2, 0, Math.PI * 2); c.fill();
-                c.beginPath(); c.arc(tx, ty2, 2, 0, Math.PI * 2); c.fill();
+                c.beginPath(); c.arc(tx, ty1, 2.2, 0, Math.PI * 2); c.fill();
+                c.beginPath(); c.arc(tx, ty2, 2.2, 0, Math.PI * 2); c.fill();
               }
             }
             c.restore();
@@ -11746,18 +12275,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             }
             c.clearRect(0, 0, W, H);
 
-            // ── Ocean ──
+            // ── Ocean with bathymetric depth & specular solar sheen ──
             var oceanGrad = c.createLinearGradient(0, 0, 0, H);
             if (isDark) {
-              oceanGrad.addColorStop(0, '#082f49');
-              oceanGrad.addColorStop(0.55, '#0c4a6e');
-              oceanGrad.addColorStop(1, '#075985');
+              oceanGrad.addColorStop(0, '#051f36');
+              oceanGrad.addColorStop(0.52, '#0b3d60');
+              oceanGrad.addColorStop(1, '#07527c');
             } else {
-              oceanGrad.addColorStop(0, '#c7e9fb');
-              oceanGrad.addColorStop(0.55, '#a5daf6');
-              oceanGrad.addColorStop(1, '#8ccdf0');
+              oceanGrad.addColorStop(0, '#b9e3fa');
+              oceanGrad.addColorStop(0.52, '#99d5f4');
+              oceanGrad.addColorStop(1, '#7ec5ec');
             }
             c.fillStyle = oceanGrad;
+            c.fillRect(0, 0, W, H);
+            // Specular oceanic sunlight glint across the mid-latitudes
+            var specGrad = c.createRadialGradient(W * 0.72, H * 0.62, 12, W * 0.72, H * 0.62, W * 0.45);
+            specGrad.addColorStop(0, isDark ? 'rgba(56,189,248,0.16)' : 'rgba(255,255,255,0.34)');
+            specGrad.addColorStop(0.6, isDark ? 'rgba(14,165,233,0.05)' : 'rgba(224,242,254,0.10)');
+            specGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            c.fillStyle = specGrad;
             c.fillRect(0, 0, W, H);
 
             c.save();
@@ -12028,7 +12564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               c.shadowBlur = 0;
               c.restore();
 
-              // Direction chevrons drifting south along the corridor
+              // Direction chevrons & luminous traveling flock pulses along the corridor
               var CHEV = 8;
               var flow = (timeRef.current * 0.05) % (1 / CHEV);
               c.save();
@@ -12049,6 +12585,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 c.lineTo(-chs, chs * 0.8);
                 c.stroke();
                 c.restore();
+              }
+              // Luminous traveling flock pulse beacons on the active flyway ribbon
+              if (isActive) {
+                for (var fp = 0; fp < 3; fp++) {
+                  var fu = (timeRef.current * 0.11 + fp / 3) % 1;
+                  var fpt = flywayPoint(pts, fu);
+                  var fHalo = c.createRadialGradient(fpt.x, fpt.y, 0.5, fpt.x, fpt.y, 12);
+                  fHalo.addColorStop(0, isDark ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.95)');
+                  fHalo.addColorStop(0.35, migrAlpha(col.stroke, 0.65));
+                  fHalo.addColorStop(1, migrAlpha(col.stroke, 0));
+                  c.fillStyle = fHalo;
+                  c.beginPath();
+                  c.arc(fpt.x, fpt.y, 12, 0, Math.PI * 2);
+                  c.fill();
+                }
               }
               c.restore();
 
@@ -12664,6 +13215,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             t('stem.migration.world_map_list_note', 'The buttons below the map carry the same information as text.'),
           style: { width: '100%', height: 'auto', display: 'block', background: WP.ocean }
         },
+          h('defs', null,
+            h('radialGradient', { id: 'mgWorldOceanGlow', cx: '34%', cy: '44%', r: '70%' },
+              h('stop', { offset: '0%', stopColor: isDark ? '#124666' : '#eff8ff' }),
+              h('stop', { offset: '58%', stopColor: WP.ocean }),
+              h('stop', { offset: '100%', stopColor: isDark ? '#061928' : '#bfdbfe' })),
+            h('linearGradient', { id: 'mgWorldLandGrad', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: isDark ? '#256952' : '#c6ebd5' }),
+              h('stop', { offset: '50%', stopColor: WP.land }),
+              h('stop', { offset: '100%', stopColor: isDark ? '#1b4f3a' : '#a9dec0' })),
+            h('linearGradient', { id: 'mgTerminator', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+              h('stop', { offset: '0%', stopColor: isDark ? 'rgba(2,6,23,0.44)' : 'rgba(15,23,42,0.11)' }),
+              h('stop', { offset: '22%', stopColor: isDark ? 'rgba(56,189,248,0.08)' : 'rgba(251,191,36,0.06)' }),
+              h('stop', { offset: '42%', stopColor: 'rgba(0,0,0,0)' }),
+              h('stop', { offset: '80%', stopColor: 'rgba(0,0,0,0)' }),
+              h('stop', { offset: '100%', stopColor: isDark ? 'rgba(2,6,23,0.36)' : 'rgba(15,23,42,0.09)' }))),
+          // Bathymetric ocean specular wash
+          h('rect', { x: 0, y: 0, width: MW.w, height: MW.h, fill: 'url(#mgWorldOceanGlow)' }),
           // Latitude bands, because a migration map is really about latitude.
           [80, 60, 40, 20, 0, -20, -40, -60].map(function(la) {
             var y = MW.pt(0, la)[1];
@@ -12676,7 +13244,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var x = MW.pt(lo, 0)[0];
             return h('line', { key: 'lo' + lo, x1: x, y1: 0, x2: x, y2: MW.h, stroke: WP.grat, strokeWidth: 0.8 });
           }),
-          h('path', { d: landD, fill: WP.land, fillRule: 'evenodd', stroke: WP.landEdge, strokeWidth: 0.6 }),
+          // Subtle prevailing westerlies / trade-wind vector chevrons over the ocean belts
+          h('g', { opacity: isDark ? 0.24 : 0.20, 'aria-hidden': 'true' },
+            [45, -45].map(function(latW) {
+              var wy = MW.pt(0, latW)[1];
+              return [-150, -30, 90].map(function(lonW) {
+                var wx = MW.pt(lonW, latW)[0];
+                return h('path', { key: 'w' + latW + '_' + lonW, d: 'M ' + (wx - 9) + ' ' + wy + ' L ' + (wx + 7) + ' ' + wy + ' M ' + (wx + 3) + ' ' + (wy - 2.6) + ' L ' + (wx + 7) + ' ' + wy + ' L ' + (wx + 3) + ' ' + (wy + 2.6), fill: 'none', stroke: isDark ? '#7dd3fc' : '#0369a1', strokeWidth: 0.9, strokeLinecap: 'round' });
+              });
+            })),
+          h('path', { d: landD, fill: 'url(#mgWorldLandGrad)', fillRule: 'evenodd', stroke: WP.landEdge, strokeWidth: 0.7 }),
+          // Soft day/night solar terminator twilight band
+          h('rect', { x: 0, y: 0, width: MW.w, height: MW.h, fill: 'url(#mgTerminator)', 'aria-hidden': 'true' }),
 
           // Flyways. Everything stays visible when one is picked; the rest fade
           // rather than vanish, so a student can still see where the chosen one
@@ -12684,21 +13263,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           WORLD_FLYWAYS.map(function(f) {
             var on = !selFlyway || selFlyway === f.id;
             var muted = !!migrant;
+            var fPath = MW.path(f.spine, false);
+            var fCol = mgColor(f);
             return h('g', { key: f.id, opacity: muted ? 0.4 : (on ? 1 : 0.35) },
-              h('path', { d: MW.path(f.spine, false), fill: 'none', stroke: mgColor(f), strokeWidth: selFlyway === f.id ? 3 : 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-              selFlyway === f.id && arrowAt(f.spine, 0.55, mgColor(f), 5.5)
+              h('path', { d: fPath, fill: 'none', stroke: fCol, strokeWidth: selFlyway === f.id ? 8.5 : 4.2, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: selFlyway === f.id ? 0.26 : 0.13 }),
+              h('path', { d: fPath, fill: 'none', stroke: fCol, strokeWidth: selFlyway === f.id ? 3 : 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              selFlyway === f.id && arrowAt(f.spine, 0.55, fCol, 5.5)
             );
           }),
 
           // The selected migrant's route, drawn over everything.
           migrant && h('g', null,
+            h('path', { d: MW.path(migrant.route, false), fill: 'none', stroke: mgColor(migrant), strokeWidth: 7.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.22 }),
             h('path', { d: MW.path(migrant.route, false), fill: 'none', stroke: mgColor(migrant), strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round', strokeDasharray: '7 4' }),
             arrowAt(migrant.route, 0.5, mgColor(migrant), 6.5),
             (function() {
               var a = MW.pt(migrant.route[0][0], migrant.route[0][1]);
               var b = MW.pt(migrant.route[migrant.route.length - 1][0], migrant.route[migrant.route.length - 1][1]);
               return [
+                h('circle', { key: 'stGlow', cx: a[0], cy: a[1], r: 8, fill: mgColor(migrant), opacity: 0.20 }),
                 h('circle', { key: 'st', cx: a[0], cy: a[1], r: 4, fill: 'none', stroke: mgColor(migrant), strokeWidth: 2 }),
+                h('circle', { key: 'enGlow', cx: b[0], cy: b[1], r: 8.5, fill: mgColor(migrant), opacity: 0.24 }),
                 h('circle', { key: 'en', cx: b[0], cy: b[1], r: 4.5, fill: mgColor(migrant) })
               ];
             })()
@@ -13629,12 +14214,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var t2 = navTimeRef.current;
             c.clearRect(0, 0, W, H);
 
-            // Night sky gradient
+            // Night sky gradient + subtle polar aurora curtain
             var skyGrad = c.createLinearGradient(0, 0, 0, H);
             skyGrad.addColorStop(0, '#020617');
-            skyGrad.addColorStop(0.6, '#0f172a');
-            skyGrad.addColorStop(1, '#1e293b');
+            skyGrad.addColorStop(0.55, '#0b1830');
+            skyGrad.addColorStop(1, '#182b46');
             c.fillStyle = skyGrad;
+            c.fillRect(0, 0, W, H);
+            var aurGrad = c.createRadialGradient(W * 0.74, H * 0.16, 10, W * 0.74, H * 0.22, W * 0.42);
+            aurGrad.addColorStop(0, 'rgba(45,212,191,0.16)');
+            aurGrad.addColorStop(0.45, 'rgba(99,102,241,0.09)');
+            aurGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            c.fillStyle = aurGrad;
             c.fillRect(0, 0, W, H);
 
             // Stars with twinkling
@@ -13650,35 +14241,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.globalAlpha = 1;
 
             // ── Magnetic field lines ──
-            // These were drawn at 8% alpha, which is invisible on a night sky:
-            // one of the three navigation cues the panel is about simply was not
-            // on screen. Now they read, and they carry direction arrows.
+            // Luminous dual-pass geomagnetic flux ribbons + glowing traveling dipole pulses.
             for (var fli = 0; fli < fieldLines.length; fli++) {
               var fl2 = fieldLines[fli];
-              c.beginPath();
-              // Control points shared with the pulse maths below, so the moving
-              // dot stays exactly on the curve it is meant to be travelling.
               var fc1 = fl2.startY - 62 * fl2.curve;
               var fc2 = fl2.endY + 48 * fl2.curve;
+              c.beginPath();
               c.moveTo(0, fl2.startY);
-              c.bezierCurveTo(
-                W * 0.3, fc1,
-                W * 0.7, fc2,
-                W, fl2.endY
-              );
-              c.strokeStyle = 'rgba(96,165,250,0.30)';
-              c.lineWidth = 1;
+              c.bezierCurveTo(W * 0.3, fc1, W * 0.7, fc2, W, fl2.endY);
+              c.strokeStyle = 'rgba(56,189,248,0.12)';
+              c.lineWidth = 4.2;
               c.stroke();
-              // A pulse travelling along the line shows the field's direction
+              c.strokeStyle = 'rgba(125,211,252,0.36)';
+              c.lineWidth = 1.1;
+              c.stroke();
+              // A glowing pulse travelling along the line shows the field's direction
               var fu = ((t2 * 0.16) + fli * 0.13) % 1;
               var fx = fu * W;
               var fy = fl2.startY * Math.pow(1 - fu, 3)
                 + fc1 * 3 * fu * Math.pow(1 - fu, 2)
                 + fc2 * 3 * fu * fu * (1 - fu)
                 + fl2.endY * fu * fu * fu;
+              var fpGlow = c.createRadialGradient(fx, fy, 0.5, fx, fy, 7);
+              fpGlow.addColorStop(0, 'rgba(224,242,254,0.95)');
+              fpGlow.addColorStop(0.45, 'rgba(56,189,248,0.45)');
+              fpGlow.addColorStop(1, 'rgba(56,189,248,0)');
+              c.fillStyle = fpGlow;
               c.beginPath();
-              c.arc(fx, fy, 1.7, 0, Math.PI * 2);
-              c.fillStyle = 'rgba(147,197,253,0.85)';
+              c.arc(fx, fy, 7, 0, Math.PI * 2);
               c.fill();
             }
 

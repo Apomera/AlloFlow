@@ -282,14 +282,35 @@ for (let left = 0; left < prompts.length; left += 1) {
 }
 requireCondition(nearDuplicatePairs.length === 0, 'prompt-originality', 'Exact or conservative high-similarity pilot prompts were detected.', { asset: 'pack' });
 
+const diagrams = Array.isArray(library.diagrams) ? library.diagrams : [];
+const diagramPlacements = Array.isArray(library.diagramPlacements) ? library.diagramPlacements : [];
+const diagramIds = new Set(diagrams.map((diagram) => diagram.id));
+const sectionIdSet = new Set(sections.map((section) => section.id));
 requireCondition(
   chapters.length === 8 && sections.length === 24 && checks.length === 24 &&
-    Array.isArray(library.flashcards) && library.flashcards.length === 8 &&
+    Array.isArray(library.flashcards) && library.flashcards.length === 24 &&
     Array.isArray(library.memoryAids) && library.memoryAids.length === 8 &&
+    diagrams.length === 8 && diagramPlacements.length === 8 &&
     library.summary?.chapters === 8 && library.summary?.sections === 24 && library.summary?.knowledgeChecks === 24 &&
+    library.summary?.flashcards === 24 && library.summary?.diagrams === 8 && library.summary?.diagramPlacements === 8 &&
     library.summary?.richLessonPrototypes === 8,
   'library-inventory', 'The native AP Biology library inventory does not match its eight-unit structured-lesson declaration.', { asset: 'learning-library' }
 );
+for (const diagram of diagrams) {
+  requireCondition(
+    diagram.spec?.nodes?.length === 4 && diagram.spec?.edges?.length === 3 &&
+      diagram.accessibility?.textEquivalent?.length === 4 && diagram.accessibility?.fallbackMode === 'ordered-text-equivalent' &&
+      diagram.unscored === true && diagram.officialItem === false && diagram.releaseEligible === false,
+    'library-content-structure', 'Each optional Biology reasoning-flow diagram must provide 4 nodes, 3 edges, an ordered text equivalent, and unscored release-blocked boundaries.', { asset: 'learning-library', recordId: diagram.id }
+  );
+}
+for (const placement of diagramPlacements) {
+  requireCondition(
+    diagramIds.has(placement.diagramId) && sectionIdSet.has(placement.sectionId) &&
+      placement.fallbackMode === 'diagram-text-equivalent' && placement.requiredForComprehension === false && placement.releaseEligible === false,
+    'library-content-structure', 'Each Biology diagram placement must resolve to a declared diagram and lesson section without requiring visuals for comprehension.', { asset: 'learning-library', recordId: placement.id }
+  );
+}
 requireCondition(
   chapters.every((chapter, index) => chapter.id === `ap-bio-ch-${String(index + 1).padStart(2, '0')}` &&
     expectedUnits.includes(chapter.domainId) && chapter.sections?.length === 3 && chapter.knowledgeChecks?.length === 3 &&

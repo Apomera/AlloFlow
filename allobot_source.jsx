@@ -1250,21 +1250,25 @@ const buildStudentEventTip = (latest, topic, t) => {
   const type = typeof latest?.type === 'string' ? latest.type : '';
   const data = latest?.data;
   const topicName = alloBotTipText(topic || latest?.topic || data?.topic || latest?.title);
-  const questions = alloBotTipList(data?.questions || (Array.isArray(data) && type === 'faq' ? data : []));
+  const questions = alloBotTipList(
+    type === 'quiz'
+      ? [...alloBotTipList(data?.questions || (Array.isArray(data) ? data : [])), ...alloBotTipList(data?.reflections)]
+      : (data?.questions || (Array.isArray(data) && type === 'faq' ? data : []))
+  );
   const glossaryTerms = alloBotTipList(Array.isArray(data) ? data : data?.terms);
   const firstTerm = alloBotTipText(glossaryTerms[0]?.term || glossaryTerms[0]?.word || glossaryTerms[0]);
   const level = alloBotTipText(data?.gradeLevel || data?.level, 50);
   const concepts = alloBotTipList(data?.keyConcepts || data?.concepts);
-  const frames = alloBotTipList(data?.frames || (Array.isArray(data) ? data : []));
-  const sections = alloBotTipList(data?.sections || data?.outline);
+  const frames = alloBotTipList(data?.frames || ((type === 'scaffolds' || type === 'sentence-frames') ? data?.items : null) || (Array.isArray(data) ? data : []));
+  const sections = alloBotTipList(data?.sections || data?.branches || data?.outline);
   const activities = alloBotTipList(data?.activities || (Array.isArray(data) ? data : []));
   const categories = alloBotTipList(data?.categories);
   const items = alloBotTipList(data?.items);
   const problems = alloBotTipList(data?.problems || data?.equations || (Array.isArray(data) ? data : []));
-  const events = alloBotTipList(data?.events || (Array.isArray(data) ? data : []));
-  const personaName = alloBotTipText(data?.name || data?.character?.name, 60);
+  const events = alloBotTipList(data?.events || (type === 'timeline' ? data?.items : null) || (Array.isArray(data) ? data : []));
+  const personaName = alloBotTipText(data?.name || data?.character?.name || (Array.isArray(data) ? data[0]?.name : null), 60);
   const documents = alloBotTipList(data?.documents || data?.sources);
-  const noteSections = alloBotTipList(data?.sections || data?.notes || data?.templates);
+  const noteSections = alloBotTipList(data?.sections || data?.entries || data?.cues || data?.notes || data?.templates);
   const words = alloBotTipList(data?.words || data?.terms || (Array.isArray(data) && type === 'word-sounds' ? data : []));
   const steps = alloBotTipList(data?.steps || data?.directions || data?.instructions);
   const readingItems = alloBotTipList(data?.books || data?.items || data?.pages || data?.chapters);
@@ -1288,7 +1292,7 @@ const buildStudentEventTip = (latest, topic, t) => {
   if (type === 'faq' && questions.length) return localized('bot_events.student_faq_ready_count', { count: questions.length }, 'bot_events.student_faq_ready');
   if (type === 'outline' && sections.length) return localized('bot_events.student_outline_ready_count', { count: sections.length }, 'bot_events.student_outline_ready');
   if (type === 'brainstorm' && activities.length) return localized('bot_events.student_brainstorm_ready_count', { count: activities.length }, 'bot_events.student_brainstorm_ready');
-  if (type === 'concept-sort' && (categories.length || items.length)) return localized('bot_events.student_concept_sort_ready_counts', { itemCount: items.length, categoryCount: categories.length }, 'bot_events.student_concept_sort_ready');
+  if (type === 'concept-sort' && categories.length && items.length) return localized('bot_events.student_concept_sort_ready_counts', { itemCount: items.length, categoryCount: categories.length }, 'bot_events.student_concept_sort_ready');
   if (type === 'math' && problems.length) return localized('bot_events.student_math_ready_count', { count: problems.length }, 'bot_events.student_math_ready');
   if (type === 'persona' && personaName) return localized('bot_events.student_persona_ready_name', { name: personaName }, 'bot_events.student_persona_ready');
   if (type === 'timeline' && events.length) return localized('bot_events.student_timeline_ready_count', { count: events.length }, 'bot_events.student_timeline_ready');
@@ -1331,11 +1335,20 @@ const buildStudentEventTip = (latest, topic, t) => {
 const buildEducatorEventTip = (latest, topic, t) => {
   const type = typeof latest?.type === 'string' ? latest.type : '';
   const data = latest?.data;
-  const questions = alloBotTipList(data?.questions || (Array.isArray(data) && type === 'quiz' ? data : []));
+  const quizBaseQuestions = alloBotTipList(data?.questions || (Array.isArray(data) && type === 'quiz' ? data : []));
+  const quizReflections = type === 'quiz' ? alloBotTipList(data?.reflections) : [];
+  const questions = type === 'quiz' ? [...quizBaseQuestions, ...quizReflections] : quizBaseQuestions;
   const terms = alloBotTipList(Array.isArray(data) && type === 'glossary' ? data : data?.terms);
-  const higherOrderQuestionCount = questions.filter((question) => {
+  const higherOrderQuestionCount = questions.filter((question, idx) => {
+    if (type === 'quiz' && idx >= quizBaseQuestions.length) return true;
+    if (question && typeof question === 'object') {
+      const dokNum = Number(String(question.dok ?? question.dokLevel ?? '').replace(/[^\d]/g, ''));
+      if (Number.isFinite(dokNum) && dokNum >= 2) return true;
+      if (/analy|evaluat|creat|synthes|apply/i.test(String(question.bloom || question.blooms || question.cognitiveLevel || ''))) return true;
+      if (String(question.type || '').toLowerCase() === 'reflection') return true;
+    }
     const prompt = alloBotTipText(question?.question || question?.text || question, 300).toLowerCase();
-    return ['analyze', 'evaluate', 'compare', 'contrast', 'justify', 'predict', 'infer', 'synthesize'].some(word => prompt.includes(word));
+    return /\b(?:analyz|evaluat|compar|contrast|justif|predict|infer|synthes|explain\s+why|explain\s+how|support\s+your|evidence|conclud|defend|critique)/i.test(prompt);
   }).length;
   const complexTermCount = terms.filter((term) => {
     const label = alloBotTipText(term?.term || term?.word || term, 100);
@@ -1344,17 +1357,17 @@ const buildEducatorEventTip = (latest, topic, t) => {
   const concepts = alloBotTipList(data?.keyConcepts || data?.concepts);
   const vocabulary = alloBotTipList(data?.vocabulary || data?.tier2Words);
   const documents = alloBotTipList(data?.documents || data?.sources);
-  const sections = alloBotTipList(data?.sections || data?.outline || data?.notes || data?.templates);
+  const sections = alloBotTipList(data?.sections || data?.branches || data?.entries || data?.cues || data?.outline || data?.notes || data?.templates);
   const categories = alloBotTipList(data?.categories);
   const items = alloBotTipList(data?.items);
   const steps = alloBotTipList(data?.steps || data?.directions || data?.instructions);
   const readings = alloBotTipList(data?.books || data?.items || data?.pages || data?.chapters);
   const accuracy = Number(data?.metrics?.accuracy ?? data?.accuracy);
   const aacChoiceCount = alloBotAacChoiceCount(data);
-  const frames = alloBotTipList(data?.frames || (Array.isArray(data) && (type === 'scaffolds' || type === 'sentence-frames') ? data : []));
+  const frames = alloBotTipList(data?.frames || ((type === 'scaffolds' || type === 'sentence-frames') ? data?.items : null) || (Array.isArray(data) && (type === 'scaffolds' || type === 'sentence-frames') ? data : []));
   const activities = alloBotTipList(data?.activities || (Array.isArray(data) && type === 'brainstorm' ? data : []));
   const problems = alloBotTipList(data?.problems || data?.equations || (Array.isArray(data) && type === 'math' ? data : []));
-  const events = alloBotTipList(data?.events || (Array.isArray(data) && type === 'timeline' ? data : []));
+  const events = alloBotTipList(data?.events || (type === 'timeline' ? data?.items : null) || (Array.isArray(data) && type === 'timeline' ? data : []));
   const creativeVocabularyCount = alloBotTipList(data?.vocabTerms || data?.practiceSet?.lesson?.vocabulary).length;
   const submissionWordCount = Number(data?.analytics?.totalWords) || alloBotWordCount(data?.text || data?.story || data?.sourceText);
   const submissionLineCount = Number(data?.lineCount) || alloBotTipList(data?.lines).length;
@@ -1364,19 +1377,23 @@ const buildEducatorEventTip = (latest, topic, t) => {
   const localized = (key, params, fallbackKey) => t(key, params) || (fallbackKey ? t(fallbackKey) : undefined);
 
   if (type === 'quiz' && questions.length) {
-    return localized('bot_events.educator_quiz_ready_context', { count: questions.length, higherOrderCount: higherOrderQuestionCount }, EDUCATOR_EVENT_TIP_KEYS[type]);
+    return higherOrderQuestionCount > 0
+      ? localized('bot_events.educator_quiz_ready_context', { count: questions.length, higherOrderCount: higherOrderQuestionCount }, EDUCATOR_EVENT_TIP_KEYS[type])
+      : localized('bot_events.educator_quiz_ready_count', { count: questions.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
   }
   if (type === 'glossary' && terms.length) {
-    return localized('bot_events.educator_glossary_ready_context', { count: terms.length, complexCount: complexTermCount }, EDUCATOR_EVENT_TIP_KEYS[type]);
+    return complexTermCount > 0
+      ? localized('bot_events.educator_glossary_ready_context', { count: terms.length, complexCount: complexTermCount }, EDUCATOR_EVENT_TIP_KEYS[type])
+      : localized('bot_events.educator_glossary_ready_count', { count: terms.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
   }
-  if (type === 'analysis' && (concepts.length || vocabulary.length)) {
+  if (type === 'analysis' && concepts.length && vocabulary.length) {
     return localized('bot_events.educator_analysis_ready_counts', { conceptCount: concepts.length, vocabularyCount: vocabulary.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
   }
   if (type === 'dbq' && documents.length) return localized('bot_events.educator_dbq_ready_count', { count: documents.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
   if ((type === 'outline' || type === 'note-taking' || type === 'anchor-chart' || type === 'lesson-plan') && sections.length) {
     return localized('bot_events.educator_sections_ready_count', { count: sections.length, resource: resourceName }, EDUCATOR_EVENT_TIP_KEYS[type]);
   }
-  if (type === 'concept-sort' && (categories.length || items.length)) {
+  if (type === 'concept-sort' && categories.length && items.length) {
     return localized('bot_events.educator_sort_ready_counts', { itemCount: items.length, categoryCount: categories.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
   }
   if ((type === 'scaffolds' || type === 'sentence-frames') && frames.length) {
@@ -1444,7 +1461,7 @@ const buildStudentIdleTips = ({ activeView, history, topic, t }) => {
     if (!tips.length) add('tips.student_glossary_practice');
     add('tips.student_glossary_connection');
   } else if (activeView === 'quiz') {
-    const count = alloBotTipList(data?.questions).length;
+    const count = alloBotTipList(data?.questions).length + alloBotTipList(data?.reflections).length;
     if (count) add('tips.student_quiz_count', { count });
     add('tips.student_quiz_reasoning');
     add('tips.student_quiz_review');
@@ -1453,7 +1470,7 @@ const buildStudentIdleTips = ({ activeView, history, topic, t }) => {
     add('tips.student_adventure_evidence');
     add('tips.student_adventure_inventory');
   } else if (activeView === 'timeline') {
-    const count = alloBotTipList(data?.events || (Array.isArray(data) ? data : [])).length;
+    const count = alloBotTipList(data?.items || data?.events || (Array.isArray(data) ? data : [])).length;
     if (count) add('tips.student_timeline_count', { count });
     add('tips.student_timeline_sequence');
   } else if (activeView === 'math') {
@@ -1465,16 +1482,16 @@ const buildStudentIdleTips = ({ activeView, history, topic, t }) => {
     if (count) add('tips.student_faq_count', { count });
     else add('tips.student_faq_predict');
   } else if (activeView === 'outline') {
-    const count = alloBotTipList(data?.sections || data?.outline).length;
+    const count = alloBotTipList(data?.branches || data?.sections || data?.outline).length;
     if (count) add('tips.student_outline_count', { count });
     else add('tips.student_outline_checkpoint');
   } else if (activeView === 'concept-sort') {
     const categoryCount = alloBotTipList(data?.categories).length;
     const itemCount = alloBotTipList(data?.items).length;
-    if (categoryCount || itemCount) add('tips.student_concept_sort_counts', { itemCount, categoryCount });
+    if (categoryCount && itemCount) add('tips.student_concept_sort_counts', { itemCount, categoryCount });
     else add('tips.student_concept_sort_reason');
   } else if (activeView === 'sentence-frames' || activeView === 'scaffolds') {
-    const count = alloBotTipList(data?.frames || (Array.isArray(data) ? data : [])).length;
+    const count = alloBotTipList(data?.items || data?.frames || (Array.isArray(data) ? data : [])).length;
     if (count) add('tips.student_scaffolds_count', { count });
     else add('tips.student_scaffolds_own_idea');
   } else if (activeView === 'analysis') {
@@ -1488,13 +1505,14 @@ const buildStudentIdleTips = ({ activeView, history, topic, t }) => {
     const count = alloBotTipList(data?.activities || (Array.isArray(data) ? data : [])).length;
     if (count) add('tips.student_brainstorm_count', { count });
   } else if (activeView === 'persona') {
-    const name = alloBotTipText(data?.name || data?.character?.name, 60);
+    const personaOption = Array.isArray(data) ? data[0] : data;
+    const name = alloBotTipText(personaOption?.name || personaOption?.character?.name, 60);
     if (name) add('tips.student_persona_name', { name });
   } else if (activeView === 'dbq') {
     const count = alloBotTipList(data?.documents || data?.sources).length;
     if (count) add('tips.student_dbq_count', { count });
   } else if (activeView === 'note-taking' || activeView === 'anchor-chart') {
-    const count = alloBotTipList(data?.sections || data?.notes || data?.templates).length;
+    const count = alloBotTipList(data?.sections || data?.entries || data?.cues || data?.notes || data?.templates).length;
     if (count) add(activeView === 'note-taking' ? 'tips.student_notes_count' : 'tips.student_anchor_chart_count', { count });
   } else if (activeView === 'lesson-plan') {
     if (topicName) add('tips.student_study_guide_topic', { topic: topicName });
@@ -1565,7 +1583,7 @@ const buildEducatorIdleTips = ({ activeView, history, topic, t }) => {
   const resourceName = alloBotTipText(current?.title || activeView?.replace(/-/g, ' '), 70);
 
   if (activeView === 'quiz') {
-    const count = alloBotTipList(data?.questions || (Array.isArray(data) ? data : [])).length;
+    const count = alloBotTipList(data?.questions || (Array.isArray(data) ? data : [])).length + alloBotTipList(data?.reflections).length;
     if (count) add('tips.educator_quiz_count', { count });
   } else if (activeView === 'glossary') {
     const count = alloBotTipList(Array.isArray(data) ? data : data?.terms).length;
@@ -1574,12 +1592,12 @@ const buildEducatorIdleTips = ({ activeView, history, topic, t }) => {
     const count = alloBotTipList(data?.documents || data?.sources).length;
     if (count) add('tips.educator_document_count', { count });
   } else if (['outline', 'note-taking', 'anchor-chart', 'lesson-plan'].includes(activeView)) {
-    const count = alloBotTipList(data?.sections || data?.outline || data?.notes || data?.templates).length;
+    const count = alloBotTipList(data?.branches || data?.sections || data?.entries || data?.cues || data?.outline || data?.notes || data?.templates).length;
     if (count) add('tips.educator_section_count', { count, resource: resourceName });
   } else if (activeView === 'concept-sort') {
     const categoryCount = alloBotTipList(data?.categories).length;
     const itemCount = alloBotTipList(data?.items).length;
-    if (categoryCount || itemCount) add('tips.educator_sort_counts', { itemCount, categoryCount });
+    if (categoryCount && itemCount) add('tips.educator_sort_counts', { itemCount, categoryCount });
   } else if (activeView === 'readingSet') {
     const count = alloBotTipList(data?.books || data?.items).length;
     if (count) add('tips.educator_reading_set_count', { count });
@@ -2523,8 +2541,19 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           generationMilestoneTimerRef.current = null;
       }, 650);
   }, [effectiveMood, isFullPackGeneration, generationHistorySignature, history, activeView]);
+  const accPopTimerRef = useRef(null);
+  useEffect(() => () => {
+      if (accPopTimerRef.current) {
+          clearTimeout(accPopTimerRef.current);
+          accPopTimerRef.current = null;
+      }
+  }, []);
   useEffect(() => {
       if (effectiveMood !== 'thinking') return;
+      if (accPopTimerRef.current) {
+          clearTimeout(accPopTimerRef.current);
+          accPopTimerRef.current = null;
+      }
       lastGenerationFamilyRef.current = alloBotGenerationFamily(generationType, activeView);
       setAccPop(false);
       setCompletedGenerationFamily(null);
@@ -2537,15 +2566,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       const hasVisibleResource = generationHistoryBaselineRef.current !== generationHistorySignature;
       if (prev === 'thinking' && effectiveMood !== 'thinking' && !isSleeping
           && (generationOutcome !== 'success' || hasVisibleResource)) {
+          if (accPopTimerRef.current) clearTimeout(accPopTimerRef.current);
           setCompletedGenerationFamily(lastGenerationFamilyRef.current || 'generic');
           setCompletedGenerationOutcome(generationOutcome);
           setAccPop(true);
-          const t = setTimeout(() => {
+          accPopTimerRef.current = setTimeout(() => {
+              accPopTimerRef.current = null;
               setAccPop(false);
               setCompletedGenerationFamily(null);
               setCompletedGenerationOutcome(null);
           }, 650);
-          return () => clearTimeout(t);
       }
   }, [effectiveMood, isSleeping, generationHistorySignature, generationOutcome]);
   useEffect(() => {
@@ -3495,8 +3525,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                   if (vocabCount > 0) msg += ` There are ${vocabCount} vocabulary terms worth teaching.`;
                   if (!conceptCount && !vocabCount) msg += ` Check the Key Concepts section before moving on.`;
                   message = msg;
-              } else if (type === 'scaffolds') {
-                  const frames = latest.data?.frames || latest.data || [];
+              } else if (type === 'scaffolds' || type === 'sentence-frames') {
+                  const frames = latest.data?.frames || latest.data?.items || latest.data || [];
                   const frameCount = Array.isArray(frames) ? frames.length : 0;
                   message = frameCount > 0
                     ? `I've prepared ${frameCount} writing supports${topicStr}. These sentence frames and paragraph starters will help structure student writing!`
@@ -3508,7 +3538,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                     ? `I generated ${faqCount} frequently asked questions${topicStr}. These cover the most common points students wonder about. Reveal the answers to study!`
                     : `I generated some common questions${topicStr}. Revealing the answers is a great way to study.`;
               } else if (type === 'outline') {
-                  const sections = latest.data?.sections || latest.data?.outline || [];
+                  const sections = latest.data?.sections || latest.data?.branches || latest.data?.outline || [];
                   const sectionCount = Array.isArray(sections) ? sections.length : 0;
                   message = sectionCount > 0
                     ? `Here's a ${sectionCount}-section outline${topicStr}. It works as a roadmap for your lesson planning!`
@@ -3532,11 +3562,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                     ? `I've generated ${probCount} practice problems. Let's crunch some numbers and build those math skills!`
                     : `I've solved the problem and generated some practice equations. Let's crunch some numbers!`;
               } else if (type === 'persona') {
-                  const name = latest.data?.name || latest.data?.character?.name;
+                  const name = latest.data?.name || latest.data?.character?.name || (Array.isArray(latest.data) ? latest.data[0]?.name : null);
                   message = name
                     ? `${name} is ready for your interview! Ask them anything about the topic and they'll respond in character.`
                     : `Your interview partner is ready. You can ask them anything about the topic!`;
-              } else if (type === 'alignment') {
+              } else if (type === 'alignment' || type === 'alignment-report') {
                   message = `I've audited the content against your standards. Check the Rigor Report to see how well it aligns.`;
               } else {
                   if (type === 'timeline') tips.push(t('tips.timeline_drag'));
@@ -3579,7 +3609,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         const latestText = envHistory && Array.isArray(envHistory) && envHistory.find(h => h && h.type === 'simplified');
         const tipTopic = alloBotTipText(envTopic || (latestText && latestText.topic) || (envGenerated && envGenerated.topic) || '');
         const glossaryEntry = envHistory && Array.isArray(envHistory) && envHistory.find(h => h && h.type === 'glossary');
-        const glossaryTerms = alloBotTipList(glossaryEntry?.data?.terms);
+        const glossaryTerms = alloBotTipList(Array.isArray(glossaryEntry?.data) ? glossaryEntry.data : glossaryEntry?.data?.terms);
         const resourceCount = (envHistory && Array.isArray(envHistory)) ? envHistory.length : 0;
         const allTypes = ['quiz', 'glossary', 'adventure', 'lesson-plan', 'image', 'timeline', 'brainstorm'];
         const missingTypes = allTypes.filter(tp => !has(tp));
@@ -3744,9 +3774,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     try {
       const rect = containerRef.current?.getBoundingClientRect?.();
       if (rect && rect.width > 0 && rect.height > 0 && Number.isFinite(rect.right) && Number.isFinite(rect.top)) {
+        const activeHeadroomLift = Number.isFinite(hudHeadroomLift) ? hudHeadroomLift : 0;
         visualPosition = clampAlloBotPosition({
           x: window.innerWidth - rect.right,
-          y: rect.top,
+          y: rect.top - activeHeadroomLift,
         }, window.innerWidth, window.innerHeight, position);
       }
     } catch (_) {}

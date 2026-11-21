@@ -130,10 +130,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       '.theme-contrast .al-hero-badge, .theme-contrast .al-hero-pill, .theme-contrast .al-principle-box, .theme-contrast .al-spectrum-band { background: #000000 !important; border: 1px solid #ffffff !important; color: #ffffff !important; }',
       '.theme-contrast .al-hero-badge, .theme-contrast .al-spectrum-title, .theme-contrast .al-spectrum-meta { color: #facc15 !important; }',
       '.theme-contrast .al-preset-btn, .theme-contrast .al-inquiry-preset { background: #000000 !important; border: 2px solid #facc15 !important; color: #ffffff !important; }',
-      '.theme-contrast .al-preset-btn:hover, .theme-contrast .al-inquiry-preset:hover { background: #facc15 !important; color: #000000 !important; }'
+      '.theme-contrast .al-preset-btn:hover, .theme-contrast .al-inquiry-preset:hover { background: #facc15 !important; color: #000000 !important; }',
+      '.theme-contrast .al-svg-fx { display: none !important; }'
     ].join('\n');
     document.head.appendChild(st);
   })();
+
+  function _alIsHC() {
+    try {
+      if (typeof document === 'undefined') return false;
+      var r = document.documentElement, b = document.body;
+      return !!((r && r.classList && r.classList.contains('theme-contrast')) || (b && b.classList && b.classList.contains('theme-contrast')));
+    } catch (e) { return false; }
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // SECTION 1: DATA CONSTANTS
@@ -9945,21 +9954,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('button', { type: 'button', className: 'al-inquiry-preset', onClick: function() { setIQ({ reliability: 0.80, sem: 6.5, observed: 100, stakes: 5 }); } }, __alloT('stem.assessmentliteracy.preset_screening_tool', 'Screening Tool (r=.80, SEM=6.5)')),
               h('button', { type: 'button', className: 'al-inquiry-preset', onClick: function() { setIQ({ reliability: 0.60, sem: 9.5, observed: 100, stakes: 7 }); } }, __alloT('stem.assessmentliteracy.preset_low_reliability', 'Low-Reliability Quiz (r=.60, SEM=9.5)'))
             ),
-            h('svg', { width: '100%', height: 132, viewBox: '0 0 320 132', role: 'img', 'aria-label': __alloT('stem.assessmentliteracy.confidence_interval_diagram_accessible_label', 'Confidence interval diagram') + ': observed score ' + iq.observed.toFixed(0) + ', 95% confidence interval ' + ciLow.toFixed(1) + ' to ' + ciHigh.toFixed(1) + ', ' + sm.label + '.', style: { background: '#0a0a1a', borderRadius: 8, marginBottom: 12, border: '1px solid rgba(148,163,184,0.3)' } },
-              h('rect', { x: 30 + ((85 - 60) / 80) * 260, y: 34, width: ((115 - 85) / 80) * 260, height: 60, fill: 'rgba(148,163,184,0.08)', stroke: 'rgba(148,163,184,0.22)', strokeDasharray: '3 3' }),
-              h('line', { x1: 30, y1: 66, x2: 290, y2: 66, stroke: '#475569', strokeWidth: 1.5 }),
-              h('rect', { x: Math.max(30, 30 + ((ciLow - 60) / 80) * 260), y: 54, width: Math.max(2, Math.min(260, ((ciHigh - ciLow) / 80) * 260)), height: 24, rx: 4, fill: sm.color, opacity: 0.45 }),
-              h('line', { x1: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y1: 34, x2: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y2: 96, stroke: sm.color, strokeWidth: 2.5 }),
-              h('text', { x: Math.max(30, Math.min(290, 30 + ((iq.observed - 60) / 80) * 260)), y: 29, fill: sm.color, fontSize: 11, textAnchor: 'middle', fontWeight: 800 }, iq.observed.toFixed(0)),
-              [60, 80, 100, 120, 140].map(function(v, i) {
-                var tx = 30 + ((v - 60) / 80) * 260;
-                return h('g', { key: 'x' + i },
-                  h('line', { x1: tx, y1: 62, x2: tx, y2: 70, stroke: '#64748b', strokeWidth: 1 }),
-                  h('text', { x: tx, y: 118, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, v)
-                );
-              }),
-              h('text', { x: 160, y: 15, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'Observed score with 95% CI · ±' + ciHalf.toFixed(1) + ' (Avg band 85–115)')
-            ),
+            (function() {
+              var hc = _alIsHC();
+              var xScale = function(v) { return Math.max(30, Math.min(290, 30 + ((v - 60) / 80) * 260)); };
+              var obsX = xScale(iq.observed);
+              var ciX1 = xScale(ciLow);
+              var ciX2 = xScale(ciHigh);
+              var ciW = Math.max(4, ciX2 - ciX1);
+              var avgX1 = 30 + ((85 - 60) / 80) * 260;
+              var avgW = ((115 - 85) / 80) * 260;
+              // Gaussian sampling envelope centered at observed score with sigma = max(1, sem)
+              var sig = Math.max(1, iq.sem);
+              var envPts = [];
+              var envSamples = 48;
+              for (var ei = 0; ei <= envSamples; ei++) {
+                var sv = 60 + (ei / envSamples) * 80;
+                var z = (sv - iq.observed) / sig;
+                var g = Math.exp(-0.5 * z * z);
+                envPts.push([30 + ((sv - 60) / 80) * 260, 96 - g * 50]);
+              }
+              var envPath = 'M ' + envPts.map(function(pt) { return pt[0].toFixed(1) + ' ' + pt[1].toFixed(1); }).join(' L ');
+              var envFill = envPath + ' L 290 96 L 30 96 Z';
+              return h('svg', { width: '100%', height: 132, viewBox: '0 0 320 132', role: 'img', 'aria-label': __alloT('stem.assessmentliteracy.confidence_interval_diagram_accessible_label', 'Confidence interval diagram') + ': observed score ' + iq.observed.toFixed(0) + ', 95% confidence interval ' + ciLow.toFixed(1) + ' to ' + ciHigh.toFixed(1) + ', ' + sm.label + '.', style: { background: hc ? '#000000' : '#060a18', borderRadius: 10, marginBottom: 12, border: hc ? '2px solid #ffffff' : '1px solid rgba(148,163,184,0.32)' } },
+                !hc && h('defs', null,
+                  h('radialGradient', { id: 'al-ci-well', cx: '50%', cy: '40%', r: '65%' },
+                    h('stop', { offset: '0%', stopColor: '#131d36' }),
+                    h('stop', { offset: '100%', stopColor: '#040814' })
+                  ),
+                  h('linearGradient', { id: 'al-ci-env', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: sm.color, stopOpacity: 0.34 }),
+                    h('stop', { offset: '100%', stopColor: sm.color, stopOpacity: 0.03 })
+                  ),
+                  h('linearGradient', { id: 'al-ci-bar', x1: '0', y1: '0', x2: '1', y2: '0' },
+                    h('stop', { offset: '0%', stopColor: sm.color, stopOpacity: 0.25 }),
+                    h('stop', { offset: '50%', stopColor: sm.color, stopOpacity: 0.58 }),
+                    h('stop', { offset: '100%', stopColor: sm.color, stopOpacity: 0.25 })
+                  )
+                ),
+                // Recessed studio psychometric well
+                h('rect', { x: 0, y: 0, width: 320, height: 132, rx: 10, fill: hc ? '#000000' : 'url(#al-ci-well)' }),
+                // Average normative band (85-115)
+                h('rect', { x: avgX1, y: 34, width: avgW, height: 62, rx: 3, fill: hc ? 'rgba(255,255,255,0.06)' : 'rgba(148,163,184,0.09)', stroke: hc ? '#ffffff' : 'rgba(148,163,184,0.28)', strokeWidth: 0.9, strokeDasharray: '3 3' }),
+                // Sampling-error Gaussian envelope
+                !hc && h('path', { className: 'al-svg-fx', d: envFill, fill: 'url(#al-ci-env)', stroke: 'none' }),
+                !hc && h('path', { className: 'al-svg-fx', d: envPath, fill: 'none', stroke: sm.color, strokeWidth: 3.4, strokeOpacity: 0.20 }),
+                h('path', { d: envPath, fill: 'none', stroke: hc ? '#facc15' : sm.color, strokeWidth: 1.35, strokeOpacity: 0.85 }),
+                // Baseline score rail
+                h('line', { x1: 30, y1: 96, x2: 290, y2: 96, stroke: hc ? '#ffffff' : '#64748b', strokeWidth: 1.4 }),
+                // Beveled 95% CI capsule + glowing end-cap calipers
+                h('rect', { x: ciX1, y: 60, width: ciW, height: 22, rx: 5, fill: hc ? 'rgba(250,204,21,0.26)' : 'url(#al-ci-bar)', stroke: hc ? '#facc15' : sm.color, strokeWidth: 1.1 }),
+                h('line', { x1: ciX1, y1: 56, x2: ciX1, y2: 86, stroke: hc ? '#facc15' : sm.color, strokeWidth: 2, strokeLinecap: 'round' }),
+                h('line', { x1: ciX2, y1: 56, x2: ciX2, y2: 86, stroke: hc ? '#facc15' : sm.color, strokeWidth: 2, strokeLinecap: 'round' }),
+                // Dual-pass luminous observed-score laser line + diamond beacon
+                !hc && h('line', { className: 'al-svg-fx', x1: obsX, y1: 35, x2: obsX, y2: 96, stroke: sm.color, strokeWidth: 5.5, strokeOpacity: 0.24 }),
+                h('line', { x1: obsX, y1: 35, x2: obsX, y2: 96, stroke: hc ? '#ffffff' : sm.color, strokeWidth: 2.4 }),
+                h('polygon', { points: obsX.toFixed(1) + ',66 ' + (obsX + 4.5).toFixed(1) + ',71 ' + obsX.toFixed(1) + ',76 ' + (obsX - 4.5).toFixed(1) + ',71', fill: '#ffffff', stroke: hc ? '#000000' : sm.color, strokeWidth: 1.4 }),
+                // Observed score badge pill
+                h('rect', { x: Math.max(12, Math.min(278, obsX - 16)), y: 19, width: 32, height: 15, rx: 7.5, fill: hc ? '#000000' : '#0f172a', stroke: hc ? '#facc15' : sm.color, strokeWidth: 1.1 }),
+                h('text', { x: Math.max(28, Math.min(294, obsX)), y: 29.5, fill: hc ? '#facc15' : sm.color, fontSize: 10.5, textAnchor: 'middle', fontWeight: 800 }, iq.observed.toFixed(0)),
+                // Minor and major scale ticks
+                [60, 70, 80, 90, 100, 110, 120, 130, 140].map(function(v, i) {
+                  var tx = 30 + ((v - 60) / 80) * 260;
+                  var major = v % 20 === 0;
+                  return h('g', { key: 'x' + i },
+                    h('line', { x1: tx, y1: major ? 92 : 94, x2: tx, y2: major ? 101 : 98, stroke: hc ? '#ffffff' : (major ? '#94a3b8' : '#475569'), strokeWidth: major ? 1.2 : 0.8 }),
+                    major && h('text', { x: tx, y: 118, fill: hc ? '#ffffff' : '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, v)
+                  );
+                }),
+                h('text', { x: 160, y: 13, fill: hc ? '#facc15' : '#cbd5e1', fontSize: 9.8, fontWeight: 700, textAnchor: 'middle' }, 'Observed score with 95% CI · ±' + ciHalf.toFixed(1) + ' (Avg band 85–115)')
+              );
+            })(),
             h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
               h('label', { className: 'text-xs' },
                 h('div', { className: 'flex justify-between mb-1' }, h('span', null, __alloT('stem.assessmentliteracy.reliability_r', 'Reliability (r)')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.reliability.toFixed(2))),
@@ -10793,38 +10857,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('div', { className: 'flex flex-wrap items-center gap-4 mb-3' },
             // Score donut — top score as %
             h('div', { className: 'relative flex-shrink-0', style: { width: 100, height: 100 } },
-              h('svg', { viewBox: '0 0 100 100', width: 100, height: 100,
-                'aria-label': 'Top letter ' + sortedKeys[0] + ' at ' + topScore + ' percent'
-              },
-                h('circle', { cx: 50, cy: 50, r: donutRad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
-                h('circle', { cx: 50, cy: 50, r: donutRad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
-                  strokeDasharray: donutCirc, strokeDashoffset: donutOff, transform: 'rotate(-90 50 50)' })
-              ),
+              (function() {
+                var hc = _alIsHC();
+                var tipAng = -Math.PI / 2 + (Math.max(0, Math.min(100, topScore)) / 100) * Math.PI * 2;
+                var tipX = 50 + donutRad * Math.cos(tipAng);
+                var tipY = 50 + donutRad * Math.sin(tipAng);
+                return h('svg', { viewBox: '0 0 100 100', width: 100, height: 100,
+                  'aria-label': 'Top letter ' + sortedKeys[0] + ' at ' + topScore + ' percent'
+                },
+                  !hc && h('defs', null,
+                    h('radialGradient', { id: 'al-hd-well', cx: '50%', cy: '42%', r: '56%' },
+                      h('stop', { offset: '0%', stopColor: '#1e293b', stopOpacity: 0.85 }),
+                      h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.96 })
+                    )
+                  ),
+                  h('circle', { cx: 50, cy: 50, r: 47, fill: hc ? '#000000' : 'url(#al-hd-well)', stroke: hc ? '#ffffff' : 'rgba(148,163,184,0.28)', strokeWidth: 1 }),
+                  [0, 1, 2, 3, 4, 5].map(function(ti) {
+                    var ta = (ti / 6) * Math.PI * 2 - Math.PI / 2;
+                    return h('line', { key: 'ht-' + ti, x1: (50 + 43.5 * Math.cos(ta)).toFixed(1), y1: (50 + 43.5 * Math.sin(ta)).toFixed(1), x2: (50 + 46 * Math.cos(ta)).toFixed(1), y2: (50 + 46 * Math.sin(ta)).toFixed(1), stroke: hc ? '#facc15' : 'rgba(148,163,184,0.42)', strokeWidth: 1.1 });
+                  }),
+                  h('circle', { cx: 50, cy: 50, r: donutRad, fill: 'none', stroke: hc ? 'rgba(255,255,255,0.25)' : 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                  !hc && h('circle', { className: 'al-svg-fx', cx: 50, cy: 50, r: donutRad, fill: 'none', stroke: tierColor, strokeWidth: 14, strokeOpacity: 0.22, strokeLinecap: 'round', strokeDasharray: donutCirc, strokeDashoffset: donutOff, transform: 'rotate(-90 50 50)' }),
+                  h('circle', { cx: 50, cy: 50, r: donutRad, fill: 'none', stroke: hc ? '#facc15' : tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                    strokeDasharray: donutCirc, strokeDashoffset: donutOff, transform: 'rotate(-90 50 50)' }),
+                  topScore > 2 && h('circle', { cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 3.4, fill: '#ffffff', stroke: hc ? '#000000' : tierColor, strokeWidth: 1.5 })
+                );
+              })(),
               h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                 h('div', { style: { fontSize: 30, fontWeight: 900, color: tierColor, lineHeight: 1, letterSpacing: '0.04em' } }, code),
                 h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text, #cbd5e1)' } }, topScore + '/100')
               )
             ),
             // Holland hexagon
-            h('svg', { viewBox: '0 0 140 140', width: 140, height: 140, role: 'img',
-              'aria-label': 'Holland hexagon — your code is ' + code,
-              style: { flexShrink: 0 }
-            },
-              // hexagon outline
-              h('path', { d: hexPath, fill: 'rgba(148,163,184,0.08)', stroke: 'rgba(148,163,184,0.35)', strokeWidth: 1 }),
-              // adjacency edges (RI, IA, AS, SE, EC, CR — already drawn by the hex outline)
-              // vertex circles — colored if letter is in the code, dimmed otherwise
-              hexVerts.map(function(v, i) {
-                var inCode = code.indexOf(v.letter) >= 0;
-                var rank = code.indexOf(v.letter); // 0 = primary, 1 = secondary, 2 = tertiary
-                var fill = inCode ? (rank === 0 ? tierColor : (rank === 1 ? tierColor + 'cc' : tierColor + '99')) : 'rgba(148,163,184,0.25)';
-                var rOut = inCode ? (rank === 0 ? 14 : (rank === 1 ? 12 : 10)) : 9;
-                return h('g', { key: v.letter },
-                  h('circle', { cx: v.x, cy: v.y, r: rOut, fill: fill, stroke: inCode ? '#0f172a' : 'rgba(15,23,42,0.6)', strokeWidth: 2 }),
-                  h('text', { x: v.x, y: v.y + 4, textAnchor: 'middle', fontSize: 12, fontWeight: 900, fill: inCode ? '#0f172a' : '#cbd5e1' }, v.letter)
-                );
-              })
-            ),
+            (function() {
+              var hc = _alIsHC();
+              var codeVerts = code.split('').map(function(ch) {
+                return hexVerts.filter(function(v) { return v.letter === ch; })[0];
+              }).filter(Boolean);
+              var codePoly = codeVerts.length === 3
+                ? codeVerts.map(function(v) { return v.x.toFixed(1) + ',' + v.y.toFixed(1); }).join(' ')
+                : '';
+              return h('svg', { viewBox: '0 0 140 140', width: 140, height: 140, role: 'img',
+                'aria-label': 'Holland hexagon — your code is ' + code,
+                style: { flexShrink: 0 }
+              },
+                !hc && h('defs', null,
+                  h('radialGradient', { id: 'al-hex-well', cx: '50%', cy: '50%', r: '52%' },
+                    h('stop', { offset: '0%', stopColor: '#1e293b', stopOpacity: 0.72 }),
+                    h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.94 })
+                  ),
+                  h('radialGradient', { id: 'al-hex-spec', cx: '32%', cy: '28%', r: '68%' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.55 }),
+                    h('stop', { offset: '60%', stopColor: '#ffffff', stopOpacity: 0.05 }),
+                    h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.25 })
+                  )
+                ),
+                // Sculpted radial bullseye compass dial behind hexagon
+                h('circle', { cx: hexCx, cy: hexCy, r: 66, fill: hc ? '#000000' : 'url(#al-hex-well)', stroke: hc ? '#ffffff' : 'rgba(148,163,184,0.24)', strokeWidth: 1 }),
+                h('circle', { cx: hexCx, cy: hexCy, r: 50, fill: 'none', stroke: hc ? 'rgba(255,255,255,0.25)' : 'rgba(148,163,184,0.18)', strokeWidth: 0.8, strokeDasharray: '2 3' }),
+                h('circle', { cx: hexCx, cy: hexCy, r: 26, fill: 'none', stroke: hc ? 'rgba(255,255,255,0.2)' : 'rgba(148,163,184,0.15)', strokeWidth: 0.7 }),
+                // Opposite-axis RIASEC chords (R-S, I-E, A-C)
+                [0, 1, 2].map(function(di) {
+                  return h('line', { key: 'diag-' + di, x1: hexVerts[di].x, y1: hexVerts[di].y, x2: hexVerts[di + 3].x, y2: hexVerts[di + 3].y, stroke: hc ? 'rgba(255,255,255,0.2)' : 'rgba(148,163,184,0.18)', strokeWidth: 0.7, strokeDasharray: '2 2' });
+                }),
+                // Hexagon perimeter
+                h('path', { d: hexPath, fill: hc ? 'rgba(255,255,255,0.04)' : 'rgba(148,163,184,0.08)', stroke: hc ? '#ffffff' : 'rgba(148,163,184,0.42)', strokeWidth: 1.2 }),
+                // Luminous Holland Code top-3 triad polygon
+                codePoly && !hc && h('polygon', { className: 'al-svg-fx', points: codePoly, fill: tierColor, fillOpacity: 0.22, stroke: tierColor, strokeWidth: 4, strokeOpacity: 0.22, strokeLinejoin: 'round' }),
+                codePoly && h('polygon', { points: codePoly, fill: hc ? 'rgba(250,204,21,0.18)' : 'none', stroke: hc ? '#facc15' : tierColor, strokeWidth: 1.8, strokeLinejoin: 'round' }),
+                // Sculpted vertex medals
+                hexVerts.map(function(v, i) {
+                  var inCode = code.indexOf(v.letter) >= 0;
+                  var rank = code.indexOf(v.letter);
+                  var fill = hc
+                    ? (inCode ? '#facc15' : '#000000')
+                    : (inCode ? (rank === 0 ? tierColor : (rank === 1 ? tierColor + 'cc' : tierColor + '99')) : '#1e293b');
+                  var rOut = inCode ? (rank === 0 ? 14 : (rank === 1 ? 12 : 10.5)) : 9;
+                  return h('g', { key: v.letter },
+                    !hc && inCode && rank === 0 && h('circle', { className: 'al-svg-fx', cx: v.x, cy: v.y, r: rOut + 4.5, fill: tierColor, opacity: 0.24 }),
+                    h('circle', { cx: v.x, cy: v.y, r: rOut, fill: fill, stroke: hc ? '#ffffff' : (inCode ? '#ffffff' : 'rgba(148,163,184,0.45)'), strokeWidth: inCode ? (rank === 0 ? 2.2 : 1.6) : 1.1 }),
+                    !hc && inCode && h('circle', { className: 'al-svg-fx', cx: v.x, cy: v.y, r: rOut, fill: 'url(#al-hex-spec)' }),
+                    h('text', { x: v.x, y: v.y + 4, textAnchor: 'middle', fontSize: inCode && rank === 0 ? 12.5 : 11, fontWeight: 900, fill: inCode ? '#0f172a' : '#cbd5e1' }, v.letter)
+                  );
+                })
+              );
+            })(),
             // Tier message
             h('div', { style: { flex: 1, minWidth: 200 } },
               h('div', { style: { fontSize: 28, marginBottom: 2 }, 'aria-hidden': 'true' }, tierIcon),
@@ -11623,75 +11740,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         // SVG
         h('section', { className: 'p-3 rounded-xl bg-slate-900/80 border border-emerald-500/30 overflow-x-auto' },
-          h('svg', {
-            viewBox: '0 0 ' + W + ' ' + H,
-            width: '100%',
-            style: { maxHeight: 600, display: 'block' },
-            role: 'img',
-            'aria-label': 'Network graph centered on ' + root.title + ' with ' + neighbors.length + ' direct neighbors and ' + twoHops.length + ' 2-hop neighbors'
-          },
-            // edges first (behind nodes)
-            edges.map(function(e, i) {
-              var pa = positions[e.a], pb = positions[e.b];
-              if (!pa || !pb) return null;
-              return h('line', {
-                key: 'e' + i,
-                x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y,
-                stroke: e.strong ? '#10b981' : '#475569',
-                strokeWidth: e.strong ? 1.8 : 1,
-                strokeOpacity: e.strong ? 0.7 : 0.4
-              });
-            }),
-            // nodes
-            Object.keys(positions).map(function(pid) {
-              var p = positions[pid];
-              var pcl = CAREER_CLUSTERS[p.node.cluster] || { color: '#666', icon: '?' };
-              var r = p.ring === 0 ? 38 : p.ring === 1 ? 26 : 18;
-              // One activation path so pointer and keyboard cannot drift apart.
-              function activateNode() {
-                if (p.ring === 0) { upd({ sub: 'detail', careerId: pid }); }
-                else { upd({ networkRootId: pid }); }
-              }
-              return h('g', {
-                key: 'n' + pid,
-                style: { cursor: 'pointer' },
-                onClick: function() { activateNode(); },
-                // role="button" without tabIndex announced these nodes as
-                // buttons that no keyboard could reach, and the label said
-                // "click" — so a screen-reader user was told to do the one
-                // thing they could not do. tabIndex makes the node focusable
-                // and onKeyDown gives Enter/Space the same effect as a click.
-                role: 'button',
-                tabIndex: 0,
-                onKeyDown: function(e) {
-                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateNode(); }
+          (function() {
+            var hc = _alIsHC();
+            return h('svg', {
+              viewBox: '0 0 ' + W + ' ' + H,
+              width: '100%',
+              style: { maxHeight: 600, display: 'block', borderRadius: 10 },
+              role: 'img',
+              'aria-label': 'Network graph centered on ' + root.title + ' with ' + neighbors.length + ' direct neighbors and ' + twoHops.length + ' 2-hop neighbors'
+            },
+              !hc && h('defs', null,
+                h('radialGradient', { id: 'al-net-well', cx: '50%', cy: '50%', r: '58%' },
+                  h('stop', { offset: '0%', stopColor: '#112238' }),
+                  h('stop', { offset: '65%', stopColor: '#0b1224' }),
+                  h('stop', { offset: '100%', stopColor: '#020617' })
+                ),
+                h('radialGradient', { id: 'al-net-spec', cx: '34%', cy: '28%', r: '66%' },
+                  h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.45 }),
+                  h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0.04 }),
+                  h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.28 })
+                )
+              ),
+              // Recessed studio constellation backdrop + orbital bullseye rings
+              h('rect', { x: 0, y: 0, width: W, height: H, rx: 10, fill: hc ? '#000000' : 'url(#al-net-well)', stroke: hc ? '#ffffff' : 'rgba(52,211,153,0.22)', strokeWidth: 1.2 }),
+              h('circle', { cx: cx, cy: cy, r: outerR, fill: 'none', stroke: hc ? 'rgba(255,255,255,0.28)' : 'rgba(148,163,184,0.16)', strokeWidth: 1, strokeDasharray: '4 4' }),
+              h('circle', { cx: cx, cy: cy, r: innerR, fill: 'none', stroke: hc ? '#facc15' : 'rgba(16,185,129,0.28)', strokeWidth: 1.1, strokeDasharray: '3 3' }),
+              // edges first (behind nodes)
+              edges.map(function(e, i) {
+                var pa = positions[e.a], pb = positions[e.b];
+                if (!pa || !pb) return null;
+                return h('g', { key: 'e' + i },
+                  !hc && e.strong && h('line', { className: 'al-svg-fx', x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y, stroke: '#10b981', strokeWidth: 5, strokeOpacity: 0.16, strokeLinecap: 'round' }),
+                  h('line', {
+                    x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y,
+                    stroke: hc ? (e.strong ? '#facc15' : '#ffffff') : (e.strong ? '#34d399' : '#64748b'),
+                    strokeWidth: e.strong ? 2 : 1,
+                    strokeOpacity: e.strong ? 0.85 : 0.42
+                  })
+                );
+              }),
+              // nodes
+              Object.keys(positions).map(function(pid) {
+                var p = positions[pid];
+                var pcl = CAREER_CLUSTERS[p.node.cluster] || { color: '#666', icon: '?' };
+                var r = p.ring === 0 ? 38 : p.ring === 1 ? 26 : 18;
+                var shortTitle = p.node.title.length > 18 ? p.node.title.substring(0, 16) + '\u2026' : p.node.title;
+                var lblW = Math.max(46, shortTitle.length * (p.ring === 0 ? 7.2 : 6.0) + 12);
+                var lblY = p.y + r + (p.ring === 0 ? 16 : 12);
+                function activateNode() {
+                  if (p.ring === 0) { upd({ sub: 'detail', careerId: pid }); }
+                  else { upd({ networkRootId: pid }); }
+                }
+                return h('g', {
+                  key: 'n' + pid,
+                  style: { cursor: 'pointer' },
+                  onClick: function() { activateNode(); },
+                  role: 'button',
+                  tabIndex: 0,
+                  onKeyDown: function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateNode(); }
+                  },
+                  'aria-label': p.node.title + (p.ring === 0 ? ' (root — open detail)' : ' (select to re-root the network here)')
                 },
-                'aria-label': p.node.title + (p.ring === 0 ? ' (root — open detail)' : ' (select to re-root the network here)')
-              },
-                h('circle', {
-                  cx: p.x, cy: p.y, r: r,
-                  fill: pcl.color,
-                  fillOpacity: p.ring === 0 ? 1 : (p.ring === 1 ? 0.75 : 0.5),
-                  stroke: p.ring === 0 ? '#fff' : pcl.color,
-                  strokeWidth: p.ring === 0 ? 3 : 1.5
-                }),
-                h('text', {
-                  x: p.x, y: p.y + 4,
-                  textAnchor: 'middle',
-                  fontSize: p.ring === 0 ? 18 : 14,
-                  'aria-hidden': 'true'
-                }, pcl.icon),
-                h('text', {
-                  x: p.x, y: p.y + r + (p.ring === 0 ? 16 : 12),
-                  textAnchor: 'middle',
-                  fontSize: p.ring === 0 ? 13 : (p.ring === 1 ? 11 : 10),
-                  fontWeight: p.ring === 0 ? 900 : 700,
-                  fill: '#f1f5f9',
-                  style: { pointerEvents: 'none' }
-                }, p.node.title.length > 18 ? p.node.title.substring(0, 16) + '\u2026' : p.node.title)
-              );
-            })
-          )
+                  !hc && p.ring === 0 && h('circle', { className: 'al-svg-fx', cx: p.x, cy: p.y, r: r + 10, fill: pcl.color, opacity: 0.22 }),
+                  p.ring === 0 && h('circle', { cx: p.x, cy: p.y, r: r + 5, fill: 'none', stroke: hc ? '#facc15' : '#ffffff', strokeWidth: 1.2, strokeDasharray: '4 3', opacity: 0.7 }),
+                  h('circle', {
+                    cx: p.x, cy: p.y, r: r,
+                    fill: hc ? '#000000' : pcl.color,
+                    fillOpacity: hc ? 1 : (p.ring === 0 ? 1 : (p.ring === 1 ? 0.82 : 0.62)),
+                    stroke: hc ? (p.ring === 0 ? '#facc15' : '#ffffff') : (p.ring === 0 ? '#ffffff' : pcl.color),
+                    strokeWidth: p.ring === 0 ? 3 : 1.6
+                  }),
+                  !hc && h('circle', { className: 'al-svg-fx', cx: p.x, cy: p.y, r: r, fill: 'url(#al-net-spec)' }),
+                  h('text', {
+                    x: p.x, y: p.y + 5,
+                    textAnchor: 'middle',
+                    fontSize: p.ring === 0 ? 19 : 14,
+                    'aria-hidden': 'true'
+                  }, pcl.icon),
+                  h('rect', {
+                    x: p.x - lblW / 2, y: lblY - (p.ring === 0 ? 12 : 10),
+                    width: lblW, height: p.ring === 0 ? 17 : 14, rx: 7,
+                    fill: hc ? '#000000' : 'rgba(2,6,23,0.82)',
+                    stroke: hc ? (p.ring === 0 ? '#facc15' : '#ffffff') : 'rgba(148,163,184,0.28)',
+                    strokeWidth: 0.8,
+                    style: { pointerEvents: 'none' }
+                  }),
+                  h('text', {
+                    x: p.x, y: lblY,
+                    textAnchor: 'middle',
+                    fontSize: p.ring === 0 ? 12.5 : (p.ring === 1 ? 10.5 : 9.8),
+                    fontWeight: p.ring === 0 ? 900 : 700,
+                    fill: hc && p.ring === 0 ? '#facc15' : '#f1f5f9',
+                    style: { pointerEvents: 'none' }
+                  }, shortTitle)
+                );
+              })
+            );
+          })()
         ),
 
         // LEGEND
@@ -16838,19 +16984,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   pts.push({ yr: yr, cost: cost, gain: gain });
                 }
                 // Crossover point
+                var hc = _alIsHC();
                 var crossYr = roi.paybackYears != null ? roi.paybackYears + roi.yearsToCredential : null;
-                return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + (H + 30), role: 'img', 'aria-label': __alloT('stem.assessmentliteracy.a11y_cumulative_cost_vs_gain_over_20_years', 'Cumulative cost vs gain over 20 years') },
-                  // Cost line
-                  h('path', { d: costPath, fill: 'none', stroke: '#ef4444', strokeWidth: 2 }),
-                  // Gain line
-                  h('path', { d: gainPath, fill: 'none', stroke: '#10b981', strokeWidth: 2 }),
-                  // Crossover marker
-                  crossYr != null && crossYr <= 20 && h('line', { x1: (crossYr / 20) * W, y1: 0, x2: (crossYr / 20) * W, y2: H, stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '3,3' }),
-                  crossYr != null && crossYr <= 20 && h('text', { x: (crossYr / 20) * W, y: 12, textAnchor: 'middle', fontSize: 10, fill: '#fbbf24', fontWeight: 700 }, 'break-even'),
-                  // X-axis labels
+                var crossX = crossYr != null ? (crossYr / 20) * W : null;
+                var crossY = crossYr != null && maxY > 0 ? H - (roi.totalInvestment / maxY) * H : null;
+                var costArea = costPath + ' L ' + W + ' ' + H + ' L 0 ' + H + ' Z';
+                var gainArea = gainPath + ' L ' + W + ' ' + H + ' L 0 ' + H + ' Z';
+                return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + (H + 30), role: 'img', 'aria-label': __alloT('stem.assessmentliteracy.a11y_cumulative_cost_vs_gain_over_20_years', 'Cumulative cost vs gain over 20 years'), style: { borderRadius: 8, display: 'block' } },
+                  !hc && h('defs', null,
+                    h('linearGradient', { id: 'al-roi-well', x1: '0', y1: '0', x2: '0', y2: '1' },
+                      h('stop', { offset: '0%', stopColor: '#0f172a' }),
+                      h('stop', { offset: '100%', stopColor: '#020617' })
+                    ),
+                    h('linearGradient', { id: 'al-roi-cost', x1: '0', y1: '0', x2: '0', y2: '1' },
+                      h('stop', { offset: '0%', stopColor: '#ef4444', stopOpacity: 0.26 }),
+                      h('stop', { offset: '100%', stopColor: '#ef4444', stopOpacity: 0.02 })
+                    ),
+                    h('linearGradient', { id: 'al-roi-gain', x1: '0', y1: '0', x2: '0', y2: '1' },
+                      h('stop', { offset: '0%', stopColor: '#10b981', stopOpacity: 0.30 }),
+                      h('stop', { offset: '100%', stopColor: '#10b981', stopOpacity: 0.02 })
+                    )
+                  ),
+                  h('rect', { x: 0, y: 0, width: W, height: H + 30, rx: 6, fill: hc ? '#000000' : 'url(#al-roi-well)', stroke: hc ? '#ffffff' : 'rgba(148,163,184,0.22)', strokeWidth: 0.8 }),
+                  // Subtle studio gridlines
+                  [0.25, 0.5, 0.75].map(function(f, gi) {
+                    var gy = H * f;
+                    return h('line', { key: 'rg-' + gi, x1: 0, y1: gy, x2: W, y2: gy, stroke: hc ? 'rgba(255,255,255,0.18)' : 'rgba(148,163,184,0.14)', strokeWidth: 0.6, strokeDasharray: '2 3' });
+                  }),
+                  h('line', { x1: 0, y1: H, x2: W, y2: H, stroke: hc ? '#ffffff' : '#475569', strokeWidth: 1 }),
+                  // Area fills + dual-pass luminous curves
+                  !hc && h('path', { className: 'al-svg-fx', d: costArea, fill: 'url(#al-roi-cost)', stroke: 'none' }),
+                  !hc && h('path', { className: 'al-svg-fx', d: gainArea, fill: 'url(#al-roi-gain)', stroke: 'none' }),
+                  !hc && h('path', { className: 'al-svg-fx', d: costPath, fill: 'none', stroke: '#ef4444', strokeWidth: 5, strokeOpacity: 0.22, strokeLinejoin: 'round' }),
+                  h('path', { d: costPath, fill: 'none', stroke: hc ? '#fb7185' : '#ef4444', strokeWidth: 2.1, strokeLinejoin: 'round' }),
+                  !hc && h('path', { className: 'al-svg-fx', d: gainPath, fill: 'none', stroke: '#10b981', strokeWidth: 5, strokeOpacity: 0.24, strokeLinejoin: 'round' }),
+                  h('path', { d: gainPath, fill: 'none', stroke: hc ? '#facc15' : '#34d399', strokeWidth: 2.2, strokeLinejoin: 'round' }),
+                  // Luminous break-even laser + intersection beacon
+                  crossYr != null && crossYr <= 20 && h('g', null,
+                    !hc && h('line', { className: 'al-svg-fx', x1: crossX, y1: 16, x2: crossX, y2: H, stroke: '#fbbf24', strokeWidth: 4, strokeOpacity: 0.18 }),
+                    h('line', { x1: crossX, y1: 16, x2: crossX, y2: H, stroke: '#fbbf24', strokeWidth: 1.2, strokeDasharray: '3,3' }),
+                    crossY != null && !hc && h('circle', { className: 'al-svg-fx', cx: crossX, cy: crossY, r: 7, fill: '#fbbf24', opacity: 0.28 }),
+                    crossY != null && h('circle', { cx: crossX, cy: crossY, r: 3.5, fill: '#fef08a', stroke: '#0f172a', strokeWidth: 1.2 }),
+                    h('rect', { x: Math.max(4, Math.min(W - 64, crossX - 30)), y: 2, width: 60, height: 14, rx: 7, fill: hc ? '#000000' : '#1e1b4b', stroke: '#fbbf24', strokeWidth: 0.9 }),
+                    h('text', { x: Math.max(34, Math.min(W - 34, crossX)), y: 12, textAnchor: 'middle', fontSize: 9, fill: '#fde047', fontWeight: 800 }, 'break-even')
+                  ),
+                  // X-axis ticks + labels
                   [0, 5, 10, 15, 20].map(function(yr) {
                     var px = (yr / 20) * W;
-                    return h('text', { key: yr, x: px, y: H + 14, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8' }, yr + ' yr');
+                    var anchor = yr === 0 ? 'start' : yr === 20 ? 'end' : 'middle';
+                    return h('g', { key: yr },
+                      h('line', { x1: px, y1: H, x2: px, y2: H + 4, stroke: hc ? '#ffffff' : '#64748b', strokeWidth: 0.9 }),
+                      h('text', { x: yr === 0 ? px + 3 : yr === 20 ? px - 3 : px, y: H + 17, textAnchor: anchor, fontSize: 9, fill: hc ? '#ffffff' : '#94a3b8', fontWeight: 700 }, yr + ' yr')
+                    );
                   })
                 );
               })()
@@ -17859,36 +18044,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             var ciPath = 'M ' + ciFillPts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ') + ' Z';
             // Standard band labels at -2sd, -1sd, mean, +1sd, +2sd (SS=70,85,100,115,130)
             var bandTicks = [70, 85, 100, 115, 130];
+            var hc = _alIsHC();
+            var fullBellFill = curvePath + ' L ' + sxFn(xMax).toFixed(1) + ',' + (H - pad.b) + ' L ' + sxFn(xMin).toFixed(1) + ',' + (H - pad.b) + ' Z';
+            var scoreX = sxFn(score);
+            var scoreCurveY = syFn(pdf(score));
+            var badgeX = Math.max(26, Math.min(W - 26, scoreX));
             return h('div', { className: 'mt-4' },
               h('div', { className: 'text-xs font-bold text-sky-300 mb-1' }, 'Where this score lands on the normal distribution'),
               h('svg', {
                 width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
                 role: 'img',
                 'aria-label': 'Normal distribution with score ' + score + ' marked. 95% confidence interval shaded from ' + ci95.low + ' to ' + ci95.high + '. Percentile rank ' + percentile(score).toFixed(1) + '%.',
-                style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8 }
+                style: { background: hc ? '#000000' : 'var(--allo-stem-canvas, #0b1121)', borderRadius: 10, border: hc ? '2px solid #ffffff' : '1px solid rgba(56,189,248,0.28)' }
               },
-                // 95% CI band fill under the curve
-                h('path', { d: ciPath, fill: '#0ea5e9', opacity: 0.55 }),
-                // Bell curve outline
-                h('path', { d: curvePath, fill: 'none', stroke: '#7dd3fc', strokeWidth: 2 }),
+                !hc && h('defs', null,
+                  h('radialGradient', { id: 'al-bell-well', cx: '50%', cy: '38%', r: '66%' },
+                    h('stop', { offset: '0%', stopColor: '#11203a' }),
+                    h('stop', { offset: '100%', stopColor: '#030712' })
+                  ),
+                  h('linearGradient', { id: 'al-bell-base', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0.16 }),
+                    h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0.02 })
+                  ),
+                  h('linearGradient', { id: 'al-bell-ci', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0.72 }),
+                    h('stop', { offset: '100%', stopColor: '#0284c7', stopOpacity: 0.22 })
+                  )
+                ),
+                h('rect', { x: 0, y: 0, width: W, height: H, rx: 10, fill: hc ? '#000000' : 'url(#al-bell-well)' }),
+                // Faint base bell shading
+                !hc && h('path', { className: 'al-svg-fx', d: fullBellFill, fill: 'url(#al-bell-base)', stroke: 'none' }),
+                // 95% CI band gradient fill under the curve
+                h('path', { d: ciPath, fill: hc ? 'rgba(250,204,21,0.32)' : 'url(#al-bell-ci)', stroke: hc ? '#facc15' : 'none', strokeWidth: hc ? 1 : 0 }),
                 // Standard-score band gridlines (every 1 SD)
                 bandTicks.map(function(t, ti) {
+                  var isMean = t === 100;
                   return h('g', { key: ti },
-                    h('line', { x1: sxFn(t), y1: pad.t, x2: sxFn(t), y2: H - pad.b, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.7 }),
-                    h('text', { x: sxFn(t), y: H - pad.b + 14, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, t)
+                    h('line', { x1: sxFn(t), y1: pad.t, x2: sxFn(t), y2: H - pad.b, stroke: hc ? 'rgba(255,255,255,0.38)' : (isMean ? '#94a3b8' : '#475569'), strokeWidth: isMean ? 1.2 : 0.9, strokeDasharray: isMean ? '4 2' : '2 3', opacity: isMean ? 0.85 : 0.6 }),
+                    h('text', { x: sxFn(t), y: H - pad.b + 14, textAnchor: 'middle', fontSize: 10, fontWeight: isMean ? 800 : 600, fill: hc ? '#ffffff' : (isMean ? '#e2e8f0' : '#94a3b8') }, t)
                   );
                 }),
-                // Score marker — vertical line + label
-                h('line', { x1: sxFn(score), y1: pad.t - 4, x2: sxFn(score), y2: H - pad.b, stroke: '#fef3c7', strokeWidth: 2 }),
-                h('text', { x: sxFn(score), y: pad.t - 6, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: '#fef3c7' },
+                // Baseline axis
+                h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: hc ? '#ffffff' : '#64748b', strokeWidth: 1.2 }),
+                // Dual-pass luminous bell curve stroke
+                !hc && h('path', { className: 'al-svg-fx', d: curvePath, fill: 'none', stroke: '#38bdf8', strokeWidth: 5.5, strokeOpacity: 0.22, strokeLinejoin: 'round' }),
+                h('path', { d: curvePath, fill: 'none', stroke: hc ? '#ffffff' : '#bae6fd', strokeWidth: 2.2, strokeLinejoin: 'round' }),
+                // Luminous observed score laser + curve beacon + badge pill
+                !hc && h('line', { className: 'al-svg-fx', x1: scoreX, y1: pad.t + 2, x2: scoreX, y2: H - pad.b, stroke: '#fde047', strokeWidth: 5, strokeOpacity: 0.20 }),
+                h('line', { x1: scoreX, y1: pad.t + 2, x2: scoreX, y2: H - pad.b, stroke: hc ? '#facc15' : '#fef08a', strokeWidth: 2 }),
+                !hc && h('circle', { className: 'al-svg-fx', cx: scoreX, cy: scoreCurveY, r: 7, fill: '#fde047', opacity: 0.28 }),
+                h('circle', { cx: scoreX, cy: scoreCurveY, r: 3.6, fill: '#fef3c7', stroke: '#0f172a', strokeWidth: 1.3 }),
+                h('rect', { x: badgeX - 24, y: Math.max(1, pad.t - 16), width: 48, height: 15, rx: 7.5, fill: hc ? '#000000' : '#0f172a', stroke: '#fde047', strokeWidth: 1 }),
+                h('text', { x: badgeX, y: Math.max(12, pad.t - 5), textAnchor: 'middle', fontSize: 10.5, fontWeight: 800, fill: '#fef08a' },
                   'SS ' + score
                 ),
-                // 95% CI bracket above the curve
-                h('line', { x1: sxFn(ci95.low), y1: H - pad.b - 4, x2: sxFn(ci95.high), y2: H - pad.b - 4, stroke: '#0ea5e9', strokeWidth: 2 }),
-                h('line', { x1: sxFn(ci95.low), y1: H - pad.b - 8, x2: sxFn(ci95.low), y2: H - pad.b, stroke: '#0ea5e9', strokeWidth: 2 }),
-                h('line', { x1: sxFn(ci95.high), y1: H - pad.b - 8, x2: sxFn(ci95.high), y2: H - pad.b, stroke: '#0ea5e9', strokeWidth: 2 }),
+                // Beveled 95% CI caliper bracket
+                h('line', { x1: sxFn(ci95.low), y1: H - pad.b - 5, x2: sxFn(ci95.high), y2: H - pad.b - 5, stroke: hc ? '#facc15' : '#38bdf8', strokeWidth: 2.2 }),
+                h('line', { x1: sxFn(ci95.low), y1: H - pad.b - 10, x2: sxFn(ci95.low), y2: H - pad.b, stroke: hc ? '#facc15' : '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                h('line', { x1: sxFn(ci95.high), y1: H - pad.b - 10, x2: sxFn(ci95.high), y2: H - pad.b, stroke: hc ? '#facc15' : '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' }),
                 // Axis label
-                h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, 'Standard Score (mean 100, SD 15) — blue band = 95% CI')
+                h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 10, fill: hc ? '#facc15' : '#cbd5e1', fontWeight: 600 }, 'Standard Score (mean 100, SD 15) — blue band = 95% CI')
               ),
               h('div', { className: 'mt-2 text-xs text-slate-300 italic' },
                 'The 95% CI band reflects the score\'s real uncertainty. A "true score" anywhere in the blue band is consistent with what we observed. Notice how the band widens dramatically when you drag reliability down.'
@@ -17910,35 +18125,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               pts.push([sxFn2(r), syFn2(sm)]);
             }
             var path = 'M ' + pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ');
+            var hc2 = _alIsHC();
+            var areaPath = path + ' L ' + sxFn2(rMax).toFixed(1) + ',' + (H - pad.b) + ' L ' + sxFn2(rMin).toFixed(1) + ',' + (H - pad.b) + ' Z';
+            var ptX = sxFn2(rel);
+            var ptY = syFn2(sem);
+            var pillW = 104;
+            var pillX = Math.max(pad.l + 4, Math.min(W - pad.r - pillW - 2, ptX > W - 135 ? ptX - pillW - 10 : ptX + 10));
+            var pillY = Math.max(pad.t + 2, Math.min(H - pad.b - 20, ptY - 14));
             return h('div', { className: 'mt-4' },
               h('div', { className: 'text-xs font-bold text-sky-300 mb-1' }, 'Reliability vs SEM — drag the reliability slider to see your point move along this curve'),
               h('svg', {
                 width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
                 role: 'img', 'aria-label': __alloALT('stem.assessmentliteracy.a11y_curve_showing_how_the_standard_error_of_measure', 'Curve showing how the standard error of measurement grows as reliability drops below 1.0.'),
-                style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8 }
+                style: { background: hc2 ? '#000000' : 'var(--allo-stem-canvas, #0b1121)', borderRadius: 10, border: hc2 ? '2px solid #ffffff' : '1px solid rgba(56,189,248,0.28)' }
               },
+                !hc2 && h('defs', null,
+                  h('linearGradient', { id: 'al-sem-well', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#111e36' }),
+                    h('stop', { offset: '100%', stopColor: '#030712' })
+                  ),
+                  h('linearGradient', { id: 'al-sem-fill', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#0ea5e9', stopOpacity: 0.30 }),
+                    h('stop', { offset: '100%', stopColor: '#0ea5e9', stopOpacity: 0.02 })
+                  ),
+                  h('linearGradient', { id: 'al-sem-stroke', x1: '0', y1: '0', x2: '1', y2: '0' },
+                    h('stop', { offset: '0%', stopColor: '#f59e0b' }),
+                    h('stop', { offset: '55%', stopColor: '#38bdf8' }),
+                    h('stop', { offset: '100%', stopColor: '#34d399' })
+                  )
+                ),
+                h('rect', { x: 0, y: 0, width: W, height: H, rx: 10, fill: hc2 ? '#000000' : 'url(#al-sem-well)' }),
+                // Psychometric threshold bands (clinical r>=.90 emerald, low r<.70 amber)
+                !hc2 && h('rect', { className: 'al-svg-fx', x: sxFn2(0.90), y: pad.t, width: sxFn2(1.00) - sxFn2(0.90), height: H - pad.t - pad.b, fill: 'rgba(16,185,129,0.10)' }),
+                !hc2 && h('rect', { className: 'al-svg-fx', x: pad.l, y: pad.t, width: sxFn2(0.70) - pad.l, height: H - pad.t - pad.b, fill: 'rgba(245,158,11,0.08)' }),
+                // Subtle horizontal reference grid
+                [5, 10].map(function(sm0, ti) {
+                  return h('line', { key: 'hg-' + ti, x1: pad.l, y1: syFn2(sm0), x2: W - pad.r, y2: syFn2(sm0), stroke: hc2 ? 'rgba(255,255,255,0.2)' : 'rgba(148,163,184,0.16)', strokeWidth: 0.7, strokeDasharray: '2 3' });
+                }),
                 // Axes
-                h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
-                h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
-                // Curve
-                h('path', { d: path, fill: 'none', stroke: '#0ea5e9', strokeWidth: 2 }),
-                // Current-point marker
-                h('circle', { cx: sxFn2(rel), cy: syFn2(sem), r: 5, fill: '#fef3c7', stroke: '#0f172a', strokeWidth: 2 }),
-                h('text', { x: sxFn2(rel) + 8, y: syFn2(sem) - 6, fontSize: 10, fill: '#fef3c7', fontWeight: 700 },
-                  'r=' + rel.toFixed(2) + '  SEM=±' + sem.toFixed(1)
+                h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: hc2 ? '#ffffff' : '#64748b', strokeWidth: 1.2 }),
+                h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: hc2 ? '#ffffff' : '#64748b', strokeWidth: 1.2 }),
+                // Gradient fill + dual-pass luminous curve
+                !hc2 && h('path', { className: 'al-svg-fx', d: areaPath, fill: 'url(#al-sem-fill)', stroke: 'none' }),
+                !hc2 && h('path', { className: 'al-svg-fx', d: path, fill: 'none', stroke: '#38bdf8', strokeWidth: 5, strokeOpacity: 0.22 }),
+                h('path', { d: path, fill: 'none', stroke: hc2 ? '#facc15' : 'url(#al-sem-stroke)', strokeWidth: 2.3, strokeLinecap: 'round' }),
+                // Precision crosshair projections from active point to both axes
+                h('line', { x1: ptX, y1: ptY, x2: ptX, y2: H - pad.b, stroke: hc2 ? '#facc15' : 'rgba(254,240,138,0.45)', strokeWidth: 1, strokeDasharray: '2 2' }),
+                h('line', { x1: pad.l, y1: ptY, x2: ptX, y2: ptY, stroke: hc2 ? '#facc15' : 'rgba(254,240,138,0.45)', strokeWidth: 1, strokeDasharray: '2 2' }),
+                // Glowing active beacon + clamped readout pill
+                !hc2 && h('circle', { className: 'al-svg-fx', cx: ptX, cy: ptY, r: 9.5, fill: '#fde047', opacity: 0.26 }),
+                h('circle', { cx: ptX, cy: ptY, r: 5, fill: '#fef3c7', stroke: hc2 ? '#000000' : '#0f172a', strokeWidth: 2 }),
+                h('rect', { x: pillX, y: pillY, width: pillW, height: 17, rx: 8.5, fill: hc2 ? '#000000' : 'rgba(15,23,42,0.92)', stroke: '#fde047', strokeWidth: 1 }),
+                h('text', { x: pillX + pillW / 2, y: pillY + 11.5, textAnchor: 'middle', fontSize: 9.5, fill: '#fef08a', fontWeight: 800 },
+                  'r=' + rel.toFixed(2) + ' · SEM=±' + sem.toFixed(1)
                 ),
                 // Tick labels
                 [0.60, 0.70, 0.80, 0.90, 0.99].map(function(r0, ti) {
                   return h('g', { key: ti },
-                    h('line', { x1: sxFn2(r0), y1: H - pad.b, x2: sxFn2(r0), y2: H - pad.b + 4, stroke: '#475569' }),
-                    h('text', { x: sxFn2(r0), y: H - pad.b + 14, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, r0.toFixed(2))
+                    h('line', { x1: sxFn2(r0), y1: H - pad.b, x2: sxFn2(r0), y2: H - pad.b + 4, stroke: hc2 ? '#ffffff' : '#64748b' }),
+                    h('text', { x: sxFn2(r0), y: H - pad.b + 14, textAnchor: 'middle', fontSize: 10, fill: hc2 ? '#ffffff' : '#cbd5e1', fontWeight: r0 === 0.90 ? 800 : 600 }, r0.toFixed(2))
                   );
                 }),
                 [0, 5, 10].map(function(sm0, ti) {
-                  return h('text', { key: ti, x: pad.l - 4, y: syFn2(sm0) + 4, textAnchor: 'end', fontSize: 10, fill: '#cbd5e1' }, sm0);
+                  return h('text', { key: ti, x: pad.l - 5, y: syFn2(sm0) + 4, textAnchor: 'end', fontSize: 10, fill: hc2 ? '#ffffff' : '#cbd5e1' }, sm0);
                 }),
-                h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, 'Reliability →   (lower reliability = larger SEM = wider CIs)'),
-                h('text', { x: 6, y: H / 2, textAnchor: 'start', fontSize: 10, fill: '#cbd5e1', transform: 'rotate(-90 6 ' + (H / 2) + ')' }, 'SEM')
+                h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 10, fill: hc2 ? '#facc15' : '#cbd5e1' }, 'Reliability →   (lower reliability = larger SEM = wider CIs)'),
+                h('text', { x: 10, y: H / 2, textAnchor: 'middle', fontSize: 10, fill: hc2 ? '#facc15' : '#cbd5e1', fontWeight: 700, transform: 'rotate(-90 10 ' + (H / 2) + ')' }, 'SEM')
               )
             );
           })()

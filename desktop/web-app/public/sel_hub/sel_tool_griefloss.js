@@ -242,13 +242,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
       var _griT = (ctx && ctx.theme) || {};
       var _griHC = !!_griT.isContrast, _griL = !_griHC && !_griT.isDark;
       var _gri_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _gri_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#fdf2f8':'#000000'};
-      var _gri_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#64748b','#fecaca':'#b91c1c','#e2e8f0':'#1e293b','#a5b4fc':'#3730a3','#fee2e2':'#991b1b','#c7d2fe':'#312e81','#e9d5ff':'#581c87','#c4b5fd':'#5b21b6','#fca5a5':'#991b1b','#fcd34d':'#78350f','#fde68a':'#92400e'}, _gri_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fecdd3':'#ffff00','#e2e8f0':'#ffff00','#a5b4fc':'#ffff00','#fff':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fee2e2':'#ffff00','#c7d2fe':'#ffff00','#e9d5ff':'#ffff00','#c4b5fd':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fca5a5':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
-      var _gri_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _gri_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#1e293b':'#ffff00','#fb7185':'#ffff00','#818cf8':'#ffff00','#6366f1':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00','#f59e0b':'#ffff00'};
+      var _gri_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#bbf7d0':'#166534','#dcfce7':'#14532d','#94a3b8':'#64748b','#fecaca':'#b91c1c','#e2e8f0':'#1e293b','#a5b4fc':'#3730a3','#fee2e2':'#991b1b','#c7d2fe':'#312e81','#e9d5ff':'#581c87','#c4b5fd':'#5b21b6','#fca5a5':'#991b1b','#fcd34d':'#78350f','#fde68a':'#92400e'}, _gri_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fecdd3':'#ffff00','#e2e8f0':'#ffff00','#a5b4fc':'#ffff00','#fff':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fee2e2':'#ffff00','#c7d2fe':'#ffff00','#e9d5ff':'#ffff00','#c4b5fd':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fca5a5':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _gri_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _gri_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#1e293b':'#ffff00','#fb7185':'#ffff00','#818cf8':'#ffff00','#6366f1':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00','#f59e0b':'#ffff00'};
       var _griBg = function(h){ return _griHC ? (_gri_BGH[h]||h) : (_griL ? (_gri_BGL[h]||h) : h); };
       var _griFg = function(h){ return _griHC ? (_gri_FGH[h]||h) : (_griL ? (_gri_FGL[h]||h) : h); };
-      var _griBd = function(h){ return _griHC ? (_gri_BDH[h]||h) : (_griL ? (_gri_BDL[h]||h) : h); };
-      // accent text on the dark shell needs the 300/400 weight (1.4.3)
-      var _griInk = function(c){ return _griHC || _griL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
+      var _griBd = function(h){ return _griHC ? (_gri_BDH[h]||'#ffff00') : (_griL ? (_gri_BDL[h]||h) : h); };
+      // accent text needs AA contrast in Dark, Light, and High Contrast (WCAG 1.4.3)
+      var _griInk = function(c){
+        if (_griHC) return '#ffff00';
+        var lc = String(c).toLowerCase();
+        if (_griL) return {'#fb7185':'#be123c','#0ea5e9':'#0369a1','#a855f7':'#7e22ce','#22c55e':'#15803d','#f59e0b':'#b45309','#6366f1':'#4338ca','#ef4444':'#b91c1c','#818cf8':'#4338ca'}[lc] || c;
+        return {'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[lc] || c;
+      };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -256,6 +261,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _griBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.griefLoss || defaultState();
       function setG(patch) {
@@ -266,14 +273,40 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           return Object.assign({}, prev, { griefLoss: next });
         });
       }
-      var view = d.view || 'home';
-      function goto(v) { setG({ view: v }); }
+      function scanGriefText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'griefLoss', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && (scan.hasCrisis || scan.triggered)) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'griefLoss', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setG({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Grief & Loss', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
+      }
+      var VALID_VIEWS = ['home', 'name', 'tasks', 'letter', 'rituals', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'home';
+      function goto(v) { setG({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'home' }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _griFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _griHC ? '#000000' : (_griL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _griBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _griFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _griFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🕯️ Grief & Loss'),
             h('div', { style: { fontSize: 12, color: _griFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A guided companion for grief, on your own time.')
@@ -295,10 +328,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#fb7185' : '#334155'),
-                background: active ? 'rgba(251,113,133,0.18)' : _griBg('#1e293b'),
+            return h('button', { key: t.id, id: 'grief-tab-' + t.id, onClick: function() { goto(t.id); },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'grief-panel-' + t.id, tabIndex: active ? 0 : -1,
+              style: { padding: '6px 12px', borderRadius: 8, border: (_griHC ? '2px' : '1px') + ' solid ' + _griBd(active ? '#fb7185' : '#334155'),
+                background: active ? (_griHC ? '#000000' : (_griL ? '#ffe4e6' : 'rgba(251,113,133,0.18)')) : _griBg('#1e293b'),
                 color: active ? _griFg('#fecdd3') : _griFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -307,7 +340,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
 
       // Strong safety banner — always visible across all views
       function safetyBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: _griFg('#fecaca'), lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _griHC ? '#000000' : (_griL ? '#fef2f2' : 'rgba(239,68,68,0.10)'), borderTop: '1px solid ' + (_griHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderRight: '1px solid ' + (_griHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderBottom: '1px solid ' + (_griHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderLeft: '3px solid ' + _griBd('#ef4444'), marginBottom: 12, fontSize: 12.5, color: _griFg('#fecaca'), lineHeight: 1.65 } },
           h('strong', null, '🆘 Please read: '),
           'Grief is not the same as suicidality. But sometimes, in grief, people have thoughts about wanting to be with the person who died. If you\'re having those thoughts, that is a moment for an adult, not for this tool alone. Call 988 (Suicide and Crisis Lifeline), text HOME to 741741, or open the Crisis Companion in this SEL Hub. You deserve company in this. You do not have to carry it alone.'
         );
@@ -315,7 +348,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _griFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _griHC ? '#000000' : (_griL ? '#f8fafc' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _griBd('#334155'), fontSize: 11, color: _griFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'This tool is a companion, not therapy. Severe grief, complicated grief, or grief tied to trauma deserves a counselor or grief-trained therapist. Crisis Text Line: text HOME to 741741.'
         );
@@ -328,7 +361,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(251,113,133,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(251,113,133,0.4)', marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 14, background: _griHC ? '#000000' : (_griL ? '#fff1f2' : 'linear-gradient(135deg, rgba(251,113,133,0.16) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_griHC ? '#ffff00' : 'rgba(251,113,133,0.4)'), marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _griFg('#fecdd3'), marginBottom: 4 } }, 'Grief is the price of loving.'),
             h('p', { style: { margin: '0 0 8px', color: _griFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'Grief is not a problem to be fixed. It is the natural response to loss. The goal of grief work is not to "get over it" — that\'s a myth. The goal is to carry what has happened in a way that lets you keep living, while staying connected to what you loved.'
@@ -372,8 +405,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
 
       function stepCard(title, blurb, onClick, color) {
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _griBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _griFg('#e2e8f0') } },
-          h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid ' + _griBd('#1e293b'), borderRight: '1px solid ' + _griBd('#1e293b'), borderBottom: '1px solid ' + _griBd('#1e293b'), borderLeft: '4px solid ' + _griBd(color), background: _griBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _griFg('#e2e8f0') } },
+          h('div', { style: { fontSize: 14, fontWeight: 800, color: _griInk(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _griFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }
@@ -385,44 +418,46 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
         return h('div', null,
           safetyBanner(),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(251,113,133,0.10)', borderTop: '1px solid rgba(251,113,133,0.3)', borderRight: '1px solid rgba(251,113,133,0.3)', borderBottom: '1px solid rgba(251,113,133,0.3)', borderLeft: '3px solid #fb7185', marginBottom: 14, fontSize: 13, color: _griFg('#fecdd3'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _griHC ? '#000000' : (_griL ? '#fff1f2' : 'rgba(251,113,133,0.10)'), borderTop: '1px solid ' + (_griHC ? '#ffff00' : 'rgba(251,113,133,0.3)'), borderRight: '1px solid ' + (_griHC ? '#ffff00' : 'rgba(251,113,133,0.3)'), borderBottom: '1px solid ' + (_griHC ? '#ffff00' : 'rgba(251,113,133,0.3)'), borderLeft: '3px solid ' + _griBd('#fb7185'), marginBottom: 14, fontSize: 13, color: _griFg('#fecdd3'), lineHeight: 1.65 } },
             h('strong', null, '✍️ Name what you\'re carrying. '),
             'You can name as much or as little as you want. Nothing is shared anywhere. This is just for you to have words for it.'
           ),
 
           // Type
-          h('div', { style: { padding: 14, borderRadius: 10, background: _griBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _griBg('#0f172a'), borderTop: '1px solid ' + _griBd('#1e293b'), borderRight: '1px solid ' + _griBd('#1e293b'), borderBottom: '1px solid ' + _griBd('#1e293b'), borderLeft: '3px solid ' + _griBd('#fb7185'), marginBottom: 10 } },
             h('label', { htmlFor: 'g-type', style: { display: 'block', fontSize: 12, color: _griFg('#fda4af'), fontWeight: 800, marginBottom: 6 } }, 'What kind of loss is this?'),
             h('select', { id: 'g-type', value: d.lossType || '',
               onChange: function(e) { setG({ lossType: e.target.value }); },
-              style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 13 } },
+              style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _griBd('#334155'), background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 13 } },
               h('option', { value: '' }, '(pick one)'),
               LOSS_TYPES.map(function(lt) { return h('option', { key: lt.id, value: lt.id }, lt.label); })
             )
           ),
 
           // Who/what
-          h('div', { style: { padding: 14, borderRadius: 10, background: _griBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _griBg('#0f172a'), borderTop: '1px solid ' + _griBd('#1e293b'), borderRight: '1px solid ' + _griBd('#1e293b'), borderBottom: '1px solid ' + _griBd('#1e293b'), borderLeft: '3px solid ' + _griBd('#fb7185'), marginBottom: 10 } },
             h('label', { htmlFor: 'g-who', style: { display: 'block', fontSize: 12, color: _griFg('#fda4af'), fontWeight: 800, marginBottom: 6 } }, 'Who or what (a name, a relationship, a place — whatever fits)'),
             h('input', { id: 'g-who', type: 'text', value: d.whoOrWhat || '',
               placeholder: 'e.g. My grandma. My dog Rex. My friend group.',
               onChange: function(e) { setG({ whoOrWhat: e.target.value }); },
-              style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid #334155', background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 14 } })
+              onBlur: function(e) { scanGriefText(e.target.value); },
+              style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid ' + _griBd('#334155'), background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 14 } })
           ),
 
           // Description
-          h('div', { style: { padding: 14, borderRadius: 10, background: _griBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #fb7185', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _griBg('#0f172a'), borderTop: '1px solid ' + _griBd('#1e293b'), borderRight: '1px solid ' + _griBd('#1e293b'), borderBottom: '1px solid ' + _griBd('#1e293b'), borderLeft: '3px solid ' + _griBd('#fb7185'), marginBottom: 10 } },
             h('label', { htmlFor: 'g-desc', style: { display: 'block', fontSize: 12, color: _griFg('#fda4af'), fontWeight: 800, marginBottom: 6 } }, 'What happened?'),
             h('div', { style: { fontSize: 11, color: _griFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'In your own words. As much or as little as feels okay right now.'),
             h('textarea', { id: 'g-desc', value: d.loss || '',
               placeholder: '',
               onChange: function(e) { setG({ loss: e.target.value }); },
-              style: { width: '100%', minHeight: 140, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
+              onBlur: function(e) { scanGriefText(e.target.value); },
+              style: { width: '100%', minHeight: 140, padding: 10, borderRadius: 6, border: '1px solid ' + _griBd('#334155'), background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
           ),
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('tasks'); }, 'aria-label': 'Continue to the four tasks',
-              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _griFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 22px', borderRadius: 10, border: _griHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _griHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _griHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '→ Continue to the four tasks')
           ),
 
@@ -438,9 +473,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
         var active = TASKS.find(function(t) { return t.id === activeTaskId; }) || TASKS[0];
 
         function setTaskNotes(taskId, val) {
-          var n = Object.assign({}, (d.taskNotes || {}));
-          n[taskId] = val;
-          setG({ taskNotes: n });
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.griefLoss) || defaultState();
+            var n = Object.assign({}, prior.taskNotes || {});
+            n[taskId] = val;
+            var next = Object.assign({}, prior, { taskNotes: n, lastUpdated: todayISO() });
+            return Object.assign({}, prev, { griefLoss: next });
+          });
         }
 
         return h('div', null,
@@ -454,11 +493,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
               return h('button', { key: t.id,
                 onClick: function() { setG({ currentTask: t.id }); },
                 'aria-label': 'Task ' + t.number + ': ' + t.label, 'aria-pressed': isActive,
-                style: { textAlign: 'left', padding: 10, borderRadius: 8, border: '2px solid ' + (isActive ? t.color : '#334155'), background: isActive ? t.color + '22' : '#0f172a', cursor: 'pointer', color: _griFg('#e2e8f0') } },
+                style: { textAlign: 'left', padding: 10, borderRadius: 8, border: '2px solid ' + _griBd(isActive ? t.color : '#334155'), background: isActive ? (_griHC ? '#000000' : t.color + '22') : _griBg('#0f172a'), cursor: 'pointer', color: _griFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
                   h('span', { style: { fontSize: 16 } }, t.icon),
                   h('span', { style: { fontSize: 10, color: _griInk(t.color), fontWeight: 800 } }, 'Task ' + t.number),
-                  hasNotes ? h('span', { style: { marginLeft: 'auto', fontSize: 10, color: t.color } }, '✓') : null
+                  hasNotes ? h('span', { style: { marginLeft: 'auto', fontSize: 10, color: _griInk(t.color) } }, '✓') : null
                 ),
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: isActive ? _griInk(t.color) : _griFg('#cbd5e1'), marginTop: 4, lineHeight: 1.4 } }, t.label)
               );
@@ -466,12 +505,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           ),
 
           // Active task card
-          h('div', { style: { padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, ' + active.color + '14 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid ' + active.color + '66', borderLeft: '4px solid ' + active.color, marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 12, background: _griHC ? '#000000' : (_griL ? '#f8fafc' : 'linear-gradient(135deg, ' + active.color + '14 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_griHC ? '#ffff00' : active.color + '66'), borderLeft: '4px solid ' + _griBd(active.color), marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
               h('span', { style: { fontSize: 36 } }, active.icon),
               h('div', null,
                 h('div', { style: { fontSize: 10, color: _griFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Task ' + active.number + ' of 4'),
-                h('h3', { style: { margin: '2px 0 0', color: active.color, fontSize: 19, fontWeight: 900 } }, active.label)
+                h('h3', { style: { margin: '2px 0 0', color: _griInk(active.color), fontSize: 19, fontWeight: 900 } }, active.label)
               )
             ),
             h('p', { style: { margin: '0 0 14px', color: _griFg('#e2e8f0'), fontSize: 14, lineHeight: 1.75 } }, active.blurb),
@@ -501,6 +540,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             h('textarea', { id: 'g-task-' + active.id, value: (d.taskNotes || {})[active.id] || '',
               placeholder: 'Whatever is on this task right now. You can come back.',
               onChange: function(e) { setTaskNotes(active.id, e.target.value); },
+              onBlur: function(e) { scanGriefText(e.target.value); },
               style: { width: '100%', minHeight: 110, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
           ),
 
@@ -543,6 +583,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             h('textarea', { id: 'g-letter', value: d.letter || '',
               placeholder: 'Dear...',
               onChange: function(e) { setG({ letter: e.target.value }); },
+              onBlur: function(e) { scanGriefText(e.target.value); },
               style: { width: '100%', minHeight: 280, padding: 12, borderRadius: 6, border: '1px solid #334155', background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.85, resize: 'vertical' } })
           ),
 
@@ -585,6 +626,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             h('textarea', { id: 'g-rituals', value: d.ritualPlan || '',
               placeholder: 'Once a year on...   On their birthday I want to...   I want to carry...',
               onChange: function(e) { setG({ ritualPlan: e.target.value }); },
+              onBlur: function(e) { scanGriefText(e.target.value); },
               style: { width: '100%', minHeight: 180, padding: 12, borderRadius: 6, border: '1px solid #334155', background: _griBg('#1e293b'), color: _griFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
           ),
 
@@ -596,38 +638,42 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
       // PRINT
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
+        var whoTrim = (d.whoOrWhat || '').trim();
+        var lossTrim = (d.loss || '').trim();
+        var letterTrim = (d.letter || '').trim();
+        var ritualTrim = (d.ritualPlan || '').trim();
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(251,113,133,0.10)', borderRadius: 8, border: '1px solid rgba(251,113,133,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _griHC ? '#000000' : (_griL ? '#fff1f2' : 'rgba(251,113,133,0.10)'), borderRadius: 8, border: '1px solid ' + (_griHC ? '#ffff00' : 'rgba(251,113,133,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _griFg('#fecdd3'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'This is your private work. Print only if you want a paper copy; nothing is shared anywhere.'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _griFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _griHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _griHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _griHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _griBg('#1e293b'), color: _griFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _griBd('#475569'), background: _griBg('#1e293b'), color: _griFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'grief-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _griBg('#fff'), color: _griFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _griBg('#fff'), color: _griFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _griBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
-              '#grief-print-region, #grief-print-region * { visibility: visible !important; } ' +
+              '#grief-print-region, #grief-print-region * { visibility: visible !important; background: #fff !important; color: #0f172a !important; border-color: #cbd5e1 !important; } ' +
               '#grief-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
 
-            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #be123c' } },
+            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _griBd('#be123c') } },
               h('div', { style: { fontSize: 10, color: _griFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Grief & Loss Companion'),
-              h('h1', { style: { margin: 0, fontSize: 24, fontWeight: 900 } }, d.whoOrWhat ? 'For ' + d.whoOrWhat : 'My grief work'),
+              h('h1', { style: { margin: 0, fontSize: 24, fontWeight: 900 } }, whoTrim ? 'For ' + whoTrim : 'My grief work'),
               d.lastUpdated ? h('div', { style: { fontSize: 12, color: _griFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
-            d.loss ? h('div', { style: { marginBottom: 16, pageBreakInside: 'avoid' } },
+            lossTrim ? h('div', { style: { marginBottom: 16, pageBreakInside: 'avoid' } },
               h('div', { style: { fontSize: 11, color: _griFg('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 4 } }, 'What happened'),
-              h('p', { style: { margin: 0, color: _griFg('#0f172a'), fontSize: 13, lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, d.loss)
+              h('p', { style: { margin: 0, color: _griFg('#0f172a'), fontSize: 13, lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, lossTrim)
             ) : null,
 
             // Tasks
@@ -635,22 +681,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
               var notes = (d.taskNotes || {})[t.id];
               if (!notes || !notes.trim()) return null;
               return h('div', { key: t.id, style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 6, background: t.color, color: _griFg('#fff') } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 6, background: _griHC ? '#000000' : '#f1f5f9', border: _griHC ? '1px solid #ffff00' : '1px solid #e2e8f0', borderLeft: '4px solid ' + _griBd(t.color), color: _griHC ? '#ffff00' : '#0f172a' } },
                   h('span', { style: { fontSize: 16 } }, t.icon),
                   h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Task ' + t.number + ': ' + t.label)
                 ),
-                h('p', { style: { margin: '0 8px', color: _griFg('#0f172a'), fontSize: 13, lineHeight: 1.75, whiteSpace: 'pre-wrap' } }, notes)
+                h('p', { style: { margin: '0 8px', color: _griFg('#0f172a'), fontSize: 13, lineHeight: 1.75, whiteSpace: 'pre-wrap' } }, notes.trim())
               );
             }),
 
-            d.letter ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
+            letterTrim ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
               h('div', { style: { fontSize: 11, color: _griFg('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 4 } }, 'My letter'),
-              h('p', { style: { margin: 0, color: _griFg('#0f172a'), fontSize: 13, lineHeight: 1.85, whiteSpace: 'pre-wrap', padding: 10, background: _griBg('#fdf2f8'), borderLeft: '3px solid #be123c' } }, d.letter)
+              h('p', { style: { margin: 0, color: _griFg('#0f172a'), fontSize: 13, lineHeight: 1.85, whiteSpace: 'pre-wrap', padding: 10, background: _griBg('#fdf2f8'), borderLeft: '3px solid ' + _griBd('#be123c') } }, letterTrim)
             ) : null,
 
-            d.ritualPlan ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
+            ritualTrim ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
               h('div', { style: { fontSize: 11, color: _griFg('#64748b'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 4 } }, 'Rituals'),
-              h('p', { style: { margin: 0, color: _griFg('#0f172a'), fontSize: 13, lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, d.ritualPlan)
+              h('p', { style: { margin: 0, color: _griFg('#0f172a'), fontSize: 13, lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, ritualTrim)
             ) : null,
 
             h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _griFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
@@ -762,7 +808,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Grief and Loss Companion' },
         header(),
         navTabs(),
-        body
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _griBand) : null,
+        h('div', { role: 'tabpanel', id: 'grief-panel-' + view, 'aria-labelledby': 'grief-tab-' + view }, body)
       );
     }
   });

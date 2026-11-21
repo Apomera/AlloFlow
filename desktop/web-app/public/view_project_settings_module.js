@@ -122,11 +122,22 @@
   return /*#__PURE__*/React.createElement("div", {
     className: "mt-4 grid gap-4 rounded-2xl border border-violet-200 bg-violet-50/60 p-4 sm:grid-cols-[auto,1fr] sm:items-center"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex min-h-44 min-w-44 items-center justify-center rounded-xl border-2 border-violet-200 bg-white p-3"
+    "data-allo-qr-preserve": "true",
+    className: "flex min-h-44 min-w-44 items-center justify-center rounded-xl border-2 border-violet-200 bg-white p-3",
+    style: {
+      backgroundColor: '#ffffff',
+      color: '#0f172a',
+      forcedColorAdjust: 'none'
+    }
   }, state.status === 'ready' && state.svg ? /*#__PURE__*/React.createElement("div", {
     role: "img",
     "aria-label": t('project_settings.portal_qr_aria') || "Educator Evaluation district portal QR code",
     className: "h-40 w-40 [&_svg]:h-full [&_svg]:w-full",
+    style: {
+      backgroundColor: '#ffffff',
+      color: '#000000',
+      filter: 'none'
+    },
     dangerouslySetInnerHTML: {
       __html: state.svg
     }
@@ -157,12 +168,52 @@
     className: "text-xs font-bold text-violet-900"
   }, copyMsg))));
 }
+function ProjectSettingsDisclosure(props) {
+  var React = window.React;
+  var pair = React.useState(Boolean(props.defaultOpen));
+  var open = pair[0];
+  var setOpen = pair[1];
+  return /*#__PURE__*/React.createElement("details", {
+    open: open,
+    onToggle: function (event) {
+      setOpen(Boolean(event.currentTarget && event.currentTarget.open));
+    },
+    className: props.className
+  }, props.children);
+}
 function ProjectSettingsDialogFocusManager(props) {
   var React = window.React;
   React.useEffect(function () {
     var root = document.getElementById(props.dialogId);
     if (!root) return undefined;
     var previouslyFocused = document.activeElement;
+    var isolatedSiblings = [];
+    var node = root.parentElement || root;
+    while (node && node.parentElement && node !== document.body) {
+      var parent = node.parentElement;
+      Array.from(parent.children).forEach(function (sibling) {
+        if (sibling === node || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName)) return;
+        if (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
+        isolatedSiblings.push({
+          el: sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          prevAriaHidden: sibling.getAttribute('aria-hidden')
+        });
+        sibling.inert = true;
+        sibling.setAttribute('inert', '');
+        sibling.setAttribute('aria-hidden', 'true');
+      });
+      node = parent;
+    }
+    var alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = {
+      count: 0,
+      prev: ''
+    });
+    var alloScrollLocked = Boolean(document.body);
+    if (alloScrollLocked && ++alloScrollLock.count === 1) {
+      alloScrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    }
     var trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     var trap = {
       root: root
@@ -195,8 +246,15 @@ function ProjectSettingsDialogFocusManager(props) {
       });
     };
     var handleKeyDown = function (event) {
-      if (event.isComposing || event.keyCode === 229) return;
-      if (!isTopTrap() || event.key !== 'Tab') return;
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+      if (!isTopTrap()) return;
+      if (event.key === 'Escape' && typeof props.onClose === 'function') {
+        event.preventDefault();
+        event.stopPropagation();
+        props.onClose();
+        return;
+      }
+      if (event.key !== 'Tab') return;
       var focusableElements = getFocusableElements();
       if (!focusableElements.length) {
         event.preventDefault();
@@ -220,6 +278,18 @@ function ProjectSettingsDialogFocusManager(props) {
     } catch (_) {}
     return function () {
       document.removeEventListener('keydown', handleKeyDown);
+      if (alloScrollLocked) {
+        alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
+        if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+      }
+      isolatedSiblings.forEach(function (item) {
+        if (!item.el || !item.el.isConnected) return;
+        if (!item.hadInert) {
+          item.el.inert = false;
+          item.el.removeAttribute('inert');
+        }
+        if (item.prevAriaHidden === null) item.el.removeAttribute('aria-hidden');else if (item.prevAriaHidden !== 'true') item.el.setAttribute('aria-hidden', item.prevAriaHidden);
+      });
       var wasTopTrap = isTopTrap();
       var trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
@@ -229,8 +299,119 @@ function ProjectSettingsDialogFocusManager(props) {
         } catch (_) {}
       }
     };
-  }, [props.dialogId]);
+  }, [props.dialogId, props.onClose]);
   return null;
+}
+function PortalUrlConnectionForm(props) {
+  var React = window.React;
+  var savedUrl = String(props.savedUrl || '');
+  var isConnected = props.isConnected === true;
+  var _draftState = React.useState(savedUrl);
+  var urlDraft = _draftState[0],
+    setUrlDraft = _draftState[1];
+  var _openState = React.useState(!isConnected);
+  var detailsOpen = _openState[0],
+    setDetailsOpen = _openState[1];
+  var _confirmState = React.useState(false);
+  var confirmingDisconnect = _confirmState[0],
+    setConfirmingDisconnect = _confirmState[1];
+  var prevConnectedRef = React.useRef(isConnected);
+  React.useEffect(function () {
+    setUrlDraft(savedUrl);
+  }, [savedUrl]);
+  React.useEffect(function () {
+    if (prevConnectedRef.current && !isConnected) {
+      setDetailsOpen(true);
+      setConfirmingDisconnect(false);
+    } else if (!prevConnectedRef.current && isConnected) {
+      setConfirmingDisconnect(false);
+    }
+    prevConnectedRef.current = isConnected;
+  }, [isConnected]);
+  var submitUrl = function (nextValue) {
+    if (typeof props.onSave !== 'function') return;
+    var result = props.onSave(nextValue);
+    if (result && result.ok !== false && typeof result.url === 'string') {
+      setUrlDraft(result.url);
+    }
+    return result;
+  };
+  var accent = props.accent === 'emerald' ? {
+    summary: 'text-emerald-800 focus-visible:ring-emerald-700',
+    borderTop: 'border-emerald-100',
+    inputFocus: 'focus-visible:border-emerald-600 focus-visible:ring-emerald-600',
+    submitBtn: 'border-emerald-700 text-emerald-800 hover:bg-emerald-50 focus-visible:ring-emerald-600',
+    neutralFocus: 'focus-visible:ring-emerald-600'
+  } : {
+    summary: 'text-indigo-800 focus-visible:ring-indigo-600',
+    borderTop: 'border-indigo-100',
+    inputFocus: 'focus-visible:border-indigo-600 focus-visible:ring-indigo-600',
+    submitBtn: 'border-indigo-600 text-indigo-700 hover:bg-indigo-50 focus-visible:ring-indigo-600',
+    neutralFocus: 'focus-visible:ring-indigo-600'
+  };
+  return /*#__PURE__*/React.createElement("details", {
+    open: detailsOpen,
+    onToggle: function (event) {
+      setDetailsOpen(Boolean(event.currentTarget && event.currentTarget.open));
+    },
+    className: "mt-4"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: `min-h-11 cursor-pointer rounded-lg px-2 py-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 ${accent.summary}`
+  }, props.summaryLabel), /*#__PURE__*/React.createElement("form", {
+    className: `mt-2 border-t ${accent.borderTop} pt-4`,
+    onSubmit: function (event) {
+      event.preventDefault();
+      submitUrl(urlDraft);
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: props.inputId,
+    className: "block text-xs font-black text-slate-700"
+  }, props.fieldLabel), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex flex-col gap-2 sm:flex-row"
+  }, /*#__PURE__*/React.createElement("input", {
+    id: props.inputId,
+    type: "url",
+    inputMode: "url",
+    autoComplete: "off",
+    spellCheck: false,
+    value: urlDraft,
+    onChange: function (event) {
+      setUrlDraft(event.target.value);
+    },
+    "aria-describedby": props.helpId,
+    placeholder: "https://script.google.com/macros/s/…/exec",
+    className: `min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus-visible:outline-none focus-visible:ring-2 ${accent.inputFocus}`
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    className: `min-h-11 rounded-xl border bg-white px-4 py-2 text-sm font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${accent.submitBtn}`
+  }, isConnected ? 'Update connection' : 'Connect portal'), isConnected && !confirmingDisconnect && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      setConfirmingDisconnect(true);
+    },
+    className: `min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${accent.neutralFocus}`
+  }, "Disconnect"), isConnected && confirmingDisconnect && /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2",
+    role: "group",
+    "aria-label": "Confirm portal disconnect"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      setConfirmingDisconnect(false);
+      setUrlDraft('');
+      submitUrl('');
+    },
+    className: "min-h-11 rounded-xl border border-rose-700 bg-rose-700 px-3 py-2 text-sm font-black text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2"
+  }, "Confirm disconnect"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      setConfirmingDisconnect(false);
+    },
+    className: `min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${accent.neutralFocus}`
+  }, "Cancel"))), /*#__PURE__*/React.createElement("p", {
+    id: props.helpId,
+    className: "mt-2 text-xs leading-relaxed text-slate-600"
+  }, props.helpText)), props.children);
 }
 function ProjectSettingsView(props) {
   var t = props.t;
@@ -343,10 +524,12 @@ function ProjectSettingsView(props) {
   };
   var updateSetting = function (key, value) {
     setStudentProjectSettings(function (prev) {
-      return {
+      var next = {
         ...prev,
         [key]: value
       };
+      if (key === 'allowStudentByokAi' && !value) next.studentByokAdultsConfirmed = false;
+      return next;
     });
   };
   var updatePermission = function (key, value) {
@@ -409,12 +592,29 @@ function ProjectSettingsView(props) {
   };
   var presetMatches = function (name) {
     var preset = presets[name];
-    var settingKeys = ['hideStudentAiFeatures', 'allowDictation', 'allowSocraticTutor', 'allowFreeResponse', 'allowPersonaFreeResponse'];
+    var settingDefaults = {
+      hideStudentAiFeatures: false,
+      allowDictation: true,
+      allowSocraticTutor: true,
+      allowFreeResponse: true,
+      allowPersonaFreeResponse: true
+    };
+    var permissionDefaults = {
+      allowDifficultySwitch: true,
+      allowModeSwitch: false,
+      allowCustomInstructions: false,
+      allowLanguageSwitch: true,
+      allowVisualsToggle: true,
+      lockAllSettings: false
+    };
+    var settingKeys = Object.keys(settingDefaults);
     var permissionKeys = Object.keys(preset.adventurePermissions);
     return settingKeys.every(function (key) {
-      return studentProjectSettings[key] === preset[key];
+      var actual = studentProjectSettings[key] === undefined ? settingDefaults[key] : Boolean(studentProjectSettings[key]);
+      return actual === preset[key];
     }) && permissionKeys.every(function (key) {
-      return permissions[key] === preset.adventurePermissions[key];
+      var actual = permissions[key] === undefined ? Boolean(permissionDefaults[key]) : Boolean(permissions[key]);
+      return actual === preset.adventurePermissions[key];
     });
   };
   var applyPreset = function (name) {
@@ -489,16 +689,10 @@ function ProjectSettingsView(props) {
     className: "fixed inset-0 z-[300] flex items-center justify-center bg-slate-950/80 p-3 backdrop-blur-sm animate-in fade-in duration-200 motion-reduce:animate-none sm:p-6",
     onMouseDown: event => {
       if (event.target === event.currentTarget) handleSetIsProjectSettingsOpenToFalse();
-    },
-    onKeyDown: event => {
-      if (event.isComposing || event.keyCode === 229) return;
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        handleSetIsProjectSettingsOpenToFalse();
-      }
     }
   }, /*#__PURE__*/React.createElement(ProjectSettingsDialogFocusManager, {
-    dialogId: "project-settings-dialog"
+    dialogId: "project-settings-dialog",
+    onClose: handleSetIsProjectSettingsOpenToFalse
   }), /*#__PURE__*/React.createElement("section", {
     id: "project-settings-dialog",
     tabIndex: -1,
@@ -549,7 +743,7 @@ function ProjectSettingsView(props) {
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-black text-slate-900"
     }, preset.title), preset.badge && /*#__PURE__*/React.createElement("span", {
-      className: "rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-700"
+      className: "rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-indigo-700"
     }, preset.badge)), /*#__PURE__*/React.createElement("span", {
       className: "mt-1 block text-xs leading-relaxed text-slate-600"
     }, preset.description));
@@ -561,8 +755,8 @@ function ProjectSettingsView(props) {
     className: "mt-3 grid gap-3 sm:grid-cols-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "sm:col-span-2"
-  }, renderFeatureToggle('proj-hide-student-ai', 'hideStudentAiFeatures', tx('project_settings.hide_student_ai', 'Hide student AI tools'), tx('project_settings.hide_student_ai_desc', 'Remove student-facing AI controls from this project. Teacher authoring tools remain available.'), false)), renderFeatureToggle('proj-dictation', 'allowDictation', t('project_settings.enable_dictation'), t('project_settings.dictation_desc'), true), renderFeatureToggle('proj-socratic', 'allowSocraticTutor', t('project_settings.enable_socratic'), t('project_settings.socratic_desc'), true), renderFeatureToggle('proj-free-response', 'allowFreeResponse', t('project_settings.enable_free_response'), t('project_settings.free_response_desc'), true), renderFeatureToggle('proj-persona-free', 'allowPersonaFreeResponse', t('project_settings.enable_persona_free'), t('project_settings.persona_free_desc'), true), /*#__PURE__*/React.createElement("details", {
-    open: studentProjectSettings.workStoryEnabled === true || studentProjectSettings.allowStudentByokAi === true ? true : undefined,
+  }, renderFeatureToggle('proj-hide-student-ai', 'hideStudentAiFeatures', tx('project_settings.hide_student_ai', 'Hide student AI tools'), tx('project_settings.hide_student_ai_desc', 'Remove student-facing AI controls from this project. Teacher authoring tools remain available.'), false)), renderFeatureToggle('proj-dictation', 'allowDictation', t('project_settings.enable_dictation'), t('project_settings.dictation_desc'), true), renderFeatureToggle('proj-socratic', 'allowSocraticTutor', t('project_settings.enable_socratic'), t('project_settings.socratic_desc'), true), renderFeatureToggle('proj-free-response', 'allowFreeResponse', t('project_settings.enable_free_response'), t('project_settings.free_response_desc'), true), renderFeatureToggle('proj-persona-free', 'allowPersonaFreeResponse', t('project_settings.enable_persona_free'), t('project_settings.persona_free_desc'), true), /*#__PURE__*/React.createElement(ProjectSettingsDisclosure, {
+    defaultOpen: studentProjectSettings.workStoryEnabled === true || studentProjectSettings.allowStudentByokAi === true,
     className: "sm:col-span-2 group rounded-xl border border-slate-200 bg-slate-50"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "min-h-11 flex cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600"
@@ -628,7 +822,7 @@ function ProjectSettingsView(props) {
     placeholder: t('project_settings.socratic_instructions_placeholder'),
     className: "mt-2 w-full resize-y rounded-lg border-2 border-slate-200 bg-white p-3 text-sm text-slate-800 focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "mt-1 text-right text-[11px] font-medium text-slate-600"
+    className: "mt-1 text-right text-xs font-medium text-slate-600"
   }, (studentProjectSettings.socraticCustomInstructions || '').length, "/600")), /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "project-settings-progression-heading"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -653,7 +847,7 @@ function ProjectSettingsView(props) {
     onChange: event => updateSetting('adventureUnlockXP', Math.max(0, parseInt(event.target.value, 10) || 0)),
     className: "mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
   }), /*#__PURE__*/React.createElement("span", {
-    className: "mt-1 block text-[11px] font-normal leading-relaxed text-slate-600"
+    className: "mt-1 block text-xs font-normal leading-relaxed text-slate-600"
   }, t('project_settings.unlock_xp_desc'))), /*#__PURE__*/React.createElement("label", {
     className: "text-sm font-bold text-slate-800"
   }, /*#__PURE__*/React.createElement("span", {
@@ -671,7 +865,7 @@ function ProjectSettingsView(props) {
     onChange: event => updateSetting('baseXP', Math.max(10, parseInt(event.target.value, 10) || 100)),
     className: "mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
   }), /*#__PURE__*/React.createElement("span", {
-    className: "mt-1 block text-[11px] font-normal leading-relaxed text-slate-600"
+    className: "mt-1 block text-xs font-normal leading-relaxed text-slate-600"
   }, t('project_settings.base_xp_desc'))), /*#__PURE__*/React.createElement("label", {
     className: "text-sm font-bold text-slate-800"
   }, /*#__PURE__*/React.createElement("span", {
@@ -689,7 +883,7 @@ function ProjectSettingsView(props) {
     onChange: event => updateSetting('adventureMinXP', Math.max(0, parseInt(event.target.value, 10) || 0)),
     className: "mt-1 min-h-11 w-full rounded-lg border-2 border-slate-200 px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-indigo-600 focus-visible:ring-4 focus-visible:ring-indigo-600/20"
   }), /*#__PURE__*/React.createElement("span", {
-    className: "mt-1 block text-[11px] font-normal leading-relaxed text-slate-600"
+    className: "mt-1 block text-xs font-normal leading-relaxed text-slate-600"
   }, t('project_settings.storybook_xp_desc'))))), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
     className: "text-xs font-black uppercase tracking-wider text-slate-600"
   }, t('project_settings.permissions_header')), /*#__PURE__*/React.createElement("p", {
@@ -727,48 +921,17 @@ function ProjectSettingsView(props) {
     type: "button",
     onClick: onOpenSchoolRewards,
     className: `min-h-11 shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isRewardsPortalConnected ? 'bg-emerald-700 text-white hover:bg-emerald-800 focus-visible:ring-emerald-600' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus-visible:ring-amber-600'}`
-  }, isRewardsPortalConnected ? 'Open School Rewards' : 'Connect School Rewards')), typeof onSaveRewardsPortalUrl === 'function' && /*#__PURE__*/React.createElement("details", {
-    open: !isRewardsPortalConnected,
-    className: "mt-4"
-  }, /*#__PURE__*/React.createElement("summary", {
-    className: "min-h-11 cursor-pointer rounded-lg px-2 py-3 text-xs font-bold text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
-  }, tx('project_settings.connection_setup', 'Connection setup')), /*#__PURE__*/React.createElement("form", {
-    className: "mt-2 border-t border-emerald-100 pt-4",
-    onSubmit: function (event) {
-      event.preventDefault();
-      applyRewardsPortalUrl(rewardsPortalUrlDraft);
-    }
-  }, /*#__PURE__*/React.createElement("label", {
-    htmlFor: "school-rewards-portal-url",
-    className: "block text-xs font-black text-slate-700"
-  }, "School or district Apps Script web-app URL"), /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 flex flex-col gap-2 sm:flex-row"
-  }, /*#__PURE__*/React.createElement("input", {
-    id: "school-rewards-portal-url",
-    type: "url",
-    inputMode: "url",
-    autoComplete: "off",
-    spellCheck: false,
-    defaultValue: rewardsPortalUrlDraft,
-    onChange: function (event) {
-      rewardsPortalUrlDraft = event.target.value;
-    },
-    "aria-describedby": "school-rewards-portal-help",
-    placeholder: "https://script.google.com/macros/s/…/exec",
-    className: "min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus-visible:border-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
-  }), /*#__PURE__*/React.createElement("button", {
-    type: "submit",
-    className: "min-h-11 rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-black text-emerald-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
-  }, isRewardsPortalConnected ? 'Update connection' : 'Connect portal'), isRewardsPortalConnected && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: function () {
-      applyRewardsPortalUrl('');
-    },
-    className: "min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
-  }, "Disconnect")), /*#__PURE__*/React.createElement("p", {
-    id: "school-rewards-portal-help",
-    className: "mt-2 text-xs leading-relaxed text-slate-600"
-  }, isRewardsPortalConnected ? 'This device opens the exact Google-hosted /exec deployment. Google sign-in and server-side roles control awards, checkout, and administration.' : 'Open School Rewards & Store from Leadership Hub for the step-by-step setup: it copies the reviewed apps_script/school_rewards package, generates the one-time setup call, and saves the /exec URL. You can also paste the URL here. AlloFlow stores only the launcher address.')))), isSchoolRole && typeof onOpenPrincipalEvaluation === 'function' && /*#__PURE__*/React.createElement("section", {
+  }, isRewardsPortalConnected ? 'Open School Rewards' : 'Connect School Rewards')), typeof onSaveRewardsPortalUrl === 'function' && /*#__PURE__*/React.createElement(PortalUrlConnectionForm, {
+    accent: "emerald",
+    savedUrl: rewardsPortalUrl,
+    isConnected: isRewardsPortalConnected,
+    summaryLabel: tx('project_settings.connection_setup', 'Connection setup'),
+    inputId: "school-rewards-portal-url",
+    fieldLabel: "School or district Apps Script web-app URL",
+    helpId: "school-rewards-portal-help",
+    helpText: isRewardsPortalConnected ? 'This device opens the exact Google-hosted /exec deployment. Google sign-in and server-side roles control awards, checkout, and administration.' : 'Open School Rewards & Store from Leadership Hub for the step-by-step setup: it copies the reviewed apps_script/school_rewards package, generates the one-time setup call, and saves the /exec URL. You can also paste the URL here. AlloFlow stores only the launcher address.',
+    onSave: applyRewardsPortalUrl
+  })), isSchoolRole && typeof onOpenPrincipalEvaluation === 'function' && /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "principal-evaluation-title",
     className: "rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-4 shadow-sm sm:p-5"
   }, /*#__PURE__*/React.createElement("div", {
@@ -795,48 +958,17 @@ function ProjectSettingsView(props) {
     className: "ml-1 font-normal text-slate-600"
   }, "covers the private, principal-managed Drive, and district portal paths, plus the evaluation cycle and privacy.")), !isEvaluationPortalConnected && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-900"
-  }, /*#__PURE__*/React.createElement("strong", null, "Need the middle path?"), " Open Educator Evaluation, choose ", /*#__PURE__*/React.createElement("strong", null, "Setup"), ", then select ", /*#__PURE__*/React.createElement("strong", null, "Principal-managed Drive"), ". A resumable seven-step checklist provides script.new, three source-copy buttons, private-deployment warnings, a helper-link field, and the deployment check."), typeof onSaveEvaluationPortalUrl === 'function' && /*#__PURE__*/React.createElement("details", {
-    open: !isEvaluationPortalConnected,
-    className: "mt-4"
-  }, /*#__PURE__*/React.createElement("summary", {
-    className: "min-h-11 cursor-pointer rounded-lg px-2 py-3 text-xs font-bold text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, tx('project_settings.connection_setup', 'Connection setup')), /*#__PURE__*/React.createElement("form", {
-    className: "mt-2 border-t border-indigo-100 pt-4",
-    onSubmit: function (event) {
-      event.preventDefault();
-      applyEvaluationPortalUrl(portalUrlDraft);
-    }
-  }, /*#__PURE__*/React.createElement("label", {
-    htmlFor: "principal-evaluation-portal-url",
-    className: "block text-xs font-black text-slate-700"
-  }, "District Apps Script web-app URL"), /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 flex flex-col gap-2 sm:flex-row"
-  }, /*#__PURE__*/React.createElement("input", {
-    id: "principal-evaluation-portal-url",
-    type: "url",
-    inputMode: "url",
-    autoComplete: "off",
-    spellCheck: false,
-    defaultValue: portalUrlDraft,
-    onChange: function (event) {
-      portalUrlDraft = event.target.value;
-    },
-    "aria-describedby": "principal-evaluation-portal-help",
-    placeholder: "https://script.google.com/macros/s/…/exec",
-    className: "min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus-visible:border-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }), /*#__PURE__*/React.createElement("button", {
-    type: "submit",
-    className: "min-h-11 rounded-xl border border-indigo-600 bg-white px-4 py-2 text-sm font-black text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
-  }, isEvaluationPortalConnected ? 'Update connection' : 'Connect portal'), isEvaluationPortalConnected && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: function () {
-      applyEvaluationPortalUrl('');
-    },
-    className: "min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
-  }, "Disconnect")), /*#__PURE__*/React.createElement("p", {
-    id: "principal-evaluation-portal-help",
-    className: "mt-2 text-xs leading-relaxed text-slate-600"
-  }, isEvaluationPortalConnected ? 'This device will open the exact district /exec deployment in a separate tab. Google sign-in and server assignments control access; emailed links do not.' : 'Paste the district-owned HTTPS Apps Script deployment URL ending in /exec. AlloFlow stores only this launcher address on this device.')), /*#__PURE__*/React.createElement("details", {
+  }, /*#__PURE__*/React.createElement("strong", null, "Need the middle path?"), " Open Educator Evaluation, choose ", /*#__PURE__*/React.createElement("strong", null, "Setup"), ", then select ", /*#__PURE__*/React.createElement("strong", null, "Principal-managed Drive"), ". A resumable seven-step checklist provides script.new, three source-copy buttons, private-deployment warnings, a helper-link field, and the deployment check."), typeof onSaveEvaluationPortalUrl === 'function' && /*#__PURE__*/React.createElement(PortalUrlConnectionForm, {
+    accent: "indigo",
+    savedUrl: evaluationPortalUrl,
+    isConnected: isEvaluationPortalConnected,
+    summaryLabel: tx('project_settings.connection_setup', 'Connection setup'),
+    inputId: "principal-evaluation-portal-url",
+    fieldLabel: "District Apps Script web-app URL",
+    helpId: "principal-evaluation-portal-help",
+    helpText: isEvaluationPortalConnected ? 'This device will open the exact district /exec deployment in a separate tab. Google sign-in and server assignments control access; emailed links do not.' : 'Paste the district-owned HTTPS Apps Script deployment URL ending in /exec. AlloFlow stores only this launcher address on this device.',
+    onSave: applyEvaluationPortalUrl
+  }, /*#__PURE__*/React.createElement("details", {
     className: "mt-4 rounded-xl border border-slate-200 bg-white/70 p-3"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "min-h-11 flex items-center cursor-pointer rounded-lg text-xs font-black text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"

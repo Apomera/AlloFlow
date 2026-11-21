@@ -137,10 +137,13 @@ window.StemLab = window.StemLab || {
   // ── Sound Effects ──
   // ══════════════════════════════════════════════════════════════
   var _audioCtx = null;
+  var _soundEnabled = true;
   function getAC() { if (!_audioCtx) try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} return _audioCtx; }
   function playTone(f, dur, type, vol) {
+    if (!_soundEnabled) return;
+    if (typeof window !== 'undefined' && ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute)) return;
     var ac = getAC(); if (!ac) return;
-    try { var o = ac.createOscillator(), g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(vol || 0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.12)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (dur || 0.12)); } catch(e) {}
+    try { if (ac.state === 'suspended' && ac.resume) ac.resume(); var o = ac.createOscillator(), g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(vol || 0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.12)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (dur || 0.12)); } catch(e) {}
   }
   function sfxClick() { playTone(600, 0.04, 'sine', 0.05); }
   function sfxCorrect() { playTone(523, 0.08, 'sine', 0.08); setTimeout(function() { playTone(659, 0.08, 'sine', 0.08); }, 70); setTimeout(function() { playTone(784, 0.12, 'sine', 0.1); }, 140); }
@@ -454,6 +457,7 @@ window.StemLab = window.StemLab || {
     var DEG = Math.PI / 180;
     var T = null;
     var state = 'idle';
+    var mountSeq = 0;
     var canvasEl = null, renderer = null, scene = null, camera = null;
     var batch = null, groundMesh = null;
     var rafId = 0, capacity = 0, resizeObs = null;
@@ -519,13 +523,17 @@ window.StemLab = window.StemLab || {
     function build() {
       scene = new T.Scene();
       camera = new T.PerspectiveCamera(45, 1, 0.1, 3000);
-      scene.add(new T.HemisphereLight(0xe0f2fe, 0x334155, 0.9));
-      var dir = new T.DirectionalLight(0xffffff, 0.6);
-      dir.position.set(30, 60, 40);
-      scene.add(dir);
+      // 3-point tactile studio lighting: sunlit warm key, cool sky fill/rim, balanced ambient hemisphere
+      scene.add(new T.HemisphereLight(0xf0f9ff, 0x1e293b, 0.85));
+      var keyLight = new T.DirectionalLight(0xfffbeb, 0.78);
+      keyLight.position.set(32, 64, 42);
+      scene.add(keyLight);
+      var rimLight = new T.DirectionalLight(0xbae6fd, 0.36);
+      rimLight.position.set(-38, 28, -32);
+      scene.add(rimLight);
       groundMesh = new T.Mesh(
         new T.PlaneGeometry(600, 600),
-        new T.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.12, depthWrite: false })
+        new T.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.14, depthWrite: false })
       );
       groundMesh.rotation.x = -Math.PI / 2;
       groundMesh.position.y = -0.02;
@@ -641,11 +649,12 @@ window.StemLab = window.StemLab || {
         canvasEl = el;
         if (state === 'ready' || state === 'loading') return;
         state = 'loading';
+        var seq = ++mountSeq;
         var loader = (window.StemLab && window.StemLab.ensureThree)
           ? window.StemLab.ensureThree({ failMessage: 'The 3D engine could not load. The flat blocks still work.' })
           : Promise.reject(new Error('no-loader'));
         loader.then(function (three) {
-          if (!canvasEl) return;
+          if (seq !== mountSeq || !canvasEl) return;
           T = three;
           try {
             renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
@@ -662,9 +671,10 @@ window.StemLab = window.StemLab || {
           appliedSig = ''; appliedCamSig = ''; dirty = true;
           if (!rafId) rafId = requestAnimationFrame(frame);
           if (pending && typeof pending.onReady === 'function') { try { pending.onReady(); } catch (e2) {} }
-        }).catch(function () { fail('cdn'); });
+        }).catch(function () { if (seq !== mountSeq) return; fail('cdn'); });
       },
       unmount: function () {
+        mountSeq++;
         if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
         else window.removeEventListener('resize', resize);
@@ -734,6 +744,7 @@ window.StemLab = window.StemLab || {
       var manipMode = typeof _m.mode === 'string' && _m.mode ? _m.mode : 'blocks';
       var score = (_m.score && typeof _m.score === 'object' && !Array.isArray(_m.score)) ? { correct: Number(_m.score.correct) || 0, total: Number(_m.score.total) || 0 } : { correct: 0, total: 0 };
       var soundEnabled = _m.soundEnabled != null ? _m.soundEnabled : true;
+      _soundEnabled = !!soundEnabled;
       var earnedBadges = (_m.earnedBadges && typeof _m.earnedBadges === 'object' && !Array.isArray(_m.earnedBadges)) ? _m.earnedBadges : {};
       var showBadgesPanel = _m.showBadgesPanel || false;
       var streak = Number(_m.streak) || 0;
@@ -1222,27 +1233,97 @@ window.StemLab = window.StemLab || {
       // ──────────────────────────────────────────────────────────────
       // FIX (v3.1): previously the grid backgroundImage *replaced* the
       // colored gradient, so all blocks rendered as faint grid-on-transparent
-      // — they looked beige. Now: solid colored backgroundColor + grid as
-      // backgroundImage layered on top, with a strong slate border for
-      // category contrast.
       // ══════════════════════════════════════════════════════════════
+      // Crisp 3-face isometric Base-10 blocks (sunlit top, mid front,
+      // deep side) with etched unit-cube grooves & soft grounded shadows.
+      // ══════════════════════════════════════════════════════════════
+      var shadeIsoHex = function(hex, factor) {
+        if (typeof hex !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(hex)) return hex;
+        var r = Math.max(0, Math.min(255, Math.round(parseInt(hex.slice(1, 3), 16) * factor)));
+        var g = Math.max(0, Math.min(255, Math.round(parseInt(hex.slice(3, 5), 16) * factor)));
+        var b = Math.max(0, Math.min(255, Math.round(parseInt(hex.slice(5, 7), 16) * factor)));
+        return '#' + [r, g, b].map(function(v) { return ('0' + v.toString(16)).slice(-2); }).join('');
+      };
       var renderBlock3D = function(color, lightColor, w, ht, count, gridCols, gridRows) {
-        var hasGrid = gridCols > 1 || gridRows > 1;
+        var isCube = w >= 54 && ht >= 54;
+        var isFlat = !isCube && w >= 40 && ht >= 40;
+        var isRod = !isCube && !isFlat && ht >= 36;
+        var dx = isCube ? 12 : (isFlat ? 5.5 : (isRod ? 5 : 4.5));
+        var dy = isCube ? 10 : (isFlat ? 4.5 : (isRod ? 4 : 3.5));
+        var pad = 2;
+        var svgW = Math.ceil(w + dx + pad * 2 + 2);
+        var svgH = Math.ceil(ht + dy + pad * 2 + 3);
+        var x0 = pad;
+        var y0 = pad + dy;
+        var topFill = isContrast ? '#ffff00' : (lightColor || shadeIsoHex(color, 1.28));
+        var frontFill = isContrast ? '#000000' : color;
+        var sideFill = isContrast ? '#ffffff' : shadeIsoHex(color, 0.66);
+        var edgeInk = isContrast ? '#ffff00' : '#0f172a';
+        var grooveInk = isContrast ? 'rgba(255,255,0,0.75)' : 'rgba(255,255,255,0.52)';
+        var deepGroove = isContrast ? 'rgba(0,0,0,0.65)' : 'rgba(15,23,42,0.34)';
+        var depthSlices = isCube ? 10 : 1;
+
+        var grooves = [];
+        // Front face etched unit-cube grooves
+        if (gridCols > 1) {
+          for (var gc = 1; gc < gridCols; gc++) {
+            var gx = x0 + (w * gc) / gridCols;
+            grooves.push(h('line', { key: 'fv' + gc, x1: gx, y1: y0, x2: gx, y2: y0 + ht, stroke: grooveInk, strokeWidth: 0.75 }));
+          }
+        }
+        if (gridRows > 1) {
+          for (var gr = 1; gr < gridRows; gr++) {
+            var gy = y0 + (ht * gr) / gridRows;
+            grooves.push(h('line', { key: 'fh' + gr, x1: x0, y1: gy, x2: x0 + w, y2: gy, stroke: grooveInk, strokeWidth: 0.75 }));
+            // Matching side-face horizontal unit notches
+            grooves.push(h('line', { key: 'sh' + gr, x1: x0 + w, y1: gy, x2: x0 + w + dx, y2: gy - dy, stroke: deepGroove, strokeWidth: 0.7 }));
+          }
+        }
+        // Top-face etched grooves (column notches + depth layers on 1000-cube)
+        if (gridCols > 1) {
+          for (var tc = 1; tc < gridCols; tc++) {
+            var tx = x0 + (w * tc) / gridCols;
+            grooves.push(h('line', { key: 'tc' + tc, x1: tx, y1: y0, x2: tx + dx, y2: y0 - dy, stroke: deepGroove, strokeWidth: 0.65 }));
+          }
+        }
+        if (depthSlices > 1) {
+          for (var ds = 1; ds < depthSlices; ds++) {
+            var frac = ds / depthSlices;
+            var ddx = dx * frac, ddy = dy * frac;
+            // Top face depth slice line
+            grooves.push(h('line', { key: 'td' + ds, x1: x0 + ddx, y1: y0 - ddy, x2: x0 + w + ddx, y2: y0 - ddy, stroke: deepGroove, strokeWidth: 0.65 }));
+            // Side face vertical depth slice line (10 flats thick!)
+            grooves.push(h('line', { key: 'sd' + ds, x1: x0 + w + ddx, y1: y0 - ddy, x2: x0 + w + ddx, y2: y0 + ht - ddy, stroke: deepGroove, strokeWidth: 0.65 }));
+          }
+        }
+
+        var topPts = x0 + ',' + y0 + ' ' + (x0 + dx) + ',' + (y0 - dy) + ' ' + (x0 + w + dx) + ',' + (y0 - dy) + ' ' + (x0 + w) + ',' + y0;
+        var sidePts = (x0 + w) + ',' + y0 + ' ' + (x0 + w + dx) + ',' + (y0 - dy) + ' ' + (x0 + w + dx) + ',' + (y0 + ht - dy) + ' ' + (x0 + w) + ',' + (y0 + ht);
+        var shadowPts = (x0 + 2) + ',' + (y0 + ht + 2.5) + ' ' + (x0 + w + 2) + ',' + (y0 + ht + 2.5) + ' ' + (x0 + w + dx + 2) + ',' + (y0 + ht - dy + 3) + ' ' + (x0 + dx + 2) + ',' + (y0 + ht - dy + 3);
+
         return Array.from({ length: count }).map(function(_, i) {
-          return h('div', {
+          return h('svg', {
             key: i,
-            style: {
-              width: w + 'px', height: ht + 'px',
-              backgroundColor: color,
-              backgroundImage: hasGrid
-                ? 'repeating-linear-gradient(90deg, transparent, transparent ' + (100/gridCols) + '%, rgba(255,255,255,0.55) ' + (100/gridCols) + '%, rgba(255,255,255,0.55) calc(' + (100/gridCols) + '% + 1.2px)), repeating-linear-gradient(0deg, transparent, transparent ' + (100/gridRows) + '%, rgba(255,255,255,0.55) ' + (100/gridRows) + '%, rgba(255,255,255,0.55) calc(' + (100/gridRows) + '% + 1.2px))'
-                : 'none',
-              border: '1.5px solid #0f172a',
-              borderRadius: '3px',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.18)',
-              transition: 'transform 0.15s ease', flexShrink: 0
-            }
-          });
+            width: svgW,
+            height: svgH,
+            viewBox: '0 0 ' + svgW + ' ' + svgH,
+            'aria-hidden': 'true',
+            focusable: 'false',
+            style: { flexShrink: 0, display: 'block', overflow: 'visible', transition: 'transform 0.15s ease' }
+          },
+            // Grounded soft drop shadow on the place-value mat
+            !isContrast && h('polygon', { points: shadowPts, fill: 'rgba(15,23,42,0.22)' }),
+            // Sunlit top face
+            h('polygon', { points: topPts, fill: topFill, stroke: edgeInk, strokeWidth: 1.1, strokeLinejoin: 'round' }),
+            // Deep shaded right side face
+            h('polygon', { points: sidePts, fill: sideFill, stroke: edgeInk, strokeWidth: 1.1, strokeLinejoin: 'round' }),
+            // Mid front face
+            h('rect', { x: x0, y: y0, width: w, height: ht, fill: frontFill, stroke: edgeInk, strokeWidth: 1.2, strokeLinejoin: 'round' }),
+            // Etched unit-cube grooves across all 3 visible isometric faces
+            grooves,
+            // Crisp specular top-front ridge catchlight
+            !isContrast && h('line', { x1: x0 + 1, y1: y0 + 0.8, x2: x0 + w - 1, y2: y0 + 0.8, stroke: 'rgba(255,255,255,0.68)', strokeWidth: 1.1 })
+          );
         });
       };
 
@@ -1604,7 +1685,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm mb-2' }, __alloT('stem.manipulatives.first_exchange_prompt', 'Try this: build 14 ones, then trade ten ones for one ten. Does the total change?')),
             h('button', {type:'button',className:'rounded-lg border border-orange-700 px-3 py-2 text-sm font-bold',onClick:function(){upd({b10:{ones:14,tens:0,hundreds:0,thousands:0},b10Challenge:null,b10Feedback:null,b10AddMode:false,b10Addends:null});}},__alloT('stem.manipulatives.start_fourteen','Start with 14 ones'))
           ),
-          h('style', null, __alloT('stem.manipulatives.keyframes_b10regroup_0_transform_scale', '@keyframes b10regroup { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168,85,247,0.5); } 40% { transform: scale(1.15); box-shadow: 0 0 20px 8px rgba(168,85,247,0.4); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168,85,247,0); } }')),
+          h('style', null, __alloT('stem.manipulatives.keyframes_b10regroup_0_transform_scale', '@keyframes b10regroup { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168,85,247,0.55), 0 0 0 0 rgba(251,191,36,0.45); } 45% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(168,85,247,0.26), 0 0 24px 6px rgba(251,191,36,0.32); } 100% { transform: scale(1); box-shadow: 0 0 0 14px rgba(168,85,247,0), 0 0 0 0 rgba(251,191,36,0); } }')),
 
           h('div', { className: 'bg-gradient-to-b from-orange-50 to-amber-50 rounded-xl border-2 border-orange-200 p-6' },
             // Total display with expanded form + number words
@@ -1691,7 +1772,7 @@ window.StemLab = window.StemLab || {
                 renderBlock3D('#ea580c', '#fb923c', 10, 10, b10.ones, 1, 1),
                 totalValue === 0 && h('span', { className: 'text-sm text-slate-600 italic' }, __alloT('stem.manipulatives.no_blocks', 'no blocks'))
               ),
-              // Bespoke Place-Value ×10 Relationship Diagram SVG
+              // Bespoke Place-Value ×10 Relationship Diagram SVG with luminous regrouping/carry pulse rings
               (function() {
                 var pvCols = [
                   { k: 'thousands', lbl: __alloT('stem.manipulatives.pv_th', '1,000s'), val: b10.thousands, mult: 1000, fill: '#db2777', cx: 52 },
@@ -1699,26 +1780,45 @@ window.StemLab = window.StemLab || {
                   { k: 'tens',      lbl: __alloT('stem.manipulatives.pv_t', '10s'),    val: b10.tens,      mult: 10,   fill: '#059669', cx: 264 },
                   { k: 'ones',      lbl: __alloT('stem.manipulatives.pv_o', '1s'),     val: b10.ones,      mult: 1,    fill: '#ea580c', cx: 368 }
                 ];
+                var pvCarryReady = [b10.hundreds >= 10, b10.tens >= 10, b10.ones >= 10];
                 return h('div', { className: 'manip-pv-stage' },
                   h('svg', {
-                    viewBox: '0 0 420 74', width: '100%', height: 'auto', role: 'img',
+                    viewBox: '0 0 420 78', width: '100%', height: 'auto', role: 'img',
                     'aria-label': __alloT('stem.manipulatives.pv_diagram_aria', 'Place-value chart showing thousands, hundreds, tens, and ones counts with times-ten regrouping arrows'),
-                    style: { display: 'block', maxHeight: 82 }
+                    style: { display: 'block', maxHeight: 86 }
                   },
+                    !isContrast && h('defs', null,
+                      h('linearGradient', { id: 'b10-pv-gloss', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.42)' }),
+                        h('stop', { offset: '44%', stopColor: 'rgba(255,255,255,0.06)' }),
+                        h('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.22)' })
+                      )
+                    ),
                     [105, 211, 316].map(function(ax, idx) {
+                      var carryHot = pvCarryReady[idx];
                       return h('g', { key: 'pv-arr-' + idx },
-                        h('line', { x1: ax + 14, y1: 30, x2: ax - 12, y2: 30, stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 1.8 }),
-                        h('path', { d: 'M' + (ax - 8) + ' 26 L' + (ax - 14) + ' 30 L' + (ax - 8) + ' 34', fill: 'none', stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-                        h('text', { x: ax + 1, y: 21, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#64748b', fontSize: 10, fontWeight: 800 }, '×10')
+                        !isContrast && carryHot && h('line', { x1: ax + 16, y1: 31, x2: ax - 14, y2: 31, stroke: '#a855f7', strokeWidth: 7, strokeOpacity: 0.24, strokeLinecap: 'round' }),
+                        h('line', { x1: ax + 14, y1: 31, x2: ax - 12, y2: 31, stroke: isContrast ? '#ffff00' : (carryHot ? '#9333ea' : '#94a3b8'), strokeWidth: carryHot ? 2.4 : 1.8, strokeLinecap: 'round' }),
+                        h('path', { d: 'M' + (ax - 8) + ' 27 L' + (ax - 14) + ' 31 L' + (ax - 8) + ' 35', fill: 'none', stroke: isContrast ? '#ffff00' : (carryHot ? '#9333ea' : '#94a3b8'), strokeWidth: carryHot ? 2.4 : 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                        h('text', { x: ax + 1, y: 21, textAnchor: 'middle', fill: isContrast ? '#00ff00' : (carryHot ? '#7e22ce' : '#64748b'), fontSize: 10, fontWeight: 800 }, '×10')
                       );
                     }),
                     pvCols.map(function(col) {
                       var tradeReady = col.k !== 'thousands' && col.val >= 10;
+                      var isFlashing = regroupFlash === col.k;
                       return h('g', { key: 'pv-' + col.k },
-                        h('rect', { x: col.cx - 38, y: 10, width: 76, height: 42, rx: 10, fill: isContrast ? '#000000' : (col.val > 0 ? col.fill : '#f1f5f9'), stroke: isContrast ? (tradeReady ? '#ffff00' : '#00ff00') : (tradeReady ? '#a855f7' : col.fill), strokeWidth: tradeReady ? 2.5 : 1.5, opacity: isContrast ? 1 : (col.val > 0 ? 0.94 : 0.7) }),
-                        h('text', { x: col.cx, y: 29, textAnchor: 'middle', fill: isContrast ? '#ffffff' : (col.val > 0 ? '#ffffff' : '#334155'), fontSize: 14, fontWeight: 900 }, String(col.val)),
-                        h('text', { x: col.cx, y: 45, textAnchor: 'middle', fill: isContrast ? '#ffff00' : (col.val > 0 ? '#f8fafc' : '#475569'), fontSize: 10, fontWeight: 700 }, col.lbl),
-                        tradeReady && h('text', { x: col.cx, y: 67, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#7e22ce', fontSize: 10, fontWeight: 900 }, __alloT('stem.manipulatives.pv_trade_ready', '10→1 ready'))
+                        // Grounded soft shadow on place-value mat
+                        !isContrast && h('rect', { x: col.cx - 36, y: 14, width: 76, height: 42, rx: 10, fill: 'rgba(15,23,42,0.14)' }),
+                        // Luminous regrouping/carry energy pulse rings when 10→1 trade is ready or active
+                        !isContrast && (tradeReady || isFlashing) && h('g', { pointerEvents: 'none' },
+                          h('rect', { x: col.cx - 43, y: 6, width: 86, height: 50, rx: 14, fill: 'none', stroke: isFlashing ? '#f59e0b' : '#a855f7', strokeWidth: 2, strokeOpacity: 0.32, strokeDasharray: '5 3' }),
+                          h('rect', { x: col.cx - 40, y: 9, width: 80, height: 44, rx: 12, fill: 'none', stroke: isFlashing ? '#fbbf24' : '#c084fc', strokeWidth: 4.5, strokeOpacity: 0.24 })
+                        ),
+                        h('rect', { x: col.cx - 38, y: 11, width: 76, height: 42, rx: 10, fill: isContrast ? '#000000' : (col.val > 0 ? col.fill : '#f1f5f9'), stroke: isContrast ? (tradeReady ? '#ffff00' : '#00ff00') : (tradeReady ? '#a855f7' : col.fill), strokeWidth: tradeReady ? 2.5 : 1.5, opacity: isContrast ? 1 : (col.val > 0 ? 0.96 : 0.78) }),
+                        !isContrast && col.val > 0 && h('rect', { x: col.cx - 37, y: 12, width: 74, height: 40, rx: 9, fill: 'url(#b10-pv-gloss)', pointerEvents: 'none' }),
+                        h('text', { x: col.cx, y: 30, textAnchor: 'middle', fill: isContrast ? '#ffffff' : (col.val > 0 ? '#ffffff' : '#334155'), fontSize: 14, fontWeight: 900 }, String(col.val)),
+                        h('text', { x: col.cx, y: 46, textAnchor: 'middle', fill: isContrast ? '#ffff00' : (col.val > 0 ? '#f8fafc' : '#475569'), fontSize: 10, fontWeight: 700 }, col.lbl),
+                        tradeReady && h('text', { x: col.cx, y: 69, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#7e22ce', fontSize: 10, fontWeight: 900 }, __alloT('stem.manipulatives.pv_trade_ready', '10→1 ready'))
                       );
                     })
                   )
@@ -1849,14 +1949,14 @@ window.StemLab = window.StemLab || {
                     })
                   ),
                   h('div', { className: 'flex flex-col items-center gap-0.5 mt-2', style: { minHeight: '130px' } },
-                    Array.from({ length: 5 }).map(function(_, bi) {
+                    Array.from({ length: 4 }).map(function(_, bi) {
                       var isActive = bi < earthlyVal;
                       return h('button', { key: bi,
                         'aria-label': placeNames[rodIdx] + ': ' + __alloT('stem.manipulatives.lower_bead', 'Lower bead') + ' ' + (bi + 1),
                         'aria-pressed': isActive,
                         onClick: function() {
                           var newE = isActive && bi === earthlyVal - 1 ? earthlyVal - 1 : !isActive && bi === earthlyVal ? earthlyVal + 1 : bi < earthlyVal ? bi : bi + 1;
-                          setRod(rodIdx, heavenlyVal * 5 + Math.max(0, Math.min(5, newE)));
+                          setRod(rodIdx, heavenlyVal * 5 + Math.max(0, Math.min(4, newE)));
                         },
                         className: 'relative z-10 transition-all duration-200',
                         style: {
@@ -2506,10 +2606,16 @@ window.StemLab = window.StemLab || {
             renderDiskColumn('ones', pvDisks.ones, '1', '#10b981')
           ),
           h('div', { className: 'flex flex-wrap gap-2 justify-center' },
-            canRegroup && h('button', { onClick: doRegroup,
-              className: 'transition-colors px-4 py-2 rounded-lg text-sm font-bold bg-emerald-700 text-white hover:bg-emerald-800 shadow-md animate-pulse' },
-              '⇄ Regroup (' + (pvDisks.ones >= 10 ? '10 ones → 1 ten' : '') + (pvDisks.tens >= 10 ? '10 tens → 1 hundred' : '') + ')'
-            ),
+            canRegroup && (function() {
+              var parts = [];
+              if (pvDisks.ones >= 10) parts.push('10 ones → 1 ten');
+              if (pvDisks.tens >= 10) parts.push('10 tens → 1 hundred');
+              if (pvDisks.hundreds >= 10) parts.push('10 hundreds → 1 thousand');
+              return h('button', { onClick: doRegroup,
+                className: 'transition-colors px-4 py-2 rounded-lg text-sm font-bold bg-emerald-700 text-white hover:bg-emerald-800 shadow-md animate-pulse' },
+                '⇄ Regroup (' + parts.join(', ') + ')'
+              );
+            })(),
             h('button', { onClick: function() { upd({ pvDisks: { ones: 0, tens: 0, hundreds: 0, thousands: 0 } }); },
               className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-800 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear_2', '↺ Clear'))
           ),
@@ -2990,7 +3096,8 @@ window.StemLab = window.StemLab || {
         var GB_OFFSET = 24;
         var pegs = [];
         var gbFocus = (_m.geoboardFocus && typeof _m.geoboardFocus.x === 'number')
-          ? _m.geoboardFocus : { x: 0, y: 0 };
+          ? { x: Math.max(0, Math.min(GB_SIZE - 1, _m.geoboardFocus.x)), y: Math.max(0, Math.min(GB_SIZE - 1, _m.geoboardFocus.y)) }
+          : { x: 0, y: 0 };
         // Enter and Space run the SAME branch a click runs, so the mouse path and the
         // keyboard path cannot drift apart. Arrows move the roving focus; anything else
         // falls through untouched so Tab still leaves the board.
@@ -3108,7 +3215,10 @@ window.StemLab = window.StemLab || {
               className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-800 hover:bg-rose-200' }, __alloT('stem.manipulatives.clear_4', '↺ Clear')),
             h('button', { onClick: function() { upd({ geoboardSize: Math.min(10, GB_SIZE + 1), geoboardSegments: [], geoboardSelected: null }); },
               className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-sky-100 text-sky-800 hover:bg-sky-200' }, __alloT('stem.manipulatives.larger_grid', '+ Larger grid')),
-            h('button', { onClick: function() { upd({ geoboardSize: Math.max(3, GB_SIZE - 1), geoboardSegments: [], geoboardSelected: null }); },
+            h('button', { onClick: function() {
+                var nextSize = Math.max(3, GB_SIZE - 1);
+                upd({ geoboardSize: nextSize, geoboardSegments: [], geoboardSelected: null, geoboardFocus: { x: Math.min(gbFocus.x, nextSize - 1), y: Math.min(gbFocus.y, nextSize - 1) } });
+              },
               className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-sky-100 text-sky-800 hover:bg-sky-200' }, __alloT('stem.manipulatives.smaller_grid', '− Smaller grid'))
           ),
           h('div', { className: 'bg-sky-50 rounded-lg p-3 border border-sky-100 text-xs text-sky-800' },
@@ -3494,8 +3604,8 @@ window.StemLab = window.StemLab || {
             __alloT('stem.manipulatives.a_whole_splits_into_two_parts_the_sing', '💡 A whole splits into two parts. The Singapore Math curriculum (1980s) made this the cornerstone for early addition and subtraction. '),
             __alloT('stem.manipulatives.once_a_student_fluently_sees_10_6_4_7_', 'Once a student fluently sees 10 = 6 + 4 = 7 + 3 = 5 + 5, they can add and subtract with much less effort.')
           ),
-          // ── Rainbow / doubles overlay panel ──
-          h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-3' },
+          // ── Rainbow / doubles overlay panel (hidden during active practice before checking) ──
+          (nbMode === 'explore' || !!nbFeedback) && h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-3' },
             h('p', { className: 'text-xs font-bold text-pink-700 mb-2' }, '🌈 Rainbow facts (all pairs that make ' + nbWhole + '):'),
             h('div', { className: 'flex flex-wrap gap-2' },
               (function() {
@@ -3504,7 +3614,8 @@ window.StemLab = window.StemLab || {
                   var isDouble = k === nbWhole - k;
                   var nearTen = nbWhole === 10;
                   arr.push(h('button', { key: 'rb' + k,
-                    onClick: function(v) { return function() { upd({ nbPart1: v }); }; }(k),
+                    disabled: nbMode !== 'explore',
+                    onClick: nbMode === 'explore' ? function(v) { return function() { upd({ nbPart1: v }); }; }(k) : undefined,
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
                       (nbPart1 === k ? 'bg-pink-700 text-white shadow' :
                         isDouble ? 'bg-amber-100 text-amber-800 border border-amber-400 hover:bg-amber-200' :
@@ -3981,6 +4092,9 @@ window.StemLab = window.StemLab || {
           else if (srcMode === 'geoboard') snap = { geoboardSegments: geoboardSegments, geoboardSize: geoboardSize };
           else if (srcMode === 'cRods') snap = { cRods: cRods };
           else if (srcMode === 'numberBonds') snap = { nbWhole: nbWhole, nbPart1: nbPart1 };
+          else if (srcMode === 'slideRule') snap = { slideRule: sr };
+          else if (srcMode === 'fracBars') snap = { fbDenoms: fbDenoms, fbSelected: fbSelected };
+          else if (srcMode === 'algebraTiles') snap = { atTiles: atTiles };
           var nc = Object.assign({}, savedConstructions);
           nc[libraryName.trim()] = { mode: srcMode, snapshot: snap, savedAt: Date.now() };
           upd({ savedConstructions: nc, libraryName: '' });

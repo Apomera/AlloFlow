@@ -205,12 +205,24 @@ function AssignmentCenterModal({
   const safeRows = Array.isArray(rowViews) ? rowViews : [];
   const safeVisibleRows = Array.isArray(visibleRowViews) ? visibleRowViews : safeRows;
   const safeSurveyItems = Array.isArray(surveyItems) ? surveyItems : [];
+  const [confirmRemoveKey, setConfirmRemoveKey] = React.useState('');
+  React.useEffect(() => {
+    if (!isOpen) setConfirmRemoveKey('');
+  }, [isOpen]);
   const activeCount = safeRows.filter(row => row && row.lifecycle === 'active').length;
   const awaitingCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.pendingCount) || 0), 0);
   const responseCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.participantCount) || 0), 0);
   const closedCount = safeRows.filter(row => row && row.lifecycle !== 'active').length;
   const hasPollOptionLines = String(activityOptionsText || '').split(/\r?\n/).some(line => line.trim());
-  const createDisabled = activityType === 'survey' && (!safeSurveyItems.some(item => String(item && item.text || '').trim()) || !activityIdentityMode || !surveyHostingAvailable) || (activityType === 'availability' || activityType === 'signup') && (!hasPollOptionLines || !activityIdentityMode);
+  const surveyHasNamedQuestion = safeSurveyItems.some(item => String(item && item.text || '').trim());
+  const surveyInvalidChoice = safeSurveyItems.some(item => item && String(item.text || '').trim() && item.type === 'choice' && !String(item.optionsText || '').split(/\r?\n/).some(line => line.trim()));
+  const surveyInvalidRange = safeSurveyItems.some(item => {
+    if (!item || !String(item.text || '').trim() || item.type !== 'numeric') return false;
+    const hasMin = item.min !== '' && item.min !== null && item.min !== undefined;
+    const hasMax = item.max !== '' && item.max !== null && item.max !== undefined;
+    return hasMin && hasMax && Number(item.min) > Number(item.max);
+  });
+  const createDisabled = activityType === 'survey' && (!surveyHasNamedQuestion || surveyInvalidChoice || surveyInvalidRange || !activityIdentityMode || !surveyHostingAvailable) || (activityType === 'availability' || activityType === 'signup') && (!hasPollOptionLines || !activityIdentityMode);
   const tx = (key, fallback, params) => assignmentCenterText(t, key, fallback, params);
   const handleActivityTypeChange = event => {
     const nextType = event.target.value;
@@ -284,9 +296,9 @@ function AssignmentCenterModal({
     id: "activity-setup-title",
     className: "text-sm font-black text-slate-900"
   }, tx('share_collect.setup_title', 'Add a shared activity')), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] leading-relaxed text-slate-600"
+    className: "mt-1 text-xs leading-relaxed text-slate-600"
   }, tx('share_collect.setup_sub', 'Attached to the next assignment link or QR code you create. People answer without an account.')), /*#__PURE__*/React.createElement("label", {
-    className: "mt-3 block text-[11px] font-black text-slate-700"
+    className: "mt-3 block text-xs font-black text-slate-700"
   }, tx('share_collect.activity_label', 'Activity'), /*#__PURE__*/React.createElement("select", {
     value: activityEnabled ? activityType : '',
     onChange: handleActivityTypeChange,
@@ -304,7 +316,7 @@ function AssignmentCenterModal({
   }, tx('share_collect.type_signup', 'Sign-up sheet (claim a slot)')), /*#__PURE__*/React.createElement("option", {
     value: "survey"
   }, tx('share_collect.type_survey', 'Survey (multiple questions)')))), activityEnabled && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
-    className: "mt-3 block text-[11px] font-black text-slate-700"
+    className: "mt-3 block text-xs font-black text-slate-700"
   }, tx('share_collect.prompt_label', 'What people see'), /*#__PURE__*/React.createElement("input", {
     type: "text",
     value: String(activityPrompt || ''),
@@ -312,25 +324,30 @@ function AssignmentCenterModal({
       prompt: event.target.value.slice(0, 240)
     }),
     className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
-  })), (activityType === 'availability' || activityType === 'signup') && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 rounded-lg border border-sky-200 bg-white p-3"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "block text-[11px] font-black text-slate-700"
-  }, tx('share_collect.window_label', 'Describe when it needs to happen (optional)'), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    value: pollAsk,
-    onChange: event => onPollAskChange(event.target.value.slice(0, 160)),
-    placeholder: tx('share_collect.window_placeholder', '45 minutes next week, weekday afternoons'),
-    className: "mt-1 w-full rounded-md border border-sky-300 px-2 py-2 text-sm font-semibold text-slate-800"
-  })), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: onSuggestPollTimes,
-    disabled: pollSuggestionBusy || !String(pollAsk || '').trim(),
-    className: "mt-2 rounded-md bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
-  }, pollSuggestionBusy ? tx('share_collect.thinking', 'Thinking...') : tx('share_collect.suggest_options', 'Suggest options')), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[10px] leading-relaxed text-slate-600"
-  }, tx('share_collect.suggest_note', 'Suggestions land in the box below for you to edit. Nothing is shared until you create the link.'))), /*#__PURE__*/React.createElement("label", {
-    className: "mt-3 block text-[11px] font-black text-slate-700"
+  })), (activityType === 'availability' || activityType === 'signup') && (() => {
+    const acTextAiReady = typeof window !== 'undefined' && (typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable('text', window.callGemini) : Boolean(typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked && !window._alloQrBlocked && !window.__alloStudentAiDisabled && !window.__alloAiSecretsLocked));
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "mt-3 rounded-lg border border-sky-200 bg-white p-3"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "block text-xs font-black text-slate-700"
+    }, tx('share_collect.window_label', 'Describe when it needs to happen (optional)'), /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      value: pollAsk,
+      onChange: event => onPollAskChange(event.target.value.slice(0, 160)),
+      placeholder: tx('share_collect.window_placeholder', '45 minutes next week, weekday afternoons'),
+      disabled: !acTextAiReady,
+      className: "mt-1 w-full rounded-md border border-sky-300 px-2 py-2 text-sm font-semibold text-slate-800 disabled:bg-slate-50 disabled:text-slate-500"
+    })), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: onSuggestPollTimes,
+      disabled: !acTextAiReady || pollSuggestionBusy || !String(pollAsk || '').trim(),
+      title: !acTextAiReady ? tx('share_collect.suggest_ai_off', 'AI setup is required to auto-suggest times. Type your own options below.') : undefined,
+      className: "mt-2 rounded-md bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50 disabled:cursor-not-allowed"
+    }, pollSuggestionBusy ? tx('share_collect.thinking', 'Thinking...') : tx('share_collect.suggest_options', 'Suggest options')), /*#__PURE__*/React.createElement("p", {
+      className: "mt-1 text-xs leading-relaxed text-slate-600"
+    }, acTextAiReady ? tx('share_collect.suggest_note', 'Suggestions land in the box below for you to edit. Nothing is shared until you create the link.') : tx('share_collect.suggest_ai_off', 'AI is currently off — type your options directly in the box below.'))));
+  })(), (activityType === 'availability' || activityType === 'signup') && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+    className: "mt-3 block text-xs font-black text-slate-700"
   }, tx('share_collect.options_label', 'Options, one per line'), /*#__PURE__*/React.createElement("textarea", {
     value: String(activityOptionsText || ''),
     onChange: event => onActivityChange({
@@ -342,11 +359,11 @@ function AssignmentCenterModal({
   })), !hasPollOptionLines && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
-    className: "mt-1 text-[10px] font-bold text-amber-700"
+    className: "mt-1 text-xs font-bold text-amber-700"
   }, tx('share_collect.options_required_note', 'Enter at least one option line before creating the link.')), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[10px] leading-relaxed text-slate-600"
+    className: "mt-1 text-xs leading-relaxed text-slate-600"
   }, tx('share_collect.options_note', 'Write times however you say them. AlloFlow does not convert time zones, so put the zone in the label if people are in more than one.'), activityType === 'signup' && tx('share_collect.signup_multiplier_note', ' Add "x 2" at the end of a line to give that slot two places.')), /*#__PURE__*/React.createElement("label", {
-    className: "mt-3 block text-[11px] font-black text-slate-700"
+    className: "mt-3 block text-xs font-black text-slate-700"
   }, tx('share_collect.identity_voting_label', 'Who is voting'), /*#__PURE__*/React.createElement("select", {
     value: String(activityIdentityMode || ''),
     onChange: event => onActivityChange({
@@ -364,9 +381,9 @@ function AssignmentCenterModal({
   }, tx('share_collect.identity_anonymous_counts', 'Anonymous (counts only)')))), !activityIdentityMode && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
-    className: "mt-1 text-[10px] font-bold text-amber-700"
+    className: "mt-1 text-xs font-bold text-amber-700"
   }, tx('share_collect.identity_required_vote', 'Pick who is voting before you share this.')), activityType === 'signup' ? /*#__PURE__*/React.createElement("label", {
-    className: "mt-3 block text-[11px] font-black text-slate-700"
+    className: "mt-3 block text-xs font-black text-slate-700"
   }, tx('share_collect.slots_per_person', 'Slots one person may take'), /*#__PURE__*/React.createElement("input", {
     type: "number",
     min: 1,
@@ -377,7 +394,7 @@ function AssignmentCenterModal({
     }),
     className: "mt-1 w-32 rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
-    className: "mt-3 flex items-center gap-2 text-[11px] font-bold text-slate-700"
+    className: "mt-3 flex items-center gap-2 text-xs font-bold text-slate-700"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     checked: activityAllowMaybe !== false,
@@ -385,7 +402,7 @@ function AssignmentCenterModal({
       allowMaybe: event.target.checked
     })
   }), tx('share_collect.allow_maybe', 'Allow "maybe" as well as yes and no')), /*#__PURE__*/React.createElement("label", {
-    className: "mt-1 flex items-center gap-2 text-[11px] font-bold text-slate-700"
+    className: "mt-1 flex items-center gap-2 text-xs font-bold text-slate-700"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     checked: activityMultiSelect !== false,
@@ -454,7 +471,7 @@ function AssignmentCenterModal({
   }, tx('share_collect.q_steps_n', stepCount + '-point', {
     n: stepCount
   })))), /*#__PURE__*/React.createElement("label", {
-    className: "flex items-center gap-1 text-[11px] font-bold text-slate-700"
+    className: "flex items-center gap-1 text-xs font-bold text-slate-700"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     checked: surveyItem.required === true,
@@ -470,7 +487,7 @@ function AssignmentCenterModal({
     onChange: event => onSurveyItemChange(surveyIndex, {
       lowLabel: event.target.value.slice(0, 60)
     }),
-    className: "rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700"
+    className: "rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
   }), /*#__PURE__*/React.createElement("input", {
     type: "text",
     "aria-label": tx('share_collect.scale_high_aria', 'Label for the high end'),
@@ -478,7 +495,7 @@ function AssignmentCenterModal({
     onChange: event => onSurveyItemChange(surveyIndex, {
       highLabel: event.target.value.slice(0, 60)
     }),
-    className: "rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700"
+    className: "rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
   })), surveyItem.type === 'choice' && /*#__PURE__*/React.createElement("textarea", {
     "aria-label": tx('share_collect.q_choices_aria', 'Choices for question ' + (surveyIndex + 1) + ', one per line', {
       n: surveyIndex + 1
@@ -489,9 +506,9 @@ function AssignmentCenterModal({
     }),
     rows: 3,
     placeholder: tx('share_collect.signup_slots_placeholder', 'Read-aloud\nGlossary\nPictures'),
-    className: "mt-2 w-full rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700"
+    className: "mt-2 w-full rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
   }), surveyItem.type === 'numeric' && /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 grid grid-cols-1 gap-2 text-[11px] font-bold text-slate-700 sm:grid-cols-2"
+    className: "mt-2 grid grid-cols-1 gap-2 text-xs font-bold text-slate-700 sm:grid-cols-2"
   }, /*#__PURE__*/React.createElement("label", {
     className: "block"
   }, tx('share_collect.q_min', 'Min'), /*#__PURE__*/React.createElement("input", {
@@ -520,8 +537,18 @@ function AssignmentCenterModal({
       required: false
     }),
     className: "mt-2 rounded-md border border-sky-300 bg-white px-3 py-1.5 text-xs font-black text-sky-800"
-  }, tx('share_collect.add_question', '+ Add question')), /*#__PURE__*/React.createElement("label", {
-    className: "mt-3 block text-[11px] font-black text-slate-700"
+  }, tx('share_collect.add_question', '+ Add question')), !surveyHasNamedQuestion && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    className: "mt-2 text-xs font-bold text-amber-800"
+  }, tx('share_collect.survey_question_required', 'Add at least one survey question with text before creating a link.')), surveyInvalidChoice && /*#__PURE__*/React.createElement("p", {
+    role: "alert",
+    className: "mt-1 text-xs font-bold text-rose-800"
+  }, tx('share_collect.survey_choice_required', 'Each multiple-choice question needs at least one option line.')), surveyInvalidRange && /*#__PURE__*/React.createElement("p", {
+    role: "alert",
+    className: "mt-1 text-xs font-bold text-rose-800"
+  }, tx('share_collect.survey_range_invalid', 'Numeric questions must have a Min less than or equal to Max.')), /*#__PURE__*/React.createElement("label", {
+    className: "mt-3 block text-xs font-black text-slate-700"
   }, tx('share_collect.about_survey_label', 'About this survey (optional, shown to respondents)'), /*#__PURE__*/React.createElement("textarea", {
     value: String(surveyInfo || ''),
     onChange: event => onActivityChange({
@@ -532,7 +559,7 @@ function AssignmentCenterModal({
     placeholder: tx('share_collect.intro_placeholder', 'Who is asking, what the answers are for, and that taking part is voluntary.'),
     className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-xs text-slate-800"
   })), /*#__PURE__*/React.createElement("label", {
-    className: "mt-3 block text-[11px] font-black text-slate-700"
+    className: "mt-3 block text-xs font-black text-slate-700"
   }, tx('share_collect.identity_answer_label', 'Who is answering'), /*#__PURE__*/React.createElement("select", {
     value: String(activityIdentityMode || ''),
     onChange: event => onActivityChange({
@@ -550,13 +577,13 @@ function AssignmentCenterModal({
   }, tx('share_collect.identity_anonymous_agg', 'Anonymous (aggregates only)')))), !activityIdentityMode && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
-    className: "mt-1 text-[10px] font-bold text-amber-700"
+    className: "mt-1 text-xs font-bold text-amber-700"
   }, tx('share_collect.identity_required_answer', 'Pick who is answering before you share this.')), showSurveyPairingGuidance && /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[10px] leading-relaxed text-slate-600"
+    className: "mt-1 text-xs leading-relaxed text-slate-600"
   }, tx('share_collect.pairing_intro', 'For pre/mid/post comparisons:'), ' ', /*#__PURE__*/React.createElement("b", null, tx('share_collect.identity_real_short', 'real names')), ' ', tx('share_collect.pairing_real', 'pair the same person across check-ins;'), ' ', /*#__PURE__*/React.createElement("b", null, tx('share_collect.identity_codename_short', 'codenames')), ' ', tx('share_collect.pairing_codename', 'pair only when they answer from the same device;'), ' ', /*#__PURE__*/React.createElement("b", null, tx('share_collect.identity_anon_short', 'anonymous')), ' ', tx('share_collect.pairing_anon', 'never pairs, so you get group totals only.')), !surveyHostingAvailable && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
-    className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] font-bold text-amber-800"
+    className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs font-bold text-amber-800"
   }, tx('share_collect.mailbox_v13_note', 'Your Class Mailbox script needs v13 before it can host surveys. Update, redeploy, then reconnect.', {
     v: Math.max(0, Math.trunc(Number(mailboxVersion) || 0))
   }))), /*#__PURE__*/React.createElement("button", {
@@ -575,33 +602,33 @@ function AssignmentCenterModal({
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-emerald-900"
   }, activeCount), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] font-black uppercase text-emerald-700"
+    className: "text-xs font-black uppercase text-emerald-700"
   }, tx('share_collect.stat_active', 'Active'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-amber-50 p-3 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-amber-900"
   }, awaitingCount), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] font-black uppercase text-amber-700"
+    className: "text-xs font-black uppercase text-amber-700"
   }, tx('share_collect.stat_awaiting', 'Awaiting review'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-sky-50 p-3 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-sky-900"
   }, responseCount), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] font-black uppercase text-sky-700"
+    className: "text-xs font-black uppercase text-sky-700"
   }, tx('share_collect.stat_anon_responses', 'Anonymous responses'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-slate-100 p-3 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-slate-800"
   }, closedCount), /*#__PURE__*/React.createElement("div", {
-    className: "text-[10px] font-black uppercase text-slate-600"
+    className: "text-xs font-black uppercase text-slate-600"
   }, tx('share_collect.stat_closed', 'Closed')))), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-indigo-900"
+    className: "text-xs text-indigo-900"
   }, tx('share_collect.privacy_note', 'Only aggregate counts and moderation totals are cached or exported; response text, links, private keys, and participant tokens stay out of reports.')), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex flex-wrap items-end gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "text-[10px] font-black uppercase text-indigo-900"
+    className: "text-xs font-black uppercase text-indigo-900"
   }, tx('share_collect.show_label', 'Show'), /*#__PURE__*/React.createElement("select", {
     value: filter,
     onChange: event => onFilterChange(event.target.value),
@@ -669,9 +696,9 @@ function AssignmentCenterModal({
       id: 'assignment-center-row-title-' + index,
       className: "break-words text-sm font-black text-slate-900"
     }, view.title || tx('share_collect.default_title', 'AlloFlow homework')), /*#__PURE__*/React.createElement("p", {
-      className: "mt-0.5 text-[11px] text-slate-600"
+      className: "mt-0.5 text-xs text-slate-600"
     }, Number(view.resourceCount) || 1, ' ', (Number(view.resourceCount) || 1) === 1 ? tx('share_collect.resource_one', 'resource') : tx('share_collect.resource_other', 'resources'), ' · ', activityLabel, ' · ', expiryLabel)), /*#__PURE__*/React.createElement("span", {
-      className: 'rounded-full px-2 py-1 text-[10px] font-black uppercase ' + (view.lifecycle === 'active' ? 'bg-emerald-100 text-emerald-800' : view.lifecycle === 'revoked' ? 'bg-slate-200 text-slate-800' : 'bg-rose-100 text-rose-800')
+      className: 'rounded-full px-2 py-1 text-xs font-black uppercase ' + (view.lifecycle === 'active' ? 'bg-emerald-100 text-emerald-800' : view.lifecycle === 'revoked' ? 'bg-slate-200 text-slate-800' : 'bg-rose-100 text-rose-800')
     }, lifecycleLabel)), view.hasSharedActivity ? /*#__PURE__*/React.createElement("div", {
       role: view.activityState === 'error' ? 'alert' : 'status',
       "aria-live": "polite",
@@ -683,41 +710,37 @@ function AssignmentCenterModal({
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-black text-sky-900"
     }, Number(view.participantCount) || 0), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-sky-700"
+      className: "text-xs text-sky-700"
     }, tx('share_collect.stat_responses', 'Responses'))), /*#__PURE__*/React.createElement("div", {
       className: "rounded-lg bg-amber-50 px-2 py-2 text-center"
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-black text-amber-900"
     }, Number(view.pendingCount) || 0), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-amber-700"
+      className: "text-xs text-amber-700"
     }, tx('share_collect.stat_held', 'Held'))), /*#__PURE__*/React.createElement("div", {
       className: "rounded-lg bg-emerald-50 px-2 py-2 text-center"
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-black text-emerald-900"
     }, Number(view.approvedCount) || 0), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-emerald-700"
+      className: "text-xs text-emerald-700"
     }, tx('share_collect.stat_approved', 'Approved'))), /*#__PURE__*/React.createElement("div", {
       className: "rounded-lg bg-slate-50 px-2 py-2 text-center"
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-black text-slate-800"
     }, Number(view.hiddenCount) || 0), /*#__PURE__*/React.createElement("div", {
-      className: "text-[10px] text-slate-600"
+      className: "text-xs text-slate-600"
     }, tx('share_collect.stat_hidden', 'Hidden')))) : /*#__PURE__*/React.createElement("p", {
-      className: "col-span-full rounded-lg bg-slate-50 p-2 text-[11px] text-slate-600"
+      className: "col-span-full rounded-lg bg-slate-50 p-2 text-xs text-slate-600"
     }, view.activityState === 'loading' ? tx('share_collect.status_loading', 'Loading anonymous activity status…') : view.activityState === 'error' ? tx('share_collect.status_error', 'Status unavailable. Reconnect Class Mailbox and refresh.') : closed ? tx('share_collect.status_closed', 'Closed assignment; status is no longer refreshed.') : tx('share_collect.status_refresh', 'Refresh to check activity status.'))) : /*#__PURE__*/React.createElement("p", {
-      className: "mt-2 rounded-lg bg-slate-50 p-2 text-[11px] text-slate-600"
+      className: "mt-2 rounded-lg bg-slate-50 p-2 text-xs text-slate-600"
     }, tx('share_collect.resource_only_note', 'Resource-only privacy mode: this link does not collect student progress or responses.')), view.actionError && /*#__PURE__*/React.createElement("p", {
       role: "alert",
-      className: "mt-2 rounded-lg border border-rose-200 bg-rose-50 p-2 text-[11px] font-bold text-rose-800"
-    }, view.actionError), /*#__PURE__*/React.createElement("input", {
-      "aria-label": tx('share_collect.row_link_aria', 'Private assignment link for ' + (view.title || tx('share_collect.default_title_short', 'homework')), {
-        title: view.title || tx('share_collect.default_title_short', 'homework')
-      }),
-      readOnly: true,
-      value: view.linkLabel || tx('share_collect.private_link_label', 'Private assignment link'),
-      onFocus: event => event.target.select(),
-      className: "mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] text-slate-700"
-    }), /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 rounded-lg border border-rose-200 bg-rose-50 p-2 text-xs font-bold text-rose-800"
+    }, view.actionError), /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-slate-700"
+    }, view.linkLabel || tx('share_collect.private_link_label', 'Private assignment link')), !closed ? ` · ${tx('share_collect.use_copy_active_link', 'Use Copy active link below to share the URL.')}` : ''), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
@@ -754,13 +777,28 @@ function AssignmentCenterModal({
       disabled: actionBusy || typeof view.onRevoke !== 'function',
       onClick: () => invoke(view.onRevoke),
       className: "min-h-10 rounded-lg border border-rose-300 bg-rose-50 px-2 text-xs font-bold text-rose-800 disabled:opacity-50"
-    }, view.actionKind === 'revoking' ? tx('share_collect.action_revoking', 'Revoking…') : tx('share_collect.action_revoke', 'Revoke now')), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      disabled: actionBusy || typeof view.onRemoveRecord !== 'function',
-      onClick: () => invoke(view.onRemoveRecord),
-      className: "min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 disabled:opacity-50"
-    }, tx('share_collect.action_remove_record', 'Remove record'))), view.showExpiredCopyNote && /*#__PURE__*/React.createElement("p", {
-      className: "mt-2 text-[10px] text-slate-500"
+    }, view.actionKind === 'revoking' ? tx('share_collect.action_revoking', 'Revoking…') : tx('share_collect.action_revoke', 'Revoke now')), (() => {
+      const rowKey = view.viewKey || 'row-' + index;
+      const needsConfirm = !closed && confirmRemoveKey !== rowKey;
+      const confirming = !closed && confirmRemoveKey === rowKey;
+      return /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        disabled: actionBusy || typeof view.onRemoveRecord !== 'function',
+        onClick: () => {
+          if (needsConfirm) {
+            setConfirmRemoveKey(rowKey);
+            return;
+          }
+          setConfirmRemoveKey('');
+          invoke(view.onRemoveRecord);
+        },
+        onBlur: () => {
+          if (confirming) setConfirmRemoveKey('');
+        },
+        className: `min-h-10 rounded-lg border px-2 text-xs font-bold disabled:opacity-50 ${confirming ? 'border-rose-500 bg-rose-50 text-rose-800' : 'border-slate-300 bg-white text-slate-700'}`
+      }, confirming ? tx('share_collect.action_confirm_remove_record', 'Confirm remove') : tx('share_collect.action_remove_record', 'Remove record'));
+    })()), view.showExpiredCopyNote && /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-xs text-slate-600"
     }, tx('share_collect.expired_copy_note', 'A fresh copy receives a new private link and empty student activity. Revoked assignments cannot be copied because their hosted data is deleted.')));
   }))));
 }

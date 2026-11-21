@@ -49,6 +49,7 @@ function planDigest(plan) { validatePlan(plan); return createHash('sha256').upda
 function inspectPacket(plan, receipt) {
   validatePlan(plan);
   object(receipt, ['kind', 'version', 'requestRef', 'scope', 'planSha256', 'outcomes', 'externalReviews']);
+  object(receipt.scope, ['accountRef', 'scriptId', 'mailboxFolderId', 'deliveryFolderId']);
   if (receipt.kind !== 'alloflow-mailbox-deletion-receipt' || receipt.version !== 1 || receipt.requestRef !== plan.requestRef || canonical(receipt.scope) !== canonical(plan.scope) || receipt.planSha256 !== planDigest(plan)) invalid('Receipt does not match the reviewed plan and scope.');
   if (!Array.isArray(receipt.outcomes) || receipt.outcomes.length > 1000 || !Array.isArray(receipt.externalReviews) || receipt.externalReviews.length !== AREAS.length) invalid('Invalid outcome or external-review list.');
   const resources = new Map(plan.resources.map(row => [row.ref, row])), observed = new Set();
@@ -63,7 +64,7 @@ function inspectPacket(plan, receipt) {
     const success = ['trashed', 'permanent-delete-confirmed', 'session-ended', 'retained', 'not-found'].includes(outcome.state);
     if (success && row.type !== 'live-session' && outcome.beforeModifiedAt !== row.modifiedAt) invalid('A changed resource needs a new plan, not a success claim.');
     const expected = { trash: 'trashed', 'permanent-delete': 'permanent-delete-confirmed', 'end-session': 'session-ended', retain: 'retained' }[row.action];
-    if (success && outcome.state !== expected && outcome.state !== 'not-found') invalid('An observation cannot claim a different action was completed.');
+    if (success && outcome.state !== expected && (outcome.state !== 'not-found' || row.action === 'retain')) invalid('An observation cannot claim a different action was completed.');
     const counter = { pending: 'pending', failed: 'failed', changed: 'changed', trashed: 'trashed', 'permanent-delete-confirmed': 'permanentlyDeletedReported', 'session-ended': 'sessionsEndedReported', retained: 'retained', 'not-found': 'notFound' }[outcome.state];
     counts[counter]++;
   }
@@ -85,9 +86,16 @@ function inspectPacket(plan, receipt) {
   };
 }
 function readBounded(file) {
-  const stat = fs.statSync(file);
-  if (!stat.isFile() || stat.size > 2 * 1024 * 1024) invalid('Evidence must be a JSON file no larger than 2 MiB.');
-  return JSON.parse(fs.readFileSync(file, 'utf8'));
+  const linkStat = fs.lstatSync(file);
+  if (linkStat.isSymbolicLink() || !linkStat.isFile() || linkStat.size > 2 * 1024 * 1024) invalid('Evidence must be a JSON file no larger than 2 MiB.');
+  const fd = fs.openSync(file, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
+  try {
+    const stat = fs.fstatSync(fd);
+    if (!stat.isFile() || stat.size > 2 * 1024 * 1024) invalid('Evidence must be a JSON file no larger than 2 MiB.');
+    return JSON.parse(fs.readFileSync(fd, 'utf8'));
+  } finally {
+    fs.closeSync(fd);
+  }
 }
 function main(args) {
   if (args.length !== 2) invalid('Usage: check_mailbox_deletion_receipt.cjs plan.json receipt.json');

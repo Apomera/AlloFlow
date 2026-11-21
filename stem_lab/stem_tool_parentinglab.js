@@ -739,11 +739,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
     category: 'science',
     questHooks: [
       { id: 'pl_read_m1', label: 'Read all five Warmth & Structure cards', icon: '📖', check: function(d) { var m = (d && d.readCards) || {}; return ['two-dials', 'four-corners', 'causation', 'culture', 'so-what'].every(function(id) { return m[id]; }); }, progress: function(d) { var m = (d && d.readCards) || {}; return ['two-dials', 'four-corners', 'causation', 'culture', 'so-what'].filter(function(id) { return m[id]; }).length + '/5 cards'; } },
-      { id: 'pl_dials', label: 'Rate 4 vignettes on both dials', icon: '🎛️', check: function(d) { return d && d.dialsDone && Object.keys(d.dialsDone).length >= 4; }, progress: function(d) { return ((d && d.dialsDone && Object.keys(d.dialsDone).length) || 0) + '/4 vignettes'; } },
-      { id: 'pl_serves', label: 'Return 4 serves in the Serve & Return studio', icon: '🤝', check: function(d) { return d && d.servesDone && Object.keys(d.servesDone).length >= 4; }, progress: function(d) { return ((d && d.servesDone && Object.keys(d.servesDone).length) || 0) + '/4 serves'; } },
-      { id: 'pl_skills', label: 'Tag 5 moves with the right shared skill', icon: '🧪', check: function(d) { return d && d.movesDone && Object.keys(d.movesDone).length >= 5; }, progress: function(d) { return ((d && d.movesDone && Object.keys(d.movesDone).length) || 0) + '/5 moves'; } },
-      { id: 'pl_pride', label: 'Label 6 lines of the play-session transcript', icon: '🗣️', check: function(d) { return d && d.prideDone && Object.keys(d.prideDone).length >= 6; }, progress: function(d) { return ((d && d.prideDone && Object.keys(d.prideDone).length) || 0) + '/6 lines'; } },
-      { id: 'pl_abc', label: 'Tag the function in 4 home scenes', icon: '🔁', check: function(d) { return d && d.abcDone && Object.keys(d.abcDone).length >= 4; }, progress: function(d) { return ((d && d.abcDone && Object.keys(d.abcDone).length) || 0) + '/4 scenes'; } }
+      { id: 'pl_dials', label: 'Rate 4 vignettes on both dials', icon: '🎛️', check: function(d) { var m = (d && d.dialsDone) || {}; return Object.keys(m).filter(function(k) { return m[k] && m[k].correct === true; }).length >= 4; }, progress: function(d) { var m = (d && d.dialsDone) || {}; return Object.keys(m).filter(function(k) { return m[k] && m[k].correct === true; }).length + '/4 vignettes'; } },
+      { id: 'pl_serves', label: 'Return 4 serves in the Serve & Return studio', icon: '🤝', check: function(d) { var m = (d && d.servesDone) || {}; return Object.keys(m).filter(function(k) { return m[k] && m[k].kind === 'return'; }).length >= 4; }, progress: function(d) { var m = (d && d.servesDone) || {}; return Object.keys(m).filter(function(k) { return m[k] && m[k].kind === 'return'; }).length + '/4 serves'; } },
+      { id: 'pl_skills', label: 'Tag 5 moves with the right shared skill', icon: '🧪', check: function(d) { var m = (d && d.movesDone) || {}; return Object.keys(m).filter(function(k) { return m[k] && m[k].correct === true; }).length >= 5; }, progress: function(d) { var m = (d && d.movesDone) || {}; return Object.keys(m).filter(function(k) { return m[k] && m[k].correct === true; }).length + '/5 moves'; } },
+      { id: 'pl_pride', label: 'Label 6 lines of the play-session transcript', icon: '🗣️', check: function(d) { var m = (d && d.prideDone) || {}; return Object.keys(m).filter(function(k) { return m[k] && m[k].correct === true; }).length >= 6; }, progress: function(d) { var m = (d && d.prideDone) || {}; return Object.keys(m).filter(function(k) { return m[k] && m[k].correct === true; }).length + '/6 lines'; } },
+      { id: 'pl_abc', label: 'Tag the function in 4 home scenes', icon: '🔁', check: function(d) { var m = (d && d.abcDone) || {}; return Object.keys(m).filter(function(k) { return m[k] && m[k].correct === true; }).length >= 4; }, progress: function(d) { var m = (d && d.abcDone) || {}; return Object.keys(m).filter(function(k) { return m[k] && m[k].correct === true; }).length + '/4 scenes'; } }
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
@@ -823,12 +823,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
       }
 
       // Shared card list — same details/summary markup for every module.
+      var xpGiven = d.xpGiven || {};
       function markCardReadIn(cards, cardId, xpLabel) {
         if (readCards[cardId]) return;
         var next = Object.assign({}, readCards); next[cardId] = true;
-        setPL({ readCards: next });
         var all = cards.every(function(c) { return next[c.id]; });
-        if (all) { awardXP(10, xpLabel); announceToSR(__alloT('stem.parentingLab.cards_done_generic_sr', 'All cards in this module read.')); }
+        var xpKey = 'cards:' + xpLabel;
+        if (all && !xpGiven[xpKey]) {
+          var nextXp = Object.assign({}, xpGiven); nextXp[xpKey] = true;
+          setPL({ readCards: next, xpGiven: nextXp });
+          awardXP(10, xpLabel);
+          announceToSR(__alloT('stem.parentingLab.cards_done_generic_sr', 'All cards in this module read.'));
+        } else {
+          setPL({ readCards: next });
+        }
       }
       function contentCardList(cards, xpLabel) {
         return h('div', { className: 'space-y-3 mb-6' },
@@ -897,7 +905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('span', { className: 'font-black text-base' }, '🎛️ ' + __alloT('stem.parentingLab.m1_title', 'M1 — Warmth & Structure: the two dials')),
               h('span', { className: 'text-[0.6875rem] font-bold', style: { color: pal.accent } },
-                Object.keys(readCards).length + '/' + M1_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(dialsDone).length + '/' + M1_VIGNETTES.length + ' ' + __alloT('stem.parentingLab.vignettes', 'vignettes'))
+                cardsRead(M1_CARDS) + '/' + M1_CARDS.length + ' ' + __alloT('stem.parentingLab.cards', 'cards') + ' · ' + Object.keys(dialsDone).length + '/' + M1_VIGNETTES.length + ' ' + __alloT('stem.parentingLab.vignettes', 'vignettes'))
             ),
             h('p', { className: 'text-xs mt-1', style: { color: pal.muted } },
               __alloT('stem.parentingLab.m1_teaser', 'The two dimensions under the famous four styles — and why "correlates with" is doing heavy lifting.'))
@@ -1273,9 +1281,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
         function togglePrep(itemId) {
           var next = Object.assign({}, prepDone);
           if (next[itemId]) delete next[itemId]; else next[itemId] = true;
-          setPL({ prepDone: next });
           var count = Object.keys(next).length;
-          if (count === M9_CHECKLIST.length) { awardXP(10, 'Meeting prep complete'); announceToSR(__alloT('stem.parentingLab.prep_done_sr', 'Every prep item checked. You are ready for the meeting.')); }
+          if (count === M9_CHECKLIST.length && !xpGiven['m9:prep']) {
+            var nextXp = Object.assign({}, xpGiven); nextXp['m9:prep'] = true;
+            setPL({ prepDone: next, xpGiven: nextXp });
+            awardXP(10, 'Meeting prep complete');
+            announceToSR(__alloT('stem.parentingLab.prep_done_sr', 'Every prep item checked. You are ready for the meeting.'));
+          } else {
+            setPL({ prepDone: next });
+          }
         }
         return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
           moduleHeader('🤲 ' + __alloT('stem.parentingLab.m9_title', 'M9 — When to seek help + partnering with school')),

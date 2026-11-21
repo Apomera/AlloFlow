@@ -1049,9 +1049,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       '.theme-contrast .stewardship-command,.theme-contrast .stewardship-inquiry,.theme-contrast .stewardship-constellation,.theme-contrast .stewardship-card-elevated{box-shadow:none!important;border-width:2px!important;background:#000000!important;border-color:#ffff00!important;}',
       '.theme-contrast .stewardship-family-tab,.theme-contrast .stewardship-preset-chip,.theme-contrast .stewardship-hero-badge{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;}',
       '.theme-contrast .stewardship-family-tab[aria-selected="true"]{background:#ffff00!important;color:#000000!important;border-color:#ffff00!important;}',
-      '.theme-contrast [data-stewardship-constellation-svg] text{fill:#ffff00!important;}'
+      '.theme-contrast [data-stewardship-constellation-svg] text{fill:#ffff00!important;}',
+      '.theme-contrast .stew-svg-fx{display:none!important;}'
     ].join('\n');
     if (document.head) document.head.appendChild(stewardshipStyle);
+  }
+
+  function _stewIsHC() {
+    try {
+      if (typeof document === 'undefined') return false;
+      var r = document.documentElement, b = document.body;
+      return !!((r && r.classList && r.classList.contains('theme-contrast')) || (b && b.classList && b.classList.contains('theme-contrast')));
+    } catch (e) { return false; }
   }
 
   // Only one report can own the browser print lifecycle at a time.
@@ -1988,17 +1997,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                   return { ent: ent, x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang), v: Math.round(v), hv: Math.max(0, Math.min(100, hv)), col: col, d: evidenceRows[i].lastChange != null ? evidenceRows[i].lastChange : 0, change: scenarioChangeMeaning(evidenceRows[i].lastChange, !!inv) };
                 });
                 var ringC = 2 * Math.PI * 20;
-                return h('svg', { 'data-stewardship-system-map': 'true', 'aria-describedby': inquiryId + '-scenario-' + scenario.id + '-current-summary', width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 540, display: 'block', margin: '0 auto' }, role: 'img', 'aria-label': 'System map of ' + scenario.label + ': ' + N + ' interconnected parts; your last decision shifted the highlighted ones.' },
-                  // Subtle ecological telemetry rings (no <line> or <g> so spoke/node indices remain 1:1)
-                  h('circle', { cx: cx, cy: cy, r: 46, fill: 'none', stroke: '#334155', strokeWidth: 1, strokeDasharray: '2 4', opacity: 0.55 }),
-                  h('circle', { cx: cx, cy: cy, r: 92, fill: 'none', stroke: '#334155', strokeWidth: 1, strokeDasharray: '3 5', opacity: 0.45 }),
+                var hcS = _stewIsHC();
+                return h('svg', { 'data-stewardship-system-map': 'true', 'aria-describedby': inquiryId + '-scenario-' + scenario.id + '-current-summary', width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 540, display: 'block', margin: '0 auto', borderRadius: 10 }, role: 'img', 'aria-label': 'System map of ' + scenario.label + ': ' + N + ' interconnected parts; your last decision shifted the highlighted ones.' },
+                  !hcS && h('defs', null,
+                    h('radialGradient', { id: 'stew-map-well', cx: '50%', cy: '48%', r: '58%' },
+                      h('stop', { offset: '0%', stopColor: '#132a24' }),
+                      h('stop', { offset: '62%', stopColor: '#0b1622' }),
+                      h('stop', { offset: '100%', stopColor: '#030712' })
+                    ),
+                    h('radialGradient', { id: 'stew-map-hub', cx: '38%', cy: '32%', r: '68%' },
+                      h('stop', { offset: '0%', stopColor: '#1e293b' }),
+                      h('stop', { offset: '100%', stopColor: '#020617' })
+                    )
+                  ),
+                  // Recessed sunlit-biosphere telemetry well + concentric rings (no extra <line> or <g> so spoke/node indices remain strictly 1:1)
+                  h('rect', { x: 1, y: 1, width: W - 2, height: Hh - 2, rx: 10, fill: hcS ? '#000000' : 'url(#stew-map-well)', stroke: hcS ? '#ffff00' : 'rgba(134,239,172,0.20)', strokeWidth: 1 }),
+                  h('circle', { cx: cx, cy: cy, r: 48, fill: 'none', stroke: hcS ? 'rgba(255,255,0,0.35)' : '#334155', strokeWidth: 1, strokeDasharray: '2 4', opacity: 0.65 }),
+                  h('circle', { cx: cx, cy: cy, r: 92, fill: 'none', stroke: hcS ? 'rgba(255,255,0,0.45)' : 'rgba(134,239,172,0.22)', strokeWidth: 1.1, strokeDasharray: '3 5', opacity: 0.65 }),
+                  // Soft glow aura paths behind shifted spokes (uses <path>, NOT <line>)
+                  !hcS && nodes.map(function(nd, i) {
+                    if (nd.d === 0) return null;
+                    return h('path', { key: 'eg-' + i, className: 'stew-svg-fx', d: 'M ' + cx + ' ' + cy + ' L ' + nd.x.toFixed(1) + ' ' + nd.y.toFixed(1), fill: 'none', stroke: nd.change.color, strokeWidth: 7.5, strokeOpacity: 0.18, strokeLinecap: 'round' });
+                  }),
                   nodes.map(function(nd, i) {
                     var ec = nd.d === 0 ? '#64748b' : nd.change.color;
                     var ew = nd.d !== 0 ? Math.min(5, 1.5 + Math.abs(nd.d) / 5.5) : 1.25;
-                    return h('line', { key: 'e' + i, 'data-stewardship-map-change': nd.ent.id, 'data-change-direction': nd.change.state, x1: cx, y1: cy, x2: nd.x, y2: nd.y, stroke: ec, strokeWidth: ew, strokeDasharray: nd.change.state === 'worsening' ? '4 3' : undefined, opacity: nd.d !== 0 ? 0.92 : 0.55 });
+                    return h('line', { key: 'e' + i, 'data-stewardship-map-change': nd.ent.id, 'data-change-direction': nd.change.state, x1: cx, y1: cy, x2: nd.x, y2: nd.y, stroke: ec, strokeWidth: ew, strokeDasharray: nd.change.state === 'worsening' ? '4 3' : undefined, opacity: nd.d !== 0 ? 0.94 : 0.55 });
                   }),
-                  h('circle', { cx: cx, cy: cy, r: 23, fill: '#0b1220', stroke: scenario.color, strokeWidth: 2.5 }),
-                  h('circle', { cx: cx, cy: cy, r: 28, fill: 'none', stroke: stewardshipAccent(scenario.color), strokeWidth: 1, opacity: 0.45 }),
+                  // Sculpted central stewardship hub
+                  !hcS && h('circle', { className: 'stew-svg-fx', cx: cx, cy: cy, r: 32, fill: stewardshipAccent(scenario.color), opacity: 0.16 }),
+                  h('circle', { cx: cx, cy: cy, r: 28, fill: 'none', stroke: hcS ? '#ffff00' : stewardshipAccent(scenario.color), strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.6 }),
+                  h('circle', { cx: cx, cy: cy, r: 23, fill: hcS ? '#000000' : 'url(#stew-map-hub)', stroke: hcS ? '#ffff00' : scenario.color, strokeWidth: 2.5 }),
                   h('text', { x: cx, y: cy + 6, textAnchor: 'middle', fontSize: 18 }, scenario.icon),
                   nodes.map(function(nd, i) {
                     var lbl = nd.ent.name.length > 16 ? nd.ent.name.slice(0, 15) + '…' : nd.ent.name;
@@ -2006,8 +2035,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                     var deltaX = nd.x > cx + 24 ? nd.x - 24 : nd.x + 24;
                     var deltaAnchor = nd.x > cx + 24 ? 'end' : 'start';
                     return h('g', { key: 'n' + i },
-                      h('circle', { cx: nd.x, cy: nd.y, r: 20, fill: '#0b1220', stroke: '#1e293b', strokeWidth: 3.5 }),
-                      h('circle', { cx: nd.x, cy: nd.y, r: 20, fill: 'none', stroke: nd.col, strokeWidth: 3.5, strokeDasharray: arcLen.toFixed(1) + ' ' + ringC.toFixed(1), transform: 'rotate(-90 ' + nd.x.toFixed(1) + ' ' + nd.y.toFixed(1) + ')' }),
+                      !hcS && h('circle', { className: 'stew-svg-fx', cx: nd.x, cy: nd.y, r: 24.5, fill: nd.col, opacity: nd.d !== 0 ? 0.22 : 0.10 }),
+                      h('circle', { cx: nd.x, cy: nd.y, r: 20, fill: hcS ? '#000000' : '#0b1220', stroke: hcS ? '#ffff00' : '#1e293b', strokeWidth: 3.5 }),
+                      h('circle', { cx: nd.x, cy: nd.y, r: 20, fill: 'none', stroke: hcS ? '#ffff00' : nd.col, strokeWidth: 3.5, strokeLinecap: 'round', strokeDasharray: arcLen.toFixed(1) + ' ' + ringC.toFixed(1), transform: 'rotate(-90 ' + nd.x.toFixed(1) + ' ' + nd.y.toFixed(1) + ')' }),
                       h('text', { x: nd.x, y: nd.y + 5, textAnchor: 'middle', fontSize: 15 }, nd.ent.icon),
                       h('text', { x: nd.x, y: nd.y - 25, textAnchor: 'middle', fontSize: 10.5, fontWeight: 700, fill: '#e2e8f0' }, lbl),
                       h('text', { x: nd.x, y: nd.y + 33, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: nd.col }, '' + nd.v),
@@ -2117,11 +2147,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                         )
                       ),
                       h('div', { 'data-stewardship-net-change': ent.id, 'data-change-direction': netChange.state, style: { fontSize: 12, color: netChange.color, lineHeight: 1.5, marginBottom: 6, overflowWrap: 'anywhere' } }, __alloT('stem.stewardship.since_start', 'Since start') + ': ' + scenarioChangeText(delta, !!inverted)),
-                      n >= 2 && pts.every(function(value) { return value != null; }) ? h('svg', { width: '100%', viewBox: '0 0 ' + SW + ' ' + SH, preserveAspectRatio: 'none', style: { display: 'block', height: 24 }, 'aria-hidden': 'true' },
-                        h('line', { x1: 0, y1: pyv(initialValue), x2: SW, y2: pyv(initialValue), stroke: '#475569', strokeWidth: 0.75, strokeDasharray: '2 2', opacity: 0.6 }),
-                        h('polyline', { points: pts.map(function(val, i) { return px(i).toFixed(1) + ',' + pyv(val).toFixed(1); }).join(' '), fill: 'none', stroke: barColor, strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke' }),
-                        h('circle', { cx: px(n - 1), cy: pyv(pts[n - 1]), r: 2, fill: barColor })
-                      ) : h('div', { style: { height: 4, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 2, overflow: 'hidden' } },
+                      n >= 2 && pts.every(function(value) { return value != null; }) ? (function() {
+                        var hcSp = _stewIsHC();
+                        var polyStr = pts.map(function(val, i) { return px(i).toFixed(1) + ',' + pyv(val).toFixed(1); }).join(' ');
+                        var areaStr = '0,' + SH + ' ' + polyStr + ' ' + SW + ',' + SH;
+                        var spId = 'stew-sp-' + ent.id;
+                        return h('svg', { width: '100%', viewBox: '0 0 ' + SW + ' ' + SH, preserveAspectRatio: 'none', style: { display: 'block', height: 24, borderRadius: 4 }, 'aria-hidden': 'true' },
+                          !hcSp && h('defs', null,
+                            h('linearGradient', { id: spId, x1: '0', y1: '0', x2: '0', y2: '1' },
+                              h('stop', { offset: '0%', stopColor: barColor, stopOpacity: 0.34 }),
+                              h('stop', { offset: '100%', stopColor: barColor, stopOpacity: 0.02 })
+                            )
+                          ),
+                          h('rect', { x: 0, y: 0, width: SW, height: SH, fill: hcSp ? '#000000' : 'rgba(2,6,23,0.55)' }),
+                          !hcSp && h('polygon', { className: 'stew-svg-fx', points: areaStr, fill: 'url(#' + spId + ')', stroke: 'none' }),
+                          h('line', { x1: 0, y1: pyv(initialValue), x2: SW, y2: pyv(initialValue), stroke: hcSp ? '#ffff00' : '#64748b', strokeWidth: 0.75, strokeDasharray: '2 2', opacity: 0.65 }),
+                          h('polyline', { points: polyStr, fill: 'none', stroke: hcSp ? '#ffff00' : barColor, strokeWidth: 1.8, vectorEffect: 'non-scaling-stroke' }),
+                          h('ellipse', { cx: px(n - 1), cy: pyv(pts[n - 1]), rx: 1.6, ry: 2.3, fill: hcSp ? '#ffff00' : barColor, stroke: '#0f172a', strokeWidth: 0.5 })
+                        );
+                      })() : h('div', { style: { height: 4, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 2, overflow: 'hidden' } },
                         h('div', { style: { width: v + '%', height: '100%', background: barColor } }))
                     );
                   })
@@ -2263,16 +2307,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
       // Bespoke Ecological Watershed & Compass SVG Emblem
       function renderStewardshipEmblem() {
+        var hcE = _stewIsHC();
         return h('svg', {
           width: 48, height: 48, viewBox: '0 0 48 48', role: 'img',
           'aria-label': __alloT('stem.stewardship.emblem_alt', 'Environmental Stewardship ecological compass emblem'),
           style: { flexShrink: 0, display: 'block' }
         },
-          h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: '#0b1912', stroke: '#86efac', strokeWidth: 1.5 }),
-          h('circle', { cx: 24, cy: 24, r: 16, fill: 'none', stroke: '#86efac', strokeWidth: 1.2, strokeDasharray: '3 3', opacity: 0.7 }),
-          h('path', { d: 'M10 31 L18 19 L25 26 L31 17 L38 31 Z', fill: '#166534', stroke: '#86efac', strokeWidth: 1.2, strokeLinejoin: 'round' }),
-          h('path', { d: 'M12 34 Q18 30 24 34 T36 34', fill: 'none', stroke: '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' }),
-          h('circle', { cx: 24, cy: 13, r: 3, fill: '#fbbf24' })
+          !hcE && h('defs', null,
+            h('radialGradient', { id: 'stew-emb-sky', cx: '50%', cy: '28%', r: '72%' },
+              h('stop', { offset: '0%', stopColor: '#1e3a2f' }),
+              h('stop', { offset: '55%', stopColor: '#0c211b' }),
+              h('stop', { offset: '100%', stopColor: '#040b0e' })
+            ),
+            h('linearGradient', { id: 'stew-emb-mtn', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#22c55e' }),
+              h('stop', { offset: '100%', stopColor: '#14532d' })
+            ),
+            h('radialGradient', { id: 'stew-emb-sun', cx: '50%', cy: '50%', r: '50%' },
+              h('stop', { offset: '0%', stopColor: '#fef08a', stopOpacity: 0.72 }),
+              h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })
+            )
+          ),
+          h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: hcE ? '#000000' : 'url(#stew-emb-sky)', stroke: hcE ? '#ffff00' : '#86efac', strokeWidth: 1.6 }),
+          h('circle', { cx: 24, cy: 24, r: 17.5, fill: 'none', stroke: hcE ? '#ffff00' : '#86efac', strokeWidth: 1.1, strokeDasharray: '3 3', opacity: 0.72 }),
+          // Cardinal compass ticks
+          [[24,5,24,8],[24,40,24,43],[5,24,8,24],[40,24,43,24]].map(function(tk, ti) {
+            return h('line', { key: 'ct-' + ti, x1: tk[0], y1: tk[1], x2: tk[2], y2: tk[3], stroke: hcE ? '#ffff00' : '#bbf7d0', strokeWidth: 1.3, strokeLinecap: 'round' });
+          }),
+          // Sunlit dawn orb + atmospheric halo
+          !hcE && h('circle', { className: 'stew-svg-fx', cx: 24, cy: 13.5, r: 8, fill: 'url(#stew-emb-sun)' }),
+          h('circle', { cx: 24, cy: 13.5, r: 3.2, fill: '#fbbf24', stroke: '#fef9c3', strokeWidth: 0.7 }),
+          // Layered sunlit watershed ridge + specular peak crest
+          h('path', { d: 'M10 31 L18 19 L25 26 L31 17 L38 31 Z', fill: hcE ? '#000000' : 'url(#stew-emb-mtn)', stroke: hcE ? '#ffff00' : '#86efac', strokeWidth: 1.2, strokeLinejoin: 'round' }),
+          !hcE && h('path', { className: 'stew-svg-fx', d: 'M18 19 L21.5 22.5 M31 17 L34 22.5', fill: 'none', stroke: '#dcfce7', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.65 }),
+          // Dual-pass shimmering watershed river wave
+          !hcE && h('path', { className: 'stew-svg-fx', d: 'M11 35 Q17.5 31 24 35 T37 35', fill: 'none', stroke: '#38bdf8', strokeWidth: 5, strokeOpacity: 0.25, strokeLinecap: 'round' }),
+          h('path', { d: 'M11 35 Q17.5 31 24 35 T37 35', fill: 'none', stroke: hcE ? '#ffff00' : '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' })
         );
       }
 
@@ -2284,13 +2354,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       function renderFamilyConstellationSvg() {
         var W = 680, H = 166;
         var colW = W / 5;
+        var hcC = _stewIsHC();
         return h('svg', {
           'data-stewardship-constellation-svg': 'true',
           viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
           'aria-label': __alloT('stem.stewardship.constellation_aria', 'Five stewardship mechanic families linking Maine anchor campaigns with ten cross-region scenarios'),
-          style: { display: 'block', height: 'auto' }
+          style: { display: 'block', height: 'auto', borderRadius: 12 }
         },
-          h('rect', { x: 1, y: 1, width: W - 2, height: H - 2, rx: 12, fill: '#08111d', stroke: '#1e3a2f', strokeWidth: 1.2 }),
+          !hcC && h('defs', null,
+            h('radialGradient', { id: 'stew-con-well', cx: '50%', cy: '38%', r: '66%' },
+              h('stop', { offset: '0%', stopColor: '#10242c' }),
+              h('stop', { offset: '62%', stopColor: '#091522' }),
+              h('stop', { offset: '100%', stopColor: '#030812' })
+            ),
+            h('radialGradient', { id: 'stew-con-spec', cx: '34%', cy: '28%', r: '66%' },
+              h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.32 }),
+              h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+            )
+          ),
+          h('rect', { x: 1, y: 1, width: W - 2, height: H - 2, rx: 12, fill: hcC ? '#000000' : 'url(#stew-con-well)', stroke: hcC ? '#ffff00' : '#1e3a2f', strokeWidth: 1.3 }),
+          // Horizontal biosphere horizon guide linking all 5 Maine anchor nodes
+          h('line', { x1: 42, y1: 56, x2: W - 42, y2: 56, stroke: hcC ? 'rgba(255,255,0,0.35)' : 'rgba(134,239,172,0.16)', strokeWidth: 1, strokeDasharray: '4 4' }),
           FAMILY_ORDER.map(function(famId, i) {
             var meta = FAMILY_COLORS[famId] || { primary: '#15803d', accent: '#86efac', label: famId };
             var cx = colW * i + colW / 2;
@@ -2302,46 +2386,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             var isFocused = validFamilyFilter === famId;
             var shortFam = famId === 'conservation' ? 'Wildlife' : famId === 'watershed' ? 'Watershed' : famId === 'outbreak' ? 'Public Health' : famId === 'climate' ? 'Climate' : 'Fire';
             return h('g', { key: famId },
-              isFocused ? h('rect', { x: colW * i + 6, y: 6, width: colW - 12, height: H - 12, rx: 10, fill: 'rgba(134,239,172,0.08)', stroke: '#86efac', strokeWidth: 1.2 }) : null,
+              // Subtle vertical family lane separator
+              i > 0 && h('line', { x1: colW * i, y1: 12, x2: colW * i, y2: H - 12, stroke: hcC ? 'rgba(255,255,0,0.22)' : 'rgba(148,163,184,0.12)', strokeWidth: 0.8 }),
+              isFocused ? h('rect', { x: colW * i + 6, y: 6, width: colW - 12, height: H - 12, rx: 10, fill: hcC ? 'rgba(255,255,0,0.08)' : 'rgba(134,239,172,0.10)', stroke: hcC ? '#ffff00' : '#86efac', strokeWidth: 1.3 }) : null,
               // Family heading
-              h('text', { x: cx, y: 24, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: meta.accent }, shortFam.toUpperCase()),
-              // Connecting lines from Maine Anchor (y=56) to Cross-Region nodes (y=114)
+              h('text', { x: cx, y: 24, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: hcC ? '#ffff00' : meta.accent }, shortFam.toUpperCase()),
+              // Curved sustainability-flow conduit arcs from Maine Anchor (y=56) to Cross-Region nodes (y=114)
               famScens.map(function(scSnap, si) {
                 var tx = cx + (si === 0 ? -28 : 28);
+                var ctrlX = cx + (si === 0 ? -24 : 24);
                 var scDone = scSnap.state.status === 'complete';
                 var bothDone = anchorDone && scDone;
-                return h('line', {
-                  key: 'l' + si, x1: cx, y1: 66, x2: tx, y2: 106,
-                  stroke: bothDone ? '#c084fc' : (scDone || anchorDone ? meta.accent : '#334155'),
-                  strokeWidth: bothDone ? 2.4 : 1.4,
-                  strokeDasharray: bothDone ? undefined : '3 3'
-                });
+                var dPath = 'M ' + cx + ' 68 Q ' + ctrlX + ' 88 ' + tx + ' 103';
+                var arcStroke = hcC ? '#ffff00' : (bothDone ? '#c084fc' : (scDone || anchorDone ? meta.accent : '#334155'));
+                return h('g', { key: 'l' + si },
+                  !hcC && (bothDone || scDone || anchorDone) && h('path', { className: 'stew-svg-fx', d: dPath, fill: 'none', stroke: arcStroke, strokeWidth: 6, strokeOpacity: 0.18, strokeLinecap: 'round' }),
+                  h('path', {
+                    d: dPath, fill: 'none',
+                    stroke: arcStroke,
+                    strokeWidth: bothDone ? 2.4 : 1.5,
+                    strokeDasharray: bothDone ? undefined : '3 3',
+                    strokeLinecap: 'round'
+                  })
+                );
               }),
-              // Maine Anchor node
+              // Sculpted Maine Anchor node with completion halo
+              !hcC && (anchorDone || anchorActive) && h('circle', { className: 'stew-svg-fx', cx: cx, cy: 56, r: 20, fill: anchorDone ? '#4ade80' : '#fbbf24', opacity: 0.22 }),
               h('circle', {
-                cx: cx, cy: 56, r: 14,
-                fill: anchorDone ? '#14532d' : '#0f172a',
-                stroke: anchorDone ? '#86efac' : (anchorActive ? '#fbbf24' : '#475569'),
+                cx: cx, cy: 56, r: 14.5,
+                fill: hcC ? '#000000' : (anchorDone ? '#14532d' : '#0f172a'),
+                stroke: hcC ? '#ffff00' : (anchorDone ? '#86efac' : (anchorActive ? '#fbbf24' : '#475569')),
                 strokeWidth: anchorDone || anchorActive ? 2.4 : 1.5
               }),
+              !hcC && h('circle', { className: 'stew-svg-fx', cx: cx, cy: 56, r: 14.5, fill: 'url(#stew-con-spec)' }),
               h('text', { x: cx, y: 61, textAnchor: 'middle', fontSize: 13 }, anchorSnap ? anchorSnap.campaign.icon : '🌲'),
-              // Cross-Region scenario nodes
+              // Sculpted Cross-Region scenario nodes
               famScens.map(function(scSnap, si) {
                 var tx = cx + (si === 0 ? -28 : 28);
                 var scDone = scSnap.state.status === 'complete';
                 var scActive = scSnap.state.status === 'inProgress';
                 return h('g', { key: 's' + si },
+                  !hcC && (scDone || scActive) && h('circle', { className: 'stew-svg-fx', cx: tx, cy: 114, r: 16.5, fill: scDone ? '#c084fc' : '#fbbf24', opacity: 0.22 }),
                   h('circle', {
-                    cx: tx, cy: 114, r: 12,
-                    fill: scDone ? '#3b0764' : '#0f172a',
-                    stroke: scDone ? '#d8b4fe' : (scActive ? '#fbbf24' : '#475569'),
+                    cx: tx, cy: 114, r: 12.2,
+                    fill: hcC ? '#000000' : (scDone ? '#3b0764' : '#0f172a'),
+                    stroke: hcC ? '#ffff00' : (scDone ? '#d8b4fe' : (scActive ? '#fbbf24' : '#475569')),
                     strokeWidth: scDone || scActive ? 2.2 : 1.4
                   }),
+                  !hcC && h('circle', { className: 'stew-svg-fx', cx: tx, cy: 114, r: 12.2, fill: 'url(#stew-con-spec)' }),
                   h('text', { x: tx, y: 118, textAnchor: 'middle', fontSize: 11 }, scSnap.scenario.icon)
                 );
               }),
-              // Pairing status footer
-              h('text', { x: cx, y: 148, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isPaired ? '#d8b4fe' : '#94a3b8' },
+              // Pairing status badge footer
+              h('rect', { x: cx - 36, y: 136, width: 72, height: 18, rx: 9, fill: hcC ? '#000000' : (isPaired ? 'rgba(192,132,252,0.16)' : 'rgba(15,23,42,0.72)'), stroke: hcC ? '#ffff00' : (isPaired ? '#d8b4fe' : 'rgba(148,163,184,0.22)'), strokeWidth: 0.9 }),
+              h('text', { x: cx, y: 148.5, textAnchor: 'middle', fontSize: 9.8, fontWeight: 700, fill: hcC ? '#ffff00' : (isPaired ? '#e9d5ff' : '#94a3b8') },
                 isPaired ? '✓ ' + __alloT('stem.stewardship.paired_short', 'Paired') : (anchorDone ? __alloT('stem.stewardship.maine_done_short', 'Maine ✓') : __alloT('stem.stewardship.unpaired_short', '1+2 cases')))
             );
           })
@@ -2425,19 +2523,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.stewardship.pick_a_hypothetical_project_setting_pr', 'Pick a project setting, then observe how investment, time, community, and intervention complexity affect the modeled trajectory. The result updates live; record a hypothesis or pattern. This slider is intervention complexity, not biodiversity; higher biodiversity generally increases resilience.')),
             h('div', { id: inquiryId + '-outcome', 'data-stewardship-inquiry-outcome': 'true', role: 'status', 'aria-atomic': 'true', style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · success odds ' + (successOdds * 100).toFixed(0) + '% · ROI proxy ' + roi.toFixed(2)),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-            h('svg', { 'data-stewardship-inquiry-chart': 'true', width: '100%', height: 132, viewBox: '0 0 380 132', role: 'img', 'aria-label': __alloT('stem.stewardship.trajectory_chart', 'Stewardship trajectory chart showing projected success odds and ROI proxy.'), 'aria-describedby': inquiryId + '-outcome', style: { background: '#0a0a1a', borderRadius: 8, marginBottom: 10, border: '1px solid #1e293b' } },
-              h('rect', { x: 30, y: 30, width: 320, height: 60, fill: '#0f172a', stroke: '#334155' }),
-              h('rect', { x: 30, y: 30, width: (successOdds * 320).toFixed(1), height: 60, fill: sm.color, opacity: 0.75 }),
-              h('rect', { x: 122, y: 45, width: 136, height: 30, rx: 6, fill: '#0a0a1a', stroke: sm.color, strokeWidth: 1 }),
-              [0.15, 0.35, 0.55, 0.75].map(function(th, ti) {
-                var tx = 30 + th * 320;
-                return h('line', { key: ti, x1: tx.toFixed(1), y1: 30, x2: tx.toFixed(1), y2: 90, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.55 });
-              }),
-              h('text', { x: 190, y: 65, fill: '#ffffff', fontSize: 12.5, fontWeight: 800, textAnchor: 'middle' }, 'success ' + (successOdds * 100).toFixed(0) + '%'),
-              h('text', { x: 30, y: 21, fill: '#cbd5e1', fontSize: 10.5, fontWeight: 700 }, __alloT('stem.stewardship.axis_failing', '0% Failing')),
-              h('text', { x: 350, y: 21, fill: '#cbd5e1', fontSize: 10.5, fontWeight: 700, textAnchor: 'end' }, __alloT('stem.stewardship.axis_flourishing', '100% Flourishing')),
-              h('text', { x: 190, y: 114, fill: '#cbd5e1', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, 'ROI proxy: ' + roi.toFixed(2) + ' · ' + sm.label)
-            ),
+            (function() {
+              var hcG = _stewIsHC();
+              var fillW = Math.max(0, Math.min(320, successOdds * 320));
+              var tipX = 30 + fillW;
+              // Keep strictly 3 <rect> children so forced-colors rect:nth-of-type(1..3) stays 100% intact.
+              return h('svg', { 'data-stewardship-inquiry-chart': 'true', width: '100%', height: 132, viewBox: '0 0 380 132', role: 'img', 'aria-label': __alloT('stem.stewardship.trajectory_chart', 'Stewardship trajectory chart showing projected success odds and ROI proxy.'), 'aria-describedby': inquiryId + '-outcome', style: { background: hcG ? '#000000' : '#060c18', borderRadius: 10, marginBottom: 10, border: hcG ? '2px solid #ffff00' : '1px solid rgba(148,163,184,0.28)' } },
+                !hcG && h('defs', null,
+                  h('linearGradient', { id: 'stew-iq-bar', x1: '0', y1: '0', x2: '1', y2: '0' },
+                    h('stop', { offset: '0%', stopColor: sm.color, stopOpacity: 0.65 }),
+                    h('stop', { offset: '100%', stopColor: sm.color, stopOpacity: 0.96 })
+                  )
+                ),
+                // Recessed studio well backdrop (uses <path>, preserving rect:nth-of-type(1..3))
+                !hcG && h('path', { className: 'stew-svg-fx', d: 'M 8 4 H 372 Q 376 4 376 8 V 124 Q 376 128 372 128 H 8 Q 4 128 4 124 V 8 Q 4 4 8 4 Z', fill: '#0b1424', stroke: 'none' }),
+                // rect #1: recessed gauge trough
+                h('rect', { x: 30, y: 30, width: 320, height: 60, rx: 8, fill: hcG ? '#000000' : '#0f172a', stroke: hcG ? '#ffff00' : '#334155', strokeWidth: 1.4 }),
+                // rect #2: luminous progress bar fill
+                h('rect', { x: 30, y: 30, width: fillW.toFixed(1), height: 60, rx: 8, fill: hcG ? '#ffff00' : 'url(#stew-iq-bar)', opacity: hcG ? 0.85 : 0.88 }),
+                // Top specular glass highlight along active gauge fill
+                !hcG && fillW > 14 && h('path', { className: 'stew-svg-fx', d: 'M 36 33 H ' + (30 + fillW - 6).toFixed(1), fill: 'none', stroke: '#ffffff', strokeOpacity: 0.34, strokeWidth: 3, strokeLinecap: 'round' }),
+                // Precision threshold dividers + diamond markers (15%, 35%, 55%, 75%)
+                [0.15, 0.35, 0.55, 0.75].map(function(th, ti) {
+                  var tx = 30 + th * 320;
+                  return h('g', { key: ti },
+                    h('line', { x1: tx.toFixed(1), y1: 30, x2: tx.toFixed(1), y2: 90, stroke: hcG ? '#ffff00' : '#cbd5e1', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.55 }),
+                    h('polygon', { points: tx.toFixed(1) + ',90 ' + (tx - 3).toFixed(1) + ',96 ' + (tx + 3).toFixed(1) + ',96', fill: hcG ? '#ffff00' : '#64748b' })
+                  );
+                }),
+                // Luminous leading-edge indicator line + jewel beacon
+                !hcG && fillW > 2 && h('line', { className: 'stew-svg-fx', x1: tipX.toFixed(1), y1: 28, x2: tipX.toFixed(1), y2: 92, stroke: '#ffffff', strokeWidth: 2, strokeOpacity: 0.85, strokeLinecap: 'round' }),
+                !hcG && fillW > 2 && h('circle', { className: 'stew-svg-fx', cx: tipX.toFixed(1), cy: 30, r: 4, fill: '#ffffff', stroke: sm.color, strokeWidth: 1.5 }),
+                // rect #3: frosted center readout plaque
+                h('rect', { x: 118, y: 44, width: 144, height: 32, rx: 8, fill: hcG ? '#000000' : 'rgba(6,12,24,0.92)', stroke: hcG ? '#ffff00' : sm.color, strokeWidth: 1.3 }),
+                h('text', { x: 190, y: 65, fill: hcG ? '#ffff00' : '#ffffff', fontSize: 12.5, fontWeight: 800, textAnchor: 'middle' }, 'success ' + (successOdds * 100).toFixed(0) + '%'),
+                h('text', { x: 30, y: 21, fill: hcG ? '#ffff00' : '#cbd5e1', fontSize: 10.5, fontWeight: 700 }, __alloT('stem.stewardship.axis_failing', '0% Failing')),
+                h('text', { x: 350, y: 21, fill: hcG ? '#ffff00' : '#cbd5e1', fontSize: 10.5, fontWeight: 700, textAnchor: 'end' }, __alloT('stem.stewardship.axis_flourishing', '100% Flourishing')),
+                h('text', { x: 190, y: 115, fill: hcG ? '#ffff00' : '#cbd5e1', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, 'ROI proxy: ' + roi.toFixed(2) + ' · ' + sm.label)
+              );
+            })(),
             h('div', { className: 'stewardship-preset-row', role: 'group', 'aria-label': __alloT('stem.stewardship.inquiry_presets', 'Starter inquiry profiles') },
               h('span', { style: { fontSize: 11, fontWeight: 800, color: '#cbd5e1' } }, __alloT('stem.stewardship.try_profile', 'Starter profiles:')),
               [

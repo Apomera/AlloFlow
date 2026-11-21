@@ -180,7 +180,7 @@ function CanvasRecoveryDialogView(props) {
                           : _crCopy('canvas_recovery.desc_default', 'AlloFlow found saved resource history and authoring state from an earlier Gemini Canvas session.')}
                 </p>
               </div>
-              {canvasRecoveryDecisionMade && canvasRecoveryVaultForm.mode !== 'confirm-recovery-code' && (
+              {canvasRecoveryDecisionMade && canvasRecoveryVaultForm?.mode !== 'confirm-recovery-code' && (
                 <button type="button" onClick={() => closeCanvasRecoveryDialog(null)}
                   className="min-h-11 min-w-11 rounded-xl border border-slate-200 text-xl text-slate-600 hover:bg-slate-100"
                   aria-label={t('saved_work.close_aria') || 'Close saved work manager'}>×</button>
@@ -268,7 +268,7 @@ function CanvasRecoveryDialogView(props) {
                       {t('storage.import_project') || 'Import project file'}
                     </button>
                   </div>
-                  <p className="mt-3 text-xs text-slate-500">
+                  <p className="mt-3 text-xs text-slate-600">
                     {t('storage.retention_note', { max: choiceRetention.maxSnapshots, policy: choiceRetention.effectivePolicyId, used: _alloFormatWorkspaceBytes(ALLO_WORKSPACE_RECOVERY.totalBytes(canvasRecoveryStore)) })
                       || ('AlloFlow keeps up to ' + choiceRetention.maxSnapshots + ' recent device workspaces under the ' + choiceRetention.effectivePolicyId + ' policy (' + _alloFormatWorkspaceBytes(ALLO_WORKSPACE_RECOVERY.totalBytes(canvasRecoveryStore)) + ' used). Saving beyond that removes the oldest, so export anything you want to keep for good.')}
                   </p>
@@ -326,7 +326,7 @@ function CanvasRecoveryDialogView(props) {
                         </div>
                         <div className="mt-4 grid gap-3 sm:grid-cols-3">
                           <div className="rounded-xl bg-slate-50 p-3">
-                            <div className="text-[11px] font-black uppercase tracking-wide text-slate-500">{isCanvas ? 'Durable device total' : 'Browser-reported total'}</div>
+                            <div className="text-xs font-black uppercase tracking-wide text-slate-600">{isCanvas ? 'Durable device total' : 'Browser-reported total'}</div>
                             <div className="mt-1 font-black text-slate-900">
                               {Number.isFinite(physicalFacts.usage)
                                 ? _alloFormatWorkspaceBytes(physicalFacts.usage) + (Number.isFinite(physicalFacts.quota) && physicalFacts.quota > 0 ? ' of ' + _alloFormatWorkspaceBytes(physicalFacts.quota) : '')
@@ -334,7 +334,7 @@ function CanvasRecoveryDialogView(props) {
                             </div>
                           </div>
                           <div className="rounded-xl bg-slate-50 p-3">
-                            <div className="text-[11px] font-black uppercase tracking-wide text-slate-500">{t('storage.persistence_label') || 'Persistence'}</div>
+                            <div className="text-xs font-black uppercase tracking-wide text-slate-600">{t('storage.persistence_label') || 'Persistence'}</div>
                             <div className="mt-1 font-black text-slate-900">
                               {persistence === true ? 'Protected from automatic eviction'
                                 : persistence === false ? 'Best effort'
@@ -342,7 +342,7 @@ function CanvasRecoveryDialogView(props) {
                             </div>
                           </div>
                           <div className="rounded-xl bg-slate-50 p-3">
-                            <div className="text-[11px] font-black uppercase tracking-wide text-slate-500">{t('storage.recovery_workspaces_label') || 'Recovery workspaces'}</div>
+                            <div className="text-xs font-black uppercase tracking-wide text-slate-600">{t('storage.recovery_workspaces_label') || 'Recovery workspaces'}</div>
                             <div className="mt-1 font-black text-slate-900">
                               {t('storage.recovery_target', { count: retention.count, max: retention.maxSnapshots, bytes: _alloFormatWorkspaceBytes(retention.bytes) }) || (retention.count + ' / ' + retention.maxSnapshots + ' target · ' + _alloFormatWorkspaceBytes(retention.bytes))}
                             </div>
@@ -359,13 +359,13 @@ function CanvasRecoveryDialogView(props) {
                               <div key={m.key} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
                                 <span className="min-w-0">
                                   <span className="font-semibold text-slate-700">{m.label}</span>
-                                  <span className="block text-xs font-normal text-slate-500">{m.desc}</span>
+                                  <span className="block text-xs font-normal text-slate-600">{m.desc}</span>
                                 </span>
                                 {m.have ? (
                                   <span className="shrink-0 rounded-md bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-800">{'✓ '}{t('storage.model_on_device') || 'On this device'}</span>
                                 ) : (
                                   <button type="button" onClick={m.onGet} disabled={!!alloModelStatus.busy}
-                                    className="shrink-0 rounded-md border border-indigo-300 bg-white px-2 py-1 text-xs font-black text-indigo-800 disabled:opacity-50">
+                                    className="shrink-0 min-h-11 rounded-md border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-800 disabled:opacity-50">
                                     {alloModelStatus.busy === m.key
                                       ? (t('storage.model_downloading') || 'Downloading…')
                                       : ((t('storage.model_download', { size: m.size }) || ('Download ' + m.size)))}
@@ -375,7 +375,7 @@ function CanvasRecoveryDialogView(props) {
                             ))}
                           </div>
                           {alloModelStatus.bytes > 0 && (
-                            <p className="mt-1 text-[11px] text-slate-500">{t('storage.model_cache', { size: _alloFormatWorkspaceBytes(alloModelStatus.bytes) }) || ('Model cache on this device: ~' + _alloFormatWorkspaceBytes(alloModelStatus.bytes))}</p>
+                            <p className="mt-1 text-xs text-slate-600">{t('storage.model_cache', { size: _alloFormatWorkspaceBytes(alloModelStatus.bytes) }) || ('Model cache on this device: ~' + _alloFormatWorkspaceBytes(alloModelStatus.bytes))}</p>
                           )}
                         </div>
                         {storageManagerInventory.managed.length > 0 && (
@@ -384,7 +384,7 @@ function CanvasRecoveryDialogView(props) {
                             <div className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200">
                               {storageManagerInventory.managed.map(row => (
                                 <div key={row.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-                                  <span className="font-semibold text-slate-700">{row.label} <span className="text-xs font-normal text-slate-500">({row.count})</span></span>
+                                  <span className="font-semibold text-slate-700">{row.label} <span className="text-xs font-normal text-slate-600">({row.count})</span></span>
                                   <span className="font-bold text-slate-900">~{_alloFormatWorkspaceBytes(row.approximateBytes)}</span>
                                 </div>
                               ))}
@@ -397,7 +397,7 @@ function CanvasRecoveryDialogView(props) {
                             <div className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200">
                               {storageManagerInventory.deviceNamespaces.map(row => (
                                 <div key={row.ns} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-                                  <span className="font-semibold text-slate-700">{row.ns} <span className="text-xs font-normal text-slate-500">({row.count})</span></span>
+                                  <span className="font-semibold text-slate-700">{row.ns} <span className="text-xs font-normal text-slate-600">({row.count})</span></span>
                                   <span className="font-bold text-slate-900">~{_alloFormatWorkspaceBytes(row.bytes)}</span>
                                 </div>
                               ))}
@@ -405,7 +405,7 @@ function CanvasRecoveryDialogView(props) {
                           </div>
                         )}
                         {storageManagerInventory.error && (
-                          <p role="status" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs font-semibold text-amber-900">
+                          <p role="alert" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs font-semibold text-amber-900">
                             {storageManagerInventory.error}
                           </p>
                         )}
@@ -468,7 +468,7 @@ function CanvasRecoveryDialogView(props) {
                           {t('storage.local_documents_hint') || 'Accessibility remediations can be resumed independently below. Document Hub drafts are marked in their saved workspaces and can be opened directly. Nothing new is retained merely by viewing this list.'}
                         </p>
                       </div>
-                      <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-wide">
+                      <div className="flex flex-wrap gap-2 text-xs font-black uppercase tracking-wide">
                         {(pdfRemediationCacheEntries.length > 0 || pdfFixResult || lastPdfAuditResultRef.current) && (
                           <span className="rounded-full bg-emerald-200 px-2.5 py-1 text-emerald-950">{pdfRemediationCacheEntries.length || 1} remediation{(pdfRemediationCacheEntries.length || 1) === 1 ? '' : 's'}</span>
                         )}
@@ -488,7 +488,7 @@ function CanvasRecoveryDialogView(props) {
                               <div className="min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <h4 className="break-words text-sm font-black text-slate-900">{entry.documentName}</h4>
-                                  {isActive && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-emerald-900">Current</span>}
+                                  {isActive && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-emerald-900">Current</span>}
                                 </div>
                                 <p className="mt-1 text-xs text-slate-600">
                                   {entry.savedAt ? new Date(entry.savedAt).toLocaleString() : 'Saved on this device'}
@@ -583,15 +583,15 @@ function CanvasRecoveryDialogView(props) {
                         <div>
                           <div className="flex flex-wrap items-center gap-2 font-black text-slate-900">
                             <span>{snapshot.title}</span>
-                            {snapshot.pinned && <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-800">Pinned</span>}
-                            {snapshot.resourceCount === 0 && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-slate-700">Draft only</span>}
-                            {snapshot?.workspace?.builderDraft && <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-900">Document Hub draft</span>}
+                            {snapshot.pinned && <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-indigo-800">Pinned</span>}
+                            {snapshot.resourceCount === 0 && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-slate-700">Draft only</span>}
+                            {snapshot?.workspace?.builderDraft && <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-violet-900">Document Hub draft</span>}
                           </div>
                           <div className="mt-1 text-xs text-slate-600">
                             {snapshot.resourceCount} {snapshot.resourceCount === 1 ? 'resource' : 'resources'} · {new Date(snapshot.savedAt).toLocaleString()}
                             {snapshot.approximateBytes > 0 && (' · ' + _alloFormatWorkspaceBytes(snapshot.approximateBytes))}
                           </div>
-                          <div className={'mt-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ' + (snapshot.assetPolicy === 'full' ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900')}>
+                          <div className={'mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-bold ' + (snapshot.assetPolicy === 'full' ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900')}>
                             {snapshot.assetPolicy === 'full' ? 'Resource pack saved with supported media' : 'Resource history and settings saved; omissions recorded'}
                           </div>
                         </div>

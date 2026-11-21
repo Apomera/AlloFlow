@@ -1,6 +1,6 @@
 # Praxis Reading Specialist (5302) QA report
 
-Generated: 2026-08-20T07:00:05.856Z
+Generated: 2026-11-21T05:21:33.216Z
 
 ## Result
 

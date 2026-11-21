@@ -85,9 +85,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _cnsT = (ctx && ctx.theme) || {};
       var _cnsHC = !!_cnsT.isContrast, _cnsL = !_cnsHC && !_cnsT.isDark;
-      var _cns_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _cns_BGH = {'#f43f5e':'#000000','#0f172a':'#000000','#1e293b':'#000000','#ffffff':'#000000','#fff1f2':'#000000'};
-      var _cns_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#64748b','#fecaca':'#b91c1c','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#a78bfa':'#6d28d9','#fde68a':'#92400e','#e9d5ff':'#581c87'}, _cns_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#64748b':'#ffff00','#fca5a5':'#ffff00','#a78bfa':'#ffff00','#fde68a':'#ffff00','#e9d5ff':'#ffff00','#a855f7':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#9f1239':'#ffff00'};
-      var _cns_BGD = {'#f43f5e':'#be123c'}, _cns_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1','#0f172a':'#cbd5e1'}, _cns_BDH = {'#334155':'#ffff00','#fda4af':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#ef4444':'#ffff00','#fbbf24':'#ffff00','#a855f7':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fecdd3':'#ffff00','#cbd5e1':'#ffff00'};
+      var _cns_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff','#f43f5e':'#be123c'}, _cns_BGH = {'#f43f5e':'#000000','#0f172a':'#000000','#1e293b':'#000000','#ffffff':'#000000','#fff1f2':'#000000'};
+      var _cns_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#475569','#fecaca':'#b91c1c','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#a78bfa':'#6d28d9','#a855f7':'#6d28d9','#fde68a':'#92400e','#e9d5ff':'#581c87','#f59e0b':'#92400e','#ec4899':'#9d174d','#0ea5e9':'#0369a1','#16a34a':'#166534','#0d9488':'#115e59','#dc2626':'#991b1b','#6366f1':'#3730a3'}, _cns_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#64748b':'#ffff00','#fca5a5':'#ffff00','#a78bfa':'#ffff00','#fde68a':'#ffff00','#e9d5ff':'#ffff00','#a855f7':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#9f1239':'#ffff00','#f59e0b':'#ffff00','#ec4899':'#ffff00','#0ea5e9':'#ffff00','#16a34a':'#ffff00','#0d9488':'#ffff00','#dc2626':'#ffff00','#6366f1':'#ffff00'};
+      var _cns_BGD = {'#f43f5e':'#be123c'}, _cns_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#94a3b8','#0f172a':'#94a3b8'}, _cns_BDH = {'#334155':'#ffff00','#fda4af':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#ef4444':'#ffff00','#fbbf24':'#ffff00','#a855f7':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fecdd3':'#ffff00','#cbd5e1':'#ffff00'};
       var _cnsBg = function(h){ return _cnsHC ? (_cns_BGH[h]||h) : (_cnsL ? (_cns_BGL[h]||h) : (_cns_BGD[h]||h)); };
       var _cnsFg = function(h){ return _cnsHC ? (_cns_FGH[h]||h) : (_cnsL ? (_cns_FGL[h]||h) : h); };
       var _cnsBd = function(h){ return _cnsHC ? (_cns_BDH[h]||h) : (_cnsL ? (_cns_BDL[h]||h) : h); };
@@ -100,23 +100,57 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _cnsBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.careConstellations || defaultState();
       function setCC(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.careConstellations) || defaultState();
-          return Object.assign({}, prev, { careConstellations: Object.assign({}, prior, patch) });
+          var resolved = typeof patch === 'function' ? patch(prior) : patch;
+          return Object.assign({}, prev, { careConstellations: Object.assign({}, prior, resolved) });
         });
       }
+      function clampStrength(v) {
+        var n = parseInt(v, 10);
+        if (!isFinite(n)) return 3;
+        return Math.max(1, Math.min(5, n));
+      }
+      function scanCareText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'careConstellations', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && (scan.triggered || scan.hasCrisis)) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'careConstellations', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setCC({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Care Constellations', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
+      }
 
-      var view = d.view || 'map';
-      function goto(v) { setCC({ view: v }); }
+      var VALID_VIEWS = { map: 1, pulse: 1, add: 1, reflect: 1, print: 1, about: 1 };
+      var view = Object.prototype.hasOwnProperty.call(VALID_VIEWS, d.view) ? d.view : 'map';
+      function goto(v) { setCC({ view: Object.prototype.hasOwnProperty.call(VALID_VIEWS, v) ? v : 'map' }); }
 
       // ─── Header + nav ───
       function header() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _cnsFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _cnsBg('#1e293b'), border: '1px solid ' + _cnsBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _cnsFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _cnsFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🌌 Care Constellations'),
             h('div', { style: { fontSize: 12, color: _cnsFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A relational map of who cares for you and who you care for.')
@@ -171,7 +205,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
 
       function softPointer() {
         return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _cnsFg('#94a3b8'), lineHeight: 1.55, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _cnsBg('#0f172a'), border: '1px solid ' + _cnsBd('#334155'), fontSize: 11, color: _cnsFg('#94a3b8'), lineHeight: 1.55, fontStyle: 'italic' }
         },
           'A map with few connections is information, not a verdict. Some people are in seasons of isolation; that is real. If your map feels thin and you want it to be fuller, the Friendship Builder, Peer Support Coach, and Crew Membership work in HOWL Tracker are places to start. If you are struggling, the Crisis Companion tool and Crisis Text Line (741741, text HOME) are here.'
         );
@@ -187,8 +221,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
         // Lay connections out: angle by category sector center, distance by strength
         // (closer to center = stronger). Multiple connections per category fan out
         // within their sector.
-        var byCat = {};
+        var byCat = Object.create(null);
         conns.forEach(function(c) {
+          if (!c || !c.categoryId) return;
           if (!byCat[c.categoryId]) byCat[c.categoryId] = [];
           byCat[c.categoryId].push(c);
         });
@@ -200,11 +235,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
           list.forEach(function(c, i) {
             var fanOffset = list.length === 1 ? 0 : (i / (list.length - 1) - 0.5) * fanSpan;
             var angle = baseAngle + fanOffset;
-            // Strength: closer = stronger. 1 = far (240px), 5 = close (90px).
-            var distance = 90 + (5 - (c.strength || 3)) * 32;
+            // Strength: closer = stronger. 1 = far (218px), 5 = close (90px).
+            var strength = clampStrength(c.strength);
+            var distance = 90 + (5 - strength) * 32;
             var x = cx + distance * Math.cos(angle);
             var y = cy + distance * Math.sin(angle);
-            placed.push({ c: c, cat: cat, x: x, y: y, angle: angle });
+            placed.push({ c: c, cat: cat, x: x, y: y, angle: angle, strength: strength });
           });
         });
 
@@ -216,23 +252,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
 
         return h('div', null,
           // Empty-state framing
-          conns.length === 0 ? h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(253,164,175,0.10)', borderTop: '1px solid rgba(253,164,175,0.3)', borderRight: '1px solid rgba(253,164,175,0.3)', borderBottom: '1px solid rgba(253,164,175,0.3)', borderLeft: '4px solid #fda4af', marginBottom: 14, fontSize: 13.5, color: _cnsFg('#fecaca'), lineHeight: 1.65 } },
+          conns.length === 0 ? h('div', { style: { padding: 16, borderRadius: 12, background: _cnsHC ? '#000000' : 'rgba(253,164,175,0.10)', borderTop: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.3)'), borderRight: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.3)'), borderBottom: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.3)'), borderLeft: '4px solid ' + _cnsBd('#fda4af'), marginBottom: 14, fontSize: 13.5, color: _cnsFg('#fecaca'), lineHeight: 1.65 } },
             h('strong', null, 'Your constellation is empty. '),
             'That is fine. Start with one connection that already exists in your life. The point is not to fill the map; the point is to make visible what is already there.',
             h('div', { style: { marginTop: 10 } },
               h('button', { onClick: function() { goto('add'); },
-                style: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add your first connection')
+                style: { padding: '8px 14px', borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add your first connection')
             )
-          ) : h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(253,164,175,0.08)', borderTop: '1px solid rgba(253,164,175,0.2)', borderRight: '1px solid rgba(253,164,175,0.2)', borderBottom: '1px solid rgba(253,164,175,0.2)', borderLeft: '3px solid #fda4af', marginBottom: 14, fontSize: 12.5, color: _cnsFg('#fecaca'), lineHeight: 1.55 } },
+          ) : h('div', { style: { padding: 10, borderRadius: 8, background: _cnsHC ? '#000000' : 'rgba(253,164,175,0.08)', borderTop: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.2)'), borderRight: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.2)'), borderBottom: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.2)'), borderLeft: '3px solid ' + _cnsBd('#fda4af'), marginBottom: 14, fontSize: 12.5, color: _cnsFg('#fecaca'), lineHeight: 1.55 } },
             h('strong', null, conns.length + ' connection' + (conns.length === 1 ? '' : 's') + ' mapped. '),
             'Distance from center shows strength. Color shows category. Click any connection to edit or remove it.'
           ),
 
           // SVG map
-          h('div', { style: { background: _cnsBg('#0f172a'), borderRadius: 12, padding: 8, marginBottom: 14, border: '1px solid #1e293b' } },
+          h('div', { style: { background: _cnsBg('#0f172a'), borderRadius: 12, padding: 8, marginBottom: 14, border: '1px solid ' + _cnsBd('#1e293b') } },
             h('svg', { viewBox: '0 0 ' + W + ' ' + Hgt, style: { width: '100%', height: 'auto', display: 'block', maxHeight: 560 }, 'aria-label': 'Care constellation map. You are at the center; the people, practices, and places that care for you orbit at distances based on the strength you set.' },
               // Background gradient
-              h('rect', { x: 0, y: 0, width: W, height: Hgt, fill: '#0a0a14', rx: 6 }),
+              h('rect', { x: 0, y: 0, width: W, height: Hgt, fill: _cnsHC ? '#000000' : '#0a0a14', rx: 6 }),
 
               // Sector dividers (subtle radial lines)
               CARE_CATEGORIES.map(function(cat, i) {
@@ -241,7 +277,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
                   x1: cx, y1: cy,
                   x2: cx + 280 * Math.cos(angle),
                   y2: cy + 280 * Math.sin(angle),
-                  stroke: cat.color, strokeWidth: 0.5, opacity: 0.18, strokeDasharray: '2 4'
+                  stroke: _cnsHC ? '#ffff00' : cat.color, strokeWidth: 0.5, opacity: _cnsHC ? 0.5 : 0.18, strokeDasharray: '2 4'
                 });
               }),
 
@@ -251,8 +287,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
                 var lx = cx + 270 * Math.cos(angle);
                 var ly = cy + 270 * Math.sin(angle);
                 return h('g', { key: 'lab' + i },
-                  h('text', { x: lx, y: ly, textAnchor: 'middle', fontSize: 14, fontWeight: 700, fill: cat.color, opacity: 0.7 }, cat.icon),
-                  h('text', { x: lx, y: ly + 14, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: cat.color, opacity: 0.7, letterSpacing: 0.3 },
+                  h('text', { x: lx, y: ly, textAnchor: 'middle', fontSize: 14, fontWeight: 700, fill: _cnsHC ? '#ffff00' : cat.color, opacity: _cnsHC ? 1 : 0.78 }, cat.icon),
+                  h('text', { x: lx, y: ly + 14, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: _cnsHC ? '#ffff00' : cat.color, opacity: _cnsHC ? 1 : 0.78, letterSpacing: 0.3 },
                     cat.label.length > 16 ? cat.label.split(' ').slice(0, 2).join(' ') : cat.label
                   )
                 );
@@ -260,29 +296,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
 
               // Strength rings (concentric circles for orientation)
               [90, 130, 170, 210, 250].map(function(r, i) {
-                return h('circle', { key: 'ring' + i, cx: cx, cy: cy, r: r, fill: 'none', stroke: _cnsBg('#1e293b'), strokeWidth: 0.5, opacity: 0.5 });
+                return h('circle', { key: 'ring' + i, cx: cx, cy: cy, r: r, fill: 'none', stroke: _cnsHC ? '#ffff00' : '#334155', strokeWidth: 0.6, opacity: _cnsHC ? 0.7 : 0.5 });
               }),
 
               // You at the center
               h('circle', { cx: cx, cy: cy, r: 18, fill: _cnsFg('#fda4af'), opacity: 0.4 }),
-              h('circle', { cx: cx, cy: cy, r: 10, fill: _cnsFg('#fda4af') }),
-              h('text', { x: cx, y: cy + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: _cnsFg('#fff') }, 'you'),
+              h('circle', { cx: cx, cy: cy, r: 12, fill: _cnsFg('#fda4af') }),
+              h('text', { x: cx, y: cy + 4, textAnchor: 'middle', fontSize: 10.5, fontWeight: 800, fill: _cnsHC ? '#000000' : (_cnsL ? '#ffffff' : '#0f172a') }, 'you'),
 
               // Connections
               placed.map(function(p) {
                 // Line from center to point
-                var dashStyle = p.c.direction === 'to-me' ? '0' : (p.c.direction === 'from-me' ? '4 3' : '0');
+                var dashStyle = p.c.direction === 'to-me' ? '0' : (p.c.direction === 'from-me' ? '4 3' : '8 2 2 2');
                 return h('g', { key: p.c.id,
-                  onClick: function() { setCC({ selectedConnId: p.c.id, view: 'add', drafts: { name: p.c.name, categoryId: p.c.categoryId, direction: p.c.direction, strength: p.c.strength, notes: p.c.notes || '' } }); },
+                  onClick: function() { setCC({ selectedConnId: p.c.id, view: 'add', drafts: { name: p.c.name, categoryId: p.c.categoryId, direction: p.c.direction, strength: p.strength, notes: p.c.notes || '' } }); },
                   onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } },
                   style: { cursor: 'pointer' },
                   role: 'button', tabIndex: 0,
-                  'aria-label': p.c.name + ' (' + p.cat.label + ', strength ' + p.c.strength + ', ' + dirArrow(p.c.direction) + ')'
+                  'aria-label': p.c.name + ' (' + p.cat.label + ', strength ' + p.strength + ', ' + dirArrow(p.c.direction) + ')'
                 },
-                  h('line', { x1: cx, y1: cy, x2: p.x, y2: p.y, stroke: p.cat.color, strokeWidth: 1.5, opacity: 0.5, strokeDasharray: dashStyle }),
-                  h('circle', { cx: p.x, cy: p.y, r: 10 + (p.c.strength || 3), fill: p.cat.color, opacity: 0.25 }),
-                  h('circle', { cx: p.x, cy: p.y, r: 6, fill: p.cat.color }),
-                  h('text', { x: p.x, y: p.y - 14, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: _cnsFg('#fff') }, p.c.name)
+                  h('line', { x1: cx, y1: cy, x2: p.x, y2: p.y, stroke: _cnsHC ? '#ffff00' : p.cat.color, strokeWidth: p.c.direction === 'mutual' ? 2.2 : 1.5, opacity: _cnsHC ? 0.9 : 0.6, strokeDasharray: dashStyle }),
+                  h('circle', { cx: p.x, cy: p.y, r: 10 + p.strength, fill: _cnsHC ? '#ffff00' : p.cat.color, opacity: 0.25 }),
+                  h('circle', { cx: p.x, cy: p.y, r: 6, fill: _cnsHC ? '#ffff00' : p.cat.color }),
+                  h('text', { x: p.x, y: p.y - 14, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: _cnsHC ? '#ffff00' : '#ffffff' }, p.c.name)
                 );
               })
             ),
@@ -291,14 +327,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             h('div', { style: { display: 'flex', gap: 12, fontSize: 11, color: _cnsFg('#94a3b8'), marginTop: 6, paddingLeft: 6, flexWrap: 'wrap' } },
               h('span', null, '· solid line: care flows to you'),
               h('span', null, '┄ dashed: care flows from you'),
-              h('span', null, '↔ mutual: both directions'),
+              h('span', null, '━·━ dash-dot (↔): mutual care'),
               h('span', null, 'Closer to center = stronger connection')
             )
           ),
 
           // Add CTA
           h('button', { onClick: function() { goto('add'); },
-            style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #e11d48 0%, #be123c 100%)', color: _cnsFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add a connection'),
+            style: { padding: '10px 18px', borderRadius: 10, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsHC ? '#000000' : 'linear-gradient(135deg, #e11d48 0%, #be123c 100%)', color: _cnsFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add a connection'),
 
           softPointer()
         );
@@ -313,10 +349,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
         var given = connections.filter(function(c) { return c.direction === 'from-me'; }).length;
         var mutual = connections.filter(function(c) { return c.direction === 'mutual'; }).length;
         var averageStrength = connections.length
-          ? (connections.reduce(function(sum, c) { return sum + (Number(c.strength) || 0); }, 0) / connections.length).toFixed(1)
+          ? (connections.reduce(function(sum, c) { return sum + clampStrength(c.strength); }, 0) / connections.length).toFixed(1)
           : '-';
-        var categoriesUsed = {};
-        connections.forEach(function(c) { categoriesUsed[c.categoryId] = (categoriesUsed[c.categoryId] || 0) + 1; });
+        var categoriesUsed = Object.create(null);
+        connections.forEach(function(c) { if (c && c.categoryId) categoriesUsed[c.categoryId] = (categoriesUsed[c.categoryId] || 0) + 1; });
         var activeCategories = CARE_CATEGORIES.filter(function(cat) { return categoriesUsed[cat.id]; });
         var flowMessage = connections.length === 0
           ? 'Your map is empty right now. That is information, not a failure. Start with one person, place, practice, or non-human relationship that already matters.'
@@ -383,12 +419,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             h('button', {
               onClick: function() { goto('add'); if (announceToSR) announceToSR('Add a connection to explore the next care question.'); },
               'aria-label': 'Add a connection from Care Pulse',
-              style: { padding: '9px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 800, fontSize: 12 }
+              style: { padding: '9px 14px', borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 800, fontSize: 12 }
             }, 'Add a connection'),
             h('button', {
               onClick: function() { goto('reflect'); if (announceToSR) announceToSR('Reflection prompts opened from Care Pulse.'); },
               'aria-label': 'Open reflections from Care Pulse',
-              style: { padding: '9px 14px', borderRadius: 8, border: '1px solid #475569', cursor: 'pointer', background: _cnsBg('#1e293b'), color: _cnsFg('#cbd5e1'), fontWeight: 800, fontSize: 12 }
+              style: { padding: '9px 14px', borderRadius: 8, border: '1px solid ' + _cnsBd('#475569'), cursor: 'pointer', background: _cnsBg('#1e293b'), color: _cnsFg('#cbd5e1'), fontWeight: 800, fontSize: 12 }
             }, 'Open reflections')
           )
         );
@@ -397,32 +433,51 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       // ═══════════════════════════════════════════════════════
       function renderAdd() {
         var drafts = d.drafts || { name: '', categoryId: 'family', direction: 'mutual', strength: 3, notes: '' };
+        var safeStrength = clampStrength(drafts.strength);
         var editing = !!d.selectedConnId;
         function update(field, value) {
-          setCC({ drafts: Object.assign({}, drafts, { [field]: value }) });
+          setCC(function(prior) {
+            var curDrafts = prior.drafts || defaultState().drafts;
+            var patch = {};
+            patch[field] = value;
+            return { drafts: Object.assign({}, curDrafts, patch) };
+          });
         }
         function save() {
           if (!drafts.name || !drafts.name.trim()) {
             if (addToast) addToast('Give the connection a name first.', 'warn');
             return;
           }
+          scanCareText(drafts.name + ' ' + (drafts.notes || ''));
+          var trimmedName = drafts.name.trim();
+          var finalStrength = clampStrength(drafts.strength);
           if (editing) {
-            var newConns = ((Array.isArray(d.connections) ? d.connections : [])).map(function(c) {
-              if (c.id !== d.selectedConnId) return c;
-              return Object.assign({}, c, { name: drafts.name.trim(), categoryId: drafts.categoryId, direction: drafts.direction, strength: drafts.strength, notes: drafts.notes });
+            var targetId = d.selectedConnId;
+            setCC(function(prior) {
+              var list = Array.isArray(prior.connections) ? prior.connections : [];
+              var newConns = list.map(function(c) {
+                if (c.id !== targetId) return c;
+                return Object.assign({}, c, { name: trimmedName, categoryId: drafts.categoryId, direction: drafts.direction, strength: finalStrength, notes: drafts.notes });
+              });
+              return { connections: newConns, selectedConnId: null, view: 'map', drafts: defaultState().drafts };
             });
-            setCC({ connections: newConns, selectedConnId: null, view: 'map', drafts: defaultState().drafts });
             if (announceToSR) announceToSR('Connection updated.');
           } else {
-            var entry = { id: newId(), name: drafts.name.trim(), categoryId: drafts.categoryId, direction: drafts.direction, strength: drafts.strength, notes: drafts.notes };
-            setCC({ connections: ((Array.isArray(d.connections) ? d.connections : [])).concat([entry]), view: 'map', drafts: defaultState().drafts });
+            var entry = { id: newId(), name: trimmedName, categoryId: drafts.categoryId, direction: drafts.direction, strength: finalStrength, notes: drafts.notes };
+            setCC(function(prior) {
+              var list = Array.isArray(prior.connections) ? prior.connections : [];
+              return { connections: list.concat([entry]), view: 'map', drafts: defaultState().drafts };
+            });
             if (announceToSR) announceToSR('Connection added.');
             if (addToast) addToast('Added to your constellation.', 'success');
           }
         }
         function remove() {
-          var newConns = ((Array.isArray(d.connections) ? d.connections : [])).filter(function(c) { return c.id !== d.selectedConnId; });
-          setCC({ connections: newConns, selectedConnId: null, view: 'map', drafts: defaultState().drafts });
+          var targetId = d.selectedConnId;
+          setCC(function(prior) {
+            var list = Array.isArray(prior.connections) ? prior.connections : [];
+            return { connections: list.filter(function(c) { return c.id !== targetId; }), selectedConnId: null, view: 'map', drafts: defaultState().drafts };
+          });
           if (addToast) addToast('Removed.', 'info');
         }
         function cancel() { setCC({ selectedConnId: null, view: 'map', drafts: defaultState().drafts }); }
@@ -430,7 +485,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
         var cat = CARE_CATEGORIES.find(function(c) { return c.id === drafts.categoryId; }) || CARE_CATEGORIES[0];
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(253,164,175,0.08)', borderTop: '1px solid rgba(253,164,175,0.25)', borderRight: '1px solid rgba(253,164,175,0.25)', borderBottom: '1px solid rgba(253,164,175,0.25)', borderLeft: '3px solid #fda4af', marginBottom: 14, fontSize: 13, color: _cnsFg('#fecaca'), lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _cnsHC ? '#000000' : 'rgba(253,164,175,0.08)', borderTop: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.25)'), borderRight: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.25)'), borderBottom: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.25)'), borderLeft: '3px solid ' + _cnsBd('#fda4af'), marginBottom: 14, fontSize: 13, color: _cnsFg('#fecaca'), lineHeight: 1.55 } },
             editing ? 'Editing a connection. Save changes when done, or remove it.' : 'Add a person, practice, place, or non-human kin to your constellation.'
           ),
 
@@ -439,21 +494,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             h('div', null,
               h('label', { htmlFor: 'cc-name', style: { display: 'block', fontSize: 11, color: _cnsFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, 'Who or what is this?'),
               h('input', { id: 'cc-name', type: 'text', value: drafts.name, onChange: function(e) { update('name', e.target.value); },
+                onBlur: function(e) { scanCareText(e.target.value); },
                 placeholder: 'e.g. Mom, Ms. Carter, the river trail, my dog Lupin, mindful breathing, my future 22-year-old self',
-                style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid #334155', background: _cnsBg('#1e293b'), color: _cnsFg('#e2e8f0'), fontSize: 13.5 }
+                style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid ' + _cnsBd('#334155'), background: _cnsBg('#1e293b'), color: _cnsFg('#e2e8f0'), fontSize: 13.5 }
               })
             ),
 
             // Category
             h('div', null,
               h('div', { style: { fontSize: 11, color: _cnsFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, 'Category'),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 6 } },
+              h('div', { role: 'group', 'aria-label': 'Connection category', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 6 } },
                 CARE_CATEGORIES.map(function(c) {
                   var picked = drafts.categoryId === c.id;
                   return h('button', { key: c.id, onClick: function() { update('categoryId', c.id); }, 'aria-pressed': picked,
-                    style: { padding: 8, borderRadius: 6, border: '1.5px solid ' + (picked ? c.color : '#334155'),
-                      background: picked ? c.color + '22' : _cnsBg('#1e293b'),
-                      color: picked ? c.color : _cnsFg('#cbd5e1'), cursor: 'pointer', textAlign: 'left' } },
+                    style: { padding: 8, borderRadius: 6, border: '1.5px solid ' + (picked ? (_cnsHC ? '#ffff00' : c.color) : _cnsBd('#334155')),
+                      background: picked ? (_cnsHC ? '#000000' : c.color + '22') : _cnsBg('#1e293b'),
+                      color: picked ? _cnsInk(_cnsFg(c.color)) : _cnsFg('#cbd5e1'), cursor: 'pointer', textAlign: 'left' } },
                     h('div', { 'aria-hidden': 'true', style: { fontSize: 14 } }, c.icon),
                     h('div', { style: { fontSize: 11, fontWeight: 700, marginTop: 2 } }, c.label),
                     h('div', { style: { fontSize: 10, color: _cnsFg('#94a3b8'), marginTop: 2, lineHeight: 1.3 } }, c.hint)
@@ -465,7 +521,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             // Direction
             h('div', null,
               h('div', { style: { fontSize: 11, color: _cnsFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, 'Direction of care'),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 6 } },
+              h('div', { role: 'group', 'aria-label': 'Direction of care', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 6 } },
                 [
                   { id: 'to-me', label: 'Care flows TO me', desc: 'This is something/someone that cares for me. I receive from them.' },
                   { id: 'from-me', label: 'Care flows FROM me', desc: 'This is something/someone I care for. I give to them.' },
@@ -473,9 +529,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
                 ].map(function(opt) {
                   var picked = drafts.direction === opt.id;
                   return h('button', { key: opt.id, onClick: function() { update('direction', opt.id); }, 'aria-pressed': picked,
-                    style: { padding: 8, borderRadius: 6, border: '1.5px solid ' + (picked ? cat.color : '#334155'),
-                      background: picked ? cat.color + '22' : _cnsBg('#1e293b'),
-                      color: picked ? cat.color : _cnsFg('#cbd5e1'), cursor: 'pointer', textAlign: 'left' } },
+                    style: { padding: 8, borderRadius: 6, border: '1.5px solid ' + (picked ? (_cnsHC ? '#ffff00' : cat.color) : _cnsBd('#334155')),
+                      background: picked ? (_cnsHC ? '#000000' : cat.color + '22') : _cnsBg('#1e293b'),
+                      color: picked ? _cnsInk(_cnsFg(cat.color)) : _cnsFg('#cbd5e1'), cursor: 'pointer', textAlign: 'left' } },
                     h('div', { style: { fontSize: 12, fontWeight: 800 } }, opt.label),
                     h('div', { style: { fontSize: 10.5, color: _cnsFg('#94a3b8'), marginTop: 2, lineHeight: 1.4 } }, opt.desc)
                   );
@@ -485,9 +541,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
 
             // Strength
             h('div', null,
-              h('label', { style: { display: 'block', fontSize: 11, color: _cnsFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, 'Strength: ' + drafts.strength + ' / 5'),
-              h('input', { type: 'range', min: 1, max: 5, step: 1, value: drafts.strength,
-                onChange: function(e) { update('strength', parseInt(e.target.value, 10)); },
+              h('label', { htmlFor: 'cc-strength', style: { display: 'block', fontSize: 11, color: _cnsFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, 'Strength: ' + safeStrength + ' / 5'),
+              h('input', { id: 'cc-strength', type: 'range', min: 1, max: 5, step: 1, value: safeStrength,
+                onChange: function(e) { update('strength', clampStrength(e.target.value)); },
                 style: { width: '100%' }, 'aria-label': 'Strength of connection 1 to 5'
               }),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: _cnsFg('#94a3b8'), marginTop: 2 } },
@@ -500,17 +556,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             h('div', null,
               h('label', { htmlFor: 'cc-notes', style: { display: 'block', fontSize: 11, color: _cnsFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, 'How does this care show up? (optional)'),
               h('textarea', { id: 'cc-notes', value: drafts.notes, onChange: function(e) { update('notes', e.target.value); },
+                onBlur: function(e) { scanCareText(e.target.value); },
                 placeholder: 'Specific examples: "always asks how I am and waits for the real answer." Or: "walking by the river clears my head when nothing else does."',
-                style: { width: '100%', minHeight: 80, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _cnsBg('#1e293b'), color: _cnsFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' }
+                style: { width: '100%', minHeight: 80, padding: 8, borderRadius: 6, border: '1px solid ' + _cnsBd('#334155'), background: _cnsBg('#1e293b'), color: _cnsFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' }
               })
             )
           ),
 
           // Buttons
           h('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' } },
-            h('button', { onClick: save, style: { padding: '10px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 700, fontSize: 13 } }, editing ? 'Save changes' : '+ Add to constellation'),
-            h('button', { onClick: cancel, style: { padding: '10px 14px', borderRadius: 8, border: '1px solid #475569', cursor: 'pointer', background: _cnsBg('#1e293b'), color: _cnsFg('#cbd5e1'), fontWeight: 700, fontSize: 13 } }, 'Cancel'),
-            editing ? h('button', { onClick: remove, style: { padding: '10px 14px', borderRadius: 8, border: '1px solid #ef4444', cursor: 'pointer', background: 'transparent', color: _cnsFg('#fca5a5'), fontWeight: 700, fontSize: 12 } }, 'Remove from map') : null
+            h('button', { onClick: save, style: { padding: '10px 18px', borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsBg('#f43f5e'), color: _cnsFg('#fff'), fontWeight: 700, fontSize: 13 } }, editing ? 'Save changes' : '+ Add to constellation'),
+            h('button', { onClick: cancel, style: { padding: '10px 14px', borderRadius: 8, border: '1px solid ' + _cnsBd('#475569'), cursor: 'pointer', background: _cnsBg('#1e293b'), color: _cnsFg('#cbd5e1'), fontWeight: 700, fontSize: 13 } }, 'Cancel'),
+            editing ? h('button', { onClick: remove, style: { padding: '10px 14px', borderRadius: 8, border: '1px solid ' + _cnsBd('#ef4444'), cursor: 'pointer', background: 'transparent', color: _cnsFg('#fca5a5'), fontWeight: 700, fontSize: 12 } }, 'Remove from map') : null
           )
         );
       }
@@ -533,6 +590,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
                   var ra = Object.assign({}, d.reflectionAnswers || {}, { [p.id]: e.target.value });
                   setCC({ reflectionAnswers: ra });
                 },
+                onBlur: function(e) { scanCareText(e.target.value); },
                 placeholder: 'Write what comes up, or leave blank.',
                 style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _cnsBg('#1e293b'), color: _cnsFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' }
               })
@@ -648,21 +706,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
 
       function renderPrintView() {
         var connections = (Array.isArray(d.connections) ? d.connections : []);
-        var byCategory = {};
+        var byCategory = Object.create(null);
         connections.forEach(function(c) {
+          if (!c) return;
           var key = c.categoryId || 'other';
           if (!byCategory[key]) byCategory[key] = [];
           byCategory[key].push(c);
         });
         var dirLabel = { 'to-me': 'cares for me', 'from-me': 'I care for', 'mutual': 'mutual care' };
+        var promptById = Object.create(null);
+        REFLECTION_PROMPTS.forEach(function(p) { promptById[p.id] = p.text; });
+        var reflectionEntries = d.reflectionAnswers && typeof d.reflectionAnswers === 'object'
+          ? Object.keys(d.reflectionAnswers).map(function(k) {
+              var val = typeof d.reflectionAnswers[k] === 'string' ? d.reflectionAnswers[k].trim() : '';
+              return val ? { id: k, prompt: promptById[k] || k, answer: val } : null;
+            }).filter(Boolean)
+          : [];
 
         return h('div', null,
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(253,164,175,0.10)', borderTop: '1px solid rgba(253,164,175,0.4)', borderRight: '1px solid rgba(253,164,175,0.4)', borderBottom: '1px solid rgba(253,164,175,0.4)', borderLeft: '3px solid #fda4af', marginBottom: 12, fontSize: 12.5, color: _cnsFg('#fecaca'), lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _cnsHC ? '#000000' : 'rgba(253,164,175,0.10)', borderTop: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.4)'), borderRight: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.4)'), borderBottom: '1px solid ' + (_cnsHC ? '#ffff00' : 'rgba(253,164,175,0.4)'), borderLeft: '3px solid ' + _cnsBd('#fda4af'), marginBottom: 12, fontSize: 12.5, color: _cnsFg('#fecaca'), lineHeight: 1.65 } },
             h('strong', null, '🖨 My constellation map. '),
             'A relational artifact: who cares for me, who I care for, and the mutual care that runs both ways. Useful for IEPs, family meetings, intake with a new counselor, or just to remember on a thin day. Private; you decide who to share it with.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cnsFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _cnsHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cnsHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cnsFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +
@@ -671,32 +738,32 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             '#cc-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
             '.no-print { display: none !important; } }'
           ),
-          h('div', { id: 'cc-print-region', style: { padding: 18, borderRadius: 12, background: _cnsBg('#ffffff'), color: _cnsFg('#0f172a'), border: '1px solid #e2e8f0' } },
-            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+          h('div', { id: 'cc-print-region', style: { padding: 18, borderRadius: 12, background: _cnsBg('#ffffff'), color: _cnsFg('#0f172a'), border: '1px solid ' + _cnsBd('#e2e8f0') } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid ' + _cnsBd('#0f172a'), paddingBottom: 8, marginBottom: 14 } },
               h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: _cnsFg('#0f172a') } }, 'My Care Constellation'),
               h('div', { style: { fontSize: 11, color: _cnsFg('#475569') } }, 'Care Ethics · Noddings · Foucault')
             ),
 
-            h('div', { style: { padding: 10, background: _cnsBg('#fff1f2'), border: '1px solid #fecdd3', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: _cnsFg('#9f1239') } },
+            h('div', { style: { padding: 10, background: _cnsBg('#fff1f2'), border: '1px solid ' + _cnsBd('#fecdd3'), borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: _cnsFg('#9f1239') } },
               h('strong', null, 'Care is something received and given through relationship, '),
               'not a product to consume alone. This map is the shape of that relationship in your life right now.'
             ),
 
-            connections.length === 0 ? h('div', { style: { padding: 14, border: '2px dashed #cbd5e1', borderRadius: 10, fontSize: 12.5, color: _cnsFg('#475569'), fontStyle: 'italic', textAlign: 'center' } },
+            connections.length === 0 ? h('div', { style: { padding: 14, border: '2px dashed ' + _cnsBd('#cbd5e1'), borderRadius: 10, fontSize: 12.5, color: _cnsFg('#475569'), fontStyle: 'italic', textAlign: 'center' } },
               '(no connections yet — open the Add a connection tab to add them)'
             ) : null,
 
             CARE_CATEGORIES.map(function(cat) {
               var entries = byCategory[cat.id] || [];
               if (entries.length === 0) return null;
-              return h('div', { key: cat.id, style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              return h('div', { key: cat.id, style: { padding: 12, border: '2px solid ' + _cnsBd('#0f172a'), borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: _cnsFg('#0f172a'), marginBottom: 8 } }, cat.icon + ' ' + cat.label),
                 h('ul', { style: { margin: 0, padding: '0 0 0 20px', fontSize: 12, color: _cnsFg('#0f172a'), lineHeight: 1.65 } },
                   entries.map(function(c) {
-                    var dir = dirLabel[c.direction] || c.direction;
+                    var dir = Object.prototype.hasOwnProperty.call(dirLabel, c.direction) ? dirLabel[c.direction] : c.direction;
                     return h('li', { key: c.id, style: { marginBottom: 4 } },
                       h('strong', null, c.name || '(unnamed)'),
-                      h('span', { style: { color: _cnsFg('#475569') } }, ' · ' + dir + ' · strength ' + (c.strength || '—') + '/5'),
+                      h('span', { style: { color: _cnsFg('#475569') } }, ' · ' + dir + ' · strength ' + clampStrength(c.strength) + '/5'),
                       c.notes ? h('div', { style: { fontSize: 11.5, color: _cnsFg('#475569'), fontStyle: 'italic', marginTop: 2 } }, c.notes) : null
                     );
                   })
@@ -704,19 +771,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
               );
             }),
 
-            d.reflectionAnswers && Object.keys(d.reflectionAnswers).length > 0 ? h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+            reflectionEntries.length > 0 ? h('div', { style: { padding: 12, border: '2px solid ' + _cnsBd('#0f172a'), borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: _cnsFg('#0f172a'), marginBottom: 8 } }, 'My reflections'),
-              Object.keys(d.reflectionAnswers).map(function(k, i) {
-                var a = d.reflectionAnswers[k];
-                if (!a) return null;
-                return h('div', { key: k, style: { marginBottom: 8 } },
-                  h('div', { style: { fontSize: 11.5, color: _cnsFg('#475569'), fontStyle: 'italic', marginBottom: 2 } }, k),
-                  h('div', { style: { fontSize: 12.5, color: _cnsFg('#0f172a'), whiteSpace: 'pre-wrap', lineHeight: 1.55 } }, a)
+              reflectionEntries.map(function(entry) {
+                return h('div', { key: entry.id, style: { marginBottom: 8 } },
+                  h('div', { style: { fontSize: 11.5, color: _cnsFg('#475569'), fontStyle: 'italic', marginBottom: 2 } }, entry.prompt),
+                  h('div', { style: { fontSize: 12.5, color: _cnsFg('#0f172a'), whiteSpace: 'pre-wrap', lineHeight: 1.55 } }, entry.answer)
                 );
               })
             ) : null,
 
-            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: _cnsFg('#475569'), lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid ' + _cnsBd('#0f172a'), fontSize: 10.5, color: _cnsFg('#475569'), lineHeight: 1.5 } },
               'Sources: Noddings, N. (1984), Caring: A Relational Approach to Ethics and Moral Education · Foucault, M., The Care of the Self. Printed from AlloFlow SEL Hub.'
             )
           )
@@ -735,6 +800,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       return h('div', { style: { maxWidth: 860, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Care Constellations' },
         header(),
         navTabs(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _cnsBand) : null,
         h('div', { id: 'cc-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'cc-tab-' + view, tabIndex: 0 }, body)
       );
     }

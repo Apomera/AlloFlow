@@ -23,18 +23,18 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
     return typeof v === "string" && v && v !== k ? v : fb;
   };
   const dialogRef = React.useRef(null);
+  const closeRef = React.useRef(setShowKokoroOfferModal);
+  closeRef.current = setShowKokoroOfferModal;
   React.useEffect(function() {
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
     const previousFocus = document.activeElement;
     const isolatedSiblings = [];
-    let branch = dialog;
-    while (branch && branch.parentElement && branch.parentElement !== document.body) {
-      branch = branch.parentElement;
-    }
-    if (branch && branch.parentElement === document.body) {
-      Array.from(document.body.children).forEach(function(sibling) {
-        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === "function" && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
+    let node = dialog;
+    while (node && node.parentElement && node !== document.body) {
+      const parent = node.parentElement;
+      Array.from(parent.children).forEach(function(sibling) {
+        if (sibling === node || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === "function" && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
         isolatedSiblings.push({
           el: sibling,
           hadInert: sibling.hasAttribute("inert"),
@@ -45,6 +45,7 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
         sibling.setAttribute("inert", "");
         sibling.setAttribute("aria-hidden", "true");
       });
+      node = parent;
     }
     const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
     const alloScrollLocked = !!document.body;
@@ -79,9 +80,10 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
       if (event.isComposing || event.keyCode === 229) return;
       if (!isTopTrap()) return;
       if (event.key === "Escape") {
+        if (event.defaultPrevented) return;
         event.preventDefault();
         event.stopPropagation();
-        setShowKokoroOfferModal(false);
+        if (typeof closeRef.current === "function") closeRef.current(false);
         return;
       }
       if (event.key !== "Tab") return;
@@ -124,12 +126,17 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
-  }, [setShowKokoroOfferModal]);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9998] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none", role: "presentation", onClick: () => setShowKokoroOfferModal(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "kokoro-offer-title", "aria-describedby": "kokoro-offer-reason kokoro-offer-description kokoro-offer-note", tabIndex: -1, className: "allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto animate-in zoom-in-95 duration-200 motion-reduce:animate-none", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-3 rounded-full", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl" }, "\u{1F3A4}")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "kokoro-offer-title", className: "text-lg font-bold text-slate-800" }, "Cloud Voice Unavailable"), /* @__PURE__ */ React.createElement("p", { id: "kokoro-offer-reason", className: "text-xs text-slate-600" }, "Cloud speech did not complete. Check the audio status or technical details for the reported cause."))), /* @__PURE__ */ React.createElement("p", { id: "kokoro-offer-description", className: "text-sm text-slate-600 mb-4" }, "Download Kokoro, a free voice model (~88MB). Once ready on this device, it generates English speech locally. The first clip may still take time to generate."), /* @__PURE__ */ React.createElement("p", { id: "kokoro-offer-note", className: "text-xs text-slate-600 mb-4" }, "This download prepares the voice model. Preparing and saving sentence clips for offline playback are separate steps. Model retention depends on this browser's storage; clearing it may require another download."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+  }, []);
+  const studentAiOff = typeof window !== "undefined" && window.__alloStudentAiDisabled === true;
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9998] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none", role: "presentation", onClick: () => setShowKokoroOfferModal(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "kokoro-offer-title", "aria-describedby": "kokoro-offer-reason kokoro-offer-description kokoro-offer-note", tabIndex: -1, className: "allo-docsuite bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto animate-in zoom-in-95 duration-200 motion-reduce:animate-none", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 dark:bg-amber-900/40 p-3 rounded-full", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl" }, "\u{1F3A4}")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "kokoro-offer-title", className: "text-lg font-bold text-slate-800 dark:text-slate-100" }, tr("voice_engine.kokoro_offer_title", "Cloud Voice Unavailable")), /* @__PURE__ */ React.createElement("p", { id: "kokoro-offer-reason", className: "text-xs text-slate-600 dark:text-slate-300" }, tr("voice_engine.kokoro_offer_reason", "Cloud speech did not complete. Check the audio status or technical details for the reported cause.")))), /* @__PURE__ */ React.createElement("p", { id: "kokoro-offer-description", className: "text-sm text-slate-600 dark:text-slate-300 mb-4" }, tr("voice_engine.kokoro_offer_description", "Download Kokoro, a free voice model (~88MB). Once ready on this device, it generates English speech locally. The first clip may still take time to generate.")), /* @__PURE__ */ React.createElement("p", { id: "kokoro-offer-note", className: "text-xs text-slate-600 dark:text-slate-300 mb-4" }, tr("voice_engine.kokoro_offer_note", "This download prepares the voice model. Preparing and saving sentence clips for offline playback are separate steps. Model retention depends on this browser's storage; clearing it may require another download.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setShowKokoroOfferModal(false);
     window.__kokoroOfferDeclined = true;
-  }, className: "flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-600 transition-colors motion-reduce:transition-none text-sm" }, "No Thanks"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+  }, className: "flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-600 transition-colors motion-reduce:transition-none text-sm" }, tr("voice_engine.kokoro_offer_decline", "No Thanks")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: studentAiOff, onClick: () => {
     setShowKokoroOfferModal(false);
+    if (typeof window !== "undefined" && window.__alloStudentAiDisabled === true) {
+      if (typeof addToast === "function") addToast(tr("voice_engine.kokoro_student_disabled", "Voice model downloads are turned off in Student Mode. Your device voice is ready to use."), "info");
+      return;
+    }
     if (window.__kokoroTTSDownloading) {
       addToast(tr("voice_engine.kokoro_prep_running", "Voice model preparation is already running. Check audio status for progress."), "info");
       return;
@@ -150,7 +157,7 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
       window.__kokoroTTSDownloading = false;
       addToast(tr("voice_engine.kokoro_prep_failed", "Voice model preparation did not finish. Check network access or browser storage, then try again."), "error");
     });
-  }, className: "flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-indigo-700 hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-700 transition-colors motion-reduce:transition-none text-sm" }, "Download Voice"))));
+  }, className: "flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-indigo-700 hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-700 transition-colors motion-reduce:transition-none text-sm" }, tr("voice_engine.kokoro_offer_download", "Download Voice")))));
 }
 
   window.AlloModules = window.AlloModules || {};

@@ -40,10 +40,11 @@ module.exports = source.map((bank, index) => ({
   references: references.slice(),
   questions: bank.questions.map((question, questionIndex) => ({
     promptA: 'In a grades 7\u201312 setting, ' + rewrite(question.promptA).replace(/^./, (letter) => letter.toLowerCase()),
-    promptB: 'In a parallel secondary setting, ' + rewrite(question.promptB).replace(/^./, (letter) => letter.toLowerCase()),
+    promptB: 'In a secondary classroom, ' + rewrite(question.promptB).replace(/^./, (letter) => letter.toLowerCase()),
     correct: rewrite(question.correct),
     distractors: question.distractors.map(rewrite),
     rationale: rewrite(question.rationale) + ' The response should account for adolescent development, disciplinary literacy and advanced content, identity and peer context, learner agency, equitable access, independent transfer, and preparation for college, career, and civic life.',
+    distractorNotes: Array.isArray(question.distractorNotes) ? question.distractorNotes.map(rewrite) : undefined,
     difficulty: question.difficulty || (questionIndex % 3 === 0 ? 'analysis' : 'application'),
   })),
 }));

@@ -21,19 +21,30 @@
     return;
   }
 
+  function _isUnsafeProtoKey(k) {
+    return k === '__proto__' || k === 'constructor' || k === 'prototype';
+  }
+
   // Recursive object sanitizer. Firestore rejects fields with `undefined`
-  // values; this strips them (preserves `null`, dates, arrays).
-  function stripUndefined(obj) {
+  // values; this strips them (preserves `null`, dates, arrays) and guards cycles.
+  function stripUndefined(obj, seen) {
     if (obj === null || obj === undefined) return obj;
-    if (Array.isArray(obj)) return obj.map(stripUndefined);
-    if (typeof obj === 'object' && !(obj instanceof Date)) {
-      return Object.fromEntries(
-        Object.entries(obj)
-          .filter(([_, v]) => v !== undefined)
-          .map(([k, v]) => [k, stripUndefined(v)])
-      );
+    if (typeof obj !== 'object' || obj instanceof Date) return obj;
+    const visited = seen || new WeakMap();
+    if (visited.has(obj)) return visited.get(obj);
+    if (Array.isArray(obj)) {
+      const outArr = [];
+      visited.set(obj, outArr);
+      for (let i = 0; i < obj.length; i++) outArr.push(stripUndefined(obj[i], visited));
+      return outArr;
     }
-    return obj;
+    const outObj = {};
+    visited.set(obj, outObj);
+    Object.entries(obj).forEach(([k, v]) => {
+      if (v === undefined || _isUnsafeProtoKey(k)) return;
+      outObj[k] = stripUndefined(v, visited);
+    });
+    return outObj;
   }
 
   // Persona transcripts, reflections, summaries, and read-aloud session
@@ -143,13 +154,20 @@
   // intact so reload-from-cloud preserves structure even if visuals are
   // regenerated locally.
   function sanitizeHistoryForCloud(historyItems) {
-    const cleaned = historyItems.filter(item => !isPrivatePersonaHistoryItem(item)).map(rawItem => {
+    if (!Array.isArray(historyItems)) return [];
+    const stripInvList = (list) => Array.isArray(list) ? list.map(inv => {
+        if (!inv || typeof inv !== 'object') return inv;
+        const { image, ...iRest } = inv;
+        return iRest;
+    }) : list;
+    const cleaned = historyItems.filter(item => item && typeof item === 'object' && !isPrivatePersonaHistoryItem(item)).map(rawItem => {
         const safeItem = normalizeReadingRoleMetadata(sanitizeMemoryAidResourceForBoundary(rawItem));
         const item = normalizeReadingPreservation(typeof safeItem.data === 'string'
           ? { ...safeItem, dataEncoding: safeItem.dataEncoding === 'json-text/v1' ? 'json-text/v1' : 'text/v1' }
           : safeItem);
         if (item.type === 'glossary' && Array.isArray(item.data)) {
             const cleanData = item.data.map(gItem => {
+                if (!gItem || typeof gItem !== 'object') return gItem;
                 const { image, ...rest } = gItem;
                 return rest;
             });
@@ -159,17 +177,11 @@
             const { imageUrl, ...rest } = item.data;
             return { ...item, data: { ...rest, imageUrl: null } };
         }
-        if (item.type === 'adventure' && item.data) {
+        if (item.type === 'adventure' && item.data && typeof item.data === 'object') {
              const { sceneImage, ...rest } = item.data;
-             let cleanInventory = rest.inventory;
-             if (Array.isArray(cleanInventory)) {
-                cleanInventory = cleanInventory.map(inv => {
-                    const { image, ...iRest } = inv;
-                    return iRest;
-                });
-             }
+             const cleanInventory = stripInvList(rest.inventory);
              let cleanSnapshot = null;
-             if (rest.snapshot) {
+             if (rest.snapshot && typeof rest.snapshot === 'object') {
                  cleanSnapshot = {
                      xp: rest.snapshot.xp,
                      gold: rest.snapshot.gold,
@@ -181,7 +193,7 @@
                      climax: rest.snapshot.climax,
                      debateMomentum: rest.snapshot.debateMomentum,
                      missionReportDismissed: rest.snapshot.missionReportDismissed,
-                     inventory: cleanInventory,
+                     inventory: Array.isArray(rest.snapshot.inventory) ? stripInvList(rest.snapshot.inventory) : cleanInventory,
                      // The current scene and its art. Without these the student
                      // receives an adventure with no picture and no scene text:
                      // glossary keeps its shape and loses one `image` leaf, but
@@ -197,20 +209,59 @@
              }
              return { ...item, data: { ...rest, sceneImage: null, inventory: cleanInventory, snapshot: cleanSnapshot } };
         }
-        if (item.type === 'persona' && Array.isArray(item.data)) {
-             const cleanData = item.data.map(p => {
-                 const { avatarUrl, chatHistory, savedDialogue, ...rest } = p;
-                 return rest;
-             });
-             return { ...item, data: cleanData };
+        const stripPersonaNode = (p) => {
+             if (!p || typeof p !== 'object' || Array.isArray(p)) return p;
+             const { avatarUrl, chatHistory, savedDialogue, ...rest } = p;
+             return rest;
+        };
+        if (item.type === 'persona') {
+             let pData = item.data;
+             if (typeof pData === 'string') {
+                 try {
+                     const parsedP = JSON.parse(pData, _fsSafeJsonReviver);
+                     if (Array.isArray(parsedP)) pData = parsedP.map(stripPersonaNode);
+                     else if (parsedP && typeof parsedP === 'object') pData = stripPersonaNode(parsedP);
+                 } catch (_) {}
+             } else if (Array.isArray(pData)) {
+                 pData = pData.map(stripPersonaNode);
+             } else if (pData && typeof pData === 'object') {
+                 pData = stripPersonaNode(pData);
+             }
+             return { ...item, data: pData };
         }
-        if (item.type === 'fluency-record' && item.data && item.data.audioRecording) {
+        if (item.type === 'fluency-record') {
              // Strip the raw read-aloud voice clip before it reaches Firestore.
              // A child's recorded voice is biometric-class data and must never
              // auto-sync to the cloud; the scored result (metrics/wordData/
              // feedback) is kept so reload-from-cloud still shows the record.
-             const { audioRecording, mimeType, ...rest } = item.data;
-             return { ...item, data: rest };
+             const stripVoice = (node, seenV) => {
+                 if (!node || typeof node !== 'object' || node instanceof Date) return node;
+                 const vis = seenV || new WeakMap();
+                 if (vis.has(node)) return vis.get(node);
+                 if (Array.isArray(node)) {
+                     const arr = [];
+                     vis.set(node, arr);
+                     for (let i = 0; i < node.length; i++) arr.push(stripVoice(node[i], vis));
+                     return arr;
+                 }
+                 const outV = {};
+                 vis.set(node, outV);
+                 Object.entries(node).forEach(([k, v]) => {
+                     if (_isUnsafeProtoKey(k) || k === 'audioRecording' || k === 'mimeType') return;
+                     outV[k] = stripVoice(v, vis);
+                 });
+                 return outV;
+             };
+             let fData = item.data;
+             if (typeof fData === 'string') {
+                 try {
+                     const parsedF = JSON.parse(fData, _fsSafeJsonReviver);
+                     if (parsedF && typeof parsedF === 'object') fData = stripVoice(parsedF);
+                 } catch (_) {}
+             } else if (fData && typeof fData === 'object') {
+                 fData = stripVoice(fData);
+             }
+             return { ...item, data: fData };
         }
         return item;
     });
@@ -369,7 +420,7 @@
   function fitArtworkToBudget(items) {
     if (!Array.isArray(items)) return items;
     let size = estimateJsonBytes(items);
-    if (size <= CLOUD_ART_BUDGET_BYTES) return items;
+    if (!Number.isFinite(size) || size <= CLOUD_ART_BUDGET_BYTES) return items;
     const out = items.slice();
     const droppedIndexes = new Set();
     const stripPass = (lighten) => {
@@ -423,38 +474,45 @@
     return value.slice(0, SESSION_RESOURCE_STRING_MAX_CHARS) + '\n\n[Trimmed for live session sync. Open the teacher pack for the full resource.]';
   }
 
-  function sanitizeSessionValue(value, keyName) {
+  function sanitizeSessionValue(value, keyName, seen) {
     if (value == null) return value;
     if (typeof value === 'string') {
       if (SESSION_BINARY_FIELD_RE.test(String(keyName || '')) && value.length > 512) return null;
       return trimSessionString(value);
     }
-    if (Array.isArray(value)) return value.map(entry => sanitizeSessionValue(entry, keyName));
-    if (typeof value === 'object' && !(value instanceof Date)) {
-      const out = {};
-      Object.keys(value).forEach(key => {
-        const v = value[key];
-        if (v === undefined) return;
-        if (SESSION_BINARY_FIELD_RE.test(key) && (typeof v === 'string' || typeof v === 'object')) {
-          out[key] = null;
-          return;
-        }
-        // Canonical reading strings can legitimately begin with data:/blob:.
-        // Keep exact text within the same existing string budget; oversized
-        // sources become unavailable rather than a falsely preserved excerpt.
-        const canonicalReadingText = key === 'data' && value.type === 'simplified' && typeof v === 'string';
-        const canonicalSnapshotText = key === 'text' && value.schemaVersion === 1
-          && typeof value.fingerprint === 'string' && typeof v === 'string';
-        if (canonicalReadingText || canonicalSnapshotText) {
-          out[key] = v.length <= SESSION_RESOURCE_STRING_MAX_CHARS ? v
-            : (canonicalReadingText && !value.sourceSnapshot ? trimSessionString(v) : null);
-          return;
-        }
-        out[key] = sanitizeSessionValue(v, key);
-      });
-      return normalizeReadingPreservation(normalizeReadingRoleMetadata(out), 'live-session-size-limit');
+    if (typeof value !== 'object' || value instanceof Date) return value;
+    const visited = seen || new WeakMap();
+    if (visited.has(value)) return visited.get(value);
+    if (Array.isArray(value)) {
+      const arr = [];
+      visited.set(value, arr);
+      for (let i = 0; i < value.length; i++) arr.push(sanitizeSessionValue(value[i], keyName, visited));
+      return arr;
     }
-    return value;
+    const out = {};
+    visited.set(value, out);
+    Object.keys(value).forEach(key => {
+      if (_isUnsafeProtoKey(key)) return;
+      const v = value[key];
+      if (v === undefined) return;
+      if (SESSION_BINARY_FIELD_RE.test(key) && (typeof v === 'string' || typeof v === 'object')) {
+        out[key] = null;
+        return;
+      }
+      // Canonical reading strings can legitimately begin with data:/blob:.
+      // Keep exact text within the same existing string budget; oversized
+      // sources become unavailable rather than a falsely preserved excerpt.
+      const canonicalReadingText = key === 'data' && value.type === 'simplified' && typeof v === 'string';
+      const canonicalSnapshotText = key === 'text' && value.schemaVersion === 1
+        && typeof value.fingerprint === 'string' && typeof v === 'string';
+      if (canonicalReadingText || canonicalSnapshotText) {
+        out[key] = v.length <= SESSION_RESOURCE_STRING_MAX_CHARS ? v
+          : (canonicalReadingText && !value.sourceSnapshot ? trimSessionString(v) : null);
+        return;
+      }
+      out[key] = sanitizeSessionValue(v, key, visited);
+    });
+    return normalizeReadingPreservation(normalizeReadingRoleMetadata(out), 'live-session-size-limit');
   }
 
   function normalizePersistedInstructionalText(item) {
@@ -679,7 +737,7 @@
   function isUnfilledBlankDraft(item) {
     if (!item || !item.lessonPath || !item.lessonPath.seed || item.lessonPath.seed.kind !== 'blank') return false;
     const minimum = window.AlloModules && window.AlloModules.GenDispatcher && window.AlloModules.GenDispatcher.hasMinimumContent;
-    return typeof minimum === 'function' && !minimum(item.type, item.data);
+    return typeof minimum === 'function' ? !minimum(item.type, item.data) : true;
   }
   function studentFactCheck(node) {
     const text = typeof node.factCheck === 'string' ? node.factCheck : '';
@@ -692,18 +750,21 @@
     if (check && (['confirmed', 'unclear'].indexOf(check.status) < 0 || String(check.checkedKey == null ? '' : check.checkedKey) !== String(node.correctAnswer == null ? '' : node.correctAnswer))) return '';
     return /\[\[\s*KEY\s*:\s*DISPUTED|CORRECTION\s*\/\s*WARNING|Actual Correct Answer/i.test(text) ? '' : text;
   }
-  function stripTeacherOnlyResourceFields(value, memoryAid, seen) {
+  function stripTeacherOnlyResourceFields(value, memoryAid, seen, appliedChallenge) {
     if (!value || typeof value !== 'object' || value instanceof Date) return value;
     const prototype = Object.getPrototypeOf(value);
     if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
     const visited = seen || new WeakMap();
     if (visited.has(value)) return visited.get(value);
     const scope = !!memoryAid || isMemoryAidBoundaryNode(value);
+    const inApplied = !!appliedChallenge || (!Array.isArray(value) && [value.type, value.artifactType].some(t => typeof t === 'string' && t.trim().toLowerCase().replace(/[\s_]+/g, '-') === 'applied-challenge'));
     const out = Array.isArray(value) ? [] : {};
     visited.set(value, out);
     const explanation = !Array.isArray(value) && !scope && Object.prototype.hasOwnProperty.call(value, 'factCheck') ? studentFactCheck(value) : '';
     Object.entries(value).forEach(([key, nested]) => {
+      if (_isUnsafeProtoKey(key)) return;
       if (TEACHER_ONLY_RESOURCE_KEYS.indexOf(key) >= 0) return;
+      if (inApplied && (key === 'sourceExcerpt' || key === 'qualityReview')) return;
       // KWL teacher examples: keep the branch (the student prompt renders), not its items.
       if (value.teacherExample === true && (key === 'items' || key === 'items_en') && Array.isArray(nested)) { out[key] = []; return; }
       if (key === 'factCheck') { if (explanation) out.factCheck = explanation; return; }
@@ -711,7 +772,7 @@
         if (explanation && nested && nested.status === 'confirmed' && String(nested.checkedKey == null ? '' : nested.checkedKey) === String(value.correctAnswer == null ? '' : value.correctAnswer)) out.keyCheck = { status: 'confirmed', checkedKey: nested.checkedKey };
         return;
       }
-      out[key] = stripTeacherOnlyResourceFields(nested, scope, visited);
+      out[key] = stripTeacherOnlyResourceFields(nested, scope, visited, inApplied);
     });
     return out;
   }
@@ -743,7 +804,7 @@
     let decoded = false, withholdEncodedReading = false;
     if (value.type === 'simplified' && value.dataEncoding === 'json-text/v1' && reading !== null) {
       try { const parsed = JSON.parse(reading); if (typeof parsed === 'string') { reading = parsed; decoded = true; } } catch (_) {}
-      withholdEncodedReading = !decoded && /\\n#{1,6}[ \t]+(?:Your Document References|Research Review)/i.test(reading);
+      withholdEncodedReading = !decoded && /(?:^|\\n|\\u000[aAdD]|")#{1,6}[ \t]+(?:Your Document References|Research Review)/i.test(reading);
       if (withholdEncodedReading) reading = null;
     }
     let record = null;
@@ -751,6 +812,7 @@
       try { record = api.sanitize(api.forText(value.studentSources, reading)); } catch (_) {}
     }
     Object.entries(value).forEach(([key, nested]) => {
+      if (_isUnsafeProtoKey(key)) return;
       if (key === 'data' && withholdEncodedReading) return;
       if (['researchEvidence', 'researchPacket', 'reviewedResearch', 'researchConfig', 'studentSources'].includes(key)) return;
       if (key === 'sourceProvenance' && nested && typeof nested === 'object'
@@ -778,15 +840,15 @@
   // answers, per-option correctness, explanations, answer guides, fact checks
   // and rubrics stay on the teacher's copy, which live quizzes grade against.
   // Mirrors withholdGradedQuizKeys in live_aac_source.jsx.
-  const GRADED_KEY_FIELDS = ['correctAnswer', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits',
-    'expectedAnswer', 'expectedFill', 'acceptableAlternatives', 'rubric', 'sampleAnswer', 'exemplarAnswer', 'modelAnswer', 'answer', 'answerKey',
+  const GRADED_KEY_FIELDS = ['correctAnswer', 'correctAnswers', 'correctIndex', 'correctIndices', 'correct', 'correctEvidence', 'expectedEvidence', 'correctValue', 'tolerance', 'acceptableUnits',
+    'expectedAnswer', 'expectedFill', 'acceptableAlternatives', 'rubric', 'sampleAnswer', 'exemplarAnswer', 'modelAnswer', 'referenceAnswer', 'answer', 'answerKey',
     'explanation', 'answerExplanation', 'rationale', 'feedback', 'optionFeedback', 'factCheck', 'keyCheck', 'distractorQuality', 'sourceEvidence', 'contentReview',
     'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence'];
   const GRADED_OPTION_FIELDS = ['isCorrect', 'correct', 'isAnswer', 'feedback', 'explanation', 'rationale'];
   // Sequence Sense items in their displayed order: canonical order is the key.
   // Mirrors QuizLiveAggregators.sequenceDisplayForm.
   function sequenceDisplayOrder(question) {
-    const items = question.type === 'sequence-sense' && Array.isArray(question.items) ? question.items : null;
+    const items = (question.type || question.itemType) === 'sequence-sense' && Array.isArray(question.items) ? question.items : null;
     const order = question.presentedOrder;
     if (!items || !Array.isArray(order) || order.length !== items.length || new Set(order).size !== items.length || !order.every(value => Number.isInteger(value) && value >= 0 && value < items.length)) return question;
     const out = { ...question, presentedOrder: order.map((_, index) => index), itemsInDisplayOrder: true };
@@ -797,10 +859,37 @@
   }
   // teacher-release copies are withheld too; a release made for this exact
   // version (feedbackReleaseKeys) rides along so learners get their feedback.
-  function withholdGradedQuizKeys(resource) {
-    const data = resource && resource.type === 'quiz' && resource.data && typeof resource.data === 'object' && !Array.isArray(resource.data) ? resource.data : null;
-    if (!data) return resource;
-    const omit = (value, fields) => Object.fromEntries(Object.entries(value).filter(([key]) => fields.indexOf(key) < 0));
+  function withholdGradedQuizKeys(resource, seen) {
+    if (!resource || typeof resource !== 'object' || resource instanceof Date) return resource;
+    const visited = seen || new WeakMap();
+    if (visited.has(resource)) return visited.get(resource);
+    if (Array.isArray(resource)) {
+      const arr = [];
+      visited.set(resource, arr);
+      for (let i = 0; i < resource.length; i++) arr.push(withholdGradedQuizKeys(resource[i], visited));
+      return arr;
+    }
+    let rawData = resource.type === 'quiz' ? resource.data : null;
+    if (resource.type === 'quiz' && typeof rawData === 'string') {
+      try {
+        const parsedQuiz = JSON.parse(rawData, _fsSafeJsonReviver);
+        if (parsedQuiz && typeof parsedQuiz === 'object' && !Array.isArray(parsedQuiz)) rawData = parsedQuiz;
+      } catch (_) {}
+    }
+    const data = resource.type === 'quiz' && rawData && typeof rawData === 'object' && !Array.isArray(rawData) ? rawData : null;
+    if (!data) {
+      let changed = false;
+      const walked = {};
+      visited.set(resource, walked);
+      Object.entries(resource).forEach(([k, v]) => {
+        if (_isUnsafeProtoKey(k)) return;
+        const nextV = withholdGradedQuizKeys(v, visited);
+        if (nextV !== v) changed = true;
+        walked[k] = nextV;
+      });
+      return changed ? walked : resource;
+    }
+    const omit = (value, fields) => Object.fromEntries(Object.entries(value).filter(([key]) => !_isUnsafeProtoKey(key) && fields.indexOf(key) < 0));
     const settings = data.deliverySettings && typeof data.deliverySettings === 'object' ? data.deliverySettings : {};
     if (settings.feedbackTiming !== 'teacher-graded' && settings.feedbackTiming !== 'teacher-release') {
       return Object.prototype.hasOwnProperty.call(data, 'feedbackReleaseKeys') ? { ...resource, data: omit(data, ['feedbackReleaseKeys']) } : resource;
@@ -821,7 +910,9 @@
       });
       return sequenceDisplayOrder(kept);
     }) : data.questions;
-    return { ...resource, data: { ...omit(data, ['answerKey', 'distractorReview', 'feedbackReleaseKeys', 'contentReview']), ...(released ? { feedbackReleaseKeys: release } : {}), questions, answerKeysWithheld: true } };
+    const out = { ...resource, data: { ...omit(data, ['answerKey', 'distractorReview', 'feedbackReleaseKeys', 'contentReview']), ...(released ? { feedbackReleaseKeys: release } : {}), questions, answerKeysWithheld: true } };
+    visited.set(resource, out);
+    return out;
   }
 
   function prepareSessionResourcesForWrite(resources, options) {
@@ -902,9 +993,11 @@
               }
           }
           let parsedGameData = item.gameData;
+          let parsedGameDataOk = false;
           if (typeof parsedGameData === 'string') {
               try {
                   parsedGameData = JSON.parse(parsedGameData, _fsSafeJsonReviver);
+                  parsedGameDataOk = true;
               } catch(e) {
                   if (typeof window.warnLog === 'function') {
                       window.warnLog('Caught error:', e?.message || e);
@@ -914,7 +1007,7 @@
           const hydratedItem = {
               ...item,
               data: parsedData,
-              gameData: parsedGameData || item.gameData,
+              gameData: parsedGameDataOk ? parsedGameData : item.gameData,
               ...(typeof parsedData === 'string' && !unresolvedReadingEnvelope ? { dataEncoding: 'text/v1' } : {})
           };
           const boundarySafeItem = normalizeReadingPreservation(normalizeReadingRoleMetadata(sanitizeMemoryAidResourceForBoundary(hydratedItem)));

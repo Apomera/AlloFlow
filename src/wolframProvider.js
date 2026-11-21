@@ -18,13 +18,28 @@ const WolframProvider = (() => {
     const BASE_URL = 'https://api.wolframalpha.com/v2';
     const SHORT_URL = 'https://api.wolframalpha.com/v1/result';
 
+    const MAX_RESPONSE_BYTES = 1024 * 1024;
+
+    function _redactSecrets(msg) {
+        return String(msg == null ? '' : msg).replace(/appid=[^&\s]+/gi, 'appid=[REDACTED]');
+    }
+
+    function _isBlockedByPolicy() {
+        return typeof window !== 'undefined' && (
+            window._isCanvasEnv || window._isDesktopBundledApp === true || window.__ALLOFLOW_DESKTOP_OFFLINE__ === true ||
+            window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true ||
+            (window.ALLOFLOW_MANAGED_AI_POLICY != null && (window.ALLOFLOW_MANAGED_AI_POLICY.version !== 1 || window.ALLOFLOW_MANAGED_AI_POLICY.allowExternalSearch !== true))
+        );
+    }
+
     /**
      * Get the stored Wolfram API key from localStorage
      */
     function getApiKey() {
+        if (_isBlockedByPolicy()) return '';
         try {
             const config = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-            return config.wolframAppId || '';
+            return typeof config.wolframAppId === 'string' ? config.wolframAppId : '';
         } catch { return ''; }
     }
 
@@ -33,26 +48,81 @@ const WolframProvider = (() => {
      */
     function isAvailable() {
         // Canvas, bundled Desktop offline builds, secrets lock, student AI lock, or restrictive managed policy block external APIs
-        if (typeof window !== 'undefined' && (
-            window._isCanvasEnv || window._isDesktopBundledApp === true || window.__ALLOFLOW_DESKTOP_OFFLINE__ === true ||
-            window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true ||
-            (window.ALLOFLOW_MANAGED_AI_POLICY != null && (window.ALLOFLOW_MANAGED_AI_POLICY.version !== 1 || window.ALLOFLOW_MANAGED_AI_POLICY.allowExternalSearch !== true))
-        )) return false;
+        if (_isBlockedByPolicy()) return false;
         return !!getApiKey();
     }
 
-    async function fetchWolfram(url) {
+    async function _readBoundedText(res, maxBytes) {
+        if (!res.body || typeof res.body.getReader !== 'function') {
+            const text = await res.text();
+            if (text.length > maxBytes) throw new Error('Response exceeded size limit');
+            return text;
+        }
+        const reader = res.body.getReader();
+        const chunks = [];
+        let total = 0;
+        const decoder = typeof TextDecoder !== 'undefined' ? new TextDecoder() : null;
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const bytes = value instanceof Uint8Array ? value : new Uint8Array(value);
+                total += bytes.byteLength;
+                if (total > maxBytes) {
+                    try { await reader.cancel(); } catch (_) {}
+                    throw new Error('Response exceeded size limit');
+                }
+                chunks.push(decoder ? decoder.decode(bytes, { stream: true }) : String.fromCharCode.apply(null, bytes));
+            }
+            if (decoder) chunks.push(decoder.decode());
+            return chunks.join('');
+        } finally {
+            try { reader.releaseLock(); } catch (_) {}
+        }
+    }
+
+    async function fetchWolframBody(url, asJson) {
         const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
         const timer = controller ? setTimeout(() => controller.abort(), 10000) : null;
         try {
-            return await fetch(url, {
+            const res = await fetch(url, {
                 credentials: 'omit',
                 referrerPolicy: 'no-referrer',
                 signal: controller ? controller.signal : undefined,
             });
+            if (!res.ok) {
+                try { await res.body?.cancel?.(); } catch (_) {}
+                return { ok: false, status: res.status, value: null };
+            }
+            if (asJson) {
+                if (!res.body || typeof res.body.getReader !== 'function') {
+                    return { ok: true, status: res.status, value: await res.json() };
+                }
+                const text = await _readBoundedText(res, MAX_RESPONSE_BYTES);
+                return { ok: true, status: res.status, value: JSON.parse(text) };
+            }
+            const text = await _readBoundedText(res, MAX_RESPONSE_BYTES);
+            return { ok: true, status: res.status, value: text };
         } finally {
             if (timer) clearTimeout(timer);
         }
+    }
+
+    function _parseStrictNumber(raw) {
+        const trimmed = String(raw == null ? '' : raw).trim().replace(/^[a-z]\s*=\s*/i, '').trim();
+        if (/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(trimmed)) {
+            const n = Number(trimmed);
+            return Number.isFinite(n) ? n : NaN;
+        }
+        const frac = trimmed.match(/^([+-]?\d+)\s*\/\s*([+-]?\d+)$/);
+        if (frac) {
+            const denom = Number(frac[2]);
+            if (denom !== 0 && Number.isFinite(denom)) {
+                const n = Number(frac[1]) / denom;
+                return Number.isFinite(n) ? n : NaN;
+            }
+        }
+        return NaN;
     }
 
     /**
@@ -64,14 +134,14 @@ const WolframProvider = (() => {
         const appId = getApiKey();
         try {
             const url = `${SHORT_URL}?appid=${encodeURIComponent(appId)}&i=${encodeURIComponent(input)}`;
-            const res = await fetchWolfram(url);
+            const res = await fetchWolframBody(url, false);
             if (!res.ok) {
                 console.warn('[Wolfram] Query failed:', res.status);
                 return null;
             }
-            return await res.text();
+            return res.value;
         } catch (e) {
-            console.warn('[Wolfram] Query error:', e.message);
+            console.warn('[Wolfram] Query error:', _redactSecrets(e && e.message));
             return null;
         }
     }
@@ -85,12 +155,11 @@ const WolframProvider = (() => {
         const appId = getApiKey();
         try {
             const url = `${BASE_URL}/query?appid=${encodeURIComponent(appId)}&input=${encodeURIComponent(input)}&format=plaintext&output=json`;
-            const res = await fetchWolfram(url);
-            if (!res.ok) return null;
-            const data = await res.json();
-            return data.queryresult || null;
+            const res = await fetchWolframBody(url, true);
+            if (!res.ok || !res.value || typeof res.value !== 'object') return null;
+            return res.value.queryresult || null;
         } catch (e) {
-            console.warn('[Wolfram] Full query error:', e.message);
+            console.warn('[Wolfram] Full query error:', _redactSecrets(e && e.message));
             return null;
         }
     }
@@ -110,14 +179,14 @@ const WolframProvider = (() => {
             const studentNorm = normalize(studentAnswer);
             const wolframNorm = normalize(wolframAnswer);
 
-            // Try numeric comparison first
-            const studentNum = parseFloat(String(studentAnswer).replace(/[^0-9.\-]/g, ''));
-            const wolframNum = parseFloat(String(wolframAnswer).replace(/[^0-9.\-]/g, ''));
+            // Only compare numerically when both sides strictly parse as a plain number or simple fraction
+            const studentNum = _parseStrictNumber(studentAnswer);
+            const wolframNum = _parseStrictNumber(wolframAnswer);
 
             let correct = false;
             if (!studentNorm) {
                 correct = false;
-            } else if (!isNaN(studentNum) && !isNaN(wolframNum)) {
+            } else if (Number.isFinite(studentNum) && Number.isFinite(wolframNum)) {
                 correct = Math.abs(studentNum - wolframNum) < 0.01;
             } else {
                 correct = studentNorm === wolframNorm || (wolframNorm.includes('=') && wolframNorm.split('=').pop() === studentNorm);
@@ -130,7 +199,7 @@ const WolframProvider = (() => {
                 studentAnswer: String(studentAnswer),
             };
         } catch (e) {
-            return { verified: false, reason: e.message };
+            return { verified: false, reason: _redactSecrets(e && e.message) };
         }
     }
 
@@ -177,7 +246,7 @@ const WolframProvider = (() => {
 
             return steps.length > 0 ? steps : null;
         } catch (e) {
-            console.warn('[Wolfram] stepByStep error:', e.message);
+            console.warn('[Wolfram] stepByStep error:', _redactSecrets(e && e.message));
             return null;
         }
     }
@@ -194,7 +263,7 @@ const WolframProvider = (() => {
      * Test the connection with a simple query
      */
     async function testConnection() {
-        if (!getApiKey()) return { success: false, error: 'No API key configured' };
+        if (!isAvailable()) return { success: false, error: 'Wolfram unavailable or blocked by policy' };
         try {
             const result = await query('2+2');
             if (result === '4' || result === '4\n' || (result && result.trim() === '4')) {
@@ -202,7 +271,7 @@ const WolframProvider = (() => {
             }
             return { success: false, error: `Unexpected response: ${result}` };
         } catch (e) {
-            return { success: false, error: e.message };
+            return { success: false, error: _redactSecrets(e && e.message) };
         }
     }
 

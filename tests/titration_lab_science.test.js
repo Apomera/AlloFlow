@@ -31,8 +31,8 @@ describe('titrationLab — pH engine (rendered, values verified by hand)', () =>
   const PH_CASES = [
     { name: 'strong acid 0.1 M, initial', state: { presetId: 'sa_sb', volumeAdded: 0 }, pH: '1.00' },
     { name: 'strong/strong at equivalence', state: { presetId: 'sa_sb', volumeAdded: 25 }, pH: '7.00' },
-    { name: 'weak acid 0.1 M, initial', state: { presetId: 'wa_sb', volumeAdded: 0 }, pH: '2.87' },
-    { name: 'weak/strong at half-equivalence (pH = pKa)', state: { presetId: 'wa_sb', volumeAdded: 12.5 }, pH: '4.74' },
+    { name: 'weak acid 0.1 M, initial', state: { presetId: 'wa_sb', volumeAdded: 0 }, pH: '2.88' },
+    { name: 'weak/strong at half-equivalence (pH = pKa)', state: { presetId: 'wa_sb', volumeAdded: 12.5 }, pH: '4.75' },
     { name: 'weak/strong at equivalence (basic salt)', state: { presetId: 'wa_sb', volumeAdded: 25 }, pH: '8.72' },
     { name: 'strong/weak at equivalence (acidic salt)', state: { presetId: 'sa_wb', volumeAdded: 25 }, pH: '5.28' },
     { name: 'weak/weak at equivalence (~neutral)', state: { presetId: 'wa_wb', volumeAdded: 25 }, pH: '7.00' },
@@ -136,10 +136,10 @@ describe('titrationLab — redox preset plots cell potential, not pH', () => {
 
 describe('titrationLab — LOW scientific-accuracy fixes', () => {
   it('weak-acid curve rises monotonically from the start (no H-H dip)', () => {
-    // After the first trace of base the pH must be >= the initial 2.87, not dip
-    // below it. With max(H-H, weak-acid-alone) the v=0.2 mL point reads 2.88.
+    // After the first trace of base the pH must rise above the initial 2.88, not dip
+    // below it. Exact monoprotic charge balance gives pH 3.01 at v = 0.2 mL.
     const html = renderLab({ presetId: 'wa_sb', volumeAdded: 0.2 });
-    expect(showsCurrentPH(html, '2.88')).toBe(true);
+    expect(showsCurrentPH(html, '3.01')).toBe(true);
     expect(showsCurrentPH(html, '2.65')).toBe(false); // the old dipped value
   });
   it('H3PO4 third equivalence is solved by the full charge balance', () => {

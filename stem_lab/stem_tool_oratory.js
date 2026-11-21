@@ -119,6 +119,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     var baseLine = padT + plotH * (0.76 - normPitch * 0.46);
     var refPts = [];
     var livePts = [];
+    var areaPts = [];
+    var peakNodes = [];
+    var prevY = null, prevPrevY = null, prevX = null;
     var steps = 64;
     for (var i = 0; i <= steps; i++) {
       var u = i / steps;
@@ -130,19 +133,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       var wave = Math.sin(u * Math.PI * (2.6 * pace + 0.6)) * (13 * ampScale) + Math.cos(u * Math.PI * (1.2 * pace)) * (5 * ampScale);
       var y = Math.max(padT + 4, Math.min(padT + plotH - 4, baseLine - wave));
       livePts.push((i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1));
+      areaPts.push(x.toFixed(1) + ',' + y.toFixed(1));
+      if (prevY !== null && prevPrevY !== null && prevY < prevPrevY && prevY < y && peakNodes.length < 5) {
+        peakNodes.push({ x: prevX, y: prevY });
+      }
+      prevPrevY = prevY; prevY = y; prevX = x;
     }
-    var strokeW = (1.8 + ((volDb + 12) / 24) * 2.2).toFixed(1);
+    var areaPoly = padL.toFixed(1) + ',' + (padT + plotH).toFixed(1) + ' ' + areaPts.join(' ') + ' ' + (W - padR).toFixed(1) + ',' + (padT + plotH).toFixed(1);
+    var strokeW = (1.9 + ((volDb + 12) / 24) * 2.2).toFixed(1);
     var bg = isDark ? '#0b1220' : '#0f172a';
     var gridCol = '#1e293b';
+    var ringCount = volDb >= 4 ? 4 : volDb >= -4 ? 3 : 2;
     return h('div', { className: 'oratory-prosody-stage rounded-xl p-3', style: { background: bg, border: '1px solid #334155' } },
       h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-1.5 text-[0.6875rem]', style: { color: '#e2e8f0' } },
         h('span', { className: 'font-bold uppercase tracking-wider', style: { color: '#cbd5e1' } }, 'Live Acoustic Delivery Preview'),
         h('span', { className: 'font-mono font-bold', style: { color: '#38bdf8' } }, '~' + estWpm + ' WPM · +' + pitchOff + ' Hz · ' + (volDb >= 0 ? '+' : '') + volDb + ' dB')
       ),
       h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', role: 'img', 'aria-label': 'Simulated delivery prosody wave at approximately ' + estWpm + ' words per minute, plus ' + pitchOff + ' hertz pitch offset, and ' + volDb + ' decibel gain.', style: { display: 'block', maxHeight: 132 } },
-        h('rect', { x: padL, y: padT, width: plotW, height: plotH, rx: 6, fill: '#020617', stroke: '#1e293b', strokeWidth: 1 }),
-        // Target conversational band
-        h('rect', { x: padL, y: padT + plotH * 0.34, width: plotW, height: plotH * 0.34, fill: '#10b981', opacity: 0.12 }),
+        h('defs', null,
+          h('linearGradient', { id: 'oratoryStageBg', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#071024' }),
+            h('stop', { offset: '100%', stopColor: '#020617' })
+          ),
+          h('linearGradient', { id: 'oratoryRibbonFill', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: accentColor, stopOpacity: '0.32' }),
+            h('stop', { offset: '100%', stopColor: accentColor, stopOpacity: '0.02' })
+          )
+        ),
+        h('rect', { x: padL, y: padT, width: plotW, height: plotH, rx: 6, fill: 'url(#oratoryStageBg)', stroke: '#1e293b', strokeWidth: 1 }),
+        // Dynamic acoustic room-projection wave arcs radiating from speaker origin
+        Array.from({ length: ringCount }, function(_, ri) {
+          var rad = 18 + ri * 18;
+          return h('path', {
+            key: 'proj' + ri,
+            d: 'M ' + (padL + 6) + ',' + (padT + plotH * 0.5 - rad * 0.55).toFixed(1) + ' A ' + rad + ',' + rad + ' 0 0 1 ' + (padL + 6) + ',' + (padT + plotH * 0.5 + rad * 0.55).toFixed(1),
+            fill: 'none',
+            stroke: '#38bdf8',
+            strokeWidth: 1.2,
+            opacity: (0.28 - ri * 0.055).toFixed(2)
+          });
+        }),
+        // Target conversational sweet-spot band
+        h('rect', { x: padL, y: padT + plotH * 0.34, width: plotW, height: plotH * 0.34, fill: '#10b981', opacity: 0.14 }),
+        h('line', { x1: padL, y1: padT + plotH * 0.34, x2: W - padR, y2: padT + plotH * 0.34, stroke: '#10b981', strokeWidth: 0.8, opacity: 0.4 }),
+        h('line', { x1: padL, y1: padT + plotH * 0.68, x2: W - padR, y2: padT + plotH * 0.68, stroke: '#10b981', strokeWidth: 0.8, opacity: 0.4 }),
         [0.25, 0.5, 0.75].map(function(f, gi) {
           var gy = padT + plotH * f;
           return h('line', { key: 'gh' + gi, x1: padL, y1: gy, x2: W - padR, y2: gy, stroke: gridCol, strokeWidth: 1, strokeDasharray: '3 3' });
@@ -150,10 +184,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         h('text', { x: padL - 6, y: padT + 10, textAnchor: 'end', fill: '#94a3b8', fontSize: 8.5, fontWeight: 700 }, 'High'),
         h('text', { x: padL - 6, y: padT + plotH * 0.54, textAnchor: 'end', fill: '#34d399', fontSize: 8.5, fontWeight: 700 }, 'Mid'),
         h('text', { x: padL - 6, y: padT + plotH - 2, textAnchor: 'end', fill: '#94a3b8', fontSize: 8.5, fontWeight: 700 }, 'Low'),
+        // Translucent luminous ribbon beneath live prosody contour
+        h('polygon', { points: areaPoly, fill: 'url(#oratoryRibbonFill)' }),
         // Reference baseline wave
         h('path', { d: refPts.join(' '), fill: 'none', stroke: '#64748b', strokeWidth: 1.4, strokeDasharray: '5 4' }),
-        // Active live wave
+        // Active live wave glow + crisp core filament
+        h('path', { d: livePts.join(' '), fill: 'none', stroke: accentColor, strokeWidth: (Number(strokeW) + 3.2).toFixed(1), strokeLinecap: 'round', opacity: 0.25 }),
         h('path', { d: livePts.join(' '), fill: 'none', stroke: accentColor, strokeWidth: strokeW, strokeLinecap: 'round' }),
+        // Emphasis peak beacons
+        peakNodes.map(function(pk, pi) {
+          return h('g', { key: 'pk' + pi },
+            h('circle', { cx: pk.x.toFixed(1), cy: pk.y.toFixed(1), r: 5.5, fill: accentColor, opacity: 0.22 }),
+            h('circle', { cx: pk.x.toFixed(1), cy: pk.y.toFixed(1), r: 2.3, fill: '#f8fafc', stroke: accentColor, strokeWidth: 1.2 })
+          );
+        }),
         // Legend bottom
         h('line', { x1: padL + 4, y1: Hh - 8, x2: padL + 22, y2: Hh - 8, stroke: '#64748b', strokeWidth: 1.4, strokeDasharray: '4 3' }),
         h('text', { x: padL + 26, y: Hh - 5, fill: '#cbd5e1', fontSize: 8.5 }, 'Baseline (1.0×)'),
@@ -303,13 +347,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
+    if (!ctx2d) return;
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
     var W = canvas._logicalW || canvas.width;
     var H = canvas._logicalH || canvas.height;
+    var reduced = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     ctx2d.clearRect(0, 0, W, H);
 
-    // Background
-    ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    // Acoustic stage studio backdrop
+    var bgG = typeof ctx2d.createLinearGradient === 'function' ? ctx2d.createLinearGradient(0, 0, 0, H) : null;
+    if (bgG && typeof bgG.addColorStop === 'function') {
+      bgG.addColorStop(0, isDark ? '#0b1326' : '#f8fafc');
+      bgG.addColorStop(1, isDark ? '#16223b' : '#eef2f7');
+      ctx2d.fillStyle = bgG;
+    } else {
+      ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    }
     ctx2d.fillRect(0, 0, W, H);
 
     // Grid lines for frequency zones
@@ -392,47 +445,78 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     })();
 
     ctx2d.save();
-    ctx2d.shadowColor = 'rgba(255,255,255,0.45)'; ctx2d.shadowBlur = 5;
-    ctx2d.beginPath();
-    ctx2d.lineWidth = 2.5;
-    var started = false;
+    ctx2d.lineCap = 'round';
+    ctx2d.lineJoin = 'round';
+    // Luminous emphasis pitch-contour ribbon curtain beneath curve
+    var segs = [];
+    var cur = [];
     for (var pi = 0; pi < pitchHistory.length; pi++) {
       var px = (pi / (pitchHistory.length - 1)) * W;
       var phz = pitchHistory[pi];
-      if (phz <= 0) { started = false; continue; }
+      if (phz <= 0) { if (cur.length) { segs.push(cur); cur = []; } continue; }
       var py = H - ((Math.min(Math.max(phz, minHz), maxHz) - minHz) / (maxHz - minHz)) * H;
-      var pzone = pitchZone(phz);
-      if (!started) {
-        ctx2d.stroke();
-        ctx2d.beginPath();
-        ctx2d.strokeStyle = pzone.color;
-        ctx2d.moveTo(px, py);
-        started = true;
-      } else {
-        ctx2d.strokeStyle = pzone.color;
-        ctx2d.lineTo(px, py);
-      }
+      cur.push({ x: px, y: py, color: pitchZone(phz).color });
     }
-    ctx2d.stroke();
+    if (cur.length) segs.push(cur);
+    segs.forEach(function(seg) {
+      if (seg.length < 2) return;
+      var ribG = typeof ctx2d.createLinearGradient === 'function' ? ctx2d.createLinearGradient(0, 0, 0, H) : null;
+      if (ribG && typeof ribG.addColorStop === 'function') {
+        ribG.addColorStop(0, isDark ? 'rgba(56,189,248,0.22)' : 'rgba(59,130,246,0.16)');
+        ribG.addColorStop(1, 'rgba(15,23,42,0)');
+        ctx2d.beginPath();
+        ctx2d.moveTo(seg[0].x, H);
+        for (var ri = 0; ri < seg.length; ri++) ctx2d.lineTo(seg[ri].x, seg[ri].y);
+        ctx2d.lineTo(seg[seg.length - 1].x, H);
+        ctx2d.closePath();
+        ctx2d.fillStyle = ribG;
+        ctx2d.fill();
+      }
+      for (var si = 1; si < seg.length; si++) {
+        var aPt = seg[si - 1], bPt = seg[si];
+        ctx2d.shadowColor = bPt.color;
+        ctx2d.shadowBlur = 10;
+        ctx2d.strokeStyle = bPt.color;
+        ctx2d.globalAlpha = 0.3;
+        ctx2d.lineWidth = 5.5;
+        ctx2d.beginPath(); ctx2d.moveTo(aPt.x, aPt.y); ctx2d.lineTo(bPt.x, bPt.y); ctx2d.stroke();
+        ctx2d.globalAlpha = 1;
+        ctx2d.lineWidth = 2.6;
+        ctx2d.beginPath(); ctx2d.moveTo(aPt.x, aPt.y); ctx2d.lineTo(bPt.x, bPt.y); ctx2d.stroke();
+      }
+    });
     ctx2d.restore();
 
-    // Current pitch dot
+    // Current pitch dot with acoustic projection pulse rings
     var lastPitch = pitchHistory[pitchHistory.length - 1];
     if (lastPitch > 0) {
       var dotY = H - ((Math.min(Math.max(lastPitch, minHz), maxHz) - minHz) / (maxHz - minHz)) * H;
       var dotZone = pitchZone(lastPitch);
+      var pulse = reduced ? 0.5 : (0.5 + 0.5 * Math.sin((typeof performance !== 'undefined' ? performance.now() : 0) * 0.008));
       ctx2d.save();
-      ctx2d.shadowColor = dotZone.color;
-      ctx2d.shadowBlur = 10;
       ctx2d.beginPath();
-      ctx2d.arc(W - 4, dotY, 5, 0, 2 * Math.PI);
+      ctx2d.arc(W - 6, dotY, 8 + pulse * 4, 0, 2 * Math.PI);
+      ctx2d.strokeStyle = dotZone.color;
+      ctx2d.globalAlpha = 0.35;
+      ctx2d.lineWidth = 1.5;
+      ctx2d.stroke();
+      ctx2d.globalAlpha = 1;
+      ctx2d.shadowColor = dotZone.color;
+      ctx2d.shadowBlur = 12;
+      ctx2d.beginPath();
+      ctx2d.arc(W - 6, dotY, 5.2, 0, 2 * Math.PI);
       ctx2d.fillStyle = dotZone.color;
+      ctx2d.fill();
+      ctx2d.shadowBlur = 0;
+      ctx2d.beginPath();
+      ctx2d.arc(W - 7.3, dotY - 1.3, 1.8, 0, 2 * Math.PI);
+      ctx2d.fillStyle = 'rgba(255,255,255,0.85)';
       ctx2d.fill();
       ctx2d.restore();
       ctx2d.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
       ctx2d.textAlign = 'left';
       ctx2d.font = 'bold 11px sans-serif';
-      ctx2d.fillText(Math.round(lastPitch) + ' Hz', W - 60, dotY - 8);
+      ctx2d.fillText(Math.round(lastPitch) + ' Hz', W - 62, Math.max(14, dotY - 8));
     }
   }
 
@@ -445,6 +529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
+    if (!ctx2d) return;
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
     var W = canvas._logicalW || canvas.width;
     var H = canvas._logicalH || canvas.height;
@@ -453,6 +538,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     var cx = W / 2;
     var cy = H - 20;
     var r = Math.min(cx - 20, cy - 10);
+
+    // Subtle acoustic stage dial halo behind gauge
+    var haloG = typeof ctx2d.createRadialGradient === 'function' ? ctx2d.createRadialGradient(cx, cy, r * 0.15, cx, cy, r + 14) : null;
+    if (haloG && typeof haloG.addColorStop === 'function') {
+      haloG.addColorStop(0, isDark ? 'rgba(56,189,248,0.12)' : 'rgba(59,130,246,0.08)');
+      haloG.addColorStop(1, 'rgba(15,23,42,0)');
+      ctx2d.fillStyle = haloG;
+      ctx2d.beginPath(); ctx2d.arc(cx, cy, r + 14, Math.PI, 2 * Math.PI); ctx2d.fill();
+    }
 
     // Age-adjusted thresholds
     var maxWpm = 220;
@@ -468,19 +562,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       maxWpm = 180;
     }
 
-    // Draw arc zones
+    // Draw arc zones with glowing sweet-spot highlight
     var startAngle = Math.PI;
     var endAngle = 2 * Math.PI;
     for (var ti = 0; ti < thresholds.length; ti++) {
       var from = startAngle + thresholds[ti].pct * Math.PI;
       var to = ti < thresholds.length - 1 ? startAngle + thresholds[ti + 1].pct * Math.PI : endAngle;
+      ctx2d.save();
       ctx2d.beginPath();
       ctx2d.arc(cx, cy, r, from, to);
-      ctx2d.lineWidth = 18;
+      ctx2d.lineWidth = ti === 1 ? 20 : 18;
       ctx2d.strokeStyle = thresholds[ti].color;
-      ctx2d.globalAlpha = 0.3;
+      ctx2d.globalAlpha = ti === 1 ? 0.44 : 0.26;
+      if (ti === 1) { ctx2d.shadowColor = '#22c55e'; ctx2d.shadowBlur = 10; }
       ctx2d.stroke();
-      ctx2d.globalAlpha = 1.0;
+      ctx2d.restore();
+    }
+
+    // Active progress arc up to current WPM
+    var clampedWpm = Math.min(Math.max(wpm || 0, 0), maxWpm);
+    var needleAngle = startAngle + (clampedWpm / maxWpm) * Math.PI;
+    var zone = pacingZone(clampedWpm, gradeLevel);
+    if (clampedWpm > 0) {
+      ctx2d.save();
+      ctx2d.beginPath();
+      ctx2d.arc(cx, cy, r, startAngle, needleAngle);
+      ctx2d.lineWidth = 6;
+      ctx2d.lineCap = 'round';
+      ctx2d.strokeStyle = zone.color;
+      ctx2d.shadowColor = zone.color;
+      ctx2d.shadowBlur = 10;
+      ctx2d.stroke();
+      ctx2d.restore();
     }
 
     // Draw tick marks
@@ -506,22 +619,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       }
     }
 
-    // Needle
-    var clampedWpm = Math.min(Math.max(wpm || 0, 0), maxWpm);
-    var needleAngle = startAngle + (clampedWpm / maxWpm) * Math.PI;
+    // Glowing tapered needle
     var needleLen = r - 8;
+    ctx2d.save();
+    ctx2d.shadowColor = zone.color;
+    ctx2d.shadowBlur = 10;
     ctx2d.beginPath();
     ctx2d.moveTo(cx, cy);
     ctx2d.lineTo(cx + needleLen * Math.cos(needleAngle), cy + needleLen * Math.sin(needleAngle));
-    ctx2d.lineWidth = 3;
-    var zone = pacingZone(clampedWpm, gradeLevel);
+    ctx2d.lineWidth = 3.5;
+    ctx2d.lineCap = 'round';
     ctx2d.strokeStyle = zone.color;
     ctx2d.stroke();
+    ctx2d.restore();
 
-    // Center dot
+    // Metallic center hub cap
     ctx2d.beginPath();
-    ctx2d.arc(cx, cy, 6, 0, 2 * Math.PI);
+    ctx2d.arc(cx, cy, 7, 0, 2 * Math.PI);
     ctx2d.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
+    ctx2d.fill();
+    ctx2d.beginPath();
+    ctx2d.arc(cx, cy, 3, 0, 2 * Math.PI);
+    ctx2d.fillStyle = zone.color;
     ctx2d.fill();
 
     // WPM text
@@ -548,12 +667,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
+    if (!ctx2d) return;
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
     var W = canvas._logicalW || canvas.width;
     var H = canvas._logicalH || canvas.height;
     ctx2d.clearRect(0, 0, W, H);
 
-    ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    var bgV = typeof ctx2d.createLinearGradient === 'function' ? ctx2d.createLinearGradient(0, 0, 0, H) : null;
+    if (bgV && typeof bgV.addColorStop === 'function') {
+      bgV.addColorStop(0, isDark ? '#0f172a' : '#f8fafc');
+      bgV.addColorStop(1, isDark ? '#1e293b' : '#f1f5f9');
+      ctx2d.fillStyle = bgV;
+    } else {
+      ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    }
     ctx2d.fillRect(0, 0, W, H);
 
     // Normalize dB: -60 dB = silence, 0 dB = max
@@ -567,31 +694,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     var barW = W - 40;
     var barX = 20;
 
-    // Background
-    ctx2d.fillStyle = isDark ? '#334155' : '#e2e8f0';
+    // Background track + crisp frame
+    ctx2d.fillStyle = isDark ? '#1e293b' : '#e2e8f0';
     ctx2d.fillRect(barX, barY, barW, barH);
+    ctx2d.strokeStyle = isDark ? 'rgba(148,163,184,0.28)' : 'rgba(100,116,139,0.32)';
+    ctx2d.lineWidth = 1;
+    ctx2d.strokeRect(barX + 0.5, barY + 0.5, barW - 1, barH - 1);
 
-    // Zone fills — quiet (yellow), good (green), loud (red)
+    // Zone fills — quiet (yellow), good projection (green), loud (red)
     var quietEnd = 0.25, goodEnd = 0.75;
-    // Yellow zone
     ctx2d.fillStyle = '#eab30833';
     ctx2d.fillRect(barX, barY, barW * quietEnd, barH);
-    // Green zone
-    ctx2d.fillStyle = '#22c55e33';
+    ctx2d.fillStyle = '#22c55e3a';
     ctx2d.fillRect(barX + barW * quietEnd, barY, barW * (goodEnd - quietEnd), barH);
-    // Red zone
     ctx2d.fillStyle = '#ef444433';
     ctx2d.fillRect(barX + barW * goodEnd, barY, barW * (1 - goodEnd), barH);
 
-    // Active fill
+    // Active luminous gradient fill + room-projection acoustic arcs
     var fillColor = '#eab308';
     if (pct >= quietEnd && pct <= goodEnd) fillColor = '#22c55e';
     else if (pct > goodEnd) fillColor = '#ef4444';
-    ctx2d.fillStyle = fillColor;
+    var activeW = barW * pct;
+    ctx2d.save();
+    var fillG = typeof ctx2d.createLinearGradient === 'function' ? ctx2d.createLinearGradient(barX, barY, barX + Math.max(1, activeW), barY) : null;
+    if (fillG && typeof fillG.addColorStop === 'function') {
+      fillG.addColorStop(0, '#38bdf8');
+      fillG.addColorStop(0.5, '#22c55e');
+      fillG.addColorStop(1, fillColor);
+      ctx2d.fillStyle = fillG;
+    } else {
+      ctx2d.fillStyle = fillColor;
+    }
     ctx2d.shadowColor = fillColor;
-    ctx2d.shadowBlur = 8;
-    ctx2d.fillRect(barX, barY, barW * pct, barH);
+    ctx2d.shadowBlur = 10;
+    ctx2d.fillRect(barX, barY + 1, activeW, barH - 2);
     ctx2d.shadowBlur = 0;
+    // Segmented VU meter grid notches
+    ctx2d.fillStyle = isDark ? 'rgba(15,23,42,0.35)' : 'rgba(255,255,255,0.35)';
+    for (var segX = barX + 12; segX < barX + barW; segX += 12) ctx2d.fillRect(segX, barY, 1.5, barH);
+    // Acoustic room-projection wave arcs emanating from active bar tip
+    if (pct > 0.08) {
+      var tipX = barX + activeW;
+      var tipY = barY + barH / 2;
+      for (var arc = 1; arc <= 3; arc++) {
+        var ar = arc * 6;
+        if (tipX + ar < barX + barW - 2) {
+          ctx2d.strokeStyle = fillColor;
+          ctx2d.globalAlpha = 0.52 - arc * 0.14;
+          ctx2d.lineWidth = 1.4;
+          ctx2d.beginPath();
+          ctx2d.arc(tipX, tipY, ar, -Math.PI * 0.32, Math.PI * 0.32);
+          ctx2d.stroke();
+        }
+      }
+    }
+    ctx2d.restore();
 
     // Zone labels
     ctx2d.font = '8px sans-serif';
@@ -1011,9 +1168,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       }
       var sRange = sMax - sMin || 1;
 
+      ctx2d.save();
+      ctx2d.lineCap = 'round';
+      ctx2d.lineJoin = 'round';
       ctx2d.beginPath();
-      ctx2d.strokeStyle = isDark ? '#f97316' : '#ea580c';
-      ctx2d.lineWidth = 2.5;
       var sStarted = false;
       for (var si = 0; si < studentCurve.length; si++) {
         var sx = pad + (si / (studentCurve.length - 1)) * plotW;
@@ -1023,7 +1181,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         if (!sStarted) { ctx2d.moveTo(sx, sy); sStarted = true; }
         else ctx2d.lineTo(sx, sy);
       }
+      var curveCol = isDark ? '#fb923c' : '#ea580c';
+      ctx2d.shadowColor = curveCol;
+      ctx2d.shadowBlur = 9;
+      ctx2d.strokeStyle = curveCol;
+      ctx2d.globalAlpha = 0.34;
+      ctx2d.lineWidth = 5.5;
       ctx2d.stroke();
+      ctx2d.globalAlpha = 1;
+      ctx2d.lineWidth = 2.6;
+      ctx2d.stroke();
+      ctx2d.restore();
 
       // Legend
       ctx2d.font = '9px sans-serif';

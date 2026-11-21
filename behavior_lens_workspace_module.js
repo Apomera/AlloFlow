@@ -47,11 +47,11 @@
             practiceReturnStudent: boundedText(source.practiceReturnStudent, 240),
             abcEntries: normalizedAbc.items,
             observationSessions: normalizedObservations.items,
-            sessionNotes: Array.isArray(source.sessionNotes) ? source.sessionNotes.slice() : [],
-            teamNotes: Array.isArray(source.teamNotes) ? source.teamNotes.slice() : [],
+            sessionNotes: Array.isArray(source.sessionNotes) ? (sanitizeJsonValue(source.sessionNotes.slice(0, 2000), { maxBytes: 512 * 1024, maxArrayLength: 2000 }) || []) : [],
+            teamNotes: Array.isArray(source.teamNotes) ? (sanitizeJsonValue(source.teamNotes.slice(0, 2000), { maxBytes: 512 * 1024, maxArrayLength: 2000 }) || []) : [],
             studentProfile: Object.assign(emptyStudentProfile(), sanitizeJsonObject(profile, 64 * 1024)),
-            sessionHistory: Array.isArray(source.sessionHistory) ? source.sessionHistory.slice() : [],
-            designPhases: Array.isArray(source.designPhases) ? source.designPhases.slice(0, 100) : [],
+            sessionHistory: Array.isArray(source.sessionHistory) ? (sanitizeJsonValue(source.sessionHistory.slice(0, 2000), { maxBytes: 512 * 1024, maxArrayLength: 2000 }) || []) : [],
+            designPhases: Array.isArray(source.designPhases) ? (sanitizeJsonValue(source.designPhases.slice(0, 100), { maxBytes: 64 * 1024 }) || []) : [],
             activityRegistry: sanitizeJsonObject(source.activityRegistry, 256 * 1024),
             activeDesign: sanitizeJsonValue(source.activeDesign, { maxBytes: 64 * 1024 }),
             workflowTrack: boundedText(source.workflowTrack, 100) || null,
@@ -95,7 +95,8 @@
 
     function parseDirtyMarker(value) {
         if (!value) return null;
-        var parsed = JSON.parse(value);
+        var parsed;
+        try { parsed = JSON.parse(value); } catch (_) { return null; }
         if (!parsed || typeof parsed !== 'object' || parsed.pending !== true) return null;
         return {
             pending: true,
@@ -321,7 +322,7 @@
             measurement: boundedText(source.measurement, 120) || null,
             createdAt: normalizeIsoTimestamp(source.createdAt),
             updatedAt: normalizeIsoTimestamp(source.updatedAt),
-            order: Number.isFinite(Number(source.order)) ? Number(source.order) : index
+            order: strictFiniteNumber(source.order) !== null ? strictFiniteNumber(source.order) : index
         };
     }
 
@@ -389,39 +390,49 @@
         return { id: boundedText(entry.behaviorId, 120) || canonicalBehaviorId(label), label: label || 'Unclassified', defined: false };
     }
 
-    function normalizeIntensity(value) {
-        if (value == null || value === '') return null;
+    function strictFiniteNumber(value) {
+        if (value == null || typeof value === 'boolean' || typeof value === 'object') return null;
+        if (typeof value === 'string' && !value.trim()) return null;
         var numeric = Number(value);
-        return Number.isFinite(numeric) && numeric >= 1 && numeric <= 5 ? numeric : null;
+        return Number.isFinite(numeric) ? numeric : null;
+    }
+
+    function normalizeIntensity(value) {
+        var numeric = strictFiniteNumber(value);
+        return numeric !== null && numeric >= 1 && numeric <= 5 ? numeric : null;
     }
 
     function normalizeDurationSeconds(value) {
-        if (value == null || value === '') return null;
-        var numeric = Number(value);
-        return Number.isFinite(numeric) && numeric >= 0 && numeric <= 86400 ? numeric : null;
+        var numeric = strictFiniteNumber(value);
+        return numeric !== null && numeric >= 0 && numeric <= 86400 ? numeric : null;
     }
 
     function sanitizeJsonValue(value, options, depth) {
         options = options || {};
         depth = depth || 0;
         if (depth > (options.maxDepth || 8)) return null;
-        if (value == null || typeof value === 'boolean') return value;
-        if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-        if (typeof value === 'string') return value.slice(0, options.maxStringLength || 20000);
-        if (Array.isArray(value)) return value.slice(0, options.maxArrayLength || 1000).map(function (item) {
-            return sanitizeJsonValue(item, options, depth + 1);
-        });
-        if (typeof value !== 'object') return null;
-        var result = {};
-        Object.keys(value).slice(0, options.maxObjectKeys || 500).forEach(function (key) {
-            if (key === '__proto__' || key === 'prototype' || key === 'constructor') return;
-            result[key] = sanitizeJsonValue(value[key], options, depth + 1);
-        });
-        if (options.maxBytes) {
-            try { if (utf8ByteLength(JSON.stringify(result)) > options.maxBytes) return null; }
+        var output;
+        if (value == null || typeof value === 'boolean') output = value;
+        else if (typeof value === 'number') output = Number.isFinite(value) ? value : null;
+        else if (typeof value === 'string') output = value.slice(0, options.maxStringLength || 20000);
+        else if (Array.isArray(value)) {
+            output = value.slice(0, options.maxArrayLength || 1000).map(function (item) {
+                return sanitizeJsonValue(item, options, depth + 1);
+            });
+        } else if (typeof value !== 'object') {
+            return null;
+        } else {
+            output = {};
+            Object.keys(value).slice(0, options.maxObjectKeys || 500).forEach(function (key) {
+                if (key === '__proto__' || key === 'prototype' || key === 'constructor') return;
+                output[key] = sanitizeJsonValue(value[key], options, depth + 1);
+            });
+        }
+        if (options.maxBytes && depth === 0) {
+            try { if (utf8ByteLength(JSON.stringify(output)) > options.maxBytes) return null; }
             catch (_) { return null; }
         }
-        return result;
+        return output;
     }
 
     function sanitizeJsonObject(value, maxBytes) {
@@ -617,7 +628,7 @@
                 timestamp: timestamp,
                 action: action,
                 toolId: boundedText(event.toolId, 120) || null,
-                durationMs: Number.isFinite(Number(event.durationMs)) && Number(event.durationMs) >= 0 ? Math.round(Number(event.durationMs)) : null,
+                durationMs: (function () { var dMs = strictFiniteNumber(event.durationMs); return dMs !== null && dMs >= 0 ? Math.round(dMs) : null; })(),
                 outcome: boundedText(event.outcome, 80) || null
             });
         });
@@ -634,7 +645,7 @@
             if (value == null) return;
             sum += value;
             ratedCount += 1;
-            distribution[value] += 1;
+            distribution[Math.round(value)] += 1;
         });
         return {
             mean: ratedCount ? sum / ratedCount : null,
@@ -696,7 +707,7 @@
             var counters = item.data && item.data.counters;
             if (Array.isArray(counters) && counters.length) {
                 if (!counters.some(function (counter) {
-                    return counter.behaviorId === options.behaviorId || resolveCanonicalBehavior({ behavior: counter.label }, options.targetBehaviors).id === options.behaviorId;
+                    return counter && typeof counter === 'object' && (counter.behaviorId === options.behaviorId || resolveCanonicalBehavior({ behavior: counter.label }, options.targetBehaviors).id === options.behaviorId);
                 })) return false;
             } else if (item.behaviorId && item.behaviorId !== options.behaviorId) return false;
         }
@@ -738,7 +749,12 @@
     function observationWindow(session) {
         var spans = observationSpans(session);
         if (!spans.length) return null;
-        return { id: session && session.id, start: Math.min.apply(null, spans.map(function (s) { return s.start; })), end: Math.max.apply(null, spans.map(function (s) { return s.end; })) };
+        var minStart = spans[0].start, maxEnd = spans[0].end;
+        for (var i = 1; i < spans.length; i += 1) {
+            if (spans[i].start < minStart) minStart = spans[i].start;
+            if (spans[i].end > maxEnd) maxEnd = spans[i].end;
+        }
+        return { id: session && session.id, start: minStart, end: maxEnd };
     }
 
     function legacyObservationWindow(session) {
@@ -975,8 +991,9 @@
     function createWorkspacePersistenceScheduler(options) {
         options = options || {};
         if (typeof options.persist !== 'function') throw new Error('A workspace persistence callback is required');
-        var delayMs = Number.isFinite(Number(options.delayMs)) && Number(options.delayMs) >= 0
-            ? Number(options.delayMs) : LOCAL_WORKSPACE_SAVE_DELAY_MS;
+        var parsedDelay = strictFiniteNumber(options.delayMs);
+        var delayMs = parsedDelay !== null && parsedDelay >= 0
+            ? parsedDelay : LOCAL_WORKSPACE_SAVE_DELAY_MS;
         var setTimeoutFn = typeof options.setTimeout === 'function' ? options.setTimeout : setTimeout;
         var clearTimeoutFn = typeof options.clearTimeout === 'function' ? options.clearTimeout : clearTimeout;
         var keyForValue = typeof options.keyForValue === 'function' ? options.keyForValue : function () { return 'workspace'; };
@@ -1136,6 +1153,7 @@
         var rows = [], row = [], field = '', quoted = false, closed = false, rowNumber = 0;
         function keep() {
             rowNumber += 1;
+            if (rowNumber > 50000) throw new Error('CSV exceeds the 50,000-row safety limit.');
             if (!row.some(function (value) { return value.trim() !== ''; })) return;
             Object.defineProperty(row, 'rowNumber', { value: rowNumber, enumerable: false });
             rows.push(row);
@@ -1169,8 +1187,10 @@
 
     function validateWorkspaceImport(data, options) {
         options = options || {};
-        var maxBytes = Number(options.maxBytes) || MAX_WORKSPACE_IMPORT_BYTES;
-        var sourceBytes = Number(options.sourceBytes);
+        var maxBytes = (typeof options.maxBytes === 'number' && Number.isFinite(options.maxBytes) && options.maxBytes > 0)
+            ? options.maxBytes : MAX_WORKSPACE_IMPORT_BYTES;
+        var sourceBytes = (typeof options.sourceBytes === 'number' && Number.isFinite(options.sourceBytes) && options.sourceBytes >= 0)
+            ? options.sourceBytes : NaN;
         var errors = [];
         var warnings = [];
         if (!data || typeof data !== 'object' || Array.isArray(data)) {
@@ -1222,8 +1242,10 @@
 
     function validateSharedWorkspaceImport(data, options) {
         options = options || {};
-        var maxBytes = Number(options.maxBytes) || MAX_SHARED_WORKSPACE_IMPORT_BYTES;
-        var sourceBytes = Number(options.sourceBytes);
+        var maxBytes = (typeof options.maxBytes === 'number' && Number.isFinite(options.maxBytes) && options.maxBytes > 0)
+            ? options.maxBytes : MAX_SHARED_WORKSPACE_IMPORT_BYTES;
+        var sourceBytes = (typeof options.sourceBytes === 'number' && Number.isFinite(options.sourceBytes) && options.sourceBytes >= 0)
+            ? options.sourceBytes : NaN;
         var errors = [];
         if (!data || typeof data !== 'object' || Array.isArray(data)) {
             return { ok: false, error: 'The file must contain one BehaviorLens shared snapshot.', errors: ['invalid-object'] };

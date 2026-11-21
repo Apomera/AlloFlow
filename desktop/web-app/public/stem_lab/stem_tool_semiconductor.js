@@ -287,7 +287,7 @@ window.StemLab = window.StemLab || {
       clipped:peak>Math.min(center,Vdd-center),response:response,sample:sample};
   }
   function semiIV(device, voltage, temperature) {
-    var V=semiNumber(voltage,0,-6,5),T=semiNumber(temperature,300,200,400);
+    var V=semiNumber(voltage,0,-6,5),T=semiNumber(temperature,300,200,500);
     if(device==='resistor')return V/1000;
     var thermal=8.617333262e-5*T,eg=device==='led'?1.9:1.12;
     var base=device==='led'?2e-17:1e-12,rs=device==='led'?20:10;
@@ -450,15 +450,21 @@ window.StemLab = window.StemLab || {
       var dx=c.x-a.x,dy=c.y-a.y,len=Math.max(1,Math.hypot(dx,dy));
       var ar=(b[0]===cell.focus?18:11)*a.scale,cr=(b[1]===cell.focus?18:11)*c.scale;
       var x1=a.x+dx*Math.min(.45,ar/len),y1=a.y+dy*Math.min(.45,ar/len),x2=c.x-dx*Math.min(.45,cr/len),y2=c.y-dy*Math.min(.45,cr/len);
-      g.push({z:(a.z+c.z)/2,node:h('line',{key:'b'+i,x1:x1,y1:y1,x2:x2,y2:y2,stroke:active?'#a5f3fc':'#64748b',strokeWidth:active?5:3,strokeLinecap:'round',opacity:active?.9:.55})});
+      var depthFade=Math.max(.38,Math.min(1,.82-(a.z+c.z)*.28));
+      g.push({z:(a.z+c.z)/2,node:h('g',{key:'b'+i},
+        active&&h('line',{x1:x1,y1:y1,x2:x2,y2:y2,stroke:'#22d3ee',strokeWidth:9,strokeLinecap:'round',opacity:.22}),
+        h('line',{x1:x1,y1:y1,x2:x2,y2:y2,stroke:active?'#a5f3fc':'#64748b',strokeWidth:active?5:3,strokeLinecap:'round',opacity:active?.94:depthFade*.68}),
+        h('line',{x1:x1,y1:y1,x2:x2,y2:y2,stroke:'#f8fafc',strokeWidth:active?1.4:.9,strokeLinecap:'round',opacity:active?.5:depthFade*.24}))});
     });
     atoms.forEach(function(a){
       if(fs[0]&&near.indexOf(a.id)<0)return;
       var active=a.id===cell.focus,color=active?(doped?'#fbbf24':'#67e8f9'):'#94a3b8',r=(active?17:10)*a.scale;
+      var fillGrad=active?(doped?'url(#semiDopantGrad)':'url(#semiFocusGrad)'):'url(#semiSiGrad)';
       g.push({z:a.z-.01,node:h('g',{key:'a'+a.id},
-        h('circle',{cx:a.x,cy:a.y,r:r+4,fill:color,opacity:.12}),
-        h('circle',{cx:a.x,cy:a.y,r:r,fill:color,stroke:active?'#fff':'#cbd5e1',strokeWidth:active?2:1}),
-        h('circle',{cx:a.x-r*.3,cy:a.y-r*.3,r:r*.28,fill:'#fff',opacity:.45}),
+        active&&h('circle',{cx:a.x,cy:a.y,r:r+11,fill:color,opacity:.14}),
+        h('circle',{cx:a.x,cy:a.y,r:r+5,fill:color,opacity:active?.24:.11}),
+        h('circle',{cx:a.x,cy:a.y,r:r,fill:fillGrad,stroke:active?'#ffffff':'#cbd5e1',strokeWidth:active?2:1}),
+        h('circle',{cx:a.x-r*.3,cy:a.y-r*.32,r:r*.28,fill:'#ffffff',opacity:active?.58:.42}),
         active&&h('text',{x:a.x,y:a.y+4,textAnchor:'middle',fill:'#0f172a',fontSize:12,fontWeight:800},doped?dp.symbol:'Si'))});
     });
     g.sort(function(a,b){return b.z-a.z;});
@@ -481,7 +487,16 @@ window.StemLab = window.StemLab || {
         onPointerDown:function(e){if(e.button!==0)return;drag.current={x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);},
         onPointerMove:function(e){if(!drag.current)return;var dx=e.clientX-drag.current.x,dy=e.clientY-drag.current.y;drag.current={x:e.clientX,y:e.clientY};turn(dx*.01,dy*.01);},
         onPointerUp:function(){drag.current=null;},onPointerCancel:function(){drag.current=null;},onLostPointerCapture:function(){drag.current=null;}
-      },h('ellipse',{cx:280,cy:322,rx:145,ry:17,fill:'#0e7490',opacity:.15}),
+      },h('defs',null,
+          h('radialGradient',{id:'semiSiGrad',cx:'35%',cy:'30%',r:'70%'},
+            h('stop',{offset:'0%',stopColor:'#e2e8f0'}),h('stop',{offset:'48%',stopColor:'#94a3b8'}),h('stop',{offset:'100%',stopColor:'#334155'})),
+          h('radialGradient',{id:'semiFocusGrad',cx:'35%',cy:'30%',r:'70%'},
+            h('stop',{offset:'0%',stopColor:'#ecfeff'}),h('stop',{offset:'45%',stopColor:'#67e8f9'}),h('stop',{offset:'100%',stopColor:'#0e7490'})),
+          h('radialGradient',{id:'semiDopantGrad',cx:'35%',cy:'30%',r:'70%'},
+            h('stop',{offset:'0%',stopColor:'#fef3c7'}),h('stop',{offset:'45%',stopColor:'#fbbf24'}),h('stop',{offset:'100%',stopColor:'#b45309'})),
+          h('radialGradient',{id:'semiGroundGlow',cx:'50%',cy:'50%',r:'50%'},
+            h('stop',{offset:'0%',stopColor:'#22d3ee',stopOpacity:.28}),h('stop',{offset:'100%',stopColor:'#0e7490',stopOpacity:0}))),
+        h('ellipse',{cx:280,cy:322,rx:165,ry:21,fill:'url(#semiGroundGlow)'}),
         g.map(function(a){return a.node;}),
         h('text',{x:20,y:28,fill:'#cbd5e1',fontSize:12},t('stem.semiconductor.bond_angle','Four neighbors · 109.5° bond angle'))),
       h('div',{className:'semi-inspector-controls',role:'group','aria-label':t('stem.semiconductor.3d_camera_controls','3D camera controls')},
@@ -613,13 +628,16 @@ window.StemLab = window.StemLab || {
         h('text',{x:b.left,y:24,fill:'#e2e8f0',fontSize:20},'Current magnitude (mA)'),
         h('text',{x:(b.left+b.right)/2,y:285,textAnchor:'middle',fill:'#e2e8f0',fontSize:20},'Drain-bias magnitude (V)'),
         c.boundary!==null&&h('line',{'data-mos-boundary':true,x1:c.boundaryX,x2:c.boundaryX,y1:b.top,y2:b.bottom,stroke:'#e2e8f0',strokeDasharray:'3 5',strokeWidth:2}),
+        c.linearPath&&h('path',{d:c.linearPath,fill:'none',stroke:'#22d3ee',strokeWidth:9,strokeOpacity:.24,strokeLinecap:'round'}),
         c.linearPath&&h('path',{'data-mos-linear':true,d:c.linearPath,fill:'none',stroke:'#67e8f9',strokeWidth:4}),
+        h('path',{d:c.flatPath,fill:'none',stroke:c.boundary===null?'#94a3b8':'#a78bfa',strokeWidth:8,strokeOpacity:.2,strokeLinecap:'round'}),
         h('path',{'data-mos-flat':true,d:c.flatPath,fill:'none',stroke:c.boundary===null?'#cbd5e1':'#c4b5fd',strokeDasharray:c.boundary===null?undefined:'8 5',strokeWidth:4}),
         comparison&&h('g',{'data-mos-reference':true},
           h('path',{d:(comparison.reference.linearPath||'')+' '+comparison.reference.flatPath,fill:'none',stroke:'#fcd34d',strokeWidth:3,strokeDasharray:'10 4 2 4'}),
           comparison.reference.selected&&h('rect',{'data-mos-reference-point':true,x:comparison.reference.selected.x-8,y:comparison.reference.selected.y-8,width:16,height:16,fill:'#07111f',stroke:'#fcd34d',strokeWidth:2})),
         c.selected&&h('g',null,
           h('line',{x1:c.selected.x,x2:c.selected.x,y1:c.selected.y,y2:b.bottom,stroke:'#f8fafc',strokeDasharray:'2 5',strokeWidth:1.5}),
+          h('circle',{cx:c.selected.x,cy:c.selected.y,r:12,fill:'#67e8f9',fillOpacity:.22}),
           h('circle',{'data-mos-operating-point':true,cx:c.selected.x,cy:c.selected.y,r:6,fill:'#fff',stroke:'#07111f',strokeWidth:2}))),
       h('p',null,c.boundary===null?'Gray line: cutoff. White dot: selected operating point.':
         'Solid cyan: linear region. Dashed lavender: saturation. White dot: selected operating point. The dotted boundary is '+semiSweepValue(c.boundary)+' V.'),
@@ -679,10 +697,14 @@ window.StemLab = window.StemLab || {
     var faces=[],lift=exploded[0]?.35:0;
     function box(id,x0,x1,y0,y1,z0,z1,color){
       var pts=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]].map(project);
+      // Directional shading across the 6 faces (top brighter, sides mid, bottom shaded) for 3D depth
+      var faceOp=[.76,.88,.66,.96,.72,.84];
       [[0,1,2,3],[4,7,6,5],[0,4,5,1],[3,2,6,7],[0,3,7,4],[1,5,6,2]].forEach(function(f,i){
+        var isSel=layer[0]===id,isChan=id==='channel';
         faces.push({body:id==='body',z:f.reduce(function(sum,k){return sum+pts[k].z;},0)/4,
           node:h('polygon',{key:id+i,points:f.map(function(k){return pts[k].x+','+pts[k].y;}).join(' '),fill:color,
-            fillOpacity:layer[0]===id?1:.8,stroke:layer[0]===id?'#f8fafc':'#64748b',strokeWidth:layer[0]===id?2:1})});
+            fillOpacity:isSel?Math.min(1,faceOp[i]+.12):faceOp[i]*.88,
+            stroke:isSel?'#f8fafc':isChan?'#6ee7b7':'#64748b',strokeWidth:isSel?2.2:isChan?1.4:1})});
       });
     }
     box('body',-1.1,1.1,-.5,0,-.48,.48,'#1e3a5f');
@@ -1407,8 +1429,11 @@ window.StemLab = window.StemLab || {
       var _semiRaw = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData.semiconductor : null;
       var d = (_semiRaw && typeof _semiRaw === 'object' && !Array.isArray(_semiRaw)) ? _semiRaw : {};
       var _semiInitialized = !!(_semiRaw && typeof _semiRaw === 'object' && !Array.isArray(_semiRaw));
-      if (!_semiInitialized) {
+      React.useEffect(function() {
+        if (_semiInitialized) return;
         setLabToolData(function(prev) {
+          prev = prev || {};
+          if (prev.semiconductor && typeof prev.semiconductor === 'object' && !Array.isArray(prev.semiconductor)) return prev;
           return Object.assign({}, prev, { semiconductor: {
             // sub-tool selection
             subtool: 'bandgap',
@@ -1540,9 +1565,8 @@ window.StemLab = window.StemLab || {
             xpAwardedKeys: {}
           }});
         });
-        // Don't early-return — hooks below must always execute (Rules of Hooks).
-        // Default values below render the real lab on the first pass.
-      }
+      }, [_semiInitialized]);
+      // Default values below render the real lab on the first pass.
 
       var upd = function(key, val) {
         setLabToolData(function(prev) {
@@ -1730,6 +1754,7 @@ window.StemLab = window.StemLab || {
           canvasEl.height = pixelHeight;
         }
         var cx = canvasEl.getContext('2d');
+        if (!cx) return { cx: null, W: logicalWidth, H: logicalHeight };
         cx.setTransform(pixelWidth / logicalWidth, 0, 0, pixelHeight / logicalHeight, 0, 0);
         cx.imageSmoothingEnabled = true;
         if ('imageSmoothingQuality' in cx) cx.imageSmoothingQuality = 'high';
@@ -1844,52 +1869,83 @@ window.StemLab = window.StemLab || {
           if (!canvasEl) return;
           var surface = prepareCanvas(canvasEl, 440, 240);
           var cx = surface.cx, W = surface.W, H = surface.H;
+          if (!cx) return;
           cx.clearRect(0, 0, W, H);
+          var semiStatic = !!(d.motionPaused || semiReducedMotion());
+          var nowMs = semiStatic ? 0 : Date.now();
+          var hasGrad = typeof cx.createLinearGradient === 'function' && typeof cx.createRadialGradient === 'function';
 
           var midY = H / 2;
           var gapPx = Math.min(H * 0.40, Math.max(10, Eg * 28));
           var valenceTop = midY + gapPx / 2;
           var conductionBot = midY - gapPx / 2;
 
-          // Background gradient
-          var bgGrad = cx.createLinearGradient(0, 0, 0, H);
-          bgGrad.addColorStop(0, '#0F172A');
-          bgGrad.addColorStop(1, '#1E293B');
-          cx.fillStyle = bgGrad;
+          // Deep studio background gradient + subtle energy reference grid
+          if (hasGrad) {
+            var bgGrad = cx.createLinearGradient(0, 0, 0, H);
+            bgGrad.addColorStop(0, '#04091a');
+            bgGrad.addColorStop(0.5, '#0b152b');
+            bgGrad.addColorStop(1, '#081022');
+            cx.fillStyle = bgGrad;
+          } else {
+            cx.fillStyle = '#0F172A';
+          }
           cx.fillRect(0, 0, W, H);
+          cx.strokeStyle = 'rgba(100,116,139,0.16)';
+          cx.lineWidth = 1;
+          for (var gy = 28; gy < H - 18; gy += 28) {
+            cx.beginPath(); cx.moveTo(24, gy); cx.lineTo(W - 24, gy); cx.stroke();
+          }
 
-          // Valence band (filled)
-          var vGrad = cx.createLinearGradient(0, valenceTop, 0, H);
-          vGrad.addColorStop(0, mat.color);
-          vGrad.addColorStop(1, '#1E293B');
-          cx.fillStyle = vGrad;
+          // Valence band (filled with luminous upper edge)
+          if (hasGrad) {
+            var vGrad = cx.createLinearGradient(0, valenceTop, 0, H - 15);
+            vGrad.addColorStop(0, mat.color);
+            vGrad.addColorStop(0.55, '#1e3a5f');
+            vGrad.addColorStop(1, '#0f172a');
+            cx.fillStyle = vGrad;
+          } else {
+            cx.fillStyle = mat.color;
+          }
           cx.fillRect(30, valenceTop, W - 60, H - valenceTop - 15);
+          cx.strokeStyle = 'rgba(125,211,252,0.45)';
+          cx.lineWidth = 1.5;
+          cx.beginPath(); cx.moveTo(30, valenceTop); cx.lineTo(W - 30, valenceTop); cx.stroke();
           cx.fillStyle = '#E2E8F0';
           cx.font = 'bold 13px sans-serif';
           cx.textAlign = 'center';
           cx.fillText('Valence Band (E\u1D65)', W / 2, valenceTop + 22);
 
-          // Conduction band
-          var cGrad = cx.createLinearGradient(0, 15, 0, conductionBot);
-          cGrad.addColorStop(0, '#1E293B');
-          cGrad.addColorStop(1, isConductor ? mat.color : '#334155');
-          cx.fillStyle = cGrad;
+          // Conduction band (luminous lower edge)
+          if (hasGrad) {
+            var cGrad = cx.createLinearGradient(0, 15, 0, conductionBot);
+            cGrad.addColorStop(0, '#0f172a');
+            cGrad.addColorStop(0.7, isConductor ? mat.color : '#1e293b');
+            cGrad.addColorStop(1, isConductor ? mat.color : '#334155');
+            cx.fillStyle = cGrad;
+          } else {
+            cx.fillStyle = isConductor ? mat.color : '#334155';
+          }
           cx.fillRect(30, 15, W - 60, conductionBot - 15);
+          cx.strokeStyle = 'rgba(103,232,249,0.5)';
+          cx.lineWidth = 1.5;
+          cx.beginPath(); cx.moveTo(30, conductionBot); cx.lineTo(W - 30, conductionBot); cx.stroke();
           cx.fillStyle = '#E2E8F0';
           cx.fillText('Conduction Band (E\u1D9C)', W / 2, conductionBot - 12);
 
-          // Band gap region
+          // Band gap region with soft forbidden-zone shading
           if (!isConductor) {
-            cx.fillStyle = 'rgba(0,0,0,0.35)';
+            cx.fillStyle = 'rgba(2,6,23,0.48)';
             cx.fillRect(30, conductionBot, W - 60, gapPx);
 
-            // Gap label with glow
-            cx.shadowColor = '#FCD34D';
-            cx.shadowBlur = 0;
+            // Gap label with subtle halo
+            cx.save();
+            cx.shadowColor = 'rgba(252,211,77,0.55)';
+            cx.shadowBlur = 8;
             cx.fillStyle = '#FCD34D';
             cx.font = 'bold 14px sans-serif';
             cx.fillText('E_g = ' + Eg.toFixed(2) + ' eV', W / 2, midY + 5);
-            cx.shadowBlur = 0;
+            cx.restore();
 
             // Arrow
             cx.strokeStyle = '#FCD34D';
@@ -1912,6 +1968,14 @@ window.StemLab = window.StemLab || {
           // Fermi level (9-12 or toggle)
           if (d.showFermi && !isConductor) {
             var fermiY = midY; // intrinsic: mid-gap
+            cx.save();
+            cx.strokeStyle = 'rgba(249,115,22,0.32)';
+            cx.lineWidth = 5;
+            cx.beginPath();
+            cx.moveTo(35, fermiY); cx.lineTo(W / 2 - 80, fermiY);
+            cx.moveTo(W / 2 + 80, fermiY); cx.lineTo(W - 35, fermiY);
+            cx.stroke();
+            cx.restore();
             cx.strokeStyle = '#F97316';
             cx.lineWidth = 1.5;
             cx.setLineDash([6, 4]);
@@ -1920,47 +1984,80 @@ window.StemLab = window.StemLab || {
             cx.moveTo(W / 2 + 80, fermiY); cx.lineTo(W - 35, fermiY);
             cx.stroke();
             cx.setLineDash([]);
-            cx.fillStyle = '#F97316';
+            cx.fillStyle = '#FDBA74';
             cx.font = '12px sans-serif';
             cx.textAlign = 'right';
             cx.fillText('E\u1DA0 (Fermi)', W - 10, fermiY - 4);
           }
 
-          // Electrons in valence band
-          cx.fillStyle = '#60A5FA';
+          // Electrons in valence band with luminous cyan carrier halos
           var electronY = isConductor ? midY : valenceTop + 30;
           for (var i = 0; i < 8; i++) {
             var ex = 60 + i * (W - 120) / 7;
-            cx.beginPath();
-            cx.arc(ex, electronY + Math.sin(Date.now() / 500 + i) * 3, 4, 0, Math.PI * 2);
-            cx.fill();
+            var ey = electronY + Math.sin(nowMs / 500 + i) * 3;
+            if (hasGrad) {
+              var eHalo = cx.createRadialGradient(ex, ey, 1, ex, ey, 11);
+              eHalo.addColorStop(0, 'rgba(34,211,238,0.62)');
+              eHalo.addColorStop(0.55, 'rgba(56,189,248,0.18)');
+              eHalo.addColorStop(1, 'rgba(56,189,248,0)');
+              cx.fillStyle = eHalo;
+              cx.beginPath(); cx.arc(ex, ey, 11, 0, Math.PI * 2); cx.fill();
+            }
+            cx.fillStyle = '#67E8F9';
+            cx.beginPath(); cx.arc(ex, ey, 4, 0, Math.PI * 2); cx.fill();
+            cx.fillStyle = '#ECFEFF';
+            cx.beginPath(); cx.arc(ex - 1.2, ey - 1.2, 1.3, 0, Math.PI * 2); cx.fill();
           }
 
-          // Thermal excitation — more electrons jump at higher temp
+          // Thermal excitation — glowing electron-hole pairs with subtle transition filament
           var thermalProb = isConductor ? 0.5 : Math.min(0.4, Math.exp(-Eg / (2 * 8.617e-5 * tempK)) * 1e5);
           var excitedCount = Math.floor(thermalProb * 6);
           for (var ti = 0; ti < excitedCount; ti++) {
             var tex = 70 + ti * (W - 140) / Math.max(1, excitedCount - 1);
-            var tBob = Math.sin(Date.now() / 400 + ti * 2) * 5;
-            // Excited electron in conduction band
-            cx.fillStyle = '#F59E0B';
-            cx.beginPath();
-            cx.arc(tex, conductionBot - 20 + tBob, 4, 0, Math.PI * 2);
-            cx.fill();
-            // Hole left behind
+            var tBob = Math.sin(nowMs / 400 + ti * 2) * 5;
+            var tTopY = conductionBot - 20 + tBob;
+            var tBotY = valenceTop + 30 - tBob;
+            // Subtle thermal excitation trail
+            cx.strokeStyle = 'rgba(251,191,36,0.22)';
+            cx.lineWidth = 1.2;
+            cx.setLineDash([2, 3]);
+            cx.beginPath(); cx.moveTo(tex + 10, tBotY); cx.lineTo(tex, tTopY); cx.stroke();
+            cx.setLineDash([]);
+            // Excited electron halo + core in conduction band
+            if (hasGrad) {
+              var exH = cx.createRadialGradient(tex, tTopY, 1, tex, tTopY, 12);
+              exH.addColorStop(0, 'rgba(251,191,36,0.75)'); exH.addColorStop(1, 'rgba(251,191,36,0)');
+              cx.fillStyle = exH; cx.beginPath(); cx.arc(tex, tTopY, 12, 0, Math.PI * 2); cx.fill();
+            }
+            cx.fillStyle = '#FBBF24';
+            cx.beginPath(); cx.arc(tex, tTopY, 4.2, 0, Math.PI * 2); cx.fill();
+            // Hole left behind with coral halo
+            if (hasGrad) {
+              var hH = cx.createRadialGradient(tex + 10, tBotY, 1, tex + 10, tBotY, 10);
+              hH.addColorStop(0, 'rgba(248,113,113,0.48)'); hH.addColorStop(1, 'rgba(248,113,113,0)');
+              cx.fillStyle = hH; cx.beginPath(); cx.arc(tex + 10, tBotY, 10, 0, Math.PI * 2); cx.fill();
+            }
             cx.strokeStyle = '#F87171';
-            cx.lineWidth = 1.5;
-            cx.beginPath();
-            cx.arc(tex + 10, valenceTop + 30 - tBob, 4, 0, Math.PI * 2);
-            cx.stroke();
+            cx.lineWidth = 1.8;
+            cx.beginPath(); cx.arc(tex + 10, tBotY, 4.2, 0, Math.PI * 2); cx.stroke();
           }
 
           // Photon excitation
           if (d.showPhoton && !isConductor && photonAllowed) {
-            var pTime = (Date.now() % 2000) / 2000;
+            var pTime = semiStatic ? 0.5 : (nowMs % 2000) / 2000;
             var px = 60 + pTime * (W - 120);
-            // Photon wavy arrow
-            cx.strokeStyle = '#FBBF24';
+            // Dual-pass luminous photon wavy arrow
+            cx.save();
+            cx.strokeStyle = 'rgba(251,191,36,0.34)'; cx.lineWidth = 6; cx.lineCap = 'round';
+            cx.beginPath();
+            for (var pw0 = 0; pw0 < 6; pw0++) {
+              var pwy0 = valenceTop + 30 - pw0 * (gapPx + 45) / 6;
+              var pwx0 = px + Math.sin(pw0 * 1.5) * 6;
+              if (pw0 === 0) cx.moveTo(pwx0, pwy0); else cx.lineTo(pwx0, pwy0);
+            }
+            cx.stroke();
+            cx.restore();
+            cx.strokeStyle = '#FDE047';
             cx.lineWidth = 2;
             cx.beginPath();
             for (var pw = 0; pw < 6; pw++) {
@@ -1970,21 +2067,21 @@ window.StemLab = window.StemLab || {
             }
             cx.stroke();
             // Photon label
-            cx.fillStyle = '#FBBF24';
+            cx.fillStyle = '#FDE047';
             cx.font = '11px sans-serif';
             cx.textAlign = 'center';
             cx.fillText('Photon: ' + photonEnergy.toFixed(2) + ' eV', px, valenceTop + 45);
             // Excited electron
             cx.fillStyle = '#F59E0B';
             cx.shadowColor = '#F59E0B';
-            cx.shadowBlur = 10;
+            cx.shadowBlur = 12;
             cx.beginPath();
-            cx.arc(px, conductionBot - 15 + Math.sin(Date.now() / 300) * 4, 5, 0, Math.PI * 2);
+            cx.arc(px, conductionBot - 15 + Math.sin(nowMs / 300) * 4, 5, 0, Math.PI * 2);
             cx.fill();
             cx.shadowBlur = 0;
             // Hole
             cx.strokeStyle = '#F87171';
-            cx.lineWidth = 1.5;
+            cx.lineWidth = 1.8;
             cx.beginPath();
             cx.arc(px, valenceTop + 30, 5, 0, Math.PI * 2);
             cx.stroke();
@@ -1994,9 +2091,15 @@ window.StemLab = window.StemLab || {
           if (gradeBand === '9-12' || gradeBand === '6-8') {
             var niLog = intrinsicN > 0 ? Math.log10(intrinsicN) : 0;
             var barW = Math.max(5, Math.min(80, niLog * 3.5));
-            cx.fillStyle = '#94A3B8';
+            cx.fillStyle = 'rgba(148,163,184,0.28)';
             cx.fillRect(W - 95, H - 35, 85, 12);
-            cx.fillStyle = '#22D3EE';
+            if (hasGrad) {
+              var bGrad = cx.createLinearGradient(W - 95, 0, W - 10, 0);
+              bGrad.addColorStop(0, '#06B6D4'); bGrad.addColorStop(1, '#67E8F9');
+              cx.fillStyle = bGrad;
+            } else {
+              cx.fillStyle = '#22D3EE';
+            }
             cx.fillRect(W - 95, H - 35, barW, 12);
             cx.fillStyle = '#94A3B8';
             cx.font = '10px sans-serif';
@@ -2132,10 +2235,22 @@ window.StemLab = window.StemLab || {
           if (!canvasEl) return;
           var surface = prepareCanvas(canvasEl, 440, 300);
           var cx = surface.cx, W = surface.W, H = surface.H;
+          if (!cx) return;
           cx.clearRect(0, 0, W, H);
+          var semiStatic = !!(d.motionPaused || semiReducedMotion());
+          var nowMs = semiStatic ? 0 : Date.now();
+          var hasGrad = typeof cx.createRadialGradient === 'function' && typeof cx.createLinearGradient === 'function';
 
-          // Background
-          cx.fillStyle = '#0F172A';
+          // Deep silicon-wafer studio vignette backdrop
+          if (hasGrad) {
+            var bgV = cx.createRadialGradient(W / 2, H * 0.45, 25, W / 2, H * 0.5, W * 0.68);
+            bgV.addColorStop(0, '#0e1d36');
+            bgV.addColorStop(0.65, '#071124');
+            bgV.addColorStop(1, '#030816');
+            cx.fillStyle = bgV;
+          } else {
+            cx.fillStyle = '#0F172A';
+          }
           cx.fillRect(0, 0, W, H);
 
           var cellW = (W - 20) / gridSize;
@@ -2149,68 +2264,109 @@ window.StemLab = window.StemLab || {
             dopantPositions[pos] = true;
           }
 
-          // Draw crystal lattice
+          // Pass 1: Covalent silicon lattice bonds with subtle shared-electron glow
+          for (var brow = 0; brow < gridSize; brow++) {
+            for (var bcol = 0; bcol < gridSize; bcol++) {
+              var bx1 = 10 + bcol * cellW + cellW / 2;
+              var by1 = 10 + brow * cellH + cellH / 2;
+              if (bcol < gridSize - 1) {
+                cx.strokeStyle = 'rgba(103,232,249,0.16)'; cx.lineWidth = 4;
+                cx.beginPath(); cx.moveTo(bx1, by1); cx.lineTo(bx1 + cellW, by1); cx.stroke();
+                cx.strokeStyle = 'rgba(148,163,184,0.62)'; cx.lineWidth = 1.2;
+                cx.beginPath(); cx.moveTo(bx1, by1 - 1.5); cx.lineTo(bx1 + cellW, by1 - 1.5);
+                cx.moveTo(bx1, by1 + 1.5); cx.lineTo(bx1 + cellW, by1 + 1.5); cx.stroke();
+              }
+              if (brow < gridSize - 1) {
+                cx.strokeStyle = 'rgba(103,232,249,0.16)'; cx.lineWidth = 4;
+                cx.beginPath(); cx.moveTo(bx1, by1); cx.lineTo(bx1, by1 + cellH); cx.stroke();
+                cx.strokeStyle = 'rgba(148,163,184,0.62)'; cx.lineWidth = 1.2;
+                cx.beginPath(); cx.moveTo(bx1 - 1.5, by1); cx.lineTo(bx1 - 1.5, by1 + cellH);
+                cx.moveTo(bx1 + 1.5, by1); cx.lineTo(bx1 + 1.5, by1 + cellH); cx.stroke();
+              }
+            }
+          }
+
+          // Pass 2: 3D shaded crystal atoms & luminous orbiting free carriers with trails
           for (var row = 0; row < gridSize; row++) {
             for (var col = 0; col < gridSize; col++) {
               var cx1 = 10 + col * cellW + cellW / 2;
               var cy1 = 10 + row * cellH + cellH / 2;
               var idx = row * gridSize + col;
               var isDopant = dopantPositions[idx] && dopantKey !== 'none';
-
-              // Bonds
-              cx.strokeStyle = '#64748B';
-              cx.lineWidth = 1;
-              if (col < gridSize - 1) { cx.beginPath(); cx.moveTo(cx1, cy1); cx.lineTo(cx1 + cellW, cy1); cx.stroke(); }
-              if (row < gridSize - 1) { cx.beginPath(); cx.moveTo(cx1, cy1); cx.lineTo(cx1, cy1 + cellH); cx.stroke(); }
-
               var radius = Math.min(cellW, cellH) * 0.26;
-              cx.beginPath();
-              cx.arc(cx1, cy1, radius, 0, Math.PI * 2);
 
               if (isDopant) {
-                // Glow effect
-                cx.shadowColor = dopant.color;
-                cx.shadowBlur = 6;
-                cx.fillStyle = dopant.color;
-                cx.fill();
+                // Radiant dopant aura
+                if (hasGrad) {
+                  var dAura = cx.createRadialGradient(cx1, cy1, radius * 0.5, cx1, cy1, radius * 2.1);
+                  dAura.addColorStop(0, dopant.type === 'n' ? 'rgba(34,211,238,0.42)' : 'rgba(251,146,60,0.42)');
+                  dAura.addColorStop(1, 'rgba(15,23,42,0)');
+                  cx.fillStyle = dAura;
+                  cx.beginPath(); cx.arc(cx1, cy1, radius * 2.1, 0, Math.PI * 2); cx.fill();
+                }
+                cx.beginPath(); cx.arc(cx1, cy1, radius, 0, Math.PI * 2);
+                cx.shadowColor = dopant.color; cx.shadowBlur = 9;
+                cx.fillStyle = dopant.color; cx.fill();
                 cx.shadowBlur = 0;
-                cx.strokeStyle = '#FCD34D';
-                cx.lineWidth = 2;
-                cx.stroke();
+                cx.strokeStyle = '#FDE047'; cx.lineWidth = 2; cx.stroke();
+                // Specular gloss dot
+                cx.fillStyle = 'rgba(255,255,255,0.34)';
+                cx.beginPath(); cx.arc(cx1 - radius * 0.3, cy1 - radius * 0.3, radius * 0.25, 0, Math.PI * 2); cx.fill();
                 cx.fillStyle = canvasInkFor(dopant.color);
                 cx.font = 'bold ' + Math.max(11, radius * 0.8) + 'px Inter, system-ui, sans-serif';
-                cx.textAlign = 'center';
-                cx.textBaseline = 'middle';
+                cx.textAlign = 'center'; cx.textBaseline = 'middle';
                 cx.fillText(dopant.symbol, cx1, cy1);
 
-                // Animated free carrier
-                var carrierT = Date.now() / 600 + idx;
-                var carrierDx = Math.sin(carrierT) * (radius + 6);
-                var carrierDy = Math.cos(carrierT * 0.7) * (radius + 6);
+                // Orbiting free carrier with luminous halo & velocity trail
+                var carrierT = nowMs / 600 + idx;
+                var orbitR = radius + 6;
+                var carrierDx = Math.sin(carrierT) * orbitR;
+                var carrierDy = Math.cos(carrierT * 0.7) * orbitR;
+                var cpx = cx1 + carrierDx, cpy = cy1 + carrierDy;
+                // Velocity trail (3 fading ghosts behind motion)
+                for (var tr = 3; tr >= 1; tr--) {
+                  var tPrev = carrierT - tr * 0.22;
+                  var tx = cx1 + Math.sin(tPrev) * orbitR;
+                  var ty = cy1 + Math.cos(tPrev * 0.7) * orbitR;
+                  cx.fillStyle = dopant.type === 'n' ? 'rgba(34,211,238,' + (0.32 - tr * 0.08).toFixed(2) + ')' : 'rgba(251,146,60,' + (0.32 - tr * 0.08).toFixed(2) + ')';
+                  cx.beginPath(); cx.arc(tx, ty, 3 - tr * 0.5, 0, Math.PI * 2); cx.fill();
+                }
                 if (dopant.type === 'n') {
-                  cx.fillStyle = '#60A5FA';
-                  cx.beginPath();
-                  cx.arc(cx1 + carrierDx, cy1 + carrierDy, 3, 0, Math.PI * 2);
-                  cx.fill();
-                  if (radius > 10) { cx.fillStyle = '#93C5FD'; cx.font = '10px sans-serif'; cx.fillText('e\u207B', cx1 + carrierDx, cy1 + carrierDy - 7); }
+                  if (hasGrad) {
+                    var eGlow = cx.createRadialGradient(cpx, cpy, 1, cpx, cpy, 9);
+                    eGlow.addColorStop(0, 'rgba(34,211,238,0.85)'); eGlow.addColorStop(1, 'rgba(34,211,238,0)');
+                    cx.fillStyle = eGlow; cx.beginPath(); cx.arc(cpx, cpy, 9, 0, Math.PI * 2); cx.fill();
+                  }
+                  cx.fillStyle = '#67E8F9';
+                  cx.beginPath(); cx.arc(cpx, cpy, 3.2, 0, Math.PI * 2); cx.fill();
+                  if (radius > 10) { cx.fillStyle = '#A5F3FC'; cx.font = '10px sans-serif'; cx.fillText('e\u207B', cpx, cpy - 8); }
                 } else if (dopant.type === 'p') {
-                  cx.strokeStyle = '#F87171';
-                  cx.lineWidth = 1.5;
-                  cx.beginPath();
-                  cx.arc(cx1 + carrierDx, cy1 + carrierDy, 3, 0, Math.PI * 2);
-                  cx.stroke();
-                  if (radius > 10) { cx.fillStyle = '#FCA5A5'; cx.font = '10px sans-serif'; cx.fillText('h\u207A', cx1 + carrierDx, cy1 + carrierDy - 7); }
+                  if (hasGrad) {
+                    var hGlow = cx.createRadialGradient(cpx, cpy, 1, cpx, cpy, 9);
+                    hGlow.addColorStop(0, 'rgba(251,146,60,0.72)'); hGlow.addColorStop(1, 'rgba(251,146,60,0)');
+                    cx.fillStyle = hGlow; cx.beginPath(); cx.arc(cpx, cpy, 9, 0, Math.PI * 2); cx.fill();
+                  }
+                  cx.strokeStyle = '#FB923C'; cx.lineWidth = 1.8;
+                  cx.beginPath(); cx.arc(cpx, cpy, 3.4, 0, Math.PI * 2); cx.stroke();
+                  if (radius > 10) { cx.fillStyle = '#FDBA74'; cx.font = '10px sans-serif'; cx.fillText('h\u207A', cpx, cpy - 8); }
                 }
               } else {
-                cx.fillStyle = '#4F46E5';
+                // 3D radial-shaded silicon crystal atom
+                cx.beginPath(); cx.arc(cx1, cy1, radius, 0, Math.PI * 2);
+                if (hasGrad) {
+                  var siG = cx.createRadialGradient(cx1 - radius * 0.3, cy1 - radius * 0.3, radius * 0.15, cx1, cy1, radius);
+                  siG.addColorStop(0, '#818CF8'); siG.addColorStop(0.55, '#4338CA'); siG.addColorStop(1, '#1E1B4B');
+                  cx.fillStyle = siG;
+                } else {
+                  cx.fillStyle = '#4F46E5';
+                }
                 cx.fill();
-                cx.strokeStyle = '#6366F1';
-                cx.lineWidth = 1;
-                cx.stroke();
-                cx.fillStyle = '#C7D2FE';
+                cx.strokeStyle = 'rgba(165,180,252,0.72)'; cx.lineWidth = 1; cx.stroke();
+                cx.fillStyle = 'rgba(255,255,255,0.28)';
+                cx.beginPath(); cx.arc(cx1 - radius * 0.32, cy1 - radius * 0.32, radius * 0.22, 0, Math.PI * 2); cx.fill();
+                cx.fillStyle = '#E0E7FF';
                 cx.font = Math.max(10, radius * 0.65) + 'px sans-serif';
-                cx.textAlign = 'center';
-                cx.textBaseline = 'middle';
+                cx.textAlign = 'center'; cx.textBaseline = 'middle';
                 cx.fillText('Si', cx1, cy1);
               }
             }
@@ -2319,9 +2475,20 @@ window.StemLab = window.StemLab || {
           if (!canvasEl) return;
           var surface = prepareCanvas(canvasEl, 440, 280);
           var cx = surface.cx, W = surface.W, H = surface.H;
+          if (!cx) return;
           cx.clearRect(0, 0, W, H);
+          var semiStatic = !!(d.motionPaused || semiReducedMotion());
+          var nowMs = semiStatic ? 0 : Date.now();
+          var hasGrad = typeof cx.createLinearGradient === 'function' && typeof cx.createRadialGradient === 'function';
 
-          cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
+          if (hasGrad) {
+            var pnBg = cx.createLinearGradient(0, 0, 0, H);
+            pnBg.addColorStop(0, '#040a1a'); pnBg.addColorStop(1, '#0b162c');
+            cx.fillStyle = pnBg;
+          } else {
+            cx.fillStyle = '#0F172A';
+          }
+          cx.fillRect(0, 0, W, H);
 
           var midX = W / 2;
           var junctionY = 30;
@@ -2329,25 +2496,49 @@ window.StemLab = window.StemLab || {
           // depletionW / depletionUm / pnModelValid are computed at renderPNJunction
           // scope above, so the drawing and the aria-label cannot disagree.
 
-          // P-side
-          var pGrad = cx.createLinearGradient(10, 0, midX - depletionW / 2, 0);
-          pGrad.addColorStop(0, '#1E40AF'); pGrad.addColorStop(1, '#3B82F6');
+          // P-side semiconductor slab with glossy top rim
+          var pW = Math.max(0, midX - 10 - depletionW / 2);
+          var pGrad = cx.createLinearGradient(10, junctionY, midX - depletionW / 2, junctionY + junctionH);
+          pGrad.addColorStop(0, '#172554'); pGrad.addColorStop(0.55, '#1D4ED8'); pGrad.addColorStop(1, '#2563EB');
           cx.fillStyle = pGrad;
-          cx.fillRect(10, junctionY, midX - 10 - depletionW / 2, junctionH);
-          cx.fillStyle = '#FFF'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'center';
+          cx.fillRect(10, junctionY, pW, junctionH);
+          cx.strokeStyle = 'rgba(147,197,253,0.45)'; cx.lineWidth = 1;
+          cx.strokeRect(10, junctionY, pW, junctionH);
+          cx.fillStyle = '#EFF6FF'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'center';
           cx.fillText('P-type', (10 + midX - depletionW / 2) / 2, junctionY + 18);
-          // N-side
-          var nGrad = cx.createLinearGradient(midX + depletionW / 2, 0, W - 10, 0);
-          nGrad.addColorStop(0, '#EF4444'); nGrad.addColorStop(1, '#991B1B');
+
+          // N-side semiconductor slab with glossy top rim
+          var nX = midX + depletionW / 2, nW = Math.max(0, W - 10 - nX);
+          var nGrad = cx.createLinearGradient(nX, junctionY, W - 10, junctionY + junctionH);
+          nGrad.addColorStop(0, '#DC2626'); nGrad.addColorStop(0.5, '#B91C1C'); nGrad.addColorStop(1, '#450A0A');
           cx.fillStyle = nGrad;
-          cx.fillRect(midX + depletionW / 2, junctionY, W - 10 - midX - depletionW / 2, junctionH);
-          cx.fillStyle = '#FFF';
-          cx.fillText('N-type', (midX + depletionW / 2 + W - 10) / 2, junctionY + 18);
-          // Depletion region
+          cx.fillRect(nX, junctionY, nW, junctionH);
+          cx.strokeStyle = 'rgba(252,165,165,0.45)'; cx.lineWidth = 1;
+          cx.strokeRect(nX, junctionY, nW, junctionH);
+          cx.fillStyle = '#FEF2F2';
+          cx.fillText('N-type', (nX + W - 10) / 2, junctionY + 18);
+
+          // Depletion region with luminous potential-barrier glow
           if (showDepletion) {
-            cx.fillStyle = 'rgba(148, 163, 184, 0.25)';
+            if (hasGrad) {
+              var depG = cx.createLinearGradient(midX - depletionW / 2, 0, midX + depletionW / 2, 0);
+              depG.addColorStop(0, 'rgba(59,130,246,0.22)');
+              depG.addColorStop(0.5, 'rgba(251,191,36,0.16)');
+              depG.addColorStop(1, 'rgba(239,68,68,0.22)');
+              cx.fillStyle = depG;
+            } else {
+              cx.fillStyle = 'rgba(148, 163, 184, 0.25)';
+            }
             cx.fillRect(midX - depletionW / 2, junctionY, depletionW, junctionH);
-            cx.strokeStyle = '#CBD5E1'; cx.setLineDash([4, 3]); cx.lineWidth = 1;
+            // Soft vertical potential barrier edge glow
+            cx.save();
+            cx.strokeStyle = 'rgba(251,191,36,0.26)'; cx.lineWidth = 5;
+            cx.beginPath();
+            cx.moveTo(midX - depletionW / 2, junctionY); cx.lineTo(midX - depletionW / 2, junctionY + junctionH);
+            cx.moveTo(midX + depletionW / 2, junctionY); cx.lineTo(midX + depletionW / 2, junctionY + junctionH);
+            cx.stroke();
+            cx.restore();
+            cx.strokeStyle = '#E2E8F0'; cx.setLineDash([4, 3]); cx.lineWidth = 1.2;
             cx.strokeRect(midX - depletionW / 2, junctionY, depletionW, junctionH);
             cx.setLineDash([]);
             cx.fillStyle = '#CBD5E1'; cx.font = '11px sans-serif'; cx.textAlign = 'center';
@@ -2365,42 +2556,71 @@ window.StemLab = window.StemLab || {
           if (showDepletion && pnModelValid && depletionW > 12) {
             cx.font = 'bold 12px sans-serif'; cx.textAlign = 'center';
             for (var row = 0; row < 3; row++) {
-              cx.fillStyle = '#93c5fd'; cx.fillText('\u2296', midX-depletionW/4, junctionY+48+row*35);
-              cx.fillStyle = '#fca5a5'; cx.fillText('\u2295', midX+depletionW/4, junctionY+48+row*35);
+              var iy = junctionY + 48 + row * 35;
+              cx.fillStyle = 'rgba(147,197,253,0.18)';
+              cx.beginPath(); cx.arc(midX - depletionW / 4, iy - 4, 8, 0, Math.PI * 2); cx.fill();
+              cx.fillStyle = '#93c5fd'; cx.fillText('\u2296', midX - depletionW / 4, iy);
+              cx.fillStyle = 'rgba(252,165,165,0.18)';
+              cx.beginPath(); cx.arc(midX + depletionW / 4, iy - 4, 8, 0, Math.PI * 2); cx.fill();
+              cx.fillStyle = '#fca5a5'; cx.fillText('\u2295', midX + depletionW / 4, iy);
             }
           }
-          // E-field arrows
+          // Glowing E-field lines across the depletion barrier
           if (showField && pnModelValid && depletionW > 15) {
-            cx.strokeStyle = '#FBBF24'; cx.lineWidth = 2;
             var arrowCount = Math.floor(junctionH / 35);
             for (var ai = 0; ai < arrowCount; ai++) {
               var ay = junctionY + 30 + ai * 35;
               var ax1 = midX - depletionW / 3, ax2 = midX + depletionW / 3;
+              cx.save();
+              cx.strokeStyle = 'rgba(251,191,36,0.34)'; cx.lineWidth = 5; cx.lineCap = 'round';
+              cx.beginPath(); cx.moveTo(ax2, ay); cx.lineTo(ax1, ay); cx.stroke();
+              cx.restore();
+              cx.strokeStyle = '#FDE047'; cx.lineWidth = 2;
               cx.beginPath(); cx.moveTo(ax2, ay); cx.lineTo(ax1, ay); cx.stroke();
               cx.beginPath(); cx.moveTo(ax1 + 5, ay - 4); cx.lineTo(ax1, ay); cx.lineTo(ax1 + 5, ay + 4); cx.stroke();
             }
-            cx.fillStyle = '#FBBF24'; cx.font = '11px sans-serif'; cx.fillText('\u2190 E field', midX, junctionY + junctionH - 8);
+            cx.fillStyle = '#FDE047'; cx.font = 'bold 11px sans-serif'; cx.fillText('\u2190 E field', midX, junctionY + junctionH - 8);
           }
 
-          // Carrier animation
+          // Carrier animation with luminous halos & velocity trails
           if (showCarriers) {
-            var t = (Date.now() % 3000) / 3000;
+            var t = semiStatic ? 0.35 : (nowMs % 3000) / 3000;
             if (bias > 0) {
               var flowSpeed = t;
-              cx.strokeStyle = '#93C5FD'; cx.lineWidth = 1.5;
+              // Hollow cyan/blue holes drifting left-to-right with wake trail
               for (var hi = 0; hi < 6; hi++) {
                 var hx = 40 + ((flowSpeed * W + hi * 70) % (W - 80));
                 var hy = junctionY + 40 + (hi % 3) * (junctionH / 4);
-                cx.beginPath(); cx.arc(hx, hy, 4, 0, Math.PI * 2); cx.stroke();
+                if (hasGrad) {
+                  var hTrail = cx.createLinearGradient(hx - 18, hy, hx, hy);
+                  hTrail.addColorStop(0, 'rgba(147,197,253,0)'); hTrail.addColorStop(1, 'rgba(147,197,253,0.45)');
+                  cx.strokeStyle = hTrail; cx.lineWidth = 2.5;
+                  cx.beginPath(); cx.moveTo(Math.max(14, hx - 18), hy); cx.lineTo(hx - 4, hy); cx.stroke();
+                  var hHalo = cx.createRadialGradient(hx, hy, 2, hx, hy, 10);
+                  hHalo.addColorStop(0, 'rgba(147,197,253,0.45)'); hHalo.addColorStop(1, 'rgba(147,197,253,0)');
+                  cx.fillStyle = hHalo; cx.beginPath(); cx.arc(hx, hy, 10, 0, Math.PI * 2); cx.fill();
+                }
+                cx.strokeStyle = '#93C5FD'; cx.lineWidth = 2;
+                cx.beginPath(); cx.arc(hx, hy, 4.2, 0, Math.PI * 2); cx.stroke();
               }
-              cx.fillStyle = '#FCA5A5';
+              // Filled coral-red electrons drifting right-to-left with glowing trail
               for (var ei = 0; ei < 6; ei++) {
                 var exx = W - 40 - ((flowSpeed * W + ei * 70) % (W - 80));
                 var ey = junctionY + 55 + (ei % 3) * (junctionH / 4);
-                cx.beginPath(); cx.arc(exx, ey, 3, 0, Math.PI * 2); cx.fill();
+                if (hasGrad) {
+                  var eTrail = cx.createLinearGradient(exx + 18, ey, exx, ey);
+                  eTrail.addColorStop(0, 'rgba(252,165,165,0)'); eTrail.addColorStop(1, 'rgba(252,165,165,0.5)');
+                  cx.strokeStyle = eTrail; cx.lineWidth = 2.5;
+                  cx.beginPath(); cx.moveTo(Math.min(W - 14, exx + 18), ey); cx.lineTo(exx + 3, ey); cx.stroke();
+                  var eHalo = cx.createRadialGradient(exx, ey, 1, exx, ey, 9);
+                  eHalo.addColorStop(0, 'rgba(252,165,165,0.75)'); eHalo.addColorStop(1, 'rgba(252,165,165,0)');
+                  cx.fillStyle = eHalo; cx.beginPath(); cx.arc(exx, ey, 9, 0, Math.PI * 2); cx.fill();
+                }
+                cx.fillStyle = '#FCA5A5';
+                cx.beginPath(); cx.arc(exx, ey, 3.4, 0, Math.PI * 2); cx.fill();
               }
               // Current indicator with glow
-              cx.shadowColor = '#34D399'; cx.shadowBlur = 8;
+              cx.shadowColor = '#34D399'; cx.shadowBlur = 10;
               cx.fillStyle = '#34D399'; cx.font = 'bold 12px sans-serif';
               cx.fillText('Forward bias: conventional current \u2192', midX, junctionY - 10);
               cx.shadowBlur = 0;
@@ -2408,9 +2628,17 @@ window.StemLab = window.StemLab || {
               // LED glow effect
               if (d.pnLedMode && bias > 0.6) {
                 var glowIntensity = Math.min(1, (bias - 0.6) / 1.5);
+                if (hasGrad) {
+                  var ledAura = cx.createRadialGradient(midX, junctionY - 25, 2, midX, junctionY - 25, 26 * glowIntensity + 6);
+                  ledAura.addColorStop(0, 'rgba(254,240,138,' + glowIntensity.toFixed(2) + ')');
+                  ledAura.addColorStop(0.5, 'rgba(251,191,36,' + (glowIntensity * 0.45).toFixed(2) + ')');
+                  ledAura.addColorStop(1, 'rgba(251,191,36,0)');
+                  cx.fillStyle = ledAura;
+                  cx.beginPath(); cx.arc(midX, junctionY - 25, 26 * glowIntensity + 6, 0, Math.PI * 2); cx.fill();
+                }
                 cx.beginPath();
-                cx.arc(midX, junctionY - 25, 12, 0, Math.PI * 2);
-                cx.fillStyle = 'rgba(251, 191, 36, ' + glowIntensity.toFixed(2) + ')';
+                cx.arc(midX, junctionY - 25, 10, 0, Math.PI * 2);
+                cx.fillStyle = 'rgba(253, 224, 71, ' + glowIntensity.toFixed(2) + ')';
                 cx.shadowColor = '#FBBF24'; cx.shadowBlur = 20 * glowIntensity;
                 cx.fill();
                 cx.shadowBlur = 0;
@@ -2422,17 +2650,27 @@ window.StemLab = window.StemLab || {
                 cx.fillStyle = '#F87171'; cx.font = '13px sans-serif'; cx.textAlign = 'center';
                 cx.fillText('Reverse bias: small leakage; wider depletion', midX, junctionY - 10);
               }
-              cx.strokeStyle = '#93C5FD'; cx.lineWidth = 1.5;
               for (var qpi = 0; qpi < 5; qpi++) {
                 var ppx = 30 + qpi * ((midX - depletionW / 2 - 30) / 4);
-                var ppy = junctionY + 45 + (qpi % 3) * 30 + Math.sin(Date.now() / 700 + qpi) * 5;
+                var ppy = junctionY + 45 + (qpi % 3) * 30 + Math.sin(nowMs / 700 + qpi) * 5;
+                if (hasGrad) {
+                  var qpG = cx.createRadialGradient(ppx, ppy, 1, ppx, ppy, 9);
+                  qpG.addColorStop(0, 'rgba(147,197,253,0.4)'); qpG.addColorStop(1, 'rgba(147,197,253,0)');
+                  cx.fillStyle = qpG; cx.beginPath(); cx.arc(ppx, ppy, 9, 0, Math.PI * 2); cx.fill();
+                }
+                cx.strokeStyle = '#93C5FD'; cx.lineWidth = 1.8;
                 cx.beginPath(); cx.arc(ppx, ppy, 4, 0, Math.PI * 2); cx.stroke();
               }
-              cx.fillStyle = '#FCA5A5';
               for (var qni = 0; qni < 5; qni++) {
                 var nnx = midX + depletionW / 2 + 15 + qni * ((W - midX - depletionW / 2 - 30) / 4);
-                var nny = junctionY + 45 + (qni % 3) * 30 + Math.sin(Date.now() / 700 + qni + 3) * 5;
-                cx.beginPath(); cx.arc(nnx, nny, 3, 0, Math.PI * 2); cx.fill();
+                var nny = junctionY + 45 + (qni % 3) * 30 + Math.sin(nowMs / 700 + qni + 3) * 5;
+                if (hasGrad) {
+                  var qnG = cx.createRadialGradient(nnx, nny, 1, nnx, nny, 8);
+                  qnG.addColorStop(0, 'rgba(252,165,165,0.65)'); qnG.addColorStop(1, 'rgba(252,165,165,0)');
+                  cx.fillStyle = qnG; cx.beginPath(); cx.arc(nnx, nny, 8, 0, Math.PI * 2); cx.fill();
+                }
+                cx.fillStyle = '#FCA5A5';
+                cx.beginPath(); cx.arc(nnx, nny, 3.2, 0, Math.PI * 2); cx.fill();
               }
             }
           }
@@ -2442,18 +2680,28 @@ window.StemLab = window.StemLab || {
             var ivX=W-145,ivY=H-92,ivW=132,ivH=55;
             var xAt=function(v){return ivX+8+(v+3)/3.6*(ivW-16);};
             var yAt=function(i){return ivY+ivH-8-i/6e-6*(ivH-16);};
-            cx.fillStyle='#020617';cx.fillRect(ivX,ivY,ivW,ivH);
-            cx.strokeStyle='#64748b';cx.lineWidth=1;cx.strokeRect(ivX,ivY,ivW,ivH);
+            cx.fillStyle='rgba(2,6,23,0.94)';cx.fillRect(ivX,ivY,ivW,ivH);
+            cx.strokeStyle='#38bdf8';cx.lineWidth=1;cx.strokeRect(ivX,ivY,ivW,ivH);
+            cx.strokeStyle='#475569';
             cx.beginPath();cx.moveTo(xAt(-3),yAt(0));cx.lineTo(xAt(.6),yAt(0));cx.stroke();
             cx.beginPath();cx.moveTo(xAt(0),ivY+4);cx.lineTo(xAt(0),ivY+ivH-4);cx.stroke();
-            cx.strokeStyle='#67e8f9';cx.beginPath();
+            cx.save();
+            cx.strokeStyle='rgba(34,211,238,0.34)';cx.lineWidth=4.5;cx.beginPath();
+            for(var p0=0;p0<=100;p0++){var v0=-3+p0*3.6/100;if(p0===0)cx.moveTo(xAt(v0),yAt(semiJunction(v0).currentA));else cx.lineTo(xAt(v0),yAt(semiJunction(v0).currentA));}
+            cx.stroke();
+            cx.restore();
+            cx.strokeStyle='#67e8f9';cx.lineWidth=1.8;cx.beginPath();
             for(var point=0;point<=100;point++){
               var voltage=-3+point*3.6/100,xx=xAt(voltage),yy=yAt(semiJunction(voltage).currentA);
               if(point===0)cx.moveTo(xx,yy);else cx.lineTo(xx,yy);
             }
             cx.stroke();
-            if(bias<=.6){cx.fillStyle='#fbbf24';cx.beginPath();cx.arc(xAt(bias),yAt(pn.currentA),3,0,Math.PI*2);cx.fill();}
-            cx.fillStyle='#e2e8f0';cx.font='9px sans-serif';cx.textAlign='center';
+            if(bias<=.6){
+              var bmx=xAt(bias),bmy=yAt(pn.currentA);
+              cx.fillStyle='rgba(251,191,36,0.32)';cx.beginPath();cx.arc(bmx,bmy,6.5,0,Math.PI*2);cx.fill();
+              cx.fillStyle='#fbbf24';cx.beginPath();cx.arc(bmx,bmy,3,0,Math.PI*2);cx.fill();
+            }
+            cx.fillStyle='#e2e8f0';cx.font='10px sans-serif';cx.textAlign='center';
             cx.fillText('−3 to +0.6 V · 0 to 6 µA',ivX+ivW/2,ivY+ivH+10);
           }
 
@@ -2547,8 +2795,19 @@ window.StemLab = window.StemLab || {
           var logicalHeight = showCMOS ? 200 : 220;
           var surface = prepareCanvas(canvasEl, 440, logicalHeight);
           var cx = surface.cx, W = surface.W, H = surface.H;
+          if (!cx) return;
           cx.clearRect(0, 0, W, H);
-          cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
+          var semiStatic = !!(d.motionPaused || semiReducedMotion());
+          var nowMs = semiStatic ? 0 : Date.now();
+          var hasGrad = typeof cx.createLinearGradient === 'function' && typeof cx.createRadialGradient === 'function';
+          if (hasGrad) {
+            var trBg = cx.createLinearGradient(0, 0, 0, H);
+            trBg.addColorStop(0, '#040a1a'); trBg.addColorStop(1, '#0b162c');
+            cx.fillStyle = trBg;
+          } else {
+            cx.fillStyle = '#0F172A';
+          }
+          cx.fillRect(0, 0, W, H);
 
           var midX = W / 2, midY = H / 2;
 
@@ -2562,36 +2821,42 @@ window.StemLab = window.StemLab || {
             cx.fillText('VDD = ' + vdd + 'V', midX, 12);
 
             // PMOS (top)
-            cx.fillStyle = '#1E3A5F'; cx.fillRect(midX - 30, 35, 60, 40);
-            cx.strokeStyle = '#3B82F6'; cx.lineWidth = 1.5; cx.strokeRect(midX - 30, 35, 60, 40);
+            var pmosOn = Vg < (vdd - 1.5);
+            cx.fillStyle = pmosOn ? '#1e40af' : '#1E3A5F'; cx.fillRect(midX - 30, 35, 60, 40);
+            cx.strokeStyle = pmosOn ? '#60A5FA' : '#3B82F6'; cx.lineWidth = pmosOn ? 2 : 1.5; cx.strokeRect(midX - 30, 35, 60, 40);
             cx.fillStyle = '#93C5FD'; cx.font = 'bold 12px sans-serif';
             cx.fillText('PMOS', midX, 58);
-            var pmosOn = Vg < (vdd - 1.5);
             cx.fillStyle = pmosOn ? '#34D399' : '#94A3B8'; cx.font = '11px sans-serif';
             cx.fillText(pmosOn ? 'ON' : 'OFF', midX + 40, 55);
 
             // Connection
-            cx.strokeStyle = '#64748B'; cx.lineWidth = 2;
+            cx.strokeStyle = pmosOn ? '#34D399' : '#64748B'; cx.lineWidth = 2;
             cx.beginPath(); cx.moveTo(midX, 75); cx.lineTo(midX, 95); cx.stroke();
 
-            // Output node
-            cx.fillStyle = cmosTransition ? '#FBBF24' : cmosOut ? '#34D399' : '#EF4444';
+            // Output node with glowing status halo
+            var outCol = cmosTransition ? '#FBBF24' : cmosOut ? '#34D399' : '#EF4444';
+            if (hasGrad) {
+              var outH = cx.createRadialGradient(midX, 95, 2, midX, 95, 16);
+              outH.addColorStop(0, outCol); outH.addColorStop(1, 'rgba(15,23,42,0)');
+              cx.fillStyle = outH; cx.beginPath(); cx.arc(midX, 95, 16, 0, Math.PI * 2); cx.fill();
+            }
+            cx.fillStyle = outCol;
             cx.beginPath(); cx.arc(midX, 95, 6, 0, Math.PI * 2); cx.fill();
-            cx.strokeStyle = '#64748B'; cx.beginPath(); cx.moveTo(midX + 6, 95); cx.lineTo(midX + 50, 95); cx.stroke();
-            cx.fillStyle = cmosTransition ? '#FBBF24' : cmosOut ? '#34D399' : '#EF4444'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'left';
+            cx.strokeStyle = outCol; cx.beginPath(); cx.moveTo(midX + 6, 95); cx.lineTo(midX + 50, 95); cx.stroke();
+            cx.fillStyle = outCol; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'left';
             cx.fillText('OUT = ' + cmosText, midX + 55, 98);
 
             // NMOS (bottom)
-            cx.fillStyle = '#3B1212'; cx.fillRect(midX - 30, 105, 60, 40);
-            cx.strokeStyle = '#EF4444'; cx.lineWidth = 1.5; cx.strokeRect(midX - 30, 105, 60, 40);
+            var nmosOn = Vg > 1.5;
+            cx.fillStyle = nmosOn ? '#7F1D1D' : '#3B1212'; cx.fillRect(midX - 30, 105, 60, 40);
+            cx.strokeStyle = nmosOn ? '#FCA5A5' : '#EF4444'; cx.lineWidth = nmosOn ? 2 : 1.5; cx.strokeRect(midX - 30, 105, 60, 40);
             cx.fillStyle = '#FCA5A5'; cx.font = 'bold 12px sans-serif'; cx.textAlign = 'center';
             cx.fillText('NMOS', midX, 128);
-            var nmosOn = Vg > 1.5;
             cx.fillStyle = nmosOn ? '#34D399' : '#94A3B8'; cx.font = '11px sans-serif';
             cx.fillText(nmosOn ? 'ON' : 'OFF', midX + 40, 125);
 
             // GND rail
-            cx.strokeStyle = '#64748B'; cx.lineWidth = 2;
+            cx.strokeStyle = nmosOn ? '#34D399' : '#64748B'; cx.lineWidth = 2;
             cx.beginPath(); cx.moveTo(midX, 145); cx.lineTo(midX, 165); cx.stroke();
             cx.fillStyle = '#94A3B8'; cx.font = 'bold 12px sans-serif';
             cx.fillText('GND', midX, 178);
@@ -2609,14 +2874,10 @@ window.StemLab = window.StemLab || {
 
             // Current flow animation
             if (nmosOn && pmosOn) {
-              var ft = (Date.now() % 1200) / 1200;
-              cx.fillStyle = 'rgba(52, 211, 153, 0.6)';
-              cx.beginPath(); cx.arc(midX, 125 + ft * 40, 3, 0, Math.PI * 2); cx.fill();
-            }
-            if (pmosOn && nmosOn) {
-              var ft2 = (Date.now() % 1200) / 1200;
-              cx.fillStyle = 'rgba(52, 211, 153, 0.6)';
-              cx.beginPath(); cx.arc(midX, 35 + ft2 * 40, 3, 0, Math.PI * 2); cx.fill();
+              var ft = semiStatic ? 0.5 : (nowMs % 1200) / 1200;
+              cx.fillStyle = 'rgba(52, 211, 153, 0.75)';
+              cx.beginPath(); cx.arc(midX, 125 + ft * 40, 3.5, 0, Math.PI * 2); cx.fill();
+              cx.beginPath(); cx.arc(midX, 35 + ft * 40, 3.5, 0, Math.PI * 2); cx.fill();
             }
 
             // Truth table
@@ -2625,42 +2886,63 @@ window.StemLab = window.StemLab || {
             cx.fillText(' 0 \u2502 1', W - 55, 42);
             cx.fillText(' 1 \u2502 0', W - 55, 54);
           } else if (type.startsWith('mosfet')) {
-            // ═══ SINGLE MOSFET ═══
-            cx.fillStyle = '#1E293B'; cx.fillRect(midX - 60, midY - 30, 120, 60);
+            // ═══ SINGLE MOSFET with layered silicon-die gradients & glowing channel ═══
+            if (hasGrad) {
+              var subG = cx.createLinearGradient(0, midY - 30, 0, midY + 30);
+              subG.addColorStop(0, '#1e293b'); subG.addColorStop(1, '#0f172a');
+              cx.fillStyle = subG;
+            } else {
+              cx.fillStyle = '#1E293B';
+            }
+            cx.fillRect(midX - 60, midY - 30, 120, 60);
             cx.strokeStyle = '#64748B'; cx.lineWidth = 2; cx.strokeRect(midX - 60, midY - 30, 120, 60);
-            // Gate
-            cx.fillStyle = '#FBBF24'; cx.fillRect(midX - 40, midY - 55, 80, 18);
-            cx.fillStyle = '#FFF'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'center';
+            // Gate electrode with metallic gold gradient
+            if (hasGrad) {
+              var gateG = cx.createLinearGradient(0, midY - 55, 0, midY - 37);
+              gateG.addColorStop(0, '#FDE047'); gateG.addColorStop(1, '#D97706');
+              cx.fillStyle = gateG;
+            } else {
+              cx.fillStyle = '#FBBF24';
+            }
+            cx.fillRect(midX - 40, midY - 55, 80, 18);
+            cx.strokeStyle = 'rgba(254,249,195,0.6)'; cx.lineWidth = 1; cx.strokeRect(midX - 40, midY - 55, 80, 18);
+            cx.fillStyle = '#0F172A'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'center';
             cx.fillText('Gate', midX, midY - 42);
-            // Oxide
-            cx.fillStyle = '#94A3B8'; cx.fillRect(midX - 40, midY - 37, 80, 7);
-            cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.fillText('SiO\u2082', midX, midY - 32);
-            // Source
-            cx.fillStyle = type === 'mosfet-n' ? '#EF4444' : '#3B82F6';
+            // Dielectric Oxide layer
+            cx.fillStyle = '#7C3AED'; cx.fillRect(midX - 40, midY - 37, 80, 7);
+            cx.fillStyle = '#E9D5FF'; cx.font = '10px sans-serif'; cx.fillText('SiO\u2082', midX, midY - 31);
+            // Source well
+            cx.fillStyle = type === 'mosfet-n' ? '#DC2626' : '#2563EB';
             cx.fillRect(midX - 80, midY - 15, 25, 30);
+            cx.strokeStyle = type === 'mosfet-n' ? '#FCA5A5' : '#93C5FD'; cx.lineWidth = 1; cx.strokeRect(midX - 80, midY - 15, 25, 30);
             cx.fillStyle = '#FFF'; cx.font = 'bold 12px sans-serif'; cx.fillText('S', midX - 67, midY + 4);
-            // Drain
-            cx.fillStyle = type === 'mosfet-n' ? '#EF4444' : '#3B82F6';
+            // Drain well
+            cx.fillStyle = type === 'mosfet-n' ? '#DC2626' : '#2563EB';
             cx.fillRect(midX + 55, midY - 15, 25, 30);
-            // Back to white before the letter. The line above sets fillStyle to the
-            // block colour for the rectangle, so without this the D was drawn red on
-            // red and was invisible — the source terminal was labelled and the drain
-            // silently was not.
+            cx.strokeStyle = type === 'mosfet-n' ? '#FCA5A5' : '#93C5FD'; cx.lineWidth = 1; cx.strokeRect(midX + 55, midY - 15, 25, 30);
             cx.fillStyle = '#FFF';
             cx.fillText('D', midX + 68, midY + 4);
             // Substrate label
             cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif';
             cx.fillText(type === 'mosfet-n' ? 'p-substrate' : 'n-substrate', midX, midY + 25);
 
-            // Channel
+            // Glowing inversion channel with luminous carrier pulses
             if (isOn) {
-              var channelAlpha = Math.min(1,.3+mos.overdrive/3.5);
+              var channelAlpha = Math.min(1, .35 + mos.overdrive / 3.5);
+              if (hasGrad) {
+                var chGlow = cx.createLinearGradient(0, midY - 14, 0, midY + 14);
+                chGlow.addColorStop(0, 'rgba(16,185,129,0)');
+                chGlow.addColorStop(0.5, 'rgba(52,211,153,' + (channelAlpha * 0.45).toFixed(2) + ')');
+                chGlow.addColorStop(1, 'rgba(16,185,129,0)');
+                cx.fillStyle = chGlow;
+                cx.fillRect(midX - 55, midY - 14, 110, 28);
+              }
               cx.fillStyle = 'rgba(52, 211, 153, ' + channelAlpha.toFixed(2) + ')';
               cx.fillRect(midX - 55, midY - 5, 110, 10);
-              cx.strokeStyle = '#34D399'; cx.lineWidth = 2;
-              var flowOffset = (Date.now() % 1000) / 1000 * 30;
-              for (var fi = 0; fi < (Math.abs(mos.currentA||0)>0?5:0); fi++) {
-                var fx = midX - 50 + (fi * 25 + flowOffset) % 110;
+              cx.strokeStyle = '#6EE7B7'; cx.lineWidth = 2;
+              var flowOffset = semiStatic ? 12 : (nowMs % 1000) / 1000 * 30;
+              for (var fi = 0; fi < (Math.abs(mos.currentA || 0) > 0 ? 5 : 0); fi++) {
+                var fx = midX - 50 + (fi * 25 + flowOffset) % 105;
                 cx.beginPath(); cx.moveTo(fx, midY); cx.lineTo(fx + 8, midY); cx.stroke();
                 cx.beginPath(); cx.moveTo(fx + 6, midY - 3); cx.lineTo(fx + 8, midY); cx.lineTo(fx + 6, midY + 3); cx.stroke();
               }
@@ -2674,7 +2956,7 @@ window.StemLab = window.StemLab || {
             cx.fillStyle = isOn ? '#34D399' : '#F87171'; cx.font = 'bold 14px sans-serif';
             cx.fillText(isOn ? 'Channel' : 'Cutoff', W - 65, 25);
             cx.fillStyle = '#60A5FA'; cx.font = '12px sans-serif';
-            cx.textAlign='right';cx.fillText('Id = '+((mos.currentA||0)*1000).toFixed(3)+' mA', W - 10, 45);
+            cx.textAlign = 'right'; cx.fillText('Id = ' + ((mos.currentA || 0) * 1000).toFixed(3) + ' mA', W - 10, 45);
 
             // Operating region (9-12)
             if (gradeBand === '9-12' && isOn) {
@@ -2684,10 +2966,10 @@ window.StemLab = window.StemLab || {
             }
 
             // Wires
-            cx.strokeStyle = '#64748B'; cx.lineWidth = 2;
+            cx.strokeStyle = isOn ? '#FBBF24' : '#64748B'; cx.lineWidth = 2;
             cx.beginPath(); cx.moveTo(midX, midY - 55); cx.lineTo(midX, midY - 75); cx.stroke();
             cx.fillStyle = '#FBBF24'; cx.font = '12px sans-serif'; cx.textAlign = 'center'; cx.fillText('G', midX, midY - 78);
-            cx.strokeStyle = '#64748B';
+            cx.strokeStyle = isOn && Math.abs(mos.currentA || 0) > 0 ? '#34D399' : '#64748B';
             cx.beginPath(); cx.moveTo(midX - 80, midY); cx.lineTo(midX - 100, midY); cx.stroke();
             cx.beginPath(); cx.moveTo(midX + 80, midY); cx.lineTo(midX + 100, midY); cx.stroke();
           } else {
@@ -2716,9 +2998,15 @@ window.StemLab = window.StemLab || {
             cx.fillStyle = isOn ? '#34D399' : '#F87171'; cx.font = 'bold 14px sans-serif';
             cx.fillText(isOn ? '\u2713 ON \u2014 I\u1D9C flows' : '\u2717 OFF \u2014 cutoff', midX, midY + 80);
             if (isOn) {
-              var bft = (Date.now() % 800) / 800;
-              cx.fillStyle = 'rgba(52, 211, 153, 0.7)';
-              cx.beginPath(); cx.arc(midX + 4 + bft * 46, midY - 10 - bft * 30, 3, 0, Math.PI * 2); cx.fill();
+              var bft = semiStatic ? 0.5 : (nowMs % 800) / 800;
+              var bx = midX + 4 + bft * 46, by = midY - 10 - bft * 30;
+              if (hasGrad) {
+                var bh = cx.createRadialGradient(bx, by, 1, bx, by, 9);
+                bh.addColorStop(0, 'rgba(52,211,153,0.85)'); bh.addColorStop(1, 'rgba(52,211,153,0)');
+                cx.fillStyle = bh; cx.beginPath(); cx.arc(bx, by, 9, 0, Math.PI * 2); cx.fill();
+              }
+              cx.fillStyle = '#6EE7B7';
+              cx.beginPath(); cx.arc(bx, by, 3.5, 0, Math.PI * 2); cx.fill();
             }
 
             cx.fillStyle = '#E2E8F0'; cx.font = '12px sans-serif'; cx.textAlign = 'left';
@@ -2996,7 +3284,7 @@ window.StemLab = window.StemLab || {
         var device = d.ivDevice || 'diode';
         var sweepV = semiNumber(d.ivSweepV,0,-6,5);
         var showIdeal = d.ivShowIdeal !== false;
-        var ivTemp = semiNumber(d.ivTemp,300,200,400);
+        var ivTemp = semiNumber(d.ivTemp,300,200,500);
         var Vt = 8.617e-5 * ivTemp; // thermal voltage kT/q
 
         function calcCurrent(V) { return semiIV(device,V,ivTemp); }
@@ -3013,7 +3301,16 @@ window.StemLab = window.StemLab || {
           if (!canvasEl) return;
           var surface = prepareCanvas(canvasEl, 440, 260);
           var cx = surface.cx, W = surface.W, H = surface.H;
-          cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
+          if (!cx) return;
+          var hasGrad = typeof cx.createLinearGradient === 'function' && typeof cx.createRadialGradient === 'function';
+          if (hasGrad) {
+            var scopeBg = cx.createRadialGradient(W * 0.55, H * 0.45, 16, W * 0.5, H * 0.5, W * 0.68);
+            scopeBg.addColorStop(0, '#0a192f'); scopeBg.addColorStop(1, '#020617');
+            cx.fillStyle = scopeBg;
+          } else {
+            cx.fillStyle = '#0F172A';
+          }
+          cx.fillRect(0, 0, W, H);
 
           // Zener breakdown current runs to about -25 mA in this model, so it needs
           // room below the axis; the other devices are dominated by their forward
@@ -3042,11 +3339,15 @@ window.StemLab = window.StemLab || {
 
           // Grid
           cx.strokeStyle = '#64748B'; cx.lineWidth = 1;
+          cx.save(); cx.globalAlpha = 0.34;
           for (var gv = IV_V_MIN; gv <= IV_V_MAX; gv++) {
             var gx = originX + gv * scaleX;
             cx.beginPath(); cx.moveTo(gx, 10); cx.lineTo(gx, H - 10); cx.stroke();
+          }
+          cx.restore();
+          for (var gvl = IV_V_MIN; gvl <= IV_V_MAX; gvl++) {
             cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
-            cx.fillText(gv + 'V', gx, H - 3);
+            cx.fillText(gvl + 'V', originX + gvl * scaleX, H - 3);
           }
 
           // Current ticks. The y axis was previously labelled "I (mA)" with no scale
@@ -3055,7 +3356,7 @@ window.StemLab = window.StemLab || {
           for (var ti = 1; ti <= 4; ti++) {
             var ma = fullScaleMa * ti / 4;
             var ty = originY - ma * scaleY;
-            cx.strokeStyle = '#64748B';
+            cx.strokeStyle = 'rgba(100,116,139,0.34)';
             cx.beginPath(); cx.moveTo(originX - 3, ty); cx.lineTo(W - 5, ty); cx.stroke();
             cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif';
             cx.fillText(ma.toFixed(0), originX - 5, ty + 3);
@@ -3064,34 +3365,44 @@ window.StemLab = window.StemLab || {
           var negMa = -fullScaleMa / 4;
           var negY = originY - negMa * scaleY;
           if (negY < H - 16) {
-            cx.strokeStyle = '#64748B';
+            cx.strokeStyle = 'rgba(100,116,139,0.34)';
             cx.beginPath(); cx.moveTo(originX - 3, negY); cx.lineTo(W - 5, negY); cx.stroke();
             cx.fillStyle = '#94A3B8'; cx.fillText(negMa.toFixed(0), originX - 5, negY + 3);
           }
 
-          // Axes
-          cx.strokeStyle = '#64748B'; cx.lineWidth = 1.5;
+          // Axes with subtle phosphor glow
+          cx.strokeStyle = 'rgba(148,163,184,0.82)'; cx.lineWidth = 1.6;
           cx.beginPath(); cx.moveTo(15, originY); cx.lineTo(W - 5, originY); cx.stroke(); // V axis
           cx.beginPath(); cx.moveTo(originX, 5); cx.lineTo(originX, H - 15); cx.stroke(); // I axis
-          cx.fillStyle = '#94A3B8'; cx.font = '12px sans-serif'; cx.textAlign = 'center';
+          cx.fillStyle = '#CBD5E1'; cx.font = '12px sans-serif'; cx.textAlign = 'center';
           cx.fillText('V (Volts)', W / 2, H - 12);
           cx.save(); cx.translate(8, H / 2); cx.rotate(-Math.PI / 2);
           cx.fillText('I (mA)', 0, 0); cx.restore();
 
-          // I-V curve
-          cx.strokeStyle = '#22D3EE'; cx.lineWidth = 2; cx.beginPath();
-          // Lift the pen when the trace leaves the plot instead of clamping it to the
-          // border. Clamping drew a hard flat line along the top, which looks like the
-          // current levelling off rather than running off the top of the scale.
-          var penDown = false;
+          // Neon-phosphor dual-pass I-V characteristic curve
+          var ivPts = [];
           for (var v = IV_V_MIN; v <= IV_V_MAX; v += 0.05) {
             var iMa = calcCurrent(v) * 1000;
             var px = originX + v * scaleX;
             var py = originY - iMa * scaleY;
-            if (py < plotTop || py > H - 15) { penDown = false; continue; }
-            if (!penDown) { cx.moveTo(px, py); penDown = true; } else cx.lineTo(px, py);
+            if (py < plotTop || py > H - 15) { ivPts.push(null); continue; }
+            ivPts.push([px, py]);
           }
-          cx.stroke();
+          function traceIVPath() {
+            var pen = false;
+            cx.beginPath();
+            for (var pi = 0; pi < ivPts.length; pi++) {
+              var pt = ivPts[pi];
+              if (!pt) { pen = false; continue; }
+              if (!pen) { cx.moveTo(pt[0], pt[1]); pen = true; } else cx.lineTo(pt[0], pt[1]);
+            }
+          }
+          cx.save();
+          cx.lineJoin = 'round'; cx.lineCap = 'round';
+          cx.strokeStyle = 'rgba(34,211,238,0.28)'; cx.lineWidth = 7.5; traceIVPath(); cx.stroke();
+          cx.strokeStyle = '#22D3EE'; cx.lineWidth = 2.6; traceIVPath(); cx.stroke();
+          cx.strokeStyle = 'rgba(207,250,254,0.75)'; cx.lineWidth = 1; traceIVPath(); cx.stroke();
+          cx.restore();
 
           // Ideal reference (Ohm's law line)
           if (showIdeal && device !== 'resistor') {
@@ -3104,45 +3415,54 @@ window.StemLab = window.StemLab || {
             cx.fillText('1 kΩ ref.', W - 10, originY - 5);
           }
 
-          // Current sweep marker
+          // Current sweep marker — live glowing operating-point beacon
           var markerX = originX + sweepV * scaleX;
           var markerI = calcCurrent(sweepV);
-          // scaleY is px per mA now, so convert once here — same units bug as the
-          // trace above, which had the marker drifting off the curve it marks.
           var markerY = originY - markerI * 1000 * scaleY;
-          var markerOffScale=markerY<plotTop||markerY>H-15;
-          var aboveScale=markerY<plotTop;
+          var markerOffScale = markerY < plotTop || markerY > H - 15;
+          var aboveScale = markerY < plotTop;
           markerY = Math.max(plotTop, Math.min(H - 15, markerY));
-          cx.fillStyle = '#F59E0B';
-          cx.shadowColor = '#F59E0B'; cx.shadowBlur = 8;
-          cx.beginPath();
-          if(markerOffScale){var direction=aboveScale?1:-1;cx.moveTo(markerX,markerY);cx.lineTo(markerX-5,markerY+direction*9);cx.lineTo(markerX+5,markerY+direction*9);cx.closePath();}else cx.arc(markerX, markerY, 5, 0, Math.PI * 2);
-          cx.fill();
-          cx.shadowBlur = 0;
-
           // Crosshairs
-          cx.strokeStyle = 'rgba(245, 158, 11, 0.3)'; cx.lineWidth = 1; cx.setLineDash([3, 3]);
+          cx.strokeStyle = 'rgba(251, 191, 36, 0.36)'; cx.lineWidth = 1.2; cx.setLineDash([3, 3]);
           cx.beginPath(); cx.moveTo(markerX, originY); cx.lineTo(markerX, markerY); cx.stroke();
           cx.beginPath(); cx.moveTo(originX, markerY); cx.lineTo(markerX, markerY); cx.stroke();
           cx.setLineDash([]);
+          if (!markerOffScale && hasGrad) {
+            var bHalo = cx.createRadialGradient(markerX, markerY, 2, markerX, markerY, 15);
+            bHalo.addColorStop(0, 'rgba(251,191,36,0.75)'); bHalo.addColorStop(0.55, 'rgba(245,158,11,0.22)'); bHalo.addColorStop(1, 'rgba(245,158,11,0)');
+            cx.fillStyle = bHalo; cx.beginPath(); cx.arc(markerX, markerY, 15, 0, Math.PI * 2); cx.fill();
+            cx.strokeStyle = 'rgba(254,240,138,0.85)'; cx.lineWidth = 1.2;
+            cx.beginPath(); cx.arc(markerX, markerY, 8.5, 0, Math.PI * 2); cx.stroke();
+          }
+          cx.fillStyle = '#FBBF24';
+          cx.shadowColor = '#F59E0B'; cx.shadowBlur = 10;
+          cx.beginPath();
+          if (markerOffScale) { var direction = aboveScale ? 1 : -1; cx.moveTo(markerX, markerY); cx.lineTo(markerX - 5, markerY + direction * 9); cx.lineTo(markerX + 5, markerY + direction * 9); cx.closePath(); } else cx.arc(markerX, markerY, 4.8, 0, Math.PI * 2);
+          cx.fill();
+          cx.shadowBlur = 0;
 
           // Readout
-          cx.fillStyle = '#FCD34D'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'left';
+          cx.fillStyle = '#FDE047'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'left';
           var iDisplay = Math.abs(currentI) < 0.001 ? (currentI * 1e6).toFixed(1) + ' \u03BCA' : (currentI * 1000).toFixed(2) + ' mA';
-          var labelX=markerX>W-145?markerX-8:markerX+8,labelY=Math.max(58,Math.min(H-38,markerY));
-          cx.textAlign=markerX>W-145?'right':'left';
+          var labelX = markerX > W - 145 ? markerX - 10 : markerX + 10, labelY = Math.max(58, Math.min(H - 38, markerY));
+          cx.textAlign = markerX > W - 145 ? 'right' : 'left';
           cx.fillText('V = ' + sweepV.toFixed(2) + 'V', labelX, labelY - 8);
-          cx.fillText('I = ' + iDisplay + (markerOffScale?' (off scale)':''), labelX, labelY + 8);
+          cx.fillText('I = ' + iDisplay + (markerOffScale ? ' (off scale)' : ''), labelX, labelY + 8);
 
           // Device icon
-          cx.fillStyle = '#94A3B8'; cx.font = '12px sans-serif'; cx.textAlign = 'right';
+          cx.fillStyle = '#CBD5E1'; cx.font = '12px sans-serif'; cx.textAlign = 'right';
           cx.fillText(device.charAt(0).toUpperCase() + device.slice(1) + ' @ ' + ivTemp + 'K', W - 10, 15);
 
           // LED glow for LED device
           if (device === 'led' && currentI > 1e-6) {
-            var ledGlow = Math.min(1, Math.sqrt(currentI/.02));
-            cx.beginPath(); cx.arc(W - 25, 30, 8, 0, Math.PI * 2);
-            cx.fillStyle = 'rgba(251, 191, 36, ' + ledGlow.toFixed(2) + ')';
+            var ledGlow = Math.min(1, Math.sqrt(currentI / .02));
+            if (hasGrad) {
+              var lgH = cx.createRadialGradient(W - 25, 30, 1, W - 25, 30, 18 * ledGlow + 5);
+              lgH.addColorStop(0, 'rgba(254,240,138,' + ledGlow.toFixed(2) + ')'); lgH.addColorStop(1, 'rgba(251,191,36,0)');
+              cx.fillStyle = lgH; cx.beginPath(); cx.arc(W - 25, 30, 18 * ledGlow + 5, 0, Math.PI * 2); cx.fill();
+            }
+            cx.beginPath(); cx.arc(W - 25, 30, 7.5, 0, Math.PI * 2);
+            cx.fillStyle = 'rgba(253, 224, 71, ' + ledGlow.toFixed(2) + ')';
             cx.shadowColor = '#FBBF24'; cx.shadowBlur = 15 * ledGlow; cx.fill(); cx.shadowBlur = 0;
           }
         };
@@ -4355,12 +4675,22 @@ window.StemLab = window.StemLab || {
       // ════════════════════════════════════════════
       function renderBattle() {
         var round = d.battleRound || 0;
-        var playerHP = d.battleHP || 5;
-        var enemyHP = d.battleEnemyHP || 5;
+        var playerHP = d.battleHP != null ? d.battleHP : 5;
+        var enemyHP = d.battleEnemyHP != null ? d.battleEnemyHP : 5;
         var log = d.battleLog || [];
         var feedback = d.battleFeedback;
         var difficulty = d.battleDifficulty || 'cadet';
 
+        var BATTLE_OPT_I18N = {
+          'Zener diode': 'stem.semiconductor.zener_diode',
+          'Increases it': 'stem.semiconductor.increases_it',
+          'Forward bias': 'stem.semiconductor.forward_bias',
+          'Diode clamps': 'stem.semiconductor.diode_clamps',
+          'Frequency': 'stem.semiconductor.frequency',
+          'Wider energy spacing': 'stem.semiconductor.wider_energy_spacing',
+          'Common-mode noise': 'stem.semiconductor.common_mode_noise',
+          'Quantum tunneling': 'stem.semiconductor.quantum_tunneling'
+        };
         var BATTLE_ROUNDS = [
           { enemy: '\uD83D\uDC1B Bug Swarm', desc: t('stem.semiconductor.a_swarm_of_logic_bugs_what_gate_output', 'A swarm of logic bugs! What gate outputs 1 when A=0?'), answer: 'NOT', opts: ['AND', 'NOT', 'OR', 'XOR'], damage: 1, xp: 15 },
           { enemy: '\u26A1 Voltage Spike', desc: t('stem.semiconductor.a_voltage_spike_is_overloading_which_d', 'A voltage spike is overloading! Which device regulates voltage?'), answer: t('stem.semiconductor.zener_diode', 'Zener diode'), opts: ['Resistor', 'Zener diode', 'Capacitor', 'LED'], damage: 1, xp: 15 },
@@ -4451,7 +4781,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-lg mb-1' }, currentRound.enemy),
             h('p', { className: 'text-sm text-white mb-3' }, currentRound.desc),
             h('div', { className: 'flex flex-col gap-2' },
-              orderOptions(currentRound.desc, currentRound.opts, currentRound.answer).map(function(opt) {
+              orderOptions(currentRound.desc, currentRound.opts.map(function(rawOpt) { return BATTLE_OPT_I18N[rawOpt] ? t(BATTLE_OPT_I18N[rawOpt], rawOpt) : rawOpt; }), currentRound.answer).map(function(opt) {
                 var showResult = feedback !== null;
                 var isSelected = d.battleFeedback === opt || (showResult && feedback === 'wrong-' + opt);
                 var isCorrect = opt === currentRound.answer;

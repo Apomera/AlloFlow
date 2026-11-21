@@ -20,9 +20,9 @@
 .pdf-workspace .pdf-workspace-status[data-tone="ready"] { border-inline-start-color:#15803d; }
 .pdf-workspace .pdf-workspace-status-title { margin:0; font-size:14px; font-weight:750; color:var(--pw-ink); }
 .pdf-workspace .pdf-workspace-status-detail { margin:3px 0 0; max-width:75ch; font-size:12px; line-height:1.5; color:var(--pw-muted); }
-.pdf-workspace .pdf-workspace-primary { flex-shrink:0; background:var(--pw-accent); color:var(--pw-bg); padding:10px 14px; min-height:40px; border:1px solid var(--pw-accent); border-radius:8px; font-weight:700; font-size:12px; }
+.pdf-workspace .pdf-workspace-primary { flex-shrink:0; background:var(--pw-accent); color:var(--pw-bg); padding:10px 14px; min-height:44px; border:1px solid var(--pw-accent); border-radius:8px; font-weight:700; font-size:12px; }
 .pdf-workspace .pdf-workspace-nav { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-.pdf-workspace .pdf-workspace-nav button { color:var(--pw-accent); font-size:12px; font-weight:650; padding:7px 10px; border-radius:6px; min-height:34px; }
+.pdf-workspace .pdf-workspace-nav button { color:var(--pw-accent); font-size:12px; font-weight:650; padding:7px 10px; border-radius:6px; min-height:44px; }
 .pdf-workspace .pdf-workspace-nav button:hover { background:var(--pw-active); text-decoration:underline; }
 .pdf-workspace .pdf-workspace-sources { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:24px; text-align:start; }
 .pdf-workspace .pdf-workspace-sources button { padding:14px; border:1px solid var(--pw-line); border-radius:12px; background:var(--pw-bg); color:var(--pw-ink); text-align:start; }
@@ -50,14 +50,14 @@
  .pdf-workspace .pdf-workspace-eyebrow { font-size:10px; }
  .pdf-workspace .pdf-workspace-eyebrow span { display:none; }
  .pdf-workspace .pdf-workspace-stages { margin:10px 0; }
- .pdf-workspace .pdf-workspace-stages li { flex:0; }
- .pdf-workspace .pdf-workspace-stages li > span:last-child { display:none; }
+ .pdf-workspace .pdf-workspace-stages li { flex:0; position:relative; }
+ .pdf-workspace .pdf-workspace-stages li > span:last-child { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
  .pdf-workspace .pdf-workspace-stages [aria-current="step"] { flex:1; }
- .pdf-workspace .pdf-workspace-stages [aria-current="step"] > span:last-child { display:inline; }
+ .pdf-workspace .pdf-workspace-stages [aria-current="step"] > span:last-child { position:static; width:auto; height:auto; margin:0; overflow:visible; clip:auto; white-space:normal; display:inline; }
  .pdf-workspace .pdf-workspace-step-number { width:22px; height:22px; }
  .pdf-workspace .pdf-workspace-status { flex-wrap:wrap; padding:10px; gap:8px; }
  .pdf-workspace .pdf-workspace-status-detail { font-size:11px; }
- .pdf-workspace .pdf-workspace-primary { padding:8px 12px; min-height:36px; }
+ .pdf-workspace .pdf-workspace-primary { padding:8px 12px; min-height:44px; }
  .pdf-workspace .pdf-workspace-nav { gap:0; }
  .pdf-workspace .pdf-workspace-nav button { padding:7px; font-size:11px; }
  .pdf-workspace .pdf-workspace-sources { gap:6px; margin-bottom:18px; }
@@ -82,7 +82,7 @@
 .pdf-workspace .pdf-workspace-sources .pdf-workspace-selected { display:inline; font-size:inherit; color:inherit; margin:0; }
 
 .pdf-workspace .pdf-workspace-batch-filters { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 10px; text-align:start; }
-.pdf-workspace .pdf-workspace-batch-filters button { border:1px solid var(--pw-line); border-radius:8px; background:var(--pw-bg); color:var(--pw-ink); padding:7px 10px; min-height:36px; font-size:12px; }
+.pdf-workspace .pdf-workspace-batch-filters button { border:1px solid var(--pw-line); border-radius:8px; background:var(--pw-bg); color:var(--pw-ink); padding:7px 10px; min-height:44px; font-size:12px; }
 .pdf-workspace .pdf-workspace-batch-filters button[aria-pressed="true"] { border:2px solid var(--pw-accent); padding:6px 9px; background:var(--pw-active); color:var(--pw-accent); font-weight:700; }
 .pdf-workspace .pdf-workspace-batch-error { flex-basis:100%; min-width:0; border-top:1px solid var(--pw-line); padding-top:6px; color:var(--pw-ink); }
 .pdf-workspace .pdf-workspace-batch-error summary { cursor:pointer; padding:6px 0; font-weight:700; }

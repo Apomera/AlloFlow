@@ -11,7 +11,7 @@
 // non-sensitive classroom sequences.
 (function () {
   'use strict';
-  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+  if (typeof window === 'undefined' || !window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   var ALPHAFOLD_CDN_URL = 'https://alloflow-cdn.pages.dev/alphafold_explorer/alphafold_explorer.html?v=2';
 
@@ -185,9 +185,9 @@
       '@media(max-width:760px){.af-confidence-atlas{grid-template-columns:1fr;}.af-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.af-route{grid-template-columns:repeat(2,minmax(0,1fr));}.af-support-grid{grid-template-columns:1fr;}.af-evidence-ladder,.af-note-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       '@media(max-width:520px){.af-launcher{padding:11px;}.af-evidence-ladder,.af-note-grid,.af-route{grid-template-columns:1fr;}.af-mission{padding:15px;border-radius:16px;}.af-mission-top{flex-direction:column;}.af-status{white-space:normal;}.af-metrics{grid-template-columns:1fr 1fr;}.af-primary,.af-sample-launch{width:100%;}.af-actions{align-items:stretch;}.af-action-note{width:100%;}}',
       '@media(prefers-reduced-motion:reduce){.af-primary,.af-fold-ribbon,.af-fold-segment,.af-route-progress-fill{transition:none;}.af-primary:hover{transform:none;}.af-residue-node{animation:none;}}',
-      '.theme-contrast .af-launcher,.theme-contrast .af-mission,.theme-contrast .af-section,.theme-contrast .af-route-card,.theme-contrast .af-details,.theme-contrast .af-guardrail,.theme-contrast .af-protein-viz,.theme-contrast .af-confidence-key,.theme-contrast .af-metric,.theme-contrast .af-stage-tabs,.theme-contrast .af-preset-chip,.theme-contrast .af-status{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;box-shadow:none!important;}',
-      '.theme-contrast .af-primary,.theme-contrast .af-secondary,.theme-contrast .af-sample-launch,.theme-contrast .af-stage-tab[aria-selected="true"]{background:#000000!important;color:#00ff00!important;border:2px solid #00ff00!important;}',
-      '.theme-contrast .af-launcher :is(p,span,h2,h3,h4,strong,li,summary,label){color:#ffff00!important;}'
+      '.theme-contrast .af-launcher,.af-launcher[data-theme="contrast"],.theme-contrast .af-mission,.af-launcher[data-theme="contrast"] .af-mission,.theme-contrast .af-section,.af-launcher[data-theme="contrast"] .af-section,.theme-contrast .af-route-card,.af-launcher[data-theme="contrast"] .af-route-card,.theme-contrast .af-details,.af-launcher[data-theme="contrast"] .af-details,.theme-contrast .af-guardrail,.af-launcher[data-theme="contrast"] .af-guardrail,.theme-contrast .af-protein-viz,.af-launcher[data-theme="contrast"] .af-protein-viz,.theme-contrast .af-confidence-key,.af-launcher[data-theme="contrast"] .af-confidence-key,.theme-contrast .af-metric,.af-launcher[data-theme="contrast"] .af-metric,.theme-contrast .af-stage-tabs,.af-launcher[data-theme="contrast"] .af-stage-tabs,.theme-contrast .af-preset-chip,.af-launcher[data-theme="contrast"] .af-preset-chip,.theme-contrast .af-status,.af-launcher[data-theme="contrast"] .af-status,.theme-contrast .af-alert,.af-launcher[data-theme="contrast"] .af-alert,.theme-contrast .af-note-field,.af-launcher[data-theme="contrast"] .af-note-field,.theme-contrast .af-note-card,.af-launcher[data-theme="contrast"] .af-note-card,.theme-contrast .af-evidence-step,.af-launcher[data-theme="contrast"] .af-evidence-step,.theme-contrast .af-support-card,.af-launcher[data-theme="contrast"] .af-support-card,.theme-contrast .af-confidence-row,.af-launcher[data-theme="contrast"] .af-confidence-row,.theme-contrast .af-stage-tab,.af-launcher[data-theme="contrast"] .af-stage-tab{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;box-shadow:none!important;}',
+      '.theme-contrast .af-primary,.af-launcher[data-theme="contrast"] .af-primary,.theme-contrast .af-secondary,.af-launcher[data-theme="contrast"] .af-secondary,.theme-contrast .af-sample-launch,.af-launcher[data-theme="contrast"] .af-sample-launch,.theme-contrast .af-stage-tab[aria-selected="true"],.af-launcher[data-theme="contrast"] .af-stage-tab[aria-selected="true"],.theme-contrast .af-preset-chip[aria-pressed="true"],.af-launcher[data-theme="contrast"] .af-preset-chip[aria-pressed="true"]{background:#000000!important;color:#00ff00!important;border:2px solid #00ff00!important;}',
+      '.theme-contrast .af-launcher :is(p,span,h2,h3,h4,strong,li,summary,label,a),.af-launcher[data-theme="contrast"] :is(p,span,h2,h3,h4,strong,li,summary,label,a){color:#ffff00!important;}'
     ].join('\n');
     if (document.head) document.head.appendChild(alphaFoldStyle);
   }
@@ -234,7 +234,7 @@
       'Readiness: ' + safeClip(guide.readiness || 'not provided', 220),
       'Local claim review: ' + safeClip(guide.claimReview || 'not provided', 320),
       'Rubric feedback: ' + safeClip(guide.rubric || 'not provided', 420),
-      'Student observation: ' + safeClip(payload && payload.note, 700),
+      'Student observation: ' + safeEvidenceText(payload && payload.note, 700),
       'Reply with plain text only.'
     ];
     return lines.join('\n');
@@ -319,10 +319,10 @@
       'Rubric feedback: ' + safeClip(guide.rubric || 'not provided', 620),
       'Completed steps: ' + safeClip(guide.completed || 'none', 160),
       'Source confirmed: ' + (guide.sourceConfirmed ? 'yes' : 'no'),
-      'Observation: ' + safeClip(guide.observation || '', 700),
-      'Cautious claim: ' + safeClip(guide.claim || '', 700),
-      'Structure evidence: ' + safeClip(guide.evidence || '', 700),
-      'Limit or next test: ' + safeClip(guide.caution || '', 700),
+      'Observation: ' + safeEvidenceText(guide.observation || '', 700),
+      'Cautious claim: ' + safeEvidenceText(guide.claim || '', 700),
+      'Structure evidence: ' + safeEvidenceText(guide.evidence || '', 700),
+      'Limit or next test: ' + safeEvidenceText(guide.caution || '', 700),
       'Reply with plain text only.'
     ];
     return lines.join('\n');
@@ -355,11 +355,12 @@
       var announceToSR = ctx.announceToSR;
       var setLabToolData = ctx.setToolData;
 
-      var _win = React.useRef(null);
+      var _win = React.useRef((_alphafoldPopup && !_alphafoldPopup.closed) ? _alphafoldPopup : null);
 
       React.useEffect(function () {
-        var popup = _win.current;
+        var popup = (_win.current && !_win.current.closed) ? _win.current : ((_alphafoldPopup && !_alphafoldPopup.closed) ? _alphafoldPopup : null);
         if (!popup || popup.closed) return;
+        _win.current = popup;
         var activeTheme = ctx.theme === 'light' || ctx.theme === 'contrast' ? ctx.theme : 'dark';
         try { popup.postMessage({ type: 'alloflow-theme-change', theme: activeTheme }, ALPHAFOLD_ORIGIN); } catch (_) {}
       }, [ctx.theme]);
@@ -509,8 +510,10 @@
           link.href = url;
           link.download = filename;
           link.rel = 'noopener';
+          if (document.body) document.body.appendChild(link);
           link.click();
-          setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+          if (link.parentNode) link.parentNode.removeChild(link);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
           return true;
         } catch (error) {
           return false;
@@ -593,6 +596,16 @@
       var _structureEvidenceState = React.useState(safeClip(savedCrossScaleRecord.structureEvidence, 600)); var structureEvidence = _structureEvidenceState[0], setStructureEvidence = _structureEvidenceState[1];
       var _claimState = React.useState(safeClip(savedCrossScaleRecord.cautiousClaim, 600)); var cautiousClaim = _claimState[0], setCautiousClaim = _claimState[1];
       var _nextTestState = React.useState(safeClip(savedCrossScaleRecord.nextTest, 600)); var nextTest = _nextTestState[0], setNextTest = _nextTestState[1];
+      var _prevAccRef = React.useRef(prefillAccession);
+      React.useEffect(function () {
+        if (_prevAccRef.current === prefillAccession) return;
+        _prevAccRef.current = prefillAccession;
+        var matchRec = (savedCrossScaleRecord && savedCrossScaleRecord.accession === prefillAccession) ? savedCrossScaleRecord : {};
+        setStructureObservation(safeClip(matchRec.structureObservation, 600));
+        setStructureEvidence(safeClip(matchRec.structureEvidence, 600));
+        setCautiousClaim(safeClip(matchRec.cautiousClaim, 600));
+        setNextTest(safeClip(matchRec.nextTest, 600));
+      }, [prefillAccession]);
       var explorerLaunchUrl = ALPHAFOLD_URL + '&lang=' + encodeURIComponent(ctx.lang || 'en') + '&theme=' + encodeURIComponent(ctx.theme || 'dark') + (prefillAccession ? '&accession=' + encodeURIComponent(prefillAccession) : '');
       var openedCount = progress.openedCount || (progress.opened ? 1 : 0);
       var lookupCount = progress.lookupCount || 0;
@@ -649,6 +662,7 @@
       }
 
       function patchProgress(patch) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function (prev) {
           var next = Object.assign({}, prev || {});
           next._alphaFoldExplorer = Object.assign({}, next._alphaFoldExplorer || {}, patch || {});
@@ -700,7 +714,7 @@
           nextTest: experiment,
           evidenceBoundary: prefillEvidenceBoundary
         };
-        setLabToolData(function (prev) {
+        if (typeof setLabToolData === 'function') setLabToolData(function (prev) {
           var next = Object.assign({}, prev || {});
           var explorer = Object.assign({}, next._alphaFoldExplorer || {});
           explorer.crossScaleEvidenceRecord = record;
@@ -798,7 +812,7 @@
             paeSelection: paeSelection
           }
         };
-        setLabToolData(function (prev) {
+        if (typeof setLabToolData === 'function') setLabToolData(function (prev) {
           var next = Object.assign({}, prev || {});
           var explorer = Object.assign({}, next._alphaFoldExplorer || {});
           explorer.crossScaleEvidenceRecord = record;
@@ -808,11 +822,15 @@
           next.cellAtlasLab = Object.assign({}, next.cellAtlasLab || {}, { alphaFoldEvidenceRecord: record });
           return next;
         });
+        setStructureObservation(observation);
+        setStructureEvidence(evidence);
+        setCautiousClaim(claim);
+        setNextTest(caution);
         if (announceToSR) announceToSR(t('stem.alphaFold.companion_verified_sr', 'Verified AlphaFold companion evidence received for') + ' ' + accession + '.');
       }
 
       function returnToCellAtlas() {
-        setLabToolData(function (prev) {
+        if (typeof setLabToolData === 'function') setLabToolData(function (prev) {
           var next = Object.assign({}, prev || {});
           next._alphaFoldExplorer = Object.assign({}, next._alphaFoldExplorer || {}, {
             crossScaleReturnCount: ((next._alphaFoldExplorer && next._alphaFoldExplorer.crossScaleReturnCount) || 0) + 1
@@ -826,6 +844,7 @@
       }
 
       function bumpSlice(key) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function (prev) {
           var cur = Object.assign({}, (prev && prev._alphaFoldExplorer) || {});
           cur[key] = (cur[key] || 0) + 1;
@@ -834,46 +853,51 @@
         });
       }
 
-      React.useEffect(function () {
-        function onMsg(ev) {
-          var data = ev && ev.data;
-          if (!data || typeof data.type !== 'string') return;
-          if (!_alphafoldBridgeTrusted(ev, _win.current)) return;
-          if (data.type === 'allocaf-hello') {
-            if (_win.current && ev.source !== _win.current) return;
-            try { if (ev.source) ev.source.postMessage({ type: 'allocaf-ready', ai: aiOn, cellAtlasHandoff: companionHandoffPayload() }, ALPHAFOLD_ORIGIN); } catch (_) {}
-            setPopupState('open');
-            return;
-          }
-          if (data.type === 'allocaf-closed') { setPopupState('closed'); return; }
-          if (data.type === 'allocaf-db-hit') { bumpSlice('lookupCount'); return; }
-          if (data.type === 'allocaf-file-imported') { bumpSlice('fileImportCount'); return; }
-          if (data.type === 'allocaf-sequence-prepared') { bumpSlice('sequencePreparedCount'); return; }
-          if (data.type === 'allocaf-cross-scale-evidence') {
-            if (!_win.current || ev.source !== _win.current) return;
-            captureCompanionEvidence(data);
-            return;
-          }
-          var isCoachRequest = data.type === 'allocaf-ai-request';
-          var isGuideRequest = data.type === 'allocaf-ai-guide-request';
-          var isVariantRequest = data.type === 'allocaf-ai-variant-request';
-          if ((!isCoachRequest && !isGuideRequest && !isVariantRequest) || !data.id) return;
-          var replyTo = ev.source || _win.current;
-          var respond = function (payload) {
-            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allocaf-ai-response', id: data.id }, payload), ALPHAFOLD_ORIGIN); } catch (_) {}
-          };
-          if (!aiOn) { respond({ error: 'ai-disabled' }); return; }
-          bumpSlice(isVariantRequest ? 'variantAnalysisCount' : (isGuideRequest ? 'guideCount' : 'coachCount'));
-          Promise.resolve().then(function () {
-            var prompt = isVariantRequest ? buildVariantPrompt(data) : (isGuideRequest ? buildGuidePrompt(data) : buildCoachPrompt(data));
-            return ctx.callGemini(prompt, false, false, 0.7);
-          }).then(function (resp) {
-            var text = (typeof resp === 'string') ? resp : ((resp && (resp.text || resp.output || resp.response)) || '');
-            respond({ text: String(text || '').slice(0, 1200) });
-          }).catch(function (e) {
-            respond({ error: String((e && e.message) || e).slice(0, 120) });
-          });
+      var _onMsgRef = React.useRef(null);
+      _onMsgRef.current = function (ev) {
+        var data = ev && ev.data;
+        if (!data || typeof data.type !== 'string') return;
+        var activePopup = (_win.current && !_win.current.closed) ? _win.current : ((_alphafoldPopup && !_alphafoldPopup.closed) ? _alphafoldPopup : null);
+        if (activePopup && !_win.current) _win.current = activePopup;
+        if (!_alphafoldBridgeTrusted(ev, activePopup)) return;
+        if (data.type === 'allocaf-hello') {
+          if (activePopup && ev.source !== activePopup) return;
+          try { if (ev.source) ev.source.postMessage({ type: 'allocaf-ready', ai: aiOn, cellAtlasHandoff: companionHandoffPayload() }, ALPHAFOLD_ORIGIN); } catch (_) {}
+          setPopupState('open');
+          return;
         }
+        if (data.type === 'allocaf-closed') { setPopupState('closed'); return; }
+        if (data.type === 'allocaf-db-hit') { bumpSlice('lookupCount'); return; }
+        if (data.type === 'allocaf-file-imported') { bumpSlice('fileImportCount'); return; }
+        if (data.type === 'allocaf-sequence-prepared') { bumpSlice('sequencePreparedCount'); return; }
+        if (data.type === 'allocaf-cross-scale-evidence') {
+          if (!activePopup || ev.source !== activePopup) return;
+          captureCompanionEvidence(data);
+          return;
+        }
+        var isCoachRequest = data.type === 'allocaf-ai-request';
+        var isGuideRequest = data.type === 'allocaf-ai-guide-request';
+        var isVariantRequest = data.type === 'allocaf-ai-variant-request';
+        if ((!isCoachRequest && !isGuideRequest && !isVariantRequest) || !data.id) return;
+        var replyTo = ev.source || activePopup;
+        var respond = function (payload) {
+          try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allocaf-ai-response', id: data.id }, payload), ALPHAFOLD_ORIGIN); } catch (_) {}
+        };
+        if (!aiOn) { respond({ error: 'ai-disabled' }); return; }
+        bumpSlice(isVariantRequest ? 'variantAnalysisCount' : (isGuideRequest ? 'guideCount' : 'coachCount'));
+        Promise.resolve().then(function () {
+          var prompt = isVariantRequest ? buildVariantPrompt(data) : (isGuideRequest ? buildGuidePrompt(data) : buildCoachPrompt(data));
+          return ctx.callGemini(prompt, false, false, 0.7);
+        }).then(function (resp) {
+          var text = (typeof resp === 'string') ? resp : ((resp && (resp.text || resp.output || resp.response)) || '');
+          respond({ text: String(text || '').slice(0, 1200) });
+        }).catch(function (e) {
+          respond({ error: String((e && e.message) || e).slice(0, 120) });
+        });
+      };
+
+      React.useEffect(function () {
+        function onMsg(ev) { if (_onMsgRef.current) _onMsgRef.current(ev); }
         window.addEventListener('message', onMsg);
         return function () { window.removeEventListener('message', onMsg); };
       }, [aiOn]);
@@ -881,8 +905,12 @@
       function openExplorer(accessionOverride) {
         var targetAcc = (typeof accessionOverride === 'string' && /^[A-Z0-9-]{3,24}$/.test(accessionOverride)) ? accessionOverride : prefillAccession;
         var launchUrl = ALPHAFOLD_URL + '&lang=' + encodeURIComponent(ctx.lang || 'en') + '&theme=' + encodeURIComponent(ctx.theme || 'dark') + (targetAcc ? '&accession=' + encodeURIComponent(targetAcc) : '');
-        var existing = _win.current;
-        if (existing && !existing.closed) { try { if (targetAcc) existing.location.href = launchUrl; existing.focus(); } catch (_) {} return; }
+        var existing = (_win.current && !_win.current.closed) ? _win.current : ((_alphafoldPopup && !_alphafoldPopup.closed) ? _alphafoldPopup : null);
+        if (existing && !existing.closed && !targetAcc) {
+          _win.current = existing;
+          try { existing.focus(); } catch (_) {}
+          return;
+        }
         var w = null;
         try { w = window.open(launchUrl, 'alloflow-alphafold-explorer', 'width=1360,height=900'); } catch (_) { w = null; }
         if (!w) {
@@ -1001,16 +1029,50 @@
         return '#f97316';
       }
 
-      return h('main', { className: 'af-launcher', 'data-alphafold-mission': 'true', 'data-theme': afTheme },
+      function handleStageTabKeyDown(e) {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'Home' || e.key === 'End') {
+          e.preventDefault();
+          var next = e.key === 'Home' ? 'ribbon' : (e.key === 'End' ? 'pae' : (stageView === 'ribbon' ? 'pae' : 'ribbon'));
+          setStageView(next);
+          var btn = typeof document !== 'undefined' ? document.getElementById('af-stage-tab-' + next) : null;
+          if (btn && typeof btn.focus === 'function') btn.focus();
+        }
+      }
+
+      return h('section', { className: 'af-launcher', 'aria-label': t('stem.alphaFold.title', 'AlphaFold Explorer'), 'data-alphafold-mission': 'true', 'data-theme': afTheme },
         h('header', { className: 'af-mission' },
           h('div', { className: 'af-mission-top' },
-            h('div', { className: 'af-mission-copy' },
-              h('div', { className: 'af-badge-row' },
-                h('p', { className: 'af-eyebrow' }, t('stem.alphaFold.mission_label', 'Structural biology mission')),
-                h('span', { className: 'af-subject-pill' }, t('stem.alphaFold.subject_badge', 'Protein Folding \u00b7 pLDDT & PAE'))),
-              h('h2', { className: 'af-title' }, t('stem.alphaFold.title', 'AlphaFold Explorer')),
-              h('p', { className: 'af-subtitle' },
-                t('stem.alphaFold.mission_blurb', 'Explore a public protein prediction, inspect confidence and shape, then build a cautious claim from visible evidence.'))),
+            h('div', { className: 'af-mission-copy', style: { display: 'flex', alignItems: 'flex-start', gap: '12px' } },
+              h('svg', { width: 44, height: 44, viewBox: '0 0 44 44', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0, marginTop: '2px' } },
+                h('defs', null,
+                  h('radialGradient', { id: 'af-emb-bg', cx: '34%', cy: '28%', r: '72%' },
+                    h('stop', { offset: '0%', stopColor: '#0e7490' }),
+                    h('stop', { offset: '58%', stopColor: '#0f172a' }),
+                    h('stop', { offset: '100%', stopColor: '#020617' })
+                  ),
+                  h('linearGradient', { id: 'af-emb-rib', x1: '0', y1: '0', x2: '1', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#1d4ed8' }),
+                    h('stop', { offset: '42%', stopColor: '#38bdf8' }),
+                    h('stop', { offset: '74%', stopColor: '#facc15' }),
+                    h('stop', { offset: '100%', stopColor: '#f97316' })
+                  )
+                ),
+                h('rect', { x: 2, y: 2, width: 40, height: 40, rx: 11, fill: afTheme === 'contrast' ? '#000000' : 'url(#af-emb-bg)', stroke: afTheme === 'contrast' ? '#ffff00' : '#2dd4bf', strokeWidth: 1.4 }),
+                afTheme !== 'contrast' && h('path', { d: 'M9 5.2 H35', stroke: '#ccfbf1', strokeWidth: 0.9, opacity: 0.4, strokeLinecap: 'round' }),
+                afTheme !== 'contrast' && h('path', { d: 'M9 28 C13 11, 21 11, 23 23 C25 34, 32 33, 35 16', fill: 'none', stroke: '#38bdf8', strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.22 }),
+                h('path', { d: 'M9 28 C13 11, 21 11, 23 23 C25 34, 32 33, 35 16', fill: 'none', stroke: afTheme === 'contrast' ? '#00ff00' : 'url(#af-emb-rib)', strokeWidth: 3.4, strokeLinecap: 'round' }),
+                h('circle', { cx: 11, cy: 23, r: 2.8, fill: afTheme === 'contrast' ? '#ffff00' : '#38bdf8', stroke: '#ffffff', strokeWidth: 0.8 }),
+                h('circle', { cx: 23, cy: 23, r: 3.2, fill: afTheme === 'contrast' ? '#00ff00' : '#facc15', stroke: '#ffffff', strokeWidth: 0.8 }),
+                h('circle', { cx: 34, cy: 18, r: 2.6, fill: afTheme === 'contrast' ? '#ffff00' : '#f97316', stroke: '#ffffff', strokeWidth: 0.8 }),
+                afTheme !== 'contrast' && h('circle', { cx: 22.1, cy: 22, r: 0.9, fill: '#ffffff', opacity: 0.9 })
+              ),
+              h('div', { style: { minWidth: 0, flex: 1 } },
+                h('div', { className: 'af-badge-row' },
+                  h('p', { className: 'af-eyebrow' }, t('stem.alphaFold.mission_label', 'Structural biology mission')),
+                  h('span', { className: 'af-subject-pill' }, t('stem.alphaFold.subject_badge', 'Protein Folding \u00b7 pLDDT & PAE'))),
+                h('h2', { className: 'af-title' }, t('stem.alphaFold.title', 'AlphaFold Explorer')),
+                h('p', { className: 'af-subtitle' },
+                  t('stem.alphaFold.mission_blurb', 'Explore a public protein prediction, inspect confidence and shape, then build a cautious claim from visible evidence.')))),
             h('div', { className: 'af-status', 'data-state': popupState, role: 'status', 'aria-live': 'polite' },
               h('span', { className: 'af-status-dot', 'aria-hidden': 'true' }),
               h('span', null, statusText))),
@@ -1035,15 +1097,19 @@
               h('button', {
                 type: 'button', role: 'tab', id: 'af-stage-tab-ribbon',
                 className: 'af-stage-tab',
+                tabIndex: stageView === 'ribbon' ? 0 : -1,
                 'aria-selected': stageView === 'ribbon' ? 'true' : 'false',
                 'aria-controls': 'af-stage-panel',
+                onKeyDown: handleStageTabKeyDown,
                 onClick: function () { setStageView('ribbon'); }
               }, t('stem.alphaFold.tab_ribbon', 'pLDDT Ribbon')),
               h('button', {
                 type: 'button', role: 'tab', id: 'af-stage-tab-pae',
                 className: 'af-stage-tab',
+                tabIndex: stageView === 'pae' ? 0 : -1,
                 'aria-selected': stageView === 'pae' ? 'true' : 'false',
                 'aria-controls': 'af-stage-panel',
+                onKeyDown: handleStageTabKeyDown,
                 onClick: function () { setStageView('pae'); }
               }, t('stem.alphaFold.tab_pae', 'PAE Error Matrix')))),
 
@@ -1055,40 +1121,69 @@
                     h('span', { className: 'af-viz-acc' }, activeSample.name + ' \u00b7 ' + activeSample.accession + ' \u00b7 ' + activeSample.length)),
                   h('svg', { viewBox: '0 0 560 210', 'aria-hidden': 'true', focusable: 'false' },
                     h('defs', null,
+                      h('radialGradient', { id: 'af-stage-glow', cx: '46%', cy: '38%', r: '58%' },
+                        h('stop', { offset: '0%', stopColor: '#0c4a6e', stopOpacity: 0.42 }),
+                        h('stop', { offset: '62%', stopColor: '#071426', stopOpacity: 0.84 }),
+                        h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.96 })),
                       h('linearGradient', { id: 'af-confidence-gradient', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
                         h('stop', { offset: '0%', stopColor: '#1d4ed8' }),
                         h('stop', { offset: '36%', stopColor: '#38bdf8' }),
                         h('stop', { offset: '70%', stopColor: '#facc15' }),
                         h('stop', { offset: '100%', stopColor: '#f97316' })),
+                      h('linearGradient', { id: 'af-bar-vh', x1: '0', y1: '0', x2: '0', y2: '1' },
+                        h('stop', { offset: '0%', stopColor: '#60a5fa' }),
+                        h('stop', { offset: '100%', stopColor: '#1d4ed8' })),
+                      h('linearGradient', { id: 'af-bar-c', x1: '0', y1: '0', x2: '0', y2: '1' },
+                        h('stop', { offset: '0%', stopColor: '#7dd3fc' }),
+                        h('stop', { offset: '100%', stopColor: '#0284c7' })),
+                      h('linearGradient', { id: 'af-bar-l', x1: '0', y1: '0', x2: '0', y2: '1' },
+                        h('stop', { offset: '0%', stopColor: '#fef08a' }),
+                        h('stop', { offset: '100%', stopColor: '#eab308' })),
+                      h('linearGradient', { id: 'af-bar-vl', x1: '0', y1: '0', x2: '0', y2: '1' },
+                        h('stop', { offset: '0%', stopColor: '#fdba74' }),
+                        h('stop', { offset: '100%', stopColor: '#ea580c' })),
                       h('filter', { id: 'af-ribbon-glow', x: '-20%', y: '-20%', width: '140%', height: '140%' },
                         h('feGaussianBlur', { stdDeviation: '2.6', result: 'blur' }),
                         h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' })))),
-                    // Subtle coordinate grid
+                    // Dark-field structural-biology viewport chassis + optical corner reticles
+                    h('rect', { x: 4, y: 4, width: 552, height: 146, rx: 10, fill: afTheme === 'contrast' ? '#000000' : 'url(#af-stage-glow)', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(56,189,248,0.22)', strokeWidth: 1 }),
+                    afTheme !== 'contrast' && h('path', { d: 'M12 20 V12 H22 M548 20 V12 H538 M12 134 V142 H22 M548 134 V142 H538', fill: 'none', stroke: 'rgba(94,234,212,0.45)', strokeWidth: 1.2, strokeLinecap: 'round' }),
+                    // Subtle coordinate grid + domain boundary band markers
                     [40, 80, 120].map(function (gy) {
-                      return h('line', { key: 'gy-' + gy, x1: 22, y1: gy, x2: 538, y2: gy, stroke: 'rgba(148,163,184,0.12)', strokeWidth: 1, strokeDasharray: '4 4' });
+                      return h('line', { key: 'gy-' + gy, x1: 22, y1: gy, x2: 538, y2: gy, stroke: afTheme === 'contrast' ? '#333333' : 'rgba(148,163,184,0.12)', strokeWidth: 1, strokeDasharray: '4 4' });
                     }),
                     [110, 220, 330, 440].map(function (gx) {
-                      return h('line', { key: 'gx-' + gx, x1: gx, y1: 18, x2: gx, y2: 146, stroke: 'rgba(148,163,184,0.1)', strokeWidth: 1, strokeDasharray: '4 4' });
+                      return h('line', { key: 'gx-' + gx, x1: gx, y1: 14, x2: gx, y2: 144, stroke: afTheme === 'contrast' ? '#333333' : 'rgba(148,163,184,0.11)', strokeWidth: 1, strokeDasharray: '4 4' });
                     }),
                     // Terminal callouts safely inset inside viewBox
-                    h('rect', { x: 20, y: 16, width: 52, height: 18, rx: 9, fill: 'rgba(29,78,216,0.35)', stroke: 'rgba(96,165,250,0.6)', strokeWidth: 1 }),
-                    h('text', { x: 46, y: 28, textAnchor: 'middle', fill: '#dbeafe', fontSize: 9, fontWeight: 'bold' }, 'N-term'),
-                    h('rect', { x: 488, y: 16, width: 52, height: 18, rx: 9, fill: 'rgba(249,115,22,0.32)', stroke: 'rgba(251,146,60,0.6)', strokeWidth: 1 }),
-                    h('text', { x: 514, y: 28, textAnchor: 'middle', fill: '#ffedd5', fontSize: 9, fontWeight: 'bold' }, 'C-term'),
-                    // Fold shadow, core ribbon, interactive segments, spine
+                    h('rect', { x: 20, y: 16, width: 54, height: 18, rx: 9, fill: afTheme === 'contrast' ? '#000000' : 'rgba(29,78,216,0.42)', stroke: afTheme === 'contrast' ? '#00ff00' : 'rgba(96,165,250,0.75)', strokeWidth: 1 }),
+                    h('text', { x: 47, y: 28, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#00ff00' : '#dbeafe', fontSize: 9, fontWeight: 'bold' }, 'N-term'),
+                    h('rect', { x: 486, y: 16, width: 54, height: 18, rx: 9, fill: afTheme === 'contrast' ? '#000000' : 'rgba(249,115,22,0.38)', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(251,146,60,0.75)', strokeWidth: 1 }),
+                    h('text', { x: 513, y: 28, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#ffff00' : '#ffedd5', fontSize: 9, fontWeight: 'bold' }, 'C-term'),
+                    // Fold shadow, core ribbon, interactive segments, specular highlight & spine
                     h('path', { className: 'af-fold-shadow', d: activeSample.path }),
                     h('path', { className: 'af-fold-ribbon', d: activeSample.path }),
                     h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'very-high' ? 'true' : 'false', d: activeSample.segs['very-high'], stroke: '#1d4ed8', onClick: function () { selectConfidenceBand('very-high'); } }),
                     h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'confident' ? 'true' : 'false', d: activeSample.segs.confident, stroke: '#38bdf8', onClick: function () { selectConfidenceBand('confident'); } }),
                     h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'low' ? 'true' : 'false', d: activeSample.segs.low, stroke: '#facc15', onClick: function () { selectConfidenceBand('low'); } }),
                     h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'very-low' ? 'true' : 'false', d: activeSample.segs['very-low'], stroke: '#f97316', onClick: function () { selectConfidenceBand('very-low'); } }),
+                    afTheme !== 'contrast' && h('path', { d: activeSample.path, fill: 'none', stroke: '#ffffff', strokeWidth: 2.2, strokeLinecap: 'round', opacity: 0.22, pointerEvents: 'none' }),
                     h('path', { className: 'af-fold-spine', d: activeSample.path }),
                     [[62,68,'#1d4ed8'],[134,86,'#0ea5e9'],[196,120,'#38bdf8'],[254,84,'#7dd3fc'],[322,68,'#facc15'],[378,118,'#fde047'],[448,96,'#fb923c'],[508,68,'#f97316']].map(function (node, i) {
-                      return h('circle', { key: i, className: 'af-residue-node', cx: node[0], cy: node[1], r: i === 3 ? 5 : 4, fill: node[2] });
+                      var rN = i === 3 ? 5.2 : 4.2;
+                      return h('g', { key: i },
+                        h('circle', { className: 'af-residue-node', cx: node[0], cy: node[1], r: rN, fill: afTheme === 'contrast' ? '#00ff00' : node[2] }),
+                        afTheme !== 'contrast' && h('circle', { cx: node[0] - 1.3, cy: node[1] - 1.3, r: 1.2, fill: '#ffffff', opacity: 0.82 })
+                      );
                     }),
-                    // Per-residue pLDDT sparkline profile bar at bottom
-                    h('line', { x1: 58, y1: 158, x2: 536, y2: 158, stroke: 'rgba(148,163,184,0.28)', strokeWidth: 1 }),
-                    h('text', { x: 24, y: 184, fill: '#94a3b8', fontSize: 9, fontWeight: 'bold' }, 'pLDDT'),
+                    // Calibrated per-residue pLDDT confidence spectrum bar at bottom
+                    h('rect', { x: 56, y: 158, width: 484, height: 39, rx: 5, fill: afTheme === 'contrast' ? '#000000' : 'rgba(2,6,23,0.68)', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(148,163,184,0.2)', strokeWidth: 0.9 }),
+                    // Threshold lines at 90 and 70 pLDDT
+                    [90, 70].map(function (thr) {
+                      var ty = 196 - Math.round((thr / 100) * 32);
+                      return h('line', { key: 'thr-' + thr, x1: 58, y1: ty, x2: 538, y2: ty, stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(125,211,252,0.26)', strokeWidth: 0.8, strokeDasharray: '3 3' });
+                    }),
+                    h('text', { x: 24, y: 181, fill: afTheme === 'contrast' ? '#ffff00' : '#94a3b8', fontSize: 9, fontWeight: 'bold' }, 'pLDDT'),
                     activeSample.bars.map(function (score, idx) {
                       var bx = 62 + idx * 26;
                       var bh = Math.max(4, Math.round((score / 100) * 32));
@@ -1097,15 +1192,14 @@
                         (confidenceBand === 'confident' && score >= 70 && score < 90) ||
                         (confidenceBand === 'low' && score >= 50 && score < 70) ||
                         (confidenceBand === 'very-low' && score < 50);
-                      return h('rect', {
-                        key: 'b-' + idx,
-                        x: bx, y: 196 - bh, width: 20, height: bh, rx: 2,
-                        fill: barColorForScore(score),
-                        opacity: bandMatch ? 0.92 : 0.2
-                      });
+                      var gradFill = afTheme === 'contrast' ? (score >= 70 ? '#00ff00' : '#ffff00') : (score >= 90 ? 'url(#af-bar-vh)' : score >= 70 ? 'url(#af-bar-c)' : score >= 50 ? 'url(#af-bar-l)' : 'url(#af-bar-vl)');
+                      return h('g', { key: 'b-' + idx },
+                        h('rect', { x: bx, y: 196 - bh, width: 20, height: bh, rx: 2.5, fill: gradFill, opacity: bandMatch ? 0.95 : 0.2 }),
+                        afTheme !== 'contrast' && bandMatch && h('line', { x1: bx + 2, y1: 196 - bh + 1, x2: bx + 18, y2: 196 - bh + 1, stroke: '#ffffff', strokeWidth: 1, opacity: 0.45 })
+                      );
                     }),
-                    h('text', { x: 62, y: 207, fill: '#94a3b8', fontSize: 8 }, 'Res 1'),
-                    h('text', { x: 528, y: 207, textAnchor: 'end', fill: '#94a3b8', fontSize: 8 }, activeSample.length)),
+                    h('text', { x: 62, y: 207, fill: afTheme === 'contrast' ? '#ffff00' : '#94a3b8', fontSize: 8 }, 'Res 1'),
+                    h('text', { x: 528, y: 207, textAnchor: 'end', fill: afTheme === 'contrast' ? '#ffff00' : '#94a3b8', fontSize: 8 }, activeSample.length)),
                   h('div', { className: 'af-viz-foot' },
                     h('span', { className: 'af-viz-summary' }, activeSample.foldNote),
                     h('span', { className: 'af-viz-note', 'aria-hidden': 'true' }, t('stem.alphaFold.confidence_preview_note', 'Illustrative model | confidence is not correctness'))))
@@ -1114,9 +1208,18 @@
                     h('span', { className: 'af-viz-label', 'aria-hidden': 'true' }, t('stem.alphaFold.pae_preview_label', 'Predicted Aligned Error (PAE)')),
                     h('span', { className: 'af-viz-acc' }, activeSample.name + ' \u00b7 ' + activeSample.accession)),
                   h('svg', { viewBox: '0 0 560 210', 'aria-hidden': 'true', focusable: 'false' },
+                    h('defs', null,
+                      h('linearGradient', { id: 'af-pae-scale', x1: '0', y1: '0', x2: '1', y2: '0' },
+                        h('stop', { offset: '0%', stopColor: '#059669' }),
+                        h('stop', { offset: '38%', stopColor: '#34d399' }),
+                        h('stop', { offset: '70%', stopColor: '#a7f3d0' }),
+                        h('stop', { offset: '100%', stopColor: '#1e293b' }))),
+                    // Dark-field matrix viewport frame
+                    h('rect', { x: 4, y: 4, width: 552, height: 202, rx: 10, fill: afTheme === 'contrast' ? '#000000' : 'rgba(2,6,23,0.72)', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(56,189,248,0.2)', strokeWidth: 1 }),
+                    h('rect', { x: 74, y: 26, width: 167, height: 167, rx: 5, fill: '#020617', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(94,234,212,0.38)', strokeWidth: 1.2 }),
                     // 8x8 PAE matrix on the left
-                    h('text', { x: 158, y: 20, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 'bold' }, 'Scored Residue'),
-                    h('text', { x: 30, y: 112, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 'bold', transform: 'rotate(-90 30 112)' }, 'Aligned Residue'),
+                    h('text', { x: 158, y: 20, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#ffff00' : '#cbd5e1', fontSize: 10, fontWeight: 'bold' }, 'Scored Residue'),
+                    h('text', { x: 30, y: 112, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#ffff00' : '#cbd5e1', fontSize: 10, fontWeight: 'bold', transform: 'rotate(-90 30 112)' }, 'Aligned Residue'),
                     activeSample.paeBlocks.map(function (row, rIdx) {
                       return row.map(function (lvl, cIdx) {
                         var reg = paeRegionForLevel(lvl);
@@ -1128,30 +1231,51 @@
                           y: 30 + rIdx * 20,
                           width: 19,
                           height: 19,
-                          rx: 2,
-                          fill: paeColorScale[lvl] || '#1e293b',
-                          stroke: activeCell ? '#f8fafc' : 'rgba(15,23,42,0.55)',
-                          strokeWidth: activeCell ? 1.4 : 0.7,
+                          rx: 2.5,
+                          fill: afTheme === 'contrast' ? (lvl === 1 ? '#00ff00' : lvl === 2 ? '#ffff00' : '#000000') : (paeColorScale[lvl] || '#1e293b'),
+                          stroke: activeCell ? '#f8fafc' : (afTheme === 'contrast' ? '#ffff00' : 'rgba(15,23,42,0.55)'),
+                          strokeWidth: activeCell ? 1.5 : 0.7,
                           onClick: function () { setPaeRegion(reg); }
                         });
                       });
                     }),
+                    // Crisp diagonal intra-domain axis guide
+                    h('line', { x1: 78, y1: 30, x2: 237, y2: 189, stroke: afTheme === 'contrast' ? '#ffffff' : 'rgba(255,255,255,0.28)', strokeWidth: 1, strokeDasharray: '3 3', pointerEvents: 'none' }),
                     // Right side: PAE scale legend & domain guide
-                    h('text', { x: 268, y: 42, fill: '#f8fafc', fontSize: 12, fontWeight: 'bold' }, 'Expected position error (\u00c5)'),
-                    h('rect', { x: 268, y: 54, width: 22, height: 14, rx: 3, fill: '#059669' }),
-                    h('text', { x: 298, y: 65, fill: '#e2e8f0', fontSize: 10 }, '0\u20135 \u00c5  Tightly packed domain'),
-                    h('rect', { x: 268, y: 76, width: 22, height: 14, rx: 3, fill: '#34d399' }),
-                    h('text', { x: 298, y: 87, fill: '#e2e8f0', fontSize: 10 }, '6\u201312 \u00c5  Moderate local packing'),
-                    h('rect', { x: 268, y: 98, width: 22, height: 14, rx: 3, fill: '#a7f3d0' }),
-                    h('text', { x: 298, y: 109, fill: '#e2e8f0', fontSize: 10 }, '13\u201320 \u00c5  Flexible boundary'),
-                    h('rect', { x: 268, y: 120, width: 22, height: 14, rx: 3, fill: '#1e293b', stroke: '#64748b', strokeWidth: 1 }),
-                    h('text', { x: 298, y: 131, fill: '#e2e8f0', fontSize: 10 }, '>22 \u00c5  Uncertain relative position'),
-                    h('rect', { x: 268, y: 148, width: 266, height: 42, rx: 8, fill: 'rgba(15,118,110,0.22)', stroke: 'rgba(94,234,212,0.38)', strokeWidth: 1 }),
-                    h('text', { x: 280, y: 165, fill: '#99f6e4', fontSize: 10, fontWeight: 'bold' }, 'Click any matrix square to inspect:'),
-                    h('text', { x: 280, y: 181, fill: '#cbd5e1', fontSize: 9.5 }, 'Diagonal = within domain | Off-diagonal = between domains')),
-                  h('div', { className: 'af-viz-foot' },
-                    h('span', { className: 'af-viz-summary' }, PAE_EXPLANATIONS[paeRegion]),
-                    h('span', { className: 'af-viz-note', 'aria-hidden': 'true' }, t('stem.alphaFold.pae_note', 'Low PAE = reliable relative domain geometry')))),
+                    h('text', { x: 268, y: 34, fill: afTheme === 'contrast' ? '#ffff00' : '#f8fafc', fontSize: 12, fontWeight: 'bold' }, 'Expected position error (\u00c5)'),
+                    ! (afTheme === 'contrast') && h('rect', { x: 268, y: 40, width: 266, height: 6, rx: 3, fill: 'url(#af-pae-scale)' }),
+                    h('rect', { x: 268, y: 54, width: 22, height: 14, rx: 3, fill: afTheme === 'contrast' ? '#00ff00' : '#059669' }),
+                    h('text', { x: 298, y: 65, fill: afTheme === 'contrast' ? '#ffff00' : '#e2e8f0', fontSize: 10 }, '0\u20135 \u00c5  Tightly packed domain'),
+                    h('rect', { x: 268, y: 76, width: 22, height: 14, rx: 3, fill: afTheme === 'contrast' ? '#ffff00' : '#34d399' }),
+                    h('text', { x: 298, y: 87, fill: afTheme === 'contrast' ? '#ffff00' : '#e2e8f0', fontSize: 10 }, '6\u201312 \u00c5  Moderate local packing'),
+                    h('rect', { x: 268, y: 98, width: 22, height: 14, rx: 3, fill: afTheme === 'contrast' ? '#000000' : '#a7f3d0', stroke: afTheme === 'contrast' ? '#ffff00' : undefined }),
+                    h('text', { x: 298, y: 109, fill: afTheme === 'contrast' ? '#ffff00' : '#e2e8f0', fontSize: 10 }, '13\u201320 \u00c5  Flexible boundary'),
+                    h('rect', { x: 268, y: 120, width: 22, height: 14, rx: 3, fill: afTheme === 'contrast' ? '#000000' : '#1e293b', stroke: afTheme === 'contrast' ? '#ffff00' : '#64748b', strokeWidth: 1 }),
+                    h('text', { x: 298, y: 131, fill: afTheme === 'contrast' ? '#ffff00' : '#e2e8f0', fontSize: 10 }, '>22 \u00c5  Uncertain relative position'),
+                    h('rect', { x: 268, y: 148, width: 266, height: 42, rx: 8, fill: afTheme === 'contrast' ? '#000000' : 'rgba(15,118,110,0.22)', stroke: afTheme === 'contrast' ? '#00ff00' : 'rgba(94,234,212,0.42)', strokeWidth: 1 }),
+                    h('text', { x: 280, y: 165, fill: afTheme === 'contrast' ? '#00ff00' : '#99f6e4', fontSize: 10, fontWeight: 'bold' }, 'Click any matrix square to inspect:'),
+                    h('text', { x: 280, y: 181, fill: afTheme === 'contrast' ? '#ffff00' : '#cbd5e1', fontSize: 9.5 }, 'Diagonal = within domain | Off-diagonal = between domains')),
+                  h('div', { className: 'af-viz-foot', style: { flexDirection: 'column', alignItems: 'stretch', gap: '8px' } },
+                    h('div', { className: 'af-preset-strip', role: 'group', 'aria-label': t('stem.alphaFold.pae_region_aria', 'Inspect PAE error regions') },
+                      [
+                        { id: 'intra', label: t('stem.alphaFold.pae_intra', 'Within domain (0–5 Å)') },
+                        { id: 'boundary', label: t('stem.alphaFold.pae_boundary', 'Domain boundary (6–15 Å)') },
+                        { id: 'inter', label: t('stem.alphaFold.pae_inter', 'Between domains (>20 Å)') }
+                      ].map(function (reg) {
+                        return h('button', {
+                          key: reg.id,
+                          type: 'button',
+                          className: 'af-preset-chip',
+                          'aria-pressed': paeRegion === reg.id ? 'true' : 'false',
+                          onClick: function () {
+                            setPaeRegion(reg.id);
+                            if (announceToSR) announceToSR(PAE_EXPLANATIONS[reg.id]);
+                          }
+                        }, reg.label);
+                      })),
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+                      h('span', { className: 'af-viz-summary' }, PAE_EXPLANATIONS[paeRegion]),
+                      h('span', { className: 'af-viz-note', 'aria-hidden': 'true' }, t('stem.alphaFold.pae_note', 'Low PAE = reliable relative domain geometry'))))),
 
             h('aside', { className: 'af-confidence-key', 'aria-labelledby': 'af-confidence-heading' },
               h('div', null,

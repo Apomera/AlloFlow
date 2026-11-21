@@ -153,10 +153,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
         ];
         return h('div', { role: 'tablist', 'aria-label': 'Trauma Psychoeducation sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
+            return h('button', {
+              id: 'trauma-tab-' + t.id,
+              key: t.id,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(ev) {
+                var nextIdx = idx;
+                if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+                else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                else if (ev.key === 'Home') nextIdx = 0;
+                else if (ev.key === 'End') nextIdx = tabs.length - 1;
+                else return;
+                ev.preventDefault();
+                goto(tabs[nextIdx].id);
+                setTimeout(function() {
+                  var nextBtn = document.getElementById('trauma-tab-' + tabs[nextIdx].id);
+                  if (nextBtn) nextBtn.focus();
+                }, 0);
+              },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'trauma-panel-' + t.id, tabIndex: active ? 0 : -1,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#10b981' : '#334155'),
                 background: active ? 'rgba(16,185,129,0.18)' : _traBg('#1e293b'),
                 color: active ? _traFg('#a7f3d0') : _traFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
@@ -596,7 +613,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Understanding Trauma' },
         header(),
         navTabs(),
-        body
+        h('div', { id: 'trauma-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'trauma-tab-' + view }, body)
       );
     }
   });

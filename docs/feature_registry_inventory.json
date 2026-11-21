@@ -1,19 +1,19 @@
 {
   "schema": "feature-registry-inventory/v1",
   "counts": {
-    "commands": 203,
+    "commands": 204,
     "panels": 34,
-    "resourceTypes": 24,
-    "sidebarControls": 18,
+    "resourceTypes": 25,
+    "sidebarControls": 19,
     "stemTools": 152,
     "selTools": 72,
-    "alloPacks": 64,
+    "alloPacks": 67,
     "hubCards": 73,
     "appsScripts": 6,
-    "modules": 220,
+    "modules": 222,
     "langPacks": 63,
-    "unitTestFiles": 7978,
-    "e2eSpecs": 1718
+    "unitTestFiles": 9601,
+    "e2eSpecs": 1956
   },
   "commands": [
     {
@@ -826,6 +826,13 @@
       "label": "Start the lesson wizard",
       "roles": "all",
       "opensPanel": "notebook",
+      "gated": false
+    },
+    {
+      "id": "open_word_sounds",
+      "label": "Open Word Sounds",
+      "roles": "",
+      "opensPanel": "",
       "gated": false
     },
     {
@@ -1683,7 +1690,8 @@
     "reflection",
     "sentence-frames",
     "simplified",
-    "timeline"
+    "timeline",
+    "word-sounds"
   ],
   "sidebar": [
     {
@@ -1709,13 +1717,6 @@
         "always",
         "auto",
         "never"
-      ]
-    },
-    {
-      "control": "Image style source",
-      "options": [
-        "inherit",
-        "override"
       ]
     },
     {
@@ -1775,6 +1776,16 @@
         "Structured Outline",
         "T-Chart",
         "Venn Diagram"
+      ]
+    },
+    {
+      "control": "quiz_duration_preset",
+      "options": [
+        "custom",
+        "five",
+        "reasoning",
+        "recommended",
+        "two"
       ]
     },
     {
@@ -1915,6 +1926,13 @@
         "sequence",
         "single"
       ]
+    },
+    {
+      "control": "visuals.image_style_source_aria",
+      "options": [
+        "inherit",
+        "override"
+      ]
     }
   ],
   "stem": [
@@ -1950,7 +1968,7 @@
     },
     {
       "id": "angles",
-      "name": "Angle Explorer Plugin (Enhanced)",
+      "name": "Angle Explorer",
       "nameSource": "header"
     },
     {
@@ -1980,18 +1998,18 @@
     },
     {
       "id": "areamodel",
-      "name": "Area Model Plugin (Enhanced v3)",
+      "name": "Area Model (deep rebuild 2026-11-03)",
       "nameSource": "header"
     },
     {
       "id": "areaperimeter",
       "name": "Area & Perimeter Lab",
-      "nameSource": "first-line"
+      "nameSource": "registerTool"
     },
     {
       "id": "arithmetic",
-      "name": "Arithmetic Strategy Studio - whole-number operations with visual reasoning.",
-      "nameSource": "first-line"
+      "name": "Arithmetic Strategy Studio",
+      "nameSource": "registerTool"
     },
     {
       "id": "artstudio",
@@ -2045,8 +2063,8 @@
     },
     {
       "id": "brainatlas",
-      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
-      "nameSource": "first-line"
+      "name": "Brain Atlas Explorer",
+      "nameSource": "registerTool"
     },
     {
       "id": "bridgelab",
@@ -2055,13 +2073,13 @@
     },
     {
       "id": "butterfly",
-      "name": "Butterfly Habitat Lab: a local summer habitat investigation, not a migration model.",
-      "nameSource": "first-line"
+      "name": "Butterfly Habitat Lab",
+      "nameSource": "registerTool"
     },
     {
       "id": "calculus",
-      "name": "window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };",
-      "nameSource": "first-line"
+      "name": "Calculus",
+      "nameSource": "registerTool"
     },
     {
       "id": "cell",
@@ -2105,8 +2123,8 @@
     },
     {
       "id": "climateExplorer",
-      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
-      "nameSource": "first-line"
+      "name": "Climate Explorer",
+      "nameSource": "header"
     },
     {
       "id": "coasterlab",
@@ -2115,8 +2133,8 @@
     },
     {
       "id": "coding",
-      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
-      "nameSource": "first-line"
+      "name": "Coding Playground",
+      "nameSource": "registerTool-id"
     },
     {
       "id": "companionplanting",
@@ -2125,8 +2143,8 @@
     },
     {
       "id": "consciousness",
-      "name": "'use strict';",
-      "nameSource": "first-line"
+      "name": "Consciousness Theory Lab",
+      "nameSource": "registerTool"
     },
     {
       "id": "coordgrid",
@@ -2135,8 +2153,8 @@
     },
     {
       "id": "coralreef",
-      "name": "Coral Reef Survey Lab: survey a reef with the methods reef monitors use",
-      "nameSource": "first-line"
+      "name": "Coral Reef Survey Lab",
+      "nameSource": "registerTool"
     },
     {
       "id": "cyberdefense",
@@ -2155,8 +2173,8 @@
     },
     {
       "id": "datastudio",
-      "name": "stem_tool_creative.js — STEAM Lab Creative Tools",
-      "nameSource": "first-line"
+      "name": "Charts & Graphs",
+      "nameSource": "registerTool"
     },
     {
       "id": "decomposer",
@@ -2170,8 +2188,8 @@
     },
     {
       "id": "dissection",
-      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
-      "nameSource": "first-line"
+      "name": "Virtual Dissection Lab",
+      "nameSource": "registerTool"
     },
     {
       "id": "dna",
@@ -2215,8 +2233,8 @@
     },
     {
       "id": "fieldjourneys",
-      "name": "var __defProp = Object.defineProperty;",
-      "nameSource": "first-line"
+      "name": "Field Journeys (Pilot)",
+      "nameSource": "registerTool"
     },
     {
       "id": "fireecology",
@@ -2235,8 +2253,8 @@
     },
     {
       "id": "flightsim",
-      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
-      "nameSource": "first-line"
+      "name": "SkySchool: Educational Flight Simulator",
+      "nameSource": "header"
     },
     {
       "id": "forge",
@@ -2295,8 +2313,8 @@
     },
     {
       "id": "gisstudio",
-      "name": "GIS Studio - accessible, Maine-first geographic information systems lab.",
-      "nameSource": "first-line"
+      "name": "GIS Studio",
+      "nameSource": "registerTool"
     },
     {
       "id": "graphcalc",
@@ -2330,7 +2348,7 @@
     },
     {
       "id": "lifeskills",
-      "name": "Life Skills Lab  v5.23",
+      "name": "Life Skills Lab  v5.42",
       "nameSource": "header"
     },
     {
@@ -2395,7 +2413,7 @@
     },
     {
       "id": "multtable",
-      "name": "Multiplication Table Plugin (Enhanced v3)",
+      "name": "Multiplication Table (deep rebuild v4, 2026-11-03)",
       "nameSource": "header"
     },
     {
@@ -2455,13 +2473,13 @@
     },
     {
       "id": "perception",
-      "name": "Perception Lab: original SVG experiments; no external graphics or runtime dependencies.",
-      "nameSource": "first-line"
+      "name": "Perception Lab",
+      "nameSource": "registerTool"
     },
     {
       "id": "pets",
-      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
-      "nameSource": "first-line"
+      "name": "Science of Pets Lab",
+      "nameSource": "header"
     },
     {
       "id": "physics",
@@ -2470,8 +2488,8 @@
     },
     {
       "id": "platetectonics",
-      "name": "── Reduced motion CSS (WCAG 2.3.3) - shared across all STEAM Lab tools ──",
-      "nameSource": "first-line"
+      "name": "Plate Tectonics",
+      "nameSource": "registerTool"
     },
     {
       "id": "playlab",
@@ -2506,7 +2524,7 @@
     {
       "id": "ratios",
       "name": "Ratios, Rates & Proportions Lab",
-      "nameSource": "first-line"
+      "nameSource": "registerTool"
     },
     {
       "id": "renewables",
@@ -2515,8 +2533,8 @@
     },
     {
       "id": "roadready",
-      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
-      "nameSource": "first-line"
+      "name": "RoadReady: Driver's Ed & Automotive Science Lab",
+      "nameSource": "header"
     },
     {
       "id": "rocks",
@@ -2550,8 +2568,8 @@
     },
     {
       "id": "skatelab",
-      "name": "Skate Lab — a physics-first 2D / 3D motion workbench.",
-      "nameSource": "first-line"
+      "name": "Skate Lab",
+      "nameSource": "registerTool"
     },
     {
       "id": "solarsystem",
@@ -2590,8 +2608,8 @@
     },
     {
       "id": "swimlab",
-      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
-      "nameSource": "first-line"
+      "name": "SwimLab",
+      "nameSource": "registerTool"
     },
     {
       "id": "throwlab",
@@ -2610,8 +2628,8 @@
     },
     {
       "id": "titration",
-      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
-      "nameSource": "first-line"
+      "name": "Titration Lab",
+      "nameSource": "registerTool"
     },
     {
       "id": "trajectorycomputing",
@@ -2625,13 +2643,13 @@
     },
     {
       "id": "typingpractice",
-      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
-      "nameSource": "first-line"
+      "name": "Typing Practice",
+      "nameSource": "registerTool"
     },
     {
       "id": "unitconvert",
-      "name": "window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };",
-      "nameSource": "first-line"
+      "name": "Unit Converter",
+      "nameSource": "registerTool"
     },
     {
       "id": "universe",
@@ -2655,8 +2673,8 @@
     },
     {
       "id": "weathersystems",
-      "name": "Weather Systems & Forecasting Lab",
-      "nameSource": "first-line"
+      "name": "Weather Systems & Forecasting",
+      "nameSource": "registerTool"
     },
     {
       "id": "weldlab",
@@ -2666,7 +2684,7 @@
     {
       "id": "wheelandfire",
       "name": "Wheel & Fire: Pottery Lab",
-      "nameSource": "first-line"
+      "nameSource": "registerTool"
     },
     {
       "id": "worldbuilder",
@@ -2907,8 +2925,8 @@
     },
     {
       "id": "practicejourneys",
-      "name": "var __defProp = Object.defineProperty;",
-      "nameSource": "first-line"
+      "name": "Practice Journeys (Pilot)",
+      "nameSource": "registerTool"
     },
     {
       "id": "quietquestions",
@@ -3043,6 +3061,12 @@
   ],
   "packs": [
     {
+      "file": "academic_discourse_more_practice_grade6",
+      "title": "Thinking Together: More Practice",
+      "grade": "6th Grade",
+      "standards": "CCSS.ELA-LITERACY.SL.6.1 (engage effectively in a range of collaborative discussions with diverse partners on grade 6 topics, texts and issues, building on othe"
+    },
+    {
       "file": "academic_discourse_reading_space_grade6",
       "title": "Thinking Together: A Reading-Space Decision",
       "grade": "6th Grade",
@@ -3050,295 +3074,301 @@
     },
     {
       "file": "american_revolution_causes_grade5",
-      "title": "Causes of the American Revolution — How a Fight Becomes a War",
+      "title": "Causes of the American Revolution — How a Fight Becomes a War — Illustrated Edition",
       "grade": "5th Grade",
       "standards": "C3 D2.His.1.3-5 (create and use a chronological sequence of related events); C3 D2.His.14.3-5 (explain probable causes and effects of events and developments); "
     },
     {
       "file": "ancient_egypt_grade6",
-      "title": "Why Cities Grew on the Nile — Surplus, Specialists, and Writing",
+      "title": "Why Cities Grew on the Nile — Surplus, Specialists, and Writing — Illustrated Edition",
       "grade": "6th Grade",
       "standards": "C3 Framework D2.His.14.6-8 (explain multiple causes and effects of events and developments in the past); C3 Framework D2.Geo.5.6-8 (analyze the combinations of "
     },
     {
       "file": "area_perimeter_grade4",
-      "title": "Area and Perimeter — The Fence and the Floor",
+      "title": "Area and Perimeter — The Fence and the Floor — Illustrated Edition",
       "grade": "3rd-4th Grade",
       "standards": "CCSS.MATH.CONTENT.3.MD.C.7 (relate area to the operations of multiplication and addition); CCSS.MATH.CONTENT.3.MD.D.8 (solve real world problems involving perim"
     },
     {
       "file": "argument_evidence_grade6",
-      "title": "Says Who? — Claims, Evidence, and the Reasoning in Between",
+      "title": "Says Who? — Claims, Evidence, and the Reasoning in Between — Illustrated Edition",
       "grade": "6th Grade",
       "standards": "CCSS.ELA-LITERACY.RI.6.8 (trace and evaluate the argument and specific claims in a text, distinguishing claims that are supported by reasons and evidence from c"
     },
     {
       "file": "body_systems_grade6",
-      "title": "Body Systems — The Team That Keeps You Alive",
+      "title": "Body Systems — The Team That Keeps You Alive — Illustrated Edition",
       "grade": "6th Grade",
       "standards": "NGSS MS-LS1-3 (use argument supported by evidence for how the body is a system of interacting subsystems composed of groups of cells); CCSS.ELA-LITERACY.RST.6-8"
     },
     {
       "file": "cell_structure_grade7",
-      "title": "The Cell — The Smallest Living Factory",
+      "title": "The Cell — The Smallest Living Factory — Illustrated Edition",
       "grade": "7th Grade",
       "standards": "NGSS MS-LS1-1 (conduct an investigation to provide evidence that living things are made of cells, either one cell or many); NGSS MS-LS1-2 (develop and use a mod"
     },
     {
       "file": "central_idea_grade7",
-      "title": "Central Idea and Evidence — Reading Like a Detective",
+      "title": "Central Idea and Evidence — Reading Like a Detective — Illustrated Edition",
       "grade": "7th Grade",
       "standards": "CCSS.ELA-LITERACY.RI.7.2 (determine two or more central ideas in a text and analyze their development over the course of the text); CCSS.ELA-LITERACY.RI.7.1 (ci"
     },
     {
       "file": "chemical_reactions_grade8",
-      "title": "Did Anything New Actually Form? — Reactions and Conservation of Mass",
+      "title": "Did Anything New Actually Form? — Reactions and Conservation of Mass — Illustrated Edition",
       "grade": "8th Grade",
       "standards": "NGSS MS-PS1-2 (analyze and interpret data on the properties of substances before and after the substances interact to determine if a chemical reaction has occur"
     },
     {
       "file": "constitution_grade8",
-      "title": "The Constitution — Rules for the Rule-Makers",
+      "title": "The Constitution — Rules for the Rule-Makers — Illustrated Edition",
       "grade": "8th Grade",
       "standards": "C3 D2.Civ.4.6-8 (explain the powers and limits of government institutions); C3 D2.Civ.3.6-8 (examine the origins and purposes of rules, laws, and key constituti"
     },
     {
       "file": "context_clues_grade3",
-      "title": "The Words Around the Word — Working Out What It Means",
+      "title": "The Words Around the Word — Working Out What It Means — Illustrated Edition",
       "grade": "3rd Grade",
       "standards": "CCSS.ELA-LITERACY.L.3.4.A (use sentence-level context as a clue to the meaning of a word or phrase); CCSS.ELA-LITERACY.L.3.4.B (determine the meaning of a new w"
     },
     {
       "file": "crew_ask_grade6_8",
-      "title": "Crew Launch Week 5: Asking for What You Need",
+      "title": "Crew Launch Week 5: Asking for What You Need — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Perseverance (advocate for learning through questions); CASEL Relationship Skills (communicating effectively; seeking or offering suppor"
     },
     {
       "file": "crew_attention_grade6_8",
-      "title": "Crew Launch Week 9: Where Your Attention Goes",
+      "title": "Crew Launch Week 9: Where Your Attention Goes — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Responsibility (participate fully and mindfully); CASEL Self-Management (managing one's emotions; using planning and organizational skil"
     },
     {
       "file": "crew_feedback_grade6_8",
-      "title": "Crew Launch Week 6: Feedback Is Information, Not a Verdict",
+      "title": "Crew Launch Week 6: Feedback Is Information, Not a Verdict — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (having a growth mindset"
     },
     {
       "file": "crew_halfway_grade6_8",
-      "title": "Crew Launch Week 10: The Six-Week Check",
+      "title": "Crew Launch Week 10: The Six-Week Check — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (setting personal goals;"
     },
     {
       "file": "crew_norms_grade6_8",
-      "title": "Crew Launch Week 1: Norms We Can Name and Keep",
+      "title": "Crew Launch Week 1: Norms We Can Name and Keep — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Respect (work cooperatively with others); CASEL Relationship Skills (teamwork and collaborative problem-solving; communicating effective"
     },
     {
       "file": "crew_perspective_grade6_8",
-      "title": "Crew Launch Week 7: Two Sides of One Story",
+      "title": "Crew Launch Week 7: Two Sides of One Story — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Respect (work cooperatively with others); CASEL Social Awareness (taking others' perspectives; recognizing situational demands); CASEL R"
     },
     {
       "file": "crew_repair_grade6_8",
-      "title": "Crew Launch Week 2: Repair When Something Goes Wrong",
+      "title": "Crew Launch Week 2: Repair When Something Goes Wrong — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Respect (steward community resources and materials); CASEL Responsible Decision-Making (evaluating consequences of actions; contributing"
     },
     {
       "file": "crew_story_grade6_8",
-      "title": "Crew Launch Week 12: The Story of Your Trimester",
+      "title": "Crew Launch Week 12: The Story of Your Trimester — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (integrating personal an"
     },
     {
       "file": "crew_system_grade6_8",
-      "title": "Crew Launch Week 4: One System for the Week",
+      "title": "Crew Launch Week 4: One System for the Week — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (planning and organizati"
     },
     {
       "file": "crew_teamwork_grade6_8",
-      "title": "Crew Launch Week 11: Your Part of the Whole",
+      "title": "Crew Launch Week 11: Your Part of the Whole — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Perseverance (produce high quality work; advocate for learning through questions); CASEL Relationship Skills (teamwork and collaborative"
     },
     {
       "file": "crew_upstander_grade6_8",
-      "title": "Crew Launch Week 8: Small Moves, Not Big Speeches",
+      "title": "Crew Launch Week 8: Small Moves, Not Big Speeches — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Respect (respectful member of the King community); CASEL Social Awareness (demonstrating empathy and compassion; understanding and expre"
     },
     {
       "file": "crew_zones_grade6_8",
-      "title": "Crew Launch Week 3: Where Am I Right Now?",
+      "title": "Crew Launch Week 3: Where Am I Right Now? — Illustrated Edition",
       "grade": "6th-8th Grade",
       "standards": "King Middle School HOWL Responsibility (participate fully and mindfully); CASEL Self-Awareness (identifying one's emotions; linking feelings, values, and though"
     },
     {
       "file": "data_and_typical_grade6",
-      "title": "What Counts as Typical — Reading Data Honestly",
+      "title": "What Counts as Typical — Reading Data Honestly — Illustrated Edition",
       "grade": "6th Grade",
       "standards": "CCSS.MATH.CONTENT.6.SP.A.1 (recognize a statistical question as one that anticipates variability in the data and accounts for it in the answers); CCSS.MATH.CONT"
     },
     {
       "file": "day_night_sky_grade1",
-      "title": "Day Sky, Night Sky — Why the Sky Changes",
+      "title": "Day Sky, Night Sky — Why the Sky Changes — Illustrated Edition",
       "grade": "1st Grade",
       "standards": "NGSS 1-ESS1-1 (use observations of the sun, moon, and stars to describe patterns that can be predicted); CCSS.ELA-LITERACY.RI.1.1 (ask and answer questions abou"
     },
     {
       "file": "decimal_place_value_grade5",
-      "title": "Same Digits, Different Values — Decimals",
+      "title": "Same Digits, Different Values — Decimals — Illustrated Edition",
       "grade": "5th Grade",
       "standards": "CCSS.MATH.CONTENT.5.NBT.A.3 (read, write, and compare decimals to thousandths using place-value reasoning)"
     },
     {
       "file": "ecosystems_food_webs_grade5",
-      "title": "Food Webs — Who Eats Whom, and What Happens Next",
+      "title": "Food Webs — Who Eats Whom, and What Happens Next — Illustrated Edition",
       "grade": "5th Grade",
       "standards": "NGSS 5-LS2-1 (develop a model to describe the movement of matter among plants, animals, decomposers, and the environment); NGSS 5-PS3-1 (use models to describe "
     },
     {
       "file": "energy_transfer_grade4",
-      "title": "Energy Moves — How Things Make Other Things Happen",
+      "title": "Energy Moves — How Things Make Other Things Happen — Illustrated Edition",
       "grade": "4th Grade",
       "standards": "NGSS 4-PS3-1 (use evidence to construct an explanation relating the speed of an object to the energy of that object); NGSS 4-PS3-2 (make observations to provide"
     },
     {
       "file": "equal_groups_grade3",
-      "title": "Equal Groups — What Multiplication Really Means",
+      "title": "Equal Groups — What Multiplication Really Means — Illustrated Edition",
       "grade": "3rd Grade",
       "standards": "CCSS.MATH.CONTENT.3.OA.A.1 (interpret products of whole numbers, e.g., interpret 5 x 7 as the total number of objects in 5 groups of 7 objects each); CCSS.MATH."
     },
     {
       "file": "figurative_language_grade5",
-      "title": "Figurative Language — Say It Sideways",
+      "title": "Figurative Language — Say It Sideways — Illustrated Edition",
       "grade": "5th Grade",
       "standards": "CCSS.ELA-LITERACY.L.5.5 (demonstrate understanding of figurative language, word relationships, and nuances); CCSS.ELA-LITERACY.L.5.5.A (interpret figurative lan"
     },
     {
       "file": "forces_motion_grade3",
-      "title": "Forces and Motion — Pushes, Pulls, and Why Things Stop",
+      "title": "Forces and Motion — Illustrated Edition",
       "grade": "3rd Grade",
       "standards": "NGSS 3-PS2-1 (plan and conduct an investigation to provide evidence of the effects of balanced and unbalanced forces on the motion of an object); NGSS 3-PS2-2 ("
     },
     {
       "file": "fractions_number_line_grade4",
-      "title": "Fractions on the Number Line — Finding the Space Between",
+      "title": "Fractions on the Number Line — Finding the Space Between — Illustrated Edition",
       "grade": "3rd-4th Grade",
       "standards": "CCSS.MATH.CONTENT.3.NF.A.2 (understand a fraction as a number on the number line); CCSS.MATH.CONTENT.3.NF.A.3 (explain equivalence of fractions and compare frac"
     },
     {
       "file": "habitats_diversity_grade2",
-      "title": "Who Lives Here? — Comparing Habitats",
+      "title": "Who Lives Here? — Comparing Habitats — Illustrated Edition",
       "grade": "2nd Grade",
       "standards": "NGSS 2-LS4-1 (observe plants and animals to compare the diversity of life in different habitats)"
     },
     {
       "file": "linear_equations_grade8",
-      "title": "Linear Equations — Slope, Start, and the Story a Line Tells",
+      "title": "Linear Equations — Slope, Start, and the Story a Line Tells — Illustrated Edition",
       "grade": "8th Grade",
       "standards": "CCSS.MATH.CONTENT.8.EE.B.5 (graph proportional relationships, interpreting the unit rate as the slope); CCSS.MATH.CONTENT.8.EE.B.6 (use similar triangles to exp"
     },
     {
       "file": "local_government_grade4",
-      "title": "Who Decided That? — Local Government and How Rules Change",
+      "title": "Who Decided That? — Local Government and How Rules Change — Illustrated Edition",
       "grade": "4th Grade",
       "standards": "C3 Framework D2.Civ.2.3-5 (explain how a democracy relies on people's responsible participation); C3 Framework D2.Civ.12.3-5 (explain how rules and laws change "
     },
     {
       "file": "magnetism_grade6",
-      "title": "Magnetism — Invisible Push and Pull",
+      "title": "Magnetism — Invisible Push and Pull — Illustrated Edition",
       "grade": "6th-7th Grade",
       "standards": "NGSS MS-PS2-3 (ask questions about data to determine the factors that affect the strength of electric and magnetic forces); NGSS MS-PS2-5 (conduct an investigat"
     },
     {
       "file": "main_idea_grade4",
-      "title": "Main Idea — What Is This Really About?",
+      "title": "Main Idea — What Is This Really About? — Illustrated Edition",
       "grade": "4th-5th Grade",
       "standards": "CCSS.ELA-LITERACY.RI.4.2 (determine the main idea of a text and explain how it is supported by key details); CCSS.ELA-LITERACY.RI.5.2 (determine two or more mai"
     },
     {
       "file": "making_ten_grade1",
-      "title": "Ten Is a Friendly Number — Making Ten to Add",
+      "title": "Ten Is a Friendly Number — Making Ten to Add — Illustrated Edition",
       "grade": "1st Grade",
       "standards": "CCSS.MATH.CONTENT.1.OA.C.6 (add and subtract within 20, using strategies such as making ten and decomposing a number leading to a ten); CCSS.MATH.CONTENT.1.OA.B"
     },
     {
       "file": "map_skills_grade3",
-      "title": "Reading a Map — Every Map Leaves Something Out",
+      "title": "Reading a Map — Every Map Leaves Something Out — Illustrated Edition",
       "grade": "3rd Grade",
       "standards": "C3 Framework D2.Geo.1.3-5 (construct maps and other graphic representations of both familiar and unfamiliar places); C3 Framework D2.Geo.2.3-5 (use maps and oth"
     },
     {
       "file": "materials_grade2",
-      "title": "Why Windows Are Not Wool — Matching Materials to Jobs",
+      "title": "Why Windows Are Not Wool — Illustrated Edition",
       "grade": "2nd Grade",
       "standards": "NGSS 2-PS1-1 (plan and conduct an investigation to describe and classify different kinds of materials by their observable properties); NGSS 2-PS1-2 (analyze dat"
     },
     {
       "file": "moon_phases_grade6",
-      "title": "Moon Phases and Eclipses — Why the Moon Changes Shape",
+      "title": "Moon Phases and Eclipses — Why the Moon Changes Shape — Illustrated Edition",
       "grade": "6th Grade",
       "standards": "NGSS MS-ESS1-1 (develop and use a model of the Earth-Sun-Moon system to describe the cyclic patterns of lunar phases, eclipses of the Sun and Moon, and seasons)"
     },
     {
       "file": "natural_selection_grade8",
-      "title": "Nothing Is Trying — How Natural Selection Actually Works",
+      "title": "Nothing Is Trying — How Natural Selection Actually Works — Illustrated Edition",
       "grade": "8th Grade",
       "standards": "NGSS MS-LS4-4 (construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals' probability"
     },
     {
+      "file": "paper_bridge_fair_test_grade5_6",
+      "title": "Which Paper Bridge Holds More? Plan a Fair Test",
+      "grade": "5th–6th Grade",
+      "standards": "No formal standards alignment asserted; educator mapping pending."
+    },
+    {
       "file": "photosynthesis_grade7",
-      "title": "Photosynthesis — How Plants Eat Sunlight",
+      "title": "Photosynthesis — How Plants Eat Sunlight — Illustrated Edition",
       "grade": "7th Grade",
       "standards": "NGSS MS-LS1-6 (construct an explanation for how photosynthesis cycles matter and flows energy); NGSS MS-LS1-7 (develop a model to describe how food is rearrange"
     },
     {
       "file": "place_value_grade2",
-      "title": "Ten Is a Bundle — Place Value to 1000",
+      "title": "Ten Is a Bundle — Place Value to 1000 — Illustrated Edition",
       "grade": "2nd Grade",
       "standards": "CCSS.MATH.CONTENT.2.NBT.A.1 (understand that the three digits of a three-digit number represent amounts of hundreds, tens, and ones); CCSS.MATH.CONTENT.2.NBT.A."
     },
     {
       "file": "plant_needs_grade3",
-      "title": "What Plants Need — The Quiet Life of a Seed",
+      "title": "What Plants Need — Illustrated Edition",
       "grade": "3rd Grade",
       "standards": "NGSS 2-LS2-1 (plan and conduct an investigation to determine if plants need sunlight and water to grow); NGSS 3-LS1-1 (develop models to describe that organisms"
     },
     {
       "file": "plate_tectonics_grade6",
-      "title": "Plate Tectonics — The Earth Puzzle",
+      "title": "Plate Tectonics — The Earth Puzzle — Illustrated Edition",
       "grade": "6th Grade",
       "standards": "NGSS MS-ESS2-3 (analyze and interpret data on the distribution of fossils and rocks to provide evidence of past plate motions); NGSS MS-ESS2-2 (construct an exp"
     },
     {
       "file": "point_of_view_grade4",
-      "title": "Point of View — Who Is Telling This Story?",
+      "title": "Point of View — Who Is Telling This Story? — Illustrated Edition",
       "grade": "4th Grade",
       "standards": "CCSS.ELA-LITERACY.RL.4.6 (compare and contrast the point of view from which different stories are narrated, including the difference between first- and third-pe"
     },
     {
       "file": "probability_models_grade7",
-      "title": "Likely Is Not Certain — Probability Models",
+      "title": "Likely Is Not Certain — Probability Models — Illustrated Edition",
       "grade": "7th Grade",
       "standards": "CCSS.MATH.CONTENT.7.SP.C.5 (interpret probabilities from zero to one); CCSS.MATH.CONTENT.7.SP.C.6 (compare long-run relative frequencies with predicted probabil"
     },
     {
       "file": "proportional_relationships_grade7",
-      "title": "Proportional Relationships — When Doubling One Doubles the Other",
+      "title": "Proportional Relationships — When Doubling One Doubles the Other — Illustrated Edition",
       "grade": "7th Grade",
       "standards": "CCSS.MATH.CONTENT.7.RP.A.2 (recognize and represent proportional relationships between quantities); CCSS.MATH.CONTENT.7.RP.A.2.B (identify the constant of propo"
     },
     {
       "file": "ratios_real_life_grade6",
-      "title": "Ratios in Real Life — Recipes, Maps, and Best Buys",
+      "title": "Ratios in Real Life — Recipes, Maps, and Best Buys — Illustrated Edition",
       "grade": "6th Grade",
       "standards": "CCSS.MATH.CONTENT.6.RP.A.1 (understand the concept of a ratio and use ratio language); CCSS.MATH.CONTENT.6.RP.A.2 (understand the concept of a unit rate); CCSS."
     },
@@ -3350,79 +3380,85 @@
     },
     {
       "file": "rules_and_fairness_grade1",
-      "title": "Why We Have Rules — Fair, Safe, and Together",
+      "title": "Why We Have Rules — Fair, Safe, and Together — Illustrated Edition",
       "grade": "1st Grade",
       "standards": "C3 Framework D2.Civ.1.K-2 (describe roles and responsibilities of people in authority); C3 Framework D2.Civ.6.K-2 (describe how communities work to accomplish c"
     },
     {
       "file": "scarcity_choice_grade7",
-      "title": "Everything Has a Cost — Scarcity, Choice, and What You Gave Up",
+      "title": "Everything Has a Cost — Scarcity, Choice, and What You Gave Up — Illustrated Edition",
       "grade": "7th Grade",
       "standards": "C3 Framework D2.Eco.1.6-8 (explain how economic decisions affect the well-being of individuals, businesses, and society); C3 Framework D2.Eco.2.6-8 (evaluate al"
     },
     {
       "file": "simple_machines_grade5",
-      "title": "Simple Machines — Trading Distance for Strength",
+      "title": "Simple Machines — Trading Distance for Strength — Illustrated Edition",
       "grade": "5th-6th Grade",
       "standards": "NGSS 3-5-ETS1-1 (define a simple design problem reflecting a need, with criteria and constraints); NGSS 3-5-ETS1-2 (generate and compare multiple possible solut"
     },
     {
       "file": "sound_vibration_grade1",
-      "title": "Feel the Buzz — Sound and Vibration",
+      "title": "Feel the Buzz — Sound and Vibration — Illustrated Edition",
       "grade": "1st Grade",
       "standards": "NGSS 1-PS4-1 (investigate evidence that vibrating materials can make sound and sound can make materials vibrate)"
     },
     {
+      "file": "source_media_literacy_grade7_8",
+      "title": "Before You Share: Follow the Source, Check the Claim — Illustrated Edition",
+      "grade": "7th–8th Grade",
+      "standards": "No formal standards alignment asserted; educator mapping pending."
+    },
+    {
       "file": "states_of_matter_grade4",
-      "title": "States of Matter — Same Stuff, Different Behavior",
+      "title": "States of Matter — Illustrated Edition",
       "grade": "4th-5th Grade",
       "standards": "NGSS 5-PS1-1 (develop a model to describe that matter is made of particles too small to be seen); NGSS 5-PS1-2 (measure and graph quantities to provide evidence"
     },
     {
       "file": "story_retell_grade2",
-      "title": "Tell It Back — Beginning, Middle, and End",
+      "title": "Tell It Back — Beginning, Middle, and End — Illustrated Edition",
       "grade": "2nd Grade",
       "standards": "CCSS.ELA-LITERACY.RL.2.5 (describe the overall structure of a story, including how the beginning introduces it and the ending concludes the action); CCSS.ELA-LI"
     },
     {
       "file": "theme_development_grade8",
-      "title": "What the Story Is Really Saying — Tracing Theme",
+      "title": "What the Story Is Really Saying — Tracing Theme — Illustrated Edition",
       "grade": "8th Grade",
       "standards": "CCSS.ELA-LITERACY.RL.8.2 (determine a theme or central idea of a text and analyze its development over the course of the text, including its relationship to the"
     },
     {
       "file": "then_and_now_grade2",
-      "title": "Then and Now — How Life Changes Over Time",
+      "title": "Then and Now — How Life Changes Over Time — Illustrated Edition",
       "grade": "2nd Grade",
       "standards": "C3 Framework D2.His.1.K-2 (create a chronological sequence of multiple events); C3 Framework D2.His.2.K-2 (compare life in the past to life today); C3 Framework"
     },
     {
       "file": "volume_grade5",
-      "title": "Filling Space — Volume and Why You Multiply Three Numbers",
+      "title": "Filling Space — Volume and Why You Multiply Three Numbers — Illustrated Edition",
       "grade": "5th Grade",
       "standards": "CCSS.MATH.CONTENT.5.MD.C.3 (recognize volume as an attribute of solid figures and understand concepts of volume measurement); CCSS.MATH.CONTENT.5.MD.C.4 (measur"
     },
     {
       "file": "water_cycle_grade6",
-      "title": "The Water Cycle — Earth's Recycling System",
+      "title": "The Water Cycle — Earth's Recycling System — Illustrated Pilot",
       "grade": "6th Grade",
       "standards": "NGSS MS-ESS2-4 (water cycling through Earth systems driven by sunlight and gravity); CCSS.ELA-LITERACY.RST.6-8.4 (determine the meaning of symbols, key terms, a"
     },
     {
       "file": "weather_vs_climate_grade5",
-      "title": "Weather vs. Climate — Today's Mood, Decades of Personality",
+      "title": "Weather vs. Climate — Illustrated Edition",
       "grade": "5th-6th Grade",
       "standards": "NGSS 3-ESS2-2 (obtain and combine information to describe climates in different world regions); NGSS MS-ESS2-5 (collect data to provide evidence for how the mot"
     },
     {
       "file": "weathering_erosion_grade4",
-      "title": "Break, Move, Settle — Changing Land",
+      "title": "Break, Move, Settle — Changing Land — Illustrated Edition",
       "grade": "4th Grade",
       "standards": "NGSS 4-ESS2-1 (use observations or measurements as evidence of weathering effects or erosion rates)"
     },
     {
       "file": "word_families_grade1",
-      "title": "Learn One, Read Many — Word Families",
+      "title": "Learn One, Read Many — Word Families — Illustrated Edition",
       "grade": "1st Grade",
       "standards": "CCSS.ELA-LITERACY.RF.1.2.A (distinguish long from short vowel sounds in spoken single-syllable words); CCSS.ELA-LITERACY.RF.1.2.C (isolate and pronounce initial"
     }
@@ -3798,7 +3834,7 @@
     },
     {
       "script": "session_mailbox",
-      "version": "24",
+      "version": "32",
       "actions": [
         "activityupsert",
         "auth",
@@ -3818,9 +3854,12 @@
         "getactivityadmin",
         "getactivitysummary",
         "getpack",
+        "getsubmission",
         "hello",
         "join",
         "joinactivity",
+        "listsubmissions",
+        "marksubmissions",
         "moderateactivity",
         "mysessions",
         "open",
@@ -3831,6 +3870,7 @@
         "send"
       ],
       "scopes": [
+        "userinfo.email",
         "drive.file",
         "script.external_request"
       ],
@@ -3842,6 +3882,7 @@
       "version": "",
       "actions": [],
       "scopes": [
+        "userinfo.email",
         "drive.file",
         "script.send_mail"
       ],
@@ -3990,6 +4031,7 @@
     "sensitive_workspace_module.js",
     "session_transport_module.js",
     "shared_activity_module.js",
+    "speech_setup_module.js",
     "standards_context_module.js",
     "standards_provider_module.js",
     "story_forge_module.js",
@@ -4023,6 +4065,7 @@
     "view_brainstorm_module.js",
     "view_canvas_recovery_dialog_module.js",
     "view_cloze_interaction_panel_module.js",
+    "view_cold_path_screens_module.js",
     "view_cold_path_surfaces_module.js",
     "view_concept_sort_module.js",
     "view_confirm_dialog_module.js",
@@ -4157,7 +4200,7 @@
     "yoruba"
   ],
   "tests": {
-    "unit": 7978,
-    "e2e": 1718
+    "unit": 9601,
+    "e2e": 1956
   }
 }

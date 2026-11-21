@@ -1,4 +1,4 @@
-# Read the submission queues WITHOUT ADMIN_TOKEN.
+﻿# Read the submission queues WITHOUT ADMIN_TOKEN.
 #
 #   powershell -ExecutionPolicy Bypass -File catalog\cloudflare-worker\read-queues.ps1
 #   powershell -ExecutionPolicy Bypass -File catalog\cloudflare-worker\read-queues.ps1 -Show
@@ -29,10 +29,13 @@ foreach ($q in $Queues) {
     Write-Host ''
     Write-Host "=== $($q.Label)  [$($q.Binding)] ===" -ForegroundColor Cyan
 
-    $raw = & node $Wrangler --cwd $WorkerDir kv key list --binding $q.Binding --remote 2>$null
+    $raw = & node $Wrangler --cwd $WorkerDir kv key list --binding $q.Binding --remote
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to list KV keys for $($q.Binding) (exit $LASTEXITCODE). Check your Cloudflare login."
+    }
     $json = ($raw | Where-Object { $_ -notmatch '^\s*(⛅|─|Resource location)' }) -join "`n"
 
-    try { $keys = $json | ConvertFrom-Json } catch { $keys = @() }
+    $keys = $json | ConvertFrom-Json
     if (-not $keys -or $keys.Count -eq 0) {
         Write-Host '  (empty)' -ForegroundColor DarkGray
         continue
@@ -45,7 +48,13 @@ foreach ($q in $Queues) {
         Write-Host "  - $($k.name)   $when$pii"
 
         if ($Show) {
-            $val = & node $Wrangler --cwd $WorkerDir kv key get $k.name --binding $q.Binding --remote 2>$null
+            if ($k.name -notmatch '^(?:bug|bug-review|pd|plugin|community):[A-Za-z0-9:._-]+$') {
+                throw "Refusing to read unexpected KV key name: $($k.name)"
+            }
+            $val = & node $Wrangler --cwd $WorkerDir kv key get --binding $q.Binding --remote -- $k.name
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to read KV key $($k.name) from $($q.Binding) (exit $LASTEXITCODE)."
+            }
             Write-Host ($val -join "`n") -ForegroundColor DarkGray
             Write-Host ''
         }

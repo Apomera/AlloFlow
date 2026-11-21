@@ -478,8 +478,8 @@ function MaineSldStateRequirements(props) {
       if (timerRef.current) window.clearTimeout(timerRef.current);
     };
   }, []);
-  const deferFocus = (action) => {
-    const selectedState = state, origin = document.activeElement;
+  const deferFocus = (action, expectedState) => {
+    const selectedState = expectedState !== void 0 ? expectedState : state, origin = document.activeElement;
     window.requestAnimationFrame(() => {
       if (!aliveRef.current || !contextRef.current.visible || !contextRef.current.open || contextRef.current.state !== selectedState) return;
       if (document.activeElement !== origin && !(origin && !origin.isConnected && document.activeElement === document.body)) return;
@@ -492,7 +492,32 @@ function MaineSldStateRequirements(props) {
       titleRef.current.focus({ preventScroll: true });
     }
   });
-  const canReplaceDraft = () => !draftDirty || window.confirm("Replace this unsaved reference draft? Its edits have not been saved. Your saved references will stay intact.");
+  const runConfirmed = (message, opts, onConfirmed, onCancelled) => {
+    if (typeof window !== "undefined" && window.AlloFlowUX && typeof window.AlloFlowUX.confirm === "function") {
+      window.AlloFlowUX.confirm(message, opts).then((ok2) => {
+        if (ok2) onConfirmed();
+        else if (onCancelled) onCancelled();
+      }).catch(() => {
+        if (onCancelled) onCancelled();
+      });
+      return;
+    }
+    const ok = typeof window !== "undefined" && typeof window.confirm === "function" ? !!window.confirm(message) : false;
+    if (ok) onConfirmed();
+    else if (onCancelled) onCancelled();
+  };
+  const withReplaceDraftGuard = (onAllowed, onCancelled) => {
+    if (!draftDirty) {
+      onAllowed();
+      return;
+    }
+    runConfirmed(
+      "Replace this unsaved reference draft? Its edits have not been saved. Your saved references will stay intact.",
+      { title: "Replace unsaved draft?", confirmText: "Replace draft", cancelText: "Keep editing", tone: "warning" },
+      onAllowed,
+      onCancelled
+    );
+  };
   const replaceDraft = (next, dirty) => {
     retire();
     setDraft(next);
@@ -548,35 +573,39 @@ function MaineSldStateRequirements(props) {
   const changeState = (event) => {
     const wanted = event.target.value;
     if (wanted === state) return;
-    if (!canReplaceDraft()) {
-      event.target.value = state;
-      return;
-    }
-    retire();
-    setWorkspace((previous) => MState.selectState(previous, wanted));
-    setDraft(MState.emptySource());
-    setDraftDirty(false);
-    setResults([]);
-    setError("");
-    setStatus("Showing saved references for " + wanted + ". Your practice cases still use the Maine form.");
+    const selectEl = event.target;
+    withReplaceDraftGuard(() => {
+      retire();
+      setWorkspace((previous) => MState.selectState(previous, wanted));
+      setDraft(MState.emptySource());
+      setDraftDirty(false);
+      setResults([]);
+      setError("");
+      setStatus("Showing saved references for " + wanted + ". Your practice cases still use the Maine form.");
+    }, () => {
+      if (selectEl) selectEl.value = state;
+    });
   };
   const newManual = () => {
-    if (!canReplaceDraft()) return;
-    replaceDraft(MState.emptySource(), false);
-    setStatus("New manual source draft. Paste exact wording and record its source before saving.");
+    withReplaceDraftGuard(() => {
+      replaceDraft(MState.emptySource(), false);
+      setStatus("New manual source draft. Paste exact wording and record its source before saving.");
+    });
   };
   const importDocument = (event) => {
     const file = event.target.files && event.target.files[0];
     event.target.value = "";
-    if (!file || !canReplaceDraft()) return;
-    if (!window.AlloSldStateDocuments || typeof window.AlloSldStateDocuments.extract !== "function") {
-      setError("Document import is unavailable. You can paste source wording into a manual reference.");
-      return;
-    }
-    runOperation("import", () => window.AlloSldStateDocuments.extract(file, { root: window }), (result) => {
-      const next = MState.fromDocument(result);
-      replaceDraft(next, true);
-      setStatus("Document text opened as a draft. Inspect the extraction, enter the relevant excerpt and metadata, then save the reference.");
+    if (!file) return;
+    withReplaceDraftGuard(() => {
+      if (!window.AlloSldStateDocuments || typeof window.AlloSldStateDocuments.extract !== "function") {
+        setError("Document import is unavailable. You can paste source wording into a manual reference.");
+        return;
+      }
+      runOperation("import", () => window.AlloSldStateDocuments.extract(file, { root: window }), (result) => {
+        const next = MState.fromDocument(result);
+        replaceDraft(next, true);
+        setStatus("Document text opened as a draft. Inspect the extraction, enter the relevant excerpt and metadata, then save the reference.");
+      });
     });
   };
   const research = () => {
@@ -593,13 +622,14 @@ function MaineSldStateRequirements(props) {
     });
   };
   const useResult = (result) => {
-    if (!canReplaceDraft()) return;
-    try {
-      replaceDraft(MState.fromSearchResult(result), true);
-      setStatus("Source link opened as an unreviewed draft. Read the linked source and enter an exact excerpt and date checked.");
-    } catch (failure) {
-      showError(failure);
-    }
+    withReplaceDraftGuard(() => {
+      try {
+        replaceDraft(MState.fromSearchResult(result), true);
+        setStatus("Source link opened as an unreviewed draft. Read the linked source and enter an exact excerpt and date checked.");
+      } catch (failure) {
+        showError(failure);
+      }
+    });
   };
   const saveReference = () => {
     retire();
@@ -624,38 +654,56 @@ function MaineSldStateRequirements(props) {
     }
   };
   const editReference = (source) => {
-    if (!canReplaceDraft()) return;
-    replaceDraft(source, false);
-    setStatus("Editing your saved reference. Save reference to keep changes.");
+    withReplaceDraftGuard(() => {
+      replaceDraft(source, false);
+      setStatus("Editing your saved reference. Save reference to keep changes.");
+    });
   };
   const removeReference = (source) => {
-    if (!window.confirm('Remove "' + source.title + '" from your saved references for ' + state + "? Download saved references first if you want a backup.")) return;
-    if (draft.id === source.id && draftDirty && !canReplaceDraft()) return;
-    retire();
-    try {
-      const next = MState.removeSource(workspace, state, source.id);
-      setWorkspace(next);
-      if (draft.id === source.id) {
-        setDraft(MState.emptySource());
-        setDraftDirty(false);
+    const performRemove = () => {
+      retire();
+      try {
+        const next = MState.removeSource(workspace, state, source.id);
+        setWorkspace(next);
+        if (draft.id === source.id) {
+          setDraft(MState.emptySource());
+          setDraftDirty(false);
+        }
+        setError("");
+        setStatus("Reference removed. Your practice worksheet is unchanged.");
+        deferFocus(() => {
+          if (newDraftRef.current) newDraftRef.current.focus();
+        });
+      } catch (failure) {
+        showError(failure);
       }
-      setError("");
-      setStatus("Reference removed. Your practice worksheet is unchanged.");
-      deferFocus(() => {
-        if (newDraftRef.current) newDraftRef.current.focus();
-      });
-    } catch (failure) {
-      showError(failure);
-    }
+    };
+    runConfirmed(
+      'Remove "' + source.title + '" from your saved references for ' + state + "? Download saved references first if you want a backup.",
+      { title: "Remove saved reference?", confirmText: "Remove reference", cancelText: "Keep reference", tone: "warning" },
+      () => {
+        if (draft.id === source.id && draftDirty) withReplaceDraftGuard(performRemove);
+        else performRemove();
+      }
+    );
   };
   const download = () => {
     try {
       const blob = new Blob([MState.serializeWorkspace(workspace)], { type: "application/json" });
-      const url = URL.createObjectURL(blob), link2 = document.createElement("a");
-      link2.href = url;
-      link2.download = "SLD-State-References.json";
-      link2.click();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1e3);
+      const url = URL.createObjectURL(blob);
+      try {
+        const link2 = document.createElement("a");
+        link2.href = url;
+        link2.download = "SLD-State-References.json";
+        link2.click();
+      } finally {
+        window.setTimeout(() => {
+          try {
+            URL.revokeObjectURL(url);
+          } catch (_) {
+          }
+        }, 1e3);
+      }
       setError("");
       setStatus("Saved references and comparison plans download started." + (draftDirty ? " Your unsaved draft is not included." : ""));
     } catch (failure) {
@@ -672,24 +720,29 @@ function MaineSldStateRequirements(props) {
     }
     runOperation("restore", () => file.text(), (text) => {
       const restored = MState.parseWorkspace(text);
-      if (!window.confirm("Replace all saved state references and comparison plans in this tab with this workspace file?" + (draftDirty ? " This also replaces your unsaved reference draft." : "") + " Your practice worksheet will stay intact.")) {
-        setStatus("Reference restore canceled. Your current references, comparison plans and draft are retained.");
-        return;
-      }
-      retire();
-      allowPersistRef.current = true;
-      setWorkspace(restored);
-      setDraft(MState.emptySource());
-      setDraftDirty(false);
-      setResults([]);
-      setError("");
-      setStatus("State references and comparison plans restored. Your practice worksheet is unchanged.");
-      deferFocus(() => {
-        if (summaryRef.current) {
-          summaryRef.current.scrollIntoView({ block: "nearest" });
-          summaryRef.current.focus();
+      runConfirmed(
+        "Replace all saved state references and comparison plans in this tab with this workspace file?" + (draftDirty ? " This also replaces your unsaved reference draft." : "") + " Your practice worksheet will stay intact.",
+        { title: "Restore state references?", confirmText: "Replace references", cancelText: "Keep current references", tone: "warning" },
+        () => {
+          retire();
+          allowPersistRef.current = true;
+          setWorkspace(restored);
+          setDraft(MState.emptySource());
+          setDraftDirty(false);
+          setResults([]);
+          setError("");
+          setStatus("State references and comparison plans restored. Your practice worksheet is unchanged.");
+          deferFocus(() => {
+            if (summaryRef.current) {
+              summaryRef.current.scrollIntoView({ block: "nearest" });
+              summaryRef.current.focus();
+            }
+          }, restored.activeState);
+        },
+        () => {
+          setStatus("Reference restore canceled. Your current references, comparison plans and draft are retained.");
         }
-      });
+      );
     });
   };
   const toggleReview = (event) => {
@@ -722,7 +775,7 @@ function MaineSldStateRequirements(props) {
   const SLD_STYLE = `
 .msld{--ink:#142f3c;--muted:#536773;--paper:#fff;--ground:#f1f5f4;--line:#d7e2e2;--accent:#086b64;--soft:#e7f3ef;--navy:#123c4b;position:fixed;inset:0;z-index:10050;background:rgba(8,24,35,.62);padding:18px;color:var(--ink);font:15px/1.55 system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .msld[data-dark=true]{--ink:#e5f1f4;--muted:#b7cbd1;--paper:#182e38;--ground:#10242e;--line:#395460;--accent:#74d5c2;--soft:#173f43;--navy:#0b2530}
-.msld *{box-sizing:border-box}.msld button,.msld input,.msld textarea,.msld select{font:inherit}.msld button,.msld select,.msld input,.msld textarea{border-radius:8px}.msld button{cursor:pointer;min-height:42px}.msld button:disabled{opacity:.5;cursor:default}.msld button:focus-visible,.msld input:focus-visible,.msld select:focus-visible,.msld textarea:focus-visible,.msld a:focus-visible,.msld [tabindex]:focus-visible{outline:3px solid #e8a33c;outline-offset:3px}.msld a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}.msld h1,.msld h2,.msld h3,.msld p{margin:0}.msld h1{font-size:clamp(22px,2.5vw,32px);line-height:1.2;letter-spacing:-.6px}.msld h2{font-size:24px;line-height:1.25;letter-spacing:-.4px}.msld h3{font-size:17px;line-height:1.4}.msld-shell{max-width:1480px;height:100%;margin:auto;background:var(--ground);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 80px #0005}.msld-head{flex-shrink:0;max-height:48%;overflow:auto;background:var(--navy);color:#fff;padding:14px 22px}.msld-head-row{display:flex;justify-content:space-between;align-items:center;gap:18px}.msld-kicker{font-size:11px;font-weight:750;letter-spacing:1.6px;text-transform:uppercase;color:#a4e1d2;margin-bottom:7px}.msld-subtitle{font-size:13px;color:#c9dde3;margin-top:8px;max-width:750px}.msld-head-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;max-width:360px}.msld-head button{border:1px solid #78949e;background:transparent;color:#fff;padding:7px 12px;font-size:13px}.msld-head button:hover{background:#ffffff14}.msld-badge{display:inline-block;padding:3px 9px;border:1px solid var(--line);border-radius:30px;font-size:11px;font-weight:700;background:var(--soft);color:var(--accent)}.msld-tools{flex-shrink:0;background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 26px}.msld-case-picker{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.msld-case-picker label{font-size:12px;font-weight:700}.msld select,.msld input,.msld textarea{background:var(--paper);border:1px solid var(--line);color:var(--ink);padding:9px 11px}.msld textarea{width:100%;resize:vertical;min-height:95px;line-height:1.5}.msld-progress{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}.msld-progress strong{color:var(--ink)}.msld-layout{display:grid;grid-template-columns:210px minmax(0,1fr);flex:1;min-height:0}.msld-side{padding:22px 14px;overflow:auto;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:8px}.msld-step{background:transparent;border:0;color:var(--muted);display:flex;gap:10px;align-items:center;text-align:left;padding:10px 12px;font-size:13px}.msld-step span:first-child{width:25px;height:25px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:11px;flex-shrink:0}.msld-step[aria-current=step]{background:var(--soft);color:var(--accent);font-weight:750}.msld-step[aria-current=step] span:first-child{background:var(--accent);color:var(--paper);border-color:var(--accent)}.msld-side-note{font-size:12px;color:var(--muted);margin-top:auto;padding:22px 12px 6px}.msld-main{overflow:auto;padding:28px 34px;scroll-behavior:auto;min-width:0}.msld-section-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:22px}.msld-description{color:var(--muted);font-size:14px;margin-top:9px!important;max-width:850px}.msld-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(245px,1fr);gap:20px}.msld-card{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:22px;min-width:0}.msld-card+.msld-card{margin-top:16px}.msld-grid>.msld-card+.msld-card{margin-top:0}.msld-stack{display:flex;flex-direction:column;gap:14px}.msld-stack>.msld-card+.msld-card{margin-top:0}.msld-prose{display:flex;flex-direction:column;gap:16px;margin-top:16px}.msld-prose p{font-size:14px}.msld-list{margin:12px 0 0;padding-left:22px;font-size:14px}.msld-list li+li{margin-top:9px}.msld-callout{background:var(--soft);border-left:4px solid var(--accent);border-radius:8px;padding:14px 17px;color:var(--ink);font-size:13px}.msld-callout strong{display:block;margin-bottom:4px}.msld-button{padding:9px 15px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-weight:650;font-size:13px}.msld-button:hover{background:var(--soft)}.msld-primary{background:var(--accent);color:var(--paper);border-color:var(--accent)}.msld-primary:hover{filter:brightness(.94);background:var(--accent)}.msld-button-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:18px}.msld-small{font-size:12px;color:var(--muted)}.msld-filter{display:flex;gap:12px;align-items:end;flex-wrap:wrap;padding:16px;background:var(--paper);border:1px solid var(--line);border-radius:12px;margin-bottom:14px}.msld-field{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:650}.msld-field .msld-small{font-weight:400}.msld-search{flex:1;min-width:210px}.msld-table-wrap{overflow:auto;max-height:calc(100vh - 405px);min-height:250px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}.msld table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}.msld th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;background:var(--soft);padding:12px 15px;color:var(--muted);position:sticky;top:0;z-index:1}.msld td{padding:11px 15px;border-top:1px solid var(--line);vertical-align:middle}.msld tbody tr:hover{background:var(--ground)}.msld th:first-child,.msld td:first-child{min-width:140px}.msld th:nth-child(2),.msld td:nth-child(2){min-width:180px}.msld-score-value{font-size:21px;font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}.msld-pin{padding:5px 10px;border:1px solid var(--line);color:var(--accent);background:var(--paper);white-space:nowrap;font-size:12px}.msld-pin[aria-pressed=true]{background:var(--soft);border-color:var(--accent)}.msld-evidence-label{font-size:15px;font-weight:750;margin-bottom:6px}.msld-evidence-header{display:flex;gap:14px;justify-content:space-between}.msld-evidence-fields{display:grid;grid-template-columns:220px minmax(0,1fr);gap:18px;margin-top:16px}.msld-evidence-fields textarea{min-height:80px}.msld-number{display:inline-flex;width:31px;height:31px;align-items:center;justify-content:center;background:var(--soft);color:var(--accent);border-radius:8px;margin-right:9px;font-size:13px}.msld-reasoning-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(235px,.42fr);gap:20px}.msld-form-card{scroll-margin-top:20px}.msld-form-card h3{display:flex;align-items:center}.msld-form-body{margin-top:13px;font-size:13px;color:var(--muted)}.msld-form-fields{margin-top:17px;display:flex;flex-direction:column;gap:14px}.msld-q-disclosure{font-size:12px;margin-top:10px}.msld-section-divider{margin:22px 0 18px;border:0;border-top:1px solid var(--line)}.msld-jump{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}.msld-jump a{font-size:12px;background:var(--soft);border-radius:6px;padding:5px 8px}.msld-empty{padding:30px;text-align:center;border:1px dashed var(--line);border-radius:12px;background:var(--paper)}.msld-empty p{color:var(--muted);margin-top:8px}.msld-debrief-card{border-top:4px solid var(--accent)}.msld-feedback{margin-top:14px;border-left:3px solid var(--accent);background:var(--soft);padding:12px;font-size:13px}.msld-check-options{display:flex;flex-direction:column;gap:10px;margin-top:12px}.msld-check-options label{display:flex;gap:10px;align-items:flex-start;font-size:13px}.msld-check-options input{margin-top:5px;accent-color:var(--accent)}.msld-status{flex-shrink:0;font-size:12px;padding:7px 26px;border-top:1px solid var(--line);background:var(--paper);color:var(--muted);display:flex;justify-content:space-between;gap:20px}.msld-toast{font-size:13px;min-height:24px;color:var(--accent);font-weight:650;margin-top:10px}.msld-confirm-backdrop{position:absolute;inset:0;background:#092632a8;display:grid;place-items:center;padding:22px;z-index:20}.msld-confirm{max-width:460px;border-radius:14px;background:var(--paper);padding:28px;border:1px solid var(--line);box-shadow:0 20px 80px #0004}.msld-confirm p{margin-top:12px;font-size:14px;color:var(--muted)}.msld-print{display:none}.msld-sources{display:flex;flex-direction:column;gap:9px;margin-top:14px;font-size:12px}.msld-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.msld *{box-sizing:border-box}.msld button,.msld input,.msld textarea,.msld select{font:inherit}.msld button,.msld select,.msld input,.msld textarea{border-radius:8px}.msld button{cursor:pointer;min-height:42px}.msld button:disabled{opacity:.5;cursor:default}.msld button:focus-visible,.msld input:focus-visible,.msld select:focus-visible,.msld textarea:focus-visible,.msld a:focus-visible,.msld [tabindex]:focus-visible{outline:3px solid #e8a33c;outline-offset:3px}.msld a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}.msld h1,.msld h2,.msld h3,.msld p{margin:0}.msld h1{font-size:clamp(22px,2.5vw,32px);line-height:1.2;letter-spacing:-.6px}.msld h2{font-size:24px;line-height:1.25;letter-spacing:-.4px}.msld h3{font-size:17px;line-height:1.4}.msld-shell{max-width:1480px;height:100%;margin:auto;background:var(--ground);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 80px #0005}.msld-head{flex-shrink:0;max-height:48%;overflow:auto;background:var(--navy);color:#fff;padding:14px 22px}.msld-head-row{display:flex;justify-content:space-between;align-items:center;gap:18px}.msld-kicker{font-size:11px;font-weight:750;letter-spacing:1.6px;text-transform:uppercase;color:#a4e1d2;margin-bottom:7px}.msld-subtitle{font-size:13px;color:#c9dde3;margin-top:8px;max-width:750px}.msld-head-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;max-width:360px}.msld-head button{border:1px solid #78949e;background:transparent;color:#fff;padding:7px 12px;font-size:13px}.msld-head button:hover{background:#ffffff14}.msld-badge{display:inline-block;padding:3px 9px;border:1px solid var(--line);border-radius:30px;font-size:11px;font-weight:700;background:var(--soft);color:var(--accent)}.msld-tools{flex-shrink:0;background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 26px}.msld-case-picker{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.msld-case-picker label{font-size:12px;font-weight:700}.msld select,.msld input,.msld textarea{background:var(--paper);border:1px solid var(--line);color:var(--ink);padding:9px 11px}.msld textarea{width:100%;resize:vertical;min-height:95px;line-height:1.5}.msld-progress{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}.msld-progress strong{color:var(--ink)}.msld-layout{display:grid;grid-template-columns:210px minmax(0,1fr);flex:1;min-height:0}.msld-side{padding:22px 14px;overflow:auto;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:8px}.msld-step{background:transparent;border:0;color:var(--muted);display:flex;gap:10px;align-items:center;text-align:left;padding:10px 12px;font-size:13px}.msld-step span:first-child{width:25px;height:25px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:11px;flex-shrink:0}.msld-step[aria-current=step]{background:var(--soft);color:var(--accent);font-weight:750}.msld-step[aria-current=step] span:first-child{background:var(--accent);color:var(--paper);border-color:var(--accent)}.msld-side-note{font-size:12px;color:var(--muted);margin-top:auto;padding:22px 12px 6px}.msld-main{overflow:auto;padding:28px 34px;scroll-behavior:auto;min-width:0}.msld-section-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:22px}.msld-description{color:var(--muted);font-size:14px;margin-top:9px!important;max-width:850px}.msld-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(245px,1fr);gap:20px}.msld-card{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:22px;min-width:0}.msld-card+.msld-card{margin-top:16px}.msld-grid>.msld-card+.msld-card{margin-top:0}.msld-stack{display:flex;flex-direction:column;gap:14px}.msld-stack>.msld-card+.msld-card{margin-top:0}.msld-prose{display:flex;flex-direction:column;gap:16px;margin-top:16px}.msld-prose p{font-size:14px}.msld-list{margin:12px 0 0;padding-left:22px;font-size:14px}.msld-list li+li{margin-top:9px}.msld-callout{background:var(--soft);border-left:4px solid var(--accent);border-radius:8px;padding:14px 17px;color:var(--ink);font-size:13px}.msld-callout strong{display:block;margin-bottom:4px}.msld-button{padding:9px 15px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-weight:650;font-size:13px}.msld-button:hover{background:var(--soft)}.msld-primary{background:var(--accent);color:var(--paper);border-color:var(--accent)}.msld-primary:hover{filter:brightness(.94);background:var(--accent)}.msld-button-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:18px}.msld-small{font-size:12px;color:var(--muted)}.msld-filter{display:flex;gap:12px;align-items:end;flex-wrap:wrap;padding:16px;background:var(--paper);border:1px solid var(--line);border-radius:12px;margin-bottom:14px}.msld-field{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:650}.msld-field .msld-small{font-weight:400}.msld-search{flex:1;min-width:210px}.msld-table-wrap{overflow:auto;max-height:calc(100vh - 405px);min-height:250px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}.msld table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}.msld th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;background:var(--soft);padding:12px 15px;color:var(--muted);position:sticky;top:0;z-index:1}.msld td{padding:11px 15px;border-top:1px solid var(--line);vertical-align:middle}.msld tbody tr:hover{background:var(--ground)}.msld th:first-child,.msld td:first-child{min-width:140px}.msld th:nth-child(2),.msld td:nth-child(2){min-width:180px}.msld-score-value{font-size:21px;font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}.msld-pin{padding:5px 10px;border:1px solid var(--line);color:var(--accent);background:var(--paper);white-space:nowrap;font-size:12px}.msld-pin[aria-pressed=true]{background:var(--soft);border-color:var(--accent)}.msld-evidence-label{font-size:15px;font-weight:750;margin-bottom:6px}.msld-evidence-header{display:flex;gap:14px;justify-content:space-between}.msld-evidence-fields{display:grid;grid-template-columns:220px minmax(0,1fr);gap:18px;margin-top:16px}.msld-evidence-fields textarea{min-height:80px}.msld-number{display:inline-flex;width:31px;height:31px;align-items:center;justify-content:center;background:var(--soft);color:var(--accent);border-radius:8px;margin-right:9px;font-size:13px}.msld-reasoning-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(235px,.42fr);gap:20px}.msld-form-card{scroll-margin-top:20px}.msld-form-card h3{display:flex;align-items:center}.msld-form-body{margin-top:13px;font-size:13px;color:var(--muted)}.msld-form-fields{margin-top:17px;display:flex;flex-direction:column;gap:14px}.msld-q-disclosure{font-size:12px;margin-top:10px}.msld-section-divider{margin:22px 0 18px;border:0;border-top:1px solid var(--line)}.msld-jump{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}.msld-jump a{font-size:12px;background:var(--soft);border-radius:6px;padding:5px 8px}.msld-empty{padding:30px;text-align:center;border:1px dashed var(--line);border-radius:12px;background:var(--paper)}.msld-empty p{color:var(--muted);margin-top:8px}.msld-debrief-card{border-top:4px solid var(--accent)}.msld-feedback{margin-top:14px;border-left:3px solid var(--accent);background:var(--soft);padding:12px;font-size:13px}.msld-check-options{display:flex;flex-direction:column;gap:10px;margin-top:12px}.msld-check-options label{display:flex;gap:10px;align-items:flex-start;font-size:13px}.msld-check-options input{margin-top:5px;accent-color:var(--accent)}.msld-status{flex-shrink:0;font-size:12px;padding:7px 26px;border-top:1px solid var(--line);background:var(--paper);color:var(--muted);display:flex;justify-content:space-between;gap:20px}.msld-toast{font-size:13px;min-height:24px;color:var(--accent);font-weight:650;margin-top:10px}.msld-confirm-backdrop{position:absolute;inset:0;background:#092632a8;display:grid;place-items:center;padding:22px;z-index:20}.msld-confirm{max-width:460px;border-radius:14px;background:var(--paper);padding:28px;border:1px solid var(--line);box-shadow:0 20px 80px #0004}.msld-confirm p{margin-top:12px;font-size:14px;color:var(--muted)}.msld-print,.msld-print-root{display:none}.msld-sources{display:flex;flex-direction:column;gap:9px;margin-top:14px;font-size:12px}.msld-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .msld-save-warning{background:var(--soft);color:var(--ink);padding:10px 20px;max-height:32%;overflow:auto;min-height:0;display:block}.msld-save-warning-body{display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px}.msld-save-warning-text{flex:1 1 270px}.msld-save-warning-text strong{display:block;font-size:13px}.msld-save-warning-text p{margin-top:3px;font-size:12px;line-height:1.45}.msld-save-warning-body>.msld-button-row{margin:0;gap:8px}.msld-save-warning .msld-footer-meta{display:none}
 @media(max-width:1000px){.msld-layout{grid-template-columns:165px minmax(0,1fr)}.msld-main{padding:22px}.msld-grid{grid-template-columns:1fr}.msld-reasoning-grid{grid-template-columns:minmax(0,1fr)}.msld-head{padding:17px 20px}.msld-evidence-fields{grid-template-columns:1fr}.msld-side{padding:18px 7px}.msld-step{padding:9px;font-size:12px}.msld-table-wrap{max-height:none}.msld-grid>.msld-card+.msld-card{margin-top:0}}
 .msld-worksheet-tools{display:flex;flex-wrap:wrap;gap:8px;max-height:min(180px,30vh);overflow:auto;margin-top:12px;padding-top:12px;border-top:1px solid #78949e}.msld-worksheet-tools[hidden]{display:none}.msld-head-actions button[aria-expanded=true]{background:#ffffff1f}.msld-score-guide{background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:10px 14px;margin-bottom:12px;font-size:12px}.msld-score-guide summary{cursor:pointer;font-weight:700;color:var(--accent);min-height:28px;display:list-item}.msld-score-guide p{margin-top:7px}.msld-score-guide .msld-callout{margin-top:12px;font-size:12px}.msld summary:focus-visible{outline:3px solid #e8a33c;outline-offset:3px}.msld-score-selection{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;font-size:12px}.msld-score-selection label{display:flex;align-items:center;gap:8px;min-height:40px;cursor:pointer}.msld-score-selection input{accent-color:var(--accent);width:17px;height:17px}.msld-review{margin-bottom:18px}.msld-review-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}.msld-review-item{padding:14px;background:var(--ground);border:1px solid var(--line);border-radius:9px;min-width:0}.msld-review-item p{font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:8px}.msld-review-item .msld-button{margin-top:12px}.msld-review-gap{margin-top:14px}.msld-review-gap p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;margin-top:7px}.msld-review-gap .msld-button{margin-top:10px}.msld-review-earlier{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}.msld-review-earlier>summary{min-height:42px;align-content:center;cursor:pointer;font-weight:700;color:var(--accent)}.msld-review-earlier h4{margin:0;font-size:15px;line-height:1.4;overflow-wrap:anywhere}
@@ -759,7 +812,7 @@ function MaineSldPracticePanel(props) {
   const data = MAINE_SLD_CASE_DATA;
   const pendingStateWorkspaceFocusRef = React.useRef(false);
   const [stateWorkspaceOpen, setStateWorkspaceOpen] = React.useState(false), [stateWorkspaceFocusRequest, setStateWorkspaceFocusRequest] = React.useState(0);
-  const dialogRef = React.useRef(null), mainRef = React.useRef(null), headingRef = React.useRef(null), fileRef = React.useRef(null), toolsToggleRef = React.useRef(null), toolsOpenRef = React.useRef(false), pendingQuestionRef = React.useRef(null), pendingFocusRef = React.useRef(null), confirmRef = React.useRef(null), confirmTriggerRef = React.useRef(null), pendingFindingRef = React.useRef(null), referenceSummaryRef = React.useRef(null), comparisonSummaryRef = React.useRef(null), pendingComparisonRef = React.useRef(false), pendingParticipantReviewRef = React.useRef(null), pendingReflectionRef = React.useRef(null), savedAvailabilityRef = React.useRef(null);
+  const dialogRef = React.useRef(null), mainRef = React.useRef(null), headingRef = React.useRef(null), fileRef = React.useRef(null), toolsToggleRef = React.useRef(null), toolsOpenRef = React.useRef(false), pendingQuestionRef = React.useRef(null), pendingFocusRef = React.useRef(null), confirmRef = React.useRef(null), confirmTriggerRef = React.useRef(null), pendingFindingRef = React.useRef(null), referenceSummaryRef = React.useRef(null), comparisonSummaryRef = React.useRef(null), pendingComparisonRef = React.useRef(false), pendingParticipantReviewRef = React.useRef(null), pendingReflectionRef = React.useRef(null), savedAvailabilityRef = React.useRef(null), printCleanupRef = React.useRef(null);
   const [state, setState] = React.useState(() => {
     let start;
     try {
@@ -807,7 +860,12 @@ function MaineSldPracticePanel(props) {
     { key: "multilingual", label: "Multilingual inquiry", step: "reasoning" }
   ];
   const externalAnnouncement = typeof props.announceToSR === "function";
+  const mountedRef = React.useRef(true);
+  React.useEffect(() => () => {
+    mountedRef.current = false;
+  }, []);
   const say = (message) => {
+    if (!mountedRef.current) return;
     setStatus(message);
     if (externalAnnouncement) props.announceToSR(message);
   };
@@ -856,7 +914,7 @@ function MaineSldPracticePanel(props) {
     setStateWorkspaceFocusRequest((value) => value + 1);
   };
   const focusQuestion = (id) => {
-    const target = id === "gap" ? dialogRef.current.querySelector('[data-testid="evidence-gap"]') : document.getElementById("msld-" + id);
+    const target = id === "gap" ? dialogRef.current && dialogRef.current.querySelector('[data-testid="evidence-gap"]') : document.getElementById("msld-" + id);
     if (target) {
       target.scrollIntoView({ block: "start" });
       const field = target.matches("textarea") ? target : target.querySelector("select,textarea");
@@ -883,7 +941,7 @@ function MaineSldPracticePanel(props) {
   };
   const focusReflection = (key) => {
     setReferenceQuestion(null);
-    const field = dialogRef.current.querySelector('[data-testid="reflection-' + key + '"]');
+    const field = dialogRef.current && dialogRef.current.querySelector('[data-testid="reflection-' + key + '"]');
     if (field) {
       field.scrollIntoView({ block: "center" });
       field.focus({ preventScroll: true });
@@ -914,19 +972,21 @@ function MaineSldPracticePanel(props) {
     }
   };
   const editFinding = (id) => {
-    const origin = participantReturn, target = { step, question: step === "reasoning" && !(origin && origin.reflectionKey) ? referenceQuestion : null, reflectionKey: step === "reasoning" && origin ? origin.reflectionKey : null };
+    const origin = participantReturn, compOrigin = comparisonReturn, target = { step, question: step === "reasoning" && !(origin && origin.reflectionKey) ? referenceQuestion : null, reflectionKey: step === "reasoning" && origin ? origin.reflectionKey : null };
     pendingFindingRef.current = id;
     changeStep("evidence");
     setEvidenceReturn(target);
     if (origin) setParticipantReturn(origin);
+    if (compOrigin) setComparisonReturn(compOrigin);
   };
   const returnFromEvidence = () => {
-    const target = evidenceReturn, origin = participantReturn;
+    const target = evidenceReturn, origin = participantReturn, compOrigin = comparisonReturn;
     setEvidenceReturn(null);
     if (target.reflectionKey) openReflection(target.reflectionKey);
     else if (target.step === "reasoning" && target.question) editQuestion(target.question);
     else changeStep(target.step);
     if (origin && target.step === "reasoning") setParticipantReturn(origin);
+    if (compOrigin && target.step === "reasoning") setComparisonReturn(compOrigin);
   };
   const changeCase = (id, next, question) => {
     setParticipantReturn(null);
@@ -1044,7 +1104,10 @@ function MaineSldPracticePanel(props) {
     say(row.label + " restored with its original role and note.");
   };
   const writeFinding = (id, key, value) => updateWork((w) => ({ findings: { ...w.findings, [id]: { ...w.findings[id], [key]: value } } }));
-  const sourceUrl = (source) => source.url || source.href || "";
+  const sourceUrl = (source) => {
+    const raw = source && typeof source === "object" ? String(source.url || source.href || "").trim() : "";
+    return /^https?:\/\//i.test(raw) ? raw : "";
+  };
   const sourceLabel = (source) => source.label || source.title || source.id || "Source";
   const scale = (row) => {
     const scales = data.scoreScales || {};
@@ -1097,7 +1160,7 @@ function MaineSldPracticePanel(props) {
     if (pendingFindingRef.current && step === "evidence") {
       const id = pendingFindingRef.current;
       pendingFindingRef.current = null;
-      const field = dialogRef.current.querySelector('[data-testid="score-note-' + id + '"]');
+      const field = dialogRef.current && dialogRef.current.querySelector('[data-testid="score-note-' + id + '"]');
       if (field) {
         field.scrollIntoView({ block: "center" });
         field.focus({ preventScroll: true });
@@ -1112,7 +1175,7 @@ function MaineSldPracticePanel(props) {
       const question = pendingParticipantReviewRef.current;
       pendingParticipantReviewRef.current = null;
       const testId = question.startsWith("guide-") ? "revise-guide-" + question.slice(6).toLowerCase() : "edit-" + question.toLowerCase();
-      const button = dialogRef.current.querySelector('[data-testid="' + testId + '"]');
+      const button = dialogRef.current && dialogRef.current.querySelector('[data-testid="' + testId + '"]');
       if (button) {
         button.scrollIntoView({ block: "center" });
         button.focus({ preventScroll: true });
@@ -1136,6 +1199,7 @@ function MaineSldPracticePanel(props) {
     if (!pending) return;
     pendingFocusRef.current = null;
     const root = dialogRef.current;
+    if (!root) return;
     const target = pending.note ? root.querySelector('[data-testid="score-note-' + pending.note + '"]') : pending.purpose ? root.querySelector('[data-testid="score-purpose-' + pending.purpose + '"]') : pending.source ? root.querySelector('[data-testid="score-pin-' + pending.source + '"]') || headingRef.current : pending.score ? root.querySelector('[data-testid="score-pin-' + pending.score + '"]') : pending.filter ? root.querySelector('[data-testid="selected-score-filter"]') : headingRef.current;
     if (target) {
       if (pending.reveal) {
@@ -1278,13 +1342,14 @@ function MaineSldPracticePanel(props) {
       const index = stack.lastIndexOf(trap);
       if (index !== -1) stack.splice(index, 1);
       if (wasTop && previous && previous !== document.body && previous !== document.documentElement && previous.isConnected && typeof previous.focus === "function") previous.focus();
+      if (printCleanupRef.current) printCleanupRef.current();
     };
   }, []);
   React.useEffect(() => {
     confirmRef.current = confirm;
     if (confirm) {
       confirmTriggerRef.current = document.activeElement;
-      const el = dialogRef.current.querySelector("[data-confirm-dialog] button");
+      const el = dialogRef.current && dialogRef.current.querySelector("[data-confirm-dialog] button");
       if (el) el.focus();
     } else if (confirmTriggerRef.current && confirmTriggerRef.current.isConnected) {
       confirmTriggerRef.current.focus();
@@ -1293,11 +1358,20 @@ function MaineSldPracticePanel(props) {
   }, [confirm]);
   const download = () => {
     const blob = new Blob([JSON.stringify(Core.exportWorksheet(state, data), null, 2)], { type: "application/json" });
-    const href = URL.createObjectURL(blob), link = document.createElement("a");
-    link.href = href;
-    link.download = "Maine-SLD-Case-Lab-Worksheet.json";
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(href), 1e3);
+    const href = URL.createObjectURL(blob);
+    try {
+      const link = document.createElement("a");
+      link.href = href;
+      link.download = "Maine-SLD-Case-Lab-Worksheet.json";
+      link.click();
+    } finally {
+      setTimeout(() => {
+        try {
+          URL.revokeObjectURL(href);
+        } catch (_) {
+        }
+      }, 1e3);
+    }
     say("Worksheet download started. It includes your responses for all " + data.cases.length + " practice cases.");
   };
   const restore = async (event) => {
@@ -1309,7 +1383,9 @@ function MaineSldPracticePanel(props) {
       return;
     }
     try {
-      const restored = Core.importWorksheet(await file.text(), data);
+      const rawText = await file.text();
+      if (!mountedRef.current) return;
+      const restored = Core.importWorksheet(rawText, data);
       setConfirm({ kind: "restore", title: "Restore this worksheet?", body: "This replaces the responses currently in this tab for all " + data.cases.length + " practice cases. Download your current worksheet first if you want to keep it. Older compatible worksheets retain their recorded cases and start the added cases blank.", action: () => {
         setParticipantReturn(null);
         setEarlierReviewOpen(false);
@@ -1333,7 +1409,7 @@ function MaineSldPracticePanel(props) {
         say("Worksheet restored.");
       } });
     } catch (error) {
-      say(error.message);
+      if (mountedRef.current) say(error.message);
     }
   };
   const copyLink = async () => {
@@ -1353,7 +1429,8 @@ function MaineSldPracticePanel(props) {
       say("Select and copy the activity link below.");
     }
   };
-  const print = () => {
+  const preparePrintSheet = () => {
+    if (printCleanupRef.current) printCleanupRef.current();
     const existing = document.getElementById("maine-sld-print-root");
     if (existing) existing.remove();
     const sheet = document.createElement("article");
@@ -1446,7 +1523,7 @@ function MaineSldPracticePanel(props) {
           const section = document.createElement("section");
           sheet.appendChild(section);
           add("p", row.label + (row.value !== "" ? " — " + row.value + " (" + scale(row) + ")" : ""), section);
-          add("p", f.purpose + ": " + (f.note || "[Reasoning not recorded]"), section);
+          add("p", (purposeLabel(f.purpose) || f.purpose) + ": " + (f.note || "[Reasoning not recorded]"), section);
         }
       });
       add("h3", "Form reasoning");
@@ -1458,9 +1535,10 @@ function MaineSldPracticePanel(props) {
         add("p", responseLabel(id, w.responses[id]), section);
         add("p", w.responses[id].note || "[Reasoning not recorded]", section);
       });
+      const reflectionLabels = { caution: "Interpretation caution", access: "Access support", sdi: "Teaching adaptation to investigate", summary: "Q9 summary", gap: "Evidence still needed", family: "Family explanation", multilingual: "Multilingual learner transfer" };
       Object.entries(w.reflections).forEach(([key, value]) => {
         if (value) {
-          add("h3", { caution: "Interpretation caution", access: "Access support", sdi: "Teaching adaptation to investigate", summary: "Q9 summary", gap: "Evidence still needed", family: "Family explanation", multilingual: "Multilingual learner transfer" }[key]);
+          add("h3", Object.prototype.hasOwnProperty.call(reflectionLabels, key) ? reflectionLabels[key] : key);
           add("p", value);
         }
       });
@@ -1470,7 +1548,7 @@ function MaineSldPracticePanel(props) {
         add("p", "These participant responses refer to the earlier excerpt, not the current source record.");
         Object.values(prior.findings).forEach((finding) => {
           add("p", finding.label);
-          add("p", purposeLabel(finding.purpose) + ": " + (finding.note || "[No note recorded]"));
+          add("p", (purposeLabel(finding.purpose) || finding.purpose) + ": " + (finding.note || "[No note recorded]"));
         });
         Object.entries(prior.responses).forEach(([id, entry]) => {
           if (entry.answer || entry.note) {
@@ -1481,7 +1559,8 @@ function MaineSldPracticePanel(props) {
         });
         Object.entries(prior.reflections).forEach(([key, value]) => {
           if (value) {
-            add("h3", "Earlier " + key);
+            const label = Object.prototype.hasOwnProperty.call(reflectionLabels, key) ? reflectionLabels[key] : key;
+            add("h3", "Earlier " + label);
             add("p", value);
           }
         });
@@ -1491,11 +1570,33 @@ function MaineSldPracticePanel(props) {
     data.sources.forEach((source) => add("p", sourceLabel(source) + ": " + sourceUrl(source)));
     document.body.appendChild(sheet);
     const cleanup = () => {
-      sheet.remove();
+      try {
+        sheet.remove();
+      } catch (_) {
+      }
       window.removeEventListener("afterprint", cleanup);
+      if (printCleanupRef.current === cleanup) printCleanupRef.current = null;
     };
+    printCleanupRef.current = cleanup;
     window.addEventListener("afterprint", cleanup);
-    window.print();
+    return cleanup;
+  };
+  const preparePrintSheetRef = React.useRef(preparePrintSheet);
+  preparePrintSheetRef.current = preparePrintSheet;
+  React.useEffect(() => {
+    const onBeforePrint = () => {
+      if (!document.getElementById("maine-sld-print-root") && preparePrintSheetRef.current) preparePrintSheetRef.current();
+    };
+    window.addEventListener("beforeprint", onBeforePrint);
+    return () => window.removeEventListener("beforeprint", onBeforePrint);
+  }, []);
+  const print = () => {
+    const cleanup = preparePrintSheet();
+    try {
+      window.print();
+    } catch (_) {
+      cleanup();
+    }
     say("Print view prepared with full case records and participant responses only.");
   };
   const writingLimit = (id, value) => {
@@ -1545,7 +1646,7 @@ function MaineSldPracticePanel(props) {
   const priorRecordWork = () => {
     const prior = work.priorRecordWork;
     if (!prior) return null;
-    return /* @__PURE__ */ React.createElement("aside", { "aria-label": "Earlier Samira work preserved", className: "msld-callout msld-prior-work", "data-testid": "prior-record-work" }, /* @__PURE__ */ React.createElement("strong", null, "Earlier Samira work preserved"), /* @__PURE__ */ React.createElement("p", null, "This case now uses the complete source record, edition ", current.completeRecord.version, ". Your earlier excerpt responses are archived below and included in worksheet downloads. They have not been attached to the revised evidence; the current case starts blank."), /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", null, "Review earlier responses (", prior.version, ")"), /* @__PURE__ */ React.createElement("h4", null, "Selected findings from the earlier record"), Object.entries(prior.findings).map(([id, finding]) => /* @__PURE__ */ React.createElement("section", { key: id }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("strong", null, finding.label)), /* @__PURE__ */ React.createElement("p", null, purposeLabel(finding.purpose), ": ", finding.note || "No note recorded."))), /* @__PURE__ */ React.createElement("h4", null, "Earlier form reasoning"), Object.entries(prior.responses).filter(([, entry]) => entry.answer || entry.note).map(([id, entry]) => /* @__PURE__ */ React.createElement("section", { key: id }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("strong", null, id, ": ", responseLabel(id, entry))), /* @__PURE__ */ React.createElement("p", null, entry.note || "No note recorded."))), /* @__PURE__ */ React.createElement("h4", null, "Earlier planning notes"), Object.entries(prior.reflections).filter(([, value]) => value).map(([key, value]) => /* @__PURE__ */ React.createElement("p", { key }, /* @__PURE__ */ React.createElement("strong", null, planningFields.find((field) => field.key === key)?.label || key, ": "), value))));
+    return /* @__PURE__ */ React.createElement("aside", { "aria-label": t("maine_sld.prior_record_aria", "Earlier Samira work preserved"), className: "msld-callout msld-prior-work", "data-testid": "prior-record-work" }, /* @__PURE__ */ React.createElement("strong", null, "Earlier Samira work preserved"), /* @__PURE__ */ React.createElement("p", null, "This case now uses the complete source record, edition ", current.completeRecord.version, ". Your earlier excerpt responses are archived below and included in worksheet downloads. They have not been attached to the revised evidence; the current case starts blank."), /* @__PURE__ */ React.createElement("details", null, /* @__PURE__ */ React.createElement("summary", null, "Review earlier responses (", prior.version, ")"), /* @__PURE__ */ React.createElement("h4", null, "Selected findings from the earlier record"), Object.entries(prior.findings).map(([id, finding]) => /* @__PURE__ */ React.createElement("section", { key: id }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("strong", null, finding.label)), /* @__PURE__ */ React.createElement("p", null, purposeLabel(finding.purpose), ": ", finding.note || "No note recorded."))), /* @__PURE__ */ React.createElement("h4", null, "Earlier form reasoning"), Object.entries(prior.responses).filter(([, entry]) => entry.answer || entry.note).map(([id, entry]) => /* @__PURE__ */ React.createElement("section", { key: id }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("strong", null, id, ": ", responseLabel(id, entry))), /* @__PURE__ */ React.createElement("p", null, entry.note || "No note recorded."))), /* @__PURE__ */ React.createElement("h4", null, "Earlier planning notes"), Object.entries(prior.reflections).filter(([, value]) => value).map(([key, value]) => /* @__PURE__ */ React.createElement("p", { key }, /* @__PURE__ */ React.createElement("strong", null, planningFields.find((field) => field.key === key)?.label || key, ": "), value))));
   };
   const completeSourceRecord = () => {
     const record = current.completeRecord;
@@ -1568,9 +1669,10 @@ function MaineSldPracticePanel(props) {
         requestAnimationFrame(() => keepGuideWriterVisible(field));
       }
     }, value: entry.note, onChange: (e) => writeResponse(id, "note", e.target.value), placeholder: ["Q5", "Q6", "Q7"].includes(id) ? "Record the narrative, validity review, or verification needed. If bypassed, explain the form route." : "Identify the case facts, interpretation limits, and evidence still needed." }), writingLimit(id, entry.note))), /* @__PURE__ */ React.createElement("div", { className: "msld-button-row" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "msld-button", "data-testid": "consult-evidence-" + id.toLowerCase(), onClick: () => consultEvidence(id) }, "Consult your selected evidence for ", id), participantReturnAction(id)));
-  }), /* @__PURE__ */ React.createElement("section", { className: "msld-card" }, /* @__PURE__ */ React.createElement("h3", null, "Put Question 9 into words"), /* @__PURE__ */ React.createElement("div", { className: "msld-stack", style: { marginTop: 16 } }, reflection("summary", "Two-sentence Q9 summary", "Explain the impact, whether general education can adequately meet the need, and any necessary teaching adaptation."), reflection("gap", "What evidence could change or complete your judgment?"), participantReturn && participantReturn.question === "gap" && /* @__PURE__ */ React.createElement("div", { className: "msld-button-row", style: { marginTop: 0 } }, participantReturnAction("gap")), /* @__PURE__ */ React.createElement("details", { className: "msld-gap-prompts", "data-testid": "evidence-request-prompts" }, /* @__PURE__ */ React.createElement("summary", null, "Plan an actionable evidence request"), /* @__PURE__ */ React.createElement("ul", { className: "msld-list" }, /* @__PURE__ */ React.createElement("li", null, "What information would you request?"), /* @__PURE__ */ React.createElement("li", null, "Which person, source or record could provide it?"), /* @__PURE__ */ React.createElement("li", null, "Which uncertainty or next decision could it clarify?")), /* @__PURE__ */ React.createElement("p", { className: "msld-small", style: { marginTop: 10 } }, "Use these optional prompts in your evidence note above. They do not rate the request or determine readiness.")), reflection("family", current.id === "jordan" ? "Explain the findings to Jordan’s family" : "Explain the findings or next inquiry to the family", "Address their concerns, current supports and the further inquiry still warranted. For a multilingual family, plan meaningful communication in the language they use.")))), /* @__PURE__ */ React.createElement("aside", { "aria-label": "Keep Questions 8 and 9 distinct", className: "msld-stack" }, /* @__PURE__ */ React.createElement("div", { className: "msld-card" }, /* @__PURE__ */ React.createElement("h3", null, "Keep Questions 8 and 9 distinct"), /* @__PURE__ */ React.createElement("p", { className: "msld-description" }, "A finding of SLD and a finding that special education is required are separate steps. State the evidence for each."), /* @__PURE__ */ React.createElement("div", { className: "msld-jump" }, data.formSteps.map((q) => /* @__PURE__ */ React.createElement("a", { key: q.id, href: "#msld-" + q.id, onClick: (e) => {
+  }), /* @__PURE__ */ React.createElement("section", { className: "msld-card" }, /* @__PURE__ */ React.createElement("h3", null, "Put Question 9 into words"), /* @__PURE__ */ React.createElement("div", { className: "msld-stack", style: { marginTop: 16 } }, reflection("summary", "Two-sentence Q9 summary", "Explain the impact, whether general education can adequately meet the need, and any necessary teaching adaptation."), reflection("gap", "What evidence could change or complete your judgment?"), participantReturn && participantReturn.question === "gap" && /* @__PURE__ */ React.createElement("div", { className: "msld-button-row", style: { marginTop: 0 } }, participantReturnAction("gap")), /* @__PURE__ */ React.createElement("details", { className: "msld-gap-prompts", "data-testid": "evidence-request-prompts" }, /* @__PURE__ */ React.createElement("summary", null, "Plan an actionable evidence request"), /* @__PURE__ */ React.createElement("ul", { className: "msld-list" }, /* @__PURE__ */ React.createElement("li", null, "What information would you request?"), /* @__PURE__ */ React.createElement("li", null, "Which person, source or record could provide it?"), /* @__PURE__ */ React.createElement("li", null, "Which uncertainty or next decision could it clarify?")), /* @__PURE__ */ React.createElement("p", { className: "msld-small", style: { marginTop: 10 } }, "Use these optional prompts in your evidence note above. They do not rate the request or determine readiness.")), reflection("family", current.id === "jordan" ? "Explain the findings to Jordan’s family" : "Explain the findings or next inquiry to the family", "Address their concerns, current supports and the further inquiry still warranted. For a multilingual family, plan meaningful communication in the language they use.")))), /* @__PURE__ */ React.createElement("aside", { "aria-label": t("maine_sld.q8_q9_distinct_aria", "Keep Questions 8 and 9 distinct"), className: "msld-stack" }, /* @__PURE__ */ React.createElement("div", { className: "msld-card" }, /* @__PURE__ */ React.createElement("h3", null, "Keep Questions 8 and 9 distinct"), /* @__PURE__ */ React.createElement("p", { className: "msld-description" }, "A finding of SLD and a finding that special education is required are separate steps. State the evidence for each."), /* @__PURE__ */ React.createElement("div", { className: "msld-jump" }, data.formSteps.map((q) => /* @__PURE__ */ React.createElement("a", { key: q.id, href: "#msld-" + q.id, onClick: (e) => {
     e.preventDefault();
     const target = document.getElementById("msld-" + q.id);
+    if (!target) return;
     target.scrollIntoView({ block: "start" });
     const field = target.querySelector("select,textarea");
     if (field) field.focus({ preventScroll: true });
@@ -1596,7 +1698,9 @@ function MaineSldPracticePanel(props) {
     const w = state.byCase[c.id];
     return /* @__PURE__ */ React.createElement("article", { className: "msld-contrast-case", "data-testid": "contrast-" + c.id, key: c.id }, /* @__PURE__ */ React.createElement("span", { className: "msld-badge" }, c.id === current.id ? "Current case" : "Comparison case"), /* @__PURE__ */ React.createElement("h3", { style: { marginTop: 9 } }, c.title), /* @__PURE__ */ React.createElement("p", null, alexPair ? c.id === "alex" ? c.assumptions[c.assumptions.length - 1] : c.narrative[1] : caseFocus(c)), ["Q8", "Q9"].map((id) => /* @__PURE__ */ React.createElement("div", { className: "msld-contrast-entry", key: id, "data-testid": "contrast-" + c.id + "-" + id.toLowerCase() }, /* @__PURE__ */ React.createElement("h3", null, id, " · Your response"), /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("strong", null, responseLabel(id, w.responses[id]))), /* @__PURE__ */ React.createElement("p", null, String(w.responses[id].note).trim() ? w.responses[id].note : "Reasoning not yet recorded."), /* @__PURE__ */ React.createElement("div", { className: "msld-button-row" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "msld-button", "data-testid": "contrast-edit-" + c.id + "-" + id.toLowerCase(), "aria-label": "Edit " + id + " reasoning for " + c.title, onClick: () => editComparison(c.id, id) }, "Edit ", id, " in this case")))), /* @__PURE__ */ React.createElement("div", { className: "msld-contrast-entry", "data-testid": "contrast-" + c.id + "-gap" }, /* @__PURE__ */ React.createElement("h3", null, "Evidence still needed"), /* @__PURE__ */ React.createElement("p", null, String(w.reflections.gap).trim() ? w.reflections.gap : "Evidence requests not yet recorded."), /* @__PURE__ */ React.createElement("div", { className: "msld-button-row" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "msld-button", "data-testid": "contrast-edit-" + c.id + "-gap", "aria-label": "Edit evidence requests for " + c.title, onClick: () => editComparison(c.id, "gap") }, "Edit evidence requests in this case"))));
   })), /* @__PURE__ */ React.createElement("p", { className: "msld-small", style: { marginTop: 14 } }, "This comparison contains only your responses. The reviewed guide remains a separate discussion reference.")));
-  return /* @__PURE__ */ React.createElement("div", { className: "msld", lang: "en", "data-dark": dark, "data-testid": "maine-sld-panel", role: "dialog", "aria-modal": "true", "aria-labelledby": "msld-title", "aria-describedby": "msld-intro", ref: dialogRef, tabIndex: -1 }, /* @__PURE__ */ React.createElement("style", null, SLD_STYLE), /* @__PURE__ */ React.createElement("div", { className: "msld-shell", inert: confirm ? "" : void 0, "aria-hidden": confirm ? true : void 0 }, /* @__PURE__ */ React.createElement("header", { className: "msld-head", role: "presentation" }, /* @__PURE__ */ React.createElement("div", { className: "msld-head-row" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "msld-kicker" }, "Leadership Hub / Professional learning"), /* @__PURE__ */ React.createElement("h1", { id: "msld-title" }, "Maine SLD Case Lab"), /* @__PURE__ */ React.createElement("p", { className: "msld-subtitle", id: "msld-intro" }, "Examine a fictional record. Weigh the evidence. Explain a defensible decision path.")), /* @__PURE__ */ React.createElement("div", { className: "msld-head-actions" }, /* @__PURE__ */ React.createElement("button", { type: "button", ref: toolsToggleRef, "data-testid": "worksheet-tools-toggle", "aria-expanded": toolsOpen, "aria-controls": "msld-worksheet-tools", onClick: () => setToolsOpen((open) => !open) }, "Worksheet tools ", toolsOpen ? "−" : "+"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: props.onBack || props.onClose }, "Leadership Hub"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: props.onClose || props.onBack, "aria-label": t("maineSldPractice.a11y_close_maine_sld_case_lab", "Close Maine SLD Case Lab") }, "Close ✕"))), /* @__PURE__ */ React.createElement("div", { className: "msld-worksheet-tools", id: "msld-worksheet-tools", "data-testid": "worksheet-tools-menu", role: "region", "aria-label": t("maineSldPractice.a11y_worksheet_tools", "Worksheet tools"), hidden: !toolsOpen }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyLink }, "Copy activity link"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-testid": "export-reflection", onClick: download }, "Download worksheet"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: print }, "Print"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileRef.current.click() }, "Restore worksheet"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-testid": "reset-reflection", onClick: () => setConfirm({ kind: "reset", title: "Reset this case?", body: "This clears the selected findings, notes, and debrief state for " + (current.title || current.name) + ". Your other cases stay intact." + (work.priorRecordWork ? " Your archived earlier-record work is also preserved." : ""), action: () => {
+  return /* @__PURE__ */ React.createElement("div", { className: "msld", lang: "en", "data-dark": dark, "data-testid": "maine-sld-panel", role: "dialog", "aria-modal": "true", "aria-labelledby": "msld-title", "aria-describedby": "msld-intro", ref: dialogRef, tabIndex: -1 }, /* @__PURE__ */ React.createElement("style", null, SLD_STYLE), /* @__PURE__ */ React.createElement("div", { className: "msld-shell", inert: confirm ? "" : void 0, "aria-hidden": confirm ? true : void 0 }, /* @__PURE__ */ React.createElement("header", { className: "msld-head", role: "presentation" }, /* @__PURE__ */ React.createElement("div", { className: "msld-head-row" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "msld-kicker" }, "Leadership Hub / Professional learning"), /* @__PURE__ */ React.createElement("h1", { id: "msld-title" }, "Maine SLD Case Lab"), /* @__PURE__ */ React.createElement("p", { className: "msld-subtitle", id: "msld-intro" }, "Examine a fictional record. Weigh the evidence. Explain a defensible decision path.")), /* @__PURE__ */ React.createElement("div", { className: "msld-head-actions" }, /* @__PURE__ */ React.createElement("button", { type: "button", ref: toolsToggleRef, "data-testid": "worksheet-tools-toggle", "aria-expanded": toolsOpen, "aria-controls": "msld-worksheet-tools", onClick: () => setToolsOpen((open) => !open) }, "Worksheet tools ", toolsOpen ? "−" : "+"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: props.onBack || props.onClose }, "Leadership Hub"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: props.onClose || props.onBack, "aria-label": t("maineSldPractice.a11y_close_maine_sld_case_lab", "Close Maine SLD Case Lab") }, "Close ✕"))), /* @__PURE__ */ React.createElement("div", { className: "msld-worksheet-tools", id: "msld-worksheet-tools", "data-testid": "worksheet-tools-menu", role: "region", "aria-label": t("maineSldPractice.a11y_worksheet_tools", "Worksheet tools"), hidden: !toolsOpen }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyLink }, "Copy activity link"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-testid": "export-reflection", onClick: download }, "Download worksheet"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: print }, "Print"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    if (fileRef.current) fileRef.current.click();
+  } }, "Restore worksheet"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-testid": "reset-reflection", onClick: () => setConfirm({ kind: "reset", title: "Reset this case?", body: "This clears the selected findings, notes, and debrief state for " + (current.title || current.name) + ". Your other cases stay intact." + (work.priorRecordWork ? " Your archived earlier-record work is also preserved." : ""), action: () => {
     setParticipantReturn(null);
     setEarlierReviewOpen(false);
     setPlanningReviewOpen(false);

@@ -66,11 +66,28 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
+      - name: Apply reviewed trailer security patch
+        run: npm run security:prepare
+
       - name: Type-check the trailer
-        run: npx tsc --noEmit
+        run: npx --no-install tsc --noEmit
 
       - name: Download Chrome Headless Shell
-        run: npx remotion browser ensure
+        run: npx --no-install remotion browser ensure
+
+      - name: Validate dispatch inputs
+        env:
+          TRAILER_COMPOSITION: ${{ inputs.composition }}
+          TRAILER_CRF: ${{ inputs.crf }}
+        run: |
+          if [[ ! "$TRAILER_COMPOSITION" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$ ]]; then
+            echo "::error::Invalid trailer composition identifier."
+            exit 1
+          fi
+          if [[ ! "$TRAILER_CRF" =~ ^([0-9]|[1-4][0-9]|5[01])$ ]]; then
+            echo "::error::Invalid CRF value (expected integer 0-51)."
+            exit 1
+          fi
 
       - name: Render
         # Pass dispatch inputs as data; expression substitution inside run can

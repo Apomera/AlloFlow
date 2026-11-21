@@ -21,12 +21,12 @@
   var MAX_DISCOVERY_QUERY_CHARS = 300;
   var MIN_DISCOVERED_SOURCE_CHARS = 120;
   var STORAGE_PREFIX = 'alloflow_lumen_evidence_v1';
-  var STOP_WORDS = {
+  var STOP_WORDS = Object.assign(Object.create(null), {
     a: 1, an: 1, and: 1, are: 1, as: 1, at: 1, be: 1, by: 1, for: 1,
     from: 1, how: 1, i: 1, in: 1, is: 1, it: 1, of: 1, on: 1, or: 1,
     that: 1, the: 1, this: 1, to: 1, was: 1, were: 1, what: 1, when: 1,
     where: 1, which: 1, who: 1, why: 1, with: 1
-  };
+  });
 
   function nowIso(now) {
     var d = now == null ? new Date() : new Date(now);
@@ -64,7 +64,7 @@
 
   function normalizeSourceLabels(value) {
     var rows = Array.isArray(value) ? value : String(value == null ? '' : value).split(',');
-    var seen = {};
+    var seen = Object.create(null);
     var out = [];
     rows.some(function (row) {
       var label = cleanLabel(row, '').slice(0, MAX_SOURCE_LABEL_CHARS);
@@ -83,10 +83,11 @@
   }
 
   function privateWebHost(hostname) {
-    var host = String(hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
+    var host = String(hostname || '').toLowerCase().replace(/^\[|\]$/g, '').replace(/\.+$/, '');
     if (!host) return true;
-    if (host === 'localhost' || host === 'localhost.localdomain' || host === 'metadata.google.internal' || /\.local$/.test(host)) return true;
-    if (host === '::1' || host === '0.0.0.0' || /^127\./.test(host) || /^10\./.test(host) || /^192\.168\./.test(host) || /^169\.254\./.test(host)) return true;
+    if (host === 'localhost' || host === 'localhost.localdomain' || host === 'metadata.google.internal' || /\.local$/.test(host) || /\.localhost$/.test(host)) return true;
+    if (host === '::' || host === '::1' || host === '0.0.0.0' || /^127\./.test(host) || /^10\./.test(host) || /^192\.168\./.test(host) || /^169\.254\./.test(host)) return true;
+    if (/^::ffff:/i.test(host) || /^0:0:0:0:0:ffff:/i.test(host)) return true;
     var match = host.match(/^172\.(\d{1,3})\./);
     if (match && Number(match[1]) >= 16 && Number(match[1]) <= 31) return true;
     if (/^(?:fc|fd)[0-9a-f]{2}:/i.test(host) || /^fe[89ab][0-9a-f]:/i.test(host)) return true;
@@ -193,7 +194,7 @@
     var cleanQuery = cleanText(query).replace(/\s+/g, ' ').slice(0, MAX_DISCOVERY_QUERY_CHARS);
     var queryHash = hashString(cleanQuery.toLowerCase());
     var provider = cleanLabel(raw.source || raw.provider, 'web-search').slice(0, 80);
-    var seen = {};
+    var seen = Object.create(null);
     var out = [];
     rows.some(function (row, index) {
       row = row || {};
@@ -506,7 +507,7 @@
     if (!qTokens.length) qTokens = tokenize(query, true, tokOpts);
     if (!qTokens.length || !nodes.length) return [];
     var uniqueQuery = Array.from(new Set(qTokens));
-    var docFreq = {};
+    var docFreq = Object.create(null);
     nodes.forEach(function (node) {
       var unique = new Set(tokenize(node.content + ' ' + ((node.locator && node.locator.heading) || ''), true, tokOpts));
       uniqueQuery.forEach(function (term) { if (unique.has(term)) docFreq[term] = (docFreq[term] || 0) + 1; });
@@ -516,7 +517,7 @@
       var body = foldAccents(node.content.toLowerCase());
       var heading = foldAccents(cleanLabel(node.locator && node.locator.heading, '').toLowerCase());
       var tokens = tokenize(body, true, tokOpts);
-      var counts = {};
+      var counts = Object.create(null);
       tokens.forEach(function (token) { counts[token] = (counts[token] || 0) + 1; });
       var score = 0;
       var matches = [];
@@ -539,7 +540,7 @@
   function buildGroundedPrompt(projectInput, question, retrieved, options) {
     options = options || {};
     var project = migrateProject(projectInput);
-    var sourceMap = {};
+    var sourceMap = Object.create(null);
     project.sources.forEach(function (source) { sourceMap[source.id] = source; });
     // A passage whose provider does not allow AI use never enters a prompt,
     // whatever the caller retrieved (Study refuses earlier; this is the floor).
@@ -603,7 +604,7 @@
   function validateGroundedResponse(raw, retrieved) {
     var parsed;
     try { parsed = parseGroundedResponse(raw); } catch (error) { return { ok: false, errors: [error.message], claims: [] }; }
-    var nodes = {};
+    var nodes = Object.create(null);
     (retrieved || []).forEach(function (row) { var node = row.node || row; if (node && node.id) nodes[node.id] = node; });
     if (parsed.insufficientEvidence === true) return { ok: true, insufficientEvidence: true, answer: '', claims: [], errors: [] };
     if (!Array.isArray(parsed.claims) || !parsed.claims.length) return { ok: false, errors: ['A grounded response needs at least one cited claim.'], claims: [] };

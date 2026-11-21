@@ -41,16 +41,22 @@ app.config["MAX_CONTENT_LENGTH"] = 256 * 1024
 MAX_MESSAGE_CHARS = 64000
 MAX_MESSAGES = 128
 MAX_REQUESTED_TOKENS = 65536
+GENERATION_TIMEOUT_SECONDS = max(5.0, float(os.environ.get("ALLOFLOW_NPU_GENERATION_TIMEOUT_SECONDS", "120") or 120))
 _generation_lock = threading.Lock()
 _session = None
 _tokenizer = None
 _active_id = None
 _allow_model_swap = False
 _require_api_token = False
+_bound_host = "127.0.0.1"
 
 
 class ContextLimitError(ValueError):
     """The submitted prompt leaves no room for output in the selected model."""
+
+
+class GenerationTimeoutError(TimeoutError):
+    """Inference exceeded the wall-clock generation deadline."""
 
 
 class RequestValidationError(ValueError):
@@ -95,13 +101,27 @@ def request_too_large(_error):
 def is_allowed_host(host_header):
     if not host_header or not isinstance(host_header, str):
         return False
+    raw = host_header.strip()
+    if not raw or len(raw) > 255 or any(ord(c) <= 32 or ord(c) == 127 for c in raw):
+        return False
     try:
-        hostname = (urlsplit("http://" + host_header.strip()).hostname or "").lower()
+        parsed = urlsplit("http://" + raw)
+        if parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment:
+            return False
+        port = parsed.port
+        if port is not None and not (1 <= port <= 65535):
+            return False
+        hostname = (parsed.hostname or "").lower()
     except ValueError:
         return False
+    if not hostname or hostname.endswith("."):
+        return False
     allowed = {"localhost", "127.0.0.1", "::1"}
-    for raw in os.environ.get("ALLOFLOW_NPU_ALLOWED_ORIGINS", "").split(","):
-        val = raw.strip()
+    bound = (_bound_host or "").strip().strip("[]").lower()
+    if bound and bound not in ("0.0.0.0", "::", "*"):
+        allowed.add(bound)
+    for raw_origin in os.environ.get("ALLOFLOW_NPU_ALLOWED_ORIGINS", "").split(","):
+        val = raw_origin.strip()
         if not val:
             continue
         try:
@@ -126,7 +146,9 @@ def guard_browser_origin():
         if expected_token:
             auth = request.headers.get("Authorization", "")
             prefix = "Bearer "
-            if not auth.startswith(prefix) or not hmac.compare_digest(auth[len(prefix):].strip(), expected_token):
+            if (len(auth) > 1024
+                    or not auth.startswith(prefix)
+                    or not hmac.compare_digest(auth[len(prefix):].strip().encode("utf-8"), expected_token.encode("utf-8"))):
                 return api_error("Valid bearer token required.", 401)
 
 
@@ -272,8 +294,11 @@ def generate(messages, max_tokens=512, temperature=0.7):
     # Get model input names
     input_names = {i.name for i in _session.get_inputs()}
     generated = []
+    deadline = time.monotonic() + GENERATION_TIMEOUT_SECONDS
 
     for step in range(max_tokens):
+        if time.monotonic() >= deadline:
+            raise GenerationTimeoutError("AI generation timed out; try a shorter prompt or lower max_tokens.")
         feeds = {"input_ids": input_ids}
         if "attention_mask" in input_names:
             feeds["attention_mask"] = np.ones_like(input_ids, dtype="int64")
@@ -334,6 +359,8 @@ def chat_completions():
         response_model = _active_id
     except ContextLimitError:
         return api_error("Messages exceed the model context; shorten the conversation.")
+    except GenerationTimeoutError:
+        return api_error("AI generation timed out; try a shorter prompt or lower max_tokens.", 504)
     except Exception:
         app.logger.exception("AI generation failed")
         return api_error("AI generation failed; check the server log.", 500)
@@ -367,7 +394,7 @@ def health():
 
 
 def main(argv=None):
-    global _allow_model_swap, _require_api_token
+    global _allow_model_swap, _require_api_token, _bound_host
     parser = argparse.ArgumentParser(description="AlloFlow NPU Server")
     parser.add_argument("--model", default="deepseek-r1-1.5b", choices=list(MODELS.keys()))
     parser.add_argument("--port", type=int, default=11435)
@@ -379,6 +406,7 @@ def main(argv=None):
                         help="Lock the active model against runtime swap requests (default)")
     args = parser.parse_args(argv)
     _allow_model_swap = bool(args.allow_model_swap and not args.no_model_swap)
+    _bound_host = args.host
     _require_api_token = args.host not in ("127.0.0.1", "localhost", "::1")
     if _require_api_token and len(os.environ.get("ALLOFLOW_NPU_API_TOKEN", "").strip()) < 32:
         raise SystemExit("Refusing to bind non-loopback host without ALLOFLOW_NPU_API_TOKEN (>=32 chars).")

@@ -93,6 +93,122 @@
     if (typeof Lab.makeOrbitViewer !== 'function') return null;
     var sceneState = null, layout = [], layoutSignature = '[]', layoutNotify = null, statusNotify = null;
     var attachedHost = null, attachment = 0;
+    var galleryTextures = null;
+
+    function prefersReducedMotion() {
+      try {
+        return typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+          !!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (e) { return false; }
+    }
+
+    function disposeGalleryTextures() {
+      if (!galleryTextures) return;
+      Object.keys(galleryTextures).forEach(function (key) {
+        var tex = galleryTextures[key];
+        if (tex && typeof tex.dispose === 'function') { try { tex.dispose(); } catch (e) {} }
+      });
+      galleryTextures = null;
+    }
+
+    function makeCanvasTexture(THREE, width, height, draw, repeatX, repeatY, isColor) {
+      if (!THREE || typeof THREE.CanvasTexture !== 'function' || typeof document === 'undefined' ||
+          typeof document.createElement !== 'function') return null;
+      try {
+        var c = document.createElement('canvas');
+        c.width = width; c.height = height;
+        var ctx = c.getContext && c.getContext('2d');
+        if (!ctx) return null;
+        draw(ctx, width, height);
+        var tex = new THREE.CanvasTexture(c);
+        if (repeatX || repeatY) {
+          tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(repeatX || 1, repeatY || 1);
+        }
+        if (isColor && THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+        tex.needsUpdate = true;
+        return tex;
+      } catch (e) { return null; }
+    }
+
+    function ensureGalleryTextures(THREE) {
+      if (galleryTextures) return galleryTextures;
+      // Deterministic hash for procedural architectural grain (zero external assets).
+      function h2(x, y) { var n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); }
+      var floorMap = makeCanvasTexture(THREE, 256, 256, function (ctx, w, h) {
+        ctx.fillStyle = '#e7e4dc'; ctx.fillRect(0, 0, w, h);
+        var rows = 8, cols = 4, pw = w / cols, ph = h / rows;
+        for (var r = 0; r < rows; r++) {
+          var shift = (r % 2) * (pw * 0.5);
+          for (var c = -1; c <= cols; c++) {
+            var x = c * pw + shift, y = r * ph;
+            var v = h2(c + 13, r + 29);
+            var lum = Math.round(224 + (v - 0.5) * 16);
+            ctx.fillStyle = 'rgb(' + (lum + 4) + ',' + (lum + 1) + ',' + (lum - 7) + ')';
+            ctx.fillRect(x + 1, y + 1, pw - 2, ph - 2);
+            // Subtle pale architectural oak grain lines along each plank.
+            ctx.strokeStyle = 'rgba(136,122,102,0.11)'; ctx.lineWidth = 1;
+            for (var g = 0; g < 4; g++) {
+              var gy = y + 3 + (g + h2(c * 7 + g, r)) * (ph - 6) / 4;
+              ctx.beginPath(); ctx.moveTo(x + 1, gy);
+              ctx.quadraticCurveTo(x + pw * 0.5, gy + (h2(g, r + c) - 0.5) * 3, x + pw - 1, gy);
+              ctx.stroke();
+            }
+            ctx.strokeStyle = 'rgba(110,104,96,0.18)'; ctx.strokeRect(x + 0.5, y + 0.5, pw - 1, ph - 1);
+          }
+        }
+      }, 10, 7, true);
+      var floorBump = makeCanvasTexture(THREE, 256, 256, function (ctx, w, h) {
+        ctx.fillStyle = '#888888'; ctx.fillRect(0, 0, w, h);
+        var rows = 8, cols = 4, pw = w / cols, ph = h / rows;
+        for (var r = 0; r < rows; r++) {
+          var shift = (r % 2) * (pw * 0.5);
+          for (var c = -1; c <= cols; c++) {
+            var x = c * pw + shift, y = r * ph;
+            ctx.strokeStyle = '#505050'; ctx.lineWidth = 1.5;
+            ctx.strokeRect(x + 0.5, y + 0.5, pw - 1, ph - 1);
+          }
+        }
+      }, 10, 7, false);
+      var wallMap = makeCanvasTexture(THREE, 128, 128, function (ctx, w, h) {
+        ctx.fillStyle = '#f3f5f4'; ctx.fillRect(0, 0, w, h);
+        for (var i = 0; i < 420; i++) {
+          var px = h2(i, 3) * w, py = h2(i, 11) * h, r = 4 + h2(i, 19) * 14;
+          var shade = Math.round(234 + (h2(i, 23) - 0.5) * 18);
+          ctx.fillStyle = 'rgba(' + shade + ',' + (shade + 2) + ',' + (shade + 1) + ',0.16)';
+          ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill();
+        }
+        // Fine gallery wall acoustic seam lines.
+        ctx.strokeStyle = 'rgba(176,188,185,0.22)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(64, 0); ctx.lineTo(64, h); ctx.stroke();
+      }, 6, 2, true);
+      var plinthMap = makeCanvasTexture(THREE, 128, 128, function (ctx, w, h) {
+        ctx.fillStyle = '#dce3e0'; ctx.fillRect(0, 0, w, h);
+        for (var i = 0; i < 520; i++) {
+          var px = h2(i, 37) * w, py = h2(i, 53) * h, s = 1 + h2(i, 71) * 2.2;
+          var dark = h2(i, 89) > 0.55;
+          ctx.fillStyle = dark ? 'rgba(130,144,140,0.16)' : 'rgba(255,255,255,0.24)';
+          ctx.fillRect(px, py, s, s);
+        }
+      }, 2, 2, true);
+      var beamMap = makeCanvasTexture(THREE, 64, 128, function (ctx, w, h) {
+        var grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, 'rgba(255,248,228,0.68)');
+        grad.addColorStop(0.28, 'rgba(255,246,222,0.34)');
+        grad.addColorStop(0.72, 'rgba(255,244,218,0.10)');
+        grad.addColorStop(1, 'rgba(255,244,218,0.0)');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+      }, 1, 1, false);
+      var dustMap = makeCanvasTexture(THREE, 32, 32, function (ctx, w, h) {
+        var grad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+        grad.addColorStop(0, 'rgba(255,250,235,0.95)');
+        grad.addColorStop(0.4, 'rgba(255,244,214,0.45)');
+        grad.addColorStop(1, 'rgba(255,240,200,0.0)');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+      }, 1, 1, false);
+      galleryTextures = { floorMap: floorMap, floorBump: floorBump, wallMap: wallMap, plinthMap: plinthMap, beamMap: beamMap, dustMap: dustMap };
+      return galleryTextures;
+    }
 
     function layoutSnapshot() {
       return layout.map(function (point) { return { id: point.id, x: point.x, y: point.y, visible: point.visible }; });
@@ -128,6 +244,8 @@
       var overview = m.view === 'gallery';
       var open = m.view === 'inspect';
       var materials = {}, pickables = [], exhibit = null;
+      var tex = ensureGalleryTextures(THREE);
+      var dustPoints = null, dustBase = null, dustSeeds = null;
 
       function tagExhibit(mesh) {
         if (exhibit) {
@@ -137,30 +255,43 @@
         return mesh;
       }
 
-      function material(color, opacity) {
-        var key = color + ':' + (opacity == null ? 1 : opacity);
+      function material(color, opacity, extra) {
+        var tag = extra && extra.tag ? ':' + extra.tag : '';
+        var key = color + ':' + (opacity == null ? 1 : opacity) + tag;
         if (!materials[key]) {
-          materials[key] = new THREE.MeshStandardMaterial({
-            color: color, roughness: 0.73, metalness: 0.04, side: THREE.DoubleSide,
+          var cfg = {
+            color: color, roughness: 0.68, metalness: 0.05, side: THREE.DoubleSide,
             transparent: opacity != null && opacity < 1, opacity: opacity == null ? 1 : opacity,
             depthWrite: opacity == null || opacity >= 1
-          });
+          };
+          if (extra) {
+            if (extra.roughness != null) cfg.roughness = extra.roughness;
+            if (extra.metalness != null) cfg.metalness = extra.metalness;
+            if (extra.map) cfg.map = extra.map;
+            if (extra.bumpMap) { cfg.bumpMap = extra.bumpMap; cfg.bumpScale = extra.bumpScale || 0.015; }
+            if (extra.emissive != null) { cfg.emissive = extra.emissive; cfg.emissiveIntensity = extra.emissiveIntensity || 0.6; }
+          }
+          materials[key] = new THREE.MeshStandardMaterial(cfg);
           // r128 expects linear material colors when the renderer outputs sRGB.
           materials[key].color.convertSRGBToLinear();
+          if (extra && extra.emissive != null && materials[key].emissive) materials[key].emissive.convertSRGBToLinear();
         }
         return materials[key];
       }
 
-      function box(x, y, z, w, h, d, color, parent) {
-        var mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material(color));
+      function box(x, y, z, w, h, d, color, parent, matExtra) {
+        var mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material(color, null, matExtra));
         mesh.position.set(x, y, z);
+        if (matExtra && matExtra.receiveShadow) mesh.receiveShadow = true;
+        if (matExtra && matExtra.castShadow) mesh.castShadow = true;
         (parent || S.model).add(mesh);
         return tagExhibit(mesh);
       }
 
-      function sphere(x, y, z, radius, color, parent) {
-        var mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 20, 14), material(color));
+      function sphere(x, y, z, radius, color, parent, matExtra) {
+        var mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 20, 14), material(color, null, matExtra));
         mesh.position.set(x, y, z);
+        if (matExtra && matExtra.castShadow) mesh.castShadow = true;
         (parent || S.model).add(mesh);
         return tagExhibit(mesh);
       }
@@ -175,7 +306,7 @@
         return tagExhibit(mesh);
       }
 
-      function polygon(points, color, opacity, parent) {
+      function polygon(points, color, opacity, parent, castShadow) {
         var positions = [], indices = [];
         points.forEach(function (p) { positions.push(p.x, p.y, p.z); });
         for (var i = 1; i < points.length - 1; i++) indices.push(0, i, i + 1);
@@ -184,17 +315,18 @@
         geometry.setIndex(indices);
         geometry.computeVertexNormals();
         var mesh = new THREE.Mesh(geometry, material(color, opacity));
+        if (castShadow) mesh.castShadow = true;
         (parent || S.model).add(mesh);
         return tagExhibit(mesh);
       }
 
       function prism(points, color, thickness, parent) {
-        polygon(points, color, null, parent);
+        polygon(points, color, null, parent, true);
         var backs = points.map(function (p) { return { x: p.x, y: p.y, z: p.z - thickness }; });
-        polygon(backs.slice().reverse(), color, null, parent);
+        polygon(backs.slice().reverse(), color, null, parent, true);
         for (var i = 0; i < points.length; i++) {
           var next = (i + 1) % points.length;
-          polygon([points[i], backs[i], backs[next], points[next]], color, null, parent);
+          polygon([points[i], backs[i], backs[next], points[next]], color, null, parent, true);
         }
       }
 
@@ -203,31 +335,138 @@
       }
 
       function ring(x, y, z, radius, color) {
-        var mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.045, 8, 48), material(color));
+        var mesh = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.045, 10, 48), material(color, null, { tag: 'medallion', roughness: 0.35, metalness: 0.25 }));
         mesh.rotation.x = -Math.PI / 2;
         mesh.position.set(x, y, z);
         S.model.add(mesh);
+        // Subtle recessed inner brass-halo ring for gallery floor viewing spot.
+        var inner = new THREE.Mesh(new THREE.TorusGeometry(radius * 0.72, 0.018, 8, 40), material(0xf6f8f7, null, { tag: 'medallion-inner', roughness: 0.4, metalness: 0.12 }));
+        inner.rotation.x = -Math.PI / 2;
+        inner.position.set(x, y + 0.004, z);
+        S.model.add(inner);
       }
 
       function architecture() {
-        box(0, -0.2, 0, 36, 0.4, 23, COLORS.floor);
-        box(0, 4.2, -7.3, 36, 8.4, 0.25, 0xf5f7f6);
-        box(-17.8, 3.5, 0, 0.25, 7, 14.5, 0xe2e8e6);
-        box(17.8, 3.5, 0, 0.25, 7, 14.5, 0xe2e8e6);
-        box(0, 0.025, 6.5, 33, 0.03, 0.1, COLORS.teal);
+        var floorMat = { tag: 'oak-floor', map: tex.floorMap, bumpMap: tex.floorBump, bumpScale: 0.014, roughness: 0.48, metalness: 0.06, receiveShadow: true };
+        var wallMat = { tag: 'gallery-wall', map: tex.wallMap, roughness: 0.86, metalness: 0.02, receiveShadow: true };
+        var plinthMat = { tag: 'plinth-stone', map: tex.plinthMap, roughness: 0.58, metalness: 0.05, receiveShadow: true };
+        var trackMat = { tag: 'track-metal', roughness: 0.32, metalness: 0.68 };
+        var lensMat = { tag: 'spot-lens', roughness: 0.15, metalness: 0.1, emissive: 0xfff2cf, emissiveIntensity: 1.1 };
+
+        // Architectural oak parquet gallery floor and plaster walls.
+        box(0, -0.2, 0, 36, 0.4, 23, tex.floorMap ? 0xf2eee6 : COLORS.floor, null, floorMat);
+        box(0, 4.2, -7.3, 36, 8.4, 0.25, 0xf5f7f6, null, wallMat);
+        box(-17.8, 3.5, 0, 0.25, 7, 14.5, 0xe6ecea, null, wallMat);
+        box(17.8, 3.5, 0, 0.25, 7, 14.5, 0xe6ecea, null, wallMat);
+
+        // Dark architectural baseboards and upper gallery cornice trim.
+        box(0, 0.12, -7.12, 35.6, 0.24, 0.08, 0x3b4d52, null, { tag: 'trim', roughness: 0.55, metalness: 0.15 });
+        box(-17.64, 0.12, 0, 0.08, 0.24, 14.4, 0x3b4d52, null, { tag: 'trim', roughness: 0.55, metalness: 0.15 });
+        box(17.64, 0.12, 0, 0.08, 0.24, 14.4, 0x3b4d52, null, { tag: 'trim', roughness: 0.55, metalness: 0.15 });
+        box(0, 8.22, -7.1, 36, 0.28, 0.24, 0xdbe3e0, null, { tag: 'cornice', roughness: 0.68, metalness: 0.06 });
+
+        // Gallery sightline guide strip & crisp floor reference grid.
+        box(0, 0.025, 6.5, 33, 0.03, 0.1, COLORS.teal, null, { tag: 'accent-rail', roughness: 0.38, metalness: 0.22 });
         for (var gridX = -17; gridX <= 17; gridX += 2) box(gridX, 0.007, 0, 0.016, 0.008, 22, 0xcbd5d3);
         for (var gridZ = -7; gridZ <= 11; gridZ += 2) box(0, 0.009, gridZ, 35, 0.008, 0.016, 0xcbd5d3);
+
+        // Overhead museum track lighting bar spanning all three bays.
+        box(0, 7.62, 1.55, 31.5, 0.11, 0.14, 0x2c3a3e, null, trackMat);
+        [-11, -5.5, 0, 5.5, 11].forEach(function (sx) {
+          box(sx, 8.0, 1.55, 0.055, 0.72, 0.055, 0x2c3a3e, null, trackMat);
+        });
+
+        var coneOpacity = (overview || open) ? 0.15 : 0.035;
+        var beamMat = null;
+        if (THREE.ConeGeometry && THREE.MeshBasicMaterial) {
+          beamMat = new THREE.MeshBasicMaterial({
+            color: 0xfff5dc,
+            map: tex.beamMap || null,
+            transparent: true,
+            opacity: coneOpacity,
+            depthWrite: false,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending || THREE.NormalBlending
+          });
+        }
+
         ['room', 'triangle', 'shape'].forEach(function (key, index) {
           var cx = CENTERS[key], color = [COLORS.teal, COLORS.coral, COLORS.gold][index];
-          box(cx, 6.9, -7.08, 8.9, 0.32, 0.18, color);
-          box(cx, 0.14, -0.4, 8.5, 0.25, 11.3, 0xd9e2e0);
-          box(cx, 0.285, 4.7, 8.5, 0.035, 0.18, color);
+          // Wall header bar with subtle metallic sheen & numbered station pips.
+          box(cx, 6.9, -7.08, 8.9, 0.32, 0.18, color, null, { tag: 'bay-header-' + index, roughness: 0.42, metalness: 0.14 });
+          // Recessed shadow-gap kickplate under each honed limestone plinth.
+          box(cx, 0.035, -0.4, 8.15, 0.07, 10.95, 0x3b4d52, null, { tag: 'trim', roughness: 0.55, metalness: 0.15 });
+          box(cx, 0.16, -0.4, 8.5, 0.22, 11.3, 0xdce4e1, null, plinthMat);
+          box(cx, 0.285, 4.7, 8.5, 0.035, 0.18, color, null, { tag: 'plinth-edge-' + index, roughness: 0.36, metalness: 0.24 });
           ring(cx, 0.045, 7.3, 0.64, color);
-          for (var dot = 0; dot <= index; dot++) sphere(cx + (dot - index / 2) * 0.35, 6.35, -7.02, 0.095, color);
+          for (var dot = 0; dot <= index; dot++) sphere(cx + (dot - index / 2) * 0.35, 6.35, -7.02, 0.095, color, null, { tag: 'pip-' + index, roughness: 0.34, metalness: 0.2 });
+
+          // Architectural track spotlight canister aimed at each exhibit center.
+          if (THREE.CylinderGeometry) {
+            var lampGroup = new THREE.Group();
+            lampGroup.position.set(cx, 7.42, 1.55);
+            lampGroup.rotation.x = 0.24;
+            var canister = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.21, 0.46, 14), material(0x28363a, null, trackMat));
+            lampGroup.add(canister);
+            var lens = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.03, 14), material(0xfff7e2, null, lensMat));
+            lens.position.y = -0.23;
+            lampGroup.add(lens);
+            S.model.add(lampGroup);
+          }
+
+          // Volumetric translucent museum spotlight cone descending onto plinth.
+          if (beamMat && THREE.ConeGeometry) {
+            var coneHeight = 6.9;
+            var coneGeo = new THREE.ConeGeometry(3.45, coneHeight, 24, 1, true);
+            var cone = new THREE.Mesh(coneGeo, beamMat);
+            cone.position.set(cx, 7.22 - coneHeight * 0.5, 0.65);
+            cone.rotation.x = 0.20;
+            cone.renderOrder = 3;
+            S.model.add(cone);
+          }
         });
+
+        // Subtle sunlit museum air dust motes drifting inside the spotlight cones.
+        if (THREE.Points && THREE.PointsMaterial && (overview || open)) {
+          var moteCount = 90;
+          var pos = new Float32Array(moteCount * 3);
+          dustBase = new Float32Array(moteCount * 3);
+          dustSeeds = new Float32Array(moteCount);
+          for (var di = 0; di < moteCount; di++) {
+            var bayCx = CENTERS[['room', 'triangle', 'shape'][di % 3]];
+            var hA = Math.sin(di * 12.9898 + 4.14) * 43758.5453; hA -= Math.floor(hA);
+            var hB = Math.sin(di * 78.233 + 1.73) * 43758.5453; hB -= Math.floor(hB);
+            var hC = Math.sin(di * 39.425 + 9.21) * 43758.5453; hC -= Math.floor(hC);
+            var r = Math.sqrt(hA) * 2.75, ang = hB * Math.PI * 2;
+            var mx = bayCx + Math.cos(ang) * r;
+            var my = 1.0 + hC * 5.6;
+            var mz = 0.25 + Math.sin(ang) * r * 0.85;
+            pos[di * 3] = dustBase[di * 3] = mx;
+            pos[di * 3 + 1] = dustBase[di * 3 + 1] = my;
+            pos[di * 3 + 2] = dustBase[di * 3 + 2] = mz;
+            dustSeeds[di] = hA * 6.283 + hB * 3.14;
+          }
+          var dustGeo = new THREE.BufferGeometry();
+          dustGeo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+          var dustMat = new THREE.PointsMaterial({
+            color: 0xfff5d8,
+            map: tex.dustMap || null,
+            size: 0.085,
+            sizeAttenuation: true,
+            transparent: true,
+            opacity: 0.42,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending || THREE.NormalBlending
+          });
+          dustPoints = new THREE.Points(dustGeo, dustMat);
+          dustPoints.renderOrder = 4;
+          S.model.add(dustPoints);
+        }
+
+        // Architectural bay divider pilasters and ceiling beams.
         [-5.5, 5.5].forEach(function (x) {
-          box(x, 3.5, -6.7, 0.22, 7, 0.25, 0xc6d3cf);
-          box(x, 7.08, -0.6, 0.25, 0.2, 12.6, 0xc6d3cf);
+          box(x, 3.5, -6.7, 0.22, 7, 0.25, 0xc6d3cf, null, { tag: 'pilaster', roughness: 0.62, metalness: 0.08, receiveShadow: true });
+          box(x, 7.08, -0.6, 0.25, 0.2, 12.6, 0xc6d3cf, null, { tag: 'pilaster', roughness: 0.62, metalness: 0.08 });
         });
       }
 
@@ -235,13 +474,14 @@
         var group = new THREE.Group(), p = object.position;
         group.position.set(p.x, p.y, p.z);
         S.model.add(group);
-        box(0, 0.055, 0, 0.64, 0.11, 0.46, COLORS.ink, group);
-        box(-0.135, 0.39, 0, 0.17, 0.58, 0.21, color, group);
-        box(0.135, 0.39, 0, 0.17, 0.58, 0.21, color, group);
-        box(0, 0.915, 0, 0.53, 0.52, 0.28, color, group);
-        box(-0.278, 0.925, 0, 0.075, 0.45, 0.21, color, group);
-        box(0.278, 0.925, 0, 0.075, 0.45, 0.21, color, group);
-        sphere(0, 1.425, 0, 0.225, color, group);
+        var shadowOpt = { tag: 'mannequin-part', roughness: 0.56, metalness: 0.06, castShadow: true };
+        box(0, 0.055, 0, 0.64, 0.11, 0.46, COLORS.ink, group, shadowOpt);
+        box(-0.135, 0.39, 0, 0.17, 0.58, 0.21, color, group, shadowOpt);
+        box(0.135, 0.39, 0, 0.17, 0.58, 0.21, color, group, shadowOpt);
+        box(0, 0.915, 0, 0.53, 0.52, 0.28, color, group, shadowOpt);
+        box(-0.278, 0.925, 0, 0.075, 0.45, 0.21, color, group, shadowOpt);
+        box(0.278, 0.925, 0, 0.075, 0.45, 0.21, color, group, shadowOpt);
+        sphere(0, 1.425, 0, 0.225, color, group, shadowOpt);
         sphere(-0.07, 1.455, 0.203, 0.027, COLORS.ink, group);
         sphere(0.07, 1.455, 0.203, 0.027, COLORS.ink, group);
       }
@@ -329,7 +569,7 @@
           prism(points, colors[index % colors.length], 0.16);
           if (station === 'shape' && open) outline(points, 0x977524, 0.012);
         });
-        box(cx, 0.37, -0.3, 5.9, 0.22, 7, 0xc9d6d0);
+        box(cx, 0.37, -0.3, 5.9, 0.22, 7, 0xc9d6d0, null, { tag: 'shape-pad', map: tex.plinthMap, roughness: 0.6, metalness: 0.04, receiveShadow: true });
         return parts;
       }
 
@@ -344,6 +584,20 @@
       S.galleryPickables = pickables;
       S.gallery = { station: station, view: m.view || 'illusion', objects: objects, beams: beams, fragments: fragments,
         referenceEye: { x: center, y: EYE_Y, z: EYE_Z }, center: center };
+      S.tick = dustPoints ? function (now) {
+        if ((S.data && S.data.static) || prefersReducedMotion()) return;
+        var attr = dustPoints.geometry && dustPoints.geometry.attributes && dustPoints.geometry.attributes.position;
+        if (!attr || !dustBase || !dustSeeds) return;
+        var t = (now || 0) * 0.00045;
+        var arr = attr.array;
+        for (var i = 0; i < dustSeeds.length; i++) {
+          var s = dustSeeds[i], j = i * 3;
+          arr[j] = dustBase[j] + Math.sin(t + s) * 0.14;
+          arr[j + 1] = dustBase[j + 1] + Math.sin(t * 0.7 + s * 1.3) * 0.11;
+          arr[j + 2] = dustBase[j + 2] + Math.cos(t * 0.85 + s * 0.8) * 0.12;
+        }
+        attr.needsUpdate = true;
+      } : null;
       S.target.set(overview ? 0 : center, overview ? 2.5 : EYE_Y, overview ? -1 : 0);
       S.fitPts = [];
       var bounds = overview ? [-16, 16, 0, 7, -7, 6] : station === 'room' ? [-4.3, 3, 0, 6.5, -5.5, 5] : [-4, 4, 0.2, 6.2, -3.2, 3];
@@ -389,12 +643,35 @@
       lights: function (THREE, scene, S) {
         S.renderer.outputEncoding = THREE.sRGBEncoding;
         S.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        S.renderer.toneMappingExposure = 0.92;
-        scene.add(new THREE.HemisphereLight(0xffffff, 0xb4c5bd, 0.65));
-        var key = new THREE.DirectionalLight(0xfff7e7, 0.6);
-        key.position.set(4, 14, 10); scene.add(key);
-        var fill = new THREE.DirectionalLight(0xe0f5ff, 0.24);
-        fill.position.set(-12, 8, -2); scene.add(fill);
+        S.renderer.toneMappingExposure = 0.96;
+        if (S.renderer.shadowMap) {
+          S.renderer.shadowMap.enabled = true;
+          if (THREE.PCFSoftShadowMap != null) S.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        }
+        if (typeof THREE.FogExp2 === 'function') scene.fog = new THREE.FogExp2(0xeff3f1, 0.0065);
+        // Warm museum skylight + oak floor bounce hemisphere.
+        scene.add(new THREE.HemisphereLight(0xfefcf8, 0xbab4a8, 0.62));
+        // Primary warm gallery key light with soft architectural shadows.
+        var key = new THREE.DirectionalLight(0xfff5e2, 0.76);
+        key.position.set(5, 14, 11);
+        key.castShadow = true;
+        if (key.shadow) {
+          if (key.shadow.mapSize && key.shadow.mapSize.set) key.shadow.mapSize.set(1024, 1024);
+          if (key.shadow.camera) {
+            key.shadow.camera.left = -20; key.shadow.camera.right = 20;
+            key.shadow.camera.top = 12; key.shadow.camera.bottom = -12;
+            key.shadow.camera.near = 2; key.shadow.camera.far = 36;
+          }
+          key.shadow.bias = -0.0006;
+          key.shadow.radius = 3;
+        }
+        scene.add(key);
+        // Cool clerestory fill light from the upper left for crisp form separation.
+        var fill = new THREE.DirectionalLight(0xd9efff, 0.28);
+        fill.position.set(-13, 9, 2); scene.add(fill);
+        // Subtle architectural rear-right rim light to outline suspended exhibit edges.
+        var rim = new THREE.DirectionalLight(0xfff1dc, 0.20);
+        rim.position.set(14, 7, -10); scene.add(rim);
       },
       debug: function (S) {
         if (!S.gallery) return {};
@@ -457,7 +734,7 @@
       subscribeStatus(statusChanged);
       attach(host);
       if (!host) Promise.resolve().then(function () {
-        if (!attachedHost && attachment === generation) { layoutNotify = null; statusNotify = null; }
+        if (!attachedHost && attachment === generation) { layoutNotify = null; statusNotify = null; disposeGalleryTextures(); }
       });
     };
     viewer.dispose = function () {
@@ -467,6 +744,7 @@
       publishLayout([]);
       layoutNotify = null;
       statusNotify = null;
+      disposeGalleryTextures();
       dispose();
     };
     return viewer;

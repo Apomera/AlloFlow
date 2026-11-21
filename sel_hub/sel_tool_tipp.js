@@ -152,8 +152,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       var _tpT = (ctx && ctx.theme) || {};
       var _tpHC = !!_tpT.isContrast, _tpL = !_tpHC && !_tpT.isDark;
       var _tp_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _tp_BGH = {'#0f172a':'#000000','#15803d':'#000000','#1e293b':'#000000','#ffffff':'#000000','#fef2f2':'#000000'};
-      var _tp_FGL = {'#cbd5e1':'#334155','#fca5a5':'#991b1b','#94a3b8':'#64748b','#fecaca':'#b91c1c','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fcd34d':'#78350f'}, _tp_FGH = {'#cbd5e1':'#ffff00','#fca5a5':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fde68a':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#22c55e':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#7f1d1d':'#ffff00'};
-      var _tp_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1','#0f172a':'#cbd5e1'}, _tp_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#1e293b':'#ffff00','#f59e0b':'#ffff00','#475569':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fecaca':'#ffff00','#cbd5e1':'#ffff00'};
+      var _tp_FGL = {'#cbd5e1':'#334155','#fca5a5':'#991b1b','#94a3b8':'#64748b','#fecaca':'#b91c1c','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fcd34d':'#78350f','#0ea5e9':'#0369a1','#ef4444':'#b91c1c','#22c55e':'#166534','#a855f7':'#7e22ce','#f59e0b':'#92400e'}, _tp_FGH = {'#cbd5e1':'#ffff00','#fca5a5':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fde68a':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#22c55e':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#7f1d1d':'#ffff00','#0ea5e9':'#ffff00','#ef4444':'#ffff00','#a855f7':'#ffff00','#f59e0b':'#ffff00'};
+      var _tp_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1','#0f172a':'#cbd5e1'}, _tp_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#1e293b':'#ffff00','#f59e0b':'#ffff00','#475569':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fecaca':'#ffff00','#cbd5e1':'#ffff00','#0ea5e9':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00'};
       var _tpBg = function(h){ return _tpHC ? (_tp_BGH[h]||h) : (_tpL ? (_tp_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
       // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
@@ -169,22 +169,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
 
-      var d = labToolData.tipp || defaultState();
+      var d = (labToolData.tipp && typeof labToolData.tipp === 'object') ? labToolData.tipp : defaultState();
       function setTIPP(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.tipp) || defaultState();
-          var next = Object.assign({}, prior, patch);
-          if (patch.log) next.lastUsed = todayISO();
+          var prior = (prev && prev.tipp && typeof prev.tipp === 'object') ? prev.tipp : defaultState();
+          var resolved = typeof patch === 'function' ? patch(prior) : patch;
+          var next = Object.assign({}, prior, resolved);
+          if (resolved && resolved.log) next.lastUsed = todayISO();
           return Object.assign({}, prev, { tipp: next });
         });
       }
-      var view = d.view || 'home';
+      var VALID_VIEWS = ['home', 'log', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'home';
       function goto(v) { setTIPP({ view: v }); }
+      function safeLog(src) {
+        return (Array.isArray(src) ? src : []).filter(function(e) { return e && typeof e === 'object'; });
+      }
 
       function header() {
-        return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
+        return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': __alloT('sel.tipp.ui.back_to_sel_hub', 'Back to SEL Hub'),
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _tpFg('#cbd5e1'), fontSize: 14 } }, __alloT('sel.tipp.ui.back', '← Back')),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid ' + _tpBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _tpFg('#cbd5e1'), fontSize: 14 } }, __alloT('sel.tipp.ui.back', '← Back')),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _tpFg('#fca5a5'), fontSize: 22, fontWeight: 900 } }, __alloT('sel.tipp.ui.tipp_2', '🆘 TIPP')),
             h('div', { style: { fontSize: 12, color: _tpFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, __alloT('sel.tipp.ui.four_dbt_crisis_survival_skills_for', 'Four DBT crisis-survival skills for acute distress. Do, then think.'))
@@ -201,14 +206,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
           { id: 'print', label: __alloT('sel.tipp.tabs.print.label', 'Pocket card'), icon: '🖨' },
           { id: 'about', label: __alloT('sel.tipp.tabs.about.label', 'About'), icon: 'ℹ' }
         ];
-        return h('div', { role: 'tablist', 'aria-label': __alloT('sel.tipp.ui.tipp_sections', 'TIPP sections'),
+        return h('div', { className: 'no-print', role: 'tablist', 'aria-label': __alloT('sel.tipp.ui.tipp_sections', 'TIPP sections'),
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, id: 'tipp-tab-' + t.id, 'aria-controls': 'tipp-tabpanel', onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#ef4444' : '#334155'),
-                background: active ? 'rgba(239,68,68,0.18)' : _tpBg('#1e293b'),
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + _tpBd(active ? '#ef4444' : '#334155'),
+                background: active ? (_tpHC ? '#000000' : 'rgba(239,68,68,0.18)') : _tpBg('#1e293b'),
                 color: active ? _tpFg('#fecaca') : _tpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -216,22 +221,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       }
 
       function safetyBanner() {
-        return h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.4)', borderRight: '1px solid rgba(239,68,68,0.4)', borderBottom: '1px solid rgba(239,68,68,0.4)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: _tpFg('#fecaca'), lineHeight: 1.65 } },
+        return h('div', { style: { padding: 12, borderRadius: 10, background: _tpHC ? '#000000' : 'rgba(239,68,68,0.10)', borderTop: '1px solid ' + (_tpHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderRight: '1px solid ' + (_tpHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderBottom: '1px solid ' + (_tpHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), borderLeft: '3px solid ' + _tpBd('#ef4444'), marginBottom: 12, fontSize: 12.5, color: _tpFg('#fecaca'), lineHeight: 1.65 } },
           h('strong', null, __alloT('sel.tipp.ui.tipp_is_for_acute_distress_not', '🆘 TIPP is for ACUTE distress, not everyday stress. ')),
           __alloT('sel.tipp.ui.if_you_are_in_crisis_right', 'If you are in crisis right now (thinking about hurting yourself, in immediate danger), please use Crisis Companion in this SEL Hub or call 988 (Suicide and Crisis Lifeline) or text HOME to 741741 (Crisis Text Line). TIPP can buy you the next 5 minutes; a human can be with you for longer.')
         );
       }
 
       function softPointer() {
-        return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _tpFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+        return h('div', { className: 'no-print',
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _tpHC ? '#000000' : (_tpL ? '#f1f5f9' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _tpBd('#334155'), fontSize: 11, color: _tpFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           __alloT('sel.tipp.ui.tipp_is_a_real_dbt_skill', 'TIPP is a real DBT skill but it is not therapy. If you find yourself reaching for TIPP often, that is information; bring it to a counselor or school psych.')
         );
       }
 
       function tippCommandPanel() {
-        var log = (Array.isArray(d.log) ? d.log : []);
+        var log = safeLog(d.log);
         var helped = log.filter(function(e) { return e.helped; }).length;
         var routes = [
           { signal: __alloT('sel.tipp.routes.0.signal', 'Too hot or impulsive'), skill: 'temperature', fit: __alloT('sel.tipp.routes.0.fit', 'Fastest reset') },
@@ -240,13 +245,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
           { signal: __alloT('sel.tipp.routes.3.signal', 'Clenched or tense'), skill: 'paired', fit: __alloT('sel.tipp.routes.3.fit', 'Release tension') }
         ];
         return h('section', { 'aria-label': __alloT('sel.tipp.ui.tipp_quick_chooser', 'TIPP quick chooser'),
-          style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(239,68,68,0.16) 0%, rgba(15,23,42,0.62) 70%)', border: '1px solid rgba(239,68,68,0.34)', marginBottom: 14 } },
+          style: { padding: 14, borderRadius: 12, background: _tpHC ? '#000000' : (_tpL ? 'linear-gradient(135deg, rgba(239,68,68,0.10) 0%, #f8fafc 70%)' : 'linear-gradient(135deg, rgba(239,68,68,0.16) 0%, rgba(15,23,42,0.62) 70%)'), border: '1px solid ' + (_tpHC ? '#ffff00' : 'rgba(239,68,68,0.34)'), marginBottom: 14 } },
           h('div', { style: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 } },
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('div', { style: { fontSize: 12, color: _tpFg('#fca5a5'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, __alloT('sel.tipp.ui.body_first_chooser', 'Body-first chooser')),
               h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), lineHeight: 1.55 } }, __alloT('sel.tipp.ui.match_the_skill_to_the_signal', 'Match the skill to the signal your body is giving right now.'))
             ),
-            h('div', { style: { padding: '8px 10px', borderRadius: 8, background: _tpBg('#0f172a'), border: '1px solid #334155', color: _tpFg('#cbd5e1'), fontSize: 12, fontWeight: 800 } },
+            h('div', { style: { padding: '8px 10px', borderRadius: 8, background: _tpBg('#0f172a'), border: '1px solid ' + _tpBd('#334155'), color: _tpFg('#cbd5e1'), fontSize: 12, fontWeight: 800 } },
               log.length ? _selFill(__alloT('sel.tipp.ui.helped_logcount_helped', '{helped}/{logCount} helped'), { helped: helped, logCount: log.length }) : __alloT('sel.tipp.ui.no_sessions_logged', 'No sessions logged')
             )
           ),
@@ -255,7 +260,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
               var skill = SKILLS.find(function(s) { return s.id === route.skill; });
               return h('button', { key: route.skill, onClick: function() { if (skill) setTIPP({ activeSkill: skill.id, timerSeconds: 0 }); },
                 'aria-label': skill ? _selFill(__alloT('sel.tipp.ui.start_label', 'Start {label}'), { label: skill.label }) : route.signal,
-                style: { textAlign: 'left', padding: 12, borderRadius: 8, border: '1px solid ' + (skill ? skill.color : '#334155'), background: skill ? skill.color + '16' : _tpBg('#1e293b'), color: _tpFg('#e2e8f0'), cursor: 'pointer', minHeight: 104 } },
+                style: { textAlign: 'left', padding: 12, borderRadius: 8, border: '1px solid ' + (skill ? _tpBd(skill.color) : _tpBd('#334155')), background: _tpHC ? '#000000' : (skill ? (_tpL ? '#ffffff' : skill.color + '16') : _tpBg('#1e293b')), color: _tpFg('#e2e8f0'), cursor: 'pointer', minHeight: 104 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 20 } }, skill ? skill.icon : '+'),
                   h('div', { style: { fontSize: 12, color: skill ? _tpFg(skill.color) : _tpFg('#fca5a5'), fontWeight: 900 } }, route.signal)
@@ -272,12 +277,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       // HOME — pick a skill
       // ═══════════════════════════════════════════════════════════
       function renderHome() {
-        if (d.activeSkill) return renderActiveSkill();
+        var activeSkillObj = d.activeSkill ? SKILLS.find(function(x) { return x.id === d.activeSkill; }) : null;
+        if (activeSkillObj) return renderActiveSkill(activeSkillObj);
 
         return h('div', null,
           safetyBanner(),
           tippCommandPanel(),
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(239,68,68,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(239,68,68,0.4)', marginBottom: 14, textAlign: 'center' } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _tpHC ? '#000000' : (_tpL ? 'linear-gradient(135deg, rgba(239,68,68,0.10) 0%, #f8fafc 65%)' : 'linear-gradient(135deg, rgba(239,68,68,0.18) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_tpHC ? '#ffff00' : 'rgba(239,68,68,0.4)'), marginBottom: 14, textAlign: 'center' } },
             h('div', { style: { fontSize: 38, marginBottom: 4 } }, '🆘'),
             h('h3', { style: { margin: '0 0 6px', color: _tpFg('#fecaca'), fontSize: 18 } }, __alloT('sel.tipp.ui.pick_one_do_it_notice_if', 'Pick one. Do it. Notice if the dial moves.')),
             h('p', { style: { margin: 0, color: _tpFg('#fde68a'), fontSize: 13, lineHeight: 1.6 } },
@@ -290,7 +296,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
             SKILLS.map(function(s) {
               return h('button', { key: s.id, onClick: function() { setTIPP({ activeSkill: s.id, timerSeconds: 0 }); },
                 'aria-label': _selFill(__alloT('sel.tipp.ui.start_label', 'Start {label}'), { label: s.label }),
-                style: { textAlign: 'left', padding: 14, borderRadius: 12, border: '2px solid ' + s.color, background: s.color + '14', cursor: 'pointer', color: _tpFg('#e2e8f0') } },
+                style: { textAlign: 'left', padding: 14, borderRadius: 12, border: '2px solid ' + _tpBd(s.color), background: _tpHC ? '#000000' : (_tpL ? '#ffffff' : s.color + '14'), cursor: 'pointer', color: _tpFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                   h('span', { style: { fontSize: 28 } }, s.icon),
                   h('div', null,
@@ -312,13 +318,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       // ═══════════════════════════════════════════════════════════
       // ACTIVE SKILL — guided walkthrough
       // ═══════════════════════════════════════════════════════════
-      function renderActiveSkill() {
-        var s = SKILLS.find(function(x) { return x.id === d.activeSkill; });
-        if (!s) { setTIPP({ activeSkill: null }); return null; }
+      function renderActiveSkill(skillObj) {
+        var s = skillObj || SKILLS.find(function(x) { return x.id === d.activeSkill; });
+        if (!s) return null;
 
         function done(helped) {
           var entry = { date: todayISO(), skill: s.id, helped: !!helped };
-          setTIPP({ activeSkill: null, timerSeconds: 0, log: ((Array.isArray(d.log) ? d.log : [])).concat([entry]) });
+          setTIPP(function(prior) {
+            return { activeSkill: null, timerSeconds: 0, log: safeLog(prior && prior.log).concat([entry]) };
+          });
           if (addToast) addToast(helped ? __alloT('sel.tipp.ui.logged_glad_it_helped', 'Logged — glad it helped.') : __alloT('sel.tipp.ui.logged_try_a_different_tipp_next', 'Logged — try a different TIPP next time.'), 'info');
           if (announceToSR) announceToSR(__alloT('sel.tipp.ui.tipp_session_logged', 'TIPP session logged.'));
         }
@@ -326,7 +334,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
         function exit() { setTIPP({ activeSkill: null, timerSeconds: 0 }); }
 
         return h('div', null,
-          h('div', { style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, ' + s.color + '22 0%, rgba(15,23,42,0.4) 60%)', border: '2px solid ' + s.color, marginBottom: 14 } },
+          h('div', { style: { padding: 20, borderRadius: 14, background: _tpHC ? '#000000' : (_tpL ? '#f8fafc' : 'linear-gradient(135deg, ' + s.color + '22 0%, rgba(15,23,42,0.4) 60%)'), border: '2px solid ' + _tpBd(s.color), marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, flexWrap: 'wrap' } },
               h('span', { style: { fontSize: 48 } }, s.icon),
               h('div', { style: { flex: 1, minWidth: 180 } },
@@ -373,10 +381,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       // LOG
       // ═══════════════════════════════════════════════════════════
       function renderLog() {
-        var log = ((Array.isArray(d.log) ? d.log : [])).slice().reverse();
+        var log = safeLog(d.log).slice().reverse();
         var helpedCount = log.filter(function(e) { return e.helped; }).length;
-        var counts = {};
-        log.forEach(function(e) { counts[e.skill] = (counts[e.skill] || 0) + 1; });
+        var counts = Object.create(null);
+        log.forEach(function(e) { if (typeof e.skill === 'string') counts[e.skill] = (counts[e.skill] || 0) + 1; });
 
         if (log.length === 0) {
           return h('div', null,
@@ -419,7 +427,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
               h('span', { style: { fontSize: 10, color: _tpFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', minWidth: 75 } }, e.date),
               h('span', { style: { fontSize: 18 } }, s ? s.icon : '?'),
               h('span', { style: { flex: 1, fontSize: 13, color: _tpFg('#e2e8f0') } }, s ? s.label : __alloT('sel.tipp.ui.unknown', '(unknown)')),
-              h('span', { style: { fontSize: 11, color: e.helped ? _tpFg('#22c55e') : '#f59e0b' } }, e.helped ? __alloT('sel.tipp.ui.helped_2', '✓ helped') : __alloT('sel.tipp.ui.tried_another', '⤴ tried another'))
+              h('span', { style: { fontSize: 11, color: e.helped ? _tpFg('#22c55e') : _tpFg('#f59e0b') } }, e.helped ? __alloT('sel.tipp.ui.helped_2', '✓ helped') : __alloT('sel.tipp.ui.tried_another', '⤴ tried another'))
             );
           })
         );
@@ -515,17 +523,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
             '.no-print { display: none !important; } }'
           ),
 
-          h('div', { id: 'tipp-print-region', style: { padding: 18, borderRadius: 12, background: _tpBg('#ffffff'), color: _tpFg('#0f172a'), border: '1px solid #e2e8f0' } },
-            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+          h('div', { id: 'tipp-print-region', style: { padding: 18, borderRadius: 12, background: _tpBg('#ffffff'), color: _tpFg('#0f172a'), border: '1px solid ' + _tpBd('#e2e8f0') } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid ' + _tpBd('#0f172a'), paddingBottom: 8, marginBottom: 14 } },
               h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: _tpFg('#0f172a') } }, __alloT('sel.tipp.ui.tipp_pocket_card_2', 'TIPP · Pocket Card')),
               h('div', { style: { fontSize: 11, color: _tpFg('#475569') } }, __alloT('sel.tipp.ui.dbt_distress_tolerance_linehan', 'DBT Distress Tolerance · Linehan'))
             ),
-            h('div', { style: { padding: 10, background: _tpBg('#fef2f2'), border: '1px solid #fecaca', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: _tpFg('#7f1d1d') } },
+            h('div', { style: { padding: 10, background: _tpBg('#fef2f2'), border: '1px solid ' + _tpBd('#fecaca'), borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: _tpFg('#7f1d1d') } },
               h('strong', null, __alloT('sel.tipp.ui.when_to_use', 'When to use: ')),
               __alloT('sel.tipp.ui.acute_distress_where_you_might_do', 'acute distress where you might do something you will regret. Do the body part first; talk later. If you are in crisis, call 988 or text HOME to 741741.')
             ),
             SKILLS.map(function(s, i) {
-              return h('div', { key: s.id, style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              return h('div', { key: s.id, style: { padding: 12, border: '2px solid ' + _tpBd('#0f172a'), borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
                   h('div', { style: { fontSize: 24, fontWeight: 900, color: _tpFg('#0f172a'), minWidth: 28 } }, s.letter),
                   h('div', { style: { flex: 1 } },
@@ -536,12 +544,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
                 h('ol', { style: { margin: '4px 0 6px 22px', padding: 0, fontSize: 12, lineHeight: 1.55, color: _tpFg('#0f172a') } },
                   s.steps.map(function(st, si) { return h('li', { key: si }, st); })
                 ),
-                h('div', { style: { fontSize: 10.5, color: _tpFg('#7f1d1d'), fontStyle: 'italic', lineHeight: 1.5, paddingTop: 4, borderTop: '1px dashed #cbd5e1', marginTop: 4 } },
+                h('div', { style: { fontSize: 10.5, color: _tpFg('#7f1d1d'), fontStyle: 'italic', lineHeight: 1.5, paddingTop: 4, borderTop: '1px dashed ' + _tpBd('#cbd5e1'), marginTop: 4 } },
                   h('strong', null, __alloT('sel.tipp.ui.caution_2', 'Caution: ')), s.caution
                 )
               );
             }),
-            h('div', { style: { marginTop: 12, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: _tpFg('#475569'), lineHeight: 1.5, textAlign: 'center' } },
+            h('div', { style: { marginTop: 12, padding: 10, borderTop: '2px solid ' + _tpBd('#0f172a'), fontSize: 10.5, color: _tpFg('#475569'), lineHeight: 1.5, textAlign: 'center' } },
               __alloT('sel.tipp.ui.practice_tipp_once_in_a_calm', 'Practice TIPP once in a calm moment before you need it. Printed from AlloFlow SEL Hub. Source: Linehan, DBT Skills Training Manual (2014).')
             )
           )
@@ -557,7 +565,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': __alloT('sel.tipp.ui.tipp_crisis_survival_skills', 'TIPP crisis-survival skills') },
         header(),
         navTabs(),
-        body
+        h('div', { id: 'tipp-tabpanel', role: 'tabpanel', 'aria-labelledby': 'tipp-tab-' + view }, body)
       );
     }
   });

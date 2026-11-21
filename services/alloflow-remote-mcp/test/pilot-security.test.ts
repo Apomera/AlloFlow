@@ -489,7 +489,7 @@ describe("institution pilot security primitives", () => {
         headers: {
           "Content-Type":
             "application/x-www-form-urlencoded; charset=UTF-8",
-          Cookie: `alloflow_consent=${csrf}`,
+          Cookie: `__Host-alloflow_consent=${csrf}`,
         },
         body: new URLSearchParams({ consent_id: consentId }),
       }),

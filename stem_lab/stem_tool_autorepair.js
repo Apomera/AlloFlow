@@ -7012,6 +7012,251 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // Phase-driven: `api.phase` is how many steps are done, and the scene shows
   // that state — chock appears, jack goes under, car lifts, wheel comes off,
   // spare goes on. Seeing the car actually rise is most of the point.
+  // ── Cinema-grade WebGL1 / GLSL ES 1.00 Automotive Shaders ──
+  // Purely visual enhancement: clearcoat metallic flake + shop light-sweep,
+  // directional coolant thermal advection, exhaust thermal glow, 1-3-4-2
+  // high-voltage ignition plasma rings, and sunlit drifting shop-bay motes.
+  // Strictly bypassed in High-Contrast mode and frozen under prefers-reduced-motion.
+  var AR_GLSL_NOISE =
+    'float arHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }\n' +
+    'float arNoise(vec2 p){\n' +
+    '  vec2 i = floor(p); vec2 f = fract(p);\n' +
+    '  vec2 u = f * f * (3.0 - 2.0 * f);\n' +
+    '  return mix(mix(arHash(i), arHash(i + vec2(1.0, 0.0)), u.x),\n' +
+    '             mix(arHash(i + vec2(0.0, 1.0)), arHash(i + vec2(1.0, 1.0)), u.x), u.y);\n' +
+    '}\n' +
+    'float arFbm(vec2 p){\n' +
+    '  float v = 0.0; float a = 0.5;\n' +
+    '  for (int i = 0; i < 4; i++) { v += a * arNoise(p); p *= 2.05; a *= 0.5; }\n' +
+    '  return v;\n' +
+    '}\n';
+
+  function applyAutoClearcoatFlakeShader(THREE, material, opts, sharedUniforms) {
+    if (!material || !opts || opts.contrast || typeof material.onBeforeCompile !== 'function') return material;
+    var dark = opts.dark !== false;
+    var uTimeRef = sharedUniforms && sharedUniforms.uArTime ? sharedUniforms.uArTime : { value: 1.85 };
+    material.customProgramCacheKey = function () { return 'ar-clearcoat-flake-' + (dark ? 'd' : 'l'); };
+    material.onBeforeCompile = function (shader) {
+      shader.uniforms.uArTime = uTimeRef;
+      shader.uniforms.uArDark = { value: dark ? 1.0 : 0.0 };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vArWorldPos;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvArWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform float uArTime;\nuniform float uArDark;\nvarying vec3 vArWorldPos;')
+        .replace('#include <tonemapping_fragment>',
+          'vec3 arN = normalize(normal);\n' +
+          'vec3 arV = normalize(vViewPosition);\n' +
+          'vec3 arCell = floor(vArWorldPos * 180.0);\n' +
+          'float arFlakeSeed = fract(sin(dot(arCell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);\n' +
+          'float arFlakeMask = smoothstep(0.84, 0.995, arFlakeSeed);\n' +
+          'vec3 arFlakeH = normalize(normalize(vec3(0.45, 0.78, 0.42)) + arV);\n' +
+          'float arFlakeSpec = pow(max(dot(arN, arFlakeH), 0.0), 22.0) * arFlakeMask;\n' +
+          'float arSweep = pow(0.5 + 0.5 * sin(vArWorldPos.x * 1.9 + vArWorldPos.z * 1.15 - uArTime * 0.55), 5.0);\n' +
+          'float arFresnel = pow(1.0 - max(dot(arN, arV), 0.0), 3.0);\n' +
+          'float arGain = mix(0.52, 1.0, uArDark);\n' +
+          'vec3 arCoatGlow = vec3(0.76, 0.92, 1.0) * (arFlakeSpec * 0.65 + arSweep * 0.09 + arFresnel * 0.22) * arGain;\n' +
+          'gl_FragColor.rgb += arCoatGlow;\n' +
+          '#include <tonemapping_fragment>'
+        );
+    };
+    return material;
+  }
+
+  function applyExhaustThermalShader(THREE, material, opts, sharedUniforms) {
+    if (!material || !opts || opts.contrast || typeof material.onBeforeCompile !== 'function') return material;
+    var dark = opts.dark !== false;
+    material.customProgramCacheKey = function () { return 'ar-exhaust-thermal-' + (dark ? 'd' : 'l'); };
+    material.onBeforeCompile = function (shader) {
+      shader.uniforms.uArTime = sharedUniforms.uArTime;
+      shader.uniforms.uArRunning = sharedUniforms.uArRunning;
+      shader.uniforms.uArOverheat = sharedUniforms.uArOverheat;
+      shader.uniforms.uArDark = { value: dark ? 1.0 : 0.0 };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vArLocalPos;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvArLocalPos = position;');
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>',
+          '#include <common>\n' +
+          'uniform float uArTime;\n' +
+          'uniform float uArRunning;\n' +
+          'uniform float uArOverheat;\n' +
+          'uniform float uArDark;\n' +
+          'varying vec3 vArLocalPos;'
+        )
+        .replace('#include <tonemapping_fragment>',
+          'float arRadial = exp(-length(vArLocalPos.xy * vec2(2.4, 5.4)) * 1.45);\n' +
+          'float arShimmer = 0.88 + 0.12 * sin(vArLocalPos.x * 26.0 + vArLocalPos.y * 18.0 - uArTime * 3.2);\n' +
+          'float arHeat = arRadial * (0.16 + 0.56 * uArRunning + 0.44 * uArOverheat) * arShimmer;\n' +
+          'vec3 arCherry = vec3(0.86, 0.16, 0.03);\n' +
+          'vec3 arAmber = vec3(1.0, 0.58, 0.10);\n' +
+          'vec3 arHot = mix(arCherry, arAmber, smoothstep(0.35, 0.95, arHeat));\n' +
+          'gl_FragColor.rgb += arHot * arHeat * mix(0.68, 1.18, uArDark);\n' +
+          '#include <tonemapping_fragment>'
+        );
+    };
+    return material;
+  }
+
+  function makeCoolantAdvectionMaterial(THREE, opts, sharedUniforms) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    var dark = opts.dark !== false;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: sharedUniforms.uArTime,
+        uRunning: sharedUniforms.uArRunning,
+        uThermal: { value: opts.thermal != null ? opts.thermal : 0.2 },
+        uDir: { value: opts.dir != null ? opts.dir : 1.0 },
+        uDark: { value: dark ? 1.0 : 0.0 }
+      },
+      vertexShader:
+        'varying vec2 vUv;\n' +
+        'varying vec3 vNormal;\n' +
+        'varying vec3 vViewDir;\n' +
+        'void main(){\n' +
+        '  vUv = uv;\n' +
+        '  vNormal = normalize(normalMatrix * normal);\n' +
+        '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);\n' +
+        '  vViewDir = normalize(-mvPos.xyz);\n' +
+        '  gl_Position = projectionMatrix * mvPos;\n' +
+        '}',
+      fragmentShader:
+        'uniform float uTime;\n' +
+        'uniform float uRunning;\n' +
+        'uniform float uThermal;\n' +
+        'uniform float uDir;\n' +
+        'uniform float uDark;\n' +
+        'varying vec2 vUv;\n' +
+        'varying vec3 vNormal;\n' +
+        'varying vec3 vViewDir;\n' +
+        AR_GLSL_NOISE +
+        'void main(){\n' +
+        '  float flowSpeed = mix(0.45, 2.25, uRunning) * (1.0 + 0.45 * uThermal);\n' +
+        '  float s = vUv.x * 6.0 - uTime * flowSpeed * uDir;\n' +
+        '  float stream = arFbm(vec2(s * 1.4, vUv.y * 5.0 + uTime * 0.4));\n' +
+        '  float pulse = smoothstep(0.15, 0.78, fract(s * 0.55)) * smoothstep(1.0, 0.80, fract(s * 0.55));\n' +
+        '  vec3 coolCyan = vec3(0.14, 0.78, 0.98);\n' +
+        '  vec3 warmAmber = vec3(0.98, 0.58, 0.12);\n' +
+        '  vec3 hotCrimson = vec3(0.98, 0.18, 0.12);\n' +
+        '  vec3 col = mix(coolCyan, warmAmber, smoothstep(0.05, 0.62, uThermal));\n' +
+        '  col = mix(col, hotCrimson, smoothstep(0.62, 1.0, uThermal));\n' +
+        '  col = mix(col, vec3(1.0, 0.96, 0.88), pulse * 0.42 + smoothstep(0.62, 0.92, stream) * 0.25);\n' +
+        '  float ndotv = abs(dot(normalize(vNormal), normalize(vViewDir)));\n' +
+        '  float fresnel = pow(1.0 - ndotv, 1.45);\n' +
+        '  float activeGain = mix(0.38, 0.92, uRunning);\n' +
+        '  float alpha = (0.14 + 0.36 * pulse + 0.24 * stream + 0.26 * fresnel) * activeGain * mix(0.75, 1.0, uDark);\n' +
+        '  gl_FragColor = vec4(col * mix(0.95, 1.28, uDark), clamp(alpha, 0.0, 0.82));\n' +
+        '}',
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending
+    });
+  }
+
+  function makeIgnitionPlasmaMaterial(THREE, opts, sharedUniforms) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    var dark = opts.dark !== false;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: sharedUniforms.uArTime,
+        uFire: { value: opts.initialFire != null ? opts.initialFire : 0.25 },
+        uSeed: { value: opts.seed != null ? opts.seed : 0.0 }
+      },
+      vertexShader:
+        'varying vec2 vUv;\n' +
+        'varying vec3 vNormal;\n' +
+        'varying vec3 vViewDir;\n' +
+        'void main(){\n' +
+        '  vUv = uv;\n' +
+        '  vNormal = normalize(normalMatrix * normal);\n' +
+        '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);\n' +
+        '  vViewDir = normalize(-mvPos.xyz);\n' +
+        '  gl_Position = projectionMatrix * mvPos;\n' +
+        '}',
+      fragmentShader:
+        'uniform float uTime;\n' +
+        'uniform float uFire;\n' +
+        'uniform float uSeed;\n' +
+        'varying vec2 vUv;\n' +
+        'varying vec3 vNormal;\n' +
+        'varying vec3 vViewDir;\n' +
+        AR_GLSL_NOISE +
+        'void main(){\n' +
+        '  float crackle = arFbm(vec2(vUv.x * 16.0 + uSeed * 4.3 + uTime * 3.6, vUv.y * 8.0 - uTime * 4.2));\n' +
+        '  float arcBolt = pow(smoothstep(0.38, 0.92, crackle), 1.6);\n' +
+        '  float ndotv = abs(dot(normalize(vNormal), normalize(vViewDir)));\n' +
+        '  float rim = pow(1.0 - ndotv, 1.35);\n' +
+        '  vec3 elecBlue = vec3(0.24, 0.72, 1.0);\n' +
+        '  vec3 hotCore = vec3(0.92, 0.98, 1.0);\n' +
+        '  vec3 col = mix(elecBlue, hotCore, clamp(arcBolt * 0.85 + uFire * 0.45, 0.0, 1.0));\n' +
+        '  float alpha = (0.12 + 0.88 * uFire) * (0.35 + 0.65 * arcBolt + 0.30 * rim);\n' +
+        '  gl_FragColor = vec4(col * (1.1 + 0.95 * uFire), clamp(alpha, 0.0, 0.95));\n' +
+        '}',
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending
+    });
+  }
+
+  function makeShopMotesPoints(THREE, opts, sharedUniforms) {
+    if (!opts || opts.contrast || typeof THREE.ShaderMaterial !== 'function' || typeof THREE.Points !== 'function') return null;
+    var count = 72;
+    var positions = new Float32Array(count * 3);
+    var seeds = new Float32Array(count);
+    for (var mi = 0; mi < count; mi++) {
+      var h1 = Math.abs(Math.sin((mi + 1) * 12.9898) * 43758.5453) % 1;
+      var h2 = Math.abs(Math.sin((mi + 1) * 78.233) * 43758.5453) % 1;
+      var h3 = Math.abs(Math.sin((mi + 1) * 37.719) * 43758.5453) % 1;
+      positions[mi * 3] = (h1 - 0.5) * 4.8;
+      positions[mi * 3 + 1] = 0.25 + h2 * 1.95;
+      positions[mi * 3 + 2] = (h3 - 0.5) * 3.4 - 0.2;
+      seeds[mi] = h1 * 6.28318 + h2 * 3.14159;
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1));
+    var dark = opts.dark !== false;
+    var mat = new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: sharedUniforms.uArTime,
+        uDark: { value: dark ? 1.0 : 0.0 }
+      },
+      vertexShader:
+        'attribute float aSeed;\n' +
+        'uniform float uTime;\n' +
+        'varying float vTwinkle;\n' +
+        'void main(){\n' +
+        '  vec3 p = position;\n' +
+        '  p.x += sin(uTime * 0.42 + aSeed) * 0.14;\n' +
+        '  p.y += sin(uTime * 0.31 + aSeed * 1.7) * 0.10;\n' +
+        '  p.z += cos(uTime * 0.36 + aSeed * 1.3) * 0.12;\n' +
+        '  vTwinkle = 0.55 + 0.45 * sin(uTime * 1.4 + aSeed * 2.3);\n' +
+        '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);\n' +
+        '  gl_PointSize = clamp(16.0 / max(1.0, -mvPos.z), 2.0, 5.5);\n' +
+        '  gl_Position = projectionMatrix * mvPos;\n' +
+        '}',
+      fragmentShader:
+        'uniform float uDark;\n' +
+        'varying float vTwinkle;\n' +
+        'void main(){\n' +
+        '  float d = length(gl_PointCoord - vec2(0.5));\n' +
+        '  if (d > 0.5) discard;\n' +
+        '  float soft = smoothstep(0.5, 0.04, d);\n' +
+        '  vec3 col = mix(vec3(0.84, 0.92, 1.0), vec3(1.0, 0.93, 0.76), vTwinkle);\n' +
+        '  gl_FragColor = vec4(col, soft * vTwinkle * mix(0.22, 0.42, uDark));\n' +
+        '}',
+      transparent: true,
+      depthWrite: false,
+      blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending
+    });
+    var pts = new THREE.Points(geo, mat);
+    pts.name = 'shop-bay-sunlit-motes';
+    pts.userData.decorative = true;
+    return pts;
+  }
+
   function buildWheelCornerScene(THREE, api) {
     var meshes = {};
     var picks = [];
@@ -7090,6 +7335,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       shininess: api.contrast ? 0 : 96,
       specular: 0xd5e8f4
     });
+    if (!api.contrast) {
+      applyAutoClearcoatFlakeShader(THREE, bodyMat, { contrast: false, dark: api.dark !== false }, null);
+    }
     var bodyShape = new THREE.Shape();
     bodyShape.moveTo(-2.10, 0.58);
     bodyShape.lineTo(-2.04, 0.84);
@@ -7909,6 +8157,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     return cart;
   }
 
+  function makeAutoMetalTexture(THREE, kind) {
+    if (typeof document === 'undefined' || !THREE || typeof THREE.CanvasTexture !== 'function') return null;
+    try {
+      var canvas = document.createElement('canvas');
+      canvas.width = 128; canvas.height = 128;
+      var ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+      ctx.fillStyle = kind === 'iron' ? '#6e7681' : '#8a94a2';
+      ctx.fillRect(0, 0, 128, 128);
+      if (kind === 'iron') {
+        for (var i = 0; i < 640; i++) {
+          var sx = ((i * 73) % 128);
+          var sy = ((i * 41 + Math.floor(i / 17) * 19) % 128);
+          ctx.fillStyle = i % 2 ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.16)';
+          ctx.fillRect(sx, sy, 2, 2);
+        }
+      } else {
+        for (var row = 0; row < 128; row++) {
+          var v = 122 + ((row * 17) % 28);
+          ctx.fillStyle = 'rgb(' + v + ',' + v + ',' + (v + 4) + ')';
+          ctx.fillRect(0, row, 128, 1);
+        }
+        for (var s = 0; s < 120; s++) {
+          ctx.fillStyle = s % 2 ? 'rgba(255,255,255,0.18)' : 'rgba(15,23,42,0.13)';
+          ctx.fillRect((s * 29) % 110, (s * 13) % 128, 22 + (s % 34), 1);
+        }
+      }
+      var tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(2, 2);
+      return tex;
+    } catch (e) {
+      return null;
+    }
+  }
+
   function buildEngineBayScene(THREE, api) {
     var meshes = {};
     var picks = [];
@@ -7935,6 +8220,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var alternatorRotor = null;
     var beltMarker = null;
     var idleParts = [];
+    var coolantFlowPulses = [];
+    var sparkPulses = [];
+    var circuitPulses = [];
+    var arShaderUniforms = {
+      uArTime: { value: 1.85 },
+      uArRunning: { value: engineRunning ? 1.0 : 0.0 },
+      uArOverheat: { value: (repairCaseId === 'overheat' && !faultResolved) ? 1.0 : 0.0 }
+    };
+    var useStandard = !api.contrast && typeof THREE.MeshStandardMaterial === 'function';
+    var usePhysical = !api.contrast && typeof THREE.MeshPhysicalMaterial === 'function';
+    var brushedAlumTex = useStandard ? makeAutoMetalTexture(THREE, 'aluminum') : null;
+    var castIronTex = useStandard ? makeAutoMetalTexture(THREE, 'iron') : null;
     // Bay shell: floor + low fender rails + firewall. Kept deliberately LOW
     // and dark — it exists to frame the parts, and earlier taller walls just
     // occluded them from any useful camera angle. The grille side is left
@@ -7953,7 +8250,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     // share a small material set, and stay outside the picking graph.
     var serviceBay = new THREE.Group();
     serviceBay.name = 'service-bay-environment';
-    var concreteMat = new THREE.MeshPhongMaterial({
+    var concreteMat = useStandard ? new THREE.MeshStandardMaterial({
+      color: api.dark ? 0x252b35 : 0x737b86,
+      roughness: 0.44,
+      metalness: 0.08
+    }) : new THREE.MeshPhongMaterial({
       color: api.contrast ? 0x080808 : (api.dark ? 0x252b35 : 0x737b86),
       shininess: 4, specular: 0x181c22
     });
@@ -7982,7 +8283,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       color: api.contrast ? 0x111111 : (api.dark ? 0x202a38 : 0xc8ced5),
       shininess: 5, specular: 0x202631
     });
-    var steelMat = new THREE.MeshPhongMaterial({
+    var steelMat = useStandard ? new THREE.MeshStandardMaterial({
+      color: 0x3b495e,
+      roughness: 0.28,
+      metalness: 0.72,
+      bumpMap: brushedAlumTex || undefined,
+      bumpScale: brushedAlumTex ? 0.010 : 0
+    }) : new THREE.MeshPhongMaterial({
       color: api.contrast ? 0x555555 : 0x344155,
       shininess: 42, specular: 0x9aa7b8
     });
@@ -8230,17 +8537,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var workLight = new THREE.PointLight(0xd7efff, 0.30, 5.2, 2);
         workLight.position.set(x, 2.05, -0.34);
         serviceBay.add(workLight);
+        var lampWash = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.42, 0.42),
+          new THREE.MeshBasicMaterial({
+            color: 0xbfeaff, transparent: true, opacity: api.dark ? 0.16 : 0.09,
+            side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
+          })
+        );
+        lampWash.rotation.x = Math.PI / 2;
+        lampWash.position.set(x, 2.24, -0.56);
+        lampWash.userData.decorative = true;
+        serviceBay.add(lampWash);
       }
     });
+    if (!api.contrast && typeof THREE.HemisphereLight === 'function') {
+      var bayBounce = new THREE.HemisphereLight(0xdff2ff, 0x1e293b, api.dark ? 0.36 : 0.24);
+      serviceBay.add(bayBounce);
+    }
+    var shopMotes = makeShopMotesPoints(THREE, { contrast: api.contrast, dark: api.dark !== false }, arShaderUniforms);
+    if (shopMotes) serviceBay.add(shopMotes);
     api.scene.add(serviceBay);
 
     // Painted fenders, strut towers, fasteners, and a raised hood give the same
     // frame of reference as a real transverse-engine vehicle.
-    var paintMat = new THREE.MeshPhongMaterial({
+    var paintMat = usePhysical ? new THREE.MeshPhysicalMaterial({
+      color: 0x2c5678,
+      roughness: 0.22,
+      metalness: 0.42,
+      clearcoat: 0.88,
+      clearcoatRoughness: 0.12
+    }) : new THREE.MeshPhongMaterial({
       color: api.contrast ? 0xffffff : 0x315b7d,
       shininess: api.contrast ? 0 : 82,
       specular: 0xb9cede
     });
+    if (!api.contrast) {
+      applyAutoClearcoatFlakeShader(THREE, paintMat, { contrast: false, dark: api.dark !== false }, arShaderUniforms);
+    }
     [-1.56, 1.56].forEach(function (x) {
       var apron = new THREE.Mesh(
         new THREE.BoxGeometry(0.30, 0.12, 2.42), paintMat);
@@ -8318,6 +8651,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       hoodWorkLight.name = 'hood-mounted-task-light';
       hoodWorkLight.position.set(0, -0.22, 0.36);
       hood.add(hoodWorkLight);
+      var hoodBeam = new THREE.Mesh(
+        new THREE.ConeGeometry(0.95, 1.25, 24, 1, true),
+        new THREE.MeshBasicMaterial({
+          color: 0xffe6b3, transparent: true, opacity: api.dark ? 0.075 : 0.04,
+          side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
+        })
+      );
+      hoodBeam.name = 'hood-task-light-cone';
+      hoodBeam.position.set(0, -0.76, 0.42);
+      hoodBeam.userData.decorative = true;
+      hood.add(hoodBeam);
     }
     // A low-poly service-information decal gives the raised hood the layered,
     // maintained look of a real shop vehicle without adding a bitmap texture.
@@ -8503,20 +8847,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       return m;
     }
     // Upper + lower radiator hoses (radiator ⇄ engine), with real clamp bands.
-    hose(
-      [[0.30, 0.36, 0.98], [0.36, 0.52, 0.66], [0.30, 0.50, 0.30]],
-      0.045, 0x1f2937, 'upper-radiator-hose', 0, true);
-    hose(
-      [[-0.40, 0.10, 0.98], [-0.48, 0.16, 0.62], [-0.44, 0.20, 0.26]],
-      0.045, 0x1f2937, 'lower-radiator-hose', 0, true);
+    var upperRadPts = [[0.30, 0.36, 0.98], [0.36, 0.52, 0.66], [0.30, 0.50, 0.30]];
+    var lowerRadPts = [[-0.40, 0.10, 0.98], [-0.48, 0.16, 0.62], [-0.44, 0.20, 0.26]];
+    hose(upperRadPts, 0.045, 0x1f2937, 'upper-radiator-hose', 0, true);
+    hose(lowerRadPts, 0.045, 0x1f2937, 'lower-radiator-hose', 0, true);
+    if (!api.contrast) {
+      var overheatActive = repairCaseId === 'overheat' && !faultResolved;
+      var flowColor = overheatActive ? 0xf97316 : 0x38bdf8;
+      [upperRadPts, lowerRadPts].forEach(function (pts, hoseIdx) {
+        var flowCurve = new THREE.CatmullRomCurve3(pts.map(function (pt) {
+          return new THREE.Vector3(pt[0], pt[1], pt[2]);
+        }));
+        var coolantShaderMat = makeCoolantAdvectionMaterial(THREE, {
+          dark: api.dark !== false,
+          thermal: overheatActive ? (hoseIdx === 0 ? 1.0 : 0.78) : (hoseIdx === 0 ? 0.58 : 0.08),
+          dir: hoseIdx === 0 ? -1.0 : 1.0
+        }, arShaderUniforms);
+        if (coolantShaderMat) {
+          var coolantSleeve = new THREE.Mesh(
+            new THREE.TubeGeometry(flowCurve, 36, 0.052, 14, false),
+            coolantShaderMat
+          );
+          coolantSleeve.name = (hoseIdx === 0 ? 'upper' : 'lower') + '-radiator-coolant-advection';
+          coolantSleeve.userData.decorative = true;
+          coolantSleeve.renderOrder = 3;
+          api.scene.add(coolantSleeve);
+        }
+        for (var fi = 0; fi < 3; fi++) {
+          var pulseMat = new THREE.MeshBasicMaterial({
+            color: flowColor,
+            transparent: true,
+            opacity: engineRunning ? 0.58 : 0.18,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+          });
+          var pulseBead = new THREE.Mesh(new THREE.SphereGeometry(0.056, 10, 8), pulseMat);
+          pulseBead.name = 'coolant-flow-pulse-' + hoseIdx + '-' + fi;
+          pulseBead.userData.decorative = true;
+          var initT = (fi + 0.5) / 3;
+          pulseBead.position.copy(flowCurve.getPoint(initT));
+          api.scene.add(pulseBead);
+          coolantFlowPulses.push({ mesh: pulseBead, curve: flowCurve, phase: initT, dir: hoseIdx === 0 ? -1 : 1 });
+        }
+      });
+    }
     // Corrugated intake duct: air filter box → engine.
     hose(
       [[0.82, 0.34, 0.28], [0.60, 0.44, 0.10], [0.34, 0.52, -0.06]],
       0.070, 0x111827, 'corrugated-intake-duct', 8, true);
     // Battery positive cable, ground strap, and clipped engine wiring loom.
-    hose(
-      [[-1.04, 0.46, 0.52], [-1.02, 0.44, 0.34], [-1.10, 0.36, 0.20]],
-      0.026, 0xb91c1c, 'positive-battery-cable', 0, false);
+    var posCablePts = [[-1.04, 0.46, 0.52], [-1.02, 0.44, 0.34], [-1.10, 0.36, 0.20]];
+    hose(posCablePts, 0.026, 0xb91c1c, 'positive-battery-cable', 0, false);
+    if (!api.contrast) {
+      var cableCurve = new THREE.CatmullRomCurve3(posCablePts.map(function (pt) {
+        return new THREE.Vector3(pt[0], pt[1], pt[2]);
+      }));
+      for (var ci = 0; ci < 2; ci++) {
+        var cMat = new THREE.MeshBasicMaterial({
+          color: 0xfbbf24, transparent: true, opacity: engineRunning || meterSetup ? 0.55 : 0.16,
+          depthWrite: false, blending: THREE.AdditiveBlending
+        });
+        var cRing = new THREE.Mesh(new THREE.SphereGeometry(0.036, 10, 8), cMat);
+        cRing.name = 'battery-circuit-pulse-' + ci;
+        cRing.userData.decorative = true;
+        cRing.position.copy(cableCurve.getPoint((ci + 0.5) / 2));
+        api.scene.add(cRing);
+        circuitPulses.push({ mesh: cRing, curve: cableCurve, phase: (ci + 0.5) / 2 });
+      }
+    }
     hose(
       [[-1.15, 0.46, 0.58], [-1.38, 0.39, 0.38], [-1.52, 0.31, 0.16]],
       0.022, 0x151a22, 'battery-ground-strap', 0, false);
@@ -8541,20 +8939,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     api.parts.forEach(function (p) {
       var group = new THREE.Group();
       var col = new THREE.Color(api.partColor(p));
-      // Phong over Lambert: the specular roll-off is what separates painted
-      // metal (engine, alternator) from moulded plastic (airbox, tanks).
+      // PBR metal (engine, alternator, radiator) separates cast aluminum/iron
+      // from moulded plastic (airbox) and glossy translucent reservoirs (tanks).
       var metallic = (p.id === 'engine' || p.id === 'alternator' || p.id === 'radiator');
-      var mat = new THREE.MeshPhongMaterial({
-        color: col,
-        shininess: api.contrast ? 0 : (metallic ? 48 : 14),
-        specular: api.contrast ? 0x000000 : (metallic ? 0x9aa6b8 : 0x2b3442)
-      });
       var translucent = (p.shape === 'tank');
-      if (translucent) {
-        mat.transparent = true;
-        mat.opacity = api.contrast ? 1 : 0.62;
-        mat.shininess = api.contrast ? 0 : 70;
-        mat.specular = new THREE.Color(0xdfe8f5);
+      var mat;
+      if (translucent && usePhysical) {
+        mat = new THREE.MeshPhysicalMaterial({
+          color: col,
+          roughness: 0.14,
+          metalness: 0.04,
+          clearcoat: 0.9,
+          clearcoatRoughness: 0.10,
+          transparent: true,
+          opacity: 0.60
+        });
+      } else if (metallic && useStandard) {
+        mat = new THREE.MeshStandardMaterial({
+          color: col,
+          roughness: p.id === 'engine' ? 0.34 : 0.25,
+          metalness: p.id === 'engine' ? 0.72 : 0.78,
+          bumpMap: (p.id === 'engine' ? castIronTex : brushedAlumTex) || undefined,
+          bumpScale: (p.id === 'engine' ? castIronTex : brushedAlumTex) ? 0.015 : 0
+        });
+      } else {
+        mat = new THREE.MeshPhongMaterial({
+          color: col,
+          shininess: api.contrast ? 0 : (metallic ? 48 : 14),
+          specular: api.contrast ? 0x000000 : (metallic ? 0x9aa6b8 : 0x2b3442)
+        });
+        if (translucent) {
+          mat.transparent = true;
+          mat.opacity = api.contrast ? 1 : 0.62;
+          mat.shininess = api.contrast ? 0 : 70;
+          mat.specular = new THREE.Color(0xdfe8f5);
+        }
       }
 
 
@@ -9119,6 +9538,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               -0.03
             );
             group.add(coil);
+            if (!api.contrast) {
+              var sparkMat = new THREE.MeshBasicMaterial({
+                color: 0x38bdf8, transparent: true, opacity: engineRunning ? 0.26 : 0.06,
+                depthWrite: false, blending: THREE.AdditiveBlending
+              });
+              var sparkHalo = new THREE.Mesh(new THREE.SphereGeometry(0.036, 10, 8), sparkMat);
+              sparkHalo.name = 'ignition-coil-spark-' + coilIndex;
+              sparkHalo.position.set(coil.position.x, coil.position.y + 0.045, coil.position.z);
+              group.add(sparkHalo);
+              var plasmaMat = makeIgnitionPlasmaMaterial(THREE, {
+                dark: api.dark !== false,
+                initialFire: engineRunning ? (coilIndex === 0 ? 0.75 : 0.22) : 0.16,
+                seed: coilIndex + 1.0
+              }, arShaderUniforms);
+              var plasmaRing = null;
+              if (plasmaMat) {
+                plasmaRing = new THREE.Mesh(new THREE.TorusGeometry(0.052, 0.013, 10, 24), plasmaMat);
+                plasmaRing.name = 'ignition-coil-plasma-ring-' + coilIndex;
+                plasmaRing.rotation.x = Math.PI / 2;
+                plasmaRing.position.set(coil.position.x, coil.position.y + 0.048, coil.position.z);
+                plasmaRing.renderOrder = 4;
+                group.add(plasmaRing);
+              }
+              sparkPulses.push({ mesh: sparkHalo, mat: sparkMat, plasmaRing: plasmaRing, plasmaMat: plasmaMat, order: [0, 3, 1, 2][coilIndex] });
+            }
           }
           var plenum = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, p.size[0] * 0.62, 14), api.trim(0x475569, 40));
           plenum.rotation.z = Math.PI / 2;
@@ -9139,8 +9583,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             manifoldRunner.name = 'intake-manifold-runner-' + runnerIndex;
             group.add(manifoldRunner);
           }
-          // Exhaust manifold heat shield, front face.
-          var shield = new THREE.Mesh(new THREE.BoxGeometry(p.size[0] * 0.66, 0.20, 0.06), api.trim(0x8a8f98, 52));
+          // Exhaust manifold heat shield, front face — incandescent thermal glow when hot/running.
+          var exhaustShieldMat = useStandard ? new THREE.MeshStandardMaterial({
+            color: 0x8a8f98,
+            roughness: 0.34,
+            metalness: 0.74,
+            bumpMap: brushedAlumTex || undefined,
+            bumpScale: brushedAlumTex ? 0.010 : 0
+          }) : api.trim(0x8a8f98, 52);
+          if (!api.contrast) {
+            applyExhaustThermalShader(THREE, exhaustShieldMat, { contrast: false, dark: api.dark !== false }, arShaderUniforms);
+          }
+          var shield = new THREE.Mesh(new THREE.BoxGeometry(p.size[0] * 0.66, 0.20, 0.06), exhaustShieldMat);
           shield.position.set(0, 0.02, p.size[2] * 0.5 + 0.03);
           group.add(shield);
           for (var shieldDimpleIndex = 0; shieldDimpleIndex < 6; shieldDimpleIndex++) {
@@ -9374,6 +9828,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       picks: picks,
       anchor: floor,
       frame: engineRunning && !api.reduced ? function (now) {
+        arShaderUniforms.uArTime.value = now * 0.001;
         var spin = (now * 0.0062) % (Math.PI * 2);
         if (coolingFan && (repairCaseId !== 'overheat' || faultResolved)) {
           coolingFan.rotation.z = spin;
@@ -9397,6 +9852,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           idlePart.group.position.x = idlePart.x + idle * (idleIndex % 2 ? 0.35 : -0.35);
           idlePart.group.position.y = idlePart.y + idle;
           idlePart.group.position.z = idlePart.z;
+        }
+        for (var flIdx = 0; flIdx < coolantFlowPulses.length; flIdx++) {
+          var fp = coolantFlowPulses[flIdx];
+          var ft = ((fp.phase + fp.dir * now * 0.00045) % 1 + 1) % 1;
+          fp.mesh.position.copy(fp.curve.getPoint(ft));
+          var edgeFade = Math.sin(ft * Math.PI);
+          fp.mesh.material.opacity = 0.62 * edgeFade;
+          fp.mesh.scale.setScalar(0.85 + 0.25 * edgeFade);
+        }
+        var firingPhase = ((now * 0.0055) % 4 + 4) % 4;
+        for (var spIdx = 0; spIdx < sparkPulses.length; spIdx++) {
+          var sp = sparkPulses[spIdx];
+          var dist = Math.abs(firingPhase - sp.order);
+          if (dist > 2) dist = 4 - dist;
+          var intensity = Math.max(0, 1 - dist * 2.4);
+          sp.mat.opacity = 0.10 + intensity * 0.80;
+          sp.mesh.scale.setScalar(0.8 + intensity * 0.85);
+          if (sp.plasmaMat && sp.plasmaMat.uniforms) {
+            sp.plasmaMat.uniforms.uFire.value = 0.12 + intensity * 0.88;
+          }
+          if (sp.plasmaRing) {
+            sp.plasmaRing.scale.setScalar(0.82 + intensity * 0.58);
+          }
+        }
+        for (var cpIdx = 0; cpIdx < circuitPulses.length; cpIdx++) {
+          var cp = circuitPulses[cpIdx];
+          var ct = (cp.phase + now * 0.00085) % 1;
+          cp.mesh.position.copy(cp.curve.getPoint(ct));
+          cp.mesh.material.opacity = 0.62 * Math.sin(ct * Math.PI);
         }
       } : null
     };
@@ -10252,7 +10736,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var height = arShopLiftStatus(state).height;
     if (scene.fog) { scene.fog.near = 12; scene.fog.far = 26; }
     var room = new THREE.Group(); room.name = 'full-workshop-environment'; scene.add(room);
-    var paint = workshopTrim(0x246b8e, 90), rubber = workshopTrim(0x171e29, 8), metal = workshopTrim(0xa4b3c1, 75);
+    var wsStandard = !api.contrast && typeof THREE.MeshStandardMaterial === 'function';
+    var paint = wsStandard ? new THREE.MeshStandardMaterial({
+      color: 0x246b8e, roughness: 0.22, metalness: 0.42
+    }) : workshopTrim(0x246b8e, 90);
+    var rubber = workshopTrim(0x171e29, 8);
+    var metal = wsStandard ? new THREE.MeshStandardMaterial({
+      color: 0xa4b3c1, roughness: 0.26, metalness: 0.74
+    }) : workshopTrim(0xa4b3c1, 75);
     var dark = workshopTrim(0x283647, 25), amber = workshopTrim(0xf8b73c, 45), blue = workshopTrim(0x1958a1, 50);
     var red = workshopTrim(0xc83542, 45), pale = workshopTrim(0xd5e3e8, 30), green = workshopTrim(0x36b58e, 40);
     function box(parent, name, size, pos, mat) {
@@ -10336,6 +10827,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       box(room, 'ceiling-light-diffuser-' + x, [2.15, 0.02, 0.18], [x, 3.735, -1.2], new THREE.MeshBasicMaterial({ color: 0xe7f5ff }));
     });
     var shopLight = new THREE.PointLight(0xdcefff, 0.7, 12, 2); shopLight.position.set(-1, 3.5, 1); room.add(shopLight);
+    if (!api.contrast && typeof THREE.HemisphereLight === 'function') {
+      room.add(new THREE.HemisphereLight(0xdff2ff, 0x1e293b, 0.34));
+    }
     var desk = new THREE.Group(); desk.name = 'service-desk'; desk.position.x = 0.65; room.add(desk);
     box(desk, 'desk-base', [1.1, 0.88, 0.58], [-3.55, 0.44, -1.8], blue);
     box(desk, 'desk-top', [1.24, 0.07, 0.75], [-3.55, 0.92, -1.8], metal);

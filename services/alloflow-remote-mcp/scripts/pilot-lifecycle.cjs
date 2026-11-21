@@ -57,18 +57,69 @@ function normalizeLifecyclePolicy(policy) {
   return normalized;
 }
 
+const MAX_LIFECYCLE_READBACK_BYTES = 256 * 1024;
+const PRINTABLE_ASCII_TOKEN_RE = /^[\x21-\x7e]+$/u;
+const R2_BUCKET_NAME_RE = /^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])$/u;
+const LIFECYCLE_SPAWN_TIMEOUT_MS = 120_000;
+
 function resolveDocumentsBucket(config) {
   const buckets = Array.isArray(config?.r2_buckets)
-    ? config.r2_buckets.filter((entry) => entry.binding === "DOCUMENTS")
+    ? config.r2_buckets.filter((entry) => entry?.binding === "DOCUMENTS")
     : [];
   if (
     buckets.length !== 1 ||
     typeof buckets[0].bucket_name !== "string" ||
-    !buckets[0].bucket_name
+    !R2_BUCKET_NAME_RE.test(buckets[0].bucket_name)
   ) {
     throw new Error("expected_exactly_one_documents_bucket");
   }
   return buckets[0].bucket_name;
+}
+
+function validateReadbackCredentials(options = {}) {
+  const accountId = options.accountId || process.env.CLOUDFLARE_ACCOUNT_ID;
+  const token = options.token || process.env.CLOUDFLARE_API_TOKEN;
+  if (!/^[a-f0-9]{32}$/iu.test(accountId || "")) {
+    throw new Error("cloudflare_account_id_required_for_lifecycle_readback");
+  }
+  if (typeof token !== "string" || token.length < 20 || !PRINTABLE_ASCII_TOKEN_RE.test(token)) {
+    throw new Error("cloudflare_api_token_required_for_lifecycle_readback");
+  }
+  return { accountId, token };
+}
+
+async function readBoundedResponseText(response, maxBytes, tooLargeCode) {
+  const declaredLength = Number(response.headers?.get?.("Content-Length"));
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+    throw new Error(tooLargeCode);
+  }
+  if (response.body && typeof response.body.getReader === "function") {
+    const reader = response.body.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          total += value.byteLength;
+          if (total > maxBytes) {
+            try { await reader.cancel(); } catch {}
+            throw new Error(tooLargeCode);
+          }
+          chunks.push(Buffer.from(value));
+        }
+      }
+    } finally {
+      try { reader.releaseLock(); } catch {}
+    }
+    return Buffer.concat(chunks, total).toString("utf8");
+  }
+  const text = await response.text();
+  if (Buffer.byteLength(text, "utf8") > maxBytes) {
+    throw new Error(tooLargeCode);
+  }
+  return text;
 }
 
 function buildApplyCommand(configPath, policyPath, config) {
@@ -101,38 +152,37 @@ function buildApplyCommand(configPath, policyPath, config) {
 }
 
 async function readRemoteLifecyclePolicy(config, bucket, options = {}) {
-  const accountId = options.accountId || process.env.CLOUDFLARE_ACCOUNT_ID;
-  const token = options.token || process.env.CLOUDFLARE_API_TOKEN;
-  if (!/^[a-f0-9]{32}$/iu.test(accountId || "")) {
-    throw new Error("cloudflare_account_id_required_for_lifecycle_readback");
-  }
-  if (typeof token !== "string" || token.length < 20) {
-    throw new Error("cloudflare_api_token_required_for_lifecycle_readback");
-  }
+  const { accountId, token } = validateReadbackCredentials(options);
   const binding = config.r2_buckets.find(
-    (entry) => entry.binding === "DOCUMENTS",
+    (entry) => entry?.binding === "DOCUMENTS",
   );
   const headers = { Authorization: `Bearer ${token}` };
-  if (binding.jurisdiction) {
+  if (binding?.jurisdiction) {
     headers["cf-r2-jurisdiction"] = binding.jurisdiction;
   }
   const fetchImpl = options.fetchImpl || globalThis.fetch;
-  const response = await fetchImpl(
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}` +
-      `/r2/buckets/${encodeURIComponent(bucket)}/lifecycle`,
-    {
-      headers,
-      signal: AbortSignal.timeout(15_000),
-    },
+  let response;
+  try {
+    response = await fetchImpl(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}` +
+        `/r2/buckets/${encodeURIComponent(bucket)}/lifecycle`,
+      {
+        headers,
+        redirect: "error",
+        signal: AbortSignal.timeout(15_000),
+      },
+    );
+  } catch (error) {
+    if (error instanceof TypeError && /Headers|Authorization|Bearer/iu.test(error.message)) {
+      throw new Error("cloudflare_api_token_required_for_lifecycle_readback");
+    }
+    throw error;
+  }
+  const text = await readBoundedResponseText(
+    response,
+    MAX_LIFECYCLE_READBACK_BYTES,
+    "r2_lifecycle_readback_too_large",
   );
-  const declaredLength = Number(response.headers.get("Content-Length"));
-  if (Number.isFinite(declaredLength) && declaredLength > 256 * 1024) {
-    throw new Error("r2_lifecycle_readback_too_large");
-  }
-  const text = await response.text();
-  if (text.length > 256 * 1024) {
-    throw new Error("r2_lifecycle_readback_too_large");
-  }
   if (!response.ok) {
     throw new Error(`r2_lifecycle_readback_failed_${response.status}`);
   }
@@ -149,8 +199,14 @@ async function readRemoteLifecyclePolicy(config, bucket, options = {}) {
 }
 
 async function applyLifecyclePolicy(configPath, policyPath, options = {}) {
-  if (/\.example\./u.test(path.basename(configPath))) {
+  if (/\.example\./iu.test(path.basename(configPath))) {
     throw new Error("refusing_to_apply_example_configuration");
+  }
+  const policyErrors = validateLifecyclePolicy(
+    readLifecyclePolicy(policyPath),
+  );
+  if (policyErrors.length > 0) {
+    throw new Error(policyErrors.join("; "));
   }
   const { raw, config } = readPilotConfig(configPath);
   const preflightErrors = validatePilotConfig(config, raw, {
@@ -159,11 +215,14 @@ async function applyLifecyclePolicy(configPath, policyPath, options = {}) {
   if (preflightErrors.length > 0) {
     throw new Error(`pilot_preflight_failed: ${preflightErrors.join("; ")}`);
   }
+  validateReadbackCredentials(options);
   const command = buildApplyCommand(configPath, policyPath, config);
   const run = options.spawnSync || spawnSync;
   const result = run(command.command, command.args, {
     cwd: SERVICE_ROOT,
     stdio: "inherit",
+    windowsHide: true,
+    timeout: LIFECYCLE_SPAWN_TIMEOUT_MS,
   });
   if (result.error) {
     throw result.error;

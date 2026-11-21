@@ -34,7 +34,7 @@
     return /^(pdf|docx|pptx|txt|md|csv|epub)$/.test(ext) ? ext : '';
   }
 
-  function formatLabel(format) { return FORMAT_LABELS[format] || String(format || '').toUpperCase(); }
+  function formatLabel(format) { return Object.prototype.hasOwnProperty.call(FORMAT_LABELS, format) ? FORMAT_LABELS[format] : String(format || '').toUpperCase(); }
 
   function validateFile(file) {
     if (!file || typeof file !== 'object') throw new Error('Choose a document to import.');
@@ -118,7 +118,7 @@
       if (code.charAt(0) === '#') {
         var hex = code.charAt(1).toLowerCase() === 'x';
         var n = parseInt(code.slice(hex ? 2 : 1), hex ? 16 : 10);
-        return Number.isFinite(n) ? String.fromCodePoint(n) : ' ';
+        return Number.isInteger(n) && n >= 0 && n <= 0x10FFFF ? String.fromCodePoint(n) : ' ';
       }
       return Object.prototype.hasOwnProperty.call(named, code.toLowerCase()) ? named[code.toLowerCase()] : ' ';
     });
@@ -152,7 +152,7 @@
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
       script.integrity = 'sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG';
       script.async = true; script.crossOrigin = 'anonymous'; script.referrerPolicy = 'no-referrer';
-      script.onload = function () { host.JSZip ? resolve(host.JSZip) : reject(new Error('ZIP parser did not initialize.')); };
+      script.onload = function () { if (host.JSZip) resolve(host.JSZip); else { _jsZipPromise = null; reject(new Error('ZIP parser did not initialize.')); } };
       script.onerror = function () { _jsZipPromise = null; reject(new Error('Could not load the local EPUB parser. Check the network or content-security policy.')); };
       host.document.head.appendChild(script);
     });
@@ -209,7 +209,13 @@
     var containerXml = await readBoundedEntryText(container, 1024 * 1024);
     var rootMatch = containerXml.match(/full-path\s*=\s*["']([^"']+)["']/i);
     if (!rootMatch) throw new Error('This EPUB does not identify a readable package document.');
-    var opfPath = normalizeZipPath(rootMatch[1]);
+    function safeDecodeZipHref(raw) {
+      var stripped = String(raw || '').split('#')[0].split('?')[0];
+      try { return decodeURIComponent(stripped); } catch (_) { return stripped; }
+    }
+    var opfLiteral = normalizeZipPath(rootMatch[1].split('#')[0].split('?')[0]);
+    var opfDecoded = normalizeZipPath(safeDecodeZipHref(rootMatch[1]));
+    var opfPath = zip.file(opfDecoded) ? opfDecoded : opfLiteral;
     var opfFile = zip.file(opfPath);
     if (!opfFile) throw new Error('This EPUB package document could not be read.');
     var opf = await readBoundedEntryText(opfFile, 4 * 1024 * 1024), manifest = Object.create(null), itemMatch;
@@ -217,7 +223,11 @@
     while ((itemMatch = itemRe.exec(opf))) {
       var attrs = itemMatch[1], id = (attrs.match(/\bid\s*=\s*["']([^"']+)["']/i) || [])[1], href = (attrs.match(/\bhref\s*=\s*["']([^"']+)["']/i) || [])[1];
       var media = (attrs.match(/\bmedia-type\s*=\s*["']([^"']+)["']/i) || [])[1] || '';
-      if (id && href && /html|xhtml/i.test(media)) manifest[id] = normalizeZipPath(dirname(opfPath) + href.split('#')[0]);
+      if (id && href && /html|xhtml/i.test(media)) {
+        var hrefLiteral = normalizeZipPath(dirname(opfPath) + href.split('#')[0].split('?')[0]);
+        var hrefDecoded = normalizeZipPath(dirname(opfPath) + safeDecodeZipHref(href));
+        manifest[id] = zip.file(hrefDecoded) ? hrefDecoded : hrefLiteral;
+      }
     }
     var spine = [], refMatch, refRe = /<itemref\b[^>]*\bidref\s*=\s*["']([^"']+)["'][^>]*>/gi;
     while ((refMatch = refRe.exec(opf))) if (manifest[refMatch[1]]) spine.push(manifest[refMatch[1]]);

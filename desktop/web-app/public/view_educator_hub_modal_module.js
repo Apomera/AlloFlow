@@ -53,7 +53,13 @@ function _loadEducatorAlloSheetBridge() {
         reject(new Error("AlloSheet loaded without its host bridge."));
       }
     };
-    script.onerror = () => reject(new Error("AlloSheet could not be loaded."));
+    script.onerror = () => {
+      try {
+        script.remove();
+      } catch (_) {
+      }
+      reject(new Error("AlloSheet could not be loaded."));
+    };
     document.head.appendChild(script);
   }).catch((error) => {
     _educatorAlloSheetBridgePromise = null;
@@ -96,7 +102,7 @@ function EducatorHubModal(props) {
     setShowCinematicStudio = (() => {
     }),
     showEducatorHub,
-    t,
+    t = (() => ""),
     userRole = "",
     // Role scoping (X7, 2026-08-17): family mode sets isTeacherMode true, so
     // without these the hub showed a parent every school-professional surface.
@@ -105,6 +111,7 @@ function EducatorHubModal(props) {
     // prop pass is pinned by tests/educator_hub_role_scope.test.js).
     isParentMode = false,
     isIndependentMode = false,
+    isTeacherMode,
     setShowRecentQrShares = (() => {
     }),
     beginPdfDocumentIntake = (() => null),
@@ -183,7 +190,11 @@ function EducatorHubModal(props) {
     }
     return out;
   };
+  const isOpen = showEducatorHub !== false && isTeacherMode !== false;
+  const hideSchoolProfessional = Boolean(isParentMode || isIndependentMode);
+  const hideFromFamily = Boolean(isParentMode);
   const dialogRef = React.useRef(null);
+  const backdropMouseDownRef = React.useRef(false);
   const pdfBatchIntakeRef = React.useRef(null);
   const educatorHubMountedRef = React.useRef(true);
   const [pdfBatchIntakeProgress, setPdfBatchIntakeProgress] = React.useState(null);
@@ -226,9 +237,19 @@ function EducatorHubModal(props) {
       if (pdfBatchIntakeRef.current === job) pdfBatchIntakeRef.current = null;
     };
   }, []);
-  const closeHandlerRef = React.useRef(setShowEducatorHub);
-  closeHandlerRef.current = setShowEducatorHub;
+  const requestCloseHub = () => {
+    if (pdfBatchIntakeRef.current) {
+      _cancelPdfBatchIntake(true);
+    }
+    if (typeof setShowEducatorHub === "function") setShowEducatorHub(false);
+  };
+  const closeHandlerRef = React.useRef(requestCloseHub);
+  closeHandlerRef.current = requestCloseHub;
   React.useEffect(function() {
+    if (!isOpen) {
+      if (pdfBatchIntakeRef.current) _cancelPdfBatchIntake(false);
+      return void 0;
+    }
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
     const previousFocus = document.activeElement;
@@ -263,14 +284,16 @@ function EducatorHubModal(props) {
       if (parent === document.body) break;
       cursor = parent;
     }
-    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "", overflow: "" });
     let scrollLocked = false;
     try {
-      scrollLocked = true;
       if (++scrollLock.count === 1) {
-        scrollLock.prev = document.body.style.overflow;
+        const prevOverflow = document.body.style.overflow;
+        scrollLock.prev = prevOverflow;
+        scrollLock.overflow = prevOverflow;
         document.body.style.overflow = "hidden";
       }
+      scrollLocked = true;
     } catch (_) {
     }
     const isTopTrap = function() {
@@ -303,7 +326,7 @@ function EducatorHubModal(props) {
         if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault();
         event.stopPropagation();
-        closeHandlerRef.current && closeHandlerRef.current(false);
+        closeHandlerRef.current && closeHandlerRef.current();
         return;
       }
       if (event.key !== "Tab") return;
@@ -331,7 +354,9 @@ function EducatorHubModal(props) {
       try {
         if (scrollLocked) {
           scrollLock.count = Math.max(0, scrollLock.count - 1);
-          if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
+          if (scrollLock.count === 0) {
+            document.body.style.overflow = scrollLock.prev ?? scrollLock.overflow ?? scrollLock.prevOverflow ?? scrollLock.previousOverflow ?? "";
+          }
         }
       } catch (_) {
       }
@@ -365,7 +390,7 @@ function EducatorHubModal(props) {
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
-  }, []);
+  }, [isOpen]);
   const _openAlloSheet = () => {
     const bridge = window.AlloSheetHostBridge;
     if (!bridge || typeof bridge.open !== "function") {
@@ -398,6 +423,7 @@ function EducatorHubModal(props) {
     }
   });
   const [hubFavoritesOnly, setHubFavoritesOnly] = React.useState(false);
+  const [hubSectionFilter, setHubSectionFilter] = React.useState("all");
   const [hubManageFavorites, setHubManageFavorites] = React.useState(false);
   const [hubVisibleCount, setHubVisibleCount] = React.useState(0);
   const [hubUsageCounts, setHubUsageCounts] = React.useState(() => {
@@ -464,6 +490,7 @@ function EducatorHubModal(props) {
     }
   }, [hubRoleOverride]);
   React.useEffect(() => {
+    if (!isOpen) return void 0;
     const grid = hubGridRef.current;
     if (!grid) return void 0;
     const shells = Array.from(grid.querySelectorAll("[data-hub-id]"));
@@ -478,18 +505,20 @@ function EducatorHubModal(props) {
     };
     grid.addEventListener("click", remember, true);
     return () => grid.removeEventListener("click", remember, true);
-  }, []);
+  }, [isOpen, hideSchoolProfessional, hideFromFamily]);
   React.useEffect(() => {
     const grid = hubGridRef.current;
     if (!grid) return;
     const query = hubQuery.trim().toLowerCase();
     const shells = Array.from(grid.querySelectorAll("[data-hub-id]"));
     const visibleSections = /* @__PURE__ */ new Set();
+    const filtered = Boolean(query || hubFavoritesOnly || hubSectionFilter !== "all");
     let count = 0;
     shells.forEach((shell) => {
       const text = (shell.textContent || "").toLowerCase();
       const sectionCollapsed = hubCollapsedSections.includes(shell.dataset.hubSection);
-      const visible = (!query || text.includes(query)) && (!hubFavoritesOnly || hubFavoriteIds.includes(shell.dataset.hubId)) && (!sectionCollapsed || query || hubFavoritesOnly);
+      const sectionMatches = hubSectionFilter === "all" || shell.dataset.hubSection === hubSectionFilter;
+      const visible = sectionMatches && (!query || text.includes(query)) && (!hubFavoritesOnly || hubFavoriteIds.includes(shell.dataset.hubId)) && (!sectionCollapsed || filtered);
       shell.hidden = !visible;
       shell.setAttribute("aria-hidden", visible ? "false" : "true");
       if (visible) {
@@ -499,7 +528,6 @@ function EducatorHubModal(props) {
     });
     Array.from(grid.querySelectorAll("[data-hub-section-heading]")).forEach((heading) => {
       const sectionId = heading.dataset.hubSectionHeading;
-      const filtered = Boolean(query || hubFavoritesOnly);
       const visible = !filtered || visibleSections.has(sectionId);
       heading.hidden = !visible;
       const toggle = heading.querySelector("[data-hub-section-toggle]");
@@ -511,9 +539,23 @@ function EducatorHubModal(props) {
       }
     });
     setHubVisibleCount(count);
-  }, [hubQuery, hubFavoritesOnly, hubFavoriteIds, hubCards, hubCollapsedSections]);
-  const hideSchoolProfessional = Boolean(isParentMode || isIndependentMode);
-  const hideFromFamily = Boolean(isParentMode);
+  }, [hubQuery, hubFavoritesOnly, hubSectionFilter, hubFavoriteIds, hubCards, hubCollapsedSections]);
+  const hubSections = [
+    { id: "start", label: tr("educator_hub.section_start_title", "Start here") },
+    { id: "plan", label: tr("educator_hub.section_plan_title", "Plan and create") },
+    { id: "teach", label: tr("educator_hub.section_teach_title", "Teach and assess") },
+    { id: "access", label: tr("educator_hub.section_access_title", "Access and review") },
+    { id: "extend", label: tr("educator_hub.section_extend_title", "Extend and discover") }
+  ].filter((sec) => hubCards.some((card) => card.section === sec.id));
+  const launchSingleVisibleHubMatch = () => {
+    const grid = hubGridRef.current;
+    if (!grid || !hubQuery.trim()) return;
+    const visibleShells = Array.from(grid.querySelectorAll("[data-hub-id]")).filter((el) => !el.hidden);
+    if (visibleShells.length === 1) {
+      const launch = visibleShells[0].querySelector("[data-hub-launch]");
+      if (launch) launch.click();
+    }
+  };
   const hubRolePreference = hubRoleOverride || userRole || "educator";
   const hubRoleRaw = String(hubRolePreference).toLowerCase();
   const hubRoleKey = hubRoleRaw.includes("clin") ? "clinician" : hubRoleRaw.includes("lead") || hubRoleRaw.includes("admin") || hubRoleRaw.includes("principal") || hubRoleRaw.includes("coach") ? "leader" : hubRoleRaw.includes("student") ? "student" : hubRoleRaw.includes("family") ? "family" : "educator";
@@ -523,392 +565,472 @@ function EducatorHubModal(props) {
   const hubRecommendedIds = Array.from(/* @__PURE__ */ new Set([...hubRoleRecommendations[hubRoleKey] || hubRoleRecommendations.educator, ...hubUsageRankedIds])).slice(0, 5);
   const recommendedCards = hubRecommendedIds.map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
   const quickCards = Array.from(/* @__PURE__ */ new Set([...hubFavoriteIds, ...hubRecentIds])).map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: () => setShowEducatorHub(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "educator_hub_modal_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "educator-hub-title", "aria-describedby": "educator-hub-subtitle", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "educator-hub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F6E0}\uFE0F"), " ", t("educator_hub.title") || "Educator Tools"), /* @__PURE__ */ React.createElement("p", { id: "educator-hub-subtitle", className: "text-sm text-slate-600 mt-1" }, t("educator_hub.subtitle") || "Professional tools for educators and clinicians")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowEducatorHub(false), className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": t("educator_hub.close_aria") || "Close educator tools" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "mb-4 space-y-3", role: "search", "aria-label": tr("hub.search_label", "Search tools") }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "educator-hub-search", className: "sr-only" }, tr("hub.search_label", "Search tools")), /* @__PURE__ */ React.createElement("input", { id: "educator-hub-search", "data-help-key": "educator_hub_search", type: "search", value: hubQuery, onChange: (event) => setHubQuery(event.target.value), placeholder: tr("hub.search_placeholder", "Search tools by name, purpose, or workflow"), className: "min-h-11 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" }), hubQuery && /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_search_clear", onClick: () => setHubQuery(""), className: "min-h-11 px-3 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50" }, tr("hub.clear_search", "Clear")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_favorites_only", "aria-pressed": hubFavoritesOnly, onClick: () => setHubFavoritesOnly((value) => !value), className: "min-h-11 px-3 rounded-xl border border-amber-300 bg-amber-50 text-sm font-bold text-amber-800 hover:bg-amber-100" }, hubFavoritesOnly ? "\u2605 " : "\u2606 ", tr("hub.favorites_only", "Favorites")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_manage_favorites", "aria-expanded": hubManageFavorites, onClick: () => setHubManageFavorites((value) => !value), className: "min-h-11 px-3 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50" }, tr("hub.manage_favorites", "Manage favorites"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "educator-hub-role", className: "text-xs font-bold text-slate-600" }, tr("hub.role_label", "Recommendations for")), /* @__PURE__ */ React.createElement("select", { id: "educator-hub-role", "data-help-key": "educator_hub_role", value: hubRoleKey, onChange: (event) => setHubRoleOverride(event.target.value), className: "min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("option", { value: "educator" }, tr("hub.role_educator", "Educators")), /* @__PURE__ */ React.createElement("option", { value: "clinician" }, tr("hub.role_clinician", "Clinicians")), /* @__PURE__ */ React.createElement("option", { value: "leader" }, tr("hub.role_leader", "Leaders")), /* @__PURE__ */ React.createElement("option", { value: "student" }, tr("hub.role_student", "Students")), /* @__PURE__ */ React.createElement("option", { value: "family" }, tr("hub.role_family", "Families")))), recommendedCards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-emerald-200 bg-emerald-50 p-3", role: "region", "data-help-key": "educator_hub_recommended", "aria-label": tr("hub.recommended", "Recommended tools") }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-emerald-800" }, tr("hub.recommended", "Recommended tools")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-emerald-700" }, tr("hub.recommended_for", "For"), " ", hubRoleLabel)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, recommendedCards.map((card) => /* @__PURE__ */ React.createElement("button", { key: card.id, type: "button", onClick: () => activateHubCard(card.id), className: "min-h-10 rounded-lg border border-emerald-200 bg-white px-3 text-left text-xs font-bold text-emerald-800 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" }, card.label))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 mt-2" }, tr("hub.recommended_hint", "Based on your role and local tool use"))), hubManageFavorites && hubCards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-slate-50 p-3", role: "region", "data-help-key": "educator_hub_manage_favorites_list", "aria-label": tr("hub.manage_favorites", "Manage favorites") }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, hubCards.map((card) => /* @__PURE__ */ React.createElement("div", { key: card.id, className: "flex items-center gap-2 rounded-lg bg-white border border-slate-200 p-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => activateHubCard(card.id), className: "min-h-10 flex-1 text-left text-sm font-semibold text-slate-700 hover:text-indigo-700" }, card.label), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes(card.id), "aria-label": hubFavoriteIds.includes(card.id) ? tr("hub.remove_favorite", "Remove from favorites") + ": " + card.label : tr("hub.add_favorite", "Add to favorites") + ": " + card.label, onClick: () => toggleHubFavorite(card.id), className: "min-w-9 min-h-9 rounded-full text-amber-800 text-lg hover:bg-amber-50" }, hubFavoriteIds.includes(card.id) ? "\u2605" : "\u2606"))))), quickCards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50 p-3", role: "region", "data-help-key": "educator_hub_quick_access", "aria-label": tr("hub.quick_access", "Quick access") }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-indigo-800" }, tr("hub.quick_access", "Quick access")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-700" }, tr("hub.quick_access_hint", "Recent and favorite tools"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, quickCards.map((card) => /* @__PURE__ */ React.createElement("div", { key: card.id, className: "inline-flex items-center rounded-lg border border-indigo-200 bg-white shadow-sm" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => activateHubCard(card.id), className: "min-h-10 px-3 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50" }, card.label), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": hubFavoriteIds.includes(card.id), "aria-label": hubFavoriteIds.includes(card.id) ? tr("hub.remove_favorite", "Remove from favorites") + ": " + card.label : tr("hub.add_favorite", "Add to favorites") + ": " + card.label, onClick: () => toggleHubFavorite(card.id), className: "min-w-9 min-h-10 border-l border-indigo-200 text-amber-800 text-lg hover:bg-amber-50" }, hubFavoriteIds.includes(card.id) ? "\u2605" : "\u2606"))))), /* @__PURE__ */ React.createElement("p", { className: "sr-only", "aria-live": "polite" }, hubVisibleCount, " ", tr("hub.tools_available", "tools available"))), /* @__PURE__ */ React.createElement("div", { ref: hubGridRef, className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "col-span-full mt-1 mb-[-0.25rem]", "data-hub-section-heading": "start" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black uppercase tracking-wide text-indigo-800" }, tr("educator_hub.section_start_title", "Start here")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("educator_hub.section_start_desc", "Plan the next lesson, gather evidence, and prepare the materials students will use."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_section_toggle", "data-hub-section-toggle": "start", "aria-expanded": !hubCollapsedSections.includes("start"), "aria-label": hubCollapsedSections.includes("start") ? tr("hub.expand_section", "Expand section") : tr("hub.collapse_section", "Collapse section"), onClick: () => toggleHubSection("start"), className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubCollapsedSections.includes("start") ? "+" : "-"))), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "lesson", "data-hub-label": "Help me build a lesson", "data-hub-section": "start" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_lesson_builder_card", onClick: () => {
-    setShowEducatorHub(false);
-    startLessonFlow();
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1FA84}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-700" }, t("educator_hub.blueprint_mode_badge") || "Blueprint Mode"), /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-indigo-800" }, t("educator_hub.lesson_builder_title") || "Help me build a lesson"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-800 mt-1" }, t("educator_hub.lesson_builder_desc") || "Answer a few questions, then build a differentiated lesson step by step with AlloBot."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("lesson"), "aria-label": hubFavoriteIds.includes("lesson") ? tr("hub.remove_favorite", "Remove from favorites") + ": Help me build a lesson" : tr("hub.add_favorite", "Add to favorites") + ": Help me build a lesson", title: hubFavoriteIds.includes("lesson") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("lesson");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("lesson") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "lumen", "data-hub-label": "Lumen", "data-hub-section": "start" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_lumen_card", onClick: () => {
-    setShowEducatorHub(false);
-    setLabToolData((prev) => ({ ...prev, lumen: { ...prev && prev.lumen || {}, mode: "home" } }));
-    setStemLabTool("lumen");
-    setShowStemLab(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-amber-800" }, t("educator_hub.lumen_title") || "Lumen"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-amber-800 mt-1" }, t("educator_hub.lumen_desc") || "Research sources or explore data in one evidence workspace. Cite exact passages and keep uncertainty and provenance visible."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("lumen"), "aria-label": hubFavoriteIds.includes("lumen") ? tr("hub.remove_favorite", "Remove from favorites") + ": Lumen" : tr("hub.add_favorite", "Add to favorites") + ": Lumen", title: hubFavoriteIds.includes("lumen") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("lumen");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("lumen") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "document", "data-hub-label": "Document Hub", "data-hub-section": "start" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_document_hub_card", onClick: () => {
-    setShowEducatorHub(false);
-    openExportPreview("print");
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4C4}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-emerald-800" }, t("educator_hub.document_hub_title") || "Document Hub"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-emerald-800 mt-1" }, t("educator_hub.document_hub_desc") || "Build polished documents, audit accessibility, and export to PDF, HTML, worksheets, or slides."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("document"), "aria-label": hubFavoriteIds.includes("document") ? tr("hub.remove_favorite", "Remove from favorites") + ": Document Hub" : tr("hub.add_favorite", "Add to favorites") + ": Document Hub", title: hubFavoriteIds.includes("document") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("document");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("document") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "whiteboard", "data-hub-label": "Whiteboard", "data-hub-section": "start" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_whiteboard_card", onClick: () => {
-    setShowEducatorHub(false);
-    try {
-      openWhiteboard();
-    } catch (_e) {
-    }
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-indigo-800" }, t("educator_hub.whiteboard_title") || "Whiteboard"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-800 mt-1" }, t("educator_hub.whiteboard_desc") || "Sketch ideas, build diagrams, and map thinking with graphic organizers and one-click image export."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("whiteboard"), "aria-label": hubFavoriteIds.includes("whiteboard") ? tr("hub.remove_favorite", "Remove from favorites") + ": Whiteboard" : tr("hub.add_favorite", "Add to favorites") + ": Whiteboard", title: hubFavoriteIds.includes("whiteboard") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("whiteboard");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("whiteboard") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "col-span-full mt-1 mb-[-0.25rem]", "data-hub-section-heading": "plan" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black uppercase tracking-wide text-indigo-800" }, tr("educator_hub.section_plan_title", "Plan and create")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("educator_hub.section_plan_desc", "Turn ideas and evidence into lessons, documents, and accessible learning materials."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_section_toggle", "data-hub-section-toggle": "plan", "aria-expanded": !hubCollapsedSections.includes("plan"), "aria-label": hubCollapsedSections.includes("plan") ? tr("hub.expand_section", "Expand section") : tr("hub.collapse_section", "Collapse section"), onClick: () => toggleHubSection("plan"), className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubCollapsedSections.includes("plan") ? "+" : "-"))), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "throughline", "data-hub-label": "Learning Web: Unit Path", "data-hub-section": "plan" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_throughline_card", onClick: () => {
-    setShowEducatorHub(false);
-    setShowMindMap(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F9F5}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-amber-800" }, t("educator_hub.throughline_title") || "Learning Web: Unit Path"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-amber-800 mt-1" }, t("educator_hub.throughline_desc") || "Arrange lessons into a teachable sequence, then inspect linked standards and evidence in the shared Learning Web."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("throughline"), "aria-label": hubFavoriteIds.includes("throughline") ? tr("hub.remove_favorite", "Remove from favorites") + ": Learning Web: Unit Path" : tr("hub.add_favorite", "Add to favorites") + ": Learning Web: Unit Path", title: hubFavoriteIds.includes("throughline") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("throughline");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("throughline") ? "\u2605" : "\u2606")), "              ", /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "page-designer", "data-hub-label": "Page Designer", "data-hub-section": "plan" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_allo_studio_card", onClick: () => {
-    setShowEducatorHub(false);
-    setIsAlloStudioOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F3A8}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-rose-800" }, t("educator_hub.allo_studio_title") || "Page Designer"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-rose-800 mt-1" }, t("educator_hub.allo_studio_desc") || "Create flyers, worksheets, posters, and slide decks with accessible exports, reading order, alt text, and a hand/AI process record."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("page-designer"), "aria-label": hubFavoriteIds.includes("page-designer") ? tr("hub.remove_favorite", "Remove from favorites") + ": Page Designer" : tr("hub.add_favorite", "Add to favorites") + ": Page Designer", title: hubFavoriteIds.includes("page-designer") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("page-designer");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("page-designer") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "video-studio", "data-hub-label": "Video Studio", "data-hub-section": "plan" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_video_studio_card", onClick: () => {
-    setShowEducatorHub(false);
-    setIsVideoStudioOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F3A5}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sky-800" }, t("educator_hub.video_studio_title") || "Video Studio"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-sky-800 mt-1" }, t("educator_hub.video_studio_desc") || "Record, trim, caption, and export short videos, with prompt tools for NotebookLM and other AI video tools."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("video-studio"), "aria-label": hubFavoriteIds.includes("video-studio") ? tr("hub.remove_favorite", "Remove from favorites") + ": Video Studio" : tr("hub.add_favorite", "Add to favorites") + ": Video Studio", title: hubFavoriteIds.includes("video-studio") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("video-studio");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("video-studio") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "symbol-studio", "data-hub-label": "Symbol Studio", "data-hub-section": "plan" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_symbol_studio_card", onClick: () => {
-    setShowEducatorHub(false);
-    setIsSymbolStudioOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1FAA7}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-purple-800" }, t("educator_hub.symbol_studio_title") || "Symbol Studio"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-purple-800 mt-1" }, t("educator_hub.symbol_studio_desc") || "Create PCS-style icons for visual supports, AAC boards, and schedules \u2014 then edit them with image-to-image tools."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("symbol-studio"), "aria-label": hubFavoriteIds.includes("symbol-studio") ? tr("hub.remove_favorite", "Remove from favorites") + ": Symbol Studio" : tr("hub.add_favorite", "Add to favorites") + ": Symbol Studio", title: hubFavoriteIds.includes("symbol-studio") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("symbol-studio");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("symbol-studio") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "allosheet", "data-hub-label": "AlloSheet", "data-hub-section": "plan" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_allosheet_card", onClick: _openAlloSheet, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4CA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-emerald-800" }, t("educator_hub.allosheet_title") || "AlloSheet (Pilot)"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-emerald-800 mt-1" }, t("educator_hub.allosheet_desc") || "Explore educator data with agent assistance, review every change before applying it, and run local audits."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("allosheet"), "aria-label": hubFavoriteIds.includes("allosheet") ? tr("hub.remove_favorite", "Remove from favorites") + ": AlloSheet" : tr("hub.add_favorite", "Add to favorites") + ": AlloSheet", title: hubFavoriteIds.includes("allosheet") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("allosheet");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("allosheet") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "col-span-full mt-1 mb-[-0.25rem]", "data-hub-section-heading": "teach" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black uppercase tracking-wide text-indigo-800" }, tr("educator_hub.section_teach_title", "Teach and assess")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("educator_hub.section_teach_desc", "Run activities, collect evidence, and respond to learner needs."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_section_toggle", "data-hub-section-toggle": "teach", "aria-expanded": !hubCollapsedSections.includes("teach"), "aria-label": hubCollapsedSections.includes("teach") ? tr("hub.expand_section", "Expand section") : tr("hub.collapse_section", "Collapse section"), onClick: () => toggleHubSection("teach"), className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubCollapsedSections.includes("teach") ? "+" : "-"))), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "polls-signups", "data-hub-label": "Polls & Sign-ups", "data-hub-section": "teach" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_activities_card", onClick: () => {
-    setShowEducatorHub(false);
-    setShowRecentQrShares(true);
-  }, className: "flex items-start gap-3 rounded-xl border border-teal-200 bg-teal-50 p-4 text-left transition-colors hover:bg-teal-100" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F5D3}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-teal-800" }, t("educator_hub.activities_title") || "Polls & Sign-ups"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-teal-800 mt-1" }, t("educator_hub.activities_desc") || "Schedule a meeting, collect sign-ups, or run a quick word cloud or rating. Share by link or QR code \u2014 no account required."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("polls-signups"), "aria-label": hubFavoriteIds.includes("polls-signups") ? tr("hub.remove_favorite", "Remove from favorites") + ": Polls & Sign-ups" : tr("hub.add_favorite", "Add to favorites") + ": Polls & Sign-ups", title: hubFavoriteIds.includes("polls-signups") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("polls-signups");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("polls-signups") ? "\u2605" : "\u2606")), !hideFromFamily && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "assessment-center", "data-hub-label": "Assessment Center", "data-hub-section": "teach" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_assessment_center_card", onClick: () => {
-    setShowEducatorHub(false);
-    setShowClassAnalytics(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F5D2}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-violet-800" }, t("educator_hub.assessment_center_title") || "Assessment Center"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-violet-800 mt-1" }, t("educator_hub.assessment_center_desc") || "Screening batteries, CBM probes, RTI decision aids, intervention logs, and student progress."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("assessment-center"), "aria-label": hubFavoriteIds.includes("assessment-center") ? tr("hub.remove_favorite", "Remove from favorites") + ": Assessment Center" : tr("hub.add_favorite", "Add to favorites") + ": Assessment Center", title: hubFavoriteIds.includes("assessment-center") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("assessment-center");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("assessment-center") ? "\u2605" : "\u2606")), !hideFromFamily && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "dynamic-assessment", "data-hub-label": "Dynamic Assessment", "data-hub-section": "teach" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_dynamic_assessment_card", onClick: () => {
-    setShowEducatorHub(false);
-    setIsDynamicAssessmentOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1FA7A}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-blue-800" }, t("educator_hub.dynamic_assessment_title") || "Dynamic Assessment"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-blue-800 mt-1" }, t("educator_hub.dynamic_assessment_desc") || "Run test-teach-retest probes with graduated prompts, modifiability scoring, IEP goals, and family/teacher handoffs."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("dynamic-assessment"), "aria-label": hubFavoriteIds.includes("dynamic-assessment") ? tr("hub.remove_favorite", "Remove from favorites") + ": Dynamic Assessment" : tr("hub.add_favorite", "Add to favorites") + ": Dynamic Assessment", title: hubFavoriteIds.includes("dynamic-assessment") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("dynamic-assessment");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("dynamic-assessment") ? "\u2605" : "\u2606")), !hideFromFamily && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "behavior-lens", "data-hub-label": "BehaviorLens", "data-hub-section": "teach" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_behavior_lens_card", onClick: () => {
-    setShowEducatorHub(false);
-    setShowBehaviorLens(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F441}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-indigo-800" }, t("educator_hub.behavior_lens_title") || "BehaviorLens"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-800 mt-1" }, t("educator_hub.behavior_lens_desc") || "Collect ABC observations, build FBA/BIP data, and use 60+ tools for behavior support."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("behavior-lens"), "aria-label": hubFavoriteIds.includes("behavior-lens") ? tr("hub.remove_favorite", "Remove from favorites") + ": BehaviorLens" : tr("hub.add_favorite", "Add to favorites") + ": BehaviorLens", title: hubFavoriteIds.includes("behavior-lens") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("behavior-lens");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("behavior-lens") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "report-writer", "data-hub-label": "Report Writer", "data-hub-section": "teach" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_report_writer_card", onClick: () => {
-    setShowEducatorHub(false);
-    setShowReportWriter(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4DD}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-violet-800" }, t("educator_hub.report_writer_title") || "Report Writer"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-violet-800 mt-1" }, t("educator_hub.report_writer_desc") || "Draft clinical reports with fact chunks, accuracy checks, and developmental norms."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("report-writer"), "aria-label": hubFavoriteIds.includes("report-writer") ? tr("hub.remove_favorite", "Remove from favorites") + ": Report Writer" : tr("hub.add_favorite", "Add to favorites") + ": Report Writer", title: hubFavoriteIds.includes("report-writer") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("report-writer");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("report-writer") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "col-span-full mt-1 mb-[-0.25rem]", "data-hub-section-heading": "access" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black uppercase tracking-wide text-indigo-800" }, tr("educator_hub.section_access_title", "Access and review")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("educator_hub.section_access_desc", "Verify that materials work for every learner before sharing them."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_section_toggle", "data-hub-section-toggle": "access", "aria-expanded": !hubCollapsedSections.includes("access"), "aria-label": hubCollapsedSections.includes("access") ? tr("hub.expand_section", "Expand section") : tr("hub.collapse_section", "Collapse section"), onClick: () => toggleHubSection("access"), className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubCollapsedSections.includes("access") ? "+" : "-"))), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "pdf-accessibility", "data-hub-label": "PDF Accessibility", "data-hub-section": "access" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", disabled: !!pdfBatchIntakeProgress, "data-help-key": "educator_hub_pdf_accessibility_card", onClick: () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.setAttribute("aria-label", t("educator_hub.pdf_upload_or_project_label") || "Select PDF, DOCX, or PPTX files, or a saved PDF project");
-    input.accept = "application/pdf,.pdf,.docx,.pptx,.json,application/json";
-    input.multiple = true;
-    input.addEventListener("cancel", () => {
-      input.value = "";
-    });
-    input.onchange = async (e) => {
-      const target = e && e.target;
-      const files = target && target.files ? Array.from(target.files) : [];
+  if (!isOpen) return null;
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4",
+      style: { zIndex: 260 },
+      role: "presentation",
+      onMouseDown: (e) => {
+        backdropMouseDownRef.current = e.target === e.currentTarget;
+      },
+      onClick: (e) => {
+        if (e.target === e.currentTarget && backdropMouseDownRef.current) requestCloseHub();
+        backdropMouseDownRef.current = false;
+      }
+    },
+    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "educator_hub_modal_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "educator-hub-title", "aria-describedby": "educator-hub-subtitle" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "educator-hub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F6E0}\uFE0F"), " ", t("educator_hub.title") || "Educator Tools"), /* @__PURE__ */ React.createElement("p", { id: "educator-hub-subtitle", className: "text-sm text-slate-600 mt-1" }, t("educator_hub.subtitle") || "Professional tools for educators and clinicians")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: requestCloseHub, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": t("educator_hub.close_aria") || "Close educator tools" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "mb-4 space-y-3", role: "search", "aria-label": tr("hub.search_label", "Search tools") }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "educator-hub-search", className: "sr-only" }, tr("hub.search_label", "Search tools")), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "educator-hub-search",
+        "data-help-key": "educator_hub_search",
+        type: "search",
+        value: hubQuery,
+        onChange: (event) => setHubQuery(event.target.value),
+        onKeyDown: (event) => {
+          if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+          if (event.key === "Enter") {
+            event.preventDefault();
+            launchSingleVisibleHubMatch();
+          }
+        },
+        placeholder: tr("hub.search_placeholder", "Search tools by name, purpose, or workflow"),
+        className: "min-h-11 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ), hubQuery && /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_search_clear", onClick: () => setHubQuery(""), className: "min-h-11 px-3 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50" }, tr("hub.clear_search", "Clear")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_favorites_only", "aria-pressed": hubFavoritesOnly, onClick: () => setHubFavoritesOnly((value) => !value), className: "min-h-11 px-3 rounded-xl border border-amber-300 bg-amber-50 text-sm font-bold text-amber-800 hover:bg-amber-100" }, hubFavoritesOnly ? "\u2605 " : "\u2606 ", tr("hub.favorites_only", "Favorites")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_manage_favorites", "aria-expanded": hubManageFavorites, onClick: () => setHubManageFavorites((value) => !value), className: "min-h-11 px-3 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50" }, tr("hub.manage_favorites", "Manage favorites"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "educator-hub-role", className: "text-xs font-bold text-slate-600" }, tr("hub.role_label", "Recommendations for")), /* @__PURE__ */ React.createElement("select", { id: "educator-hub-role", "data-help-key": "educator_hub_role", value: hubRoleKey, onChange: (event) => setHubRoleOverride(event.target.value), className: "min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("option", { value: "educator" }, tr("hub.role_educator", "Educators")), /* @__PURE__ */ React.createElement("option", { value: "clinician" }, tr("hub.role_clinician", "Clinicians")), /* @__PURE__ */ React.createElement("option", { value: "leader" }, tr("hub.role_leader", "Leaders")), /* @__PURE__ */ React.createElement("option", { value: "student" }, tr("hub.role_student", "Students")), /* @__PURE__ */ React.createElement("option", { value: "family" }, tr("hub.role_family", "Families")))), hubSections.length >= 2 && /* @__PURE__ */ React.createElement("div", { "data-hub-section-filter-bar": "true", className: "flex flex-wrap items-center gap-1.5", role: "group", "aria-label": tr("hub.filter_by_category", "Filter tools by category") }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-hub-section-filter": "all",
+        "aria-pressed": hubSectionFilter === "all",
+        onClick: () => setHubSectionFilter("all"),
+        className: "min-h-11 rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 " + (hubSectionFilter === "all" ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50")
+      },
+      tr("hub.section_all", "All")
+    ), hubSections.map((sec) => {
+      const selected = hubSectionFilter === sec.id;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: sec.id,
+          type: "button",
+          "data-hub-section-filter": sec.id,
+          "aria-pressed": selected,
+          onClick: () => setHubSectionFilter(selected ? "all" : sec.id),
+          className: "min-h-11 rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 " + (selected ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50")
+        },
+        sec.label
+      );
+    })), recommendedCards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-emerald-200 bg-emerald-50 p-3", role: "region", "data-help-key": "educator_hub_recommended", "aria-label": tr("hub.recommended", "Recommended tools") }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-emerald-800" }, tr("hub.recommended", "Recommended tools")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-emerald-700" }, tr("hub.recommended_for", "For"), " ", hubRoleLabel)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, recommendedCards.map((card) => /* @__PURE__ */ React.createElement("button", { key: card.id, type: "button", onClick: () => activateHubCard(card.id), className: "min-h-10 rounded-lg border border-emerald-200 bg-white px-3 text-left text-xs font-bold text-emerald-800 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" }, card.label))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 mt-2" }, tr("hub.recommended_hint", "Based on your role and local tool use"))), hubManageFavorites && hubCards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-slate-50 p-3", role: "region", "data-help-key": "educator_hub_manage_favorites_list", "aria-label": tr("hub.manage_favorites", "Manage favorites") }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, hubCards.map((card) => /* @__PURE__ */ React.createElement("div", { key: card.id, className: "flex items-center gap-2 rounded-lg bg-white border border-slate-200 p-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => activateHubCard(card.id), className: "min-h-10 flex-1 text-left text-sm font-semibold text-slate-700 hover:text-indigo-700" }, card.label), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes(card.id), "aria-label": hubFavoriteIds.includes(card.id) ? tr("hub.remove_favorite", "Remove from favorites") + ": " + card.label : tr("hub.add_favorite", "Add to favorites") + ": " + card.label, onClick: () => toggleHubFavorite(card.id), className: "min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-amber-800 text-lg hover:bg-amber-50" }, hubFavoriteIds.includes(card.id) ? "\u2605" : "\u2606"))))), quickCards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50 p-3", role: "region", "data-help-key": "educator_hub_quick_access", "aria-label": tr("hub.quick_access", "Quick access") }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-indigo-800" }, tr("hub.quick_access", "Quick access")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-700" }, tr("hub.quick_access_hint", "Recent and favorite tools"))), hubRecentIds.length > 0 && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-hub-clear-recent": "true",
+        onClick: () => setHubRecentIds([]),
+        className: "min-h-11 rounded-lg border border-indigo-200 bg-white px-2.5 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+      },
+      tr("hub.clear_recent", "Clear recent")
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, quickCards.map((card) => /* @__PURE__ */ React.createElement("div", { key: card.id, className: "inline-flex items-center rounded-lg border border-indigo-200 bg-white shadow-sm" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => activateHubCard(card.id), className: "min-h-11 px-3 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50" }, card.label), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": hubFavoriteIds.includes(card.id), "aria-label": hubFavoriteIds.includes(card.id) ? tr("hub.remove_favorite", "Remove from favorites") + ": " + card.label : tr("hub.add_favorite", "Add to favorites") + ": " + card.label, onClick: () => toggleHubFavorite(card.id), className: "min-w-11 min-h-11 inline-flex items-center justify-center border-l border-indigo-200 text-amber-800 text-lg hover:bg-amber-50" }, hubFavoriteIds.includes(card.id) ? "\u2605" : "\u2606"))))), /* @__PURE__ */ React.createElement("p", { className: "sr-only", "aria-live": "polite" }, hubVisibleCount, " ", tr("hub.tools_available", "tools available")), hubVisibleCount === 0 && (hubQuery.trim() || hubFavoritesOnly || hubSectionFilter !== "all") && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-xl border border-slate-200 bg-slate-50 p-4 text-center" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-700" }, tr("hub.no_matching_tools", "No tools match your current filters.")), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          setHubQuery("");
+          setHubFavoritesOnly(false);
+          setHubSectionFilter("all");
+        },
+        className: "mt-2 min-h-11 px-4 py-2 rounded-xl border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600"
+      },
+      tr("hub.clear_filters", "Clear filters")
+    ))), /* @__PURE__ */ React.createElement("div", { ref: hubGridRef, className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "col-span-full mt-1 mb-[-0.25rem]", "data-hub-section-heading": "start" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black uppercase tracking-wide text-indigo-800" }, tr("educator_hub.section_start_title", "Start here")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("educator_hub.section_start_desc", "Plan the next lesson, gather evidence, and prepare the materials students will use."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_section_toggle", "data-hub-section-toggle": "start", "aria-expanded": !hubCollapsedSections.includes("start"), "aria-label": hubCollapsedSections.includes("start") ? tr("hub.expand_section", "Expand section") : tr("hub.collapse_section", "Collapse section"), onClick: () => toggleHubSection("start"), className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubCollapsedSections.includes("start") ? "+" : "-"))), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "lesson", "data-hub-label": "Help me build a lesson", "data-hub-section": "start" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_lesson_builder_card", onClick: () => {
+      setShowEducatorHub(false);
+      startLessonFlow();
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1FA84}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-700" }, t("educator_hub.blueprint_mode_badge") || "Blueprint Mode"), /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-indigo-800" }, t("educator_hub.lesson_builder_title") || "Help me build a lesson"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-800 mt-1" }, t("educator_hub.lesson_builder_desc") || "Answer a few questions, then build a differentiated lesson step by step with AlloBot."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("lesson"), "aria-label": hubFavoriteIds.includes("lesson") ? tr("hub.remove_favorite", "Remove from favorites") + ": Help me build a lesson" : tr("hub.add_favorite", "Add to favorites") + ": Help me build a lesson", title: hubFavoriteIds.includes("lesson") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("lesson");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("lesson") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "lumen", "data-hub-label": "Lumen", "data-hub-section": "start" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_lumen_card", onClick: () => {
+      setShowEducatorHub(false);
+      setLabToolData((prev) => ({ ...prev, lumen: { ...prev && prev.lumen || {}, mode: "home" } }));
+      setStemLabTool("lumen");
+      setShowStemLab(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-amber-800" }, t("educator_hub.lumen_title") || "Lumen"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-amber-800 mt-1" }, t("educator_hub.lumen_desc") || "Research sources or explore data in one evidence workspace. Cite exact passages and keep uncertainty and provenance visible."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("lumen"), "aria-label": hubFavoriteIds.includes("lumen") ? tr("hub.remove_favorite", "Remove from favorites") + ": Lumen" : tr("hub.add_favorite", "Add to favorites") + ": Lumen", title: hubFavoriteIds.includes("lumen") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("lumen");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("lumen") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "document", "data-hub-label": "Document Hub", "data-hub-section": "start" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_document_hub_card", onClick: () => {
+      setShowEducatorHub(false);
+      openExportPreview("print");
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4C4}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-emerald-800" }, t("educator_hub.document_hub_title") || "Document Hub"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-emerald-800 mt-1" }, t("educator_hub.document_hub_desc") || "Build polished documents, audit accessibility, and export to PDF, HTML, worksheets, or slides."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("document"), "aria-label": hubFavoriteIds.includes("document") ? tr("hub.remove_favorite", "Remove from favorites") + ": Document Hub" : tr("hub.add_favorite", "Add to favorites") + ": Document Hub", title: hubFavoriteIds.includes("document") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("document");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("document") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "whiteboard", "data-hub-label": "Whiteboard", "data-hub-section": "start" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_whiteboard_card", onClick: () => {
+      setShowEducatorHub(false);
       try {
-        if (target) target.value = "";
-      } catch (_) {
+        openWhiteboard();
+      } catch (_e) {
       }
-      if (files.length === 0) return;
-      const isProjectFile = (file) => /\.json$/i.test(String(file && file.name || "")) || String(file && file.type || "").toLowerCase() === "application/json";
-      if (files.some(isProjectFile)) {
-        if (files.length > 1) {
-          addToast(t("educator_hub.pdf_project_one_at_a_time") || "Open one saved PDF project at a time, on its own.", "warning");
-          return;
-        }
-        const openProject = typeof window !== "undefined" ? window.__alloOpenPdfProjectFile : null;
-        if (typeof openProject !== "function") {
-          addToast(t("educator_hub.pdf_project_open_from_create") || "To reopen saved PDF work, go to the Create tab, then Source Material, then Open PDF project.", "info");
-          return;
-        }
-        setShowEducatorHub(false);
-        openProject(files[0]);
-        return;
-      }
-      if (files.length === 1) {
-        setShowEducatorHub(false);
-        const singleTarget = { files: [files[0]], value: "" };
-        try {
-          await Promise.resolve(handleFileUpload({ target: singleTarget, currentTarget: singleTarget }));
-        } catch (error) {
-          addToast(tr("educator_hub.open_file_failed", 'Could not open "{name}": {error}', { name: files[0].name || "document", error: String(error && error.message || error || "unknown error") }), "error");
-        }
-        return;
-      }
-      const pdfFiles = files.filter((file) => {
-        const mime = String(file && file.type || "").toLowerCase();
-        return mime === "application/pdf" || /\.pdf$/i.test(String(file && file.name || ""));
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-indigo-800" }, t("educator_hub.whiteboard_title") || "Whiteboard"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-800 mt-1" }, t("educator_hub.whiteboard_desc") || "Sketch ideas, build diagrams, and map thinking with graphic organizers and one-click image export."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("whiteboard"), "aria-label": hubFavoriteIds.includes("whiteboard") ? tr("hub.remove_favorite", "Remove from favorites") + ": Whiteboard" : tr("hub.add_favorite", "Add to favorites") + ": Whiteboard", title: hubFavoriteIds.includes("whiteboard") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("whiteboard");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("whiteboard") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "col-span-full mt-1 mb-[-0.25rem]", "data-hub-section-heading": "plan" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black uppercase tracking-wide text-indigo-800" }, tr("educator_hub.section_plan_title", "Plan and create")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("educator_hub.section_plan_desc", "Turn ideas and evidence into lessons, documents, and accessible learning materials."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_section_toggle", "data-hub-section-toggle": "plan", "aria-expanded": !hubCollapsedSections.includes("plan"), "aria-label": hubCollapsedSections.includes("plan") ? tr("hub.expand_section", "Expand section") : tr("hub.collapse_section", "Collapse section"), onClick: () => toggleHubSection("plan"), className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubCollapsedSections.includes("plan") ? "+" : "-"))), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "throughline", "data-hub-label": "Learning Web: Unit Path", "data-hub-section": "plan" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_throughline_card", onClick: () => {
+      setShowEducatorHub(false);
+      setShowMindMap(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F9F5}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-amber-800" }, t("educator_hub.throughline_title") || "Learning Web: Unit Path"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-amber-800 mt-1" }, t("educator_hub.throughline_desc") || "Arrange lessons into a teachable sequence, then inspect linked standards and evidence in the shared Learning Web."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("throughline"), "aria-label": hubFavoriteIds.includes("throughline") ? tr("hub.remove_favorite", "Remove from favorites") + ": Learning Web: Unit Path" : tr("hub.add_favorite", "Add to favorites") + ": Learning Web: Unit Path", title: hubFavoriteIds.includes("throughline") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("throughline");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("throughline") ? "\u2605" : "\u2606")), "              ", /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "page-designer", "data-hub-label": "Page Designer", "data-hub-section": "plan" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_allo_studio_card", onClick: () => {
+      setShowEducatorHub(false);
+      setIsAlloStudioOpen(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F3A8}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-rose-800" }, t("educator_hub.allo_studio_title") || "Page Designer"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-rose-800 mt-1" }, t("educator_hub.allo_studio_desc") || "Create flyers, worksheets, posters, and slide decks with accessible exports, reading order, alt text, and a hand/AI process record."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("page-designer"), "aria-label": hubFavoriteIds.includes("page-designer") ? tr("hub.remove_favorite", "Remove from favorites") + ": Page Designer" : tr("hub.add_favorite", "Add to favorites") + ": Page Designer", title: hubFavoriteIds.includes("page-designer") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("page-designer");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("page-designer") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "video-studio", "data-hub-label": "Video Studio", "data-hub-section": "plan" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_video_studio_card", onClick: () => {
+      setShowEducatorHub(false);
+      setIsVideoStudioOpen(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F3A5}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sky-800" }, t("educator_hub.video_studio_title") || "Video Studio"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-sky-800 mt-1" }, t("educator_hub.video_studio_desc") || "Record, trim, caption, and export short videos, with prompt tools for NotebookLM and other AI video tools."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("video-studio"), "aria-label": hubFavoriteIds.includes("video-studio") ? tr("hub.remove_favorite", "Remove from favorites") + ": Video Studio" : tr("hub.add_favorite", "Add to favorites") + ": Video Studio", title: hubFavoriteIds.includes("video-studio") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("video-studio");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("video-studio") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "symbol-studio", "data-hub-label": "Symbol Studio", "data-hub-section": "plan" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_symbol_studio_card", onClick: () => {
+      setShowEducatorHub(false);
+      setIsSymbolStudioOpen(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1FAA7}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-purple-800" }, t("educator_hub.symbol_studio_title") || "Symbol Studio"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-purple-800 mt-1" }, t("educator_hub.symbol_studio_desc") || "Create PCS-style icons for visual supports, AAC boards, and schedules \u2014 then edit them with image-to-image tools."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("symbol-studio"), "aria-label": hubFavoriteIds.includes("symbol-studio") ? tr("hub.remove_favorite", "Remove from favorites") + ": Symbol Studio" : tr("hub.add_favorite", "Add to favorites") + ": Symbol Studio", title: hubFavoriteIds.includes("symbol-studio") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("symbol-studio");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("symbol-studio") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "allosheet", "data-hub-label": "AlloSheet", "data-hub-section": "plan" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_allosheet_card", onClick: _openAlloSheet, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4CA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-emerald-800" }, t("educator_hub.allosheet_title") || "AlloSheet (Pilot)"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-emerald-800 mt-1" }, t("educator_hub.allosheet_desc") || "Explore educator data with agent assistance, review every change before applying it, and run local audits."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("allosheet"), "aria-label": hubFavoriteIds.includes("allosheet") ? tr("hub.remove_favorite", "Remove from favorites") + ": AlloSheet" : tr("hub.add_favorite", "Add to favorites") + ": AlloSheet", title: hubFavoriteIds.includes("allosheet") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("allosheet");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("allosheet") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "col-span-full mt-1 mb-[-0.25rem]", "data-hub-section-heading": "teach" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black uppercase tracking-wide text-indigo-800" }, tr("educator_hub.section_teach_title", "Teach and assess")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("educator_hub.section_teach_desc", "Run activities, collect evidence, and respond to learner needs."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_section_toggle", "data-hub-section-toggle": "teach", "aria-expanded": !hubCollapsedSections.includes("teach"), "aria-label": hubCollapsedSections.includes("teach") ? tr("hub.expand_section", "Expand section") : tr("hub.collapse_section", "Collapse section"), onClick: () => toggleHubSection("teach"), className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubCollapsedSections.includes("teach") ? "+" : "-"))), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "polls-signups", "data-hub-label": "Polls & Sign-ups", "data-hub-section": "teach" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_activities_card", onClick: () => {
+      setShowEducatorHub(false);
+      setShowRecentQrShares(true);
+    }, className: "flex items-start gap-3 rounded-xl border border-teal-200 bg-teal-50 p-4 text-left transition-colors hover:bg-teal-100" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F5D3}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-teal-800" }, t("educator_hub.activities_title") || "Polls & Sign-ups"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-teal-800 mt-1" }, t("educator_hub.activities_desc") || "Schedule a meeting, collect sign-ups, or run a quick word cloud or rating. Share by link or QR code \u2014 no account required."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("polls-signups"), "aria-label": hubFavoriteIds.includes("polls-signups") ? tr("hub.remove_favorite", "Remove from favorites") + ": Polls & Sign-ups" : tr("hub.add_favorite", "Add to favorites") + ": Polls & Sign-ups", title: hubFavoriteIds.includes("polls-signups") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("polls-signups");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("polls-signups") ? "\u2605" : "\u2606")), !hideFromFamily && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "assessment-center", "data-hub-label": "Assessment Center", "data-hub-section": "teach" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_assessment_center_card", onClick: () => {
+      setShowEducatorHub(false);
+      setShowClassAnalytics(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F5D2}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-violet-800" }, t("educator_hub.assessment_center_title") || "Assessment Center"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-violet-800 mt-1" }, t("educator_hub.assessment_center_desc") || "Screening batteries, CBM probes, RTI decision aids, intervention logs, and student progress."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("assessment-center"), "aria-label": hubFavoriteIds.includes("assessment-center") ? tr("hub.remove_favorite", "Remove from favorites") + ": Assessment Center" : tr("hub.add_favorite", "Add to favorites") + ": Assessment Center", title: hubFavoriteIds.includes("assessment-center") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("assessment-center");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("assessment-center") ? "\u2605" : "\u2606")), !hideFromFamily && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "dynamic-assessment", "data-hub-label": "Dynamic Assessment", "data-hub-section": "teach" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_dynamic_assessment_card", onClick: () => {
+      setShowEducatorHub(false);
+      setIsDynamicAssessmentOpen(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1FA7A}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-blue-800" }, t("educator_hub.dynamic_assessment_title") || "Dynamic Assessment"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-blue-800 mt-1" }, t("educator_hub.dynamic_assessment_desc") || "Run test-teach-retest probes with graduated prompts, modifiability scoring, IEP goals, and family/teacher handoffs."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("dynamic-assessment"), "aria-label": hubFavoriteIds.includes("dynamic-assessment") ? tr("hub.remove_favorite", "Remove from favorites") + ": Dynamic Assessment" : tr("hub.add_favorite", "Add to favorites") + ": Dynamic Assessment", title: hubFavoriteIds.includes("dynamic-assessment") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("dynamic-assessment");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("dynamic-assessment") ? "\u2605" : "\u2606")), !hideFromFamily && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "behavior-lens", "data-hub-label": "BehaviorLens", "data-hub-section": "teach" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_behavior_lens_card", onClick: () => {
+      setShowEducatorHub(false);
+      setShowBehaviorLens(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F441}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-indigo-800" }, t("educator_hub.behavior_lens_title") || "BehaviorLens"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-800 mt-1" }, t("educator_hub.behavior_lens_desc") || "Collect ABC observations, build FBA/BIP data, and use 60+ tools for behavior support."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("behavior-lens"), "aria-label": hubFavoriteIds.includes("behavior-lens") ? tr("hub.remove_favorite", "Remove from favorites") + ": BehaviorLens" : tr("hub.add_favorite", "Add to favorites") + ": BehaviorLens", title: hubFavoriteIds.includes("behavior-lens") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("behavior-lens");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("behavior-lens") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "report-writer", "data-hub-label": "Report Writer", "data-hub-section": "teach" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_report_writer_card", onClick: () => {
+      setShowEducatorHub(false);
+      setShowReportWriter(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4DD}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-violet-800" }, t("educator_hub.report_writer_title") || "Report Writer"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-violet-800 mt-1" }, t("educator_hub.report_writer_desc") || "Draft clinical reports with fact chunks, accuracy checks, and developmental norms."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("report-writer"), "aria-label": hubFavoriteIds.includes("report-writer") ? tr("hub.remove_favorite", "Remove from favorites") + ": Report Writer" : tr("hub.add_favorite", "Add to favorites") + ": Report Writer", title: hubFavoriteIds.includes("report-writer") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("report-writer");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("report-writer") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "col-span-full mt-1 mb-[-0.25rem]", "data-hub-section-heading": "access" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black uppercase tracking-wide text-indigo-800" }, tr("educator_hub.section_access_title", "Access and review")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("educator_hub.section_access_desc", "Verify that materials work for every learner before sharing them."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_section_toggle", "data-hub-section-toggle": "access", "aria-expanded": !hubCollapsedSections.includes("access"), "aria-label": hubCollapsedSections.includes("access") ? tr("hub.expand_section", "Expand section") : tr("hub.collapse_section", "Collapse section"), onClick: () => toggleHubSection("access"), className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubCollapsedSections.includes("access") ? "+" : "-"))), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "pdf-accessibility", "data-hub-label": "PDF Accessibility", "data-hub-section": "access" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", disabled: !!pdfBatchIntakeProgress, "data-help-key": "educator_hub_pdf_accessibility_card", onClick: () => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.setAttribute("aria-label", t("educator_hub.pdf_upload_or_project_label") || "Select PDF, DOCX, or PPTX files, or a saved PDF project");
+      input.accept = "application/pdf,.pdf,.docx,.pptx,.json,application/json";
+      input.multiple = true;
+      input.addEventListener("cancel", () => {
+        input.value = "";
       });
-      if (pdfFiles.length <= 1) {
-        addToast(tr("educator_hub.batch_selection_invalid", "Select one DOCX or PPTX at a time, or select two or more PDFs for batch remediation."), "warning");
-        return;
-      }
-      const batchBudget = _educatorBatchMemoryBudget();
-      const acceptedPdfFiles = [];
-      const oversizedNames = [];
-      let overCount = 0;
-      let overTotal = 0;
-      let acceptedBytes = 0;
-      for (const file of pdfFiles) {
-        const size = Math.max(0, Number(file && file.size) || 0);
-        if (acceptedPdfFiles.length >= _EDUCATOR_BATCH_MAX_FILES) {
-          overCount += 1;
-          continue;
-        }
-        if (size > batchBudget.perFileBytes) {
-          oversizedNames.push(file.name || "PDF");
-          continue;
-        }
-        if (acceptedBytes + size > batchBudget.totalBytes) {
-          overTotal += 1;
-          continue;
-        }
-        acceptedBytes += size;
-        acceptedPdfFiles.push(file);
-      }
-      if (overCount) addToast(tr("educator_hub.batch_over_count", "Batch limit is 60 PDFs; {count} file(s) were not added. Run them as a second batch.", { count: overCount }), "warning");
-      if (oversizedNames.length) addToast(tr("educator_hub.batch_oversized", "Skipped {count} PDF(s) over this device's {mb} MB per-file safety limit: {names}", { count: oversizedNames.length, mb: Math.round(batchBudget.perFileBytes / 1048576), names: oversizedNames.slice(0, 3).join(", ") + (oversizedNames.length > 3 ? "\u2026" : "") }), "warning");
-      if (overTotal) addToast(tr("educator_hub.batch_over_budget", "This device's {mb} MB batch memory budget was reached; {count} file(s) were not added. Run them as a second batch.", { mb: Math.round(batchBudget.totalBytes / 1048576), count: overTotal }), "warning");
-      if (acceptedPdfFiles.length <= 1) {
-        addToast(tr("educator_hub.batch_too_few_remaining", "At least two PDFs must remain after the batch safety limits are applied."), "warning");
-        return;
-      }
-      let intakeToken;
-      try {
-        intakeToken = await Promise.resolve(beginPdfDocumentIntake({
-          source: "educator-hub",
-          mode: "batch",
-          files: acceptedPdfFiles
-        }));
-      } catch (error) {
-        addToast(tr("educator_hub.batch_start_failed", "Could not start the PDF batch: {error}", { error: String(error && error.message || error || "unknown error") }), "error");
-        return;
-      }
-      const intakeJob = { token: intakeToken, reader: null, cancelRead: null, cancelled: false };
-      pdfBatchIntakeRef.current = intakeJob;
-      const intakeIsCurrent = () => {
-        if (intakeJob.cancelled || pdfBatchIntakeRef.current !== intakeJob) return false;
+      input.onchange = async (e) => {
+        const target = e && e.target;
+        const files = target && target.files ? Array.from(target.files) : [];
         try {
-          return isPdfDocumentIntakeCurrent(intakeToken);
+          if (target) target.value = "";
         } catch (_) {
-          return false;
         }
-      };
-      if (!intakeIsCurrent()) {
-        if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
-        return;
-      }
-      _setPdfBatchIntakeProgressIfMounted({ completed: 0, total: acceptedPdfFiles.length, currentIndex: 0, currentName: "", totalBytes: acceptedBytes });
-      addToast(tr("educator_hub.batch_preparing", "Preparing {count} PDFs for batch remediation\u2026", { count: acceptedPdfFiles.length }), "info");
-      const skippedCount = files.length - pdfFiles.length;
-      if (skippedCount > 0) {
-        addToast(tr("educator_hub.batch_skipped_non_pdf", "{count} non-PDF file(s) were skipped; PDF batch remediation accepts PDFs only.", { count: skippedCount }), "warning");
-      }
-      const batchFiles = new Array(acceptedPdfFiles.length);
-      for (let index = 0; index < acceptedPdfFiles.length; index += 1) {
+        if (files.length === 0) return;
+        const isProjectFile = (file) => /\.json$/i.test(String(file && file.name || "")) || String(file && file.type || "").toLowerCase() === "application/json";
+        if (files.some(isProjectFile)) {
+          if (files.length > 1) {
+            addToast(t("educator_hub.pdf_project_one_at_a_time") || "Open one saved PDF project at a time, on its own.", "warning");
+            return;
+          }
+          const openProject = typeof window !== "undefined" ? window.__alloOpenPdfProjectFile : null;
+          if (typeof openProject !== "function") {
+            addToast(t("educator_hub.pdf_project_open_from_create") || "To reopen saved PDF work, go to the Create tab, then Source Material, then Open PDF project.", "info");
+            return;
+          }
+          setShowEducatorHub(false);
+          openProject(files[0]);
+          return;
+        }
+        if (files.length === 1) {
+          setShowEducatorHub(false);
+          const singleTarget = { files: [files[0]], value: "" };
+          try {
+            await Promise.resolve(handleFileUpload({ target: singleTarget, currentTarget: singleTarget }));
+          } catch (error) {
+            addToast(tr("educator_hub.open_file_failed", 'Could not open "{name}": {error}', { name: files[0].name || "document", error: String(error && error.message || error || "unknown error") }), "error");
+          }
+          return;
+        }
+        const pdfFiles = files.filter((file) => {
+          const mime = String(file && file.type || "").toLowerCase();
+          return mime === "application/pdf" || /\.pdf$/i.test(String(file && file.name || ""));
+        });
+        if (pdfFiles.length <= 1) {
+          addToast(tr("educator_hub.batch_selection_invalid", "Select one DOCX or PPTX at a time, or select two or more PDFs for batch remediation."), "warning");
+          return;
+        }
+        const batchBudget = _educatorBatchMemoryBudget();
+        const acceptedPdfFiles = [];
+        const oversizedNames = [];
+        let overCount = 0;
+        let overTotal = 0;
+        let acceptedBytes = 0;
+        for (const file of pdfFiles) {
+          const size = Math.max(0, Number(file && file.size) || 0);
+          if (acceptedPdfFiles.length >= _EDUCATOR_BATCH_MAX_FILES) {
+            overCount += 1;
+            continue;
+          }
+          if (size > batchBudget.perFileBytes) {
+            oversizedNames.push(file.name || "PDF");
+            continue;
+          }
+          if (acceptedBytes + size > batchBudget.totalBytes) {
+            overTotal += 1;
+            continue;
+          }
+          acceptedBytes += size;
+          acceptedPdfFiles.push(file);
+        }
+        if (overCount) addToast(tr("educator_hub.batch_over_count", "Batch limit is 60 PDFs; {count} file(s) were not added. Run them as a second batch.", { count: overCount }), "warning");
+        if (oversizedNames.length) addToast(tr("educator_hub.batch_oversized", "Skipped {count} PDF(s) over this device's {mb} MB per-file safety limit: {names}", { count: oversizedNames.length, mb: Math.round(batchBudget.perFileBytes / 1048576), names: oversizedNames.slice(0, 3).join(", ") + (oversizedNames.length > 3 ? "\u2026" : "") }), "warning");
+        if (overTotal) addToast(tr("educator_hub.batch_over_budget", "This device's {mb} MB batch memory budget was reached; {count} file(s) were not added. Run them as a second batch.", { mb: Math.round(batchBudget.totalBytes / 1048576), count: overTotal }), "warning");
+        if (acceptedPdfFiles.length <= 1) {
+          addToast(tr("educator_hub.batch_too_few_remaining", "At least two PDFs must remain after the batch safety limits are applied."), "warning");
+          return;
+        }
+        let intakeToken;
+        try {
+          intakeToken = await Promise.resolve(beginPdfDocumentIntake({
+            source: "educator-hub",
+            mode: "batch",
+            files: acceptedPdfFiles
+          }));
+        } catch (error) {
+          if (educatorHubMountedRef.current) addToast(tr("educator_hub.batch_start_failed", "Could not start the PDF batch: {error}", { error: String(error && error.message || error || "unknown error") }), "error");
+          return;
+        }
+        if (!educatorHubMountedRef.current) return;
+        const intakeJob = { token: intakeToken, reader: null, cancelRead: null, cancelled: false };
+        pdfBatchIntakeRef.current = intakeJob;
+        const intakeIsCurrent = () => {
+          if (!educatorHubMountedRef.current || intakeJob.cancelled || pdfBatchIntakeRef.current !== intakeJob) return false;
+          try {
+            return isPdfDocumentIntakeCurrent(intakeToken);
+          } catch (_) {
+            return false;
+          }
+        };
+        if (!intakeIsCurrent()) {
+          if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+          return;
+        }
+        _setPdfBatchIntakeProgressIfMounted({ completed: 0, total: acceptedPdfFiles.length, currentIndex: 0, currentName: "", totalBytes: acceptedBytes });
+        addToast(tr("educator_hub.batch_preparing", "Preparing {count} PDFs for batch remediation\u2026", { count: acceptedPdfFiles.length }), "info");
+        const skippedCount = files.length - pdfFiles.length;
+        if (skippedCount > 0) {
+          addToast(tr("educator_hub.batch_skipped_non_pdf", "{count} non-PDF file(s) were skipped; PDF batch remediation accepts PDFs only.", { count: skippedCount }), "warning");
+        }
+        const batchFiles = new Array(acceptedPdfFiles.length);
+        for (let index = 0; index < acceptedPdfFiles.length; index += 1) {
+          if (!intakeIsCurrent()) {
+            if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+            _setPdfBatchIntakeProgressIfMounted(null);
+            return;
+          }
+          const file = acceptedPdfFiles[index];
+          _setPdfBatchIntakeProgressIfMounted({ completed: index, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || "PDF", totalBytes: acceptedBytes });
+          const outcome = await new Promise((resolve) => {
+            if (!intakeIsCurrent()) {
+              resolve({ stale: true });
+              return;
+            }
+            let reader;
+            let staleMonitor = null;
+            let settled = false;
+            const finish = (value) => {
+              if (settled) return;
+              settled = true;
+              if (staleMonitor) clearInterval(staleMonitor);
+              if (intakeJob.reader === reader) intakeJob.reader = null;
+              intakeJob.cancelRead = null;
+              resolve(value);
+            };
+            try {
+              reader = new FileReader();
+              intakeJob.reader = reader;
+              intakeJob.cancelRead = () => finish({ cancelled: true });
+              staleMonitor = setInterval(() => {
+                if (!intakeIsCurrent()) {
+                  if (reader && typeof reader.abort === "function") {
+                    try {
+                      reader.abort();
+                    } catch (_) {
+                    }
+                  }
+                  finish({ stale: true });
+                }
+              }, 200);
+              reader.onload = () => {
+                if (!intakeIsCurrent()) {
+                  finish({ stale: true });
+                  return;
+                }
+                const result = reader.result;
+                const comma = typeof result === "string" ? result.indexOf(",") : -1;
+                const base64 = comma >= 0 ? result.slice(comma + 1) : "";
+                if (!base64) {
+                  finish({ error: new Error("The file was empty or could not be decoded.") });
+                  return;
+                }
+                finish({ entry: {
+                  id: Date.now() + index + Math.random(),
+                  fileName: file.name,
+                  fileSize: file.size,
+                  base64,
+                  status: "pending",
+                  result: null
+                } });
+              };
+              reader.onerror = () => {
+                if (!intakeIsCurrent()) {
+                  finish({ stale: true });
+                  return;
+                }
+                finish({ error: reader.error || new Error("The browser could not read this file.") });
+              };
+              reader.onabort = () => {
+                if (!intakeIsCurrent() || intakeJob.cancelled) {
+                  finish({ cancelled: true });
+                  return;
+                }
+                finish({ error: new Error("The file read was cancelled.") });
+              };
+              reader.readAsDataURL(file);
+            } catch (error) {
+              if (!intakeIsCurrent()) {
+                finish({ stale: true });
+                return;
+              }
+              finish({ error });
+            }
+          });
+          if (!intakeIsCurrent() || outcome.stale || outcome.cancelled) {
+            if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
+            _setPdfBatchIntakeProgressIfMounted(null);
+            return;
+          }
+          if (outcome.error) {
+            addToast(tr("educator_hub.batch_read_failed", 'Could not read "{name}": {error}', { name: file.name || "PDF", error: String(outcome.error && outcome.error.message || outcome.error) }), "error");
+            _setPdfBatchIntakeProgressIfMounted({ completed: index + 1, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || "PDF", totalBytes: acceptedBytes });
+            continue;
+          }
+          batchFiles[index] = outcome.entry;
+          _setPdfBatchIntakeProgressIfMounted({ completed: index + 1, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || "PDF", totalBytes: acceptedBytes });
+        }
         if (!intakeIsCurrent()) {
           if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
           _setPdfBatchIntakeProgressIfMounted(null);
           return;
         }
-        const file = acceptedPdfFiles[index];
-        _setPdfBatchIntakeProgressIfMounted({ completed: index, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || "PDF", totalBytes: acceptedBytes });
-        const outcome = await new Promise((resolve) => {
-          if (!intakeIsCurrent()) {
-            resolve({ stale: true });
-            return;
-          }
-          let reader;
-          let staleMonitor = null;
-          let settled = false;
-          const finish = (value) => {
-            if (settled) return;
-            settled = true;
-            if (staleMonitor) clearInterval(staleMonitor);
-            if (intakeJob.reader === reader) intakeJob.reader = null;
-            intakeJob.cancelRead = null;
-            resolve(value);
-          };
-          try {
-            reader = new FileReader();
-            intakeJob.reader = reader;
-            intakeJob.cancelRead = () => finish({ cancelled: true });
-            staleMonitor = setInterval(() => {
-              if (!intakeIsCurrent()) {
-                if (reader && typeof reader.abort === "function") {
-                  try {
-                    reader.abort();
-                  } catch (_) {
-                  }
-                }
-                finish({ stale: true });
-              }
-            }, 200);
-            reader.onload = () => {
-              if (!intakeIsCurrent()) {
-                finish({ stale: true });
-                return;
-              }
-              const result = reader.result;
-              const comma = typeof result === "string" ? result.indexOf(",") : -1;
-              const base64 = comma >= 0 ? result.slice(comma + 1) : "";
-              if (!base64) {
-                finish({ error: new Error("The file was empty or could not be decoded.") });
-                return;
-              }
-              finish({ entry: {
-                id: Date.now() + index + Math.random(),
-                fileName: file.name,
-                fileSize: file.size,
-                base64,
-                status: "pending",
-                result: null
-              } });
-            };
-            reader.onerror = () => {
-              if (!intakeIsCurrent()) {
-                finish({ stale: true });
-                return;
-              }
-              finish({ error: reader.error || new Error("The browser could not read this file.") });
-            };
-            reader.onabort = () => {
-              if (!intakeIsCurrent() || intakeJob.cancelled) {
-                finish({ cancelled: true });
-                return;
-              }
-              finish({ error: new Error("The file read was cancelled.") });
-            };
-            reader.readAsDataURL(file);
-          } catch (error) {
-            if (!intakeIsCurrent()) {
-              finish({ stale: true });
-              return;
-            }
-            finish({ error });
-          }
-        });
-        if (!intakeIsCurrent() || outcome.stale || outcome.cancelled) {
+        const readyFiles = batchFiles.filter(Boolean);
+        if (readyFiles.length === 0) {
           if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
           _setPdfBatchIntakeProgressIfMounted(null);
+          addToast(tr("educator_hub.batch_none_read", "None of the selected PDFs could be read."), "error");
           return;
         }
-        if (outcome.error) {
-          addToast(tr("educator_hub.batch_read_failed", 'Could not read "{name}": {error}', { name: file.name || "PDF", error: String(outcome.error && outcome.error.message || outcome.error) }), "error");
-          _setPdfBatchIntakeProgressIfMounted({ completed: index + 1, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || "PDF", totalBytes: acceptedBytes });
-          continue;
-        }
-        batchFiles[index] = outcome.entry;
-        _setPdfBatchIntakeProgressIfMounted({ completed: index + 1, total: acceptedPdfFiles.length, currentIndex: index + 1, currentName: file.name || "PDF", totalBytes: acceptedBytes });
-      }
-      if (!intakeIsCurrent()) {
         if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
         _setPdfBatchIntakeProgressIfMounted(null);
-        return;
-      }
-      const readyFiles = batchFiles.filter(Boolean);
-      if (readyFiles.length === 0) {
-        if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
-        _setPdfBatchIntakeProgressIfMounted(null);
-        addToast(tr("educator_hub.batch_none_read", "None of the selected PDFs could be read."), "error");
-        return;
-      }
-      if (pdfBatchIntakeRef.current === intakeJob) pdfBatchIntakeRef.current = null;
-      _setPdfBatchIntakeProgressIfMounted(null);
-      setPdfBatchSummary(null);
-      setPdfBatchQueue(readyFiles);
-      setPdfBatchMode(true);
-      setPdfAuditResult({
-        _choosing: true,
-        fileName: readyFiles.length + " files",
-        fileSize: readyFiles.reduce((sum, file) => sum + file.fileSize, 0)
-      });
-      addToast(tr("educator_hub.batch_ready", "{count} PDFs are ready for batch remediation.", { count: readyFiles.length }), "success");
-      setShowEducatorHub(false);
-    };
-    input.click();
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left disabled:opacity-60 disabled:cursor-wait disabled:hover:scale-100" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u267F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-teal-800" }, t("educator_hub.document_accessibility_title") || "Document accessibility"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-teal-700 mt-1" }, t("educator_hub.document_accessibility_desc") || "Improve PDFs, Word documents, slides, spreadsheets, images, and web content. Review accessibility checks and export accessible formats."), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-teal-800 mt-1 font-semibold" }, t("educator_hub.document_accessibility_resume") || "To continue saved work, choose its PDF project file (.json)."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("pdf-accessibility"), "aria-label": hubFavoriteIds.includes("pdf-accessibility") ? tr("hub.remove_favorite", "Remove from favorites") + ": PDF Accessibility" : tr("hub.add_favorite", "Add to favorites") + ": PDF Accessibility", title: hubFavoriteIds.includes("pdf-accessibility") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("pdf-accessibility");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("pdf-accessibility") ? "\u2605" : "\u2606")), pdfBatchIntakeProgress && /* @__PURE__ */ React.createElement("div", { className: "col-span-full rounded-xl border border-teal-300 bg-teal-50 p-3", role: "status", "aria-live": "polite", "aria-label": "PDF batch preparation progress" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-teal-900" }, "Preparing PDF batch: ", pdfBatchIntakeProgress.completed, "/", pdfBatchIntakeProgress.total), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-teal-700 truncate" }, pdfBatchIntakeProgress.currentName ? "Reading " + pdfBatchIntakeProgress.currentIndex + " of " + pdfBatchIntakeProgress.total + ": " + pdfBatchIntakeProgress.currentName : "Starting\u2026")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _cancelPdfBatchIntake(true), className: "min-h-11 px-3 py-2 rounded-lg border border-rose-300 bg-white text-rose-700 text-xs font-bold hover:bg-rose-50" }, "Cancel")), /* @__PURE__ */ React.createElement("progress", { className: "w-full mt-2 accent-teal-600", max: pdfBatchIntakeProgress.total, value: pdfBatchIntakeProgress.completed, "aria-label": "PDFs prepared" })), pdfFixResult && !pdfFixLoading && !pdfAuditResult && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => {
+        setPdfBatchSummary(null);
+        setPdfBatchQueue(readyFiles);
+        setPdfBatchMode(true);
+        setPdfAuditResult({
+          _choosing: true,
+          fileName: readyFiles.length + " files",
+          fileSize: readyFiles.reduce((sum, file) => sum + file.fileSize, 0)
+        });
+        addToast(tr("educator_hub.batch_ready", "{count} PDFs are ready for batch remediation.", { count: readyFiles.length }), "success");
         setShowEducatorHub(false);
-        setPdfAuditResult({ _restored: true });
+      };
+      input.click();
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left disabled:opacity-60 disabled:cursor-wait disabled:hover:scale-100" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u267F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-teal-800" }, t("educator_hub.document_accessibility_title") || "Document accessibility"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-teal-700 mt-1" }, t("educator_hub.document_accessibility_desc") || "Improve PDFs, Word documents, slides, spreadsheets, images, and web content. Review accessibility checks and export accessible formats."), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-teal-800 mt-1 font-semibold" }, t("educator_hub.document_accessibility_resume") || "To continue saved work, choose its PDF project file (.json)."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("pdf-accessibility"), "aria-label": hubFavoriteIds.includes("pdf-accessibility") ? tr("hub.remove_favorite", "Remove from favorites") + ": PDF Accessibility" : tr("hub.add_favorite", "Add to favorites") + ": PDF Accessibility", title: hubFavoriteIds.includes("pdf-accessibility") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("pdf-accessibility");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("pdf-accessibility") ? "\u2605" : "\u2606")), pdfBatchIntakeProgress && /* @__PURE__ */ React.createElement("div", { className: "col-span-full rounded-xl border border-teal-300 bg-teal-50 p-3", role: "status", "aria-live": "polite", "aria-label": "PDF batch preparation progress" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-teal-900" }, "Preparing PDF batch: ", pdfBatchIntakeProgress.completed, "/", pdfBatchIntakeProgress.total), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-teal-700 truncate" }, pdfBatchIntakeProgress.currentName ? "Reading " + pdfBatchIntakeProgress.currentIndex + " of " + pdfBatchIntakeProgress.total + ": " + pdfBatchIntakeProgress.currentName : "Starting\u2026")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _cancelPdfBatchIntake(true), className: "min-h-11 px-3 py-2 rounded-lg border border-rose-300 bg-white text-rose-700 text-xs font-bold hover:bg-rose-50" }, "Cancel")), /* @__PURE__ */ React.createElement("progress", { className: "w-full mt-2 accent-teal-600", max: pdfBatchIntakeProgress.total, value: pdfBatchIntakeProgress.completed, "aria-label": "PDFs prepared" })), pdfFixResult && !pdfFixLoading && !pdfAuditResult && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          setShowEducatorHub(false);
+          setPdfAuditResult({ _restored: true });
+        },
+        className: "min-h-11 flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold transition-all col-span-full md:col-span-2",
+        title: t("educator_hub.view_last_audit_tooltip") || "Re-open the last PDF audit \u2014 view the diff, verification, and remediated HTML without re-running the pipeline"
       },
-      className: "min-h-11 flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold transition-all col-span-full md:col-span-2",
-      title: t("educator_hub.view_last_audit_tooltip") || "Re-open the last PDF audit \u2014 view the diff, verification, and remediated HTML without re-running the pipeline"
-    },
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4CA}"),
-    " ",
-    t("pdf_audit.view_last_audit") || "View Last Audit",
-    pdfFixResult._userEditedAt && /* @__PURE__ */ React.createElement("span", { className: "opacity-70 text-[10px]" }, "\xB7 edited")
-  ), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "accessibility-lab", "data-hub-label": "Accessibility Lab", "data-hub-section": "access" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_accessibility_lab_card", onClick: () => {
-    setShowEducatorHub(false);
-    setIsAccessibilityLabOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-rose-800" }, t("educator_hub.accessibility_lab_title") || "Accessibility Lab"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-rose-700 mt-1" }, t("educator_hub.accessibility_lab_desc") || "Check the student experience with student preview, keyboard and screen-reader checks, a live WCAG audit, and disability simulations."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("accessibility-lab"), "aria-label": hubFavoriteIds.includes("accessibility-lab") ? tr("hub.remove_favorite", "Remove from favorites") + ": Accessibility Lab" : tr("hub.add_favorite", "Add to favorites") + ": Accessibility Lab", title: hubFavoriteIds.includes("accessibility-lab") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("accessibility-lab");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("accessibility-lab") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "col-span-full mt-1 mb-[-0.25rem]", "data-hub-section-heading": "extend" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black uppercase tracking-wide text-indigo-800" }, tr("educator_hub.section_extend_title", "Extend and discover")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("educator_hub.section_extend_desc", "Find community resources, professional learning, and leadership-level tools."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_section_toggle", "data-hub-section-toggle": "extend", "aria-expanded": !hubCollapsedSections.includes("extend"), "aria-label": hubCollapsedSections.includes("extend") ? tr("hub.expand_section", "Expand section") : tr("hub.collapse_section", "Collapse section"), onClick: () => toggleHubSection("extend"), className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubCollapsedSections.includes("extend") ? "+" : "-"))), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "community-catalog", "data-hub-label": "Community Catalog", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_community_catalog_card", onClick: () => {
-    setShowEducatorHub(false);
-    setIsCommunityCatalogOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F5C2}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-amber-800" }, t("educator_hub.community_catalog_title") || "Community Catalog"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-amber-700 mt-1" }, t("educator_hub.community_catalog_desc") || "Browse open-licensed lessons, or submit your own for community review."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("community-catalog"), "aria-label": hubFavoriteIds.includes("community-catalog") ? tr("hub.remove_favorite", "Remove from favorites") + ": Community Catalog" : tr("hub.add_favorite", "Add to favorites") + ": Community Catalog", title: hubFavoriteIds.includes("community-catalog") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("community-catalog");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("community-catalog") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "research-suite", "data-hub-label": "Research Suite", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_research_suite_card", onClick: () => {
-    setShowEducatorHub(false);
-    setIsResearchSuiteOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-fuchsia-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4C7}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-purple-800" }, t("educator_hub.research_suite_title") || "Research Suite"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-purple-700 mt-1" }, t("educator_hub.research_suite_desc") || "Run a named study: IRB tracking, consent provenance, Likert instruments, fidelity logs, and the study bundle export."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("research-suite"), "aria-label": hubFavoriteIds.includes("research-suite") ? tr("hub.remove_favorite", "Remove from favorites") + ": Research Suite" : tr("hub.add_favorite", "Add to favorites") + ": Research Suite", title: hubFavoriteIds.includes("research-suite") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("research-suite");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("research-suite") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "professional-development", "data-hub-label": "Professional Development", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_professional_dev_card", onClick: () => {
-    setShowEducatorHub(false);
-    try {
-      window.__alloPdIntent = true;
-      localStorage.setItem("alloflow_pd_intent", "1");
-    } catch (_) {
-    }
-    setIsCommunityCatalogOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F393}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sky-800" }, t("educator_hub.professional_dev_title") || "Professional Development"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-sky-700 mt-1" }, t("educator_hub.professional_dev_desc") || "Work through short, self-paced modules, take a knowledge check, and download a completion record."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("professional-development"), "aria-label": hubFavoriteIds.includes("professional-development") ? tr("hub.remove_favorite", "Remove from favorites") + ": Professional Development" : tr("hub.add_favorite", "Add to favorites") + ": Professional Development", title: hubFavoriteIds.includes("professional-development") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("professional-development");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("professional-development") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "leadership-hub", "data-hub-label": "Leadership Hub", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_admin_hub_card", onClick: () => {
-    setShowEducatorHub(false);
-    setIsAdminHubOpen(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-cyan-50 to-indigo-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F3DB}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-cyan-900" }, t("educator_hub.admin_hub_title") || "Leadership Hub"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-cyan-800 mt-1" }, t("educator_hub.admin_hub_desc") || "For leaders: conduct UDL walkthroughs, examine disproportionality patterns, and document meetings with aggregate or de-identified, device-only data. Reports are descriptive, not evaluative."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("leadership-hub"), "aria-label": hubFavoriteIds.includes("leadership-hub") ? tr("hub.remove_favorite", "Remove from favorites") + ": Leadership Hub" : tr("hub.add_favorite", "Add to favorites") + ": Leadership Hub", title: hubFavoriteIds.includes("leadership-hub") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("leadership-hub");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("leadership-hub") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "school-rewards", "data-hub-label": "School Rewards & Store", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_school_rewards_card", onClick: () => {
-    setShowEducatorHub(false);
-    openSchoolRewards();
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F39F}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-emerald-900" }, t("educator_hub.school_rewards_title") || "School Rewards & Store"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-emerald-800 mt-1" }, t("educator_hub.school_rewards_desc") || "Award recognition points and open the school-owned rewards ledger and prize store. The ledger lives in your school Google Workspace; the staff share link and setup checklist are inside."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("school-rewards"), "aria-label": hubFavoriteIds.includes("school-rewards") ? tr("hub.remove_favorite", "Remove from favorites") + ": School Rewards & Store" : tr("hub.add_favorite", "Add to favorites") + ": School Rewards & Store", title: hubFavoriteIds.includes("school-rewards") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("school-rewards");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("school-rewards") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "communications-studio", "data-hub-label": "Communications Studio", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_communications_studio_card", onClick: () => {
-    setShowEducatorHub(false);
-    openCommunicationsStudio();
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u2709\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sky-900" }, t("educator_hub.communications_studio_title") || "Communications Studio"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-sky-800 mt-1" }, t("educator_hub.communications_studio_desc") || "Family updates, batch report-card comments, recommendation letters and replies to families, drafted only from your notes. Codenames only, plain-language check, optional translation draft, send to your Drive. Nothing is emailed from here."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("communications-studio"), "aria-label": hubFavoriteIds.includes("communications-studio") ? tr("hub.remove_favorite", "Remove from favorites") + ": Communications Studio" : tr("hub.add_favorite", "Add to favorites") + ": Communications Studio", title: hubFavoriteIds.includes("communications-studio") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
-    event.stopPropagation();
-    toggleHubFavorite("communications-studio");
-  }, className: "absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("communications-studio") ? "\u2605" : "\u2606")))));
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4CA}"),
+      " ",
+      t("pdf_audit.view_last_audit") || "View Last Audit",
+      pdfFixResult._userEditedAt && /* @__PURE__ */ React.createElement("span", { className: "opacity-70 text-[10px]" }, "\xB7 edited")
+    ), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "accessibility-lab", "data-hub-label": "Accessibility Lab", "data-hub-section": "access" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_accessibility_lab_card", onClick: () => {
+      setShowEducatorHub(false);
+      setIsAccessibilityLabOpen(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F50D}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-rose-800" }, t("educator_hub.accessibility_lab_title") || "Accessibility Lab"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-rose-700 mt-1" }, t("educator_hub.accessibility_lab_desc") || "Check the student experience with student preview, keyboard and screen-reader checks, a live WCAG audit, and disability simulations."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("accessibility-lab"), "aria-label": hubFavoriteIds.includes("accessibility-lab") ? tr("hub.remove_favorite", "Remove from favorites") + ": Accessibility Lab" : tr("hub.add_favorite", "Add to favorites") + ": Accessibility Lab", title: hubFavoriteIds.includes("accessibility-lab") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("accessibility-lab");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("accessibility-lab") ? "\u2605" : "\u2606")), /* @__PURE__ */ React.createElement("div", { className: "col-span-full mt-1 mb-[-0.25rem]", "data-hub-section-heading": "extend" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black uppercase tracking-wide text-indigo-800" }, tr("educator_hub.section_extend_title", "Extend and discover")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("educator_hub.section_extend_desc", "Find community resources, professional learning, and leadership-level tools."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_section_toggle", "data-hub-section-toggle": "extend", "aria-expanded": !hubCollapsedSections.includes("extend"), "aria-label": hubCollapsedSections.includes("extend") ? tr("hub.expand_section", "Expand section") : tr("hub.collapse_section", "Collapse section"), onClick: () => toggleHubSection("extend"), className: "min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubCollapsedSections.includes("extend") ? "+" : "-"))), /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "community-catalog", "data-hub-label": "Community Catalog", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_community_catalog_card", onClick: () => {
+      setShowEducatorHub(false);
+      setIsCommunityCatalogOpen(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F5C2}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-amber-800" }, t("educator_hub.community_catalog_title") || "Community Catalog"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-amber-700 mt-1" }, t("educator_hub.community_catalog_desc") || "Browse open-licensed lessons, or submit your own for community review."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("community-catalog"), "aria-label": hubFavoriteIds.includes("community-catalog") ? tr("hub.remove_favorite", "Remove from favorites") + ": Community Catalog" : tr("hub.add_favorite", "Add to favorites") + ": Community Catalog", title: hubFavoriteIds.includes("community-catalog") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("community-catalog");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("community-catalog") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "research-suite", "data-hub-label": "Research Suite", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_research_suite_card", onClick: () => {
+      setShowEducatorHub(false);
+      setIsResearchSuiteOpen(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-fuchsia-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4C7}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-purple-800" }, t("educator_hub.research_suite_title") || "Research Suite"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-purple-700 mt-1" }, t("educator_hub.research_suite_desc") || "Run a named study: IRB tracking, consent provenance, Likert instruments, fidelity logs, and the study bundle export."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("research-suite"), "aria-label": hubFavoriteIds.includes("research-suite") ? tr("hub.remove_favorite", "Remove from favorites") + ": Research Suite" : tr("hub.add_favorite", "Add to favorites") + ": Research Suite", title: hubFavoriteIds.includes("research-suite") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("research-suite");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("research-suite") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "professional-development", "data-hub-label": "Professional Development", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_professional_dev_card", onClick: () => {
+      setShowEducatorHub(false);
+      try {
+        window.__alloPdIntent = true;
+        localStorage.setItem("alloflow_pd_intent", "1");
+      } catch (_) {
+      }
+      setIsCommunityCatalogOpen(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F393}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sky-800" }, t("educator_hub.professional_dev_title") || "Professional Development"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-sky-700 mt-1" }, t("educator_hub.professional_dev_desc") || "Work through short, self-paced modules, take a knowledge check, and download a completion record."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("professional-development"), "aria-label": hubFavoriteIds.includes("professional-development") ? tr("hub.remove_favorite", "Remove from favorites") + ": Professional Development" : tr("hub.add_favorite", "Add to favorites") + ": Professional Development", title: hubFavoriteIds.includes("professional-development") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("professional-development");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("professional-development") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "leadership-hub", "data-hub-label": "Leadership Hub", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_admin_hub_card", onClick: () => {
+      setShowEducatorHub(false);
+      setIsAdminHubOpen(true);
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-cyan-50 to-indigo-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F3DB}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-cyan-900" }, t("educator_hub.admin_hub_title") || "Leadership Hub"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-cyan-800 mt-1" }, t("educator_hub.admin_hub_desc") || "For leaders: conduct UDL walkthroughs, examine disproportionality patterns, and document meetings with aggregate or de-identified, device-only data. Reports are descriptive, not evaluative."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("leadership-hub"), "aria-label": hubFavoriteIds.includes("leadership-hub") ? tr("hub.remove_favorite", "Remove from favorites") + ": Leadership Hub" : tr("hub.add_favorite", "Add to favorites") + ": Leadership Hub", title: hubFavoriteIds.includes("leadership-hub") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("leadership-hub");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("leadership-hub") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "school-rewards", "data-hub-label": "School Rewards & Store", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_school_rewards_card", onClick: () => {
+      setShowEducatorHub(false);
+      openSchoolRewards();
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F39F}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-emerald-900" }, t("educator_hub.school_rewards_title") || "School Rewards & Store"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-emerald-800 mt-1" }, t("educator_hub.school_rewards_desc") || "Award recognition points and open the school-owned rewards ledger and prize store. The ledger lives in your school Google Workspace; the staff share link and setup checklist are inside."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("school-rewards"), "aria-label": hubFavoriteIds.includes("school-rewards") ? tr("hub.remove_favorite", "Remove from favorites") + ": School Rewards & Store" : tr("hub.add_favorite", "Add to favorites") + ": School Rewards & Store", title: hubFavoriteIds.includes("school-rewards") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("school-rewards");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("school-rewards") ? "\u2605" : "\u2606")), !hideSchoolProfessional && /* @__PURE__ */ React.createElement("div", { className: "relative group", "data-hub-id": "communications-studio", "data-hub-label": "Communications Studio", "data-hub-section": "extend" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-launch": "true", "data-help-key": "educator_hub_communications_studio_card", onClick: () => {
+      setShowEducatorHub(false);
+      openCommunicationsStudio();
+    }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u2709\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sky-900" }, t("educator_hub.communications_studio_title") || "Communications Studio"), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-sky-800 mt-1" }, t("educator_hub.communications_studio_desc") || "Family updates, batch report-card comments, recommendation letters and replies to families, drafted only from your notes. Codenames only, plain-language check, optional translation draft, send to your Drive. Nothing is emailed from here."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-hub-favorite": "true", "data-help-key": "educator_hub_favorite", "aria-pressed": hubFavoriteIds.includes("communications-studio"), "aria-label": hubFavoriteIds.includes("communications-studio") ? tr("hub.remove_favorite", "Remove from favorites") + ": Communications Studio" : tr("hub.add_favorite", "Add to favorites") + ": Communications Studio", title: hubFavoriteIds.includes("communications-studio") ? tr("hub.remove_favorite", "Remove from favorites") : tr("hub.add_favorite", "Add to favorites"), onClick: (event) => {
+      event.stopPropagation();
+      toggleHubFavorite("communications-studio");
+    }, className: "absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, hubFavoriteIds.includes("communications-studio") ? "\u2605" : "\u2606"))))
+  );
 }
 
   window.AlloModules = window.AlloModules || {};

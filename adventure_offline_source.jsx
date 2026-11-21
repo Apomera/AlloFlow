@@ -45,7 +45,14 @@ function normalizeOfflineStory(raw) {
     };
     var safeImg = typeof scene.sceneImage === 'string' ? scene.sceneImage.trim() : '';
     var allowRemoteOfflineImg = !(typeof window !== 'undefined' && (window._isDesktopBundledApp === true || window.__alloOfflineOnly === true));
-    if (safeImg && (/^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(safeImg) || /^blob:/i.test(safeImg) || (allowRemoteOfflineImg && /^https:/i.test(safeImg)))) {
+    var isValidRemoteHttps = false;
+    if (allowRemoteOfflineImg && safeImg && /^https:/i.test(safeImg)) {
+      try {
+        var parsedImgUrl = new URL(safeImg);
+        isValidRemoteHttps = parsedImgUrl.protocol === 'https:' && !parsedImgUrl.username && !parsedImgUrl.password;
+      } catch (_) { isValidRemoteHttps = false; }
+    }
+    if (safeImg && (/^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(safeImg) || /^blob:/i.test(safeImg) || isValidRemoteHttps)) {
       out.sceneImage = safeImg;
       if (typeof scene.sceneImageAlt === 'string') out.sceneImageAlt = scene.sceneImageAlt.slice(0, 300);
     }
@@ -194,13 +201,14 @@ function repairOfflineStory(input, options) {
 var _offlineFindCache = typeof WeakMap === 'function' ? new WeakMap() : null;
 function findOfflineAdventure(history) {
   var items = Array.isArray(history) ? history : [];
+  var allowRemote = !(typeof window !== 'undefined' && (window._isDesktopBundledApp === true || window.__alloOfflineOnly === true));
   for (var i = items.length - 1; i >= 0; i--) {
     var item = items[i];
     if (!item || item.type !== 'adventure' || !item.data || typeof item.data !== 'object' || !item.data.offlineStory) continue;
     var cached = _offlineFindCache && _offlineFindCache.get(item.data);
-    if (!cached) {
+    if (!cached || cached.allowRemote !== allowRemote) {
       var story = normalizeOfflineStory(item.data.offlineStory);
-      cached = { item: item, story: story, offlineOnly: item.data.offlineOnly === true, ok: validateOfflineStory(story).ok };
+      cached = { item: item, story: story, offlineOnly: item.data.offlineOnly === true, ok: validateOfflineStory(story).ok, allowRemote: allowRemote };
       if (_offlineFindCache) _offlineFindCache.set(item.data, cached);
     }
     if (cached.ok) return cached;
@@ -459,6 +467,7 @@ function AdventureOfflineEditor(props) {
   var story = props.story;
   var t = props.t;
   var studentMode = props.studentMode === true;
+  var editorRef = React.useRef(null);
   var check = React.useMemo(function () { return validateOfflineStory(story); }, [story]);
   var outline = React.useMemo(function () { return outlineOfflineStory(story); }, [story]);
   var numberOf = function (id) { var i = story.scenes.findIndex(function (scene) { return scene.id === id; }); return i < 0 ? '?' : i + 1; };
@@ -469,7 +478,7 @@ function AdventureOfflineEditor(props) {
   };
   var sceneName = function (scene, index) { return offlineText(t, 'scene_n', 'Scene {n}', { n: index + 1 }) + (scene.text ? ': ' + scene.text.slice(0, 40) : ''); };
   var issues = check.errors.concat(check.warnings);
-  return <div data-adventure-offline-editor className="grid gap-4">
+  return <div ref={editorRef} data-adventure-offline-editor className="grid gap-4">
     <div className={studentMode ? 'grid gap-3' : 'grid gap-3 sm:grid-cols-2'}>
       <label className="grid gap-1 text-sm font-bold">{offlineText(t, 'title_label', 'Story title')}
         <input type="text" value={story.title} maxLength={OFFLINE_LIMITS.maxTitle} onChange={function (e) { var v = e.target.value; update(function (s) { s.title = v; }); }} className={OFFLINE_FIELD} />
@@ -552,11 +561,23 @@ function AdventureOfflineEditor(props) {
                 });
               }} className={OFFLINE_SECONDARY}><Plus size={14} aria-hidden="true" /> {offlineText(t, 'add_choice', 'Add choice')}</button>}
               {story.scenes.length > 1 && <button type="button" data-offline-remove-scene aria-label={offlineText(t, 'remove_scene', 'Remove scene') + ': ' + label} onClick={function () {
+                var targetScene = story.scenes[index > 0 ? index - 1 : 1];
+                var targetId = targetScene ? targetScene.id : '';
                 update(function (s) {
                   s.scenes.splice(index, 1);
                   s.scenes.forEach(function (o) { o.choices = o.choices.filter(function (c) { return c.to !== scene.id; }); });
                   if (s.start === scene.id) s.start = s.scenes[0].id;
                 });
+                setTimeout(function () {
+                  var root = editorRef.current;
+                  if (!root) return;
+                  var items = Array.prototype.slice.call(root.querySelectorAll('[data-offline-scene-editor]'));
+                  var match = items.find(function (el) { return el.getAttribute('data-offline-scene-editor') === targetId; }) || items[0];
+                  var focusEl = (match && match.querySelector('textarea')) || root.querySelector('[data-offline-add-scene]');
+                  if (focusEl && typeof focusEl.focus === 'function') {
+                    try { focusEl.focus({ preventScroll: true }); } catch (_) { focusEl.focus(); }
+                  }
+                }, 0);
               }} className={OFFLINE_SECONDARY}><X size={14} aria-hidden="true" /> {offlineText(t, 'remove_scene', 'Remove scene')}</button>}
             </div>
           </fieldset>
@@ -609,8 +630,10 @@ function AdventureOfflinePanel(props) {
   var [busy, setBusy] = React.useState(false);
   var [notice, setNotice] = React.useState('');
   var [dirty, setDirty] = React.useState(false);
+  var [confirmRemove, setConfirmRemove] = React.useState(false);
   var closeRef = React.useRef(null);
   var panelRef = React.useRef(null);
+  var backdropDownRef = React.useRef(false);
   var openerRef = React.useRef(typeof document !== 'undefined' ? document.activeElement : null);
   var _aiConfigTickState = React.useState(0);
   var setAiConfigTick = _aiConfigTickState[1];
@@ -622,38 +645,72 @@ function AdventureOfflinePanel(props) {
     return function () { events.forEach(function (ev) { window.removeEventListener(ev, refreshAi); }); };
   }, []);
   var aiReady = !studentMode && _aiUsable('text', props.callGemini);
+  var hideAiNotice = typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloQrStudentMode === true);
   var door = null;
-  if (!aiReady && !studentMode) { try { door = typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null; } catch (_) { door = null; } }
+  if (!aiReady && !studentMode && !hideAiNotice) { try { door = typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null; } catch (_) { door = null; } }
   var resolvedNotice = typeof window !== 'undefined' && ((window.AlloModules && window.AlloModules.AlloAiSetupNotice) || window.AlloAiSetupNotice);
-  var Notice = !studentMode && typeof resolvedNotice === 'function' ? resolvedNotice : null;
+  var Notice = !studentMode && !hideAiNotice && typeof resolvedNotice === 'function' ? resolvedNotice : null;
   var autosaveRef = React.useRef(null);
   var savedIdRef = React.useRef(null);
   var previewBtnRef = React.useRef(null);
   var trapEntryRef = React.useRef(null);
   var panelCloseRef = React.useRef(null);
   var close = function () {
-    if (!studentMode && dirty && draft && typeof window !== 'undefined' && typeof window.confirm === 'function') {
+    var finishClose = function () {
+      // A learner's unsaved words are kept on close (Escape included) rather than lost.
+      try { if (autosaveRef.current) autosaveRef.current(); } catch (_) {}
+      props.onClose();
+    };
+    if (!studentMode && dirty && draft && typeof window !== 'undefined') {
       var confirmDiscard = offlineText(t, 'confirm_discard', 'You have unsaved changes to this offline adventure. Close without saving?');
-      if (!window.confirm(confirmDiscard)) return;
+      if (window.AlloFlowUX && typeof window.AlloFlowUX.confirm === 'function') {
+        window.AlloFlowUX.confirm(confirmDiscard, {
+          title: offlineText(t, 'confirm_discard_title', 'Close without saving?'),
+          confirmText: offlineText(t, 'close_without_saving', 'Close without saving'),
+          cancelText: offlineText(t, 'keep_editing', 'Keep editing'),
+          tone: 'warning'
+        }).then(function (ok) { if (ok) finishClose(); }).catch(function () {});
+        return;
+      }
+      if (typeof window.confirm === 'function' && !window.confirm(confirmDiscard)) return;
     }
-    // A learner's unsaved words are kept on close (Escape included) rather than lost.
-    try { if (autosaveRef.current) autosaveRef.current(); } catch (_) {}
-    var stack = typeof window !== 'undefined' && Array.isArray(window.__alloFocusTrapStack) ? window.__alloFocusTrapStack : null;
-    var entry = trapEntryRef.current;
-    var wasTop = !stack || !stack.length || !entry || stack[stack.length - 1] === entry;
-    props.onClose();
-    var opener = openerRef.current;
-    if (wasTop && opener && opener !== document.body && opener !== document.documentElement && opener.isConnected !== false) {
-      try { if (typeof opener.focus === 'function') opener.focus({ preventScroll: true }); } catch (_) {}
-    }
+    finishClose();
   };
   panelCloseRef.current = close;
+  var mountedRef = React.useRef(true);
+  var aiEpochRef = React.useRef(0);
   React.useEffect(function () {
+    mountedRef.current = true;
     try { closeRef.current && closeRef.current.focus({ preventScroll: true }); } catch (_) {}
     var stack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = Array.isArray(window.__alloFocusTrapStack) ? window.__alloFocusTrapStack : []) : null;
     var trapEntry = { id: studentMode ? 'adventure-student-story-dialog' : 'adventure-offline-dialog', root: panelRef.current, container: panelRef.current };
     trapEntryRef.current = trapEntry;
     if (stack) stack.push(trapEntry);
+    var scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, prev: '' }) : null;
+    if (scrollLock && document.body) {
+      if (scrollLock.count === 0) {
+        scrollLock.prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+      }
+      scrollLock.count += 1;
+    }
+    var hiddenSiblings = [];
+    var panelEl = panelRef.current;
+    var rootHost = (typeof document !== 'undefined' && document.getElementById('root')) || (typeof document !== 'undefined' && document.body);
+    if (rootHost && panelEl) {
+      Array.prototype.slice.call(rootHost.children || []).forEach(function (child) {
+        if (!child || child === panelEl || child.contains(panelEl)) return;
+        var role = child.getAttribute && child.getAttribute('role');
+        if (role === 'status' || role === 'alert' || role === 'log' || (child.hasAttribute && child.hasAttribute('aria-live'))) return;
+        hiddenSiblings.push({
+          node: child,
+          hadInert: child.hasAttribute('inert'),
+          prevAriaHidden: child.getAttribute('aria-hidden')
+        });
+        child.setAttribute('inert', '');
+        child.setAttribute('aria-hidden', 'true');
+      });
+    }
     var isTopTrap = function () {
       var s = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null;
       return !Array.isArray(s) || !s.length || s[s.length - 1] === trapEntry;
@@ -701,19 +758,37 @@ function AdventureOfflinePanel(props) {
     };
     document.addEventListener('keydown', onKey, true);
     return function () {
+      mountedRef.current = false;
+      aiEpochRef.current++;
       document.removeEventListener('keydown', onKey, true);
+      hiddenSiblings.forEach(function (entry) {
+        if (!entry.hadInert) entry.node.removeAttribute('inert');
+        if (entry.prevAriaHidden === null) entry.node.removeAttribute('aria-hidden');
+        else entry.node.setAttribute('aria-hidden', entry.prevAriaHidden);
+      });
+      if (scrollLock && document.body) {
+        scrollLock.count = Math.max(0, scrollLock.count - 1);
+        if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
+      }
+      var wasTop = !Array.isArray(stack) || !stack.length || stack[stack.length - 1] === trapEntry;
       if (Array.isArray(stack)) {
         var idx = stack.lastIndexOf(trapEntry);
         if (idx >= 0) stack.splice(idx, 1);
+      }
+      var opener = openerRef.current;
+      if (wasTop && opener && opener !== document.body && opener !== document.documentElement && opener.isConnected !== false) {
+        try { if (typeof opener.focus === 'function') opener.focus({ preventScroll: true }); } catch (_) {}
       }
     };
   }, []);
   var check = draft ? validateOfflineStory(draft) : null;
   var makeWithAi = async function () {
     if (!aiReady || busy) return;
+    var epoch = ++aiEpochRef.current;
     setBusy(true); setNotice(offlineText(t, 'making', 'Writing the story…'));
     try {
       var result = await generateOfflineStory(Object.assign({}, props.settings || {}, { callGemini: props.callGemini, continueLabel: (typeof t === 'function' && t('common.continue') !== 'common.continue' && t('common.continue')) || 'Continue' }));
+      if (!mountedRef.current || epoch !== aiEpochRef.current) return;
       if (result && result.story && result.story.scenes.length) {
         setDraft(result.story); setDirty(true); setPreviewing(false);
         setNotice(result.validation.ok
@@ -723,8 +798,11 @@ function AdventureOfflinePanel(props) {
         setNotice(offlineText(t, 'ai_failed', 'The AI story could not be used. Try again or write your own.'));
       }
     } catch (_) {
+      if (!mountedRef.current || epoch !== aiEpochRef.current) return;
       setNotice(offlineText(t, 'ai_failed', 'The AI story could not be used. Try again or write your own.'));
-    } finally { setBusy(false); }
+    } finally {
+      if (mountedRef.current && epoch === aiEpochRef.current) setBusy(false);
+    }
   };
   var save = function () {
     if (!draft || typeof props.setHistory !== 'function') return;
@@ -749,11 +827,15 @@ function AdventureOfflinePanel(props) {
   autosaveRef.current = studentMode && dirty && draft && (draft.title || draft.scenes.some(function (scene) { return String(scene.text || '').trim(); })) ? save : null;
   var remove = function () {
     if (!existing || typeof props.setHistory !== 'function') return;
+    if (!confirmRemove) { setConfirmRemove(true); return; }
+    aiEpochRef.current++;
+    setBusy(false);
+    setConfirmRemove(false);
     props.setHistory(function (prev) { return (Array.isArray(prev) ? prev : []).filter(function (h) { return !h || h.id !== existing.id; }); });
     setDraft(null); setDirty(false); setPreviewing(false); setNotice('');
   };
   var titleId = studentMode ? 'adventure-student-story-dialog-title' : 'adventure-offline-dialog-title';
-  return <div role="presentation" style={{ zIndex: 10100 }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-2 sm:p-4" onClick={function (e) { if (e.target === e.currentTarget) close(); }}>
+  return <div role="presentation" style={{ zIndex: 10100 }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-2 sm:p-4" onMouseDown={function (e) { backdropDownRef.current = e.target === e.currentTarget; }} onClick={function (e) { var shouldClose = backdropDownRef.current && e.target === e.currentTarget; backdropDownRef.current = false; if (shouldClose) close(); }}>
     <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} data-adventure-offline-panel data-adventure-student-story={studentMode ? '' : undefined} style={adventureVisualTokens(props.theme)}
       className="relative w-full max-w-4xl max-h-[calc(100vh-1rem)] overflow-y-auto rounded-2xl border border-[var(--av-line)] bg-[var(--av-wash)] p-4 sm:p-6 text-[var(--av-ink)] shadow-2xl">
       <div className="mb-3 flex items-start justify-between gap-3">
@@ -769,7 +851,7 @@ function AdventureOfflinePanel(props) {
         {!studentMode && <button type="button" data-offline-make-ai onClick={makeWithAi} disabled={!aiReady || busy} aria-busy={busy} title={door && door.disabled ? door.title : undefined} className={OFFLINE_PRIMARY}>
           <Sparkles size={14} aria-hidden="true" /> {offlineText(t, 'make_ai', 'Make with AI')}
         </button>}
-        {!draft && <button type="button" data-offline-blank onClick={function () { setDraft(_offlineBlankStory()); setDirty(true); }} className={OFFLINE_SECONDARY}>
+        {!draft && <button type="button" data-offline-blank disabled={busy} onClick={function () { aiEpochRef.current++; setBusy(false); setDraft(_offlineBlankStory()); setDirty(true); }} className={OFFLINE_SECONDARY}>
           <Pencil size={14} aria-hidden="true" /> {offlineText(t, 'start_blank', 'Write my own')}
         </button>}
         {draft && <button ref={previewBtnRef} type="button" data-offline-preview aria-pressed={previewing} disabled={!check || !check.ok} onClick={function () { setPreviewing(!previewing); }} className={OFFLINE_SECONDARY}>
@@ -780,7 +862,7 @@ function AdventureOfflinePanel(props) {
       {notice && <p role="status" aria-live="polite" className="m-0 mb-3 text-sm font-semibold">{notice}</p>}
       {draft && (previewing && check && check.ok
         ? <AdventureOfflinePlayer story={draft} t={t} theme={props.theme} onExit={function () { setPreviewing(false); setTimeout(function () { try { previewBtnRef.current && previewBtnRef.current.focus({ preventScroll: true }); } catch (_) {} }, 0); }} />
-        : <AdventureOfflineEditor story={draft} t={t} studentMode={studentMode} onChange={function (next) { setDraft(next); setDirty(true); }} />)}
+        : <AdventureOfflineEditor story={draft} t={t} studentMode={studentMode} onChange={function (next) { aiEpochRef.current++; setBusy(false); setConfirmRemove(false); setDraft(next); setDirty(true); }} />)}
       {draft && studentMode && <fieldset data-student-story-self-check className="m-0 mt-4 grid gap-1 rounded-xl border border-[var(--av-line)] px-3 py-2">
         <legend className="px-1 text-sm font-black">{offlineText(t, 'student_check_title', 'Check your story')}</legend>
         {STUDENT_STORY_CHECKS.map(function (row) {
@@ -798,7 +880,10 @@ function AdventureOfflinePanel(props) {
         <button type="button" data-offline-save onClick={save} disabled={!dirty || typeof props.setHistory !== 'function'} className={OFFLINE_PRIMARY + ' ml-auto'}>
           <Flag size={14} aria-hidden="true" /> {studentMode ? offlineText(t, 'student_save', 'Save to my work') : offlineText(t, 'save', 'Save to lesson')}
         </button>
-        {existing && !studentMode && <button type="button" data-offline-remove onClick={remove} className={OFFLINE_SECONDARY}>{offlineText(t, 'delete', 'Remove offline version')}</button>}
+        {existing && !studentMode && (confirmRemove ? <>
+          <button type="button" data-offline-remove data-offline-remove-confirm onClick={remove} className={OFFLINE_PRIMARY}>{offlineText(t, 'delete_confirm', 'Confirm remove')}</button>
+          <button type="button" data-offline-remove-cancel onClick={function () { setConfirmRemove(false); }} className={OFFLINE_SECONDARY}>{offlineText(t, 'cancel', 'Cancel')}</button>
+        </> : <button type="button" data-offline-remove onClick={remove} className={OFFLINE_SECONDARY}>{offlineText(t, 'delete', 'Remove offline version')}</button>)}
       </div>}
     </div>
   </div>;

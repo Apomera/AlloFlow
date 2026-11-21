@@ -42,26 +42,37 @@
   var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/v2/submitItemCorrection';
 
   // Managed support configuration does not authorize independent community
-  // contributions. Any configured policy blocks this POST;
-  // a custom bug-report endpoint never receives this different payload.
+  // contributions. Any configured policy (or student/QR/offline mode) blocks
+  // this POST; a custom bug-report endpoint never receives this different payload.
   function communityFeedbackBlocked() {
-    try { return Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY'); }
-    catch (_) { return true; }
+    try {
+      if (Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY')) return true;
+      if (window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloStudentView === true || window.__alloOfflineOnly === true) return true;
+      return false;
+    } catch (_) { return true; }
   }
   var COMMUNITY_BLOCK_MESSAGE = 'Community feedback is disabled in this managed deployment. Your draft stays in this window. Contact your school\'s support team.';
 
   // What kind of problem is being reported. Kept short + stable so the ingest tool can bucket them.
-  var KINDS = [
-    { id: 'wrong-answer', label: 'The keyed answer looks wrong' },
-    { id: 'ambiguous', label: 'The question is ambiguous or has more than one defensible answer' },
-    { id: 'weak-distractor', label: 'A distractor is implausible or gives the answer away' },
-    { id: 'outdated', label: 'Outdated / incorrect citation or guidance' },
-    { id: 'not-exam-item', label: 'This guided activity is presented like a real exam question' },
-    { id: 'typo', label: 'Typo, formatting, or accessibility issue' },
-    { id: 'other', label: 'Something else' }
-  ];
+  var KINDS = Object.freeze([
+    Object.freeze({ id: 'wrong-answer', label: 'The keyed answer looks wrong' }),
+    Object.freeze({ id: 'ambiguous', label: 'The question is ambiguous or has more than one defensible answer' }),
+    Object.freeze({ id: 'weak-distractor', label: 'A distractor is implausible or gives the answer away' }),
+    Object.freeze({ id: 'outdated', label: 'Outdated / incorrect citation or guidance' }),
+    Object.freeze({ id: 'not-exam-item', label: 'This guided activity is presented like a real exam question' }),
+    Object.freeze({ id: 'typo', label: 'Typo, formatting, or accessibility issue' }),
+    Object.freeze({ id: 'other', label: 'Something else' })
+  ]);
 
   var overlay = null;
+  var activeController = null;
+  var activeTimer = null;
+  var modalToken = 0;
+  var previousFocus = null;
+
+  function stripCtl(s) {
+    return String(s == null ? '' : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+  }
 
   function esc(s) {
     return String(s == null ? '' : s)
@@ -75,24 +86,34 @@
     return 'Practice item';
   }
 
+  function normalizeContext(ctx) {
+    ctx = (ctx && typeof ctx === 'object') ? ctx : {};
+    var packId = stripCtl(ctx.packId || '').trim().slice(0, 120);
+    return {
+      packId: packId,
+      packTitle: stripCtl(ctx.packTitle || packId || 'Practice pack').trim().slice(0, 200) || 'Practice pack',
+      itemId: stripCtl(ctx.itemId || '').trim().slice(0, 120),
+      prompt: stripCtl(ctx.prompt || '').slice(0, 3000),
+      domain: stripCtl(ctx.domain || '').trim().slice(0, 120),
+      reviewTier: ctx.reviewTier === 'guided-review' || ctx.reviewTier === 'source-reviewed' ? ctx.reviewTier : 'practice-item',
+      currentAnswer: stripCtl(ctx.currentAnswer || '').slice(0, 600)
+    };
+  }
+
   // Public: called from the host's per-item "Suggest a correction" button.
   function openFor(ctx) {
-    ctx = ctx || {};
-    var context = {
-      packId: String(ctx.packId || '').slice(0, 120),
-      packTitle: String(ctx.packTitle || ctx.packId || 'Practice pack').slice(0, 200),
-      itemId: String(ctx.itemId || '').slice(0, 120),
-      prompt: String(ctx.prompt || '').slice(0, 3000),
-      domain: String(ctx.domain || '').slice(0, 120),
-      reviewTier: ctx.reviewTier === 'guided-review' || ctx.reviewTier === 'source-reviewed' ? ctx.reviewTier : 'practice-item',
-      currentAnswer: String(ctx.currentAnswer || '').slice(0, 600)
-    };
-    openModal(context);
+    openModal(normalizeContext(ctx));
   }
 
   function openModal(ctx) {
     if (!document.body) return;
+    ctx = normalizeContext(ctx);
     closeModal();
+    var myToken = ++modalToken;
+    var inFlight = false;
+    try { previousFocus = document.activeElement && document.activeElement !== document.body ? document.activeElement : null; }
+    catch (_) { previousFocus = null; }
+    var blocked = communityFeedbackBlocked();
 
     overlay = document.createElement('div');
     overlay.id = 'allo-ic-overlay';
@@ -134,13 +155,13 @@
       '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">What is the problem? <span style="color:#dc2626">*</span></div>' +
       '<select id="allo-ic-kind" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px">' + kindOptions + '</select>' +
       '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Your suggested fix <span style="color:#dc2626">*</span></div>' +
-      '<textarea id="allo-ic-suggest" rows="3" placeholder="e.g. the keyed answer should be B because…, or reword the stem to…" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
+      '<textarea id="allo-ic-suggest" rows="3" maxlength="3000" placeholder="e.g. the keyed answer should be B because…, or reword the stem to…" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
       '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Source or reasoning (optional)</div>' +
-      '<textarea id="allo-ic-note" rows="2" placeholder="e.g. per the current ETS blueprint / IDEA 2004 / a citation link" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:14px"></textarea>' +
-      '<div id="allo-ic-err" role="alert" style="display:' + (communityFeedbackBlocked() ? 'block' : 'none') + ';color:#dc2626;font:13px system-ui;margin-bottom:10px">' + (communityFeedbackBlocked() ? esc(COMMUNITY_BLOCK_MESSAGE) : '') + '</div>' +
+      '<textarea id="allo-ic-note" rows="2" maxlength="2000" placeholder="e.g. per the current ETS blueprint / IDEA 2004 / a citation link" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:14px"></textarea>' +
+      '<div id="allo-ic-err" role="alert" style="display:' + (blocked ? 'block' : 'none') + ';color:#dc2626;font:13px system-ui;margin-bottom:10px">' + (blocked ? esc(COMMUNITY_BLOCK_MESSAGE) : '') + '</div>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end">' +
         '<button id="allo-ic-cancel" type="button" style="padding:9px 16px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font:600 13px system-ui;cursor:pointer">Cancel</button>' +
-        '<button id="allo-ic-send" type="button"' + (communityFeedbackBlocked() ? ' disabled' : '') + ' style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Send correction →</button>' +
+        '<button id="allo-ic-send" type="button"' + (blocked ? ' disabled' : '') + ' style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Send correction →</button>' +
       '</div>';
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
@@ -148,9 +169,11 @@
     var $ = function (id) { return panel.querySelector('#' + id); };
     $('allo-ic-x').onclick = closeModal;
     $('allo-ic-cancel').onclick = closeModal;
-    overlay.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+    overlay.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !e.isComposing) closeModal(); });
 
     function showManagedBlock() {
+      if (myToken !== modalToken) return;
+      inFlight = false;
       var error = $('allo-ic-err');
       if (error) { error.textContent = COMMUNITY_BLOCK_MESSAGE; error.style.display = 'block'; }
       var button = $('allo-ic-send');
@@ -158,6 +181,8 @@
     }
 
     function showThanks() {
+      if (myToken !== modalToken) return;
+      inFlight = false;
       panel.innerHTML =
         '<div style="text-align:center;padding:12px">' +
           '<div style="font-size:34px" aria-hidden="true">🙏</div>' +
@@ -168,16 +193,17 @@
           '<button id="allo-ic-done" type="button" style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Done</button>' +
         '</div>';
       var done = panel.querySelector('#allo-ic-done');
-      done.onclick = closeModal; done.focus();
+      if (done) { done.onclick = closeModal; done.focus(); }
     }
 
     $('allo-ic-send').onclick = function () {
+      if (myToken !== modalToken || inFlight) return;
       if (communityFeedbackBlocked()) { showManagedBlock(); return; }
       var errEl = $('allo-ic-err');
-      var suggested = ($('allo-ic-suggest').value || '').trim();
+      var suggested = stripCtl($('allo-ic-suggest').value || '').trim().slice(0, 3000);
       if (!suggested) { errEl.textContent = 'Please describe your suggested fix.'; errEl.style.display = 'block'; return; }
-      var kindId = $('allo-ic-kind').value || 'other';
-      var kindLabel = (KINDS.filter(function (k) { return k.id === kindId; })[0] || KINDS[KINDS.length - 1]).label;
+      var rawKindId = ($('allo-ic-kind').value || 'other');
+      var matchedKind = KINDS.filter(function (k) { return k.id === rawKindId; })[0] || KINDS[KINDS.length - 1];
       var payload = {
         packId: ctx.packId,
         packTitle: ctx.packTitle,
@@ -186,13 +212,16 @@
         reviewTier: ctx.reviewTier,
         prompt: ctx.prompt,
         currentAnswer: ctx.currentAnswer,
-        kind: kindId + ' (' + kindLabel + ')',
+        kind: matchedKind.id + ' (' + matchedKind.label + ')',
         suggested: suggested,
-        note: ($('allo-ic-note').value || '').trim()
+        note: stripCtl($('allo-ic-note').value || '').trim().slice(0, 2000)
       };
       var sendBtn = $('allo-ic-send');
+      inFlight = true;
       sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; errEl.style.display = 'none';
       var showSendFailure = function () {
+        if (myToken !== modalToken) return;
+        inFlight = false;
         if (communityFeedbackBlocked()) { showManagedBlock(); return; }
         errEl.textContent = 'Submission was not confirmed. Your draft stays here. You can retry later or contact your support team.';
         errEl.style.display = 'block';
@@ -201,20 +230,36 @@
       try {
         if (communityFeedbackBlocked()) { showManagedBlock(); return; }
         var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
-        var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 15000) : null;
+        var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 15000) : null;
+        activeController = ctrl;
+        activeTimer = timer;
         var fetchOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
         if (ctrl) fetchOpts.signal = ctrl.signal;
         fetch(SUBMIT_URL, fetchOpts)
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
-          .then(function (res) { if (res.ok && res.j && res.j.ok && res.j.storage === 'private') showThanks(); else showSendFailure(); })
+          .then(function (res) { if (myToken !== modalToken) return; if (res.ok && res.j && res.j.ok && res.j.storage === 'private') showThanks(); else showSendFailure(); })
           .catch(function () { showSendFailure(); })
-          .finally(function () { if (timer) clearTimeout(timer); });
+          .finally(function () {
+            if (timer) clearTimeout(timer);
+            if (activeTimer === timer) activeTimer = null;
+            if (activeController === ctrl) activeController = null;
+          });
       } catch (_) { showSendFailure(); }
     };
     var first = $('allo-ic-suggest'); if (first) first.focus();
   }
 
-  function closeModal() { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); overlay = null; }
+  function closeModal() {
+    modalToken++;
+    if (activeTimer) { clearTimeout(activeTimer); activeTimer = null; }
+    if (activeController) { try { activeController.abort(); } catch (_) {} activeController = null; }
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    overlay = null;
+    if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+      try { previousFocus.focus(); } catch (_) {}
+    }
+    previousFocus = null;
+  }
 
   window.AlloModules.ItemCorrection = {
     openFor: openFor,       // host per-item button calls this

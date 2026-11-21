@@ -1407,11 +1407,35 @@
         hh('div', { className: 'micro-resistance-visual-card' },
           hh('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, textAlign: 'center' } }, 'Petri dish · Round ' + day + ' of ' + duration),
           hh('svg', { id: 'micro-resistance-dish', viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': 'Petri dish model at exposure round ' + day + '. ' + totalAlive + ' cells remain; resistant share: ' + shareText + '. Circles are sensitive cells and diamonds are resistant cells. Open rings mark unoccupied model positions.', style: { width: '100%', maxWidth: 280, display: 'block', margin: '0 auto' } },
-            hh('defs', null, hh('radialGradient', { id: 'dishBg', cx: '38%', cy: '30%', r: '72%' }, hh('stop', { offset: '0%', stopColor: '#183a4a' }), hh('stop', { offset: '100%', stopColor: '#071426' }))),
-            hh('circle', { cx: 100, cy: 100, r: 96, fill: 'url(#dishBg)', stroke: '#64748b', strokeWidth: 2 }),
-            hh('circle', { cx: 100, cy: 100, r: 90, fill: 'none', stroke: '#7dd3fc', strokeWidth: 0.7, opacity: 0.25, 'aria-hidden': true }),
-            hh('path', { d: 'M 32 57 A 81 81 0 0 1 111 20', fill: 'none', stroke: '#e0f2fe', strokeWidth: 1.5, strokeLinecap: 'round', opacity: 0.25, 'aria-hidden': true }),
-            day < duration && day > 0 ? hh('circle', { cx: 100, cy: 100, r: 95, fill: '#fbbf24', opacity: 0.04 + (dose / 100) * 0.10 }) : null,
+            hh('defs', null,
+              hh('radialGradient', { id: 'dishBg', cx: '36%', cy: '28%', r: '74%' },
+                hh('stop', { offset: '0%', stopColor: '#214d61' }),
+                hh('stop', { offset: '48%', stopColor: '#123144' }),
+                hh('stop', { offset: '86%', stopColor: '#091c2e' }),
+                hh('stop', { offset: '100%', stopColor: '#040e1c' })
+              ),
+              hh('radialGradient', { id: 'dishAgarSheen', cx: '30%', cy: '24%', r: '62%' },
+                hh('stop', { offset: '0%', stopColor: '#bae6fd', stopOpacity: 0.22 }),
+                hh('stop', { offset: '45%', stopColor: '#38bdf8', stopOpacity: 0.06 }),
+                hh('stop', { offset: '100%', stopColor: '#0ea5e9', stopOpacity: 0 })
+              ),
+              hh('radialGradient', { id: 'dishAntibioticHalo', cx: '50%', cy: '50%', r: '50%' },
+                hh('stop', { offset: '0%', stopColor: '#fbbf24', stopOpacity: 0.24 }),
+                hh('stop', { offset: '65%', stopColor: '#f59e0b', stopOpacity: 0.10 }),
+                hh('stop', { offset: '100%', stopColor: '#b45309', stopOpacity: 0 })
+              )
+            ),
+            hh('circle', { cx: 100, cy: 100, r: 96, fill: 'url(#dishBg)', stroke: '#64748b', strokeWidth: 2.2 }),
+            hh('circle', { cx: 100, cy: 100, r: 93, fill: 'url(#dishAgarSheen)', stroke: '#94a3b8', strokeWidth: 0.6, opacity: 0.7, 'aria-hidden': true }),
+            hh('circle', { cx: 100, cy: 100, r: 90, fill: 'none', stroke: '#7dd3fc', strokeWidth: 0.8, opacity: 0.34, 'aria-hidden': true }),
+            hh('circle', { cx: 100, cy: 100, r: 62, fill: 'none', stroke: '#38bdf8', strokeWidth: 0.45, strokeDasharray: '2 4', opacity: 0.18, 'aria-hidden': true }),
+            hh('path', { d: 'M 30 58 A 82 82 0 0 1 116 19', fill: 'none', stroke: '#e0f2fe', strokeWidth: 2.2, strokeLinecap: 'round', opacity: 0.34, 'aria-hidden': true }),
+            hh('path', { d: 'M 152 162 A 76 76 0 0 1 92 176', fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.20, 'aria-hidden': true }),
+            day < duration && day > 0 ? hh('circle', { cx: 100, cy: 100, r: 94, fill: 'url(#dishAntibioticHalo)', opacity: Math.min(1, 0.35 + (dose / 100) * 0.65) }) : null,
+            bact.map(function(b, i) {
+              if (!b.alive) return null;
+              return hh('circle', { key: 'glow-' + i, cx: b.x, cy: b.y, r: (b.resistant ? 5.2 : 4.5) * b.jitter, fill: b.resistant ? '#fb7185' : '#22d3ee', opacity: 0.16, 'aria-hidden': true });
+            }),
             bact.map(function(b, i) {
               if (!b.alive) return hh('circle', { key: 'b-' + i, 'data-resistance-cell': 'unoccupied', cx: b.x, cy: b.y, r: 2, fill: 'none', stroke: '#94a3b8', strokeWidth: 0.7, opacity: 0.55 });
               if (b.resistant) {
@@ -2332,7 +2356,9 @@
       var c = o.color; var s = size; var cx = 100, cy = 100;
       if (o.shape === 'rod') {
         return hh('g', null,
-          hh('rect', { x: cx - s * 0.7, y: cy - s * 0.18, width: s * 1.4, height: s * 0.36, rx: s * 0.18, fill: c, stroke: '#0f172a', strokeWidth: 0.6, opacity: 0.85 }),
+          hh('rect', { x: cx - s * 0.7, y: cy - s * 0.18, width: s * 1.4, height: s * 0.36, rx: s * 0.18, fill: c, stroke: '#e0f2fe', strokeWidth: Math.max(0.55, s * 0.024), opacity: 0.88 }),
+          hh('ellipse', { cx: cx, cy: cy, rx: s * 0.76, ry: s * 0.24, fill: 'none', stroke: c, strokeWidth: Math.max(0.6, s * 0.03), opacity: 0.32 }),
+          hh('ellipse', { cx: cx - s * 0.06, cy: cy - s * 0.06, rx: s * 0.52, ry: s * 0.06, fill: '#ffffff', opacity: 0.28 }),
           showLabels && electronMode ? hh('g', null,
             hh('circle', { cx: cx - s * 0.5, cy: cy, r: s * 0.06, fill: '#7c3aed' }),
             hh('text', { x: cx - s * 0.5, y: cy - s * 0.3, fontSize: 6, fill: '#a78bfa', textAnchor: 'middle' }, 'nucleoid'),
@@ -2348,7 +2374,10 @@
       if (o.shape === 'cocci_chain') {
         var chain = [];
         for (var i = 0; i < 5; i++) {
-          chain.push(hh('circle', { key: 'c-' + i, cx: cx + (i - 2) * s * 0.5, cy: cy, r: s * 0.22, fill: c, stroke: '#0f172a', strokeWidth: 0.5, opacity: 0.85 }));
+          var ccx = cx + (i - 2) * s * 0.5;
+          chain.push(hh('circle', { key: 'c-' + i, cx: ccx, cy: cy, r: s * 0.22, fill: c, stroke: '#f5f3ff', strokeWidth: Math.max(0.45, s * 0.022), opacity: 0.88 }));
+          chain.push(hh('circle', { key: 'ch-' + i, cx: ccx, cy: cy, r: s * 0.27, fill: 'none', stroke: c, strokeWidth: Math.max(0.55, s * 0.03), opacity: 0.28 }));
+          chain.push(hh('circle', { key: 'cs-' + i, cx: ccx - s * 0.06, cy: cy - s * 0.06, r: s * 0.065, fill: '#ffffff', opacity: 0.38 }));
         }
         return hh('g', null, chain, showLabels ? hh('text', { x: cx, y: cy + s * 0.6, fontSize: 6, fill: '#d8b4fe', textAnchor: 'middle' }, 'chain of cocci') : null);
       }
@@ -2362,10 +2391,12 @@
           cilia.push(hh('line', { key: 'ci-' + ii, x1: x1, y1: y1, x2: x2, y2: y2 }));
         }
         return hh('g', null,
-          hh('ellipse', { cx: cx, cy: cy, rx: s * 0.6, ry: s * 0.3, fill: c, stroke: '#0f172a', strokeWidth: 0.6, opacity: 0.7 }),
-          hh('g', { stroke: '#22c55e', strokeWidth: 0.4 }, cilia),
-          hh('ellipse', { cx: cx - s * 0.05, cy: cy, rx: s * 0.18, ry: s * 0.10, fill: '#16a34a', opacity: 0.7 }),
-          hh('circle', { cx: cx + s * 0.15, cy: cy - s * 0.05, r: s * 0.04, fill: '#15803d' }),
+          hh('ellipse', { cx: cx, cy: cy, rx: s * 0.6, ry: s * 0.3, fill: c, stroke: '#bbf7d0', strokeWidth: Math.max(0.65, s * 0.015), opacity: 0.72 }),
+          hh('ellipse', { cx: cx, cy: cy, rx: s * 0.65, ry: s * 0.34, fill: 'none', stroke: c, strokeWidth: Math.max(0.7, s * 0.02), opacity: 0.24 }),
+          hh('ellipse', { cx: cx - s * 0.08, cy: cy - s * 0.11, rx: s * 0.36, ry: s * 0.07, fill: '#ffffff', opacity: 0.22 }),
+          hh('g', { stroke: '#4ade80', strokeWidth: 0.45, opacity: 0.85 }, cilia),
+          hh('ellipse', { cx: cx - s * 0.05, cy: cy, rx: s * 0.18, ry: s * 0.10, fill: '#16a34a', stroke: '#86efac', strokeWidth: 0.4, opacity: 0.76 }),
+          hh('circle', { cx: cx + s * 0.15, cy: cy - s * 0.05, r: s * 0.04, fill: '#86efac', opacity: 0.85 }),
           hh('path', { d: 'M ' + (cx - s * 0.3) + ' ' + cy + ' Q ' + (cx - s * 0.1) + ' ' + (cy - s * 0.18) + ' ' + (cx + s * 0.1) + ' ' + (cy - s * 0.15), fill: 'none', stroke: '#15803d', strokeWidth: 0.6 }),
           showLabels ? hh('g', null,
             hh('text', { x: cx - s * 0.05, y: cy - s * 0.4, fontSize: 5, fill: '#86efac', textAnchor: 'middle' }, 'macronucleus'),
@@ -2376,10 +2407,11 @@
       }
       if (o.shape === 'plasmodium') {
         return hh('g', null,
-          hh('circle', { cx: cx, cy: cy, r: s * 0.7, fill: '#fca5a5', stroke: '#7f1d1d', strokeWidth: 0.5, opacity: 0.6 }),
-          hh('circle', { cx: cx, cy: cy, r: s * 0.25, fill: '#7f1d1d', opacity: 0.4 }),
-          hh('circle', { cx: cx + s * 0.25, cy: cy - s * 0.1, r: s * 0.18, fill: 'none', stroke: c, strokeWidth: s * 0.08, opacity: 0.9 }),
-          hh('circle', { cx: cx + s * 0.25 + s * 0.12, cy: cy - s * 0.18, r: s * 0.05, fill: '#0f172a' }),
+          hh('circle', { cx: cx, cy: cy, r: s * 0.7, fill: '#fca5a5', stroke: '#fecaca', strokeWidth: 0.8, opacity: 0.66 }),
+          hh('circle', { cx: cx, cy: cy, r: s * 0.75, fill: 'none', stroke: '#fca5a5', strokeWidth: 0.9, opacity: 0.26 }),
+          hh('circle', { cx: cx, cy: cy, r: s * 0.25, fill: '#7f1d1d', opacity: 0.44 }),
+          hh('circle', { cx: cx + s * 0.25, cy: cy - s * 0.1, r: s * 0.18, fill: 'none', stroke: c, strokeWidth: s * 0.08, opacity: 0.94 }),
+          hh('circle', { cx: cx + s * 0.25 + s * 0.12, cy: cy - s * 0.18, r: s * 0.055, fill: '#fef2f2', stroke: '#0f172a', strokeWidth: 0.4 }),
           showLabels ? hh('g', null,
             hh('text', { x: cx, y: cy + s * 0.95, fontSize: 5, fill: '#fca5a5', textAnchor: 'middle' }, 'red blood cell host'),
             hh('text', { x: cx + s * 0.7, y: cy - s * 0.3, fontSize: 5, fill: '#fecaca' }, 'parasite (ring stage)')
@@ -2388,13 +2420,14 @@
       }
       if (o.shape === 'phage') {
         return hh('g', null,
-          hh('polygon', { points: (cx - s * 0.25) + ',' + (cy - s * 0.5) + ' ' + (cx + s * 0.25) + ',' + (cy - s * 0.5) + ' ' + (cx + s * 0.4) + ',' + (cy - s * 0.25) + ' ' + (cx + s * 0.25) + ',' + cy + ' ' + (cx - s * 0.25) + ',' + cy + ' ' + (cx - s * 0.4) + ',' + (cy - s * 0.25), fill: c, stroke: '#0f172a', strokeWidth: 0.6, opacity: 0.9 }),
+          hh('polygon', { points: (cx - s * 0.25) + ',' + (cy - s * 0.5) + ' ' + (cx + s * 0.25) + ',' + (cy - s * 0.5) + ' ' + (cx + s * 0.4) + ',' + (cy - s * 0.25) + ' ' + (cx + s * 0.25) + ',' + cy + ' ' + (cx - s * 0.25) + ',' + cy + ' ' + (cx - s * 0.4) + ',' + (cy - s * 0.25), fill: c, stroke: '#fef3c7', strokeWidth: 0.7, opacity: 0.92 }),
+          hh('polygon', { points: (cx - s * 0.18) + ',' + (cy - s * 0.44) + ' ' + (cx + s * 0.08) + ',' + (cy - s * 0.44) + ' ' + (cx - s * 0.06) + ',' + (cy - s * 0.24) + ' ' + (cx - s * 0.28) + ',' + (cy - s * 0.25), fill: '#ffffff', opacity: 0.26 }),
           hh('rect', { x: cx - s * 0.06, y: cy, width: s * 0.12, height: s * 0.4, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 0.4 }),
           hh('line', { x1: cx - s * 0.07, y1: cy + s * 0.1, x2: cx + s * 0.07, y2: cy + s * 0.1, stroke: '#0f172a', strokeWidth: 0.3 }),
           hh('line', { x1: cx - s * 0.07, y1: cy + s * 0.2, x2: cx + s * 0.07, y2: cy + s * 0.2, stroke: '#0f172a', strokeWidth: 0.3 }),
           hh('line', { x1: cx - s * 0.07, y1: cy + s * 0.3, x2: cx + s * 0.07, y2: cy + s * 0.3, stroke: '#0f172a', strokeWidth: 0.3 }),
           hh('rect', { x: cx - s * 0.18, y: cy + s * 0.4, width: s * 0.36, height: s * 0.05, fill: '#92400e' }),
-          hh('g', { stroke: '#92400e', strokeWidth: 0.6, fill: 'none' },
+          hh('g', { stroke: '#d97706', strokeWidth: 0.65, fill: 'none' },
             hh('path', { d: 'M ' + (cx - s * 0.15) + ' ' + (cy + s * 0.45) + ' L ' + (cx - s * 0.3) + ' ' + (cy + s * 0.7) }),
             hh('path', { d: 'M ' + (cx + s * 0.15) + ' ' + (cy + s * 0.45) + ' L ' + (cx + s * 0.3) + ' ' + (cy + s * 0.7) }),
             hh('path', { d: 'M ' + (cx - s * 0.05) + ' ' + (cy + s * 0.45) + ' L ' + (cx - s * 0.15) + ' ' + (cy + s * 0.75) }),
@@ -2447,12 +2480,42 @@
       hh('div', { style: { display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'center' } },
         hh('div', { style: { flex: '1 1 230px', minWidth: 0, maxWidth: 360, margin: '0 auto' } },
           hh('svg', { viewBox: '0 0 200 200', role: 'img', 'aria-label': sel.name + ', ' + mag + '×. ' + observation + ' ' + focusHint + ' ' + __alloMBT('stem.microbiology.scope_scale_bar', 'Scale bar') + ': ' + lengthText(scaleUm) + '. ', style: { width: '100%', height: 'auto', display: 'block', borderRadius: '50%', background: '#07101d', border: '3px solid #334155', overflow: 'hidden' } },
-            hh('circle', { cx: 100, cy: 100, r: 98, fill: '#07101d', stroke: '#334155', strokeWidth: 1 }),
-            hh('path', { d: 'M 15 100 H 185 M 100 15 V 185', stroke: '#334155', strokeWidth: 0.4, strokeDasharray: '2 3' }),
+            hh('defs', null,
+              hh('radialGradient', { id: 'microScopeField', cx: '46%', cy: '44%', r: '58%' },
+                hh('stop', { offset: '0%', stopColor: electronMode ? '#142033' : '#16314c' }),
+                hh('stop', { offset: '55%', stopColor: electronMode ? '#091220' : '#0b1c30' }),
+                hh('stop', { offset: '86%', stopColor: '#050c17' }),
+                hh('stop', { offset: '100%', stopColor: '#02050b' })
+              ),
+              hh('radialGradient', { id: 'microScopeVignette', cx: '50%', cy: '50%', r: '50%' },
+                hh('stop', { offset: '72%', stopColor: '#000000', stopOpacity: 0 }),
+                hh('stop', { offset: '92%', stopColor: '#020617', stopOpacity: 0.42 }),
+                hh('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.84 })
+              )
+            ),
+            hh('circle', { cx: 100, cy: 100, r: 98, fill: 'url(#microScopeField)', stroke: '#334155', strokeWidth: 1 }),
+            // Subtle suspended Brownian optical bokeh depth motes responding to focus distance
+            [
+              [42, 54, 4.2, 0.14], [156, 62, 3.6, 0.12], [62, 146, 5.0, 0.10],
+              [148, 134, 3.2, 0.13], [122, 46, 2.8, 0.11], [48, 108, 3.8, 0.09]
+            ].map(function(mote, mi) {
+              var focusOffset = Math.min(40, Math.abs(focusVal - targetFocus));
+              var driftX = mote[0] + Math.sin(mi * 1.9 + focusVal * 0.05) * 1.4;
+              var driftY = mote[1] + Math.cos(mi * 2.3 + focusVal * 0.04) * 1.4;
+              var bokehR = +(mote[2] + focusOffset * 0.055).toFixed(2);
+              return hh('circle', { key: 'bk-' + mi, cx: +driftX.toFixed(1), cy: +driftY.toFixed(1), r: bokehR, fill: electronMode ? '#94a3b8' : '#7dd3fc', opacity: mote[3], 'aria-hidden': true });
+            }),
+            hh('circle', { cx: 100, cy: 100, r: 62, fill: 'none', stroke: '#38bdf8', strokeWidth: 0.35, strokeDasharray: '1 5', opacity: 0.22, 'aria-hidden': true }),
+            hh('path', { d: 'M 15 100 H 185 M 100 15 V 185', stroke: '#475569', strokeWidth: 0.45, strokeDasharray: '2 3', opacity: 0.7 }),
+            hh('path', { d: 'M 32 54 A 84 84 0 0 1 118 18', fill: 'none', stroke: '#e0f2fe', strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.18, 'aria-hidden': true }),
             canSee ? hh('g', { style: { filter: 'blur(' + blurPx + 'px)' } }, renderOrganism(sel, apparentSize, false)) : hh('g', null,
               hh('text', { x: 100, y: 95, fontSize: 8, fill: '#cbd5e1', textAnchor: 'middle' }, __alloMBT('stem.microbiology.scope_detail_unavailable', 'Detail unavailable')),
               hh('text', { x: 100, y: 109, fontSize: 6, fill: '#94a3b8', textAnchor: 'middle' }, organism === 'phage' ? __alloMBT('stem.microbiology.scope_try_em', 'Try the electron view') : __alloMBT('stem.microbiology.scope_try_setup', 'Try the recommended setup'))
             ),
+            // Authentic optical vignette & chromatic objective dispersion ring
+            hh('circle', { cx: 100, cy: 100, r: 98, fill: 'url(#microScopeVignette)', 'aria-hidden': true }),
+            hh('circle', { cx: 100, cy: 100, r: 95.5, fill: 'none', stroke: electronMode ? '#94a3b8' : '#38bdf8', strokeWidth: 1.1, opacity: 0.28, 'aria-hidden': true }),
+            hh('circle', { cx: 100, cy: 100, r: 93.8, fill: 'none', stroke: electronMode ? '#cbd5e1' : '#fb923c', strokeWidth: 0.65, opacity: 0.18, 'aria-hidden': true }),
             hh('rect', { x: 46, y: 159, width: 108, height: 24, rx: 5, fill: '#07101d', opacity: 0.94 }),
             hh('path', { d: 'M ' + (100 - scalePx / 2) + ' 166 H ' + (100 + scalePx / 2), stroke: '#f8fafc', strokeWidth: 2 }),
             hh('text', { x: 100, y: 177, fontSize: 7, fill: '#f8fafc', textAnchor: 'middle' }, lengthText(scaleUm))

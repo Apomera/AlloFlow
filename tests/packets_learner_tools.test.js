@@ -130,7 +130,10 @@ describe('every file carries the reading tools', () => {
     // Re-pinned 2026-11-19 from 19000: persisted extra tool prefs (slower/syllables) minus duplicate bottom Close (+0.1 KB).
     // Re-pinned 2026-11-19 (Wave 2A) from 19500: unified Voice speed (Normal / Slower) + calm no-voice notice inside Reading tools (+0.7 KB, ~19.8 KB).
     // Re-pinned 2026-11-19 (Wave 8A) from 20200: Dark/HC @media print reset, Reading Focus Dark/HC curtain + resize sync, Magnifier null-guard & touch edge clamp (~20.8 KB).
-    expect(bytes).toBeLessThan(21000);
+    // Re-pinned 2026-11-19 (Immersive Reader parity Waves 2+4+5+6+8) from 26000: 4 text sizes + exact size slider (14-40px), custom bg/text color pickers, Rose theme, Mono/OpenDyslexic fonts, 1/3-line focus, 5-step live speed (~26.1 KB).
+    // Re-pinned 2026-11-19 (Wave 11) from 27000: 6-color WCAG-AA theme-harmonized Break it Down chip palettes (--c0..--c5, --c0b..--c5b) across all 8 Reading Tools themes (~27.2 KB).
+    // Re-pinned 2026-11-19 (Phase 1 universal Bold start / Bionic reading) from 28000: universal reversible Bold start across all 31 Packet activities inside takeHomeTools (~29.1 KB).
+    expect(bytes).toBeLessThan(30500);
     // The copy in the file is the loader's own function, without its indentation.
     expect(fn.slice('\ntools:'.length, -1)).toBe(TH._tools.toString().replace(/\n +/g, '\n'));
   });
@@ -167,16 +170,16 @@ describe('the button and the panel', () => {
     expect(t.d.getElementById(panel.getAttribute('aria-labelledby')).textContent).toBe('Reading tools');
     const groups = [...panel.querySelectorAll('[role=group]')];
     expect(groups.map((g) => [g.getAttribute('data-tool-group'), t.d.getElementById(g.getAttribute('aria-labelledby')).textContent, [...g.querySelectorAll('button')].map((b) => b.textContent + '=' + b.getAttribute('aria-pressed'))])).toEqual([
-      ['size', 'Text size', ['Normal=true', 'Larger=false', 'Largest=false']],
+      ['size', 'Text size', ['Normal=true', 'Larger=false', 'Largest=false', 'Extra large=false']],
       // 2026-11-12 (look pass), deliberately: four more colors a student may choose (Dark whatever the device says, Ocean,
       // Sunny, Forest), in the same one group, each with a dot of its color.
-      ['colors', 'Colors', ['Usual=true', 'High contrast=false', 'Soft=false', 'Dark=false', 'Ocean=false', 'Sunny=false', 'Forest=false']],
+      ['colors', 'Colors', ['Usual=true', 'High contrast=false', 'Soft=false', 'Dark=false', 'Ocean=false', 'Sunny=false', 'Forest=false', 'Rose=false']],
       ['spacing', 'Spacing', ['Normal=true', 'Wider=false']],
       // 2026-11-16, deliberately: Letters, the font choice of the app's reader, with the device's own fonts
       // (tests/packets_read_along_2026_11_16.test.js).
       // The same day: the app reader's two reading fonts, inside every file (data/vendor/fonts/source.json).
-      ['font', 'Letters', ['Usual=true', 'Lexend=false', 'Atkinson=false', 'Book=false', 'Rounded=false']],
-      ['focus', 'Reading focus', ['Off=true', 'On=false']],
+      ['font', 'Letters', ['Usual=true', 'Lexend=false', 'Atkinson=false', 'Book=false', 'Rounded=false', 'Mono=false', 'OpenDyslexic=false']],
+      ['focus', 'Reading focus', ['Off=true', '1 line=false', '3 lines=false']],
       ['lens', 'Magnifier', ['Off=true', 'On=false']],
       // 2026-11-12, deliberately: "Read the choices when a question opens" (hearAllIn; tests/packets_hear_all.test.js). Off by
       // default; shown in this Find Sounds file, whose opening does not play its sound choices.
@@ -184,11 +187,12 @@ describe('the button and the panel', () => {
       // 2026-11-15, deliberately: "Spoken directions" (directionsOnce). Default "Every question" unless set in maker;
       // shown in practice packets with spoken directions and hidden in checks/facts without them.
       ['directions', 'Spoken directions', ['Every question=true', 'First question only=false']],
-      // 2026-11-19 (Wave 2A): unified Voice speed (Normal / Slower) shown whenever the file has audio or Read aloud, hidden on silent packets.
-      ['speed', 'Voice speed', ['Normal=true', 'Slower=false']],
+      // 2026-11-19 (Wave 2A + Immersive Reader parity): unified Voice speed (Normal / Slower / Very slow / Faster / Fastest) shown whenever the file has audio or Read aloud, hidden on silent packets.
+      ['speed', 'Voice speed', ['Normal=true', 'Slower=false', 'Very slow=false', 'Faster=false', 'Fastest=false']],
       // 2026-11-17, deliberately: "Space between sounds" (the pause between a word's sounds in Blend Sounds). Shown only in a
       // practice file with Blend Sounds, so hidden in this Find Sounds file (tests/packets_sound_space_2026_11_17.test.js).
       ['sounds', 'Space between sounds', ['Some=true', 'More=false', 'Less=false']],
+      ['bold', 'Bold start', ['Off=true', 'On=false']],
     ]);
     expect(t.q('[data-tool-group="speed"]').hidden).toBe(false);
     expect(t.q('[data-tool-group="sounds"]').hidden).toBe(true);
@@ -204,7 +208,7 @@ describe('the button and the panel', () => {
       expect(nt.q('[data-tool-group="speed"]').hidden).toBe(true);
     }
     t.tool('size', 1);
-    expect([...groups[0].querySelectorAll('button')].map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true', 'false']);
+    expect([...groups[0].querySelectorAll('button')].map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true', 'false', 'false']);
     t.key('Escape', groups[0].querySelector('button'));
     expect(panel.hidden).toBe(true);
     expect(t.d.activeElement).toBe(aa);
@@ -419,7 +423,9 @@ describe('what was used is recorded', () => {
     expect(t.json().items.map((it) => it.supports)).toEqual([{ colorsOcean: 1 }, { colorsOcean: 1, colorsDark: 1 }]);
     const again = open(FILES.practice, { storage: { [keyName]: JSON.stringify({ tools: { colors: 6 } }) } });
     expect([again.html.getAttribute('data-lt-colors'), again.q('[data-tool="colors-6"]').getAttribute('aria-pressed')]).toEqual(['6', 'true']);
-    expect(open(FILES.practice, { storage: { [keyName]: JSON.stringify({ tools: { colors: 7 } }) } }).html.hasAttribute('data-lt-colors')).toBe(false);
+    const rose = open(FILES.practice, { storage: { [keyName]: JSON.stringify({ tools: { colors: 7 } }) } });
+    expect([rose.html.getAttribute('data-lt-colors'), rose.q('[data-tool="colors-7"]').getAttribute('aria-pressed')]).toEqual(['7', 'true']);
+    expect(open(FILES.practice, { storage: { [keyName]: JSON.stringify({ tools: { colors: 8 } }) } }).html.hasAttribute('data-lt-colors')).toBe(false);
     const c = open(FILES.check);
     c.d.getElementById('learner-name').value = 'Ana';
     c.button('Next').click();
@@ -622,5 +628,28 @@ describe('the look', () => {
     expect(rows).toHaveLength(3);
     // 2026-11-14 (T1/P2): per-activity tally rows use the shorter done_activity '{first} of {total}' string.
     for (const row of rows) expect(row).toMatch(/^.+ \| \d of \d$/);
+  });
+
+  it('universal Bold start (Bionic reading) in Reading tools bolds word starts across non-Read-Along activities, skips buttons, persists, and restores cleanly on Off', () => {
+    const keyName = manifestOf(FILES.reading).stores[0].key;
+    const t = open(FILES.reading);
+    t.d.getElementById('learner-name').value = 'Ana';
+    t.button('Start').click();
+    const textBefore = t.q('#app [data-read]').textContent;
+    t.tool('bold', 1);
+    expect(t.html.getAttribute('data-lt-bold')).toBe('1');
+    expect(t.dump()[keyName].tools).toEqual({ bold: 1 });
+    expect(t.q('#app [data-read] [data-lt-bionic] strong.ra-bionic')).not.toBeNull();
+    // Exact readable textContent is preserved, and buttons are skipped.
+    expect(t.q('#app [data-read]').textContent).toBe(textBefore);
+    expect([...t.d.querySelectorAll('#app button [data-lt-bionic]')]).toHaveLength(0);
+    // Advancing to the story passage automatically applies Bold start there too.
+    t.q('#app button[aria-label="Choose cat"]').click();
+    t.button('Next').click();
+    expect(t.q('#app [data-read] strong.ra-bionic')).not.toBeNull();
+    // Turning Bold start Off cleanly removes all [data-lt-bionic] wrappers.
+    t.tool('bold', 0);
+    expect(t.html.hasAttribute('data-lt-bold')).toBe(false);
+    expect(t.d.querySelectorAll('#app [data-lt-bionic]')).toHaveLength(0);
   });
 });

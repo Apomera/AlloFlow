@@ -39,13 +39,15 @@ const RUNTIME = Object.freeze([
 
 function regular(root, relative) {
   let file = path.resolve(root);
+  if (fs.lstatSync(file).isSymbolicLink()) throw Error('Loader gate root is a symlink: ' + root);
+  let lastStat = null;
   for (const part of relative.split('/')) {
     if (!/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(part)) throw Error('Invalid gate path');
     file = path.join(file, part);
-    if (fs.lstatSync(file).isSymbolicLink()) throw Error('Loader gate path is a symlink: ' + relative);
+    lastStat = fs.lstatSync(file);
+    if (lastStat.isSymbolicLink()) throw Error('Loader gate path is a symlink: ' + relative);
   }
-  const stat = fs.statSync(file);
-  if (!stat.isFile() || stat.size <= 0 || stat.size > 32 * 1024 * 1024) throw Error('Loader gate input must be a bounded regular file: ' + relative);
+  if (!lastStat || !lastStat.isFile() || lastStat.size <= 0 || lastStat.size > 32 * 1024 * 1024) throw Error('Loader gate input must be a bounded regular file: ' + relative);
   return fs.readFileSync(file);
 }
 function walk(node, visit) {
@@ -61,9 +63,19 @@ function parse(bytes, file) {
   try { return parser.parse(bytes.toString('utf8'), { sourceType: 'unambiguous', plugins: ['jsx'], allowReturnOutsideFunction: true, attachComment: false }); }
   catch (error) { throw Error('Cannot parse guarded loader ' + file + ': ' + error.message); }
 }
+function staticString(node) {
+  if (!node) return null;
+  if (node.type === 'StringLiteral') return node.value;
+  if (node.type === 'TemplateLiteral' && !node.expressions.length) return node.quasis[0].value.cooked;
+  return null;
+}
+function staticPropKey(prop) {
+  if (!prop || prop.type !== 'ObjectProperty') return null;
+  return prop.computed ? staticString(prop.key) : (prop.key.name || prop.key.value || null);
+}
 function property(node, name) {
   return node && (node.type === 'MemberExpression' || node.type === 'OptionalMemberExpression')
-    && (node.computed ? node.property.type === 'StringLiteral' && node.property.value === name : node.property.name === name);
+    && (node.computed ? staticString(node.property) === name : node.property.name === name);
 }
 function dispatcher(node) { return property(node, DISPATCHER) && node.object.type === 'Identifier' && node.object.name === 'window'; }
 function dispatcherValue(node) {
@@ -96,13 +108,16 @@ function inspectGuard(ast, name, requiredCalls) {
     if (node.type === 'UnaryExpression' && node.operator === 'typeof' && selected(node.argument)) typeChecks++;
     if (node.type === 'CallExpression' && selected(node.callee)) calls++;
     if (node.type === 'AssignmentExpression' && property(node.left, 'src')) rawWrites++;
-    if (node.type === 'CallExpression' && property(node.callee, 'setAttribute') && node.arguments[0]?.type === 'StringLiteral' && node.arguments[0].value.toLowerCase() === 'src') rawWrites++;
+    if (node.type === 'CallExpression' && property(node.callee, 'setAttribute') && (staticString(node.arguments[0]) || '').toLowerCase() === 'src') rawWrites++;
+    if (node.type === 'CallExpression' && property(node.callee, 'setAttributeNS') && (staticString(node.arguments[1]) || '').toLowerCase() === 'src') rawWrites++;
     if (node.type === 'ImportExpression' || node.type === 'CallExpression' && node.callee.type === 'Import') directImports++;
     if (node.type === 'CallExpression' && property(node.callee, 'assign') && node.callee.object.type === 'Identifier' && node.callee.object.name === 'Object'
       && node.arguments.slice(1).some(argument => argument.type === 'ObjectExpression' && argument.properties.some(prop =>
-        prop.type === 'ObjectProperty' && (prop.computed ? prop.key.value : prop.key.name || prop.key.value) === 'src'))) rawWrites++;
+        staticPropKey(prop) === 'src'))) rawWrites++;
+    if (node.type === 'CallExpression' && property(node.callee, 'defineProperty') && node.callee.object.type === 'Identifier' && node.callee.object.name === 'Object'
+      && staticString(node.arguments[1]) === 'src') rawWrites++;
     if (node.type === 'CallExpression' && property(node.callee, 'set') && node.callee.object.type === 'Identifier' && node.callee.object.name === 'Reflect'
-      && node.arguments[1]?.type === 'StringLiteral' && node.arguments[1].value === 'src') rawWrites++;
+      && staticString(node.arguments[1]) === 'src') rawWrites++;
   });
   if (!references || !typeChecks || calls < requiredCalls || rawWrites || directImports) throw Error(name + ' lacks guarded delivery (references=' + references + ', typeChecks=' + typeChecks + ', signedCalls=' + calls + ', rawSrcWrites=' + rawWrites + ', legacyImports=' + directImports + ')');
   return { name, calls, typeChecks };
@@ -137,9 +152,10 @@ function inspectDocument(ast) {
     }
     // The PDF raster worker is assembled from literal source lines. Check its
     // real code line as well as the nine ordinary AST getDocument calls.
-    if (node.type === 'StringLiteral' && /\.getDocument\s*\(/.test(node.value)) {
-      const calls = [...node.value.matchAll(/\.getDocument\s*\(/g)].length;
-      const guarded = [...node.value.matchAll(/\.getDocument\s*\(\s*\{[^}]*\bisEvalSupported\s*:\s*false\b/g)].length;
+    const literalText = node.type === 'StringLiteral' ? node.value : node.type === 'TemplateElement' ? node.value.cooked : null;
+    if (typeof literalText === 'string' && /\.getDocument\s*\(/.test(literalText)) {
+      const calls = [...literalText.matchAll(/\.getDocument\s*\(/g)].length;
+      const guarded = [...literalText.matchAll(/\.getDocument\s*\(\s*\{[^}]*\bisEvalSupported\s*:\s*false\b/g)].length;
       pdfCalls += calls; unsafePdf += calls - guarded;
     }
   });
@@ -207,6 +223,22 @@ function pdfBroker(scope, { opener = false } = {}) {
     if (target?.type === 'Identifier' && contents?.type === 'ArrayExpression' && contents.elements.length === 1 && codes.has(contents.elements[0]?.name)) blobs.add(target.name);
   });
   walk(scope, node => {
+    if (node.type === 'ImportExpression' || (node.type === 'CallExpression' && node.callee.type === 'Import')) {
+      unsafeWrites++;
+      return;
+    }
+    if (node.type === 'CallExpression') {
+      if (property(node.callee, 'setAttribute') && (staticString(node.arguments[0]) || '').toLowerCase() === 'src') unsafeWrites++;
+      if (property(node.callee, 'setAttributeNS') && (staticString(node.arguments[1]) || '').toLowerCase() === 'src') unsafeWrites++;
+      if (property(node.callee, 'defineProperty') && node.callee.object.type === 'Identifier' && node.callee.object.name === 'Object'
+        && ['src', 'workerSrc'].includes(staticString(node.arguments[1]))) unsafeWrites++;
+      if (property(node.callee, 'set') && node.callee.object.type === 'Identifier' && node.callee.object.name === 'Reflect'
+        && ['src', 'workerSrc'].includes(staticString(node.arguments[1]))) unsafeWrites++;
+      if (property(node.callee, 'assign') && node.callee.object.type === 'Identifier' && node.callee.object.name === 'Object'
+        && node.arguments.slice(1).some(argument => argument.type === 'ObjectExpression' && argument.properties.some(prop =>
+          ['src', 'workerSrc'].includes(staticPropKey(prop))))) unsafeWrites++;
+      return;
+    }
     if (node.type !== 'AssignmentExpression') return;
     if (property(node.left, 'src')) { srcWrites++; if (!blobs.has(node.right.name)) unsafeWrites++; }
     if (property(node.left, 'workerSrc')) { workerWrites++; if (!property(node.right, 'url') || !assets.has(node.right.object.name)) unsafeWrites++; }

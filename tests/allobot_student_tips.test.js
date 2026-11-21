@@ -140,9 +140,102 @@ describe('AlloBot student-facing tips', () => {
   });
 
   it('keeps teacher-only lesson creation suggestions out of the student fallback pool', () => {
-    expect(botSource).toContain("if (!isStudentMode && resourceCount >= 3 && !has('lesson-plan'))");
+    expect(botSource).toContain("if (!envStudent && resourceCount >= 3 && !has('lesson-plan'))");
     expect(uiStrings).toContain('"student_fallback_progress"');
     expect(uiStrings).toContain('"student_study_guide_ready"');
+  });
+
+  it('reads canonical data shapes in student and educator idle tips', () => {
+    const start = botSource.indexOf('const alloBotTipText =');
+    const end = botSource.indexOf('const ALLOBOT_GENERATION_FAMILY_BY_TYPE =');
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const { buildStudentIdleTips, buildEducatorIdleTips } = new Function(
+      botSource.slice(start, end) + '\nreturn { buildStudentIdleTips, buildEducatorIdleTips };'
+    )();
+    const fmt = (key, params) => params ? `${key}:${JSON.stringify(params)}` : key;
+
+    const studentTimeline = buildStudentIdleTips({
+      activeView: 'timeline',
+      history: [{ type: 'timeline', data: { items: [{ title: 'A' }, { title: 'B' }, { title: 'C' }] } }],
+      topic: 'History',
+      t: fmt,
+    });
+    expect(studentTimeline).toContain('tips.student_timeline_count:{"count":3}');
+
+    const studentOutline = buildStudentIdleTips({
+      activeView: 'outline',
+      history: [{ type: 'outline', data: { branches: [{ title: '1' }, { title: '2' }] } }],
+      topic: 'Cells',
+      t: fmt,
+    });
+    expect(studentOutline).toContain('tips.student_outline_count:{"count":2}');
+
+    const studentFrames = buildStudentIdleTips({
+      activeView: 'sentence-frames',
+      history: [{ type: 'sentence-frames', data: { items: [{ frame: 'Because...' }, { frame: 'Therefore...' }] } }],
+      topic: 'Cells',
+      t: fmt,
+    });
+    expect(studentFrames).toContain('tips.student_scaffolds_count:{"count":2}');
+
+    const studentPersona = buildStudentIdleTips({
+      activeView: 'persona',
+      history: [{ type: 'persona', data: [{ name: 'Marie Curie' }] }],
+      topic: 'Science',
+      t: fmt,
+    });
+    expect(studentPersona).toContain('tips.student_persona_name:{"name":"Marie Curie"}');
+
+    const studentNotes = buildStudentIdleTips({
+      activeView: 'note-taking',
+      history: [{ type: 'note-taking', data: { cues: [{ cue: 'What is osmosis?' }, { cue: 'Why does it happen?' }] } }],
+      topic: 'Cells',
+      t: fmt,
+    });
+    expect(studentNotes).toContain('tips.student_notes_count:{"count":2}');
+
+    const studentQuiz = buildStudentIdleTips({
+      activeView: 'quiz',
+      history: [{ type: 'quiz', data: { questions: [{ q: '1' }], reflections: [{ prompt: 'Explain why.' }, { prompt: 'Compare.' }] } }],
+      topic: 'Cells',
+      t: fmt,
+    });
+    expect(studentQuiz).toContain('tips.student_quiz_count:{"count":3}');
+
+    const studentSortPartial = buildStudentIdleTips({
+      activeView: 'concept-sort',
+      history: [{ type: 'concept-sort', data: { categories: [{ id: 'c1' }], items: [] } }],
+      topic: 'Cells',
+      t: fmt,
+    });
+    expect(studentSortPartial.some(tip => tip.startsWith('tips.student_concept_sort_counts'))).toBe(false);
+    expect(studentSortPartial).toContain('tips.student_concept_sort_reason');
+
+    const educatorQuiz = buildEducatorIdleTips({
+      activeView: 'quiz',
+      history: [{ type: 'quiz', data: { questions: [{ q: '1' }], reflections: [{ prompt: 'Explain.' }] } }],
+      topic: 'Cells',
+      t: fmt,
+    });
+    expect(educatorQuiz).toContain('tips.educator_quiz_count:{"count":2}');
+
+    const educatorOutline = buildEducatorIdleTips({
+      activeView: 'outline',
+      title: 'Cell Outline',
+      history: [{ type: 'outline', title: 'Cell Outline', data: { branches: [{ title: 'A' }, { title: 'B' }, { title: 'C' }] } }],
+      topic: 'Cells',
+      t: fmt,
+    });
+    expect(educatorOutline).toContain('tips.educator_section_count:{"count":3,"resource":"Cell Outline"}');
+
+    const educatorSortPartial = buildEducatorIdleTips({
+      activeView: 'concept-sort',
+      history: [{ type: 'concept-sort', data: { categories: [{ id: 'c1' }], items: [] } }],
+      topic: 'Cells',
+      t: fmt,
+    });
+    expect(educatorSortPartial.some(tip => tip.startsWith('tips.educator_sort_counts'))).toBe(false);
   });
 
 });

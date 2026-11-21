@@ -66,14 +66,17 @@ function aePacketExtract(text) {
 const AE_PACKET_FORM_JS = [
   "(function(){",
   'var node=document.getElementById("allo-evaluation-packet");',
-  "if(!node)return;",
-  "var packet=JSON.parse(node.textContent);",
+  'var sendBtn=document.getElementById("ae-send");',
+  "if(!node||!sendBtn)return;",
+  "var packet=null;",
+  'try{packet=JSON.parse(node.textContent||"",function(k,v){return(k==="__proto__"||k==="constructor"||k==="prototype")?undefined:v;});}catch(_){return;}',
+  'if(!packet||typeof packet!=="object")return;',
   'var status=document.getElementById("ae-status");',
-  'document.getElementById("ae-send").addEventListener("click",function(){',
+  'sendBtn.addEventListener("click",function(){',
   "  var now=new Date().toISOString();",
   '  var statementNode=document.getElementById("ae-statement");',
   '  var statement=statementNode?(statementNode.value||"").trim():"";',
-  "  var records=[];var keyed={};",
+  "  var records=[];var keyed=Object.create(null);",
   "  function sourceFor(collection,id){var list=packet[collection]||[];for(var i=0;i<list.length;i++){if(list[i].id===id)return list[i];}return null;}",
   '  function responseFor(collection,id){var key=collection+":"+id;if(!keyed[key]){var src=sourceFor(collection,id);keyed[key]={collection:collection,recordId:id,sourceUpdatedAt:src&&src.sourceUpdatedAt?src.sourceUpdatedAt:null};records.push(keyed[key]);}return keyed[key];}',
   '  var areas=document.querySelectorAll("textarea[data-record]");',
@@ -228,7 +231,7 @@ function aeEducatorPacket(workspace, teacherId, options) {
     }))
   };
   const comments = mine(source.comments).filter(function(item) {
-    return item && visible[item.recordType] && visible[item.recordType].has(item.recordId);
+    return item && Object.prototype.hasOwnProperty.call(visible, item.recordType) && visible[item.recordType].has(item.recordId);
   }).map(function(item) {
     const copy = aePacketPick(item, AE_PACKET_COMMENT_FIELDS);
     if (!opts.includeNames) copy.author = item.role === "Teacher" ? "Educator" : "Evaluator";
@@ -318,7 +321,11 @@ function aeMergeResponsePacket(workspace, packet) {
     }
   }
   (Array.isArray(packet.records) ? packet.records : []).slice(0, 5e3).forEach(function(entry) {
-    const list = entry && workspace[entry.collection];
+    if (!entry || entry.collection !== "walkthroughs" && entry.collection !== "observations") {
+      result.ignored += 1;
+      return;
+    }
+    const list = workspace[entry.collection];
     if (!Array.isArray(list)) {
       result.ignored += 1;
       return;
@@ -380,7 +387,8 @@ function aeMergeResponsePacket(workspace, packet) {
     Object.keys(comment).forEach(function(key) {
       if (AE_PACKET_RESPONSE_COMMENT_FIELDS.indexOf(key) === -1) result.ignored += 1;
     });
-    const collection = { walkthrough: "walkthroughs", formal_observation: "observations", spm: "spms" }[comment.recordType];
+    const commentCollections = { walkthrough: "walkthroughs", formal_observation: "observations", spm: "spms" };
+    const collection = Object.prototype.hasOwnProperty.call(commentCollections, comment.recordType) ? commentCollections[comment.recordType] : null;
     const records = collection && workspace[collection];
     const parent = Array.isArray(records) ? records.filter(function(item) {
       return item && item.id === comment.recordId && item.teacherId === teacherId;
@@ -408,6 +416,10 @@ function aeMergeResponsePacket(workspace, packet) {
     });
     result.applied += 1;
   });
+  if (result.applied > 0) {
+    teacher.lastActivityAt = importedAt;
+    if (typeof aeRecalculateCycleStatus === "function") aeRecalculateCycleStatus(workspace, teacherId);
+  }
   return result;
 }
 const AE_FRAMEWORK = "pa-act13-classroom-2021";
@@ -533,7 +545,7 @@ function aeSetActiveFramework(config) {
     AE_ACTIVE_FW = { ...profile, practiceWeight: profile.id === "maine_pepg" ? weight : null };
     AE_DOMAINS = Array.isArray(profile.domains) && profile.domains.length ? profile.domains : AE_DEFAULT_DOMAINS;
   }
-  AE_COMPONENTS = aeBuildComponents(AE_DOMAINS);
+  AE_COMPONENTS = aeBuildComponents(AE_DOMAINS, AE_ACTIVE_FW.components);
   return AE_ACTIVE_FW;
 }
 const AE_DEFAULT_DOMAINS = [
@@ -597,13 +609,17 @@ const AE_DEFAULT_DOMAINS = [
   }
 ];
 let AE_DOMAINS = AE_DEFAULT_DOMAINS;
-function aeBuildComponents(domains) {
-  return (domains || []).flatMap((domain) => (domain.components || []).map(([code, label]) => ({
-    code,
-    label,
-    domainId: domain.id,
-    domainLabel: domain.label
-  })));
+function aeBuildComponents(domains, componentsByDomain) {
+  return (domains || []).flatMap((domain) => {
+    const override = componentsByDomain && Array.isArray(componentsByDomain[domain.id]) ? componentsByDomain[domain.id] : null;
+    const list = override || domain.components || [];
+    return list.map(([code, label]) => ({
+      code,
+      label,
+      domainId: domain.id,
+      domainLabel: domain.label
+    }));
+  });
 }
 let AE_COMPONENTS = aeBuildComponents(AE_DEFAULT_DOMAINS);
 function aeNormalizeRubric(raw) {
@@ -738,9 +754,9 @@ function aeEvidenceSufficiency(workspace, teacherId, options) {
   })[0];
   const findings = [];
   if (!teacher) return findings;
-  const componentDomain = {};
+  const componentDomain = /* @__PURE__ */ Object.create(null);
   domains.forEach(function(domain) {
-    (opts.componentsByDomain && opts.componentsByDomain[domain.id] || domain.components || []).forEach(function(pair) {
+    (opts.componentsByDomain && aeHasOwn(opts.componentsByDomain, domain.id) && opts.componentsByDomain[domain.id] || domain.components || []).forEach(function(pair) {
       componentDomain[String(pair[0]).toLowerCase()] = domain.id;
     });
   });
@@ -749,7 +765,7 @@ function aeEvidenceSufficiency(workspace, teacherId, options) {
   })).concat((source.observations || []).filter(function(item) {
     return item && item.teacherId === teacherId && item.evidencePublishedAt;
   }));
-  const perDomain = {};
+  const perDomain = /* @__PURE__ */ Object.create(null);
   domains.forEach(function(domain) {
     perDomain[domain.id] = 0;
   });
@@ -809,7 +825,7 @@ function aeEvidenceSufficiency(workspace, teacherId, options) {
   return findings;
 }
 function aeRubricOrphans(workspace, domains) {
-  const keep = {};
+  const keep = /* @__PURE__ */ Object.create(null);
   (domains || []).forEach((domain) => {
     keep[domain.id] = true;
   });
@@ -1146,9 +1162,70 @@ function aeSanitizeScenario(raw) {
   const id = /^[a-z0-9_-]{4,60}$/i.test(String(raw.id || "")) ? String(raw.id) : "scenario_" + Math.random().toString(36).slice(2, 10);
   return { id, name, params, savedAt: typeof raw.savedAt === "string" ? raw.savedAt.slice(0, 40) : aeNow() };
 }
+function aeSafeJsonParse(raw, fallback) {
+  try {
+    const parsed = JSON.parse(String(raw), (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
+    return parsed === void 0 ? fallback : parsed;
+  } catch (_) {
+    return fallback;
+  }
+}
+function aeSafeDocsUrl(value) {
+  const s = aeString(value, 400, "");
+  if (!s) return "";
+  try {
+    const u = new URL(s);
+    if (u.protocol === "https:" && u.hostname === "docs.google.com" && !u.username && !u.password) return u.href;
+  } catch (_) {
+  }
+  return "";
+}
+function aeSafePortalShareUrl(value) {
+  const s = aeString(value, 400, "");
+  if (!s) return "";
+  try {
+    const u = new URL(s);
+    if (u.username || u.password) return "";
+    const host = String(u.hostname || "").toLowerCase().replace(/^\[|\]$/g, "");
+    if (!host) return "";
+    if (u.protocol === "http:") return host === "localhost" || host === "127.0.0.1" ? u.href : "";
+    if (u.protocol !== "https:") return "";
+    if (host.includes(":") || /^(?:localhost|127\.|10\.|192\.168\.|169\.254\.|0\.|172\.(?:1[6-9]|2\d|3[01])\.|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/i.test(host) || /\.(?:local|internal|localhost)$/i.test(host)) return "";
+    return u.href;
+  } catch (_) {
+    return "";
+  }
+}
+function aeSanitizeQrSvg(markup) {
+  const raw = String(markup || "").trim();
+  if (!raw || raw.length > 2e5 || typeof DOMParser === "undefined" || typeof XMLSerializer === "undefined") return "";
+  try {
+    const doc = new DOMParser().parseFromString(raw, "image/svg+xml");
+    const root = doc && doc.documentElement;
+    if (!root || root.tagName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) return "";
+    const allowedTags = /* @__PURE__ */ new Set(["svg", "g", "path", "rect", "title", "desc"]);
+    const allowedAttrs = /* @__PURE__ */ new Set(["viewbox", "width", "height", "xmlns", "d", "x", "y", "rx", "ry", "fill", "stroke", "stroke-width", "shape-rendering", "role", "aria-label", "aria-hidden", "preserveaspectratio", "focusable", "transform"]);
+    const walk = (el) => {
+      Array.from(el.attributes || []).forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        if (!allowedAttrs.has(name) || name.startsWith("on") || /javascript\s*:|vbscript\s*:|data\s*:/i.test(attr.value || "")) {
+          el.removeAttribute(attr.name);
+        }
+      });
+      Array.from(el.children || []).forEach((child) => {
+        if (!allowedTags.has(child.tagName.toLowerCase())) child.remove();
+        else walk(child);
+      });
+    };
+    walk(root);
+    return new XMLSerializer().serializeToString(root);
+  } catch (_) {
+    return "";
+  }
+}
 function aeReadScenarios() {
   try {
-    const list = JSON.parse(localStorage.getItem(AE_SCENARIOS_KEY) || "[]");
+    const list = aeSafeJsonParse(localStorage.getItem(AE_SCENARIOS_KEY) || "[]", []);
     return Array.isArray(list) ? list.map(aeSanitizeScenario).filter(Boolean).slice(0, 40) : [];
   } catch (_) {
     return [];
@@ -1284,8 +1361,15 @@ function aeAnnualEvidenceRefs(value) {
   return clean;
 }
 function aeComponentTags(value) {
-  const allowed = new Set(AE_COMPONENTS.map((component) => component.code));
-  return Array.isArray(value) ? Array.from(new Set(value.map((item) => aeString(item, 3, "")).filter((item) => allowed.has(item)))).slice(0, 22) : [];
+  const canonicalByLower = /* @__PURE__ */ new Map();
+  AE_COMPONENTS.forEach((component) => {
+    const code = String(component.code || "").trim();
+    if (code) canonicalByLower.set(code.toLowerCase(), code);
+  });
+  return Array.isArray(value) ? Array.from(new Set(value.map((item) => {
+    const cleaned = aeString(item, 12, "");
+    return cleaned ? canonicalByLower.get(cleaned.toLowerCase()) || "" : "";
+  }).filter(Boolean))).slice(0, 22) : [];
 }
 function aeSafeWeightSnapshot(value) {
   if (!Array.isArray(value)) return null;
@@ -1297,7 +1381,7 @@ function aeSafeWeightSnapshot(value) {
   };
   const seen = /* @__PURE__ */ new Set();
   const parts = value.map((part) => {
-    if (!aePlainObject(part) || !meta[part.id] || seen.has(part.id)) return null;
+    if (!aePlainObject(part) || !aeHasOwn(meta, part.id) || seen.has(part.id)) return null;
     const weight = Number(part.weight);
     if (!Number.isFinite(weight) || weight <= 0 || weight > 100) return null;
     seen.add(part.id);
@@ -1372,7 +1456,7 @@ function aeNormalizeWorkspace(value) {
       // the educator's Drive; the portal ignores client-sent values on save.
       releasedDoc: raw.releasedDoc && typeof raw.releasedDoc === "object" ? {
         id: aeSafeId(raw.releasedDoc.id, ""),
-        url: aeString(raw.releasedDoc.url, 400, ""),
+        url: aeSafeDocsUrl(raw.releasedDoc.url),
         at: aeTimestamp(raw.releasedDoc.at),
         by: aeString(raw.releasedDoc.by, 160, ""),
         sharedWith: aeString(raw.releasedDoc.sharedWith, 320, ""),
@@ -1380,7 +1464,7 @@ function aeNormalizeWorkspace(value) {
         accessReviewedAt: aeTimestamp(raw.releasedDoc.accessReviewedAt),
         history: (Array.isArray(raw.releasedDoc.history) ? raw.releasedDoc.history : []).filter(aePlainObject).slice(-25).map((item) => ({
           id: aeSafeId(item.id, ""),
-          url: aeString(item.url, 400, ""),
+          url: aeSafeDocsUrl(item.url),
           at: aeTimestamp(item.at),
           by: aeString(item.by, 160, ""),
           openedAt: aeTimestamp(item.openedAt),
@@ -1792,7 +1876,16 @@ function aeSimulationDefaults(workspace) {
   };
 }
 function aeNormalizeSimulationParams(rawParams) {
-  const requested = Object.assign(aeSimulationDefaults(aeSampleWorkspace()), rawParams || {});
+  const baseDefaults = {
+    staffCount: 8,
+    buildingCount: 2,
+    finalizedCount: 2,
+    overdueCount: 1,
+    walkthroughsPerTeacher: 1,
+    frameworkProfile: "maine_pepg",
+    thinEvidenceDomain: "none"
+  };
+  const requested = Object.assign(baseDefaults, rawParams || {});
   const params = Object.assign({}, requested);
   params.staffCount = aeSimulationClamp(params.staffCount, 1, 60, 8);
   params.buildingCount = aeSimulationClamp(params.buildingCount, 1, Math.min(8, params.staffCount), 2);
@@ -1917,9 +2010,11 @@ function aeBuildSimulatedWorkspace(rawParams) {
   next.comments = next.comments.filter((item) => ids.has(item.teacherId));
   next.cycleSnapshots = next.cycleSnapshots.filter((item) => ids.has(item.teacherId));
   const domainCodes = {};
-  Object.keys(AE_ACTIVE_FW.components || {}).forEach((domainId) => {
-    const first = (AE_ACTIVE_FW.components[domainId] || [])[0];
-    if (first) domainCodes[domainId] = Array.isArray(first) ? first[0] : typeof first === "string" ? first : first.code;
+  const fwComponents = AE_ACTIVE_FW.components || {};
+  AE_DOMAINS.forEach((domain) => {
+    const list = Array.isArray(fwComponents[domain.id]) && fwComponents[domain.id].length ? fwComponents[domain.id] : domain.components || [];
+    const first = list[0];
+    if (first) domainCodes[domain.id] = Array.isArray(first) ? first[0] : typeof first === "string" ? first : first.code;
   });
   const usableTags = Object.keys(domainCodes).filter((domainId) => domainId !== params.thinEvidenceDomain).map((domainId) => domainCodes[domainId]).filter(Boolean);
   next.walkthroughs = [];
@@ -2023,19 +2118,22 @@ function aeNumberOrNull(value) {
   return aeRatingValue(value);
 }
 function aeObservationScoreFor(ratings, frameworkVersion) {
+  if (!AE_DOMAINS.length) return null;
   const domains = ratings && ratings.domains || {};
-  if (AE_DOMAINS.some((domain) => aeNumberOrNull(domains[domain.id]) === null)) return null;
   const tag = String(frameworkVersion || "");
   const currentCustom = AE_ACTIVE_FW.id === "custom" && tag === AE_ACTIVE_FW.versionTag;
   const weighted = currentCustom ? !!AE_ACTIVE_FW.domainWeighted : !tag.startsWith("me-");
+  const domainSource = !currentCustom && weighted ? AE_DEFAULT_DOMAINS : AE_DOMAINS;
+  if (domainSource.some((domain) => aeNumberOrNull(domains[domain.id]) === null)) return null;
   if (!weighted) {
-    const total = AE_DOMAINS.reduce((sum, domain) => sum + Math.round(aeNumberOrNull(domains[domain.id]) * 100), 0);
-    return total / (AE_DOMAINS.length * 100);
+    const total = domainSource.reduce((sum, domain) => sum + Math.round(aeNumberOrNull(domains[domain.id]) * 100), 0);
+    return total / (domainSource.length * 100);
   }
-  const scaled = AE_DOMAINS.reduce((sum, domain) => sum + Math.round(aeNumberOrNull(domains[domain.id]) * domain.weight * 100), 0);
+  const scaled = domainSource.reduce((sum, domain) => sum + Math.round(aeNumberOrNull(domains[domain.id]) * domain.weight * 100), 0);
   return scaled / 1e4;
 }
 function aeObservationScore(ratings) {
+  if (!AE_DOMAINS.length) return null;
   const domains = ratings && ratings.domains || {};
   if (AE_DOMAINS.some((domain) => aeNumberOrNull(domains[domain.id]) === null)) return null;
   if (!AE_ACTIVE_FW.domainWeighted) {
@@ -2048,11 +2146,11 @@ function aeObservationScore(ratings) {
 function aeOverallScore(teacher) {
   if (!teacher) return null;
   const ratings = teacher.ratings || {};
-  const observation = aeObservationScore(ratings);
+  const observation = aeObservationScoreFor(ratings, teacher.frameworkVersion || AE_ACTIVE_FW.versionTag);
   if (observation === null) return null;
   const factors = { observation, building: aeNumberOrNull(ratings.building), teacher: aeNumberOrNull(ratings.teacher), lea: aeNumberOrNull(ratings.lea) };
   const profile = aeWeightProfile(teacher);
-  if (profile.some((part) => factors[part.id] === null)) return null;
+  if (profile.some((part) => !aeHasOwn(factors, part.id) || factors[part.id] === null)) return null;
   const scaled = profile.reduce((sum, part) => sum + Math.round(factors[part.id] * part.weight * 100), 0);
   return scaled / 1e4;
 }
@@ -2271,7 +2369,7 @@ function aeTeacherTrendPoints(workspace, teacherId, filters) {
   return points.filter((point) => (!sourceFilter || point.source === sourceFilter) && withinRange(point.date) && ["overall", "d1", "d2", "d3", "d4"].some((metric) => point[metric] !== null)).sort((a, b) => a.date.localeCompare(b.date) || a.recordId.localeCompare(b.recordId));
 }
 function aeDistinctTeacherMedian(points, metric) {
-  const byTeacher = {};
+  const byTeacher = /* @__PURE__ */ Object.create(null);
   (Array.isArray(points) ? points : []).forEach((point) => {
     const teacherId = aeString(point && point.teacherId, 100, "");
     const value = aeTrendPointMetric(point, metric);
@@ -2305,13 +2403,22 @@ function aeEsc(value) {
 }
 function aeCsv(rows) {
   if (!rows || !rows.length) return "";
-  const headers = Object.keys(rows[0]);
+  const headers = Object.keys(rows[0] && typeof rows[0] === "object" ? rows[0] : {});
+  if (!headers.length) return "";
   const cell = (value) => {
-    let s = String(value == null ? "" : value);
-    if (/^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(s)) s = "'" + s;
+    let s;
+    if (value == null) s = "";
+    else if (typeof value === "object") {
+      try {
+        s = JSON.stringify(value);
+      } catch (_) {
+        s = String(value);
+      }
+    } else s = String(value);
+    if (/^(?:[\t\r\n\v\f\u00A0\uFEFF ]*[=+\-@|]|[\t\r\n])/.test(s)) s = "'" + s;
     return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
-  return [headers.map(cell).join(","), ...rows.map((row) => headers.map((header) => cell(row[header])).join(","))].join("\r\n");
+  return [headers.map(cell).join(","), ...rows.map((row) => headers.map((header) => cell(row && typeof row === "object" ? row[header] : "")).join(","))].join("\r\n");
 }
 function aeDownload(name, type, content) {
   const safeName = String(name || "download").replace(/[^A-Za-z0-9._-]/g, "_").replace(/^\.+/, "") || "download";
@@ -2321,10 +2428,21 @@ function aeDownload(name, type, content) {
   const a = document.createElement("a");
   a.href = url;
   a.download = safeName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1e3);
+  try {
+    document.body.appendChild(a);
+    a.click();
+  } finally {
+    try {
+      a.remove();
+    } catch (_) {
+    }
+    setTimeout(() => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (_) {
+      }
+    }, 1e3);
+  }
 }
 function aeAuditEvent(workspace, data, actor, role) {
   workspace.audit.unshift(Object.assign({
@@ -2675,7 +2793,7 @@ function aeSanitizeTourSteps(raw) {
 }
 function aeReadTourOverride() {
   try {
-    return aeSanitizeTourSteps(JSON.parse(localStorage.getItem(AE_TOUR_KEY) || "null"));
+    return aeSanitizeTourSteps(aeSafeJsonParse(localStorage.getItem(AE_TOUR_KEY) || "null", null));
   } catch (_) {
     return null;
   }
@@ -2703,7 +2821,7 @@ function AeStatus({ status }) {
   return /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-" + meta.tone }, aeStatusLabel(status));
 }
 function AeDonut({ segments, centerTop, centerBottom, label }) {
-  const safe = (segments || []).filter((segment) => Number(segment.value) > 0);
+  const safe = (segments || []).filter((segment) => Number.isFinite(Number(segment && segment.value)) && Number(segment.value) > 0);
   const total = safe.reduce((sum, segment) => sum + Number(segment.value), 0);
   let running = 0;
   const stops = safe.map((segment) => {
@@ -2757,7 +2875,7 @@ function aeUseWorkflowDraft(kind, record, year, role, label) {
   const [, render] = React.useState(0);
   const key = JSON.stringify(["workflow-edit", year || "", kind, record?.id || "", role]);
   const draft = drafts.get(key);
-  const changes = draft ? JSON.parse(draft.value) : {};
+  const changes = draft ? aeSafeJsonParse(draft.value, {}) : {};
   const snapshot = aeReviewSnapshot(record);
   const changed = !!draft && draft.base !== snapshot;
   const clear = () => {
@@ -2943,19 +3061,20 @@ function AeRatingComposer({ workspace, teacher, role, updateTeacher, evidenceFin
     draft.cycleStatus = "finalized";
     draft.finalScore = aeRoundedScore(overall);
     draft.weightSnapshot = profile.map((part) => ({ id: part.id, label: part.label, weight: part.weight }));
-    draft.frameworkVersion = AE_ACTIVE_FW.versionTag;
+    draft.frameworkVersion = draft.frameworkVersion || AE_ACTIVE_FW.versionTag;
   }, "RELEASED", "Final rating release recorded", releaseSnapshot);
   const beginFinalRelease = () => {
     if (!requestActionReview) {
       recordFinalRelease();
       return;
     }
+    const roundedOverall = aeRoundedScore(overall);
     requestActionReview({
       title: "Record final annual release for " + teacher.name + "?",
       description: "This freezes the annual ratings, written rationales, supporting evidence references, calculation, framework, and weights for this cycle.",
       facts: [
         ["Educator", teacher.name + " · " + teacher.code],
-        ["Final calculation", AE_ACTIVE_FW.id === "portland_me" ? (aePortlandPracticeRating(teacher.ratings.domains) || {}).label || "Complete" : aeRoundedScore(overall).toFixed(2) + " · " + aeBand(overall)],
+        ["Final calculation", AE_ACTIVE_FW.id === "portland_me" ? (aePortlandPracticeRating(teacher.ratings.domains) || {}).label || "Complete" : roundedOverall != null ? roundedOverall.toFixed(2) + " · " + aeBand(overall) : "Incomplete"],
         ["Annual basis", ratedDomains.length + " domain rationales · " + ratedDomains.reduce((count, domain) => count + (annualEvidenceRefs[domain.id] || []).length, 0) + " evidence references"],
         ["Lock effect", "The cycle and annual provenance become read-only."]
       ],
@@ -2965,10 +3084,12 @@ function AeRatingComposer({ workspace, teacher, role, updateTeacher, evidenceFin
       onConfirm: recordFinalRelease
     });
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "ae-card" }, /* @__PURE__ */ React.createElement("div", { className: "ae-record-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", null, role === "evaluator" ? t("educator_evaluation.annual_summative_calculation_preview_uacw2w", "Annual summative calculation preview") : t("educator_evaluation.how_your_final_rating_is_calculated_1opgwi1", "How your final rating is calculated")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, role === "evaluator" ? t("educator_evaluation.enter_cycle_level_domain_judgments_after_reviewing_all_rel_9ulz1r", "Enter cycle-level domain judgments after reviewing all relevant observations, walkthroughs, artifacts, and professional-practice evidence. Observation-specific ratings stay separate; the system performs arithmetic only.") : t("educator_evaluation.full_transparency_into_the_arithmetic_these_are_the_only_i_j6bml4", "Full transparency into the arithmetic: these are the only inputs that enter your final rating, entered by your evaluator after reviewing your evidence. Nothing else affects the math."))), /* @__PURE__ */ React.createElement("div", null, overall === null ? /* @__PURE__ */ React.createElement("span", { className: "ae-chip " + (role === "evaluator" ? "ae-chip-amber" : "ae-chip-neutral") }, role === "evaluator" ? t("educator_evaluation.draft_1pqt609", "Draft · ") + missing.length + " input" + (missing.length === 1 ? "" : "s") + " missing" : t("educator_evaluation.in_progress_irp8zc", "In progress · ") + missing.length + " component" + (missing.length === 1 ? "" : "s") + t("educator_evaluation.still_ahead_in_your_cycle_1c4dt54", " still ahead in your cycle")) : AE_ACTIVE_FW.id === "portland_me" ? /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-blue" }, (aePortlandPracticeRating(teacher.ratings.domains) || {}).label) : /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-blue" }, aeRoundedScore(overall).toFixed(2), " · ", aeBand(overall)))), role === "evaluator" && aiReflectionEnabled && /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-info", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.second_read_on_your_own_reasoning_1ftxo87", "Second read on your own reasoning")), /* @__PURE__ */ React.createElement("p", { className: "ae-help", style: { marginTop: 4 } }, t("educator_evaluation.asks_a_model_whether_the_evidence_you_wrote_supports_the_r_77kvu4", "Asks a model whether the evidence you wrote supports the ratings you assigned, and what else it could mean. Advisory only: nothing it says is stored in the record.")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", onClick: askForReflection, disabled: reflection.status === "working", "aria-describedby": reflection.status === "idle" ? void 0 : "ae-ai-reflection-status-" + teacher.id }, reflection.status === "working" ? t("educator_evaluation.checking_vyewnp", "Checking…") : t("educator_evaluation.ask_for_alternative_readings_1fflejn", "Ask for alternative readings")), reflection.status === "working" && /* @__PURE__ */ React.createElement("p", { id: "ae-ai-reflection-status-" + teacher.id, className: "ae-help", style: { marginTop: 8 }, role: "status", "aria-live": "polite", "aria-atomic": "true" }, t("educator_evaluation.ai_reflection_checking_selected_evidence_20260830", "Checking this educator’s published evidence. The response will remain scoped to this educator.")), reflection.status === "done" && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("p", { id: "ae-ai-reflection-status-" + teacher.id, className: "ae-help", role: "status", "aria-live": "polite", "aria-atomic": "true" }, t("educator_evaluation.ai_reflection_ready_20260830", "Alternative reading ready for this educator.")), /* @__PURE__ */ React.createElement("p", { className: "ae-help", style: { marginTop: 4 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.suggestion_not_a_finding_jom4g2", "Suggestion, not a finding.")), " ", t("educator_evaluation.you_decide_what_if_anything_to_change_1tu60ru", "You decide what, if anything to change.")), /* @__PURE__ */ React.createElement("pre", { style: { whiteSpace: "pre-wrap", font: "inherit", margin: 0 } }, reflection.text)), reflection.status === "error" && /* @__PURE__ */ React.createElement("p", { id: "ae-ai-reflection-status-" + teacher.id, className: "ae-help", style: { marginTop: 8 }, role: "alert", "aria-live": "assertive", "aria-atomic": "true" }, reflection.text)), "    ", evidenceFindings && evidenceFindings.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "ae-note " + (evidenceFindings.some((item) => item.severity === "high") ? "ae-warn" : "ae-info"), style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, role === "evaluator" ? t("educator_evaluation.check_the_evidence_before_you_finalise_h00wya", "Check the evidence before you finalise") : t("educator_evaluation.what_the_documentation_shows_5puljg", "What the documentation shows")), /* @__PURE__ */ React.createElement("ul", { style: { margin: "8px 0 0", paddingLeft: 20 } }, evidenceFindings.map((item, index) => /* @__PURE__ */ React.createElement("li", { key: item.code + "-" + (item.domainId || index) }, item.message))), /* @__PURE__ */ React.createElement("p", { className: "ae-help", style: { marginTop: 8 } }, role === "evaluator" ? t("educator_evaluation.counted_from_the_evidence_you_tagged_on_this_device_a_rati_1ej0m2l", "Counted from the evidence you tagged, on this device. A rating resting on little documented evidence is the one most likely to be overturned, so this is a prompt to add evidence or revisit the rating, not a judgment about the educator.") : t("educator_evaluation.counted_from_the_evidence_tagged_to_your_record_you_can_ra_a31vfv", "Counted from the evidence tagged to your record. You can raise any of these with your evaluator."))), /* @__PURE__ */ React.createElement("div", { className: "ae-rating-grid", style: { marginTop: 12 } }, AE_DOMAINS.map((domain) => /* @__PURE__ */ React.createElement("div", { className: "ae-rating-card", key: domain.id, style: { borderTop: "4px solid " + domain.color } }, /* @__PURE__ */ React.createElement("h4", null, domain.code, ". ", aeRubricDisplayLabel(domain.label), " ", /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-neutral" }, AE_ACTIVE_FW.id === "pa_act13" ? domain.weight + t("educator_evaluation.of_o_and_p_eiuk1e", "% of O&P") : t("educator_evaluation.equal_domain_weight", "equal weight"))), /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.human_selected_rating_1mz5eyx", "Human-selected rating")), /* @__PURE__ */ React.createElement("select", { className: "ae-select", value: teacher.ratings.domains[domain.id] == null ? "" : teacher.ratings.domains[domain.id], disabled: role !== "evaluator" || !!teacher.finalizedAt, onChange: (event) => setRating(domain.id, event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, t("educator_evaluation.not_rated_17t3qdk", "Not rated")), AE_RATINGS.map((rating) => /* @__PURE__ */ React.createElement("option", { key: rating.value, value: rating.value }, rating.value, " · ", AE_ACTIVE_FW.ratingLabels && AE_ACTIVE_FW.ratingLabels[rating.value] || rating.label)))), (role === "evaluator" || teacher.finalizedAt) && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, "Annual rationale"), /* @__PURE__ */ React.createElement("textarea", { className: "ae-textarea", style: { minHeight: 90 }, maxLength: 15e3, value: annualRationales[domain.id] || "", disabled: role !== "evaluator" || !!teacher.finalizedAt, onChange: (event) => setAnnualRationale(domain.id, event.target.value), placeholder: "Explain how the cycle evidence supports this annual domain judgment." })), /* @__PURE__ */ React.createElement("fieldset", { style: { border: 0, padding: 0, margin: 0 }, disabled: role !== "evaluator" || !!teacher.finalizedAt }, /* @__PURE__ */ React.createElement("legend", { className: "ae-legend-label" }, "Supporting published or locked evidence"), annualEvidence.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "ae-help" }, "Publish walkthrough or formal-observation evidence, or lock an SPM / SLO record, before final release.") : annualEvidence.map((item) => /* @__PURE__ */ React.createElement("label", { className: "ae-check", key: domain.id + "-" + item.token }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: (annualEvidenceRefs[domain.id] || []).includes(item.token), onChange: (event) => toggleAnnualEvidence(domain.id, item.token, event.target.checked) }), /* @__PURE__ */ React.createElement("span", null, item.label, item.tags.some((tag) => String(tag).startsWith(domain.code)) ? " · tagged to this domain" : "")))))))), /* @__PURE__ */ React.createElement("div", { className: "ae-form-grid", style: { marginTop: 12 } }, profile.filter((part) => part.id !== "observation").map((part) => /* @__PURE__ */ React.createElement("label", { className: "ae-field", key: part.id }, /* @__PURE__ */ React.createElement("span", null, aeRubricDisplayLabel(part.label), " · ", part.weight, "%"), /* @__PURE__ */ React.createElement("input", { className: "ae-input", type: "number", min: "0", max: "3", step: "0.01", value: teacher.ratings[part.id] == null ? "" : teacher.ratings[part.id], disabled: role !== "evaluator" || !!teacher.finalizedAt, onChange: (event) => setRating(part.id, event.target.value), placeholder: "0.00 to 3.00" })))), AE_ACTIVE_FW.id === "portland_me" && (() => {
+  const roundedOverallDisplay = aeRoundedScore(overall);
+  const finalizedDisplayScore = teacher.finalScore != null && Number.isFinite(Number(teacher.finalScore)) ? Number(teacher.finalScore) : roundedOverallDisplay;
+  return /* @__PURE__ */ React.createElement("div", { className: "ae-card" }, /* @__PURE__ */ React.createElement("div", { className: "ae-record-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", null, role === "evaluator" ? t("educator_evaluation.annual_summative_calculation_preview_uacw2w", "Annual summative calculation preview") : t("educator_evaluation.how_your_final_rating_is_calculated_1opgwi1", "How your final rating is calculated")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, role === "evaluator" ? t("educator_evaluation.enter_cycle_level_domain_judgments_after_reviewing_all_rel_9ulz1r", "Enter cycle-level domain judgments after reviewing all relevant observations, walkthroughs, artifacts, and professional-practice evidence. Observation-specific ratings stay separate; the system performs arithmetic only.") : t("educator_evaluation.full_transparency_into_the_arithmetic_these_are_the_only_i_j6bml4", "Full transparency into the arithmetic: these are the only inputs that enter your final rating, entered by your evaluator after reviewing your evidence. Nothing else affects the math."))), /* @__PURE__ */ React.createElement("div", null, overall === null ? /* @__PURE__ */ React.createElement("span", { className: "ae-chip " + (role === "evaluator" ? "ae-chip-amber" : "ae-chip-neutral") }, role === "evaluator" ? t("educator_evaluation.draft_1pqt609", "Draft · ") + missing.length + " input" + (missing.length === 1 ? "" : "s") + " missing" : t("educator_evaluation.in_progress_irp8zc", "In progress · ") + missing.length + " component" + (missing.length === 1 ? "" : "s") + t("educator_evaluation.still_ahead_in_your_cycle_1c4dt54", " still ahead in your cycle")) : AE_ACTIVE_FW.id === "portland_me" ? /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-blue" }, (aePortlandPracticeRating(teacher.ratings.domains) || {}).label) : /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-blue" }, roundedOverallDisplay != null ? roundedOverallDisplay.toFixed(2) : "—", " · ", aeBand(overall)))), role === "evaluator" && aiReflectionEnabled && /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-info", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.second_read_on_your_own_reasoning_1ftxo87", "Second read on your own reasoning")), /* @__PURE__ */ React.createElement("p", { className: "ae-help", style: { marginTop: 4 } }, t("educator_evaluation.asks_a_model_whether_the_evidence_you_wrote_supports_the_r_77kvu4", "Asks a model whether the evidence you wrote supports the ratings you assigned, and what else it could mean. Advisory only: nothing it says is stored in the record.")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", onClick: askForReflection, disabled: reflection.status === "working", "aria-describedby": reflection.status === "idle" ? void 0 : "ae-ai-reflection-status-" + teacher.id }, reflection.status === "working" ? t("educator_evaluation.checking_vyewnp", "Checking…") : t("educator_evaluation.ask_for_alternative_readings_1fflejn", "Ask for alternative readings")), reflection.status === "working" && /* @__PURE__ */ React.createElement("p", { id: "ae-ai-reflection-status-" + teacher.id, className: "ae-help", style: { marginTop: 8 }, role: "status", "aria-live": "polite", "aria-atomic": "true" }, t("educator_evaluation.ai_reflection_checking_selected_evidence_20260830", "Checking this educator’s published evidence. The response will remain scoped to this educator.")), reflection.status === "done" && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("p", { id: "ae-ai-reflection-status-" + teacher.id, className: "ae-help", role: "status", "aria-live": "polite", "aria-atomic": "true" }, t("educator_evaluation.ai_reflection_ready_20260830", "Alternative reading ready for this educator.")), /* @__PURE__ */ React.createElement("p", { className: "ae-help", style: { marginTop: 4 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.suggestion_not_a_finding_jom4g2", "Suggestion, not a finding.")), " ", t("educator_evaluation.you_decide_what_if_anything_to_change_1tu60ru", "You decide what, if anything to change.")), /* @__PURE__ */ React.createElement("pre", { style: { whiteSpace: "pre-wrap", font: "inherit", margin: 0 } }, reflection.text)), reflection.status === "error" && /* @__PURE__ */ React.createElement("p", { id: "ae-ai-reflection-status-" + teacher.id, className: "ae-help", style: { marginTop: 8 }, role: "alert", "aria-live": "assertive", "aria-atomic": "true" }, reflection.text)), "    ", evidenceFindings && evidenceFindings.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "ae-note " + (evidenceFindings.some((item) => item.severity === "high") ? "ae-warn" : "ae-info"), style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, role === "evaluator" ? t("educator_evaluation.check_the_evidence_before_you_finalise_h00wya", "Check the evidence before you finalise") : t("educator_evaluation.what_the_documentation_shows_5puljg", "What the documentation shows")), /* @__PURE__ */ React.createElement("ul", { style: { margin: "8px 0 0", paddingLeft: 20 } }, evidenceFindings.map((item, index) => /* @__PURE__ */ React.createElement("li", { key: item.code + "-" + (item.domainId || index) }, item.message))), /* @__PURE__ */ React.createElement("p", { className: "ae-help", style: { marginTop: 8 } }, role === "evaluator" ? t("educator_evaluation.counted_from_the_evidence_you_tagged_on_this_device_a_rati_1ej0m2l", "Counted from the evidence you tagged, on this device. A rating resting on little documented evidence is the one most likely to be overturned, so this is a prompt to add evidence or revisit the rating, not a judgment about the educator.") : t("educator_evaluation.counted_from_the_evidence_tagged_to_your_record_you_can_ra_a31vfv", "Counted from the evidence tagged to your record. You can raise any of these with your evaluator."))), /* @__PURE__ */ React.createElement("div", { className: "ae-rating-grid", style: { marginTop: 12 } }, AE_DOMAINS.map((domain) => /* @__PURE__ */ React.createElement("div", { className: "ae-rating-card", key: domain.id, style: { borderTop: "4px solid " + domain.color } }, /* @__PURE__ */ React.createElement("h4", null, domain.code, ". ", aeRubricDisplayLabel(domain.label), " ", /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-neutral" }, AE_ACTIVE_FW.id === "pa_act13" ? domain.weight + t("educator_evaluation.of_o_and_p_eiuk1e", "% of O&P") : t("educator_evaluation.equal_domain_weight", "equal weight"))), /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.human_selected_rating_1mz5eyx", "Human-selected rating")), /* @__PURE__ */ React.createElement("select", { className: "ae-select", value: teacher.ratings.domains[domain.id] == null ? "" : teacher.ratings.domains[domain.id], disabled: role !== "evaluator" || !!teacher.finalizedAt, onChange: (event) => setRating(domain.id, event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, t("educator_evaluation.not_rated_17t3qdk", "Not rated")), AE_RATINGS.map((rating) => /* @__PURE__ */ React.createElement("option", { key: rating.value, value: rating.value }, rating.value, " · ", AE_ACTIVE_FW.ratingLabels && AE_ACTIVE_FW.ratingLabels[rating.value] || rating.label)))), (role === "evaluator" || teacher.finalizedAt) && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, "Annual rationale"), /* @__PURE__ */ React.createElement("textarea", { className: "ae-textarea", style: { minHeight: 90 }, maxLength: 15e3, value: annualRationales[domain.id] || "", disabled: role !== "evaluator" || !!teacher.finalizedAt, onChange: (event) => setAnnualRationale(domain.id, event.target.value), placeholder: "Explain how the cycle evidence supports this annual domain judgment." })), /* @__PURE__ */ React.createElement("fieldset", { style: { border: 0, padding: 0, margin: 0 }, disabled: role !== "evaluator" || !!teacher.finalizedAt }, /* @__PURE__ */ React.createElement("legend", { className: "ae-legend-label" }, "Supporting published or locked evidence"), annualEvidence.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "ae-help" }, "Publish walkthrough or formal-observation evidence, or lock an SPM / SLO record, before final release.") : annualEvidence.map((item) => /* @__PURE__ */ React.createElement("label", { className: "ae-check", key: domain.id + "-" + item.token }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: (annualEvidenceRefs[domain.id] || []).includes(item.token), onChange: (event) => toggleAnnualEvidence(domain.id, item.token, event.target.checked) }), /* @__PURE__ */ React.createElement("span", null, item.label, item.tags.some((tag) => String(tag).startsWith(domain.code)) ? " · tagged to this domain" : "")))))))), /* @__PURE__ */ React.createElement("div", { className: "ae-form-grid", style: { marginTop: 12 } }, profile.filter((part) => part.id !== "observation").map((part) => /* @__PURE__ */ React.createElement("label", { className: "ae-field", key: part.id }, /* @__PURE__ */ React.createElement("span", null, aeRubricDisplayLabel(part.label), " · ", part.weight, "%"), /* @__PURE__ */ React.createElement("input", { className: "ae-input", type: "number", min: "0", max: "3", step: "0.01", value: teacher.ratings[part.id] == null ? "" : teacher.ratings[part.id], disabled: role !== "evaluator" || !!teacher.finalizedAt, onChange: (event) => setRating(part.id, event.target.value), placeholder: "0.00 to 3.00" })))), AE_ACTIVE_FW.id === "portland_me" && (() => {
     const rollup = aePortlandPracticeRating(teacher.ratings.domains);
     return rollup ? /* @__PURE__ */ React.createElement("div", { className: "ae-note", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.practice_rating_guidebook_roll_up_1gx63z6", "Practice rating (guidebook roll-up):"), " ", rollup.label), ", ", rollup.rule, ". The guidebook derives this rating from the four domain ratings by rule, not by averaging; the numeric average never appears on official Portland forms. Student growth combines per the district’s current plan documents. Confirm against the current PEPG plan; this mirrors guidebook v1.0.") : null;
-  })(), /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn" }, AE_ACTIVE_FW.id === "pa_act13" ? t("educator_evaluation.this_is_a_planning_preview_not_an_official_pde_13_1_form_f_10do9m2", "This is a planning preview, not an official PDE 13-1 form. Follow your LEA’s approved process and enter/release the official summative form in PEERS or the district’s authorized record system.") : t("educator_evaluation.this_is_a_planning_preview_not_an_official_pepg_summative__foogxv", "This is a planning preview, not an official PEPG summative form. Your district’s PEPG plan (developed with its teacher-majority steering committee) governs the official process, rating levels, and forms; record the official summative rating in the district-authorized system.")), teacher.finalizedAt && /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-ok", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.final_release_recorded_11c3x9z", "Final release recorded ·"), " ", Number(teacher.finalScore == null ? aeRoundedScore(overall) : teacher.finalScore).toFixed(2)), /* @__PURE__ */ React.createElement("br", null), t("educator_evaluation.released_i33a4u", "Released"), " ", aeDateTime(teacher.finalizedAt), ". This local receipt does not replace the official record."), !teacher.finalizedAt && role === "evaluator" && overall !== null && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 12 } }, provenanceMissing.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn", style: { marginBottom: 10 } }, /* @__PURE__ */ React.createElement("strong", null, "Annual basis incomplete."), " Add a written rationale and at least one eligible supporting record for ", provenanceMissing.map((domain) => "Domain " + domain.code).join(", "), "."), /* @__PURE__ */ React.createElement("label", { className: "ae-check" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: releaseChecked, onChange: (event) => setReleaseChecked(event.target.checked) }), /* @__PURE__ */ React.createElement("span", null, AE_ACTIVE_FW.id === "pa_act13" ? t("educator_evaluation.i_confirm_the_official_final_rating_form_has_already_been__tji0m8", "I confirm the official final rating form has already been released in PEERS or the LEA-authorized record system.") : t("educator_evaluation.i_confirm_the_official_summative_rating_has_already_been_r_ugj5jr", "I confirm the official summative rating has already been recorded through the district-authorized PEPG process."))), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn ae-btn-primary", disabled: !releaseChecked || provenanceMissing.length > 0, onClick: beginFinalRelease }, t("educator_evaluation.record_final_release_q8qg6h", "Review final release")), /* @__PURE__ */ React.createElement("p", { className: "ae-help" }, t("educator_evaluation.this_locks_the_local_cycle_and_advances_the_teachers_evalu_1t38zzd", "This locks the local cycle and advances the “teachers evaluated” completion pie."))));
+  })(), /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn" }, AE_ACTIVE_FW.id === "pa_act13" ? t("educator_evaluation.this_is_a_planning_preview_not_an_official_pde_13_1_form_f_10do9m2", "This is a planning preview, not an official PDE 13-1 form. Follow your LEA’s approved process and enter/release the official summative form in PEERS or the district’s authorized record system.") : t("educator_evaluation.this_is_a_planning_preview_not_an_official_pepg_summative__foogxv", "This is a planning preview, not an official PEPG summative form. Your district’s PEPG plan (developed with its teacher-majority steering committee) governs the official process, rating levels, and forms; record the official summative rating in the district-authorized system.")), teacher.finalizedAt && /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-ok", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.final_release_recorded_11c3x9z", "Final release recorded ·"), " ", finalizedDisplayScore != null ? finalizedDisplayScore.toFixed(2) : (aePortlandPracticeRating(teacher.ratings.domains) || {}).label || "—"), /* @__PURE__ */ React.createElement("br", null), t("educator_evaluation.released_i33a4u", "Released"), " ", aeDateTime(teacher.finalizedAt), ". This local receipt does not replace the official record."), !teacher.finalizedAt && role === "evaluator" && overall !== null && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 12 } }, provenanceMissing.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn", style: { marginBottom: 10 } }, /* @__PURE__ */ React.createElement("strong", null, "Annual basis incomplete."), " Add a written rationale and at least one eligible supporting record for ", provenanceMissing.map((domain) => "Domain " + domain.code).join(", "), "."), /* @__PURE__ */ React.createElement("label", { className: "ae-check" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: releaseChecked, onChange: (event) => setReleaseChecked(event.target.checked) }), /* @__PURE__ */ React.createElement("span", null, AE_ACTIVE_FW.id === "pa_act13" ? t("educator_evaluation.i_confirm_the_official_final_rating_form_has_already_been__tji0m8", "I confirm the official final rating form has already been released in PEERS or the LEA-authorized record system.") : t("educator_evaluation.i_confirm_the_official_summative_rating_has_already_been_r_ugj5jr", "I confirm the official summative rating has already been recorded through the district-authorized PEPG process."))), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn ae-btn-primary", disabled: !releaseChecked || provenanceMissing.length > 0, onClick: beginFinalRelease }, t("educator_evaluation.record_final_release_q8qg6h", "Review final release")), /* @__PURE__ */ React.createElement("p", { className: "ae-help" }, t("educator_evaluation.this_locks_the_local_cycle_and_advances_the_teachers_evalu_1t38zzd", "This locks the local cycle and advances the “teachers evaluated” completion pie."))));
 }
 function AeEducatorStatement({ teacher, role, updateTeacher, readOnlyPreview = false, academicYear = "" }) {
   const saved = teacher.educatorStatement && teacher.educatorStatement.text || "";
@@ -3185,8 +3306,8 @@ function AeTrends({ workspace, selectedTeacher, setSelectedTeacherId, role, isRe
     const daysSince = last ? Math.max(0, Math.floor((Date.now() - new Date(last).getTime()) / 864e5)) : null;
     return { teacher, count: visits.length, last, daysSince };
   }).sort((a, b) => (a.last || "").localeCompare(b.last || "") || a.teacher.name.localeCompare(b.teacher.name)) : [];
-  const buildingTagCounts = {};
-  const buildingTagEducators = {};
+  const buildingTagCounts = /* @__PURE__ */ Object.create(null);
+  const buildingTagEducators = /* @__PURE__ */ Object.create(null);
   if (isEvaluator) {
     workspace.walkthroughs.filter((item) => activeTrendIds.has(item.teacherId) && item.publishedAt && inRange(item.publishedAt)).concat(workspace.observations.filter((item) => activeTrendIds.has(item.teacherId) && item.evidencePublishedAt && inRange(item.evidencePublishedAt))).forEach((record) => (record.componentTags || []).forEach((code) => {
       buildingTagCounts[code] = (buildingTagCounts[code] || 0) + 1;
@@ -3203,7 +3324,7 @@ function AeTrends({ workspace, selectedTeacher, setSelectedTeacherId, role, isRe
     const missing = comps.filter((comp) => !buildingTagCounts[comp[0]]).map((comp) => comp[0]);
     return { domain, total, missing };
   }) : [];
-  return /* @__PURE__ */ React.createElement("div", { className: "ae-page" }, /* @__PURE__ */ React.createElement("div", { className: "ae-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", null, isEvaluator ? t("educator_evaluation.teacher_trends_and_cohort_context_np8xyk", "Teacher trends and cohort context") : t("educator_evaluation.my_trends_1vjgzgd", "My trends")), /* @__PURE__ */ React.createElement("p", null, t("educator_evaluation.finalized_formal_observation_ratings_and_workflow_activity_170pnh7", "Finalized formal-observation ratings and workflow activity over time. Annual cycle releases are reported separately. Evidence text, comments, and rationales are never aggregated.")))), /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn", style: { marginBottom: 16 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.privacy_aware_aggregate_not_ferpa_certification_usil4c", "Privacy-aware aggregate, not FERPA certification.")), " ", t("educator_evaluation.formal_observation_cohort_values_appear_only_when_at_least_16kwdtd", "Formal-observation cohort values appear only when at least"), " ", AE_MIN_TREND_COHORT, " ", t("educator_evaluation.eligible_peers_contribute_small_groups_are_suppressed_resu_5j2kwi", "eligible peers contribute; small groups are suppressed. Results are descriptive and must not be the sole basis for personnel decisions."), " ", isRemote ? t("educator_evaluation.district_authorization_retention_and_employment_policy_req_4mwnei", "District authorization, retention, and employment-policy requirements still apply.") : t("educator_evaluation.on_this_device_cohort_context_reflects_only_this_workspace_iszwmv", "On this device, cohort context reflects only this workspace; the district portal adds authenticated, permission-filtered comparisons.")), /* @__PURE__ */ React.createElement("section", { className: "ae-card", style: { marginBottom: 16 } }, /* @__PURE__ */ React.createElement("fieldset", { style: { border: 0, padding: 0, margin: 0 } }, /* @__PURE__ */ React.createElement("legend", { style: { fontWeight: 850, marginBottom: 10 } }, t("educator_evaluation.trend_filters_17ntchv", "Trend filters")), /* @__PURE__ */ React.createElement("div", { className: "ae-form-grid" }, isEvaluator && /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.educator_8c1rq4", "Educator")), /* @__PURE__ */ React.createElement("select", { className: "ae-select", value: selectedTeacher ? selectedTeacher.id : "", onChange: (event) => setSelectedTeacherId(event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, t("educator_evaluation.choose_an_educator_1l6d6bg", "Choose an educator")), workspace.teachers.filter((teacher) => teacher.active !== false).map((teacher) => /* @__PURE__ */ React.createElement("option", { key: teacher.id, value: teacher.id }, teacher.name, " · ", teacher.code)))), /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.metric_1esenmp", "Metric")), /* @__PURE__ */ React.createElement("select", { className: "ae-select", value: metric, onChange: (event) => setMetric(event.target.value) }, Object.keys(metricLabels).map((key) => /* @__PURE__ */ React.createElement("option", { key, value: key }, metricLabels[key])))), /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.from_6s9hn9", "From")), /* @__PURE__ */ React.createElement("input", { className: "ae-input", type: "date", value: from, onChange: (event) => setFrom(event.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, "To"), /* @__PURE__ */ React.createElement("input", { className: "ae-input", type: "date", value: to, min: from || void 0, onChange: (event) => setTo(event.target.value) }))))), isEvaluator && coverageRows.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "ae-grid", style: { marginBottom: 16 } }, /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-7", "aria-labelledby": "ae-coverage-title" }, /* @__PURE__ */ React.createElement("h3", { id: "ae-coverage-title" }, t("educator_evaluation.walkthrough_coverage_across_roster_20260823", "Walkthrough coverage across the roster")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.coverage_framing_20260823", "Published walkthroughs in the selected date range, sorted with the longest-unvisited educators first. A planning aid for spreading visits, not a judgment about anyone.")), /* @__PURE__ */ React.createElement("div", { className: "ae-table-wrap", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("table", { className: "ae-table" }, /* @__PURE__ */ React.createElement("caption", { className: "ae-live" }, t("educator_evaluation.coverage_caption_20260823", "Walkthrough coverage by educator")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.educator_8c1rq4", "Educator")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.published_visits_20260823", "Published visits")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.last_visit_20260823", "Last visit")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.days_since_20260823", "Days since")))), /* @__PURE__ */ React.createElement("tbody", null, coverageRows.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.teacher.id }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-row-btn", onClick: () => setSelectedTeacherId(row.teacher.id) }, row.teacher.name), /* @__PURE__ */ React.createElement("br", null), /* @__PURE__ */ React.createElement("span", { className: "ae-sub" }, row.teacher.code)), /* @__PURE__ */ React.createElement("td", null, row.count), /* @__PURE__ */ React.createElement("td", null, row.last ? aeDate(row.last) : t("educator_evaluation.no_published_visits_yet_20260823", "No published visits yet")), /* @__PURE__ */ React.createElement("td", null, row.daysSince == null ? "" : row.daysSince))))))), /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-5", "aria-labelledby": "ae-domain-coverage-title" }, /* @__PURE__ */ React.createElement("h3", { id: "ae-domain-coverage-title" }, t("educator_evaluation.documented_evidence_by_domain_20260823", "Documented evidence by domain")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.domain_coverage_framing_20260823", "Evidence-tag counts on published records across the active roster. A domain nobody documents is a professional-development planning signal, never a rating.")), domainCoverage.map((entry) => /* @__PURE__ */ React.createElement("div", { className: "ae-stat", key: entry.domain.id, style: { marginTop: 10, borderLeftColor: entry.domain.color } }, /* @__PURE__ */ React.createElement("strong", null, entry.total), /* @__PURE__ */ React.createElement("span", null, entry.domain.code, ". ", aeRubricDisplayLabel(entry.domain.label), entry.missing.length ? t("educator_evaluation.no_evidence_tagged_yet_20260823", " · no evidence tagged yet: ") + entry.missing.join(", ") : t("educator_evaluation.every_component_tagged_20260823", " · every component has tagged evidence"))))), /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12", "aria-labelledby": "ae-component-heat-title" }, /* @__PURE__ */ React.createElement("h3", { id: "ae-component-heat-title" }, t("educator_evaluation.documented_evidence_by_component_20260902", "Documented evidence by component")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.component_heat_help_20260902", "Published records that tag each component, and how many educators they cover, across the active roster and date range. Counts only: this shows where evidence has and has not been documented, never a rating.")), componentHeat.map((row) => /* @__PURE__ */ React.createElement("div", { key: row.domain.id, style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "ae-legend-label" }, row.domain.code, ". ", aeRubricDisplayLabel(row.domain.label)), /* @__PURE__ */ React.createElement("div", { className: "ae-heat-row", role: "list" }, row.cells.map((cell) => /* @__PURE__ */ React.createElement("div", { key: cell.code, role: "listitem", className: "ae-heat-cell " + (cell.count >= 3 ? "ae-heat-3" : cell.count === 2 ? "ae-heat-2" : cell.count === 1 ? "ae-heat-1" : "ae-heat-0"), title: cell.label, "data-help-key": "ae_component_heat_cell" }, /* @__PURE__ */ React.createElement("strong", null, cell.code), /* @__PURE__ */ React.createElement("span", null, cell.count ? cell.count + (cell.count === 1 ? t("educator_evaluation.record_singular_20260902", " record") : t("educator_evaluation.records_plural_20260902", " records")) + " · " + cell.educators + (cell.educators === 1 ? t("educator_evaluation.educator_singular_20260902", " educator") : t("educator_evaluation.educators_plural_20260902", " educators")) : t("educator_evaluation.not_yet_documented_20260902", "Not yet documented"))))))))), !selectedTeacher ? /* @__PURE__ */ React.createElement("div", { className: "ae-card ae-empty" }, t("educator_evaluation.choose_an_educator_to_view_trends_1imi3bc", "Choose an educator to view trends.")) : /* @__PURE__ */ React.createElement("div", { className: "ae-grid" }, /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12" }, /* @__PURE__ */ React.createElement("div", { className: "ae-record-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", null, selectedTeacher.name, " ", t("educator_evaluation.longitudinal_snapshot_d4cp8i", "· longitudinal snapshot")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, workspace.config.academicYear, " ", t("educator_evaluation.current_workflow_plus_separately_reported_immutable_prior__1m7qy4f", "current workflow plus separately reported immutable prior-cycle releases."))), /* @__PURE__ */ React.createElement(AeStatus, { status: aeTeacherStatus(selectedTeacher) })), /* @__PURE__ */ React.createElement("div", { className: "ae-grid", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "ae-span-4 ae-stat" }, /* @__PURE__ */ React.createElement("strong", null, walkthroughs.length), /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.published_walkthroughs_1q06270", "published walkthroughs"))), /* @__PURE__ */ React.createElement("div", { className: "ae-span-4 ae-stat" }, /* @__PURE__ */ React.createElement("strong", null, observations.length), /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.finalized_formal_observations_18xzo0n", "finalized formal observations"))), /* @__PURE__ */ React.createElement("div", { className: "ae-span-4 ae-stat" }, /* @__PURE__ */ React.createElement("strong", null, snapshots.length), /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.released_cycle_snapshots_in_range_dm6l8l", "released cycle snapshots in range")))), medianAck !== null && /* @__PURE__ */ React.createElement("p", { className: "ae-sub", style: { marginTop: 10 } }, t("educator_evaluation.median_walkthrough_acknowledgment_y39z4o", "Median walkthrough acknowledgment:"), " ", medianAck < 48 ? medianAck.toFixed(1) + " hours" : (medianAck / 24).toFixed(1) + " days", " (n=", ackHours.length, ").")), /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12" }, /* @__PURE__ */ React.createElement("h3", null, t("educator_evaluation.annual_cycle_releases_1scqmxm", "Annual cycle releases")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.all_factor_final_evaluation_scores_are_listed_separately_a_9tzy7w", "All-factor final evaluation scores are listed separately and are not mixed into formal-observation O&P trajectories or peer comparisons.")), snapshots.length ? /* @__PURE__ */ React.createElement("div", { className: "ae-table-wrap", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("table", { className: "ae-table" }, /* @__PURE__ */ React.createElement("caption", { className: "ae-live" }, t("educator_evaluation.annual_cycle_release_scores_mlxmco", "Annual cycle release scores")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.academic_year_ud1477", "Academic year")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.released_i33a4u", "Released")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.final_evaluation_score_fs97kd", "Final evaluation score")))), /* @__PURE__ */ React.createElement("tbody", null, snapshots.map((snapshot) => /* @__PURE__ */ React.createElement("tr", { key: snapshot.id }, /* @__PURE__ */ React.createElement("td", null, snapshot.academicYear || t("educator_evaluation.unspecified_year_19ggyad", "Unspecified year")), /* @__PURE__ */ React.createElement("td", null, aeDate(snapshot.finalizedAt)), /* @__PURE__ */ React.createElement("td", null, snapshot.finalScore == null ? t("educator_evaluation.not_recorded_wm31ze", "Not recorded") : Number(snapshot.finalScore).toFixed(2))))))) : /* @__PURE__ */ React.createElement("div", { className: "ae-empty" }, t("educator_evaluation.no_released_annual_cycle_snapshots_in_this_date_range_tvl8b3", "No released annual cycle snapshots in this date range."))), /* @__PURE__ */ React.createElement("section", { className: "ae-card " + (isEvaluator ? "ae-span-8" : "ae-span-12") }, /* @__PURE__ */ React.createElement("h3", null, "Formal-observation ", metricLabels[metric], " ", t("educator_evaluation.over_time_11z83bw", "over time")), /* @__PURE__ */ React.createElement(AeTrendChart, { points, metric, label: metricLabels[metric] })), isEvaluator && /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-4" }, /* @__PURE__ */ React.createElement("h3", null, t("educator_evaluation.de_identified_peer_context_1j1515n", "De-identified peer context")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.same_building_and_employee_type_selected_educator_excluded_1uj3nez", "Same building and employee type; selected educator excluded. Each peer contributes one mean across finalized formal observations before the cohort median.")), isRemote && remoteCohort.status === "loading" ? /* @__PURE__ */ React.createElement("div", { className: "ae-note", role: "status", style: { marginTop: 12 } }, t("educator_evaluation.loading_permission_filtered_district_aggregate_bx5efr", "Loading permission-filtered district aggregate…")) : isRemote && remoteCohort.status === "error" ? /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn", role: "alert", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.peer_context_unavailable_1cc8pua", "Peer context unavailable.")), /* @__PURE__ */ React.createElement("br", null), remoteCohort.error, " ", t("educator_evaluation.no_local_approximation_is_shown_1gsl25z", "No local approximation is shown.")) : cohort.suppressed ? /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.suppressed_1k7oc63", "Suppressed.")), /* @__PURE__ */ React.createElement("br", null), t("educator_evaluation.fewer_than_1ofnht9", "Fewer than"), " ", cohort.minimum || AE_MIN_TREND_COHORT, " ", t("educator_evaluation.eligible_peers_contributed_to_this_metric_and_date_range_t_nlvriq", "eligible peers contributed to this metric and date range. The exact small-group count is not exposed.")) : /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement("div", { className: "ae-stat" }, /* @__PURE__ */ React.createElement("strong", null, cohort.selectedMean == null ? t("educator_evaluation.not_available_20260823", "Not available") : cohort.selectedMean.toFixed(2)), /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.selected_educator_mean_11m067i", "selected educator mean"))), /* @__PURE__ */ React.createElement("div", { className: "ae-stat", style: { marginTop: 10, borderLeftColor: "#0f766e" } }, /* @__PURE__ */ React.createElement("strong", null, cohort.median.toFixed(2)), /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.peer_cohort_median_n_1torzie", "peer cohort median · n="), cohort.peerCount))), /* @__PURE__ */ React.createElement("div", { className: "ae-note", style: { marginTop: 14 } }, t("educator_evaluation.no_ranking_percentile_peer_names_automated_judgment_or_per_1oxvxgr", "No ranking, percentile, peer names, automated judgment, or personnel recommendation is produced."))), /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12" }, /* @__PURE__ */ React.createElement("h3", null, t("educator_evaluation.observation_activity_by_month_17bprax", "Observation activity by month")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.volume_indicates_documentation_activity_not_teaching_quali_1m93vd3", "Volume indicates documentation activity, not teaching quality.")), months.length ? /* @__PURE__ */ React.createElement("div", { className: "ae-table-wrap", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("table", { className: "ae-table" }, /* @__PURE__ */ React.createElement("caption", { className: "ae-live" }, t("educator_evaluation.monthly_observation_activity_7hnyo1", "Monthly observation activity")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.month_1aqporp", "Month")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.published_walkthroughs_recj3w", "Published walkthroughs")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.finalized_formal_observations_vwek1j", "Finalized formal observations")))), /* @__PURE__ */ React.createElement("tbody", null, months.map((month) => /* @__PURE__ */ React.createElement("tr", { key: month }, /* @__PURE__ */ React.createElement("th", { scope: "row" }, month), /* @__PURE__ */ React.createElement("td", null, activity[month].walkthroughs), /* @__PURE__ */ React.createElement("td", null, activity[month].formals)))))) : /* @__PURE__ */ React.createElement("div", { className: "ae-empty" }, t("educator_evaluation.no_published_finalized_observation_activity_in_this_date_r_zsf3ug", "No published/finalized observation activity in this date range.")))));
+  return /* @__PURE__ */ React.createElement("div", { className: "ae-page" }, /* @__PURE__ */ React.createElement("div", { className: "ae-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", null, isEvaluator ? t("educator_evaluation.teacher_trends_and_cohort_context_np8xyk", "Teacher trends and cohort context") : t("educator_evaluation.my_trends_1vjgzgd", "My trends")), /* @__PURE__ */ React.createElement("p", null, t("educator_evaluation.finalized_formal_observation_ratings_and_workflow_activity_170pnh7", "Finalized formal-observation ratings and workflow activity over time. Annual cycle releases are reported separately. Evidence text, comments, and rationales are never aggregated.")))), /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn", style: { marginBottom: 16 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.privacy_aware_aggregate_not_ferpa_certification_usil4c", "Privacy-aware aggregate, not FERPA certification.")), " ", t("educator_evaluation.formal_observation_cohort_values_appear_only_when_at_least_16kwdtd", "Formal-observation cohort values appear only when at least"), " ", AE_MIN_TREND_COHORT, " ", t("educator_evaluation.eligible_peers_contribute_small_groups_are_suppressed_resu_5j2kwi", "eligible peers contribute; small groups are suppressed. Results are descriptive and must not be the sole basis for personnel decisions."), " ", isRemote ? t("educator_evaluation.district_authorization_retention_and_employment_policy_req_4mwnei", "District authorization, retention, and employment-policy requirements still apply.") : t("educator_evaluation.on_this_device_cohort_context_reflects_only_this_workspace_iszwmv", "On this device, cohort context reflects only this workspace; the district portal adds authenticated, permission-filtered comparisons.")), /* @__PURE__ */ React.createElement("section", { className: "ae-card", style: { marginBottom: 16 } }, /* @__PURE__ */ React.createElement("fieldset", { style: { border: 0, padding: 0, margin: 0 } }, /* @__PURE__ */ React.createElement("legend", { style: { fontWeight: 850, marginBottom: 10 } }, t("educator_evaluation.trend_filters_17ntchv", "Trend filters")), /* @__PURE__ */ React.createElement("div", { className: "ae-form-grid" }, isEvaluator && /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.educator_8c1rq4", "Educator")), /* @__PURE__ */ React.createElement("select", { className: "ae-select", value: selectedTeacher ? selectedTeacher.id : "", onChange: (event) => setSelectedTeacherId(event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, t("educator_evaluation.choose_an_educator_1l6d6bg", "Choose an educator")), workspace.teachers.filter((teacher) => teacher.active !== false).map((teacher) => /* @__PURE__ */ React.createElement("option", { key: teacher.id, value: teacher.id }, teacher.name, " · ", teacher.code)))), /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.metric_1esenmp", "Metric")), /* @__PURE__ */ React.createElement("select", { className: "ae-select", value: metric, onChange: (event) => setMetric(event.target.value) }, Object.keys(metricLabels).map((key) => /* @__PURE__ */ React.createElement("option", { key, value: key }, metricLabels[key])))), /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.from_6s9hn9", "From")), /* @__PURE__ */ React.createElement("input", { className: "ae-input", type: "date", value: from, onChange: (event) => setFrom(event.target.value) })), /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, "To"), /* @__PURE__ */ React.createElement("input", { className: "ae-input", type: "date", value: to, min: from || void 0, onChange: (event) => setTo(event.target.value) }))))), isEvaluator && coverageRows.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "ae-grid", style: { marginBottom: 16 } }, /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-7", "aria-labelledby": "ae-coverage-title" }, /* @__PURE__ */ React.createElement("h3", { id: "ae-coverage-title" }, t("educator_evaluation.walkthrough_coverage_across_roster_20260823", "Walkthrough coverage across the roster")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.coverage_framing_20260823", "Published walkthroughs in the selected date range, sorted with the longest-unvisited educators first. A planning aid for spreading visits, not a judgment about anyone.")), /* @__PURE__ */ React.createElement("div", { className: "ae-table-wrap", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("table", { className: "ae-table" }, /* @__PURE__ */ React.createElement("caption", { className: "ae-live" }, t("educator_evaluation.coverage_caption_20260823", "Walkthrough coverage by educator")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.educator_8c1rq4", "Educator")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.published_visits_20260823", "Published visits")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.last_visit_20260823", "Last visit")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.days_since_20260823", "Days since")))), /* @__PURE__ */ React.createElement("tbody", null, coverageRows.map((row) => /* @__PURE__ */ React.createElement("tr", { key: row.teacher.id }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-row-btn", onClick: () => setSelectedTeacherId(row.teacher.id) }, row.teacher.name), /* @__PURE__ */ React.createElement("br", null), /* @__PURE__ */ React.createElement("span", { className: "ae-sub" }, row.teacher.code)), /* @__PURE__ */ React.createElement("td", null, row.count), /* @__PURE__ */ React.createElement("td", null, row.last ? aeDate(row.last) : t("educator_evaluation.no_published_visits_yet_20260823", "No published visits yet")), /* @__PURE__ */ React.createElement("td", null, row.daysSince == null ? "" : row.daysSince))))))), /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-5", "aria-labelledby": "ae-domain-coverage-title" }, /* @__PURE__ */ React.createElement("h3", { id: "ae-domain-coverage-title" }, t("educator_evaluation.documented_evidence_by_domain_20260823", "Documented evidence by domain")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.domain_coverage_framing_20260823", "Evidence-tag counts on published records across the active roster. A domain nobody documents is a professional-development planning signal, never a rating.")), domainCoverage.map((entry) => /* @__PURE__ */ React.createElement("div", { className: "ae-stat", key: entry.domain.id, style: { marginTop: 10, borderLeftColor: entry.domain.color } }, /* @__PURE__ */ React.createElement("strong", null, entry.total), /* @__PURE__ */ React.createElement("span", null, entry.domain.code, ". ", aeRubricDisplayLabel(entry.domain.label), entry.missing.length ? t("educator_evaluation.no_evidence_tagged_yet_20260823", " · no evidence tagged yet: ") + entry.missing.join(", ") : t("educator_evaluation.every_component_tagged_20260823", " · every component has tagged evidence"))))), /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12", "aria-labelledby": "ae-component-heat-title" }, /* @__PURE__ */ React.createElement("h3", { id: "ae-component-heat-title" }, t("educator_evaluation.documented_evidence_by_component_20260902", "Documented evidence by component")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.component_heat_help_20260902", "Published records that tag each component, and how many educators they cover, across the active roster and date range. Counts only: this shows where evidence has and has not been documented, never a rating.")), componentHeat.map((row) => /* @__PURE__ */ React.createElement("div", { key: row.domain.id, style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "ae-legend-label" }, row.domain.code, ". ", aeRubricDisplayLabel(row.domain.label)), /* @__PURE__ */ React.createElement("div", { className: "ae-heat-row", role: "list" }, row.cells.map((cell) => /* @__PURE__ */ React.createElement("div", { key: cell.code, role: "listitem", className: "ae-heat-cell " + (cell.count >= 3 ? "ae-heat-3" : cell.count === 2 ? "ae-heat-2" : cell.count === 1 ? "ae-heat-1" : "ae-heat-0"), title: cell.label, "data-help-key": "ae_component_heat_cell" }, /* @__PURE__ */ React.createElement("strong", null, cell.code), /* @__PURE__ */ React.createElement("span", null, cell.count ? cell.count + (cell.count === 1 ? t("educator_evaluation.record_singular_20260902", " record") : t("educator_evaluation.records_plural_20260902", " records")) + " · " + cell.educators + (cell.educators === 1 ? t("educator_evaluation.educator_singular_20260902", " educator") : t("educator_evaluation.educators_plural_20260902", " educators")) : t("educator_evaluation.not_yet_documented_20260902", "Not yet documented"))))))))), !selectedTeacher ? /* @__PURE__ */ React.createElement("div", { className: "ae-card ae-empty" }, t("educator_evaluation.choose_an_educator_to_view_trends_1imi3bc", "Choose an educator to view trends.")) : /* @__PURE__ */ React.createElement("div", { className: "ae-grid" }, /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12" }, /* @__PURE__ */ React.createElement("div", { className: "ae-record-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", null, selectedTeacher.name, " ", t("educator_evaluation.longitudinal_snapshot_d4cp8i", "· longitudinal snapshot")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, workspace.config.academicYear, " ", t("educator_evaluation.current_workflow_plus_separately_reported_immutable_prior__1m7qy4f", "current workflow plus separately reported immutable prior-cycle releases."))), /* @__PURE__ */ React.createElement(AeStatus, { status: aeTeacherStatus(selectedTeacher) })), /* @__PURE__ */ React.createElement("div", { className: "ae-grid", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { className: "ae-span-4 ae-stat" }, /* @__PURE__ */ React.createElement("strong", null, walkthroughs.length), /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.published_walkthroughs_1q06270", "published walkthroughs"))), /* @__PURE__ */ React.createElement("div", { className: "ae-span-4 ae-stat" }, /* @__PURE__ */ React.createElement("strong", null, observations.length), /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.finalized_formal_observations_18xzo0n", "finalized formal observations"))), /* @__PURE__ */ React.createElement("div", { className: "ae-span-4 ae-stat" }, /* @__PURE__ */ React.createElement("strong", null, snapshots.length), /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.released_cycle_snapshots_in_range_dm6l8l", "released cycle snapshots in range")))), medianAck !== null && /* @__PURE__ */ React.createElement("p", { className: "ae-sub", style: { marginTop: 10 } }, t("educator_evaluation.median_walkthrough_acknowledgment_y39z4o", "Median walkthrough acknowledgment:"), " ", medianAck < 48 ? medianAck.toFixed(1) + " hours" : (medianAck / 24).toFixed(1) + " days", " (n=", ackHours.length, ").")), /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12" }, /* @__PURE__ */ React.createElement("h3", null, t("educator_evaluation.annual_cycle_releases_1scqmxm", "Annual cycle releases")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.all_factor_final_evaluation_scores_are_listed_separately_a_9tzy7w", "All-factor final evaluation scores are listed separately and are not mixed into formal-observation O&P trajectories or peer comparisons.")), snapshots.length ? /* @__PURE__ */ React.createElement("div", { className: "ae-table-wrap", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("table", { className: "ae-table" }, /* @__PURE__ */ React.createElement("caption", { className: "ae-live" }, t("educator_evaluation.annual_cycle_release_scores_mlxmco", "Annual cycle release scores")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.academic_year_ud1477", "Academic year")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.released_i33a4u", "Released")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.final_evaluation_score_fs97kd", "Final evaluation score")))), /* @__PURE__ */ React.createElement("tbody", null, snapshots.map((snapshot) => /* @__PURE__ */ React.createElement("tr", { key: snapshot.id }, /* @__PURE__ */ React.createElement("td", null, snapshot.academicYear || t("educator_evaluation.unspecified_year_19ggyad", "Unspecified year")), /* @__PURE__ */ React.createElement("td", null, aeDate(snapshot.finalizedAt)), /* @__PURE__ */ React.createElement("td", null, snapshot.finalScore == null ? t("educator_evaluation.not_recorded_wm31ze", "Not recorded") : Number(snapshot.finalScore).toFixed(2))))))) : /* @__PURE__ */ React.createElement("div", { className: "ae-empty" }, t("educator_evaluation.no_released_annual_cycle_snapshots_in_this_date_range_tvl8b3", "No released annual cycle snapshots in this date range."))), /* @__PURE__ */ React.createElement("section", { className: "ae-card " + (isEvaluator ? "ae-span-8" : "ae-span-12") }, /* @__PURE__ */ React.createElement("h3", null, "Formal-observation ", metricLabels[metric], " ", t("educator_evaluation.over_time_11z83bw", "over time")), /* @__PURE__ */ React.createElement(AeTrendChart, { points, metric, label: metricLabels[metric] })), isEvaluator && /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-4" }, /* @__PURE__ */ React.createElement("h3", null, t("educator_evaluation.de_identified_peer_context_1j1515n", "De-identified peer context")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.same_building_and_employee_type_selected_educator_excluded_1uj3nez", "Same building and employee type; selected educator excluded. Each peer contributes one mean across finalized formal observations before the cohort median.")), isRemote && remoteCohort.status === "loading" ? /* @__PURE__ */ React.createElement("div", { className: "ae-note", role: "status", style: { marginTop: 12 } }, t("educator_evaluation.loading_permission_filtered_district_aggregate_bx5efr", "Loading permission-filtered district aggregate…")) : isRemote && remoteCohort.status === "error" ? /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn", role: "alert", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.peer_context_unavailable_1cc8pua", "Peer context unavailable.")), /* @__PURE__ */ React.createElement("br", null), remoteCohort.error, " ", t("educator_evaluation.no_local_approximation_is_shown_1gsl25z", "No local approximation is shown.")) : cohort.suppressed ? /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, t("educator_evaluation.suppressed_1k7oc63", "Suppressed.")), /* @__PURE__ */ React.createElement("br", null), t("educator_evaluation.fewer_than_1ofnht9", "Fewer than"), " ", cohort.minimum || AE_MIN_TREND_COHORT, " ", t("educator_evaluation.eligible_peers_contributed_to_this_metric_and_date_range_t_nlvriq", "eligible peers contributed to this metric and date range. The exact small-group count is not exposed.")) : /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement("div", { className: "ae-stat" }, /* @__PURE__ */ React.createElement("strong", null, cohort.selectedMean != null && Number.isFinite(Number(cohort.selectedMean)) ? Number(cohort.selectedMean).toFixed(2) : t("educator_evaluation.not_available_20260823", "Not available")), /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.selected_educator_mean_11m067i", "selected educator mean"))), /* @__PURE__ */ React.createElement("div", { className: "ae-stat", style: { marginTop: 10, borderLeftColor: "#0f766e" } }, /* @__PURE__ */ React.createElement("strong", null, cohort.median != null && Number.isFinite(Number(cohort.median)) ? Number(cohort.median).toFixed(2) : t("educator_evaluation.not_available_20260823", "Not available")), /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.peer_cohort_median_n_1torzie", "peer cohort median · n="), cohort.peerCount))), /* @__PURE__ */ React.createElement("div", { className: "ae-note", style: { marginTop: 14 } }, t("educator_evaluation.no_ranking_percentile_peer_names_automated_judgment_or_per_1oxvxgr", "No ranking, percentile, peer names, automated judgment, or personnel recommendation is produced."))), /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12" }, /* @__PURE__ */ React.createElement("h3", null, t("educator_evaluation.observation_activity_by_month_17bprax", "Observation activity by month")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, t("educator_evaluation.volume_indicates_documentation_activity_not_teaching_quali_1m93vd3", "Volume indicates documentation activity, not teaching quality.")), months.length ? /* @__PURE__ */ React.createElement("div", { className: "ae-table-wrap", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("table", { className: "ae-table" }, /* @__PURE__ */ React.createElement("caption", { className: "ae-live" }, t("educator_evaluation.monthly_observation_activity_7hnyo1", "Monthly observation activity")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.month_1aqporp", "Month")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.published_walkthroughs_recj3w", "Published walkthroughs")), /* @__PURE__ */ React.createElement("th", { scope: "col" }, t("educator_evaluation.finalized_formal_observations_vwek1j", "Finalized formal observations")))), /* @__PURE__ */ React.createElement("tbody", null, months.map((month) => /* @__PURE__ */ React.createElement("tr", { key: month }, /* @__PURE__ */ React.createElement("th", { scope: "row" }, month), /* @__PURE__ */ React.createElement("td", null, activity[month].walkthroughs), /* @__PURE__ */ React.createElement("td", null, activity[month].formals)))))) : /* @__PURE__ */ React.createElement("div", { className: "ae-empty" }, t("educator_evaluation.no_published_finalized_observation_activity_in_this_date_r_zsf3ug", "No published/finalized observation activity in this date range.")))));
 }
 function aeParseRosterPaste(text) {
   return String(text || "").split(/\r?\n/).filter((line) => line.trim()).map((line) => {
@@ -3273,7 +3394,7 @@ function AeStaffProfileEditor({ teacher, workspace, role, isRemote, updateStaffP
   const saved = aeReviewSnapshot(savedProfile);
   const key = JSON.stringify(["staff-profile", workspace.config.academicYear, teacher.id, role]);
   const { text, setText, clear, keepDraft, dirty, changed } = aeUseTextDraft(key, saved, "Profile · " + teacher.name + " · " + teacher.code);
-  const profile = JSON.parse(text);
+  const profile = aeSafeJsonParse(text, savedProfile);
   const [error, setError] = React.useState(null);
   const [savedNotice, setSavedNotice] = React.useState("");
   const formRef = React.useRef(null);
@@ -3440,11 +3561,25 @@ function aeWalkthroughValidation(value, teachers) {
   if (draft.published && draft.privacyChecked !== true) return { field: "privacyChecked", message: "Review the notes and confirm that student-identifying information has been removed before publishing." };
   return null;
 }
+const AE_WALK_DRAFT_FIELDS = ["teacherId", "date", "startedAt", "durationMin", "announced", "lessonPhase", "subject", "evidence", "interpretation", "componentTags", "privacyChecked"];
+function aePickWalkDraft(blankDraft, saved) {
+  const out = Object.assign({}, blankDraft);
+  if (!saved || typeof saved !== "object" || Array.isArray(saved)) return out;
+  AE_WALK_DRAFT_FIELDS.forEach((field) => {
+    if (!aeHasOwn(saved, field)) return;
+    if (field === "componentTags") out.componentTags = Array.isArray(saved.componentTags) ? saved.componentTags.filter((v) => typeof v === "string").slice(0, 40) : [];
+    else if (field === "privacyChecked") out.privacyChecked = saved.privacyChecked === true;
+    else out[field] = String(saved[field] == null ? "" : saved[field]);
+  });
+  return out;
+}
 function aeHasWalkthroughDraft() {
   try {
-    const raw = sessionStorage.getItem(AE_WALK_DRAFT_KEY);
+    const backend = aeVaultBackend();
+    if (backend.mode === "locked") return false;
+    const raw = backend.mode === "vault" ? backend.storage.getItem(AE_WALK_DRAFT_KEY) : sessionStorage.getItem(AE_WALK_DRAFT_KEY);
     if (!raw) return false;
-    const saved = JSON.parse(raw);
+    const saved = aeSafeJsonParse(raw, null);
     return !!(saved && typeof saved === "object" && aeMeaningfulWalkthroughDraft(saved));
   } catch (_) {
     return false;
@@ -3474,27 +3609,29 @@ function aePendingWalkthroughEdits(drafts, academicYear) {
 function AeWalkthroughForm({ academicYear = "", teachers, selectedTeacherId, createWalkthrough, editingRecord = null, currentRecord = editingRecord, updateWalkthroughDraft = null, requestActionReview, addTeacher = null, canAddStaff = false, onCreated }) {
   const blank = () => ({ teacherId: selectedTeacherId || teachers[0] && teachers[0].id || "", date: aeToday(), startedAt: "", durationMin: "8", announced: "unannounced", lessonPhase: "middle", subject: "", evidence: "", interpretation: "", componentTags: [], privacyChecked: false });
   const editRecovery = aeUseTextDraft(aeWalkthroughEditKey(academicYear, editingRecord?.id || ""), aeReviewSnapshot(currentRecord || editingRecord || {}), "Walkthrough edits · " + ((teachers.find((teacher) => teacher.id === editingRecord?.teacherId) || {}).name || editingRecord?.teacherId || "") + " · " + (editingRecord?.date || ""));
-  const baseRecord = editingRecord ? JSON.parse(editRecovery.base) : null;
+  const baseRecord = editingRecord ? aeSafeJsonParse(editRecovery.base, null) : null;
   const [saveError, setSaveError] = React.useState("");
   const recordChanged = !!baseRecord && (!!currentRecord?.publishedAt || aeWalkthroughSnapshot(baseRecord) !== aeWalkthroughSnapshot(currentRecord) || !teachers.some((teacher) => teacher.id === baseRecord.teacherId && !aeCycleFinalized(teacher)));
   const canRebase = !!currentRecord && !currentRecord.publishedAt && currentRecord.teacherId === baseRecord?.teacherId && teachers.some((teacher) => teacher.id === currentRecord.teacherId && !aeCycleFinalized(teacher));
   const [newDraft, setNewDraft] = React.useState(() => {
     if (editingRecord) return blank();
     try {
-      const raw = sessionStorage.getItem(AE_WALK_DRAFT_KEY);
+      const backend = aeVaultBackend();
+      if (backend.mode === "locked") return blank();
+      const raw = backend.mode === "vault" ? backend.storage.getItem(AE_WALK_DRAFT_KEY) : sessionStorage.getItem(AE_WALK_DRAFT_KEY);
       if (raw) {
-        const saved = JSON.parse(raw);
+        const saved = aeSafeJsonParse(raw, null);
         if (saved && typeof saved === "object" && typeof saved.evidence === "string") {
-          if (!Array.isArray(saved.componentTags)) saved.componentTags = [];
-          if (saved.teacherId && !teachers.some((teacher) => teacher.id === saved.teacherId)) saved.teacherId = "";
-          return Object.assign(blank(), saved);
+          const picked = aePickWalkDraft(blank(), saved);
+          if (picked.teacherId && !teachers.some((teacher) => teacher.id === picked.teacherId)) picked.teacherId = "";
+          return picked;
         }
       }
     } catch (_) {
     }
     return blank();
   });
-  const draft = editingRecord ? Object.assign(blank(), JSON.parse(editRecovery.text)) : newDraft;
+  const draft = editingRecord ? aePickWalkDraft(blank(), aeSafeJsonParse(editRecovery.text, null)) : newDraft;
   const setDraft = (update) => {
     const next = typeof update === "function" ? update(draft) : update;
     if (editingRecord) editRecovery.setText(aeReviewSnapshot(next));
@@ -3503,6 +3640,17 @@ function AeWalkthroughForm({ academicYear = "", teachers, selectedTeacherId, cre
   React.useEffect(() => {
     try {
       if (editingRecord) return;
+      const backend = aeVaultBackend();
+      if (backend.mode === "locked") return;
+      if (backend.mode === "vault") {
+        try {
+          sessionStorage.removeItem(AE_WALK_DRAFT_KEY);
+        } catch (_) {
+        }
+        if (aeMeaningfulWalkthroughDraft(draft)) backend.storage.setItem(AE_WALK_DRAFT_KEY, JSON.stringify(draft));
+        else backend.storage.removeItem(AE_WALK_DRAFT_KEY);
+        return;
+      }
       if (aeMeaningfulWalkthroughDraft(draft)) sessionStorage.setItem(AE_WALK_DRAFT_KEY, JSON.stringify(draft));
       else sessionStorage.removeItem(AE_WALK_DRAFT_KEY);
     } catch (_) {
@@ -3552,6 +3700,8 @@ function AeWalkthroughForm({ academicYear = "", teachers, selectedTeacherId, cre
     else setDraft(blank());
     if (!editingRecord) {
       try {
+        const backend = aeVaultBackend();
+        if (backend.mode === "vault") backend.storage.removeItem(AE_WALK_DRAFT_KEY);
         sessionStorage.removeItem(AE_WALK_DRAFT_KEY);
       } catch (_) {
       }
@@ -3949,7 +4099,7 @@ function AeCopyShareSource({ name, label, onCopied }) {
           } catch (_) {
           }
         }, 1e4);
-        const response = await fetch(url, ctrl ? { credentials: "omit", signal: ctrl.signal } : { credentials: "omit" });
+        const response = await fetch(url, ctrl ? { credentials: "omit", referrerPolicy: "no-referrer", signal: ctrl.signal } : { credentials: "omit", referrerPolicy: "no-referrer" });
         if (response.ok) {
           source = await response.text();
           break;
@@ -3959,8 +4109,8 @@ function AeCopyShareSource({ name, label, onCopied }) {
         if (timer) clearTimeout(timer);
       }
     }
-    const expected = signatures[name] || [];
-    if (!source || !expected.every((token) => source.includes(token))) return "";
+    const expected = aeHasOwn(signatures, name) ? signatures[name] : null;
+    if (!source || !expected || !expected.length || !expected.every((token) => source.includes(token))) return "";
     sourceRef.current = source;
     return source;
   }, [name]);
@@ -4139,6 +4289,8 @@ function AeSimulationStudio({ workspace, onApply }) {
       return;
     }
     const reader = new FileReader();
+    reader.onerror = () => setMessage(t("educator_evaluation.scenario_import_failed_20260902", "That file could not be read as scenarios."));
+    reader.onabort = () => setMessage(t("educator_evaluation.scenario_import_failed_20260902", "That file could not be read as scenarios."));
     reader.onload = () => {
       try {
         const rawText = String(reader.result || "");
@@ -4146,11 +4298,11 @@ function AeSimulationStudio({ workspace, onApply }) {
         const parsed = JSON.parse(rawText, (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
         const list = (Array.isArray(parsed) ? parsed : parsed && Array.isArray(parsed.scenarios) ? parsed.scenarios : []).map(aeSanitizeScenario).filter(Boolean);
         const importedTour = parsed && !Array.isArray(parsed) ? aeSanitizeTourSteps(parsed.tour) : null;
-        if (tourSteps && aeWriteTourOverride(tourSteps)) {
+        if (importedTour && aeWriteTourOverride(importedTour)) {
           setTourCustom(true);
-          setTourSteps(tourSteps.map((step) => ({ ...step })));
+          setTourSteps(importedTour.map((step) => ({ ...step })));
         }
-        if (!list.length && tourSteps) {
+        if (!list.length && importedTour) {
           setMessage(t("educator_evaluation.tour_imported_20260902", "Tour script imported."));
           return;
         }
@@ -4222,7 +4374,7 @@ function AeSimulationStudio({ workspace, onApply }) {
 function AeShareQr({ isRemote, standalone, portalUrl }) {
   const loc = typeof window !== "undefined" ? window.location : null;
   const webOrigin = !!loc && /^https?:$/.test(loc.protocol || "");
-  const payload = isRemote ? aeString(portalUrl, 400, "") : standalone && webOrigin && /educator-evaluation/.test(loc.pathname || "") ? loc.origin + loc.pathname : "https://alloflow-cdn.pages.dev/educator-evaluation";
+  const payload = isRemote ? aeSafePortalShareUrl(portalUrl) : standalone && webOrigin && /educator-evaluation/.test(loc.pathname || "") ? aeSafePortalShareUrl(loc.origin + loc.pathname) || "https://alloflow-cdn.pages.dev/educator-evaluation" : "https://alloflow-cdn.pages.dev/educator-evaluation";
   const [svg, setSvg] = React.useState("");
   const [copied, setCopied] = React.useState(false);
   const [copyError, setCopyError] = React.useState("");
@@ -4239,9 +4391,10 @@ function AeShareQr({ isRemote, standalone, portalUrl }) {
           const qr = window.qrcode(0, "M");
           qr.addData(payload);
           qr.make();
-          markup = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true, title: t("educator_evaluation.educator_evaluation_19spn2m", "Educator Evaluation") });
+          markup = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true, title: String(t("educator_evaluation.educator_evaluation_19spn2m", "Educator Evaluation")).replace(/[<>]/g, "") });
         }
-        if (!cancelled) setSvg(markup);
+        const safeSvg = aeSanitizeQrSvg(markup);
+        if (!cancelled) setSvg(safeSvg);
       } catch (err) {
         if (!cancelled) setSvg("");
       }
@@ -5903,7 +6056,7 @@ function EducatorEvaluationPanel(props) {
     if (next.config.academicYear !== base.config.academicYear && draftChangeBlocked()) return false;
     const durableAudit = audit && (recordAudit || !["DRAFT_SAVED", "PROFILE_UPDATED", "CONFIG_UPDATED"].includes(audit.event));
     if (durableAudit && !isRemote) {
-      aeAuditEvent(next, audit, role === "teacher" ? (next.teachers.find((teacher) => teacher.id === (audit.teacherId || selectedTeacherId)) || {}).name || t("educator_evaluation.teacher_7cu1px", "Teacher") : next.config.evaluatorName || t("educator_evaluation.evaluator_125q2ii", "Evaluator"), role === "teacher" ? t("educator_evaluation.teacher_7cu1px", "Teacher") : t("educator_evaluation.evaluator_125q2ii", "Evaluator"));
+      aeAuditEvent(next, audit, role === "teacher" ? (next.teachers.find((teacher) => teacher.id === (audit.teacherId || selectedTeacherId)) || {}).name || t("educator_evaluation.teacher_7cu1px", "Teacher") : next.config.evaluatorName || t("educator_evaluation.evaluator_125q2ii", "Evaluator"), role === "teacher" ? "Teacher" : "Evaluator");
     }
     workspaceRef.current = next;
     setWorkspace(next);
@@ -6287,13 +6440,14 @@ function EducatorEvaluationPanel(props) {
   const addComment = ({ recordType, recordId, teacherId, text }) => {
     if (isTeacherCycleClosed(teacherId)) return false;
     const current = workspaceRef.current;
-    const collection = { walkthrough: current.walkthroughs, formal_observation: current.observations, spm: current.spms }[recordType];
+    const commentTargets = { walkthrough: current.walkthroughs, formal_observation: current.observations, spm: current.spms };
+    const collection = aeHasOwn(commentTargets, recordType) ? commentTargets[recordType] : null;
     const record = Array.isArray(collection) && collection.find((item) => item.id === recordId && item.teacherId === teacherId);
     const commentText = typeof text === "string" ? text.trim() : "";
     if (!current.teachers.some((teacher) => teacher.id === teacherId) || !record || recordType === "walkthrough" && !record.publishedAt || !commentText || commentText.length > 3e3) return false;
     text = commentText;
     return commit((next) => {
-      next.comments.push({ id: aeId("comment"), recordType, recordId, teacherId, text, role: role === "teacher" ? t("educator_evaluation.teacher_7cu1px", "Teacher") : t("educator_evaluation.evaluator_125q2ii", "Evaluator"), author: role === "teacher" ? (next.teachers.find((teacher) => teacher.id === teacherId) || {}).name || t("educator_evaluation.teacher_7cu1px", "Teacher") : next.config.evaluatorName, at: aeNow(), version: 1 });
+      next.comments.push({ id: aeId("comment"), recordType, recordId, teacherId, text, role: role === "teacher" ? "Teacher" : "Evaluator", author: role === "teacher" ? (next.teachers.find((teacher) => teacher.id === teacherId) || {}).name || t("educator_evaluation.teacher_7cu1px", "Teacher") : next.config.evaluatorName, at: aeNow(), version: 1 });
     }, { teacherId, event: "COMMENTED", summary: t("educator_evaluation.shared_comment_posted_1v4vgr8", "Shared comment posted"), entityType: recordType, entityId: recordId }, "Comment posted");
   };
   const updateConfig = (field, value) => commit((next) => {
@@ -6483,7 +6637,7 @@ function EducatorEvaluationPanel(props) {
       notify(t("educator_evaluation.no_open_cycles_with_due_dates_20260823", "No open cycles with due dates to export. Add cycle due dates in Staff first."), "error");
       return;
     }
-    const escapeIcsText = (value) => String(value).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+    const escapeIcsText = (value) => String(value).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r\n|\r|\n/g, "\\n").replace(/[\u0000-\u001f\u007f]/g, "");
     const stamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
     const events = rows.map((teacher) => {
       const dayStart = teacher.dueDate.replace(/-/g, "");
@@ -6511,11 +6665,11 @@ function EducatorEvaluationPanel(props) {
     const observations = workspace.observations.filter((item) => item.teacherId === selectedTeacher.id);
     const publishedObs = observations.filter((item) => item.evidencePublishedAt);
     const spm = workspace.spms.find((item) => item.teacherId === selectedTeacher.id);
-    const componentLookup = {};
+    const componentLookup = /* @__PURE__ */ Object.create(null);
     AE_DOMAINS.forEach((domain) => (AE_ACTIVE_FW.components && AE_ACTIVE_FW.components[domain.id] || domain.components).forEach(([code, label]) => {
       componentLookup[code] = { label: aeRubricDisplayLabel(label), domain: aeRubricDisplayLabel(domain.label) };
     }));
-    const tagCounts = {};
+    const tagCounts = /* @__PURE__ */ Object.create(null);
     walks.concat(publishedObs).forEach((record) => (record.componentTags || []).forEach((code) => {
       tagCounts[code] = (tagCounts[code] || 0) + 1;
     }));
@@ -6536,10 +6690,10 @@ function EducatorEvaluationPanel(props) {
     const profile = aeWeightProfile(selectedTeacher);
     const isPortland = AE_ACTIVE_FW.id === "portland_me";
     const portlandRollup = isPortland ? aePortlandPracticeRating(selectedTeacher.ratings.domains) : null;
-    const domainColumn = AE_ACTIVE_FW.id === "pa_act13" ? t("educator_evaluation.weight_within_o_and_amp_p_j8olta", "Weight within O&amp;P") : isPortland ? t("educator_evaluation.guidebook_input_f5n29y", "Guidebook input") : t("educator_evaluation.share_in_this_planning_profile_6jtsqr", "Share in this planning profile");
+    const domainColumn = AE_ACTIVE_FW.id === "pa_act13" ? t("educator_evaluation.weight_within_o_and_amp_p_j8olta", "Weight within O&P") : isPortland ? t("educator_evaluation.guidebook_input_f5n29y", "Guidebook input") : t("educator_evaluation.share_in_this_planning_profile_6jtsqr", "Share in this planning profile");
     const domainRows = AE_DOMAINS.map((domain) => t("educator_evaluation.tr_td_1g3q9ur", "<tr><td>") + aeEsc(aeRubricDisplayLabel(domain.label)) + t("educator_evaluation.td_td_18jyb6g", "</td><td>") + (AE_ACTIVE_FW.id === "pa_act13" ? domain.weight + "%" : isPortland ? t("educator_evaluation.categorical_domain_rating_1qlgmra", "Categorical domain rating") : "25%") + t("educator_evaluation.td_td_18jyb6g", "</td><td>") + aeEsc(selectedTeacher.ratings.domains[domain.id] == null ? t("educator_evaluation.not_rated_17t3qdk", "Not rated") : selectedTeacher.ratings.domains[domain.id]) + t("educator_evaluation.td_tr_1thzd9l", "</td></tr>")).join("");
-    const calculation = isPortland ? portlandRollup ? t("educator_evaluation.portland_professional_practice_roll_up_1h5ppvi", "Portland Professional Practice roll-up: ") + portlandRollup.label + ", " + portlandRollup.rule : t("educator_evaluation.incomplete_t03g3p", "Incomplete") : score == null ? t("educator_evaluation.incomplete_t03g3p", "Incomplete") : score.toFixed(2) + " · " + aeBand(score);
-    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><meta name="referrer" content="no-referrer"><title>Evaluation workflow summary</title><style>body{font:14px system-ui;color:#172033;max-width:850px;margin:40px auto;padding:0 24px}h1{color:#173e70}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #ccd5e2;padding:8px;text-align:left}.notice{padding:12px;background:#fff8e8;border:1px solid #e5bd59}</style></head><body><h1>Educator evaluation workflow summary</h1><p><strong>` + aeEsc(workspace.config.organization) + t("educator_evaluation.strong_60hewm", "</strong> · ") + aeEsc(workspace.config.academicYear) + "</p><h2>" + aeEsc(selectedTeacher.name) + " · " + aeEsc(selectedTeacher.code) + "</h2><p>" + aeEsc(selectedTeacher.assignment) + t("educator_evaluation.evaluator_1ytzpr7", " · evaluator ") + aeEsc(selectedTeacher.evaluator) + t("educator_evaluation.p_h2_weighting_snapshot_h2_table_thead_tr_th_factor_th_th__1599hsa", "</p><h2>Weighting snapshot</h2><table><thead><tr><th>Factor</th><th>Weight</th></tr></thead><tbody>") + profile.map((part) => t("educator_evaluation.tr_td_1g3q9ur", "<tr><td>") + aeEsc(aeRubricDisplayLabel(part.label)) + t("educator_evaluation.td_td_18jyb6g", "</td><td>") + part.weight + t("educator_evaluation.td_tr_l9swhk", "%</td></tr>")).join("") + t("educator_evaluation.tbody_table_h2_c6xgxt", "</tbody></table><h2>") + aeEsc(aeRubricDisplayLabel(AE_ACTIVE_FW.practiceLabel)) + t("educator_evaluation.ratings_h2_table_thead_tr_th_domain_th_th_1ypdek7", " ratings</h2><table><thead><tr><th>Domain</th><th>") + domainColumn + t("educator_evaluation.th_th_rating_th_tr_thead_tbody_qzy9bu", "</th><th>Rating</th></tr></thead><tbody>") + domainRows + t("educator_evaluation.tbody_table_p_strong_calculation_preview_strong_1od32ch", "</tbody></table><p><strong>Calculation preview:</strong> ") + aeEsc(calculation) + t("educator_evaluation.p_p_class_notice_strong_workflow_aid_only_strong_c1lwgn", '</p><p class="notice"><strong>Workflow aid only.</strong> ') + (AE_ACTIVE_FW.id === "pa_act13" ? t("educator_evaluation.this_is_not_an_official_pde_rating_form_or_proof_of_peers__1y4a2ed", "This is not an official PDE rating form or proof of PEERS release. Verify all inputs and complete the LEA-authorized process.") : t("educator_evaluation.this_is_not_an_official_pepg_summative_form_verify_all_inp_1w8tx29", "This is not an official PEPG summative form. Verify all inputs against your district’s PEPG plan and complete the district-authorized process.")) + t("educator_evaluation.p_p_generated_i8zqd", "</p><p>Generated ") + aeEsc(aeDateTime(aeNow())) + t("educator_evaluation.p_body_html_us1kuj", "</p></body></html>");
+    const calculation = isPortland ? portlandRollup ? t("educator_evaluation.portland_professional_practice_roll_up_1h5ppvi", "Portland Professional Practice roll-up: ") + portlandRollup.label + ", " + portlandRollup.rule : t("educator_evaluation.incomplete_t03g3p", "Incomplete") : score == null || !Number.isFinite(Number(score)) ? t("educator_evaluation.incomplete_t03g3p", "Incomplete") : Number(score).toFixed(2) + " · " + aeBand(score);
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><meta name="referrer" content="no-referrer"><title>Evaluation workflow summary</title><style>body{font:14px system-ui;color:#172033;max-width:850px;margin:40px auto;padding:0 24px}h1{color:#173e70}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #ccd5e2;padding:8px;text-align:left}.notice{padding:12px;background:#fff8e8;border:1px solid #e5bd59}</style></head><body><h1>Educator evaluation workflow summary</h1><p><strong>` + aeEsc(workspace.config.organization) + t("educator_evaluation.strong_60hewm", "</strong> · ") + aeEsc(workspace.config.academicYear) + "</p><h2>" + aeEsc(selectedTeacher.name) + " · " + aeEsc(selectedTeacher.code) + "</h2><p>" + aeEsc(selectedTeacher.assignment) + t("educator_evaluation.evaluator_1ytzpr7", " · evaluator ") + aeEsc(selectedTeacher.evaluator) + t("educator_evaluation.p_h2_weighting_snapshot_h2_table_thead_tr_th_factor_th_th__1599hsa", "</p><h2>Weighting snapshot</h2><table><thead><tr><th>Factor</th><th>Weight</th></tr></thead><tbody>") + profile.map((part) => t("educator_evaluation.tr_td_1g3q9ur", "<tr><td>") + aeEsc(aeRubricDisplayLabel(part.label)) + t("educator_evaluation.td_td_18jyb6g", "</td><td>") + part.weight + t("educator_evaluation.td_tr_l9swhk", "%</td></tr>")).join("") + t("educator_evaluation.tbody_table_h2_c6xgxt", "</tbody></table><h2>") + aeEsc(aeRubricDisplayLabel(AE_ACTIVE_FW.practiceLabel)) + t("educator_evaluation.ratings_h2_table_thead_tr_th_domain_th_th_1ypdek7", " ratings</h2><table><thead><tr><th>Domain</th><th>") + aeEsc(domainColumn) + t("educator_evaluation.th_th_rating_th_tr_thead_tbody_qzy9bu", "</th><th>Rating</th></tr></thead><tbody>") + domainRows + t("educator_evaluation.tbody_table_p_strong_calculation_preview_strong_1od32ch", "</tbody></table><p><strong>Calculation preview:</strong> ") + aeEsc(calculation) + t("educator_evaluation.p_p_class_notice_strong_workflow_aid_only_strong_c1lwgn", '</p><p class="notice"><strong>Workflow aid only.</strong> ') + (AE_ACTIVE_FW.id === "pa_act13" ? t("educator_evaluation.this_is_not_an_official_pde_rating_form_or_proof_of_peers__1y4a2ed", "This is not an official PDE rating form or proof of PEERS release. Verify all inputs and complete the LEA-authorized process.") : t("educator_evaluation.this_is_not_an_official_pepg_summative_form_verify_all_inp_1w8tx29", "This is not an official PEPG summative form. Verify all inputs against your district’s PEPG plan and complete the district-authorized process.")) + t("educator_evaluation.p_p_generated_i8zqd", "</p><p>Generated ") + aeEsc(aeDateTime(aeNow())) + t("educator_evaluation.p_body_html_us1kuj", "</p></body></html>");
     aeDownload("evaluation-summary-" + selectedTeacher.code + "-" + aeToday() + ".html", "text/html;charset=utf-8", html);
     commit(() => {
     }, { teacherId: selectedTeacher.id, event: "EXPORTED", summary: t("educator_evaluation.educator_workflow_summary_exported_1qnrsc", "Educator workflow summary exported"), entityType: "evaluation", entityId: selectedTeacher.id }, "Summary export created");
@@ -6584,11 +6738,11 @@ function EducatorEvaluationPanel(props) {
       const refs = packetTeacher.annualEvidenceRefs[domain.id] || [];
       return "<article><h3>" + aeEsc(domain.code + ". " + aeRubricDisplayLabel(domain.label)) + "</h3>" + (refs.length ? "<ul>" + refs.map((token) => "<li><strong>" + aeEsc(annualEvidenceIndex[token] || "Released evidence record") + '</strong><br><span class="meta">Reference: ' + aeEsc(token) + "</span></li>").join("") + "</ul>" : '<p class="fine">No evidence references were recorded.</p>') + "</article>";
     }).join("") + "</section>" : "";
-    const annualRatings = packetTeacher.finalizedAt && packetTeacher.ratings ? t("educator_evaluation.section_class_card_h2_finalized_annual_ratings_h2_div_clas_e6yych", '<section class="card"><h2>Finalized annual ratings</h2><div class="tablewrap" tabindex="0" role="region" aria-label="Finalized annual domain ratings"><table><thead><tr><th>Domain</th><th>Rating</th><th>Rationale</th></tr></thead><tbody>') + domainRows(packetTeacher.ratings.domains, packetTeacher.annualRationales) + t("educator_evaluation.tbody_table_div_u57d8f", "</tbody></table></div>") + (packetTeacher.finalScore == null ? "" : t("educator_evaluation.p_strong_final_calculation_1wz79wz", "<p><strong>Final calculation: ") + aeEsc(Number(packetTeacher.finalScore).toFixed(2)) + " · " + aeEsc(aeBand(packetTeacher.finalScore)) + t("educator_evaluation.strong_p_dgjddc", "</strong></p>")) + t("educator_evaluation.p_class_meta_finalized_c70m6r", '<p class="meta">Finalized ') + aeEsc(aeDateTime(packetTeacher.finalizedAt)) + ".</p></section>" + annualEvidenceDetails : "";
+    const annualRatings = packetTeacher.finalizedAt && packetTeacher.ratings ? t("educator_evaluation.section_class_card_h2_finalized_annual_ratings_h2_div_clas_e6yych", '<section class="card"><h2>Finalized annual ratings</h2><div class="tablewrap" tabindex="0" role="region" aria-label="Finalized annual domain ratings"><table><thead><tr><th>Domain</th><th>Rating</th><th>Rationale</th></tr></thead><tbody>') + domainRows(packetTeacher.ratings.domains, packetTeacher.annualRationales) + t("educator_evaluation.tbody_table_div_u57d8f", "</tbody></table></div>") + (packetTeacher.finalScore == null || !Number.isFinite(Number(packetTeacher.finalScore)) ? "" : t("educator_evaluation.p_strong_final_calculation_1wz79wz", "<p><strong>Final calculation: ") + aeEsc(Number(packetTeacher.finalScore).toFixed(2)) + " · " + aeEsc(aeBand(packetTeacher.finalScore)) + t("educator_evaluation.strong_p_dgjddc", "</strong></p>")) + t("educator_evaluation.p_class_meta_finalized_c70m6r", '<p class="meta">Finalized ') + aeEsc(aeDateTime(packetTeacher.finalizedAt)) + ".</p></section>" + annualEvidenceDetails : "";
     const existingStatement = packetTeacher.educatorStatement && packetTeacher.educatorStatement.text ? packetTeacher.educatorStatement.text : "";
     const statementControl = packetTeacher.finalizedAt ? field("Your educator statement", existingStatement) + t("educator_evaluation.p_class_fine_the_annual_cycle_is_finalized_so_this_stateme_1q4ssim", '<p class="fine">The annual cycle is finalized, so this statement is shown read-only. Follow your district process if an addendum is needed.</p>') : t("educator_evaluation.label_class_lbl_for_ae_statement_your_statement_in_your_ow_k494lx", '<label class="lbl" for="ae-statement">Your statement (in your own words)</label><textarea id="ae-statement" rows="6">') + aeEsc(existingStatement) + t("educator_evaluation.textarea_1cksj6w", "</textarea>");
     const nameNotice = packet.includeNames ? t("educator_evaluation.this_packet_includes_profile_display_names_and_released_fr_gzfcfd", "This packet includes profile/display names and released free text.") : t("educator_evaluation.strong_profile_display_names_were_replaced_with_the_educat_12wqjp0", "<strong>Profile/display names were replaced with the educator code and role labels.</strong> Free-text evidence, comments, statements, and reflections were not de-identified and may still name or identify people.");
-    const readable = t("educator_evaluation.doctype_html_html_lang_en_head_meta_charset_utf_8_7un36s", '<!doctype html><html lang="en"><head><meta charset="utf-8">') + `<meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'"><meta name="referrer" content="no-referrer">` + t("educator_evaluation.title_your_evaluation_title_1pwgui7", "<title>Your evaluation</title>") + t("educator_evaluation.style_body_font_16px_1_6_system_ui_sans_serif_color_172033_1jkfe2t", "<style>body{font:16px/1.6 system-ui,sans-serif;color:#172033;background:#f6f8fb;max-width:900px;margin:0 auto;padding:24px}") + t("educator_evaluation.h1_color_173e70_font_size_1_7rem_h2_color_173e70_font_size_1fmca8o", "h1{color:#173e70;font-size:1.7rem}h2{color:#173e70;font-size:1.25rem;margin-top:28px}h3{color:#173e70;font-size:1.05rem;margin:0 0 8px}h4{margin:14px 0 5px}") + ".card{background:#fff;border:1px solid #d7dee8;border-radius:10px;padding:18px;margin:16px 0}.notice{background:#eef6ff;border:1px solid #93b8e8}.warning{background:#fff8e8;border-color:#e5bd59}.evidence{white-space:pre-wrap;background:#f8fafc;border-left:4px solid #93b8e8;padding:10px 12px}.field{margin:12px 0}.meta,.fine{font-size:.9rem;color:#475569}.tags{font-size:.92rem}.receipt{background:#edf9f2;border:1px solid #86c9a5;padding:9px 11px}.comment{border-top:1px solid #d7dee8;padding-top:8px;margin-top:12px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;border:1px solid #cbd5e1;padding:8px}th{background:#f1f5f9}.lbl{display:block;font-weight:600;margin:12px 0 6px}textarea{box-sizing:border-box;width:100%;font:inherit;padding:10px;border:1px solid #94a3b8;border-radius:8px;min-height:96px}.ackrow{display:flex;align-items:flex-start;gap:12px;margin:14px 0}.ackrow input{width:24px;height:24px;flex:0 0 auto;margin:0}button{font:inherit;font-weight:700;min-height:48px;padding:12px 20px;border:0;border-radius:10px;background:#1d4ed8;color:#fff;cursor:pointer}button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid #b45309;outline-offset:2px}.done{margin-top:12px;font-weight:600;color:#14532d}</style></head><body>" + t("educator_evaluation.h1_your_evaluation_h1_55wd4r", "<h1>Your evaluation</h1>") + t("educator_evaluation.p_strong_1qpg7me", "<p><strong>") + aeEsc(who) + t("educator_evaluation.strong_60hewm", "</strong> · ") + aeEsc(packet.config.organization) + " · " + aeEsc(packet.config.academicYear) + '</p><div class="card notice"><p><strong>This is a released, educator-visible copy.</strong> It excludes private walkthrough drafts, unpublished observation evidence, unsigned ratings, unsubmitted reflections, mutable SPM drafts, internal receipts, and organization-wide records.</p><p>If you respond below, this page creates a response file on your device. Nothing is uploaded from this page and no account is needed.</p></div>' + t("educator_evaluation.p_class_card_warning_1z0v2rk", '<p class="card warning">') + nameNotice + t("educator_evaluation.review_this_attachment_and_use_only_a_district_authorized__q8bcbp", " Review this attachment and use only a district-authorized channel.</p>") + annualRatings + t("educator_evaluation.h2_published_walkthrough_evidence_h2_1aq7tu3", "<h2>Published walkthrough evidence</h2>") + (walkthroughRows || t("educator_evaluation.p_class_card_no_published_walkthroughs_were_included_p_1n4kkis", '<p class="card">No published walkthroughs were included.</p>')) + t("educator_evaluation.h2_formal_observation_records_h2_fqfq26", "<h2>Formal-observation records</h2>") + (observationRows || t("educator_evaluation.p_class_card_no_formal_observation_records_were_included_p_ehbfuh", '<p class="card">No formal-observation records were included.</p>')) + t("educator_evaluation.h2_spm_slo_records_h2_1qn1v2d", "<h2>SPM / SLO records</h2>") + (spmRows || t("educator_evaluation.p_class_card_no_submitted_spm_slo_records_were_included_p_xgo9nd", '<p class="card">No submitted SPM / SLO records were included.</p>')) + comments + t("educator_evaluation.h2_add_your_response_h2_1hcku8l", "<h2>Add your response</h2>") + t("educator_evaluation.div_class_card_1uxw7v", '<div class="card">') + statementControl + t("educator_evaluation.p_class_fine_reflection_and_acknowledgement_controls_appea_176ory3", '<p class="fine">Reflection and acknowledgement controls appear with the individual eligible records above. Each acknowledgement applies only to the record beside it.</p>') + t("educator_evaluation.button_type_button_id_ae_send_download_my_response_button_16kbio9", '<button type="button" id="ae-send">Download my response</button>') + t("educator_evaluation.p_class_done_id_ae_status_role_status_p_div_d55c4n", '<p class="done" id="ae-status" role="status"></p></div>') + t("educator_evaluation.p_issued_x1clpw", "<p>Issued ") + aeEsc(aeDateTime(packet.issuedAt)) + ".</p><" + t("educator_evaluation.script_type_application_json_id_h0f7zc", 'script type="application/json" id="') + AE_PACKET_SCRIPT_ID + '">' + aePacketEmbed(JSON.stringify(packet)) + "<\/script><" + t("educator_evaluation.script_nxwj5o", "script>") + AE_PACKET_FORM_JS + "<\/script>" + t("educator_evaluation.body_html_1o0q8b8", "</body></html>");
+    const readable = t("educator_evaluation.doctype_html_html_lang_en_head_meta_charset_utf_8_7un36s", '<!doctype html><html lang="en"><head><meta charset="utf-8">') + `<meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; object-src 'none'; frame-src 'none'; connect-src 'none'; base-uri 'none'; form-action 'none'"><meta name="referrer" content="no-referrer">` + t("educator_evaluation.title_your_evaluation_title_1pwgui7", "<title>Your evaluation</title>") + t("educator_evaluation.style_body_font_16px_1_6_system_ui_sans_serif_color_172033_1jkfe2t", "<style>body{font:16px/1.6 system-ui,sans-serif;color:#172033;background:#f6f8fb;max-width:900px;margin:0 auto;padding:24px}") + t("educator_evaluation.h1_color_173e70_font_size_1_7rem_h2_color_173e70_font_size_1fmca8o", "h1{color:#173e70;font-size:1.7rem}h2{color:#173e70;font-size:1.25rem;margin-top:28px}h3{color:#173e70;font-size:1.05rem;margin:0 0 8px}h4{margin:14px 0 5px}") + ".card{background:#fff;border:1px solid #d7dee8;border-radius:10px;padding:18px;margin:16px 0}.notice{background:#eef6ff;border:1px solid #93b8e8}.warning{background:#fff8e8;border-color:#e5bd59}.evidence{white-space:pre-wrap;background:#f8fafc;border-left:4px solid #93b8e8;padding:10px 12px}.field{margin:12px 0}.meta,.fine{font-size:.9rem;color:#475569}.tags{font-size:.92rem}.receipt{background:#edf9f2;border:1px solid #86c9a5;padding:9px 11px}.comment{border-top:1px solid #d7dee8;padding-top:8px;margin-top:12px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;border:1px solid #cbd5e1;padding:8px}th{background:#f1f5f9}.lbl{display:block;font-weight:600;margin:12px 0 6px}textarea{box-sizing:border-box;width:100%;font:inherit;padding:10px;border:1px solid #94a3b8;border-radius:8px;min-height:96px}.ackrow{display:flex;align-items:flex-start;gap:12px;margin:14px 0}.ackrow input{width:24px;height:24px;flex:0 0 auto;margin:0}button{font:inherit;font-weight:700;min-height:48px;padding:12px 20px;border:0;border-radius:10px;background:#1d4ed8;color:#fff;cursor:pointer}button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid #b45309;outline-offset:2px}.done{margin-top:12px;font-weight:600;color:#14532d}</style></head><body>" + t("educator_evaluation.h1_your_evaluation_h1_55wd4r", "<h1>Your evaluation</h1>") + t("educator_evaluation.p_strong_1qpg7me", "<p><strong>") + aeEsc(who) + t("educator_evaluation.strong_60hewm", "</strong> · ") + aeEsc(packet.config.organization) + " · " + aeEsc(packet.config.academicYear) + '</p><div class="card notice"><p><strong>This is a released, educator-visible copy.</strong> It excludes private walkthrough drafts, unpublished observation evidence, unsigned ratings, unsubmitted reflections, mutable SPM drafts, internal receipts, and organization-wide records.</p><p>If you respond below, this page creates a response file on your device. Nothing is uploaded from this page and no account is needed.</p></div>' + t("educator_evaluation.p_class_card_warning_1z0v2rk", '<p class="card warning">') + nameNotice + t("educator_evaluation.review_this_attachment_and_use_only_a_district_authorized__q8bcbp", " Review this attachment and use only a district-authorized channel.</p>") + annualRatings + t("educator_evaluation.h2_published_walkthrough_evidence_h2_1aq7tu3", "<h2>Published walkthrough evidence</h2>") + (walkthroughRows || t("educator_evaluation.p_class_card_no_published_walkthroughs_were_included_p_1n4kkis", '<p class="card">No published walkthroughs were included.</p>')) + t("educator_evaluation.h2_formal_observation_records_h2_fqfq26", "<h2>Formal-observation records</h2>") + (observationRows || t("educator_evaluation.p_class_card_no_formal_observation_records_were_included_p_ehbfuh", '<p class="card">No formal-observation records were included.</p>')) + t("educator_evaluation.h2_spm_slo_records_h2_1qn1v2d", "<h2>SPM / SLO records</h2>") + (spmRows || t("educator_evaluation.p_class_card_no_submitted_spm_slo_records_were_included_p_xgo9nd", '<p class="card">No submitted SPM / SLO records were included.</p>')) + comments + t("educator_evaluation.h2_add_your_response_h2_1hcku8l", "<h2>Add your response</h2>") + t("educator_evaluation.div_class_card_1uxw7v", '<div class="card">') + statementControl + t("educator_evaluation.p_class_fine_reflection_and_acknowledgement_controls_appea_176ory3", '<p class="fine">Reflection and acknowledgement controls appear with the individual eligible records above. Each acknowledgement applies only to the record beside it.</p>') + t("educator_evaluation.button_type_button_id_ae_send_download_my_response_button_16kbio9", '<button type="button" id="ae-send">Download my response</button>') + t("educator_evaluation.p_class_done_id_ae_status_role_status_p_div_d55c4n", '<p class="done" id="ae-status" role="status"></p></div>') + t("educator_evaluation.p_issued_x1clpw", "<p>Issued ") + aeEsc(aeDateTime(packet.issuedAt)) + '.</p><script type="application/json" id="' + AE_PACKET_SCRIPT_ID + '">' + aePacketEmbed(JSON.stringify(packet)) + "<\/script><script>" + AE_PACKET_FORM_JS + "<\/script>" + t("educator_evaluation.body_html_1o0q8b8", "</body></html>");
     aeDownload("evaluation-packet-" + selectedTeacher.code + "-" + aeToday() + ".html", "text/html;charset=utf-8", readable);
     commit(() => {
     }, { teacherId: selectedTeacher.id, event: "EXPORTED", summary: t("educator_evaluation.educator_packet_issued_1ypdouh", "Educator packet issued") + (packetIncludeNames ? "" : t("educator_evaluation.structured_profile_names_withheld_free_text_unchanged_9u45ss", " (structured profile names withheld; free text unchanged)")), entityType: "evaluation", entityId: selectedTeacher.id }, "Educator packet created");
@@ -6604,7 +6758,7 @@ function EducatorEvaluationPanel(props) {
     commit(() => {
     }, { teacherId: selectedTeacher.id, event: "EXPORTED", summary: t("educator_evaluation.educator_response_packet_created_1dxrsw9", "Educator response packet created"), entityType: "evaluation", entityId: selectedTeacher.id }, "Response packet created");
   };
-  const aeAiBlocked = typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || typeof window.callGemini === "function" && typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("text", window.callGemini));
+  const aeAiBlocked = typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || typeof window.callGemini === "function" && window.callGemini._alloQrBlocked === true || typeof window.callGemini === "function" && typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("text", window.callGemini));
   const aiReflectionEnabled = !!(workspace.config && workspace.config.aiReflectionEnabled) && !aeAiBlocked;
   const askForReflection = () => {
     const teacherId = selectedTeacher && selectedTeacher.id;
@@ -6618,7 +6772,7 @@ function EducatorEvaluationPanel(props) {
       return true;
     };
     const ask = typeof window !== "undefined" ? window.callGemini : null;
-    const askUsable = typeof ask === "function" && (typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("text", ask) : typeof window === "undefined" || window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true);
+    const askUsable = typeof ask === "function" && (typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("text", ask) : !ask._alloQrBlocked && (typeof window === "undefined" || window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true));
     if (!askUsable) {
       setScopedReflection("error", t("educator_evaluation.no_ai_backend_is_configured_in_this_copy_so_this_stays_una_1bghxda", "No AI backend is configured in this copy, so this stays unavailable."));
       return;
@@ -6698,10 +6852,13 @@ function EducatorEvaluationPanel(props) {
     }
     const reader = new FileReader();
     reader.onerror = () => notify(t("educator_evaluation.rubric_import_failed_the_file_could_not_be_read_19uye8a", "Rubric import failed: the file could not be read."), "error");
+    reader.onabort = () => notify(t("educator_evaluation.rubric_import_failed_the_file_could_not_be_read_19uye8a", "Rubric import failed: the file could not be read."), "error");
     reader.onload = () => {
       let rubric = null;
       try {
-        rubric = aeNormalizeRubric(JSON.parse(String(reader.result || ""), (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v));
+        const raw = String(reader.result || "");
+        if (raw.length > 1024 * 1024) throw new Error("Rubric file exceeds limit");
+        rubric = aeNormalizeRubric(JSON.parse(raw, (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v));
       } catch (error) {
         notify(t("educator_evaluation.rubric_import_failed_that_file_is_not_valid_json_pe01r0", "Rubric import failed: that file is not valid JSON."), "error");
         return;
@@ -6721,9 +6878,12 @@ function EducatorEvaluationPanel(props) {
     }
     const reader = new FileReader();
     reader.onerror = () => notify(t("educator_evaluation.import_failed_the_selected_file_could_not_be_read_15d3w26", "Import failed: the selected file could not be read."), "error");
+    reader.onabort = () => notify(t("educator_evaluation.import_failed_the_selected_file_could_not_be_read_15d3w26", "Import failed: the selected file could not be read."), "error");
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(aePacketExtract(String(reader.result || "")), (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
+        const raw = String(reader.result || "");
+        if (raw.length > 5 * 1024 * 1024) throw new Error("Import file exceeds size limit");
+        const parsed = JSON.parse(aePacketExtract(raw), (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
         if (parsed.kind === AE_PACKET_KIND && Number(parsed.version) === 1) {
           if (parsed.packetType === "response") {
             const merged = aeClone(workspaceRef.current);
@@ -6834,7 +6994,7 @@ function EducatorEvaluationPanel(props) {
         summary: t("educator_evaluation.reviewed_educator_response_imported_from_packet_gojzm0", "Reviewed educator response imported from packet ") + pendingImport.packetId + " issued " + aeDate(pendingImport.issuedAt) + "." + staleNote + droppedNote,
         entityType: "evaluation",
         entityId: outcome.teacherId
-      }, (next.teachers.find((item) => item.id === outcome.teacherId) || {}).name || t("educator_evaluation.educator_8c1rq4", "Educator"));
+      }, (next.teachers.find((item) => item.id === outcome.teacherId) || {}).name || t("educator_evaluation.educator_8c1rq4", "Educator"), "Teacher");
     } else if (pendingImport.kind === "workspace") {
       aeAuditEvent(next, { event: "IMPORTED", summary: t("educator_evaluation.reviewed_workspace_imported_from_json_guwjmd", "Reviewed workspace imported from JSON"), entityType: "workspace", entityId: "workspace" }, next.config.evaluatorName || t("educator_evaluation.evaluator_125q2ii", "Evaluator"), "Evaluator");
     }

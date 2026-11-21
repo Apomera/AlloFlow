@@ -49,10 +49,25 @@
     if (win.lamejs && win.lamejs.Mp3Encoder) return Promise.resolve(true);
     if (asked) return asked;
     asked = new Promise(function (resolve) {
+      var settled = false;
       var script = doc.createElement('script');
       script.src = MP3_ENCODER;
-      script.onload = function () { resolve(!!(win.lamejs && win.lamejs.Mp3Encoder)); };
-      script.onerror = function () { asked = null; resolve(false); };
+      var timer = typeof win.setTimeout === 'function' ? win.setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        asked = null;
+        try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
+        resolve(false);
+      }, 15000) : 0;
+      var finish = function (ok, resetOnFail) {
+        if (settled) return;
+        settled = true;
+        if (timer && typeof win.clearTimeout === 'function') win.clearTimeout(timer);
+        if (!ok && resetOnFail) asked = null;
+        resolve(ok);
+      };
+      script.onload = function () { finish(!!(win.lamejs && win.lamejs.Mp3Encoder), false); };
+      script.onerror = function () { finish(false, true); };
       doc.head.appendChild(script);
     });
     return asked;

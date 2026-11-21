@@ -25,13 +25,20 @@
   }
 
   var VERSION = 'glblib/1';
+  var hasOwn = Object.prototype.hasOwnProperty;
   // GLTFLoader attaches THREE.GLTFLoader (UMD examples/js — same base the
   // ConceptGraph3D bloom chain uses, so version + host stay consistent).
   var GLTF_URL = 'https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/loaders/GLTFLoader.js';
-  var CATEGORIES = { plant: 1, nature: 1, furniture: 1, creature: 1, trophy: 1, decor: 1 };
+  var CATEGORIES = Object.freeze({ plant: 1, nature: 1, furniture: 1, creature: 1, trophy: 1, decor: 1 });
+  var MAX_CATALOG_ITEMS = 500;
 
-  function isNum(v) { return typeof v === 'number' && !isNaN(v); }
+  function isNum(v) { return typeof v === 'number' && Number.isFinite(v); }
   function num(v, d) { return isNum(v) ? v : d; }
+  function deepFreeze(obj) {
+    if (!obj || typeof obj !== 'object' || Object.isFrozen(obj)) return obj;
+    Object.keys(obj).forEach(function (k) { deepFreeze(obj[k]); });
+    return Object.freeze(obj);
+  }
 
   // Where THIS module was loaded from — relative glbUrls resolve against it, so
   // the same catalog entry works from the Firebase host, the pages.dev CDN
@@ -47,12 +54,20 @@
     } catch (e) {}
     return '';
   }
-  // PURE given a base: absolute/data URLs pass through; anything else joins the base.
+  // PURE given a base: safe absolute/data/blob URLs pass through; safe relative paths join the base.
   function resolveGlbUrl(url, base) {
-    var u = String(url || '');
-    if (!u) return u;
-    if (/^(https?:)?\/\//i.test(u) || /^(data|blob):/i.test(u)) return u;
-    var b = (base != null) ? String(base) : _selfBase();
+    var u = String(url == null ? '' : url).trim();
+    if (!u) return '';
+    var schemeCheck = u.replace(/[\u0000-\u0020\u007F]/g, '');
+    if (/^(?:javascript|vbscript|file):/i.test(schemeCheck)) return '';
+    if (/^data:/i.test(schemeCheck)) {
+      return /^data:(?:model\/gltf-binary|model\/gltf\+json|application\/octet-stream);base64,[A-Za-z0-9+/=\s]+$/i.test(u) ? u : '';
+    }
+    if (/^blob:/i.test(schemeCheck)) return u;
+    if (/^https?:\/\//i.test(u)) return u;
+    if (/^\/\//.test(u)) return '';
+    if (u.indexOf('..') !== -1 || u.indexOf('\\') !== -1) return '';
+    var b = (base != null) ? String(base).trim() : _selfBase();
     if (!b) return u;
     return b.replace(/\/?$/, '/') + u.replace(/^\.?\//, '');
   }
@@ -151,21 +166,24 @@
     ] } }
   ];
 
+  deepFreeze(STARTER_CATALOG);
+
   function _validColor(v) { return (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v.trim())); }
 
   function normalizeItem(raw) {
     if (!raw || typeof raw !== 'object') return null;
-    var id = (typeof raw.id === 'string' && raw.id.trim()) ? raw.id.trim() : null;
+    var id = (typeof raw.id === 'string' && raw.id.trim()) ? raw.id.trim().slice(0, 120) : null;
     if (!id) return null;
     var P3D = window.AlloModules && window.AlloModules.Prim3D;
     var recipe = null;
-    if (raw.recipe) recipe = P3D ? P3D.normalizeRecipe(raw.recipe) : raw.recipe;   // keep raw if Prim3D not loaded yet
-    var glbUrl = (typeof raw.glbUrl === 'string' && raw.glbUrl.trim()) ? raw.glbUrl.trim() : null;
+    if (raw.recipe) recipe = (P3D && typeof P3D.normalizeRecipe === 'function') ? P3D.normalizeRecipe(raw.recipe) : raw.recipe;   // keep raw if Prim3D not loaded yet
+    var rawGlb = (typeof raw.glbUrl === 'string' && raw.glbUrl.trim()) ? raw.glbUrl.trim() : null;
+    var glbUrl = rawGlb && resolveGlbUrl(rawGlb, '') ? rawGlb : null;
     if (!glbUrl && !recipe) return null;   // nothing renderable
     return {
       id: id,
-      label: (raw.label != null) ? String(raw.label).slice(0, 80) : id,
-      category: CATEGORIES[raw.category] ? raw.category : 'decor',
+      label: (raw.label != null) ? String(raw.label).replace(/[\u0000-\u001F\u007F]/g, '').slice(0, 80) : id,
+      category: (typeof raw.category === 'string' && hasOwn.call(CATEGORIES, raw.category)) ? raw.category : 'decor',
       cost: Math.max(0, Math.round(num(raw.cost, 0))),
       glbUrl: glbUrl,
       recipe: recipe,
@@ -177,8 +195,8 @@
   }
 
   function normalizeCatalog(items) {
-    var arr = Array.isArray(items) ? items : STARTER_CATALOG;
-    var out = [], seen = {};
+    var arr = Array.isArray(items) ? items.slice(0, MAX_CATALOG_ITEMS) : STARTER_CATALOG;
+    var out = [], seen = Object.create(null);
     arr.forEach(function (raw) {
       var it = normalizeItem(raw);
       if (it && !seen[it.id]) { seen[it.id] = 1; out.push(it); }
@@ -187,15 +205,17 @@
   }
 
   function listCatalog(opts) {
-    opts = opts || {};
+    opts = (opts && typeof opts === 'object') ? opts : {};
     var cat = normalizeCatalog(opts.catalog);
     if (opts.category) cat = cat.filter(function (it) { return it.category === opts.category; });
     return cat;
   }
 
   function canAfford(item, tokens) {
-    if (!item) return false;
-    return num(tokens, 0) >= num(item.cost, 0);
+    if (!item || typeof item !== 'object') return false;
+    var bal = num(tokens, 0);
+    var cost = num(item.cost, 0);
+    return bal >= 0 && cost >= 0 && bal >= cost;
   }
   function affordable(items, tokens) {
     return normalizeCatalog(items).filter(function (it) { return canAfford(it, tokens); });
@@ -211,9 +231,22 @@
     return 'none';
   }
 
+  function _isTrustedLoaderScriptUrl(srcUrl) {
+    if (typeof srcUrl !== 'string' || !srcUrl.trim()) return false;
+    var u = srcUrl.trim();
+    if (u === GLTF_URL) return true;
+    try {
+      var parsed = new URL(u, window.location ? window.location.href : 'https://localhost/');
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+      var isLocal = /^(?:localhost|127\.0\.0\.1|\[::1\])$/i.test(parsed.hostname);
+      var isSameOrigin = window.location && window.location.origin && window.location.origin !== 'null' && parsed.origin === window.location.origin;
+      return (isLocal || isSameOrigin) && /\.js(?:$|\?)/i.test(parsed.pathname);
+    } catch (_) { return false; }
+  }
+
   function loadGLTFLoader(THREE, opts) {
-    opts = opts || {};
-    if (THREE.GLTFLoader) return Promise.resolve(true);
+    opts = (opts && typeof opts === 'object') ? opts : {};
+    if (THREE && THREE.GLTFLoader) return Promise.resolve(true);
     if (window.__glbLoaderPromise) return window.__glbLoaderPromise;
     window.__glbLoaderPromise = new Promise(function (resolve, reject) {
       // Clear the cached promise on failure so a later call can RE-ATTEMPT the load —
@@ -222,9 +255,13 @@
       function fail(err) { try { window.__glbLoaderPromise = null; } catch (e) {} reject(err); }
       try {
         var srcUrl = opts.gltfUrl || GLTF_URL;
-        if (window._isDesktopBundledApp === true && /^https?:/i.test(String(srcUrl))
+        if (!_isTrustedLoaderScriptUrl(srcUrl)) {
+          return fail(new Error('Untrusted GLTFLoader script URL'));
+        }
+        var remoteBlocked = window._isDesktopBundledApp === true || window.__alloOfflineOnly === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true;
+        if (remoteBlocked && /^https?:/i.test(String(srcUrl))
           && !/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)/i.test(String(srcUrl))) {
-          return fail(new Error('External GLTFLoader CDN disabled in Desktop mode'));
+          return fail(new Error('External GLTFLoader CDN disabled in restricted mode'));
         }
         var s = document.createElement('script');
         s.src = srcUrl;
@@ -299,9 +336,9 @@
   }
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.GlbLibrary = {
+  window.AlloModules.GlbLibrary = Object.freeze({
     version: VERSION,
-    CATEGORIES: Object.keys(CATEGORIES),
+    CATEGORIES: Object.freeze(Object.keys(CATEGORIES)),
     STARTER_CATALOG: STARTER_CATALOG,
     normalizeCatalog: normalizeCatalog,
     listCatalog: listCatalog,
@@ -310,6 +347,6 @@
     resolveSource: resolveSource,
     resolveGlbUrl: resolveGlbUrl,
     loadModel: loadModel
-  };
+  });
   console.log('[GlbLibrary] Registered (glblib/1 — CC0 collectibles catalog + GLTFLoader, Prim3D fallback)');
 })();

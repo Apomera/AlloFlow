@@ -11246,16 +11246,29 @@ function EcoPairMeasurement(props) {
           // a horizontal band of distortion. Explicit clearRect kills it.
           ctxC.clearRect(0, 0, cw, ch);
 
-          // ── Sky gradient (biome-aware) ──
-          var skyGrad = ctxC.createLinearGradient(0, 0, 0, aquaticRender ? ch : ch * 0.5);
+          // ── Atmospheric biome sky/sunlight gradient & horizon depth ──
+          var ecoReducedMotion = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          var animPhase = ecoReducedMotion ? 0 : tick;
+          var skyGrad = ctxC.createLinearGradient(0, 0, 0, aquaticRender ? ch : ch * 0.56);
           var bSky = bC.skyDay;
           if (isDayR) {
             var dayBright = Math.min(1, dayPhaseR * 1.5);
-            skyGrad.addColorStop(0, 'rgb(' + Math.round(bSky[0]+(255-bSky[0])*dayBright*0.3) + ',' + Math.round(bSky[1]+(255-bSky[1])*dayBright*0.2) + ',' + Math.round(bSky[2]+(255-bSky[2])*dayBright*0.15) + ')');
-            skyGrad.addColorStop(1, 'rgb(' + Math.round(Math.min(255,bSky[0]+50)+(205-bSky[0])*dayBright*0.2) + ',' + Math.round(Math.min(255,bSky[1]+40)+(215-bSky[1])*dayBright*0.15) + ',' + Math.round(Math.min(255,bSky[2]+30)+(225-bSky[2])*dayBright*0.1) + ')');
+            var zenithR = Math.round(bSky[0] * 0.84 + (255 - bSky[0]) * dayBright * 0.22);
+            var zenithG = Math.round(bSky[1] * 0.90 + (255 - bSky[1]) * dayBright * 0.16);
+            var zenithB = Math.round(Math.min(255, bSky[2] * 1.04 + (255 - bSky[2]) * dayBright * 0.14));
+            var midR = Math.round(Math.min(255, bSky[0] + 28) + (230 - bSky[0]) * dayBright * 0.18);
+            var midG = Math.round(Math.min(255, bSky[1] + 26) + (225 - bSky[1]) * dayBright * 0.15);
+            var midB = Math.round(Math.min(255, bSky[2] + 24) + (235 - bSky[2]) * dayBright * 0.12);
+            var horR = Math.round(Math.min(255, bSky[0] + 66) + (245 - bSky[0]) * dayBright * 0.18);
+            var horG = Math.round(Math.min(255, bSky[1] + 54) + (232 - bSky[1]) * dayBright * 0.15);
+            var horB = Math.round(Math.min(255, bSky[2] + 36) + (215 - bSky[2]) * dayBright * 0.10);
+            skyGrad.addColorStop(0, 'rgb(' + zenithR + ',' + zenithG + ',' + zenithB + ')');
+            skyGrad.addColorStop(0.58, 'rgb(' + midR + ',' + midG + ',' + midB + ')');
+            skyGrad.addColorStop(1, 'rgb(' + horR + ',' + horG + ',' + horB + ')');
           } else {
             skyGrad.addColorStop(0, bC.skyNight);
-            skyGrad.addColorStop(1, bC.skyNightEnd);
+            skyGrad.addColorStop(0.65, bC.skyNightEnd);
+            skyGrad.addColorStop(1, '#1e293b');
           }
           ctxC.fillStyle = skyGrad;
           // Paint behind the entire rolling ground contour so valleys never expose transparency.
@@ -11263,24 +11276,37 @@ function EcoPairMeasurement(props) {
 
           if (aquaticRender) {
             var depthGrad = ctxC.createLinearGradient(0, 0, 0, ch);
-            depthGrad.addColorStop(0, 'rgba(125,211,252,0.10)');
-            depthGrad.addColorStop(0.55, 'rgba(8,47,73,0.12)');
-            depthGrad.addColorStop(1, 'rgba(2,20,32,0.48)');
+            depthGrad.addColorStop(0, 'rgba(186,230,253,0.18)');
+            depthGrad.addColorStop(0.45, 'rgba(14,116,144,0.14)');
+            depthGrad.addColorStop(1, 'rgba(2,20,32,0.52)');
             ctxC.fillStyle = depthGrad;
             ctxC.fillRect(0, 0, cw, ch);
-            ctxC.strokeStyle = 'rgba(186,230,253,0.22)';
-            ctxC.lineWidth = 8;
+            // Volumetric sunlight shafts descending through the kelp water column
             for (var ray = 0; ray < 6; ray++) {
-              var rayX = (ray + 0.5) * cw / 6 + Math.sin(tick * 0.006 + ray) * 10;
+              var rayX = (ray + 0.5) * cw / 6 + Math.sin(animPhase * 0.006 + ray) * 10;
+              var shaftGrad = ctxC.createLinearGradient(rayX, 0, rayX - 28, ch * 0.78);
+              shaftGrad.addColorStop(0, isDayR ? 'rgba(224,242,254,0.28)' : 'rgba(148,163,184,0.10)');
+              shaftGrad.addColorStop(0.55, isDayR ? 'rgba(125,211,252,0.10)' : 'rgba(56,189,248,0.04)');
+              shaftGrad.addColorStop(1, 'rgba(125,211,252,0)');
+              ctxC.fillStyle = shaftGrad;
               ctxC.beginPath();
-              ctxC.moveTo(rayX, 0);
-              ctxC.lineTo(rayX - 24, ch * 0.72);
-              ctxC.stroke();
+              ctxC.moveTo(rayX - 8, 0);
+              ctxC.lineTo(rayX + 8, 0);
+              ctxC.lineTo(rayX - 10, ch * 0.78);
+              ctxC.lineTo(rayX - 38, ch * 0.78);
+              ctxC.closePath();
+              ctxC.fill();
             }
-            ctxC.strokeStyle = 'rgba(224,242,254,0.65)';
+            // Double-crested shimmering water surface ripples
+            ctxC.strokeStyle = 'rgba(224,242,254,0.72)';
             ctxC.lineWidth = 2;
             ctxC.beginPath();
-            for (var wx = 0; wx <= cw; wx += 4) ctxC.lineTo(wx, 5 + Math.sin(wx * 0.04 + tick * 0.02) * 3);
+            for (var wx = 0; wx <= cw; wx += 4) ctxC.lineTo(wx, 5 + Math.sin(wx * 0.04 + animPhase * 0.02) * 3);
+            ctxC.stroke();
+            ctxC.strokeStyle = 'rgba(125,211,252,0.35)';
+            ctxC.lineWidth = 1.2;
+            ctxC.beginPath();
+            for (var wx2 = 0; wx2 <= cw; wx2 += 6) ctxC.lineTo(wx2, 9 + Math.cos(wx2 * 0.032 - animPhase * 0.016) * 2.2);
             ctxC.stroke();
           }
 
@@ -11289,7 +11315,7 @@ function EcoPairMeasurement(props) {
           if (!aquaticRender && !isDayR) {
             for (var si2 = 0; si2 < stars.length; si2++) {
               var star = stars[si2];
-              var twinkle = 0.3 + 0.7 * Math.abs(Math.sin(tick * 0.02 + star.twinkle));
+              var twinkle = ecoReducedMotion ? 0.65 : 0.3 + 0.7 * Math.abs(Math.sin(tick * 0.02 + star.twinkle));
               ctxC.globalAlpha = twinkle;
               ctxC.fillStyle = '#fff';
               ctxC.beginPath();
@@ -11299,24 +11325,34 @@ function EcoPairMeasurement(props) {
             ctxC.globalAlpha = 1;
           }
 
-          // ── Sun / Moon ──
+          // ── Sun / Moon + atmospheric corona ──
           if (!aquaticRender && isDayR) {
             var sunX = cw * 0.8;
             var sunY = 30 + (1 - dayPhaseR) * 20;
             ctxC.save();
+            var sunHalo = ctxC.createRadialGradient(sunX, sunY, 6, sunX, sunY, Math.max(75, cw * 0.18));
+            sunHalo.addColorStop(0, 'rgba(254,243,199,0.58)');
+            sunHalo.addColorStop(0.35, 'rgba(251,191,36,0.20)');
+            sunHalo.addColorStop(1, 'rgba(251,191,36,0)');
+            ctxC.fillStyle = sunHalo;
+            ctxC.fillRect(0, 0, cw, ch * 0.6);
             ctxC.shadowColor = '#fbbf24';
-            ctxC.shadowBlur = 28 + Math.sin(tick * 0.02) * 6;
-            ctxC.fillStyle = '#fbbf24';
+            ctxC.shadowBlur = 28 + Math.sin(animPhase * 0.02) * 6;
+            ctxC.fillStyle = '#fef3c7';
             ctxC.beginPath();
             ctxC.arc(sunX, sunY, 18, 0, Math.PI * 2);
             ctxC.fill();
-            ctxC.strokeStyle = 'rgba(251,191,36,0.3)';
+            ctxC.fillStyle = '#fbbf24';
+            ctxC.beginPath();
+            ctxC.arc(sunX, sunY, 14, 0, Math.PI * 2);
+            ctxC.fill();
+            ctxC.strokeStyle = 'rgba(254,243,199,0.38)';
             ctxC.lineWidth = 2;
             for (var ri = 0; ri < 8; ri++) {
-              var angle = (ri / 8) * Math.PI * 2 + tick * 0.005;
+              var angle = (ri / 8) * Math.PI * 2 + animPhase * 0.005;
               ctxC.beginPath();
               ctxC.moveTo(sunX + Math.cos(angle) * 22, sunY + Math.sin(angle) * 22);
-              ctxC.lineTo(sunX + Math.cos(angle) * 30, sunY + Math.sin(angle) * 30);
+              ctxC.lineTo(sunX + Math.cos(angle) * 31, sunY + Math.sin(angle) * 31);
               ctxC.stroke();
             }
             ctxC.restore();
@@ -11324,6 +11360,11 @@ function EcoPairMeasurement(props) {
             var moonX = cw * 0.15;
             var moonY = 30;
             ctxC.save();
+            var moonHalo = ctxC.createRadialGradient(moonX, moonY, 8, moonX, moonY, 68);
+            moonHalo.addColorStop(0, 'rgba(226,232,240,0.26)');
+            moonHalo.addColorStop(1, 'rgba(148,163,184,0)');
+            ctxC.fillStyle = moonHalo;
+            ctxC.fillRect(moonX - 70, 0, 140, 110);
             ctxC.shadowColor = '#e2e8f0';
             ctxC.shadowBlur = 20;
             ctxC.fillStyle = '#e2e8f0';
@@ -11337,10 +11378,10 @@ function EcoPairMeasurement(props) {
             ctxC.restore();
           }
 
-          // ── Clouds ──
+          // ── Clouds + distant atmospheric ridge ──
           for (var cli2 = 0; !aquaticRender && cli2 < clouds.length; cli2++) {
             var cloud = clouds[cli2];
-            ctxC.globalAlpha = isDayR ? 0.7 : 0.15;
+            ctxC.globalAlpha = isDayR ? 0.74 : 0.16;
             ctxC.fillStyle = isDayR ? '#fff' : '#475569';
             ctxC.beginPath();
             ctxC.arc(cloud.x, cloud.y, cloud.w * 0.25, 0, Math.PI * 2);
@@ -11350,6 +11391,21 @@ function EcoPairMeasurement(props) {
             ctxC.fill();
           }
           ctxC.globalAlpha = 1;
+          if (!aquaticRender) {
+            var farHillGrad = ctxC.createLinearGradient(0, ch * 0.34, 0, ch * 0.54);
+            farHillGrad.addColorStop(0, isDayR ? 'rgba(71,105,126,0.34)' : 'rgba(15,23,42,0.52)');
+            farHillGrad.addColorStop(1, isDayR ? 'rgba(226,242,250,0.16)' : 'rgba(30,41,59,0.22)');
+            ctxC.fillStyle = farHillGrad;
+            ctxC.beginPath();
+            ctxC.moveTo(0, ch * 0.54);
+            for (var fhx = 0; fhx <= cw; fhx += 8) {
+              var fhy = ch * 0.415 + Math.sin(fhx * 0.0085 + 0.6) * 14 + Math.cos(fhx * 0.019) * 7;
+              ctxC.lineTo(fhx, fhy);
+            }
+            ctxC.lineTo(cw, ch * 0.54);
+            ctxC.closePath();
+            ctxC.fill();
+          }
 
           // ── Ground or seabed (scenario-aware) ──
           var groundGrad = ctxC.createLinearGradient(0, aquaticRender ? ch * 0.80 : ch * 0.45, 0, ch);
@@ -11380,6 +11436,36 @@ function EcoPairMeasurement(props) {
               ctxC.ellipse(pebX, pebY, 2 + (peb % 4), 1 + (peb % 2), 0, 0, Math.PI * 2);
               ctxC.fill();
             }
+            // Sunlit underwater seabed caustic pools
+            for (var cau = 0; cau < 5; cau++) {
+              var cauX = ((cau + 0.45) * cw / 5) + Math.sin(animPhase * 0.015 + cau * 1.4) * 14;
+              var cauGrad = ctxC.createRadialGradient(cauX, ch * 0.91, 2, cauX, ch * 0.91, 34);
+              cauGrad.addColorStop(0, isDayR ? 'rgba(186,230,253,0.22)' : 'rgba(56,189,248,0.08)');
+              cauGrad.addColorStop(1, 'rgba(186,230,253,0)');
+              ctxC.fillStyle = cauGrad;
+              ctxC.beginPath();
+              ctxC.ellipse(cauX, ch * 0.91, 34, 8, 0, 0, Math.PI * 2);
+              ctxC.fill();
+            }
+          } else {
+            // Subtle sunlit meadow pond with gentle water ripples
+            var pondX = cw * 0.72, pondY = ch * 0.73, pondRx = Math.min(72, cw * 0.14), pondRy = Math.min(18, ch * 0.052);
+            var pondGrad = ctxC.createRadialGradient(pondX - pondRx * 0.2, pondY - pondRy * 0.25, 2, pondX, pondY, pondRx);
+            pondGrad.addColorStop(0, isDayR ? 'rgba(125,211,252,0.52)' : 'rgba(56,189,248,0.26)');
+            pondGrad.addColorStop(0.65, isDayR ? 'rgba(14,165,233,0.40)' : 'rgba(12,74,110,0.34)');
+            pondGrad.addColorStop(1, 'rgba(12,74,110,0)');
+            ctxC.fillStyle = pondGrad;
+            ctxC.beginPath();
+            ctxC.ellipse(pondX, pondY, pondRx, pondRy, 0, 0, Math.PI * 2);
+            ctxC.fill();
+            ctxC.strokeStyle = isDayR ? 'rgba(224,242,254,0.45)' : 'rgba(148,163,184,0.22)';
+            ctxC.lineWidth = 1;
+            for (var rp = 0; rp < 3; rp++) {
+              var rpOff = Math.sin(animPhase * 0.025 + rp * 2.1) * 4;
+              ctxC.beginPath();
+              ctxC.ellipse(pondX + (rp - 1) * pondRx * 0.28 + rpOff, pondY + (rp % 2 ? 2.5 : -2), pondRx * (0.24 - rp * 0.04), pondRy * 0.22, 0, 0, Math.PI * 2);
+              ctxC.stroke();
+            }
           }
 
           // ── Vegetation rendering ──
@@ -11403,7 +11489,7 @@ function EcoPairMeasurement(props) {
               ctxC.lineWidth = 2.5;
               for (var blade = 0; blade < 3; blade++) {
                 var bladeX = (blade - 1) * 3;
-                var kelpSway = Math.sin(tick * 0.025 + veg2.x * 0.02 + blade) * 7;
+                var kelpSway = Math.sin(animPhase * 0.025 + veg2.x * 0.02 + blade) * 7;
                 ctxC.beginPath();
                 ctxC.moveTo(bladeX, 0);
                 ctxC.bezierCurveTo(bladeX - kelpSway, -kelpHeight * 0.35, bladeX + kelpSway, -kelpHeight * 0.7, bladeX + kelpSway * 0.4, -kelpHeight);
@@ -11414,32 +11500,45 @@ function EcoPairMeasurement(props) {
             }
 
             if (veg2.type === 'tree') {
+              // Grounded contact shadow beneath the tree
+              ctxC.fillStyle = 'rgba(15,23,42,0.22)';
+              ctxC.beginPath();
+              ctxC.ellipse(0, 3, veg2.size * 0.38, 3.2, 0, 0, Math.PI * 2);
+              ctxC.fill();
+
+              var treeSway = Math.sin(animPhase * 0.02 + veg2.x * 0.05) * 1.6;
               var barkGrad = ctxC.createLinearGradient(-2, 0, 2, 0);
               barkGrad.addColorStop(0, '#92400e');
               barkGrad.addColorStop(0.5, '#78350f');
-              barkGrad.addColorStop(1, '#92400e');
+              barkGrad.addColorStop(1, '#57280a');
               ctxC.fillStyle = barkGrad;
               ctxC.fillRect(-2, -veg2.size * 0.3, 4, veg2.size * 0.5);
 
               var cAlpha = isDayR ? veg2.health : veg2.health * 0.5;
               var canopyColors = [
-                'rgba(' + Math.round(34 * cAlpha + 20) + ',' + Math.round(197 * cAlpha + 30) + ',' + Math.round(94 * cAlpha + 20) + ',0.9)',
-                'rgba(' + Math.round(22 * cAlpha + 30) + ',' + Math.round(163 * cAlpha + 40) + ',' + Math.round(74 * cAlpha + 25) + ',0.8)',
-                'rgba(' + Math.round(74 * cAlpha + 10) + ',' + Math.round(222 * cAlpha + 20) + ',' + Math.round(128 * cAlpha + 15) + ',0.7)'
+                'rgba(' + Math.round(34 * cAlpha + 20) + ',' + Math.round(197 * cAlpha + 30) + ',' + Math.round(94 * cAlpha + 20) + ',0.92)',
+                'rgba(' + Math.round(22 * cAlpha + 30) + ',' + Math.round(163 * cAlpha + 40) + ',' + Math.round(74 * cAlpha + 25) + ',0.84)',
+                'rgba(' + Math.round(74 * cAlpha + 10) + ',' + Math.round(222 * cAlpha + 20) + ',' + Math.round(128 * cAlpha + 15) + ',0.76)'
               ];
-              var offsets = [{ dx: 0, dy: -veg2.size * 0.5, r: veg2.size * 0.35 }, { dx: -3, dy: -veg2.size * 0.4, r: veg2.size * 0.28 }, { dx: 3, dy: -veg2.size * 0.45, r: veg2.size * 0.3 }];
+              var offsets = [{ dx: treeSway, dy: -veg2.size * 0.5, r: veg2.size * 0.35 }, { dx: -3 + treeSway * 0.7, dy: -veg2.size * 0.4, r: veg2.size * 0.28 }, { dx: 3 + treeSway * 0.9, dy: -veg2.size * 0.45, r: veg2.size * 0.3 }];
               for (var li = 0; li < 3; li++) {
                 ctxC.fillStyle = canopyColors[li];
                 ctxC.beginPath();
                 ctxC.arc(offsets[li].dx, offsets[li].dy, offsets[li].r, 0, Math.PI * 2);
                 ctxC.fill();
               }
+              if (isDayR) {
+                ctxC.fillStyle = 'rgba(254,249,195,0.22)';
+                ctxC.beginPath();
+                ctxC.arc(treeSway + veg2.size * 0.1, -veg2.size * 0.58, veg2.size * 0.18, 0, Math.PI * 2);
+                ctxC.fill();
+              }
 
               if (veg2.health > 0.6) {
                 ctxC.fillStyle = '#fbbf24';
                 for (var fri = 0; fri < 3; fri++) {
-                  var fx = (Math.random() - 0.5) * veg2.size * 0.4;
-                  var fy = -veg2.size * 0.4 + (Math.random() - 0.5) * veg2.size * 0.3;
+                  var fx = treeSway + Math.sin(vgi2 * 1.7 + fri * 2.3) * veg2.size * 0.2;
+                  var fy = -veg2.size * 0.44 + Math.cos(vgi2 * 2.1 + fri * 1.9) * veg2.size * 0.14;
                   ctxC.beginPath();
                   ctxC.arc(fx, fy, 1.5, 0, Math.PI * 2);
                   ctxC.fill();
@@ -11447,18 +11546,18 @@ function EcoPairMeasurement(props) {
               }
             } else {
               ctxC.strokeStyle = isDayR
-                ? 'rgba(' + Math.round(34 + 40 * veg2.health) + ',' + Math.round(140 + 57 * veg2.health) + ',60,0.8)'
+                ? 'rgba(' + Math.round(34 + 40 * veg2.health) + ',' + Math.round(140 + 57 * veg2.health) + ',60,0.85)'
                 : 'rgba(20,80,40,0.6)';
               ctxC.lineWidth = 1.5;
               for (var gi2 = 0; gi2 < 4; gi2++) {
                 var gxOff = (gi2 - 1.5) * 3;
-                var sway = Math.sin(tick * 0.03 + veg2.x + gi2) * 2;
+                var sway = Math.sin(animPhase * 0.03 + veg2.x + gi2) * 2.2;
                 ctxC.beginPath();
                 ctxC.moveTo(gxOff, 0);
                 ctxC.quadraticCurveTo(gxOff + sway, -veg2.size * 0.5, gxOff + sway * 1.5, -veg2.size * 0.8);
                 ctxC.stroke();
                 if (veg2.health > 0.5) {
-                  ctxC.fillStyle = '#d4a574';
+                  ctxC.fillStyle = '#e5c08b';
                   ctxC.beginPath();
                   ctxC.arc(gxOff + sway * 1.5, -veg2.size * 0.8, 1.5, 0, Math.PI * 2);
                   ctxC.fill();
@@ -11506,10 +11605,14 @@ function EcoPairMeasurement(props) {
               continue;
             }
 
-            // Shadow
-            ctxC.fillStyle = 'rgba(0,0,0,0.15)';
+            // Soft radial depth shadow grounded beneath prey
+            var preyShadR = Math.max(4, 7.5 - hopAmt * 0.45);
+            var preyShad = ctxC.createRadialGradient(0, hopAmt * squash + 4.5, 0.5, 0, hopAmt * squash + 4.5, preyShadR);
+            preyShad.addColorStop(0, 'rgba(15,23,42,0.32)');
+            preyShad.addColorStop(1, 'rgba(15,23,42,0)');
+            ctxC.fillStyle = preyShad;
             ctxC.beginPath();
-            ctxC.ellipse(0, hopAmt * squash + 4, 6, 2, 0, 0, Math.PI * 2);
+            ctxC.ellipse(0, hopAmt * squash + 4.5, preyShadR, 2.6, 0, 0, Math.PI * 2);
             ctxC.fill();
 
             // Body with fur gradient
@@ -11644,10 +11747,13 @@ function EcoPairMeasurement(props) {
               ctxC.restore();
               continue;
             }
-            // Shadow
-            ctxC.fillStyle = 'rgba(0,0,0,0.15)';
+            // Soft radial depth shadow grounded beneath predator
+            var predShad = ctxC.createRadialGradient(0, 5.5, 1, 0, 5.5, 11);
+            predShad.addColorStop(0, 'rgba(15,23,42,0.34)');
+            predShad.addColorStop(1, 'rgba(15,23,42,0)');
+            ctxC.fillStyle = predShad;
             ctxC.beginPath();
-            ctxC.ellipse(0, 5, 9, 2.5, 0, 0, Math.PI * 2);
+            ctxC.ellipse(0, 5.5, 11, 3.2, 0, 0, Math.PI * 2);
             ctxC.fill();
 
             var crouchY = f2.hunting ? 2 : 0;
@@ -11786,13 +11892,42 @@ function EcoPairMeasurement(props) {
             }
           }
 
-          // ── Catch particles rendering ──
+          // ── Luminous trophic energy-flow particles & halos ──
+          if (isDayR && vegetation.length > 0) {
+            ctxC.save();
+            for (var tmi = 0; tmi < Math.min(8, vegetation.length); tmi++) {
+              var tv = vegetation[(tmi * 3) % vegetation.length];
+              if (!tv || tv.health < 0.35) continue;
+              var tmFrac = ((animPhase * 0.008 + tmi * 0.19) % 1);
+              var tmBaseY = aquaticRender ? ch * 0.86 : ch * 0.50 + Math.sin(tv.x * 0.015) * 8;
+              var tmX = tv.x + Math.sin(tmFrac * Math.PI * 2 + tmi) * 6;
+              var tmY = tmBaseY - tmFrac * (aquaticRender ? 62 : 34);
+              var tmAlpha = Math.sin(tmFrac * Math.PI) * 0.55;
+              var tmHalo = ctxC.createRadialGradient(tmX, tmY, 0.5, tmX, tmY, 6.5);
+              tmHalo.addColorStop(0, aquaticRender ? 'rgba(103,232,249,' + tmAlpha.toFixed(2) + ')' : 'rgba(167,243,208,' + tmAlpha.toFixed(2) + ')');
+              tmHalo.addColorStop(1, 'rgba(74,222,128,0)');
+              ctxC.fillStyle = tmHalo;
+              ctxC.beginPath();
+              ctxC.arc(tmX, tmY, 6.5, 0, Math.PI * 2);
+              ctxC.fill();
+            }
+            ctxC.restore();
+          }
           for (var cpi2 = 0; cpi2 < catchParticles.length; cpi2++) {
             var part2 = catchParticles[cpi2];
+            var pRad = 1.4 + part2.life * 2.4;
+            var pHalo = ctxC.createRadialGradient(part2.x, part2.y, 0.4, part2.x, part2.y, pRad * 3.2);
+            pHalo.addColorStop(0, part2.color);
+            pHalo.addColorStop(1, 'rgba(251,191,36,0)');
+            ctxC.globalAlpha = Math.min(1, part2.life * 0.55);
+            ctxC.fillStyle = pHalo;
+            ctxC.beginPath();
+            ctxC.arc(part2.x, part2.y, pRad * 3.2, 0, Math.PI * 2);
+            ctxC.fill();
             ctxC.globalAlpha = part2.life;
             ctxC.fillStyle = part2.color;
             ctxC.beginPath();
-            ctxC.arc(part2.x, part2.y, 1 + part2.life * 2, 0, Math.PI * 2);
+            ctxC.arc(part2.x, part2.y, pRad, 0, Math.PI * 2);
             ctxC.fill();
           }
           ctxC.globalAlpha = 1;
@@ -12504,7 +12639,8 @@ function EcoPairMeasurement(props) {
         // ── Header ──
         h('div', { className: 'eco-header flex items-center gap-2 mb-2' },
           h('button', {
-            className: 'transition-colors p-1 rounded hover:bg-slate-200 active:scale-[0.97]',
+            className: 'transition-colors p-2 rounded-lg hover:bg-slate-200 active:scale-[0.97]',
+            style: { minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
             onClick: function() {
               var canvasEl = document.querySelector('canvas[data-eco-canvas]');
               if (canvasEl && canvasEl._ecoCleanup) canvasEl._ecoCleanup();
@@ -12513,7 +12649,7 @@ function EcoPairMeasurement(props) {
             'aria-label': __alloT('stem.ecosystem.back', 'Back')
           }, h(ArrowLeft, { size: 18 })),
           h('span', { className: 'text-lg font-bold tracking-tight' }, activeScenario.emoji + ' ' + __alloT('stem.ecosystem.title', 'Ecosystem Simulator')),
-          h('span', { className: 'ml-auto inline-flex items-center gap-1 px-2 py-0.5 text-[0.6875rem] font-bold bg-emerald-700 text-white rounded-full' }, h('span', { 'aria-hidden': 'true', className: 'h-1.5 w-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none' }), tab === 'foodweb' ? 'MODEL' : simPaused ? __alloT('stem.ecosystem.paused_caps', 'PAUSED') : __alloT('stem.ecosystem.live', 'LIVE')),
+          h('span', { className: 'ml-auto inline-flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-bold bg-emerald-700 text-white rounded-full' }, h('span', { 'aria-hidden': 'true', className: 'h-1.5 w-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none' }), tab === 'foodweb' ? 'MODEL' : simPaused ? __alloT('stem.ecosystem.paused_caps', 'PAUSED') : __alloT('stem.ecosystem.live', 'LIVE')),
           h('span', { className: 'text-xs font-bold text-amber-800 ml-1', style: onHostStyle }, '\u2B50 ' + researchPoints + ' RP'),
         ),
 
@@ -12527,26 +12663,48 @@ function EcoPairMeasurement(props) {
             h('strong', { id: 'eco-display-profile-title', className: 'text-xs text-slate-800' }, 'Display profile'),
             h('span', { className: 'text-[0.6875rem] text-slate-600' }, activeDisplayProfile.hint)
           ),
-          h('div', { role: 'group', 'aria-label': __alloT('stem.ecosystem.a11y_display_profile', 'Display profile'), className: 'grid grid-cols-3 gap-1' },
+          h('div', { role: 'group', 'aria-label': __alloT('stem.ecosystem.a11y_display_profile', 'Display profile'), className: 'grid grid-cols-3 gap-1.5' },
             DISPLAY_PROFILES.map(function(profile) {
               var selected = displayProfile === profile.id;
-              return h('button', { key: profile.id, type: 'button', 'aria-pressed': selected, onClick: function() { upd('displayProfile', profile.id); }, className: 'min-h-9 rounded-lg border px-2 py-1.5 text-[0.6875rem] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500 bg-white text-slate-700 hover:border-emerald-500') }, profile.label);
+              return h('button', { key: profile.id, type: 'button', 'aria-pressed': selected, onClick: function() { upd('displayProfile', profile.id); }, className: 'min-h-11 rounded-lg border px-2 py-1.5 text-[0.6875rem] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500 bg-white text-slate-700 hover:border-emerald-500') }, profile.label);
             })
           )
         ),
         h('section', { 'data-ecosystem-field-brief': 'true',
-          style: {
-            padding: '14px', borderRadius: 12,
-            background: 'linear-gradient(135deg, rgba(6,78,59,0.92), rgba(15,23,42,0.96))',
-            border: '1px solid rgba(52,211,153,0.32)',
+          style: isContrast ? {
+            padding: '14px', borderRadius: 14,
+            backgroundColor: '#000000',
+            border: '2px solid #ffff00',
+            color: '#ffffff'
+          } : {
+            padding: '14px', borderRadius: 14,
+            backgroundColor: '#064e3b',
+            backgroundImage: 'linear-gradient(135deg, rgba(6,78,59,0.96), rgba(15,23,42,0.98))',
+            border: '1px solid rgba(52,211,153,0.36)',
             boxShadow: '0 14px 34px rgba(2,8,23,0.20)',
             color: '#ecfdf5'
           } },
           h('div', { className: 'eco-field-brief-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.15fr) minmax(240px,0.85fr)', gap: 12, alignItems: 'stretch' } },
-            h('div', null,
-              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#86efac', letterSpacing: 0, marginBottom: 4 } }, __alloT('stem.ecosystem.field_station', 'Field station')),
-              h('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, ecoTabNames[tab] || __alloT('stem.ecosystem.explore', 'Explore')),
-              h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#cbd5e1' } },
+            h('div', { style: { minWidth: 0 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                h('svg', { width: 42, height: 42, viewBox: '0 0 44 44', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+                  h('rect', { x: 2, y: 2, width: 40, height: 40, rx: 10, fill: isContrast ? '#000000' : '#052e16', stroke: isContrast ? '#ffff00' : '#34d399', strokeWidth: 1.5 }),
+                  h('polygon', { points: '22,8 35,34 9,34', fill: 'none', stroke: isContrast ? '#ffffff' : 'rgba(134,239,172,0.55)', strokeWidth: 1.5 }),
+                  h('line', { x1: 13.5, y1: 25, x2: 30.5, y2: 25, stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 1.4 }),
+                  h('line', { x1: 17.5, y1: 17, x2: 26.5, y2: 17, stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 1.4 }),
+                  h('circle', { cx: 22, cy: 12, r: 2.5, fill: isContrast ? '#ffff00' : '#fbbf24' }),
+                  h('circle', { cx: 17, cy: 29, r: 2.5, fill: isContrast ? '#66ff66' : '#34d399' }),
+                  h('circle', { cx: 27, cy: 29, r: 2.5, fill: isContrast ? '#66ff66' : '#34d399' })
+                ),
+                h('div', { style: { minWidth: 0 } },
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 2 } },
+                    h('span', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: isContrast ? '#ffff00' : '#86efac', letterSpacing: '0.06em' } }, __alloT('stem.ecosystem.field_station', 'Field station')),
+                    h('span', { style: { fontSize: 10, fontWeight: 800, textTransform: 'uppercase', padding: '1px 7px', borderRadius: 999, backgroundColor: isContrast ? '#000000' : '#0f172a', color: isContrast ? '#ffffff' : '#bbf7d0', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(134,239,172,0.35)') } }, __alloT('stem.ecosystem.subject_badge', 'Life Science · Ecology'))
+                  ),
+                  h('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, color: '#ffffff' } }, ecoTabNames[tab] || __alloT('stem.ecosystem.explore', 'Explore'))
+                )
+              ),
+              h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: isContrast ? '#ffffff' : '#cbd5e1' } },
                 __alloT('stem.ecosystem.field_brief_lead', 'Pick a route, watch the live population system, and use the graph or campaign when you need evidence.')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(116px,1fr))', gap: 8 } },
                 ecoRouteCards.map(function(route) {
@@ -12555,12 +12713,12 @@ function EcoPairMeasurement(props) {
                     onClick: function() { upd('tab', route.id); },
                     style: {
                       minHeight: 70, padding: 9, textAlign: 'left', borderRadius: 8,
-                      border: '1px solid ' + (active ? 'rgba(134,239,172,0.72)' : 'rgba(134,239,172,0.24)'),
-                      background: active ? 'rgba(16,185,129,0.18)' : 'rgba(15,23,42,0.55)',
-                      color: '#ecfdf5', cursor: 'pointer'
+                      border: '1px solid ' + (isContrast ? (active ? '#ffff00' : '#ffffff') : (active ? 'rgba(134,239,172,0.72)' : 'rgba(134,239,172,0.24)')),
+                      background: isContrast ? '#000000' : (active ? 'rgba(16,185,129,0.18)' : 'rgba(15,23,42,0.55)'),
+                      color: isContrast ? (active ? '#ffff00' : '#ffffff') : '#ecfdf5', cursor: 'pointer'
                     } },
                     h('div', { style: { fontSize: 12, fontWeight: 900, marginBottom: 3 } }, route.label),
-                    h('div', { style: { fontSize: 10, lineHeight: 1.35, color: '#bbf7d0' } }, route.hint)
+                    h('div', { style: { fontSize: 10, lineHeight: 1.35, color: isContrast ? '#ffffff' : '#bbf7d0' } }, route.hint)
                   );
                 })
               )
@@ -12572,9 +12730,9 @@ function EcoPairMeasurement(props) {
                 { label: __alloT('stem.ecosystem.research', 'Research'), value: researchPoints + ' RP' },
                 { label: __alloT('stem.ecosystem.badges', 'Badges'), value: badgeCount + '/' + BADGES.length }
               ].map(function(card) {
-                return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
-                  h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, card.label),
-                  h('div', { style: { fontSize: 15, fontWeight: 900, color: '#f8fafc' } }, card.value)
+                return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: isContrast ? '#000000' : 'rgba(2,6,23,0.45)', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(148,163,184,0.24)') } },
+                  h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: isContrast ? '#ffff00' : '#cbd5e1', marginBottom: 4 } }, card.label),
+                  h('div', { style: { fontSize: 15, fontWeight: 900, color: '#ffffff' } }, card.value)
                 );
               })
             )
@@ -12585,6 +12743,22 @@ function EcoPairMeasurement(props) {
           h('div', { className: 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1' },
             h('strong', { id: 'eco-scenario-picker-title', className: 'text-xs text-emerald-900' }, 'Study scenario'),
             h('span', { className: 'text-[0.6875rem] text-slate-600' }, 'Switching loads that scenario\'s calibrated baseline.')
+          ),
+          tab !== 'quiz' && h('div', {
+            'data-eco-trophic-key': 'true',
+            className: 'rounded-lg border px-2.5 py-2 flex flex-wrap items-center justify-between gap-2',
+            style: isContrast
+              ? { backgroundColor: '#000000', borderColor: '#ffff00', color: '#ffffff' }
+              : { backgroundColor: '#ffffff', borderColor: '#a7f3d0', color: '#0f172a' }
+          },
+            h('span', { className: 'text-[0.6875rem] font-black uppercase tracking-wide', style: { color: isContrast ? '#ffff00' : '#166534' } }, __alloT('stem.ecosystem.energy_pathway', 'Energy pathway')),
+            h('div', { className: 'flex flex-wrap items-center gap-1.5 text-xs font-bold' },
+              h('span', { className: 'px-2 py-0.5 rounded-full', style: { backgroundColor: isContrast ? '#000000' : '#dcfce7', color: isContrast ? '#66ff66' : '#166534', border: '1px solid ' + (isContrast ? '#66ff66' : '#86efac') } }, activeScenario.producer.label),
+              h('span', { 'aria-hidden': 'true', style: { color: isContrast ? '#ffff00' : '#0f766e' } }, '\u2192'),
+              h('span', { className: 'px-2 py-0.5 rounded-full', style: { backgroundColor: isContrast ? '#000000' : '#e0f2fe', color: isContrast ? '#00ffff' : '#075985', border: '1px solid ' + (isContrast ? '#00ffff' : '#7dd3fc') } }, activeScenario.prey.label),
+              h('span', { 'aria-hidden': 'true', style: { color: isContrast ? '#ffff00' : '#0f766e' } }, '\u2192'),
+              h('span', { className: 'px-2 py-0.5 rounded-full', style: { backgroundColor: isContrast ? '#000000' : '#ffe4e6', color: isContrast ? '#ffffff' : '#9f1239', border: '1px solid ' + (isContrast ? '#ffffff' : '#fda4af') } }, activeScenario.predator.label)
+            )
           ),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2', role: 'group', 'aria-label': __alloT('stem.ecosystem.a11y_choose_an_ecosystem_study_scenario', 'Choose an ecosystem study scenario') },
             Object.keys(ECO_SCENARIOS).map(function(nextScenarioId) {
@@ -12619,6 +12793,7 @@ function EcoPairMeasurement(props) {
               'aria-controls': 'stem-ecosystem-panel-' + t2,
               tabIndex: tab === t2 ? 0 : -1,
               onKeyDown: function(e) { ecoTabKeyDown(e, tabIndex); },
+              style: { minHeight: 44 },
               className: 'w-full min-w-0 px-2 py-1.5 text-xs font-semibold rounded-md transition-all ' +
                 (tab === t2 ? 'bg-emerald-700 text-white shadow' : 'transition-colors text-slate-600 hover:bg-slate-200 active:scale-[0.97]'),
               onClick: function() {
@@ -12653,7 +12828,14 @@ function EcoPairMeasurement(props) {
             role: 'tabpanel', id: 'stem-ecosystem-panel-' + tab,
             'aria-labelledby': 'stem-ecosystem-tab-' + tab, tabIndex: 0,
             className: 'mt-2',
-            style: {
+            style: isContrast ? {
+              padding: '12px 14px',
+              borderRadius: 12,
+              backgroundColor: '#000000',
+              border: '2px solid #ffff00',
+              borderLeft: '4px solid #ffff00',
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            } : {
               padding: '12px 14px',
               borderRadius: 12,
               background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
@@ -12664,8 +12846,8 @@ function EcoPairMeasurement(props) {
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: 'var(--eco-copy)', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: isContrast ? 'var(--allo-stem-text-soft, #475569)' : 'var(--eco-copy)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('h3', { style: { color: isContrast ? '#ffff00' : 'var(--eco-copy)', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: isContrast ? '#ffffff' : 'var(--eco-copy)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),

@@ -3884,6 +3884,16 @@
         return _magPostFXPromise;
       }
       function magLowPower() { return _motionPreference.current.reduced || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4); }
+      function magIsHighContrast(el) {
+        try {
+          if (el && typeof el.closest === 'function' && el.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+          var de = document.documentElement;
+          if (de && (de.classList.contains('theme-contrast') || de.getAttribute('data-theme') === 'high-contrast' || de.getAttribute('data-theme') === 'contrast')) return true;
+          if (document.body && document.body.classList.contains('theme-contrast')) return true;
+          if (typeof window !== 'undefined' && window.matchMedia && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+        } catch (eHc) {}
+        return false;
+      }
 
       // Attaches a composer to `pack` ({renderer, scene, camera, disposed}).
       // onReady re-renders the scene so the glow appears on these on-demand
@@ -4944,7 +4954,32 @@
         var W = 380, HH = 300, cx = W / 2, cy = HH / 2;
         function sx(x) { return cx + x; }
         function sy(y) { return cy + y; }
-        var kids = [];
+        var kids = [
+          h('defs', { key: 'field-defs' },
+            h('linearGradient', { id: 'mag-north-metal', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#f87171' }),
+              h('stop', { offset: '36%', stopColor: '#ef4444' }),
+              h('stop', { offset: '78%', stopColor: '#b91c1c' }),
+              h('stop', { offset: '100%', stopColor: '#991b1b' })
+            ),
+            h('linearGradient', { id: 'mag-south-metal', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#60a5fa' }),
+              h('stop', { offset: '36%', stopColor: '#3b82f6' }),
+              h('stop', { offset: '78%', stopColor: '#1d4ed8' }),
+              h('stop', { offset: '100%', stopColor: '#1e3a8a' })
+            ),
+            h('linearGradient', { id: 'mag-compass-bezel', x1: '0', y1: '0', x2: '1', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#f8fafc' }),
+              h('stop', { offset: '48%', stopColor: '#94a3b8' }),
+              h('stop', { offset: '100%', stopColor: '#475569' })
+            ),
+            h('radialGradient', { id: 'mag-compass-dial', cx: '38%', cy: '32%', r: '68%' },
+              h('stop', { offset: '0%', stopColor: '#1e293b' }),
+              h('stop', { offset: '75%', stopColor: '#0f172a' }),
+              h('stop', { offset: '100%', stopColor: '#020617' })
+            )
+          )
+        ];
         // background + faint coordinate grid: the grid makes compass motion and
         // distance comparisons visible without pretending to be a measurement scale.
         kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: HH, fill: INSTRUMENT, rx: 10 }));
@@ -4955,7 +4990,7 @@
           kids.push(h('line', { key: 'gy' + gy, x1: 0, y1: gy, x2: W, y2: gy, stroke: 'rgba(148,163,184,0.07)', strokeWidth: 1 }));
         }
 
-        // traced field lines (schematic dipole model)
+        // traced field lines (luminous plasma-style flux lines + directional chevrons)
         var seeds = [];
         d.magnets.forEach(function (m) {
           // seed rings around the north end of each magnet
@@ -4972,7 +5007,10 @@
           var all = back.slice().reverse().concat(fwd.slice(1));
           if (all.length < 3) return;
           var dpath = 'M ' + all.map(function (p) { return sx(p[0]).toFixed(1) + ' ' + sy(p[1]).toFixed(1); }).join(' L ');
-          kids.push(h('path', { key: 'fl' + i, d: dpath, fill: 'none', stroke: d.filings ? 'rgba(148,163,184,0.38)' : 'rgba(244,63,94,0.48)', strokeWidth: d.filings ? 1 : 1.4 }));
+          if (!d.filings) {
+            kids.push(h('path', { key: 'fl-glow-' + i, d: dpath, fill: 'none', stroke: 'rgba(251,113,133,0.16)', strokeWidth: 4.4, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+          }
+          kids.push(h('path', { key: 'fl' + i, d: dpath, fill: 'none', stroke: d.filings ? 'rgba(148,163,184,0.38)' : 'rgba(244,63,94,0.68)', strokeWidth: d.filings ? 1 : 1.55, strokeLinecap: 'round' }));
           // A chevron on each line makes the N → S direction readable without
           // relying on color or on the explanatory paragraph.
           var mp = all[Math.floor(all.length / 2)];
@@ -4980,14 +5018,13 @@
           var mm = Math.sqrt(mb.x * mb.x + mb.y * mb.y) || 1;
           var ux = mb.x / mm, uy = mb.y / mm, px = sx(mp[0]), py = sy(mp[1]);
           kids.push(h('polygon', { key: 'arrow' + i,
-            points: (px + ux * 5).toFixed(1) + ',' + (py + uy * 5).toFixed(1) + ' ' +
-              (px - ux * 3 - uy * 3).toFixed(1) + ',' + (py - uy * 3 + ux * 3).toFixed(1) + ' ' +
-              (px - ux * 3 + uy * 3).toFixed(1) + ',' + (py - uy * 3 - ux * 3).toFixed(1),
-            fill: d.filings ? 'rgba(226,232,240,0.56)' : 'rgba(251,191,36,0.9)' }));
+            points: (px + ux * 5.2).toFixed(1) + ',' + (py + uy * 5.2).toFixed(1) + ' ' +
+              (px - ux * 3 - uy * 3.1).toFixed(1) + ',' + (py - uy * 3 + ux * 3.1).toFixed(1) + ' ' +
+              (px - ux * 3 + uy * 3.1).toFixed(1) + ',' + (py - uy * 3 - ux * 3.1).toFixed(1),
+            fill: d.filings ? 'rgba(226,232,240,0.64)' : 'rgba(253,224,71,0.95)' }));
         });
 
-        // Iron filings align as many tiny compasses. Sample the same field at
-        // a regular grid and rotate each grain to the local field direction.
+        // Iron filings align as many tiny compasses with metallic steel specular highlights.
         if (d.filings) {
           for (var fy = -120; fy <= 120; fy += 24) {
             for (var fx = -168; fx <= 168; fx += 28) {
@@ -4997,23 +5034,35 @@
               var blocked = d.magnets.some(function (m) { return Math.abs(fx - m.x) < 38 && Math.abs(fy - m.y) < 18; });
               if (blocked) continue;
               var fux = fb.x / fm, fuy = fb.y / fm;
-              var grain = 4.5;
+              var glint = Math.min(1, 0.48 + Math.log10(1 + fm * 4000) * 0.22);
+              var grain = 4.6;
+              kids.push(h('line', { key: 'filing-sh' + fx + ':' + fy,
+                x1: sx(fx - fux * grain), y1: sy(fy - fuy * grain) + 0.7,
+                x2: sx(fx + fux * grain), y2: sy(fy + fuy * grain) + 0.7,
+                stroke: 'rgba(2,6,23,0.45)', strokeWidth: 1.8, strokeLinecap: 'round' }));
               kids.push(h('line', { key: 'filing' + fx + ':' + fy,
                 x1: sx(fx - fux * grain), y1: sy(fy - fuy * grain),
                 x2: sx(fx + fux * grain), y2: sy(fy + fuy * grain),
-                stroke: 'rgba(226,232,240,0.62)', strokeWidth: 1.2, strokeLinecap: 'round' }));
+                stroke: 'rgba(226,232,240,' + (0.45 + glint * 0.45).toFixed(2) + ')', strokeWidth: 1.35, strokeLinecap: 'round' }));
+              kids.push(h('line', { key: 'filing-sp' + fx + ':' + fy,
+                x1: sx(fx - fux * 1.6), y1: sy(fy - fuy * 1.6),
+                x2: sx(fx + fux * 1.6), y2: sy(fy + fuy * 1.6),
+                stroke: 'rgba(255,255,255,' + (0.35 + glint * 0.45).toFixed(2) + ')', strokeWidth: 0.75, strokeLinecap: 'round' }));
             }
           }
         }
 
-        // magnets (bars: red N half, blue S half)
+        // Brushed metallic bar magnets (anodized red N half, cobalt S half + crisp specular bevel)
         d.magnets.forEach(function (m, i) {
           var len = 64, wdt = 22;
           var deg = m.angle * 180 / Math.PI;
           var g = [];
-          // north half
-          g.push(h('rect', { key: 'n', x: 0, y: -wdt / 2, width: len / 2, height: wdt, fill: m.polarity > 0 ? '#ef4444' : '#3b82f6' }));
-          g.push(h('rect', { key: 's', x: -len / 2, y: -wdt / 2, width: len / 2, height: wdt, fill: m.polarity > 0 ? '#3b82f6' : '#ef4444' }));
+          g.push(h('rect', { key: 'shadow', x: -len / 2 + 1.5, y: -wdt / 2 + 2.2, width: len, height: wdt, rx: 3, fill: 'rgba(2,6,23,0.42)' }));
+          g.push(h('rect', { key: 'n', x: 0, y: -wdt / 2, width: len / 2, height: wdt, fill: m.polarity > 0 ? 'url(#mag-north-metal)' : 'url(#mag-south-metal)' }));
+          g.push(h('rect', { key: 's', x: -len / 2, y: -wdt / 2, width: len / 2, height: wdt, fill: m.polarity > 0 ? 'url(#mag-south-metal)' : 'url(#mag-north-metal)' }));
+          g.push(h('line', { key: 'bevel-top', x1: -len / 2 + 1, y1: -wdt / 2 + 1.4, x2: len / 2 - 1, y2: -wdt / 2 + 1.4, stroke: 'rgba(255,255,255,0.42)', strokeWidth: 1.2 }));
+          g.push(h('line', { key: 'seam', x1: 0, y1: -wdt / 2, x2: 0, y2: wdt / 2, stroke: 'rgba(248,250,252,0.48)', strokeWidth: 1 }));
+          g.push(h('rect', { key: 'rim', x: -len / 2, y: -wdt / 2, width: len, height: wdt, rx: 2, fill: 'none', stroke: 'rgba(226,232,240,0.28)', strokeWidth: 0.9 }));
           g.push(h('text', { key: 'nl', x: len / 2 - 9, y: 4, fill: '#fff', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, m.polarity > 0 ? 'N' : 'S'));
           g.push(h('text', { key: 'sl', x: -len / 2 + 9, y: 4, fill: '#fff', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, m.polarity > 0 ? 'S' : 'N'));
           if (d.fieldSelected === i) {
@@ -5050,15 +5099,21 @@
           });
         }
 
-        // compass needle points along the resultant local field
+        // Precision compass with metallic bezel, faceted needle catchlight, brass jewel & glass crystal glint
         var b = fieldAt(d.compass.x, d.compass.y, d.magnets);
         var bang = Math.atan2(b.y, b.x);
         var cxp = sx(d.compass.x), cyp = sy(d.compass.y);
         kids.push(h('g', { key: 'compass', transform: 'translate(' + cxp + ',' + cyp + ')' },
-          h('circle', { r: 18, fill: '#0f172a', stroke: '#e2e8f0', strokeWidth: 1.5 }),
+          h('circle', { r: 20, fill: 'rgba(2,6,23,0.48)', cy: 1.5 }),
+          h('circle', { r: 18.5, fill: 'url(#mag-compass-dial)', stroke: 'url(#mag-compass-bezel)', strokeWidth: 2 }),
+          h('circle', { r: 15.2, fill: 'none', stroke: 'rgba(148,163,184,0.28)', strokeWidth: 0.8, strokeDasharray: '1.5 4.4' }),
           h('g', { transform: 'rotate(' + (bang * 180 / Math.PI).toFixed(1) + ')' },
-            h('polygon', { points: '15,0 -3,-4 -3,4', fill: '#ef4444' }),
-            h('polygon', { points: '-15,0 3,-4 3,4', fill: '#e2e8f0' }))
+            h('polygon', { points: '15.5,0 -3,-4.2 -3,0', fill: '#f87171' }),
+            h('polygon', { points: '15.5,0 -3,0 -3,4.2', fill: '#dc2626' }),
+            h('polygon', { points: '-15.5,0 3,-4.2 3,0', fill: '#f8fafc' }),
+            h('polygon', { points: '-15.5,0 3,0 3,4.2', fill: '#94a3b8' }),
+            h('circle', { r: 2.6, fill: '#fbbf24', stroke: '#fef3c7', strokeWidth: 0.7 })),
+          h('path', { d: 'M -11 -8 A 14 14 0 0 1 9 -10', fill: 'none', stroke: 'rgba(255,255,255,0.34)', strokeWidth: 1.5, strokeLinecap: 'round' })
         ));
 
         function pointerFieldPoint(e) {
@@ -5207,11 +5262,46 @@
                 if (child.geometry && child.geometry.dispose && !child.geometry._magShared) child.geometry.dispose();
                 if (child.material) {
                   (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) {
-                    if (material && material.dispose) material.dispose();
+                    if (!material) return;
+                    [material.map, material.bumpMap, material.roughnessMap].forEach(function (tex) {
+                      if (tex && tex.dispose && !tex._magShared) tex.dispose();
+                    });
+                    if (material.dispose) material.dispose();
                   });
                 }
               });
             }
+            // Shared procedural brushed-metal bump texture & soft glowing flow-bead texture (cleaned up on unmount).
+            var _brushedBumpTex = null, _flowBeadTex = null;
+            try {
+              var bCv = document.createElement('canvas'); bCv.width = 128; bCv.height = 64;
+              var bCtx = bCv.getContext('2d');
+              if (bCtx) {
+                bCtx.fillStyle = '#808080'; bCtx.fillRect(0, 0, 128, 64);
+                for (var bi = 0; bi < 96; bi++) {
+                  var by = (bi / 96) * 64, lum = 104 + ((bi * 37) % 48);
+                  bCtx.fillStyle = 'rgb(' + lum + ',' + lum + ',' + lum + ')';
+                  bCtx.fillRect(0, by, 128, 1);
+                }
+                _brushedBumpTex = new THREE.CanvasTexture(bCv);
+                _brushedBumpTex.wrapS = _brushedBumpTex.wrapT = THREE.RepeatWrapping;
+                _brushedBumpTex._magShared = true;
+              }
+              var pCv = document.createElement('canvas'); pCv.width = pCv.height = 64;
+              var pCtx = pCv.getContext('2d');
+              if (pCtx && pCtx.createRadialGradient) {
+                var pg = pCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+                if (pg && pg.addColorStop) {
+                  pg.addColorStop(0, 'rgba(255,255,255,1)');
+                  pg.addColorStop(0.28, 'rgba(254,243,199,0.92)');
+                  pg.addColorStop(0.62, 'rgba(56,189,248,0.36)');
+                  pg.addColorStop(1, 'rgba(56,189,248,0)');
+                  pCtx.fillStyle = pg; pCtx.fillRect(0, 0, 64, 64);
+                }
+                _flowBeadTex = new THREE.CanvasTexture(pCv);
+                _flowBeadTex._magShared = true;
+              }
+            } catch (_texErr) {}
             function clearGroup(group) {
               while (group.children.length) {
                 var child = group.children[group.children.length - 1];
@@ -5272,8 +5362,8 @@
                 // energy with nothing replacing it, which would have dimmed the
                 // red/blue N/S coding. That coding is the teaching convention,
                 // so it does not get spent on a highlight.
-                var north = new THREE.Mesh(new THREE.BoxGeometry(1, 0.66, 0.66), new THREE.MeshStandardMaterial({ color: northColor, roughness: 0.28, metalness: 0.35, emissive: northColor, emissiveIntensity: 0.12 }));
-                var south = new THREE.Mesh(new THREE.BoxGeometry(1, 0.66, 0.66), new THREE.MeshStandardMaterial({ color: southColor, roughness: 0.28, metalness: 0.35, emissive: southColor, emissiveIntensity: 0.12 }));
+                var north = new THREE.Mesh(new THREE.BoxGeometry(1, 0.66, 0.66), new THREE.MeshStandardMaterial({ color: northColor, roughness: 0.24, metalness: 0.35, bumpMap: _brushedBumpTex, bumpScale: 0.015, emissive: northColor, emissiveIntensity: 0.14 }));
+                var south = new THREE.Mesh(new THREE.BoxGeometry(1, 0.66, 0.66), new THREE.MeshStandardMaterial({ color: southColor, roughness: 0.24, metalness: 0.35, bumpMap: _brushedBumpTex, bumpScale: 0.015, emissive: southColor, emissiveIntensity: 0.14 }));
                 north.position.x = 0.5;
                 south.position.x = -0.5;
                 north.userData.magnetIndex = index;
@@ -5281,6 +5371,10 @@
                 north.castShadow = true; south.castShadow = true;
                 group.add(north);
                 group.add(south);
+                // Polished metallic neutral-zone collar accent separating the anodized halves.
+                var seamCollar = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.69, 0.69), new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.22, metalness: 0.55 }));
+                seamCollar.userData.magnetIndex = index;
+                group.add(seamCollar);
                 // One bright stripe marks physical north; two mark physical south.
                 // The larger cross-section keeps the markers visible from oblique views.
                 var northSide = mag.polarity < 0 ? -1 : 1;
@@ -5297,6 +5391,52 @@
                   var outline = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.95 }));
                   outline.userData.magnetIndex = index;
                   group.add(outline);
+                }
+                if (typeof THREE.ShaderMaterial === 'function') {
+                  var envGeo = new THREE.TorusGeometry(0.96, 0.54, 16, 44);
+                  var envMat = new THREE.ShaderMaterial({
+                    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.FrontSide,
+                    uniforms: {
+                      uPhase: { value: 0 },
+                      uReduced: { value: _motionPreference.current.reduced ? 1 : 0 },
+                      uStrength: { value: Math.max(0.4, Math.min(1.8, Number(mag.strength) || 1)) },
+                      uPolarity: { value: mag.polarity < 0 ? -1 : 1 },
+                      uHc: { value: magIsHighContrast(cv) ? 1 : 0 }
+                    },
+                    vertexShader: [
+                      'varying vec3 vLocalPos; varying vec3 vNormalV; varying vec3 vViewV;',
+                      'void main() {',
+                      '  vLocalPos = position;',
+                      '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                      '  vNormalV = normalize(normalMatrix * normal);',
+                      '  vViewV = normalize(-mv.xyz);',
+                      '  gl_Position = projectionMatrix * mv;',
+                      '}'
+                    ].join('\n'),
+                    fragmentShader: [
+                      'uniform float uPhase; uniform float uReduced; uniform float uStrength; uniform float uPolarity; uniform float uHc;',
+                      'varying vec3 vLocalPos; varying vec3 vNormalV; varying vec3 vViewV;',
+                      'void main() {',
+                      '  if (uHc > 0.5) discard;',
+                      '  float fres = pow(1.0 - abs(dot(normalize(vNormalV), normalize(vViewV))), 2.4);',
+                      '  float poleGrad = clamp(0.5 + 0.5 * (vLocalPos.x * uPolarity / 1.35), 0.0, 1.0);',
+                      '  float ripple = uReduced > 0.5 ? 0.5 : (0.5 + 0.5 * sin(vLocalPos.x * 4.5 * uPolarity - uPhase * 12.56637));',
+                      '  vec3 southCol = vec3(0.22, 0.64, 1.0);',
+                      '  vec3 northCol = vec3(0.98, 0.34, 0.48);',
+                      '  vec3 col = mix(southCol, northCol, poleGrad) + vec3(0.98, 0.84, 0.42) * ripple * 0.22;',
+                      '  float a = clamp(fres * (0.14 + 0.14 * ripple) * clamp(uStrength * 0.8, 0.35, 1.35), 0.0, 0.42);',
+                      '  if (a < 0.005) discard;',
+                      '  gl_FragColor = vec4(col, a);',
+                      '}'
+                    ].join('\n')
+                  });
+                  var envMesh = new THREE.Mesh(envGeo, envMat);
+                  envMesh.name = 'mag-glsl-dipole-envelope';
+                  envMesh.rotation.y = Math.PI * 0.5;
+                  envMesh.scale.set(1.0, 1.0, 1.18);
+                  envMesh.renderOrder = 1;
+                  group.add(envMesh);
+                  _fieldTubeMats.push(envMat);
                 }
                 magnetGroup.add(group);
               });
@@ -5335,6 +5475,7 @@
             // line). The base hue still identifies WHICH magnet a line belongs
             // to, so the two-magnet case stays distinguishable.
             var _fieldTubeMats = [];
+            var _probeRippleArrow = null;
             // ── Field-line flow ────────────────────────────────────────────
             // Beads of light travelling along each traced line, north pole to
             // south. This is the one thing a static field map cannot show:
@@ -5361,8 +5502,8 @@
               _flowGeom = new THREE.BufferGeometry();
               _flowGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(total * 3), 3));
               _flowMat = new THREE.PointsMaterial({
-                color: 0xfff7ed, size: 0.13, sizeAttenuation: true,
-                transparent: true, opacity: 0.9, depthWrite: false,
+                color: 0xfff7ed, map: _flowBeadTex, size: 0.22, sizeAttenuation: true,
+                transparent: true, opacity: 0.95, depthWrite: false,
                 blending: THREE.AdditiveBlending
               });
               _flowPoints = new THREE.Points(_flowGeom, _flowMat);
@@ -5393,6 +5534,18 @@
                 }
               }
               _flowGeom.attributes.position.needsUpdate = true;
+              var isHc = magIsHighContrast(cv);
+              for (var fm = 0; fm < _fieldTubeMats.length; fm++) {
+                var u = _fieldTubeMats[fm] && _fieldTubeMats[fm].uniforms;
+                if (!u) continue;
+                if (u.uPhase) u.uPhase.value = _motionPreference.current.reduced ? 0.25 : phase;
+                if (u.uReduced) u.uReduced.value = _motionPreference.current.reduced ? 1 : 0;
+                if (u.uHc) u.uHc.value = isHc ? 1 : 0;
+              }
+              if (_probeRippleArrow && !_motionPreference.current.reduced) {
+                var dampedWobble = Math.sin(phase * Math.PI * 6) * 0.028;
+                _probeRippleArrow.rotation.z = (_probeRippleArrow.userData.baseRotZ || 0) + dampedWobble;
+              }
             }
             function stopFlow() {
               if (_flowRAF != null) { try { cancelAnimationFrame(_flowRAF); } catch (e) {} _flowRAF = null; }
@@ -5446,6 +5599,7 @@
               var pos = geometry.attributes.position;
               var base = new THREE.Color(magnetIndex ? 0xa78bfa : 0xf43f5e);
               var colors = new Float32Array(pos.count * 3);
+              var levelAttr = new Float32Array(pos.count);
               var tmp = new THREE.Color();
               // TubeGeometry lays vertices out as (tubular+1) rings of
               // (radial+1) vertices, so ring index recovers the arc position.
@@ -5458,11 +5612,47 @@
                 pos.setXYZ(i, centre.x + (pos.getX(i) - centre.x) * r, centre.y + (pos.getY(i) - centre.y) * r, centre.z + (pos.getZ(i) - centre.z) * r);
                 tmp.copy(base).lerp(gold, level * 0.72);
                 colors[i * 3] = tmp.r; colors[i * 3 + 1] = tmp.g; colors[i * 3 + 2] = tmp.b;
+                levelAttr[i] = level;
               }
               pos.needsUpdate = true;
               geometry.computeVertexNormals();
               geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-              var material = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.88 });
+              geometry.setAttribute('aLevel', new THREE.BufferAttribute(levelAttr, 1));
+              var material = (typeof THREE.ShaderMaterial === 'function') ? new THREE.ShaderMaterial({
+                transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+                uniforms: {
+                  uPhase: { value: _motionPreference.current.reduced ? 0.25 : 0 },
+                  uReduced: { value: _motionPreference.current.reduced ? 1 : 0 },
+                  uHc: { value: magIsHighContrast(cv) ? 1 : 0 }
+                },
+                vertexShader: [
+                  'attribute vec3 color; attribute float aLevel;',
+                  'varying vec3 vColor; varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewV; varying float vLevel;',
+                  'void main(){',
+                  '  vColor=color; vUv=uv; vLevel=aLevel;',
+                  '  vec4 mv=modelViewMatrix*vec4(position,1.0);',
+                  '  vViewV=-mv.xyz; vNormalV=normalize(normalMatrix*normal);',
+                  '  gl_Position=projectionMatrix*mv;',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uPhase; uniform float uReduced; uniform float uHc;',
+                  'varying vec3 vColor; varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewV; varying float vLevel;',
+                  'void main(){',
+                  '  if(uHc>0.5){ gl_FragColor=vec4(vColor,0.92); return; }',
+                  '  float ndv=clamp(abs(dot(normalize(vNormalV),normalize(vViewV))),0.0,1.0);',
+                  '  float core=pow(ndv,0.68);',
+                  '  float fresnelRim=pow(1.0-ndv,2.15)*(0.45+0.55*vLevel);',
+                  '  float primaryWave=uReduced>0.5?0.28:pow(0.5+0.5*sin((vUv.x*4.0-uPhase*4.0)*6.28318),5.0);',
+                  '  float harmonicWave=uReduced>0.5?0.12:pow(0.5+0.5*sin((vUv.x*8.0-uPhase*8.0+1.1)*6.28318),7.0)*0.45;',
+                  '  float pulse=(primaryWave+harmonicWave)*(0.52+0.68*vLevel);',
+                  '  vec3 rimTint=mix(vec3(0.32,0.82,1.0),vec3(1.0,0.84,0.36),vLevel);',
+                  '  vec3 plasma=mix(vColor,vec3(1.0,0.98,0.90),clamp(core*0.38+pulse*0.44,0.0,1.0))+rimTint*fresnelRim*0.42;',
+                  '  float alpha=clamp((0.36+core*0.42+fresnelRim*0.30+pulse*0.32)*(0.72+0.38*vLevel),0.0,0.96);',
+                  '  gl_FragColor=vec4(plasma,alpha);',
+                  '}'
+                ].join('\n')
+              }) : new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.82 });
               _fieldTubeMats.push(material);
               var tube = new THREE.Mesh(geometry, material);
               tube.userData.fieldTube = true;
@@ -5536,9 +5726,12 @@
 
             function buildProbe(state) {
               var origin = new THREE.Vector3(state.probe.x, state.probe.y, state.probe.z);
-              var sphere = new THREE.Mesh(new THREE.SphereGeometry(0.15, 18, 12), new THREE.MeshBasicMaterial({ color: 0xfbbf24 }));
+              var sphere = new THREE.Mesh(new THREE.SphereGeometry(0.15, 20, 14), new THREE.MeshStandardMaterial({ color: 0xfbbf24, emissive: 0xf59e0b, emissiveIntensity: 0.32, roughness: 0.2, metalness: 0.52 }));
               sphere.position.copy(origin);
               probeGroup.add(sphere);
+              var haloRing = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.016, 8, 28), new THREE.MeshBasicMaterial({ color: 0xfef3c7, transparent: true, opacity: 0.62, blending: THREE.AdditiveBlending, depthWrite: false }));
+              haloRing.position.copy(origin); haloRing.rotation.x = Math.PI / 2;
+              probeGroup.add(haloRing);
               var total = fieldAt3D(state.probe.x, state.probe.y, state.probe.z, state.magnets);
               var components = fieldComponentsAt3D(state.probe.x, state.probe.y, state.probe.z, state.magnets);
               var magnitudes = components.map(function (part) { return part.magnitude; });
@@ -5548,7 +5741,44 @@
                 addArrow(probeGroup, origin, part, index ? 0xa78bfa : 0x38bdf8, 0.45 + 1.05 * part.magnitude / maxMagnitude, 0.94);
               });
               var totalMagnitude = Math.sqrt(total.x * total.x + total.y * total.y + total.z * total.z);
+              var totalLevel = fieldLevel(totalMagnitude);
+              if (typeof THREE.ShaderMaterial === 'function') {
+                var rippleGeo = new THREE.RingGeometry(0.18, 0.62, 48, 1);
+                var rippleMat = new THREE.ShaderMaterial({
+                  transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+                  uniforms: {
+                    uPhase: { value: _motionPreference.current.reduced ? 0.25 : 0 },
+                    uReduced: { value: _motionPreference.current.reduced ? 1 : 0 },
+                    uStrength: { value: 0.35 + totalLevel * 0.65 },
+                    uHc: { value: magIsHighContrast(cv) ? 1 : 0 }
+                  },
+                  vertexShader: 'varying vec2 vLocal; void main(){ vLocal = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+                  fragmentShader: [
+                    'uniform float uPhase; uniform float uReduced; uniform float uStrength; uniform float uHc;',
+                    'varying vec2 vLocal;',
+                    'void main() {',
+                    '  if (uHc > 0.5) discard;',
+                    '  float r = clamp((length(vLocal) - 0.18) / 0.44, 0.0, 1.0);',
+                    '  float w1 = uReduced > 0.5 ? exp(-pow((r - 0.38) * 6.0, 2.0)) : pow(0.5 + 0.5 * sin((r * 2.5 - uPhase * 4.0) * 6.28318), 4.0);',
+                    '  float fade = smoothstep(0.0, 0.12, r) * pow(1.0 - r, 1.35);',
+                    '  vec3 col = mix(vec3(0.24, 0.78, 1.0), vec3(1.0, 0.82, 0.32), 1.0 - r * 0.65);',
+                    '  float a = clamp(w1 * fade * uStrength * 0.62, 0.0, 0.72);',
+                    '  if (a < 0.008) discard;',
+                    '  gl_FragColor = vec4(col, a);',
+                    '}'
+                  ].join('\n')
+                });
+                var rippleMesh = new THREE.Mesh(rippleGeo, rippleMat);
+                rippleMesh.name = 'mag-glsl-probe-ripple';
+                rippleMesh.position.copy(origin);
+                rippleMesh.rotation.x = -Math.PI * 0.5;
+                probeGroup.add(rippleMesh);
+                _fieldTubeMats.push(rippleMat);
+              }
+              var probeBeforeCount = probeGroup.children.length;
               addArrow(probeGroup, origin, total, 0xfbbf24, 0.55 + 1.2 * totalMagnitude / maxMagnitude, 1);
+              _probeRippleArrow = probeGroup.children.length > probeBeforeCount ? probeGroup.children[probeGroup.children.length - 1] : null;
+              if (_probeRippleArrow) _probeRippleArrow.userData.baseRotZ = _probeRippleArrow.rotation.z;
             }
 
             function rebuild(state) {
@@ -5563,7 +5793,7 @@
                 sliceOffset: state.sliceOffset
               };
               clearGroup(magnetGroup); clearGroup(lineGroup); clearGroup(vectorGroup); clearGroup(sliceGroup); clearGroup(probeGroup);
-              _flowCurves = [];
+              _flowCurves = []; _fieldTubeMats = []; _probeRippleArrow = null;
               buildSlice(liveState); buildLines(liveState); buildVectors(liveState); buildMagnets(liveState); buildProbe(liveState);
               buildFlow();
               renderScene();
@@ -5652,8 +5882,10 @@
               controls.dispose();
               if (resizeObserver) resizeObserver.disconnect();
               stopFlow();
-              _flowCurves = []; _flowPoints = null; _flowGeom = null; _flowMat = null;
+              _flowCurves = []; _fieldTubeMats = []; _probeRippleArrow = null; _flowPoints = null; _flowGeom = null; _flowMat = null;
               clearGroup(magnetGroup); clearGroup(lineGroup); clearGroup(vectorGroup); clearGroup(sliceGroup); clearGroup(probeGroup);
+              if (_brushedBumpTex) { _brushedBumpTex.dispose(); _brushedBumpTex = null; }
+              if (_flowBeadTex) { _flowBeadTex.dispose(); _flowBeadTex = null; }
               fieldPack.disposed = true;
               magDisposeComposer(fieldPack);
               magDisposeEnvironment(renderer);
@@ -6379,7 +6611,7 @@
             h('span', { className: 'mag-model-badge' }, 'Relative field units'),
             h('span', { className: 'mag-model-badge' }, d.learningMode === 'challenge' ? 'Independent estimate first' : 'Model-assisted investigation'),
             h('span', { className: 'mag-model-badge' }, 'Round ' + (roundIndex + 1) + '/' + FIELD_HUNT_ROUNDS.length),
-            h('span', { className: 'mag-model-badge', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_hidden_sources_found', '{value1} hidden sources found'), { value1: Number(d.fieldHuntWins) || 0 }) }, (Number(d.fieldHuntWins) || 0) + ' source' + ((Number(d.fieldHuntWins) || 0) === 1 ? '' : 's') + ' found')),
+            h('span', { role: 'note', className: 'mag-model-badge', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_hidden_sources_found', '{value1} hidden sources found'), { value1: Number(d.fieldHuntWins) || 0 }) }, (Number(d.fieldHuntWins) || 0) + ' source' + ((Number(d.fieldHuntWins) || 0) === 1 ? '' : 's') + ' found')),
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'A magnetometer reveals vectors, not the hidden magnet. Spread readings across the map, place a source estimate, then check the model. Round: ', h('b', { style: { color: TEXT } }, roundName), '.'),
           h('ol', { className: 'mag-hunt-steps', 'aria-label': d.fieldHuntSolved ? __alloT('stem.magnetism.a11y_hunt_workflow_complete_four_of_four_steps', 'Hunt workflow complete: four of four steps') : __alloFill(__alloT('stem.magnetism.a11y_hunt_workflow_step_of_four', 'Hunt workflow: step {value1} of four'), { value1: huntProgress.currentIndex + 1 }) },
             huntProgress.steps.map(function (step, index) {
@@ -6650,11 +6882,11 @@
               h('span', { 'aria-hidden': 'true' }, '◆'),
               h('span', null, h('b', null, evidence.predictionCorrect ? 'Evidence matched your estimate' : 'Evidence differed from your estimate'),
                 'The 2× larger gap produced a ' + evidence.observedWeakerFactor.toFixed(0) + '× weaker force. Bar-magnet force in this far-field model drops with the fourth power of distance, so doubling the gap gives 2⁴ = 16× weaker force. You estimated ' + evidence.prediction + '× weaker. Completion counts the controlled comparison, not whether the estimate matched.')) : null,
-            h('div', { className: 'mag-force-comparison', 'aria-label': __alloT('stem.magnetism.a11y_controlled_distance_comparison', 'Controlled distance comparison') },
+            h('div', { role: 'group', className: 'mag-force-comparison', 'aria-label': __alloT('stem.magnetism.a11y_controlled_distance_comparison', 'Controlled distance comparison') },
               h('article', { className: 'mag-force-reading', 'data-reading': 'baseline' }, h('small', null, 'A · 60-unit baseline'), h('b', null, evidence.baseline ? evidence.baseline.distance + ' units' : '60 units'), h('strong', null, evidence.baseline ? forceLabel(evidence.baseline.force) + ' force' : 'not captured'), h('span', null, evidence.baseline ? 'same strengths locked' : 'capture to lock strengths')),
               h('div', { className: 'mag-force-bridge', 'data-revealed': evidence.resultCaptured ? 'true' : 'false', 'aria-label': evidence.resultCaptured ? __alloT('stem.magnetism.a11y_gap_times_2_produces_force_divided_by_16', 'Gap times 2 produces force divided by 16') : __alloT('stem.magnetism.a11y_gap_will_be_doubled_force_change_is_hidden_until_the_test', 'Gap will be doubled; force change is hidden until the test') }, h('small', null, 'change one variable'), h('b', null, 'gap ×2'), h('span', null, evidence.resultCaptured ? 'force ÷16' : 'force ÷ ?')),
               h('article', { className: 'mag-force-reading', 'data-reading': 'test' }, h('small', null, 'B · doubled gap'), h('b', null, evidence.baseline ? evidence.baseline.targetDistance + ' units' : '120 units'), h('strong', null, evidence.resultCaptured ? forceLabel(evidence.baseline.targetForce) + ' force' : 'result hidden'), h('span', null, evidence.resultCaptured ? 'strengths stayed fixed' : 'run after estimating')))),
-          h('div', { className: 'mag-force-hud', 'aria-label': __alloT('stem.magnetism.a11y_live_force_bench_readings', 'Live Force Bench readings') },
+          h('div', { role: 'group', className: 'mag-force-hud', 'aria-label': __alloT('stem.magnetism.a11y_live_force_bench_readings', 'Live Force Bench readings') },
             h('div', { className: 'mag-force-metric', style: { '--mag-force-tone': '#fbbf24' } }, h('small', null, 'Live gap'), h('b', null, distance), h('span', null, 'distance units')),
             h('div', { className: 'mag-force-metric', style: { '--mag-force-tone': '#a78bfa' } }, h('small', null, 'Strength product'), h('b', null, evidence.strengthProduct.toFixed(2) + '×'), h('span', null, evidence.strength1 + ' × ' + evidence.strength2)),
             h('div', { className: 'mag-force-metric', style: { '--mag-force-tone': '#38bdf8' } }, h('small', null, 'Relative force'), h('b', null, forceLabel(force)), h('span', null, evidence.direction)),
@@ -6689,7 +6921,7 @@
               h('text', { x: 28, y: 216, fill: SOFT, fontSize: 11 }, '40'),
               h('text', { x: 292, y: 216, fill: SOFT, fontSize: 11, textAnchor: 'end' }, '140 distance')),
             h('figcaption', null, h('b', null, 'Live force signature'), evidence.resultCaptured ? 'The revealed distance curve uses a logarithmic vertical axis so both strong and faint interactions remain visible.' : 'The distance-response curve stays hidden until you commit an estimate and run the doubled-gap test.'),
-            h('div', { className: 'mag-force-legend', 'aria-label': __alloT('stem.magnetism.a11y_force_graph_legend', 'Force graph legend') },
+            h('div', { role: 'group', className: 'mag-force-legend', 'aria-label': __alloT('stem.magnetism.a11y_force_graph_legend', 'Force graph legend') },
               evidence.resultCaptured ? h('span', null, h('i', { className: 'mag-force-key is-curve', 'aria-hidden': 'true' }), 'revealed distance curve') : null,
               h('span', null, h('i', { className: 'mag-force-key is-current', 'aria-hidden': 'true' }), 'live reading'),
               h('span', null, h('i', { className: 'mag-force-key is-arrow', 'aria-hidden': 'true' }), 'thicker, longer arrows = stronger force'))),
@@ -6847,14 +7079,33 @@
               // not a new claim. Capped so the wire never blows out under bloom.
               var currentFraction = Math.max(0, Math.min(1, (Number(state.current) || 0) / 6));
               var wireMat = new THREE.MeshStandardMaterial({
-                color: state.current > 0 ? 0xf59e0b : 0x64748b,
-                emissive: 0xf59e0b,
-                emissiveIntensity: state.current > 0 ? 0.12 + currentFraction * 0.66 : 0,
-                roughness: 0.42, metalness: 0.55
+                color: state.current > 0 ? 0xea853c : 0x64748b,
+                emissive: 0xff9838,
+                emissiveIntensity: state.current > 0 ? 0.16 + currentFraction * 0.72 : 0,
+                roughness: 0.28, metalness: 0.66
               });
-              var wire = new THREE.Mesh(new THREE.TubeGeometry(curve, samples, 0.035, 8, false), wireMat);
+              var wire = new THREE.Mesh(new THREE.TubeGeometry(curve, samples, 0.036, 10, false), wireMat);
               wire.castShadow = true;
               dynamicGroup.add(wire);
+              // Glowing live current pulse halo sheath wrapping active copper solenoid windings.
+              if (state.current > 0 && typeof THREE.ShaderMaterial === 'function') {
+                var haloMat = new THREE.ShaderMaterial({
+                  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+                  uniforms: {
+                    uIntensity: { value: 0.18 + currentFraction * 0.48 },
+                    uDir: { value: state.currentDir < 0 ? -1 : 1 },
+                    uTime: { value: _motionPreference.current.reduced ? 0.4 : 0 },
+                    uReduced: { value: _motionPreference.current.reduced ? 1 : 0 },
+                    uHc: { value: magIsHighContrast(cv) ? 1 : 0 }
+                  },
+                  vertexShader: 'varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewV; void main(){ vUv=uv; vec4 mv=modelViewMatrix*vec4(position,1.0); vViewV=-mv.xyz; vNormalV=normalize(normalMatrix*normal); gl_Position=projectionMatrix*mv; }',
+                  fragmentShader: 'uniform float uIntensity; uniform float uDir; uniform float uTime; uniform float uReduced; uniform float uHc; varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewV; void main(){ if(uHc>0.5) discard; float ndv=clamp(abs(dot(normalize(vNormalV),normalize(vViewV))),0.0,1.0); float rim=pow(1.0-ndv,1.6); float core=pow(ndv,0.9); float shift=uReduced>0.5?0.0:(uTime*4.2*uDir); float pulses=0.62+0.38*pow(0.5+0.5*sin(vUv.x*36.0*uDir-shift),3.0); vec3 c=mix(vec3(1.0,0.56,0.14),vec3(1.0,0.94,0.62),pulses*0.68); gl_FragColor=vec4(c,(rim*0.58+core*0.42)*pulses*uIntensity); }'
+                });
+                var wireHalo = new THREE.Mesh(new THREE.TubeGeometry(curve, samples, 0.068, 8, false), haloMat);
+                wireHalo.renderOrder = 2;
+                dynamicGroup.add(wireHalo);
+                electroShaderMats.push(haloMat);
+              }
               if (state.current > 0) {
                 [0.14, 0.36, 0.58, 0.80].forEach(function (t) {
                   var point = curve.getPointAt(t), tangent = curve.getTangentAt(t).multiplyScalar(state.currentDir < 0 ? -1 : 1);
@@ -6933,7 +7184,7 @@
               var geometry = new THREE.TubeGeometry(curve, tubular, 1, radial, false);
               var pos = geometry.attributes.position;
               var cool = new THREE.Color(0x38bdf8), hot = new THREE.Color(0xf43f5e);
-              var colors = new Float32Array(pos.count * 3), tmp = new THREE.Color();
+              var colors = new Float32Array(pos.count * 3), levelAttr = new Float32Array(pos.count), tmp = new THREE.Color();
               for (var i = 0; i < pos.count; i++) {
                 var ringIndex = Math.min(levels.length - 1, Math.floor(i / (radial + 1)));
                 var level = levels[ringIndex], centre = centres[ringIndex];
@@ -6941,11 +7192,24 @@
                 pos.setXYZ(i, centre.x + (pos.getX(i) - centre.x) * rr, centre.y + (pos.getY(i) - centre.y) * rr, centre.z + (pos.getZ(i) - centre.z) * rr);
                 tmp.copy(cool).lerp(hot, level);
                 colors[i * 3] = tmp.r; colors[i * 3 + 1] = tmp.g; colors[i * 3 + 2] = tmp.b;
+                levelAttr[i] = level;
               }
               pos.needsUpdate = true;
               geometry.computeVertexNormals();
               geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-              dynamicGroup.add(new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.86 })));
+              geometry.setAttribute('aLevel', new THREE.BufferAttribute(levelAttr, 1));
+              var tubePlasmaMat = (typeof THREE.ShaderMaterial === 'function') ? new THREE.ShaderMaterial({
+                transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+                uniforms: {
+                  uTime: { value: _motionPreference.current.reduced ? 0.4 : 0 },
+                  uReduced: { value: _motionPreference.current.reduced ? 1 : 0 },
+                  uHc: { value: magIsHighContrast(cv) ? 1 : 0 }
+                },
+                vertexShader: 'attribute vec3 color; attribute float aLevel; varying vec3 vColor; varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewV; varying float vLevel; void main(){ vColor=color; vUv=uv; vLevel=aLevel; vec4 mv=modelViewMatrix*vec4(position,1.0); vViewV=-mv.xyz; vNormalV=normalize(normalMatrix*normal); gl_Position=projectionMatrix*mv; }',
+                fragmentShader: 'uniform float uTime; uniform float uReduced; uniform float uHc; varying vec3 vColor; varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewV; varying float vLevel; void main(){ if(uHc>0.5){ gl_FragColor=vec4(vColor,0.92); return; } float ndv=clamp(abs(dot(normalize(vNormalV),normalize(vViewV))),0.0,1.0); float core=pow(ndv,0.68); float rim=pow(1.0-ndv,2.1)*(0.42+0.58*vLevel); float pulse=uReduced>0.5?0.24:pow(0.5+0.5*sin((vUv.x*3.5-uTime*0.65)*6.28318),5.0); vec3 c=mix(vColor,vec3(1.0,0.97,0.90),clamp(core*0.38+pulse*0.42,0.0,1.0))+vec3(0.35,0.82,1.0)*rim*0.36; gl_FragColor=vec4(c,clamp((0.36+core*0.44+rim*0.28+pulse*0.28)*(0.74+0.36*vLevel),0.0,0.95)); }'
+              }) : new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.82 });
+              if (tubePlasmaMat.uniforms) electroShaderMats.push(tubePlasmaMat);
+              dynamicGroup.add(new THREE.Mesh(geometry, tubePlasmaMat));
             }
             function buildLines(state) {
               if (!state.lines || state.current <= 0) return;
@@ -6981,10 +7245,48 @@
               var sphere = new THREE.Mesh(new THREE.SphereGeometry(0.14, 18, 12), new THREE.MeshBasicMaterial({ color: 0xfbbf24 })); sphere.position.copy(origin); dynamicGroup.add(sphere);
               var field = solenoidFieldAt3D(origin.x, origin.y, origin.z, state); addArrow(origin, field, 0xfbbf24, Math.min(1.7, 0.55 + Math.log10(1 + Math.hypot(field.x, field.y, field.z)) * 0.5), 1);
             }
+            var electroShaderMats = [], electroFlowRaf = null, electroFlowTime = 0, electroFlowLast = null;
+            function stopElectroFlow() {
+              if (electroFlowRaf != null) { try { cancelAnimationFrame(electroFlowRaf); } catch (e) {} electroFlowRaf = null; }
+              electroFlowLast = null;
+            }
+            function startElectroFlow() {
+              if (disposed || _motionPreference.current.reduced || !electroShaderMats.length || electroFlowRaf != null) return;
+              if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') return;
+              function stepElectro(ts) {
+                electroFlowRaf = null;
+                if (disposed || !cv.isConnected || !electroShaderMats.length) return;
+                var hc = magIsHighContrast(cv) ? 1 : 0;
+                if (_motionPreference.current.reduced) {
+                  for (var ri = 0; ri < electroShaderMats.length; ri++) {
+                    var ru = electroShaderMats[ri].uniforms;
+                    if (ru.uReduced) ru.uReduced.value = 1;
+                    if (ru.uHc) ru.uHc.value = hc;
+                  }
+                  renderScene();
+                  return;
+                }
+                if (electroFlowLast == null) electroFlowLast = ts;
+                var dt = Math.max(0, Math.min(80, ts - electroFlowLast)) * 0.001;
+                electroFlowLast = ts;
+                electroFlowTime += dt;
+                for (var ei = 0; ei < electroShaderMats.length; ei++) {
+                  var eu = electroShaderMats[ei].uniforms;
+                  if (eu.uTime) eu.uTime.value = electroFlowTime;
+                  if (eu.uReduced) eu.uReduced.value = 0;
+                  if (eu.uHc) eu.uHc.value = hc;
+                }
+                renderScene();
+                electroFlowRaf = window.requestAnimationFrame(stepElectro);
+              }
+              electroFlowRaf = window.requestAnimationFrame(stepElectro);
+            }
             function rebuild(state) {
               if (disposed) return;
               liveState = Object.assign({}, state, { probe: Object.assign({}, state.probe) });
+              stopElectroFlow(); electroShaderMats = [];
               clearDynamic(); buildLines(liveState); buildVectors(liveState); buildCoil(liveState); buildProbe(liveState); renderScene();
+              if (electroShaderMats.length && liveState.current > 0) startElectroFlow();
             }
             function setPointer(event) { var rect = cv.getBoundingClientRect(); pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1; pointer.y = -((event.clientY - rect.top) / Math.max(1, rect.height)) * 2 + 1; raycaster.setFromCamera(pointer, camera); }
             function onPointerDown(event) { pointerStart = { x: event.clientX, y: event.clientY }; }
@@ -6995,7 +7297,7 @@
               var probe = { x: Math.max(-4, Math.min(4, point.x)), y: liveState.probe.y, z: Math.max(-3, Math.min(3, point.z)) };
               if (cv._electro3dCommit) cv._electro3dCommit({ electro3dProbe: probe }, 'Moved the electromagnet field probe.');
             }
-            function onContextLost(event) { event.preventDefault(); upd({ electro3dStatus: 'error' }); announceToSR(__alloT('stem.magnetism.sr_the_3d_electromagnet_graphics_context_was_lost_th', 'The 3D electromagnet graphics context was lost. The 2D coil investigation remains available.')); }
+            function onContextLost(event) { event.preventDefault(); stopElectroFlow(); upd({ electro3dStatus: 'error' }); announceToSR(__alloT('stem.magnetism.sr_the_3d_electromagnet_graphics_context_was_lost_th', 'The 3D electromagnet graphics context was lost. The 2D coil investigation remains available.')); }
             function setView(view) {
               if (view === 'side') camera.position.set(0.01, 2.2, 10);
               else if (view === 'end') camera.position.set(9, 0.6, 0.01);
@@ -7005,6 +7307,7 @@
             }
             function cleanup() {
               if (disposed) return; disposed = true;
+              stopElectroFlow(); electroShaderMats = [];
               electroPack.disposed = true;
               magDisposeComposer(electroPack);
               cv.removeEventListener('pointerdown', onPointerDown); cv.removeEventListener('pointerup', onPointerUp); cv.removeEventListener('webglcontextlost', onContextLost);
@@ -7110,10 +7413,10 @@
               h('i', { 'aria-hidden': 'true' }, '→'),
               h('span', null, changeLabel)),
             setupNode('trial', 'B · live trial', comparison.trial, comparison.trialField)),
-          h('div', { className: 'mag-fair-meters', 'aria-label': __alloT('stem.magnetism.a11y_baseline_and_trial_field_strength_comparison_ba', 'Baseline and trial field-strength comparison; bars share a linear scale') },
-            h('div', { className: 'mag-fair-meter', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_baseline_a', 'Baseline A, {value1}'), { value1: electromagnetFieldLabel(comparison.baselineField) })},
+          h('div', { role: 'group', className: 'mag-fair-meters', 'aria-label': __alloT('stem.magnetism.a11y_baseline_and_trial_field_strength_comparison_ba', 'Baseline and trial field-strength comparison; bars share a linear scale') },
+            h('div', { role: 'group', className: 'mag-fair-meter', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_baseline_a', 'Baseline A, {value1}'), { value1: electromagnetFieldLabel(comparison.baselineField) })},
               h('span', null, 'A'), h('span', { className: 'mag-fair-track', 'aria-hidden': 'true' }, h('i', { className: 'mag-fair-fill', style: { '--mag-fair-color': '#38bdf8', width: meterWidth(comparison.baselineField) + '%' } })), h('strong', null, electromagnetFieldLabel(comparison.baselineField))),
-            h('div', { className: 'mag-fair-meter', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_live_trial_b', 'Live trial B, {value1}'), { value1: electromagnetFieldLabel(comparison.trialField) })},
+            h('div', { role: 'group', className: 'mag-fair-meter', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_live_trial_b', 'Live trial B, {value1}'), { value1: electromagnetFieldLabel(comparison.trialField) })},
               h('span', null, 'B'), h('span', { className: 'mag-fair-track', 'aria-hidden': 'true' }, h('i', { className: 'mag-fair-fill', style: { '--mag-fair-color': '#fb7185', width: meterWidth(comparison.trialField) + '%' } })), h('strong', null, electromagnetFieldLabel(comparison.trialField)))),
           h('div', { className: 'mag-fair-feedback', 'data-status': comparison.status, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
             h('span', { 'aria-hidden': 'true' }, comparison.status === 'fair' ? '✓' : comparison.status === 'confounded' ? '!' : '→'),
@@ -7253,7 +7556,29 @@
         var loopGap = 252 / Math.max(1, loopCount - 1);
         var loopText = loopCount + ' visible loops represent ' + d.turns + ' turns';
         var coilColor = active ? '#d97706' : SOFT;
-        var kids = [h('rect', { key: 'bg', width: 560, height: 280, fill: INSTRUMENT })];
+        var currentRatio = Math.max(0, Math.min(1, (Number(d.current) || 0) / 6));
+        var kids = [
+          h('defs', { key: 'sol-defs' },
+            h('linearGradient', { id: 'mag-iron-core-grad', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#94a3b8' }),
+              h('stop', { offset: '28%', stopColor: '#cbd5e1' }),
+              h('stop', { offset: '62%', stopColor: '#64748b' }),
+              h('stop', { offset: '100%', stopColor: '#334155' })
+            ),
+            h('linearGradient', { id: 'mag-copper-grad', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#fde68a' }),
+              h('stop', { offset: '35%', stopColor: '#f59e0b' }),
+              h('stop', { offset: '75%', stopColor: '#b45309' }),
+              h('stop', { offset: '100%', stopColor: '#78350f' })
+            ),
+            h('radialGradient', { id: 'mag-coil-halo', cx: '50%', cy: '50%', r: '50%' },
+              h('stop', { offset: '0%', stopColor: '#fbbf24', stopOpacity: (0.14 + currentRatio * 0.22).toFixed(2) }),
+              h('stop', { offset: '60%', stopColor: '#f59e0b', stopOpacity: (0.05 + currentRatio * 0.10).toFixed(2) }),
+              h('stop', { offset: '100%', stopColor: '#f59e0b', stopOpacity: 0 })
+            )
+          ),
+          h('rect', { key: 'bg', width: 560, height: 280, fill: INSTRUMENT })
+        ];
         [40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520].forEach(function (x) {
           kids.push(h('line', { key: 'grid-x' + x, x1: x, x2: x, y1: 14, y2: 266, stroke: BORDER, opacity: 0.3 }));
         });
@@ -7261,22 +7586,28 @@
           kids.push(h('line', { key: 'grid-y' + y, x1: 20, x2: 540, y1: y, y2: y, stroke: BORDER, opacity: 0.3 }));
         });
         if (active) {
+          kids.push(h('ellipse', { key: 'coil-glow-aura', cx: 280, cy: 120, rx: 162, ry: 56, fill: 'url(#mag-coil-halo)' }));
           [0, 1].forEach(function (i) {
             var top = 40 - i * 20, bottom = 200 + i * 15;
-            kids.push(h('path', { key: 'field-top' + i, d: 'M126 120 C48 ' + top + ' 512 ' + top + ' 434 120', fill: 'none', stroke: '#38bdf8', strokeWidth: i ? 1.4 : 2, opacity: i ? 0.45 : 0.8 }));
-            kids.push(h('path', { key: 'field-bottom' + i, d: 'M126 120 C48 ' + bottom + ' 512 ' + bottom + ' 434 120', fill: 'none', stroke: '#38bdf8', strokeWidth: i ? 1.4 : 2, opacity: i ? 0.45 : 0.8 }));
+            kids.push(h('path', { key: 'field-top-glow' + i, d: 'M126 120 C48 ' + top + ' 512 ' + top + ' 434 120', fill: 'none', stroke: '#38bdf8', strokeWidth: i ? 4.2 : 6, opacity: i ? 0.12 : 0.2 }));
+            kids.push(h('path', { key: 'field-bottom-glow' + i, d: 'M126 120 C48 ' + bottom + ' 512 ' + bottom + ' 434 120', fill: 'none', stroke: '#38bdf8', strokeWidth: i ? 4.2 : 6, opacity: i ? 0.12 : 0.2 }));
+            kids.push(h('path', { key: 'field-top' + i, d: 'M126 120 C48 ' + top + ' 512 ' + top + ' 434 120', fill: 'none', stroke: '#7dd3fc', strokeWidth: i ? 1.5 : 2.1, opacity: i ? 0.55 : 0.9 }));
+            kids.push(h('path', { key: 'field-bottom' + i, d: 'M126 120 C48 ' + bottom + ' 512 ' + bottom + ' 434 120', fill: 'none', stroke: '#7dd3fc', strokeWidth: i ? 1.5 : 2.1, opacity: i ? 0.55 : 0.9 }));
           });
           [60, 180].forEach(function (y) {
-            kids.push(h('polygon', { key: 'return-arrow' + y, points: poleDir > 0 ? '272,' + y + ' 284,' + (y - 5) + ' 284,' + (y + 5) : '288,' + y + ' 276,' + (y - 5) + ' 276,' + (y + 5), fill: '#0284c7' }));
+            kids.push(h('polygon', { key: 'return-arrow' + y, points: poleDir > 0 ? '272,' + y + ' 284,' + (y - 5) + ' 284,' + (y + 5) : '288,' + y + ' 276,' + (y - 5) + ' 276,' + (y + 5), fill: '#38bdf8' }));
           });
         }
-        kids.push(h('path', { key: 'wires', d: 'M154 154V236H253 M406 154V236H277', fill: 'none', stroke: SOFT, strokeWidth: 3, strokeLinejoin: 'round' }));
-        kids.push(h('rect', { key: 'core', x: 138, y: 104, width: 284, height: 32, rx: 7, fill: d.core ? '#64748b' : INSTRUMENT, stroke: SOFT, strokeWidth: 1.5, strokeDasharray: d.core ? undefined : '4 4' }));
-        if (d.core) kids.push(h('path', { key: 'core-shine', d: 'M146 109H414', stroke: '#cbd5e1', strokeWidth: 2, opacity: 0.7 }));
+        kids.push(h('path', { key: 'wires', d: 'M154 154V236H253 M406 154V236H277', fill: 'none', stroke: active ? '#f59e0b' : SOFT, strokeWidth: 3, strokeLinejoin: 'round' }));
+        kids.push(h('rect', { key: 'core', x: 138, y: 104, width: 284, height: 32, rx: 7, fill: d.core ? 'url(#mag-iron-core-grad)' : INSTRUMENT, stroke: SOFT, strokeWidth: 1.5, strokeDasharray: d.core ? undefined : '4 4' }));
+        if (d.core) kids.push(h('path', { key: 'core-shine', d: 'M146 109H414', stroke: '#f8fafc', strokeWidth: 2, opacity: 0.72 }));
         for (var i = 0; i < loopCount; i++) {
           var cx = 154 + i * loopGap;
-          kids.push(h('ellipse', { key: 'c' + i, cx: cx, cy: 120, rx: 12, ry: 37, fill: 'none', stroke: coilColor, strokeWidth: 4 }));
-          kids.push(h('path', { key: 'front' + i, d: 'M' + cx + ' 83 A12 37 0 0 1 ' + cx + ' 157', fill: 'none', stroke: active ? '#fbbf24' : SOFT, strokeWidth: 2 }));
+          if (active) {
+            kids.push(h('ellipse', { key: 'ch' + i, cx: cx, cy: 120, rx: 12, ry: 37, fill: 'none', stroke: 'rgba(251,191,36,' + (0.14 + currentRatio * 0.22).toFixed(2) + ')', strokeWidth: 8 }));
+          }
+          kids.push(h('ellipse', { key: 'c' + i, cx: cx, cy: 120, rx: 12, ry: 37, fill: 'none', stroke: active ? 'url(#mag-copper-grad)' : coilColor, strokeWidth: 4.2 }));
+          kids.push(h('path', { key: 'front' + i, d: 'M' + cx + ' 83 A12 37 0 0 1 ' + cx + ' 157', fill: 'none', stroke: active ? '#fef08a' : SOFT, strokeWidth: 2 }));
         }
         if (active) {
           [190, 248, 306, 364].forEach(function (x, i) {
@@ -8065,8 +8396,44 @@
             var resizeObserver = null, disposed = false, liveSignature = '';
             var particleGroup = null, velocityArrow = null, forceArrow = null, trailLine = null, trailGeometry = null, referenceLine = null, particleLightRef = particleLight;
             var cometGeometry = null, cometLine = null, particleGlow = null;
+            var chargeShaderMats = [], chargeGlowRaf = null, chargeGlowTime = 0, chargeGlowLast = null;
+            function stopChargeGlow() {
+              if (chargeGlowRaf != null) { try { cancelAnimationFrame(chargeGlowRaf); } catch (e) {} chargeGlowRaf = null; }
+              chargeGlowLast = null;
+            }
+            function startChargeGlow() {
+              if (disposed || _motionPreference.current.reduced || !chargeShaderMats.length || chargeGlowRaf != null) return;
+              if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') return;
+              function stepCharge(ts) {
+                chargeGlowRaf = null;
+                if (disposed || !cv.isConnected || !chargeShaderMats.length) return;
+                var hc = magIsHighContrast(cv) ? 1 : 0;
+                if (_motionPreference.current.reduced) {
+                  for (var ri = 0; ri < chargeShaderMats.length; ri++) {
+                    var ru = chargeShaderMats[ri].uniforms;
+                    if (ru.uReduced) ru.uReduced.value = 1;
+                    if (ru.uHc) ru.uHc.value = hc;
+                  }
+                  renderScene();
+                  return;
+                }
+                if (chargeGlowLast == null) chargeGlowLast = ts;
+                var dt = Math.max(0, Math.min(80, ts - chargeGlowLast)) * 0.001;
+                chargeGlowLast = ts;
+                chargeGlowTime += dt;
+                for (var ci = 0; ci < chargeShaderMats.length; ci++) {
+                  var cu = chargeShaderMats[ci].uniforms;
+                  if (cu.uTime) cu.uTime.value = chargeGlowTime;
+                  if (cu.uReduced) cu.uReduced.value = 0;
+                  if (cu.uHc) cu.uHc.value = hc;
+                }
+                renderScene();
+                chargeGlowRaf = window.requestAnimationFrame(stepCharge);
+              }
+              chargeGlowRaf = window.requestAnimationFrame(stepCharge);
+            }
             function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose && !child.geometry._magShared) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
-            function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } particleGroup = null; velocityArrow = null; forceArrow = null; trailLine = null; trailGeometry = null; referenceLine = null; cometGeometry = null; cometLine = null; particleGlow = null; }
+            function clearDynamic() { stopChargeGlow(); chargeShaderMats = []; while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } particleGroup = null; velocityArrow = null; forceArrow = null; trailLine = null; trailGeometry = null; referenceLine = null; cometGeometry = null; cometLine = null; particleGlow = null; }
             function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); magResizeComposer(chargePack, width, height); }
             var chargePack = { renderer: renderer, scene: scene, camera: camera, composer: null, disposed: false };
             function renderScene() {
@@ -8129,6 +8496,43 @@
               var vectors = state.points.map(function (point) { return new THREE.Vector3(point.x, point.y, point.z); });
               var fullGeometry = new THREE.BufferGeometry().setFromPoints(vectors);
               dynamicGroup.add(new THREE.Line(fullGeometry, new THREE.LineBasicMaterial({ color: 0xf43f5e, transparent: true, opacity: 0.25 })));
+              if (vectors.length >= 4 && typeof THREE.ShaderMaterial === 'function') {
+                try {
+                  var helixCurve = new THREE.CatmullRomCurve3(vectors);
+                  var helixSegs = Math.min(140, Math.max(24, vectors.length));
+                  var helixTubeGeo = new THREE.TubeGeometry(helixCurve, helixSegs, 0.042, 6, false);
+                  var helixTubeMat = new THREE.ShaderMaterial({
+                    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+                    uniforms: {
+                      uTime: { value: _motionPreference.current.reduced ? 0.4 : 0 },
+                      uReduced: { value: _motionPreference.current.reduced ? 1 : 0 },
+                      uCharge: { value: state.chargeSign > 0 ? 1 : -1 },
+                      uHc: { value: magIsHighContrast(cv) ? 1 : 0 }
+                    },
+                    vertexShader: 'varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewV; void main(){ vUv=uv; vec4 mv=modelViewMatrix*vec4(position,1.0); vNormalV=normalize(normalMatrix*normal); vViewV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }',
+                    fragmentShader: [
+                      'uniform float uTime; uniform float uReduced; uniform float uCharge; uniform float uHc;',
+                      'varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewV;',
+                      'void main() {',
+                      '  if (uHc > 0.5) discard;',
+                      '  float ndv = clamp(abs(dot(normalize(vNormalV), normalize(vViewV))), 0.0, 1.0);',
+                      '  float fres = pow(1.0 - ndv, 1.85);',
+                      '  float drift = uReduced > 0.5 ? 0.35 : pow(0.5 + 0.5 * sin((vUv.x * 6.0 - uTime * 1.15) * 6.28318), 4.0);',
+                      '  vec3 baseCol = uCharge > 0.0 ? vec3(0.98, 0.32, 0.48) : vec3(0.18, 0.74, 1.0);',
+                      '  vec3 col = mix(baseCol, vec3(1.0, 0.96, 0.88), drift * 0.62 + fres * 0.28);',
+                      '  float a = clamp((0.14 + fres * 0.34 + drift * 0.38) * smoothstep(0.0, 0.06, vUv.x) * smoothstep(1.0, 0.94, vUv.x), 0.0, 0.78);',
+                      '  if (a < 0.008) discard;',
+                      '  gl_FragColor = vec4(col, a);',
+                      '}'
+                    ].join('\n')
+                  });
+                  var helixTube = new THREE.Mesh(helixTubeGeo, helixTubeMat);
+                  helixTube.name = 'mag-glsl-helix-drift';
+                  helixTube.renderOrder = 2;
+                  dynamicGroup.add(helixTube);
+                  chargeShaderMats.push(helixTubeMat);
+                } catch (eHelix) {}
+              }
               if (state.reference) {
                 var referenceVectors = state.reference.points.map(function (point) { return new THREE.Vector3(point.x, point.y, point.z); });
                 var referenceGeometry = new THREE.BufferGeometry().setFromPoints(referenceVectors);
@@ -8206,6 +8610,7 @@
               var signature = [state.fieldModel, state.chargeSign, state.fieldSign, state.speed, state.field, state.tilt, state.mass, state.mirrorRatio, state.trail, referenceSignature].join('|');
               if (signature !== liveSignature) { liveSignature = signature; buildScene(liveState); }
               updateParticle(liveState); renderScene();
+              if (chargeShaderMats.length) startChargeGlow();
             }
             function setView(view) {
               if (view === 'field') camera.position.set(0.01, 10.5, 0.01);
@@ -8214,9 +8619,10 @@
               else camera.position.set(7.8, 5.8, 8.5);
               controls.target.set(0, 0, 0); camera.lookAt(controls.target); controls.update(); renderScene();
             }
-            function onContextLost(event) { event.preventDefault(); stopCharge3D(); upd({ charge3dStatus: 'error' }); announceToSR(__alloT('stem.magnetism.sr_the_3d_particle_graphics_context_was_lost_the_2d', 'The 3D particle graphics context was lost. The 2D Lorentz-force diagram remains available.')); }
+            function onContextLost(event) { event.preventDefault(); stopChargeGlow(); stopCharge3D(); upd({ charge3dStatus: 'error' }); announceToSR(__alloT('stem.magnetism.sr_the_3d_particle_graphics_context_was_lost_the_2d', 'The 3D particle graphics context was lost. The 2D Lorentz-force diagram remains available.')); }
             function cleanup() {
               if (disposed) return; disposed = true;
+              stopChargeGlow();
               chargePack.disposed = true;
               magDisposeComposer(chargePack);
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
@@ -8268,7 +8674,7 @@
           h('div', { id: 'mag-charge3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.charge3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
             d.charge3dStatus === 'ready' ? (isMirror ? 'Mirror scene ready. Drag to orbit, then test whether the particle is trapped or escapes.' : 'Scene ready. Drag to orbit, run the particle, scrub its position, or pin a path for comparison.') :
             d.charge3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D Lorentz-force diagram remains available. ', h('button', { onClick: function () { upd({ charge3dStatus: 'loading', charge3dAttempt: (d.charge3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D particle engine...'),
-          h('div', { 'aria-label': __alloT('stem.magnetism.a11y_3d_vector_key', '3D vector key'), style: { display: 'flex', gap: 10, flexWrap: 'wrap', color: SOFT, fontSize: 11.5, marginBottom: 8 } },
+          h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_3d_vector_key', '3D vector key'), style: { display: 'flex', gap: 10, flexWrap: 'wrap', color: SOFT, fontSize: 11.5, marginBottom: 8 } },
             h('span', null, 'B ↑ blue field arrows'), isMirror ? h('span', null, 'three-ring copper mirror coils') : null, h('span', null, 'v → gold velocity arrow'), h('span', null, 'F → green force arrow'), h('span', null, 'solid pink current path'), state.reference ? h('span', null, 'dashed pale reference path') : null, h('span', null, (state.chargeSign > 0 ? '+ one-ring' : '− two-ring') + ' particle marker')),
           sceneTextAlternative('mag-charge3d-summary', 'A ' + (state.chargeSign > 0 ? 'positive' : 'negative') + ' particle of relative mass ' + state.mass.toFixed(1) + ' moves in the ' + (isMirror ? 'non-uniform field of two magnetic mirror coils with end-to-center field ratio ' + state.mirrorRatio.toFixed(1) : 'uniform magnetic field') + ' along ' + (state.fieldSign > 0 ? 'positive y' : 'negative y') + '. Its velocity is tilted ' + state.tilt + ' degrees from the field axis, with parallel component ' + state.parallelSpeed.toFixed(2) + ' and perpendicular component ' + state.perpendicularSpeed.toFixed(2) + '. The path is ' + pathWords + ', center-field radius ' + state.radius.toFixed(2) + ', and center-field pitch per turn ' + state.pitch.toFixed(2) + '. ' + (isMirror ? mirrorEvidence : 'The magnetic force magnitude is proportional to ' + state.force.toFixed(2) + ' and the path curves ' + turnWords + '. Magnetic force stays perpendicular to velocity, so speed remains constant. ') + comparisonText),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_3d_particle_camera_and_path_controls', '3D particle camera and path controls'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 9 } },
@@ -8401,7 +8807,7 @@
                 h('small', null, 'Detector radius'), h('b', null, mystery.scan ? mystery.scan.radius.toFixed(2) : '—'), h('span', null, mystery.scan ? 'at analyzer B ' + mystery.scan.analyzerField.toFixed(1) : 'scan required')),
               h('div', { className: 'mag-ion-reading', style: { '--mag-ion-tone': mystery.complete ? '#34d399' : '#a78bfa' } },
                 h('small', null, 'Identity claim'), h('b', null, identityValue), h('span', null, mystery.complete ? 'confirmed by rB/v' : mystery.checked ? 'revise from evidence' : 'ratio remains hidden'))),
-            h('div', { className: 'mag-ion-equation', 'aria-label': mystery.scan ? __alloT('stem.magnetism.a11y_mass_to_charge_inference_uses_detector_radius_times', 'Mass-to-charge inference uses detector radius times analyzer field divided by speed') : __alloT('stem.magnetism.a11y_mass_to_charge_inference_waits_for_a_detector_scan', 'Mass-to-charge inference waits for a detector scan') },
+            h('div', { role: 'group', className: 'mag-ion-equation', 'aria-label': mystery.scan ? __alloT('stem.magnetism.a11y_mass_to_charge_inference_uses_detector_radius_times', 'Mass-to-charge inference uses detector radius times analyzer field divided by speed') : __alloT('stem.magnetism.a11y_mass_to_charge_inference_waits_for_a_detector_scan', 'Mass-to-charge inference waits for a detector scan') },
               h('code', null, 'm/|q| = rB/v'), h('span', { 'aria-hidden': 'true' }, '\u2192'),
               h('b', null, mystery.scan ? mystery.scan.radius.toFixed(2) + ' × ' + mystery.scan.analyzerField.toFixed(1) + ' ÷ ' + mystery.scan.selectedSpeed.toFixed(2) + (mystery.checked ? ' = ' + mystery.target.ratio.toFixed(0) : ' = ?') : 'waiting for radius evidence')),
             mystery.scan ? h('fieldset', { className: 'mag-ion-options' },
@@ -9502,7 +9908,7 @@
               var geometry = new THREE.TubeGeometry(curve, tubular, 1, radial, false);
               var pos = geometry.attributes.position;
               var cool = new THREE.Color(0x38bdf8), hot = new THREE.Color(0xf43f5e);
-              var colors = new Float32Array(pos.count * 3), tmp = new THREE.Color();
+              var colors = new Float32Array(pos.count * 3), levelAttr = new Float32Array(pos.count), tmp = new THREE.Color();
               for (var i = 0; i < pos.count; i++) {
                 var ringIndex = Math.min(levels.length - 1, Math.floor(i / (radial + 1)));
                 var level = levels[ringIndex], centre = centres[ringIndex];
@@ -9510,11 +9916,19 @@
                 pos.setXYZ(i, centre.x + (pos.getX(i) - centre.x) * rr, centre.y + (pos.getY(i) - centre.y) * rr, centre.z + (pos.getZ(i) - centre.z) * rr);
                 tmp.copy(cool).lerp(hot, level);
                 colors[i * 3] = tmp.r; colors[i * 3 + 1] = tmp.g; colors[i * 3 + 2] = tmp.b;
+                levelAttr[i] = level;
               }
               pos.needsUpdate = true;
               geometry.computeVertexNormals();
               geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-              dynamicGroup.add(new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.82 })));
+              geometry.setAttribute('aLevel', new THREE.BufferAttribute(levelAttr, 1));
+              var indTubeMat = (typeof THREE.ShaderMaterial === 'function') ? new THREE.ShaderMaterial({
+                transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+                uniforms: { uHc: { value: magIsHighContrast(cv) ? 1 : 0 } },
+                vertexShader: 'attribute vec3 color; attribute float aLevel; varying vec3 vColor; varying vec3 vNormalV; varying vec3 vViewV; varying float vLevel; void main(){ vColor=color; vLevel=aLevel; vec4 mv=modelViewMatrix*vec4(position,1.0); vNormalV=normalize(normalMatrix*normal); vViewV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }',
+                fragmentShader: 'uniform float uHc; varying vec3 vColor; varying vec3 vNormalV; varying vec3 vViewV; varying float vLevel; void main(){ if(uHc>0.5){ gl_FragColor=vec4(vColor,0.92); return; } float ndv=clamp(abs(dot(normalize(vNormalV),normalize(vViewV))),0.0,1.0); float core=pow(ndv,0.7); float rim=pow(1.0-ndv,2.2)*(0.4+0.6*vLevel); vec3 c=mix(vColor,vec3(1.0,0.97,0.90),core*0.36)+vec3(0.32,0.82,1.0)*rim*0.34; gl_FragColor=vec4(c,clamp((0.38+core*0.44+rim*0.26)*(0.74+0.36*vLevel),0.0,0.94)); }'
+              }) : new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.82 });
+              dynamicGroup.add(new THREE.Mesh(geometry, indTubeMat));
             }
             function buildFieldLines(state) {
               var magnet = state.magnet, moment = momentVector(magnet, true);
@@ -9547,8 +9961,35 @@
                 ring.quaternion.copy(quaternion); ring.position.copy(center).add(normal.clone().multiplyScalar(offset)); ring.castShadow = true; dynamicGroup.add(ring);
               }
               var fluxStrength = Math.min(1, Math.abs(state.flux) / 8);
+              var emfThermal = Math.min(1, Math.abs(state.emf) / 3);
               var fluxColor = Math.abs(state.flux) < 0.01 ? 0x64748b : state.flux > 0 ? 0xfb7185 : 0x38bdf8;
-              var disk = new THREE.Mesh(new THREE.CircleGeometry(coil.radius * 0.94, 52), new THREE.MeshBasicMaterial({ color: fluxColor, transparent: true, opacity: 0.08 + fluxStrength * 0.25, side: THREE.DoubleSide, depthWrite: false }));
+              var diskMat = (typeof THREE.ShaderMaterial === 'function') ? new THREE.ShaderMaterial({
+                transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
+                uniforms: {
+                  uBaseColor: { value: new THREE.Color(fluxColor) },
+                  uFlux: { value: fluxStrength },
+                  uThermal: { value: emfThermal },
+                  uHc: { value: magIsHighContrast(cv) ? 1 : 0 }
+                },
+                vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+                fragmentShader: [
+                  'uniform vec3 uBaseColor; uniform float uFlux; uniform float uThermal; uniform float uHc;',
+                  'varying vec2 vUv;',
+                  'void main() {',
+                  '  vec2 p = (vUv - 0.5) * 2.0;',
+                  '  float r = length(p);',
+                  '  if (r > 1.0) discard;',
+                  '  if (uHc > 0.5) { gl_FragColor = vec4(uBaseColor, 0.22 + uFlux * 0.28); return; }',
+                  '  float eddyRings = pow(0.5 + 0.5 * sin(r * 24.0), 3.0);',
+                  '  float edgeRim = smoothstep(0.62, 0.98, r);',
+                  '  vec3 thermalCol = mix(vec3(1.0, 0.58, 0.14), vec3(1.0, 0.92, 0.56), eddyRings);',
+                  '  vec3 col = mix(uBaseColor, thermalCol, clamp(uThermal * (0.45 + 0.55 * eddyRings), 0.0, 0.92));',
+                  '  float a = clamp((0.10 + uFlux * 0.28 + uThermal * 0.34 * eddyRings + edgeRim * 0.16) * (1.0 - smoothstep(0.94, 1.0, r)), 0.0, 0.82);',
+                  '  gl_FragColor = vec4(col, a);',
+                  '}'
+                ].join('\n')
+              }) : new THREE.MeshBasicMaterial({ color: fluxColor, transparent: true, opacity: 0.08 + fluxStrength * 0.25, side: THREE.DoubleSide, depthWrite: false });
+              var disk = new THREE.Mesh(new THREE.CircleGeometry(coil.radius * 0.94, 52), diskMat);
               disk.quaternion.copy(quaternion); disk.position.copy(center); dynamicGroup.add(disk);
               addArrow(dynamicGroup, center, normal, 0x34d399, 1.0, 0.92);
               [-0.55, 0, 0.55].forEach(function (a) {
@@ -9858,7 +10299,7 @@
         return h('section', { className: 'mag-speed-evidence', 'aria-label': __alloT('stem.magnetism.a11y_generator_speed_evidence_board', 'Generator speed evidence board') },
           h('div', { className: 'mag-speed-head' },
             h('b', null, 'Controlled speed evidence'),
-            h('span', { 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_of_3_generator_trials_complete', '{completedCount} of 3 generator trials complete'), { completedCount: evidence.completedCount }) }, evidence.completedCount + '/3 runs')),
+            h('span', { role: 'note', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_of_3_generator_trials_complete', '{completedCount} of 3 generator trials complete'), { completedCount: evidence.completedCount }) }, evidence.completedCount + '/3 runs')),
           h('div', { className: 'mag-speed-actions', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_generator_speed_trial_actions', 'Generator speed trial actions') },
             evidence.trials.map(function (trial) {
               var spec = specs[trial.kind];
@@ -9874,7 +10315,7 @@
               announceToSR(__alloT('stem.magnetism.sr_generator_speed_evidence_cleared_run_the_slow_tri', 'Generator speed evidence cleared. Run the slow trial first.'));
             }, style: btn(evidence.nextAction.key === 'reset') }, evidence.status === 'confounded' ? 'Reset mismatched runs' : 'Clear runs') : null,
             evidence.valid ? h('button', { type: 'button', onClick: function () { upd({ notebookOpen: true, labShellPanel: 'evidence' }); announceToSR(__alloT('stem.magnetism.sr_notebook_opened_to_record_the_completed_generator', 'Notebook opened to record the completed generator evidence.')); }, style: btn(true) }, 'Record evidence in notebook') : null),
-          h('div', { className: 'mag-speed-grid', 'aria-label': __alloT('stem.magnetism.a11y_shared_scale_voltage_comparison', 'Shared-scale voltage comparison') },
+          h('div', { role: 'group', className: 'mag-speed-grid', 'aria-label': __alloT('stem.magnetism.a11y_shared_scale_voltage_comparison', 'Shared-scale voltage comparison') },
             evidence.trials.map(function (trial) {
               var spec = specs[trial.kind];
               return h('div', { key: 'speed-run-' + trial.kind, className: 'mag-speed-run', 'data-status': trial.completed ? 'done' : 'pending', style: { '--mag-speed-color': spec.color } },
@@ -10291,7 +10732,7 @@
         function materialChip(item, prefix) {
           var mark = d.matRevealed ? (item.correct ? '✓' : item.correct === false ? '↺' : '·') : '';
           var chipState = d.matRevealed ? (item.magnetic ? 'lifted' : 'no pull') + (item.correct ? ', prediction confirmed' : item.correct === false ? ', prediction revised' : '') : item.prediction === true ? 'predicted lift' : item.prediction === false ? 'predicted no pull' : 'awaiting prediction';
-          return h('span', { key: prefix + item.id, className: 'mag-material-chip', 'aria-label': item.name + ': ' + chipState },
+          return h('span', { role: 'note', key: prefix + item.id, className: 'mag-material-chip', 'aria-label': item.name + ': ' + chipState },
             h('span', { 'aria-hidden': 'true' }, item.emoji), item.name.replace(' paperclip', '').replace(' chunk', '').replace(' ruler', '').replace(' pencil', ''), mark ? h('b', { 'aria-hidden': 'true' }, mark) : null);
         }
         var lanes = d.matRevealed ? [
@@ -10326,7 +10767,7 @@
                 h('div', { className: 'mag-material-fill', style: { width: (evidence.answeredCount / MATERIALS.length * 100) + '%' } })),
               h('div', { className: 'mag-material-magnet', role: 'img', 'aria-label': d.matRevealed ? __alloT('stem.magnetism.a11y_magnet_test_complete_samples_are_grouped_by_observed', 'Magnet test complete; samples are grouped by observed response') : __alloT('stem.magnetism.a11y_bar_magnet_ready_classify_every_sample_before_testing', 'Bar magnet ready; classify every sample before testing') },
                 h('span', null, 'N · TEST'), h('span', null, 'S · FIELD')),
-              h('div', { className: 'mag-material-flow', 'aria-label': d.matRevealed ? __alloT('stem.magnetism.a11y_observed_material_response_groups', 'Observed material response groups') : __alloT('stem.magnetism.a11y_material_prediction_groups', 'Material prediction groups') },
+              h('div', { role: 'group', className: 'mag-material-flow', 'aria-label': d.matRevealed ? __alloT('stem.magnetism.a11y_observed_material_response_groups', 'Observed material response groups') : __alloT('stem.magnetism.a11y_material_prediction_groups', 'Material prediction groups') },
                 lanes.map(function (lane) {
                   return h('section', { key: lane.id, className: 'mag-material-lane', 'data-lane': lane.id, 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_samples', '{title}: {value1} samples'), { title: lane.title, value1: lane.items.length }) },
                     h('div', { className: 'mag-material-lane-title' }, lane.title, h('span', null, lane.items.length)),
@@ -10463,7 +10904,7 @@
             h('div', null,
               h('b', null, 'Make magnetic memory visible'),
               'Sweep the applied field H and watch the domains build magnetization M. The route matters: the loop is ', h('strong', null, 'hysteresis'), ', a record of where the material has been.')),
-          h('div', { className: 'mag-domain-materials', 'aria-label': __alloT('stem.magnetism.a11y_compare_magnetic_materials', 'Compare magnetic materials') },
+          h('div', { role: 'group', className: 'mag-domain-materials', 'aria-label': __alloT('stem.magnetism.a11y_compare_magnetic_materials', 'Compare magnetic materials') },
             memory.comparisons.map(function (item) {
               return h('button', { key: item.id, type: 'button', className: 'mag-domain-material',
                 'data-active': item.active ? 'true' : 'false', 'aria-pressed': item.active ? 'true' : 'false',
@@ -10494,7 +10935,7 @@
                     h('line', { x1: memory.fieldDirection === 'right' ? 110 : 248, y1: 18, x2: memory.fieldDirection === 'right' ? 248 : 110, y2: 18, stroke: '#d97706', strokeWidth: 2.4 }),
                     h('polygon', { points: memory.fieldDirection === 'right' ? '252,18 244,13.5 244,22.5' : '106,18 114,13.5 114,22.5', fill: '#d97706' })),
                 arrows),
-              h('div', { className: 'mag-domain-legend', 'aria-label': __alloT('stem.magnetism.a11y_domain_direction_legend', 'Domain direction legend') },
+              h('div', { role: 'group', className: 'mag-domain-legend', 'aria-label': __alloT('stem.magnetism.a11y_domain_direction_legend', 'Domain direction legend') },
                 h('span', null, '↗ Mixed = cancels'), h('span', null, '→ Right = positive M'), h('span', null, '← Left = negative M'))),
             h('figure', { className: 'mag-domain-figure' },
               h('figcaption', null, 'H–M memory loop', h('span', null, memory.history ? (memory.branch < 0 ? 'increasing H · dashed branch' : 'decreasing H · solid branch') : 'mixed starting state')),
@@ -10516,7 +10957,7 @@
                 h('text', { x: 135, y: 143, fill: SOFT, fontSize: 10 }, '−M'),
                 h('text', { x: coerciveLeft, y: 157, fill: '#e11d48', fontSize: 8.5, textAnchor: 'middle' }, '−Hc'),
                 h('text', { x: coerciveRight, y: 157, fill: '#e11d48', fontSize: 8.5, textAnchor: 'middle' }, '+Hc')),
-              h('div', { className: 'mag-domain-legend', 'aria-label': __alloT('stem.magnetism.a11y_graph_legend', 'Graph legend') },
+              h('div', { role: 'group', className: 'mag-domain-legend', 'aria-label': __alloT('stem.magnetism.a11y_graph_legend', 'Graph legend') },
                 h('span', { 'data-domain-sweep-key': 'increasing' }, h('i', { className: 'mag-domain-key is-dashed', style: { '--mag-key': '#7c3aed' }, 'aria-hidden': 'true' }), 'increasing H · dashed'),
                 h('span', { 'data-domain-sweep-key': 'decreasing' }, h('i', { className: 'mag-domain-key', style: { '--mag-key': '#0284c7' }, 'aria-hidden': 'true' }), 'decreasing H · solid'),
                 h('span', null, h('i', { className: 'mag-domain-key is-point', style: { '--mag-key': '#fbbf24' }, 'aria-hidden': 'true' }), 'current state')))),
@@ -10535,7 +10976,7 @@
               h('span', null, h('b', null, (memory.complete ? 'Compare next · ' : 'Next action · ') + memory.nextAction.label), memory.nextAction.detail),
               h('button', { type: 'button', onClick: function () { runDomainAction(memory.nextAction.key); }, style: btn(true),
                 'aria-label': __alloFill(memory.complete ? __alloT('stem.magnetism.a11y_compare_materials', 'Compare materials: {label}') : __alloT('stem.magnetism.a11y_run_next_experiment_step', 'Run next experiment step: {label}'), { label: memory.nextAction.label }) }, memory.complete ? 'Compare material →' : 'Run this step →'))),
-          h('div', { className: 'mag-domain-hud', 'aria-label': __alloT('stem.magnetism.a11y_live_magnetic_evidence_readings', 'Live magnetic evidence readings') },
+          h('div', { role: 'group', className: 'mag-domain-hud', 'aria-label': __alloT('stem.magnetism.a11y_live_magnetic_evidence_readings', 'Live magnetic evidence readings') },
             h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#38bdf8' } }, h('small', null, 'Applied field H'), h('b', null, signed(memory.fieldPercent)), h('span', null, memory.fieldDirection === 'off' ? 'field off' : 'points ' + memory.fieldDirection)),
             h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#fbbf24' } }, h('small', null, 'Signed vector M'), h('b', null, signed(memory.signedPercent)), h('span', null, memory.magnetizationDirection === 'mixed' ? 'directions cancel' : 'net points ' + memory.magnetizationDirection)),
             h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#a78bfa' } }, h('small', null, 'Memory at H = 0'), h('b', null, memory.memoryAtZeroPercent + '%'), h('span', null, 'modeled remanence')),
@@ -11382,7 +11823,13 @@
               });
               var sunGlow = new THREE.PointLight(0xfbbf24, 0.7, 16); sunGlow.position.copy(sun.position); dynamicGroup.add(sunGlow);
               var earth = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 24), new THREE.MeshStandardMaterial({ color: 0x1d4ed8, emissive: 0x082f49, emissiveIntensity: 0.32, roughness: 0.72, metalness: 0.06 })); dynamicGroup.add(earth);
-              var atmosphere = new THREE.Mesh(new THREE.SphereGeometry(1.06, 32, 20), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.12, side: THREE.DoubleSide })); dynamicGroup.add(atmosphere);
+              var atmosphereMat = (typeof THREE.ShaderMaterial === 'function') ? new THREE.ShaderMaterial({
+                transparent: true, depthWrite: false, side: THREE.FrontSide, blending: THREE.AdditiveBlending,
+                uniforms: { uHc: { value: magIsHighContrast(cv) ? 1 : 0 } },
+                vertexShader: 'varying vec3 vNormalV; varying vec3 vViewV; varying vec3 vLocalN; void main(){ vLocalN=normalize(position); vec4 mv=modelViewMatrix*vec4(position,1.0); vNormalV=normalize(normalMatrix*normal); vViewV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }',
+                fragmentShader: 'uniform float uHc; varying vec3 vNormalV; varying vec3 vViewV; varying vec3 vLocalN; void main(){ if(uHc>0.5) discard; float fres=pow(1.0-clamp(abs(dot(normalize(vNormalV),normalize(vViewV))),0.0,1.0),2.4); float polar=smoothstep(0.76,0.96,abs(vLocalN.y)); vec3 col=mix(vec3(0.22,0.68,1.0),vec3(0.16,0.96,0.58),polar*0.65); gl_FragColor=vec4(col,clamp(fres*0.58+polar*0.20,0.0,0.78)); }'
+              }) : new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.12, side: THREE.DoubleSide });
+              var atmosphere = new THREE.Mesh(new THREE.SphereGeometry(1.07, 32, 20), atmosphereMat); dynamicGroup.add(atmosphere);
               addLine(dynamicGroup, [new THREE.Vector3(0, -1.55, 0), new THREE.Vector3(0, 1.55, 0)], 0x94a3b8, 0.7, true);
               var dipoleGroup = new THREE.Group(); dipoleGroup.rotation.z = state.dipoleTilt * Math.PI / 180; dynamicGroup.add(dipoleGroup);
               addLine(dipoleGroup, [new THREE.Vector3(0, -1.65, 0), new THREE.Vector3(0, 1.65, 0)], 0xfb7185, 0.95, false);
@@ -11552,7 +11999,7 @@
             ], 'solar wind · +x'),
           h('div', { id: 'mag-earth3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.earth3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
             d.earth3dStatus === 'ready' ? 'Scene ready. Drag to orbit or compare the Sun-facing side, tail, and polar views. ' + (state.motion ? 'Flow animation is on.' : 'Motion is paused.') : d.earth3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D Earth-field model remains available. ', h('button', { onClick: function () { upd({ earth3dStatus: 'loading', earth3dAttempt: (d.earth3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D magnetosphere engine...'),
-          h('div', { 'aria-label': __alloT('stem.magnetism.a11y_3d_magnetosphere_key', '3D magnetosphere key'), style: { display: 'flex', gap: 10, flexWrap: 'wrap', color: SOFT, fontSize: 11.5, marginBottom: 8 } },
+          h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_3d_magnetosphere_key', '3D magnetosphere key'), style: { display: 'flex', gap: 10, flexWrap: 'wrap', color: SOFT, fontSize: 11.5, marginBottom: 8 } },
             h('span', null, 'blue sphere Earth'), h('span', null, 'blue arrowed curves field direction'), h('span', null, 'one/two white rings N/S poles'), h('span', null, 'gold dashed arcs bow shock'), h('span', null, 'blue wire shell magnetopause'), h('span', null, 'white dashed quiet reference'), h('span', null, 'violet/pink rings trapped-particle belts'), h('span', null, 'green polar auroral ovals'), h('span', null, 'gold arrows solar wind')),
           sceneTextAlternative('mag-earth3d-summary', 'This schematic 3D magnetosphere shows ' + state.activity + ' solar-wind pressure at level ' + state.pressure + ' of 10. The Sun-facing magnetopause is about ' + state.daysideRadiusRE.toFixed(1) + ' Earth radii from Earth in this teaching scale, while the modeled tail reaches ' + state.tailReachRE.toFixed(0) + ' Earth radii downstream. The auroral oval is shown near ' + state.auroralLatitude.toFixed(0) + ' degrees magnetic latitude. The gray geographic axis and tilted red magnetic axis are separated by about ' + state.dipoleTilt + ' degrees. One white ring marks the magnetic north side and two mark the magnetic south side without relying on color. Arrowheads show field direction outside Earth. The dashed white outline preserves the quiet-condition boundary for direct comparison. Violet and pink rings identify two schematic trapped-particle belt regions; they are zones, not solid tubes. Optional animation moves solar-wind arrows downstream and particles around the belts, and respects reduced-motion preferences. Dimensions respond illustratively to the pressure control and are not a space-weather forecast.'),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_3d_magnetosphere_camera_views', '3D magnetosphere camera views'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 } }, cameraButton('perspective', 'Perspective'), cameraButton('sun', 'Sun-facing'), cameraButton('tail', 'Down the tail'), cameraButton('polar', 'Polar view')),
@@ -11626,7 +12073,7 @@
                 h('span', { 'aria-hidden': 'true' }, shield.predictionCorrect ? '◆' : '↻'),
                 h('span', null, h('b', null, shield.predictionCorrect ? 'Evidence confirmed your response signature' : 'Evidence revised your response signature'),
                   'Pressure rose from 2 to 10. The dayside moved ' + shield.daysideCompressionRE.toFixed(1) + ' R⊕ inward, the tail grew ' + shield.tailExtensionRE.toFixed(1) + ' R⊕, and the auroral oval shifted ' + shield.auroralEquatorwardShift.toFixed(0) + '° equatorward. Completion counts the controlled comparison, not whether the first prediction matched.')) : null,
-              h('div', { className: 'mag-earth-comparison', 'aria-label': __alloT('stem.magnetism.a11y_controlled_quiet_to_storm_magnetosphere_compari', 'Controlled quiet to storm magnetosphere comparison') },
+              h('div', { role: 'group', className: 'mag-earth-comparison', 'aria-label': __alloT('stem.magnetism.a11y_controlled_quiet_to_storm_magnetosphere_compari', 'Controlled quiet to storm magnetosphere comparison') },
                 h('article', { className: 'mag-earth-reading', 'data-reading': 'quiet' },
                   h('div', { className: 'mag-earth-reading-head' }, h('span', { className: 'mag-earth-orbit', 'data-state': 'quiet', 'aria-hidden': 'true' }, '🌍'), h('span', null, h('small', null, 'A · quiet baseline'), h('b', null, 'Pressure 2/10'))),
                   h('dl', null,
@@ -11645,7 +12092,7 @@
                     h('div', null, h('dt', null, 'Dayside'), h('dd', null, shield.resultCaptured ? shield.storm.daysideRadiusRE.toFixed(1) + ' R⊕' : 'result hidden')),
                     h('div', null, h('dt', null, 'Tail reach'), h('dd', null, shield.resultCaptured ? shield.storm.tailReachRE.toFixed(1) + ' R⊕' : 'result hidden')),
                     h('div', null, h('dt', null, 'Auroral oval'), h('dd', null, shield.resultCaptured ? shield.storm.auroralLatitude.toFixed(0) + '°' : 'result hidden'))))),
-              h('div', { className: 'mag-earth-hud', 'aria-label': __alloT('stem.magnetism.a11y_live_magnetosphere_readings', 'Live magnetosphere readings') },
+              h('div', { role: 'group', className: 'mag-earth-hud', 'aria-label': __alloT('stem.magnetism.a11y_live_magnetosphere_readings', 'Live magnetosphere readings') },
                 h('div', { className: 'mag-earth-metric', style: { '--mag-earth-tone': '#fbbf24' } }, h('small', null, 'Pressure'), h('b', null, shield.current.pressure + '/10'), h('span', null, shield.current.activity)),
                 h('div', { className: 'mag-earth-metric', style: { '--mag-earth-tone': '#38bdf8' } }, h('small', null, 'Dayside'), h('b', null, shield.current.daysideRadiusRE.toFixed(1) + ' R⊕'), h('span', null, 'Sun-facing boundary')),
                 h('div', { className: 'mag-earth-metric', style: { '--mag-earth-tone': '#a78bfa' } }, h('small', null, 'Tail reach'), h('b', null, shield.current.tailReachRE.toFixed(1) + ' R⊕'), h('span', null, 'downstream extent')),
@@ -12343,7 +12790,7 @@
             h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, g.icon),
             h('span', null, g.phase),
             h('span', { className: 'mag-model-badge' }, activeModelLabel())),
-          signalOnly ? null : h('span', { className: 'mag-model-badge', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_mission_progress_of', '{label} mission progress: {doneCount} of {total}'), { label: progress.mission.label, doneCount: progress.doneCount, total: progress.total }) }, progress.mission.icon + ' ' + progress.doneCount + '/' + progress.total),
+          signalOnly ? null : h('span', { role: 'note', className: 'mag-model-badge', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_mission_progress_of', '{label} mission progress: {doneCount} of {total}'), { label: progress.mission.label, doneCount: progress.doneCount, total: progress.total }) }, progress.mission.icon + ' ' + progress.doneCount + '/' + progress.total),
           signalOnly ? null : learningModeSwitch(),
           signalOnly ? null : h('button', { type: 'button', 'aria-pressed': d.labFocus ? 'true' : 'false', onClick: function () {
             upd({ labFocus: !d.labFocus, missionPanelOpen: false, labShellPanel: '' });
@@ -12629,7 +13076,7 @@
                 h('small', null, 'Live evidence pulse'),
                 h('b', { id: 'mag-evidence-title' }, pulse.station.icon + ' ' + pulse.station.label + ' readout')),
               h('span', { className: 'mag-evidence-status' }, pulse.statusLabel)),
-            pulse.metrics.length ? h('div', { className: 'mag-evidence-grid', 'aria-label': __alloT('stem.magnetism.a11y_current_station_measurements', 'Current station measurements') },
+            pulse.metrics.length ? h('div', { role: 'group', className: 'mag-evidence-grid', 'aria-label': __alloT('stem.magnetism.a11y_current_station_measurements', 'Current station measurements') },
               pulse.metrics.map(function (metric) {
                 var comparison = metric.comparable ? metric.deltaDisplay + ' from saved ' + metric.previousDisplay : 'no saved comparison';
                 return h('div', { key: metric.key, className: 'mag-evidence-metric', 'data-trend': metric.trend, role: 'group',
@@ -12951,7 +13398,7 @@
             h('p', { style: { margin: '0 0 7px' } }, report.goal),
             h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_claim_evidence_reasoning_checklist', 'Claim Evidence Reasoning checklist'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 } },
               cer.items.map(function (item) {
-                return h('span', { key: 'cer-' + item.key, className: 'viz-badge', 'aria-label': item.label + ': ' + item.hint, style: { color: item.done ? '#22c55e' : SOFT } }, (item.done ? 'Done · ' : 'Next · ') + item.label);
+                return h('span', { role: 'note', key: 'cer-' + item.key, className: 'viz-badge', 'aria-label': item.label + ': ' + item.hint, style: { color: item.done ? '#22c55e' : SOFT } }, (item.done ? 'Done · ' : 'Next · ') + item.label);
               })),
             h('div', { style: { color: TEXT, fontWeight: 800, marginBottom: 3 } }, 'Evidence chain'),
             h('ol', { 'aria-label': __alloT('stem.magnetism.a11y_report_evidence_chain', 'Report evidence chain'), style: { margin: '0 0 8px', paddingLeft: 22 } },

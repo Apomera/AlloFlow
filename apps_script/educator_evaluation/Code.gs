@@ -56,12 +56,25 @@ function assertNoArtifactOperationRecovery_() {
   var pending = false;
   for (var i = 0; i < journal.entries.length; i++) if (journal.entries[i].stage !== 'completed') { pending = true; break; }
   var marked = !!props.getProperty('EE_ARTIFACT_RECOVERY_REQUIRED');
-  try {
-    if (pending && !marked) props.setProperty('EE_ARTIFACT_RECOVERY_REQUIRED', '1');
-    else if (!pending && marked) props.deleteProperty('EE_ARTIFACT_RECOVERY_REQUIRED');
-  } catch (markerErr) {
-    try { props.setProperty('EE_ARTIFACT_RECOVERY_MANUAL_REQUIRED', '1'); } catch (manualMarkerErr) {}
-    throw eeError_('manual_recovery_required', 'Artifact recovery status could not be reconciled safely. District IT must inspect the repository before another change.');
+  if ((pending && !marked) || (!pending && marked)) {
+    var lock = LockService.getScriptLock();
+    var alreadyHeld = typeof lock.hasLock === 'function' && lock.hasLock();
+    if (!alreadyHeld && !lock.tryLock(5000)) throw eeError_('busy', 'Repository is busy.');
+    try {
+      journal = readArtifactOperationJournal_();
+      if (journal.ambiguous || journal.unreadable || props.getProperty('EE_ARTIFACT_RECOVERY_MANUAL_REQUIRED')) throw eeError_('manual_recovery_required', 'Artifact recovery metadata requires district IT review before making another change.');
+      pending = false;
+      for (var j = 0; j < journal.entries.length; j++) if (journal.entries[j].stage !== 'completed') { pending = true; break; }
+      marked = !!props.getProperty('EE_ARTIFACT_RECOVERY_REQUIRED');
+      if (pending && !marked) props.setProperty('EE_ARTIFACT_RECOVERY_REQUIRED', '1');
+      else if (!pending && marked) props.deleteProperty('EE_ARTIFACT_RECOVERY_REQUIRED');
+    } catch (markerErr) {
+      if (markerErr && markerErr.code === 'manual_recovery_required') throw markerErr;
+      try { props.setProperty('EE_ARTIFACT_RECOVERY_MANUAL_REQUIRED', '1'); } catch (manualMarkerErr) {}
+      throw eeError_('manual_recovery_required', 'Artifact recovery status could not be reconciled safely. District IT must inspect the repository before another change.');
+    } finally {
+      if (!alreadyHeld) lock.releaseLock();
+    }
   }
   if (pending) throw artifactRecoveryRequiredError_();
 }
@@ -82,10 +95,18 @@ function doGet(e) {
   }
   try {
     currentActor_(); // fail closed before rendering confidential UI
-    return HtmlService.createTemplateFromFile('Index').evaluate()
+    var portalOutput = HtmlService.createTemplateFromFile('Index').evaluate()
       .setTitle('AlloFlow Educator Growth & Evaluation');
+    if (typeof HtmlService !== 'undefined' && HtmlService.XFrameOptionsMode && HtmlService.XFrameOptionsMode.DEFAULT && typeof portalOutput.setXFrameOptionsMode === 'function') {
+      portalOutput.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+    }
+    return portalOutput;
   } catch (err) {
-    return HtmlService.createHtmlOutput('<!doctype html><meta charset="utf-8"><title>Access unavailable</title><main style="font:16px system-ui;max-width:680px;margin:64px auto;padding:24px"><h1>Access unavailable</h1><p>This district evaluation portal could not verify an authorized managed Google account.</p><p>Ask your district administrator to verify the deployment access setting and your membership.</p></main>');
+    var deniedOutput = HtmlService.createHtmlOutput('<!doctype html><meta charset="utf-8"><title>Access unavailable</title><main style="font:16px system-ui;max-width:680px;margin:64px auto;padding:24px"><h1>Access unavailable</h1><p>This district evaluation portal could not verify an authorized managed Google account.</p><p>Ask your district administrator to verify the deployment access setting and your membership.</p></main>');
+    if (typeof HtmlService !== 'undefined' && HtmlService.XFrameOptionsMode && HtmlService.XFrameOptionsMode.DEFAULT && typeof deniedOutput.setXFrameOptionsMode === 'function') {
+      deniedOutput.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+    }
+    return deniedOutput;
   }
 }
 
@@ -132,22 +153,33 @@ function setupEvaluationRepository(config) {
       try { lockedEffectiveEmail = normalizeEmail_(Session.getEffectiveUser().getEmail()); } catch (lockedOwnerErr) {}
       if (!lockedEffectiveEmail || lockedEffectiveEmail !== email) throw eeError_('denied', 'Initial setup must be run by the Apps Script deployment owner.');
     } else {
-      var lockedExistingActor = currentActor_();
-      if (lockedExistingActor.role !== 'admin') throw eeError_('denied', 'Only an administrator can update repository setup.');
+      var lockedExistingActor = requireSameAdminLocked_(existingActor);
       assertNoAnnualRolloverRecovery_();
       assertNoPendingWorkspaceCommit_();
     }
+    var props = PropertiesService.getScriptProperties();
     var domain = normalizeDomain_(config.allowedDomain || email.split('@')[1]);
     if (!domain || emailDomain_(email) !== domain) throw eeError_('bad_config', 'Allowed domain must match the setup account.');
     var bootstrapAdmin = normalizeEmail_(config.bootstrapAdmin || email);
-    if (!existing && bootstrapAdmin !== email) throw eeError_('bad_config', 'The first bootstrap administrator must be the setup account.');
+    if (!existing) {
+      if (bootstrapAdmin !== email) throw eeError_('bad_config', 'The first bootstrap administrator must be the setup account.');
+    } else {
+      var storedBootstrap = normalizeEmail_(props.getProperty('EE_BOOTSTRAP_ADMIN'));
+      if (!storedBootstrap || emailDomain_(storedBootstrap) !== domain) throw eeError_('bad_config', 'Stored bootstrap administrator is invalid.');
+      if (config.bootstrapAdmin && normalizeEmail_(config.bootstrapAdmin) !== storedBootstrap) {
+        throw eeError_('bad_config', 'Bootstrap administrator cannot be changed on repository reconfiguration.');
+      }
+      bootstrapAdmin = storedBootstrap;
+    }
     var initialWorkspace = blankWorkspace_(config);
     var setupMembers = normalizeSetupMembers_(config.members, domain);
     var setupAssignments = normalizeSetupAssignments_(config.assignments, domain);
+    if (existing && (setupMembers.length || setupAssignments.length)) {
+      throw eeError_('bad_config', 'Use reviewed portal directory workflows to modify members or assignments on an existing repository.');
+    }
     if (!existing) validateDeclaredSetupReferences_(initialWorkspace.teachers, setupMembers, setupAssignments, bootstrapAdmin);
     for (var setupMemberIndex = 0; setupMemberIndex < setupMembers.length; setupMemberIndex++) if (setupMembers[setupMemberIndex].email === bootstrapAdmin && (!setupMembers[setupMemberIndex].active || setupMembers[setupMemberIndex].role !== 'admin')) throw eeError_('bad_config', 'Setup members cannot deactivate or demote the bootstrap administrator.');
 
-    var props = PropertiesService.getScriptProperties();
     var folder;
     var spreadsheet;
     var workspaceFile;
@@ -185,20 +217,25 @@ function setupEvaluationRepository(config) {
       if (domain !== props.getProperty('EE_ALLOWED_DOMAIN')) throw eeError_('bad_config', 'Changing the allowed domain requires a new reviewed deployment.');
     }
 
+    var state = existing ? readWorkspaceState_() : null;
     initializeSheets_(spreadsheet);
+    var effectiveAcademicYear = existing
+      ? (safeString_(state && state.workspace && state.workspace.config && state.workspace.config.academicYear, 20, '') || safeString_(config.academicYear, 20, ''))
+      : safeString_(config.academicYear, 20, '');
     putConfigRows_(spreadsheet, {
       service: EE_SERVICE,
       schemaVersion: String(EE_VERSION),
       allowedDomain: domain,
       organization: safeString_(config.organization, 160, 'District'),
       building: safeString_(config.building, 160, ''),
-      academicYear: safeString_(config.academicYear, 20, ''),
+      academicYear: effectiveAcademicYear,
       webAppUrl: safePortalUrl_(config.webAppUrl || '')
     });
-    upsertMemberRow_(spreadsheet, { email: bootstrapAdmin, displayName: safeString_(config.adminDisplayName, 160, 'Repository Administrator'), role: 'admin', teacherId: '', active: true });
-    seedMembersAndAssignments_(spreadsheet, setupMembers, setupAssignments, domain);
-
-    var state = readWorkspaceState_();
+    if (!existing) {
+      upsertMemberRow_(spreadsheet, { email: bootstrapAdmin, displayName: safeString_(config.adminDisplayName, 160, 'Repository Administrator'), role: 'admin', teacherId: '', active: true });
+      seedMembersAndAssignments_(spreadsheet, setupMembers, setupAssignments, domain);
+      state = readWorkspaceState_();
+    }
     validateRepositoryReferences_(state.workspace);
     var setupCommitPending = false;
     if (!state.metadataExists) {
@@ -554,7 +591,7 @@ function readNotificationOperationJournal_() {
   try {
     var parsed = JSON.parse(raw);
     if (!isPlainObject_(parsed) || Number(parsed.version) !== 1 || !Array.isArray(parsed.entries) || parsed.entries.length > EE_NOTIFICATION_OPERATION_MAX_ITEMS) throw new Error('shape');
-    var entries = [], seen = {};
+    var entries = [], seen = Object.create(null);
     for (var i = 0; i < parsed.entries.length; i++) {
       var sealed = sealNotificationOperationEntry_(parsed.entries[i]);
       if (!timingSafeHashEq_(sealed.integrityHash, String(parsed.entries[i].integrityHash || '')) || seen[sealed.key]) throw new Error('entry integrity');
@@ -2219,7 +2256,11 @@ function reconcilePortalWorkspaceIntegrity(request) {
     var afterIndexes = secondaryIndexStatus_(state.workspace);
     var configurationStatus=configurationIndexStatus_(state.workspace),configurationMismatch=!configurationStatus.ok;
     var afterOutbox=operationAuditOutboxStatus_(journal),finalAudit=auditChainStatus_();
-    if(afterIndexes.ambiguous||configurationStatus.ambiguous||afterOutbox.ambiguous||finalAudit.ok!==true)journal.manualReviewRequired=true;
+    if(afterIndexes.ambiguous||configurationStatus.ambiguous||afterOutbox.ambiguous||finalAudit.ok!==true){
+      var wasManual = !!journal.manualReviewRequired;
+      journal.manualReviewRequired=true;
+      if (!wasManual) writeSecondaryRecoveryJournal_(journal);
+    }
     var pending = journal.workspaceIndexes || journal.configuration || journal.auditEntries.length > 0 || journal.manualReviewRequired || configurationMismatch || afterIndexes.totalMissing > 0 || afterIndexes.ambiguous || afterOutbox.ambiguous || !!props.getProperty('EE_COMMIT_RECOVERY_REQUIRED');
     if(!pending){props.setProperty('EE_LAST_SUCCESSFUL_INTEGRITY_RECONCILIATION_AT',nowIso_());if(props.getProperty('EE_SETUP_STATE')==='recovery_required')props.setProperty('EE_SETUP_STATE','ready');}
     return {
@@ -2334,9 +2375,9 @@ function getPortalSetupHealth() {
   var teachers = (state.workspace.teachers || []).filter(function (t) { return t.active !== false; });
   var counts = { admin: 0, evaluator: 0, teacher: 0, inactive: 0 };
   members.forEach(function (m) { if (!m.active) counts.inactive++; else if (counts[m.role] !== undefined) counts[m.role]++; });
-  var teacherIdsWithMember = {};
+  var teacherIdsWithMember = Object.create(null);
   members.forEach(function (m) { if (m.active && m.role === 'teacher' && m.teacherId) teacherIdsWithMember[m.teacherId] = true; });
-  var teacherIdsWithAssignment = {};
+  var teacherIdsWithAssignment = Object.create(null);
   assignments.forEach(function (a) { if (a.active && a.teacherId) teacherIdsWithAssignment[a.teacherId] = true; });
   var withoutMember = 0, withoutAssignment = 0;
   teachers.forEach(function (t) {
@@ -2461,7 +2502,7 @@ function adminReviewCacheKey_(token) { return 'EE_ADMIN_REVIEW_' + safeId_(token
 function directoryFingerprint_() { return hashText_(JSON.stringify({ members: memberObjects_(), assignments: assignmentObjects_() })); }
 
 function uniqueTeacherIds_(items) {
-  var out = [], seen = {};
+  var out = [], seen = Object.create(null);
   for (var i = 0; i < items.length; i++) {
     var id = safeId_(items[i] || '', false);
     if (id && !seen[id]) { seen[id] = true; out.push(id); }
@@ -3596,7 +3637,9 @@ function statusExportCsv_(workspace) {
 function educatorRecordExport_(workspace, teacherId) {
   var teacher = findById_(workspace.teachers || [], teacherId);
   if (!teacher) throw eeError_('not_found', 'Educator record not found.');
-  return { teacher: teacher, walkthroughs: filterByTeacher_(workspace.walkthroughs || [], (function(){var x={};x[teacherId]=true;return x;})(), false), observations: filterByTeacher_(workspace.observations || [], (function(){var x={};x[teacherId]=true;return x;})(), false), spms: filterByTeacher_(workspace.spms || [], (function(){var x={};x[teacherId]=true;return x;})(), false), comments: filterByTeacher_(workspace.comments || [], (function(){var x={};x[teacherId]=true;return x;})(), false), audit: filterByTeacher_(workspace.audit || [], (function(){var x={};x[teacherId]=true;return x;})(), false), cycleSnapshots: filterByTeacher_(workspace.cycleSnapshots || [], (function(){var x={};x[teacherId]=true;return x;})(), false) };
+  var onlyTeacher = Object.create(null);
+  onlyTeacher[teacherId] = true;
+  return { teacher: teacher, walkthroughs: filterByTeacher_(workspace.walkthroughs || [], onlyTeacher, false), observations: filterByTeacher_(workspace.observations || [], onlyTeacher, false), spms: filterByTeacher_(workspace.spms || [], onlyTeacher, false), comments: filterByTeacher_(workspace.comments || [], onlyTeacher, false), audit: filterByTeacher_(workspace.audit || [], onlyTeacher, false), cycleSnapshots: filterByTeacher_(workspace.cycleSnapshots || [], onlyTeacher, false) };
 }
 
 /* Durable idempotency for export and restore-rehearsal artifacts. The journal
@@ -3676,7 +3719,7 @@ function readArtifactOperationJournal_() {
   try {
     var parsed = JSON.parse(raw);
     if (!isPlainObject_(parsed) || Number(parsed.version) !== 1 || !Array.isArray(parsed.entries) || parsed.entries.length > EE_ARTIFACT_OPERATION_MAX_ITEMS) throw new Error('shape');
-    var entries = [], seen = {};
+    var entries = [], seen = Object.create(null);
     for (var i = 0; i < parsed.entries.length; i++) {
       var sealed = sealArtifactOperationEntry_(parsed.entries[i]);
       if (!timingSafeHashEq_(sealed.integrityHash, String(parsed.entries[i].integrityHash || '')) || seen[sealed.key]) throw new Error('entry integrity');
@@ -3987,8 +4030,8 @@ function performPortalDistrictExport(request) {
   if (request.acknowledgePolicy !== true) throw eeError_('acknowledgment_required', 'Confirm district export policy, purpose, destination, retention, and legal-hold handling.');
   var lock = LockService.getScriptLock(); if (!lock.tryLock(30000)) throw eeError_('busy', 'Repository is busy.');
   try {
-    assertNoAnnualRolloverRecovery_({ allowArtifactRecovery: true });
     actor = requireSameAdminLocked_(actor);
+    assertNoAnnualRolloverRecovery_({ allowArtifactRecovery: true });
     if (pendingCommitInspection_().pending) throw eeError_('commit_recovery_required', 'Complete the reviewed pending workspace commit before confirming a district export.');
     var token = safeId_(request.reviewToken || '', false), cache = CacheService.getScriptCache(), key = adminReviewCacheKey_(token), raw = token ? cache.get(key) : '', review;
     if (!token) throw eeError_('review_required', 'Review the export before confirming it.');
@@ -4293,8 +4336,9 @@ function annualArchivesFolder_() {
 }
 
 function annualArchiveUrl_(file) {
-  if (file && typeof file.getUrl === 'function') return safeString_(file.getUrl(), 1000, '');
-  return 'https://drive.google.com/file/d/' + file.getId() + '/view';
+  var raw = (file && typeof file.getUrl === 'function') ? safeString_(file.getUrl(), 1000, '') : '';
+  if (/^https:\/\/drive\.google\.com\//i.test(raw)) return raw;
+  return 'https://drive.google.com/file/d/' + safeId_(file && file.getId ? file.getId() : '', true) + '/view';
 }
 
 function verifyKnownAnnualArchiveCustody_(folder) {
@@ -4916,7 +4960,7 @@ function getPortalCohortStats(request) {
   var allowed = accessibleTeacherIds_(actor, workspace);
   var teachersById = indexById_(workspace.teachers || []);
   var rows = workspace.observations || [];
-  var byTeacher = {};
+  var byTeacher = Object.create(null);
   var selectedValues = [];
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
@@ -5034,7 +5078,7 @@ function filterWorkspaceForActor_(workspace, actor) {
   }
   if (actor.role === 'teacher') {
     copy.walkthroughs = copy.walkthroughs.filter(function(item) { return !!item.publishedAt; });
-    var visibleWalkthroughIds = {};
+    var visibleWalkthroughIds = Object.create(null);
     for (var visibleWalkthroughIndex = 0; visibleWalkthroughIndex < copy.walkthroughs.length; visibleWalkthroughIndex++) visibleWalkthroughIds[copy.walkthroughs[visibleWalkthroughIndex].id] = true;
     copy.comments = copy.comments.filter(function(item) { return item.recordType !== 'walkthrough' || !!visibleWalkthroughIds[item.recordId]; });
     for (var teacherIndex = 0; teacherIndex < copy.teachers.length; teacherIndex++) {
@@ -5318,10 +5362,12 @@ function teacherObservationUpdate_(old, next) {
       result.reflectionSubmittedAt = nowIso_();
     }
   }
-  result.ackChecked = !!next.ackChecked;
-  if (!old.teacherAcknowledgedAt && next.teacherAcknowledgedAt) {
-    if (!old.evaluatorSignedAt || !result.ackChecked) throw eeError_('invalid_transition', 'Acknowledgment requires the signed assessment and confirmation.');
-    result.teacherAcknowledgedAt = nowIso_();
+  if (!old.teacherAcknowledgedAt) {
+    result.ackChecked = !!next.ackChecked;
+    if (next.teacherAcknowledgedAt) {
+      if (!old.evaluatorSignedAt || !result.ackChecked) throw eeError_('invalid_transition', 'Acknowledgment requires the signed assessment and confirmation.');
+      result.teacherAcknowledgedAt = nowIso_();
+    }
   }
   result.updatedAt = sameExcept_(old, result, ['updatedAt']) ? old.updatedAt : nowIso_();
   return result;
@@ -5464,7 +5510,7 @@ function completeRationales_(rationales) { return !!rationales && ['d1','d2','d3
   }
   return result;
 }
-function syncMessages_(workspace){var rows=dataRows_(repositorySpreadsheet_().getSheetByName('Messages'),8),existing={};for(var i=0;i<rows.length;i++)existing[String(rows[i][0])]=true;var comments=workspace.comments||[];for(var j=0;j<comments.length;j++){var item=comments[j];if(existing[item.id])continue;appendRow_('Messages',[item.id,item.teacherId,item.recordType,item.recordId,item.authorEmail||'',item.authorRole||'',item.text,item.at]);existing[item.id]=true;}}
+function syncMessages_(workspace){var rows=dataRows_(repositorySpreadsheet_().getSheetByName('Messages'),8),existing=Object.create(null);for(var i=0;i<rows.length;i++)existing[String(rows[i][0])]=true;var comments=workspace.comments||[];for(var j=0;j<comments.length;j++){var item=comments[j];if(existing[item.id])continue;appendRow_('Messages',[item.id,item.teacherId,item.recordType,item.recordId,item.authorEmail||'',item.authorRole||'',item.text,item.at]);existing[item.id]=true;}}
 function sameCommentSemantics_(a,b){return a.teacherId===b.teacherId&&a.recordType===b.recordType&&a.recordId===b.recordId&&a.text===b.text;}function serverizeNewRecord_(record, actor, kind, frameworkVersion) {
   var next = clone_(record);
   var now = nowIso_();
@@ -5693,7 +5739,7 @@ function serverOverallScore_(teacher, config) {
   var observation = serverObservationScore_(teacher.ratings && teacher.ratings.domains, config);
   if (observation === null) return null;
   var factors = { observation: observation, building: numberOrNull_(teacher.ratings.building), teacher: numberOrNull_(teacher.ratings.teacher), lea: numberOrNull_(teacher.ratings.lea) };
-  var profile = teacher.weightSnapshot || serverWeightProfile_(teacher), scaled = 0;
+  var profile = teacher.weightSnapshot || serverWeightProfile_(teacher, config), scaled = 0;
   for (var i = 0; i < profile.length; i++) {
     var value = factors[profile[i].id];
     if (value === null || value === undefined) return null;
@@ -5920,12 +5966,12 @@ function sanitizeSnapshot_(v) { v=requireObject_(v,'snapshot'); return { id:safe
 function isDriveItemPrivate_(item) {
   if (!item) return false;
   try {
-    if (typeof item.getSharingAccess === 'function' && typeof DriveApp !== 'undefined' && DriveApp.Access && DriveApp.Access.PRIVATE) {
-      if (item.getSharingAccess() !== DriveApp.Access.PRIVATE) return false;
-    }
-    if (typeof item.isShareableByEditors === 'function' && item.isShareableByEditors()) return false;
-    if (typeof item.getEditors === 'function' && item.getEditors().length) return false;
-    if (typeof item.getViewers === 'function' && item.getViewers().length) return false;
+    if (typeof item.isTrashed === 'function' && item.isTrashed()) return false;
+    if (typeof item.getSharingAccess !== 'function' || typeof DriveApp === 'undefined' || !DriveApp.Access || !DriveApp.Access.PRIVATE) return false;
+    if (item.getSharingAccess() !== DriveApp.Access.PRIVATE) return false;
+    if (typeof item.isShareableByEditors !== 'function' || item.isShareableByEditors()) return false;
+    if (typeof item.getEditors !== 'function' || item.getEditors().length) return false;
+    if (typeof item.getViewers !== 'function' || item.getViewers().length) return false;
     return true;
   } catch (err) {
     return false;
@@ -5935,7 +5981,7 @@ function repositoryConfigured_() { var p=PropertiesService.getScriptProperties()
 function repositorySpreadsheet_() { var id=PropertiesService.getScriptProperties().getProperty('EE_SPREADSHEET_ID'); if(!id)throw eeError_('not_configured','Repository spreadsheet is not configured.'); return SpreadsheetApp.openById(id); }
 function readWorkspaceState_(options) { var p=PropertiesService.getScriptProperties(); var id=p.getProperty('EE_WORKSPACE_FILE_ID'); if(!id)throw eeError_('not_configured','Workspace file is not configured.'); var wsFile=DriveApp.getFileById(id); if(!isDriveItemPrivate_(wsFile))throw eeError_('storage_not_private','Private evaluation workspace storage could not be verified. Review Drive sharing permissions.'); var raw=wsFile.getBlob().getDataAsString('UTF-8'); if(raw.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('corrupt','Stored workspace exceeds its limit.'); var workspace; try{workspace=sanitizeStoredWorkspace_(JSON.parse(raw));}catch(err){throw eeError_('corrupt','Stored workspace failed validation.');} var sheet=repositorySpreadsheet_().getSheetByName('Workspace'); var revision=0,exists=false; if(sheet&&sheet.getLastRow()>=2){var row=sheet.getRange(2,1,1,6).getValues()[0],parsedRevision=Number(row[1]);if(String(row[0])!=='workspace'||String(row[2])!==id||Math.floor(parsedRevision)!==parsedRevision||parsedRevision<0||sheetLogicalCell_(row[3])!==hashText_(raw))throw eeError_('corrupt','Workspace metadata integrity check failed; an administrator must restore a matching reviewed backup.');revision=parsedRevision;exists=true;} return {workspace:workspace,revision:revision,metadataExists:exists}; }
 function sanitizeStoredWorkspace_(raw) { var copy=clone_(raw); var audit=Array.isArray(copy.audit)?copy.audit.slice(-EE_MAX_AUDIT):[]; copy.audit=[]; var clean=sanitizeWorkspace_(copy); clean.audit=audit.map(sanitizeAuditObject_); return clean; }
-function sheetSafeCell_(value){if(typeof value!=='string')return value;return /^(?:[\t\r]|[\u0000-\u0020]*[=+\-@])/.test(value)?"'"+value:value;}
+function sheetSafeCell_(value){if(typeof value!=='string')return value;return /^(?:'+(?:[\t\r]|[\u0000-\u0020]*[=+\-@|])|[\t\r]|[\u0000-\u0020]*[=+\-@|])/.test(value)?"'"+value:value;}
 function sheetSafeRow_(row){if(!Array.isArray(row))throw eeError_('bad_request','Spreadsheet row must be an array.');return row.map(sheetSafeCell_);}
 function sheetSafeValues_(values){if(!Array.isArray(values))throw eeError_('bad_request','Spreadsheet values must be an array.');return values.map(sheetSafeRow_);}
 function safeSheetAppendRow_(sheet,row){sheet.appendRow(sheetSafeRow_(row));}
@@ -5946,6 +5992,7 @@ function writeWorkspaceState_(workspace,revision,actorEmail,lock){
   var json=JSON.stringify(workspace);
   if(json.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('too_large','Workspace exceeds the server size limit.');
   var props=PropertiesService.getScriptProperties(),pending=DriveApp.getFileById(props.getProperty('EE_PENDING_COMMIT_FILE_ID'));
+  if(!isDriveItemPrivate_(pending))throw eeError_('storage_not_private','Private pending workspace journal storage could not be verified. Review Drive sharing permissions.');
   var envelope=JSON.stringify({revision:revision,actorEmail:actorEmail,at:nowIso_(),workspace:workspace});
   pending.setContent(envelope);
   try{completePendingCommit_(lock);return{pending:false};}
@@ -6031,11 +6078,11 @@ function verifyOwnerOnlyDriveUsers_(users,ownerEmail){for(var i=0;i<(users||[]).
 function removeNonOwnerAccess_(item,users,ownerEmail,method){for(var i=0;i<(users||[]).length;i++){var email='';try{email=normalizeEmail_(users[i].getEmail());}catch(err){}if(!email||email!==ownerEmail){if(typeof item[method]!=='function')throw eeError_('protection_failed','Repository explicit access could not be revoked.');item[method](users[i]);}}}
 function appendRow_(name,row){var sheet=repositorySpreadsheet_().getSheetByName(name);if(!sheet)throw eeError_('corrupt','Required repository table is missing.');safeSheetAppendRow_(sheet,row);}
 function putConfigRows_(ss,values){var sheet=ss.getSheetByName('Config');var keys=Object.keys(values);sheet.clearContents();safeSheetSetValues_(sheet.getRange(1,1,1,2),[EE_SHEETS.Config]);for(var i=0;i<keys.length;i++)safeSheetAppendRow_(sheet,[keys[i],String(values[keys[i]]||'')]);}
-function configMap_(){var sheet=repositorySpreadsheet_().getSheetByName('Config');var rows=dataRows_(sheet,2);var out={};for(var i=0;i<rows.length;i++)out[String(rows[i][0])]=String(rows[i][1]||'');return out;}
+function configMap_(){var sheet=repositorySpreadsheet_().getSheetByName('Config');var rows=dataRows_(sheet,2);var out=Object.create(null);for(var i=0;i<rows.length;i++)out[String(rows[i][0])]=String(rows[i][1]||'');return out;}
 function setConfigValue_(key,value){var sheet=repositorySpreadsheet_().getSheetByName('Config');var rows=dataRows_(sheet,2);for(var i=0;i<rows.length;i++){if(String(rows[i][0])===String(key)){safeSheetSetValues_(sheet.getRange(i+2,1,1,2),[[String(key),String(value||'')]]);return;}}safeSheetAppendRow_(sheet,[String(key),String(value||'')]);}
 function memberObjects_(){var rows=dataRows_(repositorySpreadsheet_().getSheetByName('Members'),5),out=[];for(var i=0;i<rows.length;i++){if(!rows[i][0])continue;out.push({email:normalizeEmail_(rows[i][0]),displayName:safeString_(rows[i][1],160,normalizeEmail_(rows[i][0])),role:String(rows[i][2]),teacherId:safeId_(rows[i][3]||'',false),active:parseBool_(rows[i][4])});}return out;}
 function assignmentObjects_(){var rows=dataRows_(repositorySpreadsheet_().getSheetByName('Assignments'),3),out=[];for(var i=0;i<rows.length;i++){if(!rows[i][0])continue;out.push({teacherId:safeId_(rows[i][0],true),evaluatorEmail:normalizeEmail_(rows[i][1]),active:parseBool_(rows[i][2])});}return out;}
-function sheetLogicalCell_(value){if(typeof value!=='string')return value;return /^'(?:[\t\r]|[ \t\r\n]*[=+\-@])/.test(value)?value.slice(1):value;}
+function sheetLogicalCell_(value){if(typeof value!=='string')return value;return /^'(?:'*(?:[\t\r]|[\u0000-\u0020]*[=+\-@|]))/.test(value)?value.slice(1):value;}
 function dataRows_(sheet,width){if(!sheet||sheet.getLastRow()<2)return[];var values=sheet.getRange(2,1,sheet.getLastRow()-1,width).getValues();for(var i=0;i<values.length;i++)for(var j=0;j<values[i].length;j++)values[i][j]=sheetLogicalCell_(values[i][j]);return values;}
 function upsertMemberRow_(ss,m){upsertKeyedRow_(ss.getSheetByName('Members'),m.email,[m.email,m.displayName,m.role,m.teacherId||'',m.active!==false]);}
 function upsertAssignmentRow_(ss,a){var sheet=ss.getSheetByName('Assignments');var rows=dataRows_(sheet,3);var key=a.teacherId+'|'+a.evaluatorEmail;for(var i=0;i<rows.length;i++){if(String(rows[i][0])+'|'+normalizeEmail_(rows[i][1])===key){safeSheetSetValues_(sheet.getRange(i+2,1,1,3),[[a.teacherId,a.evaluatorEmail,a.active!==false]]);return;}}safeSheetAppendRow_(sheet,[a.teacherId,a.evaluatorEmail,a.active!==false]);}
@@ -6043,8 +6090,8 @@ function upsertKeyedRow_(sheet,key,row){var rows=dataRows_(sheet,row.length);for
 function seedMembersAndAssignments_(ss,members,assignments,domain){if(Array.isArray(members))for(var i=0;i<members.length;i++)upsertMemberRow_(ss,members[i]);if(Array.isArray(assignments))for(var j=0;j<assignments.length;j++)upsertAssignmentRow_(ss,assignments[j]);}
 function normalizeSetupMembers_(members,domain){if(members===undefined||members===null)return[];if(!Array.isArray(members)||members.length>2000)throw eeError_('bad_config','Invalid setup members list.');var out=[];for(var i=0;i<members.length;i++)out.push(normalizeMember_(members[i],domain));return out;}
 function normalizeSetupAssignments_(assignments,domain){if(assignments===undefined||assignments===null)return[];if(!Array.isArray(assignments)||assignments.length>5000)throw eeError_('bad_config','Invalid setup assignments list.');var out=[];for(var i=0;i<assignments.length;i++)out.push(normalizeAssignment_(assignments[i],domain));return out;}
-function validateDeclaredSetupReferences_(teachers,members,assignments,bootstrapAdmin){var ids={};for(var i=0;i<teachers.length;i++)ids[teachers[i].id]=true;var evaluatorEmails={};evaluatorEmails[bootstrapAdmin]=true;for(var j=0;j<members.length;j++){if(members[j].role==='teacher'&&!ids[members[j].teacherId])throw eeError_('bad_config','Teacher member references an undeclared educator ID.');if(members[j].role==='evaluator'||members[j].role==='admin')evaluatorEmails[members[j].email]=true;}for(var k=0;k<assignments.length;k++){if(!ids[assignments[k].teacherId])throw eeError_('bad_config','Assignment references an undeclared educator ID.');if(!evaluatorEmails[assignments[k].evaluatorEmail])throw eeError_('bad_config','Assignment evaluator must be an evaluator/admin member.');}}
-function validateRepositoryReferences_(workspace){var ids={};for(var i=0;i<(workspace.teachers||[]).length;i++)ids[workspace.teachers[i].id]=true;var members=memberObjects_(),evaluators={},activeAdmins=0;for(var j=0;j<members.length;j++){if(members[j].active&&members[j].role==='teacher'&&!ids[members[j].teacherId])throw eeError_('bad_config','Active teacher membership references a missing educator record.');if(members[j].active&&(members[j].role==='evaluator'||members[j].role==='admin'))evaluators[members[j].email]=true;if(members[j].active&&members[j].role==='admin')activeAdmins++;}if(activeAdmins<1)throw eeError_('bad_config','Repository requires an active administrator.');var assignments=assignmentObjects_();for(var k=0;k<assignments.length;k++){if(assignments[k].active&&!ids[assignments[k].teacherId])throw eeError_('bad_config','Active assignment references a missing educator record.');if(assignments[k].active&&!evaluators[assignments[k].evaluatorEmail])throw eeError_('bad_config','Active assignment references a missing evaluator member.');}}
+function validateDeclaredSetupReferences_(teachers,members,assignments,bootstrapAdmin){var ids=Object.create(null);for(var i=0;i<teachers.length;i++)ids[teachers[i].id]=true;var evaluatorEmails=Object.create(null);evaluatorEmails[bootstrapAdmin]=true;for(var j=0;j<members.length;j++){if(members[j].role==='teacher'&&!ids[members[j].teacherId])throw eeError_('bad_config','Teacher member references an undeclared educator ID.');if(members[j].role==='evaluator'||members[j].role==='admin')evaluatorEmails[members[j].email]=true;}for(var k=0;k<assignments.length;k++){if(!ids[assignments[k].teacherId])throw eeError_('bad_config','Assignment references an undeclared educator ID.');if(!evaluatorEmails[assignments[k].evaluatorEmail])throw eeError_('bad_config','Assignment evaluator must be an evaluator/admin member.');}}
+function validateRepositoryReferences_(workspace){var ids=Object.create(null);for(var i=0;i<(workspace.teachers||[]).length;i++)ids[workspace.teachers[i].id]=true;var members=memberObjects_(),evaluators=Object.create(null),activeAdmins=0;for(var j=0;j<members.length;j++){if(members[j].active&&members[j].role==='teacher'&&!ids[members[j].teacherId])throw eeError_('bad_config','Active teacher membership references a missing educator record.');if(members[j].active&&(members[j].role==='evaluator'||members[j].role==='admin'))evaluators[members[j].email]=true;if(members[j].active&&members[j].role==='admin')activeAdmins++;}if(activeAdmins<1)throw eeError_('bad_config','Repository requires an active administrator.');var assignments=assignmentObjects_();for(var k=0;k<assignments.length;k++){if(assignments[k].active&&!ids[assignments[k].teacherId])throw eeError_('bad_config','Active assignment references a missing educator record.');if(assignments[k].active&&!evaluators[assignments[k].evaluatorEmail])throw eeError_('bad_config','Active assignment references a missing evaluator member.');}}
 function normalizeMember_(m,domain){m=requireObject_(m,'member');var email=normalizeEmail_(m.email);if(!email||emailDomain_(email)!==domain)throw eeError_('bad_member','Member must use the allowed district domain.');var role=oneOf_(m.role,['admin','evaluator','teacher'],'role');var teacherId=role==='teacher'?safeId_(m.teacherId||'',false):'';if(role==='teacher'&&!teacherId)throw eeError_('bad_member','Teacher membership requires teacherId.');return{email:email,displayName:safeString_(m.displayName,160,email),role:role,teacherId:teacherId,active:m.active!==false};}
 function assertAdminInvariantAfterMember_(candidate){var members=memberObjects_(),activeAdmins=0;for(var i=0;i<members.length;i++){var member=members[i].email===candidate.email?candidate:members[i];if(member.active&&member.role==='admin')activeAdmins++;}var found=false;for(var j=0;j<members.length;j++)if(members[j].email===candidate.email)found=true;if(!found&&candidate.active&&candidate.role==='admin')activeAdmins++;var bootstrap=normalizeEmail_(PropertiesService.getScriptProperties().getProperty('EE_BOOTSTRAP_ADMIN'));if(candidate.email===bootstrap&&(!candidate.active||candidate.role!=='admin'))throw eeError_('bad_member','The bootstrap administrator cannot be deactivated or demoted.');if(activeAdmins<1)throw eeError_('bad_member','At least one active administrator is required.');}
 function normalizeAssignment_(a,domain){a=requireObject_(a,'assignment');var email=normalizeEmail_(a.evaluatorEmail);if(!email||emailDomain_(email)!==domain)throw eeError_('bad_assignment','Evaluator must use the allowed district domain.');return{teacherId:safeId_(a.teacherId,true),evaluatorEmail:email,active:a.active!==false};}
@@ -6092,7 +6139,7 @@ function expectedSnapshotIndexRow_(snapshot) { return [snapshot.id,snapshot.teac
 function secondaryIssueSample_(ledger, issue, id, occurrences) { var sample={ledger:ledger,issue:issue,idFingerprint:hashText_(ledger+'|'+String(id||'')).slice(0,16)};if(occurrences!==undefined)sample.occurrences=occurrences;return sample; }
 
 function secondaryLedgerParity_(ledger, expectedRows, actualRows) {
-  var expected = {}, actual = {}, blankIdRows = 0, issues = [];
+  var expected = Object.create(null), actual = Object.create(null), blankIdRows = 0, issues = [];
   for (var i = 0; i < expectedRows.length; i++) {
     var expectedRow = normalizeSecondaryRow_(ledger, expectedRows[i]), expectedId = expectedRow[0];
     expected[expectedId] = expectedRow;
@@ -6173,12 +6220,12 @@ function syncConfigurationIndex_(workspace){var status=configurationIndexStatus_
 
 function auditLedgerRows_(){var sheet=repositorySpreadsheet_().getSheetByName('Audit');if(!sheet)throw eeError_('not_configured','Audit sheet is not configured.');return dataRows_(sheet,12);}
 function auditLedgerRowsForId_(rows,id){var out=[],expectedId=String(id||'');for(var i=0;i<rows.length;i++){var row=normalizeSecondaryRow_('audit',rows[i]);if(row[0]===expectedId)out.push(row);}return out;}
-function auditLedgerRowsById_(rows){rows=rows===undefined?auditLedgerRows_():rows;var out={};for(var i=0;i<rows.length;i++){var row=normalizeSecondaryRow_('audit',rows[i]),id=row[0];if(!id)continue;if(!out[id])out[id]=[];out[id].push(row);}return out;}
+function auditLedgerRowsById_(rows){rows=rows===undefined?auditLedgerRows_():rows;var out=Object.create(null);for(var i=0;i<rows.length;i++){var row=normalizeSecondaryRow_('audit',rows[i]),id=row[0];if(!id)continue;if(!out[id])out[id]=[];out[id].push(row);}return out;}
 function operationAuditOutboxStatus_(journal,auditRows){var groups=auditLedgerRowsById_(auditRows),entries=(journal&&journal.auditEntries)||[],missing=0,exactPresent=0,mismatched=0,duplicateIds=0,issues=[],signatures=[];for(var i=0;i<entries.length;i++){var expected=normalizeSecondaryRow_('audit',expectedAuditIndexRow_(entries[i])),rows=groups[expected[0]]||[];signatures.push(JSON.stringify({expected:expected,actual:rows}));if(!rows.length){missing++;issues.push(secondaryIssueSample_('audit_outbox','missing',expected[0]));}else if(rows.length>1){duplicateIds++;issues.push(secondaryIssueSample_('audit_outbox','duplicate_id',expected[0],rows.length));}else if(same_(rows[0],expected))exactPresent++;else{mismatched++;issues.push(secondaryIssueSample_('audit_outbox','canonical_mismatch',expected[0]));}}return{queued:entries.length,missing:missing,exactPresent:exactPresent,mismatched:mismatched,duplicateIds:duplicateIds,ambiguous:mismatched>0||duplicateIds>0,issueSamples:issues.slice(0,EE_SECONDARY_ISSUE_SAMPLE_MAX),fingerprint:hashText_(JSON.stringify(signatures.sort()))};}
 function drainOperationAuditRecovery_(journal){var groups=auditLedgerRowsById_(),remaining=[],repaired=0,entries=journal.auditEntries||[];for(var i=0;i<entries.length;i++){var entry=entries[i],expected=normalizeSecondaryRow_('audit',expectedAuditIndexRow_(entry)),rows=groups[entry.id]||[];if(rows.length===1&&same_(rows[0],expected))continue;if(rows.length){journal.manualReviewRequired=true;remaining=entries.slice(i);break;}try{appendCanonicalAuditRow_(entry);groups[entry.id]=[expected];repaired++;}catch(auditErr){remaining=entries.slice(i);break;}}journal.auditEntries=remaining;return repaired;}
-function syncWorkspaceAudit_(workspace){var sheet=repositorySpreadsheet_().getSheetByName('Audit'),rows=dataRows_(sheet,12),existing={};for(var i=0;i<rows.length;i++)existing[String(rows[i][0])]=true;var audit=(workspace.audit||[]).slice().reverse();for(var j=0;j<audit.length;j++){var entry=audit[j];if(existing[entry.id])continue;appendCanonicalAuditRow_(entry);existing[entry.id]=true;}}
-function appendCanonicalAuditRow_(entry){var sheet=repositorySpreadsheet_().getSheetByName('Audit'),previous='GENESIS';if(sheet.getLastRow()>=2)previous=String(sheetLogicalCell_(sheet.getRange(sheet.getLastRow(),12).getValue())||'GENESIS');var base=[entry.id,entry.teacherId||'',entry.event,entry.summary,entry.entityType,entry.entityId||'',entry.version||1,entry.actorEmail||'',entry.actorRole||'',entry.at,previous];base.push(hashText_(base.join('|')));safeSheetAppendRow_(sheet,base);}
-function syncSnapshots_(workspace){var sheet=repositorySpreadsheet_().getSheetByName('Snapshots');var existing={};var rows=dataRows_(sheet,13);for(var i=0;i<rows.length;i++)existing[String(rows[i][0])]=true;var snapshots=workspace.cycleSnapshots||[];for(var j=0;j<snapshots.length;j++){var s=snapshots[j];if(!s.finalizedAt||existing[s.id])continue;appendRow_('Snapshots',[s.id,s.teacherId,s.staffCodeSnapshot,s.academicYear,s.buildingSnapshot,s.employeeTypeSnapshot,s.finalizedAt,s.finalScore,s.domainRatings.d1,s.domainRatings.d2,s.domainRatings.d3,s.domainRatings.d4,s.frameworkVersion]);existing[s.id]=true;}}
+function syncWorkspaceAudit_(workspace){var sheet=repositorySpreadsheet_().getSheetByName('Audit'),rows=dataRows_(sheet,12),existing=Object.create(null);for(var i=0;i<rows.length;i++)existing[String(rows[i][0])]=true;var audit=(workspace.audit||[]).slice().reverse();for(var j=0;j<audit.length;j++){var entry=audit[j];if(existing[entry.id])continue;appendCanonicalAuditRow_(entry);existing[entry.id]=true;}}
+function appendCanonicalAuditRow_(entry){var sheet=repositorySpreadsheet_().getSheetByName('Audit'),previous='GENESIS';if(sheet.getLastRow()>=2){var prevCell=String(sheetLogicalCell_(sheet.getRange(sheet.getLastRow(),12).getValue())||'').trim();if(!prevCell)throw eeError_('manual_recovery_required','Audit chain tail hash is missing. District IT must inspect the Audit ledger before appending.');previous=prevCell;}var base=[entry.id,entry.teacherId||'',entry.event,entry.summary,entry.entityType,entry.entityId||'',entry.version||1,entry.actorEmail||'',entry.actorRole||'',entry.at,previous];base.push(hashText_(base.join('|')));safeSheetAppendRow_(sheet,base);}
+function syncSnapshots_(workspace){var sheet=repositorySpreadsheet_().getSheetByName('Snapshots');var existing=Object.create(null);var rows=dataRows_(sheet,13);for(var i=0;i<rows.length;i++)existing[String(rows[i][0])]=true;var snapshots=workspace.cycleSnapshots||[];for(var j=0;j<snapshots.length;j++){var s=snapshots[j];if(!s.finalizedAt||existing[s.id])continue;appendRow_('Snapshots',[s.id,s.teacherId,s.staffCodeSnapshot,s.academicYear,s.buildingSnapshot,s.employeeTypeSnapshot,s.finalizedAt,s.finalScore,s.domainRatings.d1,s.domainRatings.d2,s.domainRatings.d3,s.domainRatings.d4,s.frameworkVersion]);existing[s.id]=true;}}
 function snapshotObjects_(){var rows=dataRows_(repositorySpreadsheet_().getSheetByName('Snapshots'),13),out=[];for(var i=0;i<rows.length;i++)out.push({id:String(rows[i][0]),teacherId:String(rows[i][1]),staffCode:String(rows[i][2]),academicYear:String(rows[i][3]),building:String(rows[i][4]),employeeType:String(rows[i][5]),finalizedAt:toIso_(rows[i][6]),finalScore:numberOrNull_(rows[i][7]),d1:numberOrNull_(rows[i][8]),d2:numberOrNull_(rows[i][9]),d3:numberOrNull_(rows[i][10]),d4:numberOrNull_(rows[i][11]),frameworkVersion:String(rows[i][12])});return out;}
 
 /* ------------------------------- helpers ------------------------------- */
@@ -6191,7 +6238,7 @@ function isPlainObject_(v){return !!v&&Object.prototype.toString.call(v)==='[obj
 function requireObject_(v,name){if(!isPlainObject_(v))throw eeError_('bad_request',String(name||'value')+' must be an object.');return v;}
 function clone_(v){return JSON.parse(JSON.stringify(v));}
 function safeString_(v,max,fallback,required){if(v===undefined||v===null)v=fallback||'';if(typeof v!=='string')v=String(v);v=v.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'').trim();if(v.length>max)throw eeError_('too_large','A text field exceeds '+max+' characters.');if(required&&!v)throw eeError_('bad_request','Required text is empty.');return v;}
-function safeId_(v,required){var s=String(v||'');if((s&&!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$/.test(s))||(required&&!s))throw eeError_('bad_request','Invalid record identifier.');return s;}
+function safeId_(v,required){var s=String(v||'');if((s&&(!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$/.test(s)||s==='__proto__'||s==='prototype'||s==='constructor'||Object.prototype.hasOwnProperty.call(Object.prototype,s)))||(required&&!s))throw eeError_('bad_request','Invalid record identifier.');return s;}
 function safeToken_(v,max){var s=String(v||'');if(!/^[A-Za-z0-9_:-]{1,}$/.test(s)||s.length>max)throw eeError_('bad_request','Invalid token.');return s;}
 function safePortalUrl_(v){var s=safeString_(v,1000,'');if(!s)return'';var standard=/^https:\/\/script\.google\.com\/(?:a\/[A-Za-z0-9.-]+\/)?macros\/s\/[A-Za-z0-9_-]+\/exec\/?$/i;var alternate=/^https:\/\/script\.google\.com\/a\/macros\/[A-Za-z0-9.-]+\/s\/[A-Za-z0-9_-]+\/exec\/?$/i;if(!standard.test(s)&&!alternate.test(s))throw eeError_('bad_config','Portal URL must be the reviewed Apps Script /exec deployment URL.');return s;}
 function normalizeEmail_(v){return String(v||'').trim().toLowerCase();}
@@ -6205,7 +6252,7 @@ function domainRating_(v){var n=rating_(v);if(n!==null&&Math.floor(n)!==n)throw 
 function numberOrNull_(v){if(v===null||v===undefined||v==='')return null;var n=Number(v);return isFinite(n)?n:null;}
 function sanitizeDomains_(v){v=isPlainObject_(v)?v:{};return{d1:rating_(v.d1),d2:rating_(v.d2),d3:rating_(v.d3),d4:rating_(v.d4)};}
 function sanitizeRubricDomains_(v){v=isPlainObject_(v)?v:{};return{d1:domainRating_(v.d1),d2:domainRating_(v.d2),d3:domainRating_(v.d3),d4:domainRating_(v.d4)};}
-function sanitizeTags_(v){if(!Array.isArray(v))return[];if(v.length>50)throw eeError_('too_large','Too many framework tags.');var out=[],seen={};for(var i=0;i<v.length;i++){var s=safeString_(v[i],12,'');if(s&&!seen[s]&&/^[1-4][a-z]$/i.test(s)){seen[s]=true;out.push(s);}}return out;}
+function sanitizeTags_(v){if(!Array.isArray(v))return[];if(v.length>50)throw eeError_('too_large','Too many framework tags.');var out=[],seen=Object.create(null);for(var i=0;i<v.length;i++){var s=safeString_(v[i],12,'');if(s&&!seen[s]&&/^[1-4][a-z]$/i.test(s)){seen[s]=true;out.push(s);}}return out;}
 function sanitizeWeights_(v){if(v===null||v===undefined)return null;if(!Array.isArray(v)||v.length>6)throw eeError_('bad_request','Invalid weight snapshot.');var out=[];for(var i=0;i<v.length;i++){var x=requireObject_(v[i],'weight');out.push({id:safeToken_(x.id,20),label:safeString_(x.label,100,''),short:safeString_(x.short,30,''),weight:Number(x.weight),color:safeString_(x.color,20,'')});if(!isFinite(out[i].weight)||out[i].weight<=0||out[i].weight>100)throw eeError_('bad_request','Invalid weight.');}return out;}
 function optionalTimestamp_(v){if(v===null||v===undefined||v==='')return null;var d=new Date(v);if(isNaN(d.getTime()))throw eeError_('bad_request','Invalid timestamp.');return d.toISOString();}
 function optionalDate_(v){if(v===null||v===undefined||v==='')return'';var s=String(v);var date=new Date(s+'T00:00:00Z');if(!/^\d{4}-\d{2}-\d{2}$/.test(s)||s.slice(0,4)==='0000'||isNaN(date.getTime())||date.toISOString().slice(0,10)!==s)throw eeError_('bad_request','Invalid date.');return s;}

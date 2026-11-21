@@ -15,11 +15,13 @@
 const StudentSaveThemeFallbackContext = window.React && window.React.createContext ? window.React.createContext({ theme: "light", colorOverlay: "none" }) : null;
 const cx = (...parts) => parts.filter(Boolean).join(" ");
 function _aiUsable(kind, fn) {
+  if (typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)) return false;
+  if (fn && fn._alloQrBlocked === true) return false;
   try {
-    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return window.__alloAiUsable(kind, fn);
+    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return Boolean(window.__alloAiUsable(kind, fn));
   } catch (_) {
   }
-  return typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+  return typeof fn === "function";
 }
 const STUDENT_SAVE_ANIMATION_CSS = `
 @keyframes student-save-history-pulse {
@@ -110,7 +112,7 @@ function getStudentSaveThemeStyles(themeContext = {}) {
     progressTrack: "bg-slate-100 border border-slate-400",
     progressFill: "bg-purple-500",
     progressLabel: "text-slate-600",
-    unlockedBadge: "bg-green-100 text-green-700 border border-green-200",
+    unlockedBadge: "bg-green-100 text-green-800 border border-green-200",
     livePanel: "bg-indigo-50 border border-indigo-200",
     liveTitle: "text-indigo-800",
     liveText: "text-indigo-700",
@@ -172,9 +174,18 @@ function StudentSaveAdventurePanel({
   const saveTitleId = "student-save-panel-title";
   const adventureTitleId = "student-adventure-panel-title";
   const adventureProgressId = "student-adventure-progress-label";
+  const [, setAiPolicyTick] = React.useState(0);
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.addEventListener !== "function") return void 0;
+    const bump = () => setAiPolicyTick((n) => (n + 1) % 1e6);
+    const evs = ["alloflow:ai-config-changed", "alloflow:student-ai-config-changed", "alloflow:ai-key-lock-changed", "storage"];
+    evs.forEach((ev) => window.addEventListener(ev, bump));
+    return () => evs.forEach((ev) => window.removeEventListener(ev, bump));
+  }, []);
+  const safePoints = Math.max(0, Number(globalPoints) || 0);
   const rawUnlockXp = Math.max(0, Number(studentProjectSettings?.adventureUnlockXP ?? 0) || 0);
   const unlockXp = Math.max(1, rawUnlockXp || 1);
-  const boundedPoints = Math.max(0, Math.min(globalPoints, unlockXp));
+  const boundedPoints = Math.max(0, Math.min(safePoints, unlockXp));
   const adventureProgress = Math.min(100, boundedPoints / unlockXp * 100);
   const adventureAvailable = isAdventureAvailable !== false;
   const soloAdventureAiOff = !activeSessionCode && !_aiUsable("text", typeof window !== "undefined" ? window.callGemini : void 0);
@@ -211,7 +222,7 @@ function StudentSaveAdventurePanel({
         type: "button",
         "aria-label": t("student.load_file"),
         "data-help-key": "student_load_file",
-        onClick: () => projectFileInputRef.current?.click(),
+        onClick: () => projectFileInputRef?.current?.click(),
         className: cx("min-h-11 px-4 py-2 font-bold text-xs rounded-xl transition-colors motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.secondary, styles.focusTeal, styles.focusOffset)
       },
       /* @__PURE__ */ React.createElement(FolderOpen, { size: 14, "aria-hidden": "true" }),
@@ -243,7 +254,7 @@ function StudentSaveAdventurePanel({
       " ",
       t("common.submit")
     ))
-  ), adventureAvailable && /* @__PURE__ */ React.createElement("section", { className: cx(styles.adventurePanel, "rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4"), "aria-labelledby": adventureTitleId }, /* @__PURE__ */ React.createElement("div", { className: cx(styles.adventureHeader, "p-3 flex justify-between items-center") }, /* @__PURE__ */ React.createElement("div", { id: adventureTitleId, className: cx("text-sm font-bold flex items-center gap-2", styles.adventureTitle) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, "aria-hidden": "true" }), " ", t("adventure.title")), globalPoints >= rawUnlockXp && /* @__PURE__ */ React.createElement("span", { className: cx("text-[11px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1", styles.unlockedBadge), role: "status" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 10, "aria-hidden": "true" }), " ", t("adventure.unlocked"))), /* @__PURE__ */ React.createElement("div", { className: "p-4" }, globalPoints < rawUnlockXp ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-3 mb-2", styles.muted) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Lock, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-xs" }, /* @__PURE__ */ React.createElement("strong", { className: cx("block", styles.adventureTitle) }, t("adventure.locked_status")), t("adventure.earn"), " ", /* @__PURE__ */ React.createElement("span", { className: cx("font-bold", styles.accentText) }, rawUnlockXp, " XP"), " ", t("adventure.to_unlock"))), /* @__PURE__ */ React.createElement(
+  ), adventureAvailable && /* @__PURE__ */ React.createElement("section", { className: cx(styles.adventurePanel, "rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4"), "aria-labelledby": adventureTitleId }, /* @__PURE__ */ React.createElement("div", { className: cx(styles.adventureHeader, "p-3 flex justify-between items-center") }, /* @__PURE__ */ React.createElement("div", { id: adventureTitleId, className: cx("text-sm font-bold flex items-center gap-2", styles.adventureTitle) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, "aria-hidden": "true" }), " ", t("adventure.title")), safePoints >= rawUnlockXp && /* @__PURE__ */ React.createElement("span", { className: cx("text-[11px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1", styles.unlockedBadge), role: "status" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 10, "aria-hidden": "true" }), " ", t("adventure.unlocked"))), /* @__PURE__ */ React.createElement("div", { className: "p-4" }, safePoints < rawUnlockXp ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-3 mb-2", styles.muted) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Lock, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-xs" }, /* @__PURE__ */ React.createElement("strong", { className: cx("block", styles.adventureTitle) }, t("adventure.locked_status")), t("adventure.earn"), " ", /* @__PURE__ */ React.createElement("span", { className: cx("font-bold", styles.accentText) }, rawUnlockXp, " XP"), " ", t("adventure.to_unlock"))), /* @__PURE__ */ React.createElement(
     "div",
     {
       className: cx("w-full rounded-full h-2.5 overflow-hidden", styles.progressTrack),
@@ -260,11 +271,10 @@ function StudentSaveAdventurePanel({
         style: { width: `${adventureProgress}%` }
       }
     )
-  ), /* @__PURE__ */ React.createElement("div", { id: adventureProgressId, className: cx("text-[11px] text-right font-mono", styles.progressLabel) }, globalPoints, " / ", rawUnlockXp, " XP")) : offlineAdventurePlay ? /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { id: adventureProgressId, className: cx("text-[11px] text-right font-mono", styles.progressLabel) }, safePoints, " / ", rawUnlockXp, " XP")) : offlineAdventurePlay ? /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
-      "aria-label": t("common.start_adventure"),
       "data-help-key": "adventure_start_btn",
       "data-adventure-offline-start": true,
       onClick: handleStartAdventure,
@@ -300,7 +310,6 @@ function StudentSaveAdventurePanel({
     "button",
     {
       type: "button",
-      "aria-label": t("common.start_adventure"),
       "data-help-key": "adventure_start_btn",
       onClick: handleStartAdventure,
       className: cx("min-h-11 w-full py-3 rounded-2xl font-bold transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primaryPurple, styles.focusPurple, styles.focusOffset)

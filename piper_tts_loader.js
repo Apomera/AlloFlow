@@ -291,7 +291,7 @@
     const _resolvedIds = new Map();      // baseLang -> voiceId actually usable
 
     function _resolveVoiceId(baseLang) {
-        const configured = PIPER_VOICE_MAP[baseLang];
+        const configured = Object.prototype.hasOwnProperty.call(PIPER_VOICE_MAP, baseLang) ? PIPER_VOICE_MAP[baseLang] : null;
         if (!configured) return null;
         if (_resolvedIds.has(baseLang)) return _resolvedIds.get(baseLang);
         // Before the library is loaded we can only trust the table. Every id in
@@ -321,33 +321,46 @@
         return picked;
     }
 
-    // The library caches whatever bytes come back, error pages included, so the
-    // config URL is checked BEFORE anything is written. A model whose config
-    // does not fetch and parse is not downloaded at all.
-    async function _configIsReal(lib, voiceId, signal) {
+    // Returns 'ok' | 'invalid' | 'transient'. Only permanent bad configs (404/410
+    // or non-JSON 200 error pages) are 'invalid' and evict/blacklist the voice;
+    // transient network/5xx/timeout errors return 'transient' so offline/flaky
+    // sessions keep cached OPFS voices and can retry later.
+    async function _configIsReal(lib, voiceId) {
+        let controller = null;
+        let timer = null;
         try {
-            if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) return false;
+            if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) return 'invalid';
             // Without PATH_MAP we cannot build the URL the library will use, so
             // there is nothing to pre-flight. Do not fail closed on a library
             // shape we do not recognise: the eviction, purge and corrupt-error
             // guards still cover the failure, and refusing every voice because
             // one export is missing would be worse than the bug being fixed.
-            if (!lib || !lib.PATH_MAP) return true;
-            const path = lib.PATH_MAP[voiceId];
+            if (!lib || !lib.PATH_MAP) return 'ok';
+            const path = Object.prototype.hasOwnProperty.call(lib.PATH_MAP, voiceId) ? lib.PATH_MAP[voiceId] : null;
             const base = lib.HF_BASE || 'https://huggingface.co/diffusionstudio/piper-voices/resolve/840e38a7e26d813bd6221b78cfbaefa3585b3f71';
-            if (!path) return false;
-            const res = await fetch(base + '/' + path + '.json', signal ? { signal } : undefined);
+            if (!path) return 'invalid';
+            if (typeof AbortController !== 'undefined') {
+                controller = new AbortController();
+                timer = setTimeout(() => controller.abort(), 15000);
+            }
+            const res = await fetch(base + '/' + path + '.json', controller ? { signal: controller.signal } : undefined);
             if (!res.ok) {
                 console.warn('[Piper TTS] Voice config for ' + voiceId + ' returned HTTP ' + res.status + '; skipping this voice.');
-                return false;
+                return (res.status === 404 || res.status === 410) ? 'invalid' : 'transient';
             }
             const text = await res.text();
-            JSON.parse(text); // an error page fails here, before it can be cached
-            return true;
+            try {
+                JSON.parse(text); // an error page fails here, before it can be cached
+            } catch (parseErr) {
+                console.warn('[Piper TTS] Voice config for ' + voiceId + ' is not valid JSON:', (parseErr && parseErr.message) || parseErr);
+                return 'invalid';
+            }
+            return 'ok';
         } catch (e) {
-            if (e && e.name === 'AbortError') throw e;
-            console.warn('[Piper TTS] Voice config for ' + voiceId + ' is not usable:', (e && e.message) || e);
-            return false;
+            console.warn('[Piper TTS] Voice config check for ' + voiceId + ' failed transiently:', (e && e.message) || e);
+            return 'transient';
+        } finally {
+            if (timer !== null) clearTimeout(timer);
         }
     }
 
@@ -410,7 +423,7 @@
         }
         if (_unavailableLangs.has(baseLang)) return false;
 
-        const voiceInfo = PIPER_VOICE_MAP[baseLang];
+        const voiceInfo = Object.prototype.hasOwnProperty.call(PIPER_VOICE_MAP, baseLang) ? PIPER_VOICE_MAP[baseLang] : null;
         if (!voiceInfo) {
             console.warn('[Piper TTS] No voice model for language:', baseLang);
             return false;
@@ -444,11 +457,14 @@
                         return false;
                     }
 
-                    if (!(await _configIsReal(lib, voiceId, signal))) {
-                        // Anything already sitting in OPFS for this voice came
-                        // from the same bad response, so throw it out too.
-                        await _evictVoice(lib, voiceId, baseLang);
-                        _unavailableLangs.add(baseLang);
+                    const configStatus = await _configIsReal(lib, voiceId);
+                    if (configStatus !== 'ok') {
+                        if (configStatus === 'invalid') {
+                            // Anything already sitting in OPFS for this voice came
+                            // from the same bad response, so throw it out too.
+                            await _evictVoice(lib, voiceId, baseLang);
+                            _unavailableLangs.add(baseLang);
+                        }
                         return false;
                     }
 
@@ -595,7 +611,7 @@
             if (signal.aborted) throw _signalAbortError(signal);
             if (!loaded) return null;
 
-            const voiceInfo = PIPER_VOICE_MAP[baseLang];
+            const voiceInfo = Object.prototype.hasOwnProperty.call(PIPER_VOICE_MAP, baseLang) ? PIPER_VOICE_MAP[baseLang] : null;
             if (!voiceInfo) return null;
             const voiceId = _resolveVoiceId(baseLang);
             if (!voiceId) return null;
@@ -671,7 +687,7 @@
         if (!langCode) return false;
         var baseLang = langCode.split('-')[0].toLowerCase();
         if (_unavailableLangs.has(baseLang)) return false;
-        return baseLang in PIPER_VOICE_MAP;
+        return Object.prototype.hasOwnProperty.call(PIPER_VOICE_MAP, baseLang);
     }
 
     // Has this language's model finished downloading to this device? The
@@ -695,7 +711,7 @@
         if (!langCode) return false;
         var baseLang = langCode.split('-')[0].toLowerCase();
         if (baseLang === 'en') return true; // Kokoro handles English
-        if (!(baseLang in PIPER_VOICE_MAP)) return false;
+        if (!Object.prototype.hasOwnProperty.call(PIPER_VOICE_MAP, baseLang)) return false;
 
         const request = _createRequest(options && options.signal);
         _activeRequests.add(request);

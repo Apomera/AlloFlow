@@ -35,6 +35,10 @@ function ensure(value, minimum, suffix) {
 function itemFromSpec(skill, spec, batchNumber, batchPosition) {
   const answerIndex = (batchPosition - 1) % 4;
   const rationale = ensure(spec.rationale, 120, 'The response matches the instructional purpose, uses relevant learner evidence, preserves access and rigor, respects professional boundaries, and includes an appropriate next step or check for understanding.');
+  const distractorNotes = Array.isArray(spec.distractorNotes) ? spec.distractorNotes : [];
+  if (distractorNotes.length !== 3 || distractorNotes.some((note) => String(note || '').trim().length < 100)) {
+    throw new Error(`Spec ${skill.id} #${batchPosition} must define three authored distractorNotes of at least 100 characters.`);
+  }
   const choices = [];
   const choiceRationales = [];
   let distractorIndex = 0;
@@ -43,9 +47,10 @@ function itemFromSpec(skill, spec, batchNumber, batchPosition) {
       choices.push(spec.correct);
       choiceRationales.push(ensure('Correct. ' + rationale, 100, 'It addresses the complete pedagogical decision and the evidence needed to guide learning.'));
     } else {
-      const distractor = spec.distractors[distractorIndex++];
+      const distractor = spec.distractors[distractorIndex];
+      const note = String(distractorNotes[distractorIndex++] || '').trim();
       choices.push(distractor);
-      choiceRationales.push(ensure('Not the best answer. "' + distractor + '" misses or conflicts with the controlling teaching and learning principle. ' + rationale, 100, 'Compare the goal, learner evidence, access, method, assessment purpose, professional boundary, and follow-up.'));
+      choiceRationales.push(note);
     }
   }
   if (new Set(choices).size !== 4) throw new Error(skill.id + ' contains duplicate choices.');

@@ -4,7 +4,7 @@ if (window.AlloModules && window.AlloModules.CmapHandlersModule) { console.log('
 // Pure flow layout is colocated with its only consumer.
 const _cmapAiUsable = (kind, fn) => {
   if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
-  if (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true)) return false;
+  if (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || window.__alloQrStudentMode === true)) return false;
   try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn)); } catch (_) { return false; }
   return true;
 };
@@ -87,6 +87,7 @@ const handleInitializeMap = async (deps) => {
               setConceptMapNodes(newNodes);
               setConceptMapEdges([]);
               setIsConceptMapReady(true);
+              hasAutoLayoutRunRef.current = true;
               return;
           }
           if (structureType === 'Flow Chart' || structureType === 'Process Flow / Sequence') {
@@ -100,8 +101,8 @@ const handleInitializeMap = async (deps) => {
           if (structureType === 'Cause and Effect') {
               const newNodes = [];
               const newEdges = [];
-              const canvasWidth = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
-              const canvasHeight = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
+              const canvasWidth = Math.max(200, (mapContainerRef.current && mapContainerRef.current.offsetWidth) || 800);
+              const canvasHeight = Math.max(200, (mapContainerRef.current && mapContainerRef.current.offsetHeight) || 600);
               const leftZoneX = canvasWidth * 0.25;
               const rightZoneX = canvasWidth * 0.75;
               const centerX = canvasWidth / 2;
@@ -194,8 +195,8 @@ const handleInitializeMap = async (deps) => {
           if (structureType === 'Problem Solution') {
               const newNodes = [];
               const newEdges = [];
-              const canvasWidth = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
-              const canvasHeight = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
+              const canvasWidth = Math.max(200, (mapContainerRef.current && mapContainerRef.current.offsetWidth) || 800);
+              const canvasHeight = Math.max(200, (mapContainerRef.current && mapContainerRef.current.offsetHeight) || 600);
               const centerX = canvasWidth / 2;
               // Problem node at top
               const rootId = 'root';
@@ -208,11 +209,12 @@ const handleInitializeMap = async (deps) => {
               });
               if (Array.isArray(branches)) {
                   const sharedRoles = window.AlloModules?.UtilsPure?.organizerBranchRoles?.('Problem Solution', branches);
-                  const outcomeIdx = sharedRoles ? sharedRoles.indexOf('outcome') : branches.findIndex(b =>
-                      b.title.toLowerCase().includes('outcome') ||
-                      b.title.toLowerCase().includes('result') ||
-                      b.title.toLowerCase().includes('evaluation')
-                  );
+                  const outcomeIdx = sharedRoles ? sharedRoles.indexOf('outcome') : branches.findIndex(b => {
+                      const titleLower = String(b?.title || '').toLowerCase();
+                      return titleLower.includes('outcome') ||
+                          titleLower.includes('result') ||
+                          titleLower.includes('evaluation');
+                  });
                   const outcomeBranch = outcomeIdx !== -1 ? branches[outcomeIdx] : null;
                   const solutionBranches = branches.filter((_, i) => i !== outcomeIdx);
                   const solCount = solutionBranches.length;
@@ -285,7 +287,7 @@ const handleInitializeMap = async (deps) => {
           if (structureType === 'Structured Outline') {
               const newNodes = [];
               const newEdges = [];
-              const canvasWidth = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
+              const canvasWidth = Math.max(200, (mapContainerRef.current && mapContainerRef.current.offsetWidth) || 800);
               const centerX = canvasWidth / 2;
               const rootId = 'root';
               newNodes.push({
@@ -422,6 +424,7 @@ const beginMapLayoutRequest = (deps, nodes, edges) => {
     if (!ref || ref.current?.request === request) {
       if (ref) ref.current.request = null;
       deps.setIsProcessing(false);
+      if (typeof deps.setGenerationStep === 'function') deps.setGenerationStep('');
     }
   };
   if (ref && ref.current) ref.current.request = request;
@@ -438,13 +441,13 @@ const handleAutoLayout = async (nodesInput, edgesInput, deps) => {
       let width = 1000;
       let height = 800;
       if (mapContainerRef.current) {
-          width = mapContainerRef.current.offsetWidth;
-          height = mapContainerRef.current.offsetHeight;
+          width = Math.max(200, mapContainerRef.current.offsetWidth || 1000);
+          height = Math.max(200, mapContainerRef.current.offsetHeight || 800);
       } else {
           const isWide = isFullscreen || !isTeacherMode;
           const availableWidth = window.innerWidth * (isWide ? 0.9 : 0.6);
-          width = Math.floor(availableWidth);
-          height = Math.floor(window.innerHeight * 0.75);
+          width = Math.max(200, Math.floor(availableWidth) || 1000);
+          height = Math.max(200, Math.floor(window.innerHeight * 0.75) || 800);
       }
       if (isFlowChart) {
           const layoutNodes = calculateFlowLayout(currentNodes, width);
@@ -550,12 +553,25 @@ const handleAutoLayout = async (nodesInput, edgesInput, deps) => {
 const handleBatchGenerateForRoster = async (resourceTypes = ['simplified'], deps) => {
   const { rosterKey, history, inputText, gradeLevel, leveledTextLanguage, studentInterests, dokLevel, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setStandardInputValue, setUseEmojis, setTextFormat, setIsProcessing, setGenerationStep, addToast, t, warnLog, handleGenerate } = deps;
   try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] handleBatchGenerateForRoster fired"); } catch(_) {}
+      if (!Array.isArray(resourceTypes) || resourceTypes.length === 0) return;
+      const _batchAiBlocked = (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || window.__alloQrStudentMode === true))
+          || (typeof deps.callGemini === 'function' && !_cmapAiUsable('text', deps.callGemini))
+          || (() => {
+              try {
+                  const cap = typeof window !== 'undefined' && typeof window.__alloResolveAiCapability === 'function' ? window.__alloResolveAiCapability() : null;
+                  return Boolean(cap && cap.text === false);
+              } catch (_) { return false; }
+          })();
+      if (_batchAiBlocked) {
+          if (typeof addToast === 'function') addToast(t('errors.ai_unavailable') || 'AI is currently unavailable.', 'error');
+          return;
+      }
       if (!rosterKey?.groups || Object.keys(rosterKey.groups).length === 0) {
           addToast(t('roster.no_groups_to_generate') || 'Add groups to your roster key first', 'warning');
           return;
       }
       const textToProcess = (() => {
-          const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+          const latestAnalysis = (Array.isArray(history) ? history : []).slice().reverse().find(h => h && h.type === 'analysis');
           if (latestAnalysis?.data?.originalText) {
               const raw = latestAnalysis.data.originalText;
               const sep = "### Accuracy Check References";
@@ -563,7 +579,7 @@ const handleBatchGenerateForRoster = async (resourceTypes = ['simplified'], deps
           }
           return inputText;
       })();
-      if (!textToProcess || !textToProcess.trim()) {
+      if (!textToProcess || !String(textToProcess).trim()) {
           addToast(t('process.enter_text') || 'Please enter or paste text first', 'warning');
           return;
       }
@@ -573,46 +589,61 @@ const handleBatchGenerateForRoster = async (resourceTypes = ['simplified'], deps
       let successCount = 0;
       let currentStep = 0;
       try {
-          for (let i = 0; i < groupEntries.length; i++) {
-              const [groupId, group] = groupEntries[i];
-              const profile = group.profile || {};
-              const saved = {
-                  grade: gradeLevel, lang: leveledTextLanguage,
-                  interests: studentInterests, dok: dokLevel,
-                  custom: leveledTextCustomInstructions,
-                  selectedLangs: selectedLanguages,
-                  standards: targetStandards,
-                  emojis: useEmojis,
-                  fmt: textFormat
-              };
-              if (profile.gradeLevel) setGradeLevel(profile.gradeLevel);
-              if (profile.leveledTextLanguage) setLeveledTextLanguage(profile.leveledTextLanguage);
-              if (profile.studentInterests) {
-                  const interests = Array.isArray(profile.studentInterests) ? profile.studentInterests : profile.studentInterests.split(',').map(s => s.trim()).filter(Boolean);
-                  setStudentInterests(interests);
-              }
-              if (profile.dokLevel) setDokLevel(profile.dokLevel);
-              if (profile.leveledTextCustomInstructions) setLeveledTextCustomInstructions(profile.leveledTextCustomInstructions);
-              if (profile.selectedLanguages && Array.isArray(profile.selectedLanguages)) setSelectedLanguages(profile.selectedLanguages);
-              if (profile.targetStandards && Array.isArray(profile.targetStandards)) { setTargetStandards(profile.targetStandards); setStandardInputValue(''); }
-              if (profile.useEmojis !== undefined) setUseEmojis(profile.useEmojis);
-              if (profile.textFormat) setTextFormat(profile.textFormat);
-              await new Promise(r => setTimeout(r, 100));
-              for (let j = 0; j < resourceTypes.length; j++) {
-                  const type = resourceTypes[j];
-                  currentStep++;
-                  const isLast = currentStep === totalSteps;
-                  const typeLabel = type === 'simplified' ? 'Adapted Text' : type === 'glossary' ? 'Glossary' : type === 'quiz' ? 'Quiz' : type === 'sentence-frames' ? 'Sentence Frames' : type;
-                  setGenerationStep(`${typeLabel} for "${group.name}" (${currentStep}/${totalSteps})`);
-                  await handleGenerate(type, profile.leveledTextLanguage || null, !isLast, textToProcess, {
-                      grade: profile.gradeLevel || gradeLevel,
+          const saved = {
+              grade: gradeLevel, lang: leveledTextLanguage,
+              interests: studentInterests, dok: dokLevel,
+              custom: leveledTextCustomInstructions,
+              selectedLangs: selectedLanguages,
+              standards: targetStandards,
+              emojis: useEmojis,
+              fmt: textFormat
+          };
+          try {
+              for (let i = 0; i < groupEntries.length; i++) {
+                  const [groupId, group] = groupEntries[i];
+                  const profile = (group && group.profile) || {};
+                  const parsedInterests = Array.isArray(profile.studentInterests)
+                      ? profile.studentInterests
+                      : (typeof profile.studentInterests === 'string'
+                          ? profile.studentInterests.split(',').map(s => s.trim()).filter(Boolean)
+                          : null);
+                  setGradeLevel(profile.gradeLevel || saved.grade);
+                  setLeveledTextLanguage(profile.leveledTextLanguage || saved.lang);
+                  setStudentInterests(parsedInterests || saved.interests);
+                  setDokLevel(profile.dokLevel || saved.dok);
+                  setLeveledTextCustomInstructions(profile.leveledTextCustomInstructions || saved.custom);
+                  setSelectedLanguages(profile.selectedLanguages && Array.isArray(profile.selectedLanguages) ? profile.selectedLanguages : saved.selectedLangs);
+                  if (profile.targetStandards && Array.isArray(profile.targetStandards)) { setTargetStandards(profile.targetStandards); setStandardInputValue(''); }
+                  else setTargetStandards(saved.standards);
+                  setUseEmojis(profile.useEmojis !== undefined ? profile.useEmojis : saved.emojis);
+                  setTextFormat(profile.textFormat || saved.fmt);
+                  const groupConfigOverride = {
+                      grade: profile.gradeLevel || saved.grade,
                       rosterGroupId: groupId,
                       rosterGroupName: group.name,
                       rosterGroupColor: group.color || '#4F46E5'
-                  }, false);
-                  successCount++;
-                  if (!isLast) await new Promise(r => setTimeout(r, 1000));
+                  };
+                  if (parsedInterests) groupConfigOverride.studentInterests = parsedInterests;
+                  if (profile.dokLevel) groupConfigOverride.dokLevel = profile.dokLevel;
+                  if (profile.leveledTextCustomInstructions) groupConfigOverride.leveledTextCustomInstructions = profile.leveledTextCustomInstructions;
+                  if (profile.selectedLanguages && Array.isArray(profile.selectedLanguages)) groupConfigOverride.selectedLanguages = profile.selectedLanguages;
+                  if (profile.targetStandards && Array.isArray(profile.targetStandards)) groupConfigOverride.targetStandards = profile.targetStandards;
+                  if (profile.useEmojis !== undefined) groupConfigOverride.useEmojis = profile.useEmojis;
+                  if (profile.textFormat) groupConfigOverride.textFormat = profile.textFormat;
+                  await new Promise(r => setTimeout(r, 100));
+                  for (let j = 0; j < resourceTypes.length; j++) {
+                      const type = resourceTypes[j];
+                      currentStep++;
+                      const isLast = currentStep === totalSteps;
+                      const typeLabel = type === 'simplified' ? 'Adapted Text' : type === 'glossary' ? 'Glossary' : type === 'quiz' ? 'Quiz' : type === 'sentence-frames' ? 'Sentence Frames' : type;
+                      setGenerationStep(`${typeLabel} for "${group.name}" (${currentStep}/${totalSteps})`);
+                      const generated = await handleGenerate(type, profile.leveledTextLanguage || null, !isLast, textToProcess, groupConfigOverride, false);
+                      if (generated !== false && generated != null) successCount++;
+                      if (!isLast) await new Promise(r => setTimeout(r, 1000));
+                  }
               }
+              addToast(`Generated ${successCount} resources for ${groupEntries.length} groups!`, 'success');
+          } finally {
               setGradeLevel(saved.grade);
               setLeveledTextLanguage(saved.lang);
               setStudentInterests(saved.interests);
@@ -623,7 +654,6 @@ const handleBatchGenerateForRoster = async (resourceTypes = ['simplified'], deps
               setUseEmojis(saved.emojis);
               setTextFormat(saved.fmt);
           }
-          addToast(`Generated ${successCount} resources for ${groupEntries.length} groups!`, 'success');
       } catch (e) {
           warnLog("Roster batch generation error:", e);
           addToast(t('roster.batch_failed') || 'Batch generation failed', 'error');
@@ -633,14 +663,17 @@ const handleBatchGenerateForRoster = async (resourceTypes = ['simplified'], deps
       }
 };
 
+let _lessonPlanReqEpoch = 0;
+
 const handleGenerateLessonPlan = async (switchView = true, deps) => {
   const { inputText, gradeLevel, isIndependentMode, isParentMode, currentUiLanguage, leveledTextLanguage, lessonCustomAdditions, history, alloBotRef, setIsProcessing, setGenerationStep, setGeneratedContent, setActiveView, setHistory, setError, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, getLessonContext, getAssetManifest, buildStudyGuidePrompt, buildParentGuidePrompt, buildLessonPlanPrompt, flyToElement } = deps;
   try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] handleGenerateLessonPlan fired"); } catch(_) {}
-        if (!inputText.trim()) return;
+        if (!inputText || !String(inputText).trim()) return;
         if (!_cmapAiUsable('text', callGemini)) {
              if (typeof addToast === 'function') addToast(t('errors.ai_unavailable') || 'AI is currently unavailable.', 'error');
              return;
         }
+        const reqEpoch = ++_lessonPlanReqEpoch;
         setIsProcessing(true);
         if (alloBotRef.current) {
              const feedback = t('bot_events.feedback_lesson_generic').replace('{grade}', gradeLevel || "general");
@@ -687,6 +720,7 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
               inventoryText:assetManifest, inventory:inventoryTrace, inventorySupplied:!isIndependentMode && !isParentMode
             }) : { version:0 };
             const result = await callGemini(prompt, true);
+            if (reqEpoch !== _lessonPlanReqEpoch) return null;
             let content;
             try {
                 if (typeof result !== 'string') throw new Error('Expected string Lesson Plan response');
@@ -744,11 +778,15 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
             flyToElement('tour-tool-lesson-plan');
             return newItem;
         } catch (e) {
+            if (reqEpoch !== _lessonPlanReqEpoch) return null;
             warnLog("Unhandled error:", e);
             setError(t('lesson_plan.error_gen_failed'));
             addToast(t('lesson_plan.toast_gen_failed'), "error");
         } finally {
-            setIsProcessing(false);
+            if (reqEpoch === _lessonPlanReqEpoch) {
+                setIsProcessing(false);
+                if (typeof setGenerationStep === 'function') setGenerationStep('');
+            }
         }
 };
 
@@ -849,6 +887,7 @@ const handleRefinePanel = async (panelIdx, editInstruction, deps) => {
   try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] handleRefinePanel fired"); } catch(_) {}
       if (!generatedContent?.data?.visualPlan) return;
       const plan = generatedContent?.data.visualPlan;
+      if (!Array.isArray(plan?.panels)) return;
       const panel = plan.panels[panelIdx];
       if (!panel?.imageUrl) return;
       if (!_cmapAiUsable('imageEdit', callGeminiImageEdit)) {
@@ -857,22 +896,30 @@ const handleRefinePanel = async (panelIdx, editInstruction, deps) => {
       }
       const rawBase64 = typeof panel.imageUrl === 'string' ? panel.imageUrl.split(',')[1] : '';
       if (!rawBase64) return;
+      const targetId = generatedContent.id;
       setIsProcessing(true);
       setGenerationStep(t('visual_director.refining_panel') || 'Refining panel...');
       try {
           const refinedUrl = await callGeminiImageEdit(editInstruction, rawBase64);
-          if (refinedUrl) {
-              const updatedPanels = [...plan.panels];
-              updatedPanels[panelIdx] = { ...panel, imageUrl: refinedUrl };
-              const updatedPlan = { ...plan, panels: updatedPanels };
-              const updatedContent = {
-                  ...generatedContent,
-                  data: { ...generatedContent?.data, visualPlan: updatedPlan, imageUrl: updatedPanels[0].imageUrl }
-              };
-              setGeneratedContent(updatedContent);
-              setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
-              addToast(t('visual_director.panel_refined') || 'Panel refined!', 'success');
+          if (!refinedUrl) {
+              addToast(t('visual_director.refine_failed') || 'Refinement failed', 'error');
+              return;
           }
+          const patchResource = (item) => {
+              if (!item || item.id !== targetId || !Array.isArray(item.data?.visualPlan?.panels)) return item;
+              const currentPanels = item.data.visualPlan.panels;
+              if (panelIdx < 0 || panelIdx >= currentPanels.length) return item;
+              const updatedPanels = currentPanels.slice();
+              updatedPanels[panelIdx] = { ...updatedPanels[panelIdx], imageUrl: refinedUrl };
+              const updatedPlan = { ...item.data.visualPlan, panels: updatedPanels };
+              return {
+                  ...item,
+                  data: { ...item.data, visualPlan: updatedPlan, imageUrl: updatedPanels[0]?.imageUrl ?? item.data.imageUrl }
+              };
+          };
+          setGeneratedContent(prev => patchResource(prev));
+          setHistory(prev => Array.isArray(prev) ? prev.map(patchResource) : prev);
+          addToast(t('visual_director.panel_refined') || 'Panel refined!', 'success');
       } catch (e) {
           warnLog('[ArtDirector] Panel refinement failed:', e);
           addToast(t('visual_director.refine_failed') || 'Refinement failed', 'error');

@@ -1047,7 +1047,7 @@
       if (raw.phase === 'insolvent' && (raw.month < 1 || raw.cash >= 0)) return null;
       if (!raw.policy || !finite(raw.policy.reserve, 0, 0.5) || typeof raw.policy.flex !== 'boolean') return null;
       if (!Array.isArray(raw.assets) || raw.assets.length < 3 || raw.assets.length > SITES.length) return null;
-      var seen = {};
+      var seen = Object.create(null);
       for (var i = 0; i < raw.assets.length; i += 1) {
         var asset = raw.assets[i], site = siteById(asset.siteId);
         if (!site || seen[site.id] || asset.id !== 'asset-' + site.id || asset.type !== site.type) return null;
@@ -1075,11 +1075,11 @@
         if (Math.abs(totals.served + totals.unserved - totals.demand) > 0.001) return null;
         if (Math.abs(totals.generation + totals.discharge - totals.served - totals.charge - totals.curtailed) > 0.001) return null;
         if (Math.abs(totals.initialStored + totals.charge - totals.discharge - totals.storageLoss - totals.endStored) > 0.001) return null;
-        if (Math.abs(totals.served / totals.demand - totals.coverage) > 0.000001) return null;
+        if (totals.demand <= 0 || Math.abs(totals.served / totals.demand - totals.coverage) > 0.000001) return null;
         if (Math.abs(totals.revenue - totals.served * TARIFF) > 0.001 || Math.abs(totals.profit - totals.revenue + totals.operatingCost) > 0.001) return null;
-        if (entry.faults.some(function (fault) { return !fault || !seen[fault.assetId && fault.assetId.replace(/^asset-/, '')] || !integer(fault.hour, 0, DAYS[h] * 24 - 1) || typeof fault.existing !== 'boolean'; })) return null;
+        if (entry.faults.some(function (fault) { return !fault || typeof fault.assetId !== 'string' || fault.assetId.indexOf('asset-') !== 0 || seen[fault.assetId.slice(6)] !== true || !integer(fault.hour, 0, DAYS[h] * 24 - 1) || typeof fault.existing !== 'boolean'; })) return null;
         if (!Array.isArray(entry.conditionByAsset) || entry.conditionByAsset.length < 3 || entry.conditionByAsset.length > SITES.length || entry.conditionByAsset.some(function (item) {
-          return !item || !seen[item.id && item.id.replace(/^asset-/, '')] || !finite(item.condition, 0, 100) || typeof item.fault !== 'boolean';
+          return !item || typeof item.id !== 'string' || item.id.indexOf('asset-') !== 0 || seen[item.id.slice(6)] !== true || !finite(item.condition, 0, 100) || typeof item.fault !== 'boolean';
         })) return null;
       }
       if (raw.phase === 'planning' && raw.outcome !== null) return null;

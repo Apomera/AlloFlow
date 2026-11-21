@@ -9040,32 +9040,36 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                 ctx.restore();
               }
 
-              // A sulcus/fissure: a soft dark valley with a bright upper lip.
+              // A sulcus/fissure: a deep soft shadow valley with a crisp warm upper lip.
               function drawSulcus(pts, o){
                 o=o||{};
                 ctx.save(); ctx.lineJoin='round'; ctx.lineCap='round';
                 function trace(){ ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]); for(var i=1;i<pts.length;i++){ var p=pts[i]; if(p.length===4) ctx.quadraticCurveTo(p[0],p[1],p[2],p[3]); else ctx.lineTo(p[0],p[1]); } }
                 var wide=o.wide||6;
-                ctx.save(); ctx.translate(0,-wide*0.34); trace(); ctx.strokeStyle=o.lip||'rgba(255,252,255,0.5)'; ctx.lineWidth=wide*0.34; ctx.stroke(); ctx.restore();
-                trace(); ctx.strokeStyle=o.shadow||'rgba(74,46,104,0.34)'; ctx.lineWidth=wide; ctx.stroke();
-                trace(); ctx.strokeStyle=o.core||'rgba(58,36,86,0.6)'; ctx.lineWidth=o.core_w||2.2; ctx.stroke();
+                ctx.save(); ctx.translate(0,-wide*0.36); trace(); ctx.strokeStyle=o.lip||'rgba(255,248,250,0.62)'; ctx.lineWidth=wide*0.38; ctx.stroke(); ctx.restore();
+                trace(); ctx.strokeStyle=o.shadow||'rgba(68,38,94,0.40)'; ctx.lineWidth=wide*1.08; ctx.stroke();
+                trace(); ctx.strokeStyle=o.core||'rgba(50,28,74,0.68)'; ctx.lineWidth=o.core_w||2.3; ctx.stroke();
                 ctx.restore();
               }
 
-              // Medium tissue base inside the current clip (so gyri gaps read as darker sulci).
+              // Medium tissue base inside the current clip with warm subsurface glow.
               function paintTissueBase(hx, hy){
-                var sub = ctx.createRadialGradient(hx,hy,W*0.05,W*0.5,H*0.44,W*0.52);
-                sub.addColorStop(0,'#dfc4cf'); sub.addColorStop(0.55,'#c4a0b5'); sub.addColorStop(1,'#9f7d99');
+                var sub = ctx.createRadialGradient(hx,hy,W*0.04,W*0.5,H*0.44,W*0.54);
+                sub.addColorStop(0,'#ecd0d9'); sub.addColorStop(0.52,'#caa3b6'); sub.addColorStop(1,'#997694');
                 ctx.fillStyle=sub; ctx.fillRect(0,0,W,H);
               }
-              // Rounded-form shading: edge ambient-occlusion + top-left sheen.
+              // Rounded-form shading: cool rim separation + warm subsurface sheen + edge AO.
               function paintTissueShade(hx, hy){
-                var ao = ctx.createRadialGradient(W*0.48,H*0.42,W*0.24,W*0.48,H*0.44,W*0.52);
-                ao.addColorStop(0,'rgba(0,0,0,0)'); ao.addColorStop(0.58,'rgba(0,0,0,0)'); ao.addColorStop(1,'rgba(59,36,81,0.34)');
+                var ao = ctx.createRadialGradient(W*0.48,H*0.42,W*0.23,W*0.48,H*0.44,W*0.52);
+                ao.addColorStop(0,'rgba(0,0,0,0)'); ao.addColorStop(0.55,'rgba(0,0,0,0)'); ao.addColorStop(0.86,'rgba(56,34,82,0.22)'); ao.addColorStop(1,'rgba(44,26,68,0.42)');
                 ctx.fillStyle=ao; ctx.fillRect(0,0,W,H);
-                var sheen = ctx.createRadialGradient(hx,hy,W*0.02,hx,hy,W*0.34);
-                sheen.addColorStop(0,'rgba(255,249,240,0.28)'); sheen.addColorStop(1,'rgba(255,252,255,0)');
+                var sheen = ctx.createRadialGradient(hx,hy,W*0.02,hx,hy,W*0.36);
+                sheen.addColorStop(0,'rgba(255,244,234,0.36)'); sheen.addColorStop(0.55,'rgba(255,232,226,0.12)'); sheen.addColorStop(1,'rgba(255,252,255,0)');
                 ctx.fillStyle=sheen; ctx.fillRect(0,0,W,H);
+                // Cool silhouette rim light separating lobes from backdrop
+                var rimWash = ctx.createRadialGradient(W*0.72,H*0.66,W*0.04,W*0.62,H*0.58,W*0.46);
+                rimWash.addColorStop(0,'rgba(147,197,253,0.16)'); rimWash.addColorStop(0.6,'rgba(125,211,252,0.05)'); rimWash.addColorStop(1,'rgba(125,211,252,0)');
+                ctx.fillStyle=rimWash; ctx.fillRect(0,0,W,H);
               }
 
               // A feathered lobe tint (educational colour that fades out — no hard seams).
@@ -14220,7 +14224,152 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
               state.placeAnatomyMarker(marker, stage);
             };
 
+            function brainAtlasIsHighContrast() {
+              try {
+                if (canvas && typeof canvas.closest === 'function' && canvas.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+                var de = typeof document !== 'undefined' ? document.documentElement : null;
+                if (de && (de.classList.contains('theme-contrast') || de.getAttribute('data-theme') === 'high-contrast' || de.getAttribute('data-theme') === 'contrast')) return true;
+                if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-contrast')) return true;
+                if (typeof window !== 'undefined' && window.matchMedia && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+              } catch (eHc) {}
+              return false;
+            }
+            state.shaderUniforms = {
+              uTime: { value: prefersReducedMotion ? 2.4 : 0.0 },
+              uHighContrast: { value: brainAtlasIsHighContrast() ? 1.0 : 0.0 }
+            };
+            state.pathwayShaderMats = [];
+            state.pathwayAnimFrame = null;
+            state.pathwayAnimStart = 0;
+            state.pathwayAnimLast = 0;
+            state.stopPathwayPulseLoop = function () {
+              if (state.pathwayAnimFrame != null) {
+                cancelAnimationFrame(state.pathwayAnimFrame);
+                state.pathwayAnimFrame = null;
+              }
+            };
+            state.syncPathwayPulseLoop = function () {
+              var shouldAnimate = !!(state.alive && state.ready && state.pathway !== 'off' && state.pathwayGroup && !prefersReducedMotion && !brainAtlasIsHighContrast() && !(typeof document !== 'undefined' && document.hidden));
+              if (!shouldAnimate) {
+                state.stopPathwayPulseLoop();
+                return;
+              }
+              if (state.pathwayAnimFrame != null) return;
+              state.pathwayAnimStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+              state.pathwayAnimLast = 0;
+              var stepPulse = function (now) {
+                state.pathwayAnimFrame = null;
+                if (!state.alive || !state.ready || state.pathway === 'off' || !state.pathwayGroup || !canvas.isConnected || prefersReducedMotion || (typeof document !== 'undefined' && document.hidden)) return;
+                var ts = typeof now === 'number' ? now : Date.now();
+                if (!state.pathwayAnimLast || ts - state.pathwayAnimLast >= 30) {
+                  state.pathwayAnimLast = ts;
+                  state.shaderUniforms.uTime.value = (ts - state.pathwayAnimStart) * 0.001;
+                  state.drawScene();
+                }
+                if (state.alive && state.pathway !== 'off' && !brainAtlasIsHighContrast()) {
+                  state.pathwayAnimFrame = requestAnimationFrame(stepPulse);
+                }
+              };
+              state.pathwayAnimFrame = requestAnimationFrame(stepPulse);
+            };
+            state.syncShaderUniforms = function () {
+              var hc = brainAtlasIsHighContrast();
+              state.shaderUniforms.uHighContrast.value = hc ? 1.0 : 0.0;
+              if (prefersReducedMotion) state.shaderUniforms.uTime.value = 2.4;
+              for (var i = 0; i < state.pathwayShaderMats.length; i++) {
+                var u = state.pathwayShaderMats[i] && state.pathwayShaderMats[i].uniforms;
+                if (!u) continue;
+                if (u.uTime) u.uTime.value = state.shaderUniforms.uTime.value;
+                if (u.uHighContrast) u.uHighContrast.value = hc ? 1.0 : 0.0;
+              }
+              if (state.activationAura) {
+                if (state.activationAura.material && state.activationAura.material.uniforms) {
+                  state.activationAura.material.uniforms.uTime.value = state.shaderUniforms.uTime.value;
+                  state.activationAura.material.uniforms.uHighContrast.value = hc ? 1.0 : 0.0;
+                }
+                state.activationAura.visible = !hc && !!state.activationAura.userData.active;
+              }
+            };
+            state.updateActivationAura = function () {
+              if (!state.THREE || !state.scene || typeof state.THREE.ShaderMaterial !== 'function') return;
+              if (!state.activationAura) {
+                var auraGeo = new state.THREE.SphereGeometry(1, 24, 18);
+                var auraMat = new state.THREE.ShaderMaterial({
+                  uniforms: {
+                    uTime: { value: state.shaderUniforms.uTime.value },
+                    uColor: { value: new state.THREE.Color(0xfbbf24) },
+                    uHighContrast: { value: state.shaderUniforms.uHighContrast.value }
+                  },
+                  vertexShader: [
+                    'varying vec3 vNormalV; varying vec3 vViewPos;',
+                    'void main(){',
+                    '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                    '  vViewPos = -mv.xyz;',
+                    '  vNormalV = normalize(normalMatrix * normal);',
+                    '  gl_Position = projectionMatrix * mv;',
+                    '}'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform float uTime; uniform vec3 uColor; uniform float uHighContrast;',
+                    'varying vec3 vNormalV; varying vec3 vViewPos;',
+                    'void main(){',
+                    '  if (uHighContrast > 0.5) discard;',
+                    '  vec3 n = normalize(vNormalV);',
+                    '  vec3 v = normalize(vViewPos);',
+                    '  float fres = pow(clamp(1.0 - abs(dot(n, v)), 0.0, 1.0), 2.2);',
+                    '  float pulse = 0.78 + 0.22 * sin(uTime * 2.1);',
+                    '  float alpha = fres * 0.34 * pulse;',
+                    '  gl_FragColor = vec4(uColor * (0.95 + 0.25 * fres), clamp(alpha, 0.0, 0.45));',
+                    '}'
+                  ].join('\n'),
+                  transparent: true,
+                  depthWrite: false,
+                  blending: state.THREE.AdditiveBlending,
+                  side: state.THREE.FrontSide
+                });
+                state.activationAura = new state.THREE.Mesh(auraGeo, auraMat);
+                state.activationAura.name = 'BrainAtlasActivationAura';
+                state.activationAura.renderOrder = 10;
+                state.activationAura.raycast = function () {};
+                state.activationAura.visible = false;
+                state.activationAura.userData.active = false;
+                state.scene.add(state.activationAura);
+              }
+              var activePathwayItem = state.pathway !== 'off' && state.pathwaySlots ? state.pathwaySlots[state.pathwayStep] : null;
+              var targetKey = activePathwayItem ? activePathwayItem.key : state.selectedStructure;
+              var targetMeshes = targetKey
+                ? state.meshes.filter(function (m) { return m.visible && m.userData.brainAtlas3D && m.userData.brainAtlas3D.structureKey === targetKey; })
+                : (state.selectedRegion && !state.compareActive
+                  ? state.meshes.filter(function (m) { return m.visible && m.userData.brainAtlas3D && m.userData.brainAtlas3D.regionId === state.selectedRegion; })
+                  : []);
+              if (!targetMeshes.length) {
+                state.activationAura.userData.active = false;
+                state.activationAura.visible = false;
+                return;
+              }
+              var auraBounds = brainAtlas3DVisibleBounds(state.THREE, targetMeshes, state.sliceAxis !== 'off' ? state.clipPlane : null);
+              if (auraBounds.isEmpty()) {
+                state.activationAura.userData.active = false;
+                state.activationAura.visible = false;
+                return;
+              }
+              var auraCenter = auraBounds.getCenter(new state.THREE.Vector3());
+              var auraSize = auraBounds.getSize(new state.THREE.Vector3());
+              state.activationAura.position.copy(auraCenter);
+              state.activationAura.scale.set(
+                Math.max(0.08, auraSize.x * 0.62),
+                Math.max(0.08, auraSize.y * 0.62),
+                Math.max(0.08, auraSize.z * 0.62)
+              );
+              if (state.activationAura.material && state.activationAura.material.uniforms && state.activationAura.material.uniforms.uColor) {
+                state.activationAura.material.uniforms.uColor.value.setHex(activePathwayItem ? 0x38bdf8 : 0xfbbf24);
+              }
+              state.activationAura.userData.active = true;
+              state.activationAura.visible = !brainAtlasIsHighContrast();
+            };
+
             state.drawScene = function () {
+              state.syncShaderUniforms();
               state.renderer.render(state.scene, state.camera);
               state.updateFeedback();
               state.updateOrientation();
@@ -14288,6 +14437,8 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
             };
 
             state.disposePathwayOverlay = function () {
+              state.stopPathwayPulseLoop();
+              state.pathwayShaderMats = [];
               state.clearPathwayMarker();
               state.pathwayKeys = [];
               state.pathwaySlots = [];
@@ -14304,6 +14455,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
             state.updatePathwayOverlay = function () {
               state.disposePathwayOverlay();
               if (!state.ready || state.pathway === 'off' || !BRAIN_3D_PATHWAYS[state.pathway] || !state.THREE || !state.structureIndex) { state.applyAppearance(); return; }
+              var hasShaderMat = typeof state.THREE.ShaderMaterial === 'function';
               var route = BRAIN_3D_PATHWAYS[state.pathway];
               var slots = route.steps.map(function (step) {
                 return state.structureIndex.filter(function (item) { return step.prefer.test(item.key); })[0] || state.structureIndex.filter(function (item) { return step.pattern.test(item.key) && item.hemisphere === 'left'; })[0] || state.structureIndex.filter(function (item) { return step.pattern.test(item.key); })[0] || null;
@@ -14315,22 +14467,133 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
               var points = slots.map(function (item) { return item ? new state.THREE.Vector3().fromArray(item.center || [0, 0, 0]) : null; });
               points.forEach(function (point, index) {
                 if (!point) return;
-                var material = new state.THREE.MeshStandardMaterial({ color: index === 0 ? 0xfbbf24 : 0x22d3ee, emissive: index === 0 ? 0x7c3d00 : 0x075985, emissiveIntensity: 0.8, depthTest: false });
-                var node = new state.THREE.Mesh(new state.THREE.SphereGeometry(0.045, 18, 14), material);
+                var material = new state.THREE.MeshStandardMaterial({ color: index === 0 ? 0xfbbf24 : 0x22d3ee, emissive: index === 0 ? 0x92400e : 0x0e7490, emissiveIntensity: 0.95, roughness: 0.25, metalness: 0.1, depthTest: false });
+                var node = new state.THREE.Mesh(new state.THREE.SphereGeometry(0.045, 24, 18), material);
                 node.position.copy(point);
                 node.userData.pathwayKind = 'node';
                 node.userData.pathwayStepIndex = index;
                 node.renderOrder = 12;
+                // Soft luminous neural-node resonant activation aura halo (travels and scales with parent node)
+                var nodeHaloMat = hasShaderMat
+                  ? new state.THREE.ShaderMaterial({
+                      uniforms: {
+                        uTime: { value: state.shaderUniforms.uTime.value },
+                        uPhase: { value: index * 0.85 },
+                        uActive: { value: index === state.pathwayStep ? 1.0 : 0.35 },
+                        uColor: { value: new state.THREE.Color(index === 0 ? 0xfde68a : 0x67e8f9) },
+                        uHighContrast: { value: state.shaderUniforms.uHighContrast.value }
+                      },
+                      vertexShader: [
+                        'varying vec3 vNormalV; varying vec3 vViewPos;',
+                        'void main(){',
+                        '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                        '  vViewPos = -mv.xyz;',
+                        '  vNormalV = normalize(normalMatrix * normal);',
+                        '  gl_Position = projectionMatrix * mv;',
+                        '}'
+                      ].join('\n'),
+                      fragmentShader: [
+                        'uniform float uTime; uniform float uPhase; uniform float uActive; uniform vec3 uColor; uniform float uHighContrast;',
+                        'varying vec3 vNormalV; varying vec3 vViewPos;',
+                        'void main(){',
+                        '  if (uHighContrast > 0.5) discard;',
+                        '  float ndv = abs(dot(normalize(vNormalV), normalize(vViewPos)));',
+                        '  float fres = pow(clamp(1.0 - ndv, 0.0, 1.0), 1.85);',
+                        '  float wave = 0.68 + 0.32 * sin(uTime * 3.1 - uPhase);',
+                        '  float core = pow(ndv, 1.6) * 0.35;',
+                        '  float alpha = (fres * 0.72 + core) * wave * mix(0.26, 0.66, uActive);',
+                        '  gl_FragColor = vec4(uColor * (0.9 + 0.45 * wave * uActive), clamp(alpha, 0.0, 0.78));',
+                        '}'
+                      ].join('\n'),
+                      transparent: true,
+                      depthTest: false,
+                      depthWrite: false,
+                      blending: state.THREE.AdditiveBlending
+                    })
+                  : new state.THREE.MeshBasicMaterial({ color: index === 0 ? 0xfde68a : 0x67e8f9, transparent: true, opacity: 0.28, depthTest: false, depthWrite: false, blending: state.THREE.AdditiveBlending });
+                if (hasShaderMat) state.pathwayShaderMats.push(nodeHaloMat);
+                var nodeHalo = new state.THREE.Mesh(
+                  new state.THREE.SphereGeometry(0.088, 18, 14),
+                  nodeHaloMat
+                );
+                nodeHalo.userData.pathwayHalo = true;
+                nodeHalo.renderOrder = 11;
+                node.add(nodeHalo);
                 group.add(node);
                 var hasNext = index < points.length - 1 || route.loop;
                 var next = hasNext ? points[(index + 1) % points.length] : null;
                 var direction = next ? next.clone().sub(point) : new state.THREE.Vector3();
                 var length = direction.length();
                 if (hasNext && length > 0.01) {
-                  var arrow = new state.THREE.ArrowHelper(direction.clone().normalize(), point, length * 0.92, 0x67e8f9, Math.min(0.12, length * 0.22), Math.min(0.07, length * 0.12));
+                  var shaftLen = length * 0.92;
+                  var arrow = new state.THREE.ArrowHelper(direction.clone().normalize(), point, shaftLen, 0x67e8f9, Math.min(0.12, length * 0.22), Math.min(0.07, length * 0.12));
                   arrow.userData.pathwayKind = 'segment';
                   arrow.userData.pathwayStepIndex = index;
-                  arrow.traverse(function (child) { if (child.material) { child.material.depthTest = false; child.material.transparent = true; child.material.opacity = 0.94; } child.renderOrder = 11; });
+                  // Crisp glowing fiber-tract core + traveling synaptic action-potential pulse sheath
+                  var headLen = Math.min(0.12, length * 0.22);
+                  var tubeLen = Math.max(0.01, shaftLen - headLen * 0.85);
+                  var tractCore = new state.THREE.Mesh(
+                    new state.THREE.CylinderGeometry(0.011, 0.011, tubeLen, 12),
+                    new state.THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.92, depthTest: false, depthWrite: false })
+                  );
+                  tractCore.position.y = tubeLen / 2;
+                  tractCore.userData.pathwayTract = 'core';
+                  var tractSheathMat = hasShaderMat
+                    ? new state.THREE.ShaderMaterial({
+                        uniforms: {
+                          uTime: { value: state.shaderUniforms.uTime.value },
+                          uPhase: { value: index * 0.34 },
+                          uActive: { value: index === state.pathwayStep ? 1.0 : 0.35 },
+                          uBaseColor: { value: new state.THREE.Color(0x38bdf8) },
+                          uPulseColor: { value: new state.THREE.Color(0xfef08a) },
+                          uHighContrast: { value: state.shaderUniforms.uHighContrast.value }
+                        },
+                        vertexShader: [
+                          'varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewPos;',
+                          'void main(){',
+                          '  vUv = uv;',
+                          '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                          '  vViewPos = -mv.xyz;',
+                          '  vNormalV = normalize(normalMatrix * normal);',
+                          '  gl_Position = projectionMatrix * mv;',
+                          '}'
+                        ].join('\n'),
+                        fragmentShader: [
+                          'uniform float uTime; uniform float uPhase; uniform float uActive;',
+                          'uniform vec3 uBaseColor; uniform vec3 uPulseColor; uniform float uHighContrast;',
+                          'varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewPos;',
+                          'void main(){',
+                          '  if (uHighContrast > 0.5) discard;',
+                          '  float ndv = abs(dot(normalize(vNormalV), normalize(vViewPos)));',
+                          '  float rim = 0.45 + 0.55 * pow(clamp(1.0 - ndv, 0.0, 1.0), 1.4);',
+                          '  float travel1 = fract(vUv.y * 1.25 - uTime * 0.72 + uPhase);',
+                          '  float ap1 = exp(-pow((travel1 - 0.52) / 0.085, 2.0));',
+                          '  float tail1 = smoothstep(0.08, 0.52, travel1) * smoothstep(0.62, 0.52, travel1) * 0.48;',
+                          '  float travel2 = fract(vUv.y * 1.25 - uTime * 0.72 + uPhase + 0.5);',
+                          '  float ap2 = exp(-pow((travel2 - 0.52) / 0.095, 2.0)) * 0.65;',
+                          '  float ends = smoothstep(0.0, 0.08, vUv.y) * smoothstep(1.0, 0.92, vUv.y);',
+                          '  float spike = clamp(ap1 + tail1 + ap2, 0.0, 1.35);',
+                          '  vec3 col = mix(uBaseColor, uPulseColor, clamp(spike * 0.78 + uActive * 0.22, 0.0, 1.0));',
+                          '  col += vec3(1.0, 0.98, 0.92) * ap1 * 0.55;',
+                          '  float alpha = ends * rim * (0.16 + 0.20 * uActive + spike * mix(0.42, 0.78, uActive));',
+                          '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.92));',
+                          '}'
+                        ].join('\n'),
+                        transparent: true,
+                        depthTest: false,
+                        depthWrite: false,
+                        blending: state.THREE.AdditiveBlending
+                      })
+                    : new state.THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.26, depthTest: false, depthWrite: false, blending: state.THREE.AdditiveBlending });
+                  if (hasShaderMat) state.pathwayShaderMats.push(tractSheathMat);
+                  var tractSheath = new state.THREE.Mesh(
+                    new state.THREE.CylinderGeometry(0.028, 0.028, tubeLen, 14, 1, true),
+                    tractSheathMat
+                  );
+                  tractSheath.position.y = tubeLen / 2;
+                  tractSheath.userData.pathwayTract = 'sheath';
+                  arrow.add(tractCore, tractSheath);
+                  arrow.traverse(function (child) { if (child.material) { child.material.depthTest = false; child.material.transparent = true; if (!child.userData.pathwayTract) child.material.opacity = 0.94; } child.renderOrder = 11; });
                   group.add(arrow);
                 }
               });
@@ -14339,6 +14602,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
               state.scene.add(group);
               state.updatePathwayStepAppearance();
               state.applyAppearance();
+              state.syncPathwayPulseLoop();
             };
 
             state.updatePathwayStepAppearance = function () {
@@ -14349,17 +14613,40 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                   object.scale.setScalar(active ? 1.75 : 1);
                   if (object.material) {
                     object.material.color.setHex(active ? 0xfbbf24 : 0x22d3ee);
-                    if (object.material.emissive) object.material.emissive.setHex(active ? 0x7c3d00 : 0x075985);
-                    object.material.emissiveIntensity = active ? 1 : 0.62;
+                    if (object.material.emissive) object.material.emissive.setHex(active ? 0x92400e : 0x0e7490);
+                    object.material.emissiveIntensity = active ? 1.1 : 0.7;
                   }
+                  object.children.forEach(function (halo) {
+                    if (halo.userData && halo.userData.pathwayHalo && halo.material) {
+                      if (halo.material.uniforms) {
+                        if (halo.material.uniforms.uColor) halo.material.uniforms.uColor.value.setHex(active ? 0xfde68a : 0x67e8f9);
+                        if (halo.material.uniforms.uActive) halo.material.uniforms.uActive.value = active ? 1.0 : 0.35;
+                      } else {
+                        halo.material.color.setHex(active ? 0xfde68a : 0x67e8f9);
+                        halo.material.opacity = active ? 0.42 : 0.20;
+                      }
+                    }
+                  });
                 } else if (object.userData.pathwayKind === 'segment') {
                   object.traverse(function (child) {
-                    if (!child.material || !child.material.color) return;
-                    child.material.color.setHex(active ? 0xfbbf24 : 0x67e8f9);
-                    child.material.opacity = active ? 1 : 0.55;
+                    if (!child.material) return;
+                    if (child.userData && child.userData.pathwayTract === 'sheath') {
+                      if (child.material.uniforms) {
+                        if (child.material.uniforms.uBaseColor) child.material.uniforms.uBaseColor.value.setHex(active ? 0xf59e0b : 0x38bdf8);
+                        if (child.material.uniforms.uPulseColor) child.material.uniforms.uPulseColor.value.setHex(active ? 0xfef08a : 0x67e8f9);
+                        if (child.material.uniforms.uActive) child.material.uniforms.uActive.value = active ? 1.0 : 0.35;
+                      } else if (child.material.color) {
+                        child.material.color.setHex(active ? 0xfde68a : 0x38bdf8);
+                        child.material.opacity = active ? 0.36 : 0.16;
+                      }
+                    } else if (child.material.color) {
+                      child.material.color.setHex(active ? 0xfbbf24 : 0x67e8f9);
+                      child.material.opacity = active ? 1 : 0.58;
+                    }
                   });
                 }
               });
+              state.updateActivationAura();
               state.requestRender();
             };
 
@@ -14619,8 +14906,8 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                 if (!mesh.material) return;
                 var opacity = 1;
                 var color = meta.baseColor;
-                var emissive = 0x080b1e;
-                var emissiveIntensity = 0.045;
+                var emissive = meta.cortical ? 0x221018 : 0x0c1224;
+                var emissiveIntensity = meta.cortical ? 0.065 : 0.05;
                 if (compareKeys.length) {
                   opacity = compareIndex >= 0 ? 1 : 0.015;
                   if (compareIndex === 0) { color = 0xfbbf24; emissive = 0x6b3b00; emissiveIntensity = 0.34; }
@@ -14644,7 +14931,13 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                 mesh.material.color.setHex(color);
                 if (mesh.material.emissive) mesh.material.emissive.setHex(emissive);
                 mesh.material.emissiveIntensity = emissiveIntensity;
+                if (mesh.material.userData && mesh.material.userData.brainUniforms) {
+                  var bu = mesh.material.userData.brainUniforms;
+                  bu.uFaded.value = opacity < 0.25 ? 1.0 : 0.0;
+                  bu.uActive.value = (selected || compareIndex >= 0 || (state.pathway !== 'off' && inPathway)) ? 1.0 : 0.0;
+                }
               });
+              state.updateActivationAura();
               state.updateFeedback();
               state.requestRender();
             };
@@ -14735,6 +15028,12 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                 state.controls.dispose();
               }
               state.disposePathwayOverlay();
+              if (state.activationAura) {
+                state.scene.remove(state.activationAura);
+                if (state.activationAura.geometry && state.activationAura.geometry.dispose) state.activationAura.geometry.dispose();
+                if (state.activationAura.material && state.activationAura.material.dispose) state.activationAura.material.dispose();
+                state.activationAura = null;
+              }
               if (state.cutawayOutline) {
                 state.scene.remove(state.cutawayOutline);
                 state.cutawayOutline.geometry.dispose();
@@ -14889,19 +15188,19 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
               if (THREE.ACESFilmicToneMapping !== undefined) state.renderer.toneMapping = THREE.ACESFilmicToneMapping;
               state.renderer.toneMappingExposure = 1.08;
               state.renderer.physicallyCorrectLights = true;
-              state.scene.add(new THREE.HemisphereLight(0xf2f5f7, 0x35323d, 0.68));
+              state.scene.add(new THREE.HemisphereLight(0xf8f3ee, 0x26293d, 0.72));
               // Keep shape-defining light consistent as the learner rotates the model.
               // Directional targets travel with the camera; the hemisphere stays world-relative.
               state.scene.add(state.camera);
-              var keyLight = new THREE.DirectionalLight(0xfff5e8, 2.1);
+              var keyLight = new THREE.DirectionalLight(0xfff2e2, 2.25);
               keyLight.position.set(-4, 6, 2);
               keyLight.target.position.set(0, 0, -1);
               state.camera.add(keyLight, keyLight.target);
-              var fillLight = new THREE.DirectionalLight(0xdde6f0, 0.55);
+              var fillLight = new THREE.DirectionalLight(0xdbeafe, 0.62);
               fillLight.position.set(4, 1, 2);
               fillLight.target.position.set(0, 0, -1);
               state.camera.add(fillLight, fillLight.target);
-              var rimLight = new THREE.DirectionalLight(0xd2e0e8, 0.75);
+              var rimLight = new THREE.DirectionalLight(0x93c5fd, 1.08);
               rimLight.position.set(2, -2, -4);
               rimLight.target.position.set(0, 0, -1);
               state.camera.add(rimLight, rimLight.target);
@@ -14955,16 +15254,62 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                   var hemisphere = /_l(?:\.\d+)?$/i.test(structureKey) ? 'left' : (/_r(?:\.\d+)?$/i.test(structureKey) ? 'right' : 'midline');
                   var cortical = /gyrus|cortex|lobule|precuneus|cuneus|operculum|pole|insula|paracentral/i.test(lower) && !/cerebell/i.test(lower);
                   var baseColor = brainAtlas3DColor(structureKey);
-                  object.material = new THREE.MeshStandardMaterial({
+                  var TissueMatCtor = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
+                  var tissueOpts = {
                     color: baseColor,
-                    roughness: 0.72,
-                    metalness: 0,
+                    roughness: cortical ? 0.54 : 0.46,
+                    metalness: 0.02,
                     transparent: false,
                     opacity: 1,
                     side: THREE.DoubleSide,
-                    emissive: 0x080b1e,
-                    emissiveIntensity: 0.045
-                  });
+                    flatShading: false,
+                    emissive: cortical ? 0x221018 : 0x0c1224,
+                    emissiveIntensity: cortical ? 0.065 : 0.05
+                  };
+                  if (THREE.MeshPhysicalMaterial) {
+                    tissueOpts.clearcoat = cortical ? 0.28 : 0.36;
+                    tissueOpts.clearcoatRoughness = 0.34;
+                  }
+                  var tissueMat = new TissueMatCtor(tissueOpts);
+                  var brainUniforms = {
+                    uTime: state.shaderUniforms.uTime,
+                    uHighContrast: state.shaderUniforms.uHighContrast,
+                    uCortical: { value: cortical ? 1.0 : 0.0 },
+                    uFaded: { value: 0.0 },
+                    uActive: { value: 0.0 }
+                  };
+                  tissueMat.userData = Object.assign({}, tissueMat.userData || {}, { brainUniforms: brainUniforms });
+                  tissueMat.onBeforeCompile = function (shader) {
+                    shader.uniforms.uTime = brainUniforms.uTime;
+                    shader.uniforms.uHighContrast = brainUniforms.uHighContrast;
+                    shader.uniforms.uCortical = brainUniforms.uCortical;
+                    shader.uniforms.uFaded = brainUniforms.uFaded;
+                    shader.uniforms.uActive = brainUniforms.uActive;
+                    shader.fragmentShader = shader.fragmentShader
+                      .replace('#include <common>', [
+                        '#include <common>',
+                        'uniform float uTime; uniform float uHighContrast; uniform float uCortical; uniform float uFaded; uniform float uActive;'
+                      ].join('\n'))
+                      .replace('#include <dithering_fragment>', [
+                        'if (uHighContrast < 0.5) {',
+                        '  float bFres = pow(clamp(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))), 0.0, 1.0), 2.35);',
+                        '  vec3 cortexSheen = mix(vec3(0.45, 0.72, 0.96), vec3(0.96, 0.84, 0.88), uCortical);',
+                        '  vec3 sssWarm = mix(vec3(0.18, 0.26, 0.42), vec3(0.42, 0.20, 0.24), uCortical);',
+                        '  gl_FragColor.rgb += (cortexSheen * bFres * 0.24 + sssWarm * pow(bFres, 1.45) * 0.16) * (1.0 - uFaded * 0.65);',
+                        '  if (uFaded > 0.5) {',
+                        '    gl_FragColor.rgb += vec3(0.56, 0.82, 0.98) * bFres * 0.52;',
+                        '    gl_FragColor.a = clamp(gl_FragColor.a + bFres * 0.14, 0.0, 0.34);',
+                        '  }',
+                        '  if (uActive > 0.5) {',
+                        '    float resPulse = 0.78 + 0.22 * sin(uTime * 2.2);',
+                        '    gl_FragColor.rgb += vec3(1.0, 0.86, 0.44) * bFres * 0.34 * resPulse;',
+                        '  }',
+                        '}',
+                        '#include <dithering_fragment>'
+                      ].join('\n'));
+                  };
+                  tissueMat.customProgramCacheKey = function () { return 'brainatlas-cortical-sss-v1'; };
+                  object.material = tissueMat;
                   var objectBounds = new THREE.Box3().setFromObject(object);
                   var objectCenter = objectBounds.getCenter(new THREE.Vector3());
                   object.userData.brainAtlas3D = { structureKey: structureKey, hemisphere: hemisphere, cortical: cortical, baseColor: baseColor, regionId: null, boundsMin: objectBounds.min.toArray(), boundsMax: objectBounds.max.toArray(), center: objectCenter.toArray() };
@@ -20953,7 +21298,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                         sel.sourceUrl ? React.createElement("a", { className: "text-xs text-sky-700 underline leading-relaxed", href: sel.sourceUrl, target: "_blank", rel: "noopener noreferrer" }, sel.source) : React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, sel.source)
                       ),
                       currentView.isNeuromyths && sel.seeView && VIEWS[sel.seeView] && React.createElement("div", null,
-                        React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.see_it_in_the_atlas', 'See it in the atlas')),
+                        React.createElement("p", { className: "text-xs font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.see_it_in_the_atlas', 'See it in the atlas')),
                         React.createElement("button", {
                           type: "button",
                           "data-brainatlas-myth-see-view": sel.seeView,

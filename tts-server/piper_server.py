@@ -25,6 +25,7 @@ import sys
 import struct
 import math
 import re
+import threading
 from urllib.parse import urlsplit
 
 
@@ -118,6 +119,17 @@ MAX_PCM_BYTES = 32 * 1024 * 1024
 
 # Cache of voice models we've already confirmed/downloaded this session
 _ready_voices = set()
+_voice_locks_guard = threading.Lock()
+_voice_locks = {}
+
+
+def _get_voice_lock(voice_name):
+    with _voice_locks_guard:
+        lock = _voice_locks.get(voice_name)
+        if lock is None:
+            lock = threading.Lock()
+            _voice_locks[voice_name] = lock
+        return lock
 
 MODEL_ID = re.compile(r"[a-z]{2,3}_[a-z]{2}-[a-z0-9_]{1,80}-(?:x_low|low|medium|high)", re.IGNORECASE | re.ASCII)
 
@@ -153,33 +165,33 @@ def ensure_voice(voice_name):
 
     model_path = os.path.join(VOICES_DIR, f"{voice_name}.onnx")
     config_path = os.path.join(VOICES_DIR, f"{voice_name}.onnx.json")
-    if voice_name in _ready_voices or (
-        os.path.exists(model_path) and os.path.exists(config_path)
-    ):
-        _ready_voices.add(voice_name)
-        return True
-    if voice_name not in ALLOWED_DOWNLOAD_VOICES:
-        return False
-        return True
-
-    print(f"[Piper TTS] Downloading voice {voice_name}...", flush=True)
-    try:
-        proc = subprocess.run(
-            [PIPER_PYTHON, "-m", "piper.download_voices", voice_name,
-             "--data-dir", VOICES_DIR],
-            capture_output=True,
-            timeout=300,
-        )
-        if proc.returncode != 0:
-            print(f"[Piper TTS] Voice download failed: "
-                  f"{proc.stderr.decode(errors='replace')[:300]}", flush=True)
+    with _get_voice_lock(voice_name):
+        if voice_name in _ready_voices or (
+            os.path.exists(model_path) and os.path.exists(config_path)
+        ):
+            _ready_voices.add(voice_name)
+            return True
+        if voice_name not in ALLOWED_DOWNLOAD_VOICES:
             return False
-        _ready_voices.add(voice_name)
-        print(f"[Piper TTS] Voice {voice_name} ready", flush=True)
-        return True
-    except Exception as e:
-        print(f"[Piper TTS] Voice download error: {e}", flush=True)
-        return False
+
+        print(f"[Piper TTS] Downloading voice {voice_name}...", flush=True)
+        try:
+            proc = subprocess.run(
+                [PIPER_PYTHON, "-m", "piper.download_voices", voice_name,
+                 "--data-dir", VOICES_DIR],
+                capture_output=True,
+                timeout=300,
+            )
+            if proc.returncode != 0:
+                print(f"[Piper TTS] Voice download failed: "
+                      f"{proc.stderr.decode(errors='replace')[:300]}", flush=True)
+                return False
+            _ready_voices.add(voice_name)
+            print(f"[Piper TTS] Voice {voice_name} ready", flush=True)
+            return True
+        except Exception as e:
+            print(f"[Piper TTS] Voice download error: {e}", flush=True)
+            return False
 
 
 def synthesize(text, voice_name, speed):

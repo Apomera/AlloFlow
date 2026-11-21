@@ -492,7 +492,7 @@
           var stores = {};
           names.forEach(function (name) { stores[name] = transaction.objectStore(name); });
           try {
-            work(stores, function (value) { result = value; }, function (error) { refused = error; try { transaction.abort(); } catch (_) {} });
+            work(stores, function (value) { result = value; }, function (error) { refused = error; try { transaction.abort(); } catch (_) { reject(refused); } });
           } catch (error) {
             refused = error && error.code ? error : storageError(error);
             try { transaction.abort(); } catch (_) { reject(refused); }
@@ -652,20 +652,50 @@
     function importAll(data) {
       if (!isObject(data) || data.kind !== EXPORT_KIND || !Array.isArray(data.words)) return refuse('not_my_words', 'This is not a My words file.');
       var kept = [], refused = [], mediaList = Array.isArray(data.media) ? data.media : [];
+      var isFatalStorage = function (err) { return !!(err && (err.code === 'no_storage' || err.code === 'storage_full')); };
+      var pushRest = function (list, from, keyFn) {
+        for (var idx = from; idx < list.length && refused.length < LIMITS.words * 2; idx++) {
+          var row = list[idx];
+          refused.push(isObject(row) ? (line(keyFn(row), 40) || '?') : '?');
+        }
+      };
       var stepMedia = function (j) {
-        if (j >= mediaList.length || j >= LIMITS.words) return Promise.resolve({ kept: kept, refused: refused });
+        if (j >= mediaList.length) return Promise.resolve({ kept: kept, refused: refused });
+        if (j >= LIMITS.words) { pushRest(mediaList, j, function (r) { return own(r, 'key') ? r.key : r.word; }); return Promise.resolve({ kept: kept, refused: refused }); }
         var row = mediaList[j], patchIn = {};
         if (!isObject(row)) { refused.push('?'); return stepMedia(j + 1); }
         ['clip', 'picture'].forEach(function (name) { if (own(row, name) && row[name]) patchIn[name] = row[name]; });
         var rawKey = own(row, 'key') ? row.key : row.word;
-        return putMedia(rawKey, patchIn).then(function (entry) { if (entry) kept.push(entry.key || entry.word); }, function () { refused.push(line(rawKey, 40) || '?'); }).then(function () { return stepMedia(j + 1); });
+        return putMedia(rawKey, patchIn).then(
+          function (entry) { if (entry) kept.push(entry.key || entry.word); return stepMedia(j + 1); },
+          function (err) {
+            refused.push(line(rawKey, 40) || '?');
+            if (isFatalStorage(err)) {
+              pushRest(mediaList, j + 1, function (r) { return own(r, 'key') ? r.key : r.word; });
+              return { kept: kept, refused: refused };
+            }
+            return stepMedia(j + 1);
+          }
+        );
       };
       var step = function (i) {
-        if (i >= data.words.length || i >= LIMITS.words) return stepMedia(0);
+        if (i >= data.words.length) return stepMedia(0);
+        if (i >= LIMITS.words) { pushRest(data.words, i, function (r) { return r.word; }); return stepMedia(0); }
         var row = data.words[i], patchIn = {};
         if (!isObject(row)) { refused.push('?'); return step(i + 1); }
         ['sounds', 'clip', 'picture'].forEach(function (name) { if (own(row, name) && row[name]) patchIn[name] = row[name]; });
-        return put(row.word, patchIn).then(function (entry) { if (entry) kept.push(entry.word); }, function () { refused.push(line(row.word, 40) || '?'); }).then(function () { return step(i + 1); });
+        return put(row.word, patchIn).then(
+          function (entry) { if (entry) kept.push(entry.word); return step(i + 1); },
+          function (err) {
+            refused.push(line(row.word, 40) || '?');
+            if (isFatalStorage(err)) {
+              pushRest(data.words, i + 1, function (r) { return r.word; });
+              pushRest(mediaList, 0, function (r) { return own(r, 'key') ? r.key : r.word; });
+              return { kept: kept, refused: refused };
+            }
+            return step(i + 1);
+          }
+        );
       };
       return step(0);
     }

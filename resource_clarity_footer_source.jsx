@@ -39,6 +39,42 @@ function ResourceClarityFooter({ resource, history, index, teacher, sync, hasPre
     const flagged = items.filter(item => item?.verification?.factual === false || item?.verification?.position === false).length;
     if (unchecked) issues.push(text(unchecked===1?'resource_check.timeline_one_unchecked':'resource_check.timeline_unchecked',unchecked===1?'1 timeline item has no saved AI review.':'{count} timeline items have no saved AI review.', { count: unchecked }));
     if (flagged) issues.push(text('resource_check.timeline_flagged', 'AI flagged {count} timeline items for review.', { count: flagged }));
+    if (resource?.data?.research?.hasGrounding === false) issues.push(text('resource_check.timeline_ungrounded', 'This topic timeline was drafted without grounded web sources. Verify dates and facts before sharing.'));
+  }
+  if (resource?.type === 'simplified' || resource?.type === 'same-text-supported') {
+    if (Number.isFinite(resource?.levelCheck?.checkedChars) && Number.isFinite(resource?.levelCheck?.totalChars) && resource.levelCheck.checkedChars < resource.levelCheck.totalChars) {
+      issues.push(text('resource_check.simplified_level_partial', 'Reading-level check only reviewed {checked} of {total} characters. Review the rest of the passage.', { checked: resource.levelCheck.checkedChars, total: resource.levelCheck.totalChars }));
+    }
+    if (Number.isFinite(resource?.alignmentCheck?.checkedChars) && Number.isFinite(resource?.alignmentCheck?.totalChars) && resource.alignmentCheck.checkedChars < resource.alignmentCheck.totalChars) {
+      issues.push(text('resource_check.simplified_rigor_partial', 'Rigor alignment check only reviewed {checked} of {total} characters. Review the rest of the passage.', { checked: resource.alignmentCheck.checkedChars, total: resource.alignmentCheck.totalChars }));
+    }
+  }
+  if (resource?.type === 'math' && resource?.data?._verification?.reviewRequired === true) {
+    issues.push(text('resource_check.math_review_required', 'This math set was edited and needs teacher review before sharing.'));
+  }
+  if (resource?.type === 'glossary') {
+    const rawGlossary = resource.data;
+    const terms = Array.isArray(rawGlossary) ? rawGlossary : (Array.isArray(rawGlossary?.terms) ? rawGlossary.terms : Array.isArray(rawGlossary?.items) ? rawGlossary.items : []);
+    const activeTerms = terms.filter(entry => entry && typeof entry === 'object' && entry.isSelected !== false && entry.selected !== false);
+    const missingDef = activeTerms.filter(entry => !String(entry.def || entry.definition || entry.meaning || '').trim()).length;
+    if (missingDef) issues.push(text(missingDef === 1 ? 'resource_check.glossary_one_missing_def' : 'resource_check.glossary_missing_defs', missingDef === 1 ? '1 glossary term is missing a definition.' : '{count} glossary terms are missing definitions.', { count: missingDef }));
+    const AD = typeof window !== 'undefined' ? window.AlloDictionary : null;
+    if (AD && typeof AD.getCached === 'function') {
+      const unmatched = activeTerms.filter(entry => {
+        const word = String(entry.term || entry.word || '').trim();
+        const def = String(entry.def || entry.definition || '').trim();
+        if (!word || !def) return false;
+        const cached = AD.getCached(word);
+        if (!cached) return false;
+        const sense = typeof AD.matchPassageSense === 'function' ? AD.matchPassageSense(cached, def) : (typeof AD.pickSense === 'function' ? AD.pickSense(cached, def) : null);
+        return !sense || !sense.definition || (typeof sense.score === 'number' && sense.score <= 0);
+      }).length;
+      if (unmatched) issues.push(text(unmatched === 1 ? 'resource_check.glossary_one_unmatched_sense' : 'resource_check.glossary_unmatched_senses', unmatched === 1 ? '1 glossary term has a dictionary entry that did not match the lesson meaning. Review it before sharing.' : '{count} glossary terms have dictionary entries that did not match the lesson meaning. Review them before sharing.', { count: unmatched }));
+    }
+  }
+  const seedKind = resource?.lessonPath?.seed?.kind;
+  if (seedKind === 'topic' || seedKind === 'word-list') {
+    issues.push(text('resource_check.non_passage_start', 'Generated without a pasted source passage ({kind} start). Verify factual accuracy before sharing.', { kind: seedKind }));
   }
   // Slim: one row of navigation; checks open above it. Hide is remembered on this device.
   // Called inline (not as a component), so no hooks: the toggle flips `hidden` on the DOM.
@@ -63,7 +99,7 @@ function ResourceClarityFooter({ resource, history, index, teacher, sync, hasPre
         {teacher && <details data-resource-sharing-check className="text-xs text-slate-900">
           <summary className={'min-h-6 cursor-pointer rounded px-1 font-semibold focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (attention ? 'text-amber-900' : 'text-slate-700')}>{text('resource_check.title', 'Before sharing')}{attention ? ' · ' + attention : ''}</summary>
           <div className="absolute inset-x-2 bottom-full z-20 mb-1 max-h-[50vh] overflow-auto rounded-lg border border-slate-300 bg-white p-3 text-start text-sm shadow-lg">
-            <p className="text-xs text-slate-700">{text('resource_check.scope', 'Checks cover detected image descriptions and saved Notes/Timeline review states. This is not a complete accessibility or accuracy review.')}</p>
+            <p className="text-xs text-slate-700">{text('resource_check.scope', 'Checks cover detected image descriptions, partial checks, unreviewed edits, non-passage starts, and saved Notes/Timeline review states. This is not a complete accessibility or accuracy review.')}</p>
             {issues.length ? <ul data-resource-check-issues className="mt-2 list-disc space-y-1 ps-5">{issues.map((issue, i) => <li key={i}>{issue}</li>)}</ul> : <p className="mt-2">{text('resource_check.no_flags', 'No concerns were found by these limited checks.')}</p>}
             <p className="mt-2 text-xs text-slate-700">{text('resource_check.manual', 'Preview the student view. Confirm that instructions, linked activities, audio, and sharing settings work for your learners.')}</p>
           </div>

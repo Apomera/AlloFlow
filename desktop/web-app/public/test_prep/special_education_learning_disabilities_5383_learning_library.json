@@ -221,10 +221,10 @@
           "id": "ld5383-ch-01-check-01",
           "prompt": "When interpreting a student’s uneven learning profile, a kindergarten teacher notices that one child reaches several language milestones later than classmates. What is the most appropriate first interpretation?",
           "choices": [
-            "Development follows broad patterns, but individual variation requires information from multiple sources and settings before conclusions are drawn.",
-            "Any difference from a class average proves a disability.",
-            "The child should immediately receive a fixed disability label.",
-            "Chronological age no longer matters when planning instruction."
+            "Broad developmental patterns allow wide variation, so the team should gather multi-source evidence across settings before drawing conclusions.",
+            "Falling below the typical classroom average on language milestones establishes a developmental disability that warrants formal eligibility.",
+            "The team should assign a provisional disability label promptly so specialized speech-language interventions can begin before gathering family input.",
+            "Chronological age norms become uninformative once a child trails classmates, so expectations should be based on informal adult impressions instead."
           ],
           "answerIndex": 0,
           "rationale": "Milestones provide useful reference points, not stand-alone diagnoses. Educators should document functioning across domains, contexts, and time and involve qualified team members before attributing a pattern to disability. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -240,10 +240,10 @@
           "id": "ld5383-ch-01-check-02",
           "prompt": "When interpreting a student’s uneven learning profile, a student solves multistep problems during small-group instruction but rarely begins the same work during a noisy whole-class period. What should the teacher examine first?",
           "choices": [
-            "Assume the student has forgotten the underlying skill.",
-            "Compare task demands, environmental conditions, supports, and performance across the two contexts.",
-            "Lower every academic expectation for the student.",
-            "Treat the difference as deliberate noncompliance."
+            "Conclude that the student has not yet retained the underlying academic skill and re-teach the lesson from the beginning.",
+            "Compare task demands, environmental conditions, supports, and performance across both settings.",
+            "Lower the academic complexity of the independent assignment so the student can finish without using classroom supports.",
+            "Treat the drop in task initiation during the busier period as willful avoidance and add a stricter compliance consequence."
           ],
           "answerIndex": 1,
           "rationale": "Performance reflects an interaction among learner skills, task demands, supports, and context. Comparing conditions can identify a removable barrier before the team changes expectations or infers a stable trait. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -259,10 +259,10 @@
           "id": "ld5383-ch-01-check-03",
           "prompt": "When interpreting a student’s uneven learning profile, a teacher wants to understand a learner’s self-regulation needs. Which information is most useful?",
           "choices": [
-            "A single global rating completed months ago.",
-            "The individual learning profile without current observations.",
-            "Observations of triggers, strategies used, recovery, and successful conditions across routines.",
-            "The average behavior of the rest of the class."
+            "A single global behavior rating scale completed by a previous teacher at the start of the school year.",
+            "The student’s primary disability eligibility category paired with a general list of typical classroom accommodations.",
+            "Current observations of triggers, strategies used, recovery patterns, and successful routines.",
+            "Whole-class averages showing how long most classmates sustain independent work without requesting teacher support."
           ],
           "answerIndex": 2,
           "rationale": "Self-regulation is best understood through specific, current observations of what precedes difficulty, how the learner responds, which strategies help, and whether patterns differ by setting or task. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -278,10 +278,10 @@
           "id": "ld5383-ch-01-check-04",
           "prompt": "When interpreting a student’s uneven learning profile, a multilingual learner has difficulty following rapid oral directions in English but demonstrates the task after a peer models it. Which interpretation is best?",
           "choices": [
-            "The performance automatically establishes an intellectual disability.",
-            "Visual modeling should be removed to reveal the true score.",
-            "Home-language information is irrelevant to educational planning.",
-            "Language access may be affecting the demonstration of knowledge, so the team should gather culturally and linguistically appropriate evidence."
+            "Difficulty demonstrating understanding through rapid English oral tasks provides sufficient evidence to suspect an intellectual disability.",
+            "Peer modeling and visual representations should be removed during checks so the teacher can measure the student’s true academic mastery.",
+            "Information about how the student performs in the home language is outside school accountability and should be set aside during planning.",
+            "Language access may affect how knowledge is shown, so gather culturally and linguistically appropriate evidence."
           ],
           "answerIndex": 3,
           "rationale": "Difference is not disability. The team should distinguish language acquisition and access from disability by using multiple methods, appropriate language supports, and information about performance in the learner’s languages. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -297,10 +297,10 @@
           "id": "ld5383-ch-01-check-05",
           "prompt": "When interpreting a student’s uneven learning profile, a middle school student with a learning disability is embarrassed when an adult uses age-inappropriate materials for a functional routine. What principle should guide revision?",
           "choices": [
-            "Use age-respectful materials while matching the instructional steps and supports to the learner’s current needs.",
-            "Match all materials to developmental level regardless of age.",
-            "Stop teaching functional skills until grade-level mastery is reached.",
-            "Ask peers to complete the routine for the student."
+            "Use age-respectful materials while adapting task steps and supports to current learner needs.",
+            "Select instructional materials strictly by developmental age estimate so the formatting matches early-childhood readiness charts.",
+            "Postpone functional and daily-living instruction until the student achieves independent mastery on grade-level academic standards.",
+            "Assign helpful classmates to perform the functional routine for the student so embarrassing instructional materials are unnecessary."
           ],
           "answerIndex": 0,
           "rationale": "Instruction can be individualized without sacrificing dignity. Materials and contexts should be chronological-age respectful, while prompts, task steps, and response modes are adapted to the learner’s present performance. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -411,10 +411,10 @@
           "id": "ld5383-ch-02-check-01",
           "prompt": "A student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. Which response is best?",
           "choices": [
-            "Target the documented area of academic need instead of assuming the disability affects every subject in the same way.",
-            "Provide identical remediation in all academic areas.",
-            "Infer low overall intelligence from the one difficulty.",
-            "Replace instruction with permanent adult completion."
+            "Target the documented area of academic need while preserving strengths in unaffected subjects.",
+            "Deliver uniform remedial instruction across all core academic subjects so the student receives consistent skill reinforcement.",
+            "Interpret the persistent academic bottleneck as evidence of broadly limited cognitive ability across every learning domain.",
+            "Assign an instructional aide to complete the demanding academic steps so the student can keep pace with class assignments."
           ],
           "answerIndex": 0,
           "rationale": "Specific learning disabilities can affect particular psychological processes and academic skills unevenly. Instruction should be based on the learner’s actual pattern of strengths and needs, not a global assumption. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -430,10 +430,10 @@
           "id": "ld5383-ch-02-check-02",
           "prompt": "A student with a learning disability and autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
           "choices": [
-            "Interpret the response as intentional defiance.",
-            "Plan a predictable, accessible warning and communication routine while teaching the student how to use it.",
-            "Exclude the student from every future drill.",
-            "Require exposure without preparation until the response stops."
+            "Treat covering the ears and missing directions as task refusal and apply standard classroom behavior consequences.",
+            "Build a predictable warning and accessible cueing routine while teaching the student how to use it.",
+            "Excuse the student from participating in future schoolwide drills or timed transitions to avoid triggering sensory distress.",
+            "Continue using loud, unannounced signals without preparation so the student gradually desensitizes through repeated exposure."
           ],
           "answerIndex": 1,
           "rationale": "Sensory and communication needs can affect access and behavior. A predictable warning, accessible direction, and taught coping or communication response support participation while preserving safety requirements. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -449,10 +449,10 @@
           "id": "ld5383-ch-02-check-03",
           "prompt": "A student with a learning disability and ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
           "choices": [
-            "The student knew the work and was choosing to fail before.",
-            "The checklist has changed the academic standard.",
-            "Executive-function supports are improving task initiation, organization, and monitoring.",
-            "The disability affects intelligence rather than self-management."
+            "The student already mastered the self-management skills needed and had been choosing not to start earlier assignments.",
+            "Adding checklists and interim milestones has lowered the rigor of the grade-level academic standard being assessed.",
+            "Executive-function scaffolds are strengthening task initiation, planning, and self-monitoring.",
+            "The student’s uneven project completion reflects limited intellectual understanding of the content rather than self-regulation."
           ],
           "answerIndex": 2,
           "rationale": "ADHD may affect executive functions such as initiation, working memory, inhibition, and organization. External structures can support performance without changing the learning target or implying weak ability. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -468,10 +468,10 @@
           "id": "ld5383-ch-02-check-04",
           "prompt": "A student with a learning disability argues mainly during unpredictable peer-group reading tasks but participates when roles and steps are explicit. What perspective is most useful?",
           "choices": [
-            "Assume the behavior will occur equally in every class.",
-            "Conclude that peers caused the learning disability.",
-            "Remove all collaborative literacy opportunities permanently.",
-            "Examine interactions among the learner, literacy demand, peer structure, expectations, supports, and consequences rather than locating the problem only within the learner."
+            "Expect the same level of arguing across every academic period because the behavior reflects an internal trait.",
+            "Conclude that classmates’ reading habits directly caused the student’s underlying specific learning disability.",
+            "Replace all collaborative peer-group literacy routines with isolated individual seatwork for the school year.",
+            "Analyze interactions among literacy demands, peer roles, expectations, supports, and consequences across contexts."
           ],
           "answerIndex": 3,
           "rationale": "An ecological and instructional analysis uses the contrast between routines to identify barriers, teach participation and self-advocacy strategies, clarify roles, and monitor both literacy access and behavior.",
@@ -487,10 +487,10 @@
           "id": "ld5383-ch-02-check-05",
           "prompt": "Which evidence best identifies an individualized learning-disability profile for instructional planning?",
           "choices": [
-            "Multiple measures of specific academic skills, error patterns, language and cultural context, instruction received, response to intervention, strengths, and functional classroom performance.",
-            "A single low reading score by itself.",
-            "Physical appearance and medical history only.",
-            "The expectations of one classroom without other evidence."
+            "Multiple measures of academic skills, error patterns, language context, instruction, response data, and strengths.",
+            "A single low standardized reading comprehension score collected during one fall screening administration.",
+            "General impressions of physical appearance paired with family medical records from early childhood visits.",
+            "One general education teacher’s classroom expectations reviewed without student work samples or progress data."
           ],
           "answerIndex": 0,
           "rationale": "Instructional planning for a learning disability uses converging, culturally and linguistically responsive evidence to identify specific strengths, needs, error patterns, access barriers, and response to explicit instruction.",
@@ -601,10 +601,10 @@
           "id": "ld5383-ch-03-check-01",
           "prompt": "While developing an individualized program for a student with a learning disability, which present-level statement best supports individualized planning?",
           "choices": [
-            "On three curriculum writing samples, the student wrote a clear topic sentence in two of three paragraphs and included supporting details in one.",
-            "The student is significantly below grade level.",
-            "The student dislikes writing and needs help.",
-            "The student has SLD in written expression."
+            "Across three writing samples, the student wrote a clear topic sentence twice and added supporting details once.",
+            "Compared with classmates across the grade level, the student performs significantly below expectations in writing.",
+            "The student expresses reluctance during extended writing tasks and continues to need frequent encouragement from adults.",
+            "Evaluation records document a specific learning disability in written expression affecting classroom writing assignments."
           ],
           "answerIndex": 0,
           "rationale": "Present levels should describe current, measurable academic or functional performance and how disability affects progress. Specific baseline evidence supports goal design and later comparison. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -618,12 +618,12 @@
         },
         {
           "id": "ld5383-ch-03-check-02",
-          "prompt": "While developing an individualized program for a student with a learning disability, which IEP goal is measurable?",
+          "prompt": "While developing an individualized program for a student with a learning disability, which draft annual IEP goal is written in measurable terms?",
           "choices": [
-            "The student will improve reading fluency.",
-            "Given a 150-word instructional-level passage, the student will read at least 120 correct words per minute on three consecutive weekly probes.",
-            "The student will try harder when reading aloud.",
-            "The student will become a confident reader by spring."
+            "With continued special education reading instruction, the student will demonstrate stronger oral reading fluency by spring.",
+            "Given a 150-word instructional passage, the student will read 120 correct words per minute on three consecutive probes.",
+            "During daily small-group literacy lessons, the student will sustain consistent effort while reading grade-level passages aloud.",
+            "Across independent classroom reading blocks, the student will develop greater confidence and enjoyment when reading narrative text."
           ],
           "answerIndex": 1,
           "rationale": "A measurable annual goal states the condition, observable behavior, criterion, and often a consistency requirement. These features permit repeated progress measurement and instructional decisions. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -639,10 +639,10 @@
           "id": "ld5383-ch-03-check-03",
           "prompt": "While developing an individualized program for a student with a learning disability, an IEP contains a measurable goal but no description of how progress will be measured. What is missing?",
           "choices": [
-            "A guarantee that the student will meet the goal.",
-            "A comparison with every classmate each week.",
+            "A written assurance that the school will bring the student to mastery before the next annual review.",
+            "Weekly normative charts ranking the student’s score against every nondisabled classmate in the grade.",
             "The measurement method and schedule for periodic progress reports.",
-            "A new individual learning profile for each skill deficit."
+            "A separate disability classification listing each academic subskill that requires targeted remediation."
           ],
           "answerIndex": 2,
           "rationale": "IDEA requires the IEP to describe how progress toward annual goals will be measured and when periodic reports will be provided. A goal without a monitoring plan is incomplete for decision making. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -658,10 +658,10 @@
           "id": "ld5383-ch-03-check-04",
           "prompt": "While developing an individualized program for a student with a learning disability, the learner’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
           "choices": [
-            "Keep the mismatch because services and goals are unrelated sections.",
-            "Delete the goal rather than examine the program.",
-            "Use a generic service package assigned by category.",
-            "Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal."
+            "Leave the service grid unchanged because annual IEP goals and service minutes are developed as independent sections.",
+            "Remove the unaligned annual goal from the draft IEP so the documented need matches the existing service schedule.",
+            "Substitute a standard district service package associated with the student’s primary eligibility category instead.",
+            "Align specially designed instruction, related services, supports, and monitoring with the stated goal."
           ],
           "answerIndex": 3,
           "rationale": "IEP components should form a coherent program: present needs lead to measurable goals, services and supports address those goals, and progress measures show whether the program is effective. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -677,10 +677,10 @@
           "id": "ld5383-ch-03-check-05",
           "prompt": "While developing an individualized program for a student with a learning disability, the learner may use a calculator on a test that measures multistep problem solving rather than computation. This is best described as what?",
           "choices": [
-            "An accommodation that changes access or response conditions without changing the intended construct.",
-            "A modification that lowers the learning target.",
-            "An alternate assessment automatically required by disability.",
-            "A placement decision."
+            "An accommodation altering access or response conditions without changing the target construct.",
+            "A curricular modification that lowers the grade-level performance expectation being evaluated on the task.",
+            "An alternate assessment pathway assigned whenever a student qualifies for special education services.",
+            "A restrictive placement determination that shifts how instructional minutes are delivered across settings."
           ],
           "answerIndex": 0,
           "rationale": "An accommodation changes how a learner accesses or responds while preserving what is measured. A modification changes the expected content, complexity, or performance standard. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -791,10 +791,10 @@
           "id": "ld5383-ch-04-check-01",
           "prompt": "In an inclusive class serving students with learning disabilities, a class loses instructional time because arrival routines change each day. Which preventive support is best?",
           "choices": [
-            "Teach, model, practice, and visually display a short consistent arrival routine, then acknowledge successful use.",
-            "Wait for errors and deliver increasingly severe consequences.",
-            "Post a long rule list without instruction or practice.",
-            "Change the routine often to build flexibility immediately."
+            "Teach, model, practice, and visually post a concise arrival routine, then reinforce consistent use.",
+            "Wait for off-task behavior during arrival and issue progressively firmer disciplinary consequences for delays.",
+            "Post a comprehensive twenty-rule classroom contract on the bulletin board without rehearsing entry expectations.",
+            "Vary arrival directions each morning so students learn to adapt rapidly to unpredictable classroom procedures."
           ],
           "answerIndex": 0,
           "rationale": "Predictable routines reduce ambiguity and increase available learning time. Expectations become useful when they are explicitly taught, practiced in context, prompted as needed, and reinforced consistently. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -810,10 +810,10 @@
           "id": "ld5383-ch-04-check-02",
           "prompt": "In an inclusive class serving students with learning disabilities, a student tears worksheets after receiving a long independent assignment, and the task is then removed. Which information is most relevant to a functional hypothesis?",
           "choices": [
-            "The student’s personality type.",
-            "The antecedent task, the observable behavior, and the consequence of escaping or delaying the work.",
-            "Whether the behavior annoys adults.",
-            "A list of consequences used with other students."
+            "Trait-based personality inventories estimating whether the student prefers independent or social school tasks.",
+            "The antecedent demand, observable behavior, and resulting escape or delay from the task.",
+            "Anecdotal staff ratings describing how frustrating the student’s behavior feels during whole-class instruction.",
+            "A standard schoolwide discipline chart listing consequences previously assigned to classmates for similar incidents."
           ],
           "answerIndex": 1,
           "rationale": "Functional assessment examines relationships among antecedents, observable behavior, and consequences. Repeated removal of a difficult task may maintain behavior through escape, a hypothesis that must be tested with data. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -829,10 +829,10 @@
           "id": "ld5383-ch-04-check-03",
           "prompt": "In an inclusive class serving students with learning disabilities, an FBA suggests that disruption reliably produces peer attention. Which BIP component is most important?",
           "choices": [
-            "Use a punishment unrelated to attention.",
-            "Remove academic instruction permanently.",
-            "Teach and reinforce an efficient appropriate way to request attention while adjusting antecedents and consequences that maintain disruption.",
-            "Teach a break request even though escape is not the identified function."
+            "Apply a generic loss-of-privilege consequence that does not address how attention is delivered in class.",
+            "Suspend group academic instruction for the student until calling out or disruption stops for a full month.",
+            "Teach and reinforce an appropriate attention-requesting skill while altering maintaining triggers and responses.",
+            "Teach the student to request quiet hallway breaks even though FBA data point to attention rather than escape."
           ],
           "answerIndex": 2,
           "rationale": "A function-based plan should prevent predictable triggers, teach a socially appropriate replacement that serves the same function, and arrange consequences so the replacement is more efficient and successful. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -848,10 +848,10 @@
           "id": "ld5383-ch-04-check-04",
           "prompt": "In an inclusive class serving students with learning disabilities, which replacement behavior is best for a student who leaves work to escape confusing directions?",
           "choices": [
-            "Remain silent until the period ends.",
-            "Ask for peer attention unrelated to the task.",
-            "Complete a preferred activity without permission.",
-            "Use a taught help card to request clarification or a brief guided start."
+            "Sit quietly at the desk without speaking or signaling until the instructional period ends.",
+            "Raise a hand to share an unrelated personal story with classmates whenever frustration builds.",
+            "Put away the confusing assignment and transition independently to a preferred classroom center.",
+            "Use a taught help card to ask for clarification or a brief guided start on the first step."
           ],
           "answerIndex": 3,
           "rationale": "A replacement behavior must be teachable, efficient, and serve the same function as the problem behavior. Requesting clarification addresses escape from confusion while keeping the learner engaged in the task. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -867,10 +867,10 @@
           "id": "ld5383-ch-04-check-05",
           "prompt": "In an inclusive class serving students with learning disabilities, a teacher says, “You opened your notebook and began within one minute—that followed our start routine.” Why is this feedback effective?",
           "choices": [
-            "It is immediate and behavior-specific, linking the student’s action to the taught expectation.",
-            "It praises a fixed trait rather than an action.",
-            "It delays feedback until the end of the month.",
-            "It depends on comparing the student with classmates."
+            "It gives prompt, behavior-specific feedback linking the observable action to the taught routine.",
+            "It highlights an innate personal strength rather than naming the student’s specific classroom action.",
+            "It accumulates general approval points to be reviewed during a summary conference at month’s end.",
+            "It compares the student’s starting speed favorably against slower classmates in the same row."
           ],
           "answerIndex": 0,
           "rationale": "Behavior-specific praise names the observable action and its connection to an expectation. Immediate, contingent feedback helps learners identify what to repeat and is more informative than global approval. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -981,10 +981,10 @@
           "id": "ld5383-ch-05-check-01",
           "prompt": "A student with a learning disability and low vision receives a worksheet containing a dense, unlabeled diagram. What is the best access response?",
           "choices": [
-            "An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner.",
-            "A different activity with no connection to the same concept.",
-            "A peer’s completed answers to copy.",
-            "More time to view the unchanged inaccessible image."
+            "Provide an equivalent accessible format—such as a verbal description, tactile graphic, or usable enlargement.",
+            "Substitute an easier vocabulary activity from an earlier unit so the student can work independently without visual media.",
+            "Provide a classmate’s completed responses so the student can record the conclusions without interpreting the figure.",
+            "Allow extended time on the original worksheet while keeping the dense visual graphic unchanged in size and contrast."
           ],
           "answerIndex": 0,
           "rationale": "Access means preserving the intended concept while changing how information is perceived when necessary. The appropriate representation depends on the learner’s assessed media and access needs. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1000,10 +1000,10 @@
           "id": "ld5383-ch-05-check-02",
           "prompt": "A student with a learning disability who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
           "choices": [
-            "Seat location as the only consideration.",
-            "The student’s communication mode, direct communication opportunities, acoustics, assistive technology, and access to all speakers.",
-            "Written homework instead of participation in discussion.",
-            "A rule that classmates may speak without being identified."
+            "Assign front-row seating near the teacher’s desk as the primary accommodation for full seminar participation.",
+            "Address communication mode, direct interaction opportunities, acoustics, assistive technology, and speaker visibility.",
+            "Replace live seminar discussions with written summaries so the student can earn participation credit independently.",
+            "Maintain rapid open-floor discussions without turn-taking cues so the student experiences realistic peer pacing."
           ],
           "answerIndex": 1,
           "rationale": "Communication access is broader than hearing volume. Planning should address the learner’s language and mode, visibility or audibility of speakers, technology, peer access, and direct instruction needs. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1019,10 +1019,10 @@
           "id": "ld5383-ch-05-check-03",
           "prompt": "A student with a learning disability and a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
           "choices": [
-            "Assign an observer role for every laboratory activity.",
-            "Move the student without consulting the established plan.",
-            "Coordinate with the student and relevant specialists to arrange accessible positioning and equipment while preserving active participation.",
-            "Have a peer perform all experimental decisions and actions."
+            "Assign the student to record observations from the side of the room during laboratory investigations for safety.",
+            "Adjust the student’s wheelchair seating and lab reach setup independently based on quick classroom judgment.",
+            "Collaborate with the student and specialists to arrange safe, accessible positioning and active lab participation.",
+            "Ask a lab partner to make experimental decisions and manipulate every tool while the student watches the steps."
           ],
           "answerIndex": 2,
           "rationale": "Physical access should enable meaningful participation and follow established safety, positioning, and equipment guidance. Collaboration prevents unsafe improvisation and avoids unnecessary removal of learner agency. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1038,10 +1038,10 @@
           "id": "ld5383-ch-05-check-04",
           "prompt": "A student with a learning disability has a documented seizure action plan. During a classroom seizure, what should staff do first?",
           "choices": [
-            "Create a new response based on what seems convenient.",
-            "Give food or medication not authorized in the plan.",
-            "Delay action until a family member can be reached.",
-            "Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified."
+            "Improvise a quick classroom response based on staff intuition rather than pausing to follow written health protocols.",
+            "Offer water, a small snack, or an unprescribed comfort remedy to help stabilize the student during the episode.",
+            "Wait to initiate school emergency procedures until a parent or guardian can be reached by telephone for guidance.",
+            "Follow the individualized emergency plan, protect safety, and activate trained medical procedures."
           ],
           "answerIndex": 3,
           "rationale": "Health supports in school must follow the individualized plan, staff training, delegation rules, and emergency procedures. Improvised treatment can create risk and exceed an educator’s role. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1057,10 +1057,10 @@
           "id": "ld5383-ch-05-check-05",
           "prompt": "When a documented individualized need includes adaptive behavior, which IEP goal is most useful?",
           "choices": [
-            "Given a visual checklist, the student will complete four steps for purchasing a cafeteria item in four of five opportunities.",
-            "The student will improve independence soon.",
-            "The student will earn higher intelligence-test scores.",
-            "The student will behave like same-age peers at all times."
+            "Given a visual checklist, the student will complete four cafeteria-purchasing steps in four of five trials.",
+            "Over the upcoming grading period, the student will demonstrate noticeably greater daily independence across school routines.",
+            "By the end of the annual review cycle, the student will achieve higher composite scores on a standardized intelligence test.",
+            "During school hours, the student will perform everyday self-care and social routines identically to same-age classmates."
           ],
           "answerIndex": 0,
           "rationale": "Adaptive goals should identify a meaningful conceptual, social, or practical routine and specify observable conditions, performance, and criteria. Vague comparisons do not support instruction or progress monitoring. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1176,10 +1176,10 @@
           "id": "ld5383-ch-06-check-01",
           "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, what is the best initial approach to teaching a new phonics pattern?",
           "choices": [
-            "Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text.",
-            "Ask students to infer the pattern from an unrelated story without guidance.",
-            "Have students memorize definitions only.",
-            "Teach several conflicting exceptions before the common pattern."
+            "Model the sound–spelling pattern explicitly, guide blending and encoding, and apply it in controlled words and text.",
+            "Have students infer the new vowel correspondence independently from an unguided literature story before explicit modeling.",
+            "Ask students to memorize phonetic rule definitions aloud without practicing blending or spelling real words.",
+            "Introduce several rare spelling exceptions first so students encounter complex irregularities before the common pattern."
           ],
           "answerIndex": 0,
           "rationale": "Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1196,10 +1196,10 @@
           "id": "ld5383-ch-06-check-02",
           "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, why use decodable text during early phonics application?",
           "choices": [
-            "It permanently limits students to one text type.",
-            "It gives students a high opportunity to practice applying taught decoding patterns in connected reading.",
-            "It measures listening comprehension without print.",
-            "It replaces language-rich read-alouds and knowledge building."
+            "It restricts developing readers permanently to simple controlled stories throughout the elementary grades.",
+            "It provides concentrated practice applying recently taught phonics patterns accurately in connected text.",
+            "It evaluates oral listening comprehension skills independently of print recognition and letter-sound decoding.",
+            "It replaces teacher read-alouds, rich academic vocabulary instruction, and broader content-knowledge building."
           ],
           "answerIndex": 1,
           "rationale": "Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1216,10 +1216,10 @@
           "id": "ld5383-ch-06-check-03",
           "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, how should irregular high-frequency words be taught?",
           "choices": [
-            "Treat every letter as arbitrary.",
-            "Require visual memorization without sound analysis.",
-            "Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning.",
-            "Avoid the word until every exception is taught."
+            "Treat every letter in an irregular high-frequency word as completely arbitrary without sound-symbol analysis.",
+            "Teach irregular words through whole-word flashcard outline memorization rather than analyzing internal phonemes.",
+            "Map the regular phoneme–grapheme parts explicitly, highlight the unexpected spelling, and link meaning.",
+            "Postpone teaching common high-frequency words until every irregular spelling pattern in English has been covered."
           ],
           "answerIndex": 2,
           "rationale": "Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1236,10 +1236,10 @@
           "id": "ld5383-ch-06-check-04",
           "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, what supports accurate multisyllabic word reading?",
           "choices": [
-            "Counting letters and choosing the shortest pronunciation.",
-            "Using context to replace word analysis.",
-            "Memorizing one pronunciation for every prefix.",
-            "Cumulative instruction in syllable patterns, vowel and consonant correspondences, morphology, flexible division, and meaning checks."
+            "Have students count total letters in unfamiliar academic words and select the shortest familiar pronunciation.",
+            "Coach students to skip complex multisyllabic words and rely on surrounding sentence context instead of decoding.",
+            "Require students to memorize one rigid pronunciation for every prefix and suffix across all academic terms.",
+            "Teach syllable patterns, vowel correspondences, morphology, flexible word division, and context checks cumulatively."
           ],
           "answerIndex": 3,
           "rationale": "Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1256,10 +1256,10 @@
           "id": "ld5383-ch-06-check-05",
           "prompt": "During explicit, systematic word-reading intervention for a student with a learning disability, why teach morphology?",
           "choices": [
-            "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words.",
-            "It is useful only for grammar labels.",
-            "It eliminates the need for phonics.",
-            "It applies only to words of Anglo-Saxon origin."
+            "Morpheme analysis strengthens decoding, spelling, vocabulary growth, and meaning across related words.",
+            "Morphological study serves primarily as a grammar-labeling exercise during isolated parts-of-speech drills.",
+            "Teaching prefixes, suffixes, and roots eliminates the need for foundational phoneme-grapheme phonics instruction.",
+            "Morphological instruction applies strictly to short Anglo-Saxon base words rather than academic Latin or Greek roots."
           ],
           "answerIndex": 0,
           "rationale": "Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1376,10 +1376,10 @@
           "id": "ld5383-ch-07-check-01",
           "prompt": "During explicit written-expression instruction for a student with a learning disability, how are reading and writing instruction related?",
           "choices": [
-            "Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning.",
-            "Writing practice automatically fixes every decoding need.",
-            "Reading and writing share no underlying knowledge.",
-            "Composition should begin only after reading is mastered."
+            "Reading supplies models and knowledge for writing, while writing deepens analysis of structure and meaning.",
+            "Frequent unstructured writing practice resolves foundational word-decoding deficits without phonics instruction.",
+            "Reading comprehension and written composition rely on unrelated knowledge bases taught best in separate blocks.",
+            "Students with learning disabilities should delay all composing tasks until fluent grade-level reading is mastered."
           ],
           "answerIndex": 0,
           "rationale": "Reading and writing are reciprocal but not identical; effective instruction connects them while directly teaching the distinct transcription, language, comprehension, and composition skills learners need. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1396,10 +1396,10 @@
           "id": "ld5383-ch-07-check-02",
           "prompt": "During explicit written-expression instruction for a student with a learning disability, what should writing assessment distinguish?",
           "choices": [
-            "Treat total word count as the only writing construct.",
-            "Transcription fluency and accuracy separately from planning, language, organization, revision, and purpose.",
-            "Assume limited output means limited knowledge.",
-            "Score handwriting appearance as reading comprehension."
+            "Use total written word count on timed essays as the primary indicator of overall writing competence.",
+            "Evaluate transcription fluency and accuracy separately from planning, language, organization, and revision.",
+            "Infer limited content understanding whenever a student produces short or effortful handwritten paragraphs.",
+            "Include handwriting neatness and letter spacing as core criteria when grading reading comprehension answers."
           ],
           "answerIndex": 1,
           "rationale": "Writing performance reflects interacting transcription and composition demands; separating components reveals whether instruction should address mechanics, language, strategy, access, or several areas. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1416,10 +1416,10 @@
           "id": "ld5383-ch-07-check-03",
           "prompt": "During explicit written-expression instruction for a student with a learning disability, what is disciplinary literacy?",
           "choices": [
-            "Every subject uses identical text conventions.",
-            "Content teachers should avoid literacy instruction.",
-            "Disciplines use characteristic purposes, evidence, vocabulary, representations, and reasoning that should be taught explicitly.",
-            "Disciplinary literacy means simplifying all texts."
+            "Every core academic subject shares identical text structures and evidence standards across secondary grades.",
+            "Content-area teachers should leave all reading and writing instruction exclusively to English language arts staff.",
+            "Disciplines use distinct purposes, evidence norms, vocabulary, and representations that must be taught explicitly.",
+            "Disciplinary literacy means rewriting science and history texts into brief simplified summaries for learners."
           ],
           "answerIndex": 2,
           "rationale": "Students need general literacy skills and instruction in how experts in a discipline build claims, read sources, interpret representations, and communicate knowledge. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1436,10 +1436,10 @@
           "id": "ld5383-ch-07-check-04",
           "prompt": "During explicit written-expression instruction for a student with a learning disability, how should a teacher support digital-text reading?",
           "choices": [
-            "Assume digital familiarity equals critical literacy.",
-            "Ban all hyperlinks without teaching evaluation.",
-            "Judge credibility by visual design alone.",
-            "Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention."
+            "Assume frequent everyday smartphone and internet use equips students with critical digital-reading skills.",
+            "Disable all digital links and online texts permanently rather than teaching structured online evaluation.",
+            "Coach students to judge website trustworthiness primarily by polished layout, graphics, and clean design.",
+            "Explicitly teach navigation, source evaluation, lateral verification, synthesis, and attention monitoring."
           ],
           "answerIndex": 3,
           "rationale": "Digital literacy includes comprehension plus navigation, authorship and evidence checks, multimodal integration, privacy awareness, and strategic control of distraction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1456,10 +1456,10 @@
           "id": "ld5383-ch-07-check-05",
           "prompt": "During explicit written-expression instruction for a student with a learning disability, why use coherent text sets?",
           "choices": [
-            "Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives.",
-            "Every text must use the same difficulty and viewpoint.",
-            "A text set eliminates the need for explicit instruction.",
-            "Students should memorize facts without discussing sources."
+            "Coherent text sets build cumulative knowledge and vocabulary while supporting comparison across perspectives.",
+            "Every selection in a classroom text set should share identical readability level and author viewpoint.",
+            "Grouping texts around one science topic removes the need for explicit comprehension and vocabulary teaching.",
+            "Students should memorize isolated facts from one textbook chapter without comparing claims across sources."
           ],
           "answerIndex": 0,
           "rationale": "Purposefully sequenced text sets support cumulative knowledge and language while creating opportunities for synthesis and critical examination. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1771,10 +1771,10 @@
           "id": "ld5383-ch-09-check-01",
           "prompt": "When evaluating possible learning disabilities, a vocabulary test is used to decide whether a student can solve multistep equations. What is the primary concern?",
           "choices": [
-            "Validity, because the evidence does not adequately support the intended interpretation and use.",
-            "Reliability, only because the score is numerical.",
-            "Efficiency, because the test is short.",
-            "Norming, because every assessment must be nationally normed."
+            "Validity, because the scores do not support the intended construct interpretation and decision.",
+            "Reliability, because numerical test scores fluctuate whenever vocabulary or spelling tasks are short.",
+            "Administration efficiency, because brief screening tools take less time than full-length unit exams.",
+            "National norming, because classroom skill evaluations must compare learners against national peer samples."
           ],
           "answerIndex": 0,
           "rationale": "Validity concerns whether evidence supports the interpretation and use of scores. A measure dominated by a different skill cannot justify a conclusion about the intended construct. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1790,10 +1790,10 @@
           "id": "ld5383-ch-09-check-02",
           "prompt": "When evaluating possible learning disabilities, a progress measure gives very different scores on consecutive days even though instruction and performance appear stable. What quality is in question?",
           "choices": [
-            "Face validity alone.",
-            "Reliability or consistency of measurement and scoring.",
-            "The student’s eligibility category.",
-            "The length of the IEP."
+            "Face validity, or whether the assessment directions appear relevant to students and families.",
+            "Reliability, or the consistency of measurement across occasions and scorers.",
+            "Eligibility classification, or whether the student’s primary disability label matches the test manual.",
+            "Documentation length, or whether the student’s IEP includes enough narrative background detail."
           ],
           "answerIndex": 1,
           "rationale": "Reliability concerns consistency across occasions, forms, items, or raters as relevant. Large unexplained variation weakens confidence that score changes reflect actual performance rather than measurement error. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1809,10 +1809,10 @@
           "id": "ld5383-ch-09-check-03",
           "prompt": "When evaluating possible learning disabilities, why should an eligibility team use multiple assessment tools and strategies?",
           "choices": [
-            "Multiple measures guarantee the preferred eligibility result.",
-            "The highest score should automatically replace all others.",
-            "Different sources can test converging explanations and prevent one measure from becoming the sole criterion.",
-            "Informal information is never relevant."
+            "Combining multiple standardized tests ensures the team can document eligibility for preferred services.",
+            "When assessment scores disagree, the team should replace lower results with the single highest score.",
+            "Converging sources test competing explanations and prevent a single score from deciding eligibility.",
+            "Formal standardized batteries should be used exclusively because informal classroom observations lack rigor."
           ],
           "answerIndex": 2,
           "rationale": "IDEA requires varied tools and strategies and prohibits using a single measure as the sole criterion. Multiple sources help the team understand functional, developmental, academic, and contextual evidence. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1828,10 +1828,10 @@
           "id": "ld5383-ch-09-check-04",
           "prompt": "When evaluating possible learning disabilities, a newly arrived multilingual learner is assessed only in rapid academic English. What is the central evaluation concern?",
           "choices": [
-            "Translate the final score but keep the inaccessible administration.",
-            "Assume low performance proves disability.",
-            "Exclude parent and language-history information.",
-            "Use the native language or appropriate communication mode and a format most likely to show what the learner knows, unless clearly infeasible."
+            "Convert the resulting test score into a translated report while keeping the original administration format.",
+            "Interpret low performance under standard administration as reliable proof of an underlying disability.",
+            "Omit parent interviews and language-history records so the evaluation relies on uniform school testing.",
+            "Assess in the language or communication mode most likely to yield accurate evidence of knowledge."
           ],
           "answerIndex": 3,
           "rationale": "Evaluation procedures must reduce racial, cultural, linguistic, sensory, manual, and communication barriers so results reflect the intended aptitude or achievement rather than an access limitation. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1847,10 +1847,10 @@
           "id": "ld5383-ch-09-check-05",
           "prompt": "When evaluating possible learning disabilities, which assessment is most useful for adjusting tomorrow’s instruction?",
           "choices": [
-            "A brief formative task or observation aligned to the taught steps, followed by error analysis.",
-            "A distant annual accountability score only.",
-            "An intelligence test unrelated to the lesson.",
-            "A final course grade after instruction ends."
+            "A brief formative check aligned to the taught steps, paired with targeted error analysis.",
+            "An annual statewide accountability score report summarizing broad end-of-year proficiency bands.",
+            "A norm-referenced intelligence battery administered by a school psychologist for triennial review.",
+            "A final cumulative semester grade calculated after the instructional unit has already concluded."
           ],
           "answerIndex": 0,
           "rationale": "Formative assessment supplies timely, instructionally relevant evidence during learning. Alignment and error analysis help the teacher decide what to reteach, model differently, or release to independent practice. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1961,10 +1961,10 @@
           "id": "ld5383-ch-10-check-01",
           "prompt": "When applying educational rights for students with learning disabilities, what does FAPE require at a foundational level under IDEA?",
           "choices": [
-            "Eligible students receive special education and related services at public expense through an appropriately developed and implemented IEP.",
-            "Schools guarantee that every student reaches the same achievement level.",
-            "Families must pay for required related services.",
-            "A disability label alone determines a standard program."
+            "Eligible students receive public special education and related services through an appropriate IEP.",
+            "Public schools must ensure that every eligible student reaches identical standardized achievement benchmarks.",
+            "Families share tuition or co-payment expenses for specialized related services written into the IEP.",
+            "A qualifying disability classification determines a uniform instructional program across the district."
           ],
           "answerIndex": 0,
           "rationale": "FAPE concerns an individualized public educational program and required services provided without charge under IDEA procedures. It does not promise a specific score or justify a category-based program. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1980,10 +1980,10 @@
           "id": "ld5383-ch-10-check-02",
           "prompt": "When applying educational rights for students with learning disabilities, a school suspects a disability in a student who is passing classes with extensive informal help. What duty remains relevant?",
           "choices": [
-            "Only families may initiate concern.",
-            "Child Find requires identification, location, and evaluation of children who may need special education, including those advancing grade to grade.",
-            "Passing grades eliminate any evaluation responsibility.",
-            "The duty begins only after a student fails a course."
+            "District staff must wait for parents or guardians to initiate a formal written concern before reviewing needs.",
+            "Child Find requires locating, identifying, and evaluating children who may need special education, even if advancing grades.",
+            "Passing report-card grades and grade-level promotion suspend the district’s IDEA evaluation obligations.",
+            "Special education referral procedures begin once a student fails at least one required core academic course."
           ],
           "answerIndex": 1,
           "rationale": "Child Find is an affirmative obligation and is not limited to students who are failing or already referred. The school should follow screening, referral, notice, consent, and evaluation procedures as appropriate. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -1999,10 +1999,10 @@
           "id": "ld5383-ch-10-check-03",
           "prompt": "When applying educational rights for students with learning disabilities, a district proposes changing a student’s placement. What procedural communication is required?",
           "choices": [
-            "An informal verbal message after the change occurs.",
-            "A public announcement naming the student.",
-            "Prior written notice describing the proposed or refused action, the reasons, evidence considered, and other required information.",
-            "No explanation when the school believes its choice is correct."
+            "A brief informal phone call summarizing the administrative decision after the classroom change takes effect.",
+            "A shared building memo naming the student so staff across departments know the updated schedule.",
+            "Prior written notice explaining the proposed or refused action, reasons, evidence, and procedural safeguards.",
+            "Internal administrative notes kept in the district office without written notice when staff agree on the choice."
           ],
           "answerIndex": 2,
           "rationale": "Prior written notice supports informed participation by documenting what the agency proposes or refuses and why, the records or assessments used, alternatives considered, and available safeguards. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2018,10 +2018,10 @@
           "id": "ld5383-ch-10-check-04",
           "prompt": "When applying educational rights for students with learning disabilities, a teacher wants to discuss a student’s IEP in a public elevator with a colleague who does not serve the student. What should the teacher do?",
           "choices": [
-            "Share the information because all school employees are entitled to it.",
-            "Post the IEP summary where substitutes and visitors can read it.",
-            "Remove the student’s name but include enough details for easy identification.",
-            "Protect confidentiality and discuss educational records only through authorized, private channels with people who have a legitimate role."
+            "Discuss the IEP openly with fellow building staff because school employment grants broad access to student files.",
+            "Display an abbreviated IEP accommodation chart on a shared clipboard where substitutes and visitors can consult it.",
+            "Omit the student’s first name during the public conversation while describing specific classroom details.",
+            "Protect confidentiality by discussing records in private authorized channels with staff who hold a legitimate role."
           ],
           "answerIndex": 3,
           "rationale": "Confidentiality protects personally identifiable educational information. Professionals should use secure channels, limit access to legitimate educational interests, and follow federal, state, and local record policies. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2037,10 +2037,10 @@
           "id": "ld5383-ch-10-check-05",
           "prompt": "When applying educational rights for students with learning disabilities, what is a central protection of Section 504 in public schools receiving federal funds?",
           "choices": [
-            "Section 504 prohibits disability discrimination and may require accommodations and related aids or services for equal access.",
-            "Section 504 applies only after IDEA eligibility.",
-            "Section 504 guarantees admission to any selective program regardless of criteria.",
-            "Section 504 is limited to physical access in buildings."
+            "Section 504 bars disability discrimination and can require accommodations and related aids for equal access.",
+            "Section 504 protections become available after a student first qualifies under an IDEA individual learning profile.",
+            "Section 504 requires selective academic programs to waive essential technical admission criteria for applicants.",
+            "Section 504 obligations are restricted to physical building accessibility such as ramps, elevators, and restrooms."
           ],
           "answerIndex": 0,
           "rationale": "Section 504 is a civil-rights law distinct from IDEA eligibility. It protects qualified students from disability discrimination and can require an appropriate plan of access supports. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2151,10 +2151,10 @@
           "id": "ld5383-ch-11-check-01",
           "prompt": "During collaborative planning for a student with a learning disability, what is the special educator’s role?",
           "choices": [
-            "Share planning, instruction, assessment, and responsibility for all learners while bringing specialized expertise to access and specially designed instruction.",
-            "Act primarily as the general educator’s assistant.",
-            "Manage behavior while the general educator owns all content.",
-            "Work only with identified students in every lesson."
+            "Share planning, instruction, assessment, and responsibility for all learners while contributing specialized expertise.",
+            "Serve primarily as a classroom assistant preparing photocopies and circulating while the general educator teaches.",
+            "Manage whole-class behavioral reminders while the general educator directs all curriculum planning and grading.",
+            "Work separately at a back table with students who have IEPs during every shared instructional period."
           ],
           "answerIndex": 0,
           "rationale": "Co-teaching is a partnership with shared ownership. Roles may vary by lesson, but both educators contribute to planning, instruction, assessment, classroom management, and access for the whole class. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2170,10 +2170,10 @@
           "id": "ld5383-ch-11-check-02",
           "prompt": "During collaborative planning for a student with a learning disability, how should a special educator work with a paraprofessional?",
           "choices": [
-            "Delegate IEP development and grading entirely.",
-            "Provide clear direction, training, boundaries, observation, and feedback while retaining responsibility for instructional decisions.",
-            "Expect the paraprofessional to improvise specialized instruction without guidance.",
-            "Avoid sharing any relevant plan information."
+            "Delegate annual IEP goal drafting, instructional planning, and summative grading to the paraprofessional.",
+            "Provide clear direction, training, boundaries, observation, and feedback while retaining instructional responsibility.",
+            "Encourage the paraprofessional to design and improvise specialized communication interventions independently.",
+            "Withhold relevant communication goals and prompt hierarchies from the paraprofessional to protect student privacy."
           ],
           "answerIndex": 1,
           "rationale": "Teachers remain accountable for instruction and supervision. Paraprofessionals need enough authorized information, modeling, and feedback to implement supports consistently without being assigned professional duties outside their role. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2189,10 +2189,10 @@
           "id": "ld5383-ch-11-check-03",
           "prompt": "During collaborative planning for a student with a learning disability, a family disagrees with the team’s interpretation of progress data. What is the best first response?",
           "choices": [
-            "Dismiss the report because school data are always superior.",
-            "End the meeting until the family agrees.",
-            "Listen, clarify the concern, examine the evidence together, invite home-context information, and identify what additional data or action is needed.",
-            "Change the IEP immediately without reviewing evidence."
+            "Explain that standardized school probes carry greater weight than informal family observations during homework.",
+            "Pause the conference and reschedule once the family is ready to accept the team’s written progress summary.",
+            "Listen carefully, clarify concerns, review evidence together, invite home context, and plan next steps.",
+            "Revise the student’s annual IEP goals on the spot to match the parent’s impression before checking data."
           ],
           "answerIndex": 2,
           "rationale": "Family collaboration is reciprocal. Respectful inquiry can reveal contextual variables and improve the evidence base, while shared review keeps decisions connected to student needs and procedural requirements. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2208,10 +2208,10 @@
           "id": "ld5383-ch-11-check-04",
           "prompt": "During collaborative planning for a student with a learning disability, an occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
           "choices": [
-            "Use the strategy only during therapy sessions.",
-            "Modify the recommendation without informing the specialist.",
-            "Ask the specialist to take full responsibility for classroom learning.",
-            "Clarify the purpose, integrate the support into authentic routines, define roles, and share implementation and outcome data."
+            "Keep the positioning or communication strategy confined to pull-out therapy sessions rather than classroom lessons.",
+            "Alter the specialist’s recommended setup unilaterally whenever classroom furniture or grouping feels tight.",
+            "Ask the related-service specialist to assume primary responsibility for teaching the student’s classroom units.",
+            "Clarify the goal, embed the support into authentic routines, define roles, and share outcome data."
           ],
           "answerIndex": 3,
           "rationale": "Related services support educational access. Coordination connects specialist expertise with classroom routines, promotes consistency, and creates shared data for determining whether the support is feasible and effective. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2227,10 +2227,10 @@
           "id": "ld5383-ch-11-check-05",
           "prompt": "During collaborative planning for a student with a learning disability, how can a student contribute meaningfully to an IEP meeting?",
           "choices": [
-            "Teach the student to describe strengths, needs, preferences, goals, and helpful supports using an accessible communication format.",
-            "Give the student a scripted statement with no opportunity for choice.",
-            "Exclude the student from discussion of future goals.",
-            "Ask the student to attend without explaining the meeting."
+            "Prepare the student to share strengths, preferences, goals, and helpful supports via an accessible mode.",
+            "Hand the student a prewritten script to read aloud at the meeting without inviting personal input or choices.",
+            "Conduct the postsecondary goal discussion privately among adults so the student avoids feeling overwhelmed.",
+            "Invite the student to sit in the meeting room without previewing the agenda, terms, or participation options."
           ],
           "answerIndex": 0,
           "rationale": "Student participation supports self-determination when learners understand the process and can communicate preferences, evaluate supports, and contribute to goals with whatever access tools they need. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2339,12 +2339,12 @@
       "knowledgeChecks": [
         {
           "id": "ld5383-ch-12-check-01",
-          "prompt": "As a learning-disabilities specialist reflects on practice, which reflection question is most useful after an instructional unit?",
+          "prompt": "After finishing an instructional literacy unit for students with learning disabilities, which reflection question is most useful?",
           "choices": [
-            "Which learners met the target, what response patterns occurred, what supports were implemented, and what evidence should change the next lesson?",
-            "Did I cover every slide in the presentation?",
-            "Did students appear to like me?",
-            "Can I attribute all missed goals to student motivation?"
+            "Which students met the target, what error patterns emerged, and what evidence should guide next lessons?",
+            "Did the pacing calendar allow the class to finish every slide deck and worksheet scheduled for the unit?",
+            "Did most students appear warm, enthusiastic, and personally comfortable with the teacher’s classroom style?",
+            "Could most unfinished assignments be explained by fluctuating student motivation rather than lesson design?"
           ],
           "answerIndex": 0,
           "rationale": "Professional reflection links educator actions to observable learner outcomes and implementation evidence. It identifies a specific change to test instead of relying on coverage, popularity, or blame. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2358,12 +2358,12 @@
         },
         {
           "id": "ld5383-ch-12-check-02",
-          "prompt": "As a learning-disabilities specialist reflects on practice, how should a teacher choose professional development?",
+          "prompt": "When building professional competence in progress monitoring for learning disabilities, how should a teacher choose professional development?",
           "choices": [
-            "Attend any available session regardless of relevance.",
-            "Select credible training aligned to the identified practice need, apply it with coaching or feedback, and evaluate effects on student evidence.",
-            "Collect certificates without changing practice.",
-            "Rely only on informal social-media advice."
+            "Register for whichever district workshop fits an open afternoon slot regardless of alignment to classroom needs.",
+            "Choose credible training matched to the practice gap, apply it with coaching, and check student outcomes.",
+            "Complete short online modules mainly to accumulate renewal certificates without altering instructional routines.",
+            "Gather quick classroom tips from unvetted educator social-media threads instead of evidence-based workshops."
           ],
           "answerIndex": 1,
           "rationale": "High-value professional learning is targeted, evidence informed, applied in authentic work, supported by feedback, and evaluated through implementation and learner outcomes rather than attendance alone. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2377,12 +2377,12 @@
         },
         {
           "id": "ld5383-ch-12-check-03",
-          "prompt": "As a learning-disabilities specialist reflects on practice, a student lacks an accessible communication tool needed to participate. What is an appropriate advocacy step?",
+          "prompt": "When a student with a learning disability lacks an accessible communication tool needed to participate, what is an appropriate advocacy step?",
           "choices": [
-            "Promise resources the teacher cannot authorize.",
-            "Publicly disclose the student’s records to create pressure.",
-            "Document the educational impact, use established team and administrative channels, propose feasible solutions, and follow up until access is addressed.",
-            "Accept the barrier without informing the team."
+            "Assure the family verbally that the teacher will arrange specialized equipment outside district approval channels.",
+            "Share details of the student’s unmet IEP accommodations publicly with community members to build pressure.",
+            "Document educational impact, use formal team and administrative channels, propose solutions, and follow up.",
+            "Adjust classroom activities quietly around the missing support without notifying the IEP team or administration."
           ],
           "answerIndex": 2,
           "rationale": "Professional advocacy is specific, evidence based, collaborative, and persistent. It protects confidentiality, stays within role, and uses formal channels to address barriers to services, resources, and equitable participation. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2396,12 +2396,12 @@
         },
         {
           "id": "ld5383-ch-12-check-04",
-          "prompt": "As a learning-disabilities specialist reflects on practice, a student reveals information suggesting immediate risk of harm and asks the teacher to keep it secret. What should the teacher do?",
+          "prompt": "If a student reveals information suggesting immediate risk of harm and asks the teacher to keep it secret, what should the teacher do?",
           "choices": [
-            "Investigate independently before telling anyone.",
-            "Promise secrecy to preserve rapport.",
-            "Discuss the concern with unrelated colleagues.",
-            "Follow mandatory reporting and school safety procedures promptly, share only with authorized personnel, and do not promise confidentiality that cannot be kept."
+            "Conduct private follow-up interviews with peers and family members to verify the report before notifying authorities.",
+            "Agree to keep the student’s disclosure completely confidential so counseling trust and rapport remain intact.",
+            "Consult informally with several colleagues in the staff lounge to gauge whether the concern warrants reporting.",
+            "Follow mandatory reporting and safety protocols promptly, share with authorized personnel, and avoid promising secrecy."
           ],
           "answerIndex": 3,
           "rationale": "Safety and reporting duties override a promise of secrecy. Educators should know their jurisdiction and policy, report through required channels, preserve privacy, and avoid conducting an unauthorized investigation. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2415,12 +2415,12 @@
         },
         {
           "id": "ld5383-ch-12-check-05",
-          "prompt": "As a learning-disabilities specialist reflects on practice, which reflection question is most useful after an instructional unit?",
+          "prompt": "After finishing an instructional literacy unit for students with learning disabilities, which reflection question is most useful?",
           "choices": [
-            "Which learners met the target, what response patterns occurred, what supports were implemented, and what evidence should change the next lesson?",
-            "Did I cover every slide in the presentation?",
-            "Did students appear to like me?",
-            "Can I attribute all missed goals to student motivation?"
+            "Which students met the target, what error patterns emerged, and what evidence should guide next lessons?",
+            "Did the pacing calendar allow the class to finish every slide deck and worksheet scheduled for the unit?",
+            "Did most students appear warm, enthusiastic, and personally comfortable with the teacher’s classroom style?",
+            "Could most unfinished assignments be explained by fluctuating student motivation rather than lesson design?"
           ],
           "answerIndex": 0,
           "rationale": "Professional reflection links educator actions to observable learner outcomes and implementation evidence. It identifies a specific change to test instead of relying on coverage, popularity, or blame. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
@@ -2443,7 +2443,7 @@
       "skillId": "development-variability-context",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "When interpreting a student’s uneven learning profile, a kindergarten teacher notices that one child reaches several language milestones later than classmates. What is the most appropriate first interpretation?",
-      "back": "Development follows broad patterns, but individual variation requires information from multiple sources and settings before conclusions are drawn.",
+      "back": "Broad developmental patterns allow wide variation, so the team should gather multi-source evidence across settings before drawing conclusions.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2458,7 +2458,7 @@
       "skillId": "development-variability-context",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "When interpreting a student’s uneven learning profile, a student solves multistep problems during small-group instruction but rarely begins the same work during a noisy whole-class period. What should the teacher examine first?",
-      "back": "Compare task demands, environmental conditions, supports, and performance across the two contexts.",
+      "back": "Compare task demands, environmental conditions, supports, and performance across both settings.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2473,7 +2473,7 @@
       "skillId": "development-variability-context",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "When interpreting a student’s uneven learning profile, a teacher wants to understand a learner’s self-regulation needs. Which information is most useful?",
-      "back": "Observations of triggers, strategies used, recovery, and successful conditions across routines.",
+      "back": "Current observations of triggers, strategies used, recovery patterns, and successful routines.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2488,7 +2488,7 @@
       "skillId": "development-variability-context",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "When interpreting a student’s uneven learning profile, a multilingual learner has difficulty following rapid oral directions in English but demonstrates the task after a peer models it. Which interpretation is best?",
-      "back": "Language access may be affecting the demonstration of knowledge, so the team should gather culturally and linguistically appropriate evidence.",
+      "back": "Language access may affect how knowledge is shown, so gather culturally and linguistically appropriate evidence.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2503,7 +2503,7 @@
       "skillId": "development-variability-context",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "When interpreting a student’s uneven learning profile, a middle school student with a learning disability is embarrassed when an adult uses age-inappropriate materials for a functional routine. What principle should guide revision?",
-      "back": "Use age-respectful materials while matching the instructional steps and supports to the learner’s current needs.",
+      "back": "Use age-respectful materials while adapting task steps and supports to current learner needs.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2518,7 +2518,7 @@
       "skillId": "development-variability-context",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "When interpreting a student’s uneven learning profile, a student performs a social routine only with one familiar adult. Which plan best promotes generalization?",
-      "back": "Practice the same skill with planned variations in people, materials, and natural settings, then fade prompts.",
+      "back": "Teach across planned variations in people, materials, and natural settings, then fade prompts.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2533,7 +2533,7 @@
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "A student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. Which response is best?",
-      "back": "Target the documented area of academic need instead of assuming the disability affects every subject in the same way.",
+      "back": "Target the documented area of academic need while preserving strengths in unaffected subjects.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2548,7 +2548,7 @@
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "A student with a learning disability and autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
-      "back": "Plan a predictable, accessible warning and communication routine while teaching the student how to use it.",
+      "back": "Build a predictable warning and accessible cueing routine while teaching the student how to use it.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2563,7 +2563,7 @@
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "A student with a learning disability and ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
-      "back": "Executive-function supports are improving task initiation, organization, and monitoring.",
+      "back": "Executive-function scaffolds are strengthening task initiation, planning, and self-monitoring.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2578,7 +2578,7 @@
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "A student with a learning disability argues mainly during unpredictable peer-group reading tasks but participates when roles and steps are explicit. What perspective is most useful?",
-      "back": "Examine interactions among the learner, literacy demand, peer structure, expectations, supports, and consequences rather than locating the problem only within the learner.",
+      "back": "Analyze interactions among literacy demands, peer roles, expectations, supports, and consequences across contexts.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2593,7 +2593,7 @@
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "Which evidence best identifies an individualized learning-disability profile for instructional planning?",
-      "back": "Multiple measures of specific academic skills, error patterns, language and cultural context, instruction received, response to intervention, strengths, and functional classroom performance.",
+      "back": "Multiple measures of academic skills, error patterns, language context, instruction, response data, and strengths.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2608,7 +2608,7 @@
       "skillId": "ld-characteristics-coexisting-needs",
       "domainId": "development-characteristics-learning-disabilities",
       "front": "A student with a learning disability understands grade-level ideas but has difficulty producing clear speech. What is the most appropriate instructional assumption?",
-      "back": "Presume competence, provide an effective communication mode, and assess knowledge without making speech production the unintended barrier.",
+      "back": "Presume competence, support an accessible response mode, and separate speech production from content mastery.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2623,7 +2623,7 @@
       "skillId": "individualized-curriculum-planning",
       "domainId": "planning-managing-learning-environment",
       "front": "While developing an individualized program for a student with a learning disability, which present-level statement best supports individualized planning?",
-      "back": "On three curriculum writing samples, the student wrote a clear topic sentence in two of three paragraphs and included supporting details in one.",
+      "back": "Across three writing samples, the student wrote a clear topic sentence twice and added supporting details once.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2637,8 +2637,8 @@
       "chapterId": "ld5383-ch-03",
       "skillId": "individualized-curriculum-planning",
       "domainId": "planning-managing-learning-environment",
-      "front": "While developing an individualized program for a student with a learning disability, which IEP goal is measurable?",
-      "back": "Given a 150-word instructional-level passage, the student will read at least 120 correct words per minute on three consecutive weekly probes.",
+      "front": "While developing an individualized program for a student with a learning disability, which draft annual IEP goal is written in measurable terms?",
+      "back": "Given a 150-word instructional passage, the student will read 120 correct words per minute on three consecutive probes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2668,7 +2668,7 @@
       "skillId": "individualized-curriculum-planning",
       "domainId": "planning-managing-learning-environment",
       "front": "While developing an individualized program for a student with a learning disability, the learner’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
-      "back": "Align specially designed instruction, services, supports, and progress monitoring with the identified need and goal.",
+      "back": "Align specially designed instruction, related services, supports, and monitoring with the stated goal.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2683,7 +2683,7 @@
       "skillId": "individualized-curriculum-planning",
       "domainId": "planning-managing-learning-environment",
       "front": "While developing an individualized program for a student with a learning disability, the learner may use a calculator on a test that measures multistep problem solving rather than computation. This is best described as what?",
-      "back": "An accommodation that changes access or response conditions without changing the intended construct.",
+      "back": "An accommodation altering access or response conditions without changing the target construct.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2698,7 +2698,7 @@
       "skillId": "individualized-curriculum-planning",
       "domainId": "planning-managing-learning-environment",
       "front": "During IEP development for a student with a learning disability, when should the team consider assistive technology?",
-      "back": "The team should consider whether assistive technology devices or services are needed for the individual learner.",
+      "back": "Consider at every IEP review whether assistive technology devices or services are needed for the student.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2713,7 +2713,7 @@
       "skillId": "positive-environment-self-regulation",
       "domainId": "planning-managing-learning-environment",
       "front": "In an inclusive class serving students with learning disabilities, a class loses instructional time because arrival routines change each day. Which preventive support is best?",
-      "back": "Teach, model, practice, and visually display a short consistent arrival routine, then acknowledge successful use.",
+      "back": "Teach, model, practice, and visually post a concise arrival routine, then reinforce consistent use.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2728,7 +2728,7 @@
       "skillId": "positive-environment-self-regulation",
       "domainId": "planning-managing-learning-environment",
       "front": "In an inclusive class serving students with learning disabilities, a student tears worksheets after receiving a long independent assignment, and the task is then removed. Which information is most relevant to a functional hypothesis?",
-      "back": "The antecedent task, the observable behavior, and the consequence of escaping or delaying the work.",
+      "back": "The antecedent demand, observable behavior, and resulting escape or delay from the task.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2743,7 +2743,7 @@
       "skillId": "positive-environment-self-regulation",
       "domainId": "planning-managing-learning-environment",
       "front": "In an inclusive class serving students with learning disabilities, an FBA suggests that disruption reliably produces peer attention. Which BIP component is most important?",
-      "back": "Teach and reinforce an efficient appropriate way to request attention while adjusting antecedents and consequences that maintain disruption.",
+      "back": "Teach and reinforce an appropriate attention-requesting skill while altering maintaining triggers and responses.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2758,7 +2758,7 @@
       "skillId": "positive-environment-self-regulation",
       "domainId": "planning-managing-learning-environment",
       "front": "In an inclusive class serving students with learning disabilities, which replacement behavior is best for a student who leaves work to escape confusing directions?",
-      "back": "Use a taught help card to request clarification or a brief guided start.",
+      "back": "Use a taught help card to ask for clarification or a brief guided start on the first step.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2773,7 +2773,7 @@
       "skillId": "positive-environment-self-regulation",
       "domainId": "planning-managing-learning-environment",
       "front": "In an inclusive class serving students with learning disabilities, a teacher says, “You opened your notebook and began within one minute—that followed our start routine.” Why is this feedback effective?",
-      "back": "It is immediate and behavior-specific, linking the student’s action to the taught expectation.",
+      "back": "It gives prompt, behavior-specific feedback linking the observable action to the taught routine.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2788,7 +2788,7 @@
       "skillId": "positive-environment-self-regulation",
       "domainId": "planning-managing-learning-environment",
       "front": "In an inclusive class serving students with learning disabilities, a teacher wants to increase engagement during review. Which change is most likely to help?",
-      "back": "Build frequent, varied opportunities for all students to respond and give brief feedback.",
+      "back": "Embed frequent, varied opportunities for all students to respond with brief corrective feedback.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2803,7 +2803,7 @@
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
       "front": "A student with a learning disability and low vision receives a worksheet containing a dense, unlabeled diagram. What is the best access response?",
-      "back": "An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner.",
+      "back": "Provide an equivalent accessible format—such as a verbal description, tactile graphic, or usable enlargement.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2818,7 +2818,7 @@
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
       "front": "A student with a learning disability who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
-      "back": "The student’s communication mode, direct communication opportunities, acoustics, assistive technology, and access to all speakers.",
+      "back": "Address communication mode, direct interaction opportunities, acoustics, assistive technology, and speaker visibility.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2833,7 +2833,7 @@
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
       "front": "A student with a learning disability and a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
-      "back": "Coordinate with the student and relevant specialists to arrange accessible positioning and equipment while preserving active participation.",
+      "back": "Collaborate with the student and specialists to arrange safe, accessible positioning and active lab participation.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2848,7 +2848,7 @@
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
       "front": "A student with a learning disability has a documented seizure action plan. During a classroom seizure, what should staff do first?",
-      "back": "Follow the individualized emergency plan, protect safety, and activate trained medical or emergency procedures as specified.",
+      "back": "Follow the individualized emergency plan, protect safety, and activate trained medical procedures.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2863,7 +2863,7 @@
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
       "front": "When a documented individualized need includes adaptive behavior, which IEP goal is most useful?",
-      "back": "Given a visual checklist, the student will complete four steps for purchasing a cafeteria item in four of five opportunities.",
+      "back": "Given a visual checklist, the student will complete four cafeteria-purchasing steps in four of five trials.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2878,7 +2878,7 @@
       "skillId": "adaptive-technology-routines",
       "domainId": "planning-managing-learning-environment",
       "front": "A student with a learning disability and low vision receives a worksheet containing a dense, unlabeled diagram. What is the best access response? Focus: Assistive Technology, Adaptive Access, and Learning Routines.",
-      "back": "An equivalent accessible representation, such as a clear verbal description, tactile graphic, or usable enlarged version matched to the learner.",
+      "back": "Provide an equivalent accessible format—such as a verbal description, tactile graphic, or usable enlargement.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2893,7 +2893,7 @@
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
       "front": "During explicit, systematic word-reading intervention for a student with a learning disability, what is the best initial approach to teaching a new phonics pattern?",
-      "back": "Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text.",
+      "back": "Model the sound–spelling pattern explicitly, guide blending and encoding, and apply it in controlled words and text.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2909,7 +2909,7 @@
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
       "front": "During explicit, systematic word-reading intervention for a student with a learning disability, why use decodable text during early phonics application?",
-      "back": "It gives students a high opportunity to practice applying taught decoding patterns in connected reading.",
+      "back": "It provides concentrated practice applying recently taught phonics patterns accurately in connected text.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2925,7 +2925,7 @@
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
       "front": "During explicit, systematic word-reading intervention for a student with a learning disability, how should irregular high-frequency words be taught?",
-      "back": "Map the regular phoneme–grapheme parts explicitly and identify the unexpected part while connecting pronunciation and meaning.",
+      "back": "Map the regular phoneme–grapheme parts explicitly, highlight the unexpected spelling, and link meaning.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2941,7 +2941,7 @@
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
       "front": "During explicit, systematic word-reading intervention for a student with a learning disability, what supports accurate multisyllabic word reading?",
-      "back": "Cumulative instruction in syllable patterns, vowel and consonant correspondences, morphology, flexible division, and meaning checks.",
+      "back": "Teach syllable patterns, vowel correspondences, morphology, flexible word division, and context checks cumulatively.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2957,7 +2957,7 @@
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
       "front": "During explicit, systematic word-reading intervention for a student with a learning disability, why teach morphology?",
-      "back": "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words.",
+      "back": "Morpheme analysis strengthens decoding, spelling, vocabulary growth, and meaning across related words.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2973,7 +2973,7 @@
       "skillId": "structured-literacy-comprehension",
       "domainId": "instruction",
       "front": "During explicit, systematic word-reading intervention for a student with a learning disability, what is orthographic mapping?",
-      "back": "They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval.",
+      "back": "Readers bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and retrieval.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -2989,7 +2989,7 @@
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
       "front": "During explicit written-expression instruction for a student with a learning disability, how are reading and writing instruction related?",
-      "back": "Reading provides models and knowledge for writing, while writing deepens analysis of language, text structure, evidence, and meaning.",
+      "back": "Reading supplies models and knowledge for writing, while writing deepens analysis of structure and meaning.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3005,7 +3005,7 @@
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
       "front": "During explicit written-expression instruction for a student with a learning disability, what should writing assessment distinguish?",
-      "back": "Transcription fluency and accuracy separately from planning, language, organization, revision, and purpose.",
+      "back": "Evaluate transcription fluency and accuracy separately from planning, language, organization, and revision.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3021,7 +3021,7 @@
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
       "front": "During explicit written-expression instruction for a student with a learning disability, what is disciplinary literacy?",
-      "back": "Disciplines use characteristic purposes, evidence, vocabulary, representations, and reasoning that should be taught explicitly.",
+      "back": "Disciplines use distinct purposes, evidence norms, vocabulary, and representations that must be taught explicitly.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3037,7 +3037,7 @@
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
       "front": "During explicit written-expression instruction for a student with a learning disability, how should a teacher support digital-text reading?",
-      "back": "Teach navigation, source evaluation, lateral verification, synthesis across modes, and monitoring of purpose and attention.",
+      "back": "Explicitly teach navigation, source evaluation, lateral verification, synthesis, and attention monitoring.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3053,7 +3053,7 @@
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
       "front": "During explicit written-expression instruction for a student with a learning disability, why use coherent text sets?",
-      "back": "Connected texts can build vocabulary and knowledge while allowing comparison of genres, claims, evidence, and perspectives.",
+      "back": "Coherent text sets build cumulative knowledge and vocabulary while supporting comparison across perspectives.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3069,7 +3069,7 @@
       "skillId": "written-expression-spelling",
       "domainId": "instruction",
       "front": "During explicit written-expression instruction for a student with a learning disability, how can sentence-level instruction support literacy?",
-      "back": "Explicit work with sentence meanings, clauses, connectives, expansion, combining, and deconstruction in reading and writing contexts.",
+      "back": "Provide explicit practice with clauses, connectives, sentence combining, expansion, and meaning in context.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3181,7 +3181,7 @@
       "skillId": "evaluation-identification-placement",
       "domainId": "identification-eligibility-placement",
       "front": "When evaluating possible learning disabilities, a vocabulary test is used to decide whether a student can solve multistep equations. What is the primary concern?",
-      "back": "Validity, because the evidence does not adequately support the intended interpretation and use.",
+      "back": "Validity, because the scores do not support the intended construct interpretation and decision.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3196,7 +3196,7 @@
       "skillId": "evaluation-identification-placement",
       "domainId": "identification-eligibility-placement",
       "front": "When evaluating possible learning disabilities, a progress measure gives very different scores on consecutive days even though instruction and performance appear stable. What quality is in question?",
-      "back": "Reliability or consistency of measurement and scoring.",
+      "back": "Reliability, or the consistency of measurement across occasions and scorers.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3211,7 +3211,7 @@
       "skillId": "evaluation-identification-placement",
       "domainId": "identification-eligibility-placement",
       "front": "When evaluating possible learning disabilities, why should an eligibility team use multiple assessment tools and strategies?",
-      "back": "Different sources can test converging explanations and prevent one measure from becoming the sole criterion.",
+      "back": "Converging sources test competing explanations and prevent a single score from deciding eligibility.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3226,7 +3226,7 @@
       "skillId": "evaluation-identification-placement",
       "domainId": "identification-eligibility-placement",
       "front": "When evaluating possible learning disabilities, a newly arrived multilingual learner is assessed only in rapid academic English. What is the central evaluation concern?",
-      "back": "Use the native language or appropriate communication mode and a format most likely to show what the learner knows, unless clearly infeasible.",
+      "back": "Assess in the language or communication mode most likely to yield accurate evidence of knowledge.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3241,7 +3241,7 @@
       "skillId": "evaluation-identification-placement",
       "domainId": "identification-eligibility-placement",
       "front": "When evaluating possible learning disabilities, which assessment is most useful for adjusting tomorrow’s instruction?",
-      "back": "A brief formative task or observation aligned to the taught steps, followed by error analysis.",
+      "back": "A brief formative check aligned to the taught steps, paired with targeted error analysis.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3256,7 +3256,7 @@
       "skillId": "evaluation-identification-placement",
       "domainId": "identification-eligibility-placement",
       "front": "When evaluating possible learning disabilities, a reading assessment is intended to measure comprehension, but a student’s documented motor disability prevents use of the response booklet. What is the best response?",
-      "back": "Provide an appropriate response accommodation that removes the motor barrier without changing the content construct.",
+      "back": "Provide a response accommodation removing the motor barrier while preserving the content construct.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3271,7 +3271,7 @@
       "skillId": "law-ethics-nondiscrimination",
       "domainId": "foundations-professional-responsibilities",
       "front": "When applying educational rights for students with learning disabilities, what does FAPE require at a foundational level under IDEA?",
-      "back": "Eligible students receive special education and related services at public expense through an appropriately developed and implemented IEP.",
+      "back": "Eligible students receive public special education and related services through an appropriate IEP.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3286,7 +3286,7 @@
       "skillId": "law-ethics-nondiscrimination",
       "domainId": "foundations-professional-responsibilities",
       "front": "When applying educational rights for students with learning disabilities, a school suspects a disability in a student who is passing classes with extensive informal help. What duty remains relevant?",
-      "back": "Child Find requires identification, location, and evaluation of children who may need special education, including those advancing grade to grade.",
+      "back": "Child Find requires locating, identifying, and evaluating children who may need special education, even if advancing grades.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3301,7 +3301,7 @@
       "skillId": "law-ethics-nondiscrimination",
       "domainId": "foundations-professional-responsibilities",
       "front": "When applying educational rights for students with learning disabilities, a district proposes changing a student’s placement. What procedural communication is required?",
-      "back": "Prior written notice describing the proposed or refused action, the reasons, evidence considered, and other required information.",
+      "back": "Prior written notice explaining the proposed or refused action, reasons, evidence, and procedural safeguards.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3316,7 +3316,7 @@
       "skillId": "law-ethics-nondiscrimination",
       "domainId": "foundations-professional-responsibilities",
       "front": "When applying educational rights for students with learning disabilities, a teacher wants to discuss a student’s IEP in a public elevator with a colleague who does not serve the student. What should the teacher do?",
-      "back": "Protect confidentiality and discuss educational records only through authorized, private channels with people who have a legitimate role.",
+      "back": "Protect confidentiality by discussing records in private authorized channels with staff who hold a legitimate role.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3331,7 +3331,7 @@
       "skillId": "law-ethics-nondiscrimination",
       "domainId": "foundations-professional-responsibilities",
       "front": "When applying educational rights for students with learning disabilities, what is a central protection of Section 504 in public schools receiving federal funds?",
-      "back": "Section 504 prohibits disability discrimination and may require accommodations and related aids or services for equal access.",
+      "back": "Section 504 bars disability discrimination and can require accommodations and related aids for equal access.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3346,7 +3346,7 @@
       "skillId": "law-ethics-nondiscrimination",
       "domainId": "foundations-professional-responsibilities",
       "front": "When applying educational rights for students with learning disabilities, a district’s referral data show one linguistic group is identified at a much higher rate. What is the best professional response?",
-      "back": "Audit definitions, opportunities to learn, referral practices, assessment access, and decision patterns while using culturally responsive multiple-source evidence.",
+      "back": "Audit definitions, instructional access, referral practices, and assessment bias using multiple sources.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3361,7 +3361,7 @@
       "skillId": "family-school-collaboration",
       "domainId": "foundations-professional-responsibilities",
       "front": "During collaborative planning for a student with a learning disability, what is the special educator’s role?",
-      "back": "Share planning, instruction, assessment, and responsibility for all learners while bringing specialized expertise to access and specially designed instruction.",
+      "back": "Share planning, instruction, assessment, and responsibility for all learners while contributing specialized expertise.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3376,7 +3376,7 @@
       "skillId": "family-school-collaboration",
       "domainId": "foundations-professional-responsibilities",
       "front": "During collaborative planning for a student with a learning disability, how should a special educator work with a paraprofessional?",
-      "back": "Provide clear direction, training, boundaries, observation, and feedback while retaining responsibility for instructional decisions.",
+      "back": "Provide clear direction, training, boundaries, observation, and feedback while retaining instructional responsibility.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3391,7 +3391,7 @@
       "skillId": "family-school-collaboration",
       "domainId": "foundations-professional-responsibilities",
       "front": "During collaborative planning for a student with a learning disability, a family disagrees with the team’s interpretation of progress data. What is the best first response?",
-      "back": "Listen, clarify the concern, examine the evidence together, invite home-context information, and identify what additional data or action is needed.",
+      "back": "Listen carefully, clarify concerns, review evidence together, invite home context, and plan next steps.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3406,7 +3406,7 @@
       "skillId": "family-school-collaboration",
       "domainId": "foundations-professional-responsibilities",
       "front": "During collaborative planning for a student with a learning disability, an occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
-      "back": "Clarify the purpose, integrate the support into authentic routines, define roles, and share implementation and outcome data.",
+      "back": "Clarify the goal, embed the support into authentic routines, define roles, and share outcome data.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3421,7 +3421,7 @@
       "skillId": "family-school-collaboration",
       "domainId": "foundations-professional-responsibilities",
       "front": "During collaborative planning for a student with a learning disability, how can a student contribute meaningfully to an IEP meeting?",
-      "back": "Teach the student to describe strengths, needs, preferences, goals, and helpful supports using an accessible communication format.",
+      "back": "Prepare the student to share strengths, preferences, goals, and helpful supports via an accessible mode.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3436,7 +3436,7 @@
       "skillId": "family-school-collaboration",
       "domainId": "foundations-professional-responsibilities",
       "front": "During collaborative planning for a student with a learning disability, two team members disagree about whether an intervention is working. What is the strongest next step?",
-      "back": "Operationalize the concern, review common data and fidelity, test a feasible adjustment, and schedule a time to evaluate the result.",
+      "back": "Define the target observably, review shared outcome and fidelity data, test one change, and reconvene.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3450,8 +3450,8 @@
       "chapterId": "ld5383-ch-12",
       "skillId": "professional-practice-advocacy",
       "domainId": "foundations-professional-responsibilities",
-      "front": "As a learning-disabilities specialist reflects on practice, which reflection question is most useful after an instructional unit?",
-      "back": "Which learners met the target, what response patterns occurred, what supports were implemented, and what evidence should change the next lesson?",
+      "front": "After finishing an instructional literacy unit for students with learning disabilities, which reflection question is most useful?",
+      "back": "Which students met the target, what error patterns emerged, and what evidence should guide next lessons?",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3465,8 +3465,8 @@
       "chapterId": "ld5383-ch-12",
       "skillId": "professional-practice-advocacy",
       "domainId": "foundations-professional-responsibilities",
-      "front": "As a learning-disabilities specialist reflects on practice, how should a teacher choose professional development?",
-      "back": "Select credible training aligned to the identified practice need, apply it with coaching or feedback, and evaluate effects on student evidence.",
+      "front": "When building professional competence in progress monitoring for learning disabilities, how should a teacher choose professional development?",
+      "back": "Choose credible training matched to the practice gap, apply it with coaching, and check student outcomes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3480,8 +3480,8 @@
       "chapterId": "ld5383-ch-12",
       "skillId": "professional-practice-advocacy",
       "domainId": "foundations-professional-responsibilities",
-      "front": "As a learning-disabilities specialist reflects on practice, a student lacks an accessible communication tool needed to participate. What is an appropriate advocacy step?",
-      "back": "Document the educational impact, use established team and administrative channels, propose feasible solutions, and follow up until access is addressed.",
+      "front": "When a student with a learning disability lacks an accessible communication tool needed to participate, what is an appropriate advocacy step?",
+      "back": "Document educational impact, use formal team and administrative channels, propose solutions, and follow up.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3495,8 +3495,8 @@
       "chapterId": "ld5383-ch-12",
       "skillId": "professional-practice-advocacy",
       "domainId": "foundations-professional-responsibilities",
-      "front": "As a learning-disabilities specialist reflects on practice, a student reveals information suggesting immediate risk of harm and asks the teacher to keep it secret. What should the teacher do?",
-      "back": "Follow mandatory reporting and school safety procedures promptly, share only with authorized personnel, and do not promise confidentiality that cannot be kept.",
+      "front": "If a student reveals information suggesting immediate risk of harm and asks the teacher to keep it secret, what should the teacher do?",
+      "back": "Follow mandatory reporting and safety protocols promptly, share with authorized personnel, and avoid promising secrecy.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3510,8 +3510,8 @@
       "chapterId": "ld5383-ch-12",
       "skillId": "professional-practice-advocacy",
       "domainId": "foundations-professional-responsibilities",
-      "front": "As a learning-disabilities specialist reflects on practice, which reflection question is most useful after an instructional unit? Focus: Professional Learning, Advocacy, Supervision, and Boundaries.",
-      "back": "Which learners met the target, what response patterns occurred, what supports were implemented, and what evidence should change the next lesson?",
+      "front": "After finishing an instructional literacy unit for students with learning disabilities, which reflection question is most useful? Focus: Professional Learning, Advocacy, Supervision, and Boundaries.",
+      "back": "Which students met the target, what error patterns emerged, and what evidence should guide next lessons?",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
@@ -3525,8 +3525,8 @@
       "chapterId": "ld5383-ch-12",
       "skillId": "professional-practice-advocacy",
       "domainId": "foundations-professional-responsibilities",
-      "front": "As a learning-disabilities specialist reflects on practice, how should a teacher choose professional development? Focus: Professional Learning, Advocacy, Supervision, and Boundaries.",
-      "back": "Select credible training aligned to the identified practice need, apply it with coaching or feedback, and evaluate effects on student evidence.",
+      "front": "When building professional competence in progress monitoring for learning disabilities, how should a teacher choose professional development? Focus: Professional Learning, Advocacy, Supervision, and Boundaries.",
+      "back": "Choose credible training matched to the practice gap, apply it with coaching, and check student outcomes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",

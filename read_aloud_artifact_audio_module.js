@@ -95,16 +95,46 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
         return value.url || value.audioUrl || value.objectUrl || null;
     }
 
+    const MAX_ARTIFACT_AUDIO_BYTES = 25 * 1024 * 1024;
+    function validateSynthesizedAudioUrl(url) {
+        const clean = String(url || '').trim();
+        if (/^blob:/i.test(clean)) return { kind: 'blob', url: clean };
+        if (/^data:(?:audio\/[a-z0-9.+-]+|application\/octet-stream)(?:;[^,]*)?,/i.test(clean)) return { kind: 'data', url: clean };
+        if (typeof dependencies.fetch === 'function') {
+            // Custom test/host fetchers may resolve relative or virtual URLs; still forbid non-http(s)/unsafe schemes.
+            if (/^(?:javascript|file|vbscript|ftp):/i.test(clean)) {
+                throw artifactAudioError('tts-audio-unsafe-url', 'Refused to fetch narration from an unsafe URL scheme.');
+            }
+            return { kind: 'http', url: clean };
+        }
+        try {
+            const base = (typeof window !== 'undefined' && window.location && window.location.href) ? window.location.href : 'https://localhost/';
+            const parsed = new URL(clean, base);
+            const sameOrigin = typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin !== 'null'
+                ? parsed.origin === window.location.origin
+                : false;
+            if (!sameOrigin || (parsed.protocol !== 'https:' && parsed.protocol !== 'http:')) {
+                throw artifactAudioError('tts-audio-unsafe-url', 'Refused to fetch narration from an external or unsupported URL.');
+            }
+            return { kind: 'http', url: parsed.href };
+        } catch (err) {
+            if (err && err.code === 'tts-audio-unsafe-url') throw err;
+            throw artifactAudioError('tts-audio-unsafe-url', 'Refused to fetch narration from an invalid URL.');
+        }
+    }
+
     async function normalizeSynthesizedAudio(value, signal) {
         if (value && typeof value === 'object') {
             if (value.b64 || value.base64 || value.bytes || value.arrayBuffer || value.blob) return value;
             if (typeof Blob !== 'undefined' && value instanceof Blob) return value;
         }
-        const url = playableUrl(value);
-        if (!url) {
+        const rawUrl = playableUrl(value);
+        if (!rawUrl) {
             throw artifactAudioError('tts-audio-missing', 'Text-to-speech did not return audio bytes or a playable URL.');
         }
-        const useTimeout = !/^(?:blob|data):/i.test(url) && typeof AbortController !== 'undefined';
+        const validated = validateSynthesizedAudioUrl(rawUrl);
+        const url = validated.url;
+        const useTimeout = validated.kind === 'http' && typeof AbortController !== 'undefined';
         let controller = null;
         let timeoutId = null;
         let onAbort = null;
@@ -121,7 +151,10 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
             timeoutId = setTimeout(() => controller.abort(), 30000);
         }
         try {
-            const fetchInit = controller ? { signal: controller.signal } : (signal ? { signal } : undefined);
+            const baseInit = validated.kind === 'http' ? { redirect: 'error' } : {};
+            if (controller) baseInit.signal = controller.signal;
+            else if (signal) baseInit.signal = signal;
+            const fetchInit = Object.keys(baseInit).length ? baseInit : undefined;
             const response = await fetchAudio(url, fetchInit);
             if (!response || response.ok === false || typeof response.blob !== 'function') {
                 throw artifactAudioError(
@@ -130,7 +163,21 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
                     response && response.status
                 );
             }
-            return { blob: await response.blob() };
+            if (validated.kind === 'http' && response.headers && typeof response.headers.get === 'function') {
+                const contentType = String(response.headers.get('content-type') || '').trim().toLowerCase();
+                if (contentType && !/^(?:audio\/|application\/octet-stream)/.test(contentType)) {
+                    throw artifactAudioError('tts-audio-invalid-type', 'The narration URL did not return an audio response.');
+                }
+                const contentLen = Number(response.headers.get('content-length'));
+                if (Number.isFinite(contentLen) && contentLen > MAX_ARTIFACT_AUDIO_BYTES) {
+                    throw artifactAudioError('tts-audio-too-large', 'The generated narration clip exceeded the maximum allowed size.');
+                }
+            }
+            const blob = await response.blob();
+            if (blob && Number.isFinite(blob.size) && blob.size > MAX_ARTIFACT_AUDIO_BYTES) {
+                throw artifactAudioError('tts-audio-too-large', 'The generated narration clip exceeded the maximum allowed size.');
+            }
+            return { blob };
         } finally {
             if (timeoutId !== null) clearTimeout(timeoutId);
             if (signal && onAbort) {
@@ -153,10 +200,12 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
             const voice = cleanToken(raw && raw.voice, defaults.voice, 160);
             const language = cleanToken(raw && raw.language, defaults.language, 100);
             const requested = getRequestedProfile({ voice, language }) || {};
-            const speedValue = Number(raw && (raw.synthesisRate == null ? raw.speed : raw.synthesisRate));
+            const strictNumber = (val) => (val == null || typeof val === 'boolean' || typeof val === 'object' || (typeof val === 'string' && !val.trim())) ? NaN : Number(val);
+            const speedValue = strictNumber(raw && (raw.synthesisRate == null ? raw.speed : raw.synthesisRate));
             const speed = Number.isFinite(speedValue) && speedValue > 0 && speedValue <= 4
                 ? speedValue
                 : defaults.speed;
+            const rawResolver = strictNumber(raw && raw.voiceResolverVersion);
             return {
                 segmentId,
                 text,
@@ -167,11 +216,29 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
                 requestedProvider: cleanToken(raw && raw.requestedProvider, defaults.requestedProvider || requested.requestedProvider || '', 240),
                 requestedModel: cleanToken(raw && raw.requestedModel, defaults.requestedModel || requested.requestedModel || '', 240),
                 directionFingerprint: cleanToken(raw && raw.directionFingerprint, '', 240),
-                voiceResolverVersion: Number(raw && raw.voiceResolverVersion) > 0
-                    ? Math.floor(Number(raw.voiceResolverVersion))
+                voiceResolverVersion: Number.isFinite(rawResolver) && Math.floor(rawResolver) >= 1
+                    ? Math.floor(rawResolver)
                     : defaults.voiceResolverVersion,
             };
         }).filter(Boolean);
+    }
+
+    function strictNum(value) {
+        if (value == null || typeof value === 'boolean' || typeof value === 'object') return NaN;
+        if (typeof value === 'string' && !value.trim()) return NaN;
+        return Number(value);
+    }
+    function boundedRate(value, fallback) {
+        const n = strictNum(value);
+        return Number.isFinite(n) && n > 0 && n <= 4 ? n : fallback;
+    }
+    function boundedResolverVersion(value, fallback) {
+        const n = strictNum(value);
+        return Number.isFinite(n) && Math.floor(n) >= 1 ? Math.floor(n) : fallback;
+    }
+    function boundedMaxRetries(value, fallback) {
+        const n = strictNum(value);
+        return Number.isFinite(n) && n >= 0 ? Math.floor(n) : fallback;
     }
 
     async function prepare(options = {}) {
@@ -181,23 +248,18 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
                 'Narration is embedded only after the owner explicitly chooses to include it.'
             );
         }
-        const requestedSpeed = Number(options.speed);
         const defaults = {
             // Kore is the product default. Never silently introduce a different
             // Gemini voice at the artifact boundary.
             voice: cleanToken(options.defaultVoice, 'Kore', 160),
             language: cleanToken(options.language, 'English', 100),
-            speed: Number.isFinite(requestedSpeed) && requestedSpeed > 0 && requestedSpeed <= 4
-                ? requestedSpeed
-                : 1,
+            speed: boundedRate(options.speed, 1),
             // Requested routing and actual engine provenance differ on fallback.
             // An invented provider here would make a valid fallback look stale.
             provider: cleanToken(options.provider, '', 80),
             requestedProvider: cleanToken(options.requestedProvider, '', 240),
             requestedModel: cleanToken(options.requestedModel, '', 240),
-            voiceResolverVersion: Number(options.voiceResolverVersion) > 0
-                ? Math.floor(Number(options.voiceResolverVersion))
-                : 2,
+            voiceResolverVersion: boundedResolverVersion(options.voiceResolverVersion, 2),
         };
         const segments = normalizeSegments(options.segments, defaults);
         if (!segments.length) {
@@ -257,14 +319,15 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
             synthesize: async ({ text, profile, signal }) => {
                 const voice = cleanToken(profile && profile.voice, defaults.voice, 160);
                 const language = cleanToken(profile && profile.language, defaults.language, 100);
-                const speed = Number(profile && (profile.synthesisRate == null ? profile.speed : profile.synthesisRate)) || defaults.speed;
+                const speed = boundedRate(profile && (profile.synthesisRate == null ? profile.speed : profile.synthesisRate), defaults.speed);
                 const requestedProvider = String((profile && (profile.requestedProvider || profile.provider)) || defaults.requestedProvider || defaults.provider || '').toLowerCase();
-                if (typeof dependencies.callTTS !== 'function' && typeof window !== 'undefined' && window.__alloAiSecretsLocked === true && (requestedProvider === 'gemini' || requestedProvider === 'cloud')) {
-                    throw artifactAudioError('tts-unavailable', 'Cloud text-to-speech is disabled while AI keys are locked.');
+                const isExplicitLocal = requestedProvider === 'local' || requestedProvider === 'kokoro' || requestedProvider === 'piper' || (/^(?:af|am|bf|bm|ef|em|ff|hf|hm|if|im|jf|jm|pf|pm|zf|zm)_/i.test(voice) && requestedProvider !== 'gemini' && requestedProvider !== 'cloud');
+                if (typeof dependencies.callTTS !== 'function' && typeof window !== 'undefined' && !isExplicitLocal && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true)) {
+                    throw artifactAudioError('tts-unavailable', 'Cloud text-to-speech is disabled in this session.');
                 }
                 let resolvedProfile = {};
                 const audio = await callTTS(text, voice, speed, {
-                    maxRetries: Number(options.maxRetries) >= 0 ? Number(options.maxRetries) : 2,
+                    maxRetries: boundedMaxRetries(options.maxRetries, 2),
                     language,
                     signal,
                     onResolvedProfile: value => { resolvedProfile = value || {}; },
@@ -350,10 +413,8 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
                             voice: cleanToken(profile.voice, defaults.voice, 160),
                             language: cleanToken(profile.language, defaults.language, 100),
                             provider: cleanToken(profile.provider, defaults.provider || 'tts-resolver', 80),
-                            synthesisRate: Number(profile.synthesisRate == null ? profile.speed : profile.synthesisRate) || defaults.speed,
-                            voiceResolverVersion: Number(profile.voiceResolverVersion) > 0
-                                ? Math.floor(Number(profile.voiceResolverVersion))
-                                : defaults.voiceResolverVersion,
+                            synthesisRate: boundedRate(profile.synthesisRate == null ? profile.speed : profile.synthesisRate, defaults.speed),
+                            voiceResolverVersion: boundedResolverVersion(profile.voiceResolverVersion, defaults.voiceResolverVersion),
                         },
                     },
                 });
@@ -395,9 +456,19 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
 // Owner-requested export recovery. Callers keep this object for their lifetime;
 // each call supplies current dependencies, avoiding stale host/profile closures.
 const createReadAloudArtifactRecovery = () => {
+    const MAX_CACHE_ENTRIES = 4;
     const checkpoints = new Map();
     const texts = new Map();
     const jobs = new Set();
+    const setBounded = (map, key, value) => {
+        if (map.has(key)) map.delete(key);
+        map.set(key, value);
+        while (map.size > MAX_CACHE_ENTRIES) {
+            const oldest = map.keys().next().value;
+            if (oldest === undefined) break;
+            map.delete(oldest);
+        }
+    };
     const errorCode = error => typeof error?.code === 'string' ? error.code : error?.name || 'checkpoint-storage-failed';
     const identityKey = options => {
         if (options.ownerApproved !== true) throw Object.assign(new Error('Choose to include narration before preparing it.'), { code: 'owner-approval-required' });
@@ -434,7 +505,7 @@ const createReadAloudArtifactRecovery = () => {
                 if (typeof generated !== 'string' || !generated.trim()) throw Object.assign(new Error('No Storybook epilogue was returned.'), { code: 'export-text-empty' });
                 value = { version: 1, identity, input: options.input, text: generated.trim() };
             }
-            texts.set(key, value);
+            setBounded(texts, key, value);
             if (matches(stored) && stored.text === value.text) {
                 recovery = { ...recovery, state: 'saved', verifiedAt: new Date().toISOString(), code: null };
             } else {
@@ -450,12 +521,16 @@ const createReadAloudArtifactRecovery = () => {
     }
     async function prepare(options, dependencies) {
         const key = 'allo_read_aloud_checkpoint:' + identityKey(options);
+        const checkPrepCancelled = () => {
+            if (options.signal?.aborted) throw Object.assign(new Error('Narration preparation cancelled.'), { name: 'AbortError' });
+        };
+        checkPrepCancelled();
         if (jobs.has(key)) throw Object.assign(new Error('Narration for this export is already being prepared.'), { code: 'preparation-in-progress' });
         jobs.add(key);
         let recovery = { state: 'session-only', verifiedAt: null, code: null, resumed: false };
         let checkpoint = options.checkpoint || checkpoints.get(key) || null;
         const save = async value => {
-            checkpoints.set(key, value);
+            setBounded(checkpoints, key, value);
             try {
                 const receipt = await dependencies.writeVerifiedStorageSnapshot(dependencies.storage, key, value);
                 if (receipt?.verified !== true) throw Object.assign(new Error('Checkpoint save was not verified.'), { code: 'checkpoint-unverified' });
@@ -471,6 +546,7 @@ const createReadAloudArtifactRecovery = () => {
                 try { checkpoint = await dependencies.storage.get(key, { throwOnError: true, localOnly: true }); }
                 catch (error) { recovery.code = errorCode(error); }
             }
+            checkPrepCancelled();
             if (checkpoint && (checkpoint.version !== 1 || checkpoint.payload?.version !== 4 ||
                 ['resourceId', 'resourceType', 'adapterId', 'scopeId'].some(field => checkpoint[field] !== options[field]))) {
                 checkpoint = null;
@@ -479,10 +555,11 @@ const createReadAloudArtifactRecovery = () => {
             }
             recovery.resumed = !!checkpoint;
             const result = await dependencies.prepare({ ...options, checkpoint, onCheckpoint: save });
+            checkPrepCancelled();
             if (result.checkpoint) await save(result.checkpoint);
             return { ...result, recovery };
         } catch (error) {
-            if (error.checkpoint) checkpoints.set(key, error.checkpoint);
+            if (error.checkpoint) setBounded(checkpoints, key, error.checkpoint);
             if (error.partialResult) error.partialResult.recovery = recovery;
             error.recovery = recovery;
             throw error;

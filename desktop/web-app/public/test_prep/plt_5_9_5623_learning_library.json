@@ -226,10 +226,10 @@
           "id": "plt5623-ch-01-check-01",
           "prompt": "A seventh-grade class holds persistent misconceptions before a science unit. Which planning step best uses schema theory?",
           "choices": [
-            "Elicit and examine prior knowledge, make the conflict visible with evidence, and connect the revised concept to an organized knowledge structure.",
-            "Begin with isolated vocabulary copying.",
-            "Avoid discussing prior ideas so they disappear.",
-            "Assign a final test before instruction."
+            "Surface prior ideas, highlight conflicts with evidence, and link revised concepts to schemas.",
+            "Begin the unit by having students copy textbook glossary terms silently into notebooks before class discussion.",
+            "Avoid mentioning inaccurate prior ideas aloud so misconceptions fade naturally once accurate facts are presented.",
+            "Administer the summative end-of-unit exam on day one to motivate closer reading during upcoming lessons."
           ],
           "answerIndex": 0,
           "rationale": "Schema influences how learners notice, organize, and retrieve new information; instruction should activate relevant knowledge and explicitly reorganize misconceptions.",
@@ -245,10 +245,10 @@
           "id": "plt5623-ch-01-check-02",
           "prompt": "Which classroom routine most directly develops metacognition during multistep problem solving?",
           "choices": [
-            "Praise speed without discussing reasoning.",
-            "Model planning and monitoring, prompt the learner to name the strategy and evidence, and require reflection on when the strategy should change.",
-            "Give the answer after the first error.",
-            "Require memorization of one procedure for every problem."
+            "Praise rapid task completion publicly so students focus on finishing multistep problems as fast as possible.",
+            "Model planning and monitoring, prompt strategy justifications, and require reflection on changes.",
+            "Supply the correct numerical answer right after an initial mistake so learners do not practice wrong steps.",
+            "Require learners to memorize one standard procedure and apply it identically to every problem in the chapter."
           ],
           "answerIndex": 1,
           "rationale": "Metacognition includes planning, monitoring understanding and strategy use, evaluating results, and adjusting deliberately rather than merely completing a task.",
@@ -264,10 +264,10 @@
           "id": "plt5623-ch-01-check-03",
           "prompt": "Students solve fraction problems in one familiar format but fail when the context changes. Which instructional move best promotes transfer?",
           "choices": [
-            "Repeat the identical item format indefinitely.",
-            "Introduce unrelated topics without comparison.",
-            "Use varied examples and contexts, compare deep structures, ask students to explain when the strategy applies, and gradually remove prompts.",
-            "Tell students that transfer should happen automatically."
+            "Assign additional pages of the identical worksheet format until students finish every item without hesitation.",
+            "Switch to unrelated academic topics quickly without prompting students to compare how concepts connect.",
+            "Vary contexts, compare deep structures, ask when the strategy applies, and fade prompts.",
+            "Remind students verbally that mastered strategies should carry over naturally into unfamiliar assignments."
           ],
           "answerIndex": 2,
           "rationale": "Transfer improves when learners recognize underlying relationships, retrieve the strategy across varied situations, explain its conditions, and practice independently.",
@@ -283,10 +283,10 @@
           "id": "plt5623-ch-01-check-04",
           "prompt": "A learner succeeds on a complex task only while the teacher gives well-timed prompts. How should instruction proceed within the zone of proximal development?",
           "choices": [
-            "Remove every support immediately.",
-            "Complete the task for the learner each time.",
-            "Keep the same prompts permanently regardless of progress.",
-            "Provide contingent support that enables success, monitor performance, and fade or adjust the support as independent control develops."
+            "Withdraw all visual cues and teacher questions right away so the learner practices unassisted problem solving.",
+            "Complete the remaining challenging steps for the learner so the assignment finishes accurately on schedule.",
+            "Maintain the identical visual cue and verbal prompt permanently across units regardless of growing accuracy.",
+            "Provide contingent support enabling success, track performance, and fade prompts as control grows."
           ],
           "answerIndex": 3,
           "rationale": "Scaffolding is responsive temporary support for work a learner can accomplish with assistance; it is adjusted and faded as competence and self-regulation increase.",
@@ -302,10 +302,10 @@
           "id": "plt5623-ch-01-check-05",
           "prompt": "Which use of teacher modeling best reflects social learning theory?",
           "choices": [
-            "Demonstrate the behavior and thinking, direct attention to critical features, provide supported rehearsal and feedback, and reinforce successful use.",
-            "Describe the rule once without an example.",
-            "Wait for students to imitate peers by chance.",
-            "Punish every initial error without practice."
+            "Model the skill and thinking, highlight key cues, guide rehearsal with feedback, and reinforce use.",
+            "State the classroom discussion rule clearly once at the start of the week without demonstrating an example.",
+            "Wait for students to observe and copy polite peer disagreement organically during unstructured group talk.",
+            "Deliver firm behavioral penalties after every early misstep during discussion without guided rehearsal first."
           ],
           "answerIndex": 0,
           "rationale": "Observational learning is strengthened by attention to a credible model, retention of what was observed, opportunities to reproduce it, feedback, and motivation.",
@@ -416,10 +416,10 @@
           "id": "plt5623-ch-02-check-01",
           "prompt": "Why should a teacher in grades 5–9 examine cognitive, physical, social, emotional, and moral development together?",
           "choices": [
-            "Treat development as interacting and variable across domains, then use multiple observations and context rather than one milestone to plan support.",
-            "Assume every domain develops at the same rate.",
-            "Use chronological age as a complete explanation.",
-            "Treat one classroom behavior as a diagnosis."
+            "Treat domains as interacting and uneven, using multiple contextual observations rather than one milestone.",
+            "Expect cognitive, physical, social, and emotional skills to advance at the identical pace within each learner.",
+            "Use chronological age alone as a sufficient explanation for why classroom performance varies across domains.",
+            "Interpret a single uneven classroom behavior across domains as reliable evidence of a clinical diagnosis."
           ],
           "answerIndex": 0,
           "rationale": "Developmental domains interact throughout early adolescence, while rates and pathways vary among learners; instruction should use multiple observations and context rather than rigid age-based labels.",
@@ -454,10 +454,10 @@
           "id": "plt5623-ch-02-check-03",
           "prompt": "Two children of the same age display different fine-motor control during writing. What is the most appropriate teacher conclusion?",
           "choices": [
-            "Conclude that same-age students must perform identically.",
-            "Lower every academic expectation permanently.",
-            "Recognize normal developmental variation, examine task demands and progress, provide access and practice, and consult qualified processes if concerns persist.",
-            "Diagnose a disability from handwriting alone."
+            "Expect same-age learners to demonstrate nearly identical fine-motor precision on standard writing tools.",
+            "Reduce conceptual writing expectations permanently until the student’s pencil grip matches faster peers.",
+            "Recognize normal variation, check task demands and growth, provide access supports, and consult if needed.",
+            "Determine that the student has a motor disability based directly on classroom handwriting samples alone."
           ],
           "answerIndex": 2,
           "rationale": "Age-based expectations describe broad patterns, not fixed schedules; teachers distinguish variation from persistent concern using multiple evidence sources and appropriate referral processes.",
@@ -492,10 +492,10 @@
           "id": "plt5623-ch-02-check-05",
           "prompt": "A student argues that a rule should be followed only to avoid immediate punishment. What can the teacher responsibly infer from an original Kohlberg stage framework?",
           "choices": [
-            "Treat it as evidence about the reasoning expressed in that situation and use discussion of perspectives, rules, care, and consequences without fixing the child to a permanent label.",
-            "Conclude the student has no moral values.",
-            "Assume reasoning is identical across every context.",
-            "Assign a clinical diagnosis from the answer."
+            "View it as context-specific reasoning and guide discussion of perspectives and care without fixed labeling.",
+            "Conclude that the student lacks core moral values and cannot participate responsibly in class norms.",
+            "Expect the student to apply identical punishment-focused moral reasoning across every social situation.",
+            "Record a formal developmental diagnosis based directly on the student’s single verbal classroom comment."
           ],
           "answerIndex": 0,
           "rationale": "Stage frameworks can help analyze the structure of stated reasoning, but classroom responses are contextual and do not justify a total or permanent judgment about a learner.",
@@ -621,10 +621,10 @@
           "id": "plt5623-ch-03-check-01",
           "prompt": "A teacher wants to understand why students engage differently with the same task. Which analysis is strongest?",
           "choices": [
-            "Examine prior knowledge, language, culture, opportunity, motivation, disability access, task demands, instruction, feedback, and individual strengths using multiple evidence sources.",
-            "Attribute the pattern to one demographic characteristic.",
-            "Assume the task offered equal access because directions were identical.",
-            "Rank students before reviewing instruction."
+            "Examine prior knowledge, language, culture, opportunity, access, task demands, instruction, and strengths.",
+            "Explain the uneven classroom outcomes through a single demographic background trait shared by some students.",
+            "Assume the lesson gave equal access to every learner because verbal directions were read aloud identically.",
+            "Rank learners from highest to lowest ability before inspecting instructional clarity or task barriers."
           ],
           "answerIndex": 0,
           "rationale": "Learning and performance reflect interacting learner and context variables; responsible analysis avoids stereotypes and examines opportunity and access as well as individual needs.",
@@ -643,10 +643,10 @@
           "id": "plt5623-ch-03-check-02",
           "prompt": "Which adaptation best supports an English learner during a grade-level science investigation?",
           "choices": [
-            "Replace science with unrelated basic-English worksheets.",
-            "Maintain the science goal while providing visuals, modeled language, structured interaction, vocabulary in context, and multiple ways to rehearse and communicate reasoning.",
-            "Prohibit use of home-language resources.",
-            "Reduce the task to copying definitions."
+            "Substitute unrelated basic-English grammar drills in place of participating in the grade-level science lab.",
+            "Keep the science goal intact while adding visuals, language models, structured talk, and varied expression.",
+            "Prohibit home-language notes or bilingual dictionaries during science so English acquisition speeds up.",
+            "Simplify the science investigation to copying bolded textbook vocabulary definitions onto a study sheet."
           ],
           "answerIndex": 1,
           "rationale": "English learners need meaningful access to grade-level content alongside explicit language development; language support should not remove the intended thinking.",
@@ -665,10 +665,10 @@
           "id": "plt5623-ch-03-check-03",
           "prompt": "A student has an IEP accommodation for text-to-speech on eligible classroom materials. What is the teacher’s responsibility?",
           "choices": [
-            "Withhold it when the student appears successful.",
-            "Replace it independently with an easier test.",
-            "Implement the documented support as specified, coordinate questions through the responsible team, and preserve the intended construct of the task.",
-            "Ask classmates to decide whether it is fair."
+            "Withhold the accommodation temporarily whenever the student appears to be performing well on recent work.",
+            "Swap out the documented access support unilaterally for a shorter, simplified version of the classroom quiz.",
+            "Implement the documented support faithfully, raise team questions properly, and protect the construct.",
+            "Poll classmates informally to decide whether providing the accommodation feels fair to the whole group."
           ],
           "answerIndex": 2,
           "rationale": "Teachers implement authorized IEP or accommodation provisions consistently and bring concerns to the qualified team rather than changing services unilaterally.",
@@ -687,10 +687,10 @@
           "id": "plt5623-ch-03-check-04",
           "prompt": "Which response best serves a student who has already mastered the unit objectives?",
           "choices": [
-            "Require repeated completion of mastered work.",
-            "Use the student only as an unpaid tutor.",
-            "Remove the learner from all peer interaction.",
-            "Provide appropriately challenging enrichment or acceleration that extends depth, complexity, creativity, or application while continuing to monitor needs."
+            "Require the student to complete all standard practice worksheets first to ensure fair classroom workload.",
+            "Assign the student primarily as an informal peer tutor for classmates who struggle with basic concepts.",
+            "Move the student to an isolated study carrel for the entire unit so peer pacing does not cause boredom.",
+            "Provide purposeful enrichment or acceleration extending depth, complexity, or transfer while monitoring."
           ],
           "answerIndex": 3,
           "rationale": "Gifted and advanced learners require evidence-based challenge, not extra repetition; enrichment and acceleration should respond to demonstrated readiness and broader development.",
@@ -709,10 +709,10 @@
           "id": "plt5623-ch-03-check-05",
           "prompt": "Which lesson design most clearly anticipates learner variability without lowering the common objective?",
           "choices": [
-            "Clarify the common goal, provide accessible representations and supports, allow appropriate ways to engage and express understanding, and evaluate the same essential relationship.",
-            "Assign unrelated objectives by perceived ability.",
-            "Use one inaccessible text and one response mode.",
-            "Remove evidence requirements for students needing support."
+            "Keep a clear shared goal, offer accessible media and scaffolds, allow varied expression, and assess core ideas.",
+            "Assign lower, unrelated content objectives to learners who need reading or communication accommodations.",
+            "Use one dense print passage and one written essay format so every student faces identical conditions.",
+            "Waive evidence requirements for students who receive language or reading scaffolds during the ecosystem unit."
           ],
           "answerIndex": 0,
           "rationale": "Inclusive differentiation varies pathways, scaffolds, materials, pacing, or response access while preserving worthwhile goals and valid evidence of learning.",
@@ -826,10 +826,10 @@
           "id": "plt5623-ch-04-check-01",
           "prompt": "Which task design best supports autonomy, competence, and relatedness without abandoning the learning goal?",
           "choices": [
-            "Offer meaningful bounded choices, an attainable challenge with useful feedback, and structured collaboration connected to a clear valued purpose.",
-            "Allow any activity regardless of the objective.",
-            "Use public comparison as the main incentive.",
-            "Remove all teacher guidance."
+            "Provide bounded choices, attainable challenge with useful feedback, and purposeful peer collaboration.",
+            "Allow learners to select any personal hobby activity regardless of whether it connects to unit standards.",
+            "Highlight public score rankings across table groups as the primary incentive for strong project quality.",
+            "Step back from offering checkpoints or instructional guidance so students experience full independence."
           ],
           "answerIndex": 0,
           "rationale": "Motivation is supported when learners experience genuine agency, growing competence, connection, and purpose within clear educational boundaries.",
@@ -845,10 +845,10 @@
           "id": "plt5623-ch-04-check-02",
           "prompt": "A class begins reading only when prizes are announced. How should the teacher strengthen intrinsic motivation?",
           "choices": [
-            "Increase prize size after every task.",
-            "Increase meaningful choice, relevance, achievable challenge, strategy feedback, and opportunities to notice growth while reducing unnecessary controlling rewards.",
-            "Tell students motivation is entirely their responsibility.",
-            "Eliminate feedback about learning."
+            "Increase prize value and point totals after every reading block so classroom participation remains brisk.",
+            "Build choice, relevance, achievable challenge, strategy feedback, and visible growth while fading prizes.",
+            "Inform students that personal reading motivation is their own responsibility outside teacher planning.",
+            "Remove specific learning feedback during reading tasks so students focus purely on personal enjoyment."
           ],
           "answerIndex": 1,
           "rationale": "External incentives can sometimes initiate behavior, but durable engagement is better supported by value, agency, competence, interest, belonging, and informative feedback.",
@@ -864,10 +864,10 @@
           "id": "plt5623-ch-04-check-03",
           "prompt": "A student says, “I failed because I am just bad at math.” Which feedback best supports an adaptive attribution?",
           "choices": [
-            "Promise that effort alone guarantees success.",
-            "Agree that mathematical ability is fixed.",
-            "Identify the specific strategy or prerequisite that needs work, acknowledge effective effort, model an alternative, and create a near-term chance to apply it.",
-            "Praise the student without discussing the work."
+            "Assure the student that working harder on the same approach ensures top scores on the next quiz.",
+            "Acknowledge that mathematical talent comes more easily to some learners and shift focus to stronger subjects.",
+            "Name the specific strategy gap, affirm effective effort, model an option, and give a near-term retry.",
+            "Offer warm general praise about the student’s positive personality without examining the missed math steps."
           ],
           "answerIndex": 2,
           "rationale": "Adaptive feedback connects outcomes with controllable strategies, knowledge, help seeking, and effective effort while providing credible evidence that improvement is possible.",
@@ -883,10 +883,10 @@
           "id": "plt5623-ch-04-check-04",
           "prompt": "Which approach is most effective when introducing a new classroom transition routine?",
           "choices": [
-            "Mention the expectation once.",
-            "Add several rules without practice.",
-            "Wait for errors and then punish the entire class.",
-            "Define and model the routine, let students rehearse it, provide prompts and feedback, reinforce successful performance, and reteach after breakdowns."
+            "Announce the new cleanup expectation clearly once on Monday morning and expect consistent follow-through.",
+            "Add a longer set of written cleanup rules to the wall poster without scheduling guided practice time.",
+            "Wait for messy transitions to occur and assign a whole-class loss of recess to build accountability.",
+            "Define and model the routine, guide rehearsal, give prompts and feedback, reinforce use, and reteach."
           ],
           "answerIndex": 3,
           "rationale": "Routines become efficient when they are explicitly taught, practiced, prompted, acknowledged, monitored, and retaught like other learned behavior.",
@@ -902,10 +902,10 @@
           "id": "plt5623-ch-04-check-05",
           "prompt": "A student repeatedly leaves a difficult independent task and receives extended adult conversation. What should the teacher examine first?",
           "choices": [
-            "Describe the observable behavior and antecedents and consequences, examine task access and likely function, then teach and reinforce an appropriate replacement behavior.",
-            "Assume the behavior reflects a bad attitude.",
-            "Choose a severe consequence without data.",
-            "Ignore whether the task is accessible."
+            "Observe behavior, triggers, and consequences, check task access and function, then teach a replacement.",
+            "Attribute repeated leaving of seats to a disrespectful classroom attitude that needs firmer authority.",
+            "Assign a harsher disciplinary consequence right away without reviewing classroom antecedent patterns.",
+            "Focus strictly on seat-leaving compliance while keeping the independent task difficulty unexamined."
           ],
           "answerIndex": 0,
           "rationale": "A functional classroom analysis examines what precedes and follows behavior and what need it may serve so prevention and replacement-skill instruction can be matched.",
@@ -1016,10 +1016,10 @@
           "id": "plt5623-ch-05-check-01",
           "prompt": "What should a teacher do when unpacking a broad content standard for unit planning?",
           "choices": [
-            "Identify the required concepts, disciplinary practices, level of thinking, evidence of mastery, prerequisite knowledge, and progression across lessons.",
-            "Copy the standard as the daily activity.",
-            "Select worksheets before clarifying the outcome.",
-            "Teach only the easiest noun in the standard."
+            "Identify concepts, practices, cognitive rigor, mastery evidence, prerequisites, and lesson progression.",
+            "Copy the full state standard verbatim onto the daily board as the entire instructional activity plan.",
+            "Gather engaging practice worksheets first and decide later which part of the standard they address.",
+            "Select the simplest foundational noun in the standard and postpone complex practices until later units."
           ],
           "answerIndex": 0,
           "rationale": "Unpacking clarifies what learners must know and do and what evidence will demonstrate the standard without fragmenting away its intended rigor.",
@@ -1035,10 +1035,10 @@
           "id": "plt5623-ch-05-check-02",
           "prompt": "Which objective is most observable and measurable for a lesson on comparing sources?",
           "choices": [
-            "Students will appreciate history.",
-            "Given two accounts, students will identify two relevant similarities or differences and explain how one source detail supports each comparison.",
-            "Students will complete a worksheet.",
-            "Students will listen carefully."
+            "By the end of the lesson, students will gain deeper appreciation for varied historical accounts of events.",
+            "Given two accounts, learners identify two similarities or differences and cite supporting source details.",
+            "During independent work time, students will finish a two-page source-comparison worksheet before dismissal.",
+            "Throughout the group read-aloud, students will listen attentively while classmates share ideas about both texts."
           ],
           "answerIndex": 1,
           "rationale": "A useful objective names the conditions, observable performance, important content, and sufficient criterion so instruction and assessment can align.",
@@ -1054,10 +1054,10 @@
           "id": "plt5623-ch-05-check-03",
           "prompt": "Which plan demonstrates alignment among objective, learning activity, and assessment?",
           "choices": [
-            "Keep the test because vocabulary is easier to score.",
-            "Change the objective after seeing the scores.",
-            "Provide instruction and practice in constructing mechanism explanations, then assess an explanation using criteria tied to the same reasoning and content.",
-            "Grade participation as proof of explanation skill."
+            "Keep the vocabulary matching test because selected-response items are faster and more consistent to grade.",
+            "Rewrite the unit learning objective afterward so it matches the vocabulary matching format used on the quiz.",
+            "Teach and practice building mechanism explanations, then score explanations with aligned reasoning criteria.",
+            "Count active lab participation points during the week as sufficient proof of mechanism explanation mastery."
           ],
           "answerIndex": 2,
           "rationale": "Alignment requires learners to practice and demonstrate the knowledge and cognitive process named in the objective through a valid assessment task.",
@@ -1073,10 +1073,10 @@
           "id": "plt5623-ch-05-check-04",
           "prompt": "How do scope and sequence differ in curriculum planning?",
           "choices": [
-            "Scope is the daily order and sequence is the textbook price.",
-            "Both terms mean the final assessment only.",
-            "Sequence lists topics without considering relationships.",
-            "Scope identifies the breadth and boundaries of content, while sequence organizes a coherent progression based on prerequisites, development, and increasing complexity."
+            "Scope sets the daily bell schedule order, while sequence tracks textbook purchasing and supply budgets.",
+            "Scope and sequence both refer strictly to the summative blueprint used for end-of-year testing.",
+            "Sequence lists required state topics alphabetically without considering prerequisite conceptual links.",
+            "Scope defines content breadth and boundaries; sequence organizes a coherent developmental progression."
           ],
           "answerIndex": 3,
           "rationale": "Curriculum scope defines what is included; sequence arranges learning so knowledge and skill can build coherently toward standards and transfer.",
@@ -1092,10 +1092,10 @@
           "id": "plt5623-ch-05-check-05",
           "prompt": "What is the best use of a brief preassessment before a new unit?",
           "choices": [
-            "Use low-stakes evidence to adjust entry points, scaffolds, grouping, pacing, enrichment, and explicit prerequisite instruction without treating it as a final grade.",
-            "Use it only to rank students publicly.",
-            "Skip instruction for anyone who answers one item correctly.",
-            "Record it as the summative unit score."
+            "Use low-stakes data to tailor entry points, scaffolds, groups, pacing, and extensions without grading.",
+            "Post preassessment scores on a wall chart so students see their starting rank compared with classmates.",
+            "Exempt any student who answers a single preview item correctly from participating in the entire unit.",
+            "Record the preassessment percentage in the grade book as part of the unit’s summative achievement score."
           ],
           "answerIndex": 0,
           "rationale": "Diagnostic evidence informs what learners already know and need next; it should guide responsive planning rather than high-stakes conclusions from a limited sample.",
@@ -1211,10 +1211,10 @@
           "id": "plt5623-ch-06-check-01",
           "prompt": "Which sequence best represents explicit instruction for a new multistep procedure?",
           "choices": [
-            "State the goal, activate prerequisites, model steps and decisions, guide practice with checks and feedback, then move to cumulative independent application.",
-            "Assign independent problems before explanation.",
-            "Lecture without checking understanding.",
-            "Model once and remove all support."
+            "State the goal, activate prior skills, model steps, guide practice with feedback, then release.",
+            "Assign independent word-problem sets first so students discover effective steps before any explanation.",
+            "Deliver an uninterrupted verbal lecture covering all rules without pausing to check student responses.",
+            "Demonstrate one single example at the board and immediately remove all visual cues and teacher hints."
           ],
           "answerIndex": 0,
           "rationale": "Explicit instruction makes the process and reasoning visible, elicits frequent responses, corrects errors, and gradually transfers responsibility through supported practice.",
@@ -1231,10 +1231,10 @@
           "id": "plt5623-ch-06-check-02",
           "prompt": "When is inquiry instruction most likely to be productive in a middle-grades classroom?",
           "choices": [
-            "The activity has no intended concept.",
-            "Learners have accessible background knowledge and materials, a focused question, strategic teacher guidance, opportunities to analyze evidence, and a planned synthesis.",
-            "Students receive no feedback despite persistent misconceptions.",
-            "The teacher tells every result before observation."
+            "The hands-on exploration remains completely open-ended with no targeted scientific concept in mind.",
+            "Learners have accessible background knowledge, a clear question, prompts, evidence, and synthesis.",
+            "The teacher refrains from giving corrective prompts even when persistent misconceptions dominate lab talk.",
+            "The teacher states every experimental result upfront before students handle materials or gather evidence."
           ],
           "answerIndex": 1,
           "rationale": "Inquiry supports knowledge construction when it is purposeful and guided, not when discovery is expected without the knowledge, prompts, tools, evidence, or consolidation needed.",
@@ -1251,10 +1251,10 @@
           "id": "plt5623-ch-06-check-03",
           "prompt": "Which feature is essential for cooperative learning rather than ordinary group seating?",
           "choices": [
-            "Give one group grade without individual evidence.",
-            "Let roles remain fixed by perceived ability.",
-            "Design positive interdependence, individual accountability, explicit collaboration skills, equitable participation roles, and reflection on both learning and process.",
-            "Assume collaboration skills need no teaching."
+            "Assign one shared group grade to the finished poster without checking what each member learned.",
+            "Keep group roles fixed all semester so confident students lead reasoning while quiet peers decorate.",
+            "Design positive interdependence, individual accountability, teamwork skills, fair roles, and reflection.",
+            "Place desks into clusters and assume effective teamwork skills require no explicit modeling or review."
           ],
           "answerIndex": 2,
           "rationale": "Cooperative learning requires a task and structures that make members responsible to one another while preserving evidence of individual learning and participation.",
@@ -1271,10 +1271,10 @@
           "id": "plt5623-ch-06-check-04",
           "prompt": "What is the strongest reason to use flexible rather than permanent ability grouping?",
           "choices": [
-            "Keep one group assignment for the year.",
-            "Use one global ability judgment for every subject.",
-            "Hide the learning purpose from students.",
-            "Form short-term purpose-specific groups from current evidence, provide targeted instruction, monitor progress, and regroup so placement does not become a fixed label."
+            "Maintain initial fall reading and math group placements throughout the year for stable classroom routines.",
+            "Assign students to identical ability tracks across every academic subject based on one global estimate.",
+            "Keep the specific skill purpose of each small group private so students do not compare group tasks.",
+            "Form temporary skill-focused groups from current data, teach responsively, and regroup as needs shift."
           ],
           "answerIndex": 3,
           "rationale": "Flexible grouping responds to a specific instructional need and changes with evidence, reducing the access and identity risks associated with static tracking.",
@@ -1291,10 +1291,10 @@
           "id": "plt5623-ch-06-check-05",
           "prompt": "When should an instructional scaffold be faded?",
           "choices": [
-            "Reduce support gradually while monitoring accuracy, strategy use, confidence, and transfer, restoring or altering support when evidence shows it is needed.",
-            "Remove it abruptly regardless of performance.",
-            "Keep it unchanged forever.",
-            "Increase assistance whenever the learner pauses."
+            "Reduce support gradually while monitoring accuracy, strategy use, and transfer, adjusting if needed.",
+            "Eliminate the graphic organizer abruptly on the next graded unit without checking independent retention.",
+            "Retain the full graphic organizer permanently across every future assignment so accuracy stays steady.",
+            "Step in with heavier verbal hints whenever the student pauses for a few seconds to think through a step."
           ],
           "answerIndex": 0,
           "rationale": "Scaffolds should be contingent: enough to enable productive effort, then faded as learners internalize the process while performance remains monitored.",
@@ -1411,10 +1411,10 @@
           "id": "plt5623-ch-07-check-01",
           "prompt": "Why should a teacher deliberately provide wait time after asking a cognitively demanding question?",
           "choices": [
-            "Pause long enough for processing, provide an accessible thinking structure, then invite varied students to explain and build on ideas.",
-            "Answer the question after one second.",
-            "Call only on volunteers who already know.",
-            "Lower every question to simple recall."
+            "Pause adequately for processing, add a thinking structure, and invite varied learners to explain.",
+            "Supply the intended answer after one brief second so whole-class lesson pacing stays crisp and energetic.",
+            "Call primarily on eager volunteers who raise their hands quickly so discussions stay accurate and smooth.",
+            "Simplify demanding open questions to quick factual recall so more classmates can respond rapidly."
           ],
           "answerIndex": 0,
           "rationale": "Wait time and preparation structures increase opportunities to formulate responses, improve explanation, and make participation less dependent on rapid verbal processing.",
@@ -1431,10 +1431,10 @@
           "id": "plt5623-ch-07-check-02",
           "prompt": "When is a closed question more useful than an open question?",
           "choices": [
-            "Use only open questions for every purpose.",
-            "Use a focused closed question to sample the prerequisite, then follow with explanation or open probing when reasoning needs to be examined.",
-            "Use a vague prompt that cannot be interpreted.",
-            "Treat one correct response as proof that the class understands."
+            "Ask open-ended debate questions exclusively across every minute of the lesson regardless of purpose.",
+            "Use a crisp closed check to sample the prerequisite, then follow with open probing of reasoning.",
+            "Pose a broad, unfocused prompt without clear criteria so learners can interpret the task in any direction.",
+            "Accept one accurate spoken reply from a volunteer as clear proof that the entire class holds the prerequisite."
           ],
           "answerIndex": 1,
           "rationale": "Question form should match purpose: focused questions can check specific knowledge efficiently, while open and probing questions reveal reasoning, alternatives, and connections.",
@@ -1451,10 +1451,10 @@
           "id": "plt5623-ch-07-check-03",
           "prompt": "A student gives an incorrect but plausible answer during discussion. What response best supports learning and psychological safety?",
           "choices": [
-            "Ridicule the error so others remember.",
-            "Ignore it and call on a stronger student.",
-            "Acknowledge the contribution, ask for the reasoning, invite evidence or comparison, clarify the misconception, and provide an opportunity to revise the answer.",
-            "Mark it wrong without examining thinking."
+            "Point out the flaw sharply in front of classmates so peers remember to avoid making the same error.",
+            "Move past the comment silently and call on a high-performing student to announce the right solution.",
+            "Affirm the effort, probe reasoning, compare evidence, clarify the misconception, and invite revision.",
+            "State briefly that the answer is wrong and advance to the next problem without exploring why it arose."
           ],
           "answerIndex": 2,
           "rationale": "Errors are diagnostic opportunities; respectful probing reveals the underlying idea, supports correction, and preserves a climate where learners can take intellectual risks.",
@@ -1471,10 +1471,10 @@
           "id": "plt5623-ch-07-check-04",
           "prompt": "Which teacher explanation is most likely to be clear for a new middle-grades concept?",
           "choices": [
-            "Add more jargon and speed.",
-            "Repeat identical wording at greater volume.",
-            "Provide examples that violate the concept.",
-            "Organize a few essential ideas, connect them to prior knowledge, use accurate examples and representations, check interpretation, and revisit the explanation responsively."
+            "Introduce formal academic jargon rapidly so learners hear precise disciplinary terminology from the start.",
+            "Repeat the exact same verbal explanation more slowly and loudly until confused facial expressions fade.",
+            "Include quirky contrasting stories that contradict key features of the concept to keep attention high.",
+            "Highlight core ideas, connect prior knowledge, use concrete models, check meaning, and refine."
           ],
           "answerIndex": 3,
           "rationale": "Clear communication manages cognitive demand, uses precise accessible language and representations, and relies on learner evidence rather than assuming the message was received.",
@@ -1491,10 +1491,10 @@
           "id": "plt5623-ch-07-check-05",
           "prompt": "Which check for understanding gives the teacher the most useful evidence during a lesson?",
           "choices": [
-            "Elicit a response from every learner on a task aligned to the objective, inspect reasoning or error patterns, and use the evidence to choose the next instructional step.",
-            "Ask whether everyone understands.",
-            "Use one confident volunteer as the sample.",
-            "Wait for the end-of-unit test."
+            "Elicit an aligned response from every learner, inspect error patterns, and decide the next move.",
+            "Ask the class whether everyone feels comfortable with the steps and look for nodding heads before release.",
+            "Call on one confident student to solve a sample problem aloud as a proxy for whole-class readiness.",
+            "Proceed directly into independent work and wait for the end-of-unit test to reveal lingering errors."
           ],
           "answerIndex": 0,
           "rationale": "An effective check is aligned, inclusive, interpretable, and actionable; it reveals more than self-reported confidence or one selected response.",
@@ -1606,10 +1606,10 @@
           "id": "plt5623-ch-08-check-01",
           "prompt": "What is the defining instructional purpose of formative assessment?",
           "choices": [
-            "The teacher and learners use timely evidence about current understanding to decide feedback and next instructional or learning actions.",
-            "It occurs on paper rather than online.",
-            "It always produces a report-card grade.",
-            "It is given only after instruction ends."
+            "Educators and learners use timely evidence to guide feedback and next instructional steps.",
+            "The assessment is administered on printed classroom exit slips rather than through digital platforms.",
+            "The assessment generates a formal numerical score entered into the quarterly report-card average.",
+            "The assessment is delivered after an instructional unit closes to certify cumulative student mastery."
           ],
           "answerIndex": 0,
           "rationale": "Formative assessment is defined by its use in an ongoing learning process, not merely by timing, format, or the absence of points.",
@@ -1625,10 +1625,10 @@
           "id": "plt5623-ch-08-check-02",
           "prompt": "Which use is most appropriate for a summative assessment?",
           "choices": [
-            "Diagnose every prerequisite from one score.",
-            "Sample the intended outcomes with aligned tasks and criteria to summarize learning while reporting limitations and avoiding unsupported conclusions.",
-            "Replace all ongoing feedback during the unit.",
-            "Measure only the easiest objective."
+            "Pinpoint every fine-grained prerequisite misconception across the curriculum from one summary score.",
+            "Sample priority outcomes with aligned tasks and criteria to summarize achievement within clear limits.",
+            "Replace ongoing classroom checks and formative feedback throughout the weeks of unit instruction.",
+            "Assess the easiest recall objective thoroughly while omitting complex application targets for fairness."
           ],
           "answerIndex": 1,
           "rationale": "Summative assessment supports a bounded judgment about achievement after a period of learning; validity depends on representative alignment and defensible interpretation.",
@@ -1644,10 +1644,10 @@
           "id": "plt5623-ch-08-check-03",
           "prompt": "Which classroom assessment is diagnostic?",
           "choices": [
-            "A participation grade.",
-            "An unrelated standardized reading score.",
-            "A targeted set of tasks and probes designed to distinguish prerequisite strengths, misconceptions, strategies, and specific sources of difficulty.",
-            "A final project scored only for neatness."
+            "A weekly classroom participation tally recording how often students volunteer during math discussions.",
+            "An unrelated norm-referenced reading score from the previous spring statewide testing administration.",
+            "Targeted probes separating prerequisite strengths, misconceptions, strategies, and error sources.",
+            "An end-of-chapter math poster scored primarily on visual layout, color contrast, and neat handwriting."
           ],
           "answerIndex": 2,
           "rationale": "Diagnostic assessment gathers fine-grained evidence to explain current performance and guide targeted instruction rather than merely ranking or summarizing.",
@@ -1663,10 +1663,10 @@
           "id": "plt5623-ch-08-check-04",
           "prompt": "Which assessment best aligns with an objective requiring students to conduct and explain a scientific investigation?",
           "choices": [
-            "A vocabulary-only matching quiz.",
-            "A self-report of whether science is enjoyable.",
-            "Attendance during the laboratory period.",
-            "An observed or documented investigation scored with criteria for design, evidence quality, analysis, and explanation, with appropriate access supports."
+            "A timed matching quiz asking students to link scientific inquiry terms with textbook definitions.",
+            "A brief classroom survey asking learners how confident and interested they feel during science labs.",
+            "An attendance checklist confirming that every student remained present throughout the laboratory period.",
+            "An observed investigation scored on design, evidence, analysis, and explanation with access supports."
           ],
           "answerIndex": 3,
           "rationale": "Assessment should elicit the knowledge and performance named in the objective; a proxy that omits the critical practice cannot support the intended interpretation.",
@@ -1682,10 +1682,10 @@
           "id": "plt5623-ch-08-check-05",
           "prompt": "When is a performance assessment preferable to selected response?",
           "choices": [
-            "Have students perform the presentation under defined conditions and use transparent criteria for content, evidence, organization, and communication.",
-            "Ask students to select the definition of presentation.",
-            "Count how many slides were created.",
-            "Use handwriting quality as the main score."
+            "Have learners deliver the presentation under clear criteria for content, evidence, and organization.",
+            "Ask students to choose the textbook definition of an organized oral presentation on a quiz.",
+            "Count the total number of digital presentation slides each student created before speaking day.",
+            "Base the primary presentation score on the visual neatness of handwritten outline note cards."
           ],
           "answerIndex": 0,
           "rationale": "Direct performance evidence is appropriate when the target includes creating, doing, communicating, or applying a process that selected response cannot adequately represent.",
@@ -1801,10 +1801,10 @@
           "id": "plt5623-ch-09-check-01",
           "prompt": "A classroom test produces highly consistent scores but measures mostly reading speed instead of the intended science reasoning. Which conclusion is strongest?",
           "choices": [
-            "Reliability may be adequate, but validity for the intended science interpretation is weak because consistency alone does not show that the right construct was measured.",
-            "The test is valid because it is consistent.",
-            "The test is invalid only if the mean is low.",
-            "Reliability and validity are identical."
+            "Reliability may hold, yet validity for science reasoning is weak because consistency cannot fix mismatch.",
+            "Strong consistency across testing days proves the assessment is valid for evaluating science reasoning.",
+            "The assessment lacks validity if the class average falls below expectations rather than due to construct drift.",
+            "Reliability and validity describe the same technical property of dependable classroom score reports."
           ],
           "answerIndex": 0,
           "rationale": "Reliability concerns consistency or precision; validity concerns evidence supporting an intended interpretation and use, and reliable measurement can consistently measure the wrong thing.",
@@ -1821,10 +1821,10 @@
           "id": "plt5623-ch-09-check-02",
           "prompt": "What is the key difference between norm-referenced and criterion-referenced interpretation?",
           "choices": [
-            "Both compare only with the classroom average.",
-            "Norm-referenced results compare performance with a defined reference group, while criterion-referenced results compare evidence with specified knowledge or performance expectations.",
-            "Criterion reference always reports a percentile.",
-            "Norm reference proves mastery of every standard."
+            "Both norm-referenced and criterion-referenced score reports compare learners strictly to the classroom average.",
+            "Norm-referenced scores compare peer standing; criterion-referenced scores compare against defined standards.",
+            "Criterion-referenced reports express student achievement as national percentile ranks against peer samples.",
+            "Earning an above-average norm-referenced score confirms mastery of every specific grade-level standard."
           ],
           "answerIndex": 1,
           "rationale": "The reference for interpretation differs: relative standing within a norm group versus performance against established criteria, each with its own supported uses and limits.",
@@ -1841,10 +1841,10 @@
           "id": "plt5623-ch-09-check-03",
           "prompt": "A percentile rank of 75 on a norm-referenced test means which of the following?",
           "choices": [
-            "The student mastered 75 percent of the curriculum.",
-            "The student earned exactly 75 raw-score points.",
+            "The student demonstrated independent mastery across approximately 75 percent of the grade-level curriculum standards measured on the test blueprint.",
+            "The student answered exactly 75 individual raw test items accurately during the timed standardized assessment administration across all subtests.",
             "The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct.",
-            "The student is performing at grade 7.5."
+            "The student is currently performing at grade 7.5 across core classroom reading, language, and mathematics expectations compared with typical classmates."
           ],
           "answerIndex": 2,
           "rationale": "Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score.",
@@ -1861,9 +1861,9 @@
           "id": "plt5623-ch-09-check-04",
           "prompt": "A seventh grader receives a grade-equivalent score of 9.2 on a standardized test. What is a defensible interpretation?",
           "choices": [
-            "The student should automatically skip two grades.",
-            "The student mastered all ninth-grade standards.",
-            "The score is the same as a percentile rank of 62.",
+            "The student should skip two full grade levels next fall because the standardized score confirms full academic and developmental readiness for accelerated placement.",
+            "The student has already mastered the full ninth-grade curriculum across reading and mathematics standards and no longer needs instruction on current-grade objectives.",
+            "The score carries the exact same statistical interpretation as earning a national percentile rank of 62 when comparing performance against same-age peer norm groups.",
             "On that test, the raw score matched the typical score of the referenced ninth-grade second-month group; it does not prove mastery of the ninth-grade curriculum or readiness for placement."
           ],
           "answerIndex": 3,
@@ -1881,10 +1881,10 @@
           "id": "plt5623-ch-09-check-05",
           "prompt": "A set of scores contains one extremely high outlier. Which measure is generally less affected when describing the typical score?",
           "choices": [
-            "The median, because it is based on the middle ordered position and is less sensitive to an extreme score than the arithmetic mean.",
-            "The range, because it ignores extremes.",
-            "The mean, because outliers never affect it.",
-            "The raw score, because it summarizes the group."
+            "The median, because it reflects the middle ordered score and resists pull from extreme outliers.",
+            "The full score range, because subtracting the lowest value from the highest value ignores extreme outliers.",
+            "The arithmetic mean, because extreme high values balance out and leave the class average unaffected.",
+            "An individual student’s raw score, because one raw point summarizes the center of the whole class."
           ],
           "answerIndex": 0,
           "rationale": "The median is resistant to extreme values, while the mean can shift substantially; distribution, purpose, and additional statistics should guide interpretation.",
@@ -2001,10 +2001,10 @@
           "id": "plt5623-ch-10-check-01",
           "prompt": "Which reflective-practice cycle is most likely to improve instruction?",
           "choices": [
-            "Define the learning and access question, gather relevant evidence, examine assumptions and alternatives, implement a focused change, and review its effects.",
-            "Write a general feeling and make no change.",
-            "Choose a solution before collecting evidence.",
-            "Judge success from teacher intention alone."
+            "Define the access question, collect data, weigh assumptions, test one focused shift, and review.",
+            "Record a brief personal feeling about the lesson in a journal without altering future classroom routines.",
+            "Adopt an appealing new discussion technique right away before gathering baseline participation evidence.",
+            "Judge whether classroom discussion improved primarily by whether the teacher intended to be inclusive."
           ],
           "answerIndex": 0,
           "rationale": "Reflection becomes professional inquiry when it connects goals and evidence with a reasoned adjustment and follow-up rather than remaining an impression.",
@@ -2021,10 +2021,10 @@
           "id": "plt5623-ch-10-check-02",
           "prompt": "Which professional-learning experience is most likely to transfer into classroom practice?",
           "choices": [
-            "Schedule another identical lecture only.",
-            "Connect the strategy to student need and current curriculum through modeling, co-planning, rehearsal, classroom use, feedback, and repeated review of evidence.",
-            "Require immediate mastery without practice.",
-            "Evaluate teachers before clarifying expectations."
+            "Schedule an identical follow-up lecture summarizing the same slide deck for the faculty next month.",
+            "Link the strategy to student needs via modeling, co-planning, classroom use, feedback, and review.",
+            "Expect teachers to implement the new strategy accurately after one workshop without coaching or rehearsal.",
+            "Conduct formal evaluative ratings on the new strategy before clarifying shared implementation criteria."
           ],
           "answerIndex": 1,
           "rationale": "Job-embedded, sustained, collaborative professional learning supports enactment and refinement better than exposure alone.",
@@ -2041,10 +2041,10 @@
           "id": "plt5623-ch-10-check-03",
           "prompt": "A study reports that students using a program had higher outcomes than a comparison group, but assignment was not random and baseline groups differed. What is the strongest conclusion?",
           "choices": [
-            "Conclude the program caused the difference.",
-            "Reject all research that is not randomized.",
-            "Treat the finding as limited evidence of association, examine design and alternative explanations, and integrate it with stronger research, local fit, feasibility, and monitored implementation.",
-            "Assume the result applies identically to every class."
+            "Conclude confidently that the commercial program directly caused the higher student achievement gains.",
+            "Dismiss every educational study that lacks random assignment as offering zero value for local planning.",
+            "Treat it as limited correlational data, weigh baseline bias, and pair with stronger research locally.",
+            "Expect the identical outcome gain to appear across every local classroom once the program is purchased."
           ],
           "answerIndex": 2,
           "rationale": "Educators interpret evidence according to design quality, comparison, measurement, implementation, context, uncertainty, and convergence rather than a headline alone.",
@@ -2061,10 +2061,10 @@
           "id": "plt5623-ch-10-check-04",
           "prompt": "What can a teacher reasonably learn from a small classroom action-research cycle?",
           "choices": [
-            "The routine is proven for all schools.",
-            "No learning is possible from local evidence.",
-            "Every change in outcomes must have one cause.",
-            "The local evidence can guide continued inquiry and adaptation, but it does not by itself establish that the routine caused the improvement or will generalize broadly."
+            "The four-week classroom gain proves the feedback routine works effectively across every school district.",
+            "Small classroom inquiry yields no useful professional insight because formal comparison groups are absent.",
+            "Any observed gain across four weeks must stem from the single feedback routine rather than other shifts.",
+            "Local data can guide continued adaptation, yet cannot prove causality or broad generalization alone."
           ],
           "answerIndex": 3,
           "rationale": "Action inquiry supports disciplined local learning when measures and implementation are documented, while causal and generalizability limits remain explicit.",
@@ -2081,10 +2081,10 @@
           "id": "plt5623-ch-10-check-05",
           "prompt": "Which use of a mentor best supports a beginning teacher’s development?",
           "choices": [
-            "Clarify the goal, jointly plan and model a manageable routine, observe agreed evidence, provide specific feedback, and revisit progress within clear confidentiality boundaries.",
-            "Take over the class indefinitely.",
-            "Report every question as incompetence.",
-            "Offer only general encouragement."
+            "Clarify goals, co-plan and model one manageable routine, observe agreed data, and give private feedback.",
+            "Step in and lead the novice teacher’s daily classroom transitions indefinitely so routines stay calm.",
+            "Forward every routine question the beginning teacher raises directly to building administrators as a flaw.",
+            "Offer warm general encouragement after school without observing transitions or giving concrete suggestions."
           ],
           "answerIndex": 0,
           "rationale": "Effective mentoring combines relational trust with concrete practice, evidence, feedback, role clarity, and follow-up rather than dependence or surveillance.",
@@ -2201,10 +2201,10 @@
           "id": "plt5623-ch-11-check-01",
           "prompt": "A student needs coordinated academic, communication, and motor supports. What is the classroom teacher’s strongest collaborative role?",
           "choices": [
-            "Share relevant classroom evidence, learn each role, align goals and feasible routines through the authorized team, implement agreed supports, and communicate progress without oversharing.",
-            "Ask one specialist to make every classroom decision.",
-            "Ignore recommendations that require coordination.",
-            "Send the full student record to all staff."
+            "Share classroom data, clarify roles, align feasible routines with the team, and track progress privately.",
+            "Ask one related-service specialist to take over all daily classroom scheduling and instructional decisions.",
+            "Set aside specialist recommendations that require coordination across classroom transitions or routines.",
+            "Email the complete cumulative evaluation file to every building staff member so everyone stays informed."
           ],
           "answerIndex": 0,
           "rationale": "Teachers contribute instructional context and carry out team decisions while respecting professional roles, privacy, family participation, and coordinated monitoring.",
@@ -2221,10 +2221,10 @@
           "id": "plt5623-ch-11-check-02",
           "prompt": "What makes a family conference reciprocal rather than one-way reporting?",
           "choices": [
-            "Read grades and end the meeting.",
-            "Invite family goals, observations, language and access needs; share clear evidence and limits; co-develop feasible next steps; and establish a follow-up channel.",
-            "Assume the family shares school priorities.",
-            "Discuss only weaknesses."
+            "Read through the printed report-card grades efficiently and close the meeting once averages are covered.",
+            "Invite family goals and insights, ensure language access, share clear evidence, and co-plan next steps.",
+            "Assume caregivers hold the exact same homework priorities and schedules without asking about home context.",
+            "Focus the entire conference on missed assignments and academic deficits so urgent problems receive priority."
           ],
           "answerIndex": 1,
           "rationale": "Reciprocal partnership treats families as knowledgeable collaborators and connects accessible evidence, assets, concerns, shared actions, and follow-up.",
@@ -2241,10 +2241,10 @@
           "id": "plt5623-ch-11-check-03",
           "prompt": "Which step should begin a collaborative team action plan?",
           "choices": [
-            "Assign tasks before agreeing on the goal.",
-            "Let the loudest member define success.",
-            "Clarify the shared purpose and observable problem with relevant stakeholder evidence, then define roles, actions, measures, communication, and review dates.",
-            "Avoid documenting decisions."
+            "Divide up classroom tasks immediately so members feel productive before reaching agreement on the goal.",
+            "Allow the most vocal team member to define the problem statement and success metric to save meeting time.",
+            "Clarify shared purpose and observable problem data first, then set roles, measures, and review dates.",
+            "Keep team agreements verbal and informal rather than documenting roles, measures, or follow-up dates."
           ],
           "answerIndex": 2,
           "rationale": "Collaboration is strengthened by a shared evidence-based purpose, meaningful participation, clear responsibility, communication, and accountability for review.",
@@ -2261,10 +2261,10 @@
           "id": "plt5623-ch-11-check-04",
           "prompt": "How should a school communicate essential information to caregivers with limited English proficiency?",
           "choices": [
-            "Ask a young sibling to interpret.",
-            "Provide a machine translation without review for a high-stakes decision.",
-            "Assume repeated English messages create access.",
-            "Use the school’s qualified language-access procedures, provide understandable translated or interpreted communication, address the family directly, and verify comprehension and questions."
+            "Ask an older sibling or the student to interpret important school decisions during the family conference.",
+            "Send an unreviewed automated online translation for a high-stakes notice without checking accuracy.",
+            "Send repeated printed copies of the English notice home until caregivers sign and return the form.",
+            "Use qualified school language-access procedures, speak directly with caregivers, and check understanding."
           ],
           "answerIndex": 3,
           "rationale": "Meaningful language access and confidentiality require qualified supports and direct respectful communication, especially for important or sensitive information.",
@@ -2281,10 +2281,10 @@
           "id": "plt5623-ch-11-check-05",
           "prompt": "Which collaboration practice best supports a paraeducator assigned to a classroom?",
           "choices": [
-            "Clarify authorized roles, instructional goals, plans, prompts, data and confidentiality procedures, provide training and feedback, and retain teacher responsibility for instruction.",
-            "Delegate every instructional decision.",
-            "Use the paraeducator only for behavior removal.",
-            "Exclude the paraeducator from relevant planning."
+            "Clarify authorized roles, goals, prompts, data, and privacy rules, give feedback, and keep lead duties.",
+            "Delegate independent lesson design, instructional planning, and summative grading to the paraeducator.",
+            "Assign the paraeducator primarily to escort students out of the room during behavioral disruptions.",
+            "Leave the paraeducator out of instructional briefings to avoid sharing authorized classroom plan details."
           ],
           "answerIndex": 0,
           "rationale": "Paraeducators are valuable team members who need role clarity, preparation, communication, supervision, and access to only the information required for assigned responsibilities.",
@@ -2411,10 +2411,10 @@
           "id": "plt5623-ch-12-check-01",
           "prompt": "A teacher is curious about a student in another grade and can access the cumulative file. What does FERPA’s school-official exception require?",
           "choices": [
-            "Access personally identifiable education records only for a legitimate educational interest tied to professional responsibility and according to school policy, not from curiosity or general employment status.",
-            "Any employee may open every record.",
-            "Records are unrestricted once stored electronically.",
-            "Verbal curiosity creates educational interest."
+            "Access records only for a legitimate educational interest tied to professional responsibility and policy.",
+            "District employment authorizes any licensed school staff member to browse every student cumulative file.",
+            "Electronic storage inside the school portal removes confidentiality restrictions for logged-in employees.",
+            "Personal professional curiosity about a former or sibling student establishes legitimate educational interest."
           ],
           "answerIndex": 0,
           "rationale": "FERPA permits disclosure without consent to qualifying school officials with legitimate educational interests; employment alone does not authorize access to every student record.",
@@ -2433,10 +2433,10 @@
           "id": "plt5623-ch-12-check-02",
           "prompt": "A teacher believes a documented disability support gives one student an unfair advantage. What is the appropriate response?",
           "choices": [
-            "Ask classmates to vote on the support.",
-            "Implement the current plan, document relevant evidence, and raise concerns through the qualified IEP or Section 504 process rather than making a unilateral change.",
-            "Remove it whenever the student earns a high score.",
-            "Replace it with a punishment."
+            "Invite classmates to vote anonymously on whether the accommodation feels fair during classroom quizzes.",
+            "Implement the active plan faithfully, log objective data, and raise concerns through the qualified team.",
+            "Suspend the approved accommodation temporarily whenever the student earns an above-average quiz score.",
+            "Pair the accommodation with an extra penalty assignment so total classroom workload stays balanced."
           ],
           "answerIndex": 1,
           "rationale": "Disability supports and services are determined through authorized individualized processes; teachers implement them and collaborate with the responsible team.",
@@ -2455,10 +2455,10 @@
           "id": "plt5623-ch-12-check-03",
           "prompt": "A student makes a disclosure that may trigger child-abuse reporting duties. What is the safest professional response?",
           "choices": [
-            "Conduct an independent interrogation first.",
-            "Wait for proof beyond all doubt.",
-            "Prioritize immediate safety, listen without leading or promising secrecy, document facts as required, and promptly follow current mandated-reporting law and school procedure with qualified authority.",
-            "Promise the student that no one will be told."
+            "Conduct detailed follow-up interviews with peers and caregivers to confirm facts before filing an official report.",
+            "Wait to submit an official agency report until unmistakable physical proof confirms abuse beyond reasonable doubt.",
+            "Protect safety, avoid promising secrecy, and promptly follow current mandated-reporting law and school procedure.",
+            "Promise the student strict personal secrecy so classroom trust remains intact while reviewing the disclosure."
           ],
           "answerIndex": 2,
           "rationale": "Reporting thresholds and procedures vary, but teachers should not investigate or make unsupported promises; they follow current law and safety procedures promptly.",
@@ -2477,10 +2477,10 @@
           "id": "plt5623-ch-12-check-04",
           "prompt": "Which use of copyrighted material is safest for a teacher planning instruction?",
           "choices": [
-            "Assume educational purpose permits unlimited copying.",
-            "Remove the author name and repost it.",
-            "Share the whole work publicly because no fee is charged.",
-            "Use licensed, public-domain, openly licensed, or permission-covered material and evaluate any limited fair-use claim under current policy and law before copying or posting."
+            "Upload the complete commercial workbook publicly because nonprofit educational use waives copyright limits.",
+            "Remove the publisher logo and author credit from scanned pages before sharing them on a public class site.",
+            "Post the full workbook openly online because students and families are not charged a fee to download it.",
+            "Use licensed, public-domain, open, or permission-cleared work and check fair use under policy."
           ],
           "answerIndex": 3,
           "rationale": "Educational use is not an automatic copyright exception; amount, purpose, nature, market effect, license terms, access controls, and current guidance matter.",
@@ -2499,10 +2499,10 @@
           "id": "plt5623-ch-12-check-05",
           "prompt": "A student club requests access to a school forum that is open to other noncurricular groups. What is the teacher’s best first step?",
           "choices": [
-            "Apply current viewpoint-neutral school policy, preserve safety and nondiscrimination, and consult authorized administrators rather than approving or denying access based on personal agreement.",
-            "Ban the group because the teacher dislikes its viewpoint.",
-            "Promise unrestricted access without checking the forum rules.",
-            "Create different safety standards for favored speech."
+            "Apply current viewpoint-neutral school policy, protect safety and nondiscrimination, and consult leadership.",
+            "Deny the club meeting space right away because the educator personally disagrees with the group’s viewpoint.",
+            "Approve unrestricted club access independently without checking established district forum and safety rules.",
+            "Enforce stricter room-use and supervision rules for unpopular student clubs than for favored groups."
           ],
           "answerIndex": 0,
           "rationale": "School speech and forum questions are fact specific; educators use current policy and qualified authority while avoiding viewpoint discrimination and protecting lawful safety boundaries.",
@@ -2529,7 +2529,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "A seventh-grade class holds persistent misconceptions before a science unit. Which planning step best uses schema theory?",
-      "back": "Elicit and examine prior knowledge, make the conflict visible with evidence, and connect the revised concept to an organized knowledge structure.",
+      "back": "Surface prior ideas, highlight conflicts with evidence, and link revised concepts to schemas.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2545,7 +2545,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Which classroom routine most directly develops metacognition during multistep problem solving?",
-      "back": "Model planning and monitoring, prompt the learner to name the strategy and evidence, and require reflection on when the strategy should change.",
+      "back": "Model planning and monitoring, prompt strategy justifications, and require reflection on changes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2561,7 +2561,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Students solve fraction problems in one familiar format but fail when the context changes. Which instructional move best promotes transfer?",
-      "back": "Use varied examples and contexts, compare deep structures, ask students to explain when the strategy applies, and gradually remove prompts.",
+      "back": "Vary contexts, compare deep structures, ask when the strategy applies, and fade prompts.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2577,7 +2577,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "A learner succeeds on a complex task only while the teacher gives well-timed prompts. How should instruction proceed within the zone of proximal development?",
-      "back": "Provide contingent support that enables success, monitor performance, and fade or adjust the support as independent control develops.",
+      "back": "Provide contingent support enabling success, track performance, and fade prompts as control grows.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2593,7 +2593,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Which use of teacher modeling best reflects social learning theory?",
-      "back": "Demonstrate the behavior and thinking, direct attention to critical features, provide supported rehearsal and feedback, and reinforce successful use.",
+      "back": "Model the skill and thinking, highlight key cues, guide rehearsal with feedback, and reinforce use.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2609,7 +2609,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Which mathematics experience is most appropriate for many learners developing concrete-operational reasoning?",
-      "back": "Let students manipulate and compare concrete representations, explain transformations, and connect those actions with increasingly abstract symbols.",
+      "back": "Let learners manipulate concrete models, explain transformations, and connect actions to symbols.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2625,7 +2625,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Why should a teacher in grades 5–9 examine cognitive, physical, social, emotional, and moral development together?",
-      "back": "Treat development as interacting and variable across domains, then use multiple observations and context rather than one milestone to plan support.",
+      "back": "Treat domains as interacting and uneven, using multiple contextual observations rather than one milestone.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2657,7 +2657,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Two children of the same age display different fine-motor control during writing. What is the most appropriate teacher conclusion?",
-      "back": "Recognize normal developmental variation, examine task demands and progress, provide access and practice, and consult qualified processes if concerns persist.",
+      "back": "Recognize normal variation, check task demands and growth, provide access supports, and consult if needed.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2689,7 +2689,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "A student argues that a rule should be followed only to avoid immediate punishment. What can the teacher responsibly infer from an original Kohlberg stage framework?",
-      "back": "Treat it as evidence about the reasoning expressed in that situation and use discussion of perspectives, rules, care, and consequences without fixing the child to a permanent label.",
+      "back": "View it as context-specific reasoning and guide discussion of perspectives and care without fixed labeling.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2705,7 +2705,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "What is the strongest basis for deciding that a student is ready for a more complex learning task?",
-      "back": "Use demonstrated prerequisite knowledge, language and strategy access, current support needs, motivation, and task demands rather than age alone.",
+      "back": "Use demonstrated prerequisites, language access, support needs, motivation, and task demands, not age alone.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2721,7 +2721,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "A teacher wants to understand why students engage differently with the same task. Which analysis is strongest?",
-      "back": "Examine prior knowledge, language, culture, opportunity, motivation, disability access, task demands, instruction, feedback, and individual strengths using multiple evidence sources.",
+      "back": "Examine prior knowledge, language, culture, opportunity, access, task demands, instruction, and strengths.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2740,7 +2740,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Which adaptation best supports an English learner during a grade-level science investigation?",
-      "back": "Maintain the science goal while providing visuals, modeled language, structured interaction, vocabulary in context, and multiple ways to rehearse and communicate reasoning.",
+      "back": "Keep the science goal intact while adding visuals, language models, structured talk, and varied expression.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2759,7 +2759,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "A student has an IEP accommodation for text-to-speech on eligible classroom materials. What is the teacher’s responsibility?",
-      "back": "Implement the documented support as specified, coordinate questions through the responsible team, and preserve the intended construct of the task.",
+      "back": "Implement the documented support faithfully, raise team questions properly, and protect the construct.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2778,7 +2778,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Which response best serves a student who has already mastered the unit objectives?",
-      "back": "Provide appropriately challenging enrichment or acceleration that extends depth, complexity, creativity, or application while continuing to monitor needs.",
+      "back": "Provide purposeful enrichment or acceleration extending depth, complexity, or transfer while monitoring.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2797,7 +2797,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Which lesson design most clearly anticipates learner variability without lowering the common objective?",
-      "back": "Clarify the common goal, provide accessible representations and supports, allow appropriate ways to engage and express understanding, and evaluate the same essential relationship.",
+      "back": "Keep a clear shared goal, offer accessible media and scaffolds, allow varied expression, and assess core ideas.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2816,7 +2816,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "A teacher learns that a familiar participation routine conflicts with norms some families use around adult-child interaction. What response is culturally responsive?",
-      "back": "Learn from students and families without stereotyping, offer multiple legitimate participation structures, teach expectations explicitly, and monitor access and learning.",
+      "back": "Learn from families without stereotyping, offer varied participation structures, teach norms, and check access.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2835,7 +2835,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Which task design best supports autonomy, competence, and relatedness without abandoning the learning goal?",
-      "back": "Offer meaningful bounded choices, an attainable challenge with useful feedback, and structured collaboration connected to a clear valued purpose.",
+      "back": "Provide bounded choices, attainable challenge with useful feedback, and purposeful peer collaboration.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2851,7 +2851,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "A class begins reading only when prizes are announced. How should the teacher strengthen intrinsic motivation?",
-      "back": "Increase meaningful choice, relevance, achievable challenge, strategy feedback, and opportunities to notice growth while reducing unnecessary controlling rewards.",
+      "back": "Build choice, relevance, achievable challenge, strategy feedback, and visible growth while fading prizes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2867,7 +2867,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "A student says, “I failed because I am just bad at math.” Which feedback best supports an adaptive attribution?",
-      "back": "Identify the specific strategy or prerequisite that needs work, acknowledge effective effort, model an alternative, and create a near-term chance to apply it.",
+      "back": "Name the specific strategy gap, affirm effective effort, model an option, and give a near-term retry.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2883,7 +2883,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Which approach is most effective when introducing a new classroom transition routine?",
-      "back": "Define and model the routine, let students rehearse it, provide prompts and feedback, reinforce successful performance, and reteach after breakdowns.",
+      "back": "Define and model the routine, guide rehearsal, give prompts and feedback, reinforce use, and reteach.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2899,7 +2899,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "A student repeatedly leaves a difficult independent task and receives extended adult conversation. What should the teacher examine first?",
-      "back": "Describe the observable behavior and antecedents and consequences, examine task access and likely function, then teach and reinforce an appropriate replacement behavior.",
+      "back": "Observe behavior, triggers, and consequences, check task access and function, then teach a replacement.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2915,7 +2915,7 @@
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
       "front": "Which statement correctly distinguishes reinforcement from bribery in classroom practice?",
-      "back": "The expectation and consequence are established ethically in advance, the acknowledgement follows the desired behavior, and the goal is to strengthen and eventually naturalize the skill.",
+      "back": "Expectations and acknowledgements are set ethically upfront, follow target behavior, and support transfer.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2931,7 +2931,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "What should a teacher do when unpacking a broad content standard for unit planning?",
-      "back": "Identify the required concepts, disciplinary practices, level of thinking, evidence of mastery, prerequisite knowledge, and progression across lessons.",
+      "back": "Identify concepts, practices, cognitive rigor, mastery evidence, prerequisites, and lesson progression.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2947,7 +2947,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "Which objective is most observable and measurable for a lesson on comparing sources?",
-      "back": "Given two accounts, students will identify two relevant similarities or differences and explain how one source detail supports each comparison.",
+      "back": "Given two accounts, learners identify two similarities or differences and cite supporting source details.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2963,7 +2963,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "Which plan demonstrates alignment among objective, learning activity, and assessment?",
-      "back": "Provide instruction and practice in constructing mechanism explanations, then assess an explanation using criteria tied to the same reasoning and content.",
+      "back": "Teach and practice building mechanism explanations, then score explanations with aligned reasoning criteria.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2979,7 +2979,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "How do scope and sequence differ in curriculum planning?",
-      "back": "Scope identifies the breadth and boundaries of content, while sequence organizes a coherent progression based on prerequisites, development, and increasing complexity.",
+      "back": "Scope defines content breadth and boundaries; sequence organizes a coherent developmental progression.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -2995,7 +2995,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "What is the best use of a brief preassessment before a new unit?",
-      "back": "Use low-stakes evidence to adjust entry points, scaffolds, grouping, pacing, enrichment, and explicit prerequisite instruction without treating it as a final grade.",
+      "back": "Use low-stakes data to tailor entry points, scaffolds, groups, pacing, and extensions without grading.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3011,7 +3011,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "Which interdisciplinary unit design preserves the integrity of each subject?",
-      "back": "Specify worthwhile standards and practices from each discipline, design authentic connections and shared products, and assess both integrated reasoning and discipline-specific learning.",
+      "back": "Name rigorous standards from each subject, link them authentically, and assess integrated and subject goals.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3027,7 +3027,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "Which sequence best represents explicit instruction for a new multistep procedure?",
-      "back": "State the goal, activate prerequisites, model steps and decisions, guide practice with checks and feedback, then move to cumulative independent application.",
+      "back": "State the goal, activate prior skills, model steps, guide practice with feedback, then release.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3044,7 +3044,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "When is inquiry instruction most likely to be productive in a middle-grades classroom?",
-      "back": "Learners have accessible background knowledge and materials, a focused question, strategic teacher guidance, opportunities to analyze evidence, and a planned synthesis.",
+      "back": "Learners have accessible background knowledge, a clear question, prompts, evidence, and synthesis.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3061,7 +3061,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "Which feature is essential for cooperative learning rather than ordinary group seating?",
-      "back": "Design positive interdependence, individual accountability, explicit collaboration skills, equitable participation roles, and reflection on both learning and process.",
+      "back": "Design positive interdependence, individual accountability, teamwork skills, fair roles, and reflection.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3078,7 +3078,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "What is the strongest reason to use flexible rather than permanent ability grouping?",
-      "back": "Form short-term purpose-specific groups from current evidence, provide targeted instruction, monitor progress, and regroup so placement does not become a fixed label.",
+      "back": "Form temporary skill-focused groups from current data, teach responsively, and regroup as needs shift.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3095,7 +3095,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "When should an instructional scaffold be faded?",
-      "back": "Reduce support gradually while monitoring accuracy, strategy use, confidence, and transfer, restoring or altering support when evidence shows it is needed.",
+      "back": "Reduce support gradually while monitoring accuracy, strategy use, and transfer, adjusting if needed.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3112,7 +3112,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "Which differentiation plan preserves a shared rigorous objective?",
-      "back": "Vary representations, vocabulary and language scaffolds, examples, grouping, pacing, and response supports while retaining the essential explanation and evidence criteria.",
+      "back": "Vary models, language scaffolds, grouping, pacing, and access supports while keeping core criteria.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3129,7 +3129,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "Why should a teacher deliberately provide wait time after asking a cognitively demanding question?",
-      "back": "Pause long enough for processing, provide an accessible thinking structure, then invite varied students to explain and build on ideas.",
+      "back": "Pause adequately for processing, add a thinking structure, and invite varied learners to explain.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3146,7 +3146,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "When is a closed question more useful than an open question?",
-      "back": "Use a focused closed question to sample the prerequisite, then follow with explanation or open probing when reasoning needs to be examined.",
+      "back": "Use a crisp closed check to sample the prerequisite, then follow with open probing of reasoning.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3163,7 +3163,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "A student gives an incorrect but plausible answer during discussion. What response best supports learning and psychological safety?",
-      "back": "Acknowledge the contribution, ask for the reasoning, invite evidence or comparison, clarify the misconception, and provide an opportunity to revise the answer.",
+      "back": "Affirm the effort, probe reasoning, compare evidence, clarify the misconception, and invite revision.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3180,7 +3180,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "Which teacher explanation is most likely to be clear for a new middle-grades concept?",
-      "back": "Organize a few essential ideas, connect them to prior knowledge, use accurate examples and representations, check interpretation, and revisit the explanation responsively.",
+      "back": "Highlight core ideas, connect prior knowledge, use concrete models, check meaning, and refine.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3197,7 +3197,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "Which check for understanding gives the teacher the most useful evidence during a lesson?",
-      "back": "Elicit a response from every learner on a task aligned to the objective, inspect reasoning or error patterns, and use the evidence to choose the next instructional step.",
+      "back": "Elicit an aligned response from every learner, inspect error patterns, and decide the next move.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3214,7 +3214,7 @@
       "domainId": "instructional-process",
       "domain": "Instructional Process",
       "front": "Half the class selects a distractor that reflects the same misconception. What is the best immediate instructional response?",
-      "back": "Pause, diagnose the reasoning with a brief probe, reteach using a contrasting representation or example, and check the revised understanding before proceeding.",
+      "back": "Pause, probe the shared reasoning, reteach using a contrasting model, and recheck understanding.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3231,7 +3231,7 @@
       "domainId": "assessment",
       "domain": "Assessment",
       "front": "What is the defining instructional purpose of formative assessment?",
-      "back": "The teacher and learners use timely evidence about current understanding to decide feedback and next instructional or learning actions.",
+      "back": "Educators and learners use timely evidence to guide feedback and next instructional steps.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3247,7 +3247,7 @@
       "domainId": "assessment",
       "domain": "Assessment",
       "front": "Which use is most appropriate for a summative assessment?",
-      "back": "Sample the intended outcomes with aligned tasks and criteria to summarize learning while reporting limitations and avoiding unsupported conclusions.",
+      "back": "Sample priority outcomes with aligned tasks and criteria to summarize achievement within clear limits.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3263,7 +3263,7 @@
       "domainId": "assessment",
       "domain": "Assessment",
       "front": "Which classroom assessment is diagnostic?",
-      "back": "A targeted set of tasks and probes designed to distinguish prerequisite strengths, misconceptions, strategies, and specific sources of difficulty.",
+      "back": "Targeted probes separating prerequisite strengths, misconceptions, strategies, and error sources.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3279,7 +3279,7 @@
       "domainId": "assessment",
       "domain": "Assessment",
       "front": "Which assessment best aligns with an objective requiring students to conduct and explain a scientific investigation?",
-      "back": "An observed or documented investigation scored with criteria for design, evidence quality, analysis, and explanation, with appropriate access supports.",
+      "back": "An observed investigation scored on design, evidence, analysis, and explanation with access supports.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3295,7 +3295,7 @@
       "domainId": "assessment",
       "domain": "Assessment",
       "front": "When is a performance assessment preferable to selected response?",
-      "back": "Have students perform the presentation under defined conditions and use transparent criteria for content, evidence, organization, and communication.",
+      "back": "Have learners deliver the presentation under clear criteria for content, evidence, and organization.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3311,7 +3311,7 @@
       "domainId": "assessment",
       "domain": "Assessment",
       "front": "What is the main advantage of an analytic rubric over a single holistic score?",
-      "back": "An analytic rubric reports performance by distinct criteria, supporting targeted feedback while requiring clear, nonoverlapping descriptors and scorer consistency.",
+      "back": "An analytic rubric scores distinct criteria separately, offering targeted feedback with clear levels.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3327,7 +3327,7 @@
       "domainId": "assessment",
       "domain": "Assessment",
       "front": "A classroom test produces highly consistent scores but measures mostly reading speed instead of the intended science reasoning. Which conclusion is strongest?",
-      "back": "Reliability may be adequate, but validity for the intended science interpretation is weak because consistency alone does not show that the right construct was measured.",
+      "back": "Reliability may hold, yet validity for science reasoning is weak because consistency cannot fix mismatch.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3344,7 +3344,7 @@
       "domainId": "assessment",
       "domain": "Assessment",
       "front": "What is the key difference between norm-referenced and criterion-referenced interpretation?",
-      "back": "Norm-referenced results compare performance with a defined reference group, while criterion-referenced results compare evidence with specified knowledge or performance expectations.",
+      "back": "Norm-referenced scores compare peer standing; criterion-referenced scores compare against defined standards.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3395,7 +3395,7 @@
       "domainId": "assessment",
       "domain": "Assessment",
       "front": "A set of scores contains one extremely high outlier. Which measure is generally less affected when describing the typical score?",
-      "back": "The median, because it is based on the middle ordered position and is less sensitive to an extreme score than the arithmetic mean.",
+      "back": "The median, because it reflects the middle ordered score and resists pull from extreme outliers.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3412,7 +3412,7 @@
       "domainId": "assessment",
       "domain": "Assessment",
       "front": "Why might a testing program convert raw scores to scaled scores?",
-      "back": "A scale can support reporting and, when justified by the program’s equating design, comparison across forms; the specific conversion and supported interpretation come from the test developer.",
+      "back": "A common scale supports reporting and, when equated, comparison across forms per developer guidance.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3429,7 +3429,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "Which reflective-practice cycle is most likely to improve instruction?",
-      "back": "Define the learning and access question, gather relevant evidence, examine assumptions and alternatives, implement a focused change, and review its effects.",
+      "back": "Define the access question, collect data, weigh assumptions, test one focused shift, and review.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3446,7 +3446,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "Which professional-learning experience is most likely to transfer into classroom practice?",
-      "back": "Connect the strategy to student need and current curriculum through modeling, co-planning, rehearsal, classroom use, feedback, and repeated review of evidence.",
+      "back": "Link the strategy to student needs via modeling, co-planning, classroom use, feedback, and review.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3463,7 +3463,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "A study reports that students using a program had higher outcomes than a comparison group, but assignment was not random and baseline groups differed. What is the strongest conclusion?",
-      "back": "Treat the finding as limited evidence of association, examine design and alternative explanations, and integrate it with stronger research, local fit, feasibility, and monitored implementation.",
+      "back": "Treat it as limited correlational data, weigh baseline bias, and pair with stronger research locally.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3480,7 +3480,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "What can a teacher reasonably learn from a small classroom action-research cycle?",
-      "back": "The local evidence can guide continued inquiry and adaptation, but it does not by itself establish that the routine caused the improvement or will generalize broadly.",
+      "back": "Local data can guide continued adaptation, yet cannot prove causality or broad generalization alone.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3497,7 +3497,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "Which use of a mentor best supports a beginning teacher’s development?",
-      "back": "Clarify the goal, jointly plan and model a manageable routine, observe agreed evidence, provide specific feedback, and revisit progress within clear confidentiality boundaries.",
+      "back": "Clarify goals, co-plan and model one manageable routine, observe agreed data, and give private feedback.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3514,7 +3514,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "What should be established before a peer observation used for professional learning?",
-      "back": "Agree on the learning question, evidence to collect, observation role, confidentiality and data-use boundaries, feedback process, and a follow-up action.",
+      "back": "Agree on the focus question, evidence, observer role, confidentiality bounds, feedback, and next steps.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3531,7 +3531,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "A student needs coordinated academic, communication, and motor supports. What is the classroom teacher’s strongest collaborative role?",
-      "back": "Share relevant classroom evidence, learn each role, align goals and feasible routines through the authorized team, implement agreed supports, and communicate progress without oversharing.",
+      "back": "Share classroom data, clarify roles, align feasible routines with the team, and track progress privately.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3548,7 +3548,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "What makes a family conference reciprocal rather than one-way reporting?",
-      "back": "Invite family goals, observations, language and access needs; share clear evidence and limits; co-develop feasible next steps; and establish a follow-up channel.",
+      "back": "Invite family goals and insights, ensure language access, share clear evidence, and co-plan next steps.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3565,7 +3565,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "Which step should begin a collaborative team action plan?",
-      "back": "Clarify the shared purpose and observable problem with relevant stakeholder evidence, then define roles, actions, measures, communication, and review dates.",
+      "back": "Clarify shared purpose and observable problem data first, then set roles, measures, and review dates.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3582,7 +3582,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "How should a school communicate essential information to caregivers with limited English proficiency?",
-      "back": "Use the school’s qualified language-access procedures, provide understandable translated or interpreted communication, address the family directly, and verify comprehension and questions.",
+      "back": "Use qualified school language-access procedures, speak directly with caregivers, and check understanding.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3599,7 +3599,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "Which collaboration practice best supports a paraeducator assigned to a classroom?",
-      "back": "Clarify authorized roles, instructional goals, plans, prompts, data and confidentiality procedures, provide training and feedback, and retain teacher responsibility for instruction.",
+      "back": "Clarify authorized roles, goals, prompts, data, and privacy rules, give feedback, and keep lead duties.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3616,7 +3616,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "A family questions why its child is receiving a new intervention. What is the best teacher response?",
-      "back": "Listen and clarify the concern, share the evidence and purpose in accessible language, examine discrepancies, explain rights and decision processes, and bring needed revisions to the appropriate team.",
+      "back": "Listen carefully, share purpose and evidence clearly, inspect differences, explain process, and involve teams.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3633,7 +3633,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "A teacher is curious about a student in another grade and can access the cumulative file. What does FERPA’s school-official exception require?",
-      "back": "Access personally identifiable education records only for a legitimate educational interest tied to professional responsibility and according to school policy, not from curiosity or general employment status.",
+      "back": "Access records only for a legitimate educational interest tied to professional responsibility and policy.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3652,7 +3652,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "A teacher believes a documented disability support gives one student an unfair advantage. What is the appropriate response?",
-      "back": "Implement the current plan, document relevant evidence, and raise concerns through the qualified IEP or Section 504 process rather than making a unilateral change.",
+      "back": "Implement the active plan faithfully, log objective data, and raise concerns through the qualified team.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3671,7 +3671,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "A student makes a disclosure that may trigger child-abuse reporting duties. What is the safest professional response?",
-      "back": "Prioritize immediate safety, listen without leading or promising secrecy, document facts as required, and promptly follow current mandated-reporting law and school procedure with qualified authority.",
+      "back": "Protect safety, avoid promising secrecy, and promptly follow current mandated-reporting law and school procedure.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3690,7 +3690,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "Which use of copyrighted material is safest for a teacher planning instruction?",
-      "back": "Use licensed, public-domain, openly licensed, or permission-covered material and evaluate any limited fair-use claim under current policy and law before copying or posting.",
+      "back": "Use licensed, public-domain, open, or permission-cleared work and check fair use under policy.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3709,7 +3709,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "A student club requests access to a school forum that is open to other noncurricular groups. What is the teacher’s best first step?",
-      "back": "Apply current viewpoint-neutral school policy, preserve safety and nondiscrimination, and consult authorized administrators rather than approving or denying access based on personal agreement.",
+      "back": "Apply current viewpoint-neutral school policy, protect safety and nondiscrimination, and consult leadership.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",
@@ -3728,7 +3728,7 @@
       "domainId": "professional-development-leadership-community",
       "domain": "Professional Development, Leadership, and Community",
       "front": "A disciplinary referral may affect a student’s access and includes conflicting accounts. Which process is most ethical?",
-      "back": "Preserve safety, gather relevant facts fairly, provide the required notice and opportunity to respond, consider disability and civil-rights protections, document decisions, and avoid retaliation or predetermined conclusions.",
+      "back": "Protect safety, gather facts fairly, give notice and voice, honor civil-rights rules, and document clearly.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5623.pdf",

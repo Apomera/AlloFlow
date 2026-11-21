@@ -93,10 +93,34 @@
         });
       }
     } catch (_) { /* Malformed or inaccessible temporary storage is disposable. */ }
-    function persist() {
+    function persist(modifiedKey) {
       const now = Date.now();
       for (const [key, entry] of checkpoints) if (now - entry.updatedAt > MAX_AGE || now < entry.updatedAt) checkpoints.delete(key);
-      const entries = [...checkpoints.entries()].sort((a, b) => b[1].updatedAt - a[1].updatedAt);
+      // Merge with existing sessionStorage entries so other controllers'/actors'/plans' checkpoints are not clobbered.
+      const merged = new Map();
+      try {
+        if (typeof storage?.getItem === 'function') {
+          const existingRaw = storage.getItem(STORAGE_KEY);
+          if (typeof existingRaw === 'string' && existingRaw.length <= MAX_STORAGE_SIZE) {
+            const existingList = JSON.parse(existingRaw);
+            if (Array.isArray(existingList) && existingList.length <= 5) {
+              existingList.forEach(entry => {
+                if (entry && entry.schema === 1 && typeof entry.actor === 'string' && typeof entry.planId === 'string'
+                  && typeof entry.updatedAt === 'number' && now - entry.updatedAt <= MAX_AGE && now >= entry.updatedAt) {
+                  merged.set(keyFor(entry.actor, entry.planId), entry);
+                }
+              });
+            }
+          }
+        }
+      } catch (_) {}
+      if (modifiedKey) {
+        if (checkpoints.has(modifiedKey)) merged.set(modifiedKey, checkpoints.get(modifiedKey));
+        else merged.delete(modifiedKey);
+      } else {
+        for (const [key, entry] of checkpoints) merged.set(key, entry);
+      }
+      const entries = [...merged.entries()].sort((a, b) => b[1].updatedAt - a[1].updatedAt);
       entries.slice(5).forEach(([key]) => checkpoints.delete(key));
       // Include JSON array punctuation in the aggregate limit so every written
       // collection can be read back after a reload.
@@ -133,6 +157,18 @@
     const core = () => typeof deps.core === 'function' ? deps.core() : deps.core;
     const research = () => typeof deps.research === 'function' ? deps.research() : deps.research;
     const allowed = state => state.isTeacherMode === true && !state.isParentMode && !state.isIndependentMode;
+    const aiAllowed = state => {
+      if (!state || !state.canGenerate) return false;
+      if (deps.callText?._alloQrBlocked) return false;
+      if (typeof root !== 'undefined' && root) {
+        if (root.__alloAiSecretsLocked === true || root.__alloStudentAiDisabled === true || root.__alloQrStudentMode === true || root._alloQrBlocked === true) return false;
+        if (root.ALLOFLOW_MANAGED_AI_POLICY && root.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return false;
+        if (typeof root.__alloAiUsable === 'function') {
+          try { if (!root.__alloAiUsable('text', deps.callText)) return false; } catch (_) { return false; }
+        }
+      }
+      return true;
+    };
     const actor = state => String(state.actorKey ?? 'teacher');
     const report = (id, patch) => deps.onStatus?.({ planId: String(id), busy: false, stage: '', error: '', ...patch });
     const errorText = error => error?.name === 'AbortError' ? 'Script generation cancelled.' : (error?.message || 'The teaching script could not be created. Please try again.');
@@ -166,36 +202,44 @@
     function readRecovery(planId, settings) {
       const state = deps.getState(), id = String(planId), key = keyFor(actor(state), id), entry = checkpoints.get(key);
       if (disposed || !allowed(state) || !entry) return null;
+      const coreMod = core();
+      if (!coreMod || typeof coreMod.captureInputs !== 'function' || typeof coreMod.validateInputs !== 'function') return null;
+      const plan = canonicalPlan(state, id);
+      if (!plan) { checkpoints.delete(key); persist(key); return null; }
+      let snapshot;
+      let materials;
       try {
         if (Date.now() < entry.updatedAt || Date.now() - entry.updatedAt > MAX_AGE || !['research', 'generating', 'chunking', 'ready'].includes(entry.stage) || !Array.isArray(entry.steps) || entry.steps.length > 8 || !entry.infer || typeof entry.infer.subject !== 'boolean' || typeof entry.infer.topic !== 'boolean') throw new Error('Invalid checkpoint');
-        const plan = canonicalPlan(state, id);
-        if (!plan) throw new Error('Missing plan');
-        const materials = selected(plan, state, entry.materialIds);
-        const snapshot = core().captureInputs(plan, entry.settings, materials);
-        if (snapshot.fingerprint !== entry.fingerprint || !core().validateInputs(snapshot).ok || requestSignature(snapshot, entry.infer, entry.materialIds) !== entry.requestSignature) throw new Error('Changed inputs');
-        const chunks = core().scriptChunks(snapshot);
+        materials = selected(plan, state, entry.materialIds);
+        snapshot = coreMod.captureInputs(plan, entry.settings, materials);
+        if (snapshot.fingerprint !== entry.fingerprint || !coreMod.validateInputs(snapshot).ok || requestSignature(snapshot, entry.infer, entry.materialIds) !== entry.requestSignature) throw new Error('Changed inputs');
+        const chunks = coreMod.scriptChunks(snapshot);
         if (entry.totalChunks !== chunks.length || entry.steps.length > chunks.length || (entry.stage !== 'chunking' && entry.steps.length)) throw new Error('Invalid chunks');
         if (entry.stage !== 'research') {
           if ((snapshot.settings.researchEnabled && entry.evidence?.status !== 'retrieved') || (!snapshot.settings.researchEnabled && entry.evidence?.status !== 'disabled')) throw new Error('Invalid research');
-          core().buildScriptPrompt(snapshot, entry.evidence); // validates stored source and recommendation records
+          coreMod.buildScriptPrompt(snapshot, entry.evidence); // validates stored source and recommendation records
           entry.steps = entry.steps.map((step, index) => {
-            const part = core().normalizeScriptChunk({ step }, snapshot, entry.evidence, chunks[index], entry.evidence.status === 'retrieved' && index === 0);
+            const part = coreMod.normalizeScriptChunk({ step }, snapshot, entry.evidence, chunks[index], entry.evidence.status === 'retrieved' && index === 0);
             if (!part.ok || JSON.stringify(part.step) !== JSON.stringify(step)) throw new Error('Invalid saved step');
             return part.step;
           });
         } else if (entry.evidence != null || entry.steps.length) throw new Error('Unexpected research data');
         if (entry.stage === 'ready') validatedCompleteVersion(entry, snapshot);
         else if (entry.completeVersion != null) throw new Error('Unexpected completed script');
-        // A render-time settings probe must not discard valid progress. Teachers
-        // can compare settings and return to the original request before retrying.
-        if (settings) {
-          const infer = { subject: settings.inferContext?.subject === true, topic: settings.inferContext?.topic === true };
-          if (requestSignature(core().captureInputs(plan, settings, materials), infer, array(settings.materialIds).map(String)) !== entry.requestSignature) return null;
-        }
-        return { entry, snapshot };
       } catch (_) {
-        checkpoints.delete(key); persist(); return null;
+        checkpoints.delete(key); persist(key); return null;
       }
+      // A render-time settings probe must not discard valid progress. Teachers
+      // can compare settings and return to the original request before retrying.
+      if (settings) {
+        try {
+          const infer = { subject: settings.inferContext?.subject === true, topic: settings.inferContext?.topic === true };
+          if (requestSignature(coreMod.captureInputs(plan, settings, materials), infer, array(settings.materialIds).map(String)) !== entry.requestSignature) return null;
+        } catch (_) {
+          return null;
+        }
+      }
+      return { entry, snapshot };
     }
     function getRecovery(planId, settings) { return summary(readRecovery(planId, settings)?.entry); }
     function discardRecovery(planId) {
@@ -290,18 +334,18 @@
         if (!validation.ok) throw new Error(validation.errors.join(' '));
         const requestKey = requestSignature(snapshot, inferContext, materialIds);
         const recovered = readRecovery(id, settings);
-        if (!initial.canGenerate && recovered?.entry.stage !== 'ready') throw new Error('Connect an AI text provider in Settings before generating a script.');
+        if (!aiAllowed(initial) && recovered?.entry.stage !== 'ready') throw new Error('Connect an AI text provider in Settings before generating a script.');
         let checkpoint = recovered?.entry;
         if (recovered) snapshot = recovered.snapshot;
         const checkpointKey = keyFor(run.actor, id);
-        if (!recovered) { checkpoints.delete(checkpointKey); persist(); }
+        if (!recovered) { checkpoints.delete(checkpointKey); persist(checkpointKey); }
         const saveProgress = patch => {
           assertInputs();
           const next = { schema: 1, actor: run.actor, planId: id, requestSignature: requestKey, infer: inferContext, materialIds, settings: snapshot.settings, fingerprint: snapshot.fingerprint, totalChunks: core().scriptChunks(snapshot).length, steps: [], evidence: null, ...checkpoint, ...patch, updatedAt: Date.now() };
           checkpoint = copy(next);
           // Oversized drafts remain resumable in this controller; persistence
           // drops that entry instead of retaining an older, incomplete checkpoint.
-          checkpoints.set(checkpointKey, checkpoint); persist();
+          checkpoints.set(checkpointKey, checkpoint); persist(checkpointKey);
         };
         // Both context and script requests share format recovery; access, billing,
         // network and cancellation failures remain terminal and keep their original message.
@@ -309,9 +353,11 @@
           const current = ensureCurrent(), currentPlan = canonicalPlan(current, id);
           if (!currentPlan) throw new Error('This plan was removed before the script finished.');
           if (core().captureInputs(currentPlan, snapshot.settings, selected(currentPlan, current, materialIds)).fingerprint !== snapshot.fingerprint) throw new Error('The plan or selected materials changed during generation. Generate again to use the updated content.');
+          return current;
         };
         const request = async nextPrompt => {
-          assertInputs();
+          const current = assertInputs();
+          if (!aiAllowed(current)) throw new Error('AI text generation is disabled or locked right now.');
           try {
             const response = await waitForRun(deps.callText(nextPrompt, run.controller.signal), run.controller.signal);
             assertInputs();
@@ -410,7 +456,7 @@
           return core().appendVersion(previous, result.version);
         });
         if (!accepted) throw new Error('The script could not be added to this plan. Reopen the plan and try again.');
-        checkpoints.delete(checkpointKey); persist();
+        checkpoints.delete(checkpointKey); persist(checkpointKey);
         report(id, { stage: 'added', recovery: null });
         return { ok: true, version: result.version };
       } catch (error) {
@@ -428,7 +474,7 @@
       const run = { controller: new AbortController(), actor: actor(initial) };
       runs.set(id, run);
       try {
-        if (!initial.canGenerate) throw new Error('Connect an AI text provider in Settings before regenerating a step.');
+        if (!aiAllowed(initial)) throw new Error('Connect an AI text provider in Settings before regenerating a step.');
         if (['captureInputs', 'buildStepRegenerationPrompt', 'normalizeRegeneratedStep', 'buildScriptRepairPrompt'].some(name => typeof core()?.[name] !== 'function')) throw new Error('The teaching-script tools have not finished loading or are out of date. Reload the app, then try again.');
         const plan = canonicalPlan(initial, id), versions = array(plan?.data?.teachingScripts).filter(version => version?.id === versionId);
         if (!plan || versions.length !== 1) throw new Error('Open the saved script version before regenerating a step.');
@@ -450,9 +496,11 @@
           const currentPlan = canonicalPlan(state, id), matches = array(currentPlan?.data?.teachingScripts).filter(item => item?.id === versionId);
           if (!currentPlan || matches.length !== 1 || JSON.stringify(matches[0]) !== versionSignature || JSON.stringify(matches[0].steps) !== JSON.stringify(expected)) throw new Error('This script changed or was removed while the step was being regenerated. Keep your draft and reopen the latest version.');
           if (core().captureInputs(currentPlan, version.inputSnapshot.settings, selected(currentPlan, state, materialIds)).fingerprint !== snapshot.fingerprint) throw new Error('The plan or original teaching materials changed while the step was being regenerated. Generate a new script to use the updated content.');
+          return state;
         };
         const request = async prompt => {
-          assertCurrent();
+          const state = assertCurrent();
+          if (!aiAllowed(state)) throw new Error('AI text generation is disabled or locked right now.');
           try {
             const raw = await waitForRun(deps.callText(prompt, run.controller.signal), run.controller.signal);
             assertCurrent(); return raw;

@@ -183,7 +183,7 @@ var AlloNarrationText = (() => {
       if (t === "mover" && ch.length >= 2) {
         const b = cleanSp(walkMath(ch[0]));
         const o = cleanSp(walkMath(ch[1]));
-        if (b && OVER_ACCENT[o]) return OVER_ACCENT[o] + "(" + b + ")";
+        if (b && Object.prototype.hasOwnProperty.call(OVER_ACCENT, o)) return OVER_ACCENT[o] + "(" + b + ")";
         return b && o ? mathBase(b) + "^" + mathScript(o) : b || o;
       }
       if (t === "mtable") {
@@ -296,27 +296,13 @@ var AlloNarrationText = (() => {
         if (options.languageRuns) preambleRuns = [..._narrationTextRuns(_note, options.language), { text: ". ", language: _narrationLanguageOf(_note, options.language) }];
       }
     }
-    if (options.languageRuns) {
-      _narrationPrepareDocument(doc, options);
-      root.querySelectorAll("[data-allo-translation-note], [data-allo-plain-note], details.allo-chart-data > summary, details.allo-image-desc > summary").forEach((el) => el.remove());
-      root.querySelectorAll("p,h1,h2,h3,h4,h5,h6,li,blockquote,dd,dt,tr,caption,figcaption,summary,.alloflow-cs-strip,.alloflow-tl-strip").forEach((el) => el.appendChild(doc.createTextNode(". ")));
-      return _narrationMergeRuns([...preambleRuns, ..._narrationTextRuns(root, options.language)], true);
+    _narrationPrepareDocument(doc, options);
+    root.querySelectorAll("[data-allo-translation-note], [data-allo-plain-note], details.allo-chart-data > summary, details.allo-image-desc > summary").forEach((el) => el.remove());
+    if (!options.languageRuns) {
+      root.querySelectorAll("details em, figcaption em").forEach((el) => {
+        if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || "")) el.remove();
+      });
     }
-    _alloDedupeVennActivityDom(root);
-    _alloReplaceFormControlsForText(doc, root, " blank ", true, !options.languageRuns);
-    root.querySelectorAll("button.alloflow-inline-term").forEach((btn) => {
-      const span = doc.createElement("span");
-      if (btn.lang) span.lang = btn.lang;
-      span.textContent = btn.textContent || "";
-      btn.replaceWith(span);
-    });
-    root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], [data-allo-footnote-backlink], details.allo-math-source, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], script, style, button, input, select, textarea, del[data-allo-change-id],[data-allo-change-kind="structure-delete"], ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
-    _replaceAccessibleMathAndSvgForSpeech(root, { doc, includeTeacherOnly: !!options.includeTeacherOnly, preserveLanguageNodes: false });
-    root.querySelectorAll("details.allo-chart-data > summary, details.allo-image-desc > summary").forEach((el) => el.remove());
-    root.querySelectorAll("details em, figcaption em").forEach((el) => {
-      if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || "")) el.remove();
-    });
-    root.querySelectorAll("annotation, annotation-xml, [data-allo-latex-src]").forEach((el) => el.remove());
     const imageText = (node, caption, alt) => {
       if (!options.languageRuns) return doc.createTextNode((caption ? caption.textContent.trim() : alt) ? "Image: " + (caption ? caption.textContent.trim() : alt) + ". " : "");
       const span = doc.createElement("span");
@@ -341,8 +327,14 @@ var AlloNarrationText = (() => {
         const role = img.getAttribute("role");
         const isPres = role === "presentation" || role === "none" || img.getAttribute("aria-hidden") === "true";
         const capText = cap ? cap.textContent.trim() : "";
+        if (options.languageRuns) {
+          if (capText && alt && alt.replace(/\s+/g, " ").toLowerCase() === capText.replace(/\s+/g, " ").toLowerCase()) {
+            img.remove();
+          }
+          return;
+        }
         const say = capText || (isPres ? "" : alt);
-        const replacement = options.languageRuns ? imageText(img, capText ? cap : null, say) : doc.createTextNode(say ? "Image: " + say + ". " : "");
+        const replacement = doc.createTextNode(say ? "Image: " + say + ". " : "");
         if (cap) cap.remove();
         img.replaceWith(replacement);
       }
@@ -353,7 +345,7 @@ var AlloNarrationText = (() => {
       const alt = isPres ? "" : (img.getAttribute("alt") || "").trim();
       img.replaceWith(options.languageRuns ? imageText(img, null, alt) : doc.createTextNode(alt ? "Image: " + alt + ". " : ""));
     });
-    root.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption, .alloflow-cs-strip, .alloflow-tl-strip").forEach((el) => {
+    root.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption, summary, .alloflow-cs-strip, .alloflow-tl-strip").forEach((el) => {
       el.appendChild(doc.createTextNode(". "));
     });
     if (options.languageRuns) return _narrationMergeRuns([...preambleRuns, ..._narrationTextRuns(root, options.language)], true);
@@ -429,16 +421,29 @@ var AlloNarrationText = (() => {
   function _srStyleTextFromHtml(html, spokenLabels, narrationOptions) {
     const options = narrationOptions || {};
     const say = (node, key, fallback, n) => {
-      const local = options.languageRuns ? options.labelsByLanguage?.[_narrationLanguageOf(node, options.language).split("-")[0]] : spokenLabels;
+      const primary = _narrationLanguageOf(node, options.language).split("-")[0].toLowerCase();
+      const local = options.languageRuns ? options.labelsByLanguage?.[primary] : spokenLabels;
       const phrase = local && (Number(n) === 1 && local[key + "One"] || local[key]);
       return phrase ? phrase.replace(/\{n\}/g, String(n)) : fallback;
     };
     const doc = new DOMParser().parseFromString(html || "", "text/html");
     _narrationPrepareDocument(doc, options);
-    const readable = (node) => options.languageRuns ? _narrationTextRuns(node, options.language).some((run) => run.text.trim()) : !!(node.textContent || "").trim();
+    const inlineText = (node) => {
+      if (!node) return "";
+      if (node.nodeType === 3) return node.textContent || "";
+      if (node.nodeType !== 1) return "";
+      if (node.tagName.toLowerCase() === "img") {
+        const role = node.getAttribute("role");
+        if (role === "presentation" || role === "none" || node.getAttribute("aria-hidden") === "true") return "";
+        const alt = (node.getAttribute("alt") || "").trim();
+        return alt ? " " + alt + " " : "";
+      }
+      return Array.from(node.childNodes).map(inlineText).join("");
+    };
+    const readable = (node) => options.languageRuns ? _narrationTextRuns(node, options.language).some((run) => run.text.trim()) : !!inlineText(node).trim();
     const out = [], runs = [];
     const add = (node, ...parts) => {
-      out.push(parts.map((part) => typeof part === "string" ? part : (part.textContent || "").trim()).join(""));
+      out.push(parts.map((part) => typeof part === "string" ? part : inlineText(part).replace(/\s+/g, " ").trim()).join(""));
       if (options.languageRuns) {
         if (runs.length) runs.push({ text: "\n\n", language: _narrationLanguageOf(node, options.language) });
         for (const part of parts) runs.push(...typeof part === "string" ? [{ text: part, language: _narrationLanguageOf(node, options.language) }] : _narrationTextRuns(part, options.language));
@@ -447,7 +452,7 @@ var AlloNarrationText = (() => {
     const walk = (el) => {
       for (const node of Array.from(el.childNodes)) {
         if (node.nodeType !== 1) {
-          if (options.languageRuns && node.nodeType === 3 && node.textContent.trim()) add(el, node);
+          if (node.nodeType === 3 && node.textContent.trim()) add(el, node);
           continue;
         }
         const tag = node.tagName.toLowerCase(), txt = readable(node);

@@ -668,8 +668,8 @@ describe('Track 4 Pass 8 security, FERPA, and supply-chain hardening (2026-11-19
   it('binds Remote MCP OAuth callback to browser cookie, adds DNS-rebinding Host checks, Dockerignore, Nginx case-insensitive denylists, and verify.yml --ignore-scripts (F-142, F-145)', () => {
     const authTs = readRepo('services/alloflow-remote-mcp/src/access-auth.ts');
     expect(authTs).toContain('browserBindHash: string;');
-    expect(authTs).toContain('alloflow_oauth_state=');
-    expect(authTs).toContain('cookieValue(request, "alloflow_oauth_state")');
+    expect(authTs).toContain('__Host-alloflow_oauth_state=');
+    expect(authTs).toContain('cookieValue(request, "__Host-alloflow_oauth_state")');
     expect(authTs).toContain('constantTimeEqual(await sha256Base64Url(browserBind), stored.browserBindHash)');
 
     expect(readRepo('docker/edge-tts-server/server.py')).toContain('def is_allowed_host(host_header):');

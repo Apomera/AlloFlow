@@ -1,6 +1,8 @@
 const SEMANTIC_ID_ATTRIBUTE = 'data-allo-semantic-id';
 const EVIDENCE_INVALIDATION_REASON = 'content-modified-pending-reverification';
 const MAX_TREE_NODES = 5000;
+const MAX_HTML_CHARS = 5 * 1024 * 1024;
+const _semHasOwn = Object.prototype.hasOwnProperty;
 
 // Keep this map aligned with doc_pipeline_source.jsx. The Review Studio uses
 // the same HTML semantics from which the tagged-PDF structure tree is built.
@@ -18,9 +20,10 @@ const SEMANTIC_SELECTOR = Object.keys(TAG_TO_PDF_ROLE).join(',');
 const RETAG_TARGETS = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote']);
 const ID_PATTERN = /^sem-[a-z0-9][a-z0-9_-]{2,79}$/i;
 const LANGUAGE_PATTERN = /^[a-z]{2,8}(?:-[a-z0-9]{1,8})*$/i;
+const DOCTYPE_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_-]{0,30}$/;
 
 function parseHtml(html) {
-  if (typeof html !== 'string') return null;
+  if (typeof html !== 'string' || html.length > MAX_HTML_CHARS) return null;
   try {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     return doc && doc.documentElement && doc.body ? doc : null;
@@ -31,12 +34,13 @@ function parseHtml(html) {
 
 function serializeDocument(doc) {
   if (!doc || !doc.documentElement) return '';
-  const name = doc.doctype && doc.doctype.name ? doc.doctype.name : 'html';
+  const rawName = doc.doctype && typeof doc.doctype.name === 'string' ? doc.doctype.name : '';
+  const name = DOCTYPE_NAME_PATTERN.test(rawName) ? rawName : 'html';
   return '<!DOCTYPE ' + name + '>\n' + doc.documentElement.outerHTML;
 }
 
 function normalizedText(value, maxLength) {
-  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, maxLength || 120);
+  return String(value || '').replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLength || 120);
 }
 
 function fnv1a(value) {
@@ -197,7 +201,7 @@ function buildSemanticTree(html) {
     const headingMatch = /^h([1-6])$/.exec(tag);
     const node = {
       id: element.getAttribute(SEMANTIC_ID_ATTRIBUTE),
-      role: TAG_TO_PDF_ROLE[tag] || 'P',
+      role: _semHasOwn.call(TAG_TO_PDF_ROLE, tag) ? TAG_TO_PDF_ROLE[tag] : 'P',
       tag,
       text: nodeText(element),
       warnings: nodeWarnings(element, previousHeadingLevel),
@@ -235,7 +239,10 @@ function findSemanticNode(doc, nodeId) {
 
 function replaceTag(element, doc, newTag) {
   const replacement = doc.createElement(newTag);
-  Array.from(element.attributes).forEach((attribute) => replacement.setAttribute(attribute.name, attribute.value));
+  Array.from(element.attributes).forEach((attribute) => {
+    if (/^on[a-z]/i.test(attribute.name)) return;
+    replacement.setAttribute(attribute.name, attribute.value);
+  });
   while (element.firstChild) replacement.appendChild(element.firstChild);
   element.replaceWith(replacement);
   return replacement;
@@ -330,7 +337,7 @@ function applySemanticCommand(html, command) {
   } else if (type === 'set-table-headers') {
     if (target.tagName.toLowerCase() !== 'table') return commandFailure(before, command, 'target-is-not-a-table', targetId);
     const aliases = { firstRowHeader: 'first-row', firstColHeader: 'first-column' };
-    const mode = aliases[command.mode] || command.mode;
+    const mode = (typeof command.mode === 'string' && _semHasOwn.call(aliases, command.mode)) ? aliases[command.mode] : command.mode;
     if (!['first-row', 'first-column', 'both'].includes(mode)) return commandFailure(before, command, 'invalid-table-header-mode', targetId);
     applyTableHeaders(doc, target, mode);
     summary = 'Applied ' + mode + ' headers to ' + targetId;
@@ -344,7 +351,7 @@ function applySemanticCommand(html, command) {
     type,
     targetId,
     summary,
-    details: Object.fromEntries(Object.entries(command).filter(([key]) => key !== 'type' && key !== 'nodeId')),
+    details: Object.fromEntries(Object.entries(command).filter(([key]) => key !== 'type' && key !== 'nodeId' && key !== '__proto__' && key !== 'constructor' && key !== 'prototype')),
   };
   return {
     ok: true,

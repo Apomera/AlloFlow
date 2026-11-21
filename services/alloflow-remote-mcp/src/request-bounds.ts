@@ -51,6 +51,37 @@ export async function boundProtocolRequest(
   });
 }
 
+export function exactLengthBodyStream(
+  body: ReadableStream<Uint8Array>,
+  expectedBytes: number,
+  tooLargeError: Error,
+  lengthMismatchError: Error,
+): ReadableStream<Uint8Array> {
+  let received = 0;
+  const limiter = new TransformStream<Uint8Array, Uint8Array>({
+    transform(chunk, controller) {
+      received += chunk.byteLength;
+      if (received > expectedBytes) {
+        controller.error(tooLargeError);
+        return;
+      }
+      controller.enqueue(chunk);
+    },
+    flush(controller) {
+      if (received !== expectedBytes) {
+        controller.error(lengthMismatchError);
+      }
+    },
+  });
+  const bounded = body.pipeThrough(limiter);
+  if (typeof FixedLengthStream === "function") {
+    const fixed = new FixedLengthStream(expectedBytes);
+    bounded.pipeTo(fixed.writable).catch(() => undefined);
+    return fixed.readable;
+  }
+  return bounded;
+}
+
 export const protocolRequestLimits = Object.freeze({
   mcp: MCP_REQUEST_MAX_BYTES,
   oauth: OAUTH_REQUEST_MAX_BYTES,

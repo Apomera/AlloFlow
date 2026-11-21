@@ -20,7 +20,22 @@
     memory: Object.freeze({ image: 'visualImage', alt: 'visualAlt', source: 'visualAltSource' }),
     challenge: Object.freeze({ image: 'image', alt: 'alt' })
   });
+  var hasOwn = Object.prototype.hasOwnProperty;
   function object(v) { return v && typeof v === 'object' && !Array.isArray(v); }
+  function safeCloneWith(src, extra) {
+    var out = {};
+    if (object(src)) {
+      Object.keys(src).forEach(function (k) {
+        if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') out[k] = src[k];
+      });
+    }
+    if (object(extra)) {
+      Object.keys(extra).forEach(function (k) {
+        if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') out[k] = extra[k];
+      });
+    }
+    return out;
+  }
   function issue(code, path, message) { return { code: code, path: path.slice(0, 600), message: message.slice(0, 2000) }; }
   function appendIssue(items, entry) {
     if (items.length < MAX_DIAGNOSTICS - 1) items.push(entry);
@@ -33,7 +48,7 @@
   function limits(options) {
     var out = {};
     Object.keys(LIMITS).forEach(function (key) {
-      var n = options && options[key];
+      var n = object(options) && hasOwn.call(options, key) ? options[key] : undefined;
       out[key] = Number.isInteger(n) && n > 0 ? Math.min(n, LIMITS[key]) : LIMITS[key];
     });
     return out;
@@ -248,12 +263,13 @@
       var tag = b[p++];
       if (tag === 59) { ended = true; if (p !== b.length) invalid('GIF has trailing data.'); break; }
       if (tag === 33) {
+        if (p >= b.length) invalid('GIF extension is truncated.');
         var extension = b[p++];
         if (extension === 249) {
           if (p + 6 > b.length || b[p] !== 4 || b[p + 5] !== 0 || (b[p + 1] & 224)) invalid('GIF graphic control block is invalid.');
           p += 6;
         } else if (extension === 255 || extension === 254) {
-          if (extension === 255 && b[p] !== 11) invalid('GIF application header is invalid.');
+          if (extension === 255 && (p >= b.length || b[p] !== 11)) invalid('GIF application header is invalid.');
           subblocks();
         } else invalid('GIF contains an unsupported extension.');
       } else if (tag === 44) {
@@ -279,9 +295,9 @@
     }
     var native = options && options.profile === 'native';
     function add(owner, kind, index, resource, resourceIndex, path, extra) {
-      var fields = extra && extra.fields || IMAGE_FIELDS[kind];
+      var fields = (extra && extra.fields) || (hasOwn.call(IMAGE_FIELDS, kind) ? IMAGE_FIELDS[kind] : null);
       if (stopAfter !== undefined && slots.length >= stopAfter) return;
-      if (!object(owner) || owner[fields.image] === undefined || owner[fields.image] === null || owner[fields.image] === '') return;
+      if (!fields || !object(owner) || !hasOwn.call(owner, fields.image) || owner[fields.image] === undefined || owner[fields.image] === null || owner[fields.image] === '') return;
       slots.push(Object.assign({ kind: kind, index: index, resourceIndex: resourceIndex, resourceId: resource.id, path: path + '.' + fields.image, owner: owner, fields: fields }, extra));
     }
     eachSlot((pack && Array.isArray(pack.history) ? pack.history : []), function (resource, ri) {
@@ -296,7 +312,7 @@
         if (object(data.originalImage)) add(data.originalImage, 'single', 0, resource, ri, base + '.originalImage');
         if (object(data.visualPlan) && Array.isArray(data.visualPlan.panels)) eachSlot(data.visualPlan.panels, function (row, i) {
           var panelPath = base + '.visualPlan.panels[' + i + ']';
-          var override = native && object(data.annotations) && object(data.annotations.imageOverrides) && data.annotations.imageOverrides[i];
+          var override = native && object(data.annotations) && object(data.annotations.imageOverrides) && hasOwn.call(data.annotations.imageOverrides, i) ? data.annotations.imageOverrides[i] : undefined;
           var frames = native && object(row) && Array.isArray(row.frames) ? row.frames : [];
           var described = override || (frames.length > 1 ? frames[0] : row && row.imageUrl);
           add(row, 'panel', i, resource, ri, panelPath, native ? { describedImage: described, skipDescription: !!override } : undefined);
@@ -305,7 +321,7 @@
             eachSlot(frames, function (frame, fi) {
               add({ imageUrl: frame }, 'frame', fi, resource, ri, panelPath, { fields: IMAGE_FIELDS.panel, path: panelPath + '.frames[' + fi + ']', panelIndex: i, skipDescription: true, stillOnly: true });
             });
-            if (override) add(Object.assign({}, row, { imageUrl: override }), 'override', i, resource, ri, base, { fields: IMAGE_FIELDS.panel, path: base + '.annotations.imageOverrides.' + i, descriptionPath: panelPath + '.', stillOnly: true });
+            if (override) add(safeCloneWith(row, { imageUrl: override }), 'override', i, resource, ri, base, { fields: IMAGE_FIELDS.panel, path: base + '.annotations.imageOverrides.' + i, descriptionPath: panelPath + '.', stillOnly: true });
           }
         });
       }
@@ -319,7 +335,7 @@
         // These renderers use the adjacent name/title as their accessible text,
         // rather than the image-view alt metadata contract.
         function named(owner, key, label, kind, index, path, decorative) {
-          if (!object(owner) || !owner[key]) return;
+          if (!object(owner) || !hasOwn.call(owner, key) || !owner[key]) return;
           var synthetic = { imageUrl: owner[key], altText: label || '', decorative: decorative === true };
           add(synthetic, kind, index, resource, ri, path, { fields: IMAGE_FIELDS.single, path: path + '.' + key, rendererDescription: true });
         }
@@ -449,7 +465,9 @@
       return { ok: false, errors: errors, warnings: warnings, stats: stats };
     }
     // Illustrated packs share the memory/challenge review-flag checks, not the image-view annotation contract.
-    errors = errors.concat(validateNativeImageState(pack, native ? cap : Object.assign({}, cap, { reviewStateOnly: true })).errors);
+    validateNativeImageState(pack, native ? cap : Object.assign({}, cap, { reviewStateOnly: true })).errors.forEach(function (e) {
+      appendIssue(errors, e);
+    });
     eachValidation(slots.slice(0, cap.maxPlacements), errors, function (slot) {
       paths.add(slot.path);
       var owner = slot.owner, f = slot.fields, value = owner[f.image], report = cache.get(value);

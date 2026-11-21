@@ -65,6 +65,14 @@ function normHex(v) {
   if (h && h[0] !== '#') h = '#' + h;
   return h;
 }
+function toPickerHex(v) {
+  const h = normHex(v);
+  if (/^#[0-9a-fA-F]{6}$/.test(h)) return h;
+  if (/^#[0-9a-fA-F]{3}$/.test(h)) {
+    return '#' + h[1] + h[1] + h[2] + h[2] + h[3] + h[3];
+  }
+  return '#000000';
+}
 function BrandProfileEditor(props) {
   const onClose = props.onClose || function () {};
   const t = function (k, d) {
@@ -355,10 +363,13 @@ function BrandProfileEditor(props) {
     }
   }, [api, draft]);
   function setColor(key, value) {
+    const raw = String(value == null ? '' : value);
+    const trimmed = raw.trim();
+    const next = trimmed && trimmed[0] !== '#' ? '#' + trimmed : raw;
     setDraft(function (d) {
       return Object.assign({}, d, {
         colors: Object.assign({}, d.colors, {
-          [key]: value
+          [key]: next
         })
       });
     });
@@ -385,9 +396,11 @@ function BrandProfileEditor(props) {
     });
   }
   function editProfile(p) {
+    setArmRemoveLogo(false);
     setDraft(JSON.parse(JSON.stringify(p)));
   }
   function newProfile() {
+    setArmRemoveLogo(false);
     setDraft(blankDraft());
   }
   function autoFix() {
@@ -440,9 +453,25 @@ function BrandProfileEditor(props) {
       name: name || t('brand.unnamed', 'unnamed profile')
     });
   }
+  const mountedRef = React.useRef(true);
+  const deleteFocusTimerRef = React.useRef(null);
+  const [armRemoveLogo, setArmRemoveLogo] = React.useState(false);
+  React.useEffect(function () {
+    mountedRef.current = true;
+    return function () {
+      mountedRef.current = false;
+      if (deleteFocusTimerRef.current) {
+        window.clearTimeout(deleteFocusTimerRef.current);
+        deleteFocusTimerRef.current = null;
+      }
+    };
+  }, []);
   function closeDeleteDialog() {
     setDeleteRequest(null);
-    window.setTimeout(function () {
+    if (deleteFocusTimerRef.current) window.clearTimeout(deleteFocusTimerRef.current);
+    deleteFocusTimerRef.current = window.setTimeout(function () {
+      deleteFocusTimerRef.current = null;
+      if (!mountedRef.current) return;
       const trigger = deleteTriggerRef.current;
       if (trigger && trigger.isConnected && typeof trigger.focus === 'function') trigger.focus();else if (closeButtonRef.current) closeButtonRef.current.focus();
     }, 0);
@@ -493,6 +522,7 @@ function BrandProfileEditor(props) {
     }
     const reader = new FileReader();
     reader.onload = function () {
+      if (!mountedRef.current) return;
       const res = api.importBrandProfile(String(reader.result || ''));
       if (res.ok) {
         addToast(t('brand.imported', 'Brand profile imported'), 'success');
@@ -502,6 +532,9 @@ function BrandProfileEditor(props) {
       } else {
         addToast(res.errors && res.errors[0] || t('brand.import_failed', 'Import failed'), 'error');
       }
+    };
+    reader.onerror = function () {
+      if (mountedRef.current) addToast(t('brand.import_failed', 'Import failed'), 'error');
     };
     reader.readAsText(file);
     e.target.value = '';
@@ -527,11 +560,13 @@ function BrandProfileEditor(props) {
     }
     const reader = new FileReader();
     reader.onload = function () {
+      if (!mountedRef.current) return;
       const safeSrc = safeRasterLogoSrc(String(reader.result || ''));
       if (!safeSrc) {
         addToast(t('brand.logo_raster_only', 'Please choose a PNG, JPEG, WebP, or GIF image'), 'error');
         return;
       }
+      setArmRemoveLogo(false);
       setDraft(function (d) {
         return Object.assign({}, d, {
           logo: {
@@ -542,6 +577,9 @@ function BrandProfileEditor(props) {
           }
         });
       });
+    };
+    reader.onerror = function () {
+      if (mountedRef.current) addToast(t('brand.logo_read_failed', 'Could not read logo file'), 'error');
     };
     reader.readAsDataURL(file);
     e.target.value = '';
@@ -644,30 +682,42 @@ function BrandProfileEditor(props) {
         editProfile(p);
       },
       "aria-pressed": isEditing,
+      style: {
+        minHeight: '44px'
+      },
       className: "text-left text-sm font-semibold text-slate-800 truncate flex-1 min-h-6",
       title: p.name
     }, p.name || '(unnamed)'), isActive && /*#__PURE__*/React.createElement("span", {
-      className: "text-[10px] font-bold uppercase text-green-700 bg-green-100 px-1.5 py-0.5 rounded"
+      className: "text-xs font-bold uppercase text-green-700 bg-green-100 px-1.5 py-0.5 rounded"
     }, t('brand.active', 'Active'))), /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-2 mt-1"
+      className: "flex flex-wrap items-center gap-2 mt-1"
     }, !isActive && /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: function () {
         makeActive(p.id);
       },
-      className: "inline-flex min-h-6 items-center text-[11px] text-blue-700 hover:underline"
+      style: {
+        minHeight: '44px'
+      },
+      className: "inline-flex min-h-6 items-center text-xs text-blue-700 hover:underline"
     }, t('brand.use', 'Set active')), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: function () {
         exportProfile(p.id);
       },
-      className: "inline-flex min-h-6 items-center text-[11px] text-slate-600 hover:underline"
+      style: {
+        minHeight: '44px'
+      },
+      className: "inline-flex min-h-6 items-center text-xs text-slate-600 hover:underline"
     }, t('brand.export', 'Export')), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: function (event) {
         requestRemove(event, p.id, p.name);
       },
-      className: "inline-flex min-h-6 items-center text-[11px] text-red-700 hover:underline"
+      style: {
+        minHeight: '44px'
+      },
+      className: "inline-flex min-h-6 items-center text-xs text-red-700 hover:underline"
     }, t('brand.delete', 'Delete'))));
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-5 min-w-0"
@@ -699,15 +749,15 @@ function BrandProfileEditor(props) {
     }, /*#__PURE__*/React.createElement("input", {
       type: "color",
       "aria-label": f.label,
-      value: valid ? val.length === 4 ? val : val.slice(0, 7) : '#000000',
+      value: valid ? toPickerHex(val) : '#000000',
       onChange: function (e) {
         setColor(f.key, e.target.value);
       },
-      className: "w-8 h-8 rounded border border-slate-300 shrink-0 cursor-pointer"
+      className: "w-11 h-11 rounded border border-slate-300 shrink-0 cursor-pointer"
     }), /*#__PURE__*/React.createElement("div", {
       className: "flex-1 min-w-0"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] text-slate-600 truncate"
+      className: "text-xs text-slate-600 truncate"
     }, f.label), /*#__PURE__*/React.createElement("input", {
       value: val,
       "aria-label": f.label + ' hex value',
@@ -716,7 +766,7 @@ function BrandProfileEditor(props) {
       onChange: function (e) {
         setColor(f.key, e.target.value);
       },
-      className: 'w-full px-1.5 py-0.5 border rounded text-xs font-mono ' + (valid ? 'border-slate-300 text-slate-800' : 'border-red-400 text-red-700')
+      className: 'w-full min-h-11 px-2 py-1 border rounded text-xs font-mono ' + (valid ? 'border-slate-300 text-slate-800' : 'border-red-400 text-red-700')
     })));
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -771,9 +821,16 @@ function BrandProfileEditor(props) {
     className: "min-h-11 px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-medium hover:bg-slate-100"
   }, draft.logo && safeRasterLogoSrc(draft.logo.src) ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')), draft.logo && safeRasterLogoSrc(draft.logo.src) && /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: removeLogo,
-    className: "min-h-11 px-3 py-1.5 rounded-lg text-red-800 text-xs font-medium hover:bg-red-50"
-  }, t('brand.logo_remove', 'Remove')), /*#__PURE__*/React.createElement("input", {
+    onClick: function () {
+      if (!armRemoveLogo) {
+        setArmRemoveLogo(true);
+        return;
+      }
+      setArmRemoveLogo(false);
+      removeLogo();
+    },
+    className: 'min-h-11 px-3 py-1.5 rounded-lg text-xs font-medium ' + (armRemoveLogo ? 'bg-red-700 text-white' : 'text-red-800 hover:bg-red-50')
+  }, armRemoveLogo ? t('brand.logo_remove_confirm', 'Tap again to remove') : t('brand.logo_remove', 'Remove')), /*#__PURE__*/React.createElement("input", {
     ref: fileInputRef,
     "aria-label": t('brand.logo_file', 'Upload logo image file'),
     type: "file",
@@ -804,9 +861,10 @@ function BrandProfileEditor(props) {
     placeholder: t('brand.header_ph', 'Header text (e.g. school name)'),
     className: "mt-1 w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
   }), /*#__PURE__*/React.createElement("label", {
-    className: "flex items-center gap-2 mt-1 text-xs text-slate-600"
+    className: "min-h-11 flex items-center gap-2 mt-1 text-xs text-slate-600 cursor-pointer"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
+    className: "w-4 h-4",
     checked: !!draft.header.showLogo,
     onChange: function (e) {
       setHeader({
@@ -827,9 +885,10 @@ function BrandProfileEditor(props) {
     placeholder: t('brand.footer_ph', 'Footer text (e.g. © School 2026)'),
     className: "mt-1 w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
   }), /*#__PURE__*/React.createElement("label", {
-    className: "flex items-center gap-2 mt-1 text-xs text-slate-600"
+    className: "min-h-11 flex items-center gap-2 mt-1 text-xs text-slate-600 cursor-pointer"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
+    className: "w-4 h-4",
     checked: !!draft.footer.showPageNumber,
     onChange: function (e) {
       setFooter({
@@ -923,15 +982,15 @@ function BrandProfileEditor(props) {
   }, validation.errors.map(function (er, i) {
     return /*#__PURE__*/React.createElement("div", {
       key: 'e' + i,
-      className: "text-[11px] text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1"
+      className: "text-xs text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1"
     }, "\u26D4 ", er);
   }), validation.warnings.map(function (w, i) {
     return /*#__PURE__*/React.createElement("div", {
       key: 'w' + i,
-      className: "text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1"
+      className: "text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1"
     }, "\u26A0\uFE0F ", w);
   }), validation.ok && validation.warnings.length === 0 && /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1"
+    className: "text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1"
   }, "\u2713 ", t('brand.passes', 'Meets WCAG AA contrast')))), /*#__PURE__*/React.createElement("div", {
     className: "p-3 border-t border-slate-200 bg-slate-50 flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("button", {

@@ -143,9 +143,19 @@
     manualComplete: 'manual'
   };
 
+  var hasOwn = Object.prototype.hasOwnProperty;
+
+  function _stripCtrl(value) {
+    return String(value == null ? '' : value).replace(/[\u0000-\u001f\u007f]/g, ' ').trim();
+  }
+
+  function _kindSpec(kind) {
+    return (typeof kind === 'string' && hasOwn.call(KINDS, kind)) ? KINDS[kind] : null;
+  }
+
   function _canonicalize(map, nativeType) {
     if (!nativeType || typeof nativeType !== 'string') return null;
-    return Object.prototype.hasOwnProperty.call(map, nativeType) ? map[nativeType] : null;
+    return hasOwn.call(map, nativeType) ? map[nativeType] : null;
   }
 
   // ── Descriptor ──────────────────────────────────────────────────────────────
@@ -158,20 +168,25 @@
     if (!quest || typeof quest !== 'object') return null;
     var kind = _canonicalize(map, quest.type || quest.kind);
     if (!kind) return null;
-    var spec = KINDS[kind];
+    var spec = _kindSpec(kind);
+    if (!spec) return null;
     var params = (quest.params && typeof quest.params === 'object') ? quest.params : quest;
     var target = null;
     if (spec.target) {
-      var raw = params[spec.target];
-      target = (typeof raw === 'number' && isFinite(raw) && raw > 0) ? raw : spec.defaultTarget;
+      var raw = hasOwn.call(params, spec.target) ? params[spec.target] : undefined;
+      target = (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) ? raw : spec.defaultTarget;
     }
+    var rawRef = hasOwn.call(quest, refField) ? quest[refField] : null;
+    var safeRef = (typeof rawRef === 'string' || (typeof rawRef === 'number' && Number.isFinite(rawRef)))
+      ? (typeof rawRef === 'string' ? _stripCtrl(rawRef).slice(0, 128) || null : rawRef)
+      : null;
     return {
       engine: engine,
       kind: kind,
       native: quest.type || quest.kind,
-      label: typeof quest.label === 'string' ? quest.label : '',
+      label: typeof quest.label === 'string' ? _stripCtrl(quest.label).slice(0, 240) : '',
       target: target,
-      ref: quest[refField] || null,
+      ref: safeRef,
       selfReported: isSelfReported(kind)
     };
   }
@@ -184,24 +199,34 @@
   // One formatter so a progress chip reads identically in every engine. Display
   // caps at the target: "14/10 min" reads as a bug to a kid.
   function formatProgress(kind, current, target) {
-    var spec = KINDS[kind];
+    var spec = _kindSpec(kind);
     if (!spec) return '';
     if (spec.measure === MEASURES.BOOLEAN) return '';
-    var cur = Math.max(0, Number(current) || 0);
-    var tgt = Number(target) || 0;
-    if (tgt <= 0) return '';
+    var rawCur = Number(current);
+    var cur = (Number.isFinite(rawCur) && rawCur > 0) ? rawCur : 0;
+    var tgt = Number(target);
+    if (!Number.isFinite(tgt) || tgt <= 0) return '';
     var shown = Math.min(cur, tgt);
     return shown + '/' + tgt + (spec.unit ? ' ' + spec.unit : '');
   }
 
   function isComplete(kind, current, target) {
-    var spec = KINDS[kind];
+    var spec = _kindSpec(kind);
     if (!spec) return false;
     if (spec.measure === MEASURES.BOOLEAN) return !!current;
-    var tgt = Number(target) || 0;
-    if (tgt <= 0) return false;
-    return (Number(current) || 0) >= tgt;
+    var rawCur = Number(current);
+    var cur = Number.isFinite(rawCur) ? rawCur : 0;
+    var tgt = Number(target);
+    if (!Number.isFinite(tgt) || tgt <= 0) return false;
+    return cur >= tgt;
   }
+
+  Object.freeze(MEASURES);
+  Object.keys(KINDS).forEach(function (k) { Object.freeze(KINDS[k]); });
+  Object.freeze(KINDS);
+  Object.freeze(DIRECTIONS_KIND_MAP);
+  Object.freeze(STEM_KIND_MAP);
+  Object.freeze(SEL_KIND_MAP);
 
   var AlloQuestContract = {
     VERSION: 1,

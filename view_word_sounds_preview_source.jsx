@@ -50,11 +50,13 @@ function WordSoundsPreviewView(props) {
     var target = readinessBusy ? readinessCancelButtonRef.current : readinessNotice && readinessCheckButtonRef.current;
     if (target) target.focus();
   }, [readinessBusy, readinessNotice]);
-  wordSoundsAudioCoverage = readinessApi ? readinessApi.inspect(readinessResource, { route: 'student-pack' }) : {
-    ready: 0, total: wordSoundsAudioCoverage && wordSoundsAudioCoverage.total || 0,
+  wordSoundsAudioCoverage = readinessApi ? readinessApi.inspect(readinessResource, { route: 'student-pack' }) : Object.assign({
+    ready: 0, total: 0,
     missing: 0, embedded: 0, online: 0, deviceOnly: 0, unverified: 1, complete: false, dependencies: [], missingLabels: [],
-  };
-  missingAudioLabels = wordSoundsAudioCoverage && wordSoundsAudioCoverage.missingLabels || [];
+  }, wordSoundsAudioCoverage && typeof wordSoundsAudioCoverage === 'object' ? wordSoundsAudioCoverage : {});
+  missingAudioLabels = wordSoundsAudioCoverage && Array.isArray(wordSoundsAudioCoverage.missingLabels)
+    ? wordSoundsAudioCoverage.missingLabels
+    : ((wordSoundsAudioCoverage && Array.isArray(wordSoundsAudioCoverage.missingWords)) ? wordSoundsAudioCoverage.missingWords : []);
   var readinessCategoryNames = {
     "speech": label('readiness_category_speech', 'Words and text'),
     "phoneme": label('readiness_category_phoneme', 'Speech sounds'),
@@ -92,18 +94,36 @@ function WordSoundsPreviewView(props) {
     setReadinessState({ busy: false, notice: 'cancelled' });
   };
   // A missing-audio confirmation can outlive the resource that opened it.
-  // Keep its callback tied to the exact prepared lesson and allow one launch.
-  var launchContext = JSON.stringify([generatedContent && generatedContent.id, generatedContent && generatedContent.sessionConfig, generatedContent && generatedContent.data, generatedContent && generatedContent.wsPreloadedWords, wsActivitySequence, isTeacherMode]);
-  var launchRef = React.useRef({ context: launchContext, launched: false, mounted: true });
-  if (launchRef.current.context !== launchContext) launchRef.current = { context: launchContext, launched: false, mounted: true };
+  // Keep its callback tied to the exact prepared lesson, guard rapid double-clicks,
+  // and allow launching again if the preview stays mounted after returning.
+  var launchContext = React.useMemo(function () {
+    try {
+      var dataWords = Array.isArray(generatedContent && generatedContent.data) ? generatedContent.data.length : 0;
+      var preloadedWords = Array.isArray(generatedContent && generatedContent.wsPreloadedWords) ? generatedContent.wsPreloadedWords.length : 0;
+      return JSON.stringify([
+        generatedContent && generatedContent.id || '',
+        generatedContent && generatedContent.sessionConfig ? (generatedContent.sessionConfig.language || '') + ':' + (generatedContent.sessionConfig.voice || '') + ':' + (generatedContent.sessionConfig.fixedForm ? '1' : '0') : '',
+        dataWords,
+        preloadedWords,
+        Array.isArray(wsActivitySequence) ? wsActivitySequence.join(',') : '',
+        Boolean(isTeacherMode),
+      ]);
+    } catch (_) {
+      return String((generatedContent && generatedContent.id) || '') + ':' + String(Boolean(isTeacherMode));
+    }
+  }, [generatedContent, wsActivitySequence, isTeacherMode]);
+  var launchRef = React.useRef({ context: launchContext, launchingUntil: 0, mounted: true });
+  if (launchRef.current.context !== launchContext) launchRef.current = { context: launchContext, launchingUntil: 0, mounted: true };
   React.useEffect(function () {
     launchRef.current.mounted = true;
+    launchRef.current.launchingUntil = 0;
     return function () { launchRef.current.mounted = false; };
   }, []);
   var claimLaunch = function () {
     var current = launchRef.current;
-    if (!current.mounted || current.context !== launchContext || current.launched) return false;
-    current.launched = true;
+    var now = Date.now();
+    if (!current.mounted || current.context !== launchContext || now < current.launchingUntil) return false;
+    current.launchingUntil = now + 600;
     return true;
   };
   var launchErrorState = React.useState('');
@@ -112,13 +132,96 @@ function WordSoundsPreviewView(props) {
   var practiceStatus = practiceState[0], setPracticeStatus = practiceState[1];
   var practiceControllerRef = React.useRef(null);
   var canPresentPractice = isTeacherMode && !generatedContent?.sessionConfig?.fixedForm && !generatedContent?.sessionConfig?.studentLocked;
+  var isAssessmentLocked = !!(generatedContent?.sessionConfig?.fixedForm || generatedContent?.sessionConfig?.studentLocked);
+  var rawPreviewWords = Array.isArray(generatedContent?.wsPreloadedWords) && generatedContent.wsPreloadedWords.length
+    ? generatedContent.wsPreloadedWords
+    : (Array.isArray(generatedContent?.data) ? generatedContent.data : []);
+  var previewWords = !isAssessmentLocked
+    ? rawPreviewWords.map(function (entry) {
+        if (typeof entry === 'string') return entry.trim();
+        if (entry && typeof entry === 'object') return String(entry.targetWord || entry.word || '').trim();
+        return '';
+      }).filter(Boolean)
+    : [];
+  var plannedSequence = Array.isArray(wsActivitySequence) && wsActivitySequence.length
+    ? wsActivitySequence
+    : (Array.isArray(generatedContent?.lessonPlanSequence) ? generatedContent.lessonPlanSequence : []);
+  var formatActivityStep = function (actId) {
+    var clean = String(actId || '').trim();
+    if (!clean) return '';
+    var fallback = clean.replace(/_/g, ' ').replace(/^\w/, function (c) { return c.toUpperCase(); });
+    return label('activity_' + clean, fallback);
+  };
+  var speakingWordState = React.useState(null);
+  var speakingWordIdx = speakingWordState[0], setSpeakingWordIdx = speakingWordState[1];
+  var previewSpeechTokenRef = React.useRef(0);
+  var previewMountedRef = React.useRef(true);
+  var hasPreviewSpeech = typeof window !== 'undefined' && (
+    (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function')
+    || (typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function')
+  );
+  var stopPreviewWordSpeech = React.useCallback(function () {
+    previewSpeechTokenRef.current += 1;
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') {
+        window.AlloSpeechPlayer.stop();
+      } else if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    } catch (_) {}
+    if (previewMountedRef.current) setSpeakingWordIdx(null);
+  }, []);
+  React.useEffect(function () {
+    previewMountedRef.current = true;
+    var onSpeechState = function (event) {
+      var detail = (event && event.detail) || {};
+      var st = detail.state;
+      if (detail.isPlaying === false || st === 'idle' || st === 'stopped' || st === 'ended' || st === 'error') {
+        if (previewMountedRef.current) setSpeakingWordIdx(null);
+      }
+    };
+    if (typeof window !== 'undefined') window.addEventListener('allo-speech-state', onSpeechState);
+    return function () {
+      previewMountedRef.current = false;
+      if (typeof window !== 'undefined') window.removeEventListener('allo-speech-state', onSpeechState);
+      stopPreviewWordSpeech();
+    };
+  }, [stopPreviewWordSpeech]);
+  var speakPreviewWord = function (wordText, idx) {
+    if (!wordText || wordSoundsAudioCoverage.requiresTeacher) return;
+    if (speakingWordIdx === idx) { stopPreviewWordSpeech(); return; }
+    var token = ++previewSpeechTokenRef.current;
+    var lang = generatedContent?.sessionConfig?.language || props.wordSoundsLanguage || undefined;
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+        window.AlloSpeechPlayer.stop && window.AlloSpeechPlayer.stop();
+        setSpeakingWordIdx(idx);
+        var res = window.AlloSpeechPlayer.speak(wordText, lang ? { language: lang } : undefined);
+        if (res && typeof res.then === 'function') {
+          res.catch(function () {}).finally(function () {
+            if (previewMountedRef.current && previewSpeechTokenRef.current === token) setSpeakingWordIdx(null);
+          });
+        }
+      } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+        window.speechSynthesis.cancel();
+        var utter = new window.SpeechSynthesisUtterance(wordText);
+        utter.onend = function () { if (previewMountedRef.current && previewSpeechTokenRef.current === token) setSpeakingWordIdx(null); };
+        utter.onerror = function () { if (previewMountedRef.current && previewSpeechTokenRef.current === token) setSpeakingWordIdx(null); };
+        setSpeakingWordIdx(idx);
+        window.speechSynthesis.speak(utter);
+      }
+    } catch (_) {
+      if (previewMountedRef.current) setSpeakingWordIdx(null);
+    }
+  };
   React.useEffect(function () {
     setPracticeStatus({ busy: false, notice: '' });
+    stopPreviewWordSpeech();
     return function () {
       if (practiceControllerRef.current) practiceControllerRef.current.abort();
       practiceControllerRef.current = null;
     };
-  }, [launchContext]);
+  }, [launchContext, stopPreviewWordSpeech]);
   var openWordPractice = async function () {
     if (!canPresentPractice || practiceControllerRef.current) return;
     var controller = new AbortController();
@@ -158,7 +261,7 @@ function WordSoundsPreviewView(props) {
     setWordSoundsAutoReview(false);
     setIsWordSoundsMode(true);
     } catch (_) {
-      launchRef.current.launched = false;
+      launchRef.current.launchingUntil = 0;
       setLaunchError(label('preview_launch_failed', 'The activity could not open. Please try again.'));
     }
   };
@@ -169,6 +272,63 @@ function WordSoundsPreviewView(props) {
                       <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || label('modal_title', 'Word Sounds')}</h3>
                       <p className="text-sm text-slate-600 mb-1">{generatedContent?.configSummary || label('preview_ready', 'Ready to practice')}</p>
                       {generatedContent?.data && <p className="text-xs text-violet-700 font-medium">{label('preview_word_count', '{count} words loaded', { count: generatedContent.data.length })}</p>}
+                      {!isAssessmentLocked && plannedSequence.length > 0 && (
+                        <div data-ws-preview-sequence="true" className="mt-3 flex flex-wrap items-center justify-center gap-1.5" aria-label={label('preview_activity_plan', 'Planned activities')}>
+                          {plannedSequence.map(function (actId, actIdx) {
+                            return (
+                              <span key={String(actId) + '-' + actIdx} className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-white px-2.5 py-1 text-xs font-semibold text-violet-900">
+                                <span className="text-violet-700 font-bold">{actIdx + 1}.</span>
+                                <span>{formatActivityStep(actId)}</span>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {previewWords.length > 0 && (
+                        <details data-ws-preview-words="true" className="mt-4 rounded-xl border border-violet-200 bg-white p-3 text-start">
+                          <summary className="min-h-11 flex items-center justify-between gap-2 cursor-pointer text-sm font-bold text-violet-900 focus-visible:ring-2 focus-visible:ring-violet-600 rounded-lg px-1">
+                            <span>{label('preview_words_heading', 'Preview words ({count})', { count: previewWords.length })}</span>
+                            <span className="text-xs font-medium text-slate-600">
+                              {(!wordSoundsAudioCoverage.requiresTeacher && hasPreviewSpeech)
+                                ? label('preview_words_tap_listen', 'Select a word to hear it')
+                                : label('preview_words_list_hint', 'Practice word list')}
+                            </span>
+                          </summary>
+                          <div className="mt-2.5 flex flex-wrap gap-1.5">
+                            {previewWords.slice(0, 30).map(function (wordText, wIdx) {
+                              var canListenWord = !wordSoundsAudioCoverage.requiresTeacher && hasPreviewSpeech;
+                              var isSpeakingWord = speakingWordIdx === wIdx;
+                              return canListenWord ? (
+                                <button
+                                  key={wordText + '-' + wIdx}
+                                  type="button"
+                                  data-ws-preview-word={wIdx}
+                                  aria-pressed={isSpeakingWord}
+                                  aria-label={label('preview_listen_word', 'Hear word: {word}', { word: wordText })}
+                                  onClick={function () { speakPreviewWord(wordText, wIdx); }}
+                                  className={'min-h-11 rounded-lg border px-3 py-1.5 text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-violet-600 ' + (isSpeakingWord ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-violet-50 text-violet-950 hover:bg-violet-100')}
+                                >
+                                  <span aria-hidden="true">{isSpeakingWord ? '⏹ ' : '🔊 '}</span>
+                                  {wordText}
+                                </button>
+                              ) : (
+                                <span
+                                  key={wordText + '-' + wIdx}
+                                  data-ws-preview-word={wIdx}
+                                  className="inline-flex min-h-11 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-800"
+                                >
+                                  {wordText}
+                                </span>
+                              );
+                            })}
+                            {previewWords.length > 30 && (
+                              <span className="inline-flex min-h-11 items-center px-2 text-xs font-medium text-slate-600">
+                                {label('preview_words_more', '+{count} more', { count: previewWords.length - 30 })}
+                              </span>
+                            )}
+                          </div>
+                        </details>
+                      )}
                       {canPresentPractice && <div className="mt-4 rounded-xl border border-violet-200 bg-white p-4 text-start">
                         <button type="button" onClick={openWordPractice} disabled={practiceStatus.busy} aria-busy={practiceStatus.busy} aria-describedby="word-sounds-preview-presentation-help" className="min-h-11 rounded-lg border border-violet-300 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-50 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{practiceStatus.busy ? label('practice_opening', 'Opening presentation tools…') : label('practice_present_export', 'Present & Export')}</button>
                         <p id="word-sounds-preview-presentation-help" className="mt-2 text-sm text-slate-600">{label('practice_export_help', 'Project these words or download HTML and PowerPoint with optional audio and prepared activities.')}</p>
@@ -182,7 +342,7 @@ function WordSoundsPreviewView(props) {
                             {!readinessBusy && readinessNotice === 'cancelled' && <span className="block">{label('readiness_cancelled', 'Audio check cancelled. Readiness is unconfirmed.')}</span>}
                             {!readinessBusy && readinessNotice === 'failed' && <span className="block">{label('readiness_failed', 'Audio could not be checked. Review the lesson and try again.')}</span>}
                           </p>
-                          {wordSoundsAudioCoverage.requiresTeacher && <p className="mt-2 text-sm text-violet-900">{label('readiness_teacher_led_words', 'A teacher must say these words aloud: {words}. This lesson needs teacher support.', { words: wordSoundsAudioCoverage.teacherLedWords.join(', ') })}</p>}
+                          {wordSoundsAudioCoverage.requiresTeacher && <p className="mt-2 text-sm text-violet-900">{label('readiness_teacher_led_words', 'A teacher must say these words aloud: {words}. This lesson needs teacher support.', { words: Array.isArray(wordSoundsAudioCoverage.teacherLedWords) ? wordSoundsAudioCoverage.teacherLedWords.join(', ') : '' })}</p>}
                           <p className="mt-2 text-sm text-slate-700">{label('readiness_counts', '{ready}/{total} required clips verified; {embedded} embedded, {online} online dependencies, {deviceOnly} available only on this device.', wordSoundsAudioCoverage)}</p>
                           <p className="mt-2 text-xs text-slate-600">{label('readiness_limits', 'This checks prepared audio and syllable counts. Review the lesson content before sharing. Online app banks and device cache are not embedded in the student pack; this check cannot confirm them on another device.')}</p>
                           {missingAudioLabels.length > 0 && <p className="mt-2 text-sm text-amber-900">{label('preview_missing', 'Missing: {labels}', { labels: missingAudioLabels.slice(0, 5).map(readableAudioLabel).join(', ') })}{missingAudioLabels.length > 5 && label('preview_more', ', plus {count} more', { count: missingAudioLabels.length - 5 })}</p>}
@@ -195,23 +355,34 @@ function WordSoundsPreviewView(props) {
                           <p className="mt-2 text-xs text-slate-600">{label('readiness_recovery', 'For missing speech clips or older syllable boards, open Teacher: Review Words & Audio and choose Repair prepared lesson. Review any flagged items, then save the updated lesson before sharing.')}</p>
                         </section>
                       )}
+                      {!isTeacherMode && wordSoundsAudioCoverage && wordSoundsAudioCoverage.requiresTeacher && (
+                        <p role="status" className="mt-4 rounded-xl border border-violet-200 bg-white p-3 text-sm font-medium text-violet-900">
+                          {label('preview_student_teacher_required_note', 'Your teacher needs to say marked words aloud for this lesson. Ask your teacher to begin.')}
+                        </p>
+                      )}
                       <div className={`grid grid-cols-1 ${isTeacherMode ? 'sm:grid-cols-2' : ''} gap-3 mt-5`}>
                         {isTeacherMode && (
                           <button
                             type="button"
                             onClick={() => {
                               if (!claimLaunch()) return;
-                              const initialActivity = (wsActivitySequence && wsActivitySequence.length > 0) ? wsActivitySequence[0] : 'counting';
-                              if (typeof prepareWordSoundsSession === 'function') {
-                                prepareWordSoundsSession({
-                                  ...(generatedContent?.sessionConfig || {}),
-                                  resourceId: generatedContent?.id || null,
-                                  initialActivity,
-                                });
+                              setLaunchError('');
+                              try {
+                                const initialActivity = (wsActivitySequence && wsActivitySequence.length > 0) ? wsActivitySequence[0] : 'counting';
+                                if (typeof prepareWordSoundsSession === 'function') {
+                                  prepareWordSoundsSession({
+                                    ...(generatedContent?.sessionConfig || {}),
+                                    resourceId: generatedContent?.id || null,
+                                    initialActivity,
+                                  });
+                                }
+                                setWordSoundsActivity(initialActivity);
+                                setIsWordSoundsMode(true);
+                                setWordSoundsAutoReview(true);
+                              } catch (_) {
+                                launchRef.current.launchingUntil = 0;
+                                setLaunchError(label('preview_launch_failed', 'The activity could not open. Please try again.'));
                               }
-                              setWordSoundsActivity(initialActivity);
-                              setIsWordSoundsMode(true);
-                              setWordSoundsAutoReview(true);
                             }}
                             className="min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-white text-violet-800 font-bold rounded-xl border-2 border-violet-300 hover:bg-violet-100 hover:border-violet-500 shadow-sm hover:shadow-md transition-all motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2"
                           >
@@ -239,7 +410,7 @@ function WordSoundsPreviewView(props) {
                             // no-sequence fallback.
                             launchPreparedActivity();
                           }}
-                          className="min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none motion-safe:hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2"
+                          className="min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none motion-safe:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2"
                         >
                           <Play size={20} aria-hidden="true" />
                           <span className="text-start">

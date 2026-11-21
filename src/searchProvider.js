@@ -24,6 +24,18 @@ const WebSearchProvider = {
         );
     },
 
+    _isBlockedByPolicy() {
+        if (this._isDesktopOffline()) return true;
+        if (typeof window !== 'undefined') {
+            if (window.__alloStudentAiDisabled === true) return true;
+            if (window.ALLOFLOW_MANAGED_AI_POLICY != null && (
+                window.ALLOFLOW_MANAGED_AI_POLICY.version !== 1 ||
+                window.ALLOFLOW_MANAGED_AI_POLICY.allowExternalSearch !== true
+            )) return true;
+        }
+        return false;
+    },
+
     _safeHttpUrl(raw) {
         if (typeof raw !== 'string') return '';
         const trimmed = raw.trim();
@@ -31,9 +43,49 @@ const WebSearchProvider = {
         try {
             const parsed = new URL(trimmed);
             if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+            if (parsed.username || parsed.password) return '';
             return parsed.href;
         } catch {
             return '';
+        }
+    },
+
+    _safeBaseUrl() {
+        const safe = this._safeHttpUrl(this.searxngUrl);
+        if (!safe) return '';
+        try {
+            const parsed = new URL(safe);
+            if (parsed.search || parsed.hash) return '';
+            return `${parsed.origin}${parsed.pathname}`.replace(/\/+$/, '');
+        } catch {
+            return '';
+        }
+    },
+
+    async _readBoundedJson(response, maxBytes = 2 * 1024 * 1024) {
+        if (!response.body || typeof response.body.getReader !== 'function') {
+            return await response.json();
+        }
+        const reader = response.body.getReader();
+        const chunks = [];
+        let total = 0;
+        const decoder = typeof TextDecoder !== 'undefined' ? new TextDecoder() : null;
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const bytes = value instanceof Uint8Array ? value : new Uint8Array(value);
+                total += bytes.byteLength;
+                if (total > maxBytes) {
+                    try { await reader.cancel(); } catch (_) {}
+                    throw new Error('Search response exceeded size limit');
+                }
+                chunks.push(decoder ? decoder.decode(bytes, { stream: true }) : String.fromCharCode.apply(null, bytes));
+            }
+            if (decoder) chunks.push(decoder.decode());
+            return JSON.parse(chunks.join(''));
+        } finally {
+            try { reader.releaseLock(); } catch (_) {}
         }
     },
 
@@ -52,17 +104,37 @@ const WebSearchProvider = {
         }
     },
 
+    async _fetchJsonWithTimeout(url, options = {}, timeoutMs = 8000, maxBytes = 2 * 1024 * 1024) {
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+        try {
+            const response = await fetch(url, {
+                credentials: 'omit',
+                referrerPolicy: 'no-referrer',
+                ...options,
+                signal: options.signal || (controller ? controller.signal : undefined),
+            });
+            if (!response.ok) {
+                try { await response.body?.cancel?.(); } catch (_) {}
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return await this._readBoundedJson(response, maxBytes);
+        } finally {
+            if (timer) clearTimeout(timer);
+        }
+    },
+
     /**
      * Search the web and return results with Gemini-compatible grounding metadata.
      */
     async search(query, maxResults = 5) {
-        if (!query || query.trim().length < 3) {
+        if (typeof query !== 'string' || query.trim().length < 3) {
             return { results: [], contextPrompt: '', groundingMetadata: null };
         }
 
-        // Offline / Desktop offline check
-        if (this._isDesktopOffline() || (typeof navigator !== 'undefined' && !navigator.onLine)) {
-            console.log('[WebSearch] Device is offline - skipping web search');
+        // Offline / Desktop offline / managed policy check
+        if (this._isBlockedByPolicy() || (typeof navigator !== 'undefined' && !navigator.onLine)) {
+            console.log('[WebSearch] Device is offline or external search disabled - skipping web search');
             return { results: [], contextPrompt: '', groundingMetadata: null, offline: true };
         }
 
@@ -114,14 +186,18 @@ const WebSearchProvider = {
      * Check if SearXNG is available (cached for 60 seconds).
      */
     async _isSearXNGAvailable() {
+        if (this._isBlockedByPolicy()) return false;
+        const base = this._safeBaseUrl();
+        if (!base) return false;
         const now = Date.now();
         if (this._searxngAvailable !== null && (now - this._lastCheckTime) < 60000) {
             return this._searxngAvailable;
         }
 
         try {
-            const resp = await this._fetchWithTimeout(`${this.searxngUrl}/search?q=test&format=json`, {}, 2000);
-            this._searxngAvailable = resp.ok;
+            const resp = await this._fetchWithTimeout(`${base}/search?q=test&format=json`, {}, 2000);
+            this._searxngAvailable = Boolean(resp && resp.ok);
+            try { await resp?.body?.cancel?.(); } catch (_) {}
         } catch {
             this._searxngAvailable = false;
         }
@@ -134,19 +210,20 @@ const WebSearchProvider = {
      * Extract a focused search query from a long prompt.
      */
     _extractSearchQuery(prompt) {
-        if (prompt.length <= 100) return prompt;
+        const bounded = String(prompt || '').slice(0, 2000);
+        if (bounded.length <= 100) return bounded;
 
         const patterns = [
-            /(?:about|regarding|topic[:\s]+|subject[:\s]+|research[:\s]+)\s*[""]?([^"".\n]{10,80})/i,
-            /(?:write|generate|create|explain|describe)\s+(?:a\s+)?(?:lesson|text|content|article|report)?\s*(?:about|on|for)\s+[""]?([^"".\n]{10,80})/i,
+            /(?:about|regarding|topic:?|subject:?|research:?)[ \t]+[""]?([^"".\n]{10,80})/i,
+            /(?:write|generate|create|explain|describe)[ \t]+(?:a[ \t]+)?(?:(?:lesson|text|content|article|report)[ \t]+)?(?:about|on|for)[ \t]+[""]?([^"".\n]{10,80})/i,
         ];
 
         for (const pattern of patterns) {
-            const match = prompt.match(pattern);
+            const match = bounded.match(pattern);
             if (match && match[1]) return match[1].trim();
         }
 
-        const firstSentence = prompt.split(/[.!?\n]/).filter(s => s.trim().length > 10)[0] || '';
+        const firstSentence = bounded.split(/[.!?\n]/).filter(s => s.trim().length > 10)[0] || '';
         return firstSentence.trim().slice(0, 100);
     },
 
@@ -157,30 +234,30 @@ const WebSearchProvider = {
      * Returns full SERP results — titles, URLs, snippets, engines used.
      */
     async _fetchSearXNG(query, maxResults) {
-        const url = `${this.searxngUrl}/search?q=${encodeURIComponent(query)}&format=json&categories=general&language=en`;
+        if (this._isBlockedByPolicy()) return [];
+        const base = this._safeBaseUrl();
+        if (!base) throw new Error('Invalid SearXNG URL');
+        const url = `${base}/search?q=${encodeURIComponent(query)}&format=json&categories=general&language=en`;
 
-        const response = await this._fetchWithTimeout(url, {
+        const data = await this._fetchJsonWithTimeout(url, {
             headers: { 'Accept': 'application/json' },
         }, 8000);
-
-        if (!response.ok) {
-            throw new Error(`SearXNG returned ${response.status}`);
-        }
-
-        const data = await response.json();
         const results = [];
 
-        if (data.results && Array.isArray(data.results)) {
+        if (data && typeof data === 'object' && Array.isArray(data.results)) {
             for (const r of data.results) {
                 if (results.length >= maxResults) break;
-                const safeUrl = this._safeHttpUrl(r && r.url);
-                if (safeUrl && (r.title || r.content)) {
+                if (!r || typeof r !== 'object') continue;
+                const safeUrl = this._safeHttpUrl(r.url);
+                const title = typeof r.title === 'string' ? r.title : '';
+                const content = typeof r.content === 'string' ? r.content : '';
+                if (safeUrl && (title || content)) {
                     results.push({
-                        title: r.title || query,
+                        title: title || query,
                         url: safeUrl,
-                        snippet: r.content || r.title || '',
-                        source: r.engine || 'SearXNG',
-                        engines: r.engines || [],
+                        snippet: content || title || '',
+                        source: typeof r.engine === 'string' ? r.engine : 'SearXNG',
+                        engines: Array.isArray(r.engines) ? r.engines : [],
                     });
                 }
             }
@@ -196,35 +273,31 @@ const WebSearchProvider = {
      * Free, no API key required. Returns topic summaries.
      */
     async _fetchDuckDuckGo(query, maxResults) {
-        if (this._isDesktopOffline()) return [];
+        if (this._isBlockedByPolicy()) return [];
         const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
 
-        const response = await this._fetchWithTimeout(url, {
+        const data = await this._fetchJsonWithTimeout(url, {
             headers: { 'Accept': 'application/json' },
         }, 8000);
-
-        if (!response.ok) {
-            throw new Error(`DuckDuckGo API returned ${response.status}`);
-        }
-
-        const data = await response.json();
         const results = [];
+        if (!data || typeof data !== 'object') return results;
 
         const abstractUrl = this._safeHttpUrl(data.AbstractURL);
-        if (data.Abstract && abstractUrl) {
+        if (typeof data.Abstract === 'string' && data.Abstract && abstractUrl) {
             results.push({
-                title: data.Heading || query,
+                title: (typeof data.Heading === 'string' && data.Heading) || query,
                 url: abstractUrl,
                 snippet: data.Abstract,
-                source: data.AbstractSource || 'DuckDuckGo',
+                source: (typeof data.AbstractSource === 'string' && data.AbstractSource) || 'DuckDuckGo',
             });
         }
 
-        if (data.RelatedTopics && Array.isArray(data.RelatedTopics)) {
+        if (Array.isArray(data.RelatedTopics)) {
             for (const topic of data.RelatedTopics) {
                 if (results.length >= maxResults) break;
-                const topicUrl = this._safeHttpUrl(topic && topic.FirstURL);
-                if (topic.Text && topicUrl) {
+                if (!topic || typeof topic !== 'object') continue;
+                const topicUrl = this._safeHttpUrl(topic.FirstURL);
+                if (typeof topic.Text === 'string' && topic.Text && topicUrl) {
                     results.push({
                         title: topic.Text.split(' - ')[0] || topic.Text.slice(0, 60),
                         url: topicUrl,
@@ -232,11 +305,12 @@ const WebSearchProvider = {
                         source: 'DuckDuckGo',
                     });
                 }
-                if (topic.Topics && Array.isArray(topic.Topics)) {
+                if (Array.isArray(topic.Topics)) {
                     for (const sub of topic.Topics) {
                         if (results.length >= maxResults) break;
-                        const subUrl = this._safeHttpUrl(sub && sub.FirstURL);
-                        if (sub.Text && subUrl) {
+                        if (!sub || typeof sub !== 'object') continue;
+                        const subUrl = this._safeHttpUrl(sub.FirstURL);
+                        if (typeof sub.Text === 'string' && sub.Text && subUrl) {
                             results.push({
                                 title: sub.Text.split(' - ')[0] || sub.Text.slice(0, 60),
                                 url: subUrl,
@@ -249,11 +323,12 @@ const WebSearchProvider = {
             }
         }
 
-        if (data.Results && Array.isArray(data.Results)) {
+        if (Array.isArray(data.Results)) {
             for (const r of data.Results) {
                 if (results.length >= maxResults) break;
-                const resUrl = this._safeHttpUrl(r && r.FirstURL);
-                if (r.Text && resUrl) {
+                if (!r || typeof r !== 'object') continue;
+                const resUrl = this._safeHttpUrl(r.FirstURL);
+                if (typeof r.Text === 'string' && r.Text && resUrl) {
                     results.push({
                         title: r.Text.split(' - ')[0] || r.Text.slice(0, 60),
                         url: resUrl,
@@ -264,7 +339,7 @@ const WebSearchProvider = {
             }
         }
 
-        if (data.Answer && results.length === 0) {
+        if (typeof data.Answer === 'string' && data.Answer && results.length === 0) {
             results.push({
                 title: query,
                 url: `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
@@ -310,7 +385,7 @@ const WebSearchProvider = {
             segment: {
                 startIndex: 0,
                 endIndex: 0,
-                text: r.snippet.slice(0, 100),
+                text: String(r && r.snippet || '').slice(0, 100),
             },
         }));
 
@@ -328,6 +403,7 @@ const WebSearchProvider = {
      * Check if web search is available (for UI — gray out if offline).
      */
     isAvailable() {
+        if (this._isBlockedByPolicy()) return false;
         if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
         return true;
     },
@@ -336,6 +412,14 @@ const WebSearchProvider = {
      * Test connectivity to search backends.
      */
     async testConnection() {
+        if (this._isBlockedByPolicy()) {
+            return {
+                online: typeof navigator !== 'undefined' ? navigator.onLine : true,
+                searxng: false,
+                duckduckgo: false,
+                blocked: true,
+            };
+        }
         const searxng = await this._isSearXNGAvailable();
         let ddg = false;
         try {

@@ -3,7 +3,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const itemBanks = require('./reading_specialist_5302/item_content.cjs');
+const { applyChoiceOverrides } = require('./reading_choice_overrides/index.cjs');
+const itemBanks = applyChoiceOverrides(require('./reading_specialist_5302/item_content.cjs'), 'S');
 const { chapters: chapterSpecs, memoryAids: memoryAidSpecs, workshops: workshopSpecs } = require('./reading_specialist_5302/learning_content.cjs');
 const root = path.resolve(__dirname, '..');
 const itemBankBySkill = new Map(itemBanks.map((bank) => [bank.id, bank]));

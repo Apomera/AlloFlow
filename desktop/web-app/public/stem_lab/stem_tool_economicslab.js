@@ -1274,13 +1274,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
     var sdPs = function (q) { return sdSupInt + sdSupSlope * q; };
 
-    // Background
+    // Background — deep financial-studio backdrop & recessed plot well
+    var hasLG = typeof ctx.createLinearGradient === 'function';
+    var hasRG = typeof ctx.createRadialGradient === 'function';
+    if (hasLG) {
+      var sdBg = ctx.createLinearGradient(0, 0, 0, H);
+      sdBg.addColorStop(0, '#071022'); sdBg.addColorStop(0.55, '#0f1c34'); sdBg.addColorStop(1, '#081122');
+      ctx.fillStyle = sdBg;
+    } else {
+      ctx.fillStyle = '#0f172a';
+    }
+    ctx.fillRect(0, 0, W, H);
+    if (hasLG) {
+      var wellG = ctx.createLinearGradient(0, gy, 0, gy + gh);
+      wellG.addColorStop(0, 'rgba(2,6,23,0.52)'); wellG.addColorStop(1, 'rgba(15,23,42,0.22)');
+      ctx.fillStyle = wellG; ctx.fillRect(gx, gy, gw, gh);
+    }
 
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+    // Crisp financial-studio coordinate grid
 
-    // Grid
-
-    ctx.strokeStyle = 'rgba(148,163,184,0.1)'; ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(148,163,184,0.14)'; ctx.lineWidth = 1;
 
     for (var gi = 0; gi <= 10; gi++) {
 
@@ -1290,11 +1303,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
     }
 
-    // Axes
+    // Axes with subtle studio edge glow
 
-    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
+    ctx.save();
+    ctx.shadowColor = 'rgba(148,163,184,0.45)'; ctx.shadowBlur = 5;
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2.2;
 
     ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
+    ctx.restore();
 
     ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
@@ -1334,17 +1350,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
     if (wq > 0.05 && !P.showRev) {
 
-      ctx.fillStyle = 'rgba(59,130,246,0.22)';
+      if (hasLG) {
+        var csGrad = ctx.createLinearGradient(0, sdYr(sdDemInt), 0, sdYr(sdOut.pc));
+        csGrad.addColorStop(0, 'rgba(56,189,248,0.38)');
+        csGrad.addColorStop(1, 'rgba(37,99,235,0.12)');
+        ctx.fillStyle = csGrad;
+      } else {
+        ctx.fillStyle = 'rgba(59,130,246,0.22)';
+      }
 
       ctx.beginPath(); ctx.moveTo(sdXr(0), sdYr(sdDemInt)); ctx.lineTo(sdXr(wq), sdYr(sdPd(wq))); ctx.lineTo(sdXr(wq), sdYr(sdOut.pc)); ctx.lineTo(sdXr(0), sdYr(sdOut.pc)); ctx.closePath(); ctx.fill();
 
-      ctx.fillStyle = 'rgba(239,68,68,0.2)';
+      if (hasLG) {
+        var psGrad = ctx.createLinearGradient(0, sdYr(sdOut.pp), 0, sdYr(sdSupInt));
+        psGrad.addColorStop(0, 'rgba(248,113,113,0.12)');
+        psGrad.addColorStop(1, 'rgba(239,68,68,0.36)');
+        ctx.fillStyle = psGrad;
+      } else {
+        ctx.fillStyle = 'rgba(239,68,68,0.2)';
+      }
 
       ctx.beginPath(); ctx.moveTo(sdXr(0), sdYr(sdSupInt)); ctx.lineTo(sdXr(0), sdYr(sdOut.pp)); ctx.lineTo(sdXr(wq), sdYr(sdOut.pp)); ctx.lineTo(sdXr(wq), sdYr(sdPs(wq))); ctx.closePath(); ctx.fill();
 
       if (sdOut.pc - sdOut.pp > 0.05) {
 
-        ctx.fillStyle = 'rgba(168,85,247,0.3)';
+        ctx.fillStyle = 'rgba(168,85,247,0.32)';
 
         ctx.fillRect(sdXr(0), sdYr(sdOut.pc), sdXr(wq) - sdXr(0), sdYr(sdOut.pp) - sdYr(sdOut.pc));
 
@@ -1352,7 +1382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
         // Subsidy: the government pays the gap between what sellers get and
         // what buyers pay on every unit traded.
-        ctx.fillStyle = 'rgba(168,85,247,0.3)';
+        ctx.fillStyle = 'rgba(168,85,247,0.32)';
         ctx.fillRect(sdXr(0), sdYr(sdOut.pp), sdXr(wq) - sdXr(0), sdYr(sdOut.pc) - sdYr(sdOut.pp));
         ctx.setLineDash([6, 4]); ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 2;
         ctx.strokeRect(sdXr(0), sdYr(sdOut.pp), sdXr(wq) - sdXr(0), sdYr(sdOut.pc) - sdYr(sdOut.pp)); ctx.setLineDash([]);
@@ -1363,7 +1393,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
     if (sdOut.dwl > 0.5 && Math.abs(eqQ - wq) > 0.05 && !extOn && !P.showRev) {
 
-      ctx.fillStyle = 'rgba(251,191,36,0.38)';
+      if (hasLG) {
+        var dwlGrad = ctx.createLinearGradient(sdXr(wq), 0, sdXr(eqQ), 0);
+        dwlGrad.addColorStop(0, 'rgba(251,191,36,0.44)');
+        dwlGrad.addColorStop(1, 'rgba(245,158,11,0.18)');
+        ctx.fillStyle = dwlGrad;
+      } else {
+        ctx.fillStyle = 'rgba(251,191,36,0.38)';
+      }
 
       ctx.beginPath(); ctx.moveTo(sdXr(wq), sdYr(sdPd(wq))); ctx.lineTo(sdXr(eqQ), sdYr(eqP)); ctx.lineTo(sdXr(wq), sdYr(sdPs(wq))); ctx.closePath(); ctx.fill();
 
@@ -1408,20 +1445,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
     ctx.setLineDash([]);
 
-    // Demand curve (downward sloping, shifted)
+    // Demand curve (downward sloping, shifted) — dual-pass luminous studio stroke
 
-    ctx.save(); ctx.shadowColor = '#3b82f6'; ctx.shadowBlur = 8; ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3;
-
+    ctx.save();
+    ctx.strokeStyle = 'rgba(56,189,248,0.28)'; ctx.lineWidth = 9; ctx.lineCap = 'round'; sdCurve(sdPd);
+    ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 12; ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3.5;
     sdCurve(sdPd);
-
+    ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(191,219,254,0.65)'; ctx.lineWidth = 1; sdCurve(sdPd);
     ctx.restore();
 
-    // Supply curve (upward sloping, shifted)
+    // Supply curve (upward sloping, shifted) — dual-pass luminous studio stroke
 
-    ctx.save(); ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 8; ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3;
-
+    ctx.save();
+    ctx.strokeStyle = 'rgba(248,113,113,0.28)'; ctx.lineWidth = 9; ctx.lineCap = 'round'; sdCurve(sdPs);
+    ctx.shadowColor = '#f87171'; ctx.shadowBlur = 12; ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3.5;
     sdCurve(sdPs);
-
+    ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(254,202,202,0.65)'; ctx.lineWidth = 1; sdCurve(sdPs);
     ctx.restore();
 
     if (extOn) { ctx.save(); ctx.setLineDash([12, 6]); ctx.lineWidth = 3; ctx.strokeStyle = sdExt > 0 ? '#c084fc' : '#4ade80'; sdCurve(sdExt > 0 ? smcAt : smbAt); ctx.restore(); }
@@ -1500,22 +1539,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
     var eqPy = sdY(eqP);
 
-    // Dashed lines to axes
+    // Glowing equilibrium crosshair lines to axes
 
-    ctx.setLineDash([5, 5]); ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5;
-
+    ctx.save();
+    ctx.strokeStyle = 'rgba(251,191,36,0.26)'; ctx.lineWidth = 5;
     ctx.beginPath(); ctx.moveTo(eqPx, eqPy); ctx.lineTo(gx, eqPy); ctx.stroke();
-
     ctx.beginPath(); ctx.moveTo(eqPx, eqPy); ctx.lineTo(eqPx, gy + gh); ctx.stroke();
-
+    ctx.setLineDash([6, 5]); ctx.strokeStyle = '#fde047'; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(eqPx, eqPy); ctx.lineTo(gx, eqPy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(eqPx, eqPy); ctx.lineTo(eqPx, gy + gh); ctx.stroke();
     ctx.setLineDash([]);
+    ctx.restore();
 
-    // Equilibrium dot
+    // Glowing equilibrium intersection beacon
+    if (hasRG) {
+      var eqHalo = ctx.createRadialGradient(eqPx, eqPy, 3, eqPx, eqPy, 26);
+      eqHalo.addColorStop(0, 'rgba(253,224,71,0.72)');
+      eqHalo.addColorStop(0.5, 'rgba(251,191,36,0.22)');
+      eqHalo.addColorStop(1, 'rgba(251,191,36,0)');
+      ctx.fillStyle = eqHalo; ctx.beginPath(); ctx.arc(eqPx, eqPy, 26, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.strokeStyle = 'rgba(254,240,138,0.85)'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(eqPx, eqPy, 13, 0, Math.PI * 2); ctx.stroke();
 
     ctx.beginPath(); ctx.arc(eqPx, eqPy, 8, 0, Math.PI * 2);
     if (placer) placer.block(eqPx, eqPy, 12);
 
-    ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 14; ctx.fillStyle = '#fbbf24'; ctx.fill(); ctx.shadowBlur = 0;
+    ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 16; ctx.fillStyle = '#fde047'; ctx.fill(); ctx.shadowBlur = 0;
 
     ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.stroke();
 
@@ -2707,9 +2757,21 @@ var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToo
               // Both halves read pfBud / pfHistory, the same numbers the yearly
               // step uses, so the picture always matches the simulation.
 
-              ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+              if (typeof ctx.createLinearGradient === 'function') {
+                var pfBg = ctx.createLinearGradient(0, 0, 0, H);
+                pfBg.addColorStop(0, '#071022'); pfBg.addColorStop(1, '#0e1b33');
+                ctx.fillStyle = pfBg;
+              } else {
+                ctx.fillStyle = '#0f172a';
+              }
+              ctx.fillRect(0, 0, W, H);
 
               var pieX = W * 0.22, pieY = H * 0.47, pieR = Math.min(W * 0.17, H * 0.36);
+              if (typeof ctx.createRadialGradient === 'function') {
+                var pieGlow = ctx.createRadialGradient(pieX, pieY, pieR * 0.65, pieX, pieY, pieR * 1.25);
+                pieGlow.addColorStop(0, 'rgba(56,189,248,0.16)'); pieGlow.addColorStop(1, 'rgba(15,23,42,0)');
+                ctx.fillStyle = pieGlow; ctx.beginPath(); ctx.arc(pieX, pieY, pieR * 1.25, 0, Math.PI * 2); ctx.fill();
+              }
 
               var expenses = [
 
@@ -2911,8 +2973,16 @@ var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToo
             else if (econTab === 'stockMarket') {
 
               // ── Stock Market Chart ──
-
-              ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+              var hasSmLG = typeof ctx.createLinearGradient === 'function';
+              var hasSmRG = typeof ctx.createRadialGradient === 'function';
+              if (hasSmLG) {
+                var smBg = ctx.createLinearGradient(0, 0, 0, H);
+                smBg.addColorStop(0, '#071022'); smBg.addColorStop(1, '#0d1930');
+                ctx.fillStyle = smBg;
+              } else {
+                ctx.fillStyle = '#0f172a';
+              }
+              ctx.fillRect(0, 0, W, H);
 
               var co = smCompanies[smSelected];
 
@@ -2922,13 +2992,20 @@ var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToo
 
               var chX = 60, chY = 50, chW = W - 120, chH = H * 0.55;
 
-              // Chart background
-
-              ctx.fillStyle = '#1e293b'; ctx.fillRect(chX, chY, chW, chH);
+              // Recessed studio chart well
+              if (hasSmLG) {
+                var wellSm = ctx.createLinearGradient(0, chY, 0, chY + chH);
+                wellSm.addColorStop(0, '#0f1c34'); wellSm.addColorStop(1, '#162540');
+                ctx.fillStyle = wellSm;
+              } else {
+                ctx.fillStyle = '#1e293b';
+              }
+              ctx.fillRect(chX, chY, chW, chH);
+              ctx.strokeStyle = 'rgba(100,116,139,0.35)'; ctx.lineWidth = 1; ctx.strokeRect(chX, chY, chW, chH);
 
               // Grid
 
-              ctx.strokeStyle = 'rgba(148,163,184,0.08)'; ctx.lineWidth = 1;
+              ctx.strokeStyle = 'rgba(148,163,184,0.12)'; ctx.lineWidth = 1;
 
               for (var cgi = 0; cgi <= 5; cgi++) {
 
@@ -2954,7 +3031,7 @@ var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToo
 
                 var priceRange = maxP - minP || 1;
 
-                // Area fill
+                // Vertical gradient area fill
 
                 ctx.beginPath();
 
@@ -2970,14 +3047,22 @@ var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToo
 
                 ctx.lineTo(chX + chW, chY + chH); ctx.lineTo(chX, chY + chH); ctx.closePath();
 
-                ctx.fillStyle = co.color.replace(')', ',0.1)').replace('rgb', 'rgba');
-
-                if (!ctx.fillStyle.startsWith('rgba')) ctx.fillStyle = 'rgba(59,130,246,0.1)';
+                if (hasSmLG) {
+                  var smArea = ctx.createLinearGradient(0, chY, 0, chY + chH);
+                  smArea.addColorStop(0, co.color.length === 7 ? co.color + '44' : 'rgba(59,130,246,0.28)');
+                  smArea.addColorStop(1, 'rgba(15,23,42,0.02)');
+                  ctx.fillStyle = smArea;
+                } else {
+                  ctx.fillStyle = 'rgba(59,130,246,0.12)';
+                }
 
                 ctx.fill();
 
-                // Line
+                // Dual-pass luminous price line
 
+                ctx.save();
+                ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+                ctx.shadowColor = co.color; ctx.shadowBlur = 10;
                 ctx.beginPath();
 
                 for (var hi2 = 0; hi2 < hist.length; hi2++) {
@@ -2990,7 +3075,8 @@ var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToo
 
                 }
 
-                ctx.strokeStyle = co.color; ctx.lineWidth = 2.5; ctx.stroke();
+                ctx.strokeStyle = co.color; ctx.lineWidth = 3; ctx.stroke();
+                ctx.restore();
 
                 // Moving average line (5-period)
 
@@ -3148,8 +3234,15 @@ var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToo
             else if (econTab === 'macro') {
 
               // ── National Economy Dashboard ──
-
-              ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+              var hasMacLG = typeof ctx.createLinearGradient === 'function';
+              if (hasMacLG) {
+                var macBg = ctx.createLinearGradient(0, 0, 0, H);
+                macBg.addColorStop(0, '#071022'); macBg.addColorStop(1, '#0e1b33');
+                ctx.fillStyle = macBg;
+              } else {
+                ctx.fillStyle = '#0f172a';
+              }
+              ctx.fillRect(0, 0, W, H);
 
               ctx.font = 'bold 28px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
@@ -3177,32 +3270,36 @@ var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToo
 
                 var gx2 = 40 + ii * gaugeW;
 
-                // Background bar
+                // Recessed studio gauge card + luminous top accent rim
 
-                ctx.fillStyle = '#1e293b'; ctx.fillRect(gx2, 60, gaugeW - 10, 50);
+                ctx.fillStyle = '#132138'; ctx.fillRect(gx2, 60, gaugeW - 10, 52);
+                ctx.strokeStyle = 'rgba(100,116,139,0.4)'; ctx.lineWidth = 1; ctx.strokeRect(gx2, 60, gaugeW - 10, 52);
 
-                // Value bar
-
+                // Value fill bar with subtle gradient
                 var pct = Math.min(1, Math.abs(ind.val) / 10);
-
+                var barW = (gaugeW - 10) * pct;
+                if (hasMacLG && barW > 1) {
+                  var gbG = ctx.createLinearGradient(gx2, 60, gx2 + barW, 60);
+                  gbG.addColorStop(0, ind.color + '44'); gbG.addColorStop(1, ind.color + 'aa');
+                  ctx.fillStyle = gbG;
+                } else {
+                  ctx.fillStyle = ind.color;
+                }
+                ctx.fillRect(gx2, 60, barW, 52);
                 ctx.fillStyle = ind.color;
-
-                ctx.fillRect(gx2, 60, (gaugeW - 10) * pct, 50);
-
-                ctx.globalAlpha = 0.3; ctx.fillRect(gx2, 60, (gaugeW - 10) * pct, 50); ctx.globalAlpha = 1;
+                ctx.fillRect(gx2, 60, gaugeW - 10, 3);
 
                 // Labels
 
-                ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = '#f8fafc';
 
-                ctx.fillText(ind.label, gx2 + 6, 82);
+                ctx.fillText(ind.label, gx2 + 8, 84);
 
-                // White, not ind.color — the value text starts INSIDE the value
-                // bar, so color-matched text (green on green) was invisible.
+                // White ink for crisp contrast across every gauge fill state.
 
-                ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#ffffff';
 
-                ctx.fillText((ind.val >= 0 ? '+' : '') + ind.val.toFixed(1) + ind.unit, gx2 + 6, 106);
+                ctx.fillText((ind.val >= 0 ? '+' : '') + ind.val.toFixed(1) + ind.unit, gx2 + 8, 108);
 
               });
 
@@ -3257,10 +3354,19 @@ var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToo
                 ];
                 series.forEach(function (sr) {
                   if (!mhPts.every(function (p) { return isFinite(p[sr.k]); })) return;
-                  ctx.strokeStyle = sr.color; ctx.lineWidth = 3; ctx.setLineDash(sr.dash); ctx.beginPath();
+                  ctx.save();
+                  ctx.shadowColor = sr.color; ctx.shadowBlur = 9;
+                  ctx.strokeStyle = sr.color; ctx.lineWidth = 3.2; ctx.setLineDash(sr.dash); ctx.beginPath();
                   mhPts.forEach(function (p, k) { if (k === 0) ctx.moveTo(xOf(k), yOf(p[sr.k])); else ctx.lineTo(xOf(k), yOf(p[sr.k])); });
                   ctx.stroke(); ctx.setLineDash([]);
-                  mhPts.forEach(function (p, k) { ctx.fillStyle = sr.color; ctx.beginPath(); ctx.arc(xOf(k), yOf(p[sr.k]), 5, 0, Math.PI * 2); ctx.fill(); });
+                  ctx.restore();
+                  mhPts.forEach(function (p, k) {
+                    var pxk = xOf(k), pyk = yOf(p[sr.k]);
+                    if (k === mhPts.length - 1) {
+                      ctx.fillStyle = sr.color + '44'; ctx.beginPath(); ctx.arc(pxk, pyk, 10, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.fillStyle = sr.color; ctx.beginPath(); ctx.arc(pxk, pyk, 5, 0, Math.PI * 2); ctx.fill();
+                  });
                 });
                 ctx.font = 'bold 18px Inter, system-ui';
                 series.forEach(function (sr, si) { ctx.fillStyle = sr.color; ctx.fillText(sr.name, mhX + 14 + si * 190, mhY + 26); });
@@ -3695,7 +3801,7 @@ var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToo
                   React.createElement('div', { className: 'text-xs leading-snug' },
                     React.createElement('div', { className: 'font-extrabold text-emerald-300' }, t('stem.economicslab.mini_eq_label', 'Live Equilibrium')),
                     React.createElement('div', { className: 'font-bold text-white' }, 'P* $' + (sdOut && isFinite(sdOut.pStar) ? sdOut.pStar.toFixed(0) : '50') + ' · Q* ' + (sdOut && isFinite(sdOut.qStar) ? sdOut.qStar.toFixed(0) : '50')),
-                    React.createElement('div', { className: 'text-[11px] text-slate-300' }, 'GDP ' + macroGDP.toFixed(1) + '% · CPI ' + macroInflation.toFixed(1) + '%')
+                    React.createElement('div', { className: 'text-xs text-slate-300' }, 'GDP ' + macroGDP.toFixed(1) + '% · CPI ' + macroInflation.toFixed(1) + '%')
                   )
                 )
               ),
@@ -3751,7 +3857,7 @@ var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToo
               ),
 
               React.createElement('div', { className: 'eco-preset-bar', role: 'group', 'aria-label': t('stem.economicslab.a11y_market_presets', 'Starter market scenarios') },
-                React.createElement('span', { className: 'text-[11px] font-extrabold uppercase tracking-wider text-emerald-300 mr-1' }, t('stem.economicslab.presets_label', 'Starter scenarios:')),
+                React.createElement('span', { className: 'text-xs font-extrabold uppercase tracking-wider text-emerald-300 mr-1' }, t('stem.economicslab.presets_label', 'Starter scenarios:')),
                 React.createElement('button', { type: 'button', className: 'eco-preset-chip', onClick: function () { applyEcoPreset({ econTab: 'supplyDemand', sdDemandShift: 20, sdSupplyShift: 0, sdPriceCeiling: 0, sdPriceFloor: 0, sdTax: 0, sdMonopoly: false }, 'Loaded Demand Surge (+20) scenario'); } }, '📈 ' + t('stem.economicslab.preset_demand_surge', 'Demand Surge')),
                 React.createElement('button', { type: 'button', className: 'eco-preset-chip', onClick: function () { applyEcoPreset({ econTab: 'supplyDemand', sdDemandShift: 0, sdSupplyShift: 0, sdPriceCeiling: 32, sdPriceFloor: 0, sdTax: 0, sdMonopoly: false }, 'Loaded Binding Price Ceiling ($32) scenario'); } }, '🏠 ' + t('stem.economicslab.preset_ceiling', 'Price Ceiling')),
                 React.createElement('button', { type: 'button', className: 'eco-preset-chip', onClick: function () { applyEcoPreset({ econTab: 'supplyDemand', sdDemandShift: 0, sdSupplyShift: 0, sdPriceCeiling: 0, sdPriceFloor: 0, sdTax: 15, sdMonopoly: false }, 'Loaded Per-Unit Tax ($15) scenario'); } }, '🏛️ ' + t('stem.economicslab.preset_tax', 'Per-Unit Tax')),

@@ -8,21 +8,56 @@
     { id: 'ai', key: 'syllable_prep.method_ai', label: 'AI for every word', hintKey: 'syllable_prep.method_ai_hint', hint: 'Sends the word list to AI, then flags any word that disagrees with the checked list.' },
   ];
 
+  function _syllableAiUsable(aiFn) {
+    if (typeof window !== 'undefined' && (
+      window.__alloStudentAiDisabled === true ||
+      window.__alloAiSecretsLocked === true ||
+      window.__alloQrStudentMode === true ||
+      window._alloQrBlocked === true ||
+      (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)
+    )) return false;
+    if (aiFn && aiFn._alloQrBlocked === true) return false;
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+        return Boolean(window.__alloAiUsable('text', aiFn));
+      }
+    } catch (_) {}
+    return typeof aiFn === 'function';
+  }
+
   function SyllablePrepPanel(props) {
-    var core = window.AlloModules.SyllablePrep;
+    var core = window.AlloModules && window.AlloModules.SyllablePrep;
+    if (!core) return null;
+    return <SyllablePrepPanelInner {...props} core={core} />;
+  }
+
+  function SyllablePrepPanelInner(props) {
+    var core = props.core;
     var text = props.text;
     var language = props.language;
-    var words = React.useMemo(function () { return core.extractWords(props.sourceText); }, [props.sourceText]);
+    var words = React.useMemo(function () { return core.extractWords(props.sourceText); }, [core, props.sourceText]);
     var onDevice = core.hasOnDeviceRules(language);
     var unsupported = core.isUnsupportedLanguage(language);
-    var aiFn = props.aiFn;
+    var [, setAiPolicyTick] = React.useState(0);
+    React.useEffect(function () {
+      if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
+      var bump = function () { setAiPolicyTick(function (n) { return (n + 1) % 1000000; }); };
+      var evs = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed', 'storage'];
+      evs.forEach(function (ev) { window.addEventListener(ev, bump); });
+      return function () { evs.forEach(function (ev) { window.removeEventListener(ev, bump); }); };
+    }, []);
+    var aiFn = _syllableAiUsable(props.aiFn) ? props.aiFn : null;
     var saved = props.savedPrep;
-    var savedInfo = React.useMemo(function () { return core.readPrep(saved); }, [saved]);
+    var savedInfo = React.useMemo(function () { return core.readPrep(saved); }, [core, saved]);
 
     var [method, setMethod] = React.useState(function () {
+      if (!aiFn) return 'device';
       if (savedInfo && METHODS.some(function (item) { return item.id === savedInfo.method; })) return savedInfo.method;
-      return aiFn ? 'auto' : 'device';
+      return 'auto';
     });
+    React.useEffect(function () {
+      if (!aiFn && method !== 'device') setMethod('device');
+    }, [aiFn, method]);
     var [entries, setEntries] = React.useState(function () { return savedInfo ? core.entriesFromSaved(words, saved) : []; });
     var [status, setStatus] = React.useState('idle');
     var [notice, setNotice] = React.useState('');
@@ -32,21 +67,69 @@
     var [replaceEdits, setReplaceEdits] = React.useState(false);
     var [closing, setClosing] = React.useState(false);
     var dialogRef = React.useRef(null);
+    var alertDialogRef = React.useRef(null);
     var runRef = React.useRef(0);
     var aliveRef = React.useRef(true);
 
     React.useEffect(function () {
       aliveRef.current = true;
-      if (dialogRef.current) dialogRef.current.focus();
-      return function () { aliveRef.current = false; runRef.current += 1; };
+      var dialog = dialogRef.current;
+      var prevFocus = typeof document !== 'undefined' ? document.activeElement : null;
+      var scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, prev: '' }) : null;
+      if (scrollLock && document.body) {
+        if (scrollLock.count === 0) {
+          scrollLock.prev = document.body.style.overflow;
+          document.body.style.overflow = 'hidden';
+        }
+        scrollLock.count += 1;
+      }
+      var hiddenSiblings = [];
+      var rootHost = (typeof document !== 'undefined' && document.getElementById('root')) || (typeof document !== 'undefined' && document.body);
+      if (rootHost && dialog) {
+        Array.prototype.slice.call(rootHost.children || []).forEach(function (child) {
+          if (!child || child === dialog || child.contains(dialog)) return;
+          var role = child.getAttribute && child.getAttribute('role');
+          if (role === 'status' || role === 'alert' || role === 'log' || (child.hasAttribute && child.hasAttribute('aria-live'))) return;
+          hiddenSiblings.push({ node: child, hadInert: child.hasAttribute('inert'), prevAriaHidden: child.getAttribute('aria-hidden') });
+          child.setAttribute('inert', '');
+          child.setAttribute('aria-hidden', 'true');
+        });
+      }
+      if (dialog) dialog.focus();
+      return function () {
+        aliveRef.current = false;
+        runRef.current += 1;
+        hiddenSiblings.forEach(function (entry) {
+          if (!entry.hadInert) entry.node.removeAttribute('inert');
+          if (entry.prevAriaHidden === null) entry.node.removeAttribute('aria-hidden');
+          else entry.node.setAttribute('aria-hidden', entry.prevAriaHidden);
+        });
+        if (scrollLock && document.body) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev || '';
+        }
+        try {
+          if (prevFocus && prevFocus !== document.body && prevFocus !== document.documentElement && prevFocus.isConnected && typeof prevFocus.focus === 'function') {
+            prevFocus.focus();
+          }
+        } catch (_) {}
+      };
     }, []);
+
+    React.useEffect(function () {
+      if (closing && alertDialogRef.current) {
+        try { alertDialogRef.current.focus(); } catch (_) {}
+        try { if (typeof alertDialogRef.current.scrollIntoView === 'function') alertDialogRef.current.scrollIntoView({ block: 'nearest' }); } catch (_) {}
+      }
+    }, [closing]);
 
     var run = React.useCallback(function (chosen, options) {
       var opts = options || {};
       var ticket = ++runRef.current;
       setStatus('working');
       setNotice('');
-      var useAi = !!aiFn && chosen !== 'device' && opts.deviceOnly !== true;
+      var liveAi = _syllableAiUsable(props.aiFn) ? props.aiFn : null;
+      var useAi = !!liveAi && chosen !== 'device' && opts.deviceOnly !== true;
       return (core.languageCode(language) === 'en' ? core.loadEnglishTable() : Promise.resolve(null)).then(function (table) {
         if (ticket !== runRef.current) return null;
         var tableMissing = core.languageCode(language) === 'en' && !table;
@@ -71,7 +154,8 @@
         var step = batches.reduce(function (chain, batch) {
           return chain.then(function () {
             if (ticket !== runRef.current) return null;
-            return Promise.resolve().then(function () { return aiFn(core.buildAiPrompt(batch, language), true); }).then(function (raw) {
+            if (!_syllableAiUsable(props.aiFn)) { failed += batch.length; return null; }
+            return Promise.resolve().then(function () { return liveAi(core.buildAiPrompt(batch, language), true); }).then(function (raw) {
               var results = core.parseAiReply(raw, batch, knownFor);
               batch.forEach(function (word) {
                 if (results[word]) byWord.set(word, Object.assign({}, byWord.get(word), results[word]));
@@ -82,7 +166,15 @@
         }, Promise.resolve());
         return step.then(function () {
           if (ticket !== runRef.current || !aliveRef.current) return;
-          setEntries(merged.map(function (entry) { return byWord.get(entry.word) || entry; }));
+          setEntries(function (prev) {
+            var latestEdited = opts.replaceEdits === true
+              ? null
+              : new Map((prev || []).filter(function (entry) { return entry && entry.edited; }).map(function (entry) { return [entry.word, entry]; }));
+            return merged.map(function (entry) {
+              if (latestEdited && latestEdited.has(entry.word)) return latestEdited.get(entry.word);
+              return byWord.get(entry.word) || entry;
+            });
+          });
           setStatus('ready');
           if (opts.markDirty !== false) setDirty(true);
           if (tableMissing) setNotice(text('syllable_prep.table_failed', 'The word list did not load, so these are first guesses. Check your connection and try again.'));
@@ -93,7 +185,7 @@
         setStatus('ready');
         setNotice(text('syllable_prep.run_failed', 'Suggestions could not be made. Try again.'));
       });
-    }, [aiFn, entries, language, saved, text, words]);
+    }, [core, entries, language, props.aiFn, saved, text, words]);
 
     // Free and instant, so a first look at English or Spanish needs no button or AI.
     React.useEffect(function () {
@@ -123,8 +215,8 @@
       if (entry.source === 'saved') return text('syllable_prep.source_saved', 'Saved');
       return text('syllable_prep.source_none', 'Not divided yet');
     };
-    var buttonClass = 'min-h-11 inline-flex items-center justify-center rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-50';
-    var primaryClass = 'min-h-11 inline-flex items-center justify-center rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-50';
+    var buttonClass = 'min-h-11 inline-flex items-center justify-center rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed';
+    var primaryClass = 'min-h-11 inline-flex items-center justify-center rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed';
 
     var renderEditor = function (entry) {
       var letters = core.graphemes(entry.word);
@@ -134,23 +226,31 @@
         pieces.push(<span key={'l' + index} className="text-xl font-bold text-slate-900">{letter}</span>);
         if (index < letters.length - 1) {
           var on = breaks.has(index + 1);
-          pieces.push(<button key={'g' + index} type="button" aria-pressed={on}
+          pieces.push(<button key={'g' + index} type="button" aria-pressed={on} disabled={status === 'working'}
             aria-label={text('syllable_prep.gap_label', 'Divide between {before} and {after}', { before: letters.slice(0, index + 1).join(''), after: letters.slice(index + 1).join('') })}
             onClick={function () { updateEntry(entry.word, { parts: core.toggleBreak(entry.parts, index + 1), edited: true, check: false, source: 'teacher', needsAi: false }); }}
-            className={'mx-0.5 inline-flex items-center justify-center rounded border text-base font-black ' + (on ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-500 hover:bg-slate-100')}
-            style={{ minWidth: 24, minHeight: 32 }}>{on ? core.SEPARATOR : ''}</button>);
+            className={'mx-0.5 inline-flex items-center justify-center rounded border text-base font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50 ' + (on ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-600 hover:bg-slate-100')}
+            style={{ minWidth: 36, minHeight: 44 }}>{on ? core.SEPARATOR : ''}</button>);
         }
       });
       return <div className="mt-2 rounded-lg border border-slate-300 bg-slate-50 p-3">
         <p className="mb-2 text-xs text-slate-700">{text('syllable_prep.edit_hint', 'Select a gap to add or remove a division.')}</p>
-        <div dir="auto" className="flex flex-wrap items-center">{pieces}</div>
+        <div dir="auto" className="flex flex-wrap items-center gap-y-1">{pieces}</div>
       </div>;
     };
 
-    return <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 10100, background: 'rgba(15, 23, 42, 0.6)' }} onMouseDown={function (event) { if (event.target === event.currentTarget) requestClose(); }}>
+    var handleEscapeOrClose = function () {
+      if (closing) { setClosing(false); return; }
+      requestClose();
+    };
+
+    return <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 10100, background: 'rgba(15, 23, 42, 0.6)' }} onMouseDown={function (event) { if (event.target === event.currentTarget) handleEscapeOrClose(); }}>
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="syllable-prep-title" tabIndex={-1}
-        onKeyDown={function (event) { if (props.containFocus) props.containFocus(event, dialogRef.current, requestClose); }}
-        className="w-full rounded-xl border border-slate-300 bg-white p-5 shadow-2xl" style={{ maxWidth: 720, maxHeight: '88vh', overflowY: 'auto' }}>
+        onKeyDown={function (event) {
+          if (props.containFocus) { props.containFocus(event, dialogRef.current, handleEscapeOrClose); return; }
+          if (event.key === 'Escape') { event.preventDefault(); handleEscapeOrClose(); }
+        }}
+        className="allo-docsuite w-full rounded-xl border border-slate-300 bg-white p-5 shadow-2xl" style={{ maxWidth: 720, maxHeight: '88vh', overflowY: 'auto' }}>
         <div className="flex items-start justify-between gap-3">
           <h2 id="syllable-prep-title" className="text-lg font-black text-slate-900">{text('syllable_prep.title', 'Check syllables')}</h2>
           <button type="button" onClick={requestClose} className={buttonClass}>{text('common.close', 'Close')}</button>
@@ -162,8 +262,8 @@
             <legend className="text-sm font-bold text-slate-900">{text('syllable_prep.method_legend', 'How should suggestions be made?')}</legend>
             {METHODS.map(function (item) {
               var needsAi = item.id !== 'device';
-              return <label key={item.id} className={'mt-2 flex items-start gap-2 text-sm ' + (needsAi && !aiFn ? 'text-slate-500' : 'text-slate-900')}>
-                <input type="radio" name="syllable-prep-method" className="mt-1" value={item.id} checked={method === item.id} disabled={needsAi && !aiFn} onChange={function () { setMethod(item.id); }} />
+              return <label key={item.id} className={'mt-2 min-h-11 flex items-start gap-2 rounded-lg p-1.5 text-sm ' + (needsAi && !aiFn ? 'text-slate-600' : 'text-slate-900')}>
+                <input type="radio" name="syllable-prep-method" className="mt-1 h-4 w-4 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" value={item.id} checked={method === item.id} disabled={needsAi && !aiFn} onChange={function () { setMethod(item.id); }} />
                 <span><span className="font-bold">{text(item.key, item.label)}</span><span className="block text-xs text-slate-700">{text(item.hintKey, item.hint)}</span></span>
               </label>;
             })}
@@ -174,7 +274,7 @@
             <button type="button" className={primaryClass} aria-disabled={status === 'working'} disabled={!onDevice && !aiFn} onClick={function () { if (status !== 'working') run(method, { replaceEdits: replaceEdits }); }}>
               {status === 'working' ? text('syllable_prep.working', 'Working...') : text('syllable_prep.suggest', 'Suggest syllables')}
             </button>
-            {editedCount > 0 && <label className="flex items-center gap-2 text-sm text-slate-900"><input type="checkbox" checked={replaceEdits} onChange={function (event) { setReplaceEdits(event.target.checked); }} />{text('syllable_prep.replace_edits', 'Also replace my changes')}</label>}
+            {editedCount > 0 && <label className="min-h-11 flex items-center gap-2 text-sm text-slate-900"><input type="checkbox" className="h-4 w-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" checked={replaceEdits} disabled={status === 'working'} onChange={function (event) { setReplaceEdits(event.target.checked); }} />{text('syllable_prep.replace_edits', 'Also replace my changes')}</label>}
           </div>
           <p role="status" aria-live="polite" className="mt-3 text-sm font-bold text-slate-900">
             {entries.length ? text('syllable_prep.summary', '{total} words, {check} to check, {edited} changed by you', { total: entries.length, check: checkCount, edited: editedCount }) : ''}
@@ -183,7 +283,7 @@
 
           <div className="mt-3 flex flex-wrap gap-2">
             {entries.length > 0 && <button type="button" aria-pressed={showAll} className={buttonClass} onClick={function () { setShowAll(!showAll); }}>{showAll ? text('syllable_prep.show_flagged', 'Show only flagged words') : text('syllable_prep.show_all', 'Show all words')}</button>}
-            {checkCount > 0 && <button type="button" className={buttonClass} onClick={function () { setEntries(function (list) { return list.map(function (entry) { return entry.check ? Object.assign({}, entry, { check: false, needsAi: false }) : entry; }); }); setDirty(true); }}>{text('syllable_prep.confirm_all', 'Confirm all flagged words')}</button>}
+            {checkCount > 0 && <button type="button" className={buttonClass} disabled={status === 'working'} onClick={function () { setEntries(function (list) { return list.map(function (entry) { return entry.check ? Object.assign({}, entry, { check: false, needsAi: false }) : entry; }); }); setDirty(true); }}>{text('syllable_prep.confirm_all', 'Confirm all flagged words')}</button>}
           </div>
 
           {entries.length > 0 && visible.length === 0 && <p className="mt-3 text-sm text-slate-700">{text('syllable_prep.none_flagged', 'No words need checking.')}</p>}
@@ -198,8 +298,8 @@
                     {entry.check && <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-slate-900">{text('syllable_prep.flagged', 'Check this')}</span>}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {entry.check && <button type="button" className={buttonClass} aria-label={text('syllable_prep.confirm_word', 'Confirm {word}', { word: entry.word })} onClick={function () { updateEntry(entry.word, { check: false, needsAi: false }); }}>{text('syllable_prep.looks_right', 'Looks right')}</button>}
-                    <button type="button" className={buttonClass} aria-expanded={open} aria-label={text('syllable_prep.change_word', 'Change {word}', { word: entry.word })} onClick={function () { setEditing(open ? null : entry.word); }}>{text('syllable_prep.change', 'Change')}</button>
+                    {entry.check && <button type="button" className={buttonClass} disabled={status === 'working'} aria-label={text('syllable_prep.confirm_word', 'Confirm {word}', { word: entry.word })} onClick={function () { updateEntry(entry.word, { check: false, needsAi: false }); }}>{text('syllable_prep.looks_right', 'Looks right')}</button>}
+                    <button type="button" className={buttonClass} disabled={status === 'working'} aria-expanded={open} aria-label={text('syllable_prep.change_word', 'Change {word}', { word: entry.word })} onClick={function () { setEditing(open ? null : entry.word); }}>{text('syllable_prep.change', 'Change')}</button>
                   </div>
                 </div>
                 {open && renderEditor(entry)}
@@ -208,15 +308,15 @@
           </ul>
         </>}
 
-        {closing ? <div role="alertdialog" aria-label={text('syllable_prep.unsaved', 'You have unsaved changes.')} className="mt-4 rounded-lg border border-amber-400 bg-amber-50 p-3">
+        {closing ? <div ref={alertDialogRef} tabIndex={-1} role="alertdialog" aria-label={text('syllable_prep.unsaved', 'You have unsaved changes.')} className="mt-4 rounded-lg border border-amber-400 bg-amber-50 p-3">
           <p className="text-sm font-bold text-slate-900">{text('syllable_prep.unsaved', 'You have unsaved changes.')}</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button type="button" className={primaryClass} onClick={saveNow}>{text('syllable_prep.save', 'Save for students')}</button>
+            <button type="button" className={primaryClass} disabled={status === 'working'} onClick={saveNow}>{text('syllable_prep.save', 'Save for students')}</button>
             <button type="button" className={buttonClass} onClick={props.onClose}>{text('syllable_prep.discard', 'Discard changes')}</button>
             <button type="button" className={buttonClass} onClick={function () { setClosing(false); }}>{text('syllable_prep.keep_working', 'Keep working')}</button>
           </div>
         </div> : <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-slate-300 pt-3">
-          {savedInfo && <button type="button" className={buttonClass} onClick={function () { props.onSave(null); props.onClose(); }}>{text('syllable_prep.remove', 'Remove saved syllables')}</button>}
+          {savedInfo && <button type="button" className={buttonClass} disabled={status === 'working'} onClick={function () { props.onSave(null); props.onClose(); }}>{text('syllable_prep.remove', 'Remove saved syllables')}</button>}
           {!unsupported && <button type="button" className={primaryClass} disabled={!entries.length || status === 'working'} onClick={saveNow}>{text('syllable_prep.save', 'Save for students')}</button>}
         </div>}
       </div>

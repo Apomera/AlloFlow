@@ -58,9 +58,122 @@ function VideoLibraryOverlay({ onClose, t }) {
   };
   const [activeId, setActiveId] = React.useState(VIDEO_CATALOG.length === 1 ? VIDEO_CATALOG[0].id : null);
   const [failed, setFailed] = React.useState({});
+  const [playbackRate, setPlaybackRate] = React.useState(1);
+  const [isSpeakingTranscript, setIsSpeakingTranscript] = React.useState(false);
+  const [transcriptCopied, setTranscriptCopied] = React.useState(false);
   const rootRef = React.useRef(null);
+  const videoRef = React.useRef(null);
+  const mountedRef = React.useRef(true);
+  const speechTokenRef = React.useRef(0);
+  const copyTimerRef = React.useRef(null);
   const onCloseRef = React.useRef(onClose);
   onCloseRef.current = onClose;
+  const hasSpeechBackend = typeof window !== "undefined" && (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === "function" || typeof window.speechSynthesis !== "undefined" && typeof window.SpeechSynthesisUtterance === "function");
+  const stopTranscriptSpeech = React.useCallback(() => {
+    speechTokenRef.current += 1;
+    try {
+      if (typeof window !== "undefined" && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === "function") {
+        window.AlloSpeechPlayer.stop();
+      } else if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    } catch (_) {
+    }
+    if (mountedRef.current) setIsSpeakingTranscript(false);
+  }, []);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    const onSpeechState = (event) => {
+      const detail = event && event.detail || {};
+      const st = detail.state;
+      if (detail.isPlaying === false || st === "idle" || st === "stopped" || st === "ended" || st === "error") {
+        if (mountedRef.current) setIsSpeakingTranscript(false);
+      }
+    };
+    if (typeof window !== "undefined") window.addEventListener("allo-speech-state", onSpeechState);
+    return () => {
+      mountedRef.current = false;
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      if (typeof window !== "undefined") window.removeEventListener("allo-speech-state", onSpeechState);
+      stopTranscriptSpeech();
+    };
+  }, [stopTranscriptSpeech]);
+  React.useEffect(() => {
+    setPlaybackRate(1);
+    setTranscriptCopied(false);
+    stopTranscriptSpeech();
+  }, [activeId, stopTranscriptSpeech]);
+  React.useEffect(() => {
+    const video = videoRef.current || rootRef.current && rootRef.current.querySelector("video");
+    if (!video) return;
+    try {
+      video.playbackRate = playbackRate;
+    } catch (_) {
+    }
+  }, [activeId, playbackRate, failed]);
+  const jumpVideoSeconds = (delta) => {
+    const video = videoRef.current || rootRef.current && rootRef.current.querySelector("video");
+    if (!video) return;
+    try {
+      const current = Number(video.currentTime) || 0;
+      const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : Infinity;
+      video.currentTime = Math.max(0, Math.min(duration, current + delta));
+    } catch (_) {
+    }
+  };
+  const toggleListenTranscript = (lines) => {
+    if (isSpeakingTranscript) {
+      stopTranscriptSpeech();
+      return;
+    }
+    const speechText = (Array.isArray(lines) ? lines : []).map((s) => String(s || "").trim()).filter(Boolean).join(" ");
+    if (!speechText || typeof window === "undefined") return;
+    const token = ++speechTokenRef.current;
+    try {
+      if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === "function") {
+        window.AlloSpeechPlayer.stop?.();
+        setIsSpeakingTranscript(true);
+        const res = window.AlloSpeechPlayer.speak(speechText);
+        if (res && typeof res.then === "function") {
+          res.catch(() => {
+          }).finally(() => {
+            if (mountedRef.current && speechTokenRef.current === token) setIsSpeakingTranscript(false);
+          });
+        }
+      } else if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === "function") {
+        window.speechSynthesis.cancel();
+        const utter = new window.SpeechSynthesisUtterance(speechText);
+        utter.onend = () => {
+          if (mountedRef.current && speechTokenRef.current === token) setIsSpeakingTranscript(false);
+        };
+        utter.onerror = () => {
+          if (mountedRef.current && speechTokenRef.current === token) setIsSpeakingTranscript(false);
+        };
+        setIsSpeakingTranscript(true);
+        window.speechSynthesis.speak(utter);
+      }
+    } catch (_) {
+      if (mountedRef.current) setIsSpeakingTranscript(false);
+    }
+  };
+  const copyTranscriptText = (lines) => {
+    const text = (Array.isArray(lines) ? lines : []).map((s) => String(s || "").trim()).filter(Boolean).join("\n");
+    if (!text) return;
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        Promise.resolve(navigator.clipboard.writeText(text)).then(() => {
+          if (!mountedRef.current) return;
+          setTranscriptCopied(true);
+          if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+          copyTimerRef.current = setTimeout(() => {
+            if (mountedRef.current) setTranscriptCopied(false);
+          }, 2e3);
+        }).catch(() => {
+        });
+      }
+    } catch (_) {
+    }
+  };
   React.useEffect(() => {
     const dialog = rootRef.current;
     if (!dialog || typeof document === "undefined") return void 0;
@@ -111,7 +224,7 @@ function VideoLibraryOverlay({ onClose, t }) {
       }
     } catch (_) {
     }
-    const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter((el) => {
+    const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, video[controls], audio[controls], [tabindex]:not([tabindex="-1"])')).filter((el) => {
       if (!el || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       let ancestor = el.parentElement;
       while (ancestor && ancestor !== dialog) {
@@ -139,8 +252,7 @@ function VideoLibraryOverlay({ onClose, t }) {
     }
     const onKey = (e) => {
       if (!dialog.isConnected || e.defaultPrevented) return;
-      const topTrap = trapStack && trapStack[trapStack.length - 1];
-      if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === "function" && topTrap.root.contains(dialog))) return;
+      if (trapStack && trapStack[trapStack.length - 1] !== trap) return;
       if (e.key === "Escape") {
         if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
         e.preventDefault();
@@ -238,6 +350,7 @@ function VideoLibraryOverlay({ onClose, t }) {
     return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
       "video",
       {
+        ref: videoRef,
         key: video.id,
         src: video.src,
         controls: true,
@@ -256,7 +369,43 @@ function VideoLibraryOverlay({ onClose, t }) {
           label: tr("video_library.captions_track", "Captions")
         }
       )
-    ), video.silent && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, tr("video_library.silent_note", "This video has no narration or soundtrack, so there is nothing to caption. The full on-screen text is below.")));
+    ), /* @__PURE__ */ React.createElement("div", { "data-video-library-controls": "true", className: "mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5", role: "group", "aria-label": tr("video_library.skip_controls_group", "Skip playback time") }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-video-library-rewind": "true",
+        onClick: () => jumpVideoSeconds(-10),
+        "aria-label": tr("video_library.rewind_10s_aria", "Rewind 10 seconds"),
+        className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+      },
+      "\u21BA 10s"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-video-library-forward": "true",
+        onClick: () => jumpVideoSeconds(10),
+        "aria-label": tr("video_library.forward_10s_aria", "Skip forward 10 seconds"),
+        className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+      },
+      "10s \u21BB"
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5", role: "group", "aria-label": tr("video_library.playback_speed_group", "Playback speed") }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, tr("video_library.speed_label", "Speed:")), [0.75, 1, 1.25, 1.5].map((rate) => {
+      const selected = playbackRate === rate;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: rate,
+          type: "button",
+          "data-video-library-speed": String(rate),
+          "aria-pressed": selected,
+          "aria-label": tr("video_library.speed_aria", "Playback speed " + rate + "x"),
+          onClick: () => setPlaybackRate(rate),
+          className: "min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 " + (selected ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100")
+        },
+        rate,
+        "\xD7"
+      );
+    }))), video.silent && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, tr("video_library.silent_note", "This video has no narration or soundtrack, so there is nothing to caption. The full on-screen text is below.")));
   };
   return /* @__PURE__ */ React.createElement(
     "div",
@@ -265,8 +414,7 @@ function VideoLibraryOverlay({ onClose, t }) {
       style: { background: "rgba(15,23,42,0.72)" },
       role: "dialog",
       "aria-modal": "true",
-      "aria-labelledby": "video-library-title",
-      "aria-label": tr("video_library.title", "Video library")
+      "aria-labelledby": "video-library-title"
     },
     /* @__PURE__ */ React.createElement(
       "div",
@@ -296,7 +444,26 @@ function VideoLibraryOverlay({ onClose, t }) {
         },
         /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-bold text-slate-800" }, /* @__PURE__ */ React.createElement(PlayCircle, { size: 15, className: "shrink-0 text-indigo-600", "aria-hidden": "true" }), video.title),
         /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-[11px] text-slate-600" }, formatDuration(video.durationSec))
-      ))), active && /* @__PURE__ */ React.createElement("div", null, VIDEO_CATALOG.length > 1 && /* @__PURE__ */ React.createElement("h3", { className: "mb-1 text-sm font-bold text-slate-800" }, active.title), /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-xs text-slate-600" }, formatDuration(active.durationSec), active.blurb ? " \xB7 " + active.blurb : ""), renderPlayer(active), active.transcript && active.transcript.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer select-none py-2 text-sm font-bold text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600" }, tr("video_library.transcript", "Text version")), /* @__PURE__ */ React.createElement("ol", { className: "mt-2 list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-slate-600" }, active.transcript.map((line, i) => /* @__PURE__ */ React.createElement("li", { key: "tr-" + i }, line))))))
+      ))), active && /* @__PURE__ */ React.createElement("div", null, VIDEO_CATALOG.length > 1 && /* @__PURE__ */ React.createElement("h3", { className: "mb-1 text-sm font-bold text-slate-800" }, active.title), /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-xs text-slate-600" }, formatDuration(active.durationSec), active.blurb ? " \xB7 " + active.blurb : ""), renderPlayer(active), active.transcript && active.transcript.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer select-none py-2 text-sm font-bold text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600" }, tr("video_library.transcript", "Text version")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2" }, hasSpeechBackend && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-video-library-listen": "true",
+          "aria-pressed": isSpeakingTranscript,
+          onClick: () => toggleListenTranscript(active.transcript),
+          className: "min-h-11 rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 " + (isSpeakingTranscript ? "border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800" : "border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100")
+        },
+        isSpeakingTranscript ? tr("video_library.stop_transcript", "\u23F9 Stop") : tr("video_library.listen_transcript", "\u{1F50A} Listen to text version")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-video-library-copy": "true",
+          onClick: () => copyTranscriptText(active.transcript),
+          className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+        },
+        transcriptCopied ? tr("video_library.copied_transcript", "\u2713 Copied") : tr("video_library.copy_transcript", "\u{1F4CB} Copy text")
+      )), /* @__PURE__ */ React.createElement("ol", { className: "mt-2 list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-slate-600" }, active.transcript.map((line, i) => /* @__PURE__ */ React.createElement("li", { key: "tr-" + i }, line))))))
     )
   );
 }

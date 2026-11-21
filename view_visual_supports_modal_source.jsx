@@ -69,6 +69,9 @@ function PausableImage(props) {
     } catch (e) { /* CORS or other — leave frozenFrame null */ }
   }, [isAnimated]);
 
+  const [crossOriginRetry, setCrossOriginRetry] = React.useState(false);
+  React.useEffect(() => { setCrossOriginRetry(false); }, [src]);
+
   // Non-GIF: plain <img>, zero overhead, zero overlay.
   if (!isAnimated) {
     return <img src={src} alt={alt} style={style} loading="lazy" decoding="async" />;
@@ -87,7 +90,8 @@ function PausableImage(props) {
         src={paused && frozenFrame ? frozenFrame : src}
         alt={alt}
         onLoad={handleLoad}
-        crossOrigin={src && src.startsWith('data:') ? undefined : 'anonymous'}
+        onError={() => { if (!crossOriginRetry && src && !src.startsWith('data:')) setCrossOriginRetry(true); }}
+        crossOrigin={(src && src.startsWith('data:')) || crossOriginRetry ? undefined : 'anonymous'}
         loading="lazy"
         decoding="async"
         style={Object.assign({}, imgInlineStyle, { visibility: hiddenWhilePaused ? 'hidden' : 'visible' })}
@@ -129,8 +133,36 @@ function visualSupportText(value, fallback) {
   return text || fallback;
 }
 
+function safeVisualSupportImageUrl(raw) {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  if (/^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[A-Za-z0-9+/=\s]+$/i.test(trimmed)) return trimmed;
+  if (/^data:image\/svg\+xml/i.test(trimmed)) {
+    let decoded = '';
+    try {
+      const comma = trimmed.indexOf(',');
+      if (comma < 0) return '';
+      const meta = trimmed.slice(0, comma);
+      const body = trimmed.slice(comma + 1);
+      decoded = /;base64/i.test(meta) ? atob(body) : decodeURIComponent(body);
+    } catch (_) { return ''; }
+    if (/<script\b|<foreignObject\b|\bon[a-z]+\s*=|javascript:/i.test(decoded)) return '';
+    return trimmed;
+  }
+  if (/^blob:/i.test(trimmed)) return trimmed;
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) return parsed.href;
+  } catch (_) {}
+  return '';
+}
+
 function readVisualSupportSnapshot() {
   try {
+    const explicitProfileId = arguments.length > 0 && typeof arguments[0] === 'string' && arguments[0].trim()
+      ? arguments[0].trim()
+      : null;
     let profiles = [];
     try {
       const parsedProfiles = JSON.parse(localStorage.getItem('alloStudentProfiles') || '[]');
@@ -138,9 +170,10 @@ function readVisualSupportSnapshot() {
     } catch (e) {}
     let savedProfileId = null;
     try { savedProfileId = JSON.parse(localStorage.getItem('alloActiveProfileId') || 'null'); } catch (e) {}
-    const profileId = (savedProfileId && profiles.some((profile) => profile && profile.id === savedProfileId))
-      ? savedProfileId
-      : (profiles[0] && profiles[0].id ? profiles[0].id : 'default');
+    const profileId = explicitProfileId
+      || ((savedProfileId && profiles.some((profile) => profile && profile.id === savedProfileId))
+        ? savedProfileId
+        : (profiles[0] && profiles[0].id ? profiles[0].id : 'default'));
     const readCollection = function (base) {
       try {
         const scoped = localStorage.getItem(base + '__' + profileId);
@@ -162,7 +195,7 @@ function readVisualSupportSnapshot() {
             id: visualSupportText(safeWord.id, 'word-' + wordIndex),
             label: visualSupportText(safeWord.label, 'Unlabeled symbol'),
             category: ['noun', 'verb', 'adjective', 'other'].includes(safeWord.category) ? safeWord.category : 'other',
-            image: typeof safeWord.image === 'string' ? safeWord.image : '',
+            image: safeVisualSupportImageUrl(safeWord.image),
           };
         }),
       };
@@ -179,7 +212,7 @@ function readVisualSupportSnapshot() {
           return {
             id: visualSupportText(safeItem.id, 'step-' + itemIndex),
             label: visualSupportText(safeItem.label, 'Unlabeled step'),
-            image: typeof safeItem.image === 'string' ? safeItem.image : '',
+            image: safeVisualSupportImageUrl(safeItem.image),
             complete: !!safeItem.complete,
           };
         }),
@@ -229,24 +262,150 @@ function persistVisualScheduleProgress(profileId, scheduleId, nextNowId, nextCom
 function VisualSupportBoardCard(props) {
   const { board, cardIndex, categoryBackgrounds, pauseAnimations, onSpeak } = props;
   const tr = props.tr || function (key, fallback, params) { return vsTr(null, key, fallback, params); };
+  const [activeCategory, setActiveCategory] = React.useState('all');
+  const [phraseOpen, setPhraseOpen] = React.useState(false);
+  const [phraseWords, setPhraseWords] = React.useState([]);
+  const categoryOrder = ['noun', 'verb', 'adjective', 'other'];
+  const categoryLabels = {
+    noun: tr('cat_noun', 'Nouns'),
+    verb: tr('cat_verb', 'Verbs'),
+    adjective: tr('cat_adjective', 'Describing'),
+    other: tr('cat_other', 'Other'),
+  };
+  const availableCategories = categoryOrder.filter((cat) => board.words.some((w) => w.category === cat));
+  const effectiveCategory = activeCategory === 'all' || availableCategories.includes(activeCategory) ? activeCategory : 'all';
+  const filteredWords = effectiveCategory === 'all'
+    ? board.words
+    : board.words.filter((w) => w.category === effectiveCategory);
+  const addPhraseWord = (word) => {
+    setPhraseWords((prev) => (prev.length >= 12 ? prev : prev.concat({ id: word.id + '-' + prev.length, label: word.label })));
+  };
+  const speakPhrase = () => {
+    const joined = phraseWords.map((w) => w.label).join(' ').trim();
+    if (!joined) return;
+    onSpeak(joined, tr('phrase_description', 'built phrase'));
+  };
   return (
     <section className="border border-slate-400 rounded-xl overflow-hidden" aria-labelledby={'visual-support-board-' + cardIndex}>
-      <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex items-center justify-between gap-3">
-        <h3 id={'visual-support-board-' + cardIndex} className="font-semibold text-slate-700 text-sm">{board.title}</h3>
-        <span className="text-xs font-medium text-slate-600">{board.words.length === 1 ? tr('symbol_count_one', '{count} symbol', { count: 1 }) : tr('symbol_count', '{count} symbols', { count: board.words.length })}</span>
+      <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0">
+          <h3 id={'visual-support-board-' + cardIndex} className="font-semibold text-slate-700 text-sm">{board.title}</h3>
+          <span className="text-xs font-medium text-slate-600">{board.words.length === 1 ? tr('symbol_count_one', '{count} symbol', { count: 1 }) : tr('symbol_count', '{count} symbols', { count: board.words.length })}</span>
+        </div>
+        {board.words.length >= 2 && (
+          <button
+            type="button"
+            data-vs-phrase-strip-toggle="true"
+            aria-pressed={phraseOpen}
+            onClick={() => setPhraseOpen((open) => !open)}
+            className={'min-h-11 px-3 rounded-lg border text-xs font-semibold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700 ' + (phraseOpen ? 'border-purple-700 bg-purple-700 text-white hover:bg-purple-800' : 'border-purple-300 bg-white text-purple-800 hover:bg-purple-50')}
+          >
+            {phraseOpen ? tr('close_phrase_strip', '✓ Phrase strip') : tr('open_phrase_strip', '💬 Phrase strip')}
+          </button>
+        )}
       </div>
+      {availableCategories.length >= 2 && (
+        <div data-vs-board-cat-filter="true" className="px-3 pt-2.5 flex flex-wrap items-center gap-1.5" role="group" aria-label={tr('filter_categories', 'Filter symbols by word type')}>
+          <button
+            type="button"
+            data-vs-cat-pill="all"
+            aria-pressed={effectiveCategory === 'all'}
+            onClick={() => setActiveCategory('all')}
+            className={'min-h-11 px-3 rounded-lg border text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700 ' + (effectiveCategory === 'all' ? 'border-purple-700 bg-purple-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50')}
+          >
+            {tr('cat_all', 'All ({count})', { count: board.words.length })}
+          </button>
+          {availableCategories.map((cat) => {
+            const count = board.words.filter((w) => w.category === cat).length;
+            const selected = effectiveCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                data-vs-cat-pill={cat}
+                aria-pressed={selected}
+                onClick={() => setActiveCategory(cat)}
+                className={'min-h-11 px-3 rounded-lg border text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700 ' + (selected ? 'border-purple-700 bg-purple-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50')}
+              >
+                {categoryLabels[cat]} ({count})
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {phraseOpen && (
+        <div data-vs-phrase-strip="true" className="mx-3 mt-2.5 rounded-xl border border-purple-200 bg-purple-50/70 p-3 space-y-2">
+          <div className="flex flex-wrap items-center gap-1.5 min-h-[2.25rem]">
+            {phraseWords.length === 0
+              ? <span className="text-xs text-purple-900">{tr('phrase_empty_hint', 'Choose "+ Add" on symbols below to build a phrase to speak aloud.')}</span>
+              : phraseWords.map((entry, idx) => (
+                <span key={entry.id} data-vs-phrase-chip={idx} className="inline-flex items-center rounded-lg border border-purple-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-800">{entry.label}</span>
+              ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              data-vs-phrase-speak="true"
+              disabled={phraseWords.length === 0}
+              onClick={speakPhrase}
+              className="min-h-11 rounded-lg bg-purple-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-purple-800 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700"
+            >
+              🔊 {tr('speak_phrase', 'Speak phrase')}
+            </button>
+            <button
+              type="button"
+              data-vs-phrase-undo="true"
+              disabled={phraseWords.length === 0}
+              onClick={() => setPhraseWords((prev) => prev.slice(0, -1))}
+              className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700"
+            >
+              ⌫ {tr('phrase_undo', 'Undo')}
+            </button>
+            <button
+              type="button"
+              data-vs-phrase-clear="true"
+              disabled={phraseWords.length === 0}
+              onClick={() => setPhraseWords([])}
+              className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700"
+            >
+              {tr('phrase_clear', 'Clear')}
+            </button>
+          </div>
+        </div>
+      )}
       {board.words.length === 0
         ? <p className="p-4 text-sm text-slate-600" role="status">{tr('board_empty', 'This board has no symbols yet.')}</p>
         : <div className="p-3" role="list" aria-label={tr('board_symbols', '{title} symbols', { title: board.title })} style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(88px, 1fr))', gap:8}}>
-            {board.words.map((word, wordIndex) => (
-              <div key={word.id + '-' + wordIndex} role="listitem" style={{background: categoryBackgrounds[word.category] || categoryBackgrounds.other, borderRadius:8, padding:8, minWidth:0, display:'flex', flexDirection:'column', alignItems:'center', gap:5}}>
+            {filteredWords.map((word, wordIndex) => {
+              const catClass = word.category === 'noun'
+                ? 'bg-amber-50 border border-amber-200'
+                : word.category === 'verb'
+                  ? 'bg-emerald-50 border border-emerald-200'
+                  : word.category === 'adjective'
+                    ? 'bg-sky-50 border border-sky-200'
+                    : 'bg-slate-100 border border-slate-200';
+              return (
+              <div key={word.id + '-' + wordIndex} role="listitem" className={catClass + ' rounded-lg p-2 min-w-0 flex flex-col items-center gap-1.5'}>
                 {word.image
                   ? <PausableImage src={word.image} alt={word.label} globalPaused={pauseAnimations} tr={tr} style={{width:64,height:64}}/>
-                  : <div aria-hidden="true" style={{width:64,height:64,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,color:'#94a3b8'}}>?</div>}
-                <span style={{fontSize:12,fontWeight:700,textAlign:'center',color:'#1f2937',lineHeight:1.25,overflowWrap:'anywhere'}}>{word.label}</span>
-                <button type="button" onClick={() => onSpeak(word.label, word.label)} aria-label={tr('read_symbol', 'Read symbol aloud: {label}', { label: word.label })} className="min-h-11 min-w-11 rounded-lg text-slate-700 hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700" title={tr('read_symbol_title', 'Read symbol aloud')}>{tr('read', 'Read')}</button>
+                  : <div aria-hidden="true" className="w-16 h-16 flex items-center justify-center text-3xl text-slate-500">?</div>}
+                <span className="text-xs font-bold text-center text-slate-900 leading-snug" style={{overflowWrap:'anywhere'}}>{word.label}</span>
+                <div className="flex flex-wrap items-center justify-center gap-1">
+                  <button type="button" onClick={() => onSpeak(word.label, word.label)} aria-label={tr('read_symbol', 'Read symbol aloud: {label}', { label: word.label })} className="min-h-11 min-w-11 px-2 rounded-lg border border-slate-300 bg-white text-slate-800 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700" title={tr('read_symbol_title', 'Read symbol aloud')}>{tr('read', 'Read')}</button>
+                  {phraseOpen && (
+                    <button
+                      type="button"
+                      data-vs-phrase-add={word.id}
+                      onClick={() => addPhraseWord(word)}
+                      aria-label={tr('add_to_phrase', 'Add {label} to phrase strip', { label: word.label })}
+                      className="min-h-11 rounded-lg border border-purple-400 bg-white px-2 text-xs font-bold text-purple-900 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700"
+                    >
+                      + {tr('add_word', 'Add')}
+                    </button>
+                  )}
+                </div>
               </div>
-            ))}
+            );})}
           </div>}
     </section>
   );
@@ -263,41 +422,192 @@ function getInitialScheduleProgress(schedule) {
 }
 
 function VisualSupportScheduleCard(props) {
-  const { schedule, cardIndex, progress, pauseAnimations, onSpeak, onSetCurrent, onToggleComplete } = props;
+  const { schedule, cardIndex, progress, pauseAnimations, onSpeak, onSetCurrent, onToggleComplete, onResetSchedule } = props;
   const tr = props.tr || function (key, fallback, params) { return vsTr(null, key, fallback, params); };
+  const [focusNowNext, setFocusNowNext] = React.useState(false);
+  const [armReset, setArmReset] = React.useState(false);
+  React.useEffect(() => {
+    if (!armReset) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setArmReset(false); } };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [armReset]);
   const initialProgress = getInitialScheduleProgress(schedule);
   const safeProgress = progress || initialProgress;
   const currentStep = Math.max(0, Math.min(Number.isInteger(safeProgress.current) ? safeProgress.current : initialProgress.current, Math.max(0, schedule.items.length - 1)));
   const completed = safeProgress.completed || initialProgress.completed;
+  const completedCount = schedule.items.reduce((acc, _, idx) => acc + (completed[idx] ? 1 : 0), 0);
+  const allDone = schedule.items.length > 0 && completedCount === schedule.items.length;
+  const progressPct = schedule.items.length > 0 ? Math.round((completedCount / schedule.items.length) * 100) : 0;
+  const nowItem = schedule.items[currentStep] || null;
+  const nextStepIndex = schedule.items.findIndex((_, idx) => idx > currentStep && !completed[idx]);
+  const fallbackNextIndex = nextStepIndex >= 0
+    ? nextStepIndex
+    : schedule.items.findIndex((_, idx) => idx !== currentStep && !completed[idx]);
+  const nextItem = fallbackNextIndex >= 0 ? schedule.items[fallbackNextIndex] : null;
   return (
     <section className="border border-slate-400 rounded-xl overflow-hidden" aria-labelledby={'visual-support-schedule-' + cardIndex}>
-      <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h3 id={'visual-support-schedule-' + cardIndex} className="font-semibold text-slate-700 text-sm">{schedule.title}</h3>
-          <p className="text-xs text-slate-600 mt-0.5">{schedule.items.length === 0 ? tr('no_steps', 'No steps') : tr('now_step', 'Now: step {n} of {total}', { n: currentStep + 1, total: schedule.items.length })}</p>
+      <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 id={'visual-support-schedule-' + cardIndex} className="font-semibold text-slate-700 text-sm">{schedule.title}</h3>
+            <p className="text-xs text-slate-600 mt-0.5">
+              {schedule.items.length === 0
+                ? tr('no_steps', 'No steps')
+                : (tr('now_step', 'Now: step {n} of {total}', { n: currentStep + 1, total: schedule.items.length })
+                  + ' · '
+                  + tr('steps_done_count', '{done}/{total} done', { done: completedCount, total: schedule.items.length }))}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {schedule.items.length >= 2 && (
+              <button
+                type="button"
+                data-vs-first-then-toggle="true"
+                aria-pressed={focusNowNext}
+                onClick={() => setFocusNowNext((v) => !v)}
+                className={'min-h-11 px-3 rounded-lg border text-xs font-semibold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700 ' + (focusNowNext ? 'border-purple-700 bg-purple-700 text-white hover:bg-purple-800' : 'border-purple-300 bg-white text-purple-800 hover:bg-purple-50')}
+              >
+                {focusNowNext ? tr('show_all_steps', 'Show all steps') : tr('first_then_mode', 'First → Then')}
+              </button>
+            )}
+            {schedule.items.length > 0 && (
+              <button type="button" onClick={() => onSpeak(schedule.items.map((item, index) => tr('step_spoken', 'Step {n}: {label}', { n: index + 1, label: item.label })).join('. '), schedule.title)} className="min-h-11 px-3 rounded-lg border border-purple-300 bg-white text-xs font-semibold text-purple-800 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700" aria-label={tr('read_all_steps', 'Read all steps in {title}', { title: schedule.title })}>{tr('read_all', 'Read all')}</button>
+            )}
+            {completedCount > 0 && typeof onResetSchedule === 'function' && (
+              armReset ? (
+                <span className="inline-flex items-center gap-1">
+                  <button
+                    type="button"
+                    data-vs-schedule-reset-confirm="true"
+                    onClick={() => { setArmReset(false); onResetSchedule(schedule); }}
+                    className="min-h-11 px-3 rounded-lg border border-rose-600 bg-rose-600 text-xs font-bold text-white hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rose-700"
+                  >
+                    {tr('confirm_reset_schedule', 'Confirm reset?')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setArmReset(false)}
+                    className="min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700"
+                  >
+                    {tr('cancel', 'Cancel')}
+                  </button>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  data-vs-schedule-reset="true"
+                  onClick={() => setArmReset(true)}
+                  className="min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700"
+                  aria-label={tr('reset_schedule_aria', 'Reset completed steps in {title}', { title: schedule.title })}
+                >
+                  ↺ {tr('reset_schedule', 'Reset')}
+                </button>
+              )
+            )}
+          </div>
         </div>
         {schedule.items.length > 0 && (
-          <button type="button" onClick={() => onSpeak(schedule.items.map((item, index) => tr('step_spoken', 'Step {n}: {label}', { n: index + 1, label: item.label })).join('. '), schedule.title)} className="min-h-11 px-3 rounded-lg border border-purple-300 bg-white text-xs font-semibold text-purple-800 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700" aria-label={tr('read_all_steps', 'Read all steps in {title}', { title: schedule.title })}>{tr('read_all', 'Read all')}</button>
+          <div
+            data-vs-schedule-progress="true"
+            role="progressbar"
+            aria-label={tr('schedule_progress_aria', '{title} progress', { title: schedule.title })}
+            aria-valuenow={completedCount}
+            aria-valuemin={0}
+            aria-valuemax={schedule.items.length}
+            className="h-2 w-full overflow-hidden rounded-full bg-slate-200"
+          >
+            <div className={'h-full rounded-full transition-all motion-reduce:transition-none ' + (allDone ? 'bg-emerald-600' : 'bg-purple-600')} style={{ width: progressPct + '%' }} />
+          </div>
         )}
       </div>
       {schedule.items.length === 0
         ? <p className="p-4 text-sm text-slate-600" role="status">{tr('schedule_empty', 'This schedule has no steps yet.')}</p>
+        : focusNowNext && schedule.items.length >= 2
+          ? (
+            <div data-vs-first-then-view="true" className="p-4 space-y-3 bg-purple-50/40">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="rounded-2xl border-2 border-purple-600 bg-white p-4 flex flex-col items-center gap-3 text-center">
+                  <span className="rounded-full bg-purple-700 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-white">
+                    {allDone ? tr('all_done_badge', 'ALL DONE') : tr('first_now_badge', 'FIRST · NOW')}
+                  </span>
+                  {nowItem && (
+                    <>
+                      <div style={{width:'100%',height:112,border:'1px solid #e2e8f0',borderRadius:12,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:'#f8fafc'}}>
+                        {nowItem.image
+                          ? <PausableImage src={nowItem.image} alt={nowItem.label} globalPaused={pauseAnimations} tr={tr} style={{width:'100%',height:'100%'}}/>
+                          : <span aria-hidden="true" style={{fontSize:34,color:'#94a3b8'}}>{allDone ? '✓' : '?'}</span>}
+                      </div>
+                      <p className="text-base font-bold text-slate-900">{nowItem.label}</p>
+                      {!completed[currentStep] ? (
+                        <button
+                          type="button"
+                          data-vs-complete-current="true"
+                          onClick={() => onToggleComplete(schedule, currentStep)}
+                          className="min-h-11 w-full rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700"
+                        >
+                          ✓ {tr('done_next_step', 'Done — Next step')}
+                        </button>
+                      ) : (
+                        <p className="text-xs font-bold text-emerald-800">{tr('step_completed_msg', '✓ Step completed!')}</p>
+                      )}
+                    </>
+                  )}
+                </div>
+                <div className="rounded-2xl border-2 border-slate-300 bg-white p-4 flex flex-col items-center gap-3 text-center">
+                  <span className="rounded-full bg-slate-700 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-white">
+                    {tr('then_next_badge', 'THEN · NEXT')}
+                  </span>
+                  {nextItem ? (
+                    <>
+                      <div style={{width:'100%',height:112,border:'1px solid #e2e8f0',borderRadius:12,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:'#f8fafc'}}>
+                        {nextItem.image
+                          ? <PausableImage src={nextItem.image} alt={nextItem.label} globalPaused={pauseAnimations} tr={tr} style={{width:'100%',height:'100%'}}/>
+                          : <span aria-hidden="true" style={{fontSize:34,color:'#94a3b8'}}>?</span>}
+                      </div>
+                      <p className="text-base font-bold text-slate-800">{nextItem.label}</p>
+                    </>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center py-6 text-emerald-800">
+                      <span aria-hidden="true" className="text-3xl mb-1">🎉</span>
+                      <p className="text-sm font-bold">{allDone ? tr('schedule_all_complete', 'Every step is complete!') : tr('last_step_hint', 'Final step — all done after this!')}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  data-vs-read-now-next="true"
+                  onClick={() => {
+                    const spoken = nextItem
+                      ? tr('read_first_then_both', 'First: {now}. Then: {next}.', { now: nowItem ? nowItem.label : '', next: nextItem.label })
+                      : tr('read_first_only', 'Now: {now}.', { now: nowItem ? nowItem.label : '' });
+                    onSpeak(spoken, schedule.title);
+                  }}
+                  className="min-h-11 rounded-lg border border-purple-300 bg-white px-3 py-1.5 text-xs font-semibold text-purple-800 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700"
+                >
+                  🔊 {tr('read_now_next', 'Read First & Then')}
+                </button>
+              </div>
+            </div>
+          )
         : <ol role="list" aria-label={tr('schedule_steps', '{title} ordered steps', { title: schedule.title })} className="p-3" style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(138px, 1fr))', gap:10}}>
             {schedule.items.map((item, itemIndex) => {
               const isCurrent = itemIndex === currentStep;
               const isComplete = !!completed[itemIndex];
               return (
-                <li key={item.id + '-' + itemIndex} aria-current={isCurrent ? 'step' : undefined} style={{border:isCurrent ? '3px solid #7c3aed' : '2px solid #cbd5e1', borderRadius:12, padding:8, minWidth:0, background:isComplete ? '#f0fdf4' : (isCurrent ? '#faf5ff' : '#fff'), display:'flex', flexDirection:'column', alignItems:'stretch', gap:7}}>
+                <li key={item.id + '-' + itemIndex} aria-current={isCurrent ? 'step' : undefined} className={(isCurrent ? 'border-[3px] border-purple-600 ' : 'border-2 border-slate-300 ') + (isComplete ? 'bg-emerald-50' : (isCurrent ? 'bg-purple-50' : 'bg-white')) + ' rounded-xl p-2 min-w-0 flex flex-col items-stretch gap-2'}>
                   <div className="flex items-center justify-between gap-2">
-                    <span style={{fontSize:11,fontWeight:800,color:isCurrent ? '#6d28d9' : '#475569'}}>{tr('step_badge', 'STEP {n}', { n: itemIndex + 1 })}</span>
-                    <span style={{fontSize:11,fontWeight:800,color:isComplete ? '#166534' : (isCurrent ? '#6d28d9' : '#64748b')}}>{isComplete ? tr('done', 'DONE') : (isCurrent ? tr('now', 'NOW') : tr('next', 'NEXT'))}</span>
+                    <span className={'text-[11px] font-extrabold ' + (isCurrent ? 'text-purple-800' : 'text-slate-700')}>{tr('step_badge', 'STEP {n}', { n: itemIndex + 1 })}</span>
+                    <span className={'text-[11px] font-extrabold ' + (isComplete ? 'text-emerald-800' : (isCurrent ? 'text-purple-800' : 'text-slate-600'))}>{isComplete ? tr('done', 'DONE') : (isCurrent ? tr('now', 'NOW') : tr('next', 'NEXT'))}</span>
                   </div>
-                  <div style={{width:'100%',height:96,border:'1px solid #cbd5e1',borderRadius:9,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:'#f8fafc'}}>
+                  <div className="w-full h-24 border border-slate-300 rounded-lg overflow-hidden flex items-center justify-center bg-slate-50">
                     {item.image
                       ? <PausableImage src={item.image} alt={item.label} globalPaused={pauseAnimations} tr={tr} style={{width:'100%',height:'100%'}}/>
-                      : <span aria-hidden="true" style={{fontSize:28,color:'#94a3b8'}}>?</span>}
+                      : <span aria-hidden="true" className="text-3xl text-slate-500">?</span>}
                   </div>
-                  <span style={{fontSize:13,fontWeight:700,textAlign:'center',color:'#1f2937',lineHeight:1.25,overflowWrap:'anywhere'}}>{item.label}</span>
+                  <span className="text-[13px] font-bold text-center text-slate-900 leading-snug" style={{overflowWrap:'anywhere'}}>{item.label}</span>
                   <div className="flex flex-col gap-1 mt-auto">
                     <button type="button" onClick={() => onSetCurrent(schedule, itemIndex)} disabled={isCurrent} className="min-h-11 rounded-lg border border-purple-300 bg-white px-2 text-xs font-semibold text-purple-800 disabled:bg-purple-100 disabled:text-purple-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700" aria-label={isCurrent ? tr('is_current', '{label} is the current step', { label: item.label }) : tr('make_current', 'Make {label} the current step', { label: item.label })}>{isCurrent ? tr('current_step', 'Current step') : tr('set_now', 'Set as now')}</button>
                     <button type="button" onClick={() => onToggleComplete(schedule, itemIndex)} aria-pressed={isComplete} className="min-h-11 rounded-lg border border-emerald-300 bg-white px-2 text-xs font-semibold text-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700">{isComplete ? tr('mark_not_done', 'Mark not done') : tr('mark_done', 'Mark done')}</button>
@@ -362,7 +672,10 @@ function VisualSupportsModal(props) {
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
-    const isTopTrap = function () { return trapStack[trapStack.length - 1] === trap; };
+    const isTopTrap = function () {
+      const top = trapStack[trapStack.length - 1];
+      return top === trap || Boolean(top && top.root && top.root.contains(dialog));
+    };
     const getFocusable = function () {
       return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(function (element) {
         if (element.hidden || element.getAttribute('aria-hidden') === 'true' || element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
@@ -424,19 +737,22 @@ function VisualSupportsModal(props) {
 
   // Keep storage reads out of render. Re-read when the viewer opens, when
   // another tab changes storage, or when Symbol Studio emits its local update event.
-  const [supportData, setSupportData] = React.useState(readVisualSupportSnapshot);
+  const explicitProfileId = props.activeStudentProfileId
+    || (typeof window !== 'undefined' && window.__alloActiveStudentProfileId)
+    || null;
+  const [supportData, setSupportData] = React.useState(() => readVisualSupportSnapshot(explicitProfileId));
   const [searchQuery, setSearchQuery] = React.useState('');
   const [scheduleProgress, setScheduleProgress] = React.useState({});
   const scheduleProgressRef = React.useRef(scheduleProgress);
   scheduleProgressRef.current = scheduleProgress;
   const [statusMessage, setStatusMessage] = React.useState('');
-  const activeProfileId = props.activeStudentProfileId
-    || (typeof window !== 'undefined' && window.__alloActiveStudentProfileId)
+  const activeProfileId = explicitProfileId
     || supportData.profileId
     || 'default';
   const refreshSupports = React.useCallback(function () {
-    setSupportData(readVisualSupportSnapshot());
-  }, []);
+    setSupportData(readVisualSupportSnapshot(explicitProfileId));
+    setScheduleProgress({});
+  }, [explicitProfileId]);
   React.useEffect(function () {
     if (showVisualSupports !== false) refreshSupports();
     const handleStorage = function (event) {
@@ -471,17 +787,27 @@ function VisualSupportsModal(props) {
     });
   }, [vsSchedules, normalizedQuery]);
 
+  const vsMountedRef = React.useRef(true);
+  React.useEffect(function () {
+    vsMountedRef.current = true;
+    return function () {
+      vsMountedRef.current = false;
+      try { if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop(); } catch (_) {}
+      try { if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (_) {}
+    };
+  }, []);
+
   const speakSupportText = React.useCallback(function (text, description) {
     const cleanText = visualSupportText(text, '');
     if (!cleanText) return;
     try {
       if (typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : window._alloGlobalMute) {
-        setStatusMessage('');
+        if (vsMountedRef.current) setStatusMessage('');
         return;
       }
     } catch (_) {}
     const say = function (key, fallback, params) { return vsTr(tRef.current, key, fallback, params); };
-    setStatusMessage(say('reading', 'Reading {name}', { name: description || cleanText }));
+    if (vsMountedRef.current) setStatusMessage(say('reading', 'Reading {name}', { name: description || cleanText }));
     const langHint = props.language
       || (typeof window !== 'undefined' && (window.__alloVoiceLang || window.__alloTextLanguage))
       || (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang)
@@ -493,16 +819,17 @@ function VisualSupportsModal(props) {
           language: langHint || undefined,
           reason: 'visual-supports',
         })).then(function (id) {
+          if (!vsMountedRef.current) return;
           setStatusMessage(id != null
             ? say('finished_reading', 'Finished reading {name}', { name: description || cleanText })
             : say('read_failed', 'Could not read that support aloud.'));
         }).catch(function () {
-          setStatusMessage(say('read_failed', 'Could not read that support aloud.'));
+          if (vsMountedRef.current) setStatusMessage(say('read_failed', 'Could not read that support aloud.'));
         });
         return;
       }
       if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
-        setStatusMessage(say('read_unavailable', 'Read aloud is not available in this browser.'));
+        if (vsMountedRef.current) setStatusMessage(say('read_unavailable', 'Read aloud is not available in this browser.'));
         return;
       }
       window.speechSynthesis.cancel();
@@ -512,11 +839,11 @@ function VisualSupportsModal(props) {
       if (Number.isFinite(rate) && rate > 0) utterance.rate = Math.max(0.5, Math.min(2, rate));
       const volume = Number(typeof window !== 'undefined' ? window.__alloVoiceVolume : NaN);
       if (Number.isFinite(volume)) utterance.volume = Math.max(0, Math.min(1, volume));
-      utterance.onend = function () { setStatusMessage(say('finished_reading', 'Finished reading {name}', { name: description || cleanText })); };
-      utterance.onerror = function () { setStatusMessage(say('read_failed', 'Could not read that support aloud.')); };
+      utterance.onend = function () { if (vsMountedRef.current) setStatusMessage(say('finished_reading', 'Finished reading {name}', { name: description || cleanText })); };
+      utterance.onerror = function () { if (vsMountedRef.current) setStatusMessage(say('read_failed', 'Could not read that support aloud.')); };
       window.speechSynthesis.speak(utterance);
     } catch (e) {
-      setStatusMessage(say('read_failed', 'Could not read that support aloud.'));
+      if (vsMountedRef.current) setStatusMessage(say('read_failed', 'Could not read that support aloud.'));
     }
   }, [props.language]);
 
@@ -582,6 +909,33 @@ function VisualSupportsModal(props) {
     });
     setStatusMessage(tr('step_updated', '{step} completion updated.', { step: schedule.items[stepIndex] ? schedule.items[stepIndex].label : tr('step_n', 'Step {n}', { n: stepIndex + 1 }) }));
   };
+  const resetScheduleProgress = function (schedule) {
+    const items = Array.isArray(schedule.items) ? schedule.items : [];
+    const nextNowId = items[0] ? items[0].id : '';
+    const completedById = {};
+    items.forEach(function (it) { if (it && it.id) completedById[it.id] = false; });
+    persistVisualScheduleProgress(activeProfileId, schedule.id, nextNowId, completedById);
+    setScheduleProgress(function (previous) {
+      return Object.assign({}, previous, {
+        [schedule.id]: { current: 0, completed: {} },
+      });
+    });
+    setSupportData(function (previous) {
+      if (!previous || !Array.isArray(previous.schedules)) return previous;
+      return Object.assign({}, previous, {
+        schedules: previous.schedules.map(function (sched) {
+          if (!sched || sched.id !== schedule.id) return sched;
+          return Object.assign({}, sched, {
+            nowId: nextNowId,
+            items: Array.isArray(sched.items) ? sched.items.map(function (it) {
+              return Object.assign({}, it, { complete: false });
+            }) : [],
+          });
+        }),
+      });
+    });
+    setStatusMessage(tr('schedule_reset_done', '{title} progress reset.', { title: schedule.title }));
+  };
 
   // WCAG 2.2.2: default to paused if the OS reports reduced-motion preference,
   // otherwise honor whatever the user picked last time. Persisted across sessions.
@@ -598,8 +952,18 @@ function VisualSupportsModal(props) {
     try { localStorage.setItem('alloVsPauseAnim', pauseAnim ? '1' : '0'); } catch (e) {}
   }, [pauseAnim]);
 
+  const backdropDownRef = React.useRef(false);
   return (
-          <div className="fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-3" role="presentation" onClick={() => setShowVisualSupports(false)}>
+          <div
+            className="fixed inset-0 z-[9000] bg-black/70 backdrop-blur-sm flex items-stretch justify-center p-3"
+            role="presentation"
+            onMouseDown={(e) => { backdropDownRef.current = e.target === e.currentTarget; }}
+            onClick={(e) => {
+              const startedOnBackdrop = backdropDownRef.current;
+              backdropDownRef.current = false;
+              if (startedOnBackdrop && e.target === e.currentTarget) setShowVisualSupports(false);
+            }}
+          >
             <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="visual-supports-title" tabIndex={-1} className="allo-docsuite bg-white rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-purple-600 focus:ring-offset-2" onClick={e => e.stopPropagation()}>
               <div style={{background: 'linear-gradient(135deg, #7c3aed 0%, #4338ca 100%)'}} className="p-4 flex items-center justify-between flex-shrink-0">
                 <div>
@@ -647,7 +1011,7 @@ function VisualSupportsModal(props) {
                 {vsTab === 'schedules' && (visibleSchedules.length === 0
                   ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3" aria-hidden="true">📅</div><p className="font-semibold">{vsSchedules.length === 0 ? tr('no_schedules', 'No saved schedules yet') : tr('no_schedules_match', 'No schedules match your search')}</p><p className="text-sm mt-1">{vsSchedules.length === 0 ? tr('no_schedules_hint', 'Save schedules in Symbol Studio to see them here') : tr('no_schedules_match_hint', 'Try a schedule title or step name')}</p></div>
                   : visibleSchedules.map((schedule, scheduleIndex) => (
-                    <VisualSupportScheduleCard key={schedule.id + '-' + scheduleIndex} schedule={schedule} cardIndex={scheduleIndex} progress={scheduleProgress[schedule.id]} pauseAnimations={pauseAnim} onSpeak={speakSupportText} onSetCurrent={setCurrentScheduleStep} onToggleComplete={toggleScheduleStepComplete} tr={tr} />
+                    <VisualSupportScheduleCard key={schedule.id + '-' + scheduleIndex} schedule={schedule} cardIndex={scheduleIndex} progress={scheduleProgress[schedule.id]} pauseAnimations={pauseAnim} onSpeak={speakSupportText} onSetCurrent={setCurrentScheduleStep} onToggleComplete={toggleScheduleStepComplete} onResetSchedule={resetScheduleProgress} tr={tr} />
                   ))
                 )}
               </div>

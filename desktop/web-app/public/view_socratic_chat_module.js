@@ -51,8 +51,23 @@ function SocraticChat({
   const RefreshCw = window.RefreshCw || noop;
   const Send = window.Send || noop;
   const previousFocusRef = React.useRef(typeof document !== "undefined" ? document.activeElement : null);
+  const socraticInputRef = React.useRef(null);
   const isComposingRef = React.useRef(false);
+  const isDictatingRef = React.useRef(!!isSocraticDictating);
+  isDictatingRef.current = !!isSocraticDictating;
+  const bionicOn = typeof window !== "undefined" && typeof window.__alloUseBionic === "function" ? window.__alloUseBionic() : false;
+  const bt = (s) => bionicOn && typeof s === "string" && typeof window !== "undefined" && typeof window.__alloBionicReact === "function" ? window.__alloBionicReact(s) : s;
   React.useEffect(() => () => {
+    if (isDictatingRef.current) {
+      try {
+        if (typeof setIsSocraticDictating === "function") setIsSocraticDictating(false);
+      } catch (_) {
+      }
+      try {
+        if (recognitionRef && recognitionRef.current && typeof recognitionRef.current.stop === "function") recognitionRef.current.stop();
+      } catch (_) {
+      }
+    }
     const prev = previousFocusRef.current;
     if (prev && prev.isConnected && typeof prev.focus === "function") {
       try {
@@ -76,6 +91,7 @@ function SocraticChat({
   const _thinkingBubble = chatStyles.modelBubble || "bg-white border border-slate-400 text-slate-600";
   const _button = chatStyles.button || "bg-teal-700 text-white hover:bg-teal-800";
   const _secondaryButton = chatStyles.secondaryButton || "hover:bg-teal-700 text-teal-100 hover:text-white";
+  const _inputMicButton = chatStyles.secondaryButton || "text-teal-800 bg-slate-100 hover:bg-teal-100";
   const titleId = "socratic-chat-title";
   const descId = "socratic-chat-desc";
   const logId = "socratic-chat-log";
@@ -93,12 +109,45 @@ function SocraticChat({
     }
     return out;
   };
-  const canDictate = Boolean(
-    recognitionRef && recognitionRef.current || typeof window !== "undefined" && (window.SpeechRecognition || window.webkitSpeechRecognition)
-  );
-  const viewportW = typeof window !== "undefined" && window.innerWidth ? window.innerWidth : 1024;
-  const viewportH = typeof window !== "undefined" && window.innerHeight ? window.innerHeight : 768;
+  const readSocraticAiAvailable = () => {
+    try {
+      if (typeof window === "undefined") return true;
+      if (typeof window.__alloAiUsable === "function") return !!window.__alloAiUsable("text", window.callGemini);
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
+      if (typeof window.callGemini === "function" && window.callGemini._alloQrBlocked === true) return false;
+      return true;
+    } catch (_) {
+      return true;
+    }
+  };
+  const [socraticAiAvailable, setSocraticAiAvailable] = React.useState(readSocraticAiAvailable);
+  React.useEffect(() => {
+    if (typeof window === "undefined") return void 0;
+    const syncAi = () => setSocraticAiAvailable(readSocraticAiAvailable());
+    syncAi();
+    window.addEventListener("alloflow:ai-config-changed", syncAi);
+    window.addEventListener("alloflow:student-ai-config-changed", syncAi);
+    window.addEventListener("alloflow:ai-key-lock-changed", syncAi);
+    return () => {
+      window.removeEventListener("alloflow:ai-config-changed", syncAi);
+      window.removeEventListener("alloflow:student-ai-config-changed", syncAi);
+      window.removeEventListener("alloflow:ai-key-lock-changed", syncAi);
+    };
+  }, []);
+  const canDictate = Boolean(recognitionRef && recognitionRef.current);
+  const [viewportSize, setViewportSize] = React.useState(() => ({
+    w: typeof window !== "undefined" && window.innerWidth ? window.innerWidth : 1024,
+    h: typeof window !== "undefined" && window.innerHeight ? window.innerHeight : 768
+  }));
   const hasCustomPos = Boolean(socraticPosition && socraticPosition.x !== null && socraticPosition.y !== null);
+  React.useEffect(() => {
+    if (!hasCustomPos || typeof window === "undefined") return void 0;
+    const onResize = () => setViewportSize({ w: window.innerWidth || 1024, h: window.innerHeight || 768 });
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [hasCustomPos]);
+  const viewportW = viewportSize.w;
+  const viewportH = viewportSize.h;
   const panelW = Math.min(Math.max(200, viewportW - 16), isSocraticExpanded ? 768 : 320);
   const panelH = Math.min(Math.max(220, viewportH - 16), isSocraticExpanded ? 704 : 448);
   const clampedX = hasCustomPos ? Math.min(Math.max(8, viewportW - panelW - 8), Math.max(8, Number(socraticPosition.x) || 8)) : null;
@@ -135,7 +184,7 @@ function SocraticChat({
       return;
     }
     e.preventDefault();
-    if (!String(socraticInput || "").trim() || isSocraticThinking) return;
+    if (!socraticAiAvailable || !String(socraticInput || "").trim() || isSocraticThinking) return;
     handleSocraticSubmit();
   };
   const safeMessages = Array.isArray(socraticMessages) ? socraticMessages : [];
@@ -145,6 +194,7 @@ function SocraticChat({
       ref: socraticChatRef,
       className: `fixed z-[110] ${_container} rounded-2xl flex flex-col overflow-hidden animate-in motion-reduce:animate-none slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? "w-[48rem] h-[44rem]" : "w-80 h-[28rem]"} max-w-[calc(100vw-1rem)] max-h-[calc(100dvh-1rem)]`,
       role: "dialog",
+      "aria-modal": "false",
       "aria-labelledby": titleId,
       "aria-describedby": descId,
       onKeyDown: (e) => {
@@ -194,11 +244,12 @@ function SocraticChat({
         {
           type: "button",
           onClick: handleToggleSocraticAutoSend,
+          disabled: !canDictate,
           "data-help-key": "socratic_auto_send",
-          className: `min-w-11 min-h-11 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${socraticAutoSend ? _button : _secondaryButton}`,
-          title: t("socratic.auto_send"),
+          className: `min-w-11 min-h-11 inline-flex items-center justify-center rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${socraticAutoSend && canDictate ? _button : _secondaryButton}`,
+          title: canDictate ? t("socratic.auto_send") : socraticLabel("socratic.mic_unavailable", "Voice input is not supported in this browser"),
           "aria-label": t("socratic.auto_send"),
-          "aria-pressed": socraticAutoSend
+          "aria-pressed": socraticAutoSend && canDictate
         },
         /* @__PURE__ */ React.createElement(Mic, { size: 14, "aria-hidden": "true" })
       ), /* @__PURE__ */ React.createElement(
@@ -226,7 +277,29 @@ function SocraticChat({
         "aria-relevant": "additions text",
         "aria-label": t("socratic.title")
       },
-      safeMessages.map((msg, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, /* @__PURE__ */ React.createElement("div", { className: `max-w-[90%] p-2.5 rounded-xl text-xs shadow-sm leading-relaxed ${msg.role === "user" ? `${_userBubble} rounded-br-none` : `${_modelBubble} rounded-bl-none`}` }, /* @__PURE__ */ React.createElement("div", null, msg.role === "user" ? msg.text : typeof renderFormattedText === "function" ? renderFormattedText(msg.text) : msg.text), msg.role !== "user" && msg.text && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex justify-end" }, /* @__PURE__ */ React.createElement(
+      !socraticAiAvailable && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs font-semibold text-amber-900" }, socraticLabel("socratic.ai_unavailable", "AI tutor is currently unavailable (AI is off or locked). Existing messages remain readable below.")),
+      safeMessages.length === 0 && !isSocraticThinking && /* @__PURE__ */ React.createElement("div", { className: `${_modelBubble} p-3 rounded-xl text-xs leading-relaxed opacity-95` }, /* @__PURE__ */ React.createElement("p", null, socraticLabel("socratic.empty_welcome", "Ask a question about this lesson or share your thinking to get a guiding prompt.")), socraticAiAvailable && typeof setSocraticInput === "function" && /* @__PURE__ */ React.createElement("div", { "data-socratic-starters": true, className: "mt-2.5 flex flex-col gap-1.5", role: "group", "aria-label": socraticLabel("socratic.starters_label", "Starter prompts") }, [
+        socraticLabel("socratic.starter_simpler", "Can you explain this part in simpler words?"),
+        socraticLabel("socratic.starter_hint", "Give me a small hint on where to start."),
+        socraticLabel("socratic.starter_check", "Ask me a question to check my understanding.")
+      ].map((starter, idx) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: idx,
+          type: "button",
+          "data-socratic-starter": idx,
+          onClick: () => {
+            setSocraticInput(starter);
+            try {
+              socraticInputRef.current?.focus();
+            } catch (_) {
+            }
+          },
+          className: `min-h-11 w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium border transition-colors motion-reduce:transition-none hover:opacity-100 opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 ${_modelBubble}`
+        },
+        bt(starter)
+      )))),
+      safeMessages.map((msg, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, /* @__PURE__ */ React.createElement("div", { className: `max-w-[90%] p-2.5 rounded-xl text-xs shadow-sm leading-relaxed ${msg.role === "user" ? `${_userBubble} rounded-br-none` : `${_modelBubble} rounded-bl-none`}` }, /* @__PURE__ */ React.createElement("div", null, msg.role === "user" ? bt(msg.text) : typeof renderFormattedText === "function" ? renderFormattedText(msg.text) : bt(msg.text)), msg.role !== "user" && msg.text && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex justify-end" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -245,23 +318,26 @@ function SocraticChat({
       {
         type: "button",
         onClick: () => {
-          if (!canDictate) return;
+          if (!canDictate || !socraticAiAvailable) return;
           if (isSocraticDictating) {
             setIsSocraticDictating(false);
-            if (recognitionRef && recognitionRef.current) recognitionRef.current.stop();
+            try {
+              if (recognitionRef && recognitionRef.current) recognitionRef.current.stop();
+            } catch (_) {
+            }
           } else {
+            if (!recognitionRef || !recognitionRef.current) return;
             setIsSocraticDictating(true);
-            if (recognitionRef && recognitionRef.current) {
-              try {
-                recognitionRef.current.start();
-              } catch (e) {
-                warnLog("Caught error:", e?.message || e);
-              }
+            try {
+              recognitionRef.current.start();
+            } catch (e) {
+              setIsSocraticDictating(false);
+              if (typeof warnLog === "function") warnLog("Caught error:", e?.message || e);
             }
           }
         },
-        disabled: isSocraticThinking || !canDictate,
-        className: `min-w-11 min-h-11 p-2 rounded-lg transition-colors shadow-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isSocraticDictating ? "bg-red-700 text-white animate-pulse motion-reduce:animate-none" : _secondaryButton}`,
+        disabled: isSocraticThinking || !canDictate || !socraticAiAvailable,
+        className: `min-w-11 min-h-11 p-2 rounded-lg transition-colors shadow-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2 ${isSocraticDictating ? "bg-red-700 text-white animate-pulse motion-reduce:animate-none" : _inputMicButton}`,
         title: canDictate ? t("socratic.mic_tooltip") : socraticLabel("socratic.mic_unavailable", "Voice input is not supported in this browser"),
         "aria-label": canDictate ? t("socratic.mic_tooltip") : socraticLabel("socratic.mic_unavailable", "Voice input is not supported in this browser"),
         "aria-pressed": isSocraticDictating
@@ -270,6 +346,7 @@ function SocraticChat({
     ), /* @__PURE__ */ React.createElement(
       "input",
       {
+        ref: socraticInputRef,
         "aria-label": t("common.enter_socratic_input"),
         "data-help-key": "socratic_input",
         type: "text",
@@ -290,7 +367,7 @@ function SocraticChat({
         placeholder: isSocraticDictating ? t("socratic.listening") : t("socratic.placeholder"),
         className: `flex-grow min-h-11 text-xs p-2 border ${_input} rounded-lg focus-visible:ring-2 focus-visible:outline-none transition-all`,
         autoFocus: true,
-        disabled: isSocraticThinking,
+        disabled: isSocraticThinking || !socraticAiAvailable,
         "aria-controls": logId
       }
     ), /* @__PURE__ */ React.createElement(
@@ -298,8 +375,8 @@ function SocraticChat({
       {
         type: "submit",
         "aria-label": t("common.socratic_submit"),
-        disabled: !String(socraticInput || "").trim() || isSocraticThinking,
-        className: `min-w-11 min-h-11 p-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_button}`
+        disabled: !socraticAiAvailable || !String(socraticInput || "").trim() || isSocraticThinking,
+        className: `min-w-11 min-h-11 p-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2 ${_button}`
       },
       isSocraticThinking ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 16, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Send, { size: 16, "aria-hidden": "true" })
     ))

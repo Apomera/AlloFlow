@@ -64,9 +64,28 @@ function MaineSldStateRequirements(props) {
     aliveRef.current = true;
     return () => { aliveRef.current = false; operationRef.current += 1; if (timerRef.current) window.clearTimeout(timerRef.current); };
   }, []);
-  const deferFocus = action => { const selectedState = state, origin = document.activeElement; window.requestAnimationFrame(() => { if (!aliveRef.current || !contextRef.current.visible || !contextRef.current.open || contextRef.current.state !== selectedState) return; if (document.activeElement !== origin && !(origin && !origin.isConnected && document.activeElement === document.body)) return; action(); }); };
+  const deferFocus = (action, expectedState) => { const selectedState = expectedState !== undefined ? expectedState : state, origin = document.activeElement; window.requestAnimationFrame(() => { if (!aliveRef.current || !contextRef.current.visible || !contextRef.current.open || contextRef.current.state !== selectedState) return; if (document.activeElement !== origin && !(origin && !origin.isConnected && document.activeElement === document.body)) return; action(); }); };
   const focusTitle = () => deferFocus(() => { if (titleRef.current && titleRef.current.isConnected && !titleRef.current.closest('[hidden], [inert], [aria-hidden="true"], details:not([open])')) { titleRef.current.scrollIntoView({ block: 'center' }); titleRef.current.focus({ preventScroll: true }); } });
-  const canReplaceDraft = () => !draftDirty || window.confirm('Replace this unsaved reference draft? Its edits have not been saved. Your saved references will stay intact.');
+  const runConfirmed = (message, opts, onConfirmed, onCancelled) => {
+    if (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.confirm === 'function') {
+      window.AlloFlowUX.confirm(message, opts)
+        .then(ok => { if (ok) onConfirmed(); else if (onCancelled) onCancelled(); })
+        .catch(() => { if (onCancelled) onCancelled(); });
+      return;
+    }
+    const ok = typeof window !== 'undefined' && typeof window.confirm === 'function' ? !!window.confirm(message) : false;
+    if (ok) onConfirmed();
+    else if (onCancelled) onCancelled();
+  };
+  const withReplaceDraftGuard = (onAllowed, onCancelled) => {
+    if (!draftDirty) { onAllowed(); return; }
+    runConfirmed(
+      'Replace this unsaved reference draft? Its edits have not been saved. Your saved references will stay intact.',
+      { title: 'Replace unsaved draft?', confirmText: 'Replace draft', cancelText: 'Keep editing', tone: 'warning' },
+      onAllowed,
+      onCancelled
+    );
+  };
   const replaceDraft = (next, dirty) => { retire(); setDraft(next); setDraftDirty(!!dirty); setError(''); focusTitle(); };
   const editDraft = patch => {
     const wasBusy = busy;
@@ -102,21 +121,26 @@ function MaineSldStateRequirements(props) {
   const changeState = event => {
     const wanted = event.target.value;
     if (wanted === state) return;
-    if (!canReplaceDraft()) { event.target.value = state; return; }
-    retire(); setWorkspace(previous => MState.selectState(previous, wanted)); setDraft(MState.emptySource()); setDraftDirty(false); setResults([]); setError('');
-    setStatus('Showing saved references for ' + wanted + '. Your practice cases still use the Maine form.');
+    const selectEl = event.target;
+    withReplaceDraftGuard(() => {
+      retire(); setWorkspace(previous => MState.selectState(previous, wanted)); setDraft(MState.emptySource()); setDraftDirty(false); setResults([]); setError('');
+      setStatus('Showing saved references for ' + wanted + '. Your practice cases still use the Maine form.');
+    }, () => { if (selectEl) selectEl.value = state; });
   };
   const newManual = () => {
-    if (!canReplaceDraft()) return;
-    replaceDraft(MState.emptySource(), false); setStatus('New manual source draft. Paste exact wording and record its source before saving.');
+    withReplaceDraftGuard(() => {
+      replaceDraft(MState.emptySource(), false); setStatus('New manual source draft. Paste exact wording and record its source before saving.');
+    });
   };
   const importDocument = event => {
     const file = event.target.files && event.target.files[0]; event.target.value = '';
-    if (!file || !canReplaceDraft()) return;
-    if (!window.AlloSldStateDocuments || typeof window.AlloSldStateDocuments.extract !== 'function') { setError('Document import is unavailable. You can paste source wording into a manual reference.'); return; }
-    runOperation('import', () => window.AlloSldStateDocuments.extract(file, { root: window }), result => {
-      const next = MState.fromDocument(result); replaceDraft(next, true);
-      setStatus('Document text opened as a draft. Inspect the extraction, enter the relevant excerpt and metadata, then save the reference.');
+    if (!file) return;
+    withReplaceDraftGuard(() => {
+      if (!window.AlloSldStateDocuments || typeof window.AlloSldStateDocuments.extract !== 'function') { setError('Document import is unavailable. You can paste source wording into a manual reference.'); return; }
+      runOperation('import', () => window.AlloSldStateDocuments.extract(file, { root: window }), result => {
+        const next = MState.fromDocument(result); replaceDraft(next, true);
+        setStatus('Document text opened as a draft. Inspect the extraction, enter the relevant excerpt and metadata, then save the reference.');
+      });
     });
   };
   const research = () => {
@@ -129,8 +153,9 @@ function MaineSldStateRequirements(props) {
     });
   };
   const useResult = result => {
-    if (!canReplaceDraft()) return;
-    try { replaceDraft(MState.fromSearchResult(result), true); setStatus('Source link opened as an unreviewed draft. Read the linked source and enter an exact excerpt and date checked.'); } catch (failure) { showError(failure); }
+    withReplaceDraftGuard(() => {
+      try { replaceDraft(MState.fromSearchResult(result), true); setStatus('Source link opened as an unreviewed draft. Read the linked source and enter an exact excerpt and date checked.'); } catch (failure) { showError(failure); }
+    });
   };
   const saveReference = () => {
     retire();
@@ -142,22 +167,37 @@ function MaineSldStateRequirements(props) {
       deferFocus(() => { const target = document.getElementById('msld-state-source-' + saved.id); if (target) { target.scrollIntoView({ block: 'nearest' }); target.focus({ preventScroll: true }); } });
     } catch (failure) { showError(failure); }
   };
-  const editReference = source => { if (!canReplaceDraft()) return; replaceDraft(source, false); setStatus('Editing your saved reference. Save reference to keep changes.'); };
+  const editReference = source => {
+    withReplaceDraftGuard(() => { replaceDraft(source, false); setStatus('Editing your saved reference. Save reference to keep changes.'); });
+  };
   const removeReference = source => {
-    if (!window.confirm('Remove "' + source.title + '" from your saved references for ' + state + '? Download saved references first if you want a backup.')) return;
-    if (draft.id === source.id && draftDirty && !canReplaceDraft()) return;
-    retire();
-    try {
-      const next = MState.removeSource(workspace, state, source.id); setWorkspace(next);
-      if (draft.id === source.id) { setDraft(MState.emptySource()); setDraftDirty(false); }
-      setError(''); setStatus('Reference removed. Your practice worksheet is unchanged.');
-      deferFocus(() => { if (newDraftRef.current) newDraftRef.current.focus(); });
-    } catch (failure) { showError(failure); }
+    const performRemove = () => {
+      retire();
+      try {
+        const next = MState.removeSource(workspace, state, source.id); setWorkspace(next);
+        if (draft.id === source.id) { setDraft(MState.emptySource()); setDraftDirty(false); }
+        setError(''); setStatus('Reference removed. Your practice worksheet is unchanged.');
+        deferFocus(() => { if (newDraftRef.current) newDraftRef.current.focus(); });
+      } catch (failure) { showError(failure); }
+    };
+    runConfirmed(
+      'Remove "' + source.title + '" from your saved references for ' + state + '? Download saved references first if you want a backup.',
+      { title: 'Remove saved reference?', confirmText: 'Remove reference', cancelText: 'Keep reference', tone: 'warning' },
+      () => {
+        if (draft.id === source.id && draftDirty) withReplaceDraftGuard(performRemove);
+        else performRemove();
+      }
+    );
   };
   const download = () => {
     try {
       const blob = new Blob([MState.serializeWorkspace(workspace)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob), link = document.createElement('a'); link.href = url; link.download = 'SLD-State-References.json'; link.click(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      const url = URL.createObjectURL(blob);
+      try {
+        const link = document.createElement('a'); link.href = url; link.download = 'SLD-State-References.json'; link.click();
+      } finally {
+        window.setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      }
       setError(''); setStatus('Saved references and comparison plans download started.' + (draftDirty ? ' Your unsaved draft is not included.' : ''));
     } catch (failure) { showError(failure); }
   };
@@ -167,9 +207,15 @@ function MaineSldStateRequirements(props) {
     if (file.size > MState.LIMITS.json * 4 + 3) { setError('This reference JSON file exceeds the workspace limit. Your current references are unchanged.'); return; }
     runOperation('restore', () => file.text(), text => {
       const restored = MState.parseWorkspace(text);
-      if (!window.confirm('Replace all saved state references and comparison plans in this tab with this workspace file?' + (draftDirty ? ' This also replaces your unsaved reference draft.' : '') + ' Your practice worksheet will stay intact.')) { setStatus('Reference restore canceled. Your current references, comparison plans and draft are retained.'); return; }
-      retire(); allowPersistRef.current = true; setWorkspace(restored); setDraft(MState.emptySource()); setDraftDirty(false); setResults([]); setError(''); setStatus('State references and comparison plans restored. Your practice worksheet is unchanged.');
-      deferFocus(() => { if (summaryRef.current) { summaryRef.current.scrollIntoView({ block: 'nearest' }); summaryRef.current.focus(); } });
+      runConfirmed(
+        'Replace all saved state references and comparison plans in this tab with this workspace file?' + (draftDirty ? ' This also replaces your unsaved reference draft.' : '') + ' Your practice worksheet will stay intact.',
+        { title: 'Restore state references?', confirmText: 'Replace references', cancelText: 'Keep current references', tone: 'warning' },
+        () => {
+          retire(); allowPersistRef.current = true; setWorkspace(restored); setDraft(MState.emptySource()); setDraftDirty(false); setResults([]); setError(''); setStatus('State references and comparison plans restored. Your practice worksheet is unchanged.');
+          deferFocus(() => { if (summaryRef.current) { summaryRef.current.scrollIntoView({ block: 'nearest' }); summaryRef.current.focus(); } }, restored.activeState);
+        },
+        () => { setStatus('Reference restore canceled. Your current references, comparison plans and draft are retained.'); }
+      );
     });
   };
   const toggleReview = event => {

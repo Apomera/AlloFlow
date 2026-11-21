@@ -586,8 +586,8 @@ window.SelHub = window.SelHub || {
     }
     // Fallback if safety layer didn't load
     return h('div', { role: 'alert', 'aria-live': 'assertive', style: { background: _ccC('#fef2f2'), border: '2px solid #fca5a5', borderRadius: '12px', padding: '12px', marginBottom: '12px' } },
-      h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#991b1b', marginBottom: '6px' } }, __alloT('sel.crisiscompanion.ui.help_is_available_right_now', 'Help is available right now')),
-      h('div', { style: { fontSize: '12px', color: '#7f1d1d', lineHeight: 1.6 } },
+      h('div', { style: { fontSize: '12px', fontWeight: 700, color: _ccC('#991b1b'), marginBottom: '6px' } }, __alloT('sel.crisiscompanion.ui.help_is_available_right_now', 'Help is available right now')),
+      h('div', { style: { fontSize: '12px', color: _ccC('#7f1d1d'), lineHeight: 1.6 } },
         h('div', null, __alloT('sel.crisiscompanion.ui.988_suicide_crisis_lifeline_call_or', '☎ 988 Suicide & Crisis Lifeline · call or text 988')),
         h('div', null, __alloT('sel.crisiscompanion.ui.crisis_text_line_text_home_to', '✉ Crisis Text Line · text HOME to 741741')),
         h('div', null, __alloT('sel.crisiscompanion.ui.tell_a_school_counselor_teacher_parent', '🏫 Tell a school counselor, teacher, parent, or trusted adult'))
@@ -637,8 +637,8 @@ window.SelHub = window.SelHub || {
   function _BreathingPacer(h, d, upd) {
     var phaseLen = 4000;  // 4 seconds per phase
     var totalCycle = phaseLen * 4;
-    var running = !!d.breathRunning;
-    var startedAt = d.breathStartedAt || 0;
+    var running = !!d.scBreathRunning;
+    var startedAt = d.scBreathStartedAt || 0;
     var phaseIndex = 0;  // 0=in, 1=hold, 2=out, 3=hold
     var elapsed = 0;
     if (running && startedAt) {
@@ -651,25 +651,15 @@ window.SelHub = window.SelHub || {
     // Discrete target scale per phase — CSS transition smooths between values.
     var targetScale = (phaseIndex === 0 || phaseIndex === 1) ? 1.0 : 0.55;
     function start() {
-      upd({ breathRunning: true, breathStartedAt: Date.now() });
+      upd({ scBreathRunning: true, scBreathStartedAt: Date.now() });
       announce(__alloT('sel.crisiscompanion.ui.box_breathing_started_4_seconds_in', 'Box breathing started. 4 seconds in, 4 hold, 4 out, 4 hold.'));
     }
     function stop() {
-      upd({ breathRunning: false, breathStartedAt: 0 });
+      upd({ scBreathRunning: false, scBreathStartedAt: 0 });
       announce(__alloT('sel.crisiscompanion.ui.box_breathing_paused', 'Box breathing paused.'));
     }
-    // Tick every 1s while running so the phase label updates each phase change.
-    // We bump a state value via upd, which triggers a parent re-render. Idempotent.
-    if (running && typeof window !== 'undefined') {
-      if (!window._ccBreathTimer) {
-        window._ccBreathTimer = setInterval(function() {
-          upd('_breathTick', Date.now());
-        }, 1000);
-      }
-    } else if (!running && typeof window !== 'undefined' && window._ccBreathTimer) {
-      clearInterval(window._ccBreathTimer);
-      window._ccBreathTimer = null;
-    }
+    // Interval ticking is driven by the unconditional React.useEffect in render()
+    // so timers clean up reliably on unmount or section switch.
     var cyclesDone = running && totalCycle ? Math.floor(elapsed / totalCycle) : 0;
     return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px', textAlign: 'center' } },
       h('h2', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, __alloT('sel.crisiscompanion.ui.box_breathing_pacer', '🌬️ Box-breathing pacer')),
@@ -677,12 +667,12 @@ window.SelHub = window.SelHub || {
         __alloT('sel.crisiscompanion.ui.a_4_4_4_4_rhythm', 'A 4-4-4-4 rhythm: breathe in for 4, hold for 4, breathe out for 4, hold for 4. Used by clinicians and first responders to calm the nervous system. The circle expands when you breathe in, contracts when you breathe out.')
       ),
       h('div', { style: { position: 'relative', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' } },
-        h('div', {
+        h('div', { role: 'status',
           className: 'cc-breath-circle',
           'aria-label': running ? _selFill(__alloT('sel.crisiscompanion.ui.phaselabel_cycle_cyclesdone', '{phaseLabel}, cycle {cyclesDone}'), { phaseLabel: phaseLabel, cyclesDone: cyclesDone }) : __alloT('sel.crisiscompanion.ui.breathing_pacer_ready', 'Breathing pacer ready'),
           style: {
             width: '160px', height: '160px', borderRadius: '50%',
-            background: 'radial-gradient(circle at 35% 35%, ' + phaseColor + ', ' + TEAL_DARK + ')',
+            background: 'radial-gradient(circle at 35% 35%, ' + phaseColor + ', #115e59)',
             transform: 'scale(' + targetScale + ')',
             boxShadow: '0 8px 30px rgba(13,148,136,0.30)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -718,23 +708,23 @@ window.SelHub = window.SelHub || {
       { n: 2, sense: 'smell', prompt: __alloT('sel.crisiscompanion.ground_steps.3.prompt', 'Name 2 things you can SMELL.'), helper: __alloT('sel.crisiscompanion.ground_steps.3.helper', '(Or things you remember the smell of, if nothing\'s nearby.)') },
       { n: 1, sense: 'taste', prompt: __alloT('sel.crisiscompanion.ground_steps.4.prompt', 'Name 1 thing you can TASTE.'), helper: __alloT('sel.crisiscompanion.ground_steps.4.helper', '(Or your last sip of water, or a favorite food.)') }
     ];
-    var stepIdx = d.groundStep != null ? d.groundStep : 0;
-    var entries = d.groundEntries || {};
+    var stepIdx = d.scGroundStep != null ? d.scGroundStep : 0;
+    var entries = d.scGroundEntries || {};
     function setEntry(stepKey, val) {
       var ne = Object.assign({}, entries); ne[stepKey] = val;
-      upd('groundEntries', ne);
+      upd('scGroundEntries', ne);
     }
     function next() {
       if (stepIdx < GROUND_STEPS.length - 1) {
-        upd('groundStep', stepIdx + 1);
+        upd('scGroundStep', stepIdx + 1);
         announce(GROUND_STEPS[stepIdx + 1].prompt);
       } else {
-        upd({ groundStep: GROUND_STEPS.length, groundCompleted: (d.groundCompleted || 0) + 1 });
+        upd({ scGroundStep: GROUND_STEPS.length, scGroundCompleted: (d.scGroundCompleted || 0) + 1 });
         announce(__alloT('sel.crisiscompanion.ui.grounding_complete_you_ve_returned_to', 'Grounding complete. You\'ve returned to the present moment.'));
       }
     }
     function reset() {
-      upd({ groundStep: 0, groundEntries: {} });
+      upd({ scGroundStep: 0, scGroundEntries: {} });
       announce(__alloT('sel.crisiscompanion.ui.grounding_reset', 'Grounding reset.'));
     }
     var atEnd = stepIdx >= GROUND_STEPS.length;
@@ -850,9 +840,9 @@ window.SelHub = window.SelHub || {
                 'aria-label': (on ? __alloT('sel.crisiscompanion.ui.remove_from_toolkit', 'Remove from toolkit: ') : __alloT('sel.crisiscompanion.ui.add_to_toolkit', 'Add to toolkit: ')) + s.label,
                 style: {
                   padding: '6px 12px',
-                  background: on ? TEAL : '#fff',
+                  background: on ? TEAL : _ccC('#fff'),
                   color: on ? '#fff' : SLATE_TEXT,
-                  border: '2px solid ' + (on ? TEAL_DARK : '#cbd5e1'),
+                  border: '2px solid ' + (on ? TEAL_DARK : _ccC('#cbd5e1')),
                   borderRadius: '999px', fontSize: '12px', fontWeight: on ? 700 : 500,
                   cursor: 'pointer', textAlign: 'left'
                 }
@@ -880,13 +870,11 @@ window.SelHub = window.SelHub || {
       { id: 'professionals', label: __alloT('sel.crisiscompanion.steps.professionals.label', '5. Professionals + crisis lines'), sub: __alloT('sel.crisiscompanion.steps.professionals.sub', 'My therapist (if I have one), psychiatrist, doctor, school counselor, plus 24/7 crisis lines.'), placeholder: __alloT('sel.crisiscompanion.ui.e_g_988_lifeline_call_or', 'e.g., "988 Lifeline (call or text), Crisis Text Line (text HOME to 741741), Dr. ____ at clinic ____, school counselor"') },
       { id: 'environment', label: __alloT('sel.crisiscompanion.steps.environment.label', '6. Making my environment safer'), sub: __alloT('sel.crisiscompanion.steps.environment.sub', 'What can I (or someone I trust) do to put distance between me and anything I might use to hurt myself? This is the single most evidence-based step.'), placeholder: __alloT('sel.crisiscompanion.ui.e_g_give_my_medications_to', 'e.g., "Give my medications to mom to lock up. Stay out of the basement. Stay with someone overnight if it\'s really bad."') }
     ];
-    var cache = _SafetyPlan._cache || (_SafetyPlan._cache = Object.create(null));
     var planKey = ccKey('crisisCompanion.safetyPlan.v1');
-    var entries = lsGet(planKey, null) || cache[planKey] || d.safetyPlan || {};
+    var entries = lsGet(planKey, null) || d.safetyPlan || {};
     function setStep(id, val) {
       var ne = Object.assign({}, entries); ne[id] = val;
-      cache[planKey] = ne;
-      upd('safetyPlanRev', Date.now());
+      upd({ safetyPlan: ne, safetyPlanRev: Date.now() });
       if (!lsSet(ccKey('crisisCompanion.safetyPlan.v1'), ne)) announce(__alloT('sel.crisiscompanion.ui.this_device_would_not_save_it', 'This device would not save it. Your work is still on screen — use Export or Print to keep a copy before you close this page.'));
     }
     function clearAll() {
@@ -934,7 +922,7 @@ window.SelHub = window.SelHub || {
     return h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', padding: '20px', marginBottom: '14px' } },
       h('h2', { id: 'cc-safety-plan-heading', tabIndex: -1, style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px' } }, __alloT('sel.crisiscompanion.ui.my_safety_plan_stanley_brown', '📋 My safety plan (Stanley-Brown)')),
       h('div', { style: { background: _ccC(AMBER_LIGHT), border: '1px solid #fcd34d', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px' } },
-        h('p', { style: { fontSize: '12px', color: '#78350f', lineHeight: 1.6, margin: 0 } },
+        h('p', { style: { fontSize: '12px', color: _ccC('#78350f'), lineHeight: 1.6, margin: 0 } },
           h('strong', null, __alloT('sel.crisiscompanion.ui.best_built_with_a_counselor_or', 'Best built WITH a counselor or therapist. ')),
           __alloT('sel.crisiscompanion.ui.a_safety_plan_is_most_effective', 'A safety plan is most effective when an adult who knows you helps you fill it in — they think of things you\'d miss, and they\'re a person you\'ve already practiced reaching out to. You can start it here, save it, and finish it together. Saved on this device only.')
         )
@@ -1028,8 +1016,8 @@ window.SelHub = window.SelHub || {
         )
       ),
       h('div', { style: { background: _ccC('#fef2f2'), border: '1px solid #fca5a5', borderRadius: '10px', padding: '14px', marginBottom: '12px' } },
-        h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#991b1b', marginBottom: '6px' } }, __alloT('sel.crisiscompanion.ui.when_supporting_a_friend_has_hit', 'When supporting a friend has hit YOU hard')),
-        h('p', { style: { fontSize: '13px', color: '#7f1d1d', lineHeight: 1.7, margin: 0 } },
+        h('div', { style: { fontSize: '13px', fontWeight: 700, color: _ccC('#991b1b'), marginBottom: '6px' } }, __alloT('sel.crisiscompanion.ui.when_supporting_a_friend_has_hit', 'When supporting a friend has hit YOU hard')),
+        h('p', { style: { fontSize: '13px', color: _ccC('#7f1d1d'), lineHeight: 1.7, margin: 0 } },
           __alloT('sel.crisiscompanion.ui.if_you_re_losing_sleep_having', 'If you\'re losing sleep, having intrusive thoughts, feeling numb, or starting to have your own thoughts of self-harm — those are signs that you need support too. Call 988, text HOME to 741741, or talk to a school counselor. Helpers need help too. There is no shame in needing it.'))
       ),
       h('div', { style: { background: _ccC(TEAL_LIGHT), border: '1px solid ' + TEAL_BORDER, borderRadius: '10px', padding: '14px' } },
@@ -1102,10 +1090,11 @@ window.SelHub = window.SelHub || {
       }, extra || {})
     }));
   }
-  function ccTextarea(value, onChange, placeholder, rows) {
+  function ccTextarea(value, onChange, placeholder, rows, id, ariaLabel) {
     return ccH('textarea', {
+      id: id || undefined,
       value: value || '', placeholder: placeholder || '', rows: rows || 3,
-      'aria-label': placeholder || '',
+      'aria-label': ariaLabel || placeholder || '',
       onChange: function(e) { onChange(e.target.value); },
       style: { width: '100%', padding: '10px 12px', fontSize: 12, color: '#e2e8f0',
         background: 'rgba(2,6,23,0.7)', border: '1px solid rgba(100,116,139,0.40)',
@@ -1164,9 +1153,10 @@ window.SelHub = window.SelHub || {
       }, __alloT('sel.crisiscompanion.ui.shared_device_tab_only_notice', 'Shared-device privacy: solo mode keeps your safety plan and coping tools in this browser tab only and clears them when the tab closes. Download a text copy below if you want to keep it.')) : null,
       ccH('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
         STEPS.map(function(s) {
+          var fieldId = 'cc-kit-sp-' + s.id;
           return ccH('div', { key: 'sp-' + s.id, style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.6)', borderLeft: '4px solid ' + s.color } },
-            ccH('label', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: s.color, marginBottom: 6 } }, s.label),
-            ccTextarea(p[s.id], function(v) { update(s.id, v); }, '', 3)
+            ccH('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 12, fontWeight: 800, color: s.color, marginBottom: 6 } }, s.label),
+            ccTextarea(p[s.id], function(v) { update(s.id, v); }, '', 3, fieldId, s.label)
           );
         })
       ),
@@ -1420,7 +1410,11 @@ window.SelHub = window.SelHub || {
     function add() { if (!newItem.trim()) { announce(__alloT('sel.crisiscompanion.ui.write_something_first_then_press_add', 'Write something first, then press Add.')); return; } setData({ items: [{ id: cc_id(), text: newItem.trim() }].concat(data.items || []) }); setNewItem(''); }
     function remove(id) { setData({ items: (data.items || []).filter(function(i) { return i.id !== id; }) }); }
     var items = data.items || [];
-    var random = items.length > 0 ? items[Math.floor(Math.random() * items.length)] : null;
+    var pickSt = R_CC.useState(0); var pickIdx = pickSt[0]; var setPickIdx = pickSt[1];
+    R_CC.useEffect(function() {
+      if (items.length > 0) setPickIdx(Math.floor(Math.random() * items.length));
+    }, [items.length]);
+    var random = items.length > 0 ? items[pickIdx % items.length] : null;
     return ccH('div', { style: { padding: 14 } },
       ccSection('💛', __alloT('sel.crisiscompanion.ui.my_hope_list', 'My Hope List'), __alloT('sel.crisiscompanion.ui.reasons_to_keep_going_people_plans', 'Reasons to keep going. People, plans, places, anything. Read this when hard.'), '#fbbf24'),
       ccCrisisBanner(),
@@ -1554,8 +1548,10 @@ window.SelHub = window.SelHub || {
       // would double-map the existing _ccC(CONST) call sites), so they flip here.
       SLATE_TEXT = _ccCHC ? '#ffff00' : (_ccCDark ? '#e2e8f0' : '#1e293b');
       SLATE_MID  = _ccCHC ? '#ffff00' : (_ccCDark ? '#cbd5e1' : '#334155');
-      // SLATE_BG is a surface and the maps already carry exactly this mapping.
+      // SLATE_BG and TEAL_DARK are remapped via _ccC so headings and surfaces stay
+      // high-contrast in dark and high-contrast shells.
       SLATE_BG   = _ccC('#f8fafc');
+      TEAL_DARK  = _ccC('#115e59');
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast || function(){};
@@ -1633,7 +1629,6 @@ window.SelHub = window.SelHub || {
         if (!ccConfirmAction) return;
         if (ccConfirmAction.type === 'clear-safety-plan') {
           upd({ ccConfirmAction: null, safetyPlan: {} });
-          if (_SafetyPlan._cache) delete _SafetyPlan._cache[ccKey('crisisCompanion.safetyPlan.v1')];
           lsSet(ccKey('crisisCompanion.safetyPlan.v1'), {});
           if (_ccEphemeralSolo) { try { localStorage.removeItem(ccKey('crisisCompanion.safetyPlan.v1')); } catch (e) {} }
           announce(__alloT('sel.crisiscompanion.ui.safety_plan_cleared', 'Safety plan cleared.'));
@@ -1695,28 +1690,40 @@ window.SelHub = window.SelHub || {
         ));
       }
 
-      // Hydrate persisted badges
-      if (!d._hydrated) {
-        var savedBadges = lsGet(ccKey('crisisCompanion.badges.v1'), null);
-        if (savedBadges && d.badges === undefined) upd({ badges: savedBadges, _hydrated: true });
-        else upd('_hydrated', true);
-      }
-
       var consented = !!d.consented;
       var section   = d.section || 'mykit';
 
+      // Compute current breath cycle count purely so persistence happens in useEffect, not render.
+      var _bCycleSecMap = { box: 16, fourseven: 19, equal: 12 };
+      var _bCycleSec = _bCycleSecMap[d.breathMode || 'box'] || 16;
+      var _bElapsedSec = (section === 'breath' && d.breathRunning && (d.breathStart || 0) > 0)
+        ? Math.floor((Date.now() - d.breathStart) / 1000) : 0;
+      var _bCyclesNow = _bCycleSec > 0 ? Math.floor(_bElapsedSec / _bCycleSec) : 0;
+
       // ── Fixed hook block ──
       // render() is called inline by the host's SelPluginBridge, so every hook
-      // here lands in the HOST's hook list. This breath-timer tick used to sit
-      // inside the `section === 'breath'` branch, so moving between sections
-      // changed the host's hook count and threw "Rendered more hooks than
-      // during the previous render" (React #310). Declared unconditionally and
-      // gated on the section inside. Gate: dev-tools/scan_hook_order_branches.cjs.
+      // here lands in the HOST's hook list. All hooks are declared unconditionally
+      // and gated inside. Gate: dev-tools/scan_hook_order_branches.cjs.
       React.useEffect(function() {
-        if (section !== 'breath' || !d.breathRunning) return undefined;
-        var t = setInterval(function() { upd('breathTick', (d.breathTick || 0) + 1); }, 250);
+        if (d._hydrated) return;
+        var savedBadges = lsGet(ccKey('crisisCompanion.badges.v1'), null);
+        if (savedBadges && d.badges === undefined) upd({ badges: savedBadges, _hydrated: true });
+        else upd('_hydrated', true);
+      }, [d._hydrated]);
+
+      React.useEffect(function() {
+        var runMain = section === 'breath' && !!d.breathRunning;
+        var runSelfCare = section === 'selfCare' && !!d.scBreathRunning;
+        if (!runMain && !runSelfCare) return undefined;
+        var t = setInterval(function() { upd('breathTick', Date.now()); }, runMain ? 250 : 1000);
         return function() { clearInterval(t); };
-      }, [section, d.breathRunning, d.breathTick]);
+      }, [section, d.breathRunning, d.scBreathRunning]);
+
+      React.useEffect(function() {
+        if (section === 'breath' && d.breathRunning && _bCyclesNow > ((d.breathSession && d.breathSession.cycles) || 0)) {
+          upd('breathSession', { cycles: _bCyclesNow });
+        }
+      }, [section, d.breathRunning, _bCyclesNow]);
 
       var SECTIONS = [
         { id: 'mykit',               icon: '🛡', label: __alloT('sel.crisiscompanion.sections.mykit.label', 'My Safety Kit') },
@@ -1930,12 +1937,9 @@ window.SelHub = window.SelHub || {
           }
           cumulative += pattern.phases[pi].sec;
         }
-        // Persist completed cycles
-        if (cycles > (d.breathSession && d.breathSession.cycles || 0)) {
-          upd('breathSession', { cycles: cycles });
-        }
-        function start() { upd('breathRunning', true); upd('breathStart', Date.now()); upd('breathSession', { cycles: 0 }); }
-        function stop()  { upd('breathRunning', false); upd('breathStart', 0); }
+        // Completed cycle persistence is handled in the unconditional React.useEffect above.
+        function start() { upd({ breathRunning: true, breathStart: Date.now(), breathSession: { cycles: 0 } }); }
+        function stop()  { upd({ breathRunning: false, breathStart: 0 }); }
 
         // Tick (force re-render each second while running)
         // The breath-tick effect lives in the fixed hook block near the top of
@@ -2059,9 +2063,21 @@ window.SelHub = window.SelHub || {
               // Input
               !complete && h('div', { style: { display: 'flex', gap: 6 } },
                 h('input', { type: 'text', id: 'gr-input-' + sense,
+                  'aria-label': current.label,
                   placeholder: __alloT('sel.crisiscompanion.steps.' + Math.min(gStep, STEPS.length - 1) + '.placeholder', ['Type one thing you see and press Enter', 'Type one thing you can touch and press Enter', 'Type one thing you hear and press Enter', 'Type one thing you smell and press Enter', 'Type one thing you taste and press Enter'][Math.min(gStep, STEPS.length - 1)] || ''),
                   onKeyDown: function(e) { if (e.key === 'Enter') { addItem(e.target.value); e.target.value = ''; } },
-                  style: { flex: 1, padding: 10, borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 } })
+                  style: { flex: 1, padding: 10, borderRadius: 6, border: '1px solid ' + _ccC('#d1d5db'), background: _ccC('#fff'), color: SLATE_TEXT, fontSize: 13 } }),
+                h('button', {
+                  type: 'button',
+                  onClick: function() {
+                    var el = typeof document !== 'undefined' ? document.getElementById('gr-input-' + sense) : null;
+                    var val = el ? el.value : '';
+                    addItem(val);
+                    if (el) { el.value = ''; el.focus(); }
+                  },
+                  'aria-label': __alloT('sel.crisiscompanion.ui.add', '+ Add') + ': ' + current.label,
+                  style: { padding: '8px 14px', borderRadius: 6, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', flexShrink: 0 }
+                }, __alloT('sel.crisiscompanion.ui.add', '+ Add'))
               ),
               // List
               items.length > 0 && h('div', { style: { marginTop: 10 } },
@@ -2076,7 +2092,7 @@ window.SelHub = window.SelHub || {
                 style: { marginTop: 12, padding: '10px 18px', borderRadius: 10, border: 'none', background: TEAL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } },
                 gStep === STEPS.length - 1 ? __alloT('sel.crisiscompanion.ui.finish_2', '✓ Finish') : __alloT('sel.crisiscompanion.ui.next', 'Next →'))
             ),
-            allDone && h('div', { style: { padding: 18, background: 'linear-gradient(135deg, #d1fae5, #ccfbf1)', borderRadius: 12, textAlign: 'center' } },
+            allDone && h('div', { style: { padding: 18, background: _ccCHC ? '#000000' : (_ccCDark ? 'linear-gradient(135deg, #0b2e22, #0c3e38)' : 'linear-gradient(135deg, #d1fae5, #ccfbf1)'), border: _ccCHC ? '2px solid #ffff00' : '1px solid ' + TEAL_BORDER, borderRadius: 12, textAlign: 'center' } },
               h('div', { style: { fontSize: 28, marginBottom: 6 } }, '🌿'),
               h('div', { style: { fontSize: 16, fontWeight: 800, color: TEAL_DARK, marginBottom: 6 } }, __alloT('sel.crisiscompanion.ui.grounding_complete', 'Grounding complete')),
               h('p', { style: { fontSize: 13, color: SLATE_TEXT, lineHeight: 1.65, margin: '0 0 14px' } }, __alloT('sel.crisiscompanion.ui.you_named_15_specific_things_in', 'You named 15 specific things in your present moment. Notice how you feel now compared to when you started.')),
@@ -2570,7 +2586,7 @@ window.SelHub = window.SelHub || {
                 }, __alloT('sel.crisiscompanion.ui.this_is_true', 'This is TRUE'))
               ),
               revealed && h('div', { 'aria-live': 'polite' },
-                h('div', { style: { padding: '10px 12px', background: picked === 0 ? _ccC('#f0fdf4') : _ccC('#fff7ed'), border: '1px solid ' + (picked === 0 ? EMERALD : '#fdba74'), borderRadius: '8px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: picked === 0 ? EMERALD_DARK : _ccC('#9a3412') } },
+                h('div', { style: { padding: '10px 12px', background: picked === 0 ? _ccC('#f0fdf4') : _ccC('#fff7ed'), border: '1px solid ' + (picked === 0 ? EMERALD : '#fdba74'), borderRadius: '8px', marginBottom: '10px', fontSize: '13px', fontWeight: 700, color: picked === 0 ? _ccC(EMERALD_DARK) : _ccC('#9a3412') } },
                   picked === 0 ? __alloT('sel.crisiscompanion.ui.correct_this_is_a_myth', '✓ Correct — this is a myth.') : __alloT('sel.crisiscompanion.ui.common_misconception_this_is_actually_a', '⚠ Common misconception — this is actually a myth.')),
                 h('p', { style: { fontSize: '14px', color: SLATE_TEXT, lineHeight: 1.7, margin: '0 0 8px' } },
                   h('strong', { style: { color: TEAL_DARK } }, __alloT('sel.crisiscompanion.ui.what_the_evidence_says', 'What the evidence says: ')),
@@ -2766,10 +2782,10 @@ window.SelHub = window.SelHub || {
               sc.responses.map(function(r, ri) {
                 var sel = (picked === ri);
                 var revealed = picked != null;
-                var bg = '#fff'; var border = _ccC('#e5e7eb'); var text = SLATE_TEXT;
+                var bg = _ccC('#fff'); var border = _ccC('#e5e7eb'); var text = SLATE_TEXT;
                 if (revealed) {
-                  if (r.rating === 'helpful') { bg = _ccC('#f0fdf4'); border = EMERALD; text = EMERALD_DARK; }
-                  else if (r.rating === 'harmful') { bg = ROSE_LIGHT; border = ROSE; text = _ccC('#9f1239'); }
+                  if (r.rating === 'helpful') { bg = _ccC('#f0fdf4'); border = EMERALD; text = _ccC(EMERALD_DARK); }
+                  else if (r.rating === 'harmful') { bg = _ccC(ROSE_LIGHT); border = ROSE; text = _ccC('#9f1239'); }
                   else { bg = _ccC('#fff7ed'); border = '#fdba74'; text = _ccC('#9a3412'); }
                 }
                 return h('button', {

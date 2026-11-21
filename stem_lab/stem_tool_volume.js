@@ -354,8 +354,8 @@ window.StemLab = window.StemLab || {
     var T = null;                    // window.THREE once loaded
     var state = 'idle';              // 'idle' | 'loading' | 'ready' | 'failed'
     var canvasEl = null, renderer = null, scene = null, camera = null;
-    var batch = null, analyticMesh = null, shadowPlane = null, gridHelper = null, ghostLines = null;
-    var clipPlane = null, dirLight = null;
+    var batch = null, analyticMesh = null, shadowPlane = null, gridHelper = null, ghostLines = null, sliceGlow = null;
+    var clipPlane = null, dirLight = null, rimLight = null;
     var rafId = 0, capacity = 0, resizeObs = null;
     var dummy = null, colorTmp = null, raycaster = null, ndc = null;
     var pending = null;              // model stashed by render()
@@ -378,11 +378,10 @@ window.StemLab = window.StemLab || {
 
       camera = new T.PerspectiveCamera(45, 1, 0.1, 500);
 
-      // Hemisphere fill keeps the underside of a stack readable when the
-      // student rotates below the horizon; the directional key gives the
-      // face-to-face contrast that makes individual cubes countable.
-      scene.add(new T.HemisphereLight(0xdbeafe, 0x1e293b, 0.85));
-      dirLight = new T.DirectionalLight(0xffffff, 0.75);
+      // Hemisphere fill + 3-point studio rim & warm bounce keeps undersides and
+      // edge silhouettes crisp when rotating below or around the solid.
+      scene.add(new T.HemisphereLight(0xe0f2fe, 0x1e293b, 0.88));
+      dirLight = new T.DirectionalLight(0xfffbeb, 0.82);
       dirLight.position.set(6, 12, 8);
       dirLight.castShadow = true;
       dirLight.shadow.mapSize.width = 1024;
@@ -391,6 +390,12 @@ window.StemLab = window.StemLab || {
       sc.left = -14; sc.right = 14; sc.top = 14; sc.bottom = -14; sc.near = 0.5; sc.far = 60;
       scene.add(dirLight);
       scene.add(dirLight.target);
+      rimLight = new T.DirectionalLight(0x7dd3fc, 0.44);
+      rimLight.position.set(-8, 7, -10);
+      scene.add(rimLight);
+      var bounceLight = new T.DirectionalLight(0xfef08a, 0.18);
+      bounceLight.position.set(3, -8, -5);
+      scene.add(bounceLight);
 
       // depthWrite:false is load-bearing — a ShadowMaterial that writes depth
       // occludes the whole model the moment the camera drops below the ground
@@ -413,8 +418,18 @@ window.StemLab = window.StemLab || {
     function disposeMesh(m) {
       if (!m) return;
       scene.remove(m);
-      if (m.geometry) m.geometry.dispose();
-      if (m.material) m.material.dispose();
+      if (typeof m.traverse === 'function') {
+        m.traverse(function (c) {
+          if (c.geometry && c.geometry.dispose) c.geometry.dispose();
+          if (c.material) {
+            if (Array.isArray(c.material)) c.material.forEach(function (mt) { if (mt && mt.dispose) mt.dispose(); });
+            else if (c.material.dispose) c.material.dispose();
+          }
+        });
+      } else {
+        if (m.geometry) m.geometry.dispose();
+        if (m.material) m.material.dispose();
+      }
     }
 
     // Voxel body + a coincident wireframe cage. The cage is what keeps the
@@ -467,10 +482,17 @@ window.StemLab = window.StemLab || {
       } else {
         return;
       }
-      var mat = new T.MeshLambertMaterial({
-        color: 0x38bdf8, transparent: true, opacity: 0.24,
-        side: T.DoubleSide, depthWrite: false, clippingPlanes: [clipPlane]
-      });
+      var mat = typeof T.MeshPhysicalMaterial === 'function'
+        ? new T.MeshPhysicalMaterial({
+            color: 0x38bdf8, roughness: 0.14, metalness: 0.08,
+            clearcoat: 0.9, clearcoatRoughness: 0.12,
+            transparent: true, opacity: 0.26,
+            side: T.DoubleSide, depthWrite: false, clippingPlanes: [clipPlane]
+          })
+        : new T.MeshLambertMaterial({
+            color: 0x38bdf8, transparent: true, opacity: 0.24,
+            side: T.DoubleSide, depthWrite: false, clippingPlanes: [clipPlane]
+          });
       analyticMesh = new T.Mesh(geo, mat);
       analyticMesh.position.set(0, hh / 2, 0);
       scene.add(analyticMesh);
@@ -527,10 +549,44 @@ window.StemLab = window.StemLab || {
       // keeps the sliced cubes reading as solid rather than hollow shells.
       clipPlane.constant = mdl.crossSection != null ? (mdl.crossSection + 0.5) : 1e6;
 
+      // Luminous cross-section slice glow plane + rim contour when slicing is active.
+      disposeMesh(sliceGlow);
+      sliceGlow = null;
+      if (mdl.crossSection != null) {
+        var slY = mdl.crossSection + 0.502;
+        var slW = Math.max(1, mdl.gl) + 0.45, slD = Math.max(1, mdl.gw) + 0.45;
+        sliceGlow = new T.Group();
+        var slPlane = new T.Mesh(
+          new T.PlaneGeometry(slW, slD),
+          new T.MeshBasicMaterial({
+            color: 0x38bdf8, transparent: true, opacity: 0.16,
+            side: T.DoubleSide, depthWrite: false,
+            blending: T.AdditiveBlending !== undefined ? T.AdditiveBlending : T.NormalBlending
+          })
+        );
+        slPlane.rotation.x = -Math.PI / 2;
+        slPlane.position.y = slY;
+        sliceGlow.add(slPlane);
+        if (typeof T.LineLoop === 'function' && typeof T.BufferGeometry === 'function') {
+          var hw = slW / 2, hd = slD / 2;
+          var slPts = [
+            new T.Vector3(-hw, slY, -hd), new T.Vector3(hw, slY, -hd),
+            new T.Vector3(hw, slY, hd), new T.Vector3(-hw, slY, hd)
+          ];
+          var slRim = new T.LineLoop(
+            new T.BufferGeometry().setFromPoints(slPts),
+            new T.LineBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.88 })
+          );
+          sliceGlow.add(slRim);
+        }
+        scene.add(sliceGlow);
+      }
+
       var span = Math.max(mdl.gl, mdl.gw, mdl.gh, 1);
       dirLight.position.set(span * 0.9, span * 1.9, span * 1.2);
       dirLight.target.position.set(0, mdl.gh / 2, 0);
       dirLight.target.updateMatrixWorld();
+      if (rimLight) rimLight.position.set(-span * 1.2, span * 1.1, -span * 1.4);
       var sc = dirLight.shadow.camera;
       var pad = span * 1.4 + 4;
       sc.left = -pad; sc.right = pad; sc.top = pad; sc.bottom = -pad; sc.far = pad * 6;
@@ -626,7 +682,7 @@ window.StemLab = window.StemLab || {
       // blanks" failure mode. Fail once, loudly, and fall back to blocks.
       try {
         if (mdl.sig !== appliedSig) { applyModel(mdl); appliedSig = mdl.sig; dirty = true; }
-        var camSig = mdl.rotX + ',' + mdl.rotY + ',' + mdl.scale;
+        var camSig = mdl.rotX + ',' + mdl.rotY + ',' + mdl.scale + ',' + mdl.gl + ',' + mdl.gw + ',' + mdl.gh;
         if (camSig !== appliedCamSig) { applyCamera(mdl); appliedCamSig = camSig; dirty = true; }
         if (!dirty) return;               // idle stacks cost nothing on a Chromebook
         dirty = false;
@@ -683,6 +739,10 @@ window.StemLab = window.StemLab || {
             renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
           } catch (e) { reportFailure('no-webgl'); return; }
           renderer.setClearColor(0x000000, 0);
+          if (T.ACESFilmicToneMapping !== undefined) {
+            renderer.toneMapping = T.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.06;
+          }
           renderer.shadowMap.enabled = true;
           renderer.shadowMap.type = T.PCFSoftShadowMap;
           renderer.localClippingEnabled = true;
@@ -708,10 +768,10 @@ window.StemLab = window.StemLab || {
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
         else window.removeEventListener('resize', resize);
         if (canvasEl) canvasEl.removeEventListener('webglcontextlost', onContextLost, false);
-        if (scene) { if (batch) batch.dispose(scene); disposeMesh(analyticMesh); disposeMesh(shadowPlane); disposeMesh(gridHelper); disposeMesh(ghostLines); }
+        if (scene) { if (batch) batch.dispose(scene); disposeMesh(analyticMesh); disposeMesh(shadowPlane); disposeMesh(gridHelper); disposeMesh(ghostLines); disposeMesh(sliceGlow); }
         if (renderer) { try { renderer.dispose(); } catch (e) {} }
-        batch = null; analyticMesh = shadowPlane = gridHelper = ghostLines = null;
-        renderer = scene = camera = null; canvasEl = null; pending = null;
+        batch = null; analyticMesh = shadowPlane = gridHelper = ghostLines = sliceGlow = null;
+        renderer = scene = camera = dirLight = rimLight = null; canvasEl = null; pending = null;
         capacity = 0; appliedSig = ''; appliedCamSig = ''; appliedViewSig = '';
         if (state !== 'failed') state = 'idle';
       }
@@ -1267,13 +1327,13 @@ window.StemLab = window.StemLab || {
               if (s === 'prism') {
                 fillThisCube = true;
               } else if (s === 'cylinder') {
-                var ndx = (x - rx) / rx, ndy = (y - ry) / ry;
+                var ndx = rx > 0 ? (x - rx) / rx : 0, ndy = ry > 0 ? (y - ry) / ry : 0;
                 fillThisCube = (ndx * ndx + ndy * ndy) <= 1.05;
               } else if (s === 'cone') {
                 var taper = 1 - (z / Math.max(1, h - 1));
                 if (taper <= 0) taper = 0.05;
-                var ndx2 = (x - rx) / (rx * taper);
-                var ndy2 = (y - ry) / (ry * taper);
+                var ndx2 = rx > 0 ? (x - rx) / (rx * taper) : 0;
+                var ndy2 = ry > 0 ? (y - ry) / (ry * taper) : 0;
                 fillThisCube = (ndx2 * ndx2 + ndy2 * ndy2) <= 1.05;
               } else if (s === 'pyramid') {
                 var taper2 = 1 - (z / Math.max(1, h - 1));
@@ -1547,7 +1607,7 @@ window.StemLab = window.StemLab || {
         var maxLayer = showLayers != null ? Math.min(showLayers, dims.h) : dims.h;
         // Voxelize the active shape. For 'prism' this is equivalent to the
         // simple triple-loop; for cylinder/cone/pyramid it tapers.
-        var voxels = voxelizeShape(shape, dims.l, dims.w, dims.h);
+        var voxels = voxelizeShape(solid, dims.l, dims.w, dims.h);
         voxels.forEach(function(vox) {
           if (vox.z >= maxLayer) return;
           glVoxels.push({
@@ -1660,7 +1720,7 @@ window.StemLab = window.StemLab || {
         gw: isSlider ? dims.w : 8,
         gh: glStackH,
         dl: dims.l, dw: dims.w, dh: dims.h,
-        shape: isSlider ? shape : 'prism',
+        shape: isSlider ? solid : 'prism',
         showAnalytic: isSlider && showAnalytic,
         crossSection: glCrossSection,
         isFreeform: isFreeform,
@@ -2098,7 +2158,7 @@ window.StemLab = window.StemLab || {
         if (key === 'd' && !isDisplacement) { e.preventDefault(); upd({ mode: 'displacement', challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, showBuildLibrary: false }); }
         if (key === 'n') {
           e.preventDefault();
-          if (isSlider) newSliderChallenge();
+          if (mode === 'slider') newSliderChallenge();
         }
         if (key === 'p') { e.preventDefault(); upd({ paintSurfaceArea: !paintSurfaceArea }); if (!badges.surfaceExplorer) checkBadges({ surfaceExplorer: true }); }
         if (key === 'b') { e.preventDefault(); upd({ showBadges: !showBadges }); }
@@ -2158,7 +2218,10 @@ window.StemLab = window.StemLab || {
               __alloT('stem.volume.interactive_net_drag_the_slider_to_fol', '🗺 Interactive net — drag the slider to fold the 2D net into a 3D prism')
             ),
             h('button', {
-              onClick: function() { playSound('place'); upd({ showNet: false }); },
+              onClick: function() {
+                if (window._volumeNetRaf) { cancelAnimationFrame(window._volumeNetRaf); window._volumeNetRaf = 0; }
+                playSound('place'); upd({ showNet: false });
+              },
               'aria-label': __alloT('stem.volume.hide_net', 'Hide net'),
               className: 'text-[0.625rem] font-bold text-emerald-700 hover:underline'
             }, __alloT('stem.volume.hide', 'Hide ×'))
@@ -2169,25 +2232,33 @@ window.StemLab = window.StemLab || {
             h('input', { id: 'volume-net-fold', 'aria-label': __alloT('stem.volume.fold_the_net_from_flat_0_to_fully_fold', 'Fold the net from flat (0) to fully folded (1)'),
               type: 'range', min: '0', max: '1', step: '0.02',
               value: netFold,
-              onChange: function(e) { upd({ netFold: parseFloat(e.target.value) }); },
+              onChange: function(e) {
+                if (window._volumeNetRaf) { cancelAnimationFrame(window._volumeNetRaf); window._volumeNetRaf = 0; }
+                upd({ netFold: parseFloat(e.target.value) });
+              },
               className: 'flex-1 h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600'
             }),
             h('span', { className: 'text-[0.6875rem] font-bold text-emerald-700' }, __alloT('stem.volume.folded', 'Folded')),
             h('button', {
               onClick: function() {
+                if (window._volumeNetRaf) { cancelAnimationFrame(window._volumeNetRaf); window._volumeNetRaf = 0; }
                 // Animate from 0 to 1 over ~1.5s
                 var start = Date.now();
                 var dur = 1500;
                 var step = function() {
+                  if (typeof document !== 'undefined' && !document.getElementById('volume-net-fold')) {
+                    window._volumeNetRaf = 0;
+                    return;
+                  }
                   var elapsed = (Date.now() - start) / dur;
-                  if (elapsed >= 1) { upd({ netFold: 1 }); return; }
+                  if (elapsed >= 1) { window._volumeNetRaf = 0; upd({ netFold: 1 }); return; }
                   // Ease out cubic
                   var eased = 1 - Math.pow(1 - elapsed, 3);
                   upd({ netFold: eased });
-                  requestAnimationFrame(step);
+                  window._volumeNetRaf = requestAnimationFrame(step);
                 };
                 upd({ netFold: 0 });
-                requestAnimationFrame(step);
+                window._volumeNetRaf = requestAnimationFrame(step);
               },
               'aria-label': __alloT('stem.volume.animate_fold', 'Animate fold'),
               title: __alloT('stem.volume.watch_it_fold_automatically', 'Watch it fold automatically'),
@@ -2410,19 +2481,22 @@ window.StemLab = window.StemLab || {
       function renderDisplacementCylinder(label, reading, objectMode, waiting, overflowing) {
         var safeReading = Math.max(0, Math.min(100, Number(reading) || 0));
         var waterY = 310 - safeReading * 2.5;
+        var uid = 'vol-cyl-' + String(label || 'x').toLowerCase().replace(/[^a-z0-9]+/g, '-');
         var ticks = [];
-        for (var mark = 0; mark <= 100; mark += 5) {
+        for (var mark = 0; mark <= 100; mark += 2.5) {
           var tickY = 310 - mark * 2.5;
           var major = mark % 10 === 0;
+          var mid = !major && (mark % 5 === 0);
           ticks.push(h('line', {
             key: 'tick-' + mark,
-            x1: major ? 48 : 55, y1: tickY, x2: 68, y2: tickY,
-            stroke: major ? '#0f172a' : '#64748b', strokeWidth: major ? 1.6 : 1
+            x1: major ? 48 : (mid ? 54 : 60), y1: tickY, x2: 68, y2: tickY,
+            stroke: major ? '#0f172a' : (mid ? '#475569' : '#94a3b8'),
+            strokeWidth: major ? 1.6 : (mid ? 1.05 : 0.7)
           }));
           if (major) ticks.push(h('text', {
             key: 'label-' + mark,
             x: 42, y: tickY + 4, textAnchor: 'end',
-            fontSize: 10, fontFamily: 'monospace', fill: '#334155'
+            fontSize: 10, fontFamily: 'monospace', fontWeight: 700, fill: '#334155'
           }, String(mark)));
         }
         var showObject = objectMode === true || objectMode === 'object' || objectMode === 'combined';
@@ -2448,30 +2522,65 @@ window.StemLab = window.StemLab || {
             'aria-label': cylinderAria,
             className: 'mx-auto h-auto w-full max-w-[220px] rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-sky-500'
           },
+            h('defs', null,
+              h('linearGradient', { id: uid + '-liq', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: waiting ? '#e0f2fe' : '#bae6fd', stopOpacity: waiting ? '0.62' : '0.88' }),
+                h('stop', { offset: '45%', stopColor: waiting ? '#bfdbfe' : '#38bdf8', stopOpacity: waiting ? '0.58' : '0.84' }),
+                h('stop', { offset: '100%', stopColor: waiting ? '#93c5fd' : '#0284c7', stopOpacity: waiting ? '0.55' : '0.90' })
+              ),
+              h('linearGradient', { id: uid + '-glass', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: '0.55' }),
+                h('stop', { offset: '14%', stopColor: '#ffffff', stopOpacity: '0.16' }),
+                h('stop', { offset: '55%', stopColor: '#e2e8f0', stopOpacity: '0.02' }),
+                h('stop', { offset: '86%', stopColor: '#ffffff', stopOpacity: '0.28' }),
+                h('stop', { offset: '100%', stopColor: '#94a3b8', stopOpacity: '0.18' })
+              ),
+              h('linearGradient', { id: uid + '-clay', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#ca8a04' }),
+                h('stop', { offset: '100%', stopColor: '#854d0e' })
+              )
+            ),
             h('rect', { x: 1, y: 1, width: 218, height: 348, rx: 16, fill: '#ffffff', stroke: '#bae6fd', strokeWidth: 2 }),
             h('text', { x: 110, y: 25, textAnchor: 'middle', fontSize: 13, fontWeight: 800, fill: '#0c4a6e' }, label),
-            h('path', { d: 'M46 45 L46 315 Q46 325 56 325 L164 325 Q174 325 174 315 L174 45', fill: 'none', stroke: '#334155', strokeWidth: 4, strokeLinecap: 'round' }),
-            h('ellipse', { cx: 110, cy: 45, rx: 64, ry: 10, fill: '#f8fafc', stroke: '#334155', strokeWidth: 3 }),
-            h('rect', { x: 48, y: waterY, width: 124, height: Math.max(0, 315 - waterY), fill: waiting ? '#dbeafe' : '#7dd3fc', opacity: waiting ? 0.55 : 0.8 }),
+            // Soft grounded cylinder pedestal shadow & glass foot rim
+            h('ellipse', { cx: 110, cy: 329, rx: 74, ry: 5.5, fill: '#0f172a', opacity: 0.12 }),
+            h('path', { d: 'M46 45 L46 315 Q46 325 56 325 L164 325 Q174 325 174 315 L174 45', fill: '#f8fafc', stroke: '#334155', strokeWidth: 4, strokeLinecap: 'round' }),
+            h('ellipse', { cx: 110, cy: 45, rx: 64, ry: 10, fill: '#f1f5f9', stroke: '#334155', strokeWidth: 3 }),
+            // Translucent shimmering liquid column
+            h('rect', { x: 48, y: waterY, width: 124, height: Math.max(0, 315 - waterY), fill: 'url(#' + uid + '-liq)' }),
+            // Optical meniscus upper band + luminous highlight + sharp eye-level bottom meniscus curve
+            h('path', {
+              d: 'M48 ' + (waterY - 6) + ' Q79 ' + (waterY - 1) + ' 110 ' + (waterY - 1) + ' Q141 ' + (waterY - 1) + ' 172 ' + (waterY - 6) + ' L172 ' + (waterY + 1) + ' Q141 ' + (waterY + 3) + ' 110 ' + (waterY + 3) + ' Q79 ' + (waterY + 3) + ' 48 ' + (waterY + 1) + ' Z',
+              fill: waiting ? '#e0f2fe' : '#e0f2fe', opacity: 0.52
+            }),
             h('path', {
               d: 'M48 ' + (waterY - 5) + ' Q79 ' + waterY + ' 110 ' + waterY + ' Q141 ' + waterY + ' 172 ' + (waterY - 5),
-              fill: 'none', stroke: waiting ? '#93c5fd' : '#0284c7', strokeWidth: 3
+              fill: 'none', stroke: waiting ? '#93c5fd' : '#0284c7', strokeWidth: 3.2, strokeLinecap: 'round'
             }),
+            h('path', {
+              d: 'M54 ' + (waterY - 2.5) + ' Q82 ' + (waterY + 1.5) + ' 110 ' + (waterY + 1.5) + ' Q138 ' + (waterY + 1.5) + ' 166 ' + (waterY - 2.5),
+              fill: 'none', stroke: '#ffffff', strokeWidth: 1.2, opacity: 0.72
+            }),
+            // Borosilicate glass vertical specular reflection sheen overlay
+            h('rect', { x: 48, y: 48, width: 124, height: 274, rx: 6, fill: 'url(#' + uid + '-glass)', style: { pointerEvents: 'none' } }),
+            h('rect', { x: 56, y: 54, width: 7, height: 262, rx: 3.5, fill: '#ffffff', opacity: 0.34, style: { pointerEvents: 'none' } }),
             ticks,
             showSinker && h('g', { 'aria-hidden': 'true', 'data-sinker-state': showObject ? 'combined' : 'alone' },
               h('line', { x1: 138, y1: 44, x2: 138, y2: 286, stroke: '#64748b', strokeWidth: 2 }),
-              h('rect', { x: 126, y: 284, width: 24, height: 22, rx: 4, fill: '#64748b', stroke: '#0f172a', strokeWidth: 2 }),
+              h('rect', { x: 126, y: 284, width: 24, height: 22, rx: 4, fill: '#475569', stroke: '#0f172a', strokeWidth: 2 }),
+              h('rect', { x: 129, y: 286.5, width: 18, height: 4, rx: 2, fill: '#cbd5e1', opacity: 0.45 }),
               h('text', { x: 138, y: 299, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#ffffff' }, 'S')
             ),
 
             showObject && h('g', { 'aria-hidden': 'true', 'data-immersion': partialImmersion ? 'partial' : 'full', 'data-clay-shape': dispObject.id === 'clay' ? dispClayShapeMeta.id : undefined },
-              dispObject.id === 'clay' && dispClayShapeMeta.id === 'lump' && h('ellipse', { cx: 110, cy: objectY, rx: 27, ry: 16, fill: '#a16207', stroke: '#713f12', strokeWidth: 2 }),
-              dispObject.id === 'clay' && dispClayShapeMeta.id === 'patty' && h('rect', { x: 70, y: objectY - 9, width: 80, height: 18, rx: 9, fill: '#a16207', stroke: '#713f12', strokeWidth: 2 }),
-              dispObject.id === 'clay' && dispClayShapeMeta.id === 'column' && h('rect', { x: 98, y: objectY - 30, width: 24, height: 60, rx: 10, fill: '#a16207', stroke: '#713f12', strokeWidth: 2 }),
+              dispObject.id === 'clay' && dispClayShapeMeta.id === 'lump' && h('ellipse', { cx: 110, cy: objectY, rx: 27, ry: 16, fill: 'url(#' + uid + '-clay)', stroke: '#713f12', strokeWidth: 2 }),
+              dispObject.id === 'clay' && dispClayShapeMeta.id === 'patty' && h('rect', { x: 70, y: objectY - 9, width: 80, height: 18, rx: 9, fill: 'url(#' + uid + '-clay)', stroke: '#713f12', strokeWidth: 2 }),
+              dispObject.id === 'clay' && dispClayShapeMeta.id === 'column' && h('rect', { x: 98, y: objectY - 30, width: 24, height: 60, rx: 10, fill: 'url(#' + uid + '-clay)', stroke: '#713f12', strokeWidth: 2 }),
               dispObject.id !== 'clay' && h('ellipse', { cx: 110, cy: objectY, rx: 24, ry: 16, fill: '#475569', stroke: '#0f172a', strokeWidth: 2 }),
               dispObject.id !== 'clay' && h('text', { x: 110, y: objectY + 5, textAnchor: 'middle', fontSize: 20 }, dispObject.icon)
             ),
             !waiting && !overflowing && h('line', { x1: 174, y1: waterY, x2: 204, y2: waterY, stroke: '#0369a1', strokeWidth: 2 }),
+            !waiting && !overflowing && h('circle', { cx: 174, cy: waterY, r: 2.8, fill: '#0284c7' }),
             !waiting && !overflowing && h('text', { x: 207, y: waterY + 4, textAnchor: 'end', fontSize: 12, fontWeight: 900, fill: '#075985' }, safeReading + ' mL'),
             overflowing && h('g', { 'aria-hidden': 'true', 'data-cylinder-overflow': 'true' },
               h('path', { d: 'M38 48 Q54 34 70 48 T102 48 T134 48 T182 48', fill: 'none', stroke: '#dc2626', strokeWidth: 5, strokeLinecap: 'round' }),
@@ -2544,18 +2653,21 @@ window.StemLab = window.StemLab || {
             return;
           }
           var ok = Math.abs(parsed - dispTrial.measuredVolume) < 0.001;
-          var newStreak = ok ? streak + 1 : 0;
+          var dispSolvedKeys = (_v.dispSolvedKeys && typeof _v.dispSolvedKeys === 'object' && !Array.isArray(_v.dispSolvedKeys)) ? _v.dispSolvedKeys : {};
+          var dispSpecimenKey = dispObject.id + ':' + dispCondition + (dispObject.id === 'clay' ? ':' + dispClayShapeMeta.id : '') + ':' + (dispUsesSinker ? 'sinker' : 'direct');
+          var alreadyCredited = ok && !!dispSolvedKeys[dispSpecimenKey];
+          var newStreak = ok ? (alreadyCredited ? streak : streak + 1) : 0;
           var patch = {
             dispFeedback: ok
               ? { correct: true, msg: 'Correct: ' + dispTrial.final + ' - ' + dispBaselineReading + ' = ' + dispTrial.measuredVolume + ' mL, so the observed displaced volume is ' + dispTrial.measuredVolume + ' cm\u00B3.' }
-              : { correct: false, msg: 'Use the change in water level: final (' + dispTrial.final + ' mL) - ' + (dispUsesSinker ? 'sinker-only' : 'initial') + ' (' + dispBaselineReading + ' mL). Do not use the final reading by itself.' },
-            score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
-            streak: newStreak,
-            attemptHist: (_v.attemptHist || []).concat([ok ? 1 : 0]).slice(-24)
+              : { correct: false, msg: 'Use the change in water level: final (' + dispTrial.final + ' mL) - ' + (dispUsesSinker ? 'sinker-only' : 'initial') + ' (' + dispBaselineReading + ' mL). Do not use the final reading by itself.' }
           };
+          if (!alreadyCredited) {
+            patch.score = { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 };
+            patch.streak = newStreak;
+            patch.attemptHist = (_v.attemptHist || []).concat([ok ? 1 : 0]).slice(-24);
+          }
           if (ok) {
-            var nextSolved = dispSolved + 1;
-            patch.dispSolved = nextSolved;
             patch.dispTrials = dispTrials.concat([{
               id: Date.now(),
               object: dispObject.label + (dispObject.id === 'clay' ? ' - ' + dispClayShapeMeta.label : ''),
@@ -2569,8 +2681,15 @@ window.StemLab = window.StemLab || {
               condition: dispUsesSinker ? 'Sinker correction (careful setup)' : dispConditionMeta.label
             }]).slice(-6);
             playSound('correct');
-            if (typeof awardStemXP === 'function') awardStemXP('volume', 5, 'water displacement');
-            checkBadges({ firstVolume: true, displacementScientist: nextSolved >= 3, streak5: newStreak >= 5, streak10: newStreak >= 10 });
+            if (!alreadyCredited) {
+              var nextSolvedKeys = Object.assign({}, dispSolvedKeys);
+              nextSolvedKeys[dispSpecimenKey] = true;
+              var nextSolved = dispSolved + 1;
+              patch.dispSolved = nextSolved;
+              patch.dispSolvedKeys = nextSolvedKeys;
+              if (typeof awardStemXP === 'function') awardStemXP('volume', 5, 'water displacement');
+              checkBadges({ firstVolume: true, displacementScientist: nextSolved >= 3, streak5: newStreak >= 5, streak10: newStreak >= 10 });
+            }
             announceToSR('Correct. Observed displaced volume ' + dispTrial.measuredVolume + ' cubic centimeters.');
           } else {
             playSound('wrong');
@@ -4460,6 +4579,7 @@ window.StemLab = window.StemLab || {
                 cvEl._volPaused = formulasPaused || reducedMotion;
                 if (cvEl._volAnim) return;
                 var c2 = cvEl.getContext('2d');
+                if (!c2) return;
                 var W = cvEl.offsetWidth || 600;
                 var H = cvEl.offsetHeight || 220;
                 cvEl.width = W * 2; cvEl.height = H * 2;
@@ -4473,15 +4593,30 @@ window.StemLab = window.StemLab || {
                   cvEl._volLastFrame = frameNow;
                   if (!cvEl._volPaused) cvEl._volTime += frameDelta;
                   var t = cvEl._volTime;
-                  c2.fillStyle = '#020210';
+                  // Deep studio backdrop with subtle radial focus & geometric grid
+                  var hasRadG = typeof c2.createRadialGradient === 'function';
+                  var hasLinG = typeof c2.createLinearGradient === 'function';
+                  if (hasRadG) {
+                    var bgGrad = c2.createRadialGradient(W * 0.5, H * 0.45, 20, W * 0.5, H * 0.5, Math.max(W, H) * 0.72);
+                    bgGrad.addColorStop(0, '#0b1530');
+                    bgGrad.addColorStop(1, '#020512');
+                    c2.fillStyle = bgGrad;
+                  } else {
+                    c2.fillStyle = '#04091a';
+                  }
                   c2.fillRect(0, 0, W, H);
+                  c2.strokeStyle = 'rgba(56, 189, 248, 0.06)';
+                  c2.lineWidth = 0.75;
+                  for (var gx = 0; gx < W; gx += 32) { c2.beginPath(); c2.moveTo(gx, 0); c2.lineTo(gx, H); c2.stroke(); }
+                  for (var gy = 0; gy < H; gy += 32) { c2.beginPath(); c2.moveTo(0, gy); c2.lineTo(W, gy); c2.stroke(); }
+
                   var solids = [
-                    { name: __alloT('stem.volume.cube', 'Cube'), formula: 'V = s³', vol: '64', s: 4, color: '#7dd3fc' },
-                    { name: __alloT('stem.volume.sphere', 'Sphere'), formula: 'V = ⁴⁄₃πr³', vol: '113', s: 3, color: '#a78bfa' },
-                    { name: __alloT('stem.volume.cylinder_2', 'Cylinder'), formula: 'V = πr²h', vol: '151', s: 3, color: '#f472b6' },
-                    { name: __alloT('stem.volume.cone_2', 'Cone'), formula: 'V = ⅓πr²h', vol: '50', s: 3, color: '#fbbf24' },
-                    { name: __alloT('stem.volume.pyramid', 'Pyramid'), formula: 'V = ⅓·b·h', vol: '32', s: 3, color: '#fb923c' },
-                    { name: __alloT('stem.volume.prism', 'Prism'), formula: 'V = b·h', vol: '60', s: 3, color: '#10b981' }
+                    { key: 'cube', name: __alloT('stem.volume.cube', 'Cube'), formula: 'V = s³', vol: '64', s: 4, color: '#7dd3fc' },
+                    { key: 'sphere', name: __alloT('stem.volume.sphere', 'Sphere'), formula: 'V = ⁴⁄₃πr³', vol: '113', s: 3, color: '#a78bfa' },
+                    { key: 'cylinder', name: __alloT('stem.volume.cylinder_2', 'Cylinder'), formula: 'V = πr²h', vol: '151', s: 3, color: '#f472b6' },
+                    { key: 'cone', name: __alloT('stem.volume.cone_2', 'Cone'), formula: 'V = ⅓πr²h', vol: '50', s: 3, color: '#fbbf24' },
+                    { key: 'pyramid', name: __alloT('stem.volume.pyramid', 'Pyramid'), formula: 'V = ⅓·b·h', vol: '32', s: 3, color: '#fb923c' },
+                    { key: 'prism', name: __alloT('stem.volume.prism', 'Prism'), formula: 'V = b·h', vol: '60', s: 3, color: '#10b981' }
                   ];
                   var cols = 3, rows = 2;
                   var cellW = W / cols, cellH = H / rows;
@@ -4494,107 +4629,106 @@ window.StemLab = window.StemLab || {
                     var sz = 25;
                     c2.save();
                     c2.translate(cx, cy - 10);
-                    c2.strokeStyle = s.color; c2.lineWidth = 1.5;
-                    c2.fillStyle = s.color + '40';
-                    // Draw shape (simplified)
-                    if (s.name === 'Cube') {
-                      // Iso cube with interior Y edges so it reads as 3D, not flat hexagon
-                      var pts = [];
+                    // Subtle grounded elliptical contact shadow + ambient halo
+                    if (hasRadG) {
+                      var shG = c2.createRadialGradient(0, sz + 6, 2, 0, sz + 6, sz * 1.05);
+                      shG.addColorStop(0, 'rgba(0,0,0,0.48)');
+                      shG.addColorStop(1, 'rgba(0,0,0,0)');
+                      c2.fillStyle = shG;
+                    } else {
+                      c2.fillStyle = 'rgba(0,0,0,0.28)';
+                    }
+                    c2.beginPath(); c2.ellipse(0, sz + 6, sz * 0.95, sz * 0.24, 0, 0, Math.PI * 2); c2.fill();
+
+                    // Specular directional shading gradient & luminous rim
+                    if (hasRadG) {
+                      var specGrad = c2.createRadialGradient(-sz * 0.35, -sz * 0.38, 2, 0, 0, sz * 1.25);
+                      specGrad.addColorStop(0, '#ffffffcc');
+                      specGrad.addColorStop(0.28, s.color + 'aa');
+                      specGrad.addColorStop(1, s.color + '28');
+                      c2.fillStyle = specGrad;
+                    } else {
+                      c2.fillStyle = s.color + '55';
+                    }
+                    c2.strokeStyle = s.color;
+                    c2.lineWidth = 1.6;
+                    c2.lineJoin = 'round';
+                    c2.shadowColor = s.color;
+                    c2.shadowBlur = 7;
+
+                    if (s.key === 'cube') {
                       var cos30 = Math.cos(Math.PI / 6 + rot);
-                      pts = [
+                      var pts = [
                         { x: 0, y: -sz }, { x: sz * cos30, y: -sz / 2 }, { x: sz * cos30, y: sz / 2 }, { x: 0, y: sz },
                         { x: -sz * cos30, y: sz / 2 }, { x: -sz * cos30, y: -sz / 2 }
                       ];
+                      // Top, left, right specular shaded faces
+                      c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[5].x, pts[5].y); c2.lineTo(pts[0].x, pts[0].y); c2.lineTo(pts[1].x, pts[1].y); c2.closePath();
+                      c2.fillStyle = s.color + '88'; c2.fill();
+                      c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[1].x, pts[1].y); c2.lineTo(pts[2].x, pts[2].y); c2.lineTo(pts[3].x, pts[3].y); c2.closePath();
+                      c2.fillStyle = s.color + '48'; c2.fill();
+                      c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[3].x, pts[3].y); c2.lineTo(pts[4].x, pts[4].y); c2.lineTo(pts[5].x, pts[5].y); c2.closePath();
+                      c2.fillStyle = s.color + '2c'; c2.fill();
                       c2.beginPath();
                       pts.forEach(function(p, pi) { if (pi === 0) c2.moveTo(p.x, p.y); else c2.lineTo(p.x, p.y); });
-                      c2.closePath();
-                      c2.fill(); c2.stroke();
-                      // Interior Y: 3 edges from the near-corner (centre) to alternating outer vertices
+                      c2.closePath(); c2.stroke();
                       c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[0].x, pts[0].y); c2.stroke();
                       c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[2].x, pts[2].y); c2.stroke();
                       c2.beginPath(); c2.moveTo(0, 0); c2.lineTo(pts[4].x, pts[4].y); c2.stroke();
-                    } else if (s.name === 'Sphere') {
-                      c2.beginPath();
-                      c2.arc(0, 0, sz, 0, Math.PI * 2);
-                      c2.fill(); c2.stroke();
-                      // Equator + two phase-offset meridians for continuous spin
-                      c2.beginPath();
-                      c2.ellipse(0, 0, sz, sz * 0.3, 0, 0, Math.PI * 2);
-                      c2.stroke();
-                      c2.beginPath();
-                      c2.ellipse(0, 0, sz * 0.3 * Math.abs(Math.cos(rot)), sz, 0, 0, Math.PI * 2);
-                      c2.stroke();
-                      c2.beginPath();
-                      c2.ellipse(0, 0, sz * 0.3 * Math.abs(Math.sin(rot)), sz, 0, 0, Math.PI * 2);
-                      c2.stroke();
-                    } else if (s.name === 'Cylinder') {
-                      c2.beginPath();
-                      c2.ellipse(0, -sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2);
-                      c2.fill(); c2.stroke();
-                      c2.beginPath();
-                      c2.rect(-sz * 0.7, -sz, sz * 1.4, sz * 2);
-                      c2.fill(); c2.stroke();
-                      c2.beginPath();
-                      c2.ellipse(0, sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2);
-                      c2.fill(); c2.stroke();
-                      // Back edge: vertical seam swinging horizontally to show vertical-axis spin
+                      // Specular corner rim glint
+                      c2.fillStyle = '#ffffff'; c2.beginPath(); c2.arc(0, 0, 2, 0, Math.PI * 2); c2.fill();
+                    } else if (s.key === 'sphere') {
+                      c2.beginPath(); c2.arc(0, 0, sz, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                      c2.shadowBlur = 0;
+                      c2.strokeStyle = s.color + 'cc'; c2.lineWidth = 1.1;
+                      c2.beginPath(); c2.ellipse(0, 0, sz, sz * 0.3, 0, 0, Math.PI * 2); c2.stroke();
+                      c2.beginPath(); c2.ellipse(0, 0, sz * 0.3 * Math.abs(Math.cos(rot)), sz, 0, 0, Math.PI * 2); c2.stroke();
+                      c2.beginPath(); c2.ellipse(0, 0, sz * 0.3 * Math.abs(Math.sin(rot)), sz, 0, 0, Math.PI * 2); c2.stroke();
+                      c2.fillStyle = 'rgba(255,255,255,0.65)'; c2.beginPath(); c2.ellipse(-sz * 0.35, -sz * 0.35, sz * 0.22, sz * 0.13, -0.6, 0, Math.PI * 2); c2.fill();
+                    } else if (s.key === 'cylinder') {
+                      if (hasLinG) {
+                        var cylG = c2.createLinearGradient(-sz * 0.7, 0, sz * 0.7, 0);
+                        cylG.addColorStop(0, s.color + '30');
+                        cylG.addColorStop(0.32, '#ffffff88');
+                        cylG.addColorStop(0.55, s.color + '80');
+                        cylG.addColorStop(1, s.color + '24');
+                        c2.fillStyle = cylG;
+                      } else {
+                        c2.fillStyle = s.color + '55';
+                      }
+                      c2.beginPath(); c2.rect(-sz * 0.7, -sz, sz * 1.4, sz * 2); c2.fill(); c2.stroke();
+                      c2.fillStyle = s.color + '77';
+                      c2.beginPath(); c2.ellipse(0, -sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                      c2.fillStyle = s.color + '33';
+                      c2.beginPath(); c2.ellipse(0, sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2); c2.fill(); c2.stroke();
                       var cylBackX = Math.sin(rot) * sz * 0.7;
                       c2.beginPath(); c2.moveTo(cylBackX, -sz); c2.lineTo(cylBackX, sz); c2.stroke();
-                    } else if (s.name === 'Cone') {
-                      c2.beginPath();
-                      c2.moveTo(0, -sz);
-                      c2.lineTo(-sz * 0.7, sz);
-                      c2.lineTo(sz * 0.7, sz);
-                      c2.closePath();
-                      c2.fill(); c2.stroke();
-                      c2.beginPath();
-                      c2.ellipse(0, sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2);
-                      c2.fill(); c2.stroke();
-                      // Back ridge: line from apex to a swinging point on the base ellipse
+                    } else if (s.key === 'cone') {
+                      c2.beginPath(); c2.moveTo(0, -sz); c2.lineTo(-sz * 0.7, sz); c2.lineTo(sz * 0.7, sz); c2.closePath(); c2.fill(); c2.stroke();
+                      c2.fillStyle = s.color + '44';
+                      c2.beginPath(); c2.ellipse(0, sz, sz * 0.7, sz * 0.2, 0, 0, Math.PI * 2); c2.fill(); c2.stroke();
                       var coneBackX = Math.sin(rot) * sz * 0.7;
                       c2.beginPath(); c2.moveTo(0, -sz); c2.lineTo(coneBackX, sz); c2.stroke();
-                    } else if (s.name === 'Pyramid') {
-                      c2.beginPath();
-                      c2.moveTo(0, -sz);
-                      c2.lineTo(-sz * 0.7, sz);
-                      c2.lineTo(sz * 0.7, sz);
-                      c2.closePath();
-                      c2.fill(); c2.stroke();
-                      // Two phase-offset edges from apex to swinging base points
-                      // (a 4-sided pyramid has 4 apex→base edges; show 2 of them rotating)
+                    } else if (s.key === 'pyramid') {
+                      c2.beginPath(); c2.moveTo(0, -sz); c2.lineTo(-sz * 0.7, sz); c2.lineTo(sz * 0.7, sz); c2.closePath(); c2.fill(); c2.stroke();
                       var pyrX1 = Math.sin(rot) * sz * 0.7;
                       var pyrX2 = Math.sin(rot + Math.PI / 2) * sz * 0.7;
                       c2.beginPath(); c2.moveTo(0, -sz); c2.lineTo(pyrX1, sz); c2.stroke();
                       c2.beginPath(); c2.moveTo(0, -sz); c2.lineTo(pyrX2, sz); c2.stroke();
-                    } else if (s.name === 'Prism') {
-                      // Triangular prism: front face triangle + depth edges from each vertex
-                      c2.beginPath();
-                      c2.moveTo(-sz, sz / 2);
-                      c2.lineTo(0, -sz / 2);
-                      c2.lineTo(sz, sz / 2);
-                      c2.closePath();
-                      c2.fill(); c2.stroke();
+                    } else if (s.key === 'prism') {
                       var prismDx = Math.cos(rot) * sz * 0.35;
                       var prismDy = Math.sin(rot) * sz * 0.15;
-                      var prismVerts = [
-                        { x: -sz, y: sz / 2 },
-                        { x: 0, y: -sz / 2 },
-                        { x: sz, y: sz / 2 }
-                      ];
-                      // Depth edges
+                      var prismVerts = [{ x: -sz, y: sz / 2 }, { x: 0, y: -sz / 2 }, { x: sz, y: sz / 2 }];
+                      c2.beginPath(); c2.moveTo(prismVerts[0].x, prismVerts[0].y); c2.lineTo(prismVerts[1].x, prismVerts[1].y); c2.lineTo(prismVerts[2].x, prismVerts[2].y); c2.closePath();
+                      c2.fill(); c2.stroke();
                       prismVerts.forEach(function(v) {
-                        c2.beginPath();
-                        c2.moveTo(v.x, v.y);
-                        c2.lineTo(v.x + prismDx, v.y + prismDy);
-                        c2.stroke();
+                        c2.beginPath(); c2.moveTo(v.x, v.y); c2.lineTo(v.x + prismDx, v.y + prismDy); c2.stroke();
                       });
-                      // Back face outline (offset triangle)
                       c2.beginPath();
                       c2.moveTo(prismVerts[0].x + prismDx, prismVerts[0].y + prismDy);
                       c2.lineTo(prismVerts[1].x + prismDx, prismVerts[1].y + prismDy);
                       c2.lineTo(prismVerts[2].x + prismDx, prismVerts[2].y + prismDy);
-                      c2.closePath();
-                      c2.stroke();
+                      c2.closePath(); c2.stroke();
                     }
                     c2.restore();
                     c2.font = 'bold 10px sans-serif'; c2.fillStyle = s.color; c2.textAlign = 'center';
@@ -4646,9 +4780,9 @@ window.StemLab = window.StemLab || {
           for (var x = 0; x < dims.l; x++)
             cubeList.push({ x: x, y: y, z: z });
     }
-    // Sort painter's-algorithm style: far cubes first
+    // Sort painter's-algorithm style: back-to-front ascending (farther x+y and lower z first)
     cubeList.sort(function(a, b) {
-      return (b.x + b.y - b.z * 0.5) - (a.x + a.y - a.z * 0.5);
+      return (a.x + a.y) - (b.x + b.y) || (a.z - b.z);
     });
 
     // Compute SVG bounds
@@ -4700,15 +4834,15 @@ window.StemLab = window.StemLab || {
       var left = [
         [px - cubeSize * cosA, py - cubeSize + cubeSize * sinA],
         [px, py - cubeSize + cubeSize * 2 * sinA],
-        [px, py],
-        [px - cubeSize * cosA, py - cubeSize * sinA + cubeSize * sinA]
+        [px, py + cubeSize * 2 * sinA],
+        [px - cubeSize * cosA, py + cubeSize * sinA]
       ];
       // Right face
       var right = [
         [px + cubeSize * cosA, py - cubeSize + cubeSize * sinA],
         [px, py - cubeSize + cubeSize * 2 * sinA],
-        [px, py],
-        [px + cubeSize * cosA, py - cubeSize + cubeSize * sinA + cubeSize - cubeSize * sinA]
+        [px, py + cubeSize * 2 * sinA],
+        [px + cubeSize * cosA, py + cubeSize * sinA]
       ];
       function poly(pts, fill, stroke) {
         return '<polygon points="' + pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="0.8"/>';

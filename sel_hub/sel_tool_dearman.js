@@ -147,6 +147,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _dmBand = ctx.gradeBand || 'middle';
+      var _dePrintFill = function(c) {
+        if (_deHC) return '#000000';
+        return ({ '#0ea5e9': '#0369a1', '#a855f7': '#7e22ce', '#22c55e': '#15803d', '#f59e0b': '#b45309', '#ec4899': '#be185d', '#14b8a6': '#0f766e', '#6366f1': '#4338ca' }[String(c || '').toLowerCase()] || c);
+      };
 
       var d = labToolData.dearMan || defaultState();
       function setDM(patch) {
@@ -156,6 +162,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           if (patch.responses || patch.script !== undefined || patch.ask !== undefined) next.lastUpdated = todayISO();
           return Object.assign({}, prev, { dearMan: next });
         });
+      }
+      function scanDearManText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed) return false;
+        try {
+          if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+            var res = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'dearman', onSafetyFlag: onSafetyFlag });
+            if (res && res.action === 'block') {
+              setDM({ _crisisTier: 3 });
+              if (typeof window.SelHub.showCrisisModal === 'function') {
+                window.SelHub.showCrisisModal({ toolName: 'DEAR MAN', contentSnippet: trimmed });
+              }
+              return true;
+            }
+          }
+        } catch (_) {}
+        return false;
       }
       var view = d.view || 'home';
       var buildMode = d.buildMode === 'all' ? 'all' : 'guided';
@@ -168,7 +191,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       var dearManProgressText = draftedSteps === 0
         ? 'No DEAR MAN steps drafted yet. Start with Describe.'
         : draftedSteps + ' of ' + LETTERS.length + ' DEAR MAN steps drafted.';
-      function goto(v) { setDM({ view: v }); }
+      function goto(v) {
+        if (v === 'script' || v === 'practice') {
+          var combined = [d.ask || '', d.audience || '', buildScript()].join(' ').trim();
+          scanDearManText(combined);
+        }
+        setDM({ view: v });
+      }
       function focusStepField(index, attempt) {
         window.setTimeout(function() {
           var field = document.getElementById('dm-' + LETTERS[index].id);
@@ -281,6 +310,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
                 h('input', { id: 'dm-ask', type: 'text', value: d.ask || '',
                   placeholder: 'e.g. I want my mom to let me ride my bike to school.',
                   onChange: function(e) { setDM({ ask: e.target.value }); },
+                  onBlur: function(e) { scanDearManText(e.target.value); },
                   style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _deBg('#1e293b'), color: _deFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', null,
@@ -288,6 +318,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
                 h('input', { id: 'dm-audience', type: 'text', value: d.audience || '',
                   placeholder: 'e.g. Mom, Coach Smith, Mr. Patel',
                   onChange: function(e) { setDM({ audience: e.target.value }); },
+                  onBlur: function(e) { scanDearManText(e.target.value); },
                   style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _deBg('#1e293b'), color: _deFg('#e2e8f0'), fontSize: 13 } })
               )
             )
@@ -361,6 +392,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               h('textarea', { id: 'dm-' + L.id, value: v,
                 placeholder: 'In your own words...',
                 onChange: function(e) { setResponse(L.id, e.target.value); },
+                onBlur: function(e) { scanDearManText(e.target.value); },
                 style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _deBg('#1e293b'), color: _deFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' } })
             );
           }),
@@ -705,7 +737,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               var v = (d.responses || {})[L.id];
               if (!v || !v.trim()) return null;
               return h('div', { key: L.id, style: { marginBottom: 12, pageBreakInside: 'avoid' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 6, background: L.color, color: _deFg('#fff') } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 6, background: _dePrintFill(L.color), border: _deHC ? '1px solid #ffff00' : 'none', color: _deFg('#fff') } },
                   h('span', { style: { fontSize: 14, fontWeight: 900, fontFamily: 'ui-monospace, monospace' } }, L.letter),
                   h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, L.label)
                 ),
@@ -823,6 +855,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'DEAR MAN script builder' },
         header(),
         navTabs(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _dmBand))
+          : null,
         h('div', { id: 'dearman-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'dearman-tab-' + view, tabIndex: 0 },
           h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-label': 'DEAR MAN progress', style: { marginBottom: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.22)', color: _deFg('#bfdbfe'), fontSize: 11, lineHeight: 1.5 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' } },

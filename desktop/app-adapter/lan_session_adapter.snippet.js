@@ -214,26 +214,30 @@ function _applyLanSessionAdapter() {
     // see docs/SCHOOL_SERVER_ARCHITECTURE.md).
     const tokenQs = cfg.token ? ('?token=' + encodeURIComponent(cfg.token)) : '';
     let closed = false;
-    let gotMessage = false;
     const es = new EventSource(cfg.base + '/api/lan-sessions/' + encodeURIComponent(ref.id) + '/events' + tokenQs);
     const handle = (event) => {
-      gotMessage = true;
+      if (closed) return;
       let payload = null;
       try { payload = JSON.parse(event.data); } catch (_) { payload = null; }
       try { cb(_alloLanSnap(ref, payload)); } catch (e) { console.warn('[LAN] snapshot callback failed', e); }
     };
     es.addEventListener('session', handle);
     es.onerror = () => {
-      // Transient drops auto-retry inside EventSource. A hard close before ANY
-      // message (wrong PIN, bridge gone) never recovers — surface it once,
-      // like a Firestore permission error, so the shell can exit the session.
-      if (!closed && !gotMessage && es.readyState === 2) {
+      // Transient drops keep readyState === 0 (CONNECTING) and auto-retry per spec.
+      // readyState === 2 (CLOSED) is always terminal (token expiry, PIN rotation,
+      // wrong PIN, or bridge gone) — surface it once so the shell can recover or exit.
+      if (!closed && es.readyState === 2) {
         closed = true;
+        try { es.removeEventListener('session', handle); } catch (_) {}
         try { es.close(); } catch (_) {}
         if (errCb) { try { errCb(new Error('LAN session bridge unreachable')); } catch (_) {} }
       }
     };
-    return () => { closed = true; try { es.close(); } catch (_) {} };
+    return () => {
+      closed = true;
+      try { es.removeEventListener('session', handle); } catch (_) {}
+      try { es.close(); } catch (_) {}
+    };
   };
   // Refresh the window mirrors that CDN modules (module_scope_extras) capture;
   // ANTI's own mirror block only runs once at module scope.

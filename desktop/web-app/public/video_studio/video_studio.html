@@ -3276,7 +3276,7 @@
     var dur = Math.max(0.1, Number(duration) || 0.1);
     var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.inserts) ? raw.inserts : (raw && Array.isArray(raw.cards) ? raw.cards : (raw && Array.isArray(raw.suggestions) ? raw.suggestions : [])));
     var out = [];
-    var typeMap = {
+    var typeMap = Object.assign(Object.create(null), {
       title: 'title_card',
       section: 'title_card',
       title_card: 'title_card',
@@ -3297,12 +3297,12 @@
       overlay: 'image_overlay',
       uploaded_image: 'image_overlay',
       resource_image: 'image_overlay'
-    };
-    var themes = { blue: 1, green: 1, amber: 1, pink: 1, slate: 1 };
-    var anims = { none: 1, pulse: 1, bounce: 1, sparkle: 1 };
-    var motions = { none: 1, fade: 1, slide_left: 1, slide_right: 1, slide_up: 1, slide_down: 1, drift_right: 1, drift_left: 1, zoom_in: 1 };
-    var styles = { label: 1, box: 1, spotlight: 1, arrow: 1 };
-    var layouts = { 'center-card': 1, 'lower-banner': 1, 'split-panel': 1 };
+    });
+    var themes = Object.assign(Object.create(null), { blue: 1, green: 1, amber: 1, pink: 1, slate: 1 });
+    var anims = Object.assign(Object.create(null), { none: 1, pulse: 1, bounce: 1, sparkle: 1 });
+    var motions = Object.assign(Object.create(null), { none: 1, fade: 1, slide_left: 1, slide_right: 1, slide_up: 1, slide_down: 1, drift_right: 1, drift_left: 1, zoom_in: 1 });
+    var styles = Object.assign(Object.create(null), { label: 1, box: 1, spotlight: 1, arrow: 1 });
+    var layouts = Object.assign(Object.create(null), { 'center-card': 1, 'lower-banner': 1, 'split-panel': 1 });
     var clamp01 = function (v, d) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(1, v)) : d; };
     for (var i = 0; i < list.length && out.length < 32; i++) {
       var s = list[i] || {};
@@ -4559,15 +4559,24 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // one is still served.
   async function resolveFfmpegWasmUrl() {
     if (ffmpegWasmBlobUrl) return ffmpegWasmBlobUrl;
+    var fetchWithTimeout = async function (url, timeoutMs) {
+      var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+      var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, timeoutMs || 30000) : null;
+      try {
+        return await fetch(url, ctrl ? { signal: ctrl.signal } : undefined);
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+    };
     var manifest = null;
     try {
-      var manifestRes = await fetch(localStudioUrl(FFMPEG_CORE_WASM_URL + '.parts.json'));
+      var manifestRes = await fetchWithTimeout(localStudioUrl(FFMPEG_CORE_WASM_URL + '.parts.json'), 30000);
       if (manifestRes.ok) manifest = await manifestRes.json();
     } catch (_) {}
     if (!manifest || !manifest.parts) return localStudioUrl(FFMPEG_CORE_WASM_URL);
     var chunks = [];
     for (var i = 0; i < manifest.parts; i++) {
-      var partRes = await fetch(localStudioUrl(FFMPEG_CORE_WASM_URL + '.part' + i));
+      var partRes = await fetchWithTimeout(localStudioUrl(FFMPEG_CORE_WASM_URL + '.part' + i), 30000);
       if (!partRes.ok) throw new Error('MP4 converter download failed (part ' + (i + 1) + ' of ' + manifest.parts + ')');
       chunks.push(await partRes.blob());
     }
@@ -6046,7 +6055,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     setStatus($('importStatus'), 'Reading project “' + file.name + '”…');
     return file.arrayBuffer().then(function (buf) {
       var entries = vsReadZip(new Uint8Array(buf));
-      var meta = null, video = null, legacyVideoData = null, videoName = '', vttText = null, transcriptEditText = null, transcriptWordText = null, audioEditText = null, visualText = null, chapterText = null, insertText = null, promptText = null, localText = null, scenePlanText = null, mediaCreditText = null, demoRunReportText = null, editorStateText = null, musicText = null, musicData = null, musicName = '', audioMedia = {}, bundleWarnings = [];
+      var meta = null, video = null, legacyVideoData = null, videoName = '', vttText = null, transcriptEditText = null, transcriptWordText = null, audioEditText = null, visualText = null, chapterText = null, insertText = null, promptText = null, localText = null, scenePlanText = null, mediaCreditText = null, demoRunReportText = null, editorStateText = null, musicText = null, musicData = null, musicName = '', audioMedia = Object.create(null), bundleWarnings = [];
       entries.forEach(function (e) {
         if (/(^|\/)meta\.json$/i.test(e.name)) { try { meta = vsSafeJsonParse(new TextDecoder().decode(e.data)); } catch (_) {} }
         else if (/(^|\/)project_readme\.txt$/i.test(e.name)) {
@@ -6128,14 +6137,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           bundleAudioManifest = audioManifest;
           if (audioManifest.applyToSource) {
             audioState = audioManifest.sourceAudio;
-            if (audioManifest.narration && audioManifest.narration.embedded && audioManifest.narration.fileName && audioMedia[audioManifest.narration.fileName]) {
+            if (audioManifest.narration && audioManifest.narration.embedded && audioManifest.narration.fileName && Object.prototype.hasOwnProperty.call(audioMedia, audioManifest.narration.fileName)) {
               narration = { blob: new Blob([audioMedia[audioManifest.narration.fileName]], { type: audioManifest.narration.mimeType || 'audio/webm' }), volume: audioManifest.narration.volume, fileName: audioManifest.narration.fileName, mimeType: audioManifest.narration.mimeType || 'audio/webm' };
             } else if (audioManifest.narration && audioManifest.narration.embedded && audioManifest.narration.fileName) {
               missingAudioFiles.push(audioManifest.narration.fileName);
             }
             (audioManifest.audioClips || []).forEach(function (c) {
               if (!c || !c.embedded || !c.fileName) return;
-              if (!audioMedia[c.fileName]) { missingAudioFiles.push(c.fileName); return; }
+              if (!Object.prototype.hasOwnProperty.call(audioMedia, c.fileName)) { missingAudioFiles.push(c.fileName); return; }
               audioClips.push({ id: c.id, name: c.name || c.fileName.replace(/^.*\//, ''), blob: new Blob([audioMedia[c.fileName]], { type: c.mimeType || 'audio/webm' }), t: c.start || 0, dur: c.duration || null, volume: c.volume, fileName: c.fileName, mimeType: c.mimeType || 'audio/webm' });
             });
           }
@@ -8849,6 +8858,7 @@ function buildContactSheet(t, count, shouldCancel) {
     options = options || {};
     return new Promise(function (resolve) {
       if (!opener || opener.closed) { resolve({ error: 'needs the AlloFlow window' }); return; }
+      if (typeof confirmUnknownOriginSend === 'function' && !confirmUnknownOriginSend()) { resolve({ error: 'cancelled', cancelled: true }); return; }
       var id = 'nr' + (++aiNarrSeq) + '-' + Date.now().toString(36);
       var signal = options.signal || null;
       var timer = null;
@@ -9466,14 +9476,14 @@ function buildContactSheet(t, count, shouldCancel) {
     current.button.textContent = '▶'; current.button.setAttribute('aria-label', current.label);
     setStatus($('clipPreviewStatus'), 'Clip preview stopped.');
   }
-  var previewAudios = {};
+  var previewAudios = Object.create(null);
   var previewVideoWaiting = false;
   function resetPreviewAudio() {
     stopClipAudition();
     Object.keys(previewAudios).forEach(function (k) {
       try { previewAudios[k].el.pause(); URL.revokeObjectURL(previewAudios[k].el.src); } catch (_) {}
     });
-    previewAudios = {};
+    previewAudios = Object.create(null);
     $('previewAudioFeedback').hidden = true;
   }
   function speechActiveAt(t, time) {
@@ -9493,7 +9503,7 @@ function buildContactSheet(t, count, shouldCancel) {
       if (music) items.push(Object.assign({ key: 'music', kind: 'music', blob: t.musicBed.blob, at: music.start, vol: music.volume }, music));
     }
     items.forEach(function (it) {
-      var pa = previewAudios[it.key];
+      var pa = Object.prototype.hasOwnProperty.call(previewAudios, it.key) ? previewAudios[it.key] : null;
       if (!pa || pa.blob !== it.blob) {
         if (pa) { try { pa.el.pause(); URL.revokeObjectURL(pa.el.src); } catch (_) {} }
         pa = previewAudios[it.key] = { el: new Audio(URL.createObjectURL(it.blob)), blob: it.blob };
@@ -10873,6 +10883,8 @@ function buildContactSheet(t, count, shouldCancel) {
       } catch (e) {
         setStatus($('sceneStatus'), 'Could not load that scene plan - ' + (e && e.message || e), 'bad');
       }
+    }).catch(function (e) {
+      setStatus($('sceneStatus'), 'Could not read that scene plan file - ' + (e && e.message || e), 'bad');
     });
   }
   function loadBundledScenePlan() {
@@ -12729,6 +12741,10 @@ function buildContactSheet(t, count, shouldCancel) {
       copyTextToClipboard(payload.text).then(function (ok) {
         setStatus(statusEl, ok ? 'AlloFlow window not found; transcript copied to the clipboard.' : 'AlloFlow window not found. Download the transcript instead.', 'warn');
       });
+      return;
+    }
+    if (!confirmUnknownOriginSend()) {
+      setStatus(statusEl, 'Transcript send cancelled.', 'warn');
       return;
     }
     var id = 'tx' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -15926,6 +15942,20 @@ function buildContactSheet(t, count, shouldCancel) {
         var cv = document.createElement('canvas'); cv.width = w; cv.height = hgt;
         var ctx = cv.getContext('2d');
         var ac = new (window.AudioContext || window.webkitAudioContext)();
+        var mixItems = [];
+        var mixUrls = [];
+        var stream = null;
+        var mr = null;
+        // Registered in stop-before-close order before MediaRecorder creation
+        // so even a MediaRecorder constructor error stops tracks, closes the
+        // AudioContext, and revokes every mix blob URL.
+        cleanupFns.push(function () { if (raf) cancelAnimationFrame(raf); });
+        cleanupFns.push(function () { try { v.pause(); } catch (_) {} });
+        cleanupFns.push(function () { mixItems.forEach(function (m) { try { if (m._el) m._el.pause(); } catch (_) {} }); });
+        cleanupFns.push(function () { try { if (mr && mr.state !== 'inactive') mr.stop(); } catch (_) {} });
+        cleanupFns.push(function () { try { if (stream) stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {} });
+        cleanupFns.push(function () { try { ac.close(); } catch (_) {} });
+        cleanupFns.push(function () { mixUrls.splice(0).forEach(function (u) { try { URL.revokeObjectURL(u); } catch (_) {} }); });
         var dest = ac.createMediaStreamDestination();
         var removeAudio = !!(audioCfg && audioCfg.removeAll);
         var gainNode = null;
@@ -15945,12 +15975,10 @@ function buildContactSheet(t, count, shouldCancel) {
         // Narration + sound clips mix in through their own gain nodes, timed
         // against take-absolute video time — they play even when the original
         // track is removed (the "replace my audio" workflow).
-        var mixItems = [];
         if (take.narration && take.narration.blob) mixItems.push({ kind: 'speech', blob: take.narration.blob, at: 0, vol: take.narration.volume });
         (take.audioClips || []).forEach(function (c) { if (c && c.blob) mixItems.push({ kind: 'speech', blob: c.blob, at: Number(c.t) || 0, vol: c.volume }); });
         var safeMusic = musicBed && musicBed.blob ? vsSanitizeMusicBed(musicBed, take.duration || 0) : null;
         if (safeMusic && safeMusic.blob) mixItems.push(Object.assign({ kind: 'music', blob: safeMusic.blob, at: safeMusic.start, vol: safeMusic.volume }, safeMusic));
-        var mixUrls = [];
         mixItems.forEach(function (m) {
           try {
             var el = document.createElement('audio');
@@ -15970,20 +15998,12 @@ function buildContactSheet(t, count, shouldCancel) {
             m._el = el; m._gain = g; m._started = false;
           } catch (_) { m._el = null; }
         });
-        var stream = cv.captureStream(30);
+        stream = cv.captureStream(30);
         if ((!removeAudio || mixItems.length) && dest.stream.getAudioTracks().length) stream.addTrack(dest.stream.getAudioTracks()[0]);
-        var mr;
         try { mr = new MediaRecorder(stream, outputMimeInfo.mime ? { mimeType: outputMimeInfo.mime, videoBitsPerSecond: exportVideoBitrate(w, hgt) } : undefined); } catch (e) { fail(e); return; }
         var chunks = [];
         mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
-        // Registered in stop-before-close order; cleanup() runs them on every
-        // exit path (see the head of this Promise).
-        cleanupFns.push(function () { cancelAnimationFrame(raf); });
-        cleanupFns.push(function () { try { v.pause(); } catch (_) {} });
-        cleanupFns.push(function () { mixItems.forEach(function (m) { try { if (m._el) m._el.pause(); } catch (_) {} }); });
-        cleanupFns.push(function () { try { if (mr.state !== 'inactive') mr.stop(); } catch (_) {} });
-        cleanupFns.push(function () { try { ac.close(); } catch (_) {} });
-        cleanupFns.push(function () { mixUrls.splice(0).forEach(function (u) { try { URL.revokeObjectURL(u); } catch (_) {} }); });
+        mr.onerror = function (ev) { fail((ev && ev.error) || new Error('Export recording failed')); };
         var insertList = vsSanitizeTeachingInserts(inserts || [], take.duration || 0);
         var insertImagesReady = Promise.all(insertList.map(function (ins) {
           return new Promise(function (res) {

@@ -3721,19 +3721,27 @@
               h('stop', { offset: '73%', stopColor: '#bae6fd', stopOpacity: .12 }),
               h('stop', { offset: '100%', stopColor: '#e0f2fe', stopOpacity: 0 })),
             h('linearGradient', { id: 'wheel-fire-metal-gradient', x1: '0', y1: '0', x2: '0', y2: '1' },
-              h('stop', { offset: '0%', stopColor: '#b8a58f' }),
-              h('stop', { offset: '48%', stopColor: '#66574c' }),
+              h('stop', { offset: '0%', stopColor: '#d6c7b4' }),
+              h('stop', { offset: '48%', stopColor: '#7a695c' }),
               h('stop', { offset: '100%', stopColor: '#2a2522' })),
-            h('radialGradient', { id: 'wheel-fire-workshop-glow', cx: '50%', cy: '30%', r: '75%' },
-              h('stop', { offset: '0%', stopColor: '#5b4638' }),
-              h('stop', { offset: '100%', stopColor: '#171210' })),
+            h('radialGradient', { id: 'wheel-fire-head-radial', cx: '42%', cy: '36%', r: '64%' },
+              h('stop', { offset: '0%', stopColor: '#e7ddd0' }),
+              h('stop', { offset: '52%', stopColor: '#9b8979' }),
+              h('stop', { offset: '100%', stopColor: '#483c34' })),
+            h('radialGradient', { id: 'wheel-fire-workshop-glow', cx: '50%', cy: '28%', r: '75%' },
+              h('stop', { offset: '0%', stopColor: '#6b5140' }),
+              h('stop', { offset: '58%', stopColor: '#2d211b' }),
+              h('stop', { offset: '100%', stopColor: '#140f0d' })),
+            h('linearGradient', { id: 'wheel-fire-floor-grad', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#30231c' }),
+              h('stop', { offset: '100%', stopColor: '#16100d' })),
             h('filter', { id: 'wheel-fire-shadow', x: '-30%', y: '-20%', width: '160%', height: '160%' }, h('feDropShadow', { dx: '0', dy: '8', stdDeviation: '7', floodColor: '#000', floodOpacity: '.48' })),
             h('marker', { id: 'wheel-fire-force-outside', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 7, markerHeight: 7, orient: 'auto' }, h('path', { d: 'M0 0 L8 4 L0 8 Z', fill: '#fb923c' })),
             h('marker', { id: 'wheel-fire-force-support', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 7, markerHeight: 7, orient: 'auto' }, h('path', { d: 'M0 0 L8 4 L0 8 Z', fill: '#2dd4bf' })),
             h('marker', { id: 'wheel-fire-clay-flow-arrow', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 7, markerHeight: 7, orient: 'auto' }, h('path', { d: 'M0 0 L8 4 L0 8 Z', fill: '#facc15' }))
           ),
-          h('rect', { x: 0, y: 0, width: 520, height: 460, rx: 18, fill: 'url(#wheel-fire-workshop-glow)', 'aria-hidden': 'true' }),
-          h('path', { d: 'M0 315 L520 275 L520 460 L0 460 Z', fill: '#241b17', opacity: .78, 'aria-hidden': 'true' }),
+          h('rect', { x: 0, y: 0, width: 520, height: 460, rx: 18, fill: isContrast ? '#000000' : 'url(#wheel-fire-workshop-glow)', 'aria-hidden': 'true' }),
+          h('path', { d: 'M0 315 L520 275 L520 460 L0 460 Z', fill: isContrast ? '#000000' : 'url(#wheel-fire-floor-grad)', opacity: .88, 'aria-hidden': 'true' }),
           [55, 150, 260, 370, 465].map(function (x) { return h('line', { key: 'floor-' + x, x1: 260, y1: 300, x2: x, y2: 460, stroke: '#8a6f5c', strokeWidth: 1, opacity: .16, 'aria-hidden': 'true' }); }),
           lowerZoneTarget ? h('g', { 'data-wheel-fire-trim-zone': 'true', 'data-wheel-fire-trim-zone-min': activeTarget.minRing + 1, 'data-wheel-fire-trim-zone-max': activeTarget.maxRing + 1, 'aria-hidden': 'true' },
             h('rect', { x: 14, y: lowerZoneTopY, width: 492, height: Math.max(8, lowerZoneBottomY - lowerZoneTopY), rx: 8, fill: '#cbd5e1', opacity: .08 }),
@@ -3741,12 +3749,16 @@
             h('text', { x: 58, y: lowerZoneTopY + 14, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'lower trim zone · rings ' + (activeTarget.minRing + 1) + '–' + (activeTarget.maxRing + 1))
           ) : null,
           h('g', { 'data-wheel-fire-wheel-hardware': 'true', 'aria-hidden': 'true' },
+            !isContrast ? h('ellipse', { cx: wheelDrive.splashPan.cx, cy: wheelDrive.splashPan.cy + 26, rx: wheelDrive.splashPan.rx * 1.06, ry: wheelDrive.splashPan.ry * 0.85, fill: '#000000', opacity: .45 }) : null,
             h('path', { 'data-wheel-fire-drive-housing': 'true', d: wheelDrive.driveHousingPath, fill: 'url(#wheel-fire-metal-gradient)', stroke: '#181311', strokeWidth: 3 }),
             h('ellipse', { 'data-wheel-fire-splash-pan': 'true', cx: wheelDrive.splashPan.cx, cy: wheelDrive.splashPan.cy, rx: wheelDrive.splashPan.rx, ry: wheelDrive.splashPan.ry, fill: '#201a17', stroke: '#8a7664', strokeWidth: 4 }),
             method === 'wheel' && wetFilm.panSlipRatio > .005 ? h('ellipse', { 'data-wheel-fire-pan-slip': wetFilm.state, 'data-wheel-fire-pan-slip-ratio': wetFilm.panSlipRatio.toFixed(3), cx: wetFilm.pool.cx, cy: wetFilm.pool.cy, rx: wetFilm.pool.rx, ry: wetFilm.pool.ry, fill: 'none', stroke: '#7dd3fc', strokeWidth: wetFilm.panSlipWidthPx, opacity: wetFilm.panSlipOpacity }) : null,
             h('path', { 'data-wheel-fire-wheel-head-side': 'true', d: wheelDrive.wheelhead.sidePath, fill: '#3d332d', stroke: '#171311', strokeWidth: 2 }),
-            h('ellipse', { 'data-wheel-fire-wheel-head': 'true', cx: wheelDrive.wheelhead.cx, cy: wheelDrive.wheelhead.cy, rx: wheelDrive.wheelhead.rx, ry: wheelDrive.wheelhead.ry, fill: 'url(#wheel-fire-metal-gradient)', stroke: '#d0b99e', strokeWidth: 4 }),
+            h('ellipse', { 'data-wheel-fire-wheel-head': 'true', cx: wheelDrive.wheelhead.cx, cy: wheelDrive.wheelhead.cy, rx: wheelDrive.wheelhead.rx, ry: wheelDrive.wheelhead.ry, fill: isContrast ? '#000000' : 'url(#wheel-fire-head-radial)', stroke: '#d0b99e', strokeWidth: 4 }),
+            !isContrast ? h('ellipse', { cx: wheelDrive.wheelhead.cx, cy: wheelDrive.wheelhead.cy, rx: wheelDrive.wheelhead.rx * 0.72, ry: wheelDrive.wheelhead.ry * 0.72, fill: 'none', stroke: '#f5e7d6', strokeWidth: 0.9, opacity: .28 }) : null,
+            !isContrast ? h('ellipse', { cx: wheelDrive.wheelhead.cx, cy: wheelDrive.wheelhead.cy, rx: wheelDrive.wheelhead.rx * 0.44, ry: wheelDrive.wheelhead.ry * 0.44, fill: 'none', stroke: '#2c2420', strokeWidth: 0.9, opacity: .26 }) : null,
             method === 'wheel' ? h('ellipse', { 'data-wheel-fire-rotation-track': 'true', cx: wheelDrive.rotation.cx, cy: wheelDrive.rotation.cy, rx: wheelDrive.rotation.rx, ry: wheelDrive.rotation.ry, fill: 'none', stroke: '#d0b99e', strokeWidth: 1.5, opacity: .24 }) : null,
+            method === 'wheel' && !isContrast && wheelDrive.rotation.periodSeconds !== null ? h('ellipse', { cx: wheelDrive.rotation.cx, cy: wheelDrive.rotation.cy, rx: wheelDrive.rotation.rx, ry: wheelDrive.rotation.ry, fill: 'none', stroke: '#fbbf24', strokeWidth: 8, opacity: .16 }) : null,
             method === 'wheel' ? h('ellipse', { 'data-wheel-fire-rotation-marker': wheelDrive.rotation.state, 'data-wheel-fire-revolution-seconds': wheelDrive.rotation.periodSeconds === null ? 'stopped' : wheelDrive.rotation.periodSeconds.toFixed(3), className: wheelDrive.rotation.periodSeconds === null ? undefined : 'wheel-fire-wheel-motion', cx: wheelDrive.rotation.cx, cy: wheelDrive.rotation.cy, rx: wheelDrive.rotation.rx, ry: wheelDrive.rotation.ry, fill: 'none', stroke: '#f5d7a8', strokeWidth: 4, strokeLinecap: 'round', strokeDasharray: wheelDrive.rotation.dashArray, strokeDashoffset: 0, opacity: wheelDrive.rotation.periodSeconds === null ? .48 : .9, style: wheelDrive.rotation.periodSeconds === null ? undefined : { animationDuration: wheelDrive.rotation.periodSeconds.toFixed(3) + 's', '--wheel-fire-orbit-shift': wheelDrive.rotation.dashOffset.toFixed(1) } }) : null,
             h('g', { 'data-wheel-fire-spindle': 'true' },
               h('path', { d: wheelDrive.spindle.path, fill: '#433a34', stroke: '#171311', strokeWidth: 1.5 }),
@@ -4471,14 +4483,24 @@
               h('svg', { viewBox: '0 0 520 72', role: 'img', 'aria-label': summary, className: 'w-full min-h-[72px]' },
                 h('title', null, metric.label + ' selected-reference path'),
                 h('desc', null, summary),
+                !isContrast ? h('defs', null,
+                  h('linearGradient', { id: 'wf-track-area-' + metric.key, x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: metric.color, stopOpacity: 0.2 }),
+                    h('stop', { offset: '100%', stopColor: metric.color, stopOpacity: 0.01 })
+                  )
+                ) : null,
+                h('line', { x1: 22, x2: 498, y1: 30, y2: 30, stroke: '#e2e8f0', strokeWidth: 0.8, strokeDasharray: '3 4' }),
                 h('line', { x1: 22, x2: 498, y1: 51, y2: 51, stroke: '#cbd5e1', strokeWidth: 1 }),
+                !isContrast && points.length >= 2 ? h('path', { d: path + ' L' + points[points.length - 1].x.toFixed(1) + ',51 L' + points[0].x.toFixed(1) + ',51 Z', fill: 'url(#wf-track-area-' + metric.key + ')' }) : null,
+                !isContrast ? h('path', { d: path, fill: 'none', stroke: metric.color, strokeWidth: 7, strokeLinejoin: 'round', strokeLinecap: 'round', opacity: 0.14 }) : null,
                 h('path', { d: path, fill: 'none', stroke: metric.color, strokeWidth: 3, strokeLinejoin: 'round', strokeLinecap: 'round' }),
                 points.map(function (point, index) {
                   var isReference = index === 0;
                   var isLatest = index === points.length - 1;
                   var showLabel = points.length <= 6 || isReference || isLatest;
                   return h('g', { key: point.trial },
-                    isReference ? h('rect', { x: point.x - 5, y: point.y - 5, width: 10, height: 10, rx: 1, fill: '#ffffff', stroke: metric.color, strokeWidth: 3 }) : h('circle', { cx: point.x, cy: point.y, r: isLatest ? 5 : 4, fill: isLatest ? '#ffffff' : metric.color, stroke: metric.color, strokeWidth: isLatest ? 3 : 1 }),
+                    isLatest && !isContrast ? h('circle', { cx: point.x, cy: point.y, r: 9, fill: metric.color, opacity: 0.18 }) : null,
+                    isReference ? h('rect', { x: point.x - 5, y: point.y - 5, width: 10, height: 10, rx: 1.5, fill: '#ffffff', stroke: metric.color, strokeWidth: 3 }) : h('circle', { cx: point.x, cy: point.y, r: isLatest ? 5 : 4, fill: isLatest ? '#ffffff' : metric.color, stroke: metric.color, strokeWidth: isLatest ? 3 : 1 }),
                     h('title', null, 'Trial ' + point.trial + ': ' + point.value.toFixed(metric.digits) + metric.unit + (isReference ? ', selected reference' : (isLatest ? ', latest trial' : ''))),
                     showLabel ? h('text', { x: point.x, y: 67, textAnchor: index === 0 ? 'start' : (index === points.length - 1 ? 'end' : 'middle'), fill: '#334155', fontSize: 10, fontWeight: 700 }, 'T' + point.trial) : null
                   );
@@ -4892,6 +4914,12 @@
             h('svg', { viewBox: '0 0 500 190', role: 'img', 'aria-label': 'Time-scaled kiln schedule at ' + kilnSample.elapsedHours.toFixed(1) + ' of ' + history.totalHours.toFixed(1) + ' modeled hours, currently ' + kilnPreviewLabel.toLowerCase() + '. The kiln chamber is about ' + Math.round(kilnPreviewTemp) + ' degrees Celsius and the representative ware core is about ' + Math.round(kilnWarePoint.coreTemperatureC) + ' degrees Celsius, ' + coreDifferenceLabel + '. The solid orange line follows chamber temperature and the dashed blue line follows the continuous comparative ware-core response. Largest modeled chamber-to-core difference: ' + maximumLagDescription + '. A diamond marks peak modeled transient stress of ' + Math.round(currentSchedule.thermalStress.peakStressPct) + ' percent during ' + peakStressSample.phaseLabel.toLowerCase() + ' near ' + Math.round(peakStressSample.temperatureC) + ' degrees Celsius. Three labeled teaching bands mark silica-change neighborhoods on heat-up and cool-down.', className: 'w-full' },
               h('title', null, 'Time-scaled kiln schedule'),
               h('desc', null, 'The horizontal position is proportional to modeled schedule time. A solid orange line shows chamber temperature; a directly labeled dashed blue line shows a representative ware core responding continuously over time. Two connected markers show the current chamber-to-core difference. A labeled diamond marks peak thermal stress; translucent labeled bands mark two silica-change neighborhoods during cooling and one during heating.'),
+              !isContrast ? h('defs', null,
+                h('linearGradient', { id: 'wf-sched-heat', x1: '0', y1: '0', x2: '0', y2: '1' },
+                  h('stop', { offset: '0%', stopColor: '#ea580c', stopOpacity: 0.24 }),
+                  h('stop', { offset: '100%', stopColor: '#fb923c', stopOpacity: 0.02 })
+                )
+              ) : null,
               transitionWindows.map(function (transitionWindow) {
                 var startX = plotStart + plotWidth * transitionWindow.startProgressPct / 100;
                 var endX = plotStart + plotWidth * transitionWindow.endProgressPct / 100;
@@ -4904,6 +4932,7 @@
                 );
               }),
               [44, 85, 126, 168].map(function (y) { return h('line', { key: y, x1: 28, x2: 472, y1: y, y2: y, stroke: '#fed7aa', strokeWidth: 1 }); }),
+              !isContrast ? h('path', { d: curve + ' Z', fill: 'url(#wf-sched-heat)', 'aria-hidden': 'true' }) : null,
               transitionWindows.map(function (transitionWindow, index) {
                 var startX = plotStart + plotWidth * transitionWindow.startProgressPct / 100;
                 var endX = plotStart + plotWidth * transitionWindow.endProgressPct / 100;
@@ -4912,12 +4941,16 @@
                 var labelX = clamp(centerX, 70, 430);
                 return h('text', { key: transitionWindow.id + '-label', x: labelX, y: [36, 58, 80][index] || 80, textAnchor: textAnchor, fill: transitionWindow.id === 'low-silica-cool' ? '#5b21b6' : '#92400e', fontSize: 11, fontWeight: 700, 'aria-hidden': 'true' }, transitionWindow.shortLabel);
               }),
+              !isContrast ? h('path', { d: curve, fill: 'none', stroke: '#f97316', strokeWidth: 11, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16, 'aria-hidden': 'true' }) : null,
               h('path', { d: curve, fill: 'none', stroke: '#c2410c', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              !isContrast ? h('path', { d: coreCurve, fill: 'none', stroke: '#3b82f6', strokeWidth: 7, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.14, 'aria-hidden': 'true' }) : null,
               h('path', { 'data-wheel-fire-core-trace': 'true', d: coreCurve, fill: 'none', stroke: '#1d4ed8', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round', strokeDasharray: '8 5' }),
               h('line', { x1: markerX, x2: markerX, y1: 24, y2: 168, stroke: '#0f766e', strokeWidth: 2, strokeDasharray: '5 5', opacity: .8, 'aria-hidden': 'true' }),
               h('line', { 'data-wheel-fire-current-core-gap': 'true', x1: markerX, x2: markerX, y1: markerY, y2: coreMarkerY, stroke: '#1e3a8a', strokeWidth: 4, strokeLinecap: 'round', 'aria-hidden': 'true' }),
+              !isContrast ? h('circle', { cx: peakStressX, cy: peakStressY, r: 12, fill: '#be123c', opacity: 0.16, 'aria-hidden': 'true' }) : null,
               h('path', { 'data-wheel-fire-peak-stress': 'true', d: peakStressDiamond, fill: '#be123c', stroke: '#fff7ed', strokeWidth: 2, 'aria-hidden': 'true' }),
               h('text', { x: clamp(peakStressX, 72, 428), y: peakStressLabelY, textAnchor: 'middle', fill: '#881337', fontSize: 11, fontWeight: 700 }, 'peak stress ' + Math.round(currentSchedule.thermalStress.peakStressPct) + '%'),
+              !isContrast ? h('circle', { cx: markerX, cy: markerY, r: 12, fill: '#0f766e', opacity: 0.18, 'aria-hidden': 'true' }) : null,
               h('circle', { cx: markerX, cy: markerY, r: 7, fill: '#0f766e', stroke: '#ccfbf1', strokeWidth: 3, 'aria-hidden': 'true' }),
               h('circle', { 'data-wheel-fire-current-core': 'true', cx: markerX, cy: coreMarkerY, r: 5.5, fill: '#1d4ed8', stroke: '#dbeafe', strokeWidth: 2.5, 'aria-hidden': 'true' }),
               h('text', { 'data-wheel-fire-core-label': 'true', x: coreLabelX, y: coreLabelY, textAnchor: coreLabelAnchor, fill: '#1e3a8a', fontSize: 11, fontWeight: 700 }, 'ware core ' + Math.round(kilnWarePoint.coreTemperatureC) + '°C'),
@@ -5185,13 +5218,25 @@
             kilnShelfGeometries.map(function (shelf, index) { return witnessConePackVisual(zoneConePacks[index], 390, shelf.frontY - 5, 'zone-' + probeZoneIds[index], index === probeIndex); })
           );
           var openScene = h('g', null,
+            !isContrast && kilnSourceState.activeInput ? h('ellipse', { cx: 280, cy: 256, rx: 185, ry: 112, fill: 'url(#wheel-fire-ember-bloom)', opacity: (.22 + kilnSourceState.fuelBedGlowRatio * .55).toFixed(2), 'aria-hidden': 'true' }) : null,
             h('path', { d: 'M20 330 Q150 300 280 326 T540 322 V380 H20 Z', fill: '#4a3023', stroke: '#24150f', strokeWidth: 4 }),
             h('ellipse', { cx: 280, cy: 322, rx: 190, ry: 38, fill: '#1e1410', stroke: '#8d6e57', strokeWidth: 4 }),
-            h('ellipse', { className: kilnSourceState.activeInput ? 'wheel-fire-heat-pulse' : undefined, 'data-wheel-fire-fuel-glow': 'open-fuel-bed', cx: 280, cy: 318, rx: 128, ry: 24, fill: '#fb923c', opacity: kilnSourceState.fuelBedGlowRatio.toFixed(2), 'aria-hidden': 'true' }),
-            [[170, 322, 310, 282], [215, 286, 356, 326], [128, 302, 256, 344], [290, 340, 422, 296]].map(function (log, index) { return h('line', { key: 'log-' + index, x1: log[0], y1: log[1], x2: log[2], y2: log[3], stroke: index % 2 ? '#8b5e3c' : '#6b4226', strokeWidth: 18, strokeLinecap: 'round' }); }),
+            h('ellipse', { className: kilnSourceState.activeInput ? 'wheel-fire-heat-pulse' : undefined, 'data-wheel-fire-fuel-glow': 'open-fuel-bed', cx: 280, cy: 318, rx: 128, ry: 24, fill: isContrast ? '#fb923c' : 'url(#wheel-fire-ember-bloom)', opacity: kilnSourceState.fuelBedGlowRatio.toFixed(2), 'aria-hidden': 'true' }),
+            [[170, 322, 310, 282], [215, 286, 356, 326], [128, 302, 256, 344], [290, 340, 422, 296]].map(function (log, index) {
+              return h('g', { key: 'log-' + index },
+                h('line', { x1: log[0], y1: log[1], x2: log[2], y2: log[3], stroke: index % 2 ? '#8b5e3c' : '#6b4226', strokeWidth: 18, strokeLinecap: 'round' }),
+                !isContrast ? h('line', { x1: log[0] + 6, y1: log[1] - 3, x2: log[2] - 6, y2: log[3] - 3, stroke: '#d6a477', strokeWidth: 3, strokeLinecap: 'round', opacity: 0.35 }) : null
+              );
+            }),
             openLoadPieces.map(function (piece, index) { return miniaturePiece(piece.x, piece.baseY, piece.scale, 'open-piece-' + index); }),
             h('g', { className: kilnSourceState.activeInput ? 'wheel-fire-flame-motion' : undefined, 'data-wheel-fire-heat-source': 'open-fuel-bed', 'data-wheel-fire-source-state': kilnSourceState.state, 'data-wheel-fire-source-active': String(kilnSourceState.activeInput), 'aria-hidden': 'true' },
-              h('path', { 'data-wheel-fire-active-flame': String(kilnSourceState.activeInput), d: 'M160 306 C138 248 190 238 178 182 C222 216 216 260 232 300 Z M248 310 C224 236 284 224 266 142 C330 206 286 246 326 306 Z M330 308 C322 258 370 244 352 190 C408 236 374 278 398 312 Z', fill: 'url(#wheel-fire-open-flame)', opacity: kilnSourceState.activeInput ? (.18 + kilnSourceState.activeFlameOpacityRatio * .78).toFixed(2) : '0.00' })
+              h('path', { 'data-wheel-fire-active-flame': String(kilnSourceState.activeInput), d: 'M160 306 C138 248 190 238 178 182 C222 216 216 260 232 300 Z M248 310 C224 236 284 224 266 142 C330 206 286 246 326 306 Z M330 308 C322 258 370 244 352 190 C408 236 374 278 398 312 Z', fill: 'url(#wheel-fire-open-flame)', opacity: kilnSourceState.activeInput ? (.18 + kilnSourceState.activeFlameOpacityRatio * .78).toFixed(2) : '0.00' }),
+              !isContrast && kilnSourceState.activeInput ? h('g', { fill: '#fef08a', opacity: (.35 + kilnSourceState.activeFlameOpacityRatio * .5).toFixed(2) },
+                h('circle', { cx: 196, cy: 158, r: 2.2 }),
+                h('circle', { cx: 282, cy: 126, r: 2.6 }),
+                h('circle', { cx: 342, cy: 162, r: 2 }),
+                h('circle', { cx: 234, cy: 174, r: 1.8 })
+              ) : null
             ),
             h('g', { 'data-wheel-fire-ware-core': 'true', 'data-wheel-fire-thermal-section': 'true', 'aria-hidden': 'true' },
               thermalStressIndicator(openThermalX, openThermalY, 'open-stress'),
@@ -5226,6 +5271,7 @@
                 h('linearGradient', { id: 'wheel-fire-kiln-hearth', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#321a13' }), h('stop', { offset: '100%', stopColor: '#80563e' })),
                 h('linearGradient', { id: 'wheel-fire-kiln-heat', x1: '0', y1: '1', x2: '0', y2: '0' }, h('stop', { offset: '0%', stopColor: '#dc2626' }), h('stop', { offset: '48%', stopColor: '#fb923c' }), h('stop', { offset: '100%', stopColor: '#fde68a' })),
                 h('linearGradient', { id: 'wheel-fire-open-flame', x1: '0', y1: '1', x2: '0', y2: '0' }, h('stop', { offset: '0%', stopColor: '#dc2626' }), h('stop', { offset: '55%', stopColor: '#fb923c' }), h('stop', { offset: '100%', stopColor: '#fef3c7' })),
+                h('radialGradient', { id: 'wheel-fire-ember-bloom', cx: '50%', cy: '62%', r: '56%' }, h('stop', { offset: '0%', stopColor: '#fde047', stopOpacity: 0.92 }), h('stop', { offset: '45%', stopColor: '#f97316', stopOpacity: 0.62 }), h('stop', { offset: '100%', stopColor: '#dc2626', stopOpacity: 0 })),
                 h('marker', { id: 'wheel-fire-flow-arrow', markerWidth: 7, markerHeight: 7, refX: 6, refY: 3.5, orient: 'auto', markerUnits: 'strokeWidth' }, h('path', { d: 'M0 0 L7 3.5 L0 7 Z', fill: kilnHeatFlowColor })),
                 h('marker', { id: 'wheel-fire-stress-arrow', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto', markerUnits: 'strokeWidth' }, h('path', { d: 'M0 0 L6 3 L0 6 Z', fill: wareStressColor }))
               ),
@@ -6023,15 +6069,22 @@
       var activeBodyProfile = materialProfile(vessel);
       var heroEmblemSvg = h('svg', { width: 56, height: 56, viewBox: '0 0 64 64', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
         h('defs', null,
+          h('radialGradient', { id: 'wf-emblem-hearth', cx: '50%', cy: '56%', r: '54%' },
+            h('stop', { offset: '0%', stopColor: '#f97316', stopOpacity: 0.42 }),
+            h('stop', { offset: '100%', stopColor: '#0f0a08', stopOpacity: 0 })
+          ),
           h('linearGradient', { id: 'wf-emblem-clay', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
-            h('stop', { offset: '0%', stopColor: '#f59e0b' }),
-            h('stop', { offset: '55%', stopColor: '#c2410c' }),
+            h('stop', { offset: '0%', stopColor: '#fbbf24' }),
+            h('stop', { offset: '42%', stopColor: '#ea580c' }),
             h('stop', { offset: '100%', stopColor: '#7c2d12' })
           )
         ),
-        h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 16, fill: isContrast ? '#000000' : 'rgba(15,10,8,0.48)', stroke: isContrast ? '#00ff00' : 'rgba(251,191,36,0.55)', strokeWidth: 1.5 }),
+        h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 16, fill: isContrast ? '#000000' : 'rgba(15,10,8,0.62)', stroke: isContrast ? '#00ff00' : 'rgba(251,191,36,0.58)', strokeWidth: 1.5 }),
+        !isContrast ? h('circle', { cx: 32, cy: 36, r: 24, fill: 'url(#wf-emblem-hearth)' }) : null,
+        !isContrast ? h('ellipse', { cx: 32, cy: 50, rx: 20, ry: 5, fill: 'none', stroke: '#fbbf24', strokeWidth: 5, opacity: 0.2 }) : null,
         h('ellipse', { cx: 32, cy: 50, rx: 20, ry: 5, fill: 'none', stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 2, strokeDasharray: '6 3' }),
         h('path', { d: 'M24 47 C19 41 18 30 22 23 C24 19 25 16 24 13 L40 13 C39 16 40 19 42 23 C46 30 45 41 40 47 Z', fill: isContrast ? '#000000' : 'url(#wf-emblem-clay)', stroke: isContrast ? '#ffffff' : '#fde68a', strokeWidth: 2 }),
+        !isContrast ? h('path', { d: 'M25.5 23 C23 29 23.5 38 27 43', fill: 'none', stroke: '#fef3c7', strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.52 }) : null,
         h('ellipse', { cx: 32, cy: 13, rx: 8, ry: 2.4, fill: isContrast ? '#000000' : '#451a03', stroke: isContrast ? '#ffff00' : '#fde68a', strokeWidth: 1.4 }),
         h('path', { d: 'M14 26 Q11 21 15 16 M50 26 Q53 21 49 16', fill: 'none', stroke: isContrast ? '#00ff00' : '#fb923c', strokeWidth: 2, strokeLinecap: 'round' })
       );
@@ -6047,9 +6100,22 @@
         }
         var dPath = 'M' + ptsL.concat(ptsR).join(' L') + ' Z';
         return h('svg', { width: 48, height: 48, viewBox: '0 0 48 48', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
-          h('rect', { x: 1, y: 1, width: 46, height: 46, rx: 10, fill: isContrast ? '#000000' : 'rgba(0,0,0,0.34)', stroke: isContrast ? '#ffff00' : 'rgba(253,230,138,0.28)', strokeWidth: 1 }),
+          !isContrast ? h('defs', null,
+            h('radialGradient', { id: 'wf-mini-spot', cx: '50%', cy: '38%', r: '62%' },
+              h('stop', { offset: '0%', stopColor: '#f59e0b', stopOpacity: 0.22 }),
+              h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.4 })
+            ),
+            h('linearGradient', { id: 'wf-mini-sheen', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+              h('stop', { offset: '0%', stopColor: '#000000', stopOpacity: 0.24 }),
+              h('stop', { offset: '34%', stopColor: '#ffffff', stopOpacity: 0.26 }),
+              h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.34 })
+            )
+          ) : null,
+          h('rect', { x: 1, y: 1, width: 46, height: 46, rx: 10, fill: isContrast ? '#000000' : 'url(#wf-mini-spot)', stroke: isContrast ? '#ffff00' : 'rgba(253,230,138,0.34)', strokeWidth: 1 }),
+          !isContrast ? h('ellipse', { cx: 24, cy: 42.5, rx: 14, ry: 2, fill: 'rgba(0,0,0,0.45)' }) : null,
           h('line', { x1: 6, y1: 42, x2: 42, y2: 42, stroke: isContrast ? '#00ff00' : '#a8a29e', strokeWidth: 1.5 }),
-          h('path', { d: dPath, fill: isContrast ? '#000000' : (vessel.surfaceColor || activeBodyProfile.color), stroke: isContrast ? '#ffffff' : '#fde68a', strokeWidth: 1.5 })
+          h('path', { d: dPath, fill: isContrast ? '#000000' : (vessel.surfaceColor || activeBodyProfile.color), stroke: isContrast ? '#ffffff' : '#fde68a', strokeWidth: 1.5 }),
+          !isContrast ? h('path', { d: dPath, fill: 'url(#wf-mini-sheen)' }) : null
         );
       })();
       var STUDIO_PRESETS = [
@@ -6088,7 +6154,7 @@
               h('div', { className: 'text-xs leading-snug' },
                 h('div', { className: 'font-black text-amber-100' }, activeBodyProfile.name),
                 h('div', { className: 'text-amber-200 font-semibold' }, stageLabel(vessel.stage) + ' · ' + stats.status),
-                h('div', { className: 'text-[11px] text-amber-100/80' }, vessel.heightCm.toFixed(1) + ' cm · ' + Math.round(stats.capacityMl) + ' mL')
+                h('div', { className: 'text-xs text-amber-100/80' }, vessel.heightCm.toFixed(1) + ' cm · ' + Math.round(stats.capacityMl) + ' mL')
               )
             )
           ),
@@ -6102,7 +6168,7 @@
               : h('span', { className: 'wf-telemetry-pill' }, __alloT('stem.wheelandfire.pill_coils', 'Seams'), ' ', h('strong', null, coilJointProfile.jointCount + ' tracked'))
           ),
           h('div', { className: 'wf-preset-bar', role: 'group', 'aria-label': __alloT('stem.wheelandfire.a11y_studio_presets', 'Quick studio presets') },
-            h('span', { className: 'text-[11px] font-extrabold uppercase tracking-wider text-amber-200 mr-1' }, __alloT('stem.wheelandfire.presets_label', 'Starter studies:')),
+            h('span', { className: 'text-xs font-extrabold uppercase tracking-wider text-amber-200 mr-1' }, __alloT('stem.wheelandfire.presets_label', 'Starter studies:')),
             STUDIO_PRESETS.map(function (preset) {
               return h('button', { key: preset.id, type: 'button', onClick: preset.apply, className: 'wf-preset-chip' }, preset.icon + ' ' + preset.label);
             })

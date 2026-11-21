@@ -668,7 +668,7 @@ function _builderReviewerIdentity(value) {
 }
 
 function _builderNormalizeCommentMessage(value) {
-  return String(value || '').replace(/\n?/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, 1200);
+  return String(value || '').replace(/\r\n?/g, '\n').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim().slice(0, 1200);
 }
 
 function _builderCommentThread(marker) {
@@ -3784,8 +3784,9 @@ function _builderH5PCompatibility(item, history) {
       }
       return { options, origToClean, rawStrings, isTf };
     };
-    const _qHasImage = (q) => !!(q && (q.image || q.imageUrl || q.mediaUrl || q.stimulusImage || (q.media && q.media.url) || (Array.isArray(q.options) && q.options.some((o) => o && typeof o === 'object' && (o.image || o.imageUrl)))));
-    const singleChoiceSetCompatible = questions.length > 0 && questions.every((question) => {
+    const reflections = Array.isArray(item?.data?.reflections) ? item.data.reflections : [];
+    const _qHasImage = (q) => !!(q && (q.image || q.imageUrl || q.mediaUrl || q.stimulusImage || (q.media && q.media.url) || (Array.isArray(q.optionImageUrls) && q.optionImageUrls.some(Boolean)) || (Array.isArray(q.options) && q.options.some((o) => o && typeof o === 'object' && (o.image || o.imageUrl)))));
+    const singleChoiceSetCompatible = questions.length > 0 && reflections.length === 0 && questions.every((question) => {
       if (!question) return true;
       if (question.requireReasoning || question.explanationPrompt || _qHasImage(question)) return false;
       if (normKind(question.type) !== 'mcq') return false;
@@ -3940,17 +3941,31 @@ function _builderH5PCompatibility(item, history) {
       }
       if (ready) valid += 1;
     });
+    let omittedMedia = 0;
+    questions.forEach((question) => {
+      if (!question) return;
+      const optUrls = Array.isArray(question.optionImageUrls) ? question.optionImageUrls.filter(Boolean) : [];
+      if (optUrls.length) omittedMedia += optUrls.length;
+      else if (Array.isArray(question.options)) {
+        omittedMedia += question.options.filter((o) => o && typeof o === 'object' && (o.image || o.imageUrl)).length;
+      }
+    });
+    reflections.forEach((reflection) => {
+      const refPrompt = plain(typeof reflection === 'string' ? reflection : (reflection && (reflection.question || reflection.prompt || reflection.text)));
+      if (refPrompt) { valid += 1; manualReview += 1; }
+    });
+    const totalQuizItems = questions.length + reflections.length;
     return {
       type,
       unit: 'question',
       library: singleChoiceSetCompatible ? 'Single Choice Set 1.11' : 'Question Set 1.21',
-      total: questions.length,
+      total: totalQuizItems,
       valid,
-      omitted: questions.length - valid,
+      omitted: totalQuizItems - valid,
       adapted,
       manualReview,
       embeddedMedia: 0,
-      omittedMedia: 0,
+      omittedMedia,
       ready: valid > 0,
     };
   }
@@ -4180,7 +4195,7 @@ function _builderH5PCompatibility(item, history) {
         ready: valid > 0,
       };
     }
-    if (templateType === 'lab') {
+    if (templateType === 'lab' || templateType === 'lab-report') {
       const partText = (v) => {
         if (Array.isArray(v)) return v.map((x) => plain(x && typeof x === 'object' ? (x.text || x.label || x.step || x.item || x.prompt || x.name) : x)).filter(Boolean).join('; ');
         if (v && typeof v === 'object') return plain(v.text || v.summary || v.observations || v.notes || v.prompt);
@@ -4193,7 +4208,7 @@ function _builderH5PCompatibility(item, history) {
       const dataTxt = partText(nt.data);
       const analysisTxt = partText(nt.analysis);
       const concTxt = plain(nt.conclusion);
-      const hasContent = !!(qTxt || hypTxt || matTxt || procTxt || dataTxt || analysisTxt || concTxt);
+      const hasContent = !!(qTxt || hypTxt || matTxt || procTxt || dataTxt || analysisTxt || concTxt || plain(nt.title));
       const valid = hasContent
         ? ((qTxt ? 1 : 0) + 1 + ((dataTxt || procTxt) ? 1 : 0) + (analysisTxt ? 1 : 0) + 1)
         : 0;
@@ -4216,10 +4231,9 @@ function _builderH5PCompatibility(item, history) {
       const validPrompts = promptItems
         ? promptItems.filter((p) => !!plain(p && typeof p === 'object' ? (p.prompt || p.question || p.text || p.label) : p))
         : [];
-      const hasFallbackContent = !!(plain(nt.favoriteLine) || plain(nt.thinkings) || plain(nt.question) || (nt.connection && plain(typeof nt.connection === 'object' ? nt.connection.text : nt.connection)));
       const valid = promptItems
         ? (validPrompts.length > 0 ? promptItems.length : 0)
-        : (hasFallbackContent ? 4 : 0);
+        : 4;
       return {
         type,
         unit: 'prompt',
@@ -4234,7 +4248,7 @@ function _builderH5PCompatibility(item, history) {
         ready: valid > 0,
       };
     }
-    if (templateType === 'cornell' || templateType === '') {
+    if (templateType === 'cornell' || templateType === 'cornell-notes' || templateType === '') {
       const cues = Array.isArray(nt.cues) ? nt.cues : [];
       const notes = Array.isArray(nt.notes) ? nt.notes : [];
       const rowCount = Math.max(cues.length, notes.length);
@@ -5526,6 +5540,7 @@ function ExportPreviewView(props) {
   const includedResourceCount = resourceItems.filter(item => item.included).length;
   const documentSourceLabel = isRemediationDocument ? 'Remediated document' : (Array.isArray(builderResourceIds) ? 'Current lesson' : 'History selection');
   const [previewDocumentTitle, setPreviewDocumentTitle] = React.useState(() => _builderVisibleDocumentTitle(null, exportConfig?.title || exportConfig?.docTitle || exportConfig?.lessonTitle));
+  const [confirmDeletePresetKey, setConfirmDeletePresetKey] = React.useState('');
   React.useEffect(() => {
     if (isRemediationDocument && exportPreviewMode === 'worksheet') setExportPreviewMode('print');
   }, [isRemediationDocument, exportPreviewMode, setExportPreviewMode]);
@@ -5826,7 +5841,7 @@ function ExportPreviewView(props) {
   }, [qtiAssessments, selectedQtiKey]);
   const h5pActivities = React.useMemo(() => (Array.isArray(history) ? history : [])
     .map((item, index) => ({ item, key: `${item?.id || item?.type || 'activity'}:${index}` }))
-    .filter(({ item }) => (!_activeScopeSet || (item?.id != null && _activeScopeSet.has(String(item.id)))) && (['quiz', 'glossary', 'flashcards', 'simplified', 'guided-notes'].includes(item?.type) || (item?.type === 'note-taking' && ['', 'cornell', 'guided-notes', 'guided', 'q-and-a', 'double-entry', 'outline', 'lab', 'reading-response'].includes(String(item?.data?.templateType || item?.data?.template || '').trim().toLowerCase())))), [history, _activeScopeSet]);
+    .filter(({ item }) => (!_activeScopeSet || (item?.id != null && _activeScopeSet.has(String(item.id)))) && (['quiz', 'glossary', 'flashcards', 'simplified', 'guided-notes'].includes(item?.type) || (item?.type === 'note-taking' && ['', 'cornell', 'cornell-notes', 'guided-notes', 'guided', 'q-and-a', 'double-entry', 'outline', 'lab', 'lab-report', 'reading-response'].includes(String(item?.data?.templateType || item?.data?.template || '').trim().toLowerCase())))), [history, _activeScopeSet]);
   const [selectedH5PKey, setSelectedH5PKey] = React.useState('');
   React.useEffect(() => {
     if (!h5pActivities.length) { if (selectedH5PKey) setSelectedH5PKey(''); return; }
@@ -6153,6 +6168,7 @@ function ExportPreviewView(props) {
     if (!dialog.contains(document.activeElement)) (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
       if (event.target?.closest?.('[data-builder-tool-search]')) return;
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         if (dialog.getAttribute('data-builder-settings-open') === 'true') {
@@ -6170,7 +6186,7 @@ function ExportPreviewView(props) {
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
       const first = focusable[0], last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
     dialog.addEventListener('keydown', onKeyDown);
@@ -9986,6 +10002,22 @@ function ExportPreviewView(props) {
     }
     addToast && addToast('Open Student QR → Live class without accounts → Connect mailbox, then come back here.', 'info');
   }, [addToast]);
+  const [pendingPresetPrompt, setPendingPresetPrompt] = React.useState('');
+  React.useEffect(() => {
+    if (!pendingPresetPrompt) return;
+    if (exportStylePrompt !== pendingPresetPrompt) return;
+    setPendingPresetPrompt('');
+    if (typeof generateCustomExportStyle === 'function') generateCustomExportStyle();
+  }, [pendingPresetPrompt, exportStylePrompt, generateCustomExportStyle]);
+  const _isSafeDriveUrl = React.useCallback((raw) => {
+    try {
+      const parsed = new URL(String(raw || '').trim());
+      if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return '';
+      return parsed.href;
+    } catch (_) {
+      return '';
+    }
+  }, []);
   const sendDocToDrive = React.useCallback(async () => {
     const config = _alloReadMailboxConfig();
     if (!config) { openMailboxSetup(); return; }
@@ -9997,16 +10029,22 @@ function ExportPreviewView(props) {
           const b64 = await _alloBlobToBase64(result.blob);
           const name = String(result.fileName || 'AlloFlow document.docx');
           const reply = await _alloMailboxDeliverCall(config, { a: 'deliver', name, mime: ALLO_DRIVE_DOCX_MIME, b64, convert: 'doc' });
-          setDriveDeliveryLink({ url: reply.url, label: 'the Google Doc' });
+          const safeUrl = _isSafeDriveUrl(reply && reply.url);
+          if (!mountedRef.current) return;
+          if (!safeUrl) {
+            addToast && addToast('Drive returned an unexpected link format and it was blocked for safety.', 'error');
+            return;
+          }
+          setDriveDeliveryLink({ url: safeUrl, label: 'the Google Doc' });
           addToast && addToast('Sent to your Drive as a Google Doc.', 'success');
         } catch (error) {
-          addToast && addToast(error?.message || 'Could not send to Drive.', 'error');
+          if (mountedRef.current) addToast && addToast(error?.message || 'Could not send to Drive.', 'error');
         }
       });
     } finally {
-      setDriveDeliveryBusy('');
+      if (mountedRef.current) setDriveDeliveryBusy('');
     }
-  }, [runOfficeExport, addToast, openMailboxSetup]);
+  }, [runOfficeExport, addToast, openMailboxSetup, _isSafeDriveUrl]);
   const sendQuizToForm = React.useCallback(async () => {
     const config = _alloReadMailboxConfig();
     if (!config) { openMailboxSetup(); return; }
@@ -10022,14 +10060,20 @@ function ExportPreviewView(props) {
     setDriveDeliveryLink(null);
     try {
       const reply = await _alloMailboxDeliverCall(config, { a: 'deliverform', title: chosen.title, items, quiz: true });
-      setDriveDeliveryLink({ url: reply.editUrl || reply.url, label: 'the Google Form' });
+      const safeUrl = _isSafeDriveUrl(reply && (reply.editUrl || reply.url));
+      if (!mountedRef.current) return;
+      if (!safeUrl) {
+        addToast && addToast('Google Form returned an unexpected link format and it was blocked for safety.', 'error');
+        return;
+      }
+      setDriveDeliveryLink({ url: safeUrl, label: 'the Google Form' });
       addToast && addToast('Google Form created in your Drive.', 'success');
     } catch (error) {
-      addToast && addToast(error?.message || 'Could not create the Form.', 'error');
+      if (mountedRef.current) addToast && addToast(error?.message || 'Could not create the Form.', 'error');
     } finally {
-      setDriveDeliveryBusy('');
+      if (mountedRef.current) setDriveDeliveryBusy('');
     }
-  }, [formQuizzes, selectedFormQuizKey, addToast, openMailboxSetup, exportConfig]);
+  }, [formQuizzes, selectedFormQuizKey, addToast, openMailboxSetup, exportConfig, _isSafeDriveUrl]);
   const runExportFromPreview = React.useCallback(async () => {
     const preflight = runBuilderPreflight(exportPreviewMode, false);
     if (preflight.errors) { addToast && addToast('Export stopped: fix the blocking preflight issues first.', 'error'); return; }
@@ -10108,7 +10152,7 @@ function ExportPreviewView(props) {
               confirm={confirmGuidedDocumentReview} dismiss={dismissGuidedDocumentReview} close={() => setShowExportPreview(false)} t={t} />}
             {pendingImageFile && (
               <div className="allo-docsuite fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4" role="presentation"
-                onClick={(e) => { if (e.target === e.currentTarget) closeImageDialog(); }}
+                onMouseDown={(e) => { if (e.target === e.currentTarget) closeImageDialog(); }}
                 >
                 <div ref={imageDialogRef} tabIndex={-1} className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl focus-visible:outline focus-visible:outline-4 focus-visible:outline-indigo-700 focus-visible:outline-offset-2" role="dialog" aria-modal="true" aria-labelledby="image-description-title" aria-describedby="image-description-help">
                   <h3 id="image-description-title" className="text-lg font-black text-slate-900">Describe this image</h3>
@@ -10236,7 +10280,7 @@ function ExportPreviewView(props) {
                     <summary className="min-h-9 rounded-lg bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800 cursor-pointer list-none">{exportActionBusy || altExportBusy ? 'Preparing export…' : 'Export'} <span aria-hidden="true">▾</span></summary>
                     <div className="builder-export-panel bg-white border border-slate-300 rounded-xl shadow-xl" role="region" aria-label={t("export_preview.accessibility.export_document") || "Export document"}>
                       <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-bold text-slate-800">Export document</h3><button type="button" onClick={(event) => closeBuilderMenu(event.currentTarget.closest('details'))} className="min-h-8 rounded px-2 text-xs font-bold text-slate-600 hover:bg-slate-100" aria-label={t("export_preview.accessibility.close_export_menu") || "Close export menu"}>Close</button></div>
-                    <button data-help-key="doc_builder_export_action" onClick={runExportFromPreview}
+                    <button type="button" data-help-key="doc_builder_export_action" onClick={runExportFromPreview}
                       disabled={exportActionBusy || !!altExportBusy || (exportPreviewMode === 'slides' && !pptxLoaded)}
                       aria-busy={exportActionBusy}
                       aria-label={exportActionBusy ? 'Export in progress' : undefined}
@@ -10254,7 +10298,7 @@ function ExportPreviewView(props) {
                         the studio — no .pptx round trip), reorder/refine, then export
                         PPTX from there with the alt-text gate in force. */}
                     {exportPreviewMode === 'slides' && typeof openInAlloStudio === 'function' && (
-                      <button onClick={openInAlloStudio}
+                      <button type="button" onClick={openInAlloStudio}
                         className="bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-300 text-xs font-bold px-3 py-2 rounded-lg shadow-sm transition-all flex items-center gap-1.5"
                         title="Open this content in Page Designer as an editable slide deck — reorder, restyle, and export PowerPoint from there.">
                         🎨 {t('export_preview.edit_in_page_designer') || 'Edit in Page Designer'}</button>
@@ -10302,7 +10346,7 @@ function ExportPreviewView(props) {
                         <button type="button" disabled={!!altExportBusy} onClick={() => runPackageExport('ims')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50">{altExportBusy === 'ims' ? 'Building IMS...' : 'IMS content package'}</button>
                         <div className="px-2 text-[10px] leading-tight text-slate-500">IMS includes the current editable Builder document.</div>
                         <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Reading & text</div>
-                        <button onClick={() => {
+                        <button type="button" onClick={() => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
                           // #7/#14 (export-format review): the old export tag-stripped the RAW
@@ -10435,7 +10479,7 @@ function ExportPreviewView(props) {
                           downloadBuilderBlob(blob, { extension: 'txt' });
                           addToast('Plain text downloaded', 'success');
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📄 Plain Text (.txt)</button>
-                        <button onClick={async () => {
+                        <button type="button" onClick={async () => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
                           const preflight = runBuilderPreflight('markdown', false);
@@ -10460,7 +10504,7 @@ function ExportPreviewView(props) {
                           } catch (error) { addToast('Markdown export failed: ' + (error?.message || 'unknown error'), 'error'); }
                           finally { finishAlternativeExport(); }
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📝 Markdown (.md)</button>
-                        <button disabled={!!altExportBusy} onClick={async () => {
+                        <button type="button" disabled={!!altExportBusy} onClick={async () => {
                           if (altExportBusy) return;
                           if (!beginAlternativeExport('notebooklm')) return;
                           // Send to NotebookLM: build a NotebookLM-tuned Markdown source from the
@@ -10661,7 +10705,19 @@ function ExportPreviewView(props) {
                                     wroteGlossary = true;
                                     if (!isAssessGlossary) {
                                       if (typeof g.contextSentence === 'string' && g.contextSentence.trim()) out.push('  - _In the text:_ ' + esc(g.contextSentence.trim()));
-                                      if (g.translations && Object.keys(g.translations).length) out.push('  - _Translations:_ ' + Object.values(g.translations).map(trv => esc(trv)).join(' / '));
+                                      if (g.translations && Object.keys(g.translations).length) {
+                                        const formattedTranslations = Object.entries(g.translations).map(([trLang, trv]) => {
+                                          if (trv && typeof trv === 'object') {
+                                            const termPart = esc(trv.term || trv.word || trv.text || trv.value || '').trim();
+                                            const defPart = esc(trv.def || trv.definition || '').trim();
+                                            const combined = termPart && defPart ? `${termPart} (${defPart})` : (termPart || defPart);
+                                            return combined ? `${esc(trLang)}: ${combined}` : '';
+                                          }
+                                          const raw = esc(trv).trim();
+                                          return raw ? `${esc(trLang)}: ${raw}` : '';
+                                        }).filter(Boolean);
+                                        if (formattedTranslations.length) out.push('  - _Translations:_ ' + formattedTranslations.join(' / '));
+                                      }
                                       if (g.etymology) out.push('  - _Etymology:_ ' + esc(g.etymology));
                                     }
                                   });
@@ -10700,7 +10756,7 @@ function ExportPreviewView(props) {
                                   });
                                   if (wroteWordWall) out.push('');
                                 }
-                                else if (ty === 'quiz' && d && Array.isArray(d.questions)) {
+                                else if (ty === 'quiz' && d && (Array.isArray(d.questions) || Array.isArray(d.reflections))) {
                                   const _NLM_QT_MAP = {
                                     multiplechoice: 'mcq', 'multiple-choice': 'mcq', 'single-choice': 'mcq', singlechoice: 'mcq', mcq: 'mcq',
                                     'true-false': 'true-false', truefalse: 'true-false', tf: 'true-false',
@@ -10750,7 +10806,8 @@ function ExportPreviewView(props) {
                                     }
                                     return -1;
                                   };
-                                  d.questions.forEach((rawQ, i) => {
+                                  const _nlmQuizQuestions = Array.isArray(d.questions) ? d.questions : [];
+                                  _nlmQuizQuestions.forEach((rawQ, i) => {
                                     if (!rawQ) return;
                                     const q = rawQ.question != null && rawQ.question !== '' ? rawQ : { ...rawQ, question: rawQ.prompt || rawQ.text || '' };
                                     const qt = _normQt(q.type);
@@ -10809,9 +10866,9 @@ function ExportPreviewView(props) {
                                   // checkbox in Export Options now controls this too (default OFF), so
                                   // the toggle is discoverable without a config file. Assessment mode
                                   // wins if both are set.
-                                  if (_showKey) {
+                                  if (_showKey && _nlmQuizQuestions.length) {
                                     out.push('### Answer Key', '');
-                                    d.questions.forEach((q, i) => {
+                                    _nlmQuizQuestions.forEach((q, i) => {
                                       if (!q) return;
                                       const qt = _normQt(q.type);
                                       let ansText = '';
@@ -10867,8 +10924,21 @@ function ExportPreviewView(props) {
                                       if (q.factCheck) out.push('  - ' + esc(q.factCheck));
                                     });
                                     out.push('');
-                                  } else {
+                                  } else if (Array.isArray(d.questions) && d.questions.length) {
                                     out.push('*Answer key omitted from this export (assessment integrity — anyone with this file can read it). Check "Teacher Answer Key" in Export Options to include it.*', '');
+                                  }
+                                  if (Array.isArray(d.reflections) && d.reflections.length) {
+                                    out.push('### Reflection Prompts', '');
+                                    d.reflections.forEach((ref, rIdx) => {
+                                      const refTxt = esc(typeof ref === 'string' ? ref : (ref && (ref.question || ref.prompt || ref.text || ''))).trim();
+                                      if (!refTxt) return;
+                                      out.push((rIdx + 1) + '. ' + refTxt);
+                                      if (_showKey && ref && typeof ref === 'object') {
+                                        const guide = esc(ref.rubric || ref.sampleAnswer || ref.expectedAnswer || ref.guidance || '').trim();
+                                        if (guide) out.push('   - _Teacher Guidance:_ ' + guide);
+                                      }
+                                    });
+                                    out.push('');
                                   }
                                 }
                                 else if (ty === 'outline' && d && (Array.isArray(d.branches) || (d.memoryPalace && typeof d.memoryPalace === 'object'))) {
@@ -11205,9 +11275,10 @@ function ExportPreviewView(props) {
                                         if (q || r) out.push('- **' + esc(heads[0]) + ':** ' + (q || '—') + ' | **' + esc(heads[1]) + ':** ' + (r || '_____'));
                                       });
                                       if (entries.length) out.push('');
-                                    } else if (tt === 'lab' || d.hypothesis || d.conclusion || Array.isArray(d.materials) || Array.isArray(d.procedure)) {
+                                    } else if (tt === 'lab' || tt === 'lab-report' || d.hypothesis || d.conclusion || Array.isArray(d.materials) || Array.isArray(d.procedure)) {
+                                      const isLabTemplate = tt === 'lab' || tt === 'lab-report';
                                       if (d.question) out.push('**Research Question:** ' + esc(d.question).trim(), '');
-                                      if (d.hypothesis || (_hideLearnerWork && tt === 'lab')) out.push('**Hypothesis:** ' + (_hideLearnerWork ? '_____' : esc(d.hypothesis).trim()), '');
+                                      if (d.hypothesis || isLabTemplate) out.push('**Hypothesis:** ' + (_hideLearnerWork || !d.hypothesis ? '_____' : esc(d.hypothesis).trim()), '');
                                       if (Array.isArray(d.materials) && d.materials.length) {
                                         out.push('**Materials:**');
                                         d.materials.forEach(m => { const mt = esc((m && m.text) || m || '').trim(); if (mt) out.push('- ' + mt); });
@@ -11218,9 +11289,9 @@ function ExportPreviewView(props) {
                                         d.procedure.forEach((p, pi) => { const pt = esc((p && p.text) || p || '').trim(); if (pt) out.push((pi + 1) + '. ' + pt); });
                                         out.push('');
                                       }
-                                      if (d.data || (_hideLearnerWork && tt === 'lab')) out.push('**Data / Observations:** ' + (_hideLearnerWork ? '_____' : esc(d.data).trim()), '');
-                                      if (d.analysis || (_hideLearnerWork && tt === 'lab')) out.push('**Analysis:** ' + (_hideLearnerWork ? '_____' : esc(d.analysis).trim()), '');
-                                      if (d.conclusion || (_hideLearnerWork && tt === 'lab')) out.push('**Conclusion:** ' + (_hideLearnerWork ? '_____' : esc(d.conclusion).trim()), '');
+                                      if (d.data || isLabTemplate) out.push('**Data / Observations:** ' + (_hideLearnerWork || !d.data ? '_____' : esc(d.data).trim()), '');
+                                      if (d.analysis || isLabTemplate) out.push('**Analysis:** ' + (_hideLearnerWork || !d.analysis ? '_____' : esc(d.analysis).trim()), '');
+                                      if (d.conclusion || isLabTemplate) out.push('**Conclusion:** ' + (_hideLearnerWork || !d.conclusion ? '_____' : esc(d.conclusion).trim()), '');
                                     } else if (tt === 'reading-response' || d.favoriteLine || d.thinkings || Array.isArray(d.prompts)) {
                                       if (Array.isArray(d.prompts) && d.prompts.length) {
                                         d.prompts.forEach((p, pi) => {
@@ -11229,11 +11300,12 @@ function ExportPreviewView(props) {
                                           if (lbl) out.push('**' + lbl + ':** ' + (ans || '_____'), '');
                                         });
                                       } else {
-                                        if (d.favoriteLine || _hideLearnerWork) out.push('**Favorite Line or Passage:** ' + (_hideLearnerWork ? '_____' : esc(d.favoriteLine).trim()), '');
-                                        if (d.thinkings || _hideLearnerWork) out.push('**What This Made Me Think About:** ' + (_hideLearnerWork ? '_____' : esc(d.thinkings).trim()), '');
+                                        const isReadingTemplate = tt === 'reading-response';
+                                        if (d.favoriteLine || _hideLearnerWork || isReadingTemplate) out.push('**Favorite Line or Passage:** ' + (_hideLearnerWork || !d.favoriteLine ? '_____' : esc(d.favoriteLine).trim()), '');
+                                        if (d.thinkings || _hideLearnerWork || isReadingTemplate) out.push('**What This Made Me Think About:** ' + (_hideLearnerWork || !d.thinkings ? '_____' : esc(d.thinkings).trim()), '');
                                         const connTxt = d.connection && typeof d.connection === 'object' ? d.connection.text : d.connection;
-                                        if (connTxt || _hideLearnerWork) out.push('**Connection:** ' + (_hideLearnerWork ? '_____' : esc(connTxt || '').trim()), '');
-                                        if (d.question || _hideLearnerWork) out.push('**One Question I Have:** ' + (_hideLearnerWork ? '_____' : esc(d.question).trim()), '');
+                                        if (connTxt || _hideLearnerWork || isReadingTemplate) out.push('**Connection:** ' + (_hideLearnerWork || !connTxt ? '_____' : esc(connTxt || '').trim()), '');
+                                        if (d.question || _hideLearnerWork || isReadingTemplate) out.push('**One Question I Have:** ' + (_hideLearnerWork || !d.question ? '_____' : esc(d.question).trim()), '');
                                       }
                                     } else if (cues.length || notes.length || d.summary) {
                                       const rowCount = Math.max(cues.length, notes.length);
@@ -11252,15 +11324,16 @@ function ExportPreviewView(props) {
                                       ? d.wordBank.map(w => esc(w && typeof w === 'object' ? (w.word || w.term || w.text || '') : w).trim()).filter(Boolean)
                                       : [];
                                     if (bank.length) out.push('**Word Bank:** ' + bank.join(', '), '');
-                                    const sfItems = Array.isArray(d.items) ? d.items.filter(Boolean) : [];
+                                    const rawSfItems = Array.isArray(d) ? d : (Array.isArray(d.items) ? d.items : (Array.isArray(d.frames) ? d.frames : []));
+                                    const sfItems = rawSfItems.filter(Boolean);
                                     if (d.mode === 'paragraph' || (!sfItems.length && d.text)) {
                                       if (d.text) out.push(esc(d.text).trim(), '');
                                       if (d.text_en) out.push('_' + esc(d.text_en).trim() + '_', '');
                                     } else if (sfItems.length) {
                                       sfItems.forEach(entry => {
-                                        const tierRaw = esc(entry.tier || entry.level || '').trim();
-                                        const frameTxt = esc(entry.text || entry.frame || entry.starter || entry.sentence || '').trim();
-                                        const glossTxt = esc(entry.text_en || '').trim();
+                                        const tierRaw = typeof entry === 'string' ? '' : esc(entry.tier || entry.level || '').trim();
+                                        const frameTxt = typeof entry === 'string' ? esc(entry).trim() : esc(entry.text || entry.frame || entry.starter || entry.sentence || '').trim();
+                                        const glossTxt = typeof entry === 'object' && entry ? esc(entry.text_en || '').trim() : '';
                                         if (!frameTxt) return;
                                         out.push('- ' + (tierRaw ? ('**[' + tierRaw.toUpperCase() + ']** ') : '') + frameTxt + (glossTxt ? (' _' + glossTxt + '_') : ''));
                                       });
@@ -11493,11 +11566,22 @@ function ExportPreviewView(props) {
                                       out.push('**Teacher Comment:** ' + esc(d.teacherComment).trim(), '');
                                     }
                                   }
-                                  else if (ty === 'image' && d && (d.prompt || d.alt || d.caption || d.description)) {
-                                    if (d.alt) out.push('**Image Alt:** ' + esc(d.alt), '');
-                                    if (d.caption) out.push('**Caption:** ' + esc(d.caption), '');
-                                    if (d.description) out.push(esc(d.description), '');
-                                    if (d.prompt) out.push('_Image prompt: ' + esc(d.prompt) + '_', '');
+                                  else if (ty === 'image' && d && (d.altText || d.alt || d.caption || d.description || d.prompt || (d.visualPlan && Array.isArray(d.visualPlan.panels) && d.visualPlan.panels.length))) {
+                                    const panels = d.visualPlan && Array.isArray(d.visualPlan.panels) ? d.visualPlan.panels.filter(Boolean) : [];
+                                    if (panels.length > 1) {
+                                      panels.forEach((p, pIdx) => {
+                                        const pAlt = esc(p.alt || p.altText || '').trim();
+                                        const pCap = esc(p.caption || '').trim();
+                                        if (pAlt || pCap) out.push(`- **Panel ${pIdx + 1}:** ${[pCap, pAlt ? ('Alt: ' + pAlt) : ''].filter(Boolean).join(' — ')}`);
+                                      });
+                                      out.push('');
+                                    } else {
+                                      const imgAlt = esc(d.altText || d.alt || '').trim();
+                                      if (imgAlt) out.push('**Image Alt:** ' + imgAlt, '');
+                                      if (d.caption) out.push('**Caption:** ' + esc(d.caption), '');
+                                      if (d.description) out.push(esc(d.description), '');
+                                      if (!imgAlt && !d.caption && !d.description && d.prompt) out.push('_Image prompt: ' + esc(d.prompt) + '_', '');
+                                    }
                                   }
                                 else {
                                   const tx = (d && (d.text || d.content || d.summary)) || '';
@@ -11527,7 +11611,7 @@ function ExportPreviewView(props) {
                           } catch (e) { if (addToast) addToast('NotebookLM export failed', 'error'); }
                           finally { finishAlternativeExport(); }
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg disabled:opacity-50">{altExportBusy === 'notebooklm' ? 'Building NotebookLM source...' : '📓 Send to NotebookLM (.md)'}</button>
-                        <button disabled={!!altExportBusy} onClick={async () => {
+                        <button type="button" disabled={!!altExportBusy} onClick={async () => {
                           const _preflight = runBuilderPreflight('epub', false);
                           if (_preflight.errors) { addToast && addToast('ePub export stopped: fix the blocking preflight issues first.', 'error'); return; }
                           const doc = exportPreviewRef.current?.contentDocument;
@@ -11833,7 +11917,7 @@ function ExportPreviewView(props) {
                           } catch (error) { addToast && addToast('ePub export failed: ' + (error?.message || 'unknown error'), 'error'); }
                           finally { finishAlternativeExport(); }
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50">{altExportBusy === 'epub' ? 'Building ePub...' : '📚 ePub (e-readers)'}</button>
-                        <button disabled={!!altExportBusy} onClick={async () => {
+                        <button type="button" disabled={!!altExportBusy} onClick={async () => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
                           if (altExportBusy) return;
@@ -12084,7 +12168,7 @@ const _downloadBRF = (brf) => {
                       </fieldset>
                     </div>
                   </details>
-                    <button onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }} className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm" aria-label={t('a11y.toggle_theme') || 'Toggle color theme'} title={theme === 'contrast' ? (t('theme.high_contrast') || 'High Contrast') : theme === 'dark' ? (t('theme.dark') || 'Dark Mode') : (t('theme.light') || 'Light Mode')}><span aria-hidden="true">{theme === 'contrast' ? '👁' : theme === 'dark' ? '🌙' : '☀️'}</span></button>
+                    <button type="button" onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }} className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm" aria-label={t('a11y.toggle_theme') || 'Toggle color theme'} title={theme === 'contrast' ? (t('theme.high_contrast') || 'High Contrast') : theme === 'dark' ? (t('theme.dark') || 'Dark Mode') : (t('theme.light') || 'Light Mode')}><span aria-hidden="true">{theme === 'contrast' ? '👁' : theme === 'dark' ? '🌙' : '☀️'}</span></button>
 
                   <button type="button" onClick={() => setShowExportPreview(false)} aria-label={t('a11y.close_doc_builder') || 'Close Document Builder'} className="min-h-9 rounded px-2 text-xs font-bold text-slate-700 hover:bg-red-50">Close</button>
                 </div>
@@ -12125,7 +12209,7 @@ const _downloadBRF = (brf) => {
                   <h3 className="text-sm font-bold text-slate-800">Document settings</h3>
                   <button type="button" onClick={closeBuilderSettings} className="min-h-9 rounded px-2 text-xs font-bold text-indigo-800 hover:bg-indigo-50">Back to document</button>
                 </div>
-                <button onClick={updateExportPreview} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100"><RefreshCw size={12} /> Regenerate</button>
+                <button type="button" onClick={updateExportPreview} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100"><RefreshCw size={12} /> Regenerate</button>
                 {Array.isArray(builderResourceIds) && exportPreviewSource === 'history' && <p role="status" className="rounded-lg border border-indigo-200 bg-indigo-50 p-2 text-xs text-indigo-950">{(t('guided.export_scope_label') || 'Current lesson: {count} selected resources.').replace('{count}', builderResourceIds.length)}{history.length === 0 && <span className="block">{t('guided.export_resources_missing') || 'This lesson has no available resources, or some are missing. Review History before opening its package.'}</span>}</p>}
                 {exportPreviewSource === 'remediation' && (
                   <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-300 bg-slate-100 p-1" role="group" aria-label={t("export_preview.accessibility.document_builder_workspace") || "Document Builder workspace"}>
@@ -12152,7 +12236,7 @@ const _downloadBRF = (brf) => {
                       const available = _builderResourceOptions(history, t);
                       const allOn = available.length > 0 && available.every(([key]) => _builderResourceIncluded(exportConfig, key));
                       return available.length > 0 && (
-                        <button onClick={() => {
+                        <button type="button" onClick={() => {
                           setExportConfigAndRefresh(p => ({ ...p, ..._builderBulkResourceUpdate(history, p, t) }));
                         }} className="text-[11px] font-bold text-indigo-700 hover:text-indigo-800 transition-colors">
                           {allOn ? 'Deselect All' : 'Select All'}
@@ -12469,25 +12553,32 @@ const _downloadBRF = (brf) => {
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Presets</div>
                   <div className="flex flex-wrap gap-1">
                     {Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => (
-                      <button key={key} onClick={() => applyExportPreset(preset)}
+                      <button type="button" key={key} onClick={() => applyExportPreset(preset)}
                         className="px-2 py-1 bg-white border border-slate-400 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 transition-all"
                         title={t("export_preview.accessibility.apply_value1_preset", { value1: (preset.name) }) || `Apply "${preset.name}" preset`}
                       >{preset.emoji} {preset.name}</button>
                     ))}
                     {Object.entries(exportPresets).map(([key, preset]) => (
                       <div key={key} className="flex items-center gap-0.5">
-                        <button onClick={() => applyExportPreset(preset)}
+                        <button type="button" onClick={() => applyExportPreset(preset)}
                           className="px-2 py-1 bg-white border border-violet-600 rounded-l-lg text-[11px] font-bold text-violet-600 hover:bg-violet-50 transition-all"
                           title={t("export_preview.accessibility.apply_value1_preset", { value1: (preset.name) }) || `Apply "${preset.name}" preset`}
                         >{preset.emoji} {preset.name}</button>
-                        <button onClick={() => deleteExportPreset(key)}
-                          className="min-w-6 min-h-6 px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-700 hover:text-red-800 hover:bg-red-50 transition-all" aria-label={t("export_preview.accessibility.delete_value1_preset", { value1: (preset.name) }) || `Delete "${preset.name}" preset`}
-                          title={t("export_preview.accessibility.delete_value1_preset", { value1: (preset.name) }) || `Delete "${preset.name}" preset`}
-                        ><X size={10} /></button>
+                        <button type="button"
+                          onClick={() => {
+                            if (confirmDeletePresetKey !== key) { setConfirmDeletePresetKey(key); return; }
+                            setConfirmDeletePresetKey('');
+                            deleteExportPreset(key);
+                          }}
+                          onBlur={() => { if (confirmDeletePresetKey === key) setConfirmDeletePresetKey(''); }}
+                          className={`min-w-6 min-h-6 px-1.5 py-1 border border-l-0 rounded-r-lg text-[11px] font-bold transition-all ${confirmDeletePresetKey === key ? 'bg-red-600 border-red-600 text-white hover:bg-red-700' : 'bg-white border-violet-600 text-red-700 hover:text-red-800 hover:bg-red-50'}`}
+                          aria-label={confirmDeletePresetKey === key ? (`Confirm delete "${preset.name}" preset`) : (t("export_preview.accessibility.delete_value1_preset", { value1: (preset.name) }) || `Delete "${preset.name}" preset`)}
+                          title={confirmDeletePresetKey === key ? 'Click again to delete preset' : (t("export_preview.accessibility.delete_value1_preset", { value1: (preset.name) }) || `Delete "${preset.name}" preset`)}
+                        >{confirmDeletePresetKey === key ? 'Delete?' : <X size={10} />}</button>
                       </div>
                     ))}
                   </div>
-                  <button onClick={async () => {
+                  <button type="button" onClick={async () => {
                     const name = await promptForBuilderText('Enter a name for this export preset.', '', {
                       title: 'Save export preset', confirmText: 'Save preset', cancelText: 'Cancel',
                       placeholder: 'Preset name', maxLength: 80,
@@ -12517,7 +12608,7 @@ const _downloadBRF = (brf) => {
                       substring, so aria-describedby goes after, not between. */}
                   <div className="flex gap-1" data-help-key="doc_builder_format" role="radiogroup" aria-label={t("export_preview.accessibility.export_format") || "Export format"} onKeyDown={handleRadioGroupKeyDown} aria-describedby="doc-builder-format-help">
                     {[['print', '📄 PDF'], ['worksheet', '📝 Worksheet'], ['html', '💻 HTML'], ['slides', '📊 Slides']].filter(([mode]) => !isRemediationDocument || mode !== 'worksheet').map(([m, label]) => (
-                      <button key={m} role="radio" aria-checked={exportPreviewMode === m} tabIndex={exportPreviewMode === m ? 0 : -1} onClick={() => { setExportPreviewMode(m); if (exportConfig?.clozeWorksheet && typeof setExportConfigAndRefresh === 'function') setExportConfigAndRefresh(p => (p && p.clozeWorksheet ? { ...p, clozeInteractive: m === 'html' } : p)); }} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
+                      <button type="button" key={m} role="radio" aria-checked={exportPreviewMode === m} tabIndex={exportPreviewMode === m ? 0 : -1} onClick={() => { setExportPreviewMode(m); if (exportConfig?.clozeWorksheet && typeof setExportConfigAndRefresh === 'function') setExportConfigAndRefresh(p => (p && p.clozeWorksheet ? { ...p, clozeInteractive: m === 'html' } : p)); }} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
                     ))}
                   </div>
                   <p id="doc-builder-format-help" className="mt-1.5 text-[11px] leading-snug text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5" role="status">
@@ -12571,7 +12662,7 @@ const _downloadBRF = (brf) => {
                             const swatchColor = s.cssVars.accentColor || s.cssVars.headingColor || '#4f46e5';
                             const tabIdx = (exportTheme === key || (!hasKnownTheme && idx === 0)) ? 0 : -1;
                             return (
-                              <button key={key} role="radio" aria-checked={exportTheme === key} tabIndex={tabIdx} onClick={() => setExportTheme(key)}
+                              <button type="button" key={key} role="radio" aria-checked={exportTheme === key} tabIndex={tabIdx} onClick={() => setExportTheme(key)}
                                 className={`flex items-center gap-1.5 text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}
                               ><span aria-hidden="true" className="inline-block w-2.5 h-2.5 rounded-full shrink-0 border border-black/15" style={{ backgroundColor: swatchColor }} /><span>{s.emoji} {s.name}</span></button>
                             );
@@ -12581,7 +12672,7 @@ const _downloadBRF = (brf) => {
                           {brandProfiles.map((p, bIdx) => {
                             const tabIdx = (exportTheme === p.id || (!hasKnownTheme && seedEntries.length === 0 && bIdx === 0)) ? 0 : -1;
                             return (
-                              <button key={p.id} role="radio" aria-checked={exportTheme === p.id} tabIndex={tabIdx} onClick={() => setExportTheme(p.id)}
+                              <button type="button" key={p.id} role="radio" aria-checked={exportTheme === p.id} tabIndex={tabIdx} onClick={() => setExportTheme(p.id)}
                                 className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? 'bg-rose-600 text-white ring-2 ring-rose-300' : 'bg-white border border-rose-400 text-rose-700 hover:bg-rose-50'}`}
                                 title={t("export_preview.accessibility.school_brand_profile") || "School brand profile"}
                               >🏷️ {p.name || 'Brand'}</button>
@@ -13136,8 +13227,16 @@ const _downloadBRF = (brf) => {
                 {/* AI Custom Style */}
                 </React.Fragment>}
 
+                {(() => {
+                  const epTextAiReady = typeof window !== 'undefined' && (
+                    typeof window.__alloAiUsable === 'function'
+                      ? !!window.__alloAiUsable('text', window.callGemini)
+                      : Boolean(typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked && !window._alloQrBlocked && !window.__alloStudentAiDisabled && !window.__alloAiSecretsLocked)
+                  );
+                  return (
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">✨ AI Style Studio</div>
+                  {!epTextAiReady && <p role="status" className="mb-1.5 rounded border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-900">AI is off — connect an AI provider in Settings to generate custom styles.</p>}
                   {/* Quick restyle presets */}
                   <div className="flex flex-wrap gap-1 mb-1.5">
                     {[
@@ -13148,29 +13247,32 @@ const _downloadBRF = (brf) => {
                       { label: '📰 Magazine', prompt: 'Clean editorial magazine layout with large hero headings, pull quotes with colored left borders, two-column text sections where appropriate, serif body text, and professional photo-story feel.' },
                       { label: '🧊 Minimalist', prompt: 'Ultra-minimal Scandinavian design. Lots of whitespace, thin sans-serif font, muted grays and one accent color, hairline borders, understated elegance.' },
                     ].map(preset => (
-                      <button key={preset.label} onClick={() => { setExportStylePrompt(preset.prompt); setTimeout(() => generateCustomExportStyle(), 50); }}
-                        disabled={isGeneratingStyle}
-                        className="px-2 py-1 bg-slate-50 border border-slate-400 rounded-md text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 disabled:opacity-40 transition-colors"
+                      <button type="button" key={preset.label} onClick={() => { if (!epTextAiReady || isGeneratingStyle) return; setExportStylePrompt(preset.prompt); setPendingPresetPrompt(preset.prompt); }}
+                        disabled={isGeneratingStyle || !epTextAiReady}
+                        className="px-2 py-1 bg-slate-50 border border-slate-400 rounded-md text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                       >{preset.label}</button>
                     ))}
                   </div>
                   <div className="flex gap-1">
                     <input type="text" value={exportStylePrompt} onChange={(e) => setExportStylePrompt(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' && exportStylePrompt.trim()) generateCustomExportStyle(); }}
+                      disabled={!epTextAiReady || isGeneratingStyle}
+                      onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && epTextAiReady && !isGeneratingStyle && exportStylePrompt.trim()) generateCustomExportStyle(); }}
                       placeholder={t("placeholders.describe_style_preset")}
-                      className="flex-1 text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
+                      className="flex-1 text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300 disabled:bg-slate-50"
                       aria-label={t("a11y.custom_export_style")} />
-                    <button onClick={generateCustomExportStyle}
+                    <button type="button" onClick={generateCustomExportStyle}
                       aria-label={isGeneratingStyle ? 'Generating custom style' : 'Generate custom style'}
-                      disabled={!exportStylePrompt.trim() || isGeneratingStyle}
-                      className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 disabled:opacity-40"
+                      disabled={!epTextAiReady || !exportStylePrompt.trim() || isGeneratingStyle}
+                      className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 disabled:opacity-40 disabled:cursor-not-allowed"
                     >{isGeneratingStyle ? '...' : '✨'}</button>
                   </div>
                   {customExportCSS && <div role="status" aria-live="polite" className="flex items-center gap-2 mt-1">
                     <div className="text-[11px] text-green-700 font-medium">✓ Custom style active</div>
-                    <button onClick={() => setCustomExportCSS('')} className="text-[11px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
+                    <button type="button" onClick={() => setCustomExportCSS('')} className="text-[11px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
                   </div>}
                 </div>
+                  );
+                })()}
 
                 {/* ── Writing check (Harper — local, suggestions-only) ── */}
                 {(() => {
@@ -13274,7 +13376,7 @@ const _downloadBRF = (brf) => {
                   return (
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">📝 {t('export_preview.writing.heading') || 'Writing Check'}</div>
-                  <button onClick={runWritingCheck} data-help-key="doc_builder_writing_check_btn" disabled={wc && wc.status === 'loading'} aria-busy={!!(wc && wc.status === 'loading')} className="w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
+                  <button type="button" onClick={runWritingCheck} data-help-key="doc_builder_writing_check_btn" disabled={wc && wc.status === 'loading'} aria-busy={!!(wc && wc.status === 'loading')} className="w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
                     {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check spelling & grammar (English)')}
                   </button>
                   <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; the ~18 MB checker downloads on first use, then checks both spelling and grammar.'}</p>
@@ -13289,15 +13391,15 @@ const _downloadBRF = (brf) => {
                       <div role="status" aria-live="polite" className="text-[10px] font-bold text-slate-600">{wc.items.length} {t('export_preview.writing.suggestions') || 'suggestion(s)'}{wc.capped ? ' (first 150 shown)' : ''} — {t('export_preview.writing.suggestions_note') || 'nothing is changed unless you Apply it'}:</div>
                       {wc.items.map((item, ii) => (
                         <div key={ii} className="bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]">
-                          <button onClick={() => _locate(item, true)} className="text-left w-full hover:underline" title={t('export_preview.writing.locate_title') || 'Scroll the preview to this spot'}>
+                          <button type="button" onClick={() => _locate(item, true)} className="text-left w-full hover:underline" title={t('export_preview.writing.locate_title') || 'Scroll the preview to this spot'}>
                             <span className="text-slate-700">{item.message}</span>
                             <span className="block text-slate-500 italic mt-0.5">{item.snippet}</span>
                           </button>
                           <div className="flex gap-1 mt-1 flex-wrap items-center">
                             {item.suggestions.map((s, si) => (
-                              <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || (t('export_preview.writing.remove') || '(remove)')}</button>
+                              <button type="button" key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || (t('export_preview.writing.remove') || '(remove)')}</button>
                             ))}
-                            <button onClick={() => _dismiss(item)} className="px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto" title={t('export_preview.writing.keep_title') || 'Keep the original wording and dismiss this suggestion'}>✓ {t('export_preview.writing.keep') || 'Keep as-is'}</button>
+                            <button type="button" onClick={() => _dismiss(item)} className="px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto" title={t('export_preview.writing.keep_title') || 'Keep the original wording and dismiss this suggestion'}>✓ {t('export_preview.writing.keep') || 'Keep as-is'}</button>
                           </div>
                         </div>
                       ))}
@@ -13310,7 +13412,7 @@ const _downloadBRF = (brf) => {
                 {/* ── Accessibility Audit ── */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">♿ Accessibility Audit</div>
-                  <button
+                  <button type="button"
                     onClick={async () => {
                       const runId = ++auditRunRef.current;
                       setExportAuditLoading(true); setExportAuditResult(null);
@@ -13558,7 +13660,7 @@ const _downloadBRF = (brf) => {
                     </div>
                 {(toolSearchOpen || (!ribbonCollapsed && activeRibbonTab === 'review')) && (
                   <div id="builder-ribbon-panel-review" role="tabpanel" aria-labelledby="builder-ribbon-tab-review" className="shrink-0">
-                    <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-3 py-2">                    <button onClick={toggleA11yInspect}
+                    <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-3 py-2">                    <button type="button" onClick={toggleA11yInspect}
                       aria-pressed={a11yInspectMode}
                       className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded transition-all ${a11yInspectMode ? 'bg-violet-100 text-violet-700 ring-1 ring-violet-300' : 'text-slate-600 hover:text-violet-600 hover:bg-slate-100'}`}
                       title="Toggle accessibility inspector — shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Editable badges support Enter, Space, and click.">
@@ -13574,7 +13676,7 @@ const _downloadBRF = (brf) => {
                         + finalText present). The AlloFlow-generated pathway has no source PDF to
                         compare against, so the button stays hidden in that mode. */}
                     {pdfFixResult && pdfFixResult.sourceText && pdfFixResult.finalText && (
-                      <button
+                      <button type="button"
                         onClick={async () => {
                                             try { if (typeof window !== 'undefined') { window._diffDiagnostic = window._diffDiagnostic || []; window._diffDiagnostic.push({ ts: new Date().toISOString(), msg: 'button clicked', source: 'click', diffLibReady, hasWindowDiff: !!window.Diff, hasResult: !!pdfFixResult, srcLen: pdfFixResult && pdfFixResult.sourceText ? pdfFixResult.sourceText.length : null, finLen: pdfFixResult && pdfFixResult.finalText ? pdfFixResult.finalText.length : null }); console.warn('[Diff] button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff); } } catch (_) {}
                                             setDiffViewOpen(true);
@@ -13802,7 +13904,7 @@ const _downloadBRF = (brf) => {
                       aria-label={label} title={label}>{icon}</button>;
                   })}
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
-                  <button onClick={async () => { const doc = exportPreviewRef.current?.contentDocument; if (!doc) return;
+                  <button type="button" onClick={async () => { const doc = exportPreviewRef.current?.contentDocument; if (!doc) return;
                     const selection = doc.getSelection?.();
                     const savedRange = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
                     const url = await promptForBuilderText('Enter the destination for this link.', '', {
@@ -13832,7 +13934,7 @@ const _downloadBRF = (brf) => {
                     doc.execCommand('createLink', false, _u); }}
                     className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label={t("export_preview.accessibility.insert_link") || "Insert link"} title={t("export_preview.accessibility.insert_link") || "Insert link"}>🔗</button>
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
-                  <button onClick={async () => {
+                  <button type="button" onClick={async () => {
                     // Insert accessible math authored in MathLive (mathlive_loader.js →
                     // window.AlloMathInput). The equation goes in as a native <math> MathML
                     // element carrying data-allo-latex (round-trip) + an aria-label spoken
@@ -13868,7 +13970,7 @@ const _downloadBRF = (brf) => {
                       const attrs = ' data-allo-latex="' + escAttr(eq.latex) + '"'
                         + (spoken ? ' aria-label="' + escAttr(spoken) + '"' : '')
                         + ' class="allo-math-authored"';
-                      mathHtml = /^<math[\s>]/i.test(mathHtml) ? mathHtml.replace(/^<math\b/i, '<math' + attrs) : ('<math' + attrs + '>' + mathHtml + '</math>');
+                      mathHtml = /^<math[\s>]/i.test(mathHtml) ? mathHtml.replace(/^<math\b/i, () => '<math' + attrs) : ('<math' + attrs + '>' + mathHtml + '</math>');
                       doc.execCommand('insertHTML', false, mathHtml + '\u200B'); // trailing ZWSP so the caret lands after the equation
                       addToast('Equation inserted', 'success');
                     } catch (e) {
@@ -14225,14 +14327,49 @@ const _downloadBRF = (brf) => {
                       const liveHtml = liveDoc ? ('<!DOCTYPE html>\n' + liveDoc.documentElement.outerHTML) : '';
                       const resultIsCurrent = mountedRef.current && expertRunId === expertRunRef.current && liveDoc === doc && liveHtml === currentHtml;
                       if (!resultIsCurrent) {
-                        setAgentActivityLog(prev => [...prev, { text: 'Result not applied because the document changed while the command was running.', type: 'info', time: new Date().toLocaleTimeString() }]);
-                        addToast('The document changed while the Workbench was running, so its older result was not applied.', 'info');
+                        if (mountedRef.current) {
+                          setAgentActivityLog(prev => [...prev, { text: 'Result not applied because the document changed while the command was running.', type: 'info', time: new Date().toLocaleTimeString() }]);
+                          addToast('The document changed while the Workbench was running, so its older result was not applied.', 'info');
+                        }
                       } else if (result && result.html && result.html !== currentHtml && doc) {
-                        doc.open(); doc.write(result.html); doc.close();
+                        const sanitizeWorkbenchHtml = (rawHtml) => {
+                          try {
+                            const parser = new DOMParser();
+                            const parsed = parser.parseFromString(String(rawHtml || ''), 'text/html');
+                            parsed.querySelectorAll('script, iframe, object, embed, base, meta[http-equiv="refresh"]').forEach((node) => node.remove());
+                            parsed.querySelectorAll('*').forEach((el) => {
+                              Array.from(el.attributes || []).forEach((attr) => {
+                                const attrName = String(attr.name || '').toLowerCase();
+                                const attrVal = String(attr.value || '').trim();
+                                if (attrName.startsWith('on')) {
+                                  el.removeAttribute(attr.name);
+                                } else if ((attrName === 'href' || attrName === 'src' || attrName === 'xlink:href' || attrName === 'formaction') && /^(?:javascript|vbscript):/i.test(attrVal)) {
+                                  el.removeAttribute(attr.name);
+                                }
+                              });
+                            });
+                            return '<!DOCTYPE html>\n' + parsed.documentElement.outerHTML;
+                          } catch (_) {
+                            return String(rawHtml || '').replace(/<script[\s\S]*?<\/script>/gi, '');
+                          }
+                        };
+                        const safeResultHtml = sanitizeWorkbenchHtml(result.html);
+                        try { delete doc.__alloPasteGuard; } catch (_) {}
+                        doc.open(); doc.write(safeResultHtml); doc.close();
+                        exportPreviewRef.current.__alloInitializeBuilderDocument?.(doc);
+                        try { applyLivePreviewOverlays?.(); } catch (_) {}
                         doc.designMode = 'on';
                         try {
                           if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
                           draftCaptureLatestRef.current?.(doc, 'Workbench edit');
+                        } catch (_) {}
+                        try {
+                          refreshDocumentStats?.();
+                          refreshReviewComments?.();
+                          refreshTrackedChanges?.();
+                          refreshActiveHeading?.();
+                          refreshPageMetrics?.();
+                          refreshFormattingState?.();
                         } catch (_) {}
                         auditRunRef.current += 1;
                         writingCheckRunRef.current += 1;
@@ -14251,8 +14388,10 @@ const _downloadBRF = (brf) => {
                       }
                     } catch (err) {
                       console.error('[ExpertWorkbench] error command=' + JSON.stringify(cmd), err);
-                      setAgentActivityLog(prev => [...prev, { text: '❌ ' + (err && (err.message || err)), type: 'error', time: new Date().toLocaleTimeString() }]);
-                      addToast('❌ Workbench failed: ' + (err && (err.message || err) || 'unknown error'), 'error');
+                      if (mountedRef.current) {
+                        setAgentActivityLog(prev => [...prev, { text: '❌ ' + (err && (err.message || err)), type: 'error', time: new Date().toLocaleTimeString() }]);
+                        addToast('❌ Workbench failed: ' + (err && (err.message || err) || 'unknown error'), 'error');
+                      }
                     }
                     if (mountedRef.current) setIsAgentRunning(false);
                   }}>
@@ -14894,14 +15033,19 @@ const _downloadBRF = (brf) => {
                         const _sanitizeFragment = (html) => {
                           try {
                             const p = new DOMParser().parseFromString('<body>' + String(html || '') + '</body>', 'text/html');
-                            p.querySelectorAll('script,style,iframe,object,embed,link,meta,base,form').forEach(el => el.remove());
+                            p.querySelectorAll('script,style,iframe,object,embed,link,meta,base,form,frame,frameset,noscript,template,svg,math,xmp,noembed,noframes,plaintext,foreignObject,animate,set,animateMotion,animateTransform').forEach(el => el.remove());
                             p.querySelectorAll('*').forEach(el => {
                               for (const a of Array.from(el.attributes)) {
-                                const n = a.name.toLowerCase(), v = String(a.value || '');
-                                if (n.startsWith('on')) el.removeAttribute(a.name);
-                                else if ((n === 'href' || n === 'src' || n === 'xlink:href' || n === 'formaction' || n === 'action')
-                                  && /^\s*(javascript|vbscript|data)\s*:/i.test(v)
-                                  && !/^\s*data:image\/(png|jpe?g|gif|webp)/i.test(v)) el.removeAttribute(a.name);
+                                const n = a.name.toLowerCase();
+                                const v = String(a.value || '').replace(/[\u0000-\u0020]+/g, '');
+                                const vl = v.toLowerCase();
+                                const isUrlAttr = /^(?:href|src|xlink:href|action|formaction|poster|data)$/.test(n);
+                                const isSafeDataImg = (n === 'src' || n === 'poster') && /^data:image\/(?:png|jpeg|jpg|gif|webp);base64,/i.test(vl);
+                                if (n.startsWith('on') || n === 'srcdoc' || n === 'srcset' || n === 'contenteditable' || /^data-allo-(change|comment)-/.test(n)) {
+                                  el.removeAttribute(a.name);
+                                } else if (isUrlAttr && (/^(?:javascript|vbscript):/.test(vl) || (/^data:/.test(vl) && !isSafeDataImg))) {
+                                  el.removeAttribute(a.name);
+                                }
                               }
                             });
                             return p.body.innerHTML;

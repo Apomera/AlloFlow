@@ -134,10 +134,10 @@ window.SelHub = window.SelHub || {
   // ── Audio + WCAG (auto-injected) ──
   var _civicAC = null;
   function getCivicAC() { if (!_civicAC) { try { _civicAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_civicAC && _civicAC.state==="suspended") { try { _civicAC.resume(); } catch(e) {} } return _civicAC; }
-  function civicTone(f,d,tp,v) { var ac=getCivicAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function civicTone(f,d,tp,v) { try { if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return; } catch (_) {} var ac=getCivicAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCivicClick() { civicTone(600,0.03,"sine",0.04); }
   function sfxCivicSuccess() { civicTone(523,0.08,"sine",0.07); setTimeout(function(){civicTone(659,0.08,"sine",0.07);},70); setTimeout(function(){civicTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("civic-a11y")){var _s=document.createElement("style");_s.id="civic-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("civic-a11y")){var _s=document.createElement("style");_s.id="civic-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){.civic-action-root *,.civic-action-root *::before,.civic-action-root *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.civic-action-root .text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
 
 
   // ── Data ──
@@ -830,6 +830,9 @@ window.SelHub = window.SelHub || {
                 tier: _safety.tier
               });
             }
+            if (_safety.tier >= 3 && window.SelHub && window.SelHub.showCrisisModal) {
+              try { window.SelHub.showCrisisModal({ toolName: 'Civic Action', contentSnippet: userInput }); } catch (_) {}
+            }
             upd('_civicTier', _safety.tier || 0);
           });
       };
@@ -843,6 +846,7 @@ window.SelHub = window.SelHub || {
         var msg = (window.SelHub && window.SelHub.rehearseBreakCharacterText)
           ? window.SelHub.rehearseBreakCharacterText(safety.severity)
           : 'Your safety matters. Please reach out to a trusted adult or call/text 988.';
+        upd('_civicTier', 3);
         if (window.SelHub && window.SelHub.showCrisisModal) {
           try { window.SelHub.showCrisisModal({ toolName: 'Civic Action', contentSnippet: userInput }); } catch (_) {}
         }
@@ -925,7 +929,21 @@ window.SelHub = window.SelHub || {
             addToast(badge.icon + ' Badge earned: ' + badge.label + '!', 'success');
             ctx.awardXP(10);
           }
+          if (badgeId !== 'democracy_champion' && earnedBadges.indexOf('democracy_champion') === -1) {
+            var otherCount = earnedBadges.filter(function(b) { return b !== 'democracy_champion'; }).length;
+            if (otherCount >= 5) awardBadge('democracy_champion');
+          }
         }
+      };
+
+      var _xpOnce = function(xpKey, amount) {
+        var awarded = d._xpAwarded || {};
+        if (awarded[xpKey]) return false;
+        var next = Object.assign({}, awarded);
+        next[xpKey] = true;
+        upd('_xpAwarded', next);
+        ctx.awardXP(amount);
+        return true;
       };
 
       // "Civic Champion: explored all tabs" had no record of visits, so it never unlocked.
@@ -1013,7 +1031,7 @@ window.SelHub = window.SelHub || {
       // RENDER
       // ═══════════════════════════════════════
 
-      return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
+      return h('div', { className: 'civic-action-root space-y-4 animate-in fade-in duration-200' },
           h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
 
         // ── Header ──
@@ -1041,12 +1059,24 @@ window.SelHub = window.SelHub || {
 
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('civicAction', h, ctx) : null),
         // ── Tab Navigation ──
-        h('div', { role: 'tablist', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 overflow-x-auto' },
-          TABS.map(function(t) {
+        h('div', { role: 'tablist', 'aria-label': 'Civic Action sections', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 overflow-x-auto' },
+          TABS.map(function(t, ti) {
             return h('button', { 'aria-label': t.label,
               key: t.id,
+              'data-civic-tab': t.id,
               role: 'tab', 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1,
               onClick: function() { upd('tab', t.id); markTabVisited(t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
+              onKeyDown: function(e) {
+                if (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+                e.preventDefault();
+                var nextIdx = e.key === 'Home' ? 0 : e.key === 'End' ? TABS.length - 1 : (ti + ((e.key === 'ArrowLeft' || e.key === 'ArrowUp') ? -1 : 1) + TABS.length) % TABS.length;
+                var nextTab = TABS[nextIdx];
+                upd('tab', nextTab.id);
+                markTabVisited(nextTab.id);
+                if (announceToSR) announceToSR(nextTab.label + ' tab selected');
+                var nextBtn = e.currentTarget && e.currentTarget.parentNode && e.currentTarget.parentNode.querySelector ? e.currentTarget.parentNode.querySelector('[data-civic-tab="' + nextTab.id + '"]') : null;
+                if (nextBtn && nextBtn.focus) nextBtn.focus();
+              },
               className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 ' +
                 (tab === t.id ? 'bg-white text-teal-700 shadow-sm' : 'text-teal-700 hover:text-teal-700')
             }, t.label);
@@ -1095,6 +1125,10 @@ window.SelHub = window.SelHub || {
             explore:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDF0D', title: 'Explore Issues \u2014 learn before you advocate',           hint: 'Ballotpedia, ProPublica, Reuters, AP, BBC \u2014 source diversity matters. The Pew media-bias chart is a useful starting tool, but no source is neutral. Triangulate. Cite primary documents when possible.' },
             act:        { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '\u270A',         title: 'Act \u2014 turn feelings into specific moves',          hint: 'Vote, call/email reps, attend a town hall, organize on a campus issue, work the polls, sign a petition with a citation. Specific > general. \u201CI care about climate\u201D \u2192 \u201CI emailed Sen. Collins about LD-1850.\u201D' },
             planner:    { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83D\uDCDD', title: 'Plan \u2014 your civic action plan',                       hint: 'Implementation intentions (Gollwitzer 1999): \u201CIf my representative\u2019s vote is X, I will respond with Y by Z date.\u201D Pre-commitment doubles follow-through over good intentions alone.' },
+            powermap:   { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',   icon: '\uD83D\uDDFA', title: 'Power Map \u2014 who holds influence here',                hint: 'Plot decision-makers, champions, and swing voices by position and power so you spend energy where persuasion actually moves outcomes.' },
+            allies:     { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',   icon: '\uD83E\uDD1D', title: 'Allies Web \u2014 who has your back',                      hint: 'Durable civic work is collective. Map emotional, practical, informational, and voice support so you know which gaps to fill next.' },
+            timeline:   { accent: '#14b8a6', soft: 'rgba(20,184,166,0.10)',  icon: '\uD83D\uDCC5', title: 'Action Timeline \u2014 concrete milestones',               hint: 'Break big civic goals into dated, checkable steps. Clear pacing prevents burnout and keeps campaigns moving forward.' },
+            talkprep:   { accent: '#0284c7', soft: 'rgba(2,132,199,0.10)',   icon: '\uD83D\uDCAC', title: 'Talk Prep \u2014 practice hard conversations',             hint: 'Steelman the other perspective, name shared ground, and prepare one genuine question before entering a high-stakes civic dialogue.' },
             simulation: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)',  icon: '\uD83C\uDFDB', title: 'Simulate \u2014 walk a decision in real terms',          hint: 'City budget allocation, town-hall mediation, school-board vote. Decisions look different from inside; tradeoffs land different when you have to MAKE them, not just react to them. Reduces \u201Cthey just don\u2019t care\u201D framing.' },
             survey:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83D\uDCCA', title: 'Survey \u2014 build your own data',                       hint: 'Listening + measuring beats assuming. Question wording matters enormously (Schuman + Presser 1981). Pilot with 5 people before sending wide. The survey is half the civic skill; reading the responses is the other half.' },
             rights:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\uD83D\uDCDC', title: 'Rights & Dissent \u2014 the legal scaffolding',           hint: '1st Amendment (speech, press, assembly, petition); UDHR 1948; ACLU + EFF + Amnesty primary sources. Peaceful dissent has a track record \u2014 Gandhi, MLK, Mandela. Knowing your rights changes the room when authority oversteps.' },
@@ -1132,7 +1166,7 @@ window.SelHub = window.SelHub || {
               var isSelected = selectedFeeling === f.id;
               return h('button', { 
                 key: f.id,
-                onClick: function() { upd('feeling', f.id); ctx.awardXP(3); },
+                onClick: function() { upd('feeling', f.id); _xpOnce('feeling_' + f.id, 3); },
                 className: 'p-4 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] ' +
                   (isSelected ? 'shadow-lg ring-2 ring-offset-1' : 'bg-white hover:shadow-md'),
                 style: { borderColor: isSelected ? f.color : '#e2e8f0', background: isSelected ? f.color + '15' : 'white', '--tw-ring-color': f.color }
@@ -1180,7 +1214,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // AI counselor
-          _civAiOn && d.freeWrite && d.freeWrite.length > 20 && h('button', { 'aria-label': 'Why Does This Matter to Me?',
+          _civAiOn && d.freeWrite && d.freeWrite.length > 20 && h('button', { 'aria-label': 'Talk to AI Counselor about this',
             onClick: function() { askCounselor(d.freeWrite); },
             disabled: aiLoading,
             className: 'w-full px-4 py-2 bg-teal-50 border border-teal-600 rounded-lg text-xs font-bold text-teal-600 hover:bg-teal-100 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
@@ -1249,7 +1283,7 @@ window.SelHub = window.SelHub || {
                   (isExpanded ? 'border-teal-400 bg-teal-50 shadow-md' : 'border-slate-200 bg-white hover:border-teal-300')
               },
                 h('button', { 'aria-label': strategy.label,
-                  onClick: function() { upd('coping', isExpanded ? null : strategy.id); if (!isExpanded) ctx.awardXP(3); },
+                  onClick: function() { upd('coping', isExpanded ? null : strategy.id); if (!isExpanded) _xpOnce('coping_' + strategy.id, 3); },
                   className: 'w-full p-4 text-left'
                 },
                   h('div', { className: 'font-bold text-sm text-slate-800' }, strategy.label),
@@ -1282,10 +1316,12 @@ window.SelHub = window.SelHub || {
                 onClick: function() {
                   upd('selectedIssue', issue.id);
                   awardBadge('first_issue');
-                  ctx.awardXP(5);
                   // Track explored issues for empathy leader badge
                   var explored = (d.exploredIssues || []).slice();
-                  if (explored.indexOf(issue.id) === -1) explored.push(issue.id);
+                  if (explored.indexOf(issue.id) === -1) {
+                    explored.push(issue.id);
+                    ctx.awardXP(5);
+                  }
                   upd('exploredIssues', explored);
                   if (explored.length >= 5) awardBadge('empathy_leader');
                 },
@@ -1315,8 +1351,8 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'flex items-center gap-3' },
                   h('span', { className: 'text-4xl' }, issue.emoji),
                   h('div', null,
-                    h('h3', { className: 'text-lg font-black text-slate-100' }, issue.title),
-                    h('p', { className: 'text-sm text-slate-300' }, issue.desc)
+                    h('h3', { className: 'text-lg font-black text-slate-900' }, issue.title),
+                    h('p', { className: 'text-sm text-slate-600' }, issue.desc)
                   )
                 ),
                 h('div', { className: 'bg-teal-50 rounded-xl p-4 border border-teal-200' },
@@ -1424,11 +1460,14 @@ window.SelHub = window.SelHub || {
                 className: 'px-4 py-2 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50'
               }, '\u2190 Previous') : h('div'),
               plannerStep < PLANNER_STEPS.length - 1 ? h('button', { 'aria-label': 'Next civic action plan step',
-                onClick: function() { upd('plannerStep', plannerStep + 1); if (announceToSR) announceToSR('Step ' + (plannerStep + 2) + ' of ' + PLANNER_STEPS.length); ctx.awardXP(5); },
+                onClick: function() { upd('plannerStep', plannerStep + 1); if (announceToSR) announceToSR('Step ' + (plannerStep + 2) + ' of ' + PLANNER_STEPS.length); _xpOnce('planner_step_' + plannerStep, 5); },
                 className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
               }, 'Next \u2192') : h('button', { onClick: function() {
+                  var planCombined = Object.keys(plannerData || {}).map(function(k) { return plannerData[k] || ''; }).join(' ').trim();
+                  var blockedMsg = _syncSafetyBlock(planCombined, 'planner');
+                  if (blockedMsg) { addToast(blockedMsg, 'info'); return; }
                   awardBadge('action_planner');
-                  ctx.awardXP(20);
+                  _xpOnce('planner_complete', 20);
                   addToast('Your civic action plan is complete! You are a changemaker.', 'success');
                   if (announceToSR) announceToSR('Civic action plan complete');
                   ctx.celebrate();
@@ -1503,7 +1542,13 @@ window.SelHub = window.SelHub || {
               })
             ),
             d.petitionTitle && d.petitionDesc && h('button', { 'aria-label': 'Save Petition Draft',
-              onClick: function() { addToast('Petition draft saved! Share it with classmates to gather support.', 'success'); ctx.awardXP(10); },
+              onClick: function() {
+                var petText = [d.petitionTitle || '', d.petitionDesc || '', d.petitionAsks || ''].join(' ').trim();
+                var blockedMsg = _syncSafetyBlock(petText, 'petition');
+                if (blockedMsg) { addToast(blockedMsg, 'info'); return; }
+                addToast('Petition draft saved! Share it with classmates to gather support.', 'success');
+                _xpOnce('petition_save', 10);
+              },
               className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700'
             }, '\ud83d\udcbe Save Petition Draft')
           )
@@ -1632,7 +1677,7 @@ window.SelHub = window.SelHub || {
                   onClick: function() {
                     upd('simDone', true);
                     awardBadge('civic_simulator');
-                    ctx.awardXP(15);
+                    _xpOnce('sim_budget_complete', 15);
                     ctx.celebrate();
                   },
                   className: 'w-full px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 mt-2'
@@ -1653,16 +1698,16 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                   h('div', { className: 'bg-indigo-500 h-full rounded-full transition-all', style: { width: ((legStep + 1) / steps.length * 100) + '%' } })
                 ),
-                h('div', { className: 'text-xs font-bold text-slate-600 text-center' }, currentStep.title),
+                h('div', { className: 'text-xs font-bold text-slate-300 text-center' }, currentStep.title),
                 h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
-                  h('p', { className: 'text-sm text-slate-300' }, currentStep.desc),
+                  h('p', { className: 'text-sm text-slate-700' }, currentStep.desc),
                   currentStep.bills.map(function(bill) {
                     var isSelected = legBill === bill.id;
                     return h('button', { 'aria-label': bill.title,
                       key: bill.id,
                       onClick: function() {
                         updMulti({ legBill: bill.id, legSupport: bill.support_base });
-                        ctx.awardXP(5);
+                        _xpOnce('leg_bill_' + bill.id, 5);
                       },
                       className: 'w-full p-4 rounded-xl border-2 text-left transition-all ' + (isSelected ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-600')
                     },
@@ -1691,7 +1736,7 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
                 ),
                 h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
-                  h('p', { className: 'text-sm text-slate-300' }, currentStep.desc),
+                  h('p', { className: 'text-sm text-slate-700' }, currentStep.desc),
                   currentStep.allies.map(function(ally) {
                     var isRecruited = legAllies.indexOf(ally.id) !== -1;
                     return h('div', { key: ally.id, className: 'p-3 rounded-xl border-2 ' + (isRecruited ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white') },
@@ -1738,7 +1783,7 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
                 ),
                 h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4' },
-                  h('p', { className: 'text-sm text-slate-300' }, currentStep.desc),
+                  h('p', { className: 'text-sm text-slate-700' }, currentStep.desc),
                   currentStep.questions.map(function(cq, qi) {
                     var answered = legAnswers[qi] !== undefined;
                     return h('div', { key: qi, className: 'p-3 rounded-xl border-2 ' + (answered ? 'border-slate-200 bg-slate-50' : 'border-amber-300 bg-amber-50') },
@@ -1784,23 +1829,23 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                   h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'bg-indigo-500 h-full rounded-full', style: { width: '100%' } })
                 ),
-                h('div', { className: 'text-xs font-bold text-slate-600 text-center' }, currentStep.title),
+                h('div', { className: 'text-xs font-bold text-slate-300 text-center' }, currentStep.title),
                 h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4 text-center' },
-                  h('p', { className: 'text-sm text-slate-300' }, currentStep.desc),
+                  h('p', { className: 'text-sm text-slate-700' }, currentStep.desc),
                   h('div', { className: 'bg-slate-100 rounded-full h-6 overflow-hidden relative mt-4' },
                     h('div', { className: 'h-full rounded-full transition-all ' + (passed ? 'bg-emerald-500' : 'bg-red-400'), style: { width: Math.min(legSupport, 100) + '%' } }),
-                    h('div', { className: 'absolute inset-0 flex items-center justify-center text-xs font-bold text-white', style: { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } }, legSupport + '% Support')
+                    h('div', { 'aria-hidden': 'true', className: 'absolute top-0 bottom-0 border-l-2 border-dashed border-slate-500', style: { left: '50%' } }),
+                    h('div', { className: 'absolute inset-0 flex items-center justify-center text-xs font-bold text-white', style: { textShadow: '0 1px 2px rgba(0,0,0,0.45)' } }, legSupport + '% Support')
                   ),
-                  h('div', { className: 'absolute left-1/2 top-0 bottom-0 border-l-2 border-dashed border-slate-400', style: { left: '50%' } }),
                   h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Need 51% to pass'),
                   h('div', { className: 'text-4xl mt-4' }, passed ? '\ud83c\udf89' : '\ud83d\udcaa'),
                   h('h4', { className: 'text-lg font-black ' + (passed ? 'text-emerald-700' : 'text-amber-700') }, passed ? 'Your Bill Passed!' : 'Your Bill Did Not Pass'),
-                  h('p', { className: 'text-sm text-slate-300' }, passed ? 'Congratulations! Your coalition-building and strong committee answers made the difference. This is how democracy works.' : 'Your bill fell short of 51%. Consider building a broader coalition and preparing stronger evidence next time. Many great bills take multiple attempts to pass.'),
+                  h('p', { className: 'text-sm text-slate-700' }, passed ? 'Congratulations! Your coalition-building and strong committee answers made the difference. This is how democracy works.' : 'Your bill fell short of 51%. Consider building a broader coalition and preparing stronger evidence next time. Many great bills take multiple attempts to pass.'),
                   h('button', { 'aria-label': 'Complete Simulation',
                     onClick: function() {
                       upd('simDone', true);
                       awardBadge('civic_simulator');
-                      ctx.awardXP(20);
+                      _xpOnce('sim_leg_complete', 20);
                       if (passed) ctx.celebrate();
                     },
                     className: 'px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 mt-2'
@@ -1828,13 +1873,13 @@ window.SelHub = window.SelHub || {
               });
               return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
                 h('div', { className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
-                h('h4', { className: 'text-lg font-black text-slate-100' }, 'School Council Results!'),
+                h('h4', { className: 'text-lg font-black text-slate-900' }, 'School Council Results!'),
                 h('div', { className: 'flex justify-center gap-6' },
                   h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\ude0a'), h('div', { className: 'text-sm font-bold ' + (totalH >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalH >= 0 ? '+' : '') + totalH), h('div', { className: 'text-xs text-slate-600' }, 'Happiness')),
                   h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udcda'), h('div', { className: 'text-sm font-bold ' + (totalL >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalL >= 0 ? '+' : '') + totalL), h('div', { className: 'text-xs text-slate-600' }, 'Learning')),
                   h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udc9a'), h('div', { className: 'text-sm font-bold ' + (totalHe >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalHe >= 0 ? '+' : '') + totalHe), h('div', { className: 'text-xs text-slate-600' }, 'Health'))
                 ),
-                h('p', { className: 'text-sm text-slate-300' }, 'Every decision has trade-offs. Great civic leaders think about how their choices affect everyone, not just themselves.'),
+                h('p', { className: 'text-sm text-slate-700' }, 'Every decision has trade-offs. Great civic leaders think about how their choices affect everyone, not just themselves.'),
                 h('button', { 'aria-label': 'Try Again',
                   onClick: function() { updMulti({ simStep: 0, simChoices: {}, simDone: false }); },
                   className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
@@ -1850,7 +1895,7 @@ window.SelHub = window.SelHub || {
               return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 space-y-4' },
                 h('div', { className: 'text-center' },
                   h('div', { className: 'text-4xl' }, '\ud83d\udcb0'),
-                  h('h4', { className: 'text-lg font-black text-slate-100' }, 'Budget Results: Community Reactions')
+                  h('h4', { className: 'text-lg font-black text-slate-900' }, 'Budget Results: Community Reactions')
                 ),
                 cats.map(function(cat) {
                   var val = alloc[cat.id] || 0;
@@ -1877,8 +1922,8 @@ window.SelHub = window.SelHub || {
             if (gradeBand === 'high') {
               return h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-6 text-center space-y-4' },
                 h('div', { className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
-                h('h4', { className: 'text-lg font-black text-slate-100' }, 'Legislative Simulation Complete!'),
-                h('p', { className: 'text-sm text-slate-300' }, 'You experienced the full legislative process: drafting, coalition-building, committee testimony, and the floor vote. Real democracy requires patience, persuasion, and persistence.'),
+                h('h4', { className: 'text-lg font-black text-slate-900' }, 'Legislative Simulation Complete!'),
+                h('p', { className: 'text-sm text-slate-700' }, 'You experienced the full legislative process: drafting, coalition-building, committee testimony, and the floor vote. Real democracy requires patience, persuasion, and persistence.'),
                 h('button', { 'aria-label': 'Try Again',
                   onClick: function() { updMulti({ legStep: 0, legBill: null, legAllies: [], legAnswers: {}, legSupport: 0, simDone: false }); },
                   className: 'px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700'
@@ -1917,7 +1962,7 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'space-y-2' },
               surveyTemplates.map(function(tmpl, ti) {
                 var alreadyAdded = surveyQuestions.some(function(sq) { return sq.q === tmpl.q; });
-                return h('button', { 'aria-label': 'Added',
+                return h('button', { 'aria-label': (alreadyAdded ? 'Added: ' : 'Add template question: ') + tmpl.q,
                   key: ti,
                   disabled: alreadyAdded,
                   onClick: function() {
@@ -2018,14 +2063,22 @@ window.SelHub = window.SelHub || {
                   });
                   text += '\nThank you for completing this survey!\n';
                   if (window.SelHub && window.SelHub.copyText) {
-                    window.SelHub.copyText(text).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
-                    addToast('Survey copied to clipboard! Share it with your community.', 'success');
+                    window.SelHub.copyText(text).then(function(ok) {
+                      if (ok) {
+                        addToast('Survey copied to clipboard! Share it with your community.', 'success');
+                        awardBadge('survey_creator');
+                        upd('surveyExported', true);
+                        _xpOnce('survey_export', 15);
+                      } else if (typeof addToast === 'function') {
+                        addToast(window.SelHub.COPY_UNAVAILABLE, 'info');
+                      }
+                    }).catch(function() { addToast('Could not copy survey. Try again.', 'error'); });
                   } else {
                     addToast('Survey generated with ' + surveyQuestions.length + ' questions.', 'success');
+                    awardBadge('survey_creator');
+                    upd('surveyExported', true);
+                    _xpOnce('survey_export', 15);
                   }
-                  awardBadge('survey_creator');
-                  upd('surveyExported', true);
-                  ctx.awardXP(15);
                 },
                 className: 'flex-1 px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
               }, '\ud83d\udccb Export Survey as Text'),
@@ -2083,10 +2136,21 @@ window.SelHub = window.SelHub || {
                   var isActive = s.id === activeSection.id;
                   return h('button', {
                     key: s.id,
+                    'data-rights-sec': s.id,
                     role: 'tab',
                     'aria-selected': isActive,
+                    tabIndex: isActive ? 0 : -1,
                     'aria-label': s.label + (sectionDone ? ' (complete)' : ''),
                     onClick: function() { updMulti({ rightsSection: s.id, rightsIdx: 0, rightsScenarioAnswer: '' }); },
+                    onKeyDown: function(e) {
+                      if (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+                      e.preventDefault();
+                      var nextIdx = e.key === 'Home' ? 0 : e.key === 'End' ? sections.length - 1 : (si + ((e.key === 'ArrowLeft' || e.key === 'ArrowUp') ? -1 : 1) + sections.length) % sections.length;
+                      var nextSec = sections[nextIdx];
+                      updMulti({ rightsSection: nextSec.id, rightsIdx: 0, rightsScenarioAnswer: '' });
+                      var nextBtn = e.currentTarget && e.currentTarget.parentNode && e.currentTarget.parentNode.querySelector ? e.currentTarget.parentNode.querySelector('[data-rights-sec="' + nextSec.id + '"]') : null;
+                      if (nextBtn && nextBtn.focus) nextBtn.focus();
+                    },
                     className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ' +
                       (isActive ? 'bg-white text-indigo-700 shadow-sm' : sectionDone ? 'text-emerald-700' : 'text-slate-600 hover:text-slate-800')
                   }, s.icon + ' ' + s.label);
@@ -2206,7 +2270,7 @@ window.SelHub = window.SelHub || {
                   className: 'px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700'
                 }, 'Next Section: ' + sections[activeSectionIdx + 1].label + ' \u2192') : allExplored ? h('button', {
                   'aria-label': 'Complete',
-                  onClick: function() { awardBadge('rights_scholar'); ctx.awardXP(15); addToast('You have explored all of Rights & Dissent.', 'success'); ctx.celebrate(); },
+                  onClick: function() { awardBadge('rights_scholar'); _xpOnce('rights_complete', 15); addToast('You have explored all of Rights & Dissent.', 'success'); ctx.celebrate(); },
                   className: 'px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800'
                 }, '\u2728 Complete') : h('div', { className: 'text-xs text-slate-300 italic' }, 'Visit every item to finish')
               )
@@ -2231,7 +2295,7 @@ window.SelHub = window.SelHub || {
                       }
                     },
                     className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ' +
-                      (rightsIdx === ri ? 'bg-white text-indigo-700 shadow-sm' : isExplored ? 'text-emerald-600/70' : 'text-slate-300/60 hover:text-slate-700')
+                      (rightsIdx === ri ? 'bg-white text-indigo-700 shadow-sm' : isExplored ? 'text-emerald-700' : 'text-slate-600 hover:text-slate-800')
                   }, r.icon + ' ' + (ri + 1));
                 })
               ),
@@ -2303,7 +2367,7 @@ window.SelHub = window.SelHub || {
                     }, 'Next Right \u2192') : h('button', { 'aria-label': 'Complete Rights Explorer',
                       onClick: function() {
                         awardBadge('rights_scholar');
-                        ctx.awardXP(15);
+                        _xpOnce('rights_explorer_complete', 15);
                         addToast('You have explored all rights for your grade level!', 'success');
                         ctx.celebrate();
                       },
@@ -2328,11 +2392,11 @@ window.SelHub = window.SelHub || {
             h('h4', { className: 'text-xs font-bold text-teal-600 uppercase tracking-widest' }, 'Choose a Project Template'),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               SERVICE_TEMPLATES.map(function(tmpl) {
-                return h('button', { 'aria-label': tmpl.title.split(' ')[0],
+                return h('button', { 'aria-label': tmpl.title,
                   key: tmpl.id,
                   onClick: function() {
                     upd('serviceTemplate', tmpl.id);
-                    ctx.awardXP(5);
+                    _xpOnce('service_tmpl_' + tmpl.id, 5);
                   },
                   className: 'p-4 rounded-2xl border-2 border-slate-200 bg-white text-left transition-all hover:border-teal-600 hover:shadow-md hover:scale-[1.01]'
                 },
@@ -2351,7 +2415,7 @@ window.SelHub = window.SelHub || {
             var currentPhase = SERVICE_PHASES[servicePhase];
             var currentStep = tmpl.steps[servicePhase];
             return h('div', { className: 'space-y-4' },
-              h('button', { 'aria-label': tmpl.title,
+              h('button', { 'aria-label': 'Back to templates',
                 onClick: function() { updMulti({ serviceTemplate: null, servicePhase: 0, serviceNotes: {}, serviceHours: 0 }); },
                 className: 'text-xs text-teal-600 font-bold hover:text-teal-800 flex items-center gap-1'
               }, h(ArrowLeft, { size: 14 }), 'Back to templates'),
@@ -2445,7 +2509,7 @@ window.SelHub = window.SelHub || {
             var tmpl = SERVICE_TEMPLATES.find(function(t) { return t.id === serviceTemplate; });
             return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
               h('div', { className: 'text-4xl' }, '\ud83c\udfc5'),
-              h('h4', { className: 'text-lg font-black text-slate-100' }, 'Service Project Complete!'),
+              h('h4', { className: 'text-lg font-black text-slate-900' }, 'Service Project Complete!'),
               tmpl && h('p', { className: 'text-sm font-bold text-teal-700' }, tmpl.title),
               h('div', { className: 'flex justify-center gap-6' },
                 h('div', null,
@@ -2464,7 +2528,7 @@ window.SelHub = window.SelHub || {
                 h('p', { className: 'text-xs text-slate-600' }, '\u2022 What I learned: ' + (serviceNotes.reflect || '(complete the Reflect phase above)')),
                 h('p', { className: 'text-xs text-slate-600' }, '\u2022 What I would do differently: ________')
               ),
-              h('p', { className: 'text-sm text-slate-300' }, 'Service is not just about helping others \u2014 it transforms you too. The skills you built here will serve you for a lifetime.'),
+              h('p', { className: 'text-sm text-slate-700' }, 'Service is not just about helping others \u2014 it transforms you too. The skills you built here will serve you for a lifetime.'),
               h('button', { 'aria-label': 'Plan Another Project',
                 onClick: function() { updMulti({ serviceTemplate: null, servicePhase: 0, serviceNotes: {}, serviceHours: 0, serviceDone: false }); },
                 className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
@@ -2505,8 +2569,8 @@ window.SelHub = window.SelHub || {
                     if (showResult && isCorrect) btnClass += 'border-emerald-400 bg-emerald-50 text-emerald-800 font-bold';
                     else if (showResult && isChosen && !isCorrect) btnClass += 'border-red-400 bg-red-50 text-red-800';
                     else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-600 hover:bg-teal-50 text-slate-700';
-                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-300';
-                    return h('button', { 'aria-label': '\ud83d\udca1 ' + question.explain,
+                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-600';
+                    return h('button', { 'aria-label': String.fromCharCode(65 + oi) + '. ' + opt,
                       key: oi,
                       disabled: quizAnswered,
                       onClick: function() {
@@ -2548,9 +2612,9 @@ window.SelHub = window.SelHub || {
           // Quiz results
           quizDone && h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
             h('div', { className: 'text-4xl' }, quizScore === quizQuestions.length ? '\ud83c\udfc6' : quizScore >= quizQuestions.length * 0.7 ? '\ud83c\udf1f' : '\ud83d\udcaa'),
-            h('h4', { className: 'text-lg font-black text-slate-100' }, 'Quiz Complete!'),
+            h('h4', { className: 'text-lg font-black text-slate-900' }, 'Quiz Complete!'),
             h('p', { className: 'text-2xl font-bold text-teal-700' }, quizScore + ' / ' + quizQuestions.length),
-            h('p', { className: 'text-sm text-slate-300' },
+            h('p', { className: 'text-sm text-slate-700' },
               quizScore === quizQuestions.length ? 'Perfect score! You are a civic knowledge champion!' :
               quizScore >= quizQuestions.length * 0.7 ? 'Great job! You have a strong understanding of civic concepts.' :
               'Good effort! Keep learning \u2014 civic knowledge is a superpower.'
@@ -2594,7 +2658,7 @@ window.SelHub = window.SelHub || {
                     var btnClass = 'w-full p-3 rounded-xl border-2 text-left text-sm transition-all ';
                     if (showResult && isChosen) btnClass += (choice.score >= 4 ? 'border-emerald-400 bg-emerald-50' : choice.score >= 3 ? 'border-amber-400 bg-amber-50' : 'border-red-600 bg-red-50') + ' text-slate-800';
                     else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-indigo-600 hover:bg-indigo-50 text-slate-800';
-                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-300';
+                    else btnClass += 'border-slate-200 bg-slate-50 text-slate-600';
                     return h('div', { key: ci },
                       h('button', { 'aria-label': choice.text,
                         disabled: scenarioChosen,
@@ -2632,9 +2696,9 @@ window.SelHub = window.SelHub || {
           // Scenario results
           scenarioDone && h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-6 text-center space-y-4' },
             h('div', { className: 'text-4xl' }, '\ud83c\udfc5'),
-            h('h4', { className: 'text-lg font-black text-slate-100' }, 'Scenarios Complete!'),
+            h('h4', { className: 'text-lg font-black text-slate-900' }, 'Scenarios Complete!'),
             h('p', { className: 'text-2xl font-bold text-indigo-700' }, scenarioScore + ' / ' + (scenarios.length * 5) + ' points'),
-            h('p', { className: 'text-sm text-slate-300' },
+            h('p', { className: 'text-sm text-slate-700' },
               scenarioScore >= scenarios.length * 4 ? 'Outstanding civic leadership! You consistently chose the most effective approaches.' :
               scenarioScore >= scenarios.length * 3 ? 'Great civic instincts! You are on your way to being a skilled advocate.' :
               'Good start! Civic skills grow with practice. Try again and explore different choices.'
@@ -2672,7 +2736,8 @@ window.SelHub = window.SelHub || {
           function moveSh(id, axis, delta) {
             updateStakeholders(stakeholders.map(function(s) {
               if (s.id !== id) return s;
-              var v = (s[axis] || 50) + delta;
+              var base = (typeof s[axis] === 'number' && isFinite(s[axis])) ? s[axis] : 50;
+              var v = base + delta;
               return Object.assign({}, s, axis === 'x' ? { x: Math.max(0, Math.min(100, v)) } : { y: Math.max(0, Math.min(100, v)) });
             }));
           }
@@ -2920,6 +2985,9 @@ window.SelHub = window.SelHub || {
           }
           function saveDraft() {
             if (!currentDraft.topic || !currentDraft.topic.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
+            var draftCombined = ['topic','otherView','commonGround','myPoint','evidence','question'].map(function(k) { return currentDraft[k] || ''; }).join(' ').trim();
+            var blockedMsg = _syncSafetyBlock(draftCombined, 'talkprep');
+            if (blockedMsg) { if (addToast) addToast(blockedMsg, 'info'); return; }
             upd('talkTopics', topics.concat([Object.assign({}, currentDraft, { id: 't_' + Date.now(), savedOn: new Date().toISOString().slice(0, 10) })]));
             upd('talkDraft', { topic: '', otherView: '', commonGround: '', myPoint: '', evidence: '', question: '' });
             if (addToast) addToast('Conversation prep saved', 'success');
@@ -2966,7 +3034,7 @@ window.SelHub = window.SelHub || {
               topics.slice().reverse().slice(0, 5).map(function(t) {
                 return h('details', { key: t.id, className: 'bg-white rounded-lg border border-slate-300 p-3 mb-2' },
                   h('summary', { className: 'cursor-pointer text-sm font-bold text-slate-700' }, t.topic.substring(0, 80) + (t.topic.length > 80 ? '...' : '') + ' · ' + t.savedOn),
-                  h('div', { className: 'mt-2 space-y-1 text-xs' },
+                  h('div', { className: 'mt-2 space-y-1 text-xs text-slate-700' },
                     t.otherView && h('div', null, h('strong', null, 'Other view: '), t.otherView),
                     t.commonGround && h('div', null, h('strong', null, 'Common: '), t.commonGround),
                     t.myPoint && h('div', null, h('strong', null, 'My point: '), t.myPoint),
@@ -3038,7 +3106,9 @@ window.SelHub = window.SelHub || {
             }),
             d.visionText && d.visionText.length > 20 && h('button', { 'aria-label': 'Save My Vision',
               onClick: function() {
-                ctx.awardXP(15);
+                var blockedMsg = _syncSafetyBlock(d.visionText, 'vision');
+                if (blockedMsg) { addToast(blockedMsg, 'info'); return; }
+                _xpOnce('vision_save', 15);
                 addToast('Your vision matters. Hold onto it. \ud83c\udf05', 'success');
                 awardBadge('hope_keeper');
                 ctx.celebrate();

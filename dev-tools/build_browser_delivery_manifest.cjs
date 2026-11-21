@@ -33,8 +33,10 @@ function assetPath(value) {
 }
 
 function readRegular(root, relative) {
+  const resolvedRoot = path.resolve(root);
+  if (fs.lstatSync(resolvedRoot).isSymbolicLink()) throw new Error(`Asset root must not be a symlink: ${resolvedRoot}`);
   const parts = relative.split('/');
-  let current = root;
+  let current = resolvedRoot;
   for (const part of parts) {
     current = path.join(current, part);
     const stat = fs.lstatSync(current);
@@ -57,7 +59,7 @@ function staticStringArray(source, name) {
 
 function discoverAssets(root = ROOT) {
   const publicRoot = path.join(root, 'desktop', 'web-app', 'public');
-  const source = fs.readFileSync(path.join(root, 'build.js'), 'utf8');
+  const source = readRegular(root, 'build.js').toString('utf8');
   const selected = new Set(EXTRA_BOOT_ASSETS);
   for (const name of fs.readdirSync(root)) {
     if (/^[A-Za-z0-9][A-Za-z0-9_-]*(?:_module|_loader)\.js$/.test(name) && fs.existsSync(path.join(publicRoot, name))) selected.add(name);
@@ -250,9 +252,12 @@ function run(argv = process.argv.slice(2)) {
     if (!HOST_FILES.includes(host)) throw new Error('Select a known canonical host or generated host mirror');
     const target = path.resolve(root, host);
     if (target === root || !target.startsWith(root + path.sep)) throw new Error('Host path must stay inside the selected root');
-    const source = fs.readFileSync(target, 'utf8');
+    const source = readRegular(root, host).toString('utf8');
     const next = replaceHostBlock(source, block);
-    if (sync) fs.writeFileSync(target, next);
+    if (sync) {
+      if (readRegular(root, host).toString('utf8') !== source) throw new Error('Host changed while preparing browser delivery policy');
+      if (next !== source) require('./write_generated_atomic.cjs')(target, next);
+    }
     else if (next !== source) throw new Error('Embedded delivery policy is stale; use explicit --sync after reviewing the asset bytes');
   } else if (sync) throw new Error('--sync requires an explicit --host path');
   console.log(`Browser delivery manifest ${manifest.releaseId}: ${Object.keys(manifest.assets).length} assets; immutable fallback ${manifest.fallbackCommit || 'disabled'}${host ? (sync ? '; host synchronized' : '; host current') : '; read-only validation'}`);

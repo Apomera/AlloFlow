@@ -136,8 +136,8 @@ async function dispatchWorkflow(
       id: job.workflow_id,
       params: { jobId: job.id },
       retention: {
-        successRetention: "1 day",
-        errorRetention: "7 days",
+        successRetention: "8 days",
+        errorRetention: "8 days",
       },
     });
     await clearDispatchPending(env, job.id);
@@ -266,6 +266,7 @@ export async function remediationReport(
     object.httpMetadata?.contentType !== "application/json" ||
     checksumHex(object.checksums.sha256) !== job.report_sha256
   ) {
+    await object?.body?.cancel().catch(() => undefined);
     throw new PilotError("remediation_report_invalid", 502);
   }
   let value: unknown;
@@ -354,6 +355,16 @@ function workflowIsStopped(status: string): boolean {
   return TERMINAL_WORKFLOW_STATES.has(status);
 }
 
+function isWorkflowInstanceNotFound(error: unknown): boolean {
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : "";
+  return /instance\.not_found|not_found/i.test(message);
+}
+
 async function confirmWorkflowStopped(
   env: PilotEnv,
   job: JobRow,
@@ -374,7 +385,10 @@ async function confirmWorkflowStopped(
     }
     status = await instance.status();
     return workflowIsStopped(status.status);
-  } catch {
+  } catch (error) {
+    if (isWorkflowInstanceNotFound(error)) {
+      return true;
+    }
     return false;
   }
 }
@@ -533,72 +547,81 @@ export async function cleanupInstitutionPilot(
   }
 
   for (const job of await listCleanupJobs(env, config)) {
-    if (!(await stopExecution(env, job))) {
-      jobsPendingStop += 1;
-      continue;
-    }
-    const outputExpired =
-      !job.output_expires_at || job.output_expires_at <= nowSeconds();
-    if (job.status === "completed" && !outputExpired) {
-      if (!env.DOCUMENTS) {
-        throw new PilotError("pilot_not_configured", 503);
-      }
-      const current = await getInternalJob(env, job.id);
-      if (
-        current.status !== "completed" ||
-        current.attempt_id !== job.attempt_id ||
-        current.input_key !== job.input_key ||
-        current.checkpoint_key !== job.checkpoint_key
-      ) {
+    try {
+      if (!(await stopExecution(env, job))) {
         jobsPendingStop += 1;
         continue;
       }
-      if (current.checkpoint_key && !current.attempt_id) {
-        jobsPendingStop += 1;
+      const outputExpired =
+        !job.output_expires_at || job.output_expires_at <= nowSeconds();
+      if (job.status === "completed" && !outputExpired) {
+        if (!env.DOCUMENTS) {
+          throw new PilotError("pilot_not_configured", 503);
+        }
+        const current = await getInternalJob(env, job.id);
+        if (
+          current.status !== "completed" ||
+          current.attempt_id !== job.attempt_id ||
+          current.input_key !== job.input_key ||
+          current.checkpoint_key !== job.checkpoint_key
+        ) {
+          jobsPendingStop += 1;
+          continue;
+        }
+        if (current.checkpoint_key && !current.attempt_id) {
+          jobsPendingStop += 1;
+          continue;
+        }
+        if (current.input_key) {
+          await env.DOCUMENTS.delete(current.input_key);
+        }
+        // Always sweep the bounded checkpoint prefix before removing the input.
+        // A runner can crash after its immutable R2 PUT but before the D1 pointer
+        // CAS, so checkpoint_key === null does not prove the prefix is empty.
+        await deleteCheckpointObjects(env.DOCUMENTS, current);
+        if (current.input_key) {
+          await finalizeInputDeletion(
+            env,
+            current.id,
+            current.attempt_id,
+          );
+        }
+        if (current.checkpoint_key && current.attempt_id) {
+          await clearJobCheckpoint(
+            env,
+            current.id,
+            current.attempt_id,
+          );
+        }
+        jobsCleaned += 1;
         continue;
       }
-      if (current.input_key) {
-        await env.DOCUMENTS.delete(current.input_key);
-      }
-      // Always sweep the bounded checkpoint prefix before removing the input.
-      // A runner can crash after its immutable R2 PUT but before the D1 pointer
-      // CAS, so checkpoint_key === null does not prove the prefix is empty.
-      await deleteCheckpointObjects(env.DOCUMENTS, current);
-      if (current.input_key) {
-        await finalizeInputDeletion(
-          env,
-          current.id,
-          current.attempt_id,
-        );
-      }
-      if (current.checkpoint_key && current.attempt_id) {
-        await clearJobCheckpoint(
-          env,
-          current.id,
-          current.attempt_id,
-        );
+      await deleteArtifacts(env, job);
+      if (job.status === "cancelling") {
+        await finalizeCancel(env, job.id, job.attempt_id);
+        await clearTerminalArtifacts(env, job.id, job.attempt_id);
+      } else if (job.status === "failed" || job.status === "cancelled") {
+        await clearTerminalArtifacts(env, job.id, job.attempt_id);
+      } else {
+        await finalizeDelete(env, job.id, job.attempt_id);
       }
       jobsCleaned += 1;
-      continue;
+    } catch {
+      jobsPendingStop += 1;
+      console.warn(JSON.stringify({ event: "pilot_cleanup_job_failed", jobId: job.id }));
     }
-    await deleteArtifacts(env, job);
-    if (job.status === "cancelling") {
-      await finalizeCancel(env, job.id, job.attempt_id);
-      await clearTerminalArtifacts(env, job.id, job.attempt_id);
-    } else if (job.status === "failed" || job.status === "cancelled") {
-      await clearTerminalArtifacts(env, job.id, job.attempt_id);
-    } else {
-      await finalizeDelete(env, job.id, job.attempt_id);
-    }
-    jobsCleaned += 1;
   }
 
   for (const upload of await listExpiredUploads(env)) {
-    if (env.DOCUMENTS) {
-      await env.DOCUMENTS.delete(upload.object_key);
+    try {
+      if (env.DOCUMENTS) {
+        await env.DOCUMENTS.delete(upload.object_key);
+      }
+      await markUploadDeleted(env, upload.id);
+      uploadsCleaned += 1;
+    } catch {
+      console.warn(JSON.stringify({ event: "pilot_cleanup_upload_failed", uploadId: upload.id }));
     }
-    await markUploadDeleted(env, upload.id);
-    uploadsCleaned += 1;
   }
 
   await purgeOldMetadata(env, config);

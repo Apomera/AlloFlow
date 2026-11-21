@@ -6,7 +6,7 @@ description: Scope guard for AlloFlow UDL Platform work — prevents cross-conta
 
 ## What IS AlloFlow
 - The UDL (Universal Design for Learning) literacy and education platform
-- Lives in: `AlloFlowANTI.txt` (~29K lines, single-file React monolith; heavy features extracted into ~250 CDN modules)
+- Lives in: `AlloFlowANTI.txt` (~50K lines as of Nov 2026, single-file React monolith; heavy features extracted into ~220 `build.js` CDN modules — current counts in `docs/FEATURE_REGISTRY_INVENTORY.md`)
 - Runs in: Google Gemini Canvas
 - Core features: Word Sounds Studio (phonics), content analysis, glossary, quiz, flashcards, 
   concept maps, story/adventure mode, simplified text, AlloBot chat guide, RTI monitoring,

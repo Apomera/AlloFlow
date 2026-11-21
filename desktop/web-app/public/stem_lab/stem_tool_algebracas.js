@@ -1148,7 +1148,7 @@ onSpeak: function(formats) {
         };
 
         var BUILDER_PALETTE = [
-          { v: '1', cat: 'num' }, { v: '2', cat: 'num' }, { v: '3', cat: 'num' },
+          { v: '0', cat: 'num' }, { v: '1', cat: 'num' }, { v: '2', cat: 'num' }, { v: '3', cat: 'num' },
           { v: '4', cat: 'num' }, { v: '5', cat: 'num' }, { v: '6', cat: 'num' },
           { v: '7', cat: 'num' }, { v: '8', cat: 'num' }, { v: '9', cat: 'num' },
           { v: 'x', cat: 'var' }, { v: 'y', cat: 'var' },
@@ -1323,7 +1323,19 @@ onSpeak: function(formats) {
           upd('builderTiles', nt);
         };
         var builderToString = function() {
-          return builderTiles.map(function(t) { return t.v; }).join(' ');
+          var out = '';
+          for (var i = 0; i < builderTiles.length; i++) {
+            var cur = builderTiles[i];
+            var prev = i > 0 ? builderTiles[i - 1] : null;
+            if (prev) {
+              var bothDigits = prev.cat === 'num' && cur.cat === 'num';
+              var numThenVar = prev.cat === 'num' && (cur.cat === 'var' || cur.v === 'x\u00B2' || cur.v === 'x\u00B3');
+              var noSpace = bothDigits || numThenVar || prev.v === '(' || cur.v === ')' || prev.v === '\u221A';
+              if (!noSpace) out += ' ';
+            }
+            out += cur.v;
+          }
+          return out;
         };
         var sendBuilderToSolver = function() {
           var eq = builderToString();
@@ -1670,10 +1682,14 @@ onSpeak: function(formats) {
                 var r0 = __alloCASPure.evalAt(parsed.rhs, 0), r1 = __alloCASPure.evalAt(parsed.rhs, 1);
                 if (!isFinite(l0) || !isFinite(l1) || !isFinite(r0) || !isFinite(r1)) return null;
                 var mL = l1 - l0, bL = l0, mR = r1 - r0, bR = r0;
-                var solX = work.kind === 'unique' ? parseFloat(work.answer) : 0;
-                if (!isFinite(solX)) {
-                  var partsF = String(work.answer || '').split('/');
-                  solX = partsF.length === 2 && parseFloat(partsF[1]) ? parseFloat(partsF[0]) / parseFloat(partsF[1]) : 0;
+                var solX = 0;
+                if (work.kind === 'unique') {
+                  var ansStr = String(work.answer || '').trim();
+                  var partsF = ansStr.split('/');
+                  solX = partsF.length === 2 && parseFloat(partsF[1])
+                    ? parseFloat(partsF[0]) / parseFloat(partsF[1])
+                    : parseFloat(ansStr);
+                  if (!isFinite(solX)) solX = 0;
                 }
                 var solY = mL * solX + bL;
                 var xSpan = Math.max(6, Math.ceil(Math.abs(solX) * 1.6) + 2);
@@ -1701,15 +1717,45 @@ onSpeak: function(formats) {
                     role: 'img',
                     'aria-label': t('stem.algebraCAS.graph_aria', 'Linear graph comparing left side and right side of ') + expression
                   },
-                    h('rect', { x: pX, y: pY, width: VW - 2 * pX, height: VH - 2 * pY, fill: isContrast ? '#000000' : (isDark ? '#1e293b' : '#ffffff'), stroke: BORDER, strokeWidth: 1 }),
-                    x0px >= pX && x0px <= VW - pX && h('line', { x1: x0px, y1: pY, x2: x0px, y2: VH - pY, stroke: axisCol, strokeWidth: 1.2, strokeDasharray: '3 3' }),
-                    y0px >= pY && y0px <= VH - pY && h('line', { x1: pX, y1: y0px, x2: VW - pX, y2: y0px, stroke: axisCol, strokeWidth: 1.2, strokeDasharray: '3 3' }),
-                    h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: colL, strokeWidth: 2.5 }),
-                    h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: colR, strokeWidth: 2.5, strokeDasharray: work.kind === 'identity' ? '6 4' : 'none' }),
+                    h('defs', null,
+                      h('linearGradient', { id: 'cas-plot-well-bg', x1: '0', y1: '0', x2: '0', y2: '1' },
+                        h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : (isDark ? '#080f20' : '#f8fafc') }),
+                        h('stop', { offset: '55%', stopColor: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff') }),
+                        h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : (isDark ? '#070d1c' : '#f1f5f9') })
+                      ),
+                      h('clipPath', { id: 'cas-plot-clip' },
+                        h('rect', { x: pX, y: pY, width: VW - 2 * pX, height: VH - 2 * pY, rx: 5 })
+                      )
+                    ),
+                    h('rect', { x: pX, y: pY, width: VW - 2 * pX, height: VH - 2 * pY, rx: 5, fill: isContrast ? '#000000' : 'url(#cas-plot-well-bg)', stroke: isContrast ? '#ffff00' : (isDark ? 'rgba(129,140,248,0.34)' : 'rgba(99,102,241,0.28)'), strokeWidth: 1.2 }),
+                    !isContrast && [0.2, 0.4, 0.6, 0.8].map(function(f) {
+                      var gxPos = pX + f * (VW - 2 * pX), gyPos = pY + f * (VH - 2 * pY);
+                      return h('g', { key: 'cg' + f },
+                        h('line', { x1: gxPos, y1: pY, x2: gxPos, y2: VH - pY, stroke: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(148,163,184,0.24)', strokeWidth: 0.8 }),
+                        h('line', { x1: pX, y1: gyPos, x2: VW - pX, y2: gyPos, stroke: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(148,163,184,0.24)', strokeWidth: 0.8 })
+                      );
+                    }),
+                    !isContrast && x0px >= pX && x0px <= VW - pX && h('line', { x1: x0px, y1: pY, x2: x0px, y2: VH - pY, stroke: isDark ? 'rgba(129,140,248,0.2)' : 'rgba(99,102,241,0.12)', strokeWidth: 4 }),
+                    !isContrast && y0px >= pY && y0px <= VH - pY && h('line', { x1: pX, y1: y0px, x2: VW - pX, y2: y0px, stroke: isDark ? 'rgba(129,140,248,0.2)' : 'rgba(99,102,241,0.12)', strokeWidth: 4 }),
+                    x0px >= pX && x0px <= VW - pX && h('line', { x1: x0px, y1: pY, x2: x0px, y2: VH - pY, stroke: axisCol, strokeWidth: 1.4, strokeDasharray: '3 3' }),
+                    y0px >= pY && y0px <= VH - pY && h('line', { x1: pX, y1: y0px, x2: VW - pX, y2: y0px, stroke: axisCol, strokeWidth: 1.4, strokeDasharray: '3 3' }),
+                    !isContrast && x0px >= pX && x0px <= VW - pX && y0px >= pY && y0px <= VH - pY && h('circle', { cx: x0px, cy: y0px, r: 3.5, fill: 'none', stroke: axisCol, strokeWidth: 1.1, opacity: 0.65 }),
+                    h('g', { clipPath: 'url(#cas-plot-clip)' },
+                      !isContrast && h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: colL, strokeWidth: 6.5, strokeLinecap: 'round', opacity: isDark ? 0.24 : 0.14 }),
+                      h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: colL, strokeWidth: 2.6, strokeLinecap: 'round' }),
+                      !isContrast && h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: '#ffffff', strokeWidth: 0.8, strokeLinecap: 'round', opacity: isDark ? 0.52 : 0.36 }),
+                      !isContrast && h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: colR, strokeWidth: 6.5, strokeLinecap: 'round', opacity: isDark ? 0.24 : 0.14 }),
+                      h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: colR, strokeWidth: 2.6, strokeLinecap: 'round', strokeDasharray: work.kind === 'identity' ? '6 4' : 'none' }),
+                      !isContrast && work.kind !== 'identity' && h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: '#ffffff', strokeWidth: 0.8, strokeLinecap: 'round', opacity: isDark ? 0.52 : 0.36 })
+                    ),
                     work.kind === 'unique' && h('g', null,
                       h('line', { x1: sxPx, y1: syPx, x2: sxPx, y2: VH - pY, stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 1.4, strokeDasharray: '3 2' }),
-                      h('circle', { cx: sxPx, cy: syPx, r: 5.5, fill: isContrast ? '#00ff00' : '#f59e0b', stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1.8 }),
-                      h('text', { x: Math.max(pX + 26, Math.min(VW - pX - 26, sxPx)), y: Math.max(pY + 12, syPx - 9), textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: isContrast ? '#ffff00' : TEXT }, 'x = ' + work.answer)
+                      !isContrast && h('line', { x1: pX, y1: syPx, x2: sxPx, y2: syPx, stroke: '#f59e0b', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.55 }),
+                      !isContrast && h('path', { d: 'M' + (sxPx - 11) + ' ' + syPx + 'H' + (sxPx + 11) + 'M' + sxPx + ' ' + (syPx - 11) + 'V' + (syPx + 11), stroke: 'rgba(245,158,11,0.55)', strokeWidth: 1 }),
+                      !isContrast && h('circle', { cx: sxPx, cy: syPx, r: 10.5, fill: '#f59e0b', opacity: isDark ? 0.24 : 0.16 }),
+                      h('circle', { cx: sxPx, cy: syPx, r: 5.5, fill: isContrast ? '#00ff00' : '#f59e0b', stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1.8, style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 4px rgba(245,158,11,0.8))' } }),
+                      !isContrast && h('circle', { cx: sxPx - 1.4, cy: syPx - 1.4, r: 1.4, fill: '#ffffff', opacity: 0.85 }),
+                      h('text', { x: Math.max(pX + 26, Math.min(VW - pX - 26, sxPx)), y: Math.max(pY + 12, syPx - 11), textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: isContrast ? '#ffff00' : TEXT }, 'x = ' + work.answer)
                     ),
                     h('text', { x: pX + 4, y: VH - 4, fontSize: 9.5, fontWeight: 700, fill: colL }, '— Left: ' + parsed.lhs),
                     h('text', { x: VW - pX - 4, y: VH - 4, textAnchor: 'end', fontSize: 9.5, fontWeight: 700, fill: colR }, '— Right: ' + parsed.rhs)
@@ -1891,8 +1937,19 @@ onSpeak: function(formats) {
             canvas.style.width = w + 'px';
             canvas.style.height = ht + 'px';
             var c = canvas.getContext('2d');
+            if (!c) return;
             c.setTransform(_acDpr, 0, 0, _acDpr, 0, 0);
             c.clearRect(0, 0, w, ht);
+
+            function casRRect(x, y, rw, rh, rad) {
+              var r = Math.min(rad, rw / 2, rh / 2);
+              c.beginPath();
+              c.moveTo(x + r, y); c.lineTo(x + rw - r, y); c.quadraticCurveTo(x + rw, y, x + rw, y + r);
+              c.lineTo(x + rw, y + rh - r); c.quadraticCurveTo(x + rw, y + rh, x + rw - r, y + rh);
+              c.lineTo(x + r, y + rh); c.quadraticCurveTo(x, y + rh, x, y + rh - r);
+              c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y);
+              c.closePath();
+            }
 
             // Parse sides
             var sides = (scaleEq || '').split('=');
@@ -1905,55 +1962,196 @@ onSpeak: function(formats) {
 
             var cx = w / 2;
             var baseY = ht - 20;
+            var pivotY = baseY - 102;
+            var armLen = Math.min(w * 0.35, 195);
 
-            // Base triangle
-            c.fillStyle = '#475569';
-            c.beginPath(); c.moveTo(cx - 30, baseY); c.lineTo(cx + 30, baseY); c.lineTo(cx, baseY - 40); c.closePath(); c.fill();
+            // Recessed studio balance bench backdrop
+            if (!isContrast && typeof c.createRadialGradient === 'function') {
+              var bgG = c.createRadialGradient(cx, pivotY + 20, 12, cx, ht * 0.55, Math.max(w, ht) * 0.7);
+              if (bgG && typeof bgG.addColorStop === 'function') {
+                bgG.addColorStop(0, scaleSolved ? 'rgba(16,185,129,0.18)' : 'rgba(99,102,241,0.18)');
+                bgG.addColorStop(0.65, 'rgba(15,23,42,0.08)');
+                bgG.addColorStop(1, 'rgba(2,6,23,0.32)');
+                c.fillStyle = bgG; c.fillRect(0, 0, w, ht);
+              }
+            }
 
-            // Raise the beam so both pans and their equation labels fit on phones.
-            c.strokeStyle = '#94a3b8'; c.lineWidth = 4;
-            c.beginPath(); c.moveTo(cx, baseY - 40); c.lineTo(cx, baseY - 100); c.stroke();
-            // Beam
+            // Studio workbench horizon line & calibration protractor arc behind pivot
+            if (!isContrast) {
+              c.strokeStyle = 'rgba(148,163,184,0.18)'; c.lineWidth = 1;
+              c.beginPath(); c.moveTo(16, baseY + 2); c.lineTo(w - 16, baseY + 2); c.stroke();
+              c.strokeStyle = 'rgba(148,163,184,0.22)'; c.lineWidth = 1;
+              c.beginPath(); c.arc(cx, pivotY, 30, Math.PI * 1.18, Math.PI * 1.82); c.stroke();
+              for (var ti = -3; ti <= 3; ti++) {
+                var ang = -Math.PI / 2 + ti * 0.14;
+                var r0 = ti === 0 ? 25 : 27, r1 = ti === 0 ? 34 : 32;
+                c.strokeStyle = ti === 0 ? (Math.abs(tilt) < 0.01 ? '#34d399' : '#94a3b8') : 'rgba(148,163,184,0.34)';
+                c.lineWidth = ti === 0 ? 1.8 : 1;
+                c.beginPath();
+                c.moveTo(cx + Math.cos(ang) * r0, pivotY + Math.sin(ang) * r0);
+                c.lineTo(cx + Math.cos(ang) * r1, pivotY + Math.sin(ang) * r1);
+                c.stroke();
+              }
+            }
+
+            // Grounded contact shadow under fulcrum base
+            if (!isContrast && typeof c.createRadialGradient === 'function') {
+              var shG = c.createRadialGradient(cx, baseY + 2, 4, cx, baseY + 2, 46);
+              if (shG && typeof shG.addColorStop === 'function') {
+                shG.addColorStop(0, 'rgba(2,6,23,0.58)');
+                shG.addColorStop(1, 'rgba(2,6,23,0)');
+                c.save(); c.translate(cx, baseY + 2); c.scale(1, 0.25);
+                c.fillStyle = shG; c.beginPath(); c.arc(0, 0, 46, 0, Math.PI * 2); c.fill();
+                c.restore();
+              }
+            }
+
+            // Brushed metallic fulcrum pedestal & machined central pillar
+            var baseGrad = (!isContrast && typeof c.createLinearGradient === 'function') ? c.createLinearGradient(cx - 34, baseY - 40, cx + 34, baseY) : null;
+            if (baseGrad && typeof baseGrad.addColorStop === 'function') {
+              baseGrad.addColorStop(0, '#64748b');
+              baseGrad.addColorStop(0.45, '#94a3b8');
+              baseGrad.addColorStop(1, '#334155');
+              c.fillStyle = baseGrad;
+            } else { c.fillStyle = isContrast ? '#ffffff' : '#475569'; }
+            c.beginPath(); c.moveTo(cx - 34, baseY); c.lineTo(cx + 34, baseY); c.lineTo(cx + 12, baseY - 38); c.lineTo(cx - 12, baseY - 38); c.closePath(); c.fill();
+            c.strokeStyle = isContrast ? '#ffff00' : 'rgba(226,232,240,0.4)'; c.lineWidth = 1.2; c.stroke();
+
+            // Baseplate lip
+            casRRect(cx - 42, baseY - 5, 84, 7, 3);
+            c.fillStyle = isContrast ? '#ffffff' : '#334155'; c.fill();
+            c.strokeStyle = isContrast ? '#ffff00' : 'rgba(203,213,225,0.45)'; c.lineWidth = 1; c.stroke();
+
+            // Vertical machined column with specular highlight
+            var colGrad = (!isContrast && typeof c.createLinearGradient === 'function') ? c.createLinearGradient(cx - 4, 0, cx + 4, 0) : null;
+            if (colGrad && typeof colGrad.addColorStop === 'function') {
+              colGrad.addColorStop(0, '#475569'); colGrad.addColorStop(0.4, '#e2e8f0'); colGrad.addColorStop(1, '#334155');
+              c.fillStyle = colGrad;
+            } else { c.fillStyle = isContrast ? '#ffffff' : '#94a3b8'; }
+            c.fillRect(cx - 3.5, pivotY, 7, baseY - 38 - pivotY);
+
+            // Tapered metallic/luminous balance beam
+            var beamCol = isContrast ? '#ffff00' : (scaleSolved ? '#22c55e' : '#818cf8');
             c.save();
-            c.translate(cx, baseY - 100);
+            c.translate(cx, pivotY);
             c.rotate(tilt);
-            var beamCol = scaleSolved ? '#22c55e' : '#6366f1';
+            // Balance pointer needle rising into protractor arc
+            c.strokeStyle = scaleSolved ? '#4ade80' : (isContrast ? '#ffff00' : '#cbd5e1');
+            c.lineWidth = 1.8;
+            c.beginPath(); c.moveTo(0, -4); c.lineTo(0, -26); c.stroke();
+            c.fillStyle = scaleSolved ? '#4ade80' : (isContrast ? '#ffff00' : '#f8fafc');
+            c.beginPath(); c.moveTo(0, -30); c.lineTo(-3.2, -23); c.lineTo(3.2, -23); c.closePath(); c.fill();
+
+            // Outer beam glow + brushed metallic tapered bar
             c.save();
-            c.shadowColor = beamCol; c.shadowBlur = scaleSolved ? 16 : 8;
-            c.strokeStyle = beamCol;
-            c.lineWidth = 4;
-            c.beginPath(); c.moveTo(-w * 0.35, 0); c.lineTo(w * 0.35, 0); c.stroke();
+            c.shadowColor = beamCol; c.shadowBlur = isContrast ? 0 : (scaleSolved ? 18 : 10);
+            var bmGrad = (!isContrast && typeof c.createLinearGradient === 'function') ? c.createLinearGradient(0, -5, 0, 5) : null;
+            if (bmGrad && typeof bmGrad.addColorStop === 'function') {
+              bmGrad.addColorStop(0, scaleSolved ? '#86efac' : '#c7d2fe');
+              bmGrad.addColorStop(0.45, beamCol);
+              bmGrad.addColorStop(1, scaleSolved ? '#15803d' : '#3730a3');
+              c.fillStyle = bmGrad;
+            } else { c.fillStyle = beamCol; }
+            c.beginPath();
+            c.moveTo(-armLen, -2.5); c.lineTo(0, -5); c.lineTo(armLen, -2.5);
+            c.lineTo(armLen, 2.5); c.lineTo(0, 5); c.lineTo(-armLen, 2.5);
+            c.closePath(); c.fill();
             c.restore();
+            // Specular metallic top ridge
+            if (!isContrast) {
+              c.strokeStyle = 'rgba(255,255,255,0.68)'; c.lineWidth = 1;
+              c.beginPath(); c.moveTo(-armLen + 4, -2); c.lineTo(0, -4); c.lineTo(armLen - 4, -2); c.stroke();
+            }
+            // End pivot hooks/knobs
+            [-armLen, armLen].forEach(function(ex) {
+              c.beginPath(); c.arc(ex, 0, 4.2, 0, Math.PI * 2);
+              c.fillStyle = isContrast ? '#000000' : '#e2e8f0'; c.fill();
+              c.strokeStyle = beamCol; c.lineWidth = 1.6; c.stroke();
+            });
             c.restore();
 
-            // Pans hang straight down from the beam ends, wherever the beam points.
-            var panW = Math.min(90, w * 0.26);
-            var drawPan = function(end, fill, stroke, label) {
-              var px = cx + end * Math.cos(tilt), py = baseY - 100 + end * Math.sin(tilt);
+            // Central jewel pivot bearing
+            c.save();
+            c.shadowColor = beamCol; c.shadowBlur = isContrast ? 0 : 10;
+            c.beginPath(); c.arc(cx, pivotY, 7, 0, Math.PI * 2);
+            c.fillStyle = isContrast ? '#000000' : '#1e293b'; c.fill();
+            c.strokeStyle = beamCol; c.lineWidth = 2.4; c.stroke();
+            c.beginPath(); c.arc(cx, pivotY, 2.8, 0, Math.PI * 2);
+            c.fillStyle = scaleSolved ? '#4ade80' : (isContrast ? '#ffff00' : '#e0e7ff'); c.fill();
+            c.restore();
+
+            // Hanging translucent glass pans + tactile specular metallic/glass weights
+            var panW = Math.min(96, w * 0.27);
+            var drawPan = function(end, fill, stroke, accentHi, label) {
+              var px = cx + end * Math.cos(tilt), py = pivotY + end * Math.sin(tilt);
               c.save();
               c.translate(px, py);
-              c.fillStyle = fill; c.strokeStyle = stroke; c.lineWidth = 2;
-              c.beginPath(); c.moveTo(0, 0); c.lineTo(-panW / 2, 50); c.moveTo(0, 0); c.lineTo(panW / 2, 50); c.stroke();
-              c.beginPath(); c.moveTo(-panW / 2, 50); c.lineTo(panW / 2, 50); c.lineTo(panW / 2 - 5, 65); c.lineTo(-panW / 2 + 5, 65); c.closePath(); c.fill(); c.stroke();
-              c.fillStyle = '#e2e8f0';
+              // Dual braided suspension rods
+              c.strokeStyle = isContrast ? '#ffffff' : 'rgba(203,213,225,0.72)'; c.lineWidth = 1.5;
+              c.beginPath(); c.moveTo(0, 3); c.lineTo(-panW * 0.44, 48); c.moveTo(0, 3); c.lineTo(panW * 0.44, 48); c.stroke();
+              c.strokeStyle = isContrast ? '#ffff00' : stroke; c.lineWidth = 1;
+              c.beginPath(); c.moveTo(0, 3); c.lineTo(0, 48); c.stroke();
+
+              // Tactile sculpted weight block sitting on pan
+              var wtW = Math.min(panW * 0.68, 56), wtH = 19;
+              casRRect(-wtW / 2, 48 - wtH, wtW, wtH, 4);
+              var wtGrad = (!isContrast && typeof c.createLinearGradient === 'function') ? c.createLinearGradient(-wtW / 2, 48 - wtH, wtW / 2, 48) : null;
+              if (wtGrad && typeof wtGrad.addColorStop === 'function') {
+                wtGrad.addColorStop(0, accentHi);
+                wtGrad.addColorStop(0.5, stroke);
+                wtGrad.addColorStop(1, 'rgba(15,23,42,0.88)');
+                c.fillStyle = wtGrad;
+              } else { c.fillStyle = isContrast ? '#000000' : stroke; }
+              c.fill();
+              c.strokeStyle = isContrast ? '#ffff00' : 'rgba(255,255,255,0.45)'; c.lineWidth = 1; c.stroke();
+              if (!isContrast) {
+                c.strokeStyle = 'rgba(255,255,255,0.65)'; c.lineWidth = 1;
+                c.beginPath(); c.moveTo(-wtW / 2 + 5, 48 - wtH + 2.5); c.lineTo(wtW / 2 - 5, 48 - wtH + 2.5); c.stroke();
+              }
+
+              // Translucent glass pan bowl with specular rim
+              var panGrad = (!isContrast && typeof c.createLinearGradient === 'function') ? c.createLinearGradient(-panW / 2, 48, panW / 2, 66) : null;
+              if (panGrad && typeof panGrad.addColorStop === 'function') {
+                panGrad.addColorStop(0, fill);
+                panGrad.addColorStop(0.5, 'rgba(255,255,255,0.22)');
+                panGrad.addColorStop(1, fill);
+                c.fillStyle = panGrad;
+              } else { c.fillStyle = fill; }
+              c.strokeStyle = isContrast ? '#ffff00' : stroke; c.lineWidth = 2;
+              c.beginPath(); c.moveTo(-panW / 2, 48); c.lineTo(panW / 2, 48); c.lineTo(panW / 2 - 7, 63); c.lineTo(-panW / 2 + 7, 63); c.closePath(); c.fill(); c.stroke();
+              if (!isContrast) {
+                c.strokeStyle = 'rgba(255,255,255,0.75)'; c.lineWidth = 1.2;
+                c.beginPath(); c.moveTo(-panW / 2 + 4, 49.5); c.lineTo(panW / 2 - 4, 49.5); c.stroke();
+              }
+
+              // Crisp expression label pill beneath pan
+              var disp = label.length > 13 ? label.substring(0, 13) + '..' : label;
               c.font = 'bold 13px monospace';
               c.textAlign = 'center';
-              c.fillText(label.length > 12 ? label.substring(0, 12) + '..' : label, 0, 82);
+              var tw = (typeof c.measureText === 'function' && c.measureText(disp)) ? (c.measureText(disp).width || 66) : 66;
+              var pillW = Math.min(w * 0.44, Math.max(panW * 0.86, tw + 16));
+              casRRect(-pillW / 2, 69, pillW, 20, 6);
+              c.fillStyle = isContrast ? '#000000' : 'rgba(15,23,42,0.82)'; c.fill();
+              c.strokeStyle = isContrast ? '#ffff00' : stroke; c.lineWidth = 1.2; c.stroke();
+              c.fillStyle = isContrast ? '#ffff00' : '#f8fafc';
+              c.fillText(disp, 0, 83);
               c.restore();
             };
-            drawPan(-w * 0.35, 'rgba(99,102,241,0.15)', '#6366f1', leftText);
-            drawPan(w * 0.35, 'rgba(168,85,247,0.15)', '#a855f7', rightText);
+            drawPan(-armLen, 'rgba(99,102,241,0.24)', '#6366f1', '#a5b4fc', leftText);
+            drawPan(armLen, 'rgba(168,85,247,0.24)', '#a855f7', '#d8b4fe', rightText);
 
-            // Solved banner
+            // Solved luminous banner pill
             if (scaleSolved) {
-              c.fillStyle = 'rgba(34,197,94,0.2)';
-              c.fillRect(0, 0, w, 28);
+              var bW = Math.min(w - 24, 260);
+              casRRect(cx - bW / 2, 5, bW, 24, 12);
+              c.fillStyle = isContrast ? '#000000' : 'rgba(20,83,45,0.85)'; c.fill();
+              c.strokeStyle = isContrast ? '#00ff00' : '#4ade80'; c.lineWidth = 1.5; c.stroke();
               c.save();
-              c.shadowColor = 'rgba(34,197,94,0.9)'; c.shadowBlur = 10;
-              c.fillStyle = '#22c55e';
-              c.font = 'bold 14px sans-serif';
+              c.shadowColor = 'rgba(34,197,94,0.9)'; c.shadowBlur = isContrast ? 0 : 8;
+              c.fillStyle = isContrast ? '#00ff00' : '#dcfce7';
+              c.font = 'bold 13px sans-serif';
               c.textAlign = 'center';
-              c.fillText('\u2705 Balanced! Equation solved!', cx, 19);
+              c.fillText('\u2705 Balanced! Equation solved!', cx, 21);
               c.restore();
             }
           };
@@ -2012,15 +2210,18 @@ onSpeak: function(formats) {
               var tickText = function(value) { return Number(value.toPrecision(4)).toString(); };
               diagram = h('figure', {style:{margin:'12px 0 0'}, 'data-balance-trial-plot':true},
                 h('figcaption', {style:{fontSize:13, color:TEXT}}, t('stem.algebraCAS.trial_plot_legend', 'Square: left side. Circle: right side. Both rows use the same number scale.')),
-                h('svg', {viewBox:'0 0 540 100', 'aria-hidden':'true', focusable:'false', style:{display:'block',width:'100%',height:'auto',marginTop:4}},
+                h('svg', {viewBox:'0 0 540 100', 'aria-hidden':'true', focusable:'false', style:{display:'block',width:'100%',height:'auto',marginTop:4,borderRadius:8}},
+                  h('rect', {x:1,y:1,width:538,height:98,rx:7,fill:isContrast?'#000000':(isDark?'rgba(15,23,42,0.72)':'rgba(248,250,252,0.92)'),stroke:isContrast?'#ffff00':BORDER,strokeWidth:1}),
                   h('line', {x1:270,y1:8,x2:270,y2:92,stroke:MUTED,strokeWidth:1,strokeDasharray:'4 4'}),
                   [30,74].map(function(y) { return h('g', {key:y},
                     h('line', {x1:28,y1:y,x2:512,y2:y,stroke:MUTED,strokeWidth:2}),
-                    [28,270,512].map(function(x) { return h('line', {key:x,x1:x,y1:y-5,x2:x,y2:y+5,stroke:MUTED,strokeWidth:2}); })
+                    [28,149,270,391,512].map(function(x) { return h('line', {key:x,x1:x,y1:y-(x===270||x===28||x===512?6:3.5),x2:x,y2:y+(x===270||x===28||x===512?6:3.5),stroke:MUTED,strokeWidth:x===270||x===28||x===512?2:1.2}); })
                   ); }),
-                  h('line', {x1:point(trial.leftNumber),y1:30,x2:point(trial.rightNumber),y2:74,stroke:MUTED,strokeWidth:1,strokeDasharray:'3 4'}),
-                  h('rect', {'data-trial-left-point':true,x:point(trial.leftNumber)-7,y:23,width:14,height:14,fill:inkLeft,stroke:TEXT,strokeWidth:1}),
-                  h('circle', {'data-trial-right-point':true,cx:point(trial.rightNumber),cy:74,r:7,fill:inkRight,stroke:TEXT,strokeWidth:1})
+                  h('line', {x1:point(trial.leftNumber),y1:30,x2:point(trial.rightNumber),y2:74,stroke:trial.relation==='='?'#22c55e':MUTED,strokeWidth:trial.relation==='='?2:1.2,strokeDasharray:'3 4'}),
+                  !isContrast && h('circle', {cx:point(trial.leftNumber),cy:30,r:12,fill:inkLeft,opacity:0.2}),
+                  h('rect', {'data-trial-left-point':true,x:point(trial.leftNumber)-7,y:23,width:14,height:14,rx:2.5,fill:inkLeft,stroke:TEXT,strokeWidth:1.2}),
+                  !isContrast && h('circle', {cx:point(trial.rightNumber),cy:74,r:12,fill:inkRight,opacity:0.2}),
+                  h('circle', {'data-trial-right-point':true,cx:point(trial.rightNumber),cy:74,r:7,fill:inkRight,stroke:TEXT,strokeWidth:1.2})
                 ),
                 h('div', {'aria-hidden':'true',style:{display:'flex',justifyContent:'space-between',gap:8,fontSize:12,color:TEXT,margin:'0 5%'}},h('span',null,tickText(-extent)),h('span',null,'0'),h('span',null,tickText(extent))),
                 h('p', {style:{fontSize:12,color:MUTED,marginTop:6}}, t('stem.algebraCAS.trial_plot_scale', 'The scale fits these values and may change after an operation. Positions are approximate; the calculations above are exact.'))

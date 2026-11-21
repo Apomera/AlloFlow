@@ -1326,6 +1326,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           canvas._dcPaintKey = null;
 
           var c = canvas.getContext('2d');
+          if (!c) { canvas._dcAnimRunning = false; return; }
           var dpr = ratio;
           var w = width;
           canvas._dcDrawWidth = w; canvas._dcDrawDpr = dpr;
@@ -1334,6 +1335,30 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           canvas.height = ht * dpr;
           canvas.style.height = ht + 'px';
           c.scale(dpr, dpr);
+          function safeRoundRect(ctx2d, rx, ry, rw, rh, rr) {
+            if (typeof ctx2d.roundRect === 'function') { ctx2d.roundRect(rx, ry, rw, rh, rr); return; }
+            var rad = Math.min(rr, rw / 2, rh / 2);
+            ctx2d.moveTo(rx + rad, ry); ctx2d.lineTo(rx + rw - rad, ry);
+            ctx2d.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rad);
+            ctx2d.lineTo(rx + rw, ry + rh - rad);
+            ctx2d.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rad, ry + rh);
+            ctx2d.lineTo(rx + rad, ry + rh);
+            ctx2d.quadraticCurveTo(rx, ry + rh, rx, ry + rh - rad);
+            ctx2d.lineTo(rx, ry + rad);
+            ctx2d.quadraticCurveTo(rx, ry, rx + rad, ry);
+          }
+
+          // Ambient nutrient / molecular motes
+          var ambMotes = [];
+          for (var am = 0; am < 18; am++) {
+            ambMotes.push({
+              x: ((Math.sin(am * 37.3) * 4375.5) % 1 + 1) % 1,
+              y: ((Math.sin(am * 89.1) * 2917.3) % 1 + 1) % 1,
+              r: 1 + (am % 3) * 0.7,
+              sp: 0.25 + (am % 4) * 0.14,
+              ph: am * 1.17
+            });
+          }
 
           // Animation state
           var curPositions = [];
@@ -1420,20 +1445,44 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             // Clear
             c.clearRect(0, 0, w, ht);
 
-            // Background — dark science theme
-            var bgGrad = c.createRadialGradient(cx, cy, 20, cx, cy, Math.max(w, ht) * 0.7);
-            bgGrad.addColorStop(0, '#1e293b');
-            bgGrad.addColorStop(1, '#0f172a');
-            c.fillStyle = bgGrad;
+            // Background — deep dark chemistry studio with live state aura
+            var hasGrad = typeof c.createRadialGradient === 'function';
+            if (hasGrad) {
+              var bgGrad = c.createRadialGradient(cx, cy, 16, cx, cy, Math.max(w, ht) * 0.72);
+              bgGrad.addColorStop(0, isDecomposed ? '#1f1b38' : '#162842');
+              bgGrad.addColorStop(0.55, '#0f172a');
+              bgGrad.addColorStop(1, '#040814');
+              c.fillStyle = bgGrad;
+            } else {
+              c.fillStyle = '#0f172a';
+            }
             c.fillRect(0, 0, w, ht);
 
-            // Subtle dot grid
-            c.fillStyle = 'rgba(99,102,241,0.08)';
+            // Subtle dot grid + concentric reaction chamber rings
+            c.fillStyle = 'rgba(129,140,248,0.10)';
             for (var gx = 20; gx < w; gx += 20) {
               for (var gy = 20; gy < ht; gy += 20) {
-                c.beginPath(); c.arc(gx, gy, 0.5, 0, Math.PI * 2); c.fill();
+                c.beginPath(); c.arc(gx, gy, 0.55, 0, Math.PI * 2); c.fill();
               }
             }
+            c.save();
+            c.strokeStyle = isDecomposed ? 'rgba(251,191,36,0.14)' : 'rgba(56,189,248,0.14)';
+            c.lineWidth = 1;
+            c.beginPath(); c.arc(cx, cy, targetR + 28, 0, Math.PI * 2); c.stroke();
+            c.setLineDash([3, 6]);
+            c.beginPath(); c.arc(cx, cy, targetR + 48, 0, Math.PI * 2); c.stroke();
+            c.setLineDash([]);
+            // Floating luminous nutrient / energy motes
+            for (var ami = 0; ami < ambMotes.length; ami++) {
+              var amP = ambMotes[ami];
+              var amX = amP.x * w + Math.sin(frame * 0.014 * amP.sp + amP.ph) * 8;
+              var amY = ((amP.y - frame * 0.00055 * amP.sp) % 1 + 1) % 1 * ht;
+              c.fillStyle = isDecomposed ? 'rgba(253,224,71,0.22)' : 'rgba(125,211,252,0.22)';
+              c.beginPath(); c.arc(amX, amY, amP.r * 2.2, 0, Math.PI * 2); c.fill();
+              c.fillStyle = isDecomposed ? 'rgba(254,240,138,0.62)' : 'rgba(186,230,253,0.62)';
+              c.beginPath(); c.arc(amX, amY, amP.r, 0, Math.PI * 2); c.fill();
+            }
+            c.restore();
 
             // Lerp positions toward targets
             for (var i = 0; i < n; i++) {
@@ -1448,29 +1497,39 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               }
             }
 
-            // Draw bond lines (when assembled) — glowing
+            // Draw bond lines (when assembled) — dual-pass luminous energy channels
             if (!isDecomposed && n > 1) {
               for (var bi = 0; bi < n; bi++) {
                 for (var bj = bi + 1; bj < n; bj++) {
                   if (curPositions[bi] && curPositions[bj]) {
-                    // Glow
                     c.save();
-                    c.shadowColor = 'rgba(148,163,184,0.4)';
-                    c.shadowBlur = 8;
-                    c.strokeStyle = 'rgba(148,163,184,0.6)';
-                    c.lineWidth = 3;
+                    c.strokeStyle = 'rgba(56,189,248,0.20)';
+                    c.lineWidth = 8; c.lineCap = 'round';
+                    c.beginPath();
+                    c.moveTo(curPositions[bi].x, curPositions[bi].y);
+                    c.lineTo(curPositions[bj].x, curPositions[bj].y);
+                    c.stroke();
+                    c.shadowColor = 'rgba(165,180,252,0.55)';
+                    c.shadowBlur = 10;
+                    c.strokeStyle = 'rgba(199,210,254,0.78)';
+                    c.lineWidth = 2.6;
                     c.setLineDash([]);
                     c.beginPath();
                     c.moveTo(curPositions[bi].x, curPositions[bi].y);
                     c.lineTo(curPositions[bj].x, curPositions[bj].y);
                     c.stroke();
                     c.restore();
-                    // Electron dots moving along bonds
-                    var bondT = (frame * 0.02 + bi * 0.3 + bj * 0.7) % 1;
-                    var edx = curPositions[bi].x + (curPositions[bj].x - curPositions[bi].x) * bondT;
-                    var edy = curPositions[bi].y + (curPositions[bj].y - curPositions[bi].y) * bondT;
-                    c.fillStyle = '#a5b4fc';
-                    c.beginPath(); c.arc(edx, edy, 2.5, 0, Math.PI * 2); c.fill();
+                    // Twin counter-traveling luminous shared-electron dots along bond
+                    for (var bd = 0; bd < 2; bd++) {
+                      var bondT = ((frame * 0.02 + bi * 0.3 + bj * 0.7 + bd * 0.5) % 1);
+                      var tDir = bd === 0 ? bondT : (1 - bondT);
+                      var edx = curPositions[bi].x + (curPositions[bj].x - curPositions[bi].x) * tDir;
+                      var edy = curPositions[bi].y + (curPositions[bj].y - curPositions[bi].y) * tDir;
+                      c.fillStyle = 'rgba(103,232,249,0.35)';
+                      c.beginPath(); c.arc(edx, edy, 5, 0, Math.PI * 2); c.fill();
+                      c.fillStyle = '#e0f2fe';
+                      c.beginPath(); c.arc(edx, edy, 2.2, 0, Math.PI * 2); c.fill();
+                    }
                   }
                 }
               }
@@ -1478,8 +1537,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
             // Draw ghost bonds when decomposed
             if (isDecomposed && n > 1) {
-              c.strokeStyle = 'rgba(100,116,139,0.2)';
-              c.lineWidth = 1;
+              c.strokeStyle = 'rgba(148,163,184,0.28)';
+              c.lineWidth = 1.2;
               c.setLineDash([4, 6]);
               for (var di = 0; di < n; di++) {
                 for (var dj = di + 1; dj < n; dj++) {
@@ -1503,7 +1562,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 p.life -= 0.015;
               }
               if (p.life <= 0) { particles.splice(pk, 1); continue; }
-              c.globalAlpha = p.life * 0.8;
+              c.globalAlpha = p.life * 0.85;
               c.fillStyle = p.color;
               c.beginPath(); c.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); c.fill();
             }
@@ -1513,53 +1572,67 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             for (var ei = 0; ei < n; ei++) {
               var el = els[ei];
               if (!curPositions[ei]) continue;
-              var wobbleX = Math.sin(frame * 0.03 + ei * 2.1) * (isDecomposed ? 4 : 1.5);
-              var wobbleY = Math.cos(frame * 0.025 + ei * 1.8) * (isDecomposed ? 4 : 1.5);
+              var wobbleX = pausedMotion ? 0 : Math.sin(frame * 0.03 + ei * 2.1) * (isDecomposed ? 4 : 1.5);
+              var wobbleY = pausedMotion ? 0 : Math.cos(frame * 0.025 + ei * 1.8) * (isDecomposed ? 4 : 1.5);
               var px = curPositions[ei].x + wobbleX;
               var py = curPositions[ei].y + wobbleY;
               var atomR = 22 + Math.min(el.count, 15) * 1.5;
-              var pulse = 1 + Math.sin(frame * 0.04 + ei) * 0.03;
+              var pulse = pausedMotion ? 1 : (1 + Math.sin(frame * 0.04 + ei) * 0.03);
               atomR *= pulse;
 
-              // Electron cloud glow
-              c.save();
-              var cloudGrad = c.createRadialGradient(px, py, atomR * 0.5, px, py, atomR * 2);
-              cloudGrad.addColorStop(0, el.color + '20');
-              cloudGrad.addColorStop(1, 'rgba(0,0,0,0)');
-              c.fillStyle = cloudGrad;
-              c.beginPath(); c.arc(px, py, atomR * 2, 0, Math.PI * 2); c.fill();
-              c.restore();
+              // Luminous electron cloud halo
+              if (hasGrad) {
+                c.save();
+                var cloudGrad = c.createRadialGradient(px, py, atomR * 0.4, px, py, atomR * 2.2);
+                cloudGrad.addColorStop(0, el.color + '40');
+                cloudGrad.addColorStop(0.55, el.color + '14');
+                cloudGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                c.fillStyle = cloudGrad;
+                c.beginPath(); c.arc(px, py, atomR * 2.2, 0, Math.PI * 2); c.fill();
+                c.restore();
+              }
 
-              // Orbiting electron ring
+              // Dual-axis orbiting electron shells
               c.save();
-              c.strokeStyle = el.color + '30';
-              c.lineWidth = 1;
-              c.beginPath();
-              c.ellipse(px, py, atomR * 1.5, atomR * 0.6, frame * 0.01 + ei * 0.5, 0, Math.PI * 2);
-              c.stroke();
-              // Orbiting electron dot
+              var rotA = frame * 0.01 + ei * 0.5;
+              c.strokeStyle = el.color + '44';
+              c.lineWidth = 1.1;
+              if (typeof c.ellipse === 'function') {
+                c.beginPath(); c.ellipse(px, py, atomR * 1.55, atomR * 0.62, rotA, 0, Math.PI * 2); c.stroke();
+                c.strokeStyle = el.color + '28';
+                c.beginPath(); c.ellipse(px, py, atomR * 1.45, atomR * 0.55, -rotA + 1.1, 0, Math.PI * 2); c.stroke();
+              }
+              // Orbiting electron dot rotated cleanly onto the shell
               var orbitA = frame * 0.05 + ei * 1.2;
-              var orbX = px + Math.cos(orbitA) * atomR * 1.5;
-              var orbY = py + Math.sin(orbitA) * atomR * 0.6;
-              c.fillStyle = '#e2e8f0';
-              c.beginPath(); c.arc(orbX, orbY, 2, 0, Math.PI * 2); c.fill();
+              var lx = Math.cos(orbitA) * atomR * 1.55, ly = Math.sin(orbitA) * atomR * 0.62;
+              var orbX = px + lx * Math.cos(rotA) - ly * Math.sin(rotA);
+              var orbY = py + lx * Math.sin(rotA) + ly * Math.cos(rotA);
+              c.fillStyle = el.color + '66';
+              c.beginPath(); c.arc(orbX, orbY, 4.5, 0, Math.PI * 2); c.fill();
+              c.fillStyle = '#f8fafc';
+              c.beginPath(); c.arc(orbX, orbY, 2.2, 0, Math.PI * 2); c.fill();
               c.restore();
 
-              // Shadow
-              c.fillStyle = 'rgba(0,0,0,0.3)';
-              c.beginPath(); c.arc(px + 2, py + 3, atomR, 0, Math.PI * 2); c.fill();
+              // Drop shadow
+              c.fillStyle = 'rgba(0,0,0,0.38)';
+              c.beginPath(); c.arc(px + 2, py + 4, atomR, 0, Math.PI * 2); c.fill();
 
-              // Main sphere gradient
-              var grad = c.createRadialGradient(px - atomR * 0.3, py - atomR * 0.3, atomR * 0.1, px, py, atomR);
-              grad.addColorStop(0, lightenColor(el.color, 60));
-              grad.addColorStop(0.7, el.color);
-              grad.addColorStop(1, lightenColor(el.color, -30));
-              c.fillStyle = grad;
+              // Main 3D sphere gradient with Fresnel rim glow
+              if (hasGrad) {
+                var grad = c.createRadialGradient(px - atomR * 0.32, py - atomR * 0.32, atomR * 0.1, px, py, atomR);
+                grad.addColorStop(0, lightenColor(el.color, 72));
+                grad.addColorStop(0.62, el.color);
+                grad.addColorStop(1, lightenColor(el.color, -38));
+                c.fillStyle = grad;
+              } else {
+                c.fillStyle = el.color;
+              }
               c.beginPath(); c.arc(px, py, atomR, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = 'rgba(255,255,255,0.24)'; c.lineWidth = 1.2; c.stroke();
 
-              // Specular highlight
-              c.fillStyle = 'rgba(255,255,255,0.25)';
-              c.beginPath(); c.arc(px - atomR * 0.25, py - atomR * 0.25, atomR * 0.35, 0, Math.PI * 2); c.fill();
+              // Crisp specular highlight
+              c.fillStyle = 'rgba(255,255,255,0.30)';
+              c.beginPath(); c.arc(px - atomR * 0.28, py - atomR * 0.28, atomR * 0.32, 0, Math.PI * 2); c.fill();
 
               // Element symbol
               var symbolSize = Math.round(atomR * 0.65);
@@ -1567,8 +1640,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               c.textAlign = 'center'; c.textBaseline = 'middle';
               c.shadowBlur = 0;
               var symbolWidth = c.measureText(el.sym).width + 8;
-              c.fillStyle = '#0f172a';
-              c.beginPath(); c.roundRect(px - symbolWidth / 2, py - symbolSize / 2 - 2, symbolWidth, symbolSize + 4, 3); c.fill();
+              c.fillStyle = 'rgba(15,23,42,0.92)';
+              c.beginPath(); safeRoundRect(c, px - symbolWidth / 2, py - symbolSize / 2 - 2, symbolWidth, symbolSize + 4, 4); c.fill();
               c.fillStyle = '#ffffff';
               c.fillText(el.sym, px, py);
 
@@ -1584,13 +1657,13 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               }
 
               // Element name below
-              c.fillStyle = '#94a3b8';
+              c.fillStyle = '#cbd5e1';
               c.font = '10px system-ui, sans-serif';
               c.fillText(el.name, px, py + atomR + 14);
             }
 
             // Title
-            c.fillStyle = '#e2e8f0';
+            c.fillStyle = '#f1f5f9';
             c.font = 'bold 14px system-ui, sans-serif';
             c.textAlign = 'center'; c.textBaseline = 'alphabetic';
             c.fillText((canvas.dataset.materialName || '') + '  (' + (canvas.dataset.formula || '') + ')', w / 2, 22);
@@ -1603,8 +1676,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             var stW = c.measureText(stLabel).width + 16;
             c.fillStyle = stColor + '25';
             c.beginPath();
-            c.roundRect(w / 2 - stW / 2, ht - 24, stW, 18, 9);
+            safeRoundRect(c, w / 2 - stW / 2, ht - 24, stW, 18, 9);
             c.fill();
+            c.strokeStyle = stColor + '66'; c.lineWidth = 1; c.stroke();
             c.fillStyle = stColor;
             c.fillText(stLabel, w / 2, ht - 12);
             c.restore();
@@ -2778,6 +2852,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       if (canvas._sceneDrawn === scene.id) return;
                       canvas._sceneDrawn = scene.id;
                       var c = canvas.getContext('2d');
+                      if (!c) return;
+                      var hasRG = typeof c.createRadialGradient === 'function';
                       var dpr = window.devicePixelRatio || 1;
                       var cw = canvas.offsetWidth || 500;
                       var ch = 320;
@@ -2788,39 +2864,44 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       if (scene.id === 'kitchen') {
                         // Wall
                         var wallGrad = c.createLinearGradient(0, 0, 0, ch * 0.5);
-                        wallGrad.addColorStop(0, '#fef9ef'); wallGrad.addColorStop(1, '#fef3c7');
+                        wallGrad.addColorStop(0, '#fffbeb'); wallGrad.addColorStop(1, '#fde68a');
                         c.fillStyle = wallGrad; c.fillRect(0, 0, cw, ch * 0.5);
                         // Backsplash tiles
-                        c.strokeStyle = '#fde68a'; c.lineWidth = 0.4;
+                        c.strokeStyle = 'rgba(245,158,11,0.28)'; c.lineWidth = 0.5;
                         for (var bx = 0; bx < cw; bx += 22) { for (var by = ch * 0.28; by < ch * 0.5; by += 16) { c.strokeRect(bx, by, 22, 16); } }
-                        // Countertop
+                        // Countertop with subtle specular bevel
                         var ctrGrad = c.createLinearGradient(0, ch * 0.48, 0, ch * 0.54);
-                        ctrGrad.addColorStop(0, '#e8d5b7'); ctrGrad.addColorStop(0.5, '#d4a574'); ctrGrad.addColorStop(1, '#c49a6c');
+                        ctrGrad.addColorStop(0, '#f5e6cc'); ctrGrad.addColorStop(0.45, '#d4a574'); ctrGrad.addColorStop(1, '#a97e52');
                         c.fillStyle = ctrGrad; c.fillRect(0, ch * 0.48, cw, ch * 0.06);
-                        c.strokeStyle = '#a0845c'; c.lineWidth = 1; c.beginPath(); c.moveTo(0, ch * 0.48); c.lineTo(cw, ch * 0.48); c.stroke();
+                        c.strokeStyle = 'rgba(255,255,255,0.55)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(0, ch * 0.483); c.lineTo(cw, ch * 0.483); c.stroke();
                         // Lower cabinets
-                        c.fillStyle = '#c8a882'; c.fillRect(0, ch * 0.54, cw, ch * 0.46);
-                        c.strokeStyle = '#a0845c'; c.lineWidth = 1;
+                        var cabGrad = c.createLinearGradient(0, ch * 0.54, 0, ch);
+                        cabGrad.addColorStop(0, '#c8a882'); cabGrad.addColorStop(1, '#a6825c');
+                        c.fillStyle = cabGrad; c.fillRect(0, ch * 0.54, cw, ch * 0.46);
+                        c.strokeStyle = '#8b6a47'; c.lineWidth = 1;
                         var cabW = cw / 5;
                         for (var ci = 0; ci < 5; ci++) {
                           c.strokeRect(ci * cabW + 4, ch * 0.57, cabW - 8, ch * 0.38);
-                          c.fillStyle = '#b8956e'; c.beginPath(); c.arc(ci * cabW + cabW / 2, ch * 0.76, 3, 0, Math.PI * 2); c.fill();
-                          c.fillStyle = '#c8a882';
+                          c.fillStyle = '#785a3a'; c.beginPath(); c.arc(ci * cabW + cabW / 2, ch * 0.76, 3.2, 0, Math.PI * 2); c.fill();
                         }
                         // Upper cabinets
                         c.fillStyle = '#c8a882';
                         c.fillRect(cw * 0.02, ch * 0.04, cw * 0.25, ch * 0.22); c.strokeRect(cw * 0.02, ch * 0.04, cw * 0.25, ch * 0.22);
                         c.fillRect(cw * 0.73, ch * 0.04, cw * 0.25, ch * 0.22); c.strokeRect(cw * 0.73, ch * 0.04, cw * 0.25, ch * 0.22);
-                        c.fillStyle = '#b8956e';
+                        c.fillStyle = '#785a3a';
                         c.beginPath(); c.arc(cw * 0.145, ch * 0.15, 3, 0, Math.PI * 2); c.fill();
                         c.beginPath(); c.arc(cw * 0.855, ch * 0.15, 3, 0, Math.PI * 2); c.fill();
-                        // Window
-                        c.fillStyle = '#bfdbfe'; c.fillRect(cw * 0.36, ch * 0.03, cw * 0.28, ch * 0.24);
+                        // Window with sunlit sky gradient & diagonal sunbeam shaft
+                        var winSky = c.createLinearGradient(0, ch * 0.03, 0, ch * 0.27);
+                        winSky.addColorStop(0, '#7dd3fc'); winSky.addColorStop(1, '#e0f2fe');
+                        c.fillStyle = winSky; c.fillRect(cw * 0.36, ch * 0.03, cw * 0.28, ch * 0.24);
                         c.strokeStyle = '#f8fafc'; c.lineWidth = 4; c.strokeRect(cw * 0.36, ch * 0.03, cw * 0.28, ch * 0.24);
                         c.lineWidth = 2; c.beginPath(); c.moveTo(cw * 0.50, ch * 0.03); c.lineTo(cw * 0.50, ch * 0.27); c.stroke();
                         c.beginPath(); c.moveTo(cw * 0.36, ch * 0.15); c.lineTo(cw * 0.64, ch * 0.15); c.stroke();
-                        // Sunlight glow through window
-                        c.fillStyle = 'rgba(253,224,71,0.15)'; c.fillRect(cw * 0.38, ch * 0.28, cw * 0.24, ch * 0.20);
+                        var beamG = c.createLinearGradient(cw * 0.48, ch * 0.27, cw * 0.42, ch * 0.56);
+                        beamG.addColorStop(0, 'rgba(254,240,138,0.30)'); beamG.addColorStop(1, 'rgba(254,240,138,0)');
+                        c.fillStyle = beamG;
+                        c.beginPath(); c.moveTo(cw * 0.37, ch * 0.27); c.lineTo(cw * 0.63, ch * 0.27); c.lineTo(cw * 0.56, ch * 0.54); c.lineTo(cw * 0.30, ch * 0.54); c.closePath(); c.fill();
                         // Stove burner outlines
                         c.strokeStyle = '#78716c'; c.lineWidth = 1.5;
                         c.beginPath(); c.arc(cw * 0.40, ch * 0.50, 8, 0, Math.PI * 2); c.stroke();
@@ -2945,45 +3026,85 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         c.beginPath(); c.arc(cw * 0.25, ch * 0.66, 10, 0, Math.PI * 2); c.fill();
                         c.fillRect(cw * 0.247, ch * 0.67, 3, ch * 0.10);
                       } else if (scene.id === 'outdoors') {
-                        // Sky gradient
+                        // Atmospheric sky gradient with warm horizon glow
                         var skyGrad = c.createLinearGradient(0, 0, 0, ch * 0.55);
-                        skyGrad.addColorStop(0, '#38bdf8'); skyGrad.addColorStop(0.5, '#7dd3fc'); skyGrad.addColorStop(1, '#bae6fd');
+                        skyGrad.addColorStop(0, '#0284c7'); skyGrad.addColorStop(0.5, '#38bdf8'); skyGrad.addColorStop(1, '#e0f2fe');
                         c.fillStyle = skyGrad; c.fillRect(0, 0, cw, ch * 0.55);
-                        // Sun with rays
-                        c.fillStyle = 'rgba(251,191,36,0.15)'; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 35, 0, Math.PI * 2); c.fill();
-                        c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 18, 0, Math.PI * 2); c.fill();
-                        c.fillStyle = '#fde68a'; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 12, 0, Math.PI * 2); c.fill();
+                        // Sun corona + dappled canopy sunlight beams
+                        if (hasRG) {
+                          var sunG = c.createRadialGradient(cw * 0.85, ch * 0.12, 4, cw * 0.85, ch * 0.12, 68);
+                          sunG.addColorStop(0, 'rgba(254,249,195,0.92)'); sunG.addColorStop(0.32, 'rgba(251,191,36,0.42)'); sunG.addColorStop(1, 'rgba(251,191,36,0)');
+                          c.fillStyle = sunG; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 68, 0, Math.PI * 2); c.fill();
+                        }
+                        c.fillStyle = '#fde047'; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 16, 0, Math.PI * 2); c.fill();
+                        // Soft sun shafts filtering diagonally onto foliage & leaf litter
+                        for (var sr = 0; sr < 3; sr++) {
+                          var rayG = c.createLinearGradient(cw * (0.78 - sr * 0.16), ch * 0.14, cw * (0.52 - sr * 0.18), ch * 0.68);
+                          rayG.addColorStop(0, 'rgba(254,249,195,0.22)'); rayG.addColorStop(1, 'rgba(254,249,195,0)');
+                          c.fillStyle = rayG;
+                          c.beginPath();
+                          c.moveTo(cw * (0.80 - sr * 0.16), ch * 0.12);
+                          c.lineTo(cw * (0.86 - sr * 0.16), ch * 0.12);
+                          c.lineTo(cw * (0.58 - sr * 0.17), ch * 0.72);
+                          c.lineTo(cw * (0.46 - sr * 0.17), ch * 0.72);
+                          c.closePath(); c.fill();
+                        }
                         // Clouds (fluffy)
-                        c.fillStyle = 'rgba(255,255,255,0.85)';
+                        c.fillStyle = 'rgba(255,255,255,0.88)';
                         c.beginPath(); c.arc(cw * 0.20, ch * 0.10, 14, 0, Math.PI * 2); c.fill();
                         c.beginPath(); c.arc(cw * 0.25, ch * 0.08, 18, 0, Math.PI * 2); c.fill();
                         c.beginPath(); c.arc(cw * 0.30, ch * 0.11, 14, 0, Math.PI * 2); c.fill();
                         c.beginPath(); c.arc(cw * 0.55, ch * 0.14, 12, 0, Math.PI * 2); c.fill();
                         c.beginPath(); c.arc(cw * 0.59, ch * 0.12, 16, 0, Math.PI * 2); c.fill();
                         c.beginPath(); c.arc(cw * 0.63, ch * 0.14, 12, 0, Math.PI * 2); c.fill();
-                        // Hills behind grass
-                        c.fillStyle = '#4ade80';
+                        // Distant atmospheric hills behind grass
+                        var hillGrad = c.createLinearGradient(0, ch * 0.42, 0, ch * 0.56);
+                        hillGrad.addColorStop(0, '#86efac'); hillGrad.addColorStop(1, '#22c55e');
+                        c.fillStyle = hillGrad;
                         c.beginPath(); c.moveTo(0, ch * 0.55); c.quadraticCurveTo(cw * 0.25, ch * 0.42, cw * 0.5, ch * 0.52); c.quadraticCurveTo(cw * 0.75, ch * 0.44, cw, ch * 0.55); c.lineTo(cw, ch * 0.55); c.closePath(); c.fill();
-                        // Grass
-                        var grassGrad = c.createLinearGradient(0, ch * 0.55, 0, ch);
-                        grassGrad.addColorStop(0, '#22c55e'); grassGrad.addColorStop(0.5, '#16a34a'); grassGrad.addColorStop(1, '#15803d');
-                        c.fillStyle = grassGrad; c.fillRect(0, ch * 0.55, cw, ch * 0.45);
-                        // Grass blades
+                        // Grass meadow + layered forest-floor humus & soil-horizon depth cutaway at base
+                        var grassGrad = c.createLinearGradient(0, ch * 0.55, 0, ch * 0.84);
+                        grassGrad.addColorStop(0, '#22c55e'); grassGrad.addColorStop(0.65, '#16a34a'); grassGrad.addColorStop(1, '#14532d');
+                        c.fillStyle = grassGrad; c.fillRect(0, ch * 0.55, cw, ch * 0.29);
+                        var soilGrad = c.createLinearGradient(0, ch * 0.82, 0, ch);
+                        soilGrad.addColorStop(0, '#451a03'); soilGrad.addColorStop(0.42, '#2e1508'); soilGrad.addColorStop(1, '#1c0f08');
+                        c.fillStyle = soilGrad; c.fillRect(0, ch * 0.82, cw, ch * 0.18);
+                        // Subtle subterranean fungal hyphae & microbial glow filaments in humus horizon
+                        c.save();
+                        c.strokeStyle = 'rgba(253,230,138,0.28)'; c.lineWidth = 1.1;
+                        for (var hy = 0; hy < 6; hy++) {
+                          var hx0 = cw * (0.08 + hy * 0.16);
+                          c.beginPath(); c.moveTo(hx0, ch * 0.84);
+                          c.quadraticCurveTo(hx0 + 18, ch * 0.90, hx0 + 36, ch * 0.95);
+                          c.moveTo(hx0 + 14, ch * 0.89);
+                          c.quadraticCurveTo(hx0 + 6, ch * 0.94, hx0 - 8, ch * 0.97);
+                          c.stroke();
+                          c.fillStyle = 'rgba(134,239,172,0.45)';
+                          c.beginPath(); c.arc(hx0 + 16, ch * 0.89, 2.2, 0, Math.PI * 2); c.fill();
+                        }
+                        c.restore();
+                        // Grass blades + fallen autumn leaf litter flecks
                         c.strokeStyle = '#15803d'; c.lineWidth = 1;
                         for (var gi = 0; gi < 30; gi++) {
-                          var gx = Math.random() * cw; var gy = ch * 0.56 + Math.random() * ch * 0.38;
-                          c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx - 2, gy - 6 - Math.random() * 5); c.stroke();
-                          c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx + 3, gy - 5 - Math.random() * 5); c.stroke();
+                          var gx = ((Math.sin(gi * 43.7) * 913.3) % 1 + 1) % 1 * cw;
+                          var gy = ch * 0.57 + (((Math.sin(gi * 71.1) * 511.9) % 1 + 1) % 1) * ch * 0.23;
+                          c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx - 2, gy - 7); c.stroke();
+                          c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx + 3, gy - 6); c.stroke();
+                        }
+                        for (var lf = 0; lf < 10; lf++) {
+                          var lx = cw * (0.12 + lf * 0.085), ly = ch * (0.79 + (lf % 3) * 0.015);
+                          c.fillStyle = lf % 2 === 0 ? '#b45309' : '#d97706';
+                          c.beginPath(); c.ellipse(lx, ly, 4.5, 2, lf * 0.5, 0, Math.PI * 2); c.fill();
                         }
                         // Tree trunk (textured)
                         c.fillStyle = '#78350f'; c.fillRect(cw * 0.24, ch * 0.22, cw * 0.05, ch * 0.34);
-                        c.strokeStyle = '#451a03'; c.lineWidth = 0.5;
+                        c.strokeStyle = '#451a03'; c.lineWidth = 0.6;
                         for (var tri = 0; tri < 6; tri++) { c.beginPath(); c.moveTo(cw * 0.24, ch * (0.25 + tri * 0.05)); c.lineTo(cw * 0.29, ch * (0.26 + tri * 0.05)); c.stroke(); }
-                        // Tree foliage (layered)
-                        c.fillStyle = '#16a34a'; c.beginPath(); c.arc(cw * 0.265, ch * 0.20, 32, 0, Math.PI * 2); c.fill();
+                        // Tree foliage (layered with warm sunlit crown)
+                        c.fillStyle = '#15803d'; c.beginPath(); c.arc(cw * 0.265, ch * 0.20, 33, 0, Math.PI * 2); c.fill();
                         c.fillStyle = '#22c55e'; c.beginPath(); c.arc(cw * 0.24, ch * 0.16, 22, 0, Math.PI * 2); c.fill();
                         c.beginPath(); c.arc(cw * 0.30, ch * 0.18, 20, 0, Math.PI * 2); c.fill();
-                        c.fillStyle = '#4ade80'; c.beginPath(); c.arc(cw * 0.265, ch * 0.13, 16, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#86efac'; c.beginPath(); c.arc(cw * 0.275, ch * 0.13, 15, 0, Math.PI * 2); c.fill();
                         // Path / stone walkway
                         c.fillStyle = '#d6d3d1'; c.lineWidth = 1;
                         var pathPts = [[0.45, 0.60], [0.47, 0.68], [0.50, 0.76], [0.52, 0.84], [0.54, 0.92]];
@@ -2993,12 +3114,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         c.beginPath(); c.moveTo(0, ch * 0.50); c.lineTo(cw * 0.18, ch * 0.50); c.stroke();
                         for (var fi = 0; fi < 4; fi++) { c.fillStyle = '#c8a882'; c.fillRect(cw * (0.02 + fi * 0.05), ch * 0.42, 4, ch * 0.12); }
                         // Flowers
-                        c.fillStyle = '#f472b6';
-                        c.beginPath(); c.arc(cw * 0.75, ch * 0.62, 4, 0, Math.PI * 2); c.fill();
-                        c.fillStyle = '#fb923c';
-                        c.beginPath(); c.arc(cw * 0.78, ch * 0.64, 4, 0, Math.PI * 2); c.fill();
-                        c.fillStyle = '#a78bfa';
-                        c.beginPath(); c.arc(cw * 0.73, ch * 0.65, 3, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#f472b6'; c.beginPath(); c.arc(cw * 0.75, ch * 0.62, 4, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#fb923c'; c.beginPath(); c.arc(cw * 0.78, ch * 0.64, 4, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#a78bfa'; c.beginPath(); c.arc(cw * 0.73, ch * 0.65, 3, 0, Math.PI * 2); c.fill();
                         c.strokeStyle = '#15803d'; c.lineWidth = 1;
                         c.beginPath(); c.moveTo(cw * 0.75, ch * 0.63); c.lineTo(cw * 0.75, ch * 0.70); c.stroke();
                         c.beginPath(); c.moveTo(cw * 0.78, ch * 0.65); c.lineTo(cw * 0.78, ch * 0.72); c.stroke();
@@ -3389,6 +3507,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   watchDecomposerCanvasSize(canvas, 'States', stateCanvasRef);
                   canvas.dataset.motionPaused = motionPaused ? 'true' : 'false';
                   var c2 = canvas.getContext('2d');
+                  if (!c2) return;
+                  var hasGrad2 = typeof c2.createLinearGradient === 'function' && typeof c2.createRadialGradient === 'function';
                   var dpr = window.devicePixelRatio || 1;
                   var cw = canvas.offsetWidth || 500;
                   var ch2 = 240;
@@ -3444,18 +3564,57 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     if (!pausedMotion) tick++;
                     c2.clearRect(0, 0, cw, ch2);
 
-                    // Background
-                    var bgColors = { solid: '#eff6ff', liquid: '#ecfeff', gas: '#fef2f2' };
-                    c2.fillStyle = bgColors[state] || '#f8fafc';
+                    // Phase-tinted thermal chamber background gradient
+                    var bgColors = { solid: ['#dbeafe', '#eff6ff'], liquid: ['#cffafe', '#ecfeff'], gas: ['#fee2e2', '#fef2f2'] };
+                    var pair = bgColors[state] || ['#e2e8f0', '#f8fafc'];
+                    if (hasGrad2) {
+                      var chBg = c2.createLinearGradient(0, 0, 0, ch2);
+                      chBg.addColorStop(0, pair[1]); chBg.addColorStop(1, pair[0]);
+                      c2.fillStyle = chBg;
+                    } else {
+                      c2.fillStyle = pair[1];
+                    }
                     c2.fillRect(0, 0, cw, ch2);
 
-                    // Container walls
-                    c2.strokeStyle = '#94a3b8'; c2.lineWidth = 2;
+                    // Translucent liquid volume & subtle surface meniscus in liquid state
+                    if (state === 'liquid' && hasGrad2) {
+                      var liqTop = ch2 * 0.46;
+                      var liqG = c2.createLinearGradient(0, liqTop, 0, ch2 * 0.92);
+                      liqG.addColorStop(0, 'rgba(6,182,212,0.18)'); liqG.addColorStop(1, 'rgba(14,116,144,0.28)');
+                      c2.fillStyle = liqG;
+                      c2.beginPath();
+                      c2.moveTo(cw * 0.1, ch2 * 0.92); c2.lineTo(cw * 0.1, liqTop);
+                      c2.quadraticCurveTo(cw * 0.5, liqTop + (pausedMotion ? 0 : Math.sin(tick * 0.05) * 4), cw * 0.9, liqTop);
+                      c2.lineTo(cw * 0.9, ch2 * 0.92); c2.closePath(); c2.fill();
+                    }
+
+                    // Glass laboratory chamber walls with specular rim
+                    c2.strokeStyle = state === 'gas' ? '#f87171' : state === 'liquid' ? '#0891b2' : '#3b82f6';
+                    c2.lineWidth = 2;
                     c2.strokeRect(cw * 0.1, ch2 * 0.08, cw * 0.8, ch2 * 0.84);
+                    c2.strokeStyle = 'rgba(255,255,255,0.65)'; c2.lineWidth = 1.2;
+                    c2.beginPath(); c2.moveTo(cw * 0.115, ch2 * 0.12); c2.lineTo(cw * 0.115, ch2 * 0.86); c2.stroke();
 
                     var energy = state === 'solid' ? 0.3 : state === 'liquid' ? 1.5 : 4;
                     var wallL = cw * 0.12; var wallR = cw * 0.88;
                     var wallT = ch2 * 0.10; var wallB = ch2 * 0.90;
+
+                    // Draw crystalline lattice bonds behind solid particles
+                    if (state === 'solid') {
+                      c2.strokeStyle = 'rgba(59,130,246,0.34)'; c2.lineWidth = 1.6;
+                      for (var si = 0; si < parts.length; si++) {
+                        for (var sj = si + 1; sj < parts.length; sj++) {
+                          var ddx = parts[si].x - parts[sj].x;
+                          var ddy = parts[si].y - parts[sj].y;
+                          if (ddx * ddx + ddy * ddy < 3000) {
+                            c2.beginPath();
+                            c2.moveTo(parts[si].x, parts[si].y);
+                            c2.lineTo(parts[sj].x, parts[sj].y);
+                            c2.stroke();
+                          }
+                        }
+                      }
+                    }
 
                     for (var i = 0; i < parts.length; i++) {
                       var pp = parts[i];
@@ -3492,34 +3651,32 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       if (pp.y < wallT + pp.r) { pp.y = wallT + pp.r; pp.vy = Math.abs(pp.vy); }
                       if (pp.y > wallB - pp.r) { pp.y = wallB - pp.r; pp.vy = -Math.abs(pp.vy); }
 
-                      // Draw particle
-                      c2.save();
-                      var pGrad = c2.createRadialGradient(pp.x - 2, pp.y - 2, 1, pp.x, pp.y, pp.r);
-                      pGrad.addColorStop(0, lightenColor(pp.color, 40));
-                      pGrad.addColorStop(1, pp.color);
-                      c2.fillStyle = pGrad;
-                      c2.beginPath(); c2.arc(pp.x, pp.y, pp.r, 0, Math.PI * 2); c2.fill();
-                      c2.strokeStyle = '#1e3a8a'; c2.lineWidth = 1.5; c2.stroke();
-                      c2.fillStyle = 'rgba(255,255,255,0.3)';
-                      c2.beginPath(); c2.arc(pp.x - 2, pp.y - 2, pp.r * 0.35, 0, Math.PI * 2); c2.fill();
-                      c2.restore();
-                    }
-
-                    // Draw bonds between nearby particles (solid only)
-                    if (state === 'solid') {
-                      c2.strokeStyle = 'rgba(148,163,184,0.3)'; c2.lineWidth = 1;
-                      for (var si = 0; si < parts.length; si++) {
-                        for (var sj = si + 1; sj < parts.length; sj++) {
-                          var ddx = parts[si].x - parts[sj].x;
-                          var ddy = parts[si].y - parts[sj].y;
-                          if (ddx * ddx + ddy * ddy < 3000) {
-                            c2.beginPath();
-                            c2.moveTo(parts[si].x, parts[si].y);
-                            c2.lineTo(parts[sj].x, parts[sj].y);
-                            c2.stroke();
-                          }
-                        }
+                      // Subtle kinetic wake trail for energetic gas particles
+                      if (state === 'gas' && !pausedMotion) {
+                        c2.strokeStyle = 'rgba(239,68,68,0.28)'; c2.lineWidth = 2.2;
+                        c2.beginPath(); c2.moveTo(pp.x, pp.y); c2.lineTo(pp.x - pp.vx * 5, pp.y - pp.vy * 5); c2.stroke();
                       }
+
+                      // Draw 3D shaded particle with soft aura halo
+                      c2.save();
+                      if (hasGrad2) {
+                        var pAura = c2.createRadialGradient(pp.x, pp.y, pp.r * 0.5, pp.x, pp.y, pp.r * 1.8);
+                        pAura.addColorStop(0, pp.color + '44'); pAura.addColorStop(1, 'rgba(0,0,0,0)');
+                        c2.fillStyle = pAura;
+                        c2.beginPath(); c2.arc(pp.x, pp.y, pp.r * 1.8, 0, Math.PI * 2); c2.fill();
+                        var pGrad = c2.createRadialGradient(pp.x - 2.5, pp.y - 2.5, 1, pp.x, pp.y, pp.r);
+                        pGrad.addColorStop(0, lightenColor(pp.color, 55));
+                        pGrad.addColorStop(0.7, pp.color);
+                        pGrad.addColorStop(1, lightenColor(pp.color, -25));
+                        c2.fillStyle = pGrad;
+                      } else {
+                        c2.fillStyle = pp.color;
+                      }
+                      c2.beginPath(); c2.arc(pp.x, pp.y, pp.r, 0, Math.PI * 2); c2.fill();
+                      c2.strokeStyle = '#1e3a8a'; c2.lineWidth = 1.4; c2.stroke();
+                      c2.fillStyle = 'rgba(255,255,255,0.42)';
+                      c2.beginPath(); c2.arc(pp.x - 2.2, pp.y - 2.2, pp.r * 0.34, 0, Math.PI * 2); c2.fill();
+                      c2.restore();
                     }
 
                     // State label in corner

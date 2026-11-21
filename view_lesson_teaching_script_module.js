@@ -288,9 +288,10 @@ function LessonSpokenDirections({
       popup.opener = null;
       const sections = version.steps.map((step, index) => {
         const spoken = exportSegments.filter(segment => segment.stepIndex === index);
-        return spoken.length ? '<section><h2 dir="auto">' + escape(index + 1 + '. ' + step.title) + '</h2>' + spoken.map(segment => '<p dir="auto">' + escape(segment.spokenText) + '</p>').join('') + '</section>' : '';
+        return spoken.length ? '<section><h2 dir="auto">' + escape(index + 1 + '. ' + _ltsText(step.title)) + '</h2>' + spoken.map(segment => '<p dir="auto">' + escape(segment.spokenText) + '</p>').join('') + '</section>' : '';
       }).join('');
-      popup.document.write('<!doctype html><html lang="' + escape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escape(version.title) + '</title><style>*{box-sizing:border-box}body{font:18px/1.6 system-ui;color:#111;background:#fff;margin:0;padding:24px}main{max-width:48rem;margin:auto}p{white-space:pre-wrap;overflow-wrap:anywhere}section{break-inside:avoid}h1,h2{overflow-wrap:anywhere}h1{font-size:24px}h2{font-size:20px}@page{margin:18mm}@media print{body{padding:0}main{max-width:none}}</style></head><body><main><h1 dir="auto">' + escape(version.title) + '</h1>' + (draft ? '<p><strong>' + escape(draftLabel) + '</strong><br>' + escape(draftHint) + '</p>' : '') + sections + '</main></body></html>');
+      const safeVersionTitle = _ltsText(version.title);
+      popup.document.write('<!doctype html><html lang="' + escape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\';"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escape(safeVersionTitle) + '</title><style>*{box-sizing:border-box}body{font:18px/1.6 system-ui;color:#111;background:#fff;margin:0;padding:24px}main{max-width:48rem;margin:auto}p{white-space:pre-wrap;overflow-wrap:anywhere}section{break-inside:avoid}h1,h2{overflow-wrap:anywhere}h1{font-size:24px}h2{font-size:20px}@page{margin:18mm}@media print{body{padding:0}main{max-width:none}}</style></head><body><main><h1 dir="auto">' + escape(safeVersionTitle) + '</h1>' + (draft ? '<p><strong>' + escape(draftLabel) + '</strong><br>' + escape(draftHint) + '</p>' : '') + sections + '</main></body></html>');
       popup.document.close();
       popup.focus();
       popup.print();
@@ -300,6 +301,8 @@ function LessonSpokenDirections({
     }
   };
   const button = 'min-h-11 rounded-lg border border-indigo-600 bg-white px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
+  const bionicOn = typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function' ? window.__alloUseBionic() : false;
+  const bt = s => bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function' ? window.__alloBionicReact(s) : s;
   const step = version.steps[stepIndex];
   const move = next => {
     if (!Number.isInteger(next) || next < 0 || next >= version.steps.length) return;
@@ -309,14 +312,33 @@ function LessonSpokenDirections({
     onStepChange?.(next);
     refresh();
   };
+  const handleTeleprompterKeyDown = event => {
+    if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const tag = String(event.target?.tagName || '').toLowerCase();
+    const isTextControl = tag === 'input' || tag === 'textarea' || tag === 'select' || event.target?.isContentEditable;
+    if (isTextControl) return;
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      move(stepIndex + 1);
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      move(stepIndex - 1);
+    } else if ((event.key === ' ' || event.key === 'Spacebar') && tag !== 'button' && tag !== 'a' && tag !== 'summary') {
+      event.preventDefault();
+      move(stepIndex + 1);
+    }
+  };
   return /*#__PURE__*/React.createElement("dialog", {
     ref: surface,
     "data-spoken-directions": true,
+    "data-spoken-shortcuts": "ArrowLeft ArrowRight Space",
     "aria-modal": "true",
     onCancel: event => {
       event.preventDefault();
       onBack();
     },
+    onKeyDown: handleTeleprompterKeyDown,
     style: {
       position: 'fixed',
       inset: 0,
@@ -361,7 +383,7 @@ function LessonSpokenDirections({
     }
   }, fullscreen ? tr('exit_fullscreen', 'Exit full screen') : tr('fullscreen', 'Full screen'))), /*#__PURE__*/React.createElement("h3", {
     className: "break-words text-xl font-black"
-  }, version.title), /*#__PURE__*/React.createElement("p", {
+  }, _ltsText(version.title)), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
   }, tr('spoken_hint', 'Only wording addressed to students is shown. Playback stops after each spoken block. Review older scripts for delivery notes before playing.')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-2 text-sm text-slate-700"
@@ -445,7 +467,9 @@ function LessonSpokenDirections({
     className: button,
     disabled: stepIndex >= version.steps.length - 1,
     onClick: () => move(stepIndex + 1)
-  }, tr('next_step', 'Next step'))), /*#__PURE__*/React.createElement("label", {
+  }, tr('next_step', 'Next step'))), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-600"
+  }, tr('spoken_keyboard_hint', 'Tip: Press Left/Right arrow keys or Space to move between steps.')), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-bold"
   }, tr('jump_step', 'Go to step'), /*#__PURE__*/React.createElement("select", {
     "aria-label": tr('jump_step', 'Go to step'),
@@ -455,11 +479,11 @@ function LessonSpokenDirections({
   }, version.steps.map((item, index) => /*#__PURE__*/React.createElement("option", {
     key: item.id || index,
     value: index
-  }, index + 1, ". ", item.title)))), /*#__PURE__*/React.createElement("h4", {
+  }, index + 1, ". ", _ltsText(item.title))))), /*#__PURE__*/React.createElement("h4", {
     "aria-live": "polite",
     "aria-atomic": "true",
     className: "break-words text-lg font-bold"
-  }, stepIndex + 1, ". ", step?.title), !segments.some(segment => segment.stepIndex === stepIndex) && /*#__PURE__*/React.createElement("p", {
+  }, stepIndex + 1, ". ", _ltsText(step?.title)), !segments.some(segment => segment.stepIndex === stepIndex) && /*#__PURE__*/React.createElement("p", {
     className: "rounded-lg bg-slate-100 p-3 text-slate-700"
   }, tr('spoken_step_empty', 'This step has no spoken directions. Choose another step or edit the full script.')), segments.filter(segment => segment.stepIndex === stepIndex).map(segment => /*#__PURE__*/React.createElement("div", {
     key: segment.id,
@@ -472,7 +496,7 @@ function LessonSpokenDirections({
   }, "❝ "), segment.field === 'checkQuestion' ? tr('ask_aloud', 'Ask aloud') : tr('say_aloud', 'Say aloud')), /*#__PURE__*/React.createElement("p", {
     dir: "auto",
     className: 'whitespace-pre-wrap break-words leading-relaxed ' + (large ? 'text-2xl' : 'text-xl')
-  }, segment.spokenText), /*#__PURE__*/React.createElement("button", {
+  }, bt(segment.spokenText)), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: button,
     disabled: !!draft || working === 'save',
@@ -772,6 +796,8 @@ function LessonTeachingScriptPanel(props) {
   const hostRun = String(scriptRun.planId || '') === planId ? scriptRun : {};
   const busy = !!hostRun.busy || localBusy;
   const error = localError || _ltsText(hostRun.error?.message || hostRun.error);
+  const bionicOn = typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function' ? window.__alloUseBionic() : false;
+  const bt = s => bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function' ? window.__alloBionicReact(s) : s;
   const aiDoor = (() => {
     try {
       return typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', props.t) : null;
@@ -890,6 +916,121 @@ function LessonTeachingScriptPanel(props) {
       downloads.current.clear();
     };
   }, []);
+  const deliveryStorageKey = version?.id ? 'alloflow:script-done:' + planId + ':' + String(version.id) : '';
+  const [completedSteps, setCompletedSteps] = React.useState(() => {
+    if (!deliveryStorageKey) return new Set();
+    try {
+      const raw = window.localStorage?.getItem(deliveryStorageKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? new Set(parsed.map(String)) : new Set();
+    } catch (_) {
+      return new Set();
+    }
+  });
+  const prevDeliveryKeyRef = React.useRef(deliveryStorageKey);
+  React.useEffect(() => {
+    if (prevDeliveryKeyRef.current === deliveryStorageKey) return;
+    prevDeliveryKeyRef.current = deliveryStorageKey;
+    if (!deliveryStorageKey) {
+      setCompletedSteps(new Set());
+      return;
+    }
+    try {
+      const raw = window.localStorage?.getItem(deliveryStorageKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      setCompletedSteps(Array.isArray(parsed) ? new Set(parsed.map(String)) : new Set());
+    } catch (_) {
+      setCompletedSteps(new Set());
+    }
+  }, [deliveryStorageKey]);
+  const persistCompletedSteps = nextSet => {
+    if (!deliveryStorageKey) return;
+    try {
+      if (nextSet.size === 0) window.localStorage?.removeItem(deliveryStorageKey);else window.localStorage?.setItem(deliveryStorageKey, JSON.stringify(Array.from(nextSet)));
+    } catch (_) {}
+  };
+  const toggleStepDone = stepKey => {
+    setCompletedSteps(prev => {
+      const next = new Set(prev);
+      if (next.has(stepKey)) next.delete(stepKey);else next.add(stepKey);
+      persistCompletedSteps(next);
+      return next;
+    });
+  };
+  const resetCompletedSteps = () => {
+    const empty = new Set();
+    setCompletedSteps(empty);
+    persistCompletedSteps(empty);
+  };
+  const [speakingStepIdx, setSpeakingStepIdx] = React.useState(null);
+  const stepSpeechTokenRef = React.useRef(0);
+  const hasSpeechBackend = typeof window !== 'undefined' && (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function' || typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function');
+  const stopStepSpeech = React.useCallback(() => {
+    stepSpeechTokenRef.current += 1;
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') {
+        window.AlloSpeechPlayer.stop();
+      } else if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    } catch (_) {}
+    if (mounted.current) setSpeakingStepIdx(null);
+  }, []);
+  React.useEffect(() => {
+    const onSpeechState = event => {
+      const st = event?.detail?.state;
+      if (st === 'idle' || st === 'stopped' || st === 'ended' || st === 'error') {
+        if (mounted.current) setSpeakingStepIdx(null);
+      }
+    };
+    if (typeof window !== 'undefined') window.addEventListener('allo-speech-state', onSpeechState);
+    return () => {
+      if (typeof window !== 'undefined') window.removeEventListener('allo-speech-state', onSpeechState);
+      stopStepSpeech();
+    };
+  }, [stopStepSpeech]);
+  React.useEffect(() => {
+    if (speakingStepIdx !== null && (draft || spokenOnly)) stopStepSpeech();
+  }, [draft, spokenOnly, version?.id, speakingStepIdx, stopStepSpeech]);
+  const toggleRehearseStep = (step, index) => {
+    if (speakingStepIdx === index) {
+      stopStepSpeech();
+      return;
+    }
+    const speechText = [_ltsText(step.teacherSays).trim(), _ltsText(step.checkQuestion).trim()].filter(Boolean).join('. ');
+    if (!speechText) return;
+    const token = ++stepSpeechTokenRef.current;
+    const speechLang = version?.inputSnapshot?.settings?.language || plan.config?.language || defaultSettings.language || undefined;
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+        window.AlloSpeechPlayer.stop?.();
+        setSpeakingStepIdx(index);
+        const res = window.AlloSpeechPlayer.speak(speechText, speechLang ? {
+          language: speechLang
+        } : undefined);
+        if (res && typeof res.then === 'function') {
+          res.catch(() => {}).finally(() => {
+            if (mounted.current && stepSpeechTokenRef.current === token) setSpeakingStepIdx(null);
+          });
+        }
+      } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+        window.speechSynthesis.cancel();
+        const utter = new window.SpeechSynthesisUtterance(speechText);
+        utter.onend = () => {
+          if (mounted.current && stepSpeechTokenRef.current === token) setSpeakingStepIdx(null);
+        };
+        utter.onerror = () => {
+          if (mounted.current && stepSpeechTokenRef.current === token) setSpeakingStepIdx(null);
+        };
+        setSpeakingStepIdx(index);
+        window.speechSynthesis.speak(utter);
+      }
+    } catch (_) {
+      if (mounted.current) setSpeakingStepIdx(null);
+    }
+  };
+  const doneStepCount = !draft ? steps.reduce((acc, step, idx) => acc + (completedSteps.has(String(step.id || idx)) ? 1 : 0), 0) : 0;
+  const remainingMinutes = !draft ? steps.reduce((sum, step, idx) => sum + (completedSteps.has(String(step.id || idx)) ? 0 : Math.max(0, Number(step.minutes || 0))), 0) : timings;
   React.useEffect(() => {
     if (regenerateFocus.current === null || regeneratingStep !== null) return;
     const index = regenerateFocus.current;
@@ -1180,9 +1321,10 @@ function LessonTeachingScriptPanel(props) {
     setTimeout(() => discardToggle.current?.focus(), 0);
   };
   // Resolves true once the edits are in the plan; quiet keeps focus on the plan's Done button.
+  const saveOwner = React.useRef(0);
   const saveEdits = async quiet => {
     if (generatingRequest.current || busy || savingRequest.current || !draft || !version || saving || staleDraft || invalidTiming || invalidDraftText || invalidDraftLength || typeof onUpdateTeachingScript !== 'function') return false;
-    const owner = ++requestOwner.current;
+    const owner = ++saveOwner.current;
     savingRequest.current = true;
     setConfirmDiscard(false);
     setSaving(true);
@@ -1202,7 +1344,7 @@ function LessonTeachingScriptPanel(props) {
         const clearStatus = _ltsClearSubmittedDraft(recoveryKey, draftScope, planId, submittedDraft);
         if (mounted.current && clearStatus) setRecoveryStatus(clearStatus);
       }
-      if (!mounted.current || owner !== requestOwner.current) return result?.ok === true;
+      if (!mounted.current || owner !== saveOwner.current) return result?.ok === true;
       if (result?.ok !== true) {
         setLocalError(_ltsText(result?.error?.message || result?.error) || (result === false || result?.ok === false ? tr('save_failed', 'Edits could not be added to the plan. Your draft is still here.') : tr('save_unconfirmed', 'Saving could not be confirmed. Your draft is still here. Try saving again.')));
         return false;
@@ -1217,12 +1359,12 @@ function LessonTeachingScriptPanel(props) {
       setNotice(tr('edits_added', 'Script edits added to this plan.'));
       return true;
     } catch (failure) {
-      if (mounted.current && owner === requestOwner.current) setLocalError(_ltsText(failure?.message) || tr('save_failed', 'Edits could not be added to the plan. Your draft is still here.'));
+      if (mounted.current && owner === saveOwner.current) setLocalError(_ltsText(failure?.message) || tr('save_failed', 'Edits could not be added to the plan. Your draft is still here.'));
       return false;
     } finally {
-      if (mounted.current && owner === requestOwner.current) {
+      if (owner === saveOwner.current) {
         savingRequest.current = false;
-        setSaving(false);
+        if (mounted.current) setSaving(false);
       }
     }
   };
@@ -1954,176 +2096,213 @@ function LessonTeachingScriptPanel(props) {
   }, tr('choose_step', 'Choose a step…')), steps.map((step, index) => /*#__PURE__*/React.createElement("option", {
     key: step.id || index,
     value: index
-  }, index + 1, ". ", _ltsText(step.title)))))), /*#__PURE__*/React.createElement("ol", {
+  }, index + 1, ". ", _ltsText(step.title)))))), !draft && steps.length >= 2 && /*#__PURE__*/React.createElement("div", {
+    "data-script-delivery-bar": "true",
+    className: "no-print flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-sm text-indigo-950"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold",
+    "data-script-pacing-status": "true",
+    "aria-live": "polite"
+  }, doneStepCount === steps.length ? tr('delivery_all_done', '✓ All {total} steps delivered').replace('{total}', String(steps.length)) : tr('delivery_pacing', '✓ {done}/{total} steps · {mins} min remaining').replace('{done}', String(doneStepCount)).replace('{total}', String(steps.length)).replace('{mins}', String(remainingMinutes))), doneStepCount > 0 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-script-delivery-reset": "true",
+    onClick: resetCompletedSteps,
+    className: "min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-900 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, tr('delivery_reset', 'Reset pacing'))), /*#__PURE__*/React.createElement("ol", {
     id: id + '-steps',
     className: "space-y-4"
-  }, steps.map((step, index) => /*#__PURE__*/React.createElement("li", {
-    key: step.id || index,
-    className: "min-w-0 space-y-3 break-words rounded-xl border border-slate-300 p-3 sm:p-4",
-    "data-teaching-step": step.id || index,
-    id: id + '-script-step-' + index
-  }, draft ? /*#__PURE__*/React.createElement("div", {
-    className: "grid gap-3 sm:grid-cols-[1fr_8rem]"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "block text-sm font-bold"
-  }, tr('step_title', 'Step title'), " ", index + 1, /*#__PURE__*/React.createElement("input", _extends({}, editFieldProps(step, index, "title"), {
-    "aria-label": tr("step_title", "Step title") + " " + (index + 1),
-    className: fieldClass + ' mt-1',
-    value: step.title || '',
-    maxLength: 240,
-    disabled: saving || busy,
-    onChange: event => updateStep(index, 'title', event.target.value)
-  })), editFieldError(step, index, 'title')), /*#__PURE__*/React.createElement("label", {
-    className: "block text-sm font-bold"
-  }, tr('step_minutes', 'Minutes'), " ", index + 1, /*#__PURE__*/React.createElement("input", _extends({}, editFieldProps(step, index, "minutes"), {
-    "aria-label": tr("step_minutes", "Minutes") + " " + (index + 1),
-    className: fieldClass + ' mt-1',
-    type: "number",
-    min: 1,
-    max: versionRules.maxStepMinutes,
-    step: 1,
-    value: step.minutes,
-    disabled: saving || busy,
-    onChange: event => updateStep(index, 'minutes', event.target.value)
-  })), editFieldError(step, index, 'minutes'))) : /*#__PURE__*/React.createElement("h5", {
-    "data-script-step-heading": true,
-    tabIndex: -1,
-    className: "rounded font-black text-indigo-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
-  }, index + 1, ". ", _ltsText(step.title), " ", /*#__PURE__*/React.createElement("span", {
-    className: "font-normal"
-  }, "· ", step.minutes, " ", tr('minutes', 'minutes'), phaseLabel(step.phase) ? ' · ' + phaseLabel(step.phase) : '')), canGenerate && typeof onRegenerateTeachingStep === 'function' && typeof onUpdateTeachingScript === 'function' && /*#__PURE__*/React.createElement("div", {
-    className: "space-y-2 no-print"
-  }, regenerateIndex === index ? /*#__PURE__*/React.createElement("div", {
-    role: "group",
-    "aria-label": tr('regenerate_step', 'Regenerate step') + ' ' + (index + 1),
-    className: "space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "block text-sm font-bold"
-  }, tr('step_instruction', 'What should change? (optional)'), " · ", index + 1, /*#__PURE__*/React.createElement("textarea", {
-    autoFocus: true,
-    "aria-label": tr('step_instruction', 'What should change? (optional)') + ' · ' + (index + 1),
-    rows: 2,
-    maxLength: 2000,
-    className: fieldClass + ' mt-1',
-    value: regenerateInstruction,
-    disabled: busy || saving || deleting,
-    onChange: event => setRegenerateInstruction(event.target.value)
-  })), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-700"
-  }, tr('step_regenerate_hint', 'Only this step will change. Review the replacement in your draft before saving.')), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-2"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: buttonClass,
-    "aria-describedby": regenerationIssue(index) ? id + '-regenerate-issue-' + index : undefined,
-    disabled: busy || saving || deleting || !!regenerationIssue(index) || staleDraft,
-    onClick: () => regenerateStep(index)
-  }, tr('generate_replacement', 'Generate replacement')), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: buttonClass,
-    disabled: busy || saving || deleting,
-    onClick: () => {
-      regenerateFocus.current = index;
-      setRegenerateIndex(null);
-      setRegenerateInstruction('');
-    }
-  }, tr('keep_step', 'Keep current step')))) : /*#__PURE__*/React.createElement("button", {
-    id: id + '-regenerate-' + index,
-    type: "button",
-    className: buttonClass,
-    "aria-label": tr('regenerate_step', 'Regenerate step') + ' ' + (index + 1),
-    "aria-describedby": regenerationIssue(index) ? id + '-regenerate-issue-' + index : undefined,
-    disabled: busy || saving || deleting || !!regenerationIssue(index) || staleDraft,
-    onClick: () => {
-      setRegenerateIndex(index);
-      setRegenerateInstruction('');
-      setLocalError('');
-      setNotice('');
-    }
-  }, tr('regenerate_step', 'Regenerate step')), regenerationIssue(index) && /*#__PURE__*/React.createElement("p", {
-    id: id + '-regenerate-issue-' + index,
-    className: "text-xs text-red-900"
-  }, regenerationIssue(index))), draft && stepChanged(index) && /*#__PURE__*/React.createElement("div", {
-    className: "space-y-1 no-print"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: buttonClass,
-    "aria-label": tr('restore_saved_step', 'Restore saved step') + ' ' + (index + 1),
-    disabled: busy || saving || deleting || staleDraft,
-    onClick: () => restoreSavedStep(index)
-  }, tr('restore_saved_step', 'Restore saved step')), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600"
-  }, tr('restore_saved_step_hint', 'Restore this step’s saved wording and minutes. Other steps stay as edited; check the total time before saving. You can undo this restore.'))), draft && stepUndo.filter(entry => entry.stepId === step.id).map(entry => /*#__PURE__*/React.createElement("div", {
-    key: entry.stepId,
-    className: "space-y-1 no-print"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: buttonClass,
-    "aria-label": (entry.kind === 'restore' ? tr('undo_step_restore', 'Undo step restore') : tr('undo_step_replacement', 'Undo step replacement')) + ' ' + (index + 1),
-    disabled: busy || saving || deleting || staleDraft,
-    onClick: () => undoStepChange(index)
-  }, entry.kind === 'restore' ? tr('undo_step_restore', 'Undo step restore') : tr('undo_step_replacement', 'Undo step replacement')), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600"
-  }, entry.kind === 'restore' ? tr('undo_step_restore_hint', 'Bring back the wording and minutes from before this restore. Editing this step will clear its undo option.') : tr('undo_step_hint', 'Restore the wording from before this replacement. Editing this step will clear its undo option.')))), /*#__PURE__*/React.createElement("div", {
-    className: "grid gap-3 sm:grid-cols-2"
-  }, stepFields.map(([key, label]) => /*#__PURE__*/React.createElement("div", {
-    key: key,
-    className: (key === 'teacherSays' ? 'sm:col-span-2 ' : '') + (['teacherSays', 'checkQuestion'].includes(key) ? 'rounded-lg border-l-4 border-indigo-600 bg-indigo-50 p-3' : '')
-  }, ['teacherSays', 'checkQuestion'].includes(key) && /*#__PURE__*/React.createElement("p", {
-    className: "mb-1 text-xs font-bold text-indigo-900"
-  }, /*#__PURE__*/React.createElement("span", {
-    "aria-hidden": "true"
-  }, "❝ "), key === 'teacherSays' ? tr('say_aloud', 'Say aloud') : tr('ask_aloud', 'Ask aloud')), draft ? /*#__PURE__*/React.createElement("label", {
-    className: "block text-sm font-bold text-slate-900"
-  }, label, " · ", index + 1, /*#__PURE__*/React.createElement("textarea", _extends({}, editFieldProps(step, index, key), {
-    "aria-label": label + " · " + (index + 1),
-    className: fieldClass + ' mt-1',
-    rows: 3,
-    value: step[key] || '',
-    maxLength: 16000,
-    disabled: saving || busy,
-    onChange: event => updateStep(index, key, event.target.value)
-  })), editFieldError(step, index, key)) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h6", {
-    className: "text-xs font-black uppercase tracking-wide text-slate-600"
-  }, label), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 whitespace-pre-wrap text-sm text-slate-900"
-  }, _ltsText(step[key]) || '—'))))), Array.isArray(step.resourceIds) && step.resourceIds.length > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap items-center gap-2"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold text-slate-700"
-  }, tr('step_materials', 'Lesson resources:')), step.resourceIds.map(resourceId => {
-    const matches = materials.filter(item => String(item.id) === String(resourceId));
-    const material = matches.length === 1 ? matches[0] : null;
-    return material && typeof onOpenTeachingMaterial === 'function' ? /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      key: resourceId,
-      className: buttonClass + ' no-print',
-      disabled: !!draft || saving || busy,
-      onClick: () => onOpenTeachingMaterial(material.id)
-    }, _ltsText(material.title || material.data?.title) || _ltsText(material.type)) : /*#__PURE__*/React.createElement("span", {
-      key: resourceId,
-      className: "text-sm text-slate-700"
-    }, material ? _ltsText(material.title || material.data?.title) || _ltsText(material.type) : matches.length > 1 ? tr('source_ambiguous', 'Duplicate resource ID') + ': ' + materialName(resourceId) : tr('missing_material', 'Resource no longer available in this lesson') + ': ' + materialName(resourceId));
-  })), Array.isArray(step.recommendationIds) && step.recommendationIds.length > 0 && /*#__PURE__*/React.createElement("ul", {
-    className: "space-y-2 rounded-lg bg-indigo-50 p-3 text-sm text-indigo-950",
-    "aria-label": tr('step_evidence', 'Teaching guidance used in this step')
-  }, step.recommendationIds.map(recommendationId => {
-    const entry = recommendationById.get(String(recommendationId));
-    if (!entry) return /*#__PURE__*/React.createElement("li", {
-      key: recommendationId
-    }, tr('missing_recommendation', 'The cited teaching guidance is unavailable. Review this step.'));
-    const href = _ltsSafeUrl(entry.source.url);
+  }, steps.map((step, index) => {
+    const stepKey = String(step.id || index);
+    const isStepDone = !draft && completedSteps.has(stepKey);
+    const isStepSpeaking = !draft && speakingStepIdx === index;
+    const canRehearse = hasSpeechBackend && (_ltsText(step.teacherSays).trim().length > 0 || _ltsText(step.checkQuestion).trim().length > 0);
     return /*#__PURE__*/React.createElement("li", {
-      key: recommendationId
-    }, /*#__PURE__*/React.createElement("p", null, _ltsText(entry.recommendation.text)), /*#__PURE__*/React.createElement("p", {
-      className: "mt-1 text-xs"
-    }, href ? /*#__PURE__*/React.createElement("a", {
-      href: href,
-      target: "_blank",
-      rel: "noopener noreferrer",
-      className: "font-bold underline"
-    }, _ltsText(entry.source.title)) : _ltsText(entry.source.title), _ltsLocator(entry.recommendation.locator) ? ' · ' + _ltsLocator(entry.recommendation.locator) : '', entry.recommendation.evidenceLevel ? ' · ' + _ltsText(entry.recommendation.evidenceLevel) : ''));
-  }))))), draft && /*#__PURE__*/React.createElement("div", {
+      key: step.id || index,
+      className: 'min-w-0 space-y-3 break-words rounded-xl border p-3 sm:p-4 ' + (isStepDone ? 'border-emerald-300 bg-emerald-50/30' : 'border-slate-300'),
+      "data-teaching-step": step.id || index,
+      "data-step-done": isStepDone ? 'true' : undefined,
+      id: id + '-script-step-' + index
+    }, draft ? /*#__PURE__*/React.createElement("div", {
+      className: "grid gap-3 sm:grid-cols-[1fr_8rem]"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "block text-sm font-bold"
+    }, tr('step_title', 'Step title'), " ", index + 1, /*#__PURE__*/React.createElement("input", _extends({}, editFieldProps(step, index, "title"), {
+      "aria-label": tr("step_title", "Step title") + " " + (index + 1),
+      className: fieldClass + ' mt-1',
+      value: step.title || '',
+      maxLength: 240,
+      disabled: saving || busy,
+      onChange: event => updateStep(index, 'title', event.target.value)
+    })), editFieldError(step, index, 'title')), /*#__PURE__*/React.createElement("label", {
+      className: "block text-sm font-bold"
+    }, tr('step_minutes', 'Minutes'), " ", index + 1, /*#__PURE__*/React.createElement("input", _extends({}, editFieldProps(step, index, "minutes"), {
+      "aria-label": tr("step_minutes", "Minutes") + " " + (index + 1),
+      className: fieldClass + ' mt-1',
+      type: "number",
+      min: 1,
+      max: versionRules.maxStepMinutes,
+      step: 1,
+      value: step.minutes,
+      disabled: saving || busy,
+      onChange: event => updateStep(index, 'minutes', event.target.value)
+    })), editFieldError(step, index, 'minutes'))) : /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap items-start justify-between gap-2"
+    }, /*#__PURE__*/React.createElement("h5", {
+      "data-script-step-heading": true,
+      tabIndex: -1,
+      className: "min-w-0 flex-1 rounded font-black text-indigo-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+    }, index + 1, ". ", _ltsText(step.title), " ", /*#__PURE__*/React.createElement("span", {
+      className: "font-normal"
+    }, "· ", step.minutes, " ", tr('minutes', 'minutes'), phaseLabel(step.phase) ? ' · ' + phaseLabel(step.phase) : '')), /*#__PURE__*/React.createElement("div", {
+      className: "no-print flex flex-wrap items-center gap-1.5 shrink-0"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-script-step-done": index,
+      "aria-pressed": isStepDone,
+      "aria-label": (isStepDone ? tr('mark_step_undone', 'Mark step {number} as not done') : tr('mark_step_done', 'Mark step {number} as done')).replace('{number}', String(index + 1)),
+      onClick: () => toggleStepDone(stepKey),
+      className: 'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepDone ? 'border-emerald-500 bg-emerald-100 text-emerald-950 hover:bg-emerald-200' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')
+    }, isStepDone ? tr('step_done_checked', '✓ Done') : tr('step_done_unchecked', 'Mark done')), canRehearse && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-script-step-listen": index,
+      "aria-pressed": isStepSpeaking,
+      "aria-label": (isStepSpeaking ? tr('stop_rehearse_step', 'Stop rehearsing step {number}') : tr('rehearse_step', 'Rehearse step {number} aloud')).replace('{number}', String(index + 1)),
+      onClick: () => toggleRehearseStep(step, index),
+      className: 'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepSpeaking ? 'border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800' : 'border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100')
+    }, isStepSpeaking ? tr('stop_rehearse_label', '⏹ Stop') : tr('rehearse_label', '🔊 Rehearse')))), canGenerate && typeof onRegenerateTeachingStep === 'function' && typeof onUpdateTeachingScript === 'function' && /*#__PURE__*/React.createElement("div", {
+      className: "space-y-2 no-print"
+    }, regenerateIndex === index ? /*#__PURE__*/React.createElement("div", {
+      role: "group",
+      "aria-label": tr('regenerate_step', 'Regenerate step') + ' ' + (index + 1),
+      className: "space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "block text-sm font-bold"
+    }, tr('step_instruction', 'What should change? (optional)'), " · ", index + 1, /*#__PURE__*/React.createElement("textarea", {
+      autoFocus: true,
+      "aria-label": tr('step_instruction', 'What should change? (optional)') + ' · ' + (index + 1),
+      rows: 2,
+      maxLength: 2000,
+      className: fieldClass + ' mt-1',
+      value: regenerateInstruction,
+      disabled: busy || saving || deleting,
+      onChange: event => setRegenerateInstruction(event.target.value)
+    })), /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-slate-700"
+    }, tr('step_regenerate_hint', 'Only this step will change. Review the replacement in your draft before saving.')), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: buttonClass,
+      "aria-describedby": regenerationIssue(index) ? id + '-regenerate-issue-' + index : undefined,
+      disabled: busy || saving || deleting || !!regenerationIssue(index) || staleDraft,
+      onClick: () => regenerateStep(index)
+    }, tr('generate_replacement', 'Generate replacement')), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: buttonClass,
+      disabled: busy || saving || deleting,
+      onClick: () => {
+        regenerateFocus.current = index;
+        setRegenerateIndex(null);
+        setRegenerateInstruction('');
+      }
+    }, tr('keep_step', 'Keep current step')))) : /*#__PURE__*/React.createElement("button", {
+      id: id + '-regenerate-' + index,
+      type: "button",
+      className: buttonClass,
+      "aria-label": tr('regenerate_step', 'Regenerate step') + ' ' + (index + 1),
+      "aria-describedby": regenerationIssue(index) ? id + '-regenerate-issue-' + index : undefined,
+      disabled: busy || saving || deleting || !!regenerationIssue(index) || staleDraft,
+      onClick: () => {
+        setRegenerateIndex(index);
+        setRegenerateInstruction('');
+        setLocalError('');
+        setNotice('');
+      }
+    }, tr('regenerate_step', 'Regenerate step')), regenerationIssue(index) && /*#__PURE__*/React.createElement("p", {
+      id: id + '-regenerate-issue-' + index,
+      className: "text-xs text-red-900"
+    }, regenerationIssue(index))), draft && stepChanged(index) && /*#__PURE__*/React.createElement("div", {
+      className: "space-y-1 no-print"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: buttonClass,
+      "aria-label": tr('restore_saved_step', 'Restore saved step') + ' ' + (index + 1),
+      disabled: busy || saving || deleting || staleDraft,
+      onClick: () => restoreSavedStep(index)
+    }, tr('restore_saved_step', 'Restore saved step')), /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-slate-600"
+    }, tr('restore_saved_step_hint', 'Restore this step’s saved wording and minutes. Other steps stay as edited; check the total time before saving. You can undo this restore.'))), draft && stepUndo.filter(entry => entry.stepId === step.id).map(entry => /*#__PURE__*/React.createElement("div", {
+      key: entry.stepId,
+      className: "space-y-1 no-print"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: buttonClass,
+      "aria-label": (entry.kind === 'restore' ? tr('undo_step_restore', 'Undo step restore') : tr('undo_step_replacement', 'Undo step replacement')) + ' ' + (index + 1),
+      disabled: busy || saving || deleting || staleDraft,
+      onClick: () => undoStepChange(index)
+    }, entry.kind === 'restore' ? tr('undo_step_restore', 'Undo step restore') : tr('undo_step_replacement', 'Undo step replacement')), /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-slate-600"
+    }, entry.kind === 'restore' ? tr('undo_step_restore_hint', 'Bring back the wording and minutes from before this restore. Editing this step will clear its undo option.') : tr('undo_step_hint', 'Restore the wording from before this replacement. Editing this step will clear its undo option.')))), /*#__PURE__*/React.createElement("div", {
+      className: "grid gap-3 sm:grid-cols-2"
+    }, stepFields.map(([key, label]) => /*#__PURE__*/React.createElement("div", {
+      key: key,
+      className: (key === 'teacherSays' ? 'sm:col-span-2 ' : '') + (['teacherSays', 'checkQuestion'].includes(key) ? 'rounded-lg border-l-4 border-indigo-600 bg-indigo-50 p-3' : '')
+    }, ['teacherSays', 'checkQuestion'].includes(key) && /*#__PURE__*/React.createElement("p", {
+      className: "mb-1 text-xs font-bold text-indigo-900"
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "❝ "), key === 'teacherSays' ? tr('say_aloud', 'Say aloud') : tr('ask_aloud', 'Ask aloud')), draft ? /*#__PURE__*/React.createElement("label", {
+      className: "block text-sm font-bold text-slate-900"
+    }, label, " · ", index + 1, /*#__PURE__*/React.createElement("textarea", _extends({}, editFieldProps(step, index, key), {
+      "aria-label": label + " · " + (index + 1),
+      className: fieldClass + ' mt-1',
+      rows: 3,
+      value: step[key] || '',
+      maxLength: 16000,
+      disabled: saving || busy,
+      onChange: event => updateStep(index, key, event.target.value)
+    })), editFieldError(step, index, key)) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h6", {
+      className: "text-xs font-black uppercase tracking-wide text-slate-600"
+    }, label), /*#__PURE__*/React.createElement("p", {
+      className: "mt-1 whitespace-pre-wrap text-sm text-slate-900"
+    }, bt(_ltsText(step[key])) || '—'))))), Array.isArray(step.resourceIds) && step.resourceIds.length > 0 && /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap items-center gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-xs font-bold text-slate-700"
+    }, tr('step_materials', 'Lesson resources:')), step.resourceIds.map(resourceId => {
+      const matches = materials.filter(item => String(item.id) === String(resourceId));
+      const material = matches.length === 1 ? matches[0] : null;
+      return material && typeof onOpenTeachingMaterial === 'function' ? /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        key: resourceId,
+        className: buttonClass + ' no-print',
+        disabled: !!draft || saving || busy,
+        onClick: () => onOpenTeachingMaterial(material.id)
+      }, _ltsText(material.title || material.data?.title) || _ltsText(material.type)) : /*#__PURE__*/React.createElement("span", {
+        key: resourceId,
+        className: "text-sm text-slate-700"
+      }, material ? _ltsText(material.title || material.data?.title) || _ltsText(material.type) : matches.length > 1 ? tr('source_ambiguous', 'Duplicate resource ID') + ': ' + materialName(resourceId) : tr('missing_material', 'Resource no longer available in this lesson') + ': ' + materialName(resourceId));
+    })), Array.isArray(step.recommendationIds) && step.recommendationIds.length > 0 && /*#__PURE__*/React.createElement("ul", {
+      className: "space-y-2 rounded-lg bg-indigo-50 p-3 text-sm text-indigo-950",
+      "aria-label": tr('step_evidence', 'Teaching guidance used in this step')
+    }, step.recommendationIds.map(recommendationId => {
+      const entry = recommendationById.get(String(recommendationId));
+      if (!entry) return /*#__PURE__*/React.createElement("li", {
+        key: recommendationId
+      }, tr('missing_recommendation', 'The cited teaching guidance is unavailable. Review this step.'));
+      const href = _ltsSafeUrl(entry.source.url);
+      return /*#__PURE__*/React.createElement("li", {
+        key: recommendationId
+      }, /*#__PURE__*/React.createElement("p", null, bt(_ltsText(entry.recommendation.text))), /*#__PURE__*/React.createElement("p", {
+        className: "mt-1 text-xs"
+      }, href ? /*#__PURE__*/React.createElement("a", {
+        href: href,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        className: "font-bold underline"
+      }, _ltsText(entry.source.title)) : _ltsText(entry.source.title), _ltsLocator(entry.recommendation.locator) ? ' · ' + _ltsLocator(entry.recommendation.locator) : '', entry.recommendation.evidenceLevel ? ' · ' + _ltsText(entry.recommendation.evidenceLevel) : ''));
+    })));
+  })), draft && /*#__PURE__*/React.createElement("div", {
     ref: editActions,
     tabIndex: -1,
     role: "region",
@@ -2208,7 +2387,7 @@ function LessonTeachingScriptPanel(props) {
       className: "mt-2 list-disc space-y-1 pl-5"
     }, source.recommendations.filter(recommendation => recommendation && typeof recommendation === 'object').map((recommendation, offset) => /*#__PURE__*/React.createElement("li", {
       key: recommendation.id || offset
-    }, _ltsText(recommendation.text), _ltsLocator(recommendation.locator) ? ' (' + _ltsLocator(recommendation.locator) + ')' : ''))), (source.scope || source.evidenceLevel || source.retrievedAt) && /*#__PURE__*/React.createElement("details", {
+    }, bt(_ltsText(recommendation.text)), _ltsLocator(recommendation.locator) ? ' (' + _ltsLocator(recommendation.locator) + ')' : ''))), (source.scope || source.evidenceLevel || source.retrievedAt) && /*#__PURE__*/React.createElement("details", {
       className: "mt-2"
     }, /*#__PURE__*/React.createElement("summary", {
       className: "min-h-11 cursor-pointer py-3 text-sm leading-5 font-bold text-indigo-800 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"

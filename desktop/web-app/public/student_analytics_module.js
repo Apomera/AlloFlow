@@ -1279,8 +1279,20 @@ try {
   // RFC 4180 quoting; text a spreadsheet would run as a formula stays text.
   function _acCsvCell(value) {
     var text = value == null ? '' : String(value);
-    if (typeof value === 'string' && (/^\s*[=+\-@|]/.test(text) || /^[\t\r\n]/.test(text))) text = "'" + text;
+    if (typeof value !== 'number' && (/^\s*[=+\-@|]/.test(text) || /^[\t\r\n]/.test(text))) text = "'" + text;
     return '"' + text.replace(/"/g, '""') + '"';
+  }
+  function _saOwnArr(obj, key) {
+    return (obj && typeof obj === 'object' && Object.prototype.hasOwnProperty.call(obj, key) && Array.isArray(obj[key])) ? obj[key] : [];
+  }
+  function _saIsPlainObj(val) {
+    return !!(val && typeof val === 'object' && !Array.isArray(val));
+  }
+  function _saSafeSurveyImageSrc(src) {
+    if (typeof src !== 'string') return '';
+    var trimmed = src.trim();
+    if (!trimmed || trimmed.length > 524288) return '';
+    return /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(trimmed) ? trimmed : '';
   }
   function _acDownloadCsv(rows, filename) {
     var csv = String.fromCharCode(0xFEFF) + rows.map(function(r) { return r.map(_acCsvCell).join(','); }).join('\r\n') + '\r\n';
@@ -1441,7 +1453,7 @@ try {
   // The same lines as small text under a table cell's figure. `h` is React.createElement.
   function _acMfSplitSpans(h, t, split, withMissed) {
     var lines = _acMfSplitLines(t, split, withMissed);
-    return lines.length ? lines.map(function(line, i) { return h('span', { key: 'mf' + i, 'data-mf-line': 'true', className: 'block text-[11px] font-normal text-slate-700 whitespace-normal' }, line); }) : null;
+    return lines.length ? lines.map(function(line, i) { return h('span', { key: 'mf' + i, 'data-mf-line': 'true', className: 'block text-xs font-normal text-slate-700 whitespace-normal' }, line); }) : null;
   }
   // Sessions, activities and wrong answers, read from every saved row before
   // the 40-row cut. A summary saved with the student already counted the rows
@@ -1785,7 +1797,7 @@ try {
     var th = 'px-2 py-1 text-left text-xs font-bold text-slate-700 border-b border-emerald-200';
     var td = 'px-2 py-1 text-xs text-slate-800 border-b border-emerald-100 align-top';
     var flag = function(cell) {
-      return cell.needsSupport ? h('span', { 'data-ws-needs-support': 'true', className: 'ml-2 inline-block px-1.5 py-0.5 rounded border border-amber-700 bg-amber-50 text-amber-900 text-[11px] font-bold whitespace-nowrap' },
+      return cell.needsSupport ? h('span', { 'data-ws-needs-support': 'true', className: 'ml-2 inline-block px-1.5 py-0.5 rounded border border-amber-700 bg-amber-50 text-amber-900 text-xs font-bold whitespace-nowrap' },
         '⚠ ' + _acWsText(t, 'class_analytics.ws_needs_support', 'Needs support')) : null;
     };
     var skillRows = [];
@@ -1813,7 +1825,7 @@ try {
             h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_items', 'Items')),
             h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_first_try', 'Right on the first try')))),
           h('tbody', null, skillRows))),
-        h('p', { className: 'text-[11px] text-slate-600 mt-1' }, _acWsText(t, 'class_analytics.ws_needs_support_hint', 'Needs support: under 50% right on the first try, over at least 6 items. Items saved without first-try data are left out and shown as not recorded.'))),
+        h('p', { className: 'text-xs text-slate-600 mt-1' }, _acWsText(t, 'class_analytics.ws_needs_support_hint', 'Needs support: under 50% right on the first try, over at least 6 items. Items saved without first-try data are left out and shown as not recorded.'))),
       h('div', { className: 'bg-white rounded-lg border border-emerald-100 p-2' },
         h('h5', { className: 'text-sm font-bold text-emerald-800 mb-1' }, sessionHeading),
         h('div', { className: 'overflow-x-auto' }, h('table', { 'data-ws-recent-sessions': 'true', className: 'w-full border-collapse' },
@@ -1826,9 +1838,9 @@ try {
           h('tbody', null, sessions.map(function(s) {
             return h('tr', { key: s.number, 'data-ws-session': s.number },
               h('th', { scope: 'row', className: td + ' font-semibold text-left whitespace-nowrap' }, s.date || _acWsText(t, 'class_analytics.ws_date_not_recorded', 'date not recorded'),
-                s.takeHome ? h('span', { 'data-ws-take-home': 'true', title: s.packet || undefined, className: 'ml-1 inline-block px-1 rounded border border-sky-800 bg-sky-50 text-sky-900 text-[11px] font-bold' }, _acWsWhereText(t, 'th')) : null,
-                s.edited ? h('span', { className: 'block text-[11px] font-normal text-slate-700 whitespace-normal' }, _acWsText(t, 'class_analytics.th_edited_short', 'File edited after it was saved')) : null,
-                s.dateFromFile ? h('span', { className: 'block text-[11px] font-normal text-slate-700 whitespace-normal' }, _acWsText(t, 'class_analytics.th_date_from_file', 'Date from the file, not from the results')) : null),
+                s.takeHome ? h('span', { 'data-ws-take-home': 'true', title: s.packet || undefined, className: 'ml-1 inline-block px-1 rounded border border-sky-800 bg-sky-50 text-sky-900 text-xs font-bold' }, _acWsWhereText(t, 'th')) : null,
+                s.edited ? h('span', { className: 'block text-xs font-normal text-slate-700 whitespace-normal' }, _acWsText(t, 'class_analytics.th_edited_short', 'File edited after it was saved')) : null,
+                s.dateFromFile ? h('span', { className: 'block text-xs font-normal text-slate-700 whitespace-normal' }, _acWsText(t, 'class_analytics.th_date_from_file', 'Date from the file, not from the results')) : null),
               h('td', { className: td }, s.activities.map(function(id) { return _acWsActivityName(t, id); }).join(', ')),
               h('td', { className: td }, _acWsFirstTryText(t, s), _acMfSplitSpans(h, t, s.newFacts, true)),
               h('td', { className: td, 'data-ws-more-practice': s.extra ? String(s.extra) : '0' }, s.extra ? _acWsMorePracticeText(t, s) : '–'));
@@ -1839,7 +1851,7 @@ try {
           onClick: function() { _acDownloadCsv(_acWsSessionCsv([student]).rows, 'word_sounds_record_' + _acWsFileStem(student.name || student.nickname) + '_' + _acLocalDate(new Date()) + '.csv'); },
           className: 'mt-2 min-h-11 bg-teal-700 hover:bg-teal-800 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2'
         }, _acWsText(t, 'class_analytics.ws_student_csv_button', "Download this student's Word Sounds record (CSV)")),
-        h('p', { className: 'text-[11px] text-slate-600 mt-1' }, _acWsText(t, 'class_analytics.ws_file_saved_here', 'The file is saved on this device. Nothing is sent anywhere.'))),
+        h('p', { className: 'text-xs text-slate-600 mt-1' }, _acWsText(t, 'class_analytics.ws_file_saved_here', 'The file is saved on this device. Nothing is sent anywhere.'))),
       _acWsOverTimeCard(h, t, summary, th, td, student, opts));
   }
   // "Over time": one row per date, one column per skill strand. Shown when the
@@ -1865,7 +1877,7 @@ try {
               h('td', { className: td }, _acWsWhereText(t, row.where)),
               over.strands.map(function(key) { return h('td', { key: key || 'other', className: td }, row.cells[key] ? _acWsFirstTryText(t, row.cells[key]) : '–'); }));
           })))),
-      over.rows.length >= 2 ? h('p', { className: 'text-[11px] text-slate-600 mt-1' }, _acWsText(t, 'class_analytics.th_over_time_hint', 'Right on the first try, by date. Take-home work is done without a teacher present, so read it beside what you see in class.')) : null,
+      over.rows.length >= 2 ? h('p', { className: 'text-xs text-slate-600 mt-1' }, _acWsText(t, 'class_analytics.th_over_time_hint', 'Right on the first try, by date. Take-home work is done without a teacher present, so read it beside what you see in class.')) : null,
       hasTakeHome && opts && typeof opts.onRemoveTakeHome === 'function' ? h('button', {
         type: 'button',
         'data-th-remove': 'true',
@@ -1958,7 +1970,7 @@ try {
     var th = function(key, fb) { return h('th', { scope: 'col', className: 'text-left font-medium pr-3 py-1' }, _acWsText(t, key, fb)); };
     return h('div', { 'data-sr-trend': 'true', className: 'mt-2' },
       h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' }, charts),
-      h('p', { className: 'text-[11px] text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.sr_chart_note', 'Each dot is a round, oldest on the left.')),
+      h('p', { className: 'text-xs text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.sr_chart_note', 'Each dot is a round, oldest on the left.')),
       h('details', { className: 'mt-1' },
         h('summary', { className: 'cursor-pointer text-slate-800 font-medium' }, _acWsText(t, 'class_analytics.sr_table', 'Rounds as a table')),
         h('div', { className: 'overflow-x-auto' }, h('table', { className: 'mt-1 text-xs text-slate-800' },
@@ -1988,7 +2000,7 @@ try {
     });
     var firstI = idx[0], lastI = idx[idx.length - 1];
     return h('figure', { key: o.kind, 'data-sr-chart': o.kind, className: 'm-0' },
-      h('figcaption', { className: 'text-[11px] font-medium text-slate-800 mb-0.5' }, o.title),
+      h('figcaption', { className: 'text-xs font-medium text-slate-800 mb-0.5' }, o.title),
       h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': o.label, className: 'block text-amber-800', style: { maxWidth: '320px', overflow: 'visible' } },
         h('line', { x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: 'currentColor', strokeOpacity: 0.25, strokeWidth: 1 }),
         h('path', { d: d.trim(), fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round' }),
@@ -2529,7 +2541,7 @@ try {
       else if (head === '<') read = { ok: false, reason: 'web_page' };
       else if (head === '{' || head === '[') {
         var data = null;
-        try { data = JSON.parse(text); } catch (e) { data = null; }
+        try { data = JSON.parse(text, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); } catch (e) { data = null; }
         read = _acThReadJson(data);
       } else read = _acThReadCsv(text);
       if (!read.ok) { out.reason = read.reason; return out; }
@@ -2813,7 +2825,7 @@ try {
     var heading = _acWsText(t, 'class_analytics.th_preview_heading', 'Take-home results to add');
     var th = 'px-2 py-1 text-left text-xs font-bold text-slate-800 border-b border-sky-300';
     var td = 'px-2 py-1 text-xs text-slate-900 border-b border-sky-200 align-top';
-    var small = 'block text-[11px] text-slate-700';
+    var small = 'block text-xs text-slate-700';
     var rows = preview.rows || [];
     var ready = rows.filter(_acThReady).length;
     var waiting = rows.filter(function(row) { return row.status === 'new' && !row.skip && !_acThReady(row); }).length;
@@ -2886,9 +2898,9 @@ try {
               className: 'w-5 h-5'
             }) : '–'));
         })))) : null,
-      rows.some(function(row) { return !row.session.check; }) ? h('p', { className: 'text-[11px] text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.th_check_hint', 'The edit check finds accidental changes to a file, not deliberate ones. Take-home work is added to the Word Sounds tables only; it does not change review groups.'))
-        : rows.length ? h('p', { className: 'text-[11px] text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.th_ck_edit_hint', 'The edit check finds accidental changes to a file, not deliberate ones.')) : null,
-      anyCheck ? h('p', { 'data-th-ck-hint': 'true', className: 'text-[11px] text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.th_ck_hint', 'A check done at home is kept with the student and marked Take-home. It is for seeing progress: it is never used for benchmarks, review groups or risk levels.')) : null,
+      rows.some(function(row) { return !row.session.check; }) ? h('p', { className: 'text-xs text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.th_check_hint', 'The edit check finds accidental changes to a file, not deliberate ones. Take-home work is added to the Word Sounds tables only; it does not change review groups.'))
+        : rows.length ? h('p', { className: 'text-xs text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.th_ck_edit_hint', 'The edit check finds accidental changes to a file, not deliberate ones.')) : null,
+      anyCheck ? h('p', { 'data-th-ck-hint': 'true', className: 'text-xs text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.th_ck_hint', 'A check done at home is kept with the student and marked Take-home. It is for seeing progress: it is never used for benchmarks, review groups or risk levels.')) : null,
       (preview.others || []).length ? h('div', { 'data-th-others': 'true', className: 'mt-2' },
         h('h4', { className: 'text-xs font-bold text-slate-900' }, _acWsText(t, 'class_analytics.th_others_heading', 'Files that were not added')),
         h('ul', { className: 'list-disc pl-5 text-xs text-slate-900' }, preview.others.map(function(o, i) {
@@ -3251,12 +3263,12 @@ try {
     var buttonElsewhere = !!(wsSaved && Array.isArray(wsSaved.sessions) && wsSaved.sessions.some(function(s) { return s && s.src === 'th'; }));
     return h('div', { 'data-ck-over-time-card': 'true', className: 'mb-4 p-4 bg-sky-50 border border-sky-300 rounded-xl' },
       h('h4', { className: 'font-bold text-slate-900 mb-1' }, heading),
-      h('p', { className: 'text-[11px] text-slate-800 mb-2' }, _acWsText(t, 'class_analytics.th_ck_over_time_hint', 'Checks given in the app and checks done at home, by date. A check done at home has no teacher present. It is shown for progress and is never used for benchmarks, review groups or risk levels.')),
+      h('p', { className: 'text-xs text-slate-800 mb-2' }, _acWsText(t, 'class_analytics.th_ck_over_time_hint', 'Checks given in the app and checks done at home, by date. A check done at home has no teacher present. It is shown for progress and is never used for benchmarks, review groups or risk levels.')),
       groups.map(function(g) {
         var name = _acCkGroupName(t, g);
         return h('div', { key: g.key, 'data-ck-group': g.key, className: 'mb-2 bg-white rounded-lg border border-sky-200 p-2' },
           h('h5', { className: 'text-sm font-bold text-slate-900 mb-1' }, name),
-          g.custom ? h('p', { 'data-ck-custom-note': 'true', className: 'text-[11px] text-slate-800 mb-1' }, _acWsText(t, 'class_analytics.th_ck_custom_note', 'Your own problem set. It is not compared with any other check.')) : null,
+          g.custom ? h('p', { 'data-ck-custom-note': 'true', className: 'text-xs text-slate-800 mb-1' }, _acWsText(t, 'class_analytics.th_ck_custom_note', 'Your own problem set. It is not compared with any other check.')) : null,
           h('div', { className: 'overflow-x-auto' }, h('table', { 'data-ck-over-time': g.key, className: 'w-full border-collapse' },
             h('caption', { className: 'sr-only' }, name),
             h('thead', null, h('tr', null,
@@ -3422,7 +3434,7 @@ try {
         h('label', { className: 'block text-xs text-slate-900 mt-1' }, _acWsText(t, 'class_analytics.th_ck_code_label', 'Teacher code'),
           h('input', { type: 'text', 'data-ck-code': 'true', value: s.code || '', maxLength: 64, autoComplete: 'off', spellCheck: false,
             onChange: function(e) { actions.onCode(e.target.value); }, className: 'ml-2 px-2 py-1.5 rounded-lg border border-slate-500 bg-white text-xs text-slate-900' })),
-        h('p', { className: 'text-[11px] text-slate-800 mt-1' }, _acWsText(t, 'class_analytics.th_ck_code_hint', 'With a code, the results screen inside the file opens only for someone who types it. Use 4 or more characters. It locks that screen; it does not hide the answers from someone determined.'))),
+        h('p', { className: 'text-xs text-slate-800 mt-1' }, _acWsText(t, 'class_analytics.th_ck_code_hint', 'With a code, the results screen inside the file opens only for someone who types it. Use 4 or more characters. It locks that screen; it does not hide the answers from someone determined.'))),
       h('p', { role: 'status', 'data-ck-save-message': s.unavailable ? 'unavailable' : s.error ? 'error' : s.message ? 'ok' : 'none', className: 'text-xs font-semibold text-slate-900 mt-2' },
         s.unavailable ? _acWsText(t, 'class_analytics.th_ck_save_unavailable', 'Saving a file for home is not available in this version.') : (s.message || '')),
       h('div', { className: 'mt-2 flex flex-wrap gap-2' },
@@ -3750,7 +3762,7 @@ try {
         ),
         // Keyboard hint
         showScoreButtons && h('div', {
-          className: 'text-center py-1.5 text-[11px] text-slate-600 bg-slate-50 shrink-0'
+          className: 'text-center py-1.5 text-xs text-slate-600 bg-slate-50 shrink-0'
         }, 'Keyboard: 1/\u2192/C = Correct \u00B7 2/\u2190/X = Incorrect \u00B7 Space/S = Skip \u00B7 Esc = End Early')
       ), document.body
     );
@@ -4399,7 +4411,7 @@ try {
             // Assessment Center fingerprint map) so a re-imported file lands under the SAME identity its
             // records already live under, instead of minting a split.
             const canonicalName = await _acCanonicalStudentName(studentName, rosterKey, identityLinks);
-            const linkedToRoster = !!(rosterKey && rosterKey.students && rosterKey.students[canonicalName] !== undefined);
+            const linkedToRoster = !!(rosterKey && rosterKey.students && Object.prototype.hasOwnProperty.call(rosterKey.students, canonicalName) && rosterKey.students[canonicalName] !== undefined);
             const stats = calculateStudentStats(data);
             chunkStudents.push({
               id: `student-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -4431,7 +4443,7 @@ try {
           var history = Object.assign({}, prev.progressHistory || {});
           allNewStudents.forEach(function (student) {
             var codename = student.name;
-            if (prev.students && prev.students[codename] !== undefined) {
+            if (prev.students && Object.prototype.hasOwnProperty.call(prev.students, codename) && prev.students[codename] !== undefined) {
               var snapshotDate = new Date(student.lastSession || Date.now());
               if (isNaN(snapshotDate.getTime())) snapshotDate = new Date();
               var snapshot = {
@@ -4454,7 +4466,7 @@ try {
                 progressSummaryGeneratedAt: student.stats.progressSummaryGeneratedAt || null,
                 importedFrom: student.filename
               };
-              var existing = history[codename] || [];
+              var existing = _saOwnArr(history, codename);
               var filtered = existing.filter(function (s) {
                 return s.date !== snapshot.date;
               });
@@ -4941,12 +4953,12 @@ try {
         React.createElement("div", { className: "flex items-center gap-2 mb-2" },
           React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: result.statusColor } }),
           React.createElement("span", { className: "text-xs font-bold", style: { color: result.statusColor } }, result.status),
-          React.createElement("span", { className: "text-[11px] text-slate-600 ml-auto" }, result.comparisonAvailable ? result.pctOfBenchmark + "% of reference median (" + result.benchmark50 + ")" : "Descriptive result")
+          React.createElement("span", { className: "text-xs text-slate-600 ml-auto" }, result.comparisonAvailable ? result.pctOfBenchmark + "% of reference median (" + result.benchmark50 + ")" : "Descriptive result")
         ),
         React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, result.interpretation),
         result.recommendations.length > 0 ? React.createElement("div", { className: "space-y-1" },
-          React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Recommendations:"),
-          ...result.recommendations.map(function(rec, i) { return React.createElement("p", { key: i, className: "text-[11px] text-slate-600 pl-3 border-l-2", style: { borderColor: result.statusColor + '60' } }, rec); })
+          React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase" }, "Recommendations:"),
+          ...result.recommendations.map(function(rec, i) { return React.createElement("p", { key: i, className: "text-xs text-slate-600 pl-3 border-l-2", style: { borderColor: result.statusColor + '60' } }, rec); })
         ) : null
       );
     };
@@ -5001,20 +5013,20 @@ try {
         sections.push(React.createElement("div", { key: type, className: "bg-white rounded-lg border border-slate-400 p-3" },
           React.createElement("div", { className: "flex items-center justify-between mb-2" },
             React.createElement("h5", { className: "text-xs font-bold text-slate-700" }, typeLabels[type] || type),
-            React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full font-bold", style: { background: growthColor[adequacy] + '15', color: growthColor[adequacy] } }, growthLabel[adequacy])
+            React.createElement("span", { className: "text-xs px-2 py-0.5 rounded-full font-bold", style: { background: growthColor[adequacy] + '15', color: growthColor[adequacy] } }, growthLabel[adequacy])
           ),
           React.createElement("div", { className: "grid grid-cols-4 gap-2 text-center mb-2" },
-            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold text-slate-700" }, firstScore), React.createElement("div", { className: "text-[11px] text-slate-600" }, "Baseline")),
-            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold", style: { color: growthColor[adequacy] } }, lastScore), React.createElement("div", { className: "text-[11px] text-slate-600" }, "Latest")),
-            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold", style: { color: change >= 0 ? '#16a34a' : '#dc2626' } }, (change >= 0 ? '+' : '') + Math.round(change * 10) / 10), React.createElement("div", { className: "text-[11px] text-slate-600" }, "Change")),
-            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold text-indigo-600" }, '+' + (Math.round(weeklyGrowth * 10) / 10) + '/wk'), React.createElement("div", { className: "text-[11px] text-slate-600" }, "Growth Rate"))
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold text-slate-700" }, firstScore), React.createElement("div", { className: "text-xs text-slate-600" }, "Baseline")),
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold", style: { color: growthColor[adequacy] } }, lastScore), React.createElement("div", { className: "text-xs text-slate-600" }, "Latest")),
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold", style: { color: change >= 0 ? '#16a34a' : '#dc2626' } }, (change >= 0 ? '+' : '') + Math.round(change * 10) / 10), React.createElement("div", { className: "text-xs text-slate-600" }, "Change")),
+            React.createElement("div", { className: "bg-slate-50 rounded-lg p-2" }, React.createElement("div", { className: "text-sm font-bold text-indigo-600" }, '+' + (Math.round(weeklyGrowth * 10) / 10) + '/wk'), React.createElement("div", { className: "text-xs text-slate-600" }, "Growth Rate"))
           ),
-          React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" },
+          React.createElement("div", { className: "flex justify-between text-xs text-slate-600" },
             React.createElement("span", null, items.length + " probes over " + Math.round(weeks) + " weeks"),
             React.createElement("span", null, "Expected: +" + expectedRate + "/wk")
           ),
-          React.createElement("div", { className: "mt-1 text-[10px] text-slate-500 italic" }, "Growth is the slope between the first and latest probe (not a modeled trend line); read it with the probe count above."),
-          (adequacy === 'insufficient' || adequacy === 'declining') ? React.createElement("div", { className: "mt-2 text-[11px] px-2 py-1 rounded bg-amber-50", style: { borderLeft: '3px solid #d97706', color: '#92400e' } }, adequacy === 'declining' ? 'Performance declining. Consider changing intervention or diagnostic assessment.' : 'Growth rate below expected. Consider increasing intensity or changing approach.') : null
+          React.createElement("div", { className: "mt-1 text-xs text-slate-500 italic" }, "Growth is the slope between the first and latest probe (not a modeled trend line); read it with the probe count above."),
+          (adequacy === 'insufficient' || adequacy === 'declining') ? React.createElement("div", { className: "mt-2 text-xs px-2 py-1 rounded bg-amber-50", style: { borderLeft: '3px solid #d97706', color: '#92400e' } }, adequacy === 'declining' ? 'Performance declining. Consider changing intervention or diagnostic assessment.' : 'Growth rate below expected. Consider increasing intensity or changing approach.') : null
         ));
       });
       if (sections.length === 0) return null;
@@ -5439,7 +5451,7 @@ try {
           width: (Number.isFinite(value) ? Math.max(8, value / Math.max(maxVal, 100) * 100) : 100) + '%'
         }
       }, React.createElement('span', {
-        className: 'text-[11px] font-bold text-white'
+        className: 'text-xs font-bold text-white'
       }, Number.isFinite(value) ? Math.round(value) : 'N/A'))), domain === insights.strength ? React.createElement('span', {
         className: 'text-xs text-emerald-600 font-bold'
       }, '⭐') : null, domain === insights.weakness ? React.createElement('span', {
@@ -5462,7 +5474,7 @@ try {
       }, React.createElement('div', {
         className: 'text-lg font-black ' + (val > 0 ? 'text-emerald-600' : val < 0 ? 'text-red-500' : 'text-slate-600')
       }, Number.isFinite(val) ? (val > 0 ? '+' : '') + Math.round(val) + unit : 'N/A'), React.createElement('div', {
-        className: 'text-[11px] text-slate-600 mt-0.5'
+        className: 'text-xs text-slate-600 mt-0.5'
       }, label))))), insights.correlations.practiceToQuiz && !insights.correlations.practiceToQuiz.insufficient ? React.createElement('div', {
         className: 'bg-white rounded-xl border border-slate-400 p-4'
       }, React.createElement('h5', {
@@ -5474,7 +5486,7 @@ try {
       }, 'r = ' + insights.correlations.practiceToQuiz.r), React.createElement('div', null, React.createElement('div', {
         className: 'text-xs font-bold ' + (insights.correlations.practiceToQuiz.provisional ? 'text-slate-500' : (strengthColor[insights.correlations.practiceToQuiz.strength] || ''))
       }, insights.correlations.practiceToQuiz.provisional ? 'Preliminary trend (small sample)' : (insights.correlations.practiceToQuiz.strength.charAt(0).toUpperCase() + insights.correlations.practiceToQuiz.strength.slice(1) + ' correlation')), React.createElement('div', {
-        className: 'text-[11px] text-slate-600'
+        className: 'text-xs text-slate-600'
       }, 'Based on ' + insights.correlations.practiceToQuiz.n + ' data points (Word Sounds accuracy ↔ Quiz performance)' + (insights.correlations.practiceToQuiz.provisional ? ' — too few points for a reliable correlation; read as a descriptive within-student trend, not a tested result.' : ' — descriptive within-student trend, not a significance-tested correlation.'))))) : null, insights.growthTrajectory.length > 1 ? React.createElement('div', {
         className: 'bg-white rounded-xl border border-slate-400 p-4'
       }, React.createElement('h5', {
@@ -5517,15 +5529,15 @@ try {
       }, React.createElement('div', null, React.createElement('div', {
         className: 'text-lg font-black text-indigo-600'
       }, insights.dosage.totalInterventions), React.createElement('div', {
-        className: 'text-[11px] text-slate-600'
+        className: 'text-xs text-slate-600'
       }, 'Interventions')), React.createElement('div', null, React.createElement('div', {
         className: 'text-lg font-black text-indigo-600'
       }, insights.dosage.avgFrequency + 'x/wk'), React.createElement('div', {
-        className: 'text-[11px] text-slate-600'
+        className: 'text-xs text-slate-600'
       }, 'Avg Frequency')), React.createElement('div', null, React.createElement('div', {
         className: 'text-lg font-black text-indigo-600'
       }, insights.dosage.avgMinutes + ' min'), React.createElement('div', {
-        className: 'text-[11px] text-slate-600'
+        className: 'text-xs text-slate-600'
       }, 'Avg Duration')))) : null);
     };
     const renderClassInsights = () => {
@@ -5552,15 +5564,15 @@ try {
       }, React.createElement('div', {
         className: 'text-xl font-black text-indigo-600'
       }, 'r = ' + classData.avgCorrelation), React.createElement('div', {
-        className: 'text-[11px] text-slate-600'
+        className: 'text-xs text-slate-600'
       }, 'Avg Practice↔Outcome Correlation'), React.createElement('div', {
-        className: 'text-[10px] text-slate-500 italic mt-1'
+        className: 'text-xs text-slate-500 italic mt-1'
       }, 'Simple average of within-student trends' + (classData.studentCount ? ' across ' + classData.studentCount + ' students' : '') + ' — descriptive, not a pooled or significance-tested correlation.')) : null, classData.commonWeakness ? React.createElement('div', {
         className: 'bg-white rounded-lg p-3 text-center'
       }, React.createElement('div', {
         className: 'text-xl font-black text-amber-600'
       }, DOMAIN_LABELS[classData.commonWeakness] || classData.commonWeakness), React.createElement('div', {
-        className: 'text-[11px] text-slate-600'
+        className: 'text-xs text-slate-600'
       }, 'Most Common Area to Watch (' + classData.commonWeaknessCount + ' students)')) : null));
     };
     const exportResearchCSV = async () => {
@@ -5568,9 +5580,9 @@ try {
       if (!await askStudentAnalyticsConfirmation("This CSV contains identifiable student data, including real names, probes, interventions, and progress. It is confidential.\n\nDe-identify it before research use and store it under your district's FERPA policy.", { title: 'Export confidential research data', confirmText: 'Export CSV' })) return;
       const students = importedStudents.map(s => {
         const insights = generateStudentInsights(s.name);
-        const probes = probeHistory?.[s.name] || [];
-        const interventions = interventionLogs?.[s.name] || [];
-        const snapshots = rosterKey?.progressHistory?.[s.name] || [];
+        const probes = _saOwnArr(probeHistory, s.name);
+        const interventions = _saOwnArr(interventionLogs, s.name);
+        const snapshots = _saOwnArr(rosterKey?.progressHistory, s.name);
         return {
           name: s.name,
           insights,
@@ -5584,13 +5596,13 @@ try {
         ? _acCsvCell
         : (v => {
             const s = v == null ? '' : String(v);
-            const g = typeof v === 'string' && (/^\s*[=+\-@|]/.test(s) || /^[\t\r\n]/.test(s)) ? "'" + s : s;
+            const g = typeof v !== 'number' && (/^\s*[=+\-@|]/.test(s) || /^[\t\r\n]/.test(s)) ? "'" + s : s;
             return '"' + g.replace(/"/g, '""') + '"';
           });
       const headers = ['Student', 'Snapshots', 'Probes', 'Latest_WS_Accuracy', 'Latest_Quiz_Avg', 'Latest_Fluency_WCPM', 'Growth_WS_Accuracy', 'Growth_Quiz', 'Growth_Fluency', 'Strength', 'Weakness', 'Correlation_r', 'Correlation_Strength', 'Correlation_N', 'Intervention_Count', 'Avg_Frequency_PerWeek', 'Avg_Minutes', 'Total_Activities', 'Games_Played', 'Adventure_XP', 'Probe_1_Activity', 'Probe_1_Accuracy', 'Probe_1_ItemsPerMin', 'Probe_1_Date', 'Probe_2_Activity', 'Probe_2_Accuracy', 'Probe_2_ItemsPerMin', 'Probe_2_Date', 'Probe_3_Activity', 'Probe_3_Accuracy', 'Probe_3_ItemsPerMin', 'Probe_3_Date', 'External_CBM_Source', 'External_CBM_Score', 'External_CBM_Date'];
       const rows = students.map(s => {
         const ins = s.insights;
-        const ext = (externalCBMScores?.[s.name] || [])[0] || {};
+        const ext = _saOwnArr(externalCBMScores, s.name)[0] || {};
         const p1 = s.probes[0] || {},
           p2 = s.probes[1] || {},
           p3 = s.probes[2] || {};
@@ -5745,27 +5757,51 @@ try {
           addToast && addToast(t('toasts.import_failed_study_bundle'), 'error');
           return;
         }
+        const sanitizedResearchMode = _saIsPlainObj(bundle.alloflow_research_mode) ? Object.assign({}, bundle.alloflow_research_mode) : null;
+        if (sanitizedResearchMode && Array.isArray(sanitizedResearchMode.customQuestions)) {
+          sanitizedResearchMode.customQuestions = sanitizedResearchMode.customQuestions.map(function (q) {
+            if (!_saIsPlainObj(q)) return q;
+            var nextQ = Object.assign({}, q);
+            ['scaleLabels', 'options'].forEach(function (field) {
+              if (Array.isArray(nextQ[field])) {
+                nextQ[field] = nextQ[field].map(function (cell) {
+                  if (!_saIsPlainObj(cell)) return cell;
+                  return Object.assign({}, cell, { image: cell.image ? _saSafeSurveyImageSrc(cell.image) || null : null });
+                });
+              }
+            });
+            return nextQ;
+          });
+        }
+        const safeBundleMap = {
+          alloflow_research_mode: sanitizedResearchMode,
+          alloflow_fidelity_log: Array.isArray(bundle.alloflow_fidelity_log) ? bundle.alloflow_fidelity_log : [],
+          alloflow_survey_responses: _saIsPlainObj(bundle.alloflow_survey_responses) ? bundle.alloflow_survey_responses : {},
+          alloflow_session_counter: parseInt(bundle.alloflow_session_counter, 10) || 0,
+          alloflow_external_cbm: _saIsPlainObj(bundle.alloflow_external_cbm) ? bundle.alloflow_external_cbm : {}
+        };
         STUDY_BUNDLE_KEYS.forEach(function (k) {
           if (Object.prototype.hasOwnProperty.call(bundle, k)) {
             try {
-              if (bundle[k] === null || bundle[k] === undefined) {
+              var val = Object.prototype.hasOwnProperty.call(safeBundleMap, k) ? safeBundleMap[k] : bundle[k];
+              if (val === null || val === undefined) {
                 localStorage.removeItem(k);
               } else {
-                localStorage.setItem(k, JSON.stringify(bundle[k]));
+                localStorage.setItem(k, JSON.stringify(val));
               }
             } catch {}
           }
         });
         // Update in-component React state immediately so the UI reflects the
         // imported bundle without a reload.
-        try { setResearchMode(bundle.alloflow_research_mode || null); } catch {}
-        try { setFidelityLog(bundle.alloflow_fidelity_log || []); } catch {}
-        try { setSurveyResponses(bundle.alloflow_survey_responses || {}); } catch {}
-        try { setSessionCounter(parseInt(bundle.alloflow_session_counter, 10) || 0); } catch {}
-        try { setExternalCBMScores(bundle.alloflow_external_cbm || {}); } catch {}
+        try { setResearchMode(safeBundleMap.alloflow_research_mode); } catch {}
+        try { setFidelityLog(safeBundleMap.alloflow_fidelity_log); } catch {}
+        try { setSurveyResponses(safeBundleMap.alloflow_survey_responses); } catch {}
+        try { setSessionCounter(safeBundleMap.alloflow_session_counter); } catch {}
+        try { setExternalCBMScores(safeBundleMap.alloflow_external_cbm); } catch {}
         // rtiGoals lives in the parent App scope; notify it so it can re-read.
         try { window.dispatchEvent(new CustomEvent('alloflow:study-bundle-imported', { detail: { keys: STUDY_BUNDLE_KEYS } })); } catch {}
-        addToast && addToast(t('toasts.study_bundle_imported_active_study') + ((bundle.alloflow_research_mode && bundle.alloflow_research_mode.studyName) || '(none)'), 'success');
+        addToast && addToast(t('toasts.study_bundle_imported_active_study') + ((safeBundleMap.alloflow_research_mode && safeBundleMap.alloflow_research_mode.studyName) || '(none)'), 'success');
       };
       reader.onerror = function () { addToast && addToast(t('toasts.import_failed_file_read_error'), 'error'); };
       reader.readAsText(file);
@@ -5779,7 +5815,7 @@ try {
       }
     });
     const saveExternalCBM = (studentName, entry) => {
-      const existing = externalCBMScores[studentName] || [];
+      const existing = _saOwnArr(externalCBMScores, studentName);
       const updated = {
         ...externalCBMScores,
         [studentName]: [...existing, {
@@ -6486,7 +6522,7 @@ try {
                   className: 'flex-1 min-w-[60px] py-2 px-1 rounded-lg text-xs font-medium transition-all flex flex-col items-center gap-1 ' + (selected ? 'bg-purple-600 text-white shadow-md scale-105' : 'bg-white border border-slate-400 text-slate-600 hover:bg-purple-50 hover:border-purple-600'),
                   onClick: () => setSurveyAnswers(p => Object.assign({}, p, { [q.id]: value }))
                 },
-                  label.image ? React.createElement('img', { src: label.image, alt: label.text || '', style: { width: 36, height: 36, objectFit: 'contain' } }) : null,
+                  _saSafeSurveyImageSrc(label.image) ? React.createElement('img', { src: _saSafeSurveyImageSrc(label.image), alt: label.text || '', style: { width: 36, height: 36, objectFit: 'contain' } }) : null,
                   React.createElement('span', null, label.text || ('Option ' + (idx + 1)))
                 );
               })
@@ -6697,7 +6733,7 @@ try {
                     const cell = (typeof rawCell === 'string') ? { text: rawCell, image: null } : (rawCell || { text: '', image: null });
                     const isActiveInput = cqImageGenInput.qid === q.id && cqImageGenInput.idx === idx && cqImageGenInput.field === fieldName;
                     return React.createElement('div', { key: idx, className: 'flex items-start gap-2 p-2 bg-white border border-slate-200 rounded-lg' },
-                      cell.image ? React.createElement('img', { src: cell.image, alt: cell.text || '', style: { width: 48, height: 48, objectFit: 'contain', flexShrink: 0 } })
+                      _saSafeSurveyImageSrc(cell.image) ? React.createElement('img', { src: _saSafeSurveyImageSrc(cell.image), alt: cell.text || '', style: { width: 48, height: 48, objectFit: 'contain', flexShrink: 0 } })
                         : React.createElement('div', { style: { width: 48, height: 48, flexShrink: 0 }, className: 'bg-slate-100 rounded text-xs text-slate-600 flex items-center justify-center' }, 'No img'),
                       React.createElement('div', { className: 'flex-1' },
                         React.createElement('input', {
@@ -6725,15 +6761,15 @@ try {
                         ) : React.createElement('div', { className: 'flex gap-1' },
                           React.createElement('button', {
                             onClick: () => setCqImageGenInput({ qid: q.id, idx: idx, prompt: '', mode: cell.image ? 'refine' : 'generate', field: fieldName }),
-                            className: 'px-2 py-0.5 text-[11px] font-medium rounded ' + (cell.image ? 'bg-violet-50 text-violet-700 border border-violet-300 hover:bg-violet-100' : 'bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100')
+                            className: 'px-2 py-0.5 text-xs font-medium rounded ' + (cell.image ? 'bg-violet-50 text-violet-700 border border-violet-300 hover:bg-violet-100' : 'bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100')
                           }, cell.image ? '✨ Refine icon' : '🖼️ Generate icon'),
                           cell.image ? React.createElement('button', {
                             onClick: () => cqUpdateCell(q.id, idx, { image: null }, fieldName),
-                            className: 'px-2 py-0.5 text-[11px] text-slate-600 hover:bg-slate-100 rounded'
+                            className: 'px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-100 rounded'
                           }, 'Remove icon') : null,
                           qType === 'mcq' ? React.createElement('button', {
                             onClick: () => cqRemoveOption(q.id, idx),
-                            className: 'px-2 py-0.5 text-[11px] text-red-800 hover:bg-red-50 rounded ml-auto'
+                            className: 'px-2 py-0.5 text-xs text-red-800 hover:bg-red-50 rounded ml-auto'
                           }, 'Delete option') : null
                         )
                       )
@@ -6885,7 +6921,7 @@ try {
         fill: '#94a3b8',
         textAnchor: 'end'
       }, Math.round(yMax))), React.createElement('p', {
-        className: 'text-[11px] text-slate-600 text-center mt-1'
+        className: 'text-xs text-slate-600 text-center mt-1'
       }, 'Dashed line = trend (' + (slope > 0 ? 'positive' : slope < 0 ? 'negative' : 'flat') + '). ' + snapshots.length + ' data points.'));
     };
     const renderResearchToolbar = () => {
@@ -6906,7 +6942,7 @@ try {
       }, React.createElement('span', {
         className: 'text-xs font-medium text-slate-600'
       }, 'Research Mode'), researchMode && researchMode.active ? React.createElement('span', {
-        className: 'flex items-center gap-1 bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-[11px] font-bold'
+        className: 'flex items-center gap-1 bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-xs font-bold'
       }, React.createElement('span', {
         className: 'w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse'
       }), 'Active') : null), React.createElement('button', {
@@ -6927,7 +6963,7 @@ try {
         className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-emerald-400 hover:bg-emerald-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowCBMModal(true)
       }, React.createElement('span', null, '\u{1F4CB}'), 'Import CBM Score', cbmCount > 0 ? React.createElement('span', {
-        className: 'bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-[11px] font-bold'
+        className: 'bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-xs font-bold'
       }, cbmCount) : null), React.createElement('button', {
         className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-purple-400 hover:bg-purple-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowSurveyModal('student')
@@ -6938,15 +6974,15 @@ try {
         className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-pink-400 hover:bg-pink-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowSurveyModal('parent')
       }, React.createElement('span', null, '\u{1F46A}'), 'Parent/Guardian Survey', surveyCount > 0 ? React.createElement('span', {
-        className: 'bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full text-[11px] font-bold'
+        className: 'bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full text-xs font-bold'
       }, surveyCount + ' responses') : null),
       React.createElement('div', { className: 'col-span-2 rounded-lg border border-sky-300 bg-sky-50 p-2' },
-        React.createElement('p', { className: 'text-[11px] font-black text-sky-900' }, '\u{1F517} Send a survey by link or QR (Share & Collect)'),
-        React.createElement('p', { className: 'text-[10px] text-sky-800 mt-0.5' }, 'Families and staff answer from their own phone, no account. Uses the current timepoint (' + (surveyTimepoint || 'unspecified') + ') and your custom items when you have them.'),
+        React.createElement('p', { className: 'text-xs font-black text-sky-900' }, '\u{1F517} Send a survey by link or QR (Share & Collect)'),
+        React.createElement('p', { className: 'text-xs text-sky-800 mt-0.5' }, 'Families and staff answer from their own phone, no account. Uses the current timepoint (' + (surveyTimepoint || 'unspecified') + ') and your custom items when you have them.'),
         React.createElement('div', { className: 'mt-1.5 grid grid-cols-3 gap-1.5' },
           ['student', 'teacher', 'parent'].map(population => React.createElement('button', {
             key: population,
-            className: 'px-2 py-1.5 bg-white rounded-md border border-sky-300 hover:bg-sky-100 text-[11px] font-bold text-slate-800',
+            className: 'px-2 py-1.5 bg-white rounded-md border border-sky-300 hover:bg-sky-100 text-xs font-bold text-slate-800',
             onClick: () => shareSurveyByLink(population)
           }, population === 'student' ? 'Student link' : population === 'teacher' ? 'Teacher link' : 'Parent link')))),
       React.createElement('button', {
@@ -6984,7 +7020,7 @@ try {
         }
       }),
       (typeof window !== 'undefined' && window._isCanvasEnv) ? React.createElement('p', {
-        className: 'col-span-2 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1 leading-snug'
+        className: 'col-span-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1 leading-snug'
       }, '⚠️ Gemini Canvas storage is ephemeral. Export the study bundle before closing this conversation, and import it next time to resume your study.') : null
       ));
     };
@@ -7144,7 +7180,7 @@ try {
         React.createElement('option', { value: 'external_forms' }, 'Collected outside AlloFlow - signed forms on file'),
         React.createElement('option', { value: 'not_required' }, 'Not required - internal program evaluation')),
       React.createElement('p', {
-        className: 'text-[10px] text-slate-500 mt-1'
+        className: 'text-xs text-slate-500 mt-1'
       }, 'AlloFlow never collects consent itself. This records where yours lives, and rides along in every CSV export.')), React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Notes'), React.createElement('textarea', {
@@ -7248,7 +7284,7 @@ try {
       }, '\u{1F52C}'), React.createElement('h4', {
         className: 'text-sm font-bold text-emerald-800 uppercase tracking-wider'
       }, 'Research Dashboard'), React.createElement('span', {
-        className: 'flex items-center gap-1 bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full text-[11px] font-bold animate-pulse'
+        className: 'flex items-center gap-1 bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full text-xs font-bold animate-pulse'
       }, React.createElement('span', {
         className: 'w-1.5 h-1.5 bg-emerald-600 rounded-full'
       }), 'ACTIVE')), React.createElement('button', {
@@ -7262,18 +7298,18 @@ try {
       }, React.createElement('div', {
         className: 'text-sm font-bold text-slate-800'
       }, researchMode.studyName), React.createElement('div', {
-        className: 'flex gap-4 text-[11px] text-slate-600 mt-1'
+        className: 'flex gap-4 text-xs text-slate-600 mt-1'
       }, React.createElement('span', null, '\u{1F4C5} Started: ' + studyStartDate.toLocaleDateString()), React.createElement('span', null, '\u{23F1} Day ' + daysSinceStart + ' (Week ' + weeksSinceStart + ')'), researchMode.irb ? React.createElement('span', null, '\u{1F4CB} IRB: ' + researchMode.irb) : null)), React.createElement('div', {
         className: 'grid grid-cols-4 gap-2 mb-3'
       }, ...[['\u{1F4CA}', totalSessions, 'Sessions Logged', 'bg-blue-50 text-blue-700'], ['\u{23F1}', Math.round(totalMinutes), 'Total Minutes', 'bg-purple-50 text-purple-700'], ['\u{1F9D1}', uniqueStudents, 'Students', 'bg-amber-50 text-amber-700'], ['\u{1F4C8}', sessionsPerWeek + '/wk', 'Frequency', 'bg-emerald-50 text-emerald-700']].map(([icon, value, label, cls]) => React.createElement('div', {
         key: label,
         className: 'text-center p-2 rounded-lg ' + cls
       }, React.createElement('div', {
-        className: 'text-[11px]'
+        className: 'text-xs'
       }, icon), React.createElement('div', {
         className: 'text-lg font-black'
       }, value), React.createElement('div', {
-        className: 'text-[11px] opacity-70'
+        className: 'text-xs opacity-70'
       }, label)))), React.createElement('div', {
         className: 'grid grid-cols-3 gap-2 mb-3'
       }, ...[[surveyCount, 'Survey Responses', 'bg-purple-100 text-purple-700'], [totalProbes, 'Probe Results', 'bg-indigo-100 text-indigo-700'], [cbmCount, 'External CBM Scores', 'bg-teal-100 text-teal-700']].map(([val, label, cls]) => React.createElement('div', {
@@ -7282,7 +7318,7 @@ try {
       }, React.createElement('div', {
         className: 'text-lg font-black'
       }, val), React.createElement('div', {
-        className: 'text-[11px] opacity-70'
+        className: 'text-xs opacity-70'
       }, label)))), React.createElement('div', {
         className: 'grid grid-cols-2 gap-2'
       }, responseRate !== null ? React.createElement('div', {
@@ -7290,36 +7326,36 @@ try {
       }, React.createElement('div', {
         className: 'text-lg font-black ' + (responseRate >= 80 ? 'text-emerald-600' : responseRate >= 50 ? 'text-amber-600' : 'text-red-500')
       }, responseRate + '%'), React.createElement('div', {
-        className: 'text-[11px] text-slate-600'
+        className: 'text-xs text-slate-600'
       }, 'Survey Response Rate'), React.createElement('div', {
-        className: 'text-[11px] text-slate-600'
+        className: 'text-xs text-slate-600'
       }, studentSurveys + '/' + expectedSurveys + ' expected')) : React.createElement('div', {
         className: 'bg-white/70 rounded-lg p-2 text-center'
       }, React.createElement('div', {
         className: 'text-sm text-slate-600'
       }, 'No auto-surveys yet'), React.createElement('div', {
-        className: 'text-[11px] text-slate-600'
+        className: 'text-xs text-slate-600'
       }, sessionCounter + ' sessions completed')), topActivity ? React.createElement('div', {
         className: 'bg-white/70 rounded-lg p-2 text-center'
       }, React.createElement('div', {
         className: 'text-sm font-bold text-slate-700'
       }, topActivity[0]), React.createElement('div', {
-        className: 'text-[11px] text-slate-600'
+        className: 'text-xs text-slate-600'
       }, 'Most Used Activity (' + topActivity[1] + 'x)')) : React.createElement('div', {
         className: 'bg-white/70 rounded-lg p-2 text-center'
       }, React.createElement('div', {
         className: 'text-sm text-slate-600'
       }, 'No sessions logged'), React.createElement('div', {
-        className: 'text-[11px] text-slate-600'
+        className: 'text-xs text-slate-600'
       }, 'Activities will appear here'))), fidelityLog.length > 0 ? React.createElement('div', {
         className: 'mt-3 bg-white/70 rounded-lg p-3'
       }, React.createElement('h5', {
-        className: 'text-[11px] font-bold text-slate-600 uppercase mb-2'
+        className: 'text-xs font-bold text-slate-600 uppercase mb-2'
       }, 'Recent Session Log'), React.createElement('div', {
         className: 'space-y-1 max-h-32 overflow-y-auto'
       }, ...fidelityLog.slice(-10).reverse().map(entry => React.createElement('div', {
         key: entry.id,
-        className: 'flex items-center justify-between text-[11px] py-0.5 border-b border-slate-100'
+        className: 'flex items-center justify-between text-xs py-0.5 border-b border-slate-100'
       }, React.createElement('span', {
         className: 'text-slate-600'
       }, entry.student), React.createElement('span', {
@@ -7403,7 +7439,8 @@ try {
       const changeAt = warnAt + 2;
       const baseDate = new Date(goal.baselineDate || Date.now());
       const targetDate = new Date(goal.targetDate);
-      const totalWeeks = Math.max(1, Math.round((targetDate - baseDate) / (7 * 24 * 60 * 60 * 1000)));
+      if (!Number.isFinite(baseDate.getTime()) || !Number.isFinite(targetDate.getTime())) return null;
+      const totalWeeks = Math.min(520, Math.max(1, Math.round((targetDate - baseDate) / (7 * 24 * 60 * 60 * 1000))));
       const slope = (goal.target - goal.baseline) / totalWeeks;
       const aimlinePoints = [];
       for (let w = 0; w <= totalWeeks; w++) {
@@ -7572,9 +7609,9 @@ try {
       fluency: 'Fluency (WCPM)'
     };
     const generateStudentInsights = studentName => {
-      const snapshots = (rosterKey?.progressHistory?.[studentName] || []).sort((a, b) => new Date(a.date) - new Date(b.date));
-      const probes = (probeHistory?.[studentName] || []).sort((a, b) => new Date(a.date) - new Date(b.date));
-      const interventions = interventionLogs?.[studentName] || [];
+      const snapshots = _saOwnArr(rosterKey?.progressHistory, studentName).slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+      const probes = _saOwnArr(probeHistory, studentName).slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+      const interventions = _saOwnArr(interventionLogs, studentName);
       if (snapshots.length < 2) return {
         insufficient: true,
         snapshots: snapshots.length,
@@ -7996,15 +8033,15 @@ try {
             <div class="section-title">SEL Participation</div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
                 <div style="text-align: center; background: #f0fdfa; padding: 10px; border-radius: 8px; border: 1px solid #ccfbf1;">
-                    <div style="font-size: 22px; font-weight: 800; color: #0f766e;">${s.selToolsUsed || 0}</div>
+                    <div style="font-size: 22px; font-weight: 800; color: #0f766e;">${Number.isFinite(Number(s.selToolsUsed)) ? Number(s.selToolsUsed) : 0}</div>
                     <div style="font-size: 10px; color: #64748b; font-weight: 700;">SEL tools used</div>
                 </div>
                 <div style="text-align: center; background: #eef2ff; padding: 10px; border-radius: 8px; border: 1px solid #c7d2fe;">
-                    <div style="font-size: 22px; font-weight: 800; color: #4f46e5;">${s.selReflectionCount || 0}</div>
+                    <div style="font-size: 22px; font-weight: 800; color: #4f46e5;">${Number.isFinite(Number(s.selReflectionCount)) ? Number(s.selReflectionCount) : 0}</div>
                     <div style="font-size: 10px; color: #64748b; font-weight: 700;">reflection snapshots</div>
                 </div>
                 <div style="text-align: center; background: #faf5ff; padding: 10px; border-radius: 8px; border: 1px solid #e9d5ff;">
-                    <div style="font-size: 22px; font-weight: 800; color: #7c3aed;">${s.selStationsCompleted || 0}/${s.selStationsTotal || 0}</div>
+                    <div style="font-size: 22px; font-weight: 800; color: #7c3aed;">${Number.isFinite(Number(s.selStationsCompleted)) ? Number(s.selStationsCompleted) : 0}/${Number.isFinite(Number(s.selStationsTotal)) ? Number(s.selStationsTotal) : 0}</div>
                     <div style="font-size: 10px; color: #64748b; font-weight: 700;">station quests</div>
                 </div>
             </div>
@@ -8023,38 +8060,38 @@ try {
                             <h3 style="font-size: 15px; font-weight: 800; color: #4338ca; margin: 0 0 12px 0;">📖 Oral Reading Fluency</h3>
                             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px;">
                                 <div style="text-align: center; background: white; padding: 8px; border-radius: 8px; border: 1px solid #e0e7ff;">
-                                    <div style="font-size: 20px; font-weight: 800; color: #dc2626;">${rr.substitutions}</div>
+                                    <div style="font-size: 20px; font-weight: 800; color: #dc2626;">${saEscapeReportText(rr.substitutions)}</div>
                                     <div style="font-size: 10px; color: #64748b; font-weight: 600;">Substitutions</div>
                                 </div>
                                 <div style="text-align: center; background: white; padding: 8px; border-radius: 8px; border: 1px solid #e0e7ff;">
-                                    <div style="font-size: 20px; font-weight: 800; color: #ea580c;">${rr.omissions}</div>
+                                    <div style="font-size: 20px; font-weight: 800; color: #ea580c;">${saEscapeReportText(rr.omissions)}</div>
                                     <div style="font-size: 10px; color: #64748b; font-weight: 600;">Omissions</div>
                                 </div>
                                 <div style="text-align: center; background: white; padding: 8px; border-radius: 8px; border: 1px solid #e0e7ff;">
-                                    <div style="font-size: 20px; font-weight: 800; color: #7c3aed;">${rr.insertions}</div>
+                                    <div style="font-size: 20px; font-weight: 800; color: #7c3aed;">${saEscapeReportText(rr.insertions)}</div>
                                     <div style="font-size: 10px; color: #64748b; font-weight: 600;">Insertions</div>
                                 </div>
                                 <div style="text-align: center; background: white; padding: 8px; border-radius: 8px; border: 1px solid #e0e7ff;">
-                                    <div style="font-size: 20px; font-weight: 800; color: #2563eb;">${rr.selfCorrections}</div>
+                                    <div style="font-size: 20px; font-weight: 800; color: #2563eb;">${saEscapeReportText(rr.selfCorrections)}</div>
                                     <div style="font-size: 10px; color: #64748b; font-weight: 600;">Self-Corrections</div>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 16px; font-size: 12px; color: #475569; align-items: center; flex-wrap: wrap;">
-                                <span><strong>Error Rate:</strong> 1:${rr.errorRate}</span>
-                                <span><strong>SC Rate:</strong> ${rr.scRate}</span>
-                                <span style="padding: 2px 10px; border-radius: 12px; font-weight: 700; background: ${accColor}20; color: ${accColor}; border: 1px solid ${accColor}40;">${accLabel} (${rr.accuracy}%)</span>
+                                <span><strong>Error Rate:</strong> 1:${saEscapeReportText(rr.errorRate)}</span>
+                                <span><strong>SC Rate:</strong> ${saEscapeReportText(rr.scRate)}</span>
+                                <span style="padding: 2px 10px; border-radius: 12px; font-weight: 700; background: ${accColor}20; color: ${accColor}; border: 1px solid ${accColor}40;">${accLabel} (${saEscapeReportText(rr.accuracy)}%)</span>
                             </div>
                         </div>`;
           }
         }
-        if (latest?.wcpm) {
+        if (latest?.wcpm && Number.isFinite(Number(latest.wcpm))) {
           var _probeDate; try { var _d = latest.date || latest.timestamp || latest.ts || latest.completedAt; var _dd = _d ? new Date(_d) : null; _probeDate = (_dd && !isNaN(_dd.getTime())) ? ('as of ' + _dd.toLocaleDateString()) : '(probe date not recorded)'; } catch (e) { _probeDate = '(probe date not recorded)'; }
           runningRecordHtml += `
                     <div style="margin-top: 8px; padding: 10px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                           <span style="font-size: 13px; color: #166534; font-weight: 600;">Most recent oral reading probe:</span>
-                          <span style="font-size: 18px; font-weight: 800; color: #16a34a;">${latest.wcpm} WCPM</span>
-                          <span style="font-size: 11px; color: #166534;">${_probeDate}</span>
+                          <span style="font-size: 18px; font-weight: 800; color: #16a34a;">${Number(latest.wcpm)} WCPM</span>
+                          <span style="font-size: 11px; color: #166534;">${saEscapeReportText(_probeDate)}</span>
                         </div>
                         <div style="font-size: 11px; color: #475569; margin-top: 4px;">Single timed reading — a one-passage WCPM can vary by several words day to day. For decisions, use the median of 3 passages and read it alongside the progress trend.</div>
                     </div>`;
@@ -8920,8 +8957,8 @@ try {
       const wsCorrect = wsGraded.filter(h => h.correct ?? h.isCorrect).length;
       const wsAccuracy = wsGraded.length > 0 ? Math.round(wsCorrect / wsGraded.length * 100) : null;
       const wsFirstTryAccuracy = _acWsFirstTryStats(wsHistory).accuracy;
-      const xp = sessionData?.globalPoints || 0;
-      const level = sessionData?.globalLevel || 1;
+      const xp = Number.isFinite(Number(sessionData?.globalPoints)) ? Number(sessionData.globalPoints) : 0;
+      const level = Number.isFinite(Number(sessionData?.globalLevel)) ? Number(sessionData.globalLevel) : 1;
       const badges = sessionData?.wordSoundsBadges || {};
       const badgeCount = Object.keys(badges).length;
       const masteredPhonemes = Object.entries(sessionData?.phonemeMastery || {}).filter(([_, v]) => _acWsSoundMastered(v));
@@ -8939,14 +8976,16 @@ try {
       const snapshotWsAccuracy = snapshot => Number.isFinite(snapshot?.wsAccuracy) &&
         (snapshot.wsGradedAttempts == null || snapshot.wsGradedAttempts > 0) ? snapshot.wsAccuracy : null;
       const growthCard = (label, startVal, endVal, unit) => {
-        if (!Number.isFinite(startVal) || !Number.isFinite(endVal)) return '<div style="background:white;border-radius:12px;padding:14px;text-align:center;border:2px solid #64748b20"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">' + label + '</div><div style="font-size:24px;font-weight:800;color:#64748b">N/A</div><div style="font-size:10px;color:#94a3b8;margin-top:4px">Graded results are needed at both time points.</div></div>';
+        const safeLabel = saEscapeReportText(label);
+        const safeUnit = saEscapeReportText(unit);
+        if (!Number.isFinite(startVal) || !Number.isFinite(endVal)) return '<div style="background:white;border-radius:12px;padding:14px;text-align:center;border:2px solid #64748b20"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">' + safeLabel + '</div><div style="font-size:24px;font-weight:800;color:#64748b">N/A</div><div style="font-size:10px;color:#94a3b8;margin-top:4px">Graded results are needed at both time points.</div></div>';
         const diff = Math.round(endVal - startVal);
         const color = diff > 0 ? '#16a34a' : diff < 0 ? '#dc2626' : '#64748b';
         const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
-        return '<div style="background:white;border-radius:12px;padding:14px;text-align:center;border:2px solid ' + color + '20"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">' + label + '</div><div style="font-size:24px;font-weight:800;color:' + color + '">' + arrow + ' ' + (diff > 0 ? '+' : '') + diff + unit + '</div><div style="font-size:10px;color:#94a3b8;margin-top:4px">' + Math.round(startVal) + unit + ' → ' + Math.round(endVal) + unit + '</div></div>';
+        return '<div style="background:white;border-radius:12px;padding:14px;text-align:center;border:2px solid ' + color + '20"><div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">' + safeLabel + '</div><div style="font-size:24px;font-weight:800;color:' + color + '">' + arrow + ' ' + (diff > 0 ? '+' : '') + diff + safeUnit + '</div><div style="font-size:10px;color:#94a3b8;margin-top:4px">' + Math.round(startVal) + safeUnit + ' → ' + Math.round(endVal) + safeUnit + '</div></div>';
       };
       const sessionRow = (snap, idx) => {
-        return '<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;font-size:12px;color:#64748b">' + (idx + 1) + '</td><td style="padding:8px 12px;font-size:12px;font-weight:600;color:#334155">' + snap.date + '</td><td style="padding:8px 12px;font-size:12px;color:#6366f1;font-weight:700">' + (snapshotWsAccuracy(snap) === null ? 'N/A' : Math.round(snapshotWsAccuracy(snap)) + '%') + '</td><td style="padding:8px 12px;font-size:12px;color:#16a34a;font-weight:700">' + Math.round(snap.quizAvg || 0) + '%</td><td style="padding:8px 12px;font-size:12px;color:#0891b2;font-weight:700">' + (snap.totalActivities || 0) + '</td></tr>';
+        return '<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;font-size:12px;color:#64748b">' + (idx + 1) + '</td><td style="padding:8px 12px;font-size:12px;font-weight:600;color:#334155">' + saEscapeReportText(snap.date) + '</td><td style="padding:8px 12px;font-size:12px;color:#6366f1;font-weight:700">' + (snapshotWsAccuracy(snap) === null ? 'N/A' : Math.round(snapshotWsAccuracy(snap)) + '%') + '</td><td style="padding:8px 12px;font-size:12px;color:#16a34a;font-weight:700">' + Math.round(Number(snap.quizAvg) || 0) + '%</td><td style="padding:8px 12px;font-size:12px;color:#0891b2;font-weight:700">' + (Number.isFinite(Number(snap.totalActivities)) ? Number(snap.totalActivities) : 0) + '</td></tr>';
       };
       const getEncouragement = score => {
         if (score >= 90) return {
@@ -8966,7 +9005,7 @@ try {
           msg: 'Keep practicing — you are on your way!'
         };
       };
-      const statCard = (icon, label, value, color) => '<div style="background:white;border-radius:16px;padding:20px;text-align:center;border:2px solid ' + color + '20;box-shadow:0 2px 8px rgba(0,0,0,0.04)"><div style="font-size:32px;margin-bottom:8px">' + icon + '</div><div style="font-size:28px;font-weight:800;color:' + color + '">' + value + '</div><div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">' + label + '</div></div>';
+      const statCard = (icon, label, value, color) => '<div style="background:white;border-radius:16px;padding:20px;text-align:center;border:2px solid ' + color + '20;box-shadow:0 2px 8px rgba(0,0,0,0.04)"><div style="font-size:32px;margin-bottom:8px">' + icon + '</div><div style="font-size:28px;font-weight:800;color:' + color + '">' + saEscapeReportText(value) + '</div><div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">' + saEscapeReportText(label) + '</div></div>';
       const quizEnc = avgQuizScore !== null ? getEncouragement(avgQuizScore) : {
         emoji: '\u{1F4DD}',
         msg: 'Try a quiz to see your score!'
@@ -9190,7 +9229,7 @@ try {
       },
       className: `flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all ${effectiveTab === tab.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700 hover:bg-slate-100'}`
     }, /*#__PURE__*/React.createElement("span", null, tab.label), /*#__PURE__*/React.createElement("span", {
-      className: `text-[11px] font-normal ${effectiveTab === tab.id ? 'text-indigo-700' : 'text-slate-600'}`
+      className: `text-xs font-normal ${effectiveTab === tab.id ? 'text-indigo-700' : 'text-slate-600'}`
     }, tab.desc)))), /*#__PURE__*/React.createElement("div", {
       className: "flex-1 overflow-y-auto p-4",
       style: {
@@ -9345,7 +9384,7 @@ try {
       className: "text-xs text-slate-600 hover:text-red-500 px-1",
       title: "Clear dates"
     }, "\u2716")), /*#__PURE__*/React.createElement("p", {
-      className: "text-[11px] text-slate-600 mt-1"
+      className: "text-xs text-slate-600 mt-1"
     }, t('learner.leave_empty_all_sessions'))), /*#__PURE__*/React.createElement("button", {
       onClick: () => generateStudentFriendlyReport({
         history,
@@ -9743,7 +9782,7 @@ try {
         React.createElement("div", { className: "flex items-center gap-2" },
           React.createElement("span", { className: "text-base" }, "\uD83E\uDDED"),
           React.createElement("span", { className: "text-sm font-bold text-slate-700" }, "Assessment Workflow Guide"),
-          React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold" }, "Which probe should I use?")
+          React.createElement("span", { className: "text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold" }, "Which probe should I use?")
         ),
         React.createElement("span", { className: "text-slate-600 text-xs" }, showAssessmentGuide ? "\u25B2 Hide" : "\u25BC Show")
       ),
@@ -9755,11 +9794,11 @@ try {
           ),
           React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "Administer to ALL students 3x per year to identify who needs intervention. ~15 min per student."),
           React.createElement("div", { className: "flex flex-wrap gap-1" },
-            React.createElement("span", { className: "text-[11px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-semibold border border-emerald-200" }, "K-1: LNF + NWF + ORF"),
-            React.createElement("span", { className: "text-[11px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-semibold border border-emerald-200" }, "2-3: ORF + Math Fluency"),
-            React.createElement("span", { className: "text-[11px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-semibold border border-emerald-200" }, "4+: ORF + Math Fluency")
+            React.createElement("span", { className: "text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-semibold border border-emerald-200" }, "K-1: LNF + NWF + ORF"),
+            React.createElement("span", { className: "text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-semibold border border-emerald-200" }, "2-3: ORF + Math Fluency"),
+            React.createElement("span", { className: "text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-semibold border border-emerald-200" }, "4+: ORF + Math Fluency")
           ),
-          React.createElement("p", { className: "text-[11px] text-slate-600 mt-1.5 italic" }, "Use Form A (Fall), Form B (Winter), Form C (Spring) to avoid practice effects.")
+          React.createElement("p", { className: "text-xs text-slate-600 mt-1.5 italic" }, "Use Form A (Fall), Form B (Winter), Form C (Spring) to avoid practice effects.")
         ),
         React.createElement("div", { className: "bg-white rounded-lg p-3 border border-amber-200" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" },
@@ -9768,10 +9807,10 @@ try {
           ),
           React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "For Tier 2/3 students. Track growth to evaluate whether the intervention is working."),
           React.createElement("div", { className: "flex flex-wrap gap-1" },
-            React.createElement("span", { className: "text-[11px] bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-semibold border border-amber-200" }, "Reading: ORF (same grade-level passages)"),
-            React.createElement("span", { className: "text-[11px] bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-semibold border border-amber-200" }, "Math: DCPM (same operation type)")
+            React.createElement("span", { className: "text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-semibold border border-amber-200" }, "Reading: ORF (same grade-level passages)"),
+            React.createElement("span", { className: "text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-semibold border border-amber-200" }, "Math: DCPM (same operation type)")
           ),
-          React.createElement("p", { className: "text-[11px] text-slate-600 mt-1.5 italic" }, "Aim for 8+ data points before making instructional decisions.")
+          React.createElement("p", { className: "text-xs text-slate-600 mt-1.5 italic" }, "Aim for 8+ data points before making instructional decisions.")
         ),
         React.createElement("div", { className: "bg-white rounded-lg p-3 border border-violet-200" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" },
@@ -9780,12 +9819,12 @@ try {
           ),
           React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "When screening identifies a concern \u2014 pinpoint the specific skill deficit."),
           React.createElement("div", { className: "flex flex-wrap gap-1" },
-            React.createElement("span", { className: "text-[11px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Decoding: NWF"),
-            React.createElement("span", { className: "text-[11px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Letter knowledge: LNF"),
-            React.createElement("span", { className: "text-[11px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Naming speed: RAN"),
-            React.createElement("span", { className: "text-[11px] bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Full battery: Benchmark Battery")
+            React.createElement("span", { className: "text-xs bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Decoding: NWF"),
+            React.createElement("span", { className: "text-xs bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Letter knowledge: LNF"),
+            React.createElement("span", { className: "text-xs bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Naming speed: RAN"),
+            React.createElement("span", { className: "text-xs bg-violet-50 text-violet-700 px-2 py-1 rounded-md font-semibold border border-violet-200" }, "Full battery: Benchmark Battery")
           ),
-          React.createElement("p", { className: "text-[11px] text-slate-600 mt-1.5 italic" }, "Patterns across reading and letter-sound tasks can inform follow-up questions. These practice results do not establish a fluency or decoding diagnosis.")
+          React.createElement("p", { className: "text-xs text-slate-600 mt-1.5 italic" }, "Patterns across reading and letter-sound tasks can inform follow-up questions. These practice results do not establish a fluency or decoding diagnosis.")
         ),
         React.createElement("div", { className: "bg-slate-100 rounded-lg p-3" },
           React.createElement("h4", { className: "text-xs font-bold text-slate-700 mb-2" }, "Interpretation requires educator review"),
@@ -9803,7 +9842,7 @@ try {
     }, "\uD83D\uDCCB"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, t('probes.benchmark_battery')), /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-xs font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "CBM-style")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
     }, "Curated word lists with fixed activity order per grade. No gamification \u2014 CBM-style measures for progress monitoring, not standardized/norm-referenced tests; they don't replace a formal evaluation."), /*#__PURE__*/React.createElement("div", {
@@ -9861,10 +9900,10 @@ try {
     }, "\u25B6 Start Battery")), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] text-slate-600 font-semibold"
+      className: "text-xs text-slate-600 font-semibold"
     }, "Battery order:"), (GRADE_SUBTEST_BATTERIES[probeGradeLevel] || []).map((act, i, arr) => /*#__PURE__*/React.createElement("span", {
       key: act,
-      className: "text-[11px] font-bold text-violet-600"
+      className: "text-xs font-bold text-violet-600"
     }, act.charAt(0).toUpperCase() + act.slice(1), i < arr.length - 1 ? ' →' : '')))), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-4 mb-4 border border-orange-200"
     }, /*#__PURE__*/React.createElement("div", {
@@ -9874,7 +9913,7 @@ try {
     }, "\uD83D\uDD22"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, t('probes.math_fluency')), /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] font-bold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-xs font-bold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "CBM-style")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
     }, "Fixed problem sets with DCPM scoring. 25 problems, 2-minute timer. Forms A/B/C for progress monitoring."), /*#__PURE__*/React.createElement("div", {
@@ -9943,7 +9982,7 @@ try {
       "aria-label": "Start math probe",
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-700 to-amber-700 text-white rounded-lg font-bold text-sm hover:from-orange-800 hover:to-amber-800 transition-all shadow-md"
     }, "\u25B6 Start Math Probe"), _acCkSaveButton(React.createElement, t, 'math_computation', checkFileActions)), _acCkSaveDialog(React.createElement, t, 'math_computation', checkFileActions), /*#__PURE__*/React.createElement("div", {
-      className: "mt-2 text-[11px] text-slate-600 font-semibold"
+      className: "mt-2 text-xs text-slate-600 font-semibold"
     }, window.MATH_PROBE_BANKS && window.MATH_PROBE_BANKS[mathProbeGrade || "1"] && window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"] ? `✅ ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].problems.length} problems · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].operation} · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].difficulty}` : probeBanksReady ? "— No math probe bank for this grade / form yet" : "⏳ Loading math probes...")), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-200"
     }, /*#__PURE__*/React.createElement("div", {
@@ -9953,7 +9992,7 @@ try {
     }, "\uD83D\uDCD6"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, t('probes.literacy_fluency')), /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "CBM-style")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
     }, "Nonsense Word Fluency (NWF), Letter Naming Fluency (LNF), Rapid Automatized Naming (RAN), and Decodable ORF (a timed passage built from your Word Sounds pack)."), /*#__PURE__*/React.createElement("div", {
@@ -9990,7 +10029,7 @@ try {
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold"
     }, "NWF"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] text-slate-600 font-normal"
+      className: "text-xs text-slate-600 font-normal"
     }, t('probes.nwf')))), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         const grade = 'K';
@@ -10021,7 +10060,7 @@ try {
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold"
     }, "LNF"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] text-slate-600 font-normal"
+      className: "text-xs text-slate-600 font-normal"
     }, t('probes.lnf')))), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         const grade = ranGrade || 'K';
@@ -10054,7 +10093,7 @@ try {
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold"
     }, "RAN"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] text-slate-600 font-normal"
+      className: "text-xs text-slate-600 font-normal"
     }, t('probes.ran')))), /*#__PURE__*/React.createElement("button", {
       onClick: handleLaunchDecodableORF,
       className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-600 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
@@ -10065,7 +10104,7 @@ try {
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-bold"
     }, "Decodable ORF"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] text-slate-600 font-normal"
+      className: "text-xs text-slate-600 font-normal"
     }, t('probes.decodable_orf')))))), nwfProbeActive && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border-2 border-emerald-300 p-6 shadow-lg animate-in fade-in slide-in-from-top-4"
     }, /*#__PURE__*/React.createElement("div", {
@@ -10206,7 +10245,7 @@ try {
     }, nwfProbeResults.cls), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600"
     }, "CLS"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] text-slate-600"
+      className: "text-xs text-slate-600"
     }, "Correct Letter Sounds")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
@@ -10381,7 +10420,7 @@ try {
     }, lnfProbeResults.lpm), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600"
     }, "LPM"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] text-slate-600"
+      className: "text-xs text-slate-600"
     }, "Letters Per Minute")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
@@ -10722,7 +10761,7 @@ try {
     }, orfProbeResults.wcpm), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600 font-bold"
     }, "WCPM"), /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] text-slate-600"
+      className: "text-xs text-slate-600"
     }, "Words Correct Per Min")), /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-3 shadow-sm"
     }, /*#__PURE__*/React.createElement("div", {
@@ -10798,7 +10837,7 @@ try {
         key: oi,
         className: `text-xs px-2 py-1 rounded-full cursor-default ${opt === q.answer ? 'bg-green-100 text-green-700 font-bold ring-1 ring-green-300' : 'bg-slate-100 text-slate-600'}`
       }, opt, " ", opt === q.answer ? '✅' : ''))))), /*#__PURE__*/React.createElement("p", {
-        className: "text-[11px] text-slate-600 mt-2 italic"
+        className: "text-xs text-slate-600 mt-2 italic"
       }, "Ask each question orally. Correct answers highlighted."));
     })(),
     orfProbeResults.decodable ? /*#__PURE__*/React.createElement("p", {
@@ -10819,7 +10858,7 @@ try {
     }, "\u2753"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, t('probes.missing_number')), /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-xs font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-2")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
     }, "Find the missing number: \"3 + __ = 7\". Measures algebraic thinking and number relationships."), importedStudents.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -11107,7 +11146,7 @@ try {
     }, "\u2696\uFE0F"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, t('probes.qd')), /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] font-bold text-cyan-800 bg-cyan-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-xs font-bold text-cyan-800 bg-cyan-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-1")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
     }, "Circle the bigger number. 1-minute timed. Measures number magnitude understanding."), /*#__PURE__*/React.createElement("div", {
@@ -11311,7 +11350,7 @@ try {
     }, "\uD83D\uDD24"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, "Nonsense Word Fluency (NWF)"), /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-1")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
     }, "Student reads CVC pseudowords aloud (e.g., \"sig\", \"bim\", \"tob\"). Scored as Correct Letter Sounds (CLS) per minute. Tests phonetic decoding."), /*#__PURE__*/React.createElement("div", {
@@ -11347,7 +11386,7 @@ try {
     }, "\uD83C\uDD70\uFE0F"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, "Letter Naming Fluency (LNF)"), /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-xs font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
     }, "Student names randomly arranged uppercase and lowercase letters. Scored as letters per minute. Tests basic letter recognition."), /*#__PURE__*/React.createElement("div", {
@@ -11374,7 +11413,7 @@ try {
     }, "\u26A1"), /*#__PURE__*/React.createElement("h3", {
       className: "text-sm font-bold text-slate-700"
     }, "Rapid Automatized Naming (RAN)"), /*#__PURE__*/React.createElement("span", {
-      className: "text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
+      className: "text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full uppercase tracking-wider"
     }, "K-2")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mb-3"
     }, "Student names colors (K), letters (1), or numbers (2) as fast as possible. Measures processing speed \u2014 a key predictor of reading fluency."), /*#__PURE__*/React.createElement("div", {
@@ -11557,7 +11596,7 @@ try {
       }, af.map((f, i) => /*#__PURE__*/React.createElement("span", {
         key: i,
         title: f.detail,
-        className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-800'}`
+        className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-800'}`
       }, f.icon, " ", f.label)));
     })()))))))),
     // ── Student Data Tab ──
@@ -11655,9 +11694,9 @@ try {
               React.createElement("div", { style: { fontSize: '11px', fontWeight: 700, color: t.color } }, t.label),
               React.createElement("div", { className: "flex flex-wrap gap-1 mt-1 justify-center" },
                 students.slice(0, 5).map(function(name, i) {
-                  return React.createElement("span", { key: i, className: "text-[11px] px-1.5 py-0.5 rounded-full bg-white/70 font-medium", style: { color: t.color } }, name);
+                  return React.createElement("span", { key: i, className: "text-xs px-1.5 py-0.5 rounded-full bg-white/70 font-medium", style: { color: t.color } }, name);
                 }),
-                students.length > 5 && React.createElement("span", { className: "text-[11px] text-slate-600" }, '+' + (students.length - 5) + ' more')
+                students.length > 5 && React.createElement("span", { className: "text-xs text-slate-600" }, '+' + (students.length - 5) + ' more')
               )
             );
           })
@@ -11737,7 +11776,7 @@ try {
                             React.createElement("option", { value: "" }, t('class_analytics.not_linked') || 'Not linked'),
                             Object.keys(rosterKey.students).map(c => React.createElement("option", { key: c, value: c }, c))
                           ),
-                          student.importedName && student.importedName !== student.name && React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, (t('class_analytics.imported_as') || 'was: ') + student.importedName)
+                          student.importedName && student.importedName !== student.name && React.createElement("div", { className: "text-xs text-slate-500 mt-0.5" }, (t('class_analytics.imported_as') || 'was: ') + student.importedName)
                         )
                       : React.createElement("span", { className: "text-xs text-slate-600" }, '\u2014')
                   )
@@ -11919,7 +11958,7 @@ try {
       }, anomalyFlags.map((f, i) => /*#__PURE__*/React.createElement("span", {
         key: i,
         title: f.detail,
-        className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-800'}`
+        className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-bold ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-800'}`
       }, f.icon, " ", f.label))), /*#__PURE__*/React.createElement("div", {
         className: "text-xs text-slate-600 mt-1"
       }, "View insights \u2192"));
@@ -12183,7 +12222,7 @@ try {
       // shown under whichever student happened to be open. That never surfaced
       // only because the engine feeding it had no UI left and so could never
       // record anything.
-      const mathDcpmData = ((probeHistory && probeHistory[selectedStudent.name]) || [])
+      const mathDcpmData = _saOwnArr(probeHistory, selectedStudent.name)
         .filter(p => {
           const a = String((p && (p.activity || p.type)) || '').toLowerCase();
           return a === 'math_dcpm' || a === 'math' || a === 'math_fluency';
@@ -12195,8 +12234,11 @@ try {
       const renderSparkline = (data, color, aimlineData) => {
         if (data.length < 2) return null;
         const allValues = [...data];
-        if (aimlineData) {
-          allValues.push(aimlineData.baseline, aimlineData.target);
+        const aimBase = aimlineData ? Number(aimlineData.baseline) : NaN;
+        const aimTarget = aimlineData ? Number(aimlineData.target) : NaN;
+        const hasFiniteAim = Number.isFinite(aimBase) && Number.isFinite(aimTarget);
+        if (hasFiniteAim) {
+          allValues.push(aimBase, aimTarget);
         }
         const max = Math.max(...allValues, 1);
         const min = Math.min(...allValues, 0);
@@ -12210,9 +12252,9 @@ try {
         const trend = _trivial ? '→' : (_lastV >= _firstV ? '↑' : '↓');
         const trendLabel = (_trivial ? 'roughly flat' : (trend === '↑' ? 'up' : 'down')) + ' from first to latest (n=' + data.length + ') — direction only, not a fitted trend';
         let aimlineCoords = null;
-        if (aimlineData && aimlineData.baseline != null && aimlineData.target != null) {
-          const y1 = h - (aimlineData.baseline - min) / range * (h - 4) - 2;
-          const y2 = h - (aimlineData.target - min) / range * (h - 4) - 2;
+        if (hasFiniteAim) {
+          const y1 = h - (aimBase - min) / range * (h - 4) - 2;
+          const y2 = h - (aimTarget - min) / range * (h - 4) - 2;
           aimlineCoords = {
             x1: 0,
             y1,
@@ -13149,7 +13191,7 @@ try {
       }, /*#__PURE__*/React.createElement("h4", {
         className: "font-bold text-rose-700 mb-1 flex items-center gap-2"
       }, "🔀 ", t('class_analytics.confused_pairs') || "Most Confused Sounds"), /*#__PURE__*/React.createElement("p", {
-        className: "text-[11px] text-slate-600 mb-2"
+        className: "text-xs text-slate-600 mb-2"
       }, t('class_analytics.confused_pairs_hint') || "Target → chosen, by frequency. Target minimal-pair contrasts the student mixes up."), /*#__PURE__*/React.createElement("div", {
         className: "flex flex-wrap gap-2"
       }, _pairs.map(function(pair, ci) {
@@ -13233,7 +13275,7 @@ try {
       }, /*#__PURE__*/React.createElement("div", {
         className: "text-lg font-bold text-violet-600"
       }, Math.round(s.best), "%"), /*#__PURE__*/React.createElement("div", {
-        className: "text-[11px] text-slate-600 uppercase"
+        className: "text-xs text-slate-600 uppercase"
       }, "Best")), /*#__PURE__*/React.createElement("div", {
         className: "flex-1 h-2 bg-slate-100 rounded-full overflow-hidden"
       }, /*#__PURE__*/React.createElement("div", {
@@ -13247,7 +13289,7 @@ try {
       }, /*#__PURE__*/React.createElement("div", {
         className: `text-xs font-bold ${s.best > s.initial ? 'text-emerald-600' : 'text-slate-600'}`
       }, s.best > s.initial ? `+${Math.round(s.best - s.initial)}%` : '—'), /*#__PURE__*/React.createElement("div", {
-        className: "text-[11px] text-slate-600 uppercase"
+        className: "text-xs text-slate-600 uppercase"
       }, "Growth"))));
     }))), _acSrRounds(React.createElement, t, selectedStudent), selectedStudent.data?.labelChallengeResults?.length > 0 && /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_label_challenge",

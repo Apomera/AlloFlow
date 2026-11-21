@@ -157,7 +157,7 @@ function validateJobId(value) {
 }
 
 function normalizeInternalUrl(value, allowedHosts) {
-  if (typeof value !== 'string' || value.length > 2048) {
+  if (typeof value !== 'string' || value.length > 2048 || value.includes('?') || value.includes('#')) {
     throw new RunnerError('invalid_storage_url', 400);
   }
 
@@ -183,7 +183,7 @@ function normalizeInternalUrl(value, allowedHosts) {
     throw new RunnerError('invalid_storage_url', 400);
   }
 
-  return url.toString();
+  return `${url.origin}${url.pathname}`;
 }
 
 function validateRunPayload(value, allowedHosts) {
@@ -873,6 +873,25 @@ function parseAllowedHosts(value) {
   return hosts;
 }
 
+async function atomicReplaceFile(tempPath, destinationPath) {
+  try {
+    await fsp.rename(tempPath, destinationPath);
+  } catch (error) {
+    if (error && (error.code === 'EEXIST' || error.code === 'EPERM')) {
+      try {
+        await fsp.rm(destinationPath, { force: true });
+        await fsp.rename(tempPath, destinationPath);
+        return;
+      } catch (retryError) {
+        await fsp.rm(tempPath, { force: true }).catch(() => {});
+        throw retryError;
+      }
+    }
+    await fsp.rm(tempPath, { force: true }).catch(() => {});
+    throw error;
+  }
+}
+
 function createStateStore(root) {
   const resolvedRoot = path.resolve(root);
 
@@ -904,18 +923,13 @@ function createStateStore(root) {
     const files = pathsFor(jobId);
     await fsp.mkdir(files.dir, { recursive: true, mode: 0o700 });
     const temp = path.join(files.dir, `.state-${process.pid}-${crypto.randomUUID()}.tmp`);
-    await fsp.writeFile(temp, JSON.stringify(value), { encoding: 'utf8', mode: 0o600 });
     try {
-      await fsp.rename(temp, files.state);
+      await fsp.writeFile(temp, JSON.stringify(value), { encoding: 'utf8', mode: 0o600 });
     } catch (error) {
-      if (error && (error.code === 'EEXIST' || error.code === 'EPERM')) {
-        await fsp.rm(files.state, { force: true });
-        await fsp.rename(temp, files.state);
-      } else {
-        await fsp.rm(temp, { force: true }).catch(() => {});
-        throw error;
-      }
+      await fsp.rm(temp, { force: true }).catch(() => {});
+      throw error;
     }
+    await atomicReplaceFile(temp, files.state);
   }
 
   return { pathsFor, read, write };
@@ -1359,13 +1373,14 @@ async function downloadPdf(fetchImpl, url, destination, maxBytes, signal) {
   if (!response.body) throw new RunnerError('input_body_missing', 422);
 
   const temp = `${destination}.${crypto.randomUUID()}.tmp`;
-  await fsp.mkdir(path.dirname(destination), { recursive: true, mode: 0o700 });
-  const handle = await fsp.open(temp, 'wx', 0o600);
+  let handle = null;
   const hash = crypto.createHash('sha256');
   const prefixParts = [];
   let prefixBytes = 0;
   let size = 0;
   try {
+    await fsp.mkdir(path.dirname(destination), { recursive: true, mode: 0o700 });
+    handle = await fsp.open(temp, 'wx', 0o600);
     for await (const chunk of response.body) {
       throwIfCancelled(signal);
       const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
@@ -1377,7 +1392,11 @@ async function downloadPdf(fetchImpl, url, destination, maxBytes, signal) {
         prefixBytes += part.length;
       }
       hash.update(buffer);
-      await handle.write(buffer);
+      for (let offset = 0; offset < buffer.length; ) {
+        const { bytesWritten } = await handle.write(buffer, offset, buffer.length - offset);
+        if (bytesWritten <= 0) throw new RunnerError('input_write_failed', 500, true);
+        offset += bytesWritten;
+      }
     }
     if (declared !== null && size !== declared) {
       throw new RunnerError('input_length_mismatch', 422);
@@ -1386,29 +1405,40 @@ async function downloadPdf(fetchImpl, url, destination, maxBytes, signal) {
     if (prefix.length < 5 || prefix.toString('ascii') !== '%PDF-') {
       throw new RunnerError('input_not_pdf', 422);
     }
+    const toClose = handle;
+    handle = null;
+    await toClose.close();
+    await atomicReplaceFile(temp, destination);
   } catch (error) {
-    await handle.close().catch(() => {});
+    await response.body?.cancel().catch(() => {});
+    if (handle) {
+      const toClose = handle;
+      handle = null;
+      await toClose.close().catch(() => {});
+    }
     await fsp.rm(temp, { force: true }).catch(() => {});
     throw error;
   }
-  await handle.close();
-  await fsp.rm(destination, { force: true });
-  await fsp.rename(temp, destination);
   return { size, sha256: hash.digest('hex') };
 }
 
 async function writeBufferAtomic(destination, buffer) {
   const temp = `${destination}.${crypto.randomUUID()}.tmp`;
   await fsp.mkdir(path.dirname(destination), { recursive: true, mode: 0o700 });
-  await fsp.writeFile(temp, buffer, { mode: 0o600 });
-  await fsp.rm(destination, { force: true });
-  await fsp.rename(temp, destination);
+  try {
+    await fsp.writeFile(temp, buffer, { mode: 0o600 });
+  } catch (error) {
+    await fsp.rm(temp, { force: true }).catch(() => {});
+    throw error;
+  }
+  await atomicReplaceFile(temp, destination);
 }
 
 async function putArtifact(fetchImpl, url, filePath, contentType, metadata, signal) {
   throwIfCancelled(signal);
   const stat = await fsp.stat(filePath);
   const body = fs.createReadStream(filePath);
+  body.on('error', () => {});
   let response;
   try {
     response = await fetchWithTimeout(
@@ -1430,9 +1460,8 @@ async function putArtifact(fetchImpl, url, filePath, contentType, metadata, sign
       STORAGE_TIMEOUT_MS,
       signal,
     );
-  } catch (error) {
+  } finally {
     body.destroy();
-    throw error;
   }
   if (!response.ok) {
     await response.body?.cancel().catch(() => {});
@@ -2039,63 +2068,81 @@ function createRunnerServer(options = {}) {
     }
   }
 
+  let stateGate = Promise.resolve();
+  function withStateLock(fn) {
+    const run = stateGate.then(fn, fn);
+    stateGate = run.then(() => undefined, () => undefined);
+    return run;
+  }
+
   async function handleRun(req, res) {
     const raw = await readJsonBody(req);
     const spec = validateRunPayload(raw, allowedHosts);
     const digest = requestDigest(spec);
-    const previous = await store.read(spec.jobId);
+    const claimed = await withStateLock(async () => {
+      const previous = await store.read(spec.jobId);
 
-    if (previous && previous.requestDigest && previous.requestDigest !== digest) {
-      throw new RunnerError('idempotency_conflict', 409);
-    }
-    if (previous && previous.status === 'succeeded' && previous.result) {
-      sendJson(res, 200, previous.result);
-      return;
-    }
-    if (previous && ['failed', 'cancelled'].includes(previous.status)) {
-      sendJson(res, 409, publicStatus(previous, null));
-      return;
-    }
-    if (active) {
-      throw new RunnerError(
-        active.jobId === spec.jobId ? 'job_already_running' : 'runner_busy',
-        409,
-        true,
-      );
-    }
-
-    const timing = attemptTiming(spec.options.maxRunMinutes);
-    const abort = new AbortController();
-    const context = {
-      jobId: spec.jobId,
-      stage: 'receiving',
-      abort,
-      ...timing,
-      driver: null,
-      driverTelemetrySuppressed: false,
-      checkpointTelemetry: { resumed: null, saved: [] },
-    };
-    const cancelAttempt = (reason) => {
-      if (!abort.signal.aborted) abort.abort(reason);
-      if (context.driver && typeof context.driver.cancelActiveRun === 'function') {
-        Promise.resolve(context.driver.cancelActiveRun()).catch(() => {});
+      if (previous && previous.requestDigest && previous.requestDigest !== digest) {
+        throw new RunnerError('idempotency_conflict', 409);
       }
-    };
-    const deadlineTimer = setTimeout(
-      () => cancelAttempt(
-        new RunnerError('attempt_deadline_exceeded', 504, true),
-      ),
-      Math.max(1, timing.deadlineAt - Date.now()),
-    );
-    deadlineTimer.unref?.();
-    const clientAbort = () => cancelAttempt(new CancelledError());
-    const responseAbort = () => {
-      if (!res.writableEnded) clientAbort();
-    };
-    if (req.aborted) clientAbort();
-    else req.once('aborted', clientAbort);
-    res.once('close', responseAbort);
-    active = context;
+      if (previous && previous.status === 'succeeded' && previous.result) {
+        return { immediateStatus: 200, immediateBody: previous.result };
+      }
+      if (previous && ['failed', 'cancelled'].includes(previous.status)) {
+        return { immediateStatus: 409, immediateBody: publicStatus(previous, null) };
+      }
+      if (active) {
+        throw new RunnerError(
+          active.jobId === spec.jobId ? 'job_already_running' : 'runner_busy',
+          409,
+          true,
+        );
+      }
+
+      const timing = attemptTiming(spec.options.maxRunMinutes);
+      const abort = new AbortController();
+      const context = {
+        jobId: spec.jobId,
+        stage: 'receiving',
+        abort,
+        ...timing,
+        driver: null,
+        driverTelemetrySuppressed: false,
+        checkpointTelemetry: { resumed: null, saved: [] },
+      };
+      const cancelAttempt = (reason) => {
+        if (!abort.signal.aborted) abort.abort(reason);
+        if (context.driver && typeof context.driver.cancelActiveRun === 'function') {
+          Promise.resolve().then(() => context.driver.cancelActiveRun()).catch(() => {});
+        }
+      };
+      const deadlineTimer = setTimeout(
+        () => cancelAttempt(
+          new RunnerError('attempt_deadline_exceeded', 504, true),
+        ),
+        Math.max(1, timing.deadlineAt - Date.now()),
+      );
+      deadlineTimer.unref?.();
+      const clientAbort = () => cancelAttempt(new CancelledError());
+      const responseAbort = () => {
+        if (!res.writableEnded) clientAbort();
+      };
+      if (req.aborted || res.destroyed || res.closed) {
+        clientAbort();
+      } else {
+        req.once('aborted', clientAbort);
+        res.once('close', responseAbort);
+      }
+      active = context;
+      return { previous, context, deadlineTimer, clientAbort, responseAbort };
+    });
+
+    if (claimed.immediateStatus) {
+      sendJson(res, claimed.immediateStatus, claimed.immediateBody);
+      return;
+    }
+
+    const { previous, context, deadlineTimer, clientAbort, responseAbort } = claimed;
     try {
       const result = await executeRun(spec, digest, previous, context);
       sendJson(res, 200, result);
@@ -2168,47 +2215,69 @@ function createRunnerServer(options = {}) {
     if (!hasExactKeys(raw, ['jobId'])) throw new RunnerError('invalid_cancel_request', 400);
     const jobId = validateJobId(raw.jobId);
 
-    if (active && active.jobId === jobId) {
-      active.abort.abort(new CancelledError());
-      if (active.driver && typeof active.driver.cancelActiveRun === 'function') {
-        await active.driver.cancelActiveRun().catch(() => {});
+    const outcome = await withStateLock(async () => {
+      const current = active;
+      if (current && current.jobId === jobId) {
+        if (!current.abort.signal.aborted) {
+          current.abort.abort(new CancelledError());
+        }
+        return {
+          status: 202,
+          body: {
+            schema: RUN_SCHEMA,
+            jobId,
+            status: 'cancelling',
+          },
+          driver: current.driver,
+        };
       }
-      sendJson(res, 202, {
+
+      const state = await store.read(jobId);
+      if (!state) throw new RunnerError('job_not_found', 404);
+      if (state.status === 'succeeded') throw new RunnerError('job_already_succeeded', 409);
+      if (state.status === 'cancelled') {
+        return { status: 200, body: publicStatus(state, null), driver: null };
+      }
+      await persist(jobId, {
         schema: RUN_SCHEMA,
         jobId,
-        status: 'cancelling',
+        requestDigest: state.requestDigest,
+        status: 'cancelled',
+        error: { code: 'job_cancelled', retryable: false },
       });
-      return;
-    }
+      const cancelPaths = store.pathsFor(jobId);
+      await fsp.rm(cancelPaths.input, { force: true }).catch(() => {});
+      await fsp.rm(cancelPaths.taggedPdf, { force: true }).catch(() => {});
+      await fsp.rm(cancelPaths.report, { force: true }).catch(() => {});
+      return {
+        status: 200,
+        body: {
+          schema: RUN_SCHEMA,
+          jobId,
+          status: 'cancelled',
+        },
+        driver: null,
+      };
+    });
 
-    const state = await store.read(jobId);
-    if (!state) throw new RunnerError('job_not_found', 404);
-    if (state.status === 'succeeded') throw new RunnerError('job_already_succeeded', 409);
-    if (state.status === 'cancelled') {
-      sendJson(res, 200, publicStatus(state, null));
-      return;
+    if (outcome.driver && typeof outcome.driver.cancelActiveRun === 'function') {
+      await Promise.resolve().then(() => outcome.driver.cancelActiveRun()).catch(() => {});
     }
-    await persist(jobId, {
-      schema: RUN_SCHEMA,
-      jobId,
-      requestDigest: state.requestDigest,
-      status: 'cancelled',
-      error: { code: 'job_cancelled', retryable: false },
-    });
-    const cancelPaths = store.pathsFor(jobId);
-    await fsp.rm(cancelPaths.input, { force: true }).catch(() => {});
-    await fsp.rm(cancelPaths.taggedPdf, { force: true }).catch(() => {});
-    await fsp.rm(cancelPaths.report, { force: true }).catch(() => {});
-    sendJson(res, 200, {
-      schema: RUN_SCHEMA,
-      jobId,
-      status: 'cancelled',
-    });
+    sendJson(res, outcome.status, outcome.body);
   }
 
   const server = http.createServer((req, res) => {
     (async () => {
-      const url = new URL(req.url || '/', 'http://runner.internal');
+      const rawUrl = typeof req.url === 'string' && req.url.length > 0 ? req.url : '/';
+      if (!rawUrl.startsWith('/') || rawUrl.startsWith('//')) {
+        throw new RunnerError('invalid_request_url', 400);
+      }
+      let url;
+      try {
+        url = new URL(rawUrl, 'http://runner.internal');
+      } catch {
+        throw new RunnerError('invalid_request_url', 400);
+      }
       if (req.method === 'GET' && url.pathname === '/healthz' && !url.search) {
         sendJson(res, shuttingDown ? 503 : 200, {
           ok: !shuttingDown,
@@ -2250,16 +2319,19 @@ function createRunnerServer(options = {}) {
 
   server.maxHeadersCount = 32;
   server.headersTimeout = 10_000;
-  server.requestTimeout = 30 * 60 * 1000;
+  server.requestTimeout = 30_000;
   server.keepAliveTimeout = 5_000;
 
   async function shutdown() {
     if (shuttingDown) return;
     shuttingDown = true;
-    if (active) {
-      active.abort.abort();
-      if (active.driver && typeof active.driver.cancelActiveRun === 'function') {
-        await active.driver.cancelActiveRun().catch(() => {});
+    const current = active;
+    if (current) {
+      if (!current.abort.signal.aborted) {
+        current.abort.abort(new RunnerError('runner_shutting_down', 503, true));
+      }
+      if (current.driver && typeof current.driver.cancelActiveRun === 'function') {
+        await Promise.resolve().then(() => current.driver.cancelActiveRun()).catch(() => {});
       }
     }
     if (server.listening) {
@@ -2306,8 +2378,13 @@ async function main() {
       process.exit(1);
     }, 10_000);
     force.unref?.();
-    await app.shutdown();
-    clearTimeout(force);
+    try {
+      await app.shutdown();
+    } catch {
+      process.exitCode = 1;
+    } finally {
+      clearTimeout(force);
+    }
   };
   process.once('SIGTERM', stop);
   process.once('SIGINT', stop);

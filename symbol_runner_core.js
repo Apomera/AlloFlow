@@ -539,7 +539,7 @@
     var low = raw.toLowerCase();
     if (!low) return '';
     if (cat === 'color_stroop') return opts.allowStroop === true ? low : '';
-    if (cat === 'number' || item.dots > 0 || /^\d{1,2}$/.test(low)) return DIGIT_WORDS[low] || low;
+    if (cat === 'number' || item.dots > 0 || /^\d{1,2}$/.test(low)) return Object.prototype.hasOwnProperty.call(DIGIT_WORDS, low) ? DIGIT_WORDS[low] : low;
     if (cat === 'word' || cat === 'chunk') return low;
     if (/^(red|blue|green|yellow|purple|orange)$/.test(low)) return low;
     return '';
@@ -710,7 +710,9 @@
     }
     var inPool = Object.create(null);
     pool.forEach(function (p) { if (p.category === item.category) inPool[p.answer.toLowerCase()] = p.answer; });
-    (LOOK_ALIKES[item.answer.toLowerCase()] || []).forEach(function (alike) {
+    var alikeKey = item.answer.toLowerCase();
+    var alikes = Object.prototype.hasOwnProperty.call(LOOK_ALIKES, alikeKey) ? LOOK_ALIKES[alikeKey] : [];
+    alikes.forEach(function (alike) {
       if (inPool[alike] && !seen[alike] && chosen.length < limit) { seen[alike] = true; chosen.push(inPool[alike]); }
     });
     var sameCat = pool.filter(function (p) { return p.category === item.category; }).map(function (p) { return p.answer; });
@@ -1017,7 +1019,7 @@
     var raw = String(transcript).toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').replace(/\s+/g, ' ').trim();
     if (!raw) return false;
     var ans = String(item.answer).toLowerCase().trim();
-    var variants = SPOKEN_MAP[ans] ? SPOKEN_MAP[ans].slice() : [ans];
+    var variants = Object.prototype.hasOwnProperty.call(SPOKEN_MAP, ans) ? SPOKEN_MAP[ans].slice() : [ans];
     if (variants.indexOf(ans) < 0) variants.push(ans);
     if (raw === ans) return true;
     var tokens = raw.split(' ');
@@ -1160,12 +1162,15 @@
     doc.head.appendChild(s);
   }
 
+  var _sharedChimeCtx = null;
   function playChime(muted) {
     if (muted) return;
     try {
       var Ctx = root.AudioContext || root.webkitAudioContext;
       if (!Ctx) return;
-      var ctx = new Ctx();
+      if (!_sharedChimeCtx || _sharedChimeCtx.state === 'closed') _sharedChimeCtx = new Ctx();
+      var ctx = _sharedChimeCtx;
+      if (ctx.state === 'suspended' && typeof ctx.resume === 'function') { try { ctx.resume(); } catch (_) {} }
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
       osc.type = 'sine';
@@ -1177,7 +1182,6 @@
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.19);
-      setTimeout(function () { try { ctx.close(); } catch (_) {} }, 300);
     } catch (_) { /* optional sound */ }
   }
 
@@ -1555,7 +1559,7 @@
     var typeInput = doc.createElement('input');
     typeInput.type = 'text';
     typeInput.className = 'asr-input';
-    typeInput.maxLength = 10;
+    typeInput.maxLength = 20;
     typeInput.id = 'asr-type-' + (++RUNNER_SEQ);
     typeLabel.htmlFor = typeInput.id;
     typeInput.setAttribute('autocomplete', 'off');
@@ -1641,8 +1645,8 @@
         }
         aimLane = controlMode === 'lockon' ? (current.lane === aimLane ? (aimLane + 1) % 3 : aimLane) : current.lane;
         syncLockState();
-        // The answer the child gave: the ink color, the count, the sum (not the word or digit printed on the card).
-        var named = /^(letter|word|sound|chunk|flanker)$/.test(String(prev.category || 'letter')) && !prev.dots ? prev.display : prev.answer;
+        // The answer the child gave: the ink color, the count, the sum, or the flanker center target.
+        var named = /^(letter|word|sound|chunk)$/.test(String(prev.category || 'letter')) && !prev.dots ? prev.display : prev.answer;
         say(T('yes', { answer: named, time: secs(rt) }) + (controlMode === 'lockon' && viewMode !== 'grid' ? ' ' + T('aim_next') : ''), T('next_card', { cue: cueLine(current) }));
         updateUi();
         draw();
@@ -1782,8 +1786,9 @@
           : current.category === 'word' ? 'b_word'
           : current.category === 'chunk' ? 'b_chunk'
           : current.category === 'sound' ? 'b_sound' : 'b_letter');
-        if (current.picture) {
-          cueImg.src = current.picture;
+        var safeCuePic = current.picture ? safePrintImg(current.picture) : '';
+        if (safeCuePic) {
+          cueImg.src = safeCuePic;
           cueImg.alt = current.pictureAlt || current.display;
           cueImg.hidden = false;
         } else {
@@ -2102,9 +2107,11 @@
 
     function tick() {
       if (destroyed) return;
-      if (approachProgress < 1 && !prefersReduced) approachProgress = Math.min(1, approachProgress + 0.015);
-      if (sparkle > 0) sparkle = Math.max(0, sparkle - 0.08);
-      draw();
+      if (started && viewMode !== 'grid') {
+        if (approachProgress < 1 && !prefersReduced) approachProgress = Math.min(1, approachProgress + 0.015);
+        if (sparkle > 0) sparkle = Math.max(0, sparkle - 0.08);
+        draw();
+      }
       if (typeof root.requestAnimationFrame === 'function') rafId = root.requestAnimationFrame(tick);
     }
 
@@ -2122,8 +2129,12 @@
       }
     });
 
+    var singleKeyRe = (function () {
+      try { return new RegExp("^[\\p{L}\\p{N}'\\u2019-]$", 'u'); } catch (_) { return /^[A-Za-z0-9'\u2019-]$/; }
+    })();
+
     function onKeyDown(e) {
-      if (destroyed || !current) return;
+      if (destroyed || !current || !started) return;
       if (e.target === typeInput) {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -2143,7 +2154,7 @@
       }
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.target && e.target.closest && e.target.closest('button, summary, select, a[href], textarea, input')) return;
-      if (/^[A-Za-z0-9]$/.test(e.key)) {
+      if (typeof e.key === 'string' && e.key.length === 1 && singleKeyRe.test(e.key)) {
         e.preventDefault();
         keyBuffer += e.key;
         typeInput.value = keyBuffer;
@@ -2167,11 +2178,17 @@
     startBtn.addEventListener('click', function () {
       if (started || destroyed) return;
       started = true;
+      keyBuffer = '';
+      typeInput.value = '';
+      approachProgress = 0.25;
       startRow.hidden = true;
       stage.hidden = false;
       cardStartMs = Date.now();
       updateUi();
       draw();
+      if (!rafId && !prefersReduced && typeof root.requestAnimationFrame === 'function') {
+        rafId = root.requestAnimationFrame(tick);
+      }
       // Said for a screen reader only: the same words are on the card line just above.
       say('', cueLine(current));
       // A host can make room for the game now (the app's panel folds its settings away).
@@ -2184,7 +2201,7 @@
     draw();
     if (started && current && current.study) playAnchorAudio(current, { restartClock: true });
     if (cfg.autoFocus && keypad.firstChild) { try { keypad.firstChild.focus(); } catch (_) {} }
-    if (!prefersReduced && typeof root.requestAnimationFrame === 'function') {
+    if (started && !prefersReduced && typeof root.requestAnimationFrame === 'function') {
       rafId = root.requestAnimationFrame(tick);
     }
     if (voiceEnabled) startVoice();
@@ -2240,7 +2257,8 @@
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   function renderDotsPrintSvg(dots, watermarkDigit) {
@@ -2256,19 +2274,30 @@
 
   function safePrintImg(src) {
     var s = String(src == null ? '' : src).trim();
-    if (!/^data:image\/(?:png|jpeg|jpg|gif|webp|svg\+xml);/i.test(s)) return '';
+    if (!s || s.length > 10 * 1024 * 1024) return '';
+    if (!/^data:image\/(?:png|jpeg|jpg|gif|webp|avif|svg\+xml);/i.test(s)) return '';
     if (/svg\+xml/i.test(s)) {
-      var decoded = s;
       var comma = s.indexOf(',');
-      if (comma > -1) {
-        var body = s.slice(comma + 1);
-        if (/;base64/i.test(s.slice(0, comma))) {
-          try { decoded = typeof root.atob === 'function' ? root.atob(body) : ''; } catch (_) { return ''; }
-        } else {
-          try { decoded = decodeURIComponent(body); } catch (_) { decoded = body; }
-        }
+      if (comma < 0) return '';
+      var body = s.slice(comma + 1);
+      var decoded = '';
+      if (/;\s*base64\b/i.test(s.slice(0, comma))) {
+        if (typeof root.atob !== 'function') return '';
+        try { decoded = root.atob(body); } catch (_) { return ''; }
+      } else {
+        try { decoded = decodeURIComponent(body); } catch (_) { return ''; }
       }
-      if (/<script|<foreignObject|\bon[a-z]+\s*=|javascript:/i.test(decoded)) return '';
+      if (/<\s*(?:[\w-]+:)?(?:script|foreignObject|iframe|object|embed|animate\w*|set|handler|listener)\b|<!(?:DOCTYPE|ENTITY)\b|<\?(?!xml\s)|\bon[a-z]+\s*=|(?:javascript|vbscript)\s*:|data\s*:\s*text\/html|(?:[\w-]+:)?href\s*=\s*['"]?\s*(?:https?:|\/\/|javascript:|vbscript:|data:)|&#/i.test(decoded)) return '';
+      var styleRe = /<\s*(?:[\w-]+:)?style\b[^>]*>([\s\S]*?)<\s*\/\s*(?:[\w-]+:)?style\s*>/gi, sm;
+      while ((sm = styleRe.exec(decoded))) {
+        if (/@import|@font-face|@namespace|url\s*\(|expression\s*\(/i.test(sm[1])) return '';
+      }
+      if (/<\s*(?:[\w-]+:)?style\b(?![^>]*\/\s*>)[\s\S]*$/i.test(decoded.replace(/<\s*(?:[\w-]+:)?style\b[^>]*>[\s\S]*?<\s*\/\s*(?:[\w-]+:)?style\s*>/gi, ''))) return '';
+      var urlRe = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi, um;
+      while ((um = urlRe.exec(decoded))) {
+        var uVal = String(um[1] != null ? um[1] : um[2] != null ? um[2] : um[3] || '').trim();
+        if (uVal && uVal.charAt(0) !== '#') return '';
+      }
     }
     return s;
   }
@@ -2345,6 +2374,7 @@
       '<html lang="en">',
       '<head>',
       '<meta charset="utf-8">',
+      '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data:; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'">',
       '<meta name="viewport" content="width=device-width,initial-scale=1">',
       '<title>' + escPrint(title) + '</title>',
       '<style>',
@@ -2418,6 +2448,7 @@
       '<html lang="en">',
       '<head>',
       '<meta charset="utf-8">',
+      '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data:; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'">',
       '<meta name="viewport" content="width=device-width,initial-scale=1">',
       '<title>' + escPrint(title) + ' — Cut-and-Fold Flashcards</title>',
       '<style>',
@@ -2479,10 +2510,11 @@
       var pic = safePrintImg(it.picture);
       var picHtml = pic ? '<img class="ccc-pic" src="' + escPrint(pic) + '" alt="' + escPrint(cleanBangText(it.pictureAlt || cleanAns)) + '">' : '';
       var dispText = cleanBangText(it.display || '');
-      var promptHtml = it.dots > 0 || it.category === 'size_stroop' || it.category === 'color_stroop' || it.category === 'flanker'
+      var hasVisualPrompt = it.dots > 0 || it.category === 'size_stroop' || it.category === 'color_stroop' || it.category === 'flanker';
+      var promptHtml = hasVisualPrompt
         ? renderPrintPromptHtml(it)
         : escPrint(dispText);
-      var modelHtml = dispText && dispText !== cleanAns
+      var modelHtml = (hasVisualPrompt || (dispText && dispText !== cleanAns))
         ? (promptHtml + ' &rarr; <strong>' + escPrint(cleanAns) + '</strong>')
         : ('<strong>' + escPrint(cleanAns) + '</strong>');
       return '<tr class="ccc-row">'
@@ -2502,6 +2534,7 @@
       '<html lang="en">',
       '<head>',
       '<meta charset="utf-8">',
+      '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data:; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'">',
       '<meta name="viewport" content="width=device-width,initial-scale=1">',
       '<title>' + escPrint(title) + ' — Cover, Copy, Compare Sheet</title>',
       '<style>',
@@ -2555,7 +2588,9 @@
   }
   function readAloudVariants(answer) {
     var a = String(answer == null ? '' : answer).toLowerCase().trim();
-    var list = (SPOKEN_MAP[a] || []).concat(READ_ALOUD_HOMOPHONES[a] || [], [a]);
+    var spoken = Object.prototype.hasOwnProperty.call(SPOKEN_MAP, a) ? SPOKEN_MAP[a] : [];
+    var homo = Object.prototype.hasOwnProperty.call(READ_ALOUD_HOMOPHONES, a) ? READ_ALOUD_HOMOPHONES[a] : [];
+    var list = spoken.concat(homo, [a]);
     return list.filter(function (v, i) { return v && list.indexOf(v) === i; });
   }
   function readAloudTokens(transcript, singleLetters) {

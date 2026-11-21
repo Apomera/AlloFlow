@@ -381,12 +381,14 @@
       }
       renderCitation();
     }
+    var verifySourceSeq = 0;
     async function verifySelectedSource(row) {
+      var seq = ++verifySourceSeq;
       sourceSearchState.metadata=null;sourceSearchState.metadataStatus='checking';sourceSearchState.metadataCheckedAt='';sourceSearchState.metadataCached=false;sourceSearchState.confidence=null;renderSourceVerification();
       var client=window.AlloFlowTextInquirySearch;
       if(!client||typeof client.verifyMetadata!=='function'){sourceSearchState.metadataStatus='error';renderSourceVerification();return;}
-      try {var response=await client.verifyMetadata(row.url);sourceSearchState.metadata=response.metadata||{};sourceSearchState.metadataStatus='ok';sourceSearchState.metadataCheckedAt=new Date().toISOString();sourceSearchState.metadataCached=!!response.cached;renderSourceVerification();updatePreview();}
-      catch(error){sourceSearchState.metadataStatus='error';renderSourceVerification();setStatus(els.sourceVerificationStatus,String(error&&error.message||error||'Metadata verification failed.'),'warn');updatePreview();}
+      try {var response=await client.verifyMetadata(row.url);if(seq!==verifySourceSeq)return;sourceSearchState.metadata=response.metadata||{};sourceSearchState.metadataStatus='ok';sourceSearchState.metadataCheckedAt=new Date().toISOString();sourceSearchState.metadataCached=!!response.cached;renderSourceVerification();updatePreview();}
+      catch(error){if(seq!==verifySourceSeq)return;sourceSearchState.metadataStatus='error';renderSourceVerification();setStatus(els.sourceVerificationStatus,String(error&&error.message||error||'Metadata verification failed.'),'warn');updatePreview();}
     }
     function renderSourceSearchResults() {
       els.sourceSearchResults.textContent='';

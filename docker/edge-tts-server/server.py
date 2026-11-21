@@ -52,13 +52,24 @@ def is_allowed_origin(origin):
 def is_allowed_host(host_header):
     if not host_header or not isinstance(host_header, str):
         return False
+    raw = host_header.strip()
+    if not raw or len(raw) > 255 or any(ord(c) <= 32 or ord(c) == 127 for c in raw):
+        return False
     try:
-        hostname = (urlsplit("http://" + host_header.strip()).hostname or "").lower()
+        parsed = urlsplit("http://" + raw)
+        if parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment:
+            return False
+        port = parsed.port
+        if port is not None and not (1 <= port <= 65535):
+            return False
+        hostname = (parsed.hostname or "").lower()
     except ValueError:
         return False
+    if not hostname or hostname.endswith("."):
+        return False
     allowed = {"localhost", "127.0.0.1", "::1", "edge-tts"}
-    for raw in os.environ.get("ALLOFLOW_TTS_ALLOWED_ORIGINS", "").split(","):
-        val = raw.strip()
+    for raw_origin in os.environ.get("ALLOFLOW_TTS_ALLOWED_ORIGINS", "").split(","):
+        val = raw_origin.strip()
         if not val:
             continue
         try:
@@ -86,7 +97,9 @@ def guard_browser_origin():
         if expected_token:
             auth = request.headers.get("Authorization", "")
             prefix = "Bearer "
-            if not auth.startswith(prefix) or not hmac.compare_digest(auth[len(prefix):].strip(), expected_token):
+            if (len(auth) > 1024
+                    or not auth.startswith(prefix)
+                    or not hmac.compare_digest(auth[len(prefix):].strip().encode("utf-8"), expected_token.encode("utf-8"))):
                 return jsonify({"error": "Valid bearer token required."}), 401
 
 

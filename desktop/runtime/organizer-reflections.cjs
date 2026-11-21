@@ -46,7 +46,7 @@ function createOrganizerReflectionStore({ sessions, compact }) {
     },
     submit(code, auth, value) {
       const entry = session(code);
-      if (!auth?.uid || !auth.jti || !entry.data?.roster?.[auth.uid]) fail(403, 'Join the class roster before submitting.');
+      if (!auth?.uid || !auth.jti || !entry.data?.roster || !Object.prototype.hasOwnProperty.call(entry.data.roster, auth.uid)) fail(403, 'Join the class roster before submitting.');
       if (!value || Object.keys(value).some(key => !['version', 'resourceId', 'structureType', 'activityId', 'revision', 'submittedAt', 'fields'].includes(key)) || value.version !== 1 || !text(value.activityId, 160) || !text(value.resourceId, 160)) fail(400, 'The reflection submission is invalid.');
       const fields = fieldsOf(value.fields), records = entry.organizerReflections || [];
       // Tokens are bound by the existing LAN join. Written work additionally belongs

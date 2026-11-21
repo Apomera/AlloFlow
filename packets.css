@@ -89,6 +89,9 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 
 .wrap { width: 100%; max-width: 68rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 2rem); }
 .wrap-narrow { max-width: 54rem; }
+@media (min-width: 72rem) {
+  .wrap-narrow { max-width: 62rem; }
+}
 
 /* Header */
 .top { background: var(--surface); border-bottom: 1px solid var(--line); }

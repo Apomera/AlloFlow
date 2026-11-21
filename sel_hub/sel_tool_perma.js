@@ -128,16 +128,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
     return d.getFullYear() + '-' + m + '-' + dd;
   }
 
+  function validRating(ratings, itemId) {
+    if (!ratings || typeof ratings !== 'object') return null;
+    var v = ratings[itemId];
+    if (typeof v !== 'number' || !isFinite(v)) return null;
+    return Math.max(0, Math.min(10, v));
+  }
+
   function domainScore(ratings, domainId) {
     var items = ITEMS.filter(function(i) { return i.domain === domainId; });
-    var rated = items.filter(function(i) { return ratings[i.id] !== undefined && ratings[i.id] !== null; });
-    if (rated.length === 0) return null;
-    var sum = rated.reduce(function(s, i) { return s + ratings[i.id]; }, 0);
-    return Math.round((sum / rated.length) * 10) / 10;
+    var vals = [];
+    items.forEach(function(i) {
+      var v = validRating(ratings, i.id);
+      if (v !== null) vals.push(v);
+    });
+    if (vals.length === 0) return null;
+    var sum = vals.reduce(function(s, v) { return s + v; }, 0);
+    return Math.round((sum / vals.length) * 10) / 10;
   }
 
   function ratedItemCount(ratings) {
-    return Object.keys(ratings || {}).filter(function(k) { return ratings[k] !== undefined && ratings[k] !== null; }).length;
+    var count = 0;
+    ITEMS.forEach(function(i) { if (validRating(ratings, i.id) !== null) count++; });
+    return count;
   }
 
   function isComplete(ratings) {
@@ -155,13 +168,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
       var _perT = (ctx && ctx.theme) || {};
       var _perHC = !!_perT.isContrast, _perL = !_perHC && !_perT.isDark;
       var _per_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff','#0b1220':'#f1f5f9'}, _per_BGH = {'#0f172a':'#000000','#15803d':'#000000','#1e293b':'#000000','#0b1220':'#000000','#fff':'#000000'};
-      var _per_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b','#e0e7ff':'#3730a3'}, _per_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#bbf7d0':'#ffff00','#e2e8f0':'#ffff00','#e0e7ff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _per_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b','#e0e7ff':'#3730a3','#bbf7d0':'#166534'}, _per_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#bbf7d0':'#ffff00','#e2e8f0':'#ffff00','#e0e7ff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
       var _per_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _per_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#475569':'#ffff00','#818cf8':'#ffff00','#cbd5e1':'#ffff00','#d97706':'#ffff00'};
       var _perBg = function(h){ return _perHC ? (_per_BGH[h]||h) : (_perL ? (_per_BGL[h]||h) : h); };
       var _perFg = function(h){ return _perHC ? (_per_FGH[h]||h) : (_perL ? (_per_FGL[h]||h) : h); };
       var _perBd = function(h){ return _perHC ? (_per_BDH[h]||h) : (_perL ? (_per_BDL[h]||h) : h); };
-      // accent text on the dark shell needs the 300/400 weight (1.4.3)
-      var _perInk = function(c){ return _perHC || _perL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
+      // accent text needs AA weight in dark, light, and high-contrast modes (1.4.3)
+      var _per_INK_LIGHT = {'#f59e0b':'#92400e','#0ea5e9':'#0369a1','#22c55e':'#166534','#a855f7':'#7e22ce','#ef4444':'#b91c1c','#10b981':'#047857'};
+      var _per_INK_DARK = {'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'};
+      var _perInk = function(c){ var k = String(c || '').toLowerCase(); return _perHC ? '#ffff00' : (_perL ? (_per_INK_LIGHT[k] || c) : (_per_INK_DARK[k] || c)); };
+      var _perDomainFill = function(c){ return _perHC ? '#ffff00' : c; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -170,16 +186,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
 
-      var d = labToolData.perma || defaultState();
+      var d = (labToolData.perma && typeof labToolData.perma === 'object') ? labToolData.perma : defaultState();
       function setP(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.perma) || defaultState();
-          var next = Object.assign({}, prior, patch);
-          if (patch.ratings) next.lastUpdated = todayISO();
+          var prior = (prev && prev.perma && typeof prev.perma === 'object') ? prev.perma : defaultState();
+          var resolved = typeof patch === 'function' ? patch(prior) : patch;
+          var next = Object.assign({}, prior, resolved);
+          if (resolved && resolved.ratings) next.lastUpdated = todayISO();
           return Object.assign({}, prev, { perma: next });
         });
       }
-      var view = d.view || 'home';
+      var VALID_VIEWS = ['home', 'check', 'profile', 'reflect', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'home';
       function goto(v) { setP({ view: v }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
@@ -209,10 +227,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, id: 'perma-tab-' + t.id, 'aria-controls': 'perma-tabpanel', onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f59e0b' : '#334155'),
-                background: active ? 'rgba(245,158,11,0.18)' : _perBg('#1e293b'),
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + _perBd(active ? '#f59e0b' : '#334155'),
+                background: active ? (_perHC ? '#000000' : 'rgba(245,158,11,0.18)') : _perBg('#1e293b'),
                 color: active ? _perFg('#fde68a') : _perFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -221,7 +239,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _perFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _perHC ? '#000000' : (_perL ? '#f1f5f9' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _perBd('#334155'), fontSize: 11, color: _perFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'PERMA is a wellbeing model, not a diagnostic tool. Persistent low scores across multiple domains can be a signal worth bringing to a counselor or therapist. Crisis Text Line: text HOME to 741741.'
         );
@@ -234,7 +252,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
         var rated = ratedItemCount(d.ratings);
 
         return h('div', null,
-          h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(245,158,11,0.4)', marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 14, background: _perHC ? '#000000' : (_perL ? 'linear-gradient(135deg, rgba(245,158,11,0.14) 0%, #f8fafc 65%)' : 'linear-gradient(135deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_perHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _perFg('#fde68a'), marginBottom: 4 } }, 'PERMA: how full is the picture right now?'),
             h('p', { style: { margin: 0, color: _perFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
               'PERMA is Martin Seligman\'s model of human flourishing. Five domains (plus one): Positive emotion, Engagement, Relationships, Meaning, Accomplishment, and Health. The point is NOT to score high on all of them; people are typically richer in some and thinner in others. The point is honesty about what is true right now.'
@@ -273,15 +291,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
       }
 
       function averageScore(ratings) {
-        var rated = ITEMS.filter(function(i) { return ratings[i.id] !== undefined && ratings[i.id] !== null; });
-        if (rated.length === 0) return 0;
-        return rated.reduce(function(s, i) { return s + ratings[i.id]; }, 0) / rated.length;
+        var vals = [];
+        ITEMS.forEach(function(i) {
+          var v = validRating(ratings, i.id);
+          if (v !== null) vals.push(v);
+        });
+        if (vals.length === 0) return 0;
+        return vals.reduce(function(s, v) { return s + v; }, 0) / vals.length;
       }
 
       function statCard(label, value, color) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color } },
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _perBg('#0f172a'), borderTop: '1px solid ' + _perBd('#1e293b'), borderRight: '1px solid ' + _perBd('#1e293b'), borderBottom: '1px solid ' + _perBd('#1e293b'), borderLeft: '3px solid ' + _perDomainFill(color) } },
           h('div', { style: { fontSize: 10, color: _perFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, label),
-          h('div', { style: { fontSize: 18, color: color, fontWeight: 900 } }, value)
+          h('div', { style: { fontSize: 18, color: _perInk(color), fontWeight: 900 } }, value)
         );
       }
 
@@ -290,9 +312,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
       // ═══════════════════════════════════════════════════════════
       function renderCheck() {
         function setRating(itemId, value) {
-          var r = Object.assign({}, (d.ratings || {}));
-          r[itemId] = value;
-          setP({ ratings: r });
+          var n = typeof value === 'number' && isFinite(value) ? Math.max(0, Math.min(10, Math.round(value))) : 5;
+          setP(function(prior) {
+            var r = Object.assign({}, (prior && prior.ratings && typeof prior.ratings === 'object') ? prior.ratings : {});
+            r[itemId] = n;
+            return { ratings: r };
+          });
         }
 
         var rated = ratedItemCount(d.ratings);
@@ -319,21 +344,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
             return h('div', { key: domainId, style: { padding: 12, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 20 } }, dom.icon),
-                h('span', { style: { fontSize: 13, fontWeight: 800, color: dom.color } }, dom.label)
+                h('span', { style: { fontSize: 13, fontWeight: 800, color: _perInk(dom.color) } }, dom.label)
               ),
               items.map(function(item) {
-                var v = (d.ratings || {})[item.id];
-                var hasRating = v !== undefined && v !== null;
+                var v = validRating(d.ratings, item.id);
+                var hasRating = v !== null;
                 return h('div', { key: item.id, style: { padding: 10, borderRadius: 6, background: _perBg('#1e293b'), marginBottom: 6 } },
                   h('div', { style: { fontSize: 13, color: _perFg('#e2e8f0'), marginBottom: 8, lineHeight: 1.5 } }, item.text),
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                     h('input', { type: 'range', min: 0, max: 10, value: hasRating ? v : 5,
                       onChange: function(e) { setRating(item.id, parseInt(e.target.value, 10)); },
                       style: { flex: 1, minWidth: 180 },
+                      'aria-valuetext': hasRating ? (v + ' out of 10') : 'Not yet rated',
                       'aria-label': 'Rate: ' + item.text }),
-                    h('span', { style: { fontSize: 14, fontWeight: 800, color: hasRating ? dom.color : _perFg('#475569'), minWidth: 40, textAlign: 'right' } }, hasRating ? v + '/10' : '–'),
-                    !hasRating ? h('button', { onClick: function() { setRating(item.id, 5); }, 'aria-label': 'Set this rating',
-                      style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + dom.color, background: 'transparent', color: _perInk(dom.color), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Set') : null
+                    h('span', { style: { fontSize: 14, fontWeight: 800, color: hasRating ? _perInk(dom.color) : _perFg('#94a3b8'), minWidth: 40, textAlign: 'right' } }, hasRating ? v + '/10' : '–'),
+                    !hasRating ? h('button', { onClick: function() { setRating(item.id, 5); }, 'aria-label': 'Set rating to 5 for: ' + item.text,
+                      style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + _perDomainFill(dom.color), background: 'transparent', color: _perInk(dom.color), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Set') : null
                   )
                 );
               })
@@ -371,6 +397,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
         var avg = ratedScores.length > 0 ? (ratedScores.reduce(function(s, v) { return s + v; }, 0) / ratedScores.length) : 0;
         // Find highest and lowest
         var ranked = ['P', 'E', 'R', 'M', 'A', 'H'].filter(function(k) { return scores[k] !== null; }).sort(function(a, b) { return scores[b] - scores[a]; });
+        if (ranked.length === 0) {
+          return h('div', null,
+            h('div', { style: { padding: 20, borderRadius: 12, background: _perBg('#0f172a'), border: '1px solid ' + _perBd('#1e293b'), textAlign: 'center' } },
+              h('div', { style: { color: _perFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'No valid ratings yet'),
+              h('button', { onClick: function() { goto('check'); }, 'aria-label': 'Self-check',
+                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _perBd('#f59e0b'), background: _perHC ? '#000000' : 'rgba(245,158,11,0.18)', color: _perFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Self-check')
+            )
+          );
+        }
         var highest = ranked[0];
         var lowest = ranked[ranked.length - 1];
 
@@ -379,19 +414,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
 
         return h('div', null,
           // Summary card
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(245,158,11,0.4)', marginBottom: 14 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _perHC ? '#000000' : (_perL ? 'linear-gradient(135deg, rgba(245,158,11,0.14) 0%, #f8fafc 65%)' : 'linear-gradient(135deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_perHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _perFg('#fde68a'), marginBottom: 4 } }, 'Overall ' + avg.toFixed(1) + ' / 10'),
             h('p', { style: { margin: 0, color: _perFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } },
               'Strongest: ',
-              h('strong', { style: { color: DOMAINS[highest].color } }, DOMAINS[highest].label + ' (' + scores[highest] + ')'),
+              h('strong', { style: { color: _perInk(DOMAINS[highest].color) } }, DOMAINS[highest].label + ' (' + scores[highest] + ')'),
               '  ·  Thinnest: ',
-              h('strong', { style: { color: DOMAINS[lowest].color } }, DOMAINS[lowest].label + ' (' + scores[lowest] + ')'),
+              h('strong', { style: { color: _perInk(DOMAINS[lowest].color) } }, DOMAINS[lowest].label + ' (' + scores[lowest] + ')'),
               '. Below: the bar for each domain.'
             )
           ),
 
           // SVG bar chart with accessibility
-          h('div', { style: { padding: 14, borderRadius: 12, background: _perBg('#0b1220'), border: '1px solid #1e293b', marginBottom: 12, overflowX: 'auto' } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _perBg('#0b1220'), border: '1px solid ' + _perBd('#1e293b'), marginBottom: 12, overflowX: 'auto' } },
             h('svg', { width: '100%', viewBox: '0 0 720 360', style: { maxWidth: 720 }, 'aria-labelledby': 'perma-title perma-desc', role: 'img' },
               h('title', { id: 'perma-title' }, 'PERMA wellbeing bar chart'),
               h('desc', { id: 'perma-desc' }, svgDesc),
@@ -399,31 +434,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
                 var dom = DOMAINS[domainId];
                 var s = scores[domainId];
                 if (s === null) return null;
-                var barW = (s / 10) * 540;
+                var barW = (s / 10) * 475;
                 var y = 30 + i * 52;
                 return h('g', { key: domainId },
-                  h('text', { x: 16, y: y + 16, fontSize: 13, fill: dom.color, style: { fontWeight: 800 } }, dom.icon + ' ' + dom.label),
-                  h('rect', { x: 160, y: y, width: 540, height: 24, fill: _perBg('#1e293b'), stroke: '#334155', strokeWidth: 1, rx: 4 }),
-                  h('rect', { x: 160, y: y, width: barW, height: 24, fill: dom.color, opacity: 0.85, rx: 4 }),
-                  h('text', { x: 170 + barW, y: y + 16, fontSize: 13, fill: '#fff', style: { fontWeight: 800 } }, s.toFixed(1))
+                  h('text', { x: 14, y: y + 16, fontSize: 13, fill: _perInk(dom.color), style: { fontWeight: 800 } }, dom.icon + ' ' + dom.label),
+                  h('rect', { x: 175, y: y, width: 475, height: 24, fill: _perBg('#1e293b'), stroke: _perBd('#334155'), strokeWidth: 1, rx: 4 }),
+                  h('rect', { x: 175, y: y, width: barW, height: 24, fill: _perDomainFill(dom.color), opacity: _perHC ? 1 : 0.85, rx: 4 }),
+                  h('text', { x: 660, y: y + 16, fontSize: 13, fill: _perFg('#e2e8f0'), style: { fontWeight: 800 } }, s.toFixed(1))
                 );
               }),
               // 10 scale markers
-              h('text', { x: 160, y: 350, fontSize: 9, fill: _perFg('#64748b') }, '0'),
-              h('text', { x: 430, y: 350, fontSize: 9, fill: _perFg('#64748b') }, '5'),
-              h('text', { x: 690, y: 350, fontSize: 9, fill: _perFg('#64748b') }, '10')
+              h('text', { x: 175, y: 350, fontSize: 9, fill: _perFg('#64748b') }, '0'),
+              h('text', { x: 412, y: 350, fontSize: 9, fill: _perFg('#64748b') }, '5'),
+              h('text', { x: 642, y: 350, fontSize: 9, fill: _perFg('#64748b') }, '10')
             )
           ),
 
           // Text-equivalent
           h('details', { style: { marginBottom: 12 } },
-            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _perFg('#fcd34d'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _perBg('#0f172a'), border: '1px solid #1e293b' } }, '🔤 Read this chart as text'),
-            h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _perBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _perFg('#fcd34d'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _perBg('#0f172a'), border: '1px solid ' + _perBd('#1e293b') } }, '🔤 Read this chart as text'),
+            h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _perBg('#0f172a'), border: '1px solid ' + _perBd('#1e293b') } },
               h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _perFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
                 ranked.map(function(k) {
                   var dom = DOMAINS[k];
                   return h('li', { key: k },
-                    h('strong', { style: { color: dom.color } }, dom.label),
+                    h('strong', { style: { color: _perInk(dom.color) } }, dom.label),
                     ': ' + scores[k] + ' / 10'
                   );
                 })
@@ -437,11 +472,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
             var dom = DOMAINS[k];
             var s = scores[k];
             var note = s >= 7 ? dom.atHigh : s <= 4 ? dom.atLow : null;
-            return h('div', { key: k, style: { padding: 12, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 8 } },
+            return h('div', { key: k, style: { padding: 12, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid ' + _perBd('#1e293b'), borderRight: '1px solid ' + _perBd('#1e293b'), borderBottom: '1px solid ' + _perBd('#1e293b'), borderLeft: '3px solid ' + _perDomainFill(dom.color), marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
                 h('span', { style: { fontSize: 18 } }, dom.icon),
-                h('span', { style: { fontSize: 13, fontWeight: 800, color: dom.color, flex: 1 } }, dom.label),
-                h('span', { style: { fontSize: 14, color: dom.color, fontWeight: 900 } }, s + '/10')
+                h('span', { style: { fontSize: 13, fontWeight: 800, color: _perInk(dom.color), flex: 1 } }, dom.label),
+                h('span', { style: { fontSize: 14, color: _perInk(dom.color), fontWeight: 900 } }, s + '/10')
               ),
               h('div', { style: { fontSize: 12, color: _perFg('#cbd5e1'), lineHeight: 1.6, marginBottom: note ? 6 : 0 } }, dom.summary),
               note ? h('div', { style: { fontSize: 12, color: _perFg('#94a3b8'), lineHeight: 1.6, fontStyle: 'italic', paddingTop: 6, borderTop: '1px solid #1e293b' } }, note) : null
@@ -488,10 +523,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           ranked.map(function(k) {
             var dom = DOMAINS[k];
             var s = scores[k];
-            return h('div', { key: k, style: { padding: 14, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + dom.color, marginBottom: 10 } },
+            return h('div', { key: k, style: { padding: 14, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid ' + _perBd('#1e293b'), borderRight: '1px solid ' + _perBd('#1e293b'), borderBottom: '1px solid ' + _perBd('#1e293b'), borderLeft: '4px solid ' + _perDomainFill(dom.color), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
                 h('span', { style: { fontSize: 22 } }, dom.icon),
-                h('span', { style: { fontSize: 14, fontWeight: 800, color: dom.color, flex: 1 } }, dom.label + ' · ' + s + '/10')
+                h('span', { style: { fontSize: 14, fontWeight: 800, color: _perInk(dom.color), flex: 1 } }, dom.label + ' · ' + s + '/10')
               ),
               h('p', { style: { margin: '0 0 8px', color: _perFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65, fontStyle: 'italic' } }, dom.reflection)
             );
@@ -536,7 +571,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#perma-print-region, #perma-print-region * { visibility: visible !important; } ' +
-              '#perma-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#perma-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #000 !important; } ' +
+              '#perma-print-region * { background: transparent !important; color: #000 !important; border-color: #888 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
@@ -588,7 +624,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           h('div', { style: { padding: 16, borderRadius: 12, background: _perBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _perFg('#fcd34d'), fontSize: 16 } }, 'Where PERMA comes from'),
             h('p', { style: { margin: 0, color: _perFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'Martin Seligman published PERMA in 2011 (in his book Flourish) as a revision of his earlier "Authentic Happiness" model. Seligman is also the co-developer (with Christopher Peterson) of the VIA Character Strengths classification. PERMA and VIA Strengths are sister frameworks: PERMA describes the domains of wellbeing, VIA describes the character traits people use to inhabit those domains. The PERMA-Profiler (Butler & Kern, 2016) is the most-cited measurement tool; this Career Compass tool uses a similar item structure adapted for school context.'
+              'Martin Seligman published PERMA in 2011 (in his book Flourish) as a revision of his earlier "Authentic Happiness" model. Seligman is also the co-developer (with Christopher Peterson) of the VIA Character Strengths classification. PERMA and VIA Strengths are sister frameworks: PERMA describes the domains of wellbeing, VIA describes the character traits people use to inhabit those domains. The PERMA-Profiler (Butler & Kern, 2016) is the most-cited measurement tool; this PERMA Wellbeing tool uses a similar item structure adapted for school context.'
             )
           ),
 
@@ -642,7 +678,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'PERMA Wellbeing Profile' },
         header(),
         navTabs(),
-        body
+        h('div', { id: 'perma-tabpanel', role: 'tabpanel', 'aria-labelledby': 'perma-tab-' + view }, body)
       );
     }
   });

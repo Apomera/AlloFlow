@@ -109,7 +109,9 @@ function VideoRefPlayerOverlay({
   const [activeDescriptionText, setActiveDescriptionText] = React.useState('');
   const [verify, setVerify] = React.useState(null); // null | 'match' | 'mismatch' | 'unknown'
   const [busy, setBusy] = React.useState(false);
+  const [playbackRate, setPlaybackRate] = React.useState(1);
   const urlsRef = React.useRef([]);
+  const mountedRef = React.useRef(true);
   const rootRef = React.useRef(null);
   const videoRef = React.useRef(null);
   const onCloseRef = React.useRef(onClose);
@@ -275,6 +277,7 @@ function VideoRefPlayerOverlay({
         const idx = trapStack.lastIndexOf(trap);
         if (idx >= 0) trapStack.splice(idx, 1);
       }
+      mountedRef.current = false;
       revokeObjectUrls(urlsRef.current.splice(0));
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
         try {
@@ -351,7 +354,7 @@ function VideoRefPlayerOverlay({
       if (ref.sha256 && window.crypto && window.crypto.subtle) {
         const digest = await window.crypto.subtle.digest('SHA-256', bytes);
         const hex = Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, '0')).join('');
-        verdict = hex === ref.sha256 ? 'match' : 'mismatch';
+        verdict = hex.toLowerCase() === String(ref.sha256).trim().toLowerCase() ? 'match' : 'mismatch';
       }
       const mime = /\.(mp4|m4v)$/i.test(videoName) ? 'video/mp4' : /\.mov$/i.test(videoName) ? 'video/quicktime' : 'video/webm';
       const nextVideoUrl = URL.createObjectURL(new Blob([bytes], {
@@ -367,6 +370,11 @@ function VideoRefPlayerOverlay({
         type: 'text/vtt'
       })) : null;
       if (nextDescriptionVttUrl) createdUrls.push(nextDescriptionVttUrl);
+      if (!mountedRef.current) {
+        revokeObjectUrls(createdUrls);
+        createdUrls = [];
+        return;
+      }
       replaceObjectUrls(createdUrls);
       createdUrls = [];
       setVideoUrl(nextVideoUrl);
@@ -398,6 +406,28 @@ function VideoRefPlayerOverlay({
       video.focus();
     } catch (_) {}
   };
+  const jumpVideoSeconds = delta => {
+    const video = videoRef.current || rootRef.current && rootRef.current.querySelector('video');
+    if (!video) return;
+    try {
+      const current = Number(video.currentTime) || 0;
+      const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : Infinity;
+      video.currentTime = Math.max(0, Math.min(duration, current + delta));
+      syncActiveDescription({
+        currentTarget: video
+      });
+    } catch (_) {}
+  };
+  React.useEffect(() => {
+    setPlaybackRate(1);
+  }, [videoUrl]);
+  React.useEffect(() => {
+    const video = videoRef.current || rootRef.current && rootRef.current.querySelector('video');
+    if (!video) return;
+    try {
+      video.playbackRate = playbackRate;
+    } catch (_) {}
+  }, [videoUrl, playbackRate]);
   React.useEffect(() => {
     const video = rootRef.current && rootRef.current.querySelector('video');
     if (!video) return undefined;
@@ -409,7 +439,7 @@ function VideoRefPlayerOverlay({
     ['timeupdate', 'seeked', 'loadedmetadata'].forEach(name => video.addEventListener(name, sync));
     const clear = () => setActiveDescriptionText('');
     video.addEventListener('ended', clear);
-    video.setAttribute('aria-label', String(ref.title || item.title || t('video_ref.player_title') || 'Video reference'));
+    video.setAttribute('aria-label', String(ref.title || item && item.title || t('video_ref.player_title') || 'Video reference'));
     if (visualDescriptions.length) video.setAttribute('aria-describedby', 'video-ref-description-summary');else video.removeAttribute('aria-describedby');
     let track = null;
     if (descriptionVttUrl) {
@@ -427,8 +457,10 @@ function VideoRefPlayerOverlay({
     };
   }, [videoUrl, descriptionVttUrl, visualDescriptions]);
   const badges = [ref.hasCaptions && (t('video_ref.badge_captions') || 'captions'), ref.hasChapters && (t('video_ref.badge_chapters') || 'chapters'), ref.hasVisualDescriptions && (t('video_ref.badge_descriptions') || 'visual descriptions'), ref.hasLocalizations && (t('video_ref.badge_localizations') || 'localizations')].filter(Boolean).join(' · ');
-  const durationLabel = `${Math.floor((ref.durationSec || 0) / 60)}:${String((ref.durationSec || 0) % 60).padStart(2, '0')}`;
+  const _totalSec = Math.floor(Math.max(0, Number(ref.durationSec) || 0));
+  const durationLabel = `${Math.floor(_totalSec / 60)}:${String(_totalSec % 60).padStart(2, '0')}`;
   const hostedUrl = typeof ref.hostedUrl === 'string' && /^https?:\/\//i.test(ref.hostedUrl.trim()) ? ref.hostedUrl.trim() : '';
+  const safeTitle = String(ref.title || item && item.title || 'Teacher video');
   return /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[210] flex items-center justify-center p-4",
     style: {
@@ -436,7 +468,7 @@ function VideoRefPlayerOverlay({
     },
     role: "dialog",
     "aria-modal": "true",
-    "aria-label": t('video_ref.player_title') || 'Video reference'
+    "aria-labelledby": "video-ref-player-title"
   }, /*#__PURE__*/React.createElement("div", {
     ref: rootRef,
     tabIndex: -1,
@@ -450,8 +482,9 @@ function VideoRefPlayerOverlay({
     className: "text-violet-700 shrink-0",
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("h2", {
+    id: "video-ref-player-title",
     className: "font-bold text-slate-800 text-base truncate"
-  }, String(ref.title || item.title || 'Teacher video'))), /*#__PURE__*/React.createElement("button", {
+  }, safeTitle)), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onClose,
     "data-alloflow-close-on-escape": "true",
@@ -477,7 +510,43 @@ function VideoRefPlayerOverlay({
     src: vttUrl,
     default: true,
     label: t('video_ref.captions_track') || 'Captions'
-  })), visualDescriptions.length > 0 && /*#__PURE__*/React.createElement("section", {
+  })), /*#__PURE__*/React.createElement("div", {
+    "data-video-ref-controls": "true",
+    className: "mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-1.5",
+    role: "group",
+    "aria-label": t('video_ref.skip_controls_group') || 'Skip playback time'
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-video-ref-rewind": "true",
+    onClick: () => jumpVideoSeconds(-10),
+    "aria-label": t('video_ref.rewind_10s_aria') || 'Rewind 10 seconds',
+    className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, "\u21BA 10s"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-video-ref-forward": "true",
+    onClick: () => jumpVideoSeconds(10),
+    "aria-label": t('video_ref.forward_10s_aria') || 'Skip forward 10 seconds',
+    className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, "10s \u21BB")), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-1.5",
+    role: "group",
+    "aria-label": t('video_ref.playback_speed_group') || 'Playback speed'
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-semibold text-slate-700"
+  }, t('video_ref.speed_label') || 'Speed:'), [0.75, 1, 1.25, 1.5].map(rate => {
+    const active = playbackRate === rate;
+    return /*#__PURE__*/React.createElement("button", {
+      key: rate,
+      type: "button",
+      "data-video-ref-speed": String(rate),
+      "aria-pressed": active,
+      "aria-label": (t('video_ref.speed_aria') || 'Playback speed {rate}x').replace('{rate}', String(rate)),
+      onClick: () => setPlaybackRate(rate),
+      className: 'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (active ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100')
+    }, rate, "\xD7");
+  }))), visualDescriptions.length > 0 && /*#__PURE__*/React.createElement("section", {
     className: "mt-3 rounded-xl border border-violet-200 bg-violet-50 p-3",
     "aria-labelledby": "video-ref-visual-descriptions-title"
   }, /*#__PURE__*/React.createElement("h3", {

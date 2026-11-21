@@ -25,6 +25,18 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
+  var _ctx = null;
+  var __alloT = function (key, fallback) {
+    var fn = (_ctx && typeof _ctx.t === 'function')
+      ? _ctx.t
+      : ((typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.t === 'function')
+        ? window.SelHub.t
+        : ((typeof window !== 'undefined' && typeof window.__alloT === 'function') ? window.__alloT : null));
+    var v = null;
+    if (fn) { try { v = fn(key, fallback); } catch (_) { v = null; } }
+    return (typeof v === 'string' && v && v !== key) ? v : (fallback != null ? fallback : key);
+  };
+
   // ── Live region (WCAG 4.1.3) ──
   (function() {
     if (document.getElementById('allo-live-goals')) return;
@@ -38,8 +50,9 @@ window.SelHub = window.SelHub || {
   var _audioCtx = null;
   function getAudioCtx() { if (!_audioCtx) { try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _audioCtx; }
   function playTone(freq, dur, type, vol) {
+    if (typeof window !== 'undefined' && ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute)) return;
     var ac = getAudioCtx(); if (!ac) return;
-    try { var o = ac.createOscillator(), g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = freq; g.gain.setValueAtTime(vol || 0.1, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (dur || 0.15)); } catch(e) {}
+    try { if (ac.state === 'suspended' && ac.resume) ac.resume(); var o = ac.createOscillator(), g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = freq; g.gain.setValueAtTime(vol || 0.1, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (dur || 0.15)); } catch(e) {}
   }
   function sfxAdd() { playTone(523, 0.08, 'sine', 0.07); setTimeout(function() { playTone(659, 0.1, 'sine', 0.07); }, 70); }
   function sfxComplete() { playTone(523, 0.1, 'sine', 0.1); setTimeout(function() { playTone(659, 0.1, 'sine', 0.1); }, 80); setTimeout(function() { playTone(784, 0.15, 'sine', 0.12); }, 160); setTimeout(function() { playTone(1047, 0.2, 'sine', 0.1); }, 280); }
@@ -197,20 +210,20 @@ window.SelHub = window.SelHub || {
     streak3: { icon: '\uD83D\uDD25', name: 'On Fire', desc: 'Check in 3 days in a row' },
     streak7: { icon: '\u2B50', name: 'Unstoppable', desc: '7-day check-in streak' },
     allCategories: { icon: '\uD83C\uDF08', name: 'Balanced Life', desc: 'Goals in 3+ categories' },
-    aiCoach: { icon: '\uD83E\uDD16', name: 'Coach Chat', desc: 'Ask the AI goal coach' },
+    aiCoach: { icon: '\uD83E\uDD16', name: 'Coach Chat', desc: 'Ask the AI goal coach', aiOnly: true },
     reflection: { icon: '\uD83D\uDCDD', name: 'Reflector', desc: 'Write a goal reflection' },
-    habitFormer: { icon: '\uD83D\uDD01', name: 'Habit Former', desc: 'Historical award for seven recorded days; new checks do not earn this award' },
+    habitFormer: { icon: '\uD83D\uDD01', name: 'Habit Former', desc: 'Historical award for seven recorded days; new checks do not earn this award', retired: true },
     visionCreator: { icon: '\uD83C\uDF1F', name: 'Vision Creator', desc: 'Create a vision board entry' },
     reflectiveAchiever: { icon: '\uD83E\uDE9E', name: 'Reflective Achiever', desc: 'Write a reflection on a completed goal' },
     accountabilityPartner: { icon: '\uD83E\uDD1D', name: 'Accountability Partner', desc: 'Share a goal with a buddy' },
-    habitMaster: { icon: '\uD83C\uDFC5', name: 'Habit Master', desc: 'Historical award for a full week of records; new checks do not earn this award' },
+    habitMaster: { icon: '\uD83C\uDFC5', name: 'Habit Master', desc: 'Historical award for a full week of records; new checks do not earn this award', retired: true },
     weeklyReviewer: { icon: '\uD83D\uDCDD', name: 'Weekly Reviewer', desc: 'Complete 3 weekly check-ins' },
     milestoneMaker: { icon: '\uD83D\uDDFC', name: 'Milestone Maker', desc: 'Reach a 50% milestone on any goal' },
     categoryExplorer: { icon: '\uD83E\uDDED', name: 'Category Explorer', desc: 'Set goals in 4+ categories' },
     habitHero: { icon: '\uD83E\uDDB8', name: 'Habit Hero', desc: '14-day accountability streak' },
     visionAchiever: { icon: '\uD83C\uDF20', name: 'Vision Achiever', desc: 'Fill all vision board sections' },
     // v4.0 badges
-    habitChampion: { icon: '\uD83E\uDD47', name: 'Habit Champion', desc: 'Historical award for three days of records; new checks do not earn this award' },
+    habitChampion: { icon: '\uD83E\uDD47', name: 'Habit Champion', desc: 'Historical award for three days of records; new checks do not earn this award', retired: true },
     difficultySeeker: { icon: '\uD83D\uDD25', name: 'Difficulty Seeker', desc: 'Complete a hard goal (difficulty 4+)' },
     smartExampleUser: { icon: '\uD83D\uDCD6', name: 'SMART Learner', desc: 'Use a SMART example as template' },
     journey25: { icon: '\uD83D\uDEA9', name: 'Journey 25%', desc: 'Complete 25% of all goals' },
@@ -1086,7 +1099,7 @@ window.SelHub = window.SelHub || {
   var MILESTONE_THRESHOLDS = [25, 50, 75, 100];
 
   function checkBadges(d, awardXP, addToast) {
-    var earned = d.badges || {};
+    var earned = Object.assign({}, d.badges || {});
     var goals = d.goals || [];
     var completedGoals = goals.filter(function(g) { return g.completed; });
     var totalSteps = 0;
@@ -1121,7 +1134,11 @@ window.SelHub = window.SelHub || {
     if (d.hasSharedGoal) award('accountabilityPartner');
     if (d.habitWeekComplete) award('habitMaster');
     // New v3 badges
-    if ((d.weeklyCheckins || []).length >= 3) award('weeklyReviewer');
+    var uniqueReviewWeeks = {};
+    (d.weeklyCheckins || []).forEach(function(c, idx) {
+      uniqueReviewWeeks[(c && c.weekOf) || ('legacy-' + idx)] = true;
+    });
+    if (Object.keys(uniqueReviewWeeks).length >= 3) award('weeklyReviewer');
     if (d.hasMilestone50) award('milestoneMaker');
     var catCount = {};
     goals.forEach(function(g) { if (g.category) catCount[g.category] = true; });
@@ -1162,6 +1179,7 @@ window.SelHub = window.SelHub || {
     category: 'self-direction',
 
     render: function(ctx) {
+      _ctx = ctx;
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _goaT = (ctx && ctx.theme) || {};
       var _goaHC = !!_goaT.isContrast, _goaL = !_goaHC && !_goaT.isDark;
@@ -1268,13 +1286,15 @@ window.SelHub = window.SelHub || {
         React.useEffect(function() {
           var newBadges = checkBadges(d, awardXP, addToast);
           if (newBadges) upd({ badges: newBadges });
-        }, [goals.length, streak, d.aiAsked, d.hasReflection, d.habitStreak7, d.hasVision, d.hasGoalReflection, d.hasSharedGoal, d.habitWeekComplete, weeklyCheckins.length, d.hasMilestone50, accountabilityStreak, d.habitChampion3Day, d.completedHardGoal, d.usedSmartExample]);
+        }, [goals, habits, visionBoard, streak, d.aiAsked, d.hasReflection, d.habitStreak7, d.hasVision, d.hasGoalReflection, d.hasSharedGoal, d.habitWeekComplete, weeklyCheckins.length, d.hasMilestone50, accountabilityStreak, d.habitChampion3Day, d.completedHardGoal, d.usedSmartExample]);
 
         // ── Streak check on mount ──
         React.useEffect(function() {
           var today = new Date().toDateString();
           if (lastCheckin === today) return;
-          var yesterday = new Date(Date.now() - 86400000).toDateString();
+          var _yest = new Date();
+          _yest.setDate(_yest.getDate() - 1);
+          var yesterday = _yest.toDateString();
           if (lastCheckin === yesterday) {
             upd({ streak: streak + 1, lastCheckin: today });
             sfxStreak();
@@ -1648,6 +1668,12 @@ window.SelHub = window.SelHub || {
           return quotes[Math.floor(Math.random() * quotes.length)];
         };
 
+        var getDailyQuote = function() {
+          var quotes = MOTIVATIONAL_QUOTES[band] || MOTIVATIONAL_QUOTES.elementary;
+          var dayIndex = Math.floor(Date.now() / 86400000) % quotes.length;
+          return quotes[dayIndex];
+        };
+
         // ── Goal Reflection helpers ──
         var saveReflection = function(goalId, reflectionData) {
           if (!goals.some(function(goal) { return goal.id === goalId && goal.completed; })) return;
@@ -1671,7 +1697,7 @@ window.SelHub = window.SelHub || {
             goal.steps.forEach(function(s, i) { text += (s.done ? '\u2705' : '\u2B1C') + ' ' + s.text + '\n'; });
           }
           text += '\nProgress: ' + goal.progress + '%';
-          if (goal.smart && goal.smart.S) text += '\nWhy: ' + goal.smart.R;
+          if (goal.smart && goal.smart.R) text += '\nWhy: ' + goal.smart.R;
           if (window.SelHub && window.SelHub.copyText) {
             window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
               if (addToast) addToast('\uD83D\uDCCB Goal copied to clipboard! Share with your buddy!', 'success');
@@ -1700,7 +1726,8 @@ window.SelHub = window.SelHub || {
           if (streak === 1 && lastCheckin) needsBoost = true; // streak just reset
           if (activeGoals.length > 0 && activeGoals.every(function(g) { return g.progress < 20; })) needsBoost = true;
           if (!needsBoost) return null;
-          return boosts[Math.floor(Math.random() * boosts.length)];
+          var dayIndex = Math.floor(Date.now() / 86400000) % boosts.length;
+          return boosts[dayIndex];
         };
 
         // ── Weekly Check-in helpers ──
@@ -1710,12 +1737,19 @@ window.SelHub = window.SelHub || {
 
         var saveWeeklyCheckin = function() {
           var reviewNow = Date.now();
+          var weekOf = goalLocalDate(new Date());
+          var hasInput = !!((weeklyDraft.obstacles || '').trim() || (weeklyDraft.support || '').trim() || (weeklyDraft.focus || '').trim() || goalReviewRating(weeklyDraft.rating) != null);
+          var alreadySavedThisWeek = weeklyCheckins.some(function(c) { return c && c.weekOf === weekOf; });
+          if (!hasInput && alreadySavedThisWeek) {
+            if (addToast) addToast('Add a note or rating to save another check-in this week.', 'info');
+            return;
+          }
           var summary = goalReviewSnapshot(goals, reviewNow);
           var checkin = {
             summaryVersion: 2, periodStart: reviewNow - 7 * 86400000, periodEnd: reviewNow,
             id: 'wci-' + Date.now(),
             date: Date.now(),
-            weekOf: goalLocalDate(new Date()),
+            weekOf: weekOf,
             progressSummary: summary,
             obstacles: weeklyDraft.obstacles || '',
             focus: weeklyDraft.focus || '',
@@ -1724,8 +1758,8 @@ window.SelHub = window.SelHub || {
           };
           var newCheckins = weeklyCheckins.concat([checkin]);
           sfxComplete();
-          if (awardXP) awardXP(10);
-          if (addToast) addToast('\uD83D\uDCDD Weekly check-in saved! +10 XP', 'success');
+          if (!alreadySavedThisWeek && awardXP) awardXP(10);
+          if (addToast) addToast(!alreadySavedThisWeek ? '\uD83D\uDCDD Weekly check-in saved! +10 XP' : '\uD83D\uDCDD Weekly check-in saved!', 'success');
           upd({ weeklyCheckins: newCheckins, weeklyDraft: { obstacles: '', support: '', focus: '', rating: null }, weeklyNotice: 'Review added to this activity. Use the Hub save/export controls to keep a project copy.' });
         };
 
@@ -2098,17 +2132,26 @@ window.SelHub = window.SelHub || {
           })(),
 
           // Badge panel
-          showBadges ? h('div', { style: { padding: 12, background: 'rgba(167,139,250,0.08)', borderBottom: '1px solid rgba(167,139,250,0.15)' } },
-            h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _goaFg('#c4b5fd'), marginBottom: 8 } }, '\uD83C\uDFC5 Badges \u2014 ' + badgeCount + '/' + Object.keys(BADGES).length),
-            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-              Object.keys(BADGES).map(function(id) {
-                var b = BADGES[id]; var e = !!badges[id];
-                return h('div', { key: id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 8, background: e ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.03)', border: e ? '1px solid rgba(167,139,250,0.3)' : '1px solid rgba(99,102,241,0.1)', opacity: e ? 1 : 0.5, fontSize: 10 } },
-                  h('span', null, e ? b.icon : '\uD83D\uDD12'), h('span', { style: { fontWeight: 'bold', color: e ? _goaFg('#c4b5fd') : _goaFg('#94a3b8') } }, b.name)
-                );
-              })
-            )
-          ) : null,
+          showBadges ? (function() {
+            var visibleBadgeIds = Object.keys(BADGES).filter(function(id) {
+              var b = BADGES[id];
+              if (badges[id]) return true;
+              if (b.retired) return false;
+              if (b.aiOnly && !_goAiOn) return false;
+              return true;
+            });
+            return h('div', { style: { padding: 12, background: 'rgba(167,139,250,0.08)', borderBottom: '1px solid rgba(167,139,250,0.15)' } },
+              h('div', { style: { fontSize: 12, fontWeight: 'bold', color: _goaFg('#c4b5fd'), marginBottom: 8 } }, '\uD83C\uDFC5 Badges \u2014 ' + badgeCount + '/' + visibleBadgeIds.length),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                visibleBadgeIds.map(function(id) {
+                  var b = BADGES[id]; var e = !!badges[id];
+                  return h('div', { key: id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 8, background: e ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.03)', border: e ? '1px solid rgba(167,139,250,0.3)' : '1px solid rgba(99,102,241,0.1)', opacity: e ? 1 : 0.5, fontSize: 10 } },
+                    h('span', null, e ? b.icon : '\uD83D\uDD12'), h('span', { style: { fontWeight: 'bold', color: e ? _goaFg('#c4b5fd') : _goaFg('#94a3b8') } }, b.name)
+                  );
+                })
+              )
+            );
+          })() : null,
 
           // Content
           h('div', { id: 'goal-panel-' + tab, role: 'tabpanel', 'aria-labelledby': 'goal-tab-' + tab, tabIndex: 0, style: { flex: 1, overflow: 'auto', padding: 16 } },
@@ -2201,7 +2244,7 @@ window.SelHub = window.SelHub || {
                       h('input', { id: 'goal-name-input-' + goalDomId, type: 'text', 'aria-label': 'Goal name', value: goal.text, onChange: function(e) { updateGoal(goal.id, { text: e.target.value }); }, autoFocus: true, style: { flex: '1 1 180px', minHeight: 44, padding: '6px 8px', borderRadius: 6, border: '1px solid ' + cat.color + '44', background: 'rgba(15,23,42,0.6)', color: _goaFg('#e2e8f0'), fontSize: 13 } }) :
                       h('button', { 'aria-label': (goal.text ? 'Rename goal: ' + goal.text : 'Name your goal'), onClick: function() { openGoalForEditing(goal.id); }, style: { flex: '1 1 180px', minHeight: 44, padding: '4px 0', border: 'none', background: 'transparent', textAlign: 'left', fontSize: 13, fontWeight: 'bold', color: _goaFg('#e2e8f0'), cursor: 'pointer' } }, goal.text || 'Name this goal...'),
                     // Difficulty indicator (flames)
-                    h('span', { 'aria-label': 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, title: 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, style: { fontSize: 10, letterSpacing: -2, cursor: 'default' } }, getDifficultyFlames(goalDiff)),
+                    h('span', { role: 'note', 'aria-label': 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, title: 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, style: { fontSize: 10, letterSpacing: -2, cursor: 'default' } }, getDifficultyFlames(goalDiff)),
                     h('select', { value: goal.category, 'aria-label': 'Category for goal: ' + (goal.text || 'unnamed goal'), onChange: function(e) { updateGoal(goal.id, { category: e.target.value }); }, style: { padding: '3px 6px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#94a3b8'), fontSize: 10, cursor: 'pointer' } },
                       GOAL_CATEGORIES.map(function(c) { return h('option', { key: c.id, value: c.id }, c.emoji + ' ' + c.label); })
                     ),
@@ -2460,7 +2503,7 @@ window.SelHub = window.SelHub || {
               // Motivational quote
               h('div', { style: { padding: '12px 16px', marginBottom: 16, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.08))', border: '1px solid rgba(99,102,241,0.2)', textAlign: 'center' } },
                 h('div', { style: { fontSize: 10, color: _goaFg('#818cf8'), fontWeight: 'bold', marginBottom: 4 } }, '\u2728 Motivational Quote'),
-                h('div', { style: { fontSize: 13, color: _goaFg('#c7d2fe'), fontStyle: 'italic', lineHeight: 1.6 } }, d.currentQuote || getRandomQuote()),
+                h('div', { style: { fontSize: 13, color: _goaFg('#c7d2fe'), fontStyle: 'italic', lineHeight: 1.6 } }, d.currentQuote || getDailyQuote()),
                 h('button', { 'aria-label': 'New quote', onClick: function() { upd({ currentQuote: getRandomQuote() }); }, style: { marginTop: 6, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 16, padding: '3px 12px', color: _goaFg('#a5b4fc'), fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD04 New quote')
               ),
               // Vision sections
@@ -2537,7 +2580,7 @@ window.SelHub = window.SelHub || {
                             h('div', { style: { width: ((smartStep + 1) / 5 * 100) + '%', height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, #7c3aed, #a855f7)', transition: 'width 0.2s ease' } })
                           )
                         ),
-                        h('div', { 'aria-label': 'Choose a SMART step', style: { display: 'flex', justifyContent: 'space-between', gap: 6, marginBottom: 12 } },
+                        h('div', { role: 'group', 'aria-label': 'Choose a SMART step', style: { display: 'flex', justifyContent: 'space-between', gap: 6, marginBottom: 12 } },
                           smartKeys.map(function(key, index) {
                             var done = !!(editGoal.smart && editGoal.smart[key] && editGoal.smart[key].trim());
                             var current = index === smartStep;
@@ -2592,7 +2635,7 @@ window.SelHub = window.SelHub || {
               ),
               h('div', { style: { display: 'flex', gap: 6 } },
                 h('input', { type: 'text', value: aiInput, 'aria-label': 'Ask the goal coach', onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(); }, placeholder: 'Ask about your goals...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#e2e8f0'), fontSize: 12 } }),
-                h('button', { onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
+                h('button', { 'aria-label': 'Send message to Goal Coach', onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 } },
                 (band === 'elementary' ? ['How do I start?', 'I\'m stuck on my goal', 'Make my goal easier', 'Give me a fun challenge'] :
@@ -2640,7 +2683,7 @@ window.SelHub = window.SelHub || {
               h('p', null, 'Your rating describes your experience. There is no preferred answer, and a missing rating is not zero.'),
               h('button', { 'aria-label': 'Save weekly review', onClick: saveWeeklyCheckin, style: { width: '100%', minHeight: 44, padding: 12, borderRadius: 10, border: 'none', background: _goaHC ? '#ffff00' : '#4338ca', color: _goaHC ? '#000000' : '#ffffff', font: 'inherit', fontWeight: 700, cursor: 'pointer' } }, 'Save weekly review'),
               h('p', null, 'Saving adds a review to this activity. Use the Hub save/export controls to keep a project copy. Sharing is your choice.'),
-              weeklyCheckins.length > 0 && h('details', { 'aria-label': 'Saved weekly goal reviews' },
+              weeklyCheckins.length > 0 && h('details', { 'aria-label': __alloT('sel.goals.saved_weekly_reviews_aria', 'Saved weekly goal reviews') },
                 h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700 } }, 'Saved reviews (' + weeklyCheckins.length + ')'),
                 h('p', null, goalReviewRatingText(weeklyCheckins)),
                 weeklyCheckins.slice().reverse().map(function(review, index) {
@@ -2786,7 +2829,7 @@ window.SelHub = window.SelHub || {
               onClick: function() {
                 if (!window.SelHub || !window.SelHub.printDoc) return;
                 var sections = goals.map(function(g) {
-                  var cat = (GOAL_CATEGORIES.find(function(c) { return c.id === g.category; }) || { name: '' }).name;
+                  var cat = (GOAL_CATEGORIES.find(function(c) { return c.id === g.category; }) || { label: '' }).label;
                   var lines = [];
                   lines.push('Goal: ' + (g.text || '(unnamed)'));
                   if (cat) lines.push('Category: ' + cat);

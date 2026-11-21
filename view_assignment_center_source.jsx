@@ -189,6 +189,10 @@ function AssignmentCenterModal({
   const safeRows = Array.isArray(rowViews) ? rowViews : [];
   const safeVisibleRows = Array.isArray(visibleRowViews) ? visibleRowViews : safeRows;
   const safeSurveyItems = Array.isArray(surveyItems) ? surveyItems : [];
+  const [confirmRemoveKey, setConfirmRemoveKey] = React.useState('');
+  React.useEffect(() => {
+    if (!isOpen) setConfirmRemoveKey('');
+  }, [isOpen]);
   const activeCount = safeRows.filter(row => row && row.lifecycle === 'active').length;
   const awaitingCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.pendingCount) || 0), 0);
   const responseCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.participantCount) || 0), 0);
@@ -196,8 +200,18 @@ function AssignmentCenterModal({
   const hasPollOptionLines = String(activityOptionsText || '')
     .split(/\r?\n/)
     .some(line => line.trim());
+  const surveyHasNamedQuestion = safeSurveyItems.some(item => String((item && item.text) || '').trim());
+  const surveyInvalidChoice = safeSurveyItems.some(item => item && String(item.text || '').trim() && item.type === 'choice' && !String(item.optionsText || '').split(/\r?\n/).some(line => line.trim()));
+  const surveyInvalidRange = safeSurveyItems.some(item => {
+    if (!item || !String(item.text || '').trim() || item.type !== 'numeric') return false;
+    const hasMin = item.min !== '' && item.min !== null && item.min !== undefined;
+    const hasMax = item.max !== '' && item.max !== null && item.max !== undefined;
+    return hasMin && hasMax && Number(item.min) > Number(item.max);
+  });
   const createDisabled = (activityType === 'survey' && (
-    !safeSurveyItems.some(item => String((item && item.text) || '').trim())
+    !surveyHasNamedQuestion
+    || surveyInvalidChoice
+    || surveyInvalidRange
     || !activityIdentityMode
     || !surveyHostingAvailable
   )) || ((activityType === 'availability' || activityType === 'signup') && (
@@ -280,11 +294,11 @@ function AssignmentCenterModal({
             <h3 id="activity-setup-title" className="text-sm font-black text-slate-900">
               {tx('share_collect.setup_title', 'Add a shared activity')}
             </h3>
-            <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
+            <p className="mt-1 text-xs leading-relaxed text-slate-600">
               {tx('share_collect.setup_sub', 'Attached to the next assignment link or QR code you create. People answer without an account.')}
             </p>
 
-            <label className="mt-3 block text-[11px] font-black text-slate-700">
+            <label className="mt-3 block text-xs font-black text-slate-700">
               {tx('share_collect.activity_label', 'Activity')}
               <select
                 value={activityEnabled ? activityType : ''}
@@ -302,7 +316,7 @@ function AssignmentCenterModal({
 
             {activityEnabled && (
               <>
-                <label className="mt-3 block text-[11px] font-black text-slate-700">
+                <label className="mt-3 block text-xs font-black text-slate-700">
                   {tx('share_collect.prompt_label', 'What people see')}
                   <input
                     type="text"
@@ -312,32 +326,47 @@ function AssignmentCenterModal({
                   />
                 </label>
 
-                {(activityType === 'availability' || activityType === 'signup') && (
+                {(activityType === 'availability' || activityType === 'signup') && (() => {
+                  const acTextAiReady = typeof window !== 'undefined' && (
+                    typeof window.__alloAiUsable === 'function'
+                      ? !!window.__alloAiUsable('text', window.callGemini)
+                      : Boolean(typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked && !window._alloQrBlocked && !window.__alloStudentAiDisabled && !window.__alloAiSecretsLocked)
+                  );
+                  return (
                   <>
                     <div className="mt-3 rounded-lg border border-sky-200 bg-white p-3">
-                      <label className="block text-[11px] font-black text-slate-700">
+                      <label className="block text-xs font-black text-slate-700">
                         {tx('share_collect.window_label', 'Describe when it needs to happen (optional)')}
                         <input
                           type="text"
                           value={pollAsk}
                           onChange={event => onPollAskChange(event.target.value.slice(0, 160))}
                           placeholder={tx('share_collect.window_placeholder', '45 minutes next week, weekday afternoons')}
-                          className="mt-1 w-full rounded-md border border-sky-300 px-2 py-2 text-sm font-semibold text-slate-800"
+                          disabled={!acTextAiReady}
+                          className="mt-1 w-full rounded-md border border-sky-300 px-2 py-2 text-sm font-semibold text-slate-800 disabled:bg-slate-50 disabled:text-slate-500"
                         />
                       </label>
                       <button
                         type="button"
                         onClick={onSuggestPollTimes}
-                        disabled={pollSuggestionBusy || !String(pollAsk || '').trim()}
-                        className="mt-2 rounded-md bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
+                        disabled={!acTextAiReady || pollSuggestionBusy || !String(pollAsk || '').trim()}
+                        title={!acTextAiReady ? tx('share_collect.suggest_ai_off', 'AI setup is required to auto-suggest times. Type your own options below.') : undefined}
+                        className="mt-2 rounded-md bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {pollSuggestionBusy ? tx('share_collect.thinking', 'Thinking...') : tx('share_collect.suggest_options', 'Suggest options')}
                       </button>
-                      <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
-                        {tx('share_collect.suggest_note', 'Suggestions land in the box below for you to edit. Nothing is shared until you create the link.')}
+                      <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                        {acTextAiReady
+                          ? tx('share_collect.suggest_note', 'Suggestions land in the box below for you to edit. Nothing is shared until you create the link.')
+                          : tx('share_collect.suggest_ai_off', 'AI is currently off — type your options directly in the box below.')}
                       </p>
                     </div>
-                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                  </>
+                  );
+                })()}
+                {(activityType === 'availability' || activityType === 'signup') && (
+                  <>
+                    <label className="mt-3 block text-xs font-black text-slate-700">
                       {tx('share_collect.options_label', 'Options, one per line')}
                       <textarea
                         value={String(activityOptionsText || '')}
@@ -348,15 +377,15 @@ function AssignmentCenterModal({
                       />
                     </label>
                     {!hasPollOptionLines && (
-                      <p role="status" aria-live="polite" className="mt-1 text-[10px] font-bold text-amber-700">
+                      <p role="status" aria-live="polite" className="mt-1 text-xs font-bold text-amber-700">
                         {tx('share_collect.options_required_note', 'Enter at least one option line before creating the link.')}
                       </p>
                     )}
-                    <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                    <p className="mt-1 text-xs leading-relaxed text-slate-600">
                       {tx('share_collect.options_note', 'Write times however you say them. AlloFlow does not convert time zones, so put the zone in the label if people are in more than one.')}
                       {activityType === 'signup' && tx('share_collect.signup_multiplier_note', ' Add "x 2" at the end of a line to give that slot two places.')}
                     </p>
-                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                    <label className="mt-3 block text-xs font-black text-slate-700">
                       {tx('share_collect.identity_voting_label', 'Who is voting')}
                       <select
                         value={String(activityIdentityMode || '')}
@@ -370,12 +399,12 @@ function AssignmentCenterModal({
                       </select>
                     </label>
                     {!activityIdentityMode && (
-                      <p role="status" aria-live="polite" className="mt-1 text-[10px] font-bold text-amber-700">
+                      <p role="status" aria-live="polite" className="mt-1 text-xs font-bold text-amber-700">
                         {tx('share_collect.identity_required_vote', 'Pick who is voting before you share this.')}
                       </p>
                     )}
                     {activityType === 'signup' ? (
-                      <label className="mt-3 block text-[11px] font-black text-slate-700">
+                      <label className="mt-3 block text-xs font-black text-slate-700">
                         {tx('share_collect.slots_per_person', 'Slots one person may take')}
                         <input
                           type="number"
@@ -388,7 +417,7 @@ function AssignmentCenterModal({
                       </label>
                     ) : (
                       <>
-                        <label className="mt-3 flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                        <label className="mt-3 flex items-center gap-2 text-xs font-bold text-slate-700">
                           <input
                             type="checkbox"
                             checked={activityAllowMaybe !== false}
@@ -396,7 +425,7 @@ function AssignmentCenterModal({
                           />
                           {tx('share_collect.allow_maybe', 'Allow "maybe" as well as yes and no')}
                         </label>
-                        <label className="mt-1 flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                        <label className="mt-1 flex items-center gap-2 text-xs font-bold text-slate-700">
                           <input
                             type="checkbox"
                             checked={activityMultiSelect !== false}
@@ -458,7 +487,7 @@ function AssignmentCenterModal({
                                 ))}
                               </select>
                             )}
-                            <label className="flex items-center gap-1 text-[11px] font-bold text-slate-700">
+                            <label className="flex items-center gap-1 text-xs font-bold text-slate-700">
                               <input
                                 type="checkbox"
                                 checked={surveyItem.required === true}
@@ -474,14 +503,14 @@ function AssignmentCenterModal({
                                 aria-label={tx('share_collect.scale_low_aria', 'Label for the low end')}
                                 value={surveyItem.lowLabel ?? tx('share_collect.scale_low_default', 'Strongly disagree')}
                                 onChange={event => onSurveyItemChange(surveyIndex, { lowLabel: event.target.value.slice(0, 60) })}
-                                className="rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700"
+                                className="rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
                               />
                               <input
                                 type="text"
                                 aria-label={tx('share_collect.scale_high_aria', 'Label for the high end')}
                                 value={surveyItem.highLabel ?? tx('share_collect.scale_high_default', 'Strongly agree')}
                                 onChange={event => onSurveyItemChange(surveyIndex, { highLabel: event.target.value.slice(0, 60) })}
-                                className="rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700"
+                                className="rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
                               />
                             </div>
                           )}
@@ -492,11 +521,11 @@ function AssignmentCenterModal({
                               onChange={event => onSurveyItemChange(surveyIndex, { optionsText: event.target.value })}
                               rows={3}
                               placeholder={tx('share_collect.signup_slots_placeholder', 'Read-aloud\nGlossary\nPictures')}
-                              className="mt-2 w-full rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700"
+                              className="mt-2 w-full rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
                             />
                           )}
                           {surveyItem.type === 'numeric' && (
-                            <div className="mt-2 grid grid-cols-1 gap-2 text-[11px] font-bold text-slate-700 sm:grid-cols-2">
+                            <div className="mt-2 grid grid-cols-1 gap-2 text-xs font-bold text-slate-700 sm:grid-cols-2">
                               <label className="block">
                                 {tx('share_collect.q_min', 'Min')}
                                 <input
@@ -530,7 +559,22 @@ function AssignmentCenterModal({
                         {tx('share_collect.add_question', '+ Add question')}
                       </button>
                     )}
-                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                    {!surveyHasNamedQuestion && (
+                      <p role="status" aria-live="polite" className="mt-2 text-xs font-bold text-amber-800">
+                        {tx('share_collect.survey_question_required', 'Add at least one survey question with text before creating a link.')}
+                      </p>
+                    )}
+                    {surveyInvalidChoice && (
+                      <p role="alert" className="mt-1 text-xs font-bold text-rose-800">
+                        {tx('share_collect.survey_choice_required', 'Each multiple-choice question needs at least one option line.')}
+                      </p>
+                    )}
+                    {surveyInvalidRange && (
+                      <p role="alert" className="mt-1 text-xs font-bold text-rose-800">
+                        {tx('share_collect.survey_range_invalid', 'Numeric questions must have a Min less than or equal to Max.')}
+                      </p>
+                    )}
+                    <label className="mt-3 block text-xs font-black text-slate-700">
                       {tx('share_collect.about_survey_label', 'About this survey (optional, shown to respondents)')}
                       <textarea
                         value={String(surveyInfo || '')}
@@ -541,7 +585,7 @@ function AssignmentCenterModal({
                         className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-xs text-slate-800"
                       />
                     </label>
-                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                    <label className="mt-3 block text-xs font-black text-slate-700">
                       {tx('share_collect.identity_answer_label', 'Who is answering')}
                       <select
                         value={String(activityIdentityMode || '')}
@@ -555,12 +599,12 @@ function AssignmentCenterModal({
                       </select>
                     </label>
                     {!activityIdentityMode && (
-                      <p role="status" aria-live="polite" className="mt-1 text-[10px] font-bold text-amber-700">
+                      <p role="status" aria-live="polite" className="mt-1 text-xs font-bold text-amber-700">
                         {tx('share_collect.identity_required_answer', 'Pick who is answering before you share this.')}
                       </p>
                     )}
                     {showSurveyPairingGuidance && (
-                      <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                      <p className="mt-1 text-xs leading-relaxed text-slate-600">
                         {tx('share_collect.pairing_intro', 'For pre/mid/post comparisons:')}{' '}
                         <b>{tx('share_collect.identity_real_short', 'real names')}</b>{' '}
                         {tx('share_collect.pairing_real', 'pair the same person across check-ins;')}{' '}
@@ -571,7 +615,7 @@ function AssignmentCenterModal({
                       </p>
                     )}
                     {!surveyHostingAvailable && (
-                      <p role="status" aria-live="polite" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] font-bold text-amber-800">
+                      <p role="status" aria-live="polite" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs font-bold text-amber-800">
                         {tx('share_collect.mailbox_v13_note', 'Your Class Mailbox script needs v13 before it can host surveys. Update, redeploy, then reconnect.', { v: Math.max(0, Math.trunc(Number(mailboxVersion) || 0)) })}
                       </p>
                     )}
@@ -593,28 +637,28 @@ function AssignmentCenterModal({
         <div role="status" aria-live="polite" aria-atomic="true" className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label={tx('share_collect.status_summary_aria', 'Assignment status summary')}>
           <div className="rounded-xl bg-emerald-50 p-3 text-center">
             <div className="text-lg font-black text-emerald-900">{activeCount}</div>
-            <div className="text-[10px] font-black uppercase text-emerald-700">{tx('share_collect.stat_active', 'Active')}</div>
+            <div className="text-xs font-black uppercase text-emerald-700">{tx('share_collect.stat_active', 'Active')}</div>
           </div>
           <div className="rounded-xl bg-amber-50 p-3 text-center">
             <div className="text-lg font-black text-amber-900">{awaitingCount}</div>
-            <div className="text-[10px] font-black uppercase text-amber-700">{tx('share_collect.stat_awaiting', 'Awaiting review')}</div>
+            <div className="text-xs font-black uppercase text-amber-700">{tx('share_collect.stat_awaiting', 'Awaiting review')}</div>
           </div>
           <div className="rounded-xl bg-sky-50 p-3 text-center">
             <div className="text-lg font-black text-sky-900">{responseCount}</div>
-            <div className="text-[10px] font-black uppercase text-sky-700">{tx('share_collect.stat_anon_responses', 'Anonymous responses')}</div>
+            <div className="text-xs font-black uppercase text-sky-700">{tx('share_collect.stat_anon_responses', 'Anonymous responses')}</div>
           </div>
           <div className="rounded-xl bg-slate-100 p-3 text-center">
             <div className="text-lg font-black text-slate-800">{closedCount}</div>
-            <div className="text-[10px] font-black uppercase text-slate-600">{tx('share_collect.stat_closed', 'Closed')}</div>
+            <div className="text-xs font-black uppercase text-slate-600">{tx('share_collect.stat_closed', 'Closed')}</div>
           </div>
         </div>
 
         <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2">
-          <p className="text-[11px] text-indigo-900">
+          <p className="text-xs text-indigo-900">
             {tx('share_collect.privacy_note', 'Only aggregate counts and moderation totals are cached or exported; response text, links, private keys, and participant tokens stay out of reports.')}
           </p>
           <div className="mt-2 flex flex-wrap items-end gap-2">
-            <label className="text-[10px] font-black uppercase text-indigo-900">
+            <label className="text-xs font-black uppercase text-indigo-900">
               {tx('share_collect.show_label', 'Show')}
               <select
                 value={filter}
@@ -717,13 +761,13 @@ function AssignmentCenterModal({
                     <h3 id={'assignment-center-row-title-' + index} className="break-words text-sm font-black text-slate-900">
                       {view.title || tx('share_collect.default_title', 'AlloFlow homework')}
                     </h3>
-                    <p className="mt-0.5 text-[11px] text-slate-600">
+                    <p className="mt-0.5 text-xs text-slate-600">
                       {Number(view.resourceCount) || 1}{' '}
                       {(Number(view.resourceCount) || 1) === 1 ? tx('share_collect.resource_one', 'resource') : tx('share_collect.resource_other', 'resources')}
                       {' · '}{activityLabel}{' · '}{expiryLabel}
                     </p>
                   </div>
-                  <span className={'rounded-full px-2 py-1 text-[10px] font-black uppercase ' + (view.lifecycle === 'active' ? 'bg-emerald-100 text-emerald-800' : view.lifecycle === 'revoked' ? 'bg-slate-200 text-slate-800' : 'bg-rose-100 text-rose-800')}>
+                  <span className={'rounded-full px-2 py-1 text-xs font-black uppercase ' + (view.lifecycle === 'active' ? 'bg-emerald-100 text-emerald-800' : view.lifecycle === 'revoked' ? 'bg-slate-200 text-slate-800' : 'bg-rose-100 text-rose-800')}>
                     {lifecycleLabel}
                   </span>
                 </div>
@@ -732,13 +776,13 @@ function AssignmentCenterModal({
                   <div role={view.activityState === 'error' ? 'alert' : 'status'} aria-live="polite" aria-atomic="true" className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4" data-assignment-activity-status={view.activityState}>
                     {view.activityState === 'ready' ? (
                       <>
-                        <div className="rounded-lg bg-sky-50 px-2 py-2 text-center"><div className="font-black text-sky-900">{Number(view.participantCount) || 0}</div><div className="text-[10px] text-sky-700">{tx('share_collect.stat_responses', 'Responses')}</div></div>
-                        <div className="rounded-lg bg-amber-50 px-2 py-2 text-center"><div className="font-black text-amber-900">{Number(view.pendingCount) || 0}</div><div className="text-[10px] text-amber-700">{tx('share_collect.stat_held', 'Held')}</div></div>
-                        <div className="rounded-lg bg-emerald-50 px-2 py-2 text-center"><div className="font-black text-emerald-900">{Number(view.approvedCount) || 0}</div><div className="text-[10px] text-emerald-700">{tx('share_collect.stat_approved', 'Approved')}</div></div>
-                        <div className="rounded-lg bg-slate-50 px-2 py-2 text-center"><div className="font-black text-slate-800">{Number(view.hiddenCount) || 0}</div><div className="text-[10px] text-slate-600">{tx('share_collect.stat_hidden', 'Hidden')}</div></div>
+                        <div className="rounded-lg bg-sky-50 px-2 py-2 text-center"><div className="font-black text-sky-900">{Number(view.participantCount) || 0}</div><div className="text-xs text-sky-700">{tx('share_collect.stat_responses', 'Responses')}</div></div>
+                        <div className="rounded-lg bg-amber-50 px-2 py-2 text-center"><div className="font-black text-amber-900">{Number(view.pendingCount) || 0}</div><div className="text-xs text-amber-700">{tx('share_collect.stat_held', 'Held')}</div></div>
+                        <div className="rounded-lg bg-emerald-50 px-2 py-2 text-center"><div className="font-black text-emerald-900">{Number(view.approvedCount) || 0}</div><div className="text-xs text-emerald-700">{tx('share_collect.stat_approved', 'Approved')}</div></div>
+                        <div className="rounded-lg bg-slate-50 px-2 py-2 text-center"><div className="font-black text-slate-800">{Number(view.hiddenCount) || 0}</div><div className="text-xs text-slate-600">{tx('share_collect.stat_hidden', 'Hidden')}</div></div>
                       </>
                     ) : (
-                      <p className="col-span-full rounded-lg bg-slate-50 p-2 text-[11px] text-slate-600">
+                      <p className="col-span-full rounded-lg bg-slate-50 p-2 text-xs text-slate-600">
                         {view.activityState === 'loading'
                           ? tx('share_collect.status_loading', 'Loading anonymous activity status…')
                           : view.activityState === 'error'
@@ -750,23 +794,20 @@ function AssignmentCenterModal({
                     )}
                   </div>
                 ) : (
-                  <p className="mt-2 rounded-lg bg-slate-50 p-2 text-[11px] text-slate-600">
+                  <p className="mt-2 rounded-lg bg-slate-50 p-2 text-xs text-slate-600">
                     {tx('share_collect.resource_only_note', 'Resource-only privacy mode: this link does not collect student progress or responses.')}
                   </p>
                 )}
 
                 {view.actionError && (
-                  <p role="alert" className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-2 text-[11px] font-bold text-rose-800">
+                  <p role="alert" className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-2 text-xs font-bold text-rose-800">
                     {view.actionError}
                   </p>
                 )}
-                <input
-                  aria-label={tx('share_collect.row_link_aria', 'Private assignment link for ' + (view.title || tx('share_collect.default_title_short', 'homework')), { title: view.title || tx('share_collect.default_title_short', 'homework') })}
-                  readOnly
-                  value={view.linkLabel || tx('share_collect.private_link_label', 'Private assignment link')}
-                  onFocus={event => event.target.select()}
-                  className="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px] text-slate-700"
-                />
+                <p className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600">
+                  <span className="font-bold text-slate-700">{view.linkLabel || tx('share_collect.private_link_label', 'Private assignment link')}</span>
+                  {!closed ? ` · ${tx('share_collect.use_copy_active_link', 'Use Copy active link below to share the URL.')}` : ''}
+                </p>
                 <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   <button
                     type="button"
@@ -804,17 +845,32 @@ function AssignmentCenterModal({
                       {view.actionKind === 'revoking' ? tx('share_collect.action_revoking', 'Revoking…') : tx('share_collect.action_revoke', 'Revoke now')}
                     </button>
                   )}
-                  <button
-                    type="button"
-                    disabled={actionBusy || typeof view.onRemoveRecord !== 'function'}
-                    onClick={() => invoke(view.onRemoveRecord)}
-                    className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 disabled:opacity-50"
-                  >
-                    {tx('share_collect.action_remove_record', 'Remove record')}
-                  </button>
+                  {(() => {
+                    const rowKey = view.viewKey || ('row-' + index);
+                    const needsConfirm = !closed && confirmRemoveKey !== rowKey;
+                    const confirming = !closed && confirmRemoveKey === rowKey;
+                    return (
+                      <button
+                        type="button"
+                        disabled={actionBusy || typeof view.onRemoveRecord !== 'function'}
+                        onClick={() => {
+                          if (needsConfirm) {
+                            setConfirmRemoveKey(rowKey);
+                            return;
+                          }
+                          setConfirmRemoveKey('');
+                          invoke(view.onRemoveRecord);
+                        }}
+                        onBlur={() => { if (confirming) setConfirmRemoveKey(''); }}
+                        className={`min-h-10 rounded-lg border px-2 text-xs font-bold disabled:opacity-50 ${confirming ? 'border-rose-500 bg-rose-50 text-rose-800' : 'border-slate-300 bg-white text-slate-700'}`}
+                      >
+                        {confirming ? tx('share_collect.action_confirm_remove_record', 'Confirm remove') : tx('share_collect.action_remove_record', 'Remove record')}
+                      </button>
+                    );
+                  })()}
                 </div>
                 {view.showExpiredCopyNote && (
-                  <p className="mt-2 text-[10px] text-slate-500">
+                  <p className="mt-2 text-xs text-slate-600">
                     {tx('share_collect.expired_copy_note', 'A fresh copy receives a new private link and empty student activity. Revoked assignments cannot be copied because their hosted data is deleted.')}
                   </p>
                 )}

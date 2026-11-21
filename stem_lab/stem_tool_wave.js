@@ -86,7 +86,12 @@ window.StemLab = window.StemLab || {
   // live AudioContext would get captured by Snapshot's Object.assign({}, d).
   var _waveAudio = { ctx: null, osc: null, gain: null, osc2: null, gain2: null, dopplerFlyby: null };
   function _waveAudioStop() {
-    try { if (_waveAudio.dopplerFlyby && _waveAudio.dopplerFlyby.timer) clearTimeout(_waveAudio.dopplerFlyby.timer); } catch (e) {}
+    if (_waveAudio.dopplerFlyby) {
+      try { if (_waveAudio.dopplerFlyby.timer) clearTimeout(_waveAudio.dopplerFlyby.timer); } catch (e) {}
+      try { if (_waveAudio.dopplerFlyby.osc) { _waveAudio.dopplerFlyby.osc.stop(); _waveAudio.dopplerFlyby.osc.disconnect(); } } catch (e) {}
+      try { if (_waveAudio.dopplerFlyby.gain) _waveAudio.dopplerFlyby.gain.disconnect(); } catch (e) {}
+      try { if (_waveAudio.dopplerFlyby.ctx && typeof _waveAudio.dopplerFlyby.ctx.close === 'function') _waveAudio.dopplerFlyby.ctx.close(); } catch (e) {}
+    }
     try { if (_waveAudio.ctx) _waveAudio.ctx.close(); } catch (e) {}
     _waveAudio.ctx = null;
     _waveAudio.osc = null;
@@ -1174,7 +1179,9 @@ window.StemLab = window.StemLab || {
               sampleRateRatio: waveClampNum(sp.sampleRateRatio, 1.2, 16, 8),
               adcBitDepth: Math.round(waveClampNum(sp.adcBitDepth, 2, 16, 8)),
               showTravelingComponents: !!sp.showTravelingComponents,
-              dopplerOffsetAngleDeg: waveClampNum(sp.dopplerOffsetAngleDeg, 0, 90, 0)
+              dopplerOffsetAngleDeg: waveClampNum(sp.dopplerOffsetAngleDeg, 0, 90, 0),
+              damping: !!sp.damping,
+              dampingAlpha: waveClampNum(sp.dampingAlpha, 0.1, 2.0, 0.5)
             }
           };
         })
@@ -1757,6 +1764,7 @@ window.StemLab = window.StemLab || {
       interferenceClass: interferenceClass,
       gratingIntensityNorm: gratingIntensityNorm,
       envelopeFrac: envelopeFrac,
+      dispEnvelope: dispEnvelope,
       standingClass: standingClass,
       region: region,
       localSpeed: localSpeed,
@@ -2178,7 +2186,7 @@ window.StemLab = window.StemLab || {
       var f2 = Math.max(0, hi - Math.max(lo, wf));
       var ratio = Math.max(0.15, s.medium2Ratio);
       spanCycles = (f1 * s.frequency) + ((f2 * s.frequency) / ratio);
-      spanMeters = (f1 * s.waveSpeed) + (f2 * s.waveSpeed * ratio);
+      spanMeters = (f1 + f2) * s.waveSpeed;
       if (f2 > f1 && f1 <= 0.02) modeWavelength = baseWl * ratio;
     } else {
       spanCycles = spanFrac * s.frequency;
@@ -2253,6 +2261,7 @@ window.StemLab = window.StemLab || {
         probeScale = Math.exp(-s.dampingAlpha * s.probeX * 3);
       }
     }
+    if (!Number.isFinite(probeScale)) probeScale = 1;
     var resonatorGainScale = (s.waveMode === 'standing' && s.resonatorDriven) ? Math.max(0.08, met.resonatorGainNorm) : 1;
     var filterGainScale = 1;
     if ((s.waveMode === 'spectrum' || s.waveMode === 'free') && s.spectrumFilter !== 'none') {
@@ -2605,13 +2614,19 @@ window.StemLab = window.StemLab || {
               // so this branch is belt-and-braces for the frame gap.
               try {
                 var _prevCv = canvasRef._lastCanvas;
-                if (_prevCv && !document.body.contains(_prevCv)) {
-                  if (_prevCv._waveCleanup) _prevCv._waveCleanup();
-                  else {
-                    if (_prevCv._waveAnim) { cancelAnimationFrame(_prevCv._waveAnim); _prevCv._waveAnim = null; }
-                    if (_prevCv._wavePointerUp) { window.removeEventListener('mouseup', _prevCv._wavePointerUp); window.removeEventListener('touchend', _prevCv._wavePointerUp); _prevCv._wavePointerUp = null; }
-                  }
-                  _waveAudioStop();
+                if (_prevCv) {
+                  Promise.resolve().then(function () {
+                    try {
+                      if (_prevCv && !document.body.contains(_prevCv)) {
+                        if (_prevCv._waveCleanup) _prevCv._waveCleanup();
+                        else {
+                          if (_prevCv._waveAnim) { cancelAnimationFrame(_prevCv._waveAnim); _prevCv._waveAnim = null; }
+                          if (_prevCv._wavePointerUp) { window.removeEventListener('mouseup', _prevCv._wavePointerUp); window.removeEventListener('touchend', _prevCv._wavePointerUp); _prevCv._wavePointerUp = null; }
+                        }
+                        _waveAudioStop();
+                      }
+                    } catch (e) {}
+                  });
                 }
               } catch (e) {}
               return;
@@ -3358,27 +3373,37 @@ window.StemLab = window.StemLab || {
 
 
 
-              // ── Measurement grid (subtle overlay) ──
+              // ── Measurement grid (precision oscilloscope graticule + subtle depth vignette) ──
 
               if (mode0 !== 'ripple') {
 
-              ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+              ctx.save();
+              var vigGrad = ctx.createRadialGradient(cW * 0.5, cH * 0.5, Math.min(cW, cH) * 0.25, cW * 0.5, cH * 0.5, Math.max(cW, cH) * 0.72);
+              vigGrad.addColorStop(0, 'rgba(56,189,248,0.03)');
+              vigGrad.addColorStop(1, 'rgba(2,12,24,0.32)');
+              ctx.fillStyle = vigGrad;
+              ctx.fillRect(0, 0, cW, cH);
 
-              ctx.lineWidth = 0.5;
+              ctx.strokeStyle = 'rgba(186,230,253,0.065)';
+
+              ctx.lineWidth = 0.6;
 
               for (var gx = 0; gx < cW; gx += 30 * dpr) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cH); ctx.stroke(); }
 
               for (var gy = 0; gy < cH; gy += 30 * dpr) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cW, gy); ctx.stroke(); }
 
-              // Center line
-
-              ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-
+              // Precision oscilloscope center axis + minor millimeter-style tick marks
+              ctx.strokeStyle = 'rgba(224,242,254,0.24)';
+              ctx.lineWidth = 1;
               ctx.setLineDash([8, 4]);
-
               ctx.beginPath(); ctx.moveTo(0, cH / 2); ctx.lineTo(cW, cH / 2); ctx.stroke();
-
               ctx.setLineDash([]);
+              ctx.strokeStyle = 'rgba(224,242,254,0.28)';
+              for (var tx = 15 * dpr; tx < cW; tx += 15 * dpr) {
+                var tickH = (Math.round(tx / (15 * dpr)) % 2 === 0 ? 4.5 : 2.2) * dpr;
+                ctx.beginPath(); ctx.moveTo(tx, cH / 2 - tickH); ctx.lineTo(tx, cH / 2 + tickH); ctx.stroke();
+              }
+              ctx.restore();
 
               }
 
@@ -3487,8 +3512,13 @@ window.StemLab = window.StemLab || {
                   ctx.restore();
                 }
 
-                // Filled maximum-displacement envelope.
-                ctx.save(); ctx.globalAlpha = 0.15; ctx.fillStyle = accent;
+                // Filled maximum-displacement envelope with luminous harmonic aura gradient.
+                ctx.save();
+                var envAura = ctx.createLinearGradient(0, standMid - standAmpPx, 0, standMid + standAmpPx);
+                envAura.addColorStop(0, 'rgba(34,211,238,0.24)');
+                envAura.addColorStop(0.5, 'rgba(167,139,250,0.06)');
+                envAura.addColorStop(1, 'rgba(34,211,238,0.24)');
+                ctx.fillStyle = envAura;
                 traceStandingEnvelope(1);
                 for (var ex2 = cW - 1; ex2 >= 0; ex2--) ctx.lineTo(ex2, standMid + waveStandingEnvelope(ex2 / uDen, harmonic, boundary) * standAmpPx);
                 ctx.closePath(); ctx.fill(); ctx.restore();
@@ -3549,10 +3579,11 @@ window.StemLab = window.StemLab || {
                     if (sxw === 0) ctx.moveTo(sxw, standPy); else ctx.lineTo(sxw, standPy);
                   }
                 }
+                ctx.lineJoin='round'; ctx.lineCap='round';
                 ctx.strokeStyle=accent; ctx.shadowColor=accent;
-                traceStandingWave(); ctx.save(); ctx.globalAlpha=.18; ctx.lineWidth=12*dpr; ctx.shadowBlur=24; ctx.stroke(); ctx.restore();
-                traceStandingWave(); ctx.lineWidth=3*dpr; ctx.shadowBlur=10; ctx.stroke();
-                traceStandingWave(); ctx.save(); ctx.globalAlpha=.3; ctx.strokeStyle='#fff'; ctx.lineWidth=.8*dpr; ctx.shadowBlur=0; ctx.stroke(); ctx.restore();
+                traceStandingWave(); ctx.save(); ctx.globalAlpha=.22; ctx.lineWidth=13*dpr; ctx.shadowBlur=26; ctx.stroke(); ctx.restore();
+                traceStandingWave(); ctx.lineWidth=3.2*dpr; ctx.shadowBlur=12; ctx.stroke();
+                traceStandingWave(); ctx.save(); ctx.globalAlpha=.48; ctx.strokeStyle='#ffffff'; ctx.lineWidth=1.0*dpr; ctx.shadowBlur=0; ctx.stroke(); ctx.restore();
                 ctx.shadowBlur=0;
 
                 if (canvasEl.dataset.showTravelingComponents === 'true') {
@@ -3615,14 +3646,19 @@ window.StemLab = window.StemLab || {
                 ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='bold '+(11*dpr)+'px sans-serif';
                 for (var k = 0; k < standGeo.nodePositions.length; k++) {
                   var nx = standGeo.nodePositions[k] * cW;
-                  ctx.shadowColor='#ef4444'; ctx.shadowBlur=10; ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.arc(nx,standMid,5*dpr,0,Math.PI*2); ctx.fill();
-                  ctx.shadowBlur=0; ctx.fillStyle='#fff'; var nodeLabelX=Math.max(10*dpr,Math.min(cW-10*dpr,nx)); ctx.fillText('N',nodeLabelX,standMid-12*dpr);
+                  ctx.strokeStyle='rgba(248,113,113,0.55)'; ctx.lineWidth=1.2*dpr; ctx.beginPath(); ctx.arc(nx,standMid,8.5*dpr,0,Math.PI*2); ctx.stroke();
+                  ctx.shadowColor='#ef4444'; ctx.shadowBlur=10; ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.arc(nx,standMid,4.8*dpr,0,Math.PI*2); ctx.fill();
+                  ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(nx,standMid,1.6*dpr,0,Math.PI*2); ctx.fill();
+                  var nodeLabelX=Math.max(10*dpr,Math.min(cW-10*dpr,nx)); ctx.fillText('N',nodeLabelX,standMid-14*dpr);
                 }
                 for (var ak = 0; ak < standGeo.antinodePositions.length; ak++) {
                   var anx = standGeo.antinodePositions[ak] * cW;
-                  var pulseR=(4+1.2*Math.abs(standPhase))*dpr;
+                  var pulseAmt = waveMotionReduced ? 0.5 : Math.abs(standPhase);
+                  var pulseR=(4+1.3*pulseAmt)*dpr;
+                  ctx.strokeStyle='rgba(74,222,128,'+(0.32+0.34*pulseAmt).toFixed(3)+')'; ctx.lineWidth=1.3*dpr; ctx.beginPath(); ctx.arc(anx,standMid,(8.5+2.6*pulseAmt)*dpr,0,Math.PI*2); ctx.stroke();
                   ctx.shadowColor='#22c55e'; ctx.shadowBlur=12; ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.arc(anx,standMid,pulseR,0,Math.PI*2); ctx.fill();
-                  ctx.shadowBlur=0; ctx.fillStyle='#fff'; var antiLabelX=Math.max(10*dpr,Math.min(cW-10*dpr,anx)); ctx.fillText('A',antiLabelX,standMid-12*dpr);
+                  ctx.shadowBlur=0; ctx.fillStyle='#ecfdf5'; ctx.beginPath(); ctx.arc(anx,standMid,1.7*dpr,0,Math.PI*2); ctx.fill();
+                  ctx.fillStyle='#fff'; var antiLabelX=Math.max(10*dpr,Math.min(cW-10*dpr,anx)); ctx.fillText('A',antiLabelX,standMid-15*dpr);
                 }
                 if (resDriven) {
                   var resIsPeak = canvasEl.dataset.resonatorIsPeak === 'true' || resGainNorm >= 0.707;
@@ -3737,10 +3773,12 @@ window.StemLab = window.StemLab || {
                   ctx.fillText(colTag, cW - colTw - 18 * dpr, 27 * dpr);
                   ctx.restore();
                 } else {
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
                 ctx.lineWidth = 3 * dpr;
                 ctx.strokeStyle = accent;
                 ctx.shadowColor = accent;
-                ctx.shadowBlur = 8;
+                ctx.shadowBlur = 10;
                 function tracePrimaryWave() {
                   ctx.beginPath();
                   for (var x = 0; x < cW; x++) {
@@ -3754,13 +3792,18 @@ window.StemLab = window.StemLab || {
                 }
                 tracePrimaryWave();
                 ctx.lineTo(cW, cH / 2); ctx.lineTo(0, cH / 2); ctx.closePath();
-                ctx.save(); ctx.globalAlpha = 0.12; ctx.fillStyle = accent; ctx.fill(); ctx.restore();
+                ctx.save();
+                var waveAuraGrad = ctx.createLinearGradient(0, cH / 2 - amp * dpr, 0, cH / 2 + amp * dpr);
+                waveAuraGrad.addColorStop(0, accent);
+                waveAuraGrad.addColorStop(0.5, 'rgba(34,211,238,0.02)');
+                waveAuraGrad.addColorStop(1, accent);
+                ctx.globalAlpha = 0.22; ctx.fillStyle = waveAuraGrad; ctx.fill(); ctx.restore();
                 tracePrimaryWave();
-                ctx.save(); ctx.globalAlpha = 0.18; ctx.lineWidth = 11 * dpr; ctx.shadowBlur = 22; ctx.stroke(); ctx.restore();
+                ctx.save(); ctx.globalAlpha = 0.22; ctx.lineWidth = 12 * dpr; ctx.shadowBlur = 24; ctx.stroke(); ctx.restore();
                 tracePrimaryWave();
-                ctx.lineWidth = 3 * dpr; ctx.globalAlpha = 1; ctx.shadowBlur = 8; ctx.stroke();
+                ctx.lineWidth = 3.2 * dpr; ctx.globalAlpha = 1; ctx.shadowBlur = 11; ctx.stroke();
                 tracePrimaryWave();
-                ctx.save(); ctx.globalAlpha = 0.32; ctx.lineWidth = 0.8 * dpr; ctx.strokeStyle = '#ffffff'; ctx.shadowBlur = 0; ctx.stroke(); ctx.restore();
+                ctx.save(); ctx.globalAlpha = 0.52; ctx.lineWidth = 1.0 * dpr; ctx.strokeStyle = '#ffffff'; ctx.shadowBlur = 0; ctx.stroke(); ctx.restore();
                 if (packetMode === 'packet') {
                   ctx.save();
                   ctx.strokeStyle = '#fde047';
@@ -4095,20 +4138,21 @@ window.StemLab = window.StemLab || {
                       }
                       vSum = (amp * hAcc) / huyNorm;
                     }
-                    // Diverging water-light palette: deep indigo troughs, dark
-                    // equilibrium water, and cyan-white constructive crests.
+                    // Diverging depth-shaded water-light palette: deep abyssal troughs,
+                    // rich marine equilibrium water, and luminous caustic-lit crests.
                     var norm = Math.max(-1, Math.min(1, vSum / Math.max(1, amp)));
                     var idx = (py * rBW + px) * 4;
                     if (norm >= 0) {
-                      var crest = Math.pow(norm, 0.72);
-                      data[idx] = Math.floor(8 + crest * 230);
-                      data[idx + 1] = Math.floor(62 + crest * 190);
-                      data[idx + 2] = Math.floor(118 + crest * 137);
+                      var crest = Math.pow(norm, 0.70);
+                      var causticSpec = norm > 0.72 ? Math.pow((norm - 0.72) / 0.28, 1.8) * 34 : 0;
+                      data[idx] = Math.min(255, Math.floor(8 + crest * 226 + causticSpec));
+                      data[idx + 1] = Math.min(255, Math.floor(64 + crest * 188 + causticSpec * 0.7));
+                      data[idx + 2] = Math.min(255, Math.floor(120 + crest * 135));
                     } else {
-                      var trough = Math.pow(-norm, 0.78);
-                      data[idx] = Math.floor(7 + (1 - trough) * 13);
-                      data[idx + 1] = Math.floor(18 + (1 - trough) * 55);
-                      data[idx + 2] = Math.floor(52 + (1 - trough) * 90);
+                      var trough = Math.pow(-norm, 0.76);
+                      data[idx] = Math.floor(4 + (1 - trough) * 14);
+                      data[idx + 1] = Math.floor(14 + (1 - trough) * 56);
+                      data[idx + 2] = Math.floor(46 + (1 - trough) * 94);
                     }
                     data[idx + 3] = 255;
                   }
@@ -4116,6 +4160,15 @@ window.StemLab = window.StemLab || {
                 rbCtx.putImageData(imgData, 0, 0);
                 ctx.imageSmoothingEnabled = true;
                 ctx.drawImage(canvasEl._rippleBuf, 0, 0, cW, cH);
+
+                // Soft tank-edge depth vignette for dimensional ripple-tank framing.
+                ctx.save();
+                var tankVig = ctx.createRadialGradient(cW * 0.5, cH * 0.5, Math.min(cW, cH) * 0.34, cW * 0.5, cH * 0.5, Math.max(cW, cH) * 0.74);
+                tankVig.addColorStop(0, 'rgba(0,0,0,0)');
+                tankVig.addColorStop(1, 'rgba(3,12,26,0.34)');
+                ctx.fillStyle = tankVig;
+                ctx.fillRect(0, 0, cW, cH);
+                ctx.restore();
 
                 if (rBarrier === 'none') {
                   // Overlay physically aligned crest contours. They preserve the
@@ -4127,10 +4180,10 @@ window.StemLab = window.StemLab || {
                     var cShiftCycles = (phaseOffRad || 0) / (2 * Math.PI);
                     var crestPhaseR = (((omegaRippleT - cShiftCycles) * rippleWL) % rippleWL + rippleWL) % rippleWL;
                     for (var wr = crestPhaseR; wr < maxRippleR; wr += rippleWL) {
-                      var wrAlpha = Math.max(0.025, 0.24 * Math.exp(-rippleDamp * wr));
+                      var wrAlpha = Math.max(0.03, 0.28 * Math.exp(-rippleDamp * wr));
                       ctx.globalAlpha = wrAlpha;
-                      ctx.strokeStyle = '#b8f3ff';
-                      ctx.lineWidth = (wr < rippleWL * 2 ? 1.35 : 0.75) * dpr;
+                      ctx.strokeStyle = '#d4f8ff';
+                      ctx.lineWidth = (wr < rippleWL * 2 ? 1.5 : 0.85) * dpr;
                       ctx.beginPath(); ctx.arc(cx, cy, wr, 0, Math.PI * 2); ctx.stroke();
                     }
                   }
@@ -4142,20 +4195,23 @@ window.StemLab = window.StemLab || {
                   // when the user is hovering or dragging them).
                   var active = canvasEl._drag.activeHandle;
                   function drawSourceHandle(x, y, label, isActive) {
-                    var sourceGlow = ctx.createRadialGradient(x, y, 0, x, y, 28 * dpr);
-                    sourceGlow.addColorStop(0, isActive ? 'rgba(255,255,255,0.72)' : 'rgba(255,120,100,0.52)');
-                    sourceGlow.addColorStop(0.25, 'rgba(255,95,95,0.22)');
+                    var sourceGlow = ctx.createRadialGradient(x, y, 0, x, y, 30 * dpr);
+                    sourceGlow.addColorStop(0, isActive ? 'rgba(255,255,255,0.78)' : 'rgba(255,126,104,0.58)');
+                    sourceGlow.addColorStop(0.28, 'rgba(255,95,95,0.24)');
                     sourceGlow.addColorStop(1, 'rgba(255,95,95,0)');
                     ctx.fillStyle = sourceGlow;
-                    ctx.beginPath(); ctx.arc(x, y, 28 * dpr, 0, Math.PI * 2); ctx.fill();
-                    // Outer pulsing ring (hint that it's draggable)
-                    var ringR = 14 * dpr * (1 + 0.15 * Math.sin(t * 0.1));
-                    ctx.strokeStyle = isActive ? 'rgba(255,255,255,0.9)' : 'rgba(255,107,107,0.5)';
-                    ctx.lineWidth = isActive ? 2 * dpr : 1.5 * dpr;
+                    ctx.beginPath(); ctx.arc(x, y, 30 * dpr, 0, Math.PI * 2); ctx.fill();
+                    // Outer pulsing ring (static when reduced motion is active)
+                    var ringR = 14 * dpr * (1 + (waveMotionReduced ? 0 : 0.15 * Math.sin(t * 0.1)));
+                    ctx.strokeStyle = isActive ? 'rgba(255,255,255,0.92)' : 'rgba(255,140,120,0.65)';
+                    ctx.lineWidth = isActive ? 2.2 * dpr : 1.5 * dpr;
                     ctx.beginPath(); ctx.arc(x, y, ringR, 0, 2 * Math.PI); ctx.stroke();
-                    // Solid core
+                    // Solid core with crisp specular ring
                     ctx.fillStyle = '#ff6b6b';
-                    ctx.beginPath(); ctx.arc(x, y, 7 * dpr, 0, 2 * Math.PI); ctx.fill();
+                    ctx.beginPath(); ctx.arc(x, y, 7.2 * dpr, 0, 2 * Math.PI); ctx.fill();
+                    ctx.strokeStyle = 'rgba(255,245,245,0.85)';
+                    ctx.lineWidth = 1.1 * dpr;
+                    ctx.stroke();
                     ctx.fillStyle = '#fff';
                     ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, x, y); ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
@@ -4223,7 +4279,7 @@ window.StemLab = window.StemLab || {
                     ctx.setLineDash([4 * dpr, 4 * dpr]);
                     for (var ordIdx = -maxOrderN; ordIdx <= maxOrderN; ordIdx++) {
                       var mHalf = ordIdx + 0.5;
-                      var deltaN = (mHalf - rPhaseDiff / (2 * Math.PI)) * rippleWL;
+                      var deltaN = (mHalf + rPhaseDiff / (2 * Math.PI)) * rippleWL;
                       if (Math.abs(deltaN) >= nSep - 1 || Math.abs(deltaN) < 1e-4) continue;
                       var hypA = Math.abs(deltaN) * 0.5;
                       var hypB = Math.sqrt(Math.max(0.5, halfC * halfC - hypA * hypA));
@@ -6617,9 +6673,9 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", { className: "wav-mini-scope" },
                       wavMiniScopeSvg,
                       React.createElement("div", { className: "text-xs leading-snug" },
-                        React.createElement("div", { className: "font-black text-cyan-200 uppercase text-[10px] tracking-wider" }, wType),
+                        React.createElement("div", { className: "font-black text-cyan-200 uppercase text-xs tracking-wider" }, wType),
                         React.createElement("div", { className: "font-bold text-white" }, "f " + wFreq.toFixed(1) + " Hz · A " + Math.round(wAmp)),
-                        React.createElement("div", { className: "text-[11px] text-sky-200/80" }, "v " + Math.round(wSpeed) + " m/s · λ " + wLambda + " m")
+                        React.createElement("div", { className: "text-xs text-sky-200/80" }, "v " + Math.round(wSpeed) + " m/s · λ " + wLambda + " m")
                       )
                     ),
                     React.createElement("span", {
@@ -6629,7 +6685,7 @@ window.StemLab = window.StemLab || {
                   )
                 ),
                 React.createElement("div", { className: "wav-preset-bar", role: "group", 'aria-label': __alloT('stem.wave.a11y_starter_presets', 'Starter wave presets') },
-                  React.createElement("span", { className: "text-[11px] font-extrabold uppercase tracking-wider text-cyan-300 mr-1" }, __alloT('stem.wave.presets_label', 'Bench presets:')),
+                  React.createElement("span", { className: "text-xs font-extrabold uppercase tracking-wider text-cyan-300 mr-1" }, __alloT('stem.wave.presets_label', 'Bench presets:')),
                   React.createElement("button", { type: "button", className: "wav-preset-chip", onClick: function() { applyWavePreset({ waveMode: 'free', waveType: 'sine', frequency: 2.5, amplitude: 55, showSecondWave: false }); } }, "〰️ " + __alloT('stem.wave.preset_pure_sine', 'Pure Sine')),
                   React.createElement("button", { type: "button", className: "wav-preset-chip", onClick: function() { applyWavePreset({ waveMode: 'standing', harmonicN: 3, amplitude: 50 }); } }, "🎸 " + __alloT('stem.wave.preset_standing', '3rd Harmonic')),
                   React.createElement("button", { type: "button", className: "wav-preset-chip", onClick: function() { applyWavePreset({ waveMode: 'free', showSecondWave: true, frequency: 3, freq2: 3.3, amplitude: 45 }); } }, "🎵 " + __alloT('stem.wave.preset_beats', 'Acoustic Beats')),
@@ -11023,9 +11079,10 @@ window.StemLab = window.StemLab || {
         var pts = [];
         for (var i = 0; i <= samples; i++) {
           var x = i / samples;
-          // Forward wave + reflected wave snapshot at t=0
-          var y1 = Math.sin(2 * Math.PI * x * nEff);
-          var y2 = Math.sin(2 * Math.PI * (1 - x) * nEff + (isHarmonic ? Math.PI : Math.PI * (1 + 0.3 * nDist)));
+          // Forward wave + fixed-end reflected wave snapshot at t=0: at integer nEff,
+          // (y1 + y2) / 2 = sin(pi * nEff * x), producing exactly nEff half-wavelengths aligned with nodeXs.
+          var y1 = Math.sin(Math.PI * x * nEff);
+          var y2 = Math.sin(Math.PI * (2 - x) * nEff + (isHarmonic ? Math.PI : Math.PI * (1 + 0.3 * nDist)));
           var y = (y1 + y2) / 2;
           pts.push([20 + x * 280, 80 - y * amp]);
         }

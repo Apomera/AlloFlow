@@ -60,6 +60,7 @@ window.StemLab = window.StemLab || {
 
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
@@ -68,8 +69,10 @@ window.StemLab = window.StemLab || {
   })();
 
   // ── Accessibility live region (WCAG 4.1.3) ──
+  var _announceToggle = false;
   function announce(msg) {
     try {
+      if (typeof document === 'undefined' || !document.body) return;
       var lr = document.getElementById('allo-live-freeforms');
       if (!lr) {
         lr = document.createElement('div');
@@ -80,12 +83,14 @@ window.StemLab = window.StemLab || {
         lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
         document.body.appendChild(lr);
       }
-      lr.textContent = msg;
+      _announceToggle = !_announceToggle;
+      lr.textContent = String(msg || '') + (_announceToggle ? '\u200B' : '');
     } catch (e) {}
   }
 
   // Scoped contrast + focus lift + Studio Workbench styling (same conventions as the other 3D lab tools).
   (function() {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('allo-freeforms-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-freeforms-css';
@@ -111,7 +116,8 @@ window.StemLab = window.StemLab || {
       '#allo-free-forms .ff-surface { background: rgba(15,23,42,0.82); border: 1px solid #334155; }',
       '#allo-free-forms .ff-card { width: 100%; height: 100%; display: flex; flex-direction: column; transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease; }',
       '#allo-free-forms .ff-card:hover { transform: translateY(-2px); border-color: #a78bfa !important; box-shadow: 0 12px 24px -14px rgba(139,92,246,0.55); background: rgba(30,41,59,0.95); }',
-      '#allo-free-forms .ff-card-svg { background: linear-gradient(180deg, rgba(11,17,32,0.95), rgba(30,27,75,0.45)); border: 1px solid rgba(139,92,246,0.28); border-radius: 10px; }',
+      '.theme-contrast #allo-free-forms .ff-card-svg { background: #000000 !important; border-color: #fbbf24 !important; }',
+      '#allo-free-forms .ff-card-svg { background: linear-gradient(180deg, rgba(11,17,32,0.96), rgba(30,27,75,0.52)); border: 1px solid rgba(139,92,246,0.34); border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -6px 14px rgba(2,6,23,0.48); }',
       '#allo-free-forms .ff-stage-bg { background-color: #090e1d; background-image: radial-gradient(rgba(148,163,184,0.16) 1px, transparent 1px); background-size: 22px 22px; }',
       '@media (max-width: 900px) { #allo-free-forms .ff-split { flex-direction: column !important; } #allo-free-forms .ff-sidebar { width: 100% !important; max-height: 46vh; } #allo-free-forms .ff-stage { min-height: 380px; } }',
       '@media (forced-colors: active) { #allo-free-forms button, #allo-free-forms input, #allo-free-forms textarea { forced-color-adjust: auto; border: 1px solid CanvasText !important; } }'
@@ -233,12 +239,12 @@ window.StemLab = window.StemLab || {
   // Returns { doc, moved } — doc is a NEW object only when something moved.
   function ffReconcileMembership(doc, categories) {
     if (!doc || !categories) return { doc: doc, moved: 0 };
-    var byTitle = {};
-    (Array.isArray(doc.groups) ? doc.groups : []).forEach(function(g) { if (byTitle[g.title] == null) byTitle[g.title] = g.id; });
+    var byTitle = Object.create(null);
+    (Array.isArray(doc.groups) ? doc.groups : []).forEach(function(g) { if (g && typeof g.title === 'string' && byTitle[g.title] == null) byTitle[g.title] = g.id; });
     var moves = [];
     (Array.isArray(doc.groups) ? doc.groups : []).forEach(function(g) {
       (g.items || []).forEach(function(it) {
-        var target = categories[it.id];
+        var target = Object.prototype.hasOwnProperty.call(categories, it.id) ? categories[it.id] : null;
         if (typeof target === 'string' && target && target !== g.title && byTitle[target] != null) {
           moves.push({ item: it, fromId: g.id, toId: byTitle[target] });
         }
@@ -246,9 +252,10 @@ window.StemLab = window.StemLab || {
     });
     if (!moves.length) return { doc: doc, moved: 0 };
     var groups = (Array.isArray(doc.groups) ? doc.groups : []).map(function(g) { return Object.assign({}, g, { items: (Array.isArray(g.items) ? g.items : []).slice() }); });
-    var byId = {}; groups.forEach(function(g) { byId[g.id] = g; });
+    var byId = Object.create(null); groups.forEach(function(g) { if (g && g.id != null) byId[g.id] = g; });
     moves.forEach(function(mv) {
       var from = byId[mv.fromId], to = byId[mv.toId];
+      if (!from || !to) return;
       var idx = from.items.indexOf(mv.item);
       if (idx >= 0) { from.items.splice(idx, 1); to.items.push(mv.item); }
     });
@@ -423,8 +430,10 @@ window.StemLab = window.StemLab || {
         return '<li><strong>' + _esc(r.correct + '/' + r.total) + '</strong> ' + _esc(when) + missed + '</li>';
       }).join('') + '</ul>';
     }
+    var docEl = (typeof document !== 'undefined' && document.documentElement) ? document.documentElement : null;
+    var safeSnap = (typeof opts.snapshotDataUrl === 'string' && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/i.test(opts.snapshotDataUrl)) ? opts.snapshotDataUrl : '';
     return [
-      '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + _esc(title) + '</title><style>',
+      '<!doctype html><html lang="' + String((docEl && docEl.lang) || 'en').replace(/[^\w-]/g, '') + '"' + (docEl && docEl.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + _esc(title) + '</title><style>',
       'body{font-family:system-ui,sans-serif;color:#1e293b;max-width:820px;margin:24px auto;padding:0 16px;line-height:1.45}',
       'h1{margin:0 0 2px;font-size:26px} .sub{color:#64748b;font-size:13px;margin-bottom:14px}',
       'img.snap{max-width:100%;border-radius:12px;border:1px solid #cbd5e1;margin:8px 0 16px}',
@@ -440,7 +449,7 @@ window.StemLab = window.StemLab || {
       '<button class="printbtn" onclick="window.print()">Print</button>',
       '<h1>🏛️ ' + _esc(title) + '</h1>',
       '<div class="sub">' + _esc((sc ? sc.name : 'Free Forms')) + (opts.generatedAt ? ' · ' + _esc(opts.generatedAt) : '') + ' · built by hand in AlloFlow Free Forms</div>',
-      (opts.snapshotDataUrl ? '<img class="snap" alt="3D view of the composition" src="' + opts.snapshotDataUrl + '">' : ''),
+      (safeSnap ? '<img class="snap" alt="3D view of the composition" src="' + safeSnap + '">' : ''),
       rows.join(''),
       coach,
       recall,
@@ -542,7 +551,14 @@ window.StemLab = window.StemLab || {
       var hostRef = React.useRef(null);
       var handleRef = React.useRef(null);
       var undoRef = React.useRef([]);   // bounded in-session undo (doc snapshots)
+      var aliveRef = React.useRef(true);
+      var xpSentRef = React.useRef(Object.create(null));
       var hasAI = typeof ctx.callGemini === 'function';
+
+      React.useEffect(function() {
+        aliveRef.current = true;
+        return function() { aliveRef.current = false; };
+      }, []);
 
       // ── Undo safety net — every destructive/structural mutation snapshots
       // the doc first (deep copy, capped, deduped so double-run updaters are
@@ -566,7 +582,7 @@ window.StemLab = window.StemLab || {
           var restored = JSON.parse(snap);
           setSelectedId(null); setSelPart(0);
           setDoc(function(d) { restored.rev = ((d && d.rev) || restored.rev || 0) + 1; return restored; });
-          announce(t('stem.freeforms.sr_undone', 'Undone'));
+          announceToSR(t('stem.freeforms.sr_undone', 'Undone'));
         } catch (e) {}
       };
       var onRootKeyDown = function(e) {
@@ -613,7 +629,7 @@ window.StemLab = window.StemLab || {
           }
           return p;
         });
-        if (accept) { setChallenge(null); setChecked(null); setPlaced({}); setSelectedId(null); announce(t('stem.freeforms.sr_imported', 'Organizer imported — now make it yours')); }
+        if (accept) { setChallenge(null); setChecked(null); setPlaced({}); setSelectedId(null); announceToSR(t('stem.freeforms.sr_imported', 'Organizer imported — now make it yours')); }
       };
 
       // ── Mount / remount the 3D view on structural changes only (doc.rev) —
@@ -689,14 +705,14 @@ window.StemLab = window.StemLab || {
           }
           return ffNewDoc(type);
         });
-        announce(t('stem.freeforms.sr_form_chosen', 'Form chosen'));
+        announceToSR(t('stem.freeforms.sr_form_chosen', 'Form chosen'));
       };
       var backToPicker = function() { setSelectedId(null); setDoc(function(d) { return d ? Object.assign({}, d, { scaffold: null }) : d; }); };
       var setTitle = function(v) { bump(function(d) { d.title = v; return d; }); };
       var renameGroup = function(gid, title) {
         bump(function(d) {
           var old = null;
-          d.groups = d.groups.map(function(g) {
+          d.groups = (Array.isArray(d.groups) ? d.groups : []).map(function(g) {
             if (g.id !== gid) return g;
             old = g.title;
             return Object.assign({}, g, { title: title });
@@ -707,17 +723,20 @@ window.StemLab = window.StemLab || {
       };
       var addGroup = function() {
         bump(function(d) {
-          var id = 'g' + d.nextId;
-          d.nextId = (d.nextId || 1) + 1;
-          d.groups = d.groups.concat([{ id: id, title: t('stem.freeforms.new_group', 'New group') + ' ' + d.groups.length, items: [] }]);
+          var nid = (typeof d.nextId === 'number' && isFinite(d.nextId) && d.nextId > 0) ? Math.floor(d.nextId) : 1;
+          var id = 'g' + nid;
+          d.nextId = nid + 1;
+          var grps = Array.isArray(d.groups) ? d.groups : [];
+          d.groups = grps.concat([{ id: id, title: t('stem.freeforms.new_group', 'New group') + ' ' + grps.length, items: [] }]);
           return d;
         });
       };
       var deleteGroup = function(gid) {
         if (selectedId) setSelectedId(null);
         bump(function(d) {
-          var gone = d.groups.filter(function(g) { return g.id === gid; })[0];
-          d.groups = d.groups.filter(function(g) { return g.id !== gid; });
+          var grps = Array.isArray(d.groups) ? d.groups : [];
+          var gone = grps.filter(function(g) { return g.id === gid; })[0];
+          d.groups = grps.filter(function(g) { return g.id !== gid; });
           if (gone) {
             var art = Object.assign({}, d.nodeArt || {});
             var avs = d.arrangement && d.arrangement.axisValues ? Object.assign({}, d.arrangement.axisValues) : null;
@@ -733,21 +752,24 @@ window.StemLab = window.StemLab || {
         var txt = String(text || '').trim();
         if (!txt) return;
         bump(function(d) {
-          var id = 'n' + d.nextId;
-          d.nextId = (d.nextId || 1) + 1;
-          d.groups = d.groups.map(function(g) { return g.id === gid ? Object.assign({}, g, { items: (g.items || []).concat([{ id: id, text: txt, note: '' }]) }) : g; });
+          var nid = (typeof d.nextId === 'number' && isFinite(d.nextId) && d.nextId > 0) ? Math.floor(d.nextId) : 1;
+          var id = 'n' + nid;
+          d.nextId = nid + 1;
+          var grps = Array.isArray(d.groups) ? d.groups : [];
+          d.groups = grps.map(function(g) { return g.id === gid ? Object.assign({}, g, { items: (g.items || []).concat([{ id: id, text: txt, note: '' }]) }) : g; });
           return d;
         });
-        announce(t('stem.freeforms.sr_idea_added', 'Idea added'));
+        announceToSR(t('stem.freeforms.sr_idea_added', 'Idea added'));
         var st = ffStats(doc);
-        if (doc && (!doc._xp || !doc._xp.compose) && st.items + 1 >= 5 && typeof awardXP === 'function') {
+        if (doc && (!doc._xp || !doc._xp.compose) && !xpSentRef.current.compose && st.items + 1 >= 5 && typeof awardXP === 'function') {
+          xpSentRef.current.compose = true;
           awardXP('freeForms', 10, 'World of Forms builder');
           setDoc(function(d) { return d ? Object.assign({}, d, { _xp: Object.assign({}, d._xp || {}, { compose: true }) }) : d; });
         }
       };
       var editItem = function(gid, iid, patch) {
         bump(function(d) {
-          d.groups = d.groups.map(function(g) {
+          d.groups = (Array.isArray(d.groups) ? d.groups : []).map(function(g) {
             if (g.id !== gid) return g;
             return Object.assign({}, g, { items: (g.items || []).map(function(it) { return it.id === iid ? Object.assign({}, it, patch) : it; }) });
           });
@@ -757,7 +779,7 @@ window.StemLab = window.StemLab || {
       var deleteItem = function(gid, iid) {
         if (selectedId === iid) setSelectedId(null);
         bump(function(d) {
-          d.groups = d.groups.map(function(g) { return g.id === gid ? Object.assign({}, g, { items: (g.items || []).filter(function(it) { return it.id !== iid; }) }) : g; });
+          d.groups = (Array.isArray(d.groups) ? d.groups : []).map(function(g) { return g.id === gid ? Object.assign({}, g, { items: (g.items || []).filter(function(it) { return it.id !== iid; }) }) : g; });
           var art = Object.assign({}, d.nodeArt || {}); delete art[iid]; d.nodeArt = art;
           if (d.arrangement) {
             var avs = Object.assign({}, d.arrangement.axisValues || {}); delete avs[iid];
@@ -769,7 +791,7 @@ window.StemLab = window.StemLab || {
       };
       var resetArrangement = function() {
         bump(function(d) { d.arrangement = null; return d; });
-        announce(t('stem.freeforms.sr_reset', 'Arrangement reset to the form’s shape'));
+        announceToSR(t('stem.freeforms.sr_reset', 'Arrangement reset to the form’s shape'));
       };
 
       // ── Sculpt (Prim3D recipes; live handle updated, NO remount) ──
@@ -784,40 +806,62 @@ window.StemLab = window.StemLab || {
       // hand-built part edit, clear). Updates the live 3D handle (no remount)
       // and persists; null recipe = cleared. Undo-snapshotted.
       var applyRecipe = function(id, recipe, srMsg) {
+        var applied = false;
+        setDoc(function(d) {
+          if (!d) return d;
+          var exists = (Array.isArray(d.groups) ? d.groups : []).some(function(g) {
+            return (g.items || []).some(function(it) { return it.id === id; });
+          });
+          if (!exists) return d;
+          applied = true;
+          pushUndo(d);
+          var art = Object.assign({}, d.nodeArt || {});
+          if (recipe) art[id] = { type: 'object', recipe: recipe }; else delete art[id];
+          return Object.assign({}, d, { nodeArt: art });
+        });
         try {
           if (handleRef.current) {
             if (recipe && handleRef.current.setNodeObject) handleRef.current.setNodeObject(id, recipe);
             else if (!recipe && handleRef.current.clearNodeArt) handleRef.current.clearNodeArt(id);
           }
         } catch (e) {}
-        setDoc(function(d) {
-          if (!d) return d;
-          pushUndo(d);
-          var art = Object.assign({}, d.nodeArt || {});
-          if (recipe) art[id] = { type: 'object', recipe: recipe }; else delete art[id];
-          return Object.assign({}, d, { nodeArt: art });
-        });
-        if (srMsg) announce(srMsg);
+        if (srMsg) announceToSR(srMsg);
       };
       var currentRecipe = function() {
         var a = selectedId && doc && doc.nodeArt && doc.nodeArt[selectedId];
         return (a && a.type === 'object' && a.recipe) ? a.recipe : null;
       };
-      var doSculpt = function() {
-        var sel = findItem(selectedId);
-        if (!sel || sculptBusy || !hasAI) return;
-        var P3D = window.AlloModules && window.AlloModules.Prim3D;
-        if (!P3D) { ensurePrim3d(function(ok) { if (ok) { setPrim3dReady(true); doSculpt(); } else if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_engine_failed', 'The sculpting engine could not load.'), 'error'); }); return; }
+      var runSculptWithP3D = function(P3D, sel) {
         var subj = (sculptText || '').trim() || sel.item.text;
-        setSculptBusy(true);
         ctx.callGemini(P3D.buildRecipePrompt(subj), false, false, 0.85).then(function(resp) {
+          if (!aliveRef.current) return;
           var recipe = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
           setSculptBusy(false);
           if (!recipe) { if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error'); return; }
           recipe.name = subj.slice(0, 80);
           setSelPart(0);
           applyRecipe(sel.item.id, recipe, t('stem.freeforms.sr_sculpted', 'Sculpture placed'));
-        }).catch(function() { setSculptBusy(false); if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error'); });
+        }).catch(function() {
+          if (!aliveRef.current) return;
+          setSculptBusy(false);
+          if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error');
+        });
+      };
+      var doSculpt = function() {
+        var sel = findItem(selectedId);
+        if (!sel || sculptBusy || !hasAI) return;
+        var P3D = window.AlloModules && window.AlloModules.Prim3D;
+        setSculptBusy(true);
+        if (!P3D) {
+          ensurePrim3d(function(ok) {
+            if (!aliveRef.current) return;
+            var loadedP3D = ok && window.AlloModules && window.AlloModules.Prim3D;
+            if (loadedP3D) { setPrim3dReady(true); runSculptWithP3D(loadedP3D, sel); }
+            else { setSculptBusy(false); if (addToast) addToast('⚠️ ' + t('stem.freeforms.sculpt_engine_failed', 'The sculpting engine could not load.'), 'error'); }
+          });
+          return;
+        }
+        runSculptWithP3D(P3D, sel);
       };
       var doClearArt = function() {
         var sel = findItem(selectedId);
@@ -843,16 +887,18 @@ window.StemLab = window.StemLab || {
         if (!doc || assessBusy || !hasAI || stats.items < 3) return;
         setAssessBusy(true);
         ctx.callGemini(ffBuildAssessPrompt(doc), false, false, 0.6).then(function(resp) {
+          if (!aliveRef.current) return;
           setAssessBusy(false);
           var a = ffParseAssessment(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
           if (!a) { if (addToast) addToast('⚠️ ' + t('stem.freeforms.assess_failed', 'The coach could not respond — try again.'), 'error'); return; }
           setDoc(function(d) { return d ? Object.assign({}, d, { assessment: a }) : d; });
-          announce(t('stem.freeforms.sr_assessed', 'Coaching feedback is ready below the builder panel'));
-          if (doc && (!doc._xp || !doc._xp.assess) && typeof awardXP === 'function') {
+          announceToSR(t('stem.freeforms.sr_assessed', 'Coaching feedback is ready below the builder panel'));
+          if (doc && (!doc._xp || !doc._xp.assess) && !xpSentRef.current.assess && typeof awardXP === 'function') {
+            xpSentRef.current.assess = true;
             awardXP('freeForms', 5, 'Asked the coach');
             setDoc(function(d) { return d ? Object.assign({}, d, { _xp: Object.assign({}, d._xp || {}, { assess: true }) }) : d; });
           }
-        }).catch(function() { setAssessBusy(false); if (addToast) addToast('⚠️ ' + t('stem.freeforms.assess_failed', 'The coach could not respond — try again.'), 'error'); });
+        }).catch(function() { if (!aliveRef.current) return; setAssessBusy(false); if (addToast) addToast('⚠️ ' + t('stem.freeforms.assess_failed', 'The coach could not respond — try again.'), 'error'); });
       };
 
       // ── Recall mode (Test yourself) ──
@@ -864,7 +910,7 @@ window.StemLab = window.StemLab || {
         if (!ch) { if (addToast) addToast('⚠️ ' + t('stem.freeforms.recall_needs_more', 'Add at least 4 ideas across 2 groups first'), 'info'); return; }
         setSelectedId(null); setPlaced({}); setChecked(null); setHintText('');
         setChallenge(ch);
-        announce(t('stem.freeforms.sr_recall_started', 'Recall mode: every idea fell into the tray. Put each one back where it belongs.'));
+        announceToSR(t('stem.freeforms.sr_recall_started', 'Recall mode: every idea fell into the tray. Put each one back where it belongs.'));
       };
       var checkChallenge = function() {
         var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
@@ -890,8 +936,9 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, d, { recallLog: log });
         });
         if (score.complete) {
-          announce('🎉 ' + t('stem.freeforms.sr_recall_complete', 'You rebuilt your whole world from memory!'));
-          if (doc && (!doc._xp || !doc._xp.recall) && typeof awardXP === 'function') {
+          announceToSR('🎉 ' + t('stem.freeforms.sr_recall_complete', 'You rebuilt your whole world from memory!'));
+          if (doc && (!doc._xp || !doc._xp.recall) && !xpSentRef.current.recall && typeof awardXP === 'function') {
+            xpSentRef.current.recall = true;
             awardXP('freeForms', 15, 'Recalled my world');
             setDoc(function(d) { return d ? Object.assign({}, d, { _xp: Object.assign({}, d._xp || {}, { recall: true }) }) : d; });
           }
@@ -906,7 +953,7 @@ window.StemLab = window.StemLab || {
       };
       var exitChallenge = function() {
         setChallenge(null); setChecked(null); setPlaced({}); setHintText(''); setSelectedId(null);
-        announce(t('stem.freeforms.sr_recall_exited', 'Back to building.'));
+        announceToSR(t('stem.freeforms.sr_recall_exited', 'Back to building.'));
       };
       // Post-check hint for the selected misplaced idea. buildStrandHintPrompt
       // NEVER reveals the correct group (pure engine helper, tested there).
@@ -923,10 +970,11 @@ window.StemLab = window.StemLab || {
           placedStrand: placed[id] || null,
           topic: (doc && doc.title) || ''
         }), false, false, 0.7).then(function(resp) {
+          if (!aliveRef.current) return;
           setHintBusy(false);
           var txt = String(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '').trim();
-          if (txt) { setHintText(txt); announce(t('stem.freeforms.sr_hint', 'Hint:') + ' ' + txt); }
-        }).catch(function() { setHintBusy(false); });
+          if (txt) { setHintText(txt); announceToSR(t('stem.freeforms.sr_hint', 'Hint:') + ' ' + txt); }
+        }).catch(function() { if (!aliveRef.current) return; setHintBusy(false); });
       };
 
       // ── Snapshot (📷): capture the live WebGL view to a PNG download ──
@@ -985,124 +1033,179 @@ window.StemLab = window.StemLab || {
       // Bespoke inline SVG architectural schematics for each of the 14 spatial grammars.
       var renderScaffoldBlueprint = function(type, size) {
         var w = size === 'sm' ? 42 : 120, hh = size === 'sm' ? 30 : 54;
+        var uid = String(type || 'free').toLowerCase().replace(/[^a-z0-9]+/g, '') + (size === 'sm' ? 's' : 'l');
         var svgProps = {
           viewBox: '0 0 120 54', width: w, height: hh, 'aria-hidden': 'true', focusable: 'false',
           style: { display: 'block', flexShrink: 0 }
         };
+        var defs = h('defs', { key: 'defs' },
+          h('linearGradient', { id: 'ff-bg-' + uid, x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#0b1224' }),
+            h('stop', { offset: '100%', stopColor: '#131c36' })
+          ),
+          h('radialGradient', { id: 'ff-aura-' + uid, cx: '50%', cy: '48%', r: '55%' },
+            h('stop', { offset: '0%', stopColor: '#8b5cf6', stopOpacity: '0.24' }),
+            h('stop', { offset: '100%', stopColor: '#0b1224', stopOpacity: '0' })
+          ),
+          h('linearGradient', { id: 'ff-vio-' + uid, x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#c4b5fd' }),
+            h('stop', { offset: '100%', stopColor: '#6d28d9' })
+          ),
+          h('linearGradient', { id: 'ff-sky-' + uid, x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#7dd3fc' }),
+            h('stop', { offset: '100%', stopColor: '#0284c7' })
+          ),
+          h('linearGradient', { id: 'ff-em-' + uid, x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#6ee7b7' }),
+            h('stop', { offset: '100%', stopColor: '#059669' })
+          ),
+          h('linearGradient', { id: 'ff-amb-' + uid, x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#fde68a' }),
+            h('stop', { offset: '100%', stopColor: '#d97706' })
+          )
+        );
         var bgGrid = [
-          h('line', { key: 'g1', x1: 8, y1: 46, x2: 112, y2: 46, stroke: 'rgba(148,163,184,0.22)', strokeWidth: 1, strokeDasharray: '2 3' }),
-          h('line', { key: 'g2', x1: 60, y1: 6, x2: 60, y2: 48, stroke: 'rgba(148,163,184,0.14)', strokeWidth: 1 })
+          h('rect', { key: 'plate', x: 1, y: 1, width: 118, height: 52, rx: 7, fill: 'url(#ff-bg-' + uid + ')', stroke: 'rgba(148,163,184,0.22)', strokeWidth: 0.9 }),
+          h('rect', { key: 'aura', x: 1, y: 1, width: 118, height: 52, rx: 7, fill: 'url(#ff-aura-' + uid + ')' }),
+          h('line', { key: 'g1', x1: 8, y1: 46, x2: 112, y2: 46, stroke: 'rgba(148,163,184,0.24)', strokeWidth: 0.9, strokeDasharray: '2 3' }),
+          h('line', { key: 'g2', x1: 60, y1: 6, x2: 60, y2: 48, stroke: 'rgba(148,163,184,0.14)', strokeWidth: 0.8 }),
+          h('path', { key: 'ticks', d: 'M6 10 V6 H10 M114 10 V6 H110 M6 44 V48 H10 M114 44 V48 H110', fill: 'none', stroke: 'rgba(167,139,250,0.42)', strokeWidth: 1, strokeLinecap: 'round' })
         ];
         var shapes = [];
         if (type === 'Structured Outline') {
           shapes = [
-            h('rect', { key: 's1', x: 14, y: 10, width: 32, height: 9, rx: 3, fill: '#7c3aed', opacity: 0.9 }),
-            h('rect', { key: 's2', x: 34, y: 23, width: 42, height: 9, rx: 3, fill: '#38bdf8', opacity: 0.9 }),
-            h('rect', { key: 's3', x: 56, y: 36, width: 48, height: 9, rx: 3, fill: '#34d399', opacity: 0.9 }),
-            h('path', { key: 'p', d: 'M30 19 L30 27 L34 27 M52 32 L52 40 L56 40', stroke: '#cbd5e1', strokeWidth: 1.5, fill: 'none' })
+            h('path', { key: 'pg', d: 'M30 19 L30 27 L34 27 M52 32 L52 40 L56 40', stroke: 'rgba(56,189,248,0.35)', strokeWidth: 4, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('path', { key: 'p', d: 'M30 19 L30 27 L34 27 M52 32 L52 40 L56 40', stroke: '#e2e8f0', strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('rect', { key: 's1', x: 14, y: 10, width: 32, height: 9, rx: 3, fill: 'url(#ff-vio-' + uid + ')', stroke: 'rgba(221,214,254,0.65)', strokeWidth: 0.8 }),
+            h('line', { key: 'sh1', x1: 17, y1: 11.5, x2: 43, y2: 11.5, stroke: 'rgba(255,255,255,0.45)', strokeWidth: 1, strokeLinecap: 'round' }),
+            h('rect', { key: 's2', x: 34, y: 23, width: 42, height: 9, rx: 3, fill: 'url(#ff-sky-' + uid + ')', stroke: 'rgba(186,230,253,0.65)', strokeWidth: 0.8 }),
+            h('line', { key: 'sh2', x1: 37, y1: 24.5, x2: 73, y2: 24.5, stroke: 'rgba(255,255,255,0.45)', strokeWidth: 1, strokeLinecap: 'round' }),
+            h('rect', { key: 's3', x: 56, y: 36, width: 48, height: 9, rx: 3, fill: 'url(#ff-em-' + uid + ')', stroke: 'rgba(167,243,208,0.65)', strokeWidth: 0.8 }),
+            h('line', { key: 'sh3', x1: 59, y1: 37.5, x2: 101, y2: 37.5, stroke: 'rgba(255,255,255,0.45)', strokeWidth: 1, strokeLinecap: 'round' })
           ];
         } else if (type === 'Venn Diagram') {
           shapes = [
-            h('circle', { key: 'c1', cx: 46, cy: 27, r: 19, fill: 'rgba(139,92,246,0.34)', stroke: '#a78bfa', strokeWidth: 2 }),
-            h('circle', { key: 'c2', cx: 74, cy: 27, r: 19, fill: 'rgba(56,189,248,0.30)', stroke: '#38bdf8', strokeWidth: 2 }),
-            h('circle', { key: 'm', cx: 60, cy: 27, r: 3.5, fill: '#fbbf24' })
+            h('circle', { key: 'c1g', cx: 46, cy: 27, r: 19, fill: 'rgba(139,92,246,0.28)', stroke: 'rgba(167,139,250,0.28)', strokeWidth: 4.5 }),
+            h('circle', { key: 'c2g', cx: 74, cy: 27, r: 19, fill: 'rgba(56,189,248,0.24)', stroke: 'rgba(56,189,248,0.28)', strokeWidth: 4.5 }),
+            h('circle', { key: 'c1', cx: 46, cy: 27, r: 19, fill: 'none', stroke: '#c4b5fd', strokeWidth: 1.8 }),
+            h('circle', { key: 'c2', cx: 74, cy: 27, r: 19, fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.8 }),
+            h('circle', { key: 'mg', cx: 60, cy: 27, r: 7, fill: 'rgba(251,191,36,0.25)' }),
+            h('circle', { key: 'm', cx: 60, cy: 27, r: 3.6, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 0.9 })
           ];
         } else if (type === 'T-Chart') {
           shapes = [
-            h('rect', { key: 'l', x: 18, y: 12, width: 32, height: 32, rx: 4, fill: 'rgba(139,92,246,0.28)', stroke: '#a78bfa', strokeWidth: 1.8 }),
-            h('rect', { key: 'r', x: 70, y: 12, width: 32, height: 32, rx: 4, fill: 'rgba(56,189,248,0.28)', stroke: '#38bdf8', strokeWidth: 1.8 }),
-            h('line', { key: 'bar', x1: 16, y1: 12, x2: 104, y2: 12, stroke: '#f8fafc', strokeWidth: 2.2 }),
-            h('line', { key: 'div', x1: 60, y1: 12, x2: 60, y2: 45, stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '3 2' })
+            h('rect', { key: 'l', x: 18, y: 12, width: 32, height: 32, rx: 4, fill: 'rgba(139,92,246,0.24)', stroke: '#a78bfa', strokeWidth: 1.6 }),
+            h('rect', { key: 'r', x: 70, y: 12, width: 32, height: 32, rx: 4, fill: 'rgba(56,189,248,0.24)', stroke: '#38bdf8', strokeWidth: 1.6 }),
+            h('line', { key: 'barg', x1: 16, y1: 12, x2: 104, y2: 12, stroke: 'rgba(248,250,252,0.28)', strokeWidth: 5, strokeLinecap: 'round' }),
+            h('line', { key: 'bar', x1: 16, y1: 12, x2: 104, y2: 12, stroke: '#f8fafc', strokeWidth: 2, strokeLinecap: 'round' }),
+            h('line', { key: 'div', x1: 60, y1: 13, x2: 60, y2: 45, stroke: '#cbd5e1', strokeWidth: 1.4, strokeDasharray: '3 2' }),
+            h('circle', { key: 'hub', cx: 60, cy: 12, r: 2.6, fill: 'url(#ff-amb-' + uid + ')' })
           ];
         } else if (type === 'Fishbone') {
           shapes = [
-            h('line', { key: 'sp', x1: 16, y1: 27, x2: 96, y2: 27, stroke: '#e2e8f0', strokeWidth: 2.2 }),
-            h('polygon', { key: 'hd', points: '96,19 109,27 96,35', fill: '#fbbf24' }),
-            h('line', { key: 'r1', x1: 30, y1: 11, x2: 42, y2: 27, stroke: '#a78bfa', strokeWidth: 2 }),
-            h('line', { key: 'r2', x1: 54, y1: 11, x2: 66, y2: 27, stroke: '#38bdf8', strokeWidth: 2 }),
-            h('line', { key: 'r3', x1: 30, y1: 43, x2: 42, y2: 27, stroke: '#34d399', strokeWidth: 2 }),
-            h('line', { key: 'r4', x1: 54, y1: 43, x2: 66, y2: 27, stroke: '#f472b6', strokeWidth: 2 })
+            h('line', { key: 'spg', x1: 16, y1: 27, x2: 96, y2: 27, stroke: 'rgba(226,232,240,0.24)', strokeWidth: 5, strokeLinecap: 'round' }),
+            h('line', { key: 'sp', x1: 16, y1: 27, x2: 96, y2: 27, stroke: '#f8fafc', strokeWidth: 2, strokeLinecap: 'round' }),
+            h('polygon', { key: 'hd', points: '96,19 110,27 96,35', fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 0.9, strokeLinejoin: 'round' }),
+            h('line', { key: 'r1', x1: 30, y1: 11, x2: 42, y2: 27, stroke: '#a78bfa', strokeWidth: 2, strokeLinecap: 'round' }),
+            h('line', { key: 'r2', x1: 54, y1: 11, x2: 66, y2: 27, stroke: '#38bdf8', strokeWidth: 2, strokeLinecap: 'round' }),
+            h('line', { key: 'r3', x1: 30, y1: 43, x2: 42, y2: 27, stroke: '#34d399', strokeWidth: 2, strokeLinecap: 'round' }),
+            h('line', { key: 'r4', x1: 54, y1: 43, x2: 66, y2: 27, stroke: '#f472b6', strokeWidth: 2, strokeLinecap: 'round' }),
+            h('circle', { key: 'b1', cx: 30, cy: 11, r: 2.4, fill: '#ddd6fe' }),
+            h('circle', { key: 'b2', cx: 54, cy: 11, r: 2.4, fill: '#bae6fd' }),
+            h('circle', { key: 'b3', cx: 30, cy: 43, r: 2.4, fill: '#a7f3d0' }),
+            h('circle', { key: 'b4', cx: 54, cy: 43, r: 2.4, fill: '#fbcfe8' })
           ];
         } else if (type === 'Cause and Effect') {
           shapes = [
-            h('circle', { key: 'c1', cx: 22, cy: 15, r: 5.5, fill: '#a78bfa' }),
-            h('circle', { key: 'c2', cx: 22, cy: 39, r: 5.5, fill: '#a78bfa' }),
-            h('rect', { key: 'mid', x: 48, y: 18, width: 24, height: 18, rx: 5, fill: '#fbbf24' }),
-            h('circle', { key: 'e1', cx: 98, cy: 15, r: 5.5, fill: '#34d399' }),
-            h('circle', { key: 'e2', cx: 98, cy: 39, r: 5.5, fill: '#38bdf8' }),
-            h('path', { key: 'a', d: 'M28 17 L47 25 M28 37 L47 29 M73 25 L92 17 M73 29 L92 37', stroke: '#cbd5e1', strokeWidth: 1.6 })
+            h('path', { key: 'ag', d: 'M28 17 L47 25 M28 37 L47 29 M73 25 L92 17 M73 29 L92 37', stroke: 'rgba(148,163,184,0.28)', strokeWidth: 4, strokeLinecap: 'round' }),
+            h('path', { key: 'a', d: 'M28 17 L47 25 M28 37 L47 29 M73 25 L92 17 M73 29 L92 37', stroke: '#e2e8f0', strokeWidth: 1.5, strokeLinecap: 'round' }),
+            h('circle', { key: 'c1', cx: 22, cy: 15, r: 5.5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 0.9 }),
+            h('circle', { key: 'c2', cx: 22, cy: 39, r: 5.5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 0.9 }),
+            h('rect', { key: 'mid', x: 48, y: 18, width: 24, height: 18, rx: 5, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 1 }),
+            h('line', { key: 'ms', x1: 52, y1: 20.5, x2: 68, y2: 20.5, stroke: 'rgba(255,255,255,0.55)', strokeWidth: 1, strokeLinecap: 'round' }),
+            h('circle', { key: 'e1', cx: 98, cy: 15, r: 5.5, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.9 }),
+            h('circle', { key: 'e2', cx: 98, cy: 39, r: 5.5, fill: 'url(#ff-sky-' + uid + ')', stroke: '#e0f2fe', strokeWidth: 0.9 })
           ];
         } else if (type === 'Frayer Model') {
           shapes = [
-            h('rect', { key: 'q1', x: 16, y: 8, width: 38, height: 16, rx: 3, fill: 'rgba(139,92,246,0.28)', stroke: '#a78bfa', strokeWidth: 1.5 }),
-            h('rect', { key: 'q2', x: 66, y: 8, width: 38, height: 16, rx: 3, fill: 'rgba(56,189,248,0.28)', stroke: '#38bdf8', strokeWidth: 1.5 }),
-            h('rect', { key: 'q3', x: 16, y: 30, width: 38, height: 16, rx: 3, fill: 'rgba(52,211,153,0.28)', stroke: '#34d399', strokeWidth: 1.5 }),
-            h('rect', { key: 'q4', x: 66, y: 30, width: 38, height: 16, rx: 3, fill: 'rgba(244,114,182,0.28)', stroke: '#f472b6', strokeWidth: 1.5 }),
-            h('circle', { key: 'ctr', cx: 60, cy: 27, r: 8.5, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 2 })
+            h('rect', { key: 'q1', x: 16, y: 8, width: 38, height: 16, rx: 3.5, fill: 'rgba(139,92,246,0.26)', stroke: '#a78bfa', strokeWidth: 1.4 }),
+            h('rect', { key: 'q2', x: 66, y: 8, width: 38, height: 16, rx: 3.5, fill: 'rgba(56,189,248,0.26)', stroke: '#38bdf8', strokeWidth: 1.4 }),
+            h('rect', { key: 'q3', x: 16, y: 30, width: 38, height: 16, rx: 3.5, fill: 'rgba(52,211,153,0.26)', stroke: '#34d399', strokeWidth: 1.4 }),
+            h('rect', { key: 'q4', x: 66, y: 30, width: 38, height: 16, rx: 3.5, fill: 'rgba(244,114,182,0.26)', stroke: '#f472b6', strokeWidth: 1.4 }),
+            h('circle', { key: 'ctrg', cx: 60, cy: 27, r: 11.5, fill: 'rgba(251,191,36,0.22)' }),
+            h('circle', { key: 'ctr', cx: 60, cy: 27, r: 8.2, fill: 'url(#ff-amb-' + uid + ')', stroke: '#0f172a', strokeWidth: 2 }),
+            h('circle', { key: 'ctrh', cx: 57.5, cy: 24.5, r: 2, fill: 'rgba(255,255,255,0.55)' })
           ];
         } else if (type === 'KWL Chart') {
           shapes = [
-            h('path', { key: 'arc', d: 'M20 38 Q60 8 100 32', stroke: '#94a3b8', strokeWidth: 2, fill: 'none', strokeDasharray: '4 3' }),
-            h('circle', { key: 'k', cx: 22, cy: 36, r: 7.5, fill: '#a78bfa' }),
-            h('circle', { key: 'w', cx: 60, cy: 19, r: 8.5, fill: '#38bdf8' }),
-            h('circle', { key: 'l', cx: 98, cy: 32, r: 9, fill: '#34d399' })
+            h('path', { key: 'arcg', d: 'M20 38 Q60 8 100 32', stroke: 'rgba(56,189,248,0.3)', strokeWidth: 4.5, fill: 'none', strokeLinecap: 'round' }),
+            h('path', { key: 'arc', d: 'M20 38 Q60 8 100 32', stroke: '#cbd5e1', strokeWidth: 1.8, fill: 'none', strokeDasharray: '4 3', strokeLinecap: 'round' }),
+            h('circle', { key: 'k', cx: 22, cy: 36, r: 7.5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 1 }),
+            h('circle', { key: 'w', cx: 60, cy: 19, r: 8.5, fill: 'url(#ff-sky-' + uid + ')', stroke: '#e0f2fe', strokeWidth: 1 }),
+            h('circle', { key: 'l', cx: 98, cy: 32, r: 9, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 1 })
           ];
         } else if (type === 'See-Think-Wonder') {
           shapes = [
-            h('polygon', { key: 'tri', points: '60,11 26,41 94,41', fill: 'rgba(139,92,246,0.14)', stroke: '#94a3b8', strokeWidth: 1.5 }),
-            h('circle', { key: 'n1', cx: 60, cy: 11, r: 6.5, fill: '#38bdf8' }),
-            h('circle', { key: 'n2', cx: 26, cy: 41, r: 6.5, fill: '#a78bfa' }),
-            h('circle', { key: 'n3', cx: 94, cy: 41, r: 6.5, fill: '#fbbf24' })
+            h('polygon', { key: 'tri', points: '60,11 26,41 94,41', fill: 'rgba(139,92,246,0.16)', stroke: '#cbd5e1', strokeWidth: 1.5, strokeLinejoin: 'round' }),
+            h('circle', { key: 'n1', cx: 60, cy: 11, r: 6.5, fill: 'url(#ff-sky-' + uid + ')', stroke: '#e0f2fe', strokeWidth: 1 }),
+            h('circle', { key: 'n2', cx: 26, cy: 41, r: 6.5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 1 }),
+            h('circle', { key: 'n3', cx: 94, cy: 41, r: 6.5, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 1 })
           ];
         } else if (type === 'Claim-Evidence-Reasoning') {
           shapes = [
-            h('rect', { key: 'p1', x: 24, y: 31, width: 14, height: 15, rx: 2, fill: '#34d399' }),
-            h('rect', { key: 'p2', x: 53, y: 31, width: 14, height: 15, rx: 2, fill: '#34d399' }),
-            h('rect', { key: 'p3', x: 82, y: 31, width: 14, height: 15, rx: 2, fill: '#34d399' }),
-            h('rect', { key: 'beam', x: 20, y: 22, width: 80, height: 7, rx: 2, fill: '#38bdf8' }),
-            h('polygon', { key: 'roof', points: '60,7 18,21 102,21', fill: '#a78bfa' })
+            h('rect', { key: 'p1', x: 24, y: 31, width: 14, height: 15, rx: 2.5, fill: 'url(#ff-em-' + uid + ')', stroke: 'rgba(167,243,208,0.6)', strokeWidth: 0.8 }),
+            h('rect', { key: 'p2', x: 53, y: 31, width: 14, height: 15, rx: 2.5, fill: 'url(#ff-em-' + uid + ')', stroke: 'rgba(167,243,208,0.6)', strokeWidth: 0.8 }),
+            h('rect', { key: 'p3', x: 82, y: 31, width: 14, height: 15, rx: 2.5, fill: 'url(#ff-em-' + uid + ')', stroke: 'rgba(167,243,208,0.6)', strokeWidth: 0.8 }),
+            h('rect', { key: 'beam', x: 20, y: 22, width: 80, height: 7, rx: 2.5, fill: 'url(#ff-sky-' + uid + ')', stroke: 'rgba(186,230,253,0.65)', strokeWidth: 0.8 }),
+            h('polygon', { key: 'roof', points: '60,7 18,21 102,21', fill: 'url(#ff-vio-' + uid + ')', stroke: '#ddd6fe', strokeWidth: 0.9, strokeLinejoin: 'round' }),
+            h('circle', { key: 'apex', cx: 60, cy: 14, r: 2.2, fill: '#fef08a' })
           ];
         } else if (type === 'Story Map') {
           shapes = [
-            h('path', { key: 'mt', d: 'M12 44 L36 30 L64 10 L86 29 L108 44', stroke: '#a78bfa', strokeWidth: 2.6, fill: 'rgba(139,92,246,0.22)', strokeLinejoin: 'round' }),
-            h('circle', { key: 'pk', cx: 64, cy: 10, r: 4.5, fill: '#fbbf24' }),
-            h('circle', { key: 'p1', cx: 36, cy: 30, r: 3.2, fill: '#38bdf8' }),
-            h('circle', { key: 'p2', cx: 86, cy: 29, r: 3.2, fill: '#34d399' })
+            h('path', { key: 'mtg', d: 'M12 44 L36 30 L64 10 L86 29 L108 44', stroke: 'rgba(167,139,250,0.34)', strokeWidth: 6, fill: 'none', strokeLinejoin: 'round', strokeLinecap: 'round' }),
+            h('path', { key: 'mt', d: 'M12 44 L36 30 L64 10 L86 29 L108 44', stroke: '#c4b5fd', strokeWidth: 2.2, fill: 'rgba(139,92,246,0.2)', strokeLinejoin: 'round', strokeLinecap: 'round' }),
+            h('circle', { key: 'pkg', cx: 64, cy: 10, r: 7.5, fill: 'rgba(251,191,36,0.25)' }),
+            h('circle', { key: 'pk', cx: 64, cy: 10, r: 4.5, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 1 }),
+            h('circle', { key: 'p1', cx: 36, cy: 30, r: 3.4, fill: 'url(#ff-sky-' + uid + ')', stroke: '#e0f2fe', strokeWidth: 0.8 }),
+            h('circle', { key: 'p2', cx: 86, cy: 29, r: 3.4, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.8 })
           ];
         } else if (type === 'Flow Chart') {
           shapes = [
-            h('path', { key: 'fl', d: 'M18 14 H56 C70 14 70 27 56 27 H44 C30 27 30 41 44 41 H98', stroke: '#38bdf8', strokeWidth: 2.2, fill: 'none' }),
-            h('circle', { key: 'a', cx: 20, cy: 14, r: 4.5, fill: '#a78bfa' }),
-            h('circle', { key: 'b', cx: 52, cy: 27, r: 4.5, fill: '#fbbf24' }),
-            h('circle', { key: 'c', cx: 96, cy: 41, r: 4.5, fill: '#34d399' })
+            h('path', { key: 'flg', d: 'M18 14 H56 C70 14 70 27 56 27 H44 C30 27 30 41 44 41 H98', stroke: 'rgba(56,189,248,0.3)', strokeWidth: 5.5, fill: 'none', strokeLinecap: 'round' }),
+            h('path', { key: 'fl', d: 'M18 14 H56 C70 14 70 27 56 27 H44 C30 27 30 41 44 41 H98', stroke: '#7dd3fc', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' }),
+            h('circle', { key: 'a', cx: 20, cy: 14, r: 4.5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 0.9 }),
+            h('circle', { key: 'b', cx: 52, cy: 27, r: 4.8, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 0.9 }),
+            h('circle', { key: 'c', cx: 96, cy: 41, r: 4.5, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.9 })
           ];
         } else if (type === 'Key Concept Map') {
           shapes = [
-            h('ellipse', { key: 'o1', cx: 60, cy: 27, rx: 40, ry: 15, fill: 'none', stroke: 'rgba(148,163,184,0.45)', strokeWidth: 1.4 }),
-            h('circle', { key: 'sun', cx: 60, cy: 27, r: 8.5, fill: '#fbbf24' }),
-            h('circle', { key: 'm1', cx: 22, cy: 24, r: 5, fill: '#a78bfa' }),
-            h('circle', { key: 'm2', cx: 96, cy: 22, r: 5, fill: '#38bdf8' }),
-            h('circle', { key: 'm3', cx: 74, cy: 41, r: 5, fill: '#34d399' })
+            h('ellipse', { key: 'o1', cx: 60, cy: 27, rx: 40, ry: 15, fill: 'none', stroke: 'rgba(148,163,184,0.48)', strokeWidth: 1.4, strokeDasharray: '3 2' }),
+            h('circle', { key: 'sung', cx: 60, cy: 27, r: 12, fill: 'rgba(251,191,36,0.22)' }),
+            h('circle', { key: 'sun', cx: 60, cy: 27, r: 8.2, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 1 }),
+            h('circle', { key: 'm1', cx: 22, cy: 24, r: 5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 0.9 }),
+            h('circle', { key: 'm2', cx: 96, cy: 22, r: 5, fill: 'url(#ff-sky-' + uid + ')', stroke: '#e0f2fe', strokeWidth: 0.9 }),
+            h('circle', { key: 'm3', cx: 74, cy: 41, r: 5, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.9 })
           ];
         } else if (type === 'Problem Solution') {
           shapes = [
-            h('polygon', { key: 'pr', points: '60,17 70,27 60,37 50,27', fill: '#f43f5e' }),
-            h('line', { key: 'l1', x1: 50, y1: 27, x2: 24, y2: 18, stroke: '#94a3b8', strokeWidth: 1.5 }),
-            h('line', { key: 'l2', x1: 70, y1: 27, x2: 96, y2: 18, stroke: '#94a3b8', strokeWidth: 1.5 }),
-            h('line', { key: 'l3', x1: 60, y1: 37, x2: 60, y2: 46, stroke: '#94a3b8', strokeWidth: 1.5 }),
-            h('circle', { key: 's1', cx: 22, cy: 17, r: 6, fill: '#34d399' }),
-            h('circle', { key: 's2', cx: 98, cy: 17, r: 6, fill: '#38bdf8' }),
-            h('circle', { key: 's3', cx: 60, cy: 46, r: 5, fill: '#a78bfa' })
+            h('line', { key: 'l1', x1: 50, y1: 27, x2: 24, y2: 18, stroke: '#cbd5e1', strokeWidth: 1.5 }),
+            h('line', { key: 'l2', x1: 70, y1: 27, x2: 96, y2: 18, stroke: '#cbd5e1', strokeWidth: 1.5 }),
+            h('line', { key: 'l3', x1: 60, y1: 37, x2: 60, y2: 46, stroke: '#cbd5e1', strokeWidth: 1.5 }),
+            h('polygon', { key: 'prg', points: '60,14 73,27 60,40 47,27', fill: 'rgba(244,63,94,0.25)' }),
+            h('polygon', { key: 'pr', points: '60,17 70,27 60,37 50,27', fill: '#fb7185', stroke: '#ffe4e6', strokeWidth: 1, strokeLinejoin: 'round' }),
+            h('circle', { key: 's1', cx: 22, cy: 17, r: 6, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.9 }),
+            h('circle', { key: 's2', cx: 98, cy: 17, r: 6, fill: 'url(#ff-sky-' + uid + ')', stroke: '#e0f2fe', strokeWidth: 0.9 }),
+            h('circle', { key: 's3', cx: 60, cy: 46, r: 5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 0.9 })
           ];
         } else {
           shapes = [
-            h('polygon', { key: 'pl1', points: '24,18 54,10 74,20 44,28', fill: 'rgba(139,92,246,0.45)', stroke: '#a78bfa', strokeWidth: 1.5 }),
-            h('polygon', { key: 'pl2', points: '44,32 76,24 98,34 66,42', fill: 'rgba(56,189,248,0.4)', stroke: '#38bdf8', strokeWidth: 1.5 }),
-            h('circle', { key: 'st1', cx: 34, cy: 14, r: 2.5, fill: '#fbbf24' }),
-            h('circle', { key: 'st2', cx: 88, cy: 16, r: 2.5, fill: '#34d399' })
+            h('polygon', { key: 'pl1', points: '24,18 54,10 74,20 44,28', fill: 'rgba(139,92,246,0.42)', stroke: '#c4b5fd', strokeWidth: 1.4, strokeLinejoin: 'round' }),
+            h('polygon', { key: 'pl2', points: '44,32 76,24 98,34 66,42', fill: 'rgba(56,189,248,0.38)', stroke: '#7dd3fc', strokeWidth: 1.4, strokeLinejoin: 'round' }),
+            h('circle', { key: 'st1', cx: 34, cy: 14, r: 2.8, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 0.7 }),
+            h('circle', { key: 'st2', cx: 88, cy: 16, r: 2.8, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.7 })
           ];
         }
-        return h('svg', svgProps, bgGrid, shapes);
+        return h('svg', svgProps, defs, bgGrid, shapes);
       };
 
       // Live 2D topology minimap of the student's current composition (always crisp even before/without WebGL).
@@ -1118,28 +1221,60 @@ window.StemLab = window.StemLab || {
           viewBox: '0 0 280 124', className: 'w-full h-auto block', role: 'img',
           'aria-label': t('stem.freeforms.minimap_aria', 'Spatial blueprint showing') + ' ' + stats.groups + ' ' + t('stem.freeforms.groups', 'groups') + ' & ' + stats.items + ' ' + t('stem.freeforms.ideas', 'ideas')
         },
-          h('rect', { x: 1, y: 1, width: 278, height: 122, rx: 10, fill: '#080d1a', stroke: '#334155', strokeWidth: 1 }),
-          h('ellipse', { cx: cx, cy: cy, rx: 94, ry: 38, fill: 'none', stroke: 'rgba(148,163,184,0.18)', strokeWidth: 1, strokeDasharray: '3 3' }),
+          h('defs', null,
+            h('linearGradient', { id: 'ff-topo-bg', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#060a16' }),
+              h('stop', { offset: '100%', stopColor: '#0d152a' })
+            ),
+            h('radialGradient', { id: 'ff-topo-aura', cx: '50%', cy: '50%', r: '48%' },
+              h('stop', { offset: '0%', stopColor: '#7c3aed', stopOpacity: '0.32' }),
+              h('stop', { offset: '65%', stopColor: '#0ea5e9', stopOpacity: '0.08' }),
+              h('stop', { offset: '100%', stopColor: '#060a16', stopOpacity: '0' })
+            ),
+            h('radialGradient', { id: 'ff-topo-core', cx: '35%', cy: '32%', r: '68%' },
+              h('stop', { offset: '0%', stopColor: '#ddd6fe' }),
+              h('stop', { offset: '55%', stopColor: '#7c3aed' }),
+              h('stop', { offset: '100%', stopColor: '#4c1d95' })
+            )
+          ),
+          h('rect', { x: 1, y: 1, width: 278, height: 122, rx: 10, fill: 'url(#ff-topo-bg)', stroke: '#334155', strokeWidth: 1.1 }),
+          h('rect', { x: 1, y: 1, width: 278, height: 122, rx: 10, fill: 'url(#ff-topo-aura)' }),
+          h('line', { x1: 14, y1: cy, x2: 266, y2: cy, stroke: 'rgba(148,163,184,0.12)', strokeWidth: 0.8, strokeDasharray: '2 4' }),
+          h('line', { x1: cx, y1: 10, x2: cx, y2: 114, stroke: 'rgba(148,163,184,0.12)', strokeWidth: 0.8, strokeDasharray: '2 4' }),
+          h('path', { d: 'M8 14 V8 H14 M272 14 V8 H266 M8 110 V116 H14 M272 110 V116 H266', fill: 'none', stroke: 'rgba(167,139,250,0.45)', strokeWidth: 1.1, strokeLinecap: 'round' }),
+          h('ellipse', { cx: cx, cy: cy, rx: 94, ry: 38, fill: 'none', stroke: 'rgba(148,163,184,0.22)', strokeWidth: 1, strokeDasharray: '3 3' }),
+          h('ellipse', { cx: cx, cy: cy, rx: 52, ry: 21, fill: 'none', stroke: 'rgba(167,139,250,0.16)', strokeWidth: 0.8 }),
           gNodes.map(function(gn) {
-            return h('line', { key: 'ln-' + gn.g.id, x1: cx, y1: cy, x2: gn.x, y2: gn.y, stroke: gn.color, strokeOpacity: 0.45, strokeWidth: 1.5 });
+            return h('g', { key: 'ln-' + gn.g.id },
+              h('line', { x1: cx, y1: cy, x2: gn.x, y2: gn.y, stroke: gn.color, strokeOpacity: 0.22, strokeWidth: 4.5, strokeLinecap: 'round' }),
+              h('line', { x1: cx, y1: cy, x2: gn.x, y2: gn.y, stroke: gn.color, strokeOpacity: 0.72, strokeWidth: 1.5, strokeLinecap: 'round' })
+            );
           }),
-          h('circle', { cx: cx, cy: cy, r: 9, fill: '#7c3aed', stroke: '#ddd6fe', strokeWidth: 1.8 }),
+          h('circle', { cx: cx, cy: cy, r: 14, fill: 'rgba(124,58,237,0.2)' }),
+          h('circle', { cx: cx, cy: cy, r: 9.2, fill: 'url(#ff-topo-core)', stroke: '#ddd6fe', strokeWidth: 1.6 }),
+          h('circle', { cx: cx - 2.6, cy: cy - 2.8, r: 2.2, fill: 'rgba(255,255,255,0.55)' }),
           gNodes.map(function(gn) {
             var items = gn.g.items || [];
             return h('g', { key: 'gn-' + gn.g.id },
+              h('circle', { cx: gn.x, cy: gn.y, r: 10, fill: gn.color, fillOpacity: 0.18 }),
               h('circle', { cx: gn.x, cy: gn.y, r: 6.5, fill: gn.color, stroke: '#0f172a', strokeWidth: 1.5 }),
+              h('circle', { cx: gn.x - 1.8, cy: gn.y - 1.8, r: 1.6, fill: 'rgba(255,255,255,0.5)' }),
               items.slice(0, 6).map(function(it, ii) {
                 var a2 = (ii / Math.max(1, Math.min(items.length, 6))) * Math.PI * 2;
                 var ix = Math.max(12, Math.min(268, gn.x + Math.cos(a2) * 18));
                 var iy = Math.max(12, Math.min(112, gn.y + Math.sin(a2) * 14));
                 var isSel = selectedId === it.id;
                 var hasArt = !!(d.nodeArt && d.nodeArt[it.id]);
-                return h('circle', {
-                  key: it.id, cx: ix, cy: iy, r: isSel ? 5 : 3.4,
-                  fill: hasArt ? '#fbbf24' : '#e2e8f0',
-                  stroke: isSel ? '#facc15' : gn.color,
-                  strokeWidth: isSel ? 2 : 1
-                });
+                return h('g', { key: it.id },
+                  isSel ? h('circle', { cx: ix, cy: iy, r: 7.5, fill: 'none', stroke: '#facc15', strokeWidth: 1.1, strokeDasharray: '2 2' }) : null,
+                  hasArt ? h('circle', { cx: ix, cy: iy, r: 5.8, fill: 'rgba(251,191,36,0.24)' }) : null,
+                  h('circle', {
+                    cx: ix, cy: iy, r: isSel ? 4.8 : 3.4,
+                    fill: hasArt ? '#fbbf24' : '#f1f5f9',
+                    stroke: isSel ? '#fef08a' : gn.color,
+                    strokeWidth: isSel ? 1.8 : 1.1
+                  })
+                );
               })
             );
           })
@@ -1159,8 +1294,8 @@ window.StemLab = window.StemLab || {
         bump(function(d) {
           if (!d.title && bank) d.title = bank.title;
           else if (!d.title) d.title = (ffScaffold(d.scaffold) ? ffScaffold(d.scaffold).name : 'My') + ' Exploration';
-          var nid = d.nextId || 1;
-          d.groups = d.groups.map(function(g, gi) {
+          var nid = (typeof d.nextId === 'number' && isFinite(d.nextId) && d.nextId > 0) ? Math.floor(d.nextId) : 1;
+          d.groups = (Array.isArray(d.groups) ? d.groups : []).map(function(g, gi) {
             if ((g.items || []).length) return g;
             var seedList = (bank && bank.lists[gi]) ? bank.lists[gi] : ['Key idea ' + (gi + 1) + 'A', 'Key idea ' + (gi + 1) + 'B'];
             var added = seedList.map(function(txt) { var id = 'n' + (nid++); return { id: id, text: txt, note: '' }; });
@@ -1169,7 +1304,7 @@ window.StemLab = window.StemLab || {
           d.nextId = nid;
           return d;
         });
-        announce(t('stem.freeforms.sr_sample_loaded', 'Starter ideas added — edit or replace any idea to make it yours.'));
+        announceToSR(t('stem.freeforms.sr_sample_loaded', 'Starter ideas added — edit or replace any idea to make it yours.'));
       };
 
       // Import confirm strip — shown (on either screen) only when an organizer

@@ -67,18 +67,21 @@
   var useRef = React.useRef;
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
-  var evidenceGraphApi = window.AlloFlowResearchEvidenceGraph;
+  function getEvidenceGraphApi() {
+    return typeof window !== 'undefined' ? (window.AlloFlowResearchEvidenceGraph || null) : null;
+  }
   function buildEvidenceGraph(journal) {
-    if (evidenceGraphApi && typeof evidenceGraphApi.buildEvidenceGraph === 'function') return evidenceGraphApi.buildEvidenceGraph(journal);
+    var api = getEvidenceGraphApi();
+    if (api && typeof api.buildEvidenceGraph === 'function') return api.buildEvidenceGraph(journal);
     return { schemaVersion: 2, generatorVersion: 'unavailable', generatedAt: new Date().toISOString(), nodes: [], edges: [], counts: {}, claimViews: [], diagnostics: [{ severity: 'action', code: 'evidence_graph_unavailable', message: 'The evidence graph module did not load.' }], status: 'action_needed' };
   }
-  function buildW3CWebAnnotations(journal, graph) { return evidenceGraphApi.toW3CWebAnnotations(journal, graph); }
-  function buildCslJson(journal) { return evidenceGraphApi.toCslJson(journal); }
-  function buildRoCrate(journal, graph) { return evidenceGraphApi.toRoCrate(journal, graph); }
-  function buildInteroperabilityBundle(journal, options) { return evidenceGraphApi.buildInteroperabilityBundle(journal, options); }
-  function validateEvidenceGraph(graph) { return evidenceGraphApi && evidenceGraphApi.validateEvidenceGraph ? evidenceGraphApi.validateEvidenceGraph(graph) : { ok: false, errors: ['Evidence Graph validator unavailable.'] }; }
-  function validateInteroperabilityBundle(bundle) { return evidenceGraphApi && evidenceGraphApi.validateInteroperabilityBundle ? evidenceGraphApi.validateInteroperabilityBundle(bundle) : { ok: false, errors: ['Interoperability validator unavailable.'] }; }
-  function importPortableBundle(bundle) { return evidenceGraphApi && evidenceGraphApi.importPortableBundle ? evidenceGraphApi.importPortableBundle(bundle) : { ok: false, errors: ['Interoperability importer unavailable.'], portfolio: null }; }
+  function buildW3CWebAnnotations(journal, graph) { var api = getEvidenceGraphApi(); return (api && typeof api.toW3CWebAnnotations === 'function') ? api.toW3CWebAnnotations(journal, graph) : []; }
+  function buildCslJson(journal) { var api = getEvidenceGraphApi(); return (api && typeof api.toCslJson === 'function') ? api.toCslJson(journal) : []; }
+  function buildRoCrate(journal, graph) { var api = getEvidenceGraphApi(); return (api && typeof api.toRoCrate === 'function') ? api.toRoCrate(journal, graph) : { '@context': 'https://w3id.org/ro/crate/1.1/context', '@graph': [] }; }
+  function buildInteroperabilityBundle(journal, options) { var api = getEvidenceGraphApi(); return (api && typeof api.buildInteroperabilityBundle === 'function') ? api.buildInteroperabilityBundle(journal, options) : { ok: false, errors: ['Evidence Graph interoperability module unavailable.'] }; }
+  function validateEvidenceGraph(graph) { var api = getEvidenceGraphApi(); return api && typeof api.validateEvidenceGraph === 'function' ? api.validateEvidenceGraph(graph) : { ok: false, errors: ['Evidence Graph validator unavailable.'] }; }
+  function validateInteroperabilityBundle(bundle) { var api = getEvidenceGraphApi(); return api && typeof api.validateInteroperabilityBundle === 'function' ? api.validateInteroperabilityBundle(bundle) : { ok: false, errors: ['Interoperability validator unavailable.'] }; }
+  function importPortableBundle(bundle) { var api = getEvidenceGraphApi(); return api && typeof api.importPortableBundle === 'function' ? api.importPortableBundle(bundle) : { ok: false, errors: ['Interoperability importer unavailable.'], portfolio: null }; }
 
   // ───────────────────────────────────────────────────────────────────────
   // Constants
@@ -102,8 +105,28 @@
     'scientific_investigation','engineering_design','humanistic_interpretation',
     'community_qualitative','civic_policy','creative_cultural'
   ];
-  var registeredToolIntegrations = {};
-  var registeredCaptureSanitizers = {};
+  var registeredToolIntegrations = Object.create(null);
+  var registeredCaptureSanitizers = Object.create(null);
+
+  function isSafeRegistryKey(key) {
+    return typeof key === 'string' && !!key && key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
+  }
+
+  function safeResearchHttpUrl(raw) {
+    var s = String(raw || '').trim().slice(0, 500);
+    if (!s) return '';
+    try {
+      var parsed = new URL(s);
+      if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || parsed.username || parsed.password) return '';
+      return parsed.href;
+    } catch (_) { return ''; }
+  }
+
+  function safeResearchAudioDataUrl(raw) {
+    var s = String(raw || '').trim();
+    if (!s || s.length > 14 * 1024 * 1024) return '';
+    return /^data:audio\/[a-z0-9.+-]+(?:;\s*[a-z0-9-]+=[a-z0-9.+-]+)*;base64,[A-Za-z0-9+/=\s]+$/i.test(s) ? s : '';
+  }
 
   function isPlainRecord(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -147,7 +170,7 @@
     if (!isPlainRecord(input)) return { ok: false, issues: ['contract must be an object'], contract: null };
     if (input.schemaVersion !== TOOL_INTEGRATION_CONTRACT_VERSION) issues.push('schemaVersion must be ' + TOOL_INTEGRATION_CONTRACT_VERSION);
     var id = String(input.id || '').trim();
-    if (!/^[a-z0-9][a-z0-9_-]{1,79}$/.test(id)) issues.push('id must be a stable lowercase tool identifier');
+    if (!/^[a-z0-9][a-z0-9_-]{1,79}$/.test(id) || !isSafeRegistryKey(id)) issues.push('id must be a stable lowercase tool identifier');
     if (!String(input.name || '').trim()) issues.push('name is required');
     if (!String(input.version || '').trim()) issues.push('version is required');
     if (!isPlainRecord(input.license) || !String(input.license.name || input.license.spdx || '').trim()) issues.push('license name or SPDX identifier is required');
@@ -190,7 +213,7 @@
   function registerCaptureSanitizer(toolId, sanitizerId, sanitizer) {
     var id = String(toolId || '').trim();
     var sid = String(sanitizerId || '').trim();
-    if (!id || !sid || typeof sanitizer !== 'function') return { ok: false, reason: 'toolId, sanitizerId, and a sanitizer function are required.' };
+    if (!isSafeRegistryKey(id) || !sid || typeof sanitizer !== 'function') return { ok: false, reason: 'toolId, sanitizerId, and a sanitizer function are required.' };
     registeredCaptureSanitizers[id] = { id: sid, sanitize: sanitizer };
     return { ok: true, toolId: id, sanitizerId: sid };
   }
@@ -213,7 +236,7 @@
     var findings = [];
     var sourceToolId = String(clone.sourceToolId || '').trim();
     var privacy = contract && contract.privacy || {};
-    var registered = registeredCaptureSanitizers[sourceToolId];
+    var registered = isSafeRegistryKey(sourceToolId) ? registeredCaptureSanitizers[sourceToolId] : null;
     if (privacy.sanitizerRequired === true && (!registered || registered.id !== privacy.sanitizerId)) return { ok: false, reason: 'Required sanitizer ' + String(privacy.sanitizerId || '') + ' is not registered for ' + sourceToolId + '.', findings: [] };
     if (registered && (!privacy.sanitizerId || registered.id === privacy.sanitizerId)) {
       try {
@@ -458,11 +481,26 @@
     var evidenceByKey = Object.create(null);
     selectedEvidence.forEach(function (item, index) { evidenceByKey[item.key] = researchAlloCode('E', index); });
     function findClaimKey(link) {
-      var id = link && (link.claimId || link.claim && link.claim.id || link.claim);
-      return selectedClaims.filter(function (item) { return String(item.record && item.record.id || '') === String(id || ''); })[0];
+      var id = link && (link.claimId || (link.claim && link.claim.id) || (typeof link.claim === 'string' ? link.claim : ''));
+      var keyStr = String(id || '').trim();
+      if (!keyStr) return null;
+      var byId = selectedClaims.filter(function (item) {
+        var recId = item.record && item.record.id != null ? String(item.record.id).trim() : '';
+        return recId && recId === keyStr;
+      })[0];
+      if (byId) return byId;
+      return selectedClaims.filter(function (item) {
+        var recText = item.record && item.record.text != null ? String(item.record.text).trim() : '';
+        return recText && recText === keyStr;
+      })[0] || null;
     }
     function evidenceKeyForId(id) {
-      return selectedEvidence.filter(function (item) { return String(item.record && item.record.id || '') === String(id || ''); })[0];
+      var keyStr = String(id || '').trim();
+      if (!keyStr) return null;
+      return selectedEvidence.filter(function (item) {
+        var recId = item.record && item.record.id != null ? String(item.record.id).trim() : '';
+        return recId && recId === keyStr;
+      })[0] || null;
     }
     var claimRows = selectedClaims.map(function (item, index) {
       var links = relationshipWindow.rows.filter(function (link) { return findClaimKey(link) === item; });
@@ -581,7 +619,10 @@
     function submitRelationship(claim, draft) {
       var evidence = evidenceNodes.filter(function (node) { return node.id === draft.evidenceId; })[0];
       if (!evidence || !String(draft.warrant || '').trim()) return;
-      props.onSaveRelationship({ claimNode: claim, evidenceNode: evidence, relationship: draft.relationship || 'supports', warrant: String(draft.warrant).trim(), edgeId: draft.edgeId || null });
+      var originalEvidence = draft.originalEvidenceId
+        ? evidenceNodes.filter(function (node) { return node.id === draft.originalEvidenceId; })[0] || null
+        : null;
+      props.onSaveRelationship({ claimNode: claim, evidenceNode: evidence, originalEvidenceNode: originalEvidence, relationship: draft.relationship || 'supports', warrant: String(draft.warrant).trim(), edgeId: draft.edgeId || null, originalEdge: draft.originalEdge || null });
       setDrafts(function (prev) { var next = Object.assign({}, prev); delete next[claim.id]; return next; });
     }
     return <details data-research-evidence-graph="true" style={{ marginTop: '12px', borderRadius: '12px', border: '1px solid ' + (graph.status === 'ready' && hasClaims ? '#86efac' : graph.status === 'action_needed' ? '#fca5a5' : '#fcd34d'), background: '#fff' }}>
@@ -593,13 +634,13 @@
         {hasClaims ? <div role="list" aria-label="Claims and their evidence relationships" style={{ display: 'grid', gap: '12px' }}>
           {graph.claimViews.map(function (view) {
             var draft = drafts[view.claim.id] || { relationship: 'supports', evidenceId: '', warrant: '' };
-            return <article key={view.claim.id} id={'evidence-claim-' + view.claim.id.replace(/[^a-z0-9_-]/gi, '-')} role="listitem" data-evidence-claim-node={view.claim.type} style={{ borderRadius: '10px', border: '1px solid #cbd5e1', padding: '12px', background: '#f8fafc' }}>
+            return <article key={view.claim.id} id={'evidence-claim-' + String(view.claim.id || '').replace(/[^a-z0-9_-]/gi, '-')} role="listitem" data-evidence-claim-node={view.claim.type} style={{ borderRadius: '10px', border: '1px solid #cbd5e1', padding: '12px', background: '#f8fafc' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'flex-start' }}><strong style={{ fontSize: '14px', lineHeight: 1.45, color: '#0f172a' }}>{view.claim.label}</strong><span style={{ flex: '0 0 auto', borderRadius: '999px', padding: '3px 8px', background: '#e0e7ff', color: '#4338ca', fontSize: '11px', fontWeight: 900 }}>{view.claim.discipline}</span></div>
-              {view.relationships.length ? <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: '8px' }}>{view.relationships.map(function (row) { return <li key={row.edge.id} data-evidence-relationship={row.edge.type} style={{ borderLeft: '4px solid ' + (relationshipColors[row.edge.type] || '#64748b'), padding: '9px 10px', background: '#fff', fontSize: '13px', lineHeight: 1.5, color: '#334155' }}><strong style={{ color: relationshipColors[row.edge.type] || '#475569' }}>{row.edge.type}</strong>{' ← ' + row.evidence.label}{row.edge.warrant ? <div style={{ marginTop: '4px', color: '#475569' }}><strong>Warrant:</strong> {row.edge.warrant}</div> : <div style={{ marginTop: '4px', color: '#b91c1c', fontWeight: 800 }}>{warrantPrompt}</div>}<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}><button type="button" onClick={function () { updateDraft(view.claim.id, { evidenceId: row.evidence.id, relationship: row.edge.type, warrant: row.edge.warrant || '', edgeId: row.edge.id }); }} style={{ minHeight: '44px', padding: '7px 11px', borderRadius: '8px', border: '1px solid #64748b', background: '#fff', color: '#334155', fontSize: '12px', fontWeight: 800 }}>Revise link</button><button type="button" onClick={function () { props.onRemoveRelationship({ claimNode: view.claim, evidenceNode: row.evidence, edge: row.edge }); }} style={{ minHeight: '44px', padding: '7px 11px', borderRadius: '8px', border: '1px solid #fca5a5', background: '#fff', color: '#b91c1c', fontSize: '12px', fontWeight: 800 }}>Remove link</button></div></li>; })}</ul> : <div style={{ marginTop: '9px', padding: '10px', borderRadius: '7px', background: '#fef2f2', color: '#991b1b', fontSize: '13px', lineHeight: 1.5, fontWeight: 800 }}>No explicit supporting evidence is connected yet.</div>}
+              {view.relationships.length ? <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: '8px' }}>{view.relationships.map(function (row) { var relColor = Object.prototype.hasOwnProperty.call(relationshipColors, row.edge.type) ? relationshipColors[row.edge.type] : null; return <li key={row.edge.id} data-evidence-relationship={row.edge.type} style={{ borderLeft: '4px solid ' + (relColor || '#64748b'), padding: '9px 10px', background: '#fff', fontSize: '13px', lineHeight: 1.5, color: '#334155' }}><strong style={{ color: relColor || '#475569' }}>{row.edge.type}</strong>{' ← ' + row.evidence.label}{row.edge.warrant ? <div style={{ marginTop: '4px', color: '#475569' }}><strong>Warrant:</strong> {row.edge.warrant}</div> : <div style={{ marginTop: '4px', color: '#b91c1c', fontWeight: 800 }}>{warrantPrompt}</div>}<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}><button type="button" onClick={function () { updateDraft(view.claim.id, { evidenceId: row.evidence.id, originalEvidenceId: row.evidence.id, originalEdge: row.edge, relationship: row.edge.type, warrant: row.edge.warrant || '', edgeId: row.edge.id }); }} style={{ minHeight: '44px', padding: '7px 11px', borderRadius: '8px', border: '1px solid #64748b', background: '#fff', color: '#334155', fontSize: '12px', fontWeight: 800 }}>Revise link</button><button type="button" onClick={function () { props.onRemoveRelationship({ claimNode: view.claim, evidenceNode: row.evidence, edge: row.edge }); }} style={{ minHeight: '44px', padding: '7px 11px', borderRadius: '8px', border: '1px solid #fca5a5', background: '#fff', color: '#b91c1c', fontSize: '12px', fontWeight: 800 }}>Remove link</button></div></li>; })}</ul> : <div style={{ marginTop: '9px', padding: '10px', borderRadius: '7px', background: '#fef2f2', color: '#991b1b', fontSize: '13px', lineHeight: 1.5, fontWeight: 800 }}>No explicit supporting evidence is connected yet.</div>}
               <details data-evidence-repair-form="true" open={!!draft.edgeId} style={{ marginTop: '10px', border: '1px solid #bfdbfe', borderRadius: '9px', background: '#eff6ff' }}>
                 <summary style={{ cursor: 'pointer', padding: '10px', minHeight: '44px', boxSizing: 'border-box', fontSize: '13px', fontWeight: 900, color: '#1d4ed8' }}>{draft.edgeId ? 'Revise this relationship' : 'Connect evidence'}</summary>
                 <div style={{ padding: '0 10px 10px', display: 'grid', gap: '9px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 800, color: '#334155' }}>Evidence record<select aria-label={'Evidence for ' + view.claim.label} value={draft.evidenceId} onChange={function (event) { updateDraft(view.claim.id, { evidenceId: event.target.value }); }} style={{ display: 'block', width: '100%', minHeight: '44px', marginTop: '4px', borderRadius: '8px', border: '1px solid #94a3b8', padding: '7px', fontSize: '13px' }}><option value="">Choose evidence…</option>{evidenceNodes.map(function (node) { return <option key={node.id} value={node.id}>{node.type.replace('_',' ') + ': ' + node.label}</option>; })}</select></label>
+                  <label style={{ fontSize: '12px', fontWeight: 800, color: '#334155' }}>Evidence record<select aria-label={'Evidence for ' + view.claim.label} value={draft.evidenceId} onChange={function (event) { updateDraft(view.claim.id, { evidenceId: event.target.value }); }} style={{ display: 'block', width: '100%', minHeight: '44px', marginTop: '4px', borderRadius: '8px', border: '1px solid #94a3b8', padding: '7px', fontSize: '13px' }}><option value="">Choose evidence…</option>{evidenceNodes.map(function (node) { return <option key={node.id} value={node.id}>{String(node.type || '').replace('_',' ') + ': ' + node.label}</option>; })}</select></label>
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#334155' }}>Relationship<select aria-label={'Relationship for ' + view.claim.label} value={draft.relationship} onChange={function (event) { updateDraft(view.claim.id, { relationship: event.target.value }); }} style={{ display: 'block', width: '100%', minHeight: '44px', marginTop: '4px', borderRadius: '8px', border: '1px solid #94a3b8', padding: '7px', fontSize: '13px' }}><option value="supports">Supports</option><option value="complicates">Complicates</option><option value="contradicts">Contradicts</option><option value="contextualizes">Contextualizes</option></select></label>
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#334155' }}>{warrantPrompt}<textarea aria-label={'Warrant for ' + view.claim.label} value={draft.warrant} onChange={function (event) { updateDraft(view.claim.id, { warrant: event.target.value.slice(0, 900) }); }} rows={3} maxLength={900} style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: '4px', borderRadius: '8px', border: '1px solid #94a3b8', padding: '8px', fontSize: '13px', lineHeight: 1.5 }} /></label>
                   <button type="button" disabled={!draft.evidenceId || String(draft.warrant || '').trim().length < 4} onClick={function () { submitRelationship(view.claim, draft); }} style={{ minHeight: '44px', border: 0, borderRadius: '8px', background: draft.evidenceId && String(draft.warrant || '').trim().length >= 4 ? '#1d4ed8' : '#94a3b8', color: '#fff', fontSize: '13px', fontWeight: 900 }}>{draft.edgeId ? 'Save revised relationship' : 'Add relationship'}</button>
@@ -625,7 +666,7 @@
 
   function readCaptureInbox() {
     try {
-      var parsed = JSON.parse(safeLocal(CAPTURE_INBOX_KEY) || '[]');
+      var parsed = JSON.parse(safeLocal(CAPTURE_INBOX_KEY) || '[]', safeJsonReviver);
       return Array.isArray(parsed) ? parsed : [];
     } catch (_) { return []; }
   }
@@ -639,19 +680,19 @@
   }  function normalizeResearchCapture(input) {
     if (!input || typeof input !== 'object') return { ok: false, reason: 'Capture must be an object.' };
     var preliminaryToolId = String(input.sourceToolId || '').trim().slice(0, 80);
-    var preliminaryContract = input.integrationContract || registeredToolIntegrations[preliminaryToolId] || null;
+    var preliminaryContract = input.integrationContract || (isSafeRegistryKey(preliminaryToolId) ? registeredToolIntegrations[preliminaryToolId] : null) || null;
     var privacyResult = enforceCapturePrivacy(input, preliminaryContract);
     if (!privacyResult.ok) return privacyResult;
     input = privacyResult.value;
     var sourceToolId = String(input.sourceToolId || '').trim().slice(0, 80);
     var title = String(input.title || '').trim().slice(0, 180);
     var summary = String(input.summary || '').trim().slice(0, 4000);
-    if (!sourceToolId || !title || !summary) return { ok: false, reason: 'sourceToolId, title, and summary are required.' };
+    if (!isSafeRegistryKey(sourceToolId) || !title || !summary) return { ok: false, reason: 'sourceToolId, title, and summary are required.' };
     var safeData = input.data && typeof input.data === 'object' ? input.data : {};
     var serialized = '';
     try { serialized = JSON.stringify(safeData); } catch (_) { return { ok: false, reason: 'Artifact data must be serializable.' }; }
     if (serialized.length > MAX_CAPTURE_BYTES) return { ok: false, reason: 'Artifact is too large. Capture a summary instead of raw files or sequences.' };
-    safeData = JSON.parse(serialized);
+    safeData = JSON.parse(serialized, safeJsonReviver);
     var contract = input.integrationContract || registeredToolIntegrations[sourceToolId] || null;
     var checkedContract = contract ? validateToolIntegrationContract(contract) : { ok: true, issues: [], contract: null };
     if (!checkedContract.ok) return { ok: false, reason: 'Integration contract is invalid: ' + checkedContract.issues.join('; ') };
@@ -673,7 +714,7 @@
       title: title, summary: summary, data: safeData,
       provenance: {
         sourceRecordId: captureMeta.sourceRecordId,
-        sourceUrl: String(input.sourceUrl || '').trim().slice(0, 500),
+        sourceUrl: safeResearchHttpUrl(input.sourceUrl),
         generatedAt: captureMeta.generatedAt,
         privacy: String(input.privacy || 'No raw files or direct identifiers included.').slice(0, 500)
       },
@@ -850,7 +891,7 @@
         var transaction = db.transaction(MEDIA_STORE_NAME, 'readwrite');
         var store = transaction.objectStore(MEDIA_STORE_NAME);
         extracted.entries.forEach(function (entry) { store.put(entry); });
-        var active = {};
+        var active = Object.create(null);
         extracted.refs.forEach(function (ref) { active[ref] = true; });
         var cursorRequest = store.openCursor();
         cursorRequest.onsuccess = function () {
@@ -874,12 +915,14 @@
       if (Array.isArray(value)) { value.forEach(collect); return; }
       Object.keys(value).forEach(function (key) {
         var child = value[key];
-        if (/Ref$/.test(key) && typeof child === 'string' && child.indexOf('media:') === 0) targets.push({ owner: value, key: key.slice(0, -3), ref: child });
-        else collect(child);
+        if (/^(audioBase64|sketchDataUrl|imageDataUrl)Ref$/i.test(key) && typeof child === 'string' && child.indexOf('media:') === 0) {
+          var targetKey = key.slice(0, -3);
+          if (isSafeRegistryKey(targetKey)) targets.push({ owner: value, key: targetKey, ref: child });
+        } else collect(child);
       });
     }
     collect(clone);
-    if (!targets.length) return Promise.resolve({ journal: clone, hydrated: false, missing: [] });
+    if (!targets.length) return Promise.resolve({ journal: clone, hydrated: false, missing: [], mediaByRef: Object.create(null) });
     return openResearchMediaDb().then(function (db) {
       return new Promise(function (resolve) {
         var transaction = db.transaction(MEDIA_STORE_NAME, 'readonly');
@@ -887,18 +930,47 @@
         var pending = targets.length;
         var hydrated = false;
         var missing = [];
+        var mediaByRef = Object.create(null);
         targets.forEach(function (target) {
           var request = store.get(target.ref);
           request.onsuccess = function () {
-            if (request.result && typeof request.result.value === 'string') { target.owner[target.key] = request.result.value; hydrated = true; }
+            if (request.result && typeof request.result.value === 'string') {
+              target.owner[target.key] = request.result.value;
+              mediaByRef[target.ref] = request.result.value;
+              hydrated = true;
+            }
             else missing.push(target.ref);
             pending -= 1;
-            if (!pending) { db.close(); resolve({ journal: clone, hydrated: hydrated, missing: missing }); }
+            if (!pending) { db.close(); resolve({ journal: clone, hydrated: hydrated, missing: missing, mediaByRef: mediaByRef }); }
           };
-          request.onerror = function () { missing.push(target.ref); pending -= 1; if (!pending) { db.close(); resolve({ journal: clone, hydrated: hydrated, missing: missing }); } };
+          request.onerror = function () { missing.push(target.ref); pending -= 1; if (!pending) { db.close(); resolve({ journal: clone, hydrated: hydrated, missing: missing, mediaByRef: mediaByRef }); } };
         });
       });
-    }).catch(function () { return { journal: clone, hydrated: false, missing: targets.map(function (target) { return target.ref; }) }; });
+    }).catch(function () { return { journal: clone, hydrated: false, missing: targets.map(function (target) { return target.ref; }), mediaByRef: Object.create(null) }; });
+  }
+
+  function applyHydratedResearchMedia(journal, mediaByRef) {
+    if (!journal || !mediaByRef) return journal;
+    var clone = safeJsonClone(journal) || journal;
+    var changed = false;
+    function walk(value) {
+      if (!value || typeof value !== 'object') return;
+      if (Array.isArray(value)) { value.forEach(walk); return; }
+      Object.keys(value).forEach(function (key) {
+        var child = value[key];
+        if (/^(audioBase64|sketchDataUrl|imageDataUrl)Ref$/i.test(key) && typeof child === 'string' && Object.prototype.hasOwnProperty.call(mediaByRef, child)) {
+          var targetKey = key.slice(0, -3);
+          if (isSafeRegistryKey(targetKey) && !value[targetKey]) {
+            value[targetKey] = mediaByRef[child];
+            changed = true;
+          }
+        } else {
+          walk(child);
+        }
+      });
+    }
+    walk(clone);
+    return changed ? clone : journal;
   }
 
   function clearResearchMediaStore() {
@@ -1089,7 +1161,7 @@
 
   function readRecoverySnapshot() {
     try {
-      var recovery = JSON.parse(safeLocal(RECOVERY_STORAGE_KEY) || 'null');
+      var recovery = JSON.parse(safeLocal(RECOVERY_STORAGE_KEY) || 'null', safeJsonReviver);
       if (!recovery) return { ok: false, errors: ['No recovery snapshot is available.'], journal: null };
       return parsePortfolioImport(recovery);
     } catch (_) { return { ok: false, errors: ['The recovery snapshot is unreadable.'], journal: null }; }
@@ -1098,7 +1170,7 @@
     var raw = safeLocal(STORAGE_KEY);
     if (!raw) return emptyJournal();
     try {
-      var parsed = JSON.parse(raw);
+      var parsed = JSON.parse(raw, safeJsonReviver);
       if (!parsed || typeof parsed !== 'object') return emptyJournal();
       // Migration ladder. Pre-Tier-3 the check was strict-equal to 1,
       // which silently dropped any v:2 save (the actual shape emptyJournal()
@@ -1217,18 +1289,38 @@
     } catch (_) { return emptyJournal(); }
   }
 
-  function saveJournal(journal) {
+  var _journalSaveSeq = 0;
+  function invalidateJournalSaves() { _journalSaveSeq += 1; }
+
+  var _persistedResearchMediaIds = new Set();
+  function saveJournal(journal, onAsyncSettled) {
     if (!journal || journal.loadWarning) return false;
     try {
+      var saveSeq = ++_journalSaveSeq;
       var snapshot = Object.assign({}, journal);
       delete snapshot.originalSchemaVersion;
       snapshot.updatedAt = Date.now();
+      var extracted = extractLargeResearchMedia(snapshot);
       var serialized = JSON.stringify(snapshot);
       var savedInline = safeLocal(STORAGE_KEY, serialized) === true;
-      var extracted = extractLargeResearchMedia(snapshot);
       if (window.indexedDB && extracted.entries.length) {
+        if (!savedInline && extracted.entries.every(function (entry) { return entry && entry.id && _persistedResearchMediaIds.has(entry.id); })) {
+          savedInline = safeLocal(STORAGE_KEY, JSON.stringify(extracted.journal)) === true;
+        }
         persistResearchMedia(extracted).then(function (stored) {
-          if (stored) safeLocal(STORAGE_KEY, JSON.stringify(extracted.journal));
+          if (stored) {
+            extracted.entries.forEach(function (entry) { if (entry && entry.id) _persistedResearchMediaIds.add(entry.id); });
+          }
+          if (stored && saveSeq === _journalSaveSeq) {
+            var offloadedOk = safeLocal(STORAGE_KEY, JSON.stringify(extracted.journal)) === true;
+            if (typeof onAsyncSettled === 'function') onAsyncSettled(offloadedOk, saveSeq);
+          } else if (!savedInline && typeof onAsyncSettled === 'function' && saveSeq === _journalSaveSeq) {
+            onAsyncSettled(false, saveSeq);
+          }
+        }).catch(function () {
+          if (!savedInline && typeof onAsyncSettled === 'function' && saveSeq === _journalSaveSeq) {
+            onAsyncSettled(false, saveSeq);
+          }
         });
       }
       return savedInline;
@@ -1317,11 +1409,11 @@
   // ───────────────────────────────────────────────────────────────────────
   if (!window.ResearchHub) {
     window.ResearchHub = {
-      _lanes: {},
+      _lanes: Object.create(null),
       _order: [],
       _educatorView: null,
       registerLane: function (id, config) {
-        if (!id || !config) return;
+        if (!isSafeRegistryKey(id) || !config || typeof config !== 'object') return;
         config.id = id;
         if (!config.label) config.label = id;
         if (!config.stages) config.stages = [];
@@ -1330,7 +1422,7 @@
         if (this._order.indexOf(id) === -1) this._order.push(id);
         console.log('[ResearchHub] Registered lane: ' + id);
       },
-      getLane: function (id) { return this._lanes[id] || null; },
+      getLane: function (id) { return (isSafeRegistryKey(id) && this._lanes[id]) || null; },
       getLanes: function () {
         var self = this;
         return this._order.map(function (id) { return self._lanes[id]; }).filter(Boolean);
@@ -1526,7 +1618,7 @@
   function resolveLanes() {
     // Merge: registered lanes (from plugins) take precedence over placeholders.
     var registered = (window.ResearchHub && window.ResearchHub.getLanes) ? window.ResearchHub.getLanes() : [];
-    var byId = {};
+    var byId = Object.create(null);
     registered.forEach(function (L) { byId[L.id] = L; });
     return PLACEHOLDER_LANES.map(function (P) { return byId[P.id] || P; })
       // Tack on any registered lanes that aren't in the placeholder set.
@@ -1569,11 +1661,11 @@
     var trimmed = s.trim();
     var fenced = /^```(?:json)?\s*([\s\S]*?)\s*```\s*$/.exec(trimmed);
     if (fenced) trimmed = fenced[1].trim();
-    try { return JSON.parse(trimmed); } catch (_) {}
+    try { return JSON.parse(trimmed, safeJsonReviver); } catch (_) {}
     var braceStart = trimmed.indexOf('{');
     var braceEnd = trimmed.lastIndexOf('}');
     if (braceStart >= 0 && braceEnd > braceStart) {
-      try { return JSON.parse(trimmed.slice(braceStart, braceEnd + 1)); } catch (_) {}
+      try { return JSON.parse(trimmed.slice(braceStart, braceEnd + 1), safeJsonReviver); } catch (_) {}
     }
     return null;
   }
@@ -1802,6 +1894,8 @@
   // wherever a rubric criterion needs to be taught rather than checked.
   // ───────────────────────────────────────────────────────────────────────
   function ExemplarPair(props) {
+    var bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
+    var bt = function (s) { return (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s; };
     var t = props.t || function (k) { return k; };
     var criterion = props.criterion || '';
     var strongExample = props.strongExample || '';
@@ -1836,16 +1930,16 @@
             <span aria-hidden="true">{'\u{2696}\u{FE0F} '}</span>
             {t('research_hub.exemplar_pair_prompt') || 'Which of these is stronger work, and why?'}
           </h3>
-          <span style={{ fontSize: '11px', color: '#64748b', fontStyle: 'italic' }}>{criterion}</span>
+          <span style={{ fontSize: '11px', color: '#64748b', fontStyle: 'italic' }}>{bt(criterion)}</span>
         </div>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button type="button" onClick={function () { setChoice('A'); }} aria-pressed={choice === 'A'} style={pickStyle('A')}>
             <strong style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: '#7c3aed' }}>Example A</strong>
-            {strongExample}
+            {bt(strongExample)}
           </button>
           <button type="button" onClick={function () { setChoice('B'); }} aria-pressed={choice === 'B'} style={pickStyle('B')}>
             <strong style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: '#7c3aed' }}>Example B</strong>
-            {weakExample}
+            {bt(weakExample)}
           </button>
         </div>
         <textarea
@@ -1915,6 +2009,10 @@
     var pausedTotalRef = useRef(0);
     var tickRef = useRef(null);
     var stoppedRef = useRef(false);
+    var mountedRef = useRef(true);
+    var startingRef = useRef(false);
+    var onChangeRef = useRef(onChange);
+    onChangeRef.current = onChange;
 
     var hardStop = function () {
       if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
@@ -1927,7 +2025,16 @@
       }
     };
 
-    useEffect(function () { return function () { hardStop(); }; }, []);
+    useEffect(function () {
+      mountedRef.current = true;
+      return function () { mountedRef.current = false; hardStop(); };
+    }, []);
+
+    useEffect(function () {
+      if (isRecording) return;
+      setAudioBase64(initialBase64);
+      setDurationS(initialDuration);
+    }, [initialBase64, initialDuration]);
 
     var getActiveElapsedSeconds = function (now) {
       var currentPause = pauseStartedRef.current ? (now - pauseStartedRef.current) : 0;
@@ -1935,41 +2042,53 @@
     };
 
     var startRec = async function () {
+      if (startingRef.current || isRecording) return;
+      startingRef.current = true;
       setErr(null);
       try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
-          setErr(t('research_hub.voice_note_unsupported') || 'Voice notes are not supported in this browser.');
+          if (mountedRef.current) setErr(t('research_hub.voice_note_unsupported') || 'Voice notes are not supported in this browser.');
           return;
         }
         var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (!mountedRef.current) {
+          try { stream.getTracks().forEach(function (tr) { try { tr.stop(); } catch (_) {} }); } catch (_) {}
+          return;
+        }
         streamRef.current = stream;
         var mr = new MediaRecorder(stream);
         recorderRef.current = mr;
         chunksRef.current = [];
         stoppedRef.current = false;
         mr.ondataavailable = function (e) { if (e.data && e.data.size > 0) chunksRef.current.push(e.data); };
+        mr.onerror = function () {
+          if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
+          if (mountedRef.current) { setIsRecording(false); setIsPaused(false); }
+        };
         mr.onstop = function () {
           if (stoppedRef.current) return;
           stoppedRef.current = true;
-          try {
-            var blob = new Blob(chunksRef.current, { type: mr.mimeType || 'audio/webm' });
-            var reader = new FileReader();
-            reader.onloadend = function () {
-              var b64 = String(reader.result || '');
-              setAudioBase64(b64);
-              var finalDur = Math.min(VOICE_NOTE_MAX_SECONDS, getActiveElapsedSeconds(Date.now()));
-              setDurationS(finalDur);
-              if (typeof onChange === 'function') {
-                try { onChange({ audioBase64: b64, durationS: finalDur }); } catch (_) {}
-              }
-            };
-            reader.readAsDataURL(blob);
-          } catch (_) { /* base64 conversion failed; surface nothing destructive */ }
+          if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
           if (streamRef.current) {
             try { streamRef.current.getTracks().forEach(function (tr) { try { tr.stop(); } catch (_) {} }); } catch (_) {}
             streamRef.current = null;
           }
-          if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
+          if (!mountedRef.current) return;
+          try {
+            var blob = new Blob(chunksRef.current, { type: mr.mimeType || 'audio/webm' });
+            var reader = new FileReader();
+            reader.onloadend = function () {
+              if (!mountedRef.current) return;
+              var b64 = String(reader.result || '');
+              var finalDur = Math.min(VOICE_NOTE_MAX_SECONDS, getActiveElapsedSeconds(Date.now()));
+              setAudioBase64(b64);
+              setDurationS(finalDur);
+              if (typeof onChangeRef.current === 'function') {
+                try { onChangeRef.current({ audioBase64: b64, durationS: finalDur }); } catch (_) {}
+              }
+            };
+            reader.readAsDataURL(blob);
+          } catch (_) { /* base64 conversion failed; surface nothing destructive */ }
         };
         startRef.current = Date.now();
         pauseStartedRef.current = 0;
@@ -1980,16 +2099,23 @@
         setIsRecording(true);
         tickRef.current = setInterval(function () {
           var sec = getActiveElapsedSeconds(Date.now());
-          setElapsed(sec);
+          if (mountedRef.current) setElapsed(sec);
           if (sec >= VOICE_NOTE_MAX_SECONDS) {
+            if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
             if (mr.state === 'recording' || mr.state === 'paused') { try { mr.stop(); } catch (_) {} }
-            setIsRecording(false);
-            setIsPaused(false);
+            if (mountedRef.current) {
+              setIsRecording(false);
+              setIsPaused(false);
+            }
           }
         }, 250);
       } catch (e) {
-        setErr(t('research_hub.voice_note_mic_denied') || 'Microphone permission was denied.');
-        setIsRecording(false);
+        if (mountedRef.current) {
+          setErr(t('research_hub.voice_note_mic_denied') || 'Microphone permission was denied.');
+          setIsRecording(false);
+        }
+      } finally {
+        startingRef.current = false;
       }
     };
 
@@ -2096,7 +2222,9 @@
           )}
           {audioBase64 && !isRecording && (
             <React.Fragment>
-              <audio controls src={audioBase64} aria-label={label + ' playback'} style={{ height: '32px' }} />
+              {safeResearchAudioDataUrl(audioBase64) && (
+                <audio controls src={safeResearchAudioDataUrl(audioBase64)} aria-label={label + ' playback'} style={{ height: '32px' }} />
+              )}
               <button
                 type="button"
                 onClick={clearRec}
@@ -2277,7 +2405,7 @@
 
       // Per-touchpoint sub-budget — prevents one touchpoint from being abused
       var tpId = touchpoint && touchpoint.id;
-      if (tpId && PER_TOUCHPOINT_CAP[tpId]) {
+      if (tpId && Object.prototype.hasOwnProperty.call(PER_TOUCHPOINT_CAP, tpId) && typeof PER_TOUCHPOINT_CAP[tpId] === 'number') {
         var usedForTp = (journal.aiHistory || []).filter(function (h) {
           return h.touchpoint === tpId && !h.blocked;
         }).length;
@@ -2342,10 +2470,13 @@
 
       // Abort timeout
       var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-      var timeoutId = controller ? setTimeout(function () { try { controller.abort(); } catch (_) {} }, 12000) : null;
+      var timedOut = false;
+      var timeoutId = controller ? setTimeout(function () { timedOut = true; try { controller.abort(); } catch (_) {} }, 12000) : null;
       var combined = controller ? controller.signal : signal;
+      var onExternalAbort = null;
       if (signal && controller && typeof signal.addEventListener === 'function') {
-        try { signal.addEventListener('abort', function () { try { controller.abort(); } catch (_) {} }); } catch (_) {}
+        onExternalAbort = function () { try { controller.abort(); } catch (_) {} };
+        try { signal.addEventListener('abort', onExternalAbort, { once: true }); } catch (_) {}
       }
 
       // Increment BEFORE the call so a double-Send race can't double-spend.
@@ -2365,15 +2496,24 @@
           var legacy = await onCallGemini(prompt, true, false, null, null, combined, false);
           rawText = (typeof legacy === 'string') ? legacy : (legacy && legacy.text) || '';
         }
+        if ((combined && combined.aborted) || (signal && signal.aborted)) {
+          errorKind = (timedOut && !(signal && signal.aborted)) ? 'timeout' : 'aborted';
+          setJournal(function (prev) {
+            var next = Object.assign({}, prev);
+            next.aiCallCount = Math.max(0, (prev.aiCallCount || 1) - 1);
+            return next;
+          });
+        }
       } catch (err) {
         var msg = (err && err.message) || String(err || '');
-        if (/abort/i.test(msg) || (signal && signal.aborted)) errorKind = 'aborted';
+        if (timedOut && !(signal && signal.aborted)) errorKind = 'timeout';
+        else if (/abort/i.test(msg) || (signal && signal.aborted)) errorKind = 'aborted';
         else if (/quota|RESOURCE_EXHAUSTED|429/i.test(msg)) errorKind = 'rate_limit_upstream';
         else if (/safety|SAFETY|blockReason/i.test(msg)) errorKind = 'safety_blocked';
         else if (/Failed to fetch|NetworkError|ECONN/i.test(msg)) errorKind = 'network';
         else errorKind = 'network';
         // Refund the counter on errors that don't burn tokens.
-        if (errorKind === 'network' || errorKind === 'aborted' || errorKind === 'rate_limit_upstream') {
+        if (errorKind === 'network' || errorKind === 'aborted' || errorKind === 'timeout' || errorKind === 'rate_limit_upstream') {
           setJournal(function (prev) {
             var next = Object.assign({}, prev);
             next.aiCallCount = Math.max(0, (prev.aiCallCount || 1) - 1);
@@ -2382,11 +2522,15 @@
         }
       } finally {
         if (timeoutId) clearTimeout(timeoutId);
+        if (signal && onExternalAbort && typeof signal.removeEventListener === 'function') {
+          try { signal.removeEventListener('abort', onExternalAbort); } catch (_) {}
+        }
       }
 
       var latencyMs = nowMs() - t0;
       if (errorKind) {
         var copy = errorKind === 'aborted' ? '' :
+                   errorKind === 'timeout' ? 'The research coach took too long to respond. Try again in a moment.' :
                    errorKind === 'rate_limit_upstream' ? "AlloBot is taking a quick breather. Try again in a minute." :
                    errorKind === 'safety_blocked' ? "I can't respond to that. Want to try rephrasing?" :
                    "Couldn't reach the AI service. Check your connection and try again.";
@@ -2396,6 +2540,17 @@
       // Parse + strip pedagogical footguns + optional touchpoint validator.
       var parsed = safeJsonParse(rawText);
       if (!parsed) {
+        setJournal(function (prev) {
+          return Object.assign({}, prev, {
+            aiHistory: appendAiHistory(prev, {
+              ts: Date.now(), touchpoint: tpId,
+              in: prompt.slice(0, 400),
+              summary: String(rawText || '').slice(0, 200),
+              parseFailed: true,
+              blocked: false, traceId: traceId,
+            }),
+          });
+        });
         return {
           ok: true, blocked: false,
           data: { __aiSuggestion: true, traceId: traceId, parseFailed: true, answer: String(rawText || '').slice(0, ANSWER_HARD_CAP) },
@@ -2737,7 +2892,9 @@
       var active = true;
       hydrateResearchMedia(latestJournalRef.current).then(function (result) {
         if (!active) return;
-        if (result.hydrated) setJournalState(result.journal);
+        if (result.hydrated && result.mediaByRef) {
+          setJournalState(function (prev) { return applyHydratedResearchMedia(prev, result.mediaByRef); });
+        }
         setMediaStatus(result.missing.length ? 'missing' : result.hydrated ? 'hydrated' : 'ready');
       });
       return function () { active = false; };
@@ -2761,14 +2918,21 @@
     var saveStatus = _saveStatus[0]; var setSaveStatus = _saveStatus[1];
     var latestJournalRef = useRef(journal);
     latestJournalRef.current = journal;
+    var skipNextCleanupSaveRef = useRef(false);
     useEffect(function () {
+      var active = true;
       setSaveStatus('saving');
       var id = setTimeout(function () {
-        var saved = saveJournal(journal);
+        var saved = saveJournal(journal, function (offloadedOk) {
+          if (!active) return;
+          setSaveStatus(offloadedOk ? 'saved' : (journal.loadWarning ? 'read-only' : 'save unavailable'));
+        });
         setSaveStatus(saved ? 'saved' : (journal.loadWarning ? 'read-only' : 'save unavailable'));
       }, 120);
       return function () {
+        active = false;
         clearTimeout(id);
+        if (skipNextCleanupSaveRef.current) { skipNextCleanupSaveRef.current = false; return; }
         saveJournal(journal);
       };
     }, [journal]);
@@ -2873,6 +3037,7 @@
         var copy = Object.assign({}, link);
         copy.evidenceIds = (link.evidenceIds || []).filter(function (id) { return String(id) !== String(evidenceId); });
         copy.counterEvidenceIds = (link.counterEvidenceIds || link.counterevidenceIds || []).filter(function (id) { return String(id) !== String(evidenceId); });
+        delete copy.counterevidenceIds;
         return copy;
       }).filter(function (link) { return (link.evidenceIds || []).length || (link.counterEvidenceIds || []).length; });
       if (payload.edge && payload.edge.declaredBy === 'source.humanitiesContext.inquiryRelationship') {
@@ -2900,7 +3065,11 @@
       var evidenceId = graphRecordId(payload && payload.evidenceNode);
       if (!claimId || !evidenceId) { addToast('This relationship cannot be saved until both records have stable IDs.', 'error'); return; }
       setJournal(function (previous) {
-        var next = removeGraphRelationshipFromJournal(previous, payload || {});
+        var next = previous;
+        if (payload && payload.originalEvidenceNode && graphRecordId(payload.originalEvidenceNode) !== evidenceId) {
+          next = removeGraphRelationshipFromJournal(next, { claimNode: payload.claimNode, evidenceNode: payload.originalEvidenceNode, edge: payload.originalEdge || null });
+        }
+        next = removeGraphRelationshipFromJournal(next, payload || {});
         next.claimEvidenceLinks = (next.claimEvidenceLinks || []).concat([{
           id: researchId('relationship_'), claimId: claimId, evidenceIds: [evidenceId],
           relationship: payload.relationship || 'supports', warrant: String(payload.warrant || '').slice(0, 900),
@@ -3114,7 +3283,7 @@
     var downloadRecoveryCopy = function () {
       var raw = safeLocal(STORAGE_KEY);
       var parsed = null;
-      try { parsed = JSON.parse(raw || 'null'); } catch (_) { parsed = { raw: raw }; }
+      try { parsed = JSON.parse(raw || 'null', safeJsonReviver); } catch (_) { parsed = { raw: raw }; }
       downloadJsonFile('alloflow-inquiry-portfolio-recovery.json', { exportedAt: new Date().toISOString(), original: parsed });
     };
     var requestClearJournal = useCallback(function (event) {
@@ -3133,10 +3302,13 @@
 
     var confirmClearJournal = useCallback(function () {
       writeRecoverySnapshot(journal, 'before_reset');
+      invalidateJournalSaves();
+      skipNextCleanupSaveRef.current = true;
       clearResearchMediaStore();
       var fresh = emptyJournal();
       // Preserve dev level — most likely the same student.
       fresh.devLevel = journal.devLevel;
+      saveJournal(fresh);
       setJournal(fresh);
       closeResetDialog();
     }, [journal, closeResetDialog]);

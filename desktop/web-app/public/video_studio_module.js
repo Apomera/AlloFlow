@@ -1885,7 +1885,7 @@
     var dur = Math.max(0.1, Number(duration) || 0.1);
     var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.inserts) ? raw.inserts : (raw && Array.isArray(raw.cards) ? raw.cards : (raw && Array.isArray(raw.suggestions) ? raw.suggestions : [])));
     var out = [];
-    var typeMap = {
+    var typeMap = Object.assign(Object.create(null), {
       title: 'title_card',
       section: 'title_card',
       title_card: 'title_card',
@@ -1906,12 +1906,12 @@
       overlay: 'image_overlay',
       uploaded_image: 'image_overlay',
       resource_image: 'image_overlay'
-    };
-    var themes = { blue: 1, green: 1, amber: 1, pink: 1, slate: 1 };
-    var anims = { none: 1, pulse: 1, bounce: 1, sparkle: 1 };
-    var motions = { none: 1, fade: 1, slide_left: 1, slide_right: 1, slide_up: 1, slide_down: 1, drift_right: 1, drift_left: 1, zoom_in: 1 };
-    var styles = { label: 1, box: 1, spotlight: 1, arrow: 1 };
-    var layouts = { 'center-card': 1, 'lower-banner': 1, 'split-panel': 1 };
+    });
+    var themes = Object.assign(Object.create(null), { blue: 1, green: 1, amber: 1, pink: 1, slate: 1 });
+    var anims = Object.assign(Object.create(null), { none: 1, pulse: 1, bounce: 1, sparkle: 1 });
+    var motions = Object.assign(Object.create(null), { none: 1, fade: 1, slide_left: 1, slide_right: 1, slide_up: 1, slide_down: 1, drift_right: 1, drift_left: 1, zoom_in: 1 });
+    var styles = Object.assign(Object.create(null), { label: 1, box: 1, spotlight: 1, arrow: 1 });
+    var layouts = Object.assign(Object.create(null), { 'center-card': 1, 'lower-banner': 1, 'split-panel': 1 });
     var clamp01 = function (v, d) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(1, v)) : d; };
     for (var i = 0; i < list.length && out.length < 32; i++) {
       var s = list[i] || {};

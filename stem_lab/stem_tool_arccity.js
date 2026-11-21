@@ -1860,12 +1860,17 @@
         }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
         if ('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
-        scene.add(new THREE.HemisphereLight(0x9adfff, 0x12091f, 0.85));
-        var keyLight = new THREE.DirectionalLight(0xffffff, 0.72); keyLight.position.set(4, 9, 7); scene.add(keyLight);
+        scene.add(new THREE.HemisphereLight(0xbae6fd, 0x182234, 0.90));
+        var keyLight = new THREE.DirectionalLight(0xffe0b2, 0.85); keyLight.position.set(6, 9, 7); scene.add(keyLight);
+        var rimLight = new THREE.DirectionalLight(0x38bdf8, 0.42); rimLight.position.set(-7, 5, -6); scene.add(rimLight);
         var ground = new THREE.Mesh(new THREE.PlaneGeometry(12, 9), new THREE.MeshPhongMaterial({ color: hiContrast ? 0x000000 : 0x090d20, shininess: 25 }));
         ground.rotation.x = -Math.PI / 2; ground.position.y = -0.04; scene.add(ground);
         var grid = new THREE.GridHelper(12, 24, hiContrast ? 0xffffff : 0x22d3ee, hiContrast ? 0x9aa4b2 : 0x24304b); grid.scale.z = 0.72; scene.add(grid);
-        if (!hiContrast) { scene.add(arcStarField(THREE, 21, 380, 60)); scene.add(arcHorizonGlow(THREE, 0x22d3ee, 90, 5, -17)); }
+        if (!hiContrast) {
+          scene.add(arcSkyDome(THREE, '#22d3ee'));
+          scene.add(arcStarField(THREE, 21, 380, 60));
+          scene.add(arcHorizonGlow(THREE, 0xf59e0b, 90, 5.5, -17));
+        }
         var laneZ = [-3, 0, 3], laneGlows = [];
         for (var li = 0; li < 3; li++) {
           var laneGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-5.4, 0.03, laneZ[li]), new THREE.Vector3(5.4, 0.03, laneZ[li])]);
@@ -1911,7 +1916,7 @@
         // Neon skyline behind the far lane (decorative; the lanes, relays and beams are untouched).
         var arenaGround = new THREE.Mesh(new THREE.PlaneGeometry(70, 70), new THREE.MeshPhongMaterial({ color: hiContrast ? 0x000000 : 0x06091a, shininess: 10, transparent: !hiContrast, opacity: hiContrast ? 1 : 0.88 }));
         arenaGround.rotation.x = -Math.PI / 2; arenaGround.position.y = -0.08; scene.add(arenaGround);
-        var arenaCity = arcBuildCity(THREE, 77, [arcLaneColor(arenaConfig, 0, hiContrast ? 'contrast' : 'dark'), arcLaneColor(arenaConfig, 1, hiContrast ? 'contrast' : 'dark'), arcLaneColor(arenaConfig, 2, hiContrast ? 'contrast' : 'dark')], { count: 28, spread: 9, xShift: -4, zNear: -7, zFar: -14 });
+        var arenaCity = arcBuildCity(THREE, 77, [arcLaneColor(arenaConfig, 0, hiContrast ? 'contrast' : 'dark'), arcLaneColor(arenaConfig, 1, hiContrast ? 'contrast' : 'dark'), arcLaneColor(arenaConfig, 2, hiContrast ? 'contrast' : 'dark')], { count: 28, spread: 9, xShift: -4, zNear: -7, zFar: -14, hiContrast: hiContrast });
         scene.add(arenaCity);
         if (!hiContrast) scene.add(arcReflectCity(THREE, arenaCity));
         var pack = { THREE: THREE, scene: scene, camera: camera, renderer: renderer, relays: relays, trailGroup: trailGroup, laneGlows: laneGlows, hiContrast: hiContrast, disposed: false };
@@ -2016,8 +2021,15 @@
   function arcDisposeObject(obj) {
     if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose();
     if (obj.material) {
-      if (Array.isArray(obj.material)) obj.material.forEach(function (m) { if (m && m.dispose) m.dispose(); });
-      else if (obj.material.dispose) obj.material.dispose();
+      var mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+      mats.forEach(function (m) {
+        if (!m) return;
+        ['map', 'bumpMap', 'normalMap', 'roughnessMap'].forEach(function (slot) {
+          var tx = m[slot];
+          if (tx && tx !== _arcGlowTex && tx !== _arcHazardTex && tx.dispose) tx.dispose();
+        });
+        if (m.dispose) m.dispose();
+      });
     }
   }
   function arcClearGroup(group) {
@@ -2044,16 +2056,337 @@
     var s = seed >>> 0;
     return function () { s = (s + 0x6D2B79F5) >>> 0; var t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   }
-  // A neon skyline: dark slabs with glowing edge-lines and a scatter of lit windows,
-  // standing in a band BEHIND the play plane (negative z) so it frames the action
-  // without ever crossing the beam. Under bloom the edges read as light tubes.
+  function arcSkyDome(THREE, tintHex) {
+    var geo = new THREE.SphereGeometry(54, 32, 18, 0, Math.PI * 2, 0, Math.PI * 0.56);
+    var dome;
+    if (typeof THREE.ShaderMaterial === 'function') {
+      var skyUniforms = {
+        uTime: { value: 3.2 },
+        uTint: { value: new THREE.Color(tintHex || '#22d3ee') },
+        uSunDir: { value: new THREE.Vector3(0.42, 0.20, -0.88).normalize() }
+      };
+      var skyMat = new THREE.ShaderMaterial({
+        uniforms: skyUniforms,
+        vertexShader: [
+          'varying vec3 vDir;',
+          'void main() {',
+          '  vDir = normalize(position);',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform vec3 uTint;',
+          'uniform vec3 uSunDir;',
+          'varying vec3 vDir;',
+          'float skyHash(vec2 p) {',
+          '  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);',
+          '}',
+          'float skyNoise(vec2 p) {',
+          '  vec2 i = floor(p);',
+          '  vec2 f = fract(p);',
+          '  vec2 u = f * f * (3.0 - 2.0 * f);',
+          '  return mix(mix(skyHash(i), skyHash(i + vec2(1.0, 0.0)), u.x), mix(skyHash(i + vec2(0.0, 1.0)), skyHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+          '}',
+          'float skyFbm(vec2 p) {',
+          '  float v = 0.0;',
+          '  float a = 0.5;',
+          '  for (int i = 0; i < 3; i++) {',
+          '    v += a * skyNoise(p);',
+          '    p = p * 2.04 + vec2(19.3, 7.1);',
+          '    a *= 0.5;',
+          '  }',
+          '  return v;',
+          '}',
+          'void main() {',
+          '  vec3 d = normalize(vDir);',
+          '  float h = clamp(d.y, 0.0, 1.0);',
+          '  vec3 goldenHorizon = mix(vec3(0.88, 0.48, 0.24), uTint, 0.24);',
+          '  vec3 twilightMid = mix(vec3(0.11, 0.14, 0.30), uTint * 0.42, 0.22);',
+          '  vec3 zenith = vec3(0.02, 0.03, 0.08);',
+          '  vec3 rayleigh = mix(goldenHorizon, twilightMid, smoothstep(0.0, 0.28, h));',
+          '  rayleigh = mix(rayleigh, zenith, pow(smoothstep(0.20, 0.96, h), 0.85));',
+          '  float sunCos = max(dot(d, normalize(uSunDir)), 0.0);',
+          '  float mieHalo = pow(sunCos, 9.0) * 0.58 + pow(sunCos, 64.0) * 0.85;',
+          '  vec3 mieCol = vec3(1.0, 0.72, 0.38) * mieHalo * (1.0 - smoothstep(0.45, 0.95, h));',
+          '  vec2 cloudUv = d.xz / (d.y + 0.18) * 1.45 + vec2(uTime * 0.022, -uTime * 0.009);',
+          '  float cDensity = skyFbm(cloudUv);',
+          '  float cMask = smoothstep(0.46, 0.80, cDensity) * smoothstep(0.03, 0.20, h) * smoothstep(0.88, 0.26, h);',
+          '  vec3 cloudLit = mix(twilightMid * 1.35 + uTint * 0.18, vec3(1.0, 0.76, 0.48), pow(sunCos, 3.0) * 0.82 + 0.15);',
+          '  vec3 col = rayleigh + mieCol;',
+          '  col = mix(col, cloudLit, cMask * 0.56);',
+          '  float horizonMist = exp(-h * 11.0);',
+          '  col += mix(vec3(0.95, 0.56, 0.28), uTint, 0.35) * horizonMist * 0.28;',
+          '  gl_FragColor = vec4(col, 1.0);',
+          '}'
+        ].join('\n'),
+        side: THREE.BackSide,
+        depthWrite: false,
+        fog: false
+      });
+      dome = new THREE.Mesh(geo, skyMat);
+      dome.userData.shaderUniforms = skyUniforms;
+    } else {
+      var pos = geo.attributes.position;
+      var cols = new Float32Array(pos.count * 3);
+      var goldenHorizon = new THREE.Color(0xd97742).lerp(new THREE.Color(tintHex || '#22d3ee'), 0.28);
+      var twilightMid = new THREE.Color(0x1b2144);
+      var zenith = new THREE.Color(0x050712);
+      var tmp = new THREE.Color();
+      for (var i = 0; i < pos.count; i++) {
+        var h = Math.max(0, Math.min(1, pos.getY(i) / 48));
+        if (h < 0.24) tmp.copy(goldenHorizon).lerp(twilightMid, h / 0.24);
+        else tmp.copy(twilightMid).lerp(zenith, Math.pow((h - 0.24) / 0.76, 0.85));
+        cols[i * 3] = tmp.r; cols[i * 3 + 1] = tmp.g; cols[i * 3 + 2] = tmp.b;
+      }
+      geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+      dome = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+        vertexColors: true, side: THREE.BackSide, depthWrite: false, fog: false
+      }));
+    }
+    dome.position.y = -2;
+    dome.renderOrder = -2;
+    return dome;
+  }
+  function arcWaterfrontCanopy(THREE, seed, tintHex) {
+    var rnd = arcSeededRandom(seed), group = new THREE.Group();
+    // Gerstner / FBM specular golden-hour waterfront ribbon along the promenade
+    var waterMat, waterGeo;
+    if (typeof THREE.ShaderMaterial === 'function') {
+      var waterUniforms = {
+        uTime: { value: 2.8 },
+        uTint: { value: new THREE.Color(tintHex || '#38bdf8') },
+        uSunDir: { value: new THREE.Vector3(0.42, 0.22, -0.88).normalize() }
+      };
+      waterGeo = new THREE.PlaneGeometry(36, 1.65, 64, 12);
+      waterMat = new THREE.ShaderMaterial({
+        uniforms: waterUniforms,
+        vertexShader: [
+          'uniform float uTime;',
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec3 vWaveN;',
+          'void main() {',
+          '  vUv = uv;',
+          '  vec3 p = position;',
+          '  float w1 = sin(p.x * 1.45 + uTime * 1.7 + p.y * 2.4) * 0.014;',
+          '  float w2 = cos(p.x * 2.85 - uTime * 2.3 + p.y * 3.8) * 0.008;',
+          '  float w3 = sin((p.x + p.y) * 4.4 + uTime * 1.3) * 0.005;',
+          '  p.z += w1 + w2 + w3;',
+          '  float dx = cos(p.x * 1.45 + uTime * 1.7 + p.y * 2.4) * 0.020 - sin(p.x * 2.85 - uTime * 2.3 + p.y * 3.8) * 0.022;',
+          '  float dy = cos(p.x * 1.45 + uTime * 1.7 + p.y * 2.4) * 0.033 - sin(p.x * 2.85 - uTime * 2.3 + p.y * 3.8) * 0.030;',
+          '  vec4 wp = modelMatrix * vec4(p, 1.0);',
+          '  vWorldPos = wp.xyz;',
+          '  vWaveN = normalize(vec3(-dx * 2.4, 1.0, -dy * 2.4));',
+          '  gl_Position = projectionMatrix * viewMatrix * wp;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform vec3 uTint;',
+          'uniform vec3 uSunDir;',
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec3 vWaveN;',
+          'float wHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+          'float wNoise(vec2 p) {',
+          '  vec2 i = floor(p); vec2 f = fract(p);',
+          '  vec2 u = f * f * (3.0 - 2.0 * f);',
+          '  return mix(mix(wHash(i), wHash(i + vec2(1.0, 0.0)), u.x), mix(wHash(i + vec2(0.0, 1.0)), wHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+          '}',
+          'float wFbm(vec2 p) {',
+          '  float v = 0.0; float a = 0.5;',
+          '  for (int k = 0; k < 3; k++) { v += a * wNoise(p); p = p * 2.05 + vec2(11.3, 23.7); a *= 0.5; }',
+          '  return v;',
+          '}',
+          'void main() {',
+          '  vec2 rUv = vWorldPos.xz * vec2(0.95, 2.6);',
+          '  float n1 = wFbm(rUv + vec2(uTime * 0.32, -uTime * 0.18));',
+          '  float n2 = wFbm(rUv * 1.9 - vec2(uTime * 0.24, uTime * 0.28));',
+          '  vec3 N = normalize(vWaveN + vec3((n1 - 0.5) * 0.34, 0.0, (n2 - 0.5) * 0.42));',
+          '  vec3 V = normalize(cameraPosition - vWorldPos);',
+          '  float fres = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.6);',
+          '  vec3 L = normalize(uSunDir);',
+          '  vec3 H = normalize(L + V);',
+          '  float sunGlint = pow(max(dot(N, H), 0.0), 54.0) * (0.65 + 0.75 * n2);',
+          '  float sunPath = smoothstep(7.5, 0.4, abs(vWorldPos.x - 4.2)) * pow(max(dot(N, H), 0.0), 14.0);',
+          '  float caustic = pow(clamp(n1 * n2 * 2.1, 0.0, 1.0), 2.4);',
+          '  vec3 deepWater = vec3(0.03, 0.13, 0.22);',
+          '  vec3 skyReflect = mix(vec3(0.14, 0.24, 0.44), vec3(0.92, 0.58, 0.30), 0.38) + uTint * 0.22;',
+          '  vec3 col = mix(deepWater, skyReflect, clamp(fres * 0.85 + 0.14, 0.0, 1.0));',
+          '  col += mix(uTint, vec3(0.45, 0.92, 1.0), 0.5) * caustic * 0.28;',
+          '  col += vec3(1.0, 0.84, 0.52) * (sunGlint * 1.25 + sunPath * 0.55);',
+          '  float shoreEdge = smoothstep(0.18, 0.0, vUv.y) + smoothstep(0.82, 1.0, vUv.y);',
+          '  col += vec3(0.65, 0.94, 1.0) * shoreEdge * (0.14 + 0.18 * n1);',
+          '  gl_FragColor = vec4(col, 0.90);',
+          '}'
+        ].join('\n'),
+        transparent: true
+      });
+      group.userData.shaderUniforms = waterUniforms;
+    } else {
+      waterGeo = new THREE.PlaneGeometry(36, 1.65);
+      waterMat = typeof THREE.MeshPhysicalMaterial === 'function'
+        ? new THREE.MeshPhysicalMaterial({ color: 0x0b2e44, roughness: 0.14, metalness: 0.55, clearcoat: 0.9, clearcoatRoughness: 0.10, transparent: true, opacity: 0.86 })
+        : new THREE.MeshPhongMaterial({ color: 0x0b2e44, shininess: 95, specular: 0x7dd3fc, transparent: true, opacity: 0.86 });
+    }
+    var water = new THREE.Mesh(waterGeo, waterMat);
+    water.rotation.x = -Math.PI / 2;
+    water.position.set(0, -0.004, -3.55);
+    group.add(water);
+    // Warm promenade shoreline glow strip
+    var shore = new THREE.Mesh(new THREE.PlaneGeometry(34, 0.08), new THREE.MeshBasicMaterial({
+      color: 0xfde68a, transparent: true, opacity: 0.34, blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    shore.rotation.x = -Math.PI / 2; shore.position.set(0, 0.002, -2.72);
+    group.add(shore);
+    // Lush park canopy clusters bordering the sustainable waterfront
+    var trunkMat = typeof THREE.MeshStandardMaterial === 'function' ? new THREE.MeshStandardMaterial({ color: 0x4b3621, roughness: 0.9 }) : new THREE.MeshLambertMaterial({ color: 0x4b3621 });
+    var leafMats = [0x15803d, 0x059669, 0x10b981].map(function (hex) {
+      return typeof THREE.MeshStandardMaterial === 'function'
+        ? new THREE.MeshStandardMaterial({ color: hex, roughness: 0.72, metalness: 0.05 })
+        : new THREE.MeshLambertMaterial({ color: hex });
+    });
+    var trunkGeo = new THREE.CylinderGeometry(0.035, 0.05, 0.32, 6);
+    var leafGeo = typeof THREE.DodecahedronGeometry === 'function' ? new THREE.DodecahedronGeometry(0.24, 0) : new THREE.SphereGeometry(0.24, 8, 6);
+    for (var ti = 0; ti < 22; ti++) {
+      var tx = -11.5 + (ti / 21) * 23 + (rnd() - 0.5) * 0.5;
+      var tz = -4.55 - rnd() * 1.1;
+      var sc = 0.72 + rnd() * 0.65;
+      var trunk = new THREE.Mesh(trunkGeo, trunkMat);
+      trunk.position.set(tx, 0.16 * sc, tz); trunk.scale.setScalar(sc);
+      group.add(trunk);
+      var canopy = new THREE.Mesh(leafGeo, leafMats[ti % leafMats.length]);
+      canopy.position.set(tx, 0.42 * sc, tz); canopy.scale.set(sc * 1.1, sc * 0.95, sc);
+      group.add(canopy);
+    }
+    return group;
+  }
+  function arcTransitArcs(THREE, tintHex) {
+    var group = new THREE.Group(), pulses = [], tubeUniforms = [];
+    var arcs = [
+      { pts: [[-10.5, 1.4, -5.8], [-5.2, 3.2, -6.6], [0.4, 2.3, -5.9], [6.0, 3.4, -6.8], [10.8, 1.6, -5.8]], color: '#34d399' },
+      { pts: [[-9.2, 2.1, -8.4], [-3.0, 4.4, -9.2], [3.6, 3.9, -8.6], [9.6, 2.2, -8.2]], color: tintHex || '#38bdf8' }
+    ];
+    var pulseGeo = new THREE.SphereGeometry(0.11, 10, 8);
+    var useShader = typeof THREE.ShaderMaterial === 'function';
+    arcs.forEach(function (spec, ai) {
+      var curve = new THREE.CatmullRomCurve3(spec.pts.map(function (p) { return new THREE.Vector3(p[0], p[1], p[2]); }));
+      var tubeMat;
+      if (useShader) {
+        var u = {
+          uTime: { value: 1.5 },
+          uColor: { value: new THREE.Color(spec.color) },
+          uPulseColor: { value: new THREE.Color('#fef08a') },
+          uSpeed: { value: 0.24 + ai * 0.09 },
+          uDir: { value: ai % 2 === 0 ? 1.0 : -1.0 }
+        };
+        tubeUniforms.push(u);
+        tubeMat = new THREE.ShaderMaterial({
+          uniforms: u,
+          vertexShader: [
+            'varying vec2 vUv;',
+            'void main() {',
+            '  vUv = uv;',
+            '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform vec3 uColor;',
+            'uniform vec3 uPulseColor;',
+            'uniform float uSpeed;',
+            'uniform float uDir;',
+            'varying vec2 vUv;',
+            'void main() {',
+            '  float flow1 = fract(vUv.x * 3.0 - uTime * uSpeed * uDir);',
+            '  float flow2 = fract(vUv.x * 5.0 - uTime * (uSpeed * 1.45) * uDir + 0.37);',
+            '  float comet1 = pow(flow1, 10.0);',
+            '  float comet2 = pow(flow2, 16.0) * 0.72;',
+            '  float cadence = 0.5 + 0.5 * sin(vUv.x * 48.0 - uTime * 3.0 * uDir);',
+            '  float endFade = smoothstep(0.0, 0.08, vUv.x) * smoothstep(1.0, 0.92, vUv.x);',
+            '  float energy = clamp(0.28 + 0.14 * cadence + comet1 * 1.45 + comet2 * 1.15, 0.0, 2.2);',
+            '  vec3 col = mix(uColor, uPulseColor, clamp(comet1 * 0.85 + comet2 * 0.65, 0.0, 1.0));',
+            '  float alpha = clamp((0.30 + comet1 * 0.65 + comet2 * 0.45) * endFade, 0.0, 0.96);',
+            '  gl_FragColor = vec4(col * energy, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        });
+      } else {
+        tubeMat = new THREE.MeshBasicMaterial({ color: spec.color, transparent: true, opacity: 0.36, blending: THREE.AdditiveBlending, depthWrite: false });
+      }
+      var tube = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 64, 0.042, 6, false),
+        tubeMat
+      );
+      group.add(tube);
+      for (var pi = 0; pi < 3; pi++) {
+        var pm = new THREE.MeshBasicMaterial({ color: '#fef08a', transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false });
+        var orb = new THREE.Mesh(pulseGeo, pm);
+        var ph = (pi / 3) + ai * 0.17;
+        orb.position.copy(curve.getPoint(ph % 1));
+        group.add(orb);
+        pulses.push({ mesh: orb, curve: curve, phase: ph, speed: 0.08 + ai * 0.03 });
+      }
+    });
+    group.userData.pulses = pulses;
+    group.userData.tubeUniforms = tubeUniforms;
+    return group;
+  }
+
+  // A neon skyline: glass-facade slabs with specular sheen, glowing edge-lines and
+  // warm interior + district windows, standing BEHIND the play plane (negative z).
   function arcBuildCity(THREE, seed, accents, opts) {
     opts = opts || {};
     var rnd = arcSeededRandom(seed), group = new THREE.Group();
     var count = opts.count || 26, spread = opts.spread || 11, zNear = opts.zNear != null ? opts.zNear : -4.5, zFar = opts.zFar != null ? opts.zFar : -11, xShift = opts.xShift || 0;
-    var slabMat = new THREE.MeshPhongMaterial({ color: 0x0b1226, emissive: 0x05091a, shininess: 8 });
+    var slabMat = typeof THREE.MeshPhysicalMaterial === 'function'
+      ? new THREE.MeshPhysicalMaterial({ color: 0x10203a, emissive: 0x071022, roughness: 0.18, metalness: 0.58, clearcoat: 0.82, clearcoatRoughness: 0.14 })
+      : new THREE.MeshPhongMaterial({ color: 0x0b1226, emissive: 0x05091a, shininess: 48, specular: 0x7dd3fc });
+    if (!opts.hiContrast && typeof THREE.ShaderMaterial === 'function') {
+      var facadeUniforms = {
+        uTime: { value: 3.2 },
+        uAccent: { value: new THREE.Color((accents && accents[0]) || '#22d3ee') }
+      };
+      group.userData.facadeUniforms = facadeUniforms;
+      slabMat.onBeforeCompile = function (shader) {
+        shader.uniforms.uTime = facadeUniforms.uTime;
+        shader.uniforms.uAccent = facadeUniforms.uAccent;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 vArcWorldPos;\nvarying vec3 vArcWorldNormal;')
+          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvArcWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvArcWorldNormal = normalize(mat3(modelMatrix) * objectNormal);');
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform vec3 uAccent;\nvarying vec3 vArcWorldPos;\nvarying vec3 vArcWorldNormal;\nfloat arcWinHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }')
+          .replace('#include <dithering_fragment>', [
+            'vec3 aN = normalize(vArcWorldNormal);',
+            'vec3 aV = normalize(cameraPosition - vArcWorldPos);',
+            'float aWallMask = 1.0 - step(0.82, abs(aN.y));',
+            'float aFres = pow(1.0 - clamp(abs(dot(aN, aV)), 0.0, 1.0), 3.0);',
+            'float aSunSide = clamp(dot(aN, normalize(vec3(0.55, 0.25, -0.80))) * 0.5 + 0.5, 0.0, 1.0);',
+            'vec3 aGlassRefl = mix(uAccent * 0.65, vec3(1.0, 0.66, 0.36), aSunSide * 0.72) * aFres * 0.62;',
+            'float aHoriz = abs(aN.z) > 0.5 ? vArcWorldPos.x : vArcWorldPos.z;',
+            'vec2 aCell = floor(vec2(aHoriz * 2.8, vArcWorldPos.y * 2.2));',
+            'vec2 aGrid = fract(vec2(aHoriz * 2.8, vArcWorldPos.y * 2.2));',
+            'float aPane = step(0.16, aGrid.x) * step(aGrid.x, 0.84) * step(0.18, aGrid.y) * step(aGrid.y, 0.82);',
+            'float aSeed = arcWinHash(aCell + floor(vArcWorldPos.xz * 0.5));',
+            'float aLit = step(0.68, aSeed) * aPane * aWallMask;',
+            'float aShimmer = 0.76 + 0.24 * sin(uTime * 0.85 + aSeed * 18.84);',
+            'vec3 aWinCol = mix(vec3(1.0, 0.82, 0.48), uAccent * 1.15, step(0.88, aSeed));',
+            'gl_FragColor.rgb += aGlassRefl * aWallMask + aWinCol * aLit * aShimmer * 0.42;',
+            '#include <dithering_fragment>'
+          ].join('\n'));
+      };
+      slabMat.customProgramCacheKey = function () { return 'arc-curtain-wall-v1'; };
+    }
+    var solarMat = typeof THREE.MeshStandardMaterial === 'function'
+      ? new THREE.MeshStandardMaterial({ color: 0x1e3a5f, emissive: 0x0c2440, roughness: 0.18, metalness: 0.72 })
+      : slabMat;
     var winGeo = new THREE.PlaneGeometry(0.14, 0.22);
-    var windowMats = accents.map(function (c) { return new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.85 }); });
+    var warmAccents = accents.concat(['#fde68a', '#fcd34d', '#fed7aa']);
+    var windowMats = warmAccents.map(function (c) { return new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.88 }); });
     var edgeMats = accents.map(function (c) { return new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: 0.5 }); });
     var windows = 0;
     for (var i = 0; i < count; i++) {
@@ -2063,6 +2396,12 @@
       var slab = new THREE.Mesh(geo, slabMat); slab.position.set(x, hgt / 2, z); group.add(slab);
       var ai = Math.floor(rnd() * accents.length);
       var edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMats[ai]); edges.position.copy(slab.position); group.add(edges);
+      // Rooftop solar canopy on mid-rise eco-buildings
+      if (hgt <= 4 && rnd() > 0.45) {
+        var panel = new THREE.Mesh(new THREE.BoxGeometry(w * 0.72, 0.04, d * 0.62), solarMat);
+        panel.position.set(x, hgt + 0.06, z); panel.rotation.x = 0.22;
+        group.add(panel);
+      }
       // Tall towers get a spire and an aviation beacon — the detail that reads as
       // "skyline" rather than "boxes". Beacons blink out of phase with each other.
       if (hgt > 4 && rnd() > 0.35) {
@@ -2269,11 +2608,18 @@
     var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     if ('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
-    scene.add(new THREE.HemisphereLight(0x8fd6ff, 0x0b0618, 0.7));
-    var key = new THREE.DirectionalLight(0xffffff, 0.55); key.position.set(5, 10, 8); scene.add(key);
-    if (!hiContrast) scene.add(arcStarField(THREE, 9, 420, 60));
+    scene.add(new THREE.HemisphereLight(0xbae6fd, 0x162238, 0.88));
+    var key = new THREE.DirectionalLight(0xffdfb0, 0.86); key.position.set(7, 10, 8); scene.add(key);
+    var rim = new THREE.DirectionalLight(0x38bdf8, 0.42); rim.position.set(-8, 6, -7); scene.add(rim);
     var tint = hiContrast ? PAL3.accent : arcFamilyTint(scene3d);
-    if (!hiContrast) scene.add(arcHorizonGlow(THREE, tint, 90, 5.5, -15.5));
+    var shaderUniforms = [];
+    if (!hiContrast) {
+      var skyDome = arcSkyDome(THREE, tint);
+      if (skyDome.userData && skyDome.userData.shaderUniforms) shaderUniforms.push(skyDome.userData.shaderUniforms);
+      scene.add(skyDome);
+      scene.add(arcStarField(THREE, 9, 420, 60));
+      scene.add(arcHorizonGlow(THREE, tint, 90, 5.5, -15.5));
+    }
     var motes = atmosphere ? arcMotes(THREE, 90, { x: 8, y: 6.5, z: 4 }) : null;
     if (motes) scene.add(motes);
     var headLight = new THREE.PointLight(PAL3.accent, 0, 6); scene.add(headLight);
@@ -2335,8 +2681,20 @@
       nodePing = new THREE.Mesh(new THREE.TorusGeometry(nr * 1.6, 0.022, 8, 44), new THREE.MeshBasicMaterial({ color: PAL3.nodeOff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
       nodePing.position.copy(np); nodePing.rotation.x = Math.PI / 2; nodePing.userData.base = 1; nodePing.visible = false; scene.add(nodePing);
     }
-    var city = arcBuildCity(THREE, 2026, [PAL3.accent, PAL3.gate, PAL3.nodeOff, hiContrast ? PAL3.nodeOn : '#f472b6'], { count: 30, spread: 13, zNear: -4.2, zFar: -12 }); scene.add(city);
-    if (!hiContrast) scene.add(arcReflectCity(THREE, city));
+    var city = arcBuildCity(THREE, 2026, [PAL3.accent, PAL3.gate, PAL3.nodeOff, hiContrast ? PAL3.nodeOn : '#f472b6'], { count: 30, spread: 13, zNear: -4.2, zFar: -12, hiContrast: hiContrast }); scene.add(city);
+    if (city.userData && city.userData.facadeUniforms) shaderUniforms.push(city.userData.facadeUniforms);
+    var transitArcs = null;
+    if (!hiContrast) {
+      scene.add(arcReflectCity(THREE, city));
+      var waterfront = arcWaterfrontCanopy(THREE, 909, tint);
+      if (waterfront.userData && waterfront.userData.shaderUniforms) shaderUniforms.push(waterfront.userData.shaderUniforms);
+      scene.add(waterfront);
+      transitArcs = arcTransitArcs(THREE, tint);
+      if (transitArcs.userData && transitArcs.userData.tubeUniforms) {
+        transitArcs.userData.tubeUniforms.forEach(function (tu) { shaderUniforms.push(tu); });
+      }
+      scene.add(transitArcs);
+    }
     // Traffic: headlight and tail-light streaks running along the avenue between the
     // play plane and the skyline. Deterministic, and only stepped while idle motion is on.
     var traffic = [];
@@ -2365,7 +2723,7 @@
     var fx = new THREE.Group(); scene.add(fx);
     return {
       THREE: THREE, scene: scene, camera: camera, renderer: renderer, canvas: canvas, PAL: PAL3, world: world,
-      dyn: dyn, fx: fx, gateMats: gateParts, gateMarks: gateMarks, slotMats: slotMats, ghostTubes: [], nodeMesh: nodeMesh, nodeRing: nodeRing, nodeLight: nodeLight, nodeHalo: nodeHalo, nodeShaft: nodeShaft, nodePing: nodePing, motes: motes, traffic: traffic, searchlight: searchlight, headLight: headLight, city: city, sparks: null, nextTwinkle: 0,
+      dyn: dyn, fx: fx, gateMats: gateParts, gateMarks: gateMarks, slotMats: slotMats, ghostTubes: [], nodeMesh: nodeMesh, nodeRing: nodeRing, nodeLight: nodeLight, nodeHalo: nodeHalo, nodeShaft: nodeShaft, nodePing: nodePing, motes: motes, traffic: traffic, searchlight: searchlight, headLight: headLight, city: city, transitArcs: transitArcs, shaderUniforms: shaderUniforms, sparks: null, nextTwinkle: 0,
       hiContrast: hiContrast,
       cam: { theta: 0.3, phi: 0.3, r: 12.5, ty: 1.4, baseTheta: 0.3 }, dirty: true, visible: true, lastLitShots: -1
     };
@@ -2619,6 +2977,20 @@
       }
       if (pack.city && pack.city.userData.beacons) {
         pack.city.userData.beacons.forEach(function (b) { b.material.opacity = 0.25 + 0.75 * Math.max(0, Math.sin(now * 0.0016 + b.userData.phase)); });
+      }
+      if (pack.transitArcs && pack.transitArcs.userData.pulses) {
+        var tSec = now * 0.001;
+        pack.transitArcs.userData.pulses.forEach(function (pl) {
+          var u = (pl.phase + tSec * pl.speed) % 1;
+          pl.mesh.position.copy(pl.curve.getPoint(u));
+          pl.mesh.material.opacity = 0.35 + 0.60 * Math.sin(u * Math.PI);
+        });
+      }
+      if (pack.shaderUniforms && pack.shaderUniforms.length) {
+        var uT = 3.2 + now * 0.001;
+        for (var sui = 0; sui < pack.shaderUniforms.length; sui++) {
+          if (pack.shaderUniforms[sui].uTime) pack.shaderUniforms[sui].uTime.value = uT;
+        }
       }
       if (pack.nodeShaft && pack.lit) pack.nodeShaft.material.opacity = 0.075 + 0.03 * Math.sin(now * 0.0013);
       // The gate apertures shimmer, each a little out of phase with the next.

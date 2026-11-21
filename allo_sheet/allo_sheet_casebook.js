@@ -256,9 +256,11 @@
     }
 
     function observationParameterLabel(parameter, index) {
+      var prefix = 'Measure ' + (index + 1) + ': ';
       var display = parameter.label + (parameter.unit ? ' (' + parameter.unit + ')' : '');
       display = display.replace(/[\/\\]+/g, ' per ').replace(/\s+/g, ' ').trim();
-      return 'Measure ' + (index + 1) + ': ' + display;
+      var maxDisplay = Math.max(1, 160 - prefix.length);
+      return prefix + display.slice(0, maxDisplay).trim();
     }
 
     function makeFields(details, values) {
@@ -299,9 +301,10 @@
         detail('privacy_mode', 'Privacy mode', 'category'),
         detail('created_at', 'Created at', 'datetime')
       ];
+      var safeCaseLabel = definition.caseLabel.replace(/[\/\\]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Case';
       var caseDetails = [
         detail('case_id', 'Case ID'),
-        detail('case_name', definition.caseLabel + ' name'),
+        detail('case_name', safeCaseLabel + ' name'),
         detail('status', 'Status', 'category'),
         detail('context', 'Context')
       ];
@@ -376,7 +379,9 @@
 
     function tableColumnMap(table) {
       var result = Object.create(null);
-      (table && table.columnDetails || []).forEach(function (column) {
+      if (!table || !Array.isArray(table.columnDetails)) return result;
+      table.columnDetails.forEach(function (column) {
+        if (!column || typeof column !== 'object') return;
         result[String(column.key)] = String(column.label);
       });
       return result;
@@ -386,9 +391,10 @@
       return (tables || []).find(function (table) { return table && table.id === id; }) || null;
     }
 
-    function fieldByKey(table, record, key) {
-      var label = tableColumnMap(table)[key];
-      return label && record && record.fields ? record.fields[label] : undefined;
+    function fieldByKey(table, record, key, cachedMap) {
+      var map = cachedMap || tableColumnMap(table);
+      var label = map[key];
+      return label && record && record.fields && hasOwn(record.fields, label) ? record.fields[label] : undefined;
     }
 
     function requireKeys(table, keys) {
@@ -442,21 +448,37 @@
         caseItems.forEach(function (item) { knownCases[item.id] = true; });
         var observationMap = tableColumnMap(observationsTable);
         if (!normalized.parameters.every(function (parameter) { return !!observationMap[parameter.key]; })) return null;
+        var cellIssues = [];
         var observations = (observationsTable.records || []).map(function (record) {
+          var obsId = String(fieldByKey(observationsTable, record, 'observation_id') || record.id || '');
           var caseId = String(fieldByKey(observationsTable, record, 'case_id') || '');
           var values = Object.create(null);
+          var rowIssues = [];
           normalized.parameters.forEach(function (parameter) {
-            values[parameter.key] = coerceValue(
-              parameter,
-              fieldByKey(observationsTable, record, parameter.key)
-            );
+            var rawCell = fieldByKey(observationsTable, record, parameter.key);
+            try {
+              values[parameter.key] = coerceValue(parameter, rawCell);
+            } catch (cellError) {
+              values[parameter.key] = null;
+              var issue = {
+                observationId: obsId,
+                caseId: caseId,
+                parameterKey: parameter.key,
+                label: parameter.label,
+                rawValue: String(rawCell == null ? '' : rawCell),
+                message: (cellError && cellError.message) || 'Invalid value'
+              };
+              rowIssues.push(issue);
+              cellIssues.push(issue);
+            }
           });
           return {
-            id: String(fieldByKey(observationsTable, record, 'observation_id') || record.id || ''),
+            id: obsId,
             caseId: caseId,
             orphaned: !knownCases[caseId],
             observedAt: String(fieldByKey(observationsTable, record, 'observed_at') || ''),
             values: values,
+            cellIssues: rowIssues,
             note: String(fieldByKey(observationsTable, record, 'qualitative_note') || ''),
             interpretation: String(fieldByKey(observationsTable, record, 'interpretation') || ''),
             source: String(fieldByKey(observationsTable, record, 'capture_source') || '')
@@ -467,6 +489,7 @@
           cases: caseItems,
           parameters: normalized.parameters,
           observations: observations,
+          cellIssues: cellIssues,
           tables: {
             definition: definitionTable,
             cases: casesTable,
@@ -558,22 +581,28 @@
     }
 
     function findParameterPhrase(narrative, parameter) {
-      var aliases = parameter.aliases.slice().sort(function (a, b) { return b.length - a.length; });
+      var aliases = (Array.isArray(parameter && parameter.aliases) ? parameter.aliases : []).slice().sort(function (a, b) { return b.length - a.length; });
       var alternation = aliases.map(escapeRegExp).join('|');
       if (!alternation) return null;
       if (parameter.type === 'number') {
-        var numberPattern = new RegExp('(?:^|\\b)(?:' + alternation + ')\\s*(?:(?:is|was|at)\\s*)?(?:=|:)?\\s*([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:e[+-]?\\d+)?)', 'i');
+        var numberPattern = new RegExp('(?:^|\\b)(?:' + alternation + ')\\s*(?:(?:is|was|at)\\s+)?(?:[=:]\\s*)?([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:e[+-]?\\d+)?)', 'i');
         var numberMatch = numberPattern.exec(narrative);
-        if (numberMatch) return { value: Number(numberMatch[1]), text: numberMatch[0].trim() };
+        if (numberMatch) {
+          var parsedNum = Number(numberMatch[1]);
+          return Number.isFinite(parsedNum) ? { value: parsedNum, text: numberMatch[0].trim() } : null;
+        }
         if (/^°[FC]$/i.test(parameter.unit)) {
           var degreePattern = /(?:^|\b)(?:at\s+)?([+-]?(?:\d+(?:\.\d*)?|\.\d+))\s*(?:°\s*[fc]|degrees?(?:\s+(?:fahrenheit|celsius))?)/i;
           var degreeMatch = degreePattern.exec(narrative);
-          if (degreeMatch) return { value: Number(degreeMatch[1]), text: degreeMatch[0].trim() };
+          if (degreeMatch) {
+            var parsedDeg = Number(degreeMatch[1]);
+            return Number.isFinite(parsedDeg) ? { value: parsedDeg, text: degreeMatch[0].trim() } : null;
+          }
         }
         return null;
       }
       if (parameter.type === 'boolean') {
-        var booleanPattern = new RegExp('(?:^|\\b)(?:' + alternation + ')\\s*(?:(?:is|was)\\s*)?(?:=|:)?\\s*(yes|no|true|false|present|absent)', 'i');
+        var booleanPattern = new RegExp('(?:^|\\b)(?:' + alternation + ')\\s*(?:(?:is|was)\\s+)?(?:[=:]\\s*)?(yes|no|true|false|present|absent)', 'i');
         var booleanMatch = booleanPattern.exec(narrative);
         if (!booleanMatch) return null;
         return {
@@ -581,7 +610,7 @@
           text: booleanMatch[0].trim()
         };
       }
-      var textPattern = new RegExp('(?:^|\\b)(?:' + alternation + ')\\s*(?:(?:is|was)\\s*)?(?:=|:)\\s*([^,;.]+)', 'i');
+      var textPattern = new RegExp('(?:^|\\b)(?:' + alternation + ')\\s*(?:(?:is|was)\\s+)?(?:=|:)\\s*([^,;.]+)', 'i');
       var textMatch = textPattern.exec(narrative);
       if (!textMatch) return null;
       return { value: textMatch[1].trim(), text: textMatch[0].trim() };
@@ -602,8 +631,12 @@
       options = options || {};
       var narrative = safeString(value, 'Observation narrative', LIMITS.maxNarrativeChars, { required: true, trim: true });
       var normalizedParameters;
-      if (Array.isArray(parameters) && parameters.every(function (parameter) {
-        return parameter && parameter.key && parameter.label && parameter.type;
+      if (Array.isArray(parameters) && parameters.length <= LIMITS.maxParameters && parameters.every(function (parameter) {
+        return parameter && typeof parameter === 'object'
+          && typeof parameter.key === 'string' && parameter.key && BLOCKED_KEYS.indexOf(parameter.key) < 0
+          && typeof parameter.label === 'string' && parameter.label
+          && typeof parameter.type === 'string' && parameter.type
+          && Array.isArray(parameter.aliases);
       })) {
         normalizedParameters = parameters;
       } else {
@@ -615,7 +648,7 @@
       var warnings = [];
       normalizedParameters.forEach(function (parameter) {
         var result = findParameterPhrase(narrative, parameter);
-        if (!result || result.value === '' || result.value === null || Number.isNaN(result.value)) {
+        if (!result || result.value === '' || result.value === null || (typeof result.value === 'number' && !Number.isFinite(result.value))) {
           values[parameter.key] = null;
           missing.push(parameter.key);
           return;
@@ -653,9 +686,13 @@
 
     function nextId(records, prefix) {
       var maximum = 0;
-      (records || []).forEach(function (record) {
-        var match = new RegExp('^' + escapeRegExp(prefix) + '(\\d+)$', 'i').exec(String(record && record.id || ''));
-        if (match) maximum = Math.max(maximum, Number(match[1]) || 0);
+      var re = new RegExp('^' + escapeRegExp(prefix) + '(\\d+)$', 'i');
+      (Array.isArray(records) ? records : []).forEach(function (record) {
+        var match = re.exec(String(record && record.id || ''));
+        if (match) {
+          var n = Number(match[1]);
+          if (Number.isSafeInteger(n) && n > maximum) maximum = n;
+        }
       });
       return prefix + String(maximum + 1).padStart(3, '0');
     }
@@ -670,7 +707,8 @@
       timestamp = new Date(timestamp).toISOString();
       var values = Object.create(null);
       book.parameters.forEach(function (parameter) {
-        values[parameter.key] = coerceValue(parameter, input.values && input.values[parameter.key]);
+        var rawVal = input.values && hasOwn(input.values, parameter.key) ? input.values[parameter.key] : undefined;
+        values[parameter.key] = coerceValue(parameter, rawVal);
       });
       var note = safeString(input.note, 'Qualitative note', LIMITS.maxNarrativeChars, { trim: true });
       var interpretation = safeString(input.interpretation, 'Human interpretation', LIMITS.maxInterpretationChars, { trim: true });
@@ -682,14 +720,13 @@
       var table = book.tables.observations;
       var map = tableColumnMap(table);
       var observationId = nextId(table.records, 'O');
-      var keyed = {
-        observation_id: observationId,
-        case_id: caseId,
-        observed_at: timestamp,
-        qualitative_note: note,
-        interpretation: interpretation,
-        capture_source: source
-      };
+      var keyed = Object.create(null);
+      keyed.observation_id = observationId;
+      keyed.case_id = caseId;
+      keyed.observed_at = timestamp;
+      keyed.qualitative_note = note;
+      keyed.interpretation = interpretation;
+      keyed.capture_source = source;
       book.parameters.forEach(function (parameter) { keyed[parameter.key] = values[parameter.key]; });
       var fields = Object.create(null);
       Object.keys(map).forEach(function (key) {
@@ -708,7 +745,11 @@
       var table = book.tables.cases;
       var map = tableColumnMap(table);
       var id = nextId(table.records, 'C');
-      var keyed = { case_id: id, case_name: cleanName, status: 'Active', context: '' };
+      var keyed = Object.create(null);
+      keyed.case_id = id;
+      keyed.case_name = cleanName;
+      keyed.status = 'Active';
+      keyed.context = '';
       var fields = Object.create(null);
       Object.keys(map).forEach(function (key) { fields[map[key]] = hasOwn(keyed, key) ? keyed[key] : ''; });
       return { id: id, fields: fields };

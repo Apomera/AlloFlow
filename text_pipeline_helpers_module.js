@@ -125,7 +125,8 @@ const languageLabels = (value, uiLanguage) => {
   const name = normalizeLanguageName(value) || _normLangName(value);
   const tag = _displayLanguageTag(name);
   const intlNative = tag ? _intlLanguageName(tag, tag) : '';
-  const native = _ownLanguageNames[_foldLanguageName(name)]
+  const folded = _foldLanguageName(name);
+  const native = (Object.prototype.hasOwnProperty.call(_ownLanguageNames, folded) ? _ownLanguageNames[folded] : '')
     || (intlNative && _foldLanguageName(intlNative) !== _foldLanguageName(_intlLanguageName(tag, 'en')) ? _capitalizeName(intlNative, tag) : '') || name;
   const uiTag = _displayLanguageTag(normalizeLanguageName(uiLanguage) || 'English');
   const inUi = (tag && uiTag && !/^en\b/i.test(uiTag) && _intlLanguageName(tag, uiTag)) || name;
@@ -281,7 +282,7 @@ const getArtifactTranslationTextAttributes = artifact => {
   if (!lang) {
     const knownRtl = { arabic: 'ar', hebrew: 'he', farsi: 'fa', persian: 'fa', urdu: 'ur', pashto: 'ps', sindhi: 'sd', yiddish: 'yi', dhivehi: 'dv' };
     const folded = target.toLowerCase();
-    lang = knownRtl[folded] || (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/i.test(target) ? target : folded === 'english' ? 'en' : 'und');
+    lang = (Object.prototype.hasOwnProperty.call(knownRtl, folded) ? knownRtl[folded] : '') || (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/i.test(target) ? target : folded === 'english' ? 'en' : 'und');
   }
   if (!dir) dir = /^(ar|he|fa|ur|ps|sd|yi|dv)(?:-|$)/i.test(lang) ? 'rtl' : lang === 'und' ? 'auto' : 'ltr';
   return { lang, dir, style: { textAlign: 'start' } };
@@ -362,7 +363,7 @@ const readingText = (() => {
             }
             if (raw.charCodeAt(i) === 96) {
                 const { width, end } = codeSpan(raw, i);
-                result += raw.slice(i, end + width); i = end + width; lineStart = false; continue;
+                result += raw.slice(i, end + width).replace(/\n/g, ' '); i = end + width; lineStart = false; continue;
             }
             const char = raw[i++]; result += char;
             if (char === '\n') lineStart = true;
@@ -743,7 +744,7 @@ const processMathHTML = (text) => {
     content = content.replace(/\\;/g, '<span style="margin-left:5px;"></span>');
     content = content.replace(/\\!/g, '');
     content = content.replace(/\\ /g, ' ');
-    content = content.replace(/\\&/g, '&amp;');
+    content = content.replace(/\\&amp;/g, '&amp;');
     return content;
 };
 
@@ -1254,16 +1255,20 @@ const filterEducationalSources = (chunks) => {
         hostname === domain || hostname.endsWith(`.${domain}`);
     const rejectSourceUrl = (uri) => {
         if (!uri || typeof uri !== 'string') return false;
+        const trimmed = uri.trim();
+        if (!trimmed) return false;
         let parsed;
         try {
-            parsed = new URL(uri);
+            parsed = new URL(trimmed);
         } catch (_error) {
+            if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return true;
             try {
-                parsed = new URL(`https://${uri}`);
+                parsed = new URL(`https://${trimmed}`);
             } catch (_invalidUrl) {
-                return false;
+                return true;
             }
         }
+        if (!/^https?:$/i.test(parsed.protocol)) return true;
         const hostname = parsed.hostname.toLowerCase().replace(/\.$/, '');
         if (hostnameMatches(hostname, 'youtube.com') &&
             /^\/watch(?:\/|$)/i.test(parsed.pathname)) return true;
@@ -1490,14 +1495,12 @@ const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson =
 };
 const parseTaggedContent = (text) => {
     if (!text) return [];
-    text = text.replace(/<([nvad])>([^<]*?)(?=<[nvad]>|<\/|\n|$)/g, (match, tag, content) => {
-        if (!match.includes('</' + tag + '>')) {
-            return '<' + tag + '>' + content.trim() + '</' + tag + '>';
-        }
-        return match;
+    text = text.replace(/<([nvad])>([^<]*?)(?!<\/\1>)(?=<[nvad]>|<\/|\n|$)/g, (match, tag, content) => {
+        return '<' + tag + '>' + content.trim() + '</' + tag + '>';
     });
     text = text.replace(/<[nvad]>\s*(?=<[nvad]>)/g, '');
-    text = text.replace(/<\/[nvad]>(?!\s|[.,!?;:\)]|$)/g, '');
+    // Only strip truly stray closing tags that have no matching opener earlier in the string
+    text = text.replace(/(<([nvad])>[^<]*?<\/\2>)|<\/[nvad]>/g, (match, paired) => paired || '');
     const extractSyllables = (word) => {
         if (!word || typeof word !== 'string') return { text: word, syllables: [word] };
         if (word.includes('·')) {
@@ -1540,23 +1543,33 @@ const parseTaggedContent = (text) => {
           }
           line = line.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
           line = line.replace(/(?<![*])\*([^*]+)\*(?![*])/g, '<i>$1</i>');
-          const parts = line.split(/(<[nvadbi]>.*?<\/[nvadbi]>)/g);
-          parts.forEach(part => {
-              if (!part) return;
-              const tagMatch = part.match(/^<([nvadbi])>(.*?)<\/[nvadbi]>$/);
-              if (tagMatch) {
-                  const type = tagMatch[1];
-                  const content = tagMatch[2];
+          const parts = [];
+          const tagRe = /<([nvadbi])>([\s\S]*?)<\/\1>/g;
+          let lastIdx = 0;
+          let m;
+          while ((m = tagRe.exec(line)) !== null) {
+              if (m.index > lastIdx) parts.push({ raw: line.slice(lastIdx, m.index), tag: null });
+              parts.push({ raw: m[0], tag: m[1], content: m[2] });
+              lastIdx = tagRe.lastIndex;
+          }
+          if (lastIdx < line.length) parts.push({ raw: line.slice(lastIdx), tag: null });
+          parts.forEach(partObj => {
+              if (!partObj.raw) return;
+              if (partObj.tag) {
+                  const type = partObj.tag;
+                  const innerPos = (type === 'b' || type === 'i') ? partObj.content.match(/^\s*<([nvad])>([^<]*)<\/\1>\s*$/) : null;
+                  const effectiveType = innerPos ? innerPos[1] : type;
+                  const content = (innerPos ? innerPos[2] : partObj.content).replace(/<\/?[nvadbi]>/g, '');
                   const posMap = { n: 'noun', v: 'verb', a: 'adj', d: 'adv', b: 'bold', i: 'italic' };
                   const { text: cleanText, syllables } = extractSyllables(content);
                   result.push({
                       text: cleanText,
-                      pos: posMap[type],
+                      pos: posMap[effectiveType],
                       syllables,
                       id: `pos-${idCounter++}`
                   });
               } else {
-                  const tokens = part.split(/([\p{L}\p{M}\p{N}·]+)|(\s+)|([^\p{L}\p{M}\p{N}·\s]+)/gu).filter(Boolean);
+                  const tokens = partObj.raw.split(/([\p{L}\p{M}\p{N}·]+)|(\s+)|([^\p{L}\p{M}\p{N}·\s]+)/gu).filter(Boolean);
                   tokens.forEach(token => {
                       const isMarkdown = /^[*#_`~]+$/.test(token);
                       const { text: cleanText, syllables } = extractSyllables(token);

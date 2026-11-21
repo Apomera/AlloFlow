@@ -482,6 +482,7 @@ async function readRunnerStage(
       ),
     );
     if (!response.ok) {
+      await response.body?.cancel().catch(() => undefined);
       return "running";
     }
     return runnerStatusStage(await readJson<unknown>(response, 8 * 1024));
@@ -492,10 +493,20 @@ async function readRunnerStage(
   }
 }
 
-function heartbeatDelay(): Promise<null> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, RUNNER_HEARTBEAT_INTERVAL_MS, null);
+function heartbeatDelay(): { promise: Promise<null>; cancel: () => void } {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const promise = new Promise<null>((resolve) => {
+    timer = setTimeout(() => resolve(null), RUNNER_HEARTBEAT_INTERVAL_MS);
   });
+  return {
+    promise,
+    cancel() {
+      if (timer !== undefined) {
+        clearTimeout(timer);
+        timer = undefined;
+      }
+    },
+  };
 }
 
 async function runWithLeaseHeartbeat(
@@ -505,85 +516,113 @@ async function runWithLeaseHeartbeat(
   attemptId: string,
   runnerToken: string,
   request: Request,
+  overallTimeoutMs: number,
 ): Promise<Response> {
   type SettledRun =
     | { ok: true; response: Response }
     | { ok: false; error: unknown };
-  const settled: Promise<SettledRun> = container.fetch(request).then(
+  const runController = new AbortController();
+  const overallTimer = setTimeout(
+    () => runController.abort(new PilotError("runner_request_timeout", 504)),
+    Math.max(60_000, overallTimeoutMs),
+  );
+  const runRequest = new Request(request, { signal: runController.signal });
+  let responseConsumed = false;
+  const settled: Promise<SettledRun> = container.fetch(runRequest).then(
     (response): SettledRun => ({ ok: true, response }),
     (error: unknown): SettledRun => ({ ok: false, error }),
   );
   let lastSuccessfulLeaseRenewalAt = Date.now();
   let deferredLeaseRenewals = 0;
 
-  while (true) {
-    const outcome = await Promise.race([settled, heartbeatDelay()]);
-    if (outcome !== null) {
-      if (!outcome.ok) {
-        throw outcome.error;
+  try {
+    while (true) {
+      const pulse = heartbeatDelay();
+      let outcome: SettledRun | null;
+      try {
+        outcome = await Promise.race([settled, pulse.promise]);
+      } finally {
+        pulse.cancel();
       }
-      return outcome.response;
+      if (outcome !== null) {
+        if (!outcome.ok) {
+          throw outcome.error;
+        }
+        responseConsumed = true;
+        return outcome.response;
+      }
+      const stage = await readRunnerStage(container, jobId, runnerToken);
+      try {
+        await renewJobLease(env, jobId, attemptId, stage);
+        lastSuccessfulLeaseRenewalAt = Date.now();
+        if (deferredLeaseRenewals > 0) {
+          console.warn(
+            JSON.stringify({
+              event: "job_lease_renewal_recovered",
+              deferredRenewals: deferredLeaseRenewals,
+            }),
+          );
+          workflowMetric(env, "lease_renewal", {
+            outcome: "recovered",
+            stage,
+            count: deferredLeaseRenewals,
+            leaseSlackMs:
+              RUNNING_JOB_LEASE_SECONDS * 1000 -
+              RUNNER_LEASE_RENEWAL_SAFETY_MS,
+          });
+        }
+        deferredLeaseRenewals = 0;
+      } catch (error) {
+        // Store-level PilotErrors are deterministic fencing/configuration
+        // outcomes. In particular, never hide job_attempt_lost behind lease
+        // slack: the newer attempt owns the work now.
+        if (error instanceof PilotError) {
+          workflowMetric(env, "lease_renewal", {
+            outcome: "fenced",
+            stage,
+            leaseSlackMs: 0,
+          });
+          throw error;
+        }
+        deferredLeaseRenewals += 1;
+        const renewalDeadline =
+          lastSuccessfulLeaseRenewalAt +
+          RUNNING_JOB_LEASE_SECONDS * 1000 -
+          RUNNER_LEASE_RENEWAL_SAFETY_MS;
+        if (deferredLeaseRenewals === 1) {
+          console.warn(
+            JSON.stringify({ event: "job_lease_renewal_deferred" }),
+          );
+          workflowMetric(env, "lease_renewal", {
+            outcome: "deferred",
+            stage,
+            leaseSlackMs: Math.max(0, renewalDeadline - Date.now()),
+          });
+        }
+        if (Date.now() >= renewalDeadline) {
+          workflowMetric(env, "lease_renewal", {
+            outcome: "fatal",
+            stage,
+            count: deferredLeaseRenewals,
+            leaseSlackMs: 0,
+          });
+          throw new PilotError("job_lease_renewal_failed", 503);
+        }
+        // A transient D1 throttle must not reset a healthy container on the
+        // first missed 30-second pulse. The loop races the live result again and
+        // retries renewal while the prior five-minute lease still has slack.
+      }
     }
-    const stage = await readRunnerStage(container, jobId, runnerToken);
-    try {
-      await renewJobLease(env, jobId, attemptId, stage);
-      lastSuccessfulLeaseRenewalAt = Date.now();
-      if (deferredLeaseRenewals > 0) {
-        console.warn(
-          JSON.stringify({
-            event: "job_lease_renewal_recovered",
-            deferredRenewals: deferredLeaseRenewals,
-          }),
-        );
-        workflowMetric(env, "lease_renewal", {
-          outcome: "recovered",
-          stage,
-          count: deferredLeaseRenewals,
-          leaseSlackMs:
-            RUNNING_JOB_LEASE_SECONDS * 1000 -
-            RUNNER_LEASE_RENEWAL_SAFETY_MS,
-        });
-      }
-      deferredLeaseRenewals = 0;
-    } catch (error) {
-      // Store-level PilotErrors are deterministic fencing/configuration
-      // outcomes. In particular, never hide job_attempt_lost behind lease
-      // slack: the newer attempt owns the work now.
-      if (error instanceof PilotError) {
-        workflowMetric(env, "lease_renewal", {
-          outcome: "fenced",
-          stage,
-          leaseSlackMs: 0,
-        });
-        throw error;
-      }
-      deferredLeaseRenewals += 1;
-      const renewalDeadline =
-        lastSuccessfulLeaseRenewalAt +
-        RUNNING_JOB_LEASE_SECONDS * 1000 -
-        RUNNER_LEASE_RENEWAL_SAFETY_MS;
-      if (deferredLeaseRenewals === 1) {
-        console.warn(
-          JSON.stringify({ event: "job_lease_renewal_deferred" }),
-        );
-        workflowMetric(env, "lease_renewal", {
-          outcome: "deferred",
-          stage,
-          leaseSlackMs: Math.max(0, renewalDeadline - Date.now()),
-        });
-      }
-      if (Date.now() >= renewalDeadline) {
-        workflowMetric(env, "lease_renewal", {
-          outcome: "fatal",
-          stage,
-          count: deferredLeaseRenewals,
-          leaseSlackMs: 0,
-        });
-        throw new PilotError("job_lease_renewal_failed", 503);
-      }
-      // A transient D1 throttle must not reset a healthy container on the
-      // first missed 30-second pulse. The loop races the live result again and
-      // retries renewal while the prior five-minute lease still has slack.
+  } finally {
+    clearTimeout(overallTimer);
+    if (!responseConsumed) {
+      runController.abort();
+      void settled.then((outcome) => {
+        if (outcome.ok) {
+          return outcome.response.body?.cancel().catch(() => undefined);
+        }
+        return undefined;
+      });
     }
   }
 }
@@ -855,6 +894,7 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
                 },
               }),
             }),
+            (config.remediationMaxRunMinutes + 3) * 60_000,
           );
           if (!response.ok) {
             throw await runnerRequestError(

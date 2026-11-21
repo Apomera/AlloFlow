@@ -460,69 +460,561 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
       function release(){
         if(disposed)return;disposed=true;cancelAnimationFrame(raf);
         if(ro)ro.disconnect();if(io)io.disconnect();window.removeEventListener('resize',resize);canvas.removeEventListener('webglcontextlost',lost);
-        if(scene){var geos=new Set(),mats=new Set();scene.traverse(function(obj){if(obj.geometry)geos.add(obj.geometry);if(obj.material)mats.add(obj.material);});geos.forEach(function(g){g.dispose();});mats.forEach(function(m){m.dispose();});}
+        if(scene){
+          var geos=new Set(),mats=new Set(),texs=new Set();
+          var texSlots=['map','alphaMap','aoMap','bumpMap','emissiveMap','envMap','lightMap','metalnessMap','normalMap','roughnessMap','specularMap'];
+          scene.traverse(function(obj){
+            if(obj.geometry)geos.add(obj.geometry);
+            if(obj.material){
+              var ml=Array.isArray(obj.material)?obj.material:[obj.material];
+              ml.forEach(function(m){
+                if(!m)return;
+                mats.add(m);
+                texSlots.forEach(function(slot){if(m[slot]&&typeof m[slot].dispose==='function')texs.add(m[slot]);});
+                if(m.uniforms){Object.keys(m.uniforms).forEach(function(uk){var uv=m.uniforms[uk]&&m.uniforms[uk].value;if(uv&&typeof uv.dispose==='function')texs.add(uv);});}
+              });
+            }
+          });
+          geos.forEach(function(g){if(typeof g.dispose==='function')g.dispose();});
+          texs.forEach(function(tx){tx.dispose();});
+          mats.forEach(function(m){if(typeof m.dispose==='function')m.dispose();});
+        }
         if(renderer){renderer.dispose();renderer.forceContextLoss();}canvas.dataset.colonyDisposed='true';
       }
       function lost(event){event.preventDefault();if(alive){setStatus('unavailable');release();}}
+      function isColonyHighContrast(){
+        try{
+          if(typeof document!=='undefined'){
+            var de=document.documentElement,b=document.body;
+            if((de&&(de.classList.contains('theme-contrast')||de.getAttribute('data-theme')==='high-contrast'))||
+               (b&&(b.classList.contains('theme-contrast')||b.getAttribute('data-theme')==='high-contrast')))return true;
+          }
+          if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(forced-colors: active)').matches)return true;
+        }catch(e){}
+        return false;
+      }
       var camera;
       function resize(){if(!renderer||disposed)return;var box=canvas.getBoundingClientRect();var width=Math.max(1,box.width),height=Math.max(1,box.height);renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();}
       function init(THREE){
         if(!alive)return;
         try {
-          scene=new THREE.Scene();scene.background=new THREE.Color('#101e35');scene.fog=new THREE.Fog('#26384b',24,65);
-          renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.outputEncoding=THREE.sRGBEncoding;
-          camera=new THREE.PerspectiveCamera(43,1,0.1,100);camera.position.set(15,13,19);
-          scene.add(new THREE.HemisphereLight(0xc4e9ff,0x65412c,1.15));var sun=new THREE.DirectionalLight(0xffdab3,1.6);sun.position.set(-14,20,9);scene.add(sun);
-          function material(color,extra){return new THREE.MeshStandardMaterial(Object.assign({color:color,roughness:0.65,metalness:0.15},extra||{}));}
-          var metal=material('#d1dbe2'),dark=material('#24374b'),cyan=material('#39d5ed',{emissive:'#076574',emissiveIntensity:0.6}),gold=material('#eeb948'),green=material('#4e9d6c'),glass=material('#79ddec',{transparent:true,opacity:0.28,roughness:0.18,depthWrite:false,side:THREE.DoubleSide});
+          var initHC=isColonyHighContrast();
+          var hasShader=typeof THREE.ShaderMaterial==='function';
+          var scStartTime=Date.now();
+          var scShared={
+            uTime:{value:3.2},
+            uDayMix:{value:live.current.phase==='day'?1.0:0.0},
+            uProgress:{value:Math.max(0,Math.min(1,(live.current.snapshot.progress||0)/100))},
+            uHC:{value:initHC?1.0:0.0}
+          };
+          var decorativeShaders=[];
+          var conduitEntries=[];
+          scene=new THREE.Scene();scene.background=new THREE.Color(initHC?'#000000':'#0c1930');scene.fog=initHC?null:(THREE.FogExp2?new THREE.FogExp2('#1d2c42',0.015):new THREE.Fog('#203349',26,72));
+          renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));if(THREE.sRGBEncoding)renderer.outputEncoding=THREE.sRGBEncoding;
+          camera=new THREE.PerspectiveCamera(43,1,0.1,120);camera.position.set(15,13,19);
+          // Exoplanet binary-star lighting rig: cool twilight hemisphere + warm primary sun + crisp cyan rim light
+          scene.add(new THREE.HemisphereLight(0x9bdcff,0x5a372a,1.05));
+          var sun=new THREE.DirectionalLight(0xffcfa0,1.75);sun.position.set(-18,16,-14);scene.add(sun);
+          var rimLight=new THREE.DirectionalLight(0x67e8f9,0.95);rimLight.position.set(18,9,16);scene.add(rimLight);
+          function material(color,extra){return new THREE.MeshStandardMaterial(Object.assign({color:color,roughness:0.62,metalness:0.18},extra||{}));}
+          var metal=material('#d4e0e8',{roughness:0.34,metalness:0.72}),dark=material('#203347',{roughness:0.52,metalness:0.45}),cyan=material('#38e2f8',{emissive:'#0891b2',emissiveIntensity:0.85,roughness:0.25}),gold=material('#f2bc4c',{roughness:0.32,metalness:0.65}),green=material('#34d399',{emissive:'#059669',emissiveIntensity:0.42,roughness:0.55});
+          var bioGlowMat=material('#4ade80',{emissive:'#10b981',emissiveIntensity:0.85,roughness:0.35,metalness:0.05});
+          var glass=typeof THREE.MeshPhysicalMaterial==='function'
+            ? new THREE.MeshPhysicalMaterial({color:'#a5f3fc',transparent:true,opacity:0.33,roughness:0.08,metalness:0.12,clearcoat:1.0,clearcoatRoughness:0.06,emissive:'#0e7490',emissiveIntensity:0.22,depthWrite:false,side:THREE.DoubleSide})
+            : material('#8ee8f5',{transparent:true,opacity:0.32,roughness:0.12,metalness:0.15,emissive:'#0e7490',emissiveIntensity:0.2,depthWrite:false,side:THREE.DoubleSide});
+          // Physical Fresnel glass rim + binary-star specular highlight via WebGL1 onBeforeCompile
+          if(!initHC&&glass&&typeof glass.onBeforeCompile==='function'){
+            glass.customProgramCacheKey=function(){return 'sc-geodesic-glass-fresnel-v1';};
+            glass.onBeforeCompile=function(shader){
+              shader.uniforms.uScTime=scShared.uTime;
+              shader.uniforms.uScDayMix=scShared.uDayMix;
+              shader.uniforms.uScHC=scShared.uHC;
+              shader.vertexShader=shader.vertexShader
+                .replace('#include <common>','#include <common>\nvarying vec3 vScWorldPos;')
+                .replace('#include <begin_vertex>','#include <begin_vertex>\nvScWorldPos=(modelMatrix*vec4(transformed,1.0)).xyz;');
+              shader.fragmentShader=shader.fragmentShader
+                .replace('#include <common>',
+                  '#include <common>\n'+
+                  'uniform float uScTime;\n'+
+                  'uniform float uScDayMix;\n'+
+                  'uniform float uScHC;\n'+
+                  'varying vec3 vScWorldPos;'
+                )
+                .replace('#include <tonemapping_fragment>',
+                  'if(uScHC<0.5){\n'+
+                  '  vec3 scN=normalize(normal);\n'+
+                  '  vec3 scV=normalize(vViewPosition);\n'+
+                  '  float scFres=pow(1.0-max(dot(scN,scV),0.0),2.6);\n'+
+                  '  float scGlint=0.5+0.5*sin(vScWorldPos.x*2.4+vScWorldPos.z*2.1-uScTime*0.65);\n'+
+                  '  vec3 scRim=mix(vec3(0.32,0.88,1.0),vec3(1.0,0.82,0.58),0.25+0.35*uScDayMix);\n'+
+                  '  gl_FragColor.rgb+=scRim*(scFres*(0.36+0.14*scGlint));\n'+
+                  '}\n'+
+                  '#include <tonemapping_fragment>'
+                );
+            };
+          }
           var boxGeo=new THREE.BoxGeometry(1,1,1),cylGeo=new THREE.CylinderGeometry(0.5,0.5,1,16),sphereGeo=new THREE.SphereGeometry(1,20,12);
           function mesh(parent,geo,mat,x,y,z,sx,sy,sz){var m=new THREE.Mesh(geo,mat);m.position.set(x||0,y||0,z||0);m.scale.set(sx||1,sy||1,sz||1);parent.add(m);return m;}
           function box(parent,mat,x,y,z,sx,sy,sz){return mesh(parent,boxGeo,mat,x,y,z,sx,sy,sz);}
           function cylinder(parent,mat,x,y,z,sx,sy,sz){return mesh(parent,cylGeo,mat,x,y,z,sx,sy,sz);}
-          var earthGeo=new THREE.PlaneGeometry(54,48,34,30);earthGeo.rotateX(-Math.PI/2);var positions=earthGeo.attributes.position;
-          function height(x,z){var edge=Math.max(0,(Math.sqrt(x*x+z*z)-12)/10);return -0.3+edge*(0.8+Math.sin(x*0.42)*0.65+Math.cos(z*0.36)*0.7);}
-          for(var v=0;v<positions.count;v++)positions.setY(v,height(positions.getX(v),positions.getZ(v)));earthGeo.computeVertexNormals();
-          var ground=mesh(scene,earthGeo,material('#7a5949'),0,0,0);
-          for(var r=0;r<32;r++){var a=r*2.3999,rad=13+(r%4)*2.6,x=Math.cos(a)*rad,z=Math.sin(a)*rad;var rock=mesh(scene,new THREE.DodecahedronGeometry(1,0),material(r%2?'#6a6670':'#8b7565'),x,height(x,z)+0.6,z,0.45+r%3*0.35,0.6+r%4*0.2,0.65);rock.rotation.set(r,0,r*0.4);}
-          cylinder(scene,dark,0,-0.03,0,5.4,0.35,5.4);
-          var dome=new THREE.SphereGeometry(2.25,32,16,0,Math.PI*2,0,Math.PI/2);mesh(scene,dome,glass,0,0.2,0);
-          for(var rib=0;rib<6;rib++){var arch=new THREE.Mesh(new THREE.TorusGeometry(2.27,0.035,6,36,Math.PI),metal);arch.rotation.y=rib*Math.PI/6;arch.position.y=0.2;scene.add(arch);}
-          cylinder(scene,metal,0,0.35,0,2.8,0.7,2.8);box(scene,cyan,0,0.95,0,0.7,0.7,0.7);
-          var pathsMat=material('#63788b');
+
+          var starAdditive=THREE.AdditiveBlending!=null?THREE.AdditiveBlending:undefined;
+          var primaryStarPos=[-28,21,-34],companionStarPos=[-20,25,-32];
+
+          // 1. Alien exoplanet twilight dust-haze sky dome with drifting silicate bands & binary-star scattering
+          if(hasShader){
+            var skyDomeMat=new THREE.ShaderMaterial({
+              uniforms:{
+                uTime:scShared.uTime,
+                uDayMix:scShared.uDayMix,
+                uProgress:scShared.uProgress
+              },
+              side:THREE.BackSide,
+              depthWrite:false,
+              vertexShader:[
+                'varying vec3 vWorldPos;',
+                'void main(){',
+                '  vec4 wp=modelMatrix*vec4(position,1.0);',
+                '  vWorldPos=wp.xyz;',
+                '  gl_Position=projectionMatrix*viewMatrix*wp;',
+                '}'
+              ].join('\n'),
+              fragmentShader:[
+                'precision mediump float;',
+                'uniform float uTime;',
+                'uniform float uDayMix;',
+                'uniform float uProgress;',
+                'varying vec3 vWorldPos;',
+                'float scHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}',
+                'float scNoise(vec2 p){',
+                '  vec2 i=floor(p),f=fract(p);',
+                '  vec2 u=f*f*(3.0-2.0*f);',
+                '  return mix(mix(scHash(i),scHash(i+vec2(1.0,0.0)),u.x),mix(scHash(i+vec2(0.0,1.0)),scHash(i+vec2(1.0,1.0)),u.x),u.y);',
+                '}',
+                'float scFbm(vec2 p){',
+                '  float v=0.0,a=0.52;',
+                '  for(int k=0;k<3;k++){v+=a*scNoise(p);p=p*2.04+vec2(13.1,7.7);a*=0.5;}',
+                '  return v;',
+                '}',
+                'void main(){',
+                '  vec3 dir=normalize(vWorldPos);',
+                '  float h=clamp(dir.y*1.25+0.12,0.0,1.0);',
+                '  float az=atan(dir.z,dir.x);',
+                '  vec3 dayZen=mix(vec3(0.04,0.11,0.24),vec3(0.05,0.18,0.36),uProgress*0.65);',
+                '  vec3 dayMid=mix(vec3(0.11,0.28,0.40),vec3(0.13,0.36,0.52),uProgress*0.55);',
+                '  vec3 dayHor=mix(vec3(0.45,0.27,0.30),vec3(0.36,0.34,0.42),uProgress*0.45);',
+                '  vec3 nitZen=vec3(0.02,0.04,0.11);',
+                '  vec3 nitMid=vec3(0.06,0.12,0.24);',
+                '  vec3 nitHor=vec3(0.18,0.12,0.25);',
+                '  vec3 zen=mix(nitZen,dayZen,uDayMix);',
+                '  vec3 mid=mix(nitMid,dayMid,uDayMix);',
+                '  vec3 hor=mix(nitHor,dayHor,uDayMix);',
+                '  vec3 col=mix(hor,mid,smoothstep(0.0,0.34,h));',
+                '  col=mix(col,zen,smoothstep(0.28,0.92,h));',
+                '  float dustBand=exp(-pow((h-0.16)*4.8,2.0));',
+                '  float dustFbm=scFbm(vec2(az*2.4+uTime*0.018,h*7.5-uTime*0.008));',
+                '  vec3 dustCol=mix(vec3(0.34,0.20,0.28),vec3(0.68,0.44,0.34),uDayMix);',
+                '  col+=dustCol*dustBand*dustFbm*(0.24+0.14*uDayMix);',
+                '  float auroraBand=smoothstep(0.26,0.52,h)*smoothstep(0.86,0.56,h);',
+                '  float auroraWave=pow(0.5+0.5*sin(az*4.0+uTime*0.24+dustFbm*3.2),3.0);',
+                '  col+=vec3(0.10,0.72,0.68)*auroraBand*auroraWave*(1.0-uDayMix*0.72)*0.18;',
+                '  vec3 s1=normalize(vec3(-28.0,21.0,-34.0));',
+                '  vec3 s2=normalize(vec3(-20.0,25.0,-32.0));',
+                '  float g1=pow(max(dot(dir,s1),0.0),16.0)*0.48+pow(max(dot(dir,s1),0.0),110.0)*0.72;',
+                '  float g2=pow(max(dot(dir,s2),0.0),24.0)*0.34+pow(max(dot(dir,s2),0.0),150.0)*0.58;',
+                '  float flarePulse=0.92+0.08*sin(uTime*1.35+dustFbm*3.0);',
+                '  col+=vec3(1.0,0.72,0.42)*g1*flarePulse*(0.48+0.52*uDayMix);',
+                '  col+=vec3(0.52,0.88,1.0)*g2*(0.94+0.06*cos(uTime*1.9))*(0.55+0.45*uDayMix);',
+                '  gl_FragColor=vec4(col,1.0);',
+                '}'
+              ].join('\n')
+            });
+            var skyDomeMesh=mesh(scene,new THREE.SphereGeometry(76,32,20),skyDomeMat,0,0,0);
+            skyDomeMesh.visible=!initHC;
+            decorativeShaders.push(skyDomeMesh);
+          }
+
+          // 2. Binary stars + GLSL Animated Coronal Flare Shaders + upper twilight starfield
+          mesh(scene,sphereGeo,new THREE.MeshBasicMaterial({color:'#fff3d6'}),primaryStarPos[0],primaryStarPos[1],primaryStarPos[2],1.45,1.45,1.45);
+          mesh(scene,sphereGeo,new THREE.MeshBasicMaterial({color:'#e0f7ff'}),companionStarPos[0],companionStarPos[1],companionStarPos[2],0.78,0.78,0.78);
+          if(hasShader){
+            var coronaVert=[
+              'varying vec3 vWorldPos;',
+              'varying vec3 vWorldNorm;',
+              'varying vec3 vLocalPos;',
+              'void main(){',
+              '  vLocalPos=position;',
+              '  vec4 wp=modelMatrix*vec4(position,1.0);',
+              '  vWorldPos=wp.xyz;',
+              '  vWorldNorm=normalize(mat3(modelMatrix)*normal);',
+              '  gl_Position=projectionMatrix*viewMatrix*wp;',
+              '}'
+            ].join('\n');
+            var coronaFrag=[
+              'precision mediump float;',
+              'uniform float uTime;',
+              'uniform float uDayMix;',
+              'uniform vec3 uCoreCol;',
+              'uniform vec3 uFlareCol;',
+              'uniform float uSeed;',
+              'varying vec3 vWorldPos;',
+              'varying vec3 vWorldNorm;',
+              'varying vec3 vLocalPos;',
+              'float cHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
+              'float cNoise(vec2 p){',
+              '  vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);',
+              '  return mix(mix(cHash(i),cHash(i+vec2(1.0,0.0)),u.x),mix(cHash(i+vec2(0.0,1.0)),cHash(i+vec2(1.0,1.0)),u.x),u.y);',
+              '}',
+              'void main(){',
+              '  vec3 N=normalize(vWorldNorm);',
+              '  vec3 V=normalize(cameraPosition-vWorldPos);',
+              '  float facing=max(dot(N,V),0.0);',
+              '  vec3 lp=normalize(vLocalPos);',
+              '  float ang=atan(lp.y,lp.x);',
+              '  float n1=cNoise(vec2(ang*3.2+uSeed,lp.z*2.5-uTime*0.42));',
+              '  float n2=cNoise(vec2(ang*6.4-uTime*0.31,lp.y*3.5+uSeed));',
+              '  float rays=0.55+0.45*sin(ang*7.0+n1*4.2-uTime*0.85+uSeed);',
+              '  float core=pow(facing,2.2);',
+              '  float halo=pow(facing,1.15)*(0.52+0.48*rays)*(0.75+0.25*n2);',
+              '  vec3 col=mix(uFlareCol,uCoreCol,clamp(core*1.15,0.0,1.0));',
+              '  float alpha=(core*0.62+halo*0.42)*(0.58+0.42*uDayMix);',
+              '  gl_FragColor=vec4(col,clamp(alpha,0.0,0.85));',
+              '}'
+            ].join('\n');
+            var pCoronaMat=new THREE.ShaderMaterial({
+              uniforms:{uTime:scShared.uTime,uDayMix:scShared.uDayMix,uCoreCol:{value:new THREE.Color('#ffdca8')},uFlareCol:{value:new THREE.Color('#f97316')},uSeed:{value:1.3}},
+              vertexShader:coronaVert,fragmentShader:coronaFrag,transparent:true,depthWrite:false,blending:starAdditive
+            });
+            var cCoronaMat=new THREE.ShaderMaterial({
+              uniforms:{uTime:scShared.uTime,uDayMix:scShared.uDayMix,uCoreCol:{value:new THREE.Color('#e0f7ff')},uFlareCol:{value:new THREE.Color('#38bdf8')},uSeed:{value:4.7}},
+              vertexShader:coronaVert,fragmentShader:coronaFrag,transparent:true,depthWrite:false,blending:starAdditive
+            });
+            var pCorMesh=mesh(scene,sphereGeo,pCoronaMat,primaryStarPos[0],primaryStarPos[1],primaryStarPos[2],5.4,5.4,5.4);
+            var cCorMesh=mesh(scene,sphereGeo,cCoronaMat,companionStarPos[0],companionStarPos[1],companionStarPos[2],2.8,2.8,2.8);
+            pCorMesh.visible=!initHC;cCorMesh.visible=!initHC;
+            decorativeShaders.push(pCorMesh,cCorMesh);
+          }else{
+            mesh(scene,sphereGeo,new THREE.MeshBasicMaterial({color:'#ffb86b',transparent:true,opacity:0.34,depthWrite:false,blending:starAdditive}),primaryStarPos[0],primaryStarPos[1],primaryStarPos[2],3.4,3.4,3.4);
+            mesh(scene,sphereGeo,new THREE.MeshBasicMaterial({color:'#f97316',transparent:true,opacity:0.14,depthWrite:false,blending:starAdditive}),primaryStarPos[0],primaryStarPos[1],primaryStarPos[2],6.2,6.2,6.2);
+            mesh(scene,sphereGeo,new THREE.MeshBasicMaterial({color:'#38bdf8',transparent:true,opacity:0.3,depthWrite:false,blending:starAdditive}),companionStarPos[0],companionStarPos[1],companionStarPos[2],2.1,2.1,2.1);
+          }
+          if(typeof THREE.Points==='function'&&typeof THREE.BufferGeometry==='function'&&typeof THREE.Float32BufferAttribute==='function'&&typeof THREE.PointsMaterial==='function'){
+            var stPos=[];
+            for(var st=0;st<160;st++){
+              var stTheta=st*2.399963,stPhi=0.18+((st*19)%100)/100*1.15,stR=68;
+              stPos.push(Math.cos(stTheta)*Math.cos(stPhi)*stR,Math.sin(stPhi)*stR,Math.sin(stTheta)*Math.cos(stPhi)*stR);
+            }
+            var stGeo=new THREE.BufferGeometry();
+            stGeo.setAttribute('position',new THREE.Float32BufferAttribute(stPos,3));
+            scene.add(new THREE.Points(stGeo,new THREE.PointsMaterial({color:'#dbeafe',size:0.42,transparent:true,opacity:0.75,depthWrite:false})));
+          }
+
+          // Rim-lit exoplanet regolith terrain with vertex-colored ochre basins, basalt ridges & crater relief
+          var earthGeo=new THREE.PlaneGeometry(58,52,42,36);earthGeo.rotateX(-Math.PI/2);var positions=earthGeo.attributes.position;
+          function height(x,z){
+            var dist=Math.sqrt(x*x+z*z);
+            var edge=Math.max(0,(dist-12)/10);
+            var ridge=edge*(0.92+Math.sin(x*0.42)*0.68+Math.cos(z*0.36)*0.72+Math.sin((x+z)*0.22)*0.32);
+            var c1=Math.hypot(x-14,z+11);var crater1=c1<4.2?-0.45*Math.cos(c1/4.2*Math.PI*0.5)+(c1>3.1?0.24:0):0;
+            return -0.3+ridge+crater1;
+          }
+          var regColors=[];
+          for(var v=0;v<positions.count;v++){
+            var vx=positions.getX(v),vz=positions.getZ(v),vy=height(vx,vz);
+            positions.setY(v,vy);
+            var hNorm=Math.max(0,Math.min(1,(vy+0.35)/2.4));
+            var nearHub=Math.max(0,1-Math.hypot(vx,vz)/13);
+            var rC=0.42+hNorm*0.16-nearHub*0.08,gC=0.29+hNorm*0.11+nearHub*0.04,bC=0.26+hNorm*0.13+nearHub*0.05;
+            regColors.push(rC,gC,bC);
+          }
+          earthGeo.computeVertexNormals();
+          if(typeof THREE.Float32BufferAttribute==='function')earthGeo.setAttribute('color',new THREE.Float32BufferAttribute(regColors,3));
+          var groundMat=material('#ffffff',{vertexColors:typeof THREE.Float32BufferAttribute==='function',roughness:0.86,metalness:0.08});
+          if(!groundMat.vertexColors)groundMat.color.set('#7a5949');
+          var ground=mesh(scene,earthGeo,groundMat,0,0,0);
+          var rockGeo=new THREE.DodecahedronGeometry(1,0),rockMatA=material('#5b5968',{roughness:0.78,metalness:0.12}),rockMatB=material('#8c6b58',{roughness:0.82,metalness:0.08});
+          for(var r=0;r<34;r++){var a=r*2.3999,rad=13+(r%4)*2.6,x=Math.cos(a)*rad,z=Math.sin(a)*rad;var rock=mesh(scene,rockGeo,r%2?rockMatA:rockMatB,x,height(x,z)+0.55,z,0.45+r%3*0.35,0.6+r%4*0.22,0.65);rock.rotation.set(r,0,r*0.4);}
+
+          // 3. GLSL Hexagonal Geodesic Lattice Specular Sheen & Interior Hydroponic Bioluminescent Bloom shaders
+          var hexDomeSheenMat=null,bioBloomMat=null;
+          if(hasShader){
+            var scDomeVert=[
+              'varying vec2 vUv;',
+              'varying vec3 vWorldPos;',
+              'varying vec3 vWorldNorm;',
+              'varying vec3 vLocalPos;',
+              'void main(){',
+              '  vUv=uv;',
+              '  vLocalPos=position;',
+              '  vec4 wp=modelMatrix*vec4(position,1.0);',
+              '  vWorldPos=wp.xyz;',
+              '  vWorldNorm=normalize(mat3(modelMatrix)*normal);',
+              '  gl_Position=projectionMatrix*viewMatrix*wp;',
+              '}'
+            ].join('\n');
+            hexDomeSheenMat=new THREE.ShaderMaterial({
+              uniforms:{uTime:scShared.uTime,uDayMix:scShared.uDayMix},
+              vertexShader:scDomeVert,
+              fragmentShader:[
+                'precision mediump float;',
+                'uniform float uTime;',
+                'uniform float uDayMix;',
+                'varying vec2 vUv;',
+                'varying vec3 vWorldPos;',
+                'varying vec3 vWorldNorm;',
+                'varying vec3 vLocalPos;',
+                'float scHexEdge(vec2 p){',
+                '  vec2 r=vec2(1.0,1.7320508);',
+                '  vec2 h=r*0.5;',
+                '  vec2 a=mod(p,r)-h;',
+                '  vec2 b=mod(p-h,r)-h;',
+                '  vec2 gv=dot(a,a)<dot(b,b)?a:b;',
+                '  vec2 ag=abs(gv);',
+                '  float d=max(dot(ag,normalize(r)),ag.x);',
+                '  return smoothstep(0.42,0.495,d);',
+                '}',
+                'void main(){',
+                '  vec3 N=normalize(vWorldNorm);',
+                '  vec3 V=normalize(cameraPosition-vWorldPos);',
+                '  float fres=pow(1.0-abs(dot(N,V)),2.1);',
+                '  vec2 hexUv=vec2(vUv.x*18.0,vUv.y*9.0);',
+                '  float hexLine=scHexEdge(hexUv);',
+                '  vec3 L1=normalize(vec3(-28.0,21.0,-34.0));',
+                '  vec3 L2=normalize(vec3(-20.0,25.0,-32.0));',
+                '  float spec1=pow(max(dot(normalize(L1+V),N),0.0),42.0);',
+                '  float spec2=pow(max(dot(normalize(L2+V),N),0.0),56.0);',
+                '  float sweep=0.5+0.5*sin(vUv.x*6.28318+vUv.y*5.0-uTime*0.75);',
+                '  vec3 rimCol=mix(vec3(0.45,0.92,1.0),vec3(1.0,0.86,0.66),0.2+0.35*uDayMix);',
+                '  vec3 col=rimCol*(fres*0.55+hexLine*(0.24+0.26*sweep))+vec3(1.0,0.88,0.68)*spec1*0.85+vec3(0.55,0.92,1.0)*spec2*0.65;',
+                '  float alpha=clamp(fres*0.24+hexLine*(0.09+0.14*fres)+(spec1+spec2)*0.32,0.0,0.52);',
+                '  gl_FragColor=vec4(col,alpha);',
+                '}'
+              ].join('\n'),
+              transparent:true,depthWrite:false,blending:starAdditive,side:THREE.DoubleSide
+            });
+            bioBloomMat=new THREE.ShaderMaterial({
+              uniforms:{uTime:scShared.uTime,uDayMix:scShared.uDayMix,uProgress:scShared.uProgress},
+              vertexShader:scDomeVert,
+              fragmentShader:[
+                'precision mediump float;',
+                'uniform float uTime;',
+                'uniform float uDayMix;',
+                'uniform float uProgress;',
+                'varying vec2 vUv;',
+                'varying vec3 vWorldPos;',
+                'varying vec3 vWorldNorm;',
+                'varying vec3 vLocalPos;',
+                'float bHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
+                'void main(){',
+                '  vec3 N=normalize(vWorldNorm);',
+                '  vec3 V=normalize(cameraPosition-vWorldPos);',
+                '  float core=pow(max(dot(N,V),0.0),1.35);',
+                '  float breath=0.82+0.18*sin(uTime*1.25+vLocalPos.y*2.4);',
+                '  vec2 moteGrid=vec2(vUv.x*14.0,vUv.y*8.0-uTime*0.32);',
+                '  vec2 cid=floor(moteGrid),cf=fract(moteGrid)-0.5;',
+                '  float rnd=bHash(cid);',
+                '  float mote=smoothstep(0.22,0.04,length(cf))*step(0.72,rnd)*(0.5+0.5*sin(uTime*2.6+rnd*18.0));',
+                '  vec3 bioCol=mix(vec3(0.08,0.82,0.56),vec3(0.42,1.0,0.72),core*0.65+mote*0.5);',
+                '  float nightBoost=1.0+(1.0-uDayMix)*0.48+uProgress*0.25;',
+                '  float alpha=clamp((core*0.24*breath+mote*0.26)*nightBoost,0.0,0.46);',
+                '  gl_FragColor=vec4(bioCol,alpha);',
+                '}'
+              ].join('\n'),
+              transparent:true,depthWrite:false,blending:starAdditive
+            });
+          }
+
+          // Central Geodesic Biome Dome: specular glass reflection, titanium ribs & warm interior green bioluminescence
+          cylinder(scene,dark,0,-0.03,0,5.6,0.36,5.6);
+          var baseBezel=new THREE.Mesh(new THREE.TorusGeometry(2.34,0.08,10,48),metal);baseBezel.rotation.x=Math.PI/2;baseBezel.position.y=0.2;scene.add(baseBezel);
+          var dome=new THREE.SphereGeometry(2.25,36,18,0,Math.PI*2,0,Math.PI/2);
+          mesh(scene,dome,glass,0,0.2,0);
+          // GLSL Fresnel + Hexagonal Geodesic Lattice Specular Sheen shell over central biome dome
+          var domeSheenGeo=new THREE.SphereGeometry(2.29,36,18,0,Math.PI*2,0,Math.PI/2);
+          var domeSheen=new THREE.Mesh(domeSheenGeo,hexDomeSheenMat||new THREE.MeshBasicMaterial({color:'#bae6fd',transparent:true,opacity:0.09,depthWrite:false,blending:starAdditive}));
+          domeSheen.position.y=0.2;domeSheen.visible=!initHC;scene.add(domeSheen);
+          decorativeShaders.push(domeSheen);
+          var ribGeo=new THREE.TorusGeometry(2.27,0.034,6,36,Math.PI);
+          for(var rib=0;rib<6;rib++){var arch=new THREE.Mesh(ribGeo,metal);arch.rotation.y=rib*Math.PI/6;arch.position.y=0.2;scene.add(arch);}
+          // Equatorial geodesic lattice rings
+          var latRing1=new THREE.Mesh(new THREE.TorusGeometry(1.96,0.025,6,40),metal);latRing1.rotation.x=Math.PI/2;latRing1.position.y=1.3;scene.add(latRing1);
+          var latRing2=new THREE.Mesh(new THREE.TorusGeometry(1.24,0.022,6,32),metal);latRing2.rotation.x=Math.PI/2;latRing2.position.y=2.05;scene.add(latRing2);
+          // Warm interior green bioluminescence terraces + sunlit golden central habitat core
+          cylinder(scene,metal,0,0.32,0,3.4,0.45,3.4);
+          var bioRing=new THREE.Mesh(new THREE.TorusGeometry(1.42,0.22,10,32),bioGlowMat);bioRing.rotation.x=Math.PI/2;bioRing.position.y=0.45;scene.add(bioRing);
+          for(var br=0;br<8;br++){var ba=br*Math.PI/4;mesh(scene,sphereGeo,bioGlowMat,Math.cos(ba)*1.38,0.68,Math.sin(ba)*1.38,0.26,0.34,0.26);}
+          box(scene,material('#fef3c7',{emissive:'#f59e0b',emissiveIntensity:0.65,roughness:0.3}),0,0.92,0,0.88,0.82,0.88);
+          var hubBioBloom=mesh(scene,sphereGeo,bioBloomMat||new THREE.MeshBasicMaterial({color:'#34d399',transparent:true,opacity:0.18,depthWrite:false,blending:starAdditive}),0,0.95,0,1.76,1.18,1.76);
+          hubBioBloom.visible=!initHC;
+          decorativeShaders.push(hubBioBloom);
+          var hubGlowLight=new THREE.PointLight(0x6ee7b7,1.6,9.5,1.6);hubGlowLight.position.set(0,1.15,0);scene.add(hubGlowLight);
+
+          var pathsMat=material('#485f73',{roughness:0.45,metalness:0.5});
+          var conduitGlassMat=material('#38bdf8',{transparent:true,opacity:0.24,roughness:0.15,metalness:0.2,emissive:'#0891b2',emissiveIntensity:0.35,depthWrite:false});
+          var pulseCoreMat=new THREE.MeshBasicMaterial({color:'#e0f7ff'});
+          var pulseHaloMat=new THREE.MeshBasicMaterial({color:'#22d3ee',transparent:true,opacity:0.48,depthWrite:false,blending:starAdditive});
+          var subDomeRibGeo=new THREE.TorusGeometry(1.46,0.025,6,28,Math.PI);
           var sites={solar:[-7,4],waterReclaim:[6,4],hydroponics:[-5,-3],greenhouse:[-7,-6],atmo:[6,-5],fusion:[0,-8],shield:[0,7],biodome:[-10,0]};
+          var conduitColors={solar:'#facc15',waterReclaim:'#22d3ee',hydroponics:'#34d399',greenhouse:'#4ade80',atmo:'#818cf8',fusion:'#fb7185',shield:'#c084fc',biodome:'#2dd4bf'};
+          var conduitVert=[
+            'varying vec2 vUv;',
+            'varying vec3 vWorldPos;',
+            'varying vec3 vWorldNorm;',
+            'void main(){',
+            '  vUv=uv;',
+            '  vec4 wp=modelMatrix*vec4(position,1.0);',
+            '  vWorldPos=wp.xyz;',
+            '  vWorldNorm=normalize(mat3(modelMatrix)*normal);',
+            '  gl_Position=projectionMatrix*viewMatrix*wp;',
+            '}'
+          ].join('\n');
+          var conduitFrag=[
+            'precision mediump float;',
+            'uniform float uTime;',
+            'uniform float uActive;',
+            'uniform vec3 uFlowColor;',
+            'uniform float uSeed;',
+            'varying vec2 vUv;',
+            'varying vec3 vWorldPos;',
+            'varying vec3 vWorldNorm;',
+            'void main(){',
+            '  vec3 N=normalize(vWorldNorm);',
+            '  vec3 V=normalize(cameraPosition-vWorldPos);',
+            '  float fres=pow(1.0-abs(dot(N,V)),1.7);',
+            '  float flow1=fract(vUv.y*3.0-uTime*0.72+uSeed);',
+            '  float packet1=smoothstep(0.0,0.18,flow1)*smoothstep(0.46,0.18,flow1);',
+            '  float flow2=fract(vUv.y*6.0-uTime*1.28+uSeed*1.7);',
+            '  float packet2=smoothstep(0.0,0.12,flow2)*smoothstep(0.32,0.12,flow2);',
+            '  float helix=0.5+0.5*sin(vUv.x*12.566+vUv.y*18.0-uTime*2.8);',
+            '  vec3 glassRim=vec3(0.32,0.82,0.98)*(0.26+0.52*fres);',
+            '  vec3 plasma=mix(uFlowColor,vec3(0.92,0.99,1.0),packet1*0.55)*(packet1*0.95+packet2*0.48)*(0.7+0.3*helix);',
+            '  vec3 col=glassRim+plasma*uActive;',
+            '  float alpha=clamp(0.16+fres*0.24+uActive*(packet1*0.52+packet2*0.24),0.0,0.86);',
+            '  gl_FragColor=vec4(col,alpha);',
+            '}'
+          ].join('\n');
           var groups={},indicators={},rotors=[],pipes=[],seedBeds=[],buildScale={},currentProgress=live.current.snapshot.progress;
-          Object.keys(sites).forEach(function(id){
+          Object.keys(sites).forEach(function(id,siteIdx){
             var site=sites[id],g=new THREE.Group();g.name='colony-tech-'+id;g.position.set(site[0],0,site[1]);scene.add(g);groups[id]=g;
-            var len=Math.sqrt(site[0]*site[0]+site[1]*site[1]);var path=box(scene,pathsMat,site[0]/2,-0.14,site[1]/2,0.3,0.08,len);path.rotation.y=Math.atan2(site[0],site[1]);
+            var len=Math.sqrt(site[0]*site[0]+site[1]*site[1]);
+            var path=box(scene,pathsMat,site[0]/2,-0.14,site[1]/2,0.34,0.08,len);path.rotation.y=Math.atan2(site[0],site[1]);
+            // 4. Raised pressurized glass plasma energy conduit along each corridor
+            var tubeMat=conduitGlassMat;
+            var cActiveUniform=null;
+            if(hasShader){
+              cActiveUniform={value:live.current.snapshot.operating.indexOf(id)>=0?1.0:0.0};
+              tubeMat=new THREE.ShaderMaterial({
+                uniforms:{
+                  uTime:scShared.uTime,
+                  uActive:cActiveUniform,
+                  uFlowColor:{value:new THREE.Color(conduitColors[id]||'#22d3ee')},
+                  uSeed:{value:siteIdx*0.37}
+                },
+                vertexShader:conduitVert,
+                fragmentShader:conduitFrag,
+                transparent:true,
+                depthWrite:false,
+                blending:starAdditive,
+                side:THREE.DoubleSide
+              });
+            }
+            var tube=new THREE.Mesh(cylGeo,tubeMat);tube.position.set(site[0]/2,0.08,site[1]/2);tube.scale.set(0.26,len,0.26);tube.rotation.set(Math.PI/2,0,-Math.atan2(site[0],site[1]));scene.add(tube);
+            if(hasShader){tube.visible=!initHC;decorativeShaders.push(tube);conduitEntries.push({id:id,uActive:cActiveUniform});}
             cylinder(scene,dark,site[0],-0.05,site[1],3.6,0.18,3.6);
-            var ring=new THREE.Mesh(new THREE.TorusGeometry(1.8,0.035,5,40),cyan.clone());ring.rotation.x=Math.PI/2;ring.position.set(site[0],0.08,site[1]);scene.add(ring);indicators[id]=ring;
-            var bead=mesh(scene,sphereGeo,cyan,site[0],0.1,site[1],0.07,0.07,0.07);pipes.push({mesh:bead,id:id,site:site});
+            var ring=new THREE.Mesh(new THREE.TorusGeometry(1.8,0.04,6,40),cyan.clone());ring.rotation.x=Math.PI/2;ring.position.set(site[0],0.08,site[1]);scene.add(ring);indicators[id]=ring;
+            // 3 staggered luminous pulse orbs with additive glow halos per pressurized conduit
+            for(var pi=0;pi<3;pi++){
+              var pulseGrp=new THREE.Group();
+              mesh(pulseGrp,sphereGeo,pulseCoreMat,0,0,0,0.075,0.075,0.075);
+              var haloM=mesh(pulseGrp,sphereGeo,pulseHaloMat,0,0,0,0.22,0.14,0.22);
+              haloM.visible=!initHC;
+              decorativeShaders.push(haloM);
+              scene.add(pulseGrp);
+              pipes.push({mesh:pulseGrp,id:id,site:site,offset:pi/3});
+            }
             buildScale[id]=live.current.snapshot.installed.indexOf(id)>=0?1:0;
             if(id==='solar'){
-              for(var panel=0;panel<4;panel++){var px=(panel%2-0.5)*1.5,pz=(Math.floor(panel/2)-0.5)*1.6;cylinder(g,metal,px,0.6,pz,0.12,1.2,0.12);var plate=box(g,material('#185aa3',{metalness:0.6,roughness:0.28}),px,1.15,pz,1.25,0.08,1.4);plate.rotation.x=-0.4;for(var wire=0;wire<3;wire++){var strip=box(g,cyan,px-0.42+wire*0.42,1.2,pz,0.012,0.015,1.4);strip.rotation.x=-0.4;}}
+              for(var panel=0;panel<4;panel++){var px=(panel%2-0.5)*1.5,pz=(Math.floor(panel/2)-0.5)*1.6;cylinder(g,metal,px,0.6,pz,0.12,1.2,0.12);var plate=box(g,material('#155cb0',{metalness:0.75,roughness:0.2,emissive:'#082f49',emissiveIntensity:0.25}),px,1.15,pz,1.25,0.08,1.4);plate.rotation.x=-0.4;for(var wire=0;wire<3;wire++){var strip=box(g,cyan,px-0.42+wire*0.42,1.2,pz,0.012,0.015,1.4);strip.rotation.x=-0.4;}}
             }else if(id==='waterReclaim'){
-              for(var tank=0;tank<3;tank++){cylinder(g,metal,tank-1,0.9,0,0.75,1.8,0.75);cylinder(g,cyan,tank-1,1,0,0.77,0.2,0.77);}box(g,dark,0,0.3,0.9,2.5,0.5,0.6);
+              for(var tank=0;tank<3;tank++){cylinder(g,metal,tank-1,0.9,0,0.75,1.8,0.75);cylinder(g,cyan,tank-1,1,0,0.78,0.22,0.78);}box(g,dark,0,0.3,0.9,2.5,0.5,0.6);
             }else if(id==='greenhouse'||id==='hydroponics'||id==='biodome'){
-              box(g,metal,0,0.2,0,2.8,0.35,2.4);var cap=mesh(g,dome,glass,0,0.4,0,0.64,0.64,0.64);for(var plant=0;plant<12;plant++){box(g,green,(plant%4-1.5)*0.5,0.6,(Math.floor(plant/4)-1)*0.6,0.2,0.35,0.3);}if(id==='biodome')g.scale.setScalar(1.2);
+              box(g,metal,0,0.2,0,2.8,0.35,2.4);
+              mesh(g,dome,glass,0,0.4,0,0.64,0.64,0.64);
+              if(hexDomeSheenMat){
+                var subSheen=mesh(g,domeSheenGeo,hexDomeSheenMat,0,0.4,0,0.645,0.645,0.645);
+                subSheen.visible=!initHC;
+                decorativeShaders.push(subSheen);
+              }
+              for(var srib=0;srib<4;srib++){var sarch=new THREE.Mesh(subDomeRibGeo,metal);sarch.rotation.y=srib*Math.PI/4;sarch.position.y=0.4;g.add(sarch);}
+              // Warm green interior bioluminescence canopy inside greenhouse / hydroponics / biodome
+              var subBio=mesh(g,sphereGeo,bioBloomMat||new THREE.MeshBasicMaterial({color:'#34d399',transparent:true,opacity:0.2,depthWrite:false,blending:starAdditive}),0,0.75,0,1.1,0.7,1.1);
+              subBio.visible=!initHC;
+              decorativeShaders.push(subBio);
+              for(var plant=0;plant<12;plant++){box(g,plant%2?bioGlowMat:green,(plant%4-1.5)*0.5,0.62,(Math.floor(plant/4)-1)*0.6,0.22,0.38,0.3);}
+              if(id==='biodome')g.scale.setScalar(1.2);
             }else if(id==='atmo'){
               box(g,dark,0,0.25,0,2.9,0.5,2.3);cylinder(g,metal,-0.8,1.5,0,0.85,2.6,0.85);cylinder(g,metal,0.75,1,0,1,1.8,1);var intake=mesh(g,new THREE.TorusGeometry(0.55,0.13,8,24),cyan,-0.8,2.8,0);intake.rotation.x=Math.PI/2;for(var fin=0;fin<6;fin++){var blade=box(g,dark,0.8,1.8,0,0.07,0.5,1.4);blade.rotation.y=fin*Math.PI/3;}
             }else if(id==='fusion'){
-              cylinder(g,metal,0,0.25,0,3,0.5,3);var torus=mesh(g,new THREE.TorusGeometry(1,0.28,12,32),material('#e7ab64'),0,1.1,0);torus.rotation.x=Math.PI/2;var plasma=mesh(g,new THREE.TorusGeometry(1,0.07,8,40),material('#ffb1e0',{emissive:'#ef4292',emissiveIntensity:1}),0,1.43,0);plasma.rotation.x=Math.PI/2;rotors.push({mesh:plasma,id:id});for(var coil=0;coil<8;coil++){var ca=coil*Math.PI/4;box(g,dark,Math.cos(ca)*1.2,1.1,Math.sin(ca)*1.2,0.3,1.1,0.3);}box(g,metal,2.1,0.85,0,0.12,1.5,2.8);
+              cylinder(g,metal,0,0.25,0,3,0.5,3);var torus=mesh(g,new THREE.TorusGeometry(1,0.28,12,32),material('#e7ab64',{metalness:0.65,roughness:0.3}),0,1.1,0);torus.rotation.x=Math.PI/2;var plasma=mesh(g,new THREE.TorusGeometry(1,0.08,8,40),material('#ffb1e0',{emissive:'#f43f8e',emissiveIntensity:1.4}),0,1.43,0);plasma.rotation.x=Math.PI/2;rotors.push({mesh:plasma,id:id});for(var coil=0;coil<8;coil++){var ca=coil*Math.PI/4;box(g,dark,Math.cos(ca)*1.2,1.1,Math.sin(ca)*1.2,0.3,1.1,0.3);}box(g,metal,2.1,0.85,0,0.12,1.5,2.8);
             }else if(id==='shield'){
-              cylinder(g,metal,0,0.5,0,1.2,1,1.2);cylinder(g,dark,0,1.5,0,0.2,2.3,0.2);var coil=mesh(g,new THREE.TorusGeometry(0.85,0.1,8,30),material('#bd95eb',{emissive:'#7136b3',emissiveIntensity:0.5}),0,2.3,0);rotors.push({mesh:coil,id:id});
+              cylinder(g,metal,0,0.5,0,1.2,1,1.2);cylinder(g,dark,0,1.5,0,0.2,2.3,0.2);var coil=mesh(g,new THREE.TorusGeometry(0.85,0.1,8,30),material('#c4b5fd',{emissive:'#7c3aed',emissiveIntensity:0.85}),0,2.3,0);rotors.push({mesh:coil,id:id});
             }
           });
           // These are LOCAL illustrative trial plots, not a prediction of global
           // breathable atmosphere or calibrated planetary climate.
+          var shootGeo=new THREE.ConeGeometry(0.22,0.6,5);
           for(var bed=0;bed<24;bed++){
             var bx=(bed%8-3.5)*1.15,bz=10+Math.floor(bed/8)*1.05;
             var tray=box(scene,material('#614536'),bx,-0.05,bz,1,0.18,0.8);
-            var shoot=mesh(scene,new THREE.ConeGeometry(0.22,0.6,5),green,bx,0.32,bz);seedBeds.push({tray:tray,shoot:shoot});
+            var shoot=mesh(scene,shootGeo,green,bx,0.32,bz);seedBeds.push({tray:tray,shoot:shoot});
           }
-          var field=mesh(scene,new THREE.SphereGeometry(3,24,12,0,Math.PI*2,0,Math.PI/2),new THREE.MeshBasicMaterial({color:'#b48af4',wireframe:true,transparent:true,opacity:0.12}),0,0.3,7);
+          // 5. GLSL Hexagonal Magnetic Deflector Shield Dome
+          var fieldMat=hasShader?new THREE.ShaderMaterial({
+            uniforms:{uTime:scShared.uTime},
+            vertexShader:[
+              'varying vec2 vUv;',
+              'varying vec3 vWorldPos;',
+              'varying vec3 vWorldNorm;',
+              'void main(){',
+              '  vUv=uv;',
+              '  vec4 wp=modelMatrix*vec4(position,1.0);',
+              '  vWorldPos=wp.xyz;',
+              '  vWorldNorm=normalize(mat3(modelMatrix)*normal);',
+              '  gl_Position=projectionMatrix*viewMatrix*wp;',
+              '}'
+            ].join('\n'),
+            fragmentShader:[
+              'precision mediump float;',
+              'uniform float uTime;',
+              'varying vec2 vUv;',
+              'varying vec3 vWorldPos;',
+              'varying vec3 vWorldNorm;',
+              'float fHex(vec2 p){',
+              '  vec2 r=vec2(1.0,1.7320508),h=r*0.5;',
+              '  vec2 a=mod(p,r)-h,b=mod(p-h,r)-h;',
+              '  vec2 g=dot(a,a)<dot(b,b)?a:b;',
+              '  vec2 ag=abs(g);',
+              '  return smoothstep(0.41,0.49,max(dot(ag,normalize(r)),ag.x));',
+              '}',
+              'void main(){',
+              '  vec3 N=normalize(vWorldNorm);',
+              '  vec3 V=normalize(cameraPosition-vWorldPos);',
+              '  float fres=pow(1.0-abs(dot(N,V)),1.85);',
+              '  float hex=fHex(vec2(vUv.x*22.0,vUv.y*11.0));',
+              '  float pulse=pow(0.5+0.5*sin(vUv.y*14.0-uTime*2.1),3.0);',
+              '  vec3 col=mix(vec3(0.55,0.42,1.0),vec3(0.42,0.92,1.0),pulse*0.6+fres*0.4);',
+              '  float alpha=clamp(fres*0.34+hex*(0.16+0.28*pulse),0.0,0.62);',
+              '  gl_FragColor=vec4(col,alpha);',
+              '}'
+            ].join('\n'),
+            transparent:true,depthWrite:false,blending:starAdditive,side:THREE.DoubleSide
+          }):new THREE.MeshBasicMaterial({color:'#c4b5fd',wireframe:true,transparent:true,opacity:0.16,blending:starAdditive,depthWrite:false});
+          var field=mesh(scene,new THREE.SphereGeometry(3,32,16,0,Math.PI*2,0,Math.PI/2),fieldMat,0,0.3,7);
           var selectRing=mesh(scene,new THREE.TorusGeometry(2,0.07,6,48),new THREE.MeshBasicMaterial({color:'#fff1af'}),6,0.12,-5);selectRing.rotation.x=Math.PI/2;
           var cameraPos=new THREE.Vector3(),look=new THREE.Vector3(),targetLook=new THREE.Vector3();
-          var skyDay=new THREE.Color('#223d57'),skyNight=new THREE.Color('#101b31');
+          var skyDay=new THREE.Color('#19334d'),skyNight=new THREE.Color('#091326'),skyHC=new THREE.Color('#000000');
+          var dayBlend=live.current.phase==='day'?1:0;
+          var lastHC=initHC;
           resize();window.addEventListener('resize',resize);canvas.addEventListener('webglcontextlost',lost);
           if(window.ResizeObserver){ro=new ResizeObserver(resize);ro.observe(canvas);}
           if(window.IntersectionObserver){io=new IntersectionObserver(function(entries){onScreen=entries[0].isIntersecting;},{threshold:0.01});io.observe(canvas);}
@@ -533,26 +1025,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             if(now-last<32)return;var dt=Math.min(0.1,(now-last)/1000||0.033);last=now;
             if(!onScreen||document.hidden)return;
             var data=live.current,snap=data.snapshot,reduced=!!(media&&media.matches),animate=data.motion&&!reduced;
-            var stillFrame=JSON.stringify([snap,data.view,data.angle,data.selected,data.phase,canvas.width,canvas.height]);
+            var hc=isColonyHighContrast();
+            var stillFrame=JSON.stringify([snap,data.view,data.angle,data.selected,data.phase,canvas.width,canvas.height,hc]);
             if(!animate&&stillFrame===lastStillFrame)return;lastStillFrame=animate?'':stillFrame;
+            if(hc!==lastHC){
+              lastHC=hc;
+              scShared.uHC.value=hc?1.0:0.0;
+              for(var dsi=0;dsi<decorativeShaders.length;dsi++)decorativeShaders[dsi].visible=!hc;
+            }
             var blend=animate?1-Math.exp(-4*dt):1;
             currentProgress+=(snap.progress-currentProgress)*blend;
+            scShared.uTime.value=animate?(((Date.now()-scStartTime)*0.001)%3600):3.2;
+            scShared.uProgress.value=Math.max(0,Math.min(1,currentProgress/100));
             Object.keys(groups).forEach(function(id){
               var target=snap.installed.indexOf(id)>=0?1:0;buildScale[id]+=(target-buildScale[id])*blend;
               groups[id].visible=buildScale[id]>0.01;groups[id].scale.setScalar(Math.max(0.001,buildScale[id]));
-              indicators[id].material.opacity=target?0.8:0.2;indicators[id].material.transparent=true;
+              indicators[id].material.opacity=target?0.85:0.2;indicators[id].material.transparent=true;
             });
+            for(var cei=0;cei<conduitEntries.length;cei++){
+              var ce=conduitEntries[cei];
+              var wantActive=snap.operating.indexOf(ce.id)>=0?1.0:0.0;
+              ce.uActive.value+=(wantActive-ce.uActive.value)*blend;
+            }
             var patches=currentProgress/100*seedBeds.length;
             seedBeds.forEach(function(b,i){var cover=Math.max(0,Math.min(1,patches-i));b.shoot.scale.setScalar(Math.max(0.001,cover));b.shoot.visible=cover>0.01;b.tray.material.color.setRGB(0.38-cover*0.18,0.27+cover*0.14,0.21-cover*0.02);});
-            pipes.forEach(function(p,index){var active=snap.operating.indexOf(p.id)>=0;p.mesh.visible=active;var fraction=animate?((now*0.00018+index*0.12)%1):0.5;p.mesh.position.set(p.site[0]*(1-fraction),0.12,p.site[1]*(1-fraction));});
+            pipes.forEach(function(p,index){
+              var active=snap.operating.indexOf(p.id)>=0;
+              p.mesh.visible=active;
+              var fraction=animate?((now*0.00022+p.offset+index*0.04)%1):(0.25+p.offset*0.65);
+              p.mesh.position.set(p.site[0]*(1-fraction),0.11,p.site[1]*(1-fraction));
+              var pulseScale=animate?(0.88+0.24*Math.sin(now*0.005+index)):1;
+              p.mesh.scale.setScalar(pulseScale);
+            });
             rotors.forEach(function(r){if(animate&&snap.operating.indexOf(r.id)>=0)r.mesh.rotation.z+=dt*0.5;});
-            field.visible=snap.operating.indexOf('shield')>=0;
+            field.visible=!hc&&snap.operating.indexOf('shield')>=0;
             var site=sites[data.selected]||[0,0];selectRing.position.set(site[0],0.12,site[1]);
             var dist=data.view==='habitat'?11:data.view==='works'?18:27,elevation=data.view==='habitat'?6:data.view==='works'?10:18;
             targetLook.set(data.view==='works'?site[0]*0.65:0,0.6,data.view==='works'?site[1]*0.65:1.5);
             var az=0.62+data.angle;cameraPos.set(targetLook.x+Math.sin(az)*dist,elevation,targetLook.z+Math.cos(az)*dist);
             camera.position.lerp(cameraPos,blend);look.lerp(targetLook,blend);camera.lookAt(look);
-            scene.background.copy(data.phase==='day'?skyDay:skyNight);
+            var targetDay=data.phase==='day'?1:0;
+            dayBlend+=(targetDay-dayBlend)*blend;
+            scShared.uDayMix.value=dayBlend;
+            sun.intensity=0.85+dayBlend*0.95;
+            hubGlowLight.intensity=1.35+(1-dayBlend)*0.75+(animate?Math.sin(now*0.002)*0.12:0);
+            scene.background.copy(hc?skyHC:(data.phase==='day'?skyDay:skyNight));
             renderer.render(scene,camera);frames++;
             canvas.dataset.colonyFrames=String(frames);canvas.dataset.colonyTurn=String(snap.turn);canvas.dataset.colonyTerraform=String(snap.progress);
             canvas.dataset.colonyVisibleTech=Object.keys(groups).filter(function(id){return groups[id].visible;}).sort().join(',');
@@ -1258,13 +1775,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             canvas.style.width = w + 'px';
             canvas.style.height = h + 'px';
             var ctx = canvas.getContext('2d');
-            ctx.setTransform(_scDpr, 0, 0, _scDpr, 0, 0);
-            var animPhase = (Date.now() / 1000) % (Math.PI * 2);
+            if (!ctx) return;
+            if (typeof ctx.setTransform === 'function') ctx.setTransform(_scDpr, 0, 0, _scDpr, 0, 0);
+            var scReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            var animPhase = scReduced ? 0 : (Date.now() / 1000) % (Math.PI * 2);
 
-            // Season-tinted background
-            var seasonBGs = { bloom: '#0a1a0f', dry: '#1a0f0a', storm: '#0a0f1a', calm: '#0f172a' };
-            var bgCol = seasonBGs[(seasonCycle || {}).id] || '#0f172a';
-            ctx.fillStyle = bgCol; ctx.fillRect(0, 0, w, h);
+            // Exoplanet twilight sky gradient + binary-star atmospheric halo glow
+            var seasonBGs = { bloom: '#081814', dry: '#1c1012', storm: '#081020', calm: '#0a1428' };
+            var bgCol = seasonBGs[(seasonCycle || {}).id] || '#0a1428';
+            var skyGrad = ctx.createLinearGradient(0, 0, 0, h);
+            skyGrad.addColorStop(0, bgCol);
+            skyGrad.addColorStop(0.55, '#12263d');
+            skyGrad.addColorStop(1, '#261e30');
+            ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, w, h);
+            if (typeof ctx.createRadialGradient === 'function') {
+              var starHalo1 = ctx.createRadialGradient(w * 0.84, 18, 2, w * 0.84, 18, w * 0.28);
+              starHalo1.addColorStop(0, 'rgba(255,214,153,0.22)');
+              starHalo1.addColorStop(0.45, 'rgba(249,115,22,0.08)');
+              starHalo1.addColorStop(1, 'rgba(0,0,0,0)');
+              ctx.fillStyle = starHalo1; ctx.fillRect(0, 0, w, h * 0.45);
+              var starHalo2 = ctx.createRadialGradient(w * 0.78, 12, 1, w * 0.78, 12, w * 0.16);
+              starHalo2.addColorStop(0, 'rgba(125,211,252,0.18)');
+              starHalo2.addColorStop(1, 'rgba(0,0,0,0)');
+              ctx.fillStyle = starHalo2; ctx.fillRect(0, 0, w, h * 0.35);
+            }
 
             // Enhanced starfield with twinkling — additive so bright stars bloom
             ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -1419,16 +1953,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   ctx.fillStyle = 'rgba(251,191,36,' + (lavaGlow * 0.5) + ')'; ctx.beginPath();
                   ctx.arc(tx + tileSize / 2, ty + tileSize / 2, tileSize * 0.12, 0, Math.PI * 2); ctx.fill();
                 } else if (tile.type === 'colony') {
-                  // Enhanced colony with building count + glow
-                  var colGlow = 0.15 + Math.sin(animPhase) * 0.05;
-                  ctx.fillStyle = 'rgba(59,130,246,' + colGlow + ')';
+                  // Translucent geodesic dome with warm interior green bioluminescence & specular reflection
+                  var colGlow = 0.2 + Math.sin(animPhase) * 0.05;
+                  ctx.fillStyle = 'rgba(16,185,129,' + colGlow + ')';
                   ctx.fillRect(tx, ty, tileSize - 1, tileSize - 1);
-                  ctx.fillStyle = '#e0f2fe'; ctx.fillRect(tx + 3, ty + 3, tileSize - 7, tileSize - 7);
-                  // Dome
-                  ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2; ctx.beginPath();
-                  ctx.arc(tx + tileSize / 2, ty + tileSize * 0.5, tileSize * 0.22, Math.PI, 0); ctx.stroke();
-                  ctx.moveTo(tx + tileSize * 0.28, ty + tileSize * 0.5);
-                  ctx.lineTo(tx + tileSize * 0.72, ty + tileSize * 0.5); ctx.stroke();
+                  ctx.fillStyle = '#0c2738'; ctx.fillRect(tx + 2, ty + 2, tileSize - 5, tileSize - 5);
+                  // Interior bioluminescent emerald core
+                  if (typeof ctx.createRadialGradient === 'function') {
+                    var bioG = ctx.createRadialGradient(tx + tileSize * 0.5, ty + tileSize * 0.52, 1, tx + tileSize * 0.5, ty + tileSize * 0.52, tileSize * 0.34);
+                    bioG.addColorStop(0, 'rgba(110,231,183,0.92)');
+                    bioG.addColorStop(0.55, 'rgba(16,185,129,0.52)');
+                    bioG.addColorStop(1, 'rgba(14,116,144,0)');
+                    ctx.fillStyle = bioG;
+                    ctx.beginPath(); ctx.arc(tx + tileSize * 0.5, ty + tileSize * 0.52, tileSize * 0.34, 0, Math.PI * 2); ctx.fill();
+                  }
+                  // Geodesic glass dome + specular highlight arc
+                  ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 1.8; ctx.beginPath();
+                  ctx.arc(tx + tileSize / 2, ty + tileSize * 0.56, tileSize * 0.25, Math.PI, 0); ctx.stroke();
+                  ctx.strokeStyle = 'rgba(224,242,254,0.8)'; ctx.lineWidth = 1; ctx.beginPath();
+                  ctx.arc(tx + tileSize / 2, ty + tileSize * 0.56, tileSize * 0.19, Math.PI * 1.18, Math.PI * 1.55); ctx.stroke();
+                  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1.4; ctx.beginPath();
+                  ctx.moveTo(tx + tileSize * 0.24, ty + tileSize * 0.56);
+                  ctx.lineTo(tx + tileSize * 0.76, ty + tileSize * 0.56); ctx.stroke();
                   // Building count badge
                   ctx.fillStyle = '#1e40af'; ctx.beginPath();
                   ctx.arc(tx + tileSize * 0.82, ty + tileSize * 0.2, tileSize * 0.13, 0, Math.PI * 2); ctx.fill();
@@ -2058,29 +2604,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               h(ColonyTerraformScene,{React:React,turn:turn,progress:terraform,buildings:buildings,efficiency:buildingEff,phase:turnPhase,playing:!!colony,onTurn:function(){var target=document.querySelector('[data-colony-turn-controls]');if(target){target.focus();target.scrollIntoView({block:'start',behavior:'instant'});}},onBuild:function(){upd('showBuild',true);setTimeout(function(){var target=document.getElementById('spacecolony-construction');if(target){target.focus();target.scrollIntoView({block:'start',behavior:'instant'});}},0);}, t: t}),
               h('details',{style:{padding:12}},h('summary',{style:{minHeight:44,cursor:'pointer',color:'#a5f3fc',fontSize:13,fontWeight:700}},t('stem.spacecolony.two_d_system_diagram','2D system diagram')),
-              h('svg',{viewBox:'0 0 780 310',role:'img','aria-label':'Habitat systems: '+loops.map(function(loop){return loop.name+' '+(buildings.indexOf(loop.building)>=0?'online':'planned');}).join(', '),style:{display:'block',width:'100%',borderRadius:12,border:'1px solid #2b546b',background:'linear-gradient(#081529,#1f3847)'}},
-                [[54,48],[118,28],[192,62],[268,36],[344,54],[438,32],[520,58],[604,42]].map(function(pt, idx){return h('circle',{key:'st-'+idx,cx:pt[0],cy:pt[1],r:idx%3===0?1.8:1.2,fill:'#e0f2fe',opacity:0.65});}),
-                h('circle',{cx:680,cy:52,r:36,fill:'#ffcc87',opacity:0.14}),
-                h('circle',{cx:680,cy:52,r:24,fill:'#ffcc87',opacity:0.9}),h('circle',{cx:713,cy:35,r:7,fill:'#fff2bd',opacity:0.85}),
-                h('path',{d:'M0 184L110 118 195 180 320 143 440 185 570 135 780 181V310H0Z',fill:'#405360'}),
-                h('path',{d:'M0 225L140 194 320 214 495 188 665 215 780 198V310H0Z',fill:'#243e48'}),
-                h('ellipse',{cx:390,cy:178,rx:94,ry:20,fill:'#07131d',opacity:0.6}),
-                h('path',{d:'M315 166A75 68 0 0 1 465 166Z',fill:'#123e52',stroke:'#a5f3fc',strokeWidth:2.2}),
-                h('path',{d:'M330 164Q350 85 390 98Q430 85 450 164M390 99V164M323 136Q390 124 457 136',fill:'none',stroke:'#5899af',strokeWidth:1.6}),
-                h('circle',{cx:390,cy:98,r:4,fill:'#67e8f9'}),
-                h('rect',{x:372,y:135,width:36,height:32,rx:7,fill:'#fef3c7',opacity:0.88}),
+              h('svg',{viewBox:'0 0 780 310',role:'img','aria-label':'Habitat systems: '+loops.map(function(loop){return loop.name+' '+(buildings.indexOf(loop.building)>=0?'online':'planned');}).join(', '),style:{display:'block',width:'100%',borderRadius:12,border:'1px solid #2b546b',background:'#071224'}},
+                h('defs',null,
+                  h('linearGradient',{id:'sc-twilight',x1:'0%',y1:'0%',x2:'0%',y2:'100%'},
+                    h('stop',{offset:'0%',stopColor:'#061024'}),
+                    h('stop',{offset:'42%',stopColor:'#15324c'}),
+                    h('stop',{offset:'68%',stopColor:'#422b3e'}),
+                    h('stop',{offset:'100%',stopColor:'#1b2c3b'})),
+                  h('radialGradient',{id:'sc-star-a',cx:'50%',cy:'50%',r:'50%'},
+                    h('stop',{offset:'0%',stopColor:'#fff7d6',stopOpacity:1}),
+                    h('stop',{offset:'38%',stopColor:'#fbbf24',stopOpacity:0.78}),
+                    h('stop',{offset:'72%',stopColor:'#f97316',stopOpacity:0.22}),
+                    h('stop',{offset:'100%',stopColor:'#f97316',stopOpacity:0})),
+                  h('radialGradient',{id:'sc-star-b',cx:'50%',cy:'50%',r:'50%'},
+                    h('stop',{offset:'0%',stopColor:'#f0f9ff',stopOpacity:1}),
+                    h('stop',{offset:'45%',stopColor:'#38bdf8',stopOpacity:0.55}),
+                    h('stop',{offset:'100%',stopColor:'#0ea5e9',stopOpacity:0})),
+                  h('linearGradient',{id:'sc-ridge-far',x1:'0%',y1:'0%',x2:'0%',y2:'100%'},
+                    h('stop',{offset:'0%',stopColor:'#5c4a55'}),
+                    h('stop',{offset:'45%',stopColor:'#3a4859'}),
+                    h('stop',{offset:'100%',stopColor:'#1c2b3a'})),
+                  h('linearGradient',{id:'sc-ridge-near',x1:'0%',y1:'0%',x2:'0%',y2:'100%'},
+                    h('stop',{offset:'0%',stopColor:'#2f4752'}),
+                    h('stop',{offset:'100%',stopColor:'#132430'})),
+                  h('radialGradient',{id:'sc-dome-bio',cx:'50%',cy:'82%',r:'68%'},
+                    h('stop',{offset:'0%',stopColor:'#6ee7b7',stopOpacity:0.82}),
+                    h('stop',{offset:'45%',stopColor:'#10b981',stopOpacity:0.42}),
+                    h('stop',{offset:'100%',stopColor:'#0e4d64',stopOpacity:0.25})),
+                  h('linearGradient',{id:'sc-dome-spec',x1:'15%',y1:'0%',x2:'85%',y2:'100%'},
+                    h('stop',{offset:'0%',stopColor:'#e0f7ff',stopOpacity:0.55}),
+                    h('stop',{offset:'40%',stopColor:'#67e8f9',stopOpacity:0.12}),
+                    h('stop',{offset:'100%',stopColor:'#082f49',stopOpacity:0.05}))),
+                h('rect',{x:0,y:0,width:780,height:310,fill:'url(#sc-twilight)'}),
+                [[54,48],[118,28],[192,62],[268,36],[344,54],[438,32],[520,58],[604,42],[742,24],[488,22]].map(function(pt, idx){return h('circle',{key:'st-'+idx,cx:pt[0],cy:pt[1],r:idx%3===0?1.8:1.2,fill:'#e0f2fe',opacity:0.7});}),
+                // Binary stars with atmospheric halo glow
+                h('circle',{cx:680,cy:54,r:72,fill:'url(#sc-star-a)'}),
+                h('circle',{cx:680,cy:54,r:21,fill:'#ffe2a8',opacity:0.95}),
+                h('circle',{cx:716,cy:34,r:28,fill:'url(#sc-star-b)'}),
+                h('circle',{cx:716,cy:34,r:6.5,fill:'#e0f7ff',opacity:0.95}),
+                // Rim-lit exoplanet regolith mountains & foreground basin
+                h('path',{d:'M0 184L110 118 195 180 320 143 440 185 570 135 780 181V310H0Z',fill:'url(#sc-ridge-far)'}),
+                h('path',{d:'M0 184L110 118 195 180 320 143 440 185 570 135 780 181',fill:'none',stroke:'#fdba74',strokeWidth:1.4,opacity:0.45}),
+                h('path',{d:'M0 225L140 194 320 214 495 188 665 215 780 198V310H0Z',fill:'url(#sc-ridge-near)'}),
+                h('path',{d:'M0 225L140 194 320 214 495 188 665 215 780 198',fill:'none',stroke:'#67e8f9',strokeWidth:1.2,opacity:0.35}),
+                // Geodesic biome dome with warm interior green bioluminescence & specular glass reflection
+                h('ellipse',{cx:390,cy:178,rx:98,ry:21,fill:'#04101a',opacity:0.7}),
+                h('ellipse',{cx:390,cy:168,rx:82,ry:13,fill:'#10b981',opacity:0.22}),
+                h('path',{d:'M315 166A75 68 0 0 1 465 166Z',fill:'url(#sc-dome-bio)'}),
+                h('path',{d:'M315 166A75 68 0 0 1 465 166Z',fill:'url(#sc-dome-spec)',stroke:'#a5f3fc',strokeWidth:2.2}),
+                h('path',{d:'M332 140A58 52 0 0 1 395 104',fill:'none',stroke:'#e0f7ff',strokeWidth:3.2,strokeLinecap:'round',opacity:0.48}),
+                h('path',{d:'M330 164Q350 85 390 98Q430 85 450 164M390 99V164M323 136Q390 124 457 136',fill:'none',stroke:'#7dd3fc',strokeWidth:1.5,opacity:0.75}),
+                h('circle',{cx:390,cy:98,r:4.2,fill:'#a5f3fc'}),
+                h('ellipse',{cx:355,cy:156,rx:16,ry:7,fill:'#34d399',opacity:0.7}),
+                h('ellipse',{cx:425,cy:156,rx:16,ry:7,fill:'#34d399',opacity:0.7}),
+                h('rect',{x:372,y:135,width:36,height:32,rx:7,fill:'#fef3c7',stroke:'#fbbf24',strokeWidth:1.2,opacity:0.92}),
                 h('text',{x:390,y:191,textAnchor:'middle',style:Object.assign({},textStyle,{fontWeight:700,letterSpacing:1})},'SEALED HABITAT'),
                 loops.map(function(loop) {
                   var online = buildings.indexOf(loop.building)>=0;
                   return h('g',{key:loop.id},
-                    h('path',{d:'M390 175V214H'+loop.x+'V239',fill:'none',stroke:loop.color,strokeWidth:online?4:2,strokeDasharray:online?'9 7':'3 7',className:online?'habitat-flow':undefined,opacity:online?0.92:0.42}),
+                    online ? h('path',{d:'M390 175V214H'+loop.x+'V239',fill:'none',stroke:loop.color,strokeWidth:10,opacity:0.18,strokeLinecap:'round',strokeLinejoin:'round'}) : null,
+                    h('path',{d:'M390 175V214H'+loop.x+'V239',fill:'none',stroke:loop.color,strokeWidth:online?4:2,strokeDasharray:online?'9 7':'3 7',className:online?'habitat-flow':undefined,opacity:online?0.95:0.42}),
+                    h('circle',{cx:loop.x,cy:214,r:online?6.5:4,fill:online?loop.color:'#1e293b',opacity:online?0.28:1}),
                     h('circle',{cx:loop.x,cy:214,r:4,fill:online?loop.color:'#1e293b',stroke:loop.color,strokeWidth:1.5}),
                     h('rect',{x:loop.x-72,y:237,width:144,height:47,rx:12,fill:'#0b2130',stroke:chosen.id===loop.id?'#ffffff':loop.color,strokeWidth:chosen.id===loop.id?3:1.2}),
                     h('text',{x:loop.x,y:257,textAnchor:'middle',style:Object.assign({},textStyle,{fill:loop.color,fontWeight:700})},loop.name),
                     h('text',{x:loop.x,y:274,textAnchor:'middle',style:Object.assign({},textStyle,{fontSize:11})},online?'ONLINE':'PLANNED'),
-                    loop.id==='food' ? h('path',{d:'M139 237V209Q170 170 201 209V237Z',fill:online?'#21794f':'#24413c',stroke:loop.color}) : loop.id==='water' ? h('g',null,[0,1,2].map(function(i){return h('rect',{key:i,x:354+i*25,y:211,width:22,height:26,rx:6,fill:online?'#087e99':'#244451',stroke:loop.color});})) : h('path',{d:'M565 231L579 202H652L640 231ZM587 204L576 228M610 204L600 228M633 204L624 228M574 217H646',fill:online?'#22558a':'#2b414c',stroke:loop.color}));
+                    loop.id==='food' ? h('path',{d:'M139 237V209Q170 170 201 209V237Z',fill:online?'#16a34a':'#24413c',stroke:loop.color}) : loop.id==='water' ? h('g',null,[0,1,2].map(function(i){return h('rect',{key:i,x:354+i*25,y:211,width:22,height:26,rx:6,fill:online?'#0891b2':'#244451',stroke:loop.color});})) : h('path',{d:'M565 231L579 202H652L640 231ZM587 204L576 228M610 204L600 228M633 204L624 228M574 217H646',fill:online?'#1d4ed8':'#2b414c',stroke:loop.color}));
                 }),
-                h('rect',{x:16,y:12,width:288,height:26,rx:8,fill:'rgba(8,24,35,0.78)',stroke:'#356079',strokeWidth:1}),
+                h('rect',{x:16,y:12,width:288,height:26,rx:8,fill:'rgba(8,24,35,0.82)',stroke:'#356079',strokeWidth:1}),
                 h('text',{x:28,y:29,style:Object.assign({},textStyle,{fontSize:11,fill:'#e0f2fe',fontWeight:700})},loops.filter(function(l){return buildings.indexOf(l.building)>=0;}).length + '/3 LOOPS ONLINE · TERRAFORM ' + Math.round(terraform) + '%'),
                 h('text',{x:18,y:54,style:Object.assign({},textStyle,{fontSize:11,fill:'#cbd5e1'})},'Illustrative scene · fictional surface and sky')),
               ),

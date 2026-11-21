@@ -220,27 +220,193 @@
         });
       }
 
+      var isContrast = ctx.theme === 'contrast';
+      var isDark = ctx.theme === 'dark';
+      var generatedCount = (_data.current && Array.isArray(_data.current.events)) ? _data.current.events.length : 0;
+
+      // Bespoke Chronometer Crest Emblem SVG (pure visual craft, HC-safe)
+      function renderTimelineEmblem() {
+        var ringStroke = isContrast ? '#ffff00' : 'url(#tl-emb-ring)';
+        var handCol = isContrast ? '#00ffff' : '#fda4af';
+        return h('svg', {
+          width: 40, height: 40, viewBox: '0 0 44 44', 'aria-hidden': 'true', focusable: 'false',
+          className: 'shrink-0',
+          style: {
+            borderRadius: 11,
+            background: isContrast ? '#000000' : 'linear-gradient(145deg,#1e1b4b,#0f172a)',
+            border: isContrast ? '2px solid #ffff00' : '1px solid rgba(251,113,133,0.42)',
+            boxShadow: isContrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.14), 0 4px 12px rgba(2,6,23,0.45)'
+          }
+        },
+          !isContrast ? h('defs', null,
+            h('radialGradient', { id: 'tl-emb-aura', cx: '50%', cy: '50%', r: '52%' },
+              h('stop', { offset: '0%', stopColor: '#fb7185', stopOpacity: '0.32' }),
+              h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: '0' })
+            ),
+            h('linearGradient', { id: 'tl-emb-ring', x1: '0', y1: '0', x2: '1', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#fecdd3' }),
+              h('stop', { offset: '55%', stopColor: '#fb7185' }),
+              h('stop', { offset: '100%', stopColor: '#a855f7' })
+            )
+          ) : null,
+          !isContrast ? h('rect', { x: 0, y: 0, width: 44, height: 44, rx: 11, fill: 'url(#tl-emb-aura)' }) : null,
+          h('circle', { cx: 22, cy: 22, r: 14, fill: 'none', stroke: ringStroke, strokeWidth: 2 }),
+          h('circle', { cx: 22, cy: 22, r: 10.5, fill: 'none', stroke: isContrast ? '#ffffff' : 'rgba(244,114,182,0.35)', strokeWidth: 0.9, strokeDasharray: '2 2.5' }),
+          h('line', { x1: 22, y1: 11, x2: 22, y2: 13.5, stroke: isContrast ? '#ffff00' : '#fda4af', strokeWidth: 1.5, strokeLinecap: 'round' }),
+          h('line', { x1: 33, y1: 22, x2: 30.5, y2: 22, stroke: isContrast ? '#ffff00' : '#fda4af', strokeWidth: 1.5, strokeLinecap: 'round' }),
+          h('line', { x1: 22, y1: 33, x2: 22, y2: 30.5, stroke: isContrast ? '#ffff00' : '#fda4af', strokeWidth: 1.5, strokeLinecap: 'round' }),
+          h('line', { x1: 11, y1: 22, x2: 13.5, y2: 22, stroke: isContrast ? '#ffff00' : '#fda4af', strokeWidth: 1.5, strokeLinecap: 'round' }),
+          h('line', { x1: 22, y1: 22, x2: 22, y2: 14.8, stroke: isContrast ? '#ffffff' : '#f8fafc', strokeWidth: 2, strokeLinecap: 'round' }),
+          h('line', { x1: 22, y1: 22, x2: 28, y2: 25, stroke: handCol, strokeWidth: 1.8, strokeLinecap: 'round' }),
+          h('circle', { cx: 22, cy: 22, r: 2.3, fill: isContrast ? '#ffff00' : '#fbbf24' })
+        );
+      }
+
+      // Bespoke Chronology Rail & Era-Band Studio Preview SVG (pure visual framing, zero fake dates/spoilers)
+      function renderChronologyRailSvg() {
+        var beacons = [
+          { x: 76,  cardY: 18, cardW: 66, col: isContrast ? '#ffff00' : '#fb7185', active: generatedCount >= 1 || status === 'open' },
+          { x: 196, cardY: 22, cardW: 72, col: isContrast ? '#00ffff' : '#f472b6', active: generatedCount >= 2 || status === 'open' },
+          { x: 320, cardY: 15, cardW: 76, col: isContrast ? '#ffff00' : '#fbbf24', active: true },
+          { x: 444, cardY: 22, cardW: 72, col: isContrast ? '#00ffff' : '#38bdf8', active: generatedCount >= 4 || status === 'ready' },
+          { x: 564, cardY: 18, cardW: 66, col: isContrast ? '#ffff00' : '#34d399', active: generatedCount >= 5 || status === 'ready' }
+        ];
+        var ticks = [];
+        for (var tx = 36; tx <= 604; tx += 16) {
+          var isMajor = ((tx - 36) % 64 === 0);
+          ticks.push(h('line', {
+            key: 'tk-' + tx,
+            x1: tx, y1: 82, x2: tx, y2: isMajor ? 92 : 87,
+            stroke: isContrast ? '#ffffff' : (isMajor ? 'rgba(226,232,240,0.48)' : 'rgba(148,163,184,0.28)'),
+            strokeWidth: isMajor ? 1.2 : 0.85,
+            strokeLinecap: 'round'
+          }));
+        }
+        return h('svg', {
+          viewBox: '0 0 640 108', width: '100%', role: 'img',
+          'aria-label': t('stem.timeline.rail_aria', 'Interactive chronology studio preview showing layered era bands, a calibrated timeline rail, and milestone event markers'),
+          style: { display: 'block', borderRadius: 12, maxHeight: 118 }
+        },
+          !isContrast ? h('defs', null,
+            h('linearGradient', { id: 'tl-stage-bg', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#070c19' }),
+              h('stop', { offset: '100%', stopColor: '#11192e' })
+            ),
+            h('linearGradient', { id: 'tl-era-1', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#fb7185', stopOpacity: '0.2' }),
+              h('stop', { offset: '100%', stopColor: '#fb7185', stopOpacity: '0.03' })
+            ),
+            h('linearGradient', { id: 'tl-era-2', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#a855f7', stopOpacity: '0.2' }),
+              h('stop', { offset: '100%', stopColor: '#a855f7', stopOpacity: '0.03' })
+            ),
+            h('linearGradient', { id: 'tl-era-3', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: '0.2' }),
+              h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: '0.03' })
+            ),
+            h('linearGradient', { id: 'tl-rail-grad', x1: '0', y1: '0', x2: '1', y2: '0' },
+              h('stop', { offset: '0%', stopColor: '#fb7185' }),
+              h('stop', { offset: '36%', stopColor: '#c084fc' }),
+              h('stop', { offset: '68%', stopColor: '#38bdf8' }),
+              h('stop', { offset: '100%', stopColor: '#34d399' })
+            ),
+            h('linearGradient', { id: 'tl-card-bg', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#1e293b' }),
+              h('stop', { offset: '100%', stopColor: '#0f172a' })
+            )
+          ) : null,
+          // Recessed chronology stage
+          h('rect', {
+            x: 1, y: 1, width: 638, height: 106, rx: 11,
+            fill: isContrast ? '#000000' : 'url(#tl-stage-bg)',
+            stroke: isContrast ? '#ffff00' : 'rgba(148,163,184,0.28)',
+            strokeWidth: isContrast ? 2 : 1.2
+          }),
+          // Corner registration brackets
+          h('path', {
+            d: 'M10 16 V10 H16 M630 16 V10 H624 M10 92 V98 H16 M630 92 V98 H624',
+            fill: 'none', stroke: isContrast ? '#ffff00' : 'rgba(244,114,182,0.45)', strokeWidth: 1.1, strokeLinecap: 'round'
+          }),
+          // Layered Era Bands with depth shading & top specular accent edge
+          h('rect', { x: 24, y: 54, width: 192, height: 26, rx: 5, fill: isContrast ? '#0a0a0a' : 'url(#tl-era-1)', stroke: isContrast ? '#ffff00' : 'rgba(251,113,133,0.32)', strokeWidth: 0.9 }),
+          h('rect', { x: 224, y: 54, width: 192, height: 26, rx: 5, fill: isContrast ? '#0a0a0a' : 'url(#tl-era-2)', stroke: isContrast ? '#00ffff' : 'rgba(192,132,252,0.34)', strokeWidth: 0.9 }),
+          h('rect', { x: 424, y: 54, width: 192, height: 26, rx: 5, fill: isContrast ? '#0a0a0a' : 'url(#tl-era-3)', stroke: isContrast ? '#ffff00' : 'rgba(56,189,248,0.32)', strokeWidth: 0.9 }),
+          !isContrast ? h('line', { x1: 28, y1: 55.2, x2: 212, y2: 55.2, stroke: 'rgba(254,205,211,0.45)', strokeWidth: 1 }) : null,
+          !isContrast ? h('line', { x1: 228, y1: 55.2, x2: 412, y2: 55.2, stroke: 'rgba(233,213,255,0.45)', strokeWidth: 1 }) : null,
+          !isContrast ? h('line', { x1: 428, y1: 55.2, x2: 612, y2: 55.2, stroke: 'rgba(186,230,253,0.45)', strokeWidth: 1 }) : null,
+          // Calibrated tick hierarchy
+          ticks,
+          // Dual-pass luminous Timeline Rail
+          !isContrast ? h('line', { x1: 24, y1: 80, x2: 616, y2: 80, stroke: 'url(#tl-rail-grad)', strokeWidth: 7, strokeOpacity: 0.24, strokeLinecap: 'round' }) : null,
+          h('line', { x1: 24, y1: 80, x2: 616, y2: 80, stroke: isContrast ? '#ffff00' : 'url(#tl-rail-grad)', strokeWidth: 2.5, strokeLinecap: 'round' }),
+          // Sculpted Milestone Beacons + miniature floating event plaques
+          beacons.map(function (b, idx) {
+            var cx = b.x;
+            var px = cx - b.cardW / 2;
+            return h('g', { key: 'mb-' + idx },
+              // Vertical stem pin
+              h('line', {
+                x1: cx, y1: b.cardY + 24, x2: cx, y2: 75,
+                stroke: b.col, strokeOpacity: isContrast ? 1 : 0.72, strokeWidth: 1.4, strokeDasharray: '2.5 2'
+              }),
+              // Sculpted floating miniature event card
+              h('rect', {
+                x: px, y: b.cardY, width: b.cardW, height: 24, rx: 5,
+                fill: isContrast ? '#000000' : 'url(#tl-card-bg)',
+                stroke: b.active ? b.col : (isContrast ? '#ffffff' : 'rgba(148,163,184,0.42)'),
+                strokeWidth: b.active ? 1.3 : 1
+              }),
+              h('rect', { x: px + 6, y: b.cardY + 6, width: Math.round(b.cardW * 0.42), height: 3.2, rx: 1.6, fill: b.col }),
+              h('rect', { x: px + 6, y: b.cardY + 13, width: Math.round(b.cardW * 0.72), height: 2.4, rx: 1.2, fill: isContrast ? '#ffffff' : 'rgba(203,213,225,0.68)' }),
+              h('rect', { x: px + 6, y: b.cardY + 18, width: Math.round(b.cardW * 0.54), height: 2.2, rx: 1.1, fill: isContrast ? '#e5e7eb' : 'rgba(148,163,184,0.48)' }),
+              // Milestone beacon on the timeline rail
+              (!isContrast && b.active) ? h('circle', { cx: cx, cy: 80, r: 9, fill: b.col, fillOpacity: 0.22 }) : null,
+              h('circle', { cx: cx, cy: 80, r: 5.2, fill: isContrast ? '#000000' : '#0b1120', stroke: b.col, strokeWidth: 2 }),
+              h('circle', { cx: cx, cy: 80, r: 2.2, fill: b.col })
+            );
+          })
+        );
+      }
+
       var statusLine = null;
-      if (status === 'thinking') statusLine = h('p', { className: 'text-xs text-indigo-300' }, t('stem.timeline.thinking', '✨ Reading the text and finding dated events…'));
-      else if (status === 'needtext') statusLine = h('p', { className: 'text-xs text-amber-300' }, t('stem.timeline.needtext', 'Paste at least a short paragraph of text with some dates in it.'));
-      else if (status === 'noevents') statusLine = h('p', { className: 'text-xs text-amber-300' }, t('stem.timeline.noevents', 'No clear dated events were found in that text. Try a passage with years or dates.'));
-      else if (status === 'needsai') statusLine = h('p', { className: 'text-xs text-amber-300' }, t('stem.timeline.needsai', 'AI hints are off, so opening the manual timeline builder instead — add events by hand.'));
-      else if (status === 'blocked') statusLine = h('p', { className: 'text-xs text-amber-300' }, t('stem.timeline.blocked', 'Pop-up blocked — allow pop-ups for this page and try again.'));
-      else if (status === 'ready' || status === 'open') statusLine = h('p', { className: 'text-xs text-emerald-300' }, t('stem.timeline.ready', 'Timeline is open in a new window. Keep this window open to send it new timelines.'));
-      else if (typeof status === 'string' && status.indexOf('error:') === 0) statusLine = h('p', { className: 'text-xs text-rose-300' }, t('stem.timeline.error', 'Something went wrong generating the timeline: ') + status.slice(6));
+      if (status === 'thinking') statusLine = h('p', { className: 'text-xs ' + (isContrast ? 'text-yellow-300' : 'text-indigo-300') }, t('stem.timeline.thinking', '✨ Reading the text and finding dated events…'));
+      else if (status === 'needtext') statusLine = h('p', { className: 'text-xs ' + (isContrast ? 'text-yellow-300' : 'text-amber-300') }, t('stem.timeline.needtext', 'Paste at least a short paragraph of text with some dates in it.'));
+      else if (status === 'noevents') statusLine = h('p', { className: 'text-xs ' + (isContrast ? 'text-yellow-300' : 'text-amber-300') }, t('stem.timeline.noevents', 'No clear dated events were found in that text. Try a passage with years or dates.'));
+      else if (status === 'needsai') statusLine = h('p', { className: 'text-xs ' + (isContrast ? 'text-yellow-300' : 'text-amber-300') }, t('stem.timeline.needsai', 'AI hints are off, so opening the manual timeline builder instead — add events by hand.'));
+      else if (status === 'blocked') statusLine = h('p', { className: 'text-xs ' + (isContrast ? 'text-yellow-300' : 'text-amber-300') }, t('stem.timeline.blocked', 'Pop-up blocked — allow pop-ups for this page and try again.'));
+      else if (status === 'ready' || status === 'open') statusLine = h('p', { className: 'text-xs ' + (isContrast ? 'text-yellow-300' : 'text-emerald-300') }, t('stem.timeline.ready', 'Timeline is open in a new window. Keep this window open to send it new timelines.'));
+      else if (typeof status === 'string' && status.indexOf('error:') === 0) statusLine = h('p', { className: 'text-xs ' + (isContrast ? 'text-yellow-300' : 'text-rose-300') }, t('stem.timeline.error', 'Something went wrong generating the timeline: ') + status.slice(6));
 
       return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl',
         // The launcher card is dark-authored (text-slate-300 body, bg-slate-800/60
         // privacy panel, slate-900/70 back button) but painted no ground, so it sat
         // on the host card -- white in BOTH themes (stem_lab_module.js ~1633): body
         // text 1.48:1, privacy rows 2.72:1 on the composited grey. Six shelf/launcher
-        // tools share this exact recipe; each gets the slate ground its inks assume.
-        style: { background: '#0f172a', borderRadius: 14, padding: 16 } },
-        h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-400' },
-          t('stem.timeline.title', '🕰️ Timeline Studio — turn a reading into a timeline')),
-        h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
+        // tools share this exact recipe; each gets the slate ground its inks assume,
+        // plus an explicit high-contrast shell when ctx.theme === 'contrast'.
+        style: isContrast
+          ? { background: '#000000', color: '#ffffff', border: '2px solid #ffff00', borderRadius: 14, padding: 16 }
+          : {
+              background: isDark
+                ? 'radial-gradient(680px 260px at 8% -12%, rgba(244,63,94,0.16), transparent 62%), radial-gradient(560px 220px at 94% 0%, rgba(168,85,247,0.14), transparent 58%), #0b1220'
+                : 'radial-gradient(680px 260px at 8% -12%, rgba(244,63,94,0.14), transparent 62%), radial-gradient(560px 220px at 94% 0%, rgba(56,189,248,0.12), transparent 58%), #0f172a',
+              border: '1px solid #334155',
+              boxShadow: '0 16px 36px -22px rgba(2,6,23,0.75)',
+              borderRadius: 14,
+              padding: 16
+            } },
+        h('div', { className: 'flex items-center gap-3' },
+          renderTimelineEmblem(),
+          h('h2', {
+            className: isContrast
+              ? 'text-lg font-bold text-yellow-300'
+              : 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-300 via-pink-300 to-amber-200'
+          }, t('stem.timeline.title', '🕰️ Timeline Studio — turn a reading into a timeline'))
+        ),
+        renderChronologyRailSvg(),
+        h('p', { className: 'text-sm leading-relaxed ' + (isContrast ? 'text-white' : 'text-slate-300') },
           t('stem.timeline.blurb', 'Paste a reading — a history handout, a biography, the story of a scientific discovery — and the AI finds the dated events and lays them out as an interactive timeline you can scroll and step through. Great for turning dense text into a clear sequence.')),
-        h('label', { className: 'text-xs font-bold text-slate-300', htmlFor: 'tl-src' },
+        h('label', { className: 'text-xs font-bold ' + (isContrast ? 'text-yellow-300' : 'text-slate-300'), htmlFor: 'tl-src' },
           t('stem.timeline.source_label', 'Paste the text to turn into a timeline')),
         h('textarea', {
           id: 'tl-src',
@@ -248,15 +414,19 @@
           onChange: function (e) { setSourceText(e.target.value); },
           rows: 8,
           placeholder: t('stem.timeline.placeholder', 'Paste a passage with dates — e.g. a chapter on the Space Race, a scientist’s biography, the events of a novel…'),
-          className: 'w-full rounded-xl bg-slate-900/70 border border-slate-700 p-3 text-sm text-slate-100 placeholder-slate-500 focus:border-rose-500 focus:outline-none resize-y'
+          className: isContrast
+            ? 'w-full rounded-xl bg-black border-2 border-yellow-300 p-3 text-sm text-white placeholder-slate-300 focus:border-cyan-300 focus:outline-none resize-y'
+            : 'w-full rounded-xl bg-slate-900/70 border border-slate-700 p-3 text-sm text-slate-100 placeholder-slate-400 focus:border-rose-500 focus:outline-none resize-y'
         }),
         h('div', { className: 'flex flex-wrap items-center gap-3' },
-          h('label', { className: 'text-xs text-slate-300 flex items-center gap-2' },
+          h('label', { className: 'text-xs flex items-center gap-2 ' + (isContrast ? 'text-white' : 'text-slate-300') },
             t('stem.timeline.reading_level', 'Reading level'),
             h('select', {
               value: grade,
               onChange: function (e) { setGrade(e.target.value); },
-              className: 'rounded-lg bg-slate-900/70 border border-slate-700 px-2 py-1 text-xs text-slate-100'
+              className: isContrast
+                ? 'rounded-lg bg-black border-2 border-yellow-300 px-2 py-1 text-xs text-white'
+                : 'rounded-lg bg-slate-900/70 border border-slate-700 px-2 py-1 text-xs text-slate-100'
             },
               h('option', { value: 'early-elementary' }, t('stem.timeline.lvl_early', 'Early elementary')),
               h('option', { value: 'upper-elementary' }, t('stem.timeline.lvl_upper', 'Upper elementary')),
@@ -265,20 +435,28 @@
           h('button', {
             onClick: generate,
             disabled: busy,
-            className: 'px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 disabled:opacity-60 shadow-md shadow-rose-600/20 transition-all',
+            className: isContrast
+              ? 'px-4 py-2.5 rounded-xl text-sm font-bold text-black bg-yellow-300 border-2 border-yellow-300 disabled:opacity-60 transition-all'
+              : 'px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 disabled:opacity-60 shadow-md shadow-rose-600/20 transition-all',
             'aria-label': t('stem.timeline.generate_title', 'Generate an interactive timeline from the pasted text')
           }, busy ? t('stem.timeline.generating', '✨ Building…') : t('stem.timeline.generate', '✨ Build the timeline')),
           h('button', {
             onClick: function () { openPopup(); },
-            className: 'px-3 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-700 hover:bg-slate-600 transition-all',
+            className: isContrast
+              ? 'px-3 py-2.5 rounded-xl text-xs font-bold text-yellow-300 bg-black border-2 border-yellow-300 transition-all'
+              : 'px-3 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-700 hover:bg-slate-600 transition-all',
             'aria-label': t('stem.timeline.build_title', 'Open the timeline window to build one by hand')
           }, t('stem.timeline.build', '✍️ Build by hand'))),
         statusLine,
-        h('div', { className: 'bg-slate-800/60 rounded-xl p-3 border border-slate-700 text-xs text-slate-300 space-y-1.5' },
+        h('div', {
+          className: isContrast
+            ? 'bg-black rounded-xl p-3 border-2 border-yellow-300 text-xs text-white space-y-1.5'
+            : 'bg-slate-800/60 rounded-xl p-3 border border-slate-700 text-xs text-slate-300 space-y-1.5'
+        },
           h('div', null, (aiOn ? '✨ ' + t('stem.timeline.ai_on', 'AI is ON — it reads your text and pulls out the dated events.')
             : '🌱 ' + t('stem.timeline.ai_off', 'AI hints are off — use “Build by hand” to add events yourself in the timeline window.'))),
           h('div', null, '🔒 ' + t('stem.timeline.privacy', 'Your text and the timeline stay in memory — nothing is saved or graded.'))),
-        h('p', { className: 'text-[0.6875rem] text-slate-300 leading-relaxed' },
+        h('p', { className: 'text-[0.6875rem] leading-relaxed ' + (isContrast ? 'text-white' : 'text-slate-300') },
           t('stem.timeline.credit', 'Timeline rendering: TimelineJS by Northwestern University Knight Lab (timeline.knightlab.com), free and open source under the Mozilla Public License. The timeline library loads from Knight Lab’s CDN, so this tool needs internet.'))
       );
     }

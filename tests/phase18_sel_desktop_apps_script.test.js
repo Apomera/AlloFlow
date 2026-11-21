@@ -118,7 +118,7 @@ describe('Phase 18: SEL Secrets-Lock, Core Fetch, Desktop Electron/MCP & Apps Sc
 
   it('apps_script/session_mailbox/Code.gs: blocks prototype-key DoS in sign-ups, availability, word cloud, and deliverDocument', () => {
     const ctx = loadAppsScriptInVm('apps_script/session_mailbox/Code.gs');
-    expect(ctx.VERSION).toBe(31);
+    expect(ctx.VERSION).toBe(32);
 
     const claims = ctx.normalizeSignupClaims(['toString', 'constructor', '__proto__', 'slot1'], {
       options: [{ id: 'slot1', label: 'Slot 1', capacity: 2 }],
@@ -196,7 +196,7 @@ describe('Phase 18: SEL Secrets-Lock, Core Fetch, Desktop Electron/MCP & Apps Sc
     const mbGs = fs.readFileSync(path.join(ROOT, 'apps_script/session_mailbox/Code.gs'));
     const mbSha = crypto.createHash('sha256').update(mbGs).digest('hex');
     for (let i = 0; i < hostTexts.length; i++) {
-      expect(hostTexts[i], `${hostPaths[i]} mailbox version`).toContain('const ALLO_MB_SCRIPT_VERSION = 31;');
+      expect(hostTexts[i], `${hostPaths[i]} mailbox version`).toContain('const ALLO_MB_SCRIPT_VERSION = 32;');
       expect(hostTexts[i], `${hostPaths[i]} mailbox sha256`).toContain(`const ALLO_MB_SCRIPT_SHA256 = '${mbSha}';`);
     }
 

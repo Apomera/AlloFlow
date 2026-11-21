@@ -361,21 +361,24 @@
 
   // ── lazy script loader (the established AlloFlow runtime-injection pattern) ──
   var _loaded = {};
+  var _loading = {};
   function loadScript(url) {
-    return new Promise(function (resolve, reject) {
-      if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
-        return reject(new Error('External script loading disabled in desktop app'));
-      }
-      if (_loaded[url]) return resolve();
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+      return Promise.reject(new Error('External script loading disabled in desktop app'));
+    }
+    if (_loaded[url]) return Promise.resolve();
+    if (_loading[url]) return _loading[url];
+    _loading[url] = new Promise(function (resolve, reject) {
       var s = document.createElement('script');
       s.src = url; s.async = true;
       if (url === ACORN_URL) s.integrity = 'sha384-mnjmEdE52E6cL7DhdNcZCJyzDp1VxguMPlMeRHO+bi6EHHLkU9vcqs9XbpTHPc+d';
       s.crossOrigin = 'anonymous';
       s.referrerPolicy = 'no-referrer';
-      s.onload = function () { _loaded[url] = true; resolve(); };
-      s.onerror = function () { reject(new Error('failed to load ' + url)); };
+      s.onload = function () { _loaded[url] = true; delete _loading[url]; resolve(); };
+      s.onerror = function () { delete _loading[url]; try { s.remove(); } catch (_) {} reject(new Error('failed to load ' + url)); };
       document.head.appendChild(s);
     });
+    return _loading[url];
   }
   function ensureAcorn() {
     if (window.acorn) return Promise.resolve();
@@ -498,7 +501,8 @@
 
     var setup = [
       '<script>(function(){',
-      '  function send(m){ try{ m.__forge=1; parent.postMessage(m,"*"); }catch(e){} }',
+      '  window.__forgeFailed = false;',
+      '  function send(m){ try{ if(m && m.type==="smoke" && m.ok===false) window.__forgeFailed=true; m.__forge=1; parent.postMessage(m,"*"); }catch(e){} }',
       '  window.__forgeSend = send;',
       '  window.onerror = function(msg,s,l,c,err){ send({type:"smoke",ok:false,error:String((err&&err.stack)||msg)}); return true; };',
       '  window.addEventListener("unhandledrejection", function(e){ send({type:"smoke",ok:false,error:"unhandled rejection: "+String((e.reason&&e.reason.stack)||e.reason)}); });',
@@ -555,7 +559,7 @@
       '    var toolEl = React.createElement(function ForgeSmoke(){ return window.StemLab.renderTool(ids[0], ctx); });',
       '    var root = ReactDOM.createRoot(document.getElementById("root"));',
       '    root.render(React.createElement(EB, null, toolEl));',
-      '    setTimeout(function(){ send({type:"smoke", ok:true, ids:ids, target:"unknown"}); }, 1200);',
+      '    setTimeout(function(){ if(!window.__forgeFailed) send({type:"smoke", ok:true, ids:ids, target:"unknown"}); }, 1200);',
       '  } catch(e){ send({type:"smoke", ok:false, error:String((e&&e.stack)||e)}); }',
       '})();</sc' + 'ript>'
     ].join('\n');
@@ -626,7 +630,9 @@
     var s_report = useState(null); var report = s_report[0], setReport = s_report[1];
     var s_smoke = useState(null); var smoke = s_smoke[0], setSmoke = s_smoke[1];
     var s_doc = useState(''); var smokeDoc = s_doc[0], setSmokeDoc = s_doc[1];
+    var s_previewRun = useState(0); var previewRun = s_previewRun[0], setPreviewRun = s_previewRun[1];
     var s_acorn = useState(false); var acornReady = s_acorn[0], setAcornReady = s_acorn[1];
+    var s_acornErr = useState(''); var acornError = s_acornErr[0], setAcornError = s_acornErr[1];
     var s_aff = useState({}); var affirm = s_aff[0], setAffirm = s_aff[1];
     var s_author = useState(ctx.studentNickname || ''); var author = s_author[0], setAuthor = s_author[1];
     var s_license = useState('CC-BY-SA-4.0'); var license = s_license[0], setLicense = s_license[1];
@@ -634,11 +640,32 @@
 
     var iframeRef = useRef(null);
     var cancelRef = useRef(false);
+    var mountedRef = useRef(true);
+    var submitCtrlRef = useRef(null);
+    var submitTimerRef = useRef(null);
+
+    useEffect(function () {
+      mountedRef.current = true;
+      return function () {
+        mountedRef.current = false;
+        cancelRef.current = true;
+        if (submitTimerRef.current !== null) {
+          clearTimeout(submitTimerRef.current);
+          submitTimerRef.current = null;
+        }
+        if (submitCtrlRef.current) {
+          try { submitCtrlRef.current.abort(); } catch (_) {}
+          submitCtrlRef.current = null;
+        }
+      };
+    }, []);
 
     // lazy-load acorn for the static contract check
     useEffect(function () {
       var alive = true;
-      ensureAcorn().then(function () { if (alive) setAcornReady(true); }).catch(function () {});
+      ensureAcorn()
+        .then(function () { if (alive) { setAcornError(''); setAcornReady(true); } })
+        .catch(function (err) { if (alive) setAcornError(String((err && err.message) || err || 'Validator unavailable')); });
       return function () { alive = false; };
     }, []);
 
@@ -711,6 +738,7 @@
       // Remember WHICH source this smoke run covers, so the effect above can
       // invalidate the result the moment the source moves off it.
       smokeSrcRef.current = src;
+      setPreviewRun(function (n) { return n + 1; });
       setSmokeDoc(buildSmokeDoc(src, { isDark: dark, isContrast: hc }));
     }, [src, runStatic, dark, hc]);
 
@@ -733,10 +761,11 @@
       var prevSrc = src;
 
       function stage(id, label) {
+        if (!mountedRef.current) return;
         setPhase(id);
         ctx.announceToSR && ctx.announceToSR(label);
       }
-      function cancelled() { return cancelRef.current; }
+      function cancelled() { return cancelRef.current || !mountedRef.current; }
 
       (function () {
         var plan = null, source = '', issues = [];
@@ -791,10 +820,12 @@
           ctx.update && ctx.update('forge', 'src', source);
           runStatic(source);
           smokeSrcRef.current = source;
+          setPreviewRun(function (n) { return n + 1; });
           setSmokeDoc(buildSmokeDoc(source, { isDark: dark, isContrast: hc }));
           ctx.addToast && ctx.addToast(t('stem.forge.generated', 'Draft generated — review the validator + preview.'), 'success');
           ctx.announceToSR && ctx.announceToSR('Plugin draft generated.');
         }).catch(function (err) {
+          if (!mountedRef.current) return;
           setBusy(false); setPhase('');
           if (err && err.message === '__forge_cancelled__') {
             // Put back exactly what the author had before the run started.
@@ -841,12 +872,19 @@
         affirmations: AFFIRMATIONS.reduce(function (o, a) { o[a.key] = affirm[a.key] === true; return o; }, {})
       };
       var submitCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      submitCtrlRef.current = submitCtrl;
       var submitTimer = submitCtrl ? setTimeout(function () { submitCtrl.abort(); }, 20000) : null;
-      var clearSubmitTimer = function () { if (submitTimer !== null) { clearTimeout(submitTimer); submitTimer = null; } };
+      submitTimerRef.current = submitTimer;
+      var clearSubmitTimer = function () {
+        if (submitTimer !== null) { clearTimeout(submitTimer); submitTimer = null; }
+        if (submitTimerRef.current === submitTimer) submitTimerRef.current = null;
+        if (submitCtrlRef.current === submitCtrl) submitCtrlRef.current = null;
+      };
       fetch(WORKER_BASE + '/submitPlugin', Object.assign({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }, submitCtrl ? { signal: submitCtrl.signal } : {}))
-        .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
+        .then(function (r) { return r.json().catch(function () { return null; }).then(function (j) { return { status: r.status, j: j }; }); })
         .then(function (o) {
           clearSubmitTimer();
+          if (!mountedRef.current) return;
           setSubmitting(false);
           if (o.status === 201 && o.j && o.j.ok) {
             ctx.addToast && ctx.addToast(t('stem.forge.submitted', 'Submitted for maintainer review ✓'), 'success');
@@ -856,7 +894,12 @@
             ctx.addToast && ctx.addToast(t('stem.forge.submit_failed', 'Submit failed: ') + ((o.j && o.j.error) || ('HTTP ' + o.status)), 'error');
           }
         })
-        .catch(function (e) { clearSubmitTimer(); setSubmitting(false); ctx.addToast && ctx.addToast(t('stem.forge.submit_failed', 'Submit failed: ') + (e && e.message || e), 'error'); });
+        .catch(function (e) {
+          clearSubmitTimer();
+          if (!mountedRef.current) return;
+          setSubmitting(false);
+          ctx.addToast && ctx.addToast(t('stem.forge.submit_failed', 'Submit failed: ') + (e && e.message || e), 'error');
+        });
     }, [ctx, report, smoke, src, author, license, affirm, t]);
 
     // ── styling helpers ──
@@ -910,6 +953,39 @@
     var heroFg = hc ? HC_FG : '#ffffff';
     var heroSub = hc ? HC_FG : '#e0e7ff';
 
+    function renderForgeEmblem() {
+      return h('svg', { width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0, marginTop: 2 } },
+        h('defs', null,
+          h('radialGradient', { id: 'fg-emb-bg', cx: '38%', cy: '28%', r: '72%' },
+            h('stop', { offset: '0%', stopColor: '#4338ca' }),
+            h('stop', { offset: '58%', stopColor: '#1e1b4b' }),
+            h('stop', { offset: '100%', stopColor: '#020617' })
+          ),
+          h('radialGradient', { id: 'fg-spark-aura', cx: '50%', cy: '50%', r: '50%' },
+            h('stop', { offset: '0%', stopColor: '#fde047', stopOpacity: 0.72 }),
+            h('stop', { offset: '55%', stopColor: '#f97316', stopOpacity: 0.25 }),
+            h('stop', { offset: '100%', stopColor: '#f97316', stopOpacity: 0 })
+          ),
+          h('linearGradient', { id: 'fg-anvil-metal', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#e2e8f0' }),
+            h('stop', { offset: '45%', stopColor: '#94a3b8' }),
+            h('stop', { offset: '100%', stopColor: '#475569' })
+          )
+        ),
+        h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 10, fill: hc ? HC_BG : 'url(#fg-emb-bg)', stroke: hc ? HC_FG : '#a5b4fc', strokeWidth: 1.4 }),
+        !hc && h('path', { d: 'M9 5 H33', stroke: '#e0e7ff', strokeWidth: 0.9, opacity: 0.4, strokeLinecap: 'round' }),
+        // Glowing forge spark aura above anvil
+        !hc && h('circle', { cx: 23, cy: 13, r: 9.5, fill: 'url(#fg-spark-aura)' }),
+        // Metallic anvil silhouette with top specular edge
+        h('path', { d: 'M8 20 H31 C33.5 20 35 21.8 34 24 L29.5 25.5 V29 H33 V32 H12 V29 H15.5 V25.5 L11.5 24 C9 23.2 8 21.6 8 20 Z', fill: hc ? HC_FG : 'url(#fg-anvil-metal)', stroke: hc ? HC_FG : '#f8fafc', strokeWidth: 0.9, strokeLinejoin: 'round' }),
+        !hc && h('line', { x1: 11, y1: 21.2, x2: 30, y2: 21.2, stroke: '#ffffff', strokeWidth: 1, opacity: 0.65, strokeLinecap: 'round' }),
+        // Forge sparks
+        h('path', { d: 'M23 7.5 L24.2 11.4 L28 12.5 L24.2 13.6 L23 17.5 L21.8 13.6 L18 12.5 L21.8 11.4 Z', fill: hc ? HC_BTN : '#fde047' }),
+        h('circle', { cx: 15, cy: 11, r: 1.4, fill: hc ? HC_FG : '#fb923c' }),
+        h('circle', { cx: 30, cy: 10.5, r: 1.2, fill: hc ? HC_FG : '#38bdf8' })
+      );
+    }
+
     function renderPipelineSvg(isLocked) {
       var stages = [
         { num: '01', name: 'Author', done: !isLocked && charCount > 40, fail: false },
@@ -918,28 +994,54 @@
         { num: '04', name: 'Submit', done: !isLocked && canSubmit, fail: false }
       ];
       return h('svg', {
-        viewBox: '0 0 560 66',
+        viewBox: '0 0 560 68',
         role: 'img',
         'aria-label': t('stem.forge.pipeline_aria', 'Four-stage plugin forge pipeline: Author, AST Contract Gate, Sandbox Smoke, and Submit Queue.'),
         style: { display: 'block', width: '100%', maxWidth: 680, height: 'auto', marginTop: 10 }
       },
+        h('defs', null,
+          h('linearGradient', { id: 'fg-pipe-rail', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#0f172a', stopOpacity: 0.52 }),
+            h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.72 })
+          ),
+          h('linearGradient', { id: 'fg-card-done', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#16a34a', stopOpacity: 0.36 }),
+            h('stop', { offset: '100%', stopColor: '#052e16', stopOpacity: 0.56 })
+          ),
+          h('linearGradient', { id: 'fg-card-idle', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#312e81', stopOpacity: 0.42 }),
+            h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0.65 })
+          ),
+          h('linearGradient', { id: 'fg-card-fail', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#dc2626', stopOpacity: 0.36 }),
+            h('stop', { offset: '100%', stopColor: '#450a0a', stopOpacity: 0.58 })
+          )
+        ),
+        !hc && h('rect', { x: 2, y: 4, width: 556, height: 60, rx: 13, fill: 'url(#fg-pipe-rail)', stroke: 'rgba(165,180,252,0.2)', strokeWidth: 1 }),
         stages.slice(0, -1).map(function (st, idx) {
           var x1 = 122 + idx * 140;
           var x2 = x1 + 26;
-          var lineCol = hc ? HC_FG : (st.done ? '#4ade80' : 'rgba(224,231,255,0.38)');
-          return h('line', { key: 'ln-' + idx, x1: x1, y1: 33, x2: x2, y2: 33, stroke: lineCol, strokeWidth: st.done ? 2.5 : 1.6, strokeDasharray: st.done ? undefined : '4 3' });
+          var lineCol = hc ? HC_FG : (st.done ? '#4ade80' : 'rgba(224,231,255,0.42)');
+          return h('g', { key: 'ln-' + idx },
+            !hc && st.done && h('line', { x1: x1, y1: 34, x2: x2 - 4, y2: 34, stroke: '#4ade80', strokeWidth: 6, opacity: 0.24 }),
+            h('line', { x1: x1, y1: 34, x2: x2 - 4, y2: 34, stroke: lineCol, strokeWidth: st.done ? 2.4 : 1.5, strokeDasharray: st.done ? undefined : '4 3' }),
+            h('polygon', { points: (x2 - 5) + ',30 ' + x2 + ',34 ' + (x2 - 5) + ',38', fill: lineCol })
+          );
         }),
         stages.map(function (st, idx) {
           var x = 10 + idx * 140;
-          var fill = hc ? HC_BG : (st.fail ? 'rgba(220,38,38,0.28)' : st.done ? 'rgba(22,163,74,0.28)' : 'rgba(15,23,42,0.36)');
-          var stk = hc ? (st.done ? HC_BTN : HC_FG) : (st.fail ? '#fca5a5' : st.done ? '#4ade80' : 'rgba(199,210,254,0.45)');
+          var fill = hc ? HC_BG : (st.fail ? 'url(#fg-card-fail)' : st.done ? 'url(#fg-card-done)' : 'url(#fg-card-idle)');
+          var stk = hc ? (st.done ? HC_BTN : HC_FG) : (st.fail ? '#fca5a5' : st.done ? '#4ade80' : 'rgba(199,210,254,0.48)');
           var badgeText = st.fail ? '✖' : (st.done ? '✔' : st.num);
           return h('g', { key: st.num },
-            h('rect', { x: x, y: 12, width: 112, height: 42, rx: 10, fill: fill, stroke: stk, strokeWidth: st.done || st.fail ? 2 : 1.2 }),
-            h('circle', { cx: x + 22, cy: 33, r: 11, fill: hc ? HC_BG : (st.fail ? '#dc2626' : st.done ? '#16a34a' : 'rgba(255,255,255,0.16)'), stroke: stk, strokeWidth: 1.2 }),
-            h('text', { x: x + 22, y: 36.5, textAnchor: 'middle', fill: hc ? (st.done ? HC_BTN : HC_FG) : '#ffffff', fontSize: 9.5, fontWeight: '800' }, badgeText),
-            h('text', { x: x + 40, y: 30, fill: hc ? HC_FG : '#ffffff', fontSize: 10.5, fontWeight: '800' }, st.name),
-            h('text', { x: x + 40, y: 44, fill: hc ? HC_FG : '#c7d2fe', fontSize: 8.5, fontWeight: '600' }, st.fail ? 'Check log' : (st.done ? 'Ready' : (isLocked ? 'Locked' : 'Pending')))
+            !hc && (st.done || st.fail) && h('rect', { x: x, y: 13, width: 112, height: 42, rx: 10, fill: 'none', stroke: stk, strokeWidth: 5, opacity: 0.16 }),
+            h('rect', { x: x, y: 13, width: 112, height: 42, rx: 10, fill: fill, stroke: stk, strokeWidth: st.done || st.fail ? 1.8 : 1.2 }),
+            !hc && h('line', { x1: x + 10, y1: 14.5, x2: x + 102, y2: 14.5, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.28 }),
+            !hc && (st.done || st.fail) && h('circle', { cx: x + 22, cy: 34, r: 14, fill: st.fail ? '#dc2626' : '#16a34a', opacity: 0.22 }),
+            h('circle', { cx: x + 22, cy: 34, r: 11, fill: hc ? HC_BG : (st.fail ? '#dc2626' : st.done ? '#16a34a' : 'rgba(255,255,255,0.16)'), stroke: stk, strokeWidth: 1.2 }),
+            h('text', { x: x + 22, y: 37.5, textAnchor: 'middle', fill: hc ? (st.done ? HC_BTN : HC_FG) : '#ffffff', fontSize: 9.5, fontWeight: '800' }, badgeText),
+            h('text', { x: x + 40, y: 31, fill: hc ? HC_FG : '#ffffff', fontSize: 10.5, fontWeight: '800' }, st.name),
+            h('text', { x: x + 40, y: 45, fill: hc ? HC_FG : '#c7d2fe', fontSize: 8.5, fontWeight: '600' }, st.fail ? 'Check log' : (st.done ? 'Ready' : (isLocked ? 'Locked' : 'Pending')))
           );
         })
       );
@@ -952,7 +1054,7 @@
       "  window.StemLab." + "registerTool('balanceDemo', {",
       "    icon: '\\u2696\\uFE0F',",
       "    label: 'Balance Scale Demo',",
-      "    desc: 'Adjust left and right weights to balance the SVG beam.',",
+      "    desc: 'Adjust left and right weights to balance the interactive beam.',",
       "    color: 'indigo',",
       "    category: 'math',",
       "    render: function (ctx) { return ctx.React.createElement(BalanceApp, { ctx: ctx }); }",
@@ -961,18 +1063,69 @@
       "    var ctx = props.ctx, React = ctx.React, h = React.createElement;",
       "    var lState = React.useState(4), left = lState[0], setLeft = lState[1];",
       "    var rState = React.useState(6), right = rState[0], setRight = rState[1];",
-      "    var dark = !!ctx.isDark, tilt = Math.max(-14, Math.min(14, (right - left) * 3));",
-      "    return h('div', { style: { padding: 14, color: dark ? '#e2e8f0' : '#0f172a' } },",
-      "      h('h3', { style: { marginTop: 0 } }, 'Balance Scale (' + left + ' vs ' + right + ')'),",
-      "      h('svg', { viewBox: '0 0 260 110', style: { width: '100%', maxWidth: 320, display: 'block' } },",
-      "        h('polygon', { points: '130,64 114,96 146,96', fill: '#4f46e5' }),",
-      "        h('g', { transform: 'rotate(' + tilt + ' 130 64)' },",
-      "          h('line', { x1: 42, y1: 64, x2: 218, y2: 64, stroke: '#4f46e5', strokeWidth: 5, strokeLinecap: 'round' }),",
-      "          h('circle', { cx: 60, cy: 48, r: 8 + left, fill: '#0ea5e9' }),",
-      "          h('circle', { cx: 200, cy: 48, r: 8 + right, fill: '#10b981' }))),",
-      "      h('div', { style: { display: 'flex', gap: 10, marginTop: 8 } },",
-      "        h('button', { onClick: function () { setLeft(function (v) { return (v % 9) + 1; }); } }, 'Left: ' + left),",
-      "        h('button', { onClick: function () { setRight(function (v) { return (v % 9) + 1; }); } }, 'Right: ' + right))",
+      "    var cvsRef = React.useRef(null);",
+      "    var dark = !!ctx.isDark, hc = !!ctx.isContrast;",
+      "    var tilt = Math.max(-14, Math.min(14, (right - left) * 3));",
+      "    var balanced = left === right;",
+      "    React.useEffect(function () {",
+      "      var c = cvsRef.current;",
+      "      if (!c || typeof c.getContext !== 'function') return;",
+      "      var g = c.getContext('2d');",
+      "      if (!g) return;",
+      "      var W = c.width, H = c.height;",
+      "      g.clearRect(0, 0, W, H);",
+      "      // Recessed studio backdrop",
+      "      if (!hc && typeof g.createLinearGradient === 'function') {",
+      "        var bg = g.createLinearGradient(0, 0, 0, H);",
+      "        bg.addColorStop(0, dark ? '#020617' : '#f8fafc');",
+      "        bg.addColorStop(1, dark ? '#0f172a' : '#e2e8f0');",
+      "        g.fillStyle = bg;",
+      "      } else {",
+      "        g.fillStyle = hc ? '#000000' : (dark ? '#0f172a' : '#f8fafc');",
+      "      }",
+      "      g.fillRect(0, 0, W, H);",
+      "      // Calibrated horizon & center axis",
+      "      g.strokeStyle = hc ? '#ffff00' : (dark ? 'rgba(148,163,184,0.22)' : 'rgba(100,116,139,0.24)');",
+      "      g.lineWidth = 1;",
+      "      g.beginPath(); g.moveTo(20, 108); g.lineTo(W - 20, 108); g.stroke();",
+      "      // Metallic fulcrum base",
+      "      g.beginPath(); g.moveTo(150, 68); g.lineTo(130, 108); g.lineTo(170, 108); g.closePath();",
+      "      if (!hc && typeof g.createLinearGradient === 'function') {",
+      "        var fg = g.createLinearGradient(130, 68, 170, 108);",
+      "        fg.addColorStop(0, '#818cf8'); fg.addColorStop(1, '#312e81');",
+      "        g.fillStyle = fg;",
+      "      } else { g.fillStyle = hc ? '#ffff00' : '#4f46e5'; }",
+      "      g.fill();",
+      "      // Tilting beam + radial-shaded weight spheres",
+      "      g.save(); g.translate(150, 68); g.rotate(tilt * Math.PI / 180);",
+      "      if (!hc) { g.strokeStyle = balanced ? 'rgba(52,211,153,0.35)' : 'rgba(99,102,241,0.3)'; g.lineWidth = 11; g.lineCap = 'round'; g.beginPath(); g.moveTo(-104, 0); g.lineTo(104, 0); g.stroke(); }",
+      "      g.strokeStyle = hc ? '#00ff00' : (balanced ? '#10b981' : '#6366f1'); g.lineWidth = 5; g.lineCap = 'round';",
+      "      g.beginPath(); g.moveTo(-104, 0); g.lineTo(104, 0); g.stroke();",
+      "      var drawOrb = function (ox, val, c0, c1, c2) {",
+      "        var rr = 9 + val * 1.4;",
+      "        var oy = -rr - 3;",
+      "        if (!hc && typeof g.createRadialGradient === 'function') {",
+      "          var rg = g.createRadialGradient(ox - rr * 0.3, oy - rr * 0.3, 1.5, ox, oy, rr);",
+      "          rg.addColorStop(0, c0); rg.addColorStop(0.5, c1); rg.addColorStop(1, c2);",
+      "          g.fillStyle = rg;",
+      "        } else { g.fillStyle = hc ? '#ffff00' : c1; }",
+      "        g.beginPath(); g.arc(ox, oy, rr, 0, Math.PI * 2); g.fill();",
+      "        g.strokeStyle = hc ? '#000000' : '#ffffff'; g.lineWidth = 1.4; g.stroke();",
+      "        g.fillStyle = hc ? '#000000' : '#ffffff'; g.font = 'bold 11px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';",
+      "        g.fillText(String(val), ox, oy);",
+      "      };",
+      "      drawOrb(-84, left, '#e0f2fe', '#0ea5e9', '#0369a1');",
+      "      drawOrb(84, right, '#d1fae5', '#10b981', '#047857');",
+      "      g.restore();",
+      "      // Pivot jewel",
+      "      g.beginPath(); g.arc(150, 68, 4.5, 0, Math.PI * 2); g.fillStyle = hc ? '#00ff00' : '#e0e7ff'; g.fill();",
+      "    }, [left, right, dark, hc, tilt, balanced]);",
+      "    return h('div', { style: { padding: 14, color: hc ? '#ffff00' : (dark ? '#e2e8f0' : '#0f172a') } },",
+      "      h('h3', { style: { marginTop: 0 } }, 'Balance Scale (' + left + ' vs ' + right + (balanced ? ' · Balanced!' : '') + ')'),",
+      "      h('canvas', { ref: cvsRef, width: 300, height: 124, role: 'img', 'aria-label': 'Balance beam with left weight ' + left + ' and right weight ' + right, style: { width: '100%', maxWidth: 340, height: 'auto', display: 'block', borderRadius: 10, border: hc ? '2px solid #ffff00' : '1px solid rgba(148,163,184,0.35)' } }),",
+      "      h('div', { style: { display: 'flex', gap: 10, marginTop: 10 } },",
+      "        h('button', { type: 'button', onClick: function () { setLeft(function (v) { return (v % 9) + 1; }); } }, 'Left: ' + left),",
+      "        h('button', { type: 'button', onClick: function () { setRight(function (v) { return (v % 9) + 1; }); } }, 'Right: ' + right))",
       "    );",
       "  }",
       "})();"
@@ -987,10 +1140,13 @@
     if (!ctx.isTeacherMode) {
       return h('div', { style: { padding: 18, color: fg, maxWidth: 740, margin: '0 auto', background: hc ? HC_BG : (dark ? '#0f172a' : '#f8fafc'), border: (hc ? '2px solid ' : '1px solid ') + border, borderRadius: 16 } },
         h('div', { style: { padding: 18, borderRadius: 12, background: heroBg, border: hc ? '2px solid ' + HC_FG : '1px solid rgba(165,180,252,0.3)', color: heroFg } },
-          h('div', { style: { fontSize: 10.5, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: heroSub, marginBottom: 4 } }, t('stem.forge.kicker', 'PLUGIN FOUNDRY · CONTRACT v') + (CONTRACT.version || '1.0')),
-          h('h2', { style: { margin: 0, fontSize: 22, color: heroFg } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
-          h('p', { style: { color: heroSub, lineHeight: 1.55, margin: '8px 0 0', fontSize: 13.5 } },
-            t('stem.forge.teacher_only', 'The Tool Forge is a teacher / developer workspace for authoring new STEAM Lab and SEL Hub tools. Switch on Teacher Mode to open it.')),
+          h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
+            renderForgeEmblem(),
+            h('div', { style: { minWidth: 0, flex: 1 } },
+              h('div', { style: { fontSize: 10.5, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: heroSub, marginBottom: 4 } }, t('stem.forge.kicker', 'PLUGIN FOUNDRY · CONTRACT v') + (CONTRACT.version || '1.0')),
+              h('h2', { style: { margin: 0, fontSize: 22, color: heroFg } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
+              h('p', { style: { color: heroSub, lineHeight: 1.55, margin: '8px 0 0', fontSize: 13.5 } },
+                t('stem.forge.teacher_only', 'The Tool Forge is a teacher / developer workspace for authoring new STEAM Lab and SEL Hub tools. Switch on Teacher Mode to open it.')))),
           renderPipelineSvg(true)
         )
       );
@@ -1008,11 +1164,13 @@
       // Hero Workbench Header
       h('header', { style: { padding: 16, borderRadius: 14, background: heroBg, border: hc ? '2px solid ' + HC_FG : '1px solid rgba(165,180,252,0.28)', color: heroFg, boxShadow: hc ? 'none' : '0 10px 26px rgba(30,27,75,0.22)' } },
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' } },
-          h('div', { style: { flex: '1 1 280px', minWidth: 0 } },
-            h('div', { style: { fontSize: 10.5, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: heroSub, marginBottom: 4 } }, t('stem.forge.kicker', 'PLUGIN FOUNDRY · CONTRACT v') + (CONTRACT.version || '1.0')),
-            h('h2', { style: { margin: 0, fontSize: 22, color: heroFg, lineHeight: 1.15 } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
-            h('p', { style: { margin: '6px 0 0', fontSize: 12.5, color: heroSub, lineHeight: 1.45 } },
-              'contract v' + (CONTRACT.version || '1.0') + ' · ' + (acornReady ? t('stem.forge.gate_live', 'gate live') : t('stem.forge.gate_loading', 'loading validator…')))
+          h('div', { style: { flex: '1 1 280px', minWidth: 0, display: 'flex', alignItems: 'flex-start', gap: 12 } },
+            renderForgeEmblem(),
+            h('div', { style: { minWidth: 0, flex: 1 } },
+              h('div', { style: { fontSize: 10.5, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: heroSub, marginBottom: 4 } }, t('stem.forge.kicker', 'PLUGIN FOUNDRY · CONTRACT v') + (CONTRACT.version || '1.0')),
+              h('h2', { style: { margin: 0, fontSize: 22, color: heroFg, lineHeight: 1.15 } }, '🛠️ ' + t('stem.forge.label', 'Tool Forge')),
+              h('p', { style: { margin: '6px 0 0', fontSize: 12.5, color: heroSub, lineHeight: 1.45 } },
+                'contract v' + (CONTRACT.version || '1.0') + ' · ' + (acornReady ? t('stem.forge.gate_live', 'gate live') : (acornError ? t('stem.forge.gate_offline', 'validator offline') : t('stem.forge.gate_loading', 'loading validator…')))))
           ),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 }, role: 'list', 'aria-label': t('stem.forge.telemetry_aria', 'Plugin build status') },
             [
@@ -1031,18 +1189,32 @@
       h('div', { role: 'tablist', 'aria-label': t('stem.forge.doors_aria', 'Authoring mode'), style: { display: 'flex', flexWrap: 'wrap', gap: 4, borderBottom: (hc ? '2px solid ' : '1px solid ') + border } },
         h('button', {
           type: 'button', role: 'tab', id: 'forge-tab-ai',
+          tabIndex: door === 'ai' ? 0 : -1,
+          'aria-controls': 'forge-door-panel',
           onClick: function () { setDoor('ai'); },
+          onKeyDown: function (e) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'End') {
+              e.preventDefault(); setDoor('code');
+              var btnEl = document.getElementById('forge-tab-code'); if (btnEl) btnEl.focus();
+            }
+          },
           style: tab(door === 'ai'),
           'aria-selected': door === 'ai',
-          'aria-pressed': door === 'ai',
           title: !aiText ? t('stem.forge.ai_unavailable_short', 'Needs an AI connection') : undefined
         }, '🤖 ' + t('stem.forge.door_ai', 'Describe (AI)') + (aiText ? '' : ' ' + t('stem.forge.door_ai_locked_suffix', '(needs AI)'))),
         h('button', {
           type: 'button', role: 'tab', id: 'forge-tab-code',
+          tabIndex: door === 'code' ? 0 : -1,
+          'aria-controls': 'forge-door-panel',
           onClick: function () { setDoor('code'); },
+          onKeyDown: function (e) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'Home') {
+              e.preventDefault(); setDoor('ai');
+              var btnEl = document.getElementById('forge-tab-ai'); if (btnEl) btnEl.focus();
+            }
+          },
           style: tab(door === 'code'),
-          'aria-selected': door === 'code',
-          'aria-pressed': door === 'code'
+          'aria-selected': door === 'code'
         }, '⌨️ ' + t('stem.forge.door_code', 'Code'))
       ),
 
@@ -1050,7 +1222,7 @@
       h('div', { style: { display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'stretch' } },
 
         // LEFT — the active door
-        h('div', { style: { flex: '1 1 400px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10, padding: 12, borderRadius: 12, background: panelBg, border: (hc ? '2px solid ' : '1px solid ') + border } },
+        h('div', { id: 'forge-door-panel', role: 'tabpanel', 'aria-labelledby': door === 'ai' ? 'forge-tab-ai' : 'forge-tab-code', style: { flex: '1 1 400px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10, padding: 12, borderRadius: 12, background: panelBg, border: (hc ? '2px solid ' : '1px solid ') + border } },
           door === 'ai'
             ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 // Say it BEFORE the textarea, not in a toast after Generate.
@@ -1071,19 +1243,21 @@
                     }, item.label);
                   })
                 ),
-                h('label', { style: { fontSize: 13, fontWeight: 700 } }, t('stem.forge.describe', 'Describe the tool you want')),
+                h('label', { htmlFor: 'forge-desc-input', style: { fontSize: 13, fontWeight: 700 } }, t('stem.forge.describe', 'Describe the tool you want')),
                 h('textarea', {
+                  id: 'forge-desc-input',
                   value: desc, onChange: function (e) { setDesc(e.target.value); }, rows: 5,
                   'aria-label': t('stem.forge.describe', 'Describe the tool you want'),
                   placeholder: t('stem.forge.placeholder', 'e.g. A lab where students drag charges around and see the electric field lines update live, with a quest to build a dipole.'),
                   style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid ' + border, background: editorBg, color: fg, font: '14px system-ui', resize: 'vertical' }
                 }),
                 h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-                  h('label', { style: { fontSize: 13, fontWeight: 600 } }, t('stem.forge.target', 'Target') + ':'),
-                  h('select', { value: target, onChange: function (e) { setTarget(e.target.value); }, 'aria-label': t('stem.forge.target', 'Target'), style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + border, background: editorBg, color: fg } },
+                  h('label', { htmlFor: 'forge-target-select', style: { fontSize: 13, fontWeight: 600 } }, t('stem.forge.target', 'Target') + ':'),
+                  h('select', { id: 'forge-target-select', value: target, onChange: function (e) { setTarget(e.target.value); }, 'aria-label': t('stem.forge.target', 'Target'), style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + border, background: editorBg, color: fg } },
                     h('option', { value: 'stem' }, 'STEAM Lab'),
                     h('option', { value: 'sel' }, 'SEL Hub')),
                   h('button', {
+                    type: 'button',
                     onClick: generate,
                     disabled: busy || !aiText,
                     'aria-busy': busy,
@@ -1092,6 +1266,7 @@
                   }, busy ? t('stem.forge.working', 'Working…') : t('stem.forge.generate', 'Generate plugin')),
                   // Four sequential model calls with no way out until now.
                   busy ? h('button', {
+                    type: 'button',
                     onClick: function () { cancelRef.current = true; ctx.announceToSR && ctx.announceToSR('Cancelling after the current step.'); },
                     style: btn(false),
                     'aria-label': t('stem.forge.cancel', 'Cancel generation')
@@ -1110,7 +1285,7 @@
             : h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, flex: 1 } },
                 h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
-                    h('label', { style: { fontSize: 13, fontWeight: 700 } }, t('stem.forge.source', 'Plugin source')),
+                    h('label', { htmlFor: 'forge-source-input', style: { fontSize: 13, fontWeight: 700 } }, t('stem.forge.source', 'Plugin source')),
                     h('span', { style: { fontSize: 11, color: sub, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' } }, lineCount + ' ln · ' + charCount + ' ch')
                   ),
                   h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
@@ -1119,6 +1294,7 @@
                   )
                 ),
                 h('textarea', {
+                  id: 'forge-source-input',
                   value: src, onChange: function (e) { setSrc(e.target.value); }, spellCheck: false,
                   'aria-label': t('stem.forge.source', 'Plugin source'),
                   style: { width: '100%', boxSizing: 'border-box', minHeight: 370, padding: 12, borderRadius: 10, border: '1px solid ' + border, background: editorBg, color: fg, font: '12.5px ui-monospace, SFMono-Regular, Menlo, monospace', lineHeight: 1.55, whiteSpace: 'pre', overflowWrap: 'normal', resize: 'vertical' }
@@ -1132,10 +1308,10 @@
           h('div', { role: 'status', 'aria-live': 'polite', style: { border: (hc ? '2px solid ' : '1px solid ') + border, borderRadius: 12, padding: 12, background: panelBg } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
               h('strong', { style: { fontSize: 13.5 } }, t('stem.forge.validator', 'Contract validator')),
-              h('button', { onClick: runPreview, style: btn(true) }, t('stem.forge.run', 'Validate + preview'))
+              h('button', { type: 'button', onClick: runPreview, style: btn(true) }, t('stem.forge.run', 'Validate + preview'))
             ),
             !report
-              ? h('div', { style: { fontSize: 12, color: sub } }, acornReady ? t('stem.forge.edit_to_validate', 'Edit the source to validate.') : t('stem.forge.gate_loading', 'loading validator…'))
+              ? h('div', { style: { fontSize: 12, color: acornError ? errFg : sub } }, acornReady ? t('stem.forge.edit_to_validate', 'Edit the source to validate.') : (acornError ? t('stem.forge.validator_unavailable', 'Static validator could not load offline: ') + acornError : t('stem.forge.gate_loading', 'loading validator…')))
               : h('div', { style: { fontSize: 12.5 } },
                   h('div', { style: { fontWeight: 700, color: structOk ? okFg : errFg, marginBottom: 6 } },
                     structOk ? '✔ ' + t('stem.forge.struct_ok', 'Structurally conformant') : '✖ ' + t('stem.forge.struct_fail', 'Structural problems')),
@@ -1166,15 +1342,34 @@
               h('span', { style: { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 10.5 } }, "sandbox='allow-scripts' · offline CSP")
             ),
             smokeDoc
-              ? h('iframe', { ref: iframeRef, srcDoc: smokeDoc, sandbox: 'allow-scripts', title: t('stem.forge.preview', 'Plugin preview (sandboxed)'), style: { width: '100%', height: 280, border: 0, background: hc ? HC_BG : (dark ? '#0f172a' : '#fff') } })
+              ? h('iframe', { key: 'forge-preview-' + previewRun, ref: iframeRef, srcDoc: smokeDoc, sandbox: 'allow-scripts', title: t('stem.forge.preview', 'Plugin preview (sandboxed)'), style: { width: '100%', height: 280, border: 0, background: hc ? HC_BG : (dark ? '#0f172a' : '#fff') } })
               : h('div', { style: { padding: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 8, flex: 1 } },
-                  h('svg', { viewBox: '0 0 280 92', 'aria-hidden': 'true', focusable: 'false', style: { width: '100%', maxWidth: 260, height: 'auto' } },
-                    h('rect', { x: 10, y: 10, width: 260, height: 72, rx: 10, fill: editorBg, stroke: border, strokeWidth: 1.5, strokeDasharray: '5 4' }),
-                    h('rect', { x: 26, y: 24, width: 94, height: 14, rx: 4, fill: hc ? HC_FG : accent, fillOpacity: hc ? 0.3 : 0.25 }),
-                    h('rect', { x: 26, y: 46, width: 168, height: 10, rx: 3, fill: sub, fillOpacity: 0.28 }),
-                    h('rect', { x: 26, y: 62, width: 72, height: 12, rx: 6, fill: hc ? HC_BTN : accent, fillOpacity: 0.75 }),
-                    h('circle', { cx: 232, cy: 48, r: 18, fill: hc ? HC_BG : accent, fillOpacity: 0.16, stroke: hc ? HC_FG : accent, strokeWidth: 1.8 }),
-                    h('polygon', { points: '227,40 241,48 227,56', fill: hc ? HC_BTN : accent })
+                  h('svg', { viewBox: '0 0 280 96', 'aria-hidden': 'true', focusable: 'false', style: { width: '100%', maxWidth: 270, height: 'auto' } },
+                    h('defs', null,
+                      h('linearGradient', { id: 'fg-prev-bg', x1: '0', y1: '0', x2: '0', y2: '1' },
+                        h('stop', { offset: '0%', stopColor: dark ? '#0f172a' : '#ffffff' }),
+                        h('stop', { offset: '100%', stopColor: dark ? '#020617' : '#f1f5f9' })
+                      ),
+                      h('radialGradient', { id: 'fg-play-aura', cx: '50%', cy: '50%', r: '50%' },
+                        h('stop', { offset: '0%', stopColor: '#818cf8', stopOpacity: 0.44 }),
+                        h('stop', { offset: '100%', stopColor: '#4f46e5', stopOpacity: 0 })
+                      )
+                    ),
+                    // Polished studio preview chassis + top window header bar
+                    h('rect', { x: 8, y: 8, width: 264, height: 80, rx: 10, fill: hc ? HC_BG : 'url(#fg-prev-bg)', stroke: hc ? HC_FG : (dark ? 'rgba(129,140,248,0.45)' : '#cbd5e1'), strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                    !hc && h('path', { d: 'M9 24 H271', stroke: dark ? 'rgba(148,163,184,0.22)' : '#e2e8f0', strokeWidth: 1 }),
+                    h('circle', { cx: 20, cy: 16, r: 2.5, fill: hc ? HC_FG : '#fb7185' }),
+                    h('circle', { cx: 29, cy: 16, r: 2.5, fill: hc ? HC_FG : '#fbbf24' }),
+                    h('circle', { cx: 38, cy: 16, r: 2.5, fill: hc ? HC_BTN : '#34d399' }),
+                    // Stylized schematic canvas & controls wireframe inside preview
+                    h('rect', { x: 24, y: 32, width: 96, height: 12, rx: 4, fill: hc ? HC_FG : accent, fillOpacity: hc ? 0.35 : 0.28 }),
+                    h('rect', { x: 24, y: 50, width: 160, height: 9, rx: 3, fill: sub, fillOpacity: 0.28 }),
+                    h('rect', { x: 24, y: 65, width: 74, height: 13, rx: 6.5, fill: hc ? HC_BTN : accent, fillOpacity: 0.8 }),
+                    !hc && h('line', { x1: 30, y1: 67, x2: 92, y2: 67, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.4 }),
+                    // Glowing play-sandbox medallion
+                    !hc && h('circle', { cx: 232, cy: 54, r: 26, fill: 'url(#fg-play-aura)' }),
+                    h('circle', { cx: 232, cy: 54, r: 18, fill: hc ? HC_BG : 'rgba(79,70,229,0.2)', stroke: hc ? HC_BTN : '#818cf8', strokeWidth: 1.8 }),
+                    h('polygon', { points: '227,46 241,54 227,62', fill: hc ? HC_BTN : '#818cf8' })
                   ),
                   h('div', { style: { color: sub, fontSize: 12.5, maxWidth: 320, lineHeight: 1.45 } }, t('stem.forge.preview_hint', 'Press “Validate + preview” to render this plugin in an isolated sandbox.')))
           ),
@@ -1198,7 +1393,7 @@
                 })
               ),
               h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-                h('button', { onClick: submitPlugin, disabled: !canSubmit, style: Object.assign({}, btn(true), canSubmit ? {} : { opacity: 0.5, cursor: 'not-allowed' }) },
+                h('button', { type: 'button', onClick: submitPlugin, disabled: !canSubmit, style: Object.assign({}, btn(true), canSubmit ? {} : { opacity: 0.5, cursor: 'not-allowed' }) },
                   submitting ? t('stem.forge.submitting', 'Submitting…') : '📤 ' + t('stem.forge.submit', 'Submit')),
                 !canSubmit ? h('span', { style: { fontSize: 11.5, color: sub } },
                   (!(report && report.ok)) ? t('stem.forge.gate_struct', 'needs a green validator')

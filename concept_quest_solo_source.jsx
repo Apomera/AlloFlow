@@ -15,13 +15,13 @@ function ConceptQuestTargetedPractice({quest,value,onChange,t}) {
   const start=()=>{const next=engine.coverage(quest).missedItems.slice(0,5).map(item=>item.sourceIndex);onChange({targets:next,entries:[],response:engine.initialResponse(bank.find(item=>item.sourceIndex===next[0])),checked:false});setError('');};
   React.useEffect(()=>{if(value)(value.closed?resume.current:heading.current)?.focus();},[position,checked,!!value,!!value?.closed]);
   if(!value||value.closed)return <button ref={resume} type="button" data-start-targeted-practice onClick={()=>value?onChange({...value,closed:false}):start()} className="mt-3 min-h-11 rounded-lg bg-cyan-800 px-4 py-2 font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{value?tr('solo_targeted_resume','Resume focused practice'):tr('solo_targeted_start','Practice up to five missed ideas')}</button>;
-  return <section data-targeted-practice className="mt-4 space-y-3 rounded-xl border-2 border-cyan-300 bg-white p-4"><h4 ref={heading} tabIndex={-1} className="font-bold">{tr('solo_targeted_title','Focused practice')}</h4><p className="text-sm">{tr('solo_targeted_help','These checks save with your adventure and stay separate from its original scores, health, and experience.')}</p><p role="status">{position+' / '+targets.length+' '+tr('solo_targeted_checked','practice items checked')}</p>{checked&&lastItem?<div role="status"><p className="font-bold">{last.gradable?(last.correct?tr('solo_targeted_correct','Correct practice response'):tr('solo_targeted_review','Review this idea again')):tr('solo_targeted_self_review','Self-review recorded; no automatic score.')}</p><p className="mt-2 whitespace-pre-wrap">{cqMd.inline(engine.answerGuide(lastItem))}</p>{lastItem.explanation&&<div className="mt-2">{cqExplanation(lastItem.explanation)}</div>}<button type="button" className="mt-3 min-h-11 rounded-lg border px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={()=>onChange({...value,checked:false,response:item?engine.initialResponse(item):{}})}>{tr('solo_targeted_continue','Continue practice')}</button></div>:item?<><ConceptQuestSoloQuestion item={item} response={value.response||{}} onChange={response=>{onChange({...value,response});setError('');}} guideOpen={value.response?.guideRevealed} onGuideOpen={()=>onChange({...value,response:{...value.response,guideRevealed:true}})} t={t}/><button type="button" className="min-h-11 rounded-lg bg-cyan-800 px-4 py-2 font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={()=>{const result=engine.grade(item,value.response||{});if(!result.complete){setError(tr('solo_targeted_incomplete','Complete the response and any self-review before checking.'));return;}onChange({...value,entries:[...value.entries,value.response],checked:true});}}>{tr('solo_targeted_check','Check practice response')}</button>{error&&<p role="alert">{error}</p>}</>:<><p>{tr('solo_targeted_complete','Focused practice complete. Explain one connection in your own words, or revisit an idea you still find difficult.')}</p><button type="button" className="min-h-11 rounded-lg border px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={start}>{tr('solo_targeted_again','Start another focused practice')}</button></>}<button type="button" className="ml-2 min-h-11 rounded-lg border px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={()=>onChange({...value,closed:true})}>{tr('solo_targeted_close','Close practice')}</button></section>;
+  return <section data-targeted-practice className="mt-4 space-y-3 rounded-xl border-2 border-cyan-300 bg-white p-4"><h4 ref={heading} tabIndex={-1} className="font-bold">{tr('solo_targeted_title','Focused practice')}</h4><p className="text-sm">{tr('solo_targeted_help','These checks save with your adventure and stay separate from its original scores, health, and experience.')}</p><p role="status">{position+' / '+targets.length+' '+tr('solo_targeted_checked','practice items checked')}</p>{checked&&lastItem?<div><p role="status" className="font-bold">{last.gradable?(last.correct?tr('solo_targeted_correct','Correct practice response'):tr('solo_targeted_review','Review this idea again')):tr('solo_targeted_self_review','Self-review recorded; no automatic score.')}</p><p className="mt-2 whitespace-pre-wrap">{cqMd.inline(engine.answerGuide(lastItem))}</p>{lastItem.explanation&&<div className="mt-2">{cqExplanation(lastItem.explanation)}</div>}<button type="button" className="mt-3 min-h-11 rounded-lg border px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={()=>onChange({...value,checked:false,response:item?engine.initialResponse(item):{}})}>{tr('solo_targeted_continue','Continue practice')}</button></div>:item?<><ConceptQuestSoloQuestion item={item} response={value.response||{}} onChange={response=>{onChange({...value,response});setError('');}} guideOpen={value.response?.guideRevealed} onGuideOpen={()=>onChange({...value,response:{...value.response,guideRevealed:true}})} t={t}/><button type="button" className="min-h-11 rounded-lg bg-cyan-800 px-4 py-2 font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={()=>{const result=engine.grade(item,value.response||{});if(!result.complete){setError(tr('solo_targeted_incomplete','Complete the response and any self-review before checking.'));return;}onChange({...value,entries:[...value.entries,value.response],checked:true});}}>{tr('solo_targeted_check','Check practice response')}</button>{error&&<p role="alert">{error}</p>}</>:<><p>{tr('solo_targeted_complete','Focused practice complete. Explain one connection in your own words, or revisit an idea you still find difficult.')}</p><button type="button" className="min-h-11 rounded-lg border px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={start}>{tr('solo_targeted_again','Start another focused practice')}</button></>}<button type="button" className="ml-2 min-h-11 rounded-lg border px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={()=>onChange({...value,closed:true})}>{tr('solo_targeted_close','Close practice')}</button></section>;
 }
 function _cqAiUsable(fn) {
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
   } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true));
 }
 function ConceptQuestSolo({ generatedContent, inputText = '', callGemini, user, appId, t, onClose }) {
   // Item text uses the Assess view's light markdown (Concept Quest opens from it); plain text without it.
@@ -40,22 +40,25 @@ function ConceptQuestSolo({ generatedContent, inputText = '', callGemini, user, 
   const GM = window.AlloModules.ConceptQuestSoloGM;
   const userId = user?.uid || 'device-local';
   const context = { generatedContent, userId, appId: appId || 'alloflow-local' };
-  const sourceSignature = JSON.stringify([userId, context.appId, generatedContent]);
+  const sourceSignature = React.useMemo(() => {
+    try { return JSON.stringify([userId, context.appId, generatedContent]); } catch (_) { return String(userId) + ':' + String(context.appId); }
+  }, [userId, context.appId, generatedContent]);
   const [, setAiConfigRevision] = React.useState(0);
   React.useEffect(() => {
     const onAiChange = () => setAiConfigRevision(v => v + 1);
+    const events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed'];
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-      window.addEventListener('alloflow:ai-config-changed', onAiChange);
+      events.forEach(ev => window.addEventListener(ev, onAiChange));
     }
     return () => {
       if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
-        window.removeEventListener('alloflow:ai-config-changed', onAiChange);
+        events.forEach(ev => window.removeEventListener(ev, onAiChange));
       }
     };
   }, []);
   const items = React.useMemo(() => solo.normalizeItems(generatedContent), [sourceSignature]);
   const canUseAi = _cqAiUsable(callGemini);
-  const SetupNotice = typeof window !== 'undefined' && window.AlloModules?.AlloAiSetupNotice ? window.AlloModules.AlloAiSetupNotice : null;
+  const SetupNotice = typeof window !== 'undefined' ? (window.AlloModules?.AlloAiSetupNotice || window.AlloAiSetupNotice || null) : null;
   const [run, setRun] = React.useState(null);
   const [setupRole, setSetupRole] = React.useState('analyst');
   const [setupAi, setSetupAi] = React.useState(canUseAi);
@@ -149,7 +152,10 @@ function ConceptQuestSolo({ generatedContent, inputText = '', callGemini, user, 
       const roleId = active?.roleId || setupRole;
       const abilityId = base.ROLES.find(role => role.id === roleId)?.abilityId || 'analyze';
       const value = {_scope:sourceSignature,quest:next,roleId,abilityId,response:solo.initialResponse(solo.currentItem(next)),recapOpen:false,gmState:null,aiEnabled:active ? active.aiEnabled : setupAi};
-      setRun(value); setError(''); setConfirmation(''); actionLock.current = false; saveRun(value);
+      const latestSaved = saves.read(getLocalStorage(), context);
+      revision.current = latestSaved.revision ?? null;
+      saveBlocked.current = false;
+      setRun(value); setError(''); setConfirmation(''); actionLock.current = false; saveRun(value, true);
     } catch (failure) { setError(failure.message || tr('launch_failed','Concept Quest could not launch.')); }
   }
   function updateRun(patch) {
@@ -176,6 +182,71 @@ function ConceptQuestSolo({ generatedContent, inputText = '', callGemini, user, 
     else {setSaveStatus(result);if(result.status === 'conflict')saveBlocked.current = true;setError(tr('solo_delete_failed','The save could not be removed. Another tab may have changed it.'));}
   }
   const canResolve = item && solo.grade(item,active?.response || {}).complete;
+  const [speakingSoloKey, setSpeakingSoloKey] = React.useState('');
+  const [mapOpen, setMapOpen] = React.useState(true);
+  const speakingSoloRef = React.useRef('');
+  const speechTokenRef = React.useRef(0);
+  const soloMountedRef = React.useRef(true);
+  speakingSoloRef.current = speakingSoloKey;
+  React.useEffect(() => {
+    if (quest?.phase) setMapOpen(quest.phase === 'explore');
+  }, [quest?.phase]);
+  const stopSoloSpeech = () => {
+    speechTokenRef.current += 1;
+    try { if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop(); } catch (_) {}
+    try { if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (_) {}
+    if (soloMountedRef.current) setSpeakingSoloKey('');
+  };
+  React.useEffect(() => {
+    if (speakingSoloRef.current) stopSoloSpeech();
+  }, [quest?.sessionId, quest?.turn, quest?.currentRoomId, active?.recapOpen, confirmation]);
+  React.useEffect(() => {
+    soloMountedRef.current = true;
+    if (typeof window === 'undefined') return () => { soloMountedRef.current = false; };
+    const onSpeechState = (e) => {
+      if (soloMountedRef.current && speakingSoloRef.current && e && e.detail && e.detail.isPlaying === false) setSpeakingSoloKey('');
+    };
+    window.addEventListener('allo-speech-state', onSpeechState);
+    return () => {
+      soloMountedRef.current = false;
+      speechTokenRef.current += 1;
+      window.removeEventListener('allo-speech-state', onSpeechState);
+      if (speakingSoloRef.current) {
+        try { if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop(); } catch (_) {}
+        try { if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (_) {}
+      }
+    };
+  }, []);
+  const canSpeakSolo = Boolean(
+    typeof window !== 'undefined' && (
+      (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') ||
+      (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function')
+    )
+  );
+  const toggleSpeakSolo = (key, rawText) => {
+    const clean = String(rawText || '').replace(/\s+/g, ' ').trim();
+    if (!clean) return;
+    if (speakingSoloKey === key) { stopSoloSpeech(); return; }
+    stopSoloSpeech();
+    const token = ++speechTokenRef.current;
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+        setSpeakingSoloKey(key);
+        Promise.resolve(window.AlloSpeechPlayer.speak(clean)).catch(() => {
+          if (soloMountedRef.current && speechTokenRef.current === token) setSpeakingSoloKey('');
+        });
+        return;
+      }
+      if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+        window.speechSynthesis.cancel();
+        const u = new window.SpeechSynthesisUtterance(clean);
+        u.onend = () => { if (soloMountedRef.current && speechTokenRef.current === token) setSpeakingSoloKey(''); };
+        u.onerror = () => { if (soloMountedRef.current && speechTokenRef.current === token) setSpeakingSoloKey(''); };
+        setSpeakingSoloKey(key);
+        window.speechSynthesis.speak(u);
+      }
+    } catch (_) { if (soloMountedRef.current && speechTokenRef.current === token) setSpeakingSoloKey(''); }
+  };
   const saveMessage = saveStatus.status === 'saved' ? tr('solo_saved_device','Progress saved on this device.') : saveStatus.status === 'saving' ? tr('solo_saving','Saving progress...') : saveStatus.status === 'conflict' ? tr('solo_save_conflict','Another tab changed this saved adventure. Choose which progress to keep. Your current game is still open.') : ['unavailable','invalid'].includes(saveStatus.status) ? tr('solo_save_failed','Progress could not be saved on this device. Keep this adventure open and try saving again.') : '';
   return <section data-concept-quest-solo="true" aria-label={tr('solo_title','Concept Quest solo adventure')} className="overflow-hidden rounded-2xl border-2 border-indigo-200 bg-slate-50 text-slate-900">
     <header className="flex flex-wrap items-start justify-between gap-3 bg-indigo-950 p-5 text-white">
@@ -190,10 +261,10 @@ function ConceptQuestSolo({ generatedContent, inputText = '', callGemini, user, 
         <h3 ref={headingRef} tabIndex={-1} className="text-xl font-black">{tr('solo_setup','Choose your adventurer')}</h3>
         <p className="max-w-3xl text-slate-700">{tr('solo_intro','Explore an adventure built from this assessment. Use abilities to overcome encounters, investigate clues, talk with your guide, and explain your ideas. Every assessment item stays in the learning path.')}</p>
         <p data-solo-source-count className="text-sm text-slate-600">{tr('solo_all_item_count','{count} assessment items are included. Written responses use answer-guide self-review.',{count:items.length})}</p>
-        {saved.status === 'saved' && <section className="rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4" data-solo-resume><h4 className="font-bold text-emerald-950">{tr('solo_saved_adventure','Saved adventure')}</h4><p className="mt-1 text-sm text-emerald-950">{tr('solo_saved_progress','{done} of {total} assessment items explored.',{done:solo.coverage(saved.snapshot.quest).attempted,total:solo.coverage(saved.snapshot.quest).total})}</p><p className="mt-1 text-xs text-emerald-900">{new Date(saved.snapshot.savedAt).toLocaleString()}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={restoreSaved} className={buttonClass + ' bg-emerald-700 text-white'}>{tr('solo_resume','Resume adventure')}</button><button type="button" onClick={() => setConfirmation('delete')} className={buttonClass + ' border border-emerald-400 bg-white text-emerald-950'}>{tr('solo_delete_save','Delete saved adventure')}</button></div></section>}
+        {saved.status === 'saved' && <section className="rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4" data-solo-resume><h4 className="font-bold text-emerald-950">{tr('solo_saved_adventure','Saved adventure')}</h4><p className="mt-1 text-sm text-emerald-950">{tr('solo_saved_progress','{done} of {total} assessment items explored.',{done:solo.coverage(saved.snapshot.quest).attempted,total:solo.coverage(saved.snapshot.quest).total})}</p>{(() => { const savedTs = Number(saved.snapshot?.savedAt); return Number.isFinite(savedTs) && savedTs > 0 ? <p className="mt-1 text-xs text-emerald-900">{new Date(savedTs).toLocaleString()}</p> : null; })()}<div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={restoreSaved} className={buttonClass + ' bg-emerald-700 text-white'}>{tr('solo_resume','Resume adventure')}</button><button type="button" onClick={() => setConfirmation('delete')} className={buttonClass + ' border border-emerald-400 bg-white text-emerald-950'}>{tr('solo_delete_save','Delete saved adventure')}</button></div></section>}
         {['stale','expired','corrupt','unavailable'].includes(saved.status) && <p role="status" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">{saved.status === 'stale' ? tr('solo_stale_save','The assessment changed, so its old adventure cannot be resumed. Start a new adventure with the current items.') : saved.status === 'expired' ? tr('solo_expired_save','The saved adventure expired. Start a new adventure.') : saved.status === 'corrupt' ? tr('solo_corrupt_save','The saved adventure could not be read. You can start a new one.') : tr('solo_storage_unavailable','Device storage is unavailable. You can play, but progress will only last while this adventure stays open.')}</p>}
         <div role="group" aria-label={tr('solo_role','Adventurer role')} className="grid grid-cols-1 gap-3 sm:grid-cols-2">{base.ROLES.map(role => <button type="button" key={role.id} aria-pressed={setupRole===role.id} onClick={() => setSetupRole(role.id)} className={buttonClass + ' border-2 p-4 text-left ' + (setupRole===role.id?'border-indigo-600 bg-indigo-50':'border-slate-300 bg-white')}><span className="block text-lg">{role.emoji} {gameLabel(role)}</span><span className="mt-1 block text-sm font-normal text-slate-700">{gameLabel(role,'description')}</span></button>)}</div>
-        <label className="flex min-h-11 items-center gap-3 rounded-xl border border-indigo-200 bg-white p-3 font-bold"><input type="checkbox" checked={setupAi && canUseAi} onChange={event=>setSetupAi(event.target.checked)} disabled={!canUseAi} className="h-4 w-4 accent-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"/>{tr('solo_enable_ai','Use AI as the game master')}</label><p className="text-sm text-slate-600">{canUseAi?tr('solo_ai_setup_help','The AI narrates the adventure and responds to your investigations, conversations, and explanations using lesson context. Game rules and scores stay in the engine.'):tr('solo_scripted_setup_help','A scripted guide is available now. The adventure remains playable without an AI connection.')}</p>{!canUseAi && SetupNotice && <SetupNotice t={t} kind="text" />}
+        <label className="flex min-h-11 items-center gap-3 rounded-xl border border-indigo-200 bg-white p-3 font-bold"><input type="checkbox" checked={setupAi && canUseAi} onChange={event=>setSetupAi(event.target.checked)} disabled={!canUseAi} className="h-4 w-4 accent-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"/>{tr('solo_enable_ai','Use AI as the game master')}</label><p className="text-sm text-slate-600">{canUseAi?tr('solo_ai_setup_help','The AI narrates the adventure and responds to your investigations, conversations, and explanations using lesson context. Game rules and scores stay in the engine.'):tr('solo_scripted_setup_help','A scripted guide is available now. The adventure remains playable without an AI connection.')}</p>{!canUseAi && SetupNotice && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) && <SetupNotice t={t} kind="text" />}
         <p className="text-sm text-slate-700">{tr('solo_rules','Choose an ability and respond to each encounter. Correct answers power your ability. Review written answers against the guide. Explore every assessment item before completing the final boss.')}</p>
         <button type="button" disabled={!items.length||saved.status==='loading'||!!confirmation} onClick={() => saved.status==='saved'?setConfirmation('new'):start()} className={buttonClass+' bg-indigo-700 text-white'}>{saved.status==='saved'?tr('solo_start_new','Start a new adventure'):tr('solo_start','Start solo adventure')}</button>
         {!items.length&&<p className="text-sm text-amber-900">{tr('solo_items_required','Add at least one assessment question to start an adventure.')}</p>}
@@ -201,7 +272,14 @@ function ConceptQuestSolo({ generatedContent, inputText = '', callGemini, user, 
         <div role="group" className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label={tr('solo_progress','Adventure progress')}>{[['solo_health','Health',quest.party.hp+'/'+quest.party.maxHp],['solo_shield','Shield',quest.party.shield],['solo_items_seen','Items explored',progress.attempted+'/'+progress.total],['solo_xp','Adventure XP',quest.party.xp]].map(([key,label,value])=><div key={key} className="rounded-xl border border-indigo-200 bg-white p-3"><p className="text-xs font-bold text-slate-600">{tr(key,label)}</p><p className="text-xl font-black text-indigo-950">{value}</p></div>)}</div>
         {!confirmation && <GM key={quest.sessionId} quest={quest} generatedContent={generatedContent} inputText={inputText} callGemini={canUseAi ? callGemini : null} t={t} gmState={active.gmState} onChange={gmState=>updateRun({gmState})} enabled={active.aiEnabled && canUseAi} onEnabledChange={aiEnabled=>updateRun({aiEnabled: aiEnabled && canUseAi})}/>}
         {!confirmation&&active.recapOpen&&quest.lastRound&&<section className="rounded-xl border-2 border-cyan-300 bg-cyan-50 p-4" aria-label={tr('solo_round_result','Turn result')}>
-          <h3 ref={headingRef} tabIndex={-1} className="text-lg font-black">{quest.lastRound.gradable===false?tr('solo_review_recorded','Self-review recorded'):quest.lastRound.correct?tr('solo_correct','Correct. Your ability succeeded!'):quest.lastRound.status==='partially-correct'?tr('solo_partly_correct','Partly correct. Review the answer guide before your next turn.'):tr('solo_incorrect','Review the concept and try another turn.')}</h3>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <h3 ref={headingRef} tabIndex={-1} className="text-lg font-black">{quest.lastRound.gradable===false?tr('solo_review_recorded','Self-review recorded'):quest.lastRound.correct?tr('solo_correct','Correct. Your ability succeeded!'):quest.lastRound.status==='partially-correct'?tr('solo_partly_correct','Partly correct. Review the answer guide before your next turn.'):tr('solo_incorrect','Review the concept and try another turn.')}</h3>
+            {canSpeakSolo && <button type="button" data-solo-listen-recap aria-pressed={speakingSoloKey === 'recap'} onClick={() => {
+              const verdict = quest.lastRound.gradable===false?tr('solo_review_recorded','Self-review recorded'):quest.lastRound.correct?tr('solo_correct','Correct. Your ability succeeded!'):quest.lastRound.status==='partially-correct'?tr('solo_partly_correct','Partly correct. Review the answer guide before your next turn.'):tr('solo_incorrect','Review the concept and try another turn.');
+              const parts = [verdict, cqMd.plain(quest.lastRound.prompt), tr('solo_answer_guide','Answer guide') + ': ' + cqMd.plain(quest.lastRound.answerGuide||quest.lastRound.correctAnswer), quest.lastRound.explanation ? cqMd.plain(quest.lastRound.explanation) : ''].filter(Boolean);
+              toggleSpeakSolo('recap', parts.join('. '));
+            }} className={buttonClass + ' border border-cyan-500 bg-white text-cyan-900 text-xs inline-flex items-center gap-1.5'}><span aria-hidden="true">{speakingSoloKey === 'recap' ? '⏹' : '🔊'}</span><span>{speakingSoloKey === 'recap' ? tr('solo_stop_audio','Stop') : tr('solo_listen','Listen')}</span></button>}
+          </div>
           {quest.lastRound.gradable!==false&&<p className="mt-2 text-sm font-bold">{tr('solo_item_score','{score} / {maximum} for this item.',{score:quest.lastRound.score,maximum:quest.lastRound.maxScore})}</p>}
           <p className="mt-2 text-sm">{tr('solo_damage','You dealt {damage} damage and lost {incoming} health.',{damage:quest.lastRound.damage,incoming:quest.lastRound.incoming})}</p>
           {quest.lastRound.regrouped&&<p role="status" className="mt-3 rounded-lg bg-amber-100 p-3 text-sm text-amber-950">{tr('solo_regrouped','Your guide helped you regroup and restored your health so you can explore the remaining assessment items. This recovery does not change your answer results.')}</p>}
@@ -221,15 +299,31 @@ function ConceptQuestSolo({ generatedContent, inputText = '', callGemini, user, 
           <button type="button" onClick={()=>setConfirmation('restart')} className={buttonClass+' mt-4 bg-indigo-700 text-white'}>{tr('solo_play_again','Play again')}</button>
         </section>}
         {!confirmation&&!active.recapOpen&&!terminal&&<div className="grid grid-cols-1 gap-5 lg:grid-cols-3"><section className="space-y-4 lg:col-span-2" aria-label={tr('current_encounter_aria','Current encounter')}>
-          <div><p className="text-xs font-bold uppercase text-indigo-700">{tr('solo_current_location','Current location')}</p><h3 ref={headingRef} tabIndex={-1} className="text-xl font-black">{currentRoom.emoji} {currentRoom.name}</h3></div>
-          {quest.phase==='explore'?<div className="space-y-3"><p>{tr('solo_path_help','Choose a connected path. Encounters help you explore lesson ideas; treasure rooms hold useful items.')}</p><div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{currentRoom.neighbors.map(id=>{const room=base.getRoom(quest,id);const locked=room.kind==='boss'&&quest.sigils.length<base.requiredSigils(quest);return <button type="button" key={id} data-solo-travel={id} disabled={locked} onClick={()=>travel(id)} className={buttonClass+' border-2 border-indigo-200 bg-white text-left'}><span className="block">{locked?'🔒':room.emoji} {room.name}</span><span className="mt-1 block text-xs font-normal text-slate-600">{locked?tr('solo_gate_locked','Collect {count} more sigils first.',{count:base.requiredSigils(quest)-quest.sigils.length}):quest.visited.includes(id)?tr('solo_revisit','Revisit location'):tr('solo_explore','Explore this location')}</span></button>;})}</div></div>:<>
-            <div className="rounded-xl border border-fuchsia-200 bg-white p-4"><p className="text-lg font-black">{currentRoom.enemy.emoji} {currentRoom.enemy.name}</p><p className="mt-1 text-sm text-slate-600">{tr('solo_enemy_health','Encounter health: {current}/{maximum}',{current:currentRoom.enemy.hp,maximum:currentRoom.enemy.maxHp})}</p><div role="progressbar" aria-label={tr('solo_enemy_health_label','Encounter health')} aria-valuemin={0} aria-valuemax={currentRoom.enemy.maxHp} aria-valuenow={currentRoom.enemy.hp} className="mt-2 h-3 overflow-hidden rounded-full bg-slate-200"><div className="h-full bg-fuchsia-600" style={{width:(100*currentRoom.enemy.hp/currentRoom.enemy.maxHp)+'%'}}/></div></div>
+          {!currentRoom ? <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"><p className="font-bold">{tr('solo_room_missing','This saved location could not be loaded.')}</p><button type="button" onClick={()=>setConfirmation('restart')} className={buttonClass+' mt-3 bg-indigo-700 text-white'}>{tr('solo_restart','Restart adventure')}</button></div> : <>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div><p className="text-xs font-bold uppercase text-indigo-700">{tr('solo_current_location','Current location')}</p><h3 ref={headingRef} tabIndex={-1} className="text-xl font-black">{currentRoom.emoji} {currentRoom.name}</h3></div>
+            {canSpeakSolo && <button type="button" data-solo-listen-encounter aria-pressed={speakingSoloKey === 'encounter'} onClick={() => {
+              const parts = [currentRoom.name];
+              if (quest.phase === 'explore') {
+                parts.push(tr('solo_path_help','Choose a connected path. Encounters help you explore lesson ideas; treasure rooms hold useful items.'));
+              } else {
+                if (currentRoom.enemy?.name) parts.push(currentRoom.enemy.name);
+                if (quest.activeEvent?.title) parts.push(cqMd.plain(quest.activeEvent.title) + '. ' + cqMd.plain(quest.activeEvent.description || ''));
+                if (item?.prompt) parts.push(cqMd.plain(item.prompt));
+                if (Array.isArray(item?.options) && item.options.length) parts.push(item.options.map((opt, idx) => `${idx + 1}. ${cqMd.plain(opt)}`).join('. '));
+              }
+              toggleSpeakSolo('encounter', parts.filter(Boolean).join('. '));
+            }} className={buttonClass + ' border border-indigo-300 bg-white text-indigo-900 text-xs inline-flex items-center gap-1.5'}><span aria-hidden="true">{speakingSoloKey === 'encounter' ? '⏹' : '🔊'}</span><span>{speakingSoloKey === 'encounter' ? tr('solo_stop_audio','Stop') : tr('solo_listen','Listen')}</span></button>}
+          </div>
+          {quest.phase==='explore'?<div className="space-y-3"><p>{tr('solo_path_help','Choose a connected path. Encounters help you explore lesson ideas; treasure rooms hold useful items.')}</p><div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{(currentRoom.neighbors||[]).map(id=>{const room=base.getRoom(quest,id);if(!room)return null;const locked=room.kind==='boss'&&quest.sigils.length<base.requiredSigils(quest);return <button type="button" key={id} data-solo-travel={id} disabled={locked} onClick={()=>travel(id)} className={buttonClass+' border-2 border-indigo-200 bg-white text-left'}><span className="block">{locked?'🔒':room.emoji} {room.name}</span><span className="mt-1 block text-xs font-normal text-slate-600">{locked?tr('solo_gate_locked','Collect {count} more sigils first.',{count:base.requiredSigils(quest)-quest.sigils.length}):quest.visited.includes(id)?tr('solo_revisit','Revisit location'):tr('solo_explore','Explore this location')}</span></button>;})}</div></div>:(!currentRoom.enemy || !item) ? <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"><p className="font-bold">{tr('solo_encounter_missing','This encounter could not be loaded.')}</p><button type="button" onClick={()=>setConfirmation('restart')} className={buttonClass+' mt-3 bg-indigo-700 text-white'}>{tr('solo_restart','Restart adventure')}</button></div> : <>
+            {(() => { const enemyMax = Number(currentRoom.enemy.maxHp) || 0; const enemyHp = Math.max(0, Number(currentRoom.enemy.hp) || 0); const enemyPct = enemyMax > 0 ? Math.max(0, Math.min(100, (100 * enemyHp) / enemyMax)) : 0; return <div className="rounded-xl border border-fuchsia-200 bg-white p-4"><p className="text-lg font-black">{currentRoom.enemy.emoji} {currentRoom.enemy.name}</p><p className="mt-1 text-sm text-slate-600">{tr('solo_enemy_health','Encounter health: {current}/{maximum}',{current:enemyHp,maximum:enemyMax})}</p><div role="progressbar" aria-label={tr('solo_enemy_health_label','Encounter health')} aria-valuemin={0} aria-valuemax={Math.max(1, enemyMax)} aria-valuenow={enemyHp} className="mt-2 h-3 overflow-hidden rounded-full bg-slate-200"><div className="h-full bg-fuchsia-600" style={{width:enemyPct+'%'}}/></div></div>; })()}
             {quest.activeEvent&&<div role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3"><strong>{cqMd.inline(quest.activeEvent.title)}</strong><p className="mt-1">{cqMd.inline(quest.activeEvent.description)}</p></div>}
             <fieldset className="space-y-3"><legend className="font-bold">{tr('solo_choose_ability','1. Choose an ability')}</legend><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{quest.abilities.map(ability=><button type="button" key={ability.id} onClick={()=>updateRun({abilityId:ability.id})} aria-pressed={active.abilityId===ability.id} className={buttonClass+' border-2 p-3 text-left '+(active.abilityId===ability.id?'border-indigo-600 bg-indigo-50':'border-slate-300 bg-white')}><span className="block">{ability.emoji} {gameLabel(ability)}</span><span className="mt-1 block text-xs font-normal text-slate-700">{gameLabel(ability,'description')}</span></button>)}</div></fieldset>
             <ConceptQuestSoloQuestion key={item.id} item={item} response={active.response} onChange={response=>updateRun({response})} guideOpen={!!active.response?.guideRevealed} onGuideOpen={()=>{}} t={t}/>
             <button type="button" disabled={!canResolve} onClick={resolveTurn} className={buttonClass+' w-full bg-indigo-700 text-white'}>{item.selfReviewRequired?tr('solo_finish_review','3. Record self-review and continue'):tr('solo_resolve','3. Resolve this turn')}</button>
           </>}
-        </section><aside aria-label={tr('solo_map_and_inventory','Adventure map and inventory')} className="space-y-4"><details className="rounded-xl border border-slate-300 bg-white p-4" open={quest.phase==='explore'}><summary className="flex min-h-11 cursor-pointer items-center rounded font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('solo_map','Adventure map')}</summary><ol className="mt-3 space-y-2">{quest.rooms.map((room,index)=><li key={room.id} aria-current={room.id===quest.currentRoomId?'location':undefined} className={'rounded-lg p-2 text-sm '+(room.id===quest.currentRoomId?'bg-indigo-100 font-bold text-indigo-900':'')}>{index+1}. {room.emoji} {room.name}{room.enemy?.hp===0?' ✓':''}</li>)}</ol></details>
+          </>}
+        </section><aside aria-label={tr('solo_map_and_inventory','Adventure map and inventory')} className="space-y-4"><details className="rounded-xl border border-slate-300 bg-white p-4" open={mapOpen} onToggle={event => setMapOpen(event.currentTarget.open)}><summary className="flex min-h-11 cursor-pointer items-center rounded font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('solo_map','Adventure map')}</summary><ol className="mt-3 space-y-2">{quest.rooms.map((room,index)=><li key={room.id} aria-current={room.id===quest.currentRoomId?'location':undefined} className={'rounded-lg p-2 text-sm '+(room.id===quest.currentRoomId?'bg-indigo-100 font-bold text-indigo-900':'')}>{index+1}. {room.emoji} {room.name}{room.enemy?.hp===0?' ✓':''}</li>)}</ol></details>
           <section className="rounded-xl border border-slate-300 bg-white p-4"><h4 className="font-bold">{tr('solo_inventory','Your inventory')}</h4>{quest.inventory.length?<ul className="mt-3 space-y-3">{quest.inventory.map((entry,index)=><li key={entry.id}><p className="font-bold">{entry.emoji} {entry.name}</p><p className="mt-1 text-xs text-slate-600">{entry.description}</p><button type="button" disabled={entry.effect?.type==='clue'&&quest.phase!=='battle'} onClick={()=>applyResult(base.useItem(quest,index),false,true)} className={buttonClass+' mt-2 border border-indigo-300 bg-indigo-50 text-indigo-800'}>{tr('solo_use_item','Use item')}</button></li>)}</ul>:<p className="mt-2 text-sm text-slate-600">{tr('solo_inventory_empty','Find items by exploring treasure rooms.')}</p>}</section>
         </aside></div>}
         <p className="text-xs text-slate-600">{tr('solo_local_notice','Independent practice. Progress and your guide conversation are saved on this device for this account or local profile. This adventure does not submit an assessment score.')}</p>

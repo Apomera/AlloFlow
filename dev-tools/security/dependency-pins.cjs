@@ -3,16 +3,28 @@ const YAML = require('yaml');
 
 function inspectImages(composeSource, dockerfiles) {
   const errors = [];
-  const pinned = (image) => typeof image === 'string' && /^[^\s@]+@sha256:[a-f0-9]{64}$/.test(image);
+  const pinned = (image) => typeof image === 'string' && !image.startsWith('--') && !image.includes('$') && /^[^\s@]+@sha256:[a-f0-9]{64}$/.test(image);
   const compose = YAML.parse(composeSource, { maxAliasCount: 30 });
-  for (const [name, service] of Object.entries(compose.services || {})) {
-    if (service.image && !pinned(service.image)) errors.push(name + ': image requires an immutable SHA256 digest');
+  if (!compose || typeof compose !== 'object' || Array.isArray(compose)) {
+    errors.push('compose: invalid YAML root');
+  } else {
+    for (const [name, service] of Object.entries(compose.services || {})) {
+      if (service && typeof service === 'object' && Object.prototype.hasOwnProperty.call(service, 'image') && !pinned(service.image)) {
+        errors.push(name + ': image requires an immutable SHA256 digest');
+      }
+    }
   }
   for (const [name, source] of Object.entries(dockerfiles)) {
-    for (const line of source.split(/\r?\n/)) {
-      const match = /^FROM\s+(\S+)/i.exec(line.trim());
-      if (match && !pinned(match[1])) errors.push(name + ': base image requires an immutable SHA256 digest');
+    const logicalLines = String(source || '').replace(/\\\r?\n/g, ' ').split(/\r?\n/);
+    let fromCount = 0;
+    for (const line of logicalLines) {
+      const match = /^FROM\s+(?:--platform=\S+\s+)?(\S+)/i.exec(line.trim());
+      if (match) {
+        fromCount += 1;
+        if (!pinned(match[1])) errors.push(name + ': base image requires an immutable SHA256 digest');
+      }
     }
+    if (fromCount === 0) errors.push(name + ': Dockerfile must declare a pinned FROM base image');
   }
   return errors;
 }

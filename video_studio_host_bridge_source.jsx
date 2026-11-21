@@ -19,7 +19,13 @@ const _videoStudioReducedMotion = () => (
   && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 );
 const _videoStudioAiTextUsable = (callGemini) => {
-  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true)) return false;
+  if (typeof window !== 'undefined' && (
+    window.__alloStudentAiDisabled === true ||
+    window.__alloAiSecretsLocked === true ||
+    window.__alloQrStudentMode === true ||
+    window._alloQrBlocked === true ||
+    (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)
+  )) return false;
   if (callGemini && callGemini._alloQrBlocked === true) return false;
   if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable('text', callGemini));
   return Boolean(callGemini);
@@ -92,12 +98,13 @@ function VideoStudioHostBridgeView(props) {
                     if (!ref || ref.type !== 'videoRef') throw new Error('Not a video reference.');
                     const refTitle = String(ref.title || 'Teacher video').slice(0, 120);
                     const safeHostedUrl = _safeVideoHostedUrl(ref.hostedUrl);
+                    const safeDur = Math.max(0, Math.round(Number(ref.durationSec) || 0));
                     const newRefId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
                     const refItem = {
                         id: newRefId,
                         type: 'video-ref',
                         title: refTitle,
-                        text: `${refTitle} — video (${Math.floor((ref.durationSec || 0) / 60)}:${String((ref.durationSec || 0) % 60).padStart(2, '0')})${safeHostedUrl ? ` — ${safeHostedUrl}` : ''}`,
+                        text: `${refTitle} — video (${Math.floor(safeDur / 60)}:${String(safeDur % 60).padStart(2, '0')})${safeHostedUrl ? ` — ${safeHostedUrl}` : ''}`,
                         content: '',
                         data: { ...ref, hostedUrl: safeHostedUrl },
                         meta: safeHostedUrl ? 'Video Studio card · hosted link attached' : 'Video Studio card · re-attach the downloaded file to play',
@@ -126,7 +133,7 @@ function VideoStudioHostBridgeView(props) {
                     if (_planRunRef.current && _planRunRef.current.running) throw new Error('AlloBot is already running a plan - stop it first.');
                     const list = (Array.isArray(steps) ? steps : []).filter(step => step && (step.id === 'source-input' || step.id === 'simplified')).slice(0, 2);
                     if (list.length !== 2) throw new Error('The Text Adaptation tutorial manifest is incomplete.');
-                    const stopWanted = () => !!(_planRunRef.current.stop || (hooks && hooks.shouldStop && hooks.shouldStop()));
+                    const stopWanted = () => !!(_planRunRef.current?.stop || (hooks && hooks.shouldStop && hooks.shouldStop()));
                     _officialTutorialSnapshotRef.current = _officialTutorialSnapshotRef.current || {
                         inputText, generatedContent, activeView, gradeLevel, expandedTools: expandedTools.slice()
                     };
@@ -247,7 +254,7 @@ function VideoStudioHostBridgeView(props) {
                         }
                     }
                     if (!steps || !steps.length) return { steps: [] };
-                    const cmds = AC.buildAlloCommands(_alloCmdCtx(), { includeGated: true });
+                    const cmds = AC.buildAlloCommands(_alloCmdCtxRef.current || _alloCmdCtx(), { includeGated: true });
                     return { steps: steps.map(s => {
                         const c = cmds.find(x => x.id === s.commandId);
                         return { commandId: s.commandId, params: s.params || {}, paramNames: typeof AC.getCommandContract === 'function' ? AC.getCommandContract(c || s.commandId).params : [], why: s.why || '', label: (c && c.label) || s.commandId };
@@ -256,7 +263,7 @@ function VideoStudioHostBridgeView(props) {
                 onValidateDemoPlan: async (steps) => {
                     const AC = window.AlloModules && window.AlloModules.AlloCommands;
                     if (!AC || typeof AC.validatePlan !== 'function') throw new Error('The command readiness checker has not loaded.');
-                    return AC.validatePlan(_alloCmdCtx(), steps, { demoSafeOnly: true });
+                    return AC.validatePlan(_alloCmdCtxRef.current || _alloCmdCtx(), steps, { demoSafeOnly: true });
                 },
                 onRunDemoPlan: async (steps, hooks, options) => {
                     // Demo Autopilot execution: one guarded runPlan call PER STEP so
@@ -264,16 +271,17 @@ function VideoStudioHostBridgeView(props) {
                     // and never auto-runs destructive commands). Shares AlloBot's
                     // single-flight guard so a bot plan and a demo can't interleave.
                     const AC = window.AlloModules && window.AlloModules.AlloCommands;
+                    const MAX_DEMO_STEPS = 16;
                     const rehearsal = !!(options && options.rehearsal);
                     if (!AC || typeof AC.runPlan !== 'function' || typeof AC.validatePlan !== 'function') throw new Error('The command runner has not loaded.');
-                    const readiness = AC.validatePlan(_alloCmdCtx(), steps, { demoSafeOnly: true });
+                    const readiness = AC.validatePlan(_alloCmdCtxRef.current || _alloCmdCtx(), steps, { demoSafeOnly: true });
                     if (!readiness || !readiness.ok) {
                         const blocked = readiness && readiness.items && readiness.items.find(item => item.status === 'block');
                         return { ok: false, completed: 0, reason: (blocked && ((blocked.label || blocked.commandId) + ': ' + blocked.detail)) || 'This demo plan is not ready to run.' };
                     }
                     if (_planRunRef.current && _planRunRef.current.running) throw new Error('AlloBot is already running a plan — stop it first.');
                     _planRunRef.current = { running: true, stop: false };
-                    const stopWanted = () => (_planRunRef.current.stop || !!(hooks && hooks.shouldStop && hooks.shouldStop()));
+                    const stopWanted = () => (!!_planRunRef.current?.stop || !!(hooks && hooks.shouldStop && hooks.shouldStop()));
                     const cursorMarkers = new Set();
                     const emphasizeCursorTarget = (cmd, label) => {
                         if (!options || options.cursorEmphasis === false) return;
@@ -303,7 +311,7 @@ function VideoStudioHostBridgeView(props) {
                     };
                     try {
                         if (rehearsal) {
-                            const previewList = (Array.isArray(steps) ? steps : []).slice(0, 8);
+                            const previewList = (Array.isArray(steps) ? steps : []).slice(0, MAX_DEMO_STEPS);
                             let previewCompleted = 0;
                             for (let i = 0; i < previewList.length; i++) {
                                 if (stopWanted()) return { ok: false, stopped: true, completed: previewCompleted, reason: 'Rehearsal stopped by the teacher.' };
@@ -328,7 +336,7 @@ function VideoStudioHostBridgeView(props) {
                             return { ok: false, completed: 0, reason: 'The AlloFlow tab never became visible, so no automatic actions were run.' };
                         }
                         addToast('🎬 Demo Autopilot is driving AlloFlow — Video Studio is recording.', 'info');
-                        const list = (Array.isArray(steps) ? steps : []).slice(0, 8);
+                        const list = (Array.isArray(steps) ? steps : []).slice(0, MAX_DEMO_STEPS);
                         let completed = 0;
                         // Post-run objective audit reads these flags: only primitives,
                         // capped, from the LIVE ctx (the ref tracks renders). Booleans
@@ -398,7 +406,7 @@ function VideoStudioHostBridgeView(props) {
                                         const finish = v => { if (!done) { done = true; clearInterval(guard); resolve(v === 'retry' || v === 'skip' ? v : 'stop'); } };
                                         const startedWaiting = Date.now();
                                         guard = setInterval(() => { if (stopWanted() || Date.now() - startedWaiting > 240000) finish('stop'); }, 250);
-                                        Promise.resolve(hooks.onDecision({ index: i, label: list[i].commandId, reason: failReason, timedOut: !!(r && r.timedOut) })).then(finish, () => finish('stop'));
+                                        Promise.resolve().then(() => hooks.onDecision({ index: i, label: list[i].commandId, reason: failReason, timedOut: !!(r && r.timedOut) })).then(finish, () => finish('stop'));
                                     });
                                     if (choice === 'retry') { i--; continue; }
                                     if (choice === 'skip') continue;

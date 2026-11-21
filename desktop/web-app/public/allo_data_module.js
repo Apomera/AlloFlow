@@ -2379,15 +2379,15 @@ const FLUENCY_BENCHMARKS = {
 
 // === UI_ELEMENT_MAP (originally AlloFlowANTI.txt:6209-6244) ===
 const UI_ELEMENT_MAP = {
-  "language": "ui-language-selector",
+  "language": "universal-output-language",
   "glossary": "ui-tool-glossary",
   "quiz": "ui-tool-quiz",
   "export": "tour-header-actions",
-  "profiles": "ui-student-profiles",
+  "profiles": "tour-level-settings",
   "text": "ui-tool-simplified",
   "simplified": "ui-tool-simplified",
-  "source": "tour-source-input",
-  "inputs": "tour-source-input",
+  "source": "allo-source-topic",
+  "inputs": "allo-source-topic",
   "analysis": "tour-source-check",
   "outline": "tour-tool-outline",
   "visual": "tour-tool-visual",

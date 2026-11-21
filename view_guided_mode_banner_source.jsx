@@ -847,7 +847,7 @@ function GuidedModeBanner({
   const [pendingReadinessAction, setPendingReadinessAction] = React.useState(null); // null | 'teach' | 'finish'
   const [pendingUnsafeExit, setPendingUnsafeExit] = React.useState(false);
   const _busyTimingRef = React.useRef(null);
-  const _skipUiPersistRef = React.useRef(false);
+  const _skipPersistRef = React.useRef({ ui: false, readiness: false, delivery: false, context: false });
   const guidedBusy = !!isGuidedRetrying;
   // Only resources made from the source text can go out of date when it is edited.
   // An analysis follows its own text, and a catalog book carries no source snapshot.
@@ -864,9 +864,10 @@ function GuidedModeBanner({
   };
   const _sourceBaselineRef = React.useRef({ fingerprint: sourceWarningFingerprint(inputText), ids: [] });
   const [sourceWarningSaveFailed, setSourceWarningSaveFailed] = React.useState(false);
-  React.useEffect(() => { if (_skipUiPersistRef.current) { _skipUiPersistRef.current = false; return; } try { localStorage.setItem('allo_guided_ui_state', JSON.stringify({ collapsed: isCollapsed, showPicker, showAbout: !!showGuidedTip, infoTab, focusDetails: showFocusDetails })); } catch (_) {} }, [isCollapsed, showPicker, showGuidedTip, infoTab, showFocusDetails]);
+  React.useEffect(() => { if (_skipPersistRef.current.ui) { _skipPersistRef.current.ui = false; return; } try { localStorage.setItem('allo_guided_ui_state', JSON.stringify({ collapsed: isCollapsed, showPicker, showAbout: !!showGuidedTip, infoTab, focusDetails: showFocusDetails })); } catch (_) {} }, [isCollapsed, showPicker, showGuidedTip, infoTab, showFocusDetails]);
   React.useEffect(() => { if (_savedUiState.showAbout && !showGuidedTip) setShowGuidedTip(true); }, []);
   React.useEffect(() => {
+    if (_skipPersistRef.current.readiness) { _skipPersistRef.current.readiness = false; return; }
     if (!readinessContextKey) return;
     try {
       localStorage.setItem('allo_guided_readiness_checks', JSON.stringify({ version: 2, contextKey: readinessContextKey, checks: readinessChecks }));
@@ -877,8 +878,8 @@ function GuidedModeBanner({
       try { localStorage.removeItem('allo_guided_readiness_checks'); } catch (_) {}
     }
   }, [readinessContextKey, readinessState]);
-  React.useEffect(() => { try { localStorage.setItem('allo_guided_delivery_preferences', JSON.stringify({ setting: deliverySetting, priority: deliveryPriority })); } catch (_) {} }, [deliverySetting, deliveryPriority]);
-  React.useEffect(() => { try { localStorage.setItem('allo_guided_classroom_context', JSON.stringify(classroomContext)); } catch (_) {} }, [classroomContext]);
+  React.useEffect(() => { if (_skipPersistRef.current.delivery) { _skipPersistRef.current.delivery = false; return; } try { localStorage.setItem('allo_guided_delivery_preferences', JSON.stringify({ setting: deliverySetting, priority: deliveryPriority })); } catch (_) {} }, [deliverySetting, deliveryPriority]);
+  React.useEffect(() => { if (_skipPersistRef.current.context) { _skipPersistRef.current.context = false; return; } try { localStorage.setItem('allo_guided_classroom_context', JSON.stringify(classroomContext)); } catch (_) {} }, [classroomContext]);
   const checkSavedAiPlansFresh = () => {
     try {
       const stored = JSON.parse(localStorage.getItem('allo_guided_saved_plans') || '[]');
@@ -1232,7 +1233,7 @@ function GuidedModeBanner({
     _ttsGenRef.current++;
     const a = _ttsAudioRef.current; _ttsAudioRef.current = null;
     if (a === 'device-voice') { try { window.speechSynthesis.cancel(); } catch (_) {} }
-    else if (a) { try { a.pause(); a.src = ''; } catch (_) {} }
+    else if (a) { try { a.onended = null; a.onerror = null; a.pause(); a.src = ''; } catch (_) {} }
     const u = _ttsUrlRef.current; _ttsUrlRef.current = null;
     if (u) { try { URL.revokeObjectURL(u); } catch (_) {} }
     setTtsState('idle');
@@ -1257,9 +1258,10 @@ function GuidedModeBanner({
     }
     _ttsUrlRef.current = url;
     const audio = new Audio(url); _ttsAudioRef.current = audio;
-    audio.onended = _stopTts; audio.onerror = _stopTts;
+    const onDone = () => { if (myGen === _ttsGenRef.current) _stopTts(); };
+    audio.onended = onDone; audio.onerror = onDone;
     try { await audio.play(); if (myGen === _ttsGenRef.current) setTtsState('playing'); else _stopTts(); }
-    catch (_) { _stopTts(); }
+    catch (_) { if (myGen === _ttsGenRef.current) _stopTts(); }
   };
   const allSteps = allGuidedSteps || GUIDED_STEPS;
   // null selection = every step on; source-input is always on (the pipeline needs it).
@@ -1761,8 +1763,8 @@ function GuidedModeBanner({
     goToGuidedStepId('package-deliver');
   };
   const performStartTeaching = () => {
-    if (documentRoute) { if (canReviewDocument) openGuidedDocumentReview(documentRoute); return; }
     setPendingReadinessAction(null);
+    if (documentRoute) { if (canReviewDocument) openGuidedDocumentReview(documentRoute); return; }
     if (deliverySetting === 'live') { startGuidedLiveSession?.(); return; }
     if (hasLearnerLink && typeof previewGuidedStudentAssignment === 'function') previewGuidedStudentAssignment();
     else if (latestLessonPlanItem && typeof openGuidedHistoryItem === 'function') openGuidedHistoryItem(latestLessonPlanItem);
@@ -1878,7 +1880,7 @@ function GuidedModeBanner({
   }, [pendingUnsafeExit]);
   React.useEffect(() => { if (progressSaveStatus !== 'error' && pendingUnsafeExit) setPendingUnsafeExit(false); }, [progressSaveStatus, pendingUnsafeExit]);
   const clearGuidedLocalData = () => {
-    _skipUiPersistRef.current = true;
+    _skipPersistRef.current = { ui: true, readiness: true, delivery: true, context: true };
     try { ['allo_guided_completed_runs', 'allo_guided_last_completion', 'allo_guided_duration_stats', 'allo_guided_feedback', 'allo_guided_ui_state', 'allo_guided_path_prompt_seen', 'allo_guided_auto_advance', 'allo_guided_readiness_checks', 'allo_guided_delivery_preferences', 'allo_guided_saved_plans', 'allo_guided_planner_draft', 'allo_guided_classroom_context', 'allo_guided_source_baseline'].forEach(key => localStorage.removeItem(key)); } catch (_) {}
     setLastCompletion(null); setDurationStats({}); setFeedbackEntries([]); setFeedbackStepId(''); setFeedbackSaved(false); setShowFeedbackHistory(false); setReadinessChecks({}); setDeliverySetting('take-home'); setDeliveryPriority('accessible'); setShowAiPlanner(false); setAiPlannerGoal(''); setAiPlannerPlan(null); setAiPlannerError(''); setAiPlannerRefinement(''); setAiPlannerMessages([]); setAiPlannerLastChanges([]); setAiPlannerQuestions([]); setAiPlannerAnswers({}); setSavedAiPlans([]); setPendingPlanImport(null); setClassroomContext(normalizeClassroomContext({})); setSavedAiPlanName(''); setActiveSavedAiPlanId(null); setSavedAiPlanStatus(''); setPendingDeleteSavedAiPlanId(null); setPendingPlannerClose(false); setPlannerRecoveryDraft(null); setPlannerDirty(false); setShowPicker(false); setInfoTab(null); setIsCollapsed(false); setPendingClearGuidedData(false);
     if (typeof setGuidedAutoAdvance === 'function') setGuidedAutoAdvance(false);

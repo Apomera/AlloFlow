@@ -122,6 +122,11 @@ function PersonaRoleSwap(props) {
     if (text && active) setField(active, 'evidence', text);
     if (evidenceRef.current) evidenceRef.current.focus();
   };
+  var roleSwapMountedRef = React.useRef(true);
+  React.useEffect(function () {
+    roleSwapMountedRef.current = true;
+    return function () { roleSwapMountedRef.current = false; };
+  }, []);
   var save = function () {
     if (busy || !entries.length) return;
     var saveFn = typeof props.onSave === 'function' ? props.onSave
@@ -132,8 +137,8 @@ function PersonaRoleSwap(props) {
     Promise.resolve().then(function () {
       return saveFn({ key: sessionKey, mode: props.mode, entries: entries, checks: { inCharacter: checks.inCharacter === true, usesEvidence: checks.usesEvidence === true, accurate: checks.accurate === true } });
     }).then(function (result) {
-      setStatus(result ? { text: label('saved', 'Saved to your work. Your teacher will see it when you hand in your work.') } : failed);
-    }).catch(function () { setStatus(failed); }).finally(function () { setBusy(false); });
+      if (roleSwapMountedRef.current) setStatus(result ? { text: label('saved', 'Saved to your work. Your teacher will see it when you hand in your work.') } : failed);
+    }).catch(function () { if (roleSwapMountedRef.current) setStatus(failed); }).finally(function () { if (roleSwapMountedRef.current) setBusy(false); });
   };
   var inputClass = 'block w-full min-w-0 rounded-xl border-2 border-slate-300 bg-white p-2 text-sm leading-relaxed text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
   var checkItems = [
@@ -258,6 +263,20 @@ function PersonaChatView(props) {
   var handlePersonaTopicSpark = props.handlePersonaTopicSpark;
   var handleGeneratePersonaSummary = props.handleGeneratePersonaSummary;
   var handleRetryPortraitGeneration = props.handleRetryPortraitGeneration;
+  var _aiConfigTickState = React.useState(0);
+  var setAiConfigTick = _aiConfigTickState[1];
+  React.useEffect(function () {
+    if (typeof window === 'undefined') return undefined;
+    var bump = function () { setAiConfigTick(function (n) { return n + 1; }); };
+    window.addEventListener('alloflow:ai-config-changed', bump);
+    window.addEventListener('alloflow:student-ai-config-changed', bump);
+    window.addEventListener('alloflow:ai-key-lock-changed', bump);
+    return function () {
+      window.removeEventListener('alloflow:ai-config-changed', bump);
+      window.removeEventListener('alloflow:student-ai-config-changed', bump);
+      window.removeEventListener('alloflow:ai-key-lock-changed', bump);
+    };
+  }, []);
   // Learner with no usable AI: the figure cannot reply, so hide AI extras and show the stored greeting with a note.
   var personaStudentTextAiOff = !isTeacherMode && !_aiUsable('text', typeof window !== 'undefined' ? window.callGemini : undefined);
   var personaStudentImageAiOff = personaStudentTextAiOff || (!isTeacherMode && !_aiUsable('images', typeof window !== 'undefined' ? window.callGeminiImageEdit : undefined));
@@ -291,11 +310,13 @@ function PersonaChatView(props) {
   };
   var renderRoleSwapToggle = function () {
     if (personaStudentTextAiOff || !roleSwapCharacters.length) return null;
+    var roleSwapShortLabel = (typeof t === 'function' && t('persona.role_swap_short') && t('persona.role_swap_short') !== 'persona.role_swap_short') ? t('persona.role_swap_short') : 'Role Swap';
     return <button type="button" ref={roleSwapToggleRef} data-persona-role-swap-toggle aria-pressed={_roleSwapOpenState[0]}
       onClick={function () { _roleSwapOpenState[1](function (open) { return !open; }); }}
-      className={'p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none flex items-center gap-2 ' + (_roleSwapOpenState[0] ? 'bg-indigo-100 text-indigo-900 border-indigo-300' : 'bg-white text-indigo-700 border-slate-200 hover:bg-indigo-50')}
+      className={'min-h-11 px-3 py-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none flex items-center gap-1.5 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (_roleSwapOpenState[0] ? 'bg-indigo-100 text-indigo-900 border-indigo-300' : 'bg-white text-indigo-700 border-slate-200 hover:bg-indigo-50')}
       title={roleSwapTitle} aria-label={roleSwapTitle}>
       <PenTool size={16} aria-hidden="true" />
+      <span className="hidden sm:inline">{roleSwapShortLabel}</span>
     </button>;
   };
   var handleSavePersonaChat = props.handleSavePersonaChat;
@@ -460,7 +481,23 @@ function PersonaChatView(props) {
         aria-disabled={busy || undefined}
         className={"block w-full min-w-0 min-h-20 max-h-40 resize-y rounded-xl border-2 border-slate-300 bg-white p-3 text-base leading-relaxed text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" + (busy ? ' opacity-60 cursor-wait' : '')} />
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <p id={id + '-keys'} className="text-[11px] leading-relaxed text-slate-600">{composerLabel('keyboard', 'Enter to send · Shift + Enter for a new line.')}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p id={id + '-keys'} className="text-xs leading-relaxed text-slate-600">{composerLabel('keyboard', 'Enter to send · Shift + Enter for a new line.')}</p>
+          {typeof window !== 'undefined' && (window.AlloModules?.DictationButton || window.AlloDictationButton) && React.createElement(window.AlloModules?.DictationButton || window.AlloDictationButton, {
+            t: t,
+            disabled: busy,
+            label: composerLabel('dictate', 'Dictate'),
+            onTranscript: function (spoken) {
+              var prev = String(value || '').trimEnd();
+              var merged = ((prev ? prev + ' ' : '') + spoken).slice(0, 2000);
+              setPersonaInput(merged);
+              if (personaAutoSend && merged.trim() && !busy) {
+                if (panel) handlePanelChatSubmit(merged);
+                else handlePersonaChatSubmit(merged);
+              }
+            },
+          })}
+        </div>
         <button type="button" onClick={send} disabled={busy || !value.trim()} aria-busy={busy}
           className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
           {busy ? <RefreshCw size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none" /> : <Send size={16} aria-hidden="true" />}
@@ -470,6 +507,11 @@ function PersonaChatView(props) {
     </section>;
   };
   var _rawHandlePersonaChatSubmit = handlePersonaChatSubmit;
+  var personaChatMountedRef = React.useRef(true);
+  React.useEffect(function () {
+    personaChatMountedRef.current = true;
+    return function () { personaChatMountedRef.current = false; };
+  }, []);
   handlePersonaChatSubmit = function (inputOverride, fromSuggestion) {
     if (fromSuggestion) {
       var text = typeof inputOverride === 'string' ? inputOverride : '';
@@ -480,7 +522,7 @@ function PersonaChatView(props) {
         .catch(function () {})
         .finally(function () {
           singleChoicePendingRef.current = false;
-          setSingleChoicePending(false);
+          if (personaChatMountedRef.current) setSingleChoicePending(false);
         });
     }
     return _rawHandlePersonaChatSubmit(inputOverride, fromSuggestion);
@@ -493,7 +535,7 @@ function PersonaChatView(props) {
       .catch(function () {})
       .finally(function () {
         panelChoicePendingRef.current = false;
-        setPanelChoicePending(false);
+        if (personaChatMountedRef.current) setPanelChoicePending(false);
       });
   };
   var _requestPersonaSummary = function (options) {
@@ -504,7 +546,7 @@ function PersonaChatView(props) {
       .catch(function () {})
       .finally(function () {
         summaryRequestPendingRef.current = false;
-        setSummaryRequestPending(false);
+        if (personaChatMountedRef.current) setSummaryRequestPending(false);
       });
   };
   var _openPersonaSummary = function () {
@@ -526,7 +568,7 @@ function PersonaChatView(props) {
       .catch(function () {})
       .finally(function () {
         reflectionSubmitPendingRef.current = false;
-        setReflectionSubmitPending(false);
+        if (personaChatMountedRef.current) setReflectionSubmitPending(false);
       });
   };
   var _retryPersonaChoices = function (mode) {
@@ -541,7 +583,7 @@ function PersonaChatView(props) {
       : function () { return generator(personaState.chatHistory, personaState.selectedCharacter, 6); };
     Promise.resolve().then(request).catch(function () {}).finally(function () {
       suggestionsRetryPendingRef.current = false;
-      setSuggestionsRetryPending(false);
+      if (personaChatMountedRef.current) setSuggestionsRetryPending(false);
     });
   };
   var _requestPersonaTopicSpark = function () {
@@ -550,7 +592,7 @@ function PersonaChatView(props) {
     setTopicSparkPending(true);
     Promise.resolve().then(function () { return handlePersonaTopicSpark(); }).catch(function () {}).finally(function () {
       topicSparkPendingRef.current = false;
-      setTopicSparkPending(false);
+      if (personaChatMountedRef.current) setTopicSparkPending(false);
     });
   };
   var _openPersonaReflection = function () {
@@ -600,7 +642,7 @@ function PersonaChatView(props) {
     setPersonaArchiveRows(null);
     setPersonaArchiveError(false);
     Promise.resolve().then(function () { return handleListPersonaSessionArchive(); }).then(function (result) {
-      if (_archiveRequestSeqRef.current !== seq) return;
+      if (!personaChatMountedRef.current || _archiveRequestSeqRef.current !== seq) return;
       if (result && Array.isArray(result.sessions)) {
         setPersonaArchiveRows(result);
       } else {
@@ -608,7 +650,7 @@ function PersonaChatView(props) {
         setPersonaArchiveError(true);
       }
     }).catch(function () {
-      if (_archiveRequestSeqRef.current !== seq) return;
+      if (!personaChatMountedRef.current || _archiveRequestSeqRef.current !== seq) return;
       setPersonaArchiveRows({ sessions: [], unreadable: [] });
       setPersonaArchiveError(true);
     });
@@ -637,6 +679,7 @@ function PersonaChatView(props) {
     Promise.resolve().then(request).then(function (ok) {
       // Host handlers report storage/download failures as null as well as rejects.
       if (ok !== true) throw new Error('Persona archive action failed');
+      if (!personaChatMountedRef.current) return;
       if (kind === 'delete') {
         setPersonaArchiveAction(null);
         var closeControl = personaArchiveCloseRef.current;
@@ -646,7 +689,7 @@ function PersonaChatView(props) {
         setPersonaArchiveAction({ key: row.key, kind: kind, status: 'complete' });
       }
     }).catch(function () {
-      setPersonaArchiveAction({ key: row.key, kind: kind, status: 'failed' });
+      if (personaChatMountedRef.current) setPersonaArchiveAction({ key: row.key, kind: kind, status: 'failed' });
     }).finally(function () {
       if (_archiveActionRef.current === action) _archiveActionRef.current = null;
     });
@@ -787,6 +830,8 @@ function PersonaChatView(props) {
   }, [isPersonaSummaryOpen]);
 
   // Pure helpers
+  var bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
+  var bt = function (s) { return (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s; };
   var splitTextToSentences = props.splitTextToSentences;
   var formatInteractiveText = props.formatInteractiveText;
   // Components
@@ -1453,7 +1498,7 @@ function PersonaChatView(props) {
                                      <span className="text-xs font-black text-amber-800">
                                         {panelTotalXp}
                                      </span>
-                                     <span className="text-[11px] text-slate-600">{t('common.xp')}</span>
+                                     <span className="text-xs text-slate-600">{t('common.xp')}</span>
                                  </div>
                              </div>
                                  <div className="w-full max-w-lg px-10 sm:px-12 md:px-0 transition-all motion-reduce:transition-none duration-500">
@@ -1599,7 +1644,7 @@ function PersonaChatView(props) {
                             >
                                 <Sparkles size={16} className={summaryBusy ? 'animate-pulse motion-reduce:animate-none' : ''}/>
                             </button>}
-                            <button type="button"
+                            {!personaStudentTextAiOff && <button type="button"
                                 aria-label={personaState.isLoading || isGeneratingReflectionPrompt ? t('persona.finish_current_turn') : (panelConcludeReady ? t('persona.conclude_button') : t('persona.conclude_locked_progress', { percent: panelUnlockPct }))}
                                 data-help-key="persona_conclude"
                                 onClick={_openPersonaReflection}
@@ -1615,13 +1660,13 @@ function PersonaChatView(props) {
                                     ? <CheckCircle2 size={16}/>
                                     : <Lock size={16}/>}
                                 <span className="hidden sm:inline">{t('persona.conclude_button')}</span>
-                                {!panelConcludeReady && <span className="hidden lg:inline text-[10px] font-black opacity-80">{panelUnlockPct}%</span>}
+                                {!panelConcludeReady && <span className="hidden lg:inline text-xs font-black opacity-80">{panelUnlockPct}%</span>}
                                 {!panelConcludeReady && (
                                     <span className="absolute left-1 right-1 bottom-1 h-1 rounded-full bg-white/70 overflow-hidden">
                                         <span className="block h-full rounded-full bg-indigo-400 transition-all motion-reduce:transition-none duration-500" style={{ width: `${panelUnlockPct}%` }} />
                                     </span>
                                 )}
-                            </button>
+                            </button>}
                         </div>
                         {(personaState.isGeneratingTopicSpark || personaState.topicSparkError) && (
                             <div className={`shrink-0 border-b px-4 py-2 text-center text-xs ${personaState.topicSparkError ? 'border-red-200 bg-red-50 text-red-800' : 'border-indigo-100 bg-indigo-50 text-indigo-700'}`} role={personaState.topicSparkError ? 'alert' : 'status'} aria-live="polite">
@@ -1649,7 +1694,7 @@ function PersonaChatView(props) {
                                             </div>
                                             <span className="min-w-0 flex-1 truncate">{char?.name || t('persona.character_fallback')}</span>
                                             <span className="font-black tabular-nums">{rapport}%</span>
-                                            {isActivePanelist && <span className="inline-flex items-center gap-1 text-[10px] text-yellow-700"><Volume2 size={12} className="animate-pulse motion-reduce:animate-none" /> {t('persona.active_speaker')}</span>}
+                                            {isActivePanelist && <span className="inline-flex items-center gap-1 text-xs text-yellow-700"><Volume2 size={12} className="animate-pulse motion-reduce:animate-none" /> {t('persona.active_speaker')}</span>}
                                             <span className="shrink-0 text-base transition-transform motion-reduce:transition-none group-open:rotate-180" aria-hidden="true">▾</span>
                                         </summary>
                                         <div role="group" className="border-t border-current/10 px-3 py-3 space-y-3 text-left" aria-label={t('persona.panelist_details', { name: char?.name || t('persona.character_fallback') })}>
@@ -1685,12 +1730,12 @@ function PersonaChatView(props) {
                                                                                 : <span className="mt-0.5 h-3 w-3 shrink-0 rounded-full border-2 border-indigo-400" aria-hidden="true" />}
                                                                         <span>{quest.isCompleted ? <span className="sr-only">{completedLabel}: </span> : isLocked ? <span className="sr-only">{lockedLabel}: </span> : null}{quest.text}</span>
                                                                     </span>
-                                                                    {!quest.isCompleted && isLocked && <span className="mt-1 block pl-4 text-[10px] font-bold opacity-70">{inquiryLabel('bonus', 'Optional story bonus at rapport')} {quest.difficulty}</span>}
+                                                                    {!quest.isCompleted && isLocked && <span className="mt-1 block pl-4 text-xs font-bold opacity-70">{inquiryLabel('bonus', 'Optional story bonus at rapport')} {quest.difficulty}</span>}
                                                                 </li>
                                                             );
                                                         })}
                                                     </ul>
-                                                ) : <p className="text-slate-500">{t('persona.no_objectives')}</p>}
+                                                ) : <p className="text-slate-600">{t('persona.no_objectives')}</p>}
                                             </div>
                                             {!char?.avatarUrl && typeof handleRetryPortraitGeneration === 'function' && (
                                                 <button type="button"
@@ -1740,7 +1785,7 @@ function PersonaChatView(props) {
                                                  >
                                                     {isMessagePlayingNow && <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 animate-pulse motion-reduce:animate-none" />}
                                                     {isUser ? (
-                                                        panelMainText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')
+                                                        bt(panelMainText.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1'))
                                                     ) : (
                                                         (() => {
                                                             const paragraphs = panelMainText.split(/\n{2,}/);
@@ -1783,7 +1828,7 @@ function PersonaChatView(props) {
                                                                                     title={t('common.click_to_read')}
                                                                                     aria-label={t('a11y.sentence_read_aloud', { num: currentGlobalIdx + 1 }) || `Sentence ${currentGlobalIdx + 1}. Click to read aloud.`}
                                                                                 >
-                                                                                    {formatInteractiveText(cleanText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1'))}
+                                                                                    {formatInteractiveText(cleanText.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1'))}
                                                                                     {" "}
                                                                                 </span>
                                                                             );
@@ -1796,7 +1841,7 @@ function PersonaChatView(props) {
                                                     {!isUser && panelTranslationText && (
                                                         <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
                                                             <div className="flex items-center gap-2 mb-1">
-                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                                                <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
                                                                     {t('persona.translation_label') || 'Translation'}
                                                                 </span>
                                                                 <button type="button"
@@ -1810,13 +1855,13 @@ function PersonaChatView(props) {
                                                                     <Volume2 size={12} aria-hidden="true"/>
                                                                 </button>
                                                             </div>
-                                                            <p lang={window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English')} dir="auto" className="text-xs text-slate-500 leading-relaxed italic">{panelTranslationText}</p>
+                                                            <p lang={window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English')} dir="auto" className="text-xs text-slate-600 leading-relaxed italic">{panelTranslationText}</p>
                                                         </div>
                                                     )}
                                                     {!isUser && <PersonaEvidenceNote message={msg} source={generatedContent?.config?.personaSource} t={t}/>}
-                                                    {!isUser && <span className="mt-2 flex items-center gap-1 text-[11px] text-slate-600 opacity-70"><Volume2 size={11}/> {t('persona.click_sentence') || 'Click any sentence to listen'}</span>}
+                                                    {!isUser && <span className="mt-2 flex items-center gap-1 text-xs text-slate-600 opacity-70"><Volume2 size={11}/> {t('persona.click_sentence') || 'Click any sentence to listen'}</span>}
                                                  </div>
-                                                 <span className={`text-[11px] mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`}>
+                                                 <span className={`text-xs mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`}>
                                                     {speakerLabel}
                                                     {isMessagePlayingNow && <Volume2 size={11} className="animate-pulse motion-reduce:animate-none" />}
                                                  </span>
@@ -1842,16 +1887,33 @@ function PersonaChatView(props) {
                                             </div>
                                         </div>
                                     )}
-                                    {personaDefinitionData && (
+                                    {personaDefinitionData && (() => {
+                                        const vp = typeof window !== 'undefined' ? window.visualViewport : null;
+                                        const vw = vp && vp.width > 0 ? vp.width : (typeof window !== 'undefined' ? window.innerWidth : 1024);
+                                        const vh = vp && vp.height > 0 ? vp.height : (typeof window !== 'undefined' ? window.innerHeight : 768);
+                                        const ox = vp && Number.isFinite(vp.offsetLeft) ? vp.offsetLeft : 0;
+                                        const oy = vp && Number.isFinite(vp.offsetTop) ? vp.offsetTop : 0;
+                                        let rootPx = 16;
+                                        try { rootPx = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16; } catch (_) {}
+                                        const width = Math.min(Math.round(22 * rootPx), Math.max(200, Math.floor(vw - 24)));
+                                        const left = Math.max(ox + 12, Math.min((Number(personaDefinitionData.x) || 0) + 10, ox + vw - width - 12));
+                                        const top = Math.max(oy + 12, Math.min((Number(personaDefinitionData.y) || 0) + 10, Math.max(oy + 12, oy + vh - Math.min(260, Math.round(vh * 0.5)) - 12)));
+                                        const maxHeight = Math.max(140, Math.floor(oy + vh - top - 12));
+                                        return (
                                         <div
                                             data-persona-definition-dialog
-                                            className="fixed z-[9999] w-[calc(100vw-1rem)] max-w-sm max-h-[calc(100dvh-1rem)] overflow-y-auto bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 animate-in motion-reduce:animate-none zoom-in-95 duration-150 sm:w-auto"
+                                            className="fixed z-[9999] max-h-[calc(100dvh-1rem)] overflow-y-auto bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 animate-in motion-reduce:animate-none zoom-in-95 duration-150"
                                             style={{
-                                                left: Math.max(8, Math.min((Number(personaDefinitionData.x) || 0) + 10, Math.max(8, window.innerWidth - 392))),
-                                                top: Math.max(8, Math.min((Number(personaDefinitionData.y) || 0) + 10, Math.max(8, window.innerHeight - 220)))
+                                                width: width + 'px',
+                                                maxWidth: Math.max(200, Math.floor(vw - 24)) + 'px',
+                                                left: Math.round(left) + 'px',
+                                                top: Math.round(top) + 'px',
+                                                maxHeight: maxHeight + 'px',
+                                                overflowWrap: 'anywhere'
                                             }}
                                             ref={personaDefinitionDialogRef}
                                             role="dialog"
+                                            aria-modal="true"
                                             tabIndex={-1}
                                             aria-labelledby="persona-definition-title"
                                             onKeyDown={(e) => {
@@ -1864,38 +1926,39 @@ function PersonaChatView(props) {
                                             }}
                                             onClick={(e) => e.stopPropagation()}
                                         >
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span id="persona-definition-title" className="font-bold text-lg text-indigo-600">{personaDefinitionData.word}</span>
+                                            <div className="flex items-start justify-between gap-2 mb-2">
+                                                <span id="persona-definition-title" className="min-w-0 break-words font-bold text-lg text-indigo-900">{personaDefinitionData.word}</span>
                                                 <button type="button"
                                                     data-definition-initial-focus
                                                     aria-label={t('common.close_definition')}
                                                     onClick={handleSetPersonaDefinitionDataToNull}
-                                                    className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded p-1 transition-colors motion-reduce:transition-none"
+                                                    className="min-h-11 min-w-11 shrink-0 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                 >
-                                                    <X size={16}/>
+                                                    <X size={16} aria-hidden="true"/>
                                                 </button>
                                             </div>
                                             {isPersonaDefining ? (
-                                                <div className="flex items-center gap-2 text-slate-600 text-sm">
-                                                    <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/>
+                                                <div className="flex items-center gap-2 text-slate-600 text-base">
+                                                    <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/>
                                                     {t('persona.looking_up_definition')}
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <p className="text-sm text-slate-700 leading-relaxed mb-3">
+                                                    <p className="text-base text-slate-800 leading-relaxed mb-3">
                                                         {personaDefinitionData.text}
                                                     </p>
                                                     <button type="button"
                                                         aria-label={t('persona.speak_definition')}
                                                         onClick={() => handleSpeak(personaDefinitionData.text, 'persona-definition', 0)}
-                                                        className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-full"
+                                                        className="min-h-11 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-800 hover:text-indigo-950 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3.5 py-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                     >
-                                                        <Volume2 size={12}/> {t('persona.speak_definition')}
+                                                        <Volume2 size={14} aria-hidden="true"/> {t('persona.speak_definition')}
                                                     </button>
                                                 </>
                                             )}
                                         </div>
-                                    )}
+                                        );
+                                    })()}
                                 </div>
                                 {renderPersonaLatestControl()}
                                 {!isPersonaFreeResponse && renderPersonaTurnError()}
@@ -1932,7 +1995,6 @@ function PersonaChatView(props) {
                                                 </button>
                                             ))}
                                         </div>
-                                        {isPersonaFreeResponse && renderPersonaComposer(true)}
                                         {!isPersonaFreeResponse && (personaState.panelSuggestions || []).length < 6 && (
                                             <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600" role="status" aria-live="polite">
                                                 {personaState.isGeneratingPanelSuggestions ? (
@@ -1956,19 +2018,13 @@ function PersonaChatView(props) {
                                         )}
                                     </div>
                                 ) : panelChoicePending || personaState.isLoading ? (
-                                    <>
                                     <div className="p-4 bg-white border-t border-slate-200" role="status" aria-live="polite" aria-busy="true">
                                         <div className="flex items-center justify-center gap-2 text-sm font-bold text-indigo-700">
                                             <RefreshCw size={18} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />
                                             {t('persona.waiting_for_response')}
                                         </div>
                                     </div>
-                                    {/* The question box stays (read-only) so focus is not dropped while the panel replies. */}
-                                    {isPersonaFreeResponse && renderPersonaComposer(true)}
-                                    </>
-                                ) : isPersonaFreeResponse ? (
-                                    renderPersonaComposer(true)
-                                ) : (
+                                ) : !isPersonaFreeResponse ? (
                                     <div className="p-4 bg-white border-t border-slate-200 flex flex-wrap items-center justify-center gap-3" role="status" aria-live="polite">
                                         <RefreshCw size={18} className={(personaState.isLoading || personaState.isGeneratingPanelSuggestions) ? 'animate-spin motion-reduce:animate-none text-indigo-600' : 'text-indigo-600'} />
                                         <span className="text-sm font-medium text-slate-700">
@@ -1989,7 +2045,9 @@ function PersonaChatView(props) {
                                             </button>
                                         )}
                                     </div>
-                                )}
+                                ) : null}
+                                {/* Keep the panel free-response composer in a stable tree slot across loading/hints transitions so focus never drops. */}
+                                {!showRoleSwap && isPersonaFreeResponse && renderPersonaComposer(true)}
                             </div>
                             <div className={`w-1/4 min-w-[250px] border-l border-slate-200 bg-white flex flex-col p-4 overflow-hidden hidden md:flex transition-all motion-reduce:transition-none ${activeSpeakerName && activeSpeakerName === personaState.selectedCharacters?.[1]?.name ? 'ring-2 ring-yellow-200 ring-inset shadow-inner' : ''}`}>
                                 <CharacterColumn character={personaState.selectedCharacters[1]} side="right" onRetryPortrait={handleRetryPortraitGeneration} />
@@ -2038,7 +2096,7 @@ function PersonaChatView(props) {
                                             </div>
                                             <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
                                                 <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1"><MessageSquare size={12} /> {t('persona.ai_feedback') || 'AI Reflection Feedback'}</h4>
-                                                <p className="mb-2 text-[11px] text-slate-500">{t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'}</p>
+                                                <p className="mb-2 text-xs text-slate-600">{t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'}</p>
                                                 <div className="break-words [overflow-wrap:anywhere] text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: reflectionFeedbackText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
                                             </div>
                                         </div>
@@ -2066,13 +2124,24 @@ function PersonaChatView(props) {
                                                     )}
                                                 </div>
                                                 <textarea id="persona-reflection-input" aria-label={t('persona.reflection_input') || 'Write your reflection'} aria-describedby="persona-reflection-count" maxLength={4000} value={personaReflectionText} onChange={(e) => setPersonaReflectionInput(e.target.value)} placeholder={t('persona.reflection_placeholder')} className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600" disabled={reflectionBusy || isGeneratingReflectionPrompt} />
-                                                <p id="persona-reflection-count" className="mt-1 text-right text-[11px] font-medium text-slate-500">{t('persona.reflection_character_count', { count: personaReflectionText.length, limit: 4000 })}</p>
+                                                <div className="mt-1 flex items-center justify-between gap-2 flex-wrap">
+                                                    {typeof window !== 'undefined' && typeof window.AlloDictationButton === 'function' && React.createElement(window.AlloDictationButton, {
+                                                        t,
+                                                        disabled: reflectionBusy || isGeneratingReflectionPrompt,
+                                                        onTranscript: (spoken) => {
+                                                            const cur = String(personaReflectionText || '');
+                                                            const sep = cur && !/\s$/.test(cur) ? ' ' : '';
+                                                            setPersonaReflectionInput((cur + sep + spoken).slice(0, 4000));
+                                                        },
+                                                    })}
+                                                    <p id="persona-reflection-count" className="ml-auto text-right text-xs font-medium text-slate-600">{t('persona.reflection_character_count', { count: personaReflectionText.length, limit: 4000 })}</p>
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="mt-6 flex gap-3">
                                             <button type="button" aria-label={t('persona.back_to_chat')} onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={reflectionBusy} className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed">{t('persona.back_to_chat')}</button>
                                             <button type="button" aria-busy={reflectionBusy ? 'true' : 'false'} onClick={_submitPersonaReflection} disabled={!personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt} className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                                                {reflectionBusy ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={18} className="text-yellow-700 fill-current"/>}
+                                                {reflectionBusy ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Sparkles size={18} className="text-amber-200 fill-current" aria-hidden="true"/>}
                                                 {reflectionBusy ? t('persona.status_grading') : t('persona.submit_xp')}
                                             </button>
                                         </div>
@@ -2084,7 +2153,7 @@ function PersonaChatView(props) {
                 ) : (
                 <>
                 <button type="button" data-persona-character-details aria-expanded={characterDetailsOpen} aria-controls="persona-character-profile" onClick={() => setCharacterDetailsOpen(!characterDetailsOpen)} className="md:hidden flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-left text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
-                    <span className="min-w-0"><span className="block text-sm font-bold">{personaState.selectedCharacter.name}</span><span className="block text-xs text-slate-600">{navigationLabel(characterDetailsOpen ? 'hide_details' : 'show_details', characterDetailsOpen ? 'Hide character details' : 'Show character details')}</span></span>
+                    <span className="min-w-0"><span className="block text-sm font-bold">{personaState.selectedCharacter?.name || t('persona.character_fallback') || 'Character'}</span><span className="block text-xs text-slate-600">{navigationLabel(characterDetailsOpen ? 'hide_details' : 'show_details', characterDetailsOpen ? 'Hide character details' : 'Show character details')}</span></span>
                     <span aria-hidden="true" className="text-xl">{characterDetailsOpen ? '−' : '+'}</span>
                 </button>
                 <div id="persona-character-profile" className={'w-full md:w-1/3 max-h-[25vh] md:max-h-none bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 p-3 sm:p-4 md:p-6 ' + (characterDetailsOpen ? 'flex' : 'hidden') + ' md:flex flex-col items-center text-center overflow-y-auto shrink-0 z-10 relative custom-scrollbar'}>
@@ -2092,7 +2161,7 @@ function PersonaChatView(props) {
                          {_safePersonaChatAvatarUrl(personaState.avatarUrl) && (
                              <img loading="lazy"
                                  src={_safePersonaChatAvatarUrl(personaState.avatarUrl)}
-                                 alt={personaState.selectedCharacter.name}
+                                 alt={personaState.selectedCharacter?.name || t('persona.character_fallback') || 'Character'}
                                  className={`w-full h-full object-cover transition-all motion-reduce:transition-none duration-500 hover:scale-105 ${personaState.isImageLoading ? 'blur-[2px] opacity-90 scale-105' : ''}`}
                                  style={{ objectPosition: 'top center' }}
                              />
@@ -2107,7 +2176,7 @@ function PersonaChatView(props) {
                          {!personaState.avatarUrl && !personaState.isImageLoading && (
                              <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-4">
                                  <History size={64} className="text-yellow-300/50"/>
-                                 {typeof handleRetryPortraitGeneration === 'function' && <button type="button"
+                                 {typeof handleRetryPortraitGeneration === 'function' && personaState.selectedCharacter && <button type="button"
                                      aria-label={t('persona.generate_portrait_for', { name: personaState.selectedCharacter?.name || t('persona.character_fallback') })}
                                      onClick={() => handleRetryPortraitGeneration(personaState.selectedCharacter)}
                                      className="bg-yellow-500 hover:bg-yellow-600 text-yellow-900 px-4 py-2 rounded-full text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2 transition-all motion-reduce:transition-none shadow-md hover:shadow-lg"
@@ -2123,17 +2192,17 @@ function PersonaChatView(props) {
                              </div>
                          )}
                      </div>
-                     <h3 className="font-black text-2xl md:text-3xl text-slate-800 leading-tight mb-2">{personaState.selectedCharacter.name}</h3>
+                     <h3 className="font-black text-2xl md:text-3xl text-slate-800 leading-tight mb-2">{personaState.selectedCharacter?.name || ''}</h3>
                      <div className="bg-yellow-100 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-6 border border-yellow-200 shadow-sm">
-                        {personaState.selectedCharacter.role} ({personaState.selectedCharacter.year})
+                        {personaState.selectedCharacter?.role || ''}{personaState.selectedCharacter?.year ? ` (${personaState.selectedCharacter.year})` : ''}
                      </div>
                      <div className="w-full bg-white p-4 rounded-xl border border-slate-400 text-sm text-slate-600 leading-relaxed font-serif italic shadow-sm relative">
                          <Quote size={16} className="absolute top-2 left-2 text-slate-600 fill-current" aria-hidden="true" />
-                         "{personaState.selectedCharacter.context}"
+                         "{bt(personaState.selectedCharacter?.context || '')}"
                      </div>
                      <div className="w-full mt-6">
                          <div className="flex justify-between items-end mb-1">
-                             <span className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">{t('persona.trust_rapport_label')}</span>
+                             <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{t('persona.trust_rapport_label')}</span>
                              <span className={`text-xs font-bold ${
                                   singleRapport >= 70 ? 'text-green-700' :
                                   singleRapport >= 30 ? 'text-yellow-800' : 'text-red-700'
@@ -2151,9 +2220,9 @@ function PersonaChatView(props) {
                              ></div>
                          </div>
                      </div>
-                     {personaState.selectedCharacter.quests && personaState.selectedCharacter.quests.length > 0 && (
+                     {personaState.selectedCharacter?.quests && personaState.selectedCharacter.quests.length > 0 && (
                          <div className="w-full mt-6 text-left">
-                             <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
+                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
                                  <Search size={12} aria-hidden="true"/> {inquiryLabel('topics', 'Topics to explore')}
                              </h4>
                              <div className="space-y-2">
@@ -2175,7 +2244,7 @@ function PersonaChatView(props) {
                                                      {quest.text}
                                                  </span>
                                                  {!quest.isCompleted && (
-                                                     <span className="text-[11px] uppercase tracking-wider font-bold text-slate-600">
+                                                     <span className="text-xs uppercase tracking-wider font-bold text-slate-600">
                                                          {inquiryLabel('bonus', 'Optional story bonus at rapport')} {quest.difficulty}
                                                      </span>
                                                  )}
@@ -2201,12 +2270,12 @@ function PersonaChatView(props) {
                         <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-amber-50 px-3 py-1.5 rounded-lg border border-yellow-200">
                             <Star size={16} className="text-amber-700" aria-hidden="true" />
                             <div className="flex flex-col">
-                                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('common.xp')}</span>
+                                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('common.xp')}</span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-black text-amber-800">
                                          {singleXp}
                                     </span>
-                                    <span className="text-[11px] text-slate-600">/ 300</span>
+                                    <span className="text-xs text-slate-600">/ 300</span>
                                 </div>
                             </div>
                             <div role="progressbar" aria-label={t('common.xp') || 'Experience points'} aria-valuemin={0} aria-valuemax={300} aria-valuenow={singleXp} className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
@@ -2345,7 +2414,7 @@ function PersonaChatView(props) {
                         >
                             <Sparkles size={16} className={summaryBusy ? 'animate-pulse motion-reduce:animate-none' : ''}/>
                         </button>}
-                        <button type="button"
+                        {!personaStudentTextAiOff && <button type="button"
                             aria-label={personaState.isLoading || isGeneratingReflectionPrompt ? t('persona.finish_current_turn') : (singleConcludeReady ? t('persona.conclude_button') : t('persona.conclude_locked_progress', { percent: singleUnlockPct }))}
                             data-help-key="persona_conclude"
                             onClick={_openPersonaReflection}
@@ -2363,13 +2432,13 @@ function PersonaChatView(props) {
                                 ? <CheckCircle2 size={16}/>
                                 : <Lock size={16}/>}
                             <span className="hidden sm:inline">{t('persona.conclude_button')}</span>
-                            {!singleConcludeReady && <span className="hidden lg:inline text-[10px] font-black opacity-80">{singleUnlockPct}%</span>}
+                            {!singleConcludeReady && <span className="hidden lg:inline text-xs font-black opacity-80">{singleUnlockPct}%</span>}
                             {!singleConcludeReady && (
                                 <span className="absolute left-1 right-1 bottom-1 h-1 rounded-full bg-white/70 overflow-hidden">
                                     <span className="block h-full rounded-full bg-indigo-400 transition-all motion-reduce:transition-none duration-500" style={{ width: `${singleUnlockPct}%` }} />
                                 </span>
                             )}
-                        </button>
+                        </button>}
                         </div>
                     </div>
                     {(personaState.isGeneratingTopicSpark || personaState.topicSparkError) && (
@@ -2396,7 +2465,7 @@ function PersonaChatView(props) {
                                     {t('persona.empty_chat_instruction')}
                                 </p>
                                 {personaState.selectedCharacter?.name && (
-                                    <p className="mt-2 text-xs text-slate-500">
+                                    <p className="mt-2 text-xs text-slate-600">
                                         {t('persona.character_question_placeholder', { name: personaState.selectedCharacter.name })}
                                     </p>
                                 )}
@@ -2450,7 +2519,7 @@ function PersonaChatView(props) {
                                              return (
                                                  <>
                                                      {isUser ? (
-                                                         mainText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')
+                                                         bt(mainText.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1'))
                                                      ) : paragraphs.map((para, pIdx) => {
                                                          const sentences = splitTextToSentences(para);
                                                          if (sentences.length === 0) return null;
@@ -2500,7 +2569,7 @@ function PersonaChatView(props) {
                                                      {!isUser && translationText && (
                                                          <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
                                                              <div className="flex items-center gap-2 mb-1">
-                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('persona.translation_label') || 'Translation'}</span>
+                                                                 <span className="text-xs font-bold uppercase tracking-wider text-slate-600">{t('persona.translation_label') || 'Translation'}</span>
                                                                  <button type="button"
                                                                      aria-label={t('persona.speak_translation')}
                                                                      onClick={(e) => {
@@ -2513,7 +2582,7 @@ function PersonaChatView(props) {
                                                                      <Volume2 size={12} aria-hidden="true"/>
                                                                  </button>
                                                              </div>
-                                                             <p lang={window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English')} dir="auto" className="text-xs text-slate-500 leading-relaxed italic">{translationText}</p>
+                                                             <p lang={window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English')} dir="auto" className="text-xs text-slate-600 leading-relaxed italic">{translationText}</p>
                                                          </div>
                                                      )}
                                                  </>
@@ -2521,7 +2590,7 @@ function PersonaChatView(props) {
                                          })()}
                                      </div>
                                  </div>
-                                 <span className={`text-[11px] mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${!isUser && avatarUrl ? 'ml-11' : ''} ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`}>
+                                 <span className={`text-xs mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${!isUser && avatarUrl ? 'ml-11' : ''} ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`}>
                                      {speakerName}
                                      {isMessagePlayingNow && <Volume2 size={11} className="animate-pulse motion-reduce:animate-none" />}
                                  </span>
@@ -2557,7 +2626,7 @@ function PersonaChatView(props) {
                         {!isPersonaFreeResponse && renderPersonaTurnError()}
                         {isPersonaFreeResponse && !showPersonaHints && !personaState.isLoading && (
                             <div className="px-4 pt-2 pb-0 flex justify-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 fade-in">
-                                <span className={`text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors motion-reduce:transition-none ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
+                                <span className={`text-xs font-bold px-3 py-1 rounded-full border shadow-sm transition-colors motion-reduce:transition-none ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
                                     {!personaTurnHintsViewed ? t('persona.hard_mode_active') : t('persona.hints_viewed_status')}
                                 </span>
                             </div>
@@ -2693,7 +2762,7 @@ function PersonaChatView(props) {
                                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1">
                                                 <MessageSquare size={12} /> {t('persona.ai_feedback') || 'AI Reflection Feedback'}
                                             </h4>
-                                            <p className="mb-2 text-[11px] text-slate-500">{t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'}</p>
+                                            <p className="mb-2 text-xs text-slate-600">{t('persona.ai_feedback_disclaimer') || 'AI-generated feedback may be imperfect; educators should review important conclusions.'}</p>
                                             <div className="break-words [overflow-wrap:anywhere] text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: reflectionFeedbackText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
                                         </div>
                                     </div>
@@ -2701,7 +2770,7 @@ function PersonaChatView(props) {
                                         <button type="button"
                                             data-persona-finish-interview
                                             onClick={_handleCompleteReflection}
-                                            className="w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
+                                            className="w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-800 hover:to-purple-800 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                                         >
                                             <CheckCircle2 size={22} aria-hidden="true" /> {finishInterviewLabel}
                                         </button>
@@ -2741,7 +2810,18 @@ function PersonaChatView(props) {
                                                 className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600"
                                                 disabled={reflectionBusy || isGeneratingReflectionPrompt}
                                             />
-                                            <p id="persona-reflection-count" className="mt-1 text-right text-[11px] font-medium text-slate-600">{t('persona.reflection_character_count', { count: personaReflectionText.length, limit: 4000 })}</p>
+                                            <div className="mt-1 flex items-center justify-between gap-2 flex-wrap">
+                                                {typeof window !== 'undefined' && typeof window.AlloDictationButton === 'function' && React.createElement(window.AlloDictationButton, {
+                                                    t,
+                                                    disabled: reflectionBusy || isGeneratingReflectionPrompt,
+                                                    onTranscript: (spoken) => {
+                                                        const cur = String(personaReflectionText || '');
+                                                        const sep = cur && !/\s$/.test(cur) ? ' ' : '';
+                                                        setPersonaReflectionInput((cur + sep + spoken).slice(0, 4000));
+                                                    },
+                                                })}
+                                                <p id="persona-reflection-count" className="ml-auto text-right text-xs font-medium text-slate-600">{t('persona.reflection_character_count', { count: personaReflectionText.length, limit: 4000 })}</p>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="mt-6 flex gap-3">
@@ -2759,7 +2839,7 @@ function PersonaChatView(props) {
                                             disabled={!personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt}
                                             className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
-                                            {reflectionBusy ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={18} className="text-yellow-700 fill-current"/>}
+                                            {reflectionBusy ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Sparkles size={18} className="text-amber-200 fill-current" aria-hidden="true"/>}
                                             {reflectionBusy ? t('persona.status_grading') : t('persona.submit_xp')}
                                         </button>
                                     </div>
@@ -2799,7 +2879,7 @@ function PersonaChatView(props) {
                                     ref={personaArchiveCloseRef}
                                     aria-label={t('common.close')}
                                     onClick={() => setIsPersonaArchiveOpen(false)}
-                                    className="rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                                    className="rounded-full p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-800"
                                 >
                                     <X size={18}/>
                                 </button>
@@ -2988,7 +3068,7 @@ function PersonaChatView(props) {
                                                                     <p className="mt-2 border-l-2 border-indigo-200 pl-3 text-xs leading-relaxed text-slate-600"><span className="font-bold">{t('persona.summary.evidence')}:</span> {item.evidence}</p>
                                                                 )}
                                                                 {item.confidence && (
-                                                                    <p className="mt-2 text-[11px] font-bold uppercase tracking-wide text-indigo-600">{t('persona.summary.confidence', { value: item.confidence })}</p>
+                                                                    <p className="mt-2 text-xs font-bold uppercase tracking-wide text-indigo-600">{t('persona.summary.confidence', { value: item.confidence })}</p>
                                                                 )}
                                                             </li>
                                                     ))}
@@ -3012,7 +3092,7 @@ function PersonaChatView(props) {
                                             </aside>
                                         )}
                                         {summaryGeneratedAtLabel && (
-                                            <p className="text-right text-[11px] text-slate-600">{t('persona.summary.generated_at', { date: summaryGeneratedAtLabel })}</p>
+                                            <p className="text-right text-xs text-slate-600">{t('persona.summary.generated_at', { date: summaryGeneratedAtLabel })}</p>
                                         )}
                                     </div>
                                 ) : (

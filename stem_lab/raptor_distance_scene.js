@@ -27,7 +27,25 @@
       placement: { sceneUnits: 'metres', animated: false, protectsDetailFov: .75, throughDistanceM: 300 } };
 
     function own(resource) { resources.push(resource); allocations++; return resource; }
-    function material(color) { return own(new THREE.MeshLambertMaterial({ color: color })); }
+    function material(color, extra) {
+      var opts = { color: color };
+      if (extra) { Object.keys(extra).forEach(function (k) { opts[k] = extra[k]; }); }
+      return own(new THREE.MeshLambertMaterial(opts));
+    }
+    function makeCanvasTexture(size, draw, rx, ry) {
+      if (typeof THREE.CanvasTexture !== 'function' || typeof document === 'undefined' || typeof document.createElement !== 'function') return null;
+      try {
+        var c = document.createElement('canvas'); c.width = c.height = size;
+        var ctx = c.getContext && c.getContext('2d');
+        if (!ctx) return null;
+        draw(ctx, size);
+        var tex = own(new THREE.CanvasTexture(c));
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        if (rx || ry) tex.repeat.set(rx || 1, ry || 1);
+        tex.needsUpdate = true;
+        return tex;
+      } catch (e) { return null; }
+    }
     function mesh(geometry, surface, parent) {
       var object = new THREE.Mesh(geometry, surface); (parent || scene).add(object); return object;
     }
@@ -150,21 +168,148 @@
       // atmosphere or camouflage manipulation. All measurements are scene metres.
       scene.background = new THREE.Color(0xcbd9ce);
       scene.add(new THREE.HemisphereLight(0xfff5df, 0x61734b, .85));
-      var sunlight = new THREE.DirectionalLight(0xfff5df, .7); sunlight.position.set(-3, 6, 4); scene.add(sunlight);
-      var ground = mesh(own(new THREE.PlaneGeometry(2000, 2000)), material(0x83936a)); ground.rotation.x = -Math.PI / 2;
-      var path = mesh(own(new THREE.PlaneGeometry(1.45, 160)), material(0xb5aa83)); path.rotation.x = -Math.PI / 2; path.position.set(0, .001, -78);
-      var bark = material(0x65533c), leaves = material(0x6b8056), leafShade = material(0x58704d);
-      var trunkGeometry = own(new THREE.CylinderGeometry(.18, .25, 4, 6));
-      var crownGeometry = own(new THREE.SphereGeometry(1.9, 8, 6));
+      var sunlight = new THREE.DirectionalLight(0xfff5df, .72); sunlight.position.set(-3, 6, 4); scene.add(sunlight);
+      // Cool sky-rim bounce from the opposite quadrant sculpts the dove, perch and trees
+      // without touching the MeshBasicMaterial stripe plaque.
+      var skyRim = new THREE.DirectionalLight(0xdcebf8, .24); skyRim.position.set(5, 4, -5); scene.add(skyRim);
+
+      // Fixed-output atmospheric sky dome with sunlit zenith gradient, horizon glow and high cumulus bands.
+      if (typeof THREE.ShaderMaterial === 'function' && typeof THREE.SphereGeometry === 'function') {
+        var skyMat = own(new THREE.ShaderMaterial({
+          side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false,
+          uniforms: {
+            zenith: { value: new THREE.Color(0x7ca7cf) },
+            horizon: { value: new THREE.Color(0xcfdcd1) },
+            sunGlow: { value: new THREE.Color(0xfff4d8) },
+            sunDir: { value: new THREE.Vector3(-3, 6, 4).normalize() }
+          },
+          vertexShader: 'varying vec3 vSkyDir; void main(){ vSkyDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+          fragmentShader: [
+            'uniform vec3 zenith; uniform vec3 horizon; uniform vec3 sunGlow; uniform vec3 sunDir; varying vec3 vSkyDir;',
+            'float skyHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+            'float skyNoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);',
+            '  return mix(mix(skyHash(i), skyHash(i + vec2(1.0, 0.0)), f.x), mix(skyHash(i + vec2(0.0, 1.0)), skyHash(i + vec2(1.0, 1.0)), f.x), f.y); }',
+            'void main(){',
+            '  vec3 d = normalize(vSkyDir); float alt = max(0.0, d.y);',
+            '  vec3 col = mix(horizon, zenith, smoothstep(0.02, 0.58, alt));',
+            '  float sunward = max(0.0, dot(d, sunDir));',
+            '  col = mix(col, sunGlow, (pow(sunward, 10.0) * 0.14 + pow(sunward, 64.0) * 0.16) * smoothstep(0.01, 0.24, alt));',
+            '  vec2 cuv = d.xz / max(0.14, alt + 0.05) * 0.65;',
+            '  float cloud = skyNoise(cuv) * 0.62 + skyNoise(cuv * 2.3 + vec2(4.1, 1.7)) * 0.38;',
+            '  float puff = smoothstep(0.54, 0.78, cloud) * smoothstep(0.06, 0.22, alt) * (1.0 - smoothstep(0.55, 0.92, alt));',
+            '  col = mix(col, vec3(0.95, 0.96, 0.94), puff * 0.42);',
+            '  gl_FragColor = vec4(col, 1.0);',
+            '}'
+          ].join('\n')
+        }));
+        var skyDome = mesh(own(new THREE.SphereGeometry(1100, 24, 14)), skyMat);
+        skyDome.name = 'distance-sky-dome';
+      }
+
+      // Distant layered valley hills & horizon ridge silhouette (kept far beyond 300 m target corridor).
+      if (typeof THREE.BufferGeometry === 'function') {
+        var rPos = [], rCol = [], rIdx = [];
+        var ridgeLayers = [
+          { radius: 580, baseH: -2, amp: 24, freq: 5, phase: 0.7, top: [0.56, 0.65, 0.57], bot: [0.68, 0.75, 0.68] },
+          { radius: 860, baseH: -4, amp: 52, freq: 4, phase: 2.1, top: [0.64, 0.72, 0.73], bot: [0.76, 0.82, 0.79] }
+        ];
+        ridgeLayers.forEach(function (layer) {
+          var segs = 48, baseVertex = rPos.length / 3;
+          for (var s = 0; s <= segs; s++) {
+            var ang = (s / segs) * Math.PI * 2;
+            var rx = Math.cos(ang) * layer.radius, rz = Math.sin(ang) * layer.radius;
+            // Dip gently along the central sightline (-Z) so the far horizon stays clean behind the target.
+            var sightDamp = 0.55 + 0.45 * (1 - Math.exp(-Math.pow((ang - Math.PI * 1.5), 2) * 8));
+            var h = layer.amp * (0.45 + 0.32 * Math.sin(ang * layer.freq + layer.phase) + 0.23 * Math.cos(ang * (layer.freq * 2 + 1) - layer.phase)) * sightDamp;
+            rPos.push(rx, layer.baseH, rz, rx, Math.max(2, h), rz);
+            rCol.push(layer.bot[0], layer.bot[1], layer.bot[2], layer.top[0], layer.top[1], layer.top[2]);
+            if (s < segs) {
+              var i0 = baseVertex + s * 2;
+              rIdx.push(i0, i0 + 2, i0 + 1, i0 + 1, i0 + 2, i0 + 3);
+            }
+          }
+        });
+        var ridgeGeo = own(new THREE.BufferGeometry());
+        ridgeGeo.setAttribute('position', new THREE.Float32BufferAttribute(rPos, 3));
+        ridgeGeo.setAttribute('color', new THREE.Float32BufferAttribute(rCol, 3));
+        ridgeGeo.setIndex(rIdx);
+        var ridgeMat = own(new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, fog: false, toneMapped: false }));
+        var ridges = mesh(ridgeGeo, ridgeMat);
+        ridges.name = 'distance-horizon-ridges';
+      }
+
+      // Subtle high-altitude thermal updraft arcs in the wide 20° valley sky (well above the 0.75° detail FOV).
+      if (typeof THREE.TorusGeometry === 'function' && typeof THREE.MeshBasicMaterial === 'function') {
+        var thermalMat = own(new THREE.MeshBasicMaterial({ color: 0xf4f8f5, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false }));
+        var thermalGeo = own(new THREE.TorusGeometry(4.2, 0.14, 6, 28, Math.PI * 1.15));
+        [[-16, 17, -140, 0.4], [-14.5, 21.5, -142, 2.2], [19, 19, -165, 1.3], [17.5, 24, -168, 3.1]].forEach(function (t, ti) {
+          var arc = mesh(thermalGeo, thermalMat);
+          arc.position.set(t[0], t[1], t[2]);
+          arc.rotation.set(Math.PI * 0.44, t[3], 0.12 * (ti % 2 ? 1 : -1));
+          arc.name = 'distance-thermal-wisp-' + ti;
+        });
+      }
+
+      // Lightweight procedural textures for sunlit meadow turf, gravel field path, and cedar observation woodwork.
+      function h2(x, y) { var n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); }
+      var meadowTex = makeCanvasTexture(128, function (ctx, s) {
+        ctx.fillStyle = '#85966c'; ctx.fillRect(0, 0, s, s);
+        for (var i = 0; i < 650; i++) {
+          var px = h2(i, 3) * s, py = h2(i, 11) * s, r = 2 + h2(i, 19) * 8;
+          ctx.fillStyle = h2(i, 29) > 0.5 ? 'rgba(155,172,114,0.16)' : 'rgba(94,114,72,0.16)';
+          ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill();
+        }
+        for (var b = 0; b < 420; b++) {
+          var bx = h2(b, 41) * s, by = h2(b, 53) * s;
+          ctx.strokeStyle = b % 2 ? 'rgba(176,188,128,0.22)' : 'rgba(78,96,60,0.20)';
+          ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + (h2(b, 61) - 0.5) * 4, by - 4 - h2(b, 71) * 4); ctx.stroke();
+        }
+      }, 95, 95);
+      var pathTex = makeCanvasTexture(128, function (ctx, s) {
+        ctx.fillStyle = '#b7ac86'; ctx.fillRect(0, 0, s, s);
+        // Soft grass-fringed verges on both edges of the field track.
+        var leftEdge = ctx.createLinearGradient(0, 0, 22, 0);
+        leftEdge.addColorStop(0, 'rgba(116,136,88,0.85)'); leftEdge.addColorStop(1, 'rgba(183,172,134,0)');
+        ctx.fillStyle = leftEdge; ctx.fillRect(0, 0, 22, s);
+        var rightEdge = ctx.createLinearGradient(s - 22, 0, s, 0);
+        rightEdge.addColorStop(0, 'rgba(183,172,134,0)'); rightEdge.addColorStop(1, 'rgba(116,136,88,0.85)');
+        ctx.fillStyle = rightEdge; ctx.fillRect(s - 22, 0, 22, s);
+        for (var i = 0; i < 480; i++) {
+          var px = h2(i, 83) * s, py = h2(i, 97) * s, r = 0.8 + h2(i, 107) * 2.2;
+          ctx.fillStyle = h2(i, 113) > 0.5 ? 'rgba(218,208,176,0.28)' : 'rgba(134,120,90,0.24)';
+          ctx.fillRect(px, py, r, r);
+        }
+      }, 1, 44);
+      var woodTex = makeCanvasTexture(128, function (ctx, s) {
+        ctx.fillStyle = '#846a49'; ctx.fillRect(0, 0, s, s);
+        for (var g = 0; g < 36; g++) {
+          var gx = (g / 36) * s + (h2(g, 131) - 0.5) * 2;
+          ctx.strokeStyle = g % 3 ? 'rgba(92,68,42,0.25)' : 'rgba(166,138,100,0.20)';
+          ctx.lineWidth = 1 + h2(g, 137) * 1.6;
+          ctx.beginPath(); ctx.moveTo(gx, 0);
+          ctx.bezierCurveTo(gx + (h2(g, 149) - 0.5) * 4, s * 0.33, gx + (h2(g, 157) - 0.5) * 4, s * 0.66, gx, s);
+          ctx.stroke();
+        }
+      }, 1, 1);
+
+      var ground = mesh(own(new THREE.PlaneGeometry(2000, 2000)), material(meadowTex ? 0xf2f4ec : 0x83936a, meadowTex ? { map: meadowTex } : null)); ground.rotation.x = -Math.PI / 2;
+      var path = mesh(own(new THREE.PlaneGeometry(1.45, 160)), material(pathTex ? 0xf4f0e4 : 0xb5aa83, pathTex ? { map: pathTex } : null)); path.rotation.x = -Math.PI / 2; path.position.set(0, .001, -78);
+      var bark = material(0x65533c, woodTex ? { map: woodTex } : null), leaves = material(0x6b8056), leafShade = material(0x58704d), leafSun = material(0x7c9261);
+      var trunkGeometry = own(new THREE.CylinderGeometry(.17, .27, 4, 7));
+      var crownGeometry = own(new THREE.SphereGeometry(1.9, 9, 7));
       for (var tree = 0; tree < 14; tree++) {
         var sign = tree % 2 ? 1 : -1, depth = -12 - Math.floor(tree / 2) * 15;
         var x = sign * (5.4 + tree % 3 * 4.2);
         var trunk = mesh(trunkGeometry, bark); trunk.position.set(x, 2, depth);
-        var crown = mesh(crownGeometry, tree % 3 ? leaves : leafShade); crown.position.set(x, 4.6 + tree % 2 * .4, depth); crown.scale.set(1, 1.25, .85);
+        // Multi-lobed organic woodland canopy using the single shared crown geometry.
+        var baseY = 4.5 + tree % 2 * .4;
+        var crown = mesh(crownGeometry, tree % 3 ? leaves : leafShade); crown.position.set(x, baseY, depth); crown.scale.set(1.02, 1.24, .88);
+        var crownSide = mesh(crownGeometry, tree % 2 ? leafSun : leaves); crownSide.position.set(x - sign * 0.95, baseY - 0.45, depth + 0.35); crownSide.scale.set(.74, .82, .72);
+        var crownTop = mesh(crownGeometry, leafSun); crownTop.position.set(x + sign * 0.55, baseY + 0.65, depth - 0.25); crownTop.scale.set(.68, .76, .66);
       }
       var vegetation = vegetationData();
       if (vegetation) makeCatalogVegetation(vegetation); else makeFallbackVegetation();
-      var wood = material(0x806746);
+      var wood = material(woodTex ? 0xe8d9c4 : 0x806746, woodTex ? { map: woodTex } : null);
       var postGeometry = own(new THREE.CylinderGeometry(.009, .011, .43, 7));
       [-.13, .13].forEach(function (x) { var post = mesh(postGeometry, wood); post.position.set(x, .215, -.012); });
       var board = mesh(own(new THREE.BoxGeometry(PANEL_WIDTH + .012, PANEL_HEIGHT + .012, .012)), wood); board.position.set(0, .5, -.008);

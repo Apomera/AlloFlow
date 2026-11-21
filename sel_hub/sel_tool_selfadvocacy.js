@@ -21,13 +21,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
 
 (function() {
   'use strict';
-  function __alloT(key, fallback) {
-    try {
-      var fn = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null;
-      if (fn) { var v = fn(key, fallback); if (v != null && v !== key) return v; }
-    } catch (_) {}
-    return fallback != null ? fallback : key;
-  }
+  var _ctx = null;
+  var __alloT = function (key, fallback) {
+    var fn = (_ctx && typeof _ctx.t === 'function')
+      ? _ctx.t
+      : ((typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.t === 'function')
+        ? window.SelHub.t
+        : ((typeof window !== 'undefined' && typeof window.__alloT === 'function') ? window.__alloT : null));
+    var v = null;
+    if (fn) { try { v = fn(key, fallback); } catch (_) { v = null; } }
+    return (typeof v === 'string' && v && v !== key) ? v : (fallback != null ? fallback : key);
+  };
 
   // ── A11y live region ──
   (function() {
@@ -55,8 +59,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     var st = document.createElement('style');
     st.id = 'allo-selfadvocacy-print-css';
     st.textContent = [
-      // Print
-      '@media print { .no-print, .no-print * { display: none !important; } body { background: white !important; color: black !important; } }',
+      // Print (scoped to .selfadv-tool so host app print styles are never overridden)
+      '@media print { .selfadv-tool .no-print, .selfadv-tool .no-print * { display: none !important; } .selfadv-tool { background: white !important; color: black !important; } }',
       // Reduced motion (WCAG 2.3.3)
       '@media (prefers-reduced-motion: reduce) { .selfadv-tool *, .selfadv-tool *::before, .selfadv-tool *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
       // Skip link (WCAG 2.4.1)
@@ -1862,6 +1866,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
           var r = window.SelHub.safeRehearseCheck(txt, { toolId: o.toolId, onSafetyFlag: o.onSafetyFlag || null });
           crisis = !!(r && r.action === 'block');
+          if (crisis && typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Self-Advocacy Studio', contentSnippet: txt.slice(0, 120) });
+          }
         }
       } catch (_) {}
       var list = (Array.isArray(d.spReflections) ? d.spReflections : []).concat([{ scenarioId: id, ending: d.spEnding, text: txt.slice(0, 2000), ts: new Date().toISOString() }]).slice(-20);
@@ -1904,6 +1911,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     color: 'indigo',
     category: 'self-awareness',
     render: function(ctx) {
+      _ctx = ctx;
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast || function() {};
@@ -1967,7 +1975,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         } else if (confirmAction.type === 'import-data') {
           if (!pendingSelfAdvocacyImport) {
             upd('confirmAction', null);
-            addToast({ message: 'The selected import is no longer available. Choose the backup file again.', type: 'error' });
+            addToast('The selected import is no longer available. Choose the backup file again.', 'error');
             focusSelfAdvocacyControl('selfadv-import-trigger');
             return;
           }
@@ -1975,7 +1983,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           pendingSelfAdvocacyImport = null;
           focusId = 'selfadv-data-heading';
           message = 'Data import complete. Previous content was replaced.';
-          addToast({ message: 'Imported. Your previous data has been replaced.', type: 'success' });
+          addToast('Imported. Your previous data has been replaced.', 'success');
         } else if (confirmAction.type === 'reset-all') {
           PERSONAL_FIELDS.forEach(function(key) {
             if (key === 'milestones' || key === 'profile' || key === 'card' || key === 'actionPlan' || key === 'meeting' || key === 'big5Answers' || key === 'letterFields') patch[key] = {};
@@ -1986,7 +1994,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           patch.pScenarioId = null;
           focusId = 'selfadv-data-heading';
           message = 'All your personal data has been cleared.';
-          addToast({ message: 'Everything has been reset.', type: 'success' });
+          addToast('Everything has been reset.', 'success');
         } else {
           closeDestructiveConfirm();
           return;
@@ -3152,6 +3160,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             ? window.SelHub.safeRehearseCheck(studentTurn, { toolId: 'selfadvocacy', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
             : { action: 'continue' };
           if (safety.action === 'block') {
+            if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+              window.SelHub.showCrisisModal({ toolName: 'Self-Advocacy Studio', contentSnippet: studentTurn.slice(0, 120) });
+            }
             upd({
               pRpHistory: pRpHistory.concat([
                 { speaker: 'student', text: studentTurn },
@@ -3268,7 +3279,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         var critique = function() {
           if (!_saAiOn) return;
           if (!selected) return;
-          if (!pResponse || pResponse.length < 20) { addToast({ message: 'Write at least a sentence or two before asking for feedback.', type: 'warning' }); return; }
+          if (!pResponse || pResponse.length < 20) { addToast('Write at least a sentence or two before asking for feedback.', 'warning'); return; }
           // Safety pre-check on the student's written draft. If critical-tier
           // content appears in what they typed, swap the AI critique for a
           // coach-style break-character message and surface crisis resources.
@@ -3276,6 +3287,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             ? window.SelHub.safeRehearseCheck(pResponse, { toolId: 'selfadvocacy_critique', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
             : { action: 'continue' };
           if (critSafety.action === 'block') {
+            if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+              window.SelHub.showCrisisModal({ toolName: 'Self-Advocacy Studio', contentSnippet: String(pResponse).slice(0, 120) });
+            }
             upd({ pLoading: false, pCritique: window.SelHub.rehearseBreakCharacterText(critSafety.severity), _lastTier: 3 });
             announceSR('Safety resources shown');
             return;
@@ -3418,6 +3432,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                 !pRpEnded && h('div', null,
                   h('textarea', {
                     id: 'sa-rp-input', value: pRpInput,
+                    'aria-label': 'Your rehearsal response',
                     onChange: function(e) { upd('pRpInput', e.target.value); },
                     placeholder: 'What would you actually say next? Keep it short — make the ask, then stop.',
                     rows: 2,
@@ -3662,13 +3677,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           if (!output) return;
           if (window.SelHub && window.SelHub.copyText) {
             window.SelHub.copyText(output).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
-              addToast({ message: 'Copied to clipboard', type: 'success' });
+              addToast('Copied to clipboard', 'success');
               announceSR('Letter copied to clipboard');
             }).catch(function() {
-              addToast({ message: 'Couldn\'t copy. Select and copy manually.', type: 'warning' });
+              addToast('Couldn\'t copy. Select and copy manually.', 'warning');
             });
           } else {
-            addToast({ message: 'Copy not available. Select the text and copy manually.', type: 'warning' });
+            addToast('Copy not available. Select the text and copy manually.', 'warning');
           }
         };
 
@@ -3730,7 +3745,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
 
           template && h('section', { className: 'p-4 rounded-xl bg-slate-900/80 border border-emerald-500/30' },
             h('h3', { className: 'text-sm font-black text-emerald-300 mb-2 no-print' }, 'Generated letter'),
-            h('pre', { className: 'text-xs text-slate-100 whitespace-pre-wrap font-sans leading-relaxed p-3 rounded bg-white text-black print:border-0 border border-slate-700' }, output),
+            h('pre', { className: 'text-xs whitespace-pre-wrap font-sans leading-relaxed p-3 rounded bg-white text-black print:border-0 border border-slate-700' }, output),
             h('div', { className: 'flex flex-wrap gap-2 mt-3 no-print' },
               h('button', {
                 onClick: copyOutput,
@@ -4020,7 +4035,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           var tmpl = JOURNAL_PROMPT_TEMPLATES.find(function(t) { return t.id === draftType; });
           if (!tmpl) return;
           var hasContent = tmpl.fields.some(function(f) { return (draft[f.id] || '').trim(); });
-          if (!hasContent) { addToast({ message: 'Write something before saving.', type: 'warning' }); return; }
+          if (!hasContent) { addToast('Write something before saving.', 'warning'); return; }
+          var combinedText = tmpl.fields.map(function(f) { return String(draft[f.id] || '').trim(); }).filter(Boolean).join(' ');
+          var crisisHit = false;
+          try {
+            if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+              var jrSafety = window.SelHub.safeRehearseCheck(combinedText, { toolId: 'selfadvocacy_journal', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null });
+              crisisHit = !!(jrSafety && jrSafety.action === 'block');
+              if (crisisHit && typeof window.SelHub.showCrisisModal === 'function') {
+                window.SelHub.showCrisisModal({ toolName: 'Self-Advocacy Studio', contentSnippet: combinedText.slice(0, 120) });
+              }
+            }
+          } catch (_) {}
           var entry = {
             id: 'e_' + Date.now(),
             date: new Date().toISOString().slice(0, 10),
@@ -4029,8 +4055,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           };
           var next = entries.slice();
           next.unshift(entry);
-          upd({ journalEntries: next, journalDraftType: null, journalDraft: {} });
-          announceSR('Entry saved');
+          upd({ journalEntries: next, journalDraftType: null, journalDraft: {}, journalCrisis: crisisHit || !!d.journalCrisis });
+          announceSR(crisisHit ? 'Entry saved. Support resources are shown.' : 'Entry saved');
         };
         var deleteEntry = function(id) {
           openDestructiveConfirm({ type: 'delete-journal', entryId: id, triggerId: 'selfadv-delete-journal-' + id });
@@ -4043,6 +4069,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
 
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
           h('h2', { id: 'selfadv-journey-heading', tabIndex: -1, className: 'text-2xl font-black text-indigo-200' }, '\uD83D\uDDFA\uFE0F My Advocacy Journey'),
+          (d.journalCrisis && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function') ? window.SelHub.renderCrisisResources(h, band) : null,
           h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Your personal space for tracking growth over time. Check off milestones as you reach them. Write short journal entries when something happens worth remembering. Nothing here is graded. You control what\'s in it, and you control who sees it.'),
 
           h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-violet-900/40 to-fuchsia-900/40 border border-violet-500/30' },
@@ -4934,10 +4961,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
             }, 100);
-            addToast({ message: 'Exported. Save the file somewhere safe.', type: 'success' });
+            addToast('Exported. Save the file somewhere safe.', 'success');
             announceSR('Your data has been exported as a JSON file.');
           } catch (e) {
-            addToast({ message: 'Export failed: ' + (e && e.message ? e.message : 'unknown error'), type: 'error' });
+            addToast('Export failed: ' + (e && e.message ? e.message : 'unknown error'), 'error');
           }
         };
 
@@ -4946,7 +4973,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           var file = input.files && input.files[0];
           if (!file) return;
           if (Number(file.size) > 2 * 1024 * 1024) {
-            addToast({ message: 'Self-Advocacy Studio export files are limited to 2 MB.', type: 'error' });
+            addToast('Self-Advocacy Studio export files are limited to 2 MB.', 'error');
             input.value = '';
             return;
           }
@@ -4955,7 +4982,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             try {
               var parsed = JSON.parse(ev.target.result, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
               if (!parsed || parsed.tool !== 'selfAdvocacyStudio' || !parsed.data) {
-                addToast({ message: 'That doesn\'t look like a Self-Advocacy Studio export file.', type: 'error' });
+                addToast('That doesn\'t look like a Self-Advocacy Studio export file.', 'error');
                 input.value = '';
                 return;
               }
@@ -4967,12 +4994,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               input.value = '';
               openDestructiveConfirm({ type: 'import-data', triggerId: 'selfadv-import-trigger' });
             } catch (e) {
-              addToast({ message: 'Import failed: ' + (e && e.message ? e.message : 'invalid JSON'), type: 'error' });
+              addToast('Import failed: ' + (e && e.message ? e.message : 'invalid JSON'), 'error');
               input.value = '';
             }
           };
           reader.onerror = function() {
-            addToast({ message: 'Could not read the file.', type: 'error' });
+            addToast('Could not read the file.', 'error');
             input.value = '';
           };
           reader.readAsText(file);

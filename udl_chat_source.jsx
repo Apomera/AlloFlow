@@ -220,6 +220,10 @@ const _normalizeSourceGrade = (value) => {
   return `${grade}${suffix} Grade`;
 };
 
+const _udlSafeJsonReviver = (key, value) => (
+  key === '__proto__' || key === 'constructor' || key === 'prototype' ? undefined : value
+);
+
 const _normalizeSourceTone = (value) => {
   const key = _lessonHandoffText(value, 60).toLowerCase().replace(/[^a-z]/g, '');
   const tones = {
@@ -230,14 +234,14 @@ const _normalizeSourceTone = (value) => {
     humorous: 'Humorous', funny: 'Humorous',
     stepbystep: 'Step-by-Step', procedural: 'Step-by-Step',
   };
-  return tones[key] || null;
+  return Object.prototype.hasOwnProperty.call(tones, key) ? tones[key] : null;
 };
 
 const _normalizeSourceLength = (value) => {
   if (value === null || value === undefined || value === '') return null;
   const raw = String(value).trim().toLowerCase();
   const named = { short: 150, brief: 150, standard: 250, medium: 250, normal: 250, detailed: 500, long: 500, exhaustive: 1000, extended: 1000 };
-  const parsed = named[raw] || Number((raw.match(/\d{2,4}/) || [])[0]);
+  const parsed = Object.prototype.hasOwnProperty.call(named, raw) ? named[raw] : Number((raw.match(/\d{2,4}/) || [])[0]);
   if (!Number.isFinite(parsed) || parsed <= 0) return null;
   return String(Math.max(50, Math.min(2000, Math.round(parsed))));
 };
@@ -310,7 +314,7 @@ const _udlChatAiUsable = (kind, fn) => {
   if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
     return Boolean(window.__alloAiUsable(kind, fn));
   }
-  return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || (window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true));
+  return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || (window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true && window.__alloQrStudentMode !== true));
 };
 const _udlChatSanitizeUntrusted = value => String(value == null ? '' : value).replace(/<\/?UNTRUSTED_[A-Z0-9_]+>/gi, '[redacted-tag]');
 const _udlChatFenceUntrusted = (tag, value) => '<' + tag + '>\n' + _udlChatSanitizeUntrusted(value) + '\n</' + tag + '>';
@@ -364,7 +368,7 @@ Rules:
   try {
     const result = await deps.callGemini(prompt, true);
     const cleaned = typeof result === 'string' && typeof deps.cleanJson === 'function' ? deps.cleanJson(result) : result;
-    const parsed = typeof cleaned === 'string' ? JSON.parse(cleaned) : cleaned;
+    const parsed = typeof cleaned === 'string' ? JSON.parse(cleaned, _udlSafeJsonReviver) : cleaned;
     const normalized = normalizeSourceGenerationConfig(parsed);
     return Object.assign({}, fallback, Object.fromEntries(Object.entries(normalized).map(([key, value]) => [
       key, value === null ? fallback[key] : value
@@ -602,14 +606,16 @@ const _modifyBlueprintWithAI = async (currentConfig, userInstruction, deps = {})
       : (Array.isArray(config.resourcePlan) && config.resourcePlan.length > 0 ? config.resourcePlan : legacyTools);
     const normalizeItem = (item) => {
       const tool = typeof item === 'string' ? item : (item && (item.tool || item.type || item.id));
-      if (!tool) return null;
+      if (!tool || typeof tool !== 'string' || tool === '__proto__' || tool === 'constructor' || tool === 'prototype') return null;
+      const ownDirective = (config.toolDirectives && typeof config.toolDirectives === 'object' && Object.prototype.hasOwnProperty.call(config.toolDirectives, tool))
+        ? config.toolDirectives[tool] : '';
       return {
         tool,
         directive: useLegacyDirectives
-          ? ((config.toolDirectives && config.toolDirectives[tool]) || (typeof item === 'object' ? (item.directive || item.instructions || item.customInstructions) : '') || '')
+          ? (ownDirective || (typeof item === 'object' ? (item.directive || item.instructions || item.customInstructions) : '') || '')
           : (typeof item === 'string'
-            ? ((config.toolDirectives && config.toolDirectives[tool]) || '')
-            : (item.directive || item.instructions || item.customInstructions || (config.toolDirectives && config.toolDirectives[tool]) || '')),
+            ? ownDirective
+            : (item.directive || item.instructions || item.customInstructions || ownDirective || '')),
       };
     };
     const resourcePlan = rawPlan.map(normalizeItem).filter(Boolean);
@@ -622,7 +628,7 @@ const _modifyBlueprintWithAI = async (currentConfig, userInstruction, deps = {})
       resourcePlan: orderedPlan,
       recommendedResources: orderedPlan.map(item => item.tool),
       toolDirectives: orderedPlan.reduce((acc, item) => {
-        if (!acc[item.tool]) acc[item.tool] = item.directive || '';
+        if (!Object.prototype.hasOwnProperty.call(acc, item.tool)) acc[item.tool] = item.directive || '';
         return acc;
       }, {}),
     };
@@ -685,7 +691,7 @@ ${toolList}
       `;
   try {
     const result = await callGemini(prompt, true);
-    const parsed = JSON.parse(cleanJson(result));
+    const parsed = JSON.parse(cleanJson(result), _udlSafeJsonReviver);
     return normalizeBlueprintPlan(parsed);
   } catch (error) {
     warnLog('Blueprint modification failed', error);
@@ -1188,7 +1194,9 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
              // negative branch; everything else defaults to CONFIRM.
              const intentResult = _choiceHit
                  ? { intent: _choiceHit.intent || 'CONFIRM', modification: null }
-                 : await detectWorkflowIntent(textToSend, _effectiveStage, udlMessages.slice(-3));
+                 : (_udlChatAiUsable('text', callGemini) && typeof detectWorkflowIntent === 'function'
+                     ? await detectWorkflowIntent(textToSend, _effectiveStage, udlMessages.slice(-3))
+                     : { intent: 'CONFIRM', modification: null });
              const isAffirmative = intentResult.intent === 'CONFIRM' || intentResult.intent === 'MODIFY';
              const isNegative = intentResult.intent === 'SKIP';
              const sendBotMsg = (text) => {
@@ -1312,7 +1320,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      const pendingSourceConfig = normalizeSourceGenerationConfig(guidedFlowState.pendingSourceConfig || {});
                      const pendingSourceTopic = pendingSourceConfig.topic || sourceTopic;
                      if (isAffirmative && pendingSourceTopic) {
-                         if (intentData?.params) applyWorkflowModification(intentData);
+                         if (intentResult?.params) applyWorkflowModification(intentResult);
                          sendBotMsg(`Understood. Generating source text for: "${pendingSourceTopic}"...`);
                          await handleGenerateSource(_sourceGenerationOverrides(guidedFlowState.pendingSourceConfig));
                          const context = getWorkflowContext();
@@ -1327,7 +1335,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          setIsChatProcessing(false);
                          return;
                      }
-                     const isUrl = /^(http|https|www)/i.test(textToSend);
+                     const isUrl = /^(?:https?:\/\/|www\.)\S+$/i.test(textToSend.trim());
                      if (isUrl) {
                          sendBotMsg("I see a link! Fetching content...");
                          // An older host resolves undefined; only an explicit false means the fetch failed.
@@ -1382,7 +1390,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      setIsChatProcessing(false);
                      return;
                  case 'initial_choice':
-                     const localizedPackKeyword = t('chat_guide.flow.keyword_pack').toLowerCase();
+                     const localizedPackKeyword = String(t('chat_guide.flow.keyword_pack') || '').toLowerCase();
                      if (lowerInput.includes('pack') || lowerInput.includes('auto') || lowerInput.includes('full') || (localizedPackKeyword && lowerInput.includes(localizedPackKeyword))) {
                          const pendingBlueprintContext = _isBareChoice
                              ? String(guidedFlowState.pendingBlueprintContext || '').trim()
@@ -1437,7 +1445,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              setIsChatProcessing(false);
                          }
                      };
-                     generateBlueprint('Auto', userContext);
+                     await generateBlueprint('Auto', userContext);
                      break;
                  case 'pack_count_selection':
                      let targetCount = 'Auto';
@@ -1627,10 +1635,12 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      if (guidedFlowState.pendingContext === 'language_check') {
                          const lowerResponse = textToSend.toLowerCase();
                          const isNo = /no|skip|pass|none/i.test(lowerResponse);
+                         let addedLang = null;
                          if (!isNo) {
                              const potentialLang = textToSend.replace(/(yes|please|add|i want|use)\b/gi, '').replace(/[^\w\s]/gi, '').trim();
                              if (potentialLang.length > 2) {
                                  const lang = potentialLang.charAt(0).toUpperCase() + potentialLang.slice(1);
+                                 addedLang = lang;
                                  if (!selectedLanguages.includes(lang)) {
                                      setSelectedLanguages(prev => [...prev, lang]);
                                      if (leveledTextLanguage === 'English') setLeveledTextLanguage(lang);
@@ -1641,8 +1651,9 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              sendBotMsg("Understood. Generating Glossary (English)...");
                          }
                          setGuidedFlowState(prev => ({ ...prev, pendingContext: null }));
-                         setTimeout(async () => {
-                             const resultItem = await _genTracked('glossary');
+                         try {
+                             const langOverride = addedLang ? { selectedLanguages: selectedLanguages.includes(addedLang) ? selectedLanguages : [...selectedLanguages, addedLang] } : undefined;
+                             const resultItem = await _genTracked('glossary', null, false, null, langOverride);
                              if (isShowMeMode) performHighlight('ui-tool-glossary');
                              const context = getWorkflowContext();
                              context.LastResult = `Glossary generated with ${resultItem?.data?.length || 0} terms.`;
@@ -1654,7 +1665,10 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              askStage(bridgeMsg, 'simplified');
                              flyToElement(getStageElementId('simplified'));
                              advanceStage('simplified');
-                         }, 200);
+                         } catch (err) {
+                             warnLog('Glossary guided step failed', err);
+                             sendBotMsg(t('chat_guide.flow.generation_failed') || 'Glossary generation failed. Try again or skip to the next step.');
+                         }
                          setIsChatProcessing(false);
                          return;
                      }
@@ -1698,8 +1712,10 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                                     return prev;
                                  });
                                  sendBotMsg(t('chat_guide.flow.integrating_interest', { interest: potentialInterest }));
-                                 setTimeout(async () => {
-                                     const resultItem = await _genTracked('simplified');
+                                 setGuidedFlowState(prev => ({ ...prev, pendingContext: null }));
+                                 try {
+                                     const nextInterests = studentInterests.includes(potentialInterest) ? studentInterests : [...studentInterests, potentialInterest];
+                                     await _genTracked('simplified', null, false, null, { studentInterests: nextInterests });
                                      if (isShowMeMode) performHighlight('ui-tool-simplified');
                                      const context = getWorkflowContext();
                                      context.LastResult = `Text adapted for ${gradeLevel}.`;
@@ -1707,7 +1723,10 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                                      askStage(bridgeMsg, 'outline', organizerChoices());
                                      flyToElement(getStageElementId('outline'));
                                      setGuidedFlowState(prev => ({ ...prev, currentStage: 'outline', pendingContext: null }));
-                                 }, 200);
+                                 } catch (err) {
+                                     warnLog('Simplified text guided step failed', err);
+                                     sendBotMsg(t('chat_guide.flow.generation_failed') || 'Leveled Text generation failed. Try again or skip to the next step.');
+                                 }
                                  setIsChatProcessing(false);
                                  return;
                              }
@@ -1726,7 +1745,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          return;
                      }
                      if (isAffirmative) {
-                         if (intentData?.params) applyWorkflowModification(intentData);
+                         if (intentResult?.params) applyWorkflowModification(intentResult);
                          if (studentInterests.length === 0) {
                              askStage(t('chat_guide.flow.interest_check'), 'simplified', interestCheckChoices());
                              setGuidedFlowState(prev => ({ ...prev, pendingContext: 'interest_check' }));
@@ -1752,18 +1771,19 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      break;
                  case 'outline':
                      if (isAffirmative) {
-                         if (intentData?.params) applyWorkflowModification(intentData);
+                         if (intentResult?.params) applyWorkflowModification(intentResult);
+                         let selectedOutlineType = 'Structured Outline';
                          let typeMsg = "Structured Outline";
-                         if (lowerInput.includes('flow')) { setOutlineType('Flow Chart'); typeMsg = "Flow Chart"; }
-                         else if (lowerInput.includes('venn')) { setOutlineType('Venn Diagram'); typeMsg = "Venn Diagram"; }
-                         else if (lowerInput.includes('map')) { setOutlineType('Key Concept Map'); typeMsg = "Concept Map"; }
-                         else if (lowerInput.includes('cause')) { setOutlineType('Cause and Effect'); typeMsg = "Cause & Effect"; }
-                         else { setOutlineType('Structured Outline'); }
+                         if (lowerInput.includes('flow')) { selectedOutlineType = 'Flow Chart'; typeMsg = "Flow Chart"; }
+                         else if (lowerInput.includes('venn')) { selectedOutlineType = 'Venn Diagram'; typeMsg = "Venn Diagram"; }
+                         else if (lowerInput.includes('map')) { selectedOutlineType = 'Key Concept Map'; typeMsg = "Concept Map"; }
+                         else if (lowerInput.includes('cause')) { selectedOutlineType = 'Cause and Effect'; typeMsg = "Cause & Effect"; }
+                         setOutlineType(selectedOutlineType);
                          sendBotMsg(`Generating ${typeMsg}...`);
-                         await _genTracked('outline');
+                         await _genTracked('outline', null, false, null, { outlineType: selectedOutlineType });
                          if (isShowMeMode) performHighlight('tour-tool-outline');
                          const context = getWorkflowContext();
-                         context.LastResult = `Visual Organizer (${outlineType}) created.`;
+                         context.LastResult = `Visual Organizer (${selectedOutlineType}) created.`;
                          const bridgeMsg = await generateDynamicBridge('Visual Organizer', 'Visual Support', context);
                          askStage(bridgeMsg, 'image', visualChoices());
                          flyToElement(getStageElementId('image'));
@@ -1778,18 +1798,14 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      break;
                  case 'image':
                      if (isAffirmative) {
-                         if (intentData?.params) applyWorkflowModification(intentData);
-                         if (lowerInput.includes('worksheet') || lowerInput.includes('fill') || lowerInput.includes('blank')) {
-                             setFillInTheBlank(true);
-                             sendBotMsg(t('chat_guide.flow.creating_worksheet'));
-                         } else {
-                             setFillInTheBlank(false);
-                             sendBotMsg(t('chat_guide.flow.generating_visual'));
-                         }
-                         await _genTracked('image');
+                         if (intentResult?.params) applyWorkflowModification(intentResult);
+                         const isWorksheet = lowerInput.includes('worksheet') || lowerInput.includes('fill') || lowerInput.includes('blank');
+                         setFillInTheBlank(isWorksheet);
+                         sendBotMsg(isWorksheet ? t('chat_guide.flow.creating_worksheet') : t('chat_guide.flow.generating_visual'));
+                         await _genTracked('image', null, false, null, { fillInTheBlank: isWorksheet });
                          if (isShowMeMode) performHighlight('tour-tool-visual');
                          const context = getWorkflowContext();
-                         context.LastResult = `Visual generated. Type: ${fillInTheBlank ? "Worksheet" : "Diagram"}.`;
+                         context.LastResult = `Visual generated. Type: ${isWorksheet ? "Worksheet" : "Diagram"}.`;
                          const bridgeMsg = await generateDynamicBridge('Visual Support', 'FAQ List', context);
                          askStage(bridgeMsg, 'faq');
                          flyToElement(getStageElementId('faq'));
@@ -1820,11 +1836,14 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      break;
                  case 'sentence-frames':
                      if (isAffirmative) {
-                         if (lowerInput.includes('paragraph')) setFrameType('Paragraph Frame');
-                         else if (lowerInput.includes('discussion')) setFrameType('Discussion Prompts');
-                         else setFrameType('Sentence Starters');
+                         const selectedFrameType = lowerInput.includes('paragraph')
+                             ? 'Paragraph Frame'
+                             : lowerInput.includes('discussion')
+                                 ? 'Discussion Prompts'
+                                 : 'Sentence Starters';
+                         setFrameType(selectedFrameType);
                          sendBotMsg("Building writing supports...");
-                         await _genTracked('sentence-frames');
+                         await _genTracked('sentence-frames', null, false, null, { frameType: selectedFrameType });
                          if (isShowMeMode) performHighlight('tour-tool-scaffolds');
                          askStage("Scaffolds created. Is there a sequence of events or steps for a **Timeline**?", 'timeline');
                          flyToElement(getStageElementId('timeline'));
@@ -1888,20 +1907,22 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  case 'quiz':
                      if (guidedFlowState.pendingContext === 'quiz_count') {
                          const numMatch = textToSend.match(/\d+/);
+                         let effectiveCount = quizMcqCount || 5;
                          if (numMatch) {
                              const count = parseInt(numMatch[0], 10);
                              const finalCount = Math.min(Math.max(1, count), 20);
+                             effectiveCount = finalCount;
                              setQuizMcqCount(finalCount);
                              sendBotMsg(`Setting to ${finalCount} questions. Generating Quiz...`);
                          } else {
                              sendBotMsg("Using default (5 questions). Generating Quiz...");
                          }
                          setGuidedFlowState(prev => ({ ...prev, pendingContext: null }));
-                         setTimeout(async () => {
-                             await _genTracked('quiz');
+                         try {
+                             await _genTracked('quiz', null, false, null, { quizMcqCount: effectiveCount });
                              if (isShowMeMode) performHighlight('ui-tool-quiz');
                              const context = getWorkflowContext();
-                             context.LastResult = `Quiz generated with ${quizMcqCount} questions.`;
+                             context.LastResult = `Quiz generated with ${effectiveCount} questions.`;
                              if (standardsInput) {
                                  const bridgeMsg = await generateDynamicBridge('Exit Ticket', 'Standard Audit', context);
                                  askStage(bridgeMsg, 'alignment-report');
@@ -1913,12 +1934,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                                  flyToElement(getStageElementId('lesson-plan'));
                                  advanceStage('lesson-plan');
                              }
-                         }, 200);
+                         } catch (err) {
+                             warnLog('Quiz guided step failed', err);
+                             sendBotMsg(t('chat_guide.flow.generation_failed') || 'Quiz generation failed. Try again or skip to the next step.');
+                         }
                          setIsChatProcessing(false);
                          return;
                      }
                      if (isAffirmative) {
-                         if (intentData?.params) applyWorkflowModification(intentData);
+                         if (intentResult?.params) applyWorkflowModification(intentResult);
                          askStage("Drafting the Exit Ticket. How many questions would you like?", 'quiz', quizCountChoices());
                          setGuidedFlowState(prev => ({ ...prev, pendingContext: 'quiz_count' }));
                          setIsChatProcessing(false);
@@ -1981,7 +2005,8 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              sendBotMsg("Setting mode to **Standard Story**. Initializing simulation...");
                          }
                          setGuidedFlowState(prev => ({ ...prev, pendingContext: null }));
-                         setTimeout(async () => {
+                         try {
+                             await new Promise(resolve => setTimeout(resolve, 0));
                              await handleStartAdventure();
                              if (isShowMeMode) performHighlight('tour-tool-adventure');
                              sendBotMsg("Adventure started! You have a complete resource pack now. Use **Export** to save it all.");
@@ -1989,7 +2014,10 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              setIsAutoFillMode(false);
                              flyToElement(getStageElementId('done'));
                              advanceStage('done');
-                         }, 200);
+                         } catch (err) {
+                             warnLog('Adventure guided step failed', err);
+                             sendBotMsg(t('chat_guide.flow.generation_failed') || 'Could not start Adventure Mode. Try again or use the Adventure button.');
+                         }
                          setIsChatProcessing(false);
                          return;
                      }
@@ -2021,7 +2049,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
              return;
         }
         const looksLikeCommand = !skipCommandRouter && /show|find|where|change|update|set|create|generate|start|make|go\s+to|navigate|open|take\s+me|switch\s+to|read\s+(this|the|my|me)|launch|load|hear|how\s+do\s+i|what\s+does|can\s+i|is\s+there|shorter|longer|shorten|lengthen|briefer|brief|concise|detailed|exhaustive|wordier|lengthier|condense|expand|elaborate|trim|shrink|less\s+(words?|wordy|long)|more\s+(words?|wordy|detail|brief|concise|long)|word\s+count|tone|format|grade\s+level|interest/i.test(textToSend);
-        if (isAutoFillMode || isShowMeMode || looksLikeCommand) {
+        if ((isAutoFillMode || isShowMeMode || looksLikeCommand) && _udlChatAiUsable('text', callGemini) && typeof parseUserIntent === 'function') {
             try {
                 const promptForIntent = isShowMeMode && !/show|find|where/i.test(textToSend)
                     ? `Show me ${textToSend}`
@@ -2033,6 +2061,20 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
             }
         }
         if (intentData && intentData.intent !== 'CHAT') {
+            const isEducatorAudience = !isParentMode && !isIndependentMode && !(typeof window !== 'undefined' && (window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true));
+            const teacherOnlyModules = new Set(['report-writer', 'educator-hub', 'behavior-lens', 'session']);
+            const teacherOnlyViews = new Set(['lesson-plan', 'dashboard', 'analysis', 'alignment-report']);
+            const _runDeferred = (fn, label) => {
+                setTimeout(() => {
+                    try {
+                        Promise.resolve(fn()).catch((err) => {
+                            if (typeof warnLog === 'function') warnLog(`Deferred ${label} failed:`, err);
+                        });
+                    } catch (err) {
+                        if (typeof warnLog === 'function') warnLog(`Deferred ${label} failed:`, err);
+                    }
+                }, 150);
+            };
             const mutatingIntents = new Set(['UPDATE_SETTINGS', 'GENERATE', 'REVISE_RESOURCE', 'EXTEND_RESOURCE']);
             if (mutatingIntents.has(intentData.intent)) {
                 const snapLabel = intentData.intent === 'UPDATE_SETTINGS' ? 'settings update'
@@ -2083,7 +2125,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                         const packMsg = `Generating full resource pack${typeof intentData.count === 'number' ? ` (${intentData.count} resources)` : ''}${intentData.targetGroup && intentData.targetGroup !== 'none' ? ` for ${intentData.targetGroup}` : ''}...`;
                         setUdlMessages(prev => [...prev, { role: 'model', text: packMsg }]);
                         if (isBotVisible && alloBotRef.current) alloBotRef.current.speak(packMsg);
-                        setTimeout(() => handleGenerateFullPack(), 150);
+                        _runDeferred(() => handleGenerateFullPack(), 'full-pack generation');
                         break;
                     }
                     if (intentData.config && Object.keys(intentData.config).length > 0) {
@@ -2096,7 +2138,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                         if (isBotVisible && alloBotRef.current) {
                             alloBotRef.current.speak(genMsg);
                         }
-                        setTimeout(() => handleGenerate(rt), 150);
+                        _runDeferred(() => handleGenerate(rt), `generation (${rt})`);
                     } else if (isAutoFillMode && !guidedFlowState.isFlowActive) {
                          const hasInput = inputText && inputText.trim().length > 0;
                          const initialStage = hasInput ? 'initial_choice' : 'source';
@@ -2121,7 +2163,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                         if (isBotVisible && alloBotRef.current) {
                             alloBotRef.current.speak(genMsg);
                         }
-                        setTimeout(() => handleGenerate('simplified'), 100);
+                        _runDeferred(() => handleGenerate('simplified'), 'simplified generation');
                     }
                     break;
                 case 'REVISE_RESOURCE': {
@@ -2149,9 +2191,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                     setUdlMessages(prev => [...prev, { role: 'model', text: reviseMsg }]);
                     if (reviseInferred) addToast(_chatText(t, 'udl_chat.toast_revise_inferred', 'Revising inferred target: {target}', { target: reviseTarget }), 'info');
                     if (isBotVisible && alloBotRef.current) alloBotRef.current.speak(reviseMsg);
-                    setTimeout(() => {
-                        handleGenerate(reviseTarget, null, false, null, { customInstructions: reviseInstruction }, true);
-                    }, 150);
+                    _runDeferred(() => handleGenerate(reviseTarget, null, false, null, { customInstructions: reviseInstruction }, true), `revision (${reviseTarget})`);
                     break;
                 }
                 case 'EXTEND_RESOURCE': {
@@ -2178,9 +2218,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                     setUdlMessages(prev => [...prev, { role: 'model', text: extendMsg }]);
                     if (extendInferred) addToast(_chatText(t, 'udl_chat.toast_extend_inferred', 'Extending inferred target: {target}', { target: extendTarget }), 'info');
                     if (isBotVisible && alloBotRef.current) alloBotRef.current.speak(extendMsg);
-                    setTimeout(() => {
-                        handleGenerate(extendTarget, null, false, null, { customInstructions: extendInstruction }, true);
-                    }, 150);
+                    _runDeferred(() => handleGenerate(extendTarget, null, false, null, { customInstructions: extendInstruction }, true), `extension (${extendTarget})`);
                     break;
                 }
                 case 'UNDO': {
@@ -2215,7 +2253,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                         'selectedvoice': { label: 'Selected Voice', value: selectedVoice || '(default)' },
                     };
                     const queried = (intentData.field || '').toString().toLowerCase().replace(/[\s_-]/g, '');
-                    if (queried && fieldMap[queried]) {
+                    if (queried && Object.prototype.hasOwnProperty.call(fieldMap, queried)) {
                         const { label, value } = fieldMap[queried];
                         const msg = `**${label}:** ${value}`;
                         setUdlMessages(prev => [...prev, { role: 'model', text: msg }]);
@@ -2241,13 +2279,18 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                         setSpotlightMessage(`Here is the ${displayName} section.`);
                         performHighlight(domId);
                     } else {
-                        const msg = t('chat.location_unknown').replace('{target}', targetKey);
+                        const msg = _chatText(t, 'chat.location_unknown', 'I could not find {target}.', { target: targetKey });
                         setUdlMessages(prev => [...prev, { role: 'model', text: msg }]);
                     }
                     break;
                 case 'NAVIGATE': {
-                    const navTarget = intentData.target;
-                    if (navTarget) {
+                    const navTarget = typeof intentData.target === 'string' ? intentData.target.trim() : '';
+                    const allowedNavTargets = ['input','glossary','quiz','simplified','analysis','outline','image','faq','sentence-frames','brainstorm','persona','timeline','concept-sort','math','adventure','lesson-plan','dashboard','word-sounds','alignment-report','note-taking','anchor-chart','dbq','gemini-bridge'];
+                    if (navTarget && teacherOnlyViews.has(navTarget) && !isEducatorAudience) {
+                        setUdlMessages(prev => [...prev, { role: 'model', text: 'That tool is only available in Educator mode.' }]);
+                        break;
+                    }
+                    if (navTarget && allowedNavTargets.includes(navTarget)) {
                         setActiveView(navTarget);
                         const navLabel = navTarget.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                         addToast(_chatText(t, 'udl_chat.toast_navigated', 'Navigated to {target}', { target: navLabel }), 'success');
@@ -2263,7 +2306,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                     break;
                 }
                 case 'OPEN_MODULE': {
-                    const modTarget = intentData.target;
+                    const modTarget = typeof intentData.target === 'string' ? intentData.target.trim() : '';
                     const moduleActions = {
                         'stem-lab': () => setShowStemLab(true),
                         'behavior-lens': () => setShowBehaviorLens(true),
@@ -2275,7 +2318,11 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                         'hints': () => uiDispatch({ type: 'UI_SET', field: 'showHintsModal', value: true }),
                         'session': () => uiDispatch({ type: 'UI_SET', field: 'showSessionModal', value: true }),
                     };
-                    if (modTarget && moduleActions[modTarget]) {
+                    if (modTarget && teacherOnlyModules.has(modTarget) && !isEducatorAudience) {
+                        setUdlMessages(prev => [...prev, { role: 'model', text: 'That workspace is only available in Educator mode.' }]);
+                        break;
+                    }
+                    if (modTarget && Object.prototype.hasOwnProperty.call(moduleActions, modTarget)) {
                         moduleActions[modTarget]();
                         const modLabel = modTarget.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                         addToast(_chatText(t, 'udl_chat.toast_opening_module', 'Opening {module}', { module: modLabel }), 'success');
@@ -2302,10 +2349,10 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                     break;
                 }
                 case 'LOAD_HISTORY': {
-                    const histType = intentData.target;
+                    const histType = typeof intentData.target === 'string' ? intentData.target.trim().toLowerCase() : '';
                     if (histType) {
                         const historyItem = history.slice().reverse().find(h =>
-                            h.type === histType || h.type.includes(histType) || (h.title && h.title.toLowerCase().includes(histType))
+                            h && typeof h.type === 'string' && (h.type === histType || h.type.includes(histType) || (typeof h.title === 'string' && h.title.toLowerCase().includes(histType)))
                         );
                         if (historyItem) {
                             setGeneratedContent(historyItem);
@@ -2366,20 +2413,24 @@ Find the BEST matching feature for the user's question. Return JSON:
 }
 Return ONLY JSON.`;
                         const ragResult = await callGemini(ragPrompt, true);
-                        const parsed = JSON.parse(cleanJson(ragResult));
-                        if (parsed.helpKey && typeof parsed.helpKey === 'string') {
+                        const parsed = JSON.parse(cleanJson(ragResult), _udlSafeJsonReviver);
+                        if (parsed && typeof parsed === 'object' && parsed.helpKey && typeof parsed.helpKey === 'string') {
                             const targetEl = Array.from(document.querySelectorAll('[data-help-key]')).find((el) => el.getAttribute('data-help-key') === parsed.helpKey);
                             if (targetEl && performHighlight) {
                                 performHighlight(parsed.helpKey);
                             }
                             if (alloBotRef.current?.triggerReaction) alloBotRef.current.triggerReaction('\uD83D\uDD0D');
-                            if (parsed.explanation) addToast(parsed.explanation.substring(0, 80), 'info');
+                            if (typeof parsed.explanation === 'string' && parsed.explanation) addToast(parsed.explanation.substring(0, 80), 'info');
                             if (parsed.action && typeof parsed.action === 'string') {
                                 const viewTargets = ['input','glossary','quiz','simplified','analysis','outline','image','faq','sentence-frames','brainstorm','persona','timeline','concept-sort','math','adventure','lesson-plan','dashboard','word-sounds'];
-                                if (viewTargets.includes(parsed.action)) setActiveView(parsed.action);
+                                if (viewTargets.includes(parsed.action) && (isEducatorAudience || !teacherOnlyViews.has(parsed.action))) {
+                                    setActiveView(parsed.action);
+                                }
                             }
                         }
-                        const explanation = parsed.explanation || `I found a feature matching "${featureQuery}" but couldn't get details.`;
+                        const explanation = (parsed && typeof parsed.explanation === 'string' && parsed.explanation)
+                          ? parsed.explanation
+                          : `I found a feature matching "${featureQuery}" but couldn't get details.`;
                         setUdlMessages(prev => [...prev, { role: 'model', text: explanation }]);
                     } catch (e) {
                         warnLog("FIND_FEATURE lookup failed:", e);
@@ -2396,17 +2447,15 @@ Return ONLY JSON.`;
              await generateStandardChatResponse(textToSend);
         }
     } catch (error) {
-        // Phase E hotfix: log full error to console so missed deps surface clearly
         try {
-          console.error('[UdlChat] handleSendUDLMessage threw:', error);
-          if (error && error.stack) console.error('[UdlChat] stack:', error.stack);
-          if (error && error.message) console.error('[UdlChat] message:', error.message);
+          console.error('[UdlChat] handleSendUDLMessage threw:', error && error.name ? error.name : 'Error');
         } catch (_) {}
         warnLog("UDL Chat Error:", error);
-        const isQuota = error.isQuota || (error.message && (
-          error.message.includes('API_QUOTA_EXHAUSTED') ||
-          error.message.includes('Daily Usage Limit')
-        ));
+        const errMsg = error && typeof error.message === 'string' ? error.message : '';
+        const isQuota = !!(error && error.isQuota) || (
+          errMsg.includes('API_QUOTA_EXHAUSTED') ||
+          errMsg.includes('Daily Usage Limit')
+        );
         const errorMsg = isQuota
           ? "⚠️ **API quota reached.** The API key has hit its usage limit. Please wait a few minutes and try again, or check your [Google AI Studio](https://aistudio.google.com/) quota.\n\nI can still talk using browser speech — just can't generate new responses until the quota resets."
           : t('common.generic_error');

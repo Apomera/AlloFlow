@@ -73,6 +73,36 @@
     { id: 'assistive_tech', wcag: '4.1.2', severity: 'serious', label: 'Real assistive-technology task', hint: 'Complete the task with an appropriate screen reader or other required assistive technology.' },
   ];
 
+  function isUnsafePropKey(k) {
+    return k === '__proto__' || k === 'constructor' || k === 'prototype';
+  }
+  function safeOwnGet(obj, key) {
+    return (obj && typeof obj === 'object' && typeof key === 'string' && !isUnsafePropKey(key) && Object.prototype.hasOwnProperty.call(obj, key))
+      ? obj[key] : undefined;
+  }
+  function safeJsonParse(raw) {
+    return JSON.parse(raw, function (k, v) { return isUnsafePropKey(k) ? undefined : v; });
+  }
+  function safeHttpUrl(url) {
+    var raw = String(url == null ? '' : url).trim();
+    if (!raw) return '';
+    try {
+      var parsed = new URL(raw);
+      if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && !parsed.username && !parsed.password) return parsed.href;
+    } catch (_) {}
+    return '';
+  }
+  function formatSafeDate(val, fallback) {
+    if (val == null || val === '') return fallback || '';
+    var d = val instanceof Date ? val : new Date(val);
+    return Number.isFinite(d.getTime()) ? d.toLocaleString() : (fallback || '');
+  }
+  function safeErrorSummary(err, fallback) {
+    var msg = err && typeof err.message === 'string' && err.message.trim() ? err.message.trim() : '';
+    if (!msg) return fallback || 'unknown error';
+    return msg.replace(/[\r\n]+/g, ' ').slice(0, 240);
+  }
+
   function reviewItemKey(item) {
     if (!item) return '';
     if (item.id !== undefined && item.id !== null && String(item.id)) return String(item.id);
@@ -87,7 +117,7 @@
     if (type === 'boolean') return value ? 'true' : 'false';
     if (type === 'undefined') return '"[undefined]"';
     if (type === 'function' || type === 'symbol') return '"[' + type + ']"';
-    if (value instanceof Date) return JSON.stringify(value.toISOString());
+    if (value instanceof Date) return Number.isFinite(value.getTime()) ? JSON.stringify(value.toISOString()) : '"[invalid-date]"';
     seen = seen || [];
     if (seen.indexOf(value) >= 0) return '"[circular]"';
     var nextSeen = seen.concat([value]);
@@ -211,7 +241,7 @@
     var evidence = getAccessibilityEvidence();
     if (!evidence || typeof evidence.deriveProfileVerificationState !== 'function') return null;
     var summary = summarizeReviewScorecard(card);
-    var derived = evidence.deriveProfileVerificationState({
+    var evidenceInput = {
       profile: 'accessibility-lab',
       artifactBinding: card && card.currentBinding ? card.currentBinding : null,
       artifactFingerprint: card && card.currentFingerprint ? card.currentFingerprint : null,
@@ -231,20 +261,10 @@
           reviewCount: Number(card.automated.needsReview) || 0,
         } : null,
       },
-    }, 'accessibility-lab');
+    };
+    var derived = evidence.deriveProfileVerificationState(evidenceInput, 'accessibility-lab');
     return evidence.attachEvidenceProvenance && typeof evidence.attachEvidenceProvenance === 'function'
-      ? evidence.attachEvidenceProvenance(derived, {
-        profile: 'accessibility-lab',
-        artifactBinding: card && card.currentBinding ? card.currentBinding : null,
-        artifactFingerprint: card && card.currentFingerprint ? card.currentFingerprint : null,
-        rendererRevision: card && card.rendererRevision ? card.rendererRevision : ACCESSIBILITY_RENDERER_REVISION,
-        capturedAt: card && (card.lastReviewedAt || card.updatedAt || card.startedAt),
-        findings: card && Array.isArray(card.findings) ? card.findings : [],
-        evidence: {
-          manual: card && card.checks ? { executed: true, findingCount: summary.fail, reviewCount: 0 } : null,
-          axe: card && card.automated ? { executed: true, findingCount: Number(card.automated.violationRules) || 0, reviewCount: Number(card.automated.needsReview) || 0 } : null,
-        },
-      }, 'accessibility-lab')
+      ? evidence.attachEvidenceProvenance(derived, evidenceInput, 'accessibility-lab')
       : derived;
   }
   function reviewSnapshot(raw, fallbackFingerprint) {
@@ -379,10 +399,13 @@
   function loadReviewScorecards() {
     try {
       var raw = window.localStorage && window.localStorage.getItem(REVIEW_SCORECARD_STORAGE_KEY);
-      if (!raw) return {};
-      var parsed = JSON.parse(raw);
-      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
-    } catch (_) { return {}; }
+      if (!raw) return Object.create(null);
+      var parsed = safeJsonParse(raw);
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return Object.create(null);
+      var clean = Object.create(null);
+      Object.keys(parsed).forEach(function (k) { if (!isUnsafePropKey(k)) clean[k] = parsed[k]; });
+      return clean;
+    } catch (_) { return Object.create(null); }
   }
 
   function persistReviewScorecards(store) {
@@ -608,6 +631,7 @@
         e('h4', { style: { fontWeight: 700, marginBottom: '16px' } }, 'Glossary'),
         e('dl', null,
           data.map(function (entry, i) {
+            if (!entry || typeof entry !== 'object') return null;
             return e('div', { key: i, style: { marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid ' + theme.sub + '40' } },
               e('dt', { style: { fontWeight: 700 } }, asString(entry.term)),
               e('dd', { style: { marginLeft: '0', marginTop: '4px', color: theme.sub } }, asString(entry.definition))
@@ -618,10 +642,11 @@
     }
 
     // quiz: array of questions
-    if (item.type === 'quiz' && data.questions && Array.isArray(data.questions)) {
+    if (item.type === 'quiz' && data && data.questions && Array.isArray(data.questions)) {
       return e('div', null,
         e('h4', { style: { fontWeight: 700, marginBottom: '16px' } }, 'Quiz'),
         data.questions.map(function (q, i) {
+          if (!q || typeof q !== 'object') return null;
           return e('div', { key: i, style: { marginBottom: '20px' } },
             e('p', { style: { fontWeight: 600, marginBottom: '8px' } }, (i + 1) + '. ' + asString(q.text || q.question)),
             Array.isArray(q.options) && e('ul', { style: { listStyle: 'none', paddingLeft: '0' } },
@@ -638,7 +663,7 @@
     }
 
     // outline / visual organizer
-    if (item.type === 'outline') {
+    if (item.type === 'outline' && data && typeof data === 'object') {
       return e('div', null,
         data.main && e('h4', { style: { fontWeight: 700, marginBottom: '12px', fontSize: '1.2em' } }, asString(data.main)),
         Array.isArray(data.branches) && e('ul', { style: { listStyle: 'circle', paddingLeft: '24px' } },
@@ -652,11 +677,12 @@
 
     // sentence frames
     if (item.type === 'sentence-frames') {
-      var frames = Array.isArray(data) ? data : (data.items || []);
+      var frames = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : []);
       return e('div', null,
         e('h4', { style: { fontWeight: 700, marginBottom: '12px' } }, 'Sentence frames'),
         e('ul', { style: { listStyle: 'none', paddingLeft: '0' } },
           frames.map(function (f, i) {
+            if (f == null) return null;
             return e('li', {
               key: i,
               style: { padding: '8px 12px', marginBottom: '6px', border: '1px dashed ' + theme.sub + '80', borderRadius: '4px' }
@@ -672,6 +698,7 @@
         e('h4', { style: { fontWeight: 700, marginBottom: '12px' } }, 'Word sounds'),
         e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
           data.map(function (w, i) {
+            if (!w || typeof w !== 'object') return null;
             var word = w.targetWord || w.word || w.displayWord || '';
             return e('div', {
               key: i,
@@ -705,18 +732,19 @@
 
   function AccessibilityAlloSheetReviewDialog(props) {
     var artifact = props.artifact;
-    if (!artifact) return null;
     useEffect(function () {
+      if (!artifact) return;
       function onKey(ev) {
         if (ev.isComposing || ev.keyCode === 229) return;
-        if (ev.key === 'Escape') { ev.stopPropagation(); props.onClose(); }
+        if (ev.key === 'Escape') { ev.stopPropagation(); if (typeof props.onClose === 'function') props.onClose(); }
       }
       document.addEventListener('keydown', onKey);
       return function () { document.removeEventListener('keydown', onKey); };
-    }, [props.onClose]);
+    }, [artifact, props.onClose]);
+    if (!artifact) return null;
     var tableSummary = (artifact.tables || []).map(function (table) { return (table.title || table.id) + ': ' + (table.rowCount || 0) + ' row(s)'; }).join(' | ');
-    return e('div', { className: 'fixed inset-0 z-[320] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4', role: 'presentation', onMouseDown: function (ev) { if (ev.target === ev.currentTarget) props.onClose(); } },
-      e('div', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'a11y-allosheet-title', 'aria-describedby': 'a11y-allosheet-description', tabIndex: -1, onKeyDown: function (ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229) return; if (ev.key === 'Escape') { ev.stopPropagation(); props.onClose(); } }, className: 'bg-white rounded-2xl shadow-2xl border-2 border-indigo-200 w-full max-w-xl max-h-[90vh] overflow-y-auto' },
+    return e('div', { className: 'fixed inset-0 z-[320] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4', role: 'presentation', onMouseDown: function (ev) { if (ev.target === ev.currentTarget && typeof props.onClose === 'function') props.onClose(); } },
+      e('div', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'a11y-allosheet-title', 'aria-describedby': 'a11y-allosheet-description', tabIndex: -1, onKeyDown: function (ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229) return; if (ev.key === 'Escape') { ev.stopPropagation(); if (typeof props.onClose === 'function') props.onClose(); } }, className: 'bg-white rounded-2xl shadow-2xl border-2 border-indigo-200 w-full max-w-xl max-h-[90vh] overflow-y-auto' },
         e('div', { className: 'p-5 border-b border-slate-200 flex items-start justify-between gap-3' },
           e('div', null,
             e('h2', { id: 'a11y-allosheet-title', className: 'text-lg font-black text-slate-900' }, 'Review audit summaries in AlloSheet'),
@@ -736,7 +764,7 @@
           ),
           e('div', { className: 'rounded-xl bg-indigo-50 border border-indigo-200 p-3', 'aria-live': 'polite' },
             e('div', { className: 'text-xs font-black uppercase tracking-wide text-indigo-900' }, 'Preview'),
-            e('p', { className: 'text-sm text-indigo-900 mt-1' }, artifact.metadata.auditedArtifactCount || 0, ' audited artifact(s) | ', tableSummary || 'No selected tables'),
+            e('p', { className: 'text-sm text-indigo-900 mt-1' }, (artifact.metadata && artifact.metadata.auditedArtifactCount) || 0, ' audited artifact(s) | ', tableSummary || 'No selected tables'),
             e('p', { className: 'text-xs text-indigo-800 mt-2' }, 'Only audit summaries and bounded criterion codes are included; no destination write-back or AI processing is enabled.')
           )
         ),
@@ -819,7 +847,9 @@
     // simplified theme enum (e.g., warm, blue, green, rose, dyslexia overlay).
     var unmappedAppTheme = appThemeToLab(props.readingTheme) === null;
 
+    var ALLOWED_PREVIEW_KEYS = ['fontFamily', 'fontSize', 'lineSpacing', 'letterSpacing', 'theme'];
     function update(key, value) {
+      if (ALLOWED_PREVIEW_KEYS.indexOf(key) < 0) return;
       var next = {};
       next[key] = value;
       setSettings(Object.assign({}, settings, next));
@@ -837,7 +867,7 @@
         }
         addToast && addToast(tr('a11y_lab.preview.apply_success', 'Applied to the live app for all students using this device.'), 'success');
       } catch (err) {
-        addToast && addToast(tr('a11y_lab.preview.apply_error', 'Could not apply settings: ') + (err && err.message), 'error');
+        addToast && addToast(tr('a11y_lab.preview.apply_error', 'Could not apply settings: ') + safeErrorSummary(err), 'error');
       }
     }
 
@@ -860,24 +890,24 @@
       }
       try {
         Promise.resolve(callTTS(text)).catch(function (err) {
-          addToast && addToast(tr('a11y_lab.preview.read_aloud_error', 'Could not start read-aloud: ') + (err && err.message), 'error');
+          addToast && addToast(tr('a11y_lab.preview.read_aloud_error', 'Could not start read-aloud: ') + safeErrorSummary(err), 'error');
         });
       } catch (err) {
-        addToast && addToast(tr('a11y_lab.preview.read_aloud_error', 'Could not start read-aloud: ') + (err && err.message), 'error');
+        addToast && addToast(tr('a11y_lab.preview.read_aloud_error', 'Could not start read-aloud: ') + safeErrorSummary(err), 'error');
       }
     }
 
     var hasStaticPreview = !!selectedItem && PREVIEW_SUPPORTED_TYPES.indexOf(selectedItem.type) >= 0;
     var authenticViewAvailable = typeof props.onOpenAuthenticView === 'function';
     var selectedReviewKey = reviewItemKey(selectedItem);
-    var scorecard = selectedItem ? normalizeReviewScorecard(reviewStore[selectedReviewKey], selectedItem) : null;
+    var scorecard = selectedItem ? normalizeReviewScorecard(safeOwnGet(reviewStore, selectedReviewKey), selectedItem) : null;
     var scoreSummary = summarizeReviewScorecard(scorecard);
     var reviewVerification = scorecard && (scorecard.verification || deriveLabVerification(scorecard));
     var evidenceProvenance = scorecard && (scorecard.evidenceProvenance || (scorecard.verification && scorecard.verification.evidenceProvenance));
     var provenanceDiff = scorecard && scorecard.provenanceDiff;
     var manifestVerification = scorecard && scorecard.evidenceManifestVerification;
     var provenanceLanes = evidenceProvenance && evidenceProvenance.lanes ? evidenceProvenance.lanes : {};
-    var provenanceCapturedAt = evidenceProvenance && evidenceProvenance.capturedAt ? new Date(evidenceProvenance.capturedAt).toLocaleString() : tr('a11y_lab.review.provenance_not_recorded', 'Not recorded');
+    var provenanceCapturedAt = formatSafeDate(evidenceProvenance && evidenceProvenance.capturedAt, tr('a11y_lab.review.provenance_not_recorded', 'Not recorded'));
     var provenanceReasonLabels = {
       'profile-changed': tr('a11y_lab.review.provenance_profile_changed', 'Evidence profile changed'),
       'artifact-binding-changed': tr('a11y_lab.review.provenance_artifact_changed', 'Artifact content changed'),
@@ -891,9 +921,12 @@
     }) : [];
 
     function saveScorecard(nextCard) {
-      if (!selectedReviewKey || !nextCard) return;
+      if (!selectedReviewKey || isUnsafePropKey(selectedReviewKey) || !nextCard) return;
       var stamped = Object.assign({}, nextCard, { updatedAt: new Date().toISOString() });
-      var nextStore = Object.assign({}, reviewStore);
+      stamped.verification = deriveLabVerification(stamped);
+      stamped.evidenceProvenance = stamped.verification && stamped.verification.evidenceProvenance ? stamped.verification.evidenceProvenance : null;
+      stamped.evidenceManifest = stamped.verification && stamped.verification.evidenceManifest ? stamped.verification.evidenceManifest : null;
+      var nextStore = Object.assign(Object.create(null), reviewStore);
       nextStore[selectedReviewKey] = stamped;
       setReviewStore(nextStore);
       persistReviewScorecards(nextStore);
@@ -906,10 +939,11 @@
         return;
       }
       var url = null;
+      var link = null;
       try {
         var blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
         url = URL.createObjectURL(blob);
-        var link = document.createElement('a');
+        link = document.createElement('a');
         var safeId = String(scorecard.artifactId || selectedReviewKey || 'artifact')
           .replace(/[^a-z0-9_-]+/gi, '-')
           .replace(/^-+|-+$/g, '') || 'artifact';
@@ -918,17 +952,18 @@
         link.style.display = 'none';
         document.body.appendChild(link);
         link.click();
-        link.remove();
-        setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
         addToast && addToast(tr('a11y_lab.review.provenance_exported', 'Evidence manifest downloaded.'), 'success');
       } catch (err) {
-        if (url) { try { URL.revokeObjectURL(url); } catch (_) {} }
-        addToast && addToast(tr('a11y_lab.review.provenance_export_error', 'Could not download the evidence manifest: ') + (err && err.message ? err.message : err), 'error');
+        addToast && addToast(tr('a11y_lab.review.provenance_export_error', 'Could not download the evidence manifest: ') + safeErrorSummary(err), 'error');
+      } finally {
+        try { if (link && link.parentNode) link.parentNode.removeChild(link); } catch (_) {}
+        if (url) { setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000); }
       }
     }
 
     function updateReviewStatus(checkId, status) {
       if (!scorecard || ['untested', 'pass', 'fail', 'not_applicable'].indexOf(status) < 0) return;
+      if (!REVIEW_CHECKS.some(function (c) { return c.id === checkId; })) return;
       var checks = Object.assign({}, scorecard.checks);
       checks[checkId] = status;
       saveScorecard(Object.assign({}, scorecard, {
@@ -994,7 +1029,7 @@
           e('div', { className: 'flex-1 text-xs text-indigo-900' }, 'Send reduced WCAG audit summaries to AlloSheet for filtering and trend review.'),
           e('button', { type: 'button', onClick: function () { setIsA11yAlloOpen(true); }, disabled: typeof props.onOpenAlloSheet !== 'function' || typeof props.buildAccessibilityLabAlloSheetEnvelope !== 'function', className: 'px-3 py-2 text-xs font-bold bg-indigo-700 text-white rounded-lg hover:bg-indigo-800 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600', 'aria-label': 'Review in AlloSheet — Accessibility Lab summaries' }, 'Review in AlloSheet')
         ),
-        isA11yAlloOpen && e(AccessibilityAlloSheetReviewDialog, { artifact: a11yAlloArtifact, dateRange: a11yDateRange, datasets: a11yDatasets, onChangeDateRange: setA11yDateRange, onChangeDataset: function (key, value) { setA11yDatasets(function (prev) { return Object.assign({}, prev, (function () { var next = {}; next[key] = value; return next; }())); }); }, onClose: function () { setIsA11yAlloOpen(false); }, onTransfer: openA11yAlloSheet }),
+        isA11yAlloOpen && e(AccessibilityAlloSheetReviewDialog, { artifact: a11yAlloArtifact, dateRange: a11yDateRange, datasets: a11yDatasets, onChangeDateRange: setA11yDateRange, onChangeDataset: function (key, value) { if (['reviewSummary', 'criterionSummary', 'trendSummary'].indexOf(key) < 0) return; setA11yDatasets(function (prev) { return Object.assign({}, prev, (function () { var next = {}; next[key] = value; return next; }())); }); }, onClose: function () { setIsA11yAlloOpen(false); }, onTransfer: openA11yAlloSheet }),
           e('p', { className: 'text-sm text-slate-600 mt-1' },
             tr('a11y_lab.preview.select_intro_workspace', 'Choose any saved artifact. Reading-focused content can be checked here with static accommodations; interactive and specialized artifacts open through the app\'s authentic workspace renderer.'))
         ),
@@ -1012,7 +1047,9 @@
           : e('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               validHistory.map(function (item) {
                 var supportsStatic = PREVIEW_SUPPORTED_TYPES.indexOf(item.type) >= 0;
-                var savedCard = reviewStore[reviewItemKey(item)] ? normalizeReviewScorecard(reviewStore[reviewItemKey(item)], item) : null;
+                var itemKey = reviewItemKey(item);
+                var rawSaved = safeOwnGet(reviewStore, itemKey);
+                var savedCard = rawSaved ? normalizeReviewScorecard(rawSaved, item) : null;
                 var savedSummary = savedCard ? summarizeReviewScorecard(savedCard) : null;
                 return e('button', {
                   type: 'button',
@@ -1025,14 +1062,14 @@
                     e('span', { className: 'font-bold text-sm text-slate-800 flex-1' }, asString(item.title) || tr('a11y_lab.preview.untitled', '(untitled)'))
                   ),
                   e('span', {
-                    className: 'text-[11px] font-semibold ' + (supportsStatic ? 'text-emerald-700' : 'text-amber-700')
+                    className: 'text-xs font-semibold ' + (supportsStatic ? 'text-emerald-700' : 'text-amber-700')
                   }, supportsStatic
                     ? tr('a11y_lab.preview.static_available', 'Static accommodation preview available')
                     : tr('a11y_lab.preview.authentic_required', 'Authentic workspace view required')),
                   savedSummary && (savedCard.isStale
-                    ? e('span', { className: 'text-[11px] font-bold text-amber-700' },
+                    ? e('span', { className: 'text-xs font-bold text-amber-700' },
                         tr('a11y_lab.review.needs_rereview', 'Needs re-review') + ' · ' + savedSummary.untested + ' ' + tr('a11y_lab.review.untested_short', 'untested'))
-                    : e('span', { className: 'text-[11px] text-slate-600' },
+                    : e('span', { className: 'text-xs text-slate-600' },
                         savedSummary.fail + ' ' + tr('a11y_lab.review.findings_short', 'findings') + ' · ' +
                         savedSummary.pass + ' ' + tr('a11y_lab.review.passed_short', 'passed') + ' · ' +
                         savedSummary.untested + ' ' + tr('a11y_lab.review.untested_short', 'untested'))),
@@ -1083,14 +1120,14 @@
           e('div', { className: 'flex-1' },
             e('h4', { className: 'font-bold text-sm text-slate-900' }, tr('a11y_lab.review.heading', 'Artifact accessibility scorecard')),
             e('p', { className: 'text-xs text-slate-600 mt-0.5' }, tr('a11y_lab.review.description', 'Record evidence from the authentic task. Untested checks remain visible and are never treated as passes.')),
-            scorecard.automated && e('p', { className: 'text-[11px] text-indigo-700 mt-1' },
+            scorecard.automated && e('p', { className: 'text-xs text-indigo-700 mt-1' },
               tr('a11y_lab.review.automated_prefix', 'Latest automated audit: ') +
               scorecard.automated.violationRules + ' ' + tr('a11y_lab.review.violations_short', 'violations') + ' · ' +
               scorecard.automated.affectedElements + ' ' + tr('a11y_lab.review.elements_short', 'elements') + ' · ' +
               scorecard.automated.needsReview + ' ' + tr('a11y_lab.review.need_review_short', 'need review') +
               ' (' + scorecard.automated.engine + ' ' + scorecard.automated.engineVersion + ')')
           ),
-          e('div', { className: 'flex flex-wrap gap-1.5 text-[11px] font-bold', 'aria-live': 'polite' },
+          e('div', { className: 'flex flex-wrap gap-1.5 text-xs font-bold', 'aria-live': 'polite' },
             e('span', { className: 'px-2 py-1 rounded bg-emerald-100 text-emerald-800' }, scoreSummary.pass + ' ' + tr('a11y_lab.review.passed_short', 'passed')),
             e('span', { className: 'px-2 py-1 rounded bg-rose-100 text-rose-800' }, scoreSummary.fail + ' ' + tr('a11y_lab.review.findings_short', 'findings')),
             e('span', { className: 'px-2 py-1 rounded bg-slate-200 text-slate-700' }, scoreSummary.untested + ' ' + tr('a11y_lab.review.untested_short', 'untested')),
@@ -1180,11 +1217,11 @@
               ),
               e('div', { className: 'sm:col-span-2' },
                 e('dt', { className: 'font-semibold' }, tr('a11y_lab.review.provenance_binding', 'Artifact binding')),
-                e('dd', { className: 'mt-0.5 break-all font-mono text-[10px]' }, evidenceProvenance.artifactFingerprint || tr('a11y_lab.review.provenance_missing', 'Not available'))
+                e('dd', { className: 'mt-0.5 break-all font-mono text-xs' }, evidenceProvenance.artifactFingerprint || tr('a11y_lab.review.provenance_missing', 'Not available'))
               ),
               e('div', { className: 'sm:col-span-2' },
                 e('dt', { className: 'font-semibold' }, tr('a11y_lab.review.provenance_replay', 'Replay key')),
-                e('dd', { className: 'mt-0.5 break-all font-mono text-[10px]' }, evidenceProvenance.replayKey || tr('a11y_lab.review.provenance_missing', 'Not available'))
+                e('dd', { className: 'mt-0.5 break-all font-mono text-xs' }, evidenceProvenance.replayKey || tr('a11y_lab.review.provenance_missing', 'Not available'))
               )
             ),
             e('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
@@ -1195,7 +1232,7 @@
                 className: 'px-2.5 py-1.5 text-xs font-semibold border border-indigo-300 text-indigo-900 rounded-lg hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50',
                 'data-a11y-evidence-export': 'true',
               }, tr('a11y_lab.review.provenance_export', 'Download evidence manifest')),
-              e('span', { className: 'text-[10px] text-indigo-800' }, tr('a11y_lab.review.provenance_export_hint', 'JSON includes the integrity digest for archiving or sharing.'))
+              e('span', { className: 'text-xs text-indigo-800' }, tr('a11y_lab.review.provenance_export_hint', 'JSON includes the integrity digest for archiving or sharing.'))
             ),
             provenanceDiff && provenanceDiff.changed && e('div', {
               role: provenanceDiff.stale ? 'status' : 'note',
@@ -1206,8 +1243,8 @@
                 ? tr('a11y_lab.review.provenance_changed_heading', 'Evidence changed since this record was captured')
                 : tr('a11y_lab.review.provenance_updated_heading', 'Evidence metadata updated')),
               provenanceDiff.stale && e('span', null, ' — ' + tr('a11y_lab.review.provenance_recheck', 're-run the affected review before treating the result as current.')),
-              e('ul', { className: 'mt-1 list-disc pl-5' }, provenanceDiff.reasons.map(function (reason) {
-                return e('li', { key: reason }, provenanceReasonLabels[reason] || reason);
+              Array.isArray(provenanceDiff.reasons) && e('ul', { className: 'mt-1 list-disc pl-5' }, provenanceDiff.reasons.map(function (reason) {
+                return e('li', { key: reason }, safeOwnGet(provenanceReasonLabels, reason) || reason);
               }))
             ),
             manifestVerification && e('div', {
@@ -1234,19 +1271,19 @@
             e('ol', { className: 'mt-3 space-y-2' }, scorecard.reviewHistory.map(function (entry, index) {
               var priorSummary = summarizeReviewScorecard(entry);
               return e('li', { key: entry.lastReviewedAt + '-' + index, className: 'rounded border border-slate-200 bg-white p-2 text-xs text-slate-700' },
-                e('div', { className: 'font-semibold text-slate-900' }, new Date(entry.lastReviewedAt).toLocaleString()),
+                e('div', { className: 'font-semibold text-slate-900' }, formatSafeDate(entry.lastReviewedAt, 'Unknown date')),
                 e('div', { className: 'mt-0.5' },
                   priorSummary.pass + ' ' + tr('a11y_lab.review.passed_short', 'passed') + ' · ' +
                   priorSummary.fail + ' ' + tr('a11y_lab.review.findings_short', 'findings') + ' · ' +
                   priorSummary.not_applicable + ' ' + tr('a11y_lab.review.na_short', 'N/A')),
-                entry.reviewedFingerprint && e('code', { className: 'block mt-1 text-[10px] text-slate-500' }, entry.reviewedFingerprint)
+                entry.reviewedFingerprint && e('code', { className: 'block mt-1 text-xs text-slate-500' }, entry.reviewedFingerprint)
               );
             }))
           ),
           e('div', { className: 'flex flex-col sm:flex-row sm:items-center gap-2 pt-2 border-t border-slate-200' },
             e('div', { className: 'flex-1 text-xs text-slate-600' },
               scorecard.lastReviewedAt
-                ? tr('a11y_lab.review.last_reviewed_prefix', 'Last completed: ') + new Date(scorecard.lastReviewedAt).toLocaleString()
+                ? tr('a11y_lab.review.last_reviewed_prefix', 'Last completed: ') + formatSafeDate(scorecard.lastReviewedAt, 'Unknown date')
                 : tr('a11y_lab.review.not_completed', 'This review has not been completed yet.')),
             props.reviewSession && typeof props.onEndReviewSession === 'function' && e('button', {
               type: 'button',
@@ -1390,7 +1427,10 @@
     if (!id) return '';
     try {
       var doc = el.ownerDocument || document;
-      var label = doc.querySelector('label[for="' + CSS.escape(id) + '"]');
+      var escapedId = (typeof CSS !== 'undefined' && typeof CSS.escape === 'function')
+        ? CSS.escape(id)
+        : String(id).replace(/["\\]/g, '\\$&');
+      var label = doc.querySelector('label[for="' + escapedId + '"]');
       return label ? (label.textContent || '').trim().replace(/\s+/g, ' ') : '';
     } catch (_) { return ''; }
   }
@@ -1447,10 +1487,14 @@
       .filter(function (el) { return !isInExcludedContainer(el) && isElementVisible(el); });
 
     // Tab order: positive tabindex first (in order), then DOM order with tabindex 0 or attribute absent
-    var withPositive = allFocusable.filter(function (el) { return parseInt(el.getAttribute('tabindex') || '0', 10) > 0; });
-    var withZeroOrNone = allFocusable.filter(function (el) { return parseInt(el.getAttribute('tabindex') || '0', 10) <= 0; });
+    function parsedTabIndex(el) {
+      var n = parseInt(el.getAttribute('tabindex') || '0', 10);
+      return Number.isFinite(n) ? n : 0;
+    }
+    var withPositive = allFocusable.filter(function (el) { return parsedTabIndex(el) > 0; });
+    var withZeroOrNone = allFocusable.filter(function (el) { return parsedTabIndex(el) <= 0; });
     withPositive.sort(function (a, b) {
-      return parseInt(a.getAttribute('tabindex'), 10) - parseInt(b.getAttribute('tabindex'), 10);
+      return parsedTabIndex(a) - parsedTabIndex(b);
     });
     var orderedFocusable = withPositive.concat(withZeroOrNone);
 
@@ -1493,6 +1537,8 @@
   // Render numbered overlay badges for each focusable element. Returns a
   // cleanup function that removes the overlays.
   function renderTabOrderOverlay(orderedFocusable) {
+    var existingOverlay = document.getElementById('alloflow-a11y-tab-order-overlay');
+    if (existingOverlay && existingOverlay.parentNode) existingOverlay.parentNode.removeChild(existingOverlay);
     var overlayContainer = document.createElement('div');
     overlayContainer.id = 'alloflow-a11y-tab-order-overlay';
     overlayContainer.setAttribute('aria-hidden', 'true');
@@ -1500,15 +1546,16 @@
     document.body.appendChild(overlayContainer);
 
     function position() {
-      overlayContainer.innerHTML = '';
+      overlayContainer.textContent = '';
       orderedFocusable.forEach(function (el, i) {
+        if (!el || el.isConnected === false) return;
         var rect = el.getBoundingClientRect();
         if (rect.width === 0 && rect.height === 0) return;
         var badge = document.createElement('div');
         badge.style.cssText = [
           'position:absolute',
-          'top:' + (rect.top + window.scrollY - 12) + 'px',
-          'left:' + (rect.left + window.scrollX - 12) + 'px',
+          'top:' + (rect.top - 12) + 'px',
+          'left:' + (rect.left - 12) + 'px',
           'min-width:24px',
           'height:24px',
           'padding:0 6px',
@@ -1529,8 +1576,8 @@
         var outline = document.createElement('div');
         outline.style.cssText = [
           'position:absolute',
-          'top:' + (rect.top + window.scrollY - 2) + 'px',
-          'left:' + (rect.left + window.scrollX - 2) + 'px',
+          'top:' + (rect.top - 2) + 'px',
+          'left:' + (rect.left - 2) + 'px',
           'width:' + (rect.width + 4) + 'px',
           'height:' + (rect.height + 4) + 'px',
           'border:2px solid #dc2626',
@@ -1747,7 +1794,26 @@
 
   function loadAxeScript(url) {
     return new Promise(function (resolve, reject) {
+      var settled = false;
       var script = document.createElement('script');
+      var timer = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        if (script.parentNode) script.parentNode.removeChild(script);
+        reject(new Error('Timed out loading axe-core from ' + url));
+      }, 15000);
+      function finish(err, axe) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (err) {
+          if (script.parentNode) script.parentNode.removeChild(script);
+          reject(err);
+        } else {
+          resolve(axe);
+        }
+      }
+      script.referrerPolicy = 'no-referrer';
       script.src = url;
       script.async = true;
       script.setAttribute('data-alloflow-axe-source', url);
@@ -1756,12 +1822,11 @@
         if (url === AXE_CDN_URL) script.integrity = AXE_CDN_INTEGRITY;
       }
       script.onload = function () {
-        if (window.axe && typeof window.axe.run === 'function') resolve(window.axe);
-        else reject(new Error('axe-core loaded but window.axe is missing'));
+        if (window.axe && typeof window.axe.run === 'function') finish(null, window.axe);
+        else finish(new Error('axe-core loaded but window.axe is missing'));
       };
       script.onerror = function () {
-        if (script.parentNode) script.parentNode.removeChild(script);
-        reject(new Error('Failed to load axe-core from ' + url));
+        finish(new Error('Failed to load axe-core from ' + url));
       };
       document.head.appendChild(script);
     });
@@ -1827,15 +1892,16 @@
   };
 
   function teacherFriendly(violation, tr) {
-    var english = TEACHER_FRIENDLY_RULES[violation.id];
+    var vid = violation && typeof violation.id === 'string' ? violation.id : '';
+    var english = safeOwnGet(TEACHER_FRIENDLY_RULES, vid);
     if (english) {
       // Convert axe rule id (e.g., 'color-contrast') to a translation key
       // segment ('color_contrast') so translators can localize each one.
-      var keySegment = violation.id.replace(/-/g, '_');
+      var keySegment = vid.replace(/-/g, '_');
       if (tr) return tr('a11y_lab.audit.rules.' + keySegment, english);
       return english;
     }
-    return violation.help || violation.description || violation.id;
+    return (violation && (violation.help || violation.description || violation.id)) || '';
   }
 
 
@@ -1859,7 +1925,7 @@
         wcag: axeFindingWcag(violation),
         severity: violation && violation.impact || 'moderate',
         count: violation && Array.isArray(violation.nodes) ? violation.nodes.length : 1,
-        helpUrl: violation && violation.helpUrl || null,
+        helpUrl: safeHttpUrl(violation && violation.helpUrl) || null,
         status: 'open',
         artifactFingerprint: fingerprint,
         detectedAt: runAt,
@@ -1883,9 +1949,11 @@
       title: reviewSession.artifactTitle || '',
     };
     var key = reviewItemKey(item);
+    if (!key || isUnsafePropKey(key)) return null;
     var store = loadReviewScorecards();
-    var fingerprint = reviewSession.artifactFingerprint || (store[key] && store[key].currentFingerprint) || artifactFingerprint(item);
-    var card = normalizeReviewScorecard(store[key], item, fingerprint);
+    var existingCard = safeOwnGet(store, key);
+    var fingerprint = reviewSession.artifactFingerprint || (existingCard && existingCard.currentFingerprint) || artifactFingerprint(item);
+    var card = normalizeReviewScorecard(existingCard, item, fingerprint);
     var violations = Array.isArray(axeResult.violations) ? axeResult.violations : [];
     var automated = {
       runAt: new Date().toISOString(),
@@ -1909,6 +1977,8 @@
       updatedAt: automated.runAt,
     });
     next.verification = deriveLabVerification(next);
+    next.evidenceProvenance = next.verification && next.verification.evidenceProvenance ? next.verification.evidenceProvenance : null;
+    next.evidenceManifest = next.verification && next.verification.evidenceManifest ? next.verification.evidenceManifest : null;
     store[key] = next;
     persistReviewScorecards(store);
     return next;
@@ -1926,9 +1996,16 @@
     var lastRun$ = useState(null);
     var lastRun = lastRun$[0], setLastRun = lastRun$[1];
     var mountedRef = useRef(true);
+    var highlightCleanupRef = useRef(null);
     useEffect(function () {
       mountedRef.current = true;
-      return function () { mountedRef.current = false; };
+      return function () {
+        mountedRef.current = false;
+        if (highlightCleanupRef.current) {
+          try { highlightCleanupRef.current(); } catch (_) {}
+          highlightCleanupRef.current = null;
+        }
+      };
     }, []);
 
     function handleRunAudit() {
@@ -1973,12 +2050,16 @@
 
     function handleFocusFirstNode(violation) {
       try {
-        var firstNode = violation.nodes && violation.nodes[0];
+        var firstNode = violation && Array.isArray(violation.nodes) && violation.nodes[0];
         if (!firstNode) return;
-        var selector = firstNode.target && firstNode.target[0];
-        if (!selector) return;
+        var selector = Array.isArray(firstNode.target) && firstNode.target[0];
+        if (typeof selector !== 'string' || !selector) return;
         var el = document.querySelector(selector);
         if (el) {
+          if (highlightCleanupRef.current) {
+            try { highlightCleanupRef.current(); } catch (_) {}
+            highlightCleanupRef.current = null;
+          }
           el.focus();
           el.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
           // Briefly highlight
@@ -1986,10 +2067,19 @@
           var origOffset = el.style.outlineOffset;
           el.style.outline = '3px solid #dc2626';
           el.style.outlineOffset = '2px';
-          setTimeout(function () {
-            el.style.outline = origOutline;
-            el.style.outlineOffset = origOffset;
-          }, 2400);
+          var restored = false;
+          var restore = function () {
+            if (restored) return;
+            restored = true;
+            clearTimeout(timer);
+            try {
+              el.style.outline = origOutline;
+              el.style.outlineOffset = origOffset;
+            } catch (_) {}
+            if (highlightCleanupRef.current === restore) highlightCleanupRef.current = null;
+          };
+          var timer = setTimeout(restore, 2400);
+          highlightCleanupRef.current = restore;
         }
       } catch (err) { /* ignore */ }
     }
@@ -2034,34 +2124,39 @@
 
       result && e('div', { className: 'flex flex-col gap-3' },
         // Top-level summary
-        e('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
-          e('div', {
-            className: 'p-3 border rounded text-center ' + (result.violations.length === 0 ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300')
-          },
-            e('div', { className: 'text-2xl font-bold ' + (result.violations.length === 0 ? 'text-emerald-800' : 'text-rose-800') }, result.violations.length),
-            e('div', { className: 'text-xs ' + (result.violations.length === 0 ? 'text-emerald-700' : 'text-rose-700') }, tr('a11y_lab.audit.summary_violations', 'Violations'))
-          ),
-          e('div', { className: 'p-3 bg-emerald-50 border border-emerald-300 rounded text-center' },
-            e('div', { className: 'text-2xl font-bold text-emerald-800' }, (result.passes || []).length),
-            e('div', { className: 'text-xs text-emerald-700' }, tr('a11y_lab.audit.summary_passes', 'Rules passed'))
-          ),
-          e('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded text-center' },
-            e('div', { className: 'text-2xl font-bold text-blue-800' }, (result.incomplete || []).length),
-            e('div', { className: 'text-xs text-blue-700' }, tr('a11y_lab.audit.summary_review', 'Need review'))
-          ),
-          e('div', { className: 'p-3 bg-slate-50 border border-slate-300 rounded text-center' },
-            e('div', { className: 'text-2xl font-bold text-slate-800' },
-              (result.violations || []).reduce(function (sum, v) { return sum + (v.nodes ? v.nodes.length : 0); }, 0)),
-            e('div', { className: 'text-xs text-slate-700' }, tr('a11y_lab.audit.summary_affected', 'Affected elements'))
-          )
-        ),
+        (function () {
+          var violationsList = Array.isArray(result.violations) ? result.violations : [];
+          var passesList = Array.isArray(result.passes) ? result.passes : [];
+          var incompleteList = Array.isArray(result.incomplete) ? result.incomplete : [];
+          return e('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
+            e('div', {
+              className: 'p-3 border rounded text-center ' + (violationsList.length === 0 ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300')
+            },
+              e('div', { className: 'text-2xl font-bold ' + (violationsList.length === 0 ? 'text-emerald-800' : 'text-rose-800') }, violationsList.length),
+              e('div', { className: 'text-xs ' + (violationsList.length === 0 ? 'text-emerald-700' : 'text-rose-700') }, tr('a11y_lab.audit.summary_violations', 'Violations'))
+            ),
+            e('div', { className: 'p-3 bg-emerald-50 border border-emerald-300 rounded text-center' },
+              e('div', { className: 'text-2xl font-bold text-emerald-800' }, passesList.length),
+              e('div', { className: 'text-xs text-emerald-700' }, tr('a11y_lab.audit.summary_passes', 'Rules passed'))
+            ),
+            e('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded text-center' },
+              e('div', { className: 'text-2xl font-bold text-blue-800' }, incompleteList.length),
+              e('div', { className: 'text-xs text-blue-700' }, tr('a11y_lab.audit.summary_review', 'Need review'))
+            ),
+            e('div', { className: 'p-3 bg-slate-50 border border-slate-300 rounded text-center' },
+              e('div', { className: 'text-2xl font-bold text-slate-800' },
+                violationsList.reduce(function (sum, v) { return sum + (v && Array.isArray(v.nodes) ? v.nodes.length : 0); }, 0)),
+              e('div', { className: 'text-xs text-slate-700' }, tr('a11y_lab.audit.summary_affected', 'Affected elements'))
+            )
+          );
+        })(),
 
-        result.violations.length === 0 && e('div', { className: 'p-4 bg-emerald-50 border border-emerald-300 rounded text-sm text-emerald-900 text-center' },
+        (!Array.isArray(result.violations) || result.violations.length === 0) && e('div', { className: 'p-4 bg-emerald-50 border border-emerald-300 rounded text-sm text-emerald-900 text-center' },
           tr('a11y_lab.audit.no_violations_wcag22', '✅ No WCAG 2.2 A/AA violations found in the current view by axe-core. (Note: automated audits catch ~30-50% of real accessibility issues. Combine with the keyboard tour, semantic outline, real assistive-technology testing, and manual review.)')
         ),
 
         // Violations grouped by impact
-        result.violations.length > 0 && IMPACT_ORDER.map(function (impact) {
+        Array.isArray(result.violations) && result.violations.length > 0 && IMPACT_ORDER.map(function (impact) {
           var rules = (grouped && grouped[impact]) || [];
           if (rules.length === 0) return null;
           var styles = IMPACT_STYLES[impact];
@@ -2089,8 +2184,10 @@
             ),
             e('div', { className: 'mt-3 flex flex-col gap-2' },
               rules.map(function (v, i) {
+                var vNodes = Array.isArray(v && v.nodes) ? v.nodes : [];
+                var safeHelpHref = safeHttpUrl(v && v.helpUrl);
                 return e('div', {
-                  key: v.id,
+                  key: (v && v.id) || i,
                   className: 'p-3 bg-white border rounded',
                   style: { borderColor: styles.border },
                 },
@@ -2098,15 +2195,15 @@
                     e('div', { className: 'font-semibold text-sm', style: { color: styles.text } },
                       v.id, ' ',
                       e('span', { className: 'text-xs font-normal text-slate-500' },
-                        '(' + v.nodes.length + ' ' + (v.nodes.length === 1 ? tr('a11y_lab.audit.element_singular', 'element') : tr('a11y_lab.audit.element_plural', 'elements')) + ')')
+                        '(' + vNodes.length + ' ' + (vNodes.length === 1 ? tr('a11y_lab.audit.element_singular', 'element') : tr('a11y_lab.audit.element_plural', 'elements')) + ')')
                     ),
                     e('div', { className: 'flex gap-1' },
-                      v.nodes.length > 0 && e('button', {
+                      vNodes.length > 0 && e('button', {
                         onClick: function () { handleFocusFirstNode(v); },
                         className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
                       }, tr('a11y_lab.audit.show_me', 'Show me')),
-                      v.helpUrl && e('a', {
-                        href: v.helpUrl,
+                      safeHelpHref && e('a', {
+                        href: safeHelpHref,
                         target: '_blank',
                         rel: 'noopener noreferrer',
                         className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
@@ -2114,13 +2211,13 @@
                     )
                   ),
                   e('p', { className: 'text-xs text-slate-700' }, teacherFriendly(v, tr)),
-                  v.nodes.length > 1 && e('details', { className: 'mt-2' },
+                  vNodes.length > 1 && e('details', { className: 'mt-2' },
                     e('summary', { className: 'text-xs text-slate-500 cursor-pointer hover:text-slate-700' },
-                      tr('a11y_lab.audit.affected_heading', 'Affected elements') + ' (' + v.nodes.length + ')'),
+                      tr('a11y_lab.audit.affected_heading', 'Affected elements') + ' (' + vNodes.length + ')'),
                     e('ul', { className: 'mt-1 max-h-40 overflow-y-auto pl-5 text-xs list-disc text-slate-600 space-y-0.5' },
-                      v.nodes.slice(0, 50).map(function (node, j) {
+                      vNodes.slice(0, 50).map(function (node, j) {
                         return e('li', { key: j, className: 'font-mono break-all' },
-                          (node.target || []).join(' '));
+                          (node && Array.isArray(node.target) ? node.target : []).join(' '));
                       })
                     )
                   )
@@ -2131,7 +2228,7 @@
         }),
 
         // Incomplete rules (need manual review)
-        (result.incomplete || []).length > 0 && e('details', {
+        Array.isArray(result.incomplete) && result.incomplete.length > 0 && e('details', {
           className: 'rounded p-3 border bg-blue-50 border-blue-300',
         },
           e('summary', {
@@ -2143,25 +2240,27 @@
           e('p', { className: 'text-xs text-blue-800 mt-1 mb-2' },
             tr('a11y_lab.audit.incomplete_help', 'These rules could not be automatically verified by axe-core. They commonly involve things like color contrast on gradient backgrounds, scrolling regions, or color meaning. A human needs to look and decide.')),
           e('div', { className: 'flex flex-col gap-2' },
-            result.incomplete.map(function (v) {
+            result.incomplete.map(function (v, idx) {
+              var vNodes = Array.isArray(v && v.nodes) ? v.nodes : [];
+              var safeHelpHref = safeHttpUrl(v && v.helpUrl);
               return e('div', {
-                key: v.id,
+                key: (v && v.id) || idx,
                 className: 'p-3 bg-white border border-blue-300 rounded',
               },
                 e('div', { className: 'flex items-start justify-between gap-2 mb-1' },
                   e('div', { className: 'font-semibold text-sm text-blue-900' },
                     v.id, ' ',
                     e('span', { className: 'text-xs font-normal text-slate-500' },
-                      '(' + (v.nodes || []).length + ' ' +
-                      ((v.nodes || []).length === 1 ? tr('a11y_lab.audit.element_singular', 'element') : tr('a11y_lab.audit.element_plural', 'elements')) + ')')
+                      '(' + vNodes.length + ' ' +
+                      (vNodes.length === 1 ? tr('a11y_lab.audit.element_singular', 'element') : tr('a11y_lab.audit.element_plural', 'elements')) + ')')
                   ),
                   e('div', { className: 'flex gap-1' },
-                    (v.nodes || []).length > 0 && e('button', {
+                    vNodes.length > 0 && e('button', {
                       onClick: function () { handleFocusFirstNode(v); },
                       className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
                     }, tr('a11y_lab.audit.show_me', 'Show me')),
-                    v.helpUrl && e('a', {
-                      href: v.helpUrl,
+                    safeHelpHref && e('a', {
+                      href: safeHelpHref,
                       target: '_blank',
                       rel: 'noopener noreferrer',
                       className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
@@ -2191,7 +2290,7 @@
     if (explicit) {
       // Friendlier label for some common ARIA roles
       var aliases = { 'button': 'button', 'link': 'link', 'navigation': 'navigation', 'main': 'main', 'banner': 'banner', 'contentinfo': 'content info', 'complementary': 'complementary', 'region': 'region', 'tab': 'tab', 'tabpanel': 'tab panel', 'tablist': 'tab list', 'dialog': 'dialog', 'alert': 'alert', 'menu': 'menu', 'menuitem': 'menu item', 'progressbar': 'progress bar', 'slider': 'slider' };
-      return aliases[explicit] || explicit;
+      return safeOwnGet(aliases, explicit) || explicit;
     }
     var tag = el.tagName.toLowerCase();
     if (tag === 'a') return el.hasAttribute('href') ? 'link' : null;
@@ -2201,7 +2300,7 @@
     if (tag === 'input') {
       var type = (el.type || 'text').toLowerCase();
       var inputRoles = { text: 'edit', email: 'edit, email', password: 'edit, password', search: 'search field', tel: 'edit, telephone', url: 'edit, URL', number: 'spin button', checkbox: 'checkbox', radio: 'radio button', submit: 'button', reset: 'button', button: 'button', range: 'slider', date: 'edit, date', time: 'edit, time' };
-      return inputRoles[type] || 'edit';
+      return safeOwnGet(inputRoles, type) || 'edit';
     }
     if (tag === 'img') {
       var alt = el.getAttribute('alt');
@@ -2486,7 +2585,7 @@
       function next() {
         if (stopped || i >= queue.length) {
           clearHighlight();
-          setPlayingIndex(null);
+          try { setPlayingIndex(null); } catch (_) {}
           stopRef.current = null;
           return;
         }
@@ -2495,15 +2594,16 @@
         setPlayingIndex(i);
         unhighlightRef.current = highlightForScreenReader(item.el);
         speakOne(item, function () {
+          if (stopped) return;
           i++;
           next();
         });
       }
       stopRef.current = function () {
         stopped = true;
-        try { window.speechSynthesis.cancel(); } catch (_) {}
+        try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
         clearHighlight();
-        setPlayingIndex(null);
+        try { setPlayingIndex(null); } catch (_) {}
       };
       next();
     }
@@ -2515,24 +2615,27 @@
       } else {
         try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
         clearHighlight();
-        setPlayingIndex(null);
+        try { setPlayingIndex(null); } catch (_) {}
       }
     }
 
     function playOne(i) {
-      if (!queue) return;
+      if (!queue || !queue[i]) return;
       stopAll();
       var item = queue[i];
+      var stoppedOne = false;
       unhighlightRef.current = highlightForScreenReader(item.el);
       setPlayingIndex(i);
       stopRef.current = function () {
-        try { window.speechSynthesis.cancel(); } catch (_) {}
+        stoppedOne = true;
+        try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
         clearHighlight();
-        setPlayingIndex(null);
+        try { setPlayingIndex(null); } catch (_) {}
       };
       speakOne(item, function () {
+        if (stoppedOne) return;
         clearHighlight();
-        setPlayingIndex(null);
+        try { setPlayingIndex(null); } catch (_) {}
         stopRef.current = null;
       });
     }
@@ -2563,7 +2666,10 @@
         queue && e('label', { className: 'text-xs text-slate-700 flex items-center gap-2' },
           tr('a11y_lab.screenreader.speed_label', 'Speed: '), e('input', {
             type: 'range', min: '0.5', max: '2.0', step: '0.1',
-            value: rate, onChange: function (ev) { setRate(parseFloat(ev.target.value)); },
+            value: rate, onChange: function (ev) {
+              var nextRate = parseFloat(ev.target.value);
+              if (Number.isFinite(nextRate)) setRate(Math.min(2.0, Math.max(0.5, nextRate)));
+            },
             className: 'w-24',
             'aria-label': tr('a11y_lab.screenreader.speed_aria', 'Playback speed'),
           }), e('span', { className: 'font-mono w-10' }, rate.toFixed(1) + 'x'))
@@ -2661,15 +2767,34 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
   max-width: 70ch;\
 }';
 
+  var SIM_SVG_FILTER_SPECS = [
+    { id: 'alloflow-sim-protanopia', values: '0.567 0.433 0.000 0 0  0.558 0.442 0.000 0 0  0.000 0.242 0.758 0 0  0 0 0 1 0' },
+    { id: 'alloflow-sim-deuteranopia', values: '0.625 0.375 0.000 0 0  0.700 0.300 0.000 0 0  0.000 0.300 0.700 0 0  0 0 0 1 0' },
+    { id: 'alloflow-sim-tritanopia', values: '0.950 0.050 0.000 0 0  0.000 0.433 0.567 0 0  0.000 0.475 0.525 0 0  0 0 0 1 0' },
+    { id: 'alloflow-sim-achromatopsia', values: '0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0 0 0 1 0' },
+  ];
+
   function ensureSimulatorAssetsLoaded() {
     if (!document.getElementById('alloflow-sim-svg-defs')) {
-      var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      var svgNS = 'http://www.w3.org/2000/svg';
+      var svg = document.createElementNS(svgNS, 'svg');
       svg.id = 'alloflow-sim-svg-defs';
       svg.setAttribute('aria-hidden', 'true');
       svg.setAttribute('width', '0');
       svg.setAttribute('height', '0');
       svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
-      svg.innerHTML = SIM_SVG_FILTERS;
+      var defs = document.createElementNS(svgNS, 'defs');
+      SIM_SVG_FILTER_SPECS.forEach(function (spec) {
+        var filter = document.createElementNS(svgNS, 'filter');
+        filter.setAttribute('id', spec.id);
+        filter.setAttribute('color-interpolation-filters', 'sRGB');
+        var matrix = document.createElementNS(svgNS, 'feColorMatrix');
+        matrix.setAttribute('type', 'matrix');
+        matrix.setAttribute('values', spec.values);
+        filter.appendChild(matrix);
+        defs.appendChild(filter);
+      });
+      svg.appendChild(defs);
       document.body.appendChild(svg);
     }
     if (!document.getElementById('alloflow-sim-styles')) {
@@ -2689,22 +2814,25 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     'alloflow-sim-reading-stress',
     'alloflow-sim-dyslexia', // cleanup for sessions opened before this upgrade
   ];
+  var ALLOWED_SIM_KEYS = ['blur', 'protanopia', 'deuteranopia', 'tritanopia', 'achromatopsia', 'reading-stress'];
 
   function applySimulator(activeKey, blurPx) {
     ensureSimulatorAssetsLoaded();
     var body = document.body;
     SIM_CLASSES.forEach(function (c) { body.classList.remove(c); });
-    if (activeKey && activeKey !== 'none' && activeKey !== 'motor-info') {
+    if (typeof activeKey === 'string' && ALLOWED_SIM_KEYS.indexOf(activeKey) >= 0) {
       body.classList.add('alloflow-sim-' + activeKey);
     }
-    if (typeof blurPx === 'number') {
-      body.style.setProperty('--alloflow-sim-blur', blurPx + 'px');
+    if (typeof blurPx === 'number' && Number.isFinite(blurPx)) {
+      var clamped = Math.min(8, Math.max(0, blurPx));
+      body.style.setProperty('--alloflow-sim-blur', clamped + 'px');
     }
   }
 
   function clearAllSimulators() {
     var body = document.body;
     SIM_CLASSES.forEach(function (c) { body.classList.remove(c); });
+    try { body.style.removeProperty('--alloflow-sim-blur'); } catch (_) {}
   }
 
   // Translatable simulators list. Built per-render because labels and
@@ -2835,7 +2963,10 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
         e('input', {
           type: 'range', min: '0', max: '8', step: '0.5',
           value: blurPx,
-          onChange: function (ev) { setBlurPx(parseFloat(ev.target.value)); },
+          onChange: function (ev) {
+            var nextBlur = parseFloat(ev.target.value);
+            if (Number.isFinite(nextBlur)) setBlurPx(Math.min(8, Math.max(0, nextBlur)));
+          },
           className: 'w-full',
           'aria-label': tr('a11y_lab.simulators.blur_amount_aria', 'Blur amount in pixels'),
         })
@@ -2945,12 +3076,12 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     var history = Array.isArray(input.history) ? input.history : [];
     var scorecards = input.scorecards && typeof input.scorecards === 'object' ? input.scorecards : {};
     var records = [];
-    var criteria = {};
-    var months = {};
+    var criteria = Object.create(null);
+    var months = Object.create(null);
     history.forEach(function (item) {
       if (!item || !item.type) return;
       var key = reviewItemKey(item);
-      var raw = scorecards[key];
+      var raw = safeOwnGet(scorecards, key);
       if (!raw) return;
       var card = normalizeReviewScorecard(raw, item);
       var date = a11yAlloRecordDate(card);
@@ -2990,7 +3121,8 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
         if (card.isStale) months[month].stale += 1;
       }
       findings.forEach(function (finding) {
-        var sourceName = a11yAlloText(finding && finding.source || 'manual', 40) || 'manual';
+        var rawSource = a11yAlloText(finding && finding.source || 'manual', 40) || 'manual';
+        var sourceName = /^[a-z0-9:_-]+$/i.test(rawSource) ? rawSource : 'other';
         var severity = a11yAlloText(finding && finding.severity || 'moderate', 30).toLowerCase() || 'moderate';
         if (['critical', 'serious', 'moderate', 'minor'].indexOf(severity) < 0) severity = 'other';
         var status = a11yAlloStatus(finding && finding.status, 'open');
@@ -3090,8 +3222,6 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
   // ----- Top-level component --------------------------------------------------
 
   function AccessibilityLab(props) {
-    if (!props.isOpen) return null;
-
     var tr = makeTr(props.t);
     var tabLabels = {
       preview:      tr('a11y_lab.tabs.content_preview', 'Content preview'),
@@ -3115,6 +3245,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     // to it on unmount, so closing the lab returns the teacher to the Educator
     // Hub button that opened it.
     useEffect(function () {
+      if (!props.isOpen) return;
       previousFocusRef.current = document.activeElement;
       if (closeBtnRef.current && typeof closeBtnRef.current.focus === 'function') {
         try { closeBtnRef.current.focus(); } catch (_) {}
@@ -3126,21 +3257,24 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
           try { prev.focus(); } catch (_) {}
         }
       };
-    }, []);
+    }, [props.isOpen]);
 
     // Escape closes the lab.
     useEffect(function () {
+      if (!props.isOpen) return;
       function onKey(ev) {
         if (ev.isComposing || ev.keyCode === 229) return;
         if (ev.key === 'Escape') {
           if (document.querySelector('[aria-labelledby="a11y-allosheet-title"]')) return;
           ev.stopPropagation();
-          props.onClose();
+          if (typeof props.onClose === 'function') props.onClose();
         }
       }
       document.addEventListener('keydown', onKey);
       return function () { document.removeEventListener('keydown', onKey); };
-    }, [props.onClose]);
+    }, [props.isOpen, props.onClose]);
+
+    if (!props.isOpen) return null;
 
     function tabBtn(tab_) {
       var active = tab === tab_.key;
@@ -3223,7 +3357,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     var modal = e('div', {
       className: 'fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4',
       'data-alloflow-a11y-lab': 'root',
-      onClick: function (ev) { if (ev.target === ev.currentTarget) props.onClose(); },
+      onClick: function (ev) { if (ev.target === ev.currentTarget && typeof props.onClose === 'function') props.onClose(); },
     },
       e('div', {
         ref: dialogRef,

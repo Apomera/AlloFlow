@@ -24,33 +24,110 @@
     // Four independent vanes form the default atlas; a single vane also
     // supports callers whose feather UVs span the entire texture.
     var cv = canvas(variants * 256, 512), ctx = cv.getContext('2d');
+    if (!ctx) return cv;
     for (var variant = 0; variant < variants; variant++) {
       ctx.save(); ctx.translate(variant * 256, 0);
       ctx.beginPath(); ctx.rect(0, 0, 256, 512); ctx.clip();
       var grad = ctx.createLinearGradient(0, 0, 256, 0);
-      grad.addColorStop(0, '#d5d1c8'); grad.addColorStop(0.45, '#e9e5db');
-      grad.addColorStop(0.53, '#e2dfd6'); grad.addColorStop(1, '#d9d6ce');
+      grad.addColorStop(0, '#d5d1c8'); grad.addColorStop(0.24, '#e1ddd3');
+      grad.addColorStop(0.45, '#ebe7dd'); grad.addColorStop(0.53, '#e2dfd6');
+      grad.addColorStop(0.78, '#ddd9d0'); grad.addColorStop(1, '#d7d3cb');
       ctx.fillStyle = grad; ctx.fillRect(0, 0, 256, 512);
+      // Subtle structural iridescent sheen bands along the curved vane surface;
+      // kept low-saturation so species pigments remain authentic.
+      var irid = ctx.createLinearGradient(16, 84 + variant * 14, 240, 428 - variant * 12);
+      irid.addColorStop(0, 'rgba(186,210,214,0)');
+      irid.addColorStop(0.30, 'rgba(196,220,224,.065)');
+      irid.addColorStop(0.52, 'rgba(232,222,196,.085)');
+      irid.addColorStop(0.74, 'rgba(190,206,222,.055)');
+      irid.addColorStop(1, 'rgba(186,210,214,0)');
+      ctx.fillStyle = irid; ctx.fillRect(0, 0, 256, 512);
       // A broad, soft root shadow suggests the feather overlapping above it;
       // the exposed vane remains matte, without a dark outline at every edge.
       var overlap = ctx.createLinearGradient(0, 0, 0, 168);
-      overlap.addColorStop(0, 'rgba(48,38,27,.075)');
-      overlap.addColorStop(0.55, 'rgba(48,38,27,.026)'); overlap.addColorStop(1, 'rgba(48,38,27,0)');
+      overlap.addColorStop(0, 'rgba(48,38,27,.085)');
+      overlap.addColorStop(0.55, 'rgba(48,38,27,.028)'); overlap.addColorStop(1, 'rgba(48,38,27,0)');
       ctx.fillStyle = overlap; ctx.fillRect(0, 0, 256, 168);
+      // Soft downy plumulaceous base barbs near the proximal root soften
+      // the transition where overlapping covert feathers meet the calamus.
+      for (var downY = 6; downY < 112; downY += 3.8 + noise(downY, variant + 51) * 2.2) [-1, 1].forEach(function (side) {
+        var dShaftX = 128 + Math.sin(downY * 0.009 + variant) * 1.2;
+        var span = 38 + (112 - downY) * 0.55 + noise(downY + side * 3, variant + 63) * 28;
+        var lift = 10 + noise(downY * 1.3, variant + side * 5) * 22;
+        var wave = (noise(downY, variant + side * 11) - 0.5) * 16;
+        ctx.strokeStyle = 'rgba(248,243,230,' + (0.095 + (1 - downY / 112) * 0.11).toFixed(3) + ')';
+        ctx.lineWidth = 0.85;
+        ctx.beginPath(); ctx.moveTo(dShaftX + side * 2, downY);
+        ctx.quadraticCurveTo(dShaftX + side * span * 0.52, downY - lift * 0.4 + wave, dShaftX + side * span, downY - lift);
+        ctx.stroke();
+      });
       for (var y = -70; y < 590; y += 2.3 + noise(y, variant + 17) * 1.2) [-1, 1].forEach(function (side) {
         var bend = 43 + noise(y + side, variant) * 18, shaftX = 128 + Math.sin(y * 0.009 + variant) * 1.2;
         ctx.strokeStyle = 'rgba(40,32,24,' + (0.055 + noise(y, variant + side) * 0.035) + ')'; ctx.lineWidth = 0.65;
         ctx.beginPath(); ctx.moveTo(shaftX + side, y);
         ctx.bezierCurveTo(shaftX + side * 42, y - bend * 0.27, shaftX + side * 83, y - bend * 0.62, shaftX + side * 130, y - bend); ctx.stroke();
-        ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 0.45;
+        ctx.strokeStyle = 'rgba(255,255,255,.075)'; ctx.lineWidth = 0.45;
         ctx.beginPath(); ctx.moveTo(shaftX + side, y + 1);
         ctx.bezierCurveTo(shaftX + side * 42, y + 1 - bend * 0.27, shaftX + side * 83, y + 1 - bend * 0.62, shaftX + side * 130, y + 1 - bend); ctx.stroke();
       });
-      ctx.strokeStyle = 'rgba(65,51,36,.17)'; ctx.lineWidth = 1.3; ctx.beginPath();
-      for (var shaftY = 0; shaftY < 509; shaftY += 8) {
-        var shaftX = 128 + Math.sin(shaftY * 0.009 + variant) * 1.2;
-        if (shaftY) ctx.lineTo(shaftX, shaftY); else ctx.moveTo(shaftX, shaftY);
+      // Fine barbule splits and subtle outer-vane notches add organic texture
+      // where interlocked hooklets part slightly along the margin.
+      for (var notch = 0; notch < 11; notch++) {
+        var notchSide = notch % 2 ? 1 : -1;
+        var notchY = 148 + noise(notch, variant + 89) * 336;
+        var notchDepth = 14 + noise(notch + 3, variant + 41) * 32;
+        var notchEdgeX = notchSide > 0 ? 254 : 2;
+        var notchTipX = notchEdgeX - notchSide * notchDepth;
+        var notchTipY = notchY + notchDepth * 0.34;
+        ctx.fillStyle = 'rgba(44,34,24,' + (0.06 + noise(notch + 5, variant) * 0.05).toFixed(3) + ')';
+        ctx.beginPath();
+        ctx.moveTo(notchEdgeX, notchY - 1.4);
+        ctx.quadraticCurveTo(notchEdgeX - notchSide * notchDepth * 0.55, notchY + notchDepth * 0.14, notchTipX, notchTipY);
+        ctx.quadraticCurveTo(notchEdgeX - notchSide * notchDepth * 0.55, notchY + notchDepth * 0.20, notchEdgeX, notchY + 1.6);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,251,240,.11)'; ctx.lineWidth = 0.55;
+        ctx.beginPath(); ctx.moveTo(notchEdgeX, notchY - 1.6); ctx.lineTo(notchTipX, notchTipY - 0.5); ctx.stroke();
       }
+      // Tapered 3D-shaded rachis shaft: recessed trailing shadow groove,
+      // smooth keratin taper from calamus to distal tip, and dorsal highlight ridge.
+      var shaftPts = [];
+      for (var shaftY = 0; shaftY <= 512; shaftY += 16) {
+        var frac = shaftY / 512;
+        var sx = 128 + Math.sin(shaftY * 0.009 + variant) * 1.2;
+        var halfW = 2.75 * (1 - frac * 0.78) + (contourFeather ? -0.35 : 0);
+        shaftPts.push({ x: sx, y: shaftY, w: Math.max(0.55, halfW) });
+      }
+      ctx.strokeStyle = 'rgba(48,37,25,.16)'; ctx.lineWidth = 2.6;
+      ctx.beginPath();
+      shaftPts.forEach(function (pt, idx) { if (idx) ctx.lineTo(pt.x + 1.35, pt.y); else ctx.moveTo(pt.x + 1.35, pt.y); });
+      ctx.stroke();
+      var rachisGrad = ctx.createLinearGradient(125, 0, 131, 0);
+      rachisGrad.addColorStop(0, '#c8c0b1'); rachisGrad.addColorStop(0.36, '#f6f2e7');
+      rachisGrad.addColorStop(0.70, '#ded7c8'); rachisGrad.addColorStop(1, '#a99f8e');
+      ctx.fillStyle = rachisGrad;
+      ctx.beginPath();
+      for (var ri = 0; ri < shaftPts.length; ri++) {
+        var rp = shaftPts[ri];
+        if (ri) ctx.lineTo(rp.x - rp.w, rp.y); else ctx.moveTo(rp.x - rp.w, rp.y);
+      }
+      for (var rj = shaftPts.length - 1; rj >= 0; rj--) {
+        var rpr = shaftPts[rj];
+        ctx.lineTo(rpr.x + rpr.w, rpr.y);
+      }
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,253,246,.36)'; ctx.lineWidth = 0.85;
+      ctx.beginPath();
+      shaftPts.forEach(function (pt, idx) {
+        var hx = pt.x - pt.w * 0.32;
+        if (idx) ctx.lineTo(hx, pt.y); else ctx.moveTo(hx, pt.y);
+      });
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(65,51,36,.15)'; ctx.lineWidth = 0.75;
+      ctx.beginPath();
+      shaftPts.forEach(function (pt, idx) {
+        var ex = pt.x + pt.w * 0.85;
+        if (idx) ctx.lineTo(ex, pt.y); else ctx.moveTo(ex, pt.y);
+      });
       ctx.stroke();
       // Fine separated barb tips suggest wear without cutting geometry or
       // introducing transparent edges that flicker at observation distance.
@@ -149,7 +226,9 @@
       'float blBroad=1.0-smoothstep(0.22,0.65,fwidth(blBundle));',
       'float blFiber=sin(blBarb*6.2831853)*blFine*0.045+sin(blBundle*6.2831853)*blBroad*0.028;',
       'float blRoot=smoothstep(0.04,0.22,blAlong);',
+      'float blSheen=smoothstep(0.18,0.68,blAlong)*(1.0-smoothstep(0.76,0.98,blAlong))*sin((blAlong*5.0-blAcross*1.8+blVariant*0.9)*3.1415926)*0.5+0.5;',
       'diffuseColor.rgb*=1.0+blFiber*blRoot;',
+      'diffuseColor.rgb+=diffuseColor.rgb*vec3(0.014,0.022,0.026)*blSheen*blFine*blRoot;',
       'float blAA=max(fwidth(blAcross),0.012);',
       'float blMargin=smoothstep(0.83-blAA,0.99+blAA,blAcross)*smoothstep(0.24,0.64,blAlong);',
       'float blTip=smoothstep(0.79,0.99,blAlong)*(0.72+0.28*sin(blVane*19.0+blVariant));',

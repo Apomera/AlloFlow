@@ -254,8 +254,14 @@
     });
 
     var i = 0;
+    _speechGen = (_speechGen || 0) + 1;
+    var gen = _speechGen;
+    if (_iAmSpeaking && window.speechSynthesis) {
+      try { window.speechSynthesis.cancel(); } catch (_) {}
+    }
     _iAmSpeaking = true;
     function nextChunk() {
+      if (gen !== _speechGen || !_iAmSpeaking) return;
       if (i >= safe.length) {
         _iAmSpeaking = false;
         if (_keepAliveTimer) { clearInterval(_keepAliveTimer); _keepAliveTimer = null; }
@@ -264,7 +270,17 @@
       var u;
       try { u = new SpeechSynthesisUtterance(safe[i++]); }
       catch (_) { _iAmSpeaking = false; return; }
-      u.onend = nextChunk; u.onerror = nextChunk;
+      u.onend = nextChunk;
+      u.onerror = function (ev) {
+        if (gen !== _speechGen || !_iAmSpeaking) return;
+        var err = ev && ev.error;
+        if (err === 'canceled' || err === 'interrupted') {
+          _iAmSpeaking = false;
+          if (_keepAliveTimer) { clearInterval(_keepAliveTimer); _keepAliveTimer = null; }
+          return;
+        }
+        nextChunk();
+      };
       var lang = getLang();
       if (lang && typeof lang === 'string' && lang.length <= 8) u.lang = lang;
       try { window.speechSynthesis.speak(u); }
@@ -290,13 +306,17 @@
   // ───────────────────────────────────────────────────────────────────────
   // cancel() — never cancels the global queue unless WE were the last speaker.
   // ───────────────────────────────────────────────────────────────────────
+  var _speechGen = 0;
   function cancel() {
+    _speechGen = (_speechGen || 0) + 1;
     var bot = getBot();
     if (bot && typeof bot.dismissMessage === 'function') {
       try { bot.dismissMessage(); } catch (_) {}
     }
     if (_iAmSpeaking && window.speechSynthesis) {
+      _iAmSpeaking = false;
       try { window.speechSynthesis.cancel(); } catch (_) {}
+    } else {
       _iAmSpeaking = false;
     }
     if (_keepAliveTimer) { clearInterval(_keepAliveTimer); _keepAliveTimer = null; }
@@ -328,8 +348,9 @@
     div.setAttribute('role', assertive ? 'alert' : 'status');
     div.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
     div.setAttribute('aria-atomic', 'true');
+    var liveLabel = getT()('onboarding.live_region_label');
     div.setAttribute('aria-label',
-      (getT()('onboarding.live_region_label') || 'AlloBot onboarding announcements'));
+      (liveLabel && liveLabel !== 'onboarding.live_region_label') ? liveLabel : 'AlloBot onboarding announcements');
     div.style.cssText =
       'position:absolute;left:-10000px;top:auto;width:1px;height:1px;' +
       'overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap;';
@@ -428,7 +449,6 @@
     var MAX = 40;
 
     for (var i = 0; i < nodes.length; i++) {
-      if (elements.length >= MAX) break;
       var el = nodes[i];
 
       var rawKey = el.getAttribute('data-help-key');
@@ -447,6 +467,8 @@
         screen = rawKey;
         screenArea = area;
       }
+
+      if (elements.length >= MAX) continue;
 
       var tag = ((el.tagName || '') + '').toUpperCase();
       var roleRaw = el.getAttribute('role');
@@ -771,11 +793,16 @@
     } catch (_) { return 'gemini'; }
   }
   function isCoachAvailable() {
-    // Blocked host fns are truthy: ask the host (old-host fallback).
+    // Blocked host fns are truthy: check explicit lock/QR/policy flags first, then ask the host.
+    if (window.__alloQrStudentMode === true || window._alloQrBlocked === true ||
+        window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true ||
+        (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)) {
+      return false;
+    }
     var fn = window.callGemini;
+    if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
     try {
-      if (typeof window.__alloAiUsable === 'function') { if (!window.__alloAiUsable('text', fn)) return false; }
-      else if (typeof fn !== 'function' || fn._alloQrBlocked || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
+      if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', fn)) return false;
     } catch (_) { return false; }
     var backend = getActiveBackend();
     if (backend && backend !== 'gemini') return false;
@@ -901,15 +928,15 @@
     var pickKeys = layout === 'roles' ? ROLE_KEYS_ALLOW : MODE_KEYS_ALLOW;
     var out = { answer: '', actions: [], blocked: false, meta: meta || {} };
     var parsed = _safeJsonParse(raw);
-    if (!parsed || typeof parsed !== 'object') {
+    var parseFailed = !parsed || typeof parsed !== 'object';
+    if (parseFailed) {
       // Model emitted prose instead of JSON. Treat the raw string as the
-      // answer, drop actions, mark meta.parseFailed for telemetry.
+      // answer, drop actions, mark meta.parseFailed for telemetry, AND still
+      // enforce the forbidden-phrase scan below.
       out.meta.parseFailed = true;
-      out.answer = String(raw || '').slice(0, COACH_MAX_ANSWER_CHARS);
-      return out;
     }
     // 1. Answer text — strict length cap, forbidden-phrase scan.
-    var answerText = String(parsed.answer || '').slice(0, COACH_MAX_ANSWER_CHARS);
+    var answerText = String(parseFailed ? (raw || '') : (parsed.answer || '')).slice(0, COACH_MAX_ANSWER_CHARS);
     var hallucinated = false;
     for (var i = 0; i < COACH_FORBIDDEN_PHRASES.length; i++) {
       if (COACH_FORBIDDEN_PHRASES[i].test(answerText)) { hallucinated = true; break; }
@@ -923,6 +950,7 @@
       return out;
     }
     out.answer = answerText;
+    if (parseFailed) return out;
     // 2. Action chips — at most 3, validate per-kind key allowlist, dedupe.
     var rawActions = Array.isArray(parsed.actions) ? parsed.actions : [];
     var seen = {};
@@ -1298,10 +1326,16 @@
       // Defense in depth: drop screen + recent context if ANY pattern fired.
       contextDropped = true;
       screen = null;
-      recent = null;
+      recent = [];
     }
-    // Use the in-memory buffer if no explicit recent was passed.
-    if (!recent) recent = _bufferTail(COACH_CONTEXT_PAIRS);
+    // Use the in-memory buffer if no explicit recent was passed (unless dropped for PII).
+    if (!contextDropped && !recent) recent = _bufferTail(COACH_CONTEXT_PAIRS);
+
+    if (signal && signal.aborted) {
+      var preAborted = await _coachBlock('aborted', '', traceId);
+      preAborted.meta.contextDropped = contextDropped || undefined;
+      return preAborted;
+    }
 
     // Build the prompt and call Gemini.
     var prompt = buildOnboardingPrompt({
@@ -1318,8 +1352,10 @@
       timeoutId = setTimeout(function () { try { controller.abort(); } catch (_) {} }, COACH_ABORT_TIMEOUT_MS);
     }
     var combinedSignal = controller ? controller.signal : signal;
+    var onExternalAbort = null;
     if (signal && controller && typeof signal.addEventListener === 'function') {
-      try { signal.addEventListener('abort', function () { try { controller.abort(); } catch (_) {} }); } catch (_) {}
+      onExternalAbort = function () { try { controller.abort(); } catch (_) {} };
+      try { signal.addEventListener('abort', onExternalAbort, { once: true }); } catch (_) {}
     }
 
     var t0 = (typeof performance !== 'undefined' && performance.now)
@@ -1334,7 +1370,7 @@
       rawText = (typeof result === 'string') ? result : (result && result.text) || '';
     } catch (err) {
       var msg = (err && err.message) || String(err || '');
-      if (/abort/i.test(msg) || (signal && signal.aborted)) errorKind = 'aborted';
+      if (/abort/i.test(msg) || (err && err.name === 'AbortError') || (signal && signal.aborted) || (controller && controller.signal && controller.signal.aborted)) errorKind = 'aborted';
       else if (/quota|RESOURCE_EXHAUSTED|429/i.test(msg)) errorKind = 'rate_limit_upstream';
       else if (/safety|SAFETY|blockReason/i.test(msg)) errorKind = 'safety_blocked';
       else if (/Failed to fetch|NetworkError|ECONN/i.test(msg)) errorKind = 'network';
@@ -1345,6 +1381,9 @@
       }
     } finally {
       if (timeoutId) clearTimeout(timeoutId);
+      if (signal && onExternalAbort && typeof signal.removeEventListener === 'function') {
+        try { signal.removeEventListener('abort', onExternalAbort); } catch (_) {}
+      }
       _coachInFlight = false;
       _coachLastReplyAt = Date.now();
       _coachLastInteractAt = Date.now();

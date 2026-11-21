@@ -44,7 +44,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       '.gis-starter-chip[data-active="true"] { background: #0f766e; border-color: #5eead4; color: #ffffff; }',
       '.gis-nav-btn { min-height: 44px; transition: background 140ms ease, border-color 140ms ease; }',
       '.gis-nav-btn:hover:not(:disabled) { border-color: #5eead4 !important; background: #133548 !important; }',
+      '.gis-map-frame { position: relative; border-radius: 14px; overflow: hidden; border: 1.5px solid rgba(94,234,212,0.34); box-shadow: inset 0 0 0 1px rgba(15,48,64,0.75), 0 12px 28px -18px rgba(2,14,24,0.85); }',
+      '.gis-legend-ramp { display: inline-block; width: 92px; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #0e7490 0%, #14b8a6 28%, #84cc16 55%, #f59e0b 78%, #be123c 100%); border: 1px solid rgba(255,255,255,0.42); box-shadow: inset 0 1px 0 rgba(255,255,255,0.32); vertical-align: middle; margin-right: 7px; }',
       '.gis-hero-deck button:focus-visible, [data-gis-studio="true"] button:focus-visible, [data-gis-studio="true"] select:focus-visible, [data-gis-studio="true"] input:focus-visible { outline: 2px solid #5eead4; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-map-frame { border: 2px solid #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-legend-ramp { border: 1.5px solid #ffff00 !important; box-shadow: none !important; }',
       '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-hero-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
       '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-emblem-box, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-subject-badge, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-telemetry-pill, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-pipeline-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-starter-label { color: #ffff00 !important; }',
@@ -3613,9 +3617,14 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       var spanStart = projection.project(projection.bounds.minLon, middleLat);
       var spanEnd = projection.project(projection.bounds.maxLon, middleLat);
       var scalePixels = Math.min(220, Math.max(35, Math.abs(spanEnd.x - spanStart.x) * scaleKm / Math.max(1, spanKm)));
-      svg.push('<line x1="60" y1="458" x2="' + (60 + scalePixels).toFixed(1) + '" y2="458" class="scale" aria-hidden="true"/>');
+      svg.unshift('<rect x="10" y="10" width="780" height="480" rx="8" fill="none" stroke="#38bdf8" stroke-width="1.2" opacity="0.45" aria-hidden="true"/>');
+      svg.push('<rect x="52" y="434" width="' + (scalePixels + 22).toFixed(1) + '" height="36" rx="6" fill="rgba(7,24,39,0.82)" stroke="#38bdf8" stroke-width="1" opacity="0.9" aria-hidden="true"/>');
+      svg.push('<rect x="60" y="454" width="' + (scalePixels / 2).toFixed(1) + '" height="6" fill="#e2e8f0" aria-hidden="true"/>');
+      svg.push('<rect x="' + (60 + scalePixels / 2).toFixed(1) + '" y="454" width="' + (scalePixels / 2).toFixed(1) + '" height="6" fill="#38bdf8" aria-hidden="true"/>');
+      svg.push('<line x1="60" y1="458" x2="' + (60 + scalePixels).toFixed(1) + '" y2="458" class="scale" opacity="0.35" aria-hidden="true"/>');
       svg.push('<text x="60" y="448" class="scale-text" aria-hidden="true">approx. ' + scaleKm + ' km</text>');
-      svg.push('<text x="760" y="34" class="north" aria-hidden="true">N &#8593;</text>');
+      svg.push('<g transform="translate(752,44)" aria-hidden="true"><circle cx="0" cy="0" r="18" fill="rgba(7,24,39,0.78)" stroke="#5eead4" stroke-width="1.2"/><polygon points="0,-14 4,-2 0,-5 -4,-2" fill="#5eead4"/><polygon points="0,14 4,2 0,5 -4,2" fill="#64748b"/><polygon points="-11,0 -2,-3 -4,0 -2,3" fill="#64748b"/><polygon points="11,0 2,-3 4,0 2,3" fill="#64748b"/><circle cx="0" cy="0" r="2" fill="#f8fafc"/></g>');
+      svg.push('<text x="752" y="21" text-anchor="middle" class="north" aria-hidden="true">N</text>');
       mapMarkup = '<figure><svg viewBox="0 0 800 500" role="img" aria-label="' +
         escapeHTML(composition.altText || suggestMapAltText(model)) + '">' + svg.join('') +
         '</svg><figcaption>Schematic coordinate map. Use the numbered key and data table for exact values; this is not a navigation map.</figcaption></figure>';
@@ -4603,8 +4612,22 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var message = unavailable
             ? 'Interactive map unavailable. The equivalent data table remains available.'
             : 'Preparing interactive map?';
-          return h('div', { style: { position: 'relative', height: height, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#102c3b' } },
+          return h('div', { className: 'gis-map-frame', style: { position: 'relative', height: height, borderRadius: 14, overflow: 'hidden', border: '1.5px solid rgba(94,234,212,0.34)', background: '#102c3b' } },
             h('div', { ref: ref, tabIndex: pending || unavailable ? -1 : 0, role: 'application', 'aria-label': label, 'aria-busy': pending ? 'true' : 'false', style: { height: '100%', overflow: 'hidden', background: '#102c3b' } }),
+            // Finely drafted cartographic compass rose overlay (top-right, non-interactive)
+            !pending && !unavailable && h('svg', {
+              viewBox: '0 0 46 46', width: 42, height: 42, 'aria-hidden': 'true', focusable: 'false',
+              style: { position: 'absolute', top: 10, right: 10, zIndex: 450, pointerEvents: 'none', filter: 'drop-shadow(0 2px 5px rgba(2,12,22,0.65))' }
+            },
+              h('circle', { cx: 23, cy: 23, r: 19, fill: 'rgba(6,24,36,0.82)', stroke: '#5eead4', strokeWidth: 1.2 }),
+              h('circle', { cx: 23, cy: 23, r: 14, fill: 'none', stroke: 'rgba(148,163,184,0.45)', strokeWidth: 0.7, strokeDasharray: '2 2' }),
+              h('polygon', { points: '23,7 26.2,20.5 23,18.2 19.8,20.5', fill: '#5eead4' }),
+              h('polygon', { points: '23,39 26.2,25.5 23,27.8 19.8,25.5', fill: '#94a3b8' }),
+              h('polygon', { points: '9,23 20.5,20.5 18.5,23 20.5,25.5', fill: '#94a3b8', opacity: 0.85 }),
+              h('polygon', { points: '37,23 25.5,20.5 27.5,23 25.5,25.5', fill: '#94a3b8', opacity: 0.85 }),
+              h('circle', { cx: 23, cy: 23, r: 2.2, fill: '#f8fafc' }),
+              h('text', { x: 23, y: 12.2, textAnchor: 'middle', fill: '#f0fdfa', fontSize: 6.5, fontWeight: 900, fontFamily: 'system-ui,sans-serif' }, 'N')
+            ),
             (pending || unavailable) && h('div', { role: 'status', 'aria-live': 'polite', style: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18, boxSizing: 'border-box', background: 'linear-gradient(135deg,#102c3b,#173e4d)', color: '#cfe8f3', fontSize: 12, fontWeight: 700, textAlign: 'center' } },
               h('div', null, message,
                 (unavailable || pending) && h('button', { type: 'button', onClick: retryLeaflet, style: Object.assign({}, control, { display: 'block', margin: '12px auto 0', cursor: 'pointer' }) }, unavailable ? 'Try online basemap again' : 'Retry loading'))));
@@ -4889,8 +4912,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               tileLayer.addTo(map);
             }
             if (layers.coast && !imported && activeRegionPack.id === 'maine') {
-              L.polyline([[43.08, -70.74], [43.54, -70.18], [43.91, -69.82], [44.05, -69.10], [44.39, -68.20], [44.68, -67.21], [45.19, -67.28]], {
-                color: '#22d3ee', weight: 4, opacity: 0.75, dashArray: '8 7'
+              var coastCoords = [[43.08, -70.74], [43.54, -70.18], [43.91, -69.82], [44.05, -69.10], [44.39, -68.20], [44.68, -67.21], [45.19, -67.28]];
+              L.polyline(coastCoords, { color: '#06b6d4', weight: 9, opacity: 0.22, interactive: false }).addTo(map);
+              L.polyline(coastCoords, {
+                color: '#22d3ee', weight: 3.5, opacity: 0.88, dashArray: '8 7'
               }).bindTooltip('Coastal guide (schematic)').addTo(map);
             }
             if (layers.grid) {
@@ -4949,21 +4974,30 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               }).bindTooltip(escapeHTML(record.name) + ': ' + escapeHTML(value + unit) + (isSelected ? ' (selected)' : '')).addTo(map);
             });
             if (analysisMode === 'distance' && analysisPoints.length) {
-              if (analysisPoints.length > 1) L.polyline(analysisPoints.map(function (point) { return [point.lat, unwrapLongitudeForArc(point.lon, mapArc)]; }), { color: '#facc15', weight: 4 }).addTo(map);
+              if (analysisPoints.length > 1) {
+                var distLatLngs = analysisPoints.map(function (point) { return [point.lat, unwrapLongitudeForArc(point.lon, mapArc)]; });
+                L.polyline(distLatLngs, { color: '#facc15', weight: 10, opacity: 0.24, interactive: false }).addTo(map);
+                L.polyline(distLatLngs, { color: '#facc15', weight: 3.5, opacity: 0.96 }).addTo(map);
+              }
               analysisPoints.forEach(function (point, index) {
-                L.circleMarker([point.lat, unwrapLongitudeForArc(point.lon, mapArc)], { radius: 5, color: '#111827', weight: 2, fillColor: '#facc15', fillOpacity: 1 })
+                L.circleMarker([point.lat, unwrapLongitudeForArc(point.lon, mapArc)], { radius: 5.5, color: '#111827', weight: 2, fillColor: '#fde047', fillOpacity: 1 })
                   .bindTooltip('Measurement vertex ' + (index + 1)).addTo(map);
               });
             }
             if (analysisMode === 'buffer' && analysisPoints.length) {
-              L.circle([analysisPoints[0].lat, unwrapLongitudeForArc(analysisPoints[0].lon, mapArc)], {
-                radius: Math.max(0, Number(bufferRadiusKm) || 0) * 1000,
-                color: '#facc15', weight: 3, fillColor: '#facc15', fillOpacity: 0.13
+              var bufCenter = [analysisPoints[0].lat, unwrapLongitudeForArc(analysisPoints[0].lon, mapArc)];
+              var bufRadiusM = Math.max(0, Number(bufferRadiusKm) || 0) * 1000;
+              L.circle(bufCenter, { radius: bufRadiusM, color: '#facc15', weight: 9, opacity: 0.18, fill: false, interactive: false }).addTo(map);
+              L.circle(bufCenter, {
+                radius: bufRadiusM,
+                color: '#fde047', weight: 2.5, dashArray: '6 5', fillColor: '#facc15', fillOpacity: 0.15
               }).bindTooltip(formatDistance(Number(bufferRadiusKm) || 0) + ' radius').addTo(map);
             }
             if (analysisMode === 'nearest' && analysisPoints.length && selectedRecords[0]) {
-              L.polyline([[analysisPoints[0].lat, unwrapLongitudeForArc(analysisPoints[0].lon, mapArc)], [selectedRecords[0].lat, unwrapLongitudeForArc(selectedRecords[0].lon, mapArc)]], {
-                color: '#facc15', weight: 4, dashArray: '7 6'
+              var nearLine = [[analysisPoints[0].lat, unwrapLongitudeForArc(analysisPoints[0].lon, mapArc)], [selectedRecords[0].lat, unwrapLongitudeForArc(selectedRecords[0].lon, mapArc)]];
+              L.polyline(nearLine, { color: '#facc15', weight: 10, opacity: 0.22, interactive: false }).addTo(map);
+              L.polyline(nearLine, {
+                color: '#fde047', weight: 3.5, dashArray: '7 6'
               }).addTo(map);
             }
             map.on('click', function (event) {
@@ -6031,16 +6065,34 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
           var grat = graticuleLines(proj.bounds);
           var kids = [];
+          // Cartographic SVG definitions: bathymetric backdrop + luminous vector glow
+          kids.push(h('defs', { key: 'gis-defs' },
+            h('radialGradient', { id: 'gis-schem-bg', cx: '48%', cy: '44%', r: '74%' },
+              h('stop', { offset: '0%', stopColor: '#0e2c3e' }),
+              h('stop', { offset: '68%', stopColor: '#071b2b' }),
+              h('stop', { offset: '100%', stopColor: '#04101b' })
+            ),
+            h('filter', { id: 'gis-vec-glow', x: '-20%', y: '-20%', width: '140%', height: '140%' },
+              h('feGaussianBlur', { stdDeviation: '2.2', result: 'blur' }),
+              h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' }))
+            )
+          ));
+          kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: SW, height: SH, fill: 'url(#gis-schem-bg)' }));
+          // Cartographic neatline frame + subtle corner registration ticks
+          kids.push(h('rect', { key: 'neat-out', x: 6, y: 6, width: SW - 12, height: SH - 12, rx: 10, fill: 'none', stroke: 'rgba(94,234,212,0.34)', strokeWidth: 1.2 }));
+          kids.push(h('rect', { key: 'neat-in', x: 10, y: 10, width: SW - 20, height: SH - 20, rx: 7, fill: 'none', stroke: 'rgba(56,189,248,0.18)', strokeWidth: 0.8 }));
           if (layers.grid) {
             grat.lats.forEach(function (lat) {
               var a = proj.project(proj.bounds.minLon, lat), b = proj.project(proj.bounds.maxLon, lat);
-              kids.push(h('line', { key: 'glat' + lat, x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.55 }));
-              kids.push(h('text', { key: 'glatT' + lat, x: 4, y: a.y - 3, fill: '#9fb6c5', fontSize: 9 }, graticuleLabel(lat, 'N', 'S', grat.latStep)));
+              kids.push(h('line', { key: 'glat' + lat, x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#5eead4', strokeWidth: 0.9, strokeDasharray: '4 4', opacity: 0.28 }));
+              kids.push(h('line', { key: 'glatTk' + lat, x1: 6, y1: a.y, x2: 12, y2: a.y, stroke: '#5eead4', strokeWidth: 1.2, opacity: 0.65 }));
+              kids.push(h('text', { key: 'glatT' + lat, x: 14, y: a.y - 3, fill: '#9fb6c5', fontSize: 9, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }, graticuleLabel(lat, 'N', 'S', grat.latStep)));
             });
             grat.lons.forEach(function (lon) {
               var a = proj.project(lon, proj.bounds.minLat), b = proj.project(lon, proj.bounds.maxLat);
-              kids.push(h('line', { key: 'glon' + lon, x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.55 }));
-              kids.push(h('text', { key: 'glonT' + lon, x: a.x + 3, y: SH - 5, fill: '#9fb6c5', fontSize: 9 }, graticuleLabel(lon, 'E', 'W', grat.lonStep)));
+              kids.push(h('line', { key: 'glon' + lon, x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#5eead4', strokeWidth: 0.9, strokeDasharray: '4 4', opacity: 0.28 }));
+              kids.push(h('line', { key: 'glonTk' + lon, x1: a.x, y1: SH - 12, x2: a.x, y2: SH - 6, stroke: '#5eead4', strokeWidth: 1.2, opacity: 0.65 }));
+              kids.push(h('text', { key: 'glonT' + lon, x: a.x + 3, y: SH - 14, fill: '#9fb6c5', fontSize: 9, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }, graticuleLabel(lon, 'E', 'W', grat.lonStep)));
             });
           }
           polygonParts.forEach(function (item) {
@@ -6053,8 +6105,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             var value = (item.feature.properties || {})[geoMetric];
             kids.push(h('path', {
               key: 'poly' + item.key, d: d, fillRule: 'evenodd',
-              fill: geoMetric ? classColor(value, geoBreaks) : 'rgba(34,211,238,0.15)',
-              fillOpacity: 0.68, stroke: '#e2e8f0', strokeWidth: 1.2
+              fill: geoMetric ? classColor(value, geoBreaks) : 'rgba(34,211,238,0.18)',
+              fillOpacity: 0.72, stroke: '#e2e8f0', strokeWidth: 1.35
             }));
           });
           lineParts.forEach(function (item) {
@@ -6063,36 +6115,68 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               return (index === 0 ? 'M' : 'L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
             }).join(' ');
             var value = (item.feature.properties || {})[geoMetric];
+            var strokeCol = geoMetric ? classColor(value, geoBreaks) : '#22d3ee';
             kids.push(h('path', {
               key: 'line' + item.key, d: d, fill: 'none',
-              stroke: geoMetric ? classColor(value, geoBreaks) : '#22d3ee', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round'
+              stroke: strokeCol, strokeWidth: 3.2, strokeLinecap: 'round', strokeLinejoin: 'round', filter: 'url(#gis-vec-glow)'
             }));
           });
           vectorPoints.forEach(function (item) {
             var p = proj.project(item.coordinate[0], item.coordinate[1]);
             var value = (item.feature.properties || {})[geoMetric];
+            var col = geoMetric ? classColor(value, geoBreaks) : '#22d3ee';
+            kids.push(h('circle', { key: 'vp-halo-' + item.key, cx: p.x, cy: p.y, r: 9.5, fill: col, opacity: 0.22 }));
             kids.push(h('circle', {
               key: 'vector-point-' + item.key, cx: p.x, cy: p.y, r: 6,
-              fill: geoMetric ? classColor(value, geoBreaks) : '#22d3ee', stroke: '#ffffff', strokeWidth: 2, fillOpacity: 0.9
+              fill: col, stroke: '#ffffff', strokeWidth: 2, fillOpacity: 0.94
             }));
           });
           pointRows.forEach(function (record, index) {
             var p = proj.project(record.lon, record.lat);
             var value = valueOf(record, metric, imported);
+            var col = color(value, min, max);
+            var isSel = !!selectedLookup[index];
+            kids.push(h('circle', { key: 'pt-halo-' + index, cx: p.x, cy: p.y, r: isSel ? 13 : 10.5, fill: isSel ? '#fde047' : col, opacity: isSel ? 0.34 : 0.22 }));
             kids.push(h('circle', {
-              key: 'pt' + index, cx: p.x, cy: p.y, r: 7,
-              fill: color(value, min, max), stroke: '#ffffff', strokeWidth: 2, fillOpacity: 0.85
+              key: 'pt' + index, cx: p.x, cy: p.y, r: isSel ? 8.5 : 7,
+              fill: col, stroke: isSel ? '#fde047' : '#ffffff', strokeWidth: isSel ? 2.8 : 2, fillOpacity: 0.92
             }));
           });
           annotationRows.forEach(function (annotation, index) {
             var p = proj.project(annotation.lon, annotation.lat);
+            kids.push(h('circle', { key: 'annotation-halo-' + index, cx: p.x, cy: p.y, r: 17, fill: '#fde047', opacity: 0.24 }));
             kids.push(h('circle', { key: 'annotation-' + index, cx: p.x, cy: p.y, r: 13, fill: '#fde047', stroke: '#111827', strokeWidth: 3 }));
             kids.push(h('text', { key: 'annotation-label-' + index, x: p.x, y: p.y + 4, textAnchor: 'middle', fill: '#111827', fontSize: 10, fontWeight: 900 }, 'A' + (index + 1)));
           });
-          // North arrow + the honesty label, both decorative; the aria-label below
-          // carries the same facts, and the table twin carries the numbers.
-          kids.push(h('text', { key: 'north', x: SW - 14, y: 20, textAnchor: 'end', fill: '#cbd5e1', fontSize: 12, fontWeight: 800 }, 'N ↑'));
-          kids.push(h('text', { key: 'schem', x: 8, y: 16, fill: '#7dd3fc', fontSize: 10, fontWeight: 700 }, __alloT('stem.gisstudio.ui_schematic_not_a_projected_navigation_map', 'Schematic — not a projected navigation map')));
+          // Calibrated schematic scale bar (bottom-left)
+          var midLat = (proj.bounds.minLat + proj.bounds.maxLat) / 2;
+          var spanKm = haversineKm({ lat: midLat, lon: proj.bounds.minLon }, { lat: midLat, lon: proj.bounds.maxLon });
+          if (Number.isFinite(spanKm) && spanKm > 0) {
+            var sKm = niceScaleKilometers(Math.max(1, spanKm / 4));
+            var sA = proj.project(proj.bounds.minLon, midLat), sB = proj.project(proj.bounds.maxLon, midLat);
+            var sPx = Math.min(148, Math.max(38, Math.abs(sB.x - sA.x) * sKm / Math.max(1, spanKm)));
+            kids.push(h('g', { key: 'scale-bar', transform: 'translate(18,' + (SH - 42) + ')' },
+              h('rect', { x: -4, y: -15, width: sPx + 14, height: 26, rx: 5, fill: 'rgba(4,16,27,0.78)', stroke: 'rgba(94,234,212,0.34)', strokeWidth: 0.9 }),
+              h('rect', { x: 2, y: 1, width: sPx / 2, height: 5, fill: '#e2e8f0' }),
+              h('rect', { x: 2 + sPx / 2, y: 1, width: sPx / 2, height: 5, fill: '#5eead4' }),
+              h('line', { x1: 2, y1: -1, x2: 2, y2: 7, stroke: '#f8fafc', strokeWidth: 1.2 }),
+              h('line', { x1: 2 + sPx, y1: -1, x2: 2 + sPx, y2: 7, stroke: '#f8fafc', strokeWidth: 1.2 }),
+              h('text', { x: 2, y: -4, fill: '#e2e8f0', fontSize: 9, fontWeight: 700, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }, '~' + sKm + ' km')
+            ));
+          }
+          // Finely drafted cartographic compass rose (top-right) + honesty label pill (top-left)
+          kids.push(h('g', { key: 'compass-rose', transform: 'translate(' + (SW - 34) + ',34)' },
+            h('circle', { cx: 0, cy: 0, r: 19, fill: 'rgba(4,16,27,0.82)', stroke: '#5eead4', strokeWidth: 1.2 }),
+            h('circle', { cx: 0, cy: 0, r: 14, fill: 'none', stroke: 'rgba(148,163,184,0.45)', strokeWidth: 0.7, strokeDasharray: '2 2' }),
+            h('polygon', { points: '0,-15 3.4,-2 0,-4.5 -3.4,-2', fill: '#5eead4' }),
+            h('polygon', { points: '0,15 3.4,2 0,4.5 -3.4,2', fill: '#64748b' }),
+            h('polygon', { points: '-12,0 -2,-2.5 -4,0 -2,2.5', fill: '#64748b' }),
+            h('polygon', { points: '12,0 2,-2.5 4,0 2,2.5', fill: '#64748b' }),
+            h('circle', { cx: 0, cy: 0, r: 2, fill: '#f0fdfa' }),
+            h('text', { x: 0, y: -11, textAnchor: 'middle', fill: '#f0fdfa', fontSize: 7.5, fontWeight: 900 }, 'N')
+          ));
+          kids.push(h('rect', { key: 'schem-bg', x: 14, y: 12, width: 256, height: 18, rx: 5, fill: 'rgba(4,16,27,0.78)', stroke: 'rgba(125,211,252,0.28)', strokeWidth: 0.8 }));
+          kids.push(h('text', { key: 'schem', x: 20, y: 24, fill: '#7dd3fc', fontSize: 10, fontWeight: 700 }, __alloT('stem.gisstudio.ui_schematic_not_a_projected_navigation_map', 'Schematic — not a projected navigation map')));
           var summary = options.altText || ((pointRows.length + vectorPoints.length) + ' points, ' + lineParts.length +
             ' lines, and ' + polygonParts.length + ' polygons drawn from latitude ' +
             display.coordinate(proj.bounds.minLat, 2, 'lat') + ' to ' + display.coordinate(proj.bounds.maxLat, 2, 'lat') + ' and longitude ' +
@@ -6285,9 +6369,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     var upper = legendBounds[index + 1];
                     var label = display.number(lower, 1) + ' to ' + display.number(upper, 1);
                     return h('span', { key: index, role: 'listitem', style: { display: 'inline-flex', alignItems: 'center', gap: 4 } },
-                      h('span', { 'aria-hidden': 'true', style: { width: 18, height: 10, display: 'inline-block', background: paletteForClasses(legendBounds.length - 1)[Math.min(index, legendBounds.length - 2)], borderRadius: 2, border: '1px solid rgba(255,255,255,.35)' } }),
+                      h('span', { 'aria-hidden': 'true', style: { width: 18, height: 10, display: 'inline-block', background: paletteForClasses(legendBounds.length - 1)[Math.min(index, legendBounds.length - 2)], borderRadius: 3, border: '1px solid rgba(255,255,255,.45)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)' } }),
                       label);
-                  })) : h('div', { role: 'img', 'aria-label': __alloT('stem.gisstudio.a11y_point_values_run_from_low_teal_to_high_rose', 'Point values run from low teal to high rose'), style: { color: '#b7d2df', fontSize: 10 } }, __alloT('stem.gisstudio.ui_point_legend_low_teal_high_rose', 'Point legend: low teal → high rose')))),
+                  })) : h('div', { role: 'img', 'aria-label': __alloT('stem.gisstudio.a11y_point_values_run_from_low_teal_to_high_rose', 'Point values run from low teal to high rose'), style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4, color: '#b7d2df', fontSize: 10, marginTop: 4 } },
+                    h('span', { className: 'gis-legend-ramp', 'aria-hidden': 'true' }),
+                    __alloT('stem.gisstudio.ui_point_legend_low_teal_high_rose', 'Point legend: low teal → high rose')))),
             analysisResults(),
             basemap === 'satellite' && h('section', { 'aria-labelledby': 'gis-imagery-heading', style: panel },
               h('h2', { id: 'gis-imagery-heading', style: { margin: '0 0 5px', color: '#f0fdfa', fontSize: 15 } }, __alloT('stem.gisstudio.ui_satellite_imagery_reading_routine', 'Satellite imagery reading routine')),
@@ -8435,10 +8521,28 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 h('div', { id: 'gis-factor', role: 'status', style: { marginTop: 14, padding: 11, borderRadius: 9, background: '#071827', color: '#cffafe' } },
                   h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 18 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_visual_area_factor', '{factor}× visual area'), { factor: display.number(factor, 2) })),
                   projection === 'mercator' ? 'Preserves local angles; enlarges high latitudes.' : projection === 'equirectangular' ? 'Maps coordinates directly; stretches east-west distance.' : 'Preserves relative area; changes shape and angle.')),
-              h('svg', { viewBox: '0 0 560 300', role: 'img', 'aria-label': projection + ' distortion diagram at ' + display.coordinate(latitude, 0, 'lat') + '. Area factor ' + display.number(factor, 2), style: { width: '100%', minHeight: 280, background: '#071827', borderRadius: 12 } },
-                [0, 1, 2, 3, 4, 5, 6].map(function (n) { return h('line', { key: 'v' + n, x1: 40 + n * 80, x2: 40 + n * 80, y1: 30, y2: 260, stroke: '#294457' }); }),
-                [0, 1, 2, 3, 4].map(function (n) { return h('line', { key: 'h' + n, x1: 40, x2: 520, y1: 30 + n * 57.5, y2: 30 + n * 57.5, stroke: '#294457' }); }),
-                h('ellipse', { cx: 280, cy: 145, rx: Math.min(86, 20 * (projection === 'equalarea' ? 1 / Math.sqrt(scale) : scale)), ry: Math.min(86, 20 * (projection === 'equalarea' ? Math.sqrt(scale) : scale)), fill: 'rgba(34,211,238,.25)', stroke: '#67e8f9', strokeWidth: 4 }),
+              h('svg', { viewBox: '0 0 560 300', role: 'img', 'aria-label': projection + ' distortion diagram at ' + display.coordinate(latitude, 0, 'lat') + '. Area factor ' + display.number(factor, 2), style: { width: '100%', minHeight: 280, background: '#071827', borderRadius: 12, border: '1px solid rgba(94,234,212,0.28)' } },
+                h('defs', null,
+                  h('radialGradient', { id: 'gis-tissot-bg', cx: '50%', cy: '48%', r: '70%' },
+                    h('stop', { offset: '0%', stopColor: '#0e2d40' }),
+                    h('stop', { offset: '100%', stopColor: '#04101c' })
+                  ),
+                  h('radialGradient', { id: 'gis-tissot-fill', cx: '40%', cy: '35%', r: '70%' },
+                    h('stop', { offset: '0%', stopColor: 'rgba(103,232,249,0.42)' }),
+                    h('stop', { offset: '100%', stopColor: 'rgba(14,165,233,0.14)' })
+                  )
+                ),
+                h('rect', { x: 0, y: 0, width: 560, height: 300, fill: 'url(#gis-tissot-bg)' }),
+                h('rect', { x: 34, y: 24, width: 492, height: 242, rx: 6, fill: 'none', stroke: 'rgba(94,234,212,0.32)', strokeWidth: 1 }),
+                [0, 1, 2, 3, 4, 5, 6].map(function (n) { return h('line', { key: 'v' + n, x1: 40 + n * 80, x2: 40 + n * 80, y1: 30, y2: 260, stroke: n === 3 ? '#3b6d85' : '#223e50', strokeDasharray: n === 3 ? undefined : '3 3' }); }),
+                [0, 1, 2, 3, 4].map(function (n) { return h('line', { key: 'h' + n, x1: 40, x2: 520, y1: 30 + n * 57.5, y2: 30 + n * 57.5, stroke: n === 2 ? '#3b6d85' : '#223e50', strokeDasharray: n === 2 ? undefined : '3 3' }); }),
+                // Reference undistorted equator unit circle
+                h('circle', { cx: 280, cy: 145, r: 20, fill: 'none', stroke: '#fde047', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.78 }),
+                // Distorted Tissot ellipse with soft outer halo and principal axes
+                h('ellipse', { cx: 280, cy: 145, rx: Math.min(86, 20 * (projection === 'equalarea' ? 1 / Math.sqrt(scale) : scale)), ry: Math.min(86, 20 * (projection === 'equalarea' ? Math.sqrt(scale) : scale)), fill: 'url(#gis-tissot-fill)', stroke: '#67e8f9', strokeWidth: 3.5 }),
+                h('line', { x1: 280 - Math.min(86, 20 * (projection === 'equalarea' ? 1 / Math.sqrt(scale) : scale)), x2: 280 + Math.min(86, 20 * (projection === 'equalarea' ? 1 / Math.sqrt(scale) : scale)), y1: 145, y2: 145, stroke: '#5eead4', strokeWidth: 1.2, opacity: 0.75 }),
+                h('line', { x1: 280, x2: 280, y1: 145 - Math.min(86, 20 * (projection === 'equalarea' ? Math.sqrt(scale) : scale)), y2: 145 + Math.min(86, 20 * (projection === 'equalarea' ? Math.sqrt(scale) : scale)), stroke: '#5eead4', strokeWidth: 1.2, opacity: 0.75 }),
+                h('circle', { cx: 280, cy: 145, r: 3, fill: '#f0fdfa' }),
                 h('text', { x: 280, y: 286, textAnchor: 'middle', fill: '#a7c7d8', fontSize: 12 }, __alloT('stem.gisstudio.ui_tissot_indicatrix_one_equal_patch_of_ground', 'Tissot indicatrix: one equal patch of ground')))),
             h('p', { style: { color: '#b7d2df', fontSize: 12, lineHeight: 1.5 } },
               h('strong', { style: { color: '#86efac' } }, __alloT('stem.gisstudio.ui_choose_intentionally', 'Choose intentionally: ')),
@@ -8459,13 +8563,21 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('div', { className: 'gis-hero-identity' },
                 h('div', { className: 'gis-emblem-box', 'aria-hidden': 'true' },
                   h('svg', { viewBox: '0 0 48 48', width: 38, height: 38, fill: 'none' },
-                    h('circle', { cx: 24, cy: 24, r: 19, stroke: '#5eead4', strokeWidth: 1.6, opacity: 0.9 }),
-                    h('ellipse', { cx: 24, cy: 24, rx: 10, ry: 19, stroke: '#38bdf8', strokeWidth: 1.2, opacity: 0.75 }),
-                    h('line', { x1: 5, y1: 24, x2: 43, y2: 24, stroke: '#38bdf8', strokeWidth: 1.2, opacity: 0.7 }),
+                    h('defs', null,
+                      h('radialGradient', { id: 'gis-emblem-ocean', cx: '35%', cy: '32%', r: '70%' },
+                        h('stop', { offset: '0%', stopColor: 'rgba(94,234,212,0.34)' }),
+                        h('stop', { offset: '100%', stopColor: 'rgba(7,30,43,0.12)' })
+                      )
+                    ),
+                    h('circle', { cx: 24, cy: 24, r: 19, fill: 'url(#gis-emblem-ocean)', stroke: '#5eead4', strokeWidth: 1.6, opacity: 0.95 }),
+                    h('ellipse', { cx: 24, cy: 24, rx: 10, ry: 19, stroke: '#38bdf8', strokeWidth: 1.2, opacity: 0.78 }),
+                    h('line', { x1: 5, y1: 24, x2: 43, y2: 24, stroke: '#38bdf8', strokeWidth: 1.2, opacity: 0.72 }),
                     h('line', { x1: 8, y1: 15, x2: 40, y2: 15, stroke: '#5eead4', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.55 }),
                     h('line', { x1: 8, y1: 33, x2: 40, y2: 33, stroke: '#5eead4', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.55 }),
-                    h('polygon', { points: '24,8 27.5,21 24,24 20.5,21', fill: '#5eead4' }),
-                    h('polygon', { points: '24,40 27.5,27 24,24 20.5,27', fill: '#38bdf8', opacity: 0.8 }),
+                    h('polygon', { points: '24,7 27.5,20.5 24,24 20.5,20.5', fill: '#5eead4' }),
+                    h('polygon', { points: '24,41 27.5,27.5 24,24 20.5,27.5', fill: '#38bdf8', opacity: 0.85 }),
+                    h('polygon', { points: '9,24 20.5,21.5 24,24 20.5,26.5', fill: '#bae6fd', opacity: 0.7 }),
+                    h('polygon', { points: '39,24 27.5,21.5 24,24 27.5,26.5', fill: '#bae6fd', opacity: 0.7 }),
                     h('circle', { cx: 24, cy: 24, r: 2.5, fill: '#f0fdfa' })
                   )
                 ),

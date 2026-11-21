@@ -330,7 +330,7 @@ window.SelHub = window.SelHub || {
     { id: 'appreciation_pro', label: 'Appreciation Pro', emoji: '\uD83C\uDF1F', desc: 'Complete all 6 journal prompts', check: function(d) { return (d.journalPromptsCompleted || []).length >= 6; } },
     { id: 'foodie_explorer', label: 'Foodie Explorer', emoji: '\uD83C\uDF7D\uFE0F', desc: 'Mark 4+ recipes as "want to try"', check: function(d) { return (d.recipesWantToTry || []).length >= 4; } },
     { id: 'music_lover', label: 'Music Lover', emoji: '\uD83C\uDFB5', desc: 'Explore 5+ music/dance traditions', check: function(d) { return (d.musicExplored || []).length >= 5; } },
-    { id: 'story_listener', label: 'Story Listener', emoji: '\uD83D\uDCDA', desc: 'Read 4+ cultural stories', check: function(d) { return (d.storiesRead || []).length >= 4; } },
+    { id: 'story_listener', label: 'Story Listener', emoji: '\uD83D\uDCDA', desc: 'Read 3+ cultural stories', check: function(d) { return (d.storiesRead || []).length >= 3; } },
     { id: 'calendar_scholar', label: 'Calendar Scholar', emoji: '\uD83D\uDCC5', desc: 'Explore 6+ months on the cultural calendar', check: function(d) { return (d.calendarMonthsViewed || []).length >= 6; } },
     { id: 'cultural_ambassador', label: 'Cultural Ambassador', emoji: '\uD83C\uDF0E', desc: 'Earn 10 total badges', check: function(d) { return (d.badgesEarned || []).length >= 10; } },
     { id: 'rhythm_explorer', label: 'Rhythm Explorer', emoji: '\uD83E\uDD41', desc: 'Try 3+ beat patterns in the Rhythm Explorer', check: function(d) { return (d.rhythmsTried || []).length >= 3; } },
@@ -730,8 +730,28 @@ window.SelHub = window.SelHub || {
       var rHasDraft = rFilled > 0 || _str(rDraft.subject).trim().length > 0 || _str(rDraft.sources).trim().length > 0 || _str(rInterview.person).trim().length > 0;
       var saveResearchCard = function() {
         if (!rCanSave) return;
+        var combinedCardText = [
+          _str(rDraft.subject),
+          _str(rDraft.sources),
+          _str(rInterview.person)
+        ].concat(Object.keys(rFields).map(function(k) { return _str(rFields[k]); }))
+          .concat(Object.keys(rInterviewAnswers).map(function(k) { return _str(rInterviewAnswers[k]); }))
+          .join(' ').trim();
+        var cardCrisis = false;
+        try {
+          if (combinedCardText && window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+            var rcSafety = window.SelHub.safeRehearseCheck(combinedCardText, { toolId: 'cultureexplorer_card', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null });
+            if (rcSafety && rcSafety.action === 'block') {
+              cardCrisis = true;
+              if (typeof window.SelHub.showCrisisModal === 'function') {
+                window.SelHub.showCrisisModal({ toolName: 'Culture Explorer', contentSnippet: combinedCardText.slice(0, 120) });
+              }
+            }
+          }
+        } catch (_) {}
+        var isEditingCard = !!rDraft._editingExisting;
         var card = {
-          id: 'rc_' + Date.now(),
+          id: rDraft._origId || ('rc_' + Date.now()),
           savedAt: new Date().toISOString(),
           subject: _str(rDraft.subject).trim(),
           relation: rDraft.relation === 'researched' ? 'researched' : 'own',
@@ -741,8 +761,10 @@ window.SelHub = window.SelHub || {
           checks: { source: !!rChecks.source, noGeneralize: !!rChecks.noGeneralize, ownWords: !!rChecks.ownWords }
         };
         var newCards = researchCards.concat([card]);
-        updMulti({ researchCards: newCards, researchDraft: {}, researchInterviewOpen: false });
-        ctx.awardXP(10);
+        var patch = { researchCards: newCards, researchDraft: {}, researchInterviewOpen: false };
+        if (cardCrisis) patch._lastTier = 3;
+        updMulti(patch);
+        if (!isEditingCard) ctx.awardXP(10);
         var savedMsg = __alloT('sel.cultureExplorer.research.saved', 'Culture card saved.');
         addToast(savedMsg, 'success');
         if (announceToSR) announceToSR(savedMsg);
@@ -752,7 +774,7 @@ window.SelHub = window.SelHub || {
         if (rHasDraft) return; // never overwrite a card being written
         updMulti({
           researchCards: researchCards.filter(function(c) { return c !== card; }),
-          researchDraft: { subject: _str(card.subject), relation: card.relation, fields: Object.assign({}, (card.fields && typeof card.fields === 'object') ? card.fields : {}), sources: _str(card.sources), interview: { person: _str(card.interview && card.interview.person), answers: Object.assign({}, (card.interview && card.interview.answers) || {}) }, checks: Object.assign({}, card.checks || {}) },
+          researchDraft: { _editingExisting: true, _origId: card.id, subject: _str(card.subject), relation: card.relation, fields: Object.assign({}, (card.fields && typeof card.fields === 'object') ? card.fields : {}), sources: _str(card.sources), interview: { person: _str(card.interview && card.interview.person), answers: Object.assign({}, (card.interview && card.interview.answers) || {}) }, checks: Object.assign({}, card.checks || {}) },
           researchInterviewOpen: !!(card.interview && Object.keys(card.interview.answers || {}).length)
         });
       };
@@ -855,6 +877,20 @@ window.SelHub = window.SelHub || {
       var _ceFence = function(s) { return '<UNTRUSTED_STUDENT_INPUT>\n' + String(s || '').replace(/<\/?UNTRUSTED_STUDENT_INPUT>/gi, '') + '\n</UNTRUSTED_STUDENT_INPUT>'; };
       var exploreCulture = function(culture, aspect) {
         if (!_ceAiOn || !callGemini) return;
+        var expSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+          ? window.SelHub.safeRehearseCheck(String(culture || ''), { toolId: 'cultureexplorer', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+          : { action: 'continue' };
+        if (expSafety.action === 'block') {
+          var _expMsg = (window.SelHub && window.SelHub.rehearseBreakCharacterText)
+            ? window.SelHub.rehearseBreakCharacterText(expSafety.severity)
+            : 'Your safety matters. Please reach out to a trusted adult or call/text 988.';
+          updMulti({ aiLoading: false, cultureData: null, followUpAnswer: _expMsg, _lastTier: 3 });
+          if (typeof addToast === 'function') addToast(_expMsg, 'info');
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal({ toolName: 'Culture Explorer', contentSnippet: String(culture || '').slice(0, 120) }); } catch (_) {}
+          }
+          return;
+        }
         updMulti({ aiLoading: true, cultureData: null, cultureImage: null, greeting: null });
 
         var aspectInfo = EXPLORE_ASPECTS.find(function(a) { return a.id === aspect; }) || EXPLORE_ASPECTS[0];
@@ -927,6 +963,9 @@ window.SelHub = window.SelHub || {
           : { action: 'continue' };
         if (ceSafety.action === 'block') {
           updMulti({ followUpAnswer: window.SelHub.rehearseBreakCharacterText(ceSafety.severity), aiLoading: false, _lastTier: 3 });
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal({ toolName: 'Culture Explorer', contentSnippet: String(question).slice(0, 120) }); } catch (_) {}
+          }
           return;
         }
         upd('aiLoading', true);
@@ -1088,17 +1127,25 @@ window.SelHub = window.SelHub || {
       };
 
       // ── Toggle recipe "want to try" ──
+      var recipesXpAwarded = (d.recipesXpAwarded && typeof d.recipesXpAwarded === 'object') ? d.recipesXpAwarded : {};
       var toggleRecipeTry = function(recipeId) {
         var list = recipesWantToTry.slice();
         var idx = list.indexOf(recipeId);
         if (idx >= 0) {
           list.splice(idx, 1);
+          upd('recipesWantToTry', list);
         } else {
           list.push(recipeId);
-          ctx.awardXP(3);
+          var patch = { recipesWantToTry: list };
+          if (!recipesXpAwarded[recipeId]) {
+            var nextXp = Object.assign({}, recipesXpAwarded);
+            nextXp[recipeId] = true;
+            patch.recipesXpAwarded = nextXp;
+            ctx.awardXP(3);
+          }
+          updMulti(patch);
           addToast('Added to your food bucket list!', 'success');
         }
-        upd('recipesWantToTry', list);
         checkBadges({ recipesWantToTry: list });
       };
 
@@ -1137,8 +1184,6 @@ window.SelHub = window.SelHub || {
       // ── Rhythm Explorer: play a simple beat pattern via Web Audio ──
       var playRhythm = function(pattern, tradId) {
         if (rhythmPlaying) return;
-        upd('rhythmPlaying', true);
-        upd('rhythmId', tradId);
         // Mark tried
         if (rhythmsTried.indexOf(tradId) < 0) {
           var newTried = rhythmsTried.concat([tradId]);
@@ -1146,10 +1191,18 @@ window.SelHub = window.SelHub || {
           ctx.awardXP(3);
           checkBadges({ rhythmsTried: newTried });
         }
+        var isMuted = false;
+        try { isMuted = (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || !!window._alloGlobalMute; } catch (_) {}
+        if (isMuted) return;
+        upd('rhythmPlaying', true);
+        upd('rhythmId', tradId);
         try {
           var AudioCtx = window.AudioContext || window.webkitAudioContext;
           if (!AudioCtx) { upd('rhythmPlaying', false); return; }
           var actx = new AudioCtx();
+          if (actx.state === 'suspended' && typeof actx.resume === 'function') {
+            try { actx.resume(); } catch (_) {}
+          }
           var tempo = 0.18;
           pattern.forEach(function(hit, i) {
             if (hit) {
@@ -1305,8 +1358,8 @@ window.SelHub = window.SelHub || {
 
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('cultureExplorer', h, ctx) : null),
         // Tabs (expanded)
-        h('div', { role: 'tablist', 'aria-label': 'Culture Explorer tabs', className: 'flex flex-wrap gap-1 bg-cyan-50 rounded-xl p-1 border border-cyan-200' },
-          [
+        (function() {
+          var ceTabs = [
             { id: 'choose', label: '\uD83D\uDDFA\uFE0F Cultures' },
             { id: 'research', label: '\uD83D\uDDC2\uFE0F ' + __alloT('sel.cultureExplorer.research.tab', 'Culture Card') },
             { id: 'worldmap', label: '\uD83C\uDF0E World Map' },
@@ -1320,12 +1373,32 @@ window.SelHub = window.SelHub || {
             { id: 'quiz', label: '\uD83C\uDFC6 Quiz' },
             { id: 'journal', label: '\uD83D\uDCD3 Journal' },
             { id: 'badges', label: '\uD83C\uDFC5 Badges' }
-          ].filter(function(t) { return _ceAiOn || !AI_TABS[t.id]; }).map(function(t) {
-            return h('button', { key: t.id, role: 'tab', 'aria-label': t.label, 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1, onClick: function() { upd('tab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
-              className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-700 hover:text-cyan-700')
-            }, t.label);
-          })
-        ),
+          ].filter(function(t) { return _ceAiOn || !AI_TABS[t.id]; });
+          return h('div', { role: 'tablist', 'aria-label': 'Culture Explorer tabs', className: 'flex flex-wrap gap-1 bg-cyan-50 rounded-xl p-1 border border-cyan-200' },
+            ceTabs.map(function(t, idx) {
+              return h('button', {
+                key: t.id, id: 'ce-tab-' + t.id, role: 'tab', 'aria-label': t.label, 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1,
+                onClick: function() { upd('tab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
+                onKeyDown: function(e) {
+                  var nextIdx = -1;
+                  if (e.key === 'ArrowRight') nextIdx = (idx + 1) % ceTabs.length;
+                  else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + ceTabs.length) % ceTabs.length;
+                  else if (e.key === 'Home') nextIdx = 0;
+                  else if (e.key === 'End') nextIdx = ceTabs.length - 1;
+                  if (nextIdx >= 0) {
+                    e.preventDefault();
+                    var nt = ceTabs[nextIdx];
+                    upd('tab', nt.id);
+                    if (announceToSR) announceToSR(nt.label + ' tab selected');
+                    var el = document.getElementById('ce-tab-' + nt.id);
+                    if (el && el.focus) el.focus();
+                  }
+                },
+                className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-700 hover:text-cyan-700')
+              }, t.label);
+            })
+          );
+        })(),
 
         // Teacher cards live on the Culture Card tab; point there from any other tab.
         teacherCards.length > 0 && tab !== 'research' && h('button', { type: 'button', 'data-ce-teacher-jump': 'true', onClick: function() { upd('tab', 'research'); },
@@ -1578,9 +1651,10 @@ window.SelHub = window.SelHub || {
               var reg = WORLD_MAP_DATA[key];
               var visited = mapRegionsVisited.indexOf(key) >= 0;
               return h('button', { key: key, 'aria-label': reg.label + (visited ? ', visited' : ''), 'aria-pressed': visited, onClick: function() {
-                  var newVisited = mapRegionsVisited.indexOf(key) < 0 ? mapRegionsVisited.concat([key]) : mapRegionsVisited;
+                  var isNewRegion = mapRegionsVisited.indexOf(key) < 0;
+                  var newVisited = isNewRegion ? mapRegionsVisited.concat([key]) : mapRegionsVisited;
                   updMulti({ mapRegion: key, mapRegionsVisited: newVisited });
-                  ctx.awardXP(3);
+                  if (isNewRegion) ctx.awardXP(3);
                   checkBadges({ mapRegionsVisited: newVisited });
                 },
                 className: 'bg-white rounded-2xl border-2 p-4 text-center transition-all hover:scale-105 hover:shadow-md ' +
@@ -1702,7 +1776,7 @@ window.SelHub = window.SelHub || {
                   h('p', { className: 'text-xs font-bold text-amber-700 uppercase mb-1' }, '\u2728 Fun Fact'),
                   h('p', { className: 'text-sm text-amber-800 leading-relaxed' }, recipe.funFact)
                 ),
-                h('button', { 'aria-label': 'Toggle option', onClick: function() { toggleRecipeTry(recipe.id); },
+                h('button', { 'aria-pressed': wantToTry, onClick: function() { toggleRecipeTry(recipe.id); },
                   className: 'w-full px-4 py-2.5 rounded-lg text-sm font-bold transition-all ' +
                     (wantToTry ? 'bg-amber-100 border-2 border-amber-600 text-amber-700 hover:bg-amber-200' : 'bg-amber-700 text-white hover:bg-amber-800')
                 }, wantToTry ? '\u2764\uFE0F On My List!' : '\uD83D\uDE0B I Want to Try This!')
@@ -2426,9 +2500,21 @@ window.SelHub = window.SelHub || {
                     className: 'w-full text-sm p-2 border border-slate-400 rounded-lg resize-none h-14 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800',
                   }),
                   entryVal.length > 20 && !completed && h('button', { 'aria-label': 'Save reflection for: ' + jp.prompt, onClick: function() {
+                      var jpCrisis = false;
+                      try {
+                        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+                          var jps = window.SelHub.safeRehearseCheck(entryVal, { toolId: 'cultureexplorer_journal', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null });
+                          if (jps && jps.action === 'block') {
+                            jpCrisis = true;
+                            if (typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal({ toolName: 'Culture Explorer', contentSnippet: entryVal.slice(0, 120) });
+                          }
+                        }
+                      } catch (_) {}
                       var newCompleted = journalPromptsCompleted.concat([jp.id]);
                       var newCount = journalCount + 1;
-                      updMulti({ journalPromptsCompleted: newCompleted, journalCount: newCount });
+                      var patch = { journalPromptsCompleted: newCompleted, journalCount: newCount };
+                      if (jpCrisis) patch._lastTier = 3;
+                      updMulti(patch);
                       ctx.awardXP(8);
                       addToast('Reflection saved!', 'success');
                       if (announceToSR) announceToSR('Reflection saved for: ' + jp.prompt);
@@ -2464,16 +2550,30 @@ window.SelHub = window.SelHub || {
               className: 'w-full text-sm p-3 border border-cyan-600 rounded-lg resize-none h-32 outline-none focus:ring-2 focus:ring-cyan-300 bg-white text-slate-800', 'aria-label': 'Culture journal entry'
             }),
             d.journalEntry && d.journalEntry.length > 30 && h('button', { onClick: function() {
-                var newCount = journalCount + 1;
-                updMulti({ journalCount: newCount });
-                ctx.awardXP(10);
+                var jText = String(d.journalEntry || '').trim();
+                var jCrisis = false;
+                try {
+                  if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+                    var js = window.SelHub.safeRehearseCheck(jText, { toolId: 'cultureexplorer_journal', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null });
+                    if (js && js.action === 'block') {
+                      jCrisis = true;
+                      if (typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal({ toolName: 'Culture Explorer', contentSnippet: jText.slice(0, 120) });
+                    }
+                  }
+                } catch (_) {}
+                var alreadySavedFree = !!d.freeJournalSaved;
+                var newCount = alreadySavedFree ? journalCount : (journalCount + 1);
+                var patch = { journalCount: newCount, freeJournalSaved: true };
+                if (jCrisis) patch._lastTier = 3;
+                updMulti(patch);
+                if (!alreadySavedFree) ctx.awardXP(10);
                 addToast('Journal saved!', 'success');
                 if (announceToSR) announceToSR('Culture journal entry saved');
-                if (ctx.celebrate) ctx.celebrate();
+                if (ctx.celebrate && !alreadySavedFree) ctx.celebrate();
                 checkBadges({ journalCount: newCount });
               },
               className: 'mt-2 px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
-            }, '\uD83D\uDC9B Save Journal Entry')
+            }, d.freeJournalSaved ? '\u2713 Journal Saved' : '\uD83D\uDC9B Save Journal Entry')
           ),
 
           // Closing thought

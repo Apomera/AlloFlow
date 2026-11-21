@@ -208,41 +208,155 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     // the walls instead of clipping through them.
     var HX = 1.25, HZ = 0.92, HY = 1.16;
 
-    // The shell's trim() is tuned for painted metal — a pale blue specular at
-    // shininess 30. That is right for the apparatus and wrong for fur, so the
-    // organic surfaces get their own weak, dark specular.
-    function metal(hex, shiny) {
+    // Procedural brushed-metal & soft radial halo DataTextures (zero 2D canvas
+    // contexts, auto-disposed by makeBayViewer's scene texture traversal).
+    function makeBrushedMetalTex() {
+      if (typeof THREE.DataTexture !== 'function') return null;
+      var sz = 64, buf = new Uint8Array(sz * sz * 4);
+      for (var y = 0; y < sz; y++) {
+        var streak = ((y * 37 + (y % 5) * 19) % 23) - 11;
+        for (var x = 0; x < sz; x++) {
+          var grain = (((x * 13 + y * 29) ^ (x * 7)) & 15) - 7;
+          var v = Math.max(185, Math.min(255, 224 + streak + Math.round(grain * 0.6)));
+          var i = (y * sz + x) * 4;
+          buf[i] = v; buf[i + 1] = v; buf[i + 2] = Math.min(255, v + 4); buf[i + 3] = 255;
+        }
+      }
+      var tex = new THREE.DataTexture(buf, sz, sz, THREE.RGBAFormat);
+      tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(2, 2);
+      tex.needsUpdate = true;
+      return tex;
+    }
+    function makeRadialGlowTex(innerAlpha, midStop, power) {
+      if (typeof THREE.DataTexture !== 'function') return null;
+      var sz = 64, buf = new Uint8Array(sz * sz * 4);
+      var half = (sz - 1) / 2;
+      for (var y = 0; y < sz; y++) {
+        for (var x = 0; x < sz; x++) {
+          var dx = (x - half) / half, dy = (y - half) / half;
+          var d = Math.min(1, Math.sqrt(dx * dx + dy * dy));
+          var a = Math.pow(Math.max(0, 1 - d), power || 2.1);
+          if (midStop && d < midStop) a = Math.max(a, innerAlpha || 0.95);
+          var i = (y * sz + x) * 4;
+          buf[i] = 255; buf[i + 1] = 255; buf[i + 2] = 255;
+          buf[i + 3] = Math.max(0, Math.min(255, Math.round(a * 255)));
+        }
+      }
+      var tex = new THREE.DataTexture(buf, sz, sz, THREE.RGBAFormat);
+      tex.needsUpdate = true;
+      return tex;
+    }
+    var brushedTex = C ? null : makeBrushedMetalTex();
+    var shadowTex = C ? null : makeRadialGlowTex(0.85, 0.18, 2.2);
+    var haloTex = makeRadialGlowTex(0.95, 0.12, 2.5);
+
+    // Atmospheric studio / habitat hemisphere + rim lighting (complements the
+    // bay viewer's directional key/fill/bounce without washing out the steel).
+    if (!C) {
+      if (typeof THREE.HemisphereLight === 'function') {
+        var hemi = new THREE.HemisphereLight(0xdbeafe, 0x1e2538, 0.34);
+        api.scene.add(hemi);
+      }
+      if (typeof THREE.DirectionalLight === 'function') {
+        var rim = new THREE.DirectionalLight(0x93c5fd, 0.36);
+        rim.position.set(-2.0, 2.3, -2.5);
+        api.scene.add(rim);
+      }
+    }
+
+    var hasStdMat = typeof THREE.MeshStandardMaterial === 'function';
+    var hasPhysMat = typeof THREE.MeshPhysicalMaterial === 'function';
+
+    // PBR brushed stainless & painted apparatus finishes (fallback to Phong in headless stubs).
+    function metal(hex, shiny, roughOverride, metalOverride) {
+      if (hasStdMat && !C) {
+        var r = roughOverride != null ? roughOverride : Math.max(0.20, Math.min(0.72, 0.68 - ((shiny == null ? 55 : shiny) / 260)));
+        var mt = metalOverride != null ? metalOverride : ((shiny == null ? 55 : shiny) >= 40 ? 0.68 : 0.32);
+        var m = new THREE.MeshStandardMaterial({
+          color: hex,
+          roughness: r,
+          metalness: mt,
+          bumpMap: brushedTex || null,
+          bumpScale: brushedTex ? 0.004 : 0
+        });
+        return m;
+      }
       return new THREE.MeshPhongMaterial({
         color: C ? 0xffffff : hex,
         shininess: C ? 0 : (shiny == null ? 55 : shiny),
-        // Restrained. The shell already lights this scene with a 0.92 key on a 0.44
-        // ambient; a hot specular on top turned every steel surface into white
-        // plastic and flattened the apparatus into one blown-out shape.
         specular: C ? 0x000000 : 0x8c9bb0
       });
     }
     function organic(hex, shiny) {
+      if (hasStdMat && !C) {
+        return new THREE.MeshStandardMaterial({
+          color: hex,
+          roughness: shiny != null && shiny > 8 ? 0.68 : 0.86,
+          metalness: 0.04
+        });
+      }
       return new THREE.MeshPhongMaterial({
         color: C ? 0xffffff : hex,
         shininess: C ? 0 : (shiny == null ? 5 : shiny),
         specular: C ? 0x000000 : 0x1a1620
       });
     }
-    // Acrylic. depthWrite off so the panel in front of the camera blends over the
-    // apparatus instead of z-fighting it out of existence, and DoubleSide so the
-    // far walls still read once the camera swings behind the box.
+    // Clearcoat optical-Fresnel acrylic. depthWrite off so the panel in front of
+    // the camera blends over the apparatus instead of z-fighting it out of existence,
+    // and DoubleSide so the far walls still read once the camera swings behind the box.
     function acrylic() {
-      var m = new THREE.MeshPhongMaterial({
-        color: C ? 0x222222 : 0x8fb6d4,
-        shininess: C ? 0 : 120,
-        specular: C ? 0x000000 : 0xdfeaf7,
-        transparent: true,
-        // Four panes stack between the camera and the far wall, so per-pane alpha
-        // compounds; 0.13 each washed the interior out to mid-grey.
-        opacity: C ? 0.05 : 0.095,
-        side: THREE.DoubleSide
-      });
+      var m = hasPhysMat && !C
+        ? new THREE.MeshPhysicalMaterial({
+            color: 0x9ec5e6,
+            roughness: 0.08,
+            metalness: 0.05,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.06,
+            transparent: true,
+            opacity: 0.09,
+            side: THREE.DoubleSide
+          })
+        : new THREE.MeshPhongMaterial({
+            color: C ? 0x222222 : 0x8fb6d4,
+            shininess: C ? 0 : 120,
+            specular: C ? 0x000000 : 0xdfeaf7,
+            transparent: true,
+            opacity: C ? 0.05 : 0.095,
+            side: THREE.DoubleSide
+          });
       m.depthWrite = false;
+      if (!C) {
+        var prevAcrylicCompile = m.onBeforeCompile;
+        var prevAcrylicKey = m.customProgramCacheKey;
+        m.onBeforeCompile = function (shader, rendererArg) {
+          if (typeof prevAcrylicCompile === 'function') prevAcrylicCompile.call(this, shader, rendererArg);
+          if (shader.vertexShader.indexOf('vBlAcrylicUv') === -1) {
+            shader.vertexShader = 'varying vec2 vBlAcrylicUv;\n' + shader.vertexShader;
+            shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvBlAcrylicUv = uv;');
+          }
+          if (shader.fragmentShader.indexOf('vBlAcrylicUv') === -1) {
+            shader.fragmentShader = 'varying vec2 vBlAcrylicUv;\n' + shader.fragmentShader;
+          }
+          if (shader.fragmentShader.indexOf('#include <tonemapping_fragment>') !== -1 && shader.fragmentShader.indexOf('blAcrylicFresnel') === -1) {
+            shader.fragmentShader = shader.fragmentShader.replace('#include <tonemapping_fragment>', [
+              'float blAcrylicView = clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0);',
+              'float blAcrylicFresnel = pow(1.0 - blAcrylicView, 2.65);',
+              'vec2 blEdgeD = min(vBlAcrylicUv, 1.0 - vBlAcrylicUv);',
+              'float blAcrylicBevel = 1.0 - smoothstep(0.0, 0.032, min(blEdgeD.x, blEdgeD.y));',
+              'vec3 blGlassSheen = vec3(0.72, 0.88, 1.0) * (blAcrylicFresnel * 0.42 + blAcrylicBevel * 0.24);',
+              'gl_FragColor.rgb += blGlassSheen;',
+              'gl_FragColor.a = clamp(gl_FragColor.a + blAcrylicFresnel * 0.24 + blAcrylicBevel * 0.14, 0.0, 0.54);',
+              '#include <tonemapping_fragment>'
+            ].join('\n'));
+          }
+        };
+        m.customProgramCacheKey = function () {
+          var bk = typeof prevAcrylicKey === 'function' ? prevAcrylicKey.call(this) : '';
+          return bk + '|bl-optical-acrylic-fresnel-v1';
+        };
+        m.needsUpdate = true;
+      }
       return m;
     }
     // Emissive surfaces (lamp lenses) must survive the shell's per-frame emissive
@@ -250,12 +364,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     // _preserveBaseEmissive makes the shell ADD its selection glow on top of a
     // base this scene owns and mutates in frame().
     function lampMat(hex) {
-      var m = new THREE.MeshPhongMaterial({
-        color: C ? 0xffffff : hex, shininess: 60, specular: 0xffffff,
-        emissive: new THREE.Color(0x000000)
-      });
+      var m = hasPhysMat && !C
+        ? new THREE.MeshPhysicalMaterial({
+            color: hex, roughness: 0.14, metalness: 0.05,
+            clearcoat: 0.9, clearcoatRoughness: 0.1,
+            emissive: new THREE.Color(0x000000)
+          })
+        : new THREE.MeshPhongMaterial({
+            color: C ? 0xffffff : hex, shininess: 60, specular: 0xffffff,
+            emissive: new THREE.Color(0x000000)
+          });
       m.userData._preserveBaseEmissive = true;
       m.userData._baseEmissive = { r: 0, g: 0, b: 0 };
+      return m;
+    }
+    function makeHaloMesh(radius, hex) {
+      var mat = new THREE.MeshBasicMaterial({
+        color: C ? 0xffff00 : hex,
+        map: haloTex || null,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        blending: C ? THREE.NormalBlending : THREE.AdditiveBlending
+      });
+      var m = new THREE.Mesh(new THREE.PlaneGeometry(radius * 2, radius * 2), mat);
+      m.visible = false;
       return m;
     }
     function box(w, h, dp, mat, x, y, z, parent) {
@@ -293,7 +427,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     // ── Enclosure ────────────────────────────────────────────────────────────
     // Deliberately NOT registered: the acrylic sits between the camera and every
     // part worth clicking, and a pickable pane would swallow every pick.
-    var frameMat = metal(0x7d8a9d, 42);
+    var frameMat = metal(0x8896ab, 65, 0.34, 0.72);
     var acrylicMat = acrylic();
     var panels = [
       [2 * HX, HY, 0, HY / 2, -HZ, 0],            // back
@@ -324,21 +458,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
       rod(2 * HZ, 0.028, frameMat, HX, y, 0, 'z');
     });
 
-    // Waste pan under the grid, and the plinth the whole box stands on.
-    box(2 * HX + 0.10, 0.10, 2 * HZ + 0.10, metal(0x2d3a4d, 20), 0, -0.10, 0);
-    box(2 * HX + 0.34, 0.07, 2 * HZ + 0.34, metal(0x1b2532, 12), 0, -0.19, 0);
+    // Waste pan under the grid, chamfered lab plinth, and grounded contact shadow.
+    var wastePan = box(2 * HX + 0.10, 0.10, 2 * HZ + 0.10, metal(0x283548, 22, 0.56, 0.35), 0, -0.10, 0);
+    var plinth = box(2 * HX + 0.34, 0.07, 2 * HZ + 0.34, metal(0x182230, 14, 0.68, 0.28), 0, -0.19, 0);
+    if (api.wantShadow) { wastePan.receiveShadow = true; plinth.receiveShadow = true; }
+    if (!C && shadowTex) {
+      var plinthShadow = new THREE.Mesh(
+        new THREE.PlaneGeometry(2 * HX + 1.1, 2 * HZ + 1.1),
+        new THREE.MeshBasicMaterial({ color: 0x020617, map: shadowTex, transparent: true, opacity: 0.52, depthWrite: false })
+      );
+      plinthShadow.rotation.x = -Math.PI / 2;
+      plinthShadow.position.y = -0.228;
+      api.scene.add(plinthShadow);
+    }
 
     // ── Grid floor ───────────────────────────────────────────────────────────
     // Stainless rods, not a plane. The bars ARE the signature of an operant
     // chamber, and they give the shadows something to land between.
     var gridGroup = new THREE.Group();
-    var rodMat = metal(0x8794a8, 34);
+    var rodMat = metal(0x98a6ba, 80, 0.28, 0.78);
     var GRID_N = 15;
     for (var gi = 0; gi < GRID_N; gi++) {
       var gz = -HZ + 0.10 + (gi / (GRID_N - 1)) * (2 * HZ - 0.20);
       rod(2 * HX - 0.10, 0.017, rodMat, 0, 0.03, gz, 'x', gridGroup);
     }
     reg('grid', gridGroup);
+
+    // Grounded contact shadow directly beneath the subject on the waste pan / grid plane.
+    var subjectShadow = null;
+    if (!C && shadowTex) {
+      subjectShadow = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.46, 0.54),
+        new THREE.MeshBasicMaterial({ color: 0x020617, map: shadowTex, transparent: true, opacity: 0.48, depthWrite: false })
+      );
+      subjectShadow.rotation.x = -Math.PI / 2;
+      subjectShadow.position.set(0, -0.044, 0);
+      api.scene.add(subjectShadow);
+    }
 
     // ── Response lever ───────────────────────────────────────────────────────
     // Placed from BL_LEVER, the same constant the tick loop measures approach
@@ -349,9 +505,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     var leverPivot = new THREE.Group();
     leverPivot.position.set(HX - 0.10, 0.33, leverZ);
     leverGroup.add(leverPivot);
-    var leverArm = box(0.30, 0.030, 0.050, metal(0xd7dfea, 150), -0.15, 0, 0, leverPivot);
-    var leverPad = box(0.10, 0.028, 0.11, metal(0xe6ecf4, 150), -0.28, 0, 0, leverPivot);
+    var leverArm = box(0.30, 0.030, 0.050, metal(0xdce5f0, 150, 0.22, 0.85), -0.15, 0, 0, leverPivot);
+    var leverPad = box(0.10, 0.028, 0.11, metal(0xedf2f8, 150, 0.18, 0.88), -0.28, 0, 0, leverPivot);
     reg('lever', leverGroup);
+    // Luminous activation halo around the lever pad when pressed.
+    var leverHalo = makeHaloMesh(0.24, 0xfbbf24);
+    leverHalo.rotation.x = -Math.PI / 2;
+    leverHalo.position.set(HX - 0.38, 0.34, leverZ);
+    api.scene.add(leverHalo);
 
     // ── Food magazine ────────────────────────────────────────────────────────
     var hopperZ = blWorldZ(238);
@@ -359,8 +520,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     box(0.09, 0.26, 0.30, metal(0x76839a, 55), -HX + 0.045, 0.20, hopperZ, hopperGroup);
     // Recessed aperture: a dark inset is what makes it read as an opening
     // rather than a bump on the wall.
-    box(0.05, 0.15, 0.20, metal(0x0d1420, 8), -HX + 0.085, 0.17, hopperZ, hopperGroup);
-    var trough = box(0.16, 0.035, 0.20, metal(0xb9c4d2, 110), -HX + 0.15, 0.10, hopperZ, hopperGroup);
+    box(0.05, 0.15, 0.20, metal(0x0d1420, 8, 0.85, 0.1), -HX + 0.085, 0.17, hopperZ, hopperGroup);
+    var trough = box(0.16, 0.035, 0.20, metal(0xc3cedc, 120, 0.26, 0.80), -HX + 0.15, 0.10, hopperZ, hopperGroup);
     // Delivery tube up the wall — the pellet's route is visible, which is what
     // makes the drop legible as a mechanism rather than a pellet appearing.
     var tubeMat = acrylic();
@@ -369,16 +530,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     hopperGroup.add(tube);
     reg('hopper', hopperGroup);
 
-    var pelletMat = new THREE.MeshPhongMaterial({
-      color: C ? 0xffffff : 0xd8a851, shininess: 24, specular: 0x6b5a34,
-      emissive: new THREE.Color(0x000000)
-    });
+    var pelletMat = hasStdMat && !C
+      ? new THREE.MeshStandardMaterial({ color: 0xe6b85c, roughness: 0.42, metalness: 0.08, emissive: new THREE.Color(0x000000) })
+      : new THREE.MeshPhongMaterial({
+          color: C ? 0xffffff : 0xd8a851, shininess: 24, specular: 0x6b5a34,
+          emissive: new THREE.Color(0x000000)
+        });
     // Outside `meshes` on purpose: the pellet's opacity and position are the
     // reinforcement animation, and the shell owns both for registered parts.
     var pellet = new THREE.Mesh(new THREE.SphereGeometry(0.042, 16, 12), pelletMat);
     pellet.position.set(-HX + 0.10, 0.12, hopperZ);
     pellet.visible = false;
     api.scene.add(pellet);
+
+    // Luminous reinforcement signal halo & warm bounce light at the food magazine.
+    var foodHalo = makeHaloMesh(0.28, 0xfbbf24);
+    foodHalo.rotation.x = -Math.PI / 2;
+    foodHalo.position.set(-HX + 0.14, 0.122, hopperZ);
+    api.scene.add(foodHalo);
+    var foodLamp = new THREE.PointLight(0xfbbf24, 0, 1.5);
+    foodLamp.position.set(-HX + 0.18, 0.22, hopperZ);
+    api.scene.add(foodLamp);
 
     // ── Stimulus light (SD / S-delta) ────────────────────────────────────────
     var sdGroup = new THREE.Group();
@@ -389,9 +561,201 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     sdLens.position.set(HX - 0.09, 0.80, leverZ);
     sdGroup.add(sdLens);
     reg('sdlight', sdGroup);
-    var sdLamp = new THREE.PointLight(0xffffff, 0, 1.9);
+    var sdLamp = new THREE.PointLight(0xffffff, 0, 2.2);
     sdLamp.position.set(HX - 0.22, 0.80, leverZ);
     api.scene.add(sdLamp);
+    var sdHalo = makeHaloMesh(0.24, 0x22c55e);
+    sdHalo.rotation.y = -Math.PI / 2;
+    sdHalo.position.set(HX - 0.115, 0.80, leverZ);
+    api.scene.add(sdHalo);
+
+    // Custom WebGL1 / GLSL ES 1.00 volumetric SD / S-delta cue-light cone, radial
+    // reward-wave floor ripples, and overhead spotlight dust motes (bypassed in High-Contrast)
+    var sdConeMesh = null, sdConeUniforms = null;
+    var rewardRippleMesh = null, rewardRippleUniforms = null;
+    var chamberDustMesh = null, chamberDustUniforms = null;
+    if (!C && typeof THREE.ShaderMaterial === 'function') {
+      sdConeUniforms = {
+        uTime: { value: 2.2 },
+        uIntensity: { value: 0.0 },
+        uColor: { value: new THREE.Color(0x22c55e) }
+      };
+      var sdConeGeo = new THREE.ConeGeometry(0.44, 0.96, 28, 1, true);
+      sdConeGeo.translate(0, -0.48, 0);
+      var sdConeMat = new THREE.ShaderMaterial({
+        uniforms: sdConeUniforms,
+        vertexShader: [
+          'varying vec2 vUv;',
+          'varying vec3 vNormalView;',
+          'varying vec3 vViewDir;',
+          'void main() {',
+          '  vUv = uv;',
+          '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);',
+          '  vNormalView = normalize(normalMatrix * normal);',
+          '  vViewDir = normalize(-mvPos.xyz);',
+          '  gl_Position = projectionMatrix * mvPos;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uIntensity;',
+          'uniform vec3 uColor;',
+          'varying vec2 vUv;',
+          'varying vec3 vNormalView;',
+          'varying vec3 vViewDir;',
+          'void main() {',
+          '  float axial = smoothstep(0.0, 0.72, vUv.y) * smoothstep(1.0, 0.86, vUv.y);',
+          '  float edgeSoft = pow(clamp(abs(dot(normalize(vNormalView), normalize(vViewDir))), 0.0, 1.0), 1.45);',
+          '  float shimmer = 0.84 + 0.16 * sin(vUv.y * 14.0 - uTime * 3.4 + vUv.x * 6.2831);',
+          '  float alpha = axial * edgeSoft * shimmer * 0.34 * uIntensity;',
+          '  if (alpha < 0.004) discard;',
+          '  gl_FragColor = vec4(uColor, clamp(alpha, 0.0, 0.44));',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending
+      });
+      sdConeMesh = new THREE.Mesh(sdConeGeo, sdConeMat);
+      sdConeMesh.name = 'bl-sd-volumetric-cone';
+      sdConeMesh.position.set(HX - 0.10, 0.80, leverZ);
+      sdConeMesh.rotation.z = -0.62;
+      sdConeMesh.visible = false;
+      sdConeMesh.renderOrder = 3;
+      api.scene.add(sdConeMesh);
+
+      // Animated radial reward-wave ripples on the chamber floor beneath the stainless grid
+      var floorW = 2 * HX - 0.08, floorD = 2 * HZ - 0.08;
+      var leverFloorU = ((HX - 0.34) / floorW) + 0.5;
+      var leverFloorV = 0.5 - (leverZ / floorD);
+      var foodFloorU = ((-HX + 0.18) / floorW) + 0.5;
+      var foodFloorV = 0.5 - (hopperZ / floorD);
+      rewardRippleUniforms = {
+        uTime: { value: 2.2 },
+        uReduced: { value: 0.0 },
+        uLeverOrigin: { value: new THREE.Vector2(leverFloorU, leverFloorV) },
+        uLeverStrength: { value: 0.0 },
+        uFoodOrigin: { value: new THREE.Vector2(foodFloorU, foodFloorV) },
+        uFoodStrength: { value: 0.0 },
+        uLeverColor: { value: new THREE.Color(0x38bdf8) },
+        uFoodColor: { value: new THREE.Color(0xfbbf24) }
+      };
+      var rippleMat = new THREE.ShaderMaterial({
+        uniforms: rewardRippleUniforms,
+        vertexShader: [
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vUv = uv;',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uReduced;',
+          'uniform vec2 uLeverOrigin;',
+          'uniform float uLeverStrength;',
+          'uniform vec2 uFoodOrigin;',
+          'uniform float uFoodStrength;',
+          'uniform vec3 uLeverColor;',
+          'uniform vec3 uFoodColor;',
+          'varying vec2 vUv;',
+          'float radialWave(vec2 uv, vec2 origin, float speed, float reduced) {',
+          '  vec2 d = (uv - origin) * vec2(1.36, 1.0);',
+          '  float dist = length(d);',
+          '  float phase = reduced > 0.5 ? 0.24 : fract(uTime * speed);',
+          '  float r1 = exp(-pow((dist - phase * 0.65) * 18.0, 2.0)) * (1.0 - smoothstep(0.45, 0.72, dist));',
+          '  float phase2 = reduced > 0.5 ? 0.42 : fract(uTime * speed + 0.5);',
+          '  float r2 = exp(-pow((dist - phase2 * 0.65) * 18.0, 2.0)) * (1.0 - smoothstep(0.45, 0.72, dist));',
+          '  float core = exp(-dist * dist * 46.0) * 0.45;',
+          '  return clamp(r1 * 0.72 + r2 * 0.48 + core, 0.0, 1.0);',
+          '}',
+          'void main() {',
+          '  float lw = uLeverStrength > 0.01 ? radialWave(vUv, uLeverOrigin, 1.15, uReduced) * uLeverStrength : 0.0;',
+          '  float fw = uFoodStrength > 0.01 ? radialWave(vUv, uFoodOrigin, 0.85, uReduced) * uFoodStrength : 0.0;',
+          '  vec3 col = uLeverColor * lw + uFoodColor * fw;',
+          '  float alpha = clamp((lw + fw) * 0.58, 0.0, 0.72);',
+          '  if (alpha < 0.006) discard;',
+          '  gl_FragColor = vec4(col, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+      rewardRippleMesh = new THREE.Mesh(new THREE.PlaneGeometry(floorW, floorD), rippleMat);
+      rewardRippleMesh.name = 'bl-reward-ripples';
+      rewardRippleMesh.rotation.x = -Math.PI / 2;
+      rewardRippleMesh.position.set(0, -0.041, 0);
+      rewardRippleMesh.visible = false;
+      rewardRippleMesh.renderOrder = 1;
+      api.scene.add(rewardRippleMesh);
+
+      // Subtle overhead studio spotlight dust motes floating inside the chamber
+      if (typeof THREE.Points === 'function') {
+        var dmCount = 58;
+        var dmPos = new Float32Array(dmCount * 3);
+        var dmPhase = new Float32Array(dmCount);
+        var dmSize = new Float32Array(dmCount);
+        var dmSeed = 61907;
+        function dmRand() { dmSeed = (dmSeed * 1664525 + 1013904223) >>> 0; return (dmSeed >>> 8) / 16777216; }
+        for (var dmi = 0; dmi < dmCount; dmi++) {
+          dmPos[dmi * 3] = (dmRand() - 0.5) * (2 * HX - 0.24);
+          dmPos[dmi * 3 + 1] = 0.14 + dmRand() * (HY - 0.24);
+          dmPos[dmi * 3 + 2] = (dmRand() - 0.5) * (2 * HZ - 0.22);
+          dmPhase[dmi] = dmRand() * Math.PI * 2;
+          dmSize[dmi] = 1.9 + dmRand() * 2.8;
+        }
+        var dmGeo = new THREE.BufferGeometry();
+        dmGeo.setAttribute('position', new THREE.BufferAttribute(dmPos, 3));
+        dmGeo.setAttribute('aPhase', new THREE.BufferAttribute(dmPhase, 1));
+        dmGeo.setAttribute('aSize', new THREE.BufferAttribute(dmSize, 1));
+        chamberDustUniforms = {
+          uTime: { value: 2.2 },
+          uBrightness: { value: 1.0 },
+          uColor: { value: new THREE.Color(0xfff1cf) }
+        };
+        var dmMat = new THREE.ShaderMaterial({
+          uniforms: chamberDustUniforms,
+          vertexShader: [
+            'attribute float aPhase;',
+            'attribute float aSize;',
+            'uniform float uTime;',
+            'varying float vGlow;',
+            'void main() {',
+            '  vec3 p = position;',
+            '  p.x += sin(uTime * 0.32 + aPhase) * 0.055;',
+            '  p.y += sin(uTime * 0.24 + aPhase * 1.3) * 0.045;',
+            '  p.z += cos(uTime * 0.28 + aPhase * 0.9) * 0.055;',
+            '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);',
+            '  float dist = max(-mvPos.z, 0.6);',
+            '  gl_PointSize = clamp(aSize * (5.2 / dist), 1.4, 8.5);',
+            '  vGlow = 0.5 + 0.5 * sin(uTime * 1.4 + aPhase * 2.2);',
+            '  gl_Position = projectionMatrix * mvPos;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uBrightness;',
+            'uniform vec3 uColor;',
+            'varying float vGlow;',
+            'void main() {',
+            '  float r = length(gl_PointCoord - vec2(0.5));',
+            '  if (r > 0.5) discard;',
+            '  float soft = smoothstep(0.5, 0.05, r);',
+            '  gl_FragColor = vec4(uColor, soft * soft * (0.20 + 0.22 * vGlow) * uBrightness);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+        chamberDustMesh = new THREE.Points(dmGeo, dmMat);
+        chamberDustMesh.name = 'bl-studio-motes';
+        chamberDustMesh.frustumCulled = false;
+        chamberDustMesh.renderOrder = 2;
+        api.scene.add(chamberDustMesh);
+      }
+    }
 
     // ── Tone generator ───────────────────────────────────────────────────────
     var spGroup = new THREE.Group();
@@ -411,8 +775,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     var toneRings = [];
     for (var ti = 0; ti < 3; ti++) {
       var tr = new THREE.Mesh(
-        new THREE.TorusGeometry(0.13, 0.010, 6, 32),
-        new THREE.MeshBasicMaterial({ color: C ? 0xffffff : 0x7dd3fc, transparent: true, opacity: 0 })
+        new THREE.TorusGeometry(0.13, 0.011, 8, 36),
+        new THREE.MeshBasicMaterial({
+          color: C ? 0xffff00 : 0x7dd3fc,
+          transparent: true,
+          opacity: 0,
+          depthWrite: false,
+          blending: C ? THREE.NormalBlending : THREE.AdditiveBlending
+        })
       );
       tr.position.set(0, 0.80, -HZ + 0.07);
       tr.visible = false;
@@ -428,16 +798,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     houseLens.position.set(0, HY - 0.06, 0);
     houseGroup.add(houseLens);
     reg('house', houseGroup);
-    var houseLamp = new THREE.PointLight(0xffe6b8, C ? 0 : 0.55, 3.4);
+    var houseLamp = new THREE.PointLight(0xffe6b8, C ? 0 : 0.62, 3.8);
     houseLamp.position.set(0, HY - 0.14, 0);
     api.scene.add(houseLamp);
+    var houseHalo = makeHaloMesh(0.32, 0xffe6b8);
+    houseHalo.rotation.x = Math.PI / 2;
+    houseHalo.position.set(0, HY - 0.065, 0);
+    houseHalo.visible = !C;
+    houseHalo.material.opacity = 0.22;
+    api.scene.add(houseHalo);
 
     // ── Subject ──────────────────────────────────────────────────────────────
-    var furMat = organic(0xd7d3dd, 4);
-    var pinkMat = organic(0xefa8b4, 9);
-    var eyeMat = new THREE.MeshPhongMaterial({
-      color: C ? 0x000000 : 0x14121c, shininess: 180, specular: 0xffffff
-    });
+    var furMat = organic(0xdedae4, 4);
+    var pinkMat = organic(0xf2aebe, 9);
+    var eyeMat = hasPhysMat && !C
+      ? new THREE.MeshPhysicalMaterial({ color: 0x111018, roughness: 0.08, metalness: 0.05, clearcoat: 1.0 })
+      : new THREE.MeshPhongMaterial({
+          color: C ? 0x000000 : 0x14121c, shininess: 180, specular: 0xffffff
+        });
     var mouse = new THREE.Group();
     // The shell owns per-mesh scale for everything in `meshes` — that is how
     // selection and recede work — so the subject opts out and drives its own
@@ -507,6 +885,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     // Smoothed heading, kept across frames so the subject turns rather than snaps.
     var heading = 0;
     var lastX = 0, lastZ = 0, haveLast = false;
+    var leverRippleEnergy = 0;
+    var foodRippleEnergy = 0;
 
     return {
       meshes: meshes,
@@ -541,6 +921,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
         mouse.position.set(tx, 0.045 + bob + rear * 0.075, tz);
         mouse.rotation.y = act === 'spin' && !reduced ? (t * 3.4) : heading;
         mouse.rotation.x = -rear * 0.62;
+
+        if (subjectShadow) {
+          subjectShadow.position.set(tx, -0.044, tz);
+          subjectShadow.rotation.z = -mouse.rotation.y;
+          var shScale = 1 - rear * 0.22 - bob * 2.2;
+          subjectShadow.scale.set(shScale, shScale, 1);
+          subjectShadow.material.opacity = 0.48 * Math.max(0.55, shScale);
+        }
 
         // Breathing lives on the body MESH, never on the registered group.
         var breath = reduced ? 1 : 1 + Math.sin(t * 1.9) * 0.022;
@@ -579,6 +967,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
         var pressed = act === 'pressLever';
         var wantRot = pressed ? -0.34 : 0;
         leverPivot.rotation.z += (wantRot - leverPivot.rotation.z) * (reduced ? 1 : 0.35);
+        if (leverHalo) {
+          leverHalo.visible = pressed;
+          if (pressed) {
+            var lp = reduced ? 1 : 0.85 + 0.15 * Math.sin(t * 8);
+            leverHalo.scale.setScalar(lp);
+            leverHalo.material.opacity = C ? 0.7 : 0.45 * lp;
+          }
+        }
 
         // ── Food magazine ──
         // One timeline: 0–0.45s the pellet travels the tube, then it sits in the
@@ -589,9 +985,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
           var drop = Math.min(1, age / 0.45);
           pellet.position.set(-HX + 0.10, 0.95 - drop * 0.83, hopperZ);
           if (drop >= 1) pellet.position.set(-HX + 0.13, 0.135, hopperZ);
-          pelletMat.emissive.setRGB(0.30, 0.20, 0.03);
+          pelletMat.emissive.setRGB(0.36, 0.24, 0.04);
+          var fPulse = reduced ? 1 : 0.84 + 0.16 * Math.sin(t * 5.2);
+          foodHalo.visible = true;
+          foodHalo.scale.setScalar(0.9 + 0.18 * fPulse);
+          foodHalo.material.opacity = C ? 0.65 : 0.52 * fPulse;
+          foodLamp.intensity = C ? 0 : 0.75 * fPulse;
         } else {
           pellet.visible = false;
+          foodHalo.visible = false;
+          foodLamp.intensity = 0;
         }
 
         // ── Stimulus light ──
@@ -599,19 +1002,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
         // the lens sits dark rather than implying a contingency that is not there.
         var sdOn = st.level === 5 || st.level === 6;
         var lit = sdOn ? (st.lightColor === 'green' ? 1 : (st.lightColor === 'red' ? 2 : 0)) : 0;
-        var sdPulse = reduced ? 1 : 0.82 + 0.18 * Math.sin(t * 2.6);
+        var sdPulse = reduced ? 1 : 0.84 + 0.16 * Math.sin(t * 2.8);
         var be = sdLensMat.userData._baseEmissive;
-        if (lit === 1) { be.r = 0.04; be.g = 0.62 * sdPulse; be.b = 0.22 * sdPulse; sdLamp.color.setHex(0x22c55e); sdLamp.intensity = C ? 0 : 0.9 * sdPulse; }
-        else if (lit === 2) { be.r = 0.70 * sdPulse; be.g = 0.06; be.b = 0.10; sdLamp.color.setHex(0xef4444); sdLamp.intensity = C ? 0 : 0.9 * sdPulse; }
-        else { be.r = 0; be.g = 0; be.b = 0; sdLamp.intensity = 0; }
+        if (lit === 1) {
+          be.r = 0.05; be.g = 0.72 * sdPulse; be.b = 0.25 * sdPulse;
+          sdLamp.color.setHex(0x22c55e); sdLamp.intensity = C ? 0 : 1.05 * sdPulse;
+          sdHalo.visible = true; sdHalo.material.color.setHex(C ? 0x00ff00 : 0x22c55e);
+          sdHalo.material.opacity = C ? 0.75 : 0.55 * sdPulse; sdHalo.scale.setScalar(0.95 + 0.12 * sdPulse);
+        } else if (lit === 2) {
+          be.r = 0.78 * sdPulse; be.g = 0.07; be.b = 0.11;
+          sdLamp.color.setHex(0xef4444); sdLamp.intensity = C ? 0 : 1.05 * sdPulse;
+          sdHalo.visible = true; sdHalo.material.color.setHex(C ? 0xffff00 : 0xef4444);
+          sdHalo.material.opacity = C ? 0.75 : 0.55 * sdPulse; sdHalo.scale.setScalar(0.95 + 0.12 * sdPulse);
+        } else {
+          be.r = 0; be.g = 0; be.b = 0; sdLamp.intensity = 0; sdHalo.visible = false;
+        }
         sdLensMat.color.setHex(C ? 0xffffff : (lit === 1 ? 0x22c55e : lit === 2 ? 0xef4444 : 0x94a3b8));
 
         // ── House light ──
         // Dimmed through extinction: reinforcement has stopped, and the room says so.
-        var houseBase = st.extinctionPhase ? 0.16 : 0.34;
+        var houseBase = st.extinctionPhase ? 0.16 : 0.38;
         var hb = houseLensMat.userData._baseEmissive;
         hb.r = houseBase; hb.g = houseBase * 0.92; hb.b = houseBase * 0.70;
-        houseLamp.intensity = C ? 0 : (st.extinctionPhase ? 0.26 : 0.55);
+        houseLamp.intensity = C ? 0 : (st.extinctionPhase ? 0.26 : 0.62);
+        if (houseHalo && !C) houseHalo.material.opacity = st.extinctionPhase ? 0.08 : 0.24;
+
+        // ── Update custom WebGL1 / GLSL ES 1.00 volumetric cue cone, reward-wave ripples & studio motes ──
+        var shaderT = reduced ? 2.2 : t;
+        if (sdConeMesh && sdConeUniforms) {
+          sdConeMesh.visible = lit === 1 || lit === 2;
+          if (sdConeMesh.visible) {
+            sdConeUniforms.uTime.value = shaderT;
+            sdConeUniforms.uIntensity.value = sdPulse;
+            sdConeUniforms.uColor.value.setHex(lit === 1 ? 0x22c55e : 0xef4444);
+          }
+        }
+        if (rewardRippleMesh && rewardRippleUniforms) {
+          var leverTarget = pressed ? 1.0 : 0.0;
+          var foodActive = (st.foodVisible && age < 3.2) ? Math.max(0.25, 1.0 - age / 3.2) : 0.0;
+          leverRippleEnergy += (leverTarget - leverRippleEnergy) * (reduced ? 1.0 : 0.14);
+          foodRippleEnergy += (foodActive - foodRippleEnergy) * (reduced ? 1.0 : 0.16);
+          rewardRippleUniforms.uTime.value = shaderT;
+          rewardRippleUniforms.uReduced.value = reduced ? 1.0 : 0.0;
+          rewardRippleUniforms.uLeverStrength.value = leverRippleEnergy;
+          rewardRippleUniforms.uFoodStrength.value = foodRippleEnergy;
+          rewardRippleMesh.visible = leverRippleEnergy > 0.02 || foodRippleEnergy > 0.02;
+        }
+        if (chamberDustMesh && chamberDustUniforms) {
+          chamberDustUniforms.uTime.value = shaderT;
+          chamberDustUniforms.uBrightness.value = st.extinctionPhase ? 0.35 : 1.0;
+        }
 
         // ── Tone generator ──
         // Rings only while the CS is actually sounding, so the visual and the
@@ -626,7 +1066,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
           var ph = ((t * 1.5) + ri / toneRings.length) % 1;
           r3.visible = true;
           r3.scale.setScalar(0.6 + ph * 2.6);
-          r3.material.opacity = 0.62 * (1 - ph);
+          r3.position.z = -HZ + 0.07 + ph * 0.32;
+          r3.material.opacity = 0.68 * (1 - ph);
         }
       }
     };
@@ -2780,6 +3221,7 @@ dataRef.current = d;
             if (!canvas) return;
 
             var ctx = canvas.getContext('2d');
+            if (!ctx) return;
 
             // HiDPI support
             var dpr = window.devicePixelRatio || 1;
@@ -2844,68 +3286,57 @@ dataRef.current = d;
             var oscT = (_st && _st.reduced) ? 0 : Date.now();
 
 
-            // Chamber background
-
+            // Chamber background — atmospheric laboratory studio spotlight
             var chamberGrad = ctx.createLinearGradient(0, 0, 0, H);
-
-            chamberGrad.addColorStop(0, '#1e1b2e');
-
-            chamberGrad.addColorStop(1, '#2d2641');
-
+            chamberGrad.addColorStop(0, '#131629');
+            chamberGrad.addColorStop(0.55, '#1d1c33');
+            chamberGrad.addColorStop(1, '#26213c');
             ctx.fillStyle = chamberGrad;
-
             ctx.fillRect(0, 0, W, H);
 
+            // Overhead house-light studio cone (dims during extinction to mirror 3D)
+            var houseConeAlpha = blExtinctionPhase ? 0.05 : 0.14;
+            var houseCone = ctx.createRadialGradient(W / 2, 48, 8, W / 2, H * 0.56, Math.max(W * 0.52, 220));
+            houseCone.addColorStop(0, 'rgba(255, 236, 188, ' + houseConeAlpha + ')');
+            houseCone.addColorStop(0.5, 'rgba(129, 140, 248, ' + (houseConeAlpha * 0.45) + ')');
+            houseCone.addColorStop(1, 'rgba(15, 23, 42, 0)');
+            ctx.fillStyle = houseCone;
+            ctx.fillRect(20, 50, W - 40, H - 70);
 
-            // Chamber walls
-
-            ctx.strokeStyle = '#6366f1';
-
-            ctx.lineWidth = 3;
-
+            // Chamber acrylic enclosure frame with subtle brushed-metal edge rim
+            ctx.strokeStyle = 'rgba(129, 140, 248, 0.72)';
+            ctx.lineWidth = 2.5;
             ctx.strokeRect(20, 50, W - 40, H - 70);
-
+            ctx.strokeStyle = 'rgba(199, 210, 254, 0.22)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(22.5, 52.5, W - 45, H - 75);
 
             // Wall texture lines (subtle horizontal stripes)
-
             ctx.strokeStyle = 'rgba(99, 102, 241, 0.06)';
-
             ctx.lineWidth = 0.5;
-
             for (var wly = 65; wly < H - 30; wly += 15) {
-
               ctx.beginPath(); ctx.moveTo(22, wly); ctx.lineTo(W - 22, wly); ctx.stroke();
-
             }
 
             // Vertical wall texture accents
-
-            ctx.strokeStyle = 'rgba(99, 102, 241, 0.04)';
-
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.045)';
             for (var wlx = 50; wlx < W - 30; wlx += 40) {
-
               ctx.beginPath(); ctx.moveTo(wlx, 52); ctx.lineTo(wlx, H - 22); ctx.stroke();
-
             }
 
+            // Chamber stainless grid floor with metallic specular highlight
+            var floorGrad = ctx.createLinearGradient(0, H - 27, 0, H - 19);
+            floorGrad.addColorStop(0, '#52527a');
+            floorGrad.addColorStop(0.4, '#363254');
+            floorGrad.addColorStop(1, '#1e1b36');
+            ctx.fillStyle = floorGrad;
+            ctx.fillRect(20, H - 26, W - 40, 6);
 
-            // Chamber floor
-
-            ctx.fillStyle = '#3b3555';
-
-            ctx.fillRect(20, H - 25, W - 40, 5);
-
-
-            // Grid lines on floor
-
-            ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
-
-            ctx.lineWidth = 0.5;
-
-            for (var gx = 40; gx < W - 20; gx += 20) {
-
-              ctx.beginPath(); ctx.moveTo(gx, H - 25); ctx.lineTo(gx, H - 20); ctx.stroke();
-
+            // Grid rod cross-bars on floor
+            ctx.strokeStyle = 'rgba(165, 180, 252, 0.28)';
+            ctx.lineWidth = 1;
+            for (var gx = 36; gx < W - 24; gx += 18) {
+              ctx.beginPath(); ctx.moveTo(gx, H - 26); ctx.lineTo(gx, H - 20); ctx.stroke();
             }
 
 
@@ -3241,20 +3672,31 @@ dataRef.current = d;
               ctx.fillText(__alloT('stem.behaviorlab.canvas_distance_delta', 'distance \u0394'), 25, 44);
             }
 
-            // Movement trail (fading dots)
+            // Movement trajectory ribbon + fading telemetry nodes
             if (_st && _st.trail && _st.trail.length > 2) {
               var trNow = Date.now();
-              for (var tri = 0; tri < _st.trail.length; tri++) {
+              ctx.save();
+              ctx.lineCap = 'round';
+              ctx.lineJoin = 'round';
+              for (var tri = 1; tri < _st.trail.length; tri++) {
+                var trPrev = _st.trail[tri - 1];
                 var trp = _st.trail[tri];
                 var trAge = (trNow - trp.t) / 2000;
                 if (trAge > 1) continue;
-                var trAlpha = 0.25 * (1 - trAge);
-                ctx.beginPath(); ctx.arc(wx(trp.x), trp.y, 1.5 + (1 - trAge), 0, Math.PI * 2);
-                // Indigo at 0.25 alpha over the chamber floor was a barely-there
-                // smudge; the trail is the record of where the subject has been, so
-                // it is drawn to be seen.
-                ctx.fillStyle = 'rgba(148,163,255,' + (trAlpha * 2.2).toFixed(2) + ')'; ctx.fill();
+                var trFade = 1 - trAge;
+                ctx.beginPath();
+                ctx.moveTo(wx(trPrev.x), trPrev.y);
+                ctx.lineTo(wx(trp.x), trp.y);
+                ctx.strokeStyle = 'rgba(129, 140, 248, ' + (trFade * 0.48).toFixed(2) + ')';
+                ctx.lineWidth = 1.2 + trFade * 2.2;
+                ctx.stroke();
+                if (tri % 4 === 0) {
+                  ctx.beginPath(); ctx.arc(wx(trp.x), trp.y, 1.3 + trFade * 1.1, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(196, 181, 253, ' + (trFade * 0.62).toFixed(2) + ')';
+                  ctx.fill();
+                }
               }
+              ctx.restore();
             }
 
             // ── Phase 3B: Extinction burst effects (Level 3) ──
@@ -3315,11 +3757,15 @@ dataRef.current = d;
               }
             }
 
-            // ── Phase 4: Mouse shadow ──
+            // ── Phase 4: Grounded multi-stop mouse contact shadow ──
             ctx.save();
-            ctx.globalAlpha = 0.15;
-            ctx.fillStyle = '#000';
-            ctx.beginPath(); ctx.ellipse(blMouseSX, blMouseY + 13, 18, 6, 0, 0, Math.PI * 2); ctx.fill();
+            var rearLift = blMouseAction === 'rearUp' ? 0.72 : 1;
+            var shGrad = ctx.createRadialGradient(blMouseSX, blMouseY + 13, 2, blMouseSX, blMouseY + 13, 22 * rearLift);
+            shGrad.addColorStop(0, 'rgba(2, 6, 23, ' + (0.42 * rearLift).toFixed(2) + ')');
+            shGrad.addColorStop(0.6, 'rgba(2, 6, 23, ' + (0.18 * rearLift).toFixed(2) + ')');
+            shGrad.addColorStop(1, 'rgba(2, 6, 23, 0)');
+            ctx.fillStyle = shGrad;
+            ctx.beginPath(); ctx.ellipse(blMouseSX, blMouseY + 13, 22 * rearLift, 7 * rearLift, 0, 0, Math.PI * 2); ctx.fill();
             ctx.restore();
 
             // ─ Mouse sprite ─
@@ -3726,6 +4172,7 @@ dataRef.current = d;
             if (!canvas) return;
 
             var ctx = canvas.getContext('2d');
+            if (!ctx) return;
 
             // HiDPI, matching the chamber canvas above. The backing store used to
             // be set in CSS pixels, so on any 2x display the cumulative record —
@@ -3756,10 +4203,11 @@ dataRef.current = d;
             var data = blCumRecord;
 
 
-            // Background
-
-            ctx.fillStyle = '#0f172a';
-
+            // Background — subtle laboratory chart gradient
+            var cumBg = ctx.createLinearGradient(0, 0, 0, H);
+            cumBg.addColorStop(0, '#0b1222');
+            cumBg.addColorStop(1, '#111a2e');
+            ctx.fillStyle = cumBg;
             ctx.fillRect(0, 0, W, H);
 
 
@@ -3862,25 +4310,41 @@ dataRef.current = d;
             }
 
 
+            // Area-under-curve subtle amber telemetry gradient
+            ctx.save();
             ctx.beginPath();
-
-            ctx.strokeStyle = '#f59e0b';
-
-            ctx.lineWidth = 2;
-
-            for (var i = 0; i < data.length; i++) {
-
-              var px = 40 + ((data[i].tick - startTick) / tickRange) * plotW;
-
-              var py = (H - 25) - (data[i].cum / maxCum) * plotH;
-
-              if (i === 0) ctx.moveTo(px, py);
-
-              else ctx.lineTo(px, py);
-
+            for (var ai = 0; ai < data.length; ai++) {
+              var apx = 40 + ((data[ai].tick - startTick) / tickRange) * plotW;
+              var apy = (H - 25) - (data[ai].cum / maxCum) * plotH;
+              if (ai === 0) ctx.moveTo(apx, apy);
+              else ctx.lineTo(apx, apy);
             }
+            ctx.lineTo(40 + ((data[data.length - 1].tick - startTick) / tickRange) * plotW, H - 20);
+            ctx.lineTo(40, H - 20);
+            ctx.closePath();
+            var areaGrad = ctx.createLinearGradient(0, 12, 0, H - 20);
+            areaGrad.addColorStop(0, 'rgba(245, 158, 11, 0.24)');
+            areaGrad.addColorStop(1, 'rgba(245, 158, 11, 0.01)');
+            ctx.fillStyle = areaGrad;
+            ctx.fill();
+            ctx.restore();
 
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2.2;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.shadowColor = 'rgba(251, 191, 36, 0.45)';
+            ctx.shadowBlur = 5;
+            for (var i = 0; i < data.length; i++) {
+              var px = 40 + ((data[i].tick - startTick) / tickRange) * plotW;
+              var py = (H - 25) - (data[i].cum / maxCum) * plotH;
+              if (i === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
             ctx.stroke();
+            ctx.restore();
 
 
             // Extinction burst markers (red zone on graph)
@@ -6425,8 +6889,12 @@ dataRef.current = d;
                       cvs.style.height = '286px';
                     }
                     var ctx = cvs.getContext('2d');
+                    if (!ctx) return;
                     ctx.setTransform(slDpr, 0, 0, slDpr, 0, 0);
-                    ctx.fillStyle = '#0f172a';
+                    var slBg = ctx.createLinearGradient(0, 0, 0, 286);
+                    slBg.addColorStop(0, '#0b1222');
+                    slBg.addColorStop(1, '#111a2e');
+                    ctx.fillStyle = slBg;
                     ctx.fillRect(0, 0, w, 286);
 
                     // ── Small multiples, 2x2 ────────────────────────────────
@@ -6472,10 +6940,16 @@ dataRef.current = d;
                       var cx = function(t) { return x0 + (t / maxT) * cellW; };
                       var cy = function(c) { return y0 + plotH - (Math.min(c, maxR) / maxR) * plotH; };
 
-                      ctx.fillStyle = 'rgba(148,163,184,0.04)';
+                      ctx.fillStyle = 'rgba(148,163,184,0.045)';
                       ctx.fillRect(x0, y0, cellW, plotH);
-                      ctx.strokeStyle = 'rgba(100,116,139,0.28)';
+                      ctx.strokeStyle = 'rgba(100,116,139,0.16)';
                       ctx.lineWidth = 0.5;
+                      for (var sg = 1; sg <= 3; sg++) {
+                        var sgy = y0 + (plotH * sg) / 4;
+                        ctx.beginPath(); ctx.moveTo(x0, sgy); ctx.lineTo(x0 + cellW, sgy); ctx.stroke();
+                      }
+                      ctx.strokeStyle = 'rgba(100,116,139,0.34)';
+                      ctx.lineWidth = 0.75;
                       ctx.strokeRect(x0 + 0.5, y0 + 0.5, cellW - 1, plotH - 1);
 
                       ctx.fillStyle = sch.color;
@@ -6483,14 +6957,44 @@ dataRef.current = d;
                       ctx.textAlign = 'left';
                       ctx.fillText(sch.abbrev, x0 + 4, y0 - 4);
 
+                      if (animLen > 1) {
+                        ctx.save();
+                        ctx.beginPath();
+                        for (var ta = 0; ta < animLen; ta++) {
+                          if (ta === 0) ctx.moveTo(cx(ta), cy(rec.resp[ta]));
+                          else ctx.lineTo(cx(ta), cy(rec.resp[ta]));
+                        }
+                        ctx.lineTo(cx(animLen - 1), y0 + plotH);
+                        ctx.lineTo(cx(0), y0 + plotH);
+                        ctx.closePath();
+                        var cellArea = ctx.createLinearGradient(0, y0, 0, y0 + plotH);
+                        cellArea.addColorStop(0, sch.color + '33');
+                        cellArea.addColorStop(1, sch.color + '03');
+                        ctx.fillStyle = cellArea;
+                        ctx.fill();
+                        ctx.restore();
+                      }
+
+                      ctx.save();
                       ctx.beginPath();
                       ctx.strokeStyle = sch.color;
-                      ctx.lineWidth = 1.75;
+                      ctx.lineWidth = 2;
+                      ctx.lineJoin = 'round';
+                      ctx.shadowColor = sch.color;
+                      ctx.shadowBlur = 4;
                       for (var t = 0; t < animLen; t++) {
                         if (t === 0) ctx.moveTo(cx(t), cy(rec.resp[t]));
                         else ctx.lineTo(cx(t), cy(rec.resp[t]));
                       }
                       ctx.stroke();
+                      if (animLen > 0) {
+                        var tipT = animLen - 1;
+                        ctx.fillStyle = '#ffffff';
+                        ctx.beginPath();
+                        ctx.arc(cx(tipT), cy(rec.resp[tipT]), 2.4, 0, Math.PI * 2);
+                        ctx.fill();
+                      }
+                      ctx.restore();
 
                       ctx.lineWidth = 1;
                       for (var ri = 0; ri < rec.reinf.length; ri++) {

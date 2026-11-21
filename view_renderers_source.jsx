@@ -384,7 +384,10 @@ const _loadOrganizerHtml2Canvas = (() => {
       script.async = true;
       script.crossOrigin = 'anonymous';
       script.referrerPolicy = 'no-referrer';
-      script.onload = () => window.html2canvas ? resolve(window.html2canvas) : reject(new Error('html2canvas unavailable'));
+      script.onload = () => {
+        if (window.html2canvas) resolve(window.html2canvas);
+        else { pending = null; reject(new Error('html2canvas unavailable')); }
+      };
       script.onerror = () => {
         pending = null;
         reject(new Error('html2canvas failed to load'));
@@ -570,11 +573,9 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
 
   const clampZoom = value => Math.min(1.6, Math.max(0.5, Math.round(value * 10) / 10));
   const changeZoom = delta => {
-    setZoom(current => {
-      const next = clampZoom(current + delta);
-      setToolbarMessage((t('outline.zoom_changed') || 'Zoom') + ': ' + Math.round(next * 100) + '%');
-      return next;
-    });
+    const next = clampZoom(zoom + delta);
+    setZoom(next);
+    setToolbarMessage((t('outline.zoom_changed') || 'Zoom') + ': ' + Math.round(next * 100) + '%');
   };
   const fitToScreen = () => {
     const viewportWidth = viewportRef.current?.clientWidth || minBoardWidth;
@@ -709,7 +710,7 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
     <section className="rounded-3xl border border-slate-200 bg-white shadow-sm" aria-label={t('outline.flow_topology') || 'Flow chart topology'}>
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-3 py-3">
         <div role="toolbar" aria-label={t('outline.flow_view_controls') || 'Flow chart view controls'} className="flex flex-wrap items-center gap-1.5">
-          <button type="button" onClick={() => changeZoom(-0.1)} disabled={zoom <= 0.5} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white px-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-40" aria-label={t('outline.zoom_out') || 'Zoom out'} title={t('outline.zoom_out') || 'Zoom out'}>?</button>
+          <button type="button" onClick={() => changeZoom(-0.1)} disabled={zoom <= 0.5} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white px-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-40" aria-label={t('outline.zoom_out') || 'Zoom out'} title={t('outline.zoom_out') || 'Zoom out'}>−</button>
           <span role="group" className="min-w-14 text-center text-xs font-black tabular-nums text-slate-700" aria-label={(t('outline.current_zoom') || 'Current zoom') + ' ' + Math.round(zoom * 100) + '%'}>{Math.round(zoom * 100)}%</span>
           <button type="button" onClick={() => changeZoom(0.1)} disabled={zoom >= 1.6} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white px-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-40" aria-label={t('outline.zoom_in') || 'Zoom in'} title={t('outline.zoom_in') || 'Zoom in'}>+</button>
           <button type="button" onClick={fitToScreen} className="min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 text-xs font-black text-indigo-800 hover:bg-indigo-100">{t('outline.fit_to_screen') || 'Fit'}</button>
@@ -719,7 +720,7 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
         </div>
         <div role="toolbar" aria-label={t('outline.flow_export_controls') || 'Flow chart export controls'} className="flex flex-wrap items-center gap-1.5">
           <button type="button" onClick={handleDownloadSvg} disabled={exportState === 'rendering'} className="min-h-11 rounded-lg border border-violet-300 bg-violet-50 px-3 text-xs font-black text-violet-800 hover:bg-violet-100 disabled:opacity-50" aria-label={t('outline.download_svg') || 'Download flow chart as SVG'}>SVG</button>
-          <button type="button" onClick={handleDownloadPng} disabled={exportState === 'rendering'} className="min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-black text-emerald-800 hover:bg-emerald-100 disabled:opacity-50" aria-busy={exportState === 'rendering'} aria-label={t('outline.download_png') || 'Download flow chart as PNG'}>{exportState === 'rendering' ? (t('outline.rendering') || 'Rendering?') : 'PNG'}</button>
+          <button type="button" onClick={handleDownloadPng} disabled={exportState === 'rendering'} className="min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-black text-emerald-800 hover:bg-emerald-100 disabled:opacity-50" aria-busy={exportState === 'rendering'} aria-label={t('outline.download_png') || 'Download flow chart as PNG'}>{exportState === 'rendering' ? (t('outline.rendering') || 'Rendering...') : 'PNG'}</button>
           <button type="button" onClick={handlePrintFlow} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-black text-slate-800 hover:bg-slate-100" aria-label={t('outline.print_pdf') || 'Print or save flow chart as PDF'}>{t('outline.print') || 'Print / PDF'}</button>
         </div>
         <div className="sr-only" role="status" aria-live="polite">{toolbarMessage}</div>
@@ -785,7 +786,7 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
                     role="listitem"
                     className={'relative rounded-2xl border-2 bg-white p-5 shadow-lg ' + (isDecision ? 'border-amber-400 ring-4 ring-amber-100' : isMerge ? 'border-teal-400 ring-4 ring-teal-100' : 'border-indigo-200')}
                   >
-                    <div className={'absolute -top-4 left-4 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white ' + (isDecision ? 'bg-amber-600' : isMerge ? 'bg-teal-700' : 'bg-indigo-600')}>{badgeText}</div>
+                    <div className={'absolute -top-4 left-4 rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider text-white ' + (isDecision ? 'bg-amber-600' : isMerge ? 'bg-teal-700' : 'bg-indigo-600')}>{badgeText}</div>
                     <button
                       type="button"
                       onClick={() => toggleNodeCollapsed(branchIndex)}
@@ -793,7 +794,7 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
                       aria-label={(isCollapsed ? (t('outline.expand_step') || 'Expand step') : (t('outline.collapse_step') || 'Collapse step')) + ' ' + (branchIndex + 1)}
                       className="absolute right-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-black text-slate-700 shadow-sm hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-500"
                     >
-                      <span aria-hidden="true">{isCollapsed ? '+' : '?'}</span>
+                      <span aria-hidden="true">{isCollapsed ? '+' : '−'}</span>
                     </button>
                     <div className="mt-2 pr-10">
                       {isEditingOutline ? (
@@ -842,7 +843,7 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
                     {!isCollapsed && outgoing.length > 0 && (
                       <div role="group" className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-100 pt-3" aria-label={t('outline.outgoing_paths') || 'Outgoing paths'}>
                         {outgoing.map(connection => (
-                          <span key={connection.target} className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[10px] font-bold text-indigo-800">
+                          <span key={connection.target} className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-800">
                             {(connection.label ? connection.label + ': ' : '') + (t('outline.step') || 'Step') + ' ' + (connection.target + 1)}
                           </span>
                         ))}
@@ -872,7 +873,7 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
                                   <span>{(t('outline.connect_to') || 'Connect to') + ' ' + (targetIndex + 1) + ': ' + targetBranch.title}</span>
                                 </label>
                                 {connection && (
-                                  <label className="mt-1 block text-[11px] font-bold text-slate-600">
+                                  <label className="mt-1 block text-xs font-bold text-slate-600">
                                     {t('outline.path_label') || 'Path label (for example: Yes or No)'}
                                     <input
                                       value={connection.label || ''}
@@ -1174,15 +1175,18 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
       const near = left <= ORGANIZER_REFLECTION_WARN_AT;
       const full = left <= 0;
       const countId = 'reflection-count-' + id;
-      return <label key={id} className="block text-sm font-semibold">
-        <span>{label}</span><span className="my-1 block text-xs font-normal text-slate-700">{prompt}</span>
-        <textarea aria-label={label} aria-describedby={near ? countId : undefined} rows={7} maxLength={ORGANIZER_REFLECTION_MAX_CHARS} value={shown.values[id] || ''} onChange={event => { const text = event.target.value; setEntry(current => ({ ...(current.key === storageKey ? current : empty()), values: { ...(current.key === storageKey ? current.values : {}), [id]: text } })); setNotice(''); }} className="w-full rounded-lg border border-slate-400 p-3 font-normal focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700" />
+      const fieldId = 'reflection-field-' + id;
+      const DictationBtn = typeof window !== 'undefined' && (window.AlloModules?.DictationButton || window.AlloDictationButton);
+      return <div key={id} className="block text-sm font-semibold">
+        <label htmlFor={fieldId} className="block"><span>{label}</span><span className="my-1 block text-xs font-normal text-slate-700">{prompt}</span></label>
+        <textarea id={fieldId} aria-label={label} aria-describedby={near ? countId : undefined} rows={7} maxLength={ORGANIZER_REFLECTION_MAX_CHARS} value={shown.values[id] || ''} onChange={event => { const text = event.target.value; setEntry(current => ({ ...(current.key === storageKey ? current : empty()), values: { ...(current.key === storageKey ? current.values : {}), [id]: text } })); setNotice(''); }} className="w-full rounded-lg border border-slate-400 p-3 font-normal focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700" />
+        {DictationBtn ? <div className="mt-1.5">{React.createElement(DictationBtn, { t, label: tr('dictate_field', 'Dictate') + ': ' + label, onTranscript: (spoken) => { setEntry(current => { const base = current.key === storageKey ? current : empty(); const prev = String(base.values[id] || '').trimEnd(); const merged = ((prev ? prev + ' ' : '') + spoken).slice(0, ORGANIZER_REFLECTION_MAX_CHARS); return { ...base, values: { ...base.values, [id]: merged } }; }); setNotice(''); } })}</div> : null}
         {near && <span id={countId} className={'mt-1 block text-xs font-normal ' + (full ? 'font-semibold text-red-800' : 'text-slate-700')}>
           {full
             ? tr('chars_full', 'You have reached the {max}-character limit for this box. Shorten this answer to add more.').replace('{max}', String(ORGANIZER_REFLECTION_MAX_CHARS))
             : tr('chars_left', '{n} characters left').replace('{n}', String(left))}
         </span>}
-      </label>;
+      </div>;
     })}</div>
     <p role="status" aria-live="polite" className="sr-only">{(() => {
       const worst = fields.reduce((least, [id]) => Math.min(least, ORGANIZER_REFLECTION_MAX_CHARS - String(shown.values[id] || '').length), ORGANIZER_REFLECTION_MAX_CHARS);
@@ -1213,17 +1217,39 @@ const OrganizerMountReceipt = ({ children, activityKey, onReady, onFailed }) => 
   const ready = React.useRef(onReady); ready.current = onReady;
   const failed = React.useRef(onFailed); failed.current = onFailed;
   React.useEffect(() => {
+    setMountFailed(false);
     let done = false;
+    let poll = null;
+    let timeout = null;
+    const clearTimers = () => {
+      if (poll != null) { clearInterval(poll); poll = null; }
+      if (timeout != null) { clearTimeout(timeout); timeout = null; }
+    };
     const check = () => {
-      if (!done && element.current?.querySelector('[role="dialog"], [data-organizer-activity-ready="true"]')) { done = true; ready.current?.(); }
+      if (!done && element.current?.querySelector('[role="dialog"], [data-organizer-activity-ready="true"]')) {
+        done = true;
+        clearTimers();
+        ready.current?.();
+      }
     };
     check();
-    const poll = setInterval(check, 100);
-    const timeout = setTimeout(() => { if (!done) { done = true; setMountFailed(true); failed.current?.(); } }, 15000);
-    return () => { done = true; clearInterval(poll); clearTimeout(timeout); };
+    if (!done) {
+      poll = setInterval(check, 100);
+      timeout = setTimeout(() => { if (!done) { done = true; clearTimers(); setMountFailed(true); failed.current?.(); } }, 15000);
+    }
+    return () => { done = true; clearTimers(); };
   }, [activityKey]);
   return mountFailed ? <div role="alert" className="mx-auto my-6 max-w-xl rounded-xl border-2 border-amber-400 bg-amber-50 p-5 text-amber-950"><h3 className="font-bold">This activity could not be opened.</h3><p className="mt-2">Ask your teacher to retry the activity from the Live Dashboard. Your saved work is still on this device.</p></div> : <div ref={element}>{children}</div>;
 };
+
+// Stable module-scope fallback for lazily-registered organizer games so React never remounts
+// the loading state across parent renders.
+const _OrganizerGameLoadingFallback = (props) => React.createElement(
+  'div',
+  { className: 'p-8 flex flex-col items-center justify-center gap-3 text-center', role: 'status', 'aria-live': 'polite' },
+  React.createElement('div', { className: 'w-10 h-10 rounded-full border-[3px] border-indigo-100 border-t-indigo-500 motion-safe:animate-spin', 'aria-hidden': 'true' }),
+  React.createElement('div', { className: 'text-sm font-bold text-slate-600' }, (props && typeof props.t === 'function' && props.t('common.loading')) || 'Loading the activity…')
+);
 
 // A learner's 3D / palace stores overlay the teacher's resource in their own view only.
 const _organizerOverlayCache = new WeakMap();
@@ -1238,6 +1264,7 @@ const organizerDataWithLearnerWork = (data, work) => {
 };
 
 const renderOutlineContentCore = (deps) => {
+  const _bt = (s) => (typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s;
   const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractiveConceptRecall3d, setIsInteractiveConceptRecall3d, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer, interactiveOrganizerSync } = deps;
   // Fallback if older host hasn't passed broadcastInteractiveOrganizer yet — no-op, local-only behavior preserved.
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {});
@@ -1259,7 +1286,7 @@ const renderOutlineContentCore = (deps) => {
       deps.addToast(_vrCopy(t, 'organizer.live_preview_closed', 'Teacher preview closed. The activity is still live for students; use “Stop for students” to end it.'), 'info');
     }
   };
-  const LiveOrganizerStatus = ({ type }) => {
+  const renderLiveOrganizerStatus = (type) => {
     if (!isTeacherMode || interactiveOrganizerSync?.type !== type || interactiveOrganizerSync.status === 'idle') return null;
     const status = interactiveOrganizerSync.status;
     const label = status === 'starting' ? 'Starting for students…'
@@ -1285,12 +1312,7 @@ const renderOutlineContentCore = (deps) => {
   // window before window.AlloModules.<Game> registers (or if it fails to load). Replaces 10
   // identical plain-text "Loading game..." fallbacks with one spinner + localized label
   // (role=status for screen readers; the spin is motion-safe so reduced-motion users don't see it).
-  const _GameLoadingFallback = () => React.createElement(
-    'div',
-    { className: 'p-8 flex flex-col items-center justify-center gap-3 text-center', role: 'status', 'aria-live': 'polite' },
-    React.createElement('div', { className: 'w-10 h-10 rounded-full border-[3px] border-indigo-100 border-t-indigo-500 motion-safe:animate-spin', 'aria-hidden': 'true' }),
-    React.createElement('div', { className: 'text-sm font-bold text-slate-500' }, (t('common.loading') || 'Loading the activity…'))
-  );
+  const _GameLoadingFallback = _OrganizerGameLoadingFallback;
   const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? window.AlloModules.CauseEffectSortGame : _GameLoadingFallback;
   // Use the registered component itself. Creating a wrapper here changes the
   // component type on every host render and remounts (resets) the whole game.
@@ -1315,7 +1337,8 @@ const renderOutlineContentCore = (deps) => {
         const _organizerResourceId = generatedContent.id;
         const _organizerPersist = typeof deps.handleConceptSpacePersist === 'function'
             ? (arrangement, key) => deps.handleConceptSpacePersist(arrangement, key, _organizerResourceId) : undefined;
-        const _organizerViewData = isTeacherMode ? generatedContent.data : organizerDataWithLearnerWork(generatedContent.data, deps.organizerLearnerWork);
+        const _normalizedOrganizerViewBase = { ...generatedContent.data, ...organizerData };
+        const _organizerViewData = isTeacherMode ? _normalizedOrganizerViewBase : organizerDataWithLearnerWork(_normalizedOrganizerViewBase, deps.organizerLearnerWork);
         const activityTypeByStructure = {
             'Flow Chart': 'pipeline', 'Process Flow / Sequence': 'pipeline',
             'T-Chart': 'tchart', 'Fishbone': 'fishbone', 'Cause and Effect': 'cesort',
@@ -1353,7 +1376,7 @@ const renderOutlineContentCore = (deps) => {
             fishbone: setIsFishboneSortPlaying, problemsolution: setIsProblemSolutionSortPlaying,
             frayer: setIsFrayerSortPlaying, seethinkwonder: setIsSeeThinkWonderSortPlaying, storymap: setIsStoryMapSortPlaying,
         }[organizerActivityType];
-        const GameButtonHint = () => (
+        const renderGameButtonHint = () => (
             <>
                 {isTeacherMode && deps.activeSessionCode && localPractice && <button type="button" disabled={!organizerLaunchReadiness.ok} onClick={() => localPractice(true)} className="mr-2 min-h-11 rounded-full border border-indigo-500 bg-white px-4 text-sm font-bold text-indigo-800 disabled:opacity-50">Practice activity</button>}
                 <p id="game-btn-hint" className="sr-only">
@@ -1366,7 +1389,7 @@ const renderOutlineContentCore = (deps) => {
                 )}
             </>
         );
-        const MainTitle = () => (
+        const renderMainTitle = () => (
              <div className="text-center mb-8">
                 {isEditingOutline ? (
                     <div className="flex flex-col gap-2 max-w-md mx-auto">
@@ -1383,6 +1406,16 @@ const renderOutlineContentCore = (deps) => {
                                 placeholder={t('common.placeholder_translation')}
                             />
                         )}
+                        <div className="flex justify-center pt-1">
+                            <button
+                                type="button"
+                                data-outline-add-branch="true"
+                                onClick={() => handleOutlineChange(null, 'add-branch', '')}
+                                className="inline-flex min-h-9 items-center gap-1 rounded-full border border-indigo-300 bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                            >
+                                <Plus size={13} aria-hidden="true" /> {t('outline.add_section') || 'Add section'}
+                            </button>
+                        </div>
                     </div>
                 ) : (
                     <>
@@ -1394,7 +1427,7 @@ const renderOutlineContentCore = (deps) => {
         );
         const renderOrganizerFallback = (title, description, detail = '') => (
             <div className="max-w-2xl mx-auto px-4 py-8">
-                <MainTitle />
+                {renderMainTitle()}
                 <div role="status" className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 text-center">
                     <h3 className="text-lg font-black text-amber-900 mb-2">{title}</h3>
                     <p className="text-sm text-amber-800">{description}</p>
@@ -1402,16 +1435,30 @@ const renderOutlineContentCore = (deps) => {
                 </div>
             </div>
         );
-        const BranchItem = React.memo(({ branch, bIdx, minimal = false, colorClass = "bg-white" }) => (
-            <div className={`${colorClass} p-5 rounded-2xl border-2 shadow-sm transition-all h-full ${bIdx % 2 === 0 ? 'border-indigo-100' : 'border-teal-100'} ${minimal ? 'p-3' : ''} hover:shadow-md relative z-10`}>
+        const renderBranchItem = ({ branch, bIdx, minimal = false, colorClass = "bg-white", key } = {}) => (
+            <div key={key !== undefined ? key : bIdx} className={`${colorClass} p-5 rounded-2xl border-2 shadow-sm transition-all h-full ${bIdx % 2 === 0 ? 'border-indigo-100' : 'border-teal-100'} ${minimal ? 'p-3' : ''} hover:shadow-md relative z-10`}>
                 <div className="mb-3 pb-2 border-b border-black/5">
                      {isEditingOutline ? (
                          <div className="flex flex-col gap-1">
-                             <input aria-label={t('common.enter_branch')}
-                                value={branch.title}
-                                onChange={(e) => handleOutlineChange(bIdx, 'title', e.target.value)}
-                                className="font-bold text-lg text-indigo-900 w-full bg-transparent border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1"
-                             />
+                             <div className="flex items-center gap-1">
+                               <input aria-label={t('common.enter_branch')}
+                                  value={branch.title}
+                                  onChange={(e) => handleOutlineChange(bIdx, 'title', e.target.value)}
+                                  className="font-bold text-lg text-indigo-900 flex-1 min-w-0 bg-transparent border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1"
+                               />
+                               {Array.isArray(branches) && branches.length > 1 && (
+                                 <button
+                                   type="button"
+                                   data-outline-remove-branch={bIdx}
+                                   onClick={() => handleOutlineChange(bIdx, 'remove-branch')}
+                                   aria-label={(t('outline.remove_section') || 'Remove section') + (branch.title ? ': ' + branch.title : '')}
+                                   title={t('outline.remove_section') || 'Remove section'}
+                                   className="shrink-0 inline-flex min-h-8 min-w-8 items-center justify-center rounded-md text-slate-600 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
+                                 >
+                                   <X size={14} aria-hidden="true" />
+                                 </button>
+                               )}
+                             </div>
                              {(branch.title_en || leveledTextLanguage !== 'English') && (
                                  <input aria-label={t('common.common_placeholder_title_trans')}
                                     value={branch.title_en || ''}
@@ -1423,8 +1470,31 @@ const renderOutlineContentCore = (deps) => {
                          </div>
                      ) : (
                          <>
-                             <h4 className="font-bold text-lg text-indigo-900">{branch.title}</h4>
-                             {branch.title_en && <p className="text-xs text-slate-600 italic">({branch.title_en})</p>}
+                             <div className="flex items-start justify-between gap-2">
+                               <h4 className="font-bold text-lg text-indigo-900">{_bt(branch.title)}</h4>
+                               <button
+                                 type="button"
+                                 data-outline-branch-listen={bIdx}
+                                 onClick={() => {
+                                   const spoken = [branch.title, ...(Array.isArray(branch.items) ? branch.items : [])].filter(Boolean).join('. ').replace(/\s+/g, ' ').trim();
+                                   if (!spoken) return;
+                                   try {
+                                     if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+                                       window.AlloSpeechPlayer.speak(spoken);
+                                     } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
+                                       window.callTTS(spoken);
+                                     } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+                                       window.speechSynthesis.cancel();
+                                       window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(spoken));
+                                     }
+                                   } catch (_) {}
+                                 }}
+                                 aria-label={(t('a11y.read_aloud') || 'Listen') + (branch.title ? ': ' + branch.title : '')}
+                                 title={t('a11y.read_aloud') || 'Listen'}
+                                 className="no-print shrink-0 inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                               ><span aria-hidden="true">🔊</span><span>{t('common.listen') || 'Listen'}</span></button>
+                             </div>
+                             {branch.title_en && <p className="text-xs text-slate-600 italic">({_bt(branch.title_en)})</p>}
                          </>
                      )}
                 </div>
@@ -1435,11 +1505,23 @@ const renderOutlineContentCore = (deps) => {
                             <div className="w-full">
                                 {isEditingOutline ? (
                                     <div className="flex flex-col gap-1">
-                                        <input aria-label={t('common.enter_item')}
-                                            value={item}
-                                            onChange={(e) => handleOutlineChange(bIdx, 'item', e.target.value, iIdx)}
-                                            className="w-full bg-white/50 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200"
-                                        />
+                                        <div className="flex items-center gap-1">
+                                          <input aria-label={t('common.enter_item')}
+                                              value={item}
+                                              onChange={(e) => handleOutlineChange(bIdx, 'item', e.target.value, iIdx)}
+                                              className="flex-1 min-w-0 bg-white/50 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200"
+                                          />
+                                          <button
+                                            type="button"
+                                            data-outline-remove-item={`${bIdx}-${iIdx}`}
+                                            onClick={() => handleOutlineChange(bIdx, 'remove-item', null, iIdx)}
+                                            aria-label={(t('outline.remove_item') || 'Remove item') + ' ' + (iIdx + 1)}
+                                            title={t('outline.remove_item') || 'Remove item'}
+                                            className="shrink-0 inline-flex min-h-7 min-w-7 items-center justify-center rounded text-slate-600 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
+                                          >
+                                            <X size={12} aria-hidden="true" />
+                                          </button>
+                                        </div>
                                         {(branch.items_en?.[iIdx] || leveledTextLanguage !== 'English') && (
                                             <input aria-label={t('common.common_placeholder_item_trans')}
                                                 value={branch.items_en?.[iIdx] || ''}
@@ -1451,16 +1533,26 @@ const renderOutlineContentCore = (deps) => {
                                     </div>
                                 ) : (
                                     <>
-                                        <span>{item}</span>
-                                        {branch.items_en?.[iIdx] && <div className="text-xs text-slate-600 italic">({branch.items_en[iIdx]})</div>}
+                                        <span>{_bt(item)}</span>
+                                        {branch.items_en?.[iIdx] && <div className="text-xs text-slate-600 italic">({_bt(branch.items_en[iIdx])})</div>}
                                     </>
                                 )}
                             </div>
                         </li>
                     ))}
                 </ul>
+                {isEditingOutline && (
+                    <button
+                        type="button"
+                        data-outline-add-item={bIdx}
+                        onClick={() => handleOutlineChange(bIdx, 'add-item', '')}
+                        className="mt-3 inline-flex min-h-8 items-center gap-1 rounded-lg border border-dashed border-indigo-300 bg-indigo-50/50 px-2.5 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                    >
+                        <Plus size={12} aria-hidden="true" /> {t('outline.add_item') || 'Add item'}
+                    </button>
+                )}
             </div>
-        ));
+        );
         if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
             if (isPipelinePlaying || (isInteractivePipeline && !isTeacherMode)) {
                 const stepData = branches.map(branch => ({
@@ -1486,7 +1578,7 @@ const renderOutlineContentCore = (deps) => {
                 <div className="mx-auto max-w-7xl">
                     {showGameButton && (
                       <div className="mb-4 flex justify-center">
-                        <GameButtonHint />
+                        {renderGameButtonHint()}
                         <button type="button"
                           onClick={() => _startOrganizerGame('pipeline', () => setIsPipelinePlaying(true))}
                           disabled={!organizerLaunchReadiness.ok}
@@ -1495,10 +1587,10 @@ const renderOutlineContentCore = (deps) => {
                         >
                           <Gamepad2 size={16} /> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                         </button>
-                        <LiveOrganizerStatus type="pipeline" />
+                        {renderLiveOrganizerStatus("pipeline")}
                       </div>
                     )}
-                    <MainTitle />
+                    {renderMainTitle()}
                     {React.createElement(FlowTopologyBoard, {
                       branches,
                       t,
@@ -1534,7 +1626,7 @@ const renderOutlineContentCore = (deps) => {
             const isNonEnglish = leveledTextLanguage !== 'English';
             const showEnglish = !isNonEnglish || outlineTranslationMode === 'bilingual';
             const renderVennItems = (items, items_en, branchIndex) => {
-                return items.slice(0, 5).map((it, i) => (
+                return (isEditingOutline ? items : items.slice(0, 5)).map((it, i) => (
                     <li key={i}>
                         {isEditingOutline ? (
                              <div className="flex flex-col gap-1 mb-2">
@@ -1643,7 +1735,7 @@ const renderOutlineContentCore = (deps) => {
                                             <button type="button" onClick={() => handleRemoveVennItem('setA', i)} className="min-h-11 min-w-11 text-rose-700 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
                                         </div>
                                     ))}
-                                    {vennGameData.setA.length === 0 && <p className="text-[11px] text-rose-700 italic text-center">{t('concept_sort.no_items')}</p>}
+                                    {vennGameData.setA.length === 0 && <p className="text-xs text-rose-700 italic text-center">{t('concept_sort.no_items')}</p>}
                                 </div>
                             </div>
                             <div className="bg-purple-50 rounded-xl border-2 border-purple-200 p-4 flex flex-col">
@@ -1666,7 +1758,7 @@ const renderOutlineContentCore = (deps) => {
                                             <button type="button" onClick={() => handleRemoveVennItem('shared', i)} className="min-h-11 min-w-11 text-purple-700 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
                                         </div>
                                     ))}
-                                    {vennGameData.shared.length === 0 && <p className="text-[11px] text-purple-700 italic text-center">{t('concept_sort.no_items')}</p>}
+                                    {vennGameData.shared.length === 0 && <p className="text-xs text-purple-700 italic text-center">{t('concept_sort.no_items')}</p>}
                                 </div>
                             </div>
                             <div className="bg-blue-50 rounded-xl border-2 border-blue-200 p-4 flex flex-col">
@@ -1689,11 +1781,11 @@ const renderOutlineContentCore = (deps) => {
                                             <button type="button" onClick={() => handleRemoveVennItem('setB', i)} className="min-h-11 min-w-11 text-blue-700 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity rounded focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2" aria-label={`${t('common.remove')}: ${typeof item === 'object' ? item.text : item}`}><X size={12}/></button>
                                         </div>
                                     ))}
-                                    {vennGameData.setB.length === 0 && <p className="text-[11px] text-blue-700 italic text-center">{t('concept_sort.no_items')}</p>}
+                                    {vennGameData.setB.length === 0 && <p className="text-xs text-blue-700 italic text-center">{t('concept_sort.no_items')}</p>}
                                 </div>
                             </div>
                         </div>
-                        <div className="mb-4 flex justify-center"><LiveOrganizerStatus type="venn" /></div>
+                        <div className="mb-4 flex justify-center">{renderLiveOrganizerStatus("venn")}</div>
                         <button type="button"
                             aria-label={isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             disabled={!isVennGameReady}
@@ -1704,7 +1796,7 @@ const renderOutlineContentCore = (deps) => {
                                 _startOrganizerGame('venn', handleSetIsVennPlayingToTrue, { gameData: vennGameData });
                             }}
                         >
-                            <Gamepad2 size={24} className="fill-current text-yellow-700"/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
+                            <Gamepad2 size={24} className="fill-current text-yellow-300"/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                         </button>
                         {!isVennGameReady && (
                             <p id="venn-game-readiness" role="status" className="mt-3 text-center text-sm font-bold text-amber-800">
@@ -1735,7 +1827,7 @@ const renderOutlineContentCore = (deps) => {
                             </select>
                          )}
                     </div>
-                    <MainTitle />
+                    {renderMainTitle()}
                     <div className="flex flex-col items-center space-y-[-40px]">
                         <div className="w-full max-w-lg z-10">
                              <div className="bg-blue-50 border-4 border-blue-200 rounded-[50px] p-10 pb-16 text-center shadow-sm relative">
@@ -1866,8 +1958,8 @@ const renderOutlineContentCore = (deps) => {
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <span>{text}</span>
-                                                    {trans && <div className="text-xs italic opacity-75 mt-0.5">({trans})</div>}
+                                                    <span>{_bt(text)}</span>
+                                                    {trans && <div className="text-xs italic opacity-75 mt-0.5">({_bt(trans)})</div>}
                                                 </>
                                             )}
                                         </div>
@@ -1883,10 +1975,10 @@ const renderOutlineContentCore = (deps) => {
             };
             return (
                 <div className="max-w-5xl mx-auto px-2">
-                    <MainTitle />
+                    {renderMainTitle()}
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
-                            <GameButtonHint />
+                            {renderGameButtonHint()}
                             <button type="button"
                                 onClick={() => _startOrganizerGame('tchart', () => setIsTChartPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
@@ -1896,7 +1988,7 @@ const renderOutlineContentCore = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
-                            <LiveOrganizerStatus type="tchart" />
+                            {renderLiveOrganizerStatus("tchart")}
                         </div>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-0 bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
@@ -1956,10 +2048,10 @@ const renderOutlineContentCore = (deps) => {
             });
             return (
                 <div className="max-w-6xl mx-auto px-2">
-                    <MainTitle />
+                    {renderMainTitle()}
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
-                            <GameButtonHint />
+                            {renderGameButtonHint()}
                             <button type="button"
                                 onClick={() => _startOrganizerGame('fishbone', () => setIsFishboneSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
@@ -1969,7 +2061,7 @@ const renderOutlineContentCore = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
-                            <LiveOrganizerStatus type="fishbone" />
+                            {renderLiveOrganizerStatus("fishbone")}
                         </div>
                     )}
                     {/* SVG fishbone skeleton — purely decorative, the real content is in the cards below */}
@@ -2065,8 +2157,8 @@ const renderOutlineContentCore = (deps) => {
                                                             </div>
                                                         ) : (
                                                             <>
-                                                                <span>{text}</span>
-                                                                {trans && <div className="text-xs italic opacity-75 mt-0.5">({trans})</div>}
+                                                                <span>{_bt(text)}</span>
+                                                                {trans && <div className="text-xs italic opacity-75 mt-0.5">({_bt(trans)})</div>}
                                                             </>
                                                         )}
                                                     </div>
@@ -2084,7 +2176,7 @@ const renderOutlineContentCore = (deps) => {
                 </div>
             );
         }
-        if (type === 'Cause and Effect') {
+        if (type === 'Cause and Effect' && !isEditingOutline) {
             const semanticText = (branch) => `${branch?.title || ''} ${branch?.title_en || ''}`.toLowerCase();
             const semanticRole = (branch) => String(branch?.role || branch?.semanticRole || '').trim().toLowerCase();
             let causes = branches.filter(branch => semanticRole(branch) === 'cause' || semanticRole(branch) === 'causes' || semanticText(branch).includes('cause'));
@@ -2139,7 +2231,7 @@ const renderOutlineContentCore = (deps) => {
                     <div className="max-w-4xl mx-auto px-2">
                         {showGameButton && (
                         <div className="flex justify-center mb-4">
-                            <GameButtonHint />
+                            {renderGameButtonHint()}
                             <button type="button"
                                 onClick={() => _startOrganizerGame('cesort', () => setIsCESortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
@@ -2149,16 +2241,16 @@ const renderOutlineContentCore = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
-                            <LiveOrganizerStatus type="cesort" />
+                            {renderLiveOrganizerStatus("cesort")}
                         </div>
                         )}
-                        <MainTitle />
+                        {renderMainTitle()}
                         <div className="space-y-6">
                             {branches.map((b, i) => (
                                  <div key={i} className="relative pl-4 md:pl-0 group">
                                      <div className="flex flex-col md:flex-row items-stretch gap-0 bg-white rounded-2xl border border-slate-400 shadow-md overflow-hidden">
                                          <div className="flex-1 p-6 bg-orange-50 border-r border-orange-100 relative">
-                                             <div className="absolute top-0 left-0 bg-orange-200 text-orange-800 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-br-lg">{t('outline.labels.cause')}</div>
+                                             <div className="absolute top-0 left-0 bg-orange-200 text-orange-800 text-xs font-black uppercase tracking-wider px-3 py-1 rounded-br-lg">{t('outline.labels.cause')}</div>
                                              <div className="pt-2 h-full flex items-center">
                                                  {isEditingOutline ? (
                                                      <textarea
@@ -2177,11 +2269,11 @@ const renderOutlineContentCore = (deps) => {
                                              <ArrowRight size={24} className="text-slate-600 rotate-90 md:rotate-0 relative z-10" strokeWidth={3} />
                                          </div>
                                          <div className="flex-1 p-6 bg-teal-50 relative">
-                                             <div className="absolute top-0 left-0 bg-teal-200 text-teal-800 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-br-lg">{t('outline.labels.effect')}</div>
+                                             <div className="absolute top-0 left-0 bg-teal-200 text-teal-800 text-xs font-black uppercase tracking-wider px-3 py-1 rounded-br-lg">{t('outline.labels.effect')}</div>
                                              <div className="pt-4 h-full">
                                                  <ul className="list-disc list-inside text-teal-900 space-y-2 marker:text-teal-400">
                                                      {b.items.map((item, k) => (
-                                                         <li key={k} className="text-sm font-medium leading-relaxed">{item}</li>
+                                                         <li key={k} className="text-sm font-medium leading-relaxed">{_bt(item)}</li>
                                                      ))}
                                                  </ul>
                                              </div>
@@ -2197,7 +2289,7 @@ const renderOutlineContentCore = (deps) => {
                 <div className="max-w-6xl mx-auto px-4 py-8">
                     {showGameButton && (
                     <div className="flex justify-center mb-6">
-                        <GameButtonHint />
+                        {renderGameButtonHint()}
                         <button type="button"
                             onClick={() => _startOrganizerGame('cesort', () => setIsCESortPlaying(true))}
                             disabled={!organizerLaunchReadiness.ok}
@@ -2207,18 +2299,19 @@ const renderOutlineContentCore = (deps) => {
                         >
                             <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                         </button>
-                        <LiveOrganizerStatus type="cesort" />
+                        {renderLiveOrganizerStatus("cesort")}
                     </div>
                     )}
-                    <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16">
+                    {renderMainTitle()}
+                    <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-10">
                         <div className="flex-1 flex flex-col gap-6 w-full lg:items-end">
                             {causes.map((branch, i) => (
                                 <div key={`c-${i}`} className="bg-orange-50 border-l-4 border-orange-400 p-5 rounded-r-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow">
                                     <h4 className="font-black text-orange-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-orange-400"></div> {t('outline.labels.causes')}
+                                        <div className="w-2 h-2 rounded-full bg-orange-400"></div> {branch.title || t('outline.labels.causes')}
                                     </h4>
                                     <ul className="space-y-2">
-                                        {branch.items.map((it, k) => (
+                                        {(Array.isArray(branch.items) ? branch.items : []).map((it, k) => (
                                             <li key={k} className="text-slate-700 font-medium text-sm flex items-start gap-2">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-orange-300 mt-1.5 shrink-0"></div>
                                                 {it}
@@ -2237,10 +2330,10 @@ const renderOutlineContentCore = (deps) => {
                              {effects.map((branch, i) => (
                                 <div key={`e-${i}`} className="bg-teal-50 border-r-4 border-teal-400 p-5 rounded-l-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow text-right lg:text-left">
                                     <h4 className="font-black text-teal-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2 justify-end lg:justify-start">
-                                        {t('outline.labels.effects')} <div className="w-2 h-2 rounded-full bg-teal-400"></div>
+                                        {branch.title || t('outline.labels.effects')} <div className="w-2 h-2 rounded-full bg-teal-400"></div>
                                     </h4>
                                     <ul className="space-y-2">
-                                        {branch.items.map((it, k) => (
+                                        {(Array.isArray(branch.items) ? branch.items : []).map((it, k) => (
                                             <li key={k} className="text-slate-700 font-medium text-sm flex items-start gap-2 justify-end lg:justify-start">
                                                 {it}
                                                 <div className="w-1.5 h-1.5 rounded-full bg-teal-300 mt-1.5 shrink-0 order-first lg:order-last"></div>
@@ -2251,6 +2344,22 @@ const renderOutlineContentCore = (deps) => {
                             ))}
                         </div>
                     </div>
+                    {chains.length > 0 && (
+                        <div className="max-w-4xl mx-auto mt-4 space-y-4">
+                            {chains.map((branch, i) => (
+                                <div key={`ch-${i}`} className="bg-indigo-50 border-t-4 border-indigo-400 p-5 rounded-xl shadow-sm">
+                                    <h4 className="font-black text-indigo-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-indigo-400"></div> {branch.title || t('outline.labels.chain') || 'Chain Reaction'}
+                                    </h4>
+                                    <ol className="list-decimal list-inside space-y-2">
+                                        {(Array.isArray(branch.items) ? branch.items : []).map((it, k) => (
+                                            <li key={k} className="text-slate-700 font-medium text-sm leading-relaxed">{_bt(it)}</li>
+                                        ))}
+                                    </ol>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -2286,7 +2395,7 @@ const renderOutlineContentCore = (deps) => {
                 <div className="max-w-5xl mx-auto px-4 py-12">
                      {showPSGame && (
                          <div className="flex justify-center mb-6">
-                             <GameButtonHint />
+                             {renderGameButtonHint()}
                              <button type="button"
                                  onClick={() => _startOrganizerGame('problemsolution', () => setIsProblemSolutionSortPlaying(true))}
                                  disabled={!organizerLaunchReadiness.ok}
@@ -2296,7 +2405,7 @@ const renderOutlineContentCore = (deps) => {
                              >
                                  <Gamepad2 size={16}/> {(t('games.problem_solution_sort.match_btn') === 'games.problem_solution_sort.match_btn' ? 'Match Details to Solutions' : (t('games.problem_solution_sort.match_btn') || 'Match Details to Solutions'))}
                              </button>
-                             <LiveOrganizerStatus type="problemsolution" />
+                             {renderLiveOrganizerStatus("problemsolution")}
                          </div>
                      )}
                      <div className="relative z-10 mb-16">
@@ -2308,7 +2417,7 @@ const renderOutlineContentCore = (deps) => {
                                 <h4 className="text-xs font-black text-red-500 uppercase tracking-widest mb-2 opacity-70 flex items-center gap-2">
                                     {t('outline.labels.problem')}
                                 </h4>
-                                <MainTitle />
+                                {renderMainTitle()}
                              </div>
                              <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center h-24 w-8 justify-end">
                                  <div className="h-full w-1 bg-slate-200"></div>
@@ -2325,11 +2434,11 @@ const renderOutlineContentCore = (deps) => {
                                      <div key={i} className="flex flex-col relative group">
                                          <div className="absolute -top-8 left-1/2 -translate-x-1/2 h-8 w-1 bg-slate-200 hidden md:block group-hover:bg-green-300 transition-colors"></div>
                                          <div className="relative bg-white rounded-2xl border-t-8 border-green-500 shadow-md hover:shadow-xl transition-all duration-300 flex-grow p-6 flex flex-col h-full">
-                                             <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-green-100 text-green-800 px-4 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border border-green-200 whitespace-nowrap shadow-sm z-10">
+                                             <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-green-100 text-green-800 px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-green-200 whitespace-nowrap shadow-sm z-10">
                                                  Solution Path {i + 1}
                                              </div>
                                              <div className="mt-4 flex-grow">
-                                                <BranchItem branch={b} bIdx={originalIndex} colorClass="bg-transparent border-none shadow-none p-0" />
+                                                {renderBranchItem({ branch: b, bIdx: originalIndex, colorClass: "bg-transparent border-none shadow-none p-0" })}
                                              </div>
                                          </div>
                                          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 h-8 w-1 bg-slate-200 hidden md:block group-hover:bg-blue-300 transition-colors"></div>
@@ -2349,7 +2458,7 @@ const renderOutlineContentCore = (deps) => {
                              </div>
                              {outcomeBranch ? (
                                  <div className="text-left">
-                                     <BranchItem branch={outcomeBranch} bIdx={outcomeIndex} colorClass="bg-transparent border-none shadow-none p-0" />
+                                     {renderBranchItem({ branch: outcomeBranch, bIdx: outcomeIndex, colorClass: "bg-transparent border-none shadow-none p-0" })}
                                  </div>
                              ) : (
                                  <>
@@ -2357,16 +2466,20 @@ const renderOutlineContentCore = (deps) => {
                                      <p className="text-sm text-blue-800/80 max-w-lg mx-auto leading-relaxed italic">
                                          Analyze the results here. Did the proposed solutions effectively address the challenge? What were the trade-offs or final results?
                                      </p>
-                                     {isTeacherMode && (
-                                         <button type="button"
-                                            onClick={handleGenerateOutcome}
-                                            disabled={isProcessing}
-                                            className="mt-4 text-xs font-bold bg-blue-100 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:cursor-wait"
-                                         >
-                                             {isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={14}/>}
-                                             {t('outline.labels.generate_outcome') || "Generate Outcome"}
-                                         </button>
-                                     )}
+                                     {isTeacherMode && (() => {
+                                         const outcomeAiOff = typeof window !== 'undefined' && typeof window.__alloAiAvailable === 'function' && window.__alloAiAvailable('text') === false;
+                                         return (
+                                             <button type="button"
+                                                onClick={handleGenerateOutcome}
+                                                disabled={isProcessing || outcomeAiOff}
+                                                title={outcomeAiOff ? ((t && t('sidebar.needs_ai_setup')) || 'Needs AI setup') : undefined}
+                                                className="mt-4 text-xs font-bold bg-blue-100 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                                             >
+                                                 {isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={14}/>}
+                                                 {t('outline.labels.generate_outcome') || "Generate Outcome"}
+                                             </button>
+                                         );
+                                     })()}
                                  </>
                              )}
                          </div>
@@ -2404,7 +2517,7 @@ const renderOutlineContentCore = (deps) => {
                 <div>
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
-                            <GameButtonHint />
+                            {renderGameButtonHint()}
                             <button type="button"
                                 onClick={() => _startOrganizerGame('conceptmap', () => setIsConceptMapSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
@@ -2414,7 +2527,7 @@ const renderOutlineContentCore = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
-                            <LiveOrganizerStatus type="conceptmap" />
+                            {renderLiveOrganizerStatus("conceptmap")}
                         </div>
                     )}
                     <KeyConceptMapView branches={branches} main={main} main_en={main_en} BranchItem={BranchItem} t={t} />
@@ -2499,7 +2612,7 @@ const renderOutlineContentCore = (deps) => {
                             {items.length > 0 ? items.map((text, i) => (
                                 <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-snug">
                                     <span className={`${c.dot} mt-0.5 flex-shrink-0`}>●</span>
-                                    <span>{text}</span>
+                                    <span>{_bt(text)}</span>
                                 </li>
                             )) : (
                                 <li className="text-xs text-slate-600 italic">—</li>
@@ -2512,7 +2625,7 @@ const renderOutlineContentCore = (deps) => {
                 <div className="max-w-4xl mx-auto px-4 py-6 relative">
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
-                            <GameButtonHint />
+                            {renderGameButtonHint()}
                             <button type="button"
                                 onClick={() => _startOrganizerGame('frayer', () => setIsFrayerSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
@@ -2522,7 +2635,7 @@ const renderOutlineContentCore = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
-                            <LiveOrganizerStatus type="frayer" />
+                            {renderLiveOrganizerStatus("frayer")}
                         </div>
                     )}
                     <div className="grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative" style={{ minHeight: '460px' }}>
@@ -2541,14 +2654,18 @@ const renderOutlineContentCore = (deps) => {
                             </div>
                         </div>
                     </div>
-                    {isTeacherMode ? (
+                    {isTeacherMode ? (() => {
+                        const frayerImageAiOff = typeof window !== 'undefined' && typeof window.__alloAiAvailable === 'function' && window.__alloAiAvailable('images') === false;
+                        const frayerAiTitle = frayerImageAiOff ? ((t && t('sidebar.needs_ai_setup')) || 'Needs AI setup') : undefined;
+                        return (
                         <div className="flex gap-2 justify-center mt-3">
                             {frayerImage ? (
                                 <>
                                     <button type="button"
                                         onClick={onRefineFrayerVisual}
-                                        disabled={isProcessing}
-                                        className="px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-800 border border-violet-300 rounded-md hover:bg-violet-100 disabled:opacity-50"
+                                        disabled={isProcessing || frayerImageAiOff}
+                                        title={frayerAiTitle}
+                                        className="px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-800 border border-violet-300 rounded-md hover:bg-violet-100 disabled:opacity-50 disabled:cursor-not-allowed"
                                         aria-label={t('outline.frayer_refine_visual_aria') || 'Refine the Examples-quadrant visual via image-to-image edit'}
                                     >
                                         {t('outline.frayer_refine_visual_button') || '✨ Refine visual'}
@@ -2565,16 +2682,18 @@ const renderOutlineContentCore = (deps) => {
                             ) : (
                                 <button type="button"
                                     onClick={onGenerateFrayerVisual}
-                                    disabled={isProcessing}
-                                    className="px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100 disabled:opacity-50"
+                                    disabled={isProcessing || frayerImageAiOff}
+                                    title={frayerAiTitle}
+                                    className="px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed"
                                     aria-label={t('outline.frayer_add_visual_aria') || 'Generate an AI visual for the Examples quadrant'}
                                 >
                                     {t('outline.frayer_add_visual_button') || '🖼️ Add visual to Examples'}
                                 </button>
                             )}
                         </div>
-                    ) : null}
-                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.frayer_caption') || 'Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants.'}</p>
+                        );
+                    })() : null}
+                    <p className="text-xs text-slate-600 italic text-center mt-3">{t('outline.frayer_caption') || 'Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants.'}</p>
                 </div>
             );
         }
@@ -2616,12 +2735,12 @@ const renderOutlineContentCore = (deps) => {
                 return (
                     <div className={`${c.bg} flex-1 min-h-[280px]`}>
                         <h4 className={`${c.header} font-black text-base uppercase tracking-wide text-center py-3 px-4`}>{branch.title}</h4>
-                        <div className="px-4 pt-2 pb-1 text-[11px] italic text-slate-500 text-center">{hint}</div>
+                        <div className="px-4 pt-2 pb-1 text-xs italic text-slate-600 text-center">{hint}</div>
                         <ul className="p-4 pt-2 space-y-2">
                             {items.length > 0 ? items.map((text, i) => (
                                 <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-snug">
                                     <span className={`${c.dot} mt-0.5 flex-shrink-0`}>●</span>
-                                    <span>{text}</span>
+                                    <span>{_bt(text)}</span>
                                 </li>
                             )) : (
                                 <li className="text-xs text-slate-600 italic">—</li>
@@ -2632,10 +2751,10 @@ const renderOutlineContentCore = (deps) => {
             };
             return (
                 <div className="max-w-5xl mx-auto px-4 py-6">
-                    <MainTitle />
+                    {renderMainTitle()}
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
-                            <GameButtonHint />
+                            {renderGameButtonHint()}
                             <button type="button"
                                 onClick={() => _startOrganizerGame('seethinkwonder', () => setIsSeeThinkWonderSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
@@ -2645,7 +2764,7 @@ const renderOutlineContentCore = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
-                            <LiveOrganizerStatus type="seethinkwonder" />
+                            {renderLiveOrganizerStatus("seethinkwonder")}
                         </div>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200">
@@ -2653,7 +2772,7 @@ const renderOutlineContentCore = (deps) => {
                         {renderSTWColumn(thinkBranch,  'violet', 'What the observations suggest')}
                         {renderSTWColumn(wonderBranch, 'amber',  'Questions you want to explore')}
                     </div>
-                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.see_think_wonder_caption') || 'See, Think, Wonder (Harvard Project Zero): observation, inference, and open questioning kept distinct.'}</p>
+                    <p className="text-xs text-slate-600 italic text-center mt-3">{t('outline.see_think_wonder_caption') || 'See, Think, Wonder (Harvard Project Zero): observation, inference, and open questioning kept distinct.'}</p>
                 </div>
             );
         }
@@ -2698,7 +2817,7 @@ const renderOutlineContentCore = (deps) => {
                             {items.length > 0 ? items.map((text, i) => (
                                 <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-snug">
                                     <span className={`${c.dot} mt-0.5 flex-shrink-0`}>●</span>
-                                    <span>{text}</span>
+                                    <span>{_bt(text)}</span>
                                 </li>
                             )) : (
                                 <li className="text-xs text-slate-600 italic">{placeholderWhenEmpty || '—'}</li>
@@ -2709,14 +2828,14 @@ const renderOutlineContentCore = (deps) => {
             };
             return (
                 <div className="max-w-5xl mx-auto px-4 py-6">
-                    <MainTitle />
+                    {renderMainTitle()}
                     <div className="grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200">
                         {renderColumn(knowBranch,    'sky',     null, ['kwl_prompt_know', 'What do you already know?'])}
                         {renderColumn(wantBranch,    'violet',  null, ['kwl_prompt_want', 'What do you want to know?'])}
                         {renderColumn(learnedBranch, 'emerald', t('outline.kwl_learned_placeholder') || '(students fill this in after the lesson)', ['kwl_prompt_learned', 'What did you learn?'])}
                     </div>
 
-                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.kwl_caption') || 'KWL Chart: prior knowledge on the left, anticipated questions in the middle, learning captured on the right after the lesson.'}</p>
+                    <p className="text-xs text-slate-600 italic text-center mt-3">{t('outline.kwl_caption') || 'KWL Chart: prior knowledge on the left, anticipated questions in the middle, learning captured on the right after the lesson.'}</p>
                 </div>
             );
         }
@@ -2751,19 +2870,19 @@ const renderOutlineContentCore = (deps) => {
             };
             return (
                 <div className="max-w-6xl mx-auto px-4 py-6">
-                    <MainTitle />
+                    {renderMainTitle()}
                     <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
-                        <GameButtonHint />
+                        {renderGameButtonHint()}
                         <button type="button" disabled={!organizerLaunchReadiness.ok}
                             onClick={() => _startOrganizerGame('outline', () => setIsOutlineSortPlaying(true))}
                             aria-describedby={organizerLaunchReadiness.ok ? 'game-btn-hint' : 'game-btn-hint game-btn-readiness'}
                             className="min-h-11 rounded-full bg-indigo-700 px-5 py-2 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50">
                             {isTeacherMode && deps.activeSessionCode ? 'Start CER sorting for students' : 'Practice CER sorting'}
                         </button>
-                        <LiveOrganizerStatus type="outline" />
+                        {renderLiveOrganizerStatus("outline")}
                     </div>
                     <div className="mb-5 rounded-2xl border-2 border-slate-300 bg-white px-5 py-4 text-center shadow-sm">
-                        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-600">{t('outline.cer_question') || 'Question or phenomenon'}</div>
+                        <div className="text-xs font-black uppercase tracking-[0.18em] text-slate-600">{t('outline.cer_question') || 'Question or phenomenon'}</div>
                         <div className="mt-1 font-bold text-slate-900">{main}</div>
                     </div>
                     <div role="list" aria-label={t('outline.cer_flow_aria') || 'Claim, Evidence, and Reasoning relationship'} className="flex flex-col md:flex-row items-stretch gap-3">
@@ -2789,7 +2908,7 @@ const renderOutlineContentCore = (deps) => {
                                         </ul>
                                     </section>
                                     {index < cerStages.length - 1 && (
-                                        <div className="flex shrink-0 items-center justify-center text-slate-500" aria-hidden="true">
+                                        <div className="flex shrink-0 items-center justify-center text-slate-600" aria-hidden="true">
                                             <ArrowRight size={28} className="rotate-90 md:rotate-0" strokeWidth={2.5} />
                                         </div>
                                     )}
@@ -2836,10 +2955,10 @@ const renderOutlineContentCore = (deps) => {
             const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
             return (
                 <div className="max-w-5xl mx-auto px-4 py-6">
-                    <MainTitle />
+                    {renderMainTitle()}
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
-                            <GameButtonHint />
+                            {renderGameButtonHint()}
                             <button type="button"
                                 onClick={() => _startOrganizerGame('storymap', () => setIsStoryMapSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
@@ -2849,7 +2968,7 @@ const renderOutlineContentCore = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
-                            <LiveOrganizerStatus type="storymap" />
+                            {renderLiveOrganizerStatus("storymap")}
                         </div>
                     )}
                     <div className="bg-gradient-to-b from-sky-50/80 via-white to-amber-50/40 border-2 border-slate-300 rounded-2xl p-6 shadow-lg">
@@ -2874,7 +2993,7 @@ const renderOutlineContentCore = (deps) => {
                                         </h5>
                                         <ul className="space-y-1">
                                             {items.length > 0 ? items.map((text, k) => (
-                                                <li key={k} className="text-xs text-slate-700 leading-snug">• {text}</li>
+                                                <li key={k} className="text-xs text-slate-700 leading-snug">• {_bt(text)}</li>
                                             )) : (
                                                 <li className="text-xs text-slate-600 italic">—</li>
                                             )}
@@ -2884,7 +3003,7 @@ const renderOutlineContentCore = (deps) => {
                             })}
                         </div>
                     </div>
-                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.story_map_caption') || 'Story Map: tension rises through Rising Action to the Climax, then falls toward Resolution. The arc visualizes the shape of narrative tension.'}</p>
+                    <p className="text-xs text-slate-600 italic text-center mt-3">{t('outline.story_map_caption') || 'Story Map: tension rises through Rising Action to the Climax, then falls toward Resolution. The arc visualizes the shape of narrative tension.'}</p>
                 </div>
             );
         }
@@ -2894,8 +3013,8 @@ const renderOutlineContentCore = (deps) => {
             // editing of rooms/items; mnemonics ride along untouched).
             return (
                 <div className="max-w-6xl mx-auto px-4 py-6">
-                    <MainTitle />
-                    <div className="mb-3 flex justify-center"><LiveOrganizerStatus type="palacerecall" /></div>
+                    {renderMainTitle()}
+                    <div className="mb-3 flex justify-center">{renderLiveOrganizerStatus("palacerecall")}</div>
                     <ErrorBoundary fallbackMessage="Memory Palace encountered an error.">
                         <MemoryPalaceView
                             key={String(_organizerResourceId)}
@@ -2930,8 +3049,8 @@ const renderOutlineContentCore = (deps) => {
             // already provides full inline editing for {main, branches}.
             return (
                 <div className="max-w-6xl mx-auto px-4 py-6">
-                    <MainTitle />
-                    <div className="mb-3 flex justify-center gap-2"><LiveOrganizerStatus type="strandchallenge3d" /><LiveOrganizerStatus type="conceptrecall3d" /></div>
+                    {renderMainTitle()}
+                    <div className="mb-3 flex justify-center gap-2">{renderLiveOrganizerStatus("strandchallenge3d")}{renderLiveOrganizerStatus("conceptrecall3d")}</div>
                     <ErrorBoundary fallbackMessage="3D Concept Space encountered an error.">
                         <ConceptSpace3DView
                             key={String(_organizerResourceId)}
@@ -2990,10 +3109,10 @@ const renderOutlineContentCore = (deps) => {
             }
             return (
                 <div className="max-w-4xl mx-auto px-4 py-6">
-                    <MainTitle />
+                    {renderMainTitle()}
                     {showGameButton && (
                         <div className="flex justify-center mb-4">
-                            <GameButtonHint />
+                            {renderGameButtonHint()}
                             <button type="button"
                                 onClick={() => _startOrganizerGame('outline', () => setIsOutlineSortPlaying(true))}
                                 disabled={!organizerLaunchReadiness.ok}
@@ -3003,7 +3122,7 @@ const renderOutlineContentCore = (deps) => {
                             >
                                 <Gamepad2 size={16}/> {isTeacherMode && deps.activeSessionCode ? 'Start activity for students' : 'Practice activity'}
                             </button>
-                            <LiveOrganizerStatus type="outline" />
+                            {renderLiveOrganizerStatus("outline")}
                         </div>
                     )}
                     <div className="relative mt-8 space-y-8 ml-4 md:ml-12">
@@ -3036,8 +3155,31 @@ const renderOutlineContentCore = (deps) => {
                                                 </div>
                                             ) : (
                                                 <div className="border-b border-slate-50 pb-2">
-                                                    <h4 className="font-bold text-lg text-indigo-900">{branch.title}</h4>
-                                                    {branch.title_en && <p className="text-xs text-slate-600 italic">({branch.title_en})</p>}
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <h4 className="font-bold text-lg text-indigo-900">{_bt(branch.title)}</h4>
+                                                        <button
+                                                            type="button"
+                                                            data-outline-branch-listen={i}
+                                                            onClick={() => {
+                                                                const spoken = [branch.title, ...(Array.isArray(branch.items) ? branch.items : [])].filter(Boolean).join('. ').replace(/\s+/g, ' ').trim();
+                                                                if (!spoken) return;
+                                                                try {
+                                                                    if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+                                                                        window.AlloSpeechPlayer.speak(spoken);
+                                                                    } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
+                                                                        window.callTTS(spoken);
+                                                                    } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+                                                                        window.speechSynthesis.cancel();
+                                                                        window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(spoken));
+                                                                    }
+                                                                } catch (_) {}
+                                                            }}
+                                                            aria-label={(t('a11y.read_aloud') || 'Listen') + (branch.title ? ': ' + branch.title : '')}
+                                                            title={t('a11y.read_aloud') || 'Listen'}
+                                                            className="no-print shrink-0 inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                                        ><span aria-hidden="true">🔊</span><span>{t('common.listen') || 'Listen'}</span></button>
+                                                    </div>
+                                                    {branch.title_en && <p className="text-xs text-slate-600 italic">({_bt(branch.title_en)})</p>}
                                                 </div>
                                             )}
                                         </div>
@@ -3065,8 +3207,8 @@ const renderOutlineContentCore = (deps) => {
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            <span className="leading-relaxed">{item}</span>
-                                                            {branch.items_en?.[k] && <div className="text-xs text-slate-600 italic mt-0.5">({branch.items_en[k]})</div>}
+                                                            <span className="leading-relaxed">{_bt(item)}</span>
+                                                            {branch.items_en?.[k] && <div className="text-xs text-slate-600 italic mt-0.5">({_bt(branch.items_en[k])})</div>}
                                                         </>
                                                     )}
                                                 </div>
@@ -3082,9 +3224,9 @@ const renderOutlineContentCore = (deps) => {
         }
         return (
             <div className="max-w-5xl mx-auto">
-                <MainTitle />
+                {renderMainTitle()}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {branches.map((b, i) => <BranchItem key={i} branch={b} bIdx={i} />)}
+                    {branches.map((b, i) => renderBranchItem({ key: i, branch: b, bIdx: i }))}
                 </div>
             </div>
         );
@@ -3463,12 +3605,15 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     const fmtTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
     const challengeEligible = React.useMemo(() => {
         const branches = Array.isArray(data?.branches) ? data.branches : [];
-        const items = branches.reduce((s, b) => s + ((b.items || []).filter((it) => (typeof it === 'object' ? it.text : it)).length), 0);
+        const items = branches.reduce((s, b) => {
+            const list = Array.isArray(b?.items) ? b.items : [];
+            return s + list.filter((it) => (it && typeof it === 'object' ? (it.text || it.label || it.name || it.title) : it)).length;
+        }, 0);
         return branches.length >= 2 && items >= 4;   // same bar as the 2D sort games
     }, [data]);
     // Scene identity = the CONTENT (not the arrangement): edits update
     // data.conceptSpace continuously and must NOT remount the GL scene.
-    const dataKey = JSON.stringify({ m: data?.main, b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items })) });
+    const dataKey = JSON.stringify({ m: data?.main, b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b?.title, i: Array.isArray(b?.items) ? b.items : [] })) });
 
     React.useEffect(() => {
         let alive = true;
@@ -4164,7 +4309,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     return (
         <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-slate-600">
                     {challenge
                         ? (t('concept_space.challenge_hint') || '🎯 Click a fallen concept, then give it a strand (chips in its panel, or [ and ] keys). Check when ready.')
                         : (t('concept_space.hint') || 'Position carries meaning: left → right = sequence · higher = more abstract · depth = strand.')}
@@ -4217,7 +4362,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     <button type="button"
                                         onClick={() => { setRecallAnswerMode('bank'); setTypedAnswer(''); }}
                                         aria-pressed={recallAnswerMode === 'bank' ? 'true' : 'false'}
-                                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === 'bank' ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
+                                        className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${recallAnswerMode === 'bank' ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
                                     >
                                         {t('concept_space.recall_mode_bank') || 'Choose'}
                                     </button>
@@ -4226,7 +4371,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                             onClick={() => setRecallAnswerMode('typed')}
                                             aria-pressed={recallAnswerMode === 'typed' ? 'true' : 'false'}
                                             title={t('concept_space.recall_mode_typed_tooltip') || 'Expert: type the name instead of choosing it'}
-                                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === 'typed' ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
+                                            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${recallAnswerMode === 'typed' ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
                                         >
                                             {t('concept_space.recall_mode_typed') || 'Type'}
                                         </button>
@@ -4271,12 +4416,12 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 </button>
                             )}
                             {isTeacherMode && !challenge && !recall && challengeLiveReadiness?.ok === false && (
-                                <span role="status" className="max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900">
+                                <span role="status" className="max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-900">
                                     Strand Challenge: {challengeLiveReadiness.message}
                                 </span>
                             )}
                             {isTeacherMode && !challenge && !recall && recallLiveReadiness?.ok === false && (
-                                <span role="status" className="max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900">
+                                <span role="status" className="max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-900">
                                     Concept Recall: {recallLiveReadiness.message}
                                 </span>
                             )}
@@ -4369,7 +4514,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     .replace('{revealed}', String(recallScore.revealed))
                                     .replace('{points}', String(recallScore.points))}
                             </div>
-                            <p className="text-[11px] text-slate-500 italic mt-2">
+                            <p className="text-xs text-slate-600 italic mt-2">
                                 {t('concept_space.recall_framing') || 'Naming a concept from its picture is retrieval practice, which is what makes the images worth making. It is a study strategy, not a measure of ability.'}
                             </p>
                         </div>
@@ -4378,7 +4523,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             {/* Purely visual wayfinding: says which node to look at. The
                                 heading above already carries the position and the cue in
                                 words, so this would only be noise read aloud. */}
-                            <p className="text-[11px] text-slate-500 mb-2" aria-hidden="true">
+                            <p className="text-xs text-slate-600 mb-2" aria-hidden="true">
                                 {(t('concept_space.recall_look') || 'Concept {n} of {total} — the glowing node is the one being asked about.')
                                     .replace('{n}', String(recallIdx + 1)).replace('{total}', String(recall.order.length))}
                             </p>
@@ -4391,7 +4536,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                         onClick={() => setDescribeOpen((o) => !o)}
                                         aria-expanded={describeOpen ? 'true' : 'false'}
                                         aria-controls="cg3d-recall-desc"
-                                        className="text-[11px] font-bold text-sky-700 underline hover:text-sky-900"
+                                        className="text-xs font-bold text-sky-700 underline hover:text-sky-900"
                                     >
                                         🔍 {describeOpen ? (t('concept_space.recall_hide_desc') || 'Hide the description') : (t('concept_space.recall_show_desc') || 'Describe the picture')}
                                     </button>
@@ -4448,7 +4593,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             <button type="button"
                                 onClick={revealRecallAnswer}
                                 disabled={!!recallFeedback}
-                                className="text-[11px] text-slate-500 underline hover:text-slate-700 mt-2 disabled:opacity-50"
+                                className="text-xs text-slate-600 underline hover:text-slate-700 mt-2 disabled:opacity-50"
                             >
                                 {t('concept_space.recall_reveal') || 'Show me this one'}
                             </button>
@@ -4460,7 +4605,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                 <div className="mb-3 bg-white border border-fuchsia-300 rounded-xl px-4 py-3 text-slate-800" role="group" aria-label={t('concept_space.furnish_panel_aria') || 'Furnish every concept'}>
                     <div className="flex items-center gap-2 flex-wrap mb-2">
                         <h3 className="text-xs font-extrabold text-fuchsia-700">🎨 {t('concept_space.furnish_heading') || 'Furnish every concept'}</h3>
-                        <span className="text-[11px] text-slate-500 ml-auto">
+                        <span className="text-xs text-slate-600 ml-auto">
                             {(t('concept_space.furnish_pending') || '{n} still need art').replace('{n}', String(furnishTargets.length))}
                         </span>
                     </div>
@@ -4469,7 +4614,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             onClick={() => setFurnishMode('sculpture')}
                             aria-pressed={furnishMode === 'sculpture' ? 'true' : 'false'}
                             disabled={!!furnishing}
-                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors disabled:opacity-50 ${furnishMode === 'sculpture' ? 'bg-fuchsia-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
+                            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors disabled:opacity-50 ${furnishMode === 'sculpture' ? 'bg-fuchsia-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
                         >
                             🧊 {t('concept_space.furnish_mode_sculpture') || 'Sculptures'}
                         </button>
@@ -4478,12 +4623,12 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             aria-pressed={furnishMode === 'image' ? 'true' : 'false'}
                             disabled={!canImagen || !!furnishing}
                             title={!canImagen ? (t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.') : undefined}
-                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors disabled:opacity-40 ${furnishMode === 'image' ? 'bg-fuchsia-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
+                            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors disabled:opacity-40 ${furnishMode === 'image' ? 'bg-fuchsia-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
                         >
                             🖼 {t('concept_space.furnish_mode_image') || 'Images'}
                         </button>
                     </div>
-                    <label className="flex items-start gap-2 text-[11px] text-slate-600 mb-2 cursor-pointer">
+                    <label className="flex items-start gap-2 text-xs text-slate-600 mb-2 cursor-pointer">
                         <input
                             type="checkbox"
                             checked={useMnemonics}
@@ -4495,7 +4640,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                     </label>
                     {furnishMode === 'image' && (
                         <p
-                            className={`text-[11px] rounded-lg px-2.5 py-2 mb-2 ${furnishHeavy ? 'bg-amber-50 border border-amber-300 text-amber-900' : 'bg-slate-50 border border-slate-200 text-slate-600'}`}
+                            className={`text-xs rounded-lg px-2.5 py-2 mb-2 ${furnishHeavy ? 'bg-amber-50 border border-amber-300 text-amber-900' : 'bg-slate-50 border border-slate-200 text-slate-600'}`}
                             role={furnishHeavy && !furnishing ? 'alert' : undefined}
                         >
                             {furnishHeavy ? '⚠ ' : ''}
@@ -4557,12 +4702,12 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             change on the element you are already focused on is not
                             reliably announced. Say it in a live region instead. */}
                         {clearArmed && !furnishing && (
-                            <span id="cg3d-clear-armed" role="status" aria-live="assertive" className="text-[11px] font-bold text-rose-700">
+                            <span id="cg3d-clear-armed" role="status" aria-live="assertive" className="text-xs font-bold text-rose-700">
                                 {(t('concept_space.furnish_clear_armed') || 'This removes the art from {n} concepts. Press the button again to confirm.').replace('{n}', String(artCount))}
                             </span>
                         )}
                     </div>
-                    <p className="text-[11px] text-slate-500 italic mt-2">
+                    <p className="text-xs text-slate-600 italic mt-2">
                         {t('concept_space.furnish_framing') || 'Students can still make and refine art on any single concept by clicking it. Building the image yourself is where most of the memory benefit lives, so use this to seed a space rather than to replace their turn.'}
                     </p>
                 </div>
@@ -4574,7 +4719,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         <div className="flex items-center gap-0.5 bg-slate-800 rounded-full p-0.5 ml-auto" role="group" aria-label={t('cg3d.constel_mode_label') || 'Constellation view mode'}>
                             {['off', 'mine', 'ai', 'diff'].map((m) => (
                                 <button type="button" key={m} onClick={() => setConstelMode(m)} aria-pressed={constelMode === m ? 'true' : 'false'}
-                                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${constelMode === m ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-700'}`}>
+                                    className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${constelMode === m ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-700'}`}>
                                     {m === 'off' ? (t('cg3d.constel_mode_off') || 'Off') : m === 'mine' ? (t('cg3d.constel_mode_mine') || 'My weights') : m === 'ai' ? (t('cg3d.constel_mode_ai') || 'AI weights') : (t('cg3d.constel_mode_diff') || 'Compare')}
                                 </button>
                             ))}
@@ -4586,13 +4731,13 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             <option value="">{t('cg3d.constel_pick_a') || 'First concept'}…</option>
                             {constelNodes.map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
                         </select>
-                        <span className="text-slate-500 text-xs">🔗</span>
+                        <span className="text-slate-600 text-xs">🔗</span>
                         <select value={constelB} onChange={(e) => setConstelB(e.target.value)} aria-label={t('cg3d.constel_pick_b') || 'Second concept'}
                             className="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-200 max-w-[180px]">
                             <option value="">{t('cg3d.constel_pick_b') || 'Second concept'}…</option>
                             {constelNodes.filter((n) => n.id !== constelA).map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
                         </select>
-                        <label className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                        <label className="flex items-center gap-1.5 text-xs text-slate-400">
                             {t('cg3d.constel_weight') || 'How related?'}
                             <input type="range" min="0" max="1" step="0.05" value={constelW} onChange={(e) => setConstelW(parseFloat(e.target.value))}
                                 aria-label={t('cg3d.constel_weight_aria') || 'Relatedness weight, 0 to 1'} aria-valuetext={`${Math.round(constelW * 100)}%`} className="w-24 accent-indigo-500" />
@@ -4617,11 +4762,11 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         )}
                     </div>
                     {constelMode === 'diff' && (
-                        <div className="text-[11px] text-slate-400 mt-2">
+                        <div className="text-xs text-slate-400 mt-2">
                             <span className="text-indigo-300 font-bold">■</span> {t('cg3d.constel_diff_mine') || 'you rated it stronger'} · <span className="text-amber-400 font-bold">■</span> {t('cg3d.constel_diff_ai') || 'the AI rated it stronger'} · <span className="text-slate-200 font-bold">■</span> {t('cg3d.constel_diff_agree') || 'you roughly agree'}
                         </div>
                     )}
-                    <p className="text-[11px] text-slate-300 italic mt-2">
+                    <p className="text-xs text-slate-300 italic mt-2">
                         {t('cg3d.constel_framing') || 'Brightness shows how strongly YOU rated each link. Comparing with the AI shows where your mental maps differ — a window into weighted connections and semantic similarity (closest to spreading-activation models of memory), not literally “how neural networks work.”'}
                     </p>
                 </div>
@@ -4651,12 +4796,15 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                     <div className="p-6 text-slate-200 text-sm overflow-auto h-full" role="status">
                         <p className="mb-3 text-amber-300">{t('cg3d.load_error') || 'The 3D library could not load. Showing the reading-order outline instead.'}</p>
                         <ol className="list-decimal pl-6 space-y-2">
-                            {(Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => (
+                            {(Array.isArray(data?.branches) ? data.branches : []).filter(Boolean).map((b, bi) => (
                                 <li key={bi}>
                                     <span className="font-bold">{b.title}</span>
                                     {Array.isArray(b.items) && b.items.length > 0 && (
                                         <ul className="list-disc pl-5 mt-1 space-y-0.5">
-                                            {b.items.map((it, ii) => <li key={ii}>{typeof it === 'object' ? it.text : it}</li>)}
+                                            {b.items.map((it, ii) => {
+                                                const txt = it && typeof it === 'object' ? (it.text || it.label || it.name || it.title || '') : (it == null ? '' : String(it));
+                                                return txt ? <li key={ii}>{txt}</li> : null;
+                                            })}
                                         </ul>
                                     )}
                                 </li>
@@ -4676,22 +4824,24 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         </div>
                         {nodeArtType ? (
                             <div className="space-y-2">
-                                <div className="text-[11px] text-slate-500">{nodeArtType === 'sculpture' ? (t('concept_space.art_has_sculpture') || 'A sculpture floats above this concept.') : (t('concept_space.art_has_image') || 'An image floats above this concept.')}</div>
+                                <div className="text-xs text-slate-600">{nodeArtType === 'sculpture' ? (t('concept_space.art_has_sculpture') || 'A sculpture floats above this concept.') : (t('concept_space.art_has_image') || 'An image floats above this concept.')}</div>
                                 {nodeArtType === 'sculpture' && (
                                     <>
                                         <div className="flex flex-wrap gap-1">
-                                            <button type="button" onClick={() => handleArtManualTweak('bigger')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍+ {t('memory_palace.refine_bigger') || 'Bigger'}</button>
-                                            <button type="button" onClick={() => handleArtManualTweak('smaller')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍− {t('memory_palace.refine_smaller') || 'Smaller'}</button>
-                                            <button type="button" onClick={() => handleArtManualTweak('rotate')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">⟳ {t('memory_palace.refine_rotate') || 'Rotate'}</button>
-                                            <button type="button" onClick={() => handleArtManualTweak('recolor')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
+                                            <button type="button" onClick={() => handleArtManualTweak('bigger')} className="px-2 py-1 rounded-full text-xs font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍+ {t('memory_palace.refine_bigger') || 'Bigger'}</button>
+                                            <button type="button" onClick={() => handleArtManualTweak('smaller')} className="px-2 py-1 rounded-full text-xs font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍− {t('memory_palace.refine_smaller') || 'Smaller'}</button>
+                                            <button type="button" onClick={() => handleArtManualTweak('rotate')} className="px-2 py-1 rounded-full text-xs font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">⟳ {t('memory_palace.refine_rotate') || 'Rotate'}</button>
+                                            <button type="button" onClick={() => handleArtManualTweak('recolor')} className="px-2 py-1 rounded-full text-xs font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
                                         </div>
+                                        {_alloRuntimeAiAvailable() && (
                                         <form onSubmit={(e) => { e.preventDefault(); handleArtRefine(); }} className="flex gap-1">
-                                            <input value={refinePrompt} onChange={(e) => setRefinePrompt(e.target.value)} disabled={refineBusy} placeholder={t('concept_space.refine_placeholder') || 'Tell the AI what to change…'} aria-label={t('concept_space.refine_placeholder') || 'Tell the AI what to change'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" />
-                                            <button type="submit" aria-label="Apply art change" disabled={!refinePrompt.trim() || refineBusy} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50"><span aria-hidden="true">✨</span></button>
+                                            <input value={refinePrompt} onChange={(e) => setRefinePrompt(e.target.value)} disabled={refineBusy || !_alloRuntimeAiAvailable()} placeholder={t('concept_space.refine_placeholder') || 'Tell the AI what to change…'} aria-label={t('concept_space.refine_placeholder') || 'Tell the AI what to change'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400 disabled:opacity-50" />
+                                            <button type="submit" aria-label="Apply art change" disabled={!refinePrompt.trim() || refineBusy || !_alloRuntimeAiAvailable()} className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50"><span aria-hidden="true">✨</span></button>
                                         </form>
+                                        )}
                                     </>
                                 )}
-                                <button type="button" onClick={handleArtClear} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-800 border border-rose-200 hover:bg-rose-50">🗑 {t('concept_space.art_remove') || 'Remove art'}</button>
+                                <button type="button" onClick={handleArtClear} className="w-full px-2 py-1.5 rounded-lg text-xs font-bold bg-white text-rose-800 border border-rose-200 hover:bg-rose-50">🗑 {t('concept_space.art_remove') || 'Remove art'}</button>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -4699,29 +4849,29 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     <div className="text-xs text-fuchsia-700 font-bold py-2 text-center" role="status">{directBusy === 'evaluating' ? (t('concept_space.art_checking') || '… Checking your idea') : (t('concept_space.art_creating') || '… Creating')}</div>
                                 ) : (
                                     <>
-                                        <button type="button" onClick={doSculptFromLabel} disabled={!_alloRuntimeAiAvailable()} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">🧊 {t('concept_space.art_sculpt_auto') || 'Sculpt from this concept'}</button>
-                                        <div className="text-[11px] text-slate-600 text-center">{t('concept_space.art_or_direct') || 'or describe your own:'}</div>
+                                        <button type="button" onClick={doSculptFromLabel} disabled={!_alloRuntimeAiAvailable()} className="w-full px-2 py-1.5 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">🧊 {t('concept_space.art_sculpt_auto') || 'Sculpt from this concept'}</button>
+                                        <div className="text-xs text-slate-600 text-center">{t('concept_space.art_or_direct') || 'or describe your own:'}</div>
                                         <div className="flex gap-1">
-                                            <button type="button" aria-pressed={artType === 'sculpture'} onClick={() => setArtType('sculpture')} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}><span aria-hidden="true">🧊</span> {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
-                                            <button type="button" aria-pressed={artType === 'image'} onClick={() => setArtType('image')} disabled={!canImagen} title={!canImagen ? (t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.') : undefined} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}><span aria-hidden="true">🖼</span> {t('memory_palace.direct_image') || 'Image'}</button>
+                                            <button type="button" aria-pressed={artType === 'sculpture'} onClick={() => setArtType('sculpture')} className={`flex-1 px-2 py-1 rounded-full text-xs font-bold border ${artType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}><span aria-hidden="true">🧊</span> {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
+                                            <button type="button" aria-pressed={artType === 'image'} onClick={() => setArtType('image')} disabled={!canImagen} title={!canImagen ? (t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.') : undefined} className={`flex-1 px-2 py-1 rounded-full text-xs font-bold border disabled:opacity-40 ${artType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}><span aria-hidden="true">🖼</span> {t('memory_palace.direct_image') || 'Image'}</button>
                                         </div>
                                         {directEval && directEval.verdict === 'reject' && (
-                                            <div className="text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900"><span className="font-bold">{t('memory_palace.direct_rejected') || 'Let’s adjust:'}</span> {directEval.reason}</div>
+                                            <div className="text-xs bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900"><span className="font-bold">{t('memory_palace.direct_rejected') || 'Let’s adjust:'}</span> {directEval.reason}</div>
                                         )}
                                         {directEval && directEval.verdict === 'enhance' && (
-                                            <div className="text-[11px] bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-1.5">
+                                            <div className="text-xs bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-1.5">
                                                 {directEval.reason && <div className="mb-1 text-fuchsia-900">{directEval.reason}</div>}
                                                 {directEval.enhancedPrompt && <div className="italic text-fuchsia-800 mb-1">“{directEval.enhancedPrompt}”</div>}
                                                 <div className="flex gap-1">
-                                                    <button type="button" onClick={() => handleArtGenerate(directEval.enhancedPrompt || directPrompt)} className="flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
-                                                    <button type="button" onClick={() => handleArtGenerate(directPrompt)} className="px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50">{t('memory_palace.direct_use_mine') || 'Use mine'}</button>
+                                                    <button type="button" onClick={() => handleArtGenerate(directEval.enhancedPrompt || directPrompt)} className="flex-1 px-2 py-1 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
+                                                    <button type="button" onClick={() => handleArtGenerate(directPrompt)} className="px-2 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50">{t('memory_palace.direct_use_mine') || 'Use mine'}</button>
                                                 </div>
                                             </div>
                                         )}
                                         {(!directEval || directEval.verdict === 'reject') && (
-                                            <form onSubmit={(e) => { e.preventDefault(); handleArtSubmit(); }} className="flex gap-1">
-                                                <input value={directPrompt} onChange={(e) => { setDirectPrompt(e.target.value); if (directEval) setDirectEval(null); }} placeholder={t('concept_space.art_prompt_placeholder') || 'e.g. a glowing brain with gears'} aria-label={t('concept_space.art_prompt_placeholder') || 'Describe the art'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" />
-                                                <button type="submit" aria-label="Create art" disabled={!directPrompt.trim()} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50"><span aria-hidden="true">✨</span></button>
+                                            <form onSubmit={(e) => { e.preventDefault(); if (_alloRuntimeAiAvailable()) handleArtSubmit(); }} className="flex gap-1">
+                                                <input value={directPrompt} onChange={(e) => { setDirectPrompt(e.target.value); if (directEval) setDirectEval(null); }} disabled={!_alloRuntimeAiAvailable()} placeholder={t('concept_space.art_prompt_placeholder') || 'e.g. a glowing brain with gears'} aria-label={t('concept_space.art_prompt_placeholder') || 'Describe the art'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400 disabled:opacity-50" />
+                                                <button type="submit" aria-label={t('concept_space.create_art_aria') || 'Create art'} disabled={!directPrompt.trim() || !_alloRuntimeAiAvailable()} className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50"><span aria-hidden="true">✨</span></button>
                                             </form>
                                         )}
                                     </>
@@ -4731,7 +4881,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                     </div>
                 )}
             </div>
-            <p className="text-xs text-slate-500 italic text-center mt-3">
+            <p className="text-xs text-slate-600 italic text-center mt-3">
                 {t('concept_space.caption') || 'Drag to orbit · scroll to zoom · click a concept for details. Drag a concept to place it on its strand plane — position is saved with the resource.'}
             </p>
         </div>
@@ -6596,7 +6746,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             : (t('memory_palace.recall_help_steps') || 'Use the image to recall the fact at each stop. After two misses, your memory cue appears. You can reveal an answer whenever you need help.'))
                         : (t('memory_palace.hint') || 'A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory.')}
                     {recall && recall.direction && recall.direction !== 'forward' && (
-                        <span className="ml-1.5 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
+                        <span className="ml-1.5 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800">
                             {recall.direction === 'backward'
                                 ? ('↩ ' + (t('memory_palace.order_backward') || 'Backwards'))
                                 : ('🔀 ' + (t('memory_palace.order_shuffle') || 'Shuffled'))}
@@ -6638,7 +6788,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     ) : (
                         <>
                             {hasContent && !failed && (<section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm" role="group" aria-label={t('memory_palace.controls_explore') || 'Explore'}>
-                                <div className="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">{t('memory_palace.controls_explore') || 'Explore'}</div>
+                                <div className="mb-2 text-xs font-extrabold uppercase tracking-wider text-slate-600">{t('memory_palace.controls_explore') || 'Explore'}</div>
                                 <div className="flex flex-wrap gap-2">                            {hasContent && !failed && !noWalk && (
                                 <button
                                     type="button"
@@ -6687,7 +6837,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 </div>
                             </section>)}
                             {hasContent && !failed && !noWalk && (<section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm" role="group" aria-label={t('memory_palace.controls_practice') || 'Practice'}>
-                                <div className="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">{t('memory_palace.controls_practice') || 'Practice'}</div>
+                                <div className="mb-2 text-xs font-extrabold uppercase tracking-wider text-slate-600">{t('memory_palace.controls_practice') || 'Practice'}</div>
                                 {!recallEligible && <p className="mb-2 text-xs leading-relaxed text-slate-600">{t('memory_palace.practice_minimum') || 'Add a second memory stop to unlock recall practice.'}</p>}
                                 <div className="flex flex-wrap gap-2">                            {hasContent && !failed && !noWalk && recallEligible && (
                                 <button type="button"
@@ -6723,7 +6873,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                             )}
                             {isTeacherMode && liveRecallReadiness?.ok === false && (
-                                <span role="status" className="max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900">
+                                <span role="status" className="max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-900">
                                     Recall walk: {liveRecallReadiness.message}
                                 </span>
                             )}
@@ -6733,7 +6883,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 generation runs so its progress + Stop stay visible). */}
                             {(customizeOpen || furnishing || sculpting) && (
                                 <div className="col-span-full rounded-2xl border border-indigo-200 bg-indigo-50/60 p-3" role="group" aria-label={t('memory_palace.controls_create') || 'Create & personalize'}>
-                                <div className="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-indigo-800">{t('memory_palace.controls_create') || 'Create & personalize'}</div>
+                                <div className="mb-2 text-xs font-extrabold uppercase tracking-wider text-indigo-800">{t('memory_palace.controls_create') || 'Create & personalize'}</div>
                                 <div className="flex flex-wrap gap-2">
                             {hasContent && !failed && !noWalk && persist && _alloRuntimeAiAvailable() && (
                                 <button type="button"
@@ -6830,7 +6980,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </div></div>
                             )}
 
-                            {hasContent && !failed && !noWalk && persist && (<div className="col-span-full flex flex-wrap items-center gap-3 px-1" data-palace-setting-row="true"><span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">{t('memory_palace.theme_label') || 'Palace setting'}</span>                            {hasContent && !failed && !noWalk && persist && (
+                            {hasContent && !failed && !noWalk && persist && (<div className="col-span-full flex flex-wrap items-center gap-3 px-1" data-palace-setting-row="true"><span className="text-xs font-extrabold uppercase tracking-wider text-slate-600">{t('memory_palace.theme_label') || 'Palace setting'}</span>                            {hasContent && !failed && !noWalk && persist && (
                                 <div className="grid w-full grid-cols-3 items-center gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1 sm:flex sm:w-auto" role="group" aria-label={t('memory_palace.theme_label') || 'Palace setting'}>
                                     {((window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS) || ['gallery', 'pasture', 'space']).map((thm) => {
                                         const on = paletteTheme === thm;
@@ -6920,7 +7070,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-[width] motion-reduce:transition-none" style={{ width: progressPercent + '%' }} />
                             </div>
                         </div>
-                        <div className="hidden sm:flex items-center gap-2 text-[10px] font-bold text-slate-600" aria-hidden="true">
+                        <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-600" aria-hidden="true">
                             <span><i className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-slate-300 border border-slate-500" />{t('memory_palace.status_empty') || 'Empty'}</span>
                             <span><i className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-sky-500" />{t('memory_palace.status_image') || 'Image'}</span>
                             <span><i className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-violet-500" />{t('memory_palace.status_sculpture') || '3D'}</span>
@@ -6972,7 +7122,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     return (
                                         <React.Fragment key={id}>
                                             {startsRoom && (
-                                                <div className="pt-1 text-[10px] font-extrabold uppercase tracking-widest text-indigo-700">
+                                                <div className="pt-1 text-xs font-extrabold uppercase tracking-widest text-indigo-700">
                                                     {t('memory_palace.room') || 'Room'}: {room?.label || locus.roomIdx}
                                                 </div>
                                             )}
@@ -6985,7 +7135,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-700 text-xs font-black text-white" aria-hidden="true">{index + 1}</span>
                                                 <span className="min-w-0 flex-1">
                                                     <span className="block truncate text-xs font-extrabold text-slate-900">{locus.label}</span>
-                                                    <span className="block truncate text-[10px] text-slate-500">{room?.label || (t('memory_palace.room') || 'Room')}</span>
+                                                    <span className="block truncate text-xs text-slate-600">{room?.label || (t('memory_palace.room') || 'Room')}</span>
                                                 </span>
                                                 <span className="flex shrink-0 gap-1" role="group" aria-label={(t('memory_palace.route_move_aria') || 'Move {label}').replace('{label}', locus.label)}>
                                                     <button type="button" onClick={() => moveRouteItem(index, index - 1)} disabled={index === 0}
@@ -7036,7 +7186,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             return (
                                 <React.Fragment key={locus.id}>
                                     {startsRoom && (
-                                        <span className="ml-1 mr-0.5 shrink-0 text-[10px] font-extrabold uppercase tracking-wide text-slate-500">
+                                        <span className="ml-1 mr-0.5 shrink-0 text-xs font-extrabold uppercase tracking-wide text-slate-600">
                                             {room?.label || (t('memory_palace.room') || 'Room')}
                                         </span>
                                     )}
@@ -7057,7 +7207,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         })}
                     </div>
                     {hasMasteryRings && (
-                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold text-slate-600">
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-bold text-slate-600">
                             <span>{t('memory_palace.mastery_rings') || 'Memory rings:'}</span>
                             <span><i className="mr-1 inline-block h-2.5 w-2.5 rounded-full border-2 border-red-500 align-[-1px]" />{t('memory_palace.mastery_practice') || 'Needs practice'}</span>
                             <span><i className="mr-1 inline-block h-2.5 w-2.5 rounded-full border-2 border-amber-500 align-[-1px]" />{t('memory_palace.mastery_developing') || 'Developing'}</span>
@@ -7074,7 +7224,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             ✕ {t('memory_palace.presentation_exit') || 'Exit presentation'}
                         </button>
                         <span className="hidden truncate text-xs font-bold text-slate-200 sm:block">{data?.main || title || (t('memory_palace.title') || 'Memory Palace')}</span>
-                        <span className="hidden text-[10px] text-slate-600 md:inline">{t('memory_palace.presentation_escape') || 'Esc also exits'}</span>
+                        <span className="hidden text-xs text-slate-600 md:inline">{t('memory_palace.presentation_escape') || 'Esc also exits'}</span>
                     </div>
                 )}
                 {tourChapter && tourOpen && tourPlaying && !recall && (
@@ -7082,7 +7232,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         style={{ borderColor: tourChapter.color, boxShadow: `0 18px 50px ${tourChapter.color}33` }} aria-hidden="true">
                         <div className="h-1.5" style={{ backgroundColor: tourChapter.color }} />
                         <div className="px-5 py-3 sm:py-4">
-                            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-300">
+                            <div className="text-xs font-black uppercase tracking-[0.22em] text-slate-300">
                                 {(t('memory_palace.tour_room_of') || 'Room {current} of {total}')
                                     .replace('{current}', String(tourChapter.position)).replace('{total}', String(tourChapter.total))}
                             </div>
@@ -7101,8 +7251,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             <div className={'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg shadow-inner ' + (tourPlaying ? 'bg-cyan-500 motion-safe:animate-pulse' : 'bg-slate-700')} aria-hidden="true">🎬</div>
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">{t('memory_palace.tour') || 'Cinematic tour'}</span>
-                                    {tourPlaying && <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-[10px] font-extrabold text-emerald-200">{t('memory_palace.tour_live') || 'Playing'}</span>}
+                                    <span className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">{t('memory_palace.tour') || 'Cinematic tour'}</span>
+                                    {tourPlaying && <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-xs font-extrabold text-emerald-200">{t('memory_palace.tour_live') || 'Playing'}</span>}
                                 </div>
                                 <div className="mt-0.5 truncate text-sm font-extrabold text-white">
                                     {tourLocus?.label || (t('memory_palace.tour_ready') || 'Ready for the first locus')}
@@ -7168,7 +7318,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <div className="flex rounded-xl border border-slate-600 bg-slate-900 p-1" role="group" aria-label={t('memory_palace.tour_pace') || 'Tour pace'}>
                                     {Object.entries(_mpTourPaces).map(([key, pace]) => (
                                         <button key={key} type="button" onClick={() => setTourPace(key)} aria-pressed={tourPace === key ? 'true' : 'false'}
-                                            className={'min-h-9 rounded-lg px-2.5 py-1 text-[11px] font-extrabold transition-colors ' + (tourPace === key ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-300 hover:bg-slate-800 hover:text-white')}>
+                                            className={'min-h-9 rounded-lg px-2.5 py-1 text-xs font-extrabold transition-colors ' + (tourPace === key ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-300 hover:bg-slate-800 hover:text-white')}>
                                             {t('memory_palace.tour_pace_' + key) || pace.label}
                                         </button>
                                     ))}
@@ -7178,7 +7328,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     🔊 {tourNarration ? (t('memory_palace.tour_narration_on') || 'Narration on') : (t('memory_palace.tour_narration_off') || 'Narration off')}
                                 </button>
                             </div>
-                            <p className="text-[11px] leading-relaxed text-slate-400">{t('memory_palace.tour_pause_help') || 'The tour pauses automatically when you interact with the palace. Reduced-motion settings use instant camera cuts.'}</p>
+                            <p className="text-xs leading-relaxed text-slate-400">{t('memory_palace.tour_pause_help') || 'The tour pauses automatically when you interact with the palace. Reduced-motion settings use instant camera cuts.'}</p>
                             <div className="sr-only" role="status" aria-live="polite">{tourAnnouncement}</div>
                         </div>
                     </aside>
@@ -7252,7 +7402,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         </button>
                                         {quickCreate.variants?.length > 1 && (
                                             <div className="mb-2 rounded-xl border border-indigo-200 bg-indigo-50/80 p-2">
-                                                <div className="mb-1.5 text-[10px] font-extrabold uppercase tracking-wide text-indigo-800">
+                                                <div className="mb-1.5 text-xs font-extrabold uppercase tracking-wide text-indigo-800">
                                                     {t('memory_palace.quick_variants') || 'Recent versions'}
                                                 </div>
                                                 <div className="flex gap-2" role="group" aria-label={t('memory_palace.quick_variants_aria') || 'Recent generated variants'}>
@@ -7264,7 +7414,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                                             {variant.type === 'image'
                                                                 ? <img src={variant.value} alt="" className="h-full w-full object-cover" />
                                                                 : <span className="text-2xl" aria-hidden="true">🗿</span>}
-                                                            <span className="absolute bottom-0 right-0 rounded-tl bg-slate-900/80 px-1 text-[9px] font-black text-white">{index + 1}</span>
+                                                            <span className="absolute bottom-0 right-0 rounded-tl bg-slate-900/80 px-1 text-xs font-black text-white">{index + 1}</span>
                                                         </button>
                                                     ))}
                                                 </div>
@@ -7382,7 +7532,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <button type="button" onClick={() => setAddingRoom(true)} className="rounded-full border border-sky-300 bg-white px-3 py-1 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100">
                                     ➕ {t('memory_palace.build_new_room') || 'New room'}
                                 </button>
-                                <span className="text-[11px] text-sky-800">
+                                <span className="text-xs text-sky-800">
                                     {(t('memory_palace.build_count') || 'You have added {rooms} room(s) and {spots} spot(s).')
                                         .replace('{rooms}', String(mineRooms.length)).replace('{spots}', String(mineLoci.length))}
                                 </span>
@@ -7400,7 +7550,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         <div className="text-sm text-indigo-900">
                             <span className="font-bold">{t('memory_palace.picture_this') || 'Picture this:'}</span> {current.mnemonic}
                             {current.source === 'self' && (
-                                <span className="ml-1.5 inline-block rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                                <span className="ml-1.5 inline-block rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-white">
                                     {t('memory_palace.own_badge') || 'Yours'}
                                 </span>
                             )}
@@ -7447,19 +7597,19 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             {/* Self-rated prompts, not a machine score: whether an image is
                                 vivid is the student's call, and word-list scoring would only
                                 ever work in English. */}
-                            <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-indigo-700">
+                            <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-indigo-700">
                                 <li>{t('memory_palace.own_crit_action') || 'Is something MOVING in it?'}</li>
                                 <li>{t('memory_palace.own_crit_sensory') || 'Can you see a colour or hear a sound?'}</li>
                                 <li>{t('memory_palace.own_crit_placed') || 'Is it happening at THIS spot?'}</li>
                                 <li>{t('memory_palace.own_crit_personal') || 'Does it connect to something of yours?'}</li>
                             </ul>
                             {mnFeedback && mnFeedback.echoesLabel && (
-                                <div className="mt-1 text-[11px] font-bold text-amber-700" role="status">
+                                <div className="mt-1 text-xs font-bold text-amber-700" role="status">
                                     {t('memory_palace.own_warn_echo') || 'That is the item name again — describe a picture of it instead.'}
                                 </div>
                             )}
                             {mnFeedback && mnFeedback.tooShort && !mnFeedback.echoesLabel && (
-                                <div className="mt-1 text-[11px] font-bold text-amber-700" role="status">
+                                <div className="mt-1 text-xs font-bold text-amber-700" role="status">
                                     {t('memory_palace.own_warn_short') || 'A little more detail gives your memory something to hold on to.'}
                                 </div>
                             )}
@@ -7622,7 +7772,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                             );
                                         })}
                                     </div>
-                                    <div className="text-[10px] text-emerald-600 mt-1">{t('memory_palace.decorate_credit') || '3D models: KayKit by Kay Lousberg (CC0)'}</div>
+                                    <div className="text-xs text-emerald-600 mt-1">{t('memory_palace.decorate_credit') || '3D models: KayKit by Kay Lousberg (CC0)'}</div>
                                 </div>
                             )}
                             <div>
@@ -7696,8 +7846,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     <summary className="min-h-[44px] cursor-pointer rounded-xl px-3 py-3 text-xs font-bold text-indigo-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{t('memory_palace.review_facts_cues') || 'Review facts and memory cues'}</summary>
                                     <ol className="space-y-2 px-3 pb-3">
                                         {stops.map((stop) => <li key={stop.id} className="min-w-0 rounded-xl border border-slate-200 bg-white p-3">
-                                            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold">
-                                                <span className="text-slate-500">{(t('memory_palace.stop_number') || 'Stop {number}').replace('{number}', String(stop.stop))}</span>
+                                            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
+                                                <span className="text-slate-600">{(t('memory_palace.stop_number') || 'Stop {number}').replace('{number}', String(stop.stop))}</span>
                                                 <span className="rounded-full bg-amber-50 px-2 py-1 text-amber-900">{stop.reason === 'revealed' ? (t('memory_palace.answer_revealed') || 'Answer revealed') : stop.reason === 'retried' ? (t('memory_palace.needed_retry') || 'Needed another try') : (t('memory_palace.not_yet_recalled') || 'Not yet recalled')}</span>
                                             </div>
                                             <p className="mt-2 break-words font-bold text-slate-900">{stop.label}</p>
@@ -7869,7 +8019,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             )}
                 </div>
             )}
-            <p className={presenting ? 'sr-only' : 'text-xs text-slate-500 italic text-center mt-3'}>
+            <p className={presenting ? 'sr-only' : 'text-xs text-slate-600 italic text-center mt-3'}>
                 {t('memory_palace.caption') || 'Method of loci: a practice strategy with strong evidence for remembering ordered material — the effect comes from walking the route repeatedly and picturing each image vividly, not from the tool itself.'}
             </p>
         </div>
@@ -7939,7 +8089,7 @@ const renderFlowShape = (node, isSelected, deps) => {
                 <g>
                     <polygon points="0,-50 60,0 0,50 -60,0" fill="#fefce8" stroke={strokeColor} strokeWidth={strokeWidth} />
                     <foreignObject x="-40" y="-20" width="80" height="40" style={STYLE_POINTER_EVENTS_NONE}>
-                         <div className="flex items-center justify-center h-full text-center text-[11px] font-bold leading-tight select-none text-yellow-900 break-words px-1">
+                         <div className="flex items-center justify-center h-full text-center text-xs font-bold leading-tight select-none text-yellow-900 break-words px-1">
                              {text}
                          </div>
                     </foreignObject>
@@ -7952,7 +8102,7 @@ const renderFlowShape = (node, isSelected, deps) => {
                     <path d="M-50,-30 L35,-30 L50,-15 L50,30 L-50,30 Z" fill="#fff7ed" stroke={strokeColor} strokeWidth={1} strokeDasharray="4 2"/>
                     <path d="M35,-30 L35,-15 L50,-15" fill="none" stroke={strokeColor} strokeWidth={1} />
                     <foreignObject x="-45" y="-25" width="90" height="50" style={STYLE_POINTER_EVENTS_NONE}>
-                         <div className="flex items-center justify-center h-full text-center text-[11px] text-slate-600 italic select-none px-1">
+                         <div className="flex items-center justify-center h-full text-center text-xs text-slate-600 italic select-none px-1">
                              {text}
                          </div>
                     </foreignObject>
@@ -8043,7 +8193,7 @@ const renderOutlineContent = (deps) => {
   const reflectionLive = deps.isTeacherMode && deps.activeSessionCode && deps.interactiveOrganizerSync?.type === 'reflection' && deps.interactiveOrganizerSync?.status === 'live';
   return <>
     {diagram}
-    <section aria-label="Reflection activity controls" className="mx-auto my-4 max-w-5xl rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+    <section aria-label={tr("reflection_controls_aria", "Reflection activity controls")} className="mx-auto my-4 max-w-5xl rounded-xl border border-indigo-200 bg-indigo-50 p-4">
       <p className="text-sm text-indigo-950">Use the diagram to explain your thinking. Written reflections allow more than one supported answer.</p>
       <div className="mt-3 flex flex-wrap gap-3">
         {type !== 'KWL Chart' && <button type="button" disabled={!readiness.ok} onClick={() => deps.setIsReflectionPlaying?.(true)} className="min-h-11 rounded-lg border border-indigo-700 bg-white px-4 font-bold text-indigo-800 disabled:opacity-50">{tr("practice_reflection","Practice reflection")}</button>}
@@ -8243,18 +8393,24 @@ const renderInteractiveMap = (deps) => {
                             >
                                 <RefreshCw size={14} /> <span className="hidden sm:inline">{t('concept_map.toolbar.scramble')}</span>
                             </button>
-                            {!isChallengeActive && (
-                                <button type="button"
-                                    onClick={() => handleAutoLayout()}
-                                    disabled={isProcessing || isMapLocked}
-                                    className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-indigo-100"
-                                    title={t('concept_map.toolbar.auto_layout_tooltip')}
-                                    aria-label={t('concept_map.toolbar.auto_layout_tooltip')}
-                                >
-                                    {isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={14} />}
-                                    <span className="hidden sm:inline">{t('concept_map.toolbar.auto_layout')}</span>
-                                </button>
-                            )}
+                            {!isChallengeActive && (() => {
+                                const autoLayoutAiOff = typeof window !== 'undefined' && typeof window.__alloAiAvailable === 'function' && window.__alloAiAvailable('text') === false;
+                                const autoLayoutTitle = autoLayoutAiOff
+                                    ? ((t && t('sidebar.needs_ai_setup')) || 'Needs AI setup')
+                                    : t('concept_map.toolbar.auto_layout_tooltip');
+                                return (
+                                    <button type="button"
+                                        onClick={() => handleAutoLayout()}
+                                        disabled={isProcessing || isMapLocked || autoLayoutAiOff}
+                                        className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-indigo-100"
+                                        title={autoLayoutTitle}
+                                        aria-label={autoLayoutTitle}
+                                    >
+                                        {isProcessing ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={14} />}
+                                        <span className="hidden sm:inline">{t('concept_map.toolbar.auto_layout')}</span>
+                                    </button>
+                                );
+                            })()}
                             {!isChallengeActive && (
                                 <button type="button"
                                     onClick={handleClearEdges}
@@ -8331,7 +8487,7 @@ const renderInteractiveMap = (deps) => {
                                                           AI Score: {challengeFeedback.score}%
                                                        </span>
                                                        {challengeFeedback.feedbackText && (
-                                                           <div className="text-[11px] text-slate-600 italic text-right leading-tight bg-white/80 p-1.5 rounded border border-slate-400 shadow-sm animate-in motion-reduce:animate-none slide-in-from-right-2">
+                                                           <div className="text-xs text-slate-600 italic text-right leading-tight bg-white/80 p-1.5 rounded border border-slate-400 shadow-sm animate-in motion-reduce:animate-none slide-in-from-right-2">
                                                                {challengeFeedback.feedbackText}
                                                            </div>
                                                        )}
@@ -8392,13 +8548,13 @@ const renderInteractiveMap = (deps) => {
                   {generatedContent?.data?.structureType === 'Cause and Effect' && (
                       <div className="absolute inset-0 pointer-events-none z-0 flex">
                           <div className="w-1/2 h-full bg-gradient-to-br from-orange-50/80 to-orange-100/40 border-r-2 border-dashed border-orange-200">
-                              <div className="absolute top-3 left-4 text-orange-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-3 left-4 text-orange-700 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <div className="w-2.5 h-2.5 rounded-full bg-orange-300"></div>
                                   CAUSES
                               </div>
                           </div>
                           <div className="w-1/2 h-full bg-gradient-to-bl from-teal-50/80 to-teal-100/40">
-                              <div className="absolute top-3 right-4 text-teal-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-3 right-4 text-teal-700 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
                                   EFFECTS
                                   <div className="w-2.5 h-2.5 rounded-full bg-teal-300"></div>
                               </div>
@@ -8414,19 +8570,19 @@ const renderInteractiveMap = (deps) => {
                   {generatedContent?.data?.structureType === 'Problem Solution' && (
                       <div className="absolute inset-0 pointer-events-none z-0 flex flex-col">
                           <div className="h-[20%] w-full bg-gradient-to-b from-red-50/70 to-transparent border-b-2 border-dashed border-red-200">
-                              <div className="absolute top-3 left-4 text-red-600 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-3 left-4 text-red-600 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                                   PROBLEM
                               </div>
                           </div>
                           <div className="flex-grow w-full bg-gradient-to-b from-transparent via-green-50/30 to-transparent">
-                              <div className="absolute top-[22%] left-4 text-green-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute top-[22%] left-4 text-green-700 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <div className="w-2.5 h-2.5 rounded-sm bg-green-300 rotate-45"></div>
                                   SOLUTIONS
                               </div>
                           </div>
                           <div className="h-[25%] w-full bg-gradient-to-t from-blue-50/60 to-transparent border-t-2 border-dashed border-blue-200">
-                              <div className="absolute bottom-3 left-4 text-blue-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <div className="absolute bottom-3 left-4 text-blue-700 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                                   OUTCOME
                               </div>
@@ -8621,21 +8777,21 @@ const renderInteractiveMap = (deps) => {
                                 node.type === 'flow-start' || node.type === 'flow-end' ? 'bg-slate-800 text-white px-6 py-3 rounded-full border-2 border-slate-600 text-xs uppercase tracking-wider' :
                                 node.type === 'flow-process' ? 'bg-white text-indigo-900 w-48 h-20 rounded-lg border-2 border-indigo-200 text-xs shadow-sm flex items-center justify-center px-4' :
                                 node.type === 'flow-decision' ? 'bg-yellow-50 text-yellow-900 w-32 h-32 rotate-45 border-2 border-yellow-400 text-xs shadow-sm flex items-center justify-center' :
-                                node.type === 'flow-note' ? 'bg-yellow-100 text-yellow-800 px-3 py-2 text-[11px] border border-yellow-200 shadow-sm max-w-[150px] rounded-bl-none' :
+                                node.type === 'flow-note' ? 'bg-yellow-100 text-yellow-800 px-3 py-2 text-xs border border-yellow-200 shadow-sm max-w-[150px] rounded-bl-none' :
                                 node.type === 'outline-main' ? 'bg-slate-900 text-white w-60 py-4 px-6 rounded-xl border-2 border-slate-700 shadow-xl text-sm z-20' :
                                 node.type === 'outline-branch' ? 'bg-white text-indigo-900 w-48 py-3 px-4 rounded-lg border-l-8 border-l-indigo-600 border-y border-r border-slate-200 text-xs shadow-md z-10' :
-                                node.type === 'outline-item' ? 'bg-slate-50 text-slate-700 w-40 py-2 px-3 rounded border border-slate-400 text-[11px] shadow-sm hover:bg-white z-0' :
+                                node.type === 'outline-item' ? 'bg-slate-50 text-slate-700 w-40 py-2 px-3 rounded border border-slate-400 text-xs shadow-sm hover:bg-white z-0' :
                                 node.type === 'ce-main' ? 'bg-slate-800 text-white w-56 py-4 px-6 rounded-xl border-2 border-slate-600 shadow-xl text-sm z-20' :
                                 node.type === 'cause-node' ? 'bg-orange-50 text-orange-900 w-48 py-3 px-4 rounded-xl border-l-[6px] border-l-orange-400 border-y border-r border-orange-200 text-xs shadow-md hover:shadow-lg hover:border-orange-300 transition-all' :
                                 node.type === 'effect-node' ? 'bg-teal-50 text-teal-900 w-48 py-3 px-4 rounded-xl border-r-[6px] border-r-teal-400 border-y border-l border-teal-200 text-xs shadow-md hover:shadow-lg hover:border-teal-300 transition-all' :
                                 node.type === 'chain-node' ? 'bg-purple-50 text-purple-900 w-44 py-3 px-4 rounded-lg border-2 border-purple-300 text-xs shadow-md hover:shadow-lg transition-all' :
                                 node.type === 'ps-problem' ? 'bg-red-600 text-white w-64 py-5 px-6 rounded-2xl border-4 border-red-300 text-sm shadow-xl shadow-red-200 z-20' :
                                 node.type === 'ps-solution' ? 'bg-white text-green-900 w-48 py-3 px-4 rounded-xl border-t-[6px] border-t-green-500 border-x border-b border-green-200 text-xs shadow-lg hover:shadow-xl hover:scale-105 transition-all' :
-                                node.type === 'ps-solution-item' ? 'bg-green-50 text-green-800 w-40 py-2 px-3 rounded-lg border border-green-300 text-[11px] shadow-sm hover:bg-green-100 transition-colors' :
+                                node.type === 'ps-solution-item' ? 'bg-green-50 text-green-800 w-40 py-2 px-3 rounded-lg border border-green-300 text-xs shadow-sm hover:bg-green-100 transition-colors' :
                                 node.type === 'ps-outcome' ? 'bg-blue-600 text-white w-56 py-4 px-5 rounded-2xl border-4 border-blue-300 text-sm shadow-xl shadow-blue-200 z-20' :
-                                node.type === 'ps-outcome-item' ? 'bg-blue-50 text-blue-800 w-40 py-2 px-3 rounded-lg border border-blue-300 text-[11px] shadow-sm hover:bg-blue-100 transition-colors' :
-                                node.type === 'item' ? `bg-${node.colorVariant || 'slate'}-50 text-${node.colorVariant || 'slate'}-900 w-28 h-28 rounded-full border border-${node.colorVariant || 'slate'}-300 text-[11px] shadow-sm hover:bg-white hover:shadow-md transition-all` :
-                                'bg-slate-50 text-slate-700 w-28 h-28 rounded-full border border-slate-400 text-[11px] hover:bg-white'}
+                                node.type === 'ps-outcome-item' ? 'bg-blue-50 text-blue-800 w-40 py-2 px-3 rounded-lg border border-blue-300 text-xs shadow-sm hover:bg-blue-100 transition-colors' :
+                                node.type === 'item' ? `bg-${node.colorVariant || 'slate'}-50 text-${node.colorVariant || 'slate'}-900 w-28 h-28 rounded-full border border-${node.colorVariant || 'slate'}-300 text-xs shadow-sm hover:bg-white hover:shadow-md transition-all` :
+                                'bg-slate-50 text-slate-700 w-28 h-28 rounded-full border border-slate-400 text-xs hover:bg-white'}
                               ${connectingSourceId === node.id ? 'ring-4 ring-yellow-400 ring-offset-2 scale-105' : ''}
                           `}
                           onMouseDown={(e) => !isMapLocked && handleNodeMouseDown(e, node.id)}
@@ -8671,7 +8827,7 @@ const renderInteractiveMap = (deps) => {
                           )}
                       </div>
                   ))}
-                  <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] text-slate-600 pointer-events-none border border-slate-400 shadow-sm">
+                  <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-slate-600 pointer-events-none border border-slate-400 shadow-sm">
                       {isVenn
                           ? t('concept_map.overlay.venn_instructions_tap')
                           : (isChallengeActive ? t('concept_map.overlay.challenge_instructions') : t('concept_map.overlay.standard_instructions'))

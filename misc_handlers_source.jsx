@@ -1205,6 +1205,8 @@ const handleLoadProject = (e, deps) => {
                 if (isStudentSave) {
                     setIsStudentLinkMode(true);
                     setIsTeacherMode(false);
+                    if (typeof setIsParentMode === 'function') setIsParentMode(false);
+                    if (typeof setIsIndependentMode === 'function') setIsIndependentMode(false);
                     setIsFullscreen(true);
 
                     if (!rawData.studentNickname) addToast(t('toasts.loaded_student_view'), "info");
@@ -1213,16 +1215,31 @@ const handleLoadProject = (e, deps) => {
                 }
                 if (hydratedHistory.length > 0) {
                     // An AlloPack opens on its directions (the run sheet, goals and quest map),
-                    // not on its last resource; a saved project reopens where the work left off.
+                    // not on its last resource; a saved project reopens on the last inline-renderable
+                    // resource (skipping overlay/windowed resource types that have no content-pane view).
+                    const _OVERLAY_ONLY_TYPES = new Set([
+                        'aac-board', 'readingSet', 'readingBook', 'manipulative-resource',
+                        'video-ref', 'video-transcript', 'word-sounds',
+                        'storyforge-config', 'storyforge-submission',
+                        'poettree-config', 'poettree-submission',
+                        'litlab-config', 'litlab-submission',
+                        'lingua-config', 'lingua-submission'
+                    ]);
                     const lastItem = (rawData && rawData.allopack && hydratedHistory.find((item) => item && item.type === 'directions'))
-                        || hydratedHistory[hydratedHistory.length - 1];
-                    // Restore the whole artifact envelope. Narrowing this to
-                    // type/data/id discarded text role, source linkage,
-                    // standards context, and complexity evidence immediately
-                    // after a successful project load.
-                    setGeneratedContent({ ...lastItem });
-                    setActiveView(lastItem.type);
-                    setIsMapLocked(false);
+                        || [...hydratedHistory].reverse().find((item) => item && typeof item.type === 'string' && !_OVERLAY_ONLY_TYPES.has(item.type));
+                    if (lastItem) {
+                        // Restore the whole artifact envelope. Narrowing this to
+                        // type/data/id discarded text role, source linkage,
+                        // standards context, and complexity evidence immediately
+                        // after a successful project load.
+                        setGeneratedContent({ ...lastItem });
+                        setActiveView(lastItem.type);
+                        setIsMapLocked(false);
+                    } else {
+                        setGeneratedContent(null);
+                        setActiveView('input');
+                        setIsMapLocked(false);
+                    }
                 } else {
                     setGeneratedContent(null);
                     setActiveView('input');

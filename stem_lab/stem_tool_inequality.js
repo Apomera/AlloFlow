@@ -495,8 +495,8 @@ window.StemLab = window.StemLab || {
       var qMul = function(a, b) { return a && b ? qMake(a.n * b.n, a.d * b.d) : null; };
       var qDiv = function(a, b) { return a && b && b.n ? qMake(a.n * b.d, a.d * b.n) : null; };
       var qAbs = function(a) { return a && a.n < 0 ? qNeg(a) : a; };
-      var qCmp = function(a, b) { var x = a.n * b.d - b.n * a.d; return x < 0 ? -1 : x > 0 ? 1 : 0; };
-      var qVal = function(a) { return a.n / a.d; };
+      var qCmp = function(a, b) { if (!a || !b) return 0; var x = a.n * b.d - b.n * a.d; return x < 0 ? -1 : x > 0 ? 1 : 0; };
+      var qVal = function(a) { return a ? a.n / a.d : 0; };
       // "-3", "2.5", ".5", "3/4"; null for "1/0" and anything else.
       var qParse = function(str) {
         var m = /^([+-]?)(\d+\.?\d*|\.\d+)(?:\/(\d+\.?\d*|\.\d+))?$/.exec(String(str).replace(/\s+/g, ''));
@@ -786,6 +786,12 @@ window.StemLab = window.StemLab || {
             add({ text: iqFill(__alloT('stem.inequality.solver_step_reorder', 'Rewrite it in increasing order: {expr}'), { expr: rel3(qText(lo), o1, v, o2, qText(hi)) }), move: { kind: 'swap' } });
           }
         }
+        var cmpLoHi = qCmp(lo, hi);
+        if (cmpLoHi > 0 || (cmpLoHi === 0 && !(o1 === '<=' && o2 === '<='))) {
+          add({ text: iqFill(__alloT('stem.inequality.solver_chain_contradiction', '{expr} is impossible, so there is no solution.'), { expr: rel3(qText(lo), o1, v, o2, qText(hi)) }), final: true });
+          steps.solution = null; steps.identity = 'none';
+          return steps;
+        }
         return finish(qText(lo) + ' ' + o1 + ' ' + v + ' ' + o2 + ' ' + qText(hi));
       };
 
@@ -923,7 +929,13 @@ window.StemLab = window.StemLab || {
             if (!x || !y) continue;
             var ok = true, strict = false;
             for (var m = 0; m < cons.length; m++) {
-              var K = cons[m], cmp = qCmp(qAdd(qMul(K.qa, x), qMul(K.qb, y)), K.qc);
+              var K = cons[m], lhsQ = qAdd(qMul(K.qa, x), qMul(K.qb, y));
+              var cmp;
+              if (lhsQ && K.qc) cmp = qCmp(lhsQ, K.qc);
+              else {
+                var lf = K.a * qVal(x) + K.b * qVal(y);
+                cmp = lf < K.c - 1e-12 ? -1 : lf > K.c + 1e-12 ? 1 : 0;
+              }
               if (!iqHolds(cmp, K.rel)) { if (cmp === 0) strict = true; else ok = false; }
             }
             if (!ok) continue;
@@ -1437,18 +1449,42 @@ window.StemLab = window.StemLab || {
         var span = R.max - R.min, tickStep = Math.max(1, Math.ceil(span / 40));
         var lblStep = Math.max(tickStep, Math.ceil(span / 20 / tickStep) * tickStep);
         var kids = [], v = (ineq && ineq.v) || 'x';
-        var gradId = 'iqBandGrad_' + (o.id || 'main');
+        var gid = (o.id || 'main');
+        var gradId = 'iqBandGrad_' + gid;
+        var wellId = 'iqWellGrad_' + gid;
+        var beadId = 'iqBeadGrad_' + gid;
         kids.push(h('defs', { key: 'defs' },
+          h('linearGradient', { id: wellId, x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: isDark ? '#020617' : '#f8fafc' }),
+            h('stop', { offset: '100%', stopColor: isDark ? '#0f172a' : '#f1f5f9' })),
           h('linearGradient', { id: gradId, x1: '0', y1: '0', x2: '0', y2: '1' },
-            h('stop', { offset: '0%', stopColor: mark, stopOpacity: isContrast ? '0.32' : '0.24' }),
-            h('stop', { offset: '100%', stopColor: isContrast ? '#00ff00' : '#a855f7', stopOpacity: isContrast ? '0.16' : '0.07' }))));
+            h('stop', { offset: '0%', stopColor: mark, stopOpacity: isContrast ? '0.38' : '0.32' }),
+            h('stop', { offset: '55%', stopColor: isContrast ? '#00ff00' : '#c026d3', stopOpacity: isContrast ? '0.22' : '0.16' }),
+            h('stop', { offset: '100%', stopColor: isContrast ? '#00ff00' : '#a855f7', stopOpacity: isContrast ? '0.14' : '0.06' })),
+          h('radialGradient', { id: beadId, cx: '34%', cy: '30%', r: '68%' },
+            h('stop', { offset: '0%', stopColor: isContrast ? '#00ff00' : '#f5d0fe' }),
+            h('stop', { offset: '45%', stopColor: mark }),
+            h('stop', { offset: '100%', stopColor: isContrast ? '#00cc00' : '#86198f' }))));
+        // Recessed studio rail well (strictly clamped to pad..W-pad = 35..385)
+        if (!isContrast) {
+          kids.push(h('rect', { key: 'railwell', x: pad, y: 24, width: W - 2 * pad, height: 52, rx: 8, fill: 'url(#' + wellId + ')', stroke: isDark ? 'rgba(148,163,184,0.22)' : '#e2e8f0', strokeWidth: 1 }));
+          kids.push(h('path', { key: 'railbevel', d: 'M' + (pad + 8) + ',25 H' + (W - pad - 8), stroke: isDark ? 'rgba(255,255,255,0.08)' : '#ffffff', strokeWidth: 1, fill: 'none' }));
+        }
         var band = function(key, x0, x1) {
           var a = csx(x0), b = csx(x1);
-          if (b - a > 0.5) kids.push(h('rect', { key: key, x: a, y: 26, width: b - a, height: 48, fill: 'url(#' + gradId + ')', rx: 6 }));
+          if (b - a > 0.5) {
+            kids.push(h('rect', { key: key, x: a, y: 26, width: b - a, height: 48, fill: 'url(#' + gradId + ')', rx: 6 }));
+            if (!isContrast && b - a > 12) kids.push(h('path', { key: key + 'top', d: 'M' + (a + 4) + ',27.2 H' + (b - 4), stroke: '#f5d0fe', strokeWidth: 1.1, opacity: isDark ? 0.45 : 0.65, fill: 'none' }));
+          }
         };
         var seg = function(key, x0, x1, gapL, gapR) {
           var a = csx(x0) + (gapL && vis(x0) ? 8 : 0), b = csx(x1) - (gapR && vis(x1) ? 8 : 0);
-          if (b - a > 0.5) kids.push(h('line', { key: key, x1: a, y1: 50, x2: b, y2: 50, stroke: mark, strokeWidth: 4.5, strokeLinecap: 'round' }));
+          if (b - a > 0.5) {
+            // Dual-pass luminous boundary laser segment
+            if (!isContrast) kids.push(h('path', { key: key + 'glow', d: 'M' + a + ',50 L' + b + ',50', stroke: mark, strokeWidth: 10, strokeLinecap: 'round', opacity: isDark ? 0.28 : 0.18, fill: 'none' }));
+            kids.push(h('line', { key: key, x1: a, y1: 50, x2: b, y2: 50, stroke: mark, strokeWidth: 4.5, strokeLinecap: 'round' }));
+            if (!isContrast) kids.push(h('path', { key: key + 'core', d: 'M' + a + ',49.2 L' + b + ',49.2', stroke: '#fdf4ff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.65, fill: 'none' }));
+          }
         };
         var arrow = function(key, right) {
           var e = right ? W - pad : pad, s = right ? -11 : 11;
@@ -1457,9 +1493,12 @@ window.StemLab = window.StemLab || {
         var dot = function(key, x, closed, text, labelY) {
           var y = labelY || 19, sym = closed ? '● ' : '○ ';
           if (vis(x)) {
-            kids.push(h('circle', { key: key + 'halo', cx: sx(x), cy: 50, r: 10.5, fill: mark, opacity: isContrast ? 0.25 : 0.16 }));
-            kids.push(h('circle', { key: key, cx: sx(x), cy: 50, r: 6.5, fill: closed ? mark : hollow, stroke: mark, strokeWidth: 2.8, strokeDasharray: o.dashedDot ? '3,2' : undefined }));
-            if (text) kids.push(h('text', { key: key + 't', x: Math.max(pad + 18, Math.min(W - pad - 18, sx(x))), y: y, textAnchor: 'middle', fill: ink, style: { fontSize: '10px', fontWeight: 'bold' } }, sym + text));
+            var cxPos = sx(x);
+            var specCx = Math.max(pad, Math.min(W - pad, cxPos - 1.8));
+            kids.push(h('circle', { key: key + 'halo', cx: cxPos, cy: 50, r: 11.5, fill: mark, opacity: isContrast ? 0.25 : 0.18 }));
+            kids.push(h('circle', { key: key, cx: cxPos, cy: 50, r: 6.8, fill: closed ? (isContrast ? mark : 'url(#' + beadId + ')') : hollow, stroke: mark, strokeWidth: 2.6, strokeDasharray: o.dashedDot ? '3,2' : undefined }));
+            if (closed && !isContrast) kids.push(h('circle', { key: key + 'spec', cx: specCx, cy: 47.8, r: 1.6, fill: '#ffffff', opacity: 0.8 }));
+            if (text) kids.push(h('text', { key: key + 't', x: Math.max(pad + 18, Math.min(W - pad - 18, cxPos)), y: y, textAnchor: 'middle', fill: ink, style: { fontSize: '10px', fontWeight: 'bold' } }, sym + text));
             return;
           }
           // Off-screen boundary: a chevron at the edge it lies beyond, with its value.
@@ -1477,12 +1516,12 @@ window.StemLab = window.StemLab || {
         for (var g = Math.ceil(R.min / lblStep) * lblStep; g <= R.max; g += lblStep) {
           kids.push(h('line', { key: 'vg' + g, x1: sx(g), y1: 24, x2: sx(g), y2: 74, stroke: gridInk, strokeWidth: 1 }));
         }
-        kids.push(h('line', { key: 'axis', x1: pad, y1: 50, x2: W - pad, y2: 50, stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 2.2 }));
+        kids.push(h('line', { key: 'axis', x1: pad, y1: 50, x2: W - pad, y2: 50, stroke: isContrast ? '#ffff00' : (isDark ? '#94a3b8' : '#64748b'), strokeWidth: 2.2 }));
         for (var n = Math.ceil(R.min / tickStep) * tickStep; n <= R.max; n += tickStep) {
           var isOrigin = n === 0, showLbl = isOrigin || n % lblStep === 0;
           kids.push(h('g', { key: 'tk' + n },
-            h('line', { x1: sx(n), y1: isOrigin ? 36 : 43, x2: sx(n), y2: isOrigin ? 64 : 57, stroke: isOrigin ? axisInk : (isContrast ? '#ffff00' : '#94a3b8'), strokeWidth: isOrigin ? 2.2 : 1, opacity: showLbl ? 1 : 0.45 }),
-            showLbl && h('text', { x: sx(n), y: 86, textAnchor: 'middle', fill: isOrigin ? axisInk : tickInk, style: { fontSize: isOrigin ? '11px' : '10px', fontWeight: isOrigin ? 'bold' : 'normal' } }, n)));
+            h('line', { x1: sx(n), y1: isOrigin ? 35 : 43, x2: sx(n), y2: isOrigin ? 65 : 57, stroke: isOrigin ? axisInk : (isContrast ? '#ffff00' : '#94a3b8'), strokeWidth: isOrigin ? 2.2 : 1, opacity: showLbl ? 1 : 0.45 }),
+            showLbl && h('text', { x: sx(n), y: 88, textAnchor: 'middle', fill: isOrigin ? axisInk : tickInk, style: { fontSize: isOrigin ? '11px' : '10px', fontWeight: isOrigin ? 'bold' : 'normal' } }, n)));
         }
         kids.push(h('polygon', { key: 'axr', points: (W - pad) + ',50 ' + (W - pad - 8) + ',45 ' + (W - pad - 8) + ',55', fill: isContrast ? '#ffff00' : '#94a3b8' }));
         kids.push(h('polygon', { key: 'axl', points: pad + ',50 ' + (pad + 8) + ',45 ' + (pad + 8) + ',55', fill: isContrast ? '#ffff00' : '#94a3b8' }));
@@ -1507,7 +1546,8 @@ window.StemLab = window.StemLab || {
           var tx = sx(o.testVal), tcol = o.testOk ? okInk : badInk;
           kids.push(h('g', { key: 'tv' },
             h('line', { x1: tx, y1: 24, x2: tx, y2: 76, stroke: tcol, strokeWidth: 2.2, strokeDasharray: '4,2' }),
-            h('circle', { cx: tx, cy: 50, r: 4, fill: tcol }),
+            !isContrast && h('circle', { cx: tx, cy: 50, r: 8, fill: tcol, opacity: 0.22 }),
+            h('circle', { cx: tx, cy: 50, r: 4.4, fill: tcol, stroke: hollow, strokeWidth: 1.4 }),
             h('text', { x: Math.max(pad + 18, Math.min(W - pad - 18, tx)), y: 120, textAnchor: 'middle', fill: tcol, style: { fontSize: '10px', fontWeight: 'bold' } }, (o.testOk ? '✅ ' : '❌ ') + o.testVal)));
         }
         var pick = o.onPick ? function(e) {
@@ -1532,10 +1572,21 @@ window.StemLab = window.StemLab || {
         var ink = isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#0f172a');
         var axisStroke = isContrast ? '#ffff00' : (isDark ? '#94a3b8' : '#334155');
         var gridStroke = isContrast ? '#333333' : (isDark ? '#1e293b' : '#e2e8f0');
-        var hatchId = 'iqPlaneHatch_' + (o.id || 'single');
+        var pid = (o.id || 'single');
+        var hatchId = 'iqPlaneHatch_' + pid;
+        var planeBgId = 'iqPlaneBg_' + pid;
+        var feasibleGradId = 'iqFeasibleGrad_' + pid;
         kids.push(h('defs', { key: 'pdefs' },
+          h('radialGradient', { id: planeBgId, cx: '50%', cy: '50%', r: '68%' },
+            h('stop', { offset: '0%', stopColor: isDark ? '#0f172a' : '#ffffff' }),
+            h('stop', { offset: '100%', stopColor: isDark ? '#020617' : '#f8fafc' })),
+          h('linearGradient', { id: feasibleGradId, x1: '0', y1: '0', x2: '1', y2: '1' },
+            h('stop', { offset: '0%', stopColor: isContrast ? '#00ff00' : '#d946ef', stopOpacity: isContrast ? '0.24' : (isDark ? '0.28' : '0.22') }),
+            h('stop', { offset: '100%', stopColor: isContrast ? '#00ff00' : '#6366f1', stopOpacity: isContrast ? '0.12' : (isDark ? '0.14' : '0.10') })),
           h('pattern', { id: hatchId, width: 10, height: 10, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
-            h('path', { d: 'M0 0 V10', stroke: isContrast ? '#00ff00' : '#c026d3', strokeWidth: 1.5, opacity: isContrast ? 0.35 : 0.22 }))));
+            h('path', { d: 'M0 0 V10', stroke: isContrast ? '#00ff00' : '#c026d3', strokeWidth: 1.4, opacity: isContrast ? 0.38 : 0.22 }))));
+        // Recessed studio coordinate well
+        kids.push(h('rect', { key: 'pwell', x: pad2, y: pad2, width: W2 - 2 * pad2, height: H2 - 2 * pad2, rx: 4, fill: isContrast ? '#000000' : 'url(#' + planeBgId + ')', stroke: isContrast ? '#ffff00' : (isDark ? '#334155' : '#cbd5e1'), strokeWidth: 1.2 }));
         for (var gi = gRange.xMin; gi <= gRange.xMax; gi++) {
           kids.push(h('line', { key: 'gx' + gi, x1: toGX(gi), y1: pad2, x2: toGX(gi), y2: H2 - pad2, stroke: gi === 0 ? axisStroke : gridStroke, strokeWidth: gi === 0 ? 2 : 0.7 }));
           kids.push(h('line', { key: 'gy' + gi, x1: pad2, y1: toGY(gi), x2: W2 - pad2, y2: toGY(gi), stroke: gi === 0 ? axisStroke : gridStroke, strokeWidth: gi === 0 ? 2 : 0.7 }));
@@ -1544,6 +1595,8 @@ window.StemLab = window.StemLab || {
             kids.push(h('text', { key: 'yl' + gi, x: toGX(0) - 9, y: toGY(gi) + 3, textAnchor: 'end', fill: tickInk, style: { fontSize: '10px' } }, gi));
           }
         }
+        // Axis directional arrowheads using <path> (keeps <polygon> set strictly limited to feasible region)
+        kids.push(h('path', { key: 'axarr', d: 'M' + (W2 - pad2) + ',' + toGY(0) + ' L' + (W2 - pad2 - 7) + ',' + (toGY(0) - 4) + ' L' + (W2 - pad2 - 7) + ',' + (toGY(0) + 4) + ' Z M' + toGX(0) + ',' + pad2 + ' L' + (toGX(0) - 4) + ',' + (pad2 + 7) + ' L' + (toGX(0) + 4) + ',' + (pad2 + 7) + ' Z', fill: axisStroke }));
         // Subtle quadrant labels
         kids.push(h('text', { key: 'q1', x: W2 - pad2 - 14, y: pad2 + 14, fill: tickInk, opacity: 0.45, style: { fontSize: '10px', fontWeight: 'bold' } }, 'I'));
         kids.push(h('text', { key: 'q2', x: pad2 + 8, y: pad2 + 14, fill: tickInk, opacity: 0.45, style: { fontSize: '10px', fontWeight: 'bold' } }, 'II'));
@@ -1552,31 +1605,39 @@ window.StemLab = window.StemLab || {
         var region = cons.length ? iqRegion(cons, gRange) : [];
         if (region.length >= 3) {
           var ptsStr = region.map(function(p) { return toGX(p[0]) + ',' + toGY(p[1]); }).join(' ');
-          kids.push(h('polygon', { key: 'region', 'data-inequality-region': 'true', points: ptsStr, fill: isContrast ? 'rgba(0,255,0,0.16)' : 'rgba(217,70,239,0.16)' }));
+          kids.push(h('polygon', { key: 'region', 'data-inequality-region': 'true', points: ptsStr, fill: 'url(#' + feasibleGradId + ')' }));
           kids.push(h('polygon', { key: 'regionHatch', points: ptsStr, fill: 'url(#' + hatchId + ')' }));
         }
         cons.forEach(function(k, i) {
           var sg = iqSegment(k, gRange);
           if (!sg) return;
           var col = isContrast ? (i === 0 ? '#00ff00' : '#ffff00') : (cons.length > 1 ? PLANE_COLORS[i % 3] : '#d946ef');
-          kids.push(h('line', { key: 'bl' + i, 'data-inequality-boundary': 'true', x1: toGX(sg[0][0]), y1: toGY(sg[0][1]), x2: toGX(sg[1][0]), y2: toGY(sg[1][1]), stroke: col, strokeWidth: 2.8, strokeDasharray: k.rel.indexOf('=') >= 0 ? 'none' : '6,4' }));
+          var x1 = toGX(sg[0][0]), y1 = toGY(sg[0][1]), x2 = toGX(sg[1][0]), y2 = toGY(sg[1][1]);
+          var dash = k.rel.indexOf('=') >= 0 ? 'none' : '6,4';
+          // Dual-pass luminous boundary laser (glow pass uses <path> so <line> boundary invariant stays exact)
+          if (!isContrast) kids.push(h('path', { key: 'blg' + i, d: 'M' + x1 + ',' + y1 + ' L' + x2 + ',' + y2, stroke: col, strokeWidth: 8.5, strokeDasharray: dash, opacity: isDark ? 0.28 : 0.2, fill: 'none', strokeLinecap: 'round' }));
+          kids.push(h('line', { key: 'bl' + i, 'data-inequality-boundary': 'true', x1: x1, y1: y1, x2: x2, y2: y2, stroke: col, strokeWidth: 2.8, strokeDasharray: dash }));
           if (cons.length > 1) {
-            var ex = toGX(sg[1][0]), ey = toGY(sg[1][1]), sx0 = toGX(sg[0][0]), sy0 = toGY(sg[0][1]), len = Math.sqrt((ex - sx0) * (ex - sx0) + (ey - sy0) * (ey - sy0)) || 1;
+            var ex = x2, ey = y2, sx0 = x1, sy0 = y1, len = Math.sqrt((ex - sx0) * (ex - sx0) + (ey - sy0) * (ey - sy0)) || 1;
             kids.push(h('text', { key: 'bn' + i, x: Math.max(pad2 + 6, Math.min(W2 - pad2 - 14, ex + (sx0 - ex) * 16 / len + 6)), y: Math.max(pad2 + 12, Math.min(H2 - pad2 - 6, ey + (sy0 - ey) * 16 / len)), fill: col, style: { fontSize: '13px', fontWeight: 'bold' } }, o.labels ? o.labels[i] : CIRCLED[i % 3]));
           }
         });
         (o.corners || []).forEach(function(c, i) {
           if (c.x < gRange.xMin || c.x > gRange.xMax || c.y < gRange.yMin || c.y > gRange.yMax) return;
-          kids.push(h('circle', { key: 'cn' + i, cx: toGX(c.x), cy: toGY(c.y), r: 5, fill: c.strict ? (isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff')) : ink, stroke: ink, strokeWidth: 1.8 }));
-          kids.push(h('text', { key: 'cl' + i, x: Math.min(W2 - pad2 - 12, toGX(c.x) + 7), y: Math.max(pad2 + 12, toGY(c.y) - 6), fill: ink, style: { fontSize: '11px', fontWeight: 'bold' } }, String.fromCharCode(65 + i)));
+          var ccx = toGX(c.x), ccy = toGY(c.y);
+          if (!isContrast) kids.push(h('circle', { key: 'cnh' + i, cx: ccx, cy: ccy, r: 9, fill: '#d946ef', opacity: 0.2 }));
+          kids.push(h('circle', { key: 'cn' + i, cx: ccx, cy: ccy, r: 5.2, fill: c.strict ? (isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff')) : ink, stroke: ink, strokeWidth: 1.8 }));
+          kids.push(h('text', { key: 'cl' + i, x: Math.min(W2 - pad2 - 12, ccx + 7), y: Math.max(pad2 + 12, ccy - 6), fill: ink, style: { fontSize: '11px', fontWeight: 'bold' } }, String.fromCharCode(65 + i)));
         });
         (o.points || []).forEach(function(p, i) {
           var px = toGX(p.x), py = toGY(p.y), col = p.ok ? okInk : badInk;
           if (p.x < gRange.xMin || p.x > gRange.xMax || p.y < gRange.yMin || p.y > gRange.yMax) return;
-          // Shape as well as colour: a filled dot inside, a cross outside.
+          // Shape as well as colour: a filled glossy bead inside, a cross outside.
+          if (p.ok && !isContrast) kids.push(h('circle', { key: 'tph' + i, cx: px, cy: py, r: 10, fill: col, opacity: 0.22 }));
           kids.push(p.ok
-            ? h('circle', { key: 'tp' + i, cx: px, cy: py, r: 5.5, fill: col, stroke: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 1.8 })
-            : h('path', { key: 'tp' + i, d: 'M' + (px - 5) + ',' + (py - 5) + ' L' + (px + 5) + ',' + (py + 5) + ' M' + (px - 5) + ',' + (py + 5) + ' L' + (px + 5) + ',' + (py - 5), stroke: col, strokeWidth: 2.5 }));
+            ? h('circle', { key: 'tp' + i, cx: px, cy: py, r: 5.8, fill: col, stroke: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 1.8 })
+            : h('path', { key: 'tp' + i, d: 'M' + (px - 5) + ',' + (py - 5) + ' L' + (px + 5) + ',' + (py + 5) + ' M' + (px - 5) + ',' + (py + 5) + ' L' + (px + 5) + ',' + (py - 5), stroke: col, strokeWidth: 2.5, strokeLinecap: 'round' }));
+          if (p.ok && !isContrast) kids.push(h('circle', { key: 'tps' + i, cx: px - 1.6, cy: py - 1.6, r: 1.4, fill: '#ffffff', opacity: 0.78 }));
           if (p.label) kids.push(h('text', { key: 'tpl' + i, x: Math.min(W2 - pad2 - 42, px + 8), y: Math.max(pad2 + 12, py - 6), fill: col, style: { fontSize: '10px', fontWeight: 'bold' } }, p.label));
         });
         kids.push(h('text', { key: 'axx', x: W2 - pad2 + 5, y: toGY(0) + 4, fill: axisStroke, style: { fontSize: '11px', fontWeight: 'bold' } }, 'x'));
@@ -1774,7 +1835,9 @@ window.StemLab = window.StemLab || {
         var obj = objSrc.trim() ? iqObjective(objSrc) : null;
         var corners = cons.length >= 2 ? iqCorners(cons) : [];
         var BIG = { xMin: -1e4, xMax: 1e4, yMin: -1e4, yMax: 1e4 };
-        var emptyRegion = cons.length > 0 && iqRegion(cons, BIG).length < 3;
+        var hasPointCorner = corners.some(function(c) { return !c.strict; });
+        var emptyRegion = cons.length > 0 && iqRegion(cons, BIG).length < 3 && !hasPointCorner;
+        if (emptyRegion) corners = [];
         var unbounded = cons.length > 0 && !emptyRegion && iqUnbounded(cons);
         var setSys = function(patch) { mergeIneq(function(cur) { return { sys: Object.assign({ cons: SYS_DEFAULT.slice(), obj: 'P = 3x + 2y' }, cur.sys || {}, patch) }; }); };
         var cornerName = function(c, i) { return String.fromCharCode(65 + i) + ' ' + pt2(qText(c.qx), qText(c.qy)); };
@@ -1784,9 +1847,18 @@ window.StemLab = window.StemLab || {
           if (!qx || !qy) return null;
           var at = { x: qx, y: qy }, fails = [];
           var lines = cons.map(function(k, i) {
-            var l = iqLinEval(k.lhs, at), r = iqLinEval(k.rhs, at), ok = iqHolds(qCmp(l, r), k.rel);
+            var l = iqLinEval(k.lhs, at), r = iqLinEval(k.rhs, at);
+            var cmp;
+            if (l && r) cmp = qCmp(l, r);
+            else {
+              var lf = k.a * qVal(qx) + k.b * qVal(qy);
+              cmp = lf < k.c - 1e-12 ? -1 : lf > k.c + 1e-12 ? 1 : 0;
+            }
+            var ok = iqHolds(cmp, k.rel);
             if (!ok) fails.push(labels[i]);
-            return labels[i] + ' ' + qText(l) + ' ' + iqOpText(k.rel) + ' ' + qText(r) + (ok ? ' ✓' : ' ✗');
+            var lStr = l ? qText(l) : String(Number((k.a * qVal(qx) + k.b * qVal(qy)).toFixed(4)));
+            var rStr = r ? qText(r) : String(Number(k.c.toFixed(4)));
+            return labels[i] + ' ' + lStr + ' ' + iqOpText(k.rel) + ' ' + rStr + (ok ? ' ✓' : ' ✗');
           });
           return { x: qVal(qx), y: qVal(qy), name: pt2(qText(qx), qText(qy)), ok: cons.length > 0 && !fails.length, lines: lines, fails: fails };
         };
@@ -1813,6 +1885,7 @@ window.StemLab = window.StemLab || {
         if (obj && corners.length) {
           corners.forEach(function(c, i) {
             var val = iqLinEval(obj.form, { x: c.qx, y: c.qy });
+            if (!val) return;
             objRows.push({ i: i, c: c, q: val });
             if (!c.strict) {
               if (!best || qCmp(val, best.q) > 0) best = { i: i, c: c, q: val };
@@ -1941,27 +2014,49 @@ window.StemLab = window.StemLab || {
         if (hi - lo < 10) { var grow = Math.ceil((10 - (hi - lo)) / 2); lo -= grow; hi += grow; }
         var FW = 420, FH = 130, fp = 35, fsx = function(x) { return fp + (x - lo) / (hi - lo) * (FW - 2 * fp); };
         var tStep = Math.max(1, Math.ceil((hi - lo) / 20)), fk = [];
-        var lineInk = isDark ? '#94a3b8' : '#64748b', txtInk = isDark ? '#e2e8f0' : '#1e293b';
+        var lineInk = isContrast ? '#ffff00' : (isDark ? '#94a3b8' : '#64748b'), txtInk = isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#1e293b');
+        var beforeCol = isContrast ? '#00ff00' : '#d946ef', afterCol = isContrast ? '#ffff00' : '#0284c7';
+        fk.push(h('defs', { key: 'fdefs' },
+          h('linearGradient', { id: 'iqFlipWell', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: isDark ? '#020617' : '#f8fafc' }),
+            h('stop', { offset: '100%', stopColor: isDark ? '#0f172a' : '#f1f5f9' })),
+          h('radialGradient', { id: 'iqFlipBeadA', cx: '34%', cy: '30%', r: '68%' },
+            h('stop', { offset: '0%', stopColor: '#f5d0fe' }),
+            h('stop', { offset: '45%', stopColor: '#d946ef' }),
+            h('stop', { offset: '100%', stopColor: '#86198f' })),
+          h('radialGradient', { id: 'iqFlipBeadB', cx: '34%', cy: '30%', r: '68%' },
+            h('stop', { offset: '0%', stopColor: '#bae6fd' }),
+            h('stop', { offset: '45%', stopColor: '#0284c7' }),
+            h('stop', { offset: '100%', stopColor: '#075985' }))));
+        // Recessed rail wells for Before and After rows (note: no <g> added before `after` loop)
         [40, 95].forEach(function(y, row) {
-          fk.push(h('line', { key: 'ax' + row, x1: fp, y1: y, x2: FW - fp, y2: y, stroke: '#94a3b8', strokeWidth: 1.5 }));
-          for (var t = Math.ceil(lo / tStep) * tStep; t <= hi; t += tStep) fk.push(h('line', { key: 'tk' + row + '_' + t, x1: fsx(t), y1: y - 4, x2: fsx(t), y2: y + 4, stroke: t === 0 ? txtInk : '#94a3b8', strokeWidth: t === 0 ? 2 : 1 }));
+          if (!isContrast) fk.push(h('rect', { key: 'fw' + row, x: fp, y: y - 13, width: FW - 2 * fp, height: 26, rx: 6, fill: 'url(#iqFlipWell)', stroke: isDark ? 'rgba(148,163,184,0.2)' : '#e2e8f0', strokeWidth: 0.9 }));
+          fk.push(h('line', { key: 'ax' + row, x1: fp, y1: y, x2: FW - fp, y2: y, stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 1.6 }));
+          for (var t = Math.ceil(lo / tStep) * tStep; t <= hi; t += tStep) fk.push(h('line', { key: 'tk' + row + '_' + t, x1: fsx(t), y1: y - 4, x2: fsx(t), y2: y + 4, stroke: t === 0 ? txtInk : (isContrast ? '#ffff00' : '#94a3b8'), strokeWidth: t === 0 ? 2 : 1 }));
           fk.push(h('text', { key: 'rl' + row, x: 4, y: y - 8, fill: txtInk, style: { fontSize: '9px', fontWeight: 'bold' } }, row ? __alloT('stem.inequality.flip_after', 'After') : __alloT('stem.inequality.flip_before', 'Before')));
         });
         for (var t0 = Math.ceil(lo / tStep) * tStep; t0 <= hi; t0 += tStep) if (t0 % (tStep * 2) === 0 || t0 === 0) fk.push(h('text', { key: 'tn' + t0, x: fsx(t0), y: 122, textAnchor: 'middle', fill: lineInk, style: { fontSize: '9px' } }, t0));
         var mirror = checked && (op === 'mul' || op === 'div') && k < 0;
         if (mirror) {
-          fk.push(h('line', { key: 'mirror', x1: fsx(0), y1: 22, x2: fsx(0), y2: 108, stroke: '#0284c7', strokeWidth: 1.5, strokeDasharray: '4,3' }));
-          fk.push(h('text', { key: 'mirrorT', x: fsx(0) + 4, y: 70, fill: isDark ? '#7dd3fc' : '#0369a1', style: { fontSize: '9px', fontWeight: 'bold' } }, __alloT('stem.inequality.flip_mirror', 'mirror at 0')));
+          if (!isContrast) fk.push(h('line', { key: 'mirrorGlow', x1: fsx(0), y1: 18, x2: fsx(0), y2: 112, stroke: '#38bdf8', strokeWidth: 7, opacity: 0.22 }));
+          fk.push(h('line', { key: 'mirror', x1: fsx(0), y1: 20, x2: fsx(0), y2: 110, stroke: isContrast ? '#00ff00' : '#0284c7', strokeWidth: 1.8, strokeDasharray: '4,3' }));
+          fk.push(h('text', { key: 'mirrorT', x: fsx(0) + 5, y: 70, fill: isContrast ? '#00ff00' : (isDark ? '#7dd3fc' : '#0369a1'), style: { fontSize: '9px', fontWeight: 'bold' } }, __alloT('stem.inequality.flip_mirror', 'mirror at 0')));
         }
         before.forEach(function(p, i) {
-          fk.push(h('circle', { key: 'b' + i, cx: fsx(p.v), cy: 40, r: p.boundary ? 6 : 5, fill: p.boundary && setOp.indexOf('=') < 0 ? (isDark ? '#0f172a' : '#ffffff') : '#d946ef', stroke: '#d946ef', strokeWidth: 2 }));
-          fk.push(h('text', { key: 'bt' + i, x: fsx(p.v), y: 28, textAnchor: 'middle', fill: isDark ? '#f0abfc' : '#a21caf', style: { fontSize: '9px', fontWeight: 'bold' } }, p.t));
+          var bx = fsx(p.v), isOpen = p.boundary && setOp.indexOf('=') < 0;
+          if (!isContrast) fk.push(h('circle', { key: 'bh' + i, cx: bx, cy: 40, r: p.boundary ? 9.5 : 8, fill: beforeCol, opacity: 0.18 }));
+          fk.push(h('circle', { key: 'b' + i, cx: bx, cy: 40, r: p.boundary ? 6 : 5, fill: isOpen ? (isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff')) : (isContrast ? beforeCol : 'url(#iqFlipBeadA)'), stroke: beforeCol, strokeWidth: 2 }));
+          if (!isOpen && !isContrast) fk.push(h('circle', { key: 'bs' + i, cx: bx - 1.5, cy: 38.2, r: 1.3, fill: '#ffffff', opacity: 0.78 }));
+          fk.push(h('text', { key: 'bt' + i, x: bx, y: 24, textAnchor: 'middle', fill: isContrast ? '#00ff00' : (isDark ? '#f0abfc' : '#a21caf'), style: { fontSize: '9px', fontWeight: 'bold' } }, p.t));
         });
         after.forEach(function(p, i) {
           var from = before[i] ? fsx(before[i].v) : fsx(p.v), dx = checked ? fsx(p.v) - from : 0;
+          var isOpen = p.boundary && setOp.indexOf('=') < 0;
           fk.push(h('g', { key: 'a' + i, style: { transform: 'translate(' + dx + 'px, 0px)', transition: reduceMotion ? 'none' : 'transform 0.6s ease', opacity: checked ? 1 : 0.35 } },
-            h('circle', { cx: from, cy: 95, r: p.boundary ? 6 : 5, fill: p.boundary && setOp.indexOf('=') < 0 ? (isDark ? '#0f172a' : '#ffffff') : '#0284c7', stroke: '#0284c7', strokeWidth: 2 }),
-            checked && h('text', { x: from, y: 112, textAnchor: 'middle', fill: isDark ? '#7dd3fc' : '#0369a1', style: { fontSize: '9px', fontWeight: 'bold' } }, p.t)));
+            !isContrast && h('circle', { cx: from, cy: 95, r: p.boundary ? 9.5 : 8, fill: afterCol, opacity: 0.2 }),
+            h('circle', { cx: from, cy: 95, r: p.boundary ? 6 : 5, fill: isOpen ? (isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff')) : (isContrast ? afterCol : 'url(#iqFlipBeadB)'), stroke: afterCol, strokeWidth: 2 }),
+            !isOpen && !isContrast && h('circle', { cx: from - 1.5, cy: 93.2, r: 1.3, fill: '#ffffff', opacity: 0.78 }),
+            checked && h('text', { x: from, y: 112, textAnchor: 'middle', fill: isContrast ? '#ffff00' : (isDark ? '#7dd3fc' : '#0369a1'), style: { fontSize: '9px', fontWeight: 'bold' } }, p.t)));
         });
         var flipLabel = iqFill(__alloT('stem.inequality.flip_svg_label', 'Before: {s0}. After {act}: {s1}.'), { s0: stmt0, act: act, s1: checked ? stmt1 : __alloT('stem.inequality.flip_hidden', 'hidden until you check') });
         var sliders = mode === 'numbers'
@@ -2140,7 +2235,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Badge panel ──
-        showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
+        showBadges && h('div', { className: (isContrast ? 'bg-black border-2 border-yellow-300' : 'bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200') + ' rounded-xl p-3 mb-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 ' + __alloT('stem.inequality.badges', 'Badges') + ' (' + earnedCount + '/' + BADGES.length + ')'),
             h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-xs text-slate-600 hover:text-slate-800' }, '\u2715')
@@ -2162,7 +2257,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── AI Tutor panel ──
-        showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
+        showAI && h('div', { className: (isContrast ? 'bg-black border-2 border-yellow-300' : 'bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200') + ' rounded-xl p-3 mb-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, '\uD83E\uDDE0 ' + __alloT('stem.inequality.ai_inequality_tutor', 'AI Inequality Tutor')),
             h('button', { onClick: function() { upd('showAI', false); }, className: 'text-xs text-slate-600 hover:text-slate-800' }, '\u2715')
@@ -2263,8 +2358,8 @@ window.StemLab = window.StemLab || {
         graphMode === '2d' && twoDMode === 'single' && singlePlane(),
         graphMode === '2d' && twoDMode === 'system' && systemPanel(),
 
-        // ── Legend ──
-        h('div', { className: 'flex flex-wrap items-center justify-center gap-x-6 gap-y-1 mt-2 text-xs' },
+        // ── Legend (1D number line) ──
+        graphMode === '1d' && h('div', { className: 'flex flex-wrap items-center justify-center gap-x-6 gap-y-1 mt-2 text-xs' },
           h('span', { className: 'flex items-center gap-1.5 text-fuchsia-700 font-bold' },
             h('span', { style: { display: 'inline-block', width: 10, height: 10, borderRadius: '50%', backgroundColor: '#d946ef' } }),
             __alloT('stem.inequality.legend_closed', 'Closed (≤ ≥) includes the value')),
@@ -2287,8 +2382,8 @@ window.StemLab = window.StemLab || {
         // === Flip Lab (H7b'' inquiry widget): predict, then check ===
         flipLab(),
 
-        // ── Notation display ──
-        ineq && exploring && h('div', { className: 'mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3' },
+        // ── Notation display (1D explore only) ──
+        ineq && graphMode === '1d' && oneDMode === 'explore' && h('div', { className: 'mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3' },
           h('div', { className: 'bg-fuchsia-50 rounded-lg p-3 border border-fuchsia-200 text-center' },
             h('p', { className: 'text-[0.6875rem] font-bold text-fuchsia-700 uppercase tracking-wider mb-1' }, __alloT('stem.inequality.interval_notation', 'Interval Notation')),
             h('p', { className: 'text-lg font-bold text-fuchsia-800 font-mono', style: { overflowWrap: 'anywhere' } }, intervalStr)),
@@ -2297,8 +2392,8 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-violet-800 font-mono', style: { overflowWrap: 'anywhere' } }, setBuilderStr))
         ),
 
-        // ── Test-a-Value panel ──
-        exploring && h('div', { className: 'mt-3 bg-sky-50 rounded-lg p-3 border border-sky-200' },
+        // ── Test-a-Value panel (1D explore only) ──
+        graphMode === '1d' && oneDMode === 'explore' && h('div', { className: 'mt-3 bg-sky-50 rounded-lg p-3 border border-sky-200' },
           h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
             h('p', { className: 'text-[0.6875rem] font-bold text-sky-700 uppercase tracking-wider' }, '\uD83E\uDDEA ' + __alloT('stem.inequality.test_a_value', 'Test a Value')),
             ineq && (function() {
@@ -2313,7 +2408,7 @@ window.StemLab = window.StemLab || {
                     type: 'button',
                     onClick: function() { upd('testVal', String(pv)); },
                     className: 'px-2 py-0.5 rounded-full text-[0.6875rem] font-mono font-bold bg-white text-sky-800 border border-sky-600 hover:bg-sky-100 transition-colors cursor-pointer'
-                  }, 'x=' + pv);
+                  }, (ineq.v || 'x') + '=' + pv);
                 })
               );
             })()
@@ -2441,8 +2536,8 @@ window.StemLab = window.StemLab || {
             !d.quiz.correct && d.quiz.fb && h('p', { className: 'text-xs leading-relaxed text-red-800 mt-1' }, d.quiz.fb))
         ),
 
-        // ── Absolute Value Decomposition ──
-        ineq && ineq.absSource && exploring && h('div', { className: 'mt-3 bg-purple-50 rounded-lg p-3 border border-purple-200' },
+        // ── Absolute Value Decomposition (1D explore only) ──
+        ineq && ineq.absSource && graphMode === '1d' && oneDMode === 'explore' && h('div', { className: 'mt-3 bg-purple-50 rounded-lg p-3 border border-purple-200' },
           h('p', { className: 'text-[0.6875rem] font-bold text-purple-600 uppercase tracking-wider mb-2' }, '\uD83D\uDD0D ' + __alloT('stem.inequality.abs_value_decomposition', 'Absolute Value Decomposition')),
           (ineq.emptySet || ineq.allReals)
             ? h('p', { className: 'text-xs text-purple-900' }, ineq.absSource + ': ' + reasonText)

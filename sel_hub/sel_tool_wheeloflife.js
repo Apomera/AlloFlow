@@ -72,7 +72,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       var _wlT = (ctx && ctx.theme) || {};
       var _wlHC = !!_wlT.isContrast, _wlL = !_wlHC && !_wlT.isDark;
       var _wl_BGL = {'#0b1220':'#f1f5f9','#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _wl_BGH = {'#0b1220':'#000000','#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#f8fafc':'#000000'};
-      var _wl_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#c7d2fe':'#312e81'}, _wl_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fecaca':'#ffff00','#c7d2fe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _wl_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#c7d2fe':'#312e81','#bbf7d0':'#166534'}, _wl_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fecaca':'#ffff00','#c7d2fe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
       var _wl_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _wl_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#6366f1':'#ffff00','#cbd5e1':'#ffff00','#d97706':'#ffff00'};
       var _wlBg = function(h){ return _wlHC ? (_wl_BGH[h]||h) : (_wlL ? (_wl_BGL[h]||h) : h); };
       var _wlFg = function(h){ return _wlHC ? (_wl_FGH[h]||h) : (_wlL ? (_wl_FGL[h]||h) : h); };
@@ -81,6 +81,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       var _wlInk = function(c){ return _wlHC || _wlL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var _wl_DOMAIN_LIGHT = {'#ef4444':'#b91c1c','#f59e0b':'#92400e','#22c55e':'#166534','#ec4899':'#be185d','#0ea5e9':'#0369a1','#6366f1':'#4338ca','#a855f7':'#7e22ce','#eab308':'#854d0e'};
       var _wlDomain = function(h){ return _wlHC ? '#ffff00' : (_wlL ? (_wl_DOMAIN_LIGHT[h] || h) : h); };
+      var _wl_SHORT_LABEL = { romance: 'Romance & love', money: 'Money & finances', friends: 'Friends & social', learning: 'Learning & growth', fun: 'Fun & recreation' };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -88,24 +89,53 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _wlBand = (ctx && ctx.gradeBand) || 'high';
 
-      var d = labToolData.wheelOfLife || defaultState();
+      var d = (labToolData.wheelOfLife && typeof labToolData.wheelOfLife === 'object') ? labToolData.wheelOfLife : defaultState();
       function setWOL(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.wheelOfLife) || defaultState();
-          var next = Object.assign({}, prior, patch);
-          if (patch.ratings || patch.notes || patch.focusDomain !== undefined || patch.nextStep !== undefined) next.lastUpdated = todayISO();
+          var prior = (prev && prev.wheelOfLife && typeof prev.wheelOfLife === 'object') ? prev.wheelOfLife : defaultState();
+          var resolved = typeof patch === 'function' ? patch(prior) : patch;
+          var next = Object.assign({}, prior, resolved);
+          if (resolved && (resolved.ratings || resolved.notes || resolved.focusDomain !== undefined || resolved.nextStep !== undefined)) next.lastUpdated = todayISO();
           return Object.assign({}, prev, { wheelOfLife: next });
         });
       }
-      var view = d.view || 'wheel';
+      function scanWheelText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'wheelOfLife', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'wheelOfLife', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setWOL({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Wheel of Life', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
+      }
+      var VALID_VIEWS = ['wheel', 'rate', 'reflect', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'wheel';
       function goto(v) { setWOL({ view: v }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _wlFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid ' + _wlBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _wlFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _wlFg('#fcd34d'), fontSize: 22, fontWeight: 900 } }, '🛞 Wheel of Life'),
             h('div', { style: { fontSize: 12, color: _wlFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A self-portrait of 8 life domains, each rated 1 to 10.')
@@ -125,10 +155,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, id: 'wol-tab-' + t.id, 'aria-controls': 'wol-tabpanel', onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f59e0b' : '#334155'),
-                background: active ? 'rgba(245,158,11,0.18)' : _wlBg('#1e293b'),
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + _wlBd(active ? '#f59e0b' : '#334155'),
+                background: active ? (_wlHC ? '#000000' : 'rgba(245,158,11,0.18)') : _wlBg('#1e293b'),
                 color: active ? _wlFg('#fde68a') : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -137,13 +167,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _wlFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _wlHC ? '#000000' : (_wlL ? '#f1f5f9' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _wlBd('#334155'), fontSize: 11, color: _wlFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'A low score on a domain is information, not a failure. The Wheel is a snapshot of right now; in three months your shape will look different. Crisis Text Line: text HOME to 741741.'
         );
       }
 
-      function ratingOf(id) { return (d.ratings || {})[id] || 0; }
+      function ratingOf(id) {
+        var raw = (d.ratings && typeof d.ratings === 'object') ? d.ratings[id] : 0;
+        var n = typeof raw === 'number' ? raw : Number(raw);
+        if (!isFinite(n) || n <= 0) return 0;
+        return Math.max(0, Math.min(10, Math.round(n)));
+      }
+      function noteOf(id) {
+        var raw = (d.notes && typeof d.notes === 'object') ? d.notes[id] : '';
+        return typeof raw === 'string' ? raw : '';
+      }
+      function safeNextStep() {
+        return typeof d.nextStep === 'string' ? d.nextStep : '';
+      }
 
       // ═══════════════════════════════════════════════════════════
       // WHEEL — SVG radar chart
@@ -152,7 +194,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         var hasAny = DOMAINS.some(function(d2) { return ratingOf(d2.id) > 0; });
         if (!hasAny) {
           return h('div', null,
-            h('div', { style: { padding: 28, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(245,158,11,0.4)', textAlign: 'center', marginBottom: 14 } },
+            h('div', { style: { padding: 28, borderRadius: 14, background: _wlHC ? '#000000' : (_wlL ? 'linear-gradient(135deg, rgba(245,158,11,0.14) 0%, #f8fafc 65%)' : 'linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_wlHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), textAlign: 'center', marginBottom: 14 } },
               h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🛞'),
               h('h3', { style: { margin: '0 0 8px', color: _wlFg('#fde68a'), fontSize: 18 } }, 'Your Wheel is empty'),
               h('p', { style: { margin: '0 0 14px', color: _wlFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
@@ -196,7 +238,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         var spread = maxRating - minRating;
         var shapeLabel = ratedDomains.length < DOMAINS.length ? 'Still taking shape' : spread <= 2 ? 'Close together' : spread <= 5 ? 'Mixed terrain' : 'Wide contrast';
         var chosenFocus = ratedDomains.find(function(dom) { return dom.id === d.focusDomain; }) || null;
-        var savedMove = (d.nextStep || '').trim();
+        var savedMove = safeNextStep().trim();
         var svgDesc = 'Wheel of Life radar chart, ' + ratedDomains.length + ' of ' + DOMAINS.length +
           ' domains rated. Average: ' + avg + ' out of 10. ' +
           DOMAINS.map(function(dom) { return dom.label + ': ' + (ratingOf(dom.id) || '0') + '/10'; }).join('; ') + '.' +
@@ -228,12 +270,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
                   var p = pointFor(i, level);
                   return p.x + ',' + p.y;
                 }).join(' ');
-                return h('polygon', { key: 'grid_' + level, points: poly, fill: 'none', stroke: '#334155', strokeWidth: 1, opacity: 0.4 });
+                return h('polygon', { key: 'grid_' + level, points: poly, fill: 'none', stroke: _wlBd('#334155'), strokeWidth: 1, opacity: _wlHC ? 0.8 : 0.4 });
               }),
               // Spokes
               DOMAINS.map(function(_, i) {
                 var p = pointFor(i, 10);
-                return h('line', { key: 'spoke_' + i, x1: cx, y1: cy, x2: p.x, y2: p.y, stroke: '#334155', strokeWidth: 1 });
+                return h('line', { key: 'spoke_' + i, x1: cx, y1: cy, x2: p.x, y2: p.y, stroke: _wlBd('#334155'), strokeWidth: 1 });
               }),
               // Data polygon
               h('polygon', { points: poly, fill: _wlHC ? 'none' : 'url(#wol-wheel-gradient)', stroke: _wlHC ? '#ffff00' : '#f59e0b', strokeWidth: 3 }),
@@ -252,10 +294,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
               DOMAINS.map(function(dom, i) {
                 var lp = labelPoint(i);
                 var v = ratingOf(dom.id);
+                var shortLabel = _wl_SHORT_LABEL[dom.id] || dom.label;
                 return h('g', { key: 'lbl_' + dom.id },
-                  h('text', { x: lp.x, y: lp.y - 6, textAnchor: 'middle', fontSize: 16, fill: _wlDomain(dom.color) }, dom.icon),
-                  h('text', { x: lp.x, y: lp.y + 10, textAnchor: 'middle', fontSize: 11, fill: _wlFg('#e2e8f0'), style: { fontWeight: 700 } }, dom.label.slice(0, 18)),
-                  h('text', { x: lp.x, y: lp.y + 24, textAnchor: 'middle', fontSize: 13, fill: _wlDomain(dom.color), style: { fontWeight: 900 } }, v || '0')
+                  h('text', { x: lp.x, y: lp.y - 6, textAnchor: 'middle', fontSize: 16, fill: _wlInk(_wlDomain(dom.color)) }, dom.icon),
+                  h('text', { x: lp.x, y: lp.y + 10, textAnchor: 'middle', fontSize: 11, fill: _wlFg('#e2e8f0'), style: { fontWeight: 700 } }, shortLabel),
+                  h('text', { x: lp.x, y: lp.y + 24, textAnchor: 'middle', fontSize: 13, fill: _wlInk(_wlDomain(dom.color)), style: { fontWeight: 900 } }, v || '0')
                 );
               })
             )
@@ -267,7 +310,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
                 h('div', { style: { color: _wlFg('#fcd34d'), fontSize: 13.5, fontWeight: 900, marginBottom: 2 } }, 'Shape at a glance'),
                 h('div', { style: { color: _wlFg('#cbd5e1'), fontSize: 11.5, lineHeight: 1.5 } }, 'Notice the contrast. A round wheel is not the goal.')
               ),
-              h('span', { style: { padding: '5px 8px', borderRadius: 999, background: _wlBg('#0f172a'), border: '1px solid #475569', color: _wlFg('#fde68a'), fontSize: 10.5, fontWeight: 900 } }, shapeLabel)
+              h('span', { style: { padding: '5px 8px', borderRadius: 999, background: _wlBg('#0f172a'), border: '1px solid ' + _wlBd('#475569'), color: _wlFg('#fde68a'), fontSize: 10.5, fontWeight: 900 } }, shapeLabel)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8, marginBottom: 8 } },
               snapshotMetric('Average', avg + ' / 10', 'Across rated areas', _wlFg('#fcd34d')),
@@ -277,13 +320,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 8 } },
               fullest ? h('div', { style: { padding: 11, borderRadius: 10, background: _wlBg('#0f172a'), borderLeft: '3px solid ' + _wlDomain(fullest.color), color: _wlFg('#e2e8f0'), fontSize: 12.5, lineHeight: 1.5 } },
                 h('span', { style: { color: _wlFg('#94a3b8'), fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, 'Fullest right now'),
-                h('div', { style: { marginTop: 3, fontWeight: 850 } }, fullest.icon + ' ' + fullest.label + ' · ', h('strong', { style: { color: _wlDomain(fullest.color) } }, ratingOf(fullest.id)))
+                h('div', { style: { marginTop: 3, fontWeight: 850 } }, fullest.icon + ' ' + fullest.label + ' · ', h('strong', { style: { color: _wlInk(_wlDomain(fullest.color)) } }, ratingOf(fullest.id)))
               ) : null,
               thinnest ? h('div', { style: { padding: 11, borderRadius: 10, background: _wlBg('#0f172a'), borderLeft: '3px solid ' + (chosenFocus ? _wlDomain(chosenFocus.color) : _wlDomain(thinnest.color)), color: _wlFg('#e2e8f0'), fontSize: 12.5, lineHeight: 1.5 } },
                 h('span', { style: { color: _wlFg('#94a3b8'), fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, chosenFocus ? 'Chosen focus' : 'A place to explore'),
                 h('div', { style: { marginTop: 3, fontWeight: 850 } },
                   (chosenFocus || thinnest).icon + ' ' + (chosenFocus || thinnest).label + ' · ',
-                  h('strong', { style: { color: _wlDomain((chosenFocus || thinnest).color) } }, ratingOf((chosenFocus || thinnest).id)),
+                  h('strong', { style: { color: _wlInk(_wlDomain((chosenFocus || thinnest).color)) } }, ratingOf((chosenFocus || thinnest).id)),
                   chosenFocus && savedMove ? h('div', { style: { marginTop: 5, color: _wlFg('#c7d2fe'), fontSize: 11.5, fontWeight: 650 } }, 'This week: ' + savedMove) : null
                 )
               ) : null
@@ -292,14 +335,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
           // Text-equivalent (accessible to all users; WCAG 1.1.1)
           h('details', { style: { marginBottom: 12 } },
-            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _wlFg('#fcd34d'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _wlBg('#0f172a'), border: '1px solid #1e293b' } }, '🔤 Read this wheel as text'),
-            h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _wlBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _wlFg('#fcd34d'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _wlBg('#0f172a'), border: '1px solid ' + _wlBd('#1e293b') } }, '🔤 Read this wheel as text'),
+            h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _wlBg('#0f172a'), border: '1px solid ' + _wlBd('#1e293b') } },
               h('p', { style: { margin: '0 0 8px', color: _wlFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, 'Ratings 0-10, where 0 means thin/empty in this area and 10 means full/thriving:'),
               h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _wlFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
                 DOMAINS.map(function(dom) {
                   var v = ratingOf(dom.id);
                   return h('li', { key: dom.id, style: { marginBottom: 2 } },
-                    h('strong', { style: { color: _wlDomain(dom.color) } }, dom.label),
+                    h('strong', { style: { color: _wlInk(_wlDomain(dom.color)) } }, dom.label),
                     ': ' + (v || '0') + '/10'
                   );
                 })
@@ -325,14 +368,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       // ═══════════════════════════════════════════════════════════
       function renderRate() {
         function setRating(id, value) {
-          var ratings = Object.assign({}, (d.ratings || {}));
-          ratings[id] = value;
-          setWOL({ ratings: ratings });
+          var n = typeof value === 'number' && isFinite(value) ? Math.max(1, Math.min(10, Math.round(value))) : 1;
+          setWOL(function(prior) {
+            var ratings = Object.assign({}, (prior && prior.ratings && typeof prior.ratings === 'object') ? prior.ratings : {});
+            ratings[id] = n;
+            return { ratings: ratings };
+          });
         }
         function setNote(id, val) {
-          var notes = Object.assign({}, (d.notes || {}));
-          notes[id] = val;
-          setWOL({ notes: notes });
+          setWOL(function(prior) {
+            var notes = Object.assign({}, (prior && prior.notes && typeof prior.notes === 'object') ? prior.notes : {});
+            notes[id] = typeof val === 'string' ? val : String(val || '');
+            return { notes: notes };
+          });
         }
 
         return h('div', null,
@@ -343,28 +391,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
           DOMAINS.map(function(dom) {
             var v = ratingOf(dom.id);
-            var note = (d.notes || {})[dom.id] || '';
+            var note = noteOf(dom.id);
             var noteId = 'wol-note-' + dom.id;
             var domainColor = _wlDomain(dom.color);
-            return h('div', { key: dom.id, style: { padding: 14, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + domainColor, marginBottom: 10 } },
+            var activeDarkInk = (dom.color === '#6366f1' || dom.color === '#a855f7') ? '#ffffff' : '#0f172a';
+            return h('div', { key: dom.id, style: { padding: 14, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid ' + _wlBd('#1e293b'), borderRight: '1px solid ' + _wlBd('#1e293b'), borderBottom: '1px solid ' + _wlBd('#1e293b'), borderLeft: '3px solid ' + domainColor, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 26 } }, dom.icon),
                 h('div', { style: { flex: 1, minWidth: 140 } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: _wlInk(domainColor) } }, dom.label)
                 ),
-                h('div', { style: { fontSize: 22, fontWeight: 900, color: v > 0 ? domainColor : _wlFg('#475569') } }, v || '–')
+                h('div', { style: { fontSize: 22, fontWeight: 900, color: v > 0 ? _wlInk(domainColor) : _wlFg('#94a3b8') } }, v || '–')
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }, role: 'radiogroup', 'aria-label': 'Rate ' + dom.label },
                 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function(n) {
                   var active = v === n;
-                  return h('button', { key: n, onClick: function() { setRating(dom.id, n); }, role: 'radio', 'aria-checked': active, 'aria-label': 'Rate ' + n,
-                    style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? domainColor : _wlFg('#475569')), background: active ? domainColor : _wlBg('#1e293b'), color: active ? (_wlHC ? '#000000' : (_wlL ? '#ffffff' : '#0f172a')) : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700, minWidth: 32 } }, n);
+                  return h('button', { key: n, onClick: function() { setRating(dom.id, n); }, role: 'radio', 'aria-checked': active, 'aria-label': 'Rate ' + dom.label + ' ' + n + ' out of 10',
+                    style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? domainColor : _wlBd('#475569')), background: active ? domainColor : _wlBg('#1e293b'), color: active ? (_wlHC ? '#000000' : (_wlL ? '#ffffff' : activeDarkInk)) : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700, minWidth: 32 } }, n);
                 })
               ),
               h('label', { htmlFor: noteId, style: { display: 'block', fontSize: 11, color: _wlFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Note (optional)'),
               h('textarea', { id: noteId, value: note,
                 placeholder: 'What is true about this area right now? Why this number?',
                 onChange: function(e) { setNote(dom.id, e.target.value); },
+                onBlur: function(e) { scanWheelText(e.target.value); },
                 style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _wlBg('#1e293b'), color: _wlFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.55, resize: 'vertical' } })
             );
           }),
@@ -395,11 +445,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         var focusChoices = bottom.slice();
         if (selectedFocus && !focusChoices.some(function(d2) { return d2.id === selectedFocus.id; })) focusChoices.unshift(selectedFocus);
         function chooseFocus(dom) {
+          if (d.focusDomain === dom.id) return;
           setWOL({ focusDomain: dom.id, nextStep: '' });
           if (announceToSR) announceToSR(dom.label + ' selected as this week\'s focus');
         }
         function setNextStep(value) { setWOL({ nextStep: value }); }
-        var nextStep = (d.nextStep || '').trim();
+        var rawNextStep = safeNextStep();
+        var nextStep = rawNextStep.trim();
 
         return h('div', null,
           h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: _wlFg('#fde68a'), lineHeight: 1.65 } },
@@ -407,21 +459,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             'A round wheel is not the goal. The goal is honesty about right now, and one or two intentional moves toward something that matters. Average across rated domains: ', h('strong', null, avg.toFixed(1)), '.'
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid ' + _wlBd('#1e293b'), borderRight: '1px solid ' + _wlBd('#1e293b'), borderBottom: '1px solid ' + _wlBd('#1e293b'), borderLeft: '3px solid ' + _wlBd('#22c55e'), marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _wlFg('#bbf7d0'), marginBottom: 8 } }, '🟢 Where my wheel is fullest'),
             top.map(function(d2) {
               return h('div', { key: d2.id, style: { fontSize: 13, color: _wlFg('#e2e8f0'), marginBottom: 4 } },
-                d2.icon + ' ' + d2.label + ' · ', h('strong', { style: { color: _wlDomain(d2.color) } }, ratingOf(d2.id)));
+                d2.icon + ' ' + d2.label + ' · ', h('strong', { style: { color: _wlInk(_wlDomain(d2.color)) } }, ratingOf(d2.id)));
             }),
             h('div', { style: { fontSize: 12, color: _wlFg('#94a3b8'), lineHeight: 1.55, marginTop: 6, fontStyle: 'italic' } },
               'These are doing well. Notice them. They are part of how you are holding the rest.')
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid ' + _wlBd('#1e293b'), borderRight: '1px solid ' + _wlBd('#1e293b'), borderBottom: '1px solid ' + _wlBd('#1e293b'), borderLeft: '3px solid ' + _wlBd('#ef4444'), marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _wlFg('#fecaca'), marginBottom: 8 } }, '🔴 Where my wheel is thinnest'),
             bottom.map(function(d2) {
               return h('div', { key: d2.id, style: { fontSize: 13, color: _wlFg('#e2e8f0'), marginBottom: 4 } },
-                d2.icon + ' ' + d2.label + ' · ', h('strong', { style: { color: _wlDomain(d2.color) } }, ratingOf(d2.id)));
+                d2.icon + ' ' + d2.label + ' · ', h('strong', { style: { color: _wlInk(_wlDomain(d2.color)) } }, ratingOf(d2.id)));
             }),
             h('div', { style: { fontSize: 12, color: _wlFg('#94a3b8'), lineHeight: 1.55, marginTop: 6, fontStyle: 'italic' } },
               'A low score is not a moral judgment. Sometimes a domain is intentionally thin right now (you are pouring into work for a season, or family is intense and there is no room for romance). The question worth sitting with: which of these would you actually want to move from a 3 to a 5 in the next month? Only one. Pick one.')
@@ -436,21 +488,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
               focusChoices.map(function(dom) {
                 var selected = selectedFocus && selectedFocus.id === dom.id;
                 var color = _wlDomain(dom.color);
+                var textColor = _wlInk(color);
                 return h('button', { key: dom.id, onClick: function() { chooseFocus(dom); }, 'aria-pressed': selected,
-                  style: { padding: '8px 11px', borderRadius: 999, background: selected ? (_wlHC ? '#000000' : color + '22') : _wlBg('#1e293b'), border: '1px solid ' + (selected ? color : '#475569'), color: selected ? color : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: selected ? 900 : 700 } },
+                  style: { padding: '8px 11px', borderRadius: 999, background: selected ? (_wlHC ? '#000000' : color + '22') : _wlBg('#1e293b'), border: '1px solid ' + (selected ? color : _wlBd('#475569')), color: selected ? textColor : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: selected ? 900 : 700 } },
                   (selected ? '✓ ' : '') + dom.icon + ' ' + dom.label + ' · ' + ratingOf(dom.id));
               })
             ),
             selectedFocus ? h('div', { style: { padding: 12, borderRadius: 10, background: _wlBg('#0f172a'), borderLeft: '3px solid ' + _wlDomain(selectedFocus.color) } },
-              h('label', { htmlFor: 'wol-next-step', style: { display: 'block', color: _wlDomain(selectedFocus.color), fontSize: 12.5, fontWeight: 900, marginBottom: 5 } }, selectedFocus.icon + ' One small move for ' + selectedFocus.label),
-              h('textarea', { id: 'wol-next-step', value: d.nextStep || '', onChange: function(e) { setNextStep(e.target.value); }, maxLength: 180,
+              h('label', { htmlFor: 'wol-next-step', style: { display: 'block', color: _wlInk(_wlDomain(selectedFocus.color)), fontSize: 12.5, fontWeight: 900, marginBottom: 5 } }, selectedFocus.icon + ' One small move for ' + selectedFocus.label),
+              h('textarea', { id: 'wol-next-step', value: rawNextStep, onChange: function(e) { setNextStep(e.target.value); }, onBlur: function(e) { scanWheelText(e.target.value); }, maxLength: 180,
                 placeholder: 'Example: Text one friend, take a 10-minute walk, or ask for one piece of help…',
-                style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 8, border: '1px solid #475569', background: _wlBg('#1e293b'), color: _wlFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.55, resize: 'vertical' } }),
+                style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 8, border: '1px solid ' + _wlBd('#475569'), background: _wlBg('#1e293b'), color: _wlFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.55, resize: 'vertical' } }),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, marginTop: 6, color: _wlFg('#94a3b8'), fontSize: 10.5 } },
                 h('span', null, 'Small enough to try this week'),
-                h('span', null, String((d.nextStep || '').length) + ' / 180')
+                h('span', null, String(rawNextStep.length) + ' / 180')
               ),
-              nextStep ? h('div', { 'aria-label': 'Saved small move preview', style: { marginTop: 10, padding: 10, borderRadius: 8, background: _wlHC ? '#000000' : 'rgba(99,102,241,0.15)', border: '1px solid ' + (_wlHC ? '#ffff00' : 'rgba(99,102,241,0.36)'), color: _wlFg('#c7d2fe'), fontSize: 12.5, lineHeight: 1.55 } },
+              nextStep ? h('div', { role: 'group', 'aria-label': 'Saved small move preview', style: { marginTop: 10, padding: 10, borderRadius: 8, background: _wlHC ? '#000000' : 'rgba(99,102,241,0.15)', border: '1px solid ' + (_wlHC ? '#ffff00' : 'rgba(99,102,241,0.36)'), color: _wlFg('#c7d2fe'), fontSize: 12.5, lineHeight: 1.55 } },
                 h('strong', null, 'This week · '), nextStep)
               : null
             ) : h('div', { style: { color: _wlFg('#94a3b8'), fontSize: 11.5, fontStyle: 'italic' } }, 'Choose one area above to shape a half-step.')
@@ -486,7 +539,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#wol-print-region, #wol-print-region * { visibility: visible !important; } ' +
-              '#wol-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#wol-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #000 !important; } ' +
+              '#wol-print-region * { background: transparent !important; color: #000 !important; border-color: #888 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
@@ -499,12 +553,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
             DOMAINS.map(function(dom) {
               var v = ratingOf(dom.id);
-              var note = (d.notes || {})[dom.id] || '';
-              return h('div', { key: dom.id, style: { marginBottom: 12, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + _wlDomain(dom.color), background: _wlBg('#f8fafc') } },
+              var note = noteOf(dom.id);
+              var printAccent = _wlHC ? '#ffff00' : (_wl_DOMAIN_LIGHT[dom.color] || dom.color);
+              return h('div', { key: dom.id, style: { marginBottom: 12, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + printAccent, background: _wlBg('#f8fafc') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                   h('span', { style: { fontSize: 18 } }, dom.icon),
                   h('span', { style: { fontSize: 14, fontWeight: 800, color: _wlFg('#0f172a'), flex: 1 } }, dom.label),
-                  h('span', { style: { fontSize: 22, fontWeight: 900, color: _wlDomain(dom.color) } }, v || '–')
+                  h('span', { style: { fontSize: 22, fontWeight: 900, color: printAccent } }, v || '–')
                 ),
                 note ? h('p', { style: { margin: 0, color: _wlFg('#0f172a'), fontSize: 12, lineHeight: 1.6, fontStyle: 'italic' } }, note) : null
               );
@@ -593,7 +648,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Wheel of Life' },
         header(),
         navTabs(),
-        body
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _wlBand) : null,
+        h('div', { id: 'wol-tabpanel', role: 'tabpanel', 'aria-labelledby': 'wol-tab-' + view }, body)
       );
     }
   });

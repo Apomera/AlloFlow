@@ -254,10 +254,12 @@
         line(-14, 7, -14, 20, '#71868b', 2), line(18, -6, 18, 8, '#71868b', 2), line(-14, 19, 18, -5, '#84999b', 1.1),
         line(-19, 20, -9, 20, '#bac7bd', 2), line(14, 9, 22, 6, '#bac7bd', 2),
         polygon('-30,-3 7,-19 30,-3 30,0 -7,16 -30,0', '#6e8994'),
-        polygon('-28,-3 7,-18 28,-3 -7,12', 'url(#' + uid + '-solar-glass)', { stroke: '#bdd5d9', strokeWidth: 1.25 }),
+        polygon('-28,-3 7,-18 28,-3 -7,12', 'url(#' + uid + '-solar-glass)', { stroke: '#c7dfe2', strokeWidth: 1.3 }),
         h('g', { opacity: night ? 0.58 : 0.78, 'data-tycoon-cell-grid': true }, cells),
-        polygon('-28,-3 7,-18 15,-12 -20,3', '#d2f0eb', { opacity: night ? 0.035 : clamp(irradiance * 0.17, 0.035, 0.2) }),
-        line(-7, 13, 29, -2, '#d2e2dc', 1.2), line(-29, -2, -7, 13, '#8eabb3', 1));
+        polygon('-28,-3 7,-18 15,-12 -20,3', '#d2f0eb', { opacity: night ? 0.035 : clamp(irradiance * 0.19, 0.035, 0.24) }),
+        !night && irradiance > 0.12 ? polygon('-14,-9 2,-16 8,-12 -8,-5', '#ffffff', { opacity: clamp(irradiance * 0.32, 0.06, 0.34) }) : null,
+        !night && irradiance > 0.35 ? line(-19, 1, 11, -12, '#f0fffc', 1.1, { opacity: clamp((irradiance - 0.25) * 0.48, 0.08, 0.38) }) : null,
+        line(-7, 13, 29, -2, '#dcebe5', 1.25), line(-29, -2, -7, 13, '#8eabb3', 1));
     }
     function solar(site, asset) {
       var rooftop = /roof/.test(site.id), panels = [];
@@ -267,18 +269,29 @@
     function wind(site, asset) {
       var cached = motion.current.rotors[site.id], phase = cached ? cached.phase : 18;
       var target = liveTargets[site.id], mode = target.rotor ? cached && cached.speed >= target.rotor * 0.9 ? 'generating' : 'starting' : cached && cached.speed > 0 ? target.stopMode : 'parked';
+      var spinArc = active && target.rotor > 0 ? clamp(target.rotor / 80, 0.25, 1) : 0;
       return h('g', { 'data-tycoon-material': 'wind' },
-        h('ellipse', { cx: 32, cy: 3, rx: 64, ry: 11, fill: '#173d423b', transform: 'rotate(-12)' }),
+        h('ellipse', { cx: 34, cy: 4, rx: 68, ry: 12, fill: '#14373d36', transform: 'rotate(-12)' }),
+        h('ellipse', { cx: 46, cy: -1, rx: 32, ry: 5.5, fill: '#14373d24', transform: 'rotate(-16)' }),
         h('ellipse', { cy: 8, rx: 20, ry: 8, fill: '#617c73' }), h('ellipse', { cy: 4, rx: 20, ry: 8, fill: '#b5bfb0', stroke: '#7c9689', strokeWidth: 1.5 }),
         [[-13,2],[-7,8],[9,7],[14,0]].map(function (point, index) { return h('circle', { key: index, cx: point[0], cy: point[1], r: 1.4, fill: '#526d68', stroke: '#d3d8c4', strokeWidth: 0.5 }); }),
         polygon('-8,2 8,2 4,-103 -4,-103', 'url(#' + uid + '-tower)'),
+        line(-2.2, 0, -1.1, -99, '#ffffff', 0.9, { opacity: 0.35 }),
         h('path', { d: 'M -6 -29 Q 0 -26 6 -29 M -5 -65 Q 0 -63 5 -65', fill: 'none', stroke: '#789994', strokeWidth: 0.7, opacity: 0.65 }),
         h('path', { d: 'M -3 -5 V -18 Q -3 -23 2 -22 L 3 -5 Z', fill: '#b3c8bf', stroke: '#698a86', strokeWidth: 0.75 }), line(1, -14, 1, -10, '#547573', 0.9),
         h('ellipse', { cy: -96, rx: 6, ry: 2.8, fill: '#88a6a0', stroke: '#cadbd0', strokeWidth: 0.8 }),
         polygon('-3,-108 20,-115 26,-110 3,-102', '#dfebe0', { stroke: '#b4c9c1', strokeWidth: 0.65 }), polygon('3,-102 26,-110 26,-100 3,-92', 'url(#' + uid + '-nacelle)'),
         [0,1,2,3].map(function (index) { return line(12 + index * 3, -103 - index, 12 + index * 3, -98 - index, '#73918a', 1, { key: index }); }),
         line(6, -102, 24, -108, '#e1eee0', 0.75),
-        h('g', { transform: 'translate(0 -103)' }, h('g', { ref: function (node) { refs.current.rotors[site.id] = node; }, transform: 'rotate(' + phase + ')', 'data-tycoon-rotor': site.id, opacity: asset.status === 'building' && buildStage === 'assembly' ? 0.12 : 1, 'data-motion-rate': cached ? cached.speed : 0, 'data-motion-mode': active ? mode : 'paused', 'data-local-wind': (windSpeed * (n(site.resource) || 1)).toFixed(2) }, [0, 120, 240].map(function (angle) { return h('g', { key: angle, transform: 'rotate(' + angle + ')' }, h('path', { d: 'M -4 0 C -10 -22 -5 -53 2 -73 Q 5 -78 7 -73 L 6 -14 L 3 2 Z', fill: '#eff5e9', stroke: '#9aafb0', strokeWidth: 0.9 }), h('path', { d: 'M 2 -73 L 6 -14 L 3 2 L 0 -9 Z', fill: '#c7d9d5' })); })), h('circle', { r: 8, fill: 'url(#' + uid + '-nacelle)', stroke: '#6e8c8f', strokeWidth: 1.5 }), h('circle', { r: 5.5, fill: 'none', stroke: '#e1ece0', strokeWidth: 0.8 }), h('circle', { r: 2.5, fill: '#f2f5e9' })),
+        h('circle', { cx: 19, cy: -115.5, r: 2.2, fill: night ? '#ff8b7b' : '#e06c60', opacity: night ? 0.95 : 0.75 }),
+        h('g', { transform: 'translate(0 -103)' },
+          spinArc > 0 ? h('circle', { r: 72, fill: 'none', stroke: night ? '#b9ece8' : '#ffffff', strokeWidth: 1.8, strokeDasharray: '28 18 12 24', opacity: (0.09 + spinArc * 0.14).toFixed(3) }) : null,
+          h('g', { ref: function (node) { refs.current.rotors[site.id] = node; }, transform: 'rotate(' + phase + ')', 'data-tycoon-rotor': site.id, opacity: asset.status === 'building' && buildStage === 'assembly' ? 0.12 : 1, 'data-motion-rate': cached ? cached.speed : 0, 'data-motion-mode': active ? mode : 'paused', 'data-local-wind': (windSpeed * (n(site.resource) || 1)).toFixed(2) }, [0, 120, 240].map(function (angle) { return h('g', { key: angle, transform: 'rotate(' + angle + ')' },
+            spinArc > 0 ? h('path', { d: 'M 4 -69 A 69 69 0 0 1 24 -64', fill: 'none', stroke: '#eefcf9', strokeWidth: 1.5, strokeLinecap: 'round', opacity: (0.14 + spinArc * 0.2).toFixed(3) }) : null,
+            h('path', { d: 'M -4 0 C -10 -22 -5 -53 2 -73 Q 5 -78 7 -73 L 6 -14 L 3 2 Z', fill: '#f3f8ee', stroke: '#9aafb0', strokeWidth: 0.9 }),
+            h('path', { d: 'M 2 -73 L 6 -14 L 3 2 L 0 -9 Z', fill: '#c5d8d4' }),
+            h('path', { d: 'M -3 -5 C -7 -24 -3 -51 2 -71', fill: 'none', stroke: '#ffffff', strokeWidth: 0.7, opacity: 0.55 })); })),
+          h('circle', { r: 8, fill: 'url(#' + uid + '-nacelle)', stroke: '#6e8c8f', strokeWidth: 1.5 }), h('circle', { r: 5.5, fill: 'none', stroke: '#e1ece0', strokeWidth: 0.8 }), h('circle', { r: 2.5, fill: '#f2f5e9' })),
         line(-12, 7, 12, 7, '#d5dfce', 2));
     }
     function windsock() {
@@ -295,7 +308,8 @@
         var cellFill = clamp(fill * 6 - i, 0, 1), x = 3 + i * 8, y = 4 - i * 2.84;
         strips.push(h('g', { key: i, 'data-tycoon-battery-cell': site.id, 'data-cell': i, 'data-fill': cellFill },
           polygon(x + ',' + y + ' ' + (x + 6) + ',' + (y - 2.15) + ' ' + (x + 6) + ',' + (y + 16.85) + ' ' + x + ',' + (y + 19), '#345e65'),
-          cellFill > 0 ? polygon(x + ',' + y + ' ' + (x + 6 * cellFill) + ',' + (y - 2.15 * cellFill) + ' ' + (x + 6 * cellFill) + ',' + (y + 19 - 2.15 * cellFill) + ' ' + x + ',' + (y + 19), '#7ce2b5') : null));
+          cellFill > 0 ? polygon(x + ',' + y + ' ' + (x + 6 * cellFill) + ',' + (y - 2.15 * cellFill) + ' ' + (x + 6 * cellFill) + ',' + (y + 19 - 2.15 * cellFill) + ' ' + x + ',' + (y + 19), '#7ce2b5') : null,
+          cellFill > 0.2 ? line(x + 1, y + 1.5, x + 1, y + 16.5, '#d9ffea', 0.9, { opacity: 0.7 }) : null));
       }
       var indicatorState = asset.status === 'fault' ? 'fault' : asset.available === false || asset.status === 'service' || asset.status === 'building' ? 'isolated' : n(asset.power) < 0 ? 'charge' : n(asset.power) > 0 ? 'export' : 'idle';
       var indicatorColor = { charge: '#b8a8f9', export: '#ffe6a0', idle: '#9cb6b5', isolated: '#ffca72', fault: '#ff9a87' }[indicatorState];
@@ -403,12 +417,14 @@
         var angle = Math.atan2(dy, dx) * 180 / Math.PI + (power < 0 ? 180 : 0);
         return h('g', { key: position, transform: 'translate(' + x.toFixed(3) + ' ' + y.toFixed(3) + ') rotate(' + angle.toFixed(3) + ')', 'data-tycoon-flow-cue': id, 'data-position': position, 'data-direction': power < 0 ? 'to-storage' : 'to-grid', pointerEvents: 'none' }, polygon('-5,-4 1,0 -5,4 -2,0', color, { stroke: '#20484e', strokeWidth: 0.9, strokeLinejoin: 'round' }));
       }) : null;
+      var glowLevel = moving ? clamp(Math.sqrt(Math.abs(power) / 100), 0.2, 1) : 0;
       return h('g', { key: 'flow-' + id, ref: function (node) { refs.current.flowGroups[id] = node; }, 'data-tycoon-flow': id, 'data-power': power, 'data-direction': !power ? 'idle' : power < 0 ? 'to-storage' : id === 'town' ? 'to-community' : 'to-grid', 'data-slot-count': FLOW_SLOTS, 'data-selected': selected, 'data-flow-phase': cached ? cached.phase : 0.12, 'data-visual-magnitude': visualMagnitude, 'data-flow-speed': appearance.speed, 'aria-hidden': true },
         selected ? h('path', { d: path, fill: 'none', stroke: '#c6f7e0', strokeWidth: 12, opacity: 0.32, 'data-tycoon-selected-cable': id }) : null,
+        moving && installed ? h('path', { d: path, fill: 'none', stroke: color, strokeWidth: (6.5 + glowLevel * 5.5).toFixed(2), opacity: (0.16 + glowLevel * 0.24).toFixed(3), filter: 'url(#' + uid + '-energy-glow)', strokeLinecap: 'round' }) : null,
         h('path', { d: path, fill: 'none', stroke: installed ? '#2b5a59' : '#73948a', strokeWidth: installed ? 7 : 2, strokeDasharray: installed ? undefined : '3 7', opacity: installed ? 0.65 : 0.45 }),
-        h('path', { ref: function (node) { refs.current.paths[id] = node; }, d: path, fill: 'none', stroke: moving ? power < 0 ? '#8e6ad0' : '#cba954' : '#74948b', strokeWidth: moving ? selected ? 4.5 : 3.5 : selected ? 2.3 : 1.3, markerEnd: power > 0 ? 'url(#' + uid + '-arrow)' : undefined, markerStart: power < 0 ? 'url(#' + uid + '-charge-arrow)' : undefined, opacity: installed ? 1 : 0 }),
+        h('path', { ref: function (node) { refs.current.paths[id] = node; }, d: path, fill: 'none', stroke: moving ? power < 0 ? '#a17be6' : '#e0ba5e' : '#74948b', strokeWidth: moving ? selected ? 4.5 : 3.5 : selected ? 2.3 : 1.3, markerEnd: power > 0 ? 'url(#' + uid + '-arrow)' : undefined, markerStart: power < 0 ? 'url(#' + uid + '-charge-arrow)' : undefined, opacity: installed ? 1 : 0 }),
         directionCues,
-        Array.from({ length: FLOW_SLOTS }, function (_, index) { return h('circle', { key: index, ref: function (node) { if (!refs.current.particles[id]) refs.current.particles[id] = []; refs.current.particles[id][index] = node; }, cx: 0, cy: 0, r: appearance.radius, opacity: appearance.opacity, fill: color, visibility: moving ? 'visible' : 'hidden', 'data-tycoon-packet': id, 'data-slot': index, style: { pointerEvents: 'none' } }); }));
+        Array.from({ length: FLOW_SLOTS }, function (_, index) { return h('circle', { key: index, ref: function (node) { if (!refs.current.particles[id]) refs.current.particles[id] = []; refs.current.particles[id][index] = node; }, cx: 0, cy: 0, r: appearance.radius, opacity: appearance.opacity, fill: color, stroke: power < 0 ? '#efe4ff' : '#fff8dc', strokeWidth: 0.7, filter: moving ? 'url(#' + uid + '-energy-glow)' : undefined, visibility: moving ? 'visible' : 'hidden', 'data-tycoon-packet': id, 'data-slot': index, style: { pointerEvents: 'none' } }); }));
     }
     var skyTop = night ? '#10283b' : overcast ? '#658997' : dawn ? '#b9adad' : '#8cc7d2';
     var skyBottom = night ? '#274858' : overcast ? '#afc9c7' : dawn ? '#f0d1ae' : '#deeee1';
@@ -549,25 +565,85 @@
       h('svg', { viewBox: (camera.x - 550 / camera.zoom) + ' ' + (camera.y - 345 / camera.zoom) + ' ' + 1100 / camera.zoom + ' ' + 690 / camera.zoom, xmlns: 'http://www.w3.org/2000/svg', role: 'group', tabIndex: 0, 'aria-labelledby': uid + '-title ' + uid + '-description', 'aria-describedby': camera.zoom > 1 ? uid + '-pan-help' : undefined, 'data-tycoon-map': 'true', 'data-tycoon-overlay': overlay, 'data-hour': hour, 'data-night': night ? 'true' : 'false', 'data-animation': active ? 'on' : 'off', 'data-zoom': camera.zoom, onKeyDown: mapKey, onPointerDown: beginPan, onPointerMove: movePan, onPointerUp: endPan, onPointerCancel: endPan, onLostPointerCapture: endPan, style: { cursor: camera.zoom > 1 ? 'grab' : undefined, touchAction: camera.zoom > 1 ? 'none' : 'pan-y' } },
         h('title', { id: uid + '-title' }, title), h('desc', { id: uid + '-description' }, description),
         h('defs', null,
-          h('linearGradient', { id: uid + '-sky', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: skyTop }), h('stop', { offset: '100%', stopColor: skyBottom })),
-          h('linearGradient', { id: uid + '-sea', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: night ? '#31596b' : '#73b9bb' }), h('stop', { offset: '100%', stopColor: night ? '#183d53' : '#397e93' })),
-          h('linearGradient', { id: uid + '-grass', x1: '0', y1: '0', x2: '0.7', y2: '1' }, h('stop', { offset: '0%', stopColor: night ? '#376d62' : '#9bc299' }), h('stop', { offset: '100%', stopColor: night ? '#274d4a' : '#598c78' })),
-          h('linearGradient', { id: uid + '-tower', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#99b2b1' }), h('stop', { offset: '45%', stopColor: '#ecf3e9' }), h('stop', { offset: '100%', stopColor: '#b3cbc6' })),
-          h('linearGradient', { id: uid + '-solar-glass', x1: '0', y1: '0', x2: '0.8', y2: '1' }, h('stop', { offset: '0%', stopColor: night ? '#163549' : '#173f67' }), h('stop', { offset: '55%', stopColor: night ? '#25465c' : '#2f7093' }), h('stop', { offset: '100%', stopColor: night ? '#153344' : '#174b70' })),
-          h('linearGradient', { id: uid + '-nacelle', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#d8e6db' }), h('stop', { offset: '100%', stopColor: '#8daea6' })),
+          h('linearGradient', { id: uid + '-sky', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: skyTop }),
+            h('stop', { offset: '42%', stopColor: night ? '#19394d' : overcast ? '#87a8b0' : dawn ? '#d8b9ab' : '#a7d7dd' }),
+            h('stop', { offset: '100%', stopColor: skyBottom })),
+          h('linearGradient', { id: uid + '-sea', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: night ? '#2c5368' : overcast ? '#6ea6ad' : dawn ? '#7cb4b9' : '#78c3c6' }),
+            h('stop', { offset: '48%', stopColor: night ? '#1f475d' : '#4d98a7' }),
+            h('stop', { offset: '100%', stopColor: night ? '#133146' : '#2e6e85' })),
+          h('linearGradient', { id: uid + '-grass', x1: '0', y1: '0', x2: '0.7', y2: '1' },
+            h('stop', { offset: '0%', stopColor: night ? '#3c7467' : '#a4ca9f' }),
+            h('stop', { offset: '58%', stopColor: night ? '#2f5d55' : '#78a888' }),
+            h('stop', { offset: '100%', stopColor: night ? '#244745' : '#538673' })),
+          h('linearGradient', { id: uid + '-tower', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#91adac' }), h('stop', { offset: '42%', stopColor: '#f3f9f0' }), h('stop', { offset: '100%', stopColor: '#a9c4bf' })),
+          h('linearGradient', { id: uid + '-solar-glass', x1: '0', y1: '0', x2: '0.8', y2: '1' },
+            h('stop', { offset: '0%', stopColor: night ? '#132f42' : '#143c65' }),
+            h('stop', { offset: '42%', stopColor: night ? '#22445b' : '#2d7298' }),
+            h('stop', { offset: '65%', stopColor: night ? '#285069' : '#3a84a8' }),
+            h('stop', { offset: '100%', stopColor: night ? '#122c3e' : '#144468' })),
+          h('linearGradient', { id: uid + '-nacelle', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#e2efe4' }), h('stop', { offset: '100%', stopColor: '#87a8a1' })),
           h('linearGradient', { id: uid + '-cabinet-side', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#8fbbb1' }), h('stop', { offset: '100%', stopColor: '#527c7b' })),
           h('linearGradient', { id: uid + '-cabinet-top', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#d2e4d6' }), h('stop', { offset: '100%', stopColor: '#95bbb2' })),
-          h('radialGradient', { id: uid + '-sun' }, h('stop', { offset: '0%', stopColor: '#fff3b2', stopOpacity: 0.7 }), h('stop', { offset: '100%', stopColor: '#fff3b2', stopOpacity: 0 })),
+          h('radialGradient', { id: uid + '-sun' },
+            h('stop', { offset: '0%', stopColor: dawn ? '#ffdfa0' : '#fff7c4', stopOpacity: 0.85 }),
+            h('stop', { offset: '45%', stopColor: dawn ? '#f9c78f' : '#fff1a8', stopOpacity: 0.34 }),
+            h('stop', { offset: '100%', stopColor: '#fff3b2', stopOpacity: 0 })),
+          h('radialGradient', { id: uid + '-moon-glow' },
+            h('stop', { offset: '0%', stopColor: '#d8f0ec', stopOpacity: 0.42 }),
+            h('stop', { offset: '100%', stopColor: '#7eb7c4', stopOpacity: 0 })),
+          h('linearGradient', { id: uid + '-horizon-mist', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: night ? '#3c687a' : dawn ? '#f7dbc0' : '#e6f4ec', stopOpacity: 0 }),
+            h('stop', { offset: '55%', stopColor: night ? '#3c687a' : dawn ? '#f7dbc0' : '#e6f4ec', stopOpacity: night ? 0.22 : 0.36 }),
+            h('stop', { offset: '100%', stopColor: night ? '#2c5368' : '#78c3c6', stopOpacity: 0 })),
+          h('filter', { id: uid + '-energy-glow', x: '-35%', y: '-35%', width: '170%', height: '170%' },
+            h('feGaussianBlur', { stdDeviation: '2.6', result: 'glow' }),
+            h('feMerge', null, h('feMergeNode', { in: 'glow' }), h('feMergeNode', { in: 'SourceGraphic' }))),
           h('pattern', { id: uid + '-curtail-hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, h('rect', { width: 6, height: 6, fill: '#654f3b' }), line(0, 0, 0, 6, '#d9bb7d', 2)),
           h('marker', { id: uid + '-arrow', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 3, markerHeight: 3, orient: 'auto' }, polygon('0,0 8,4 0,8', '#ffe5a0')),
           h('marker', { id: uid + '-charge-arrow', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 3, markerHeight: 3, orient: 'auto-start-reverse' }, polygon('0,0 8,4 0,8', '#c5a5ff'))),
         h('g', { 'aria-hidden': true },
           h('rect', { width: 1100, height: 690, fill: 'url(#' + uid + '-sky)' }),
-          night ? h('g', { fill: '#cbe5e3' }, [[80,70],[190,45],[295,109],[442,40],[530,91],[724,50],[960,66],[1020,123]].map(function (point, index) { return h('circle', { key: index, cx: point[0], cy: point[1], r: index % 2 ? 1.7 : 2.5, opacity: 0.8 }); }), h('circle', { cx: 900, cy: 80, r: 24, fill: '#d8e8db' }), h('circle', { cx: 910, cy: 73, r: 23, fill: skyTop })) : h('g', null, h('circle', { cx: 130 + hour / 24 * 800, cy: 110 - daylight * 55, r: 100, fill: 'url(#' + uid + '-sun)' }), h('circle', { cx: 130 + hour / 24 * 800, cy: 110 - daylight * 55, r: 25, fill: overcast ? '#d9dfc9' : '#fff1b0', opacity: overcast ? 0.55 : 0.95 })),
-          h('path', { d: 'M 0 194 L 65 174 L 100 185 L 180 149 L 242 178 L 321 136 L 420 187 L 478 160 L 561 193 L 663 145 L 721 171 L 780 151 L 881 189 L 981 157 L 1100 190 V 263 H 0 Z', fill: night ? '#355563' : '#7ea9a6', opacity: 0.45 }),
+          night
+            ? h('g', { fill: '#cbe5e3' },
+                [[80,70],[190,45],[295,109],[442,40],[530,91],[724,50],[960,66],[1020,123],[138,118],[365,68],[618,34],[815,96]].map(function (point, index) { return h('circle', { key: index, cx: point[0], cy: point[1], r: index % 3 === 0 ? 2.3 : index % 2 ? 1.5 : 1.1, opacity: index % 3 === 0 ? 0.88 : 0.56 }); }),
+                h('circle', { cx: 900, cy: 80, r: 74, fill: 'url(#' + uid + '-moon-glow)' }),
+                h('circle', { cx: 900, cy: 80, r: 24, fill: '#e2f0e4' }),
+                h('circle', { cx: 910, cy: 73, r: 23, fill: skyTop }))
+            : (function () {
+                var sunX = 130 + hour / 24 * 800, sunY = 110 - daylight * 55;
+                return h('g', null,
+                  !overcast ? h('g', { opacity: clamp(daylight * 0.22, 0.06, 0.22) },
+                    polygon((sunX - 18) + ',' + (sunY + 18) + ' ' + (sunX + 18) + ',' + (sunY + 18) + ' ' + (sunX + 130) + ',232 ' + (sunX - 95) + ',232', '#fff7cc'),
+                    polygon((sunX - 8) + ',' + (sunY + 16) + ' ' + (sunX + 10) + ',' + (sunY + 16) + ' ' + (sunX + 62) + ',228 ' + (sunX - 38) + ',228', '#ffffff')) : null,
+                  h('circle', { cx: sunX, cy: sunY, r: 124, fill: 'url(#' + uid + '-sun)' }),
+                  h('circle', { cx: sunX, cy: sunY, r: 25, fill: overcast ? '#d9dfc9' : '#fff4bc', opacity: overcast ? 0.55 : 0.96 }),
+                  !overcast ? h('circle', { cx: sunX, cy: sunY, r: 17, fill: '#fffdf0', opacity: 0.72 }) : null);
+              })(),
+          h('path', { d: 'M 0 186 L 94 148 L 166 168 L 268 118 L 368 164 L 460 128 L 570 172 L 694 124 L 804 166 L 916 132 L 1030 165 L 1100 150 V 252 H 0 Z', fill: night ? '#274555' : overcast ? '#87a8ad' : '#96c0bd', opacity: 0.36 }),
+          h('path', { d: 'M 0 194 L 65 174 L 100 185 L 180 149 L 242 178 L 321 136 L 420 187 L 478 160 L 561 193 L 663 145 L 721 171 L 780 151 L 881 189 L 981 157 L 1100 190 V 263 H 0 Z', fill: night ? '#355563' : '#7ba7a4', opacity: 0.52 }),
+          h('path', { d: 'M 180 149 L 206 162 L 194 176 L 164 162 Z M 321 136 L 352 156 L 336 173 L 304 152 Z M 663 145 L 692 162 L 675 176 L 647 160 Z', fill: night ? '#577a86' : dawn ? '#f7d8be' : '#d2ece3', opacity: 0.24 }),
+          h('rect', { x: 0, y: 172, width: 1100, height: 68, fill: 'url(#' + uid + '-horizon-mist)' }),
           h('path', { d: 'M 0 222 Q 145 204 298 222 T 610 219 T 945 221 T 1100 211 V 690 H 0 Z', fill: 'url(#' + uid + '-sea)' }),
-          [0,1,2,3].map(function (index) { return h('g', { key: index, ref: function (node) { refs.current.clouds[index] = node; }, transform: 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')', fill: night ? '#769298' : '#f1f2e5', opacity: overcast ? 0.65 : 0.43, 'data-tycoon-cloud': index }, h('ellipse', { rx: overcast ? 104 : 69, ry: 14 }), h('ellipse', { cx: -23, cy: -10, rx: 36, ry: 19 }), h('ellipse', { cx: 18, cy: -8, rx: 39, ry: 17 })); }),
-          h('g', { stroke: night ? '#71a1ad' : '#c8ece1', strokeWidth: 2, fill: 'none', opacity: 0.35 }, h('path', { d: 'M 21 333 q 29 -8 51 0 M 19 369 q 23 -8 48 -2 M 1005 453 q 35 -8 73 -2 M 957 626 q 47 -8 94 1 M 19 566 q 37 -7 65 -2 M 230 651 q 42 -10 77 -3 M 1000 288 q 26 -5 60 1' })),
+          (function () {
+            var glintX = night ? 900 : 130 + hour / 24 * 800;
+            return h('g', { opacity: night ? 0.22 : overcast ? 0.1 : clamp(irradiance * 0.34, 0.12, 0.36) },
+              [0, 1, 2, 3, 4].map(function (row) {
+                var ry = 232 + row * 19, half = 34 - row * 3.5;
+                return h('line', { key: row, x1: glintX - half, y1: ry, x2: glintX + half, y2: ry, stroke: night ? '#c9ebe7' : '#fff5c4', strokeWidth: 2.4 - row * 0.25, strokeLinecap: 'round' });
+              }));
+          })(),
+          [0,1,2,3].map(function (index) { return h('g', { key: index, ref: function (node) { refs.current.clouds[index] = node; }, transform: 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')', opacity: overcast ? 0.72 : 0.48, 'data-tycoon-cloud': index },
+            h('ellipse', { cy: 5, rx: overcast ? 104 : 69, ry: 12, fill: night ? '#56727c' : overcast ? '#b6c7c9' : '#d3e4df' }),
+            h('ellipse', { rx: overcast ? 102 : 67, ry: 13, fill: night ? '#769298' : '#f3f5ea' }),
+            h('ellipse', { cx: -23, cy: -10, rx: 36, ry: 19, fill: night ? '#829ea4' : '#fafbf2' }),
+            h('ellipse', { cx: 18, cy: -8, rx: 39, ry: 17, fill: night ? '#7c989e' : '#f5f7ed' })); }),
+          h('g', { stroke: night ? '#71a1ad' : '#d3f4ea', strokeWidth: 2, fill: 'none', opacity: 0.42 }, h('path', { d: 'M 21 333 q 29 -8 51 0 M 19 369 q 23 -8 48 -2 M 1005 453 q 35 -8 73 -2 M 957 626 q 47 -8 94 1 M 19 566 q 37 -7 65 -2 M 230 651 q 42 -10 77 -3 M 1000 288 q 26 -5 60 1' })),
+          h('path', { d: 'M 94 398 Q 92 478 168 516 L 458 654 Q 518 682 590 666 L 845 616 Q 918 596 946 558 L 1014 422 Q 1034 345 984 316', fill: 'none', stroke: night ? '#7db3be' : '#e6fcf6', strokeWidth: 3.5, strokeDasharray: '18 12 7 14', opacity: night ? 0.24 : 0.46, strokeLinecap: 'round' }),
+          h('g', { opacity: night ? 0.28 : 0.56 },
+            h('path', { d: 'M 150 518 Q 178 538 205 533 Q 230 551 258 548', fill: 'none', stroke: night ? '#8bc6cf' : '#eefefb', strokeWidth: 2.2, strokeLinecap: 'round' }),
+            h('path', { d: 'M 162 529 Q 186 544 214 542', fill: 'none', stroke: '#ffffff', strokeWidth: 1.3, strokeDasharray: '4 6', strokeLinecap: 'round' })),
           h('path', { d: 'M 111 297 Q 163 267 258 239 L 460 184 Q 578 174 676 202 L 982 321 Q 1026 346 1006 421 L 936 555 Q 909 592 838 610 L 588 659 Q 518 675 459 648 L 165 511 Q 87 474 86 403 Z', fill: '#244f584d', transform: 'translate(9 11)' }),
           h('path', { d: 'M 111 285 Q 163 255 258 227 L 460 172 Q 578 162 676 190 L 982 309 Q 1026 334 1006 409 L 936 543 Q 909 580 838 598 L 588 647 Q 518 663 459 636 L 165 499 Q 87 462 86 391 Z', fill: night ? '#426c68' : '#879d83', transform: 'translate(0 8)', 'data-tycoon-shore-depth': true }),
           h('path', { d: 'M 111 285 Q 163 255 258 227 L 460 172 Q 578 162 676 190 L 982 309 Q 1026 334 1006 409 L 936 543 Q 909 580 838 598 L 588 647 Q 518 663 459 636 L 165 499 Q 87 462 86 391 Z', fill: '#c6c9a4' }),

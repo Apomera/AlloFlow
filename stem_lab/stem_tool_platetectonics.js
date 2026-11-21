@@ -1420,10 +1420,13 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       dirLight.position.set(-90, 130, 110);
       scene.add(dirLight);
       // Fill from the camera side, so the faces the student looks at are not
-      // left flat and unlit.
-      var fillL = new T.DirectionalLight(0xdbeafe, 0.22);
+      // left flat and unlit, plus a subtle warm asthenosphere under-bounce.
+      var fillL = new T.DirectionalLight(0xdbeafe, 0.26);
       fillL.position.set(120, 40, 160);
       scene.add(fillL);
+      var underL = new T.DirectionalLight(0xf59e0b, 0.18);
+      underL.position.set(10, -120, 45);
+      scene.add(underL);
 
       // Mantle: a translucent shell so the slab and the foci inside stay
       // visible. depthWrite off keeps it from occluding them from any angle.
@@ -1448,34 +1451,61 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       scene.add(mantle);
 
       // Plate-top textures, painted once and shared by every rebuild: ocean
-      // floor with abyssal hills running along strike, and continental land.
-      tex.ocean = topTex('#1f3f66', function (c, w, hh) {
-        for (var i = 0; i < 70; i++) {
-          c.strokeStyle = i % 3 ? 'rgba(96,165,250,0.12)' : 'rgba(15,30,55,0.35)';
+      // floor with bathymetric depth shading, abyssal hills and fracture zones,
+      // and continental land with hypsometric topographic relief.
+      tex.ocean = topTex('#1b3c64', function (c, w, hh) {
+        var bathy = c.createLinearGradient(0, 0, w, 0);
+        bathy.addColorStop(0, 'rgba(12,30,58,0.42)');
+        bathy.addColorStop(0.55, 'rgba(28,84,132,0.22)');
+        bathy.addColorStop(1, 'rgba(56,138,184,0.26)');
+        c.fillStyle = bathy;
+        c.fillRect(0, 0, w, hh);
+        for (var i = 0; i < 76; i++) {
+          c.strokeStyle = i % 3 ? 'rgba(125,211,252,0.16)' : 'rgba(10,24,48,0.42)';
           c.lineWidth = 1 + (i % 4);
           var x = (i * 37) % w;
-          c.beginPath(); c.moveTo(x, 0); c.bezierCurveTo(x + 6, hh * 0.3, x - 6, hh * 0.7, x + 3, hh); c.stroke();
+          c.beginPath(); c.moveTo(x, 0); c.bezierCurveTo(x + 7, hh * 0.3, x - 7, hh * 0.7, x + 3, hh); c.stroke();
+        }
+        // Subtle oceanic transform fracture-zone lineaments perpendicular to hills
+        c.strokeStyle = 'rgba(186,230,253,0.11)';
+        c.lineWidth = 1.2;
+        for (var fz = 0; fz < 7; fz++) {
+          var fy = ((fz + 0.5) * hh) / 7;
+          c.beginPath(); c.moveTo(0, fy); c.lineTo(w, fy + (fz % 2 ? 3 : -3)); c.stroke();
         }
       });
       // Cooled ridge rock must remain distinct from the older blue seafloor.
       // Fine fractures show a solid surface; only the narrow axial fissure glows.
       tex.ridge = topTex('#657985', function (c, w, hh) {
         for (var i = 0; i < 260; i++) {
-          c.fillStyle = i % 2 ? 'rgba(219,230,235,0.12)' : 'rgba(25,39,48,0.18)';
+          c.fillStyle = i % 2 ? 'rgba(219,230,235,0.14)' : 'rgba(25,39,48,0.20)';
           c.fillRect((i * 53) % w, (i * 97) % hh, 2 + i % 4, 1 + i % 3);
         }
-        c.strokeStyle = 'rgba(27,43,53,0.35)'; c.lineWidth = 1.5;
+        c.strokeStyle = 'rgba(27,43,53,0.38)'; c.lineWidth = 1.5;
         for (var j = 0; j < 12; j++) {
           var y = (j + 0.5) * hh / 12;
           c.beginPath(); c.moveTo(0, y); c.lineTo(w * 0.35, y + 4);
           c.lineTo(w * 0.65, y - 3); c.lineTo(w, y + 2); c.stroke();
         }
       });
-      tex.land = topTex('#7a5f1c', function (c, w, hh) {
-        for (var i = 0; i < 260; i++) {
+      tex.land = topTex('#786122', function (c, w, hh) {
+        var topo = c.createLinearGradient(0, 0, w, hh);
+        topo.addColorStop(0, 'rgba(65,104,52,0.34)');
+        topo.addColorStop(0.5, 'rgba(156,124,58,0.22)');
+        topo.addColorStop(1, 'rgba(104,76,36,0.36)');
+        c.fillStyle = topo;
+        c.fillRect(0, 0, w, hh);
+        for (var i = 0; i < 280; i++) {
           var k = (i * 7919) % 100 / 100;
-          c.fillStyle = k < 0.5 ? 'rgba(77,110,48,0.45)' : k < 0.8 ? 'rgba(150,118,52,0.45)' : 'rgba(92,70,30,0.5)';
-          c.beginPath(); c.arc((i * 53) % w, (i * 97) % hh, 3 + (i % 9), 0, Math.PI * 2); c.fill();
+          c.fillStyle = k < 0.45 ? 'rgba(72,114,52,0.44)' : k < 0.78 ? 'rgba(164,130,62,0.44)' : 'rgba(92,70,32,0.48)';
+          c.beginPath(); c.arc((i * 53) % w, (i * 97) % hh, 3 + (i % 10), 0, Math.PI * 2); c.fill();
+        }
+        // Subtle hypsometric ridge contour strokes for relief readability
+        c.strokeStyle = 'rgba(248,236,204,0.14)';
+        c.lineWidth = 1;
+        for (var ct = 0; ct < 10; ct++) {
+          var cx0 = (ct * 71) % w, cy0 = (ct * 43) % hh;
+          c.beginPath(); c.ellipse(cx0, cy0, 14 + (ct % 4) * 8, 8 + (ct % 3) * 5, ct * 0.4, 0, Math.PI * 2); c.stroke();
         }
       });
       // The lighter crust is the thin top of a plate; the rock beneath it is
@@ -1537,6 +1567,13 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     function rockSection(crust, mantle, crustFraction) {
       return topTex(mantle, function (c, w, hh) {
         c.fillStyle = crust; c.fillRect(0, 0, w, hh * crustFraction);
+        // Subtle depth-graded thermal warmth in the rigid lithospheric mantle below the Moho
+        var lithoGrad = c.createLinearGradient(0, hh * crustFraction, 0, hh);
+        lithoGrad.addColorStop(0, 'rgba(0,0,0,0.08)');
+        lithoGrad.addColorStop(0.7, 'rgba(120,53,15,0.12)');
+        lithoGrad.addColorStop(1, 'rgba(180,83,9,0.24)');
+        c.fillStyle = lithoGrad;
+        c.fillRect(0, hh * crustFraction, w, hh * (1 - crustFraction));
         for (var i = 0; i < 700; i++) {
           c.fillStyle = i % 2 ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.10)';
           c.fillRect((i * 53) % w, (i * 97) % hh, 1 + i % 3, 1);
@@ -1711,15 +1748,20 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         new T.MeshLambertMaterial({ color: 0x57534e, clippingPlanes: [clipPlane] }));
       g.add(cone);
       var cap = new T.Mesh(new T.CircleGeometry(r * 0.14, 24),
-        new T.MeshBasicMaterial({ color: 0xfb923c, side: T.DoubleSide, clippingPlanes: [clipPlane] }));
+        new T.MeshBasicMaterial({ color: 0xffa855, side: T.DoubleSide, clippingPlanes: [clipPlane] }));
       cap.rotation.x = -Math.PI / 2;
       cap.position.y = hgt * 0.86;
       g.add(cap);
-      var glow = new T.Sprite(new T.SpriteMaterial({ map: tex.glow, color: 0xff8a3d, transparent: true, depthWrite: false, blending: T.AdditiveBlending }));
-      glow.scale.set(r * 0.8, r * 0.8, 1);
-      glow.position.y = hgt * 0.9;
+      var glow = new T.Sprite(new T.SpriteMaterial({ map: tex.glow, color: 0xff8a3d, transparent: true, opacity: 0.92, depthWrite: false, blending: T.AdditiveBlending }));
+      glow.scale.set(r * 1.15, r * 1.15, 1);
+      glow.position.y = hgt * 0.92;
       glow.material.clippingPlanes = [clipPlane];
       g.add(glow);
+      var outerHalo = new T.Sprite(new T.SpriteMaterial({ map: tex.glow, color: 0xea580c, transparent: true, opacity: 0.34, depthWrite: false, blending: T.AdditiveBlending }));
+      outerHalo.scale.set(r * 2.1, r * 2.1, 1);
+      outerHalo.position.y = hgt * 0.98;
+      outerHalo.material.clippingPlanes = [clipPlane];
+      g.add(outerHalo);
       g.position.set(x, 0, z);
       g.userData.feature = 'volcanic-arc-edifice';
       cap.userData.feature = 'volcanic-arc-crater';
@@ -15163,16 +15205,18 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
               var deepTop = zoneBot + cH * 0.048;    // compressed interior starts here
               var driftOn = !!live.ptDrift;
 
-              // ── Sky ──
+              // ── Sky (atmospheric horizon depth) ──
               var skyGrad = ctx.createLinearGradient(0, 0, 0, seaY);
               if (isDark) {
-                skyGrad.addColorStop(0, '#090d16');
-                skyGrad.addColorStop(0.55, '#0f172a');
-                skyGrad.addColorStop(1, '#1e1b4b');
+                skyGrad.addColorStop(0, '#050814');
+                skyGrad.addColorStop(0.52, '#0d1832');
+                skyGrad.addColorStop(0.84, '#1b264e');
+                skyGrad.addColorStop(1, '#28365e');
               } else {
-                skyGrad.addColorStop(0, '#7fc0e8');
-                skyGrad.addColorStop(0.55, '#b0d4f1');
-                skyGrad.addColorStop(1, '#dcefff');
+                skyGrad.addColorStop(0, '#5aa9de');
+                skyGrad.addColorStop(0.48, '#95c9ee');
+                skyGrad.addColorStop(0.84, '#cbe6fa');
+                skyGrad.addColorStop(1, '#e6f4ff');
               }
               ctx.fillStyle = skyGrad;
               ctx.fillRect(0, 0, cW, seaY);
@@ -15181,21 +15225,24 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
               // they never sit behind the boundary captions, which are the one
               // piece of text in this frame a student has to be able to read.
               if (isDark) {
-                ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                for (var si = 0; si < 20; si++) {
+                for (var si = 0; si < 24; si++) {
                   var starX = (si * 37 + amb * 0.05) % cW;
                   var starY = (si * 17) % (seaY * 0.45);
+                  var starR = (ptReducedMotion() ? 0 : Math.sin(amb * 0.05 + si) * 0.55) + (si % 5 === 0 ? 1.25 : 0.85);
+                  ctx.fillStyle = si % 7 === 0 ? 'rgba(186,230,253,0.85)' : si % 11 === 0 ? 'rgba(254,240,138,0.82)' : 'rgba(255,255,255,0.74)';
                   ctx.beginPath();
-                  ctx.arc(starX, starY, Math.sin(amb * 0.05 + si) * 0.7 + 1.0, 0, Math.PI * 2);
+                  ctx.arc(starX, starY, Math.max(0.4, starR), 0, Math.PI * 2);
                   ctx.fill();
                 }
               } else {
-                ctx.fillStyle = 'rgba(255,255,255,0.5)';
                 for (var cl = 0; cl < 5; cl++) {
                   var cx = ((cl * cW / 4) + amb * 0.2 * speed) % (cW + 100) - 50;
-                  var cy = 12 + cl * 9;
+                  var cy = 12 + cl * 8;
+                  ctx.fillStyle = 'rgba(255,255,255,0.52)';
                   ctx.beginPath();
-                  ctx.ellipse(cx, cy, 26, 7, 0, 0, Math.PI * 2);
+                  ctx.ellipse(cx, cy, 28, 7, 0, 0, Math.PI * 2);
+                  ctx.ellipse(cx - 12, cy - 3, 14, 5.5, 0, 0, Math.PI * 2);
+                  ctx.ellipse(cx + 11, cy - 2, 16, 5.5, 0, 0, Math.PI * 2);
                   ctx.fill();
                 }
               }
@@ -15229,18 +15276,40 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
               ctx.fillRect(0, deepTop, cW, cH * 0.845 - deepTop);
 
               // ── The tectonic zone: 0 to 400 km, drawn to a real scale ──
+              // Thermal gradient depth through the ductile asthenosphere.
               var umGrad = ctx.createLinearGradient(0, seaY, 0, zoneBot);
               if (isDark) {
-                umGrad.addColorStop(0, '#3f3f46');
-                umGrad.addColorStop(0.45, '#292524');
-                umGrad.addColorStop(1, '#1c1917');
+                umGrad.addColorStop(0, '#3a3438');
+                umGrad.addColorStop(0.32, '#3c2620');
+                umGrad.addColorStop(0.68, '#4a2117');
+                umGrad.addColorStop(1, '#5c1f14');
               } else {
-                umGrad.addColorStop(0, '#7b5945');
-                umGrad.addColorStop(0.45, '#654939');
-                umGrad.addColorStop(1, '#4c3540');
+                umGrad.addColorStop(0, '#7e5d47');
+                umGrad.addColorStop(0.35, '#724732');
+                umGrad.addColorStop(0.72, '#6b3626');
+                umGrad.addColorStop(1, '#5e2820');
               }
               ctx.fillStyle = umGrad;
               ctx.fillRect(0, seaY, cW, zoneBot - seaY);
+              // Subtle glowing thermal convection veins rising from the deep asthenosphere
+              var veinPulse = ptReducedMotion() ? 1 : (0.88 + 0.12 * Math.sin(amb * 0.03));
+              for (var vn = 0; vn < 4; vn++) {
+                var vx = (vn / 3) * cW;
+                var veinHot = vn % 2 === 0;
+                var vRad = cW * 0.14;
+                var vGrad = ctx.createRadialGradient(vx, zoneBot, 6, vx, (GEO.dY(140) + zoneBot) * 0.54, vRad);
+                if (veinHot) {
+                  vGrad.addColorStop(0, 'rgba(251,146,60,' + (0.24 * veinPulse).toFixed(3) + ')');
+                  vGrad.addColorStop(0.5, 'rgba(234,88,12,' + (0.10 * veinPulse).toFixed(3) + ')');
+                  vGrad.addColorStop(1, 'rgba(234,88,12,0)');
+                } else {
+                  vGrad.addColorStop(0, 'rgba(56,189,248,0.10)');
+                  vGrad.addColorStop(0.55, 'rgba(30,58,138,0.06)');
+                  vGrad.addColorStop(1, 'rgba(30,58,138,0)');
+                }
+                ctx.fillStyle = vGrad;
+                ctx.fillRect(Math.max(0, vx - vRad), GEO.dY(105), vRad * 2, zoneBot - GEO.dY(105));
+              }
 
               // Stipple: mantle rock texture. Generated ONCE (a per-frame re-roll
               // read as flickering static) and rebuilt only if the zone height
@@ -15315,7 +15384,13 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 // anything went round. The ring is the shape of the claim.
                 for (var ce = 0; ce < CELLS; ce++) {
                   var ccx = (ce + 0.5) * cellW;
-                  ctx.strokeStyle = 'rgba(251,146,60,0.32)';
+                  // Soft glowing molten convection-vein aura beneath each dashed cell ring
+                  ctx.strokeStyle = 'rgba(249,115,22,0.15)';
+                  ctx.lineWidth = 8;
+                  ctx.beginPath();
+                  ctx.ellipse(ccx, cellCy, cellRx, cellRy, 0, 0, Math.PI * 2);
+                  ctx.stroke();
+                  ctx.strokeStyle = 'rgba(251,146,60,0.44)';
                   ctx.lineWidth = 2;
                   ctx.setLineDash([9, 9]);
                   ctx.beginPath();
@@ -15348,16 +15423,27 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                   // A short trail, so the DIRECTION of travel is readable from a
                   // still frame. Without it a screenshot of this canvas cannot
                   // tell a student which way the cell turns.
-                  var tAng = dot.angle - spin * 0.22;
-                  ctx.strokeStyle = 'rgba(251,146,60,0.45)';
-                  ctx.lineWidth = 2.5;
+                  var tAng = dot.angle - spin * 0.24;
+                  ctx.strokeStyle = 'rgba(251,146,60,0.52)';
+                  ctx.lineWidth = 2.8;
+                  ctx.lineCap = 'round';
                   ctx.beginPath();
                   ctx.moveTo(cellCx + Math.cos(tAng) * cellRx, cellCy + Math.sin(tAng) * cellRy);
                   ctx.lineTo(dot.x, dot.y);
                   ctx.stroke();
-                  ctx.fillStyle = 'rgba(255,170,60,0.95)';
+                  ctx.lineCap = 'butt';
+                  // Soft luminous thermal halo around each rising/circulating parcel
+                  var parcelGlow = ctx.createRadialGradient(dot.x, dot.y, 1, dot.x, dot.y, 9);
+                  parcelGlow.addColorStop(0, 'rgba(254,215,170,0.95)');
+                  parcelGlow.addColorStop(0.45, 'rgba(249,115,22,0.52)');
+                  parcelGlow.addColorStop(1, 'rgba(249,115,22,0)');
+                  ctx.fillStyle = parcelGlow;
                   ctx.beginPath();
-                  ctx.arc(dot.x, dot.y, 4, 0, Math.PI * 2);
+                  ctx.arc(dot.x, dot.y, 9, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.fillStyle = 'rgba(255,226,158,0.98)';
+                  ctx.beginPath();
+                  ctx.arc(dot.x, dot.y, 3.6, 0, Math.PI * 2);
                   ctx.fill();
                 }
 
@@ -15656,10 +15742,23 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 if (wpl.type !== 'oceanic') continue;
                 var wTop = GEO.top(wpl);
                 var wGrad = ctx.createLinearGradient(0, seaY, 0, wTop);
-                wGrad.addColorStop(0, isDark ? 'rgba(30,58,138,0.6)' : 'rgba(56,132,208,0.7)');
-                wGrad.addColorStop(1, isDark ? 'rgba(15,23,42,0.72)' : 'rgba(20,70,130,0.82)');
+                if (isDark) {
+                  wGrad.addColorStop(0, 'rgba(56,189,248,0.52)');
+                  wGrad.addColorStop(0.35, 'rgba(30,64,155,0.68)');
+                  wGrad.addColorStop(1, 'rgba(12,24,52,0.84)');
+                } else {
+                  wGrad.addColorStop(0, 'rgba(56,178,236,0.72)');
+                  wGrad.addColorStop(0.38, 'rgba(30,104,186,0.78)');
+                  wGrad.addColorStop(1, 'rgba(15,52,110,0.88)');
+                }
                 ctx.fillStyle = wGrad;
                 ctx.fillRect(wpl.x, seaY, wpl.w, wTop - seaY);
+                // Delicate pelagic sunlit surface shimmer just below sea level
+                var shimmerGrad = ctx.createLinearGradient(0, seaY, 0, seaY + Math.max(4, (wTop - seaY) * 0.35));
+                shimmerGrad.addColorStop(0, isDark ? 'rgba(186,230,253,0.22)' : 'rgba(255,255,255,0.34)');
+                shimmerGrad.addColorStop(1, 'rgba(186,230,253,0)');
+                ctx.fillStyle = shimmerGrad;
+                ctx.fillRect(wpl.x, seaY, wpl.w, Math.max(4, (wTop - seaY) * 0.35));
               }
               // Waves, clipped to the ocean basins. Drawn edge to edge they ran
               // straight across the continents' summits as a pale band, which read
@@ -15834,15 +15933,21 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 ctx.stroke();
 
                 // Wadati-Benioff zone: earthquake foci get DEEPER the further
-                // they are from the trench, because they happen in and around
-                // the sinking slab. That dipping plane of quakes is the direct
-                // evidence subduction is real, so it is drawn as data lying on
-                // the slab rather than as scatter.
+                // they are from the trench, with luminous seismic depth halos.
                 for (var wq = 0; wq < 14; wq++) {
                   var frac = (wq + 0.5) / 14;
                   var wqY = slabTop + (reachY - slabTop) * frac;
                   var wqX = B.mid + dirS * (runX * frac + slabW * 0.4);
                   var wqKm = (wqY - seaY) / GEO.pxPerKm;
+                  var wqHaloColor = wqKm >= 300 ? 'rgba(167,139,250,' : wqKm >= 70 ? 'rgba(251,146,60,' : 'rgba(244,63,94,';
+                  var wqHalo = ctx.createRadialGradient(wqX, wqY, 1, wqX, wqY, 9.5);
+                  wqHalo.addColorStop(0, wqHaloColor + '0.68)');
+                  wqHalo.addColorStop(0.5, wqHaloColor + '0.24)');
+                  wqHalo.addColorStop(1, wqHaloColor + '0)');
+                  ctx.fillStyle = wqHalo;
+                  ctx.beginPath();
+                  ctx.arc(wqX, wqY, 9.5, 0, Math.PI * 2);
+                  ctx.fill();
                   ctx.fillStyle = wqKm >= 300 ? '#a78bfa' : wqKm >= 70 ? '#fb923c' : '#f43f5e';
                   ctx.beginPath();
                   ctx.arc(wqX, wqY, 3.6, 0, Math.PI * 2);
@@ -15850,21 +15955,34 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 }
 
                 // Melting where the slab passes ~110 km, and the magma rising
-                // from it. This is WHY arcs stand back from the trench instead
-                // of sitting on it — the one fact that makes an arc make sense.
+                // from it with a luminous partial-melt thermal aureole.
                 var meltY = GEO.dY(110);
-                // Measured from the slab's OWN top surface at the trench, which
-                // is where the quad above starts. Taking it from GEO.base()
-                // instead put the origin 80 km down and landed the melt point
-                // almost on top of the trench.
                 var meltX = B.mid + dirS * ((meltY - GEO.top(B.down)) / Math.tan(DIP));
                 var arcX = meltX;
-                var mGrad = ctx.createLinearGradient(meltX, meltY, arcX, seaY);
-                mGrad.addColorStop(0, 'rgba(251,146,60,0.8)');
-                mGrad.addColorStop(1, 'rgba(220,38,38,0.15)');
-                ctx.strokeStyle = mGrad;
-                ctx.lineWidth = 9;
+                var meltAureole = ctx.createRadialGradient(meltX, meltY, 2, meltX, meltY, 22);
+                meltAureole.addColorStop(0, 'rgba(254,215,170,0.72)');
+                meltAureole.addColorStop(0.45, 'rgba(249,115,22,0.34)');
+                meltAureole.addColorStop(1, 'rgba(220,38,38,0)');
+                ctx.fillStyle = meltAureole;
+                ctx.beginPath();
+                ctx.arc(meltX, meltY, 22, 0, Math.PI * 2);
+                ctx.fill();
+                var mHaloGrad = ctx.createLinearGradient(meltX, meltY, arcX, seaY);
+                mHaloGrad.addColorStop(0, 'rgba(249,115,22,0.36)');
+                mHaloGrad.addColorStop(1, 'rgba(220,38,38,0.06)');
+                ctx.strokeStyle = mHaloGrad;
+                ctx.lineWidth = 17;
                 ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(meltX, meltY);
+                ctx.quadraticCurveTo(meltX - dirS * 18, (meltY + seaY) / 2, arcX, seaY + 4);
+                ctx.stroke();
+                var mGrad = ctx.createLinearGradient(meltX, meltY, arcX, seaY);
+                mGrad.addColorStop(0, 'rgba(254,215,170,0.92)');
+                mGrad.addColorStop(0.4, 'rgba(251,146,60,0.85)');
+                mGrad.addColorStop(1, 'rgba(234,88,12,0.28)');
+                ctx.strokeStyle = mGrad;
+                ctx.lineWidth = 7.5;
                 ctx.beginPath();
                 ctx.moveTo(meltX, meltY);
                 ctx.quadraticCurveTo(meltX - dirS * 18, (meltY + seaY) / 2, arcX, seaY + 4);
@@ -15925,7 +16043,15 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                       ctx.lineTo(vcx + vch * 0.75, seaY);
                       ctx.closePath();
                       ctx.fill();
-                      ctx.fillStyle = '#f97316';
+                      var craterHalo = ctx.createRadialGradient(vcx, seaY - vch, 0.8, vcx, seaY - vch, 9.5);
+                      craterHalo.addColorStop(0, 'rgba(254,215,170,0.85)');
+                      craterHalo.addColorStop(0.45, 'rgba(249,115,22,0.42)');
+                      craterHalo.addColorStop(1, 'rgba(249,115,22,0)');
+                      ctx.fillStyle = craterHalo;
+                      ctx.beginPath();
+                      ctx.arc(vcx, seaY - vch, 9.5, 0, Math.PI * 2);
+                      ctx.fill();
+                      ctx.fillStyle = '#fb923c';
                       ctx.beginPath();
                       ctx.arc(vcx, seaY - vch, 2.6, 0, Math.PI * 2);
                       ctx.fill();

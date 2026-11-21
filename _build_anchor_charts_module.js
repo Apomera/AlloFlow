@@ -79,7 +79,7 @@ const outputCode = `/**
     document.head.appendChild(_s);
   }
   (function() {
-    if (document.getElementById('allo-live-anchor-charts')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-anchor-charts')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-anchor-charts';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -94,10 +94,10 @@ const outputCode = `/**
     console.warn('[AnchorChartsModule] Already loaded — skipping');
     return;
   }
-  window.__anchorChartsModuleLoaded = true;
 
   var React = window.React;
   if (!React) { console.error('[AnchorChartsModule] React not found on window'); return; }
+  window.__anchorChartsModuleLoaded = true;
   var useState = React.useState;
   var useEffect = React.useEffect;
   var useRef = React.useRef;

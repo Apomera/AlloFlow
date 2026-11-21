@@ -322,7 +322,7 @@
       var a = document.createElement('a');
       a.href = url; a.download = 'alloflow-whiteboard.png';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 4000);
       toOpener({ type: 'allocwb-export' });
     }).catch(function (e) { console.warn('[Whiteboard] export failed', e); });
   }
@@ -353,6 +353,10 @@
       .then(function (blob) {
         var reader = new FileReader();
         reader.onloadend = function () {
+          if (reader.error || typeof reader.result !== 'string') {
+            flash('Could not read the drawing image — try Export PNG instead.', false);
+            return;
+          }
           var nameEl = document.getElementById('nameInput');
           var name = (nameEl && nameEl.value ? nameEl.value : '').trim().slice(0, 120) || 'Whiteboard sketch';
           // The editable scene, in the .excalidraw shape, so the resource can be
@@ -379,7 +383,7 @@
   // message listener in Boot. Everything the AI produces is re-sanitized here
   // before it reaches the canvas (whitelisted element types, clamped geometry,
   // hex-checked colors, capped counts).
-  var aiPending = {};      // requestId -> { mode }
+  var aiPending = Object.create(null);      // requestId -> { mode, record, prompt, timer }
   var aiBusyFlag = false;
   var aiButtonsRAF = 0;
 
@@ -441,7 +445,15 @@
       if (!sel) { aiStatus('Select exactly one image on the canvas first.', false); return; }
       payload.imageDataUrl = sel.dataURL;
     }
-    aiPending[payload.requestId] = { mode: mode, record: record, prompt: prompt };
+    var reqId = payload.requestId;
+    var timer = setTimeout(function () {
+      if (Object.prototype.hasOwnProperty.call(aiPending, reqId)) {
+        delete aiPending[reqId];
+        setAiBusy(false);
+        aiStatus('The AI request timed out. Try again.', false);
+      }
+    }, 60000);
+    aiPending[reqId] = { mode: mode, record: record, prompt: prompt, timer: timer };
     setAiBusy(true);
     aiStatus(mode === 'image' ? 'Generating image…' : mode === 'edit-image' ? 'Editing image…' : record ? 'Planning the drawing…' : 'Drawing diagram…', null);
     toOpener(payload);
@@ -680,11 +692,24 @@
     var mime = pickRecorderMime();
     var mr;
     try { mr = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4000000 } : undefined); }
-    catch (e) { recordBusy = false; aiStatus('Could not start the recorder.', false); return Promise.resolve(); }
+    catch (e) {
+      try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+      recordBusy = false; aiStatus('Could not start the recorder.', false); return Promise.resolve();
+    }
     var chunks = [];
-    var recorded = new Promise(function (resolve) {
+    var recorderSettled = false;
+    var recorded = new Promise(function (resolve, reject) {
       mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
-      mr.onstop = function () { resolve(new Blob(chunks, { type: mr.mimeType || 'video/webm' })); };
+      mr.onstop = function () {
+        if (recorderSettled) return;
+        recorderSettled = true;
+        resolve(new Blob(chunks, { type: mr.mimeType || 'video/webm' }));
+      };
+      mr.onerror = function (ev) {
+        if (recorderSettled) return;
+        recorderSettled = true;
+        reject((ev && ev.error) || new Error('MediaRecorder error'));
+      };
     });
 
     var cues = [];
@@ -729,7 +754,11 @@
         cues.push({ start: at, end: Math.min(totalSec, at + Math.max(1.2, perEl * 1.4)), text: cueTextFor(newEls[active], active) });
       }
       return renderSceneToCanvas(frameEls.concat(anchors), files).then(function (src) {
-        paintLetterboxed(ctx, src);
+        try {
+          paintLetterboxed(ctx, src);
+        } finally {
+          if (src && typeof src.close === 'function') { try { src.close(); } catch (_) {} }
+        }
         sampleGifFrames(elapsed);
         try { if (track && track.requestFrame) track.requestFrame(); } catch (_) {}
         if (elapsed >= totalSec) return null;
@@ -741,6 +770,9 @@
       try { if (mr.state === 'recording' && mr.requestData) mr.requestData(); } catch (_) {}
       return new Promise(function (r) { setTimeout(r, 350); });
     }).then(function () {
+      if (mr.state === 'inactive' && !recorderSettled) {
+        return new Blob(chunks, { type: mr.mimeType || 'video/webm' });
+      }
       try { mr.stop(); } catch (_) {}
       return recorded;
     }).then(function (blob) {
@@ -909,15 +941,16 @@
       }
       if (!linked) return;
       if (openerOrigin && ev.origin !== openerOrigin) return;   // once learned, pin to the opener's origin
-      if (d.type === 'allocwb-ai-image' && d.requestId && aiPending[d.requestId]) {
-        var m1 = aiPending[d.requestId].mode; delete aiPending[d.requestId]; setAiBusy(false);
+      if (d.type === 'allocwb-ai-image' && typeof d.requestId === 'string' && Object.prototype.hasOwnProperty.call(aiPending, d.requestId)) {
+        var pend1 = aiPending[d.requestId]; delete aiPending[d.requestId]; clearTimeout(pend1.timer); setAiBusy(false);
         if (!d.dataUrl || !/^data:image\/(?:png|jpeg|webp|gif);base64,/i.test(String(d.dataUrl))) { aiStatus('The AI didn’t return an image.', false); return; }
-        if (m1 === 'edit-image') replaceSelectedImage(d.dataUrl); else insertGeneratedImage(d.dataUrl);
+        if (pend1.mode === 'edit-image') replaceSelectedImage(d.dataUrl); else insertGeneratedImage(d.dataUrl);
         return;
       }
-      if (d.type === 'allocwb-ai-plan' && d.requestId && aiPending[d.requestId]) {
+      if (d.type === 'allocwb-ai-plan' && typeof d.requestId === 'string' && Object.prototype.hasOwnProperty.call(aiPending, d.requestId)) {
         var pend = aiPending[d.requestId];
         delete aiPending[d.requestId];
+        clearTimeout(pend.timer);
         // For a recorded build the controls stay disabled until the recording
         // finishes (applyDiagram re-enables them), so nothing can start a second
         // pass mid-capture.
@@ -925,8 +958,8 @@
         applyDiagram(d.plan, pend.record, pend.prompt);
         return;
       }
-      if (d.type === 'allocwb-ai-error' && d.requestId && aiPending[d.requestId]) {
-        delete aiPending[d.requestId]; setAiBusy(false); aiStatus(d.message || 'AI is unavailable right now.', false); return;
+      if (d.type === 'allocwb-ai-error' && typeof d.requestId === 'string' && Object.prototype.hasOwnProperty.call(aiPending, d.requestId)) {
+        var pendErr = aiPending[d.requestId]; delete aiPending[d.requestId]; clearTimeout(pendErr.timer); setAiBusy(false); aiStatus(d.message || 'AI is unavailable right now.', false); return;
       }
     } catch (_) {}
   });

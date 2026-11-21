@@ -260,15 +260,15 @@ window.StemLab = window.StemLab || {
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: false, carrier: true, genotype: 'Cc', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: false, carrier: true, genotype: 'Cc', label: 'I-2' },
-        { id: 3, sex: 'F', x: 80, y: 130, affected: false, carrier: false, genotype: 'CC', label: 'II-1' },
+        { id: 3, sex: 'F', x: 80, y: 130, affected: false, carrier: true, genotype: 'Cc', label: 'II-1' },
         { id: 4, sex: 'M', x: 180, y: 130, affected: false, carrier: true, genotype: 'Cc', label: 'II-2' },
         { id: 5, sex: 'F', x: 280, y: 130, affected: true, carrier: false, genotype: 'cc', label: 'II-3' },
-        { id: 6, sex: 'F', x: 80, y: 225, affected: false, carrier: false, genotype: 'Cc', label: 'III-1' },
+        { id: 6, sex: 'F', x: 80, y: 225, affected: false, carrier: true, genotype: 'Cc', label: 'III-1' },
         { id: 7, sex: 'M', x: 180, y: 225, affected: true, carrier: false, genotype: 'cc', label: 'III-2' }
       ],
       couples: [[1,2],[3,4]],
       sibGroups: [
-        { parents: [1,2], children: [3,4,5] },
+        { parents: [1,2], children: [4,5] },
         { parents: [3,4], children: [6,7] }
       ]
     },
@@ -1207,19 +1207,16 @@ window.StemLab = window.StemLab || {
       { id: 'use_2_presets', label: 'Try 2 genetics presets', icon: '🔬', check: function(d) { return (d._presetsUsed || 0) >= 2; }, progress: function(d) { return (d._presetsUsed || 0) + '/2'; } }
     ],
     render: function(ctx) {
-      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
-      var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
-      // These sit on the HOST surface, not on one of this tool own panels -
-      // white in light and dark, pure BLACK in the contrast theme, where the
-      // grid heading measured 1.44:1.
-      var isContrast = !!ctx.isContrast;
-      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React;
       var h = React.createElement;
 
       if (!this._PunnettComponent) {
         this._PunnettComponent = function PunnettLab(props) {
           var ctx = props.ctx;
+          var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+          var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
+          var isContrast = !!ctx.isContrast;
+          var onHostInk = isContrast ? ' text-white' : '';
           var React = ctx.React;
           var h = React.createElement;
           var labToolData = ctx.toolData;
@@ -1642,6 +1639,7 @@ window.StemLab = window.StemLab || {
 
           // Mode-aware phenotype function
           var phenotype;
+          var _isABO = false;
           if (inheritMode === 'incomplete') {
             phenotype = function(g) {
               if (isSexLinked) return 'Dominant';
@@ -1651,27 +1649,30 @@ window.StemLab = window.StemLab || {
               return 'Blended';
             };
           } else if (inheritMode === 'codominant') {
-            // Two-codominant-allele systems (ABO's A/B, MN) need to be classified by allele
-            // IDENTITY, not by letter case: with both A and B uppercase, the old case-only test
-            // collapsed AA and BB into one "Dominant" class, so AB × AB wrongly read 2 Dominant
-            // instead of the true 1 Type-A : 2 Type-AB : 1 Type-B. We map the dominant-labelled
-            // allele and the recessive-labelled allele explicitly. Single-codominant-allele systems
-            // (Roan R/r, where the heterozygote is the blend) fall back to the case-based test.
             var _coAll = [parent1[0], parent1[1], parent2[0], parent2[1]];
+            _isABO = !isSexLinked && _coAll.every(function(a) { return a === 'A' || a === 'B' || a === 'i'; });
             var _coUp = _coAll.filter(function(a) { return a === a.toUpperCase() && a !== 'Y'; });
             var _coDistinct = _coUp.filter(function(a, i) { return _coUp.indexOf(a) === i; }).sort();
             var coDomAllele = _coDistinct[0], coRecAllele = _coDistinct[1];
             phenotype = function(g) {
               if (isSexLinked) return 'Dominant';
+              if (_isABO) {
+                var hasA = g[0] === 'A' || g[1] === 'A';
+                var hasB = g[0] === 'B' || g[1] === 'B';
+                if (hasA && hasB) return 'Codominant';
+                if (hasA) return 'Dominant';
+                if (hasB) return 'Recessive';
+                return 'Null';
+              }
               if (_coDistinct.length >= 2) {
-                // true codominance between two expressed alleles (A/B, M/N); lowercase (incl. i) is null
+                // true codominance between two expressed alleles (e.g. M/N); lowercase is null
                 var up0 = g[0] === g[0].toUpperCase(), up1 = g[1] === g[1].toUpperCase();
                 var hasD = (up0 && g[0] === coDomAllele) || (up1 && g[1] === coDomAllele);
                 var hasR = (up0 && g[0] === coRecAllele) || (up1 && g[1] === coRecAllele);
                 if (hasD && hasR) return 'Codominant';
                 if (hasD) return 'Dominant';
                 if (hasR) return 'Recessive';
-                return 'Recessive'; // neither codominant allele expressed (e.g. ii) → recessive class
+                return 'Null';
               }
               // single codominant allele over a recessive one (Roan): heterozygote = the blend
               var upper = g[0].toUpperCase();
@@ -1702,6 +1703,7 @@ window.StemLab = window.StemLab || {
           var domCount = flatGrid.filter(function(g) { return phenotype(g) === 'Dominant'; }).length;
           var recCount = flatGrid.filter(function(g) { return phenotype(g) === 'Recessive'; }).length;
           var blendCount = flatGrid.filter(function(g) { return phenotype(g) === 'Blended' || phenotype(g) === 'Codominant'; }).length;
+          var nullCount = flatGrid.filter(function(g) { return phenotype(g) === 'Null'; }).length;
           var homoD = isSexLinked ? 0 : flatGrid.filter(function(g) { return g[0] === g[1] && g[0] === g[0].toUpperCase(); }).length;
           var hetero = isSexLinked ? 0 : flatGrid.filter(function(g) { return g[0] !== g[1]; }).length;
           var homoR = isSexLinked ? 0 : flatGrid.filter(function(g) { return g[0] === g[1] && g[0] === g[0].toLowerCase(); }).length;
@@ -1734,13 +1736,18 @@ window.StemLab = window.StemLab || {
           var displayDomLabel = activePreset && activePreset.domLabel ? activePreset.domLabel : (isSexLinked ? 'Unaffected in model' : 'Dominant');
           var displayRecLabel = activePreset && activePreset.recLabel ? activePreset.recLabel : (isSexLinked ? 'Affected in model' : 'Recessive');
           var displayBlendLabel = activePreset && activePreset.blendLabel ? activePreset.blendLabel : (inheritMode === 'incomplete' ? 'Intermediate' : 'Codominant');
+          var displayNullLabel = _isABO ? 'Type O' : 'Null (recessive)';
           var parent1Gametes = isSexLinked ? ['X' + parent1[0], 'X' + parent1[1]] : parent1.slice();
           var parent2Gametes = isSexLinked ? ['X' + parent2[0], 'Y'] : parent2.slice();
           var phenotypeMix = [
             { id: 'dom', label: displayDomLabel, count: domCount, color: '#047857', soft: '#ecfdf5', border: '#86efac' },
             { id: 'blend', label: displayBlendLabel, count: blendCount, color: inheritMode === 'incomplete' ? '#be185d' : '#6d28d9', soft: inheritMode === 'incomplete' ? '#fdf2f8' : '#f5f3ff', border: inheritMode === 'incomplete' ? '#f9a8d4' : '#c4b5fd' },
             { id: 'rec', label: displayRecLabel, count: recCount, color: '#92400e', soft: '#fffbeb', border: '#fcd34d' }
-          ].filter(function(item) { return item.count > 0 || item.id !== 'blend'; });
+          ];
+          if (nullCount > 0 || _isABO) {
+            phenotypeMix.push({ id: 'null', label: _isABO ? 'Type O' : 'Null (recessive)', count: nullCount, color: '#0369a1', soft: '#f0f9ff', border: '#7dd3fc' });
+          }
+          phenotypeMix = phenotypeMix.filter(function(item) { return item.count > 0 || (item.id !== 'blend' && item.id !== 'null'); });
           var maximumPhenotypeCount = phenotypeMix.reduce(function(maximum, item) {
             return Math.max(maximum, item.count);
           }, 0);
@@ -2229,12 +2236,30 @@ window.StemLab = window.StemLab || {
                   viewBox: '0 0 40 40', width: 38, height: 38, className: 'shrink-0',
                   'aria-hidden': 'true'
                 },
-                  h('rect', { x: 2, y: 2, width: 36, height: 36, rx: 10, fill: isContrastNow ? '#000000' : '#4c1d95', stroke: isContrastNow ? '#ffff00' : '#a78bfa', strokeWidth: 1.8 }),
+                  !isContrastNow && h('defs', null,
+                    h('radialGradient', { id: 'pun-emb-bg', cx: '35%', cy: '30%', r: '75%' },
+                      h('stop', { offset: '0%', stopColor: '#6d28d9' }),
+                      h('stop', { offset: '100%', stopColor: '#2e1065' })
+                    ),
+                    h('linearGradient', { id: 'pun-emb-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.28 }),
+                      h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                    )
+                  ),
+                  h('rect', { x: 2, y: 2, width: 36, height: 36, rx: 10, fill: isContrastNow ? '#000000' : 'url(#pun-emb-bg)', stroke: isContrastNow ? '#ffff00' : '#a78bfa', strokeWidth: 1.8 }),
+                  !isContrastNow && h('rect', { x: 3.5, y: 3.5, width: 33, height: 15, rx: 8, fill: 'url(#pun-emb-sheen)' }),
+                  // Base-pair rungs
+                  h('line', { x1: 15, y1: 12, x2: 25, y2: 12, stroke: isContrastNow ? '#ffff00' : '#fde68a', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                  h('line', { x1: 14, y1: 20, x2: 26, y2: 20, stroke: isContrastNow ? '#00ff00' : '#67e8f9', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                  h('line', { x1: 15, y1: 28, x2: 25, y2: 28, stroke: isContrastNow ? '#ffff00' : '#fde68a', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                  // Dual-pass luminous double-helix backbones
+                  !isContrastNow && h('path', { d: 'M 12 8 C 28 14, 12 26, 28 32', fill: 'none', stroke: '#34d399', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.24 }),
+                  !isContrastNow && h('path', { d: 'M 28 8 C 12 14, 28 26, 12 32', fill: 'none', stroke: '#c4b5fd', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.24 }),
                   h('path', { d: 'M 12 8 C 28 14, 12 26, 28 32', fill: 'none', stroke: isContrastNow ? '#00ff00' : '#34d399', strokeWidth: 2.4, strokeLinecap: 'round' }),
                   h('path', { d: 'M 28 8 C 12 14, 28 26, 12 32', fill: 'none', stroke: isContrastNow ? '#ffff00' : '#c4b5fd', strokeWidth: 2.4, strokeLinecap: 'round' }),
-                  h('line', { x1: 15, y1: 12, x2: 25, y2: 12, stroke: isContrastNow ? '#ffff00' : '#fde68a', strokeWidth: 1.6 }),
-                  h('line', { x1: 14, y1: 20, x2: 26, y2: 20, stroke: isContrastNow ? '#00ff00' : '#67e8f9', strokeWidth: 1.6 }),
-                  h('line', { x1: 15, y1: 28, x2: 25, y2: 28, stroke: isContrastNow ? '#ffff00' : '#fde68a', strokeWidth: 1.6 })
+                  // Specular nexus beads
+                  !isContrastNow && h('circle', { cx: 20, cy: 15.6, r: 1.6, fill: '#ffffff', opacity: 0.85 }),
+                  !isContrastNow && h('circle', { cx: 20, cy: 24.4, r: 1.6, fill: '#ffffff', opacity: 0.85 })
                 ),
                 h('div', { className: 'min-w-0' },
                   h('div', { className: 'flex items-center gap-2 flex-wrap' },
@@ -2594,32 +2619,70 @@ window.StemLab = window.StemLab || {
                     role: 'img',
                     'aria-label': __alloT('stem.punnett.segregation_svg_aria', 'Chromatid allele segregation and proportional offspring genotype diagram')
                   },
-                    // Left: Parent 1 & Parent 2 Chromatid Pairs
-                    h('rect', { x: 8, y: 8, width: 162, height: 82, rx: 10, fill: isContrastNow ? '#000000' : '#f8fafc', stroke: isContrastNow ? '#ffff00' : '#e2e8f0', strokeWidth: 1.4 }),
-                    h('text', { x: 89, y: 22, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: isContrastNow ? '#ffff00' : '#475569' }, 'GAMETE SEGREGATION'),
-                    // Parent 1 chromatids
-                    h('rect', { x: 24, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : '#ede9fe', stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 2 }),
-                    h('line', { x1: 26, y1: 54, x2: 44, y2: 54, stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 3 }),
-                    h('text', { x: 35, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#00ff00' : '#5b21b6' }, p1a),
-                    h('rect', { x: 52, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : '#ede9fe', stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 2 }),
-                    h('line', { x1: 54, y1: 54, x2: 72, y2: 54, stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 3 }),
-                    h('text', { x: 63, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#00ff00' : '#5b21b6' }, p1b),
+                    !isContrastNow && h('defs', null,
+                      h('linearGradient', { id: 'pun-seg-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: isDarkNow ? '#0f172a' : '#f8fafc' }),
+                        h('stop', { offset: '100%', stopColor: isDarkNow ? '#1e293b' : '#f1f5f9' })
+                      ),
+                      h('linearGradient', { id: 'pun-chr-p1', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                        h('stop', { offset: '0%', stopColor: '#c4b5fd' }),
+                        h('stop', { offset: '38%', stopColor: '#f5f3ff' }),
+                        h('stop', { offset: '100%', stopColor: '#a78bfa' })
+                      ),
+                      h('linearGradient', { id: 'pun-chr-p2', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                        h('stop', { offset: '0%', stopColor: '#93c5fd' }),
+                        h('stop', { offset: '38%', stopColor: '#eff6ff' }),
+                        h('stop', { offset: '100%', stopColor: '#60a5fa' })
+                      ),
+                      h('linearGradient', { id: 'pun-bar-gloss', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.36 }),
+                        h('stop', { offset: '52%', stopColor: '#ffffff', stopOpacity: 0.04 }),
+                        h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.14 })
+                      )
+                    ),
+                    // Left: Recessed laboratory genetics well for Parent 1 & Parent 2 Chromatid Pairs
+                    h('rect', { x: 8, y: 8, width: 162, height: 82, rx: 10, fill: isContrastNow ? '#000000' : 'url(#pun-seg-well)', stroke: isContrastNow ? '#ffff00' : (isDarkNow ? '#334155' : '#cbd5e1'), strokeWidth: 1.4 }),
+                    h('text', { x: 89, y: 22, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: isContrastNow ? '#ffff00' : (isDarkNow ? '#cbd5e1' : '#475569') }, 'GAMETE SEGREGATION'),
+                    // Parent 1 specular 3D-shaded paired chromosomes with glowing gene-locus bands
+                    [
+                      { x: 24, lbl: p1a }, { x: 52, lbl: p1b }
+                    ].map(function(ch, ci) {
+                      return h('g', { key: 'p1c-' + ci },
+                        !isContrastNow && h('rect', { x: ch.x + 1, y: 32, width: 22, height: 48, rx: 11, fill: '#7c3aed', opacity: 0.16 }),
+                        h('rect', { x: ch.x, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : 'url(#pun-chr-p1)', stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 2 }),
+                        // Glowing gene-locus band & centromere waist
+                        !isContrastNow && h('rect', { x: ch.x + 2, y: 51, width: 18, height: 6, rx: 3, fill: '#7c3aed', opacity: 0.25 }),
+                        h('line', { x1: ch.x + 2, y1: 54, x2: ch.x + 20, y2: 54, stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 3, strokeLinecap: 'round' }),
+                        !isContrastNow && h('line', { x1: ch.x + 5, y1: 35, x2: ch.x + 5, y2: 73, stroke: '#ffffff', strokeWidth: 1.4, strokeLinecap: 'round', opacity: 0.55 }),
+                        h('text', { x: ch.x + 11, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#00ff00' : '#4c1d95' }, ch.lbl)
+                      );
+                    }),
                     // Cross multiplier symbol
                     h('text', { x: 89, y: 58, textAnchor: 'middle', fontSize: 14, fontWeight: 900, fill: isContrastNow ? '#ffff00' : '#64748b' }, '\u00D7'),
-                    // Parent 2 chromatids
-                    h('rect', { x: 104, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : '#dbeafe', stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 2 }),
-                    h('line', { x1: 106, y1: 54, x2: 124, y2: 54, stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 3 }),
-                    h('text', { x: 115, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#ffff00' : '#1d4ed8' }, p2a),
-                    h('rect', { x: 132, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : '#dbeafe', stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 2 }),
-                    h('line', { x1: 134, y1: 54, x2: 152, y2: 54, stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 3 }),
-                    h('text', { x: 143, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#ffff00' : '#1d4ed8' }, p2b),
-                    // Right: Proportional Offspring Genotype Stacked Bar
-                    h('rect', { x: 178, y: 8, width: 174, height: 82, rx: 10, fill: isContrastNow ? '#000000' : '#f8fafc', stroke: isContrastNow ? '#ffff00' : '#e2e8f0', strokeWidth: 1.4 }),
-                    h('text', { x: 265, y: 22, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: isContrastNow ? '#ffff00' : '#475569' }, 'OFFSPRING GENOTYPE MIX'),
+                    // Parent 2 specular 3D-shaded paired chromosomes with glowing gene-locus bands
+                    [
+                      { x: 104, lbl: p2a }, { x: 132, lbl: p2b }
+                    ].map(function(ch, ci) {
+                      return h('g', { key: 'p2c-' + ci },
+                        !isContrastNow && h('rect', { x: ch.x + 1, y: 32, width: 22, height: 48, rx: 11, fill: '#2563eb', opacity: 0.16 }),
+                        h('rect', { x: ch.x, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : 'url(#pun-chr-p2)', stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 2 }),
+                        !isContrastNow && h('rect', { x: ch.x + 2, y: 51, width: 18, height: 6, rx: 3, fill: '#2563eb', opacity: 0.25 }),
+                        h('line', { x1: ch.x + 2, y1: 54, x2: ch.x + 20, y2: 54, stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 3, strokeLinecap: 'round' }),
+                        !isContrastNow && h('line', { x1: ch.x + 5, y1: 35, x2: ch.x + 5, y2: 73, stroke: '#ffffff', strokeWidth: 1.4, strokeLinecap: 'round', opacity: 0.55 }),
+                        h('text', { x: ch.x + 11, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#ffff00' : '#1e3a8a' }, ch.lbl)
+                      );
+                    }),
+                    // Right: Recessed stage + Glossy Beveled Proportional Offspring Genotype Bar
+                    h('rect', { x: 178, y: 8, width: 174, height: 82, rx: 10, fill: isContrastNow ? '#000000' : 'url(#pun-seg-well)', stroke: isContrastNow ? '#ffff00' : (isDarkNow ? '#334155' : '#cbd5e1'), strokeWidth: 1.4 }),
+                    h('text', { x: 265, y: 22, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: isContrastNow ? '#ffff00' : (isDarkNow ? '#cbd5e1' : '#475569') }, 'OFFSPRING GENOTYPE MIX'),
                     gKeys.map(function(gk, gi) {
                       var w = Math.round((counts[gk] / 4) * totalBarW);
+                      var segW = Math.max(8, w - 2);
                       var seg = h('g', { key: 'gs' + gk },
-                        h('rect', { x: barX, y: 32, width: Math.max(8, w - 2), height: 26, rx: 5, fill: segColors[gi % segColors.length], stroke: isContrastNow ? '#000000' : '#ffffff', strokeWidth: 1.5 }),
+                        !isContrastNow && h('rect', { x: barX, y: 34, width: segW, height: 26, rx: 5, fill: segColors[gi % segColors.length], opacity: 0.2 }),
+                        h('rect', { x: barX, y: 32, width: segW, height: 26, rx: 5, fill: segColors[gi % segColors.length], stroke: isContrastNow ? '#000000' : '#ffffff', strokeWidth: 1.5 }),
+                        !isContrastNow && h('rect', { x: barX + 1, y: 33, width: Math.max(4, segW - 2), height: 24, rx: 4, fill: 'url(#pun-bar-gloss)' }),
+                        !isContrastNow && segW >= 14 && h('line', { x1: barX + 4, y1: 34.5, x2: barX + segW - 4, y2: 34.5, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.6 }),
                         h('text', { x: barX + w / 2 - 1, y: 49, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#000000' : '#ffffff' }, gk)
                       );
                       barX += w;
@@ -2682,9 +2745,11 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-sm font-bold text-slate-600' }, genotypeRatioStr),
                 h('p', { className: 'text-xs text-slate-600 mt-1' },
                   (function() {
-                    return blendCount > 0
+                    var summary = blendCount > 0
                       ? 'Phenotype: ' + domCount + '/4 ' + displayDomLabel + ', ' + blendCount + '/4 ' + displayBlendLabel + ', ' + recCount + '/4 ' + displayRecLabel
                       : 'Phenotype: ' + domCount + '/4 ' + displayDomLabel + ', ' + recCount + '/4 ' + displayRecLabel;
+                    if (nullCount > 0) summary += ', ' + nullCount + '/4 ' + displayNullLabel;
+                    return summary;
                   })()
                 )
               ),
@@ -2859,7 +2924,7 @@ window.StemLab = window.StemLab || {
                             },
                             className: 'punnett-touch-choice px-2 py-2 border border-violet-600 rounded font-bold text-sm text-center'
                           },
-                            ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
+                            ['A','a','B','b','C','c','R','r','S','s','T','t','Y','y'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
                         })
                       ),
@@ -2878,7 +2943,7 @@ window.StemLab = window.StemLab || {
                             },
                             className: 'punnett-touch-choice px-2 py-2 border border-violet-600 rounded font-bold text-sm text-center'
                           },
-                            ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
+                            ['A','a','B','b','C','c','R','r','S','s','T','t','Y','y'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
                         })
                       )
@@ -2901,7 +2966,7 @@ window.StemLab = window.StemLab || {
                             },
                             className: 'punnett-touch-choice px-2 py-2 border border-blue-600 rounded font-bold text-sm text-center'
                           },
-                            ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
+                            ['A','a','B','b','C','c','R','r','S','s','T','t','Y','y'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
                         })
                       ),
@@ -2920,7 +2985,7 @@ window.StemLab = window.StemLab || {
                             },
                             className: 'punnett-touch-choice px-2 py-2 border border-blue-600 rounded font-bold text-sm text-center'
                           },
-                            ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
+                            ['A','a','B','b','C','c','R','r','S','s','T','t','Y','y'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
                         })
                       )
@@ -3080,10 +3145,35 @@ window.StemLab = window.StemLab || {
                 },
                   h('title', { id: 'punnett-pedigree-title' }, pedSolveMode ? 'Pedigree pattern to identify' : currentPed.label + ' pedigree'),
                   h('desc', { id: 'punnett-pedigree-desc' }, 'Family pedigree with ' + currentPed.members.length + ' people across generations. Squares are males, circles are females, filled shapes are affected, and half-filled shapes are carriers. A text description follows the chart.'),
+                  !isContrastNow && h('defs', null,
+                    h('linearGradient', { id: 'pun-ped-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#f8fafc' }),
+                      h('stop', { offset: '100%', stopColor: '#f1f5f9' })
+                    ),
+                    h('radialGradient', { id: 'pun-ped-aff', cx: '34%', cy: '30%', r: '70%' },
+                      h('stop', { offset: '0%', stopColor: '#a855f7' }),
+                      h('stop', { offset: '100%', stopColor: '#6d28d9' })
+                    ),
+                    h('linearGradient', { id: 'pun-ped-car', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#a78bfa' }),
+                      h('stop', { offset: '100%', stopColor: '#7c3aed' })
+                    ),
+                    h('linearGradient', { id: 'pun-ped-unaff', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#ffffff' }),
+                      h('stop', { offset: '100%', stopColor: '#e2e8f0' })
+                    )
+                  ),
+                  // Recessed clinical laboratory stage & legend header strip
+                  !isContrastNow && h('rect', { x: 1, y: 1, width: 378, height: 278, rx: 8, fill: 'url(#pun-ped-well)', stroke: '#e2e8f0', strokeWidth: 1 }),
+                  !isContrastNow && h('rect', { x: 2, y: 2, width: 376, height: 22, rx: 6, fill: '#ffffff', opacity: 0.88 }),
+                  // Subtle generation reference lines
+                  !isContrastNow && [100, 188].map(function(gy, gi) {
+                    return h('line', { key: 'gen-' + gi, x1: 12, y1: gy, x2: 368, y2: gy, stroke: '#cbd5e1', strokeWidth: 0.75, strokeDasharray: '3 5', opacity: 0.65 });
+                  }),
                   // Legend
-                  h('rect', { x: 5, y: 5, width: 12, height: 12, fill: 'white', stroke: '#1e293b', strokeWidth: 1.5 }),
+                  h('rect', { x: 5, y: 5, width: 12, height: 12, rx: 2, fill: 'white', stroke: '#1e293b', strokeWidth: 1.5 }),
                   h('text', { x: 22, y: 14, style: { fontSize: '8px', fill: '#475569' } }, 'Unaffected'),
-                  h('rect', { x: 85, y: 5, width: 12, height: 12, fill: '#7c3aed', stroke: '#1e293b', strokeWidth: 1.5 }),
+                  h('rect', { x: 85, y: 5, width: 12, height: 12, rx: 2, fill: isContrastNow ? '#7c3aed' : 'url(#pun-ped-aff)', stroke: '#1e293b', strokeWidth: 1.5 }),
                   h('text', { x: 102, y: 14, style: { fontSize: '8px', fill: '#475569' } }, 'Affected'),
                   h('circle', { cx: 175, cy: 11, r: 6, fill: 'white', stroke: '#1e293b', strokeWidth: 1.5 }),
                   h('path', { d: 'M 175 5 A 6 6 0 0 0 175 17 Z', fill: '#9c80e0' }),
@@ -3099,7 +3189,7 @@ window.StemLab = window.StemLab || {
                       var m1 = findMem(pair[0]);
                       var m2 = findMem(pair[1]);
                       if (m1 && m2) {
-                        lines.push(h('line', { key: 'c' + ci, x1: m1.x + 16, y1: m1.y, x2: m2.x - 16, y2: m2.y, stroke: '#64748b', strokeWidth: 2 }));
+                        lines.push(h('line', { key: 'c' + ci, x1: m1.x + 16, y1: m1.y, x2: m2.x - 16, y2: m2.y, stroke: '#64748b', strokeWidth: 2, strokeLinecap: 'round' }));
                       }
                     });
                     // Descent lines
@@ -3113,10 +3203,11 @@ window.StemLab = window.StemLab || {
                       var lastChild = findMem(sg.children[sg.children.length - 1]);
                       if (!firstChild) return;
                       var sibY = midY + 45;
-                      // Vertical from couple
+                      // Vertical from couple + junction bead
                       lines.push(h('line', { key: 'v' + gi, x1: midX, y1: midY, x2: midX, y2: sibY, stroke: '#64748b', strokeWidth: 2 }));
+                      !isContrastNow && lines.push(h('circle', { key: 'jb' + gi, cx: midX, cy: midY, r: 2.5, fill: '#64748b' }));
                       // Horizontal sibling bar
-                      lines.push(h('line', { key: 's' + gi, x1: firstChild.x, y1: sibY, x2: lastChild.x, y2: sibY, stroke: '#64748b', strokeWidth: 2 }));
+                      lines.push(h('line', { key: 's' + gi, x1: firstChild.x, y1: sibY, x2: lastChild.x, y2: sibY, stroke: '#64748b', strokeWidth: 2, strokeLinecap: 'round' }));
                       // Vertical to each child
                       sg.children.forEach(function(cid, ci) {
                         var child = findMem(cid);
@@ -3128,27 +3219,43 @@ window.StemLab = window.StemLab || {
                     return lines;
                   })(),
 
-                  // Members
+                  // Members (luminous shaded inheritance nodes & carrier rings)
                   currentPed.members.map(function(m) {
                     var els = [];
                     var showGeno = pedShowGeno && !pedSolveMode;
+                    var affFill = isContrastNow ? '#7c3aed' : 'url(#pun-ped-aff)';
+                    var unaffFill = isContrastNow ? 'white' : 'url(#pun-ped-unaff)';
+                    var carFill = isContrastNow ? '#9c80e0' : 'url(#pun-ped-car)';
                     if (m.sex === 'M') {
-                      // Square
+                      // Square with luminous affected/carrier halo
+                      if (!isContrastNow && (m.affected || m.carrier)) {
+                        els.push(h('rect', { key: m.id + 'hl', x: m.x - 19, y: m.y - 19, width: 38, height: 38, rx: 6, fill: m.affected ? '#7c3aed' : '#a78bfa', opacity: m.affected ? 0.16 : 0.14 }));
+                      }
                       if (m.carrier) {
-                        els.push(h('rect', { key: m.id + 'bg', x: m.x - 15, y: m.y - 15, width: 30, height: 30, fill: 'white', stroke: 'none' }));
-                        els.push(h('rect', { key: m.id + 'car', x: m.x - 15, y: m.y - 15, width: 15, height: 30, fill: '#9c80e0', stroke: 'none' }));
-                        els.push(h('rect', { key: m.id + 'brd', x: m.x - 15, y: m.y - 15, width: 30, height: 30, fill: 'none', stroke: '#1e293b', strokeWidth: 2 }));
+                        els.push(h('rect', { key: m.id + 'bg', x: m.x - 15, y: m.y - 15, width: 30, height: 30, rx: 3, fill: unaffFill, stroke: 'none' }));
+                        els.push(h('rect', { key: m.id + 'car', x: m.x - 15, y: m.y - 15, width: 15, height: 30, rx: 2, fill: carFill, stroke: 'none' }));
+                        els.push(h('rect', { key: m.id + 'brd', x: m.x - 15, y: m.y - 15, width: 30, height: 30, rx: 3, fill: 'none', stroke: '#1e293b', strokeWidth: 2 }));
                       } else {
-                        els.push(h('rect', { key: m.id + 's', x: m.x - 15, y: m.y - 15, width: 30, height: 30, fill: m.affected ? '#7c3aed' : 'white', stroke: '#1e293b', strokeWidth: 2 }));
+                        els.push(h('rect', { key: m.id + 's', x: m.x - 15, y: m.y - 15, width: 30, height: 30, rx: 3, fill: m.affected ? affFill : unaffFill, stroke: '#1e293b', strokeWidth: 2 }));
+                      }
+                      if (!isContrastNow) {
+                        els.push(h('line', { key: m.id + 'sp', x1: m.x - 11, y1: m.y - 12, x2: m.x + 11, y2: m.y - 12, stroke: '#ffffff', strokeWidth: 1.4, strokeLinecap: 'round', opacity: m.affected ? 0.45 : 0.85 }));
                       }
                     } else {
-                      // Circle
+                      // Circle with luminous affected/carrier halo ring
+                      if (!isContrastNow && (m.affected || m.carrier)) {
+                        els.push(h('circle', { key: m.id + 'hl', cx: m.x, cy: m.y, r: 19, fill: m.affected ? '#7c3aed' : '#a78bfa', opacity: m.affected ? 0.16 : 0.14 }));
+                      }
                       if (m.carrier) {
-                        els.push(h('circle', { key: m.id + 'bg', cx: m.x, cy: m.y, r: 15, fill: 'white', stroke: 'none' }));
-                        els.push(h('path', { key: m.id + 'car', d: 'M ' + m.x + ' ' + (m.y - 15) + ' A 15 15 0 0 0 ' + m.x + ' ' + (m.y + 15) + ' Z', fill: '#9c80e0' }));
+                        els.push(h('circle', { key: m.id + 'bg', cx: m.x, cy: m.y, r: 15, fill: unaffFill, stroke: 'none' }));
+                        els.push(h('path', { key: m.id + 'car', d: 'M ' + m.x + ' ' + (m.y - 15) + ' A 15 15 0 0 0 ' + m.x + ' ' + (m.y + 15) + ' Z', fill: carFill }));
                         els.push(h('circle', { key: m.id + 'brd', cx: m.x, cy: m.y, r: 15, fill: 'none', stroke: '#1e293b', strokeWidth: 2 }));
+                        !isContrastNow && els.push(h('circle', { key: m.id + 'cr', cx: m.x, cy: m.y, r: 18, fill: 'none', stroke: '#9c80e0', strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.7 }));
                       } else {
-                        els.push(h('circle', { key: m.id + 's', cx: m.x, cy: m.y, r: 15, fill: m.affected ? '#7c3aed' : 'white', stroke: '#1e293b', strokeWidth: 2 }));
+                        els.push(h('circle', { key: m.id + 's', cx: m.x, cy: m.y, r: 15, fill: m.affected ? affFill : unaffFill, stroke: '#1e293b', strokeWidth: 2 }));
+                      }
+                      if (!isContrastNow) {
+                        els.push(h('circle', { key: m.id + 'sp', cx: m.x - 4.5, cy: m.y - 5, r: 2.6, fill: '#ffffff', opacity: m.affected ? 0.35 : 0.75 }));
                       }
                     }
                     // Label below
@@ -3354,6 +3461,24 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'bg-white rounded-xl border p-3 mb-3' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, '\uD83D\uDC65 Population Sample (n=' + Math.min(popSize, 100) + ')'),
                 h('svg', { viewBox: '0 0 300 60', className: 'w-full', role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_illustrative_sample_of_individuals_at_allele_frequency_p', 'Illustrative sample of {popSize} individuals at allele frequency p {displayedPopFreqA}'), { popSize: Math.min(popSize, 100), displayedPopFreqA: displayedPopFreqA.toFixed(2) }) },
+                  !isContrastNow && h('defs', null,
+                    h('radialGradient', { id: 'pun-orb-aa1', cx: '34%', cy: '30%', r: '70%' },
+                      h('stop', { offset: '0%', stopColor: '#86efac' }),
+                      h('stop', { offset: '55%', stopColor: '#22c55e' }),
+                      h('stop', { offset: '100%', stopColor: '#15803d' })
+                    ),
+                    h('radialGradient', { id: 'pun-orb-aa2', cx: '34%', cy: '30%', r: '70%' },
+                      h('stop', { offset: '0%', stopColor: '#bae6fd' }),
+                      h('stop', { offset: '55%', stopColor: '#38bdf8' }),
+                      h('stop', { offset: '100%', stopColor: '#0284c7' })
+                    ),
+                    h('radialGradient', { id: 'pun-orb-aa3', cx: '34%', cy: '30%', r: '70%' },
+                      h('stop', { offset: '0%', stopColor: '#fde68a' }),
+                      h('stop', { offset: '55%', stopColor: '#f59e0b' }),
+                      h('stop', { offset: '100%', stopColor: '#b45309' })
+                    )
+                  ),
+                  !isContrastNow && h('rect', { x: 1, y: 1, width: 298, height: 58, rx: 6, fill: isDarkNow ? '#0f172a' : '#f8fafc', stroke: isDarkNow ? '#334155' : '#e2e8f0', strokeWidth: 0.9 }),
                   (function() {
                     var dots = [];
                     var p = popHistory && popHistory.length > 0 ? popHistory[popHistory.length - 1] : popFreqA;
@@ -3362,10 +3487,12 @@ window.StemLab = window.StemLab || {
                     var cols = 20;
                     for (var i = 0; i < n; i++) {
                       var rand = (0.5 + i * 0.61803398875) % 1;
-                      var color = rand < p * p ? '#22c55e' : rand < p * p + 2 * p * q ? '#38bdf8' : '#f59e0b';
+                      var color = isContrastNow
+                        ? (rand < p * p ? '#22c55e' : rand < p * p + 2 * p * q ? '#38bdf8' : '#f59e0b')
+                        : (rand < p * p ? 'url(#pun-orb-aa1)' : rand < p * p + 2 * p * q ? 'url(#pun-orb-aa2)' : 'url(#pun-orb-aa3)');
                       var cx = 10 + (i % cols) * 14.5;
                       var cy = 8 + Math.floor(i / cols) * 12;
-                      dots.push(h('circle', { key: i, cx: cx, cy: cy, r: 4.5, fill: color, opacity: 0.85 }));
+                      dots.push(h('circle', { key: i, cx: cx, cy: cy, r: 4.5, fill: color, opacity: isContrastNow ? 0.95 : 0.92 }));
                     }
                     return dots;
                   })()
@@ -3380,39 +3507,60 @@ window.StemLab = window.StemLab || {
               // Allele frequency graph
               popHistory && popHistory.length > 1 && h('div', { className: 'bg-white rounded-xl border p-3' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, '\uD83D\uDCC8 Allele Frequency Over Generations'),
-                h('svg', { viewBox: '0 0 340 160', className: 'w-full', role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_allele_frequencies_p_and_q_across_simulated_generations_current', 'Allele frequencies p and q across {value1} simulated generations; current p is {displayedPopFreqA} and q is {value2}'), { value1: popHistory.length - 1, displayedPopFreqA: displayedPopFreqA.toFixed(2), value2: (1 - displayedPopFreqA).toFixed(2) }) },
-                  // Grid
-                  h('line', { x1: 30, y1: 10, x2: 30, y2: 140, stroke: '#e2e8f0', strokeWidth: 1 }),
-                  h('line', { x1: 30, y1: 140, x2: 330, y2: 140, stroke: '#e2e8f0', strokeWidth: 1 }),
-                  h('line', { x1: 30, y1: 75, x2: 330, y2: 75, stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '4' }),
-                  h('line', { x1: 30, y1: 10, x2: 330, y2: 10, stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '4' }),
-                  // Y-axis labels
-                  h('text', { x: 2, y: 14, style: { fontSize: '8px', fill: '#475569' } }, '1.0'),
-                  h('text', { x: 2, y: 79, style: { fontSize: '8px', fill: '#475569' } }, '0.5'),
-                  h('text', { x: 2, y: 144, style: { fontSize: '8px', fill: '#475569' } }, '0.0'),
-                  h('text', { x: 165, y: 156, textAnchor: 'middle', style: { fontSize: '8px', fill: '#475569' } }, 'Generation'),
-                  // p line
-                  h('polyline', {
-                    fill: 'none', stroke: '#15803d', strokeWidth: 2,
-                    points: popHistory.map(function(pVal, i) {
-                      var x = 30 + (i / Math.max(popGens, popHistory.length - 1)) * 300;
-                      var y = 140 - pVal * 130;
-                      return x + ',' + y;
-                    }).join(' ')
-                  }),
-                  // q line
-                  h('polyline', {
-                    fill: 'none', stroke: '#b45309', strokeWidth: 2, strokeDasharray: '4',
-                    points: popHistory.map(function(pVal, i) {
-                      var x = 30 + (i / Math.max(popGens, popHistory.length - 1)) * 300;
-                      var y = 140 - (1 - pVal) * 130;
-                      return x + ',' + y;
-                    }).join(' ')
-                  }),
-                  // Labels
-                  h('text', { x: 328, textAnchor: 'end', y: Math.max(12, 136 - popHistory[popHistory.length - 1] * 124), style: { fontSize: '11px', fontWeight: 'bold', fill: '#15803d' } }, 'p'),
-                  h('text', { x: 328, textAnchor: 'end', y: Math.max(20, 144 - (1 - popHistory[popHistory.length - 1]) * 124), style: { fontSize: '11px', fontWeight: 'bold', fill: '#b45309' } }, 'q')
-                ),
+                (function() {
+                  var pPtsArr = popHistory.map(function(pVal, i) {
+                    var x = 30 + (i / Math.max(popGens, popHistory.length - 1)) * 300;
+                    var y = 140 - pVal * 130;
+                    return [x, y];
+                  });
+                  var qPtsArr = popHistory.map(function(pVal, i) {
+                    var x = 30 + (i / Math.max(popGens, popHistory.length - 1)) * 300;
+                    var y = 140 - (1 - pVal) * 130;
+                    return [x, y];
+                  });
+                  var pPts = pPtsArr.map(function(pt) { return pt[0].toFixed(1) + ',' + pt[1].toFixed(1); }).join(' ');
+                  var qPts = qPtsArr.map(function(pt) { return pt[0].toFixed(1) + ',' + pt[1].toFixed(1); }).join(' ');
+                  var pLast = pPtsArr[pPtsArr.length - 1];
+                  var qLast = qPtsArr[qPtsArr.length - 1];
+                  var pAreaD = 'M ' + pPtsArr.map(function(pt) { return pt[0].toFixed(1) + ',' + pt[1].toFixed(1); }).join(' L ') + ' L ' + pLast[0].toFixed(1) + ',140 L ' + pPtsArr[0][0].toFixed(1) + ',140 Z';
+                  return h('svg', { viewBox: '0 0 340 160', className: 'w-full', role: 'img', 'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_allele_frequencies_p_and_q_across_simulated_generations_current', 'Allele frequencies p and q across {value1} simulated generations; current p is {displayedPopFreqA} and q is {value2}'), { value1: popHistory.length - 1, displayedPopFreqA: displayedPopFreqA.toFixed(2), value2: (1 - displayedPopFreqA).toFixed(2) }) },
+                    !isContrastNow && h('defs', null,
+                      h('linearGradient', { id: 'pun-frq-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: isDarkNow ? '#0f172a' : '#f8fafc' }),
+                        h('stop', { offset: '100%', stopColor: isDarkNow ? '#1e293b' : '#ffffff' })
+                      ),
+                      h('linearGradient', { id: 'pun-frq-p-area', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#15803d', stopOpacity: 0.2 }),
+                        h('stop', { offset: '100%', stopColor: '#15803d', stopOpacity: 0.01 })
+                      )
+                    ),
+                    // Recessed studio telemetry well
+                    !isContrastNow && h('rect', { x: 30, y: 10, width: 300, height: 130, rx: 4, fill: 'url(#pun-frq-well)', stroke: isDarkNow ? '#334155' : '#e2e8f0', strokeWidth: 0.9 }),
+                    // Grid
+                    h('line', { x1: 30, y1: 10, x2: 30, y2: 140, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 30, y1: 140, x2: 330, y2: 140, stroke: '#94a3b8', strokeWidth: 1.2 }),
+                    h('line', { x1: 30, y1: 75, x2: 330, y2: 75, stroke: '#cbd5e1', strokeWidth: 0.75, strokeDasharray: '4 3' }),
+                    h('line', { x1: 30, y1: 10, x2: 330, y2: 10, stroke: '#cbd5e1', strokeWidth: 0.75, strokeDasharray: '4 3' }),
+                    // Y-axis labels
+                    h('text', { x: 2, y: 14, style: { fontSize: '8px', fill: '#475569' } }, '1.0'),
+                    h('text', { x: 2, y: 79, style: { fontSize: '8px', fill: '#475569' } }, '0.5'),
+                    h('text', { x: 2, y: 144, style: { fontSize: '8px', fill: '#475569' } }, '0.0'),
+                    h('text', { x: 165, y: 156, textAnchor: 'middle', style: { fontSize: '8px', fill: '#475569' } }, 'Generation'),
+                    // Gradient area envelope under p
+                    !isContrastNow && h('path', { d: pAreaD, fill: 'url(#pun-frq-p-area)' }),
+                    // Dual-pass luminous p & q curves
+                    !isContrastNow && h('polyline', { fill: 'none', stroke: '#15803d', strokeWidth: 5.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16, points: pPts }),
+                    h('polyline', { fill: 'none', stroke: '#15803d', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round', points: pPts }),
+                    !isContrastNow && h('polyline', { fill: 'none', stroke: '#b45309', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.14, points: qPts }),
+                    h('polyline', { fill: 'none', stroke: '#b45309', strokeWidth: 2.2, strokeDasharray: '4 3', strokeLinecap: 'round', points: qPts }),
+                    // Terminal endpoint beacons
+                    h('circle', { cx: pLast[0], cy: pLast[1], r: 3.6, fill: '#15803d', stroke: '#ffffff', strokeWidth: 1.4 }),
+                    h('circle', { cx: qLast[0], cy: qLast[1], r: 3.6, fill: '#b45309', stroke: '#ffffff', strokeWidth: 1.4 }),
+                    // Labels
+                    h('text', { x: 328, textAnchor: 'end', y: Math.max(12, 136 - popHistory[popHistory.length - 1] * 124), style: { fontSize: '11px', fontWeight: 'bold', fill: '#15803d' } }, 'p'),
+                    h('text', { x: 328, textAnchor: 'end', y: Math.max(20, 144 - (1 - popHistory[popHistory.length - 1]) * 124), style: { fontSize: '11px', fontWeight: 'bold', fill: '#b45309' } }, 'q')
+                  );
+                })(),
                 h('p', { className: 'text-[0.6875rem] text-slate-600 mt-1 text-center' },
                   'Gen ' + (popHistory.length - 1) + ': p = ' + popHistory[popHistory.length - 1].toFixed(4) + ', q = ' + (1 - popHistory[popHistory.length - 1]).toFixed(4)
                 )
@@ -3529,7 +3677,7 @@ window.StemLab = window.StemLab || {
 
               // DNA input
               h('div', { className: 'bg-gradient-to-r from-fuchsia-50 to-purple-50 rounded-xl p-3 border border-fuchsia-200 mb-3' },
-                h('label', { htmlFor: 'punnett-dna-sequence', className: 'text-[0.6875rem] font-bold text-fuchsia-700 uppercase tracking-wider block mb-1' }, '\uD83E\uDDEC Enter DNA Template Strand (5\'\u21923\')'),
+                h('label', { htmlFor: 'punnett-dna-sequence', className: 'text-[0.6875rem] font-bold text-fuchsia-700 uppercase tracking-wider block mb-1' }, '\uD83E\uDDEC Enter DNA Coding Strand (5\'\u21923\')'),
                 h('input', {
                   id: 'punnett-dna-sequence', type: 'text', value: dnaSeq,
                   onChange: function(e) { upd('_dnaSeq', e.target.value.toUpperCase().replace(/[^ATCG]/g, '')); },
@@ -3568,7 +3716,7 @@ window.StemLab = window.StemLab || {
                   var aminos = result.aminos;
                   return h('div', { className: 'bg-white rounded-xl border p-3 mb-3 space-y-2' },
                     h('div', null,
-                      h('p', { className: 'text-[0.6875rem] font-bold text-blue-600' }, '1\uFE0F\u20E3 DNA Template (3\'\u21925\')'),
+                      h('p', { className: 'text-[0.6875rem] font-bold text-blue-600' }, '1\uFE0F\u20E3 DNA Coding Strand (5\'\u21923\')'),
                       h('p', { className: 'font-mono text-sm font-bold text-blue-700 tracking-widest' }, dnaSeq)
                     ),
                     h('div', null,
@@ -4047,7 +4195,10 @@ window.StemLab = window.StemLab || {
               var q = 1 - pFrac;
               var s = iq.selection / 100;
               var mu = iq.mutation / 1000;
-              var newP = pFrac * (1 - s) + mu * q;
+              // Frequency-dependent selection normalized by mean fitness wBar, followed by mutation (a -> A)
+              var wBar = pFrac * (1 - s) + q;
+              var pSel = wBar > 0 ? (pFrac * (1 - s)) / wBar : pFrac;
+              var newP = pSel + mu * (1 - pSel);
               newP = Math.max(0, Math.min(1, newP));
               var deltaP = Math.abs(newP - pFrac);
               var state;
@@ -4092,18 +4243,37 @@ window.StemLab = window.StemLab || {
                       role: 'img',
                       'aria-label': 'Hardy-Weinberg genotype proportions: AA ' + Math.round(pp * 100) + ' percent, Aa ' + Math.round(pq2 * 100) + ' percent, aa ' + Math.round(qq * 100) + ' percent'
                     },
+                      !isContrastNow && h('defs', null,
+                        h('linearGradient', { id: 'pun-hw-gloss', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                          h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.36 }),
+                          h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0.04 }),
+                          h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.14 })
+                        )
+                      ),
                       h('text', { x: 30, y: 14, fontSize: 9, fontWeight: 800, fill: isContrastNow ? '#ffff00' : '#475569' }, 'HARDY-WEINBERG GENOTYPES (p\u00B2 + 2pq + q\u00B2 = 1)'),
+                      // Recessed bar well + beveled genotype segments with glossy sheen
+                      !isContrastNow && h('rect', { x: 29, y: 19, width: barTotal + 2, height: 20, rx: 4, fill: '#e2e8f0' }),
                       h('rect', { x: 30, y: 20, width: wAA, height: 18, rx: 3, fill: isContrastNow ? '#00ff00' : '#7c3aed' }),
                       h('rect', { x: 30 + wAA, y: 20, width: wAa, height: 18, rx: 3, fill: isContrastNow ? '#ffff00' : '#0ea5e9' }),
                       h('rect', { x: 30 + wAA + wAa, y: 20, width: waa, height: 18, rx: 3, fill: isContrastNow ? '#ffffff' : '#f59e0b' }),
+                      !isContrastNow && h('rect', { x: 30, y: 20, width: barTotal, height: 18, rx: 3, fill: 'url(#pun-hw-gloss)' }),
+                      !isContrastNow && h('line', { x1: 33, y1: 22, x2: 307, y2: 22, stroke: '#ffffff', strokeWidth: 1, strokeLinecap: 'round', opacity: 0.5 }),
                       h('text', { x: 30, y: 50, fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#00ff00' : '#6d28d9' }, 'AA ' + Math.round(pp * 100) + '%'),
                       h('text', { x: 170, y: 50, textAnchor: 'middle', fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#ffff00' : '#0369a1' }, 'Aa ' + Math.round(pq2 * 100) + '%'),
                       h('text', { x: 310, y: 50, textAnchor: 'end', fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#ffffff' : '#b45309' }, 'aa ' + Math.round(qq * 100) + '%'),
-                      // Allele frequency shift vector p -> p'
-                      h('line', { x1: 30, y1: 68, x2: 310, y2: 68, stroke: isContrastNow ? '#ffff00' : '#cbd5e1', strokeWidth: 3, strokeLinecap: 'round' }),
-                      h('circle', { cx: xCur, cy: 68, r: 5, fill: isContrastNow ? '#ffff00' : '#6d28d9' }),
-                      Math.abs(xNext - xCur) >= 2 && h('line', { x1: xCur, y1: 68, x2: xNext, y2: 68, stroke: isContrastNow ? '#00ff00' : '#dc2626', strokeWidth: 3.5 }),
-                      h('circle', { cx: xNext, cy: 68, r: 4, fill: isContrastNow ? '#00ff00' : '#dc2626', stroke: '#ffffff', strokeWidth: 1.2 }),
+                      // Calibrated allele frequency shift track & dual-pass luminous shift vector p -> p'
+                      h('line', { x1: 30, y1: 68, x2: 310, y2: 68, stroke: isContrastNow ? '#ffff00' : '#cbd5e1', strokeWidth: 3.5, strokeLinecap: 'round' }),
+                      !isContrastNow && [0.25, 0.5, 0.75].map(function(tk) {
+                        var tx = 30 + tk * barTotal;
+                        return h('line', { key: 'htk-' + tk, x1: tx, y1: 63, x2: tx, y2: 73, stroke: '#94a3b8', strokeWidth: 1, opacity: 0.55 });
+                      }),
+                      !isContrastNow && Math.abs(xNext - xCur) >= 2 && h('line', { x1: xCur, y1: 68, x2: xNext, y2: 68, stroke: '#dc2626', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.2 }),
+                      Math.abs(xNext - xCur) >= 2 && h('line', { x1: xCur, y1: 68, x2: xNext, y2: 68, stroke: isContrastNow ? '#00ff00' : '#dc2626', strokeWidth: 3.5, strokeLinecap: 'round' }),
+                      !isContrastNow && h('circle', { cx: xCur, cy: 68, r: 8, fill: '#6d28d9', opacity: 0.16 }),
+                      h('circle', { cx: xCur, cy: 68, r: 5, fill: isContrastNow ? '#ffff00' : '#6d28d9', stroke: '#ffffff', strokeWidth: 1.2 }),
+                      !isContrastNow && h('circle', { cx: xNext, cy: 68, r: 7.5, fill: '#dc2626', opacity: 0.2 }),
+                      h('circle', { cx: xNext, cy: 68, r: 4.2, fill: isContrastNow ? '#00ff00' : '#dc2626', stroke: '#ffffff', strokeWidth: 1.4 }),
+                      !isContrastNow && h('circle', { cx: xNext - 1.2, cy: 66.8, r: 1.1, fill: '#ffffff', opacity: 0.7 }),
                       h('text', { x: 170, y: 81, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: isContrastNow ? '#ffff00' : '#475569' }, 'Next-generation shift: p = ' + iq.p + '% \u2192 p\u2032 = ' + (newP * 100).toFixed(1) + '%')
                     )
                   );

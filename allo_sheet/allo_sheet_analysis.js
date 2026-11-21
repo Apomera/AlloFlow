@@ -10,7 +10,7 @@
   var MAX_VISUAL_GROUPS = 50;
   var NUMERIC_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
   var IDENTIFIER_PATTERN = /(?:^|[\s_-])(?:id|uid|code|zip|postal|phone)(?:$|[\s_-])/i;
-  var ALLOWED_TYPES = {
+  var ALLOWED_TYPES = Object.assign(Object.create(null), {
     text: true,
     number: true,
     boolean: true,
@@ -18,15 +18,15 @@
     datetime: true,
     duration: true,
     category: true
-  };
-  var CALCULATIONS = {
+  });
+  var CALCULATIONS = Object.assign(Object.create(null), {
     count: true,
     average: true,
     sum: true,
     min: true,
     max: true
-  };
-  var FILTER_OPERATORS = {
+  });
+  var FILTER_OPERATORS = Object.assign(Object.create(null), {
     contains: true,
     equals: true,
     'not-equals': true,
@@ -34,7 +34,7 @@
     'not-blank': true,
     gte: true,
     lte: true
-  };
+  });
 
   function fail(message) {
     var error = new Error(message);
@@ -84,6 +84,12 @@
     return result;
   }
 
+  function ownField(record, column) {
+    return record && record.fields && Object.prototype.hasOwnProperty.call(record.fields, column)
+      ? record.fields[column]
+      : '';
+  }
+
   function inferColumnTypes(records, columns, declaredDetails) {
     var declared = normalizedDeclaredTypes(columns, declaredDetails);
     var result = Object.create(null);
@@ -94,7 +100,7 @@
         return;
       }
       var values = (records || []).map(function (record) {
-        return record && record.fields ? record.fields[name] : '';
+        return ownField(record, name);
       }).filter(function (value) { return !isBlank(value); });
       if (!values.length) {
         result[name] = 'text';
@@ -184,7 +190,7 @@
       fail('Enter a filter value or choose a blank-value condition.');
     }
     return (records || []).filter(function (record) {
-      var value = record && record.fields ? record.fields[spec.filterColumn] : '';
+      var value = ownField(record, spec.filterColumn);
       if (spec.filterOperator === 'is-blank') return isBlank(value);
       if (spec.filterOperator === 'not-blank') return !isBlank(value);
       if (spec.filterOperator === 'equals') return compareText(value, target);
@@ -225,7 +231,8 @@
     }
     if (type === 'datetime') {
       if (validIsoDateTime(raw)) {
-        var day = raw.slice(0, 10);
+        var parsedMs = Date.parse(raw);
+        var day = Number.isFinite(parsedMs) ? new Date(parsedMs).toISOString().slice(0, 10) : raw.slice(0, 10);
         return { key: 'dated:' + day, label: day, trendEligible: true, blank: false };
       }
       return {
@@ -270,9 +277,8 @@
     var includedMeasureCount = 0;
     var excludedMeasureCount = 0;
     (records || []).forEach(function (record) {
-      var fields = record && record.fields ? record.fields : {};
       var descriptor = groupDescriptor(
-        fields[spec.groupColumn],
+        ownField(record, spec.groupColumn),
         columnTypes[spec.groupColumn]
       );
       if (!grouped[descriptor.key]) {
@@ -288,7 +294,7 @@
       var group = grouped[descriptor.key];
       group.rowCount += 1;
       if (spec.measureColumn !== '__count__') {
-        var numeric = strictNumber(fields[spec.measureColumn]);
+        var numeric = strictNumber(ownField(record, spec.measureColumn));
         if (numeric === null) excludedMeasureCount += 1;
         else {
           group.numericValues.push(numeric);
@@ -445,7 +451,10 @@
     if (type === 'datetime') {
       var dateTimes = values.map(function (value) { return String(value).trim(); }).filter(validIsoDateTime);
       if (!dateTimes.length) return null;
-      dateTimes.sort();
+      dateTimes.sort(function (a, b) {
+        var diff = Date.parse(a) - Date.parse(b);
+        return diff !== 0 ? diff : a.localeCompare(b);
+      });
       return { minimum: dateTimes[0], maximum: dateTimes[dateTimes.length - 1], validCount: dateTimes.length };
     }
     return null;
@@ -456,7 +465,7 @@
     var copiedColumns = (columns || []).map(String);
     var columnTypes = inferColumnTypes(copiedRecords, copiedColumns, declaredDetails);
     var profiles = copiedColumns.map(function (column) {
-      var values = copiedRecords.map(function (record) { return record && record.fields ? record.fields[column] : ''; });
+      var values = copiedRecords.map(function (record) { return ownField(record, column); });
       var nonBlankValues = values.filter(function (value) { return !isBlank(value); });
       var distinct = Object.create(null);
       nonBlankValues.forEach(function (value) { distinct[typeof value + ':' + String(value).trim()] = true; });

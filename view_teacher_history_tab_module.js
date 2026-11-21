@@ -111,8 +111,8 @@ function TeacherHistoryTab({
       type: "button",
       key: gid,
       onClick: () => handleApplyRosterGroup(gid),
-      className: "min-h-11 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none hover:scale-105 motion-reduce:hover:scale-100 border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
-      style: { backgroundColor: (g.color || "#6366f1") + "20", borderColor: g.color && g.color !== "#f5f5f5" ? g.color + "80" : "#94a3b8", color: "#1e293b" },
+      className: "min-h-11 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 transition-all motion-reduce:transition-none hover:scale-105 motion-reduce:hover:scale-100 border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
+      style: { backgroundColor: (g.color || "#6366f1") + "20", borderColor: g.color && g.color !== "#f5f5f5" ? g.color + "80" : "#94a3b8" },
       title: `${g.name} \xB7 ${g.profile?.gradeLevel || "No grade"} \xB7 ${g.profile?.leveledTextLanguage || "English"}`
     },
     /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full mr-1.5 align-middle", "aria-hidden": "true", style: { backgroundColor: g.color || "#6366f1" } }),

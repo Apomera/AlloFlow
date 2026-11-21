@@ -121,10 +121,10 @@
       "chapters": 8,
       "sections": 24,
       "knowledgeChecks": 24,
-      "flashcards": 8,
+      "flashcards": 24,
       "memoryAids": 8,
-      "diagrams": 0,
-      "diagramPlacements": 0,
+      "diagrams": 8,
+      "diagramPlacements": 8,
       "glossaryTerms": 0,
       "constructedResponseWorkshops": 8,
       "topicDiagnosticRoutes": 0,
@@ -134,8 +134,6 @@
       "sourceCatalog": 4
     },
     "emptyLibraryLayers": [
-      "diagrams",
-      "diagramPlacements",
       "glossaryTerms",
       "topicDiagnosticRoutes",
       "remediationPlaybooks",
@@ -290,14 +288,14 @@
     "chapterCount": 8,
     "sectionCount": 24,
     "knowledgeCheckCount": 24,
-    "flashcardCount": 8,
+    "flashcardCount": 24,
     "memoryAidCount": 8,
     "richLessonPrototypeCount": 8,
     "nearDuplicatePairCount": 0
   },
   "inputs": {
     "packSha256": "be831727f5d21716f60750b8114bba9f80bdb48bbae271bec7275b4ba6407b92",
-    "learningLibrarySha256": "d47c457d209727d37284a46cd0ff627f46c13c429fce15ebf977c4692240b5ae",
+    "learningLibrarySha256": "442084acb72f97edd70c9260ff704432f8a35ce8e3f2c81bcccaecde9a8a15ed",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-biology",
     "factualCrossCheckUrl": "https://openstax.org/details/books/biology-2e"
@@ -314,8 +312,8 @@
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "d47c457d209727d37284a46cd0ff627f46c13c429fce15ebf977c4692240b5ae",
-      "deploySha256": "d47c457d209727d37284a46cd0ff627f46c13c429fce15ebf977c4692240b5ae"
+      "sourceSha256": "442084acb72f97edd70c9260ff704432f8a35ce8e3f2c81bcccaecde9a8a15ed",
+      "deploySha256": "442084acb72f97edd70c9260ff704432f8a35ce8e3f2c81bcccaecde9a8a15ed"
     }
   ],
   "releaseBlockers": [

@@ -2049,8 +2049,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       ".birdlab-hero-action { pointer-events: auto; display: inline-flex; align-items: center; gap: 28px; min-height: 44px; margin-top: 22px; padding: 11px 18px; border: 1px solid #e7cf83; border-radius: 9px; background: #f1dfa7; color: #193c30; font-weight: 750; font-size: 13px; box-shadow: 0 3px 12px #071c2133; transition: background 160ms ease, transform 160ms ease; }",
       ".birdlab-hero-action:hover { background: #fff0bd; transform: translateY(-2px); }",
       ".birdlab-hero-action span { font-size: 21px; line-height: 1; }",
-      ".birdlab-hero-specimen { position: absolute; z-index: 1; right: 4%; top: 9%; width: 29%; text-align: center; color: #fffbe8; pointer-events: none; }",
-      ".birdlab-hero-specimen svg { display: block; width: 100%; height: 230px; filter: drop-shadow(0 10px 9px #15292245); }",
+      ".birdlab-hero-specimen { position: absolute; z-index: 1; right: 4%; top: 14px; width: 29%; text-align: center; color: #fffbe8; pointer-events: none; }",
+      ".birdlab-hero-specimen svg { display: block; width: 100%; height: 170px; filter: drop-shadow(0 10px 9px #15292245); }",
       ".birdlab-hero-specimen span { display: block; font-size: 11px; font-weight: 650; letter-spacing: .08em; }",
       ".birdlab-hero-specimen em { display: block; margin-top: 4px; color: #dde4c9; font-family: Georgia, serif; font-size: 12px; }",
       ".birdlab-field-station { background: #fffef8; border: 1px solid #d2d9c9; border-radius: 16px; box-shadow: 0 4px 16px #203a2207; }",
@@ -18685,16 +18685,257 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         ready?h('div',{className:'wing-mesh-section-readings'},h('span',null,'Plane X = ',h('strong',{'data-wing-section-x':''},number(data.x))),has?h('span',null,'Section height = ',h('strong',{'data-wing-section-height':''},number(maxY-minY))):null,has?h('span',null,'Section width = ',h('strong',{'data-wing-section-width':''},number(maxZ-minZ))):null):null,
         h('p',{className:'wing-mesh-section-note'},'This cuts the triangular faces of the slats and tip pieces on the positive-X half; the body is excluded. Hidden regions contribute no lines. Coordinates belong to this teaching construction, not a measured bird. The profile fits each section while keeping equal Y/Z scale; it is not a shared-size comparison. The separate wing-section illustration below explains ideal camber, chord and airflow. No aerodynamic result is calculated.')):null));
   }
+  function _blIsHighContrast() {
+    try {
+      if (typeof document !== 'undefined') {
+        if (document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) return true;
+        if (document.body && document.body.classList && document.body.classList.contains('theme-contrast')) return true;
+        if (typeof document.querySelector === 'function' && document.querySelector('.theme-contrast')) return true;
+      }
+      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+        if (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches) return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  function applyBirdlabFeatherIridescence(material, opts, sharedUniforms) {
+    if (!material || !opts || opts.contrast || typeof material.onBeforeCompile !== 'function') return material;
+    var region = opts.region || 'secondaries';
+    var filmShift = region === 'primaries' ? 0.62 : (region === 'body' ? 0.25 : 1.05);
+    var iridStrength = region === 'primaries' ? 0.34 : (region === 'body' ? 0.20 : 0.28);
+    var striationScale = region === 'body' ? 14.0 : 28.0;
+    material.customProgramCacheKey = function() { return 'bl-feather-irid-' + region + '-v1'; };
+    material.onBeforeCompile = function(shader) {
+      shader.uniforms.uBlTime = sharedUniforms.uTime;
+      shader.uniforms.uBlFilmShift = { value: filmShift };
+      shader.uniforms.uBlIridStrength = { value: iridStrength };
+      shader.uniforms.uBlStriation = { value: striationScale };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vBlWorldPos;\nvarying vec3 vBlLocalPos;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBlLocalPos = position;\nvBlWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>',
+          '#include <common>\n' +
+          'uniform float uBlTime;\n' +
+          'uniform float uBlFilmShift;\n' +
+          'uniform float uBlIridStrength;\n' +
+          'uniform float uBlStriation;\n' +
+          'varying vec3 vBlWorldPos;\n' +
+          'varying vec3 vBlLocalPos;'
+        )
+        .replace('#include <tonemapping_fragment>',
+          'vec3 blN = normalize(normal);\n' +
+          'vec3 blV = normalize(vViewPosition);\n' +
+          'float blNdotV = clamp(dot(blN, blV), 0.0, 1.0);\n' +
+          'float blFresnel = pow(1.0 - blNdotV, 2.35);\n' +
+          'float blBarbule = 0.5 + 0.5 * sin((vBlWorldPos.x * 1.35 + vBlWorldPos.z * 0.85) * uBlStriation + sin(vBlWorldPos.y * 9.0) * 1.4);\n' +
+          'float blOpd = 2.65 * (1.0 - blNdotV * 0.72) + uBlFilmShift + blBarbule * 0.22 + sin(uBlTime * 0.55 + vBlWorldPos.x * 0.9) * 0.14;\n' +
+          'vec3 blThinFilm = 0.5 + 0.5 * cos(6.28318 * (blOpd + vec3(0.0, 0.33, 0.67)));\n' +
+          'vec3 blPlumageTint = mix(vec3(0.24, 0.84, 0.76), vec3(0.98, 0.78, 0.34), blThinFilm.r);\n' +
+          'vec3 blIrid = mix(blThinFilm, blPlumageTint, 0.45);\n' +
+          'float blSunSweep = pow(0.5 + 0.5 * sin(vBlWorldPos.x * 1.4 - vBlWorldPos.z * 0.9 - uBlTime * 0.65), 3.0);\n' +
+          'float blSheenMask = blFresnel * (0.62 + 0.38 * blBarbule) + blSunSweep * 0.16 * (0.4 + 0.6 * blFresnel);\n' +
+          'gl_FragColor.rgb += blIrid * blSheenMask * uBlIridStrength;\n' +
+          '#include <tonemapping_fragment>'
+        );
+    };
+    return material;
+  }
+
+  function addBirdlabForestAtmosphere(THREE, scene, spec, sharedUniforms, isContrast) {
+    if (isContrast || !THREE || !scene || typeof THREE.ShaderMaterial !== 'function') return;
+    var atmoGroup = new THREE.Group();
+    atmoGroup.name = 'birdlab-forest-atmosphere';
+
+    // 1. Volumetric golden-hour sunlit forest god-ray shafts
+    if (typeof THREE.CylinderGeometry === 'function' && typeof THREE.Mesh === 'function') {
+      var shaftMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: sharedUniforms.uTime
+        },
+        vertexShader:
+          'varying vec2 vUv;\n' +
+          'varying vec3 vNormalView;\n' +
+          'varying vec3 vViewDir;\n' +
+          'void main() {\n' +
+          '  vUv = uv;\n' +
+          '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);\n' +
+          '  vNormalView = normalize(normalMatrix * normal);\n' +
+          '  vViewDir = normalize(-mvPos.xyz);\n' +
+          '  gl_Position = projectionMatrix * mvPos;\n' +
+          '}',
+        fragmentShader:
+          'uniform float uTime;\n' +
+          'varying vec2 vUv;\n' +
+          'varying vec3 vNormalView;\n' +
+          'varying vec3 vViewDir;\n' +
+          'void main() {\n' +
+          '  float edgeSoft = pow(abs(dot(normalize(vNormalView), normalize(vViewDir))), 1.65);\n' +
+          '  float vFade = smoothstep(0.0, 0.28, vUv.y) * smoothstep(1.0, 0.14, vUv.y);\n' +
+          '  float streak1 = 0.55 + 0.45 * sin(vUv.x * 18.8495 + uTime * 0.42 + vUv.y * 2.2);\n' +
+          '  float streak2 = 0.62 + 0.38 * sin(vUv.x * 31.4159 - uTime * 0.28 + vUv.y * 4.1);\n' +
+          '  float shimmer = 0.72 + 0.28 * sin(uTime * 0.65 + vUv.y * 3.5);\n' +
+          '  float alpha = edgeSoft * vFade * streak1 * streak2 * shimmer * 0.095;\n' +
+          '  vec3 col = mix(vec3(0.45, 0.86, 0.62), vec3(1.0, 0.85, 0.46), vUv.y * 0.78 + 0.18);\n' +
+          '  gl_FragColor = vec4(col, alpha);\n' +
+          '}',
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        fog: false
+      });
+      var shaftConfigs = [
+        { pos: [-1.85, 1.45, -2.35], rot: [0.18, 0.12, -0.34], rTop: 0.24, rBot: 1.05, h: 6.4 },
+        { pos: [0.35, 1.75, -2.65], rot: [0.22, -0.08, -0.28], rTop: 0.30, rBot: 1.25, h: 6.8 },
+        { pos: [2.10, 1.30, -2.15], rot: [0.16, 0.18, -0.38], rTop: 0.22, rBot: 0.96, h: 6.1 }
+      ];
+      for (var si = 0; si < shaftConfigs.length; si++) {
+        var sc = shaftConfigs[si];
+        var shaftGeo = new THREE.CylinderGeometry(sc.rTop, sc.rBot, sc.h, 16, 1, true);
+        var shaftMesh = new THREE.Mesh(shaftGeo, shaftMat);
+        shaftMesh.position.set(sc.pos[0], sc.pos[1], sc.pos[2]);
+        shaftMesh.rotation.set(sc.rot[0], sc.rot[1], sc.rot[2]);
+        shaftMesh.frustumCulled = false;
+        shaftMesh.renderOrder = 1;
+        atmoGroup.add(shaftMesh);
+      }
+    }
+
+    // 2. Drifting sunlit forest pollen motes
+    if (typeof THREE.BufferGeometry === 'function' && typeof THREE.BufferAttribute === 'function' && typeof THREE.Points === 'function') {
+      var moteCount = 48;
+      var positions = new Float32Array(moteCount * 3);
+      var seeds = new Float32Array(moteCount * 3);
+      var spanSpread = Math.max(2.6, (spec && spec.span ? spec.span : 3.6) * 0.82);
+      for (var mi = 0; mi < moteCount; mi++) {
+        var frac = (mi + 0.5) / moteCount;
+        var ang = mi * 2.39996323;
+        var rad = 0.85 + Math.sqrt(frac) * spanSpread;
+        positions[mi * 3] = Math.cos(ang) * rad;
+        positions[mi * 3 + 1] = ((mi * 17) % 19) / 19 * 3.4 - 1.35;
+        positions[mi * 3 + 2] = Math.sin(ang) * rad * 0.72 - 0.35;
+        seeds[mi * 3] = frac * 6.28318;
+        seeds[mi * 3 + 1] = 0.55 + ((mi * 7) % 11) / 11 * 0.95;
+        seeds[mi * 3 + 2] = 0.45 + ((mi * 13) % 17) / 17 * 0.55;
+      }
+      var moteGeo = new THREE.BufferGeometry();
+      moteGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      moteGeo.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 3));
+      var moteMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: sharedUniforms.uTime
+        },
+        vertexShader:
+          'uniform float uTime;\n' +
+          'attribute vec3 aSeed;\n' +
+          'varying float vTwinkle;\n' +
+          'varying float vWarm;\n' +
+          'void main() {\n' +
+          '  vec3 p = position;\n' +
+          '  float t = uTime * (0.42 + aSeed.y * 0.25) + aSeed.x;\n' +
+          '  p.x += sin(t * 0.95 + p.y * 0.8) * 0.22;\n' +
+          '  p.y += mod(uTime * 0.14 * aSeed.y + aSeed.z * 3.2, 3.2) - 1.6;\n' +
+          '  p.z += cos(t * 0.78 + p.x * 0.6) * 0.18;\n' +
+          '  vTwinkle = 0.48 + 0.52 * sin(uTime * (1.8 + aSeed.y) + aSeed.x * 3.0);\n' +
+          '  vWarm = aSeed.z;\n' +
+          '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);\n' +
+          '  gl_PointSize = clamp((16.0 + 12.0 * aSeed.z) / max(1.0, -mvPos.z), 2.5, 9.5);\n' +
+          '  gl_Position = projectionMatrix * mvPos;\n' +
+          '}',
+        fragmentShader:
+          'varying float vTwinkle;\n' +
+          'varying float vWarm;\n' +
+          'void main() {\n' +
+          '  vec2 c = gl_PointCoord - vec2(0.5);\n' +
+          '  float d = length(c);\n' +
+          '  if (d > 0.5) discard;\n' +
+          '  float core = smoothstep(0.5, 0.06, d);\n' +
+          '  float halo = pow(core, 2.1);\n' +
+          '  vec3 col = mix(vec3(0.76, 0.98, 0.72), vec3(1.0, 0.90, 0.56), vWarm);\n' +
+          '  gl_FragColor = vec4(col, halo * vTwinkle * 0.52);\n' +
+          '}',
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        fog: false
+      });
+      var motePoints = new THREE.Points(moteGeo, moteMat);
+      motePoints.name = 'birdlab-pollen-motes';
+      motePoints.frustumCulled = false;
+      motePoints.renderOrder = 2;
+      atmoGroup.add(motePoints);
+    }
+
+    // 3. Luminous expanding 3D acoustic birdsong wavefront rings
+    if (typeof THREE.PlaneGeometry === 'function' && typeof THREE.Mesh === 'function') {
+      var waveSpan = Math.max(3.6, (spec && spec.span ? spec.span : 3.8) * 1.18);
+      var waveGeo = new THREE.PlaneGeometry(waveSpan, waveSpan, 1, 1);
+      var waveMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: sharedUniforms.uTime
+        },
+        vertexShader:
+          'varying vec2 vUv;\n' +
+          'void main() {\n' +
+          '  vUv = uv;\n' +
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n' +
+          '}',
+        fragmentShader:
+          'uniform float uTime;\n' +
+          'varying vec2 vUv;\n' +
+          'void main() {\n' +
+          '  vec2 p = (vUv - vec2(0.5)) * 2.0;\n' +
+          '  float r = length(p);\n' +
+          '  if (r > 1.0) discard;\n' +
+          '  float angle = atan(p.y, p.x);\n' +
+          '  float chirpMod = 0.72 + 0.28 * sin(uTime * 2.35 + angle * 2.0);\n' +
+          '  float wave1 = sin(r * 24.0 - uTime * 3.4);\n' +
+          '  float ring1 = pow(smoothstep(0.68, 0.99, wave1), 2.4);\n' +
+          '  float wave2 = sin(r * 14.0 - uTime * 2.1 + 1.57);\n' +
+          '  float ring2 = pow(smoothstep(0.76, 0.995, wave2), 2.8);\n' +
+          '  float radialEnv = smoothstep(0.06, 0.22, r) * smoothstep(1.0, 0.34, r);\n' +
+          '  float pulseGate = 0.55 + 0.45 * sin(uTime * 1.15 - r * 3.2);\n' +
+          '  float intensity = (ring1 * 0.65 + ring2 * 0.45) * radialEnv * chirpMod * pulseGate;\n' +
+          '  vec3 col = mix(vec3(0.32, 0.92, 0.84), vec3(1.0, 0.86, 0.44), smoothstep(0.18, 0.85, r));\n' +
+          '  gl_FragColor = vec4(col, intensity * 0.34);\n' +
+          '}',
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        fog: false
+      });
+      var waveMesh = new THREE.Mesh(waveGeo, waveMat);
+      waveMesh.name = 'birdlab-birdsong-wavefronts';
+      waveMesh.rotation.x = -Math.PI * 0.5;
+      waveMesh.position.set(0, -1.12, 0.38);
+      waveMesh.frustumCulled = false;
+      waveMesh.renderOrder = 3;
+      atmoGroup.add(waveMesh);
+    }
+
+    scene.add(atmoGroup);
+  }
+
   function buildWingScene(THREE, api) {
     var sp = (api.sceneProps || {});
     var spec = WING3D_SPECS[sp.wing] || WING3D_SPECS.soaring;
+    var isContrast = !!(api.contrast || _blIsHighContrast());
+    var sharedUniforms = { uTime: { value: 1.65 } };
     var secMat = api.trim(spec.color, 12);
-    var priMat = api.trim(api.contrast ? 0xffffff : 0xd8e5e8, 8);
-    var bodyMat = api.trim(api.contrast ? 0xffffff : 0x64758a, 18);
+    var priMat = api.trim(isContrast ? 0xffffff : 0xd8e5e8, 8);
+    var bodyMat = api.trim(isContrast ? 0xffffff : 0x64758a, 18);
     // A construction plate has no atmospheric depth cue. Keep the shared bay's
     // distance fog from hiding this model, especially its unselected surfaces.
     [secMat,priMat,bodyMat].forEach(function(material){material.fog=false;});
-    if(!api.contrast)secMat.color.lerp(new THREE.Color(0x8eabb3),.35);
+    if(!isContrast){
+      secMat.color.lerp(new THREE.Color(0x8eabb3),.35);
+      applyBirdlabFeatherIridescence(secMat, { contrast: isContrast, region: 'secondaries' }, sharedUniforms);
+      applyBirdlabFeatherIridescence(priMat, { contrast: isContrast, region: 'primaries' }, sharedUniforms);
+      applyBirdlabFeatherIridescence(bodyMat, { contrast: isContrast, region: 'body' }, sharedUniforms);
+    }
     var meshes = {}, picks = [];
     var root = new THREE.Group();root.name='birdlab-wing-construction';
     // One display scale for every authored construction.
@@ -18725,7 +18966,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     priG.traverse(function(o) { if (o.isMesh) picks.push(o); });
 
     api.scene.add(root);
+    addBirdlabForestAtmosphere(THREE, api.scene, spec, sharedUniforms, isContrast);
     var updateSection=wing3dSectionProbe(THREE,api,root,[secG,priG],spec,sp.wing||'soaring');
+    var startMs = null;
     function applyCondition(next){
       var input=Number(next.separation),gap=isFinite(input)?Math.max(0,Math.min(100,input)):0;
       secG.position.y=-1.4*gap/100;priG.position.y=1.4*gap/100;root.userData.separation=gap;
@@ -18746,8 +18989,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // views that matter instead.
       // Direct view transforms use the existing viewer loop. No separate clock,
       // interpolation, pose writer, geometry allocation or content rebuild.
-      frame: function(now,next){
+      frame: function(now,next,reduced){
         applyCondition(next);
+        if (reduced || api.reduced) {
+          sharedUniforms.uTime.value = 1.65;
+        } else if (typeof now === 'number' && isFinite(now)) {
+          if (startMs === null) startMs = now;
+          sharedUniforms.uTime.value = 1.65 + (((now - startMs) * 0.001) % 3600.0);
+        }
       }
     };
   }
@@ -22769,7 +23018,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       var __alloFill = function (template, values) { return String(template).replace(/{([A-Za-z0-9_]+)}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       // The menu now supplies its own paper surface, including when the host
       // uses its contrast theme. Its labels need dark ink in either case.
-      var isContrast = !!ctx.isContrast;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+      var isDark = !!(ctx.isDark || ctx.theme === 'dark');
       var onHostInk = '';
       var React = ctx.React || window.React;
       var h = React.createElement;
@@ -22778,14 +23028,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       var useRef = React.useRef;
       var useMemo = React.useMemo;
 
-      var d = (ctx.toolData && ctx.toolData['birdLab']) || {};
+      var rawBirdData = (ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData['birdLab'] : null;
+      var d = (rawBirdData && typeof rawBirdData === 'object' && !Array.isArray(rawBirdData)) ? rawBirdData : {};
       var birdLabWindowSnapshot = {};
       try {
         if (typeof window !== 'undefined' && window.__alloflowBirdLab) birdLabWindowSnapshot = window.__alloflowBirdLab;
       } catch (e) {}
       // Non-persisted deterministic scene seam used only by local visual QA.
       var birdLabVisualQa = (ctx.props && ctx.props.birdLabVisualQa && typeof ctx.props.birdLabVisualQa === 'object') ? ctx.props.birdLabVisualQa : null;
-      var upd = function(key, val) { ctx.update('birdLab', key, val); };
+      var upd = function(key, val) { if (typeof ctx.update === 'function') ctx.update('birdLab', key, val); };
       var addToast = ctx.addToast || function(msg) { console.log('[BirdLab]', msg); };
 
       // localStorage → host toolData hydration. This MUST run in an effect:
@@ -23038,14 +23289,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // ─────────────────────────────────────────────────────
 
       function BackBar(props) {
-        return h('div', { className: 'birdlab-backbar flex items-center gap-3 bg-gradient-to-r from-emerald-700 to-sky-700 text-white p-4 shadow' },
+        return h('div', {
+          className: 'birdlab-backbar flex flex-wrap items-center gap-3 p-4 shadow',
+          style: isContrast
+            ? { backgroundColor: '#000000', color: '#ffffff', borderBottom: '2px solid #ffff00' }
+            : { backgroundColor: '#064e3b', backgroundImage: 'linear-gradient(125deg, #064e3b 0%, #0369a1 100%)', color: '#ffffff', borderBottom: '1px solid rgba(125,211,252,0.4)' }
+        },
           h('button', {
+            type: 'button',
             onClick: function() { setView('menu'); upd('view', 'menu'); },
             'aria-label': __alloT('stem.birdlab.back_to_birdlab_menu', 'Back to BirdLab menu'),
-            className: 'px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-sm transition-colors active:scale-[0.97]'
+            className: 'px-3.5 py-2 rounded-xl font-bold text-sm transition-colors active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300',
+            style: isContrast
+              ? { minHeight: 44, backgroundColor: '#000000', color: '#ffff00', border: '2px solid #ffff00' }
+              : { minHeight: 44, backgroundColor: 'rgba(15,23,42,0.52)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.42)' }
           }, __alloT('stem.birdlab.menu', '← Menu')),
-          h('span', { className: 'text-3xl' }, props.icon),
-          h('h1', { className: 'text-xl font-black flex-1 tracking-tight' }, props.title)
+          h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, props.icon),
+          h('h1', { className: 'text-xl font-black flex-1 min-w-0 tracking-tight', style: { color: '#ffffff' } }, props.title)
         );
       }
 
@@ -23189,7 +23449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       }
       function rankMedallion(i, overrideLabel) {
         var p = rankPalette(i, overrideLabel);
-        return h('div', {
+        return h('div', { role: 'group',
           'aria-label': __alloFill(__alloT('stem.birdlab.a11y_rank', 'Rank {value1}, {value2}'), { value1: (i + 1), value2: p.label }),
           style: {
             position: 'absolute', top: -16, left: 14,
@@ -24562,6 +24822,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('button', { type:'button', className:'birdlab-atmosphere-toggle', 'aria-pressed':!atmosphereOn, onClick:function() { setAtmosphereOn(!atmosphereOn); } },
               atmosphereOn ? __alloT('stem.birdlab.pause_ambient_motion', 'Pause ambient motion') : __alloT('stem.birdlab.play_ambient_motion', 'Play ambient motion'))
           ),
+          // ── Field Station Telemetry Workbench & Quick-Jump Stations ──
+          (function() {
+            var totalBirdsCount = Object.keys(BIRDS || {}).length || 1;
+            var lifeCount = Object.keys(menuLifeList || {}).filter(function(k) { return !!menuLifeList[k]; }).length;
+            var lifePct = Math.min(100, Math.round((lifeCount / totalBirdsCount) * 100));
+            var fieldXpVal = Math.max(0, Math.floor(Number(d.blXp) || 0));
+            var birdPresetsLocked = !!(ctx.quizMode || ctx.teacherLock || d._teacherLocked);
+            var birdQuickStops = [
+              { id: 'ispy', label: '🔭 I-Spy Habitat' },
+              { id: 'observatory3d', label: '🌲 3D Observatory' },
+              { id: 'lifeList', label: '📖 Life List' },
+              { id: 'fieldMarks', label: '🪶 Field Marks' },
+              { id: 'calls', label: '🎵 Bird Calls' },
+              { id: 'flightPatterns', label: '🧭 Flight Patterns' }
+            ];
+            return h('section', {
+              'data-birdlab-telemetry-bar': 'true',
+              'aria-label': __alloT('stem.birdlab.field_station_telemetry', 'Field station telemetry and quick jump stations'),
+              className: 'mb-6 rounded-2xl p-4 flex flex-col gap-3',
+              style: isContrast
+                ? { backgroundColor: '#000000', color: '#ffffff', border: '2px solid #ffff00' }
+                : {
+                    backgroundColor: '#0f2924',
+                    backgroundImage: 'linear-gradient(125deg, #0b2220 0%, #113832 55%, #0c2e45 100%)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(110,231,183,0.38)',
+                    boxShadow: '0 10px 26px -12px rgba(15, 23, 42, 0.38)'
+                  }
+            },
+              h('div', { className: 'flex flex-wrap items-center gap-3', style: { minWidth: 0 } },
+                // Bespoke inline SVG Ornithology Binoculars & Wing Emblem
+                h('svg', { width: 42, height: 42, viewBox: '0 0 48 48', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0 } },
+                  h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : '#081b19', stroke: isContrast ? '#ffff00' : '#34d399', strokeWidth: 1.6 }),
+                  h('circle', { cx: 17, cy: 26, r: 7.5, fill: 'none', stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 2 }),
+                  h('circle', { cx: 31, cy: 26, r: 7.5, fill: 'none', stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 2 }),
+                  h('line', { x1: 24, y1: 23, x2: 24, y2: 29, stroke: isContrast ? '#ffff00' : '#fde68a', strokeWidth: 2 }),
+                  h('path', { d: 'M12 14 Q18 8 24 14 Q30 8 36 14', fill: 'none', stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 2.2, strokeLinecap: 'round' })
+                ),
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('div', { className: 'flex flex-wrap items-center gap-2' },
+                    h('span', {
+                      className: 'rounded-full px-2.5 py-0.5 text-[0.6875rem] font-extrabold uppercase tracking-wider',
+                      style: { backgroundColor: isContrast ? '#000000' : 'rgba(16,185,129,0.28)', color: isContrast ? '#ffff00' : '#a7f3d0', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(167,243,208,0.45)') }
+                    }, __alloT('stem.birdlab.ornithology_badge', 'Avian Ecology · Field Station')),
+                    h('span', {
+                      className: 'rounded-full px-2.5 py-0.5 text-xs font-bold tabular-nums',
+                      style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.72)', color: isContrast ? '#00ffff' : '#fde68a', border: '1px solid ' + (isContrast ? '#00ffff' : 'rgba(253,230,138,0.38)') }
+                    }, __alloT('stem.birdlab.life_list_pill', 'Life List: ') + lifeCount + ' / ' + totalBirdsCount),
+                    h('span', {
+                      className: 'rounded-full px-2.5 py-0.5 text-xs font-bold tabular-nums',
+                      style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.72)', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255,255,255,0.28)') }
+                    }, fieldXpVal + ' XP · ' + menuHabitatIds.length + ' Habitats')
+                  )
+                )
+              ),
+              h('svg', {
+                viewBox: '0 0 640 40',
+                className: 'w-full h-auto block',
+                role: 'img',
+                'aria-label': 'Life list discovery progress: ' + lifeCount + ' of ' + totalBirdsCount + ' species recorded (' + lifePct + ' percent)'
+              },
+                h('text', { x: 10, y: 15, fill: isContrast ? '#ffff00' : '#a7f3d0', fontSize: 11, fontWeight: 700 }, 'SPECIES DISCOVERY TRACK'),
+                h('text', { x: 630, y: 15, textAnchor: 'end', fill: '#ffffff', fontSize: 11, fontWeight: 700 }, lifePct + '% (' + lifeCount + '/' + totalBirdsCount + ')'),
+                h('rect', { x: 10, y: 23, width: 620, height: 10, rx: 5, fill: '#1e293b', stroke: isContrast ? '#ffffff' : '#475569', strokeWidth: 1 }),
+                lifePct > 0 && h('rect', { x: 10, y: 23, width: Math.max(8, Math.round((lifePct / 100) * 620)), height: 10, rx: 5, fill: isContrast ? '#ffff00' : '#34d399' })
+              ),
+              !birdPresetsLocked && h('div', { className: 'flex flex-wrap items-center gap-2', role: 'group', 'aria-label': __alloT('stem.birdlab.quick_field_stations', 'Quick-launch field stations') },
+                birdQuickStops.map(function(stop) {
+                  return h('button', {
+                    key: stop.id,
+                    type: 'button',
+                    onClick: function() { goto(stop.id); },
+                    className: 'min-h-11 rounded-xl px-3 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300',
+                    style: isContrast
+                      ? { backgroundColor: '#000000', color: '#ffff00', border: '1px solid #ffff00' }
+                      : { backgroundColor: 'rgba(15,23,42,0.72)', color: '#ffffff', border: '1px solid rgba(167,243,208,0.35)' }
+                  }, stop.label);
+                })
+              )
+            );
+          })(),
           // Previewing a habitat connects the catalog to a place and a purpose.
           // The entry action persists the destination before mounting I-Spy.
           h('section', { className:'birdlab-field-station birdlab-atlas mb-6', 'data-birdlab-field-station':'true', 'data-birdlab-atlas':atlasHabitatId, 'aria-labelledby':'birdlab-atlas-title' },
@@ -24603,7 +24944,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 __alloT('stem.birdlab.atlas_preview_note', 'The preview is your briefing. Make your discoveries in I-Spy.')),
               h('button', { type:'button', className:'birdlab-atlas-enter', 'data-birdlab-atlas-enter':atlasHabitatId, onClick:function() { upd('activeHabitat',atlasHabitatId); goto('ispy'); } },
                 __alloFill(__alloT('stem.birdlab.atlas_enter', 'Explore {value1}'), {value1:atlasLabel(atlasHabitatId)}), h('span', { 'aria-hidden':'true' }, '↗'))),
-            h('div', { className: 'birdlab-metric-grid', 'aria-label': __alloT('stem.birdlab.birdlab_status_summary', 'BirdLab status summary') },
+            h('div', { role: 'group', className: 'birdlab-metric-grid', 'aria-label': __alloT('stem.birdlab.birdlab_status_summary', 'BirdLab status summary') },
                 h('div', { className: 'birdlab-metric' },
                   h('strong', null, menuLiferCount),
                   h('span', null, __alloT('stem.birdlab.lifers_logged', 'Lifers logged'))
@@ -27762,7 +28103,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('div', { className: 'birdlab-progress-fill', style: { width: habitatProgressPct + '%' } })
                   )
                 ),
-                h('div', { className: 'birdlab-status-grid', 'aria-label': __alloT('stem.birdlab.i_spy_status_summary', 'I-Spy status summary') },
+                h('div', { role: 'group', className: 'birdlab-status-grid', 'aria-label': __alloT('stem.birdlab.i_spy_status_summary', 'I-Spy status summary') },
                   h('div', { className: 'birdlab-status-chip' },
                     h('strong', null, foundCount + '/' + totalBirds),
                     h('span', null, __alloT('stem.birdlab.birds_found', 'Birds found'))
@@ -27954,18 +28295,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     }, __alloT('stem.birdlab.diary', '📔 Diary'))
                   ),
                   h('div', { className: 'flex items-center gap-3 flex-wrap text-center' },
-                    h('div', { className: 'flex-shrink-0', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_lifers_unique_species', 'Lifers: {value1} unique species'), { value1: totalLifers })},
+                    h('div', { role: 'group', className: 'flex-shrink-0', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_lifers_unique_species', 'Lifers: {value1} unique species'), { value1: totalLifers })},
                       h('div', { className: 'text-xl font-black text-emerald-700 tracking-tight', 'aria-hidden': 'true' }, totalLifers),
                       h('div', { className: 'text-[0.625rem] uppercase tracking-wider text-slate-700' }, 'lifers')
                     ),
                     h('div', { className: 'w-px h-8 bg-slate-300', 'aria-hidden': 'true' }),
-                    h('div', { className: 'flex-shrink-0', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_best_streak_in_a_row', 'Best streak: {value1} in a row'), { value1: bestStreak })},
+                    h('div', { role: 'group', className: 'flex-shrink-0', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_best_streak_in_a_row', 'Best streak: {value1} in a row'), { value1: bestStreak })},
                       h('div', { className: 'text-xl font-black tracking-tight ' + (bestStreak >= 10 ? 'text-amber-700' : bestStreak >= 5 ? 'text-orange-700' : 'text-slate-700'), 'aria-hidden': 'true' },
                         (bestStreak >= 10 ? '🦅 ' : bestStreak >= 5 ? '🔥 ' : '') + bestStreak),
                       h('div', { className: 'text-[0.625rem] uppercase tracking-wider text-slate-700' }, __alloT('stem.birdlab.best_streak', 'best streak'))
                     ),
                     h('div', { className: 'w-px h-8 bg-slate-300', 'aria-hidden': 'true' }),
-                    h('div', { className: 'flex-shrink-0', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_clean_habitats_of', 'Clean habitats: {value1} of {value2}'), { value1: cleanCount, value2: totalHabitats })},
+                    h('div', { role: 'group', className: 'flex-shrink-0', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_clean_habitats_of', 'Clean habitats: {value1} of {value2}'), { value1: cleanCount, value2: totalHabitats })},
                       h('div', { className: 'text-xl font-black tracking-tight ' + (allHabitatsClean ? 'text-amber-700' : 'text-slate-700'), 'aria-hidden': 'true' },
                         (allHabitatsClean ? '🏆 ' : '') + cleanCount + '/' + totalHabitats),
                       // Mini medal tally — shows distribution of tier achievements
@@ -27983,11 +28324,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                           'aria-label': __alloT('stem.birdlab.grand_master_spotter_all_habitats_clea', 'Grand Master Spotter: all habitats cleared on Expert difficulty')
                         }, __alloT('stem.birdlab.grand_master', '👑 Grand Master'))
                       : allHardOrBetter
-                        ? h('div', { className: 'flex-shrink-0 px-3 py-1 bg-amber-200 border-2 border-amber-500 rounded-full text-[0.625rem] font-black uppercase tracking-wider text-amber-900',
+                        ? h('div', { role: 'group', className: 'flex-shrink-0 px-3 py-1 bg-amber-200 border-2 border-amber-500 rounded-full text-[0.625rem] font-black uppercase tracking-wider text-amber-900',
                             'aria-label': __alloT('stem.birdlab.master_spotter_all_habitats_cleared_on', 'Master Spotter: all habitats cleared on Hard or Expert')
                           }, __alloT('stem.birdlab.master_spotter', '🥇 Master Spotter'))
                         : allHabitatsClean
-                          ? h('div', { className: 'flex-shrink-0 px-3 py-1 bg-emerald-100 border-2 border-emerald-400 rounded-full text-[0.625rem] font-black uppercase tracking-wider text-emerald-900',
+                          ? h('div', { role: 'group', className: 'flex-shrink-0 px-3 py-1 bg-emerald-100 border-2 border-emerald-400 rounded-full text-[0.625rem] font-black uppercase tracking-wider text-emerald-900',
                               'aria-label': __alloT('stem.birdlab.spotter_all_habitats_cleared_without_h', 'Spotter: all habitats cleared without hints')
                             }, __alloT('stem.birdlab.spotter', '✨ Spotter'))
                           : null
@@ -28248,7 +28589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       h('h3', { id: 'birdlab-field-evidence-title', className: 'text-sm font-black text-slate-900' }, '\uD83D\uDD0E Field evidence'),
                       h('p', { className: 'text-xs text-slate-700 mt-0.5' }, 'Mark at least two cues that supported your identification.')
                     ),
-                    h('span', {
+                    h('span', { role: 'note',
                       className: 'flex-shrink-0 rounded-full px-2.5 py-1 text-[0.6875rem] font-black ' + (pickedEvidenceCount >= 2 ? 'bg-emerald-700 text-white' : 'bg-white text-amber-900 border border-amber-300'),
                       'aria-label': __alloFill(__alloT('stem.birdlab.a11y_of_2_required_evidence_cues_logged', '{pickedEvidenceCount} of 2 required evidence cues logged'), { pickedEvidenceCount: pickedEvidenceCount })
                     }, Math.min(pickedEvidenceCount, 2) + ' / 2 cues')
@@ -28312,7 +28653,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   picked.name,
                   __alloT('stem.birdlab.they_have_professional_recordings', '" — they have professional recordings.')),
                 // Deep-link cluster — verify or read more on real ID resources
-                h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border-2 border-slate-200 bg-slate-50 p-2', 'aria-label': __alloT('stem.birdlab.a11y_field_record_navigation', 'Field record navigation') },
+                h('div', { role: 'group', className: 'flex flex-wrap items-center gap-2 rounded-xl border-2 border-slate-200 bg-slate-50 p-2', 'aria-label': __alloT('stem.birdlab.a11y_field_record_navigation', 'Field record navigation') },
                   h('button', {
                     type: 'button',
                     onClick: continueHabitatScanning,
@@ -28633,10 +28974,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       isFound && h('span', {
                         className: 'ml-auto rounded-full px-1.5 py-0.5 text-[0.5625rem] font-black ' + (speciesEvidenceReady ? 'bg-emerald-700 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300')
                       }, '\uD83D\uDD0E ' + Math.min(speciesEvidenceCount, 2) + '/2'),
-                      isFound && speciesHasNote && h('span', {
+                      isFound && speciesHasNote && h('span', { role: 'note',
                         className: 'text-[0.6875rem]', title: __alloT('stem.birdlab.field_journal_note_saved','Field journal note saved'), 'aria-label': __alloT('stem.birdlab.a11y_field_journal_note_saved', 'Field journal note saved')
                       }, '\uD83D\uDCDD'),
-                      isFound && foundViaThis === 'spotted' && h('span', { 'aria-label': __alloT('stem.birdlab.spotted_in_the_scene', 'Spotted in the scene'), title: __alloT('stem.birdlab.you_spotted_this_one_in_the_scene', 'You spotted this one in the scene'), className: 'ml-1 text-[0.625rem] text-amber-600' }, '🌟')
+                      isFound && foundViaThis === 'spotted' && h('span', { role: 'note', 'aria-label': __alloT('stem.birdlab.spotted_in_the_scene', 'Spotted in the scene'), title: __alloT('stem.birdlab.you_spotted_this_one_in_the_scene', 'You spotted this one in the scene'), className: 'ml-1 text-[0.625rem] text-amber-600' }, '🌟')
                     ),
                     h('div', { className: 'text-[0.625rem] text-slate-700 mt-0.5 italic' }, b.hint)
                   );
@@ -30713,7 +31054,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   )
                 ),
                 // Per-question result chip strip
-                h('div', { className: 'flex flex-wrap gap-1', 'aria-label': __alloT('stem.birdlab.question_status_click_any_chip_to_jump', 'Question status. Click any chip to jump to that question.') },
+                h('div', { role: 'group', className: 'flex flex-wrap gap-1', 'aria-label': __alloT('stem.birdlab.question_status_click_any_chip_to_jump', 'Question status. Click any chip to jump to that question.') },
                   BIRD_TO_HABITAT.map(function(q, i) {
                     var ans = b2hPicks[i];
                     var answered = ans != null;
@@ -32873,7 +33214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                           h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.birdlab.route_distance', 'Route distance')),
                           h('span', { className: 'text-xs font-mono text-orange-700 font-bold' }, m.distance)
                         ),
-                        rng && rng.kind !== 'sedentary' && h('div', {
+                        rng && rng.kind !== 'sedentary' && h('div', { role: 'group',
                           className: 'relative h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-300',
                           'aria-label': __alloFill(__alloT('stem.birdlab.a11y_distance_bar_to_miles_on_a_0_to_6000_mile_scale', 'Distance bar {value1} to {value2} miles on a 0 to 6000-mile scale'), { value1: (rng.min), value2: (rng.max) })},
                           // Range fill: from min to max
@@ -36492,7 +36833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             },
               h('div', { className: 'p-5 flex items-center gap-5 flex-wrap' },
                 h('div', { className: 'flex-shrink-0 text-center' },
-                  h('div', { className: 'text-5xl font-black text-emerald-800', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_of_species_spotted', '{spotted} of {total} species spotted'), { spotted: spottedKeys.length, total: allSpeciesKeys.length }) },
+                  h('div', { role: 'group', className: 'text-5xl font-black text-emerald-800', 'aria-label': __alloFill(__alloT('stem.birdlab.a11y_of_species_spotted', '{spotted} of {total} species spotted'), { spotted: spottedKeys.length, total: allSpeciesKeys.length }) },
                     spottedKeys.length + ' / ' + allSpeciesKeys.length
                   ),
                   h('div', { className: 'text-[0.625rem] uppercase tracking-widest text-slate-700 font-bold mt-1' }, __alloT('stem.birdlab.species_spotted', 'species spotted'))
@@ -37939,7 +38280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('h4',null,wingPart?wingPartInfo[wingPart][0]:'One model, three regions'),
                   h('p',null,wingPart?wingPartInfo[wingPart][1]:'Explore both inner wings, both outer wings, and the body reference. Selection highlights a region without enlarging or reshaping it.'),
                   wingPart?h('p',null,h('strong',{'data-wing-piece-count':''},wingPieces[wingPart]),' drawn pieces in this region, across both sides where present. A piece is a model mesh, not a feather count.'):null),
-                h('div',{className:'wing-construction-controls','aria-label':__alloT("stem.birdlab.a11y_wing_construction_regions", "Wing construction regions")},
+                h('div',{ role: 'group',className:'wing-construction-controls','aria-label':__alloT("stem.birdlab.a11y_wing_construction_regions", "Wing construction regions")},
                   WING3D_PARTS.map(function(part){return h('button',{key:part.id,type:'button','data-wing-select':part.id,'aria-pressed':wingPart===part.id?'true':'false',onClick:function(){setWingPart(part.id);}},wingPartInfo[part.id][0]);}),
                   h('button',{type:'button','data-wing-select':'all','aria-pressed':wingPart===null?'true':'false',onClick:function(){setWingPart(null);setWingIsolate(false);WING3D.returnToScene({immediate:true});}},'Whole model')),
                 h('label',{htmlFor:'birdlab-wing-isolate',style:{display:'flex',gap:10,alignItems:'flex-start',minHeight:44,fontSize:13,lineHeight:1.5,color:'#214956',margin:'10px 0'}},

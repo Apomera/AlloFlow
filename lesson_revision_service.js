@@ -134,7 +134,7 @@
       var c = catalog(item), duplicate = mapped.duplicates.has(idOf(item));
       var supported = c.fields.length > 0 && !duplicate;
       return { id: idOf(item), type: item.type, title: titleOf(item), fieldCount: c.fields.length,
-        supported: supported, current: idOf(item) === String(currentId || ''),
+        supported: supported, current: idOf(item) === (currentId == null ? '' : String(currentId)),
         reason: duplicate ? 'This resource ID is duplicated. Open a distinct copy before revising.' : supported ? ''
           : 'Use this resource’s native editor. Its source, media, or activity structure is protected in this flow.' };
     });
@@ -429,9 +429,15 @@
       if (!copies.has(entry.resourceId)) copies.set(entry.resourceId, clone(mapped.map.get(entry.resourceId)));
       write(copies.get(entry.resourceId), entry.path, entry.before);
     });
-    if (!Array.from(copies.entries()).every(function (entry) {
-      return nativeChangesValid(mapped.map.get(entry[0]), entry[1], record.paths.filter(function (change) { return change.resourceId === entry[0]; }));
-    })) return fail('Undo would no longer match the current native activity format. Review the newer activity edits before restoring this revision.');
+    var validUndo = false;
+    try {
+      validUndo = Array.from(copies.entries()).every(function (entry) {
+        return nativeChangesValid(mapped.map.get(entry[0]), entry[1], record.paths.filter(function (change) { return change.resourceId === entry[0]; }));
+      });
+    } catch (_) {
+      return fail('Native revision validation is unavailable.');
+    }
+    if (!validUndo) return fail('Undo would no longer match the current native activity format. Review the newer activity edits before restoring this revision.');
     undos.delete(record);
     return { ok: true, resources: resources.map(function (item) { return copies.get(idOf(item)) || item; }), resourceIds: Array.from(copies.keys()) };
   }

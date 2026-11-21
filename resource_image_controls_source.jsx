@@ -51,9 +51,10 @@ function resourceImageSlots(resource) {
     if (data?.visualPlan?.panels?.length) entries(data.visualPlan.panels, ['data', 'visualPlan', 'panels'], 'imageUrl', 'Panel');
     else add(['data', 'imageUrl'], 'Lesson image', 'altText');
   }
-  if (resource.type === 'quiz') (data?.questions || []).forEach((q, i) => {
+  if (resource.type === 'quiz' && Array.isArray(data?.questions)) data.questions.forEach((q, i) => {
+    if (!q || typeof q !== 'object') return;
     add(['data', 'questions', i, 'imageUrl'], 'Question ' + (i + 1), 'imageAltText');
-    (q.options || []).forEach((option, j) => add(['data', 'questions', i, 'optionImageUrls', j], 'Question ' + (i + 1) + ' — choice ' + (j + 1)));
+    if (Array.isArray(q.options)) q.options.forEach((option, j) => add(['data', 'questions', i, 'optionImageUrls', j], 'Question ' + (i + 1) + ' — choice ' + (j + 1)));
   });
   if (resource.type === 'adventure') {
     add(['data', 'sceneImage'], 'Current scene', 'sceneImageAlt');
@@ -177,11 +178,11 @@ function openResourceDrawing({ scene, title, onSave, onCancel, onError, onStatus
       if (done) return;
       if (accepted === false) throw Error('This image changed while the drawing was open. Export your drawing or reopen the image slot.');
       post({ type: 'alloasset-saved' }); cleanup();
-    } catch (error) { post({ type: 'alloasset-error', message: error.message }); onError?.(error); }
+    } catch (error) { post({ type: 'alloasset-error', message: error.message }); onError?.(error, { recoverable: true }); }
     finally { saving = false; if (cancelRequested && !done) { post({ type: 'alloasset-disconnected' }); cleanup(); } }
   };
   window.addEventListener('message', receive);
-  const closedTimer = setInterval(() => { if (popup.closed) { cleanup(); onCancel?.(); } }, 700);
+  const closedTimer = setInterval(() => { if (popup.closed && !saving) { cleanup(); onCancel?.(); } }, 700);
   // The Whiteboard downloads Excalidraw before it says hello, so a slow network is
   // not a failure yet; a window with no link back (some desktop shells) never will.
   const slowTimer = setTimeout(() => { if (!connected && !done) onStatus?.('Still connecting to the Whiteboard. If it says it has no link back to AlloFlow, choose Export PNG there, then Upload image here.'); }, 8000);
@@ -192,7 +193,7 @@ function openResourceDrawing({ scene, title, onSave, onCancel, onError, onStatus
 
 function ResourceImageInput({ label = 'Image', value = '', scene, alt = '', disabled = false, onApply }) {
   const [editor, setEditor] = React.useState(null), [description, setDescription] = React.useState(alt);
-  const [message, setMessage] = React.useState(''), [busy, setBusy] = React.useState(false);
+  const [message, setMessage] = React.useState(''), [isError, setIsError] = React.useState(false), [busy, setBusy] = React.useState(false);
   const alive = React.useRef(true), cancelDrawing = React.useRef(null), trigger = React.useRef(null), openerRef = React.useRef(null);
   const disabledRef = React.useRef(disabled); disabledRef.current = disabled;
   const descriptionRef = React.useRef(description); descriptionRef.current = description;
@@ -209,8 +210,8 @@ function ResourceImageInput({ label = 'Image', value = '', scene, alt = '', disa
     if (!alive.current || disabledRef.current) return false;
     const accepted = await onApply({ ...result, alt: descriptionRef.current });
     if (!alive.current) return accepted !== false;
-    if (accepted === false) { setMessage('This image changed. Reopen its controls and try again.'); return false; }
-    setEditor(null); setMessage('Image saved.'); setBusy(false); restoreOpenerFocus(); return true;
+    if (accepted === false) { setIsError(true); setMessage('This image changed. Reopen its controls and try again.'); setBusy(false); return false; }
+    setEditor(null); setIsError(false); setMessage('Image saved.'); setBusy(false); restoreOpenerFocus(); return true;
   };
   const button = 'min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
   return <section className="rounded-xl border border-slate-300 bg-white p-3 text-slate-900" data-resource-image-input>
@@ -221,20 +222,23 @@ function ResourceImageInput({ label = 'Image', value = '', scene, alt = '', disa
     </label>
     <div className="my-2 flex flex-wrap gap-2">
       {/* Stays usable while a drawing is pending: Export PNG + upload is the fallback when the Whiteboard cannot link back. */}
-      <ImageAssetPicker label="Upload image" disabled={disabled} onLoaded={result => { cancelDrawing.current?.(); cancelDrawing.current = null; if (typeof document !== 'undefined' && document.activeElement && document.activeElement !== document.body && document.activeElement !== document.documentElement) { openerRef.current = document.activeElement; } setBusy(false); setEditor(result); setMessage(''); }} onError={error => setMessage(error.message)} />
+      <ImageAssetPicker label="Upload image" disabled={disabled} onLoaded={result => { cancelDrawing.current?.(); cancelDrawing.current = null; if (typeof document !== 'undefined' && document.activeElement && document.activeElement !== document.body && document.activeElement !== document.documentElement) { openerRef.current = document.activeElement; } setBusy(false); setIsError(false); setEditor(result); setMessage(''); }} onError={error => { setIsError(true); setMessage(error.message); }} />
       <button ref={trigger} type="button" className={button} disabled={disabled || busy} onClick={() => {
         cancelDrawing.current?.();
         openerRef.current = trigger.current;
-        setBusy(true); setMessage('Draw in the Whiteboard, then choose Use drawing.');
+        setBusy(true); setIsError(false); setMessage('Draw in the Whiteboard, then choose Use drawing.');
         cancelDrawing.current = openResourceDrawing({ scene, title: label, onSave: finish,
-          onCancel: () => { if (alive.current) { setBusy(false); setMessage('Drawing closed.'); restoreOpenerFocus(); } },
-          onError: error => { if (alive.current) { setBusy(false); setMessage(error.message); } },
-          onStatus: text => { if (alive.current) setMessage(text); } });
+          onCancel: () => { if (alive.current) { setBusy(false); setIsError(false); setMessage('Drawing closed.'); restoreOpenerFocus(); } },
+          onError: (error, meta) => { if (alive.current) { if (!meta?.recoverable) setBusy(false); setIsError(true); setMessage(error.message); } },
+          onStatus: text => { if (alive.current) { setIsError(false); setMessage(text); } } });
       }}>{scene ? 'Edit drawing' : 'Draw with Excalidraw'}</button>
-      {value && <button type="button" className={button} disabled={disabled || busy} onClick={() => finish({ dataUrl: value, scene }).catch(error => setMessage(error.message))}>Save description</button>}
+      {value && <button type="button" className={button} disabled={disabled || busy} onClick={() => {
+        setBusy(true); setIsError(false);
+        finish({ dataUrl: value, scene }).catch(error => { if (alive.current) { setBusy(false); setIsError(true); setMessage(error?.message || 'The image description could not be saved.'); } });
+      }}>Save description</button>}
     </div>
-    {editor && <ImageAssetEditor sourceDataUrl={editor.dataUrl} onApply={result => finish(result).catch(error => setMessage(error.message))} onCancel={() => { setEditor(null); restoreOpenerFocus(); }} />}
-    <p className="text-sm text-slate-700" role="status">{message}</p>
+    {editor && <ImageAssetEditor sourceDataUrl={editor.dataUrl} onApply={result => finish(result).catch(error => { if (alive.current) { setIsError(true); setMessage(error?.message || 'The image could not be saved.'); } })} onCancel={() => { setEditor(null); restoreOpenerFocus(); }} />}
+    <p className={isError ? 'text-sm font-semibold text-red-700' : 'text-sm text-slate-700'} role={isError ? 'alert' : 'status'}>{message}</p>
   </section>;
 }
 

@@ -1593,23 +1593,27 @@ window.StemLab = window.StemLab || {
                 } catch (e) {}
               }
 
-              var ambientLight = new THREE.AmbientLight(0xffffff, 0.48); // deeper sphere shading (CPK hues untouched — intensity only)
+              var ambientLight = new THREE.AmbientLight(0xf8fafc, 0.42); // deeper sphere shading (CPK hues untouched — intensity only)
               scene.add(ambientLight);
 
-              var hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x0f172a, 0.45);
+              var hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x0b1324, 0.54);
               scene.add(hemiLight);
 
-              var dirLight = new THREE.DirectionalLight(0xffffff, 1.05);
-              dirLight.position.set(5, 10, 7);
+              var dirLight = new THREE.DirectionalLight(0xfff9f0, 1.18);
+              dirLight.position.set(6, 11, 8);
               scene.add(dirLight);
               
-              var fillLight = new THREE.DirectionalLight(0xe8f1ff, 0.45);
-              fillLight.position.set(-5, -5, -2);
+              var fillLight = new THREE.DirectionalLight(0xdbeafe, 0.48);
+              fillLight.position.set(-7, -4, -3);
               scene.add(fillLight);
 
-              var rimLight = new THREE.DirectionalLight(0x67e8f9, 0.55);
-              rimLight.position.set(-4, 3, 9);
+              var rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.78);
+              rimLight.position.set(-5, 4, -9);
               scene.add(rimLight);
+
+              var catchLight = new THREE.DirectionalLight(0xfef3c7, 0.34);
+              catchLight.position.set(4, -5, 9);
+              scene.add(catchLight);
 
               var controls = new THREE.OrbitControls(camera, renderer.domElement);
               controls.enableDamping = true;
@@ -1618,13 +1622,34 @@ window.StemLab = window.StemLab || {
               controls.minDistance = 2;
               threeControlsRef.current = controls;
 
+              var isMolHC = function() {
+                try {
+                  if (ctx && (ctx.theme === 'contrast' || ctx.isContrast)) return true;
+                  if (typeof document !== 'undefined') {
+                    var de = document.documentElement, b = document.body;
+                    if ((de && (de.classList.contains('theme-contrast') || de.getAttribute('data-theme') === 'high-contrast')) ||
+                        (b && (b.classList.contains('theme-contrast') || b.getAttribute('data-theme') === 'high-contrast'))) return true;
+                  }
+                  if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(forced-colors: active)').matches) return true;
+                } catch (e) {}
+                return false;
+              };
               threeResourcesRef.current = {
                 ambientLight: ambientLight,
                 hemiLight: hemiLight,
                 dirLight: dirLight,
                 fillLight: fillLight,
                 rimLight: rimLight,
-                atomGroup: new THREE.Group()
+                catchLight: catchLight,
+                atomGroup: new THREE.Group(),
+                shaderUniforms: {
+                  uTime: { value: 2.8 },
+                  uHC: { value: isMolHC() ? 1.0 : 0.0 }
+                },
+                decorativeNodes: [],
+                startTime: Date.now(),
+                isMolHC: isMolHC,
+                lastHC: isMolHC()
               };
               scene.add(threeResourcesRef.current.atomGroup);
 
@@ -1696,6 +1721,22 @@ window.StemLab = window.StemLab || {
               if (controls) {
                 controls.update();
               }
+              if (resources && resources.shaderUniforms) {
+                var molReduced = false;
+                try {
+                  molReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || !!(d && d.calmDiagrams);
+                } catch (e) {}
+                resources.shaderUniforms.uTime.value = molReduced ? 2.8 : (((Date.now() - (resources.startTime || 0)) * 0.001) % 3600);
+                var nowHC = resources.isMolHC ? resources.isMolHC() : false;
+                if (nowHC !== resources.lastHC) {
+                  resources.lastHC = nowHC;
+                  resources.shaderUniforms.uHC.value = nowHC ? 1.0 : 0.0;
+                  var dNodes = resources.decorativeNodes || [];
+                  for (var dni = 0; dni < dNodes.length; dni++) {
+                    if (dNodes[dni]) dNodes[dni].visible = !nowHC;
+                  }
+                }
+              }
               
               if (threeRendererRef.current && threeSceneRef.current && threeCameraRef.current) {
                 var canvas = webglCanvasRef.current;
@@ -1720,19 +1761,39 @@ window.StemLab = window.StemLab || {
             if (!THREE || !scene || !resources || !resources.atomGroup) return;
 
             var atomGroup = resources.atomGroup;
+            var disposeNode = function(node) {
+              if (!node || !node.traverse) return;
+              var geos = new Set(), mats = new Set(), texs = new Set();
+              node.traverse(function(obj) {
+                if (obj.geometry) geos.add(obj.geometry);
+                if (obj.material) {
+                  var ml = Array.isArray(obj.material) ? obj.material : [obj.material];
+                  ml.forEach(function(m) {
+                    if (!m) return;
+                    mats.add(m);
+                    if (m.map && typeof m.map.dispose === 'function') texs.add(m.map);
+                    if (m.uniforms) {
+                      Object.keys(m.uniforms).forEach(function(uk) {
+                        var uv = m.uniforms[uk] && m.uniforms[uk].value;
+                        if (uv && typeof uv.dispose === 'function') texs.add(uv);
+                      });
+                    }
+                  });
+                }
+              });
+              geos.forEach(function(g) { if (typeof g.dispose === 'function') g.dispose(); });
+              texs.forEach(function(tx) { tx.dispose(); });
+              mats.forEach(function(m) { if (typeof m.dispose === 'function') m.dispose(); });
+            };
             while(atomGroup.children.length > 0) {
               var child = atomGroup.children[0];
               atomGroup.remove(child);
-              if (child.geometry) child.geometry.dispose();
-              if (child.material) {
-                if (Array.isArray(child.material)) {
-                  child.material.forEach(function(m) { if (m.map) m.map.dispose(); m.dispose(); });
-                } else {
-                  if (child.material.map) child.material.map.dispose();
-                  child.material.dispose();
-                }
-              }
+              disposeNode(child);
             }
+            resources.decorativeNodes = [];
+            var molHC = resources.isMolHC ? resources.isMolHC() : false;
+            var molShared = resources.shaderUniforms || { uTime: { value: 2.8 }, uHC: { value: molHC ? 1.0 : 0.0 } };
+            molShared.uHC.value = molHC ? 1.0 : 0.0;
             
             atomGroup.rotation.set(0, 0, 0);
 
@@ -1818,24 +1879,139 @@ window.StemLab = window.StemLab || {
               return sprite;
             };
 
-            // Render Atom Spheres and Labels
+            // Render Glossy Specular CPK Atom Spheres with Subsurface Rim + Quantum Electron-Cloud Density Aura
+            var AtomMatCtor = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
+            var BondMatCtor = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
+            var enMapAll = { F: 4.0, O: 3.44, Cl: 3.16, N: 3.04, Br: 2.96, I: 2.66, S: 2.58, C: 2.55, P: 2.19, H: 2.2, Na: 0.93, K: 0.82, Ca: 1.0, Fe: 1.83, Cu: 1.9, Zn: 1.65, Ag: 1.93, Au: 2.54 };
+            var hasMolShader = typeof THREE.ShaderMaterial === 'function';
+            var molAddBlend = THREE.AdditiveBlending != null ? THREE.AdditiveBlending : undefined;
+
+            var applyAtomSubsurfaceRim = function(material, electroNeg) {
+              if (!material || typeof material.onBeforeCompile !== 'function') return;
+              var enNorm = Math.max(0, Math.min(1, ((electroNeg || 2.5) - 0.8) / 3.2));
+              material.customProgramCacheKey = function() { return 'mol-cpk-sss-rim-v1'; };
+              material.onBeforeCompile = function(shader) {
+                shader.uniforms.uMolTime = molShared.uTime;
+                shader.uniforms.uMolHC = molShared.uHC;
+                shader.uniforms.uMolEN = { value: enNorm };
+                shader.vertexShader = shader.vertexShader
+                  .replace('#include <common>', '#include <common>\nvarying vec3 vMolLocalPos;')
+                  .replace('#include <begin_vertex>', '#include <begin_vertex>\nvMolLocalPos = position;');
+                shader.fragmentShader = shader.fragmentShader
+                  .replace('#include <common>',
+                    '#include <common>\n' +
+                    'uniform float uMolTime;\n' +
+                    'uniform float uMolHC;\n' +
+                    'uniform float uMolEN;\n' +
+                    'varying vec3 vMolLocalPos;'
+                  )
+                  .replace('#include <tonemapping_fragment>',
+                    'if (uMolHC < 0.5) {\n' +
+                    '  vec3 mN = normalize(normal);\n' +
+                    '  vec3 mV = normalize(vViewPosition);\n' +
+                    '  float ndv = max(dot(mN, mV), 0.0);\n' +
+                    '  float fres = pow(1.0 - ndv, 2.65);\n' +
+                    '  float sssWrap = pow(clamp(1.0 - ndv * 0.65, 0.0, 1.0), 1.8) * 0.16;\n' +
+                    '  float qShimmer = 0.88 + 0.12 * sin(vMolLocalPos.y * 5.2 + vMolLocalPos.x * 3.8 - uMolTime * 1.4);\n' +
+                    '  vec3 espTint = mix(vec3(1.0, 0.82, 0.56), vec3(0.45, 0.90, 1.0), uMolEN);\n' +
+                    '  gl_FragColor.rgb += (diffuseColor.rgb * sssWrap + espTint * fres * 0.34) * qShimmer;\n' +
+                    '}\n' +
+                    '#include <tonemapping_fragment>'
+                  );
+              };
+            };
+
+            var molCloudVert = [
+              'varying vec3 vNorm;',
+              'varying vec3 vView;',
+              'varying vec3 vLocalDir;',
+              'void main() {',
+              '  vLocalDir = normalize(position);',
+              '  vNorm = normalize(normalMatrix * normal);',
+              '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+              '  vView = normalize(-mv.xyz);',
+              '  gl_Position = projectionMatrix * mv;',
+              '}'
+            ].join('\n');
+
+            var molCloudFrag = [
+              'precision mediump float;',
+              'uniform float uTime;',
+              'uniform vec3 uRimColor;',
+              'uniform float uElectroNeg;',
+              'uniform float uSeed;',
+              'varying vec3 vNorm;',
+              'varying vec3 vView;',
+              'varying vec3 vLocalDir;',
+              'void main() {',
+              '  float ndv = max(0.0, dot(normalize(vNorm), normalize(vView)));',
+              '  float fresnel = pow(1.0 - ndv, 2.35);',
+              '  float theta = acos(clamp(vLocalDir.y, -1.0, 1.0));',
+              '  float phi = atan(vLocalDir.z, vLocalDir.x);',
+              '  float orbWave = 0.5 + 0.5 * sin(theta * 4.0 - uTime * 1.15 + uSeed) * cos(phi * 3.0 + uTime * 0.85 - uSeed);',
+              '  float densityBand = smoothstep(0.18, 0.92, orbWave);',
+              '  vec3 deltaNeg = vec3(0.24, 0.82, 1.0);',
+              '  vec3 deltaPos = vec3(1.0, 0.72, 0.38);',
+              '  vec3 espCol = mix(deltaPos, deltaNeg, clamp((uElectroNeg - 1.5) / 2.2, 0.0, 1.0));',
+              '  vec3 finalCol = mix(uRimColor, espCol, 0.52);',
+              '  float breath = 0.86 + 0.14 * sin(uTime * 1.45 + uSeed * 2.3);',
+              '  float alpha = (fresnel * (0.34 + 0.24 * densityBand) + pow(1.0 - ndv, 4.2) * 0.22) * breath;',
+              '  gl_FragColor = vec4(finalCol, clamp(alpha, 0.0, 0.52));',
+              '}'
+            ].join('\n');
+
+            var makeAtomRimMaterial = function(baseColor, electroNeg, seedVal) {
+              if (!hasMolShader) return null;
+              var rimColor = new THREE.Color(baseColor).lerp(new THREE.Color(0xcffafe), 0.54);
+              return new THREE.ShaderMaterial({
+                uniforms: {
+                  uTime: molShared.uTime,
+                  uRimColor: { value: rimColor },
+                  uElectroNeg: { value: electroNeg || 2.5 },
+                  uSeed: { value: seedVal || 0.0 }
+                },
+                vertexShader: molCloudVert,
+                fragmentShader: molCloudFrag,
+                transparent: true,
+                depthWrite: false,
+                blending: molAddBlend
+              });
+            };
+
             atoms.forEach(function(a, i) {
               var pos = positions[i];
               var r = getRadius(a.el) * (moleculeDisplayStyle === 'spheres' ? 1.65 : 0.72);
               var color = getColor(a);
+              var atomEN = enMapAll[a.el] || 2.3;
 
-              var sphereGeo = new THREE.SphereGeometry(r, 32, 32);
+              var sphereGeo = new THREE.SphereGeometry(r, 40, 40);
               var atomColor = new THREE.Color(color);
-              var atomMat = new THREE.MeshStandardMaterial({
+              var atomOpts = {
                 color: atomColor,
                 emissive: atomColor,
-                emissiveIntensity: 0.06,
-                roughness: 0.3,
-                metalness: 0.03
-              });
+                emissiveIntensity: 0.05,
+                roughness: 0.22,
+                metalness: 0.08
+              };
+              if (THREE.MeshPhysicalMaterial) {
+                atomOpts.clearcoat = 0.78;
+                atomOpts.clearcoatRoughness = 0.14;
+              }
+              var atomMat = new AtomMatCtor(atomOpts);
+              applyAtomSubsurfaceRim(atomMat, atomEN);
               var sphereMesh = new THREE.Mesh(sphereGeo, atomMat);
               sphereMesh.position.copy(pos);
               atomGroup.add(sphereMesh);
+
+              var rimMat = makeAtomRimMaterial(atomColor, atomEN, i * 1.17);
+              if (rimMat) {
+                var auraScale = moleculeDisplayStyle === 'spheres' ? 1.045 : 1.13;
+                var rimShell = new THREE.Mesh(new THREE.SphereGeometry(r * auraScale, 32, 32), rimMat);
+                rimShell.renderOrder = 2;
+                rimShell.visible = !molHC;
+                sphereMesh.add(rimShell);
+                resources.decorativeNodes.push(rimShell);
+              }
 
               if (showAtomLabels) {
                 var sprite = createTextSprite(a.el);
@@ -1844,23 +2020,127 @@ window.StemLab = window.StemLab || {
               }
             });
 
-            // Render Covalent Bonds (Supports single, double, and triple parallel rods)
-            var bondColors;
-            var renderBond = function(mid, len, quat, radius) {
+            // Render Shaded Metallic Covalent Bonds + GLSL Quantum Resonance Pulse Sheaths (σ / π / H-bond)
+            var bondPulseVert = [
+              'varying vec2 vUv;',
+              'varying vec3 vNorm;',
+              'varying vec3 vView;',
+              'void main() {',
+              '  vUv = uv;',
+              '  vNorm = normalize(normalMatrix * normal);',
+              '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+              '  vView = normalize(-mv.xyz);',
+              '  gl_Position = projectionMatrix * mv;',
+              '}'
+            ].join('\n');
+
+            var bondPulseFrag = [
+              'precision mediump float;',
+              'uniform float uTime;',
+              'uniform vec3 uColorA;',
+              'uniform vec3 uColorB;',
+              'uniform float uBondOrder;',
+              'uniform float uIsPolarH;',
+              'uniform float uSeed;',
+              'varying vec2 vUv;',
+              'varying vec3 vNorm;',
+              'varying vec3 vView;',
+              'void main() {',
+              '  float fres = pow(1.0 - abs(dot(normalize(vNorm), normalize(vView))), 1.55);',
+              '  float endFade = smoothstep(0.0, 0.16, vUv.y) * smoothstep(1.0, 0.84, vUv.y);',
+              '  float speed = 0.55 + uBondOrder * 0.28;',
+              '  float pFwd = fract(vUv.y * (1.2 + uBondOrder * 0.45) - uTime * speed + uSeed);',
+              '  float pRev = fract(vUv.y * (1.2 + uBondOrder * 0.45) + uTime * speed * 0.88 + uSeed * 1.4);',
+              '  float pktA = smoothstep(0.0, 0.16, pFwd) * smoothstep(0.42, 0.16, pFwd);',
+              '  float pktB = smoothstep(0.0, 0.16, pRev) * smoothstep(0.42, 0.16, pRev);',
+              '  float piWave = uBondOrder > 1.5 ? pow(0.5 + 0.5 * sin(vUv.y * 18.8495 - uTime * 3.4 + vUv.x * 6.28318), 2.4) : 0.0;',
+              '  float hDash = uIsPolarH > 0.5 ? (0.45 + 0.55 * sin(vUv.y * 28.0 - uTime * 2.2)) : 1.0;',
+              '  vec3 baseMix = mix(uColorA, uColorB, vUv.y);',
+              '  vec3 resTint = uBondOrder > 1.5 ? vec3(0.48, 0.92, 1.0) : (uIsPolarH > 0.5 ? vec3(0.32, 0.96, 0.88) : vec3(0.74, 0.94, 1.0));',
+              '  vec3 col = mix(baseMix, resTint, 0.62);',
+              '  float pulse = (pktA * 0.72 + pktB * 0.58 + piWave * 0.68) * hDash;',
+              '  float alpha = endFade * (0.12 + 0.52 * fres) * (0.18 + 0.82 * pulse) * (0.52 + 0.22 * uBondOrder);',
+              '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.62));',
+              '}'
+            ].join('\n');
+
+            var bondColors, bondMeta;
+            var renderBond = function(mid, len, quat, radius, rodSeed) {
               // Color each half by its attached atom while retaining bond order.
               var quarter = new THREE.Vector3(0, len / 4, 0).applyQuaternion(quat);
               [-1, 1].forEach(function(sign, half) {
-                var cylinderGeo = new THREE.CylinderGeometry(radius, radius, len / 2, 16);
-                var bondMat = new THREE.MeshStandardMaterial({ color: bondColors[half], roughness: 0.42, metalness: 0.03 });
+                var cylinderGeo = new THREE.CylinderGeometry(radius, radius, len / 2, 24);
+                var bOpts = { color: bondColors[half], roughness: 0.24, metalness: 0.26 };
+                if (THREE.MeshPhysicalMaterial) {
+                  bOpts.clearcoat = 0.45;
+                  bOpts.clearcoatRoughness = 0.20;
+                }
+                var bondMat = new BondMatCtor(bOpts);
+                if (typeof bondMat.onBeforeCompile === 'function') {
+                  bondMat.customProgramCacheKey = function() { return 'mol-bond-resonance-v1'; };
+                  bondMat.onBeforeCompile = function(shader) {
+                    shader.uniforms.uMolTime = molShared.uTime;
+                    shader.uniforms.uMolHC = molShared.uHC;
+                    shader.vertexShader = shader.vertexShader
+                      .replace('#include <common>', '#include <common>\nvarying vec2 vMolBondUv;')
+                      .replace('#include <uv_vertex>', '#include <uv_vertex>\nvMolBondUv = uv;');
+                    shader.fragmentShader = shader.fragmentShader
+                      .replace('#include <common>', '#include <common>\nuniform float uMolTime;\nuniform float uMolHC;\nvarying vec2 vMolBondUv;')
+                      .replace('#include <tonemapping_fragment>',
+                        'if (uMolHC < 0.5) {\n' +
+                        '  float bWave = pow(0.5 + 0.5 * sin(vMolBondUv.y * 9.4247 - uMolTime * 2.2), 3.0);\n' +
+                        '  gl_FragColor.rgb += vec3(0.36, 0.84, 1.0) * bWave * 0.09;\n' +
+                        '}\n' +
+                        '#include <tonemapping_fragment>'
+                      );
+                  };
+                }
                 var cylinderMesh = new THREE.Mesh(cylinderGeo, bondMat);
                 cylinderMesh.position.copy(mid).addScaledVector(quarter, sign);
                 cylinderMesh.quaternion.copy(quat);
                 atomGroup.add(cylinderMesh);
               });
+              // Translucent GLSL quantum resonance pulse sheath along the bond rod
+              if (hasMolShader) {
+                var sheathGeo = new THREE.CylinderGeometry(radius * 1.28, radius * 1.28, len * 0.92, 18, 1, true);
+                var sheathMat = new THREE.ShaderMaterial({
+                  uniforms: {
+                    uTime: molShared.uTime,
+                    uColorA: { value: bondColors[0] ? bondColors[0].clone() : new THREE.Color(0x94a3b8) },
+                    uColorB: { value: bondColors[1] ? bondColors[1].clone() : new THREE.Color(0x94a3b8) },
+                    uBondOrder: { value: (bondMeta && bondMeta.order) || 1.0 },
+                    uIsPolarH: { value: (bondMeta && bondMeta.isPolarH) ? 1.0 : 0.0 },
+                    uSeed: { value: rodSeed || 0.0 }
+                  },
+                  vertexShader: bondPulseVert,
+                  fragmentShader: bondPulseFrag,
+                  transparent: true,
+                  depthWrite: false,
+                  blending: molAddBlend,
+                  side: THREE.DoubleSide
+                });
+                var sheathMesh = new THREE.Mesh(sheathGeo, sheathMat);
+                sheathMesh.position.copy(mid);
+                sheathMesh.quaternion.copy(quat);
+                sheathMesh.renderOrder = 3;
+                sheathMesh.visible = !molHC;
+                atomGroup.add(sheathMesh);
+                resources.decorativeNodes.push(sheathMesh);
+              }
+              // Subtle machined metallic collar at the heteronuclear bond midpoint
+              if (bondColors[0] && bondColors[1] && bondColors[0].getHex && bondColors[0].getHex() !== bondColors[1].getHex()) {
+                var collarGeo = new THREE.CylinderGeometry(radius * 1.12, radius * 1.12, Math.min(0.08, len * 0.06), 24);
+                var collarMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.26, metalness: 0.65 });
+                var collarMesh = new THREE.Mesh(collarGeo, collarMat);
+                collarMesh.position.copy(mid);
+                collarMesh.quaternion.copy(quat);
+                atomGroup.add(collarMesh);
+              }
             };
 
-            if (moleculeDisplayStyle === 'ball-stick') bonds.forEach(function(b) {
-              bondColors = [getColor(atoms[b[0]] || {}), getColor(atoms[b[1]] || {})];
+            if (moleculeDisplayStyle === 'ball-stick') bonds.forEach(function(b, bIdx) {
+              var atomA = atoms[b[0]] || {}, atomB = atoms[b[1]] || {};
+              bondColors = [getColor(atomA), getColor(atomB)];
               var posA = positions[b[0]];
               var posB = positions[b[1]];
               if (!posA || !posB) return;
@@ -1873,8 +2153,11 @@ window.StemLab = window.StemLab || {
               var quaternion = new THREE.Quaternion().setFromUnitVectors(alignAxis, direction);
 
               var bondType = b[2] || 1;
+              var isPolarH = (atomA.el === 'H' && (atomB.el === 'O' || atomB.el === 'N' || atomB.el === 'F')) ||
+                             (atomB.el === 'H' && (atomA.el === 'O' || atomA.el === 'N' || atomA.el === 'F'));
+              bondMeta = { order: bondType, isPolarH: isPolarH };
               if (bondType === 1) {
-                renderBond(midpoint, dist, quaternion, 0.12);
+                renderBond(midpoint, dist, quaternion, 0.12, bIdx * 0.31);
               } else {
                 // Find a perpendicular direction for parallel offset cylinders
                 var offsetDir = new THREE.Vector3(0, 0, 1);
@@ -1887,20 +2170,119 @@ window.StemLab = window.StemLab || {
                   var off = 0.18;
                   var mid1 = new THREE.Vector3().copy(midpoint).addScaledVector(perp1, off);
                   var mid2 = new THREE.Vector3().copy(midpoint).addScaledVector(perp1, -off);
-                  renderBond(mid1, dist, quaternion, 0.08);
-                  renderBond(mid2, dist, quaternion, 0.08);
+                  renderBond(mid1, dist, quaternion, 0.08, bIdx * 0.31);
+                  renderBond(mid2, dist, quaternion, 0.08, bIdx * 0.31 + 0.5);
                 } else if (bondType === 3) {
                   var perp2 = new THREE.Vector3().crossVectors(direction, perp1).normalize();
                   var off = 0.22;
                   var mid1 = new THREE.Vector3().copy(midpoint);
                   var mid2 = new THREE.Vector3().copy(midpoint).addScaledVector(perp2, off);
                   var mid3 = new THREE.Vector3().copy(midpoint).addScaledVector(perp2, -off);
-                  renderBond(mid1, dist, quaternion, 0.07);
-                  renderBond(mid2, dist, quaternion, 0.07);
-                  renderBond(mid3, dist, quaternion, 0.07);
+                  renderBond(mid1, dist, quaternion, 0.07, bIdx * 0.31);
+                  renderBond(mid2, dist, quaternion, 0.07, bIdx * 0.31 + 0.33);
+                  renderBond(mid3, dist, quaternion, 0.07, bIdx * 0.31 + 0.66);
                 }
               }
             });
+            // Translucent GLSL lone-pair quantum probability orbital & electrostatic δ- aura for polar teaching models
+            if (moleculeDisplayStyle === 'ball-stick' && teachingModel && teachingModel.polarity === 'Polar' && atoms.length >= 2) {
+              var enMap = { F: 4.0, O: 3.44, Cl: 3.16, N: 3.04, Br: 2.96, I: 2.66, S: 2.58, C: 2.55, P: 2.19, H: 2.2 };
+              var adjMap = {};
+              bonds.forEach(function(b) {
+                if (!adjMap[b[0]]) adjMap[b[0]] = [];
+                if (!adjMap[b[1]]) adjMap[b[1]] = [];
+                adjMap[b[0]].push(b[1]);
+                adjMap[b[1]].push(b[0]);
+              });
+              atoms.forEach(function(a, idx) {
+                var neighbors = adjMap[idx] || [];
+                var isLoneCarrier = (a.el === 'O' && neighbors.length === 2) || (a.el === 'N' && neighbors.length === 3) || (a.el === 'S' && neighbors.length === 2);
+                if (isLoneCarrier && positions[idx]) {
+                  var sumDir = new THREE.Vector3();
+                  neighbors.forEach(function(ni) {
+                    if (positions[ni]) sumDir.add(new THREE.Vector3().subVectors(positions[ni], positions[idx]).normalize());
+                  });
+                  if (sumDir.lengthSq() > 0.001) {
+                    var antiDir = sumDir.normalize().negate();
+                    var lobeRadius = getRadius(a.el) * 0.44;
+                    var lobeGeo = new THREE.SphereGeometry(lobeRadius, 24, 24);
+                    lobeGeo.scale(0.86, 1.38, 0.86);
+                    var lobeMat;
+                    if (hasMolShader) {
+                      lobeMat = new THREE.ShaderMaterial({
+                        uniforms: {
+                          uTime: molShared.uTime,
+                          uSeed: { value: idx * 1.7 + 0.4 }
+                        },
+                        vertexShader: molCloudVert,
+                        fragmentShader: [
+                          'precision mediump float;',
+                          'uniform float uTime;',
+                          'uniform float uSeed;',
+                          'varying vec3 vNorm;',
+                          'varying vec3 vView;',
+                          'varying vec3 vLocalDir;',
+                          'void main() {',
+                          '  float ndv = abs(dot(normalize(vNorm), normalize(vView)));',
+                          '  float fres = pow(1.0 - ndv, 1.85);',
+                          '  float ripple = 0.5 + 0.5 * sin(vLocalDir.y * 8.0 - uTime * 2.1 + uSeed);',
+                          '  vec3 col = mix(vec3(0.58, 0.44, 1.0), vec3(0.28, 0.88, 1.0), 0.38 + 0.42 * ripple);',
+                          '  float alpha = clamp((0.18 + 0.38 * fres) * (0.72 + 0.28 * ripple), 0.0, 0.54);',
+                          '  gl_FragColor = vec4(col, alpha);',
+                          '}'
+                        ].join('\n'),
+                        transparent: true,
+                        depthWrite: false,
+                        blending: molAddBlend,
+                        side: THREE.DoubleSide
+                      });
+                    } else {
+                      var lobeOpts = { color: 0xa78bfa, emissive: 0x38bdf8, emissiveIntensity: 0.22, transparent: true, opacity: 0.24, roughness: 0.15, metalness: 0.05, depthWrite: false };
+                      if (THREE.MeshPhysicalMaterial) { lobeOpts.clearcoat = 0.6; lobeOpts.clearcoatRoughness = 0.15; }
+                      lobeMat = new AtomMatCtor(lobeOpts);
+                    }
+                    var lobeMesh = new THREE.Mesh(lobeGeo, lobeMat);
+                    lobeMesh.position.copy(positions[idx]).addScaledVector(antiDir, getRadius(a.el) * 0.82);
+                    lobeMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), antiDir);
+                    lobeMesh.renderOrder = 3;
+                    lobeMesh.visible = !molHC;
+                    atomGroup.add(lobeMesh);
+                    resources.decorativeNodes.push(lobeMesh);
+                  }
+                }
+                // Subtle electrostatic δ- dipole sheen halo around strongly electronegative atoms
+                if ((enMap[a.el] || 2.0) >= 3.0 && positions[idx]) {
+                  var dipGeo = new THREE.SphereGeometry(getRadius(a.el) * 1.16, 24, 24);
+                  var dipMat = hasMolShader ? new THREE.ShaderMaterial({
+                    uniforms: { uTime: molShared.uTime, uSeed: { value: idx * 2.1 } },
+                    vertexShader: molCloudVert,
+                    fragmentShader: [
+                      'precision mediump float;',
+                      'uniform float uTime;',
+                      'uniform float uSeed;',
+                      'varying vec3 vNorm;',
+                      'varying vec3 vView;',
+                      'varying vec3 vLocalDir;',
+                      'void main() {',
+                      '  float fres = pow(1.0 - abs(dot(normalize(vNorm), normalize(vView))), 2.2);',
+                      '  float pulse = 0.78 + 0.22 * sin(uTime * 1.7 + vLocalDir.y * 4.0 + uSeed);',
+                      '  gl_FragColor = vec4(vec3(0.22, 0.76, 1.0), clamp(fres * 0.24 * pulse, 0.0, 0.34));',
+                      '}'
+                    ].join('\n'),
+                    transparent: true,
+                    depthWrite: false,
+                    blending: molAddBlend
+                  }) : new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.10, depthWrite: false, blending: THREE.AdditiveBlending });
+                  var dipMesh = new THREE.Mesh(dipGeo, dipMat);
+                  dipMesh.position.copy(positions[idx]);
+                  dipMesh.renderOrder = 1;
+                  dipMesh.visible = !molHC;
+                  atomGroup.add(dipMesh);
+                  resources.decorativeNodes.push(dipMesh);
+                }
+              });
+            }
+
             var signature = JSON.stringify([d.formula, atoms, bonds, moleculeDisplayStyle]);
             if (resources.modelSignature !== signature) {
               fitMoleculeCamera();
@@ -1930,17 +2312,27 @@ window.StemLab = window.StemLab || {
               }
               if (threeSceneRef.current) {
                 var scene = threeSceneRef.current;
+                var dGeos = new Set(), dMats = new Set(), dTexs = new Set();
                 scene.traverse(function(obj) {
-                  if (obj.geometry) obj.geometry.dispose();
+                  if (obj.geometry) dGeos.add(obj.geometry);
                   if (obj.material) {
-                    if (Array.isArray(obj.material)) {
-                      obj.material.forEach(function(m) { if (m.map) m.map.dispose(); m.dispose(); });
-                    } else {
-                      if (obj.material.map) obj.material.map.dispose();
-                      obj.material.dispose();
-                    }
+                    var ml = Array.isArray(obj.material) ? obj.material : [obj.material];
+                    ml.forEach(function(m) {
+                      if (!m) return;
+                      dMats.add(m);
+                      if (m.map && typeof m.map.dispose === 'function') dTexs.add(m.map);
+                      if (m.uniforms) {
+                        Object.keys(m.uniforms).forEach(function(uk) {
+                          var uv = m.uniforms[uk] && m.uniforms[uk].value;
+                          if (uv && typeof uv.dispose === 'function') dTexs.add(uv);
+                        });
+                      }
+                    });
                   }
                 });
+                dGeos.forEach(function(g) { if (typeof g.dispose === 'function') g.dispose(); });
+                dTexs.forEach(function(tx) { tx.dispose(); });
+                dMats.forEach(function(m) { if (typeof m.dispose === 'function') m.dispose(); });
                 threeSceneRef.current = null;
               }
               threeCameraRef.current = null;
@@ -2620,31 +3012,38 @@ window.StemLab = window.StemLab || {
           // ═══ Lab Challenges ═══
           const MOLECULE_CHALLENGES = [
             { id: 'first_discovery', emoji: '🧪', name: __alloT('stem.molecule.first_discovery', 'First Discovery'), desc: __alloT('stem.molecule.discover_any_compound', 'Discover any compound'), reward: 10,
-              check: function() { return (d.discoveredCompounds || []).length >= 1; } },
+              check: function(st) { return ((st && st.discoveredCompounds) || d.discoveredCompounds || []).length >= 1; } },
             { id: 'chemist_10', emoji: '🧑‍🔬', name: __alloT('stem.molecule.lab_chemist', 'Lab Chemist'), desc: __alloT('stem.molecule.discover_10_compounds', 'Discover 10 compounds'), reward: 25,
-              check: function() { return (d.discoveredCompounds || []).length >= 10; } },
+              check: function(st) { return ((st && st.discoveredCompounds) || d.discoveredCompounds || []).length >= 10; } },
             { id: 'master_chemist', emoji: '🏆', name: __alloT('stem.molecule.master_chemist', 'Master Chemist'), desc: __alloT('stem.molecule.discover_all_compounds', 'Discover all compounds'), reward: 50,
-              check: function() { return (d.discoveredCompounds || []).length >= COMPOUNDS.length; } },
+              check: function(st) { return ((st && st.discoveredCompounds) || d.discoveredCompounds || []).length >= COMPOUNDS.length; } },
             { id: 'quiz_streak', emoji: '🔥', name: __alloT('stem.molecule.quiz_streak', 'Quiz Streak'), desc: __alloT('stem.molecule.5_correct_in_a_row', '5 correct in a row'), reward: 20,
-              check: function() { return (d.elStreak || 0) >= 5; } },
+              check: function(st) { return (st && st.elStreak != null ? st.elStreak : (d.elStreak || 0)) >= 5; } },
             { id: 'balance_3', emoji: '⚖️', name: __alloT('stem.molecule.equation_balancer', 'Equation Balancer'), desc: __alloT('stem.molecule.balance_3_reactions', 'Balance 3 reactions'), reward: 30,
-              check: function() { return reactionsBalanced >= 3; } }
+              check: function(st) { return (st && st.reactionsBalanced != null ? st.reactionsBalanced : reactionsBalanced) >= 3; } }
           ];
 
           // ═══ Reaction helpers ═══
+          const _molGcd = (a, b) => { a = Math.abs(Math.round(a)); b = Math.abs(Math.round(b)); while (b) { const t = b; b = a % b; a = t; } return a || 1; };
           const checkBalance = (reaction, coeffs) => {
             const leftAtoms = {};
             const rightAtoms = {};
+            const usedCoeffs = [];
             reaction.left.forEach((term, i) => {
               const c = coeffs[i] || 1;
+              usedCoeffs.push(c);
               Object.entries(term.atoms).forEach(([el, n]) => { leftAtoms[el] = (leftAtoms[el] || 0) + c * n; });
             });
             reaction.right.forEach((term, i) => {
               const c = coeffs[reaction.left.length + i] || 1;
+              usedCoeffs.push(c);
               Object.entries(term.atoms).forEach(([el, n]) => { rightAtoms[el] = (rightAtoms[el] || 0) + c * n; });
             });
             const allEls = [...new Set([...Object.keys(leftAtoms), ...Object.keys(rightAtoms)])];
-            return { balanced: allEls.every(el => (leftAtoms[el] || 0) === (rightAtoms[el] || 0)), leftAtoms, rightAtoms };
+            const atomsMatch = allEls.every(el => (leftAtoms[el] || 0) === (rightAtoms[el] || 0));
+            const commonDiv = usedCoeffs.reduce((acc, c) => _molGcd(acc, c), usedCoeffs[0] || 1);
+            const reduced = commonDiv === 1;
+            return { balanced: atomsMatch && reduced, atomsMatch, reduced, leftAtoms, rightAtoms };
           };
 
           const getAtomBalance = (reaction, coeffs) => {
@@ -2672,13 +3071,27 @@ window.StemLab = window.StemLab || {
             const r = REACTIONS[currentReactionIdx];
             const result = checkBalance(r, reactionCoeffs || []);
             if (result.balanced) {
+              const solvedList = Array.isArray(d.solvedReactions) ? d.solvedReactions : [];
+              const rxKey = r.name || String(currentReactionIdx);
+              const alreadySolved = solvedList.includes(rxKey);
+              if (alreadySolved) {
+                updMulti({ reactionResult: 'correct' });
+                addToast('✅ Balanced! (Already credited for this reaction)', 'success');
+                return;
+              }
               const newBal = reactionsBalanced + 1;
               const rpGain = r.difficulty * 10;
-              updMulti({ reactionResult: 'correct', reactionsBalanced: newBal, researchPoints: researchPoints + rpGain, totalRP: totalRP + rpGain });
+              const nextRP = researchPoints + rpGain;
+              const nextTotalRP = totalRP + rpGain;
+              const nextSolved = [...solvedList, rxKey];
+              updMulti({ reactionResult: 'correct', reactionsBalanced: newBal, solvedReactions: nextSolved, researchPoints: nextRP, totalRP: nextTotalRP });
               addToast('✅ Balanced! +' + rpGain + ' RP', 'success');
               if (typeof awardStemXP === 'function') awardStemXP('molecule', 20, 'Balanced: ' + r.name);
               if (typeof stemCelebrate === 'function') stemCelebrate();
-              checkMoleculeChallenges();
+              checkMoleculeChallenges({ reactionsBalanced: newBal, researchPoints: nextRP, totalRP: nextTotalRP });
+            } else if (result.atomsMatch && !result.reduced) {
+              updMulti({ reactionResult: 'incorrect' });
+              addToast('❌ Atoms match, but divide all coefficients by their common factor to get the lowest whole-number ratio!', 'warning');
             } else {
               updMulti({ reactionResult: 'incorrect' });
               addToast('❌ Not balanced yet - check the atom counts!', 'warning');
@@ -2686,18 +3099,23 @@ window.StemLab = window.StemLab || {
           };
 
           // ═══ Challenge checker ═══
-          const checkMoleculeChallenges = () => {
+          const checkMoleculeChallenges = (overrides) => {
+            const nextState = overrides && typeof overrides === 'object' ? overrides : {};
             let newCompleted = [...completedChallenges];
             let rpGained = 0;
             MOLECULE_CHALLENGES.forEach(ch => {
-              if (!newCompleted.includes(ch.id) && ch.check()) {
+              if (!newCompleted.includes(ch.id) && ch.check(nextState)) {
                 newCompleted.push(ch.id);
                 rpGained += ch.reward;
                 addToast('🏆 ' + ch.name + '! +' + ch.reward + ' RP', 'success');
                 if (typeof stemCelebrate === 'function') stemCelebrate();
               }
             });
-            if (rpGained > 0) updMulti({ completedChallenges: newCompleted, researchPoints: researchPoints + rpGained, totalRP: totalRP + rpGained });
+            if (rpGained > 0) {
+              const baseRP = nextState.researchPoints != null ? nextState.researchPoints : researchPoints;
+              const baseTotalRP = nextState.totalRP != null ? nextState.totalRP : totalRP;
+              updMulti({ completedChallenges: newCompleted, researchPoints: baseRP + rpGained, totalRP: baseTotalRP + rpGained });
+            }
           };
 
           const advanceTutorial = () => upd('tutorialStep', Math.min(tutorialStep + 1, 4));
@@ -3034,12 +3452,13 @@ window.StemLab = window.StemLab || {
             if (match) {
 
               const isNew = !discovered.includes(match.formula);
+              const nextDiscovered = isNew ? [...discovered, match.formula] : discovered;
 
               upd('craftResult', { success: true, compound: match, isNew });
 
-              if (isNew) upd('discoveredCompounds', [...discovered, match.formula]);
+              if (isNew) upd('discoveredCompounds', nextDiscovered);
               playBeep();
-              checkMoleculeChallenges();
+              checkMoleculeChallenges({ discoveredCompounds: nextDiscovered });
 
             } else {
 
@@ -3330,7 +3749,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             },
               React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
                 React.createElement("div", { className: "min-w-0" },
-                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-900" }, __alloT('stem.molecule.imported_from_particle_lab', 'Imported from Particle Lab 3D')),
+                  React.createElement("p", { className: "text-xs font-black uppercase tracking-wide text-cyan-900" }, __alloT('stem.molecule.imported_from_particle_lab', 'Imported from Particle Lab 3D')),
                   React.createElement("p", { className: "mt-0.5 text-xs font-bold text-slate-900" }, (d.sourceGasFormula || d.sourceGasId || 'N\u2082') + ' \u2022 ' + (Math.round(Number(d.sourceTemperatureK) || 300)) + ' K chamber conditions')
                 ),
                 React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
@@ -3626,7 +4045,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     }),
                     React.createElement("div", {
                       "aria-hidden": "true",
-                      style: { position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(circle at 50% 46%, transparent 34%, rgba(2,6,23,0.5) 100%), linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.05) 1px, transparent 1px)", backgroundSize: "100% 100%, 28px 28px, 28px 28px", mixBlendMode: "screen", opacity: 0.68 }
+                      style: { position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse 68% 58% at 50% 44%, rgba(56,189,248,0.14) 0%, rgba(99,102,241,0.06) 44%, rgba(2,6,23,0.56) 100%), linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.05) 1px, transparent 1px)", backgroundSize: "100% 100%, 28px 28px, 28px 28px", mixBlendMode: "screen", opacity: 0.78 }
                     }),
                     React.createElement("div", {
                       style: { position: "absolute", top: 12, left: 12, right: 12, pointerEvents: "none", width: "fit-content", maxWidth: "calc(100% - 24px)", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", padding: "6px 9px", borderRadius: 10, background: "rgba(2,6,23,0.68)", color: "#dbeafe", border: "1px solid rgba(147,197,253,0.22)", boxShadow: "0 10px 24px rgba(2,6,23,0.35)", backdropFilter: "blur(10px)", fontSize: 11, fontWeight: 800, letterSpacing: 0 }
@@ -3670,6 +4089,20 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   )
                 )
                 : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "2D molecule structure with " + (Array.isArray(d.atoms) ? d.atoms : []).length + " atom" + ((Array.isArray(d.atoms) ? d.atoms : []).length === 1 ? "" : "s") + ". Drag an atom to reposition it; use the controls to add atoms and bonds.", className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { height: "320px", maxHeight: "320px", display: "block" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
+                    React.createElement("defs", null,
+                      React.createElement("radialGradient", { id: "mol2dStudioBg", cx: "50%", cy: "45%", r: "65%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#f0f9ff", stopOpacity: 0.72 }),
+                        React.createElement("stop", { offset: "65%", stopColor: "#f8fafc", stopOpacity: 0.35 }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#e2e8f0", stopOpacity: 0.45 })
+                      ),
+                      React.createElement("radialGradient", { id: "mol2dAtomSpec", cx: "34%", cy: "28%", r: "68%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#ffffff", stopOpacity: 0.65 }),
+                        React.createElement("stop", { offset: "38%", stopColor: "#ffffff", stopOpacity: 0.14 }),
+                        React.createElement("stop", { offset: "78%", stopColor: "#0f172a", stopOpacity: 0.08 }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#020617", stopOpacity: 0.32 })
+                      )
+                    ),
+                    React.createElement("rect", { x: 0, y: 0, width: W, height: H, fill: "url(#mol2dStudioBg)", style: { pointerEvents: "none" } }),
                     (Array.isArray(d.bonds) ? d.bonds : []).map((b, i) => {
                       const a = d.atoms[b[0]], z = d.atoms[b[1]];
                       if (!a || !z) return null;
@@ -3678,7 +4111,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       const offsets = order === 3 ? [-6, 0, 6] : order === 2 ? [-4, 4] : [0];
                       return React.createElement('g', { key: 'b' + i, 'data-molecule-bond-order': order }, offsets.map((offset, lineIndex) => {
                         const dx = -(z.y - a.y) / length * offset, dy = (z.x - a.x) / length * offset;
-                        return React.createElement('line', { key: lineIndex, x1: a.x + dx, y1: a.y + dy, x2: z.x + dx, y2: z.y + dy, stroke: '#94a3b8', strokeWidth: order === 1 ? 4 : 2.5, strokeLinecap: 'round' });
+                        return React.createElement('line', { key: lineIndex, x1: a.x + dx, y1: a.y + dy, x2: z.x + dx, y2: z.y + dy, stroke: '#64748b', strokeWidth: order === 1 ? 5 : 3, strokeLinecap: 'round' });
                       }));
                     }),
                     (Array.isArray(d.atoms) ? d.atoms : []).map((a, i) => React.createElement("g", { key: i },
@@ -3689,7 +4122,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       React.createElement("circle", {
                         cx: a.x, cy: a.y, r: 24,
                         fill: a.color || '#94a3b8', stroke: '#fff', strokeWidth: 3,
-                        style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' },
+                        style: { filter: 'drop-shadow(0 3px 6px rgba(15,23,42,0.26))', cursor: 'grab' },
                         role: 'button',
                         tabIndex: 0,
                         'aria-label': (a.el || 'atom') + ' at x ' + Math.round(a.x) + ', y ' + Math.round(a.y) + '. Arrow keys to move.',
@@ -3707,7 +4140,8 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                           upd('atoms', na);
                         }
                       }),
-                      React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '14px', fontWeight: 'bold', pointerEvents: 'none' } }, a.el)
+                      React.createElement("circle", { cx: a.x, cy: a.y, r: 23, fill: "url(#mol2dAtomSpec)", style: { pointerEvents: 'none' } }),
+                      React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '14px', fontWeight: 'bold', pointerEvents: 'none', textShadow: '0 1px 2px rgba(15,23,42,0.5)' } }, a.el)
                     ))
                   ),
 
@@ -3782,7 +4216,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
               React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-4" },
 
-                ['H', 'C', 'N', 'O', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'K', 'Ca', 'Fe', 'Cu', 'Zn', 'Br', 'Ag', 'I', 'Au'].map(sym => {
+                ['H', 'C', 'N', 'O', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'K', 'Ca', 'Mn', 'Fe', 'Cu', 'Zn', 'Br', 'Ag', 'I', 'Au'].map(sym => {
 
                   const el = getEl(sym);
 
@@ -3907,6 +4341,18 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   { sym: 'K', color: '#f87171', label: __alloT('stem.molecule.potassium', 'Potassium') },
 
                   { sym: 'Si', color: '#34d399', label: __alloT('stem.molecule.silicon', 'Silicon') },
+
+                  { sym: 'Mg', color: '#10b981', label: __alloT('stem.molecule.magnesium', 'Magnesium') },
+
+                  { sym: 'Al', color: '#94a3b8', label: __alloT('stem.molecule.aluminum', 'Aluminum') },
+
+                  { sym: 'Mn', color: '#c084fc', label: __alloT('stem.molecule.manganese', 'Manganese') },
+
+                  { sym: 'Cu', color: '#d97706', label: __alloT('stem.molecule.copper', 'Copper') },
+
+                  { sym: 'Zn', color: '#64748b', label: __alloT('stem.molecule.zinc', 'Zinc') },
+
+                  { sym: 'Ag', color: '#cbd5e1', label: __alloT('stem.molecule.silver', 'Silver') },
 
                 ].map(a => React.createElement("button", { "aria-label": "Add " + a.label + " atom to canvas",
 
@@ -4395,9 +4841,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   onClick: () => {
 
+                    const atoms = d.buildAtoms || [];
+                    const bonds = d.buildBonds || [];
                     const counts = {};
 
-                    (d.buildAtoms || []).forEach(a => { counts[a.el] = (counts[a.el] || 0) + 1; });
+                    atoms.forEach(a => { counts[a.el] = (counts[a.el] || 0) + 1; });
 
                     const match = COMPOUNDS.find(c => {
 
@@ -4409,20 +4857,55 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     });
 
-                    if (match) {
+                    // Verify all atoms are connected by bonds for multi-atom molecules
+                    let isConnected = atoms.length <= 1;
+                    if (!isConnected && bonds.length >= atoms.length - 1) {
+                      const adj = atoms.map(() => []);
+                      bonds.forEach(b => {
+                        if (b && b[0] >= 0 && b[0] < atoms.length && b[1] >= 0 && b[1] < atoms.length && b[0] !== b[1]) {
+                          adj[b[0]].push(b[1]);
+                          adj[b[1]].push(b[0]);
+                        }
+                      });
+                      const visited = new Set([0]);
+                      const q = [0];
+                      while (q.length) {
+                        const cur = q.shift();
+                        adj[cur].forEach(nxt => { if (!visited.has(nxt)) { visited.add(nxt); q.push(nxt); } });
+                      }
+                      isConnected = visited.size === atoms.length;
+                    }
 
-                      upd('buildCheckResult', { success: true, compound: match });
+                    if (match && !isConnected) {
+
+                      upd('buildCheckResult', { success: false });
+
+                      addToast('\u{1F517} Atoms match ' + match.formula + ', but connect all atoms with bonds to complete the molecule!', 'warning');
+
+                    } else if (match && d.buildTarget && d.buildTarget.formula !== match.formula) {
+
+                      upd('buildCheckResult', { success: false, compound: match });
+
+                      addToast('\u{1F3AF} You built ' + match.name + ' (' + match.formula + '), but your challenge target is ' + d.buildTarget.name + ' (' + d.buildTarget.formula + ')!', 'warning');
+
+                    } else if (match) {
+
+                      const builtList = Array.isArray(d.builtCompounds) ? d.builtCompounds : [];
+                      const isFirstBuild = !builtList.includes(match.formula);
+                      const disc = d.discoveredCompounds || [];
+                      const nextDisc = disc.includes(match.formula) ? disc : [...disc, match.formula];
+
+                      updMulti({
+                        buildCheckResult: { success: true, compound: match },
+                        discoveredCompounds: nextDisc,
+                        builtCompounds: isFirstBuild ? [...builtList, match.formula] : builtList
+                      });
 
                       addToast('\u2705 You built ' + match.name + '!', 'success');
 
-                      if (typeof awardStemXP === 'function') awardStemXP('molecule', 15, 'Built ' + match.name);
+                      if (isFirstBuild && typeof awardStemXP === 'function') awardStemXP('molecule', 15, 'Built ' + match.name);
 
-                      // Add to discovered
-
-                      const disc = d.discoveredCompounds || [];
-
-                      if (!disc.includes(match.formula)) upd('discoveredCompounds', [...disc, match.formula]);
-                      checkMoleculeChallenges();
+                      checkMoleculeChallenges({ discoveredCompounds: nextDisc });
 
                     } else {
 
@@ -5821,13 +6304,14 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                             var correct = opt === elQuiz.answer;
 
+                            var nextStreak = correct ? elStreak + 1 : 0;
                             updMulti({
                               elQuiz: Object.assign({}, elQuiz, { answered: true, chosen: opt }),
                               elScore: elScore + (correct ? 1 : 0),
                               elAttempts: elAttempts + 1,
-                              elStreak: correct ? elStreak + 1 : 0
+                              elStreak: nextStreak
                             });
-                            if (correct) checkMoleculeChallenges();
+                            if (correct) checkMoleculeChallenges({ elStreak: nextStreak });
 
                             if (correct) addToast(t('stem.periodic.correct', '✅ Correct!'), 'success'); else addToast(t('stem.periodic.answer', '❌ Answer: ') + elQuiz.answer, 'error');
 
@@ -8061,13 +8545,15 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
         var h = React.createElement;
         var R_GAS = 8.314;                                   // J/(mol·K)
         function numOr(v, fb) { var n = Number(v); return (v === '' || v === null || !isFinite(n)) ? fb : n; }
-        var Ea    = numOr(d2.kinEa, 75);                      // kJ/mol, uncatalysed barrier
+        var rawEa = numOr(d2.kinEa, 75);                      // kJ/mol, uncatalysed barrier
         var drop  = numOr(d2.kinDrop, 30);                    // kJ/mol the catalyst removes
         var T     = numOr(d2.kinT, 298);                      // K
         var dH    = numOr(d2.kinDH, -50);                     // kJ/mol, reaction enthalpy
+        var minEaFloor = Math.max(5, dH > 0 ? dH + 5 : 5);
+        var Ea    = Math.max(minEaFloor, rawEa);              // physical floor: transition state must sit above products (EaRev >= 5)
         var showCat = d2.kinCat !== false;
-        var EaCat = Math.max(5, Ea - drop);
-        var EaRev = Ea - dH;                                   // reverse barrier: always Ea − ΔH
+        var EaCat = Math.max(minEaFloor, Ea - drop);
+        var EaRev = Ea - dH;                                   // reverse barrier: always Ea − ΔH >= 5
 
         // Boltzmann factor: the share of collisions carrying at least Ea.
         function boltz(ea) { return Math.exp(-ea * 1000 / (R_GAS * T)); }
@@ -8130,7 +8616,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               // aria-valuetext carries the reading itself.
               'aria-valuetext': val + ' ' + unit,
               onChange: function (e) {
-                var patch = {}; patch[key] = numOr(e.target.value, fallback);
+                var valNext = numOr(e.target.value, fallback);
+                var patch = {}; patch[key] = valNext;
+                if (key === 'kinDH' && valNext + 5 > rawEa) {
+                  patch.kinEa = Math.min(200, Math.max(20, valNext + 5));
+                }
                 try { setExp(patch); } catch (er) {}
               },
               className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer',
@@ -8187,7 +8677,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
               h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))' } },
                 h('div', null,
-                  slider('kinEa', __alloT('stem.molecule.kin_ea', 'Activation energy Ea'), 20, 200, 5, Ea, 'kJ/mol', 75),
+                  slider('kinEa', __alloT('stem.molecule.kin_ea', 'Activation energy Ea'), Math.max(20, dH > 0 ? dH + 5 : 20), 200, 5, Ea, 'kJ/mol', 75),
                   slider('kinDH', __alloT('stem.molecule.kin_dh', 'Reaction enthalpy ΔH'), -150, 150, 10, dH, 'kJ/mol', -50),
                   slider('kinT', __alloT('stem.molecule.kin_temp', 'Temperature'), 250, 700, 5, T, 'K', 298),
                   h('div', { className: 'flex items-center gap-3 mt-2' },
@@ -9304,7 +9794,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             h('p', { className: 'text-[10.5px] text-slate-600 leading-snug mt-1.5' },
               __alloT('stem.molecule.gl_graham_body', 'At one temperature every gas carries the same average kinetic energy — so the light molecules must move faster to match the heavy ones. Helium is seven times lighter than nitrogen and moves about 2.6 times quicker, which is exactly √7. That is Graham\'s law, and it is why the helium balloon is on the floor by morning while the air-filled one is not.')),
             typeof setStemLabTool === 'function' && h('div', { className: 'mt-2.5 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2' },
-              h('span', { className: 'text-[11px] font-bold text-slate-700' }, __alloT('stem.molecule.gl_particle_bridge_hint', 'Test these conditions in the 3D kinetic chamber:')),
+              h('span', { className: 'text-xs font-bold text-slate-700' }, __alloT('stem.molecule.gl_particle_bridge_hint', 'Test these conditions in the 3D kinetic chamber:')),
               h('button', {
                 id: 'molecule-gaslaws-to-particlelab-btn',
                 type: 'button',

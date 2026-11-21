@@ -345,6 +345,29 @@
     .clab-root #clab-hud .elegend{gap:10px}
   }
   @container clab-stage (min-width:1101px){.clab-root #clab-hud .clab-minimap{display:flex}}
+  /* Bespoke Coaster Physics Workbench Hero + Full Light/Dark/High-Contrast Parity */
+  .clab-workbench-shell{display:flex;flex-direction:column;gap:12px;min-width:0}
+  .clab-studio-hero{background:linear-gradient(135deg,#0d1520 0%,#1a2333 52%,#2a1b12 100%);border:1px solid rgba(251,191,36,0.36);border-radius:16px;padding:14px 16px;color:#f8fafc;box-shadow:0 16px 34px -22px rgba(5,10,18,0.88);min-width:0}
+  .clab-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;min-width:0}
+  .clab-hero-identity{display:flex;align-items:flex-start;gap:12px;flex:1 1 320px;min-width:0}
+  .clab-emblem-box{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,rgba(245,158,11,0.28),rgba(15,21,28,0.92));border:1.5px solid rgba(251,191,36,0.58);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 6px 16px rgba(5,10,18,0.55)}
+  .clab-subject-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;background:rgba(245,158,11,0.20);border:1px solid rgba(251,191,36,0.50);color:#fde68a;font-size:10.5px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase}
+  .clab-hero-title{margin:5px 0 2px;font-size:18px;font-weight:900;line-height:1.2;color:#ffffff}
+  .clab-hero-sub{margin:0;font-size:12px;line-height:1.45;color:#cbd5e1}
+  .clab-telemetry-strip{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:10px;padding-top:9px;border-top:1px solid rgba(251,191,36,0.22);min-width:0}
+  .clab-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:rgba(12,18,26,0.82);border:1px solid rgba(251,191,36,0.36);color:#fef3c7;font-size:11px;font-weight:700;white-space:nowrap}
+  .clab-energy-schematic{margin-top:10px;padding:7px 10px;border-radius:12px;background:rgba(10,15,22,0.78);border:1px solid rgba(251,191,36,0.26)}
+  .clab-starter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding-top:9px;border-top:1px solid rgba(251,191,36,0.22)}
+  .clab-starter-label{font-size:10.5px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:#fde68a}
+  .clab-starter-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 13px;border-radius:10px;background:rgba(12,18,26,0.86);border:1px solid rgba(251,191,36,0.40);color:#fef3c7;font-size:12px;font-weight:700;cursor:pointer;transition:background 140ms ease,border-color 140ms ease}
+  .clab-starter-chip:hover:not(:disabled){background:rgba(180,83,9,0.42);border-color:#fcd34d;color:#ffffff}
+  .clab-starter-chip:focus-visible,.clab-root button:focus-visible,.clab-root select:focus-visible,.clab-root input:focus-visible{outline:2.5px solid #facc15!important;outline-offset:2px!important}
+  .theme-contrast .clab-studio-hero,.theme-contrast .clab-root{background:#000000!important;background-image:none!important;border:2px solid #ffff00!important;color:#ffff00!important;box-shadow:none!important}
+  .theme-contrast .clab-emblem-box,.theme-contrast .clab-subject-badge,.theme-contrast .clab-telemetry-pill,.theme-contrast .clab-energy-schematic,.theme-contrast .clab-root #clab-top,.theme-contrast .clab-root .card,.theme-contrast .clab-root #clab-hud,.theme-contrast .clab-root #clab-side{background:#000000!important;background-image:none!important;border:1.5px solid #ffff00!important;color:#ffff00!important;box-shadow:none!important}
+  .theme-contrast .clab-hero-title,.theme-contrast .clab-hero-sub,.theme-contrast .clab-starter-label,.theme-contrast .clab-root .hint,.theme-contrast .clab-root .eyebrow,.theme-contrast .clab-root .hudk,.theme-contrast .clab-root .hudv{color:#ffff00!important}
+  .theme-contrast .clab-starter-chip,.theme-contrast .clab-root button,.theme-contrast .clab-root select,.theme-contrast .clab-root input{background:#000000!important;background-image:none!important;border:1.5px solid #ffff00!important;color:#ffff00!important}
+  .theme-contrast .clab-starter-chip:hover:not(:disabled),.theme-contrast .clab-root button:hover:not(:disabled){background:#00ff00!important;color:#000000!important;border-color:#00ff00!important}
+  .theme-contrast .clab-root button.primary,.theme-contrast .clab-root button[aria-pressed="true"],.theme-contrast .clab-root button.on{background:#ffff00!important;color:#000000!important;border-color:#ffff00!important}
   `;
   var fxControl = '<button id="clab-btnFx" title="Lite mode disables shadows and trees for slower devices">FX: Full</button>';
   CLAB_HTML = CLAB_HTML
@@ -1129,23 +1152,58 @@ function physicsPitEmblem(){
   return '<span class="clab-pit-emblem" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M4 29C10 29 9 12 17 12S22 30 29 30S33 18 37 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M10 28V34M19 18V34M29 30V34" fill="none" stroke="currentColor" opacity=".35"/><rect x="12" y="6" width="9" height="5" rx="2" fill="currentColor"/></svg></span>';
 }
 function renderPhysicsPitIllustration(id){
-  const car = (x, y, angle = 0) => '<g transform="translate(' + x + ' ' + y + ') rotate(' + angle + ')"><path d="M-12 -13H12L9 -3H-9Z" fill="currentColor"/><path d="M-6 -17V-13M4 -17V-13" stroke="currentColor" stroke-width="3"/><circle cx="-7" cy="0" r="3" fill="#dceaf3"/><circle cx="7" cy="0" r="3" fill="#dceaf3"/></g>';
+  const uid = 'clab-pit-' + id;
+  const car = (x, y, angle = 0, fast = false) => '<g transform="translate(' + x + ' ' + y + ') rotate(' + angle + ')">' +
+    (fast ? '<path d="M-34 -9H-14M-28 -5H-13M-22 -12H-13" stroke="#ffd27d" stroke-width="1.6" stroke-linecap="round" opacity=".72"/>' : '') +
+    '<path d="M-13 -13H12L15 -8L10 -3H-10Z" fill="currentColor"/><path d="M-10 -12H10L12 -9H-8Z" fill="#ffffff" opacity=".28"/><path d="M-6 -17V-13M4 -17V-13" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="13" cy="-7" r="1.8" fill="#fff6cf"/><circle cx="-7" cy="0" r="3" fill="#dceaf3" stroke="#0f1b26" stroke-width=".9"/><circle cx="7" cy="0" r="3" fill="#dceaf3" stroke="#0f1b26" stroke-width=".9"/></g>';
+  const defs = '<defs><linearGradient id="' + uid + '-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0d1e2e" stop-opacity=".75"/><stop offset="68%" stop-color="#183247" stop-opacity=".42"/><stop offset="100%" stop-color="#223e50" stop-opacity=".15"/></linearGradient>' +
+    '<linearGradient id="' + uid + '-ribbon" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#60a5fa"/><stop offset="55%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#fb7185"/></linearGradient>' +
+    '<filter id="' + uid + '-glow" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  const skyBackdrop = '<rect width="320" height="176" fill="url(#' + uid + '-sky)"/>' +
+    '<g opacity=".18" fill="#cfe6f5"><ellipse cx="76" cy="34" rx="28" ry="6"/><ellipse cx="92" cy="30" rx="18" ry="6"/><ellipse cx="238" cy="40" rx="32" ry="6.5"/><ellipse cx="256" cy="36" rx="18" ry="6"/></g>' +
+    '<path d="M0 144L46 112L94 128L152 94L214 126L272 102L320 130V176H0Z" fill="#0f2536" opacity=".36"/>' +
+    '<path d="M0 154L68 128L130 142L198 116L262 138L320 124V176H0Z" fill="#173448" opacity=".42"/>';
+  const trussCol = (x, yTop, yBot) => {
+    let segs = '<path d="M' + (x - 4) + ' ' + yTop + 'V' + yBot + 'M' + (x + 4) + ' ' + yTop + 'V' + yBot + 'M' + (x - 7) + ' ' + yBot + 'H' + (x + 7) + '" stroke="currentColor" stroke-width="1.2" opacity=".32"/>';
+    for(let yy = yTop; yy < yBot - 10; yy += 16){
+      const yNext = Math.min(yBot, yy + 16);
+      segs += '<path d="M' + (x - 4) + ' ' + yy + 'L' + (x + 4) + ' ' + yNext + 'M' + (x + 4) + ' ' + yy + 'L' + (x - 4) + ' ' + yNext + '" stroke="currentColor" stroke-width=".85" opacity=".24"/>';
+    }
+    return segs;
+  };
   const grid = '<path d="M0 40H320M0 80H320M0 120H320M40 0V176M80 0V176M120 0V176M160 0V176M200 0V176M240 0V176M280 0V176" stroke="#aec4d6" stroke-opacity=".07"/>';
   let drawing, label, view;
   if(id === 'energy'){
     label = 'A car at a higher point and a later lower point on the same descent. Compare its speed at the two positions.';
     view = 'Side view';
-    drawing = '<path d="M25 67H67C133 67 137 132 229 132H294V160H25Z" fill="currentColor" opacity=".05"/><path d="M40 72V158M100 81V158M160 122V158M220 137V158M280 137V158" stroke="currentColor" opacity=".18"/><path d="M25 70H67C133 70 137 135 229 135H294" fill="none" stroke="currentColor" opacity=".35" stroke-width="2"/><path d="M25 64H67C133 64 137 129 229 129H294" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>' + car(58,60) + car(259,125) + '<text x="24" y="25" class="pit-label">Higher point</text><text x="215" y="88" class="pit-label">Lower point</text><path d="M204 95H254V104" fill="none" stroke="currentColor" opacity=".5"/><path d="M148 45L179 65M168 65H179V54" fill="none" stroke="#dceaf3" stroke-width="2" stroke-linecap="round"/><text x="24" y="158" class="pit-small">ONE DESCENT · TWO POSITIONS</text>';
+    drawing = skyBackdrop +
+      '<path d="M25 67H67C133 67 137 132 229 132H294V160H25Z" fill="currentColor" opacity=".06"/>' +
+      trussCol(44, 71, 158) + trussCol(104, 83, 158) + trussCol(164, 124, 158) + trussCol(224, 136, 158) + trussCol(278, 136, 158) +
+      '<path d="M25 70H67C133 70 137 135 229 135H294" fill="none" stroke="currentColor" opacity=".42" stroke-width="2"/>' +
+      '<path d="M25 64H67C133 64 137 129 229 129H294" fill="none" stroke="url(#' + uid + '-ribbon)" stroke-width="6" opacity=".28" filter="url(#' + uid + '-glow)"/>' +
+      '<path d="M25 64H67C133 64 137 129 229 129H294" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>' +
+      car(58,60,0,false) + car(259,125,0,true) +
+      '<text x="24" y="25" class="pit-label">Higher point</text><text x="215" y="88" class="pit-label">Lower point</text><path d="M204 95H254V104" fill="none" stroke="currentColor" opacity=".5"/><path d="M148 45L179 65M168 65H179V54" fill="none" stroke="#dceaf3" stroke-width="2" stroke-linecap="round"/><text x="24" y="158" class="pit-small">ONE DESCENT · TWO POSITIONS</text>';
   }else if(id === 'curvature'){
     label = 'Top view of a wide turn and a tighter turn. Dashed lines show the different radii. Entry speed is the same.';
     view = 'Top view';
-    drawing = '<path d="M160 16V158" stroke="#aec4d6" stroke-opacity=".18" stroke-dasharray="3 5"/><text x="80" y="25" text-anchor="middle" class="pit-label">Wide turn</text><text x="242" y="25" text-anchor="middle" class="pit-label">Tight turn</text><path d="M33 126V100A49 49 0 0 1 131 100V126M210 126V100A31 31 0 0 1 272 100V126" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M82 100H33M241 100H210" stroke="#dceaf3" stroke-dasharray="4 4"/><circle cx="82" cy="100" r="3" fill="#dceaf3"/><circle cx="241" cy="100" r="3" fill="#dceaf3"/><text x="82" y="88" font-style="italic">r</text><text x="241" y="88" font-style="italic">r</text><path d="M17 126V106L13 113M17 106L21 113M194 126V106L190 113M194 106L198 113" fill="none" stroke="#dceaf3" stroke-width="2"/><text x="160" y="158" text-anchor="middle" class="pit-small">SAME ENTRY SPEED · DIFFERENT RADII</text>';
+    drawing = '<rect width="320" height="176" fill="url(#' + uid + '-sky)"/>' +
+      '<circle cx="82" cy="100" r="64" fill="none" stroke="#9ec5dc" stroke-opacity=".08" stroke-dasharray="4 6"/><circle cx="241" cy="100" r="46" fill="none" stroke="#9ec5dc" stroke-opacity=".08" stroke-dasharray="4 6"/>' +
+      '<path d="M160 16V158" stroke="#aec4d6" stroke-opacity=".18" stroke-dasharray="3 5"/><text x="80" y="25" text-anchor="middle" class="pit-label">Wide turn</text><text x="242" y="25" text-anchor="middle" class="pit-label">Tight turn</text>' +
+      '<path d="M33 126V100A49 49 0 0 1 131 100V126M210 126V100A31 31 0 0 1 272 100V126" fill="none" stroke="url(#' + uid + '-ribbon)" stroke-width="8" opacity=".24" filter="url(#' + uid + '-glow)"/>' +
+      '<path d="M33 126V100A49 49 0 0 1 131 100V126M210 126V100A31 31 0 0 1 272 100V126" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M82 100H33M241 100H210" stroke="#dceaf3" stroke-dasharray="4 4"/><circle cx="82" cy="100" r="3.5" fill="#dceaf3"/><circle cx="241" cy="100" r="3.5" fill="#dceaf3"/><text x="82" y="88" font-style="italic">r</text><text x="241" y="88" font-style="italic">r</text><path d="M17 126V106L13 113M17 106L21 113M194 126V106L190 113M194 106L198 113" fill="none" stroke="#dceaf3" stroke-width="2"/><text x="160" y="158" text-anchor="middle" class="pit-small">SAME ENTRY SPEED · DIFFERENT RADII</text>';
   }else{
     label = 'Side view of a car passing over a smooth crest. A seat-g indicator reads approximately zero.';
     view = 'Side view';
-    drawing = '<path d="M20 147Q155 5 300 147V165H20Z" fill="currentColor" opacity=".05"/><path d="M20 147Q155 5 300 147" fill="none" stroke="currentColor" stroke-width="3"/><path d="M20 153Q155 11 300 153" fill="none" stroke="currentColor" opacity=".35" stroke-width="2"/><path d="M70 104V161M120 83V161M170 82V161M220 104V161M270 130V161" stroke="currentColor" opacity=".18"/>' + car(157,72) + '<rect x="207" y="14" width="95" height="57" rx="10" fill="#1a3041" stroke="currentColor" stroke-opacity=".5"/><text x="254" y="34" text-anchor="middle" class="pit-small">SEAT G</text><text x="254" y="58" text-anchor="middle" class="pit-label" style="font-size:22px">≈ 0 g</text><path d="M207 45H187L170 61" fill="none" stroke="currentColor" stroke-dasharray="3 4"/><text x="20" y="27" class="pit-label">Over the crest</text><text x="160" y="163" text-anchor="middle" class="pit-small">WHAT DOES THE RIDER FEEL?</text>';
+    drawing = skyBackdrop +
+      '<path d="M20 147Q155 5 300 147V165H20Z" fill="currentColor" opacity=".06"/>' +
+      trussCol(70, 106, 161) + trussCol(118, 84, 161) + trussCol(168, 82, 161) + trussCol(218, 104, 161) + trussCol(268, 130, 161) +
+      '<path d="M20 147Q155 5 300 147" fill="none" stroke="url(#' + uid + '-ribbon)" stroke-width="6.5" opacity=".28" filter="url(#' + uid + '-glow)"/>' +
+      '<path d="M20 147Q155 5 300 147" fill="none" stroke="currentColor" stroke-width="3"/><path d="M20 153Q155 11 300 153" fill="none" stroke="currentColor" opacity=".4" stroke-width="2"/>' +
+      car(157,72,0,true) +
+      '<rect x="207" y="14" width="95" height="57" rx="10" fill="#162a3b" stroke="currentColor" stroke-opacity=".55"/><text x="254" y="34" text-anchor="middle" class="pit-small">SEAT G</text><text x="254" y="58" text-anchor="middle" class="pit-label" style="font-size:22px">≈ 0 g</text><path d="M207 45H187L170 61" fill="none" stroke="currentColor" stroke-dasharray="3 4"/><text x="20" y="27" class="pit-label">Over the crest</text><text x="160" y="163" text-anchor="middle" class="pit-small">WHAT DOES THE RIDER FEEL?</text>';
   }
-  return '<figure class="clab-pit-figure"><svg class="clab-pit-viz" viewBox="0 0 320 176" role="img" aria-label="' + label + '">' + grid + drawing + '</svg><figcaption><span>' + view + ' · schematic</span><span>Predict → check → try</span></figcaption></figure>';
+  return '<figure class="clab-pit-figure"><svg class="clab-pit-viz" viewBox="0 0 320 176" role="img" aria-label="' + label + '">' + defs + drawing + grid + '</svg><figcaption><span>' + view + ' · schematic</span><span>Predict → check → try</span></figcaption></figure>';
 }
 function renderPhysicsPitNotebook(item){
   const notes = physicsPit.stops[item.id].notebook;
@@ -1399,10 +1457,18 @@ function updateSceneLightFrame(){
   sky.material.uniforms.sunDir.value.copy(sceneSunDirection);
 }
 
-/* sky dome: gradient dusk, sun glow + disc, sparse stars overhead */
+/* sky dome: GLSL Rayleigh-Mie atmospheric scattering + drifting volumetric FBM clouds + stars */
+function isCoasterHighContrast(){
+  try{
+    return !!(typeof document !== 'undefined' && (
+      (document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) ||
+      (document.body && document.body.classList && document.body.classList.contains('theme-contrast'))
+    ));
+  }catch(_e){ return false; }
+}
 const sky = new THREE.Mesh(
   new THREE.SphereGeometry(2200, 32, 20),
-  new THREE.ShaderMaterial({
+  typeof THREE.ShaderMaterial === 'function' ? new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
     uniforms: {
       sunDir: { value: new THREE.Vector3(260, 74, 50).normalize() },
@@ -1410,29 +1476,57 @@ const sky = new THREE.Mesh(
       midColor: { value: new THREE.Color(VISUAL_THEMES[visualTheme].mid) },
       horizonColor: { value: new THREE.Color(VISUAL_THEMES[visualTheme].horizon) },
       sunGlow: { value: new THREE.Color(VISUAL_THEMES[visualTheme].sunGlow) },
-      starStrength: { value: VISUAL_THEMES[visualTheme].stars }
+      starStrength: { value: VISUAL_THEMES[visualTheme].stars },
+      uTime: { value: 2.4 },
+      uHighContrast: { value: isCoasterHighContrast() ? 1.0 : 0.0 }
     },
     vertexShader:
       'varying vec3 vDir;' +
       'void main(){ vDir = normalize(position);' +
       ' gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-    fragmentShader:
-      'varying vec3 vDir; uniform vec3 sunDir, zenColor, midColor, horizonColor, sunGlow; uniform float starStrength;' +
-      'float hash(vec3 p){ p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3)); p *= 17.0;' +
-      ' return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }' +
-      'void main(){' +
-      ' float h = clamp(vDir.y, -0.05, 1.0);' +
-      ' vec3 zen = zenColor;' +
-      ' vec3 mid = midColor;' +
-      ' vec3 hor = horizonColor;' +
-      ' vec3 col = mix(hor, mid, smoothstep(0.0, 0.22, h));' +
-      ' col = mix(col, zen, smoothstep(0.22, 0.75, h));' +
-      ' float sd = max(dot(vDir, sunDir), 0.0);' +
-      ' col += sunGlow * pow(sd, 22.0) * 0.50;' +
-      ' col += sunGlow * pow(sd, 350.0) * 1.40;' +
-      ' float st = step(0.9982, hash(floor(vDir * 460.0))) * smoothstep(0.12, 0.45, h);' +
-      ' gl_FragColor = vec4(col + vec3(st) * starStrength, 1.0); }'
-  })
+    fragmentShader: [
+      'varying vec3 vDir;',
+      'uniform vec3 sunDir, zenColor, midColor, horizonColor, sunGlow;',
+      'uniform float starStrength, uTime, uHighContrast;',
+      'float hash31(vec3 p){ p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }',
+      'float hash21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+      'float vnoise(vec2 p){',
+      '  vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);',
+      '  return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), u.x), mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), u.x), u.y);',
+      '}',
+      'float fbmCloud(vec2 p){',
+      '  float v = 0.0; float a = 0.52;',
+      '  for(int i = 0; i < 4; i++){ v += a * vnoise(p); p = p * 2.04 + vec2(11.3, 7.7); a *= 0.5; }',
+      '  return v;',
+      '}',
+      'void main(){',
+      '  float h = clamp(vDir.y, -0.05, 1.0);',
+      '  float rayleigh = pow(1.0 - clamp(h, 0.0, 1.0), 2.35);',
+      '  vec3 col = mix(horizonColor, midColor, smoothstep(0.0, 0.24, h));',
+      '  col = mix(col, zenColor, smoothstep(0.20, 0.78, h));',
+      '  if(uHighContrast > 0.5){ gl_FragColor = vec4(col, 1.0); return; }',
+      '  vec3 sDir = normalize(sunDir);',
+      '  float sd = max(dot(vDir, sDir), 0.0);',
+      '  float mie = 0.08 / pow(max(0.18, 1.0 + 0.56 - 1.48 * sd), 1.5);',
+      '  col += sunGlow * (mie * 0.26 * (0.45 + 0.55 * rayleigh) + pow(sd, 24.0) * 0.44 + pow(sd, 340.0) * 1.45);',
+      '  float antiSun = max(dot(vDir, -sDir), 0.0);',
+      '  col += mix(horizonColor, midColor, 0.45) * pow(antiSun, 3.0) * (1.0 - smoothstep(0.0, 0.28, h)) * 0.14;',
+      '  float cloudMask = smoothstep(0.035, 0.20, h) * (1.0 - smoothstep(0.58, 0.94, h));',
+      '  vec2 skyProj = vDir.xz / max(0.18, h + 0.16);',
+      '  vec2 drift1 = vec2(uTime * 0.011, uTime * 0.0045);',
+      '  vec2 drift2 = vec2(-uTime * 0.007, uTime * 0.009);',
+      '  float c1 = fbmCloud(skyProj * 0.72 + drift1);',
+      '  float c2 = fbmCloud(skyProj * 1.48 + drift2 + vec2(3.1, 5.4));',
+      '  float density = smoothstep(0.46, 0.79, c1 * 0.72 + c2 * 0.28) * cloudMask * (1.0 - starStrength * 0.65);',
+      '  float litEdge = smoothstep(0.32, 0.76, c1 - c2 * 0.25) * (0.35 + 0.65 * pow(sd, 1.8));',
+      '  vec3 cloudBase = mix(midColor * 0.78 + horizonColor * 0.22, vec3(0.96, 0.97, 1.0), 0.52);',
+      '  vec3 cloudLit = mix(cloudBase, sunGlow * 1.15 + vec3(0.32), 0.62);',
+      '  col = mix(col, mix(cloudBase, cloudLit, litEdge), clamp(density * 0.46, 0.0, 0.68));',
+      '  float st = step(0.9982, hash31(floor(vDir * 460.0))) * smoothstep(0.12, 0.45, h) * (1.0 - density * 0.85);',
+      '  gl_FragColor = vec4(col + vec3(st) * starStrength, 1.0);',
+      '}'
+    ].join('\n')
+  }) : new THREE.MeshBasicMaterial({ color: VISUAL_THEMES[visualTheme].mid, side: THREE.BackSide, depthWrite: false, fog: false })
 );
 sky.renderOrder = -1;
 scene.add(sky);
@@ -1532,6 +1626,26 @@ const readableDimMat = readableTrackMaterial({ color: 0x576578 }, 0.65);
 const readableSpineMat = readableTrackMaterial({ color: 0x14222e }, 0.55);
 const readableHeatMat = readableTrackMaterial({ vertexColors: true }, 1.6);
 scene.userData.clabExtraMaterials = [readableRailMat, readableDimMat, readableSpineMat, readableHeatMat];
+const clabWindUniforms = {
+  uWindTime: { value: 1.5 },
+  uWindStrength: { value: 0.085 }
+};
+MAT.leaf.onBeforeCompile = shader => {
+  shader.uniforms.uWindTime = clabWindUniforms.uWindTime;
+  shader.uniforms.uWindStrength = clabWindUniforms.uWindStrength;
+  shader.vertexShader = 'uniform float uWindTime;\nuniform float uWindStrength;\n' + shader.vertexShader.replace('#include <begin_vertex>', [
+    '#include <begin_vertex>',
+    'float clabTip = clamp(position.y + 0.5, 0.0, 1.0);',
+    'float clabPhase = 0.0;',
+    '#ifdef USE_INSTANCING',
+    '  clabPhase = instanceMatrix[3].x * 0.13 + instanceMatrix[3].z * 0.11;',
+    '#endif',
+    'float clabGust = sin(uWindTime * 1.55 + clabPhase) + 0.45 * sin(uWindTime * 2.75 + clabPhase * 1.7);',
+    'transformed.x += clabGust * uWindStrength * clabTip * clabTip;',
+    'transformed.z += cos(uWindTime * 1.25 + clabPhase * 1.3) * uWindStrength * 0.6 * clabTip * clabTip;'
+  ].join('\n'));
+};
+MAT.leaf.customProgramCacheKey = () => 'clab-wind-leaf-v1';
 const trackMainMeshes = [];
 const launchPhaseMeshes = [];
 const liftChainDogs = [];
@@ -2401,6 +2515,126 @@ const speedStreakSeed = Array.from({ length: SPEED_STREAK_COUNT }, (_, i) => ({
 const streakPos = new THREE.Vector3(), streakTan = new THREE.Vector3(), streakUp = new THREE.Vector3(), streakSide = new THREE.Vector3();
 const streakHead = new THREE.Vector3(), streakTail = new THREE.Vector3();
 
+/* GLSL speed- & G-force-reactive aerodynamic slipstream ribbon + glowing kinetic rail-energy pulses */
+const SLIPSTREAM_SEGS = 28;
+const slipstreamPositions = new Float32Array((SLIPSTREAM_SEGS + 1) * 2 * 3);
+const slipstreamUvs = new Float32Array((SLIPSTREAM_SEGS + 1) * 2 * 2);
+const slipstreamIndices = [];
+for(let i = 0; i <= SLIPSTREAM_SEGS; i++){
+  const v = i / SLIPSTREAM_SEGS;
+  slipstreamUvs[i * 4] = 0; slipstreamUvs[i * 4 + 1] = v;
+  slipstreamUvs[i * 4 + 2] = 1; slipstreamUvs[i * 4 + 3] = v;
+  if(i < SLIPSTREAM_SEGS){
+    const a = i * 2, b = a + 1, c = a + 2, d = a + 3;
+    slipstreamIndices.push(a, b, c, b, d, c);
+  }
+}
+const slipstreamGeo = new THREE.BufferGeometry();
+slipstreamGeo.setAttribute('position', new THREE.BufferAttribute(slipstreamPositions, 3));
+slipstreamGeo.setAttribute('uv', new THREE.BufferAttribute(slipstreamUvs, 2));
+slipstreamGeo.setIndex(slipstreamIndices);
+const slipstreamMat = typeof THREE.ShaderMaterial === 'function' ? new THREE.ShaderMaterial({
+  uniforms: {
+    uTime: { value: 1.5 },
+    uSpeed: { value: 0.0 },
+    uGForce: { value: 1.0 },
+    uOpacity: { value: 0.0 },
+    uHighContrast: { value: isCoasterHighContrast() ? 1.0 : 0.0 }
+  },
+  vertexShader: [
+    'varying vec2 vUv;',
+    'void main(){',
+    '  vUv = uv;',
+    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+    '}'
+  ].join('\n'),
+  fragmentShader: [
+    'uniform float uTime, uSpeed, uGForce, uOpacity, uHighContrast;',
+    'varying vec2 vUv;',
+    'void main(){',
+    '  if(uHighContrast > 0.5 || uOpacity <= 0.005) discard;',
+    '  float railL = exp(-pow((vUv.x - 0.08) * 18.0, 2.0));',
+    '  float railR = exp(-pow((vUv.x - 0.92) * 18.0, 2.0));',
+    '  float rails = clamp(railL + railR, 0.0, 1.0);',
+    '  float flowSpeed = 3.8 + uSpeed * 0.28;',
+    '  float pulseWave = pow(0.5 + 0.5 * sin(vUv.y * 18.0 - uTime * flowSpeed), 3.0);',
+    '  float aero = (0.5 + 0.5 * sin(vUv.x * 22.0 + sin(vUv.y * 10.0 - uTime * flowSpeed * 0.7) * 2.2)) * sin(vUv.x * 3.1415926);',
+    '  float trailFade = (1.0 - smoothstep(0.0, 1.0, vUv.y)) * smoothstep(0.0, 0.08, vUv.y);',
+    '  float speedNorm = clamp((uSpeed - 5.0) / 26.0, 0.0, 1.0);',
+    '  float gStress = clamp((uGForce - 2.0) / 2.2, 0.0, 1.0);',
+    '  vec3 coolCyan = vec3(0.26, 0.84, 1.0);',
+    '  vec3 kineticGold = vec3(1.0, 0.76, 0.28);',
+    '  vec3 highGHot = vec3(1.0, 0.36, 0.44);',
+    '  vec3 baseCol = mix(coolCyan, kineticGold, speedNorm);',
+    '  vec3 col = mix(baseCol, highGHot, gStress) * (0.75 + 0.55 * pulseWave);',
+    '  col += vec3(1.0, 0.96, 0.86) * rails * pulseWave * 0.65;',
+    '  float pattern = rails * (0.65 + 0.55 * pulseWave) + aero * (0.18 + 0.26 * speedNorm);',
+    '  float alpha = clamp(pattern * trailFade * uOpacity, 0.0, 0.85);',
+    '  gl_FragColor = vec4(col * alpha, alpha);',
+    '}'
+  ].join('\n'),
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  side: THREE.DoubleSide
+}) : new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+const slipstreamRibbon = new THREE.Mesh(slipstreamGeo, slipstreamMat);
+slipstreamRibbon.name = 'coaster-slipstream-ribbon';
+slipstreamRibbon.visible = false; slipstreamRibbon.frustumCulled = false;
+scene.add(slipstreamRibbon);
+const slipPos = new THREE.Vector3(), slipTan = new THREE.Vector3(), slipUp = new THREE.Vector3(), slipSide = new THREE.Vector3();
+
+/* GLSL high-G brake & turn wheel spark bursts (pre-allocated, disposed with scene) */
+const SPARK_COUNT = 64;
+const sparkPosArr = new Float32Array(SPARK_COUNT * 3);
+const sparkLifeArr = new Float32Array(SPARK_COUNT);
+const sparkSeedArr = new Float32Array(SPARK_COUNT);
+const sparkVel = Array.from({ length: SPARK_COUNT }, () => new THREE.Vector3());
+for(let i = 0; i < SPARK_COUNT; i++){ sparkLifeArr[i] = 0; sparkSeedArr[i] = (i * 0.6180339) % 1; }
+const wheelSparkGeo = new THREE.BufferGeometry();
+wheelSparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPosArr, 3));
+wheelSparkGeo.setAttribute('aLife', new THREE.BufferAttribute(sparkLifeArr, 1));
+wheelSparkGeo.setAttribute('aSeed', new THREE.BufferAttribute(sparkSeedArr, 1));
+const wheelSparkMat = typeof THREE.ShaderMaterial === 'function' ? new THREE.ShaderMaterial({
+  uniforms: {
+    uHighContrast: { value: isCoasterHighContrast() ? 1.0 : 0.0 }
+  },
+  vertexShader: [
+    'attribute float aLife;',
+    'attribute float aSeed;',
+    'varying float vLife;',
+    'void main(){',
+    '  vLife = aLife;',
+    '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);',
+    '  float sz = (95.0 + 75.0 * aSeed) * clamp(aLife, 0.0, 1.0);',
+    '  gl_PointSize = aLife > 0.01 ? clamp(sz / max(1.5, -mvPos.z), 2.0, 14.0) : 0.0;',
+    '  gl_Position = projectionMatrix * mvPos;',
+    '}'
+  ].join('\n'),
+  fragmentShader: [
+    'uniform float uHighContrast;',
+    'varying float vLife;',
+    'void main(){',
+    '  if(uHighContrast > 0.5 || vLife <= 0.01) discard;',
+    '  float r = length(gl_PointCoord - 0.5);',
+    '  if(r > 0.5) discard;',
+    '  float core = pow(1.0 - smoothstep(0.0, 0.48, r), 2.4);',
+    '  vec3 hot = mix(vec3(1.0, 0.42, 0.08), vec3(1.0, 0.96, 0.78), clamp(core * 0.7 + vLife * 0.5, 0.0, 1.0));',
+    '  float alpha = clamp(core * vLife * 1.15, 0.0, 0.95);',
+    '  gl_FragColor = vec4(hot * alpha, alpha);',
+    '}'
+  ].join('\n'),
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending
+}) : new THREE.PointsMaterial({ color: 0xffb84d, size: 0.25, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending });
+const wheelSparks = new THREE.Points(wheelSparkGeo, wheelSparkMat);
+wheelSparks.name = 'coaster-wheel-sparks';
+wheelSparks.visible = false; wheelSparks.frustumCulled = false;
+scene.add(wheelSparks);
+let sparkCursor = 0, sparkEmitAcc = 0;
+const sparkPosTmp = new THREE.Vector3(), sparkTanTmp = new THREE.Vector3(), sparkUpTmp = new THREE.Vector3(), sparkSideTmp = new THREE.Vector3();
+
 /* camera-scale progress tracer: tapered hoops plus an arrow, not color alone */
 const progressTracerGroup = new THREE.Group();
 const progressTracerMats = [], progressTracerRings = [];
@@ -3064,9 +3298,26 @@ function gvColor(g, out){
   }
   return out.copy(XSTOPS[XSTOPS.length - 1][1]);
 }
+function idealV2(i){
+  if(!analysis) return LIFT_V * LIFT_V;
+  if(design.propulsion && design.propulsion.mode === 'launch' && analysis.L){
+    const si = track.s[i];
+    if(si <= analysis.L.s){
+      return Math.max(0, 2 * (design.propulsion.accel * si - G0 * (track.y[i] - track.y[0])));
+    }
+    if(si < track.sCrest){
+      return Math.max(0, analysis.L.v * analysis.L.v + 2 * G0 * (analysis.L.h - track.y[i]));
+    }
+  } else if(track.s[i] < track.sCrest){
+    return LIFT_V * LIFT_V;
+  }
+  return Math.max(0, analysis.A.v ** 2 + 2 * G0 * (analysis.A.h - track.y[i]));
+}
 function idealGV(i){
-  if(!analysis || track.s[i] < track.sCrest) return 1;
-  const v2 = Math.max(0, analysis.A.v ** 2 + 2 * G0 * (analysis.A.h - track.y[i]));
+  if(!analysis) return 1;
+  const isLaunch = design.propulsion && design.propulsion.mode === 'launch' && analysis.L;
+  if(!isLaunch && track.s[i] < track.sCrest) return 1;
+  const v2 = idealV2(i);
   return track.upY[i] + v2 * track.kUp[i] / G0;
 }
 const HEAT_RAMP = [
@@ -3081,10 +3332,6 @@ const HEAT_CONFIG = {
   lateral: { label: 'Predicted lateral g', min: 0, max: 2, unit: 'g' },
   curvature: { label: 'Track curvature', min: 0, max: 12, unit: '1/100 m' }
 };
-function idealV2(i){
-  if(!analysis || track.s[i] < track.sCrest) return LIFT_V * LIFT_V;
-  return Math.max(0, analysis.A.v ** 2 + 2 * G0 * (analysis.A.h - track.y[i]));
-}
 function idealGLat(i){
   const v2 = idealV2(i);
   return track.sideY[i] + v2 * track.kSide[i] / G0;
@@ -3677,7 +3924,7 @@ function analyze(){
     vB: B ? vAt(B.h) : null,
     vCmin: C ? Math.sqrt(G0 * C.r) : null,
     vC: C ? vAt(C.h) : null,
-    gB: B ? 1 + vAt(B.h) ** 2 * Math.abs(track.kUp[B.idx]) / G0 : null,
+    gB: B ? t.upY[B.idx] + vAt(B.h) ** 2 * t.kUp[B.idx] / G0 : null,
     vD: D ? vAt(D.h) : null,
     bankD: D ? Math.atan(vAt(D.h) ** 2 / (G0 * D.r)) * 180 / Math.PI : null
   };
@@ -3745,17 +3992,22 @@ function renderProblems(){
         (The problems below assume it clears.)</p></div>`;
     }
   }
-  html += `
-    <div class="card prob" data-p="p1">
-      <p class="eyebrow">Concept check 1 · Conservation of energy</p>
-      <div class="given">crest A: h = ${fmt(a.A.h)} m, ${a.L ? 'crossed' : 'released'} at v = ${fmt(a.A.v)} m/s<br>valley B: h = ${fmt(a.B.h)} m</div>
-      <p class="ask">How fast is the train moving at <b>B</b>, the lowest point of your ride?</p>
-      <div class="ansrow"><input type="number" step="0.1" id="inP1" inputmode="decimal" aria-label="speed at B"><span class="unit">m/s</span><span class="verdict" id="vP1"></span></div>
-      <details class="work"><summary>Show the physics</summary><div>
-        ½v² + gh is conserved (ideal conditions)<br>
-        v_B = √(v_A² + 2g·(h_A − h_B))
-      </div></details>
-    </div>`;
+  if(a.B){
+    html += `
+      <div class="card prob" data-p="p1">
+        <p class="eyebrow">Concept check 1 · Conservation of energy</p>
+        <div class="given">crest A: h = ${fmt(a.A.h)} m, ${a.L ? 'crossed' : 'released'} at v = ${fmt(a.A.v)} m/s<br>valley B: h = ${fmt(a.B.h)} m</div>
+        <p class="ask">How fast is the train moving at <b>B</b>, the lowest point of your ride?</p>
+        <div class="ansrow"><input type="number" step="0.1" id="inP1" inputmode="decimal" aria-label="speed at B"><span class="unit">m/s</span><span class="verdict" id="vP1"></span></div>
+        <details class="work"><summary>Show the physics</summary><div>
+          ½v² + gh is conserved (ideal conditions)<br>
+          v_B = √(v_A² + 2g·(h_A − h_B))
+        </div></details>
+      </div>`;
+  } else {
+    html += `<div class="card"><p class="eyebrow">Concept check 1 · Conservation of energy</p>
+      <p class="hint" style="margin:0">No valley found between crest A and the brake run — move the first high crest earlier in the track to unlock valley problems.</p></div>`;
+  }
   if(a.C){
     html += `
     <div class="card prob" data-p="p2">
@@ -3774,16 +4026,18 @@ function renderProblems(){
     html += `<div class="card"><p class="eyebrow">Concept check 2 · Loop safety</p>
       <p class="hint" style="margin:0">No inversion detected — add a vertical loop to unlock this problem.</p></div>`;
   }
-  html += `
-    <div class="card prob" data-p="p3">
-      <p class="eyebrow">Concept check 3 · Circular motion</p>
-      <div class="given">valley B: radius of curvature r = ${fmt(a.B.r)} m</div>
-      <p class="ask">How many g's does a rider feel pressed into the seat at <b>B</b>?</p>
-      <div class="ansrow"><input type="number" step="0.01" id="inP3" inputmode="decimal" aria-label="seat g at valley"><span class="unit">g</span><span class="verdict" id="vP3"></span></div>
-      <details class="work"><summary>Show the physics</summary><div>
-        seat force = weight + centripetal: n = 1 + v_B²/(g·r)
-      </div></details>
-    </div>`;
+  if(a.B){
+    html += `
+      <div class="card prob" data-p="p3">
+        <p class="eyebrow">Concept check 3 · Circular motion</p>
+        <div class="given">valley B: radius of curvature r = ${fmt(a.B.r)} m</div>
+        <p class="ask">How many g's does a rider feel pressed into the seat at <b>B</b>?</p>
+        <div class="ansrow"><input type="number" step="0.01" id="inP3" inputmode="decimal" aria-label="seat g at valley"><span class="unit">g</span><span class="verdict" id="vP3"></span></div>
+        <details class="work"><summary>Show the physics</summary><div>
+          seat force = weight + centripetal: n = 1 + v_B²/(g·r)
+        </div></details>
+      </div>`;
+  }
   if(a.D){
     html += `
     <div class="card prob" data-p="p4">
@@ -3828,7 +4082,15 @@ function applyCertBankAnswer(){
   const p = design.points[design.certTurnIdx];
   if(!p) return;
   if(!isFinite(deg)){ banner('Type your bank angle in check 4 first.', 'fail', 2600); if(el) el.focus(); return; }
-  p.bank = Math.max(-180, Math.min(180, deg));
+  let signedDeg = deg;
+  if(deg > 0 && analysis && analysis.D && typeof track !== 'undefined' && track && track.T){
+    const idx = analysis.D.idx;
+    const ip = (idx - 1 + M) % M, inx = (idx + 1) % M;
+    const Td = track.T[idx], dTx = track.T[inx].x - track.T[ip].x, dTz = track.T[inx].z - track.T[ip].z;
+    const crossY = dTx * Td.z - dTz * Td.x;
+    if(crossY > 1e-9) signedDeg = -deg;
+  }
+  p.bank = Math.max(-180, Math.min(180, signedDeg));
   fullRebuild(); saveDesign();
   banner(`Node ${design.certTurnIdx} is now banked ${fmt(p.bank, 0)}°. Run the inspection to measure the turn.`, 'pass', 3200);
 }
@@ -4280,7 +4542,8 @@ function stepSim(dtFrame){
       tele.lastTraceS = sim.S;
       tele.trace.push({ s: sim.S, v: Math.abs(sim.v), g: gV, gl: gLat });
     }
-    if(!tele.rolledBack && sim.S > t.sCrest && sim.S < sim.sMax - 0.8){
+    const rollbackFloorS = (launch && sLaunchEnd != null) ? sLaunchEnd : t.sCrest;
+    if(!tele.rolledBack && sim.S > rollbackFloorS && sim.S < sim.sMax - 0.8){
       tele.rolledBack = true;
       banner('Rolled back — not enough energy to clear that hill!', 'fail', 3000);
     }
@@ -6233,7 +6496,9 @@ function drawChart(cv, pts, key, yMin, yMax, color, opts){
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const w = cv.clientWidth || 300, hh = cv.clientHeight || 72;
   cv.width = w * dpr; cv.height = hh * dpr;
-  const g = cv.getContext('2d'); g.scale(dpr, dpr);
+  const g = cv.getContext('2d');
+  if(!g) return;
+  g.scale(dpr, dpr);
   const sMax = Math.max(pts[pts.length - 1].s, 1);
   const X = s => 2 + (w - 4) * s / sMax;
   const Y = v => hh - 4 - (hh - 16) * (v - yMin) / (yMax - yMin);
@@ -6299,7 +6564,35 @@ function drawChart(cv, pts, key, yMin, yMax, color, opts){
     g.stroke();
     g.setLineDash([]);
   }
-  g.strokeStyle = color; g.lineWidth = 2; g.lineJoin = 'round';
+  const baselineY = Y(Math.max(yMin, Math.min(yMax, yMin <= 0 && yMax >= 0 ? 0 : yMin)));
+  g.save();
+  const areaGrad = g.createLinearGradient(0, 10, 0, hh - 4);
+  areaGrad.addColorStop(0, color);
+  areaGrad.addColorStop(1, 'rgba(15,23,42,0)');
+  g.globalAlpha = 0.22;
+  g.fillStyle = areaGrad;
+  g.beginPath();
+  pts.forEach((p, i) => {
+    const x = X(p.s), y = Y(Math.max(yMin, Math.min(yMax, p[key])));
+    if(i) g.lineTo(x, y); else g.moveTo(x, y);
+  });
+  if(pts.length){
+    g.lineTo(X(pts[pts.length - 1].s), baselineY);
+    g.lineTo(X(pts[0].s), baselineY);
+    g.closePath();
+    g.fill();
+  }
+  g.restore();
+  g.save();
+  g.strokeStyle = color; g.lineWidth = 4.5; g.lineJoin = 'round'; g.lineCap = 'round'; g.globalAlpha = 0.22;
+  g.beginPath();
+  pts.forEach((p, i) => {
+    const x = X(p.s), y = Y(Math.max(yMin, Math.min(yMax, p[key])));
+    if(i) g.lineTo(x, y); else g.moveTo(x, y);
+  });
+  g.stroke();
+  g.restore();
+  g.strokeStyle = color; g.lineWidth = 2.1; g.lineJoin = 'round'; g.lineCap = 'round';
   g.beginPath();
   pts.forEach((p, i) => {
     const x = X(p.s), y = Y(Math.max(yMin, Math.min(yMax, p[key])));
@@ -6419,59 +6712,121 @@ function miniXY(x, z){
   return [ox + (x - miniState.minX) * s, h - (oz + (z - miniState.minZ) * s)];
 }
 function rebuildMiniMap(){
-  if(!track || !minimap) return;
+  if(!track || !minimap || !miniBaseCtx) return;
   miniState.minX = miniState.minZ = Infinity;
   miniState.maxX = miniState.maxZ = -Infinity;
+  let maxTrackY = 1;
   for(let i = 0; i < M; i += 8){
     const p = track.pos[i];
     miniState.minX = Math.min(miniState.minX, p.x); miniState.maxX = Math.max(miniState.maxX, p.x);
     miniState.minZ = Math.min(miniState.minZ, p.z); miniState.maxZ = Math.max(miniState.maxZ, p.z);
+    if(p.y > maxTrackY) maxTrackY = p.y;
   }
   const c = miniBaseCtx, cfg = VISUAL_THEMES[visualTheme];
-  c.clearRect(0, 0, miniBase.width, miniBase.height);
-  c.fillStyle = visualTheme === 'daylight' ? '#183328' : visualTheme === 'blueprint' ? '#061a2d' : '#070c13';
-  c.fillRect(0, 0, miniBase.width, miniBase.height);
+  const bw = miniBase.width, bh = miniBase.height;
+  c.clearRect(0, 0, bw, bh);
+  const bgGrad = c.createRadialGradient(bw * 0.5, bh * 0.5, 8, bw * 0.5, bh * 0.5, Math.max(bw, bh) * 0.72);
+  if(visualTheme === 'daylight'){
+    bgGrad.addColorStop(0, '#214536'); bgGrad.addColorStop(1, '#13281f');
+  } else if(visualTheme === 'blueprint'){
+    bgGrad.addColorStop(0, '#0a2a47'); bgGrad.addColorStop(1, '#041221');
+  } else {
+    bgGrad.addColorStop(0, '#101a27'); bgGrad.addColorStop(1, '#060b11');
+  }
+  c.fillStyle = bgGrad;
+  c.fillRect(0, 0, bw, bh);
   c.strokeStyle = 'rgba(134,170,196,0.10)'; c.lineWidth = 1;
-  for(let x = 16; x < miniBase.width; x += 24){ c.beginPath(); c.moveTo(x, 0); c.lineTo(x, miniBase.height); c.stroke(); }
-  for(let y = 8; y < miniBase.height; y += 24){ c.beginPath(); c.moveTo(0, y); c.lineTo(miniBase.width, y); c.stroke(); }
+  for(let x = 16; x < bw; x += 24){ c.beginPath(); c.moveTo(x, 0); c.lineTo(x, bh); c.stroke(); }
+  for(let y = 8; y < bh; y += 24){ c.beginPath(); c.moveTo(0, y); c.lineTo(bw, y); c.stroke(); }
+  // Ground shadow under elevated track + glowing rail halo + elevation-tinted energy ribbon
+  c.save();
+  c.strokeStyle = 'rgba(0,0,0,0.42)';
+  c.lineWidth = 7; c.lineJoin = c.lineCap = 'round';
+  c.beginPath();
+  for(let i = 0; i < M; i += 5){
+    const q = miniXY(track.pos[i].x, track.pos[i].z);
+    if(i) c.lineTo(q[0] + 2, q[1] + 2.5); else c.moveTo(q[0] + 2, q[1] + 2.5);
+  }
+  c.closePath(); c.stroke();
+  c.restore();
   c.strokeStyle = '#' + cfg.rail.toString(16).padStart(6, '0');
-  c.lineWidth = 5; c.lineJoin = c.lineCap = 'round'; c.shadowColor = c.strokeStyle; c.shadowBlur = 8;
+  c.lineWidth = 5; c.lineJoin = c.lineCap = 'round'; c.shadowColor = c.strokeStyle; c.shadowBlur = 10;
   c.beginPath();
   for(let i = 0; i < M; i += 5){
     const q = miniXY(track.pos[i].x, track.pos[i].z);
     if(i) c.lineTo(q[0], q[1]); else c.moveTo(q[0], q[1]);
   }
   c.closePath(); c.stroke(); c.shadowBlur = 0;
+  // Subtle elevation-lit inner ribbon sheen along the rail
+  c.lineWidth = 1.6;
+  for(let i = 0; i < M - 5; i += 5){
+    const p0 = track.pos[i], p1 = track.pos[i + 5];
+    const q0 = miniXY(p0.x, p0.z), q1 = miniXY(p1.x, p1.z);
+    const elev = Math.max(0, Math.min(1, p0.y / maxTrackY));
+    c.strokeStyle = elev > 0.55 ? 'rgba(255,232,165,0.72)' : 'rgba(135,214,255,0.48)';
+    c.beginPath(); c.moveTo(q0[0], q0[1]); c.lineTo(q1[0], q1[1]); c.stroke();
+  }
   c.fillStyle = '#e8eef4';
   for(const p of design.points){ const q = miniXY(p.x, p.z); c.beginPath(); c.arc(q[0], q[1], 2.3, 0, Math.PI * 2); c.fill(); }
   const start = miniXY(track.pos[0].x, track.pos[0].z);
-  c.fillStyle = '#59c98d'; c.fillRect(start[0] - 3, start[1] - 3, 6, 6);
+  c.fillStyle = '#59c98d'; c.fillRect(start[0] - 3.5, start[1] - 3.5, 7, 7);
+  c.strokeStyle = '#e8fff2'; c.lineWidth = 1; c.strokeRect(start[0] - 3.5, start[1] - 3.5, 7, 7);
 }
+const miniTrail = [];
 function drawMiniMap(){
-  if(!track || !minimap) return;
+  if(!track || !minimap || !miniCtx) return;
   miniCtx.clearRect(0, 0, minimap.width, minimap.height);
   miniCtx.drawImage(miniBase, 0, 0);
   frameAt(sim.S, miniPos, miniTan, miniUp);
   const q = miniXY(miniPos.x, miniPos.z), ang = Math.atan2(miniTan.z, miniTan.x);
+  const speedNorm = Math.min(1, Math.abs(sim.v || 0) / 30);
+  if(!reducedMotion() && sim.running && !sim.paused){
+    miniTrail.push([q[0], q[1]]);
+    if(miniTrail.length > 14) miniTrail.shift();
+  } else if(!sim.running){
+    miniTrail.length = 0;
+  }
+  if(miniTrail.length > 1 && speedNorm > 0.08){
+    miniCtx.save();
+    miniCtx.lineCap = 'round';
+    for(let ti = 1; ti < miniTrail.length; ti++){
+      const frac = ti / miniTrail.length;
+      miniCtx.strokeStyle = speedNorm > 0.62 ? 'rgba(255,209,102,' + (frac * 0.62).toFixed(3) + ')' : 'rgba(125,211,252,' + (frac * 0.52).toFixed(3) + ')';
+      miniCtx.lineWidth = 1.4 + frac * 2.4;
+      miniCtx.beginPath();
+      miniCtx.moveTo(miniTrail[ti - 1][0], miniTrail[ti - 1][1]);
+      miniCtx.lineTo(miniTrail[ti][0], miniTrail[ti][1]);
+      miniCtx.stroke();
+    }
+    miniCtx.restore();
+  }
   miniCtx.save(); miniCtx.translate(q[0], q[1]); miniCtx.rotate(-ang);
-  miniCtx.fillStyle = '#ffffff'; miniCtx.shadowColor = '#ffffff'; miniCtx.shadowBlur = 10;
-  miniCtx.beginPath(); miniCtx.moveTo(7, 0); miniCtx.lineTo(-5, -4.5); miniCtx.lineTo(-3, 0); miniCtx.lineTo(-5, 4.5); miniCtx.closePath(); miniCtx.fill();
+  miniCtx.fillStyle = '#ffffff'; miniCtx.shadowColor = speedNorm > 0.62 ? '#ffd166' : '#ffffff'; miniCtx.shadowBlur = 12;
+  miniCtx.beginPath(); miniCtx.moveTo(7.5, 0); miniCtx.lineTo(-5, -4.6); miniCtx.lineTo(-3, 0); miniCtx.lineTo(-5, 4.6); miniCtx.closePath(); miniCtx.fill();
   miniCtx.restore();
 }
 function drawGBall(gl, gv){
   const c = gbCtx, W = 64, H = 64;
+  if(!c) return;
   const cl = THREE.MathUtils.clamp;
   c.setTransform(2, 0, 0, 2, 0, 0);
-  c.fillStyle = '#1c2836';
+  const dialBg = c.createRadialGradient(W * 0.5, H * 0.5, 2, W * 0.5, H * 0.5, W * 0.72);
+  dialBg.addColorStop(0, '#223347');
+  dialBg.addColorStop(1, '#121b26');
+  c.fillStyle = dialBg;
   c.fillRect(0, 0, W, H);
   const X = g => W / 2 + g * (W / 2 - 4) / 2;     // ±2 g lateral
   const Y = g => 3 + (7 - g) / 9 * (H - 6);       // +7 … −2 g seat
-  c.fillStyle = 'rgba(229,72,77,0.16)';
+  c.fillStyle = 'rgba(229,72,77,0.18)';
   c.fillRect(0, 0, X(-LIM.glat), H);
   c.fillRect(X(LIM.glat), 0, W - X(LIM.glat), H);
   c.fillRect(0, 0, W, Y(LIM.gvMax));
   c.fillRect(0, Y(LIM.gvMin), W, H - Y(LIM.gvMin));
-  c.strokeStyle = 'rgba(159,176,193,0.3)';
+  c.strokeStyle = 'rgba(159,176,193,0.14)';
+  c.lineWidth = 0.75;
+  c.beginPath(); c.arc(X(0), Y(1), 12, 0, Math.PI * 2); c.stroke();
+  c.beginPath(); c.arc(X(0), Y(1), 24, 0, Math.PI * 2); c.stroke();
+  c.strokeStyle = 'rgba(159,176,193,0.34)';
   c.lineWidth = 1;
   c.beginPath(); c.moveTo(X(0), 0); c.lineTo(X(0), H); c.stroke();
   c.beginPath(); c.moveTo(0, Y(0)); c.lineTo(W, Y(0)); c.stroke();
@@ -6480,18 +6835,28 @@ function drawGBall(gl, gv){
   c.setLineDash([]);
   gbTrail.push({ gl, gv });
   if(gbTrail.length > 30) gbTrail.shift();
-  c.strokeStyle = 'rgba(242,166,60,0.35)';
-  c.beginPath();
-  gbTrail.forEach((p, i) => {
-    const x = X(cl(p.gl, -2, 2)), y = Y(cl(p.gv, -2, 7));
-    if(i) c.lineTo(x, y); else c.moveTo(x, y);
-  });
-  c.stroke();
+  for(let i = 1; i < gbTrail.length; i++){
+    const frac = i / gbTrail.length;
+    const p0 = gbTrail[i - 1], p1 = gbTrail[i];
+    c.strokeStyle = 'rgba(242,166,60,' + (0.08 + frac * 0.55).toFixed(3) + ')';
+    c.lineWidth = 0.8 + frac * 1.4;
+    c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(X(cl(p0.gl, -2, 2)), Y(cl(p0.gv, -2, 7)));
+    c.lineTo(X(cl(p1.gl, -2, 2)), Y(cl(p1.gv, -2, 7)));
+    c.stroke();
+  }
   const hot = gv > LIM.gvMax || gv < LIM.gvMin || Math.abs(gl) > LIM.glat;
-  c.fillStyle = hot ? '#e5484d' : '#f2a63c';
-  c.beginPath();
-  c.arc(X(cl(gl, -2, 2)), Y(cl(gv, -2, 7)), 3, 0, Math.PI * 2);
-  c.fill();
+  const bx = X(cl(gl, -2, 2)), by = Y(cl(gv, -2, 7));
+  const halo = c.createRadialGradient(bx, by, 0.5, bx, by, 9);
+  halo.addColorStop(0, hot ? 'rgba(255,95,100,0.75)' : 'rgba(255,196,96,0.68)');
+  halo.addColorStop(1, 'rgba(242,166,60,0)');
+  c.fillStyle = halo;
+  c.beginPath(); c.arc(bx, by, 9, 0, Math.PI * 2); c.fill();
+  c.fillStyle = hot ? '#ef4444' : '#f2a63c';
+  c.beginPath(); c.arc(bx, by, 3.2, 0, Math.PI * 2); c.fill();
+  c.fillStyle = '#fff9e6';
+  c.beginPath(); c.arc(bx - 0.9, by - 0.9, 1.0, 0, Math.PI * 2); c.fill();
 }
 
 function meter(fillEl, x, lo, hi, zeroFrac){
@@ -6528,6 +6893,11 @@ function activeSeat(){ return (sim.cert || sim.ride) ? 0 : Math.min(rideSeat, TR
 /* The speed a rigid train really has: every car shares it, and it belongs to the
    train's mean height, not to whichever point the integrator runs from. */
 function trainSpeed2(yRef){
+  const isLaunch = design.propulsion && design.propulsion.mode === 'launch';
+  const sLaunchEnd = isLaunch && analysis && analysis.L ? analysis.L.s : null;
+  if((!isLaunch && track && sim.S < track.sCrest) || (isLaunch && sLaunchEnd != null && sim.S < sLaunchEnd)){
+    return sim.v * sim.v;
+  }
   let ySum = 0;
   for(let c = 0; c < TRAIN_CARS; c++) ySum += trackAt(sim.S - c * CAR_GAP).y;
   return Math.max(0, sim.v * sim.v + 2 * G0 * (yRef - ySum / TRAIN_CARS));
@@ -10594,14 +10964,128 @@ function updateSectionLandmarks(){
     }
   }
 }
+let parkShaderClock = 0;
+function updateKineticShaders(dt){
+  const hc = isCoasterHighContrast();
+  const rm = reducedMotion();
+  const step = Math.min(Math.max(dt || 0, 0), 0.05);
+  if(!rm) parkShaderClock += step;
+  const beautyTime = 2.4 + parkShaderClock;
+  if(sky && sky.material && sky.material.uniforms){
+    if(sky.material.uniforms.uTime) sky.material.uniforms.uTime.value = rm ? 2.4 : beautyTime;
+    if(sky.material.uniforms.uHighContrast) sky.material.uniforms.uHighContrast.value = hc ? 1.0 : 0.0;
+  }
+  clabWindUniforms.uWindTime.value = rm ? 1.5 : (1.5 + parkShaderClock);
+  clabWindUniforms.uWindStrength.value = (fxLite || rm || hc) ? 0.0 : 0.088;
+
+  /* velocity- & G-force-reactive slipstream ribbon & kinetic rail energy pulses */
+  const vAbs = Math.abs(sim.v || 0);
+  const showSlip = !!(track && sim.running && vAbs > 4.5 && !fxLite && !hc && !xrOn);
+  slipstreamRibbon.visible = showSlip;
+  if(showSlip){
+    const trNow = trackAt(sim.S);
+    const v2 = vAbs * vAbs;
+    const gV = Math.abs(trNow.upY + v2 * trNow.kUp / G0);
+    const gLat = Math.abs(trNow.sideY + v2 * trNow.kSide / G0);
+    const gTotal = Math.hypot(gV, gLat);
+    const trailSpacing = 0.55 + Math.min(0.65, vAbs * 0.02);
+    const halfWidth = 1.02 + Math.min(0.32, (vAbs - 4.5) * 0.012);
+    for(let i = 0; i <= SLIPSTREAM_SEGS; i++){
+      frameAt(sim.S - 0.8 - i * trailSpacing, slipPos, slipTan, slipUp);
+      slipSide.crossVectors(slipUp, slipTan).normalize();
+      const lift = 0.24 + (i / SLIPSTREAM_SEGS) * 0.14;
+      const lx = slipPos.x - slipSide.x * halfWidth + slipUp.x * lift;
+      const ly = slipPos.y - slipSide.y * halfWidth + slipUp.y * lift;
+      const lz = slipPos.z - slipSide.z * halfWidth + slipUp.z * lift;
+      const rx = slipPos.x + slipSide.x * halfWidth + slipUp.x * lift;
+      const ry = slipPos.y + slipSide.y * halfWidth + slipUp.y * lift;
+      const rz = slipPos.z + slipSide.z * halfWidth + slipUp.z * lift;
+      const j = i * 6;
+      slipstreamPositions[j] = lx; slipstreamPositions[j + 1] = ly; slipstreamPositions[j + 2] = lz;
+      slipstreamPositions[j + 3] = rx; slipstreamPositions[j + 4] = ry; slipstreamPositions[j + 5] = rz;
+    }
+    slipstreamGeo.attributes.position.needsUpdate = true;
+    if(slipstreamMat.uniforms){
+      slipstreamMat.uniforms.uTime.value = rm ? 1.5 : (1.5 + parkShaderClock);
+      slipstreamMat.uniforms.uSpeed.value = vAbs;
+      slipstreamMat.uniforms.uGForce.value = gTotal;
+      slipstreamMat.uniforms.uOpacity.value = Math.min(0.88, 0.22 + (vAbs - 4.5) * 0.032 + Math.max(0, gTotal - 1.8) * 0.14);
+      slipstreamMat.uniforms.uHighContrast.value = hc ? 1.0 : 0.0;
+    }
+  }
+
+  /* high-G brake & banked-turn wheel spark bursts */
+  if(wheelSparkMat.uniforms && wheelSparkMat.uniforms.uHighContrast) wheelSparkMat.uniforms.uHighContrast.value = hc ? 1.0 : 0.0;
+  if(fxLite || rm || hc || !track){
+    wheelSparks.visible = false;
+    return;
+  }
+  const brakeStart = Math.max(0, track.L - brakeLen());
+  let sq = sim.S % track.L; if(sq < 0) sq += track.L;
+  const brakingNow = sim.running && !sim.paused && sq >= brakeStart && sq <= track.L - 1 && vAbs > 3.05;
+  let highGNow = false;
+  if(sim.running && !sim.paused && vAbs > 10){
+    const trS = trackAt(sim.S);
+    const v2 = vAbs * vAbs;
+    const gV = trS.upY + v2 * trS.kUp / G0;
+    const gLat = Math.abs(trS.sideY + v2 * trS.kSide / G0);
+    if(gLat > 0.85 || gV > 2.65) highGNow = true;
+  }
+  const emitRate = brakingNow ? 58 : highGNow ? 34 : 0;
+  if(emitRate > 0){
+    sparkEmitAcc += step * emitRate;
+    frameAt(sim.S, sparkPosTmp, sparkTanTmp, sparkUpTmp);
+    sparkSideTmp.crossVectors(sparkUpTmp, sparkTanTmp).normalize();
+    while(sparkEmitAcc >= 1){
+      sparkEmitAcc -= 1;
+      const idx = sparkCursor++ % SPARK_COUNT;
+      const wheelSide = (idx % 2 ? 1 : -1) * 0.9;
+      const carOff = (idx % Math.max(1, Math.min(TRAIN_CARS, 3))) * CAR_GAP;
+      sparkPosArr[idx * 3] = sparkPosTmp.x + sparkSideTmp.x * wheelSide - sparkTanTmp.x * carOff;
+      sparkPosArr[idx * 3 + 1] = sparkPosTmp.y + sparkSideTmp.y * wheelSide - sparkTanTmp.y * carOff + 0.16;
+      sparkPosArr[idx * 3 + 2] = sparkPosTmp.z + sparkSideTmp.z * wheelSide - sparkTanTmp.z * carOff;
+      const sRand = ((idx * 17.31 + parkShaderClock * 31.7) % 1 + 1) % 1;
+      const backSpeed = Math.max(4, vAbs * 0.45) * (0.7 + sRand * 0.6);
+      const outSpeed = (wheelSide > 0 ? 1 : -1) * (1.4 + ((sRand * 7.3) % 1) * 2.8);
+      const upSpeed = 1.6 + ((sRand * 13.7) % 1) * 3.4;
+      sparkVel[idx].set(
+        -sparkTanTmp.x * backSpeed + sparkSideTmp.x * outSpeed + sparkUpTmp.x * upSpeed,
+        -sparkTanTmp.y * backSpeed + sparkSideTmp.y * outSpeed + sparkUpTmp.y * upSpeed,
+        -sparkTanTmp.z * backSpeed + sparkSideTmp.z * outSpeed + sparkUpTmp.z * upSpeed
+      );
+      sparkLifeArr[idx] = 0.72 + sRand * 0.28;
+    }
+  }
+  let anySparkAlive = false;
+  for(let i = 0; i < SPARK_COUNT; i++){
+    if(sparkLifeArr[i] <= 0) continue;
+    sparkLifeArr[i] = Math.max(0, sparkLifeArr[i] - step * 2.1);
+    if(sparkLifeArr[i] > 0.01){
+      anySparkAlive = true;
+      sparkVel[i].y -= 13.5 * step;
+      sparkPosArr[i * 3] += sparkVel[i].x * step;
+      sparkPosArr[i * 3 + 1] += sparkVel[i].y * step;
+      sparkPosArr[i * 3 + 2] += sparkVel[i].z * step;
+    }
+  }
+  wheelSparks.visible = anySparkAlive;
+  if(anySparkAlive || emitRate > 0){
+    wheelSparkGeo.attributes.position.needsUpdate = true;
+    wheelSparkGeo.attributes.aLife.needsUpdate = true;
+  }
+}
 function updateParkAtmosphere(dt){
+  updateKineticShaders(dt);
   if(fxLite || reducedMotion()) return;
   const step = Math.min(dt, 0.05);
   ferrisRotor.rotation.z += step * 0.035;
   cloudGroup.rotation.y += step * 0.0025;
   birdFlock.rotation.y += step * 0.018;
   const now = performance.now() * 0.002;
-  stationFlags.forEach((flag, i) => { flag.rotation.z = Math.sin(now + i * 0.63) * 0.08; });
+  stationFlags.forEach((flag, i) => {
+    flag.rotation.z = Math.sin(now * 1.15 + i * 0.63) * 0.11 + Math.sin(now * 2.55 + i * 1.37) * 0.045;
+    flag.rotation.y = Math.sin(now * 1.65 + i * 0.91) * 0.09;
+  });
 }
 function placeCamera(){
   if(stationShot && (camMode!=='orbit' || xrOn || !sceneFocus || sim.running)) clearStationViews();
@@ -11206,13 +11690,17 @@ return { destroy: __clabDestroy };
       // mid-render → "Cannot update a component (StemLabModal) while rendering a
       // different component (AlloFlowContent)". A reducer must be pure; side
       // effects run AFTER it, below.
-      var _clabPersist = (ctx.toolData && ctx.toolData.coasterLab) || {};
+      var _rawClab = ctx.toolData && ctx.toolData.coasterLab;
+      var _clabPersist = (_rawClab && typeof _rawClab === 'object' && !Array.isArray(_rawClab)) ? _rawClab : {};
+      var _clabNum = function (v) { return (typeof v === 'number' && isFinite(v) && v >= 0) ? Math.floor(v) : 0; };
+      var _clabRuns = _clabNum(_clabPersist.runs);
       var _clabMs = {
         certified: !!_clabPersist.certified,
         explored: !!_clabPersist.explored,
-        rideBestCorrect: _clabPersist.rideBestCorrect || 0,
-        missionCount: _clabPersist.missionCount || 0
+        rideBestCorrect: _clabNum(_clabPersist.rideBestCorrect),
+        missionCount: _clabNum(_clabPersist.missionCount)
       };
+      var isClabLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
       function bridge(ev){
         if (typeof setToolData !== 'function') return;
         // Decide awards from the milestone tracker (pure read, no setState).
@@ -11355,12 +11843,99 @@ return { destroy: __clabDestroy };
         startCoasterBoot();
       }
 
-      return h('div', {
-        className: 'clab-root',
-        style: { position: 'relative', height: '78vh', minHeight: 540, borderRadius: 12, overflow: 'hidden', border: '1px solid #334155', background: '#0f151c' }
-      },
+      function triggerClabControl(action) {
+        var root = refCb._el;
+        if (!root || !root.querySelector) return;
+        if (action === 'speed' || action === 'vertical') {
+          var sel = root.querySelector('#clab-trackViz');
+          if (sel) { sel.value = action; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+        } else if (action === 'vectors') {
+          var vb = root.querySelector('#clab-btnVectors');
+          if (vb) vb.click();
+        } else if (action === 'blueprint') {
+          var th = root.querySelector('#clab-visualTheme');
+          if (th) { th.value = (th.value === 'blueprint' ? 'dusk' : 'blueprint'); th.dispatchEvent(new Event('change', { bubbles: true })); }
+        } else if (action === 'fit') {
+          var fb = root.querySelector('#clab-btnFitCoaster');
+          if (fb) fb.click();
+        }
+      }
+
+      var _activePhysicsStage = _clabMs.certified ? 3 : (_clabMs.explored ? 2 : (_clabRuns > 0 ? 1 : 0));
+      var _gradeBadge = bridge.gradeLabel ? bridge.gradeLabel : (bridge.gradeBand ? bridge.gradeBand.toUpperCase() : __alloT('stem.coasterlab.grade_auto', 'Auto'));
+
+      return h('div', { className: 'clab-workbench-shell' },
         h('style', { dangerouslySetInnerHTML: { __html: CLAB_CSS } }),
-        h(ClabStage, { React: React, refCb: refCb })
+        h('section', { className: 'clab-studio-hero', 'aria-label': __alloT('stem.coasterlab.hero_aria', 'Coaster Lab engineering workbench header') },
+          h('div', { className: 'clab-hero-top' },
+            h('div', { className: 'clab-hero-identity' },
+              h('div', { className: 'clab-emblem-box', 'aria-hidden': 'true' },
+                h('svg', { width: 34, height: 34, viewBox: '0 0 36 36', fill: 'none' },
+                  h('path', { d: 'M3 28 Q 9 8, 15 24 T 26 14 Q 30 10, 33 26', stroke: '#fbbf24', strokeWidth: 2.4, strokeLinecap: 'round', fill: 'none' }),
+                  h('circle', { cx: 21, cy: 17, r: 5.2, stroke: '#38bdf8', strokeWidth: 2, fill: 'none' }),
+                  h('line', { x1: 9, y1: 16, x2: 9, y2: 30, stroke: '#94a3b8', strokeWidth: 1.5 }),
+                  h('line', { x1: 28, y1: 15, x2: 28, y2: 30, stroke: '#94a3b8', strokeWidth: 1.5 }),
+                  h('circle', { cx: 15, cy: 24, r: 2.4, fill: '#f8fafc' })
+                )
+              ),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('span', { className: 'clab-subject-badge' }, __alloT('stem.coasterlab.subject_badge', 'Kinematics · Energy Conservation · G-Force Lab')),
+                h('h2', { className: 'clab-hero-title' }, __alloT('stem.coasterlab.hero_title', 'Coaster Physics & Track Engineering Lab')),
+                h('p', { className: 'clab-hero-sub' }, __alloT('stem.coasterlab.hero_sub', 'Shape 3D track curves, inspect speed and g-force heatmaps, predict energy conversions, and certify your coaster safely.'))
+              )
+            )
+          ),
+          h('div', { className: 'clab-telemetry-strip', role: 'group', 'aria-label': __alloT('stem.coasterlab.telemetry_aria', 'Coaster engineering progress telemetry') },
+            h('span', { className: 'clab-telemetry-pill' }, __alloT('stem.coasterlab.pill_runs', 'Test Runs:') + ' ' + _clabRuns),
+            h('span', { className: 'clab-telemetry-pill' }, __alloT('stem.coasterlab.pill_missions', 'Missions:') + ' ' + _clabMs.missionCount + '/6'),
+            h('span', { className: 'clab-telemetry-pill' }, _clabMs.certified ? __alloT('stem.coasterlab.pill_cert_pass', 'Inspection: Certified') : __alloT('stem.coasterlab.pill_cert_pending', 'Inspection: In Progress')),
+            h('span', { className: 'clab-telemetry-pill' }, __alloT('stem.coasterlab.pill_grade', 'Level:') + ' ' + _gradeBadge)
+          ),
+          h('div', { className: 'clab-energy-schematic' },
+            h('svg', {
+              viewBox: '0 0 580 56',
+              style: { width: '100%', height: 'auto', maxHeight: 58, display: 'block' },
+              role: 'img',
+              'aria-label': __alloT('stem.coasterlab.schematic_aria', 'Roller coaster energy conservation cycle from lift hill potential energy through drop kinetic energy, banked g-forces, and thermal braking')
+            },
+              h('line', { x1: 126, y1: 28, x2: 156, y2: 28, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '4 3' }),
+              h('line', { x1: 272, y1: 28, x2: 302, y2: 28, stroke: '#38bdf8', strokeWidth: 2, strokeDasharray: '4 3' }),
+              h('line', { x1: 418, y1: 28, x2: 448, y2: 28, stroke: '#fb923c', strokeWidth: 2, strokeDasharray: '4 3' }),
+              [
+                { x: 10, w: 116, k: '1. LIFT (PE)', v: __alloT('stem.coasterlab.stage_pe', 'm·g·h Height'), idx: 0, stroke: '#c084fc' },
+                { x: 156, w: 116, k: '2. DROP (KE)', v: __alloT('stem.coasterlab.stage_ke', '½·m·v² Speed'), idx: 1, stroke: '#38bdf8' },
+                { x: 302, w: 116, k: '3. CURVES (g)', v: __alloT('stem.coasterlab.stage_g', 'v²/r Bank & G'), idx: 2, stroke: '#fbbf24' },
+                { x: 448, w: 122, k: '4. BRAKES (Q)', v: __alloT('stem.coasterlab.stage_heat', 'Thermal Stop'), idx: 3, stroke: '#fb923c' }
+              ].map(function (stNode) {
+                var on = _activePhysicsStage === stNode.idx;
+                return h('g', { key: stNode.k },
+                  h('rect', {
+                    x: stNode.x, y: 6, width: stNode.w, height: 44, rx: 9,
+                    fill: on ? 'rgba(245,158,11,0.24)' : 'rgba(13,21,32,0.88)',
+                    stroke: on ? '#fde68a' : stNode.stroke,
+                    strokeWidth: on ? 2 : 1.2
+                  }),
+                  h('text', { x: stNode.x + stNode.w / 2, y: 23, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, stNode.k),
+                  h('text', { x: stNode.x + stNode.w / 2, y: 40, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, stNode.v)
+                );
+              })
+            )
+          ),
+          !isClabLocked && h('div', { className: 'clab-starter-bar', role: 'group', 'aria-label': __alloT('stem.coasterlab.quick_views_aria', 'Quick physics inspection overlays') },
+            h('span', { className: 'clab-starter-label' }, __alloT('stem.coasterlab.quick_views_label', 'Quick Views:')),
+            h('button', { type: 'button', className: 'clab-starter-chip', onClick: function () { triggerClabControl('speed'); } }, __alloT('stem.coasterlab.quick_speed', 'Speed Heatmap')),
+            h('button', { type: 'button', className: 'clab-starter-chip', onClick: function () { triggerClabControl('vertical'); } }, __alloT('stem.coasterlab.quick_vg', 'Vertical G Heatmap')),
+            h('button', { type: 'button', className: 'clab-starter-chip', onClick: function () { triggerClabControl('vectors'); } }, __alloT('stem.coasterlab.quick_vectors', 'Toggle Physics Vectors')),
+            h('button', { type: 'button', className: 'clab-starter-chip', onClick: function () { triggerClabControl('blueprint'); } }, __alloT('stem.coasterlab.quick_blueprint', 'Blueprint Mode')),
+            h('button', { type: 'button', className: 'clab-starter-chip', onClick: function () { triggerClabControl('fit'); } }, __alloT('stem.coasterlab.quick_fit', 'Fit Track View'))
+          )
+        ),
+        h('div', {
+          className: 'clab-root',
+          style: { position: 'relative', height: '78vh', minHeight: 540, borderRadius: 12, overflow: 'hidden', border: '1px solid #334155', background: '#0f151c' }
+        },
+          h(ClabStage, { React: React, refCb: refCb })
+        )
       );
     }
   });

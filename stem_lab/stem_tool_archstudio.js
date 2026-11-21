@@ -524,6 +524,7 @@ function __alloAST(k, fb) {
     var state = 'idle';
     var canvasEl = null, renderer = null, scene = null, camera = null;
     var batch = null, groundMesh = null, groundGrid = null, previewMesh = null, selectionMesh = null, designRegionMesh = null;
+    var studioSky = null, plinthTexture = null, structuralCueGroup = null;
     var customMeshes = [];
     var raycaster = null, pointer = null, latestBlocks = [], latestAllBlocks = [];
     var rafId = 0, capacity = 0, resizeObs = null;
@@ -768,30 +769,70 @@ function __alloAST(k, fb) {
       if (pending && typeof pending.onFail === 'function') { try { pending.onFail(reason); } catch (e) {} }
     }
 
+    function makeArchPlinthTexture() {
+      if (typeof document === 'undefined') return null;
+      var c = document.createElement('canvas'); c.width = 256; c.height = 256;
+      var g = null; try { g = c.getContext('2d'); } catch (e) { return null; }
+      if (!g) return null;
+      var grad = g.createRadialGradient(128, 128, 12, 128, 128, 124);
+      grad.addColorStop(0, 'rgba(148,163,184,0.34)');
+      grad.addColorStop(0.55, 'rgba(71,85,105,0.22)');
+      grad.addColorStop(1, 'rgba(15,23,42,0)');
+      g.fillStyle = grad; g.fillRect(0, 0, 256, 256);
+      var tex = new T.CanvasTexture(c);
+      if (T.sRGBEncoding) tex.encoding = T.sRGBEncoding;
+      return tex;
+    }
+
     function build() {
       scene = new T.Scene();
       camera = new T.PerspectiveCamera(45, 1, 0.1, 3000);
       raycaster = new T.Raycaster();
       pointer = new T.Vector2();
-      scene.add(new T.HemisphereLight(0xe2e8f0, 0x1e293b, 0.9));
-      sun = new T.DirectionalLight(0xffffff, 0.62);
+      // Warm architectural studio daylight key + cool zenith/horizon bounce + rim fill.
+      scene.add(new T.HemisphereLight(0xfef7e6, 0x243448, 0.96));
+      sun = new T.DirectionalLight(0xfff3db, 0.86);
       sun.position.set(24, 40, 30);
-      // Soft shadows are the depth cue that shows what rests on what and
-      // how far apart things are. The catcher draws only the shadow.
+      // Soft contact shadows show structural bearing and floor-to-floor elevation.
       sun.castShadow = true;
       sun.shadow.mapSize.set(1024, 1024);
-      sun.shadow.bias = -0.0006;
-      sun.shadow.normalBias = 0.02;
+      sun.shadow.bias = -0.0005;
+      sun.shadow.normalBias = 0.024;
+      if (typeof sun.shadow.radius === 'number') sun.shadow.radius = 2.8;
       scene.add(sun);
       scene.add(sun.target);
+      var rimLight = new T.DirectionalLight(0x9bd0ff, 0.34);
+      rimLight.position.set(-22, 18, -28);
+      scene.add(rimLight);
+      // Warm architectural studio sky dome with soft horizon glow.
+      try {
+        studioSky = new T.Mesh(
+          new T.SphereGeometry(620, 24, 16),
+          new T.ShaderMaterial({
+            uniforms: {
+              zenith: { value: new T.Color(0x0d1b2d) },
+              mid: { value: new T.Color(0x1b334e) },
+              horizon: { value: new T.Color(0x475c74) },
+              warmGlow: { value: new T.Color(0xf6d8ad) },
+              ground: { value: new T.Color(0x0b1522) }
+            },
+            vertexShader: 'varying vec3 vPos; void main(){ vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+            fragmentShader: 'uniform vec3 zenith; uniform vec3 mid; uniform vec3 horizon; uniform vec3 warmGlow; uniform vec3 ground; varying vec3 vPos; void main(){ vec3 d = normalize(vPos); float h = d.y; vec3 sky = mix(horizon, mid, smoothstep(0.0, 0.32, h)); sky = mix(sky, zenith, smoothstep(0.28, 0.9, h)); float sunHalo = pow(max(dot(d, normalize(vec3(-0.48, 0.55, 0.32))), 0.0), 6.0); sky += warmGlow * sunHalo * 0.22 * smoothstep(-0.05, 0.25, h); vec3 col = mix(ground, sky, smoothstep(-0.12, 0.04, h)); gl_FragColor = vec4(col, 0.58); }',
+            side: T.BackSide, transparent: true, depthWrite: false
+          })
+        );
+        studioSky.renderOrder = -2;
+        scene.add(studioSky);
+      } catch (e) { studioSky = null; }
+      plinthTexture = makeArchPlinthTexture();
       groundMesh = new T.Mesh(
         new T.PlaneGeometry(400, 400),
-        new T.MeshBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.16, depthWrite: false })
+        new T.MeshBasicMaterial(Object.assign({ color: 0x64748b, transparent: true, opacity: plinthTexture ? 0.82 : 0.16, depthWrite: false }, plinthTexture ? { map: plinthTexture } : {}))
       );
       groundMesh.rotation.x = -Math.PI / 2;
       groundMesh.position.y = -0.02;
       scene.add(groundMesh);
-      shadowCatcher = new T.Mesh(new T.PlaneGeometry(1, 1), new T.ShadowMaterial({ opacity: 0.42, depthWrite: false }));
+      shadowCatcher = new T.Mesh(new T.PlaneGeometry(1, 1), new T.ShadowMaterial({ opacity: 0.46, depthWrite: false }));
       shadowCatcher.rotation.x = -Math.PI / 2;
       shadowCatcher.position.y = 0.002;
       shadowCatcher.receiveShadow = true;
@@ -825,26 +866,111 @@ function __alloAST(k, fb) {
       });
       customMeshes = [];
     }
-    // Geometry per shape and material per look are shared by every instanced
-    // group, and released only when the renderer is torn down.
-    var geometryCache = {}, materialCache = {};
+    // Geometry per shape, procedural architectural textures, and material per look
+    // are shared by every instanced group, and released cleanly on unmount.
+    var geometryCache = {}, materialCache = {}, textureCache = {};
     function archLook(material) {
       return material === 'glass' ? 'glass' : material === 'metal' ? 'metal' : material === 'marble' ? 'marble'
-        : (material === 'stone' || material === 'brick') ? 'faceted' : 'plain';
+        : material === 'brick' ? 'brick' : material === 'wood' ? 'wood' : material === 'stone' ? 'stone' : 'plain';
+    }
+    function cachedTexture(look) {
+      if (Object.prototype.hasOwnProperty.call(textureCache, look)) return textureCache[look];
+      if (typeof document === 'undefined') { textureCache[look] = null; return null; }
+      var c = document.createElement('canvas'); c.width = 128; c.height = 128;
+      var g = null; try { g = c.getContext('2d'); } catch (e) { textureCache[look] = null; return null; }
+      if (!g) { textureCache[look] = null; return null; }
+      g.fillStyle = '#f8fafc'; g.fillRect(0, 0, 128, 128);
+      if (look === 'glass') {
+        // Architectural curtain-wall glazing: diagonal sky sheen + crisp mullion frame.
+        var gl = g.createLinearGradient(0, 0, 128, 128);
+        gl.addColorStop(0, '#ffffff'); gl.addColorStop(0.28, '#dbeafe');
+        gl.addColorStop(0.42, '#ffffff'); gl.addColorStop(0.62, '#bae6fd'); gl.addColorStop(1, '#e0f2fe');
+        g.fillStyle = gl; g.fillRect(0, 0, 128, 128);
+        g.fillStyle = 'rgba(255,255,255,0.65)';
+        g.beginPath(); g.moveTo(14, 0); g.lineTo(36, 0); g.lineTo(0, 36); g.lineTo(0, 14); g.closePath(); g.fill();
+        g.beginPath(); g.moveTo(58, 0); g.lineTo(74, 0); g.lineTo(0, 74); g.lineTo(0, 58); g.closePath(); g.fill();
+        g.strokeStyle = 'rgba(15,23,42,0.45)'; g.lineWidth = 6; g.strokeRect(3, 3, 122, 122);
+        g.strokeStyle = 'rgba(15,23,42,0.28)'; g.lineWidth = 3;
+        g.beginPath(); g.moveTo(64, 4); g.lineTo(64, 124); g.moveTo(4, 64); g.lineTo(124, 64); g.stroke();
+      } else if (look === 'brick') {
+        g.fillStyle = '#e8e8e8'; g.fillRect(0, 0, 128, 128);
+        g.strokeStyle = 'rgba(30,41,59,0.24)'; g.lineWidth = 2.5;
+        for (var row = 0; row < 4; row++) {
+          var ry = row * 32;
+          g.beginPath(); g.moveTo(0, ry); g.lineTo(128, ry); g.stroke();
+          var off = (row % 2) * 32;
+          for (var col = 0; col < 3; col++) {
+            var rx = (off + col * 64) % 128;
+            g.beginPath(); g.moveTo(rx, ry); g.lineTo(rx, ry + 32); g.stroke();
+          }
+        }
+      } else if (look === 'wood') {
+        g.fillStyle = '#f6f3ee'; g.fillRect(0, 0, 128, 128);
+        for (var wg = 0; wg < 26; wg++) {
+          var wy = wg * 5;
+          g.strokeStyle = wg % 2 ? 'rgba(92,58,28,0.14)' : 'rgba(255,255,255,0.16)';
+          g.lineWidth = 1.6;
+          g.beginPath(); g.moveTo(0, wy); g.bezierCurveTo(42, wy + 2, 86, wy - 2, 128, wy); g.stroke();
+        }
+      } else if (look === 'stone') {
+        g.fillStyle = '#f2f4f7'; g.fillRect(0, 0, 128, 128);
+        for (var st = 0; st < 220; st++) {
+          var sx = ((st * 47) % 128), sy = ((st * 73) % 128);
+          g.fillStyle = st % 2 ? 'rgba(15,23,42,0.06)' : 'rgba(255,255,255,0.14)';
+          g.fillRect(sx, sy, 3, 3);
+        }
+        g.strokeStyle = 'rgba(15,23,42,0.12)'; g.lineWidth = 1.5;
+        g.strokeRect(2, 2, 124, 60); g.strokeRect(2, 64, 124, 62);
+      } else if (look === 'metal') {
+        var mg = g.createLinearGradient(0, 0, 128, 128);
+        mg.addColorStop(0, '#ffffff'); mg.addColorStop(0.5, '#dde6f0'); mg.addColorStop(1, '#f8fafc');
+        g.fillStyle = mg; g.fillRect(0, 0, 128, 128);
+        for (var ml = 0; ml < 32; ml++) {
+          g.strokeStyle = ml % 2 ? 'rgba(15,23,42,0.05)' : 'rgba(255,255,255,0.18)';
+          g.lineWidth = 1; g.beginPath(); g.moveTo(0, ml * 4); g.lineTo(128, ml * 4); g.stroke();
+        }
+      } else if (look === 'marble') {
+        g.fillStyle = '#ffffff'; g.fillRect(0, 0, 128, 128);
+        g.strokeStyle = 'rgba(100,116,139,0.16)'; g.lineWidth = 1.4;
+        g.beginPath(); g.moveTo(0, 28); g.bezierCurveTo(40, 44, 78, 12, 128, 52); g.stroke();
+        g.beginPath(); g.moveTo(14, 128); g.bezierCurveTo(54, 92, 88, 108, 128, 76); g.stroke();
+      }
+      var tex = new T.CanvasTexture(c);
+      if (T.sRGBEncoding) tex.encoding = T.sRGBEncoding;
+      textureCache[look] = tex;
+      return tex;
     }
     function cachedGeometry(shape) {
       return geometryCache[shape] || (geometryCache[shape] = makeArchGeometry(shape));
     }
     function cachedMaterial(look) {
-      return materialCache[look] || (materialCache[look] = new T.MeshPhongMaterial({
-        color: 0xffffff, transparent: look === 'glass', opacity: look === 'glass' ? 0.48 : 1,
-        shininess: look === 'metal' ? 100 : look === 'marble' ? 80 : 40, flatShading: look === 'faceted'
-      }));
+      if (materialCache[look]) return materialCache[look];
+      var tex = cachedTexture(look);
+      var opts = {
+        color: 0xffffff,
+        transparent: look === 'glass',
+        opacity: look === 'glass' ? 0.56 : 1,
+        shininess: look === 'glass' ? 180 : look === 'metal' ? 140 : look === 'marble' ? 105 : look === 'wood' ? 32 : 28,
+        specular: look === 'glass' ? 0xe0f2fe : look === 'metal' ? 0xe2e8f0 : look === 'marble' ? 0xf8fafc : 0x334155,
+        flatShading: look === 'stone' || look === 'brick'
+      };
+      if (tex) opts.map = tex;
+      return (materialCache[look] = new T.MeshPhongMaterial(opts));
     }
     function releaseCaches() {
       Object.keys(geometryCache).forEach(function (k) { geometryCache[k].dispose(); });
       Object.keys(materialCache).forEach(function (k) { materialCache[k].dispose(); });
-      geometryCache = {}; materialCache = {};
+      Object.keys(textureCache).forEach(function (k) { if (textureCache[k] && textureCache[k].dispose) textureCache[k].dispose(); });
+      geometryCache = {}; materialCache = {}; textureCache = {};
+    }
+    function clearStructuralCues() {
+      if (!structuralCueGroup) return;
+      if (scene) scene.remove(structuralCueGroup);
+      structuralCueGroup.traverse(function (o) {
+        if (o.geometry && o.geometry.dispose) o.geometry.dispose();
+        if (o.material && o.material.dispose) o.material.dispose();
+      });
+      structuralCueGroup = null;
     }
     function customCount() {
       return customMeshes.reduce(function (n, mesh) { return n + mesh.count; }, 0);
@@ -1003,6 +1129,7 @@ function __alloAST(k, fb) {
 
       clearCustomMeshes();
       clearSelectionMesh();
+      clearStructuralCues();
 
       var minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity, maxY = 0;
       bs.forEach(function (b) {
@@ -1089,6 +1216,23 @@ function __alloAST(k, fb) {
         designRegionMesh = new T.LineSegments(edges, new T.LineBasicMaterial({ color: 0x38bdf8, depthTest: false, transparent: true, opacity: 0.95 }));
         designRegionMesh.position.set((rb.minX + rb.maxX) / 2, (rb.minY + rb.maxY + 1) / 2, (rb.minZ + rb.maxZ) / 2);
         designRegionMesh.renderOrder = 6; scene.add(designRegionMesh);
+      }
+      // Structural load visual cues: crisp glowing alert frames on unsupported / peak-load blocks in heatmap mode.
+      if (typeof m.sig === 'string' && m.sig.indexOf('|heat:on') !== -1) {
+        var stressed = bs.filter(function (b) { return b.hex === 0xef4444; }).slice(0, 64);
+        if (stressed.length) {
+          structuralCueGroup = new T.Group();
+          var cueBox = new T.BoxGeometry(1.03, 1.03, 1.03);
+          var cueEdges = new T.EdgesGeometry(cueBox); cueBox.dispose();
+          var cueMat = new T.LineBasicMaterial({ color: 0xfef08a, transparent: true, opacity: 0.88, depthWrite: false });
+          stressed.forEach(function (sb) {
+            var frame = new T.LineSegments(cueEdges, cueMat);
+            frame.position.set(sb.x, sb.y + 0.5, sb.z);
+            frame.renderOrder = 4;
+            structuralCueGroup.add(frame);
+          });
+          scene.add(structuralCueGroup);
+        }
       }
       buildPlacementGrid(minX, maxX, minZ, maxZ);
       fitSun(minX, maxX, minZ, maxZ, maxY);
@@ -1433,9 +1577,12 @@ function __alloAST(k, fb) {
           if (batch) batch.dispose(scene);
           clearPreview();
           clearSelectionMesh();
+          clearStructuralCues();
           clearGroundGrid();
           clearCustomMeshes();
+          if (studioSky) { scene.remove(studioSky); studioSky.geometry.dispose(); studioSky.material.dispose(); studioSky = null; }
           if (groundMesh) { scene.remove(groundMesh); groundMesh.geometry.dispose(); groundMesh.material.dispose(); }
+          if (plinthTexture) { plinthTexture.dispose(); plinthTexture = null; }
           if (pivotMesh) { scene.remove(pivotMesh); pivotMesh.geometry.dispose(); pivotMesh.material.dispose(); pivotMesh = null; }
           releaseCaches();
           if (shadowCatcher) { scene.remove(shadowCatcher); shadowCatcher.geometry.dispose(); shadowCatcher.material.dispose(); shadowCatcher = null; }
@@ -2433,23 +2580,43 @@ function __alloAST(k, fb) {
       return '<line pointer-events="none" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" ' + (extra || 'stroke="#64748b"') + '/>';
     }
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + width + ' ' + height + '" width="' + width + '" height="' + height + '" role="img" aria-label="' + esc(archDrawingTitle(p, labels)) + '" font-family="Arial,Helvetica,sans-serif">';
+    var hk = esc(p.kind);
     svg += '<title>' + esc(archDrawingTitle(p, labels)) + '</title><desc>' + esc(labels.units + '. ' + labels.cell_note) + '</desc>';
+    svg += '<defs>'
+      + '<pattern id="arch-h-stone-' + hk + '" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 8 L8 0" stroke="#0f172a" stroke-width="0.65" opacity="0.24"/><circle cx="2.5" cy="2.5" r="0.55" fill="#0f172a" opacity="0.2"/></pattern>'
+      + '<pattern id="arch-h-brick-' + hk + '" width="12" height="8" patternUnits="userSpaceOnUse"><path d="M0 4 H12 M0 8 H12 M6 0 V4 M0 4 V8 M12 4 V8" stroke="#0f172a" stroke-width="0.6" opacity="0.28" fill="none"/></pattern>'
+      + '<pattern id="arch-h-wood-' + hk + '" width="10" height="6" patternUnits="userSpaceOnUse"><path d="M0 2 Q5 3.5 10 2 M0 5 Q5 6 10 5" stroke="#451a03" stroke-width="0.6" opacity="0.25" fill="none"/></pattern>'
+      + '<pattern id="arch-h-glass-' + hk + '" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M1 9 L9 1 M5 10 L10 5" stroke="#ffffff" stroke-width="0.95" opacity="0.55"/></pattern>'
+      + '<pattern id="arch-h-metal-' + hk + '" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 8 L8 0 M0 0 L8 8" stroke="#0f172a" stroke-width="0.45" opacity="0.2"/></pattern>'
+      + '<pattern id="arch-h-ground-' + hk + '" width="10" height="8" patternUnits="userSpaceOnUse"><path d="M0 8 L8 0 M5 8 L10 3" stroke="#334155" stroke-width="0.85" opacity="0.38"/></pattern>'
+      + '</defs>';
     svg += '<rect width="' + width + '" height="' + height + '" fill="#ffffff"/>';
+    svg += '<rect x="6" y="6" width="' + (width - 12) + '" height="' + (height - 12) + '" fill="none" stroke="#cbd5e1" stroke-width="0.8" pointer-events="none"/>';
     svg += textAt(20, 24, archDrawingTitle(p, labels), 16, 'start');
-    svg += '<rect x="' + x + '" y="' + y + '" width="' + p.width * c + '" height="' + p.height * c + '" fill="#f1f5f9" stroke="#cbd5e1"/>';
+    svg += '<rect x="' + x + '" y="' + y + '" width="' + p.width * c + '" height="' + p.height * c + '" fill="#f8fafc" stroke="#94a3b8"/>';
     if (options.grid !== false) {
       for (var u = 0; u <= p.width; u++) svg += line(x + u * c, y, x + u * c, bottom, 'stroke="#cbd5e1" stroke-width=".6"');
       for (var v = 0; v <= p.height; v++) svg += line(x, y + v * c, right, y + v * c, 'stroke="#cbd5e1" stroke-width=".6"');
     }
     p.cells.forEach(function (cell) {
       var bx = px(cell.u), by = p.kind === 'plan' ? py(cell.v) : py(cell.v + 1);
-      svg += '<rect data-drawing-cell="' + cell.u + ',' + cell.v + '" data-block="' + archBlockKey(cell.block) + '" x="' + bx + '" y="' + by + '" width="' + c + '" height="' + c + '" fill="' + cell.block.color + '" stroke="#334155" stroke-width=".8"><title>'
+      var mat = cell.block.material || 'stone';
+      var hatchId = (mat === 'brick' || mat === 'wood' || mat === 'glass' || mat === 'metal') ? mat : 'stone';
+      svg += '<rect data-drawing-cell="' + cell.u + ',' + cell.v + '" data-block="' + archBlockKey(cell.block) + '" x="' + bx + '" y="' + by + '" width="' + c + '" height="' + c + '" fill="' + cell.block.color + '" stroke="#334155" stroke-width=".85"><title>'
         + esc(cell.block.shape + ' · ' + cell.block.material + ' · X=' + cell.block.x + ', Y=' + cell.block.y + ', Z=' + cell.block.z) + '</title></rect>';
+      svg += '<rect pointer-events="none" x="' + bx + '" y="' + by + '" width="' + c + '" height="' + c + '" fill="url(#arch-h-' + hatchId + '-' + hk + ')"/>';
+      if (cell.block.shape === 'window') {
+        svg += '<line pointer-events="none" x1="' + (bx + c * 0.5) + '" y1="' + by + '" x2="' + (bx + c * 0.5) + '" y2="' + (by + c) + '" stroke="#0f172a" stroke-width="0.7" opacity="0.55"/>'
+          + '<line pointer-events="none" x1="' + bx + '" y1="' + (by + c * 0.5) + '" x2="' + (bx + c) + '" y2="' + (by + c * 0.5) + '" stroke="#0f172a" stroke-width="0.7" opacity="0.55"/>';
+      } else if (cell.block.shape === 'arch' && p.kind !== 'plan') {
+        svg += '<path pointer-events="none" d="M ' + (bx + c * 0.14) + ' ' + (by + c) + ' A ' + (c * 0.36) + ' ' + (c * 0.36) + ' 0 0 1 ' + (bx + c * 0.86) + ' ' + (by + c) + '" fill="none" stroke="#0f172a" stroke-width="0.9" opacity="0.6"/>';
+      }
     });
     if (!p.cells.length) svg += textAt(width / 2, height / 2, p.total ? labels.empty_slice : labels.empty, 14);
     if (p.kind !== 'plan') {
-      svg += line(x - 5, bottom, right + 5, bottom, 'stroke="#334155" stroke-width="2"');
-      svg += textAt(right, bottom + 15, labels.ground, 10, 'end');
+      svg += '<rect pointer-events="none" x="' + (x - 5) + '" y="' + bottom + '" width="' + (right - x + 10) + '" height="7" fill="url(#arch-h-ground-' + hk + ')"/>';
+      svg += line(x - 5, bottom, right + 5, bottom, 'stroke="#1e293b" stroke-width="2.2"');
+      svg += textAt(right, bottom + 17, labels.ground, 10, 'end');
     } else if (p.cut >= p.minV && p.cut < p.maxV) {
       var sectionY = py(p.cut + 0.5);
       svg += line(x, sectionY, right, sectionY, 'stroke="#be123c" stroke-width="1.5" stroke-dasharray="7 4" data-drawing-cut="true"');

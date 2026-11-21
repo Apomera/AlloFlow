@@ -62,11 +62,14 @@
     if (!count || count > entryLimit || get16(end+8) !== count || start+get32(end+12) !== end) throw invalidArchive();
     var cursor = start, expanded = 0, entries = new Map(), aliases = new Set();
     var decoder = new TextDecoder('utf-8',{fatal:true});
+    function decodeName(slice) {
+      try { return decoder.decode(slice); } catch (_) { throw invalidArchive(); }
+    }
     for (var i=0;i<count;i++) {
       if (cursor+46 > end || get32(cursor) !== 0x02014b50) throw invalidArchive();
       var nameLength = get16(cursor+28), next = cursor+46+nameLength+get16(cursor+30)+get16(cursor+32);
       if (next > end || !nameLength || nameLength > 256 || get16(cursor+34)) throw invalidArchive();
-      var name = decoder.decode(bytes.subarray(cursor+46,cursor+46+nameLength));
+      var name = decodeName(bytes.subarray(cursor+46,cursor+46+nameLength));
       checkExtraFields(view,cursor+46+nameLength,cursor+46+nameLength+get16(cursor+30));
       if (name.includes('\\') || name.startsWith('/') || /[:\x00-\x1f]/.test(name) || name.split('/').some(function(part){return part==='.' || part==='..';}) || aliases.has(name.toLowerCase())) throw invalidArchive();
       aliases.add(name.toLowerCase());
@@ -79,7 +82,7 @@
       if ((method!==0 && method!==8) || (get16(cursor+8) & 1) || local+30 > start || get32(local) !== 0x04034b50) throw invalidArchive();
       var dataOffset = local+30+get16(local+26)+get16(local+28);
       if (get16(local+26) !== nameLength || dataOffset+compressed > start || get16(local+8)!==method || get16(local+6)!==get16(cursor+8) ||
-          decoder.decode(bytes.subarray(local+30,local+30+nameLength))!==name) throw invalidArchive();
+          decodeName(bytes.subarray(local+30,local+30+nameLength))!==name) throw invalidArchive();
       checkExtraFields(view,local+30+nameLength,dataOffset);
       entries.set(name,{size:size,crc:get32(cursor+16)});
       cursor = next;

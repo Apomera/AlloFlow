@@ -15,8 +15,11 @@
     maxRows: 200,
     maxCellChars: 1200
   });
-  var BLOCKED_KEYS = { __proto__: true, constructor: true, prototype: true };
-  var COLUMN_TYPES = {
+  var BLOCKED_KEYS = Object.create(null);
+  BLOCKED_KEYS['__proto__'] = true;
+  BLOCKED_KEYS.constructor = true;
+  BLOCKED_KEYS.prototype = true;
+  var COLUMN_TYPES = Object.assign(Object.create(null), {
     text: true,
     number: true,
     boolean: true,
@@ -24,7 +27,7 @@
     datetime: true,
     duration: true,
     category: true
-  };
+  });
 
   function fail(message) {
     var error = new Error(message);
@@ -155,7 +158,7 @@
     var rows = limitedRows.map(function (candidate, index) {
       var originalId = candidate && candidate.id != null ? String(candidate.id) : tableId + '-' + (index + 1);
       var rowId = safeText(originalId, 120);
-      if (!rowId || rowId !== originalId || rowId.trim() !== rowId || seenRows[rowId]) {
+      if (!rowId || rowId !== originalId || rowId.trim() !== rowId || BLOCKED_KEYS[rowId] || /[\u0000-\u001f\u007f]/.test(rowId) || seenRows[rowId]) {
         fail('Table ' + tableId + ' contains an empty, unsafe, oversized, or duplicate row identifier.');
       }
       seenRows[rowId] = true;
@@ -175,7 +178,7 @@
     declaredSourceCount = Math.min(1000000, declaredSourceCount);
     return {
       id: tableId,
-      title: safeText(config.title || tableId, 160).trim() || tableId,
+      title: safeText(config.title || tableId, 160).replace(/[\r\n\t]+/g, ' ').trim().slice(0, 160) || tableId,
       columns: columns,
       rows: rows,
       rowCount: rows.length,
@@ -186,6 +189,9 @@
 
   function envelope(config) {
     config = config || {};
+    var safeSingleLine = function (value, max) {
+      return safeText(value, max).replace(/[\r\n\t]+/g, ' ').trim().slice(0, max);
+    };
     var sourceConfig = isPlainObject(config.source) ? config.source : {};
     var sourceTool = safeText(sourceConfig.tool, 64).trim().toLowerCase();
     if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(sourceTool)) {
@@ -210,23 +216,24 @@
       || privacy.identifierIncluded === true;
     var notesIncluded = classification.freeTextNotesIncluded === true
       || privacy.notesIncluded === true;
+    var sourceLabel = safeSingleLine(sourceConfig.label || sourceTool, 100) || sourceTool;
     var result = {
       kind: KIND,
       version: 1,
       source: {
         tool: sourceTool,
-        label: safeText(sourceConfig.label || sourceTool, 100).trim() || sourceTool,
-        version: safeText(sourceConfig.version || '1', 40)
+        label: sourceLabel,
+        version: safeSingleLine(sourceConfig.version || '1', 40) || '1'
       },
-      title: safeText(config.title || (sourceConfig.label || sourceTool) + ' tables', 180),
-      createdAt: safeText(config.createdAt || new Date().toISOString(), 60),
+      title: safeSingleLine(config.title || sourceLabel + ' tables', 180) || sourceLabel + ' tables',
+      createdAt: safeSingleLine(config.createdAt || new Date().toISOString(), 60),
       classification: {
-        level: safeText(classification.level || 'education-data', 80),
+        level: safeSingleLine(classification.level || 'education-data', 80) || 'education-data',
         studentIdentifierIncluded: identifierIncluded,
         freeTextNotesIncluded: notesIncluded
       },
       privacy: {
-        scope: safeText(privacy.scope || 'educator-selected', 80),
+        scope: safeSingleLine(privacy.scope || 'educator-selected', 80) || 'educator-selected',
         identifierIncluded: identifierIncluded,
         reducedData: privacy.reducedData === true,
         notesIncluded: notesIncluded,
@@ -264,10 +271,13 @@
   function withinDateRange(value, range, nowMs) {
     var time = timestamp(value);
     if (!Number.isFinite(time)) return false;
+    if (range === 'all') return true;
     var end = typeof nowMs === 'undefined' ? Date.now() : nowMs;
     if (typeof end !== 'number' || !Number.isFinite(end)) return false;
     var start = dateRangeStart(range, end);
-    return time <= end && (start == null || time >= start);
+    var isDateOnly = typeof value === 'string' && /^\s*\d{4}-\d{2}-\d{2}\s*$/.test(value);
+    var effectiveEnd = isDateOnly ? Math.max(end, Date.UTC(new Date(end).getFullYear(), new Date(end).getMonth(), new Date(end).getDate(), 23, 59, 59, 999)) : end;
+    return time <= effectiveEnd && (start == null || time >= start);
   }
 
   function createPseudonymMap(names, prefix) {

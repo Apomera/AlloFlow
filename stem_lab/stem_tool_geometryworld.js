@@ -31,6 +31,21 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     document.head.appendChild(st);
   })();
 
+  // Bespoke 3D Geometry World identity badges, formula schematic & High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-geometryworld-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-geometryworld-studio-css';
+    st.textContent = [
+      '.gw-brand-subject { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; background: rgba(124,58,237,0.24); border: 1px solid rgba(196,181,253,0.48); color: #e9d5ff; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; width: fit-content; }',
+      '.gw-intro-emblem { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, rgba(124,58,237,0.34), rgba(15,23,42,0.92)); border: 1.5px solid rgba(196,181,253,0.55); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 6px 16px rgba(2,6,23,0.55); }',
+      '.gw-intro-schematic { margin: 10px 0; padding: 7px 8px; border-radius: 12px; background: rgba(9,14,30,0.82); border: 1px solid rgba(167,139,250,0.34); }',
+      '.theme-contrast .gw-brand-subject, .theme-contrast .gw-intro-emblem, .theme-contrast .gw-intro-schematic { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast #geoworld-fs-workspace .gw-toolbar, .theme-contrast #geoworld-fs-workspace .gw-intro-card { background: #000000 !important; background-image: none !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   (function() {
     if (document.getElementById('allo-geometryworld-ui-css')) return;
     var uiStyle = document.createElement('style');
@@ -8705,7 +8720,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           toolbarSizingRef.current.observe(node);
         }
       }, []);
-      var d = (ctx.toolData && ctx.toolData.geometryWorld) || {};
+      var _rawGwD = ctx.toolData && ctx.toolData.geometryWorld;
+      var d = (_rawGwD && typeof _rawGwD === 'object' && !Array.isArray(_rawGwD)) ? _rawGwD : {};
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
       var setWebglError = webglErrState[1];
@@ -9872,7 +9888,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         // The sun stands off the 45-degree diagonal so a block's two lit sides differ, and the flat fill stays low so
         // its shadowed sides and shadows read; the sky/ground fill carries the soft top-versus-side difference.
         engine.scene.add(new THREE.AmbientLight(0xffffff, 0.12));
-        var sun = new THREE.DirectionalLight(0xfff4e0, 1.12);
+        var sun = new THREE.DirectionalLight(0xfff2d6, 1.18);
         // Where the sun stands is now a function of the time of day (engine._sunAngles,
         // driven by the preset cross-fade and applied every frame), so shadows rake at
         // sunrise and shorten at noon instead of pointing the same way all day.
@@ -9899,7 +9915,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         sun.shadow.normalBias = 0.012;
         engine.sun = sun;
         engine.scene.add(sun);
-        var hemi = new THREE.HemisphereLight(0xb5d4ed, 0x485c48, 0.40);
+        var hemi = new THREE.HemisphereLight(0xbce0ff, 0x455a4a, 0.46);
         engine.scene.add(hemi);
         engine._hemi = hemi;
 
@@ -10416,8 +10432,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             engine._landscape = group; engine.scene.add(group);
           };
         })();
-        // Soft rim light from behind for depth
-        var rim = new THREE.DirectionalLight(0xc0d8ff, 0.16);
+        // Soft cool sky rim light from behind for crisp voxel silhouette depth
+        var rim = new THREE.DirectionalLight(0xaad4ff, 0.24);
         rim.position.set(-15, 20, -15);
         engine.scene.add(rim);
 
@@ -10513,6 +10529,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         // palette to keep in step. One sphere, no per-frame cost worth measuring;
         // it rides with the camera so the player can never reach its edge.
         (function initSkyDome() {
+          if (typeof THREE.ShaderMaterial !== 'function') return;
           var skyGeo = new THREE.SphereGeometry(180, 24, 12);
           var skyMat = new THREE.ShaderMaterial({
             uniforms: {
@@ -10525,7 +10542,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               // the fog colour and sun intensity each frame (animate loop).
               sunDir: { value: new THREE.Vector3(40, 45, 40).normalize() },
               sunColor: { value: new THREE.Color(0xfff4e0) },
-              sunGlow: { value: 1.0 }
+              sunGlow: { value: 1.0 },
+              uTime: { value: 3.5 },
+              uContrastBypass: { value: 0.0 }
             },
             vertexShader: [
               'varying vec3 vWorldPosition;',
@@ -10543,14 +10562,28 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               'uniform vec3 sunDir;',
               'uniform vec3 sunColor;',
               'uniform float sunGlow;',
+              'uniform float uTime;',
+              'uniform float uContrastBypass;',
               'varying vec3 vWorldPosition;',
               'void main() {',
+              '  vec3 viewDir = normalize(vWorldPosition);',
               '  vec3 dir = normalize(vWorldPosition + vec3(0.0, offset, 0.0));',
               '  float h = dir.y;',
               '  float t = pow(max(h, 0.0), exponent);',
-              '  vec3 col = mix(bottomColor, topColor, t);',
-              '  float s = max(dot(normalize(vWorldPosition), sunDir), 0.0);',
-              '  col += sunColor * (pow(s, 64.0) * 0.55 + pow(s, 7.0) * 0.16) * sunGlow;',
+              '  vec3 midColor = mix(bottomColor, topColor, 0.42);',
+              '  vec3 col = mix(bottomColor, midColor, smoothstep(0.0, 0.36, t));',
+              '  col = mix(col, topColor, smoothstep(0.28, 1.0, t));',
+              '  if (uContrastBypass < 0.5) {',
+              '    float horizonMist = pow(1.0 - clamp(h, 0.0, 1.0), 4.5);',
+              '    float goldenBand = exp(-abs(viewDir.y - 0.05) * 14.0);',
+              '    col = mix(col, mix(bottomColor, sunColor, 0.28), (horizonMist * 0.28 + goldenBand * 0.12) * (0.35 + 0.65 * sunGlow));',
+              '    float s = max(dot(viewDir, sunDir), 0.0);',
+              '    float mieCorona = pow(s, 84.0) * 0.65 + pow(s, 9.0) * 0.22 + pow(s, 2.6) * 0.08;',
+              '    col += sunColor * mieCorona * sunGlow;',
+              '    float cirrusWave = sin(viewDir.x * 7.5 + uTime * 0.06 + sin(viewDir.z * 6.2 - uTime * 0.04)) * cos(viewDir.z * 5.4 + uTime * 0.05);',
+              '    float cirrusMask = smoothstep(0.14, 0.42, viewDir.y) * (1.0 - smoothstep(0.55, 0.92, viewDir.y));',
+              '    col += mix(bottomColor, sunColor, 0.45) * max(cirrusWave, 0.0) * cirrusMask * 0.065 * sunGlow;',
+              '  }',
               '  gl_FragColor = vec4(col, 1.0);',
               '  #include <encodings_fragment>',
               '}'
@@ -10564,6 +10597,152 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           engine.scene.add(skyDome);
           engine._skyDome = skyDome;
           engine._skyWhite = new THREE.Color(1, 1, 1);
+        })();
+
+        // ── Holographic Laser Symmetry/Measurement Planes & Construction Snap-Beacon Pulse Ring ──
+        (function initHoloAndSnapShaders() {
+          if (typeof THREE.ShaderMaterial !== 'function') return;
+          var holoGroup = new THREE.Group();
+          holoGroup.name = 'gw-holo-measure-rig';
+          holoGroup.userData.gwDecorative = true;
+          holoGroup.visible = false;
+          holoGroup.raycast = function() {};
+
+          var gridUniforms = {
+            uTime: { value: 2.4 },
+            uDims: { value: new THREE.Vector2(2.0, 2.0) },
+            uColorA: { value: new THREE.Color(0x38bdf8) },
+            uColorB: { value: new THREE.Color(0xfbbf24) }
+          };
+          var gridMat = new THREE.ShaderMaterial({
+            uniforms: gridUniforms,
+            vertexShader: [
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vUv = uv;',
+              '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime;',
+              'uniform vec2 uDims;',
+              'uniform vec3 uColorA;',
+              'uniform vec3 uColorB;',
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vec2 g = fract(vUv * max(uDims, vec2(1.0)));',
+              '  vec2 edgeDist = min(g, 1.0 - g);',
+              '  float gridLine = 1.0 - smoothstep(0.015, 0.055, min(edgeDist.x, edgeDist.y));',
+              '  vec2 frameDist = min(vUv, 1.0 - vUv);',
+              '  float border = 1.0 - smoothstep(0.012, 0.045, min(frameDist.x, frameDist.y));',
+              '  float sweep = exp(-abs(vUv.x - fract(uTime * 0.24)) * 18.0);',
+              '  vec3 col = mix(uColorA, uColorB, clamp(border * 0.65 + sweep * 0.45, 0.0, 1.0));',
+              '  float alpha = clamp(gridLine * 0.24 + border * 0.48 + sweep * 0.20 + 0.045, 0.0, 0.62);',
+              '  gl_FragColor = vec4(col, alpha);',
+              '}'
+            ].join('\n'),
+            transparent: true,
+            depthWrite: false,
+            side: THREE.DoubleSide
+          });
+          var basePlane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), gridMat);
+          basePlane.rotation.x = -Math.PI / 2;
+          basePlane.renderOrder = 994;
+          basePlane.userData.gwDecorative = true;
+          basePlane.raycast = function() {};
+          holoGroup.add(basePlane);
+
+          var symUniforms = {
+            uTime: { value: 2.4 },
+            uColor: { value: new THREE.Color(0xa78bfa) },
+            uAccent: { value: new THREE.Color(0x38bdf8) }
+          };
+          var symMat = new THREE.ShaderMaterial({
+            uniforms: symUniforms,
+            vertexShader: [
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vUv = uv;',
+              '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime;',
+              'uniform vec3 uColor;',
+              'uniform vec3 uAccent;',
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vec2 edge = min(vUv, 1.0 - vUv);',
+              '  float border = 1.0 - smoothstep(0.008, 0.036, min(edge.x, edge.y));',
+              '  float scan = 0.5 + 0.5 * sin(vUv.y * 34.0 - uTime * 2.8);',
+              '  float beam = exp(-abs(vUv.y - fract(uTime * 0.18 + 0.35)) * 20.0);',
+              '  float centerAxis = 1.0 - smoothstep(0.006, 0.022, abs(vUv.x - 0.5));',
+              '  vec3 col = mix(uColor, uAccent, clamp(border * 0.55 + beam * 0.6 + centerAxis * 0.5, 0.0, 1.0));',
+              '  float alpha = clamp(0.045 + scan * 0.03 + border * 0.32 + beam * 0.16 + centerAxis * 0.18, 0.0, 0.44);',
+              '  gl_FragColor = vec4(col, alpha);',
+              '}'
+            ].join('\n'),
+            transparent: true,
+            depthWrite: false,
+            side: THREE.DoubleSide
+          });
+          var symPlane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), symMat);
+          symPlane.renderOrder = 995;
+          symPlane.userData.gwDecorative = true;
+          symPlane.raycast = function() {};
+          holoGroup.add(symPlane);
+
+          engine.scene.add(holoGroup);
+          engine._holoMeasureRig = { group: holoGroup, base: basePlane, symmetry: symPlane, gridUniforms: gridUniforms, symUniforms: symUniforms };
+
+          var beaconUniforms = {
+            uTime: { value: 2.4 },
+            uAllowed: { value: 1.0 },
+            uOkColor: { value: new THREE.Color(0x5eead4) },
+            uBlockColor: { value: new THREE.Color(0xfb7185) }
+          };
+          var beaconMat = new THREE.ShaderMaterial({
+            uniforms: beaconUniforms,
+            vertexShader: [
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vUv = uv;',
+              '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime;',
+              'uniform float uAllowed;',
+              'uniform vec3 uOkColor;',
+              'uniform vec3 uBlockColor;',
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vec2 p = vUv * 2.0 - 1.0;',
+              '  float r = length(p);',
+              '  float pulseR = fract(uTime * 0.58) * 0.72 + 0.18;',
+              '  float ring = exp(-pow((r - pulseR) * 14.0, 2.0)) * (1.0 - smoothstep(0.62, 0.96, pulseR));',
+              '  float innerHalo = exp(-pow((r - 0.52) * 18.0, 2.0)) * 0.65;',
+              '  vec2 ap = abs(p);',
+              '  float inCorner = step(0.56, max(ap.x, ap.y)) * step(max(ap.x, ap.y), 0.78);',
+              '  float bracket = inCorner * (1.0 - smoothstep(0.03, 0.075, abs(max(ap.x, ap.y) - 0.72))) * step(0.46, min(ap.x, ap.y));',
+              '  vec3 col = mix(uBlockColor, uOkColor, clamp(uAllowed, 0.0, 1.0));',
+              '  float alpha = clamp(ring * 0.55 + innerHalo * 0.42 + bracket * 0.75, 0.0, 0.82);',
+              '  if (alpha < 0.015) discard;',
+              '  gl_FragColor = vec4(col, alpha);',
+              '}'
+            ].join('\n'),
+            transparent: true,
+            depthWrite: false,
+            side: THREE.DoubleSide
+          });
+          var beaconMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.36, 1.36), beaconMat);
+          beaconMesh.rotation.x = -Math.PI / 2;
+          beaconMesh.renderOrder = 996;
+          beaconMesh.visible = false;
+          beaconMesh.userData.gwDecorative = true;
+          beaconMesh.raycast = function() {};
+          engine.scene.add(beaconMesh);
+          engine._snapBeaconMesh = beaconMesh;
         })();
 
         // ── Sky atmosphere: sun disc + drifting clouds ──
@@ -11330,12 +11509,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         // Measurements, silhouettes and exported triangles remain exact unit cells.
         // Attach after Material.clone(): three r128 does not clone shader hooks.
         engine.configureBlockFinish = function(material, type, shape, isGround) {
-          if (isGround || (shape !== 'cube' && shape !== 'halfB') || !/^(stone|wood|brick|sand|gold|diamond|obsidian|marble|copper|emerald|amethyst|wool)$/.test(type)) return;
+          if (isGround || (shape !== 'cube' && shape !== 'halfB') || !/^(stone|wood|brick|sand|gold|diamond|obsidian|marble|copper|emerald|amethyst|wool|concrete|clay|terracotta|iron|quartz)$/.test(type)) return;
           var finish = {
             gwBlockHalfSize: {value:new THREE.Vector3(0.5, shape === 'halfB' ? 0.25:0.5, 0.5)},
-            gwBlockBevelWidth: {value:0.018},
-            gwBlockBevelStrength: {value:engine._renderProfile && engine._renderProfile.tier === 'saver' ? 0:0.45},
-            gwBlockEdgeShade: {value:0.13}
+            gwBlockBevelWidth: {value:0.024},
+            gwBlockBevelStrength: {value:engine._renderProfile && engine._renderProfile.tier === 'saver' ? 0:0.56},
+            gwBlockEdgeShade: {value:0.15}
           };
           material._gwBlockFinish = finish;
           material.userData.gwBlockFinish = true;
@@ -11362,7 +11541,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               '  vec3 gwEdgeGap=max(gwBlockHalfSize-abs(vGwBlockPosition),vec3(0.0));',
               '  float gwEdge=max(min(gwEdgeGap.x,gwEdgeGap.y),min(max(gwEdgeGap.x,gwEdgeGap.y),gwEdgeGap.z));',
               '  float gwSpan=max(length(dFdx(vGwBlockPosition)),length(dFdy(vGwBlockPosition)));',
-              '  diffuseColor.rgb*=1.0-gwBlockEdgeShade*(1.0-smoothstep(0.0,0.11,gwEdge))*(1.0-smoothstep(0.035,0.11,gwSpan));',
+              '  float gwDetailFade=1.0-smoothstep(0.035,0.11,gwSpan);',
+              '  float gwEdgeBand=1.0-smoothstep(0.0,0.11,gwEdge);',
+              '  diffuseColor.rgb*=1.0-gwBlockEdgeShade*gwEdgeBand*gwDetailFade;',
+              '  float gwTopBevel=(1.0-smoothstep(0.0,0.045,gwEdge))*smoothstep(gwBlockHalfSize.y-0.06,gwBlockHalfSize.y-0.005,vGwBlockPosition.y);',
+              '  diffuseColor.rgb+=vec3(0.08,0.075,0.065)*gwTopBevel*gwDetailFade;',
               '}'
             ].join('\n'));
             shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_begin>', [
@@ -11377,7 +11560,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               '}'
             ].join('\n'));
           };
-          material.customProgramCacheKey = function(){return 'gw-block-finish-v2';};
+          material.customProgramCacheKey = function(){return 'gw-block-finish-v3';};
         };
 
         // Block edge wireframe overlay for visual crispness
@@ -11404,6 +11587,63 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               if (material && material.dispose && !(material.userData && material.userData.gwSharedBlockEdge)) material.dispose();
             });
           });
+        };
+
+        // Custom WebGL1 / GLSL ES 1.00 Fresnel crystal, glass & architectural surface sheen
+        engine._fresnelUniforms = {
+          uGwFresnelBypass: { value: 0.0 },
+          uGwFresnelTime: { value: 2.4 }
+        };
+        engine.configureCrystalFresnelSheen = function(material, type, isGround) {
+          if (!material || isGround || /^(grass|grass_cube|sand|wood|dirt)$/.test(type)) return;
+          var isCrystal = /^(glass|diamond|ice|water|amethyst|emerald|quartz)$/.test(type);
+          var isMetal = /^(gold|copper|iron|obsidian|marble)$/.test(type);
+          var rimStrength = isCrystal ? 0.34 : (isMetal ? 0.18 : 0.09);
+          var prismStrength = isCrystal ? 0.16 : 0.0;
+          var rimColor = new THREE.Color(isCrystal ? 0xe0f7ff : (isMetal ? 0xfff3d6 : 0xedf6ff)).convertSRGBToLinear();
+          var prevCompile = material.onBeforeCompile;
+          var prevKeyFn = material.customProgramCacheKey;
+          var shared = engine._fresnelUniforms;
+          material.onBeforeCompile = function(shader, rendererArg) {
+            if (typeof prevCompile === 'function') prevCompile.call(this, shader, rendererArg);
+            shader.uniforms.uGwFresnelBypass = shared.uGwFresnelBypass;
+            shader.uniforms.uGwFresnelTime = shared.uGwFresnelTime;
+            shader.uniforms.uGwRimColor = { value: rimColor };
+            shader.uniforms.uGwRimStrength = { value: rimStrength };
+            shader.uniforms.uGwPrismStrength = { value: prismStrength };
+            if (shader.fragmentShader.indexOf('uniform float uGwFresnelBypass;') === -1) {
+              shader.fragmentShader = [
+                'uniform float uGwFresnelBypass;',
+                'uniform float uGwFresnelTime;',
+                'uniform vec3 uGwRimColor;',
+                'uniform float uGwRimStrength;',
+                'uniform float uGwPrismStrength;',
+                shader.fragmentShader
+              ].join('\n');
+            }
+            if (shader.fragmentShader.indexOf('#include <tonemapping_fragment>') !== -1 && shader.fragmentShader.indexOf('gwArchFresnel') === -1) {
+              shader.fragmentShader = shader.fragmentShader.replace('#include <tonemapping_fragment>', [
+                'if (uGwFresnelBypass < 0.5) {',
+                '  vec3 gwFN = normalize(normal);',
+                '  vec3 gwFV = normalize(vViewPosition);',
+                '  float gwNDotV = clamp(abs(dot(gwFN, gwFV)), 0.0, 1.0);',
+                '  float gwArchFresnel = pow(1.0 - gwNDotV, 3.0) * uGwRimStrength;',
+                '  vec3 gwPrism = vec3(0.0);',
+                '  if (uGwPrismStrength > 0.0) {',
+                '    float gwPhase = gwNDotV * 5.2 + uGwFresnelTime * 0.45;',
+                '    gwPrism = vec3(0.5 + 0.5 * sin(gwPhase), 0.5 + 0.5 * sin(gwPhase + 2.09), 0.5 + 0.5 * sin(gwPhase + 4.18)) * pow(1.0 - gwNDotV, 2.2) * uGwPrismStrength;',
+                '  }',
+                '  gl_FragColor.rgb += (uGwRimColor * gwArchFresnel + gwPrism) * max(diffuseColor.a, 0.35);',
+                '}',
+                '#include <tonemapping_fragment>'
+              ].join('\n'));
+            }
+          };
+          material.customProgramCacheKey = function() {
+            var baseKey = typeof prevKeyFn === 'function' ? prevKeyFn.call(this) : '';
+            return baseKey + '|gw-fresnel-sheen-v1:' + (isCrystal ? 'c' : (isMetal ? 'm' : 'a'));
+          };
+          material.needsUpdate = true;
         };
 
         // ── Undo / Redo system ──
@@ -11838,6 +12078,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
           var mat = getBlockMaterial(grassCube ? 'grass_cube' : type);
           engine.configureBlockFinish(mat,type,shapeId,engine._measurementLayer === 'ground');
+          if (engine.configureCrystalFresnelSheen) engine.configureCrystalFresnelSheen(mat, type, engine._measurementLayer === 'ground');
           // Lesson ground only: alternate cells by a hair so the floor reads as unit
           // squares a student can count for V = L x W x H, without a line grid. The
           // material is this block's own clone, and a student's grass block keeps
@@ -12680,6 +12921,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var x0 = startX, y0 = startY, z0 = startZ;
           var x1 = x0 + m.L, y1 = y0 + m.H, z1 = z0 + m.W;
           engine._measureCenter = { x: (x0 + x1) / 2, y: (y0 + y1) / 2, z: (z0 + z1) / 2 };
+          engine._measureBounds = { x0: x0, y0: y0, z0: z0, x1: x1, y1: y1, z1: z1 };
 
           function dimLine(ax, ay, az, bx, by, bz, color) {
             // Axis-aligned by construction (each runs along one of L, W, H), so a
@@ -13237,10 +13479,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               } else {
                 var THREE2 = window.THREE;
                 if (THREE2) {
-                  engine._gridHelper = new THREE2.GridHelper(60, 60, 0x444466, 0x333355);
+                  engine._gridHelper = new THREE2.GridHelper(60, 60, 0x38bdf8, 0xcbe4f9);
                   engine._gridHelper.position.y = 1.01; // just above ground blocks
                   engine._gridHelper.material.transparent = true;
-                  engine._gridHelper.material.opacity = 0.35;
+                  engine._gridHelper.material.opacity = 0.48;
+                  engine._gridHelper.material.depthWrite = false;
                   engine.scene.add(engine._gridHelper);
                   if (addToast) addToast('\uD83D\uDCCF Grid ON', 'info');
                 }
@@ -14154,10 +14397,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             // A protected floor is a useful building surface, not a placement
             // error. Keep its hover warm and steady; coral is reserved for the
             // invalid destination shown by the placement ghost below.
-            engine._highlightMesh.material.color.setHex(isProtected?0xe6cf9e:0xf3eee0);
-            engine._highlightMesh.material.opacity=isProtected?0.48:stillHover?0.44:0.44+Math.sin(pulseT*2.5)*0.08;
-            engine._hoverGlowMesh.material.color.setHex(isProtected?0xe6cf9e:0xf3eee0);
-            engine._hoverGlowMesh.material.opacity=(isProtected?0.055:stillHover?0.08:0.08+Math.sin(pulseT*2.5)*0.025)*(engine._dimLines && engine._dimLines.length>0?0.35:1);
+            engine._highlightMesh.material.color.setHex(isProtected?0xf0d9a8:0xe0f7ff);
+            engine._highlightMesh.material.opacity=isProtected?0.58:stillHover?0.68:0.68+Math.sin(pulseT*2.5)*0.12;
+            engine._hoverGlowMesh.material.color.setHex(isProtected?0xf0d9a8:0xbae6fd);
+            engine._hoverGlowMesh.material.opacity=(isProtected?0.065:stillHover?0.10:0.10+Math.sin(pulseT*2.5)*0.03)*(engine._dimLines && engine._dimLines.length>0?0.35:1);
           } else {
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
             if (engine._hoverGlowMesh) engine._hoverGlowMesh.visible = false;
@@ -15081,6 +15324,14 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           if (engine._groundDecorDirty && !engine._placingLessonBlocks && engine.refreshGroundDecor) engine.refreshGroundDecor();
           if (engine._groundDecor && engine._ambientMotionEnabled !== false) engine._groundDecor.sway.value += dt * 1.6;
           if (engine._horizon && engine.camera) { engine._horizon.position.x = engine.camera.position.x; engine._horizon.position.z = engine.camera.position.z; }
+          var gwContrastActive = geometryGuideContrast(engine);
+          var gwShaderMotion = engine._ambientMotionEnabled !== false && !(engine._renderProfile && engine._renderProfile.tier === 'saver');
+          if (typeof engine._shaderTime !== 'number') engine._shaderTime = 2.4;
+          if (gwShaderMotion) engine._shaderTime += dt;
+          if (engine._fresnelUniforms) {
+            engine._fresnelUniforms.uGwFresnelTime.value = engine._shaderTime;
+            engine._fresnelUniforms.uGwFresnelBypass.value = (gwContrastActive || (engine._renderProfile && engine._renderProfile.tier === 'saver')) ? 1.0 : 0.0;
+          }
           if (engine._skyDome && engine.camera) {
             engine._skyDome.position.copy(engine.camera.position);
             var skyUniforms = engine._skyDome.material.uniforms;
@@ -15092,6 +15343,35 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             if (skyUniforms.sunColor && engine._skyWhite) {
               skyUniforms.sunColor.value.copy(engine.scene.fog ? engine.scene.fog.color : skyUniforms.bottomColor.value).lerp(engine._skyWhite, 0.6);
               skyUniforms.sunGlow.value = engine.sun ? Math.max(0.12, Math.min(1, engine.sun.intensity / 1.2)) : 1;
+            }
+            if (skyUniforms.uTime) skyUniforms.uTime.value = engine._shaderTime;
+            if (skyUniforms.uContrastBypass) skyUniforms.uContrastBypass.value = gwContrastActive ? 1.0 : 0.0;
+          }
+          if (engine._holoMeasureRig) {
+            var holo = engine._holoMeasureRig;
+            var showHolo = !gwContrastActive && !engine._showcase && engine._dimLines && engine._dimLines.length > 0 && engine._measureBounds && !(engine._renderProfile && engine._renderProfile.tier === 'saver');
+            holo.group.visible = !!showHolo;
+            if (showHolo) {
+              var mb = engine._measureBounds;
+              var spanX = Math.max(1, mb.x1 - mb.x0), spanY = Math.max(1, mb.y1 - mb.y0), spanZ = Math.max(1, mb.z1 - mb.z0);
+              var mcx = (mb.x0 + mb.x1) * 0.5, mcy = (mb.y0 + mb.y1) * 0.5, mcz = (mb.z0 + mb.z1) * 0.5;
+              holo.base.position.set(mcx, mb.y0 + 0.024, mcz);
+              holo.base.scale.set(spanX + 0.36, spanZ + 0.36, 1);
+              holo.gridUniforms.uDims.value.set(spanX, spanZ);
+              holo.gridUniforms.uTime.value = engine._shaderTime;
+              holo.symmetry.position.set(mcx, mcy, mcz);
+              holo.symmetry.scale.set(spanX + 0.24, spanY + 0.24, 1);
+              holo.symUniforms.uTime.value = engine._shaderTime;
+            }
+          }
+          if (engine._snapBeaconMesh) {
+            var showBeacon = !gwContrastActive && !engine._showcase && engine._ghostMesh && engine._ghostMesh.visible && !(engine._renderProfile && engine._renderProfile.tier === 'saver');
+            engine._snapBeaconMesh.visible = !!showBeacon;
+            if (showBeacon) {
+              var gPos = engine._ghostMesh.position;
+              engine._snapBeaconMesh.position.set(gPos.x, Math.floor(gPos.y) + 0.022, gPos.z);
+              engine._snapBeaconMesh.material.uniforms.uTime.value = engine._shaderTime;
+              engine._snapBeaconMesh.material.uniforms.uAllowed.value = engine._ghostMesh.userData && engine._ghostMesh.userData.placementAllowed === false ? 0.0 : 1.0;
             }
           }
           // Keep sun sprite at a consistent sky direction relative to camera so it doesn't
@@ -15723,6 +16003,22 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // Dispose ghost mesh + highlight mesh
           if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); if (engine._disposeGhost) engine._disposeGhost(engine._ghostMesh); engine._ghostEdges = null; }
           if (engine._skyDome) { engine.scene.remove(engine._skyDome); engine._skyDome.geometry.dispose(); engine._skyDome.material.dispose(); engine._skyDome = null; }
+          if (engine._holoMeasureRig) {
+            if (engine._holoMeasureRig.group) {
+              engine.scene.remove(engine._holoMeasureRig.group);
+              engine._holoMeasureRig.group.traverse(function(part) {
+                if (part.geometry && part.geometry.dispose) part.geometry.dispose();
+                if (part.material && part.material.dispose) part.material.dispose();
+              });
+            }
+            engine._holoMeasureRig = null;
+          }
+          if (engine._snapBeaconMesh) {
+            engine.scene.remove(engine._snapBeaconMesh);
+            if (engine._snapBeaconMesh.geometry) engine._snapBeaconMesh.geometry.dispose();
+            if (engine._snapBeaconMesh.material) engine._snapBeaconMesh.material.dispose();
+            engine._snapBeaconMesh = null;
+          }
           if (engine._envRT) { try { engine._envRT.dispose(); } catch (e) {} engine._envRT = null; }
           if (engine._horizon) { engine.scene.remove(engine._horizon); engine._horizon.geometry.dispose(); engine._horizon.material.dispose(); engine._horizon = null; }
           if (engine._sunTarget) { engine.scene.remove(engine._sunTarget); engine._sunTarget = null; }
@@ -16630,6 +16926,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           el('div', { className: 'gw-brand-lockup' },
             el('span', { className: 'gw-brand-mark', 'aria-hidden': 'true' }, renderShapeSwatch(el, 'cube')),
             el('div', { className: 'gw-brand-copy' },
+              el('span', { className: 'gw-brand-subject' }, currentLesson.sandbox ? __alloT('stem.geometryworld.badge_sandbox', '3D Voxel Studio') : __alloT('stem.geometryworld.badge_guided', '3D Spatial Measurement')),
               el('h2', { id: 'gw-title', className: 'gw-title' }, window.StemLab.geometryWorldBuilderPure ? el('button',{type:'button',className:'gw-home-brand-button','aria-label':__alloT('stem.geometryworld.geometry_world_home','Geometry World home'),'aria-haspopup':'dialog',onClick:openGeometryHome},'Geometry World') : 'Geometry World'),
               el('span', { className: 'gw-lesson-title' }, currentLesson.title || 'Choose a lesson to begin')
             )
@@ -17515,15 +17812,38 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         if (!checked.ok) throw new Error(checked.error);
                         var bounds = checked.summary.bounds;
                         var promptText = 'Open "' + checked.value.title + '" with ' + checked.summary.blockCount + ' student blocks (bounds ' + bounds.width + ' x ' + bounds.depth + ' x ' + bounds.height + ')? This replaces the current world and cannot be undone.';
-                        if (typeof window.confirm === 'function' && !window.confirm(promptText)) { if (addToast) addToast('World import canceled. The current world was not changed.', 'info'); return; }
-                        return runWorldTransition(eng, checked.value, function() {
-                        var restored = builderPure.restoreEditableWorld(eng, checked.value);
-                        if (!restored.ok) throw new Error(restored.error);
-                        upd({ activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory', measureResult: null, measureHistory: [], blocksPlaced: restored.placedCount });
-                        if (addToast) addToast('\uD83C\uDF0D Opened ' + restored.placedCount + ' validated student blocks', 'success');
-                        if (eng.logEvent) eng.logEvent('world_import', { title: worldData.title || 'imported', blockCount: (worldData.blocks || []).length });
-                        return true;
+                        var _gwConfirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+                        var _gwConfirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                        if (typeof _gwConfirmModule !== 'function' || typeof _gwConfirmApi !== 'function') {
+                          if (addToast) addToast('World import confirmation is unavailable right now. The current world was not changed.', 'warning');
+                          return;
+                        }
+                        _gwConfirmApi(promptText, {
+                          title: 'Replace current world?',
+                          confirmText: 'Open imported world',
+                          cancelText: 'Keep current world',
+                          tone: 'warning'
+                        }).then(function(confirmed) {
+                          if (!confirmed) {
+                            if (addToast) addToast('World import canceled. The current world was not changed.', 'info');
+                            return;
+                          }
+                          try {
+                            runWorldTransition(eng, checked.value, function() {
+                              var restored = builderPure.restoreEditableWorld(eng, checked.value);
+                              if (!restored.ok) throw new Error(restored.error);
+                              upd({ activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory', measureResult: null, measureHistory: [], blocksPlaced: restored.placedCount });
+                              if (addToast) addToast('\uD83C\uDF0D Opened ' + restored.placedCount + ' validated student blocks', 'success');
+                              if (eng.logEvent) eng.logEvent('world_import', { title: worldData.title || 'imported', blockCount: (worldData.blocks || []).length });
+                              return true;
+                            });
+                          } catch (restoreErr) {
+                            if (addToast) addToast(restoreErr && restoreErr.message ? restoreErr.message : 'World import failed.', 'error');
+                          }
+                        }).catch(function() {
+                          if (addToast) addToast('World import confirmation could not open. The current world was not changed.', 'warning');
                         });
+                        return;
                       } else if (worldData.structures || worldData.npcs) {
                         return runWorldTransition(eng, worldData, function() {
                         if (eng.loadLesson(worldData) === false) return false;
@@ -18863,10 +19183,33 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         },
           el('div', { className: 'gw-intro-card', style: { maxWidth: '420px', width: '90%', textAlign: 'center' } },
             el('div', { className: 'gw-intro-heading' },
-              el('div', { className: 'gw-intro-icon', 'aria-hidden': 'true' }, '\uD83E\uDDF1'),
+              el('div', { className: 'gw-intro-emblem', 'aria-hidden': 'true' },
+                el('svg', { width: 32, height: 32, viewBox: '0 0 36 36', fill: 'none' },
+                  el('polygon', { points: '18,4 31,11 31,25 18,32 5,25 5,11', stroke: '#c4b5fd', strokeWidth: 2, fill: 'rgba(124,58,237,0.22)' }),
+                  el('polyline', { points: '5,11 18,18 31,11', stroke: '#e9d5ff', strokeWidth: 1.8, fill: 'none' }),
+                  el('line', { x1: 18, y1: 18, x2: 18, y2: 32, stroke: '#38bdf8', strokeWidth: 1.8 }),
+                  el('circle', { cx: 18, cy: 18, r: 2.3, fill: '#fde047' })
+                )
+              ),
               el('div', null,
+                el('span', { className: 'gw-brand-subject', style: { marginBottom: 4 } }, __alloT('stem.geometryworld.intro_subject_badge', '3D Voxel Volume & Surface Area')),
                 el('h2', { id: 'gw-intro-title', className: 'gw-intro-title' }, currentLesson.title || 'Geometry World'),
                 el('p', { id: 'gw-intro-description', className: 'gw-intro-description' }, currentLesson.description || 'Explore geometric measurement in an interactive 3D world.')
+              )
+            ),
+            el('div', { className: 'gw-intro-schematic' },
+              el('svg', { viewBox: '0 0 360 48', style: { width: '100%', height: 'auto', maxHeight: 50, display: 'block' }, role: 'img', 'aria-label': __alloT('stem.geometryworld.intro_schematic_aria', 'Unit cube measurement formulas for volume, surface area, and scale factor') },
+                [
+                  { x: 4, w: 112, k: 'VOLUME', v: 'L × W × H', c: '#c4b5fd' },
+                  { x: 124, w: 112, k: 'SURFACE AREA', v: 'Sum of Faces', c: '#7dd3fc' },
+                  { x: 244, w: 112, k: 'SCALE (k)', v: 'Area k² · Vol k³', c: '#86efac' }
+                ].map(function(node) {
+                  return el('g', { key: node.k },
+                    el('rect', { x: node.x, y: 4, width: node.w, height: 40, rx: 8, fill: 'rgba(15,23,42,0.9)', stroke: node.c, strokeWidth: 1.2 }),
+                    el('text', { x: node.x + node.w / 2, y: 19, textAnchor: 'middle', fill: node.c, fontSize: 10, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, node.k),
+                    el('text', { x: node.x + node.w / 2, y: 35, textAnchor: 'middle', fill: '#f8fafc', fontSize: 10.5, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, node.v)
+                  );
+                })
               )
             ),
             // Objectives preview

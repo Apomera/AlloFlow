@@ -3,9 +3,23 @@ import {validateResponses} from './response-records.mjs';
 export const PREFIX = 'alloflow-campaign-pilot:v1:';
 export const MAX_COMMANDS = 500;
 const copy = x => JSON.parse(JSON.stringify(x));
+export function makeRunId() {
+  if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID();
+  }
+  if (globalThis.crypto && typeof globalThis.crypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(16);
+    globalThis.crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+  return 'run-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+}
 export function makeRun(adapter, {seed = 'FIELD-01', runId, config = {}} = {}) {
   if(typeof seed!=='string'||!seed.trim()||seed.length>32)throw new Error('Use a world seed of 1 to 32 characters.');
-  const id = runId || globalThis.crypto.randomUUID();
+  const id = runId || makeRunId();
   if(!/^[a-zA-Z0-9-]{1,64}$/.test(id))throw new Error('Invalid run ID.');
   const initial = adapter.start(seed.trim(),config);
   return {version:1,campaignId:adapter.id,runId:id,seed:seed.trim(),config:adapter.config(initial),
@@ -32,8 +46,9 @@ export function dispatch(adapter, run, actionId, expectedRevision = run.commands
   return next;
 }
 export function validateRun(adapter, raw) {
-  if(!raw||![1,2].includes(raw.version)||raw.campaignId!==adapter.id||!/^[a-zA-Z0-9-]{1,64}$/.test(raw.runId||''))throw new Error('Unrecognized pilot save.');
+  if(!raw||typeof raw!=='object'||Array.isArray(raw)||![1,2].includes(raw.version)||raw.campaignId!==adapter.id||!/^[a-zA-Z0-9-]{1,64}$/.test(raw.runId||''))throw new Error('Unrecognized pilot save.');
   if(typeof raw.seed!=='string'||!raw.seed.trim()||raw.seed.length>32)throw new Error('Invalid saved world seed.');
+  if(!raw.config||typeof raw.config!=='object'||Array.isArray(raw.config))throw new Error('Invalid saved campaign settings.');
   if(!Array.isArray(raw.commands)||raw.commands.length>MAX_COMMANDS||raw.commands.some(c=>typeof c!=='string'||c.length>120))throw new Error('Invalid saved decisions.');
   if(!Array.isArray(raw.notes)||raw.notes.length>100||raw.notes.some(n=>!n||!Number.isInteger(n.revision)||n.revision<0||n.revision>raw.commands.length||typeof n.text!=='string'||n.text.length>1200))throw new Error('Invalid saved field notes.');
   if(typeof raw.createdAt!=='string'||!Number.isFinite(Date.parse(raw.createdAt)))throw new Error('Invalid saved date.');
@@ -90,7 +105,7 @@ export function addNote(run,text) {
   if(!value||value.length>1200||run.notes.length>=100)throw new Error('Write a field note of 1 to 1,200 characters (up to 100 notes per journey).');
   return {...copy(run),notes:[...run.notes,{revision:run.commands.length,text:value}]};
 }
-export function forkRun(run,revision,runId=globalThis.crypto.randomUUID()){
+export function forkRun(run,revision,runId=makeRunId()){
   if(!Number.isInteger(revision)||revision<0||revision>run.commands.length)throw new Error('Invalid replay point.');
   return {...copy(run),runId,createdAt:new Date().toISOString(),
     commands:run.commands.slice(0,revision),notes:run.notes.filter(n=>n.revision<=revision),

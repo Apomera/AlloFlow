@@ -39,7 +39,9 @@
 
   function defaultBase64ToBytes(base64) {
     if (typeof atob === 'function') {
-      var binary = atob(base64);
+      var binary;
+      try { binary = atob(base64); }
+      catch (_) { throw adapterError('openai-invalid-image', 'OpenAI returned malformed base64 image data.'); }
       var bytes = new Uint8Array(binary.length);
       for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       return bytes;
@@ -105,6 +107,9 @@
       }
       if (request.providerPolicy.maxOperations < 1) {
         return { ready: false, code: 'operation-limit-too-low', request: request, estimate: null, provider: null };
+      }
+      if (request.operation === 'generate' && Array.isArray(request.referenceAssets) && request.referenceAssets.length > 0) {
+        return { ready: false, code: 'reference-assets-require-edit', request: request, estimate: null, provider: null };
       }
       var size = selectOpenAIImageSize(request.output.width, request.output.height);
       var quality = QUALITY_MAP[request.output.quality];
@@ -176,11 +181,19 @@
       form.append('quality', plan.api.quality);
       form.append('output_format', plan.api.outputFormat);
       form.append('moderation', 'auto');
+      var resolveAssetMime = function (ref) {
+        if (ref && ref.mimeType) return ref.mimeType;
+        try {
+          var meta = ref && typeof assetStore.getMetadata === 'function' ? assetStore.getMetadata(ref.handle) : null;
+          if (meta && meta.mimeType) return meta.mimeType;
+        } catch (_) {}
+        return 'image/png';
+      };
       var sourceBytes = assetStore.readBytesForAdapter(plan.request.sourceAsset.handle, { purpose: 'openai-image-edit-source' });
-      formAppendImage(form, 'image[]', sourceBytes, plan.request.sourceAsset.mimeType || 'image/png', 'source.png');
+      formAppendImage(form, 'image[]', sourceBytes, resolveAssetMime(plan.request.sourceAsset), 'source.png');
       plan.request.referenceAssets.forEach(function (reference, index) {
         var bytes = assetStore.readBytesForAdapter(reference.handle, { purpose: 'openai-image-edit-reference' });
-        formAppendImage(form, 'image[]', bytes, reference.mimeType || 'image/png', 'reference-' + (index + 1) + '.png');
+        formAppendImage(form, 'image[]', bytes, resolveAssetMime(reference), 'reference-' + (index + 1) + '.png');
       });
       // Do not set Content-Type: fetch/FormData must add the multipart boundary.
       // GPT Image 2 always uses high-fidelity inputs, so input_fidelity is omitted.
@@ -207,7 +220,9 @@
         throw adapterError('cost-accounting-failed', 'Actual OpenAI media cost could not be calculated.');
       }
       if (actualCostUsd > plan.request.providerPolicy.maxCostUsd) {
-        throw adapterError('actual-cost-limit-exceeded', 'Actual OpenAI media cost exceeded the approved limit.');
+        var costErr = adapterError('actual-cost-limit-exceeded', 'Actual OpenAI media cost exceeded the approved limit.');
+        costErr.actualCostUsd = actualCostUsd;
+        throw costErr;
       }
       var mimeType = FORMAT_TO_MIME[plan.api.outputFormat];
       var altText = '';

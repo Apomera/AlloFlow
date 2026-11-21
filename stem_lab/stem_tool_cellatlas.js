@@ -2261,57 +2261,114 @@
                   return h('button', { key: gene.id, type: 'button', className: 'cal-pill', 'aria-pressed': selectedGene.id === gene.id ? 'true' : 'false', onClick: function () { patch({ selectedGene: gene.id }); announce(gene.id + ' marker selected.'); } }, gene.id);
                 })),
               h('div', { className: 'cal-map-wrap' },
-                h('svg', { className: 'cal-map', viewBox: '0 0 680 430', role: 'group', 'aria-labelledby': 'cal-svg-title cal-svg-desc' },
-                  h('title', { id: 'cal-svg-title' }, tissue.mapAria),
-                  h('desc', { id: 'cal-svg-desc' }, 'Eight labeled cell-type clusters. Dot size and brightness indicate ' + metricLabel + ' for ' + selectedGene.id + '. Coordinates are illustrative, not a published UMAP.'),
-                  h('defs', null,
-                    h('radialGradient', { id: 'cal-bg-glow' }, h('stop', { offset: '0%', stopColor: '#164e63', stopOpacity: .52 }), h('stop', { offset: '100%', stopColor: '#071b2f', stopOpacity: 0 }))),
-                  h('rect', { x: 0, y: 0, width: 680, height: 430, fill: '#071b2f' }),
-                  h('circle', { cx: 340, cy: 215, r: 270, fill: 'url(#cal-bg-glow)' }),
-                  // Subtle expression-space gridlines
-                  [140, 260, 380, 500, 620].map(function (gx) {
-                    return h('line', { key: 'gx-' + gx, x1: gx, y1: 18, x2: gx, y2: 396, stroke: '#16324f', strokeWidth: 0.9, strokeDasharray: '3 5' });
-                  }),
-                  [90, 170, 250, 330].map(function (gy) {
-                    return h('line', { key: 'gy-' + gy, x1: 30, y1: gy, x2: 662, y2: gy, stroke: '#16324f', strokeWidth: 0.9, strokeDasharray: '3 5' });
-                  }),
-                  // Top-right in-SVG expression legend pill
-                  h('g', { 'aria-hidden': 'true' },
-                    h('rect', { x: 454, y: 12, width: 214, height: 34, rx: 10, fill: '#0b2540', stroke: '#2c527a', strokeWidth: 1 }),
-                    h('text', { x: 466, y: 27, fill: '#7dd3fc', fontSize: 9.5, fontWeight: 800 }, 'MARKER: ' + selectedGene.id),
-                    h('circle', { cx: 562, cy: 24, r: 3.5, fill: '#94a3b8', opacity: 0.45 }),
-                    h('text', { x: 570, y: 27, fill: '#cbd5e1', fontSize: 8.5 }, 'Low'),
-                    h('circle', { cx: 604, cy: 24, r: 6.5, fill: '#38bdf8', stroke: '#f8fafc', strokeWidth: 1.5 }),
-                    h('text', { x: 615, y: 27, fill: '#f8fafc', fontSize: 8.5, fontWeight: 800 }, 'High'),
-                    h('text', { x: 466, y: 40, fill: '#94a3b8', fontSize: 8 }, 'Selected: ' + selectedCell.label)
-                  ),
-                  h('text', { className: 'cal-axis', x: 15, y: 215, transform: 'rotate(-90 15 215)' }, 'illustrative expression neighborhood 2'),
-                  h('text', { className: 'cal-axis', x: 245, y: 418 }, 'illustrative expression neighborhood 1'),
-                  CELL_TYPES.map(function (cell) {
-                    var rawStrength = currentEvidenceValue(cell.id, selectedGene.id);
-                    var strength = rawStrength === null ? 0 : rawStrength;
-                    var radius = 4.5 + strength / 22;
-                    var opacity = rawStrength === null ? .16 : .28 + strength / 140;
-                    var isSelected = cell.id === selectedCell.id;
-                    return h('g', {
-                      key: cell.id,
-                      className: 'cal-cluster',
-                      role: 'button',
-                      tabIndex: 0,
-                      'aria-label': cell.label + ', ' + selectedGene.id + ' ' + (rawStrength === null ? 'not represented in snapshot' : metricLabel + ' ' + Math.round(strength * 10) / 10),
-                      onClick: function () { chooseCell(cell.id); },
-                      onKeyDown: function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); chooseCell(cell.id); } }
-                    },
-                      // Soft density cloud halo
-                      h('circle', { cx: cell.center[0], cy: cell.center[1], r: 30 + strength / 12, fill: cell.color, opacity: rawStrength === null ? 0.04 : 0.08 + (strength / 500) }),
-                      // Active selection telemetry reticle
-                      isSelected && h('circle', { cx: cell.center[0], cy: cell.center[1], r: 37, fill: 'none', stroke: '#38bdf8', strokeWidth: 2, strokeDasharray: '5 3' }),
-                      offsets.map(function (point, index) {
-                        return h('circle', { key: index, cx: cell.center[0] + point[0], cy: cell.center[1] + point[1], r: radius + (index % 2), fill: cell.color, opacity: opacity, stroke: (isSelected || strength >= 80) ? '#f8fafc' : 'rgba(255,255,255,.32)', strokeWidth: (isSelected || strength >= 80) ? 2 : 1 });
-                      }),
-                      h('text', { x: cell.center[0], y: cell.center[1] + 40, textAnchor: 'middle', fill: (isSelected || strength >= 80) ? '#ffffff' : '#cbd5e1' }, (isSelected ? '▸ ' : '') + cell.label + (rawStrength === null ? ' *' : ''))
-                    );
-                  }))),
+                (function () {
+                  var isHC = !!(ctx && ctx.isContrast);
+                  var selCx = selectedCell.center[0], selCy = selectedCell.center[1];
+                  return h('svg', { className: 'cal-map', viewBox: '0 0 680 430', role: 'group', 'aria-labelledby': 'cal-svg-title cal-svg-desc' },
+                    h('title', { id: 'cal-svg-title' }, tissue.mapAria),
+                    h('desc', { id: 'cal-svg-desc' }, 'Eight labeled cell-type clusters. Dot size and brightness indicate ' + metricLabel + ' for ' + selectedGene.id + '. Coordinates are illustrative, not a published UMAP.'),
+                    h('defs', null,
+                      h('radialGradient', { id: 'cal-bg-glow', cx: '48%', cy: '46%', r: '54%' },
+                        h('stop', { offset: '0%', stopColor: '#155e75', stopOpacity: 0.62 }),
+                        h('stop', { offset: '55%', stopColor: '#0b2540', stopOpacity: 0.45 }),
+                        h('stop', { offset: '100%', stopColor: '#041220', stopOpacity: 0 })
+                      ),
+                      h('radialGradient', { id: 'cal-vignette', cx: '50%', cy: '50%', r: '62%' },
+                        h('stop', { offset: '62%', stopColor: '#020617', stopOpacity: 0 }),
+                        h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.65 })
+                      ),
+                      h('radialGradient', { id: 'cal-sel-beacon', cx: '50%', cy: '50%', r: '50%' },
+                        h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0.34 }),
+                        h('stop', { offset: '65%', stopColor: '#2dd4bf', stopOpacity: 0.1 }),
+                        h('stop', { offset: '100%', stopColor: '#2dd4bf', stopOpacity: 0 })
+                      ),
+                      h('radialGradient', { id: 'cal-spec-shine', cx: '32%', cy: '28%', r: '65%' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.8 }),
+                        h('stop', { offset: '40%', stopColor: '#ffffff', stopOpacity: 0.18 }),
+                        h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                      ),
+                      CELL_TYPES.map(function (c) {
+                        return h('radialGradient', { key: 'cg-' + c.id, id: 'cal-cell-grad-' + c.id, cx: '35%', cy: '30%', r: '68%' },
+                          h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.42 }),
+                          h('stop', { offset: '34%', stopColor: c.color, stopOpacity: 0.96 }),
+                          h('stop', { offset: '100%', stopColor: '#041220', stopOpacity: 0.85 })
+                        );
+                      })
+                    ),
+                    // Optical-microscope dark-field stage & radial condenser illumination
+                    h('rect', { x: 0, y: 0, width: 680, height: 430, fill: isHC ? '#000000' : '#051526' }),
+                    !isHC && h('circle', { cx: 340, cy: 215, r: 295, fill: 'url(#cal-bg-glow)' }),
+                    !isHC && h('rect', { x: 0, y: 0, width: 680, height: 430, fill: 'url(#cal-vignette)', pointerEvents: 'none' }),
+                    // Concentric optical-microscope field calibration rings
+                    !isHC && [96, 178, 258].map(function (rr) {
+                      return h('circle', { key: 'opt-' + rr, cx: 340, cy: 215, r: rr, fill: 'none', stroke: 'rgba(125,211,252,0.1)', strokeWidth: 1, strokeDasharray: rr === 178 ? '4 6' : undefined });
+                    }),
+                    // Subtle expression-space gridlines
+                    [140, 260, 380, 500, 620].map(function (gx) {
+                      return h('line', { key: 'gx-' + gx, x1: gx, y1: 18, x2: gx, y2: 396, stroke: isHC ? '#333333' : '#16324f', strokeWidth: 0.9, strokeDasharray: '3 5' });
+                    }),
+                    [90, 170, 250, 330].map(function (gy) {
+                      return h('line', { key: 'gy-' + gy, x1: 30, y1: gy, x2: 662, y2: gy, stroke: isHC ? '#333333' : '#16324f', strokeWidth: 0.9, strokeDasharray: '3 5' });
+                    }),
+                    // Glowing anatomical callout leader line linking selected cluster to telemetry pill
+                    h('g', { 'aria-hidden': 'true' },
+                      !isHC && h('path', { d: 'M ' + selCx + ' ' + selCy + ' Q ' + Math.round((selCx + 454) / 2) + ' ' + Math.max(24, Math.min(selCy, 92)) + ' 454 30', fill: 'none', stroke: '#38bdf8', strokeWidth: 4, opacity: 0.14 }),
+                      h('path', { d: 'M ' + selCx + ' ' + selCy + ' Q ' + Math.round((selCx + 454) / 2) + ' ' + Math.max(24, Math.min(selCy, 92)) + ' 454 30', fill: 'none', stroke: isHC ? '#00ff00' : '#7dd3fc', strokeWidth: 1.2, strokeDasharray: '4 4', opacity: isHC ? 0.85 : 0.55 }),
+                      h('circle', { cx: 454, cy: 30, r: 3, fill: isHC ? '#00ff00' : '#38bdf8' })
+                    ),
+                    // Top-right in-SVG expression legend pill
+                    h('g', { 'aria-hidden': 'true' },
+                      h('rect', { x: 454, y: 12, width: 214, height: 34, rx: 10, fill: isHC ? '#000000' : '#082038', stroke: isHC ? '#ffff00' : '#38bdf8', strokeWidth: 1.1, strokeOpacity: isHC ? 1 : 0.6 }),
+                      !isHC && h('line', { x1: 464, y1: 13.5, x2: 658, y2: 13.5, stroke: '#bae6fd', strokeWidth: 0.9, opacity: 0.35 }),
+                      h('text', { x: 466, y: 27, fill: isHC ? '#ffff00' : '#7dd3fc', fontSize: 9.5, fontWeight: 800 }, 'MARKER: ' + selectedGene.id),
+                      h('circle', { cx: 562, cy: 24, r: 3.5, fill: isHC ? '#ffff00' : '#94a3b8', opacity: isHC ? 0.65 : 0.45 }),
+                      h('text', { x: 570, y: 27, fill: isHC ? '#ffff00' : '#cbd5e1', fontSize: 8.5 }, 'Low'),
+                      h('circle', { cx: 604, cy: 24, r: 6.5, fill: isHC ? '#00ff00' : '#38bdf8', stroke: '#f8fafc', strokeWidth: 1.5 }),
+                      !isHC && h('circle', { cx: 602, cy: 22, r: 1.8, fill: '#ffffff', opacity: 0.78 }),
+                      h('text', { x: 615, y: 27, fill: isHC ? '#00ff00' : '#f8fafc', fontSize: 8.5, fontWeight: 800 }, 'High'),
+                      h('text', { x: 466, y: 40, fill: isHC ? '#ffff00' : '#94a3b8', fontSize: 8 }, 'Selected: ' + selectedCell.label)
+                    ),
+                    h('text', { className: 'cal-axis', x: 15, y: 215, transform: 'rotate(-90 15 215)' }, 'illustrative expression neighborhood 2'),
+                    h('text', { className: 'cal-axis', x: 245, y: 418 }, 'illustrative expression neighborhood 1'),
+                    CELL_TYPES.map(function (cell) {
+                      var rawStrength = currentEvidenceValue(cell.id, selectedGene.id);
+                      var strength = rawStrength === null ? 0 : rawStrength;
+                      var radius = 4.5 + strength / 22;
+                      var opacity = rawStrength === null ? .16 : .34 + strength / 150;
+                      var isSelected = cell.id === selectedCell.id;
+                      var isPeak = strength >= 80;
+                      var cx0 = cell.center[0], cy0 = cell.center[1];
+                      return h('g', {
+                        key: cell.id,
+                        className: 'cal-cluster',
+                        role: 'button',
+                        tabIndex: 0,
+                        'aria-label': cell.label + ', ' + selectedGene.id + ' ' + (rawStrength === null ? 'not represented in snapshot' : metricLabel + ' ' + Math.round(strength * 10) / 10),
+                        onClick: function () { chooseCell(cell.id); },
+                        onKeyDown: function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); chooseCell(cell.id); } }
+                      },
+                        // Soft optical density cloud & outer translucent membrane aura
+                        !isHC && isSelected && h('circle', { cx: cx0, cy: cy0, r: 48, fill: 'url(#cal-sel-beacon)' }),
+                        !isHC && h('circle', { cx: cx0, cy: cy0, r: 32 + strength / 11, fill: cell.color, opacity: rawStrength === null ? 0.04 : 0.1 + (strength / 460) }),
+                        h('circle', { cx: cx0, cy: cy0, r: 28 + strength / 15, fill: 'none', stroke: isHC ? (isSelected ? '#00ff00' : '#ffff00') : cell.color, strokeWidth: isPeak ? 1.5 : 0.9, opacity: rawStrength === null ? 0.12 : (isPeak ? 0.55 : 0.25) }),
+                        // Active selection dual-pass telemetry reticle + optical crosshair ticks
+                        isSelected && !isHC && h('circle', { cx: cx0, cy: cy0, r: 38, fill: 'none', stroke: '#38bdf8', strokeWidth: 5.5, opacity: 0.22 }),
+                        isSelected && h('circle', { cx: cx0, cy: cy0, r: 38, fill: 'none', stroke: isHC ? '#00ff00' : '#38bdf8', strokeWidth: 2, strokeDasharray: '5 3' }),
+                        isSelected && h('path', { d: 'M' + (cx0 - 44) + ',' + cy0 + ' H' + (cx0 - 34) + ' M' + (cx0 + 34) + ',' + cy0 + ' H' + (cx0 + 44) + ' M' + cx0 + ',' + (cy0 - 44) + ' V' + (cy0 - 34) + ' M' + cx0 + ',' + (cy0 + 34) + ' V' + (cy0 + 44), stroke: isHC ? '#00ff00' : '#7dd3fc', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                        // Translucent membrane / organelle cells with specular catchlights
+                        offsets.map(function (point, index) {
+                          var px = cx0 + point[0], py = cy0 + point[1];
+                          var rCell = radius + (index % 2);
+                          return h('g', { key: index },
+                            h('circle', { cx: px, cy: py, r: rCell, fill: isHC ? (isSelected || isPeak ? '#00ff00' : '#ffff00') : ('url(#cal-cell-grad-' + cell.id + ')'), opacity: isHC ? (rawStrength === null ? 0.25 : 0.92) : Math.min(0.98, opacity), stroke: (isSelected || isPeak) ? '#f8fafc' : 'rgba(255,255,255,.35)', strokeWidth: (isSelected || isPeak) ? 1.8 : 1 }),
+                            !isHC && (isSelected || isPeak || index % 2 === 0) && h('circle', { cx: px - rCell * 0.28, cy: py - rCell * 0.28, r: Math.max(1.2, rCell * 0.28), fill: '#ffffff', opacity: isPeak ? 0.72 : 0.42 })
+                          );
+                        }),
+                        h('text', { x: cx0, y: cy0 + 41, textAnchor: 'middle', fill: isHC ? (isSelected ? '#00ff00' : '#ffff00') : ((isSelected || isPeak) ? '#ffffff' : '#cbd5e1') }, (isSelected ? '▸ ' : '') + cell.label + (rawStrength === null ? ' *' : ''))
+                      );
+                    })
+                  );
+                })()),
               (function () {
                 var topCell = CELL_TYPES.slice().sort(function (a, b) {
                   var va = currentEvidenceValue(a.id, selectedGene.id);
@@ -2382,17 +2439,40 @@
             h('div', { className: 'cal-field' }, h('label', { htmlFor: 'cal-compare-b' }, 'Cell type B'), h('select', { id: 'cal-compare-b', value: compareB.id, onChange: function (event) { patch({ compareB: event.target.value, comparisonViewed: true }); } }, CELL_TYPES.map(function (cell) { return h('option', { key: cell.id, value: cell.id }, cell.label); })))),
           // Diverging butterfly comparison chart SVG
           (function () {
+            var isHC = !!(ctx && ctx.isContrast);
             var W = 560, rowH = 22, topPad = 24, Hh = topPad + GENES.length * rowH + 14;
             var midL = 236, midR = 324, maxBar = 194;
             return h('div', { className: 'cal-butterfly-wrap' },
               h('div', { className: 'cal-butterfly-head' },
-                h('span', { style: { color: '#7dd3fc' } }, '◀ ' + compareA.label),
-                h('span', { style: { color: '#cbd5e1', fontSize: 10 } }, 'Differential Marker Profile'),
-                h('span', { style: { color: '#fde047' } }, compareB.label + ' ▶')
+                h('span', { style: { color: isHC ? '#00ff00' : '#7dd3fc' } }, '◀ ' + compareA.label),
+                h('span', { style: { color: isHC ? '#ffff00' : '#cbd5e1', fontSize: 10 } }, 'Differential Marker Profile'),
+                h('span', { style: { color: isHC ? '#ffff00' : '#fde047' } }, compareB.label + ' ▶')
               ),
               h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', role: 'img', 'aria-label': 'Diverging bar comparison of ' + compareA.label + ' and ' + compareB.label + ' across ' + GENES.length + ' marker genes.', style: { display: 'block', maxHeight: 230 } },
-                h('line', { x1: midL, y1: 12, x2: midL, y2: Hh - 8, stroke: '#334155', strokeWidth: 1 }),
-                h('line', { x1: midR, y1: 12, x2: midR, y2: Hh - 8, stroke: '#334155', strokeWidth: 1 }),
+                h('defs', null,
+                  h('linearGradient', { id: 'cal-bf-a', x1: '1', y1: '0', x2: '0', y2: '0' },
+                    h('stop', { offset: '0%', stopColor: '#0284c7' }),
+                    h('stop', { offset: '60%', stopColor: '#38bdf8' }),
+                    h('stop', { offset: '100%', stopColor: '#bae6fd' })
+                  ),
+                  h('linearGradient', { id: 'cal-bf-b', x1: '0', y1: '0', x2: '1', y2: '0' },
+                    h('stop', { offset: '0%', stopColor: '#d97706' }),
+                    h('stop', { offset: '60%', stopColor: '#fbbf24' }),
+                    h('stop', { offset: '100%', stopColor: '#fef08a' })
+                  )
+                ),
+                // Calibrated 50% / 100% comparison guides
+                [0.5, 1].map(function (frac) {
+                  var gxL = midL - frac * maxBar, gxR = midR + frac * maxBar;
+                  return h('g', { key: 'bfg-' + frac },
+                    h('line', { x1: gxL, y1: 14, x2: gxL, y2: Hh - 8, stroke: isHC ? '#333333' : 'rgba(148,163,184,0.2)', strokeWidth: 1, strokeDasharray: '2 4' }),
+                    h('line', { x1: gxR, y1: 14, x2: gxR, y2: Hh - 8, stroke: isHC ? '#333333' : 'rgba(148,163,184,0.2)', strokeWidth: 1, strokeDasharray: '2 4' }),
+                    h('text', { x: gxL, y: 11, textAnchor: 'middle', fill: isHC ? '#ffff00' : '#64748b', fontSize: 7.5, fontWeight: 700 }, Math.round(frac * 100)),
+                    h('text', { x: gxR, y: 11, textAnchor: 'middle', fill: isHC ? '#ffff00' : '#64748b', fontSize: 7.5, fontWeight: 700 }, Math.round(frac * 100))
+                  );
+                }),
+                h('line', { x1: midL, y1: 14, x2: midL, y2: Hh - 8, stroke: isHC ? '#ffff00' : '#475569', strokeWidth: 1.2 }),
+                h('line', { x1: midR, y1: 14, x2: midR, y2: Hh - 8, stroke: isHC ? '#ffff00' : '#475569', strokeWidth: 1.2 }),
                 GENES.map(function (gene, idx) {
                   var a = evidenceMode === 'real' ? (realEvidence(realSnapshot, compareA.id, gene.id, realMetric) || 0) : compareA.evidence[gene.id];
                   var b = evidenceMode === 'real' ? (realEvidence(realSnapshot, compareB.id, gene.id, realMetric) || 0) : compareB.evidence[gene.id];
@@ -2400,13 +2480,15 @@
                   var wa = Math.max(2, (Math.max(0, Math.min(100, a)) / 100) * maxBar);
                   var wb = Math.max(2, (Math.max(0, Math.min(100, b)) / 100) * maxBar);
                   return h('g', { key: 'bf-' + gene.id },
-                    h('rect', { x: midL - maxBar, y: y, width: maxBar, height: 12, rx: 3, fill: '#0f2942' }),
-                    h('rect', { x: midL - wa, y: y, width: wa, height: 12, rx: 3, fill: '#38bdf8' }),
-                    h('text', { x: midL - maxBar - 6, y: y + 9.5, textAnchor: 'end', fill: '#bae6fd', fontSize: 9, fontWeight: 800 }, Math.round(a)),
-                    h('text', { x: W / 2, y: y + 9.5, textAnchor: 'middle', fill: '#f8fafc', fontSize: 9.5, fontWeight: 900 }, gene.id),
-                    h('rect', { x: midR, y: y, width: maxBar, height: 12, rx: 3, fill: '#0f2942' }),
-                    h('rect', { x: midR, y: y, width: wb, height: 12, rx: 3, fill: '#fbbf24' }),
-                    h('text', { x: midR + maxBar + 6, y: y + 9.5, textAnchor: 'start', fill: '#fef08a', fontSize: 9, fontWeight: 800 }, Math.round(b))
+                    h('rect', { x: midL - maxBar, y: y, width: maxBar, height: 12, rx: 3.5, fill: isHC ? '#111111' : '#0b223a', stroke: isHC ? '#333333' : 'rgba(56,189,248,0.12)', strokeWidth: 0.7 }),
+                    h('rect', { x: midL - wa, y: y, width: wa, height: 12, rx: 3.5, fill: isHC ? '#00ff00' : 'url(#cal-bf-a)' }),
+                    !isHC && wa > 8 && h('line', { x1: midL - wa + 2, y1: y + 2, x2: midL - 2, y2: y + 2, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.4 }),
+                    h('text', { x: midL - maxBar - 6, y: y + 9.5, textAnchor: 'end', fill: isHC ? '#00ff00' : '#bae6fd', fontSize: 9, fontWeight: 800 }, Math.round(a)),
+                    h('text', { x: W / 2, y: y + 9.5, textAnchor: 'middle', fill: isHC ? '#ffff00' : '#f8fafc', fontSize: 9.5, fontWeight: 900 }, gene.id),
+                    h('rect', { x: midR, y: y, width: maxBar, height: 12, rx: 3.5, fill: isHC ? '#111111' : '#0b223a', stroke: isHC ? '#333333' : 'rgba(251,191,36,0.12)', strokeWidth: 0.7 }),
+                    h('rect', { x: midR, y: y, width: wb, height: 12, rx: 3.5, fill: isHC ? '#ffff00' : 'url(#cal-bf-b)' }),
+                    !isHC && wb > 8 && h('line', { x1: midR + 2, y1: y + 2, x2: midR + wb - 2, y2: y + 2, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.4 }),
+                    h('text', { x: midR + maxBar + 6, y: y + 9.5, textAnchor: 'start', fill: isHC ? '#ffff00' : '#fef08a', fontSize: 9, fontWeight: 800 }, Math.round(b))
                   );
                 })
               )
@@ -3024,17 +3106,33 @@
           h('button', { type: 'button', className: 'cal-back', onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(null); announce(__alloT('stem.cellatlas.sr_returned_to_steam_lab_tools', 'Returned to STEAM Lab tools.')); }, 'aria-label': __alloT('stem.cellatlas.a11y_back_to_steam_lab_tools', 'Back to STEAM Lab tools') }, '\u2190'),
           h('svg', { width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true', style: { flexShrink: 0 } },
             h('defs', null,
-              h('linearGradient', { id: 'cal-emblem-bg', x1: '0', y1: '0', x2: '1', y2: '1' },
-                h('stop', { offset: '0%', stopColor: '#075985' }),
-                h('stop', { offset: '100%', stopColor: '#0f766e' })
+              h('radialGradient', { id: 'cal-emblem-bg', cx: '36%', cy: '28%', r: '76%' },
+                h('stop', { offset: '0%', stopColor: '#0e7490' }),
+                h('stop', { offset: '58%', stopColor: '#075985' }),
+                h('stop', { offset: '100%', stopColor: '#042f2e' })
+              ),
+              h('radialGradient', { id: 'cal-emb-orb-a', cx: '32%', cy: '28%', r: '68%' },
+                h('stop', { offset: '0%', stopColor: '#e0f2fe' }),
+                h('stop', { offset: '45%', stopColor: '#38bdf8' }),
+                h('stop', { offset: '100%', stopColor: '#0369a1' })
+              ),
+              h('radialGradient', { id: 'cal-emb-orb-b', cx: '32%', cy: '28%', r: '68%' },
+                h('stop', { offset: '0%', stopColor: '#fef9c3' }),
+                h('stop', { offset: '45%', stopColor: '#fbbf24' }),
+                h('stop', { offset: '100%', stopColor: '#b45309' })
               )
             ),
             h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 11, fill: 'url(#cal-emblem-bg)', stroke: '#99f6e4', strokeWidth: 1.4 }),
-            h('circle', { cx: 21, cy: 21, r: 12, fill: 'none', stroke: '#bae6fd', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.7 }),
-            h('circle', { cx: 16, cy: 17, r: 4.2, fill: '#38bdf8', stroke: '#ffffff', strokeWidth: 1 }),
-            h('circle', { cx: 26, cy: 16, r: 3.4, fill: '#5eead4', stroke: '#ffffff', strokeWidth: 1 }),
-            h('circle', { cx: 22, cy: 26, r: 4.5, fill: '#fbbf24', stroke: '#ffffff', strokeWidth: 1 }),
-            h('circle', { cx: 13, cy: 26, r: 2.2, fill: '#e0f2fe' })
+            h('path', { d: 'M9 5.5 H33', stroke: '#e0f2fe', strokeWidth: 1, strokeLinecap: 'round', opacity: 0.42 }),
+            h('circle', { cx: 21, cy: 21, r: 14, fill: 'none', stroke: '#38bdf8', strokeWidth: 2.8, opacity: 0.16 }),
+            h('circle', { cx: 21, cy: 21, r: 12.2, fill: 'none', stroke: '#bae6fd', strokeWidth: 1, strokeDasharray: '2.5 2', opacity: 0.8 }),
+            h('circle', { cx: 16, cy: 17, r: 4.5, fill: 'url(#cal-emb-orb-a)', stroke: '#ffffff', strokeWidth: 0.9 }),
+            h('circle', { cx: 14.7, cy: 15.6, r: 1.1, fill: '#ffffff', opacity: 0.85 }),
+            h('circle', { cx: 26, cy: 16, r: 3.5, fill: '#5eead4', stroke: '#ffffff', strokeWidth: 0.9 }),
+            h('circle', { cx: 25, cy: 14.9, r: 0.9, fill: '#ffffff', opacity: 0.8 }),
+            h('circle', { cx: 22, cy: 26, r: 4.8, fill: 'url(#cal-emb-orb-b)', stroke: '#ffffff', strokeWidth: 0.9 }),
+            h('circle', { cx: 20.6, cy: 24.5, r: 1.2, fill: '#ffffff', opacity: 0.85 }),
+            h('circle', { cx: 13, cy: 26, r: 2.2, fill: '#e0f2fe', opacity: 0.9 })
           ),
           h('div', { className: 'cal-brand' },
             h('p', { className: 'cal-kicker' }, 'Tissue to cell to gene to protein'),

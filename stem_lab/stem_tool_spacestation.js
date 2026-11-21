@@ -7035,6 +7035,74 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           renderer.shadowMap.enabled = true;
           renderer.shadowMap.type = THREE.PCFSoftShadowMap;
           var scene = new THREE.Scene();
+          var issShaderTime = _prefersReducedMotion ? 2.4 : 0.0;
+          var issShaderUniforms = {
+            uIssTime: { value: issShaderTime },
+            uIssSunDir: { value: new THREE.Vector3(0.34, 0.77, 0.54) },
+            uIssDaylight: { value: 1.0 },
+            uIssHc: { value: 0.0 }
+          };
+          var issLivingShaders = {
+            atmoMesh: null,
+            auroraGroup: null,
+            auroraMats: [],
+            rcsGroup: null,
+            rcsMats: [],
+            motes: null,
+            motesMat: null,
+            disposables: []
+          };
+          function issIsHighContrast() {
+            try {
+              if (cv && typeof cv.closest === 'function' && cv.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+              var de = document.documentElement;
+              if (de && (de.classList.contains('theme-contrast') || de.getAttribute('data-theme') === 'high-contrast' || de.getAttribute('data-theme') === 'contrast')) return true;
+              if (document.body && document.body.classList.contains('theme-contrast')) return true;
+              if (typeof window !== 'undefined' && window.matchMedia && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+            } catch (eHc) {}
+            return false;
+          }
+          function issPatchSolarIridescence(material, kind) {
+            if (!material || typeof material !== 'object') return material;
+            var isRosa = kind === 'irosa';
+            material.onBeforeCompile = function (shader) {
+              if (!shader || typeof shader.vertexShader !== 'string' || typeof shader.fragmentShader !== 'string') return;
+              if (shader.vertexShader.indexOf('#include <common>') < 0 || shader.vertexShader.indexOf('#include <begin_vertex>') < 0) return;
+              if (shader.fragmentShader.indexOf('#include <common>') < 0 || shader.fragmentShader.indexOf('#include <dithering_fragment>') < 0) return;
+              shader.uniforms.uIssTime = issShaderUniforms.uIssTime;
+              shader.uniforms.uIssSunDir = issShaderUniforms.uIssSunDir;
+              shader.uniforms.uIssDaylight = issShaderUniforms.uIssDaylight;
+              shader.uniforms.uIssHc = issShaderUniforms.uIssHc;
+              shader.vertexShader = shader.vertexShader
+                .replace('#include <common>', '#include <common>\nvarying vec3 vIssPvWorldPos;\nvarying vec3 vIssPvWorldNormal;\nvarying vec2 vIssPvUv;')
+                .replace('#include <begin_vertex>', '#include <begin_vertex>\nvIssPvWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvIssPvWorldNormal = normalize(mat3(modelMatrix) * objectNormal);\nvIssPvUv = uv;');
+              var pvSnippet = [
+                'if (uIssHc < 0.5 && uIssDaylight > 0.01) {',
+                '  vec3 pvN = normalize(vIssPvWorldNormal);',
+                '  vec3 pvV = normalize(cameraPosition - vIssPvWorldPos);',
+                '  vec3 pvL = normalize(uIssSunDir);',
+                '  float pvNdV = clamp(dot(pvN, pvV), 0.0, 1.0);',
+                '  float pvNdL = clamp(dot(pvN, pvL), 0.0, 1.0);',
+                '  vec3 pvH = normalize(pvL + pvV);',
+                '  float pvSpec = pow(max(dot(pvN, pvH), 0.0), ' + (isRosa ? '54.0' : '38.0') + ');',
+                '  float pvFres = pow(1.0 - pvNdV, 2.8);',
+                '  float pvPhase = pvNdV * 5.2 + pvNdL * 2.1 + sin(uIssTime * 0.55 + vIssPvWorldPos.x * 0.85) * 0.14;',
+                '  vec3 pvFilm = ' + (isRosa
+                  ? 'mix(vec3(0.14, 0.42, 0.96), vec3(0.36, 0.82, 0.98), 0.5 + 0.5 * sin(pvPhase))'
+                  : 'mix(vec3(0.18, 0.48, 0.96), vec3(0.98, 0.68, 0.24), 0.5 + 0.5 * sin(pvPhase))') + ';',
+                '  float pvGrid = 0.82 + 0.18 * step(0.12, fract(vIssPvUv.x * 24.0)) * step(0.08, fract(vIssPvUv.y * 48.0));',
+                '  float pvSheen = (pvFres * 0.34 + pvSpec * 0.46) * (0.25 + 0.75 * pvNdL) * pvGrid * uIssDaylight;',
+                '  gl_FragColor.rgb += pvFilm * pvSheen;',
+                '}',
+                '#include <dithering_fragment>'
+              ].join('\n');
+              shader.fragmentShader = shader.fragmentShader
+                .replace('#include <common>', '#include <common>\nuniform float uIssTime;\nuniform vec3 uIssSunDir;\nuniform float uIssDaylight;\nuniform float uIssHc;\nvarying vec3 vIssPvWorldPos;\nvarying vec3 vIssPvWorldNormal;\nvarying vec2 vIssPvUv;')
+                .replace('#include <dithering_fragment>', pvSnippet);
+            };
+            material.customProgramCacheKey = function () { return 'iss-pv-irid-' + kind; };
+            return material;
+          }
           // Authored PRE tone-mapping. A plain render writes the clear colour
           // straight out, but the post-FX chain puts the background through ACES
           // like everything else, and 0x030712 came out of that as a milky navy
@@ -7050,19 +7118,24 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           camera.updateProjectionMatrix();
           camera.position.set(8.2, 4.8, 10.4);
           camera.lookAt(0, 0, 1);
-          var earthShine = new THREE.HemisphereLight(0x9bdcff, 0x081225, 0.5);
+          var earthShine = new THREE.HemisphereLight(0x88d4ff, 0x07152a, 0.54);
           earthShine.position.set(0, -1, 0); // Earth-facing surfaces receive the cool fill.
           scene.add(earthShine);
+          // Dedicated cool blue Earthshine bounce light from the sunlit ocean/cloud deck below
+          var earthBounce = new THREE.DirectionalLight(0x60c8ff, 0.44);
+          earthBounce.name = 'iss-earthshine-bounce';
+          earthBounce.position.set(1.5, -14, 2.5);
+          scene.add(earthBounce);
           var fillAmbient = new THREE.AmbientLight(0x7288aa, 0.16);
           scene.add(fillAmbient);
-          var sun = new THREE.DirectionalLight(0xfff3da, 1.35);
+          var sun = new THREE.DirectionalLight(0xfff5e0, 1.35);
           sun.name = 'iss-direct-sun';
           // Initial placeholder; the orbital lighting model sets the final direction.
           sun.position.set(10, 7, 5); sun.castShadow = true;
           sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
           sun.shadow.camera.left = -13; sun.shadow.camera.right = 13; sun.shadow.camera.top = 13; sun.shadow.camera.bottom = -13;
           scene.add(sun);
-          var rim = new THREE.DirectionalLight(0x8fbbd2, 0.42);
+          var rim = new THREE.DirectionalLight(0x9ac8e6, 0.46);
           rim.position.set(-8, -2, -9); scene.add(rim);
           // Earth below. Real Natural Earth coastlines, a specular map so only
           // open water carries the sun-glint that shows up in almost every real
@@ -7179,6 +7252,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
           var atmo = makeLimbShell(30.32, 0x67c8ff, 0xff8b3d, 0.24);
           scene.add(atmo);
+          // Soft outer Rayleigh exosphere scatter horizon beneath the station
+          var horizonGlow = makeLimbShell(30.62, 0x38bdf8, 0xff7b36, 0.18);
+          scene.add(horizonGlow);
           // Night photographs from the station show a thin green band over the
           // dark limb: oxygen atoms near 95 km glowing at 557.7 nm. The tight
           // shell carries it on the night side only.
@@ -7432,7 +7508,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var ISS_IROSA_WINGS = [[1, -1], [1], [1, -1], [1]];   // P6, P4, S4, S6
           var rosaSkin = issRosaCanvas(), rosaMap = rosaSkin ? issTexture(rosaSkin, true) : null;
           if (rosaMap) { rosaMap.name = 'iss-irosa-cells'; rosaMap.wrapS = THREE.ClampToEdgeWrapping; }
-          var rosaFront = new THREE.MeshStandardMaterial({ color: rosaMap ? 0xffffff : 0x1d2640, map: rosaMap, roughness: .3, metalness: .4 });
+          var SolarMatCtor = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
+          var rosaFrontOpts = { color: rosaMap ? 0xffffff : 0x1d2640, map: rosaMap, roughness: .22, metalness: .52 };
+          if (THREE.MeshPhysicalMaterial) { rosaFrontOpts.clearcoat = 0.82; rosaFrontOpts.clearcoatRoughness = 0.12; }
+          var rosaFront = issPatchSolarIridescence(new SolarMatCtor(rosaFrontOpts), 'irosa');
           var rosaBack = new THREE.MeshStandardMaterial({ color: 0x8f969e, roughness: .62, metalness: .2 });
           var rosaEdge = new THREE.MeshStandardMaterial({ color: 0xc3cad3, roughness: .45, metalness: .55 });
           var ROSA_CANT = 10 * Math.PI / 180;
@@ -7445,9 +7524,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             var hinge = new THREE.Mesh(new THREE.CylinderGeometry(.105, .105, .24, 12), new THREE.MeshStandardMaterial({ color: 0x416782, metalness: .65, roughness: .4 }));
             hinge.rotation.z = Math.PI / 2; wingGroup.add(hinge);
             [1, -1].forEach(function (side) {
-              var front = new THREE.MeshStandardMaterial({ color: arrayFrontMap ? 0xffffff : 0x664a42, map: arrayFrontMap, roughness: .38, metalness: .3, emissive: 0x000000 });
-              var backing = new THREE.MeshStandardMaterial({ color: arrayBackMap ? 0xffffff : 0xa9763f, map: arrayBackMap, roughness: .62, metalness: .32 });
-              var edge = new THREE.MeshStandardMaterial({ color: 0xb5a582, roughness: .5, metalness: .45 });
+              var frontOpts = { color: arrayFrontMap ? 0xffffff : 0x664a42, map: arrayFrontMap, roughness: .24, metalness: .46, emissive: 0x000000 };
+              if (THREE.MeshPhysicalMaterial) { frontOpts.clearcoat = 0.72; frontOpts.clearcoatRoughness = 0.14; }
+              var front = issPatchSolarIridescence(new SolarMatCtor(frontOpts), 'legacy');
+              var backing = new THREE.MeshStandardMaterial({ color: arrayBackMap ? 0xffffff : 0xa9763f, map: arrayBackMap, roughness: .52, metalness: .40 });
+              var edge = new THREE.MeshStandardMaterial({ color: 0xb5a582, roughness: .42, metalness: .52 });
               var panel = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.026, 3.4), [edge, edge, front, backing, edge, edge]);
               panel.name = 'iss-solar-blanket-' + wi + '-' + side;
               panel.position.set(0, 0, side * 2.0); panel.castShadow = true; panel.receiveShadow = true;
@@ -8706,7 +8787,59 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           planetScene.name = 'iss-orbital-planet'; scene.name = 'iss-station-inspection';
           earth.name = 'iss-orbital-earth'; station.name = 'iss-inspected-station';
           planetScene.background = scene.background; scene.background = null;
-          planetScene.add(earth, cloudShell, atmo, airglow);
+          planetScene.add(earth, cloudShell, atmo, horizonGlow, airglow);
+          // Crisp station navigation beacons (port red, starboard green, zenith amber)
+          // and docking-port alignment glow cues (Harmony IDA-2 forward, Zvezda aft).
+          var stationNavCues = [];
+          (function addStationNavBeacons() {
+            var glowTex = null;
+            try {
+              var bc = document.createElement('canvas');
+              bc.setAttribute('aria-hidden', 'true');
+              bc.width = 64; bc.height = 64;
+              var bctx = bc.getContext && bc.getContext('2d');
+              if (bctx) {
+                var bg = bctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+                bg.addColorStop(0, 'rgba(255,255,255,1)');
+                bg.addColorStop(0.28, 'rgba(255,255,255,0.68)');
+                bg.addColorStop(0.65, 'rgba(255,255,255,0.16)');
+                bg.addColorStop(1, 'rgba(255,255,255,0)');
+                bctx.fillStyle = bg;
+                bctx.fillRect(0, 0, 64, 64);
+                glowTex = issTexture(bc, true);
+              }
+            } catch (eBeacon) { glowTex = null; }
+            var beaconSpecs = [
+              { name: 'iss-nav-port', pos: [-5.42, ISS_TRUSS_Y + 0.16, -1.6], color: 0xff4d6d, scale: 0.42, baseOp: 0.72, phase: 0 },
+              { name: 'iss-nav-starboard', pos: [5.42, ISS_TRUSS_Y + 0.16, -1.6], color: 0x34d399, scale: 0.42, baseOp: 0.72, phase: 1.5 },
+              { name: 'iss-nav-zenith', pos: [0, ISS_TRUSS_Y + 0.34, -1.6], color: 0xfbbf24, scale: 0.36, baseOp: 0.62, phase: 3.1 },
+              { name: 'iss-dock-ida2', pos: [0, 0, -4.64], color: 0x38bdf8, scale: 0.48, baseOp: 0.64, phase: 0.8, isDock: true },
+              { name: 'iss-dock-zvezda', pos: [0, 0, 5.26], color: 0x38bdf8, scale: 0.44, baseOp: 0.56, phase: 2.3, isDock: true }
+            ];
+            beaconSpecs.forEach(function (spec) {
+              var lensMat = new THREE.MeshBasicMaterial({ color: spec.color, transparent: true, opacity: 0.92, toneMapped: false });
+              var lens = new THREE.Mesh(
+                spec.isDock ? new THREE.TorusGeometry(0.16, 0.018, 8, 24) : new THREE.SphereGeometry(0.045, 10, 8),
+                lensMat
+              );
+              lens.name = spec.name;
+              lens.position.set(spec.pos[0], spec.pos[1], spec.pos[2]);
+              station.add(lens);
+              var halo = null;
+              if (glowTex && THREE.Sprite && THREE.SpriteMaterial) {
+                var haloMat = new THREE.SpriteMaterial({
+                  map: glowTex, color: spec.color, transparent: true, opacity: spec.baseOp,
+                  blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false
+                });
+                halo = new THREE.Sprite(haloMat);
+                halo.name = spec.name + '-halo';
+                halo.position.set(spec.pos[0], spec.pos[1], spec.pos[2]);
+                halo.scale.set(spec.scale, spec.scale, 1);
+                station.add(halo);
+              }
+              stationNavCues.push({ lens: lens, halo: halo, spec: spec });
+            });
+          })();
           var earthSun = new THREE.DirectionalLight(0xfff3da, 1.35);
           earthSun.name = 'iss-planet-sun';
           var planetFill = new THREE.AmbientLight(0x7288aa, 0.16);
@@ -8722,6 +8855,334 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             }), 'glow'));
             aurora.name = 'iss-aurora'; aurora.position.copy(earth.position);
             planetScene.add(aurora);
+          }
+          // Cinema-grade GLSL Rayleigh/Mie scattering limb halo, 3D billowing polar
+          // aurora curtains, ionized RCS station-keeping plumes & cupola dust motes.
+          if (typeof THREE.ShaderMaterial === 'function') {
+            try {
+              var rayleighGeo = new THREE.SphereGeometry(30.92, 64, 40);
+              var rayleighMat = new THREE.ShaderMaterial({
+                uniforms: {
+                  uTime: issShaderUniforms.uIssTime,
+                  uSunDir: issShaderUniforms.uIssSunDir,
+                  uEarthCenter: { value: earth.position.clone() },
+                  uOpacity: { value: 0.92 }
+                },
+                vertexShader: [
+                  'varying vec3 vWorldPos;',
+                  'void main() {',
+                  '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+                  '  vWorldPos = wp.xyz;',
+                  '  gl_Position = projectionMatrix * viewMatrix * wp;',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uTime;',
+                  'uniform vec3 uSunDir;',
+                  'uniform vec3 uEarthCenter;',
+                  'uniform float uOpacity;',
+                  'varying vec3 vWorldPos;',
+                  'void main() {',
+                  '  vec3 N = normalize(vWorldPos - uEarthCenter);',
+                  '  vec3 V = normalize(cameraPosition - vWorldPos);',
+                  '  vec3 L = normalize(uSunDir);',
+                  '  float graze = clamp(-dot(N, V), 0.0, 1.0);',
+                  '  float limbProfile = pow(smoothstep(0.0, 0.26, graze), 1.65) * (1.0 - smoothstep(0.24, 0.62, graze));',
+                  '  float sunDot = dot(N, L);',
+                  '  float dayTerm = smoothstep(-0.20, 0.42, sunDot);',
+                  '  float duskBand = exp(-pow((sunDot + 0.02) / 0.13, 2.0));',
+                  '  float nightTerm = smoothstep(0.06, -0.26, sunDot);',
+                  '  float mieFwd = pow(max(dot(-V, L), 0.0), 5.0) * (0.28 + 0.72 * duskBand);',
+                  '  vec3 rayleighCol = mix(vec3(0.12, 0.40, 0.96), vec3(0.46, 0.80, 1.0), smoothstep(0.06, 0.24, graze)) * dayTerm;',
+                  '  vec3 mieCol = vec3(1.0, 0.44, 0.15) * (duskBand * 0.92 + mieFwd * 0.32);',
+                  '  float airWave = 0.86 + 0.14 * sin(uTime * 0.55 + N.x * 9.0 + N.z * 7.0);',
+                  '  vec3 nightAirglow = vec3(0.07, 0.36, 0.22) * nightTerm * airWave * smoothstep(0.04, 0.20, graze);',
+                  '  vec3 col = (rayleighCol * 0.88 + mieCol * 0.68 + nightAirglow * 0.42) * limbProfile * uOpacity;',
+                  '  float alpha = clamp(limbProfile * (dayTerm * 0.72 + duskBand * 0.65 + nightTerm * 0.32) * uOpacity, 0.0, 0.95);',
+                  '  if (alpha < 0.004) discard;',
+                  '  gl_FragColor = vec4(col, alpha);',
+                  '}'
+                ].join('\n'),
+                side: THREE.BackSide,
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+              });
+              var rayleighMesh = new THREE.Mesh(rayleighGeo, rayleighMat);
+              rayleighMesh.name = 'iss-glsl-rayleigh-atmosphere';
+              rayleighMesh.position.copy(earth.position);
+              planetScene.add(rayleighMesh);
+              issLivingShaders.atmoMesh = rayleighMesh;
+              issLivingShaders.disposables.push(rayleighGeo, rayleighMat);
+            } catch (eRay) {}
+
+            try {
+              var auroraCurtainGroup = new THREE.Group();
+              auroraCurtainGroup.name = 'iss-glsl-aurora-curtains';
+              auroraCurtainGroup.position.copy(earth.position);
+              var aurRad = Math.PI / 180;
+              var gPoleLat = 80.7 * aurRad, gPoleLon = -72.7 * aurRad;
+              var northPoleVec = new THREE.Vector3(
+                Math.cos(gPoleLat) * Math.cos(gPoleLon),
+                Math.sin(gPoleLat),
+                -Math.cos(gPoleLat) * Math.sin(gPoleLon)
+              ).normalize();
+              var buildAuroraCurtain = function (poleVec, phaseSeed, suffix) {
+                var refUp = Math.abs(poleVec.y) < 0.92 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
+                var e1 = new THREE.Vector3().crossVectors(poleVec, refUp).normalize();
+                var e2 = new THREE.Vector3().crossVectors(poleVec, e1).normalize();
+                var segU = 112, segV = 8;
+                var colat = 23.0 * aurRad;
+                var rBase = 30.48, rTop = 31.48;
+                var verts = new Float32Array((segU + 1) * (segV + 1) * 3);
+                var norms = new Float32Array((segU + 1) * (segV + 1) * 3);
+                var uvs = new Float32Array((segU + 1) * (segV + 1) * 2);
+                var indices = [];
+                var pt = new THREE.Vector3();
+                var vi = 0, ui = 0;
+                for (var iv = 0; iv <= segV; iv++) {
+                  var vFrac = iv / segV;
+                  var radLen = rBase + (rTop - rBase) * vFrac;
+                  for (var iu = 0; iu <= segU; iu++) {
+                    var uFrac = iu / segU;
+                    var phi = uFrac * Math.PI * 2;
+                    var waveLat = colat + (0.022 * Math.sin(phi * 3.0 + phaseSeed) + 0.014 * Math.cos(phi * 5.0 - phaseSeed * 1.3));
+                    var sinC = Math.sin(waveLat), cosC = Math.cos(waveLat);
+                    pt.copy(poleVec).multiplyScalar(cosC)
+                      .addScaledVector(e1, sinC * Math.cos(phi))
+                      .addScaledVector(e2, sinC * Math.sin(phi))
+                      .normalize();
+                    verts[vi] = pt.x * radLen; verts[vi + 1] = pt.y * radLen; verts[vi + 2] = pt.z * radLen;
+                    norms[vi] = pt.x; norms[vi + 1] = pt.y; norms[vi + 2] = pt.z;
+                    uvs[ui] = uFrac; uvs[ui + 1] = vFrac;
+                    vi += 3; ui += 2;
+                  }
+                }
+                for (var jv = 0; jv < segV; jv++) {
+                  for (var ju = 0; ju < segU; ju++) {
+                    var a = jv * (segU + 1) + ju;
+                    var b = a + 1;
+                    var c = a + (segU + 1);
+                    var d = c + 1;
+                    indices.push(a, b, c, b, d, c);
+                  }
+                }
+                var geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+                geo.setAttribute('normal', new THREE.BufferAttribute(norms, 3));
+                geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+                geo.setIndex(indices);
+                var mat = new THREE.ShaderMaterial({
+                  uniforms: {
+                    uTime: issShaderUniforms.uIssTime,
+                    uSunDir: issShaderUniforms.uIssSunDir,
+                    uSeed: { value: phaseSeed },
+                    uOpacity: { value: 0.88 }
+                  },
+                  vertexShader: [
+                    'uniform float uTime;',
+                    'uniform float uSeed;',
+                    'varying vec2 vUv;',
+                    'varying vec3 vWorldNormal;',
+                    'void main() {',
+                    '  vUv = uv;',
+                    '  float ang = uv.x * 6.2831853;',
+                    '  float billow = (sin(ang * 5.0 + uTime * 0.72 + uSeed) * 0.6 + cos(ang * 9.0 - uTime * 0.48 + uSeed * 1.7) * 0.4) * uv.y;',
+                    '  vec3 displaced = position + normal * (billow * 0.22);',
+                    '  vWorldNormal = normalize(mat3(modelMatrix) * normal);',
+                    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);',
+                    '}'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform float uTime;',
+                    'uniform vec3 uSunDir;',
+                    'uniform float uSeed;',
+                    'uniform float uOpacity;',
+                    'varying vec2 vUv;',
+                    'varying vec3 vWorldNormal;',
+                    'float aurHash(vec2 p) {',
+                    '  p.x = mod(p.x, 48.0);',
+                    '  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);',
+                    '}',
+                    'float aurNoise(vec2 p) {',
+                    '  vec2 i = floor(p);',
+                    '  vec2 f = fract(p);',
+                    '  vec2 u = f * f * (3.0 - 2.0 * f);',
+                    '  return mix(mix(aurHash(i), aurHash(i + vec2(1.0, 0.0)), u.x), mix(aurHash(i + vec2(0.0, 1.0)), aurHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+                    '}',
+                    'void main() {',
+                    '  float nightGate = smoothstep(0.04, -0.24, dot(normalize(vWorldNormal), normalize(uSunDir)));',
+                    '  if (nightGate < 0.01) discard;',
+                    '  float xCoord = vUv.x * 48.0;',
+                    '  float drift = uTime * 0.42 + uSeed;',
+                    '  float n1 = aurNoise(vec2(xCoord + drift * 0.85, vUv.y * 2.4 - uTime * 0.22));',
+                    '  float n2 = aurNoise(vec2(xCoord * 2.0 - drift * 1.25, vUv.y * 4.2 + uTime * 0.18));',
+                    '  float rays = 1.0 - abs(2.0 * aurNoise(vec2(xCoord * 3.0 + sin(uTime * 0.35 + vUv.x * 12.566) * 0.9, vUv.y * 1.2)) - 1.0);',
+                    '  float ribbon = clamp(0.32 + 0.55 * n1 + 0.35 * n2 + 0.58 * rays * rays * rays, 0.0, 1.6);',
+                    '  float vEnv = smoothstep(0.0, 0.14, vUv.y) * pow(1.0 - vUv.y, 1.65);',
+                    '  vec3 emerald = vec3(0.09, 0.96, 0.48);',
+                    '  vec3 cyan = vec3(0.14, 0.82, 0.90);',
+                    '  vec3 violet = vec3(0.68, 0.18, 0.92);',
+                    '  vec3 crimson = vec3(0.92, 0.22, 0.46);',
+                    '  vec3 col = mix(emerald, cyan, smoothstep(0.22, 0.52, vUv.y));',
+                    '  col = mix(col, mix(violet, crimson, n2), smoothstep(0.46, 0.88, vUv.y));',
+                    '  float intensity = ribbon * vEnv * nightGate * uOpacity;',
+                    '  if (intensity < 0.01) discard;',
+                    '  gl_FragColor = vec4(col * intensity * 1.15, clamp(intensity, 0.0, 0.92));',
+                    '}'
+                  ].join('\n'),
+                  side: THREE.DoubleSide,
+                  transparent: true,
+                  depthWrite: false,
+                  blending: THREE.AdditiveBlending
+                });
+                var curtainMesh = new THREE.Mesh(geo, mat);
+                curtainMesh.name = 'iss-glsl-aurora-' + suffix;
+                auroraCurtainGroup.add(curtainMesh);
+                issLivingShaders.auroraMats.push(mat);
+                issLivingShaders.disposables.push(geo, mat);
+              };
+              buildAuroraCurtain(northPoleVec, 0.7, 'north');
+              buildAuroraCurtain(northPoleVec.clone().negate(), 3.9, 'south');
+              planetScene.add(auroraCurtainGroup);
+              issLivingShaders.auroraGroup = auroraCurtainGroup;
+            } catch (eAur) {}
+
+            try {
+              var rcsGroup = new THREE.Group();
+              rcsGroup.name = 'iss-glsl-rcs-plumes';
+              var rcsSpecs = [
+                { pos: [0.56, 0.16, 5.75], rot: [0.18, 0, -Math.PI * 0.44], phase: 0.0 },
+                { pos: [-0.56, 0.16, 5.75], rot: [0.18, 0, Math.PI * 0.44], phase: 2.1 },
+                { pos: [0.56, -0.16, 5.75], rot: [-0.18, 0, -Math.PI * 0.56], phase: 4.2 },
+                { pos: [-0.56, -0.16, 5.75], rot: [-0.18, 0, Math.PI * 0.56], phase: 6.3 }
+              ];
+              var rcsGeo = new THREE.ConeGeometry(0.11, 0.62, 14, 4, true);
+              rcsGeo.translate(0, -0.31, 0);
+              issLivingShaders.disposables.push(rcsGeo);
+              rcsSpecs.forEach(function (spec, ri) {
+                var rcsMat = new THREE.ShaderMaterial({
+                  uniforms: {
+                    uTime: issShaderUniforms.uIssTime,
+                    uPhase: { value: spec.phase },
+                    uIntensity: { value: 0.55 }
+                  },
+                  vertexShader: [
+                    'varying vec2 vUv;',
+                    'varying vec3 vNorm;',
+                    'varying vec3 vViewDir;',
+                    'void main() {',
+                    '  vUv = uv;',
+                    '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);',
+                    '  vNorm = normalize(normalMatrix * normal);',
+                    '  vViewDir = normalize(-mvPos.xyz);',
+                    '  gl_Position = projectionMatrix * mvPos;',
+                    '}'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform float uTime;',
+                    'uniform float uPhase;',
+                    'uniform float uIntensity;',
+                    'varying vec2 vUv;',
+                    'varying vec3 vNorm;',
+                    'varying vec3 vViewDir;',
+                    'void main() {',
+                    '  float cycle = sin(uTime * 0.95 + uPhase);',
+                    '  float pulse = 0.22 + 0.78 * pow(max(0.0, cycle), 4.0);',
+                    '  float along = smoothstep(0.0, 0.92, vUv.y) * smoothstep(1.0, 0.84, vUv.y);',
+                    '  float edge = pow(abs(dot(normalize(vNorm), normalize(vViewDir))), 0.65);',
+                    '  float shimmer = 0.82 + 0.18 * sin(uTime * 16.0 - vUv.y * 18.0 + uPhase);',
+                    '  float a = along * edge * pulse * shimmer * uIntensity;',
+                    '  if (a < 0.01) discard;',
+                    '  vec3 col = mix(vec3(0.24, 0.68, 1.0), vec3(0.84, 0.96, 1.0), smoothstep(0.55, 0.96, vUv.y));',
+                    '  gl_FragColor = vec4(col * a * 1.25, clamp(a, 0.0, 0.85));',
+                    '}'
+                  ].join('\n'),
+                  side: THREE.DoubleSide,
+                  transparent: true,
+                  depthWrite: false,
+                  blending: THREE.AdditiveBlending
+                });
+                var plume = new THREE.Mesh(rcsGeo, rcsMat);
+                plume.name = 'iss-rcs-plume-' + ri;
+                plume.position.set(spec.pos[0], spec.pos[1], spec.pos[2]);
+                plume.rotation.set(spec.rot[0], spec.rot[1], spec.rot[2]);
+                rcsGroup.add(plume);
+                issLivingShaders.rcsMats.push(rcsMat);
+                issLivingShaders.disposables.push(rcsMat);
+              });
+              station.add(rcsGroup);
+              issLivingShaders.rcsGroup = rcsGroup;
+            } catch (eRcs) {}
+
+            try {
+              var moteCount = 68;
+              var motePos = new Float32Array(moteCount * 3);
+              var moteSeed = new Float32Array(moteCount * 3);
+              var mSeed = 918273;
+              var mRand = function () { mSeed = (mSeed * 1103515245 + 12345) & 0x7fffffff; return mSeed / 0x7fffffff; };
+              for (var mi = 0; mi < moteCount; mi++) {
+                var nearCupola = mi < 22;
+                if (nearCupola) {
+                  motePos[mi * 3] = -1.2 + (mRand() - 0.5) * 2.4;
+                  motePos[mi * 3 + 1] = -1.15 + (mRand() - 0.5) * 1.4;
+                  motePos[mi * 3 + 2] = 0.2 + (mRand() - 0.5) * 2.4;
+                } else {
+                  motePos[mi * 3] = (mRand() - 0.5) * 11.0;
+                  motePos[mi * 3 + 1] = (mRand() - 0.5) * 4.4;
+                  motePos[mi * 3 + 2] = (mRand() - 0.5) * 9.5 + 0.5;
+                }
+                moteSeed[mi * 3] = mRand() * 6.28318;
+                moteSeed[mi * 3 + 1] = 0.6 + mRand() * 1.4;
+                moteSeed[mi * 3 + 2] = nearCupola ? 1.0 : 0.7;
+              }
+              var moteGeo = new THREE.BufferGeometry();
+              moteGeo.setAttribute('position', new THREE.BufferAttribute(motePos, 3));
+              moteGeo.setAttribute('aSeed', new THREE.BufferAttribute(moteSeed, 3));
+              var moteMat = new THREE.ShaderMaterial({
+                uniforms: {
+                  uTime: issShaderUniforms.uIssTime,
+                  uDaylight: issShaderUniforms.uIssDaylight
+                },
+                vertexShader: [
+                  'attribute vec3 aSeed;',
+                  'uniform float uTime;',
+                  'varying float vTwinkle;',
+                  'void main() {',
+                  '  vec3 p = position;',
+                  '  p.x += sin(uTime * 0.22 * aSeed.y + aSeed.x) * 0.14;',
+                  '  p.y += cos(uTime * 0.18 * aSeed.y + aSeed.x * 1.3) * 0.10;',
+                  '  p.z += sin(uTime * 0.15 * aSeed.y + aSeed.x * 0.7) * 0.14;',
+                  '  vTwinkle = (0.45 + 0.55 * sin(uTime * 1.45 * aSeed.y + aSeed.x * 2.0)) * aSeed.z;',
+                  '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);',
+                  '  gl_PointSize = clamp((14.0 * aSeed.z) / max(1.0, -mvPos.z), 1.4, 5.2);',
+                  '  gl_Position = projectionMatrix * mvPos;',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uDaylight;',
+                  'varying float vTwinkle;',
+                  'void main() {',
+                  '  vec2 c = gl_PointCoord - vec2(0.5);',
+                  '  float r2 = dot(c, c);',
+                  '  if (r2 > 0.25) discard;',
+                  '  float soft = exp(-r2 * 18.0);',
+                  '  float lit = 0.24 + 0.76 * uDaylight;',
+                  '  vec3 col = mix(vec3(0.52, 0.84, 1.0), vec3(1.0, 0.95, 0.84), uDaylight);',
+                  '  gl_FragColor = vec4(col, soft * vTwinkle * lit * 0.48);',
+                  '}'
+                ].join('\n'),
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+              });
+              var motes = new THREE.Points(moteGeo, moteMat);
+              motes.name = 'iss-glsl-orbital-motes';
+              scene.add(motes);
+              issLivingShaders.motes = motes;
+              issLivingShaders.motesMat = moteMat;
+              issLivingShaders.disposables.push(moteGeo, moteMat);
+            } catch (eMote) {}
           }
           // The Moon at its true apparent size from the station (0.52 deg), in
           // the planet scene so the Sun that lights Earth's far day side still
@@ -8750,6 +9211,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             _trackQ.setFromRotationMatrix(_trackBasis);
             earth.quaternion.copy(_trackQ);
             if (aurora) aurora.quaternion.copy(_trackQ);
+            if (issLivingShaders.auroraGroup) issLivingShaders.auroraGroup.quaternion.copy(_trackQ);
             // The cloud deck drifts slowly against the ground, as weather does.
             cloudShell.quaternion.copy(_trackQ).multiply(_driftQ.setFromAxisAngle(_polarAxis, track.phase * Math.PI / 180 * 0.015));
             // Same rotation the Sun's direction makes in issMapLighting.
@@ -9893,9 +10355,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             var daylight01 = lightModel.eclipse ? 0 : 1;
             // Modest illustrative fill keeps hardware legible in shadow; direct
             // solar illumination itself is exactly zero during the modeled eclipse.
-            earthShine.intensity = 0.16 + 0.34 * daylight01;
+            earthShine.intensity = 0.16 + 0.38 * daylight01;
+            earthBounce.intensity = 0.08 + 0.36 * daylight01;
             fillAmbient.intensity = 0.08 + 0.08 * daylight01;
-            rim.intensity = 0.18 + 0.24 * daylight01;
+            rim.intensity = 0.20 + 0.26 * daylight01;
             _sunDir.copy(sun.position).normalize();
             // Repaint the limb only when the Sun has actually moved enough to
             // change it — every 4th frame at most, and never at all while the
@@ -9911,7 +10374,34 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             }
             // Solar cells reflect light through their standard material; they do
             // not emit their own light. Specular highlights depend on view angle.
+            var issHighContrast = issIsHighContrast();
+            if (!_prefersReducedMotion && !document.hidden) {
+              issShaderTime += dt;
+            }
+            issShaderUniforms.uIssTime.value = _prefersReducedMotion ? 2.4 : issShaderTime;
+            issShaderUniforms.uIssSunDir.value.copy(_sunDir);
+            issShaderUniforms.uIssDaylight.value = daylight01;
+            issShaderUniforms.uIssHc.value = issHighContrast ? 1.0 : 0.0;
+            if (issLivingShaders.atmoMesh) issLivingShaders.atmoMesh.visible = !issHighContrast;
+            if (issLivingShaders.auroraGroup) issLivingShaders.auroraGroup.visible = !issHighContrast;
+            if (issLivingShaders.rcsGroup) issLivingShaders.rcsGroup.visible = !issHighContrast && !cv._issCutaway;
+            if (issLivingShaders.motes) issLivingShaders.motes.visible = !issHighContrast;
             var lampOn = 1 - daylight01;
+            if (typeof stationNavCues !== 'undefined' && stationNavCues.length) {
+              var navNightBoost = 0.72 + 0.45 * lampOn;
+              var navPulseTime = (typeof _prefersReducedMotion === 'undefined' || !_prefersReducedMotion) ? ((typeof issShaderTime !== 'undefined' ? issShaderTime : 0) * 2.2) : 0;
+              var navHc = (typeof issHighContrast !== 'undefined') && issHighContrast;
+              for (var ni = 0; ni < stationNavCues.length; ni++) {
+                var cue = stationNavCues[ni];
+                var breath = (typeof _prefersReducedMotion === 'undefined' || !_prefersReducedMotion) ? (0.86 + 0.14 * Math.sin(navPulseTime + cue.spec.phase)) : 1;
+                if (cue.halo && cue.halo.material) {
+                  cue.halo.visible = !navHc;
+                  cue.halo.material.opacity = Math.min(1, cue.spec.baseOp * navNightBoost * breath);
+                  var s = cue.spec.scale * (0.94 + 0.14 * lampOn) * breath;
+                  cue.halo.scale.set(s, s, 1);
+                }
+              }
+            }
             // City lights come up as the station crosses into orbital night and
             // fade out in daylight. Phong adds emissive regardless of where the
             // Sun is, so a fixed intensity either blows the lights to white over
@@ -10052,8 +10542,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 '|' + q.x.toFixed(4) + ',' + q.y.toFixed(4) + ',' + q.z.toFixed(4) + ',' + q.w.toFixed(4) +
                 '|' + station.rotation.x.toFixed(4) + ',' + station.rotation.y.toFixed(4) +
                 '|' + Wc + 'x' + Hc + '|' + (composer ? 1 : 0) + '|' + (_limbPainted ? 1 : 0) + '|' + (cv._issHoverId || '') +
+                '|' + (issHighContrast ? 1 : 0) +
                 '|' + lighting.phase.toFixed(5) + ',' + lighting.beta + ',' + lighting.tracking + ',' + lighting.arrayAlpha + ',' + lighting.arrayFeather + ',' + drivePose.alpha + ',' + drivePose.feather + ',' + lighting.motorEnabled + ',' + lighting.motorRate + ',' + lightGuides;
-              if (frameSig === _lastFrameSig && tick % 120 !== 0) { rafId = requestAnimationFrame(animate); return; }
+              var livingSkip = (_prefersReducedMotion || issHighContrast || document.hidden) ? (tick % 120 !== 0) : (tick % 2 !== 0);
+              if (frameSig === _lastFrameSig && livingSkip) { rafId = requestAnimationFrame(animate); return; }
               _lastFrameSig = frameSig;
             }
             if (composer) { try { composer.render(); } catch (e) { composer = null; renderMapScene(); } }
@@ -10096,6 +10588,17 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             // are per-renderer and must go with it.
             try { earthTextures.forEach(function (tex) { if (tex && typeof tex.dispose === 'function') tex.dispose(); }); } catch (e) {}
             try { if (sunGlowTex && typeof sunGlowTex.dispose === 'function') sunGlowTex.dispose(); } catch (e) {}
+            try {
+              issLivingShaders.disposables.forEach(function (item) { if (item && typeof item.dispose === 'function') item.dispose(); });
+              issLivingShaders.disposables.length = 0;
+              issLivingShaders.auroraMats.length = 0;
+              issLivingShaders.rcsMats.length = 0;
+              issLivingShaders.atmoMesh = null;
+              issLivingShaders.auroraGroup = null;
+              issLivingShaders.rcsGroup = null;
+              issLivingShaders.motes = null;
+              issLivingShaders.motesMat = null;
+            } catch (e) {}
             try { renderer._alloComposer = null; } catch (e) {}
             composer = null;
             try {
@@ -14835,11 +15338,18 @@ var i = 0;
             ctx2.beginPath(); ctx2.arc(starX, starY, starR, 0, Math.PI * 2); ctx2.fill();
           }
           ctx2.globalAlpha = 1;
-          // Earth limb with a brighter atmospheric rim.
+          // Earth limb with a layered Rayleigh blue atmospheric horizon glow.
+          var horizonHalo = ctx2.createRadialGradient(Wc / 2, Hc + 520, 554, Wc / 2, Hc + 520, 594);
+          horizonHalo.addColorStop(0, 'rgba(125,211,252,.52)');
+          horizonHalo.addColorStop(0.35, 'rgba(56,189,248,.24)');
+          horizonHalo.addColorStop(0.72, 'rgba(14,165,233,.08)');
+          horizonHalo.addColorStop(1, 'rgba(2,6,23,0)');
+          ctx2.fillStyle = horizonHalo; ctx2.beginPath(); ctx2.arc(Wc / 2, Hc + 520, 594, Math.PI * 1.08, Math.PI * 1.92); ctx2.fill();
           var earthGlow = ctx2.createRadialGradient(Wc / 2, Hc + 450, 420, Wc / 2, Hc + 500, 590);
-          earthGlow.addColorStop(0, '#2578b8'); earthGlow.addColorStop(.62, '#124b82'); earthGlow.addColorStop(1, '#061a3b');
+          earthGlow.addColorStop(0, '#2b86cc'); earthGlow.addColorStop(.62, '#124b82'); earthGlow.addColorStop(1, '#061a3b');
           ctx2.fillStyle = earthGlow; ctx2.beginPath(); ctx2.arc(Wc / 2, Hc + 520, 560, 0, Math.PI * 2); ctx2.fill();
-          ctx2.strokeStyle = 'rgba(125,211,252,.55)'; ctx2.lineWidth = 3; ctx2.beginPath(); ctx2.arc(Wc / 2, Hc + 520, 562, Math.PI * 1.12, Math.PI * 1.88); ctx2.stroke();
+          ctx2.strokeStyle = 'rgba(186,230,253,.78)'; ctx2.lineWidth = 2.4; ctx2.beginPath(); ctx2.arc(Wc / 2, Hc + 520, 561, Math.PI * 1.12, Math.PI * 1.88); ctx2.stroke();
+          ctx2.strokeStyle = 'rgba(56,189,248,.36)'; ctx2.lineWidth = 5; ctx2.beginPath(); ctx2.arc(Wc / 2, Hc + 520, 565, Math.PI * 1.12, Math.PI * 1.88); ctx2.stroke();
           var view = viewSnapshot(), sc = view.scale, ox = view.ox, oy = view.oy, portFaceX = view.portX;
           // The cyan contact opening is exactly ±2.5 m about the axis. The
           // wider approach guide is illustrative; it is not a collision wall.
@@ -14865,13 +15375,27 @@ var i = 0;
           ctx2.strokeStyle = '#cbd5e1'; ctx2.lineWidth = 1;
           for (var seam = 12; seam < nodeWidth - 4; seam += 15) { ctx2.beginPath(); ctx2.moveTo(hardwareX + seam, oy - nodeHalf + 3); ctx2.lineTo(hardwareX + seam, oy + nodeHalf - 3); ctx2.stroke(); }
           ctx2.fillStyle = '#64748b'; ctx2.fillRect(hardwareX + 9, oy - 92, 9, 184);
-          [[oy - 137, '#c28a21'], [oy + 77, '#b77918']].forEach(function (panelInfo) {
-            ctx2.fillStyle = panelInfo[1]; ctx2.fillRect(hardwareX + 1, panelInfo[0], 24, 41);
-            ctx2.strokeStyle = 'rgba(254,215,112,.7)'; ctx2.lineWidth = .7;
+          [[oy - 137, '#c28a21', '#f6d57a', '#7c4d0f'], [oy + 77, '#b77918', '#eab85a', '#6e400b']].forEach(function (panelInfo) {
+            var panelSheen = ctx2.createLinearGradient(hardwareX + 1, panelInfo[0], hardwareX + 25, panelInfo[0] + 41);
+            panelSheen.addColorStop(0, panelInfo[3]);
+            panelSheen.addColorStop(0.32, panelInfo[1]);
+            panelSheen.addColorStop(0.54, panelInfo[2]);
+            panelSheen.addColorStop(0.76, panelInfo[1]);
+            panelSheen.addColorStop(1, panelInfo[3]);
+            ctx2.fillStyle = panelSheen; ctx2.fillRect(hardwareX + 1, panelInfo[0], 24, 41);
+            ctx2.strokeStyle = 'rgba(254,235,165,.78)'; ctx2.lineWidth = .75;
             for (var cell = 1; cell < 4; cell++) { ctx2.beginPath(); ctx2.moveTo(hardwareX + 1, panelInfo[0] + cell * 10); ctx2.lineTo(hardwareX + 25, panelInfo[0] + cell * 10); ctx2.stroke(); }
             ctx2.beginPath(); ctx2.moveTo(hardwareX + 13, panelInfo[0]); ctx2.lineTo(hardwareX + 13, panelInfo[0] + 41); ctx2.stroke();
           });
-          ctx2.shadowColor = '#38bdf8'; ctx2.shadowBlur = 14; ctx2.fillStyle = '#67e8f9'; ctx2.fillRect(portFaceX, oy - captureHalf, 4, captureHalf * 2); ctx2.shadowBlur = 0;
+          // Crisp station navigation beacons (port red, starboard green) & docking port alignment cues
+          [[hardwareX + 13, oy - 95, '#fb7185', 'rgba(251,113,133,.55)'], [hardwareX + 13, oy + 95, '#34d399', 'rgba(52,211,153,.55)']].forEach(function (nav) {
+            ctx2.save();
+            ctx2.shadowColor = nav[3]; ctx2.shadowBlur = 9;
+            ctx2.fillStyle = nav[2];
+            ctx2.beginPath(); ctx2.arc(nav[0], nav[1], 2.2, 0, Math.PI * 2); ctx2.fill();
+            ctx2.restore();
+          });
+          ctx2.shadowColor = '#38bdf8'; ctx2.shadowBlur = 16; ctx2.fillStyle = '#67e8f9'; ctx2.fillRect(portFaceX, oy - captureHalf, 4, captureHalf * 2); ctx2.shadowBlur = 0;
           ctx2.strokeStyle = '#e0f2fe'; ctx2.lineWidth = 1.5; ctx2.beginPath(); ctx2.moveTo(portFaceX - 7, oy - captureHalf); ctx2.lineTo(portFaceX + 8, oy - captureHalf); ctx2.moveTo(portFaceX - 7, oy + captureHalf); ctx2.lineTo(portFaceX + 8, oy + captureHalf); ctx2.stroke();
           ctx2.fillStyle = '#7dd3fc'; ctx2.font = '800 8px ui-monospace, monospace'; ctx2.fillText('CONTACT ±2.5 M', portFaceX - 76, oy - captureHalf - 12);
           // Capsule with glass nose, service body, and RCS plumes.

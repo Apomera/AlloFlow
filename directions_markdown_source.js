@@ -10,8 +10,9 @@ function _alloParsePreviewMarkdown(text) {
             .replace(/\x60([^\x60]+)\x60/g, (_, code) => hold('<code>' + code + '</code>'))
             .replace(/\\([\\*_{}\[\]()#+.!-])/g, (_, literal) => hold(literal))
             .replace(/\[([^\]]+)\]\(([^\s)]+)\)/g, (_, label, url) => {
-                const safeUrl = /^(?:https?:|mailto:|tel:|resource:|#|\/|\.)/i.test(url) ? url : '#';
-                return hold('<a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer">' + emphasis(label) + '</a>');
+                const safeUrl = !url.includes('\u0000') && /^(?:https?:|mailto:|tel:|resource:|#|\/(?![\/\\])|\.)/i.test(url) ? url : '#';
+                const targetAttrs = /^https?:/i.test(safeUrl) ? ' target="_blank" rel="noopener noreferrer"' : '';
+                return hold('<a href="' + safeUrl + '"' + targetAttrs + '>' + emphasis(label) + '</a>');
             });
         let rendered = emphasis(content);
         for (let pass = 0; pass <= tokens.length && rendered.includes('\u0000'); pass++) {
@@ -19,7 +20,7 @@ function _alloParsePreviewMarkdown(text) {
         }
         return rendered;
     };
-    const lines = String(text).replace(/\\n/g, '\n').replace(/\r\n?/g, '\n').split('\n');
+    const lines = String(text).replace(/\\n(?![a-zA-Z])/g, '\n').replace(/\r\n?/g, '\n').split('\n');
     let html = '';
     const lists = [];
     const closeList = () => {

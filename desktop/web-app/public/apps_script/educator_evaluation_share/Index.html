@@ -161,7 +161,8 @@
     if (!labelMatchesPacket(req.educatorLabel)) return 'Educator name or code must match the validated packet.'
     if (!req.educatorEmail.trim() || normalized(req.educatorEmail) !== normalized(req.recipientConfirmation)) return 'The two educator email entries must match exactly.'
     if (!verifiedDomain || normalized(req.expectedDomain).replace(/^@/, '') !== verifiedDomain) return 'The district domain must remain bound to the verified managed account.'
-    if (normalized(req.educatorEmail).split('@')[1] !== verifiedDomain) return 'The educator email must use the verified district domain @' + verifiedDomain + '.'
+    var emailParts = normalized(req.educatorEmail).split('@');
+    if (emailParts.length !== 2 || !/^[A-Za-z0-9.!#$%&'*+/=?^_{|}~-]+$/.test(emailParts[0]) || emailParts[1] !== verifiedDomain) return 'The educator email must use the verified district domain @' + verifiedDomain + '.'
     if (!req.policyConfirmed) return 'Confirm the policy and recipient statement before reviewing.'
     return ''
   }

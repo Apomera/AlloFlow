@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'none'; form-action 'none';">
 <title>AlloBot Screen Coach</title>
 <!--
   Standalone Screen Coach. Guides a person through ANY website they choose to
@@ -457,6 +458,7 @@
       try { paintBackendForm(); } catch (_) {}
       if (nowAvailable) setStatus($('coachStatus'), 'Connected to AlloFlow. Suggestions will use its AI settings.', 'ok');
     }
+    if (bridgeDeclined) return;
     try { opener.postMessage(withBridge({ type: 'allostudio-ready' }), openerOrigin || realOrigin); } catch (_) {}
   });
   function withBridge(msg) {
@@ -1331,10 +1333,14 @@
   function resumeHandsFreeChat() {
     if (chatMicMode === 'chat' && !chatListening && !chatBusy) startHandsFreeChat(true);
   }
+  var voiceRestartTimer = null;
   function stopVoiceCommands() {
     voiceShouldRestart = false;
     voiceListening = false;
-    if (voiceRecognition) { try { voiceRecognition.stop(); } catch (_) {} }
+    if (voiceRestartTimer) { clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
+    var rec = voiceRecognition;
+    voiceRecognition = null;
+    if (rec) { try { rec.stop(); } catch (_) {} }
     $('coachVoiceBtn').setAttribute('aria-pressed', 'false');
     $('coachVoiceBtn').textContent = 'Start voice commands';
     if ($('coachMicMode') && $('coachMicMode').value === 'commands') {
@@ -1386,8 +1392,15 @@
           setStatus($('coachStatus'), 'Microphone access was not granted. Voice commands are off.', 'warn');
         }
       };
-      voiceRecognition.onend = function () {
-        if (voiceShouldRestart && chatMicMode === 'commands') setTimeout(function () { try { voiceRecognition.start(); } catch (_) {} }, 350);
+      var recognition = voiceRecognition;
+      recognition.onend = function () {
+        if (!voiceShouldRestart || chatMicMode !== 'commands' || voiceRecognition !== recognition) return;
+        if (voiceRestartTimer) clearTimeout(voiceRestartTimer);
+        voiceRestartTimer = setTimeout(function () {
+          voiceRestartTimer = null;
+          if (!voiceShouldRestart || chatMicMode !== 'commands' || voiceRecognition !== recognition) return;
+          try { recognition.start(); } catch (_) {}
+        }, 350);
       };
       voiceShouldRestart = true;
       voiceListening = true;
@@ -1687,10 +1700,15 @@
         if (replied && replied.error) throw new Error(String(replied.error));
         parsed = replied;
       } else {
-        parsed = parseReply(await abortable(p.analyzeImage(buildPrompt(goal, priorHistory), frame, {
-          mimeType: 'image/jpeg',
-          signal: req.controller.signal
-        }), req.controller.signal));
+        var suggestTimeout = setTimeout(function () { req.controller.abort(); }, 45000);
+        try {
+          parsed = parseReply(await abortable(p.analyzeImage(buildPrompt(goal, priorHistory), frame, {
+            mimeType: 'image/jpeg',
+            signal: req.controller.signal
+          }), req.controller.signal));
+        } finally {
+          clearTimeout(suggestTimeout);
+        }
       }
       if (!requestStillCurrent(req)) return;
       if (!parsed || typeof parsed !== 'object') throw new Error('the reply was not readable');

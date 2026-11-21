@@ -39,9 +39,13 @@ window.SelHub = window.SelHub || {
     if (!_audioCtx) {
       try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
     }
+    if (_audioCtx && _audioCtx.state === 'suspended') {
+      try { _audioCtx.resume(); } catch(e) {}
+    }
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
       var osc = ac.createOscillator();
@@ -1511,6 +1515,12 @@ window.SelHub = window.SelHub || {
 
       var ACCENT = _pspFg('#8b5cf6');
       var ACCENT_BUTTON = '#6d28d9';
+      var ACCENT_BTN_BG = _pspHC ? '#000000' : ACCENT_BUTTON;
+      var ACCENT_BTN_FG = _pspHC ? '#ffff00' : '#ffffff';
+      var ACCENT_BTN_BD = _pspHC ? '1px solid #ffff00' : 'none';
+      var SAVED_BTN_BG = _pspHC ? '#000000' : '#15803d';
+      var INDIGO_BTN_BG = _pspHC ? '#000000' : '#4f46e5';
+      var AMBER_BTN_BG = _pspHC ? '#000000' : '#b45309';
       var ACCENT_DIM = '#8b5cf622';
       var ACCENT_MED = '#8b5cf644';
 
@@ -1537,16 +1547,32 @@ window.SelHub = window.SelHub || {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         h('div', { role: 'tablist', 'aria-label': 'Perspective Taking tabs', style: { display: 'flex', gap: 2 } },
-          tabs.map(function(tab) {
+          tabs.map(function(tab, idx) {
           var isActive = activeTab === tab.id;
           return h('button', { 'aria-label': tab.label,
             key: tab.id,
-            role: 'tab', 'aria-selected': isActive,
+            id: 'psp-tab-' + tab.id,
+            role: 'tab', 'aria-selected': isActive, 'aria-controls': 'psp-tab-panel',
+            tabIndex: isActive ? 0 : -1,
             onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); },
+            onKeyDown: function(e) {
+              var nextIdx = null;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+              else if (e.key === 'Home') nextIdx = 0;
+              else if (e.key === 'End') nextIdx = tabs.length - 1;
+              if (nextIdx !== null) {
+                e.preventDefault();
+                var target = tabs[nextIdx];
+                upd('activeTab', target.id);
+                if (soundEnabled) sfxClick();
+                setTimeout(function() { var el = document.getElementById('psp-tab-' + target.id); if (el) el.focus(); }, 0);
+              }
+            },
             style: {
-              padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: isActive ? ACCENT_BUTTON : 'transparent',
-              color: isActive ? _pspFg('#fff') : _pspFg('#94a3b8'),
+              padding: '7px 12px', borderRadius: 8, border: isActive ? ACCENT_BTN_BD : 'none', cursor: 'pointer',
+              background: isActive ? ACCENT_BTN_BG : 'transparent',
+              color: isActive ? ACCENT_BTN_FG : _pspFg('#94a3b8'),
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
           }, tab.label);
@@ -1585,15 +1611,15 @@ window.SelHub = window.SelHub || {
             margin: '8px 12px 12px',
             padding: '12px 14px',
             borderRadius: 12,
-            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
-            border: '1px solid ' + meta.accent + '55',
-            borderLeft: '4px solid ' + meta.accent,
+            background: _pspHC ? '#000000' : (_pspL ? ('linear-gradient(135deg, ' + meta.soft + ' 0%, #f8fafc 100%)') : ('linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a')),
+            border: '1px solid ' + (_pspHC ? '#ffff00' : (meta.accent + '55')),
+            borderLeft: '4px solid ' + (_pspHC ? '#ffff00' : meta.accent),
             display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
           }
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('h3', { style: { color: _pspHC ? '#ffff00' : (_pspL ? _pspFg('#0f172a') : meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
             h('p', { style: { margin: '3px 0 0', color: _pspFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
@@ -1628,7 +1654,7 @@ window.SelHub = window.SelHub || {
             style: { position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)' },
             onClick: function() { upd('showBadgePopup', null); }
           },
-            h('div', {               style: { background: 'linear-gradient(135deg, #0c1631 0%, #1e293b 100%)', borderRadius: 20, padding: '32px 40px', textAlign: 'center', border: '2px solid ' + ACCENT, maxWidth: 320 },
+            h('div', {               style: { background: _pspHC ? '#000000' : (_pspL ? '#ffffff' : 'linear-gradient(135deg, #0c1631 0%, #1e293b 100%)'), borderRadius: 20, padding: '32px 40px', textAlign: 'center', border: '2px solid ' + ACCENT, maxWidth: 320 },
               onClick: function(e) { e.stopPropagation(); }
             },
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
@@ -1639,7 +1665,7 @@ window.SelHub = window.SelHub || {
               h('button', {
                 type: 'button',
                 onClick: function() { upd('showBadgePopup', null); },
-                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.14)', color: '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: ACCENT_BTN_BD, background: ACCENT_BTN_BG, color: ACCENT_BTN_FG, fontSize: 14, fontWeight: 800, cursor: 'pointer' }
               }, 'Nice')
             )
           );
@@ -1649,14 +1675,16 @@ window.SelHub = window.SelHub || {
       // ── Badges Panel ──
       if (showBadgesPanel) {
         return h('div', { style: { minHeight: '100%' } },
-          tabBar, badgePopup,
+          tabBar,
+          (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
+          badgePopup,
           h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _pspFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
               shownBadges.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
-                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _pspBg('#1e293b'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT : _pspBg('#334155')) }
+                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? (_pspHC ? '#000000' : (_pspL ? '#f5f3ff' : '#0c1631')) : _pspBg('#1e293b'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT : _pspBg('#334155')) }
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4, filter: earned ? 'none' : 'grayscale(1)' } }, badge.icon),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _pspFg('#e2e8f0') : _pspFg('#94a3b8') } }, badge.name),
@@ -1857,15 +1885,22 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: 16 } },
             h('button', { 'aria-label': 'Next Scenario',
               onClick: function() {
+                var doneIds = Object.assign({}, d.scenCompletedIds || {});
+                var isNew = !doneIds[current.id];
+                if (isNew) doneIds[current.id] = true;
+                var nextCompleted = isNew ? (scenCompleted + 1) : scenCompleted;
                 upd({
                   scenIdx: scenIdx + 1,
                   scenCharIdx: null,
                   scenRevealed: {},
-                  scenCompleted: scenCompleted + 1
+                  scenCompleted: nextCompleted,
+                  scenCompletedIds: doneIds
                 });
-                logPractice('scenario', current.id);
-                if (scenCompleted === 0) tryAwardBadge('first_scenario');
-                if (scenCompleted + 1 >= 5) tryAwardBadge('scenario_5');
+                if (isNew) {
+                  logPractice('scenario', current.id);
+                  if (nextCompleted >= 1) tryAwardBadge('first_scenario');
+                  if (nextCompleted >= 5) tryAwardBadge('scenario_5');
+                }
                 if (soundEnabled) sfxClick();
                 if (celebrate) celebrate();
                 ctx.announceToSR && ctx.announceToSR('Next scenario loaded');
@@ -1927,7 +1962,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { textAlign: 'center' } },
               h('button', { 'aria-label': 'Reveal the Insight',
                 onClick: function() { upd('swapRevealed', true); if (soundEnabled) sfxReveal(); awardXP(10); },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: ACCENT_BTN_BD, background: ACCENT_BTN_BG, color: ACCENT_BTN_FG, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCA1 Reveal the Insight')
             )
           :
@@ -2011,19 +2046,24 @@ window.SelHub = window.SelHub || {
                   addToast('Fill in at least one quadrant first!', 'info');
                   return;
                 }
-                upd('emSaved', true);
+                var emIds = Object.assign({}, d.emCompletedIds || {});
+                var emKey = curEm.id || curEm.name;
+                var isNew = !emIds[emKey];
+                if (isNew) emIds[emKey] = true;
+                var newCompleted = isNew ? (emCompleted + 1) : emCompleted;
+                upd({ emSaved: true, emCompleted: newCompleted, emCompletedIds: emIds });
                 if (soundEnabled) sfxCorrect();
-                awardXP(15);
-                var newCompleted = emCompleted + 1;
-                upd('emCompleted', newCompleted);
-                logPractice('empathy', curEm.name);
-                if (newCompleted === 1) tryAwardBadge('empathy_map_1');
-                if (newCompleted >= 3) tryAwardBadge('empathy_map_3');
+                if (isNew) {
+                  awardXP(15);
+                  logPractice('empathy', curEm.name);
+                  if (newCompleted >= 1) tryAwardBadge('empathy_map_1');
+                  if (newCompleted >= 3) tryAwardBadge('empathy_map_3');
+                }
                 addToast('Empathy map saved!', 'success');
                 ctx.announceToSR && ctx.announceToSR('Empathy map saved');
               },
               disabled: emSaved,
-              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: emSaved ? _pspBg('#334155') : ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: emSaved ? 'default' : 'pointer', opacity: emSaved ? 0.5 : 1 }
+              style: { padding: '10px 24px', borderRadius: 10, border: emSaved ? 'none' : ACCENT_BTN_BD, background: emSaved ? _pspBg('#334155') : ACCENT_BTN_BG, color: emSaved ? _pspFg('#f1f5f9') : ACCENT_BTN_FG, fontWeight: 600, fontSize: 13, cursor: emSaved ? 'default' : 'pointer', opacity: emSaved ? 0.5 : 1 }
             }, emSaved ? '\u2705 Saved' : '\uD83D\uDCBE Save Map'),
             h('button', { 'aria-label': 'Next Person',
               onClick: function() {
@@ -2161,6 +2201,9 @@ window.SelHub = window.SelHub || {
                   ? window.SelHub.safeRehearseCheck(aiPrompt, { toolId: 'perspective', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
                   : { action: 'continue' };
                 if (pSafety.action === 'block') {
+                  if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+                    try { window.SelHub.showCrisisModal({ toolName: 'Perspective-Taking Lab', contentSnippet: aiPrompt }); } catch (_) {}
+                  }
                   upd({ aiLoading: false, aiResponse: window.SelHub.rehearseBreakCharacterText(pSafety.severity), _lastTier: 3 });
                   return;
                 }
@@ -2190,7 +2233,7 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: aiLoading,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: aiLoading ? _pspBg('#334155') : ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: aiLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
+              style: { padding: '10px 20px', borderRadius: 10, border: aiLoading ? 'none' : ACCENT_BTN_BD, background: aiLoading ? _pspBg('#334155') : ACCENT_BTN_BG, color: aiLoading ? _pspFg('#f1f5f9') : ACCENT_BTN_FG, fontWeight: 600, fontSize: 13, cursor: aiLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
             },
               aiLoading ? 'Thinking...' : h(Sparkles, { size: 14 }), aiLoading ? null : ' Explore Perspectives'
             )
@@ -2269,6 +2312,9 @@ window.SelHub = window.SelHub || {
                   ? window.SelHub.safeRehearseCheck(text, { toolId: 'perspective_journal', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
                   : { action: 'continue' };
                 if (jSafety.action === 'block') {
+                  if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+                    try { window.SelHub.showCrisisModal({ toolName: 'Perspective-Taking Lab', contentSnippet: text }); } catch (_) {}
+                  }
                   upd({ journalAiLoad: false, journalAiResp: window.SelHub.rehearseBreakCharacterText(jSafety.severity), _lastTier: 3 });
                   return;
                 }
@@ -2299,24 +2345,29 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: journalAiLoad || journalText.trim().split(/\s+/).length < 10,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: journalAiLoad ? _pspBg('#334155') : _pspFg('#6366f1'), color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: journalAiLoad ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: journalAiLoad ? 'none' : ACCENT_BTN_BD, background: journalAiLoad ? _pspBg('#334155') : INDIGO_BTN_BG, color: journalAiLoad ? _pspFg('#f1f5f9') : ACCENT_BTN_FG, fontWeight: 600, fontSize: 13, cursor: journalAiLoad ? 'default' : 'pointer' }
             }, journalAiLoad ? 'Reading...' : '\u2728 Get Feedback'),
             // Save & Next
-            h('button', { 'aria-label': 'Feedback',
+            h('button', { 'aria-label': 'Save journal entry',
               onClick: function() {
                 if (journalText.trim().split(/\s+/).length < 5) { addToast('Write at least a few words first!', 'info'); return; }
-                var newDone = journalDone + 1;
-                upd({ journalSaved: true, journalDone: newDone });
-                logPractice('journal', curJournal.id);
+                var jIds = Object.assign({}, d.journalCompletedIds || {});
+                var isNew = !jIds[curJournal.id];
+                if (isNew) jIds[curJournal.id] = true;
+                var newDone = isNew ? (journalDone + 1) : journalDone;
+                upd({ journalSaved: true, journalDone: newDone, journalCompletedIds: jIds });
                 if (soundEnabled) sfxCorrect();
                 addToast('Journal entry saved! \uD83D\uDCD4', 'success');
-                awardXP(15);
-                tryAwardBadge('journal_1');
-                if (newDone >= 3) tryAwardBadge('journal_3');
+                if (isNew) {
+                  logPractice('journal', curJournal.id);
+                  awardXP(15);
+                  tryAwardBadge('journal_1');
+                  if (newDone >= 3) tryAwardBadge('journal_3');
+                }
                 ctx.announceToSR && ctx.announceToSR('Journal entry saved');
               },
               disabled: journalSaved,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: journalSaved ? _pspFg('#22c55e') : ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: journalSaved ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: ACCENT_BTN_BD, background: journalSaved ? SAVED_BTN_BG : ACCENT_BTN_BG, color: ACCENT_BTN_FG, fontWeight: 600, fontSize: 13, cursor: journalSaved ? 'default' : 'pointer' }
             }, journalSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Entry')
           ),
           // AI Feedback display
@@ -2395,7 +2446,7 @@ window.SelHub = window.SelHub || {
           ),
           // Submit for evaluation
           h('div', { style: { textAlign: 'center', marginBottom: 16 } },
-            h('button', { 'aria-label': 'Select perspective',
+            h('button', { 'aria-label': 'Submit my response',
               onClick: function() {
                 var text = respondText.trim();
                 if (text.split(/\s+/).length < 8) { addToast('Write a bit more about what you\'d do and why!', 'info'); return; }
@@ -2405,6 +2456,9 @@ window.SelHub = window.SelHub || {
                   ? window.SelHub.safeRehearseCheck(text, { toolId: 'perspective_respond', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
                   : { action: 'continue' };
                 if (rSafety.action === 'block') {
+                  if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+                    try { window.SelHub.showCrisisModal({ toolName: 'Perspective-Taking Lab', contentSnippet: text }); } catch (_) {}
+                  }
                   upd({ respondAiLoad: false, respondAiResp: window.SelHub.rehearseBreakCharacterText(rSafety.severity), _lastTier: 3 });
                   return;
                 }
@@ -2529,7 +2583,7 @@ window.SelHub = window.SelHub || {
                   if (soundEnabled) sfxReveal();
                   awardXP(10);
                 },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: ACCENT_BTN_BD, background: ACCENT_BTN_BG, color: ACCENT_BTN_FG, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCA1 Reveal Reflection')
             )
           :
@@ -2612,20 +2666,24 @@ window.SelHub = window.SelHub || {
               (walkText.trim() ? walkText.trim().split(/\s+/).length : 0) + ' words'
             ),
             h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
-              h('button', { 'aria-label': 'Next Person',
+              h('button', { 'aria-label': 'Save reflection',
                 onClick: function() {
                   if (walkText.trim().split(/\s+/).length < 10) { addToast('Write a bit more \u2014 at least a few sentences!', 'info'); return; }
-                  upd('walkSaved', true);
-                  var newExDone = exerciseDone + 1;
-                  upd('exerciseDone', newExDone);
-                  logPractice('exercise', curWalk.id);
-                  if (newExDone >= 3) tryAwardBadge('empathy_builder');
+                  var wIds = Object.assign({}, d.walkCompletedIds || {});
+                  var isNew = !wIds[curWalk.id];
+                  if (isNew) wIds[curWalk.id] = true;
+                  var newExDone = isNew ? (exerciseDone + 1) : exerciseDone;
+                  upd({ walkSaved: true, exerciseDone: newExDone, walkCompletedIds: wIds });
+                  if (isNew) {
+                    logPractice('exercise', curWalk.id);
+                    if (newExDone >= 3) tryAwardBadge('empathy_builder');
+                    awardXP(15);
+                  }
                   if (soundEnabled) sfxCorrect();
-                  awardXP(15);
                   addToast('Perspective saved!', 'success');
                 },
                 disabled: walkSaved,
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: walkSaved ? _pspFg('#22c55e') : ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: walkSaved ? 'default' : 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: ACCENT_BTN_BD, background: walkSaved ? SAVED_BTN_BG : ACCENT_BTN_BG, color: ACCENT_BTN_FG, fontWeight: 600, fontSize: 13, cursor: walkSaved ? 'default' : 'pointer' }
               }, walkSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save'),
               h('button', { 'aria-label': 'Next Person',
                 onClick: function() {
@@ -2661,7 +2719,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 12, fontWeight: 700, color: _pspFg('#3b82f6'), marginBottom: 6 } }, '\uD83D\uDC64 ' + charName),
                   h('textarea', {
                     value: charText,
-                    'aria-label': 'Character perspective response',
+                    'aria-label': charName + ' perspective',
                     onChange: function(e) {
                       var newTexts = Object.assign({}, sameEventTexts);
                       newTexts[textKey] = e.target.value;
@@ -2675,30 +2733,39 @@ window.SelHub = window.SelHub || {
               })
             ),
             h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
-              h('button', { 'aria-label': 'Save All Perspectives',
-                onClick: function() {
-                  var filled = curSE.characters.filter(function(c, ci) {
-                    var k = curSE.id + '_' + ci;
-                    return sameEventTexts[k] && sameEventTexts[k].trim().length > 10;
-                  }).length;
-                  if (filled < 2) { addToast('Write from at least 2 perspectives first!', 'info'); return; }
-                  var newSEDone = sameEventDone + 1;
-                  var newExDone = exerciseDone + 1;
-                  upd('sameEventDone', newSEDone);
-                  upd('exerciseDone', newExDone);
-                  logPractice('exercise', curSE.id);
-                  if (newExDone >= 3) tryAwardBadge('empathy_builder');
-                  if (filled >= 3) tryAwardBadge('perspective_shift');
-                  if (soundEnabled) sfxCorrect();
-                  awardXP(20);
-                  addToast('Multi-perspective writing saved!', 'success');
-                  if (celebrate) celebrate();
-                },
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
-              }, '\uD83D\uDCBE Save All Perspectives'),
+              (function() {
+                var seIds = d.sameEventCompletedIds || {};
+                var alreadySavedSE = !!seIds[curSE.id];
+                return h('button', { 'aria-label': 'Save All Perspectives',
+                  disabled: alreadySavedSE,
+                  onClick: function() {
+                    var filled = curSE.characters.filter(function(c, ci) {
+                      var k = curSE.id + '_' + ci;
+                      return sameEventTexts[k] && sameEventTexts[k].trim().length > 10;
+                    }).length;
+                    if (filled < 2) { addToast('Write from at least 2 perspectives first!', 'info'); return; }
+                    var nextIds = Object.assign({}, seIds);
+                    var isNew = !nextIds[curSE.id];
+                    if (isNew) nextIds[curSE.id] = true;
+                    var newSEDone = isNew ? (sameEventDone + 1) : sameEventDone;
+                    var newExDone = isNew ? (exerciseDone + 1) : exerciseDone;
+                    upd({ sameEventDone: newSEDone, exerciseDone: newExDone, sameEventCompletedIds: nextIds });
+                    if (isNew) {
+                      logPractice('exercise', curSE.id);
+                      if (newExDone >= 3) tryAwardBadge('empathy_builder');
+                      if (filled >= 3) tryAwardBadge('perspective_shift');
+                      awardXP(20);
+                    }
+                    if (soundEnabled) sfxCorrect();
+                    addToast('Multi-perspective writing saved!', 'success');
+                    if (celebrate) celebrate();
+                  },
+                  style: { padding: '10px 20px', borderRadius: 10, border: ACCENT_BTN_BD, background: alreadySavedSE ? SAVED_BTN_BG : ACCENT_BTN_BG, color: ACCENT_BTN_FG, fontWeight: 600, fontSize: 13, cursor: alreadySavedSE ? 'default' : 'pointer', opacity: alreadySavedSE ? 0.75 : 1 }
+                }, alreadySavedSE ? '\u2705 Saved' : '\uD83D\uDCBE Save All Perspectives');
+              })(),
               h('button', { 'aria-label': 'Next Event',
                 onClick: function() {
-                  upd({ sameEventIdx: sameEventIdx + 1, sameEventTexts: {} });
+                  upd({ sameEventIdx: sameEventIdx + 1 });
                   if (soundEnabled) sfxClick();
                 },
                 style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
@@ -2732,7 +2799,7 @@ window.SelHub = window.SelHub || {
                     logPractice('exercise', curBYJ.id);
                     if (newExDone >= 3) tryAwardBadge('empathy_builder');
                   },
-                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _pspBg('#b45309'), color: _pspFg('#0f172a'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                  style: { padding: '10px 24px', borderRadius: 10, border: ACCENT_BTN_BD, background: AMBER_BTN_BG, color: ACCENT_BTN_FG, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
                 }, '\uD83D\uDD13 Reveal the Full Story')
               )
             :
@@ -2798,7 +2865,7 @@ window.SelHub = window.SelHub || {
             biasList.map(function(b, bi) {
               var explored = !!biasExplored[b.id];
               var isCur = (biasIdx % biasList.length) === bi;
-              return h('button', { 'aria-label': explored ? '\u2713' : String(bi + 1),
+              return h('button', { 'aria-label': b.name + (explored ? ' (explored)' : ''),
                 key: bi,
                 onClick: function() { upd('biasIdx', bi); if (soundEnabled) sfxClick(); },
                 title: b.name,
@@ -2849,7 +2916,7 @@ window.SelHub = window.SelHub || {
                   if (newCount >= biasList.length) tryAwardBadge('bias_master');
                   addToast('Bias explored! ' + newCount + '/' + biasList.length, 'success');
                 },
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: ACCENT_BTN_BD, background: ACCENT_BTN_BG, color: ACCENT_BTN_FG, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\u2705 Mark as Explored')
             :
               h('span', { style: { padding: '10px 20px', borderRadius: 10, background: '#22c55e22', color: _pspFg('#22c55e'), fontWeight: 600, fontSize: 13, border: '1px solid #22c55e44' } }, '\u2713 Explored'),
@@ -2908,26 +2975,32 @@ window.SelHub = window.SelHub || {
                 var timestamp = new Date().toISOString();
                 var entry = { prompt: curGJ.title, text: guidedJText.trim(), time: timestamp };
                 var newEntries = guidedJEntries.concat([entry]);
-                var newDone = guidedJDone + 1;
+                var gjIds = Object.assign({}, d.guidedJCompletedIds || {});
+                var isNew = !gjIds[curGJ.id];
+                if (isNew) gjIds[curGJ.id] = true;
+                var newDone = isNew ? (guidedJDone + 1) : guidedJDone;
                 upd({
                   guidedJSaved: true,
                   guidedJEntries: newEntries,
-                  guidedJDone: newDone
+                  guidedJDone: newDone,
+                  guidedJCompletedIds: gjIds
                 });
-                logPractice('guidedJ', curGJ.id);
+                if (isNew) {
+                  logPractice('guidedJ', curGJ.id);
+                  awardXP(15);
+                  tryAwardBadge('open_mind');
+                }
                 if (soundEnabled) sfxCorrect();
-                awardXP(15);
-                tryAwardBadge('open_mind');
                 addToast('Journal entry saved with timestamp!', 'success');
                 ctx.announceToSR && ctx.announceToSR('Guided journal entry saved');
               },
               disabled: guidedJSaved,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: guidedJSaved ? _pspFg('#22c55e') : _pspFg('#6366f1'), color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: guidedJSaved ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: ACCENT_BTN_BD, background: guidedJSaved ? SAVED_BTN_BG : INDIGO_BTN_BG, color: ACCENT_BTN_FG, fontWeight: 600, fontSize: 13, cursor: guidedJSaved ? 'default' : 'pointer' }
             }, guidedJSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Entry'),
             !guidedJShowFU && guidedJSaved ?
               h('button', { 'aria-label': 'Show Follow-Up Question',
                 onClick: function() { upd('guidedJShowFU', true); if (soundEnabled) sfxReveal(); },
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: ACCENT_BTN_BD, background: ACCENT_BTN_BG, color: ACCENT_BTN_FG, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCA1 Show Follow-Up Question')
             : null
           ),
@@ -3014,8 +3087,8 @@ window.SelHub = window.SelHub || {
               h('span', { style: { fontSize: 12, fontWeight: 700, color: _pspFg('#f1f5f9') } }, 'Hidden Feelings Accuracy'),
               h('span', { style: { fontSize: 12, fontWeight: 700, color: _pspFg('#f59e0b') } }, Math.round((hfCorrect / hfTotal) * 100) + '%')
             ),
-            h('div', { style: { height: 8, borderRadius: 4, background: _pspBg('#334155'), overflow: 'hidden' } },
-              h('div', { style: { height: '100%', borderRadius: 4, background: _pspBg('#b45309'), width: Math.round((hfCorrect / hfTotal) * 100) + '%', transition: 'width 0.3s' } })
+            h('div', { role: 'progressbar', 'aria-label': 'Hidden feelings accuracy', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round((hfCorrect / hfTotal) * 100), style: { height: 8, borderRadius: 4, background: _pspBg('#334155'), overflow: 'hidden' } },
+              h('div', { style: { height: '100%', borderRadius: 4, background: _pspHC ? '#ffff00' : '#b45309', width: Math.round((hfCorrect / hfTotal) * 100) + '%', transition: 'width 0.3s' } })
             )
           ),
           // Recent practice log
@@ -3051,7 +3124,7 @@ window.SelHub = window.SelHub || {
         // Surface 988 / Crisis Text Line block when any AI-input turn was tier-3.
         (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
         badgePopup,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, content)
+        h('div', { id: 'psp-tab-panel', role: 'tabpanel', 'aria-labelledby': 'psp-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, content)
       );
     }
   });

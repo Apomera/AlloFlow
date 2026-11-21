@@ -1630,8 +1630,10 @@ const createExport = deps => {
     reflectionEntries.forEach((text, i) => {
       const itemId = `REF_${i}_${generateUUID().slice(0, 8)}`;
       const responseId = `REF_RESP_${i}`;
+      const rawRefLabel = typeof t === 'function' ? t('common.reflection') : '';
+      const refLabel = rawRefLabel && rawRefLabel !== 'common.reflection' && !/\$\{/.test(rawRefLabel) ? rawRefLabel : 'Reflection';
       itemsXml += `
-    <item ident="${itemId}" title="${_escapeExportText(t('common.reflection_i_1') || 'Reflection')}">
+    <item ident="${itemId}" title="${_escapeExportText(`${refLabel} ${i + 1}`)}">
       ${_qtiItemMetadataXml('reflection', 'essay_question', {
         manual: true
       })}
@@ -1884,7 +1886,7 @@ const createExport = deps => {
         if (!plain(prompt) || !answers.length) return false;
         const token = 'ALLOFLOWBLANKTOKEN';
         const withToken = /_{3,}/.test(prompt) ? plain(prompt).replace(/_{3,}/, token) : plain(prompt) + ' ' + token;
-        const line = richText(withToken).replace(token, '*' + answers.map(_escapeExportText).join('/') + '*');
+        const line = richText(withToken).replace(token, () => '*' + answers.map(_escapeExportText).join('/') + '*');
         questions.push({
           library: 'H5P.Blanks 1.14',
           subContentId: generateUUID(),
@@ -2102,8 +2104,16 @@ const createExport = deps => {
     };
     if (type === 'quiz') {
       const rawQuestions = Array.isArray(generatedContent?.data?.questions) ? generatedContent.data.questions : [];
-      const _qHasImage = q => !!(q && (q.image || q.imageUrl || q.stimulusImage || q.media || Array.isArray(q.options) && q.options.some(opt => opt && typeof opt === 'object' && (opt.image || opt.imageUrl))));
-      const allSingleChoice = rawQuestions.length > 0 && rawQuestions.every(q => {
+      const rawReflections = Array.isArray(generatedContent?.data?.reflections) ? generatedContent.data.reflections : [];
+      const _qHasStemImage = q => !!(q && (q.image || q.imageUrl || q.stimulusImage || q.media));
+      const _qOptionImages = q => {
+        if (!q) return [];
+        const urls = Array.isArray(q.optionImageUrls) ? q.optionImageUrls.filter(Boolean) : [];
+        if (urls.length) return urls;
+        return Array.isArray(q.options) ? q.options.filter(opt => opt && typeof opt === 'object' && (opt.image || opt.imageUrl)).map(opt => opt.image || opt.imageUrl) : [];
+      };
+      const _qHasImage = q => _qHasStemImage(q) || _qOptionImages(q).length > 0;
+      const allSingleChoice = rawQuestions.length > 0 && rawReflections.length === 0 && rawQuestions.every(q => {
         if (!q) return true;
         if (_normExportQuizType(q.type) !== 'mcq' || _qHasImage(q)) return false;
         if (q.requireReasoning || q.explanationPrompt) return false;
@@ -2174,12 +2184,12 @@ const createExport = deps => {
             closeButtonLabel: tx('common.close', 'Close'),
             slideOfTotal: tx('quiz.slide_of_total', 'Slide :num of :total'),
             scoreBarLabel: tx('quiz.score_bar_label', 'You got :num out of :total points'),
-            solutionListQuestionNumber: tx('common.question_i_1', 'Question') + ' :num',
+            solutionListQuestionNumber: tx('common.question', 'Question') + ' :num',
             a11yShowSolution: tx('quiz.a11y_show_solution', 'Show the solution. The task will be marked with its correct solution.'),
             a11yRetry: tx('quiz.a11y_retry', 'Retry the task. Reset all responses and start the task over again.'),
             resultHeader: tx('quiz.your_result', 'Your result:'),
             totalScore: tx('quiz.total_score', ':score of :maxScore correct'),
-            resultTableHeader: tx('common.question_i_1', 'Question'),
+            resultTableHeader: tx('common.question', 'Question'),
             resultScoreTableHeader: tx('common.score', 'Score'),
             correctAnswerIntroduction: tx('quiz.correct_answer', 'Correct answer')
           }
@@ -2228,7 +2238,9 @@ const createExport = deps => {
                 key = remapped;
               }
             }
-            const qImgAsset = _qHasImage(q) ? addEmbeddedAsset(q.image || q.imageUrl || q.stimulusImage || q.media, 'image', questionIndex) : null;
+            const qImgAsset = _qHasStemImage(q) ? addEmbeddedAsset(q.image || q.imageUrl || q.stimulusImage || q.media, 'image', questionIndex) : null;
+            const qOptImgs = _qOptionImages(q);
+            if (qOptImgs.length) mediaOmitted += qOptImgs.length;
             const qImgAlt = plain(q.imageAltText || q.imageAlt || q.alt || prompt);
             included = addMulti(prompt, options, [key], qImgAsset, qImgAlt);
             if (included && (q.requireReasoning || q.explanationPrompt)) {
@@ -2247,7 +2259,11 @@ const createExport = deps => {
                 indices = remapped;
               }
             }
-            included = !!indices && addMulti(prompt, options, indices);
+            const msImgAsset = _qHasStemImage(q) ? addEmbeddedAsset(q.image || q.imageUrl || q.stimulusImage || q.media, 'image', questionIndex) : null;
+            const msOptImgs = _qOptionImages(q);
+            if (msOptImgs.length) mediaOmitted += msOptImgs.length;
+            const msImgAlt = plain(q.imageAltText || q.imageAlt || q.alt || prompt);
+            included = !!indices && addMulti(prompt, options, indices, msImgAsset, msImgAlt);
             if (included && (q.requireReasoning || q.explanationPrompt)) {
               addEssay((plain(q.explanationPrompt) || 'Explain your reasoning.') + ' (' + prompt + ')', plain(q.explanation || q.rubric || q.sampleAnswer || ''));
               manualReview += 1;
@@ -2355,6 +2371,15 @@ const createExport = deps => {
             }
           }
           if (!included) omitted += 1;
+        });
+        rawReflections.forEach(reflection => {
+          const refPrompt = plain(typeof reflection === 'string' ? reflection : reflection && (reflection.question || reflection.prompt || reflection.text));
+          if (!refPrompt) {
+            omitted += 1;
+            return;
+          }
+          const refGuide = reflection && typeof reflection === 'object' ? plain(reflection.expectedAnswer || reflection.sampleAnswer || reflection.rubric || reflection.guidance || '') : '';
+          if (addEssay(refPrompt, refGuide)) manualReview += 1;else omitted += 1;
         });
         if (!finalize('quiz')) return false;
       }
@@ -2494,7 +2519,7 @@ const createExport = deps => {
           const sample = allowH5pSampleKey ? pts.map(pt => plain(pt && typeof pt === 'object' ? pt.text || pt.label || pt.prompt : pt)).filter(Boolean).join('; ') : '';
           if (addEssay('Outline notes for: ' + headingTxt, sample)) manualReview += 1;else omitted += 1;
         });
-      } else if (templateType === 'lab' || nt.hypothesis || nt.conclusion || Array.isArray(nt.materials) || Array.isArray(nt.procedure)) {
+      } else if (templateType === 'lab' || templateType === 'lab-report' || nt.hypothesis || nt.conclusion || Array.isArray(nt.materials) || Array.isArray(nt.procedure)) {
         const parts = [['Research Question', nt.question], ['Hypothesis', nt.hypothesis], ['Procedure / Observations', nt.data || (Array.isArray(nt.procedure) ? nt.procedure.map(p => plain(p && p.text || p)).filter(Boolean).join('; ') : '')], ['Analysis (CER)', nt.analysis], ['Conclusion', nt.conclusion]];
         parts.forEach(([lbl, val]) => {
           const v = plain(val);
@@ -3078,6 +3103,20 @@ const createExport = deps => {
         filename,
         renderedInIms: true
       });
+      const _imsReaderCss = (() => {
+        try {
+          const lib = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.UIFontLibrary;
+          if (!lib || typeof lib.readerExportCss !== 'function' || !lib.readingSettingsAvailable || !lib.readingSettingsAvailable()) return '';
+          const s = window.__alloReadingSettings.get();
+          if (!s || (s.fontId || 'default') === 'default' && Number(s.baseFontSize) === 16 && Number(s.lineHeight) === 1.6 && Number(s.letterSpacing) === 0) return '';
+          return lib.readerExportCss(s);
+        } catch (_) {
+          return '';
+        }
+      })();
+      const _imsBodyHtml = !entry.completeDocument && typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicHtml === 'function' ? window.__alloBionicHtml(entry.html, {
+        lang: exportLang
+      }) : entry.html;
       const contentHtml = entry.completeDocument ? entry.html : `
                 <!DOCTYPE html>
                 <html lang="${_escapeExportText(exportLang)}" dir="${exportDir}">
@@ -3093,10 +3132,11 @@ const createExport = deps => {
                         th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; }
                         th { background-color: #f8f9fa; }
                         .resource-header { background: #f1f5f9; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-weight: bold; color: #475569; }
+                        ${_imsReaderCss}
                     </style>
                 </head>
                 <body>
-                    ${entry.html}
+                    ${_imsBodyHtml}
                 </body>
                 </html>
             `;
@@ -3826,7 +3866,16 @@ const createExport = deps => {
             });
           });
         } else if (type === 'quiz') {
-          const questions = item.data.questions || [];
+          if (!item.data || typeof item.data !== 'object') {
+            skipped.push(itemTitle);
+            return;
+          }
+          const questions = Array.isArray(item.data.questions) ? item.data.questions : [];
+          const reflections = Array.isArray(item.data.reflections) ? item.data.reflections : [];
+          if (!questions.length && !reflections.length) {
+            skipped.push(itemTitle);
+            return;
+          }
           const slideQuizKey = q => {
             if (!q) return '';
             const qt = _normExportQuizType(q.type);
@@ -4082,41 +4131,156 @@ const createExport = deps => {
               });
             }
           }
-        } else if (type === 'image' && item.data.imageUrl) {
-          const slide = pptx.addSlide({
-            masterName: "MASTER_SLIDE"
-          });
-          addSlideTitle(slide, itemTitle);
-          const pptAlt = item.data.decorative ? '' : item.data.alt || item.data.description || item.title || 'Visual support image';
-          slide.addImage({
-            data: item.data.imageUrl,
-            x: 'center',
-            y: 1.0,
-            w: 8,
-            h: 3.5,
-            sizing: {
-              type: 'contain',
-              w: 9,
-              h: 3.5
-            },
-            altText: pptAlt
-          });
-          slide.addText(item.data.caption || item.data.alt || item.data.prompt || '', {
-            x: 0.5,
-            y: 4.6,
-            w: 9,
-            h: 0.6,
-            fontSize: 10,
-            color: "475569",
-            italic: true,
-            align: 'center',
-            valign: 'top',
-            fit: 'shrink',
-            margin: 0.03
-          });
-          addA11yNotes(slide, itemTitle, pptAlt ? 'Image: ' + pptAlt : 'Decorative image');
+          if (reflections.length > 0) {
+            const refSlides = [];
+            reflections.forEach((ref, rIdx) => {
+              const refText = cleanTextForPptx(typeof ref === 'string' ? ref : ref && (ref.question || ref.prompt || ref.text || ''));
+              if (!refText) return;
+              refSlides.push({
+                num: rIdx + 1,
+                text: refText,
+                guidance: showSlideAnswerKey && ref && typeof ref === 'object' ? cleanTextForPptx(ref.rubric || ref.sampleAnswer || ref.expectedAnswer || ref.guidance || '') : ''
+              });
+            });
+            for (let rf = 0; rf < refSlides.length; rf += 2) {
+              const chunk = refSlides.slice(rf, rf + 2);
+              const refSlide = pptx.addSlide({
+                masterName: "MASTER_SLIDE"
+              });
+              addSlideTitle(refSlide, rf === 0 ? `${itemTitle} — Reflection` : `${itemTitle} — Reflection (Cont.)`);
+              const refRich = [];
+              chunk.forEach(entry => {
+                refRich.push({
+                  text: `Reflection ${entry.num}: ${entry.text}`,
+                  options: {
+                    fontSize: 15,
+                    bold: true,
+                    color: darkText,
+                    breakLine: true,
+                    paraSpaceAfter: 6
+                  }
+                });
+                if (entry.guidance) {
+                  refRich.push({
+                    text: `Guidance: ${entry.guidance}`,
+                    options: {
+                      fontSize: 11,
+                      italic: true,
+                      color: "475569",
+                      breakLine: true,
+                      paraSpaceAfter: 12
+                    }
+                  });
+                } else {
+                  refRich.push({
+                    text: '________________________________________________',
+                    options: {
+                      fontSize: 12,
+                      color: "94A3B8",
+                      breakLine: true,
+                      paraSpaceAfter: 14
+                    }
+                  });
+                }
+              });
+              refSlide.addText(refRich, {
+                x: 0.5,
+                y: 1.0,
+                w: 9,
+                h: 4.1,
+                valign: 'top',
+                fit: 'shrink',
+                margin: 0.04
+              });
+              addA11yNotes(refSlide, itemTitle, chunk.map(e => `Reflection ${e.num}: ${e.text}`).join(' | '));
+            }
+          }
+        } else if (type === 'image') {
+          const imgData = item.data && typeof item.data === 'object' ? item.data : null;
+          const planPanels = imgData && imgData.visualPlan && Array.isArray(imgData.visualPlan.panels) ? imgData.visualPlan.panels.filter(p => p && p.imageUrl) : [];
+          if (planPanels.length > 0) {
+            planPanels.forEach((panel, pIdx) => {
+              const slide = pptx.addSlide({
+                masterName: "MASTER_SLIDE"
+              });
+              const slideHeading = planPanels.length > 1 ? `${itemTitle} (${pIdx + 1}/${planPanels.length})` : itemTitle;
+              addSlideTitle(slide, slideHeading);
+              const pptAlt = panel.decorative ? '' : panel.alt || panel.altText || imgData.altText || imgData.alt || imgData.description || item.title || 'Visual support image';
+              slide.addImage({
+                data: panel.imageUrl,
+                x: 'center',
+                y: 1.0,
+                w: 8,
+                h: 3.5,
+                sizing: {
+                  type: 'contain',
+                  w: 9,
+                  h: 3.5
+                },
+                altText: pptAlt
+              });
+              const visibleCaption = panel.caption || (pIdx === 0 ? imgData.caption || '' : '');
+              if (visibleCaption) {
+                slide.addText(visibleCaption, {
+                  x: 0.5,
+                  y: 4.6,
+                  w: 9,
+                  h: 0.6,
+                  fontSize: 10,
+                  color: "475569",
+                  italic: true,
+                  align: 'center',
+                  valign: 'top',
+                  fit: 'shrink',
+                  margin: 0.03
+                });
+              }
+              addA11yNotes(slide, slideHeading, pptAlt ? 'Image: ' + pptAlt : 'Decorative image');
+            });
+          } else if (imgData && imgData.imageUrl) {
+            const slide = pptx.addSlide({
+              masterName: "MASTER_SLIDE"
+            });
+            addSlideTitle(slide, itemTitle);
+            const pptAlt = imgData.decorative ? '' : imgData.altText || imgData.alt || imgData.description || item.title || 'Visual support image';
+            slide.addImage({
+              data: imgData.imageUrl,
+              x: 'center',
+              y: 1.0,
+              w: 8,
+              h: 3.5,
+              sizing: {
+                type: 'contain',
+                w: 9,
+                h: 3.5
+              },
+              altText: pptAlt
+            });
+            if (imgData.caption) {
+              slide.addText(imgData.caption, {
+                x: 0.5,
+                y: 4.6,
+                w: 9,
+                h: 0.6,
+                fontSize: 10,
+                color: "475569",
+                italic: true,
+                align: 'center',
+                valign: 'top',
+                fit: 'shrink',
+                margin: 0.03
+              });
+            }
+            addA11yNotes(slide, itemTitle, pptAlt ? 'Image: ' + pptAlt : 'Decorative image');
+          } else {
+            skipped.push(itemTitle);
+          }
         } else if (type === 'outline') {
-          const branches = Array.isArray(item.data.branches) ? item.data.branches : [];
+          if (!item.data || typeof item.data !== 'object') {
+            skipped.push(itemTitle);
+            return;
+          }
+          const branches = Array.isArray(item.data.branches) ? item.data.branches.filter(Boolean) : [];
           const rawStruct = String(item.data.structureType || '').trim();
           const outlineHeading = item.data.main || itemTitle;
           const _outlineEntryText = entry => entry && typeof entry === 'object' ? String(entry.text || entry.label || entry.content || '') : String(entry == null ? '' : entry);
@@ -4438,8 +4602,9 @@ const createExport = deps => {
             const kwlExamples = item.data.structureType === 'KWL Chart' && branches.some(b => b && b.teacherExample === true);
             const kwlPrompts = [['kwl_prompt_know', 'What do you already know?'], ['kwl_prompt_want', 'What do you want to know?'], ['kwl_prompt_learned', 'What did you learn?']];
             branches.forEach((b, bi) => {
+              if (!b) return;
               richText.push({
-                text: b.title,
+                text: b.title || '',
                 options: {
                   fontSize: 16,
                   bold: true,
@@ -4848,7 +5013,8 @@ const createExport = deps => {
               margin: 0.02
             });
           };
-          const sfItems = Array.isArray(sf.items) ? sf.items.filter(entry => entry && entry.isSelected !== false && entry.selected !== false) : [];
+          const rawSfItems = Array.isArray(sf) ? sf : Array.isArray(sf.items) ? sf.items : Array.isArray(sf.frames) ? sf.frames : [];
+          const sfItems = rawSfItems.filter(entry => entry && (typeof entry === 'string' || entry.isSelected !== false && entry.selected !== false));
           if (sf.mode === 'paragraph' || !sfItems.length && sf.text) {
             const paraChunks = chunkText(clip(sf.text || '', 1800) || itemTitle, 700);
             paraChunks.forEach((chunk, pIdx) => {
@@ -4919,15 +5085,15 @@ const createExport = deps => {
               const rowH = Math.min(0.88, availH / Math.max(1, slice.length));
               slice.forEach((entry, rIdx) => {
                 const rowY = yStart + rIdx * rowH;
-                const tierRaw = clip(entry && (entry.tier || entry.level), 30);
+                const tierRaw = typeof entry === 'string' ? '' : clip(entry && (entry.tier || entry.level), 30);
                 const tierKey = tierRaw.toLowerCase();
                 const tc = tierStyles[tierKey] || {
                   fill: "E0E7FF",
                   border: "A5B4FC",
                   text: "3730A3"
                 };
-                const frameTxt = clip(entry && (entry.text || entry.frame || entry.starter || entry.sentence || ''), 360);
-                const glossTxt = entry && entry.text_en ? clip(entry.text_en, 240) : '';
+                const frameTxt = typeof entry === 'string' ? clip(entry, 360) : clip(entry && (entry.text || entry.frame || entry.starter || entry.sentence || ''), 360);
+                const glossTxt = typeof entry === 'object' && entry && entry.text_en ? clip(entry.text_en, 240) : '';
                 slide.addShape(pptx.ShapeType.rect, {
                   x: 0.5,
                   y: rowY,
@@ -5441,7 +5607,7 @@ const createExport = deps => {
                 valign: 'top'
               });
             }
-          } else if (tt === 'lab' || nt.hypothesis || nt.conclusion || Array.isArray(nt.materials) || Array.isArray(nt.procedure)) {
+          } else if (tt === 'lab' || tt === 'lab-report' || nt.hypothesis || nt.conclusion || Array.isArray(nt.materials) || Array.isArray(nt.procedure)) {
             const runs = [];
             const mats = listOf((Array.isArray(nt.materials) ? nt.materials : []).map(m => m && m.text || m), 8);
             const procs = listOf((Array.isArray(nt.procedure) ? nt.procedure : []).map(p => p && p.text || p), 8);
@@ -5449,9 +5615,9 @@ const createExport = deps => {
               runs.push(heading(_nsT('note_taking.research_question', 'Research Question')));
               runs.push(body(clip(nt.question, 400)));
             }
-            if (nt.hypothesis) {
+            if (nt.hypothesis || tt === 'lab' || tt === 'lab-report') {
               runs.push(heading(_nsT('note_taking.hypothesis', 'Hypothesis')));
-              runs.push(body(showSlideAnswerKey ? clip(nt.hypothesis, 400) : '________________________'));
+              runs.push(body(showSlideAnswerKey && nt.hypothesis ? clip(nt.hypothesis, 400) : '________________________'));
             }
             if (mats.length) {
               runs.push(heading(_nsT('note_taking.materials', 'Materials')));
@@ -5461,17 +5627,17 @@ const createExport = deps => {
               runs.push(heading(_nsT('note_taking.procedure', 'Procedure')));
               procs.forEach(p => runs.push(bullet(p)));
             }
-            if (nt.data) {
+            if (nt.data || tt === 'lab' || tt === 'lab-report') {
               runs.push(heading(_nsT('note_taking.data_observations', 'Data / Observations')));
-              runs.push(body(showSlideAnswerKey ? clip(nt.data, 500) : '________________________'));
+              runs.push(body(showSlideAnswerKey && nt.data ? clip(nt.data, 500) : '________________________'));
             }
-            if (nt.analysis) {
+            if (nt.analysis || tt === 'lab' || tt === 'lab-report') {
               runs.push(heading(_nsT('note_taking.analysis_label', 'Analysis (CER)')));
-              runs.push(body(showSlideAnswerKey ? clip(nt.analysis, 500) : '________________________'));
+              runs.push(body(showSlideAnswerKey && nt.analysis ? clip(nt.analysis, 500) : '________________________'));
             }
-            if (nt.conclusion) {
+            if (nt.conclusion || tt === 'lab' || tt === 'lab-report') {
               runs.push(heading(_nsT('note_taking.conclusion', 'Conclusion')));
-              runs.push(body(showSlideAnswerKey ? clip(nt.conclusion, 500) : '________________________'));
+              runs.push(body(showSlideAnswerKey && nt.conclusion ? clip(nt.conclusion, 500) : '________________________'));
             }
             if (!runs.length) {
               skipped.push(itemTitle);
@@ -5480,21 +5646,22 @@ const createExport = deps => {
             addRichSlide(itemTitle, runs, runs.map(r => r.text).join(' '));
           } else if (tt === 'reading-response' || nt.favoriteLine || nt.thinkings) {
             const runs = [];
-            if (nt.favoriteLine) {
+            const isReadingTemplate = tt === 'reading-response';
+            if (nt.favoriteLine || isReadingTemplate) {
               runs.push(heading(_nsT('note_taking.favorite_line', 'Favorite Line or Passage')));
-              runs.push(body(showSlideAnswerKey ? clip(nt.favoriteLine, 500) : '________________________'));
+              runs.push(body(showSlideAnswerKey && nt.favoriteLine ? clip(nt.favoriteLine, 500) : '________________________'));
             }
-            if (nt.thinkings) {
+            if (nt.thinkings || isReadingTemplate) {
               runs.push(heading(_nsT('note_taking.thinkings', 'What This Made Me Think About')));
-              runs.push(body(showSlideAnswerKey ? clip(nt.thinkings, 600) : '________________________'));
+              runs.push(body(showSlideAnswerKey && nt.thinkings ? clip(nt.thinkings, 600) : '________________________'));
             }
-            if (nt.connection && nt.connection.text) {
+            if (nt.connection && nt.connection.text || isReadingTemplate) {
               runs.push(heading(_nsT('note_taking.connection', 'Connection')));
-              runs.push(body(showSlideAnswerKey ? clip(nt.connection.text, 500) : '________________________'));
+              runs.push(body(showSlideAnswerKey && nt.connection && nt.connection.text ? clip(nt.connection.text, 500) : '________________________'));
             }
-            if (nt.question) {
+            if (nt.question || isReadingTemplate) {
               runs.push(heading(_nsT('note_taking.one_question', 'One Question I Have')));
-              runs.push(body(showSlideAnswerKey ? clip(nt.question, 400) : '________________________'));
+              runs.push(body(showSlideAnswerKey && nt.question ? clip(nt.question, 400) : '________________________'));
             }
             if (!runs.length) {
               skipped.push(itemTitle);
@@ -6183,7 +6350,7 @@ const createExport = deps => {
             summary = preparedText.text;
             if (preparedText.recovery?.state === 'session-only') summaryWarning = 'The epilogue is available for this session but could not be saved on this device. Keep this page open to retry, or keep the download.';
           } else if (typeof window.callGemini === 'function') {
-            summary = String((await window.callGemini(prompt)) || '').trim();
+            summary = String((await window.callGemini(prompt, false, false, null, null, options.signal)) || '').trim();
           } else {
             throw new Error('AI helper unavailable.');
           }
@@ -6324,7 +6491,8 @@ const createExport = deps => {
               } else if (!Object.keys(acceptedAudio).length && !narrationWarning) {
                 narrationWarning = 'No narrated audio was returned. The complete text Storybook will still be downloaded.';
               } else if (Object.keys(acceptedAudio).length < totalSegments && !narrationWarning) {
-                narrationWarning = `${totalSegments - Object.keys(acceptedAudio).length} narration clips are missing. Retry the export to prepare the missing clips; completed narration is retained.`;
+                const missingClips = totalSegments - Object.keys(acceptedAudio).length;
+                narrationWarning = `${missingClips} narration clip${missingClips === 1 ? ' is' : 's are'} missing. Retry the export to prepare the missing clip${missingClips === 1 ? '' : 's'}; completed narration is retained.`;
               }
               if (prepared?.recovery?.state === 'session-only') {
                 narrationWarning += ' Prepared narration could not be saved for recovery on this device. Keep this page open to retry, or keep the downloaded Storybook.';
@@ -6480,10 +6648,10 @@ const createExport = deps => {
                   </div>
                   ${summary ? `<div class="summary-box" data-scene-id="epilogue">
                       <div class="epilogue-badge">${safeEpilogue}</div>
-                      ${epilogueHtml}
+                      ${typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicHtml === 'function' ? window.__alloBionicHtml(epilogueHtml) : epilogueHtml}
                   </div>` : '<p class="epilogue-availability">Epilogue unavailable. The complete journey follows.</p>'}
                   <h2 style="text-align: center; text-transform: uppercase; letter-spacing: 2px; color: #64748b; margin-bottom: 40px;">${_escapeExportText(strLogHeader)}</h2>
-                  <div class="log-section">${chaptersHtml}</div>
+                  <div class="log-section">${typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicHtml === 'function' ? window.__alloBionicHtml(chaptersHtml) : chaptersHtml}</div>
                   <p class="media-availability" role="status">${_escapeExportText([mediaSummary, pictureSummary].filter(Boolean).join(' '))}</p>
                   <div style="text-align: center; margin-top: 50px; color: #64748b; font-size: 0.8em;">${_escapeExportText(strFooter)}</div>
                   ${embeddedArtifact}
@@ -7389,7 +7557,10 @@ const createExport = deps => {
                 </style>${readerSettings ? _FLASHCARD_READER_SLOT : ''}
             </head>
             <body>
-                ${htmlBody}
+                ${readerSettings && (readerSettings.bionic || readerSettings.syllables) && typeof window !== 'undefined' && typeof window.__alloBionicHtml === 'function' ? window.__alloBionicHtml(htmlBody, {
+      bionic: !!readerSettings.bionic,
+      syllables: !!readerSettings.syllables
+    }) : htmlBody}
                 ${htmlBody.includes('data-ci-src=') ? `<script>(function(){var c=document.querySelectorAll('img[data-ci-src]');for(var i=0;i<c.length;i++){var s=document.querySelector('img[data-ci="'+c[i].getAttribute('data-ci-src')+'"]');if(s)c[i].setAttribute('src',s.getAttribute('src'));}})();</script>` : ''}${audioIds.size ? `
                 <script type="application/json" id="card-audio-data">${_jsonForHtmlScript(audioData)}</script><script>(function(){var d=JSON.parse(document.getElementById('card-audio-data').textContent||'{}'),p=null;document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('[data-card-audio]'):null,s=b&&d[b.getAttribute('data-card-audio')];if(!s)return;if(p)p.pause();p=new Audio(s);var r=p.play();if(r&&r.catch)r.catch(function(){});});})();</script>` : ''}
                 <script data-flashcard-study>(function(){
@@ -7560,9 +7731,13 @@ const createExport = deps => {
       settings = null;
     }
     if (!settings || typeof settings !== 'object') return null;
-    const differs = (settings.fontId || 'default') !== 'default' || Number(settings.baseFontSize) !== 16 || Number(settings.lineHeight) !== 1.6 || Number(settings.letterSpacing) !== 0;
+    const syllablesOn = typeof window !== 'undefined' && typeof window.__alloIsSyllablesOn === 'function' ? !!window.__alloIsSyllablesOn() : false;
+    const enriched = Object.assign({}, settings, {
+      syllables: syllablesOn
+    });
+    const differs = (enriched.fontId || 'default') !== 'default' || Number(enriched.baseFontSize) !== 16 || Number(enriched.lineHeight) !== 1.6 || Number(enriched.letterSpacing) !== 0 || !!enriched.bionic || syllablesOn;
     return {
-      settings,
+      settings: enriched,
       differs
     };
   };
@@ -7689,7 +7864,10 @@ const createExport = deps => {
       };
       const box = clips.length ? option(_gxText('flashcards.include_audio', 'Include prepared audio'), true) : null;
       if (box) {
-        ui.el('p', 'agx-note', _gxText('flashcards.audio_summary', '{count} prepared recordings, about {size} MB.', {
+        ui.el('p', 'agx-note', clips.length === 1 ? _gxText('flashcards.audio_summary_one', '{count} prepared recording, about {size} MB.', {
+          count: clips.length,
+          size
+        }) : _gxText('flashcards.audio_summary', '{count} prepared recordings, about {size} MB.', {
           count: clips.length,
           size
         }), ui.dialog);
@@ -7739,6 +7917,7 @@ const createExport = deps => {
   };
   const _gxPlain = value => _glossaryPlainText(value);
   const _gxOneLine = value => _gxPlain(value).replace(/\s+/g, ' ').trim();
+  const _gxTerm = item => item && (item.term != null ? item.term : item.word);
   const _gxDefinition = item => item.def != null ? item.def : item.definition;
   const _gxTranslation = (item, lang) => {
     const translation = _flashcardTranslation(item, lang);
@@ -7759,8 +7938,11 @@ const createExport = deps => {
         list = [];
       }
     }
+    if (list && !Array.isArray(list) && typeof list === 'object') {
+      list = Array.isArray(list.terms) ? list.terms : Array.isArray(list.items) ? list.items : Array.isArray(list.entries) ? list.entries : Array.isArray(list.glossary) ? list.glossary : [];
+    }
     list = Array.isArray(list) ? list : [];
-    const entries = list.filter(item => item && typeof item === 'object' && _gxOneLine(item.term));
+    const entries = list.filter(item => item && typeof item === 'object' && _gxOneLine(_gxTerm(item)));
     if (scope === 'all') return entries;
     if (scope === 'selected') return entries.filter(item => item.isSelected !== false && item.selected !== false);
     // Filters belong to the source object used to compute the visible rows.
@@ -7780,7 +7962,7 @@ const createExport = deps => {
       const id = idOf(row);
       if (id) return byId.get(id) || null;
       const original = Number.isInteger(row._originalIdx) ? list[row._originalIdx] : null;
-      return entrySet.has(original) && row.term === original.term && _gxDefinition(row) === _gxDefinition(original) ? original : null;
+      return entrySet.has(original) && _gxTerm(row) === _gxTerm(original) && _gxDefinition(row) === _gxDefinition(original) ? original : null;
     }).filter(item => item && !seen.has(item) && seen.add(item));
   };
   const _gxScopeLabel = (scope, count) => scope === 'filtered' ? _gxText('export.word_list_scope_filtered', 'Filtered words ({count})', {
@@ -7808,11 +7990,11 @@ const createExport = deps => {
   };
   const _gxCsv = (entries, languages) => {
     const rows = [[_gxText('output.col_term', 'Term'), _gxText('output.col_def', 'Definition'), _gxText('export.word_list_col_tier', 'Tier')].concat(languages)];
-    entries.forEach(item => rows.push([item.term, _gxDefinition(item), item.tier].concat(languages.map(lang => _gxTranslation(item, lang)))));
+    entries.forEach(item => rows.push([_gxTerm(item), _gxDefinition(item), item.tier].concat(languages.map(lang => _gxTranslation(item, lang)))));
     return String.fromCharCode(0xFEFF) + rows.map(row => row.map(_gxCsvCell).join(',')).join('\r\n') + '\r\n';
   };
   const _gxPairs = (entries, back, resource = liveRef.current?.generatedContent) => entries.map(item => ({
-    front: _gxOneLine(item.term),
+    front: _gxOneLine(_gxTerm(item)),
     back: _gxOneLine(back === 'definition' ? _gxDefinition(item) : _gxTranslation(item, back)),
     tags: _gxOneLine(item.tier).replace(/\s+/g, '_'),
     frontLanguage: _glossarySourceLanguage(resource, item, 'termLanguage'),

@@ -52,9 +52,9 @@ describe.each(['source', 'runtime'])('Live structured glossary translation: %s',
     expect(view.container.textContent).not.toContain('[object Object]');
     const toolbar = view.container.querySelector('[role="toolbar"][aria-label="French actions for Leaf"]');
     await click(toolbar?.querySelectorAll('button')[0]);
-    expect(view.props.handleSpeak).toHaveBeenCalledWith(text, 'trans-0-French');
+    expect(view.props.handleSpeak).toHaveBeenCalledWith(text, 'trans-0-French', 0, false, 'French');
     await click(toolbar?.querySelectorAll('button')[1]);
-    expect(view.props.handleDownloadAudio).toHaveBeenCalledWith(text, 'trans-0-French-audio', 'dl-trans-0-French');
+    expect(view.props.handleDownloadAudio).toHaveBeenCalledWith(text, 'trans-0-French-audio', 'dl-trans-0-French', 'French');
     expect(view.props.generatedContent.data[0].translations.French).toEqual(translation);
   });
   it('sends the canonical string to saved-audio playback and retains structured source metadata', async () => {

@@ -35,8 +35,19 @@
     if (Array.isArray(value)) return value.map(projectStudentGuideValue).filter(function (entry) { return entry != null; });
     if (!value || typeof value !== 'object') return null;
     var kept = {};
-    ['en', 'text', 'description', 'title', 'label', 'name', 'item', 'statement', 'instructions', 'studentTask', 'activity', 'steps', 'questions', 'prompt'].forEach(function (key) {
+    var allowed = ['en', 'text', 'description', 'title', 'label', 'name', 'item', 'statement', 'instructions', 'studentTask', 'activity', 'steps', 'questions', 'prompt'];
+    allowed.forEach(function (key) {
       if (value[key] != null) { var next = projectStudentGuideValue(value[key]); if (next != null) kept[key] = next; }
+    });
+    // Preserve home-language translation strings (e.g. es, fr, ar, zh-CN, text_en)
+    // while keeping the strict allowlist for nested objects and teacher-only keys.
+    Object.keys(value).forEach(function (key) {
+      if (Object.prototype.hasOwnProperty.call(kept, key)) return;
+      if (typeof value[key] !== 'string') return;
+      if (key === 'id' || key === 'q' || key === 'a') return;
+      if (/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(key) || /^(?:text|title|description|label|statement|instructions|prompt)_en$/.test(key)) {
+        kept[key] = value[key];
+      }
     });
     return Object.keys(kept).length ? kept : null;
   }
@@ -95,7 +106,8 @@
   // the findings (accuracy, grammar, barriers, DoK ideas, report views, per-section
   // reports, idea drafts) are teacher notes and stay on the teacher's copy.
   var SOURCE_CHECK_TEACHER_FIELDS = ['accuracy', 'grammar', 'grammarUnreadable', 'learnerBarriers', 'depthOfKnowledge',
-    'reportTranslations', 'displayReportLanguage', 'analysisCoverage', 'analysisIdeaDrafts', 'passageVersionsToRefresh'];
+    'reportTranslations', 'displayReportLanguage', 'analysisCoverage', 'analysisIdeaDrafts', 'passageVersionsToRefresh',
+    'summary', 'standards', 'contentReview', 'factCheck', 'readability', 'teacherNotes', 'pedagogicalNotes'];
   function projectStudentSourceCheck(item) {
     var data = item && item.data;
     if (!data || typeof data !== 'object' || Array.isArray(data)) return item;
@@ -249,11 +261,15 @@
         }
         return Promise.resolve(ops.hostPack(candidates)).then(function (packIdentity) {
           assertCurrent();
+          if (!packIdentity) {
+            if (typeof ops.trace === 'function') ops.trace('mailbox:pack-host-empty', { candidates: candidates.length });
+            return { pushed: pushed, failed: failed, removed: removedIds.length, hosted: false, referencePublished: false };
+          }
           // Late joiners need both the pack and its published reference.
           // A failed reference write must remain retryable on the next cycle.
           var referencePublished = true;
           var publish = Promise.resolve();
-          if (packIdentity && typeof ops.publishPackRef === 'function') {
+          if (typeof ops.publishPackRef === 'function') {
             publish = Promise.resolve().then(function () { assertCurrent(); return ops.publishPackRef({
               id: packIdentity.id,
               k: packIdentity.k,

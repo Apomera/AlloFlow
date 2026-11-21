@@ -45,12 +45,16 @@ describe('Break it Down in the app\'s look', () => {
       expect(tile.querySelector('[data-seg-icon="sound"][aria-hidden="true"]')).not.toBeNull();
       expect(tile.style.borderRadius).toBe('50%');
     }
-    // Every tile follows the active Reading Tools theme via CSS variables (no hardcoded hex/rgb fill or ink).
-    for (const tile of tiles) {
-      expect(tile.style.background).toBe('var(--soft)');
+    // Every tile follows the active Reading Tools theme via per-slot CSS variables (no hardcoded hex/rgb fill or ink),
+    // and adjacent tiles get distinct thematic color slots (--c0..--c5 / --c0b..--c5b) to aid visual differentiation.
+    for (const [i, tile] of tiles.entries()) {
+      const slot = i % 6;
+      expect(tile.getAttribute('data-seg-c')).toBe(String(slot));
+      expect(tile.style.background).toBe('var(--c' + slot + 'b,var(--soft))');
       expect(tile.style.color).toBe('var(--ink)');
-      expect(tile.style.borderColor).toBe('var(--accent)');
+      expect(tile.style.borderColor).toBe('var(--c' + slot + ',var(--accent))');
     }
+    expect(tiles[0].style.background).not.toBe(tiles[1].style.background);
     for (const [i, box] of p.boxes().entries()) {
       expect(box.getAttribute('aria-label')).toBe('Box ' + (i + 1) + ', empty');
       expect(box.querySelector('[data-seg-icon="drop"][aria-hidden="true"]')).not.toBeNull();
@@ -137,19 +141,21 @@ describe('Break it Down in the app\'s look', () => {
     expect(html).not.toMatch(/<(?:iframe|object|embed|link|base|img|audio|video|svg)\b/i);
   });
 
-  it('chips and boxes follow every Reading Tools theme with no hardcoded colors and pass AA contrast in all 8 palettes', async () => {
+  it('multicolored chips and boxes follow every Reading Tools theme with no hardcoded colors and pass AA contrast in all 9 palettes', async () => {
     const built = await build({ showLetters: true });
     const p = await start(built.html);
     const tile = p.tiles()[0];
-    // Idle tray tile uses --soft / --ink / --accent.
-    expect([tile.style.background, tile.style.color, tile.style.borderColor]).toEqual(['var(--soft)', 'var(--ink)', 'var(--accent)']);
-    // Picked tray tile flips to --accent / --accent-ink; empty boxes highlight with --soft / --accent.
+    // Idle tray tile 0 uses its theme-harmonized slot 0 (--c0b / --ink / --c0), distinct from tile 1 (--c1b / --c1).
+    expect([tile.style.background, tile.style.color, tile.style.borderColor]).toEqual(['var(--c0b,var(--soft))', 'var(--ink)', 'var(--c0,var(--accent))']);
+    expect(p.tiles()[1].style.borderColor).toBe('var(--c1,var(--accent))');
+    // Picked tray tile flips to its slot accent fill (--c0 / --accent-ink); empty boxes highlight with --soft / --accent.
     tile.click();
-    expect([tile.style.background, tile.style.color, tile.style.borderColor]).toEqual(['var(--accent)', 'var(--accent-ink)', 'var(--accent)']);
+    expect([tile.style.background, tile.style.color, tile.style.borderColor]).toEqual(['var(--c0,var(--accent))', 'var(--accent-ink)', 'var(--c0,var(--accent))']);
     expect([p.boxes()[0].style.background, p.boxes()[0].style.color, p.boxes()[0].style.borderColor]).toEqual(['var(--soft)', 'var(--accent)', 'var(--accent)']);
-    // Placed box adopts --soft / --ink / --accent.
+    // Placed box adopts the placed tile's exact color slot (--c0b / --ink / --c0) and data-seg-c="0".
     p.boxes()[0].click();
-    expect([p.boxes()[0].style.background, p.boxes()[0].style.color, p.boxes()[0].style.borderColor]).toEqual(['var(--soft)', 'var(--ink)', 'var(--accent)']);
+    expect(p.boxes()[0].getAttribute('data-seg-c')).toBe('0');
+    expect([p.boxes()[0].style.background, p.boxes()[0].style.color, p.boxes()[0].style.borderColor]).toEqual(['var(--c0b,var(--soft))', 'var(--ink)', 'var(--c0,var(--accent))']);
     // Submit a deliberately wrong arrangement to verify retry ("bad") box uses --warn-bg / --warn (not dark #1d2433 on dark themes).
     const remaining = p.tiles();
     p.boxes()[1].click(); // empty -> no-op
@@ -169,9 +175,12 @@ describe('Break it Down in the app\'s look', () => {
     for (const b of p.boxes()) {
       expect([b.style.background, b.style.color, b.style.borderColor]).toEqual(['var(--ok-bg)', 'var(--ok)', 'var(--ok)']);
     }
-    // Verify the embedded CSS defines all 8 theme palettes (default light, OS dark, colors 1..6) with >= 4.5:1 AA contrast for every state pair.
+    // Verify the embedded CSS defines all 9 theme palettes (default light, OS dark, colors 1..7 including Rose)
+    // and desktop screen coverage (@media (min-width:960px)), with >= 4.5:1 AA contrast for every state & chip color.
     const css = p.d.querySelector('style').textContent;
-    const parseVars = (block) => Object.fromEntries([...block.matchAll(/(--[a-z-]+):([^;}\s]+)/g)].map((m) => [m[1], m[2]]));
+    expect(css).toContain('@media (min-width:960px){:root{--seg-sz:78px;--seg-box:94px');
+    expect(css).toContain('main{max-width:min(1080px,90vw)');
+    const parseVars = (block) => Object.fromEntries([...block.matchAll(/(--[a-z0-9-]+):([^;}\s]+)/g)].map((m) => [m[1], m[2]]));
     const hexToRgb = (hex) => {
       const h = hex.replace('#', '');
       const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
@@ -185,7 +194,7 @@ describe('Break it Down in the app\'s look', () => {
     const themes = [
       ['default-light', /:root\{([^}]+)\}/.exec(css)[1]],
       ['os-dark', /prefers-color-scheme:dark\)\{:root\{([^}]+)\}/.exec(css)[1]],
-      ...[1, 2, 3, 4, 5, 6].map((n) => ['colors-' + n, new RegExp('\\[data-lt-colors="' + n + '"\\]\\{([^}]+)\\}').exec(css)[1]]),
+      ...[1, 2, 3, 4, 5, 6, 7].map((n) => ['colors-' + n, new RegExp('\\[data-lt-colors="' + n + '"\\]\\{([^}]+)\\}').exec(css)[1]]),
     ];
     for (const [label, block] of themes) {
       const v = parseVars(block);
@@ -195,10 +204,43 @@ describe('Break it Down in the app\'s look', () => {
       expect(ratio(v['--muted'], v['--card']), label + ' empty box muted/card').toBeGreaterThanOrEqual(4.5);
       expect(ratio(v['--warn'], v['--warn-bg']), label + ' retry box warn/warn-bg').toBeGreaterThanOrEqual(4.5);
       expect(ratio(v['--ok'], v['--ok-bg']), label + ' reveal box ok/ok-bg').toBeGreaterThanOrEqual(4.5);
+      const uniqueBorders = new Set();
+      for (let s = 0; s < 6; s++) {
+        const bd = v['--c' + s], bg = v['--c' + s + 'b'];
+        expect(bd, label + ' --c' + s).toBeTruthy();
+        expect(bg, label + ' --c' + s + 'b').toBeTruthy();
+        uniqueBorders.add(bd);
+        expect(ratio(v['--ink'], bg), label + ' chip ' + s + ' ink/bg').toBeGreaterThanOrEqual(4.5);
+        expect(ratio(v['--accent-ink'], bd), label + ' chip ' + s + ' held accent-ink/bd').toBeGreaterThanOrEqual(4.5);
+        expect(ratio(bd, v['--card']), label + ' chip ' + s + ' bd/card').toBeGreaterThanOrEqual(3.0);
+        expect(ratio(bd, bg), label + ' chip ' + s + ' bd/bg').toBeGreaterThanOrEqual(3.0);
+      }
+      expect(uniqueBorders.size, label + ' 6 distinct chip hues').toBe(6);
     }
     // Adapter source itself must contain zero hardcoded hex/rgb fills or ink.
     const src = require('node:fs').readFileSync('word_sounds_take_home/adapters/segmentation.js', 'utf8');
     const codeLines = src.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
     expect(codeLines).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i);
+  });
+
+  it('supports keyboard shortcuts (1-9 to pick/place, Backspace to pop last filled box, Enter to Check) and desktop scaling variables', async () => {
+    const built = await build({ showLetters: true });
+    const p = await start(built.html);
+    const key = (k) => p.d.body.dispatchEvent(new p.w.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+    // Press '1' to pick up tile 0, then '1' to place it into box 0!
+    key('1');
+    expect(p.tiles()[0].getAttribute('aria-pressed')).toBe('true');
+    key('1');
+    expect(p.boxes()[0].getAttribute('aria-label')).toMatch(/^Box 1: /);
+    // Backspace pops box 0 back to tray.
+    key('Backspace');
+    expect(p.boxes()[0].getAttribute('aria-label')).toBe('Box 1, empty');
+    // Desktop responsive CSS scales Mapping, Word Scramble, Letter Trace, Symbol Runner, and Picture prompts.
+    const css = p.d.querySelector('style').textContent;
+    expect(css).toContain('--map-box:94px');
+    expect(css).toContain('--ws-tile:70px');
+    expect(css).toContain('--trace-sz:360px');
+    expect(css).toContain('--sr-lane:680px');
+    expect(css).toContain('.picture{max-width:220px;max-height:220px}');
   });
 });

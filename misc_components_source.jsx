@@ -20,7 +20,7 @@ const _safeMiscImageUrl = (raw) => {
   if (typeof raw !== 'string') return '';
   const trimmed = raw.trim();
   if (!trimmed || /[\x00-\x1F\x7F]/.test(trimmed)) return '';
-  if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(trimmed)) return trimmed;
+  if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=_\-\s]+$/i.test(trimmed)) return trimmed;
   if (/^(?:blob:|https:\/\/)/i.test(trimmed)) return trimmed;
   if (/^\/(?!\/)/.test(trimmed) || /^\.\//.test(trimmed)) return trimmed;
   return '';
@@ -108,6 +108,14 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
   const [entered, setEntered] = useState('');
   const [val, setVal] = useState(isSolved ? _passage : '');
   const [status, setStatus] = useState(isSolved ? 'success' : 'neutral');
+  const errorTimerRef = React.useRef(null);
+  const clearErrorTimer = () => {
+      if (errorTimerRef.current) {
+          clearTimeout(errorTimerRef.current);
+          errorTimerRef.current = null;
+      }
+  };
+  useEffect(() => () => clearErrorTimer(), []);
   useEffect(() => {
       if (isSolved) {
           // On a fresh mount of an already-solved blank (reload, remount) there
@@ -160,14 +168,19 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
   const placeWord = (raw) => {
     const droppedText = String(raw || '').trim();
     if (isAcceptedAnswer(droppedText)) {
+        clearErrorTimer();
         setVal(droppedText);
         setEntered(droppedText);
         setStatus('success');
         if (onCorrect) onCorrect(targetWord);
         return true;
     }
+    clearErrorTimer();
     setStatus('error');
-    setTimeout(() => setStatus('neutral'), 800);
+    errorTimerRef.current = setTimeout(() => {
+        errorTimerRef.current = null;
+        setStatus(prev => (prev === 'error' ? 'neutral' : prev));
+    }, 800);
     return false;
   };
   const handleDrop = (e) => {
@@ -208,6 +221,7 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
       const newVal = e.target.value;
       setVal(newVal);
       if (isAcceptedAnswer(newVal)) {
+          clearErrorTimer();
           setEntered(newVal);
           setStatus('success');
           if (onCorrect) onCorrect(targetWord);
@@ -433,7 +447,10 @@ const WordSoundsReviewPanel = ({
     // inside an async loop is the value from the render that created the
     // closure, so it cannot serialise anything. The ref can.
     const gapBusyRef = React.useRef(false);
-    React.useEffect(() => () => { unmountedRef.current = true; }, []);
+    React.useEffect(() => () => {
+        unmountedRef.current = true;
+        if (typeof window !== 'undefined') window._currentPhonemeSeqId = null;
+    }, []);
     // Runs one gap and RETURNS its tally. It does not write the outcome line,
     // so the same function serves a single fix and a combined run without the
     // second one overwriting its own result at every step.
@@ -513,7 +530,7 @@ const WordSoundsReviewPanel = ({
         const _canRunGap = (g) => {
             if (!g || !g.needsNetwork) return true;
             if (g.key === 'images') return _wsAiUsable('images', onGenerateImage);
-            if (g.key === 'audio') {
+            if (g.key === 'audio' || g.key === 'audio_runtime') {
                 const ttsLocal = typeof window !== 'undefined' && !!(window._kokoroTTS && window._kokoroTTS.ready);
                 return ttsLocal || _wsAiUsable('audio', onRetryFailedTTS);
             }
@@ -655,10 +672,9 @@ const WordSoundsReviewPanel = ({
                      Object.keys(assets).forEach((key) => portableKeys.add(normalizeAudioKey(key)));
                  }
              });
-             setAudioProgress({
-                 ready: preloadedWords.filter(w => !isTeacherSpoken(w) && (w.ttsReady === true || portableKeys.has(normalizeAudioKey(w.targetWord || w.word || w.term)))).length,
-                 total: preloadedWords.filter(w => !isTeacherSpoken(w)).length
-             });
+             const nextReady = preloadedWords.filter(w => !isTeacherSpoken(w) && (w.ttsReady === true || portableKeys.has(normalizeAudioKey(w.targetWord || w.word || w.term)))).length;
+             const nextTotal = preloadedWords.filter(w => !isTeacherSpoken(w)).length;
+             setAudioProgress(prev => (prev.ready === nextReady && prev.total === nextTotal) ? prev : { ready: nextReady, total: nextTotal });
         };
         let cancelled = false;
         let pollTimer = null;
@@ -1263,7 +1279,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         const _gapAiBlocked = (g) => {
                             if (!g || !g.needsNetwork) return false;
                             if (g.key === 'images') return !_wsImageAiReady;
-                            if (g.key === 'audio') return !((typeof window !== 'undefined' && window._kokoroTTS && window._kokoroTTS.ready) || _wsAiUsable('audio', onRetryFailedTTS));
+                            if (g.key === 'audio' || g.key === 'audio_runtime') return !((typeof window !== 'undefined' && window._kokoroTTS && window._kokoroTTS.ready) || _wsAiUsable('audio', onRetryFailedTTS));
                             return !_wsTextAiReady;
                         };
                         const runnableFixable = fixable.filter((g) => !_gapAiBlocked(g));
@@ -1408,11 +1424,12 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                         const seqId = Date.now();
                                                         window._currentPhonemeSeqId = seqId;
                                                         for (const phoneme of word.phonemes) {
-                                                            if (window._currentPhonemeSeqId !== seqId) {
+                                                            if (unmountedRef.current || window._currentPhonemeSeqId !== seqId) {
                                                                 debugLog('Phoneme sequence cancelled');
                                                                 break;
                                                             }
-                                                            await onPlayAudio(phonemeLabel(phoneme));
+                                                            try { await onPlayAudio(phonemeLabel(phoneme)); } catch (err) { warnLog('Play phoneme error:', err); }
+                                                            if (unmountedRef.current || window._currentPhonemeSeqId !== seqId) break;
                                                             await new Promise(r => setTimeout(r, 900));
                                                         }
                                                     }
@@ -1476,6 +1493,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                         }}
                                                         disabled={isGeneratingImage(idx) || !_wsImageAiReady}
                                                         aria-busy={isGeneratingImage(idx)}
+                                                        aria-label={isGeneratingImage(idx) ? (t('word_sounds.generating_image_aria') || 'Generating image') : undefined}
                                                         className={`min-h-11 px-3 py-2 rounded-lg border-2 flex items-center gap-2 text-sm font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed ${
                                                             isGeneratingImage(idx)
                                                                 ? 'border-indigo-400 bg-indigo-100 text-indigo-800 animate-pulse motion-reduce:animate-none'
@@ -2169,29 +2187,34 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                             className="flex-1 min-h-11 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                                                                             onKeyDown={(e) => {
                                                                                 if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
-                                                                                if (e.key === 'Enter' && onRefineImage && imageRefinementInputs[idx]) {
+                                                                                const promptText = String(imageRefinementInputs[idx] || '').trim();
+                                                                                if (e.key === 'Enter' && onRefineImage && promptText && !isGeneratingImage(idx)) {
                                                                                     if (!_wsAiUsable('images', onRefineImage)) {
                                                                                         setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
                                                                                         return;
                                                                                     }
-                                                                                    onRefineImage(idx, imageRefinementInputs[idx]);
+                                                                                    setImageLoadErrors((prev) => { if (!prev[idx]) return prev; const n = { ...prev }; delete n[idx]; return n; });
+                                                                                    onRefineImage(idx, promptText);
+                                                                                    setImageRefinementInputs(prev => ({...prev, [idx]: ''}));
                                                                                 }
                                                                             }}
                                                                         />
                                                                         <button type="button"
                                                                             aria-label={t('common.refresh')}
                                                                             onClick={() => {
+                                                                                if (isGeneratingImage(idx)) return;
+                                                                                const promptText = String(imageRefinementInputs[idx] || '').trim();
                                                                                 if (!_wsAiUsable('images', onRefineImage)) {
                                                                                     setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
                                                                                     return;
                                                                                 }
-                                                                                if (onRefineImage && imageRefinementInputs[idx]) {
+                                                                                if (onRefineImage && promptText) {
                                                                                     setImageLoadErrors((prev) => { if (!prev[idx]) return prev; const n = { ...prev }; delete n[idx]; return n; });
-                                                                                    onRefineImage(idx, imageRefinementInputs[idx]);
+                                                                                    onRefineImage(idx, promptText);
                                                                                     setImageRefinementInputs(prev => ({...prev, [idx]: ''}));
                                                                                 }
                                                                             }}
-                                                                            disabled={!imageRefinementInputs[idx] || isGeneratingImage(idx) || !_wsImageAiReady}
+                                                                            disabled={!String(imageRefinementInputs[idx] || '').trim() || isGeneratingImage(idx) || !_wsImageAiReady}
                                                                             className="min-w-11 min-h-11 px-3 py-1.5 bg-yellow-400 text-yellow-900 rounded-lg hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xs transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 flex items-center justify-center"
                                                                         >
                                                                             {isGeneratingImage(idx) ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Send size={12} aria-hidden="true"/>}
@@ -2249,11 +2272,153 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
     );
 };
 
+// ─── DictationButton (UDL Action & Expression — Speech-to-Text) ───────────────
+// Lightweight, browser-guarded speech-to-text button that appends dictated
+// phrases into learner writing surfaces. Automatically honors AlloFlow's
+// local/offline SpeechRecognition shims when present, and returns null when
+// speech recognition is unavailable in the runtime.
+const DictationButton = ({ onTranscript, language, disabled = false, label, stopLabel, className = '', t }) => {
+    const [listening, setListening] = React.useState(false);
+    const [statusNote, setStatusNote] = React.useState('');
+    const recognitionRef = React.useRef(null);
+    const mountedRef = React.useRef(true);
+    const onTranscriptRef = React.useRef(onTranscript);
+    onTranscriptRef.current = onTranscript;
+
+    const getRecognitionCtor = () => {
+        if (typeof window === 'undefined') return null;
+        return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+    };
+
+    React.useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+            const rec = recognitionRef.current;
+            recognitionRef.current = null;
+            if (rec) {
+                try { rec.onresult = null; rec.onerror = null; rec.onend = null; } catch (_) {}
+                try {
+                    if (typeof rec.abort === 'function') rec.abort();
+                    else if (typeof rec.stop === 'function') rec.stop();
+                } catch (_) {}
+            }
+        };
+    }, []);
+
+    const Ctor = getRecognitionCtor();
+    if (!Ctor) return null;
+
+    const tr = (key, fallback) => {
+        const val = typeof t === 'function' ? t(key) : '';
+        return typeof val === 'string' && val.trim() && val !== key ? val : fallback;
+    };
+    const startText = label || tr('common.dictate', 'Dictate');
+    const stopText = stopLabel || tr('common.stop_dictating', 'Stop dictating');
+
+    const resolveLang = () => {
+        if (language && typeof language === 'string') {
+            try {
+                if (window.AlloFlowLang && typeof window.AlloFlowLang.bcp47Full === 'function') {
+                    const code = window.AlloFlowLang.bcp47Full(language);
+                    if (code) return code;
+                }
+                if (typeof window.languageToTTSCode === 'function') {
+                    const code = window.languageToTTSCode(language);
+                    if (code) return code;
+                }
+            } catch (_) {}
+            if (/^[a-z]{2,3}(?:-[A-Za-z0-9]+)*$/.test(language.trim())) return language.trim();
+        }
+        return (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) || 'en-US';
+    };
+
+    const toggle = () => {
+        if (disabled) return;
+        if (listening) {
+            try { recognitionRef.current && recognitionRef.current.stop(); } catch (_) {}
+            recognitionRef.current = null;
+            setListening(false);
+            return;
+        }
+        try {
+            const rec = new Ctor();
+            rec.continuous = false;
+            rec.interimResults = false;
+            rec.lang = resolveLang();
+            rec.onresult = (event) => {
+                if (!mountedRef.current || recognitionRef.current !== rec) return;
+                const results = event && event.results;
+                if (!results) return;
+                const chunks = [];
+                for (let i = (event.resultIndex || 0); i < results.length; i++) {
+                    const alt = results[i] && results[i][0];
+                    if (alt && typeof alt.transcript === 'string' && alt.transcript.trim()) {
+                        chunks.push(alt.transcript.trim());
+                    }
+                }
+                const spoken = chunks.join(' ').trim();
+                if (spoken && typeof onTranscriptRef.current === 'function') {
+                    onTranscriptRef.current(spoken);
+                    setStatusNote(tr('common.dictation_added', 'Added spoken text.'));
+                }
+            };
+            rec.onerror = (event) => {
+                if (!mountedRef.current || recognitionRef.current !== rec) return;
+                const code = event && event.error;
+                setListening(false);
+                recognitionRef.current = null;
+                if (code === 'not-allowed' || code === 'service-not-allowed') {
+                    setStatusNote(tr('common.dictation_mic_blocked', 'Microphone permission is blocked.'));
+                } else if (code !== 'aborted' && code !== 'no-speech') {
+                    setStatusNote(tr('common.dictation_error', 'Could not hear speech. Please try again.'));
+                }
+            };
+            rec.onend = () => {
+                if (!mountedRef.current || recognitionRef.current !== rec) return;
+                setListening(false);
+                recognitionRef.current = null;
+            };
+            recognitionRef.current = rec;
+            setStatusNote('');
+            setListening(true);
+            rec.start();
+        } catch (_) {
+            setListening(false);
+            recognitionRef.current = null;
+            setStatusNote(tr('common.dictation_unavailable', 'Voice dictation is unavailable right now.'));
+        }
+    };
+
+    return (
+        <span className="inline-flex items-center gap-2 no-print">
+            <button
+                type="button"
+                data-allo-dictation-btn="true"
+                disabled={disabled}
+                aria-pressed={listening}
+                aria-label={listening ? stopText : startText}
+                onClick={toggle}
+                className={className || (
+                    'min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed ' +
+                    (listening ? 'bg-rose-600 text-white border-rose-700 hover:bg-rose-700' : 'bg-white text-indigo-800 border-indigo-300 hover:bg-indigo-50')
+                )}
+            >
+                <span aria-hidden="true">{listening ? '⏹️' : '🎙️'}</span>
+                <span>{listening ? stopText : startText}</span>
+            </button>
+            {statusNote && <span role="status" aria-live="polite" className="text-xs text-slate-600">{statusNote}</span>}
+        </span>
+    );
+};
+
 // ─── Registration ───────────────────────────────────────────────────────────
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AnimatedNumber = AnimatedNumber;
 window.AlloModules.ClozeInput = ClozeInput;
 window.AlloModules.WordSoundsReviewPanel = WordSoundsReviewPanel;
+window.AlloModules.DictationButton = DictationButton;
 // Preserve existing consumption path for word_sounds_module.js.
 window.WordSoundsReviewPanel = WordSoundsReviewPanel;
-console.log('[MiscComponentsModule] 3 components registered.');
+window.AlloDictationButton = DictationButton;
+console.log('[MiscComponentsModule] 4 components registered.');

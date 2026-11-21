@@ -532,8 +532,10 @@ function scriptedBrowserFactory(remediation, counters, overrides = {}) {
         async evaluate(fn, arg) {
           const previousWindow = global.window;
           const previousDOMParser = global.DOMParser;
+          const previousInstallRuntimeGraphHost = global._alloInstallRuntimeGraphHost;
           global.window = realm;
           global.DOMParser = dom.window.DOMParser;
+          global._alloInstallRuntimeGraphHost = () => ({ configureScript() {} });
           try {
             return await fn(clone(arg));
           } finally {
@@ -541,6 +543,8 @@ function scriptedBrowserFactory(remediation, counters, overrides = {}) {
             else global.window = previousWindow;
             if (previousDOMParser === undefined) delete global.DOMParser;
             else global.DOMParser = previousDOMParser;
+            if (previousInstallRuntimeGraphHost === undefined) delete global._alloInstallRuntimeGraphHost;
+            else global._alloInstallRuntimeGraphHost = previousInstallRuntimeGraphHost;
           }
         },
       };
@@ -681,12 +685,13 @@ test('real driver resumes a terminal capsule without rerunning fixes and republi
   const warned = await driver.remediate({ ...runOptions, resumeCheckpoint: warningCheckpoint });
   assert.equal(counters.audit, beforeWarnings.audit);
   assert.equal(counters.fix, beforeWarnings.fix);
-  assert.equal(counters.tag, beforeWarnings.tag);
+  assert.equal(counters.tag, beforeWarnings.tag + 1);
   assert.equal(warned.contentCoverage.reviewRequired, true);
   assert.equal(warned.contentCoverage.extraction.pageErrorCount, 2);
   assert.equal(warned.contentCoverage.extraction.lowConfidencePageCount, 1);
   assert.equal(warned.taggedPdfError, 'content_coverage_requires_review');
   assert.equal(warned.taggedPdfB64, null);
+  assert.ok(warned.taggedPdfHeld && warned.taggedPdfHeld.b64);
 
   // Old compact capsules omitted the exact source and OCR warning metadata.
   // They must restart work, while legacy full snapshots remain valid above.

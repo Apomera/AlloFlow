@@ -156,7 +156,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       .trim()
       .slice(0, 600);
     if (!text) return fallbackQuestion;
-    var sentences = (text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text])
+    var sentences = (text.match(/(?:[^.!?]|\.(?=\d))+[.!?]+|(?:[^.!?]|\.(?=\d))+$/g) || [text])
       .map(function (part) { return part.trim(); })
       .filter(Boolean);
     var questionIndex = -1;
@@ -287,7 +287,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       var r = rawRows[i];
       if (!r || typeof r !== 'object') continue;
       var row = attributes.map(function (a) {
-        return cleanCell(Array.isArray(r) ? r[a.sourceIndex] : r[a.sourceName]);
+        return cleanCell(Array.isArray(r) ? r[a.sourceIndex] : (Object.prototype.hasOwnProperty.call(r, a.sourceName) ? r[a.sourceName] : ''));
       });
       rows.push(row);
     }
@@ -425,11 +425,14 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       }
 
       function openInbox() {
-        var item = takeInbox();
-        setInboxItem(null);
-        if (!item) return;
+        var item = peekRawInbox();
+        if (!item) { setInboxItem(null); return; }
         var res = openInDataLab(item);
-        if (announceToSR) announceToSR(res.ok
+        if (res && res.ok) {
+          takeInbox();
+          setInboxItem(null);
+        }
+        if (announceToSR) announceToSR(res && res.ok
           ? t('stem.dataLab.inbox_sent_sr', 'Sending {title} to the Data Lab.').replace('{title}', function () { return item.title || ''; })
           : t('stem.dataLab.inbox_failed_sr', 'That data could not be opened. Allow pop-ups for this page and try again.'));
       }
@@ -520,10 +523,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         }, desktop ? t('stem.dataLab.desktop_open_btn', '📊 Open Data Lab in my web browser') : t('stem.dataLab.open', '📊 Open Data Lab'));
       }
 
-      // Bespoke 4-Phase Socratic Data Inquiry Pipeline (pure HTML/CSS geometric stage; zero data-spoiling and zero <svg>/<canvas> per dataLab_engage invariant)
+      // Bespoke 4-Phase Socratic Data Inquiry Pipeline (pure HTML/CSS recessed studio well; zero data-spoiling and zero <svg>/<canvas> per dataLab_engage invariant)
       function renderInquiryPipeline() {
-        var bg = isContrast ? '#000000' : (isDark ? '#0b1220' : '#0f172a');
-        var nodeBg = isContrast ? '#000000' : '#1e293b';
+        var bg = isContrast ? '#000000' : (isDark ? '#070d19' : '#0b1220');
+        var wellBg = isContrast ? '#000000' : 'radial-gradient(rgba(148,163,184,0.14) 1px, transparent 1px), linear-gradient(180deg, #070d19 0%, #0f172a 100%)';
+        var nodeBg = isContrast ? '#000000' : 'linear-gradient(180deg, rgba(30,41,59,0.96) 0%, rgba(15,23,42,0.94) 100%)';
         var inkMain = isContrast ? '#ffff00' : '#f8fafc';
         var inkSub = isContrast ? '#ffffff' : '#cbd5e1';
         var colActive = isContrast ? '#00ff00' : '#38bdf8';
@@ -531,8 +535,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var colIdle = isContrast ? '#ffff00' : '#475569';
         var phases = [
           { num: '1', label: t('stem.dataLab.pipe_predict', 'Predict'), sub: t('stem.dataLab.pipe_predict_sub', 'Lock idea first'), done: safeOpened || completed.length > 0, active: !safeOpened },
-          { num: '2', label: t('stem.dataLab.pipe_explore', 'Explore'), sub: t('stem.dataLab.pipe_explore_sub', 'Drag in CODAP'), done: loadedSets.length > 0 || safeOpened, active: safeOpened && !graphsMade.length },
-          { num: '3', label: t('stem.dataLab.pipe_graph', 'Graph'), sub: t('stem.dataLab.pipe_graph_sub', 'Check pattern'), done: graphsMade.length > 0, active: safeOpened && !graphsMade.length },
+          { num: '2', label: t('stem.dataLab.pipe_explore', 'Explore'), sub: t('stem.dataLab.pipe_explore_sub', 'Drag in CODAP'), done: loadedSets.length > 0 || graphsMade.length > 0, active: safeOpened && !loadedSets.length && !graphsMade.length },
+          { num: '3', label: t('stem.dataLab.pipe_graph', 'Graph'), sub: t('stem.dataLab.pipe_graph_sub', 'Check pattern'), done: graphsMade.length > 0, active: (loadedSets.length > 0 && !graphsMade.length) },
           { num: '4', label: t('stem.dataLab.pipe_cer', 'Claim (CER)'), sub: t('stem.dataLab.pipe_cer_sub', 'Evidence & test'), done: completed.length > 0, active: graphsMade.length > 0 && !completed.length }
         ];
         return h('div', {
@@ -540,12 +544,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           'aria-label': t('stem.dataLab.pipeline_aria', 'Four-step scientific data inquiry workflow: Predict, Explore in CODAP, Graph Check, and Claim with Evidence'),
           style: {
             borderRadius: '14px',
-            padding: '12px',
+            padding: '13px',
             border: isContrast ? '2px solid #ffff00' : '1px solid ' + (isDark ? '#334155' : '#1e293b'),
             backgroundColor: bg,
+            backgroundImage: isContrast ? 'none' : wellBg,
+            backgroundSize: isContrast ? undefined : '16px 16px, 100% 100%',
+            boxShadow: isContrast ? 'none' : 'inset 0 2px 10px rgba(2,6,23,0.72), 0 8px 20px -14px rgba(15,23,42,0.5)',
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-            gap: '8px'
+            gap: '9px'
           }
         },
           phases.map(function (ph) {
@@ -553,24 +560,27 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             return h('div', {
               key: ph.num,
               style: {
-                padding: '10px 8px',
-                borderRadius: '10px',
-                backgroundColor: nodeBg,
+                padding: '11px 9px 10px',
+                borderRadius: '11px',
+                background: nodeBg,
                 border: (ph.done || ph.active ? '2px solid ' : '1px solid ') + stCol,
+                boxShadow: isContrast ? 'none' : (ph.active ? '0 0 0 3px rgba(56,189,248,0.18), inset 0 1px 0 rgba(255,255,255,0.12)' : (ph.done ? '0 0 0 2px rgba(52,211,153,0.16), inset 0 1px 0 rgba(255,255,255,0.1)' : 'inset 0 1px 0 rgba(255,255,255,0.06)')),
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 textAlign: 'center',
-                gap: '4px',
+                gap: '5px',
                 minWidth: 0
               }
             },
               h('span', {
                 'aria-hidden': 'true',
                 style: {
-                  width: '26px', height: '26px', borderRadius: '999px',
+                  width: '28px', height: '28px', borderRadius: '999px',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  backgroundColor: bg, border: '2px solid ' + stCol,
+                  background: isContrast ? '#000000' : (ph.done ? 'linear-gradient(180deg,#065f46,#022c22)' : (ph.active ? 'linear-gradient(180deg,#0369a1,#0c4a6e)' : '#0b1220')),
+                  border: '2px solid ' + stCol,
+                  boxShadow: isContrast ? 'none' : (ph.active ? '0 0 10px rgba(56,189,248,0.48)' : (ph.done ? '0 0 8px rgba(52,211,153,0.4)' : 'none')),
                   color: ph.done ? colDone : inkMain, fontSize: '11px', fontWeight: 800
                 }
               }, ph.done ? '✓' : ph.num),
@@ -603,12 +613,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         h('header', { style: heroBannerStyle },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 260px', minWidth: 0 } },
-              // Bespoke Data Lab Geometric Emblem (pure HTML/CSS bars & nodes — zero SVG/Canvas)
-              h('div', { 'aria-hidden': 'true', style: { width: '46px', height: '46px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '4px', padding: '9px 8px', backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.45)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(165,180,252,0.4)', boxSizing: 'border-box' } },
-                h('span', { style: { width: '6px', height: '12px', borderRadius: '3px', backgroundColor: isContrast ? '#ffff00' : '#818cf8' } }),
-                h('span', { style: { width: '6px', height: '20px', borderRadius: '3px', backgroundColor: isContrast ? '#00ff00' : '#34d399' } }),
-                h('span', { style: { width: '6px', height: '15px', borderRadius: '3px', backgroundColor: isContrast ? '#ffff00' : '#38bdf8' } }),
-                h('span', { style: { width: '6px', height: '26px', borderRadius: '3px', backgroundColor: isContrast ? '#00ff00' : '#fbbf24' } })),
+              // Bespoke Data Lab Recessed Geometric Emblem (pure HTML/CSS beveled gradient bars & active peak beacon — zero SVG/Canvas)
+              h('div', { 'aria-hidden': 'true', style: { width: '48px', height: '48px', borderRadius: '13px', flexShrink: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '4px', padding: '9px 8px 7px', background: isContrast ? '#000000' : 'linear-gradient(180deg, rgba(2,6,23,0.72) 0%, rgba(15,23,42,0.58) 100%)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(165,180,252,0.48)', boxShadow: isContrast ? 'none' : 'inset 0 2px 6px rgba(2,6,23,0.65), 0 0 12px rgba(99,102,241,0.28)', boxSizing: 'border-box', position: 'relative' } },
+                h('span', { style: { width: '6px', height: '12px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#ffff00' : 'linear-gradient(180deg,#a5b4fc,#6366f1)', boxShadow: isContrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.4)' } }),
+                h('span', { style: { width: '6px', height: '20px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#00ff00' : 'linear-gradient(180deg,#6ee7b7,#059669)', boxShadow: isContrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.4)' } }),
+                h('span', { style: { width: '6px', height: '15px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#ffff00' : 'linear-gradient(180deg,#7dd3fc,#0284c7)', boxShadow: isContrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.4)' } }),
+                h('span', { style: { width: '6px', height: '26px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#00ff00' : 'linear-gradient(180deg,#fde68a,#d97706)', boxShadow: isContrast ? 'none' : '0 0 8px rgba(251,191,36,0.55), inset 0 1px 0 rgba(255,255,255,0.5)' } })),
               h('div', { style: { minWidth: 0 } },
                 h('div', { style: { fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: isContrast ? '#00ff00' : '#c7d2fe', marginBottom: '2px' } },
                   t('stem.dataLab.badge_subject', 'Technology · Math · CODAP Data Science Studio')),
@@ -745,21 +755,22 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
             heading,
             h('span', { className: 'text-xs font-bold ' + ink.info }, t('stem.dataLab.path_step_label', 'Step {n} of {total}').replace('{n}', function () { return String(nextIdx + 1); }).replace('{total}', function () { return String(steps.length); }))),
-          // Visual Learning Path Stepper Track (fixed-height bar + numbered step dots)
+          // Visual Learning Path Stepper Track (calibrated recessed bar + glowing milestone beacons)
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', marginBottom: '10px', flexWrap: 'wrap' } },
-            h('div', { style: { flex: '1 1 160px', height: '8px', borderRadius: '999px', backgroundColor: isContrast ? '#000000' : (isDark ? '#1e293b' : '#e2e8f0'), border: isContrast ? '1px solid #ffff00' : 'none', overflow: 'hidden' } },
-              h('div', { style: { width: pctDone + '%', height: '8px', backgroundColor: isContrast ? '#00ff00' : '#0284c7' } })),
-            h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' }, 'aria-hidden': 'true' },
+            h('div', { style: { flex: '1 1 160px', height: '10px', borderRadius: '999px', background: isContrast ? '#000000' : (isDark ? 'linear-gradient(180deg,#0b1220,#1e293b)' : 'linear-gradient(180deg,#cbd5e1,#e2e8f0)'), border: isContrast ? '1px solid #ffff00' : '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), boxShadow: isContrast ? 'none' : 'inset 0 1px 3px rgba(15,23,42,0.2)', overflow: 'hidden' } },
+              h('div', { style: { width: pctDone + '%', height: '100%', borderRadius: '999px', background: isContrast ? '#00ff00' : 'linear-gradient(90deg,#4338ca 0%,#0284c7 60%,#10b981 100%)', boxShadow: isContrast ? 'none' : 'inset 0 1.5px 0 rgba(255,255,255,0.35)' } })),
+            h('div', { style: { display: 'flex', gap: '5px', alignItems: 'center' }, 'aria-hidden': 'true' },
               steps.map(function (stItem, idx) {
                 var isCur = idx === nextIdx;
                 return h('span', {
                   key: stItem.inv.id,
                   style: {
-                    width: '20px', height: '20px', borderRadius: '999px', fontSize: '10.5px', fontWeight: 800,
+                    width: '22px', height: '22px', borderRadius: '999px', fontSize: '10.5px', fontWeight: 800,
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: stItem.claimDone ? (isContrast ? '#00ff00' : '#059669') : (isCur ? (isContrast ? '#ffff00' : '#4338ca') : (isContrast ? '#000000' : (isDark ? '#1e293b' : '#e2e8f0'))),
+                    background: stItem.claimDone ? (isContrast ? '#00ff00' : 'linear-gradient(180deg,#10b981,#047857)') : (isCur ? (isContrast ? '#ffff00' : 'linear-gradient(180deg,#6366f1,#3730a3)') : (isContrast ? '#000000' : (isDark ? '#1e293b' : '#e2e8f0'))),
                     color: stItem.claimDone ? (isContrast ? '#000000' : '#ffffff') : (isCur ? (isContrast ? '#000000' : '#ffffff') : (isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'))),
-                    border: isContrast ? '1px solid #ffff00' : 'none'
+                    border: isContrast ? '1px solid #ffff00' : (isCur ? '1.5px solid #a5b4fc' : '1px solid transparent'),
+                    boxShadow: isContrast ? 'none' : (isCur ? '0 0 0 3px rgba(99,102,241,0.22)' : 'none')
                   }
                 }, stItem.claimDone ? '✓' : String(idx + 1));
               }))),
@@ -1954,6 +1965,13 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     _bridge.pending.push(ds);
     flushPending();
     return { ok: true, status: res.reused ? 'sent' : 'opening', truncated: norm.truncated };
+  }
+  function peekRawInbox() {
+    try {
+      var box = window.__alloDataLabInbox;
+      if (Array.isArray(box) && box.length) return box[box.length - 1];
+    } catch (_) {}
+    return null;
   }
   function peekInbox() {
     try {

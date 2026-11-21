@@ -2801,16 +2801,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   // no asset to fetch. Untextured THREE.Points render as hard SQUARES, which
   // read as rendering glitches rather than as drifting smell.
   function _petsScentTexture(THREE) {
+    if (typeof document === 'undefined' || typeof THREE.CanvasTexture !== 'function') return null;
     var c = document.createElement('canvas');
     c.setAttribute('aria-hidden', 'true');
     c.width = 64; c.height = 64;
     var g = c.getContext('2d');
+    if (!g) return null;
     var grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
     grad.addColorStop(0, 'rgba(255,255,255,1)');
     grad.addColorStop(0.35, 'rgba(255,255,255,0.55)');
     grad.addColorStop(1, 'rgba(255,255,255,0)');
     g.fillStyle = grad;
     g.fillRect(0, 0, 64, 64);
+    var tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  function _petsContactShadowTexture(THREE) {
+    if (typeof document === 'undefined' || typeof THREE.CanvasTexture !== 'function') return null;
+    var c = document.createElement('canvas');
+    c.setAttribute('aria-hidden', 'true');
+    c.width = 128; c.height = 128;
+    var g = c.getContext('2d');
+    if (!g) return null;
+    var grad = g.createRadialGradient(64, 64, 8, 64, 64, 62);
+    grad.addColorStop(0, 'rgba(26, 17, 12, 0.52)');
+    grad.addColorStop(0.55, 'rgba(26, 17, 12, 0.22)');
+    grad.addColorStop(1, 'rgba(26, 17, 12, 0)');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 128, 128);
+    var tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  function _petsSunPoolTexture(THREE) {
+    if (typeof document === 'undefined' || typeof THREE.CanvasTexture !== 'function') return null;
+    var c = document.createElement('canvas');
+    c.setAttribute('aria-hidden', 'true');
+    c.width = 128; c.height = 128;
+    var g = c.getContext('2d');
+    if (!g) return null;
+    var grad = g.createRadialGradient(64, 64, 6, 64, 64, 64);
+    grad.addColorStop(0, 'rgba(255, 244, 214, 0.44)');
+    grad.addColorStop(0.55, 'rgba(255, 232, 182, 0.16)');
+    grad.addColorStop(1, 'rgba(255, 232, 182, 0)');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 128, 128);
     var tex = new THREE.CanvasTexture(c);
     tex.needsUpdate = true;
     return tex;
@@ -2824,12 +2862,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var tinted = [];   // meshes whose colour changes with species
     var lights = [];   // {light, baseIntensity}
     var disposables = [];
+    var contactTex = _petsContactShadowTexture(THREE);
+    if (contactTex) disposables.push(contactTex);
+    var contactGeo = new THREE.PlaneGeometry(1, 1);
+    disposables.push(contactGeo);
 
     function mat(hex, opts) {
-      var Material = THREE.MeshStandardMaterial || THREE.MeshLambertMaterial;
+      var o = Object.assign({}, opts || {});
+      var usePhys = o.clearcoat != null && typeof THREE.MeshPhysicalMaterial === 'function';
+      var Material = usePhys ? THREE.MeshPhysicalMaterial : (THREE.MeshStandardMaterial || THREE.MeshLambertMaterial);
       var base = { color: hex };
-      if (THREE.MeshStandardMaterial) { base.roughness = 0.82; base.metalness = 0.02; }
-      var m = new Material(Object.assign(base, opts || {}));
+      if (usePhys || THREE.MeshStandardMaterial) { base.roughness = 0.82; base.metalness = 0.02; }
+      if (!usePhys) { delete o.clearcoat; delete o.clearcoatRoughness; }
+      var m = new Material(Object.assign(base, o));
       disposables.push(m);
       return m;
     }
@@ -2843,6 +2888,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       mesh.receiveShadow = true;
       scene.add(mesh);
       return mesh;
+    }
+    function addContactShadow(x, y, z, w, d, opacity) {
+      if (!contactTex || typeof THREE.MeshBasicMaterial !== 'function') return null;
+      var cm = new THREE.MeshBasicMaterial({ map: contactTex, transparent: true, opacity: opacity || 0.45, depthWrite: false });
+      disposables.push(cm);
+      var disc = new THREE.Mesh(contactGeo, cm);
+      disc.position.set(x, y, z);
+      disc.rotation.x = -Math.PI / 2;
+      disc.scale.set(w, d, 1);
+      disc.castShadow = false;
+      disc.receiveShadow = false;
+      scene.add(disc);
+      return disc;
     }
     function prop(geo, hex, x, y, z, rx, ry, opts) {
       var m = mat(hex, opts);
@@ -2915,50 +2973,162 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     prop(new THREE.BoxGeometry(0.09, 0.22, 0.09), 0x3b2b24, 0.32, 0.12, 2.34);
     prop(new THREE.BoxGeometry(0.09, 0.22, 0.09), 0x3b2b24, 2.08, 0.12, 2.34);
 
-    // Coffee table
-    prop(new THREE.BoxGeometry(1.3, 0.08, 0.7), 0x6b4a2f, 0.6, 0.44, 1.5, 0, 0, { roughness: 0.60 });
+    // Coffee table (satin oiled oak + grounded contact shadow)
+    prop(new THREE.BoxGeometry(1.3, 0.08, 0.7), 0x6b4a2f, 0.6, 0.44, 1.5, 0, 0, { roughness: 0.48, clearcoat: 0.22, clearcoatRoughness: 0.35 });
     prop(new THREE.BoxGeometry(0.34, 0.035, 0.24), 0x315b78, 0.33, 0.50, 1.42, 0, -0.18);
     prop(new THREE.BoxGeometry(0.31, 0.028, 0.22), 0xd5a15c, 0.36, 0.535, 1.43, 0, -0.18);
-    prop(new THREE.CylinderGeometry(0.065, 0.075, 0.13, 18), 0xf2dfb0, 0.94, 0.535, 1.48);
+    prop(new THREE.CylinderGeometry(0.065, 0.075, 0.13, 18), 0xf2dfb0, 0.94, 0.535, 1.48, 0, 0, { roughness: 0.26, clearcoat: 0.48 });
     [[0.05, 1.2], [1.15, 1.2], [0.05, 1.8], [1.15, 1.8]].forEach(function (p) {
       prop(new THREE.BoxGeometry(0.07, 0.42, 0.07), 0x553a24, p[0], 0.21, p[1]);
     });
+    addContactShadow(0.6, 0.029, 1.5, 1.55, 0.95, 0.36);
+    addContactShadow(1.2, 0.029, 2.6, 2.45, 1.15, 0.44);
 
-    // Bowls — food (the strongest scent source) and water
-    prop(new THREE.CylinderGeometry(0.20, 0.16, 0.11, 20), 0xcfd4da, 2.1, 0.055, -1.4);
+    // Bowls — food (the strongest scent source) and water (clearcoat water + brushed steel rims + GLSL capillary ripple & meniscus caustic shimmer)
+    prop(new THREE.CylinderGeometry(0.20, 0.16, 0.11, 20), 0xcfd4da, 2.1, 0.055, -1.4, 0, 0, { roughness: 0.26, metalness: 0.62 });
     prop(new THREE.CylinderGeometry(0.17, 0.14, 0.10, 20), 0x8b5e34, 2.1, 0.085, -1.4);
-    prop(new THREE.CylinderGeometry(0.18, 0.15, 0.10, 20), 0xcfd4da, 2.6, 0.05, -1.4);
-    prop(new THREE.CylinderGeometry(0.15, 0.13, 0.08, 20), 0x4aa3d8, 2.6, 0.075, -1.4, 0, 0, { roughness: 0.28, metalness: 0.35 });
-    prop(new THREE.TorusGeometry(0.19, 0.022, 8, 28), 0xe9eef2, 2.1, 0.12, -1.4, Math.PI / 2, 0, { roughness: 0.28, metalness: 0.45 });
-    prop(new THREE.TorusGeometry(0.18, 0.020, 8, 28), 0xe9eef2, 2.6, 0.105, -1.4, Math.PI / 2, 0, { roughness: 0.28, metalness: 0.45 });
+    prop(new THREE.CylinderGeometry(0.18, 0.15, 0.10, 20), 0xcfd4da, 2.6, 0.05, -1.4, 0, 0, { roughness: 0.26, metalness: 0.62 });
+    prop(new THREE.CylinderGeometry(0.15, 0.13, 0.08, 20), 0x4aa3d8, 2.6, 0.075, -1.4, 0, 0, { roughness: 0.10, metalness: 0.18, clearcoat: 0.92, clearcoatRoughness: 0.08 });
+    var shaderUniforms = {
+      uTime: { value: 2.8 },
+      uDusk: { value: 0.0 },
+      uContrast: { value: 0.0 },
+      uSunColor: { value: new THREE.Color(0xfff1cc) },
+      uWaterColor: { value: new THREE.Color(0x6ec7f0) }
+    };
+    var decorativeShaderMeshes = [];
+    if (typeof THREE.ShaderMaterial === 'function' && typeof THREE.CircleGeometry === 'function') {
+      var waterRippleGeo = new THREE.CircleGeometry(0.148, 32);
+      var waterRippleMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: shaderUniforms.uTime,
+          uDusk: shaderUniforms.uDusk,
+          uWaterColor: shaderUniforms.uWaterColor,
+          uSunColor: shaderUniforms.uSunColor
+        },
+        vertexShader: [
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vUv = uv;',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uDusk;',
+          'uniform vec3 uWaterColor;',
+          'uniform vec3 uSunColor;',
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vec2 p = vUv * 2.0 - 1.0;',
+          '  float r = length(p);',
+          '  if (r > 1.0) discard;',
+          '  float angle = atan(p.y, p.x);',
+          '  float ring1 = sin(r * 24.0 - uTime * 2.4 + sin(angle * 3.0 + uTime * 0.7) * 0.6);',
+          '  float ring2 = sin(r * 38.0 + uTime * 1.8 - cos(angle * 5.0 - uTime * 0.9) * 0.45);',
+          '  float caustic = pow(clamp(0.5 + 0.25 * (ring1 + ring2), 0.0, 1.0), 3.4);',
+          '  float meniscus = smoothstep(0.76, 0.98, r) * (0.72 + 0.28 * sin(angle * 4.0 + uTime * 1.4));',
+          '  float glint = exp(-dot(p - vec2(-0.22, -0.18), p - vec2(-0.22, -0.18)) * 16.0) * (0.65 + 0.35 * sin(uTime * 2.2));',
+          '  vec3 col = mix(uWaterColor, uSunColor, clamp(caustic * 0.55 + meniscus * 0.5 + glint * 0.8, 0.0, 1.0));',
+          '  float lightScale = mix(1.0, 0.28, uDusk);',
+          '  float alpha = clamp((0.18 + caustic * 0.32 + meniscus * 0.44 + glint * 0.45) * lightScale, 0.0, 0.85);',
+          '  gl_FragColor = vec4(col, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false
+      });
+      disposables.push(waterRippleGeo, waterRippleMat);
+      var waterRippleMesh = new THREE.Mesh(waterRippleGeo, waterRippleMat);
+      waterRippleMesh.name = 'pets-waterbowl-ripples';
+      waterRippleMesh.position.set(2.6, 0.118, -1.4);
+      waterRippleMesh.rotation.x = -Math.PI / 2;
+      waterRippleMesh.renderOrder = 2;
+      scene.add(waterRippleMesh);
+      decorativeShaderMeshes.push(waterRippleMesh);
+    }
+    prop(new THREE.TorusGeometry(0.19, 0.022, 8, 28), 0xe9eef2, 2.1, 0.12, -1.4, Math.PI / 2, 0, { roughness: 0.22, metalness: 0.72 });
+    prop(new THREE.TorusGeometry(0.18, 0.020, 8, 28), 0xe9eef2, 2.6, 0.105, -1.4, Math.PI / 2, 0, { roughness: 0.22, metalness: 0.72 });
     prop(new THREE.BoxGeometry(1.05, 0.025, 0.55), 0x315b78, 2.35, 0.018, -1.4);
     prop(new THREE.SphereGeometry(0.035, 12, 9), 0xb67a42, 2.04, 0.15, -1.38);
     prop(new THREE.SphereGeometry(0.035, 12, 9), 0xb67a42, 2.15, 0.15, -1.43);
+    addContactShadow(2.1, 0.033, -1.4, 0.50, 0.50, 0.42);
+    addContactShadow(2.6, 0.033, -1.4, 0.46, 0.46, 0.42);
 
     // THE demo object: a red ball. Vivid to a human, muddy-yellow to a dog
     // or cat — the single clearest illustration of dichromacy in the room.
-    prop(new THREE.SphereGeometry(0.11, 20, 14), 0xd92b2b, 0.4, 0.11, 0.6);
+    prop(new THREE.SphereGeometry(0.11, 20, 14), 0xd92b2b, 0.4, 0.11, 0.6, 0, 0, { roughness: 0.28, metalness: 0.04, clearcoat: 0.68, clearcoatRoughness: 0.18 });
+    addContactShadow(0.4, 0.029, 0.6, 0.28, 0.28, 0.48);
     // ...and a blue one, which stays vivid in every view (dogs see blue well).
-    prop(new THREE.SphereGeometry(0.11, 20, 14), 0x2563eb, 0.05, 0.11, 0.15);
+    prop(new THREE.SphereGeometry(0.11, 20, 14), 0x2563eb, 0.05, 0.11, 0.15, 0, 0, { roughness: 0.28, metalness: 0.04, clearcoat: 0.68, clearcoatRoughness: 0.18 });
+    addContactShadow(0.05, 0.029, 0.15, 0.28, 0.28, 0.48);
 
-    // Houseplant
-    prop(new THREE.CylinderGeometry(0.17, 0.13, 0.28, 16), 0xa9613c, -2.7, 0.14, 2.5);
-    scale(prop(new THREE.SphereGeometry(0.28, 18, 12), 0x3f8a44, -2.7, 0.55, 2.5), 1.2, 1.35, 0.75);
-    scale(prop(new THREE.SphereGeometry(0.21, 18, 12), 0x4f9b55, -2.48, 0.66, 2.48), 1.2, 0.65, 0.75);
-    scale(prop(new THREE.SphereGeometry(0.21, 18, 12), 0x477f43, -2.91, 0.67, 2.52), 1.2, 0.70, 0.75);
-    scale(prop(new THREE.SphereGeometry(0.18, 18, 12), 0x5ba960, -2.67, 0.86, 2.51), 0.82, 1.35, 0.64);
+    // Houseplant (terracotta pot + layered botanical canopy with GLSL vertex leaf-sway & sunlit chlorophyll rim)
+    prop(new THREE.CylinderGeometry(0.17, 0.13, 0.28, 16), 0xa9613c, -2.7, 0.14, 2.5, 0, 0, { roughness: 0.74 });
+    var plantCanopy = [
+      scale(prop(new THREE.SphereGeometry(0.28, 18, 12), 0x3f8a44, -2.7, 0.55, 2.5), 1.2, 1.35, 0.75),
+      scale(prop(new THREE.SphereGeometry(0.21, 18, 12), 0x4f9b55, -2.48, 0.66, 2.48), 1.2, 0.65, 0.75),
+      scale(prop(new THREE.SphereGeometry(0.21, 18, 12), 0x477f43, -2.91, 0.67, 2.52), 1.2, 0.70, 0.75),
+      scale(prop(new THREE.SphereGeometry(0.18, 18, 12), 0x5ba960, -2.67, 0.86, 2.51), 0.82, 1.35, 0.64)
+    ];
+    plantCanopy.forEach(function (leafMesh, leafIdx) {
+      var lm = leafMesh && leafMesh.material;
+      if (!lm) return;
+      var prevCompile = lm.onBeforeCompile;
+      var prevKey = lm.customProgramCacheKey;
+      lm.onBeforeCompile = function (shader, rendererArg) {
+        if (typeof prevCompile === 'function') prevCompile.call(this, shader, rendererArg);
+        shader.uniforms.uPetsPlantTime = shaderUniforms.uTime;
+        shader.uniforms.uPetsPlantContrast = shaderUniforms.uContrast;
+        shader.uniforms.uPetsPlantPhase = { value: leafIdx * 1.15 };
+        if (shader.vertexShader.indexOf('uPetsPlantTime') === -1) {
+          shader.vertexShader = 'uniform float uPetsPlantTime;\nuniform float uPetsPlantContrast;\nuniform float uPetsPlantPhase;\nvarying float vPetsLeafTip;\n' + shader.vertexShader;
+          shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', [
+            '#include <begin_vertex>',
+            'float petsTip = clamp((position.y + 0.28) / 0.56, 0.0, 1.0);',
+            'vPetsLeafTip = petsTip;',
+            'if (uPetsPlantContrast < 0.5) {',
+            '  float petsGust = sin(uPetsPlantTime * 1.15 + uPetsPlantPhase + position.x * 4.2);',
+            '  float petsFlutter = cos(uPetsPlantTime * 1.85 + uPetsPlantPhase * 1.7 + position.z * 5.0);',
+            '  transformed.x += (petsGust * 0.022 + petsFlutter * 0.008) * petsTip;',
+            '  transformed.z += (petsFlutter * 0.016) * petsTip;',
+            '}'
+          ].join('\n'));
+        }
+        if (shader.fragmentShader.indexOf('vPetsLeafTip') === -1) {
+          shader.fragmentShader = 'uniform float uPetsPlantContrast;\nvarying float vPetsLeafTip;\n' + shader.fragmentShader;
+        }
+        if (shader.fragmentShader.indexOf('#include <tonemapping_fragment>') !== -1 && shader.fragmentShader.indexOf('petsLeafSss') === -1) {
+          shader.fragmentShader = shader.fragmentShader.replace('#include <tonemapping_fragment>', [
+            'if (uPetsPlantContrast < 0.5) {',
+            '  float petsFacing = clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0);',
+            '  float petsLeafSss = pow(1.0 - petsFacing, 2.4) * vPetsLeafTip * 0.14;',
+            '  gl_FragColor.rgb += diffuseColor.rgb * vec3(1.15, 1.25, 0.72) * petsLeafSss;',
+            '}',
+            '#include <tonemapping_fragment>'
+          ].join('\n'));
+        }
+      };
+      lm.customProgramCacheKey = function () {
+        var bk = typeof prevKey === 'function' ? prevKey.call(this) : '';
+        return bk + '|pets-houseplant-sway-v1';
+      };
+      lm.needsUpdate = true;
+    });
     prop(new THREE.BoxGeometry(0.55, 0.04, 0.55), 0x755136, -2.7, 0.03, 2.5);
     prop(new THREE.CylinderGeometry(0.115, 0.07, 0.72, 12), 0x765236, -2.7, 0.49, 2.5);
     prop(new THREE.TorusGeometry(0.18, 0.025, 8, 24), 0xc17b4f, -2.7, 0.30, 2.5, Math.PI / 2);
+    addContactShadow(-2.7, 0.052, 2.5, 0.72, 0.72, 0.44);
 
     // A standing person — the scale reference. From a cat's eye line this
     // reads as a tower, which is the point.
     prop(new THREE.CylinderGeometry(0.16, 0.20, 0.95, 14), 0x37506e, -1.9, 0.48, -1.2);
     prop(new THREE.CylinderGeometry(0.13, 0.13, 0.55, 14), 0x9c6b4a, -1.9, 1.22, -1.2);
     prop(new THREE.SphereGeometry(0.135, 16, 12), 0xd8a887, -1.9, 1.62, -1.2);
+    addContactShadow(-1.9, 0.029, -1.2, 0.62, 0.62, 0.46);
 
     // Window on the far wall + the daylight it implies
-    prop(new THREE.PlaneGeometry(1.5, 1.0), 0xdff1ff, 0, 1.5, -R.halfZ + 0.02);
+    prop(new THREE.PlaneGeometry(1.5, 1.0), 0xdff1ff, 0, 1.5, -R.halfZ + 0.02, 0, 0, { emissive: 0x93c5fd, emissiveIntensity: 0.18, roughness: 0.12 });
     prop(new THREE.BoxGeometry(1.62, 0.06, 0.05), 0xf6f1e7, 0, 2.02, -R.halfZ + 0.04);
     prop(new THREE.BoxGeometry(1.62, 0.06, 0.05), 0xf6f1e7, 0, 0.98, -R.halfZ + 0.04);
     prop(new THREE.BoxGeometry(0.06, 1.08, 0.05), 0xf6f1e7, -0.79, 1.50, -R.halfZ + 0.04);
@@ -3015,6 +3185,191 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var windowFill = new THREE.PointLight(0xbfe5ff, 0.24, 5.5, 2);
     windowFill.position.set(0, 1.55, -2.95);
     scene.add(windowFill); lights.push({ light: windowFill, base: 0.24 });
+    // Soft warm studio rim light from the sunlit yard/window side to define prop silhouettes
+    var rimLight = new THREE.DirectionalLight(0xffe7c2, 0.28);
+    rimLight.position.set(2.4, 2.8, 3.1);
+    scene.add(rimLight); lights.push({ light: rimLight, base: 0.28 });
+
+    // Soft cozy sunlit window floor glow pool + GLSL volumetric window god-rays & floating golden dust motes
+    var sunPoolMat = null;
+    if (typeof THREE.ShaderMaterial === 'function') {
+      var sunPoolGeo = new THREE.PlaneGeometry(2.45, 1.95);
+      sunPoolMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: shaderUniforms.uTime,
+          uDusk: shaderUniforms.uDusk,
+          uSunColor: shaderUniforms.uSunColor
+        },
+        vertexShader: [
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vUv = uv;',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uDusk;',
+          'uniform vec3 uSunColor;',
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vec2 p = vUv * 2.0 - 1.0;',
+          '  float paneX = smoothstep(0.95, 0.42, abs(p.x));',
+          '  float paneY = smoothstep(0.96, 0.35, abs(p.y));',
+          '  float mullionV = 1.0 - 0.38 * exp(-pow(p.x * 16.0, 2.0));',
+          '  float mullionH = 1.0 - 0.28 * exp(-pow((p.y + 0.06) * 14.0, 2.0));',
+          '  float dapple = 0.86 + 0.14 * sin(p.x * 5.2 + uTime * 0.42) * cos(p.y * 4.6 - uTime * 0.34);',
+          '  float radial = exp(-dot(p * vec2(0.85, 0.95), p * vec2(0.85, 0.95)) * 1.45);',
+          '  float mask = paneX * paneY * mullionV * mullionH * (0.55 + 0.45 * radial) * dapple;',
+          '  float intensity = mix(0.24, 0.045, uDusk);',
+          '  gl_FragColor = vec4(uSunColor, clamp(mask * intensity, 0.0, 0.32));',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+      disposables.push(sunPoolGeo, sunPoolMat);
+      var sunPool = new THREE.Mesh(sunPoolGeo, sunPoolMat);
+      sunPool.name = 'pets-sunpool-shader';
+      sunPool.position.set(0.05, 0.032, -1.65);
+      sunPool.rotation.x = -Math.PI / 2;
+      sunPool.castShadow = false;
+      sunPool.receiveShadow = false;
+      sunPool.renderOrder = 1;
+      scene.add(sunPool);
+      decorativeShaderMeshes.push(sunPool);
+
+      // Volumetric window sunbeam god-ray shafts angling from the window into the cozy room
+      var rayGeo = new THREE.PlaneGeometry(1.62, 2.68);
+      var rayMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: shaderUniforms.uTime,
+          uDusk: shaderUniforms.uDusk,
+          uSunColor: shaderUniforms.uSunColor
+        },
+        vertexShader: [
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vUv = uv;',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uDusk;',
+          'uniform vec3 uSunColor;',
+          'varying vec2 vUv;',
+          'void main() {',
+          '  float topFade = smoothstep(1.0, 0.84, vUv.y);',
+          '  float botFade = smoothstep(0.0, 0.58, vUv.y);',
+          '  float edgeX = smoothstep(0.0, 0.24, vUv.x) * smoothstep(1.0, 0.76, vUv.x);',
+          '  float beam1 = 0.5 + 0.5 * sin(vUv.x * 14.0 + uTime * 0.22 + vUv.y * 1.4);',
+          '  float beam2 = 0.5 + 0.5 * sin(vUv.x * 23.0 - uTime * 0.16);',
+          '  float shafts = 0.45 + 0.35 * beam1 + 0.20 * beam2;',
+          '  float alpha = topFade * botFade * edgeX * shafts * mix(0.115, 0.024, uDusk);',
+          '  gl_FragColor = vec4(uSunColor, clamp(alpha, 0.0, 0.16));',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending
+      });
+      disposables.push(rayGeo, rayMat);
+      [-0.36, 0.0, 0.36].forEach(function (offsetX, rIdx) {
+        var shaft = new THREE.Mesh(rayGeo, rayMat);
+        shaft.name = 'pets-window-godray-' + (rIdx + 1);
+        shaft.position.set(offsetX * 0.6, 0.88, -2.35);
+        shaft.rotation.x = -0.78;
+        shaft.rotation.y = (rIdx - 1) * 0.24;
+        shaft.renderOrder = 3;
+        scene.add(shaft);
+        decorativeShaderMeshes.push(shaft);
+      });
+
+      // Floating golden sunlit dust motes drifting lazily through the window beam
+      if (typeof THREE.Points === 'function') {
+        var dustCount = 72;
+        var dustPos = new Float32Array(dustCount * 3);
+        var dustPhase = new Float32Array(dustCount);
+        var dustSize = new Float32Array(dustCount);
+        var dustSeed = 19381;
+        function dustRand() { dustSeed = (dustSeed * 1664525 + 1013904223) >>> 0; return (dustSeed >>> 8) / 16777216; }
+        for (var di = 0; di < dustCount; di++) {
+          var inBeam = di < 46;
+          dustPos[di * 3] = inBeam ? (dustRand() - 0.5) * 1.95 : (dustRand() - 0.5) * 4.8;
+          dustPos[di * 3 + 1] = 0.28 + dustRand() * 1.85;
+          dustPos[di * 3 + 2] = inBeam ? (-3.05 + dustRand() * 2.25) : (-2.6 + dustRand() * 4.4);
+          dustPhase[di] = dustRand() * Math.PI * 2;
+          dustSize[di] = inBeam ? (2.8 + dustRand() * 4.0) : (1.8 + dustRand() * 2.6);
+        }
+        var dustGeo = new THREE.BufferGeometry();
+        dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+        dustGeo.setAttribute('aPhase', new THREE.BufferAttribute(dustPhase, 1));
+        dustGeo.setAttribute('aSize', new THREE.BufferAttribute(dustSize, 1));
+        var dustMat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: shaderUniforms.uTime,
+            uDusk: shaderUniforms.uDusk,
+            uSunColor: shaderUniforms.uSunColor
+          },
+          vertexShader: [
+            'attribute float aPhase;',
+            'attribute float aSize;',
+            'uniform float uTime;',
+            'varying float vSparkle;',
+            'void main() {',
+            '  vec3 p = position;',
+            '  p.x += sin(uTime * 0.28 + aPhase) * 0.14;',
+            '  p.y += sin(uTime * 0.22 + aPhase * 1.4) * 0.11;',
+            '  p.z += cos(uTime * 0.25 + aPhase * 0.8) * 0.12;',
+            '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);',
+            '  float dist = max(-mvPos.z, 0.45);',
+            '  gl_PointSize = clamp(aSize * (4.2 / dist), 1.5, 11.0);',
+            '  vSparkle = 0.55 + 0.45 * sin(uTime * 1.35 + aPhase * 2.3);',
+            '  gl_Position = projectionMatrix * mvPos;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uDusk;',
+            'uniform vec3 uSunColor;',
+            'varying float vSparkle;',
+            'void main() {',
+            '  float r = length(gl_PointCoord - vec2(0.5));',
+            '  if (r > 0.5) discard;',
+            '  float soft = smoothstep(0.5, 0.04, r);',
+            '  float alpha = soft * soft * vSparkle * mix(0.56, 0.14, uDusk);',
+            '  gl_FragColor = vec4(uSunColor, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        });
+        disposables.push(dustGeo, dustMat);
+        var dustPoints = new THREE.Points(dustGeo, dustMat);
+        dustPoints.name = 'pets-sunbeam-motes';
+        dustPoints.frustumCulled = false;
+        dustPoints.renderOrder = 4;
+        scene.add(dustPoints);
+        decorativeShaderMeshes.push(dustPoints);
+      }
+    } else if (typeof THREE.MeshBasicMaterial === 'function') {
+      var sunPoolTex = _petsSunPoolTexture(THREE);
+      if (sunPoolTex) {
+        disposables.push(sunPoolTex);
+        sunPoolMat = new THREE.MeshBasicMaterial({ map: sunPoolTex, transparent: true, opacity: 0.22, depthWrite: false });
+        disposables.push(sunPoolMat);
+        var sunPoolFallback = new THREE.Mesh(contactGeo, sunPoolMat);
+        sunPoolFallback.position.set(0.05, 0.031, -1.65);
+        sunPoolFallback.rotation.x = -Math.PI / 2;
+        sunPoolFallback.scale.set(2.3, 1.8, 1);
+        sunPoolFallback.castShadow = false;
+        sunPoolFallback.receiveShadow = false;
+        scene.add(sunPoolFallback);
+      }
+    }
 
     // ── Scent field (dog view only) ──
     // Additive drifting motes rising from each source. Kept as one Points
@@ -3024,7 +3379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     scene.add(scentGroup);
     var scentClouds = [];
     var scentTex = _petsScentTexture(THREE);
-    disposables.push(scentTex);
+    if (scentTex) disposables.push(scentTex);
     SENSORY_SCENTS.forEach(function (src) {
       var positions = new Float32Array(src.count * 3);
       var seeds = [];
@@ -3040,7 +3395,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       var pmat = new THREE.PointsMaterial({
         color: src.color, size: 0.20, transparent: true, opacity: 0.5,
-        map: scentTex, blending: THREE.AdditiveBlending,
+        map: scentTex || undefined, blending: THREE.AdditiveBlending,
         depthWrite: false, sizeAttenuation: true
       });
       disposables.push(geo, pmat);
@@ -3052,6 +3407,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     return {
       tinted: tinted,
       lights: lights,
+      sunPoolMat: sunPoolMat,
+      plantCanopy: plantCanopy,
+      shaderUniforms: shaderUniforms,
+      decorativeShaderMeshes: decorativeShaderMeshes,
       scentGroup: scentGroup,
       scentClouds: scentClouds,
       dispose: function () {
@@ -3111,6 +3470,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       // the room — that contrast IS the lesson, so the gain is species-scaled.
       var gain = dusk ? Math.min(0.62, 0.10 * sp.lowLightFactor) : 1;
       S.built.lights.forEach(function (l) { l.light.intensity = l.base * gain; });
+      if (S.built.sunPoolMat && !S.built.sunPoolMat.isShaderMaterial) S.built.sunPoolMat.opacity = dusk ? 0.04 : 0.22;
+      if (S.built.shaderUniforms) {
+        var su = S.built.shaderUniforms;
+        su.uDusk.value = dusk ? 1.0 : 0.0;
+        var sunHex = dusk ? 0xb7d4ff : 0xfff1cc;
+        var sr = ((sunHex >> 16) & 255) / 255, sg = ((sunHex >> 8) & 255) / 255, sb = (sunHex & 255) / 255;
+        if (sp.dichromat) { var sd = _petsDichromat(sr, sg, sb); sr = sd.r; sg = sd.g; sb = sd.b; }
+        su.uSunColor.value.setRGB(sr, sg, sb);
+        var wr = 0x6e / 255, wg = 0xc7 / 255, wb = 0xf0 / 255;
+        if (sp.dichromat) { var wd = _petsDichromat(wr, wg, wb); wr = wd.r; wg = wd.g; wb = wd.b; }
+        su.uWaterColor.value.setRGB(wr, wg, wb);
+      }
       S.scene.background.setHex(dusk ? 0x111827 : 0x2a211c);
       if (S.scene.fog) S.scene.fog.color.setHex(dusk ? 0x1a2130 : 0x5e4a3d);
       if (S.renderer.toneMappingExposure != null) {
@@ -3256,9 +3627,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           // student moves it. Walking still works — it just does not drift on
           // its own. Bail BEFORE the scent animation and the render.
           if (reduced && !S.dirty) return;
+          var isContrast = false;
+          if (typeof document !== 'undefined') {
+            isContrast = !!((document.body && document.body.classList && document.body.classList.contains('theme-contrast')) ||
+              (document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) ||
+              (S.node && S.node.closest && S.node.closest('.theme-contrast, [data-stem-theme="contrast"]')));
+          }
+          if (!isContrast && typeof window !== 'undefined' && window.matchMedia) {
+            try { isContrast = window.matchMedia('(forced-colors: active)').matches; } catch (e) {}
+          }
           var scentAnimating = S.built.scentGroup.visible && !reduced;
-          if (!S.dirty && !scentAnimating) return;
+          var ambientAnimating = !reduced && !!S.built.shaderUniforms && !isContrast;
+          if (!S.dirty && !scentAnimating && !ambientAnimating) return;
           S.dirty = false;
+
+          if (S.built.shaderUniforms) {
+            S.built.shaderUniforms.uContrast.value = isContrast ? 1.0 : 0.0;
+            S.built.shaderUniforms.uTime.value = reduced ? 2.8 : (2.8 + clock);
+          }
+          if (S.built.decorativeShaderMeshes) {
+            for (var dm = 0; dm < S.built.decorativeShaderMeshes.length; dm++) {
+              S.built.decorativeShaderMeshes[dm].visible = !isContrast;
+            }
+          }
+          if (ambientAnimating && S.built.plantCanopy) {
+            for (var pc2 = 0; pc2 < S.built.plantCanopy.length; pc2++) {
+              S.built.plantCanopy[pc2].rotation.z = Math.sin(clock * 0.85 + pc2 * 0.9) * 0.022;
+            }
+          }
 
           // Scent motes rise and recycle. Dog view only, so skip the work
           // entirely otherwise. Frozen (but still visible, at a stable
@@ -3278,6 +3674,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               pos.needsUpdate = true;
               cl.points.material.opacity = 0.26 + 0.16 * Math.sin(clock * 1.3 + cl.src.rise);
             });
+            if (S.built.plantCanopy) {
+              for (var pc = 0; pc < S.built.plantCanopy.length; pc++) {
+                S.built.plantCanopy[pc].rotation.z = Math.sin(clock * 0.85 + pc * 0.9) * 0.028;
+              }
+            }
           }
 
           S.camera.position.set(S.x, S.camera.position.y, S.z);
@@ -3286,7 +3687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           S.camera.rotateX(S.pitch);
           S.renderer.render(S.scene, S.camera);
           if (S.renderer.shadowMap && S.renderer.shadowMap.autoUpdate) S.renderer.shadowMap.autoUpdate = false;
-          if (fwd || strafe || turn || scentAnimating) ensureFrame();
+          if (fwd || strafe || turn || scentAnimating || ambientAnimating) ensureFrame();
         }
         requestFrame = ensureFrame;
         applySpecies();
@@ -11201,17 +11602,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               cueSummary + '. Read the whole posture; color is decorative.'),
             h('defs', null,
               h('linearGradient', { id: safeId + '-wall', x1: 0, y1: 0, x2: 0, y2: 1 },
-                h('stop', { offset: '0%', stopColor: '#3f2d22' }),
-                h('stop', { offset: '100%', stopColor: '#221812' })),
+                h('stop', { offset: '0%', stopColor: '#483427' }),
+                h('stop', { offset: '55%', stopColor: '#34241b' }),
+                h('stop', { offset: '100%', stopColor: '#211711' })),
+              h('linearGradient', { id: safeId + '-floor', x1: 0, y1: 0, x2: 0, y2: 1 },
+                h('stop', { offset: '0%', stopColor: '#694d38' }),
+                h('stop', { offset: '100%', stopColor: '#4a3425' })),
               h('radialGradient', { id: safeId + '-lamp', cx: '50%', cy: '50%', r: '50%' },
-                h('stop', { offset: '0%', stopColor: '#fde68a', stopOpacity: 0.5 }),
-                h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 }))
+                h('stop', { offset: '0%', stopColor: '#fef3c7', stopOpacity: 0.56 }),
+                h('stop', { offset: '55%', stopColor: '#fbbf24', stopOpacity: 0.18 }),
+                h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })),
+              h('linearGradient', { id: safeId + '-sunbeam', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#fef3c7', stopOpacity: 0.16 }),
+                h('stop', { offset: '100%', stopColor: '#fef3c7', stopOpacity: 0 }))
             ),
             h('rect', { x: 0, y: 0, width: 560, height: 200, fill: 'url(#' + safeId + '-wall)' }),
-            h('circle', { cx: 485, cy: 44, r: 62, fill: 'url(#' + safeId + '-lamp)' }),
-            h('circle', { cx: 485, cy: 44, r: 21, fill: '#fde68a', opacity: 0.5 }),
-            h('path', { d: 'M 0 151 Q 128 137 263 151 T 560 151 V 200 H 0 Z', fill: ground }),
-            h('path', { d: 'M 0 151 Q 128 137 263 151 T 560 151', fill: 'none', stroke: '#a97e56', strokeWidth: 2 }),
+            h('polygon', { points: '380,0 560,0 440,180 260,180', fill: 'url(#' + safeId + '-sunbeam)' }),
+            h('circle', { cx: 485, cy: 44, r: 72, fill: 'url(#' + safeId + '-lamp)' }),
+            h('circle', { cx: 485, cy: 44, r: 21, fill: '#fef3c7', opacity: 0.56 }),
+            h('path', { d: 'M 0 151 Q 128 137 263 151 T 560 151 V 200 H 0 Z', fill: 'url(#' + safeId + '-floor)' }),
+            h('path', { d: 'M 0 151 Q 128 137 263 151 T 560 151', fill: 'none', stroke: '#c79b6f', strokeWidth: 2, opacity: 0.85 }),
             !compact && h('text', { x: 18, y: 24, fill: '#fde68a', fontSize: 13, fontWeight: 800, letterSpacing: '0.08em' }, 'WATCH THE WHOLE BODY'),
             animal,
             showCues && cues.map(function(cue, ci) {
@@ -14760,35 +15170,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
       function clearScenarioWork() {
         if (!scenario || !hasScenarioSavedWork) return;
-        var confirmed = true;
-        try {
-          if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
-            confirmed = window.confirm(
-              'Clear the saved draft, critique, and revision note for “' +
-              scenario.title + '”? Aggregate completion and evidence metadata will remain.'
-            );
+        var doClear = function() {
+          _aiRequestRef.current.seq += 1;
+          _aiCritiqueFocusPendingRef.current = false;
+          var nextDrafts = Object.assign({}, aiDrafts);
+          var nextCritiques = Object.assign({}, aiCritiques);
+          var nextNotes = Object.assign({}, aiRevisionNotes);
+          delete nextDrafts[scenario.id];
+          delete nextCritiques[scenario.id];
+          delete nextNotes[scenario.id];
+          updMulti({
+            aiDrafts: nextDrafts,
+            aiCritiques: nextCritiques,
+            aiRevisionNotes: nextNotes,
+            aiResponse: '',
+            aiCritique: null,
+            aiLoadingCritique: false,
+            aiCritiqueRequest: null
+          });
+          petsAnnounce('Saved work cleared for ' + scenario.title + '.');
+          focusPetsTarget(_aiResponseRef);
+        };
+        var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+        var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+        if (typeof confirmModule !== 'function' || typeof confirmApi !== 'function') {
+          petsAnnounce('Confirmation dialog is unavailable right now, so your saved scenario work was kept.');
+          return;
+        }
+        confirmApi(
+          'Clear the saved draft, critique, and revision note for “' +
+          scenario.title + '”? Aggregate completion and evidence metadata will remain.',
+          {
+            title: 'Clear saved scenario work?',
+            confirmText: 'Clear saved work',
+            cancelText: 'Keep saved work',
+            tone: 'warning'
           }
-        } catch (e) {}
-        if (!confirmed) return;
-        _aiRequestRef.current.seq += 1;
-        _aiCritiqueFocusPendingRef.current = false;
-        var nextDrafts = Object.assign({}, aiDrafts);
-        var nextCritiques = Object.assign({}, aiCritiques);
-        var nextNotes = Object.assign({}, aiRevisionNotes);
-        delete nextDrafts[scenario.id];
-        delete nextCritiques[scenario.id];
-        delete nextNotes[scenario.id];
-        updMulti({
-          aiDrafts: nextDrafts,
-          aiCritiques: nextCritiques,
-          aiRevisionNotes: nextNotes,
-          aiResponse: '',
-          aiCritique: null,
-          aiLoadingCritique: false,
-          aiCritiqueRequest: null
+        ).then(function(confirmed) {
+          if (confirmed) doClear();
+        }).catch(function() {
+          petsAnnounce('Confirmation dialog could not open, so your saved scenario work was kept.');
         });
-        petsAnnounce('Saved work cleared for ' + scenario.title + '.');
-        focusPetsTarget(_aiResponseRef);
       }
 
       // Words that appear in almost any fluent English sentence. The old check
@@ -16605,14 +17027,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('stop', { offset: '62%', stopColor: '#9c8272' }),
             h('stop', { offset: '100%', stopColor: '#6f5a50' })
           ),
+          h('radialGradient', { id: 'pets-sun-halo-' + dayIdx, cx: '50%', cy: '50%', r: '50%' },
+            h('stop', { offset: '0%', stopColor: '#fef9c3', stopOpacity: 0.42 }),
+            h('stop', { offset: '55%', stopColor: '#fde68a', stopOpacity: 0.14 }),
+            h('stop', { offset: '100%', stopColor: '#fde68a', stopOpacity: 0 })
+          ),
           h('filter', { id: 'pets-soft-shadow-' + dayIdx, x: '-25%', y: '-25%', width: '150%', height: '170%' },
             h('feDropShadow', { dx: 0, dy: 5, stdDeviation: 5, floodColor: '#1f2937', floodOpacity: 0.28 })
           )
         ),
         h('rect', { x: 0, y: 0, width: W, height: H * 0.62, fill: 'url(#pets-sky-' + dayIdx + ')' }),
-        // Sun
+        // Warm atmospheric solar glow + sun disc
+        h('circle', { cx: sunX, cy: sunY, r: 88, fill: 'url(#pets-sun-halo-' + dayIdx + ')' }),
         h('circle', { cx: sunX, cy: sunY, r: 30, fill: 'url(#pets-sun-' + dayIdx + ')' }),
-        h('circle', { cx: sunX, cy: sunY, r: 16, fill: '#fef3c7' })
+        h('circle', { cx: sunX, cy: sunY, r: 16, fill: '#fef9c3' })
       );
 
       // ── Per-species scene ──

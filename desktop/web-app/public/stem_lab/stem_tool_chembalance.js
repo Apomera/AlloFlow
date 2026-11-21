@@ -284,6 +284,7 @@
         var cnt = '';
         while (i < clean.length && clean[i] >= '0' && clean[i] <= '9') { cnt += clean[i]; i++; }
         var n = cnt ? parseInt(cnt, 10) : 1;
+        if (stack.length <= 1) continue;
         var group = stack.pop();
         var top = stack[stack.length - 1];
         top.mass += group.mass * n;
@@ -371,7 +372,8 @@
 
   // parseSpecies('2H2O') -> { coef, formula, elems, mass, ok, unknown[], syntaxError }
   function parseSpecies(token) {
-    token = String(token == null ? '' : token).trim();
+    token = String(token == null ? '' : token).trim()
+      .replace(/[\u2080-\u2089]/g, function(ch) { return String(ch.charCodeAt(0) - 0x2080); });
     var coef = 1;
     var cm = token.match(/^\s*(\d+)\s*/);
     var formula = token;
@@ -4041,7 +4043,18 @@
           var R = 9, STEP = 16, GAP_PLUS = 18, GAP_ARROW = 30, PAD = 6, Hh = 30;
           var isCombustion = rt.id === 'combustion';
           var fillFor = function(letter) { return isCombustion ? (atomColors[letter] || '#94a3b8') : (RXN_GLYPH_FILL[letter] || '#94a3b8'); };
+          var glossId = 'chem-rxn-gloss-' + rt.id;
           var kids = [];
+          if (!ctx.isContrast) {
+            kids.push(h('defs', { key: 'defs' },
+              h('radialGradient', { id: glossId, cx: '32%', cy: '28%', r: '68%' },
+                h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: '0.62' }),
+                h('stop', { offset: '42%', stopColor: '#ffffff', stopOpacity: '0.14' }),
+                h('stop', { offset: '78%', stopColor: '#0f172a', stopOpacity: '0.06' }),
+                h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: '0.32' })
+              )
+            ));
+          }
           var x = PAD;
           var draw = function(groups, side) {
             groups.forEach(function(g, gi) {
@@ -4050,16 +4063,31 @@
                 x += GAP_PLUS;
               }
               var w = R * 2 + (g.length - 1) * STEP;
+              if (g.length > 1) {
+                for (var bi = 0; bi < g.length - 1; bi++) {
+                  var bx1 = x + R + bi * STEP, bx2 = x + R + (bi + 1) * STEP;
+                  kids.push(h('line', { key: side + gi + 'b' + bi, x1: bx1, y1: Hh / 2, x2: bx2, y2: Hh / 2, stroke: ctx.isContrast ? '#ffffff' : '#64748b', strokeWidth: 4, strokeLinecap: 'round' }));
+                  if (!ctx.isContrast) kids.push(h('line', { key: side + gi + 'bh' + bi, x1: bx1, y1: Hh / 2 - 1, x2: bx2, y2: Hh / 2 - 1, stroke: '#e2e8f0', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.8 }));
+                }
+              }
               g.forEach(function(letter, li) {
                 var cx = x + R + li * STEP;
-                kids.push(h('circle', { key: side + gi + 'c' + li, cx: cx, cy: Hh / 2, r: R, fill: fillFor(letter), stroke: '#1e293b', strokeWidth: 1 }));
-                kids.push(h('text', { key: side + gi + 't' + li, x: cx, y: Hh / 2 + 3.5, textAnchor: 'middle', fill: pvInk(fillFor(letter)), style: { fontSize: '9px', fontWeight: 'bold' } }, letter));
+                var baseFill = fillFor(letter);
+                if (!ctx.isContrast) {
+                  kids.push(h('ellipse', { key: side + gi + 'sh' + li, cx: cx, cy: Hh / 2 + R + 1.5, rx: R * 0.72, ry: 2, fill: 'rgba(15,23,42,0.16)' }));
+                }
+                kids.push(h('circle', { key: side + gi + 'c' + li, cx: cx, cy: Hh / 2, r: R, fill: baseFill, stroke: ctx.isContrast ? '#ffffff' : '#1e293b', strokeWidth: 1 }));
+                if (!ctx.isContrast) {
+                  kids.push(h('circle', { key: side + gi + 'g' + li, cx: cx, cy: Hh / 2, r: R - 0.5, fill: 'url(#' + glossId + ')', style: { pointerEvents: 'none' } }));
+                  kids.push(h('ellipse', { key: side + gi + 'sp' + li, cx: cx - R * 0.3, cy: Hh / 2 - R * 0.32, rx: R * 0.28, ry: R * 0.16, fill: '#ffffff', opacity: 0.65, transform: 'rotate(-28 ' + (cx - R * 0.3) + ' ' + (Hh / 2 - R * 0.32) + ')' }));
+                }
+                kids.push(h('text', { key: side + gi + 't' + li, x: cx, y: Hh / 2 + 3.5, textAnchor: 'middle', fill: pvInk(baseFill), style: { fontSize: '9px', fontWeight: 'bold' } }, letter));
               });
               x += w;
             });
           };
           draw(spec.left, 'l');
-          kids.push(h('text', { key: 'arrow', x: x + GAP_ARROW / 2, y: Hh / 2 + 6, textAnchor: 'middle', fill: '#65a30d', style: { fontSize: '18px', fontWeight: 'bold' } }, '→'));
+          kids.push(h('path', { key: 'arrow', d: 'M' + (x + 5) + ' ' + (Hh / 2) + ' H' + (x + GAP_ARROW - 7) + ' M' + (x + GAP_ARROW - 12) + ' ' + (Hh / 2 - 4.5) + ' L' + (x + GAP_ARROW - 6) + ' ' + (Hh / 2) + ' L' + (x + GAP_ARROW - 12) + ' ' + (Hh / 2 + 4.5), fill: 'none', stroke: ctx.isContrast ? '#fde047' : '#65a30d', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }));
           x += GAP_ARROW;
           draw(spec.right, 'r');
           var W = x + PAD;
@@ -4708,16 +4736,35 @@
               h(ArrowLeft, { size: 18, className: 'text-slate-600' })
             ),
             React.createElement('svg', { viewBox: '0 0 64 64', width: 40, height: 40, 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0, borderRadius: 10 } },
-              React.createElement('rect', { x: 1, y: 1, width: 62, height: 62, rx: 12, fill: ctx.isContrast ? '#000000' : '#0f172a', stroke: ctx.isContrast ? '#fde047' : '#84cc16', strokeWidth: 2 }),
-              // Erlenmeyer flask silhouette
+              !ctx.isContrast && React.createElement('defs', null,
+                React.createElement('radialGradient', { id: 'chem-logo-bg', cx: '32%', cy: '24%', r: '78%' },
+                  React.createElement('stop', { offset: '0%', stopColor: '#1e293b' }),
+                  React.createElement('stop', { offset: '100%', stopColor: '#020617' })
+                ),
+                React.createElement('linearGradient', { id: 'chem-logo-liq', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  React.createElement('stop', { offset: '0%', stopColor: '#4ade80' }),
+                  React.createElement('stop', { offset: '55%', stopColor: '#16a34a' }),
+                  React.createElement('stop', { offset: '100%', stopColor: '#065f46' })
+                ),
+                React.createElement('radialGradient', { id: 'chem-logo-glow', cx: '50%', cy: '68%', r: '44%' },
+                  React.createElement('stop', { offset: '0%', stopColor: '#4ade80', stopOpacity: '0.42' }),
+                  React.createElement('stop', { offset: '100%', stopColor: '#4ade80', stopOpacity: '0' })
+                )
+              ),
+              React.createElement('rect', { x: 1, y: 1, width: 62, height: 62, rx: 12, fill: ctx.isContrast ? '#000000' : 'url(#chem-logo-bg)', stroke: ctx.isContrast ? '#fde047' : '#84cc16', strokeWidth: 2 }),
+              !ctx.isContrast && React.createElement('circle', { cx: 32, cy: 42, r: 22, fill: 'url(#chem-logo-glow)' }),
+              // Liquid reaction fill + meniscus
+              React.createElement('path', { d: 'M21 38 H43 L47 46 C48 48.5 46.5 50.5 44 50.5 H20 C17.5 50.5 16 48.5 17 46 Z', fill: ctx.isContrast ? '#fde047' : 'url(#chem-logo-liq)', opacity: ctx.isContrast ? 0.92 : 0.9 }),
+              !ctx.isContrast && React.createElement('ellipse', { cx: 32, cy: 38, rx: 11, ry: 2, fill: '#bbf7d0', opacity: 0.72 }),
+              // Erlenmeyer flask silhouette + specular glass glint
               React.createElement('path', { d: 'M25 14 H39 M27 14 V25 L16 46 C14.5 49 16.5 52 20 52 H44 C47.5 52 49.5 49 48 46 L37 25 V14', fill: 'none', stroke: ctx.isContrast ? '#ffffff' : '#e2e8f0', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-              // Liquid reaction fill
-              React.createElement('path', { d: 'M21 38 H43 L47 46 C48 48.5 46.5 50.5 44 50.5 H20 C17.5 50.5 16 48.5 17 46 Z', fill: ctx.isContrast ? '#fde047' : '#22c55e', opacity: ctx.isContrast ? 0.9 : 0.72 }),
-              // Molecular orbital bubbles rising
+              !ctx.isContrast && React.createElement('path', { d: 'M29.5 16.5 V25.5 L20.5 43.5', fill: 'none', stroke: '#ffffff', strokeWidth: 1.3, strokeLinecap: 'round', opacity: 0.45 }),
+              // Molecular orbital bubbles rising with specular catchlights
               React.createElement('circle', { cx: 28, cy: 43, r: 2.6, fill: ctx.isContrast ? '#000000' : '#ecfccb' }),
               React.createElement('circle', { cx: 36, cy: 45, r: 2, fill: ctx.isContrast ? '#000000' : '#38bdf8' }),
-              React.createElement('circle', { cx: 32, cy: 31, r: 2.4, fill: ctx.isContrast ? '#fde047' : '#38bdf8' }),
-              React.createElement('ellipse', { cx: 32, cy: 20, rx: 14, ry: 5, fill: 'none', stroke: ctx.isContrast ? '#fde047' : '#38bdf8', strokeWidth: 1.2, opacity: 0.7 })
+              React.createElement('circle', { cx: 32, cy: 31, r: 2.6, fill: ctx.isContrast ? '#fde047' : '#38bdf8' }),
+              !ctx.isContrast && React.createElement('circle', { cx: 31.1, cy: 30.1, r: 0.9, fill: '#ffffff', opacity: 0.9 }),
+              React.createElement('ellipse', { cx: 32, cy: 20, rx: 14, ry: 4.8, fill: 'none', stroke: ctx.isContrast ? '#fde047' : '#38bdf8', strokeWidth: 1.2, opacity: 0.78 })
             ),
             h('div', { className: 'min-w-0' },
               h('div', { className: 'flex items-center gap-2 flex-wrap' },
@@ -4759,7 +4806,7 @@
           },
             h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
               h('div', { className: 'min-w-0' },
-                h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, __alloT('stem.chembalance.imported_from_particle_lab', 'Imported from Particle Lab 3D')),
+                h('p', { className: 'text-xs font-black uppercase tracking-wide text-cyan-900' }, __alloT('stem.chembalance.imported_from_particle_lab', 'Imported from Particle Lab 3D')),
                 h('p', { className: 'mt-0.5 text-xs font-bold text-slate-900' }, (d.sourceGasFormula || d.sourceGasId || 'N\u2082') + ' \u2022 ' + (Math.round(Number(d.sourceTemperatureK) || 300)) + ' K' + (d.sourceMolarMassGPerMol ? (' \u2022 ' + Number(d.sourceMolarMassGPerMol).toFixed(2) + ' g/mol') : ''))
               ),
               h('div', { className: 'flex flex-wrap items-center gap-2' },
@@ -5045,50 +5092,85 @@
                         h('span', { className: 'text-[0.6875rem] font-bold text-lime-300' }, __alloT('stem.chembalance.atoms_conserved_tag', '4 H + 2 O conserved'))
                       ),
                       React.createElement('svg', { viewBox: '0 0 360 112', width: '100%', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', height: 'auto', marginBottom: 10 } },
-                        React.createElement('rect', { x: 2, y: 4, width: 150, height: 104, rx: 12, fill: 'rgba(34,211,238,0.1)', stroke: '#22d3ee', strokeWidth: 1.5 }),
-                        // 2 H2 molecules
-                        React.createElement('line', { x1: 28, y1: 36, x2: 50, y2: 36, stroke: '#94a3b8', strokeWidth: 3 }),
-                        React.createElement('circle', { cx: 28, cy: 36, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
-                        React.createElement('circle', { cx: 50, cy: 36, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
-                        React.createElement('text', { x: 28, y: 40, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
-                        React.createElement('text', { x: 50, y: 40, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
-                        React.createElement('line', { x1: 28, y1: 68, x2: 50, y2: 68, stroke: '#94a3b8', strokeWidth: 3 }),
-                        React.createElement('circle', { cx: 28, cy: 68, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
-                        React.createElement('circle', { cx: 50, cy: 68, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
-                        React.createElement('text', { x: 28, y: 72, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
-                        React.createElement('text', { x: 50, y: 72, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
+                        !ctx.isContrast && React.createElement('defs', null,
+                          React.createElement('radialGradient', { id: 'chem-hub-h', cx: '32%', cy: '28%', r: '70%' },
+                            React.createElement('stop', { offset: '0%', stopColor: '#e0f2fe' }),
+                            React.createElement('stop', { offset: '38%', stopColor: '#38bdf8' }),
+                            React.createElement('stop', { offset: '100%', stopColor: '#0369a1' })
+                          ),
+                          React.createElement('radialGradient', { id: 'chem-hub-o', cx: '32%', cy: '28%', r: '70%' },
+                            React.createElement('stop', { offset: '0%', stopColor: '#fecaca' }),
+                            React.createElement('stop', { offset: '38%', stopColor: '#ef4444' }),
+                            React.createElement('stop', { offset: '100%', stopColor: '#991b1b' })
+                          ),
+                          React.createElement('linearGradient', { id: 'chem-hub-lbox', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                            React.createElement('stop', { offset: '0%', stopColor: '#22d3ee', stopOpacity: '0.18' }),
+                            React.createElement('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: '0.28' })
+                          ),
+                          React.createElement('linearGradient', { id: 'chem-hub-rbox', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                            React.createElement('stop', { offset: '0%', stopColor: '#34d399', stopOpacity: '0.18' }),
+                            React.createElement('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: '0.28' })
+                          )
+                        ),
+                        React.createElement('rect', { x: 2, y: 4, width: 150, height: 104, rx: 12, fill: ctx.isContrast ? '#000000' : 'url(#chem-hub-lbox)', stroke: ctx.isContrast ? '#ffffff' : '#22d3ee', strokeWidth: 1.5 }),
+                        !ctx.isContrast && React.createElement('line', { x1: 14, y1: 6.5, x2: 140, y2: 6.5, stroke: '#bae6fd', strokeWidth: 1, opacity: 0.4 }),
+                        // 2 H2 molecules with metallic bond cylinders + glossy 3D radial spheres
+                        [36, 68].map(function (hy, hi) {
+                          return React.createElement('g', { key: 'h2-' + hi },
+                            React.createElement('line', { x1: 28, y1: hy, x2: 50, y2: hy, stroke: '#475569', strokeWidth: 5, strokeLinecap: 'round' }),
+                            React.createElement('line', { x1: 28, y1: hy - 1, x2: 50, y2: hy - 1, stroke: '#e2e8f0', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.85 }),
+                            React.createElement('circle', { cx: 28, cy: hy, r: 9.2, fill: ctx.isContrast ? '#38bdf8' : 'url(#chem-hub-h)', stroke: '#e0f2fe', strokeWidth: 1 }),
+                            React.createElement('circle', { cx: 50, cy: hy, r: 9.2, fill: ctx.isContrast ? '#38bdf8' : 'url(#chem-hub-h)', stroke: '#e0f2fe', strokeWidth: 1 }),
+                            !ctx.isContrast && React.createElement('ellipse', { cx: 25, cy: hy - 3.2, rx: 2.8, ry: 1.5, fill: '#ffffff', opacity: 0.72 }),
+                            !ctx.isContrast && React.createElement('ellipse', { cx: 47, cy: hy - 3.2, rx: 2.8, ry: 1.5, fill: '#ffffff', opacity: 0.72 }),
+                            React.createElement('text', { x: 28, y: hy + 3.8, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
+                            React.createElement('text', { x: 50, y: hy + 3.8, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H')
+                          );
+                        }),
                         React.createElement('text', { x: 76, y: 57, textAnchor: 'middle', fill: '#cbd5e1', style: { fontSize: '15px', fontWeight: 900 } }, '+'),
-                        // 1 O2 molecule
-                        React.createElement('line', { x1: 102, y1: 49, x2: 128, y2: 49, stroke: '#cbd5e1', strokeWidth: 2 }),
-                        React.createElement('line', { x1: 102, y1: 55, x2: 128, y2: 55, stroke: '#cbd5e1', strokeWidth: 2 }),
-                        React.createElement('circle', { cx: 102, cy: 52, r: 12, fill: '#f87171', stroke: '#fee2e2', strokeWidth: 1.4 }),
-                        React.createElement('circle', { cx: 128, cy: 52, r: 12, fill: '#f87171', stroke: '#fee2e2', strokeWidth: 1.4 }),
-                        React.createElement('text', { x: 102, y: 56, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
-                        React.createElement('text', { x: 128, y: 56, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
+                        // 1 O2 molecule with shaded double covalent bond cylinders
+                        React.createElement('line', { x1: 102, y1: 48.5, x2: 128, y2: 48.5, stroke: '#64748b', strokeWidth: 3.2, strokeLinecap: 'round' }),
+                        React.createElement('line', { x1: 102, y1: 47.8, x2: 128, y2: 47.8, stroke: '#f1f5f9', strokeWidth: 1, opacity: 0.85 }),
+                        React.createElement('line', { x1: 102, y1: 55.5, x2: 128, y2: 55.5, stroke: '#64748b', strokeWidth: 3.2, strokeLinecap: 'round' }),
+                        React.createElement('line', { x1: 102, y1: 54.8, x2: 128, y2: 54.8, stroke: '#f1f5f9', strokeWidth: 1, opacity: 0.85 }),
+                        React.createElement('circle', { cx: 102, cy: 52, r: 12.2, fill: ctx.isContrast ? '#f87171' : 'url(#chem-hub-o)', stroke: '#fee2e2', strokeWidth: 1.2 }),
+                        React.createElement('circle', { cx: 128, cy: 52, r: 12.2, fill: ctx.isContrast ? '#f87171' : 'url(#chem-hub-o)', stroke: '#fee2e2', strokeWidth: 1.2 }),
+                        !ctx.isContrast && React.createElement('ellipse', { cx: 98.2, cy: 47.5, rx: 3.6, ry: 2, fill: '#ffffff', opacity: 0.65 }),
+                        !ctx.isContrast && React.createElement('ellipse', { cx: 124.2, cy: 47.5, rx: 3.6, ry: 2, fill: '#ffffff', opacity: 0.65 }),
+                        React.createElement('text', { x: 102, y: 56, textAnchor: 'middle', fill: '#ffffff', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
+                        React.createElement('text', { x: 128, y: 56, textAnchor: 'middle', fill: '#ffffff', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
                         React.createElement('text', { x: 77, y: 98, textAnchor: 'middle', fill: '#bae6fd', style: { fontSize: '11px', fontWeight: 800 } }, '2 H\u2082 + O\u2082'),
-                        // Reaction Arrow
+                        // Luminous Reaction Arrow
+                        !ctx.isContrast && React.createElement('path', { d: 'M160 54 H196 M189 47 L197 54 L189 61', fill: 'none', stroke: '#fbbf24', strokeWidth: 7, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.22 }),
                         React.createElement('path', { d: 'M160 54 H196 M189 47 L197 54 L189 61', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                         // Products box
-                        React.createElement('rect', { x: 206, y: 4, width: 152, height: 104, rx: 12, fill: 'rgba(52,211,153,0.1)', stroke: '#34d399', strokeWidth: 1.5 }),
-                        // 2 H2O molecules
+                        React.createElement('rect', { x: 206, y: 4, width: 152, height: 104, rx: 12, fill: ctx.isContrast ? '#000000' : 'url(#chem-hub-rbox)', stroke: ctx.isContrast ? '#fde047' : '#34d399', strokeWidth: 1.5 }),
+                        !ctx.isContrast && React.createElement('line', { x1: 218, y1: 6.5, x2: 346, y2: 6.5, stroke: '#a7f3d0', strokeWidth: 1, opacity: 0.4 }),
+                        // 2 H2O molecules with shaded bond cylinders & glossy CPK spheres
                         [246, 316].map(function (ox, wi) {
                           return React.createElement('g', { key: 'h2o-' + wi },
-                            React.createElement('line', { x1: ox, y1: 42, x2: ox - 16, y2: 64, stroke: '#cbd5e1', strokeWidth: 2.5 }),
-                            React.createElement('line', { x1: ox, y1: 42, x2: ox + 16, y2: 64, stroke: '#cbd5e1', strokeWidth: 2.5 }),
-                            React.createElement('circle', { cx: ox, cy: 42, r: 12, fill: '#f87171', stroke: '#fee2e2', strokeWidth: 1.4 }),
-                            React.createElement('circle', { cx: ox - 16, cy: 64, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
-                            React.createElement('circle', { cx: ox + 16, cy: 64, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1.2 }),
-                            React.createElement('text', { x: ox, y: 46, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
-                            React.createElement('text', { x: ox - 16, y: 68, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
-                            React.createElement('text', { x: ox + 16, y: 68, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H')
+                            !ctx.isContrast && React.createElement('ellipse', { cx: ox, cy: 76, rx: 20, ry: 3.5, fill: 'rgba(0,0,0,0.34)' }),
+                            React.createElement('line', { x1: ox, y1: 42, x2: ox - 16, y2: 64, stroke: '#64748b', strokeWidth: 4.2, strokeLinecap: 'round' }),
+                            React.createElement('line', { x1: ox, y1: 41.2, x2: ox - 16, y2: 63.2, stroke: '#e2e8f0', strokeWidth: 1.3, strokeLinecap: 'round', opacity: 0.85 }),
+                            React.createElement('line', { x1: ox, y1: 42, x2: ox + 16, y2: 64, stroke: '#64748b', strokeWidth: 4.2, strokeLinecap: 'round' }),
+                            React.createElement('line', { x1: ox, y1: 41.2, x2: ox + 16, y2: 63.2, stroke: '#e2e8f0', strokeWidth: 1.3, strokeLinecap: 'round', opacity: 0.85 }),
+                            React.createElement('circle', { cx: ox, cy: 42, r: 12.2, fill: ctx.isContrast ? '#f87171' : 'url(#chem-hub-o)', stroke: '#fee2e2', strokeWidth: 1.2 }),
+                            React.createElement('circle', { cx: ox - 16, cy: 64, r: 9.2, fill: ctx.isContrast ? '#38bdf8' : 'url(#chem-hub-h)', stroke: '#e0f2fe', strokeWidth: 1 }),
+                            React.createElement('circle', { cx: ox + 16, cy: 64, r: 9.2, fill: ctx.isContrast ? '#38bdf8' : 'url(#chem-hub-h)', stroke: '#e0f2fe', strokeWidth: 1 }),
+                            !ctx.isContrast && React.createElement('ellipse', { cx: ox - 3.6, cy: 37.5, rx: 3.5, ry: 1.9, fill: '#ffffff', opacity: 0.65 }),
+                            !ctx.isContrast && React.createElement('ellipse', { cx: ox - 18.8, cy: 60.8, rx: 2.6, ry: 1.4, fill: '#ffffff', opacity: 0.7 }),
+                            !ctx.isContrast && React.createElement('ellipse', { cx: ox + 13.2, cy: 60.8, rx: 2.6, ry: 1.4, fill: '#ffffff', opacity: 0.7 }),
+                            React.createElement('text', { x: ox, y: 46, textAnchor: 'middle', fill: '#ffffff', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
+                            React.createElement('text', { x: ox - 16, y: 67.8, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
+                            React.createElement('text', { x: ox + 16, y: 67.8, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H')
                           );
                         }),
                         React.createElement('text', { x: 282, y: 98, textAnchor: 'middle', fill: '#a7f3d0', style: { fontSize: '11px', fontWeight: 800 } }, '2 H\u2082O')
                       )
                     ),
                     h('div', null,
-                      h('div', { className: 'h-2 rounded-full bg-slate-800 overflow-hidden' },
-                        h('div', { className: 'h-full rounded-full', style: { width: '100%', background: 'linear-gradient(90deg, #22d3ee, #84cc16, #34d399)' } })
+                      h('div', { className: 'h-2.5 rounded-full bg-slate-800/90 overflow-hidden p-0.5', style: ctx.isContrast ? { border: '1px solid #ffffff' } : { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.5)' } },
+                        h('div', { className: 'h-full rounded-full', style: { width: '100%', background: ctx.isContrast ? '#fde047' : 'linear-gradient(90deg, #22d3ee, #84cc16, #34d399)', boxShadow: ctx.isContrast ? 'none' : '0 0 10px rgba(52,211,153,0.55)' } })
                       ),
                       h('div', { className: 'mt-2 text-xs text-slate-300' }, __alloT('stem.chembalance.bench_hint', 'Choose Core Labs to open the interactive balancer.'))
                     )
@@ -5235,25 +5317,87 @@
               h('span', { className: 'text-xs text-slate-600' },
                 __alloT('stem.chembalance.practice_next_hint', 'Picks an unsolved equation — ones you missed come back first.'))
             ),
-            // Balance Scale SVG
+            // Balance Scale SVG — Sculpted Metallic Beam Scale with Balanced-State Aura
             h('svg', { viewBox: '0 0 400 100', role: 'img', 'aria-label': __alloT('stem.chembalance.balance_scale_accessible_summary', 'Balance scale comparing reactant and product atom counts') + '. ' + (isBalanced ? 'Balanced.' : 'Not balanced.') + ' Reactant atoms: ' + Object.keys(leftAtoms).map(function(atom) { return atom + ' ' + leftAtoms[atom]; }).join(', ') + '. Product atoms: ' + Object.keys(rightAtoms).map(function(atom) { return atom + ' ' + rightAtoms[atom]; }).join(', ') + '.', className: 'w-full mb-3', style: { maxHeight: '100px' } },
-              h('polygon', { points: '200,95 190,75 210,75', fill: '#94a3b8' }),
-              h('line', { x1: 60, y1: 75 + tilt * 8, x2: 340, y2: 75 - tilt * 8, stroke: isBalanced ? '#22c55e' : '#94a3b8', strokeWidth: 3, strokeLinecap: 'round', style: { transition: 'all 0.3s', filter: isBalanced ? 'drop-shadow(0 0 3px rgba(34,197,94,0.7))' : 'none' } }),
-              h('ellipse', { cx: 100, cy: 80 + tilt * 8, rx: 50, ry: 8, fill: isBalanced ? '#dcfce7' : '#f1f5f9', stroke: isBalanced ? '#22c55e' : '#94a3b8', strokeWidth: 1.5, style: { transition: 'all 0.3s' } }),
-              h('ellipse', { cx: 300, cy: 80 - tilt * 8, rx: 50, ry: 8, fill: isBalanced ? '#dcfce7' : '#f1f5f9', stroke: isBalanced ? '#22c55e' : '#94a3b8', strokeWidth: 1.5, style: { transition: 'all 0.3s' } }),
+              !ctx.isContrast && h('defs', null,
+                h('radialGradient', { id: 'chem-bal-aura', cx: '50%', cy: '55%', r: '50%' },
+                  h('stop', { offset: '0%', stopColor: '#22c55e', stopOpacity: '0.24' }),
+                  h('stop', { offset: '65%', stopColor: '#10b981', stopOpacity: '0.07' }),
+                  h('stop', { offset: '100%', stopColor: '#10b981', stopOpacity: '0' })
+                ),
+                h('linearGradient', { id: 'chem-bal-metal', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#e2e8f0' }),
+                  h('stop', { offset: '48%', stopColor: '#94a3b8' }),
+                  h('stop', { offset: '100%', stopColor: '#475569' })
+                ),
+                h('linearGradient', { id: 'chem-bal-beam-ok', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                  h('stop', { offset: '0%', stopColor: '#16a34a' }),
+                  h('stop', { offset: '50%', stopColor: '#4ade80' }),
+                  h('stop', { offset: '100%', stopColor: '#16a34a' })
+                ),
+                h('linearGradient', { id: 'chem-bal-pan-ok', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#ecfdf5' }),
+                  h('stop', { offset: '100%', stopColor: '#bbf7d0' })
+                ),
+                h('linearGradient', { id: 'chem-bal-pan', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#f8fafc' }),
+                  h('stop', { offset: '100%', stopColor: '#cbd5e1' })
+                ),
+                h('radialGradient', { id: 'chem-bal-gloss', cx: '32%', cy: '28%', r: '68%' },
+                  h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: '0.68' }),
+                  h('stop', { offset: '45%', stopColor: '#ffffff', stopOpacity: '0.12' }),
+                  h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: '0.3' })
+                )
+              ),
+              // Balanced-state luminous aura
+              isBalanced && !ctx.isContrast && h('ellipse', { cx: 200, cy: 62, rx: 165, ry: 34, fill: 'url(#chem-bal-aura)' }),
+              // Grounded pedestal shadow + brushed metallic fulcrum
+              !ctx.isContrast && h('ellipse', { cx: 200, cy: 96, rx: 28, ry: 3, fill: 'rgba(15,23,42,0.18)' }),
+              h('rect', { x: 180, y: 92, width: 40, height: 5, rx: 2.5, fill: ctx.isContrast ? '#ffffff' : 'url(#chem-bal-metal)', stroke: ctx.isContrast ? '#ffffff' : '#475569', strokeWidth: 0.7 }),
+              h('polygon', { points: '200,72 188,93 212,93', fill: ctx.isContrast ? '#94a3b8' : 'url(#chem-bal-metal)', stroke: ctx.isContrast ? '#ffffff' : '#475569', strokeWidth: 0.8, strokeLinejoin: 'round' }),
+              // Pan support stems
+              h('line', { x1: 100, y1: 75 + tilt * 8, x2: 100, y2: 80 + tilt * 8, stroke: ctx.isContrast ? '#ffffff' : '#64748b', strokeWidth: 2, style: { transition: 'all 0.3s' } }),
+              h('line', { x1: 300, y1: 75 - tilt * 8, x2: 300, y2: 80 - tilt * 8, stroke: ctx.isContrast ? '#ffffff' : '#64748b', strokeWidth: 2, style: { transition: 'all 0.3s' } }),
+              // Sculpted balance beam + specular ridge
+              isBalanced && !ctx.isContrast && h('line', { x1: 60, y1: 75 + tilt * 8, x2: 340, y2: 75 - tilt * 8, stroke: '#22c55e', strokeWidth: 8, strokeLinecap: 'round', opacity: 0.22, style: { transition: 'all 0.3s' } }),
+              h('line', { x1: 60, y1: 75 + tilt * 8, x2: 340, y2: 75 - tilt * 8, stroke: ctx.isContrast ? (isBalanced ? '#fde047' : '#ffffff') : (isBalanced ? 'url(#chem-bal-beam-ok)' : 'url(#chem-bal-metal)'), strokeWidth: 4.2, strokeLinecap: 'round', style: { transition: 'all 0.3s' } }),
+              !ctx.isContrast && h('line', { x1: 64, y1: 73.9 + tilt * 8, x2: 336, y2: 73.9 - tilt * 8, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.65, style: { transition: 'all 0.3s' } }),
+              // Center fulcrum pivot pin
+              h('circle', { cx: 200, cy: 75, r: 4.2, fill: isBalanced ? (ctx.isContrast ? '#fde047' : '#22c55e') : (ctx.isContrast ? '#ffffff' : '#cbd5e1'), stroke: '#334155', strokeWidth: 1 }),
+              !ctx.isContrast && h('circle', { cx: 198.8, cy: 73.8, r: 1.2, fill: '#ffffff', opacity: 0.85 }),
+              // Sculpted pans with rim specular highlight
+              h('ellipse', { cx: 100, cy: 80 + tilt * 8, rx: 50, ry: 8.5, fill: ctx.isContrast ? '#000000' : (isBalanced ? 'url(#chem-bal-pan-ok)' : 'url(#chem-bal-pan)'), stroke: isBalanced ? (ctx.isContrast ? '#fde047' : '#16a34a') : (ctx.isContrast ? '#ffffff' : '#64748b'), strokeWidth: 1.6, style: { transition: 'all 0.3s' } }),
+              h('ellipse', { cx: 300, cy: 80 - tilt * 8, rx: 50, ry: 8.5, fill: ctx.isContrast ? '#000000' : (isBalanced ? 'url(#chem-bal-pan-ok)' : 'url(#chem-bal-pan)'), stroke: isBalanced ? (ctx.isContrast ? '#fde047' : '#16a34a') : (ctx.isContrast ? '#ffffff' : '#64748b'), strokeWidth: 1.6, style: { transition: 'all 0.3s' } }),
               Object.keys(leftAtoms).map(function(atom, idx) {
                 var count = leftAtoms[atom]; var balls = [];
-                for (var b = 0; b < Math.min(count, 8); b++) balls.push(h('circle', { key: atom + b, cx: 70 + idx * 18 + (b % 3) * 10, cy: 60 + tilt * 8 - Math.floor(b / 3) * 10, r: 5, fill: atomColors[atom] || '#94a3b8', stroke: 'white', strokeWidth: 0.5 }));
+                for (var b = 0; b < Math.min(count, 8); b++) {
+                  var bx = 70 + idx * 18 + (b % 3) * 10, by = 60 + tilt * 8 - Math.floor(b / 3) * 10;
+                  balls.push(h('g', { key: atom + b },
+                    h('circle', { cx: bx, cy: by, r: 5.2, fill: atomColors[atom] || '#94a3b8', stroke: ctx.isContrast ? '#ffffff' : '#1e293b', strokeWidth: 0.6 }),
+                    !ctx.isContrast && h('circle', { cx: bx, cy: by, r: 4.8, fill: 'url(#chem-bal-gloss)' }),
+                    !ctx.isContrast && h('circle', { cx: bx - 1.6, cy: by - 1.6, r: 1.2, fill: '#ffffff', opacity: 0.72 })
+                  ));
+                }
                 return h('g', { key: 'l' + atom }, balls, h('text', { x: 70 + idx * 18, y: 42 + tilt * 8, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: atomColors[atom] || '#94a3b8' }, atom + '\u00D7' + count));
               }),
               Object.keys(rightAtoms).map(function(atom, idx) {
                 var count = rightAtoms[atom]; var balls = [];
-                for (var b = 0; b < Math.min(count, 8); b++) balls.push(h('circle', { key: atom + b, cx: 270 + idx * 18 + (b % 3) * 10, cy: 60 - tilt * 8 - Math.floor(b / 3) * 10, r: 5, fill: atomColors[atom] || '#94a3b8', stroke: 'white', strokeWidth: 0.5 }));
+                for (var b = 0; b < Math.min(count, 8); b++) {
+                  var bx = 270 + idx * 18 + (b % 3) * 10, by = 60 - tilt * 8 - Math.floor(b / 3) * 10;
+                  balls.push(h('g', { key: atom + b },
+                    h('circle', { cx: bx, cy: by, r: 5.2, fill: atomColors[atom] || '#94a3b8', stroke: ctx.isContrast ? '#ffffff' : '#1e293b', strokeWidth: 0.6 }),
+                    !ctx.isContrast && h('circle', { cx: bx, cy: by, r: 4.8, fill: 'url(#chem-bal-gloss)' }),
+                    !ctx.isContrast && h('circle', { cx: bx - 1.6, cy: by - 1.6, r: 1.2, fill: '#ffffff', opacity: 0.72 })
+                  ));
+                }
                 return h('g', { key: 'r' + atom }, balls, h('text', { x: 270 + idx * 18, y: 42 - tilt * 8, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: atomColors[atom] || '#94a3b8' }, atom + '\u00D7' + count));
               }),
-              h('text', { x: 100, y: 15, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#475569' }, __alloT('stem.chembalance.reactants', 'Reactants')),
-              h('text', { x: 300, y: 15, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#475569' }, __alloT('stem.chembalance.products', 'Products')),
-              isBalanced && h('text', { x: 200, y: 15, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: '#22c55e' }, __alloT('stem.chembalance.balanced', '\u2705 Balanced!'))
+              h('text', { x: 100, y: 15, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: ctx.isContrast ? '#ffffff' : '#475569' }, __alloT('stem.chembalance.reactants', 'Reactants')),
+              h('text', { x: 300, y: 15, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: ctx.isContrast ? '#ffffff' : '#475569' }, __alloT('stem.chembalance.products', 'Products')),
+              isBalanced && h('g', null,
+                h('rect', { x: 158, y: 3, width: 84, height: 17, rx: 8.5, fill: ctx.isContrast ? '#000000' : '#dcfce7', stroke: ctx.isContrast ? '#fde047' : '#22c55e', strokeWidth: 1.2 }),
+                h('text', { x: 200, y: 14.5, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: ctx.isContrast ? '#fde047' : '#15803d' }, __alloT('stem.chembalance.balanced', '\u2705 Balanced!'))
+              )
             ),
             // ── Particle view: coefficients multiply whole molecules ──
             (function() {
@@ -5280,13 +5424,27 @@
               });
               var H = maxRows * CELL + LABEL_H + 6;
               var kids = [];
+              if (!ctx.isContrast) {
+                kids.push(h('defs', { key: 'pv-defs' },
+                  h('radialGradient', { id: 'chem-pv-gloss', cx: '32%', cy: '28%', r: '68%' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: '0.62' }),
+                    h('stop', { offset: '44%', stopColor: '#ffffff', stopOpacity: '0.12' }),
+                    h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: '0.32' })
+                  )
+                ));
+              }
               var srParts = { left: [], right: [] };
               var x = PAD;
               groups.forEach(function(g, gi) {
                 if (gi > 0) {
                   var isArrow = groups[gi - 1].side !== g.side;
                   var sepW = isArrow ? GAP_ARROW : GAP_PLUS;
-                  kids.push(h('text', { key: 'sep' + gi, x: x + sepW / 2, y: (maxRows * CELL) / 2 + 6, textAnchor: 'middle', fill: isArrow ? '#65a30d' : '#64748b', style: { fontSize: isArrow ? '22px' : '18px', fontWeight: 'bold' } }, isArrow ? '→' : '+'));
+                  var midY = (maxRows * CELL) / 2;
+                  if (isArrow) {
+                    kids.push(h('path', { key: 'sep' + gi, d: 'M' + (x + 6) + ' ' + midY + ' H' + (x + sepW - 8) + ' M' + (x + sepW - 14) + ' ' + (midY - 5.5) + ' L' + (x + sepW - 7) + ' ' + midY + ' L' + (x + sepW - 14) + ' ' + (midY + 5.5), fill: 'none', stroke: ctx.isContrast ? '#fde047' : '#65a30d', strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+                  } else {
+                    kids.push(h('text', { key: 'sep' + gi, x: x + sepW / 2, y: midY + 6, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '18px', fontWeight: 'bold' } }, '+'));
+                  }
                   x += sepW;
                 }
                 var k = g.els.length;
@@ -5299,12 +5457,15 @@
                   var cx = gx + (c % 3) * CELL + CELL / 2;
                   var cy = gy + Math.floor(c / 3) * CELL + CELL / 2;
                   kids.push(h('g', { key: 'm' + g.slot + '_' + c, 'data-pv-slot': g.slot, 'data-pv-copy': c, 'data-pv-atoms': k },
-                    h('circle', { cx: cx, cy: cy, r: CELL / 2 - 1, fill: g.side === 'left' ? 'rgba(148,163,184,0.10)' : 'rgba(101,163,13,0.10)', stroke: 'rgba(100,116,139,0.35)', strokeWidth: 1, strokeDasharray: '3,2' }),
+                    h('circle', { cx: cx, cy: cy, r: CELL / 2 - 1, fill: ctx.isContrast ? 'transparent' : (g.side === 'left' ? 'rgba(14,165,233,0.08)' : 'rgba(34,197,94,0.09)'), stroke: ctx.isContrast ? '#ffffff' : (g.side === 'left' ? 'rgba(14,116,144,0.34)' : 'rgba(21,128,61,0.38)'), strokeWidth: 1.1, strokeDasharray: '3,2' }),
                     pos.map(function(p, pi) {
                       var el = g.els[pi];
+                      var ax = cx + p[0] * r, ay = cy + p[1] * r;
                       return h('g', { key: pi },
-                        h('circle', { cx: cx + p[0] * r, cy: cy + p[1] * r, r: r, fill: atomColors[el] || '#94a3b8', stroke: '#1e293b', strokeWidth: 0.8 }),
-                        r >= 6 ? h('text', { x: cx + p[0] * r, y: cy + p[1] * r + r * 0.4, textAnchor: 'middle', fill: pvInk(atomColors[el]), style: { fontSize: (r * 1.1) + 'px', fontWeight: 'bold' } }, el) : null
+                        h('circle', { cx: ax, cy: ay, r: r, fill: atomColors[el] || '#94a3b8', stroke: ctx.isContrast ? '#ffffff' : '#1e293b', strokeWidth: 0.8 }),
+                        !ctx.isContrast && h('circle', { cx: ax, cy: ay, r: Math.max(1, r - 0.4), fill: 'url(#chem-pv-gloss)' }),
+                        !ctx.isContrast && r >= 5 && h('circle', { cx: ax - r * 0.28, cy: ay - r * 0.28, r: Math.max(1, r * 0.22), fill: '#ffffff', opacity: 0.68 }),
+                        r >= 6 ? h('text', { x: ax, y: ay + r * 0.4, textAnchor: 'middle', fill: pvInk(atomColors[el]), style: { fontSize: (r * 1.1) + 'px', fontWeight: 'bold' } }, el) : null
                       );
                     })
                   ));
@@ -5353,6 +5514,20 @@
                       'aria-label': __alloT('stem.chembalance.element_bars_aria', 'Per-element atom balance comparison between reactants and products') + '. ' + barSummary,
                       style: { display: 'block', width: '100%', maxWidth: '460px', height: 'auto', margin: '0 auto' }
                     },
+                      !ctx.isContrast && React.createElement('defs', null,
+                        React.createElement('linearGradient', { id: 'chem-eb-left', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                          React.createElement('stop', { offset: '0%', stopColor: '#38bdf8' }),
+                          React.createElement('stop', { offset: '100%', stopColor: '#0284c7' })
+                        ),
+                        React.createElement('linearGradient', { id: 'chem-eb-right', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                          React.createElement('stop', { offset: '0%', stopColor: '#059669' }),
+                          React.createElement('stop', { offset: '100%', stopColor: '#34d399' })
+                        ),
+                        React.createElement('linearGradient', { id: 'chem-eb-warn', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                          React.createElement('stop', { offset: '0%', stopColor: '#fbbf24' }),
+                          React.createElement('stop', { offset: '100%', stopColor: '#d97706' })
+                        )
+                      ),
                       React.createElement('text', { x: midX - 24, y: 13, textAnchor: 'end', fill: ctx.isContrast ? '#ffffff' : '#0369a1', style: { fontSize: '10.5px', fontWeight: 800 } }, __alloT('stem.chembalance.reactants', 'Reactants')),
                       React.createElement('text', { x: midX + 24, y: 13, textAnchor: 'start', fill: ctx.isContrast ? '#fde047' : '#047857', style: { fontSize: '10.5px', fontWeight: 800 } }, __alloT('stem.chembalance.products', 'Products')),
                       React.createElement('line', { x1: midX, y1: 16, x2: midX, y2: svgH - 4, stroke: ctx.isContrast ? '#ffffff' : '#cbd5e1', strokeWidth: 1.2, strokeDasharray: '3 3' }),
@@ -5360,14 +5535,18 @@
                         var lc = leftAtoms[el] || 0, rc = rightAtoms[el] || 0, eq = lc === rc;
                         var y = topPad + idx * rowH;
                         var lw = Math.max(4, (lc / maxCnt) * maxBar), rw = Math.max(4, (rc / maxCnt) * maxBar);
-                        var leftFill = ctx.isContrast ? '#ffffff' : (eq ? '#0284c7' : '#f59e0b');
-                        var rightFill = ctx.isContrast ? '#fde047' : (eq ? '#059669' : '#f59e0b');
+                        var leftFill = ctx.isContrast ? '#ffffff' : (eq ? 'url(#chem-eb-left)' : 'url(#chem-eb-warn)');
+                        var rightFill = ctx.isContrast ? '#fde047' : (eq ? 'url(#chem-eb-right)' : 'url(#chem-eb-warn)');
                         return React.createElement('g', { key: 'eb-' + el },
+                          !ctx.isContrast && React.createElement('rect', { x: midX - 22 - maxBar, y: y + 4, width: maxBar, height: 14, rx: 4, fill: '#f1f5f9' }),
+                          !ctx.isContrast && React.createElement('rect', { x: midX + 22, y: y + 4, width: maxBar, height: 14, rx: 4, fill: '#f1f5f9' }),
                           React.createElement('rect', { x: midX - 22 - lw, y: y + 4, width: lw, height: 14, rx: 4, fill: leftFill }),
+                          !ctx.isContrast && lw > 8 && React.createElement('rect', { x: midX - 20 - lw, y: y + 5.5, width: lw - 4, height: 2.5, rx: 1.2, fill: '#ffffff', opacity: 0.35 }),
                           React.createElement('text', { x: midX - 27 - lw, y: y + 15, textAnchor: 'end', fill: ctx.isContrast ? '#ffffff' : '#334155', style: { fontSize: '10.5px', fontWeight: 800 } }, String(lc)),
                           React.createElement('rect', { x: midX - 18, y: y + 2, width: 36, height: 18, rx: 5, fill: eq ? (ctx.isContrast ? '#fde047' : '#dcfce7') : (ctx.isContrast ? '#000000' : '#fef3c7'), stroke: eq ? (ctx.isContrast ? '#ffffff' : '#16a34a') : (ctx.isContrast ? '#fde047' : '#d97706'), strokeWidth: 1.2 }),
                           React.createElement('text', { x: midX, y: y + 15, textAnchor: 'middle', fill: eq ? (ctx.isContrast ? '#000000' : '#14532d') : (ctx.isContrast ? '#fde047' : '#92400e'), style: { fontSize: '10.5px', fontWeight: 900 } }, el),
                           React.createElement('rect', { x: midX + 22, y: y + 4, width: rw, height: 14, rx: 4, fill: rightFill }),
+                          !ctx.isContrast && rw > 8 && React.createElement('rect', { x: midX + 24, y: y + 5.5, width: rw - 4, height: 2.5, rx: 1.2, fill: '#ffffff', opacity: 0.35 }),
                           React.createElement('text', { x: midX + 27 + rw, y: y + 15, textAnchor: 'start', fill: ctx.isContrast ? '#ffffff' : '#334155', style: { fontSize: '10.5px', fontWeight: 800 } }, String(rc))
                         );
                       })
@@ -5819,34 +5998,70 @@
                 h('p', { className: 'text-sm font-bold text-indigo-700' }, currentMol.name + ' (' + currentMol.formula + ')'),
                 h('span', { className: 'px-2 py-0.5 bg-indigo-100 text-indigo-600 text-[0.6875rem] font-bold rounded-full' }, currentMol.shape)
               ),
-              h('svg', { viewBox: '0 0 300 200', role: 'img', 'aria-label': __alloT('stem.chembalance.molecular_structure_accessible_summary', 'Molecular structure diagram') + ' for ' + currentMol.name + ', formula ' + currentMol.formula + ', shape ' + currentMol.shape + ', with ' + currentMol.atoms.length + ' atoms and ' + currentMol.bonds.length + ' bonds.', className: 'w-full max-w-sm mx-auto', style: { background: '#fafafa', borderRadius: '8px' } },
-                // Bonds
+              h('svg', { viewBox: '0 0 300 200', role: 'img', 'aria-label': __alloT('stem.chembalance.molecular_structure_accessible_summary', 'Molecular structure diagram') + ' for ' + currentMol.name + ', formula ' + currentMol.formula + ', shape ' + currentMol.shape + ', with ' + currentMol.atoms.length + ' atoms and ' + currentMol.bonds.length + ' bonds.', className: 'w-full max-w-sm mx-auto', style: { background: ctx.isContrast ? '#000000' : '#f8fafc', borderRadius: '10px', border: ctx.isContrast ? '1px solid #ffffff' : '1px solid #e2e8f0' } },
+                !ctx.isContrast && h('defs', null,
+                  h('radialGradient', { id: 'chem-mol-stage', cx: '50%', cy: '44%', r: '62%' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff' }),
+                    h('stop', { offset: '68%', stopColor: '#f1f5f9' }),
+                    h('stop', { offset: '100%', stopColor: '#e2e8f0' })
+                  ),
+                  h('radialGradient', { id: 'chem-mol-gloss', cx: '32%', cy: '26%', r: '68%' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: '0.72' }),
+                    h('stop', { offset: '36%', stopColor: '#ffffff', stopOpacity: '0.18' }),
+                    h('stop', { offset: '76%', stopColor: '#0f172a', stopOpacity: '0.08' }),
+                    h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: '0.38' })
+                  )
+                ),
+                !ctx.isContrast && h('rect', { x: 0, y: 0, width: 300, height: 200, fill: 'url(#chem-mol-stage)' }),
+                // Subtle ambient ground shadows beneath each atom
+                !ctx.isContrast && currentMol.atoms.map(function(atom, ai) {
+                  var r = atom.el === 'H' ? 12 : 16;
+                  return h('ellipse', { key: 'sh' + ai, cx: atom.x + 2, cy: atom.y + r + 5, rx: r * 0.85, ry: r * 0.24, fill: 'rgba(15,23,42,0.12)' });
+                }),
+                // Shaded metallic/glass covalent bond cylinders (single, double, triple & ionic)
                 currentMol.bonds.map(function(bond, bi) {
                   var a1 = currentMol.atoms[bond[0]];
                   var a2 = currentMol.atoms[bond[1]];
-                  var order = bond[2] || 1;
+                  var order = bond[2] != null ? bond[2] : 1;
+                  var dx = a2.x - a1.x, dy = a2.y - a1.y;
+                  var len = Math.sqrt(dx * dx + dy * dy) || 1;
+                  var ux = -dy / len, uy = dx / len;
+                  var drawCylinder = function(keyPrefix, ox, oy, w) {
+                    var x1 = a1.x + ox, y1 = a1.y + oy, x2 = a2.x + ox, y2 = a2.y + oy;
+                    if (ctx.isContrast) {
+                      return [h('line', { key: keyPrefix, x1: x1, y1: y1, x2: x2, y2: y2, stroke: '#ffffff', strokeWidth: w, strokeLinecap: 'round' })];
+                    }
+                    return [
+                      h('line', { key: keyPrefix + 's', x1: x1 + 1, y1: y1 + 2.5, x2: x2 + 1, y2: y2 + 2.5, stroke: 'rgba(15,23,42,0.14)', strokeWidth: w + 1, strokeLinecap: 'round' }),
+                      h('line', { key: keyPrefix + 'o', x1: x1, y1: y1, x2: x2, y2: y2, stroke: '#475569', strokeWidth: w + 1.6, strokeLinecap: 'round' }),
+                      h('line', { key: keyPrefix + 'm', x1: x1, y1: y1, x2: x2, y2: y2, stroke: '#94a3b8', strokeWidth: w, strokeLinecap: 'round' }),
+                      h('line', { key: keyPrefix + 'h', x1: x1 + ux * (w * 0.22), y1: y1 + uy * (w * 0.22), x2: x2 + ux * (w * 0.22), y2: y2 + uy * (w * 0.22), stroke: '#f8fafc', strokeWidth: Math.max(1, w * 0.34), strokeLinecap: 'round', opacity: 0.88 })
+                    ];
+                  };
                   var els = [];
                   if (order === 0) {
-                    // Ionic - dashed line
-                    els.push(h('line', { key: 'b' + bi, x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '6,4' }));
+                    // Ionic electrostatic dashed bridge
+                    if (!ctx.isContrast) els.push(h('line', { key: 'b' + bi + 'gl', x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, stroke: '#38bdf8', strokeWidth: 5, strokeDasharray: '6,4', opacity: 0.22 }));
+                    els.push(h('line', { key: 'b' + bi, x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, stroke: ctx.isContrast ? '#fde047' : '#64748b', strokeWidth: 2.2, strokeDasharray: '6,4', strokeLinecap: 'round' }));
                   } else if (order === 2) {
-                    var dx = a2.x - a1.x, dy = a2.y - a1.y;
-                    var len = Math.sqrt(dx * dx + dy * dy) || 1;
-                    var nx = -dy / len * 3, ny = dx / len * 3;
-                    els.push(h('line', { key: 'b' + bi + 'a', x1: a1.x + nx, y1: a1.y + ny, x2: a2.x + nx, y2: a2.y + ny, stroke: '#94a3b8', strokeWidth: 3 }));
-                    els.push(h('line', { key: 'b' + bi + 'b', x1: a1.x - nx, y1: a1.y - ny, x2: a2.x - nx, y2: a2.y - ny, stroke: '#94a3b8', strokeWidth: 3 }));
+                    els = els.concat(drawCylinder('b' + bi + 'a', ux * 3.4, uy * 3.4, 3.2), drawCylinder('b' + bi + 'b', -ux * 3.4, -uy * 3.4, 3.2));
+                  } else if (order === 3) {
+                    els = els.concat(drawCylinder('b' + bi + 'a', ux * 5, uy * 5, 2.5), drawCylinder('b' + bi + 'm', 0, 0, 2.5), drawCylinder('b' + bi + 'b', -ux * 5, -uy * 5, 2.5));
                   } else {
-                    els.push(h('line', { key: 'b' + bi, x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, stroke: '#94a3b8', strokeWidth: 3 }));
+                    els = els.concat(drawCylinder('b' + bi, 0, 0, 4.4));
                   }
                   return els;
                 }),
-                // Atoms
+                // Glossy 3D radial-shaded CPK atom spheres with specular catchlights
                 currentMol.atoms.map(function(atom, ai) {
-                  var r = atom.el === 'H' ? 12 : 16;
+                  var r = atom.el === 'H' ? 12.5 : 16.5;
                   var col = ATOM_COLORS[atom.el] || '#94a3b8';
                   var textCol = atom.el === 'H' || atom.el === 'Ag' || atom.el === 'Ca' ? '#1e293b' : '#ffffff';
                   return h('g', { key: 'a' + ai },
-                    h('circle', { cx: atom.x, cy: atom.y, r: r, fill: col, stroke: '#1e293b', strokeWidth: 1.5 }),
+                    h('circle', { cx: atom.x, cy: atom.y, r: r, fill: col, stroke: ctx.isContrast ? '#ffffff' : '#1e293b', strokeWidth: 1.4 }),
+                    !ctx.isContrast && h('circle', { cx: atom.x, cy: atom.y, r: r - 0.6, fill: 'url(#chem-mol-gloss)' }),
+                    !ctx.isContrast && h('ellipse', { cx: atom.x - r * 0.3, cy: atom.y - r * 0.34, rx: r * 0.3, ry: r * 0.17, fill: '#ffffff', opacity: 0.72, transform: 'rotate(-28 ' + (atom.x - r * 0.3) + ' ' + (atom.y - r * 0.34) + ')' }),
+                    !ctx.isContrast && h('circle', { cx: atom.x + r * 0.32, cy: atom.y + r * 0.34, r: r * 0.1, fill: '#ffffff', opacity: 0.25 }),
                     h('text', { x: atom.x, y: atom.y + 4, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold', fill: textCol } }, atom.el)
                   );
                 })
@@ -6605,18 +6820,37 @@
                   ),
 
                   h('svg', { viewBox: '0 0 ' + SW + ' ' + SH, role: 'img', 'aria-label': srBuf, 'data-testid': 'chem-buffer-scale', style: { width: '100%', height: 'auto', display: 'block' }, className: 'mb-2' },
-                    h('rect', { x: 4, y: 4, width: SW - 8, height: 9, fill: '#e2e8f0', rx: 2 }),
-                    h('rect', { x: 4, y: 4, width: (SW - 8) * (7 / 14), height: 9, fill: '#fecaca', rx: 2 }),
-                    h('rect', { x: 4 + (SW - 8) * (7 / 14), y: 4, width: (SW - 8) * (7 / 14), height: 9, fill: '#bfdbfe' }),
+                    !ctx.isContrast && h('defs', null,
+                      h('linearGradient', { id: 'chem-ph-spec', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                        h('stop', { offset: '0%', stopColor: '#ef4444' }),
+                        h('stop', { offset: '22%', stopColor: '#f97316' }),
+                        h('stop', { offset: '42%', stopColor: '#facc15' }),
+                        h('stop', { offset: '50%', stopColor: '#22c55e' }),
+                        h('stop', { offset: '66%', stopColor: '#06b6d4' }),
+                        h('stop', { offset: '84%', stopColor: '#3b82f6' }),
+                        h('stop', { offset: '100%', stopColor: '#6366f1' })
+                      )
+                    ),
+                    h('rect', { x: 4, y: 4, width: SW - 8, height: 9, fill: ctx.isContrast ? '#000000' : 'url(#chem-ph-spec)', stroke: ctx.isContrast ? '#ffffff' : '#64748b', strokeWidth: 0.6, rx: 3.5 }),
+                    !ctx.isContrast && h('rect', { x: 5, y: 5, width: SW - 10, height: 2.5, fill: '#ffffff', opacity: 0.32, rx: 1.2 }),
+                    // Buffer capacity window (pKa ± 1) highlight
+                    h('rect', { x: Math.max(4, xKa - (SW - 8) / 14), y: 3, width: Math.min(SW - 8, (SW - 8) * (2 / 14)), height: 11, fill: ctx.isContrast ? 'none' : 'rgba(255,255,255,0.22)', stroke: ctx.isContrast ? '#fde047' : '#78350f', strokeWidth: 0.8, strokeDasharray: '2 1.5', rx: 2 }),
+                    // Calibrated pH tick marks
+                    [2, 4, 7, 10, 12].map(function(tk) {
+                      var tx = 4 + (SW - 8) * (tk / 14);
+                      return h('line', { key: 'tk' + tk, x1: tx, y1: 13, x2: tx, y2: tk === 7 ? 16 : 14.8, stroke: ctx.isContrast ? '#ffffff' : '#64748b', strokeWidth: tk === 7 ? 0.9 : 0.6 });
+                    }),
                     // The pKa tick sits ABOVE the bar and the pH dot ON it, so at a
                     // 1:1 ratio (where they coincide - the whole point) the dot does
                     // not swallow the tick and hide the relationship.
-                    h('line', { x1: xKa, y1: 0, x2: xKa, y2: 4, stroke: '#78350f', strokeWidth: 1.5 }),
-                    h('text', { x: xKa, y: 21, textAnchor: 'middle', style: { fontSize: '5px' }, fill: '#78350f' }, 'pKa'),
-                    h('circle', { cx: x, cy: 8.5, r: 3.5, fill: '#0f172a', stroke: '#ffffff', strokeWidth: 1 }),
-                    h('text', { x: 4, y: SH - 2, style: { fontSize: '6px' }, fill: '#475569' }, '0 acid'),
-                    h('text', { x: SW / 2, y: SH - 2, textAnchor: 'middle', style: { fontSize: '6px' }, fill: '#475569' }, '7'),
-                    h('text', { x: SW - 4, y: SH - 2, textAnchor: 'end', style: { fontSize: '6px' }, fill: '#475569' }, '14 base')
+                    h('line', { x1: xKa, y1: 0, x2: xKa, y2: 4, stroke: ctx.isContrast ? '#fde047' : '#78350f', strokeWidth: 1.5 }),
+                    h('text', { x: xKa, y: 21, textAnchor: 'middle', style: { fontSize: '5px', fontWeight: 'bold' }, fill: ctx.isContrast ? '#fde047' : '#78350f' }, 'pKa'),
+                    !ctx.isContrast && h('circle', { cx: x, cy: 8.5, r: 5.2, fill: '#0f172a', opacity: 0.2 }),
+                    h('circle', { cx: x, cy: 8.5, r: 3.6, fill: ctx.isContrast ? '#fde047' : '#0f172a', stroke: '#ffffff', strokeWidth: 1.1 }),
+                    !ctx.isContrast && h('circle', { cx: x - 1, cy: 7.5, r: 0.9, fill: '#ffffff', opacity: 0.8 }),
+                    h('text', { x: 4, y: SH - 2, style: { fontSize: '6px' }, fill: ctx.isContrast ? '#ffffff' : '#475569' }, '0 acid'),
+                    h('text', { x: SW / 2, y: SH - 2, textAnchor: 'middle', style: { fontSize: '6px' }, fill: ctx.isContrast ? '#ffffff' : '#475569' }, '7'),
+                    h('text', { x: SW - 4, y: SH - 2, textAnchor: 'end', style: { fontSize: '6px' }, fill: ctx.isContrast ? '#ffffff' : '#475569' }, '14 base')
                   ),
 
                   h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
@@ -7491,20 +7725,43 @@
                         style: { width: '100%', maxWidth: '220px', height: 'auto', display: 'block', margin: '0 auto' },
                         className: 'mb-2'
                       },
-                        // Two beakers, before -> after. A single beaker with a dark
-                        // band at the bottom reads as two LAYERED liquids, which is the
-                        // opposite of the idea: the solute spreads through the whole
-                        // larger volume, so the colour DILUTES rather than stacking.
-                        h('rect', { x: 8, y: 6 + (totalH - stockH), width: 34, height: stockH, fill: '#0891b2', rx: 1 }),
-                        h('rect', { x: 7, y: 6, width: 36, height: totalH, fill: 'none', stroke: '#94a3b8', strokeWidth: 2, rx: 2 }),
-                        h('text', { x: 25, y: BH - 1, textAnchor: 'middle', style: { fontSize: '6px' }, fill: '#475569' },
+                        !ctx.isContrast && h('defs', null,
+                          h('linearGradient', { id: 'chem-dil-stock', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                            h('stop', { offset: '0%', stopColor: '#22d3ee' }),
+                            h('stop', { offset: '55%', stopColor: '#0891b2' }),
+                            h('stop', { offset: '100%', stopColor: '#155e75' })
+                          ),
+                          h('linearGradient', { id: 'chem-dil-after', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                            h('stop', { offset: '0%', stopColor: '#bae6fd' }),
+                            h('stop', { offset: '100%', stopColor: '#0ea5e9' })
+                          )
+                        ),
+                        // Two borosilicate beakers, before -> after: solute spreads through the
+                        // larger volume so color dilutes evenly rather than layering.
+                        !ctx.isContrast && h('ellipse', { cx: 25, cy: 7 + totalH, rx: 17, ry: 2, fill: 'rgba(15,23,42,0.14)' }),
+                        h('rect', { x: 8, y: 6 + (totalH - stockH), width: 34, height: stockH, fill: ctx.isContrast ? '#fde047' : 'url(#chem-dil-stock)', rx: 1.5 }),
+                        !ctx.isContrast && stockH > 3 && h('ellipse', { cx: 25, cy: 6 + (totalH - stockH), rx: 17, ry: 2, fill: '#a5f3fc', opacity: 0.72 }),
+                        h('path', { d: 'M5.5 6 H7 V' + (4 + totalH) + ' Q7 ' + (6 + totalH) + ' 9 ' + (6 + totalH) + ' H41 Q43 ' + (6 + totalH) + ' 43 ' + (4 + totalH) + ' V6 H44.5', fill: 'none', stroke: ctx.isContrast ? '#ffffff' : '#64748b', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                        !ctx.isContrast && h('line', { x1: 11, y1: 9, x2: 11, y2: 3 + totalH, stroke: '#ffffff', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.48 }),
+                        [0.25, 0.5, 0.75].map(function(f, gi) {
+                          var gy = 6 + totalH * f;
+                          return h('line', { key: 'gt1_' + gi, x1: 37, y1: gy, x2: 41.5, y2: gy, stroke: ctx.isContrast ? '#ffffff' : '#475569', strokeWidth: 0.7, opacity: 0.65 });
+                        }),
+                        h('text', { x: 25, y: BH - 1, textAnchor: 'middle', style: { fontSize: '6px', fontWeight: 600 }, fill: ctx.isContrast ? '#ffffff' : '#475569' },
                           num(sol.v1, 0) + ' mL @ ' + num(sol.m1, 1) + ' M'),
-                        h('text', { x: 60, y: 6 + totalH / 2, textAnchor: 'middle', style: { fontSize: '9px' }, fill: '#0f172a' }, '→'),
-                        h('text', { x: 60, y: 6 + totalH / 2 + 9, textAnchor: 'middle', style: { fontSize: '5px' }, fill: '#475569' },
+                        h('path', { d: 'M51 ' + (6 + totalH / 2) + ' H68 M64 ' + (3 + totalH / 2) + ' L68.5 ' + (6 + totalH / 2) + ' L64 ' + (9 + totalH / 2), fill: 'none', stroke: ctx.isContrast ? '#fde047' : '#0891b2', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                        h('text', { x: 60, y: 6 + totalH / 2 + 9, textAnchor: 'middle', style: { fontSize: '5px', fontWeight: 700 }, fill: ctx.isContrast ? '#ffffff' : '#0e7490' },
                           '+' + num(add, 0) + ' mL'),
-                        h('rect', { x: 78, y: 6, width: 34, height: totalH, fill: '#7dd3fc', fillOpacity: Math.max(0.15, stockFrac), rx: 1 }),
-                        h('rect', { x: 77, y: 6, width: 36, height: totalH, fill: 'none', stroke: '#94a3b8', strokeWidth: 2, rx: 2 }),
-                        h('text', { x: 95, y: BH - 1, textAnchor: 'middle', style: { fontSize: '6px' }, fill: '#475569' },
+                        !ctx.isContrast && h('ellipse', { cx: 95, cy: 7 + totalH, rx: 17, ry: 2, fill: 'rgba(15,23,42,0.14)' }),
+                        h('rect', { x: 78, y: 6, width: 34, height: totalH, fill: ctx.isContrast ? '#38bdf8' : 'url(#chem-dil-after)', fillOpacity: Math.max(0.18, stockFrac), rx: 1.5 }),
+                        !ctx.isContrast && h('ellipse', { cx: 95, cy: 6.5, rx: 17, ry: 2, fill: '#e0f2fe', fillOpacity: Math.max(0.32, stockFrac * 0.85) }),
+                        h('path', { d: 'M75.5 6 H77 V' + (4 + totalH) + ' Q77 ' + (6 + totalH) + ' 79 ' + (6 + totalH) + ' H111 Q113 ' + (6 + totalH) + ' 113 ' + (4 + totalH) + ' V6 H114.5', fill: 'none', stroke: ctx.isContrast ? '#ffffff' : '#64748b', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                        !ctx.isContrast && h('line', { x1: 81, y1: 9, x2: 81, y2: 3 + totalH, stroke: '#ffffff', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.48 }),
+                        [0.25, 0.5, 0.75].map(function(f, gi) {
+                          var gy = 6 + totalH * f;
+                          return h('line', { key: 'gt2_' + gi, x1: 107, y1: gy, x2: 111.5, y2: gy, stroke: ctx.isContrast ? '#ffffff' : '#475569', strokeWidth: 0.7, opacity: 0.65 });
+                        }),
+                        h('text', { x: 95, y: BH - 1, textAnchor: 'middle', style: { fontSize: '6px', fontWeight: 600 }, fill: ctx.isContrast ? '#ffffff' : '#475569' },
                           num(v2, 0) + ' mL @ ' + num(sol.m2, 1) + ' M')
                       ),
 
@@ -7661,15 +7918,35 @@
                   style: { width: '100%', height: 'auto', display: 'block' },
                   className: 'mb-2 rounded bg-slate-50 border border-slate-200'
                 },
+                  !ctx.isContrast && h('defs', null,
+                    h('linearGradient', { id: 'chem-decay-area', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#06b6d4', stopOpacity: '0.32' }),
+                      h('stop', { offset: '100%', stopColor: '#06b6d4', stopOpacity: '0.02' })
+                    )
+                  ),
                   [1, 2, 3].map(function(q) {
                     var gy = PAD + (q / 4) * (CH - PAD - BGUT);
-                    return h('line', { key: 'g' + q, x1: LGUT, y1: gy, x2: CW - PAD, y2: gy, stroke: '#cbd5e1', strokeWidth: 0.5, strokeDasharray: '3 3' });
+                    return h('line', { key: 'g' + q, x1: LGUT, y1: gy, x2: CW - PAD, y2: gy, stroke: ctx.isContrast ? '#64748b' : '#cbd5e1', strokeWidth: 0.5, strokeDasharray: '3 3' });
                   }),
-                  h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#0891b2', strokeWidth: 2 }),
-                  h('circle', { cx: markX, cy: markY, r: 4, fill: '#0e7490' }),
-                  h('text', { x: PAD, y: PAD + 6, style: { fontSize: '7px' }, fill: '#475569' }, '100%'),
-                  h('text', { x: PAD, y: CH - BGUT, style: { fontSize: '7px' }, fill: '#475569' }, '0%'),
-                  h('text', { x: CW - PAD, y: CH - 3, textAnchor: 'end', style: { fontSize: '7px' }, fill: '#475569' }, '6 half-lives')
+                  [1, 2, 3, 4, 5].map(function(hlStep) {
+                    var vx = LGUT + (hlStep / 6) * (CW - LGUT - PAD);
+                    return h('line', { key: 'v' + hlStep, x1: vx, y1: PAD, x2: vx, y2: CH - BGUT, stroke: ctx.isContrast ? '#64748b' : '#e2e8f0', strokeWidth: 0.6, strokeDasharray: '2 2' });
+                  }),
+                  // Translucent gradient area beneath the exponential decay curve
+                  !ctx.isContrast && h('polygon', { points: LGUT + ',' + (CH - BGUT) + ' ' + pts.join(' ') + ' ' + (CW - PAD) + ',' + (CH - BGUT), fill: 'url(#chem-decay-area)' }),
+                  // Active marker crosshair guides
+                  h('line', { x1: markX, y1: markY, x2: markX, y2: CH - BGUT, stroke: ctx.isContrast ? '#fde047' : '#0891b2', strokeWidth: 0.9, strokeDasharray: '2 2', opacity: 0.75 }),
+                  h('line', { x1: LGUT, y1: markY, x2: markX, y2: markY, stroke: ctx.isContrast ? '#fde047' : '#0891b2', strokeWidth: 0.9, strokeDasharray: '2 2', opacity: 0.75 }),
+                  // Soft glow + crisp decay curve
+                  !ctx.isContrast && h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#22d3ee', strokeWidth: 4.5, strokeLinecap: 'round', opacity: 0.25 }),
+                  h('polyline', { points: pts.join(' '), fill: 'none', stroke: ctx.isContrast ? '#fde047' : '#0891b2', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                  // Concentric luminous beacon at active half-life point
+                  !ctx.isContrast && h('circle', { cx: markX, cy: markY, r: 7.5, fill: '#06b6d4', opacity: 0.2 }),
+                  h('circle', { cx: markX, cy: markY, r: 4.2, fill: ctx.isContrast ? '#fde047' : '#0e7490', stroke: '#ffffff', strokeWidth: 1.2 }),
+                  !ctx.isContrast && h('circle', { cx: markX - 1.1, cy: markY - 1.1, r: 1.1, fill: '#ffffff', opacity: 0.85 }),
+                  h('text', { x: PAD, y: PAD + 6, style: { fontSize: '7px' }, fill: ctx.isContrast ? '#ffffff' : '#475569' }, '100%'),
+                  h('text', { x: PAD, y: CH - BGUT, style: { fontSize: '7px' }, fill: ctx.isContrast ? '#ffffff' : '#475569' }, '0%'),
+                  h('text', { x: CW - PAD, y: CH - 3, textAnchor: 'end', style: { fontSize: '7px' }, fill: ctx.isContrast ? '#ffffff' : '#475569' }, '6 half-lives')
                 ),
 
                 h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },

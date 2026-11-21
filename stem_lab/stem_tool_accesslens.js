@@ -49,8 +49,12 @@
       '.accesslens-tab:focus-visible, .accesslens-btn:focus-visible, .accesslens-chip:focus-visible { outline: 3px solid #0ea5e9; outline-offset: 2px; }',
       '.accesslens-btn:not([disabled]):not([aria-disabled="true"]):hover, .accesslens-chip:hover { transform: translateY(-1px); }',
       '@keyframes accesslens-pulse { 0% { opacity: 0.55; } 50% { opacity: 1; } 100% { opacity: 0.55; } }',
+      '@keyframes accesslens-scan { 0% { transform: translateY(-18px); opacity: 0.35; } 50% { transform: translateY(18px); opacity: 0.92; } 100% { transform: translateY(-18px); opacity: 0.35; } }',
+      '@keyframes accesslens-ring { 0% { opacity: 0.45; } 50% { opacity: 0.95; } 100% { opacity: 0.45; } }',
       '.accesslens-busy { animation: accesslens-pulse 1.2s ease-in-out infinite; }',
-      '@media (prefers-reduced-motion: reduce) { .accesslens-tab, .accesslens-btn, .accesslens-chip { transition: none !important; } .accesslens-busy { animation: none !important; } }',
+      '.accesslens-scan-beam { animation: accesslens-scan 3.4s ease-in-out infinite; }',
+      '.accesslens-ring-pulse { animation: accesslens-ring 2.6s ease-in-out infinite; }',
+      '@media (prefers-reduced-motion: reduce) { .accesslens-tab, .accesslens-btn, .accesslens-chip { transition: none !important; } .accesslens-busy, .accesslens-scan-beam, .accesslens-ring-pulse { animation: none !important; } }',
       '@media (max-width: 720px) { [data-accesslens-columns] { grid-template-columns: 1fr !important; } }'
     ].join('\n');
     if (document.head) document.head.appendChild(_st);
@@ -70,11 +74,14 @@
     'Chinese (Simplified)', 'Haitian Creole', 'Russian', 'Ukrainian',
     'Swahili', 'Farsi', 'Pashto', 'Khmer', 'Tagalog', 'English'
   ];
-  var LANG_CODES = {
+  var LANG_CODES = Object.assign(Object.create(null), {
     'Spanish': 'es', 'French': 'fr', 'Portuguese': 'pt', 'Arabic': 'ar', 'Somali': 'so', 'Vietnamese': 'vi',
     'Chinese (Simplified)': 'zh-CN', 'Haitian Creole': 'ht', 'Russian': 'ru', 'Ukrainian': 'uk',
     'Swahili': 'sw', 'Farsi': 'fa', 'Pashto': 'ps', 'Khmer': 'km', 'Tagalog': 'tl', 'English': 'en'
-  };
+  });
+  function langCodeOf(name) {
+    return (name && Object.prototype.hasOwnProperty.call(LANG_CODES, name)) ? LANG_CODES[name] : '';
+  }
   function langSlug(name) { return String(name).toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, ''); }
   // The page language, as an English language name the prompt can use. A
   // blind English learner otherwise got every description in English. Returns
@@ -481,6 +488,7 @@
     var fileRef = useRef(null);
     var videoRef = useRef(null);
     var streamRef = useRef(null);
+    var camTokenRef = useRef(0);
     var lensWinRef = useRef(null);
     var lensNonceRef = useRef('');
     var busyRef = useRef(''); busyRef.current = busy;
@@ -550,9 +558,11 @@
       return function () {};
     }, [camState]);
 
-    // stop stream + speech on unmount
+    // stop stream + speech + in-flight requests on unmount
     useEffect(function () {
       return function () {
+        camTokenRef.current++;
+        photoTokenRef.current++;
         stopStream();
         stopSpeech();
         try { if (lensWinRef.current && !lensWinRef.current.closed) lensWinRef.current.close(); } catch (_) {}
@@ -565,7 +575,7 @@
       if (typeof window === 'undefined') return undefined;
       function onMsg(ev) {
         if (!lensWinRef.current || ev.source !== lensWinRef.current) return;
-        if (ev.origin && ev.origin !== LENS_ORIGIN) return;
+        if (ev.origin !== LENS_ORIGIN) return;
         var d = ev.data || {};
         if (d.type === 'allolens-ready') {
           // The window sends a photo only to an opener that proves it opened
@@ -621,9 +631,12 @@
           var cv = document.createElement('canvas');
       cv.setAttribute('aria-hidden', 'true');
           cv.width = cw; cv.height = chg;
-          cv.getContext('2d').drawImage(img, 0, 0, cw, chg);
+          var cvCtx = cv.getContext('2d');
+          if (!cvCtx) throw new Error('no 2d context');
+          cvCtx.drawImage(img, 0, 0, cw, chg);
           var out = cv.toDataURL('image/jpeg', 0.85);
           setPhoto({ dataUrl: out, width: cw, height: chg, source: sourceLabel || '' });
+          busyRef.current = '';
           setResults({}); setAnswers({}); setErr(''); setBusy(''); setGuessShown(false);
           stopSpeech();
           markQuest('captured');
@@ -666,11 +679,17 @@
         setCamState('denied');
         return;
       }
+      var tok = ++camTokenRef.current;
+      stopStream();
       // The Live camera button is replaced by Snap as soon as this renders.
       pendingFocusRef.current = 'snap';
       setCamState('starting');
       navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }, audio: false })
         .then(function (stream) {
+          if (tok !== camTokenRef.current) {
+            if (stream && stream.getTracks) { try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {} }
+            return;
+          }
           streamRef.current = stream;
           setCamReason('');
           pendingFocusRef.current = 'snap';
@@ -678,6 +697,7 @@
           announce(_t('stem.accessLens.sr_cam_live', 'Live camera started. Press Snap photo when ready.'));
         })
         .catch(function (error) {
+          if (tok !== camTokenRef.current) return;
           // The error was discarded, so a laptop with no rear camera, a camera
           // already in use, and a real permission refusal all told the student
           // the same thing: that the camera is blocked and to try the pop-out
@@ -697,8 +717,11 @@
       var cv = document.createElement('canvas');
       cv.setAttribute('aria-hidden', 'true');
       cv.width = v.videoWidth; cv.height = v.videoHeight;
-      cv.getContext('2d').drawImage(v, 0, 0);
+      var snapCtx = cv.getContext('2d');
+      if (!snapCtx) return;
+      snapCtx.drawImage(v, 0, 0);
       var url = cv.toDataURL('image/jpeg', 0.9);
+      camTokenRef.current++;
       stopStream();
       // Snap disappears with the live view; land on the photo button until the
       // decoded photo moves focus on to Analyze.
@@ -707,7 +730,7 @@
       acceptPhoto(url, 'live camera');
     }
 
-    function cancelLive() { stopStream(); pendingFocusRef.current = 'live'; setCamState('idle'); }
+    function cancelLive() { camTokenRef.current++; stopStream(); pendingFocusRef.current = 'live'; setCamState('idle'); }
 
     function openLensWindow() {
       setErr('');
@@ -730,6 +753,7 @@
 
     function clearPhoto() {
       photoTokenRef.current++;
+      busyRef.current = '';
       setPhoto(null); setResults({}); setAnswers({}); setErr(''); setBusy(''); setGuessShown(false);
       stopSpeech();
       pendingFocusRef.current = 'take';
@@ -749,6 +773,7 @@
         m === 'read' ? readPrompt() :
         m === 'translate' ? translatePrompt(targetLang || 'Spanish') :
         inquirePrompt(band, uiLang);
+      busyRef.current = m;
       setBusy(m); setErr('');
       if (m === 'inquire') setGuessShown(false);
       var token = photoTokenRef.current;
@@ -757,6 +782,7 @@
         // The photo this describes is gone or replaced; saying anything now
         // would attach it to whatever is on screen instead.
         if (token !== photoTokenRef.current) return;
+        busyRef.current = '';
         setBusy('');
         if (!text) {
           setErr(_t('stem.accessLens.err_ai', 'The AI could not answer right now. Please try again.'));
@@ -795,6 +821,7 @@
         } catch (_) {}
       }).catch(function (e) {
         if (token !== photoTokenRef.current) return;
+        busyRef.current = '';
         setBusy('');
         setErr(e && e.accessLensTimeout
           ? _t('stem.accessLens.err_timeout', 'The AI took too long to answer. Check the internet connection and press Analyze again.')
@@ -842,7 +869,7 @@
       try {
         var u = new SpeechSynthesisUtterance(text);
         u.rate = 0.95;
-        var code = lang && LANG_CODES[lang];
+        var code = langCodeOf(lang);
         if (code) u.lang = code;
         var done = function () { if (token === undefined || token === speechTokenRef.current) setSpeaking(false); };
         u.onend = done;
@@ -924,55 +951,168 @@
         cv.width = 720; cv.height = 460;
         var g = cv.getContext('2d');
         if (!g) return;
+        var hasLin = typeof g.createLinearGradient === 'function';
+        var hasRad = typeof g.createRadialGradient === 'function';
+        var fillRoundRect = function (x, y, w, hgt, r) {
+          var rad = Math.min(r, w / 2, hgt / 2);
+          g.beginPath();
+          g.moveTo(x + rad, y);
+          g.lineTo(x + w - rad, y);
+          g.quadraticCurveTo(x + w, y, x + w, y + rad);
+          g.lineTo(x + w, y + hgt - rad);
+          g.quadraticCurveTo(x + w, y + hgt, x + w - rad, y + hgt);
+          g.lineTo(x + rad, y + hgt);
+          g.quadraticCurveTo(x, y + hgt, x, y + hgt - rad);
+          g.lineTo(x, y + rad);
+          g.quadraticCurveTo(x, y, x + rad, y);
+          g.closePath();
+        };
         if (kind === 'handout') {
-          g.fillStyle = '#f8fafc'; g.fillRect(0, 0, 720, 460);
-          g.fillStyle = '#0369a1'; g.fillRect(36, 32, 648, 72);
+          if (hasLin) {
+            var bgH = g.createLinearGradient(0, 0, 720, 460);
+            bgH.addColorStop(0, '#eef4f9'); bgH.addColorStop(0.5, '#f8fafc'); bgH.addColorStop(1, '#e2ebf4');
+            g.fillStyle = bgH;
+          } else { g.fillStyle = '#f8fafc'; }
+          g.fillRect(0, 0, 720, 460);
+          // Subtle lab-sheet card elevation shadow
+          g.fillStyle = 'rgba(15,23,42,0.08)';
+          fillRoundRect(30, 26, 666, 412, 12); g.fill();
+          g.fillStyle = '#ffffff';
+          fillRoundRect(26, 20, 668, 414, 12); g.fill();
+          g.strokeStyle = '#cbd5e1'; g.lineWidth = 1.5; g.stroke();
+          // Header banner with subtle optical sheen
+          if (hasLin) {
+            var hdrH = g.createLinearGradient(36, 32, 684, 104);
+            hdrH.addColorStop(0, '#0c4a6e'); hdrH.addColorStop(0.55, '#0369a1'); hdrH.addColorStop(1, '#0284c7');
+            g.fillStyle = hdrH;
+          } else { g.fillStyle = '#0369a1'; }
+          fillRoundRect(36, 32, 648, 72, 8); g.fill();
+          g.fillStyle = 'rgba(255,255,255,0.12)';
+          fillRoundRect(36, 32, 648, 28, 8); g.fill();
           g.fillStyle = '#ffffff'; g.font = 'bold 30px sans-serif';
           g.fillText('SCIENCE LAB STATION 4', 60, 78);
+          // Ruled horizontal notebook guides
+          g.strokeStyle = 'rgba(148,163,184,0.22)'; g.lineWidth = 1;
+          for (var ly = 170; ly <= 316; ly += 46) {
+            g.beginPath(); g.moveTo(56, ly); g.lineTo(664, ly); g.stroke();
+          }
           g.fillStyle = '#0f172a'; g.font = 'bold 24px sans-serif';
           g.fillText('Today\'s Investigation Steps:', 56, 152);
           g.font = '22px sans-serif';
           g.fillText('1. Measure 50 mL of warm water in the beaker.', 56, 204);
           g.fillText('2. Place one sugar cube in the dish.', 56, 250);
           g.fillText('3. Record the time until it dissolves.', 56, 296);
-          g.fillStyle = '#e0f2fe'; g.fillRect(56, 340, 608, 74);
-          g.strokeStyle = '#0284c7'; g.lineWidth = 3; g.strokeRect(56, 340, 608, 74);
+          if (hasLin) {
+            var boxH = g.createLinearGradient(56, 340, 664, 414);
+            boxH.addColorStop(0, '#e0f2fe'); boxH.addColorStop(1, '#bae6fd');
+            g.fillStyle = boxH;
+          } else { g.fillStyle = '#e0f2fe'; }
+          fillRoundRect(56, 340, 608, 74, 8); g.fill();
+          g.strokeStyle = '#0284c7'; g.lineWidth = 3; g.stroke();
           g.fillStyle = '#0c4a6e'; g.font = 'bold 20px sans-serif';
           g.fillText('Remember: Rinse glassware and return goggles to Tray B.', 74, 384);
         } else if (kind === 'leaf') {
-          g.fillStyle = '#ecfdf5'; g.fillRect(0, 0, 720, 460);
-          g.fillStyle = '#d1fae5'; g.fillRect(40, 40, 640, 380);
-          g.strokeStyle = '#059669'; g.lineWidth = 4; g.strokeRect(40, 40, 640, 380);
-          // Stylized botanical leaf specimen
-          g.fillStyle = '#15803d';
+          if (hasLin) {
+            var bgL = g.createLinearGradient(0, 0, 720, 460);
+            bgL.addColorStop(0, '#ecfdf5'); bgL.addColorStop(1, '#d1fae5');
+            g.fillStyle = bgL;
+          } else { g.fillStyle = '#ecfdf5'; }
+          g.fillRect(0, 0, 720, 460);
+          // Specimen mounting board with soft inner shadow
+          g.fillStyle = 'rgba(6,78,59,0.10)';
+          fillRoundRect(44, 44, 640, 380, 12); g.fill();
+          g.fillStyle = '#f0fdf4';
+          fillRoundRect(40, 40, 640, 380, 12); g.fill();
+          g.strokeStyle = '#059669'; g.lineWidth = 3.5; g.stroke();
+          // Subtle botanical grid lines
+          g.strokeStyle = 'rgba(5,150,105,0.11)'; g.lineWidth = 1;
+          for (var gx = 80; gx < 660; gx += 40) { g.beginPath(); g.moveTo(gx, 46); g.lineTo(gx, 414); g.stroke(); }
+          for (var gy = 80; gy < 400; gy += 40) { g.beginPath(); g.moveTo(46, gy); g.lineTo(674, gy); g.stroke(); }
+          // Soft leaf cast shadow
+          g.fillStyle = 'rgba(6,78,59,0.18)';
+          g.beginPath();
+          g.moveTo(190, 330);
+          g.quadraticCurveTo(220, 120, 470, 130);
+          g.quadraticCurveTo(440, 320, 190, 330);
+          g.fill();
+          // Stylized botanical leaf specimen with chlorophyll gradient
+          if (hasLin) {
+            var leafGrad = g.createLinearGradient(180, 320, 460, 120);
+            leafGrad.addColorStop(0, '#166534'); leafGrad.addColorStop(0.5, '#15803d'); leafGrad.addColorStop(1, '#22c55e');
+            g.fillStyle = leafGrad;
+          } else { g.fillStyle = '#15803d'; }
           g.beginPath();
           g.moveTo(180, 320);
           g.quadraticCurveTo(210, 110, 460, 120);
           g.quadraticCurveTo(430, 310, 180, 320);
           g.fill();
-          g.strokeStyle = '#bbf7d0'; g.lineWidth = 4;
-          g.beginPath(); g.moveTo(160, 336); g.lineTo(445, 130); g.stroke();
+          g.strokeStyle = '#14532d'; g.lineWidth = 2; g.stroke();
+          // Central midrib & lateral veins
+          g.strokeStyle = '#bbf7d0'; g.lineWidth = 4; g.lineCap = 'round';
+          g.beginPath(); g.moveTo(156, 340); g.lineTo(445, 130); g.stroke();
           g.lineWidth = 2.5;
           g.beginPath(); g.moveTo(250, 270); g.lineTo(240, 195); g.moveTo(310, 228); g.lineTo(300, 160); g.moveTo(368, 188); g.lineTo(360, 138); g.stroke();
           g.beginPath(); g.moveTo(265, 258); g.lineTo(335, 265); g.moveTo(325, 215); g.lineTo(395, 220); g.stroke();
-          g.fillStyle = '#064e3b'; g.font = 'bold 24px sans-serif';
-          g.fillText('Specimen Card #12', 455, 290);
-          g.font = '19px sans-serif';
-          g.fillText('Serrated margin, net veins', 455, 326);
-          g.fillText('Collected: Courtyard Oak', 455, 358);
+          // Glossy dewdrop highlight on leaf blade
+          if (hasRad) {
+            var dew = g.createRadialGradient(342, 194, 1, 345, 197, 8);
+            dew.addColorStop(0, 'rgba(255,255,255,0.92)'); dew.addColorStop(0.5, 'rgba(187,247,208,0.55)'); dew.addColorStop(1, 'rgba(21,128,61,0)');
+            g.fillStyle = dew;
+            g.beginPath(); g.arc(345, 197, 8, 0, Math.PI * 2); g.fill();
+          }
+          // Specimen placard
+          g.fillStyle = 'rgba(255,255,255,0.88)';
+          fillRoundRect(442, 260, 218, 118, 8); g.fill();
+          g.strokeStyle = '#6ee7b7'; g.lineWidth = 1.5; g.stroke();
+          g.fillStyle = '#064e3b'; g.font = 'bold 23px sans-serif';
+          g.fillText('Specimen Card #12', 454, 290);
+          g.font = '18px sans-serif';
+          g.fillText('Serrated margin, net veins', 454, 324);
+          g.fillText('Collected: Courtyard Oak', 454, 356);
         } else {
-          g.fillStyle = '#fffbeb'; g.fillRect(0, 0, 720, 460);
-          g.fillStyle = '#1d4ed8'; g.fillRect(48, 44, 624, 92);
+          if (hasLin) {
+            var bgS = g.createLinearGradient(0, 0, 720, 460);
+            bgS.addColorStop(0, '#fffbeb'); bgS.addColorStop(1, '#fef3c7');
+            g.fillStyle = bgS;
+          } else { g.fillStyle = '#fffbeb'; }
+          g.fillRect(0, 0, 720, 460);
+          // Placard frame shadow & bevel
+          g.fillStyle = 'rgba(30,41,59,0.10)';
+          fillRoundRect(38, 34, 648, 396, 14); g.fill();
+          g.fillStyle = '#fffdf7';
+          fillRoundRect(34, 30, 650, 396, 14); g.fill();
+          g.strokeStyle = '#d97706'; g.lineWidth = 2; g.stroke();
+          if (hasLin) {
+            var hdrS = g.createLinearGradient(48, 44, 672, 136);
+            hdrS.addColorStop(0, '#1e3a8a'); hdrS.addColorStop(0.5, '#1d4ed8'); hdrS.addColorStop(1, '#2563eb');
+            g.fillStyle = hdrS;
+          } else { g.fillStyle = '#1d4ed8'; }
+          fillRoundRect(48, 44, 624, 92, 10); g.fill();
+          g.fillStyle = 'rgba(255,255,255,0.12)';
+          fillRoundRect(48, 44, 624, 34, 10); g.fill();
           g.fillStyle = '#ffffff'; g.font = 'bold 34px sans-serif';
           g.fillText('COMMUNITY LIBRARY HOURS', 100, 102);
           g.fillStyle = '#1e293b'; g.font = 'bold 24px sans-serif';
           g.fillText('Monday - Thursday: 8:00 AM to 5:30 PM', 84, 200);
           g.fillText('Friday: 8:00 AM to 3:30 PM', 84, 252);
-          g.fillStyle = '#fef3c7'; g.fillRect(84, 298, 552, 92);
-          g.strokeStyle = '#d97706'; g.lineWidth = 3; g.strokeRect(84, 298, 552, 92);
+          if (hasLin) {
+            var callS = g.createLinearGradient(84, 298, 636, 390);
+            callS.addColorStop(0, '#fef3c7'); callS.addColorStop(1, '#fde68a');
+            g.fillStyle = callS;
+          } else { g.fillStyle = '#fef3c7'; }
+          fillRoundRect(84, 298, 552, 92, 8); g.fill();
+          g.strokeStyle = '#d97706'; g.lineWidth = 3; g.stroke();
           g.fillStyle = '#92400e'; g.font = 'bold 22px sans-serif';
           g.fillText('Quiet study tables are on the second floor.', 110, 340);
           g.fillText('Ask at the front desk for Braille or audio books.', 110, 374);
+        }
+        // Subtle optical camera-lens corner vignette on the synthetic capture
+        if (hasRad) {
+          var vig = g.createRadialGradient(360, 230, 190, 360, 230, 440);
+          vig.addColorStop(0, 'rgba(15,23,42,0)');
+          vig.addColorStop(1, 'rgba(15,23,42,0.12)');
+          g.fillStyle = vig;
+          g.fillRect(0, 0, 720, 460);
         }
         acceptPhoto(cv.toDataURL('image/jpeg', 0.88), 'practice scene');
       } catch (_) {}
@@ -980,11 +1120,12 @@
 
     // ════════════════════ Interactive Optical Viewfinder & Pipeline SVG ════════════════════
     function renderOpticalStage() {
-      var strokePrimary = contrast ? '#ffff00' : (dark ? '#38bdf8' : '#0284c7');
-      var strokeSecondary = contrast ? '#00ff00' : (dark ? '#34d399' : '#059669');
-      var strokeMuted = contrast ? '#ffffff' : (dark ? '#334155' : '#94a3b8');
-      var bgStage = contrast ? '#000000' : (dark ? '#07101f' : '#0f172a');
-      var cardStage = contrast ? '#000000' : (dark ? '#0f172a' : '#1e293b');
+      var strokePrimary = contrast ? '#ffff00' : (dark ? '#38bdf8' : '#0ea5e9');
+      var strokeSecondary = contrast ? '#00ff00' : (dark ? '#34d399' : '#10b981');
+      var strokeAmber = contrast ? '#ffff00' : '#fbbf24';
+      var strokeMuted = contrast ? '#ffffff' : (dark ? '#334155' : '#475569');
+      var bgStage = contrast ? '#000000' : (dark ? '#050b16' : '#0b1324');
+      var cardStage = contrast ? '#000000' : (dark ? '#0c182c' : '#132038');
       var txtMain = contrast ? '#ffff00' : '#f8fafc';
       var txtSub = contrast ? '#ffffff' : '#cbd5e1';
 
@@ -1007,42 +1148,69 @@
       // Mode-specific viewfinder center artwork
       var lensGraphic = mode === 'describe'
         ? h('g', null,
-            h('line', { x1: 118, y1: 42, x2: 118, y2: 142, stroke: strokeMuted, strokeWidth: 1, strokeDasharray: '4 4' }),
-            h('line', { x1: 212, y1: 42, x2: 212, y2: 142, stroke: strokeMuted, strokeWidth: 1, strokeDasharray: '4 4' }),
-            h('text', { x: 74, y: 58, fill: txtSub, fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'LEFT'),
-            h('text', { x: 165, y: 58, fill: strokePrimary, fontSize: 10, fontWeight: 800, textAnchor: 'middle' }, 'CENTER'),
-            h('text', { x: 256, y: 58, fill: txtSub, fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'RIGHT'),
-            h('circle', { cx: 165, cy: 96, r: 24, fill: 'none', stroke: strokePrimary, strokeWidth: 2 }),
-            h('circle', { cx: 165, cy: 96, r: 9, fill: strokePrimary, opacity: 0.85 }),
-            h('path', { d: 'M200 84 Q212 96 200 108', fill: 'none', stroke: strokeSecondary, strokeWidth: 2.2, strokeLinecap: 'round' }),
-            h('path', { d: 'M209 76 Q225 96 209 116', fill: 'none', stroke: strokeSecondary, strokeWidth: 2, strokeLinecap: 'round', opacity: 0.75 })
+            h('line', { x1: 118, y1: 40, x2: 118, y2: 138, stroke: strokeMuted, strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.75 }),
+            h('line', { x1: 212, y1: 40, x2: 212, y2: 138, stroke: strokeMuted, strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.75 }),
+            h('text', { x: 74, y: 54, fill: txtSub, fontSize: 9.5, fontWeight: 700, letterSpacing: '0.06em', textAnchor: 'middle' }, 'LEFT'),
+            h('text', { x: 165, y: 54, fill: strokePrimary, fontSize: 9.5, fontWeight: 800, letterSpacing: '0.06em', textAnchor: 'middle' }, 'CENTER'),
+            h('text', { x: 256, y: 54, fill: txtSub, fontSize: 9.5, fontWeight: 700, letterSpacing: '0.06em', textAnchor: 'middle' }, 'RIGHT'),
+            // Optical lens bezel with subtle refraction glow
+            h('circle', { cx: 165, cy: 95, r: 30, fill: contrast ? 'none' : 'url(#al-lens-glass)', stroke: strokePrimary, strokeWidth: 1.4, opacity: 0.9 }),
+            h('circle', { cx: 165, cy: 95, r: 23, fill: 'none', stroke: strokePrimary, strokeWidth: 2, filter: contrast ? undefined : 'url(#al-glow)' }),
+            h('circle', { cx: 165, cy: 95, r: 14, fill: 'none', stroke: strokeSecondary, strokeWidth: 1.2, strokeDasharray: '3 3', opacity: 0.8 }),
+            h('circle', { cx: 165, cy: 95, r: 7.5, fill: strokePrimary, opacity: 0.9 }),
+            // Specular glass highlight crescent
+            !contrast ? h('path', { d: 'M146 80 A23 23 0 0 1 174 73', fill: 'none', stroke: '#ffffff', strokeWidth: 2, strokeLinecap: 'round', opacity: 0.55 }) : null,
+            // Acoustic read-aloud emission arcs
+            h('path', { className: 'accesslens-ring-pulse', d: 'M203 82 Q216 95 203 108', fill: 'none', stroke: strokeSecondary, strokeWidth: 2.3, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
+            h('path', { className: 'accesslens-ring-pulse', d: 'M213 73 Q231 95 213 117', fill: 'none', stroke: strokeSecondary, strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.72 }),
+            h('path', { d: 'M127 84 Q116 95 127 106', fill: 'none', stroke: strokePrimary, strokeWidth: 1.5, strokeLinecap: 'round', opacity: 0.5 })
           )
         : mode === 'read'
         ? h('g', null,
-            h('rect', { x: 64, y: 54, width: 202, height: 76, rx: 8, fill: cardStage, stroke: strokePrimary, strokeWidth: 1.5 }),
-            h('text', { x: 82, y: 88, fill: strokePrimary, fontSize: 22, fontWeight: 800 }, 'Aa'),
-            h('rect', { x: 122, y: 70, width: 126, height: 8, rx: 4, fill: txtMain, opacity: 0.9 }),
-            h('rect', { x: 122, y: 86, width: 104, height: 8, rx: 4, fill: txtSub, opacity: 0.75 }),
-            h('rect', { x: 82, y: 106, width: 162, height: 8, rx: 4, fill: strokeSecondary, opacity: 0.85 }),
-            h('line', { x1: 56, y1: 92, x2: 274, y2: 92, stroke: strokeSecondary, strokeWidth: 1.5, strokeDasharray: '6 4' })
+            h('rect', { x: 56, y: 48, width: 218, height: 82, rx: 8, fill: cardStage, stroke: strokePrimary, strokeWidth: 1.4 }),
+            // Split-comparison loupe divider (Left: raw fine print, Right: magnified high-legibility OCR)
+            h('rect', { x: 64, y: 60, width: 78, height: 5, rx: 2.5, fill: txtSub, opacity: 0.45 }),
+            h('rect', { x: 64, y: 71, width: 70, height: 5, rx: 2.5, fill: txtSub, opacity: 0.35 }),
+            h('rect', { x: 64, y: 82, width: 74, height: 5, rx: 2.5, fill: txtSub, opacity: 0.4 }),
+            h('rect', { x: 64, y: 93, width: 64, height: 5, rx: 2.5, fill: txtSub, opacity: 0.32 }),
+            h('rect', { x: 64, y: 104, width: 72, height: 5, rx: 2.5, fill: txtSub, opacity: 0.38 }),
+            // Right magnified optical pane
+            h('rect', { x: 154, y: 50, width: 118, height: 78, rx: 6, fill: contrast ? '#000000' : 'rgba(14,165,233,0.12)' }),
+            h('text', { x: 164, y: 84, fill: strokePrimary, fontSize: 22, fontWeight: 800, filter: contrast ? undefined : 'url(#al-glow)' }, 'Aa'),
+            h('rect', { x: 202, y: 66, width: 60, height: 8, rx: 4, fill: txtMain, opacity: 0.95 }),
+            h('rect', { x: 202, y: 81, width: 48, height: 8, rx: 4, fill: strokeSecondary, opacity: 0.88 }),
+            h('rect', { x: 164, y: 102, width: 96, height: 8, rx: 4, fill: txtSub, opacity: 0.82 }),
+            // Crisp vertical split-comparison loupe rail + specular handle
+            h('line', { x1: 154, y1: 42, x2: 154, y2: 136, stroke: strokeSecondary, strokeWidth: 2.2, filter: contrast ? undefined : 'url(#al-glow)' }),
+            h('circle', { cx: 154, cy: 89, r: 9.5, fill: cardStage, stroke: strokeSecondary, strokeWidth: 2 }),
+            h('path', { d: 'M151 86 L148.5 89 L151 92 M157 86 L159.5 89 L157 92', fill: 'none', stroke: txtMain, strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            // Animated optical OCR scan beam (reduced-motion gated)
+            h('line', { className: 'accesslens-scan-beam', x1: 58, y1: 89, x2: 272, y2: 89, stroke: strokePrimary, strokeWidth: 1.5, strokeDasharray: '5 4', opacity: 0.78 })
           )
         : mode === 'translate'
         ? h('g', null,
-            h('rect', { x: 56, y: 58, width: 88, height: 64, rx: 8, fill: cardStage, stroke: strokeMuted, strokeWidth: 1.5 }),
-            h('text', { x: 100, y: 85, fill: txtMain, fontSize: 14, fontWeight: 800, textAnchor: 'middle' }, 'TEXT'),
-            h('text', { x: 100, y: 106, fill: txtSub, fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'SOURCE'),
-            h('path', { d: 'M152 90 L178 90 M172 83 L180 90 L172 97', fill: 'none', stroke: strokeSecondary, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            h('rect', { x: 186, y: 58, width: 92, height: 64, rx: 8, fill: cardStage, stroke: strokePrimary, strokeWidth: 2 }),
-            h('text', { x: 232, y: 85, fill: strokePrimary, fontSize: 13, fontWeight: 800, textAnchor: 'middle' }, String(LANG_CODES[targetLang] || 'LANG').toUpperCase()),
-            h('text', { x: 232, y: 106, fill: txtSub, fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, String(targetLang || 'Target').slice(0, 10))
+            h('rect', { x: 50, y: 54, width: 90, height: 68, rx: 8, fill: cardStage, stroke: strokeMuted, strokeWidth: 1.5 }),
+            h('line', { x1: 62, y1: 66, x2: 128, y2: 66, stroke: strokeMuted, strokeWidth: 1.5, opacity: 0.45 }),
+            h('text', { x: 95, y: 87, fill: txtMain, fontSize: 13.5, fontWeight: 800, textAnchor: 'middle' }, 'TEXT'),
+            h('text', { x: 95, y: 107, fill: txtSub, fontSize: 9.5, fontWeight: 700, textAnchor: 'middle' }, 'SOURCE'),
+            // Luminous optical translation bridge arcs
+            h('path', { d: 'M144 82 Q165 68 186 82', fill: 'none', stroke: strokePrimary, strokeWidth: 2, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
+            h('path', { d: 'M146 92 L182 92 M176 86 L183 92 L176 98', fill: 'none', stroke: strokeSecondary, strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('circle', { className: 'accesslens-ring-pulse', cx: 165, cy: 75, r: 3, fill: strokeAmber }),
+            h('rect', { x: 188, y: 54, width: 94, height: 68, rx: 8, fill: contrast ? '#000000' : 'url(#al-card-tint)', stroke: strokePrimary, strokeWidth: 2 }),
+            h('text', { x: 235, y: 86, fill: strokePrimary, fontSize: 13.5, fontWeight: 800, textAnchor: 'middle' }, String(langCodeOf(targetLang) || 'LANG').toUpperCase()),
+            h('text', { x: 235, y: 107, fill: txtSub, fontSize: 9.5, fontWeight: 700, textAnchor: 'middle' }, String(targetLang || 'Target').slice(0, 10))
           )
         : h('g', null,
-            h('polygon', { points: '165,50 122,126 208,126', fill: cardStage, stroke: strokePrimary, strokeWidth: 2 }),
-            h('text', { x: 165, y: 106, fill: strokeSecondary, fontSize: 24, fontWeight: 800, textAnchor: 'middle' }, '?'),
-            h('line', { x1: 72, y1: 88, x2: 134, y2: 88, stroke: txtMain, strokeWidth: 2, strokeDasharray: '5 3' }),
-            h('line', { x1: 196, y1: 76, x2: 258, y2: 64, stroke: strokePrimary, strokeWidth: 2 }),
-            h('line', { x1: 196, y1: 94, x2: 258, y2: 94, stroke: strokeSecondary, strokeWidth: 2 }),
-            h('line', { x1: 196, y1: 112, x2: 258, y2: 124, stroke: txtSub, strokeWidth: 2 })
+            // Incident beam + glass optical dispersion prism + luminous spectral response curves
+            h('line', { x1: 58, y1: 88, x2: 136, y2: 88, stroke: txtMain, strokeWidth: 2.2, strokeDasharray: '5 3', opacity: 0.9 }),
+            h('polygon', { points: '165,46 118,128 212,128', fill: contrast ? '#000000' : 'url(#al-lens-glass)', stroke: strokePrimary, strokeWidth: 2.2, strokeLinejoin: 'round' }),
+            !contrast ? h('line', { x1: 165, y1: 52, x2: 130, y2: 118, stroke: '#ffffff', strokeWidth: 1.4, opacity: 0.42 }) : null,
+            h('text', { x: 165, y: 109, fill: strokeSecondary, fontSize: 23, fontWeight: 800, textAnchor: 'middle' }, '?'),
+            // Refracted spectral curves (S / M / L luminous optical bands)
+            h('path', { d: 'M194 78 Q228 62 272 64', fill: 'none', stroke: strokePrimary, strokeWidth: 2.4, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
+            h('path', { d: 'M198 94 Q232 90 272 92', fill: 'none', stroke: strokeSecondary, strokeWidth: 2.4, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
+            h('path', { d: 'M202 110 Q234 120 272 122', fill: 'none', stroke: strokeAmber, strokeWidth: 2.2, strokeLinecap: 'round' })
           );
 
       var stepFill = function (done, active) {
@@ -1050,13 +1218,15 @@
         if (active) return strokePrimary;
         return strokeMuted;
       };
+      var progressX = step3Done ? 590 : (step2Done ? 533 : (step1Done ? 477 : 364));
 
       return h('div', {
         style: {
           borderRadius: '12px',
           overflow: 'hidden',
           border: (contrast ? '2px solid ' : '1px solid ') + (contrast ? '#ffff00' : (dark ? '#1e3a5f' : '#1e293b')),
-          background: bgStage
+          background: bgStage,
+          boxShadow: contrast ? 'none' : 'inset 0 1px 0 rgba(186,230,253,0.14), 0 6px 18px rgba(2,6,23,0.28)'
         }
       },
         h('svg', {
@@ -1066,35 +1236,88 @@
           role: 'img',
           'aria-label': _t('stem.accessLens.stage_aria', 'Optical viewfinder and 3-step accessibility workflow diagram for ') + modeTitle
         },
-          // Background optical grid
-          h('rect', { x: 0, y: 0, width: 640, height: 176, fill: bgStage }),
-          // Left viewfinder box
-          h('rect', { x: 24, y: 16, width: 282, height: 144, rx: 10, fill: cardStage, stroke: strokeMuted, strokeWidth: 1.2 }),
-          // Reticle corner brackets
-          h('path', { d: 'M36 42 L36 26 L52 26 M278 26 L294 26 L294 42 M36 134 L36 150 L52 150 M278 150 L294 150 L294 134', fill: 'none', stroke: hasPhoto ? strokeSecondary : strokePrimary, strokeWidth: 2.5, strokeLinecap: 'round' }),
+          !contrast ? h('defs', null,
+            h('radialGradient', { id: 'al-stage-bg', cx: '26%', cy: '50%', r: '78%' },
+              h('stop', { offset: '0%', stopColor: dark ? '#0f2544' : '#142a4a' }),
+              h('stop', { offset: '65%', stopColor: bgStage }),
+              h('stop', { offset: '100%', stopColor: '#030712' })
+            ),
+            h('radialGradient', { id: 'al-lens-glass', cx: '36%', cy: '32%', r: '68%' },
+              h('stop', { offset: '0%', stopColor: 'rgba(186,230,253,0.34)' }),
+              h('stop', { offset: '55%', stopColor: 'rgba(14,165,233,0.14)' }),
+              h('stop', { offset: '100%', stopColor: 'rgba(2,132,199,0.03)' })
+            ),
+            h('linearGradient', { id: 'al-card-tint', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: 'rgba(56,189,248,0.18)' }),
+              h('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.88)' })
+            ),
+            h('linearGradient', { id: 'al-bezel-sheen', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: 'rgba(186,230,253,0.52)' }),
+              h('stop', { offset: '45%', stopColor: 'rgba(56,189,248,0.16)' }),
+              h('stop', { offset: '100%', stopColor: 'rgba(52,211,153,0.38)' })
+            ),
+            h('filter', { id: 'al-glow', x: '-25%', y: '-25%', width: '150%', height: '150%' },
+              h('feGaussianBlur', { stdDeviation: '2.2', result: 'blur' }),
+              h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' }))
+            )
+          ) : null,
+          // Atmospheric optical chamber backdrop
+          h('rect', { x: 0, y: 0, width: 640, height: 176, fill: contrast ? bgStage : 'url(#al-stage-bg)' }),
+          // Calibrated micro-grid inside optical bench
+          !contrast ? h('g', { stroke: '#38bdf8', strokeWidth: 0.6, opacity: 0.09 },
+            [60, 120, 180, 240, 300, 360, 420, 480, 540, 600].map(function (gx) {
+              return h('line', { key: 'gx' + gx, x1: gx, y1: 0, x2: gx, y2: 176 });
+            }),
+            [44, 88, 132].map(function (gy) {
+              return h('line', { key: 'gy' + gy, x1: 0, y1: gy, x2: 640, y2: gy });
+            })
+          ) : null,
+          // Left viewfinder glass bezel housing
+          h('rect', { x: 20, y: 12, width: 290, height: 152, rx: 13, fill: 'none', stroke: contrast ? strokeMuted : 'url(#al-bezel-sheen)', strokeWidth: 1.6 }),
+          h('rect', { x: 24, y: 16, width: 282, height: 144, rx: 10, fill: cardStage, stroke: strokeMuted, strokeWidth: 1.1 }),
+          // Specular upper glass reflection across viewfinder
+          !contrast ? h('path', { d: 'M30 22 L300 22 L300 44 Q165 30 30 44 Z', fill: 'rgba(224,242,254,0.06)' }) : null,
+          // Optical calibration tick marks along top & bottom edges
+          h('g', { stroke: strokeMuted, strokeWidth: 1, opacity: 0.65 },
+            [85, 125, 165, 205, 245].map(function (tx) {
+              return h('g', { key: 'tk' + tx },
+                h('line', { x1: tx, y1: 18, x2: tx, y2: tx === 165 ? 25 : 22 }),
+                h('line', { x1: tx, y1: tx === 165 ? 151 : 154, x2: tx, y2: 158 })
+              );
+            })
+          ),
+          // Precision corner reticle brackets
+          h('path', { d: 'M36 42 L36 26 L52 26 M278 26 L294 26 L294 42 M36 134 L36 150 L52 150 M278 150 L294 150 L294 134', fill: 'none', stroke: hasPhoto ? strokeSecondary : strokePrimary, strokeWidth: 2.5, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
           lensGraphic,
-          h('text', { x: 165, y: 150, fill: hasPhoto ? strokeSecondary : txtSub, fontSize: 10.5, fontWeight: 700, textAnchor: 'middle' },
+          h('text', { x: 165, y: 150, fill: hasPhoto ? strokeSecondary : txtSub, fontSize: 10.2, fontWeight: 800, letterSpacing: '0.06em', textAnchor: 'middle' },
             hasPhoto ? _t('stem.accessLens.stage_locked', 'IMAGE READY IN MEMORY') : _t('stem.accessLens.stage_standby', 'VIEWFINDER STANDBY')),
           // Right pipeline panel
-          h('text', { x: 332, y: 34, fill: strokePrimary, fontSize: 11, fontWeight: 800 }, modeTitle.toUpperCase()),
-          h('text', { x: 332, y: 50, fill: txtSub, fontSize: 11 }, modeDetail),
-          // Connector track
-          h('line', { x1: 364, y1: 92, x2: 590, y2: 92, stroke: strokeMuted, strokeWidth: 2, strokeDasharray: '4 4' }),
+          h('text', { x: 332, y: 33, fill: strokePrimary, fontSize: 11, fontWeight: 800, letterSpacing: '0.05em' }, modeTitle.toUpperCase()),
+          h('text', { x: 332, y: 49, fill: txtSub, fontSize: 11 }, modeDetail),
+          // Calibrated optical signal / contrast meter bar
+          h('rect', { x: 332, y: 58, width: 282, height: 4, rx: 2, fill: strokeMuted, opacity: 0.45 }),
+          h('rect', { x: 332, y: 58, width: Math.max(46, Math.round(((lensesExploredCount + (hasPhoto ? 1 : 0)) / 5) * 282)), height: 4, rx: 2, fill: hasPhoto ? strokeSecondary : strokePrimary }),
+          // Connector track (base dashed + active luminous progress rail)
+          h('line', { x1: 364, y1: 94, x2: 590, y2: 94, stroke: strokeMuted, strokeWidth: 2, strokeDasharray: '4 4' }),
+          progressX > 364 ? h('line', { x1: 364, y1: 94, x2: progressX, y2: 94, stroke: strokeSecondary, strokeWidth: 2.6, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }) : null,
           // Step 1
-          h('circle', { cx: 364, cy: 92, r: 16, fill: cardStage, stroke: stepFill(step1Done, !step1Done), strokeWidth: 2.5 }),
-          h('text', { x: 364, y: 96, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step1Done ? 'OK' : '1'),
-          h('text', { x: 364, y: 126, fill: txtMain, fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, _t('stem.accessLens.step_capture', 'Capture')),
-          h('text', { x: 364, y: 141, fill: txtSub, fontSize: 10, textAnchor: 'middle' }, hasPhoto ? _t('stem.accessLens.step_done', 'Loaded') : _t('stem.accessLens.step_local', 'Local only')),
+          h('circle', { cx: 364, cy: 94, r: 20, fill: 'none', stroke: stepFill(step1Done, !step1Done), strokeWidth: 1, opacity: 0.35 }),
+          h('circle', { cx: 364, cy: 94, r: 16, fill: cardStage, stroke: stepFill(step1Done, !step1Done), strokeWidth: 2.5 }),
+          h('text', { x: 364, y: 98, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step1Done ? 'OK' : '1'),
+          h('text', { x: 364, y: 128, fill: txtMain, fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, _t('stem.accessLens.step_capture', 'Capture')),
+          h('text', { x: 364, y: 143, fill: txtSub, fontSize: 10, textAnchor: 'middle' }, hasPhoto ? _t('stem.accessLens.step_done', 'Loaded') : _t('stem.accessLens.step_local', 'Local only')),
           // Step 2
-          h('circle', { cx: 477, cy: 92, r: 16, fill: cardStage, stroke: stepFill(step2Done, step1Done && !step2Done), strokeWidth: 2.5 }),
-          h('text', { x: 477, y: 96, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step2Done ? 'OK' : '2'),
-          h('text', { x: 477, y: 126, fill: txtMain, fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, _t('stem.accessLens.step_lens', 'Analyze')),
-          h('text', { x: 477, y: 141, fill: txtSub, fontSize: 10, textAnchor: 'middle' }, busy ? _t('stem.accessLens.step_working', 'Working') : (step2Done ? _t('stem.accessLens.step_ready', 'Ready') : _t('stem.accessLens.step_user', 'On click'))),
+          h('circle', { cx: 477, cy: 94, r: 20, fill: 'none', stroke: stepFill(step2Done, step1Done && !step2Done), strokeWidth: 1, opacity: 0.35 }),
+          h('circle', { cx: 477, cy: 94, r: 16, fill: cardStage, stroke: stepFill(step2Done, step1Done && !step2Done), strokeWidth: 2.5 }),
+          h('text', { x: 477, y: 98, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step2Done ? 'OK' : '2'),
+          h('text', { x: 477, y: 128, fill: txtMain, fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, _t('stem.accessLens.step_lens', 'Analyze')),
+          h('text', { x: 477, y: 143, fill: txtSub, fontSize: 10, textAnchor: 'middle' }, busy ? _t('stem.accessLens.step_working', 'Working') : (step2Done ? _t('stem.accessLens.step_ready', 'Ready') : _t('stem.accessLens.step_user', 'On click'))),
           // Step 3
-          h('circle', { cx: 590, cy: 92, r: 16, fill: cardStage, stroke: stepFill(step3Done, step2Done), strokeWidth: 2.5 }),
-          h('text', { x: 590, y: 96, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step3Done ? 'OK' : '3'),
-          h('text', { x: 590, y: 126, fill: txtMain, fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, _t('stem.accessLens.step_access', 'Access')),
-          h('text', { x: 590, y: 141, fill: txtSub, fontSize: 10, textAnchor: 'middle' }, speaking ? _t('stem.accessLens.step_speaking', 'Speaking') : _t('stem.accessLens.step_audio', 'Audio / Print'))
+          h('circle', { cx: 590, cy: 94, r: 20, fill: 'none', stroke: stepFill(step3Done, step2Done), strokeWidth: 1, opacity: 0.35 }),
+          h('circle', { cx: 590, cy: 94, r: 16, fill: cardStage, stroke: stepFill(step3Done, step2Done), strokeWidth: 2.5 }),
+          h('text', { x: 590, y: 98, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step3Done ? 'OK' : '3'),
+          h('text', { x: 590, y: 128, fill: txtMain, fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, _t('stem.accessLens.step_access', 'Access')),
+          h('text', { x: 590, y: 143, fill: txtSub, fontSize: 10, textAnchor: 'middle' }, speaking ? _t('stem.accessLens.step_speaking', 'Speaking') : _t('stem.accessLens.step_audio', 'Audio / Print'))
         )
       );
     }
@@ -1308,7 +1531,7 @@
                 _t('stem.accessLens.text_size', 'Text size'),
                 // 44px was small for many low-vision readers; 96 matches a magnifier at about 4x body text.
                 h('input', {
-                  type: 'range', min: 16, max: 96, step: 4, value: readerPx,
+                  type: 'range', min: 16, max: 96, step: 2, value: readerPx,
                   'aria-label': _t('stem.accessLens.text_size', 'Text size'),
                   'aria-valuetext': _t('stem.accessLens.text_size_value', '{n} pixels').replace('{n}', String(readerPx)),
                   onChange: function (e) { setReaderPx(parseInt(e.target.value, 10) || 24); },
@@ -1442,7 +1665,7 @@
               h('div', { key: 'trans', style: { padding: '10px 12px', borderRadius: '10px', background: C.accentBg, border: '1px solid ' + C.accent, minWidth: 0 } },
                 h('div', { style: { fontSize: '10.5px', fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, _t('stem.accessLens.translation', 'Translation') + (out.lang ? ' (' + out.lang + ')' : '')),
                 // lang picks the right font and voice; dir=auto lays out Arabic, Farsi and Pashto right to left.
-                h('div', { dir: 'auto', lang: (out.lang && LANG_CODES[out.lang]) || undefined, style: { fontSize: '16px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out.translated))),
+                h('div', { dir: 'auto', lang: langCodeOf(out.lang) || undefined, style: { fontSize: '16px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out.translated))),
             countUnclear(out.original) ? h('div', { key: 'gaps', role: 'status', style: { marginTop: '10px', fontSize: '12.5px', lineHeight: 1.5, color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px' } },
               _t('stem.accessLens.translate_gap', 'Some words in the original could not be read, so the translation is missing part of the text. Take the photo again with more light if this matters.')) : null,
             h('div', { key: 'mt', role: 'note', style: { marginTop: '10px', fontSize: '13px', lineHeight: 1.5, color: C.text } },
@@ -1575,11 +1798,19 @@
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: '1 1 240px' } },
             // Bespoke Optical Aperture + Soundwave SVG Emblem
-            h('div', { 'aria-hidden': 'true', style: { width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: contrast ? '#000000' : 'rgba(255,255,255,0.12)', border: contrast ? '2px solid #ffff00' : '1px solid rgba(186,230,253,0.35)' } },
+            h('div', { 'aria-hidden': 'true', style: { width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: contrast ? '#000000' : 'radial-gradient(circle at 32% 28%, rgba(125,211,252,0.28), rgba(15,23,42,0.45))', border: contrast ? '2px solid #ffff00' : '1px solid rgba(186,230,253,0.42)', boxShadow: contrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.24)' } },
               h('svg', { viewBox: '0 0 40 40', width: 32, height: 32, 'aria-hidden': 'true' },
-                h('circle', { cx: 18, cy: 20, r: 12, fill: 'none', stroke: contrast ? '#ffff00' : '#7dd3fc', strokeWidth: 2.2 }),
-                h('circle', { cx: 18, cy: 20, r: 6.5, fill: 'none', stroke: contrast ? '#00ff00' : '#ffffff', strokeWidth: 2 }),
-                h('circle', { cx: 18, cy: 20, r: 2.5, fill: contrast ? '#ffff00' : '#38bdf8' }),
+                !contrast ? h('defs', null,
+                  h('radialGradient', { id: 'al-emblem-glass', cx: '35%', cy: '30%', r: '70%' },
+                    h('stop', { offset: '0%', stopColor: 'rgba(186,230,253,0.48)' }),
+                    h('stop', { offset: '100%', stopColor: 'rgba(14,165,233,0.08)' })
+                  )
+                ) : null,
+                h('circle', { cx: 18, cy: 20, r: 12.5, fill: contrast ? 'none' : 'url(#al-emblem-glass)', stroke: contrast ? '#ffff00' : '#7dd3fc', strokeWidth: 2 }),
+                h('circle', { cx: 18, cy: 20, r: 7, fill: 'none', stroke: contrast ? '#00ff00' : '#ffffff', strokeWidth: 1.8 }),
+                h('path', { d: 'M18 11 L21 15 M26 20 L22 23 M18 29 L15 25 M10 20 L14 17', fill: 'none', stroke: contrast ? '#ffff00' : '#bae6fd', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.72 }),
+                h('circle', { cx: 18, cy: 20, r: 2.6, fill: contrast ? '#ffff00' : '#38bdf8' }),
+                !contrast ? h('path', { d: 'M11.5 14 A10 10 0 0 1 20 10.5', fill: 'none', stroke: '#ffffff', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.7 }) : null,
                 h('path', { d: 'M31 14 Q36 20 31 26', fill: 'none', stroke: contrast ? '#00ff00' : '#34d399', strokeWidth: 2.2, strokeLinecap: 'round' }),
                 h('path', { d: 'M34.5 10.5 Q40 20 34.5 29.5', fill: 'none', stroke: contrast ? '#ffff00' : '#bae6fd', strokeWidth: 1.8, strokeLinecap: 'round' })
               )

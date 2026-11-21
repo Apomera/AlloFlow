@@ -47,7 +47,7 @@
   // question in one activity is put back after the word before it in another.
   function wordOrder(blocks) {
     var lists = blocks.map(function (block) {
-      var seen = {};
+      var seen = Object.create(null);
       return list(block.items).map(function (item) { return isObject(item) ? String(item.word || '').trim().toLowerCase() : ''; })
         .filter(function (word) { if (!WORD.test(word) || seen[word]) return false; seen[word] = true; return true; });
     }).sort(function (a, b) { return b.length - a.length; });
@@ -76,7 +76,7 @@
   // Which sound each phoneme clip says: every { label, audio } pair the file holds (Find Sounds choices, Break it
   // Down chips, Sound Sort chips).
   function soundOfClip(blocks) {
-    var map = {};
+    var map = Object.create(null);
     var walk = function (value) {
       if (Array.isArray(value)) { value.forEach(walk); return; }
       if (!isObject(value)) return;
@@ -354,7 +354,7 @@
     if (!method || typeof b.parseFacts !== 'function' || typeof b.factKey !== 'function') return elsewhere('other', out);
     var id = /^math-facts-(.+)-(?:ccc|rehearsal)$/.exec(String(lesson.lessonId || ''));
     var set = id ? list(b.FAMILIES).filter(function (f) { return isObject(f) && f.id === id[1]; })[0] : null;
-    var facts = [], known = [], seen = {}, lost = 0;
+    var facts = [], known = [], seen = Object.create(null), lost = 0;
     var cards = block.items.filter(isObject);
     // New facts first, in the order they come, then the known ones: the way the page lists a typed list for rehearsal.
     ['new', '', 'known'].forEach(function (role) {
@@ -433,7 +433,7 @@
       out.teacherCode = !!back.teacherCode;
       return out;
     }
-    var seen = {}, words = [], types = [];
+    var seen = Object.create(null), words = [], types = [];
     got.blocks.forEach(function (b) {
       var t = String(b.activity || '').replace(/^vocab_/, '');
       if (t && types.indexOf(t) < 0) types.push(t);

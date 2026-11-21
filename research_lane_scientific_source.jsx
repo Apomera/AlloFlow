@@ -1193,7 +1193,7 @@
         background: '#f5f3ff', border: '1px solid #c4b5fd',
       }}>
         {SuggestionBadge && (<div style={{ marginBottom: '6px' }}><SuggestionBadge t={t} /></div>)}
-        <AiResultBody data={data} t={t} />
+        <AiResultBody data={data} t={t} aiScalarText={aiScalarText} />
       </div>
     );
   }
@@ -1201,6 +1201,9 @@
   function AiResultBody(props) {
     var data = props.data || {};
     var t = props.t || function (k) { return k; };
+    var aiScalarText = typeof props.aiScalarText === 'function'
+      ? props.aiScalarText
+      : function (v) { return typeof v === 'string' ? v : (v && typeof v === 'object' && !Array.isArray(v) && typeof v.text === 'string' ? v.text : (v == null || typeof v === 'object' ? '' : String(v))); };
     function renderQuestions(arr, label) {
       if (!Array.isArray(arr) || !arr.length) return null;
       return (
@@ -1909,7 +1912,7 @@
           <AiResultPanel t={t} data={aiResult.data} primitives={primitives} />
         )}
 
-        {aiResult && !aiResult.blocked && (
+        {((aiResult && !aiResult.blocked) || (journal.aiHistory || []).some(function (h) { return h && h.touchpoint === 'steelman_second_pass' && !h.blocked; }) || !!(comp && comp.trim())) && (
           <TextareaCard t={t} label={t('scientific.comparison_label') || 'Your comparison (gate to Revise & Share + export, ≥80 chars)'}
                         help={t('scientific.comparison_help') || 'Given OUR evidence: which reading is stronger, and what additional evidence would distinguish them? You author this — AI does not.'}
                         value={comp} onChange={setComp} rows={4} max={1200} />

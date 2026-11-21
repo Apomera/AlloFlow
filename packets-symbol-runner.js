@@ -60,15 +60,45 @@
   var statusEl = $('sr-status');
   var clearStatusEl = $('sr-clear-status');
 
-  var pictures = {};
-  var phonemeAudio = {};
-  var letterAudio = {};
-  var wordAudio = {};
-  var myWordAudio = {};
+  var pictures = Object.create(null);
+  var phonemeAudio = Object.create(null);
+  var letterAudio = Object.create(null);
+  var wordAudio = Object.create(null);
+  var myWordAudio = Object.create(null);
   var lastMyMediaSig = '';
   var wordAudioPromise = null;
   function mergedWordAudio(wBank) {
-    return Object.assign({}, wBank || wordAudio, myWordAudio);
+    return Object.assign(Object.create(null), wBank || wordAudio, myWordAudio);
+  }
+  function safeJsonParse(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
+  function withFetchTimeout(reqPromise, ctrl, ms) {
+    var limit = ms || 15000;
+    var timer = 0;
+    return new Promise(function (resolve, reject) {
+      timer = root.setTimeout(function () {
+        if (ctrl) { try { ctrl.abort(); } catch (_) {} }
+        reject(new Error('Request timed out'));
+      }, limit);
+      Promise.resolve(reqPromise).then(function (res) {
+        root.clearTimeout(timer);
+        resolve(res);
+      }, function (err) {
+        root.clearTimeout(timer);
+        reject(err);
+      });
+    });
+  }
+  function fetchWithTimeout(url, ms) {
+    var ctrl = typeof root.AbortController === 'function' ? new root.AbortController() : null;
+    try {
+      return withFetchTimeout(ctrl ? root.fetch(url, { signal: ctrl.signal }) : root.fetch(url), ctrl, ms);
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
   var wordsJsonPromise = null;
   var shardIndexData = null;
@@ -93,9 +123,11 @@
 
   function loadAudioJson(url, targetMap, onLoaded) {
     if (typeof root.fetch !== 'function') return Promise.resolve(targetMap);
-    return root.fetch(url).then(function (res) {
+    return fetchWithTimeout(url, 15000).then(function (res) {
       if (!res || !res.ok) return targetMap;
-      return res.json();
+      return typeof res.text === 'function'
+        ? res.text().then(function (txt) { return safeJsonParse(txt.charCodeAt(0) === 0xFEFF ? txt.slice(1) : txt); })
+        : res.json();
     }).then(function (data) {
       if (data && typeof data === 'object') {
         var srcMap = data.clips && typeof data.clips === 'object' ? data.clips : data;
@@ -184,11 +216,13 @@
     if (shardIndexData) return Promise.resolve(shardIndexData);
     if (typeof root.fetch !== 'function') return Promise.resolve(null);
     if (!shardIndexPromise) {
-      shardIndexPromise = root.fetch('word_audio_shards/index.json').then(function (res) {
+      var idxCtrl = typeof root.AbortController === 'function' ? new root.AbortController() : null;
+      var idxReq = root.fetch('word_audio_shards/index.json', idxCtrl ? { signal: idxCtrl.signal } : undefined);
+      shardIndexPromise = withFetchTimeout(idxReq, idxCtrl, 15000).then(function (res) {
         if (!res || !res.ok) return null;
-        return typeof res.json === 'function' ? res.json() : res.text().then(function (txt) {
-          return JSON.parse(txt.charCodeAt(0) === 0xFEFF ? txt.slice(1) : txt);
-        });
+        return typeof res.text === 'function' ? res.text().then(function (txt) {
+          return safeJsonParse(txt.charCodeAt(0) === 0xFEFF ? txt.slice(1) : txt);
+        }) : res.json();
       }).then(function (data) {
         if (data && data.format === 'alloflow-word-audio-index/1' && data.words && data.shards) {
           shardIndexData = data;
@@ -225,11 +259,11 @@
       var fetchOneShard = function (url) {
         if (shardFileCache[url]) return Promise.resolve(shardFileCache[url]);
         if (!shardFilePromises[url]) {
-          shardFilePromises[url] = root.fetch(url).then(function (res) {
+          shardFilePromises[url] = fetchWithTimeout(url, 15000).then(function (res) {
             if (!res || !res.ok) return null;
-            return typeof res.json === 'function' ? res.json() : res.text().then(function (txt) {
-              return JSON.parse(txt.charCodeAt(0) === 0xFEFF ? txt.slice(1) : txt);
-            });
+            return typeof res.text === 'function' ? res.text().then(function (txt) {
+              return safeJsonParse(txt.charCodeAt(0) === 0xFEFF ? txt.slice(1) : txt);
+            }) : res.json();
           }).then(function (data) {
             if (data && typeof data === 'object') shardFileCache[url] = data;
             return shardFileCache[url] || null;
@@ -607,9 +641,18 @@
     return Promise.resolve(src);
   }
 
+  var MAX_SVG_UPLOAD_BYTES = 1200 * 1024;
+  var MAX_RASTER_UPLOAD_BYTES = 25 * 1024 * 1024;
   function readFileAsDataUri(file) {
     var mime = String((file && file.type) || '').toLowerCase();
     var isSvg = mime === 'image/svg+xml' || /\.svg$/i.test(String((file && file.name) || ''));
+    var sizeBytes = Number((file && file.size) || 0);
+    if (isSvg && sizeBytes > MAX_SVG_UPLOAD_BYTES) {
+      return Promise.reject(new Error('That SVG picture is too large to keep. Choose a smaller picture.'));
+    }
+    if (!isSvg && sizeBytes > MAX_RASTER_UPLOAD_BYTES) {
+      return Promise.reject(new Error('That picture is too large to keep. Choose a smaller picture.'));
+    }
     if (isSvg) {
       return new Promise(function (resolve, reject) {
         if (typeof root.FileReader !== 'function') { reject(new Error('File reader is unavailable.')); return; }
@@ -832,7 +875,7 @@
     if (rehearsalCheck && rehearsalCheck.checked && packetModeValue() !== 'check') {
       var pool = currentPool();
       var knownRaw = knownInput ? knownInput.value.trim().toLowerCase().split(/[\s,;|\r\n]+/).filter(Boolean) : [];
-      var knownSet = {};
+      var knownSet = Object.create(null);
       knownRaw.forEach(function (k) { knownSet[k] = true; });
       focus = knownRaw.length
         ? pool.filter(function (p) { return !knownSet[p.answer.toLowerCase()]; }).slice(0, 6).map(function (p) { return p.answer; })
@@ -1827,17 +1870,18 @@
     try {
       var raw = root.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
-      var saved = JSON.parse(raw);
-      if (saved && saved.mode && modeSelect) modeSelect.value = saved.mode;
-      if (saved && saved.control) {
+      var saved = safeJsonParse(raw);
+      if (!saved || typeof saved !== 'object') return;
+      if (typeof saved.mode === 'string' && modeSelect) modeSelect.value = saved.mode;
+      if (saved.control === 'direct' || saved.control === 'lockon') {
         var cr = doc.querySelector('input[name="sr-control"][value="' + saved.control + '"]');
         if (cr) cr.checked = true;
       }
-      if (saved && saved.viewMode) {
+      if (saved.viewMode === '3d' || saved.viewMode === '2d' || saved.viewMode === 'grid') {
         var vr = doc.querySelector('input[name="sr-view"][value="' + saved.viewMode + '"]');
         if (vr) vr.checked = true;
       }
-      if (saved && saved.packetMode) {
+      if (saved.packetMode === 'practice' || saved.packetMode === 'check') {
         var pmr = doc.querySelector('input[name="sr-packet-mode"][value="' + saved.packetMode + '"]');
         if (pmr) pmr.checked = true;
       }
@@ -1866,7 +1910,7 @@
     if (!match) return false;
     var raw = '';
     try { raw = decodeURIComponent(match[1]); } catch (_) { raw = match[1]; }
-    var seen = {};
+    var seen = Object.create(null);
     var missed = [];
     raw.split(/[,;\s]+/).forEach(function (tok) {
       var clean = String(tok || '').trim();
@@ -1934,7 +1978,7 @@
     if (!match) return false;
     var raw = '';
     try { raw = decodeURIComponent(match[1]); } catch (_) { raw = match[1]; }
-    var seen = {};
+    var seen = Object.create(null);
     var items = [];
     raw.split(/[,;\s]+/).forEach(function (tok) {
       var clean = String(tok || '').trim();

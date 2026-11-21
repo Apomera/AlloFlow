@@ -118,14 +118,35 @@ function getDataDir() {
 function getAuditPath() { return path.join(getDataDir(), 'agent-core', 'mcp-audit.jsonl'); }
 function hashRef(value) { return 'sha256:' + crypto.createHash('sha256').update(String(value), 'utf8').digest('hex').slice(0, 16); }
 function rotateAudit(auditPath, incomingBytes) {
-  if (!fs.existsSync(auditPath) || fs.statSync(auditPath).size + incomingBytes <= LIMITS.auditBytes) return;
+  let st;
+  try { st = fs.lstatSync(auditPath); } catch (_) { return; }
+  if (st.isSymbolicLink() || !st.isFile()) throw new Error('Audit log path must be a regular file');
+  if (st.size + incomingBytes <= LIMITS.auditBytes) return;
   for (let index = LIMITS.auditFiles - 1; index >= 1; index--) {
     const target = auditPath + '.' + index;
-    if (fs.existsSync(target)) fs.unlinkSync(target);
     const source = index === 1 ? auditPath : auditPath + '.' + (index - 1);
-    if (fs.existsSync(source)) {
-      if (fs.statSync(source).size > LIMITS.auditBytes) fs.unlinkSync(source);
-      else fs.renameSync(source, target);
+    let srcStat = null;
+    try { srcStat = fs.lstatSync(source); } catch (_) { continue; }
+    if (srcStat.isSymbolicLink() || !srcStat.isFile()) throw new Error('Audit rotation source is not a regular file');
+    try {
+      const tgtStat = fs.lstatSync(target);
+      if (tgtStat.isSymbolicLink()) throw new Error('Audit rotation target is a symlink');
+    } catch (e) {
+      if (e && e.code !== 'ENOENT') throw e;
+    }
+    if (srcStat.size > LIMITS.auditBytes) {
+      try { fs.unlinkSync(source); } catch (_) {}
+      continue;
+    }
+    try {
+      fs.renameSync(source, target);
+    } catch (err) {
+      if (process.platform === 'win32' && (err.code === 'EEXIST' || err.code === 'EPERM')) {
+        try { fs.unlinkSync(target); } catch (_) {}
+        fs.renameSync(source, target);
+      } else {
+        throw err;
+      }
     }
   }
 }
@@ -147,7 +168,14 @@ function appendAudit(toolName, outcome, context) {
     fs.mkdirSync(path.dirname(auditPath), { recursive: true, mode: 0o700 });
     const line = JSON.stringify(record) + '\n';
     rotateAudit(auditPath, Buffer.byteLength(line, 'utf8'));
-    fs.appendFileSync(auditPath, line, { encoding: 'utf8', mode: 0o600 });
+    const fd = fs.openSync(auditPath, fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_APPEND | (fs.constants.O_NOFOLLOW || 0), 0o600);
+    try {
+      const fstat = fs.fstatSync(fd);
+      if (!fstat.isFile()) throw new Error('Audit log is not a regular file');
+      fs.writeFileSync(fd, line, 'utf8');
+    } finally {
+      fs.closeSync(fd);
+    }
   } catch (_) {
     const e = new Error('Audit log unavailable; the requested state change was not committed.');
     e.auditFailure = true;
@@ -204,8 +232,9 @@ function validateRevisionChanges(changes) {
   assertOptionalString(changes, 'standards', 4000, 'arguments.changes');
   if (changes.setDirectives !== undefined) {
     assertObject(changes.setDirectives, 'arguments.changes.setDirectives');
-    const bad = Object.keys(changes.setDirectives).find((tool) => Contracts.FALLBACK_TOOL_IDS.indexOf(tool) === -1 || typeof changes.setDirectives[tool] !== 'string' || changes.setDirectives[tool].length > LIMITS.directiveChars);
-    if (bad) throw invalidParams('arguments.changes.setDirectives must map known tool IDs to strings');
+    if (Object.keys(changes.setDirectives).some((tool) => Contracts.FALLBACK_TOOL_IDS.indexOf(tool) === -1 || typeof changes.setDirectives[tool] !== 'string' || changes.setDirectives[tool].length > LIMITS.directiveChars)) {
+      throw invalidParams('arguments.changes.setDirectives must map known tool IDs to strings');
+    }
   }
 }
 function requireJobId(args) {
@@ -603,18 +632,21 @@ const TOOL_HANDLERS = {
   resource_pack_validate(args) {
     assertAllowedKeys(args, ['pack', 'profile'], 'arguments');
     assertObject(args.pack, 'arguments.pack');
+    if (args.profile !== undefined && PACK_PROFILE_SCHEMA.enum.indexOf(args.profile) === -1) throw invalidParams('arguments.profile must be a supported resource-pack profile');
     return reportPayload(ResourcePackService.validatePack(args.pack, { strict: true, profile: args.profile }));
   },
   resource_pack_preview(args) {
     assertAllowedKeys(args, ['pack', 'profile'], 'arguments');
     assertObject(args.pack, 'arguments.pack');
+    if (args.profile !== undefined && PACK_PROFILE_SCHEMA.enum.indexOf(args.profile) === -1) throw invalidParams('arguments.profile must be a supported resource-pack profile');
     const report = ResourcePackService.previewPack(args.pack, { profile: args.profile });
-    if (!report.ok) return report;
+    if (!report.ok) return reportPayload(report);
     return report;
   },
   resource_pack_export(args) {
     assertAllowedKeys(args, ['pack', 'profile'], 'arguments');
     assertObject(args.pack, 'arguments.pack');
+    if (args.profile !== undefined && PACK_PROFILE_SCHEMA.enum.indexOf(args.profile) === -1) throw invalidParams('arguments.profile must be a supported resource-pack profile');
     const result = ResourcePackService.exportPack(args.pack, { profile: args.profile });
     if (!result.ok) throw invalidParams('Resource-pack export failed validation: ' + result.errors.map((e) => e.code).join(', '));
     return pendingWrite(result, { blueprintId: args.pack.allopack && args.pack.allopack.title ? String(args.pack.allopack.title) : '' }, () => {});
@@ -623,6 +655,7 @@ const TOOL_HANDLERS = {
     assertAllowedKeys(args, ['pack', 'profile', 'attachment'], 'arguments');
     assertObject(args.pack, 'arguments.pack');
     assertObject(args.attachment, 'arguments.attachment');
+    if (args.profile !== undefined && PACK_PROFILE_SCHEMA.enum.indexOf(args.profile) === -1) throw invalidParams('arguments.profile must be a supported resource-pack profile');
     const report = ResourcePackService.attachImage(args.pack, args.attachment, { profile: args.profile });
     if (!report.ok) throw invalidParams('Image attachment failed validation: ' + report.errors.map((e) => e.code).join(', '));
     return pendingWrite(reportPayload(report), { blueprintId: String(args.pack.allopack && args.pack.allopack.title || '') }, () => {});

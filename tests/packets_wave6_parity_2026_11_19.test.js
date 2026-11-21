@@ -402,7 +402,9 @@ describe('Item #5 — Sound Mapping retry error marking, drag-and-drop, ● ● 
     };
     drag(pick('qu'), slot(0));
     expect(slot(0).getAttribute('data-span')).toBe('2');
-    expect(slot(0).style.background).toBe('var(--soft)');
+    expect(slot(0).getAttribute('data-map-c')).toBe('1');
+    expect(slot(0).style.background).toBe('var(--c1b,var(--soft))');
+    expect(pick('n').style.background).not.toBe(pick('qu').style.background);
     expect(slot(0).querySelector('[data-span-dots][aria-hidden="true"]').textContent).toBe('●●');
 
     // Place wrong order for last two slots ('n' at slot 2, 'ee' at slot 3) -> retry marks slots 2 and 3 wrong, leaves slot 0 clean.

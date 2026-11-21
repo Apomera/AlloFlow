@@ -1340,6 +1340,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                       const armWatchdog = (ms) => {
                           if (watchdogTimer) clearTimeout(watchdogTimer);
                           watchdogTimer = setTimeout(() => {
+                              if (audio.paused || audio.ended) return;
                               warnLog(`Watchdog triggered for segment ${index}`);
                               _pkTrace('pk:watchdog-fired', { idx: index });
                               if (playbackSessionRef.current === sessionId && audioRef.current === audio) {
@@ -1348,6 +1349,23 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                               }
                           }, ms);
                       };
+                      const armRemainingWatchdog = () => {
+                          const rate = playbackRateRef.current || 1;
+                          if (audio.duration && isFinite(audio.duration)) {
+                              const remaining = Math.max(0, audio.duration - (Number(audio.currentTime) || 0));
+                              armWatchdog((remaining * 1000) / rate + 2000);
+                          } else {
+                              armWatchdog(Math.max(8000, (String(textToSpeak || '').length * 90) / rate + 4000));
+                          }
+                      };
+                      audio.addEventListener('pause', () => {
+                          if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
+                      });
+                      audio.addEventListener('play', () => {
+                          if (!audio.ended && playbackSessionRef.current === sessionId && audioRef.current === audio) {
+                              armRemainingWatchdog();
+                          }
+                      });
                       const duration = audio.duration;
                       if (duration && isFinite(duration)) {
                           armWatchdog((duration * 1000) / playbackRateRef.current + 2000);
@@ -1360,7 +1378,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                           // duration the moment metadata arrives.
                           armWatchdog(Math.max(8000, (String(textToSpeak || '').length * 90) / (playbackRateRef.current || 1) + 4000));
                           audio.addEventListener('loadedmetadata', () => {
-                              if (audio.duration && isFinite(audio.duration) && audioRef.current === audio) {
+                              if (!audio.paused && audio.duration && isFinite(audio.duration) && audioRef.current === audio) {
                                   armWatchdog(((audio.duration - audio.currentTime) * 1000) / (playbackRateRef.current || 1) + 2000);
                               }
                           }, { once: true });
@@ -2704,22 +2722,28 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
               if ((subPart.startsWith('$') && subPart.endsWith('$')) || (subPart.startsWith('\\(') && subPart.endsWith('\\)')) || (subPart.startsWith('\\[') && subPart.endsWith('\\]'))) {
                   return <React.Fragment key={sIdx}><MathSymbol text={subPart} /></React.Fragment>;
               }
+              const _sylOn = !isCode && typeof window !== 'undefined' && typeof window.__alloIsSyllablesOn === 'function' && window.__alloIsSyllablesOn();
+              const _bionicOn = !isCode && !!focusMode;
+              const _assistLang = leveledTextLanguage || '';
+              const _assistText = (str) => (typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function')
+                  ? window.__alloBionicReact(str, { bionic: _bionicOn, syllables: _sylOn, lang: _assistLang })
+                  : toFocusText(str);
               if (enableGlossary) {
                   const glossed = highlightGlossaryTerms(subPart, latestGlossary, false, isDarkBg);
-                  if (focusMode) {
+                  if (_bionicOn || _sylOn) {
                       if (Array.isArray(glossed)) {
                           return glossed.map((g, gIdx) => {
-                              if (typeof g === 'string') return <React.Fragment key={gIdx}>{toFocusText(g)}</React.Fragment>;
+                              if (typeof g === 'string') return <React.Fragment key={gIdx}>{_assistText(g)}</React.Fragment>;
                               return <React.Fragment key={gIdx}>{g}</React.Fragment>;
                           });
                       } else if (typeof glossed === 'string') {
-                          return <React.Fragment key={sIdx}>{toFocusText(glossed)}</React.Fragment>;
+                          return <React.Fragment key={sIdx}>{_assistText(glossed)}</React.Fragment>;
                       }
                   }
                   return <React.Fragment key={sIdx}>{glossed}</React.Fragment>;
               } else {
-                  if (focusMode) {
-                      return <React.Fragment key={sIdx}>{toFocusText(subPart)}</React.Fragment>;
+                  if (_bionicOn || _sylOn) {
+                      return <React.Fragment key={sIdx}>{_assistText(subPart)}</React.Fragment>;
                   }
                   return <React.Fragment key={sIdx}>{subPart}</React.Fragment>;
               }
@@ -4236,7 +4260,7 @@ const recordPartnerFluencyCheck = (deps, result, sourceText) => {
 };
 
 const toggleFluencyRecording = async (deps) => {
-  const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, generationSignal } = deps;
+  const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, startFluencyRecording, stopFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, generationSignal } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] toggleFluencyRecording fired"); } catch(_) {}
       // FluencyModePanel's partner check hands its finished, audio-free result
       // here (the host passes this function, not its deps). Save it; never record.
@@ -4379,7 +4403,10 @@ const toggleFluencyRecording = async (deps) => {
                   setFluencyStatus('idle');
               }
           }
-      } catch (e) { warnLog("Unhandled error in toggleFluencyRecording:", e); }
+      } catch (e) {
+          warnLog("Unhandled error in toggleFluencyRecording:", e);
+          setFluencyStatus('idle');
+      }
 };
 
 const handleFixGrammarErrors = async (deps) => {

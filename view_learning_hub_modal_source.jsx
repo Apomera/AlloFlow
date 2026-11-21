@@ -159,7 +159,7 @@ function LearningHubModal(props) {
   const readHubAiHidden = () => {
     try {
       if (typeof window === 'undefined') return false;
-      if (window.__alloStudentAiDisabled === true) return true;
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return true;
       const fn = window.callGemini;
       return typeof fn === 'function' && fn._alloQrBlocked === true;
     } catch (_) { return false; }
@@ -171,9 +171,11 @@ function LearningHubModal(props) {
     refresh();
     window.addEventListener('alloflow:student-ai-config-changed', refresh);
     window.addEventListener('alloflow:ai-config-changed', refresh);
+    window.addEventListener('alloflow:ai-key-lock-changed', refresh);
     return () => {
       window.removeEventListener('alloflow:student-ai-config-changed', refresh);
       window.removeEventListener('alloflow:ai-config-changed', refresh);
+      window.removeEventListener('alloflow:ai-key-lock-changed', refresh);
     };
   }, [showLearningHub]);
   const [hubQuery, setHubQuery] = React.useState('');
@@ -187,6 +189,7 @@ function LearningHubModal(props) {
     catch (_) { return []; }
   });
   const [hubFavoritesOnly, setHubFavoritesOnly] = React.useState(false);
+  const [hubSectionFilter, setHubSectionFilter] = React.useState('all');
   const [hubManageFavorites, setHubManageFavorites] = React.useState(false);
   const [hubVisibleCount, setHubVisibleCount] = React.useState(0);
   const [hubUsageCounts, setHubUsageCounts] = React.useState(() => {
@@ -247,19 +250,20 @@ function LearningHubModal(props) {
     const query = hubQuery.trim().toLowerCase();
     const shells = Array.from(grid.querySelectorAll('[data-hub-id]'));
     const visibleSections = new Set();
+    const filtered = Boolean(query || hubFavoritesOnly || hubSectionFilter !== 'all');
     let count = 0;
     shells.forEach((shell) => {
       const text = (shell.textContent || '').toLowerCase();
       const sectionCollapsed = hubCollapsedSections.includes(shell.dataset.hubSection);
       const aiOnlyHidden = hubAiHidden && shell.dataset.hubAiOnly === 'true';
-      const visible = !aiOnlyHidden && (!query || text.includes(query)) && (!hubFavoritesOnly || hubFavoriteIds.includes(shell.dataset.hubId)) && (!sectionCollapsed || query || hubFavoritesOnly);
+      const sectionMatches = hubSectionFilter === 'all' || shell.dataset.hubSection === hubSectionFilter;
+      const visible = !aiOnlyHidden && sectionMatches && (!query || text.includes(query)) && (!hubFavoritesOnly || hubFavoriteIds.includes(shell.dataset.hubId)) && (!sectionCollapsed || filtered);
       shell.hidden = !visible;
       shell.setAttribute('aria-hidden', visible ? 'false' : 'true');
       if (visible) { visibleSections.add(shell.dataset.hubSection); count += 1; }
     });
     Array.from(grid.querySelectorAll('[data-hub-section-heading]')).forEach((heading) => {
       const sectionId = heading.dataset.hubSectionHeading;
-      const filtered = Boolean(query || hubFavoritesOnly);
       const visible = !filtered || visibleSections.has(sectionId);
       heading.hidden = !visible;
       const toggle = heading.querySelector('[data-hub-section-toggle]');
@@ -271,7 +275,22 @@ function LearningHubModal(props) {
       }
     });
     setHubVisibleCount(count);
-  }, [hubQuery, hubFavoritesOnly, hubFavoriteIds, hubCards, hubCollapsedSections, hubAiHidden]);
+  }, [hubQuery, hubFavoritesOnly, hubSectionFilter, hubFavoriteIds, hubCards, hubCollapsedSections, hubAiHidden]);
+  const hubSections = [
+    { id: 'core', label: tr('learning_hub.section_core_title', 'Core learning') },
+    { id: 'practice', label: tr('learning_hub.section_practice_title', 'Practice and progress') },
+    { id: 'explore', label: tr('learning_hub.section_explore_title', 'Explore and organize') },
+    { id: 'create', label: tr('learning_hub.section_create_title', 'Create and express') },
+  ].filter((sec) => hubCards.some((card) => card.section === sec.id));
+  const launchSingleVisibleHubMatch = () => {
+    const grid = hubGridRef.current;
+    if (!grid || !hubQuery.trim()) return;
+    const visibleShells = Array.from(grid.querySelectorAll('[data-hub-id]')).filter((el) => !el.hidden);
+    if (visibleShells.length === 1) {
+      const launch = visibleShells[0].querySelector('[data-hub-launch]');
+      if (launch) launch.click();
+    }
+  };
   const hubRolePreference = hubRoleOverride || userRole || (isTeacherMode ? 'teacher' : 'student');
   const hubRoleRaw = String(hubRolePreference).toLowerCase();
   const hubRoleKey = hubRoleRaw.includes('family') ? 'family' : (hubRoleRaw.includes('teacher') || hubRoleRaw.includes('educator')) ? 'teacher' : 'student';
@@ -282,7 +301,7 @@ function LearningHubModal(props) {
   const recommendedCards = hubRecommendedIds.map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
   const quickCards = Array.from(new Set([...hubFavoriteIds, ...hubRecentIds])).map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
   return (
-        <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={() => setShowLearningHub(false)}>
+        <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setShowLearningHub(false); }}>
           {/* allo-docsuite: this modal is a portal rendered OUTSIDE the main .allo-docsuite
               content wrapper, so the theme-dark gradient/text remaps (which are scoped to
               .allo-docsuite) never reached the pastel tool cards — they stayed light-pastel in
@@ -306,7 +325,21 @@ function LearningHubModal(props) {
             <div className="mb-4 space-y-3" role="search" aria-label={tr('hub.search_label', 'Search tools')}>
               <div className="flex flex-col sm:flex-row gap-2">
                 <label htmlFor="learning-hub-search" className="sr-only">{tr('hub.search_label', 'Search tools')}</label>
-                <input id="learning-hub-search" type="search" value={hubQuery} onChange={(event) => setHubQuery(event.target.value)} placeholder={tr('hub.search_placeholder', 'Search tools by name, purpose, or workflow')} className="min-h-11 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input
+                  id="learning-hub-search"
+                  type="search"
+                  value={hubQuery}
+                  onChange={(event) => setHubQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      launchSingleVisibleHubMatch();
+                    }
+                  }}
+                  placeholder={tr('hub.search_placeholder', 'Search tools by name, purpose, or workflow')}
+                  className="min-h-11 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
                 {hubQuery && <button type="button" onClick={() => setHubQuery('')} className="min-h-11 px-3 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">{tr('hub.clear_search', 'Clear')}</button>}
                 <button type="button" aria-pressed={hubFavoritesOnly} onClick={() => setHubFavoritesOnly((value) => !value)} className="min-h-11 px-3 rounded-xl border border-amber-300 bg-amber-50 text-sm font-bold text-amber-800 hover:bg-amber-100">{hubFavoritesOnly ? '★ ' : '☆ '}{tr('hub.favorites_only', 'Favorites')}</button>
                 <button type="button" aria-expanded={hubManageFavorites} onClick={() => setHubManageFavorites((value) => !value)} className="min-h-11 px-3 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">{tr('hub.manage_favorites', 'Manage favorites')}</button>
@@ -319,6 +352,34 @@ function LearningHubModal(props) {
                     <option value="family">{tr('hub.role_family', 'Families')}</option>
                 </select>
               </div>
+              {hubSections.length >= 2 && (
+                <div data-hub-section-filter-bar="true" className="flex flex-wrap items-center gap-1.5" role="group" aria-label={tr('hub.filter_by_category', 'Filter tools by category')}>
+                  <button
+                    type="button"
+                    data-hub-section-filter="all"
+                    aria-pressed={hubSectionFilter === 'all'}
+                    onClick={() => setHubSectionFilter('all')}
+                    className={'min-h-11 rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (hubSectionFilter === 'all' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50')}
+                  >
+                    {tr('hub.section_all', 'All')}
+                  </button>
+                  {hubSections.map((sec) => {
+                    const selected = hubSectionFilter === sec.id;
+                    return (
+                      <button
+                        key={sec.id}
+                        type="button"
+                        data-hub-section-filter={sec.id}
+                        aria-pressed={selected}
+                        onClick={() => setHubSectionFilter(selected ? 'all' : sec.id)}
+                        className={'min-h-11 rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (selected ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50')}
+                      >
+                        {sec.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               {recommendedCards.length > 0 && (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3" role="region" aria-label={tr('hub.recommended', 'Recommended tools')}>
                   <div className="flex items-center justify-between gap-2 mb-2">
@@ -347,7 +408,22 @@ function LearningHubModal(props) {
               )}
               {quickCards.length > 0 && (
                 <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3" role="region" aria-label={tr('hub.quick_access', 'Quick access')}>
-                  <div className="flex items-center justify-between gap-2 mb-2"><h3 className="text-xs font-black uppercase tracking-wide text-indigo-800">{tr('hub.quick_access', 'Quick access')}</h3><span className="text-[11px] text-indigo-700">{tr('hub.quick_access_hint', 'Recent and favorite tools')}</span></div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xs font-black uppercase tracking-wide text-indigo-800">{tr('hub.quick_access', 'Quick access')}</h3>
+                      <span className="text-[11px] text-indigo-700">{tr('hub.quick_access_hint', 'Recent and favorite tools')}</span>
+                    </div>
+                    {hubRecentIds.length > 0 && (
+                      <button
+                        type="button"
+                        data-hub-clear-recent="true"
+                        onClick={() => setHubRecentIds([])}
+                        className="min-h-11 rounded-lg border border-indigo-200 bg-white px-2.5 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                      >
+                        {tr('hub.clear_recent', 'Clear recent')}
+                      </button>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {quickCards.map((card) => (
                       <div key={card.id} className="inline-flex items-center rounded-lg border border-indigo-200 bg-white shadow-sm">
@@ -359,6 +435,18 @@ function LearningHubModal(props) {
                 </div>
               )}
               <p className="sr-only" aria-live="polite">{hubVisibleCount} {tr('hub.tools_available', 'tools available')}</p>
+              {hubVisibleCount === 0 && (hubQuery.trim() || hubFavoritesOnly || hubSectionFilter !== 'all') && (
+                <div role="status" className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
+                  <p className="text-sm font-bold text-slate-700">{tr('hub.no_matching_tools', 'No tools match your current filters.')}</p>
+                  <button
+                    type="button"
+                    onClick={() => { setHubQuery(''); setHubFavoritesOnly(false); setHubSectionFilter('all'); }}
+                    className="mt-2 min-h-11 px-4 py-2 rounded-xl border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                  >
+                    {tr('hub.clear_filters', 'Clear filters')}
+                  </button>
+                </div>
+              )}
             </div>
             <div ref={hubGridRef} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="core">

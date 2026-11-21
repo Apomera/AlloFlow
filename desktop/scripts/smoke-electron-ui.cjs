@@ -38,6 +38,8 @@ function assert(condition, message) {
     // Electron downloads its development executable lazily. Complete that
     // setup before starting Playwright's application-launch timeout.
     const executablePath = require('electron');
+    const launchEnv = { ...process.env };
+    delete launchEnv.ELECTRON_RUN_AS_NODE;
     electronApp = await electron.launch({
       executablePath,
       args: [
@@ -46,7 +48,7 @@ function assert(condition, message) {
       ],
       cwd: desktopRoot,
       env: {
-        ...process.env,
+        ...launchEnv,
         ALLOFLOW_DESKTOP_HOME: path.join(tempHome, 'runtime'),
         ALLOFLOW_DESKTOP_PORT: String(port),
         ELECTRON_DISABLE_SECURITY_WARNINGS: 'true',
@@ -165,8 +167,25 @@ function assert(condition, message) {
     if (electronProcess) console.error('[AlloFlow Desktop] Smoke process exit:', electronProcess.exitCode, electronProcess.signalCode);
     throw error;
   } finally {
-    if (electronApp) await electronApp.close().catch(() => {});
-    fs.rmSync(tempHome, { recursive: true, force: true });
+    if (electronApp) {
+      let closeTimer = null;
+      await Promise.race([
+        electronApp.close().catch(() => {}),
+        new Promise((resolve) => {
+          closeTimer = setTimeout(() => {
+            try { if (electronProcess && !electronProcess.killed) electronProcess.kill('SIGKILL'); } catch (_) {}
+            resolve();
+          }, 10000);
+          closeTimer.unref?.();
+        }),
+      ]);
+      if (closeTimer) clearTimeout(closeTimer);
+    }
+    try {
+      fs.rmSync(tempHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 250 });
+    } catch (cleanupError) {
+      console.warn('[AlloFlow Desktop] Could not fully remove smoke temp profile:', cleanupError && cleanupError.message ? cleanupError.message : cleanupError);
+    }
   }
 })().catch((error) => {
   console.error('[AlloFlow Desktop] Electron UI smoke failed:', error && error.stack ? error.stack : error);

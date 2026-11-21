@@ -187,7 +187,7 @@ module.exports = {
     var tray = ctx.el('ul', { class: 'row', 'data-ws-tray': '', 'aria-label': L.word_scramble_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:10px' });
     var tiles = item.letters.map(function (letter, ti) {
       var btn = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-ws-tile': String(ti), 'aria-label': ctx.fmt(L.word_scramble_pick, { letter: up(ti) }),
-        style: 'min-width:56px;min-height:56px;font-size:1.5rem;font-weight:700;touch-action:none',
+        style: 'min-width:var(--ws-tile,56px);min-height:var(--ws-tile,56px);font-size:1.5rem;font-weight:700;touch-action:none',
         on: { click: function (e) { if (dragged()) return; onTile(ti, e); }, pointerdown: function (e) { dragStart(e, ti, 'tray', -1); } } }, [up(ti)]);
       var li = ctx.el('li', {}, [btn]);
       tray.appendChild(li);
@@ -198,7 +198,7 @@ module.exports = {
     target.split('').forEach(function (ch, i) {
       if (fixed(ch)) { boxList.appendChild(ctx.el('li', { 'aria-hidden': 'true', 'data-fixed': '', style: 'display:flex;align-items:center;font-size:1.5rem;font-weight:700' }, [written[i] === ' ' ? ' ' : written[i]])); return; }
       var bi = boxEls.length;
-      var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-ws-box': String(bi), style: 'min-width:60px;min-height:64px;font-size:1.5rem;font-weight:700',
+      var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-ws-box': String(bi), style: 'min-width:var(--ws-box-w,60px);min-height:var(--ws-box-h,64px);font-size:1.5rem;font-weight:700',
         on: { click: function (e) { if (dragged()) return; onBox(bi, e); }, pointerdown: function (e) { if (boxes[bi] != null) dragStart(e, boxes[bi], 'box', bi); } } });
       boxList.appendChild(ctx.el('li', {}, [btn]));
       boxEls.push(btn);

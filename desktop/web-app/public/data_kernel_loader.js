@@ -15,10 +15,15 @@
   var VERSION = '1.2.0';
   var TABLE_NAME = 'data';
   var MAX_ROWS = 100000;
+  var MAX_COLUMNS = 200;
+  var MAX_RESULT_DEPTH = 16;
   var runtimePromise = null;
   var runtimeInfo = { state: 'idle', backend: 'pending', version: VERSION, error: null };
 
   function own(obj, key) { return Object.prototype.hasOwnProperty.call(obj, key); }
+  function stripCtl(value) {
+    return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+  }
 
   function resolveAssetBase() {
     try {
@@ -29,7 +34,7 @@
   }
 
   function normalizeName(value, fallback, used) {
-    var name = String(value == null ? '' : value).trim().replace(/[^A-Za-z0-9_]+/g, '_');
+    var name = stripCtl(value == null ? '' : value).trim().replace(/[^A-Za-z0-9_]+/g, '_').slice(0, 120);
     if (!name || name === '__proto__' || name === 'constructor' || name === 'prototype') name = fallback;
     if (/^[0-9]/.test(name)) name = '_' + name;
     var base = name, suffix = 2;
@@ -39,14 +44,17 @@
   }
 
   function normalizeRows(input, options) {
-    options = options || {};
+    options = (options && typeof options === 'object') ? options : {};
     var source = Array.isArray(input) ? input : [];
     var rows = source.slice(0, MAX_ROWS).filter(function (row) { return row && typeof row === 'object' && !Array.isArray(row); });
     var keys = [];
     rows.forEach(function (row) {
-      Object.keys(row).forEach(function (key) { if (keys.indexOf(key) < 0) keys.push(key); });
+      if (keys.length >= MAX_COLUMNS) return;
+      Object.keys(row).forEach(function (key) {
+        if (keys.length < MAX_COLUMNS && keys.indexOf(key) < 0) keys.push(key);
+      });
     });
-    if (!keys.length && options.columns && Array.isArray(options.columns)) keys = options.columns.slice();
+    if (!keys.length && options.columns && Array.isArray(options.columns)) keys = options.columns.slice(0, MAX_COLUMNS);
     var used = Object.create(null), columns = keys.map(function (key, index) { return normalizeName(key, 'column_' + (index + 1), used); });
     var keyMap = Object.create(null);
     keys.forEach(function (key, index) { keyMap[key] = columns[index]; });
@@ -219,31 +227,53 @@
   }
 
   function safeQuery(sql) {
-    var text = String(sql == null ? '' : sql).trim().replace(/;+\s*$/, '');
+    var text = stripCtl(sql == null ? '' : sql).trim().replace(/;+\s*$/, '');
     if (!text) throw new Error('Enter a query first.');
     if (text.length > 5000) throw new Error('Query is limited to 5,000 characters.');
     var stripped = text.replace(/'(?:''|[^'])*'/g, "''");
-    if (/[;]/.test(stripped) || /--/.test(stripped) || /\/\*/.test(stripped)) {
+    if (/[;]/.test(stripped) || /--/.test(stripped) || /\/\*/.test(stripped) || /\$\$/.test(stripped)) {
       throw new Error('Multiple SQL statements or SQL comments are not allowed.');
     }
     if (!/^(select|with|describe|summarize|show)\b/i.test(text)) throw new Error('Only read-only SELECT/WITH/DESCRIBE/SUMMARIZE/SHOW queries are allowed.');
-    if (/(\b(attach|call|copy|create|delete|detach|drop|export|import|install|insert|load|pragma|pragma_[a-z0-9_]*|set|update|http[s]?:|read_csv|read_csv_auto|read_json|read_json_auto|read_json_objects|read_parquet|parquet_scan|csv_scan|json_scan|read_text|read_blob|duckdb_secrets|duckdb_settings|duckdb_extensions|glob)\b)/i.test(text)) {
+    // Block direct file-path table-function shorthand (e.g. FROM 'file.csv' / JOIN 'https://...')
+    if (/\b(?:from|join)\s+''/i.test(stripped)) {
+      throw new Error('This workspace only permits queries against the local data table.');
+    }
+    if (/(\b(attach|call|copy|create|delete|detach|drop|export|import|install|insert|load|pragma|pragma_[a-z0-9_]*|set|update|http[s]?|s3|gs|hf|file|ftp|read_csv|read_csv_auto|read_json|read_json_auto|read_json_objects|read_ndjson|read_ndjson_auto|read_ndjson_objects|read_parquet|read_xlsx|read_objects|parquet_scan|parquet_metadata|parquet_schema|parquet_file_metadata|parquet_kv_metadata|csv_scan|json_scan|sniff_csv|read_text|read_blob|st_read|iceberg_scan|delta_scan|sqlite_scan|sqlite_attach|postgres_scan|mysql_scan|from_substrait|from_substrait_json|duckdb_secrets|duckdb_settings|duckdb_extensions|duckdb_databases|duckdb_tables|duckdb_functions|duckdb_variables|current_setting|getenv|load_aws_credentials|query_table|glob)\b)/i.test(text)) {
+      throw new Error('This workspace only permits queries against the local data table.');
+    }
+    if (/\b(http[s]?|s3|gs|hf|file|ftp):\/\//i.test(text)) {
       throw new Error('This workspace only permits queries against the local data table.');
     }
     return text;
   }
 
-  function safeResultValue(value) {
+  function safeResultValue(value, depth, seen) {
+    var d = depth || 0;
     if (typeof value === 'bigint') return value <= BigInt(Number.MAX_SAFE_INTEGER) && value >= BigInt(Number.MIN_SAFE_INTEGER) ? Number(value) : String(value);
     if (value instanceof Date) return value.toISOString();
-    if (Array.isArray(value)) return value.map(safeResultValue);
+    if (d > MAX_RESULT_DEPTH) return null;
     if (value && typeof value === 'object') {
-      if (typeof value.toJSON === 'function') {
-        try { return safeResultValue(value.toJSON()); } catch (_) {}
+      var visited = seen || new Set();
+      if (visited.has(value)) return null;
+      visited.add(value);
+      try {
+        if (Array.isArray(value)) return value.map(function (item) { return safeResultValue(item, d + 1, visited); });
+        if (typeof value.toJSON === 'function') {
+          try {
+            var jsonVal = value.toJSON();
+            if (jsonVal !== value) return safeResultValue(jsonVal, d + 1, visited);
+          } catch (_) {}
+        }
+        var out = {};
+        Object.keys(value).forEach(function (key) {
+          if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
+          out[key] = safeResultValue(value[key], d + 1, visited);
+        });
+        return out;
+      } finally {
+        visited.delete(value);
       }
-      var out = {};
-      Object.keys(value).forEach(function (key) { out[key] = safeResultValue(value[key]); });
-      return out;
     }
     return value;
   }
@@ -324,20 +354,22 @@
     var sourceRowCount = Number(entry.sourceRowCount);
     var rowCount = Number(entry.rowCount);
     return {
-      id: String(entry.id || ('query_' + timestamp + '_' + Math.random().toString(36).slice(2, 8))).slice(0, 120),
+      id: stripCtl(entry.id || ('query_' + timestamp + '_' + Math.random().toString(36).slice(2, 8))).slice(0, 120),
       timestamp: timestamp,
-      tool: String(entry.tool || 'unknown').slice(0, 40),
-      recipe: entry.recipe ? String(entry.recipe).slice(0, 160) : null,
-      sql: String(entry.sql || '').trim().slice(0, 5000),
-      backend: String(entry.backend || 'local').slice(0, 40),
+      tool: stripCtl(entry.tool || 'unknown').slice(0, 40),
+      recipe: entry.recipe ? stripCtl(entry.recipe).slice(0, 160) : null,
+      sql: stripCtl(entry.sql || '').trim().slice(0, 5000),
+      backend: stripCtl(entry.backend || 'local').slice(0, 40),
       rowCount: isFinite(rowCount) ? rowCount : null,
       sourceRowCount: isFinite(sourceRowCount) ? sourceRowCount : null,
-      columns: Array.isArray(entry.columns) ? entry.columns.slice(0, 50).map(function (column) { return String(column).slice(0, 120); }) : []
+      columns: Array.isArray(entry.columns) ? entry.columns.slice(0, 50).map(function (column) { return stripCtl(column).slice(0, 120); }) : []
     };
   }
   function readQueryHistory() {
     try {
-      var parsed = JSON.parse(window.localStorage.getItem(QUERY_HISTORY_KEY) || '[]');
+      var parsed = JSON.parse(window.localStorage.getItem(QUERY_HISTORY_KEY) || '[]', function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      });
       if (!Array.isArray(parsed)) return [];
       return parsed.map(cleanHistoryEntry).filter(function (entry) { return entry.sql; }).slice(-QUERY_HISTORY_LIMIT);
     } catch (_) { return []; }
@@ -355,7 +387,7 @@
     try { window.localStorage.removeItem(QUERY_HISTORY_KEY); } catch (_) {}
     return [];
   }
-  window.AlloDataKernel = {
+  window.AlloDataKernel = Object.freeze({
     version: VERSION,
     tableName: TABLE_NAME,
     maxRows: MAX_ROWS,
@@ -366,12 +398,12 @@
     createWorkspace: createWorkspace,
     queryRows: queryRows,
     suggestRecipes: suggestRecipes,
-    queryHistory: {
+    queryHistory: Object.freeze({
       list: readQueryHistory,
       record: recordQuery,
       clear: clearQueryHistory
-    },
+    }),
     rowsToCSV: function (rows, options) { return rowsToCSV(normalizeRows(rows, options)); }
-  };
+  });
   try { window.dispatchEvent(new CustomEvent('allo-data-kernel-ready', { detail: window.AlloDataKernel })); } catch (_) {}
 }());

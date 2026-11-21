@@ -8648,6 +8648,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     renderer.setPixelRatio(dpr);
     renderer.setSize(W, H, false);
+    if (THREE.sRGBEncoding != null && 'outputEncoding' in renderer) renderer.outputEncoding = THREE.sRGBEncoding;
+    if (THREE.ACESFilmicToneMapping != null && 'toneMapping' in renderer) {
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.06;
+    }
+    var farmDisposables = [];
+    function trackDisp(item) {
+      if (item) farmDisposables.push(item);
+      return item;
+    }
+    function disposeGroupResources(group) {
+      if (!group) return;
+      if (typeof group.traverse === 'function') {
+        group.traverse(function (obj) {
+          if (obj.geometry && typeof obj.geometry.dispose === 'function') { try { obj.geometry.dispose(); } catch (_) {} }
+          if (obj.material) {
+            var mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+            mats.forEach(function (m) {
+              if (m && m.map && typeof m.map.dispose === 'function') { try { m.map.dispose(); } catch (_) {} }
+              if (m && typeof m.dispose === 'function') { try { m.dispose(); } catch (_) {} }
+            });
+          }
+        });
+      }
+    }
+    function makePbrMat(opts) {
+      var o = Object.assign({}, opts || {});
+      var usePhys = o.clearcoat != null && typeof THREE.MeshPhysicalMaterial === 'function';
+      var useStd = typeof THREE.MeshStandardMaterial === 'function';
+      var MatCtor = usePhys ? THREE.MeshPhysicalMaterial : (useStd ? THREE.MeshStandardMaterial : THREE.MeshLambertMaterial);
+      if (!usePhys) { delete o.clearcoat; delete o.clearcoatRoughness; delete o.reflectivity; }
+      if (!usePhys && !useStd) { delete o.roughness; delete o.metalness; }
+      return trackDisp(new MatCtor(o));
+    }
+    function makeCausticTexture() {
+      if (typeof document === 'undefined' || typeof THREE.CanvasTexture !== 'function') return null;
+      var c = document.createElement('canvas');
+      c.width = 256; c.height = 256;
+      var g = c.getContext('2d');
+      if (!g) return null;
+      g.fillStyle = '#0e4d64';
+      g.fillRect(0, 0, 256, 256);
+      // Soft sunlit caustic web and wave-crest specular streaks
+      for (var ci = 0; ci < 28; ci++) {
+        var cx = ((ci * 73) % 256);
+        var cy = ((ci * 137) % 256);
+        var cr = 18 + (ci % 5) * 9;
+        var grad = g.createRadialGradient(cx, cy, 1, cx, cy, cr);
+        grad.addColorStop(0, 'rgba(186, 245, 255, 0.34)');
+        grad.addColorStop(0.55, 'rgba(94, 234, 212, 0.14)');
+        grad.addColorStop(1, 'rgba(14, 77, 100, 0)');
+        g.fillStyle = grad;
+        g.beginPath();
+        g.arc(cx, cy, cr, 0, Math.PI * 2);
+        g.fill();
+      }
+      g.strokeStyle = 'rgba(224, 252, 255, 0.24)';
+      g.lineWidth = 1.6;
+      for (var wy = 16; wy < 256; wy += 32) {
+        g.beginPath();
+        for (var wx = 0; wx <= 256; wx += 16) {
+          var oy = wy + Math.sin(wx * 0.05 + wy * 0.1) * 5;
+          if (wx === 0) g.moveTo(wx, oy); else g.lineTo(wx, oy);
+        }
+        g.stroke();
+      }
+      var tex = trackDisp(new THREE.CanvasTexture(c));
+      if (THREE.RepeatWrapping != null) {
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+      }
+      if (tex.repeat && typeof tex.repeat.set === 'function') tex.repeat.set(24, 24);
+      tex.needsUpdate = true;
+      return tex;
+    }
+    function makeTimberTexture(baseHex, grainHex) {
+      if (typeof document === 'undefined' || typeof THREE.CanvasTexture !== 'function') return null;
+      var c = document.createElement('canvas');
+      c.width = 128; c.height = 128;
+      var g = c.getContext('2d');
+      if (!g) return null;
+      g.fillStyle = baseHex;
+      g.fillRect(0, 0, 128, 128);
+      g.strokeStyle = grainHex;
+      g.lineWidth = 1.2;
+      for (var p = 0; p < 128; p += 16) {
+        g.beginPath(); g.moveTo(0, p); g.lineTo(128, p); g.stroke();
+      }
+      g.globalAlpha = 0.2;
+      for (var s = 4; s < 128; s += 7) {
+        g.beginPath(); g.moveTo(0, s); g.lineTo(128, s + ((s % 3) - 1)); g.stroke();
+      }
+      var tex = trackDisp(new THREE.CanvasTexture(c));
+      if (THREE.RepeatWrapping != null) {
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+      }
+      tex.needsUpdate = true;
+      return tex;
+    }
     // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
     renderer._alloComposer = null;
     (function(){
@@ -8670,18 +8770,229 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       });
     })();
 
-    // Lights
+    // Lights — sunlit coastal hemisphere + warm solar key + atmospheric sky rim
     var ambient = new THREE.AmbientLight(0xe6eef2, missionScenario.scene.ambient);
     scene.add(ambient);
     var sun = new THREE.DirectionalLight(0xfff2c8, missionScenario.scene.sun);
     sun.position.set(50, 80, 30);
     scene.add(sun);
-    var hemi = new THREE.HemisphereLight(0xc8d8e0, 0x3a5a4f, 0.55);
+    var hemi = new THREE.HemisphereLight(0xd6ecfa, 0x264b46, 0.68);
     scene.add(hemi);
+    var rimLight = new THREE.DirectionalLight(0x9be7f5, 0.36);
+    rimLight.position.set(-45, 32, -70);
+    scene.add(rimLight);
 
-    // Water plane (river — slightly browner than open ocean)
-    var waterGeo = new THREE.PlaneGeometry(1200, 1200, 80, 80);
-    var waterMat = new THREE.MeshLambertMaterial({ color: missionScenario.scene.water, transparent: true, opacity: 0.95 });
+    // ── Cinema-grade WebGL1 / GLSL ES 1.00 Shaders: Tidal River Gerstner Current,
+    //    Voronoi Riverbed Caustics, Volumetric Aeration Plumes & Nutrient-Circulation Ribbons ──
+    var aqNoRaycast = function() {};
+    var aqIsHighContrast = function() {
+      try {
+        if (canvas && typeof canvas.closest === 'function' && canvas.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+        var de = document.documentElement;
+        if (de && (de.classList.contains('theme-contrast') || de.getAttribute('data-theme') === 'high-contrast' || de.getAttribute('data-theme') === 'contrast')) return true;
+        if (document.body && document.body.classList.contains('theme-contrast')) return true;
+        if (typeof window !== 'undefined' && window.matchMedia && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+      } catch (eHc) {}
+      return false;
+    };
+    var aqHasShader = typeof THREE.ShaderMaterial === 'function';
+    var aqCurrVec = (missionScenario && missionScenario.currentVector) || { x: 0, z: -0.05 };
+    var aqCurrMag = Math.max(0.01, Math.hypot(aqCurrVec.x || 0, aqCurrVec.z || 0));
+    var aqCurrDir = new THREE.Vector2((aqCurrVec.x || 0) / aqCurrMag, (aqCurrVec.z || -0.05) / aqCurrMag);
+    var aqCurrSpeed = Math.min(2.2, Math.max(0.35, aqCurrMag * 18.0));
+    var aqSkyCol = new THREE.Color(missionScenario.scene.sky);
+    var aqSunDir = new THREE.Vector3(50, 80, 30).normalize();
+    var aqWaterUniforms = {
+      uAqTime: { value: 4.2 },
+      uAqWaveScale: { value: missionScenario.waveScale || 1.0 },
+      uAqCurrDir: { value: aqCurrDir.clone() },
+      uAqCurrSpeed: { value: aqCurrSpeed },
+      uAqSkyColor: { value: aqSkyCol.clone() },
+      uAqSunDir: { value: aqSunDir.clone() },
+      uAqHighContrast: { value: aqIsHighContrast() ? 1.0 : 0.0 }
+    };
+
+    // Submerged estuarine riverbed floor for translucent water-depth contrast
+    var riverbedGeo = trackDisp(new THREE.PlaneGeometry(1200, 1200, 1, 1));
+    var riverbedMat = makePbrMat({ color: 0x0b2a34, roughness: 0.96, metalness: 0.0 });
+    var riverbed = new THREE.Mesh(riverbedGeo, riverbedMat);
+    riverbed.rotation.x = -Math.PI / 2;
+    riverbed.position.y = -4.2;
+    scene.add(riverbed);
+
+    // 1. Animated Voronoi Underwater Caustics dancing on the Bagaduce riverbed
+    var riverbedCaustics = null;
+    var riverbedCausticMat = null;
+    if (aqHasShader) {
+      riverbedCausticMat = trackDisp(new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 4.2 },
+          uCurrDir: { value: aqCurrDir.clone() },
+          uCurrSpeed: { value: aqCurrSpeed },
+          uHighContrast: { value: aqIsHighContrast() ? 1.0 : 0.0 }
+        },
+        vertexShader: [
+          'varying vec3 vWorldPos;',
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vUv = uv;',
+          '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+          '  vWorldPos = wp.xyz;',
+          '  gl_Position = projectionMatrix * viewMatrix * wp;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform vec2 uCurrDir;',
+          'uniform float uCurrSpeed;',
+          'uniform float uHighContrast;',
+          'varying vec3 vWorldPos;',
+          'varying vec2 vUv;',
+          'vec2 aqVoroHash(vec2 p) {',
+          '  vec2 q = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));',
+          '  return fract(sin(q) * 43758.5453);',
+          '}',
+          'float aqVoronoiEdge(vec2 x, float t) {',
+          '  vec2 n = floor(x);',
+          '  vec2 f = fract(x);',
+          '  float md1 = 8.0;',
+          '  float md2 = 8.0;',
+          '  for (int j = -1; j <= 1; j++) {',
+          '    for (int i = -1; i <= 1; i++) {',
+          '      vec2 g = vec2(float(i), float(j));',
+          '      vec2 o = aqVoroHash(n + g);',
+          '      o = 0.5 + 0.42 * sin(t + 6.283185 * o);',
+          '      vec2 r = g + o - f;',
+          '      float d = dot(r, r);',
+          '      if (d < md1) { md2 = md1; md1 = d; }',
+          '      else if (d < md2) { md2 = d; }',
+          '    }',
+          '  }',
+          '  return sqrt(md2) - sqrt(md1);',
+          '}',
+          'void main() {',
+          '  if (uHighContrast > 0.5) discard;',
+          '  vec2 flow = uCurrDir * uTime * (0.28 * uCurrSpeed);',
+          '  vec2 p1 = vWorldPos.xz * 0.24 - flow;',
+          '  vec2 p2 = vWorldPos.xz * 0.37 + flow * 0.55 + vec2(4.3, -2.7);',
+          '  float e1 = aqVoronoiEdge(p1, uTime * 1.05);',
+          '  float e2 = aqVoronoiEdge(p2, uTime * 0.82);',
+          '  float net1 = pow(clamp(1.0 - e1 * 2.7, 0.0, 1.0), 2.8);',
+          '  float net2 = pow(clamp(1.0 - e2 * 2.5, 0.0, 1.0), 3.0);',
+          '  float caustic = clamp(net1 * 0.72 + net2 * 0.55, 0.0, 1.0);',
+          '  float distFade = exp(-dot(vWorldPos.xz - vec2(0.0, -42.0), vWorldPos.xz - vec2(0.0, -42.0)) * 0.00008);',
+          '  vec3 col = mix(vec3(0.14, 0.78, 0.84), vec3(0.76, 0.98, 0.96), caustic);',
+          '  gl_FragColor = vec4(col, caustic * distFade * 0.62);',
+          '}'
+        ].join('\n'),
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+      }));
+      riverbedCaustics = new THREE.Mesh(trackDisp(new THREE.PlaneGeometry(340, 340, 1, 1)), riverbedCausticMat);
+      riverbedCaustics.rotation.x = -Math.PI / 2;
+      riverbedCaustics.position.set(0, -4.06, -42);
+      riverbedCaustics.name = 'aquaculture-voronoi-caustics';
+      riverbedCaustics.raycast = aqNoRaycast;
+      riverbedCaustics.visible = !aqIsHighContrast();
+      scene.add(riverbedCaustics);
+    }
+
+    // 2. Water plane (Bagaduce tidal river — directional FBM Gerstner current + Schlick Fresnel reflection)
+    var causticTex = makeCausticTexture();
+    var waterGeo = trackDisp(new THREE.PlaneGeometry(1200, 1200, 80, 80));
+    var waterMat = makePbrMat({
+      color: missionScenario.scene.water,
+      map: causticTex || undefined,
+      transparent: true,
+      opacity: 0.88,
+      roughness: 0.16,
+      metalness: 0.14,
+      clearcoat: 0.82,
+      clearcoatRoughness: 0.14,
+      emissive: 0x093442,
+      emissiveIntensity: 0.16
+    });
+    if (waterMat && typeof waterMat.onBeforeCompile === 'function') {
+      waterMat.customProgramCacheKey = function() { return 'aquaculture-tidal-gerstner:v1'; };
+      waterMat.onBeforeCompile = function(shader) {
+        if (!shader || typeof shader.vertexShader !== 'string' || typeof shader.fragmentShader !== 'string') return;
+        if (shader.vertexShader.indexOf('#include <begin_vertex>') === -1 ||
+            shader.fragmentShader.indexOf('#include <dithering_fragment>') === -1) return;
+        shader.uniforms.uAqTime = aqWaterUniforms.uAqTime;
+        shader.uniforms.uAqWaveScale = aqWaterUniforms.uAqWaveScale;
+        shader.uniforms.uAqCurrDir = aqWaterUniforms.uAqCurrDir;
+        shader.uniforms.uAqCurrSpeed = aqWaterUniforms.uAqCurrSpeed;
+        shader.uniforms.uAqSkyColor = aqWaterUniforms.uAqSkyColor;
+        shader.uniforms.uAqSunDir = aqWaterUniforms.uAqSunDir;
+        shader.uniforms.uAqHighContrast = aqWaterUniforms.uAqHighContrast;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'uniform float uAqTime;',
+            'uniform float uAqWaveScale;',
+            'uniform vec2 uAqCurrDir;',
+            'uniform float uAqCurrSpeed;',
+            'uniform float uAqHighContrast;',
+            'varying vec3 vAqWorldPos;',
+            'varying float vAqCrest;'
+          ].join('\n'))
+          .replace('#include <begin_vertex>', [
+            '#include <begin_vertex>',
+            'vec2 aqLocal = position.xy;',
+            'float aqProj = dot(aqLocal, vec2(uAqCurrDir.x, -uAqCurrDir.y));',
+            'float aqCross = dot(aqLocal, vec2(uAqCurrDir.y, uAqCurrDir.x));',
+            'float aqW1 = sin(aqProj * 0.24 - uAqTime * (1.35 * uAqCurrSpeed));',
+            'float aqW2 = cos(aqCross * 0.19 + aqProj * 0.08 - uAqTime * 0.95);',
+            'float aqGerst = aqW1 * 0.62 + aqW2 * 0.38;',
+            'if (uAqHighContrast < 0.5) {',
+            '  float aqAmp = clamp(uAqWaveScale, 0.3, 2.0) * 0.08;',
+            '  transformed.z += aqGerst * aqAmp;',
+            '  transformed.x += cos(aqProj * 0.24 - uAqTime * (1.35 * uAqCurrSpeed)) * aqAmp * 0.42 * uAqCurrDir.x;',
+            '}',
+            'vAqCrest = clamp(0.5 + 0.5 * aqGerst, 0.0, 1.0);',
+            'vAqWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;'
+          ].join('\n'));
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'uniform float uAqTime;',
+            'uniform vec2 uAqCurrDir;',
+            'uniform float uAqCurrSpeed;',
+            'uniform vec3 uAqSkyColor;',
+            'uniform vec3 uAqSunDir;',
+            'uniform float uAqHighContrast;',
+            'varying vec3 vAqWorldPos;',
+            'varying float vAqCrest;',
+            'float aqHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }',
+            'float aqNoise(vec2 p) {',
+            '  vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);',
+            '  return mix(mix(aqHash(i), aqHash(i + vec2(1.0, 0.0)), u.x), mix(aqHash(i + vec2(0.0, 1.0)), aqHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+            '}',
+            'float aqFbm(vec2 p) {',
+            '  float v = 0.0; float a = 0.5;',
+            '  for (int i = 0; i < 3; i++) { v += a * aqNoise(p); p = p * 2.05 + vec2(11.3, 23.7); a *= 0.5; }',
+            '  return v;',
+            '}'
+          ].join('\n'))
+          .replace('#include <dithering_fragment>', [
+            'if (uAqHighContrast < 0.5) {',
+            '  vec2 drift = uAqCurrDir * uAqTime * (0.55 * uAqCurrSpeed);',
+            '  float f1 = aqFbm(vAqWorldPos.xz * 0.28 - drift);',
+            '  float f2 = aqFbm(vAqWorldPos.xz * 0.62 - drift * 1.45 + vec2(f1 * 0.65, -f1 * 0.45));',
+            '  vec3 nWave = normalize(vec3((f1 - 0.5) * 0.28, 1.0, (f2 - 0.5) * 0.28));',
+            '  vec3 vDir = normalize(cameraPosition - vAqWorldPos);',
+            '  float ndv = clamp(dot(nWave, vDir), 0.0, 1.0);',
+            '  float schlick = 0.03 + 0.88 * pow(1.0 - ndv, 4.4);',
+            '  float spec = pow(max(dot(reflect(-normalize(uAqSunDir), nWave), vDir), 0.0), 46.0);',
+            '  float foamStreak = smoothstep(0.68, 0.90, vAqCrest * 0.55 + f2 * 0.65) * 0.26;',
+            '  vec3 shallowTeal = vec3(0.08, 0.52, 0.56) * pow(vAqCrest, 1.8) * 0.18;',
+            '  gl_FragColor.rgb = mix(gl_FragColor.rgb + shallowTeal, uAqSkyColor, clamp(schlick * 0.62, 0.0, 0.68));',
+            '  gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.90, 0.98, 1.0), foamStreak) + vec3(1.0, 0.96, 0.84) * spec * 0.55;',
+            '}',
+            '#include <dithering_fragment>'
+          ].join('\n'));
+      };
+      waterMat.needsUpdate = true;
+    }
     var water = new THREE.Mesh(waterGeo, waterMat);
     water.rotation.x = -Math.PI / 2;
     scene.add(water);
@@ -8691,42 +9002,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var initialZ = new Float32Array(waterPosArr.length / 3);
     for (var iw = 0; iw < waterPosArr.length / 3; iw++) initialZ[iw] = waterPosArr[iw * 3 + 2];
 
-    // Boat (working skiff — stubbier than fishing skiff, more deck for gear)
+    // Boat (working skiff — clearcoat fiberglass hull, weathered timber deck, glazed cabin)
+    var deckTex = makeTimberTexture('#b89f7d', '#866e4f');
     var boat = new THREE.Group();
-    var hull = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.6, 5.0), new THREE.MeshLambertMaterial({ color: 0xe8e3d0 }));
+    var hull = new THREE.Mesh(
+      trackDisp(new THREE.BoxGeometry(2.4, 0.6, 5.0)),
+      makePbrMat({ color: 0xf1ece0, roughness: 0.24, metalness: 0.06, clearcoat: 0.85, clearcoatRoughness: 0.12 })
+    );
     hull.position.y = 0.3;
     boat.add(hull);
-    var deck = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.05, 4.5), new THREE.MeshLambertMaterial({ color: 0xb09a7c }));
+    var hullStripe = new THREE.Mesh(
+      trackDisp(new THREE.BoxGeometry(2.44, 0.11, 5.04)),
+      makePbrMat({ color: 0x0f766e, roughness: 0.28, metalness: 0.1, clearcoat: 0.7 })
+    );
+    hullStripe.position.y = 0.14;
+    boat.add(hullStripe);
+    var deck = new THREE.Mesh(
+      trackDisp(new THREE.BoxGeometry(2.1, 0.05, 4.5)),
+      makePbrMat({ color: 0xc2ab89, map: deckTex || undefined, roughness: 0.78, metalness: 0.02 })
+    );
     deck.position.y = 0.62;
     boat.add(deck);
-    var cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.9, 1.2), new THREE.MeshLambertMaterial({ color: 0x3a5566 }));
+    var cabin = new THREE.Mesh(
+      trackDisp(new THREE.BoxGeometry(1.6, 0.9, 1.2)),
+      makePbrMat({ color: 0x2f5166, roughness: 0.32, metalness: 0.12, clearcoat: 0.65, clearcoatRoughness: 0.18 })
+    );
     cabin.position.set(0, 1.1, 1.0);
     boat.add(cabin);
-    // davit (gear-handling boom)
-    var davit = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.5, 8), new THREE.MeshLambertMaterial({ color: 0x444444 }));
+    var cabinGlass = new THREE.Mesh(
+      trackDisp(new THREE.BoxGeometry(1.64, 0.34, 0.84)),
+      makePbrMat({ color: 0x7dd3fc, roughness: 0.08, metalness: 0.25, clearcoat: 1.0, clearcoatRoughness: 0.06, transparent: true, opacity: 0.78 })
+    );
+    cabinGlass.position.set(0, 1.24, 1.18);
+    boat.add(cabinGlass);
+    // davit (gear-handling boom — brushed marine aluminum)
+    var davit = new THREE.Mesh(
+      trackDisp(new THREE.CylinderGeometry(0.06, 0.06, 2.5, 10)),
+      makePbrMat({ color: 0x94a3b8, roughness: 0.28, metalness: 0.82 })
+    );
     davit.position.set(0.7, 1.8, -0.5);
     davit.rotation.z = Math.PI / 8;
     boat.add(davit);
-    var motor = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.6, 0.5), new THREE.MeshLambertMaterial({ color: 0x222831 }));
+    var motor = new THREE.Mesh(
+      trackDisp(new THREE.BoxGeometry(0.4, 0.6, 0.5)),
+      makePbrMat({ color: 0x1e293b, roughness: 0.36, metalness: 0.42, clearcoat: 0.45 })
+    );
     motor.position.set(0, 0.6, -2.4);
     boat.add(motor);
     boat.position.set(0, 0, 6);
     boat.rotation.y = Math.PI; // model bow is +z; mission heading 0 travels up-river toward -z
     scene.add(boat);
 
-    // Buoyage — narrow channel
+    // Oxygenated stern wake & aeration bubble plumes (boat + lease)
+    var wakeBubbles = [];
+    var sharedBubbleGeo = trackDisp(new THREE.SphereGeometry(0.11, 8, 6));
+    var wakeBubbleMat = makePbrMat({ color: 0xe0f7ff, emissive: 0x38bdf8, emissiveIntensity: 0.32, transparent: true, opacity: 0.62, roughness: 0.12, metalness: 0.05 });
+    for (var wb = 0; wb < 14; wb++) {
+      var wMesh = new THREE.Mesh(sharedBubbleGeo, wakeBubbleMat);
+      wMesh.position.set(0, -10, 6);
+      wMesh.scale.setScalar(0.55 + (wb % 4) * 0.22);
+      scene.add(wMesh);
+      wakeBubbles.push({ mesh: wMesh, phase: wb / 14, side: (wb % 2 === 0 ? 1 : -1) * (0.25 + (wb % 3) * 0.18) });
+    }
+
+    // Buoyage — narrow channel (marine enamel PBR + waterline collar + beacon lens)
     var buoys = [];
+    var buoyCollarGeo = trackDisp(new THREE.CylinderGeometry(0.56, 0.58, 0.22, 16));
+    var buoyCollarMat = makePbrMat({ color: 0x1e293b, roughness: 0.72, metalness: 0.18 });
+    var buoyCapGeo = trackDisp(new THREE.SphereGeometry(0.12, 10, 8));
     function addBuoy(x, z, type) {
       var g = new THREE.Group();
+      var collar = new THREE.Mesh(buoyCollarGeo, buoyCollarMat);
+      collar.position.y = 0.08;
+      g.add(collar);
       if (type === 'red-nun') {
-        var coneGeo = new THREE.ConeGeometry(0.5, 1.4, 16);
-        var cone = new THREE.Mesh(coneGeo, new THREE.MeshLambertMaterial({ color: 0xc8302a }));
-        cone.position.y = 0.7;
+        var coneGeo = trackDisp(new THREE.ConeGeometry(0.5, 1.4, 16));
+        var cone = new THREE.Mesh(coneGeo, makePbrMat({ color: 0xd1362e, roughness: 0.34, metalness: 0.14, clearcoat: 0.55 }));
+        cone.position.y = 0.72;
         g.add(cone);
+        var rCap = new THREE.Mesh(buoyCapGeo, makePbrMat({ color: 0xfca5a5, emissive: 0xef4444, emissiveIntensity: 0.65, roughness: 0.18 }));
+        rCap.position.y = 1.44;
+        g.add(rCap);
       } else if (type === 'green-can') {
-        var cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.4, 16), new THREE.MeshLambertMaterial({ color: 0x2a7c44 }));
-        cyl.position.y = 0.7;
+        var cyl = new THREE.Mesh(trackDisp(new THREE.CylinderGeometry(0.45, 0.45, 1.4, 16)), makePbrMat({ color: 0x268248, roughness: 0.34, metalness: 0.14, clearcoat: 0.55 }));
+        cyl.position.y = 0.72;
         g.add(cyl);
+        var gCap = new THREE.Mesh(buoyCapGeo, makePbrMat({ color: 0x86efac, emissive: 0x22c55e, emissiveIntensity: 0.65, roughness: 0.18 }));
+        gCap.position.y = 1.46;
+        g.add(gCap);
       }
       g.position.set(x, 0, z);
       g.userData = { type: type };
@@ -8741,71 +9104,290 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     addBuoy(4, -50, 'red-nun');
     addBuoy(-4, -50, 'green-can');
 
-    // ─── Lease (yellow corner buoys marking 1-acre rectangle)
+    // ─── Lease (yellow corner buoys marking 1-acre rectangle + glowing DO circulation ring)
     var lease = new THREE.Group();
     var leasePoints = [[-8, -75], [8, -75], [8, -95], [-8, -95]];
+    var leasePoleGeo = trackDisp(new THREE.CylinderGeometry(0.12, 0.14, 2.4, 10));
+    var leasePoleMat = makePbrMat({ color: 0xfacc15, emissive: 0x4d3500, emissiveIntensity: 0.38, roughness: 0.32, metalness: 0.15, clearcoat: 0.5 });
+    var leaseBeaconGeo = trackDisp(new THREE.SphereGeometry(0.18, 12, 10));
+    var leaseBeaconMat = makePbrMat({ color: 0xfef08a, emissive: 0xf59e0b, emissiveIntensity: 0.72, roughness: 0.15 });
     leasePoints.forEach(function(p) {
-      var pole = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.12, 0.12, 2.4, 8),
-        new THREE.MeshLambertMaterial({ color: 0xfacc15, emissive: 0x332200, emissiveIntensity: 0.3 })
-      );
+      var pole = new THREE.Mesh(leasePoleGeo, leasePoleMat);
       pole.position.set(p[0], 1.2, p[1]);
       lease.add(pole);
+      var beacon = new THREE.Mesh(leaseBeaconGeo, leaseBeaconMat);
+      beacon.position.set(p[0], 2.42, p[1]);
+      lease.add(beacon);
     });
     scene.add(lease);
-    // central yellow waypoint marker
-    var leaseMarker = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 12), new THREE.MeshLambertMaterial({ color: 0xfacc15, emissive: 0x553300, emissiveIntensity: 0.5 }));
+    // central yellow waypoint marker + glowing dissolved-oxygen circulation halo
+    var leaseMarker = new THREE.Mesh(
+      trackDisp(new THREE.SphereGeometry(0.5, 18, 14)),
+      makePbrMat({ color: 0xfacc15, emissive: 0x784900, emissiveIntensity: 0.62, roughness: 0.22, metalness: 0.18, clearcoat: 0.72 })
+    );
     leaseMarker.position.set(0, 1.5, -85);
     leaseMarker.userData = { label: 'YOUR AQUACULTURE LEASE' };
     scene.add(leaseMarker);
 
-    // Existing droppers (visible if any deployed)
+    var circulationRing = null;
+    var circulationRingShaderMat = null;
+    if (typeof THREE.TorusGeometry === 'function') {
+      var circGeo = trackDisp(new THREE.TorusGeometry(6.8, 0.11, 10, 56));
+      if (aqHasShader) {
+        circulationRingShaderMat = trackDisp(new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 4.2 },
+            uFlowSpeed: { value: aqCurrSpeed },
+            uHighContrast: { value: aqIsHighContrast() ? 1.0 : 0.0 }
+          },
+          vertexShader: [
+            'varying vec2 vUv;',
+            'void main() {',
+            '  vUv = uv;',
+            '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uFlowSpeed;',
+            'uniform float uHighContrast;',
+            'varying vec2 vUv;',
+            'void main() {',
+            '  if (uHighContrast > 0.5) discard;',
+            '  float pulse = 0.55 + 0.45 * sin(vUv.x * 37.699 - uTime * (2.6 * uFlowSpeed));',
+            '  float wave = pow(0.5 + 0.5 * sin(vUv.x * 12.566 + uTime * 1.8), 2.0);',
+            '  vec3 col = mix(vec3(0.08, 0.76, 0.70), vec3(0.62, 0.98, 0.92), wave * 0.65);',
+            '  gl_FragColor = vec4(col, clamp((0.36 + 0.42 * pulse) * 0.78, 0.0, 0.82));',
+            '}'
+          ].join('\n'),
+          transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+        }));
+      }
+      var circMat = circulationRingShaderMat || makePbrMat({ color: 0x5eead4, emissive: 0x14b8a6, emissiveIntensity: 0.75, transparent: true, opacity: 0.58, roughness: 0.2 });
+      circulationRing = new THREE.Mesh(circGeo, circMat);
+      circulationRing.rotation.x = Math.PI / 2;
+      circulationRing.position.set(0, 0.16, -85);
+      circulationRing.raycast = aqNoRaycast;
+      scene.add(circulationRing);
+    }
+
+    // 3. Volumetric Rising Dissolved-Oxygen Aeration Plumes & 4. Luminous Tidal Nutrient-Circulation Ribbons
+    var aerationPlumeGroup = null;
+    var aerationPlumeMat = null;
+    var nutrientRibbonGroup = null;
+    var nutrientRibbonMats = [];
+    if (aqHasShader) {
+      if (typeof THREE.CylinderGeometry === 'function') {
+        aerationPlumeGroup = new THREE.Group();
+        aerationPlumeGroup.name = 'aquaculture-aeration-plumes';
+        aerationPlumeMat = trackDisp(new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 4.2 },
+            uHighContrast: { value: aqIsHighContrast() ? 1.0 : 0.0 }
+          },
+          vertexShader: [
+            'varying vec2 vUv;',
+            'varying vec3 vNormalView;',
+            'varying vec3 vViewPos;',
+            'varying float vSeed;',
+            'void main() {',
+            '  vUv = uv;',
+            '  vNormalView = normalize(normalMatrix * normal);',
+            '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+            '  vSeed = wp.x * 0.73 + wp.z * 0.21;',
+            '  vec4 mv = viewMatrix * wp;',
+            '  vViewPos = -mv.xyz;',
+            '  gl_Position = projectionMatrix * mv;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uHighContrast;',
+            'varying vec2 vUv;',
+            'varying vec3 vNormalView;',
+            'varying vec3 vViewPos;',
+            'varying float vSeed;',
+            'void main() {',
+            '  if (uHighContrast > 0.5) discard;',
+            '  float fres = pow(1.0 - abs(dot(normalize(vNormalView), normalize(vViewPos))), 1.5);',
+            '  float rise1 = fract(vUv.y * 5.0 - uTime * 0.75 + vSeed);',
+            '  float rise2 = fract(vUv.y * 9.0 - uTime * 1.15 - vSeed * 1.7);',
+            '  float bubbles = exp(-pow((rise1 - 0.5) * 6.5, 2.0)) * 0.65 + exp(-pow((rise2 - 0.5) * 7.5, 2.0)) * 0.45;',
+            '  float ribs = 0.62 + 0.38 * sin(vUv.x * 25.1327 + vUv.y * 8.0 - uTime * 2.1);',
+            '  float vertMask = smoothstep(0.0, 0.18, vUv.y) * smoothstep(1.0, 0.80, vUv.y);',
+            '  vec3 col = mix(vec3(0.16, 0.86, 0.82), vec3(0.76, 0.98, 1.0), clamp(bubbles * 0.7 + vUv.y * 0.35, 0.0, 1.0));',
+            '  float alpha = (0.14 + 0.42 * bubbles + 0.26 * fres) * ribs * vertMask * 0.58;',
+            '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.64));',
+            '}'
+          ].join('\n'),
+          transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+        }));
+        var plumeGeo = trackDisp(new THREE.CylinderGeometry(0.46, 1.05, 3.8, 18, 1, true));
+        for (var api = 0; api < 5; api++) {
+          var pMesh = new THREE.Mesh(plumeGeo, aerationPlumeMat);
+          pMesh.position.set(-6 + api * 3, -1.85, -85);
+          pMesh.raycast = aqNoRaycast;
+          aerationPlumeGroup.add(pMesh);
+        }
+        aerationPlumeGroup.visible = !aqIsHighContrast();
+        scene.add(aerationPlumeGroup);
+      }
+
+      if (typeof THREE.CatmullRomCurve3 === 'function' && typeof THREE.TubeGeometry === 'function') {
+        nutrientRibbonGroup = new THREE.Group();
+        nutrientRibbonGroup.name = 'aquaculture-nutrient-ribbons';
+        var ribbonDefs = [
+          { yBase: -0.65, radX: 8.4, radZ: 4.6, phase: 0.0, col: 0x34d399 },
+          { yBase: -1.35, radX: 7.4, radZ: 3.4, phase: 2.1, col: 0x2dd4bf },
+          { yBase: -2.05, radX: 6.2, radZ: 2.6, phase: 4.2, col: 0x38bdf8 }
+        ];
+        for (var rdi = 0; rdi < ribbonDefs.length; rdi++) {
+          var rd = ribbonDefs[rdi];
+          var rPts = [];
+          for (var rpi = 0; rpi < 20; rpi++) {
+            var th = (rpi / 20) * Math.PI * 2;
+            rPts.push(new THREE.Vector3(
+              Math.cos(th) * rd.radX,
+              rd.yBase + Math.sin(th * 3.0 + rd.phase) * 0.24,
+              -85 + Math.sin(th) * rd.radZ
+            ));
+          }
+          var rCurve = new THREE.CatmullRomCurve3(rPts, true);
+          var rGeo = trackDisp(new THREE.TubeGeometry(rCurve, 64, 0.085, 6, true));
+          var rMat = trackDisp(new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: { value: 4.2 },
+              uFlowSpeed: { value: aqCurrSpeed },
+              uPhase: { value: rd.phase },
+              uColor: { value: new THREE.Color(rd.col) },
+              uHighContrast: { value: aqIsHighContrast() ? 1.0 : 0.0 }
+            },
+            vertexShader: [
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vUv = uv;',
+              '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime;',
+              'uniform float uFlowSpeed;',
+              'uniform float uPhase;',
+              'uniform vec3 uColor;',
+              'uniform float uHighContrast;',
+              'varying vec2 vUv;',
+              'void main() {',
+              '  if (uHighContrast > 0.5) discard;',
+              '  float stream = fract(vUv.x * 5.0 - uTime * (0.34 * uFlowSpeed) + uPhase * 0.16);',
+              '  float packet = exp(-pow((stream - 0.5) * 6.0, 2.0));',
+              '  vec3 col = mix(uColor, vec3(0.84, 1.0, 0.96), packet * 0.65);',
+              '  float alpha = (0.14 + 0.58 * packet) * 0.72;',
+              '  gl_FragColor = vec4(col, alpha);',
+              '}'
+            ].join('\n'),
+            transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+          }));
+          var rMesh = new THREE.Mesh(rGeo, rMat);
+          rMesh.raycast = aqNoRaycast;
+          nutrientRibbonGroup.add(rMesh);
+          nutrientRibbonMats.push(rMat);
+        }
+        nutrientRibbonGroup.visible = !aqIsHighContrast();
+        scene.add(nutrientRibbonGroup);
+      }
+    }
+
+    // Rising aeration / dissolved-oxygen bubble plumes around lease droppers
+    var leaseBubbles = [];
+    var leaseBubbleMat = makePbrMat({ color: 0x99f6e4, emissive: 0x2dd4bf, emissiveIntensity: 0.55, transparent: true, opacity: 0.68, roughness: 0.12 });
+    for (var lb = 0; lb < 15; lb++) {
+      var lMesh = new THREE.Mesh(sharedBubbleGeo, leaseBubbleMat);
+      var bx = -6 + (lb % 5) * 3 + Math.cos(lb * 2.1) * 0.45;
+      var bz = -85 + Math.sin(lb * 1.7) * 0.55;
+      lMesh.position.set(bx, -2.2 + (lb % 3) * 0.8, bz);
+      lMesh.scale.setScalar(0.42 + (lb % 3) * 0.18);
+      scene.add(lMesh);
+      leaseBubbles.push({ mesh: lMesh, baseX: bx, baseZ: bz, phase: lb / 15 });
+    }
+
+    // Existing droppers (visible if any deployed) — cleanly disposes previous resources on rebuild
     var droppersGroup = new THREE.Group();
     scene.add(droppersGroup);
 
     function rebuildDroppers(count) {
+      disposeGroupResources(droppersGroup);
       while (droppersGroup.children.length) droppersGroup.remove(droppersGroup.children[0]);
       // Up to 5 droppers along a horizontal line
       var existing = Math.min(5, count || 0);
       for (var di = 0; di < existing; di++) {
+        var dxPos = -6 + di * 3;
         var rope = new THREE.Mesh(
           new THREE.CylinderGeometry(0.05, 0.05, 3, 8),
-          new THREE.MeshLambertMaterial({ color: 0x222222 })
+          new (THREE.MeshStandardMaterial || THREE.MeshLambertMaterial)({ color: 0x262930, roughness: 0.85 })
         );
-        rope.position.set(-6 + di * 3, -1.5, -85);
+        rope.position.set(dxPos, -1.5, -85);
         droppersGroup.add(rope);
-        // mussel cluster (sphere)
-        var cluster = new THREE.Mesh(
-          new THREE.SphereGeometry(0.3, 10, 8),
-          new THREE.MeshLambertMaterial({ color: 0x2a2233 })
-        );
-        cluster.position.set(-6 + di * 3, -1.5, -85);
+        // multi-lobe mussel cluster with subtle pearlescent slate sheen
+        var musselMat = new (THREE.MeshStandardMaterial || THREE.MeshLambertMaterial)({ color: 0x28233d, roughness: 0.38, metalness: 0.24 });
+        var cluster = new THREE.Mesh(new THREE.SphereGeometry(0.32, 12, 10), musselMat);
+        cluster.position.set(dxPos, -1.5, -85);
         droppersGroup.add(cluster);
-        // float at surface
+        var clusterSub = new THREE.Mesh(new THREE.SphereGeometry(0.24, 10, 8), musselMat);
+        clusterSub.position.set(dxPos + 0.16, -1.95, -84.88);
+        droppersGroup.add(clusterSub);
+        // glossy surface float buoy
         var float_ = new THREE.Mesh(
-          new THREE.SphereGeometry(0.18, 10, 8),
-          new THREE.MeshLambertMaterial({ color: 0xfff7d0 })
+          new THREE.SphereGeometry(0.2, 12, 10),
+          new (THREE.MeshStandardMaterial || THREE.MeshLambertMaterial)({ color: 0xfff7d0, emissive: 0x3b2c0a, emissiveIntensity: 0.2, roughness: 0.25, metalness: 0.08 })
         );
-        float_.position.set(-6 + di * 3, 0.2, -85);
+        float_.position.set(dxPos, 0.2, -85);
         droppersGroup.add(float_);
       }
     }
     rebuildDroppers(opts && opts.initialDroppers);
 
-    // Dock + landing
-    var dock = new THREE.Mesh(new THREE.BoxGeometry(5, 0.4, 2), new THREE.MeshLambertMaterial({ color: 0x8a6c47 }));
+    // Dock + landing (weathered timber + pilings)
+    var dockTex = makeTimberTexture('#8f704a', '#5f462a');
+    var dock = new THREE.Mesh(
+      trackDisp(new THREE.BoxGeometry(5, 0.4, 2)),
+      makePbrMat({ color: 0x997952, map: dockTex || undefined, roughness: 0.82, metalness: 0.02 })
+    );
     dock.position.set(0, 0.1, 9);
     scene.add(dock);
+    var pilingGeo = trackDisp(new THREE.CylinderGeometry(0.14, 0.16, 2.2, 10));
+    var pilingMat = makePbrMat({ color: 0x4b3b2a, roughness: 0.9, metalness: 0.02 });
+    [[-2.2, 8.2], [2.2, 8.2], [-2.2, 9.8], [2.2, 9.8]].forEach(function (pp) {
+      var piling = new THREE.Mesh(pilingGeo, pilingMat);
+      piling.position.set(pp[0], 0.05, pp[1]);
+      scene.add(piling);
+    });
 
-    // Land (Bagaduce river bank — green forested)
-    var land = new THREE.Mesh(new THREE.BoxGeometry(40, 3, 8), new THREE.MeshLambertMaterial({ color: 0x4a6a3a }));
+    // Land (Bagaduce river bank — green forested with coastal spruce silhouettes)
+    var land = new THREE.Mesh(
+      trackDisp(new THREE.BoxGeometry(40, 3, 8)),
+      makePbrMat({ color: 0x3f6237, roughness: 0.92, metalness: 0.0 })
+    );
     land.position.set(0, 1.5, 15);
     scene.add(land);
+    var treeGeo = trackDisp(new THREE.ConeGeometry(0.85, 2.8, 8));
+    var treeMat = makePbrMat({ color: 0x264b2c, roughness: 0.88, metalness: 0.0 });
+    [-16, -8, -4, 5, 9, 14, 17].forEach(function (tx, ti) {
+      var tree = new THREE.Mesh(treeGeo, treeMat);
+      tree.position.set(tx, 4.1 + (ti % 2) * 0.35, 14.2 + (ti % 3) * 0.7);
+      tree.scale.setScalar(0.85 + (ti % 3) * 0.16);
+      scene.add(tree);
+    });
     // Castine-style point landmark (church spire)
-    var spireBase = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.4, 0.8), new THREE.MeshLambertMaterial({ color: 0xf5f1e8 }));
+    var spireBase = new THREE.Mesh(
+      trackDisp(new THREE.BoxGeometry(0.8, 1.4, 0.8)),
+      makePbrMat({ color: 0xf8f5ec, roughness: 0.62, metalness: 0.02 })
+    );
     spireBase.position.set(-12, 3.2, 14);
     scene.add(spireBase);
-    var spireTop = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.5, 8), new THREE.MeshLambertMaterial({ color: 0x6c8a4a }));
+    var spireTop = new THREE.Mesh(
+      trackDisp(new THREE.ConeGeometry(0.5, 1.5, 8)),
+      makePbrMat({ color: 0x4d8c78, roughness: 0.42, metalness: 0.32 })
+    );
     spireTop.position.set(-12, 4.5, 14);
     scene.add(spireTop);
 
@@ -9169,7 +9751,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         }
       }
 
-      // Wave displacement
+      // Update GLSL tidal current, Voronoi riverbed caustics, aeration plumes & nutrient ribbons
+      var aqHCNow = aqIsHighContrast();
+      var aqShaderT = reducedMotion ? 4.2 : elapsed;
+      aqWaterUniforms.uAqTime.value = aqShaderT;
+      aqWaterUniforms.uAqHighContrast.value = aqHCNow ? 1.0 : 0.0;
+      if (riverbedCaustics && riverbedCausticMat) {
+        riverbedCaustics.visible = !aqHCNow;
+        riverbedCausticMat.uniforms.uTime.value = aqShaderT;
+        riverbedCausticMat.uniforms.uHighContrast.value = aqHCNow ? 1.0 : 0.0;
+      }
+      if (circulationRing) {
+        circulationRing.visible = !aqHCNow;
+        if (circulationRingShaderMat) {
+          circulationRingShaderMat.uniforms.uTime.value = aqShaderT;
+          circulationRingShaderMat.uniforms.uHighContrast.value = aqHCNow ? 1.0 : 0.0;
+        }
+      }
+      if (aerationPlumeGroup && aerationPlumeMat) {
+        aerationPlumeGroup.visible = !aqHCNow;
+        aerationPlumeMat.uniforms.uTime.value = aqShaderT;
+        aerationPlumeMat.uniforms.uHighContrast.value = aqHCNow ? 1.0 : 0.0;
+      }
+      if (nutrientRibbonGroup) {
+        nutrientRibbonGroup.visible = !aqHCNow;
+        for (var nri = 0; nri < nutrientRibbonMats.length; nri++) {
+          nutrientRibbonMats[nri].uniforms.uTime.value = aqShaderT;
+          nutrientRibbonMats[nri].uniforms.uHighContrast.value = aqHCNow ? 1.0 : 0.0;
+        }
+      }
+
+      // Wave displacement + sunlit caustic shimmer + oxygen bubble plumes
       if (!reducedMotion) {
         for (var iv = 0; iv < waterPosArr.length / 3; iv++) {
           var px = waterPosArr[iv * 3];
@@ -9177,6 +9789,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           waterPosArr[iv * 3 + 2] = initialZ[iv] + (Math.sin(px * 0.09 + elapsed * 1.0) * 0.12 + Math.cos(pz * 0.10 + elapsed * 0.85) * 0.10) * missionScenario.waveScale;
         }
         waterPositions.needsUpdate = true;
+        if (causticTex && causticTex.offset) {
+          causticTex.offset.x = (elapsed * 0.032) % 1;
+          causticTex.offset.y = (elapsed * 0.022) % 1;
+        }
+        if (circulationRing && circulationRing.material) {
+          circulationRing.rotation.z = elapsed * 0.25;
+          if (!circulationRingShaderMat) circulationRing.material.opacity = 0.42 + 0.18 * Math.sin(elapsed * 2.1);
+        }
+        // Stern oxygenated wake bubbles scaled by vessel speed
+        var wakeSpeed = Math.min(1, Math.abs(boatState.speed) / 4.2);
+        var sinH = Math.sin(boatState.heading), cosH = Math.cos(boatState.heading);
+        for (var wbi = 0; wbi < wakeBubbles.length; wbi++) {
+          var wItem = wakeBubbles[wbi];
+          if (wakeSpeed < 0.08) {
+            wItem.mesh.visible = false;
+            continue;
+          }
+          wItem.mesh.visible = true;
+          var wLife = (elapsed * (0.65 + wakeSpeed * 0.5) + wItem.phase) % 1;
+          var trail = 2.6 + wLife * (3.8 + wakeSpeed * 3.5);
+          var spread = wItem.side * (0.4 + wLife * 1.6);
+          wItem.mesh.position.set(
+            boat.position.x - sinH * trail + cosH * spread,
+            -0.06 + Math.sin(wLife * Math.PI) * 0.14,
+            boat.position.z + cosH * trail + sinH * spread
+          );
+          var wScale = (0.4 + (1 - wLife) * 0.7) * (0.6 + wakeSpeed * 0.5);
+          wItem.mesh.scale.setScalar(wScale);
+        }
+        // Rising dissolved-oxygen / aeration bubble plumes around lease
+        for (var lbi = 0; lbi < leaseBubbles.length; lbi++) {
+          var lItem = leaseBubbles[lbi];
+          var lLife = (elapsed * 0.36 + lItem.phase) % 1;
+          lItem.mesh.position.set(
+            lItem.baseX + Math.sin(elapsed * 1.4 + lbi) * 0.18,
+            -2.4 + lLife * 2.65,
+            lItem.baseZ + Math.cos(elapsed * 1.2 + lbi) * 0.18
+          );
+        }
       }
 
       // Camera follow
@@ -9304,6 +9955,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         canvas.removeEventListener('blur', clearKeys);
         clearKeys();
         window.removeEventListener('resize', onResize);
+        disposeGroupResources(droppersGroup);
+        farmDisposables.forEach(function (res) {
+          if (res && typeof res.dispose === 'function') { try { res.dispose(); } catch (_) {} }
+        });
+        farmDisposables.length = 0;
         try{ if(renderer && renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
         try { renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); } catch (_) {}
       }
@@ -13089,9 +13745,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('div', { className: 'aq-section-kicker', style: headerStyle }, '🗺 Chart Room (Bagaduce River)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Stylized Bagaduce River chart. In a real sim, you\'d use NOAA chart 13309 (Penobscot Bay). Narrow channels — set + drift on river current matters as much as wind.'),
         h('svg', { viewBox: '0 0 600 400', role: 'img', style: { width: '100%', maxWidth: 720, background: '#dbe7ef', borderRadius: 8, border: '1px solid rgba(20,184,166,0.3)' }, 'aria-label': __alloT('stem.aquaculture.a11y_bagaduce_river_route_chart_the_town_landing_is', 'Bagaduce River route chart. The town landing is south, the mussel lease is north, inbound red nuns are on starboard to the east, and green cans are on port to the west.') },
-          h('rect', { x: 0, y: 0, width: 600, height: 60, fill: '#a8c595' }),
+          h('defs', null,
+            h('linearGradient', { id: 'aq-chart-water-grad', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+              h('stop', { offset: '0%', stopColor: '#cde4ef' }),
+              h('stop', { offset: '36%', stopColor: '#b5d7e8' }),
+              h('stop', { offset: '50%', stopColor: '#9ac8e0' }),
+              h('stop', { offset: '64%', stopColor: '#b5d7e8' }),
+              h('stop', { offset: '100%', stopColor: '#cde4ef' })
+            ),
+            h('linearGradient', { id: 'aq-chart-land-grad', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: '#96b984' }),
+              h('stop', { offset: '100%', stopColor: '#b4ce9f' })
+            )
+          ),
+          h('rect', { x: 0, y: 60, width: 600, height: 260, fill: 'url(#aq-chart-water-grad)' }),
+          // Bathymetric channel contours (4 m shelf & 12 m center trough)
+          h('path', { d: 'M 215 60 Q 225 190 210 320 L 390 320 Q 375 190 385 60 Z', fill: 'rgba(14,116,144,0.10)', stroke: 'rgba(14,116,144,0.28)', strokeWidth: 1, strokeDasharray: '4 3' }),
+          h('path', { d: 'M 255 60 Q 262 190 252 320 L 348 320 Q 338 190 345 60 Z', fill: 'rgba(14,116,144,0.12)', stroke: 'rgba(14,116,144,0.34)', strokeWidth: 1 }),
+          h('rect', { x: 0, y: 0, width: 600, height: 60, fill: 'url(#aq-chart-land-grad)' }),
+          h('path', { d: 'M 0 60 Q 150 64 300 59 T 600 60', fill: 'none', stroke: '#6c8f5c', strokeWidth: 2 }),
           h('text', { x: 18, y: 28, fill: '#3b4d2b', fontSize: 13, fontWeight: 700 }, 'Castine / Penobscot Peninsula'),
-          h('rect', { x: 0, y: 320, width: 600, height: 80, fill: '#a8c595' }),
+          h('rect', { x: 0, y: 320, width: 600, height: 80, fill: 'url(#aq-chart-land-grad)' }),
+          h('path', { d: 'M 0 320 Q 150 316 300 321 T 600 320', fill: 'none', stroke: '#6c8f5c', strokeWidth: 2 }),
           h('text', { x: 18, y: 360, fill: '#3b4d2b', fontSize: 13, fontWeight: 700 }, 'Brooksville side'),
           h('rect', { x: 270, y: 320, width: 60, height: 10, fill: '#8a6c47' }),
           h('text', { x: 275, y: 316, fill: '#3b4d2b', fontSize: 10 }, 'Town landing'),
@@ -13103,27 +13778,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('g', null,
             [{ x: 350, y: 125 }, { x: 350, y: 190 }, { x: 350, y: 255 }].map(function(b, i) {
               return h('g', { key: 'r' + i },
-                h('polygon', { points: (b.x - 7) + ',' + (b.y + 10) + ' ' + (b.x + 7) + ',' + (b.y + 10) + ' ' + b.x + ',' + (b.y - 4), fill: '#c8302a' }),
+                h('polygon', { points: (b.x - 7) + ',' + (b.y + 10) + ' ' + (b.x + 7) + ',' + (b.y + 10) + ' ' + b.x + ',' + (b.y - 4), fill: '#c8302a', stroke: '#7f1d1d', strokeWidth: 0.8 }),
                 h('text', { x: b.x + 12, y: b.y + 5, fill: '#9b1c17', fontSize: 10, fontWeight: 700 }, 'R' + (i * 2 + 2)));
             })),
           h('g', null,
             [{ x: 250, y: 125 }, { x: 250, y: 190 }, { x: 250, y: 255 }].map(function(b, i) {
               return h('g', { key: 'g' + i },
-                h('rect', { x: b.x - 6, y: b.y - 4, width: 12, height: 14, fill: '#2a7c44' }),
+                h('rect', { x: b.x - 6, y: b.y - 4, width: 12, height: 14, fill: '#2a7c44', stroke: '#14532d', strokeWidth: 0.8 }),
                 h('text', { x: b.x - 12, y: b.y + 5, fill: '#155b2f', fontSize: 10, fontWeight: 700, textAnchor: 'end' }, 'G' + (i * 2 + 1)));
             })),
           // Lease rectangle
-          h('rect', { x: 270, y: 70, width: 60, height: 30, fill: 'none', stroke: '#a16207', strokeWidth: 2, strokeDasharray: '4,3' }),
+          h('rect', { x: 270, y: 70, width: 60, height: 30, fill: 'rgba(250,204,21,0.22)', stroke: '#a16207', strokeWidth: 2, strokeDasharray: '4,3' }),
           h('circle', { cx: 280, cy: 75, r: 3, fill: '#a16207' }),
           h('circle', { cx: 320, cy: 75, r: 3, fill: '#a16207' }),
           h('circle', { cx: 280, cy: 95, r: 3, fill: '#a16207' }),
           h('circle', { cx: 320, cy: 95, r: 3, fill: '#a16207' }),
           h('text', { x: 340, y: 88, fill: '#713f12', fontSize: 10, fontWeight: 700 }, 'Your lease (1 acre)'),
           // Depth labels
-          h('text', { x: 130, y: 175, fill: '#5a8ba5', fontSize: 10 }, 'depths 4-12 m'),
+          h('text', { x: 130, y: 175, fill: '#356985', fontSize: 10, fontWeight: 600 }, 'depths 4-12 m'),
           // Compass
           h('g', { transform: 'translate(70, 360)' },
-            h('circle', { cx: 0, cy: 0, r: 22, fill: 'rgba(255,255,255,0.5)', stroke: '#5a8ba5', strokeWidth: 1 }),
+            h('circle', { cx: 0, cy: 0, r: 22, fill: 'rgba(255,255,255,0.68)', stroke: '#356985', strokeWidth: 1.2 }),
+            h('polygon', { points: '0,-18 3,-4 -3,-4', fill: '#0e7490' }),
+            h('polygon', { points: '0,16 3,4 -3,4', fill: '#94a3b8' }),
             h('text', { x: 0, y: -10, fill: '#3b4d2b', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, 'N')))));
     }
 
@@ -25585,33 +26262,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         var obs = { d: sh.density, x: sh.exchange, f: sh.feed, doL: parseFloat(doLevel.toFixed(2)), state: doState };
         setSH({ log: (sh.log || []).concat([obs]).slice(-8) });
       }
-      // SVG: pond with fish, ripples for exchange rate, DISCRETE state badge
+      // SVG: clearcoat recirculating tank cross-section with sunlit caustics, oxygen bubble plumes, biofilter flow, fish, and DISCRETE state badge
       function pondSvg() {
         var fishCount = Math.min(24, Math.round(sh.density * 2));
         var fish = [];
         for (var i = 0; i < fishCount; i++) {
-          var fx = 30 + (i * 41) % 260;
-          var fy = 30 + (i * 23) % 70;
-          var fishColor = doState === 'healthy' ? '#fbbf24' : (doState === 'stressed' ? '#a3a3a3' : '#525252');
+          var fx = 34 + (i * 41) % 252;
+          var fy = 34 + (i * 23) % 66;
+          var fishColor = doState === 'healthy' ? '#fbbf24' : (doState === 'stressed' ? '#9ca3af' : '#64748b');
+          var finColor = doState === 'healthy' ? '#f59e0b' : (doState === 'stressed' ? '#6b7280' : '#475569');
           var tilt = doState === 'critical' ? (i % 2 === 0 ? ' rotate(180 ' + fx + ' ' + fy + ')' : '') : '';
-          fish.push(h('g', { key: 'f' + i, transform: tilt },
-            h('ellipse', { cx: fx, cy: fy, rx: 6, ry: 2.5, fill: fishColor, opacity: doState === 'critical' ? 0.6 : 1 }),
-            h('polygon', { points: (fx - 6) + ',' + fy + ' ' + (fx - 10) + ',' + (fy - 2) + ' ' + (fx - 10) + ',' + (fy + 2), fill: fishColor, opacity: doState === 'critical' ? 0.6 : 1 })
+          fish.push(h('g', { key: 'f' + i, transform: tilt, opacity: doState === 'critical' ? 0.68 : 1 },
+            h('polygon', { points: (fx - 5) + ',' + fy + ' ' + (fx - 10) + ',' + (fy - 2.6) + ' ' + (fx - 10) + ',' + (fy + 2.6), fill: finColor }),
+            h('path', { d: 'M ' + (fx - 1) + ' ' + (fy - 2.2) + ' Q ' + (fx + 1) + ' ' + (fy - 5.2) + ' ' + (fx + 3) + ' ' + (fy - 2.1), fill: finColor }),
+            h('ellipse', { cx: fx, cy: fy, rx: 6.4, ry: 2.7, fill: fishColor }),
+            h('ellipse', { cx: fx + 0.8, cy: fy - 0.8, rx: 3.4, ry: 0.9, fill: '#fef9c3', opacity: doState === 'healthy' ? 0.55 : 0.2 }),
+            h('circle', { cx: fx + 3.6, cy: fy - 0.5, r: 0.8, fill: '#0f172a' })
           ));
         }
         var ripples = [];
         var rippleN = Math.round(sh.exchange / 20);
         for (var r = 0; r < rippleN; r++) {
-          ripples.push(h('path', { key: 'r' + r, d: 'M 10 ' + (115 + r * 4) + ' Q 50 ' + (110 + r * 4) + ' 100 ' + (115 + r * 4) + ' T 200 ' + (115 + r * 4) + ' T 310 ' + (115 + r * 4), stroke: '#67e8f9', strokeWidth: 1, fill: 'none', opacity: 0.5 }));
+          ripples.push(h('path', { key: 'r' + r, d: 'M 14 ' + (112 + r * 3.5) + ' Q 54 ' + (108 + r * 3.5) + ' 104 ' + (112 + r * 3.5) + ' T 204 ' + (112 + r * 3.5) + ' T 306 ' + (112 + r * 3.5), stroke: '#67e8f9', strokeWidth: 1.1, fill: 'none', opacity: 0.45 }));
         }
+        var bubbleCount = Math.max(3, Math.min(18, Math.round(sh.exchange / 12)));
+        var bubbles = [];
+        for (var bi = 0; bi < bubbleCount; bi++) {
+          var bx = 24 + ((bi * 37) % 272);
+          var by = 26 + ((bi * 19) % 86);
+          var br = 1.2 + (bi % 3) * 0.7;
+          bubbles.push(h('circle', { key: 'b' + bi, cx: bx, cy: by, r: br, fill: 'rgba(186,245,255,0.28)', stroke: '#a5f3fc', strokeWidth: 0.65, opacity: doState === 'critical' ? 0.35 : 0.75 }));
+        }
+        var flowStroke = doState === 'healthy' ? '#2dd4bf' : (doState === 'stressed' ? '#fbbf24' : '#fb7185');
         return h('svg', { role: 'img', 'aria-label': __alloT('stem.aquaculture.pond_img', 'Pond simulation view'), viewBox: '0 0 320 140', style: { width: '100%', height: 160, display: 'block' } },
-          h('rect', { x: 0, y: 0, width: 320, height: 140, fill: '#0f1c2f' }),
-          h('rect', { x: 0, y: 20, width: 320, height: 100, fill: '#1e3a5f', opacity: 0.7 }),
+          h('defs', null,
+            h('linearGradient', { id: 'aq-pond-bg', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: '#0c233a' }),
+              h('stop', { offset: '100%', stopColor: '#061322' })
+            ),
+            h('linearGradient', { id: 'aq-pond-water', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: '#0e7490', stopOpacity: 0.78 }),
+              h('stop', { offset: '45%', stopColor: '#155e75', stopOpacity: 0.82 }),
+              h('stop', { offset: '100%', stopColor: '#0c2d48', stopOpacity: 0.94 })
+            ),
+            h('linearGradient', { id: 'aq-pond-glass', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.16 }),
+              h('stop', { offset: '38%', stopColor: '#e0f2fe', stopOpacity: 0.04 }),
+              h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+            )
+          ),
+          h('rect', { x: 0, y: 0, width: 320, height: 140, fill: 'url(#aq-pond-bg)' }),
+          // Acrylic/glass tank vessel + sunlit aquatic column
+          h('rect', { x: 6, y: 18, width: 308, height: 104, rx: 6, fill: 'url(#aq-pond-water)', stroke: 'rgba(125,211,252,0.45)', strokeWidth: 1.5 }),
+          // Sunlit water surface caustic rays
+          h('polygon', { points: '44,20 76,20 56,118 28,118', fill: 'rgba(186,245,255,0.08)' }),
+          h('polygon', { points: '132,20 176,20 154,118 112,118', fill: 'rgba(186,245,255,0.10)' }),
+          h('polygon', { points: '226,20 264,20 246,118 208,118', fill: 'rgba(186,245,255,0.07)' }),
+          h('path', { d: 'M 8 22 Q 48 18 88 22 T 168 22 T 248 22 T 312 22', fill: 'none', stroke: '#a5f3fc', strokeWidth: 1.6, opacity: 0.72 }),
+          // Glowing biofilter / dissolved-oxygen circulation pathway along perimeter
+          h('path', { d: 'M 14 28 V 114 H 306 V 28', fill: 'none', stroke: flowStroke, strokeWidth: 2, strokeDasharray: '6 4', opacity: sh.exchange > 0 ? 0.55 : 0.16 }),
+          h('polygon', { points: '306,24 302,32 310,32', fill: flowStroke, opacity: sh.exchange > 0 ? 0.8 : 0.2 }),
           ripples,
+          bubbles,
           fish,
+          // Clearcoat acrylic front-wall reflection sheen
+          h('polygon', { points: '8,20 96,20 42,120 8,120', fill: 'url(#aq-pond-glass)' }),
           // DISCRETE state badge (not a continuous gradient)
           h('g', { transform: 'translate(260, 130)' },
-            h('rect', { x: -52, y: -10, width: 104, height: 18, rx: 4, fill: stateColor, opacity: 0.85, stroke: stateColor, strokeWidth: 1 }),
+            h('rect', { x: -52, y: -10, width: 104, height: 18, rx: 4, fill: stateColor, opacity: 0.9, stroke: stateColor, strokeWidth: 1 }),
             h('text', { x: 0, y: 4, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: '#04141f' }, stateLabel)
           )
         );

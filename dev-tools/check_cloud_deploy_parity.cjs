@@ -168,9 +168,12 @@ function defaultGitChangedPaths(rootDir, sinceRef) {
     if (rel) changed.add(rel);
   }
   if (sinceRef) {
+    if (typeof sinceRef !== 'string' || sinceRef.startsWith('-') || !/^[A-Za-z0-9._/@^{}~-]+$/.test(sinceRef)) {
+      throw new Error(`Invalid --since git ref: ${sinceRef}`);
+    }
     const diffOut = cp.execFileSync(
       'git',
-      ['diff', '--name-only', `${sinceRef}...HEAD`],
+      ['diff', '--name-only', `${sinceRef}...HEAD`, '--'],
       { cwd: rootDir, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }
     );
     for (const rawLine of diffOut.split(/\r?\n/)) {
@@ -213,20 +216,35 @@ const CLOUD_TARGETS = [
   },
 ];
 
+function readRegularNoSymlink(rootDir, relPath, label, parityErrors) {
+  const resolvedRoot = path.resolve(rootDir);
+  const parts = relPath.split(/[\\/]+/).filter(Boolean);
+  let cur = resolvedRoot;
+  for (const part of parts) {
+    cur = path.join(cur, part);
+    const st = fs.lstatSync(cur, { throwIfNoEntry: false });
+    if (!st) {
+      parityErrors.push(`${label}: missing ${relPath}`);
+      return null;
+    }
+    if (st.isSymbolicLink()) {
+      parityErrors.push(`${label}: ${relPath} must not be or traverse a symbolic link`);
+      return null;
+    }
+  }
+  const finalStat = fs.lstatSync(cur, { throwIfNoEntry: false });
+  if (!finalStat || !finalStat.isFile()) {
+    parityErrors.push(`${label}: ${relPath} is not a regular file`);
+    return null;
+  }
+  return fs.readFileSync(cur);
+}
+
 function checkBytePair(rootDir, leftRel, rightRel, label, parityErrors, checkedFiles) {
-  const leftPath = path.join(rootDir, leftRel);
-  const rightPath = path.join(rootDir, rightRel);
   checkedFiles.push(leftRel, rightRel);
-  if (!fs.existsSync(leftPath)) {
-    parityErrors.push(`${label}: missing ${leftRel}`);
-    return;
-  }
-  if (!fs.existsSync(rightPath)) {
-    parityErrors.push(`${label}: missing ${rightRel}`);
-    return;
-  }
-  const leftBuf = fs.readFileSync(leftPath);
-  const rightBuf = fs.readFileSync(rightPath);
+  const leftBuf = readRegularNoSymlink(rootDir, leftRel, label, parityErrors);
+  const rightBuf = readRegularNoSymlink(rootDir, rightRel, label, parityErrors);
+  if (!leftBuf || !rightBuf) return;
   if (!leftBuf.equals(rightBuf)) {
     parityErrors.push(`${label}: byte drift between ${leftRel} and ${rightRel}`);
   }
@@ -454,7 +472,14 @@ if (require.main === module) {
   }
 
   const sinceIdx = args.indexOf('--since');
-  const since = sinceIdx >= 0 ? args[sinceIdx + 1] : null;
+  let since = null;
+  if (sinceIdx >= 0) {
+    since = args[sinceIdx + 1];
+    if (!since || since.startsWith('-')) {
+      console.error('Error: --since requires a valid git ref argument.');
+      process.exit(2);
+    }
+  }
   const requireCleanCloud = args.includes('--require-clean-cloud');
   const asJson = args.includes('--json');
 

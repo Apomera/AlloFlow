@@ -54,14 +54,10 @@ const localPatches={
       ],
     },
   },
-  praxis_core_5752:{
-    'core5752-b2-071':{
-      prompt:'A printer uses 3 liters of ink for 2 production runs. At the same rate, how many liters of ink are used for 5 runs?',
-      choices:['3.3 liters','6 liters','7.5 liters','10 liters'],answerIndex:2,
-      rationale:'The unit rate is 3 divided by 2, or 1.5 liters per run. Multiplying 1.5 liters per run by 5 runs gives 7.5 liters, a continuous quantity that does not require rounding to a whole container.',
-      notes:['This divides or scales the quantities incorrectly.','This does not maintain the stated ratio of ink to runs.','', 'This multiplies the number of runs without using the 3-to-2 rate.']
-    }
-  },
+  // praxis_core_5752 core5752-b2-071 is now authored directly in
+  // dev-tools/praxis_core_5752/math_items.cjs via variantB with full
+  // per-distractor error explanations.
+  praxis_core_5752:{},
   special_education_learning_disabilities_5383:{
     'ld5383-b1-053':{prompt:'During explicit literacy instruction for a student with a learning disability, what combination of supports best promotes engagement with grade-level text?'},
     'ld5383-b2-053':{prompt:'A capable student with a learning disability avoids reading because assigned texts feel irrelevant and successful reading is rare. Which response best supports engagement while preserving meaningful literacy instruction?'}

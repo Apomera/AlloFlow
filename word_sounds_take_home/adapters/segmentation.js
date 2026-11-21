@@ -110,9 +110,13 @@ module.exports = {
     var locked = function () { return ctx.isDone(); };
     var halt = function () { token++; };
 
-    // Theme-driven tiles (2026-11-19): follow every Reading Tools color theme (Default, High Contrast, Soft, Dark,
-    // Ocean, Sunny, Forest) and forced-colors via CSS variables, never hardcoded light-only fills or dark ink.
+    // Theme-harmonized multicolored chips: 6 distinct per-theme color slots (--c0..--c5, --c0b..--c5b)
+    // that automatically adapt to every Reading Tools theme (Usual, High Contrast, Soft, Dark, Ocean, Sunny,
+    // Forest, Rose) and forced-colors, with zero hardcoded hex/rgb values in this adapter.
     var still = !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var chipSlot = function (ci) { return ci % 6; };
+    var chipBg = function (ci) { return 'var(--c' + chipSlot(ci) + 'b,var(--soft))'; };
+    var chipBd = function (ci) { return 'var(--c' + chipSlot(ci) + ',var(--accent))'; };
     // A "goes here" arrow (a character), and a speaker drawn with borders in the tile's own ink, so it is as dark as the
     // letters (an emoji speaker is pale grey on most devices). No drawing element: a file carries none.
     var icon = function (kind) {
@@ -131,10 +135,10 @@ module.exports = {
       node.textContent = '';
       if (ctx.showLetters) node.appendChild(doc.createTextNode(name(ci))); else node.appendChild(icon('sound'));
     };
-    var tileStyle = function () {
-      return (ctx.showLetters ? 'min-width:64px;height:58px;padding:0 16px;border-radius:999px;' : 'width:64px;height:64px;padding:0;border-radius:50%;')
+    var tileStyle = function (ci) {
+      return (ctx.showLetters ? 'min-width:var(--seg-sz,64px);height:calc(var(--seg-sz,64px) - 6px);padding:0 16px;border-radius:999px;' : 'width:var(--seg-sz,64px);height:var(--seg-sz,64px);padding:0;border-radius:50%;')
         + 'display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:800;color:var(--ink);touch-action:none;'
-        + 'background:var(--soft);border:3px solid var(--accent);box-shadow:0 3px 0 var(--accent)'
+        + 'background:' + chipBg(ci) + ';border:3px solid ' + chipBd(ci) + ';box-shadow:0 3px 0 ' + chipBd(ci)
         + (still ? '' : ';transition:transform .12s ease,box-shadow .12s ease');
     };
     // The line under the boxes: what the last move did (also said through ctx.announce).
@@ -144,8 +148,8 @@ module.exports = {
     var byKey = function (e) { return !e || e.detail === 0; };
     var tray = ctx.el('ul', { class: 'row', 'data-seg-tray': '', 'aria-label': L.segmentation_tray, style: 'list-style:none;padding:6px 0;margin:8px 0;gap:12px;justify-content:center' });
     var chipEls = item.chips.map(function (chip, ci) {
-      var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-seg-tile': String(ci),
-        'aria-label': ctx.fmt(L.segmentation_pick, { sound: name(ci) }), style: tileStyle(),
+      var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-seg-tile': String(ci), 'data-seg-c': String(chipSlot(ci)),
+        'aria-label': ctx.fmt(L.segmentation_pick, { sound: name(ci) }), style: tileStyle(ci),
         on: { click: function (e) { if (dragged()) return; onChip(ci, e); }, pointerdown: function (e) { dragStart(e, ci, 'tray', -1); } } });
       face(pick, ci);
       var li = ctx.el('li', {}, [pick]);
@@ -154,7 +158,7 @@ module.exports = {
     });
     var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.segmentation_boxes, style: 'justify-content:center;margin:12px 0 0' });
     var boxEls = boxes.map(function (_, bi) {
-      var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-seg-box': String(bi), style: 'min-width:76px;min-height:76px;border-width:3px;border-radius:16px;font-size:1.25rem;font-weight:800',
+      var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-seg-box': String(bi), style: 'min-width:var(--seg-box,76px);min-height:var(--seg-box,76px);border-width:3px;border-radius:16px;font-size:1.25rem;font-weight:800',
         on: { click: function (e) { if (dragged()) return; onBox(bi, e); }, pointerdown: function (e) { if (boxes[bi] != null) dragStart(e, boxes[bi], 'box', bi); } } });
       boxList.appendChild(ctx.el('li', {}, [btn]));
       return btn;
@@ -238,22 +242,25 @@ module.exports = {
       chipEls.forEach(function (c, ci) {
         c.li.hidden = boxes.indexOf(ci) >= 0;
         var on = picked === ci;
+        var bg = chipBg(ci), bd = chipBd(ci);
         c.pick.setAttribute('aria-pressed', on ? 'true' : 'false');
-        // Held: it lifts and flips to the theme accent fill/ink with a ring in the accent color.
-        c.pick.style.background = on ? 'var(--accent)' : 'var(--soft)';
+        // Held: it lifts and flips to its own chip accent color with theme accent-ink and a ring.
+        c.pick.style.background = on ? bd : bg;
         c.pick.style.color = on ? 'var(--accent-ink)' : 'var(--ink)';
-        c.pick.style.borderColor = 'var(--accent)';
+        c.pick.style.borderColor = bd;
         c.pick.style.transform = on ? 'translateY(-6px) scale(1.08)' : '';
-        c.pick.style.boxShadow = on ? '0 0 0 3px var(--card), 0 0 0 7px var(--accent)' : '0 3px 0 var(--accent)';
+        c.pick.style.boxShadow = on ? '0 0 0 3px var(--card), 0 0 0 7px ' + bd : '0 3px 0 ' + bd;
         if (locked()) c.pick.setAttribute('aria-disabled', 'true');
       });
       boxEls.forEach(function (btn, bi) {
         var ci = boxes[bi];
         var bad = errors.indexOf(bi) >= 0 && ci != null;
         if (ci == null) { btn.textContent = ''; btn.appendChild(icon('drop')); } else face(btn, ci);
+        if (ci != null && !bad) btn.setAttribute('data-seg-c', String(chipSlot(ci)));
+        else btn.removeAttribute('data-seg-c');
         btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
-        btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--accent)';
-        btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : 'var(--soft)';
+        btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : chipBd(ci);
+        btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
         btn.style.color = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--ink)';
         // While a tile is held, the empty boxes light up: that is where it can go.
         btn.style.boxShadow = holding && ci == null ? '0 0 0 3px var(--accent)' : '';
@@ -323,6 +330,44 @@ module.exports = {
       if (outcome === 'retry') { errors = bad; draw(); }
     };
 
+    if (typeof ctx.keys === 'function') {
+      ctx.keys(function (key) {
+        if (locked()) return false;
+        var k = String(key == null ? '' : key);
+        if (k === 'Backspace') {
+          for (var bi = n - 1; bi >= 0; bi--) {
+            if (boxes[bi] != null) {
+              var out = boxes[bi];
+              halt(); boxes[bi] = null; picked = null; errors = [];
+              draw();
+              tell(ctx.fmt(L.segmentation_removed, { sound: name(out), n: bi + 1 }));
+              return true;
+            }
+          }
+          return false;
+        }
+        if (k === 'Enter') {
+          var ae = doc && doc.activeElement;
+          var onBtn = !!(ae && String(ae.tagName || '').toUpperCase() === 'BUTTON' && ae !== checkBtn && !ae.closest('[hidden]') && !ae.disabled && ae.getAttribute('aria-disabled') !== 'true');
+          if (onBtn || boxes.some(function (x) { return x == null; })) return false;
+          onCheck();
+          return true;
+        }
+        if (/^[1-9]$/.test(k)) {
+          var idx = Number(k) - 1;
+          if (picked != null) {
+            if (idx < n) { placeAt(picked, idx); return true; }
+            return false;
+          }
+          if (idx < chipEls.length && boxes.indexOf(idx) < 0) {
+            onChip(idx, { detail: 1 });
+            return true;
+          }
+        }
+        return false;
+      });
+    }
+
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.segmentation_question }));
     ctx.root.appendChild(ctx.el('p', { class: 'muted', text: L.segmentation_how }));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
@@ -359,6 +404,7 @@ module.exports = {
         }
         draw();
         boxEls.forEach(function (btn) {
+          btn.removeAttribute('data-seg-c');
           btn.style.borderColor = 'var(--ok)';
           btn.style.background = 'var(--ok-bg)';
           btn.style.color = 'var(--ok)';

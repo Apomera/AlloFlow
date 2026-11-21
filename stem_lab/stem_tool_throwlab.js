@@ -1047,9 +1047,9 @@ window.StemLab = window.StemLab || {
   // net. Server stands at z=0, net stretches across z=9 m at 2.43 m height
   // (men's), target court is z=9 m to z=18 m, court width ±4.5 m.
   //
-  // Spin axis convention here:
-  //   0° = topspin (drops the ball — what you want past the net)
-  // 180° = backspin (lifts; rarely used in serves)
+  // Spin axis convention (matches global Throw Lab convention):
+  //   0° = backspin (lifts; used in gentle underhand serves)
+  // 180° = topspin (drops the ball — what you want past the net)
   //  ~0 rpm + 0° = "float" (no-spin wobble — most common at all levels)
   //
   // Modeling note: simulatePitch handles 3D drag + Magnus correctly for
@@ -1062,15 +1062,15 @@ window.StemLab = window.StemLab || {
       grip: 'Stiff wrist, contact dead-center of the ball, NO follow-through',
       teach: 'No spin = unpredictable wobble from seam-induced drag asymmetry. The same physics as a soccer knuckleball or baseball knuckler. Lower speed than a jump serve but harder to pass — passers can\'t predict where the ball will be. Most common serve at every level (rec → Olympic).' },
     { id: 'jump', label: 'Jump Serve', icon: '🚀',
-      speedMph: 70, spinRpm: 1500, spinAxisDeg: 0, aimDegV: 4, releaseHeight: 3.0,
+      speedMph: 70, spinRpm: 1500, spinAxisDeg: 180, aimDegV: 4, releaseHeight: 3.0,
       grip: 'Toss high in front, attack-jump approach, snap-wrist top-spin contact',
       teach: 'Highest-skill serve. Toss the ball ~3 m high in front of you, run a 3-step approach, jump to ~3.0 m release height, contact with topspin. The Magnus lift pushes the ball DOWN, so it can clear the net at speed and still land in. Top servers (Wilfredo Leon ~80+ mph) make this almost unplayable.' },
     { id: 'topspin', label: 'Top-Spin Serve', icon: '🌀',
-      speedMph: 55, spinRpm: 1000, spinAxisDeg: 0, aimDegV: 12, releaseHeight: 2.4,
+      speedMph: 55, spinRpm: 1000, spinAxisDeg: 180, aimDegV: 12, releaseHeight: 2.4,
       grip: 'Toss above hitting shoulder, brush UP and OVER the ball at contact',
       teach: 'Topspin without the jump — middle-school + JV staple. ~1000 rpm of topspin makes the ball drop ~1 m faster than a no-spin equivalent over 18 m. Clears the net with margin, still lands deep. Easier to control than a jump serve, harder to ace.' },
     { id: 'underhand', label: 'Underhand Serve', icon: '🤲',
-      speedMph: 35, spinRpm: 80, spinAxisDeg: 180, aimDegV: 25, releaseHeight: 1.0,
+      speedMph: 35, spinRpm: 80, spinAxisDeg: 0, aimDegV: 25, releaseHeight: 1.0,
       grip: 'Stable platform with non-dominant hand, swing dominant hand from below the waist',
       teach: 'Beginner serve. High arc (~25° launch), slow speed, gentle backspin. Easy to land in (high arc clears the net), but easy to pass — a passer has 1+ second of reaction time. Great for skill-building before progressing to overhand.' }
   ];
@@ -1510,17 +1510,16 @@ window.StemLab = window.StemLab || {
   }
 
   // Convert pitch axis (degrees) into a 3D angular velocity unit vector.
-  // World coords: +X = toward right-handed batter (3rd-base side from mound),
-  // +Y = up, +Z = toward catcher (mound to plate axis).
-  // axis 0°   = backspin (ω points in +X for a RHP)
-  // axis 180° = topspin (ω points in -X)
-  // axis 90°  = sidespin (ω points in +Y for a slider that breaks toward 3B)
+  // World coords: +X = lateral, +Y = up, +Z = forward (mound to plate).
+  // Magnus force F ∝ ω × v. With v along +Z:
+  //   axis 0°   = backspin -> ω = (-1, 0, 0) -> ω × v = (0, +1, 0) (upward lift, same for RHP & LHP)
+  //   axis 180° = topspin  -> ω = (+1, 0, 0) -> ω × v = (0, -1, 0) (downward drop, same for RHP & LHP)
+  //   axis 90°  = sidespin -> ω = (0, ±1, 0) -> ω × v = (±1, 0, 0) (mirrored between RHP & LHP)
   function spinAxisVector(axisDeg, throwerHand) {
     var rad = axisDeg * Math.PI / 180;
     var sign = throwerHand === 'left' ? -1 : 1;
-    // Lerp between backspin axis (1, 0, 0) and topspin (-1, 0, 0) through sidespin (0, 1, 0)
-    var x = Math.cos(rad) * sign;
-    var y = Math.sin(rad);
+    var x = -Math.cos(rad);
+    var y = Math.sin(rad) * sign;
     return { x: x, y: y, z: 0 };
   }
 
@@ -1539,7 +1538,7 @@ window.StemLab = window.StemLab || {
     var releaseStride = opts.releaseStride !== undefined ? opts.releaseStride : 1.5; // m forward of mound rubber
     var aimDegV = opts.aimDegV !== undefined ? opts.aimDegV : -1.5; // small downward tilt
     var aimDegH = opts.aimDegH !== undefined ? opts.aimDegH : 0;
-    var spinRpm = opts.spinRpm || 2300;
+    var spinRpm = opts.spinRpm !== undefined ? opts.spinRpm : 2300;
     var spinAxis = spinAxisVector(opts.spinAxisDeg || 0, opts.throwerHand || 'right');
     var omegaMag = spinRpm * 2 * Math.PI / 60; // rad/s
     var omega = { x: spinAxis.x * omegaMag, y: spinAxis.y * omegaMag, z: spinAxis.z * omegaMag };
@@ -1548,18 +1547,18 @@ window.StemLab = window.StemLab || {
     // Initial velocity vector (release direction)
     var radV = aimDegV * Math.PI / 180;
     var radH = aimDegH * Math.PI / 180;
-    var vx = v0 * Math.sin(radH);
+    var vx = v0 * Math.cos(radV) * Math.sin(radH);
     var vy = v0 * Math.sin(radV);
     var vz = v0 * Math.cos(radV) * Math.cos(radH);
     var pos = { x: releaseSide, y: releaseHeight, z: releaseStride };
     var samples = [{ t: 0, x: pos.x, y: pos.y, z: pos.z, vx: vx, vy: vy, vz: vz }];
     var dt = 1 / 240; // small step for Magnus stability
     var t = 0;
-    var maxT = opts.maxT !== undefined ? opts.maxT : 2.0;
     var plateZ = opts.targetZ !== undefined ? opts.targetZ : 18.44; // baseball plate default
     // Gravity (m/s²) — defaults to Earth. Overridable so the same pitch can
     // be replayed on Moon/Mars/Jupiter for the "what if" lesson.
     var gNow = opts.gravity !== undefined ? opts.gravity : G;
+    var maxT = opts.maxT !== undefined ? opts.maxT : Math.min(30, Math.max(4.0, 4.0 * Math.sqrt(G / Math.max(0.5, gNow))));
     // Wind vector in m/s (world frame). Headwind in -Z direction (0°),
     // tailwind +Z (180°), crosswinds ±X. Drag uses RELATIVE air-frame
     // velocity (ball minus wind), so a tailwind shrinks |v_rel| and reduces
@@ -2977,6 +2976,12 @@ window.StemLab = window.StemLab || {
         var effectiveTargetZ = d.mode === 'fieldgoal'
           ? (d.fgDistanceYd || 35) * 0.9144  // yd → m
           : modeMeta.targetZ;
+        var simGravity = (function() {
+          var p = GRAVITY_PRESETS.find(function(g) { return g.id === (d.gravityId || 'earth'); });
+          return p ? p.g : G;
+        })();
+        var baseMaxT = d.mode === 'golf' ? 12 : (d.mode === 'fieldgoal' ? 10 : 4);
+        var dynamicMaxT = Math.min(30, Math.max(baseMaxT, baseMaxT * Math.sqrt(G / Math.max(0.5, simGravity))));
         var simOpts = {
           ball: modeMeta.ball,
           speedMph: d.speedMph,
@@ -2997,10 +3002,8 @@ window.StemLab = window.StemLab || {
           allowBounces: d.mode !== 'pitching' && d.mode !== 'bowling',
           windMph: d.windMph || 0,
           windDirDeg: d.windDirDeg || 0,
-          gravity: (function() {
-            var p = GRAVITY_PRESETS.find(function(g) { return g.id === (d.gravityId || 'earth'); });
-            return p ? p.g : G;
-          })()
+          gravity: simGravity,
+          maxT: dynamicMaxT
         };
         // Free kick + field goal let the arc continue past the goal line so we
         // can detect missed-over / wide / post cases.
@@ -3035,19 +3038,10 @@ window.StemLab = window.StemLab || {
         // Compute break stats relative to a no-spin baseline. Pass through
         // the same wind so the baseline is "what would happen WITHOUT spin
         // but WITH the same conditions" — break attribution stays clean.
-        var noSpin = simulatePitch({
-          ball: modeMeta.ball,
-          speedMph: d.speedMph,
-          releaseHeight: d.releaseHeight,
-          aimDegV: d.aimDegV,
-          aimDegH: d.aimDegH,
+        var noSpin = simulatePitch(Object.assign({}, simOpts, {
           spinRpm: 0,
-          spinAxisDeg: 0,
-          throwerHand: d.throwerHand,
-          windMph: d.windMph || 0,
-          windDirDeg: d.windDirDeg || 0,
-          gravity: simOpts.gravity
-        });
+          spinAxisDeg: 0
+        }));
         if (result.outcome.reachedPlate && noSpin.outcome.reachedPlate) {
           result.vBreakIn = (noSpin.outcome.plateY - result.outcome.plateY) * FT_PER_M * 12;
           result.hBreakIn = (result.outcome.plateX - noSpin.outcome.plateX) * FT_PER_M * 12;
@@ -3839,25 +3833,100 @@ window.StemLab = window.StemLab || {
         // Helper: pull the right "b" component from a sample for the active view.
         function sampleB(s) { return isTopDown ? s.x : s.y; }
         if (isTopDown) {
-          // Top-down pitch view: full canvas is grass, bird's-eye.
-          gfx.fillStyle = '#3a7a26';
+          // Top-down pitch view: rich mowed turf gradient + evening stadium floodlight pools
+          var turfGrad = gfx.createLinearGradient(0, 0, 0, H);
+          turfGrad.addColorStop(0, '#2a6220');
+          turfGrad.addColorStop(0.5, '#3a7a26');
+          turfGrad.addColorStop(1, '#26591d');
+          gfx.fillStyle = turfGrad;
           gfx.fillRect(0, 0, W, H);
           // Mowing stripes for top-down readability — alternating bands
-          gfx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+          gfx.fillStyle = 'rgba(255, 255, 255, 0.045)';
           for (var ms = 0; ms < W; ms += 60) gfx.fillRect(ms, 0, 30, H);
+          // Subtle stadium corner floodlight pools
+          if (typeof gfx.createRadialGradient === 'function') {
+            [[0, 0], [W, 0], [0, H], [W, H]].forEach(function(pt) {
+              var fg = gfx.createRadialGradient(pt[0], pt[1], 8, pt[0], pt[1], W * 0.42);
+              fg.addColorStop(0, 'rgba(254, 249, 195, 0.14)');
+              fg.addColorStop(0.5, 'rgba(186, 230, 253, 0.05)');
+              fg.addColorStop(1, 'rgba(0, 0, 0, 0)');
+              gfx.fillStyle = fg;
+              gfx.fillRect(0, 0, W, H);
+            });
+          }
         } else {
-          // Side view: sky gradient + ground band
-          var skyTop = d.mode === 'pitching' || d.mode === 'bowling' ? '#1e3a5f' : d.mode === 'golf' ? '#1e4d6f' : d.mode === 'volleyball' ? '#27316b' : '#3a2e2a';
-          var skyBot = d.mode === 'pitching' || d.mode === 'bowling' ? '#5a7ba8' : d.mode === 'golf' ? '#7fb5c8' : d.mode === 'volleyball' ? '#5b6cb5' : '#6e5a48';
+          // Side view: rich stadium/field twilight sky gradient + floodlight ambiance + ground band
+          var isIndoor = d.mode === 'freethrow' || d.mode === 'volleyball';
           var skyGrad = gfx.createLinearGradient(0, 0, 0, marginT + fieldH);
-          skyGrad.addColorStop(0, skyTop);
-          skyGrad.addColorStop(1, skyBot);
+          if (isIndoor) {
+            skyGrad.addColorStop(0, d.mode === 'volleyball' ? '#141c42' : '#1b171b');
+            skyGrad.addColorStop(0.55, d.mode === 'volleyball' ? '#2c3975' : '#3a2d2b');
+            skyGrad.addColorStop(1, d.mode === 'volleyball' ? '#4f5ea1' : '#634d3e');
+          } else if (d.mode === 'golf') {
+            skyGrad.addColorStop(0, '#0d2542');
+            skyGrad.addColorStop(0.42, '#1f4e73');
+            skyGrad.addColorStop(0.76, '#5c8ea8');
+            skyGrad.addColorStop(1, '#d8a679');
+          } else {
+            // Evening stadium twilight (pitching, fieldgoal, bowling)
+            skyGrad.addColorStop(0, '#0a162e');
+            skyGrad.addColorStop(0.38, '#1b355c');
+            skyGrad.addColorStop(0.74, '#435e87');
+            skyGrad.addColorStop(1, '#c48365');
+          }
           gfx.fillStyle = skyGrad;
           gfx.fillRect(0, 0, W, marginT + fieldH);
-          gfx.fillStyle = d.mode === 'pitching' ? '#3a7a26' : d.mode === 'bowling' ? '#a47b4f' : d.mode === 'golf' ? '#5fa83a' : d.mode === 'volleyball' ? '#b8854d' : '#c8965a';
+
+          // Stadium floodlight radial cones / indoor arena spotlights
+          if (typeof gfx.createRadialGradient === 'function') {
+            var lights = isIndoor ? [[W * 0.28, 12], [W * 0.72, 12]] : [[W * 0.18, 18], [W * 0.82, 18]];
+            lights.forEach(function(lt) {
+              var lg = gfx.createRadialGradient(lt[0], lt[1], 3, lt[0], lt[1], isIndoor ? 190 : 210);
+              lg.addColorStop(0, isIndoor ? 'rgba(254, 243, 199, 0.26)' : 'rgba(254, 249, 195, 0.28)');
+              lg.addColorStop(0.35, isIndoor ? 'rgba(251, 191, 36, 0.08)' : 'rgba(186, 230, 253, 0.10)');
+              lg.addColorStop(1, 'rgba(0, 0, 0, 0)');
+              gfx.fillStyle = lg;
+              gfx.fillRect(0, 0, W, marginT + fieldH);
+            });
+            // Warm twilight horizon glow band for outdoor modes
+            if (!isIndoor) {
+              var horGlow = gfx.createRadialGradient(W * 0.52, marginT + fieldH, 10, W * 0.52, marginT + fieldH, W * 0.55);
+              horGlow.addColorStop(0, 'rgba(251, 146, 60, 0.22)');
+              horGlow.addColorStop(0.55, 'rgba(244, 114, 182, 0.06)');
+              horGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+              gfx.fillStyle = horGlow;
+              gfx.fillRect(0, marginT + fieldH * 0.35, W, fieldH * 0.65);
+            }
+          }
+
+          // Distant stadium deck / treeline silhouette along the horizon
+          gfx.fillStyle = isIndoor ? 'rgba(15, 23, 42, 0.22)' : 'rgba(15, 23, 42, 0.28)';
+          gfx.beginPath();
+          gfx.moveTo(0, marginT + fieldH);
+          for (var sx = 0; sx <= W; sx += 32) {
+            var sh = isIndoor
+              ? 16 + ((sx / 32) % 2) * 5
+              : (d.mode === 'golf' ? 10 + Math.sin(sx * 0.04) * 7 + Math.cos(sx * 0.09) * 4 : 18 + Math.sin(sx * 0.025) * 6);
+            gfx.lineTo(sx, marginT + fieldH - sh);
+          }
+          gfx.lineTo(W, marginT + fieldH);
+          gfx.closePath();
+          gfx.fill();
+
+          // Ground band with subtle depth gradient
+          var gTopCol = d.mode === 'pitching' || d.mode === 'fieldgoal' ? '#3d8128' : d.mode === 'bowling' ? '#ad8253' : d.mode === 'golf' ? '#58a336' : d.mode === 'volleyball' ? '#be894f' : '#cc995d';
+          var gBotCol = d.mode === 'pitching' || d.mode === 'fieldgoal' ? '#1f4b16' : d.mode === 'bowling' ? '#6d4c2c' : d.mode === 'golf' ? '#2e661d' : d.mode === 'volleyball' ? '#7a522a' : '#855c31';
+          var gGrad = gfx.createLinearGradient(0, marginT + fieldH, 0, H);
+          gGrad.addColorStop(0, gTopCol);
+          gGrad.addColorStop(1, gBotCol);
+          gfx.fillStyle = gGrad;
           gfx.fillRect(0, marginT + fieldH, W, H - (marginT + fieldH));
+          // Horizon crisp rim line
+          gfx.strokeStyle = isIndoor ? 'rgba(255,255,255,0.22)' : 'rgba(254, 243, 199, 0.28)';
+          gfx.lineWidth = 1;
+          gfx.beginPath(); gfx.moveTo(0, marginT + fieldH); gfx.lineTo(W, marginT + fieldH); gfx.stroke();
           if (d.mode === 'freethrow') {
-            // Hardwood plank lines for the gym floor
+            // Hardwood plank lines + soft arena floor sheen
             gfx.strokeStyle = 'rgba(0,0,0,0.18)';
             gfx.lineWidth = 1;
             for (var hp = 0; hp < W; hp += 22) {
@@ -4389,6 +4458,7 @@ window.StemLab = window.StemLab || {
 
         // No-spin reference trajectory (gray, dashed) — only when there's a result
         var lr = d.lastResult;
+        var noSpinRef = null;
         if (lr && d.showPhysics) {
           var noSpin = simulatePitch({
             ball: modeMeta.ball,
@@ -4405,7 +4475,8 @@ window.StemLab = window.StemLab || {
               return p ? p.g : G;
             })()
           });
-          gfx.strokeStyle = 'rgba(148, 163, 184, 0.6)';
+          noSpinRef = noSpin;
+          gfx.strokeStyle = 'rgba(148, 163, 184, 0.65)';
           gfx.lineWidth = 1.5;
           gfx.setLineDash([4, 4]);
           gfx.beginPath();
@@ -4419,39 +4490,167 @@ window.StemLab = window.StemLab || {
           gfx.setLineDash([]);
         }
 
-        // Actual trajectory (color by outcome — palette per mode).
+        // Actual trajectory — glowing spin-colored Magnus ribbon, airflow vortex wake & impact burst
         if (lr) {
-          // Use the same sport-aware palette as the result card so a success
-          // never appears as a failure color in cricket, golf, or volleyball.
           var trajColor = outcomeColor(lr.location);
-          gfx.strokeStyle = trajColor;
-          gfx.lineWidth = 2.5;
-          gfx.beginPath();
+          var spinRpmVal = Number(displayTrial.spinRpm) || 0;
+          var spinAxisVal = ((Number(displayTrial.spinAxisDeg) || 0) % 360 + 360) % 360;
+          // Spin-colored Magnus accent: cyan = backspin/lift, magenta = topspin/drop, violet = curve/sidespin, gold = low-spin
+          var spinGlowCol = spinRpmVal < 200 ? '#fbbf24'
+            : (spinAxisVal <= 45 || spinAxisVal >= 315) ? '#38bdf8'
+            : (spinAxisVal >= 135 && spinAxisVal <= 225) ? '#f472b6'
+            : '#a78bfa';
           var renderUpTo = d.replayActive ? Math.floor(lr.samples.length * Math.min(1, d.replayT)) : lr.samples.length;
+          var visPts = [];
           for (var j = 0; j < renderUpTo; j++) {
             var sj = lr.samples[j];
             if (sj.z > renderMaxZ + 0.5) break;
-            var pj = worldToCanvas(sj.z, sampleB(sj));
-            if (j === 0) gfx.moveTo(pj[0], pj[1]); else gfx.lineTo(pj[0], pj[1]);
+            visPts.push({ s: sj, p: worldToCanvas(sj.z, sampleB(sj)) });
           }
-          gfx.shadowColor = trajColor;
-          gfx.shadowBlur = 6;
-          gfx.stroke();
-          gfx.shadowBlur = 0;
-          // Ball at the leading edge of the trajectory
-          if (renderUpTo > 0) {
-            var ballSample = lr.samples[Math.min(renderUpTo - 1, lr.samples.length - 1)];
-            var bp = worldToCanvas(ballSample.z, sampleB(ballSample));
-            gfx.shadowColor = trajColor;
-            gfx.shadowBlur = 10;
-            gfx.fillStyle = '#fafafa';
+
+          // Translucent glowing Magnus deflection ribbon between curved path & no-spin path
+          if (noSpinRef && noSpinRef.samples && noSpinRef.samples.length > 2 && visPts.length > 2 && spinRpmVal >= 120) {
+            var nsPts = [];
+            for (var ni = 0; ni < noSpinRef.samples.length; ni++) {
+              var ns = noSpinRef.samples[ni];
+              if (ns.z > visPts[visPts.length - 1].s.z + 0.15 || ns.z > renderMaxZ + 0.5) break;
+              nsPts.push(worldToCanvas(ns.z, sampleB(ns)));
+            }
+            if (nsPts.length > 2) {
+              var ribGrad = gfx.createLinearGradient(visPts[0].p[0], visPts[0].p[1], visPts[visPts.length - 1].p[0], visPts[visPts.length - 1].p[1]);
+              ribGrad.addColorStop(0, spinGlowCol + '08');
+              ribGrad.addColorStop(0.5, spinGlowCol + '22');
+              ribGrad.addColorStop(1, spinGlowCol + '3d');
+              gfx.save();
+              gfx.fillStyle = ribGrad;
+              gfx.beginPath();
+              gfx.moveTo(visPts[0].p[0], visPts[0].p[1]);
+              for (var vi = 1; vi < visPts.length; vi++) gfx.lineTo(visPts[vi].p[0], visPts[vi].p[1]);
+              for (var nri = nsPts.length - 1; nri >= 0; nri--) gfx.lineTo(nsPts[nri][0], nsPts[nri][1]);
+              gfx.closePath();
+              gfx.fill();
+              gfx.restore();
+            }
+          }
+
+          // Outer spin-tinted luminous ribbon + crisp outcome core trace
+          if (visPts.length > 1) {
+            gfx.save();
+            gfx.lineCap = 'round'; gfx.lineJoin = 'round';
+            // Outer Magnus ribbon glow
+            gfx.strokeStyle = spinGlowCol;
+            gfx.globalAlpha = 0.28;
+            gfx.lineWidth = 8.5;
             gfx.beginPath();
-            gfx.arc(bp[0], bp[1], 5, 0, Math.PI * 2);
-            gfx.fill();
-            gfx.shadowBlur = 0;
-            gfx.strokeStyle = '#dc2626';
-            gfx.lineWidth = 1;
+            visPts.forEach(function(pt, idx) { if (idx === 0) gfx.moveTo(pt.p[0], pt.p[1]); else gfx.lineTo(pt.p[0], pt.p[1]); });
             gfx.stroke();
+            // Mid luminous core
+            gfx.globalAlpha = 0.96;
+            gfx.strokeStyle = trajColor;
+            gfx.lineWidth = 2.8;
+            gfx.shadowColor = spinGlowCol;
+            gfx.shadowBlur = 8;
+            gfx.beginPath();
+            visPts.forEach(function(pt, idx) { if (idx === 0) gfx.moveTo(pt.p[0], pt.p[1]); else gfx.lineTo(pt.p[0], pt.p[1]); });
+            gfx.stroke();
+            gfx.shadowBlur = 0;
+            // Subtle specular inner filament along the ribbon
+            gfx.strokeStyle = 'rgba(255,255,255,0.45)';
+            gfx.lineWidth = 1;
+            gfx.beginPath();
+            visPts.forEach(function(pt, idx) { if (idx === 0) gfx.moveTo(pt.p[0], pt.p[1]); else gfx.lineTo(pt.p[0], pt.p[1]); });
+            gfx.stroke();
+            gfx.restore();
+          }
+
+          // Crisp target impact rings & deterministic turf/chalk dust burst at trajectory end
+          var atImpactEnd = visPts.length > 1 && (!d.replayActive || renderUpTo >= lr.samples.length - 1);
+          if (atImpactEnd) {
+            var impPt = visPts[visPts.length - 1];
+            var ix = impPt.p[0], iy = impPt.p[1];
+            gfx.save();
+            // Concentric target impact rings (elliptical perspective on ground/pitch, circular in strike zone)
+            var isGroundImpact = isTopDown || impPt.s.y <= 0.35;
+            var rx1 = isGroundImpact ? 14 : 11, ry1 = isGroundImpact ? 5.5 : 11;
+            var rx2 = isGroundImpact ? 24 : 18, ry2 = isGroundImpact ? 9.5 : 18;
+            gfx.strokeStyle = trajColor;
+            gfx.globalAlpha = 0.72; gfx.lineWidth = 1.8;
+            gfx.beginPath(); gfx.ellipse(ix, iy, rx1, ry1, 0, 0, Math.PI * 2); gfx.stroke();
+            gfx.globalAlpha = 0.36; gfx.lineWidth = 1.2;
+            gfx.beginPath(); gfx.ellipse(ix, iy, rx2, ry2, 0, 0, Math.PI * 2); gfx.stroke();
+            // Deterministic chalk/turf dust burst puffs around impact point
+            var dustCol = isTopDown || d.mode === 'golf' || d.mode === 'fieldgoal' ? '#d9f99d'
+              : d.mode === 'pitching' || d.mode === 'bowling' ? '#fde68a' : '#e0f2fe';
+            for (var dp = 0; dp < 8; dp++) {
+              var da = (dp / 8) * Math.PI * 2 + ((ix + iy) % 1.2);
+              var dr = 8 + (dp % 3) * 5;
+              var dpx = ix + Math.cos(da) * dr * (isGroundImpact ? 1.25 : 0.9);
+              var dpy = iy + Math.sin(da) * dr * (isGroundImpact ? 0.48 : 0.9) - (isGroundImpact && !isTopDown ? 3 : 0);
+              gfx.fillStyle = dustCol;
+              gfx.globalAlpha = 0.38 - (dp % 3) * 0.08;
+              gfx.beginPath(); gfx.arc(dpx, dpy, 2.4 - (dp % 2) * 0.6, 0, Math.PI * 2); gfx.fill();
+            }
+            gfx.restore();
+          }
+
+          // Ball at the leading edge + curved airflow vortex wake streamlines around the spinning ball
+          if (visPts.length > 0) {
+            var lastVis = visPts[visPts.length - 1];
+            var prevVis = visPts.length > 2 ? visPts[visPts.length - 3] : visPts[0];
+            var bp = lastVis.p;
+            var velAng = Math.atan2(bp[1] - prevVis.p[1], bp[0] - prevVis.p[0]);
+            var wakeDir = velAng + Math.PI; // upstream behind ball
+            var perpAng = velAng + Math.PI / 2;
+            var magnusSign = (spinAxisVal > 90 && spinAxisVal < 270) ? 1 : -1;
+            // Airflow vortex wake streamlines curving past the spinning ball
+            if (visPts.length > 2) {
+              gfx.save();
+              gfx.lineCap = 'round';
+              [-1, 0, 1].forEach(function(lane) {
+                var off = lane * 7.5;
+                var asym = lane === magnusSign ? 0.72 : 1.18;
+                var startX = bp[0] + Math.cos(velAng) * 7 + Math.cos(perpAng) * off * asym;
+                var startY = bp[1] + Math.sin(velAng) * 7 + Math.sin(perpAng) * off * asym;
+                var midX = bp[0] + Math.cos(wakeDir) * 14 + Math.cos(perpAng) * (off * 1.15);
+                var midY = bp[1] + Math.sin(wakeDir) * 14 + Math.sin(perpAng) * (off * 1.15);
+                var curlShift = (spinRpmVal >= 200 ? magnusSign * 6 : 0) + lane * 4;
+                var endX = bp[0] + Math.cos(wakeDir) * 32 + Math.cos(perpAng) * (off + curlShift);
+                var endY = bp[1] + Math.sin(wakeDir) * 32 + Math.sin(perpAng) * (off + curlShift);
+                gfx.strokeStyle = lane === 0 ? 'rgba(224,242,254,0.48)' : (spinGlowCol + (lane === magnusSign ? '88' : '48'));
+                gfx.lineWidth = lane === magnusSign ? 1.6 : 1.1;
+                gfx.beginPath();
+                gfx.moveTo(startX, startY);
+                gfx.quadraticCurveTo(midX, midY, endX, endY);
+                gfx.stroke();
+              });
+              // Trailing vortex eddy curl when spin is significant
+              if (spinRpmVal >= 400) {
+                var vx = bp[0] + Math.cos(wakeDir) * 20 + Math.cos(perpAng) * (magnusSign * 5);
+                var vy = bp[1] + Math.sin(wakeDir) * 20 + Math.sin(perpAng) * (magnusSign * 5);
+                gfx.strokeStyle = spinGlowCol;
+                gfx.globalAlpha = 0.52;
+                gfx.lineWidth = 1.1;
+                gfx.beginPath();
+                gfx.arc(vx, vy, 4.5, wakeDir, wakeDir + Math.PI * 1.45);
+                gfx.stroke();
+              }
+              gfx.restore();
+            }
+            // Ball halo + crisp spinning ball with seam arc
+            if (typeof gfx.createRadialGradient === 'function') {
+              var bGlow = gfx.createRadialGradient(bp[0], bp[1], 1, bp[0], bp[1], 14);
+              bGlow.addColorStop(0, spinGlowCol + '88');
+              bGlow.addColorStop(0.5, trajColor + '33');
+              bGlow.addColorStop(1, 'rgba(0,0,0,0)');
+              gfx.fillStyle = bGlow;
+              gfx.beginPath(); gfx.arc(bp[0], bp[1], 14, 0, Math.PI * 2); gfx.fill();
+            }
+            gfx.fillStyle = '#fafafa';
+            gfx.beginPath(); gfx.arc(bp[0], bp[1], 5.4, 0, Math.PI * 2); gfx.fill();
+            gfx.strokeStyle = '#dc2626'; gfx.lineWidth = 1.2; gfx.stroke();
+            // Subtle curved seam indicating ball rotation
+            gfx.strokeStyle = 'rgba(220,38,38,0.75)'; gfx.lineWidth = 0.9;
+            gfx.beginPath(); gfx.arc(bp[0] - 1.2, bp[1], 3.2, -0.7, 0.7); gfx.stroke();
           }
         }
       }, [
@@ -4473,8 +4672,17 @@ window.StemLab = window.StemLab || {
         if (!gfx) return;
         gfx.clearRect(0, 0, W, H);
         var bg = gfx.createLinearGradient(0, 0, 0, H);
-        bg.addColorStop(0, '#071426'); bg.addColorStop(0.62, '#10263a'); bg.addColorStop(1, '#183422');
+        bg.addColorStop(0, '#050d1f'); bg.addColorStop(0.42, '#0f2342'); bg.addColorStop(0.66, '#383a56'); bg.addColorStop(0.76, '#183726'); bg.addColorStop(1, '#0d2217');
         gfx.fillStyle = bg; gfx.fillRect(0, 0, W, H);
+        if (typeof gfx.createRadialGradient === 'function') {
+          [[W * 0.22, 24], [W * 0.78, 24]].forEach(function(fl) {
+            var fg = gfx.createRadialGradient(fl[0], fl[1], 4, fl[0], fl[1], 200);
+            fg.addColorStop(0, 'rgba(254, 249, 195, 0.20)');
+            fg.addColorStop(0.45, 'rgba(56, 189, 248, 0.06)');
+            fg.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            gfx.fillStyle = fg; gfx.fillRect(0, 0, W, H * 0.72);
+          });
+        }
 
         var references = showImmersiveReferences ? activeReferenceList() : [];
         var sampleSets = [];
@@ -4577,11 +4785,41 @@ window.StemLab = window.StemLab || {
           if(!result||!result.samples||!result.samples.length)return;
           var samples=result.samples, visible=samples.length;
           if(current&&d.replayActive)visible=Math.max(1,Math.floor(samples.length*Math.max(0,Math.min(1,d.replayT||0))));
-          gfx.save();gfx.strokeStyle=color;gfx.lineWidth=width;gfx.setLineDash(dashed?[8,6]:[]);gfx.lineCap='round';gfx.lineJoin='round';gfx.shadowColor=color;gfx.shadowBlur=current?7:2;gfx.beginPath();
+          // Projected ground shadow trace & translucent flight curtain for 3D depth
+          if(current&&visible>1){
+            gfx.save();
+            gfx.strokeStyle='rgba(15,23,42,0.55)';gfx.lineWidth=3;gfx.beginPath();var sStarted=false;
+            for(var gi=0;gi<visible;gi++){var gs=samples[gi],gp=project({x:Number(gs.x)||0,y:0.01,z:Number(gs.z)||0});if(!gp)continue;if(!sStarted){gfx.moveTo(gp[0],gp[1]);sStarted=true;}else gfx.lineTo(gp[0],gp[1]);}
+            if(sStarted)gfx.stroke();
+            var dropStep=Math.max(2,Math.floor(visible/10));
+            gfx.strokeStyle=color;gfx.globalAlpha=0.18;gfx.lineWidth=1;
+            for(var di=dropStep;di<visible;di+=dropStep){var ds=samples[di];drawSegment({x:Number(ds.x)||0,y:0.01,z:Number(ds.z)||0},{x:Number(ds.x)||0,y:Math.max(0,Number(ds.y)||0),z:Number(ds.z)||0});}
+            gfx.restore();
+            // Outer Magnus ribbon glow underlay
+            gfx.save();gfx.strokeStyle=color;gfx.globalAlpha=0.26;gfx.lineWidth=width+6;gfx.lineCap='round';gfx.lineJoin='round';gfx.beginPath();var rStarted=false;
+            for(var ri=0;ri<visible;ri++){var rs=samples[ri],rp=project({x:Number(rs.x)||0,y:Math.max(0,Number(rs.y)||0),z:Number(rs.z)||0});if(!rp)continue;if(!rStarted){gfx.moveTo(rp[0],rp[1]);rStarted=true;}else gfx.lineTo(rp[0],rp[1]);}
+            if(rStarted)gfx.stroke();gfx.restore();
+          }
+          gfx.save();gfx.strokeStyle=color;gfx.lineWidth=width;gfx.setLineDash(dashed?[8,6]:[]);gfx.lineCap='round';gfx.lineJoin='round';gfx.shadowColor=color;gfx.shadowBlur=current?9:2;gfx.beginPath();
           var drew=false;
           for(var si=0;si<visible;si++){var s=samples[si],p=project({x:Number(s.x)||0,y:Math.max(0,Number(s.y)||0),z:Number(s.z)||0});if(!p)continue;if(!drew){gfx.moveTo(p[0],p[1]);drew=true;}else gfx.lineTo(p[0],p[1]);}
           if(drew)gfx.stroke();gfx.restore();
-          if(current&&visible>0){var ball=samples[Math.min(visible-1,samples.length-1)],bp=project({x:Number(ball.x)||0,y:Math.max(0,Number(ball.y)||0),z:Number(ball.z)||0});if(bp){gfx.fillStyle='#fff';gfx.strokeStyle=color;gfx.lineWidth=2;gfx.beginPath();gfx.arc(bp[0],bp[1],5,0,Math.PI*2);gfx.fill();gfx.stroke();}}
+          if(current&&visible>0){
+            var ball=samples[Math.min(visible-1,samples.length-1)],bp=project({x:Number(ball.x)||0,y:Math.max(0,Number(ball.y)||0),z:Number(ball.z)||0});
+            if(bp){
+              if(typeof gfx.createRadialGradient==='function'){
+                var bg3=gfx.createRadialGradient(bp[0],bp[1],1,bp[0],bp[1],13);
+                bg3.addColorStop(0,color+'88');bg3.addColorStop(1,'rgba(0,0,0,0)');
+                gfx.fillStyle=bg3;gfx.beginPath();gfx.arc(bp[0],bp[1],13,0,Math.PI*2);gfx.fill();
+              }
+              gfx.fillStyle='#fff';gfx.strokeStyle=color;gfx.lineWidth=2;gfx.beginPath();gfx.arc(bp[0],bp[1],5.2,0,Math.PI*2);gfx.fill();gfx.stroke();
+            }
+            if(!d.replayActive||visible>=samples.length-1){
+              var endS=samples[samples.length-1];
+              drawRing(Number(endS.x)||0,0.03,Number(endS.z)||0,Math.max(0.28,maxZ*0.011),color);
+              drawRing(Number(endS.x)||0,0.03,Number(endS.z)||0,Math.max(0.52,maxZ*0.02),'rgba(254,240,138,0.55)');
+            }
+          }
         }
         function drawPhysicsAnnotations(result){
           if(!result||!result.samples||!result.samples.length)return;

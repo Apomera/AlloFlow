@@ -468,61 +468,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
   }
 
   function drawSonarPulse(c, cx, cy, radius, maxRadius, isDark) {
-    // Multi-ring wavefront visualization. A real sonar pulse isn't a single
-    // ring traveling outward — it's a continuous sound wave with a coherent
-    // wavefront. We render the leading edge bright + three trailing
-    // concentric rings spaced behind it to suggest the wave's continuous
-    // emission, plus a soft radial-gradient fill for the "energy zone" the
-    // wave currently occupies. Far more readable than a thin outline at a
-    // glance — students can tell direction of expansion + see how the wave
-    // fades with distance (inverse-square spreading).
+    // Multi-ring ultrasonic wavefront visualization with luminous cyan-indigo
+    // leading edge, harmonic interference trails, and radial energy annulus.
     var lifeFrac = radius / maxRadius;
-    var primaryAlpha = Math.max(0, 1 - lifeFrac) * 0.85;
+    var primaryAlpha = Math.max(0, 1 - lifeFrac) * 0.90;
     if (primaryAlpha <= 0.01) return;
-    // ── Energy fill: faint radial gradient bounded by the leading wavefront ──
-    // Brightest at the leading edge, fading toward the center. Visualizes the
-    // "where the sound is right now" annulus, not just the front line.
-    var innerR = Math.max(0, radius - 18);
+    // ── Energy fill: smooth radial gradient bounded by the leading wavefront ──
+    var innerR = Math.max(0, radius - 26);
     var grad = c.createRadialGradient(cx, cy, innerR, cx, cy, radius);
-    var fillBase = isDark ? '165,180,252' : '99,102,241';
+    var fillBase = isDark ? '56,189,248' : '79,70,229';
+    var coreBase = isDark ? '165,243,252' : '129,140,248';
     grad.addColorStop(0, 'rgba(' + fillBase + ',0)');
-    grad.addColorStop(0.85, 'rgba(' + fillBase + ',' + (primaryAlpha * 0.15).toFixed(3) + ')');
-    grad.addColorStop(1, 'rgba(' + fillBase + ',' + (primaryAlpha * 0.30).toFixed(3) + ')');
+    grad.addColorStop(0.76, 'rgba(' + fillBase + ',' + (primaryAlpha * 0.14).toFixed(3) + ')');
+    grad.addColorStop(0.95, 'rgba(' + coreBase + ',' + (primaryAlpha * 0.34).toFixed(3) + ')');
+    grad.addColorStop(1, 'rgba(' + coreBase + ',0)');
     c.fillStyle = grad;
     c.beginPath();
     c.arc(cx, cy, radius, 0, Math.PI * 2);
     c.fill();
-    // ── Leading wavefront — bright, thick line at the current radius ──
-    var ledColor = isDark ? '129,140,248' : '79,70,229';
-    c.strokeStyle = 'rgba(' + ledColor + ',' + primaryAlpha.toFixed(3) + ')';
-    c.lineWidth = 2.4;
-    c.shadowColor = 'rgba(' + ledColor + ',0.6)';
-    c.shadowBlur = 4;
+    // ── Outer bloom halo + crisp luminous leading wavefront ──
+    var ledColor = isDark ? '103,232,249' : '79,70,229';
+    c.save();
+    c.strokeStyle = 'rgba(' + fillBase + ',' + (primaryAlpha * 0.36).toFixed(3) + ')';
+    c.lineWidth = 5.2;
     c.beginPath();
     c.arc(cx, cy, radius, 0, Math.PI * 2);
     c.stroke();
-    c.shadowBlur = 0;
-    // ── Trailing rings — three thinner concentric circles spaced 8px behind ──
-    // Suggests the continuous wave emission rather than a single front.
+    c.strokeStyle = 'rgba(' + ledColor + ',' + primaryAlpha.toFixed(3) + ')';
+    c.lineWidth = 2.2;
+    c.beginPath();
+    c.arc(cx, cy, radius, 0, Math.PI * 2);
+    c.stroke();
+    c.restore();
+    // ── Trailing harmonic rings spaced behind the leading click front ──
     for (var ri = 1; ri <= 3; ri++) {
-      var trailR = radius - ri * 8;
+      var trailR = radius - ri * 9;
       if (trailR < 4) break;
-      var trailAlpha = primaryAlpha * (0.5 - ri * 0.13);
+      var trailAlpha = primaryAlpha * (0.52 - ri * 0.13);
       if (trailAlpha <= 0) continue;
-      c.strokeStyle = 'rgba(' + fillBase + ',' + trailAlpha.toFixed(3) + ')';
-      c.lineWidth = 1.2 - ri * 0.2;
+      c.strokeStyle = 'rgba(' + (ri === 1 ? coreBase : fillBase) + ',' + trailAlpha.toFixed(3) + ')';
+      c.lineWidth = 1.3 - ri * 0.22;
       c.beginPath();
       c.arc(cx, cy, trailR, 0, Math.PI * 2);
       c.stroke();
     }
-    // ── Pulse origin marker (only on first ~20% of expansion) ──
-    // Brief bright dot at the source showing where the pulse came from —
-    // fades quickly so it doesn't distract during the expansion.
-    if (lifeFrac < 0.20) {
-      var originAlpha = (1 - lifeFrac / 0.20) * 0.9;
-      c.fillStyle = 'rgba(' + ledColor + ',' + originAlpha.toFixed(3) + ')';
+    // ── Pulse origin flash (first 22% of expansion) ──
+    if (lifeFrac < 0.22) {
+      var originAlpha = (1 - lifeFrac / 0.22) * 0.92;
+      var oGrad = c.createRadialGradient(cx, cy, 0, cx, cy, 9);
+      oGrad.addColorStop(0, 'rgba(224,242,254,' + originAlpha.toFixed(3) + ')');
+      oGrad.addColorStop(1, 'rgba(' + ledColor + ',0)');
+      c.fillStyle = oGrad;
       c.beginPath();
-      c.arc(cx, cy, 3, 0, Math.PI * 2);
+      c.arc(cx, cy, 9, 0, Math.PI * 2);
       c.fill();
     }
   }
@@ -1041,9 +1039,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             });
           })();
 
-          // Ambient light (very dim — cave is dark)
-          eng.ambient = new THREE.AmbientLight(0x111122, 0.15);
+          // Ambient & subtle subterranean depth lighting (cave stays dark until pulsed)
+          eng.ambient = new THREE.AmbientLight(0x111528, 0.18);
           eng.scene.add(eng.ambient);
+          if (typeof THREE.HemisphereLight === 'function') {
+            eng.hemi = new THREE.HemisphereLight(0x1e2948, 0x050814, 0.22);
+            eng.scene.add(eng.hemi);
+          }
+
+          // Subtle drifting cave mineral / bioluminescent dust motes (GLSL shader with HC bypass)
+          var _caveIsHc = !!(isContrast || (typeof document !== 'undefined' && document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')));
+          eng._isHc = _caveIsHc;
+          eng._dustPoints = null;
+          eng._dustUniforms = null;
+          eng._shaderTime = 1.4;
+          if (!_caveIsHc && typeof THREE.BufferGeometry === 'function' && typeof THREE.Float32BufferAttribute === 'function' && typeof THREE.Points === 'function') {
+            var dCount = 110;
+            var dPos = new Float32Array(dCount * 3);
+            var dSeed = new Float32Array(dCount);
+            var dTone = new Float32Array(dCount);
+            for (var di = 0; di < dCount; di++) {
+              dPos[di * 3] = ((di * 73) % 180) * 0.1 - 9;
+              dPos[di * 3 + 1] = 0.4 + ((di * 41) % 52) * 0.1;
+              dPos[di * 3 + 2] = ((di * 97) % 340) * 0.1 - 17;
+              dSeed[di] = (di * 0.6180339) % 1;
+              dTone[di] = ((di * 37) % 100) * 0.01;
+            }
+            var dGeo = new THREE.BufferGeometry();
+            dGeo.setAttribute('position', new THREE.Float32BufferAttribute(dPos, 3));
+            dGeo.setAttribute('aSeed', new THREE.Float32BufferAttribute(dSeed, 1));
+            dGeo.setAttribute('aTone', new THREE.Float32BufferAttribute(dTone, 1));
+            if (typeof THREE.ShaderMaterial === 'function') {
+              eng._dustUniforms = {
+                uTime: { value: 1.4 },
+                uSonarFlash: { value: 0.0 }
+              };
+              var dMat = new THREE.ShaderMaterial({
+                uniforms: eng._dustUniforms,
+                vertexShader: [
+                  'uniform float uTime;',
+                  'uniform float uSonarFlash;',
+                  'attribute float aSeed;',
+                  'attribute float aTone;',
+                  'varying float vTone;',
+                  'varying float vGlow;',
+                  'void main() {',
+                  '  vTone = aTone;',
+                  '  vec3 p = position;',
+                  '  float ph = aSeed * 6.2831853;',
+                  '  p.x += sin(uTime * 0.34 + ph) * 0.24;',
+                  '  p.y += sin(uTime * 0.42 + ph * 1.7) * 0.18;',
+                  '  p.z += cos(uTime * 0.28 + ph * 1.2) * 0.24;',
+                  '  vGlow = (0.48 + 0.52 * sin(uTime * (1.4 + aSeed * 2.2) + ph)) * (1.0 + uSonarFlash * 1.15);',
+                  '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);',
+                  '  float sz = (18.0 + aSeed * 16.0) * (1.0 + uSonarFlash * 0.35);',
+                  '  gl_PointSize = clamp(sz / max(1.0, -mvPos.z), 1.8, 10.0);',
+                  '  gl_Position = projectionMatrix * mvPos;',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'varying float vTone;',
+                  'varying float vGlow;',
+                  'void main() {',
+                  '  float d = length(gl_PointCoord - vec2(0.5));',
+                  '  if (d > 0.5) discard;',
+                  '  float core = smoothstep(0.5, 0.05, d);',
+                  '  vec3 cyanMote = vec3(0.40, 0.91, 0.98);',
+                  '  vec3 amethystMote = vec3(0.68, 0.52, 0.99);',
+                  '  vec3 emeraldMote = vec3(0.24, 0.92, 0.68);',
+                  '  vec3 col = vTone < 0.5 ? mix(cyanMote, amethystMote, vTone * 2.0) : mix(amethystMote, emeraldMote, (vTone - 0.5) * 2.0);',
+                  '  gl_FragColor = vec4(col, clamp(core * core * 0.52 * vGlow, 0.0, 0.92));',
+                  '}'
+                ].join('\n'),
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+              });
+              eng._dustPoints = new THREE.Points(dGeo, dMat);
+              eng.scene.add(eng._dustPoints);
+            } else if (typeof THREE.PointsMaterial === 'function') {
+              var dCv = document.createElement('canvas');
+              dCv.width = 32; dCv.height = 32;
+              var dCx = dCv.getContext && dCv.getContext('2d');
+              if (dCx) {
+                var dg = dCx.createRadialGradient(16, 16, 0, 16, 16, 15);
+                dg.addColorStop(0, 'rgba(165,243,252,0.85)');
+                dg.addColorStop(0.5, 'rgba(99,102,241,0.32)');
+                dg.addColorStop(1, 'rgba(99,102,241,0)');
+                dCx.fillStyle = dg;
+                dCx.fillRect(0, 0, 32, 32);
+                var dTex = new THREE.CanvasTexture(dCv);
+                var dMatFb = new THREE.PointsMaterial({
+                  map: dTex, size: 0.16, transparent: true, opacity: 0.34,
+                  depthWrite: false, blending: THREE.AdditiveBlending
+                });
+                eng._dustPoints = new THREE.Points(dGeo, dMatFb);
+                eng.scene.add(eng._dustPoints);
+              }
+            }
+          }
 
           // ── Build cave geometry ──
           // Floor
@@ -1099,14 +1193,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           var chFloor = new THREE.Mesh(new THREE.PlaneGeometry(10, 14), new THREE.MeshStandardMaterial({ color: 0x15152a, roughness: 0.9 }));
           chFloor.rotation.x = -Math.PI / 2; chFloor.position.set(14, 0.01, 2);
           eng.scene.add(chFloor);
-          // Glowing crystal (landmark in chamber)
-          var crystalGeo = new THREE.ConeGeometry(0.3, 1.5, 5);
-          var crystalMat = new THREE.MeshStandardMaterial({ color: 0x7c3aed, emissive: 0x4c1d95, emissiveIntensity: 0.7, roughness: 0.2, metalness: 0.5 }); // the "glowing crystal" now glows
+          // Glowing amethyst crystal cluster (landmark in side chamber) with GLSL Fresnel subsurface & facet refraction
+          var crystalGeo = new THREE.ConeGeometry(0.32, 1.65, 6);
+          var crystalMat = new THREE.MeshStandardMaterial({ color: 0x8b5cf6, emissive: 0x5b21b6, emissiveIntensity: 0.85, roughness: 0.18, metalness: 0.55 });
+          eng._crystalUniforms = { uTime: { value: 1.4 }, uSonarResonance: { value: 0.0 } };
+          if (!_caveIsHc && typeof crystalMat.onBeforeCompile === 'function') {
+            crystalMat.customProgramCacheKey = function() { return 'allo_echo_amethyst_sss_v1'; };
+            crystalMat.onBeforeCompile = function(shader) {
+              shader.uniforms.uTime = eng._crystalUniforms.uTime;
+              shader.uniforms.uSonarResonance = eng._crystalUniforms.uSonarResonance;
+              shader.vertexShader = shader.vertexShader
+                .replace('#include <common>', '#include <common>\nvarying vec3 vCrysPos;')
+                .replace('#include <begin_vertex>', '#include <begin_vertex>\nvCrysPos = transformed;');
+              shader.fragmentShader = shader.fragmentShader
+                .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uSonarResonance;\nvarying vec3 vCrysPos;')
+                .replace('#include <lights_fragment_end>', [
+                  '#include <lights_fragment_end>',
+                  'vec3 crN = normalize(normal);',
+                  'vec3 crV = normalize(geometry.viewDir);',
+                  'float crFres = pow(1.0 - clamp(dot(crN, crV), 0.0, 1.0), 2.35);',
+                  'float crFacet = 0.5 + 0.5 * sin(vCrysPos.y * 14.0 - uTime * 1.9 + vCrysPos.x * 10.0 - vCrysPos.z * 8.0);',
+                  'float crCore = smoothstep(-0.8, 0.8, vCrysPos.y);',
+                  'vec3 sssCol = mix(vec3(0.45, 0.16, 0.88), vec3(0.82, 0.56, 1.0), crFacet * 0.65 + crCore * 0.35);',
+                  'vec3 sonarTint = vec3(0.22, 0.85, 0.98) * (uSonarResonance * (0.45 + 0.75 * crFres));',
+                  'totalEmissiveRadiance += sssCol * (crFres * 0.95 + 0.24 * crFacet) + sonarTint;'
+                ].join('\n'));
+            };
+          }
           var crystal = new THREE.Mesh(crystalGeo, crystalMat);
-          crystal.position.set(14, 0.75, 2); eng.scene.add(crystal);
-          // Crystal point light (very dim — just enough to hint)
-          var crystalLight = new THREE.PointLight(0x7c3aed, 0.3, 4);
-          crystalLight.position.set(14, 1.5, 2); eng.scene.add(crystalLight);
+          crystal.position.set(14, 0.82, 2); eng.scene.add(crystal);
+          eng._crystalPos = crystal.position.clone();
+          var shardGeo = new THREE.ConeGeometry(0.18, 0.95, 5);
+          var shardA = new THREE.Mesh(shardGeo, crystalMat);
+          shardA.position.set(14.32, 0.48, 2.22); shardA.rotation.set(0.22, 0, -0.32); eng.scene.add(shardA);
+          var shardB = new THREE.Mesh(shardGeo, crystalMat);
+          shardB.position.set(13.68, 0.42, 1.80); shardB.rotation.set(-0.18, 0, 0.28); eng.scene.add(shardB);
+          // Crystal point light (pulses softly in animate loop)
+          var crystalLight = new THREE.PointLight(0x8b5cf6, 0.55, 6.5);
+          crystalLight.position.set(14, 1.6, 2); eng.scene.add(crystalLight);
+          eng._crystalLight = crystalLight;
+          // Shared geometry for shimmering echo-return interference rebound arcs
+          eng._echoArcs = [];
+          eng._echoArcGeo = (!_caveIsHc && typeof THREE.SphereGeometry === 'function')
+            ? new THREE.SphereGeometry(0.62, 20, 12, 0, Math.PI * 2, 0, Math.PI * 0.40)
+            : null;
           // High-value Luna Moths in the chamber. Initialize eng.moths up
           // front — the previous ordering only created this array at line
           // ~926, AFTER this loop pushed into it via spawnInsect, so mounting
@@ -1178,13 +1308,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             { name: t('stem.echolocation.beetle', 'Beetle'), color: 0xffaa44, energy: 20, size: 0.18, speed: 0.15 }
           ];
 
-          // Spawn initial insects
+          // Spawn initial insects (with luminous sonar-reveal target halo)
           function spawnInsect(type) {
             var iType = type || INSECT_TYPES[Math.floor(Math.random() * INSECT_TYPES.length)];
-            var mGeo = new THREE.SphereGeometry(iType.size, 8, 8);
+            var mGeo = new THREE.SphereGeometry(iType.size, 12, 10);
             var mMat = new THREE.MeshBasicMaterial({ color: iType.color, transparent: true, opacity: 0.0 });
             var mMesh = new THREE.Mesh(mGeo, mMat);
             mMesh.position.set((Math.random() - 0.5) * 14, 1 + Math.random() * 4, (Math.random() - 0.5) * 28);
+            var haloGeo = new THREE.SphereGeometry(iType.size * 2.15, 10, 8);
+            var haloMat = new THREE.MeshBasicMaterial({
+              color: 0x38bdf8, transparent: true, opacity: 0.0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var haloMesh = new THREE.Mesh(haloGeo, haloMat);
+            mMesh.add(haloMesh);
+            mMesh._halo = haloMesh;
             mMesh._type = iType;
             mMesh._found = false;
             mMesh._caught = false;
@@ -1423,13 +1561,138 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               }
             }
 
-            // Emit sonar pulse (E key, costs 2 energy) — 3D expanding sphere
+            // Helper: spawn a shimmering GLSL echo-return interference arc rebounding toward the bat
+            function spawnEchoArc(originPos, colorHex) {
+              if (eng._isHc || !eng._echoArcGeo || typeof THREE.ShaderMaterial !== 'function') return;
+              if (!eng._echoArcs) eng._echoArcs = [];
+              if (eng._echoArcs.length >= 8) return;
+              var arcMat = new THREE.ShaderMaterial({
+                uniforms: {
+                  uTime: { value: eng._shaderTime },
+                  uAge: { value: 0.0 },
+                  uOpacity: { value: 0.72 },
+                  uColor: { value: new THREE.Color(colorHex) }
+                },
+                vertexShader: [
+                  'varying vec2 vUv;',
+                  'varying vec3 vNorm;',
+                  'varying vec3 vView;',
+                  'void main() {',
+                  '  vUv = uv;',
+                  '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);',
+                  '  vNorm = normalize(normalMatrix * normal);',
+                  '  vView = normalize(-mvPos.xyz);',
+                  '  gl_Position = projectionMatrix * mvPos;',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uTime;',
+                  'uniform float uAge;',
+                  'uniform float uOpacity;',
+                  'uniform vec3 uColor;',
+                  'varying vec2 vUv;',
+                  'varying vec3 vNorm;',
+                  'varying vec3 vView;',
+                  'void main() {',
+                  '  float fres = pow(1.0 - abs(dot(normalize(vNorm), normalize(vView))), 1.6);',
+                  '  float rippleA = 0.5 + 0.5 * sin(vUv.y * 30.0 - uTime * 11.0 - uAge * 14.0);',
+                  '  float rippleB = 0.5 + 0.5 * sin(vUv.x * 18.84955 + uTime * 5.0);',
+                  '  float interference = pow(rippleA, 2.0) * (0.65 + 0.35 * rippleB);',
+                  '  float capFade = smoothstep(0.0, 0.18, vUv.y) * smoothstep(1.0, 0.22, vUv.y);',
+                  '  vec3 col = mix(uColor, vec3(0.88, 0.98, 1.0), interference * 0.45 + fres * 0.25);',
+                  '  float alpha = clamp((interference * 0.72 + fres * 0.45) * capFade * uOpacity, 0.0, 0.92);',
+                  '  gl_FragColor = vec4(col, alpha);',
+                  '}'
+                ].join('\n'),
+                transparent: true,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+                blending: THREE.AdditiveBlending
+              });
+              var arcMesh = new THREE.Mesh(eng._echoArcGeo, arcMat);
+              arcMesh.position.copy(originPos);
+              var toBat = eng.camera.position.clone().sub(originPos);
+              var distToBat = toBat.length();
+              if (distToBat > 0.001) toBat.divideScalar(distToBat);
+              else toBat.set(0, 0, 1);
+              arcMesh.lookAt(eng.camera.position);
+              arcMesh.rotateX(Math.PI * 0.5);
+              arcMesh._born = t;
+              arcMesh._dir = toBat;
+              eng.scene.add(arcMesh);
+              eng._echoArcs.push(arcMesh);
+            }
+
+            // Emit sonar pulse (E key, costs 2 energy) — GLSL Doppler-shifted multi-crest ultrasonic wavefront shell
             if (eng.keys['KeyE'] && (!eng._lastPulse || t - eng._lastPulse > 0.5) && eng.energy > 2) {
               eng.energy -= 2;
               eng._lastPulse = t;
-              // Sonar sphere (wireframe sphere instead of flat ring)
-              var pulseGeo = new THREE.SphereGeometry(0.3, 16, 12);
-              var pulseMat = new THREE.MeshBasicMaterial({ color: 0x00ffaa, transparent: true, opacity: 0.6, wireframe: true });
+              var moveDeltaVec = eng.camera.position.clone().sub(prevPos);
+              var dopplerVel = dt > 0.0001 ? clamp(moveDeltaVec.dot(fwd) / (4 * dt), -1, 1) : 0;
+              var carrierFreq = 46.0 + dopplerVel * 14.0;
+              var pulseGeo = new THREE.SphereGeometry(0.3, 28, 20);
+              var pulseMat;
+              if (!eng._isHc && typeof THREE.ShaderMaterial === 'function') {
+                pulseMat = new THREE.ShaderMaterial({
+                  uniforms: {
+                    uColorApproach: { value: new THREE.Color(0x38bdf8) },
+                    uColorRecede: { value: new THREE.Color(0x34d399) },
+                    uColorShift: { value: new THREE.Color(0xa78bfa) },
+                    uOpacity: { value: 0.72 },
+                    uPhase: { value: 0.0 },
+                    uTime: { value: eng._shaderTime },
+                    uFreq: { value: carrierFreq },
+                    uDoppler: { value: dopplerVel },
+                    uForward: { value: fwd.clone() }
+                  },
+                  vertexShader: [
+                    'uniform vec3 uForward;',
+                    'varying vec3 vNorm;',
+                    'varying vec3 vView;',
+                    'varying vec2 vUv;',
+                    'varying float vDirDot;',
+                    'void main() {',
+                    '  vUv = uv;',
+                    '  vDirDot = dot(normalize(normal), normalize(uForward));',
+                    '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);',
+                    '  vNorm = normalize(normalMatrix * normal);',
+                    '  vView = normalize(-mvPos.xyz);',
+                    '  gl_Position = projectionMatrix * mvPos;',
+                    '}'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform vec3 uColorApproach;',
+                    'uniform vec3 uColorRecede;',
+                    'uniform vec3 uColorShift;',
+                    'uniform float uOpacity;',
+                    'uniform float uPhase;',
+                    'uniform float uTime;',
+                    'uniform float uFreq;',
+                    'uniform float uDoppler;',
+                    'varying vec3 vNorm;',
+                    'varying vec3 vView;',
+                    'varying vec2 vUv;',
+                    'varying float vDirDot;',
+                    'void main() {',
+                    '  float ndotv = abs(dot(normalize(vNorm), normalize(vView)));',
+                    '  float fres = pow(1.0 - ndotv, 2.15);',
+                    '  float doppBand = clamp(0.5 + 0.5 * vDirDot + uDoppler * 0.32, 0.0, 1.0);',
+                    '  float localFreq = uFreq * (0.82 + 0.36 * doppBand);',
+                    '  float crestA = 0.5 + 0.5 * sin(vUv.y * localFreq - uPhase * 10.5 - uTime * 3.2);',
+                    '  float crestB = 0.5 + 0.5 * sin((vUv.y * 0.55 + vDirDot * 0.35) * localFreq * 1.4 - uPhase * 14.0);',
+                    '  float multiCrest = pow(crestA, 2.6) * 0.72 + pow(crestB, 3.2) * 0.45;',
+                    '  vec3 baseCol = mix(uColorRecede, uColorApproach, smoothstep(0.15, 0.72, doppBand));',
+                    '  vec3 col = mix(baseCol, uColorShift, smoothstep(0.65, 1.0, doppBand) * 0.65);',
+                    '  col += vec3(0.75, 0.96, 1.0) * (multiCrest * 0.25 * fres);',
+                    '  float alpha = clamp((fres * 0.92 + multiCrest * 0.32) * uOpacity, 0.0, 0.95);',
+                    '  gl_FragColor = vec4(col, alpha);',
+                    '}'
+                  ].join('\n'),
+                  transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+                });
+              } else {
+                pulseMat = new THREE.MeshBasicMaterial({ color: eng._isHc ? 0xffff00 : 0x00ffaa, transparent: true, opacity: eng._isHc ? 0.85 : 0.6, wireframe: true });
+              }
               var pulse = new THREE.Mesh(pulseGeo, pulseMat);
               pulse.position.copy(eng.camera.position);
               pulse._born = t;
@@ -1437,6 +1700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               pulse._dir = fwd.clone();
               eng.scene.add(pulse);
               eng.pulses.push(pulse);
+              if (eng._dustUniforms) eng._dustUniforms.uSonarFlash.value = 1.0;
               // Sound effect — chirp sweep (like real bat call)
               if (typeof beep === 'function') beep(2000, 0.05, 0.08);
             }
@@ -1447,12 +1711,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               var age = t - p._born;
               var radius = age * 10; // expands at 10 units/sec (sphere radiates from origin)
               p.scale.setScalar(radius);
-              p.material.opacity = Math.max(0, 0.5 - age * 0.25);
+              var pOp = Math.max(0, 0.72 - age * 0.27);
+              if (p.material && p.material.uniforms && p.material.uniforms.uOpacity) {
+                p.material.uniforms.uOpacity.value = pOp;
+                if (p.material.uniforms.uPhase) p.material.uniforms.uPhase.value = age;
+                if (p.material.uniforms.uTime) p.material.uniforms.uTime.value = eng._shaderTime;
+              } else if (p.material) {
+                p.material.opacity = Math.max(0, 0.5 - age * 0.25);
+              }
               // Sphere stays at origin (expands in place, like real sonar)
               // but moves slightly forward for visual directional feel
               p.position.addScaledVector(p._dir, 3 * dt);
 
-              // Check proximity to walls — light them up + spawn impact point light
+              // Crystal chamber acoustic resonance flash
+              if (eng._crystalPos && eng._crystalUniforms) {
+                var crysDist = p.position.distanceTo(eng._crystalPos);
+                if (crysDist < radius + 1.8 && crysDist > radius - 1.8) {
+                  eng._crystalUniforms.uSonarResonance.value = Math.max(eng._crystalUniforms.uSonarResonance.value, Math.max(0, 1.0 - age * 0.45));
+                }
+              }
+
+              // Check proximity to walls — light them up + spawn impact point light + echo-return arc
               eng.walls.forEach(function(w) {
                 var dist = p.position.distanceTo(w.position);
                 if (dist < radius + 2 && dist > radius - 2) {
@@ -1468,6 +1747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     il._born = t;
                     eng.scene.add(il);
                     eng._impactLights.push(il);
+                    spawnEchoArc(w.position, 0x38bdf8);
                   }
                 }
               });
@@ -1486,7 +1766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 }
               }
 
-              // Check insects — reveal with sonar, then catch by flying close
+              // Check insects — reveal with sonar, spawn warm prey echo-return arc, then catch by flying close
               eng.moths.forEach(function(m) {
                 if (m._caught) return;
                 var dist = p.position.distanceTo(m.position);
@@ -1497,6 +1777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     m._found = true;
                     m.material.color.setHex(0xffff00);
                     eng.mothsFound++;
+                    spawnEchoArc(m.position, 0xfbbf24);
                   }
                   // Flee behavior: revealed insects scatter away from sonar source
                   if (m._found) {
@@ -1512,6 +1793,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               if (age > 3) {
                 eng.scene.remove(p); p.geometry.dispose(); p.material.dispose();
                 eng.pulses.splice(pi, 1);
+              }
+            }
+
+            // Update & dispose shimmering echo-return interference rebound arcs
+            if (eng._echoArcs && eng._echoArcs.length) {
+              for (var eai = eng._echoArcs.length - 1; eai >= 0; eai--) {
+                var arc = eng._echoArcs[eai];
+                var arcAge = t - arc._born;
+                if (arcAge > 0.85) {
+                  eng.scene.remove(arc);
+                  if (arc.material && arc.material.dispose) arc.material.dispose();
+                  eng._echoArcs.splice(eai, 1);
+                  continue;
+                }
+                var arcProg = arcAge / 0.85;
+                arc.scale.setScalar(0.85 + arcProg * 2.4);
+                arc.position.addScaledVector(arc._dir, 3.8 * dt);
+                if (arc.material && arc.material.uniforms) {
+                  arc.material.uniforms.uTime.value = eng._shaderTime;
+                  arc.material.uniforms.uAge.value = arcAge;
+                  arc.material.uniforms.uOpacity.value = Math.max(0, (1 - arcProg) * 0.72);
+                }
               }
             }
 
@@ -1564,9 +1867,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 m.position.x = Math.max(-7, Math.min(7, m.position.x));
                 m.position.z = Math.max(-18, Math.min(18, m.position.z));
               }
-              // Revealed insects fade slightly if not caught
+              // Revealed insects fade slightly if not caught; sync luminous target halo
               if (m._found && !m._caught) {
                 m.material.opacity = Math.max(0.3, m.material.opacity - 0.002);
+              }
+              if (m._halo && m._halo.material) {
+                var hPulse = reducedMotion.current ? 1 : (0.85 + 0.15 * Math.sin(t * 5 + mi2));
+                m._halo.material.opacity = m._caught ? 0 : m.material.opacity * 0.34 * hPulse;
+                m._halo.scale.setScalar(hPulse);
               }
               // Catch: fly within 1.2 blocks of a revealed insect
               if (m._found && !m._caught) {
@@ -1603,6 +1911,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   m.material.opacity = 1;
                   (function(mesh) {
                     setTimeout(function() {
+                      if (mesh._halo) {
+                        if (mesh._halo.geometry) mesh._halo.geometry.dispose();
+                        if (mesh._halo.material) mesh._halo.material.dispose();
+                      }
                       eng.scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose();
                     }, 300);
                   })(m);
@@ -1645,6 +1957,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               eng.scene.fog.color.setRGB(0.08, 0.01, 0.01);
             } else {
               eng.scene.fog.color.setRGB(0.008, 0.008, 0.03);
+            }
+
+            // Ambient cave crystal pulse, GLSL shader clocks & gentle dust mote drift (gated on reducedMotion)
+            if (!reducedMotion.current) {
+              eng._shaderTime += dt;
+              if (eng._crystalLight) eng._crystalLight.intensity = 0.45 + 0.22 * Math.sin(t * 2.1);
+              if (eng._dustPoints) eng._dustPoints.position.y = Math.sin(t * 0.35) * 0.14;
+            }
+            if (eng._crystalUniforms) {
+              eng._crystalUniforms.uTime.value = eng._shaderTime;
+              eng._crystalUniforms.uSonarResonance.value = Math.max(0, eng._crystalUniforms.uSonarResonance.value - dt * 1.15);
+            }
+            if (eng._dustUniforms) {
+              eng._dustUniforms.uTime.value = eng._shaderTime;
+              eng._dustUniforms.uSonarFlash.value = Math.max(0, eng._dustUniforms.uSonarFlash.value - dt * 1.4);
             }
 
             var _ac=eng.renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ eng.renderer._alloComposer=null; eng.renderer.render(eng.scene, eng.camera); } } else { eng.renderer.render(eng.scene, eng.camera); }
@@ -1705,6 +2032,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             document.removeEventListener('mousemove', eng._mouseMove);
             document.removeEventListener('pointerlockchange', eng._pointerLockChange);
             if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
+            try {
+              if (eng._echoArcGeo && eng._echoArcGeo.dispose) { eng._echoArcGeo.dispose(); eng._echoArcGeo = null; }
+              if (eng._echoArcs) {
+                eng._echoArcs.forEach(function (a) { try { if (a.material && a.material.dispose) a.material.dispose(); } catch (_) {} });
+                eng._echoArcs = [];
+              }
+              if (eng.scene && typeof eng.scene.traverse === 'function') {
+                var dGeos = new Set(), dMats = new Set(), dTexs = new Set();
+                eng.scene.traverse(function (o) {
+                  if (o.geometry && o.geometry.dispose && !dGeos.has(o.geometry)) { dGeos.add(o.geometry); o.geometry.dispose(); }
+                  if (o.material) {
+                    var ms = Array.isArray(o.material) ? o.material : [o.material];
+                    ms.forEach(function (m) {
+                      if (!m || dMats.has(m)) return;
+                      dMats.add(m);
+                      if (m.map && m.map.dispose && !dTexs.has(m.map)) { dTexs.add(m.map); m.map.dispose(); }
+                      if (m.dispose) m.dispose();
+                    });
+                  }
+                });
+              }
+            } catch (e) {}
             try { if (eng.renderer && eng.renderer.dispose) eng.renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(eng.renderer); } catch (e) {}
             cave3dEngineRef.current = null;
           };
@@ -2532,6 +2881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var canvas = sonarCanvasRef.current;
         if (!canvas) return;
         var gfx = canvas.getContext('2d');
+        if (!gfx) return;
         var sp = currentSpeciesData || PLAYABLE_SPECIES[0];
         var isFrug = sp.diet === 'fruit';
 
@@ -2543,6 +2893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           sonarBufferRef.current.height = 500;
         }
         var bufCtx = sonarBufferRef.current.getContext('2d');
+        if (!bufCtx) return;
 
         var scene = getActiveScene();
         var st = sonarStateRef.current;
@@ -2852,6 +3203,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 echoColor = 'rgba(200,200,200,' + (brightness * 0.2) + ')';
               }
 
+              // Spawn specular echo return arc radiating back from target toward bat
+              if (!st.echoArcs) st.echoArcs = [];
+              if (st.echoArcs.length < 24 && Math.random() < 0.28) {
+                var backAng = Math.atan2(st.batY - hit.y, st.batX - hit.x);
+                var arcCol = hit.material === 'soft' ? '251,191,36' : (hit.material === 'water' ? '56,189,248' : '165,180,252');
+                st.echoArcs.push({ x: hit.x, y: hit.y, r: 4, maxR: Math.min(85, dist * 0.6 + 18), ang: backAng, color: arcCol, alpha: Math.min(0.85, brightness + 0.2) });
+              }
+              if (!st.specHistory) st.specHistory = [];
+              if (st.specHistory.length < 64) st.specHistory.push({ energy: Math.min(1, brightness), freq: hit.material === 'soft' ? 0.78 : (hit.material === 'water' ? 0.35 : 0.55) });
+              else { st.specHistory.shift(); st.specHistory.push({ energy: Math.min(1, brightness), freq: hit.material === 'soft' ? 0.78 : (hit.material === 'water' ? 0.35 : 0.55) }); }
+
               bufCtx.fillStyle = echoColor;
               // Draw at the hit point based on type
               if (hit.obj && hit.obj.type === 'moth') {
@@ -2993,14 +3355,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           bufCtx.fillRect(0, 0, 800, 500);
 
           // ── RENDER ──
-          gfx.fillStyle = scene.bg || '#0a0a1a';
+          // Deep nocturnal / aquatic atmospheric depth gradient backdrop
+          var bgGrad = gfx.createLinearGradient(0, 0, 0, 500);
+          bgGrad.addColorStop(0, scene.bg || '#060a18');
+          bgGrad.addColorStop(0.55, '#071324');
+          bgGrad.addColorStop(1, '#040a16');
+          gfx.fillStyle = bgGrad;
           gfx.fillRect(0, 0, 800, 500);
+
+          // Subtle acoustic range rings centered on the bat
+          gfx.save();
+          gfx.strokeStyle = 'rgba(56,189,248,0.065)';
+          gfx.lineWidth = 1;
+          for (var rr = 80; rr <= 240; rr += 80) {
+            gfx.beginPath();
+            gfx.arc(st.batX, st.batY, rr, 0, Math.PI * 2);
+            gfx.stroke();
+          }
+          gfx.restore();
 
           // Draw streetlights glow in urban scene
           scene.objects.forEach(function(obj) {
             if (obj.type === 'light') {
               var grad = gfx.createRadialGradient(obj.x, obj.y, 0, obj.x, obj.y, obj.radius);
-              grad.addColorStop(0, 'rgba(255,200,100,0.15)');
+              grad.addColorStop(0, 'rgba(255,200,100,0.18)');
               grad.addColorStop(1, 'rgba(255,200,100,0)');
               gfx.fillStyle = grad;
               gfx.beginPath();
@@ -3039,10 +3417,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // Draw sonar buffer (the persistent echo image)
           gfx.drawImage(sonarBufferRef.current, 0, 0);
 
+          // Draw specular echo return arcs radiating back toward the bat
+          if (st.echoArcs && st.echoArcs.length) {
+            for (var eai = st.echoArcs.length - 1; eai >= 0; eai--) {
+              var ea = st.echoArcs[eai];
+              ea.r += 3.2;
+              var eaFrac = ea.r / ea.maxR;
+              if (eaFrac >= 1) { st.echoArcs.splice(eai, 1); continue; }
+              var eaAlpha = (1 - eaFrac) * ea.alpha;
+              gfx.strokeStyle = 'rgba(' + ea.color + ',' + (eaAlpha * 0.35).toFixed(3) + ')';
+              gfx.lineWidth = 4;
+              gfx.beginPath();
+              gfx.arc(ea.x, ea.y, ea.r, ea.ang - 0.55, ea.ang + 0.55);
+              gfx.stroke();
+              gfx.strokeStyle = 'rgba(' + ea.color + ',' + eaAlpha.toFixed(3) + ')';
+              gfx.lineWidth = 1.5;
+              gfx.beginPath();
+              gfx.arc(ea.x, ea.y, ea.r, ea.ang - 0.48, ea.ang + 0.48);
+              gfx.stroke();
+            }
+          }
+
           // Draw active pulses
           st.pulses.forEach(function(p) {
             drawSonarPulse(gfx, p.x, p.y, p.radius, p.maxRadius, true);
           });
+
+          // Compact glowing sonar spectrogram waterfall strip (bottom-right)
+          if (st.specHistory && st.specHistory.length > 0) {
+            var swX = 646, swY = 442, swW = 142, swH = 46;
+            gfx.fillStyle = 'rgba(2,8,20,0.72)';
+            gfx.fillRect(swX, swY, swW, swH);
+            gfx.strokeStyle = 'rgba(56,189,248,0.28)';
+            gfx.lineWidth = 1;
+            gfx.strokeRect(swX, swY, swW, swH);
+            var nBins = st.specHistory.length;
+            for (var sbi = 0; sbi < nBins; sbi++) {
+              var sb = st.specHistory[sbi];
+              var bx = swX + 3 + (sbi / 64) * (swW - 6);
+              var by = swY + swH - 4 - sb.freq * (swH - 12);
+              var bh = Math.max(3, sb.energy * 18);
+              gfx.fillStyle = sb.freq > 0.65
+                ? 'rgba(251,191,36,' + (0.35 + sb.energy * 0.6).toFixed(2) + ')'
+                : 'rgba(56,189,248,' + (0.32 + sb.energy * 0.62).toFixed(2) + ')';
+              gfx.fillRect(bx, by - bh * 0.5, 2, bh);
+            }
+            gfx.fillStyle = 'rgba(186,230,253,0.65)';
+            gfx.font = '7px ui-monospace, Menlo, monospace';
+            gfx.textAlign = 'left';
+            gfx.fillText('ECHO SPECTROGRAM', swX + 4, swY + 9);
+          }
 
           // Draw bat with species-appropriate size and color
           var batSize = sp.size ? sp.size * 2 : 18;
@@ -3459,6 +3883,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var canvas = waveCanvasRef.current;
         if (!canvas) return;
         var gfx = canvas.getContext('2d');
+        if (!gfx) return;
         var running = true;
         var phase = 0;
 
@@ -3467,11 +3892,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           if (!reducedMotion.current) phase += 0.05;
           var W = canvas.width;
           var H = canvas.height;
-          gfx.fillStyle = isDark ? '#0f172a' : '#f8fafc';
+          var bgG = gfx.createLinearGradient(0, 0, 0, H);
+          if (isDark) {
+            bgG.addColorStop(0, '#070d1e');
+            bgG.addColorStop(0.5, '#0f172a');
+            bgG.addColorStop(1, '#091124');
+          } else {
+            bgG.addColorStop(0, '#f1f5f9');
+            bgG.addColorStop(0.5, '#ffffff');
+            bgG.addColorStop(1, '#e2e8f0');
+          }
+          gfx.fillStyle = bgG;
           gfx.fillRect(0, 0, W, H);
 
           // Grid lines
-          gfx.strokeStyle = isDark ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.2)';
+          gfx.strokeStyle = isDark ? 'rgba(56,189,248,0.09)' : 'rgba(100,116,139,0.16)';
           gfx.lineWidth = 1;
           for (var gy = 0; gy <= H; gy += 30) {
             gfx.beginPath(); gfx.moveTo(0, gy); gfx.lineTo(W, gy); gfx.stroke();
@@ -3479,17 +3914,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
           // Frequency range markers
           var midY = H / 2;
-          gfx.strokeStyle = isDark ? 'rgba(74,222,128,0.3)' : 'rgba(34,197,94,0.3)';
+          gfx.strokeStyle = isDark ? 'rgba(74,222,128,0.35)' : 'rgba(34,197,94,0.35)';
           gfx.setLineDash([4, 4]);
           gfx.beginPath(); gfx.moveTo(0, midY - 2); gfx.lineTo(W, midY - 2); gfx.stroke();
           gfx.setLineDash([]);
 
-          // Draw wave
+          // Draw acoustic energy fill + phosphor glow dual-stroke wave
           var color = freqToColor(waveFreq);
-          gfx.strokeStyle = color;
-          gfx.lineWidth = 2.5;
-          gfx.beginPath();
           var freqScale = Math.min(waveFreq / 500, 20);
+          gfx.save();
+          gfx.beginPath();
+          gfx.moveTo(0, midY);
+          for (var xf = 0; xf < W; xf++) {
+            var yf = midY + Math.sin((xf / W) * freqScale * Math.PI * 2 + phase) * (H * 0.35 * waveAmp);
+            gfx.lineTo(xf, yf);
+          }
+          gfx.lineTo(W, midY);
+          gfx.closePath();
+          gfx.globalAlpha = isDark ? 0.14 : 0.10;
+          gfx.fillStyle = color;
+          gfx.fill();
+          gfx.restore();
+
+          gfx.save();
+          gfx.strokeStyle = color;
+          gfx.globalAlpha = isDark ? 0.28 : 0.18;
+          gfx.lineWidth = 6;
+          gfx.beginPath();
+          for (var xg = 0; xg < W; xg++) {
+            var yg = midY + Math.sin((xg / W) * freqScale * Math.PI * 2 + phase) * (H * 0.35 * waveAmp);
+            if (xg === 0) gfx.moveTo(xg, yg); else gfx.lineTo(xg, yg);
+          }
+          gfx.stroke();
+          gfx.restore();
+
+          gfx.strokeStyle = color;
+          gfx.lineWidth = 2.4;
+          gfx.beginPath();
           for (var x = 0; x < W; x++) {
             var y = midY + Math.sin((x / W) * freqScale * Math.PI * 2 + phase) * (H * 0.35 * waveAmp);
             if (x === 0) gfx.moveTo(x, y);
@@ -3537,6 +3998,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var canvas = reflCanvasRef.current;
         if (!canvas) return;
         var gfx = canvas.getContext('2d');
+        if (!gfx) return;
         var running = true;
         var phase = 0;
 
@@ -3621,6 +4083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var canvas = invSqCanvasRef.current;
         if (!canvas) return;
         var gfx = canvas.getContext('2d');
+        if (!gfx) return;
         var W = canvas.width;
         var H = canvas.height;
 
@@ -4080,6 +4543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var canvas = dopplerCanvasRef.current;
         if (!canvas) return;
         var gfx = canvas.getContext('2d');
+        if (!gfx) return;
         var running = true;
         var dSt = dopplerStateRef.current;
         dSt.waves = [];
@@ -4129,40 +4593,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             }
           }
 
-          // Render
-          gfx.fillStyle = '#0a0a1a';
+          // Render deep nocturnal acoustic depth gradient
+          var dBg = gfx.createLinearGradient(0, 0, W, H);
+          dBg.addColorStop(0, '#050919');
+          dBg.addColorStop(0.55, '#0b1530');
+          dBg.addColorStop(1, '#060c1f');
+          gfx.fillStyle = dBg;
           gfx.fillRect(0, 0, W, H);
 
           // Grid
-          gfx.strokeStyle = 'rgba(99,102,241,0.06)';
+          gfx.strokeStyle = 'rgba(56,189,248,0.07)';
           gfx.lineWidth = 1;
           for (var gridY = 0; gridY < H; gridY += 40) {
             gfx.beginPath(); gfx.moveTo(0, gridY); gfx.lineTo(W, gridY); gfx.stroke();
           }
 
-          // Draw waves
+          // Draw luminous emitted & Doppler-shifted specular return waves
           dSt.waves.forEach(function(w) {
-            var alpha = Math.max(0, 1 - w.r / 400) * 0.5;
-            if (w.type === 'emit') {
-              gfx.strokeStyle = 'rgba(99,102,241,' + alpha + ')';
-            } else {
-              // Reflected waves: color shift based on Doppler
-              if (mothSpeed < 0) gfx.strokeStyle = 'rgba(96,165,250,' + alpha + ')'; // blue shift
-              else if (mothSpeed > 0) gfx.strokeStyle = 'rgba(239,68,68,' + alpha + ')'; // red shift
-              else gfx.strokeStyle = 'rgba(249,115,22,' + alpha + ')'; // neutral
-            }
-            gfx.lineWidth = 1.5;
+            var alpha = Math.max(0, 1 - w.r / 420) * 0.65;
+            var rgb = w.type === 'emit'
+              ? '129,140,248'
+              : (mothSpeed < 0 ? '56,189,248' : mothSpeed > 0 ? '248,113,113' : '251,146,60');
+            gfx.strokeStyle = 'rgba(' + rgb + ',' + (alpha * 0.28).toFixed(3) + ')';
+            gfx.lineWidth = 4.6;
+            gfx.beginPath();
+            gfx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
+            gfx.stroke();
+            gfx.strokeStyle = 'rgba(' + rgb + ',' + alpha.toFixed(3) + ')';
+            gfx.lineWidth = 1.7;
             gfx.beginPath();
             gfx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
             gfx.stroke();
           });
 
-          // Draw bat
+          // Draw bat with subtle ultrasonic emitter halo
+          var bGlow = gfx.createRadialGradient(batX + 18, batY, 2, batX + 18, batY, 28);
+          bGlow.addColorStop(0, 'rgba(129,140,248,0.34)');
+          bGlow.addColorStop(1, 'rgba(129,140,248,0)');
+          gfx.fillStyle = bGlow;
+          gfx.beginPath();
+          gfx.arc(batX + 18, batY, 28, 0, Math.PI * 2);
+          gfx.fill();
           drawBat(gfx, batX, batY, 16, flapPhase, 1, true);
           gfx.fillStyle = '#a5b4fc';
           gfx.font = 'bold 9px system-ui';
           gfx.textAlign = 'center';
           gfx.fillText('BAT', batX, batY + 30);
+
+          // Doppler-shifted target highlight halo around the moth
+          var dHaloRgb = mothSpeed < 0 ? '56,189,248' : mothSpeed > 0 ? '248,113,113' : '251,191,36';
+          var mGlow = gfx.createRadialGradient(mothX, mothY, 4, mothX, mothY, 26);
+          mGlow.addColorStop(0, 'rgba(' + dHaloRgb + ',0.36)');
+          mGlow.addColorStop(0.6, 'rgba(' + dHaloRgb + ',0.14)');
+          mGlow.addColorStop(1, 'rgba(' + dHaloRgb + ',0)');
+          gfx.fillStyle = mGlow;
+          gfx.beginPath();
+          gfx.arc(mothX, mothY, 26, 0, Math.PI * 2);
+          gfx.fill();
+          gfx.strokeStyle = 'rgba(' + dHaloRgb + ',0.55)';
+          gfx.lineWidth = 1.2;
+          gfx.beginPath();
+          gfx.arc(mothX, mothY, 18 + Math.sin(dSt.time * 5) * 2.5, 0, Math.PI * 2);
+          gfx.stroke();
 
           // Draw moth
           drawMoth(gfx, mothX, mothY, 10, mothPhase);
@@ -4626,6 +5118,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var canvas = anatomyCanvasRef.current;
         if (!canvas) return;
         var gfx = canvas.getContext('2d');
+        if (!gfx) return;
         var W = canvas.width;
         var H = canvas.height;
 
@@ -5161,6 +5654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var canvas = soundscapeCanvasRef.current;
         if (!canvas) return;
         var gfx = canvas.getContext('2d');
+        if (!gfx) return;
         var running = true;
         var phase = 0;
 
@@ -5180,26 +5674,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           var W = canvas.width;
           var H = canvas.height;
 
-          // Night scene background
-          gfx.fillStyle = '#050d14';
+          // Deep nocturnal atmospheric depth gradient
+          var nSky = gfx.createLinearGradient(0, 0, 0, H);
+          nSky.addColorStop(0, '#030916');
+          nSky.addColorStop(0.65, '#071a2d');
+          nSky.addColorStop(1, '#0b2540');
+          gfx.fillStyle = nSky;
           gfx.fillRect(0, 0, W, H);
 
           // Stars
-          gfx.fillStyle = 'rgba(255,255,255,0.3)';
+          gfx.fillStyle = 'rgba(224,242,254,0.42)';
           for (var si = 0; si < 30; si++) {
             var sx = (si * 137.5 + 50) % W;
             var sy = (si * 73.3 + 20) % (H * 0.5);
             gfx.beginPath();
-            gfx.arc(sx, sy, 1, 0, Math.PI * 2);
+            gfx.arc(sx, sy, si % 3 === 0 ? 1.3 : 0.9, 0, Math.PI * 2);
             gfx.fill();
           }
 
-          // Ground/water
-          gfx.fillStyle = '#0a1628';
-          gfx.fillRect(0, H * 0.8, W, H * 0.2);
+          // Water/depth horizon with moonlight specular shimmer
+          var wGrad = gfx.createLinearGradient(0, H * 0.78, 0, H);
+          wGrad.addColorStop(0, '#0a203b');
+          wGrad.addColorStop(1, '#051022');
+          gfx.fillStyle = wGrad;
+          gfx.fillRect(0, H * 0.78, W, H * 0.22);
+          var mRefl = gfx.createRadialGradient(620, H * 0.84, 4, 620, H * 0.84, 64);
+          mRefl.addColorStop(0, 'rgba(254,249,195,0.22)');
+          mRefl.addColorStop(1, 'rgba(254,249,195,0)');
+          gfx.fillStyle = mRefl;
+          gfx.fillRect(540, H * 0.78, 160, H * 0.22);
 
           // Trees
-          gfx.fillStyle = '#0d1f0d';
+          gfx.fillStyle = '#091a16';
           var treeXs = [60, 180, 350, 500, 640];
           treeXs.forEach(function(tx) {
             gfx.beginPath();
@@ -5209,8 +5715,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             gfx.fill();
           });
 
-          // Moon
-          gfx.fillStyle = 'rgba(250,250,210,0.8)';
+          // Moon with atmospheric corona
+          var moonGlow = gfx.createRadialGradient(620, 40, 12, 620, 40, 48);
+          moonGlow.addColorStop(0, 'rgba(254,249,195,0.45)');
+          moonGlow.addColorStop(0.5, 'rgba(186,230,253,0.14)');
+          moonGlow.addColorStop(1, 'rgba(186,230,253,0)');
+          gfx.fillStyle = moonGlow;
+          gfx.beginPath();
+          gfx.arc(620, 40, 48, 0, Math.PI * 2);
+          gfx.fill();
+          gfx.fillStyle = 'rgba(254,252,232,0.92)';
           gfx.beginPath();
           gfx.arc(620, 40, 18, 0, Math.PI * 2);
           gfx.fill();

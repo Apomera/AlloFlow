@@ -563,7 +563,7 @@ function _lessonPlanSummaryHtml(plan, {
   const body = [section(tr('overview_objectives', 'Objectives'), items(list(data.objectives))), section(tr('summary_success_criteria', 'Success criteria'), items(list(data.successCriteria), value => _lessonPlanPlain(_lessonPlanCriterionText(value)))), section(tr('overview_materials', 'Materials'), items(list(data.materialsNeeded), value => _lessonPlanPlain(normalizeMaterialItem ? normalizeMaterialItem(value) : value))), steps.length ? section(tr('overview_timing', 'Phase timing'), steps.map(step => step.label + ' · ' + step.minutes + ' ' + minutes), true).replace('</ol></section>', `</ol><p class="total">${esc(tr('overview_total', 'Total:') + ' ' + steps.reduce((sum, step) => sum + step.minutes, 0) + ' ' + minutes)}</p></section>`) : '', section(tr('summary_assessment', 'Assessment ideas'), items(list(data.assessmentIdeas)))].join('');
   const question = _lessonPlanPlain(data.essentialQuestion);
   const lang = typeof document !== 'undefined' && document.documentElement.lang || 'en';
-  return `<!doctype html><html lang="${esc(lang)}"><head><meta charset="utf-8"><title>${esc(title + ' · ' + tr('summary_title', 'One-page summary'))}</title><style>` + '@page{margin:12mm}body{font:10.5pt/1.35 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#111;margin:0}h1{font-size:15pt;margin:0 0 2px}' + '.meta{color:#444;margin:0 0 8px}.eq{border-left:3px solid #4338ca;background:#eef2ff;padding:4px 8px;margin:0 0 10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}' + 'section{break-inside:avoid}h2{font-size:11pt;margin:0 0 3px;color:#312e81}ul,ol{margin:0;padding-left:16px}li{margin:0 0 2px}.total{font-weight:700;margin:3px 0 0}footer{margin-top:10px;font-size:8.5pt;color:#555}' + `</style></head><body><h1>${esc(title)}</h1>${gradeLevel ? `<p class="meta">${esc(gradeLevel)}</p>` : ''}` + (question ? `<p class="eq"><strong>${esc(tr('summary_essential_question', 'Essential question:'))}</strong> ${esc(question)}</p>` : '') + `<div class="grid">${body}</div><footer>${esc(tr('summary_footer', 'One-page summary from AlloFlow. The full teacher guide has every step.'))}</footer></body></html>`;
+  return `<!doctype html><html lang="${esc(lang)}"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline';"><title>${esc(title + ' · ' + tr('summary_title', 'One-page summary'))}</title><style>` + '@page{margin:12mm}body{font:10.5pt/1.35 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#111;margin:0}h1{font-size:15pt;margin:0 0 2px}' + '.meta{color:#444;margin:0 0 8px}.eq{border-left:3px solid #4338ca;background:#eef2ff;padding:4px 8px;margin:0 0 10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}' + 'section{break-inside:avoid}h2{font-size:11pt;margin:0 0 3px;color:#312e81}ul,ol{margin:0;padding-left:16px}li{margin:0 0 2px}.total{font-weight:700;margin:3px 0 0}footer{margin-top:10px;font-size:8.5pt;color:#555}' + `</style></head><body><h1>${esc(title)}</h1>${gradeLevel ? `<p class="meta">${esc(gradeLevel)}</p>` : ''}` + (question ? `<p class="eq"><strong>${esc(tr('summary_essential_question', 'Essential question:'))}</strong> ${esc(question)}</p>` : '') + `<div class="grid">${body}</div><footer>${esc(tr('summary_footer', 'One-page summary from AlloFlow. The full teacher guide has every step.'))}</footer></body></html>`;
 }
 // Woven teaching view (read-only): lines from the latest saved teaching script, shown under the plan phase
 // each step teaches. Editing, versions and regeneration stay in the Teaching script section.
@@ -742,6 +742,7 @@ function LessonPlanOverview({
   }, latestWhole ? tr('overview_invalid_timing', 'The latest whole-lesson script has incomplete or inconsistent timing. Review its step times before teaching.') : tr('overview_no_timing', 'No whole-lesson script timing is recorded. Segment scripts cover only part of the lesson.')))));
 }
 function LessonPlanView(props) {
+  if (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') window.__alloUseBionic();
   var t = key => {
     const value = typeof props.t === 'function' ? props.t(key) : '';
     return typeof value === 'string' && value !== key ? value : '';
@@ -785,17 +786,24 @@ function LessonPlanView(props) {
   // One Edit toggle covers the plan and its teaching script; Done saves the script draft first
   // and stays in edit mode when the script's checks fail (the panel shows what to fix).
   var scriptEditBridge = React.useRef(null);
+  var editingToggleLockRef = React.useRef(false);
   var toggleLessonPlanEditing = async () => {
-    if (isEditingLessonPlan && typeof scriptEditBridge.current === 'function') {
-      let finished = false;
-      try {
-        finished = await scriptEditBridge.current();
-      } catch (_) {
-        finished = false;
+    if (editingToggleLockRef.current) return;
+    editingToggleLockRef.current = true;
+    try {
+      if (isEditingLessonPlan && typeof scriptEditBridge.current === 'function') {
+        let finished = false;
+        try {
+          finished = await scriptEditBridge.current();
+        } catch (_) {
+          finished = false;
+        }
+        if (!finished) return;
       }
-      if (!finished) return;
+      handleToggleIsEditingLessonPlan();
+    } finally {
+      editingToggleLockRef.current = false;
     }
-    handleToggleIsEditingLessonPlan();
   };
   var handleLessonPlanChange = (field, value, index = null) => {
     // Merge text into the latest saved value so arriving metadata survives.
@@ -804,12 +812,13 @@ function LessonPlanView(props) {
   var handleGenerateExtensionGuide = props.handleGenerateExtensionGuide;
   // Print window first (Canvas ignores window.print on the app frame); hidden iframe if pop-ups are blocked.
   var printLessonSummary = () => {
-    const html = _lessonPlanSummaryHtml(generatedContent, {
+    const rawHtml = _lessonPlanSummaryHtml(generatedContent, {
       t,
       normalizeMaterialItem,
       title: _lessonPlanText(generatedContent.title) || sourceTopic || '',
       gradeLevel
     });
+    const html = typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicHtml === 'function' ? window.__alloBionicHtml(rawHtml) : rawHtml;
     const popup = window.open('', '_blank');
     if (popup) {
       try {
@@ -892,16 +901,121 @@ function LessonPlanView(props) {
   var lessonPlanAiDoor = _lessonPlanAiDoor(t);
   var lessonPlanAiOff = !!(lessonPlanAiDoor && (lessonPlanAiDoor.disabled || lessonPlanAiDoor.available === false));
   var lessonPlanAiTitle = lessonPlanAiOff ? lessonPlanAiDoor.title || t('ai.setup_required') || 'Set up AI to use this feature' : undefined;
+  var headerTitle = headerMode === 'student' ? tl('lesson_plan.study_guide_title', 'Study Guide') : headerMode === 'parent' ? tl('lesson_plan.family_guide_title', 'Family Guide') : tl('lesson_plan.title', 'Lesson Plan');
+  var _listenState = React.useState(false);
+  var isSpeakingGuide = _listenState[0],
+    setIsSpeakingGuide = _listenState[1];
+  var materialsStorageKey = 'alloflow:lesson-materials:' + String(generatedContent && generatedContent.id || 'default');
+  var readCheckedMaterials = function (key) {
+    try {
+      var raw = typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem(key) : null;
+      var parsed = raw ? JSON.parse(raw) : null;
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (_) {
+      return {};
+    }
+  };
+  var _checkedMaterialsState = React.useState(function () {
+    return readCheckedMaterials(materialsStorageKey);
+  });
+  var checkedMaterials = _checkedMaterialsState[0],
+    setCheckedMaterials = _checkedMaterialsState[1];
+  React.useEffect(function () {
+    setCheckedMaterials(readCheckedMaterials('alloflow:lesson-materials:' + String(generatedContent && generatedContent.id || 'default')));
+  }, [generatedContent && generatedContent.id]);
+  var toggleMaterialChecked = function (idx) {
+    setCheckedMaterials(function (prev) {
+      var next = Object.assign({}, prev);
+      if (next[idx]) delete next[idx];else next[idx] = true;
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          if (Object.keys(next).length) window.localStorage.setItem(materialsStorageKey, JSON.stringify(next));else window.localStorage.removeItem(materialsStorageKey);
+        }
+      } catch (_) {}
+      return next;
+    });
+  };
+  var jumpToLessonSection = function (sectionId) {
+    var target = typeof document !== 'undefined' ? document.getElementById(sectionId) : null;
+    if (!target || typeof target.scrollIntoView !== 'function') return;
+    var reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({
+      behavior: reduce ? 'auto' : 'smooth',
+      block: 'start'
+    });
+  };
+  var lessonPlanMountedRef = React.useRef(true);
+  var lessonPlanSpeechTokenRef = React.useRef(0);
+  var stopLessonPlanSpeech = React.useCallback(() => {
+    lessonPlanSpeechTokenRef.current += 1;
+    if (typeof window !== 'undefined') {
+      try {
+        if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop();
+      } catch (_) {}
+      try {
+        if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel();
+      } catch (_) {}
+    }
+    if (lessonPlanMountedRef.current) setIsSpeakingGuide(false);
+  }, []);
+  React.useEffect(() => {
+    lessonPlanMountedRef.current = true;
+    return () => {
+      lessonPlanMountedRef.current = false;
+      stopLessonPlanSpeech();
+    };
+  }, [generatedContent?.id, stopLessonPlanSpeech]);
+  var handleListenLessonPlan = () => {
+    if (typeof window === 'undefined') return;
+    const player = window.AlloSpeechPlayer;
+    if (isSpeakingGuide) {
+      stopLessonPlanSpeech();
+      return;
+    }
+    const d = generatedContent.data || {};
+    const parts = [headerTitle + (sourceTopic ? ': ' + sourceTopic : '')];
+    const objs = lessonList(d.objectives).map(_lessonPlanText).filter(Boolean);
+    if (objs.length) parts.push(tl('lesson_plan.objectives', 'Objectives') + ': ' + objs.join('. '));
+    const acts = lessonList(d.activities).map(_lessonPlanText).filter(Boolean);
+    if (acts.length) parts.push(tl('lesson_plan.activities_heading', 'Activities') + ': ' + acts.join('. '));
+    ['hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'].forEach(field => {
+      const txt = _lessonPlanText(d[field]).trim();
+      if (txt) parts.push(txt);
+    });
+    const speechText = parts.join('. ').replace(/\s+/g, ' ').trim();
+    if (!speechText) return;
+    const lang = generatedContent?.config?.language || undefined;
+    const token = ++lessonPlanSpeechTokenRef.current;
+    if (player && typeof player.speak === 'function') {
+      setIsSpeakingGuide(true);
+      Promise.resolve(player.speak(speechText, lang ? {
+        language: lang
+      } : undefined)).catch(() => {}).finally(() => {
+        if (lessonPlanMountedRef.current && lessonPlanSpeechTokenRef.current === token) setIsSpeakingGuide(false);
+      });
+    } else if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+      window.speechSynthesis.cancel();
+      const u = new window.SpeechSynthesisUtterance(speechText);
+      u.onend = () => {
+        if (lessonPlanMountedRef.current && lessonPlanSpeechTokenRef.current === token) setIsSpeakingGuide(false);
+      };
+      u.onerror = () => {
+        if (lessonPlanMountedRef.current && lessonPlanSpeechTokenRef.current === token) setIsSpeakingGuide(false);
+      };
+      setIsSpeakingGuide(true);
+      window.speechSynthesis.speak(u);
+    }
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "min-w-0 space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-0 sm:pr-2 pb-10"
   }, audienceView && !['study', 'family'].includes(generatedContent.config?.generationInputs?.mode) && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "rounded-lg border border-slate-300 p-3 text-sm"
-  }, "This learner view includes structured tasks and learning goals. Teacher narrative sections are omitted because this saved plan does not identify separate learner text."), audienceView && lessonList(generatedContent.data.activities).length > 0 && /*#__PURE__*/React.createElement("section", {
+  }, tl('lesson_plan.learner_projection_notice', 'This learner view includes structured tasks and learning goals. Teacher narrative sections are omitted because this saved plan does not identify separate learner text.')), audienceView && lessonList(generatedContent.data.activities).length > 0 && /*#__PURE__*/React.createElement("section", {
     className: "rounded-lg border border-slate-300 p-3"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "font-bold"
-  }, "Activities"), /*#__PURE__*/React.createElement("ul", {
+  }, tl('lesson_plan.activities_heading', 'Activities')), /*#__PURE__*/React.createElement("ul", {
     className: "list-disc pl-5"
   }, lessonList(generatedContent.data.activities).map((activity, index) => /*#__PURE__*/React.createElement("li", {
     key: index
@@ -911,7 +1025,7 @@ function LessonPlanView(props) {
     className: "flex flex-wrap justify-between items-start gap-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
     className: "text-2xl font-bold text-indigo-900 mb-1"
-  }, t('lesson_plan.title') || 'Lesson Plan'), generatedContent?.data?.unitPath && generatedContent.data.unitPath.nodeId && /*#__PURE__*/React.createElement("div", {
+  }, headerTitle), generatedContent?.data?.unitPath && generatedContent.data.unitPath.nodeId && /*#__PURE__*/React.createElement("div", {
     className: "mb-1 inline-flex flex-wrap items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-800",
     "data-unit-path-node": generatedContent.data.unitPath.nodeId
   }, /*#__PURE__*/React.createElement("span", null, "🗺️ ", t('lesson_plan.unit_path_label') || 'Unit Path'), /*#__PURE__*/React.createElement("span", {
@@ -931,6 +1045,16 @@ function LessonPlanView(props) {
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
   }), isEditingLessonPlan ? t('common.done') : t('common.edit')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-lesson-plan-listen": "true",
+    "aria-pressed": isSpeakingGuide,
+    onClick: handleListenLessonPlan,
+    className: "flex min-h-11 items-center gap-1 text-sm font-bold bg-white text-indigo-700 hover:bg-indigo-100 border border-indigo-200 px-3 py-1.5 rounded-full transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
+    title: isSpeakingGuide ? tl('common.stop', 'Stop') : tl('lesson_plan.listen_guide', 'Listen'),
+    "aria-label": isSpeakingGuide ? tl('common.stop', 'Stop reading') : tl('lesson_plan.listen_guide_aria', 'Listen to ' + headerTitle)
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, isSpeakingGuide ? '⏹️' : '🔊'), " ", isSpeakingGuide ? tl('common.stop', 'Stop') : tl('common.listen', 'Listen')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleCopyToClipboard,
     "data-help-key": "export_copy_button",
@@ -963,7 +1087,38 @@ function LessonPlanView(props) {
     t: t,
     BilingualFieldRenderer: BilingualFieldRenderer,
     normalizeMaterialItem: normalizeMaterialItem
-  }), !audienceView && added && added.length > 0 && /*#__PURE__*/React.createElement(LessonPlanAddedNotice, {
+  }), !isEditingLessonPlan && (() => {
+    const jumpSections = [materialsNeeded.length > 0 ? {
+      id: 'lp-section-materials',
+      label: tl('lesson_plan.jump_materials', 'Materials')
+    } : null, objectives.length > 0 ? {
+      id: 'lp-section-objectives',
+      label: tl('lesson_plan.jump_objectives', 'Objectives')
+    } : null, _lessonPlanText(generatedContent?.data?.directInstruction).trim() ? {
+      id: 'lp-section-instruction',
+      label: tl('lesson_plan.jump_instruction', 'Instruction')
+    } : null, _lessonPlanText(generatedContent?.data?.guidedPractice).trim() || _lessonPlanText(generatedContent?.data?.independentPractice).trim() ? {
+      id: 'lp-section-practice',
+      label: tl('lesson_plan.jump_practice', 'Practice')
+    } : null, _lessonPlanText(generatedContent?.data?.closure).trim() ? {
+      id: 'lp-section-closure',
+      label: tl('lesson_plan.jump_closure', 'Closure')
+    } : null].filter(Boolean);
+    if (jumpSections.length < 2) return null;
+    return /*#__PURE__*/React.createElement("nav", {
+      "data-lesson-plan-jump-nav": true,
+      "aria-label": tl('lesson_plan.jump_nav_aria', 'Jump to lesson section'),
+      className: "mb-4 flex flex-wrap items-center gap-1.5 no-print"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-xs font-bold text-indigo-800 mr-1"
+    }, tl('lesson_plan.jump_to', 'Jump to:')), jumpSections.map(sec => /*#__PURE__*/React.createElement("button", {
+      key: sec.id,
+      type: "button",
+      "data-lp-jump": sec.id,
+      onClick: () => jumpToLessonSection(sec.id),
+      className: "min-h-9 rounded-full border border-indigo-200 bg-white px-3 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, sec.label)));
+  })(), !audienceView && added && added.length > 0 && /*#__PURE__*/React.createElement(LessonPlanAddedNotice, {
     items: added,
     onOpen: openAdded,
     tl: tl,
@@ -995,24 +1150,41 @@ function LessonPlanView(props) {
   }, tl('lesson_plan.script_woven_edit_hint', 'To edit, regenerate or choose another version, use the Teaching script section below the lesson.'))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, (materialsNeeded.length > 0 || isEditingLessonPlan) && /*#__PURE__*/React.createElement("div", {
-    className: "bg-white p-4 rounded-lg border border-indigo-100"
+    id: "lp-section-materials",
+    className: "bg-white p-4 rounded-lg border border-indigo-100 scroll-mt-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-between gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("h4", {
-    className: "text-xs font-black text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-2"
+    className: "text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Backpack, {
     size: 14
-  }), " ", t('lesson_plan.materials_header')), isEditingLessonPlan ? /*#__PURE__*/React.createElement(LessonPlanListEditor, {
+  }), " ", t('lesson_plan.materials_header')), !isEditingLessonPlan && materialsNeeded.filter(m => m != null).length > 0 && (() => {
+    const totalMats = materialsNeeded.filter(m => m != null).length;
+    const readyMats = materialsNeeded.reduce((n, m, i) => n + (m != null && checkedMaterials[i] ? 1 : 0), 0);
+    return /*#__PURE__*/React.createElement("span", {
+      "data-lesson-materials-progress": true,
+      className: `no-print text-xs font-bold rounded-full border px-2.5 py-0.5 ${readyMats === totalMats ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-slate-50 text-slate-700 border-slate-300'}`
+    }, readyMats === totalMats ? '✓ ' + tl('lesson_plan.materials_all_ready', 'All {total} ready').replace('{total}', String(totalMats)) : tl('lesson_plan.materials_ready_count', '{ready}/{total} ready').replace('{ready}', String(readyMats)).replace('{total}', String(totalMats)));
+  })()), isEditingLessonPlan ? /*#__PURE__*/React.createElement(LessonPlanListEditor, {
     key: String(generatedContent.id) + ":materials",
     field: "materialsNeeded",
     value: generatedContent.data.materialsNeeded,
     onChange: handleLessonPlanChange,
     t: t
   }) : /*#__PURE__*/React.createElement("ul", {
-    className: "list-disc list-inside text-sm text-slate-700 space-y-1"
+    className: "list-none text-sm text-slate-700 space-y-1.5"
   }, materialsNeeded.map((mat, i) => mat == null ? null : /*#__PURE__*/React.createElement("li", {
     key: i,
-    className: "flex items-start gap-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "w-full"
+    className: "flex items-start gap-2.5"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    "data-lesson-material-check": i,
+    checked: !!checkedMaterials[i],
+    onChange: () => toggleMaterialChecked(i),
+    "aria-label": tl('lesson_plan.mark_material_ready', 'Mark material {n} ready').replace('{n}', String(i + 1)),
+    className: "no-print mt-1 h-4 w-4 shrink-0 rounded border-slate-400 text-indigo-600 accent-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 cursor-pointer"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: `w-full ${checkedMaterials[i] ? 'line-through text-slate-500' : ''}`
   }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
     text: normalizeMaterialItem(mat)
   })))))), /*#__PURE__*/React.createElement("div", {
@@ -1031,7 +1203,8 @@ function LessonPlanView(props) {
     text: generatedContent?.data.essentialQuestion,
     className: "text-lg text-slate-800 italic leading-relaxed"
   })), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-1 md:grid-cols-2 gap-4"
+    id: "lp-section-objectives",
+    className: "grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -1119,10 +1292,10 @@ function LessonPlanView(props) {
       }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
         text: statement
       })), criterionId && !audienceView && /*#__PURE__*/React.createElement("span", {
-        className: "max-w-full break-all text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100",
+        className: "max-w-full break-all text-xs font-mono px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100",
         title: c.source === 'quiz' ? tl('lesson_plan.criteria_chip_quiz', 'Rolls up from the quiz questions carrying this concept label') : tl('lesson_plan.criteria_chip_objective', 'Derived from an objective')
       }, criterionId), pct !== null && /*#__PURE__*/React.createElement("span", {
-        className: `text-[11px] font-bold px-2 py-0.5 rounded-full border ${pct >= 80 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : pct >= 60 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-rose-50 text-rose-800 border-rose-200'}`,
+        className: `text-xs font-bold px-2 py-0.5 rounded-full border ${pct >= 80 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : pct >= 60 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-rose-50 text-rose-800 border-rose-200'}`,
         "data-criterion-mastery": c.id
       }, tl('lesson_plan.criteria_met', '{pct}% met ({met}/{total})').replace('{pct}', pct).replace('{met}', s.met).replace('{total}', s.total)), pct !== null && pct < 80 && !audienceView && typeof handleActivateNextLesson === 'function' && /*#__PURE__*/React.createElement("button", {
         type: "button",
@@ -1134,14 +1307,15 @@ function LessonPlanView(props) {
         }, {
           synthetic: true
         }),
-        className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+        className: "text-xs font-bold px-2 py-0.5 rounded-full bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-50"
       }, t('lesson_plan.reteach') || 'Reteach'));
     })), !audienceView && /*#__PURE__*/React.createElement("p", {
-      className: "mt-2 text-[11px] text-slate-600",
+      className: "mt-2 text-xs text-slate-600",
       "data-criteria-source": rollup.status
     }, footer));
   })(), /*#__PURE__*/React.createElement("div", {
-    className: "bg-white p-4 rounded-lg border border-indigo-100"
+    id: "lp-section-instruction",
+    className: "bg-white p-4 rounded-lg border border-indigo-100 scroll-mt-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(BookOpen, {
@@ -1161,7 +1335,8 @@ function LessonPlanView(props) {
     phase: "directInstruction",
     t: t
   }), addedFor('directInstruction')), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-1 md:grid-cols-2 gap-4"
+    id: "lp-section-practice",
+    className: "grid grid-cols-1 md:grid-cols-2 gap-4 scroll-mt-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -1201,7 +1376,8 @@ function LessonPlanView(props) {
     phase: "independentPractice",
     t: t
   }), addedFor('independentPractice'))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-white p-4 rounded-lg border border-indigo-100"
+    id: "lp-section-closure",
+    className: "bg-white p-4 rounded-lg border border-indigo-100 scroll-mt-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -1379,7 +1555,7 @@ function LessonPlanView(props) {
         tools: tools,
         teacherNote: '',
         createdAt: new Date().toISOString(),
-        lessonTitle: generatedContent.data.essentialQuestion || sourceTopic || ''
+        lessonTitle: _lessonPlanText(generatedContent.data.essentialQuestion) || sourceTopic || ''
       };
       try {
         const existing = JSON.parse(localStorage.getItem('alloflow_stem_stations') || '[]');
@@ -1483,7 +1659,7 @@ function LessonPlanView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-3"
   }, /*#__PURE__*/React.createElement("span", {
-    className: `text-[11px] font-black uppercase px-2 py-1 rounded-full border ${option.type === 'Deep Dive' ? 'bg-purple-100 text-purple-700 border-purple-200' : option.type === 'Remediation' ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-blue-100 text-blue-700 border-blue-200'}`
+    className: `text-xs font-black uppercase px-2 py-1 rounded-full border ${option.type === 'Deep Dive' ? 'bg-purple-100 text-purple-700 border-purple-200' : option.type === 'Remediation' ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-blue-100 text-blue-700 border-blue-200'}`
   }, option.type || "Linear")), /*#__PURE__*/React.createElement("h5", {
     className: "font-bold text-slate-800 text-sm mb-2 leading-tight",
     title: option.nextTopic

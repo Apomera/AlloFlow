@@ -588,7 +588,7 @@
         heal += ability.heal || 0;
         shield += ability.shield || 0;
         correctAbilityIds.push(ability.id);
-        var committedRole = typeof action.roleId === 'string' ? action.roleId : roles && roles[uid];
+        var committedRole = typeof action.roleId === 'string' ? action.roleId : (roles && Object.prototype.hasOwnProperty.call(roles, uid) ? roles[uid] : undefined);
         var role = ROLES.find(function(entry) { return entry.id === committedRole; });
         if (role && role.abilityId === ability.id) { damage += 1; synergyCount += 1; }
       } else {
@@ -599,7 +599,7 @@
     Object.keys(actions || {}).sort().forEach(function(uid) {
       var action = actions[uid] || {};
       var targetUid = cleanText(action.supportTargetUid, '', 128);
-      if (!targetUid || targetUid === uid || !actions[targetUid]) return;
+      if (!targetUid || targetUid === uid || !Object.prototype.hasOwnProperty.call(actions, targetUid) || !actions[targetUid]) return;
       var helperCorrect = action.answerIndex === challenge.correctIndex;
       if (!helperCorrect) return;
       var supportId = action.supportId;
@@ -1415,10 +1415,11 @@
   function validateResponse(value) {
     if (value === null || value === undefined) return null;
     requireValue(plain(value), 'The unfinished response is invalid.');
-    var output = safePick(value, ['answerIndex','selectedIndices','text','unit','verifyAnswer','wrongIndex','principleAnswer','pairIndex','partnerAnswer','evidenceIndex','guideRevealed','selfReview','abilityId']);
+    var output = safePick(value, ['answerIndex','selectedIndices','order','text','unit','verifyAnswer','wrongIndex','principleAnswer','pairIndex','partnerAnswer','evidenceIndex','guideRevealed','selfReview','abilityId']);
     ['answerIndex','wrongIndex','pairIndex','evidenceIndex'].forEach(function(key) { if (own(output,key)) requireValue(output[key] === null || integer(output[key],0,100000), 'The unfinished response has an invalid index.'); });
     ['text','unit','principleAnswer','partnerAnswer'].forEach(function(key) { if (own(output,key)) requireValue(output[key] === null || boundedText(output[key], key === 'text' ? 100000 : 20000, true), 'The unfinished response has invalid text.'); });
     if (own(output,'selectedIndices')) requireValue(Array.isArray(output.selectedIndices) && output.selectedIndices.every(function(index) { return integer(index,0,100000); }) && new Set(output.selectedIndices).size === output.selectedIndices.length, 'The unfinished selections are invalid.');
+    if (own(output,'order')) requireValue(output.order === null || (Array.isArray(output.order) && output.order.every(function(index) { return integer(index,0,100000); }) && new Set(output.order).size === output.order.length), 'The unfinished order is invalid.');
     if (own(output,'verifyAnswer')) requireValue(output.verifyAnswer === null || output.verifyAnswer === '' || ['yes','no'].indexOf(output.verifyAnswer) >= 0, 'The unfinished verification is invalid.');
     if (own(output,'guideRevealed')) requireValue(typeof output.guideRevealed === 'boolean', 'The guide state is invalid.');
     if (own(output,'selfReview')) requireValue(output.selfReview === '' || ['understood','needs-practice'].indexOf(output.selfReview) >= 0, 'The self-review state is invalid.');
@@ -1777,8 +1778,10 @@ const ConceptQuestSoloGMHelpers = (() => {
     if (/\b(?:you|your party|your character|the party)\s+(?:have\s+|has\s+)?(?:gain(?:ed)?|earn(?:ed)?|receiv(?:e|ed)|recover(?:ed)?|restor(?:e|ed)|lose|lost)\s+(?:\d+|an?|some|more)\s+(?:(?:extra|bonus|new)\s+)?(?:xp|experience|hp|health|shields?|sigils?|items?|coins?|gold|points|rewards?)\b/i.test(prose)) throw new Error('invented-effect');
     if (!ctx.attempted && ctx.quest?.phase === 'battle') {
       if (/correct (?:answer|option|choice)\s*(?:is|:)|choose (?:option|answer|choice)\s*[a-f0-9]\b/.test(prose)) throw new Error('answer-reveal');
-      for (const option of [...(ctx.room?.challenge?.options || []), ...(ctx.room?.challenge?.answerOptions || []), ...(ctx.room?.challenge?.evidenceOptions || []), ctx.room?.challenge?.expectedFill, ctx.room?.challenge?.expectedAnswer, ctx.room?.challenge?.correctPartnerForWrong].filter(value => typeof value === 'string')) {
-        const text = String(option).normalize('NFC').trim().toLocaleLowerCase();
+      const rawCandidates = [...(ctx.room?.challenge?.options || []), ...(ctx.room?.challenge?.answerOptions || []), ...(ctx.room?.challenge?.evidenceOptions || []), ...(ctx.room?.challenge?.principleOptions || []), ...(ctx.room?.challenge?.candidatePartners || []), ctx.room?.challenge?.expectedFill, ctx.room?.challenge?.expectedAnswer, ctx.room?.challenge?.correctPartnerForWrong, ctx.room?.challenge?.expectedNumber != null ? String(ctx.room.challenge.expectedNumber) : null];
+      for (const option of rawCandidates) {
+        const extracted = typeof option === 'string' ? option : option && typeof option === 'object' ? option.text || option.label || '' : '';
+        const text = String(extracted || '').normalize('NFC').trim().toLocaleLowerCase();
         if (text.length < 3) continue;
         const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         if (new RegExp('(^|[^\\p{L}\\p{N}])' + escaped + '($|[^\\p{L}\\p{N}])', 'u').test(prose)) throw new Error('answer-reveal');
@@ -1866,7 +1869,7 @@ function _cqGmAiUsable(fn) {
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
   } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true));
 }
 function ConceptQuestSoloGM({
   quest,
@@ -1895,16 +1898,17 @@ function ConceptQuestSoloGM({
   const [, setAiConfigRevision] = React.useState(0);
   React.useEffect(() => {
     const onAiChange = () => setAiConfigRevision(v => v + 1);
+    const events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed'];
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-      window.addEventListener('alloflow:ai-config-changed', onAiChange);
+      events.forEach(ev => window.addEventListener(ev, onAiChange));
     }
     return () => {
       if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
-        window.removeEventListener('alloflow:ai-config-changed', onAiChange);
+        events.forEach(ev => window.removeEventListener(ev, onAiChange));
       }
     };
   }, []);
-  const ctx = helpers.context(quest, generatedContent, inputText);
+  const ctx = React.useMemo(() => helpers.context(quest, generatedContent, inputText), [quest, generatedContent, inputText]);
   const current = helpers.sanitizeState(gmState, ctx.scope);
   const hasProvider = _cqGmAiUsable(callGemini);
   const aiEnabled = enabled !== false && hasProvider;
@@ -2041,16 +2045,17 @@ function ConceptQuestSoloGM({
     className: "h-4 w-4 accent-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }), tr('solo_gm_ai_toggle', 'AI game master'))), !hasProvider && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
-  }, tr('solo_gm_no_provider', 'The adventure guide is available now. AI narration becomes available when your AI provider is connected.')), SetupNotice && /*#__PURE__*/React.createElement(SetupNotice, {
+  }, tr('solo_gm_no_provider', 'The adventure guide is available now. AI narration becomes available when your AI provider is connected.')), SetupNotice && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) && /*#__PURE__*/React.createElement(SetupNotice, {
     t: t,
     kind: "text"
   })), busy && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "text-sm text-indigo-800"
   }, tr('solo_gm_thinking', 'Your game master is thinking. You can keep playing while the story catches up.')), failed && /*#__PURE__*/React.createElement("div", {
-    role: "status",
     className: "rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"
-  }, /*#__PURE__*/React.createElement("p", null, tr('solo_gm_failed', 'AI narration is unavailable for this moment. Your adventure guide is ready and you can keep playing.')), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("p", {
+    role: "status"
+  }, tr('solo_gm_failed', 'AI narration is unavailable for this moment. Your adventure guide is ready and you can keep playing.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: busy,
     onClick: () => run(retryRef.current),
@@ -2146,6 +2151,20 @@ function ConceptQuestSoloGM({
 }
 
 /* Accessible independent responses shared by solo encounters and resumed runs. */
+function _safeQuestQuestionImageUrl(raw) {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed || /[\u0000-\u001f<>]/.test(trimmed)) return '';
+  if (/^data:image\/(?:png|jpeg|jpg|webp|gif|avif);base64,[A-Za-z0-9+/=\s]+$/i.test(trimmed)) return trimmed;
+  if (/^blob:/i.test(trimmed)) return trimmed;
+  if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed) && !trimmed.startsWith('//')) return trimmed;
+  if (typeof window !== 'undefined' && (window.__alloOfflineOnly === true || window._isDesktopBundledApp === true)) return '';
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) return parsed.href;
+  } catch (_) {}
+  return '';
+}
 function ConceptQuestSoloQuestion({
   item,
   response = {},
@@ -2155,6 +2174,7 @@ function ConceptQuestSoloQuestion({
   onGuideOpen,
   t
 }) {
+  const safeResponse = response && typeof response === 'object' ? response : {};
   // Item text uses the Assess view's light markdown (Concept Quest opens from it); plain text without it.
   const cqMd = window.AlloModules?.QuizView?.markdown || {
     inline: v => v == null ? '' : String(v),
@@ -2166,8 +2186,10 @@ function ConceptQuestSoloQuestion({
     return typeof value === 'string' && value !== 'concept_quest.' + key ? value : fallback;
   };
   const uid = React.useId();
+  const [reorderNotice, setReorderNotice] = React.useState('');
+  const orderListRef = React.useRef(null);
   const update = patch => onChange({
-    ...response,
+    ...safeResponse,
     ...patch
   });
   const type = item.type || 'mcq';
@@ -2193,14 +2215,15 @@ function ConceptQuestSoloQuestion({
   };
   const choiceContent = (field, index, text, prefix = '') => {
     const support = choiceSupport(field);
+    const safeImg = _safeQuestQuestionImageUrl(support.images[index]);
     return /*#__PURE__*/React.createElement("span", {
       "data-solo-choice-field": field,
       "data-solo-choice-index": index,
       className: "min-w-0 flex-1 break-words"
     }, /*#__PURE__*/React.createElement("span", null, prefix, cqMd.inline(text)), support.translations[index] && /*#__PURE__*/React.createElement("span", {
       className: "mt-1 block text-sm font-normal italic opacity-80"
-    }, cqMd.inline(support.translations[index])), support.images[index] && /*#__PURE__*/React.createElement("img", {
-      src: support.images[index],
+    }, cqMd.inline(support.translations[index])), safeImg && /*#__PURE__*/React.createElement("img", {
+      src: safeImg,
       alt: imageAlt(support.descriptions[index]),
       loading: "lazy",
       className: "my-2 max-h-48 w-full rounded bg-white object-contain"
@@ -2220,33 +2243,35 @@ function ConceptQuestSoloQuestion({
   const pairSide = (pair, index, side) => {
     pair = pair && typeof pair === 'object' ? pair : {};
     const translation = pair[side + '_en'] || item.pairs_en?.[index]?.[side];
+    const safeImg = _safeQuestQuestionImageUrl(pair[side + 'ImageUrl']);
     return /*#__PURE__*/React.createElement("span", {
       "data-solo-pair-side": side,
       className: "min-w-0 flex-1 break-words"
     }, /*#__PURE__*/React.createElement("span", null, cqMd.inline(pair[side])), translation && /*#__PURE__*/React.createElement("span", {
       className: "mt-1 block text-sm font-normal italic opacity-80"
-    }, cqMd.inline(translation)), pair[side + 'ImageUrl'] && /*#__PURE__*/React.createElement("img", {
-      src: pair[side + 'ImageUrl'],
+    }, cqMd.inline(translation)), safeImg && /*#__PURE__*/React.createElement("img", {
+      src: safeImg,
       alt: imageAlt(pair[side + 'ImageAltText']),
       loading: "lazy",
       className: "my-2 max-h-48 w-full rounded bg-white object-contain"
     }));
   };
   const pairLabel = (pair, index) => {
-    const left = pair.left_en || item.pairs_en?.[index]?.left,
-      right = pair.right_en || item.pairs_en?.[index]?.right;
-    return cqMd.plain(pair.left + ' / ' + pair.right + (left || right ? ' — ' + (left || pair.left) + ' / ' + (right || pair.right) : ''));
+    const safePair = pair && typeof pair === 'object' ? pair : {};
+    const left = safePair.left_en || item.pairs_en?.[index]?.left,
+      right = safePair.right_en || item.pairs_en?.[index]?.right;
+    return cqMd.plain((safePair.left ?? '') + ' / ' + (safePair.right ?? '') + (left || right ? ' — ' + (left || safePair.left || '') + ' / ' + (right || safePair.right || '') : ''));
   };
   const choiceClass = selected => 'flex min-h-11 items-start gap-3 rounded-xl border-2 p-3 text-left ' + (selected ? 'border-indigo-600 bg-indigo-50' : 'border-slate-300 bg-white');
   const textClass = 'min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-600';
   const guide = window.AlloModules.ConceptQuestSoloEngine.answerGuide(item);
   const renderChoice = (option, index, field, name, sourceField) => /*#__PURE__*/React.createElement("label", {
     key: index,
-    className: choiceClass(response[field] === index)
+    className: choiceClass(safeResponse[field] === index)
   }, /*#__PURE__*/React.createElement("input", {
     type: "radio",
     name: uid + name,
-    checked: response[field] === index,
+    checked: safeResponse[field] === index,
     onChange: () => update({
       [field]: index
     }),
@@ -2256,15 +2281,22 @@ function ConceptQuestSoloQuestion({
   const orderItems = Array.isArray(item.items) ? item.items : [];
   const presented = Array.isArray(item.presentedOrder) && item.presentedOrder.length ? item.presentedOrder.map(entry => typeof entry === 'number' ? orderItems[entry] : entry) : orderItems;
   const presentedIndices = Array.isArray(item.presentedOrder) && item.presentedOrder.length === orderItems.length && item.presentedOrder.every(entry => Number.isInteger(entry) && entry >= 0 && entry < orderItems.length) ? item.presentedOrder : orderItems.map((_, index) => index);
-  const arranged = Array.isArray(response.order) && response.order.length === orderItems.length ? response.order : presentedIndices;
+  const arranged = Array.isArray(safeResponse.order) && safeResponse.order.length === orderItems.length ? safeResponse.order : presentedIndices;
   const moveStep = (position, delta) => {
     const target = position + delta;
     if (target < 0 || target >= arranged.length) return;
+    const movedCanonical = arranged[position];
     const next = arranged.slice();
     next[position] = arranged[target];
-    next[target] = arranged[position];
+    next[target] = movedCanonical;
     update({
       order: next
+    });
+    setReorderNotice(`${cqMd.plain(orderItems[movedCanonical])} moved to position ${target + 1} of ${arranged.length}.`);
+    const preferredDir = delta < 0 && target === 0 ? 'down' : delta > 0 && target === arranged.length - 1 ? 'up' : delta < 0 ? 'up' : 'down';
+    Promise.resolve().then(() => {
+      const btn = orderListRef.current?.querySelector(`button[data-seq-canonical="${movedCanonical}"][data-seq-dir="${preferredDir}"]:not([disabled])`);
+      if (btn && typeof btn.focus === 'function') btn.focus();
     });
   };
   const moveClass = 'min-h-11 min-w-11 rounded border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
@@ -2278,6 +2310,8 @@ function ConceptQuestSoloQuestion({
   // A missing automatic key changes how the learner responds, not the material
   // they need to inspect. Keep the authored stimulus available for self-review.
   const reviewOrder = new Set(presentedIndices).size === orderItems.length ? presentedIndices : orderItems.map((_, index) => index);
+  const safeSelectedIndices = Array.isArray(safeResponse.selectedIndices) ? safeResponse.selectedIndices : [];
+  const safeItemImageUrl = _safeQuestQuestionImageUrl(item.imageUrl);
   return /*#__PURE__*/React.createElement("fieldset", {
     disabled: disabled,
     className: "space-y-4",
@@ -2289,8 +2323,8 @@ function ConceptQuestSoloQuestion({
     className: "break-words text-lg font-bold"
   }, cqMd.inline(item.prompt || item.question)), item.question_en && /*#__PURE__*/React.createElement("p", {
     className: "text-sm italic text-slate-600"
-  }, cqMd.inline(item.question_en)), item.imageUrl && /*#__PURE__*/React.createElement("img", {
-    src: item.imageUrl,
+  }, cqMd.inline(item.question_en)), safeItemImageUrl && /*#__PURE__*/React.createElement("img", {
+    src: safeItemImageUrl,
     alt: imageAlt(item.imageAltText),
     className: "max-h-72 w-full rounded-xl bg-white object-contain"
   }), !requiresReview && type === 'mcq' && /*#__PURE__*/React.createElement("div", {
@@ -2300,7 +2334,7 @@ function ConceptQuestSoloQuestion({
   }, tr('solo_select_all', 'Select every answer that applies.')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
   }, (item.options || []).map((option, index) => {
-    const selected = (response.selectedIndices || []).includes(index);
+    const selected = safeSelectedIndices.includes(index);
     return /*#__PURE__*/React.createElement("label", {
       key: index,
       className: choiceClass(selected)
@@ -2308,7 +2342,7 @@ function ConceptQuestSoloQuestion({
       type: "checkbox",
       checked: selected,
       onChange: () => update({
-        selectedIndices: selected ? response.selectedIndices.filter(value => value !== index) : [...(response.selectedIndices || []), index]
+        selectedIndices: selected ? safeSelectedIndices.filter(value => value !== index) : [...safeSelectedIndices, index]
       }),
       className: "mt-1 h-4 w-4 accent-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     }), choiceContent('options', index, option));
@@ -2317,7 +2351,7 @@ function ConceptQuestSoloQuestion({
   }, type === 'numeric-response' ? tr('solo_numeric_answer', 'Your value') : tr('solo_fill_answer', 'Complete the blank'), /*#__PURE__*/React.createElement("input", {
     "aria-describedby": uid + '-prompt',
     inputMode: type === 'numeric-response' ? 'decimal' : undefined,
-    value: response.text || '',
+    value: safeResponse.text || '',
     maxLength: 4000,
     onChange: event => update({
       text: event.target.value
@@ -2326,7 +2360,7 @@ function ConceptQuestSoloQuestion({
   })), type === 'numeric-response' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_units', 'Units'), /*#__PURE__*/React.createElement("input", {
-    value: response.unit || '',
+    value: safeResponse.unit || '',
     maxLength: 100,
     onChange: event => update({
       unit: event.target.value
@@ -2334,7 +2368,7 @@ function ConceptQuestSoloQuestion({
     className: textClass + ' mt-2'
   })), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600"
-  }, tr('solo_numeric_help', 'Enter a number, decimal, or fraction. Include units when the question requires them.')), response.text && !window.AlloModules.ConceptQuestSoloEngine.grade(item, response).complete && /*#__PURE__*/React.createElement("p", {
+  }, tr('solo_numeric_help', 'Enter a number, decimal, or fraction. Include units when the question requires them.')), safeResponse.text && !window.AlloModules.ConceptQuestSoloEngine.grade(item, safeResponse).complete && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "text-sm text-amber-900"
   }, tr('solo_numeric_invalid', 'Check that the value is a valid number and that any units in both fields agree.')))), !requiresReview && type === 'sequence-sense' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("ol", {
@@ -2346,7 +2380,7 @@ function ConceptQuestSoloQuestion({
   }, choiceContent('items', presentedIndices[index], text)))), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_sequence_check', 'Is this sequence in the correct order?'), /*#__PURE__*/React.createElement("select", {
-    value: response.verifyAnswer || '',
+    value: safeResponse.verifyAnswer || '',
     onChange: event => update({
       verifyAnswer: event.target.value,
       wrongIndex: null
@@ -2358,10 +2392,10 @@ function ConceptQuestSoloQuestion({
     value: "yes"
   }, tr('solo_yes', 'Yes')), /*#__PURE__*/React.createElement("option", {
     value: "no"
-  }, tr('solo_no', 'No')))), response.verifyAnswer === 'no' && /*#__PURE__*/React.createElement("label", {
+  }, tr('solo_no', 'No')))), safeResponse.verifyAnswer === 'no' && /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_wrong_position', 'Which position needs correcting?'), /*#__PURE__*/React.createElement("select", {
-    value: response.wrongIndex ?? '',
+    value: safeResponse.wrongIndex ?? '',
     onChange: event => update({
       wrongIndex: event.target.value === '' ? null : Number(event.target.value)
     }),
@@ -2375,7 +2409,13 @@ function ConceptQuestSoloQuestion({
     className: "space-y-2"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-semibold"
-  }, tr('solo_arrange_order', 'Put the steps in the correct order. If they are already right, leave them.')), /*#__PURE__*/React.createElement("ol", {
+  }, tr('solo_arrange_order', 'Put the steps in the correct order. If they are already right, leave them.')), /*#__PURE__*/React.createElement("p", {
+    className: "sr-only",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
+  }, reorderNotice), /*#__PURE__*/React.createElement("ol", {
+    ref: orderListRef,
     "aria-label": tr('solo_your_order', 'Your order'),
     className: "space-y-2 rounded-xl border border-slate-200 bg-white p-4"
   }, arranged.map((canonicalIndex, position) => /*#__PURE__*/React.createElement("li", {
@@ -2385,12 +2425,16 @@ function ConceptQuestSoloQuestion({
     className: "w-6 flex-shrink-0 text-xs font-bold text-slate-600"
   }, position + 1, "."), choiceContent('items', canonicalIndex, orderItems[canonicalIndex]), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "data-seq-canonical": canonicalIndex,
+    "data-seq-dir": "up",
     disabled: position === 0,
     "aria-label": tr('solo_move_up', 'Move up') + ': ' + cqMd.plain(orderItems[canonicalIndex]),
     onClick: () => moveStep(position, -1),
     className: moveClass
   }, "▲"), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "data-seq-canonical": canonicalIndex,
+    "data-seq-dir": "down",
     disabled: position === arranged.length - 1,
     "aria-label": tr('solo_move_down', 'Move down') + ': ' + cqMd.plain(orderItems[canonicalIndex]),
     onClick: () => moveStep(position, 1),
@@ -2398,7 +2442,7 @@ function ConceptQuestSoloQuestion({
   }, "▼"))))), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_ordering_reason', 'What principle determines the order?'), Array.isArray(item.principleOptions) && item.principleOptions.length ? /*#__PURE__*/React.createElement("select", {
-    value: response.principleAnswer || '',
+    value: safeResponse.principleAnswer || '',
     onChange: event => update({
       principleAnswer: event.target.value
     }),
@@ -2409,7 +2453,7 @@ function ConceptQuestSoloQuestion({
     key: index,
     value: option
   }, optionLabel('principleOptions', index, option)))) : /*#__PURE__*/React.createElement("input", {
-    value: response.principleAnswer || '',
+    value: safeResponse.principleAnswer || '',
     onChange: event => update({
       principleAnswer: event.target.value
     }),
@@ -2429,7 +2473,7 @@ function ConceptQuestSoloQuestion({
   }, "↔"), pairSide(pair, index, 'right'))))), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_mismatch_pair', 'Which pair does not belong?'), /*#__PURE__*/React.createElement("select", {
-    value: response.pairIndex ?? '',
+    value: safeResponse.pairIndex ?? '',
     onChange: event => update({
       pairIndex: event.target.value === '' ? null : Number(event.target.value)
     }),
@@ -2442,7 +2486,7 @@ function ConceptQuestSoloQuestion({
   }, index + 1, ". ", pairLabel(pair, index))))), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_correct_partner', 'Choose or write the correct partner'), Array.isArray(item.candidatePartners) && item.candidatePartners.length ? /*#__PURE__*/React.createElement("select", {
-    value: response.partnerAnswer || '',
+    value: safeResponse.partnerAnswer || '',
     onChange: event => update({
       partnerAnswer: event.target.value
     }),
@@ -2453,7 +2497,8 @@ function ConceptQuestSoloQuestion({
     key: index,
     value: partner
   }, optionLabel('candidatePartners', index, partner)))) : /*#__PURE__*/React.createElement("input", {
-    value: response.partnerAnswer || '',
+    value: safeResponse.partnerAnswer || '',
+    maxLength: 2000,
     onChange: event => update({
       partnerAnswer: event.target.value
     }),
@@ -2518,7 +2563,7 @@ function ConceptQuestSoloQuestion({
   }, tr('solo_written_scope', 'Explain your reasoning, then compare it with the answer guide. This is a self-review checkpoint; it is not automatically graded and does not award correctness XP.')), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_your_explanation', 'Your explanation'), /*#__PURE__*/React.createElement("textarea", {
-    value: response.text || '',
+    value: safeResponse.text || '',
     onChange: event => update({
       text: event.target.value,
       guideRevealed: false,
@@ -2529,7 +2574,7 @@ function ConceptQuestSoloQuestion({
     className: textClass + ' mt-2'
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    disabled: !(response.text || '').trim(),
+    disabled: !(safeResponse.text || '').trim(),
     onClick: () => {
       update({
         guideRevealed: true
@@ -2537,13 +2582,13 @@ function ConceptQuestSoloQuestion({
       onGuideOpen?.(true);
     },
     className: "min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-2 font-bold text-indigo-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, tr('solo_compare_guide', 'Compare with answer guide')), guideOpen && response.guideRevealed && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, tr('solo_compare_guide', 'Compare with answer guide')), guideOpen && safeResponse.guideRevealed && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-950",
     role: "status"
   }, /*#__PURE__*/React.createElement("strong", null, tr('solo_answer_guide', 'Answer guide'), ": "), cqMd.inline(guide)), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold"
   }, tr('solo_self_review_label', 'After comparing your explanation'), /*#__PURE__*/React.createElement("select", {
-    value: response.selfReview || '',
+    value: safeResponse.selfReview || '',
     onChange: event => update({
       selfReview: event.target.value
     }),
@@ -2624,9 +2669,8 @@ function ConceptQuestTargetedPractice({
     className: "text-sm"
   }, tr('solo_targeted_help', 'These checks save with your adventure and stay separate from its original scores, health, and experience.')), /*#__PURE__*/React.createElement("p", {
     role: "status"
-  }, position + ' / ' + targets.length + ' ' + tr('solo_targeted_checked', 'practice items checked')), checked && lastItem ? /*#__PURE__*/React.createElement("div", {
-    role: "status"
-  }, /*#__PURE__*/React.createElement("p", {
+  }, position + ' / ' + targets.length + ' ' + tr('solo_targeted_checked', 'practice items checked')), checked && lastItem ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    role: "status",
     className: "font-bold"
   }, last.gradable ? last.correct ? tr('solo_targeted_correct', 'Correct practice response') : tr('solo_targeted_review', 'Review this idea again') : tr('solo_targeted_self_review', 'Self-review recorded; no automatic score.')), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 whitespace-pre-wrap"
@@ -2693,7 +2737,7 @@ function _cqAiUsable(fn) {
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
   } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true));
 }
 function ConceptQuestSolo({
   generatedContent,
@@ -2728,22 +2772,29 @@ function ConceptQuestSolo({
     userId,
     appId: appId || 'alloflow-local'
   };
-  const sourceSignature = JSON.stringify([userId, context.appId, generatedContent]);
+  const sourceSignature = React.useMemo(() => {
+    try {
+      return JSON.stringify([userId, context.appId, generatedContent]);
+    } catch (_) {
+      return String(userId) + ':' + String(context.appId);
+    }
+  }, [userId, context.appId, generatedContent]);
   const [, setAiConfigRevision] = React.useState(0);
   React.useEffect(() => {
     const onAiChange = () => setAiConfigRevision(v => v + 1);
+    const events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed'];
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-      window.addEventListener('alloflow:ai-config-changed', onAiChange);
+      events.forEach(ev => window.addEventListener(ev, onAiChange));
     }
     return () => {
       if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
-        window.removeEventListener('alloflow:ai-config-changed', onAiChange);
+        events.forEach(ev => window.removeEventListener(ev, onAiChange));
       }
     };
   }, []);
   const items = React.useMemo(() => solo.normalizeItems(generatedContent), [sourceSignature]);
   const canUseAi = _cqAiUsable(callGemini);
-  const SetupNotice = typeof window !== 'undefined' && window.AlloModules?.AlloAiSetupNotice ? window.AlloModules.AlloAiSetupNotice : null;
+  const SetupNotice = typeof window !== 'undefined' ? window.AlloModules?.AlloAiSetupNotice || window.AlloAiSetupNotice || null : null;
   const [run, setRun] = React.useState(null);
   const [setupRole, setSetupRole] = React.useState('analyst');
   const [setupAi, setSetupAi] = React.useState(canUseAi);
@@ -2922,11 +2973,14 @@ function ConceptQuestSolo({
         gmState: null,
         aiEnabled: active ? active.aiEnabled : setupAi
       };
+      const latestSaved = saves.read(getLocalStorage(), context);
+      revision.current = latestSaved.revision ?? null;
+      saveBlocked.current = false;
       setRun(value);
       setError('');
       setConfirmation('');
       actionLock.current = false;
-      saveRun(value);
+      saveRun(value, true);
     } catch (failure) {
       setError(failure.message || tr('launch_failed', 'Concept Quest could not launch.'));
     }
@@ -2988,6 +3042,85 @@ function ConceptQuestSolo({
     }
   }
   const canResolve = item && solo.grade(item, active?.response || {}).complete;
+  const [speakingSoloKey, setSpeakingSoloKey] = React.useState('');
+  const [mapOpen, setMapOpen] = React.useState(true);
+  const speakingSoloRef = React.useRef('');
+  const speechTokenRef = React.useRef(0);
+  const soloMountedRef = React.useRef(true);
+  speakingSoloRef.current = speakingSoloKey;
+  React.useEffect(() => {
+    if (quest?.phase) setMapOpen(quest.phase === 'explore');
+  }, [quest?.phase]);
+  const stopSoloSpeech = () => {
+    speechTokenRef.current += 1;
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop();
+    } catch (_) {}
+    try {
+      if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel();
+    } catch (_) {}
+    if (soloMountedRef.current) setSpeakingSoloKey('');
+  };
+  React.useEffect(() => {
+    if (speakingSoloRef.current) stopSoloSpeech();
+  }, [quest?.sessionId, quest?.turn, quest?.currentRoomId, active?.recapOpen, confirmation]);
+  React.useEffect(() => {
+    soloMountedRef.current = true;
+    if (typeof window === 'undefined') return () => {
+      soloMountedRef.current = false;
+    };
+    const onSpeechState = e => {
+      if (soloMountedRef.current && speakingSoloRef.current && e && e.detail && e.detail.isPlaying === false) setSpeakingSoloKey('');
+    };
+    window.addEventListener('allo-speech-state', onSpeechState);
+    return () => {
+      soloMountedRef.current = false;
+      speechTokenRef.current += 1;
+      window.removeEventListener('allo-speech-state', onSpeechState);
+      if (speakingSoloRef.current) {
+        try {
+          if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop();
+        } catch (_) {}
+        try {
+          if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel();
+        } catch (_) {}
+      }
+    };
+  }, []);
+  const canSpeakSolo = Boolean(typeof window !== 'undefined' && (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function' || window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function'));
+  const toggleSpeakSolo = (key, rawText) => {
+    const clean = String(rawText || '').replace(/\s+/g, ' ').trim();
+    if (!clean) return;
+    if (speakingSoloKey === key) {
+      stopSoloSpeech();
+      return;
+    }
+    stopSoloSpeech();
+    const token = ++speechTokenRef.current;
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+        setSpeakingSoloKey(key);
+        Promise.resolve(window.AlloSpeechPlayer.speak(clean)).catch(() => {
+          if (soloMountedRef.current && speechTokenRef.current === token) setSpeakingSoloKey('');
+        });
+        return;
+      }
+      if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+        window.speechSynthesis.cancel();
+        const u = new window.SpeechSynthesisUtterance(clean);
+        u.onend = () => {
+          if (soloMountedRef.current && speechTokenRef.current === token) setSpeakingSoloKey('');
+        };
+        u.onerror = () => {
+          if (soloMountedRef.current && speechTokenRef.current === token) setSpeakingSoloKey('');
+        };
+        setSpeakingSoloKey(key);
+        window.speechSynthesis.speak(u);
+      }
+    } catch (_) {
+      if (soloMountedRef.current && speechTokenRef.current === token) setSpeakingSoloKey('');
+    }
+  };
   const saveMessage = saveStatus.status === 'saved' ? tr('solo_saved_device', 'Progress saved on this device.') : saveStatus.status === 'saving' ? tr('solo_saving', 'Saving progress...') : saveStatus.status === 'conflict' ? tr('solo_save_conflict', 'Another tab changed this saved adventure. Choose which progress to keep. Your current game is still open.') : ['unavailable', 'invalid'].includes(saveStatus.status) ? tr('solo_save_failed', 'Progress could not be saved on this device. Keep this adventure open and try saving again.') : '';
   return /*#__PURE__*/React.createElement("section", {
     "data-concept-quest-solo": "true",
@@ -3081,9 +3214,12 @@ function ConceptQuestSolo({
   }, tr('solo_saved_progress', '{done} of {total} assessment items explored.', {
     done: solo.coverage(saved.snapshot.quest).attempted,
     total: solo.coverage(saved.snapshot.quest).total
-  })), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-xs text-emerald-900"
-  }, new Date(saved.snapshot.savedAt).toLocaleString()), /*#__PURE__*/React.createElement("div", {
+  })), (() => {
+    const savedTs = Number(saved.snapshot?.savedAt);
+    return Number.isFinite(savedTs) && savedTs > 0 ? /*#__PURE__*/React.createElement("p", {
+      className: "mt-1 text-xs text-emerald-900"
+    }, new Date(savedTs).toLocaleString()) : null;
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -3120,7 +3256,7 @@ function ConceptQuestSolo({
     className: "h-4 w-4 accent-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }), tr('solo_enable_ai', 'Use AI as the game master')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600"
-  }, canUseAi ? tr('solo_ai_setup_help', 'The AI narrates the adventure and responds to your investigations, conversations, and explanations using lesson context. Game rules and scores stay in the engine.') : tr('solo_scripted_setup_help', 'A scripted guide is available now. The adventure remains playable without an AI connection.')), !canUseAi && SetupNotice && /*#__PURE__*/React.createElement(SetupNotice, {
+  }, canUseAi ? tr('solo_ai_setup_help', 'The AI narrates the adventure and responds to your investigations, conversations, and explanations using lesson context. Game rules and scores stay in the engine.') : tr('solo_scripted_setup_help', 'A scripted guide is available now. The adventure remains playable without an AI connection.')), !canUseAi && SetupNotice && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) && /*#__PURE__*/React.createElement(SetupNotice, {
     t: t,
     kind: "text"
   }), /*#__PURE__*/React.createElement("p", {
@@ -3161,11 +3297,25 @@ function ConceptQuestSolo({
   }), !confirmation && active.recapOpen && quest.lastRound && /*#__PURE__*/React.createElement("section", {
     className: "rounded-xl border-2 border-cyan-300 bg-cyan-50 p-4",
     "aria-label": tr('solo_round_result', 'Turn result')
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-start justify-between gap-2"
   }, /*#__PURE__*/React.createElement("h3", {
     ref: headingRef,
     tabIndex: -1,
     className: "text-lg font-black"
-  }, quest.lastRound.gradable === false ? tr('solo_review_recorded', 'Self-review recorded') : quest.lastRound.correct ? tr('solo_correct', 'Correct. Your ability succeeded!') : quest.lastRound.status === 'partially-correct' ? tr('solo_partly_correct', 'Partly correct. Review the answer guide before your next turn.') : tr('solo_incorrect', 'Review the concept and try another turn.')), quest.lastRound.gradable !== false && /*#__PURE__*/React.createElement("p", {
+  }, quest.lastRound.gradable === false ? tr('solo_review_recorded', 'Self-review recorded') : quest.lastRound.correct ? tr('solo_correct', 'Correct. Your ability succeeded!') : quest.lastRound.status === 'partially-correct' ? tr('solo_partly_correct', 'Partly correct. Review the answer guide before your next turn.') : tr('solo_incorrect', 'Review the concept and try another turn.')), canSpeakSolo && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-solo-listen-recap": true,
+    "aria-pressed": speakingSoloKey === 'recap',
+    onClick: () => {
+      const verdict = quest.lastRound.gradable === false ? tr('solo_review_recorded', 'Self-review recorded') : quest.lastRound.correct ? tr('solo_correct', 'Correct. Your ability succeeded!') : quest.lastRound.status === 'partially-correct' ? tr('solo_partly_correct', 'Partly correct. Review the answer guide before your next turn.') : tr('solo_incorrect', 'Review the concept and try another turn.');
+      const parts = [verdict, cqMd.plain(quest.lastRound.prompt), tr('solo_answer_guide', 'Answer guide') + ': ' + cqMd.plain(quest.lastRound.answerGuide || quest.lastRound.correctAnswer), quest.lastRound.explanation ? cqMd.plain(quest.lastRound.explanation) : ''].filter(Boolean);
+      toggleSpeakSolo('recap', parts.join('. '));
+    },
+    className: buttonClass + ' border border-cyan-500 bg-white text-cyan-900 text-xs inline-flex items-center gap-1.5'
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, speakingSoloKey === 'recap' ? '⏹' : '🔊'), /*#__PURE__*/React.createElement("span", null, speakingSoloKey === 'recap' ? tr('solo_stop_audio', 'Stop') : tr('solo_listen', 'Listen')))), quest.lastRound.gradable !== false && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-sm font-bold"
   }, tr('solo_item_score', '{score} / {maximum} for this item.', {
     score: quest.lastRound.score,
@@ -3262,18 +3412,48 @@ function ConceptQuestSolo({
   }, /*#__PURE__*/React.createElement("section", {
     className: "space-y-4 lg:col-span-2",
     "aria-label": tr('current_encounter_aria', 'Current encounter')
+  }, !currentRoom ? /*#__PURE__*/React.createElement("div", {
+    className: "rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold"
+  }, tr('solo_room_missing', 'This saved location could not be loaded.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setConfirmation('restart'),
+    className: buttonClass + ' mt-3 bg-indigo-700 text-white'
+  }, tr('solo_restart', 'Restart adventure'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-start justify-between gap-2"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold uppercase text-indigo-700"
   }, tr('solo_current_location', 'Current location')), /*#__PURE__*/React.createElement("h3", {
     ref: headingRef,
     tabIndex: -1,
     className: "text-xl font-black"
-  }, currentRoom.emoji, " ", currentRoom.name)), quest.phase === 'explore' ? /*#__PURE__*/React.createElement("div", {
+  }, currentRoom.emoji, " ", currentRoom.name)), canSpeakSolo && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-solo-listen-encounter": true,
+    "aria-pressed": speakingSoloKey === 'encounter',
+    onClick: () => {
+      const parts = [currentRoom.name];
+      if (quest.phase === 'explore') {
+        parts.push(tr('solo_path_help', 'Choose a connected path. Encounters help you explore lesson ideas; treasure rooms hold useful items.'));
+      } else {
+        if (currentRoom.enemy?.name) parts.push(currentRoom.enemy.name);
+        if (quest.activeEvent?.title) parts.push(cqMd.plain(quest.activeEvent.title) + '. ' + cqMd.plain(quest.activeEvent.description || ''));
+        if (item?.prompt) parts.push(cqMd.plain(item.prompt));
+        if (Array.isArray(item?.options) && item.options.length) parts.push(item.options.map((opt, idx) => `${idx + 1}. ${cqMd.plain(opt)}`).join('. '));
+      }
+      toggleSpeakSolo('encounter', parts.filter(Boolean).join('. '));
+    },
+    className: buttonClass + ' border border-indigo-300 bg-white text-indigo-900 text-xs inline-flex items-center gap-1.5'
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, speakingSoloKey === 'encounter' ? '⏹' : '🔊'), /*#__PURE__*/React.createElement("span", null, speakingSoloKey === 'encounter' ? tr('solo_stop_audio', 'Stop') : tr('solo_listen', 'Listen')))), quest.phase === 'explore' ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-3"
   }, /*#__PURE__*/React.createElement("p", null, tr('solo_path_help', 'Choose a connected path. Encounters help you explore lesson ideas; treasure rooms hold useful items.')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-3 sm:grid-cols-2"
-  }, currentRoom.neighbors.map(id => {
+  }, (currentRoom.neighbors || []).map(id => {
     const room = base.getRoom(quest, id);
+    if (!room) return null;
     const locked = room.kind === 'boss' && quest.sigils.length < base.requiredSigils(quest);
     return /*#__PURE__*/React.createElement("button", {
       type: "button",
@@ -3289,28 +3469,41 @@ function ConceptQuestSolo({
     }, locked ? tr('solo_gate_locked', 'Collect {count} more sigils first.', {
       count: base.requiredSigils(quest) - quest.sigils.length
     }) : quest.visited.includes(id) ? tr('solo_revisit', 'Revisit location') : tr('solo_explore', 'Explore this location')));
-  }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "rounded-xl border border-fuchsia-200 bg-white p-4"
+  }))) : !currentRoom.enemy || !item ? /*#__PURE__*/React.createElement("div", {
+    className: "rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-lg font-black"
-  }, currentRoom.enemy.emoji, " ", currentRoom.enemy.name), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-sm text-slate-600"
-  }, tr('solo_enemy_health', 'Encounter health: {current}/{maximum}', {
-    current: currentRoom.enemy.hp,
-    maximum: currentRoom.enemy.maxHp
-  })), /*#__PURE__*/React.createElement("div", {
-    role: "progressbar",
-    "aria-label": tr('solo_enemy_health_label', 'Encounter health'),
-    "aria-valuemin": 0,
-    "aria-valuemax": currentRoom.enemy.maxHp,
-    "aria-valuenow": currentRoom.enemy.hp,
-    className: "mt-2 h-3 overflow-hidden rounded-full bg-slate-200"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "h-full bg-fuchsia-600",
-    style: {
-      width: 100 * currentRoom.enemy.hp / currentRoom.enemy.maxHp + '%'
-    }
-  }))), quest.activeEvent && /*#__PURE__*/React.createElement("div", {
+    className: "font-bold"
+  }, tr('solo_encounter_missing', 'This encounter could not be loaded.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setConfirmation('restart'),
+    className: buttonClass + ' mt-3 bg-indigo-700 text-white'
+  }, tr('solo_restart', 'Restart adventure'))) : /*#__PURE__*/React.createElement(React.Fragment, null, (() => {
+    const enemyMax = Number(currentRoom.enemy.maxHp) || 0;
+    const enemyHp = Math.max(0, Number(currentRoom.enemy.hp) || 0);
+    const enemyPct = enemyMax > 0 ? Math.max(0, Math.min(100, 100 * enemyHp / enemyMax)) : 0;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "rounded-xl border border-fuchsia-200 bg-white p-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-lg font-black"
+    }, currentRoom.enemy.emoji, " ", currentRoom.enemy.name), /*#__PURE__*/React.createElement("p", {
+      className: "mt-1 text-sm text-slate-600"
+    }, tr('solo_enemy_health', 'Encounter health: {current}/{maximum}', {
+      current: enemyHp,
+      maximum: enemyMax
+    })), /*#__PURE__*/React.createElement("div", {
+      role: "progressbar",
+      "aria-label": tr('solo_enemy_health_label', 'Encounter health'),
+      "aria-valuemin": 0,
+      "aria-valuemax": Math.max(1, enemyMax),
+      "aria-valuenow": enemyHp,
+      className: "mt-2 h-3 overflow-hidden rounded-full bg-slate-200"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "h-full bg-fuchsia-600",
+      style: {
+        width: enemyPct + '%'
+      }
+    })));
+  })(), quest.activeEvent && /*#__PURE__*/React.createElement("div", {
     role: "status",
     className: "rounded-xl border border-amber-300 bg-amber-50 p-3"
   }, /*#__PURE__*/React.createElement("strong", null, cqMd.inline(quest.activeEvent.title)), /*#__PURE__*/React.createElement("p", {
@@ -3348,12 +3541,13 @@ function ConceptQuestSolo({
     disabled: !canResolve,
     onClick: resolveTurn,
     className: buttonClass + ' w-full bg-indigo-700 text-white'
-  }, item.selfReviewRequired ? tr('solo_finish_review', '3. Record self-review and continue') : tr('solo_resolve', '3. Resolve this turn')))), /*#__PURE__*/React.createElement("aside", {
+  }, item.selfReviewRequired ? tr('solo_finish_review', '3. Record self-review and continue') : tr('solo_resolve', '3. Resolve this turn'))))), /*#__PURE__*/React.createElement("aside", {
     "aria-label": tr('solo_map_and_inventory', 'Adventure map and inventory'),
     className: "space-y-4"
   }, /*#__PURE__*/React.createElement("details", {
     className: "rounded-xl border border-slate-300 bg-white p-4",
-    open: quest.phase === 'explore'
+    open: mapOpen,
+    onToggle: event => setMapOpen(event.currentTarget.open)
   }, /*#__PURE__*/React.createElement("summary", {
     className: "flex min-h-11 cursor-pointer items-center rounded font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, tr('solo_map', 'Adventure map')), /*#__PURE__*/React.createElement("ol", {

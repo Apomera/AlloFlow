@@ -19,10 +19,47 @@ const DEPENDENCIES = [
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 const IMPLEMENTATION_HASH = hash(fs.readFileSync(__filename));
 const PLAN_HASH = hash(fs.readFileSync(require.resolve('./remediation_narration_plan.cjs')));
+const MAX_SOURCE_HTML_BYTES = 32 * 1024 * 1024;
+const MAX_CLIP_META_BYTES = 16 * 1024;
+const MAX_CLIP_AUDIO_BYTES = 64 * 1024 * 1024;
+function writeAllSync(fd, buf) {
+  const data = Buffer.isBuffer(buf) ? buf : Buffer.from(buf);
+  let off = 0;
+  while (off < data.length) {
+    const n = fs.writeSync(fd, data, off, data.length - off);
+    if (n <= 0) throw Error('Short write while writing narration output');
+    off += n;
+  }
+}
+function readRegularBounded(file, maxBytes) {
+  const ls = fs.lstatSync(file);
+  if (ls.isSymbolicLink() || !ls.isFile()) throw Error('Refusing non-regular or symlinked narration file');
+  if (ls.size > maxBytes) throw Error('Narration file exceeds size limit');
+  const fd = fs.openSync(file, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
+  try {
+    const st = fs.fstatSync(fd);
+    if (!st.isFile() || st.size > maxBytes) throw Error('Narration file exceeds size limit');
+    const out = Buffer.alloc(st.size);
+    let off = 0;
+    while (off < st.size) {
+      const n = fs.readSync(fd, out, off, st.size - off, off);
+      if (n <= 0) break;
+      off += n;
+    }
+    return off === st.size ? out : out.subarray(0, off);
+  } finally { fs.closeSync(fd); }
+}
+function samePathDir(a, b) {
+  const ra = path.resolve(a), rb = path.resolve(b);
+  return process.platform === 'win32' ? ra.toLowerCase() === rb.toLowerCase() : ra === rb;
+}
 function atomic(file, bytes) {
   const tmp = file + '.' + crypto.randomUUID() + '.tmp';
-  try { fs.writeFileSync(tmp, bytes, {mode: 0o600}); fs.renameSync(tmp, file); }
-  finally { try { fs.unlinkSync(tmp); } catch (_) {} }
+  try {
+    const fd = fs.openSync(tmp, 'wx', 0o600);
+    try { writeAllSync(fd, bytes); fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
+    fs.renameSync(tmp, file);
+  } finally { try { fs.unlinkSync(tmp); } catch (_) {} }
 }
 function wavInfo(bytes) {
   if (bytes.length < 44 || bytes.toString('ascii',0,4) !== 'RIFF' || bytes.toString('ascii',8,12) !== 'WAVE') throw Error('Invalid narration WAV');
@@ -35,8 +72,10 @@ function wavInfo(bytes) {
     if(tag==='data') {start=p+8; length=size;}
     p=end+(size%2);
   }
-  if(!fmt || !length || fmt.readUInt16LE(0)!==1 || fmt.readUInt16LE(2)!==1 || fmt.readUInt16LE(14)!==16 || !fmt.readUInt32LE(8)) throw Error('Unsupported or empty narration WAV');
-  return {fmt,start,length,duration:length/fmt.readUInt32LE(8)};
+  const sampleRate = fmt ? fmt.readUInt32LE(4) : 0;
+  const byteRate = fmt ? fmt.readUInt32LE(8) : 0;
+  if(!fmt || !length || (length % 2 !== 0) || fmt.readUInt16LE(0)!==1 || fmt.readUInt16LE(2)!==1 || fmt.readUInt16LE(14)!==16 || !sampleRate || byteRate !== sampleRate * 2) throw Error('Unsupported or empty narration WAV');
+  return {fmt,start,length,duration:length/byteRate};
 }
 function mergeWavs(files, target) {
   // Stream PCM from disk: an entire textbook must not require all audio in RAM.
@@ -47,7 +86,7 @@ function mergeWavs(files, target) {
   if(total>0xffffffff-36) throw Error('Narration exceeds WAV size limit; split the document');
   const header=Buffer.alloc(44); header.write('RIFF');header.writeUInt32LE(total+36,4);header.write('WAVEfmt ',8);header.writeUInt32LE(16,16);first.fmt.copy(header,20,0,16);header.write('data',36);header.writeUInt32LE(total,40);
   const fd=fs.openSync(target,'wx',0o600);
-  try {fs.writeSync(fd,header); for(let k=0;k<files.length;k++) {const bytes=fs.readFileSync(files[k]);fs.writeSync(fd,bytes.subarray(infos[k].start,infos[k].start+infos[k].length));} fs.fsyncSync(fd);}
+  try {writeAllSync(fd,header); for(let k=0;k<files.length;k++) {const bytes=fs.readFileSync(files[k]);writeAllSync(fd,bytes.subarray(infos[k].start,infos[k].start+infos[k].length));} fs.fsyncSync(fd);}
   finally {fs.closeSync(fd);}
   return infos.reduce((n,i)=>n+i.duration,0);
 }
@@ -80,7 +119,7 @@ function loadCompletion(file, fingerprint, outputDir, epub) {
     for(const artifact of record.artifacts){
       if(roles.has(artifact.role)||!required.includes(artifact.role)||artifact.path!==record.result.files[artifact.role])return null;
       roles.add(artifact.role);
-      if(path.dirname(path.resolve(artifact.path))!==path.resolve(outputDir)||path.dirname(fs.realpathSync(artifact.path))!==root||fs.lstatSync(artifact.path).isSymbolicLink())return null;
+      if(!samePathDir(path.dirname(path.resolve(artifact.path)),path.resolve(outputDir))||!samePathDir(path.dirname(fs.realpathSync(artifact.path)),root)||fs.lstatSync(artifact.path).isSymbolicLink())return null;
       const stat=fs.statSync(artifact.path);if(!stat.isFile()||stat.size!==artifact.sizeBytes||hashFile(artifact.path)!==artifact.sha256)return null;
     }
     return {...record.result,reused:true};
@@ -97,7 +136,7 @@ function clipCachePath(stateDir,runtimeHash,mode,segment,route) {
 }
 function readClipCache(stem) {
   try{
-    const m=JSON.parse(fs.readFileSync(stem+'.json','utf8')),wav=fs.readFileSync(stem+'.wav'),mp3=fs.readFileSync(stem+'.mp3');
+    const m=JSON.parse(readRegularBounded(stem+'.json',MAX_CLIP_META_BYTES).toString('utf8')),wav=readRegularBounded(stem+'.wav',MAX_CLIP_AUDIO_BYTES),mp3=readRegularBounded(stem+'.mp3',MAX_CLIP_AUDIO_BYTES);
     if(m.wav!==hash(wav)||m.mp3!==hash(mp3)||mp3.length<32)return null;
     const info=wavInfo(wav);return info.fmt.readUInt32LE(4)===24000?info:null;
   }catch(_){return null;}
@@ -119,7 +158,7 @@ async function preflight(o) {
     for(const file of o.filePaths) {
       if(o.signal?.aborted)throw Error('Narration cancelled');
       try {
-        const bytes=fs.readFileSync(file);const sourceSha256=hash(bytes);
+        const bytes=typeof o.readSource==='function'?o.readSource(file):readRegularBounded(file,MAX_SOURCE_HTML_BYTES);const sourceSha256=hash(bytes);
         const plan=await page.evaluate(Planner.planDocument,{html:bytes.toString('utf8'),mode:o.mode||'accessible',language:Planner.normalizeLanguage(o.language),labels:Planner.LABELS});
         if(plan.contentCoverage.status==='blocked'){rows.push({file,ready:false,sourceSha256,contentCoverage:plan.contentCoverage,error:'Narration coverage is incomplete: '+plan.contentCoverage.missingUnits+' text units omitted; '+plan.contentCoverage.unresolvedVisuals+' visuals need spoken descriptions. Check contentCoverage.issues.',modelsTested:false});continue;}
         const routing=Planner.routePlan(plan,o,catalog,voices);
@@ -148,7 +187,7 @@ async function narrate(o) {
   const log=o.onLog || (()=>{}); const mode=o.mode || 'accessible';
   if(!['accessible','natural'].includes(mode)) throw Error('Narration mode must be accessible or natural');
   if(o.signal?.aborted)throw Error('Narration cancelled');
-  const sourceBytes=fs.readFileSync(o.filePath),sourceHash=hash(sourceBytes);
+  const sourceBytes=typeof o.readSource==='function'?o.readSource(o.filePath):readRegularBounded(o.filePath,MAX_SOURCE_HTML_BYTES),sourceHash=hash(sourceBytes);
   const runtimeHash=narrationRuntimeHash(o.assetsRoot);
   const fingerprint=o.outputDir?completionFingerprint(o,sourceHash,runtimeHash):null;
   const completionFile=fingerprint?path.join(o.stateDir,'narration-completions',fingerprint+'.json'):null;
@@ -162,7 +201,8 @@ async function narrate(o) {
   if(!res.installed) throw Error('Chromium is not installed; run remediation_setup');
   const profile=path.join(o.stateDir,'kokoro-browser'); fs.mkdirSync(profile,{recursive:true});
   const context=await res.chromium.launchPersistentContext(profile,{headless:true,serviceWorkers:'block',args:['--disable-background-timer-throttling','--disable-renderer-backgrounding']});
-  const abort=()=>{context.close().catch(()=>{});};
+  const wallController=typeof AbortController==='function'?new AbortController():null;
+  const abort=()=>{try{wallController?.abort();}catch(_){}context.close().catch(()=>{});};
   o.signal?.addEventListener('abort',abort,{once:true});
   const wallTimer=setTimeout(abort,Math.min(180,Math.max(1,Number(o.maxRunMinutes)||180))*60000);wallTimer.unref?.();
   try {
@@ -171,7 +211,9 @@ async function narrate(o) {
     // Only dependency GETs can leave this browser. Source HTML is parsed inertly,
     // never navigated to, and cannot introduce a remote request or script.
     await context.route('**/*',route=>{
-      const request=route.request();const url=new URL(request.url());
+      const request=route.request();
+      let url;
+      try{url=new URL(request.url());}catch(_){return route.abort();}
       if(url.href===boot) return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><head></head><body></body></html>'});
       const allowed=['cdn.jsdelivr.net','unpkg.com','huggingface.co','hf.co','cdn-lfs.huggingface.co','cdn-lfs-us-1.hf.co','cas-bridge.xethub.hf.co'];
       if(request.method()==='GET' && url.protocol==='https:' && (allowed.includes(url.hostname) || (url.hostname==='cdnjs.cloudflare.com' && url.pathname.startsWith('/ajax/libs/onnxruntime-web/')))) return route.continue();
@@ -223,7 +265,8 @@ async function narrate(o) {
       o.onProgress?.({total:plan.segments.length,completed:completed.length,mode,language:route.language,provider:route.provider});
       log('narration: '+completed.length+'/'+plan.segments.length+(reused?' (reused)':''));
     }
-    if(hash(fs.readFileSync(o.filePath))!==sourceHash)throw Error('Source changed during narration; restart using the current document');
+    const currentSourceBytes=typeof o.readSource==='function'?o.readSource(o.filePath):readRegularBounded(o.filePath,MAX_SOURCE_HTML_BYTES);
+    if(hash(currentSourceBytes)!==sourceHash)throw Error('Source changed during narration; restart using the current document');
     // Claim collision-safe output names only after every section is complete.
     const title=path.basename(o.filePath).replace(/\.html?$/i,'');
     const wavOut=o.claimPath(title+'-'+mode+'-audio.wav');
@@ -233,10 +276,22 @@ async function narrate(o) {
     try{duration=mergeWavs(completed,temp);fs.renameSync(temp,wavOut);}catch(err){try{fs.unlinkSync(temp);}catch(_){}throw err;}
     const mp3Out=o.claimPath(title+'-'+mode+'-audio.mp3');
     const mp3Temp=mp3Out+'.'+crypto.randomUUID()+'.tmp';
-    try{const fd=fs.openSync(mp3Temp,'wx',0o600);try{for(const f of mp3s)fs.writeSync(fd,fs.readFileSync(f));fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.renameSync(mp3Temp,mp3Out);}catch(err){try{fs.unlinkSync(mp3Temp);}catch(_){}throw err;}
+    try{const fd=fs.openSync(mp3Temp,'wx',0o600);try{for(const f of mp3s)writeAllSync(fd,fs.readFileSync(f));fs.fsyncSync(fd);}finally{fs.closeSync(fd);}fs.renameSync(mp3Temp,mp3Out);}catch(err){try{fs.unlinkSync(mp3Temp);}catch(_){}throw err;}
     const htmlOut=o.claimPath(title+'-'+mode+'-readalong.html');
     await page.route('**/*',r=>(/^(?:about|blob|data):/i.test(r.request().url())?r.continue():r.abort()));
-    const player=await page.evaluate(({html,audio,mode,labels})=>{const doc=new DOMParser().parseFromString(html,'text/html');const section=doc.createElement('section');const label=doc.createElement('p');label.textContent=(mode==='accessible'?(labels?.playerAccessible||'Accessible narration'):(labels?.playerNatural||'Natural narration'))+' — '+(labels?.complete||'complete document');section.setAttribute('aria-label',label.textContent);if(!labels)section.lang='en';const player=doc.createElement('audio');player.controls=true;player.preload='none';player.src=audio;player.setAttribute('aria-label',label.textContent);section.append(label,player);doc.body.prepend(section);const csp=doc.createElement('meta');csp.httpEquiv='Content-Security-Policy';csp.content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; media-src 'self' file:; font-src data:";doc.head.prepend(csp);return '<!doctype html>\n'+doc.documentElement.outerHTML;},{html:plan.html,audio:encodeURIComponent(path.basename(mp3Out)),mode,labels:Planner.LABELS[plan.lang.split('-')[0]]});
+    const langKey=String(plan.lang||'').split('-')[0];
+    const safeLabels=Object.prototype.hasOwnProperty.call(Planner.LABELS,langKey)?Planner.LABELS[langKey]:undefined;
+    const player=await page.evaluate(({html,audio,mode,labels})=>{
+      const doc=new DOMParser().parseFromString(html,'text/html');
+      doc.querySelectorAll('script,iframe,object,embed').forEach(el=>el.remove());
+      doc.querySelectorAll('*').forEach(el=>{
+        for(const attr of Array.from(el.attributes)){
+          const n=attr.name.toLowerCase();
+          if(n.startsWith('on')||((n==='href'||n==='src'||n==='xlink:href'||n==='formaction')&&/^\s*(?:javascript|vbscript):/i.test(attr.value)))el.removeAttribute(attr.name);
+        }
+      });
+      const section=doc.createElement('section');const label=doc.createElement('p');label.textContent=(mode==='accessible'?(labels?.playerAccessible||'Accessible narration'):(labels?.playerNatural||'Natural narration'))+' — '+(labels?.complete||'complete document');section.setAttribute('aria-label',label.textContent);if(!labels)section.lang='en';const player=doc.createElement('audio');player.controls=true;player.preload='none';player.src=audio;player.setAttribute('aria-label',label.textContent);section.append(label,player);doc.body.prepend(section);const csp=doc.createElement('meta');csp.httpEquiv='Content-Security-Policy';csp.content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; media-src 'self'; font-src data:";doc.head.prepend(csp);return '<!doctype html>\n'+doc.documentElement.outerHTML;
+    },{html:plan.html,audio:encodeURIComponent(path.basename(mp3Out)),mode,labels:safeLabels});
     atomic(htmlOut,player);
     const files={audioWav:wavOut,audioMp3:mp3Out,narratedHtml:htmlOut};
     if(o.epub!==false) {
@@ -253,7 +308,13 @@ async function narrate(o) {
         // Clean plan.bodyHtml for XHTML/EPUB3 while preserving every narration segment id,
         // then sync nav.xhtml links against the exact heading ids present in content.xhtml.
         const bodyDoc=new DOMParser().parseFromString('<!doctype html><html><body>'+plan.bodyHtml+'</body></html>','text/html');
-        bodyDoc.querySelectorAll('script,annotation,annotation-xml,button,select,input,textarea').forEach(el=>el.remove());
+        bodyDoc.querySelectorAll('script,iframe,object,embed,annotation,annotation-xml,button,select,input,textarea').forEach(el=>el.remove());
+        bodyDoc.querySelectorAll('*').forEach(el=>{
+          for(const attr of Array.from(el.attributes)){
+            const n=attr.name.toLowerCase();
+            if(n.startsWith('on')||((n==='href'||n==='src'||n==='xlink:href'||n==='formaction')&&/^\s*(?:javascript|vbscript):/i.test(attr.value)))el.removeAttribute(attr.name);
+          }
+        });
         bodyDoc.querySelectorAll('svg').forEach(svg=>{
           if((!svg.namespaceURI||svg.namespaceURI==='http://www.w3.org/1999/xhtml')&&!svg.getAttribute('xmlns'))svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
         });
@@ -263,7 +324,7 @@ async function narrate(o) {
           if(!h.getAttribute('id')){let cand;do{cand='sec-'+(++secSeq);}while(usedIds.has(cand));h.setAttribute('id',cand);usedIds.add(cand);}
         });
         const cleanBody=Array.from(bodyDoc.body.childNodes).map(n=>new XMLSerializer().serializeToString(n)).join('').replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g,'').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g,'');
-        pkg.files['OEBPS/content.xhtml']=pkg.files['OEBPS/content.xhtml'].replace(/<body[^>]*>[\s\S]*<\/body>/, () => '<body>'+cleanBody+'</body>');
+        pkg.files['OEBPS/content.xhtml']=pkg.files['OEBPS/content.xhtml'].replace(/<body([^>]*)>[\s\S]*<\/body>/i, (_m, attrs) => '<body'+(attrs||'')+'>'+cleanBody+'</body>');
         const escXml=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
         const heads=Array.from(bodyDoc.querySelectorAll('h1[id],h2[id],h3[id]'));
         const navItems=heads.length?heads.map(h=>'<li><a href="content.xhtml#'+escXml(h.getAttribute('id'))+'">'+(escXml((h.textContent||'').replace(/\s+/g,' ').trim())||'Section')+'</a></li>').join('\n'):'<li><a href="content.xhtml">Document</a></li>';
@@ -285,7 +346,7 @@ async function narrate(o) {
     }
     // Release synthesis models before starting another browser/JVM for verification.
     await context.close();
-    const epubValidation=files.readalongEpub?await EpubValidation.validate(files.readalongEpub,{stateDir:o.stateDir,resolveChromium:o.resolveChromium,claimPath:o.claimPath,onLog:o.onLog,signal:o.signal}):undefined;
+    const epubValidation=files.readalongEpub?await EpubValidation.validate(files.readalongEpub,{stateDir:o.stateDir,resolveChromium:o.resolveChromium,claimPath:o.claimPath,onLog:o.onLog,signal:wallController?wallController.signal:o.signal}):undefined;
     if(epubValidation)Object.assign(files,epubValidation.files);
     const result={status:'completed',deliveryStatus:epubValidation?.status||'complete-for-tested-scope',reviewRequired:epubValidation?.reviewRequired||false,audioAuditVerified:false,sourceCoverage:o.sourceCoverage||null,contentCoverage:plan.contentCoverage,reusedSections:coverage.filter(section=>section.reused).length,generatedSections:coverage.filter(section=>!section.reused).length,provider:provider==='mixed-local'?provider:provider+'-browser',mode,voice,language:plan.lang,languages:plan.languages,voices:selected,sampleRate:24000,coverage,warnings:plan.warnings,sourceSha256:sourceHash,totalSections:plan.segments.length,completedSections:completed.length,durationSeconds:duration,files,epubValidation};
     files.narrationReport=o.claimPath(title+'-'+mode+'-narration.json');

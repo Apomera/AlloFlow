@@ -53,7 +53,9 @@
       }
     } catch (_) { /* fall through to the wait below */ }
 
-    var deadline = Date.now() + (Number(timeoutMs) > 0 ? Number(timeoutMs) : 8000);
+    var parsedWait = Number(timeoutMs);
+    var waitMs = (Number.isFinite(parsedWait) && parsedWait > 0) ? Math.min(parsedWait, 30000) : 8000;
+    var deadline = Date.now() + waitMs;
     while (Date.now() < deadline) {
       if (evidenceApi() && documentsApi()) return true;
       await new Promise(function (resolve) { setTimeout(resolve, 120); });
@@ -143,7 +145,7 @@
     var ids = new Set(sources.map(function (source) { return source.id; }));
     return Object.assign({}, project, {
       sources: sources,
-      evidenceNodes: (project.evidenceNodes || []).filter(function (node) { return ids.has(node.sourceId); }),
+      evidenceNodes: (Array.isArray(project.evidenceNodes) ? project.evidenceNodes : []).filter(function (node) { return node && ids.has(node.sourceId); }),
       // The generator's Include/Exclude controls select its sources. A label
       // selected in Lumen must not silently narrow this separate workflow.
       retrievalLabel: '',
@@ -289,13 +291,15 @@
   }
 
   function identicalDocument(existing, incoming) {
+    if (!existing || !incoming || typeof existing.content !== 'string' || typeof incoming.content !== 'string') return false;
     if (existing.fileContentHash && incoming.fileContentHash) return existing.fileContentHash === incoming.fileContentHash && existing.content === incoming.content;
-    return existing.contentHash === incoming.contentHash && existing.content === incoming.content;
+    return !!existing.contentHash && existing.contentHash === incoming.contentHash && existing.content === incoming.content;
   }
 
   function findDuplicate(project, incoming) {
+    var inName = documentName(incoming);
     var matches = (project.sources || []).filter(function (source) {
-      return source.id === incoming.id || (isResearchSource(source) && documentName(source) === documentName(incoming));
+      return source && (source.id === incoming.id || (inName && isResearchSource(source) && documentName(source) === inName));
     });
     // A previous Keep both may already contain this exact file. Match that
     // copy first, rather than treating the original filename as a replacement.
@@ -306,7 +310,7 @@
   function duplicateSummary(source) {
     return {
       id: source.id, title: source.title, fileName: source.fileName || source.title,
-      fileSize: source.fileSize, chars: source.content.length, version: Number(source.version) || 1,
+      fileSize: source.fileSize, chars: typeof source.content === 'string' ? source.content.length : 0, version: Number(source.version) || 1,
       importedAt: source.importedAt || '', active: source.active !== false, allowAI: source.allowAI !== false,
     };
   }
@@ -342,7 +346,8 @@
     if (!E || !D) return { ok: false, reason: 'unavailable', imported: 0, skipped: 0, failed: 0, results: [], count: 0 };
 
     var files = Array.prototype.slice.call(fileList || []);
-    var limit = Number(D.MAX_FILES_PER_IMPORT) > 0 ? Number(D.MAX_FILES_PER_IMPORT) : 5;
+    var rawLimit = Number(D.MAX_FILES_PER_IMPORT);
+    var limit = (Number.isFinite(rawLimit) && rawLimit > 0) ? Math.min(Math.floor(rawLimit), 50) : 5;
     var overLimit = files.slice(limit);
     files = files.slice(0, limit);
     if (!files.length) return { ok: false, reason: 'empty', imported: 0, skipped: 0, failed: 0, results: [], count: await countSources(ctx) };
@@ -378,7 +383,9 @@
         var duplicate = findDuplicate(project, incoming);
         var decision = '';
         var identical = false;
-        while (duplicate) {
+        var dupAttempts = 0;
+        while (duplicate && dupAttempts < 5) {
+          dupAttempts++;
           identical = identicalDocument(duplicate, incoming);
           if (!ctx || typeof ctx.resolveDuplicate !== 'function') {
             decision = identical ? 'skip' : '';
@@ -388,7 +395,7 @@
           decision = await ctx.resolveDuplicate({
             existing: duplicateSummary(duplicate), incoming: duplicateSummary(incoming), identical: identical,
           });
-          if (decision === 'skip') break;
+          if (decision !== 'replace' && decision !== 'keep-both') break;
           // A dialog can stay open while another Lumen surface saves. Apply
           // the decision to a fresh project, and ask again if its target changed.
           project = await loadLatest();
@@ -508,10 +515,23 @@
   var storagePrefix = 'alloflow.research-evidence.v1.';
   var closeViewer = null;
   var sequence = 0;
+  function safeJsonParse(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
+  function isEphemeralStudentMode() {
+    try {
+      var k = root && typeof root.__alloActiveLearnerKey === 'string' ? root.__alloActiveLearnerKey.trim() : '';
+      if (k) return false;
+      return Boolean(root && (root.__alloQrStudentMode || root.__alloStudentView === true));
+    } catch (_) { return false; }
+  }
   function activePrefix() {
     try {
       var k = root && typeof root.__alloActiveLearnerKey === 'string' ? root.__alloActiveLearnerKey.trim() : '';
       if (k) return storagePrefix + 'u_' + encodeURIComponent(k.slice(0, 64)) + '.';
+      if (isEphemeralStudentMode()) return storagePrefix + 'ephemeral.';
     } catch (_) {}
     return storagePrefix;
   }
@@ -521,11 +541,13 @@
   function passage(row) { return String(row && row.snippet || '').slice(0, 1200); }
   function snapshot(evidence) {
     var run = Date.now().toString(36) + '-' + (++sequence).toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-    return (evidence || []).map(function(row, index) {
+    return (Array.isArray(evidence) ? evidence : []).filter(Boolean).map(function(row, index) {
+      var v = row && row.version;
+      var safeVersion = (Number.isSafeInteger(v) && v > 0) ? v : null;
       var item = {
-        id: run + '-' + (index + 1), sourceId: String(row.sourceId || ''),
-        evidenceId: String(row.evidenceId || ''), title: String(row.title || 'Imported document'),
-        locatorLabel: String(row.locatorLabel || ''), version: row.version || null,
+        id: run + '-' + (index + 1), sourceId: String(row.sourceId || '').slice(0, 200),
+        evidenceId: String(row.evidenceId || '').slice(0, 200), title: String(row.title || 'Imported document').slice(0, 500),
+        locatorLabel: String(row.locatorLabel || '').slice(0, 200), version: safeVersion,
         passage: passage(row), suppliedAt: new Date().toISOString()
       };
       return item;
@@ -546,7 +568,8 @@
       if (!value || typeof value !== 'object' || Array.isArray(value) || !citationId(value.id)) return null;
       var fields = { sourceId: 200, evidenceId: 200, title: 500, locatorLabel: 200, passage: 1200, suppliedAt: 64 };
       for (var name in fields) {
-        if (typeof value[name] !== 'string' || value[name].length > fields[name]) return null;
+        if (!Object.prototype.hasOwnProperty.call(fields, name)) continue;
+        if (!Object.prototype.hasOwnProperty.call(value, name) || typeof value[name] !== 'string' || value[name].length > fields[name]) return null;
       }
       if (!value.passage.length || (value.version !== null && (!Number.isSafeInteger(value.version) || value.version <= 0))) return null;
       var item = { id: value.id, sourceId: value.sourceId, evidenceId: value.evidenceId,
@@ -562,7 +585,7 @@
     var value = null, item = null;
     try {
       if (citationBytes(key, raw) <= cacheLimits.itemBytes) {
-        value = JSON.parse(raw);
+        value = safeJsonParse(raw);
         item = normaliseSnapshot(value);
         if (item && key !== activePrefix() + item.id) item = null;
       }
@@ -572,23 +595,25 @@
     return { key: key, raw: raw, item: item, bytes: citationBytes(key, raw), used: Number.isFinite(stamp) ? stamp : 0 };
   }
   function citationNow() { citationClock = Math.max(Date.now(), citationClock + 1); return citationClock; }
-  function citationKeep(item, raw, protectedIds) {
-    var old = citationMemory.get(item.id);
+  function citationKeep(item, raw, protectedMemKeys, pfx) {
+    var scopePrefix = pfx || activePrefix();
+    var memKey = scopePrefix + item.id;
+    var old = citationMemory.get(memKey);
     if (old) citationMemoryBytes -= old.bytes;
-    citationMemory.delete(item.id);
-    var bytes = citationBytes(activePrefix() + item.id, JSON.stringify(item)) + (raw ? raw.length * 2 : 0);
-    citationMemory.set(item.id, { item: item, raw: raw, bytes: bytes, touched: Date.now() });
+    citationMemory.delete(memKey);
+    var bytes = citationBytes(memKey, JSON.stringify(item)) + (raw ? raw.length * 2 : 0);
+    citationMemory.set(memKey, { item: item, raw: raw, bytes: bytes, touched: Date.now() });
     citationMemoryBytes += bytes;
     var entries = Array.from(citationMemory.keys());
     for (var i = 0; (citationMemory.size > cacheLimits.memoryItems || citationMemoryBytes > cacheLimits.memoryBytes) && i < entries.length; i++) {
       var id = entries[i];
-      if (protectedIds && protectedIds.has(id)) continue;
+      if (protectedMemKeys && protectedMemKeys.has(id)) continue;
       citationMemoryBytes -= citationMemory.get(id).bytes;
       citationMemory.delete(id);
     }
   }
   function citationStorage() {
-    var storage = root.localStorage;
+    var storage = isEphemeralStudentMode() ? root.sessionStorage : root.localStorage;
     if (!storage || typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function'
       || typeof storage.key !== 'function' || typeof storage.removeItem !== 'function') throw new Error('Citation storage unavailable');
     return storage;
@@ -637,7 +662,7 @@
     for (var i = 0; i < items.length; i++) {
       var item = normaliseSnapshot(items[i]);
       if (!item) return false;
-      var prior = batch.get(item.id), cached = citationMemory.get(item.id);
+      var prior = batch.get(item.id), cached = citationMemory.get(pfx + item.id);
       if ((prior && !citationSame(prior, item)) || (cached && !citationSame(cached.item, item))) return false;
       if (!prior) { batch.set(item.id, item); batchBytes += 2 * citationBytes(pfx + item.id, JSON.stringify(item)) + 64; }
     }
@@ -645,7 +670,7 @@
     // A single operation cannot promise both bounded retention and protection of
     // an oversized batch. Normal generation supplies at most six passages.
     if (batch.size > cacheLimits.memoryItems || batchBytes > cacheLimits.memoryBytes) return false;
-    var protectedIds = new Set(batch.keys()), storage = null, records = null;
+    var protectedIds = new Set(batch.keys()), protectedMemKeys = new Set(Array.from(protectedIds, function (id) { return pfx + id; })), storage = null, records = null;
     try {
       storage = citationStorage();
       records = citationScan(storage);
@@ -665,7 +690,7 @@
     if (retainedBytes > cacheLimits.memoryBytes) return false;
     batch.forEach(function(item) {
       var record = records && records.get(pfx + item.id);
-      citationKeep(item, record && record.item ? record.raw : null, protectedIds);
+      citationKeep(item, record && record.item ? record.raw : null, protectedMemKeys, pfx);
     });
     if (!storage) return false;
     var candidates = citationCandidates(records, protectedIds), cleanupAllowed = true;
@@ -689,7 +714,7 @@
             try { storage.setItem(key, raw); existing = citationRecord(key, raw); records.set(key, existing); }
             catch (_) { cleanupAllowed = false; }
           }
-          citationKeep(current, existing.raw, protectedIds);
+          citationKeep(current, existing.raw, protectedMemKeys, pfx);
           continue;
         }
         while (true) {
@@ -699,7 +724,7 @@
           }
         }
         records.set(key, citationRecord(key, raw));
-        citationKeep(current, raw, protectedIds);
+        citationKeep(current, raw, protectedMemKeys, pfx);
       }
       // Normal retention pruning only follows successful saves. Security/read
       // failures never initiate quota cleanup.
@@ -719,31 +744,31 @@
   function lookup(id) {
     if (!citationId(id)) return null;
     var pfx = activePrefix();
-    var cached = citationMemory.get(id), storage = null, record = null;
+    var memKey = pfx + id;
+    var cached = citationMemory.get(memKey), storage = null, record = null;
     if (!cached) {
       try {
         storage = citationStorage();
-        var raw = storage.getItem(pfx + id);
+        var raw = storage.getItem(memKey);
         if (raw === null) return null;
-        record = citationRecord(pfx + id, raw);
+        record = citationRecord(memKey, raw);
         if (!record.item) return null;
-        citationKeep(record.item, raw);
-        cached = citationMemory.get(id);
+        citationKeep(record.item, raw, null, pfx);
+        cached = citationMemory.get(memKey);
         // Permit a first cold read to refresh old persisted recency.
         cached.touched = record.used;
       } catch (_) { return null; }
     }
-    citationMemory.delete(id);
-    citationMemory.set(id, cached);
+    citationMemory.delete(memKey);
+    citationMemory.set(memKey, cached);
     if (cached.raw && Date.now() - cached.touched >= citationTouchInterval) {
       cached.touched = Date.now();
       try {
         storage = storage || citationStorage();
-        var key = pfx + id;
-        if (storage.getItem(key) === cached.raw) {
+        if (storage.getItem(memKey) === cached.raw) {
           var updated = JSON.stringify(Object.assign({}, cached.item, { __cacheLastUsed: citationNow() }));
-          storage.setItem(key, updated);
-          citationKeep(cached.item, updated);
+          storage.setItem(memKey, updated);
+          citationKeep(cached.item, updated, null, pfx);
         }
       } catch (_) {} // Reading a passage never requires a successful metadata write.
     }
@@ -752,12 +777,14 @@
   function purgeBySourceId(sourceId) {
     var sid = String(sourceId || '');
     if (!sid) return 0;
+    var pfx = activePrefix();
     var removed = 0;
-    Array.from(citationMemory.keys()).forEach(function(id) {
-      var entry = citationMemory.get(id);
+    Array.from(citationMemory.keys()).forEach(function(memKey) {
+      if (memKey.indexOf(pfx) !== 0 || !citationId(memKey.slice(pfx.length))) return;
+      var entry = citationMemory.get(memKey);
       if (entry && entry.item && entry.item.sourceId === sid) {
         citationMemoryBytes -= entry.bytes;
-        citationMemory.delete(id);
+        citationMemory.delete(memKey);
         removed++;
       }
     });
@@ -766,10 +793,12 @@
       var toRemove = [];
       for (var i = 0; i < storage.length; i++) {
         var key = storage.key(i);
-        if (typeof key !== 'string' || key.indexOf(storagePrefix) !== 0) continue;
+        if (typeof key !== 'string' || key.indexOf(pfx) !== 0 || !citationId(key.slice(pfx.length))) continue;
         try {
-          var parsed = JSON.parse(storage.getItem(key) || 'null');
-          if (parsed && parsed.sourceId === sid) toRemove.push(key);
+          var raw = storage.getItem(key);
+          if (raw === null || citationBytes(key, raw) > cacheLimits.itemBytes) continue;
+          var parsed = safeJsonParse(raw);
+          if (parsed && typeof parsed === 'object' && Object.prototype.hasOwnProperty.call(parsed, 'sourceId') && parsed.sourceId === sid) toRemove.push(key);
         } catch (_) {}
       }
       toRemove.forEach(function(key) {
@@ -780,8 +809,9 @@
   }
   function cite(text, items) {
     return String(text || '').replace(/\s*\[Your document (\d+)\]/gi, function(_, n) {
-      var item = items && items[Number(n) - 1];
-      return item ? ' [Document ' + n + '](' + prefix + item.id + ')' : '';
+      var idx = Number(n) - 1;
+      var item = Array.isArray(items) && idx >= 0 && idx < items.length ? items[idx] : null;
+      return (item && citationId(item.id)) ? ' [Document ' + n + '](' + prefix + item.id + ')' : '';
     });
   }
   function used(text, items) {
@@ -799,7 +829,8 @@
       body += '\n\nOpen a Document link to inspect the passage supplied to the model. A citation does not by itself verify the generated claim. The exact supplied passages are also saved below for export and review.';
       cited.forEach(function(item) {
         var index = items.indexOf(item) + 1;
-        body += '\n\n**Document ' + index + ': ' + escapeMarkdown(item.title + (item.locatorLabel ? ', ' + item.locatorLabel : '')) + '**\n\n'
+        var safeHeading = String(item.title + (item.locatorLabel ? ', ' + item.locatorLabel : '')).replace(/[\r\n]+/g, ' ');
+        body += '\n\n**Document ' + index + ': ' + escapeMarkdown(safeHeading) + '**\n\n'
           + item.passage.split(/\r?\n/).map(function(line) { return '> ' + escapeMarkdown(line); }).join('\n');
       });
     } else body += '\n\nNo document citation was present in the generated text.';
@@ -809,21 +840,23 @@
   // The model chooses excerpts; it does not write the output. Reject the entire
   // selection if ANY quote is altered, invented, empty, or attributed incorrectly.
   function exactExcerpts(response, items, topic) {
+    if (!Array.isArray(items) || !items.length) return null;
     var data = response;
     if (data && typeof data === 'object' && typeof data.text === 'string') data = data.text;
     if (typeof data === 'string') {
+      if (data.length > 200000) return null;
       data = data.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-      try { data = JSON.parse(data); } catch (_) { return null; }
+      try { data = safeJsonParse(data); } catch (_) { return null; }
     }
-    if (!data || !Array.isArray(data.excerpts) || !data.excerpts.length || data.excerpts.length > 6) return null;
+    if (!data || typeof data !== 'object' || Array.isArray(data) || !Object.prototype.hasOwnProperty.call(data, 'excerpts') || !Array.isArray(data.excerpts) || !data.excerpts.length || data.excerpts.length > 6) return null;
     var seen = new Set();
     var rendered = [];
     for (var i = 0; i < data.excerpts.length; i++) {
       var excerpt = data.excerpts[i];
-      var number = excerpt && excerpt.document;
-      var item = Number.isInteger(number) && items[number - 1];
-      var quote = excerpt && excerpt.quote;
-      if (!item || typeof quote !== 'string' || quote.trim().length < 20 || item.passage.indexOf(quote) < 0) return null;
+      var number = excerpt && typeof excerpt === 'object' && Object.prototype.hasOwnProperty.call(excerpt, 'document') ? excerpt.document : null;
+      var item = (Number.isInteger(number) && number >= 1 && number <= items.length) ? items[number - 1] : null;
+      var quote = excerpt && typeof excerpt === 'object' && Object.prototype.hasOwnProperty.call(excerpt, 'quote') ? excerpt.quote : null;
+      if (!item || typeof item.passage !== 'string' || typeof quote !== 'string' || quote.trim().length < 20 || item.passage.indexOf(quote) < 0) return null;
       var key = number + '|' + quote;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -877,7 +910,10 @@
       var s = root && root.__alloFocusTrapStack;
       return !Array.isArray(s) || !s.length || s[s.length - 1] === trapEntry;
     }
+    var closed = false;
     function close() {
+      if (closed) return;
+      closed = true;
       doc.removeEventListener('keydown', keydown, true); doc.removeEventListener('focusin', containFocus, true); overlay.remove(); closeViewer = null;
       var s = root && root.__alloFocusTrapStack;
       var wasTop = true;
@@ -892,10 +928,14 @@
       if (wasTop && validOpener) previous.focus();
     }
     function containFocus(event) {
+      if (overlay.isConnected === false) { close(); return; }
       if (!isTopTrap()) return;
-      if (!panel.contains(event.target)) button.focus();
+      var inside = false;
+      try { inside = panel.contains(event.target); } catch (_) {}
+      if (!inside) button.focus();
     }
     function keydown(event) {
+      if (overlay.isConnected === false) { close(); return; }
       if (event.isComposing || event.keyCode === 229) return;
       if (!isTopTrap()) return;
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); }
@@ -918,7 +958,7 @@
   if (root.document) root.document.addEventListener('click', function(event) {
     var anchor = event.target && event.target.closest && event.target.closest('a');
     var href = anchor && anchor.getAttribute('href');
-    if (!href || !/^#allo-doc-[a-z0-9-]+$/.test(href)) return;
+    if (!href || !/^#allo-doc-[a-z0-9-]{1,128}$/.test(href)) return;
     event.preventDefault(); event.stopPropagation(); show(href.slice(prefix.length), anchor);
   }, true);
   root.AlloResearchEvidence = { snapshot: snapshot, remember: remember, lookup: lookup, cite: cite, finish: finish, exactExcerpts: exactExcerpts, show: show, passage: passage, purgeBySourceId: purgeBySourceId };

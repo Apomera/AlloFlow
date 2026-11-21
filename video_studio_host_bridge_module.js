@@ -22,7 +22,7 @@ const _safeVideoHostedUrl = raw => {
 };
 const _videoStudioReducedMotion = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const _videoStudioAiTextUsable = callGemini => {
-  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true)) return false;
+  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)) return false;
   if (callGemini && callGemini._alloQrBlocked === true) return false;
   if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable('text', callGemini));
   return Boolean(callGemini);
@@ -131,12 +131,13 @@ function VideoStudioHostBridgeView(props) {
       if (!ref || ref.type !== 'videoRef') throw new Error('Not a video reference.');
       const refTitle = String(ref.title || 'Teacher video').slice(0, 120);
       const safeHostedUrl = _safeVideoHostedUrl(ref.hostedUrl);
+      const safeDur = Math.max(0, Math.round(Number(ref.durationSec) || 0));
       const newRefId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
       const refItem = {
         id: newRefId,
         type: 'video-ref',
         title: refTitle,
-        text: `${refTitle} — video (${Math.floor((ref.durationSec || 0) / 60)}:${String((ref.durationSec || 0) % 60).padStart(2, '0')})${safeHostedUrl ? ` — ${safeHostedUrl}` : ''}`,
+        text: `${refTitle} — video (${Math.floor(safeDur / 60)}:${String(safeDur % 60).padStart(2, '0')})${safeHostedUrl ? ` — ${safeHostedUrl}` : ''}`,
         content: '',
         data: {
           ...ref,
@@ -178,7 +179,7 @@ function VideoStudioHostBridgeView(props) {
       if (_planRunRef.current && _planRunRef.current.running) throw new Error('AlloBot is already running a plan - stop it first.');
       const list = (Array.isArray(steps) ? steps : []).filter(step => step && (step.id === 'source-input' || step.id === 'simplified')).slice(0, 2);
       if (list.length !== 2) throw new Error('The Text Adaptation tutorial manifest is incomplete.');
-      const stopWanted = () => !!(_planRunRef.current.stop || hooks && hooks.shouldStop && hooks.shouldStop());
+      const stopWanted = () => !!(_planRunRef.current?.stop || hooks && hooks.shouldStop && hooks.shouldStop());
       _officialTutorialSnapshotRef.current = _officialTutorialSnapshotRef.current || {
         inputText,
         generatedContent,
@@ -378,7 +379,7 @@ function VideoStudioHostBridgeView(props) {
       if (!steps || !steps.length) return {
         steps: []
       };
-      const cmds = AC.buildAlloCommands(_alloCmdCtx(), {
+      const cmds = AC.buildAlloCommands(_alloCmdCtxRef.current || _alloCmdCtx(), {
         includeGated: true
       });
       return {
@@ -397,7 +398,7 @@ function VideoStudioHostBridgeView(props) {
     onValidateDemoPlan: async steps => {
       const AC = window.AlloModules && window.AlloModules.AlloCommands;
       if (!AC || typeof AC.validatePlan !== 'function') throw new Error('The command readiness checker has not loaded.');
-      return AC.validatePlan(_alloCmdCtx(), steps, {
+      return AC.validatePlan(_alloCmdCtxRef.current || _alloCmdCtx(), steps, {
         demoSafeOnly: true
       });
     },
@@ -407,9 +408,10 @@ function VideoStudioHostBridgeView(props) {
       // and never auto-runs destructive commands). Shares AlloBot's
       // single-flight guard so a bot plan and a demo can't interleave.
       const AC = window.AlloModules && window.AlloModules.AlloCommands;
+      const MAX_DEMO_STEPS = 16;
       const rehearsal = !!(options && options.rehearsal);
       if (!AC || typeof AC.runPlan !== 'function' || typeof AC.validatePlan !== 'function') throw new Error('The command runner has not loaded.');
-      const readiness = AC.validatePlan(_alloCmdCtx(), steps, {
+      const readiness = AC.validatePlan(_alloCmdCtxRef.current || _alloCmdCtx(), steps, {
         demoSafeOnly: true
       });
       if (!readiness || !readiness.ok) {
@@ -425,7 +427,7 @@ function VideoStudioHostBridgeView(props) {
         running: true,
         stop: false
       };
-      const stopWanted = () => _planRunRef.current.stop || !!(hooks && hooks.shouldStop && hooks.shouldStop());
+      const stopWanted = () => !!_planRunRef.current?.stop || !!(hooks && hooks.shouldStop && hooks.shouldStop());
       const cursorMarkers = new Set();
       const emphasizeCursorTarget = (cmd, label) => {
         if (!options || options.cursorEmphasis === false) return;
@@ -468,7 +470,7 @@ function VideoStudioHostBridgeView(props) {
       };
       try {
         if (rehearsal) {
-          const previewList = (Array.isArray(steps) ? steps : []).slice(0, 8);
+          const previewList = (Array.isArray(steps) ? steps : []).slice(0, MAX_DEMO_STEPS);
           let previewCompleted = 0;
           for (let i = 0; i < previewList.length; i++) {
             if (stopWanted()) return {
@@ -520,7 +522,7 @@ function VideoStudioHostBridgeView(props) {
           };
         }
         addToast('🎬 Demo Autopilot is driving AlloFlow — Video Studio is recording.', 'info');
-        const list = (Array.isArray(steps) ? steps : []).slice(0, 8);
+        const list = (Array.isArray(steps) ? steps : []).slice(0, MAX_DEMO_STEPS);
         let completed = 0;
         // Post-run objective audit reads these flags: only primitives,
         // capped, from the LIVE ctx (the ref tracks renders). Booleans
@@ -609,7 +611,7 @@ function VideoStudioHostBridgeView(props) {
                 guard = setInterval(() => {
                   if (stopWanted() || Date.now() - startedWaiting > 240000) finish('stop');
                 }, 250);
-                Promise.resolve(hooks.onDecision({
+                Promise.resolve().then(() => hooks.onDecision({
                   index: i,
                   label: list[i].commandId,
                   reason: failReason,

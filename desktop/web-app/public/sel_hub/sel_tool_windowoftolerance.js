@@ -128,7 +128,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       var _wtT = (ctx && ctx.theme) || {};
       var _wtHC = !!_wtT.isContrast, _wtL = !_wtHC && !_wtT.isDark;
       var _wt_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc'}, _wt_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#fff':'#000000'};
-      var _wt_FGL = {'#cbd5e1':'#334155','#5eead4':'#0f766e','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#99f6e4':'#0f766e','#fbbf24':'#854d0e','#a78bfa':'#6d28d9','#fecaca':'#b91c1c','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e','#ef4444':'#b91c1c','#14b8a6':'#0f766e','#0ea5e9':'#0369a1'}, _wt_FGH = {'#cbd5e1':'#ffff00','#5eead4':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#64748b':'#ffff00','#99f6e4':'#ffff00','#fff':'#ffff00','#fbbf24':'#ffff00','#a78bfa':'#ffff00','#fecaca':'#ffff00','#ef4444':'#ffff00','#14b8a6':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#e9d5ff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _wt_FGL = {'#cbd5e1':'#334155','#5eead4':'#0f766e','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#99f6e4':'#0f766e','#fbbf24':'#854d0e','#a78bfa':'#6d28d9','#fecaca':'#b91c1c','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e','#ef4444':'#b91c1c','#14b8a6':'#0f766e','#0ea5e9':'#0369a1','#bae6fd':'#0369a1'}, _wt_FGH = {'#cbd5e1':'#ffff00','#5eead4':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#64748b':'#ffff00','#99f6e4':'#ffff00','#fff':'#ffff00','#fbbf24':'#ffff00','#a78bfa':'#ffff00','#fecaca':'#ffff00','#ef4444':'#ffff00','#14b8a6':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#e9d5ff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _wt_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _wt_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#a78bfa':'#ffff00','#14b8a6':'#ffff00','#cbd5e1':'#ffff00','#0d9488':'#ffff00','#f59e0b':'#ffff00'};
       var _wtBg = function(h){ return _wtHC ? (_wt_BGH[h]||h) : (_wtL ? (_wt_BGL[h]||h) : h); };
       var _wtFg = function(h){ return _wtHC ? (_wt_FGH[h]||h) : (_wtL ? (_wt_FGL[h]||h) : h); };
@@ -144,18 +144,47 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _wtBand = (ctx && ctx.gradeBand) || 'middle';
 
       var d = labToolData.windowOfTolerance || defaultState();
       function setWOT(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.windowOfTolerance) || defaultState();
-          var next = Object.assign({}, prior, patch);
-          if (patch.hyperSigns || patch.windowSigns || patch.hypoSigns || patch.triggers || patch.practices) next.lastUpdated = todayISO();
+          var resolved = typeof patch === 'function' ? patch(prior) : patch;
+          var next = Object.assign({}, prior, resolved);
+          if (resolved && (resolved.hyperSigns || resolved.windowSigns || resolved.hypoSigns || resolved.triggers || resolved.practices)) next.lastUpdated = todayISO();
           return Object.assign({}, prev, { windowOfTolerance: next });
         });
       }
-      var view = d.view || 'window';
+      function scanWotText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'windowOfTolerance', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && (scan.triggered || scan.hasCrisis)) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'windowOfTolerance', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setWOT({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Window of Tolerance', contentSnippet: trimmed });
+          }
+          if (announceToSR) announceToSR('Support resources are shown on screen. Please reach out to a trusted adult, call or text 988, or text HOME to 741741.');
+        }
+        return blocked;
+      }
       var WOT_VIEW_LABELS = { window: 'My Window', edit: 'Edit', checkin: 'Check in', print: 'Print view', about: 'About' };
+      var view = (d.view && Object.prototype.hasOwnProperty.call(WOT_VIEW_LABELS, d.view)) ? d.view : 'window';
       function goto(v) {
         setWOT({ view: v });
         if (announceToSR) announceToSR((WOT_VIEW_LABELS[v] || v) + ' section selected');
@@ -165,7 +194,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _wtFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _wtHC ? '#000000' : 'rgba(255,255,255,0.05)', border: '1px solid ' + _wtBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _wtFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _wtFg('#5eead4'), fontSize: 22, fontWeight: 900 } }, '🪟 Window of Tolerance'),
             h('div', { style: { fontSize: 12, color: _wtFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A map of your three arousal zones and what brings you back to the window.')
@@ -214,8 +243,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                     if (target) target.focus();
                   }, 0);
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _wtFg('#14b8a6') : '#334155'),
-                  background: active ? 'rgba(20,184,166,0.18)' : _wtBg('#1e293b'),
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _wtFg('#14b8a6') : _wtBd('#334155')),
+                  background: active ? (_wtHC ? '#000000' : 'rgba(20,184,166,0.18)') : _wtBg('#1e293b'),
                   color: active ? _wtFg('#99f6e4') : _wtFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 }
               }, t.icon + ' ' + t.label);
             })
@@ -224,7 +253,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       }
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _wtFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _wtBg('#0f172a'), border: '1px solid ' + _wtBd('#334155'), fontSize: 11, color: _wtFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Knowing your zones helps you self-regulate; it does not replace adults who can help. If you find yourself stuck outside your window often, that is worth bringing to a counselor or school psych. Crisis Text Line: text HOME to 741741.'
         );
@@ -234,31 +263,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
         var signs = ((Array.isArray(d.hyperSigns) ? d.hyperSigns : [])).length + ((Array.isArray(d.windowSigns) ? d.windowSigns : [])).length + ((Array.isArray(d.hypoSigns) ? d.hypoSigns : [])).length;
         var triggers = ((Array.isArray(d.triggers) ? d.triggers : [])).length;
         var practices = ((Array.isArray(d.practices) ? d.practices : [])).length;
-        var zoneColor = d.currentZone === 'hyper' ? _wtFg('#ef4444') : d.currentZone === 'hypo' ? _wtFg('#0ea5e9') : d.currentZone === 'window' ? _wtFg('#14b8a6') : _wtFg('#fbbf24');
+        var zoneColor = d.currentZone === 'hyper' ? _wtInk(_wtFg('#ef4444')) : d.currentZone === 'hypo' ? _wtFg('#0ea5e9') : d.currentZone === 'window' ? _wtFg('#14b8a6') : _wtFg('#fbbf24');
         var zoneLabel = d.currentZone === 'hyper' ? 'Hyper' : d.currentZone === 'hypo' ? 'Hypo' : d.currentZone === 'window' ? 'In window' : 'Not checked';
         function stat(label, value, color) {
-          return h('div', { style: { padding: 10, borderRadius: 8, background: _wtBg('#0f172a'), border: '1px solid #1e293b' } },
+          return h('div', { style: { padding: 10, borderRadius: 8, background: _wtBg('#0f172a'), border: '1px solid ' + _wtBd('#1e293b') } },
             h('div', { style: { fontSize: 11, color: _wtFg('#94a3b8'), fontWeight: 800, textTransform: 'uppercase', marginBottom: 3 } }, label),
             h('div', { style: { fontSize: 20, color: color, fontWeight: 900 } }, value)
           );
         }
         function action(label, target, color, filled) {
-          var borderColor = _wtHC ? '#ffff00' : color;
-          var bgColor = filled ? (_wtHC ? '#000000' : color) : 'rgba(15,23,42,0.55)';
-          var fgColor = _wtHC ? '#ffff00' : (filled ? '#0f172a' : color);
+          var borderColor = _wtHC ? '#ffff00' : _wtFg(color);
+          var bgColor = filled ? (_wtHC ? '#000000' : color) : _wtBg('#0f172a');
+          var fgColor = _wtHC ? '#ffff00' : (filled ? '#0f172a' : _wtInk(_wtFg(color)));
           return h('button', { onClick: function() { goto(target); }, 'aria-label': label,
             style: { padding: '9px 12px', borderRadius: 8, border: '1px solid ' + borderColor, background: bgColor, color: fgColor, cursor: 'pointer', fontWeight: 900, fontSize: 12 } },
             label
           );
         }
         return h('section', { className: 'no-print', 'aria-label': 'Window of Tolerance workspace summary',
-          style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(20,184,166,0.16) 0%, rgba(15,23,42,0.62) 70%)', border: '1px solid rgba(20,184,166,0.34)', marginBottom: 14 } },
+          style: { padding: 14, borderRadius: 12, background: _wtHC ? '#000000' : (_wtL ? '#f8fafc' : 'linear-gradient(135deg, rgba(20,184,166,0.16) 0%, rgba(15,23,42,0.62) 70%)'), border: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(20,184,166,0.34)'), marginBottom: 14 } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 } },
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('div', { style: { fontSize: 12, color: _wtFg('#5eead4'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, 'Regulation map'),
               h('div', { style: { fontSize: 13, color: _wtFg('#e2e8f0'), lineHeight: 1.55 } }, 'Name your zones, spot what pushes you out, and keep return-to-window practices close.')
             ),
-            h('div', { style: { padding: '8px 10px', borderRadius: 8, background: _wtBg('#0f172a'), border: '1px solid #334155', color: zoneColor, fontSize: 12, fontWeight: 900 } },
+            h('div', { style: { padding: '8px 10px', borderRadius: 8, background: _wtBg('#0f172a'), border: '1px solid ' + _wtBd('#334155'), color: zoneColor, fontSize: 12, fontWeight: 900 } },
               'Today: ' + zoneLabel
             )
           ),
@@ -291,7 +320,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                     return h('div', { key: i, style: { padding: '4px 10px', borderRadius: 14, background: _wtBg('#1e293b'), border: '1px solid ' + color + '44', fontSize: 12, color: _wtFg('#e2e8f0') } }, s);
                   })
                 )
-              : h('div', { style: { fontSize: 11, color: _wtFg('#64748b'), fontStyle: 'italic' } }, '(no signs added yet)')
+              : h('div', { style: { fontSize: 11, color: _wtFg('#94a3b8'), fontStyle: 'italic' } }, '(no signs added yet)')
           );
         }
 
@@ -299,13 +328,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
         if (totalSigns === 0 && ((Array.isArray(d.triggers) ? d.triggers : [])).length === 0 && ((Array.isArray(d.practices) ? d.practices : [])).length === 0) {
           return h('div', null,
             windowCommandPanel(),
-            h('div', { style: { padding: 28, borderRadius: 14, background: 'linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(20,184,166,0.4)', textAlign: 'center', marginBottom: 14 } },
+            h('div', { style: { padding: 28, borderRadius: 14, background: _wtHC ? '#000000' : (_wtL ? '#f8fafc' : 'linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(20,184,166,0.4)'), textAlign: 'center', marginBottom: 14 } },
               h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🪟'),
               h('h3', { style: { margin: '0 0 8px', color: _wtFg('#99f6e4'), fontSize: 18 } }, 'Your Window is empty'),
               h('p', { style: { margin: '0 0 14px', color: _wtFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'The Window of Tolerance is your body and brain\'s "regulated" zone. Above it: too activated (heart racing, snappy, overwhelmed). Below it: too shut down (foggy, numb, going through motions). Your personal signs of each zone are uniquely yours. Build the map.'),
               h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Start building my Window',
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 14 } },
+                style: { padding: '10px 22px', borderRadius: 10, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start building my Window')
             ),
             softPointer()
@@ -314,7 +343,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
 
         return h('div', null,
           windowCommandPanel(),
-          zone('🔺 Hyperarousal (above the window)', _wtFg('#ef4444'), (Array.isArray(d.hyperSigns) ? d.hyperSigns : []),
+          zone('🔺 Hyperarousal (above the window)', _wtInk(_wtFg('#ef4444')), (Array.isArray(d.hyperSigns) ? d.hyperSigns : []),
             'Too activated. Fight or flight territory. Hard to think, hard to sit still, snappy, racing.'),
 
           zone('🪟 In the Window (the regulated zone)', _wtFg('#14b8a6'), (Array.isArray(d.windowSigns) ? d.windowSigns : []),
@@ -323,7 +352,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
           zone('🔻 Hypoarousal (below the window)', _wtFg('#0ea5e9'), (Array.isArray(d.hypoSigns) ? d.hypoSigns : []),
             'Too shut down. Freeze or collapse territory. Foggy, slow, disconnected, going through motions.'),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), border: '1px solid #1e293b', marginTop: 10, marginBottom: 8 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), border: '1px solid ' + _wtBd('#1e293b'), marginTop: 10, marginBottom: 8 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _wtFg('#fbbf24'), marginBottom: 8 } }, '⚡ Things that push me out of the window'),
             ((Array.isArray(d.triggers) ? d.triggers : [])).length > 0
               ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -331,10 +360,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                     return h('div', { key: i, style: { padding: '4px 10px', borderRadius: 14, background: _wtBg('#1e293b'), border: '1px solid #fbbf2444', fontSize: 12, color: _wtFg('#e2e8f0') } }, s);
                   })
                 )
-              : h('div', { style: { fontSize: 11, color: _wtFg('#64748b'), fontStyle: 'italic' } }, '(no triggers added yet)')
+              : h('div', { style: { fontSize: 11, color: _wtFg('#94a3b8'), fontStyle: 'italic' } }, '(no triggers added yet)')
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), border: '1px solid ' + _wtBd('#1e293b'), marginBottom: 12 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _wtFg('#a78bfa'), marginBottom: 8 } }, '🛟 Things that bring me back to the window'),
             ((Array.isArray(d.practices) ? d.practices : [])).length > 0
               ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -342,17 +371,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                     return h('div', { key: i, style: { padding: '4px 10px', borderRadius: 14, background: _wtBg('#1e293b'), border: '1px solid #a78bfa44', fontSize: 12, color: _wtFg('#e2e8f0') } }, s);
                   })
                 )
-              : h('div', { style: { fontSize: 11, color: _wtFg('#64748b'), fontStyle: 'italic' } }, '(no practices added yet)')
+              : h('div', { style: { fontSize: 11, color: _wtFg('#94a3b8'), fontStyle: 'italic' } }, '(no practices added yet)')
           ),
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Edit my Window',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✏️ Edit'),
             h('button', { onClick: function() { goto('checkin'); }, 'aria-label': 'Check in on my zone right now',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '📍 Check in'),
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _wtBd('#475569'), background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '📍 Check in'),
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _wtBd('#475569'), background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -364,21 +393,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       // ═══════════════════════════════════════════════════════════
       function renderEdit() {
         function addTo(key, value) {
-          if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
-          var list = (d[key] || []).slice();
-          if (list.indexOf(value.trim()) === -1) list.push(value.trim());
-          var patch = {}; patch[key] = list;
-          setWOT(patch);
+          var trimmed = String(value || '').trim();
+          if (!trimmed) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
+          scanWotText(trimmed);
+          setWOT(function(prior) {
+            var list = (Array.isArray(prior[key]) ? prior[key] : []).slice();
+            if (list.indexOf(trimmed) === -1) list.push(trimmed);
+            var patch = {}; patch[key] = list;
+            return patch;
+          });
         }
         function removeFrom(key, idx) {
-          var list = (d[key] || []).slice();
-          list.splice(idx, 1);
-          var patch = {}; patch[key] = list;
-          setWOT(patch);
+          setWOT(function(prior) {
+            var list = (Array.isArray(prior[key]) ? prior[key] : []).slice();
+            list.splice(idx, 1);
+            var patch = {}; patch[key] = list;
+            return patch;
+          });
         }
 
         function listEditor(key, title, color, starters, blurb) {
-          var items = d[key] || [];
+          var items = Array.isArray(d[key]) ? d[key] : [];
           var inputId = 'wot-input-' + key;
           function submit() {
             var el = document.getElementById(inputId);
@@ -386,7 +421,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
             addTo(key, el.value);
             el.value = '';
           }
-          return h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 12 } },
+          return h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), borderTop: '1px solid ' + _wtBd('#1e293b'), borderRight: '1px solid ' + _wtBd('#1e293b'), borderBottom: '1px solid ' + _wtBd('#1e293b'), borderLeft: '3px solid ' + color, marginBottom: 12 } },
             h('div', { style: { fontSize: 13, color: color, fontWeight: 800, marginBottom: 6 } }, title),
             h('div', { style: { fontSize: 11.5, color: _wtFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, blurb),
 
@@ -407,9 +442,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
               h('input', { id: inputId, type: 'text',
                 placeholder: 'Type and press Enter, or pick a starter below...',
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
-                style: { flex: 1, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _wtBg('#1e293b'), color: _wtFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: submit, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _wtSolid(color), color: _wtFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { flex: 1, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid ' + _wtBd('#334155'), background: _wtBg('#1e293b'), color: _wtFg('#e2e8f0'), fontSize: 13 } }),
+              h('button', { onClick: submit, 'aria-label': 'Add to ' + title,
+                style: { padding: '8px 14px', borderRadius: 6, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtSolid(color), color: _wtFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
 
             h('details', null,
@@ -418,7 +453,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                 starters.map(function(s, si) {
                   var already = items.indexOf(s) !== -1;
                   return h('button', { key: si, onClick: function() { addTo(key, s); }, disabled: already, 'aria-label': 'Add starter: ' + s,
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + color + '66', background: already ? _wtBg('#1e293b') : 'rgba(15,23,42,0.6)', color: already ? _wtFg('#64748b') : _wtFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
+                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + (_wtHC ? '#ffff00' : color + '66'), background: already ? _wtBg('#1e293b') : _wtBg('#0f172a'), color: already ? _wtFg('#94a3b8') : _wtFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.6 : 1 } },
                     (already ? '✓ ' : '+ ') + s);
                 })
               )
@@ -469,7 +504,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
             fallback: 'Look around slowly and add one small, comfortable movement.'
           }
         };
-        var activeInfo = cur ? zoneInfo[cur] : null;
+        var activeInfo = (cur && Object.prototype.hasOwnProperty.call(zoneInfo, cur)) ? zoneInfo[cur] : null;
 
         function pathStep(number, label, value, color) {
           return h('div', { style: { minWidth: 0, padding: 12, borderRadius: 10, background: _wtBg('#0f172a'), border: '1px solid ' + (_wtHC ? '#ffff00' : color + '55') } },
@@ -499,7 +534,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                   h('span', { style: { display: 'block', fontSize: 14, fontWeight: 900, color: _wtInk(_wtFg('#ef4444')), marginBottom: 3 } }, 'High activation · Hyperarousal'),
                   h('span', { style: { display: 'block', fontSize: 11.5, color: _wtFg('#cbd5e1'), lineHeight: 1.45 } }, 'Fast • tight • urgent — overwhelmed or ready to react')
                 ),
-                cur === 'hyper' ? h('span', { style: { padding: '5px 8px', borderRadius: 999, background: _wtHC ? '#000000' : 'rgba(239,68,68,0.2)', border: '1px solid ' + _wtFg('#ef4444'), color: _wtFg('#ef4444'), fontSize: 10.5, fontWeight: 900, whiteSpace: 'nowrap' } }, '● HERE') : h('span', { 'aria-hidden': 'true', style: { width: 8, height: 8, borderRadius: '50%', background: 'rgba(239,68,68,0.45)' } })
+                cur === 'hyper' ? h('span', { style: { padding: '5px 8px', borderRadius: 999, background: _wtHC ? '#000000' : 'rgba(239,68,68,0.2)', border: '1px solid ' + _wtInk(_wtFg('#ef4444')), color: _wtInk(_wtFg('#ef4444')), fontSize: 10.5, fontWeight: 900, whiteSpace: 'nowrap' } }, '● HERE') : h('span', { 'aria-hidden': 'true', style: { width: 8, height: 8, borderRadius: '50%', background: 'rgba(239,68,68,0.45)' } })
               ),
               h('button', { onClick: function() { setZone('window'); }, 'aria-label': 'I am in the window right now', 'aria-pressed': cur === 'window',
                 'data-wot-zone': 'window',
@@ -526,8 +561,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
           ),
 
           // Show triggers + practices if outside the window
-          cur && cur !== 'window' ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Return to the window guidance' },
-            h('div', { style: { padding: 15, borderRadius: 12, background: _wtBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid #a78bfa', marginBottom: 10 } },
+          activeInfo && cur !== 'window' ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Return to the window guidance' },
+            h('div', { style: { padding: 15, borderRadius: 12, background: _wtBg('#0f172a'), borderTop: '1px solid ' + _wtBd('#1e293b'), borderRight: '1px solid ' + _wtBd('#1e293b'), borderBottom: '1px solid ' + _wtBd('#1e293b'), borderLeft: '4px solid #a78bfa', marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
                 h('div', null,
                   h('div', { style: { fontSize: 13.5, fontWeight: 900, color: _wtFg('#a78bfa'), marginBottom: 3 } }, '🛟 Choose one gentle move'),
@@ -540,7 +575,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                     practices.map(function(s, i) {
                       var selected = chosenPractice === s;
                       return h('button', { key: i, onClick: function() { choosePractice(s); }, 'aria-pressed': chosenPractice === s,
-                        style: { padding: '7px 11px', borderRadius: 999, background: selected ? 'rgba(167,139,250,0.24)' : _wtBg('#1e293b'), border: '1px solid ' + (selected ? _wtFg('#a78bfa') : '#475569'), fontSize: 12, color: selected ? _wtFg('#e9d5ff') : _wtFg('#cbd5e1'), fontWeight: selected ? 850 : 650, cursor: 'pointer', textAlign: 'left' } },
+                        style: { padding: '7px 11px', borderRadius: 999, background: selected ? (_wtHC ? '#000000' : 'rgba(167,139,250,0.24)') : _wtBg('#1e293b'), border: '1px solid ' + (selected ? _wtFg('#a78bfa') : _wtBd('#475569')), fontSize: 12, color: selected ? _wtFg('#e9d5ff') : _wtFg('#cbd5e1'), fontWeight: selected ? 850 : 650, cursor: 'pointer', textAlign: 'left' } },
                         (selected ? '✓ ' : '') + s);
                     })
                   )
@@ -548,7 +583,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                     activeInfo.fallback + ' ',
                     h('button', { onClick: function() { goto('edit'); }, style: { background: 'transparent', border: 'none', color: _wtFg('#a78bfa'), cursor: 'pointer', textDecoration: 'underline', fontSize: 12 } }, 'Add some.'))
             ),
-            h('section', { 'aria-label': 'Notice choose recheck regulation path', style: { padding: 15, borderRadius: 12, background: _wtHC ? '#000000' : 'linear-gradient(135deg, rgba(167,139,250,0.13), rgba(15,23,42,0.58))', border: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(167,139,250,0.34)') } },
+            h('section', { 'aria-label': 'Notice choose recheck regulation path', style: { padding: 15, borderRadius: 12, background: _wtHC ? '#000000' : (_wtL ? '#f8fafc' : 'linear-gradient(135deg, rgba(167,139,250,0.13), rgba(15,23,42,0.58))'), border: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(167,139,250,0.34)') } },
               h('div', { style: { fontSize: 12, color: _wtFg('#e9d5ff'), fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 9 } }, 'Notice → Choose → Recheck'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 8 } },
                 pathStep(1, 'Notice', activeInfo.title + ': ' + activeInfo.signal, activeInfo.color),
@@ -559,7 +594,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
             )
           ) : null,
 
-          cur === 'window' ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'In-window check-in result', style: { padding: 15, borderRadius: 12, background: _wtHC ? '#000000' : 'linear-gradient(135deg, rgba(20,184,166,0.16), rgba(15,23,42,0.52))', borderTop: '1px solid rgba(20,184,166,0.38)', borderRight: '1px solid rgba(20,184,166,0.38)', borderBottom: '1px solid rgba(20,184,166,0.38)', borderLeft: '4px solid #14b8a6', color: _wtFg('#99f6e4'), lineHeight: 1.65 } },
+          cur === 'window' ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'In-window check-in result', style: { padding: 15, borderRadius: 12, background: _wtHC ? '#000000' : (_wtL ? '#f8fafc' : 'linear-gradient(135deg, rgba(20,184,166,0.16), rgba(15,23,42,0.52))'), borderTop: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(20,184,166,0.38)'), borderRight: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(20,184,166,0.38)'), borderBottom: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(20,184,166,0.38)'), borderLeft: '4px solid ' + (_wtHC ? '#ffff00' : '#14b8a6'), color: _wtFg('#99f6e4'), lineHeight: 1.65 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 } },
               h('span', { 'aria-hidden': 'true', style: { width: 38, height: 38, borderRadius: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,184,166,0.18)', border: '1px solid rgba(20,184,166,0.48)', fontSize: 19 } }, '🪟'),
               h('div', null,
@@ -587,7 +622,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: _wtSolid(color), color: _wtFg('#fff') } },
               h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, title)
             ),
-            list && list.length > 0
+            Array.isArray(list) && list.length > 0
               ? h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _wtFg('#0f172a'), fontSize: 13, lineHeight: 1.65 } },
                   list.map(function(s, i) { return h('li', { key: i }, s); }))
               : h('div', { style: { fontSize: 11, color: _wtFg('#475569'), fontStyle: 'italic', paddingLeft: 10 } }, '(not filled in)')
@@ -595,23 +630,24 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
         }
 
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(20,184,166,0.10)', borderRadius: 8, border: '1px solid rgba(20,184,166,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _wtHC ? '#000000' : 'rgba(20,184,166,0.10)', borderRadius: 8, border: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(20,184,166,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _wtFg('#99f6e4'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _wtHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _wtHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _wtFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('window'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _wtBd('#475569'), background: _wtBg('#1e293b'), color: _wtFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'wot-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _wtBg('#fff'), color: _wtFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _wtBg('#fff'), color: _wtFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _wtBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#wot-print-region, #wot-print-region * { visibility: visible !important; } ' +
-              '#wot-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#wot-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+              '#wot-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
@@ -713,6 +749,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Window of Tolerance' },
         header(),
         navTabs(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _wtBand)) : null,
         h('div', { id: 'wot-tab-panel', role: 'tabpanel', 'aria-labelledby': 'wot-tab-' + view }, body)
       );
     }

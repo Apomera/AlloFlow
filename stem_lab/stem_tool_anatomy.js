@@ -590,6 +590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       ".anatomy-tool-shell .anatomy-muscle-guide{padding:18px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-header{align-items:flex-start;gap:12px;margin-bottom:16px}.anatomy-tool-shell .anatomy-muscle-intro{flex:1 1 300px;min-width:0}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-header h5{font-size:24px;line-height:1.4;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-guide :is(p,button,span,bdi,li){font-size:16px;line-height:1.65}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-header p{max-width:none;margin:8px 0 0;color:var(--practice-ink);font-size:16px}.anatomy-tool-shell .anatomy-muscle-guide button{min-height:44px;min-width:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:9px;background:var(--practice-panel);color:var(--practice-nav);font-weight:800;text-align:start;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-muscle-guide button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell .anatomy-muscle-guide button:disabled{background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);opacity:1;cursor:default}.anatomy-tool-shell .anatomy-muscle-flow-controls{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.anatomy-tool-shell .anatomy-muscle-playback{font-size:16px;font-weight:700;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-steps{gap:10px;margin:0 0 12px;grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-steps button{display:flex;flex-direction:column;gap:6px;color:var(--practice-ink);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-steps strong{font-size:18px;line-height:1.5}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-steps button[aria-pressed=true],.anatomy-tool-shell .anatomy-muscle-guide [data-anatomy-clinical-toggle][aria-pressed=true]{background:var(--practice-nav-soft);color:var(--practice-nav);border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-muscle-step-navigation{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-block:12px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-detail{display:block;padding:16px;background:var(--practice-soft);color:var(--practice-ink);border-left:0;border-inline-start:4px solid var(--practice-nav);border-radius:10px;margin-block:16px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-detail>strong{display:block;margin-block:8px;font-size:20px;line-height:1.5;white-space:normal}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-detail :is(span,p){font-size:16px;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-detail p{margin:0}.anatomy-tool-shell .anatomy-muscle-step-focus{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--practice-border);margin-top:12px;padding-top:12px}.anatomy-tool-shell .anatomy-muscle-step-focus strong{font-size:16px;line-height:1.6;white-space:normal;min-width:0}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-position{font-size:16px!important;display:inline-block;padding:3px 8px;border:1px solid var(--practice-border);background:var(--practice-panel);border-radius:6px;font-weight:800}.anatomy-tool-shell .anatomy-muscle-marker-help{margin-block:18px 12px}.anatomy-tool-shell .anatomy-muscle-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.anatomy-tool-shell .anatomy-muscle-figure{margin:0 0 14px;padding:14px;min-width:0;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-figure h6{font-size:18px;line-height:1.5;font-weight:800;color:var(--practice-ink);margin:0 0 12px}.anatomy-tool-shell .anatomy-muscle-picture{border:1px solid var(--practice-border);border-radius:10px;background:#f8fafc;padding:6px;overflow:hidden}.anatomy-tool-shell .anatomy-muscle-picture svg{display:block;width:100%;height:auto;min-height:0}.anatomy-tool-shell [data-anatomy-muscle-scale=body] svg,.anatomy-tool-shell [data-anatomy-muscle-scale=regions] svg{height:230px}.anatomy-tool-shell .anatomy-muscle-marker line{stroke:#334155;stroke-width:2}.anatomy-tool-shell .anatomy-muscle-marker circle{fill:#fff;stroke:#0f172a;stroke-width:2}.anatomy-tool-shell .anatomy-muscle-marker text{fill:#0f172a;stroke:none;font-weight:900}.anatomy-tool-shell .anatomy-muscle-marker[data-current=true] circle{fill:#075985;stroke:#075985;stroke-width:4}.anatomy-tool-shell .anatomy-muscle-marker[data-current=true] text{fill:#fff}.anatomy-tool-shell .anatomy-muscle-figure figcaption p{margin:10px 0 0}.anatomy-tool-shell .anatomy-muscle-structure-key{display:grid;gap:8px;list-style:none;padding:0;margin:12px 0 0}.anatomy-tool-shell .anatomy-muscle-structure-key li{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0;padding:8px;border:1px solid var(--practice-border);border-radius:8px;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-muscle-key-number{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;border:1px solid var(--practice-border);border-radius:50%;font-weight:800}.anatomy-tool-shell .anatomy-muscle-structure-key li[data-current=true]{border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-muscle-current{font-weight:800;color:var(--practice-nav);margin-inline-start:auto}.anatomy-tool-shell .anatomy-muscle-flow-key{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;padding:12px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-muscle-flow-key>span{display:inline-flex;align-items:center;gap:8px}.anatomy-tool-shell .anatomy-muscle-flow-symbol{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;border-radius:50%;color:#fff;font-weight:800}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-clinical-panel{border-left:0;border-inline-start:4px solid var(--practice-nav);font-size:16px;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-nav);border-radius:10px;padding:14px;gap:10px;margin-block:14px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-clinical-panel :is(strong,span){font-size:16px!important;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-scale-continuation{font-size:16px;line-height:1.7;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);padding:14px;margin-top:16px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-scale-continuation :is(p,span,strong){font-size:16px;line-height:1.7;color:var(--practice-ink)!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-muscle-guide :is(p,span,bdi,li,button,strong){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-muscle-guide :is(h6,.anatomy-atlas-steps strong,.anatomy-atlas-step-detail>strong){font-size:20px!important;line-height:1.6!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-muscle-guide{padding:12px}.anatomy-tool-shell .anatomy-muscle-context{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-muscle-figure{padding:10px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-steps{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-muscle-step-navigation button{flex:1 1 100px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-detail{padding:12px}}@media(forced-colors:active){.anatomy-tool-shell .anatomy-muscle-guide :is(.anatomy-muscle-figure,.anatomy-muscle-picture,.anatomy-muscle-flow-key,.anatomy-atlas-step-detail,.anatomy-clinical-panel,.anatomy-muscle-structure-key li){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-muscle-guide button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;box-shadow:none}.anatomy-tool-shell .anatomy-muscle-guide button[aria-pressed=true],.anatomy-tool-shell .anatomy-muscle-structure-key li[data-current=true]{outline:2px solid Highlight;outline-offset:1px}.anatomy-tool-shell .anatomy-muscle-guide :focus-visible{outline-color:Highlight}.anatomy-tool-shell .anatomy-muscle-marker circle{fill:Canvas;stroke:CanvasText}.anatomy-tool-shell .anatomy-muscle-marker text{fill:CanvasText}.anatomy-tool-shell .anatomy-muscle-marker[data-current=true] circle{fill:Highlight;stroke:Highlight}.anatomy-tool-shell .anatomy-muscle-marker[data-current=true] text{fill:HighlightText}.anatomy-tool-shell .anatomy-muscle-flow-symbol{background:Canvas!important;color:CanvasText;border:1px solid CanvasText}}.anatomy-tool-shell .anatomy-muscle-marker line{stroke:#0f172a;stroke-width:1.5}.anatomy-tool-shell .anatomy-muscle-picture svg{display:block;width:100%;height:auto;min-height:0;max-height:none}.anatomy-tool-shell .anatomy-muscle-figure h6{font-size:20px;line-height:1.5;margin:0 0 12px;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-valve-key{padding:14px;margin-block:14px;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-muscle-valve-key h6{font-size:20px;line-height:1.5;color:var(--practice-ink);margin:0 0 8px}.anatomy-tool-shell .anatomy-muscle-valve-key p{margin:0 0 12px}.anatomy-tool-shell .anatomy-muscle-valve-state{margin-inline-start:auto;font-weight:800}.anatomy-tool-shell .anatomy-muscle-flow-symbol{width:44px;height:32px;white-space:nowrap;direction:ltr;unicode-bidi:isolate}.anatomy-tool-shell .anatomy-muscle-orientation{padding:12px;border-inline-start:4px solid var(--practice-nav);background:var(--practice-soft);border-radius:8px}.anatomy-tool-shell .anatomy-muscle-mechanism-note{margin-block:14px}.anatomy-tool-shell .anatomy-muscle-mechanism-note strong{font-size:16px;line-height:1.7}.anatomy-tool-shell .anatomy-muscle-mechanism-note p{margin:4px 0 0}.anatomy-tool-shell .anatomy-muscle-scale-path{display:flex;flex-wrap:wrap;gap:12px;list-style:none;padding:12px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-muscle-scale-path li{display:flex;align-items:center;gap:8px}.anatomy-tool-shell [data-anatomy-muscle-scale=sarcomere] .anatomy-muscle-marker line{stroke-width:.8}.anatomy-tool-shell [data-anatomy-muscle-scale=sarcomere] .anatomy-muscle-marker circle{stroke-width:1}.anatomy-tool-shell [data-anatomy-muscle-scale=sarcomere] .anatomy-muscle-marker[data-current=true] circle{stroke-width:1.5}",
       ".anatomy-tool-shell .anatomy-liver-guide{padding:18px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-header{align-items:flex-start;gap:12px;margin-bottom:16px}.anatomy-tool-shell .anatomy-liver-intro{flex:1 1 300px;min-width:0}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-header h5{font-size:24px;line-height:1.4;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-guide :is(p,button,span,li){font-size:16px;line-height:1.65}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-header p{max-width:none;margin:8px 0 0;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-guide button{min-height:44px;min-width:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:9px;background:var(--practice-panel);color:var(--practice-nav);font-weight:800;text-align:start;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-liver-guide button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell .anatomy-liver-guide button:disabled{background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);opacity:1;cursor:default}.anatomy-tool-shell .anatomy-liver-flow-controls{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.anatomy-tool-shell .anatomy-liver-playback{font-weight:700;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-steps{gap:10px;margin:0 0 12px;grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-steps button{display:flex;flex-direction:column;gap:6px;color:var(--practice-ink);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-steps strong{font-size:18px;line-height:1.5}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-steps button[aria-pressed=true],.anatomy-tool-shell .anatomy-liver-guide [data-anatomy-clinical-toggle][aria-pressed=true]{background:var(--practice-nav-soft);color:var(--practice-nav);border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-liver-step-navigation{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-block:12px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-step-detail{display:block;padding:16px;background:var(--practice-soft);color:var(--practice-ink);border-left:0;border-inline-start:4px solid var(--practice-nav);border-radius:10px;margin-block:16px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-step-detail>strong{display:block;margin-block:8px;font-size:20px;line-height:1.5;white-space:normal}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-step-detail :is(span,p){line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-guide p{margin:0}.anatomy-tool-shell .anatomy-liver-step-focus{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--practice-border);margin-top:12px;padding-top:12px}.anatomy-tool-shell .anatomy-liver-step-focus strong{font-size:16px;line-height:1.6;white-space:normal;min-width:0}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-step-position{font-size:16px!important;display:inline-block;padding:3px 8px;border:1px solid var(--practice-border);background:var(--practice-panel);border-radius:6px;font-weight:800}.anatomy-tool-shell .anatomy-liver-marker-help{margin-block:18px 12px!important}.anatomy-tool-shell .anatomy-liver-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.anatomy-tool-shell .anatomy-liver-figure{margin:0 0 14px;padding:14px;min-width:0;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-guide h6{font-size:20px;line-height:1.5;font-weight:800;color:var(--practice-ink);margin:0 0 12px}.anatomy-tool-shell .anatomy-liver-picture{border:1px solid var(--practice-border);border-radius:10px;background:#f8fafc;padding:6px;overflow:hidden}.anatomy-tool-shell .anatomy-liver-picture svg{display:block;width:100%;height:auto;min-height:0;max-height:none}.anatomy-tool-shell [data-anatomy-liver-scale=body] svg,.anatomy-tool-shell [data-anatomy-liver-scale=organ] svg{height:230px}.anatomy-tool-shell .anatomy-liver-marker line{stroke:#0f172a;stroke-width:1}.anatomy-tool-shell .anatomy-liver-marker circle{fill:#fff;stroke:#0f172a;stroke-width:1}.anatomy-tool-shell .anatomy-liver-marker text{fill:#0f172a;stroke:none;font-weight:900}.anatomy-tool-shell .anatomy-liver-marker[data-current=true] circle{fill:#075985;stroke:#075985;stroke-width:1.5}.anatomy-tool-shell .anatomy-liver-marker[data-current=true] text{fill:#fff}.anatomy-tool-shell .anatomy-liver-structure-key{list-style:none;display:flex;flex-direction:column;gap:8px;padding:0;margin:12px 0 0}.anatomy-tool-shell .anatomy-liver-structure-key li{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;padding:8px;border:1px solid var(--practice-border);border-radius:8px;background:var(--practice-panel);color:var(--practice-ink);min-width:0}.anatomy-tool-shell .anatomy-liver-structure-key li[data-current=true]{border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-liver-key-number{display:inline-flex;align-items:center;justify-content:center;flex:0 0 28px;width:28px;height:28px;border:1px solid var(--practice-border);border-radius:50%;font-weight:800;direction:ltr;unicode-bidi:isolate;background:var(--practice-panel);color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-current{margin-inline-start:auto;font-weight:800;color:var(--practice-nav)}.anatomy-tool-shell .anatomy-liver-flow-key,.anatomy-tool-shell .anatomy-liver-triad-key{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:12px;margin-block:14px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-liver-triad-key h6{flex-basis:100%;margin:0;font-size:18px}.anatomy-tool-shell .anatomy-liver-triad-items{display:flex;align-items:center;flex-wrap:wrap;gap:12px;min-width:0;width:100%}.anatomy-tool-shell .anatomy-liver-flow-key>span,.anatomy-tool-shell .anatomy-liver-triad-items>span{display:flex;align-items:center;gap:8px;min-width:0}.anatomy-tool-shell .anatomy-liver-flow-symbol{display:inline-flex;align-items:center;justify-content:center;flex:0 0 36px;width:36px;height:32px;border-radius:16px;color:#fff;font-weight:900;direction:ltr;unicode-bidi:isolate;white-space:nowrap}.anatomy-tool-shell .anatomy-liver-mechanism-note{padding:12px;border-inline-start:4px solid var(--practice-nav);background:var(--practice-soft);border-radius:8px;margin-block:14px}.anatomy-tool-shell .anatomy-liver-mechanism-note strong{font-size:16px;line-height:1.7}.anatomy-tool-shell .anatomy-liver-mechanism-note p{margin:4px 0 0}.anatomy-tool-shell .anatomy-liver-scale-path{display:flex;align-items:center;flex-wrap:wrap;gap:12px;list-style:none;padding:12px;margin:0 0 14px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-liver-scale-path li{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0}.anatomy-tool-shell .anatomy-liver-zoom{width:44px;height:28px;flex:0 0 44px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-clinical-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:14px;border-inline-start:4px solid var(--practice-nav);background:var(--practice-soft);color:var(--practice-ink);padding:12px;font-size:16px;line-height:1.7}.anatomy-tool-shell .anatomy-liver-guide .anatomy-clinical-panel :is(strong,p){color:var(--practice-ink);font-size:16px;line-height:1.7}.anatomy-tool-shell .anatomy-liver-guide .anatomy-clinical-note{margin-top:8px;padding:10px;border:1px solid var(--practice-border);border-radius:10px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-scale-continuation{align-items:center;background:var(--practice-soft);color:var(--practice-ink);padding:12px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-scale-continuation p{font-size:16px;line-height:1.7;flex:1 1 240px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-scale-continuation strong{color:var(--practice-ink);font-size:16px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-scale-continuation :is(p,span,strong){color:var(--practice-ink)!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-liver-guide :is(p,span,li,button,strong){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-liver-guide :is(h6,.anatomy-atlas-steps strong,.anatomy-atlas-step-detail>strong){font-size:20px!important;line-height:1.6!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-liver-guide .anatomy-atlas-header h5{font-size:24px!important;line-height:1.5!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-liver-guide{padding:12px}.anatomy-tool-shell .anatomy-liver-context{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-liver-figure{padding:10px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-steps{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-liver-step-navigation button{flex:1 1 100px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-step-detail{padding:12px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-clinical-panel{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.anatomy-tool-shell .anatomy-liver-guide :is(.anatomy-liver-figure,.anatomy-liver-picture,.anatomy-liver-flow-key,.anatomy-liver-triad-key,.anatomy-atlas-step-detail,.anatomy-clinical-panel,.anatomy-liver-structure-key li,.anatomy-liver-mechanism-note){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-liver-guide button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;box-shadow:none}.anatomy-tool-shell .anatomy-liver-guide button[aria-pressed=true],.anatomy-tool-shell .anatomy-liver-structure-key li[data-current=true]{outline:2px solid Highlight;outline-offset:1px}.anatomy-tool-shell .anatomy-liver-guide :focus-visible{outline-color:Highlight}.anatomy-tool-shell .anatomy-liver-marker circle{fill:Canvas;stroke:CanvasText}.anatomy-tool-shell .anatomy-liver-marker text{fill:CanvasText}.anatomy-tool-shell .anatomy-liver-marker[data-current=true] circle{fill:Highlight;stroke:Highlight}.anatomy-tool-shell .anatomy-liver-marker[data-current=true] text{fill:HighlightText}.anatomy-tool-shell .anatomy-liver-flow-symbol{background:Canvas!important;color:CanvasText;border:1px solid CanvasText}}",
       ".theme-contrast .anatomy-tool-shell,.theme-contrast .anatomy-tool-shell *{--anatomy-browser-border:#ffff00!important;--anatomy-browser-ink:#ffff00!important;--anatomy-browser-muted:#ffff00!important;--anatomy-browser-note:#ffff00!important;--anatomy-detail-accent:#ffff00!important;--anatomy-ui-border:#ffff00!important;--anatomy-ui-ink:#ffff00!important;--anatomy-ui-muted:#ffff00!important;--atlas-border:#ffff00!important;--atlas-ink:#ffff00!important;--atlas-muted:#ffff00!important;--card-accent:#ffff00!important;--card-border:#ffff00!important;--card-ink:#ffff00!important;--card-muted:#ffff00!important;--case-nav:#ffff00!important;--detail-muted:#ffff00!important;--guide-accent:#ffff00!important;--guide-border:#ffff00!important;--guide-ink:#ffff00!important;--guide-muted:#ffff00!important;--homeo-accent:#ffff00!important;--homeo-border:#ffff00!important;--homeo-ink:#ffff00!important;--homeo-muted:#ffff00!important;--myth-claim:#ffff00!important;--myth-fact:#ffff00!important;--myth-heading:#ffff00!important;--pathway-accent:#ffff00!important;--pathway-border:#ffff00!important;--pathway-ink:#ffff00!important;--pathway-muted:#ffff00!important;--practice-bad-border:#ffff00!important;--practice-border:#ffff00!important;--practice-good-border:#ffff00!important;--practice-ink:#ffff00!important;--practice-nav:#ffff00!important;--quiz-accent:#ffff00!important;--quiz-border:#ffff00!important;--quiz-ink:#ffff00!important;--quiz-muted:#ffff00!important;--quiz-review:#ffff00!important;--quiz-success:#ffff00!important;--sheet-accent:#ffff00!important;--sheet-border:#ffff00!important;--sheet-ink:#ffff00!important;--sheet-muted:#ffff00!important;--spot-nav:#ffff00!important;--step-accent:#ffff00!important;--step-muted:#ffff00!important;--tutor-accent:#ffff00!important;--tutor-border:#ffff00!important;--tutor-ink:#ffff00!important;--tutor-muted:#ffff00!important;--tutor-nav:#ffff00!important;--anatomy-accent:#ffff00!important;--motion-accent:#ffff00!important;--atlas-panel:#000!important;--card-panel:#000!important;--card-soft:#000!important;--case-soft:#000!important;--compare-first-soft:#000!important;--compare-second-soft:#000!important;--guide-on-accent:#000!important;--guide-panel:#000!important;--guide-soft:#000!important;--homeo-soft:#000!important;--homeo-surface:#000!important;--pathway-soft:#000!important;--pathway-surface:#000!important;--practice-bad-bg:#000!important;--practice-good-bg:#000!important;--practice-nav-soft:#000!important;--practice-panel:#000!important;--practice-soft:#000!important;--quiz-panel:#000!important;--quiz-review-bg:#000!important;--quiz-soft:#000!important;--quiz-success-bg:#000!important;--sheet-on-accent:#000!important;--sheet-panel:#000!important;--sheet-soft:#000!important;--spot-soft:#000!important;--tutor-panel:#000!important;--tutor-soft:#000!important;--anatomy-soft:#000!important;--motion-soft:#000!important;--motion-alert-soft:#000!important;--anatomy-ui-panel:#000!important;--anatomy-ui-soft:#000!important;--anatomy-browser-panel:#000!important;--anatomy-browser-row:#000!important;--anatomy-browser-soft:#000!important;--anatomy-browser-note-bg:#000!important;--atlas-soft:#000!important;--practice-good:#86efac!important;--practice-bad:#fca5a5!important}.theme-contrast .anatomy-tool-shell{background:#000!important;border-color:#ffff00!important}.theme-contrast .anatomy-mission,.theme-contrast .anatomy-spotter-end,.theme-contrast .anatomy-structure-status[data-status=\"practice\"],.theme-contrast .anatomy-structure-status[data-status=\"learning\"],.theme-contrast .anatomy-structure-status[data-status=\"mastered\"],.theme-contrast .anatomy-start-here,.theme-contrast .anatomy-start-here-dismiss,.theme-contrast .anatomy-study-evidence-guide,.theme-contrast .anatomy-study-controls,.theme-contrast .anatomy-study-controls select,.theme-contrast .anatomy-study-controls button,.theme-contrast .anatomy-study-sheet,.theme-contrast.theme-contrast .anatomy-tool-shell .anatomy-study-sheet :is(.anatomy-study-sheet-stale,.anatomy-structure-status),.theme-contrast .anatomy-study-sheet-stats>div,.theme-contrast .anatomy-study-sheet-stale,.theme-contrast .anatomy-study-workbench,.theme-contrast .anatomy-study-workbench select,.theme-contrast .anatomy-study-workbench button,.theme-contrast .anatomy-study-system-heading button,.theme-contrast .anatomy-study-import-preview,.theme-contrast .anatomy-study-dashboard,.theme-contrast .anatomy-lens,.theme-contrast .anatomy-lens-progress,.theme-contrast .anatomy-lens-card,.theme-contrast .anatomy-lens-card[data-viewed=\"true\"],.theme-contrast .anatomy-motion,.theme-contrast .anatomy-motion-progress,.theme-contrast .anatomy-motion-node,.theme-contrast .anatomy-motion-current,.theme-contrast .anatomy-motion-whatif,.theme-contrast .anatomy-intervention,.theme-contrast .anatomy-intervention-progress,.theme-contrast .anatomy-intervention-options button,.theme-contrast .anatomy-intervention-options button:hover,.theme-contrast .anatomy-intervention-options button[data-selected=\"true\"][data-correct=\"true\"],.theme-contrast .anatomy-intervention-options button[data-selected=\"true\"][data-correct=\"false\"],.theme-contrast .anatomy-intervention-stage,.theme-contrast .anatomy-intervention-feedback,.theme-contrast .anatomy-intervention-feedback[data-correct=\"false\"],.theme-contrast .anatomy-intervention-feedback button,.theme-contrast .anatomy-synthesis-compare section,.theme-contrast .anatomy-motion-check,.theme-contrast .anatomy-metric,.theme-contrast .anatomy-coach,.theme-contrast .anatomy-confidence,.theme-contrast .anatomy-challenge-chip,.theme-contrast .anatomy-challenge-chip[data-done=\"false\"],.theme-contrast .anatomy-tab-strip,.theme-contrast .anatomy-system-rail,.theme-contrast .anatomy-layer-bar,.theme-contrast .anatomy-controls-bar,.theme-contrast .anatomy-system-button[aria-pressed=\"true\"] .anatomy-system-meter>span,.theme-contrast .anatomy-progress-row,.theme-contrast .anatomy-body-shell,.theme-contrast .anatomy-orientation-key,.theme-contrast .anatomy-canvas-toolbar button,.theme-contrast .anatomy-3d-status,.theme-contrast .anatomy-view-toggle,.theme-contrast .anatomy-scale-journey,.theme-contrast .anatomy-scale-step,.theme-contrast .anatomy-scale-step[data-scale-stage=\"body\"],.theme-contrast .anatomy-scale-step[data-scale-stage=\"structure\"],.theme-contrast .anatomy-scale-step[data-scale-stage=\"tissue\"],.theme-contrast .anatomy-scale-step[data-scale-stage=\"cell\"],.theme-contrast button.anatomy-scale-step:hover,.theme-contrast .anatomy-scale-journey-buttons button,.theme-contrast .anatomy-minimap,.theme-contrast .anatomy-structure-panel,.theme-contrast .anatomy-atlas,.theme-contrast .anatomy-atlas-stage,.theme-contrast .anatomy-clinical-panel,.theme-contrast .anatomy-atlas-steps button,.theme-contrast .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"kidneys\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"kidneys\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"kidneys\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"alveoli\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"alveoli\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"alveoli\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"patella\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"patella\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"patella\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"biceps\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"biceps\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"biceps\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"liver\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"liver\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"liver\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"sm_intestine\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"sm_intestine\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"sm_intestine\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"epidermis\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"epidermis\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"epidermis\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-scale-path,.theme-contrast .anatomy-atlas-step-position,.theme-contrast .anatomy-compare-tray,.theme-contrast .anatomy-mastery-map,.theme-contrast .anatomy-mastery-totals span,.theme-contrast .anatomy-mastery-focus,.theme-contrast .anatomy-mastery-system,.theme-contrast .anatomy-mastery-system:hover,.theme-contrast .anatomy-mastery-bar,.theme-contrast .anatomy-relation-map,.theme-contrast .anatomy-relation-header button,.theme-contrast .anatomy-relation-node,.theme-contrast .anatomy-relation-node[data-kind=\"structure\"],.theme-contrast .anatomy-relation-node[data-kind=\"system\"],.theme-contrast .anatomy-relation-branch button:hover,.theme-contrast .anatomy-relation-node[data-kind=\"partner\"],.theme-contrast .anatomy-review-queue button,.theme-contrast .anatomy-review-queue button:hover,.theme-contrast .anatomy-topbar,.theme-contrast .anatomy-body-shell,.theme-contrast .anatomy-body-badges>span,.theme-contrast .anatomy-view-toggle,.theme-contrast .anatomy-view-toggle button:hover,.theme-contrast .anatomy-canvas-toolbar,.theme-contrast .anatomy-canvas-mode-chip[data-mode=\"2d\"],.theme-contrast .anatomy-3d-status,.theme-contrast .anatomy-canvas,.theme-contrast .anatomy-structure-panel,.theme-contrast .anatomy-tab-strip,.theme-contrast .anatomy-system-rail,.theme-contrast .anatomy-layer-bar,.theme-contrast .anatomy-controls-bar,.theme-contrast .anatomy-display-panel,.theme-contrast .anatomy-appearance-panel,.theme-contrast .anatomy-model-source,.theme-contrast .anatomy-display-summary strong,.theme-contrast .anatomy-appearance-summary strong,.theme-contrast .anatomy-visual-presets button,.theme-contrast .anatomy-controls-bar>.anatomy-appearance-panel,.theme-contrast .anatomy-atlas-scope-note,.theme-contrast .anatomy-tool-shell .anatomy-refinement,.theme-contrast .anatomy-refinement-item,.theme-contrast .anatomy-refinement button,.theme-contrast .anatomy-card-disclosure,.theme-contrast .anatomy-flashcard-deck-controls button,.theme-contrast .anatomy-flashcard-round-status,.theme-contrast .anatomy-clinical-selection-actions button,.theme-contrast .anatomy-clinical-selection-actions button:disabled,.theme-contrast .anatomy-3d-recovery button,.theme-contrast .anatomy-global-search-popup,.theme-contrast .anatomy-global-search-status,.theme-contrast .anatomy-global-search-more,.theme-contrast .anatomy-clinical-structures,.theme-contrast .anatomy-clinical-concept,.theme-contrast .anatomy-clinical-concept[data-selected=\"true\"],.theme-contrast .anatomy-clinical-selection,.theme-contrast .anatomy-clinical-locator,.theme-contrast .anatomy-clinical-ftu,.theme-contrast .anatomy-clinical-ftu-badge,.theme-contrast .anatomy-clinical-ftu-image,.theme-contrast .anatomy-clinical-ftu-cell,.theme-contrast .anatomy-clinical-ftu-cell[data-selected=true],.theme-contrast .anatomy-clinical-ftu-selection,.theme-contrast .anatomy-model-focus-toggle,.theme-contrast .anatomy-model-focus-toggle:hover,.theme-contrast .anatomy-clinical-pack-switcher,.theme-contrast .anatomy-clinical-pack-switcher select,.theme-contrast .anatomy-canvas-guide,.theme-contrast .anatomy-learning-tools,.theme-contrast .anatomy-canvas-guide-summary>span:last-of-type,.theme-contrast .anatomy-learning-tools-summary>span:last-of-type,.theme-contrast .anatomy-clinical-search input,.theme-contrast .anatomy-clinical-search button,.theme-contrast .anatomy-clinical-concept-empty,.theme-contrast .anatomy-clinical-visual-key,.theme-contrast .anatomy-clinical-visual-key i[data-key=\"selected\"],.theme-contrast .anatomy-clinical-visual-key i[data-key=\"context\"],.theme-contrast .anatomy-feedback-experiment,.theme-contrast .anatomy-feedback-experiment select,.theme-contrast .anatomy-feedback-experiment textarea,.theme-contrast .anatomy-mobile-activity select,.theme-contrast .anatomy-mobile-brief,.theme-contrast .anatomy-shared-context,.theme-contrast .anatomy-shared-context button,.theme-contrast .anatomy-motion-learning,.theme-contrast .anatomy-motion-learning textarea,.theme-contrast .anatomy-motion-learning button,.theme-contrast .anatomy-route-return,.theme-contrast .anatomy-route-jump select,.theme-contrast .anatomy-route-scope,.theme-contrast .anatomy-route-checks fieldset,.theme-contrast .anatomy-route-checks button,.theme-contrast .anatomy-route-checks button[data-result=correct],.theme-contrast .anatomy-route-checks button[data-result=incorrect],.theme-contrast .anatomy-connections-panel,.theme-contrast .anatomy-connections-panel fieldset button,.theme-contrast .anatomy-connections-panel [data-answer-state=correct],.theme-contrast .anatomy-connections-panel [data-answer-state=incorrect],.theme-contrast .anatomy-tutor-panel input,.theme-contrast .anatomy-clinical-note,.theme-contrast .anatomy-clinical-note button,.theme-contrast .anatomy-fact-study,.theme-contrast .anatomy-fact-study button,.theme-contrast .anatomy-case-card,.theme-contrast .anatomy-case-card textarea,.theme-contrast .anatomy-clinical-study button,.theme-contrast .anatomy-clinical-study button:disabled,.theme-contrast .anatomy-case-hint,.theme-contrast .anatomy-case-explanation,.theme-contrast .anatomy-tool-shell,.theme-contrast .anatomy-tool-shell .anatomy-topbar,.theme-contrast .anatomy-tool-shell .anatomy-mode-card,.theme-contrast .anatomy-tool-shell .anatomy-structure-list>button,.theme-contrast .anatomy-tool-shell .anatomy-structure-list>button:hover,.theme-contrast.theme-contrast .anatomy-tool-shell,.theme-contrast .anatomy-tool-shell .anatomy-canvas-frame[data-anatomy-view=\"2d\"],.theme-contrast .anatomy-model-explanation,.theme-contrast .anatomy-surface-choice select,.theme-contrast .anatomy-tool-shell .anatomy-camera-presets button,.theme-contrast .anatomy-tool-shell .anatomy-camera-presets button:hover,.theme-contrast .anatomy-tool-shell .anatomy-canvas-toolbar:not([data-anatomy-canvas-mode=\"2d\"]),.theme-contrast .anatomy-tool-shell .anatomy-surface-lighting button[aria-pressed=true],.theme-contrast .anatomy-viewer-dock,.theme-contrast .anatomy-tool-shell .anatomy-viewer-dock button,.theme-contrast .anatomy-view-angles,.theme-contrast .anatomy-tool-shell .anatomy-view-angle-buttons button,.theme-contrast .anatomy-tool-shell[data-anatomy-focus-studio=true] .anatomy-focus-studio-hint,.theme-contrast .anatomy-tool-shell .anatomy-viewer-dock .anatomy-viewer-region,.theme-contrast .anatomy-tool-shell .anatomy-viewer-dock .anatomy-viewer-region:hover,.theme-contrast .anatomy-tool-shell .anatomy-camera-fine-adjust .anatomy-3d-nudge,.theme-contrast .anatomy-region-learning,.theme-contrast .anatomy-region-learning summary,.theme-contrast .anatomy-region-card,.theme-contrast .anatomy-tool-shell .anatomy-region-card button,.theme-contrast .anatomy-region-reading,.theme-contrast .anatomy-region-learning .anatomy-region-reading summary,.theme-contrast .anatomy-return-view,.theme-contrast .anatomy-tool-shell .anatomy-return-view button,.theme-contrast .anatomy-tool-shell .anatomy-tour-recap-return,.theme-contrast.theme-contrast .anatomy-tool-shell .anatomy-tour-recap-return,.theme-contrast .anatomy-spotter-view-note,.theme-contrast.theme-contrast .anatomy-spotter-view-note,.theme-contrast .anatomy-tool-shell [data-anatomy-homeo-recap-option][data-anatomy-homeo-answer-state=correct],.theme-contrast .anatomy-tool-shell [data-anatomy-homeo-recap-option][data-anatomy-homeo-answer-state=chosen],.theme-contrast.theme-contrast .anatomy-tool-shell [data-anatomy-homeo-recap-option],.theme-contrast.theme-contrast .anatomy-start-here,.theme-contrast .anatomy-tool-shell .anatomy-kidney-picture,.theme-contrast .anatomy-tool-shell .anatomy-alveolus-picture,.theme-contrast .anatomy-tool-shell .anatomy-heart-picture,.theme-contrast .anatomy-tool-shell .anatomy-knee-picture,.theme-contrast .anatomy-tool-shell .anatomy-muscle-picture,.theme-contrast .anatomy-tool-shell .anatomy-liver-picture{background:#000!important;border-color:#ffff00!important}.theme-contrast .anatomy-tool-shell,.theme-contrast .anatomy-kicker,.theme-contrast .anatomy-mission-title,.theme-contrast .anatomy-mission-text,.theme-contrast .anatomy-spotter-panel,.theme-contrast .anatomy-spotter-end,.theme-contrast .anatomy-structure-status[data-status=\"practice\"],.theme-contrast .anatomy-structure-status[data-status=\"learning\"],.theme-contrast .anatomy-structure-status[data-status=\"mastered\"],.theme-contrast .anatomy-start-here-head h3,.theme-contrast .anatomy-start-here-dismiss,.theme-contrast .anatomy-start-here-steps,.theme-contrast .anatomy-start-here-steps strong,.theme-contrast .anatomy-study-evidence-guide,.theme-contrast .anatomy-study-controls,.theme-contrast .anatomy-study-sheet-head h3,.theme-contrast .anatomy-study-sheet-head p,.theme-contrast.theme-contrast .anatomy-tool-shell .anatomy-study-sheet :is(.anatomy-study-sheet-stale,.anatomy-structure-status),.theme-contrast .anatomy-study-sheet-stats strong,.theme-contrast .anatomy-study-sheet-stats span,.theme-contrast .anatomy-study-sheet-next,.theme-contrast .anatomy-study-sheet-system h4,.theme-contrast .anatomy-study-sheet-system li,.theme-contrast .anatomy-study-sheet-viewed,.theme-contrast .anatomy-study-sheet-stale,.theme-contrast .anatomy-study-sheet-due-line,.theme-contrast .anatomy-study-sheet-fn,.theme-contrast .anatomy-study-sheet-note,.theme-contrast .anatomy-study-sheet-note,.theme-contrast .anatomy-study-sheet-empty,.theme-contrast .anatomy-study-workbench,.theme-contrast .anatomy-study-workbench select,.theme-contrast .anatomy-study-workbench button,.theme-contrast .anatomy-study-system-heading button,.theme-contrast .anatomy-study-sheet-name,.theme-contrast .anatomy-study-dashboard-summary,.theme-contrast .anatomy-study-dashboard-summary>span:last-of-type,.theme-contrast .anatomy-lens-header h3,.theme-contrast .anatomy-lens-header p,.theme-contrast .anatomy-lens-progress,.theme-contrast .anatomy-lens-card strong,.theme-contrast .anatomy-lens-card .anatomy-lens-kicker,.theme-contrast .anatomy-lens-card .anatomy-lens-desc,.theme-contrast .anatomy-lens-card .anatomy-lens-action,.theme-contrast .anatomy-motion-header p,.theme-contrast .anatomy-motion-node,.theme-contrast .anatomy-motion-node span,.theme-contrast .anatomy-motion-current>strong,.theme-contrast .anatomy-motion-current>span,.theme-contrast .anatomy-motion-cascade-stage span,.theme-contrast .anatomy-motion-whatif strong,.theme-contrast .anatomy-motion-whatif span,.theme-contrast .anatomy-motion-impact-stage span,.theme-contrast .anatomy-intervention-header h4,.theme-contrast .anatomy-intervention-header p,.theme-contrast .anatomy-intervention-progress,.theme-contrast .anatomy-intervention-options button,.theme-contrast .anatomy-intervention-options button[data-selected=\"true\"][data-correct=\"true\"],.theme-contrast .anatomy-intervention-options button[data-selected=\"true\"][data-correct=\"false\"],.theme-contrast .anatomy-intervention-stage span,.theme-contrast .anatomy-intervention-stage strong,.theme-contrast .anatomy-intervention-arrow,.theme-contrast .anatomy-intervention-feedback,.theme-contrast .anatomy-intervention-feedback[data-correct=\"false\"],.theme-contrast .anatomy-intervention-feedback button,.theme-contrast .anatomy-intervention-boundary,.theme-contrast .anatomy-synthesis-header p,.theme-contrast .anatomy-synthesis-compare span,.theme-contrast .anatomy-motion-check p,.theme-contrast .anatomy-motion-feedback,.theme-contrast .anatomy-motion-feedback[data-correct=\"true\"],.theme-contrast .anatomy-metric strong,.theme-contrast .anatomy-metric span,.theme-contrast .anatomy-coach strong,.theme-contrast .anatomy-coach p,.theme-contrast .anatomy-system-count,.theme-contrast .anatomy-body-header strong,.theme-contrast .anatomy-body-title span,.theme-contrast .anatomy-orientation-key,.theme-contrast .anatomy-canvas-toolbar>span,.theme-contrast .anatomy-canvas-toolbar button,.theme-contrast .anatomy-3d-status,.theme-contrast .anatomy-view-toggle button,.theme-contrast .anatomy-scale-journey-head strong,.theme-contrast .anatomy-scale-journey-head span,.theme-contrast .anatomy-scale-step,.theme-contrast .anatomy-scale-step span,.theme-contrast .anatomy-scale-status,.theme-contrast .anatomy-scale-journey-buttons button,.theme-contrast .anatomy-minimap-label,.theme-contrast .anatomy-canvas-help,.theme-contrast .anatomy-marker-legend,.theme-contrast .anatomy-marker-legend-title,.theme-contrast .anatomy-atlas-header h5,.theme-contrast .anatomy-atlas-header p,.theme-contrast .anatomy-atlas-visual-key,.theme-contrast .anatomy-atlas-visual-key-label,.theme-contrast .anatomy-atlas-focus,.theme-contrast .anatomy-atlas-focus-label,.theme-contrast .anatomy-clinical-panel,.theme-contrast .anatomy-clinical-panel-note,.theme-contrast .anatomy-atlas-steps button,.theme-contrast .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"kidneys\"] .anatomy-atlas-header h5,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"kidneys\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"kidneys\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"alveoli\"] .anatomy-atlas-header h5,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"alveoli\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"alveoli\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"patella\"] .anatomy-atlas-header h5,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"patella\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"patella\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"biceps\"] .anatomy-atlas-header h5,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"biceps\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"biceps\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"liver\"] .anatomy-atlas-header h5,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"liver\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"liver\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"sm_intestine\"] .anatomy-atlas-header h5,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"sm_intestine\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"sm_intestine\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"epidermis\"] .anatomy-atlas-header h5,.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"epidermis\"] .anatomy-atlas-steps button[aria-pressed=\"true\"],.theme-contrast .anatomy-atlas[data-anatomy-atlas=\"epidermis\"] .anatomy-atlas-step-detail,.theme-contrast .anatomy-scale-path,.theme-contrast .anatomy-scale-arrow,.theme-contrast .anatomy-scale-continuation p,.theme-contrast .anatomy-scale-continuation strong,.theme-contrast .anatomy-compare-tray,.theme-contrast .anatomy-compare-tray p,.theme-contrast .anatomy-mastery-header h3,.theme-contrast .anatomy-mastery-header p,.theme-contrast .anatomy-mastery-totals span,.theme-contrast .anatomy-mastery-focus span,.theme-contrast .anatomy-mastery-focus strong,.theme-contrast .anatomy-mastery-system,.theme-contrast .anatomy-mastery-counts,.theme-contrast .anatomy-mastery-legend,.theme-contrast .anatomy-relation-header strong,.theme-contrast .anatomy-relation-header p,.theme-contrast .anatomy-relation-header button,.theme-contrast .anatomy-relation-node,.theme-contrast .anatomy-relation-node span,.theme-contrast .anatomy-relation-caption,.theme-contrast .anatomy-review-queue-label,.theme-contrast .anatomy-review-queue button,.theme-contrast .anatomy-review-queue-more,.theme-contrast .anatomy-view-toggle button:hover,.theme-contrast .anatomy-view-control-label,.theme-contrast .anatomy-canvas-mode-chip[data-mode=\"2d\"],.theme-contrast .anatomy-3d-status,.theme-contrast .anatomy-display-summary,.theme-contrast .anatomy-appearance-summary,.theme-contrast .anatomy-model-source-summary,.theme-contrast .anatomy-display-summary strong,.theme-contrast .anatomy-appearance-summary strong,.theme-contrast .anatomy-visual-presets button,.theme-contrast .anatomy-model-source-note,.theme-contrast .anatomy-atlas-provenance,.theme-contrast .anatomy-atlas-provenance dt,.theme-contrast .anatomy-atlas-provenance a,.theme-contrast .anatomy-atlas-scope-note,.theme-contrast .anatomy-tool-shell .anatomy-refinement,.theme-contrast .anatomy-refinement a,.theme-contrast .anatomy-card-disclosure,.theme-contrast .anatomy-flashcard-deck-controls button,.theme-contrast .anatomy-flashcard-round-status,.theme-contrast .anatomy-clinical-key-help,.theme-contrast .anatomy-clinical-selection-actions button,.theme-contrast .anatomy-clinical-selection-actions button:disabled,.theme-contrast .anatomy-3d-recovery button,.theme-contrast .anatomy-global-search-status,.theme-contrast .anatomy-global-search-more,.theme-contrast .anatomy-global-search-results button,.theme-contrast .anatomy-global-search-results span,.theme-contrast .anatomy-clinical-structures-head strong,.theme-contrast .anatomy-clinical-structures-head span,.theme-contrast .anatomy-clinical-concept,.theme-contrast .anatomy-clinical-concept span,.theme-contrast .anatomy-clinical-selection,.theme-contrast .anatomy-clinical-locator p,.theme-contrast .anatomy-clinical-ftu-head h6,.theme-contrast .anatomy-clinical-ftu-head p,.theme-contrast .anatomy-clinical-ftu-badge,.theme-contrast .anatomy-clinical-ftu figcaption,.theme-contrast .anatomy-clinical-ftu figcaption a,.theme-contrast .anatomy-clinical-ftu-cell,.theme-contrast .anatomy-clinical-ftu-cell span,.theme-contrast .anatomy-clinical-ftu-selection,.theme-contrast .anatomy-clinical-ftu-selection span,.theme-contrast .anatomy-clinical-ftu-note,.theme-contrast .anatomy-skin-tone-controls>span:first-child,.theme-contrast .anatomy-model-focus-toggle,.theme-contrast .anatomy-model-focus-toggle:hover,.theme-contrast .anatomy-clinical-pack-switcher label,.theme-contrast .anatomy-clinical-pack-switcher select,.theme-contrast .anatomy-clinical-pack-switcher>span,.theme-contrast .anatomy-canvas-guide-summary,.theme-contrast .anatomy-learning-tools-summary,.theme-contrast .anatomy-canvas-guide-summary>span:last-of-type,.theme-contrast .anatomy-learning-tools-summary>span:last-of-type,.theme-contrast .anatomy-clinical-search input,.theme-contrast .anatomy-clinical-search button,.theme-contrast .anatomy-clinical-search>span,.theme-contrast .anatomy-clinical-concept-empty,.theme-contrast .anatomy-clinical-visual-key,.theme-contrast .anatomy-clinical-visual-key-note,.theme-contrast .anatomy-science-sources a,.theme-contrast .anatomy-feedback-experiment a,.theme-contrast .anatomy-recall-evidence,.theme-contrast .anatomy-feedback-experiment,.theme-contrast .anatomy-mobile-activity select,.theme-contrast .anatomy-mobile-brief,.theme-contrast .anatomy-shared-context,.theme-contrast .anatomy-shared-context button,.theme-contrast .anatomy-motion-learning,.theme-contrast .anatomy-motion-learning textarea,.theme-contrast .anatomy-motion-learning button,.theme-contrast .anatomy-motion-learning a,.theme-contrast .anatomy-route-return,.theme-contrast .anatomy-route-jump select,.theme-contrast .anatomy-route-scope,.theme-contrast .anatomy-route-reference,.theme-contrast .anatomy-route-checks,.theme-contrast .anatomy-route-checks button,.theme-contrast .anatomy-route-checks button[data-result=correct],.theme-contrast .anatomy-route-checks button[data-result=incorrect],.theme-contrast .anatomy-mnemonics-card>button span,.theme-contrast .anatomy-connections-panel,.theme-contrast .anatomy-connection-progress,.theme-contrast .anatomy-connection-card h5 button,.theme-contrast .anatomy-connection-systems,.theme-contrast .anatomy-connections-panel fieldset button,.theme-contrast .anatomy-connections-panel [data-answer-state=correct],.theme-contrast .anatomy-connections-panel [data-answer-state=incorrect],.theme-contrast .anatomy-connections-panel a,.theme-contrast .anatomy-mnemonics-card a,.theme-contrast .anatomy-connection-diagrams button,.theme-contrast .anatomy-mnemonics-card [data-anatomy-memory-toggle],.theme-contrast .anatomy-memory-guide,.theme-contrast .anatomy-mnemonics-card [data-anatomy-memory-cue],.theme-contrast .anatomy-tool-shell .anatomy-tutor-panel .anatomy-own-words :is(label,p,span,bdi),.theme-contrast .anatomy-clinical-note,.theme-contrast .anatomy-clinical-note-title,.theme-contrast .anatomy-clinical-note a,.theme-contrast .anatomy-clinical-note button,.theme-contrast .anatomy-fact-study,.theme-contrast .anatomy-fact-study h3,.theme-contrast .anatomy-fact-guide,.theme-contrast .anatomy-fact-study button,.theme-contrast .anatomy-fact-study a,.theme-contrast .anatomy-clinical-study,.theme-contrast .anatomy-clinical-study h3,.theme-contrast .anatomy-case-card h4,.theme-contrast .anatomy-case-card textarea,.theme-contrast .anatomy-case-help,.theme-contrast .anatomy-case-scope,.theme-contrast .anatomy-clinical-study button,.theme-contrast .anatomy-clinical-study button:disabled,.theme-contrast .anatomy-case-reviewed,.theme-contrast .anatomy-clinical-study a,.theme-contrast .anatomy-tour-panel,.theme-contrast .anatomy-tour-panel a,.theme-contrast .anatomy-detail-breadcrumb,.theme-contrast .anatomy-model-explanation,.theme-contrast .anatomy-model-explanation p,.theme-contrast .anatomy-surface-choice select,.theme-contrast .anatomy-surface-credit,.theme-contrast .anatomy-tool-shell .anatomy-body-shell .anatomy-model-explanation strong,.theme-contrast .anatomy-tool-shell .anatomy-body-shell .anatomy-surface-choice,.theme-contrast .anatomy-tool-shell .anatomy-body-shell .anatomy-model-source-note,.theme-contrast .anatomy-tool-shell .anatomy-body-shell .anatomy-model-source-summary>span:first-child,.theme-contrast .anatomy-camera-presets-label,.theme-contrast .anatomy-tool-shell .anatomy-camera-presets button,.theme-contrast .anatomy-tool-shell .anatomy-canvas-toolbar:not([data-anatomy-canvas-mode=\"2d\"]),.theme-contrast .anatomy-tool-shell .anatomy-canvas-toolbar:not([data-anatomy-canvas-mode=\"2d\"])>[data-anatomy-canvas-toolbar-label],.theme-contrast .anatomy-model-explanation summary,.theme-contrast .anatomy-tool-shell .anatomy-surface-lighting button[aria-pressed=true],.theme-contrast .anatomy-viewer-dock,.theme-contrast .anatomy-viewer-region span,.theme-contrast .anatomy-viewer-region strong,.theme-contrast .anatomy-tool-shell .anatomy-viewer-dock button,.theme-contrast .anatomy-view-angles,.theme-contrast .anatomy-view-angles-heading,.theme-contrast .anatomy-view-angles-heading strong,.theme-contrast .anatomy-tool-shell .anatomy-view-angle-buttons button,.theme-contrast .anatomy-view-angles p,.theme-contrast .anatomy-tool-shell[data-anatomy-focus-studio=true] .anatomy-focus-studio-hint,.theme-contrast .anatomy-viewer-region .anatomy-refit-icon,.theme-contrast .anatomy-camera-fine-adjust summary,.theme-contrast .anatomy-tool-shell .anatomy-camera-fine-adjust .anatomy-3d-nudge,.theme-contrast .anatomy-region-learning,.theme-contrast .anatomy-region-learning summary strong,.theme-contrast .anatomy-region-intro,.theme-contrast .anatomy-region-system,.theme-contrast .anatomy-region-card h4,.theme-contrast .anatomy-region-card p,.theme-contrast .anatomy-region-card small,.theme-contrast .anatomy-tool-shell .anatomy-region-card button,.theme-contrast .anatomy-region-learning .anatomy-region-reading summary,.theme-contrast .anatomy-region-reading-copy strong,.theme-contrast .anatomy-tool-shell .anatomy-return-view button,.theme-contrast .anatomy-tool-shell .anatomy-tour-recap-return,.theme-contrast.theme-contrast .anatomy-tool-shell .anatomy-tour-recap-return,.theme-contrast .anatomy-spotter-view-note,.theme-contrast.theme-contrast .anatomy-spotter-view-note,.theme-contrast .anatomy-tool-shell [data-anatomy-homeo-recap-option][data-anatomy-homeo-answer-state=correct],.theme-contrast .anatomy-tool-shell [data-anatomy-homeo-recap-option][data-anatomy-homeo-answer-state=chosen],.theme-contrast.theme-contrast .anatomy-tool-shell [data-anatomy-homeo-recap-option],.theme-contrast .anatomy-tool-shell [data-anatomy-homeo-panel] :is(a),.theme-contrast.theme-contrast .anatomy-tool-shell [data-anatomy-homeo-panel] a,.theme-contrast .anatomy-tool-shell .anatomy-homeo-range-summary p,.theme-contrast.theme-contrast .anatomy-start-here h3,.theme-contrast.theme-contrast .anatomy-start-here-steps,.theme-contrast.theme-contrast .anatomy-start-here-steps strong{color:#ffff00!important}.theme-contrast .anatomy-tool-shell a{color:#ffff00!important}",
+      ".anatomy-tool-shell .anatomy-topbar{padding:14px 16px;border-radius:16px;border:1px solid var(--practice-border);border-inline-start:4px solid var(--anatomy-accent);background:linear-gradient(135deg,var(--practice-soft) 0%,var(--practice-panel) 100%);flex-wrap:wrap;gap:12px;box-shadow:0 4px 16px rgba(15,23,42,0.06)}.theme-dark .anatomy-tool-shell .anatomy-topbar{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);box-shadow:0 6px 20px rgba(0,0,0,0.3)}.theme-contrast .anatomy-tool-shell .anatomy-topbar{background:#000!important;border-color:#ffff00!important;box-shadow:none}.anatomy-tool-shell .anatomy-topbar-back,.anatomy-tool-shell .anatomy-topbar-action{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}.anatomy-tool-shell .anatomy-tab-strip button{min-height:44px}.anatomy-tool-shell .anatomy-topbar-title{min-width:0;flex:1 1 220px}.anatomy-tool-shell .anatomy-hero-badge{display:inline-flex;align-items:center;padding:2px 9px;margin-bottom:4px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:0.03em;background:var(--practice-soft);color:var(--practice-nav);border:1px solid var(--practice-border)}.anatomy-tool-shell .anatomy-hero-pills{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%;margin-top:4px;padding-top:8px;border-top:1px solid var(--practice-border)}.anatomy-tool-shell .anatomy-hero-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:var(--practice-panel);color:var(--practice-ink);border:1px solid var(--practice-border)}.anatomy-tool-shell .anatomy-plane-strip{margin-bottom:12px;padding:12px 14px;border-radius:14px;border:1px solid var(--practice-border);background:var(--practice-panel);color:var(--practice-ink);display:flex;flex-direction:column;gap:10px}.anatomy-tool-shell .anatomy-quick-presets{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.anatomy-tool-shell .anatomy-quick-preset-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-quick-preset-btn{min-height:44px;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;border:1px solid var(--practice-border);background:var(--practice-soft);color:var(--practice-ink);cursor:pointer;transition:background-color 140ms ease,border-color 140ms ease}.anatomy-tool-shell .anatomy-quick-preset-btn[aria-pressed=\"true\"]{background:var(--practice-nav);color:var(--practice-panel);border-color:var(--practice-nav)}.theme-contrast .anatomy-tool-shell .anatomy-hero-badge,.theme-contrast .anatomy-tool-shell .anatomy-hero-pill,.theme-contrast .anatomy-tool-shell .anatomy-plane-strip,.theme-contrast .anatomy-tool-shell .anatomy-quick-preset-btn{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}.theme-contrast .anatomy-tool-shell .anatomy-quick-preset-btn[aria-pressed=\"true\"]{background:#ffff00!important;color:#000!important;border-color:#ffff00!important}@media(forced-colors:active){.anatomy-tool-shell .anatomy-topbar,.anatomy-tool-shell .anatomy-plane-strip,.anatomy-tool-shell .anatomy-hero-badge,.anatomy-tool-shell .anatomy-hero-pill{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-quick-preset-btn{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}"
     ].join('');
     document.head.appendChild(st);
   })();
@@ -3066,7 +3067,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
       // ── Tool body (anatomy) ──
       return (function() {
-        var d = labToolData.anatomy || {};
+        var rawAnatomy = (labToolData && typeof labToolData === 'object') ? labToolData.anatomy : null;
+        var d = (rawAnatomy && typeof rawAnatomy === 'object' && !Array.isArray(rawAnatomy)) ? rawAnatomy : {};
         var readingMode = d._readingMode === true;
 
           // ── Canvas narration: init ──
@@ -9237,15 +9239,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.globalAlpha = xrayMode ? 0.85 : (sysKey === 'skeletal' ? 0.95 : 0.50);
               if (xrayMode) { cCtx.shadowColor = '#e0f0ff'; cCtx.shadowBlur = 8; }
               var boneColor = xrayMode ? '#d0e8ff' : '#94a3b8';
-              var boneFill = xrayMode ? '#1a2a3a' : '#f5f0e8';
-              var boneStroke = xrayMode ? '#c0d8f0' : (sysKey === 'skeletal' ? '#526176' : '#8895a0');
-              var boneHighlight = xrayMode ? '#e8f4ff' : '#e8e0d0';
+              var boneFill = xrayMode ? '#1a2a3a' : '#f8f3e9';
+              var boneStroke = xrayMode ? '#c0d8f0' : (sysKey === 'skeletal' ? '#475569' : '#8895a0');
+              var boneHighlight = xrayMode ? '#e8f4ff' : '#dcd1be';
 
-              // Helper: draw a tapered bone (wider at epiphyses, narrower at diaphysis)
+              // Helper: draw a tapered bone with cylindrical ivory contour shading & periosteal specular ridge
               function drawBone(x1, y1, x2, y2, w1, w2, wMid) {
                 if (wMid === undefined) wMid = Math.min(w1, w2) * 0.6;
                 var dx = x2 - x1, dy = y2 - y1;
-                var len = Math.sqrt(dx * dx + dy * dy);
+                var len = Math.sqrt(dx * dx + dy * dy) || 1;
                 var nx = -dy / len, ny = dx / len; // normal
                 var mx = (x1 + x2) * 0.5, my = (y1 + y2) * 0.5;
                 cCtx.beginPath();
@@ -9254,16 +9256,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 cCtx.lineTo(x2 - nx * w2, y2 - ny * w2);
                 cCtx.quadraticCurveTo(mx - nx * wMid, my - ny * wMid, x1 - nx * w1, y1 - ny * w1);
                 cCtx.closePath();
-                var bGrad = cCtx.createLinearGradient(x1 + nx * w1, y1, x1 - nx * w1, y2);
-                bGrad.addColorStop(0, boneHighlight); bGrad.addColorStop(0.5, boneFill); bGrad.addColorStop(1, boneHighlight);
+                var maxW = Math.max(w1, w2, 1);
+                var bGrad = cCtx.createLinearGradient(mx + nx * maxW, my + ny * maxW, mx - nx * maxW, my - ny * maxW);
+                if (xrayMode) {
+                  bGrad.addColorStop(0, '#c7e3ff'); bGrad.addColorStop(0.35, '#1e354d'); bGrad.addColorStop(0.7, '#27435f'); bGrad.addColorStop(1, '#d8ecff');
+                } else {
+                  bGrad.addColorStop(0, '#cfc2ab'); bGrad.addColorStop(0.32, '#fffcf5'); bGrad.addColorStop(0.68, boneFill); bGrad.addColorStop(1, '#bfa98d');
+                }
                 cCtx.fillStyle = bGrad; cCtx.fill();
-                cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.8; cCtx.stroke();
+                cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 0.85; cCtx.stroke();
+                // Subtle periosteal ivory specular ridge along shaft
+                if (!xrayMode && len > 8) {
+                  cCtx.save();
+                  cCtx.beginPath();
+                  cCtx.moveTo(x1 + dx * 0.14 + nx * wMid * 0.28, y1 + dy * 0.14 + ny * wMid * 0.28);
+                  cCtx.lineTo(x2 - dx * 0.14 + nx * wMid * 0.28, y2 - dy * 0.14 + ny * wMid * 0.28);
+                  cCtx.strokeStyle = 'rgba(255,255,250,0.62)';
+                  cCtx.lineWidth = Math.max(0.45, wMid * 0.22);
+                  cCtx.lineCap = 'round';
+                  cCtx.stroke();
+                  cCtx.restore();
+                }
               }
 
-              // ── Skull (cranium with mandible) ──
+              // ── Skull (cranium with mandible & ivory contour relief) ──
               cCtx.beginPath(); cCtx.arc(W * 0.50, H * 0.055, W * 0.046, 0, Math.PI * 2);
-              var skullGrad = cCtx.createRadialGradient(W * 0.49, H * 0.048, W * 0.01, W * 0.50, H * 0.055, W * 0.046);
-              skullGrad.addColorStop(0, boneHighlight); skullGrad.addColorStop(1, boneFill);
+              var skullGrad = cCtx.createRadialGradient(W * 0.486, H * 0.045, W * 0.006, W * 0.50, H * 0.055, W * 0.048);
+              if (xrayMode) {
+                skullGrad.addColorStop(0, '#e8f4ff'); skullGrad.addColorStop(0.65, '#223a52'); skullGrad.addColorStop(1, '#93c5fd');
+              } else {
+                skullGrad.addColorStop(0, '#fffdf7'); skullGrad.addColorStop(0.58, boneFill); skullGrad.addColorStop(1, '#cab99e');
+              }
               cCtx.fillStyle = skullGrad; cCtx.fill();
               cCtx.strokeStyle = boneStroke; cCtx.lineWidth = 1.5; cCtx.stroke();
               // Eye sockets
@@ -9677,10 +9700,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.restore();
             }
 
-            // ── ORGAN LAYER (with breathing animation + enhanced anatomical detail) ──
+            // ── ORGAN LAYER (with breathing animation + rim-lit moist serous specular depth) ──
+            var anatMotionReduced = false;
+            try { anatMotionReduced = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (_mrErr) {}
             if (layerOn('organs')) {
-              cCtx.save(); cCtx.globalAlpha = 0.55;
-              var breathCycle = 1.0 + Math.sin(anatTick * 0.03) * 0.06;
+              cCtx.save(); cCtx.globalAlpha = 0.62;
+              var breathCycle = anatMotionReduced ? 1.0 : (1.0 + Math.sin(anatTick * 0.03) * 0.06);
 
               // ── Lungs (anatomical shape: wider base, narrower apex, medial cardiac notch) ──
               function drawLung(cx, cy, flipX) {
@@ -9692,34 +9717,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 cCtx.quadraticCurveTo(s * W * 0.06, H * 0.05, s * W * 0.01, H * 0.055); // base
                 cCtx.quadraticCurveTo(0, H * 0.04, 0, H * 0.01); // medial wall (cardiac notch on left)
                 cCtx.closePath();
-                var lungGrad = cCtx.createRadialGradient(s * W * 0.02, 0, W * 0.01, s * W * 0.02, 0, W * 0.07);
-                lungGrad.addColorStop(0, '#dbeafe'); lungGrad.addColorStop(1, '#93c5fd40');
+                var lungGrad = cCtx.createRadialGradient(s * W * 0.024, -H * 0.012, W * 0.006, s * W * 0.025, H * 0.008, W * 0.072);
+                lungGrad.addColorStop(0, '#f0f9ff'); lungGrad.addColorStop(0.45, '#bfdbfe'); lungGrad.addColorStop(1, '#60a5fa55');
                 cCtx.fillStyle = lungGrad; cCtx.fill();
-                cCtx.strokeStyle = '#3b82f6'; cCtx.lineWidth = 1; cCtx.stroke();
+                cCtx.strokeStyle = '#2563eb'; cCtx.lineWidth = 1.05; cCtx.stroke();
+                // Moist pleural serous specular crescent
+                cCtx.save(); cCtx.globalAlpha = 0.45;
+                cCtx.beginPath(); cCtx.ellipse(s * W * 0.028, -H * 0.014, W * 0.014, H * 0.009, s * -0.35, 0, Math.PI * 2);
+                cCtx.fillStyle = '#ffffff'; cCtx.fill();
+                cCtx.restore();
                 // Bronchial branches inside lung
-                cCtx.globalAlpha = 0.3;
+                cCtx.globalAlpha = 0.34;
                 cCtx.beginPath(); cCtx.moveTo(0, -H * 0.01); cCtx.lineTo(s * W * 0.03, H * 0.02);
                 cCtx.moveTo(s * W * 0.015, H * 0.005); cCtx.lineTo(s * W * 0.04, -H * 0.01);
                 cCtx.moveTo(s * W * 0.015, H * 0.005); cCtx.lineTo(s * W * 0.045, H * 0.035);
                 cCtx.moveTo(s * W * 0.03, H * 0.02); cCtx.lineTo(s * W * 0.05, H * 0.01);
                 cCtx.strokeStyle = '#60a5fa'; cCtx.lineWidth = 0.6; cCtx.stroke();
-                cCtx.globalAlpha = 0.55;
+                cCtx.globalAlpha = 0.62;
                 // Lobe fissures
                 cCtx.beginPath(); cCtx.moveTo(0, H * 0.005);
                 cCtx.quadraticCurveTo(s * W * 0.03, H * 0.01, s * W * 0.06, H * 0.02);
-                cCtx.strokeStyle = '#3b82f660'; cCtx.lineWidth = 0.5; cCtx.stroke();
+                cCtx.strokeStyle = '#3b82f665'; cCtx.lineWidth = 0.55; cCtx.stroke();
                 cCtx.restore();
               }
               drawLung(W * 0.42, H * 0.22, false); // left lung
               drawLung(W * 0.58, H * 0.22, true);  // right lung
 
-              // ── Heart (with chamber detail) ──
+              // ── Heart (with chamber detail + moist pericardial sheen) ──
               var hx = W * 0.50, hy = H * 0.24;
               cCtx.beginPath();
               cCtx.moveTo(hx, hy + 6); cCtx.bezierCurveTo(hx - 8, hy - 4, hx - 14, hy, hx - 14, hy + 6); cCtx.bezierCurveTo(hx - 14, hy + 12, hx - 4, hy + 18, hx, hy + 22); cCtx.bezierCurveTo(hx + 4, hy + 18, hx + 14, hy + 12, hx + 14, hy + 6); cCtx.bezierCurveTo(hx + 14, hy, hx + 8, hy - 4, hx, hy + 6);
-              var heartGrad = cCtx.createRadialGradient(hx - 2, hy + 8, 2, hx, hy + 10, 16);
-              heartGrad.addColorStop(0, '#fca5a5'); heartGrad.addColorStop(1, '#ef444480');
-              cCtx.fillStyle = heartGrad; cCtx.fill(); cCtx.strokeStyle = '#ef4444'; cCtx.lineWidth = 1; cCtx.stroke();
+              var heartGrad = cCtx.createRadialGradient(hx - 4, hy + 6, 1.5, hx, hy + 11, 17);
+              heartGrad.addColorStop(0, '#fecaca'); heartGrad.addColorStop(0.45, '#ef4444'); heartGrad.addColorStop(1, '#991b1b95');
+              cCtx.fillStyle = heartGrad; cCtx.fill(); cCtx.strokeStyle = '#b91c1c'; cCtx.lineWidth = 1.05; cCtx.stroke();
+              cCtx.save(); cCtx.globalAlpha = 0.48;
+              cCtx.beginPath(); cCtx.ellipse(hx - 5.5, hy + 5.5, 3.6, 1.8, -0.5, 0, Math.PI * 2);
+              cCtx.fillStyle = '#fff5f5'; cCtx.fill();
+              cCtx.restore();
               // Interventricular septum
               cCtx.beginPath(); cCtx.moveTo(hx, hy + 4); cCtx.lineTo(hx + 1, hy + 20);
               cCtx.strokeStyle = '#dc262660'; cCtx.lineWidth = 0.8; cCtx.stroke();
@@ -9727,37 +9761,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.beginPath(); cCtx.moveTo(hx + 2, hy + 3);
               cCtx.quadraticCurveTo(hx + 6, hy - 6, hx + 14, hy - 4);
               cCtx.quadraticCurveTo(hx + 18, hy - 2, hx + 16, hy + 6);
-              cCtx.strokeStyle = '#ef4444'; cCtx.lineWidth = 2; cCtx.stroke();
+              cCtx.strokeStyle = '#dc2626'; cCtx.lineWidth = 2.2; cCtx.stroke();
 
-              // ── Liver (right lobe larger, left lobe smaller, falciform ligament) ──
+              // ── Liver (right lobe larger, left lobe smaller, radial visceral depth + serous gleam) ──
               cCtx.beginPath();
               cCtx.moveTo(W * 0.52, H * 0.295); // midline
               cCtx.quadraticCurveTo(W * 0.58, H * 0.29, W * 0.62, H * 0.30);
               cCtx.quadraticCurveTo(W * 0.63, H * 0.32, W * 0.58, H * 0.33);
               cCtx.quadraticCurveTo(W * 0.54, H * 0.335, W * 0.52, H * 0.325);
               cCtx.closePath();
-              cCtx.fillStyle = '#a1887f'; cCtx.fill(); cCtx.strokeStyle = '#795548'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              var livRGrad = cCtx.createRadialGradient(W * 0.56, H * 0.304, W * 0.005, W * 0.57, H * 0.314, W * 0.062);
+              livRGrad.addColorStop(0, '#c89b8d'); livRGrad.addColorStop(0.55, '#966558'); livRGrad.addColorStop(1, '#5d3a31');
+              cCtx.fillStyle = livRGrad; cCtx.fill(); cCtx.strokeStyle = '#5d3a31'; cCtx.lineWidth = 0.85; cCtx.stroke();
+              cCtx.save(); cCtx.globalAlpha = 0.36;
+              cCtx.beginPath(); cCtx.ellipse(W * 0.565, H * 0.304, W * 0.018, H * 0.004, -0.15, 0, Math.PI * 2);
+              cCtx.fillStyle = '#fff1f2'; cCtx.fill();
+              cCtx.restore();
               // Left lobe (smaller)
               cCtx.beginPath();
               cCtx.moveTo(W * 0.52, H * 0.295);
               cCtx.quadraticCurveTo(W * 0.48, H * 0.29, W * 0.46, H * 0.305);
               cCtx.quadraticCurveTo(W * 0.48, H * 0.32, W * 0.52, H * 0.325);
               cCtx.closePath();
-              cCtx.fillStyle = '#8d6e63'; cCtx.fill(); cCtx.strokeStyle = '#795548'; cCtx.lineWidth = 0.6; cCtx.stroke();
+              var livLGrad = cCtx.createRadialGradient(W * 0.495, H * 0.303, W * 0.004, W * 0.495, H * 0.31, W * 0.036);
+              livLGrad.addColorStop(0, '#b58376'); livLGrad.addColorStop(1, '#6d4c41');
+              cCtx.fillStyle = livLGrad; cCtx.fill(); cCtx.strokeStyle = '#5d3a31'; cCtx.lineWidth = 0.65; cCtx.stroke();
               // Falciform ligament
               cCtx.beginPath(); cCtx.moveTo(W * 0.52, H * 0.295); cCtx.lineTo(W * 0.52, H * 0.325);
-              cCtx.strokeStyle = '#5d4037'; cCtx.lineWidth = 0.5; cCtx.stroke();
+              cCtx.strokeStyle = '#e7e5e4'; cCtx.lineWidth = 0.7; cCtx.stroke();
 
-              // ── Stomach (with rugae folds + greater/lesser curvature) ──
+              // ── Stomach (with rugae folds + greater/lesser curvature + serous highlight) ──
               cCtx.beginPath();
               cCtx.moveTo(W * 0.48, H * 0.30); // cardia
               cCtx.quadraticCurveTo(W * 0.44, H * 0.305, W * 0.425, H * 0.33); // greater curvature
               cCtx.quadraticCurveTo(W * 0.43, H * 0.355, W * 0.46, H * 0.36); // pylorus
               cCtx.quadraticCurveTo(W * 0.48, H * 0.35, W * 0.48, H * 0.33); // lesser curvature
               cCtx.quadraticCurveTo(W * 0.48, H * 0.31, W * 0.48, H * 0.30);
-              var stomGrad = cCtx.createLinearGradient(W * 0.42, H * 0.30, W * 0.48, H * 0.36);
-              stomGrad.addColorStop(0, '#c8e6c9'); stomGrad.addColorStop(1, '#a5d6a780');
-              cCtx.fillStyle = stomGrad; cCtx.fill(); cCtx.strokeStyle = '#43a047'; cCtx.lineWidth = 0.8; cCtx.stroke();
+              var stomGrad = cCtx.createRadialGradient(W * 0.445, H * 0.32, W * 0.004, W * 0.455, H * 0.332, W * 0.042);
+              stomGrad.addColorStop(0, '#ecfdf5'); stomGrad.addColorStop(0.45, '#a7f3d0'); stomGrad.addColorStop(1, '#34d39970');
+              cCtx.fillStyle = stomGrad; cCtx.fill(); cCtx.strokeStyle = '#059669'; cCtx.lineWidth = 0.85; cCtx.stroke();
+              cCtx.save(); cCtx.globalAlpha = 0.38;
+              cCtx.beginPath(); cCtx.ellipse(W * 0.442, H * 0.322, W * 0.008, H * 0.005, -0.45, 0, Math.PI * 2);
+              cCtx.fillStyle = '#ffffff'; cCtx.fill();
+              cCtx.restore();
               // Rugae folds (wavy internal lines)
               cCtx.save(); cCtx.globalAlpha = 0.25;
               for (var rgi = 0; rgi < 3; rgi++) {
@@ -9821,14 +9867,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.restore();
             }
 
-            // ── CIRCULATORY LAYER (enhanced with organ arteries, capillary beds, coronaries) ──
+            // ── CIRCULATORY LAYER (crisp arterial-crimson / venous-cobalt vascular sheen) ──
             if (layerOn('circulatory')) {
-              cCtx.save(); cCtx.globalAlpha = 0.45;
-              var heartPulse = 1.0 + Math.sin(anatTick * 0.08) * 0.08;
+              cCtx.save(); cCtx.globalAlpha = 0.54;
+              var heartPulse = anatMotionReduced ? 1.0 : (1.0 + Math.sin(anatTick * 0.08) * 0.08);
+              function strokeVascularSheen(drawPathFn, baseCol, sheenCol, baseW) {
+                cCtx.lineCap = 'round'; cCtx.lineJoin = 'round';
+                drawPathFn(); cCtx.strokeStyle = baseCol; cCtx.lineWidth = baseW; cCtx.stroke();
+                cCtx.save(); cCtx.globalAlpha *= 0.65;
+                drawPathFn(); cCtx.strokeStyle = sheenCol; cCtx.lineWidth = Math.max(0.45, baseW * 0.34); cCtx.stroke();
+                cCtx.restore();
+              }
               // ── Heart with coronary arteries ──
               cCtx.save(); cCtx.translate(W * 0.50, H * 0.23); cCtx.scale(heartPulse, heartPulse);
               cCtx.beginPath(); cCtx.moveTo(0, 4); cCtx.bezierCurveTo(-10, -5, -18, -1, -18, 6); cCtx.bezierCurveTo(-18, 14, -4, 20, 0, 28); cCtx.bezierCurveTo(4, 20, 18, 14, 18, 6); cCtx.bezierCurveTo(18, -1, 10, -5, 0, 4);
-              cCtx.fillStyle = '#ef4444'; cCtx.fill(); cCtx.strokeStyle = '#dc2626'; cCtx.lineWidth = 1.5; cCtx.stroke();
+              var cHeartG = cCtx.createRadialGradient(-5, 5, 1.5, 0, 11, 22);
+              cHeartG.addColorStop(0, '#fca5a5'); cHeartG.addColorStop(0.42, '#dc2626'); cHeartG.addColorStop(1, '#7f1d1d');
+              cCtx.fillStyle = cHeartG; cCtx.fill(); cCtx.strokeStyle = '#991b1b'; cCtx.lineWidth = 1.5; cCtx.stroke();
               // Coronary arteries (LAD + RCA)
               cCtx.beginPath(); cCtx.moveTo(-2, 4); cCtx.quadraticCurveTo(-6, 10, -10, 18); // LAD
               cCtx.strokeStyle = '#fbbf24'; cCtx.lineWidth = 0.8; cCtx.stroke();
@@ -9843,17 +9898,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.fillText('RV', -4, 18);  // Right ventricle
               cCtx.fillText('LA', 6, 8);    // Left atrium
               cCtx.fillText('LV', 4, 18);   // Left ventricle
-              cCtx.globalAlpha = 0.45;
+              cCtx.globalAlpha = 0.54;
               cCtx.restore();
 
-              // ── Ascending aorta + aortic arch ──
-              cCtx.beginPath(); cCtx.moveTo(W * 0.50, H * 0.20);
-              cCtx.quadraticCurveTo(W * 0.52, H * 0.17, W * 0.54, H * 0.15);
-              cCtx.quadraticCurveTo(W * 0.53, H * 0.13, W * 0.50, H * 0.10);
-              cCtx.strokeStyle = '#ef4444'; cCtx.lineWidth = 3; cCtx.stroke();
+              // ── Ascending aorta + aortic arch (arterial crimson + specular sheen) ──
+              strokeVascularSheen(function() {
+                cCtx.beginPath(); cCtx.moveTo(W * 0.50, H * 0.20);
+                cCtx.quadraticCurveTo(W * 0.52, H * 0.17, W * 0.54, H * 0.15);
+                cCtx.quadraticCurveTo(W * 0.53, H * 0.13, W * 0.50, H * 0.10);
+              }, '#dc2626', '#fecaca', 3.2);
               // ── Descending aorta ──
-              cCtx.beginPath(); cCtx.moveTo(W * 0.50, H * 0.23); cCtx.lineTo(W * 0.50, H * 0.44);
-              cCtx.strokeStyle = '#ef4444'; cCtx.lineWidth = 2.5; cCtx.stroke();
+              strokeVascularSheen(function() {
+                cCtx.beginPath(); cCtx.moveTo(W * 0.50, H * 0.23); cCtx.lineTo(W * 0.50, H * 0.44);
+              }, '#dc2626', '#fca5a5', 2.7);
 
               // ── Carotid arteries (to head) ──
               cCtx.beginPath(); cCtx.moveTo(W * 0.48, H * 0.10); cCtx.quadraticCurveTo(W * 0.47, H * 0.08, W * 0.47, H * 0.06);
@@ -9948,19 +10005,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               drawCapillaryBed(W * 0.34, H * 0.95, 7);  // left foot
               drawCapillaryBed(W * 0.66, H * 0.95, 7);  // right foot
 
-              // ── Venous return (blue — IVC + major veins) ──
-              cCtx.beginPath(); cCtx.moveTo(W * 0.52, H * 0.22); cCtx.lineTo(W * 0.52, H * 0.15);
-              cCtx.strokeStyle = '#3b82f6'; cCtx.lineWidth = 2; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.52, H * 0.28); cCtx.lineTo(W * 0.52, H * 0.44);
-              cCtx.strokeStyle = '#3b82f6'; cCtx.lineWidth = 2; cCtx.stroke();
+              // ── Venous return (deep venous cobalt + cool specular sheen — SVC/IVC + major veins) ──
+              strokeVascularSheen(function() {
+                cCtx.beginPath(); cCtx.moveTo(W * 0.52, H * 0.22); cCtx.lineTo(W * 0.52, H * 0.15);
+                cCtx.moveTo(W * 0.52, H * 0.28); cCtx.lineTo(W * 0.52, H * 0.44);
+              }, '#1d4ed8', '#93c5fd', 2.3);
               // Femoral veins
-              cCtx.beginPath(); cCtx.moveTo(W * 0.49, H * 0.44); cCtx.quadraticCurveTo(W * 0.46, H * 0.56, W * 0.43, H * 0.68);
-              cCtx.strokeStyle = '#3b82f6'; cCtx.lineWidth = 1.2; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.51, H * 0.44); cCtx.quadraticCurveTo(W * 0.54, H * 0.56, W * 0.57, H * 0.68); cCtx.stroke();
+              strokeVascularSheen(function() {
+                cCtx.beginPath(); cCtx.moveTo(W * 0.49, H * 0.44); cCtx.quadraticCurveTo(W * 0.46, H * 0.56, W * 0.43, H * 0.68);
+                cCtx.moveTo(W * 0.51, H * 0.44); cCtx.quadraticCurveTo(W * 0.54, H * 0.56, W * 0.57, H * 0.68);
+              }, '#2563eb', '#bfdbfe', 1.4);
               // Jugular veins (neck)
-              cCtx.beginPath(); cCtx.moveTo(W * 0.46, H * 0.06); cCtx.lineTo(W * 0.47, H * 0.12);
-              cCtx.strokeStyle = '#3b82f6'; cCtx.lineWidth = 1; cCtx.stroke();
-              cCtx.beginPath(); cCtx.moveTo(W * 0.54, H * 0.06); cCtx.lineTo(W * 0.53, H * 0.12); cCtx.stroke();
+              strokeVascularSheen(function() {
+                cCtx.beginPath(); cCtx.moveTo(W * 0.46, H * 0.06); cCtx.lineTo(W * 0.47, H * 0.12);
+                cCtx.moveTo(W * 0.54, H * 0.06); cCtx.lineTo(W * 0.53, H * 0.12);
+              }, '#2563eb', '#bfdbfe', 1.2);
 
               // ── Pulmonary circulation (heart → lungs → heart) ──
               cCtx.save(); cCtx.globalAlpha = 0.3;
@@ -10880,15 +10939,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.restore();
             }
 
-            // ── Anatomical region glow for selected structure ──
+            // ── Anatomical region glow for selected structure (clean halo bloom) ──
             if (sel) {
               cCtx.save();
               var glowX = sel.x * W, glowY = sel.y * H;
-              var regionGlow = cCtx.createRadialGradient(glowX, glowY, 2, glowX, glowY, 35);
-              regionGlow.addColorStop(0, sys.accent + '25');
-              regionGlow.addColorStop(0.6, sys.accent + '10');
+              var regionGlow = cCtx.createRadialGradient(glowX, glowY, 2, glowX, glowY, 42);
+              regionGlow.addColorStop(0, sys.accent + '42');
+              regionGlow.addColorStop(0.45, sys.accent + '1c');
               regionGlow.addColorStop(1, sys.accent + '00');
-              cCtx.beginPath(); cCtx.arc(glowX, glowY, 35, 0, Math.PI * 2);
+              cCtx.beginPath(); cCtx.arc(glowX, glowY, 42, 0, Math.PI * 2);
               cCtx.fillStyle = regionGlow; cCtx.fill();
               cCtx.restore();
 
@@ -10964,17 +11023,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               var markerConfidence = structureConfidence[st.id] || null;
               var r = isSel ? 10 : isHover ? 8 : markerConfidence ? 6 : 4.5;
               if (isSel) {
-                var pulse = 1.0 + Math.sin(anatTick * 0.06) * 0.3;
+                var pulse = anatMotionReduced ? 1.0 : (1.0 + Math.sin(anatTick * 0.06) * 0.3);
                 cCtx.save();
-                cCtx.globalAlpha = 0.3 - pulse * 0.1;
-                cCtx.beginPath(); cCtx.arc(px, py, r + 4 + pulse * 2, 0, Math.PI * 2);
-                cCtx.strokeStyle = sys.accent; cCtx.lineWidth = 1.5; cCtx.stroke();
+                cCtx.globalAlpha = 0.36 - pulse * 0.1;
+                cCtx.beginPath(); cCtx.arc(px, py, r + 5 + pulse * 2.2, 0, Math.PI * 2);
+                cCtx.strokeStyle = sys.accent; cCtx.lineWidth = 1.6; cCtx.stroke();
                 cCtx.restore();
                 cCtx.save();
-                var sGlow = cCtx.createRadialGradient(px, py, r * 0.3, px, py, r + 4);
-                sGlow.addColorStop(0, sys.accent + '70');
+                var sGlow = cCtx.createRadialGradient(px, py, r * 0.25, px, py, r + 7);
+                sGlow.addColorStop(0, sys.accent + '88');
+                sGlow.addColorStop(0.55, sys.accent + '36');
                 sGlow.addColorStop(1, sys.accent + '00');
-                cCtx.beginPath(); cCtx.arc(px, py, r + 4, 0, Math.PI * 2);
+                cCtx.beginPath(); cCtx.arc(px, py, r + 7, 0, Math.PI * 2);
                 cCtx.fillStyle = sGlow; cCtx.fill();
                 cCtx.restore();
               }
@@ -14732,12 +14792,68 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
               scene.add(keyLight);
               var fillLight = new THREE.DirectionalLight(0xb8d8ff, 0.46); fillLight.position.set(-3.5, 1.8, 4.5); scene.add(fillLight);
               var rimLight = new THREE.DirectionalLight(new THREE.Color(sys.accent), 0.52); rimLight.position.set(-3.8, 2.6, -4.2); scene.add(rimLight);
-              var blueprintSkinMat = new THREE.MeshStandardMaterial({ color: 0x67e8f9, roughness: 0.46, metalness: 0.05, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.FrontSide });
+              function anatomyIsHighContrast() {
+                try {
+                  if (canvas && typeof canvas.closest === 'function' && canvas.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+                  var de = typeof document !== 'undefined' ? document.documentElement : null;
+                  if (de && (de.classList.contains('theme-contrast') || de.getAttribute('data-theme') === 'high-contrast' || de.getAttribute('data-theme') === 'contrast')) return true;
+                  if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-contrast')) return true;
+                  if (typeof window !== 'undefined' && window.matchMedia && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+                } catch (eHc) {}
+                return false;
+              }
+              var initialAnatomyReduced = false;
+              try { initialAnatomyReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (eRm) {}
+              var anatomyShaderUniforms = {
+                uTime: { value: initialAnatomyReduced ? 1.8 : 0.0 },
+                uHighContrast: { value: anatomyIsHighContrast() ? 1.0 : 0.0 },
+                uCardiacPhase: { value: 0.72 },
+                uBreathPhase: { value: 0.78 }
+              };
+              var anatomyVascularMats = [];
+              var vascularGroup = null;
+              var cardiacAuraMesh = null;
+              var lungAuraMeshes = [];
+
+              var blueprintSkinMat = new THREE.MeshStandardMaterial({ color: 0x67e8f9, roughness: 0.42, metalness: 0.08, transparent: true, opacity: 0.24, depthWrite: false, side: THREE.FrontSide });
+              blueprintSkinMat.onBeforeCompile = function(shader) {
+                shader.uniforms.uTime = anatomyShaderUniforms.uTime;
+                shader.uniforms.uBreathPhase = anatomyShaderUniforms.uBreathPhase;
+                shader.uniforms.uHighContrast = anatomyShaderUniforms.uHighContrast;
+                shader.fragmentShader = shader.fragmentShader
+                  .replace('#include <common>', '#include <common>\nuniform float uTime; uniform float uBreathPhase; uniform float uHighContrast;')
+                  .replace('#include <dithering_fragment>', [
+                    'if (uHighContrast < 0.5) {',
+                    '  float bpRim = pow(clamp(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))), 0.0, 1.0), 2.5);',
+                    '  float oxyBreath = 0.86 + 0.14 * uBreathPhase;',
+                    '  gl_FragColor.rgb += vec3(0.24, 0.78, 0.96) * bpRim * 0.56 * oxyBreath;',
+                    '  gl_FragColor.a = clamp(gl_FragColor.a + bpRim * 0.28, 0.0, 0.72);',
+                    '}',
+                    '#include <dithering_fragment>'
+                  ].join('\n'));
+              };
+              blueprintSkinMat.customProgramCacheKey = function() { return 'anatomy-blueprint-rim-v2'; };
               var blueprintWireMat = new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.20, wireframe: true, depthWrite: false });
               var SurfaceBodyMaterial = THREE.MeshPhysicalMaterial || THREE.MeshStandardMaterial;
               var surfaceSkinMat = new SurfaceBodyMaterial({ color: new THREE.Color(skinTone.base), roughness: 0.76, metalness: 0.0, clearcoat: 0.035, clearcoatRoughness: 0.9, side: THREE.FrontSide });
               var surfaceDetailColor = new THREE.Color(skinTone.shadow).lerp(new THREE.Color(skinTone.base), 0.28);
               var surfaceShadeMat = new SurfaceBodyMaterial({ color: surfaceDetailColor, roughness: 0.83, metalness: 0.0, clearcoat: 0.02, clearcoatRoughness: 0.92, side: THREE.FrontSide });
+              [surfaceSkinMat, surfaceShadeMat].forEach(function(skinTemplate) {
+                skinTemplate.onBeforeCompile = function(shader) {
+                  shader.uniforms.uHighContrast = anatomyShaderUniforms.uHighContrast;
+                  shader.uniforms.uBreathPhase = anatomyShaderUniforms.uBreathPhase;
+                  shader.fragmentShader = shader.fragmentShader
+                    .replace('#include <common>', '#include <common>\nuniform float uHighContrast; uniform float uBreathPhase;')
+                    .replace('#include <dithering_fragment>', [
+                      'if (uHighContrast < 0.5) {',
+                      '  float sssRim = pow(clamp(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))), 0.0, 1.0), 2.75);',
+                      '  gl_FragColor.rgb += vec3(0.36, 0.16, 0.12) * sssRim * (0.24 + 0.05 * uBreathPhase);',
+                      '}',
+                      '#include <dithering_fragment>'
+                    ].join('\n'));
+                };
+                skinTemplate.customProgramCacheKey = function() { return 'anatomy-dermal-sss-v1'; };
+              });
               function addBodyEllipsoid(group, name, position, scale, material, blueprint, rotation) {
                 var geometry = new THREE.SphereGeometry(1, blueprint ? 20 : 32, blueprint ? 14 : 24);
                 var mesh = new THREE.Mesh(geometry, material.clone());
@@ -14838,6 +14954,160 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
               buildDetailedBody(blueprintGroup, blueprintSkinMat, blueprintSkinMat, true);
               buildDetailedBody(surfaceGroup, surfaceSkinMat, surfaceShadeMat, false);
               [blueprintSkinMat, blueprintWireMat, surfaceSkinMat, surfaceShadeMat].forEach(function(templateMaterial) { templateMaterial.dispose(); });
+              // Living 3D Vascular Systolic Blood-Flow (Oxygenated Arterial / Venous Return) & Cardiopulmonary Respiration Shaders.
+              if (typeof THREE.ShaderMaterial === 'function' && typeof THREE.CatmullRomCurve3 === 'function' && typeof THREE.TubeGeometry === 'function') {
+                vascularGroup = new THREE.Group();
+                vascularGroup.name = 'living-vascular-respiration';
+                var anatomyNoRaycast = function() {};
+                var makeVesselMat = function(isArterial, phaseOffset) {
+                  var mat = new THREE.ShaderMaterial({
+                    uniforms: {
+                      uTime: anatomyShaderUniforms.uTime,
+                      uHighContrast: anatomyShaderUniforms.uHighContrast,
+                      uFlowDir: { value: isArterial ? 1.0 : -1.0 },
+                      uPhase: { value: phaseOffset || 0.0 },
+                      uIsArterial: { value: isArterial ? 1.0 : 0.0 },
+                      uBaseColor: { value: new THREE.Color(isArterial ? 0xc81e1e : 0x1d4ed8) },
+                      uPeakColor: { value: new THREE.Color(isArterial ? 0xfca5a5 : 0x7dd3fc) },
+                      uOpacity: { value: (sysKey === 'circulatory' || sysKey === 'respiratory') ? 0.86 : 0.42 }
+                    },
+                    vertexShader: [
+                      'varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewPos;',
+                      'void main(){',
+                      '  vUv = uv;',
+                      '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                      '  vViewPos = -mv.xyz;',
+                      '  vNormalV = normalize(normalMatrix * normal);',
+                      '  gl_Position = projectionMatrix * mv;',
+                      '}'
+                    ].join('\n'),
+                    fragmentShader: [
+                      'uniform float uTime; uniform float uHighContrast; uniform float uFlowDir; uniform float uPhase;',
+                      'uniform float uIsArterial; uniform vec3 uBaseColor; uniform vec3 uPeakColor; uniform float uOpacity;',
+                      'varying vec2 vUv; varying vec3 vNormalV; varying vec3 vViewPos;',
+                      'void main(){',
+                      '  if (uHighContrast > 0.5) discard;',
+                      '  float ndv = abs(dot(normalize(vNormalV), normalize(vViewPos)));',
+                      '  float fres = pow(clamp(1.0 - ndv, 0.0, 1.0), 1.9);',
+                      '  float speed = mix(0.36, 0.72, uIsArterial);',
+                      '  float p1 = fract(vUv.x * 2.2 - uTime * speed * uFlowDir + uPhase);',
+                      '  float systolic = exp(-pow((p1 - 0.52) / mix(0.16, 0.085, uIsArterial), 2.0));',
+                      '  float dicrotic = uIsArterial * exp(-pow((p1 - 0.34) / 0.11, 2.0)) * 0.45;',
+                      '  float wave = clamp(systolic + dicrotic, 0.0, 1.25);',
+                      '  float ends = smoothstep(0.0, 0.06, vUv.x) * smoothstep(1.0, 0.94, vUv.x);',
+                      '  vec3 col = mix(uBaseColor, uPeakColor, clamp(wave * 0.78 + fres * 0.36, 0.0, 1.0));',
+                      '  col += vec3(1.0, 0.92, 0.90) * systolic * uIsArterial * 0.34;',
+                      '  float alpha = ends * uOpacity * (0.44 + 0.44 * wave + 0.22 * fres);',
+                      '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.94));',
+                      '}'
+                    ].join('\n'),
+                    transparent: true,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending
+                  });
+                  anatomyVascularMats.push(mat);
+                  return mat;
+                };
+                var addVessel = function(pts, radius, isArterial, phaseOffset) {
+                  var curve = new THREE.CatmullRomCurve3(pts.map(function(p) { return new THREE.Vector3(p[0], p[1], p[2]); }));
+                  var geo = new THREE.TubeGeometry(curve, 28, radius, 8, false);
+                  var mesh = new THREE.Mesh(geo, makeVesselMat(isArterial, phaseOffset));
+                  mesh.renderOrder = 4;
+                  mesh.raycast = anatomyNoRaycast;
+                  vascularGroup.add(mesh);
+                };
+                // Arterial oxygenated tree (aortic arch, carotids, subclavian/brachial, descending aorta, iliac/femoral)
+                addVessel([[0.05, 1.18, 0.04], [0.02, 1.44, 0.02], [-0.04, 1.38, -0.02], [-0.03, 0.85, -0.03], [-0.02, 0.25, -0.02]], 0.028, true, 0.0);
+                addVessel([[0.02, 1.44, 0.02], [-0.07, 1.76, 0.02], [-0.09, 2.18, 0.02]], 0.015, true, 0.14);
+                addVessel([[0.02, 1.44, 0.02], [0.09, 1.76, 0.02], [0.11, 2.18, 0.02]], 0.015, true, 0.16);
+                addVessel([[0.02, 1.44, 0.02], [-0.42, 1.48, 0.01], [-0.78, 1.34, 0.01], [-0.90, 0.62, 0.02]], 0.014, true, 0.24);
+                addVessel([[0.02, 1.44, 0.02], [0.42, 1.48, 0.01], [0.78, 1.34, 0.01], [0.90, 0.62, 0.02]], 0.014, true, 0.26);
+                addVessel([[-0.02, 0.25, -0.02], [-0.20, -0.10, 0.0], [-0.36, -0.82, 0.01], [-0.42, -1.55, 0.02]], 0.017, true, 0.42);
+                addVessel([[-0.02, 0.25, -0.02], [0.18, -0.10, 0.0], [0.36, -0.82, 0.01], [0.42, -1.55, 0.02]], 0.017, true, 0.44);
+                // Venous return tree (vena cavae, jugulars, femoral venous return flowing back toward heart)
+                addVessel([[-0.12, 2.15, 0.0], [-0.11, 1.74, 0.01], [-0.08, 1.38, 0.03], [-0.06, 1.18, 0.04]], 0.015, false, 0.08);
+                addVessel([[0.13, 2.15, 0.0], [0.12, 1.74, 0.01], [-0.06, 1.38, 0.03], [-0.06, 1.18, 0.04]], 0.015, false, 0.12);
+                addVessel([[-0.06, 1.18, 0.04], [-0.08, 0.72, 0.01], [-0.07, 0.24, 0.0]], 0.026, false, 0.22);
+                addVessel([[-0.07, 0.24, 0.0], [-0.25, -0.12, 0.02], [-0.39, -0.85, 0.02], [-0.45, -1.52, 0.02]], 0.015, false, 0.36);
+                addVessel([[-0.07, 0.24, 0.0], [0.22, -0.12, 0.02], [0.39, -0.85, 0.02], [0.45, -1.52, 0.02]], 0.015, false, 0.38);
+
+                // Rhythmic cardiac systolic glow orb at heart position.
+                var cardiacMat = new THREE.ShaderMaterial({
+                  uniforms: {
+                    uCardiacPhase: anatomyShaderUniforms.uCardiacPhase,
+                    uHighContrast: anatomyShaderUniforms.uHighContrast,
+                    uOpacity: { value: sysKey === 'circulatory' ? 0.74 : 0.38 }
+                  },
+                  vertexShader: [
+                    'varying vec3 vNormalV; varying vec3 vViewPos;',
+                    'void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vViewPos = -mv.xyz; vNormalV = normalize(normalMatrix * normal); gl_Position = projectionMatrix * mv; }'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform float uCardiacPhase; uniform float uHighContrast; uniform float uOpacity;',
+                    'varying vec3 vNormalV; varying vec3 vViewPos;',
+                    'void main(){',
+                    '  if (uHighContrast > 0.5) discard;',
+                    '  float ndv = abs(dot(normalize(vNormalV), normalize(vViewPos)));',
+                    '  float fres = pow(clamp(1.0 - ndv, 0.0, 1.0), 1.8);',
+                    '  float core = pow(ndv, 1.5);',
+                    '  vec3 col = mix(vec3(0.88, 0.14, 0.24), vec3(1.0, 0.64, 0.56), uCardiacPhase * 0.65 + fres * 0.35);',
+                    '  float alpha = (core * 0.42 + fres * 0.72) * (0.68 + 0.32 * uCardiacPhase) * uOpacity;',
+                    '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.85));',
+                    '}'
+                  ].join('\n'),
+                  transparent: true,
+                  depthWrite: false,
+                  blending: THREE.AdditiveBlending
+                });
+                cardiacAuraMesh = new THREE.Mesh(new THREE.SphereGeometry(0.16, 20, 16), cardiacMat);
+                cardiacAuraMesh.position.set(0.05, 1.15, 0.05);
+                cardiacAuraMesh.scale.set(0.95, 1.18, 0.88);
+                cardiacAuraMesh.renderOrder = 4;
+                cardiacAuraMesh.raycast = anatomyNoRaycast;
+                vascularGroup.add(cardiacAuraMesh);
+
+                // Bilateral pulmonary tidal-oxygenation respiration aura shells.
+                var lungMat = new THREE.ShaderMaterial({
+                  uniforms: {
+                    uBreathPhase: anatomyShaderUniforms.uBreathPhase,
+                    uHighContrast: anatomyShaderUniforms.uHighContrast,
+                    uOpacity: { value: sysKey === 'respiratory' ? 0.68 : 0.30 }
+                  },
+                  vertexShader: [
+                    'varying vec3 vNormalV; varying vec3 vViewPos;',
+                    'void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vViewPos = -mv.xyz; vNormalV = normalize(normalMatrix * normal); gl_Position = projectionMatrix * mv; }'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform float uBreathPhase; uniform float uHighContrast; uniform float uOpacity;',
+                    'varying vec3 vNormalV; varying vec3 vViewPos;',
+                    'void main(){',
+                    '  if (uHighContrast > 0.5) discard;',
+                    '  float ndv = abs(dot(normalize(vNormalV), normalize(vViewPos)));',
+                    '  float fres = pow(clamp(1.0 - ndv, 0.0, 1.0), 2.1);',
+                    '  vec3 deox = vec3(0.16, 0.52, 0.86);',
+                    '  vec3 oxy = vec3(0.32, 0.90, 0.94);',
+                    '  vec3 col = mix(deox, oxy, uBreathPhase);',
+                    '  float alpha = (0.18 + 0.78 * fres) * (0.65 + 0.35 * uBreathPhase) * uOpacity;',
+                    '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.74));',
+                    '}'
+                  ].join('\n'),
+                  transparent: true,
+                  depthWrite: false,
+                  blending: THREE.AdditiveBlending
+                });
+                [-1, 1].forEach(function(side) {
+                  var lungMesh = new THREE.Mesh(new THREE.SphereGeometry(0.24, 20, 16), side < 0 ? lungMat : lungMat.clone());
+                  lungMesh.position.set(side * 0.25, 1.24, 0.0);
+                  lungMesh.scale.set(0.86, 1.32, 0.74);
+                  lungMesh.userData.baseLungScale = [0.86, 1.32, 0.74];
+                  lungMesh.renderOrder = 3;
+                  lungMesh.raycast = anatomyNoRaycast;
+                  vascularGroup.add(lungMesh);
+                  lungAuraMeshes.push(lungMesh);
+                });
+                vascularGroup.visible = body3dStyle === 'blueprint' && !anatomyIsHighContrast();
+                bodyGroup.add(vascularGroup);
+              }
               blueprintGroup.visible = body3dStyle === 'blueprint';
               surfaceGroup.visible = body3dStyle === 'realistic' || body3dStyle === 'clinical';
               structuresGroup = new THREE.Group(); structuresGroup.name = 'structure-markers'; bodyGroup.add(structuresGroup);
@@ -14866,6 +15136,11 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
                 new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.82, depthTest: true, depthWrite: false, side: THREE.DoubleSide })
               );
               selectedAnchorRing.name = 'selected-structure-anchor'; selectedAnchorRing.renderOrder = 7; selectionCueGroup.add(selectedAnchorRing);
+              var selectedHaloRing = new THREE.Mesh(
+                new THREE.RingGeometry(0.155, 0.245, 36),
+                new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.28, depthTest: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })
+              );
+              selectedHaloRing.name = 'selected-structure-halo'; selectedHaloRing.renderOrder = 6; selectionCueGroup.add(selectedHaloRing);
               markerGeometry.dispose();
               var platformMaterial = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.58, metalness: 0.24 });
               var platform = new THREE.Mesh(new THREE.CylinderGeometry(1.42, 1.64, 0.18, 64), platformMaterial); platform.position.y = -2.94; platform.receiveShadow = true; bodyGroup.add(platform);
@@ -14932,6 +15207,34 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
                           var clonedMaterial = sourceMaterial && sourceMaterial.clone ? sourceMaterial.clone() : sourceMaterial;
                           if (clonedMaterial) {
                             clonedMaterial.side = activeAnatomyModelKind === 'bundled' ? THREE.FrontSide : THREE.DoubleSide;
+                            if (activeAnatomyModelKind === 'clinical') {
+                              // Moist serous specular sheen & anatomical Fresnel rim-lit organ depth
+                              if (typeof clonedMaterial.roughness === 'number' && clonedMaterial.roughness > 0.34) {
+                                clonedMaterial.roughness = Math.max(0.32, clonedMaterial.roughness * 0.72);
+                              }
+                              if ('clearcoat' in clonedMaterial) {
+                                clonedMaterial.clearcoat = Math.max(clonedMaterial.clearcoat || 0, 0.42);
+                                clonedMaterial.clearcoatRoughness = 0.24;
+                              }
+                              clonedMaterial.onBeforeCompile = function(shader) {
+                                shader.uniforms.uHighContrast = anatomyShaderUniforms.uHighContrast;
+                                shader.uniforms.uCardiacPhase = anatomyShaderUniforms.uCardiacPhase;
+                                shader.uniforms.uBreathPhase = anatomyShaderUniforms.uBreathPhase;
+                                shader.fragmentShader = shader.fragmentShader
+                                  .replace('#include <common>', '#include <common>\nuniform float uHighContrast; uniform float uCardiacPhase; uniform float uBreathPhase;')
+                                  .replace('#include <dithering_fragment>', [
+                                    'if (uHighContrast < 0.5) {',
+                                    '  float ndv = clamp(abs(dot(normalize(vNormal), normalize(vViewPosition))), 0.0, 1.0);',
+                                    '  float organRim = pow(1.0 - ndv, 2.45);',
+                                    '  float sssWrap = pow(1.0 - ndv, 1.45) * 0.14;',
+                                    '  float perfusion = 0.84 + 0.16 * (0.6 * uCardiacPhase + 0.4 * uBreathPhase);',
+                                    '  gl_FragColor.rgb += (vec3(0.44, 0.20, 0.18) * organRim * 0.42 + vec3(0.30, 0.11, 0.10) * sssWrap) * perfusion;',
+                                    '}',
+                                    '#include <dithering_fragment>'
+                                  ].join('\n'));
+                              };
+                              clonedMaterial.customProgramCacheKey = function() { return 'anatomy-clinical-organ-sss-v2'; };
+                            }
                             clonedMaterial.userData = Object.assign({}, clonedMaterial.userData || {}, {
                               anatomyClinicalBaseColor: clonedMaterial.color ? clonedMaterial.color.getHex() : null,
                               anatomyClinicalBaseEmissive: clonedMaterial.emissive ? clonedMaterial.emissive.getHex() : null,
@@ -15180,6 +15483,7 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
                 leaderPosition.needsUpdate = true;
                 selectedLeader.geometry.computeBoundingSphere();
                 selectedAnchorRing.position.copy(selectedMarker.position);
+                if (selectedHaloRing) selectedHaloRing.position.copy(selectedMarker.position);
               }
               canvas._anatomy3dSyncState = function(selectedId, nextStyle, nextClinicalConceptId) {
                 var resolvedStyle = nextStyle === 'clinical' && selectedClinicalAtlasPack ? 'clinical'
@@ -15195,6 +15499,7 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
                 canvas._anatomy3dClinicalSelection = nextClinicalConceptId || '';
                 if (silhouetteGroup) silhouetteGroup.visible = !importedVisible;
                 if (blueprintGroup) blueprintGroup.visible = resolvedStyle === 'blueprint';
+                if (vascularGroup) vascularGroup.visible = (resolvedStyle === 'blueprint' || (!importedVisible && resolvedStyle === 'realistic' && (sysKey === 'circulatory' || sysKey === 'respiratory'))) && !anatomyIsHighContrast();
                 if (surfaceGroup) surfaceGroup.visible = !importedVisible && (resolvedStyle === 'realistic' || resolvedStyle === 'clinical');
                 if (importedModel) importedModel.visible = importedVisible;
                 if (blueprintStageGroup) blueprintStageGroup.visible = resolvedStyle === 'blueprint' && (!currentCameraPreset || currentCameraPreset === 'body');
@@ -15251,8 +15556,47 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
               canvas._anatomy3dSyncState(pending3dState.selectedId, pending3dState.style, pending3dState.clinicalConceptId);
               var reduced = false; try { reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
               var renderBurstUntil = 0;
+              var physioAnimStart = 0;
+              var lastPhysioDraw = 0;
               function anatomy3dClock() {
                 return typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+              }
+              function updateAnatomyPhysiologyUniforms(nowMs) {
+                var hcNow = anatomyIsHighContrast();
+                anatomyShaderUniforms.uHighContrast.value = hcNow ? 1.0 : 0.0;
+                if (vascularGroup) {
+                  var activeStyle = canvas.getAttribute('data-anatomy-3d-style') || 'blueprint';
+                  var showVasc = activeStyle === 'blueprint' || (!importedModel || !importedModel.visible) && activeStyle === 'realistic' && (sysKey === 'circulatory' || sysKey === 'respiratory');
+                  vascularGroup.visible = showVasc && !hcNow;
+                }
+                if (reduced || hcNow) {
+                  anatomyShaderUniforms.uTime.value = 1.8;
+                  anatomyShaderUniforms.uCardiacPhase.value = 0.72;
+                  anatomyShaderUniforms.uBreathPhase.value = 0.78;
+                  return false;
+                }
+                if (!physioAnimStart) physioAnimStart = nowMs;
+                var sec = (nowMs - physioAnimStart) * 0.001;
+                anatomyShaderUniforms.uTime.value = sec;
+                // Physiological ~72 bpm (1.2 Hz) lub-dub systolic envelope (sub-3Hz safe).
+                var beatCycle = (sec * 1.2) % 1;
+                var lub = Math.exp(-Math.pow((beatCycle - 0.16) / 0.075, 2));
+                var dub = Math.exp(-Math.pow((beatCycle - 0.36) / 0.095, 2)) * 0.52;
+                var cardiac = Math.min(1, lub + dub);
+                // Calm ~14 breaths/min (0.23 Hz) tidal respiration wave.
+                var breath = 0.5 - 0.5 * Math.cos(sec * 1.45);
+                anatomyShaderUniforms.uCardiacPhase.value = cardiac;
+                anatomyShaderUniforms.uBreathPhase.value = breath;
+                if (cardiacAuraMesh) {
+                  var cScale = 1 + cardiac * 0.085;
+                  cardiacAuraMesh.scale.set(0.95 * cScale, 1.18 * cScale, 0.88 * cScale);
+                }
+                for (var li = 0; li < lungAuraMeshes.length; li++) {
+                  var lm = lungAuraMeshes[li];
+                  var bs = lm.userData.baseLungScale;
+                  if (bs) lm.scale.set(bs[0] * (1 + breath * 0.045), bs[1] * (1 + breath * 0.025), bs[2] * (1 + breath * 0.04));
+                }
+                return !!(vascularGroup && vascularGroup.visible) || canvas.getAttribute('data-anatomy-3d-style') === 'clinical';
               }
               function scheduleAnatomy3dFrame() {
                 if (raf || reduced || !viewerIsVisible || !alive || canvas._anatomy3dContextLost || canvas._anatomy3dRenderFailed) return;
@@ -15262,16 +15606,24 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
               function animate3d() {
                 raf = null;
                 if (!alive || !viewerIsVisible || canvas._anatomy3dContextLost || canvas._anatomy3dRenderFailed) return;
+                var nowMs = anatomy3dClock();
+                var inBurst = nowMs < renderBurstUntil;
+                var livingActive = updateAnatomyPhysiologyUniforms(nowMs);
                 if (controls) controls.update();
-                if (render3d() === false) return;
-                if (anatomy3dClock() < renderBurstUntil) scheduleAnatomy3dFrame();
+                if (inBurst || !lastPhysioDraw || nowMs - lastPhysioDraw >= 32) {
+                  lastPhysioDraw = nowMs;
+                  if (render3d() === false) return;
+                }
+                if (inBurst || livingActive) scheduleAnatomy3dFrame();
               }
               function requestAnatomy3dRender(duration) {
                 if (!alive || !viewerIsVisible || canvas._anatomy3dContextLost || canvas._anatomy3dRenderFailed) return;
                 renderBurstUntil = Math.max(renderBurstUntil, anatomy3dClock() + Math.max(0, Number(duration) || 0));
-                if (reduced) { render3d(); return; }
+                if (reduced) { updateAnatomyPhysiologyUniforms(anatomy3dClock()); render3d(); return; }
                 scheduleAnatomy3dFrame();
               }
+              updateAnatomyPhysiologyUniforms(anatomy3dClock());
+              if (!reduced) scheduleAnatomy3dFrame();
               canvas._anatomy3dRequestRender = requestAnatomy3dRender;
               canvas._anatomy3dResume = function() { requestAnatomy3dRender(320); };
               if (controls) {
@@ -15812,10 +16164,22 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
             }
           }, t('stem.anatomy.skip_to_workspace', 'Skip to the study panel')),
 
-          // Header
+          // Header — Biomedical Atlas Hero Workbench with bespoke SVG emblem,
+          // discipline badge, live non-spoiler telemetry pills, and 44px actions.
           h('div', { className: 'anatomy-topbar flex items-center gap-3 mb-3' },
             h('button', { className: 'anatomy-topbar-back p-1.5 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 active:scale-[0.97]', onClick: function() { setStemLabTool(null); }, 'aria-label': t('stem.anatomy.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+            h('svg', {
+              width: 44, height: 44, viewBox: '0 0 48 48', 'aria-hidden': 'true',
+              className: 'shrink-0',
+              style: { borderRadius: 12, background: 'var(--practice-soft)', border: '1px solid var(--practice-border)' }
+            },
+              h('circle', { cx: 24, cy: 24, r: 17, fill: 'none', stroke: 'var(--anatomy-accent)', strokeWidth: 1.8, opacity: 0.7 }),
+              h('path', { d: 'M14 25 L19 25 L22 16 L26 32 L29 22 L34 25', fill: 'none', stroke: 'var(--anatomy-accent)', strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              h('circle', { cx: 24, cy: 11, r: 2.2, fill: 'var(--practice-nav)' }),
+              h('circle', { cx: 24, cy: 37, r: 2.2, fill: 'var(--practice-nav)' })
+            ),
             h('div', { className: 'anatomy-topbar-title' },
+              h('span', { className: 'anatomy-hero-badge' }, t('stem.anatomy.workbench_badge', 'Life Science · Human Anatomy & Physiology Atlas')),
               h('h3', { className: 'text-lg font-bold text-slate-800 tracking-tight' }, t('stem.anatomy.human_anatomy_explorer', '\uD83E\uDEC0 Human Anatomy Explorer')),
               h('p', { className: 'text-xs text-slate-600' }, sys.desc)
             ),
@@ -15837,7 +16201,15 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
               onClick: takeSnapshot,
               className: 'anatomy-topbar-action anatomy-topbar-snapshot px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all active:scale-[0.97]',
               title: t('stem.anatomy.save_snapshot', 'Save snapshot')
-            }, t('stem.anatomy.snapshot_2', '\uD83D\uDCF8 Snapshot'))
+            }, t('stem.anatomy.snapshot_2', '\uD83D\uDCF8 Snapshot')),
+            // Live non-spoiler telemetry pills (never reveals quiz/spotter/flashcard answer targets)
+            h('div', { className: 'anatomy-hero-pills', 'aria-label': t('stem.anatomy.telemetry_summary', 'Active anatomy atlas summary') },
+              h('span', { className: 'anatomy-hero-pill' }, sys.icon + ' ' + sys.name),
+              h('span', { className: 'anatomy-hero-pill' }, (view === 'posterior' ? t('stem.anatomy.view_posterior_pill', 'Posterior view') : t('stem.anatomy.view_anterior_pill', 'Anterior view'))),
+              h('span', { className: 'anatomy-hero-pill' }, complexity === 1 ? 'K–5' : complexity === 2 ? '6–8' : '9–12+'),
+              h('span', { className: 'anatomy-hero-pill' }, bodyView3d ? t('stem.anatomy.mode_3d_pill', '3D Atlas') : t('stem.anatomy.mode_2d_pill', '2D Atlas')),
+              h('span', { className: 'anatomy-hero-pill' }, ANATOMY_SYSTEM_IDS.length + ' ' + t('stem.anatomy.systems_count_pill', 'body systems'))
+            )
           ),
 
           h('label', { className: 'anatomy-mobile-activity', htmlFor: 'anatomy-mobile-activity' },
@@ -15934,6 +16306,56 @@ liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 17
               className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'procedure' ? 'bg-rose-800 text-white border border-rose-800' : 'bg-white text-slate-600 hover:bg-rose-50 border border-slate-300 active:scale-[0.97]')
             }, t('stem.anatomy.procedure_tab', '\uD83E\uDE7A Procedure'))
           ),
+
+          // Explore-only Visual Stage Strip: Anatomical Planes & Orientation Key + 44px Quick Study Presets
+          !focusedAnatomyWorkspace && !showSystemsMotion && activeTab === 'explore' ? h('div', {
+            className: 'anatomy-plane-strip',
+            'data-anatomy-plane-strip': 'true'
+          },
+            h('svg', {
+              viewBox: '0 0 640 68', width: '100%', role: 'img',
+              'aria-label': t('stem.anatomy.planes_svg_aria', 'Reference diagram of anatomical planes: Sagittal divides left and right, Coronal divides anterior and posterior, Transverse divides superior and inferior'),
+              style: { display: 'block', maxHeight: 74 }
+            },
+              h('rect', { x: 2, y: 2, width: 636, height: 64, rx: 10, fill: 'var(--practice-soft)', stroke: 'var(--practice-border)', strokeWidth: 1.2 }),
+              // Sagittal
+              h('rect', { x: 14, y: 12, width: 144, height: 44, rx: 8, fill: 'var(--practice-panel)', stroke: 'var(--practice-border)', strokeWidth: 1.2 }),
+              h('line', { x1: 32, y1: 18, x2: 32, y2: 50, stroke: 'var(--anatomy-accent)', strokeWidth: 2, strokeDasharray: '3 2' }),
+              h('text', { x: 44, y: 31, fontSize: 11.5, fontWeight: 800, fill: 'var(--practice-ink)' }, t('stem.anatomy.plane_sagittal', 'Sagittal Plane')),
+              h('text', { x: 44, y: 47, fontSize: 10.5, fontWeight: 600, fill: 'var(--practice-nav)' }, t('stem.anatomy.plane_sagittal_sub', 'Left / Right')),
+              // Coronal
+              h('rect', { x: 170, y: 12, width: 148, height: 44, rx: 8, fill: 'var(--practice-panel)', stroke: 'var(--practice-border)', strokeWidth: 1.2 }),
+              h('rect', { x: 182, y: 20, width: 12, height: 28, rx: 2, fill: 'none', stroke: 'var(--anatomy-accent)', strokeWidth: 1.8 }),
+              h('text', { x: 202, y: 31, fontSize: 11.5, fontWeight: 800, fill: 'var(--practice-ink)' }, t('stem.anatomy.plane_coronal', 'Coronal Plane')),
+              h('text', { x: 202, y: 47, fontSize: 10.5, fontWeight: 600, fill: 'var(--practice-nav)' }, t('stem.anatomy.plane_coronal_sub', 'Anterior / Posterior')),
+              // Transverse
+              h('rect', { x: 330, y: 12, width: 152, height: 44, rx: 8, fill: 'var(--practice-panel)', stroke: 'var(--practice-border)', strokeWidth: 1.2 }),
+              h('line', { x1: 340, y1: 34, x2: 360, y2: 34, stroke: 'var(--anatomy-accent)', strokeWidth: 2 }),
+              h('text', { x: 368, y: 31, fontSize: 11.5, fontWeight: 800, fill: 'var(--practice-ink)' }, t('stem.anatomy.plane_transverse', 'Transverse Plane')),
+              h('text', { x: 368, y: 47, fontSize: 10.5, fontWeight: 600, fill: 'var(--practice-nav)' }, t('stem.anatomy.plane_transverse_sub', 'Superior / Inferior')),
+              // Active Orientation Telemetry Badge
+              h('rect', { x: 494, y: 12, width: 132, height: 44, rx: 8, fill: 'var(--practice-panel)', stroke: 'var(--anatomy-accent)', strokeWidth: 1.8 }),
+              h('text', { x: 560, y: 31, fontSize: 11, fontWeight: 800, textAnchor: 'middle', fill: 'var(--practice-ink)' }, view === 'posterior' ? t('stem.anatomy.orient_post', 'POSTERIOR VIEW') : t('stem.anatomy.orient_ant', 'ANTERIOR VIEW')),
+              h('text', { x: 560, y: 47, fontSize: 10.5, fontWeight: 700, textAnchor: 'middle', fill: 'var(--practice-nav)' }, (sys.structures ? sys.structures.length : 0) + ' ' + t('stem.anatomy.structures_unit', 'structures'))
+            ),
+            h('div', { className: 'anatomy-quick-presets', role: 'group', 'aria-label': t('stem.anatomy.quick_study_presets', 'Quick anatomy study presets') },
+              h('span', { className: 'anatomy-quick-preset-label' }, t('stem.anatomy.quick_study_label', 'Quick study:')),
+              [
+                { id: 'skeletal', label: t('stem.anatomy.qs_skeletal', 'Quick study: Skeletal') },
+                { id: 'circulatory', label: t('stem.anatomy.qs_circulatory', 'Quick study: Circulatory') },
+                { id: 'nervous', label: t('stem.anatomy.qs_nervous', 'Quick study: Nervous') },
+                { id: 'respiratory', label: t('stem.anatomy.qs_respiratory', 'Quick study: Respiratory') }
+              ].map(function(preset) {
+                return h('button', {
+                  key: preset.id,
+                  type: 'button',
+                  className: 'anatomy-quick-preset-btn',
+                  'aria-pressed': sysKey === preset.id,
+                  onClick: function() { showAnatomySystem(preset.id); }
+                }, preset.label);
+              })
+            )
+          ) : null,
 
           // Go-deeper row: the three whole-body panels open on demand below the mode strip so the
           // strip never jumps, and the mission card no longer duplicates mode navigation.

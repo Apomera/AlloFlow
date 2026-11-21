@@ -1,10 +1,10 @@
 {
   "note": "Accepted targeted feedback warnings. Ratchet only: entries may be removed by content work, never added. Regenerate with dev-tools/update_feedback_quality_baseline.cjs.",
-  "total": 585,
+  "total": 568,
   "byCode": {
-    "short-prompt": 33,
-    "incorrect-option-full-key-echo": 89,
-    "incorrect-option-feedback-detail": 463
+    "short-prompt": 19,
+    "incorrect-option-full-key-echo": 87,
+    "incorrect-option-feedback-detail": 462
   },
   "findings": [
     "audiology_5343_pack.json:aud5343-b1-012:short-prompt",
@@ -126,7 +126,6 @@
     "early_childhood_5025_pack.json:ec5025-b3-042:incorrect-option-feedback-detail",
     "early_childhood_5025_pack.json:ec5025-b3-043:incorrect-option-feedback-detail",
     "early_childhood_5025_pack.json:ec5025-b3-044:incorrect-option-feedback-detail",
-    "early_childhood_5025_pack.json:ec5025-b3-045:incorrect-option-feedback-detail",
     "early_childhood_5025_pack.json:ec5025-b3-046:incorrect-option-feedback-detail",
     "early_childhood_5025_pack.json:ec5025-b3-047:incorrect-option-feedback-detail",
     "early_childhood_5025_pack.json:ec5025-b3-048:incorrect-option-feedback-detail",
@@ -570,27 +569,11 @@
     "parapro_pack.json:parapro-writing-skills-026:incorrect-option-feedback-detail",
     "parapro_pack.json:parapro-writing-skills-028:incorrect-option-feedback-detail",
     "parapro_pack.json:parapro-writing-skills-039:incorrect-option-feedback-detail",
-    "praxis_core_5752_pack.json:core5752-b1-048:incorrect-option-full-key-echo",
-    "praxis_core_5752_pack.json:core5752-b1-049:incorrect-option-full-key-echo",
-    "praxis_core_5752_pack.json:core5752-b1-055:incorrect-option-full-key-echo",
-    "praxis_core_5752_pack.json:core5752-b2-048:incorrect-option-full-key-echo",
-    "praxis_core_5752_pack.json:core5752-b2-049:incorrect-option-full-key-echo",
-    "praxis_core_5752_pack.json:core5752-b2-055:incorrect-option-full-key-echo",
-    "reading_specialist_5302_pack.json:read5302-b1-012:short-prompt",
-    "reading_specialist_5302_pack.json:read5302-b1-021:short-prompt",
-    "reading_specialist_5302_pack.json:read5302-b1-022:short-prompt",
-    "reading_specialist_5302_pack.json:read5302-b1-036:short-prompt",
-    "reading_specialist_5302_pack.json:read5302-b1-038:short-prompt",
-    "reading_specialist_5302_pack.json:read5302-b1-043:short-prompt",
-    "reading_specialist_5302_pack.json:read5302-b1-047:short-prompt",
-    "reading_specialist_5302_pack.json:read5302-b1-053:short-prompt",
-    "reading_specialist_5302_pack.json:read5302-b1-057:short-prompt",
-    "reading_specialist_5302_pack.json:read5302-b1-089:short-prompt",
+    "praxis_core_5752_pack.json:core5752-b1-003-exp3:incorrect-option-full-key-echo",
+    "praxis_core_5752_pack.json:core5752-b1-017-exp3:incorrect-option-full-key-echo",
+    "praxis_core_5752_pack.json:core5752-b1-045-exp3:incorrect-option-full-key-echo",
+    "praxis_core_5752_pack.json:core5752-b1-058-exp3:incorrect-option-full-key-echo",
     "school_psychologist_5403_pack.json:sp5403-b1-052:short-prompt",
-    "special_education_5355_pack.json:sp5355-b1-028:short-prompt",
-    "special_education_5355_pack.json:sp5355-b1-081:short-prompt",
-    "special_education_early_childhood_5692_pack.json:se5692-b1-028:short-prompt",
-    "special_education_early_childhood_5692_pack.json:se5692-b1-081:short-prompt",
     "speech_language_pathology_5331_pack.json:slp5331-b1-090:short-prompt"
   ]
 }

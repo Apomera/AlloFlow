@@ -152,23 +152,43 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
       popup.opener = null;
       const sections = version.steps.map((step, index) => {
         const spoken = exportSegments.filter(segment => segment.stepIndex === index);
-        return spoken.length ? '<section><h2 dir="auto">' + escape((index + 1) + '. ' + step.title) + '</h2>' + spoken.map(segment => '<p dir="auto">' + escape(segment.spokenText) + '</p>').join('') + '</section>' : '';
+        return spoken.length ? '<section><h2 dir="auto">' + escape((index + 1) + '. ' + _ltsText(step.title)) + '</h2>' + spoken.map(segment => '<p dir="auto">' + escape(segment.spokenText) + '</p>').join('') + '</section>' : '';
       }).join('');
-      popup.document.write('<!doctype html><html lang="' + escape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escape(version.title) + '</title><style>*{box-sizing:border-box}body{font:18px/1.6 system-ui;color:#111;background:#fff;margin:0;padding:24px}main{max-width:48rem;margin:auto}p{white-space:pre-wrap;overflow-wrap:anywhere}section{break-inside:avoid}h1,h2{overflow-wrap:anywhere}h1{font-size:24px}h2{font-size:20px}@page{margin:18mm}@media print{body{padding:0}main{max-width:none}}</style></head><body><main><h1 dir="auto">' + escape(version.title) + '</h1>' + (draft ? '<p><strong>' + escape(draftLabel) + '</strong><br>' + escape(draftHint) + '</p>' : '') + sections + '</main></body></html>');
+      const safeVersionTitle = _ltsText(version.title);
+      popup.document.write('<!doctype html><html lang="' + escape(document.documentElement.lang || 'en') + '"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\';"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escape(safeVersionTitle) + '</title><style>*{box-sizing:border-box}body{font:18px/1.6 system-ui;color:#111;background:#fff;margin:0;padding:24px}main{max-width:48rem;margin:auto}p{white-space:pre-wrap;overflow-wrap:anywhere}section{break-inside:avoid}h1,h2{overflow-wrap:anywhere}h1{font-size:24px}h2{font-size:20px}@page{margin:18mm}@media print{body{padding:0}main{max-width:none}}</style></head><body><main><h1 dir="auto">' + escape(safeVersionTitle) + '</h1>' + (draft ? '<p><strong>' + escape(draftLabel) + '</strong><br>' + escape(draftHint) + '</p>' : '') + sections + '</main></body></html>');
       popup.document.close(); popup.focus(); popup.print();
       if (alive.current) setStatus(tr('print_opened', 'The script print view is open.'));
     } catch (error) { if (alive.current) setStatus(_ltsText(error?.message || error) || tr('export_failed', 'The script could not be exported. Please try again.')); }
   };
   const button = 'min-h-11 rounded-lg border border-indigo-600 bg-white px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
+  const bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
+  const bt = s => (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s;
   const step = version.steps[stepIndex];
   const move = next => { if (!Number.isInteger(next) || next < 0 || next >= version.steps.length) return; stop(); setStatus(''); setStepIndex(next); onStepChange?.(next); refresh(); };
-  return <dialog ref={surface} data-spoken-directions aria-modal="true" onCancel={event => { event.preventDefault(); onBack(); }} style={{ position: 'fixed', inset: 0, margin: 0, width: '100vw', maxWidth: 'none', height: '100dvh', maxHeight: 'none', overflowY: 'auto' }} className="min-w-0 space-y-4 border-0 bg-white p-4 text-slate-900 sm:p-6" aria-label={tr('spoken_view', 'Spoken directions')}>
+  const handleTeleprompterKeyDown = event => {
+    if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const tag = String(event.target?.tagName || '').toLowerCase();
+    const isTextControl = tag === 'input' || tag === 'textarea' || tag === 'select' || event.target?.isContentEditable;
+    if (isTextControl) return;
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      move(stepIndex + 1);
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      move(stepIndex - 1);
+    } else if ((event.key === ' ' || event.key === 'Spacebar') && tag !== 'button' && tag !== 'a' && tag !== 'summary') {
+      event.preventDefault();
+      move(stepIndex + 1);
+    }
+  };
+  return <dialog ref={surface} data-spoken-directions data-spoken-shortcuts="ArrowLeft ArrowRight Space" aria-modal="true" onCancel={event => { event.preventDefault(); onBack(); }} onKeyDown={handleTeleprompterKeyDown} style={{ position: 'fixed', inset: 0, margin: 0, width: '100vw', maxWidth: 'none', height: '100dvh', maxHeight: 'none', overflowY: 'auto' }} className="min-w-0 space-y-4 border-0 bg-white p-4 text-slate-900 sm:p-6" aria-label={tr('spoken_view', 'Spoken directions')}>
     <div className="flex flex-wrap gap-2">
       <button ref={back} type="button" className={button} onClick={onBack}>{tr('full_script', 'Full script')}</button>
       <button type="button" className={button} aria-pressed={large} onClick={() => setLarge(value => !value)}>{tr('larger_text', 'Larger text')}</button>
       <button type="button" className={button} aria-pressed={fullscreen} onClick={async () => { try { if (document.fullscreenElement) await document.exitFullscreen(); else if (document.documentElement.requestFullscreen) { await document.documentElement.requestFullscreen(); if (!alive.current) { await document.exitFullscreen(); return; } ownsFullscreen.current = true; } else throw new Error(tr('fullscreen_unavailable', 'Full screen is unavailable in this browser.')); } catch (error) { if (alive.current) setStatus(error.message); } }}>{fullscreen ? tr('exit_fullscreen', 'Exit full screen') : tr('fullscreen', 'Full screen')}</button>
     </div>
-    <h3 className="break-words text-xl font-black">{version.title}</h3>
+    <h3 className="break-words text-xl font-black">{_ltsText(version.title)}</h3>
     <p className="text-sm text-slate-700">{tr('spoken_hint', 'Only wording addressed to students is shown. Playback stops after each spoken block. Review older scripts for delivery notes before playing.')}</p>
     <div className="flex flex-wrap items-center gap-2 text-sm text-slate-700">
       <span>{tr('voice_summary', 'Voice:')} {audioVoice || tr('voice_default', 'App default')} · {tr('language', 'Script language:')} {audioLanguage || 'English'} · {audioSpeed || 1}×</span>
@@ -200,16 +220,17 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
       <span className="font-bold">{stepIndex + 1} / {version.steps.length}</span>
       <button type="button" className={button} disabled={stepIndex >= version.steps.length - 1} onClick={() => move(stepIndex + 1)}>{tr('next_step', 'Next step')}</button>
     </nav>
+    <p className="text-xs text-slate-600">{tr('spoken_keyboard_hint', 'Tip: Press Left/Right arrow keys or Space to move between steps.')}</p>
     <label className="block text-sm font-bold">{tr('jump_step', 'Go to step')}
       <select aria-label={tr('jump_step', 'Go to step')} className="mt-1 block min-h-11 w-full min-w-0 max-w-full rounded-lg border border-slate-400 bg-white p-2 text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600" value={stepIndex} onChange={event => move(Number(event.target.value))}>
-        {version.steps.map((item, index) => <option key={item.id || index} value={index}>{index + 1}. {item.title}</option>)}
+        {version.steps.map((item, index) => <option key={item.id || index} value={index}>{index + 1}. {_ltsText(item.title)}</option>)}
       </select>
     </label>
-    <h4 aria-live="polite" aria-atomic="true" className="break-words text-lg font-bold">{stepIndex + 1}. {step?.title}</h4>
+    <h4 aria-live="polite" aria-atomic="true" className="break-words text-lg font-bold">{stepIndex + 1}. {_ltsText(step?.title)}</h4>
     {!segments.some(segment => segment.stepIndex === stepIndex) && <p className="rounded-lg bg-slate-100 p-3 text-slate-700">{tr('spoken_step_empty', 'This step has no spoken directions. Choose another step or edit the full script.')}</p>}
     {segments.filter(segment => segment.stepIndex === stepIndex).map(segment => <div key={segment.id} data-spoken-block={segment.field} className={'space-y-3 rounded-xl border-2 p-4 ' + (active === segment.id ? 'border-indigo-700 bg-indigo-100' : 'border-indigo-300 bg-indigo-50')}>
       <p className="text-sm font-bold"><span aria-hidden="true">❝ </span>{segment.field === 'checkQuestion' ? tr('ask_aloud', 'Ask aloud') : tr('say_aloud', 'Say aloud')}</p>
-      <p dir="auto" className={'whitespace-pre-wrap break-words leading-relaxed ' + (large ? 'text-2xl' : 'text-xl')}>{segment.spokenText}</p>
+      <p dir="auto" className={'whitespace-pre-wrap break-words leading-relaxed ' + (large ? 'text-2xl' : 'text-xl')}>{bt(segment.spokenText)}</p>
       <button type="button" className={button} disabled={!!draft || working === 'save'} onClick={() => play(segment)} aria-label={tr('play_block', 'Play spoken block') + ': ' + (segment.field === 'checkQuestion' ? tr('ask_aloud', 'Ask aloud') : tr('say_aloud', 'Say aloud'))}>{tr('play_block', 'Play spoken block')}</button>
     </div>)}
   </dialog>;
@@ -437,6 +458,8 @@ function LessonTeachingScriptPanel(props) {
   const hostRun = String(scriptRun.planId || '') === planId ? scriptRun : {};
   const busy = !!hostRun.busy || localBusy;
   const error = localError || _ltsText(hostRun.error?.message || hostRun.error);
+  const bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
+  const bt = s => (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s;
   const aiDoor = (() => { try { return typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', props.t) : null; } catch (_) { return null; } })();
   const canGenerate = capabilities.canGenerate === true && typeof onGenerateTeachingScript === 'function' && !aiDoor?.disabled;
   const canResearch = capabilities.canResearch === true;
@@ -519,6 +542,109 @@ function LessonTeachingScriptPanel(props) {
       downloads.current.clear();
     };
   }, []);
+  const deliveryStorageKey = version?.id ? 'alloflow:script-done:' + planId + ':' + String(version.id) : '';
+  const [completedSteps, setCompletedSteps] = React.useState(() => {
+    if (!deliveryStorageKey) return new Set();
+    try {
+      const raw = window.localStorage?.getItem(deliveryStorageKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? new Set(parsed.map(String)) : new Set();
+    } catch (_) { return new Set(); }
+  });
+  const prevDeliveryKeyRef = React.useRef(deliveryStorageKey);
+  React.useEffect(() => {
+    if (prevDeliveryKeyRef.current === deliveryStorageKey) return;
+    prevDeliveryKeyRef.current = deliveryStorageKey;
+    if (!deliveryStorageKey) { setCompletedSteps(new Set()); return; }
+    try {
+      const raw = window.localStorage?.getItem(deliveryStorageKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      setCompletedSteps(Array.isArray(parsed) ? new Set(parsed.map(String)) : new Set());
+    } catch (_) { setCompletedSteps(new Set()); }
+  }, [deliveryStorageKey]);
+  const persistCompletedSteps = nextSet => {
+    if (!deliveryStorageKey) return;
+    try {
+      if (nextSet.size === 0) window.localStorage?.removeItem(deliveryStorageKey);
+      else window.localStorage?.setItem(deliveryStorageKey, JSON.stringify(Array.from(nextSet)));
+    } catch (_) {}
+  };
+  const toggleStepDone = stepKey => {
+    setCompletedSteps(prev => {
+      const next = new Set(prev);
+      if (next.has(stepKey)) next.delete(stepKey); else next.add(stepKey);
+      persistCompletedSteps(next);
+      return next;
+    });
+  };
+  const resetCompletedSteps = () => {
+    const empty = new Set();
+    setCompletedSteps(empty);
+    persistCompletedSteps(empty);
+  };
+  const [speakingStepIdx, setSpeakingStepIdx] = React.useState(null);
+  const stepSpeechTokenRef = React.useRef(0);
+  const hasSpeechBackend = typeof window !== 'undefined' && (
+    (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function')
+    || (typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance === 'function')
+  );
+  const stopStepSpeech = React.useCallback(() => {
+    stepSpeechTokenRef.current += 1;
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') {
+        window.AlloSpeechPlayer.stop();
+      } else if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    } catch (_) {}
+    if (mounted.current) setSpeakingStepIdx(null);
+  }, []);
+  React.useEffect(() => {
+    const onSpeechState = event => {
+      const st = event?.detail?.state;
+      if (st === 'idle' || st === 'stopped' || st === 'ended' || st === 'error') {
+        if (mounted.current) setSpeakingStepIdx(null);
+      }
+    };
+    if (typeof window !== 'undefined') window.addEventListener('allo-speech-state', onSpeechState);
+    return () => {
+      if (typeof window !== 'undefined') window.removeEventListener('allo-speech-state', onSpeechState);
+      stopStepSpeech();
+    };
+  }, [stopStepSpeech]);
+  React.useEffect(() => {
+    if (speakingStepIdx !== null && (draft || spokenOnly)) stopStepSpeech();
+  }, [draft, spokenOnly, version?.id, speakingStepIdx, stopStepSpeech]);
+  const toggleRehearseStep = (step, index) => {
+    if (speakingStepIdx === index) { stopStepSpeech(); return; }
+    const speechText = [_ltsText(step.teacherSays).trim(), _ltsText(step.checkQuestion).trim()].filter(Boolean).join('. ');
+    if (!speechText) return;
+    const token = ++stepSpeechTokenRef.current;
+    const speechLang = version?.inputSnapshot?.settings?.language || plan.config?.language || defaultSettings.language || undefined;
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+        window.AlloSpeechPlayer.stop?.();
+        setSpeakingStepIdx(index);
+        const res = window.AlloSpeechPlayer.speak(speechText, speechLang ? { language: speechLang } : undefined);
+        if (res && typeof res.then === 'function') {
+          res.catch(() => {}).finally(() => {
+            if (mounted.current && stepSpeechTokenRef.current === token) setSpeakingStepIdx(null);
+          });
+        }
+      } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+        window.speechSynthesis.cancel();
+        const utter = new window.SpeechSynthesisUtterance(speechText);
+        utter.onend = () => { if (mounted.current && stepSpeechTokenRef.current === token) setSpeakingStepIdx(null); };
+        utter.onerror = () => { if (mounted.current && stepSpeechTokenRef.current === token) setSpeakingStepIdx(null); };
+        setSpeakingStepIdx(index);
+        window.speechSynthesis.speak(utter);
+      }
+    } catch (_) {
+      if (mounted.current) setSpeakingStepIdx(null);
+    }
+  };
+  const doneStepCount = !draft ? steps.reduce((acc, step, idx) => acc + (completedSteps.has(String(step.id || idx)) ? 1 : 0), 0) : 0;
+  const remainingMinutes = !draft ? steps.reduce((sum, step, idx) => sum + (completedSteps.has(String(step.id || idx)) ? 0 : Math.max(0, Number(step.minutes || 0))), 0) : timings;
   React.useEffect(() => {
     if (regenerateFocus.current === null || regeneratingStep !== null) return;
     const index = regenerateFocus.current; regenerateFocus.current = null;
@@ -705,9 +831,10 @@ function LessonTeachingScriptPanel(props) {
   };
   const keepEditing = () => { setConfirmDiscard(false); setTimeout(() => discardToggle.current?.focus(), 0); };
   // Resolves true once the edits are in the plan; quiet keeps focus on the plan's Done button.
+  const saveOwner = React.useRef(0);
   const saveEdits = async quiet => {
     if (generatingRequest.current || busy || savingRequest.current || !draft || !version || saving || staleDraft || invalidTiming || invalidDraftText || invalidDraftLength || typeof onUpdateTeachingScript !== 'function') return false;
-    const owner = ++requestOwner.current;
+    const owner = ++saveOwner.current;
     savingRequest.current = true;
     setConfirmDiscard(false);
     setSaving(true); setLocalError(''); setNotice('');
@@ -718,7 +845,7 @@ function LessonTeachingScriptPanel(props) {
         const clearStatus = _ltsClearSubmittedDraft(recoveryKey, draftScope, planId, submittedDraft);
         if (mounted.current && clearStatus) setRecoveryStatus(clearStatus);
       }
-      if (!mounted.current || owner !== requestOwner.current) return result?.ok === true;
+      if (!mounted.current || owner !== saveOwner.current) return result?.ok === true;
       if (result?.ok !== true) {
         setLocalError(_ltsText(result?.error?.message || result?.error) || (result === false || result?.ok === false
           ? tr('save_failed', 'Edits could not be added to the plan. Your draft is still here.')
@@ -731,9 +858,14 @@ function LessonTeachingScriptPanel(props) {
       setNotice(tr('edits_added', 'Script edits added to this plan.'));
       return true;
     } catch (failure) {
-      if (mounted.current && owner === requestOwner.current) setLocalError(_ltsText(failure?.message) || tr('save_failed', 'Edits could not be added to the plan. Your draft is still here.'));
+      if (mounted.current && owner === saveOwner.current) setLocalError(_ltsText(failure?.message) || tr('save_failed', 'Edits could not be added to the plan. Your draft is still here.'));
       return false;
-    } finally { if (mounted.current && owner === requestOwner.current) { savingRequest.current = false; setSaving(false); } }
+    } finally {
+      if (owner === saveOwner.current) {
+        savingRequest.current = false;
+        if (mounted.current) setSaving(false);
+      }
+    }
   };
   // Inside a lesson plan, the plan's Edit/Done toggle drives the script: Edit opens a draft
   // (no focus jump), Done saves a changed draft or drops an unchanged one.
@@ -1059,12 +1191,65 @@ function LessonTeachingScriptPanel(props) {
             {(invalidTiming || invalidDraftText || invalidDraftLength) && <><p className="text-sm text-red-900">{tr('review_fields', 'Review the highlighted fields and step timing before saving.')}</p><button type="button" className={buttonClass} onClick={focusEditIssue}>{tr('first_issue', 'Go to first issue')}</button></>}
           </div>}
           {steps.length > 1 && <nav className="no-print" aria-label={tr('script_navigation', 'Script step navigation')}><label className="block text-sm font-bold text-slate-900">{tr('jump_script_step', 'Go to script step')}<select aria-label={tr('jump_script_step', 'Go to script step')} className={fieldClass + ' mt-1 min-h-11 min-w-0 max-w-full'} value="" onChange={event => jumpToStep(event.target.value)}><option value="">{tr('choose_step', 'Choose a step…')}</option>{steps.map((step, index) => <option key={step.id || index} value={index}>{index + 1}. {_ltsText(step.title)}</option>)}</select></label></nav>}
+          {!draft && steps.length >= 2 && (
+            <div data-script-delivery-bar="true" className="no-print flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-sm text-indigo-950">
+              <span className="font-bold" data-script-pacing-status="true" aria-live="polite">
+                {doneStepCount === steps.length
+                  ? tr('delivery_all_done', '✓ All {total} steps delivered').replace('{total}', String(steps.length))
+                  : tr('delivery_pacing', '✓ {done}/{total} steps · {mins} min remaining')
+                      .replace('{done}', String(doneStepCount))
+                      .replace('{total}', String(steps.length))
+                      .replace('{mins}', String(remainingMinutes))}
+              </span>
+              {doneStepCount > 0 && (
+                <button
+                  type="button"
+                  data-script-delivery-reset="true"
+                  onClick={resetCompletedSteps}
+                  className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-900 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                >
+                  {tr('delivery_reset', 'Reset pacing')}
+                </button>
+              )}
+            </div>
+          )}
           <ol id={id + '-steps'} className="space-y-4">
-            {steps.map((step, index) => <li key={step.id || index} className="min-w-0 space-y-3 break-words rounded-xl border border-slate-300 p-3 sm:p-4" data-teaching-step={step.id || index} id={id + '-script-step-' + index}>
+            {steps.map((step, index) => {
+              const stepKey = String(step.id || index);
+              const isStepDone = !draft && completedSteps.has(stepKey);
+              const isStepSpeaking = !draft && speakingStepIdx === index;
+              const canRehearse = hasSpeechBackend && (_ltsText(step.teacherSays).trim().length > 0 || _ltsText(step.checkQuestion).trim().length > 0);
+              return <li key={step.id || index} className={'min-w-0 space-y-3 break-words rounded-xl border p-3 sm:p-4 ' + (isStepDone ? 'border-emerald-300 bg-emerald-50/30' : 'border-slate-300')} data-teaching-step={step.id || index} data-step-done={isStepDone ? 'true' : undefined} id={id + '-script-step-' + index}>
               {draft ? <div className="grid gap-3 sm:grid-cols-[1fr_8rem]">
                 <label className="block text-sm font-bold">{tr('step_title', 'Step title')} {index + 1}<input {...editFieldProps(step, index, "title")} aria-label={tr("step_title", "Step title") + " " + (index + 1)} className={fieldClass + ' mt-1'} value={step.title || ''} maxLength={240} disabled={saving || busy} onChange={event => updateStep(index, 'title', event.target.value)} />{editFieldError(step, index, 'title')}</label>
                 <label className="block text-sm font-bold">{tr('step_minutes', 'Minutes')} {index + 1}<input {...editFieldProps(step, index, "minutes")} aria-label={tr("step_minutes", "Minutes") + " " + (index + 1)} className={fieldClass + ' mt-1'} type="number" min={1} max={versionRules.maxStepMinutes} step={1} value={step.minutes} disabled={saving || busy} onChange={event => updateStep(index, 'minutes', event.target.value)} />{editFieldError(step, index, 'minutes')}</label>
-              </div> : <h5 data-script-step-heading tabIndex={-1} className="rounded font-black text-indigo-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">{index + 1}. {_ltsText(step.title)} <span className="font-normal">· {step.minutes} {tr('minutes', 'minutes')}{phaseLabel(step.phase) ? ' · ' + phaseLabel(step.phase) : ''}</span></h5>}
+              </div> : <div className="flex flex-wrap items-start justify-between gap-2">
+                <h5 data-script-step-heading tabIndex={-1} className="min-w-0 flex-1 rounded font-black text-indigo-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">{index + 1}. {_ltsText(step.title)} <span className="font-normal">· {step.minutes} {tr('minutes', 'minutes')}{phaseLabel(step.phase) ? ' · ' + phaseLabel(step.phase) : ''}</span></h5>
+                <div className="no-print flex flex-wrap items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    data-script-step-done={index}
+                    aria-pressed={isStepDone}
+                    aria-label={(isStepDone ? tr('mark_step_undone', 'Mark step {number} as not done') : tr('mark_step_done', 'Mark step {number} as done')).replace('{number}', String(index + 1))}
+                    onClick={() => toggleStepDone(stepKey)}
+                    className={'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepDone ? 'border-emerald-500 bg-emerald-100 text-emerald-950 hover:bg-emerald-200' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')}
+                  >
+                    {isStepDone ? tr('step_done_checked', '✓ Done') : tr('step_done_unchecked', 'Mark done')}
+                  </button>
+                  {canRehearse && (
+                    <button
+                      type="button"
+                      data-script-step-listen={index}
+                      aria-pressed={isStepSpeaking}
+                      aria-label={(isStepSpeaking ? tr('stop_rehearse_step', 'Stop rehearsing step {number}') : tr('rehearse_step', 'Rehearse step {number} aloud')).replace('{number}', String(index + 1))}
+                      onClick={() => toggleRehearseStep(step, index)}
+                      className={'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepSpeaking ? 'border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800' : 'border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100')}
+                    >
+                      {isStepSpeaking ? tr('stop_rehearse_label', '⏹ Stop') : tr('rehearse_label', '🔊 Rehearse')}
+                    </button>
+                  )}
+                </div>
+              </div>}
               {canGenerate && typeof onRegenerateTeachingStep === 'function' && typeof onUpdateTeachingScript === 'function' && <div className="space-y-2 no-print">
                 {regenerateIndex === index ? <div role="group" aria-label={tr('regenerate_step', 'Regenerate step') + ' ' + (index + 1)} className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
                   <label className="block text-sm font-bold">{tr('step_instruction', 'What should change? (optional)')} · {index + 1}<textarea autoFocus aria-label={tr('step_instruction', 'What should change? (optional)') + ' · ' + (index + 1)} rows={2} maxLength={2000} className={fieldClass + ' mt-1'} value={regenerateInstruction} disabled={busy || saving || deleting} onChange={event => setRegenerateInstruction(event.target.value)} /></label>
@@ -1087,7 +1272,7 @@ function LessonTeachingScriptPanel(props) {
               <div className="grid gap-3 sm:grid-cols-2">
                 {stepFields.map(([key, label]) => <div key={key} className={(key === 'teacherSays' ? 'sm:col-span-2 ' : '') + (['teacherSays', 'checkQuestion'].includes(key) ? 'rounded-lg border-l-4 border-indigo-600 bg-indigo-50 p-3' : '')}>
                   {['teacherSays', 'checkQuestion'].includes(key) && <p className="mb-1 text-xs font-bold text-indigo-900"><span aria-hidden="true">❝ </span>{key === 'teacherSays' ? tr('say_aloud', 'Say aloud') : tr('ask_aloud', 'Ask aloud')}</p>}
-                  {draft ? <label className="block text-sm font-bold text-slate-900">{label} · {index + 1}<textarea {...editFieldProps(step, index, key)} aria-label={label + " · " + (index + 1)} className={fieldClass + ' mt-1'} rows={3} value={step[key] || ''} maxLength={16000} disabled={saving || busy} onChange={event => updateStep(index, key, event.target.value)} />{editFieldError(step, index, key)}</label> : <><h6 className="text-xs font-black uppercase tracking-wide text-slate-600">{label}</h6><p className="mt-1 whitespace-pre-wrap text-sm text-slate-900">{_ltsText(step[key]) || '—'}</p></>}
+                  {draft ? <label className="block text-sm font-bold text-slate-900">{label} · {index + 1}<textarea {...editFieldProps(step, index, key)} aria-label={label + " · " + (index + 1)} className={fieldClass + ' mt-1'} rows={3} value={step[key] || ''} maxLength={16000} disabled={saving || busy} onChange={event => updateStep(index, key, event.target.value)} />{editFieldError(step, index, key)}</label> : <><h6 className="text-xs font-black uppercase tracking-wide text-slate-600">{label}</h6><p className="mt-1 whitespace-pre-wrap text-sm text-slate-900">{bt(_ltsText(step[key])) || '—'}</p></>}
                 </div>)}
               </div>
               {Array.isArray(step.resourceIds) && step.resourceIds.length > 0 && <div className="flex flex-wrap items-center gap-2">
@@ -1103,10 +1288,10 @@ function LessonTeachingScriptPanel(props) {
                   const entry = recommendationById.get(String(recommendationId));
                   if (!entry) return <li key={recommendationId}>{tr('missing_recommendation', 'The cited teaching guidance is unavailable. Review this step.')}</li>;
                   const href = _ltsSafeUrl(entry.source.url);
-                  return <li key={recommendationId}><p>{_ltsText(entry.recommendation.text)}</p><p className="mt-1 text-xs">{href ? <a href={href} target="_blank" rel="noopener noreferrer" className="font-bold underline">{_ltsText(entry.source.title)}</a> : _ltsText(entry.source.title)}{_ltsLocator(entry.recommendation.locator) ? ' · ' + _ltsLocator(entry.recommendation.locator) : ''}{entry.recommendation.evidenceLevel ? ' · ' + _ltsText(entry.recommendation.evidenceLevel) : ''}</p></li>;
+                  return <li key={recommendationId}><p>{bt(_ltsText(entry.recommendation.text))}</p><p className="mt-1 text-xs">{href ? <a href={href} target="_blank" rel="noopener noreferrer" className="font-bold underline">{_ltsText(entry.source.title)}</a> : _ltsText(entry.source.title)}{_ltsLocator(entry.recommendation.locator) ? ' · ' + _ltsLocator(entry.recommendation.locator) : ''}{entry.recommendation.evidenceLevel ? ' · ' + _ltsText(entry.recommendation.evidenceLevel) : ''}</p></li>;
                 })}
               </ul>}
-            </li>)}
+            </li>; })}
           </ol>
           {draft && <div ref={editActions} tabIndex={-1} role="region" aria-label={tr('edit_actions', 'Save or discard script edits')} className="space-y-3 rounded-lg border border-indigo-300 bg-indigo-50 p-3 no-print focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">
             {invalidTiming && <p role="alert" className="text-sm text-red-900">{tr('timing_error', 'Step times must be positive whole minutes and add up to the version’s teaching time.')} ({timings} / {version.durationMinutes} {tr('minutes', 'minutes')})</p>}
@@ -1131,7 +1316,7 @@ function LessonTeachingScriptPanel(props) {
               return <li key={source.id || index} className="rounded-lg border border-slate-200 p-3 text-sm text-slate-800">
                 <p className="font-bold">{href ? <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-800 underline">{_ltsText(source.title) || href}</a> : _ltsText(source.title) || tr('source_unavailable', 'Source link unavailable')}</p>
                 <p>{[_ltsText(source.author), _ltsText(source.publishedAt), source.evidenceKind === 'general-practice' ? tr('evidence_general', 'General instructional practice') : source.evidenceKind === 'content-specific' ? tr('evidence_content', 'Content-specific guidance') : ''].filter(Boolean).join(' · ')}</p>
-                {Array.isArray(source.recommendations) && source.recommendations.length > 0 && <ul className="mt-2 list-disc space-y-1 pl-5">{source.recommendations.filter(recommendation => recommendation && typeof recommendation === 'object').map((recommendation, offset) => <li key={recommendation.id || offset}>{_ltsText(recommendation.text)}{_ltsLocator(recommendation.locator) ? ' (' + _ltsLocator(recommendation.locator) + ')' : ''}</li>)}</ul>}
+                {Array.isArray(source.recommendations) && source.recommendations.length > 0 && <ul className="mt-2 list-disc space-y-1 pl-5">{source.recommendations.filter(recommendation => recommendation && typeof recommendation === 'object').map((recommendation, offset) => <li key={recommendation.id || offset}>{bt(_ltsText(recommendation.text))}{_ltsLocator(recommendation.locator) ? ' (' + _ltsLocator(recommendation.locator) + ')' : ''}</li>)}</ul>}
                 {(source.scope || source.evidenceLevel || source.retrievedAt) && <details className="mt-2">
                   <summary className="min-h-11 cursor-pointer py-3 text-sm leading-5 font-bold text-indigo-800 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">{tr('about_source', 'About this source')}</summary>
                   {source.scope && <p className="mt-1">{tr('scope_label', 'Scope:')} {_ltsText(source.scope)}</p>}

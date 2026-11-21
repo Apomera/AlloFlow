@@ -1,5 +1,5 @@
 import {createAdapters} from './adapters.mjs';
-import {makeRun,materialize,dispatch,saveRun,readRun,listRuns,addNote,forkRun,narrate,saveKey} from './core.mjs';
+import {makeRun,materialize,dispatch,validateRun,saveRun,readRun,listRuns,addNote,forkRun,narrate,saveKey} from './core.mjs';
 import {landscape} from './scene-art.mjs';
 import {reviewResponse,dispatchResponse} from './responses.mjs';
 export function mountFieldJourneys(root,options={}){
@@ -31,6 +31,12 @@ function stopSound(){
   for(const node of audioNodes){try{node.stop?.();}catch{}try{node.disconnect?.();}catch{}}
   audioNodes=[];try{audioGain?.disconnect();}catch{}audioGain=null;
 }
+function syncSoundButton(){
+  const btn=$('sound-toggle');
+  if(!btn)return;
+  btn.textContent=sound?'Sound on':'Sound off';
+  btn.setAttribute('aria-pressed',String(sound));
+}
 async function playSound(){
   stopSound();if(!sound||!view||!view.sound||document.hidden||destroyed)return;
   const serial=soundSerial;
@@ -39,17 +45,25 @@ async function playSound(){
     if(destroyed||serial!==soundSerial||!sound||document.hidden)return;
     const Ctx=window.AudioContext||window.webkitAudioContext;
     if(!Ctx)throw new Error('Audio unavailable.');
-    audioContext=audioContext||new Ctx();audioContext.resume().catch(()=>{if(destroyed||serial!==soundSerial)return;sound=false;stopSound();message('Sound could not start. The journey remains available.',true);});
+    audioContext=audioContext||new Ctx();audioContext.resume().catch(()=>{if(destroyed||serial!==soundSerial)return;sound=false;stopSound();syncSoundButton();message('Sound could not start. The journey remains available.',true);});
     audioGain=audioContext.createGain();audioGain.gain.value=.15;audioGain.connect(audioContext.destination);
-    audioNodes=window.AlloModules.playGenerativeSoundscape(audioContext,audioGain,view.sound,{gentle:true,sceneText:view.body,themeSeed:run.seed});
-  }catch{if(destroyed||serial!==soundSerial)return;sound=false;stopSound();message('Sound is unavailable. The journey remains available.',true);}
+    const nodes=window.AlloModules.playGenerativeSoundscape(audioContext,audioGain,view.sound,{gentle:true,sceneText:view.body,themeSeed:run.seed});
+    audioNodes=Array.isArray(nodes)?nodes:[];
+  }catch{if(destroyed||serial!==soundSerial)return;sound=false;stopSound();syncSoundButton();message('Sound is unavailable. The journey remains available.',true);}
 }
-function stopReading(){if(reading){window.speechSynthesis?.cancel();reading=null;}}
+function stopReading(){if(reading){reading=null;window.speechSynthesis?.cancel();}}
 function readScene(){
   if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){message('Read aloud is unavailable in this browser.',true);return;}
   stopReading();const utterance=new SpeechSynthesisUtterance(view.title+'. '+view.body);reading=utterance;
   utterance.rate=.92;utterance.onstart=()=>{if(audioGain)audioGain.gain.value=.035;};
-  const restore=()=>{if(reading===utterance)reading=null;if(audioGain)audioGain.gain.value=.15;};utterance.onend=restore;utterance.onerror=()=>{restore();message('Read aloud could not finish. The scene text is still available.',true);};
+  const restore=()=>{if(reading===utterance)reading=null;if(audioGain)audioGain.gain.value=.15;};
+  utterance.onend=restore;
+  utterance.onerror=ev=>{
+    const stale=reading!==utterance;
+    restore();
+    if(stale||ev?.error==='canceled'||ev?.error==='interrupted')return;
+    message('Read aloud could not finish. The scene text is still available.',true);
+  };
   window.speechSynthesis.speak(utterance);
 }
 async function refreshNarration(){
@@ -120,13 +134,18 @@ function renderHome(){
     const chosen=file.files[0];if(!chosen)return;
     try{
       if(chosen.size>180000)throw new Error('Choose a pilot journal smaller than 180 KB.');
-      const raw=JSON.parse(await chosen.text());const a=adapters.find(a=>a.id===raw.campaignId);
+      const text=await chosen.text();
+      if(destroyed)return;
+      const raw=JSON.parse(text);
+      if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new Error('This is not a recognized pilot journey.');
+      const a=adapters.find(a=>a.id===raw.campaignId);
       if(!a)throw new Error('This is not a recognized pilot journey.');
       // Treat importing as a new run, never an overwrite of an existing saved journey.
-      const {validateRun}=await import('./core.mjs');
       const checked=validateRun(a,raw),next=forkRun(checked,checked.commands.length);
+      if(destroyed)return;
       run=next;adapter=a;persist();activate(next);
-    }catch(error){message(error.message,true);}
+    }catch(error){if(!destroyed)message(error.message,true);}
+    finally{file.value='';}
   });
   const tools=el('div','footer-tools');tools.append(button('Open a downloaded journey',()=>file.click()),file);main.append(tools);
   renderPilotDetails();
@@ -163,6 +182,7 @@ function renderResponses(decisions,actions){
     const draftKey=run.runId+':'+run.commands.length;input.value=responseDrafts.get(draftKey)||'';
     const review=el('div','response-review');review.id='response-review';
     input.addEventListener('input',()=>{responseDrafts.set(draftKey,input.value);proposal=null;review.replaceChildren();});
+    input.addEventListener('blur',()=>{options.onFreeText?.(input.value);});
     form.append(label,input,el('p','status-line','Your confirmed response stays in your journal. Review the action before it runs.'));
     const showReview=()=>{
       review.replaceChildren();if(!proposal)return;
@@ -182,6 +202,7 @@ function renderResponses(decisions,actions){
       },'primary'));
     };
     form.append(button('Review my response',()=>{
+      options.onFreeText?.(input.value);
       try{proposal=reviewResponse(adapter,run,input.value,{location:adapter.id==='watershed'?selected:undefined});showReview();$('response-action').focus();announce(proposal.message);}
       catch(error){message(error.message,true);input.focus();}
     }),review);
@@ -216,7 +237,8 @@ function renderJourney(focus=false){
   const heading=el('div','journey-heading'),titles=el('div');
   titles.append(button(isSEL?'← Practice journeys':'← Field station',returnHome,'quiet'),el('p','eyebrow',adapter.eyebrow),el('h1','',adapter.title));
   const tools=el('div','header-actions');
-  const soundButton=button(sound?'Sound on':'Sound off',()=>{sound=!sound;playSound();soundButton.textContent=sound?'Sound on':'Sound off';soundButton.setAttribute('aria-pressed',String(sound));});
+  const soundButton=button(sound?'Sound on':'Sound off',()=>{sound=!sound;syncSoundButton();playSound();});
+  soundButton.id='sound-toggle';
   soundButton.setAttribute('aria-pressed',String(sound));
   if(view.sound)tools.append(soundButton);tools.append(button('Download journal',downloadJournal));
   heading.append(titles,tools);main.append(heading,makeNotice());
@@ -288,7 +310,9 @@ function renderJournal(){
   const input=el('textarea');input.id='field-note';input.maxLength=1200;input.placeholder='Use something you observed as evidence…';
   input.value=noteDrafts.get(run.runId)||'';
   const noteRunId=run.runId;input.addEventListener('input',()=>noteDrafts.set(noteRunId,input.value));
+  input.addEventListener('blur',()=>{options.onFreeText?.(input.value);});
   notes.append(label,input,button('Save field note',()=>{
+    options.onFreeText?.(input.value);
     try{run=addNote(run,input.value);noteDrafts.delete(run.runId);persist();renderJourney();$('field-note').focus();}catch(error){message(error.message,true);}
   }));
   for(const response of run.responses||[]){const entry=el('div','written-record');entry.append(el('h3','','Your words · decision '+response.revision),el('p','note',response.text));notes.append(entry);}

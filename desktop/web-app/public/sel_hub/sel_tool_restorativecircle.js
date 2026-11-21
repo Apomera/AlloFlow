@@ -14,13 +14,17 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
-  function __alloT(key, fallback) {
-    try {
-      var fn = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null;
-      if (fn) { var v = fn(key, fallback); if (v != null && v !== key) return v; }
-    } catch (_) {}
-    return fallback != null ? fallback : key;
-  }
+  var _ctx = null;
+  var __alloT = function (key, fallback) {
+    var fn = (_ctx && typeof _ctx.t === 'function')
+      ? _ctx.t
+      : ((typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.t === 'function')
+        ? window.SelHub.t
+        : ((typeof window !== 'undefined' && typeof window.__alloT === 'function') ? window.__alloT : null));
+    var v = null;
+    if (fn) { try { v = fn(key, fallback); } catch (_) { v = null; } }
+    return (typeof v === 'string' && v && v !== key) ? v : (fallback != null ? fallback : key);
+  };
 
   // ── Live region (WCAG 4.1.3) ──
   (function() {
@@ -34,10 +38,10 @@ window.SelHub = window.SelHub || {
   // ── Audio + WCAG (auto-injected) ──
   var _restorAC = null;
   function getRestorAC() { if (!_restorAC) { try { _restorAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_restorAC && _restorAC.state==="suspended") { try { _restorAC.resume(); } catch(e) {} } return _restorAC; }
-  function restorTone(f,d,tp,v) { var ac=getRestorAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function restorTone(f,d,tp,v) { if(typeof window!=="undefined"&&((typeof window.__alloIsGlobalMuted==="function"&&window.__alloIsGlobalMuted())||window._alloGlobalMute)) return; var ac=getRestorAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxRestorClick() { restorTone(600,0.03,"sine",0.04); }
   function sfxRestorSuccess() { restorTone(523,0.08,"sine",0.07); setTimeout(function(){restorTone(659,0.08,"sine",0.07);},70); setTimeout(function(){restorTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("restor-a11y")){var _s=document.createElement("style");_s.id="restor-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-400{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("restor-a11y")){var _s=document.createElement("style");_s.id="restor-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){[data-sel-tool-shell=\"restorativeCircle\"] *,[data-sel-tool-shell=\"restorativeCircle\"] *::before,[data-sel-tool-shell=\"restorativeCircle\"] *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
 
 
   // ── Circle process data ──
@@ -1151,6 +1155,7 @@ window.SelHub = window.SelHub || {
     category: 'relationship-skills',
 
     render: function(ctx) {
+      _ctx = ctx;
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _rcT = (ctx && ctx.theme) || {};
       var _rcHC = !!_rcT.isContrast, _rcL = !_rcHC && !_rcT.isDark;
@@ -1292,15 +1297,18 @@ window.SelHub = window.SelHub || {
           'Return ONLY a JSON array of strings: ["prompt 1", "prompt 2", ...]';
         callGemini(prompt, true).then(function(resp) {
           try {
-            var cleaned = resp.trim();
+            var raw = typeof resp === 'string' ? resp : (resp && typeof resp.text === 'string' ? resp.text : String(resp || ''));
+            var cleaned = raw.trim();
             if (cleaned.indexOf('```') !== -1) {
               cleaned = cleaned.split('```')[1] || cleaned;
               if (cleaned.indexOf('\n') !== -1) cleaned = cleaned.split('\n').slice(1).join('\n');
             }
             var prompts = JSON.parse(cleaned);
-            if (Array.isArray(prompts)) {
+            if (Array.isArray(prompts) && prompts.length > 0) {
               updMulti({ customPrompts: prompts, aiLoading: false });
               addToast('Custom prompts generated!', 'success');
+            } else {
+              upd('aiLoading', false);
             }
           } catch(e) {
             upd('aiLoading', false);
@@ -1337,11 +1345,24 @@ window.SelHub = window.SelHub || {
       var scriptSection = d.scriptSection || 'opening';
       var activeScriptIdx = d.activeScriptIdx;
 
+      // Deduplicated XP + badge stat helper to prevent repeat-click farming
+      var _xpAwardedKeys = (d.xpAwardedKeys && typeof d.xpAwardedKeys === 'object') ? d.xpAwardedKeys : {};
+      function awardOnce(key, xp, statKey) {
+        if (_xpAwardedKeys[key]) return false;
+        var nextKeys = Object.assign({}, _xpAwardedKeys);
+        nextKeys[key] = true;
+        _xpAwardedKeys = nextKeys;
+        upd('xpAwardedKeys', nextKeys);
+        if (xp) ctx.awardXP(xp);
+        if (statKey) incrementBadgeStat(statKey, 1);
+        return true;
+      }
+
       // ═══════════════════════════════════════
       // RENDER
       // ═══════════════════════════════════════
 
-      return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
+      return h('div', { 'data-sel-tool-shell': 'restorativeCircle', className: 'space-y-4 animate-in fade-in duration-200' },
           h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, (typeof d._srMsg === 'string' ? d._srMsg : '')),
 
         // ── Header ──
@@ -1398,7 +1419,7 @@ window.SelHub = window.SelHub || {
             CIRCLE_TYPES.map(function(ct) {
               return h('button', { 
                 key: ct.id,
-                onClick: function() { updMulti({ circleType: ct.id, tab: 'circle', promptIdx: 0, circleActive: true, customPrompts: null }); ctx.awardXP(5); },
+                onClick: function() { updMulti({ circleType: ct.id, tab: 'circle', promptIdx: 0, circleActive: true, circleRunId: Date.now(), customPrompts: null }); awardOnce('circleType:' + ct.id, 5); },
                 className: 'p-4 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-md ' +
                   (selectedCircleType === ct.id ? 'border-amber-400 bg-amber-50 shadow-md' : 'border-slate-200 bg-white hover:border-amber-600')
               },
@@ -1424,6 +1445,16 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ ACTIVE CIRCLE ═══
+        tab === 'circle' && !selectedCircleType && h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-6 text-center shadow-lg space-y-3' },
+          h('div', { className: 'text-3xl', 'aria-hidden': 'true' }, '\u2B55'),
+          h('h3', { className: 'text-base font-bold text-slate-800' }, 'Choose a circle type first'),
+          h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-md mx-auto' }, 'Pick a circle type from the Types tab to open your discussion rounds and reflection space.'),
+          h('button', {
+            type: 'button',
+            onClick: function() { upd('tab', 'home'); },
+            className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-colors'
+          }, '\uD83C\uDFE0 Choose a Circle Type')
+        ),
         tab === 'circle' && selectedCircleType && h('div', { role: 'region', 'aria-labelledby': 'rc-circle-title', className: 'space-y-4' },
 
           // Circle type badge
@@ -1473,11 +1504,12 @@ window.SelHub = window.SelHub || {
                     upd('promptIdx', currentPromptIdx + 1);
                     if (announceToSR) announceToSR('Round ' + (currentPromptIdx + 2) + ' of ' + prompts.length);
                   } else {
-                    updMulti({ circleActive: false, tab: 'home' });
+                    updMulti({ circleActive: false, tab: 'home', promptIdx: 0 });
                     addToast('Circle complete \u2014 well done! \uD83E\uDEB6', 'success');
-                    ctx.awardXP(15);
+                    if (d.circleActive) {
+                      awardOnce('circleClose:' + (d.circleRunId || selectedCircleType), 15, 'circlesCompleted');
+                    }
                     if (ctx.celebrate) ctx.celebrate();
-                    incrementBadgeStat('circlesCompleted', 1);
                   }
                 },
                 className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700 transition-colors'
@@ -1515,7 +1547,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Generate custom prompts
-          _rcAiOn && h('button', { 'aria-label': 'Circle Scripts',
+          _rcAiOn && h('button', { 'aria-label': 'Generate custom circle prompts with AI',
             onClick: generateCustomPrompts,
             disabled: aiLoading,
             className: 'w-full px-4 py-2 bg-indigo-50 border border-indigo-600 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
@@ -1566,7 +1598,7 @@ window.SelHub = window.SelHub || {
                   );
                 }),
                 h('button', { 'aria-label': 'Mark discussion prompts as used',
-                  onClick: function() { incrementBadgeStat('scriptsUsed', 1); addToast('Discussion prompts reviewed!', 'success'); ctx.awardXP(5); },
+                  onClick: function() { awardOnce('script:discussion:' + gradeBand, 5, 'scriptsUsed'); addToast('Discussion prompts reviewed!', 'success'); },
                   className: 'w-full px-4 py-2 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors mt-2'
                 }, '\u2705 Mark Discussion Prompts as Used')
               );
@@ -1598,9 +1630,8 @@ window.SelHub = window.SelHub || {
                       }, '\uD83D\uDD0A Read Aloud'),
                       h('button', { 'aria-label': 'Mark as Used',
                         onClick: function() {
-                          incrementBadgeStat('scriptsUsed', 1);
+                          awardOnce('script:' + scriptSection + ':' + script.title, 5, 'scriptsUsed');
                           addToast('Script "' + script.title + '" marked as used!', 'success');
-                          ctx.awardXP(5);
                         },
                         className: 'px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors'
                       }, '\u2705 Mark as Used')
@@ -1682,13 +1713,12 @@ window.SelHub = window.SelHub || {
                     if (harmStep < HARM_REPAIR_STEPS.length - 1) {
                       upd('harmStep', harmStep + 1);
                       if (announceToSR) announceToSR('Step ' + (harmStep + 2) + ' of ' + HARM_REPAIR_STEPS.length);
-                      ctx.awardXP(5);
+                      awardOnce('harmStep:' + harmStep, 5);
                     } else {
                       addToast('Harm repair process complete \u2014 thank you for this brave work. \uD83E\uDE79', 'success');
                       if (announceToSR) announceToSR('Harm repair process complete');
-                      ctx.awardXP(25);
+                      awardOnce('harmComplete', 25, 'harmRepairsCompleted');
                       if (ctx.celebrate) ctx.celebrate();
-                      incrementBadgeStat('harmRepairsCompleted', 1);
                     }
                   },
                   className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700 transition-colors'
@@ -2275,9 +2305,8 @@ window.SelHub = window.SelHub || {
               agreements.length >= 5 && h('button', { 'aria-label': 'Finalize Agreements',
                 onClick: function() {
                   addToast('Agreements finalized! Your community is ready. \uD83E\uDD1D', 'success');
-                  ctx.awardXP(15);
+                  awardOnce('agreementsFinalized', 15, 'agreementsMade');
                   if (ctx.celebrate) ctx.celebrate();
-                  incrementBadgeStat('agreementsMade', 1);
                 },
                 className: 'flex-1 px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
               }, '\u2705 Finalize Agreements')
@@ -2307,7 +2336,7 @@ window.SelHub = window.SelHub || {
                   (isSelected ? 'border-amber-400 bg-amber-50 shadow-md ring-2 ring-amber-200' : 'border-slate-200 bg-white hover:border-amber-300'),
                 role: 'button', tabIndex: 0, 'aria-pressed': isSelected ? 'true' : 'false',
                 onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); ev.currentTarget.click(); } },
-                onClick: function() { upd('talkingPiece', piece.id); ctx.awardXP(3); }
+                onClick: function() { upd('talkingPiece', piece.id); awardOnce('talkingPiece:' + piece.id, 3); }
               },
                 h('div', { className: 'flex items-center gap-3 mb-2' },
                   h('span', { className: 'text-3xl' }, piece.emoji),
@@ -2381,9 +2410,8 @@ window.SelHub = window.SelHub || {
 
           h('button', { 'aria-label': 'I have read and reflected on these roots',
             onClick: function() {
-              ctx.awardXP(10);
+              awardOnce('rootsStudied', 10, 'rootsStudied');
               addToast('Thank you for learning about these roots \uD83C\uDF0D', 'success');
-              incrementBadgeStat('rootsStudied', 1);
             },
             className: 'w-full px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
           }, '\u2705 I have read and reflected on these roots')
@@ -2507,8 +2535,7 @@ window.SelHub = window.SelHub || {
                 onClick: function() {
                   upd('expandedRole', isExpanded ? null : role.id);
                   if (!isExpanded) {
-                    incrementBadgeStat('rolesStudied', 1);
-                    ctx.awardXP(3);
+                    awardOnce('role:' + role.id, 3, 'rolesStudied');
                   }
                 },
                 className: 'w-full text-left p-4 flex items-center gap-3'
@@ -2567,7 +2594,7 @@ window.SelHub = window.SelHub || {
                           onClick: function() { callTTS(phrase); },
                           className: 'text-xs text-indigo-400 hover:text-indigo-600 shrink-0'
                         }, '\uD83D\uDD0A'),
-                        h('button', { onClick: function() {
+                        h('button', { 'aria-label': 'Copy sample phrase', onClick: function() {
                             if (window.SelHub && window.SelHub.copyText) {
                               window.SelHub.copyText(phrase).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
                               addToast('Phrase copied!', 'success');
@@ -2689,7 +2716,8 @@ window.SelHub = window.SelHub || {
                 ? window.SelHub.safeRehearseCheck(summary, { toolId: 'restorativecircle', onSafetyFlag: ctx.onSafetyFlag })
                 : { action: 'continue' };
               if (_empSafety.action === 'block') {
-                updMulti({ empathyAnalysis: window.SelHub.rehearseBreakCharacterText(_empSafety.severity), aiLoading: false });
+                updMulti({ empathyAnalysis: window.SelHub.rehearseBreakCharacterText(_empSafety.severity), aiLoading: false, _lastTier: 3 });
+                if (window.SelHub && window.SelHub.showCrisisModal) window.SelHub.showCrisisModal(gradeBand);
                 return;
               }
               callGemini(aiPrompt).then(function(resp) {
@@ -2842,8 +2870,7 @@ window.SelHub = window.SelHub || {
                           var newRatings = Object.assign({}, ratings);
                           newRatings[ratingKey] = 'punitive';
                           upd('compareRatings', newRatings);
-                          incrementBadgeStat('comparisonScenariosRated', 1);
-                          ctx.awardXP(5);
+                          awardOnce('compareRate:' + ratingKey, 5, 'comparisonScenariosRated');
                         },
                         className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
                           (ratings[ratingKey] === 'punitive' ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-600')
@@ -2853,8 +2880,7 @@ window.SelHub = window.SelHub || {
                           var newRatings = Object.assign({}, ratings);
                           newRatings[ratingKey] = 'restorative';
                           upd('compareRatings', newRatings);
-                          incrementBadgeStat('comparisonScenariosRated', 1);
-                          ctx.awardXP(5);
+                          awardOnce('compareRate:' + ratingKey, 5, 'comparisonScenariosRated');
                         },
                         className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
                           (ratings[ratingKey] === 'restorative' ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600 hover:border-emerald-600')
@@ -2916,10 +2942,10 @@ window.SelHub = window.SelHub || {
                 h('span', { className: 'text-xs text-emerald-600 font-bold' }, '\uD83D\uDC9A Restorative: ' + restorativeCount)
               ),
               totalRated >= totalScenarios && h('div', { className: 'mt-2 text-center' },
-                h('button', { 'aria-label': 'Complete Comparison Study',
+                h('button', { 'aria-label': __alloT('sel.restorativecircle.complete_comparison_study_aria', 'Complete Comparison Study'),
                   onClick: function() {
                     addToast('Comparison complete! You are a Restorative Scholar! \uD83D\uDCDA', 'success');
-                    ctx.awardXP(20);
+                    awardOnce('compareComplete', 20);
                     if (ctx.celebrate) ctx.celebrate();
                   },
                   className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors'
@@ -2991,7 +3017,7 @@ window.SelHub = window.SelHub || {
             )
           ),
           h('button', { 'aria-label': 'Dismiss', onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-xs text-indigo-400 hover:text-indigo-600 font-bold' }, 'Dismiss')
-        ),
+        )),
 
         // ═══ PRINT ═══
         tab === 'print' && h('div', { className: 'space-y-3' },
@@ -3092,7 +3118,6 @@ window.SelHub = window.SelHub || {
               'Circle practice has deep Indigenous roots and was carried into Western restorative justice through Howard Zehr, Kay Pranis, and many First Nations elders. Sources: International Institute for Restorative Practices (iirp.edu), Kay Pranis (The Little Book of Circle Processes), Howard Zehr (The Little Book of Restorative Justice). Printed from AlloFlow SEL Hub.'
             )
           )
-        )
         )
       );
     }

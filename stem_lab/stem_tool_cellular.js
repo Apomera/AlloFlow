@@ -1971,27 +1971,84 @@
       if (contrast) return C.live;
       if (vizMode === 'field') return '#67e8f9';
       if (vizMode === 'change') return previousGridRef.current && previousGridRef.current[r] && previousGridRef.current[r][c] ? '#22d3ee' : '#4ade80';
-      if (vizMode === 'age') { var a = Math.min(1, Math.max(0, (age || 1) - 1) / 45); return 'hsl(' + Math.round(48 + a * 220) + ',88%,66%)'; }
+      if (vizMode === 'age') {
+        var a = Math.min(1, Math.max(0, (age || 1) - 1) / 36);
+        var ageHue = Math.round(52 + a * 224);
+        var ageLit = Math.round(72 - a * 7);
+        return 'hsl(' + ageHue + ',92%,' + ageLit + '%)';
+      }
       if (vizMode === 'xray') { var xc = ['#94a3b8','#64748b','#ef4444','#22c55e','#f59e0b','#f97316','#ef4444','#dc2626','#e11d48']; return xc[neighbours] || C.live; }
-      if (lifeHue < 0) return '#f8fafc';
-      return 'hsl(' + lifeHue + ',82%,' + (45 + Math.min(4, neighbours) * 4) + '%)';
+      if (lifeHue < 0) {
+        var monoBoost = (age || 1) <= 2 ? 98 : 90;
+        return 'hsl(210,25%,' + monoBoost + '%)';
+      }
+      var ageStep = Math.min(4, Math.floor(Math.max(0, (age || 1) - 1) / 3));
+      var hueShift = (lifeHue + (ageStep === 0 ? 14 : -ageStep * 4) + 360) % 360;
+      var lit = 49 + Math.min(4, neighbours) * 4 + (ageStep === 0 ? 7 : -ageStep);
+      return 'hsl(' + hueShift + ',88%,' + Math.max(47, Math.min(76, lit)) + '%)';
+    }
+    function cellRectSubpath(x, y, side, r) {
+      if (r <= 0.4) return 'M' + x + ' ' + y + 'h' + side + 'v' + side + 'h-' + side + 'z';
+      var s = side - 2 * r;
+      return 'M' + (x + r).toFixed(2) + ' ' + y.toFixed(2) + 'h' + s.toFixed(2) + 'q' + r.toFixed(2) + ' 0 ' + r.toFixed(2) + ' ' + r.toFixed(2) + 'v' + s.toFixed(2) + 'q0 ' + r.toFixed(2) + ' ' + (-r).toFixed(2) + ' ' + r.toFixed(2) + 'h' + (-s).toFixed(2) + 'q' + (-r).toFixed(2) + ' 0 ' + (-r).toFixed(2) + ' ' + (-r).toFixed(2) + 'v' + (-s).toFixed(2) + 'q0 ' + (-r).toFixed(2) + ' ' + r.toFixed(2) + ' ' + (-r).toFixed(2) + 'z';
     }
     function renderLifeGrid() {
-      var W = COLS * PX, H = ROWS * PX, scan = populationBounds(grid), dynamicsScan = detectDynamics(grid, gen, transitionHistoryRef.current), rects = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: dark ? '#020617' : '#07130f' })];
-      if (lifeSize <= 80) { var lines = ''; for (var gx = 0; gx <= COLS; gx++) lines += 'M' + (gx * PX) + ' 0V' + H; for (var gy = 0; gy <= ROWS; gy++) lines += 'M0 ' + (gy * PX) + 'H' + W; rects.push(h('path', { key: 'grid', d: lines, stroke: 'rgba(148,163,184,0.16)', strokeWidth: Math.max(0.45, PX / 16), fill: 'none' })); }
+      var W = COLS * PX, H = ROWS * PX, scan = populationBounds(grid), dynamicsScan = detectDynamics(grid, gen, transitionHistoryRef.current);
+      var stageAccent = contrast ? '#fde047' : (lifeHue < 0 ? '#94a3b8' : 'hsl(' + lifeHue + ',84%,56%)');
+      var rects = [
+        h('defs', { key: 'defs' },
+          h('radialGradient', { id: 'cell-life-bg-grad', cx: '50%', cy: '44%', r: '72%' },
+            h('stop', { offset: '0%', stopColor: contrast ? '#000000' : (dark ? '#071b24' : '#0a221d') }),
+            h('stop', { offset: '62%', stopColor: contrast ? '#000000' : (dark ? '#030b19' : '#061511') }),
+            h('stop', { offset: '100%', stopColor: contrast ? '#000000' : '#020617' })
+          ),
+          h('radialGradient', { id: 'cell-cursor-halo', cx: '50%', cy: '50%', r: '50%' },
+            h('stop', { offset: '0%', stopColor: brush === 0 ? '#fb7185' : C.cursor, stopOpacity: 0.42 }),
+            h('stop', { offset: '65%', stopColor: brush === 0 ? '#fb7185' : C.cursor, stopOpacity: 0.14 }),
+            h('stop', { offset: '100%', stopColor: brush === 0 ? '#fb7185' : C.cursor, stopOpacity: 0 })
+          )
+        ),
+        h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: contrast ? '#000000' : (dark ? '#020617' : '#07130f') }),
+        !contrast && h('rect', { key: 'bgGlow', x: 0, y: 0, width: W, height: H, fill: 'url(#cell-life-bg-grad)', opacity: 0.72, style: { pointerEvents: 'none' } })
+      ];
+      if (lifeSize <= 80) {
+        var minorLines = '', majorLines = '', crossTicks = '', majorStep = lifeSize <= 40 ? 5 : 10;
+        for (var gx = 0; gx <= COLS; gx++) {
+          if (gx > 0 && gx < COLS && gx % majorStep === 0) majorLines += 'M' + (gx * PX) + ' 0V' + H;
+          else minorLines += 'M' + (gx * PX) + ' 0V' + H;
+        }
+        for (var gy = 0; gy <= ROWS; gy++) {
+          if (gy > 0 && gy < ROWS && gy % majorStep === 0) majorLines += 'M0 ' + (gy * PX) + 'H' + W;
+          else minorLines += 'M0 ' + (gy * PX) + 'H' + W;
+        }
+        if (minorLines) rects.push(h('path', { key: 'grid', d: minorLines, stroke: contrast ? 'rgba(255,255,255,0.16)' : 'rgba(148,163,184,0.11)', strokeWidth: Math.max(0.4, PX / 18), fill: 'none', style: { pointerEvents: 'none' } }));
+        if (majorLines) rects.push(h('path', { key: 'gridMajor', d: majorLines, stroke: contrast ? 'rgba(255,255,255,0.34)' : 'rgba(52,211,153,0.22)', strokeWidth: Math.max(0.6, PX / 13), fill: 'none', style: { pointerEvents: 'none' } }));
+        if (!contrast && lifeSize <= 60 && PX >= 8) {
+          var tickArm = Math.min(2.4, PX * 0.22);
+          for (var tx = majorStep; tx < COLS; tx += majorStep) for (var ty = majorStep; ty < ROWS; ty += majorStep) {
+            var ix = tx * PX, iy = ty * PX;
+            crossTicks += 'M' + (ix - tickArm).toFixed(1) + ' ' + iy + 'H' + (ix + tickArm).toFixed(1) + 'M' + ix + ' ' + (iy - tickArm).toFixed(1) + 'V' + (iy + tickArm).toFixed(1);
+          }
+          if (crossTicks) rects.push(h('path', { key: 'gridTicks', d: crossTicks, stroke: 'rgba(167,243,208,0.34)', strokeWidth: Math.max(0.7, PX / 12), fill: 'none', style: { pointerEvents: 'none' } }));
+        }
+      }
+      if (!contrast) rects.push(h('rect', { key: 'innerFrame', x: 0.75, y: 0.75, width: Math.max(0, W - 1.5), height: Math.max(0, H - 1.5), rx: 2, fill: 'none', stroke: 'rgba(148,163,184,0.18)', strokeWidth: 1, style: { pointerEvents: 'none' } }));
       if (vizMode === 'field') {
         var track = transitionHistoryRef.current.filter(function (sample) { return sample.centerR != null && sample.centerC != null; }).slice(-60), trail = '', prior = null;
         track.forEach(function (sample) { var tx = (sample.centerC + 0.5) * PX, ty = (sample.centerR + 0.5) * PX, jump = prior && (Math.abs(sample.centerR - prior.centerR) > ROWS / 3 || Math.abs(sample.centerC - prior.centerC) > COLS / 3); trail += (!prior || jump ? 'M' : 'L') + tx.toFixed(2) + ' ' + ty.toFixed(2); prior = sample; });
-        if (track.length > 1) rects.push(h('path', { key: 'centroidTrail', d: trail, fill: 'none', stroke: '#fbbf24', strokeWidth: Math.max(1.2, PX / 5), strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', opacity: 0.8, style: { filter: 'drop-shadow(0 0 3px rgba(251,191,36,0.75))', pointerEvents: 'none' } }));
+        if (track.length > 1) {
+          if (!contrast) rects.push(h('path', { key: 'centroidTrailGlow', d: trail, fill: 'none', stroke: 'rgba(251,191,36,0.28)', strokeWidth: Math.max(3.4, PX / 2.2), strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } }));
+          rects.push(h('path', { key: 'centroidTrail', d: trail, fill: 'none', stroke: '#fbbf24', strokeWidth: Math.max(1.2, PX / 5), strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', opacity: 0.9, style: { filter: 'drop-shadow(0 0 3px rgba(251,191,36,0.75))', pointerEvents: 'none' } }));
+        }
       }
-      var liveBuckets = {}, bucketOrder = [], cellSide = Math.max(1, PX - 1.3), liveLayerIndex = rects.length;
+      var liveBuckets = {}, bucketOrder = [], cellSide = Math.max(1, PX - 1.3), cellRadius = PX >= 9 ? Math.min(2.6, cellSide * 0.22) : (PX >= 7 ? 1.2 : 0), liveCoreD = [], liveLayerIndex = rects.length;
       var exView = explainShown && lifeExplain ? lifeExplain : null, exDie = '', exBorn = '', exNums = !!exView && lifeSize <= 60 && PX >= 8, exSide = Math.max(1, PX - 2);
       for (var r = 0; r < ROWS; r++) for (var c = 0; c < COLS; c++) {
         var n = neighborCount(grid, r, c, wrap), alive = !!grid[r][c], futureAlive = !!(forecastPreview && forecastPreview.grid[r][c]), residency = forecastResidency ? forecastResidency.grid[r][c] : 0;
         if (exView) {
           // Explaining the next step: solid cyan stays, rose outline dies, dashed green is born.
           var fate = exView.fate[r * COLS + c];
-          if (alive && fate === 'stays') { if (!liveBuckets['ex|stay']) { liveBuckets['ex|stay'] = { fill: '#22d3ee', glow: '', d: [] }; bucketOrder.push('ex|stay'); } liveBuckets['ex|stay'].d.push('M' + (c * PX + 0.65) + ' ' + (r * PX + 0.65) + 'h' + cellSide + 'v' + cellSide + 'h-' + cellSide + 'z'); }
+          if (alive && fate === 'stays') { if (!liveBuckets['ex|stay']) { liveBuckets['ex|stay'] = { fill: '#22d3ee', glow: '', d: [] }; bucketOrder.push('ex|stay'); } liveBuckets['ex|stay'].d.push(cellRectSubpath(c * PX + 0.65, r * PX + 0.65, cellSide, cellRadius)); }
           else if (alive) exDie += 'M' + (c * PX + 1) + ' ' + (r * PX + 1) + 'h' + exSide + 'v' + exSide + 'h-' + exSide + 'z';
           else if (fate === 'born') exBorn += 'M' + (c * PX + 1) + ' ' + (r * PX + 1) + 'h' + exSide + 'v' + exSide + 'h-' + exSide + 'z';
           if (exNums && (alive || fate === 'born')) rects.push(h('text', { key: 'ex' + r + '_' + c, x: c * PX + PX / 2, y: r * PX + PX * 0.7, textAnchor: 'middle', fill: alive && fate === 'stays' ? '#0f172a' : '#ffffff', style: { fontSize: Math.max(5, PX * 0.58) + 'px', fontWeight: 900, pointerEvents: 'none' } }, String(n)));
@@ -2004,11 +2061,18 @@
         if (alive) {
           // Live cells are batched into one path per colour (a 120 x 120 soup
           // used to be ~14,000 separate SVG rects, redrawn every generation).
-          var fillKey = vizMode === 'forecast' ? (futureAlive ? '#22d3ee' : '#fb7185') : lifeFill(n, agesRef.current[r] && agesRef.current[r][c], r, c);
-          var glowKey = vizMode === 'forecast' ? (futureAlive ? 'rgba(34,211,238,0.9)' : 'rgba(251,113,133,0.9)') : vizMode === 'field' ? 'rgba(103,232,249,0.9)' : vizMode === 'normal' && n >= 2 && n <= 3 ? C.live : '';
+          var cellAge = agesRef.current[r] && agesRef.current[r][c];
+          var fillKey = vizMode === 'forecast' ? (futureAlive ? '#22d3ee' : '#fb7185') : lifeFill(n, cellAge, r, c);
+          var glowKey = contrast ? '' : (vizMode === 'forecast' ? (futureAlive ? 'rgba(34,211,238,0.9)' : 'rgba(251,113,133,0.9)') : vizMode === 'field' ? 'rgba(103,232,249,0.9)' : vizMode === 'age' ? fillKey : vizMode === 'change' ? fillKey : vizMode === 'normal' && (n >= 2 && n <= 3 || (cellAge || 1) <= 2) ? stageAccent : '');
           var bucketKey = fillKey + '|' + glowKey;
           if (!liveBuckets[bucketKey]) { liveBuckets[bucketKey] = { fill: fillKey, glow: glowKey, d: [] }; bucketOrder.push(bucketKey); }
-          liveBuckets[bucketKey].d.push('M' + (c * PX + 0.65) + ' ' + (r * PX + 0.65) + 'h' + cellSide + 'v' + cellSide + 'h-' + cellSide + 'z');
+          liveBuckets[bucketKey].d.push(cellRectSubpath(c * PX + 0.65, r * PX + 0.65, cellSide, cellRadius));
+          if (!contrast && PX >= 8 && vizMode !== 'xray') {
+            var coreSide = Math.max(1.5, cellSide * 0.34);
+            var coreX = c * PX + 0.65 + cellSide * 0.16;
+            var coreY = r * PX + 0.65 + cellSide * 0.14;
+            liveCoreD.push('M' + coreX.toFixed(2) + ' ' + coreY.toFixed(2) + 'h' + coreSide.toFixed(2) + 'v' + (coreSide * 0.72).toFixed(2) + 'h-' + coreSide.toFixed(2) + 'z');
+          }
           if (vizMode === 'forecast' && !futureAlive && PX >= 7) rects.push(h('path', { key: 'forecastDeath' + r + '_' + c, d: 'M' + (c * PX + PX * 0.25) + ' ' + (r * PX + PX * 0.25) + 'L' + (c * PX + PX * 0.75) + ' ' + (r * PX + PX * 0.75) + 'M' + (c * PX + PX * 0.75) + ' ' + (r * PX + PX * 0.25) + 'L' + (c * PX + PX * 0.25) + ' ' + (r * PX + PX * 0.75), stroke: '#ffe4e6', strokeWidth: Math.max(0.8, PX / 9), strokeLinecap: 'round', style: { pointerEvents: 'none' } }));
           if (vizMode === 'xray' && lifeSize <= 60 && PX >= 8) rects.push(h('text', { key: 'n' + r + '_' + c, x: c * PX + PX / 2, y: r * PX + PX * 0.7, textAnchor: 'middle', fill: (parseLifeRule(survivalRule, '23')[n] ? '#ffffff' : '#fee2e2'), style: { fontSize: Math.max(5, PX * 0.58) + 'px', fontWeight: 900, pointerEvents: 'none' } }, String(n)));
         } else if (vizMode === 'forecast' && futureAlive) {
@@ -2021,13 +2085,20 @@
           rects.push(h('text', { key: 'd' + r + '_' + c, x: c * PX + PX / 2, y: r * PX + PX * 0.7, textAnchor: 'middle', fill: parseLifeRule(birthRule, '3')[n] ? '#86efac' : 'rgba(148,163,184,0.34)', style: { fontSize: Math.max(5, PX * 0.5) + 'px', fontWeight: 800, pointerEvents: 'none' } }, String(n)));
         }
       }
-      var glowOk = lifeSize <= 60 && !(running && lifeSize > 40), exLayers = [];
+      var glowOk = !contrast && lifeSize <= 60 && !(running && lifeSize > 40), exLayers = [], liveLayers = [];
       if (exDie) exLayers.push(h('path', { key: 'exDie', 'data-life-explain-layer': 'die', d: exDie, fill: 'rgba(251,113,133,0.28)', stroke: '#fb7185', strokeWidth: Math.max(0.8, PX / 7), style: { pointerEvents: 'none' } }));
       if (exBorn) exLayers.push(h('path', { key: 'exBorn', 'data-life-explain-layer': 'born', d: exBorn, fill: 'rgba(74,222,128,0.18)', stroke: '#4ade80', strokeWidth: Math.max(0.8, PX / 7), strokeDasharray: PX >= 7 ? '2 1.5' : undefined, style: { pointerEvents: 'none' } }));
-      rects.splice.apply(rects, [liveLayerIndex, 0].concat(bucketOrder.map(function (bk, bi) {
-        var b = liveBuckets[bk];
-        return h('path', { key: 'live' + bi, 'data-life-live-layer': 'true', d: b.d.join(''), fill: b.fill, style: { filter: glowOk && b.glow ? 'drop-shadow(0 0 ' + Math.max(1, PX / 4) + 'px ' + b.glow + ')' : 'none', pointerEvents: 'none' } });
-      }), exLayers));
+      bucketOrder.forEach(function (bk, bi) {
+        var b = liveBuckets[bk], pathD = b.d.join('');
+        if (glowOk && b.glow) {
+          liveLayers.push(h('path', { key: 'liveBloom' + bi, d: pathD, fill: 'none', stroke: b.glow, strokeWidth: Math.max(1.4, PX * 0.24), strokeLinejoin: 'round', opacity: 0.32, style: { pointerEvents: 'none' } }));
+        }
+        liveLayers.push(h('path', { key: 'live' + bi, 'data-life-live-layer': 'true', d: pathD, fill: b.fill, style: { filter: glowOk && b.glow ? 'drop-shadow(0 0 ' + Math.max(1.4, PX / 3.2).toFixed(1) + 'px ' + b.glow + ')' : 'none', pointerEvents: 'none' } }));
+      });
+      if (liveCoreD.length) {
+        liveLayers.push(h('path', { key: 'liveSpecularCore', d: liveCoreD.join(''), fill: 'rgba(255,255,255,0.42)', style: { pointerEvents: 'none' } }));
+      }
+      rects.splice.apply(rects, [liveLayerIndex, 0].concat(liveLayers, exLayers));
       if (vizMode === 'forecast' && !exView && forecastMotion && forecastMotion.points.length) {
         var motionPath = '', motionPrevious = null;
         forecastMotion.points.forEach(function (point) {
@@ -2055,7 +2126,19 @@
         if (PX >= 7) rects.push(h('text', { key: 'scanLabel', x: Math.min(W - 4, bx + 3), y: Math.max(8, by - 3), fill: '#a5f3fc', style: { fontSize: Math.max(6, PX * 0.55) + 'px', fontWeight: 900, pointerEvents: 'none', filter: 'drop-shadow(0 1px 2px #020617)' } }, scan.width + 'x' + scan.height + ' · ' + Math.round(scan.density * 100) + '%'));
       }
       if (pop === 0) rects.push(h('text', { key: 'empty', x: W / 2, y: H / 2, textAnchor: 'middle', fill: '#cbd5e1', style: { fontSize: Math.max(9, Math.min(14, W / 30)) + 'px', fontStyle: 'italic' } }, t('stem.cellular.grid_empty_hint', 'Draw cells, choose a pattern, or make a random soup')));
-      rects.push(h('rect', { key: 'cursor', x: cursor[1] * PX, y: cursor[0] * PX, width: PX, height: PX, fill: 'none', stroke: C.cursor, strokeWidth: Math.max(1.4, PX / 7), rx: 2, style: { pointerEvents: 'none', filter: 'drop-shadow(0 0 4px ' + C.cursor + ')' } }));
+      var curX = cursor[1] * PX, curY = cursor[0] * PX, curInk = contrast ? C.cursor : (brush === 0 ? '#fb7185' : C.cursor);
+      if (!contrast) {
+        rects.push(h('circle', { key: 'cursorHalo', cx: curX + PX / 2, cy: curY + PX / 2, r: Math.max(PX * 1.15, 10), fill: 'url(#cell-cursor-halo)', style: { pointerEvents: 'none' } }));
+        if (PX >= 8) {
+          var brk = Math.max(2.6, PX * 0.32), padB = 2.2;
+          var brkD = 'M' + (curX - padB) + ' ' + (curY - padB + brk) + 'V' + (curY - padB) + 'H' + (curX - padB + brk)
+            + 'M' + (curX + PX + padB - brk) + ' ' + (curY - padB) + 'H' + (curX + PX + padB) + 'V' + (curY - padB + brk)
+            + 'M' + (curX - padB) + ' ' + (curY + PX + padB - brk) + 'V' + (curY + PX + padB) + 'H' + (curX - padB + brk)
+            + 'M' + (curX + PX + padB - brk) + ' ' + (curY + PX + padB) + 'H' + (curX + PX + padB) + 'V' + (curY + PX + padB - brk);
+          rects.push(h('path', { key: 'cursorBrackets', d: brkD, fill: 'none', stroke: curInk, strokeWidth: Math.max(1.0, PX / 10), strokeLinecap: 'round', opacity: 0.78, style: { pointerEvents: 'none' } }));
+        }
+      }
+      rects.push(h('rect', { key: 'cursor', x: curX, y: curY, width: PX, height: PX, fill: 'none', stroke: curInk, strokeWidth: Math.max(1.4, PX / 7), rx: 2, style: { pointerEvents: 'none', filter: 'drop-shadow(0 0 5px ' + curInk + ')' } }));
       // The picture is aria-hidden; the focusable wrapper is a real grid whose
       // ONE rendered gridcell (the cursor cell) is its aria-activedescendant,
       // so the grid is one tab stop however large it is.
@@ -2144,13 +2227,28 @@
       var legend = [{ key:'pop', label:t('stem.cellular.chart_population', 'Population'), color:'#22d3ee', value:latest.pop }, { key:'born', label:t('stem.cellular.chart_births', 'Births'), color:'#4ade80', value:latest.born }, { key:'died', label:t('stem.cellular.chart_deaths', 'Deaths'), color:'#fb7185', value:latest.died }];
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px', minWidth: 0, padding: '8px 10px', borderRadius: '13px', background: dark ? 'rgba(15,23,42,0.72)' : 'rgba(248,250,252,0.9)', border: '1px solid ' + C.border } },
         h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' } }, h('span', { style: { fontSize: '9px', color: C.sub, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' } }, fmt(t('stem.cellular.chart_signal_title', 'Evolution signal: {n} generations'), { n: n })), legend.map(function (item) { return h('span', { key: item.key, style: { display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: C.text, fontWeight: 800 } }, h('span', { 'aria-hidden': 'true', style: { width: item.key === 'born' ? '8px' : '10px', height: item.key === 'died' ? '8px' : '3px', transform: item.key === 'died' ? 'rotate(45deg)' : 'none', background: item.color, borderRadius: item.key === 'pop' ? '999px' : '1px', boxShadow: '0 0 7px ' + item.color } }), fmt(t('stem.cellular.chart_legend_value', '{label} {value}'), { label: item.label, value: item.value })); }), h('span', { style: { marginLeft: 'auto', fontSize: '10px', color: net > 0 ? (dark ? '#86efac' : '#15803d') : net < 0 ? (dark ? '#fda4af' : '#be123c') : C.sub, fontWeight: 900 } }, fmt(t('stem.cellular.chart_net', 'Net {n}'), { n: (net > 0 ? '+' : '') + net }))),
-        h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': fmt(t('stem.cellular.chart_signal_aria', 'Evolution over {n} generations. Latest population {pop}, births {born}, deaths {died}, net change {net}. Scale zero to {max} cells.'), { n: n, pop: latest.pop, born: latest.born, died: latest.died, net: net, max: ceiling }), style: { width: '100%', height: H + 'px', display: 'block' } },
-          h('defs', null, h('linearGradient', { id: 'cellEvolutionFill', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#22d3ee', stopOpacity: 0.24 }), h('stop', { offset: '100%', stopColor: '#22d3ee', stopOpacity: 0.01 }))),
-          [0.25,0.5,0.75].map(function (level) { return h('line', { key: level, x1: pad, x2: W - pad, y1: y(ceiling * level), y2: y(ceiling * level), stroke: dark ? 'rgba(148,163,184,0.16)' : 'rgba(100,116,139,0.18)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }); }),
+        h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': fmt(t('stem.cellular.chart_signal_aria', 'Evolution over {n} generations. Latest population {pop}, births {born}, deaths {died}, net change {net}. Scale zero to {max} cells.'), { n: n, pop: latest.pop, born: latest.born, died: latest.died, net: net, max: ceiling }), style: { width: '100%', height: H + 'px', display: 'block', borderRadius: '8px' } },
+          h('defs', null,
+            h('linearGradient', { id: 'cellEvolutionWell', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: contrast ? '#000000' : (dark ? '#071122' : '#f1f5f9') }),
+              h('stop', { offset: '100%', stopColor: contrast ? '#000000' : (dark ? '#020617' : '#ffffff') })
+            ),
+            h('linearGradient', { id: 'cellEvolutionFill', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#22d3ee', stopOpacity: dark ? 0.34 : 0.24 }),
+              h('stop', { offset: '65%', stopColor: '#22d3ee', stopOpacity: 0.08 }),
+              h('stop', { offset: '100%', stopColor: '#22d3ee', stopOpacity: 0.01 })
+            )
+          ),
+          h('rect', { x: 0.5, y: 0.5, width: W - 1, height: H - 1, rx: 7, fill: 'url(#cellEvolutionWell)', stroke: contrast ? '#ffffff' : (dark ? 'rgba(56,189,248,0.18)' : 'rgba(148,163,184,0.28)'), strokeWidth: 1 }),
+          [0.25,0.5,0.75].map(function (level) { return h('line', { key: level, x1: pad, x2: W - pad, y1: y(ceiling * level), y2: y(ceiling * level), stroke: dark ? 'rgba(148,163,184,0.16)' : 'rgba(100,116,139,0.18)', strokeWidth: 1, strokeDasharray: level === 0.5 ? 'none' : '2 3', vectorEffect: 'non-scaling-stroke' }); }),
           h('polygon', { points: points('pop') + ' ' + x(n - 1) + ',' + (H - pad) + ' ' + x(0) + ',' + (H - pad), fill: 'url(#cellEvolutionFill)' }),
-          h('polyline', { points: points('pop'), fill: 'none', stroke: '#22d3ee', strokeWidth: 2.3, vectorEffect: 'non-scaling-stroke' }),
-          h('polyline', { points: points('born'), fill: 'none', stroke: '#4ade80', strokeWidth: 1.7, vectorEffect: 'non-scaling-stroke' }),
-          h('polyline', { points: points('died'), fill: 'none', stroke: '#fb7185', strokeWidth: 1.7, strokeDasharray: '4 3', vectorEffect: 'non-scaling-stroke' }),
+          !contrast && h('polyline', { points: points('pop'), fill: 'none', stroke: 'rgba(34,211,238,0.28)', strokeWidth: 6.2, strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
+          h('polyline', { points: points('pop'), fill: 'none', stroke: '#22d3ee', strokeWidth: 2.3, strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', style: { filter: contrast ? 'none' : 'drop-shadow(0 0 3px rgba(34,211,238,0.72))' } }),
+          !contrast && h('polyline', { points: points('pop'), fill: 'none', stroke: 'rgba(236,254,255,0.68)', strokeWidth: 0.85, strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
+          !contrast && h('polyline', { points: points('born'), fill: 'none', stroke: 'rgba(74,222,128,0.24)', strokeWidth: 4.5, strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
+          h('polyline', { points: points('born'), fill: 'none', stroke: '#4ade80', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
+          h('polyline', { points: points('died'), fill: 'none', stroke: '#fb7185', strokeWidth: 1.7, strokeDasharray: '4 3', strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
+          !contrast && h('circle', { cx: x(n - 1), cy: y(latest.pop), r: 6.5, fill: 'rgba(34,211,238,0.2)', stroke: 'rgba(34,211,238,0.55)', strokeWidth: 1 }),
           h('circle', { cx: x(n - 1), cy: y(latest.pop), r: 3.2, fill: '#22d3ee', stroke: dark ? '#0f172a' : '#ffffff', strokeWidth: 1.3 }),
           h('rect', { x: x(n - 1) - 2.7, y: y(latest.born) - 2.7, width: 5.4, height: 5.4, rx: 1, fill: '#4ade80' }),
           h('rect', { x: x(n - 1) - 2.5, y: y(latest.died) - 2.5, width: 5, height: 5, transform: 'rotate(45 ' + x(n - 1) + ' ' + y(latest.died) + ')', fill: '#fb7185' })
@@ -2581,14 +2679,25 @@
       }
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px', maxWidth: '560px' } },
         h('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' } }, h('span', { style: { color: C.sub, fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' } }, fmt(t('stem.cellular.sig_header', 'Generation {gen}: {n} live. Click the chart to inspect a time.'), { gen: caInspectRow, n: selectedLive })), h('span', { 'data-ca-cause-detail': 'true', style: { color: dark ? '#fde68a' : '#92400e', fontSize: '10px', fontWeight: 900 } }, causeSummary), legend.map(function (item) { return h('span', { key: item.key, style: { display: 'inline-flex', alignItems: 'center', gap: '4px', color: C.text, fontSize: '10px', fontWeight: 800 } }, h('span', { 'aria-hidden': 'true', style: { width: item.key === 'entropy' ? '7px' : '10px', height: item.key === 'activity' ? '7px' : '3px', transform: item.key === 'activity' ? 'rotate(45deg)' : 'none', borderRadius: item.key === 'density' ? '999px' : '1px', background: item.color } }), item.label); })),
-        h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': fmt(t('stem.cellular.sig_aria', 'Signal profile of Rule {rule} over {n} generations. At generation {gen}: density {d} percent, entropy {e} bits per cell, edge rate {a} percent, row change {c} percent. Averages: entropy {me} bits, row change {mc} percent.'), { rule: rule, n: n, gen: caInspectRow, d: Math.round(selectedDensity * 100), e: selectedEntropy.toFixed(2), a: Math.round(selectedActivity * 100), c: Math.round(selectedTemporalChange * 100), me: caAnalysis.meanEntropy.toFixed(2), mc: Math.round(caAnalysis.meanTemporalChange * 100) }), onClick: inspectSignalFromEvent, 'data-ca-signal-profile': 'true', style: { width: '100%', height: H + 'px', display: 'block', cursor: 'crosshair' } },
-          [0,0.5,1].map(function (level) { return h('line', { key: level, x1: px, x2: W - px, y1: y(level), y2: y(level), stroke: dark ? 'rgba(148,163,184,0.18)' : 'rgba(100,116,139,0.2)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }); }),
+        h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': fmt(t('stem.cellular.sig_aria', 'Signal profile of Rule {rule} over {n} generations. At generation {gen}: density {d} percent, entropy {e} bits per cell, edge rate {a} percent, row change {c} percent. Averages: entropy {me} bits, row change {mc} percent.'), { rule: rule, n: n, gen: caInspectRow, d: Math.round(selectedDensity * 100), e: selectedEntropy.toFixed(2), a: Math.round(selectedActivity * 100), c: Math.round(selectedTemporalChange * 100), me: caAnalysis.meanEntropy.toFixed(2), mc: Math.round(caAnalysis.meanTemporalChange * 100) }), onClick: inspectSignalFromEvent, 'data-ca-signal-profile': 'true', style: { width: '100%', height: H + 'px', display: 'block', cursor: 'crosshair', borderRadius: '8px' } },
+          h('defs', null,
+            h('linearGradient', { id: 'caDensityFill', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#22d3ee', stopOpacity: dark ? 0.24 : 0.16 }),
+              h('stop', { offset: '100%', stopColor: '#22d3ee', stopOpacity: 0.01 })
+            )
+          ),
+          h('rect', { x: 0.5, y: 0.5, width: W - 1, height: H - 1, rx: 7, fill: contrast ? '#000000' : (dark ? 'rgba(2,6,23,0.78)' : 'rgba(248,250,252,0.92)'), stroke: contrast ? '#ffffff' : (dark ? 'rgba(148,163,184,0.2)' : 'rgba(148,163,184,0.3)'), strokeWidth: 1 }),
+          [0,0.5,1].map(function (level) { return h('line', { key: level, x1: px, x2: W - px, y1: y(level), y2: y(level), stroke: dark ? 'rgba(148,163,184,0.18)' : 'rgba(100,116,139,0.2)', strokeWidth: 1, strokeDasharray: level === 0.5 ? '3 3' : undefined, vectorEffect: 'non-scaling-stroke' }); }),
+          !contrast && h('polygon', { points: points(caAnalysis.densities) + ' ' + x(n - 1).toFixed(1) + ',' + y(0).toFixed(1) + ' ' + x(0).toFixed(1) + ',' + y(0).toFixed(1), fill: 'url(#caDensityFill)' }),
           h('line', { x1: x(caInspectRow), x2: x(caInspectRow), y1: top, y2: H - bottom, stroke: '#fde047', strokeWidth: 1.3, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 3px rgba(253,224,71,0.8))' } }),
-          h('polyline', { 'data-ca-signal': 'density', points: points(caAnalysis.densities), fill: 'none', stroke: '#22d3ee', strokeWidth: 2.1, vectorEffect: 'non-scaling-stroke' }),
-          h('polyline', { 'data-ca-signal': 'entropy', points: points(caAnalysis.entropies), fill: 'none', stroke: '#a78bfa', strokeWidth: 1.8, vectorEffect: 'non-scaling-stroke' }),
+          !contrast && h('polyline', { points: points(caAnalysis.densities), fill: 'none', stroke: 'rgba(34,211,238,0.28)', strokeWidth: 5.5, strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
+          h('polyline', { 'data-ca-signal': 'density', points: points(caAnalysis.densities), fill: 'none', stroke: '#22d3ee', strokeWidth: 2.1, strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', style: { filter: contrast ? 'none' : 'drop-shadow(0 0 2.5px rgba(34,211,238,0.65))' } }),
+          !contrast && h('polyline', { points: points(caAnalysis.entropies), fill: 'none', stroke: 'rgba(167,139,250,0.22)', strokeWidth: 4.4, strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
+          h('polyline', { 'data-ca-signal': 'entropy', points: points(caAnalysis.entropies), fill: 'none', stroke: '#a78bfa', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke' }),
           h('polyline', { 'data-ca-signal': 'spatial-edge', points: points(caAnalysis.activities), fill: 'none', stroke: '#fbbf24', strokeWidth: 1.7, strokeDasharray: '4 3', vectorEffect: 'non-scaling-stroke' }),
           h('polyline', { 'data-ca-signal': 'temporal-change', points: points(caAnalysis.temporalChanges), fill: 'none', stroke: '#fb7185', strokeWidth: 1.65, strokeDasharray: '2 2', vectorEffect: 'non-scaling-stroke' }),
-          h('circle', { cx: x(caInspectRow), cy: y(selectedDensity), r: 3.1, fill: '#22d3ee' }),
+          !contrast && h('circle', { cx: x(caInspectRow), cy: y(selectedDensity), r: 5.5, fill: 'rgba(34,211,238,0.22)' }),
+          h('circle', { cx: x(caInspectRow), cy: y(selectedDensity), r: 3.1, fill: '#22d3ee', stroke: dark ? '#020617' : '#ffffff', strokeWidth: 0.9 }),
           h('rect', { x: x(caInspectRow) - 2.7, y: y(selectedEntropy) - 2.7, width: 5.4, height: 5.4, rx: 1, fill: '#a78bfa' }),
           h('rect', { x: x(caInspectRow) - 2.4, y: y(selectedActivity) - 2.4, width: 4.8, height: 4.8, transform: 'rotate(45 ' + x(caInspectRow) + ' ' + y(selectedActivity) + ')', fill: '#fbbf24' }),
           h('path', { 'data-ca-temporal-marker': String(caInspectRow), d: 'M' + (x(caInspectRow) - 3) + ' ' + (y(selectedTemporalChange) - 3) + 'L' + (x(caInspectRow) + 3) + ' ' + (y(selectedTemporalChange) + 3) + 'M' + (x(caInspectRow) + 3) + ' ' + (y(selectedTemporalChange) - 3) + 'L' + (x(caInspectRow) - 3) + ' ' + (y(selectedTemporalChange) + 3), stroke: '#fb7185', strokeWidth: 1.4, vectorEffect: 'non-scaling-stroke' }),
@@ -2663,18 +2772,29 @@
       var W = 64, H = 56, pad = 4, bounds = preview.bounds;
       var scale = Math.min((W - pad * 2) / Math.max(1, bounds.width), (H - pad * 2) / Math.max(1, bounds.height));
       var cellSize = Math.max(1.25, Math.min(6.5, scale * 0.72)), offsetX = (W - bounds.width * scale) / 2, offsetY = (H - bounds.height * scale) / 2;
-      var futureSet = {}, marks = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: C.dead, rx: 5 })];
+      var futureSet = {};
+      var marks = [
+        h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: C.dead, rx: 5, stroke: contrast ? '#ffffff' : (dark ? 'rgba(52,211,153,0.28)' : 'rgba(148,163,184,0.34)'), strokeWidth: 0.85 })
+      ];
+      if (!contrast) {
+        marks.push(h('circle', { key: 'stampHalo', cx: W / 2, cy: H / 2, r: Math.min(W, H) * 0.44, fill: 'none', stroke: dark ? 'rgba(34,211,238,0.16)' : 'rgba(14,165,233,0.18)', strokeWidth: 0.85, strokeDasharray: '2.5 2.5' }));
+        var gridD = '';
+        for (var gx = 16; gx < W; gx += 16) gridD += 'M' + gx + ' 2V' + (H - 2);
+        for (var gy = 14; gy < H; gy += 14) gridD += 'M2 ' + gy + 'H' + (W - 2);
+        marks.push(h('path', { key: 'thumbGrid', d: gridD, fill: 'none', stroke: dark ? 'rgba(148,163,184,0.1)' : 'rgba(100,116,139,0.12)', strokeWidth: 0.5 }));
+      }
       preview.futureCells.forEach(function (cell) { futureSet[cell[0] + '_' + cell[1]] = true; });
       preview.initialCells.forEach(function (cell, index) {
         var overlap = !!futureSet[cell[0] + '_' + cell[1]], x = offsetX + (cell[1] - bounds.minC + 0.5) * scale - cellSize / 2, y = offsetY + (cell[0] - bounds.minR + 0.5) * scale - cellSize / 2;
-        marks.push(h('rect', { key: 'initial' + index, x: x, y: y, width: cellSize, height: cellSize, rx: Math.min(1.3, cellSize / 4), fill: overlap ? '#f8fafc' : '#22d3ee', opacity: overlap ? 0.96 : 0.72, style: { filter: overlap ? 'drop-shadow(0 0 3px rgba(248,250,252,0.72))' : 'none' } }));
+        if (!contrast && overlap) marks.push(h('circle', { key: 'haloI' + index, cx: x + cellSize / 2, cy: y + cellSize / 2, r: cellSize * 0.95, fill: 'rgba(34,211,238,0.18)' }));
+        marks.push(h('rect', { key: 'initial' + index, x: x, y: y, width: cellSize, height: cellSize, rx: Math.min(1.4, cellSize / 3.5), fill: overlap ? '#f8fafc' : '#22d3ee', opacity: overlap ? 0.98 : 0.78, style: { filter: overlap ? 'drop-shadow(0 0 3px rgba(248,250,252,0.78))' : (contrast ? 'none' : 'drop-shadow(0 0 2px rgba(34,211,238,0.5))') } }));
       });
       preview.futureCells.forEach(function (cell, index) {
         if (preview.initialSet[cell[0] + '_' + cell[1]]) return;
         var x = offsetX + (cell[1] - bounds.minC + 0.5) * scale - cellSize / 2, y = offsetY + (cell[0] - bounds.minR + 0.5) * scale - cellSize / 2;
-        marks.push(h('rect', { key: 'future' + index, x: x, y: y, width: cellSize, height: cellSize, rx: Math.min(1.3, cellSize / 4), fill: '#fde047', opacity: 0.82, style: { filter: 'drop-shadow(0 0 3px rgba(253,224,71,0.58))' } }));
+        marks.push(h('rect', { key: 'future' + index, x: x, y: y, width: cellSize, height: cellSize, rx: Math.min(1.4, cellSize / 3.5), fill: '#fde047', opacity: 0.88, style: { filter: 'drop-shadow(0 0 3px rgba(253,224,71,0.68))' } }));
       });
-      marks.push(h('text', { key: 'step', x: W - 3, y: 8, textAnchor: 'end', fill: '#fef08a', style: { fontSize: '7px', fontWeight: 900 } }, '+4'));
+      marks.push(h('text', { key: 'step', x: W - 3, y: 8, textAnchor: 'end', fill: dark ? '#fef08a' : '#b45309', style: { fontSize: '7px', fontWeight: 900 } }, '+4'));
       return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: 64, height: 56, 'aria-hidden': 'true', 'data-pattern-evolution-preview': key, 'data-now': String(preview.initialCells.length), 'data-future': String(preview.futureCells.length), style: { display: 'block', flex: '0 0 auto' } }, marks);
     }
     function patternPulse(key, journey) {
@@ -2685,16 +2805,19 @@
       var populationPoints = journey.points.map(function (point, index) { return x(index).toFixed(1) + ',' + yPop(point.population).toFixed(1); }).join(' ');
       var areaPoints = left + ',' + (top + plotH) + ' ' + populationPoints + ' ' + (left + plotW) + ',' + (top + plotH);
       var marks = [
-        h('path', { key: 'area', d: 'M' + areaPoints.replace(/ /g, 'L'), fill: 'rgba(34,211,238,0.11)', stroke: 'none' }),
-        h('line', { key: 'axis', x1: left, y1: top + plotH, x2: left + plotW, y2: top + plotH, stroke: 'rgba(148,163,184,0.22)', strokeWidth: 0.7 }),
-        h('polyline', { key: 'population', points: populationPoints, fill: 'none', stroke: '#22d3ee', strokeWidth: 1.65, strokeLinejoin: 'round', strokeLinecap: 'round', vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 2px rgba(34,211,238,0.65))' } })
+        h('path', { key: 'area', d: 'M' + areaPoints.replace(/ /g, 'L'), fill: dark ? 'rgba(34,211,238,0.16)' : 'rgba(14,165,233,0.12)', stroke: 'none' }),
+        h('line', { key: 'axis', x1: left, y1: top + plotH, x2: left + plotW, y2: top + plotH, stroke: 'rgba(148,163,184,0.26)', strokeWidth: 0.7 }),
+        !contrast && h('polyline', { key: 'populationGlow', points: populationPoints, fill: 'none', stroke: 'rgba(34,211,238,0.28)', strokeWidth: 4.2, strokeLinejoin: 'round', strokeLinecap: 'round', vectorEffect: 'non-scaling-stroke' }),
+        h('polyline', { key: 'population', points: populationPoints, fill: 'none', stroke: '#22d3ee', strokeWidth: 1.75, strokeLinejoin: 'round', strokeLinecap: 'round', vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 2.5px rgba(34,211,238,0.75))' } })
       ];
       journey.points.forEach(function (point, index) {
         if (!point.turnover) return;
         var barHeight = point.turnover / maxTurnover * Math.min(8, plotH * 0.38);
-        marks.push(h('line', { key: 'turnover' + index, x1: x(index), y1: top + plotH, x2: x(index), y2: top + plotH - barHeight, stroke: '#fde047', strokeWidth: Math.max(0.75, plotW / journey.points.length * 0.38), opacity: 0.66, vectorEffect: 'non-scaling-stroke' }));
+        marks.push(h('line', { key: 'turnover' + index, x1: x(index), y1: top + plotH, x2: x(index), y2: top + plotH - barHeight, stroke: '#fde047', strokeWidth: Math.max(0.75, plotW / journey.points.length * 0.38), opacity: 0.72, vectorEffect: 'non-scaling-stroke' }));
       });
-      marks.push(h('circle', { key: 'end', cx: x(journey.points.length - 1), cy: yPop(journey.points[journey.points.length - 1].population), r: 1.8, fill: '#f8fafc', stroke: '#22d3ee', strokeWidth: 0.8, style: { filter: 'drop-shadow(0 0 3px rgba(248,250,252,0.8))' } }));
+      var endX = x(journey.points.length - 1), endY = yPop(journey.points[journey.points.length - 1].population);
+      if (!contrast) marks.push(h('circle', { key: 'endHalo', cx: endX, cy: endY, r: 4.0, fill: 'rgba(34,211,238,0.22)' }));
+      marks.push(h('circle', { key: 'end', cx: endX, cy: endY, r: 1.9, fill: '#f8fafc', stroke: '#22d3ee', strokeWidth: 0.9, style: { filter: 'drop-shadow(0 0 3px rgba(248,250,252,0.85))' } }));
       return h('div', { style: { width: '100%', marginTop: '7px' } },
         h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '7px', marginBottom: '2px', color: C.sub, fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' } },
           h('span', null, t('stem.cellular.pulse_title', 'First 16 generations')),

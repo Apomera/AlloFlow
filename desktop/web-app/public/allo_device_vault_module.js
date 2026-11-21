@@ -50,7 +50,9 @@
 
   function clone(value) {
     if (value == null) return value;
-    return JSON.parse(JSON.stringify(value));
+    return JSON.parse(JSON.stringify(value), function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
   }
 
   function jsonEqual(a, b) {
@@ -134,6 +136,9 @@
     if (!record.payload || typeof record.payload !== 'object' || Array.isArray(record.payload)) {
       fail('VAULT_STORE_INVALID', 'An encrypted recovery record has no ciphertext payload.');
     }
+    if (record.savedAt != null && (typeof record.savedAt !== 'string' || !Number.isFinite(Date.parse(record.savedAt)))) {
+      fail('VAULT_STORE_INVALID', 'An encrypted recovery record has an invalid savedAt timestamp.');
+    }
   }
 
   function validateVaultStore(value) {
@@ -188,17 +193,21 @@
     var maxRecords = compact ? COMPACT_MAX_RECORDS : STANDARD_MAX_RECORDS;
     var maxBytes = compact ? COMPACT_MAX_BYTES : STANDARD_MAX_BYTES;
     var clock = Number.isFinite(Number(nowMs)) ? Number(nowMs) : Date.now();
+    var safeMs = function (v) {
+      var ms = Date.parse(typeof v === 'string' ? v : '');
+      return Number.isFinite(ms) ? ms : 0;
+    };
     var ordered = store.records.map(function (record, index) {
       return { record: record, index: index };
     }).sort(function (left, right) {
-      var delta = Date.parse(right.record.savedAt) - Date.parse(left.record.savedAt);
+      var delta = safeMs(right.record.savedAt) - safeMs(left.record.savedAt);
       return delta || left.index - right.index;
     }).map(function (entry) { return entry.record; });
 
     if (compact && ordered.length > 1) {
       var newestId = ordered[0] && ordered[0].id;
       ordered = ordered.filter(function (record) {
-        var ageMs = Math.max(0, clock - Date.parse(record.savedAt));
+        var ageMs = Math.max(0, clock - safeMs(record.savedAt));
         return record.resourceCount !== 0 || record.pinned || record.id === newestId
           || ageMs <= COMPACT_DRAFT_MAX_AGE_MS;
       });
@@ -492,6 +501,9 @@
       var built = await this._buildVault(normalizePlainStore(head.store), password, options);
       var committed = false;
       try {
+        if (generation !== this._keyGeneration) {
+          fail('VAULT_LOCKED', 'The recovery-vault session changed before protection could be enabled.');
+        }
         if (await this._cas(head.revision, built.vault)) {
           committed = true;
           this._setKeyIfCurrent(built.dek, generation);
@@ -592,6 +604,9 @@
       var next = Object.assign({}, store, { wrappedKey: wrappedKey });
       var recoveredCommitted = false;
       try {
+        if (generation !== this._keyGeneration) {
+          fail('VAULT_LOCKED', 'The recovery-vault session changed before password recovery could be saved.');
+        }
         if (await this._cas(head.revision, next)) {
           recoveredCommitted = true;
           this._setKeyIfCurrent(verifiedDek, generation);
@@ -627,6 +642,9 @@
         this._destroyDek(verifiedDek);
       }
       var next = Object.assign({}, store, { recoveryWrappedKey: recoveryWrappedKey });
+      if (generation !== this._keyGeneration) {
+        fail('VAULT_LOCKED', 'The recovery-vault session changed before recovery-key rotation could be saved.');
+      }
       if (await this._cas(head.revision, next)) {
         this._setKeyIfCurrent(dek, generation);
         return { rotated: true, recoveryCode: recoveryCode };
@@ -658,6 +676,9 @@
       delete next.recoveryWrappedKey;
       var removedCommitted = false;
       try {
+        if (generation !== this._keyGeneration) {
+          fail('VAULT_LOCKED', 'The recovery-vault session changed before recovery-key removal could be saved.');
+        }
         if (await this._cas(head.revision, next)) {
           removedCommitted = true;
           this._setKeyIfCurrent(dek, generation);
@@ -698,6 +719,7 @@
     var dek = await this._requireUnlockedKey(store, generation);
     for (var i = 0; i < store.records.length; i += 1) {
       var snapshot = await this._decryptRecord(store, store.records[i], dek);
+      if (generation !== this._keyGeneration) fail('VAULT_LOCKED', 'The recovery vault was locked while listing saved work.');
       base[i].title = typeof snapshot.title === 'string' && snapshot.title ? snapshot.title : 'Untitled workspace';
       base[i].locked = false;
     }
@@ -713,6 +735,7 @@
     var snapshots = [];
     for (var i = 0; i < store.records.length; i += 1) {
       snapshots.push(await this._decryptRecord(store, store.records[i], dek));
+      if (generation !== this._keyGeneration) fail('VAULT_LOCKED', 'The recovery vault was locked while reading saved work.');
     }
     return {
       version: 1,
@@ -739,7 +762,9 @@
     var dek = await this._requireUnlockedKey(store, generation);
     var record = store.records.find(function (item) { return item.id === normalizedId; });
     if (!record) fail('VAULT_SNAPSHOT_NOT_FOUND', 'The saved workspace no longer exists.');
-    return this._decryptRecord(store, record, dek);
+    var restored = await this._decryptRecord(store, record, dek);
+    if (generation !== this._keyGeneration) fail('VAULT_LOCKED', 'The recovery vault was locked before restore completed.');
+    return restored;
   };
 
   RecoveryVaultController.prototype.upsertSnapshot = async function (snapshot) {
@@ -774,6 +799,9 @@
         records: [nextRecord].concat(store.records.filter(function (record) { return record.id !== nextMetadata.id; }))
       });
       next = applyVaultRetention(next, this.now().getTime());
+      if (generation !== this._keyGeneration) {
+        fail('VAULT_LOCKED', 'The recovery vault was locked before the workspace could be saved.');
+      }
       if (await this._cas(head.revision, next)) return { saved: true, store: clone(next) };
     }
     fail('VAULT_CONFLICT', 'The recovery store changed repeatedly while the workspace was being saved.');
@@ -846,15 +874,20 @@
   };
 
   RecoveryVaultController.prototype.setPolicy = async function (policyId, effectivePolicyId) {
-    if (typeof policyId !== 'string' || !policyId) fail('VAULT_POLICY_INVALID', 'A retention policy identifier is required.');
+    var validPolicies = { standard: true, compact: true, automatic: true };
+    var validEffective = { standard: true, compact: true };
+    if (typeof policyId !== 'string' || !own(validPolicies, policyId)) {
+      fail('VAULT_POLICY_INVALID', 'A valid retention policy identifier is required.');
+    }
+    var resolvedEffective = typeof effectivePolicyId === 'string' && own(validEffective, effectivePolicyId)
+      ? effectivePolicyId
+      : (policyId === 'compact' ? 'compact' : 'standard');
     for (var attempt = 0; attempt < this.maxCasRetries; attempt += 1) {
       var head = await this._read();
       var current = isVaultStore(head.store) ? validateVaultStore(head.store) : normalizePlainStore(head.store);
       var next = Object.assign({}, current, {
         retentionPolicy: policyId,
-        effectiveRetentionPolicy: typeof effectivePolicyId === 'string' && effectivePolicyId
-          ? effectivePolicyId
-          : policyId
+        effectiveRetentionPolicy: resolvedEffective
       });
       if (isVaultStore(next)) next = applyVaultRetention(next, this.now().getTime());
       if (await this._cas(head.revision, next)) return { changed: true, store: clone(next) };
@@ -887,6 +920,9 @@
       }
       var changeCommitted = false;
       try {
+        if (generation !== this._keyGeneration) {
+          fail('VAULT_LOCKED', 'The recovery-vault session changed before the password change could be saved.');
+        }
         if (await this._cas(head.revision, next)) {
           changeCommitted = true;
           this._setKeyIfCurrent(nextDek, generation);
@@ -931,6 +967,9 @@
           removedSnapshotIds: sanitizeRemovedIds(store.removedSnapshotIds),
           snapshots: snapshots
         };
+        if (generation !== this._keyGeneration) {
+          fail('VAULT_LOCKED', 'The recovery vault was locked before protection could be disabled.');
+        }
         if (await this._cas(head.revision, plain)) {
           this._clearKeyIfCurrent(generation);
           return { disabled: true, restoredSnapshots: snapshots.length };
@@ -971,9 +1010,21 @@
     if (!importedWrapper) {
       fail('VAULT_RECOVERY_NOT_CONFIGURED', 'This backup does not contain a recovery-key wrapper.');
     }
+    var cryptoApi = options.useRecoveryKey === true
+      ? requireRecoveryCryptoApi(this._crypto())
+      : this._crypto();
+    var unwrapSecret = password;
+    if (options.useRecoveryKey === true) {
+      try {
+        unwrapSecret = cryptoApi.normalizeRecoveryCode(password);
+        if (!cryptoApi.validateRecoveryCode(unwrapSecret)) throw new Error('INVALID_RECOVERY_CODE');
+      } catch (error) {
+        fail('VAULT_RECOVERY_KEY_OR_CORRUPT', 'The backup recovery key is incorrect or the backup is damaged.', error);
+      }
+    }
     try {
       try {
-        dek = await this._crypto().unwrapVaultKey(importedWrapper, password);
+        dek = await cryptoApi.unwrapVaultKey(importedWrapper, unwrapSecret);
         await this._verifyKey(imported, dek);
         if (options.useRecoveryKey === true) {
           if (!options.newPassword) fail('VAULT_PASSWORD_REQUIRED', 'Choose a new password when restoring a backup with its recovery key.');
@@ -1005,6 +1056,9 @@
         : normalizePlainStore(head.store).snapshots.length;
       if (currentCount > 0 && options.replace !== true) {
         fail('VAULT_IMPORT_REPLACE_REQUIRED', 'Import would replace saved work; explicit replace confirmation is required.');
+      }
+      if (generation !== this._keyGeneration) {
+        fail('VAULT_LOCKED', 'The recovery-vault session changed before the encrypted backup could be imported.');
       }
       if (!(await this._cas(head.revision, imported))) {
         fail('VAULT_CONFLICT', 'Saved work changed before the encrypted backup could be imported.');

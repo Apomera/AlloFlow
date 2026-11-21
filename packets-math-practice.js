@@ -49,7 +49,7 @@
 
   // title (2026-11-13): the file's title, empty for the builder's own. learner: a student's code name for the file. It is
   // not kept: the next file is often for someone else.
-  function defaults() { return { kind: '', sets: { add: '', sub: '', mul: '', div: '' }, facts: '', method: '', known: {}, title: '', learner: '' }; }
+  function defaults() { return { kind: '', sets: { add: '', sub: '', mul: '', div: '' }, facts: '', method: '', known: Object.create(null), title: '', learner: '' }; }
   function setsOf(kind) { return builder.FAMILIES.filter(function (set) { return set.op === kind; }); }
   function setRow(id) {
     for (var i = 0; i < builder.FAMILIES.length; i++) if (builder.FAMILIES[i].id === id) return builder.FAMILIES[i];
@@ -67,7 +67,11 @@
   }
   function recall() {
     var fresh = defaults(), saved = null;
-    try { saved = JSON.parse(window.localStorage.getItem(STORE_KEY) || 'null'); } catch (_) { saved = null; }
+    try {
+      saved = JSON.parse(window.localStorage.getItem(STORE_KEY) || 'null', function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      });
+    } catch (_) { saved = null; }
     if (!saved || saved.v !== 1) return fresh;
     if (KINDS.indexOf(saved.kind) >= 0) fresh.kind = saved.kind;
     OPS.forEach(function (kind) {

@@ -6,10 +6,14 @@ function _usePdfSavedBatch({ pipeline, batchMode, documentEpoch, occupied, ready
   const refresh = React.useCallback(() => setVersion(value => value + 1), []);
   const loader = pipeline?.loadResumableBatch;
   React.useEffect(() => {
-    if (!batchMode || occupied) return;
+    if (!batchMode || occupied) {
+      setSaved(null);
+      setStatus('idle');
+      return;
+    }
     let cancelled = false, timeout, retry;
     const lookup = async (attempt) => {
-      if (typeof loader !== 'function') { setStatus('unavailable'); return; }
+      if (typeof loader !== 'function') { setSaved(null); setStatus('unavailable'); return; }
       setStatus('loading');
       try {
         const value = await Promise.race([
@@ -24,6 +28,7 @@ function _usePdfSavedBatch({ pipeline, batchMode, documentEpoch, occupied, ready
       } catch (_) {
         clearTimeout(timeout);
         if (cancelled) return;
+        setSaved(null);
         setStatus('error');
         // One automatic retry; explicit Retry, returning to this mode, focus, and online can try again.
         if (attempt === 0) retry = setTimeout(() => lookup(1), 1200);
@@ -31,7 +36,7 @@ function _usePdfSavedBatch({ pipeline, batchMode, documentEpoch, occupied, ready
     };
     lookup(0);
     return () => { cancelled = true; clearTimeout(timeout); clearTimeout(retry); };
-  }, [loader, batchMode, documentEpoch, occupied, ready, version]);
+  }, [pipeline, loader, batchMode, documentEpoch, occupied, ready, version]);
   React.useEffect(() => {
     if (!batchMode || occupied) return;
     window.addEventListener('focus', refresh); window.addEventListener('online', refresh);
@@ -61,7 +66,7 @@ function _usePdfBatchRecovery(pipeline, epoch) {
     window.addEventListener('alloflow:batch-recovery-state', listener);
     try { receive(pipeline?.getBatchRecoveryState?.()); } catch (_) {}
     return () => window.removeEventListener('alloflow:batch-recovery-state', listener);
-  }, [pipeline?.getBatchRecoveryState, epoch]);
+  }, [pipeline, pipeline?.getBatchRecoveryState, epoch]);
   return state;
 }
 function _PdfWorkspaceRecovery({ state, t }) {
@@ -100,13 +105,14 @@ function _pdfWorkspaceBatchFindings(item) {
   ];
 }
 function _PdfWorkspaceBatchReview({ item, t }) {
-  if (item.status !== 'done' || !item.result) return null;
+  if (!item || item.status !== 'done' || !item.result) return null;
   const say = (key, fallback) => _pdfWorkspaceText(t, key, fallback);
+  const displayName = item.fileName || say('unnamed_file', 'document');
   const result = item.result, coverage = result.verificationCoverage || {}, findings = _pdfWorkspaceBatchFindings(item);
   const coverageLabel = value => value === 'complete' ? say('check_complete', 'Complete') : value === 'complete-with-review' ? say('check_complete_review', 'Complete (needs review)') : value === 'partial' ? say('check_partial', 'Partial') : value === 'unavailable' ? say('unavailable', 'Unavailable') : say('not_recorded', 'Not recorded');
   return <details className="pdf-workspace-batch-review">
-    <summary aria-label={say('review_file', 'Review findings for') + ' ' + item.fileName}>{say('review_findings', 'Review findings')}</summary>
-    <p><strong>{item.fileName}</strong></p>
+    <summary aria-label={say('review_file', 'Review findings for') + ' ' + displayName}>{say('review_findings', 'Review findings')}</summary>
+    <p><strong>{displayName}</strong></p>
     <p>{_pdfWorkspaceBatchVerified(item) ? say('review_verified', 'Recorded verification is complete. Review the document before sharing.') : say('review_provisional', 'This file still needs review. A high score alone does not establish complete verification.')}</p>
     <dl>{[['AI audit', coverage.ai], ['axe-core', coverage.axe], ['Equal Access', coverage.equalAccess]].map(([engine, value]) => <div key={engine}><dt>{engine}</dt><dd>{coverageLabel(value)}</dd></div>)}</dl>
     {findings.length ? <ul>{findings.map((finding, index) => <li key={index}><strong>{finding.engine}: </strong>{finding.text}</li>)}</ul>

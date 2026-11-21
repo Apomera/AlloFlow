@@ -49,7 +49,7 @@ function stableSerializeEvidence(value, seen) {
   if (type === 'boolean') return value ? 'true' : 'false';
   if (type === 'undefined') return '"[undefined]"';
   if (type === 'function' || type === 'symbol') return '"[' + type + ']"';
-  if (value instanceof Date) return JSON.stringify(value.toISOString());
+  if (value instanceof Date) return Number.isFinite(value.getTime()) ? JSON.stringify(value.toISOString()) : '"[invalid-date]"';
   seen = seen || [];
   if (seen.indexOf(value) >= 0) return '"[circular]"';
   var nextSeen = seen.concat([value]);
@@ -308,10 +308,14 @@ function verifyEvidenceManifest(manifest) {
   delete body.manifestId;
   var expectedDigest = 'sha256:' + sha256Hex(stableSerializeEvidence(body));
   var actualDigest = String(manifest.manifestDigest || '');
-  var valid = actualDigest === expectedDigest;
+  var expectedId = String(manifest.evidenceProfile || '') + ':' + expectedDigest;
+  var actualId = String(manifest.manifestId || '');
+  var digestMatches = actualDigest === expectedDigest;
+  var idMatches = actualId === expectedId;
+  var valid = digestMatches && idMatches;
   return {
     valid: valid,
-    reason: valid ? null : 'manifest-digest-mismatch',
+    reason: valid ? null : (!digestMatches ? 'manifest-digest-mismatch' : 'manifest-id-mismatch'),
     expectedDigest: expectedDigest,
     actualDigest: actualDigest || null,
     manifestId: manifest.manifestId || null,
@@ -352,7 +356,8 @@ function canonicalizeFinding(finding, defaults) {
   defaults = defaults || {};
   var ruleId = String(finding.ruleId || finding.id || defaults.ruleId || 'other').toLowerCase().trim();
   var reportedSeverity = String(finding.severity || defaults.severity || '').toLowerCase();
-  var severity = normalizeSeverity(ACCESSIBILITY_RULE_SEVERITY[ruleId] || reportedSeverity, 'moderate');
+  var ruleSeverity = Object.prototype.hasOwnProperty.call(ACCESSIBILITY_RULE_SEVERITY, ruleId) ? ACCESSIBILITY_RULE_SEVERITY[ruleId] : '';
+  var severity = normalizeSeverity(ruleSeverity || reportedSeverity, 'moderate');
   var description = String(finding.description || finding.issue || finding.message || finding.help || defaults.description || ruleId);
   var normalized = Object.assign({}, finding, {
     schemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
@@ -470,11 +475,13 @@ function diffFindings(baseline, current) {
 }
 
 function normalizeProfile(profile) {
-  if (typeof profile === 'string' && ACCESSIBILITY_EVIDENCE_PROFILES[profile]) {
+  if (typeof profile === 'string' && Object.prototype.hasOwnProperty.call(ACCESSIBILITY_EVIDENCE_PROFILES, profile)) {
     return Object.assign({}, ACCESSIBILITY_EVIDENCE_PROFILES[profile]);
   }
   profile = profile && typeof profile === 'object' ? profile : {};
-  var base = ACCESSIBILITY_EVIDENCE_PROFILES[profile.id] || ACCESSIBILITY_EVIDENCE_PROFILES['accessibility-lab'];
+  var base = (typeof profile.id === 'string' && Object.prototype.hasOwnProperty.call(ACCESSIBILITY_EVIDENCE_PROFILES, profile.id))
+    ? ACCESSIBILITY_EVIDENCE_PROFILES[profile.id]
+    : ACCESSIBILITY_EVIDENCE_PROFILES['accessibility-lab'];
   return Object.assign({}, base, profile, {
     requiredEvidence: Array.isArray(profile.requiredEvidence) ? profile.requiredEvidence.slice() : base.requiredEvidence.slice(),
   });
@@ -580,9 +587,9 @@ function deriveDocumentVerificationState(input) {
     : (_count(ai && ai.issueCount) !== null ? _count(ai && ai.issueCount) : _count(ai && ai.totalIssues));
   var aiReviewCount = aiIssues
     ? aiIssues.filter(function (issue) { return !!(issue && issue.requiresManualReview === true); }).length
-    : 0;
+    : (_count(ai && ai.reviewCount) !== null ? _count(ai && ai.reviewCount) : (_count(ai && ai.needsReview) !== null ? _count(ai && ai.needsReview) : 0));
   if (aiReviewCount > 0) reasons.push('ai-manual-review:' + aiReviewCount);
-  if (!_finite(ai && ai.score)) {
+  if ((ai && ai.executed === false) || !_finite(ai && ai.score)) {
     reasons.push('ai-unavailable');
   } else {
     var _aiPartial = !!(input.aiIncomplete || input.aiVerificationIncomplete || ai._partialAudit || ai.partial || ai._scoreDegraded || ai.scoreDegraded || ai.synthesized);
@@ -605,7 +612,7 @@ function deriveDocumentVerificationState(input) {
   var axeStatus = 'unavailable';
   var axeReviewCount = 0;
   var axeFindingCount = _count(axe && axe.totalViolations);
-  if (!_finite(axe && axe.score)) {
+  if ((axe && axe.executed === false) || !_finite(axe && axe.score)) {
     reasons.push('axe-unavailable');
   } else {
     var _axeIncomplete = _count(axe.totalIncomplete);
@@ -629,7 +636,7 @@ function deriveDocumentVerificationState(input) {
   var eaStatus = 'unavailable';
   var eaReviewCount = 0;
   var eaFindingCount = _count(ea && ea.failViolations);
-  if (!_finite(ea && ea.score)) {
+  if ((ea && ea.executed === false) || !_finite(ea && ea.score)) {
     reasons.push('equal-access-unavailable');
   } else {
     var _eaPotential = _count(ea.potentialViolations);
@@ -748,10 +755,11 @@ function unavailableDocumentVerificationState(reason) {
     equalAccess: 'unavailable',
     pdfUaSelfCheck: 'not-run'
   };
-  return {
+  var provenance = createEvidenceProvenance({ profile: 'document-remediation' });
+  var state = {
     evidenceSchemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
     evidenceProfile: 'document-remediation',
-    evidenceProvenance: createEvidenceProvenance({ profile: 'document-remediation' }),
+    evidenceProvenance: provenance,
     verificationCoverage: coverage,
     coverage: coverage,
     verificationState: 'unavailable',
@@ -775,6 +783,13 @@ function unavailableDocumentVerificationState(reason) {
     scoreEvidence: { ai: null, axe: null, equalAccess: null },
     reasons: [why]
   };
+  state.evidenceManifest = createEvidenceManifest({
+    profile: 'document-remediation',
+    provenance: provenance,
+    findings: [],
+    verification: state,
+  });
+  return state;
 }
 
 window.AlloModules.AccessibilityEvidence = {

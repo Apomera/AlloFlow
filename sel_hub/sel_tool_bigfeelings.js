@@ -287,19 +287,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
       var _bigT = (ctx && ctx.theme) || {};
       var _bigHC = !!_bigT.isContrast, _bigL = !_bigHC && !_bigT.isDark;
       var _big_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _big_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#0ea5e9':'#000000','#fff':'#000000','#b45309':'#000000','#ef4444':'#000000'};
-      var _big_FGL = {'#cbd5e1':'#334155','#fdba74':'#9a3412','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#c4b5fd':'#5b21b6','#fecaca':'#b91c1c','#fde68a':'#92400e','#86efac':'#166534','#fcd34d':'#78350f'}, _big_FGH = {'#ef4444':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#cbd5e1':'#ffff00','#fdba74':'#ffff00','#94a3b8':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#fca5a5':'#ffff00','#bbf7d0':'#ffff00','#c4b5fd':'#ffff00','#fecaca':'#ffff00','#475569':'#ffff00','#fde68a':'#ffff00','#86efac':'#ffff00','#bae6fd':'#ffff00','#fff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00'};
+      var _big_FGL = {'#cbd5e1':'#334155','#fdba74':'#9a3412','#fed7aa':'#9a3412','#bbf7d0':'#166534','#bae6fd':'#075985','#22c55e':'#15803d','#0ea5e9':'#0369a1','#f59e0b':'#b45309','#ef4444':'#b91c1c','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#c4b5fd':'#5b21b6','#fecaca':'#b91c1c','#fde68a':'#92400e','#86efac':'#166534','#fcd34d':'#78350f'}, _big_FGH = {'#ef4444':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#cbd5e1':'#ffff00','#fdba74':'#ffff00','#94a3b8':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#fca5a5':'#ffff00','#bbf7d0':'#ffff00','#c4b5fd':'#ffff00','#fecaca':'#ffff00','#475569':'#ffff00','#fde68a':'#ffff00','#86efac':'#ffff00','#bae6fd':'#ffff00','#fff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00'};
       var _big_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _big_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#f97316':'#ffff00','#a855f7':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#0ea5e9':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#ea580c':'#ffff00','#e2e8f0':'#ffff00'};
       var _bigBg = function(h){ return _bigHC ? (_big_BGH[h]||h) : (_bigL ? (_big_BGL[h]||h) : h); };
       var _bigFg = function(h){ return _bigHC ? (_big_FGH[h]||h) : (_bigL ? (_big_FGL[h]||h) : h); };
       var _bigBd = function(h){ return _bigHC ? (_big_BDH[h]||h) : (_bigL ? (_big_BDL[h]||h) : h); };
-      // white text needs a 700-weight fill (1.4.3)
-      var _bigSolid = function(c){ return _bigHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
+      // white text needs a 700-weight fill (1.4.3); HC uses solid black + yellow border
+      var _bigSolid = function(c){ return _bigHC ? '#000000' : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#b45309':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _bigBand = (ctx && ctx.gradeBand) || 'middle';
 
       var d = labToolData.bigFeelings || defaultState();
       function setBF(patch) {
@@ -309,6 +311,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           next.lastUpdated = todayISO();
           return Object.assign({}, prev, { bigFeelings: next });
         });
+      }
+      function scanBigFeelingsText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'bigFeelings', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'bigFeelings', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setBF({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Big Feelings', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
       }
       var view = d.view || 'home';
       function goto(v) { setBF({ view: v }); }
@@ -337,9 +364,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
         ];
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Big Feelings sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
+            return h('button', {
+              key: t.id,
+              id: 'bf-tab-' + t.id,
+              'aria-controls': 'bf-panel-' + t.id,
+              tabIndex: active ? 0 : -1,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(e) {
+                var nextIdx = idx;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                else if (e.key === 'Home') nextIdx = 0;
+                else if (e.key === 'End') nextIdx = tabs.length - 1;
+                else return;
+                e.preventDefault();
+                goto(tabs[nextIdx].id);
+                setTimeout(function() {
+                  var el = document.getElementById('bf-tab-' + tabs[nextIdx].id);
+                  if (el) el.focus();
+                }, 0);
+              },
               role: 'tab', 'aria-selected': active,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f97316' : '#334155'),
                 background: active ? 'rgba(249,115,22,0.18)' : _bigBg('#1e293b'),
@@ -351,7 +397,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
 
       function softPointer() {
         return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _bigFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _bigBg('#0f172a'), border: '1px solid ' + _bigBd('#334155'), fontSize: 11, color: _bigFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'If your anger is leading to violence (toward yourself, others, or things), please get a counselor or therapist involved. There are effective treatments. Crisis Text Line: text HOME to 741741.'
         );
@@ -482,12 +528,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
       // ═══════════════════════════════════════════════════════════
       function renderHassle() {
         function addEntry() {
-          var trigger = document.getElementById('bf-trigger').value;
-          var body = document.getElementById('bf-body').value;
-          var didDo = document.getElementById('bf-did').value;
-          var betterDo = document.getElementById('bf-better').value;
-          var intensity = parseInt(document.getElementById('bf-intensity').value, 10);
+          var triggerEl = document.getElementById('bf-trigger');
+          var bodyEl = document.getElementById('bf-body');
+          var didEl = document.getElementById('bf-did');
+          var betterEl = document.getElementById('bf-better');
+          var intEl = document.getElementById('bf-intensity');
+          var trigger = triggerEl ? triggerEl.value : '';
+          var body = bodyEl ? bodyEl.value : '';
+          var didDo = didEl ? didEl.value : '';
+          var betterDo = betterEl ? betterEl.value : '';
+          var rawInt = parseInt(intEl ? intEl.value : '', 10);
+          var intensity = isNaN(rawInt) ? undefined : Math.max(0, Math.min(10, rawInt));
           if (!trigger || !trigger.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
+          scanBigFeelingsText([trigger, body, didDo, betterDo].join(' '));
           var entry = { date: todayISO(), trigger: trigger.trim(), body: body, didDo: didDo, wouldHaveBeen: betterDo, intensity: intensity };
           setBF({ hassleLog: (d.hassleLog || []).concat([entry]) });
           ['bf-trigger', 'bf-body', 'bf-did', 'bf-better'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
@@ -532,7 +585,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
             h('textarea', { id: 'bf-better', placeholder: 'In hindsight. Specific.',
               style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _bigBg('#1e293b'), color: _bigFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginBottom: 10 } }),
             h('button', { onClick: addEntry, 'aria-label': 'Log this incident',
-              style: { padding: '8px 18px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bigBg(_bigSolid('#0ea5e9')), color: _bigFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Log incident')
+              style: { padding: '8px 18px', borderRadius: 6, border: _bigHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bigSolid('#0ea5e9'), color: _bigFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Log incident')
           ),
 
           // Log
@@ -542,7 +595,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
               return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: _bigBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
                   h('span', { style: { fontSize: 11, color: _bigFg('#94a3b8'), fontFamily: 'ui-monospace, monospace' } }, e.date),
-                  e.intensity !== undefined && !isNaN(e.intensity) ? h('span', { style: { fontSize: 11, color: e.intensity >= 7 ? _bigFg('#fca5a5') : e.intensity >= 4 ? _bigFg('#fde68a') : _bigFg('#bbf7d0'), fontWeight: 700 } }, 'Intensity: ' + e.intensity + '/10') : null,
+                  typeof e.intensity === 'number' && !isNaN(e.intensity) ? h('span', { style: { fontSize: 11, color: e.intensity >= 7 ? _bigFg('#fca5a5') : e.intensity >= 4 ? _bigFg('#fde68a') : _bigFg('#bbf7d0'), fontWeight: 700 } }, 'Intensity: ' + e.intensity + '/10') : null,
                   h('button', { onClick: function() { removeEntry(log.length - 1 - i); }, 'aria-label': 'Remove',
                     style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: _bigFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
                 ),
@@ -566,8 +619,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           var items = d[key] || [];
           function addItem(value) {
             if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
+            var trimmed = value.trim();
+            scanBigFeelingsText(trimmed);
             var list = items.slice();
-            if (list.indexOf(value.trim()) === -1) list.push(value.trim());
+            if (list.indexOf(trimmed) === -1) list.push(trimmed);
             var patch = {}; patch[key] = list;
             setBF(patch);
           }
@@ -596,16 +651,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
               items.map(function(s, i) {
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 14, background: _bigBg('#1e293b'), border: '1px solid ' + color + '44', fontSize: 12, color: _bigFg('#e2e8f0') } },
                   h('span', null, s),
-                  h('button', { onClick: function() { removeItem(i); }, 'aria-label': 'Remove',
+                  h('button', { onClick: function() { removeItem(i); }, 'aria-label': 'Remove ' + s,
                     style: { background: 'transparent', border: 'none', color: _bigFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕'));
               })
             ) : null,
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' } },
-              h('input', { id: inputId, type: 'text', placeholder: 'Type and Enter to add...',
+              h('label', { htmlFor: inputId, className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add to ' + title),
+              h('input', { id: inputId, type: 'text', placeholder: 'Type and Enter to add...', 'aria-label': 'Add to ' + title,
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
                 style: { flex: 1, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _bigBg('#1e293b'), color: _bigFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: submit, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bigSolid(color), color: _bigFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+              h('button', { onClick: submit, 'aria-label': 'Add to ' + title,
+                style: { padding: '8px 14px', borderRadius: 6, border: _bigHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bigSolid(color), color: _bigFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             h('details', null,
               h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _bigFg('#94a3b8') } }, 'Need ideas? Tap a starter'),
@@ -613,7 +669,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
                 starters.map(function(s, si) {
                   var already = items.indexOf(s) !== -1;
                   return h('button', { key: si, onClick: function() { addItem(s); }, disabled: already, 'aria-label': 'Add: ' + s,
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + color + '66', background: already ? _bigBg('#1e293b') : 'rgba(15,23,42,0.6)', color: already ? _bigFg('#64748b') : _bigFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
+                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + color + '66', background: already ? _bigBg('#1e293b') : _bigBg('#0f172a'), color: already ? _bigFg('#64748b') : _bigFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
                     (already ? '✓ ' : '+ ') + s);
                 })
               )
@@ -643,8 +699,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
         var items = d.myCoolDowns || [];
         function addItem(value) {
           if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
+          var trimmed = value.trim();
+          scanBigFeelingsText(trimmed);
           var list = items.slice();
-          if (list.indexOf(value.trim()) === -1) list.push(value.trim());
+          if (list.indexOf(trimmed) === -1) list.push(trimmed);
           setBF({ myCoolDowns: list });
         }
         function removeItem(i) {
@@ -684,8 +742,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
               h('input', { id: 'bf-cd-input', type: 'text', placeholder: 'A specific move you know works for you',
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
                 style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _bigBg('#1e293b'), color: _bigFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: submit, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _bigBg(_bigSolid('#0ea5e9')), color: _bigFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+              h('button', { onClick: submit, 'aria-label': 'Add cool-down',
+                style: { padding: '8px 14px', borderRadius: 6, border: _bigHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bigSolid('#0ea5e9'), color: _bigFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
@@ -696,7 +754,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
               COOLDOWN_STARTERS.map(function(s, i) {
                 var already = items.indexOf(s) !== -1;
                 return h('button', { key: i, onClick: function() { addItem(s); }, disabled: already, 'aria-label': 'Add: ' + s,
-                  style: { padding: '4px 10px', borderRadius: 14, border: '1px solid #0ea5e966', background: already ? _bigBg('#1e293b') : 'rgba(15,23,42,0.6)', color: already ? _bigFg('#64748b') : _bigFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
+                  style: { padding: '4px 10px', borderRadius: 14, border: '1px solid #0ea5e966', background: already ? _bigBg('#1e293b') : _bigBg('#0f172a'), color: already ? _bigFg('#64748b') : _bigFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
                   (already ? '✓ ' : '+ ') + s);
               })
             )
@@ -779,7 +837,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _bigFg('#fed7aa'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Hassle log + patterns inventory — useful for a counselor, therapist, or IEP/behavior plan conversation.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #9a3412 0%, #c2410c 100%)', color: _bigFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _bigHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _bigHC ? '#000000' : 'linear-gradient(135deg, #9a3412 0%, #c2410c 100%)', color: _bigFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _bigBg('#1e293b'), color: _bigFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
@@ -791,7 +849,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#bf-print-region, #bf-print-region * { visibility: visible !important; } ' +
-              '#bf-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#bf-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+              '#bf-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
@@ -804,21 +863,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
 
             // Patterns: triggers, body signs, cool-downs
             (d.myTriggers || []).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _bigBg('#b45309'), color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '⚡ My triggers'),
+              h('div', { style: { background: _bigSolid('#b45309'), border: _bigHC ? '1px solid #ffff00' : 'none', color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '⚡ My triggers'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _bigFg('#0f172a'), fontSize: 12.5, lineHeight: 1.8 } },
                 d.myTriggers.map(function(t, i) { return h('li', { key: i }, t); })
               )
             ) : null,
 
             (d.myBodySigns || []).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _bigBg(_bigSolid('#ef4444')), color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🔥 My body signs (early warning)'),
+              h('div', { style: { background: _bigSolid('#ef4444'), border: _bigHC ? '1px solid #ffff00' : 'none', color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🔥 My body signs (early warning)'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _bigFg('#0f172a'), fontSize: 12.5, lineHeight: 1.8 } },
                 d.myBodySigns.map(function(t, i) { return h('li', { key: i }, t); })
               )
             ) : null,
 
             (d.myCoolDowns || []).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _bigBg(_bigSolid('#0ea5e9')), color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '❄️ My cool-downs that work'),
+              h('div', { style: { background: _bigSolid('#0ea5e9'), border: _bigHC ? '1px solid #ffff00' : 'none', color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '❄️ My cool-downs that work'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _bigFg('#0f172a'), fontSize: 12.5, lineHeight: 1.8 } },
                 d.myCoolDowns.map(function(t, i) { return h('li', { key: i }, t); })
               )
@@ -826,12 +885,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
 
             // Hassle log
             log.length > 0 ? h('div', { style: { marginBottom: 14 } },
-              h('div', { style: { background: _bigBg(_bigSolid('#0ea5e9')), color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📓 Hassle log (' + log.length + ' entries)'),
+              h('div', { style: { background: _bigSolid('#0ea5e9'), border: _bigHC ? '1px solid #ffff00' : 'none', color: _bigFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📓 Hassle log (' + log.length + ' entries)'),
               log.map(function(e, i) {
                 return h('div', { key: i, style: { marginBottom: 10, pageBreakInside: 'avoid', padding: '8px 0', borderTop: '1px solid #e2e8f0' } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 3 } },
                     h('strong', { style: { fontSize: 11, color: _bigFg('#475569'), fontFamily: 'ui-monospace, monospace' } }, e.date),
-                    e.intensity !== undefined && !isNaN(e.intensity) ? h('span', { style: { fontSize: 11, color: _bigFg('#475569') } }, '· Intensity: ' + e.intensity + '/10') : null
+                    typeof e.intensity === 'number' && !isNaN(e.intensity) ? h('span', { style: { fontSize: 11, color: _bigFg('#475569') } }, '· Intensity: ' + e.intensity + '/10') : null
                   ),
                   h('div', { style: { fontSize: 12.5, color: _bigFg('#0f172a'), marginBottom: 2 } }, h('strong', null, 'Trigger: '), e.trigger),
                   e.body ? h('div', { style: { fontSize: 12, color: _bigFg('#0f172a'), marginBottom: 2 } }, h('strong', null, 'Body: '), e.body) : null,
@@ -862,8 +921,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
 
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Big Feelings' },
         header(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _bigBand))
+          : null,
         navTabs(),
-        body
+        h('div', { id: 'bf-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'bf-tab-' + view }, body)
       );
     }
   });

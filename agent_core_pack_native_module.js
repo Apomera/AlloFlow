@@ -4,8 +4,10 @@
  */
 (function () {
   'use strict';
-  var TYPES = ['analysis', 'brainstorm', 'adventure', 'persona', 'dbq', 'lesson-plan', 'gemini-bridge', 'alignment-report', 'udl-advice', 'word-sounds'];
+  var TYPES = Object.freeze(['analysis', 'brainstorm', 'adventure', 'persona', 'dbq', 'lesson-plan', 'gemini-bridge', 'alignment-report', 'udl-advice', 'word-sounds']);
   var MAX_ERRORS = 100;
+  var hasOwn = Object.prototype.hasOwnProperty;
+  var UNSAFE_URL_SCHEME_RE = /^\s*(?:javascript|vbscript|data|file|blob)\s*:/i;
   function record(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
   function issue(code, path, message) { return { code: code, path: path.slice(0, 600), message: message.slice(0, 2000) }; }
   function appendIssue(items, entry) {
@@ -22,6 +24,13 @@
       if (typeof value !== 'string' || (!optional && !value.trim()) || value.length > (max || 120000)) { fail(path, 'Expected ' + (optional ? 'a string' : 'a non-empty string') + ' of at most ' + (max || 120000) + ' characters.'); return false; }
       return true;
     }
+    function safeUrl(value, path) {
+      if (value === undefined || value === null || value === '') return true;
+      if (typeof value !== 'string') return false;
+      var stripped = value.replace(/[\u0000-\u0020\u007F]/g, '');
+      if (UNSAFE_URL_SCHEME_RE.test(stripped)) { fail(path, 'URL scheme is not allowed.', 'unsafe-url'); return false; }
+      return true;
+    }
     function obj(value, path, optional) {
       if (optional && (value === undefined || value === null)) return false;
       if (!record(value)) { fail(path, 'Expected an object.'); return false; }
@@ -35,8 +44,8 @@
     }
     function strings(value, path, optional, min, max) { list(value, path, min || 0, max || 100, function (entry, p) { str(entry, p, false, 20000); }, optional); }
     function fields(value, path, required, optional) {
-      (required || []).forEach(function (key) { str(value[key], path + '.' + key); });
-      (optional || []).forEach(function (key) { str(value[key], path + '.' + key, true); });
+      (required || []).forEach(function (key) { str(hasOwn.call(value, key) ? value[key] : undefined, path + '.' + key); });
+      (optional || []).forEach(function (key) { str(hasOwn.call(value, key) ? value[key] : undefined, path + '.' + key, true); });
     }
     function num(value, path, min, max, optional, integer) {
       if (optional && (value === undefined || value === null)) return;
@@ -48,7 +57,7 @@
     }
     function bool(value, path) { if (value !== undefined && value !== null && typeof value !== 'boolean') fail(path, 'Expected a boolean.'); }
     function warn(code, path, message) { appendIssue(warnings, issue(code, path, message)); }
-    return { fail: fail, str: str, obj: obj, list: list, strings: strings, fields: fields, num: num, enumeration: enumeration, bool: bool, warn: warn, each: function (values, visit) { eachValidation(values, errors, visit); }, exhausted: function () { return errors.length >= MAX_ERRORS; } };
+    return { fail: fail, str: str, safeUrl: safeUrl, obj: obj, list: list, strings: strings, fields: fields, num: num, enumeration: enumeration, bool: bool, warn: warn, each: function (values, visit) { eachValidation(values, errors, visit); }, exhausted: function () { return errors.length >= MAX_ERRORS; } };
   }
 
   function analysis(d, p, c) {
@@ -65,7 +74,11 @@
         c.strings(value.accuracy.discrepancies, path + '.accuracy.discrepancies', true);
         c.strings(value.accuracy.verifiedFacts, path + '.accuracy.verifiedFacts', true);
         c.list(value.accuracy.citations, path + '.accuracy.citations', 0, 100, function (citation, cp) {
-          if (c.obj(citation, cp)) c.fields(citation, cp, [], ['uri', 'url', 'title']);
+          if (c.obj(citation, cp)) {
+            c.fields(citation, cp, [], ['uri', 'url', 'title']);
+            if (hasOwn.call(citation, 'uri')) c.safeUrl(citation.uri, cp + '.uri');
+            if (hasOwn.call(citation, 'url')) c.safeUrl(citation.url, cp + '.url');
+          }
         }, true);
       }
       if (c.obj(value.depthOfKnowledge, path + '.depthOfKnowledge', true)) {
@@ -76,9 +89,17 @@
     }
     report(d, p);
     c.fields(d, p, [], ['sourceLanguage', 'reportLanguage', 'displayReportLanguage']);
-    if (c.obj(d.sourceTranslations, p + '.sourceTranslations', true)) c.each(Object.keys(d.sourceTranslations), function (lang) { c.str(d.sourceTranslations[lang], p + '.sourceTranslations.' + lang); });
-    if (c.obj(d.reportTranslations, p + '.reportTranslations', true)) c.each(Object.keys(d.reportTranslations), function (lang) { report(d.reportTranslations[lang], p + '.reportTranslations.' + lang); });
-    if (c.obj(d.localStats, p + '.localStats', true)) ['score', 'words', 'sentences', 'syllables'].forEach(function (k) { c.num(d.localStats[k], p + '.localStats.' + k, k === 'score' ? -100 : 0, 10000000); });
+    if (c.obj(d.sourceTranslations, p + '.sourceTranslations', true)) {
+      var stKeys = Object.keys(d.sourceTranslations);
+      if (stKeys.length > 100) c.fail(p + '.sourceTranslations', 'Expected at most 100 translation entries.');
+      c.each(stKeys.slice(0, 100), function (lang) { c.str(d.sourceTranslations[lang], p + '.sourceTranslations.' + lang); });
+    }
+    if (c.obj(d.reportTranslations, p + '.reportTranslations', true)) {
+      var rtKeys = Object.keys(d.reportTranslations);
+      if (rtKeys.length > 100) c.fail(p + '.reportTranslations', 'Expected at most 100 report translation entries.');
+      c.each(rtKeys.slice(0, 100), function (lang) { report(d.reportTranslations[lang], p + '.reportTranslations.' + lang); });
+    }
+    if (c.obj(d.localStats, p + '.localStats', true)) ['score', 'words', 'sentences', 'syllables'].forEach(function (k) { c.num(hasOwn.call(d.localStats, k) ? d.localStats[k] : undefined, p + '.localStats.' + k, k === 'score' ? -100 : 0, 10000000); });
     c.warn('analysis-review-required', p, 'Reading-level, accuracy, and depth-of-knowledge claims are authored estimates; validation does not independently verify them.');
   }
 
@@ -127,7 +148,13 @@
     if (!c.obj(d, p)) return;
     c.str(d.text, p + '.text');
     c.strings(d.options, p + '.options', false, 0, 12);
-    ['voiceMap', 'voices'].forEach(function (k) { if (c.obj(d[k], p + '.' + k, true)) c.each(Object.keys(d[k]), function (name) { c.str(d[k][name], p + '.' + k + '.' + name, false, 240); }); });
+    ['voiceMap', 'voices'].forEach(function (k) {
+      if (hasOwn.call(d, k) && c.obj(d[k], p + '.' + k, true)) {
+        var vKeys = Object.keys(d[k]);
+        if (vKeys.length > 100) c.fail(p + '.' + k, 'Expected at most 100 voice entries.');
+        c.each(vKeys.slice(0, 100), function (name) { c.str(d[k][name], p + '.' + k + '.' + name, false, 240); });
+      }
+    });
     if (c.obj(d.soundParams, p + '.soundParams', true)) c.fields(d.soundParams, p + '.soundParams', [], ['atmosphere', 'element']);
     c.strings(d.charactersInScene, p + '.charactersInScene', true, 0, 30);
     if (c.obj(d.inventoryUpdate, p + '.inventoryUpdate', true)) {
@@ -178,6 +205,7 @@
     c.list(d.documents, p + '.documents', 1, 30, function (doc, dp) {
       if (!c.obj(doc, dp)) return;
       c.fields(doc, dp, ['id', 'title', 'source', 'excerpt'], ['sourceUrl', 'perspective', 'author', 'date']);
+      if (hasOwn.call(doc, 'sourceUrl')) c.safeUrl(doc.sourceUrl, dp + '.sourceUrl');
       c.enumeration(doc.excerptKind, dp + '.excerptKind', ['verbatim', 'adapted', 'reconstructed']);
       c.enumeration(doc.documentType, dp + '.documentType', ['primary', 'secondary', 'data', 'visual', 'testimony', 'linked', 'reconstructed'], true);
       if (typeof doc.id === 'string') { if (ids[doc.id]) c.fail(dp + '.id', 'Document IDs must be unique.'); ids[doc.id] = true; }
@@ -232,26 +260,33 @@
     var textLists = ['recommendations', 'corrections', 'missedTier2', 'formatGaps', 'colorOnlyExamples', 'implicitImageExamples', 'studentImpacts', 'fixes', 'claimsToVerify', 'priorityAdditions', 'qualityFlags', 'specificAdjustments', 'strengths', 'gaps', 'additions', 'distinctTypes', 'includedTypes', 'includedArtifactIds', 'artifactIds', 'warnings', 'serializationFailures', 'tier2Words', 'tier3Words', 'tier2Examples', 'tier3Examples', 'modalitiesPresent', 'present', 'missing'];
     var textFields = ['notes', 'reason', 'error', 'narrative', 'standard', 'evidence', 'status', 'issue', 'dimension', 'scoreBasis', 'dokAssessment', 'adminRecommendation', 'overallDetermination', 'cognitiveDemand', 'contentFocus', 'selectionMode', 'generatedAt', 'gradeLevel', 'auditLanguage', 'auditLanguageTag', 'rating', 'overallNarrative', 'title', 'label'];
     var numberFields = ['score', 'sourceWords', 'auditedTextWords', 'totalWords', 'tier2Count', 'tier3Count', 'glossaryTermsCount', 'distinctTypeCount', 'totalArtifacts', 'diversityScore', 'dokTotal', 'totalAnalyses', 'totalVerifiedFacts', 'totalDiscrepancies', 'verifiedFactCount', 'discrepancyCount', 'wordCount', 'sentenceCount', 'avgSentenceLength', 'minutes'];
-    var visited = [];
+    var visited = new Set();
+    var walkNodes = 0;
+    var MAX_WALK_NODES = 10000;
     function walk(value, path, depth) {
       if (!value || typeof value !== 'object' || depth > 24 || c.exhausted()) return;
-      if (visited.indexOf(value) >= 0) { c.fail(path, 'Expected acyclic JSON data.'); return; }
-      visited.push(value);
+      if (++walkNodes > MAX_WALK_NODES) { c.fail(path, 'Audit payload exceeds node traversal budget.', 'payload-too-large'); return; }
+      if (visited.has(value)) { c.fail(path, 'Expected acyclic JSON data.'); return; }
+      visited.add(value);
       c.each(Object.keys(value), function (key) {
         var child = value[key], cp = path + '.' + key;
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+          c.fail(cp, 'Prototype-polluting key is not allowed.', 'unsafe-key');
+          return;
+        }
         if (textLists.indexOf(key) >= 0) c.strings(child, cp, true, 0, 1000);
         else if (reportLists.indexOf(key) >= 0) c.list(child, cp, 0, 1000, function (entry, ep) { c.obj(entry, ep); }, true);
         else if (textFields.indexOf(key) >= 0) c.str(child, cp, true);
         else if (numberFields.indexOf(key) >= 0) c.num(child, cp, -1e12, 1e12, true);
         if (child && typeof child === 'object') walk(child, cp, depth + 1);
       });
-      visited.pop();
+      visited.delete(value);
     }
     c.list(d.reports, p + '.reports', 0, 100, function (report, rp) { if (c.obj(report, rp)) c.fields(report, rp, ['standard']); }, true);
     var present = 0;
-    dimensions.forEach(function (key) { if (comp[key] !== undefined) { present++; c.obj(comp[key], p + '.comprehensive.' + key); } });
+    dimensions.forEach(function (key) { if (hasOwn.call(comp, key) && comp[key] !== undefined) { present++; c.obj(comp[key], p + '.comprehensive.' + key); } });
     if (!present) c.fail(p + '.comprehensive', 'Include at least one native audit dimension, with evidence or an explicit notEvaluated/notApplicable/computeFailed status.');
-    ['auditScope', 'auditMetadata', 'overall', 'alignmentMapGraph'].forEach(function (key) { c.obj(comp[key], p + '.comprehensive.' + key, true); });
+    ['auditScope', 'auditMetadata', 'overall', 'alignmentMapGraph'].forEach(function (key) { if (hasOwn.call(comp, key)) c.obj(comp[key], p + '.comprehensive.' + key, true); });
     walk(d, p, 0);
     c.warn('audit-not-recomputed', p, 'This validates the saved report shape only. It does not recompute alignment, readiness, source accuracy, or accessibility conformance.');
   }
@@ -345,7 +380,7 @@
   // __ALLO_STATIC_SVG_POLICY_END__
   function validateMathGraph(value, path, errors) {
     if (value === undefined || value === null || value === '') return;
-    if (!validateStaticSvg(value) && errors.length < MAX_ERRORS) errors.push(issue('unsafe-math-graph', path, 'Use static SVG shapes and text with presentation attributes, at most 120000 characters, 2048 elements and 32 levels. Scripts, animation, links, embedded images, foreign content, CSS, and external references are not supported.'));
+    if (!validateStaticSvg(value)) appendIssue(errors, issue('unsafe-math-graph', path, 'Use static SVG shapes and text with presentation attributes, at most 120000 characters, 2048 elements and 32 levels. Scripts, animation, links, embedded images, foreign content, CSS, and external references are not supported.'));
   }
 
   function validateMathData(d, p, errors, warnings) {
@@ -363,8 +398,9 @@
   }
 
   function validateResource(item, path, errors, warnings) {
-    if (!item || TYPES.indexOf(item.type) < 0) return false;
-    var c = checkContext(errors, warnings || []), p = path + '.data', d = item.data;
+    if (!item || typeof item.type !== 'string' || TYPES.indexOf(item.type) < 0) return false;
+    var errList = Array.isArray(errors) ? errors : [];
+    var c = checkContext(errList, warnings || []), p = path + '.data', d = item.data;
     if (item.type === 'analysis') analysis(d, p, c);
     else if (item.type === 'brainstorm') brainstorm(d, p, c);
     else if (item.type === 'adventure') adventure(d, p, c);

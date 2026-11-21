@@ -79,10 +79,11 @@
   function validateResponse(value) {
     if (value === null || value === undefined) return null;
     requireValue(plain(value), 'The unfinished response is invalid.');
-    var output = safePick(value, ['answerIndex','selectedIndices','text','unit','verifyAnswer','wrongIndex','principleAnswer','pairIndex','partnerAnswer','evidenceIndex','guideRevealed','selfReview','abilityId']);
+    var output = safePick(value, ['answerIndex','selectedIndices','order','text','unit','verifyAnswer','wrongIndex','principleAnswer','pairIndex','partnerAnswer','evidenceIndex','guideRevealed','selfReview','abilityId']);
     ['answerIndex','wrongIndex','pairIndex','evidenceIndex'].forEach(function(key) { if (own(output,key)) requireValue(output[key] === null || integer(output[key],0,100000), 'The unfinished response has an invalid index.'); });
     ['text','unit','principleAnswer','partnerAnswer'].forEach(function(key) { if (own(output,key)) requireValue(output[key] === null || boundedText(output[key], key === 'text' ? 100000 : 20000, true), 'The unfinished response has invalid text.'); });
     if (own(output,'selectedIndices')) requireValue(Array.isArray(output.selectedIndices) && output.selectedIndices.every(function(index) { return integer(index,0,100000); }) && new Set(output.selectedIndices).size === output.selectedIndices.length, 'The unfinished selections are invalid.');
+    if (own(output,'order')) requireValue(output.order === null || (Array.isArray(output.order) && output.order.every(function(index) { return integer(index,0,100000); }) && new Set(output.order).size === output.order.length), 'The unfinished order is invalid.');
     if (own(output,'verifyAnswer')) requireValue(output.verifyAnswer === null || output.verifyAnswer === '' || ['yes','no'].indexOf(output.verifyAnswer) >= 0, 'The unfinished verification is invalid.');
     if (own(output,'guideRevealed')) requireValue(typeof output.guideRevealed === 'boolean', 'The guide state is invalid.');
     if (own(output,'selfReview')) requireValue(output.selfReview === '' || ['understood','needs-practice'].indexOf(output.selfReview) >= 0, 'The self-review state is invalid.');

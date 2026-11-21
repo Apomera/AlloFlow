@@ -430,7 +430,7 @@
     '4.1.2': ['Name, Role, Value', 'A', 'name-role-value']
   };
   function wcagRefs(list) {
-    return (Array.isArray(list) ? list : []).filter(function (sc) { return WCAG[sc]; }).map(function (sc) {
+    return (Array.isArray(list) ? list : []).filter(function (sc) { return Object.prototype.hasOwnProperty.call(WCAG, sc); }).map(function (sc) {
       return { sc: sc, name: WCAG[sc][0], level: WCAG[sc][1], url: 'https://www.w3.org/WAI/WCAG21/Understanding/' + WCAG[sc][2] + '.html' };
     });
   }

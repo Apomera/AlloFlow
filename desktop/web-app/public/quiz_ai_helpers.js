@@ -28,9 +28,36 @@
     return;
   }
 
+  var MAX_JSON_CHARS = 250000;
+  var MAX_FEEDBACK_CHARS = 2000;
+  var MAX_CRITERIA_COUNT = 30;
+  var MAX_ALTERNATIVES_COUNT = 100;
+
+  function stripCtrl(value) {
+    return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
+  }
+
+  function sanitizeFeedback(value) {
+    return typeof value === 'string' ? stripCtrl(value).slice(0, MAX_FEEDBACK_CHARS) : '';
+  }
+
+  function sanitizeErrMsg(err, fallback) {
+    var msg = (err && typeof err.message === 'string') ? err.message : '';
+    if (!msg) return fallback;
+    msg = stripCtrl(msg)
+      .replace(/\bAIza[A-Za-z0-9_-]{10,}\b/g, '[redacted]')
+      .replace(/\bsk-[A-Za-z0-9_-]{10,}\b/g, '[redacted]')
+      .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]{8,}/gi, 'Bearer [redacted]')
+      .replace(/([?&](?:key|api_key|token|access_token)=)[^&\s]+/gi, '$1[redacted]')
+      .trim()
+      .slice(0, 240);
+    return msg || fallback;
+  }
+
   function safeParseJson(raw) {
     if (!raw) return null;
-    var txt = (typeof raw === 'object' && raw.text) ? raw.text : String(raw);
+    var txt = (typeof raw === 'object' && typeof raw.text === 'string') ? raw.text : String(raw);
+    if (txt.length > MAX_JSON_CHARS) return null;
     // Strip code fences and any leading/trailing prose
     txt = txt.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '');
     var firstBrace = txt.indexOf('{');
@@ -38,13 +65,25 @@
     if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
       txt = txt.slice(firstBrace, lastBrace + 1);
     }
-    try { return JSON.parse(txt); } catch (e) { return null; }
+    try {
+      var parsed = JSON.parse(txt, function (key, val) {
+        return (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : val;
+      });
+      return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : null;
+    } catch (e) { return null; }
   }
 
   function _quizAiUsable(fn) {
     if (typeof fn !== 'function' || fn._alloQrBlocked === true) return false;
     if (typeof window !== 'undefined') {
-      if (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true) return false;
+      if (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || window._alloQrBlocked === true) return false;
+      if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return false;
+      if (window.__alloQrStudentMode === true) {
+        if (typeof window.__alloAiUsable === 'function') {
+          try { return !!window.__alloAiUsable('text', fn); } catch (_) { return false; }
+        }
+        return false;
+      }
       if (typeof window.__alloAiUsable === 'function') {
         try { return !!window.__alloAiUsable('text', fn); } catch (_) { return false; }
       }
@@ -58,8 +97,8 @@
   }
 
   function studentCriteria(args) {
-    return Array.isArray(args && args.studentCriteria) ? args.studentCriteria.map(function (value) {
-      return String(typeof value === 'string' ? value : value && value.text || '').trim();
+    return Array.isArray(args && args.studentCriteria) ? args.studentCriteria.slice(0, MAX_CRITERIA_COUNT).map(function (value) {
+      return String(typeof value === 'string' ? value : (value && typeof value === 'object' && value.text != null ? value.text : '')).trim();
     }) : [];
   }
 
@@ -68,14 +107,18 @@
     return criteria.map(function (criterion, index) {
       var row = rows.find(function (entry) { return entry && entry.index === index; }) || {};
       var status = ['met', 'partial', 'not-yet', 'unclear'].indexOf(row.status) >= 0 ? row.status : 'unclear';
-      return { index: index, status: status, feedback: typeof row.feedback === 'string' ? row.feedback : '' };
+      return { index: index, status: status, feedback: sanitizeFeedback(row.feedback) };
     });
   }
 
   // Never grade a silently shortened response or rubric. Very large inputs
   // remain available to the teacher instead of sending an incomplete sample.
   function gradingInputLimit(data) {
-    if (JSON.stringify(data).length <= 100000) return null;
+    try {
+      if (JSON.stringify(data).length <= 100000) return null;
+    } catch (_) {
+      return { status: 'submitted', needsReview: true, code: 'input-unserializable', feedback: 'This response needs teacher review because it could not be serialized for automatic feedback.' };
+    }
     return { status: 'submitted', needsReview: true, code: 'input-too-long', feedback: 'This response and its criteria need teacher review because they exceed the automatic feedback limit. No text was shortened or automatically scored.' };
   }
 
@@ -93,13 +136,13 @@
     if (!args || !_quizAiUsable(args.callGemini)) {
       return { status: 'error', feedback: 'Grader unavailable: callGemini not provided.' };
     }
-    if (!args.studentResponse || !args.studentResponse.trim()) {
+    var resp = args.studentResponse == null ? '' : String(args.studentResponse);
+    if (!resp.trim()) {
       return { status: 'incorrect', feedback: 'No response provided yet.' };
     }
     var q = String(args.question || '');
     var expected = String(args.expectedAnswer || '');
-    var resp = String(args.studentResponse || '');
-    var grade = args.gradeLevel || 'middle school';
+    var grade = String(args.gradeLevel || 'middle school');
     var criteria = studentCriteria(args);
     var trustedTeacherData = { question: q, expectedAnswer: expected, gradeLevel: grade, studentCriteria: criteria };
     var untrustedStudentData = { response: resp };
@@ -123,12 +166,12 @@
       if (!parsed) return { status: 'error', feedback: 'Could not parse grader response. Try again.' };
       return {
         status: clampStatus(parsed.status),
-        feedback: typeof parsed.feedback === 'string' ? parsed.feedback : '',
+        feedback: sanitizeFeedback(parsed.feedback),
         expectedAnswer: expected,
         criteriaFeedback: criteriaFeedback(parsed, criteria),
       };
     } catch (err) {
-      return { status: 'error', feedback: (err && err.message) ? err.message : 'Grader call failed.' };
+      return { status: 'error', feedback: sanitizeErrMsg(err, 'Grader call failed.') };
     }
   }
 
@@ -146,14 +189,16 @@
    */
   async function gradeFillBlank(args) {
     args = args || {};
-    if (!args.studentFill || !args.studentFill.trim()) {
+    var sf = args.studentFill == null ? '' : String(args.studentFill).trim();
+    if (!sf) {
       return { status: 'incorrect', feedback: 'Blank not filled in yet.' };
     }
     // Use the same deterministic policy as the teacher's grader, including
     // when AI is disabled. Explicit exact spelling must never use fuzzy AI.
-    var sf = String(args.studentFill).trim();
-    var ef = String(args.expectedFill || '').trim();
-    var alts = Array.isArray(args.acceptableAlternatives) ? args.acceptableAlternatives.map(function (a) { return String(a).trim(); }) : [];
+    var ef = args.expectedFill == null ? '' : String(args.expectedFill).trim();
+    var alts = Array.isArray(args.acceptableAlternatives)
+      ? args.acceptableAlternatives.slice(0, MAX_ALTERNATIVES_COUNT).map(function (a) { return a == null ? '' : String(a).trim(); }).filter(function (s) { return s; })
+      : [];
     var allTargets = [ef].concat(alts).filter(function (s) { return s; });
     var policy = args.fillBlankPolicy || (args.spellingPolicy === 'exact' ? 'exact' : 'normalized');
     var normalize = function (value) {
@@ -199,11 +244,11 @@
       if (!parsed) return { status: 'error', feedback: 'Could not parse grader response.' };
       return {
         status: clampStatus(parsed.status),
-        feedback: typeof parsed.feedback === 'string' ? parsed.feedback : '',
+        feedback: sanitizeFeedback(parsed.feedback),
         expectedFill: ef,
       };
     } catch (err) {
-      return { status: 'error', feedback: (err && err.message) ? err.message : 'Grader call failed.' };
+      return { status: 'error', feedback: sanitizeErrMsg(err, 'Grader call failed.') };
     }
   }
 
@@ -241,7 +286,8 @@
     var trustedCalibration = [];
     var untrustedCalibrationResponses = [];
     calibration.forEach(function(s) {
-      var score = (typeof s.teacherScore === 'number' && s.teacherScore >= 0 && s.teacherScore <= 100) ? s.teacherScore : 50;
+      if (!s || typeof s !== 'object') return;
+      var score = (typeof s.teacherScore === 'number' && Number.isFinite(s.teacherScore) && s.teacherScore >= 0 && s.teacherScore <= 100) ? s.teacherScore : 50;
       trustedCalibration.push({ score: score, teacherFeedback: String(s.teacherFeedback || '') });
       untrustedCalibrationResponses.push(String(s.studentResponse || ''));
     });
@@ -275,17 +321,18 @@
       var raw = await args.callGemini(prompt, true);
       var parsed = safeParseJson(raw);
       if (!parsed) return { status: 'error', feedback: 'Could not parse grader response. Try again.', score: 0 };
-      var score = (typeof parsed.score === 'number' && parsed.score >= 0 && parsed.score <= 100)
+      var clampedStatus = clampStatus(parsed.status);
+      var score = (typeof parsed.score === 'number' && Number.isFinite(parsed.score) && parsed.score >= 0 && parsed.score <= 100)
         ? Math.round(parsed.score)
-        : (parsed.status === 'correct' ? 90 : parsed.status === 'partially-correct' ? 65 : parsed.status === 'incorrect' ? 25 : 0);
+        : (clampedStatus === 'correct' ? 90 : clampedStatus === 'partially-correct' ? 65 : clampedStatus === 'incorrect' ? 25 : 0);
       return {
-        status: clampStatus(parsed.status),
-        feedback: typeof parsed.feedback === 'string' ? parsed.feedback : '',
+        status: clampedStatus,
+        feedback: sanitizeFeedback(parsed.feedback),
         score: score,
         criteriaFeedback: criteriaFeedback(parsed, criteria),
       };
     } catch (err) {
-      return { status: 'error', feedback: (err && err.message) ? err.message : 'Grader call failed.', score: 0 };
+      return { status: 'error', feedback: sanitizeErrMsg(err, 'Grader call failed.'), score: 0 };
     }
   }
 

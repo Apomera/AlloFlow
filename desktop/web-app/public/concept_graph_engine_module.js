@@ -57,13 +57,13 @@
     var nodes = (graph && Array.isArray(graph.nodes)) ? graph.nodes.slice() : [];
     var edges = (graph && Array.isArray(graph.edges)) ? graph.edges : [];
     var byX = nodes.slice().sort(function (a, b) { return (num(a.x, 0) - num(b.x, 0)) || (num(a.y, 0) - num(b.y, 0)); });
-    var indeg = {}, adj = {};
+    var indeg = Object.create(null), adj = Object.create(null);
     nodes.forEach(function (n) { indeg[n.id] = 0; adj[n.id] = []; });
     edges.forEach(function (e) { if (adj[e.fromId] && indeg[e.toId] != null) { adj[e.fromId].push(e.toId); indeg[e.toId]++; } });
     var ready = byX.filter(function (n) { return indeg[n.id] === 0; }).map(function (n) { return n.id; });
     var order = [];
-    var localIndeg = {}; nodes.forEach(function (n) { localIndeg[n.id] = indeg[n.id]; });
-    var posOf = {}; byX.forEach(function (n, i) { posOf[n.id] = i; });
+    var localIndeg = Object.create(null); nodes.forEach(function (n) { localIndeg[n.id] = indeg[n.id]; });
+    var posOf = Object.create(null); byX.forEach(function (n, i) { posOf[n.id] = i; });
     while (ready.length) {
       ready.sort(function (a, b) { return posOf[a] - posOf[b]; });
       var id = ready.shift();
@@ -81,7 +81,7 @@
   // The index is the band position AND the depth plane a 3D view stacks on.
   function deriveLanes(graph) {
     var nodes = (graph && Array.isArray(graph.nodes)) ? graph.nodes : [];
-    var order = [], seen = {}, hasUngrouped = false;
+    var order = [], seen = Object.create(null), hasUngrouped = false;
     nodes.forEach(function (n) {
       var c = (n && typeof n.category === 'string' && n.category) ? n.category : null;
       if (c === null) { hasUngrouped = true; return; }
@@ -104,11 +104,16 @@
     opts = opts || {};
     var width = num(opts.width, 2000), height = num(opts.height, 1200), planeGap = num(opts.planeGap, 300);
     var catDepth = opts.categoryDepth !== false;   // category-lane → depth plane, even without axisValues
-    var zPlane = {};
+    var zPlane = Object.create(null);
+    var ungroupedPlane = null;
     if (graph.axes && graph.axes.z && Array.isArray(graph.axes.z.categories)) {
       graph.axes.z.categories.forEach(function (c, i) { zPlane[c] = i; });
+      ungroupedPlane = graph.axes.z.categories.length;
     } else {
-      deriveLanes(graph).forEach(function (l) { if (l.key != null) zPlane[l.key] = l.index; });
+      deriveLanes(graph).forEach(function (l) {
+        if (l.key != null) zPlane[l.key] = l.index;
+        else ungroupedPlane = l.index;
+      });
     }
     var nodes = graph.nodes.map(function (n) {
       var av = (n.axisValues && typeof n.axisValues === 'object') ? n.axisValues : null;
@@ -116,12 +121,14 @@
       var hasX = !!(av && isNum(av.x)), hasY = !!(av && isNum(av.y));
       var hasZ = !!(av && (typeof av.z === 'string' || isNum(av.z)));
       var hasCatDepth = catDepth && cat != null;
-      if (!hasX && !hasY && !hasZ && !hasCatDepth) return n;     // nothing to project — leave manual/legacy coords
+      var hasUngroupedDepth = catDepth && cat == null && !hasZ && ungroupedPlane != null && ungroupedPlane > 0;
+      if (!hasX && !hasY && !hasZ && !hasCatDepth && !hasUngroupedDepth) return n;     // nothing to project — leave manual/legacy coords
       var nx = hasX ? av.x * width : num(n.x, 0);
       var ny = hasY ? av.y * height : num(n.y, 0);
       var nz = num(n.z, 0);
       if (hasZ) nz = (typeof av.z === 'string') ? (zPlane[av.z] || 0) * planeGap : av.z * planeGap;
       else if (hasCatDepth) nz = (zPlane[cat] || 0) * planeGap;  // swim-lane index becomes the depth plane
+      else if (hasUngroupedDepth) nz = ungroupedPlane * planeGap;  // trailing ungrouped plane holds uncategorized items
       return Object.assign({}, n, { x: nx, y: ny, z: nz });
     });
     return Object.assign({}, graph, { nodes: nodes });
@@ -661,12 +668,12 @@
         if (!seenStrand[n.category]) { seenStrand[n.category] = true; strands.push(n.category); }
       }
     });
-    var targetSet = {}; targets.forEach(function (id) { targetSet[id] = 1; });
+    var targetSet = Object.create(null); targets.forEach(function (id) { targetSet[id] = 1; });
     var nodes = graph.nodes.map(function (n) {
       if (!targetSet[n.id]) return n;
       var av = Object.assign({}, n.axisValues || {});
       delete av.z;
-      return Object.assign({}, n, { category: null, axisValues: av });
+      return Object.assign({}, n, { category: null, z: 0, axisValues: av });
     });
     var edges = (graph.edges || []).filter(function (e) { return !targetSet[e.fromId] && !targetSet[e.toId]; });
     var g = Object.assign({}, graph, { nodes: nodes, edges: edges });
@@ -813,6 +820,7 @@
     graph = normalizeGraph(graph);
     var nodes = (graph.nodes || []).map(function (node) {
       var n = Object.assign({}, node);
+      if (typeof n.text !== 'string' && typeof node.label === 'string') n.text = node.label;
       delete n.label; delete n.z; delete n.axisValues;   // concept-map node = {id,x,y,text,type,colorVariant?}
       return n;
     });
@@ -853,8 +861,9 @@
     branches.forEach(function (b, bi) {
       var ct = (b && Array.isArray(b.connectsTo)) ? b.connectsTo : [];
       ct.forEach(function (target) {
-        if (branchIds[target] && target !== bi) {
-          g.edges.push({ id: 'e_ct' + bi + '_' + target, fromId: branchIds[bi], toId: branchIds[target], type: 'sequence' });
+        var idx = Number(target);
+        if (Number.isInteger(idx) && idx >= 0 && idx < branchIds.length && idx !== bi) {
+          g.edges.push({ id: 'e_ct' + bi + '_' + idx, fromId: branchIds[bi], toId: branchIds[idx], type: 'sequence' });
         }
       });
     });
@@ -1389,7 +1398,7 @@
     var maxEdges = Math.max(1, Math.min(1000, parseInt(opts.maxEdges, 10) || 480));
     var state = { text: 0 };
     var sourceNodes = graph && Array.isArray(graph.nodes) ? graph.nodes : [];
-    var nodeIds = {};
+    var nodeIds = Object.create(null);
     var nodes = sourceNodes.slice(0, maxNodes).map(function (node) {
       var safe = sanitizeAlignmentValue(node, 0, state);
       if (!safe || typeof safe !== 'object') return null;
@@ -1399,17 +1408,26 @@
       nodeIds[id] = true;
       return safe;
     }).filter(Boolean);
+    var graphMeta = graph && graph.meta && typeof graph.meta === 'object'
+      ? sanitizeAlignmentValue(graph.meta, 0, state)
+      : {};
+    var safeAxes = sanitizeAlignmentValue(graph && graph.axes, 0, state);
     var sourceEdges = graph && Array.isArray(graph.edges) ? graph.edges : [];
-    var edges = sourceEdges.map(function (edge) {
+    var eligibleEdges = [];
+    for (var ei = 0; ei < sourceEdges.length && eligibleEdges.length < maxEdges; ei++) {
+      var rawEdge = sourceEdges[ei];
+      if (!rawEdge || typeof rawEdge !== 'object') continue;
+      var rawFrom = auditText(rawEdge.fromId).slice(0, 240);
+      var rawTo = auditText(rawEdge.toId).slice(0, 240);
+      if (nodeIds[rawFrom] && nodeIds[rawTo]) eligibleEdges.push(rawEdge);
+    }
+    var edges = eligibleEdges.map(function (edge) {
       var safe = sanitizeAlignmentValue(edge, 0, state);
       if (!safe || typeof safe !== 'object') return null;
       safe.fromId = auditText(safe.fromId).slice(0, 240);
       safe.toId = auditText(safe.toId).slice(0, 240);
       return nodeIds[safe.fromId] && nodeIds[safe.toId] ? safe : null;
-    }).filter(Boolean).slice(0, maxEdges);
-    var graphMeta = graph && graph.meta && typeof graph.meta === 'object'
-      ? sanitizeAlignmentValue(graph.meta, 0, state)
-      : {};
+    }).filter(Boolean);
     var viewMeta = graphMeta.alignmentView && typeof graphMeta.alignmentView === 'object' ? graphMeta.alignmentView : {};
     var meta = Object.assign({}, graphMeta, {
       alignmentView: Object.assign({}, viewMeta, { bounded: true, maxNodes: maxNodes, maxEdges: maxEdges, truncated: nodes.length < sourceNodes.length || edges.length < sourceEdges.length })
@@ -1417,7 +1435,7 @@
     var bounded = {
       version: VERSION,
       title: auditText(graph && graph.title).slice(0, 400),
-      axes: sanitizeAlignmentValue(graph && graph.axes, 0, state),
+      axes: safeAxes,
       nodes: nodes,
       edges: edges,
       layers: [],
@@ -1445,14 +1463,15 @@
       var candidateMeta = candidate && candidate.meta && candidate.meta.alignmentMap;
       if (candidate && candidate.version === VERSION && candidateMeta && candidateMeta.version === 'alloflow-alignment-map/v2') originalGraph = boundedAlignmentGraph(candidate, opts);
     }
+    var bounded = boundedAlignmentGraph(graph, opts);
     return {
       ok: true,
       schema: payload.schema,
-      graph: boundedAlignmentGraph(graph, opts),
+      graph: bounded,
       originalGraph: originalGraph,
-      audit: payload.audit && typeof payload.audit === 'object' ? Object.assign({}, payload.audit) : null,
+      audit: payload.audit && typeof payload.audit === 'object' ? sanitizeAlignmentValue(payload.audit, 0, { text: 0 }) : null,
       filters: null,
-      counts: { nodes: graph.nodes.length, edges: graph.edges.length }
+      counts: { nodes: bounded.nodes.length, edges: bounded.edges.length }
     };
   }
   function alignmentNodeSearchText(node) {
@@ -1569,8 +1588,13 @@
   function buildSemanticGraphPrompt(graph, opts) {
     opts = opts || {};
     graph = normalizeGraph(graph);
-    var axes = opts.axes || (graph.axes && graph.axes.x ? graph.axes : DEFAULT_AXES);
-    var strands = [], seen = {};
+    var rawAxes = opts.axes || graph.axes || {};
+    var axes = {
+      x: (rawAxes.x && typeof rawAxes.x.label === 'string' && rawAxes.x.label) ? rawAxes.x : DEFAULT_AXES.x,
+      y: (rawAxes.y && typeof rawAxes.y.label === 'string' && rawAxes.y.label) ? rawAxes.y : DEFAULT_AXES.y,
+      z: (rawAxes.z && typeof rawAxes.z.label === 'string' && rawAxes.z.label) ? rawAxes.z : DEFAULT_AXES.z
+    };
+    var strands = [], seen = Object.create(null);
     graph.nodes.forEach(function (n) { var c = (typeof n.category === 'string' && n.category) ? n.category : null; if (c && !seen[c]) { seen[c] = true; strands.push(c); } });
     var nodeList = graph.nodes.map(function (n) { return '- id "' + n.id + '": ' + (n.label || n.text || n.id); }).join('\n');
     var zLine = strands.length

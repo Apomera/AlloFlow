@@ -32,42 +32,60 @@
   'use strict';
   if (window.AlloTranslate && typeof window.AlloTranslate.translate === 'function') return;
 
-  var TRANSFORMERS_URLS = [
+  var hasOwn = Object.prototype.hasOwnProperty;
+  var MAX_INPUT_CHARS = 4000;
+  var MAX_OUTPUT_CHARS = 8000;
+
+  var TRANSFORMERS_URLS = Object.freeze([
     'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2',
     'https://unpkg.com/@xenova/transformers@2.17.2'
-  ];
+  ]);
   // Language name / code → opus-mt 2-letter code.
-  var LANG_TO_CODE = {
+  var LANG_TO_CODE = Object.freeze({
     english: 'en', spanish: 'es', french: 'fr', german: 'de', chinese: 'zh',
     'chinese (simplified)': 'zh', mandarin: 'zh', arabic: 'ar', russian: 'ru',
     hindi: 'hi', vietnamese: 'vi', italian: 'it',
     en: 'en', es: 'es', fr: 'fr', de: 'de', zh: 'zh', ar: 'ar', ru: 'ru', hi: 'hi', vi: 'vi', it: 'it'
-  };
+  });
   // Non-English codes with a verified quantized opus-mt pair to/from English.
-  var SUPPORTED = { es: 1, fr: 1, de: 1, zh: 1, ar: 1, ru: 1, hi: 1, vi: 1, it: 1 };
+  var SUPPORTED = Object.freeze({ es: 1, fr: 1, de: 1, zh: 1, ar: 1, ru: 1, hi: 1, vi: 1, it: 1 });
 
-  var _libPromise = null;   // memoized transformers.js module
-  var _pipes = {};          // pair key → memoized pipeline promise
+  var _libPromise = null;          // memoized transformers.js module
+  var _pipes = Object.create(null); // pair key → memoized pipeline promise
+
+  function stripCtl(s) {
+    return String(s == null ? '' : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+  }
 
   function codeOf(lang) {
-    if (!lang) return '';
-    var s = String(lang).toLowerCase().trim();
-    if (LANG_TO_CODE[s]) return LANG_TO_CODE[s];
+    if (!lang || typeof lang !== 'string') return '';
+    var s = lang.toLowerCase().trim().slice(0, 60);
+    if (hasOwn.call(LANG_TO_CODE, s)) return LANG_TO_CODE[s];
     var two = s.slice(0, 2);
-    return LANG_TO_CODE[two] || '';
+    return hasOwn.call(LANG_TO_CODE, two) ? LANG_TO_CODE[two] : '';
   }
   // A pair is on-device-translatable when both map to a code, they differ, and
   // exactly one side is English with the other in the verified opus-mt set.
   function pairModel(fromCode, toCode) {
     if (!fromCode || !toCode || fromCode === toCode) return null;
-    if (fromCode === 'en' && SUPPORTED[toCode]) return 'Xenova/opus-mt-en-' + toCode;
-    if (toCode === 'en' && SUPPORTED[fromCode]) return 'Xenova/opus-mt-' + fromCode + '-en';
+    if (fromCode === 'en' && hasOwn.call(SUPPORTED, toCode)) return 'Xenova/opus-mt-en-' + toCode;
+    if (toCode === 'en' && hasOwn.call(SUPPORTED, fromCode)) return 'Xenova/opus-mt-' + fromCode + '-en';
     return null;
   }
 
+  function remoteCdnBlocked() {
+    try {
+      if (typeof window === 'undefined') return true;
+      return window._isDesktopBundledApp === true
+        || window.__alloOfflineOnly === true
+        || window.__alloQrStudentMode === true
+        || window._alloQrBlocked === true;
+    } catch (_) { return true; }
+  }
+
   function ensureLib() {
-    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
-      return Promise.reject(new Error('Remote translation CDN is disabled in Desktop mode'));
+    if (remoteCdnBlocked()) {
+      return Promise.reject(new Error('Remote translation CDN is disabled in this mode'));
     }
     if (_libPromise) return _libPromise;
     _libPromise = (function tryAt(i) {
@@ -84,13 +102,14 @@
 
   function getPipe(model, onProgress) {
     if (_pipes[model]) return _pipes[model];
+    var progressCb = typeof onProgress === 'function' ? onProgress : undefined;
     _pipes[model] = ensureLib().then(function (lib) {
-      return lib.pipeline('translation', model, { quantized: true, progress_callback: onProgress || undefined });
+      return lib.pipeline('translation', model, { quantized: true, progress_callback: progressCb });
     }).catch(function (e) { delete _pipes[model]; throw e; });
     return _pipes[model];
   }
 
-  window.AlloTranslate = {
+  window.AlloTranslate = Object.freeze({
     ready: function () { return !!_libPromise; },
     /** Is there an on-device model for this language pair? */
     supports: function (fromLang, toLang) {
@@ -107,21 +126,21 @@
      * model covers the pair / anything fails (caller uses the cloud path).
      */
     translate: function (text, fromLang, toLang, opts) {
-      var src = String(text == null ? '' : text).trim();
+      var src = stripCtl(text == null ? '' : text).trim().slice(0, MAX_INPUT_CHARS);
       if (!src) return Promise.resolve(null);
       var model = pairModel(codeOf(fromLang), codeOf(toLang));
       if (!model) return Promise.resolve(null);
-      var onProgress = opts && opts.onProgress;
+      var onProgress = opts && typeof opts.onProgress === 'function' ? opts.onProgress : undefined;
       return getPipe(model, onProgress).then(function (translator) {
         return translator(src, { max_new_tokens: 512 });
       }).then(function (out) {
         var res = Array.isArray(out) ? out[0] : out;
         var txt = res && (res.translation_text || res.text || res.generated_text);
-        txt = String(txt == null ? '' : txt).trim();
+        txt = stripCtl(txt == null ? '' : txt).trim().slice(0, MAX_OUTPUT_CHARS);
         return txt.length ? txt : null;
       }).catch(function () { return null; });
     }
-  };
+  });
 
   console.log('[AlloTranslate] translate_loader.js ready — window.AlloTranslate.translate(text, from, to) (lazy opus-mt, on-device)');
 })();

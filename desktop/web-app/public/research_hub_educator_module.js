@@ -54,7 +54,7 @@
       civic_policy: "Civic & Policy Inquiry",
       creative_cultural: "Creative & Cultural Inquiry"
     };
-    return labels[id] || id || "no approach selected";
+    return (typeof id === "string" && Object.prototype.hasOwnProperty.call(labels, id) ? labels[id] : id) || "no approach selected";
   }
   function clip(s, n) {
     if (!s || typeof s !== "string") return "";
@@ -229,7 +229,7 @@
     });
     var allSurvivesFlag = probes.length > 0 && probes.every(function(p) {
       return p.verdict === "warrant_survives";
-    }) && !probes.every(function(p) {
+    }) && !probes.some(function(p) {
       return p.allSurvivesJustification && p.allSurvivesJustification.length >= 120;
     });
     return /* @__PURE__ */ React.createElement(Panel, { title: "Warrant trajectory", subtitle: qualifierContractionsTotal + " qualifier contraction(s), " + warrantRevisionsTotal + " warrant revision(s), " + positionalitySnapshots.length + " positionality snapshot(s)" }, /* @__PURE__ */ React.createElement("div", { "data-humanities-source-context-health": "true", style: { marginBottom: "9px", padding: "7px 9px", borderRadius: "8px", background: "#faf5ff", border: "1px solid #d8b4fe", fontSize: "10px", color: "#6b21a8" } }, /* @__PURE__ */ React.createElement("strong", null, "Humanistic source context:"), " ", sources.filter(function(s) {
@@ -256,7 +256,7 @@
           {
             key: "q" + qi,
             color: "#92400e",
-            label: "qual v" + (qi + 2) + (q.deltaJaccard != null ? " \u0394" + q.deltaJaccard.toFixed(2) : "")
+            label: "qual v" + (qi + 2) + (typeof q.deltaJaccard === "number" && Number.isFinite(q.deltaJaccard) ? " \u0394" + q.deltaJaccard.toFixed(2) : "")
           }
         );
       }), wLog.map(function(w, wi) {
@@ -275,7 +275,7 @@
           {
             key: "p" + pi,
             color,
-            label: p.verdict.replace("warrant_", "")
+            label: String(p.verdict || "").replace("warrant_", "")
           }
         );
       })));
@@ -289,9 +289,9 @@
       color: "#92400e"
     } }, /* @__PURE__ */ React.createElement("strong", null, "\u26A0\uFE0F ", "All-survives without justification:"), ' Every framing probe verdict is "warrant survives" but no allSurvivesJustification \u2265120c was authored. Frameworks usually contract under at least one alternative \u2014 ask student why theirs did not.')), compositions.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#475569" } }, "Composition + Foreclosure Coda:"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "20px", fontSize: "11px", color: "#1e293b" } }, compositions.map(function(c, i) {
       var av = j.absentVoices || [];
-      var coda = c.foreclosureCodaText || "";
+      var coda = String(c.foreclosureCodaText || "");
       var avMissing = av.filter(function(a) {
-        return a.whoseVoiceText && coda.indexOf(a.whoseVoiceText.slice(0, 20)) === -1;
+        return a && typeof a.whoseVoiceText === "string" && a.whoseVoiceText && coda.indexOf(a.whoseVoiceText.slice(0, 20)) === -1;
       }).length;
       return /* @__PURE__ */ React.createElement("li", { key: i }, "v", c.v, " \xB7 genre: ", c.genreChoice, " \xB7", " ", /* @__PURE__ */ React.createElement("span", { style: { color: avMissing > 0 ? "#991b1b" : "#166534" } }, "Foreclosure Coda ", avMissing > 0 ? "missing " + avMissing + " absent voice(s)" : "complete"));
     }))), /* @__PURE__ */ React.createElement(Note, null, "qualifierRevisionLog is THE assessment artifact for humanities. Multiple contractions under framing pressure = real warrant work. Source tier downgrades are good data; never penalize."));
@@ -450,7 +450,7 @@
       var contract = artifact.integrationContract || {};
       var receipt = artifact.reproducibilityReceipt || {};
       var color = row.health.status === "healthy" ? "#166534" : row.health.status === "action_needed" ? "#991b1b" : "#92400e";
-      return /* @__PURE__ */ React.createElement("div", { key: artifact.id, style: { padding: "8px 10px", borderRadius: "9px", border: "1px solid " + color, background: color + "0d" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "10px", color: "#1e293b" } }, artifact.sourceToolName || artifact.sourceToolId, " \xB7 ", artifact.sourceToolVersion || "version unknown"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "9px", fontWeight: 900, color } }, row.health.status.replace("_", " "))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#64748b" } }, "Contract v", contract.schemaVersion || "?", " \xB7 license: ", contract.license && (contract.license.spdx || contract.license.name) || "missing", " \xB7 citation: ", contract.citation && contract.citation.text ? "declared" : "missing", " \xB7 reproducibility: ", receipt.status || "missing", /* @__PURE__ */ React.createElement("span", null, " \xB7 review after: ", contract.reviewAfter || "unknown")), receipt.missingFields && receipt.missingFields.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#92400e" } }, /* @__PURE__ */ React.createElement("strong", null, "Receipt gaps:"), " ", receipt.missingFields.join(", ")), artifact.privacyFindings && artifact.privacyFindings.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#5b21b6" } }, /* @__PURE__ */ React.createElement("strong", null, "Privacy controls:"), " ", artifact.privacyFindings.map(function(finding) {
+      return /* @__PURE__ */ React.createElement("div", { key: artifact.id, style: { padding: "8px 10px", borderRadius: "9px", border: "1px solid " + color, background: color + "0d" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: "8px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "10px", color: "#1e293b" } }, artifact.sourceToolName || artifact.sourceToolId, " \xB7 ", artifact.sourceToolVersion || "version unknown"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "9px", fontWeight: 900, color } }, String(row.health && row.health.status || "").replace("_", " "))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#64748b" } }, "Contract v", contract.schemaVersion || "?", " \xB7 license: ", contract.license && (contract.license.spdx || contract.license.name) || "missing", " \xB7 citation: ", contract.citation && contract.citation.text ? "declared" : "missing", " \xB7 reproducibility: ", receipt.status || "missing", /* @__PURE__ */ React.createElement("span", null, " \xB7 review after: ", contract.reviewAfter || "unknown")), receipt.missingFields && receipt.missingFields.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#92400e" } }, /* @__PURE__ */ React.createElement("strong", null, "Receipt gaps:"), " ", receipt.missingFields.join(", ")), artifact.privacyFindings && artifact.privacyFindings.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#5b21b6" } }, /* @__PURE__ */ React.createElement("strong", null, "Privacy controls:"), " ", artifact.privacyFindings.map(function(finding) {
         return finding.code;
       }).join(", ")), artifact.legacyProvenance && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px", fontSize: "9px", color: "#92400e" } }, /* @__PURE__ */ React.createElement("strong", null, "Legacy metadata:"), " ", artifact.legacyProvenance.reason, artifact.legacyContextNote ? " Learner context attached." : ""), row.health.issues && row.health.issues.length > 0 && /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "17px", fontSize: "9px", color: "#475569" } }, row.health.issues.map(function(issue) {
         return /* @__PURE__ */ React.createElement("li", { key: issue.code }, issue.message);

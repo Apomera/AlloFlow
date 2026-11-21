@@ -2,7 +2,8 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const banks = require('./teaching_reading_5205/item_content.cjs');
+const { applyChoiceOverrides } = require('./reading_choice_overrides/index.cjs');
+const banks = applyChoiceOverrides(require('./teaching_reading_5205/item_content.cjs'), 'R');
 const { cleanSourceText } = require('./teaching_reading_5205/source_text_cleanup.cjs');
 const root = path.resolve(__dirname, '..');
 const diagnosticCounts = { 'phonological-emergent': 16, 'phonics-decoding': 20, 'vocabulary-fluency': 23, comprehension: 23, 'written-expression': 18 };
@@ -11,10 +12,11 @@ const ensure = (value, minimum, suffix) => String(value || '').trim().length >= 
 function makeItem(bank, spec, batch, position) {
   const answerIndex = (position - 1) % 4;
   const rationale = ensure(cleanSourceText(spec.rationale), 120, 'The response links the measured literacy skill to explicit instruction, accessible grade-level practice, and progress evidence.');
+  const notes = Array.isArray(spec.distractorNotes) ? spec.distractorNotes : []; if (notes.length !== 3 || notes.some((note) => String(note || '').trim().length < 100)) throw new Error('Missing authored distractorNotes for ' + bank.id + ' #' + position);
   const choices = []; const choiceRationales = []; let distractor = 0;
   for (let index = 0; index < 4; index += 1) {
     if (index === answerIndex) { choices.push(cleanSourceText(spec.correct)); choiceRationales.push('Correct. ' + rationale); }
-    else { const value = cleanSourceText(spec.distractors[distractor++]); choices.push(value); choiceRationales.push('Not the best answer. "' + value + '" does not match the controlling literacy evidence, construct, instructional sequence, or monitoring need. ' + rationale); }
+    else { const value = cleanSourceText(spec.distractors[distractor]); const note = cleanSourceText(notes[distractor++]); choices.push(value); choiceRationales.push(note); }
   }
   return { id: 'tr5205-b' + batch + '-' + String(position).padStart(3, '0'), type: 'single-choice', domainId: bank.domainId, difficulty: spec.difficulty, prompt: cleanSourceText(batch === 1 ? spec.promptA : spec.promptB), choices, answerIndex, rationale, references: bank.references.slice(), reviewStatus: 'source-reviewed', qaStatus: 'qa-passed', qaReviewedAt: '2026-07-14', choiceRationales, skillIds: [bank.id], chapterIds: [bank.chapterId] };
 }

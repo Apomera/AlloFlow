@@ -659,6 +659,10 @@
         }
         self.win = win;
       } else {
+        if (!document || !document.body) {
+          reject(storageError('allo/storage-dom-unavailable', 'Device storage bridge requires document.body.'));
+          return;
+        }
         var frame = document.createElement('iframe');
         frame.src = url;
         frame.setAttribute('aria-hidden', 'true');
@@ -954,7 +958,9 @@
             recoveryGet.onsuccess = function () {
               try {
                 result = applyRecoveryMutation(recoveryGet.result ? recoveryGet.result.value : null, params.mutation);
-                store.put({ k: k, ns: params.ns, key: params.key, value: result.store, updatedAt: new Date().toISOString() });
+                if (result && result.applied !== false) {
+                  store.put({ k: k, ns: params.ns, key: params.key, value: result.store, updatedAt: new Date().toISOString() });
+                }
               } catch (error) {
                 operationError = error;
                 try { t.abort(); } catch (_) {}
@@ -1018,32 +1024,38 @@
   var memoryBackend = {
     request: function (op, params) {
       var ns = params && params.ns, key = params && params.key;
-      var bucket = _mem[ns] = _mem[ns] || Object.create(null);
+      var readBucket = (typeof ns === 'string' && own(_mem, ns)) ? _mem[ns] : null;
+      var ensureBucket = function () {
+        if (typeof ns !== 'string') throw storageError('allo/bad-ns', 'Namespace must be a string.');
+        return _mem[ns] = _mem[ns] || Object.create(null);
+      };
       switch (op) {
-        case 'get': return Promise.resolve(own(bucket, key) ? bucket[key] : null);
-        case 'set': bucket[key] = params.value; return Promise.resolve(true);
+        case 'get': return Promise.resolve(readBucket && own(readBucket, key) ? readBucket[key] : null);
+        case 'set': ensureBucket()[key] = params.value; return Promise.resolve(true);
         case 'compareAndSwap':
           try {
-            var casExists = own(bucket, key);
+            var casBucket = ensureBucket();
+            var casExists = own(casBucket, key);
             var casResult = applyCompareAndSwap(
-              casExists ? bucket[key] : undefined,
+              casExists ? casBucket[key] : undefined,
               casExists,
               params.expected,
               params.nextValue
             );
-            if (casResult.applied) bucket[key] = casResult.value;
+            if (casResult.applied) casBucket[key] = casResult.value;
             return Promise.resolve(casResult);
           } catch (error) { return Promise.reject(error); }
         case 'mutateRecovery':
           try {
-            var recoveryResult = applyRecoveryMutation(own(bucket, key) ? bucket[key] : null, params.mutation);
-            bucket[key] = recoveryResult.store;
+            var recBucket = ensureBucket();
+            var recoveryResult = applyRecoveryMutation(own(recBucket, key) ? recBucket[key] : null, params.mutation);
+            recBucket[key] = recoveryResult.store;
             return Promise.resolve(recoveryResult);
           } catch (error) { return Promise.reject(error); }
-        case 'delete': delete bucket[key]; return Promise.resolve(true);
-        case 'list': return Promise.resolve(Object.keys(bucket));
-        case 'getAll': return Promise.resolve(Object.keys(bucket).map(function (k) { return { key: k, value: bucket[k] }; }));
-        case 'clearNamespace': { var n = Object.keys(bucket).length; _mem[ns] = Object.create(null); return Promise.resolve(n); }
+        case 'delete': if (readBucket) delete readBucket[key]; return Promise.resolve(true);
+        case 'list': return Promise.resolve(readBucket ? Object.keys(readBucket) : []);
+        case 'getAll': return Promise.resolve(readBucket ? Object.keys(readBucket).map(function (k) { return { key: k, value: readBucket[k] }; }) : []);
+        case 'clearNamespace': { var n = readBucket ? Object.keys(readBucket).length : 0; if (typeof ns === 'string') delete _mem[ns]; return Promise.resolve(n); }
         case 'namespaces': return Promise.resolve(Object.keys(_mem).sort().map(function (k) {
           return { ns: k, count: Object.keys(_mem[k]).length, bytes: 0 };
         }));
@@ -1163,8 +1175,10 @@
     },
     /** Open the bridge (popup needs a user gesture). Resolves when ready. */
     connect: function () {
-      if (state.backendName === 'direct' || state.backendName === 'memory') return Promise.resolve(api.status());
       if (state.backendName === 'unset') api.init({});
+      if (state.backendName === 'direct' || state.backendName === 'memory') {
+        return flushQueue().then(function () { return api.status(); });
+      }
       if (state.declined) {
         var code = state.declinedCode || DENIED;
         return Promise.reject(storageError(code, DECLINE_MESSAGES[code]));
@@ -1456,6 +1470,17 @@
       'Run once, then run again in a completely fresh session — the second run gives the verdict. ' +
       'A small window may flash open; that is the storage bridge.';
 
+    var isProbeBlockedForLearner = function () {
+      try {
+        if (window.__alloQrStudentMode) return true;
+        if (window.__alloStudentView === true) return true;
+        var ctxRaw = window.__alloSensitiveWorkspaceContext;
+        var ctx = typeof ctxRaw === 'function' ? ctxRaw() : ctxRaw;
+        if (ctx && typeof ctx === 'object' && ctx.learner === true) return true;
+      } catch (_) { return true; }
+      return false;
+    };
+
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;';
     var runBtn = document.createElement('button');
@@ -1467,6 +1492,7 @@
     reviewBtn.textContent = '🔍 Open review page';
     reviewBtn.style.cssText = btnCss;
     reviewBtn.onclick = function () {
+      if (isProbeBlockedForLearner()) { out.textContent = 'Device storage review is disabled in student mode.'; return; }
       try { window.open(state.bridgeUrl, '_blank', 'noopener'); } catch (_) {}
     };
     // The standalone review page sees the FIRST-PARTY bucket only. The iframe
@@ -1484,6 +1510,10 @@
     out.style.cssText = 'white-space:pre-wrap;word-break:break-word;font-size:12px;';
 
     dataBtn.onclick = function () {
+      if (isProbeBlockedForLearner()) {
+        out.textContent = 'Viewing stored app data is disabled in student mode.';
+        return;
+      }
       out.textContent = 'Loading stored data…';
       api.ready().then(function () { return api.namespaces(); }).then(function (list) {
         out.textContent = '';
@@ -1505,19 +1535,18 @@
           al.textContent = msg;
           out.appendChild(al);
         };
-        var isProbeBlockedForLearner = function () {
-          try {
-            if (window.__alloQrStudentMode) return true;
-            if (window.__alloSensitiveWorkspaceContext && window.__alloSensitiveWorkspaceContext.learner === true) return true;
-          } catch (_) {}
-          return false;
-        };
         var isClinicalDeletionHeld = function (ns) {
           if (ns !== 'protected_clinical_records') return false;
           try {
             if (Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SENSITIVE_RECORD_RETENTION_POLICY')) {
               var pol = window.ALLOFLOW_SENSITIVE_RECORD_RETENTION_POLICY;
-              if (!pol || typeof pol !== 'object' || pol.allowManualDeletion === false || pol.legalHold === true) return true;
+              if (!pol || typeof pol !== 'object' || Array.isArray(pol)) return true;
+              var polProto = Object.getPrototypeOf(pol);
+              if (polProto !== Object.prototype && polProto !== null) return true;
+              if (!Object.prototype.hasOwnProperty.call(pol, 'version') || pol.version !== 1) return true;
+              if (Object.prototype.hasOwnProperty.call(pol, 'allowManualDeletion') && typeof pol.allowManualDeletion !== 'boolean') return true;
+              if (Object.prototype.hasOwnProperty.call(pol, 'legalHold') && typeof pol.legalHold !== 'boolean') return true;
+              if (pol.allowManualDeletion === false || pol.legalHold === true) return true;
             }
             if (typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_retention_legal_hold_v1') === '1') return true;
             var sw = window.AlloModules && window.AlloModules.SensitiveWorkspace;
@@ -1533,6 +1562,13 @@
           if (!dac || typeof dac.isConfigured !== 'function' || !dac.isConfigured()) return Promise.resolve(true);
           return new Promise(function (resolve) {
             if (!document || !document.body) { resolve(false); return; }
+            var background = [];
+            Array.prototype.slice.call(document.body.children).forEach(function (child) {
+              if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE' || child.tagName === 'LINK') return;
+              background.push({ node: child, inert: child.hasAttribute('inert'), ariaHidden: child.getAttribute('aria-hidden') });
+              child.setAttribute('inert', '');
+              child.setAttribute('aria-hidden', 'true');
+            });
             var overlay = document.createElement('div');
             overlay.setAttribute('role', 'dialog');
             overlay.setAttribute('aria-modal', 'true');
@@ -1545,32 +1581,39 @@
             overlay.setAttribute('aria-labelledby', heading.id);
             heading.textContent = 'Educator access code required';
             heading.style.cssText = 'margin:0 0 8px;font-size:16px;';
+            var inputLabel = document.createElement('label');
+            inputLabel.setAttribute('for', 'allo-device-storage-code-input');
+            inputLabel.textContent = 'Educator access code';
+            inputLabel.style.cssText = 'display:block;font-weight:600;margin-bottom:4px;color:#0f172a;';
             var input = document.createElement('input');
+            input.id = 'allo-device-storage-code-input';
             input.type = 'password';
             input.autocomplete = 'off';
             input.placeholder = 'Enter educator access code';
-            input.style.cssText = 'width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #94a3b8;border-radius:8px;margin-bottom:8px;font:inherit;';
+            input.style.cssText = 'width:100%;box-sizing:border-box;min-height:44px;padding:8px 10px;border:1px solid #64748b;border-radius:8px;margin-bottom:8px;font:inherit;color:#0f172a;background:#fff;';
             var err = document.createElement('div');
             err.setAttribute('role', 'alert');
-            err.style.cssText = 'color:#b91c1c;min-height:18px;font-size:12px;margin-bottom:8px;';
+            err.style.cssText = 'color:#991b1b;min-height:18px;font-size:12px;margin-bottom:8px;';
             var row = document.createElement('div');
             row.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;';
             var cancel = document.createElement('button');
             cancel.type = 'button';
             cancel.textContent = 'Cancel';
-            cancel.style.cssText = 'padding:6px 12px;border:1px solid #64748b;border-radius:8px;background:#fff;cursor:pointer;';
+            cancel.style.cssText = 'min-height:44px;padding:10px 14px;border:1px solid #475569;border-radius:8px;background:#fff;color:#0f172a;font-weight:600;cursor:pointer;';
             var submit = document.createElement('button');
             submit.type = 'submit';
             submit.textContent = 'Verify';
-            submit.style.cssText = 'padding:6px 12px;border:0;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer;';
+            submit.style.cssText = 'min-height:44px;padding:10px 14px;border:0;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer;';
             row.appendChild(cancel);
             row.appendChild(submit);
             box.appendChild(heading);
+            box.appendChild(inputLabel);
             box.appendChild(input);
             box.appendChild(err);
             box.appendChild(row);
             overlay.appendChild(box);
             document.body.appendChild(overlay);
+            var finished = false;
             var onModalKey = function (ev) {
               if (ev.key === 'Escape') {
                 if (ev.isComposing || ev.keyCode === 229) return;
@@ -1595,22 +1638,32 @@
             };
             document.addEventListener('keydown', onModalKey, true);
             var finish = function (ok) {
+              if (finished) return;
+              finished = true;
               document.removeEventListener('keydown', onModalKey, true);
+              background.forEach(function (entry) {
+                if (!entry.inert) entry.node.removeAttribute('inert');
+                if (entry.ariaHidden === null) entry.node.removeAttribute('aria-hidden');
+                else entry.node.setAttribute('aria-hidden', entry.ariaHidden);
+              });
               try { overlay.remove(); } catch (_) {}
-              if (openerBtn && openerBtn.focus) try { openerBtn.focus(); } catch (_) {}
+              if (openerBtn && openerBtn.isConnected && openerBtn.focus) try { openerBtn.focus(); } catch (_) {}
               resolve(!!ok);
             };
             cancel.onclick = function () { finish(false); };
             box.onsubmit = function (ev) {
               ev.preventDefault();
+              if (finished) return;
               submit.disabled = true;
               err.textContent = '';
               Promise.resolve(dac.verify(input.value)).then(function (res) {
+                if (finished) return;
                 submit.disabled = false;
                 if (res && res.ok) { finish(true); return; }
                 err.textContent = res && res.reason === 'backoff' ? 'Too many attempts. Wait before trying again.' : 'Incorrect access code.';
-                input.focus();
+                if (input.isConnected) input.focus();
               }, function () {
+                if (finished) return;
                 submit.disabled = false;
                 err.textContent = 'Could not verify access code.';
               });
@@ -1649,14 +1702,18 @@
           var del = document.createElement('button');
           del.type = 'button';
           del.textContent = 'Erase';
-          del.style.cssText = btnCss + 'padding:2px 8px;color:#dc2626;';
+          del.style.cssText = btnCss + 'padding:2px 10px;' + (dark ? 'background:#7f1d1d;color:#fecaca;border-color:#f87171;' : 'background:#fef2f2;color:#991b1b;border-color:#b91c1c;');
           del.onclick = function () {
             if (isProbeBlockedForLearner()) { probeNotice('Erasing stored data is disabled in student mode.'); return; }
             if (isClinicalDeletionHeld(info.ns)) { probeNotice('Manual clinical-record deletion is blocked by retention policy or legal hold.'); return; }
             runAfterEducatorVerify(del, function () {
               if (isClinicalDeletionHeld(info.ns)) { probeNotice('Manual clinical-record deletion is blocked by retention policy or legal hold.'); return; }
               confirmDeviceStorageErase(info, del).then(function (confirmed) {
-                if (confirmed) api.clearNamespace(info.ns).then(function () { dataBtn.onclick(); });
+                if (confirmed) {
+                  api.clearNamespace(info.ns).then(function () { dataBtn.onclick(); }).catch(function (e) {
+                    probeNotice('Erase failed: ' + ((e && (e.code || e.message)) || e));
+                  });
+                }
               });
             });
           };

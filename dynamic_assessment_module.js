@@ -204,6 +204,28 @@
     });
   }
 
+  function daIsUnsafeKey(key) {
+    return key === "__proto__" || key === "constructor" || key === "prototype";
+  }
+
+  function daJsonReviver(key, value) {
+    return daIsUnsafeKey(key) ? undefined : value;
+  }
+
+  function daStripUnsafeKeys(value, depth) {
+    if (depth === undefined) depth = 0;
+    if (depth > 40 || value === null || typeof value !== "object") return value;
+    if (Array.isArray(value)) {
+      return value.map(function (item) { return daStripUnsafeKeys(item, depth + 1); });
+    }
+    var clean = {};
+    Object.keys(value).forEach(function (k) {
+      if (daIsUnsafeKey(k)) return;
+      clean[k] = daStripUnsafeKeys(value[k], depth + 1);
+    });
+    return clean;
+  }
+
   function daDecryptBackupEnvelope(envelope, password, cryptoApi) {
     var api, normalizedPassword, validation;
     try {
@@ -214,7 +236,8 @@
     } catch (error) {
       return Promise.reject(error);
     }
-    return api.decryptJSON(envelope.encryption, normalizedPassword).then(function (parsed) {
+    return api.decryptJSON(envelope.encryption, normalizedPassword).then(function (rawParsed) {
+      var parsed = daStripUnsafeKeys(rawParsed);
       if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)
         || parsed._exportFormat !== DA_BACKUP_FORMAT || parsed._exportVersion !== DA_BACKUP_VERSION
         || !Number.isFinite(Date.parse(parsed._exportedAt)) || !Array.isArray(parsed.sessions)
@@ -1703,12 +1726,12 @@
   // ─── Combined registry ───
   // Register all items by id so renderActivePhase can look them up.
   // Add new domains here as they ship.
-  var ITEMS_BY_ID = {};
+  var ITEMS_BY_ID = Object.create(null);
   MATH_ITEMS.forEach(function (it) { ITEMS_BY_ID[it.id] = it; });
   READING_ITEMS.forEach(function (it) { ITEMS_BY_ID[it.id] = it; });
   WM_ITEMS.forEach(function (it) { ITEMS_BY_ID[it.id] = it; });
   LANGUAGE_ITEMS.forEach(function (it) { ITEMS_BY_ID[it.id] = it; });
-  var DA_BUILT_IN_ITEMS = Object.assign({}, ITEMS_BY_ID);
+  var DA_BUILT_IN_ITEMS = Object.assign(Object.create(null), ITEMS_BY_ID);
   function daClearClinicalItems() {
     Object.keys(ITEMS_BY_ID).forEach(function (key) { delete ITEMS_BY_ID[key]; });
     Object.keys(DA_BUILT_IN_ITEMS).forEach(function (key) { ITEMS_BY_ID[key] = DA_BUILT_IN_ITEMS[key]; });
@@ -2043,18 +2066,27 @@
 
   function sumItemResultScores(itemResults) {
     if (!Array.isArray(itemResults)) return 0;
-    return itemResults.reduce(function (s, r) { return s + (r.scoreAwarded || 0); }, 0);
+    return itemResults.reduce(function (s, r) {
+      var val = r && typeof r.scoreAwarded === "number" && Number.isFinite(r.scoreAwarded) ? r.scoreAwarded : 0;
+      return s + val;
+    }, 0);
   }
-  function maxPossibleScore(itemCount) { return 5 * (itemCount || 0); }
+  function maxPossibleScore(itemCount) {
+    var count = Number(itemCount);
+    return Number.isFinite(count) && count > 0 ? 5 * count : 0;
+  }
 
   // Modifiability Index = (post - pre) / (max - pre).
   // Bounded to [-1, 1]. Negative would mean posttest was actually worse
   // than pretest — rare but possible (fatigue, regression).
   function computeModifiabilityIndex(pretestSum, posttestSum, itemCount) {
     var max = maxPossibleScore(itemCount);
-    if (max <= 0) return 0;
-    if (max === pretestSum) return 0; // Already at ceiling on pretest
-    var idx = (posttestSum - pretestSum) / (max - pretestSum);
+    var pre = Number(pretestSum);
+    var post = Number(posttestSum);
+    if (max <= 0 || !Number.isFinite(pre) || !Number.isFinite(post)) return 0;
+    if (max === pre) return 0; // Already at ceiling on pretest
+    var idx = (post - pre) / (max - pre);
+    if (!Number.isFinite(idx)) return 0;
     if (idx > 1) idx = 1;
     if (idx < -1) idx = -1;
     return Math.round(idx * 100) / 100;
@@ -2069,9 +2101,11 @@
   // growth WITH transfer growth = actual learning that generalized.
   // The clinical inference is different in each case.
   function transferTier(transferSum, transferMax, posttestSum, posttestMax) {
-    if (transferMax === 0) return null;
+    if (typeof transferMax !== "number" || !Number.isFinite(transferMax) || transferMax <= 0) return null;
+    if (typeof transferSum !== "number" || !Number.isFinite(transferSum)) return null;
     var transferPct = transferSum / transferMax;
-    var posttestPct = posttestMax > 0 ? posttestSum / posttestMax : 0;
+    var posttestPct = (typeof posttestMax === "number" && Number.isFinite(posttestMax) && posttestMax > 0 && typeof posttestSum === "number" && Number.isFinite(posttestSum))
+      ? posttestSum / posttestMax : 0;
     var transferRatio = posttestPct > 0 ? transferPct / posttestPct : 0;
     if (transferPct >= 0.7) {
       return { id: "strong-transfer", label: "Strong transfer", color: "#16a34a",
@@ -2105,11 +2139,11 @@
   // Descriptive within this session only — NOT a normed placement.
   function computeZpdProfile(session) {
     var results = (session && session.itemResults) || [];
-    var pre = {}, med = {};
+    var pre = Object.create(null), med = Object.create(null);
     var order = [];
-    var seen = {};
+    var seen = Object.create(null);
     results.forEach(function (r) {
-      if (!r || !r.itemId) return;
+      if (!r || !r.itemId || daIsUnsafeKey(r.itemId)) return;
       if (!seen[r.itemId]) { seen[r.itemId] = true; order.push(r.itemId); }
       if (r.phase === "pretest") pre[r.itemId] = r;
       else if (r.phase === "mediation") med[r.itemId] = r;
@@ -2206,16 +2240,17 @@
     { id: "guess",            label: "Appeared to guess",   hint: "Response not derived from visible strategy" },
     { id: "fluent",           label: "Fluent + automatic",  hint: "Quick, confident, no visible effort (mastery signal)" }
   ];
-  var OBSERVATION_TAGS_BY_ID = OBSERVATION_TAGS.reduce(function (acc, t) { acc[t.id] = t; return acc; }, {});
+  var OBSERVATION_TAGS_BY_ID = OBSERVATION_TAGS.reduce(function (acc, t) { acc[t.id] = t; return acc; }, Object.create(null));
 
   // Aggregate tag counts across all itemResults in a session.
   // Returns [{ id, label, count, share }] sorted by count desc.
   function aggregateObservationTags(itemResults) {
-    var counts = {};
+    var counts = Object.create(null);
     var total = 0;
     (itemResults || []).forEach(function (r) {
-      var tags = Array.isArray(r.observationTags) ? r.observationTags : [];
+      var tags = r && Array.isArray(r.observationTags) ? r.observationTags : [];
       tags.forEach(function (tid) {
+        if (typeof tid !== "string" || daIsUnsafeKey(tid)) return;
         counts[tid] = (counts[tid] || 0) + 1;
         total++;
       });
@@ -2486,9 +2521,9 @@
     // Tag agreement: count overlap (Jaccard-ish)
     var clinicianTags = (clinicianScore.observationTags || []).slice().sort();
     var expertTags = (expertScoring.observationTags || []).slice().sort();
-    var clinicianSet = {};
+    var clinicianSet = Object.create(null);
     clinicianTags.forEach(function (t) { clinicianSet[t] = true; });
-    var expertSet = {};
+    var expertSet = Object.create(null);
     expertTags.forEach(function (t) { expertSet[t] = true; });
     var missed = expertTags.filter(function (t) { return !clinicianSet[t]; });
     var extra = clinicianTags.filter(function (t) { return !expertSet[t]; });
@@ -2535,8 +2570,8 @@
         cohenD: null, hedgesG: null, miDistribution: [], tierCounts: {}, allMIs: [] };
     }
     var miVals = sess.map(function (s) { return s.modifiabilityIndex; });
-    var preVals = sess.map(function (s) { return typeof s.pretestSum === "number" ? s.pretestSum : 0; });
-    var postVals = sess.map(function (s) { return typeof s.posttestSum === "number" ? s.posttestSum : 0; });
+    var preVals = sess.map(function (s) { return typeof s.pretestSum === "number" && Number.isFinite(s.pretestSum) ? s.pretestSum : 0; });
+    var postVals = sess.map(function (s) { return typeof s.posttestSum === "number" && Number.isFinite(s.posttestSum) ? s.posttestSum : 0; });
 
     function mean(arr) { return arr.length === 0 ? null : arr.reduce(function (a, b) { return a + b; }, 0) / arr.length; }
     function sd(arr, useSample) {
@@ -2590,7 +2625,7 @@
     var tierCounts = { high: 0, moderate: 0, low: 0, regression: 0 };
     sess.forEach(function (s) {
       var t = (s.modifiabilityTier && s.modifiabilityTier.id) || modifiabilityTier(s.modifiabilityIndex).id;
-      if (t in tierCounts) tierCounts[t]++;
+      if (Object.prototype.hasOwnProperty.call(tierCounts, t)) tierCounts[t]++;
     });
 
     return {
@@ -2605,22 +2640,26 @@
 
   // Z-score for an individual MI relative to a population.
   function computeMiZScore(thisMI, popMean, popSD) {
-    if (typeof thisMI !== "number" || popMean === null || popSD === null || popSD === 0) return null;
+    if (typeof thisMI !== "number" || !Number.isFinite(thisMI)
+      || typeof popMean !== "number" || !Number.isFinite(popMean)
+      || typeof popSD !== "number" || !Number.isFinite(popSD) || popSD === 0) return null;
     return (thisMI - popMean) / popSD;
   }
 
   // Percentile rank of thisMI within allMIs. Uses simple ranking with
   // midpoint convention for ties.
   function computeMiPercentile(thisMI, allMIs) {
-    if (typeof thisMI !== "number" || !Array.isArray(allMIs) || allMIs.length === 0) return null;
-    var below = allMIs.filter(function (m) { return m < thisMI; }).length;
-    var equal = allMIs.filter(function (m) { return m === thisMI; }).length;
-    return Math.round(((below + 0.5 * equal) / allMIs.length) * 100);
+    if (typeof thisMI !== "number" || !Number.isFinite(thisMI) || !Array.isArray(allMIs) || allMIs.length === 0) return null;
+    var finiteMIs = allMIs.filter(function (m) { return typeof m === "number" && Number.isFinite(m); });
+    if (finiteMIs.length === 0) return null;
+    var below = finiteMIs.filter(function (m) { return m < thisMI; }).length;
+    var equal = finiteMIs.filter(function (m) { return m === thisMI; }).length;
+    return Math.round(((below + 0.5 * equal) / finiteMIs.length) * 100);
   }
 
   // Plain-language interpretation of Cohen's d.
   function interpretCohenD(d) {
-    if (d === null || d === undefined) return { label: "—", color: "#64748b", desc: "Insufficient data." };
+    if (typeof d !== "number" || !Number.isFinite(d)) return { label: "—", color: "#64748b", desc: "Insufficient data." };
     var abs = Math.abs(d);
     if (abs < 0.2) return { label: "Negligible", color: "#64748b",
       desc: "Effect size is below the conventional 'small' threshold (Cohen, 1988). Across your caseload, the average pretest→posttest change is too small to distinguish from measurement noise — do not describe it as a meaningful mediation effect." };
@@ -2632,7 +2671,7 @@
       desc: "Average mediation produces a large effect across your caseload. Strong evidence of population-level responsiveness to the mediation approach in use." };
   }
 
-  var DA_REDACTED_SESSION_FIELDS = {
+  var DA_REDACTED_SESSION_FIELDS = Object.assign(Object.create(null), {
     studentNickname: true,
     intake: true,
     sessionNote: true,
@@ -2645,7 +2684,7 @@
     progressMonitoring: true,
     secondRaterReview: true,
     auditTrail: true
-  };
+  });
 
   function daRedactSessionForExport(sessionRecord) {
     var source = sessionRecord && typeof sessionRecord === "object" ? sessionRecord : {};
@@ -2693,11 +2732,11 @@
     ].join(","));
     (sessions || []).forEach(function (s) {
       function txt(x) {
-        var raw = String(x === undefined || x === null ? "" : x);
+        var raw = String(x === undefined || x === null ? "" : x).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "");
         var safe = /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) ? "'" + raw : raw;
         return '"' + safe.replace(/"/g, '""') + '"';
       }
-      function num(x) { return x === null || x === undefined ? "" : (typeof x === "number" ? x.toFixed(4) : String(x)); }
+      function num(x) { return typeof x === "number" && Number.isFinite(x) ? x.toFixed(4) : ""; }
       var trResults = (s.itemResults || []).filter(function (r) { return r.phase === "transfer"; });
       var trSum = sumItemResultScores(trResults);
       var evidence = daEvidenceStatus(s);
@@ -2742,12 +2781,13 @@
   // ═════════════════════════════════════════════════════════
   function aggregateItemStatistics(sessions, minN) {
     if (typeof minN !== "number") minN = 3;
-    var perItem = {};
+    var perItem = Object.create(null);
     (sessions || []).filter(daIsSufficientSession).forEach(function (sess) {
       var rs = sess.itemResults || [];
       rs.forEach(function (r) {
         if (!isScorableResponse(r)) return;
         var id = r.itemId;
+        if (typeof id !== "string" || !id || daIsUnsafeKey(id)) return;
         if (!perItem[id]) {
           perItem[id] = {
             itemId: id,
@@ -2781,8 +2821,9 @@
       });
 
       // Modifiability sensitivity needs same-session pretest+posttest pairing
-      var preById = {}, postById = {};
+      var preById = Object.create(null), postById = Object.create(null);
       rs.forEach(function (r) {
+        if (!r || typeof r.itemId !== "string" || !r.itemId || daIsUnsafeKey(r.itemId)) return;
         if (r.phase === "pretest") preById[r.itemId] = !!r.finalCorrect;
         else if (r.phase === "posttest") postById[r.itemId] = !!r.finalCorrect;
       });
@@ -2867,9 +2908,9 @@
       "flags"
     ].join(","));
     itemStats.forEach(function (it) {
-      function num(x) { return x === null || x === undefined ? "" : (typeof x === "number" ? x.toFixed(3) : String(x)); }
+      function num(x) { return typeof x === "number" && Number.isFinite(x) ? x.toFixed(3) : ""; }
       function txt(x) {
-        var raw = String(x === undefined || x === null ? "" : x);
+        var raw = String(x === undefined || x === null ? "" : x).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "");
         var safe = /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) ? "'" + raw : raw;
         return '"' + safe.replace(/"/g, '""') + '"';
       }
@@ -2898,8 +2939,10 @@
   function groupSessionsByStudent(sessions) {
     var by = {};
     (sessions || []).forEach(function (s) {
-      var key = (s.studentNickname || "").trim() || "(anonymous)";
-      if (!by[key]) by[key] = [];
+      if (!s || typeof s !== "object") return;
+      var key = String(s.studentNickname || "").trim() || "(anonymous)";
+      if (daIsUnsafeKey(key)) key = "_" + key;
+      if (!Object.prototype.hasOwnProperty.call(by, key)) by[key] = [];
       by[key].push(s);
     });
     // Sort each student's sessions oldest → newest
@@ -3394,7 +3437,7 @@
     try {
       var raw = storage.getItem(STORAGE_KEY);
       if (!raw) return defaultState();
-      var parsed = JSON.parse(raw);
+      var parsed = JSON.parse(raw, daJsonReviver);
       var base = defaultState();
       var next = Object.assign({}, base, parsed || {});
       next.privacy = Object.assign({}, base.privacy, parsed && parsed.privacy || {});
@@ -3446,7 +3489,7 @@
   }
 
   function daEvidencePhaseCoverage(results, phase, expectedIds) {
-    var expected = {};
+    var expected = Object.create(null);
     var orderedIds = [];
     (expectedIds || []).forEach(function (id) {
       var key = String(id || "");
@@ -3454,7 +3497,7 @@
       expected[key] = true;
       orderedIds.push(key);
     });
-    var seen = {};
+    var seen = Object.create(null);
     var rawCount = 0;
     var duplicateCount = 0;
     var invalidCount = 0;
@@ -3703,6 +3746,10 @@
     if (typeof session.modifiabilityIndex !== "number" || !Number.isFinite(session.modifiabilityIndex)
       || session.modifiabilityIndex < -1 || session.modifiabilityIndex > 1) {
       return { valid: false, reason: "invalid-index", evidence: evidence };
+    }
+    if ((session.pretestSum !== undefined && session.pretestSum !== null && (typeof session.pretestSum !== "number" || !Number.isFinite(session.pretestSum)))
+      || (session.posttestSum !== undefined && session.posttestSum !== null && (typeof session.posttestSum !== "number" || !Number.isFinite(session.posttestSum)))) {
+      return { valid: false, reason: "invalid-scores", evidence: evidence };
     }
     if (!evidence.complete) return { valid: false, reason: "incomplete-evidence", evidence: evidence };
     if (!evidence.sufficient) return { valid: false, reason: "insufficient-evidence", evidence: evidence };
@@ -4984,7 +5031,7 @@
               return appendLinkTokenToRung(withSupps, sr.anchorRung, token, res.id, sr.kind);
             })
             .catch(function (err) {
-              try { console.warn("[DA Phase Z] Glossary generation failed for item " + idx + ":", err && err.message); } catch (_) {}
+              try { console.warn("[DA Phase Z] Glossary generation failed for item " + idx + ":", err && err.name ? err.name : "Error"); } catch (_) {}
               var failSupps = currentItem.supplementaryResources.slice();
               failSupps[si] = Object.assign({}, sr, { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
               return Object.assign({}, currentItem, { supplementaryResources: failSupps });
@@ -5008,7 +5055,7 @@
               return appendLinkTokenToRung(withSupps, sr.anchorRung, token, res.id, sr.kind);
             })
             .catch(function (err) {
-              try { console.warn("[DA Phase Z] Manipulative generation failed for item " + idx + ":", err && err.message); } catch (_) {}
+              try { console.warn("[DA Phase Z] Manipulative generation failed for item " + idx + ":", err && err.name ? err.name : "Error"); } catch (_) {}
               var failSupps = currentItem.supplementaryResources.slice();
               failSupps[si] = Object.assign({}, sr, { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
               return Object.assign({}, currentItem, { supplementaryResources: failSupps });
@@ -5033,7 +5080,7 @@
               return appendLinkTokenToRung(withSupps, sr.anchorRung, token, res.id, sr.kind);
             })
             .catch(function (err) {
-              try { console.warn("[DA Phase Z] Word Sounds probe generation failed for item " + idx + ":", err && err.message); } catch (_) {}
+              try { console.warn("[DA Phase Z] Word Sounds probe generation failed for item " + idx + ":", err && err.name ? err.name : "Error"); } catch (_) {}
               var failSupps = currentItem.supplementaryResources.slice();
               failSupps[si] = Object.assign({}, sr, { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
               return Object.assign({}, currentItem, { supplementaryResources: failSupps });
@@ -5059,7 +5106,7 @@
               return appendLinkTokenToRung(withSupps, sr.anchorRung, token, res.id, sr.kind);
             })
             .catch(function (err) {
-              try { console.warn("[DA Phase Z] Visual organizer generation failed for item " + idx + ":", err && err.message); } catch (_) {}
+              try { console.warn("[DA Phase Z] Visual organizer generation failed for item " + idx + ":", err && err.name ? err.name : "Error"); } catch (_) {}
               var failSupps = currentItem.supplementaryResources.slice();
               failSupps[si] = Object.assign({}, sr, { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
               return Object.assign({}, currentItem, { supplementaryResources: failSupps });
@@ -5084,7 +5131,7 @@
               return appendLinkTokenToRung(withSupps, sr.anchorRung, token, res.id, sr.kind);
             })
             .catch(function (err) {
-              try { console.warn("[DA Phase Z] Sentence-frames generation failed for item " + idx + ":", err && err.message); } catch (_) {}
+              try { console.warn("[DA Phase Z] Sentence-frames generation failed for item " + idx + ":", err && err.name ? err.name : "Error"); } catch (_) {}
               var failSupps = currentItem.supplementaryResources.slice();
               failSupps[si] = Object.assign({}, sr, { status: "failed", _failureMessage: (err && err.message) ? String(err.message).slice(0, 120) : "Unknown" });
               return Object.assign({}, currentItem, { supplementaryResources: failSupps });
@@ -7813,14 +7860,14 @@
     useEffect(function () {
       if (state.activeSession && state.activeSession.isCustomBank && Array.isArray(state.activeSession.customBankSnapshot)) {
         state.activeSession.customBankSnapshot.forEach(function (it) {
-          if (it && it.id) ITEMS_BY_ID[it.id] = it;
+          if (it && typeof it.id === "string" && it.id && !daIsUnsafeKey(it.id)) ITEMS_BY_ID[it.id] = it;
         });
       }
       // Also rehydrate items from any saved templates (so library-launched
       // sessions resolve their items even after a reload).
       (state.savedProbeTemplates || []).forEach(function (tpl) {
         (tpl.items || []).forEach(function (it) {
-          if (it && it.id) ITEMS_BY_ID[it.id] = it;
+          if (it && typeof it.id === "string" && it.id && !daIsUnsafeKey(it.id)) ITEMS_BY_ID[it.id] = it;
         });
       });
       // eslint-disable-next-line
@@ -7844,7 +7891,7 @@
         if (typeof localStorage === "undefined") return null;
         var raw = localStorage.getItem(DA_PERSIST_KEY);
         if (!raw) return null;
-        var parsed = JSON.parse(raw);
+        var parsed = JSON.parse(raw, daJsonReviver);
         if (!parsed || typeof parsed !== "object") return null;
         // Stale-cap: drop if older than 24h so a stale review doesn't haunt the next student.
         if (parsed._savedAt && (Date.now() - parsed._savedAt) > 24 * 60 * 60 * 1000) {
@@ -7856,7 +7903,10 @@
     }
     var _persisted = _loadPersistedDaState();
     var _resumeAnnouncedRef = (React.useRef ? React.useRef(false) : { current: false });
-    var startScreenViewTuple = useState((_persisted && _persisted.startScreenView) || "start");
+    var _validStartViews = { start: true, "custom-builder": true, "custom-review": true, sessions: true, "session-detail": true, tour: true };
+    var _initialStartView = (_persisted && typeof _persisted.startScreenView === "string" && Object.prototype.hasOwnProperty.call(_validStartViews, _persisted.startScreenView))
+      ? _persisted.startScreenView : "start";
+    var startScreenViewTuple = useState(_initialStartView);
     var startScreenView = startScreenViewTuple[0];
     var setStartScreenView = startScreenViewTuple[1];
     // Phase F — which saved session is being viewed in detail mode
@@ -8297,7 +8347,7 @@
       var customItems = Array.isArray(opts.customBank) ? opts.customBank : null;
       if (customItems && customItems.length > 0) {
         customItems.forEach(function (it) {
-          if (it && it.id) ITEMS_BY_ID[it.id] = it;
+          if (it && typeof it.id === "string" && it.id && !daIsUnsafeKey(it.id)) ITEMS_BY_ID[it.id] = it;
         });
         sessionItems = customItems.map(function (it) { return it.id; });
       } else {
@@ -8459,7 +8509,7 @@
           announce(announceMsg + supportNote);
         }).catch(function (err) {
           // Orchestrator never throws (each item is caught individually), but be defensive.
-          try { console.warn("[DA Phase Z] Supports orchestrator unexpected throw:", err); } catch (_) {}
+          try { console.warn("[DA Phase Z] Supports orchestrator unexpected throw:", err && err.name ? err.name : "Error"); } catch (_) {}
           setGeneratedItems(items);
           setGenBusy(false);
           setGenStage(null);
@@ -12435,7 +12485,7 @@
           });
           var json = JSON.stringify(payload, null, 2);
           var blob = new Blob([json], { type: "application/json" });
-          var safeName = (source.studentNickname || "anonymous").replace(/[^A-Za-z0-9_-]/g, "_") || "anonymous";
+          var safeName = String(source.studentNickname || "anonymous").replace(/[^A-Za-z0-9_-]/g, "_") || "anonymous";
           var dateStr = new Date(source.dateCompleted || source.dateStarted || Date.now())
             .toISOString().slice(0, 10);
           daDownloadBlob(blob, "da-session-" + safeName + "-" + exportMode + "-" + dateStr + ".json");
@@ -12489,7 +12539,7 @@
         candidates.push(s);
       });
       var existing = state.sessions || [];
-      var existingIds = {};
+      var existingIds = Object.create(null);
       existing.forEach(function (s) { if (s && s.id) existingIds[s.id] = true; });
       var added = 0;
       candidates.forEach(function (candidate) { if (!existingIds[candidate.id]) added++; });
@@ -12497,7 +12547,7 @@
       if (candidates.length > 0) {
         patch(function (prev) {
           var prevSessions = (prev && prev.sessions) || [];
-          var seen = {};
+          var seen = Object.create(null);
           prevSessions.forEach(function (s) { if (s && s.id) seen[s.id] = true; });
           var fresh = [];
           candidates.forEach(function (candidate) {
@@ -12541,6 +12591,9 @@
             return;
           }
           var reader = new FileReader();
+          reader.onerror = function () {
+            addToast("Restore failed: could not read the selected file.");
+          };
           reader.onload = function () {
             try {
               daAssertOperation();
@@ -16512,10 +16565,14 @@
                 h("button", {
                   onClick: function () {
                     try {
+                      if (!daCanExport("print")) return;
                       document.body.setAttribute("data-da-print-mode", "teacher-handoff");
-                      if (daCanExport("print")) window.print();
+                      window.print();
                       setTimeout(function () { try { document.body.removeAttribute("data-da-print-mode"); } catch (e) {} }, 500);
-                    } catch (e) { addToast("Print is not available in this browser."); }
+                    } catch (e) {
+                      try { document.body.removeAttribute("data-da-print-mode"); } catch (_) {}
+                      addToast("Print is not available in this browser.");
+                    }
                   },
                   "aria-label": "Print handoff",
                   title: "Prints just the handoff page in a clean B&W layout",
@@ -16631,12 +16688,16 @@
               h("button", {
                 onClick: function () {
                   try {
+                    if (!daCanExport("print")) return;
                     // Open print dialog — the @media print stylesheet swaps to the letter mode
                     document.body.setAttribute("data-da-print-mode", "family-letter");
-                    if (daCanExport("print")) window.print();
+                    window.print();
                     // Reset after the print dialog closes
                     setTimeout(function () { try { document.body.removeAttribute("data-da-print-mode"); } catch (e) {} }, 500);
-                  } catch (e) { addToast("Print is not available in this browser."); }
+                  } catch (e) {
+                    try { document.body.removeAttribute("data-da-print-mode"); } catch (_) {}
+                    addToast("Print is not available in this browser.");
+                  }
                 },
                 "aria-label": "Print family letter",
                 title: "Prints just this letter on a single page in a family-friendly layout",
@@ -17044,7 +17105,7 @@
                 daAssertOperation();
                 payload = exportSessionToReportWriter(ready, s.studentNickname, workspace);
               } catch (error) {
-                if (error && error.name !== "AbortError") addToast(error.message || "Report Writer transfer could not finish.");
+                if (error && error.name !== "AbortError") addToast(error.message || __alloT("da.export.transfer_failed", "Report Writer transfer could not finish."));
                 return;
               }
               if (payload) {
@@ -17055,9 +17116,9 @@
                 if (teacherHandoff) extras.push("teacher handoff");
                 if (progressMonitoring) extras.push("monitoring plan");
                 var extra = extras.length > 0 ? " + " + extras.join(" + ") : "";
-                addToast("📝 Sent to Report Writer (" + payload.factChunks.length + " fact chunks" + extra + "). Open Report Writer to ingest.");
+                addToast(__alloT("da.export.sent_to_report_writer", "📝 Sent to Report Writer ({count} fact chunks{extra}). Open Report Writer to ingest.").replace("{count}", String(payload.factChunks.length)).replace("{extra}", extra));
               } else {
-                addToast("Could not build export payload.");
+                addToast(__alloT("da.export.payload_failed", "Could not build export payload."));
               }
             },
             "aria-label": __alloT("da.export.send_to_report_writer_aria", "Send DA findings to Report Writer"),
@@ -17109,7 +17170,7 @@
       daRequireWorkspace(workspace);
       var raw = workspace.storage.getItem(STORAGE_KEY);
       if (!raw) return [];
-      var state = JSON.parse(raw);
+      var state = JSON.parse(raw, daJsonReviver);
       var sessions = Array.isArray(state && state.sessions) ? state.sessions : [];
       var target = nickname.toLowerCase();
       var matches = sessions.filter(function (s) {

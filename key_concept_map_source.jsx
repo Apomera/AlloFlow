@@ -100,15 +100,34 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
     const rightRefs = useRef([]);
     const [lines, setLines] = useState([]);
     const [dims, setDims] = useState({ w: 0, h: 0 });
+    const [focusedBranch, setFocusedBranch] = useState(null);
+    const [studyMode, setStudyMode] = useState(false);
+    const [revealedBranches, setRevealedBranches] = useState(() => new Set());
     const uidRef = useRef(null);
     if (uidRef.current == null) uidRef.current = ++_kcmInstanceSeq;
     const uid = uidRef.current;
 
-    const mid = Math.ceil(branches.length / 2);
-    const left = branches.slice(0, mid);
-    const right = branches.slice(mid);
+    const safeBranches = Array.isArray(branches) ? branches : [];
+    const mid = Math.ceil(safeBranches.length / 2);
+    const left = safeBranches.slice(0, mid);
+    const right = safeBranches.slice(mid);
 
-    const spine = React.useMemo(() => _deriveSpine(main, branches), [main, branches]);
+    React.useEffect(() => {
+        setFocusedBranch(null);
+        setStudyMode(false);
+        setRevealedBranches(new Set());
+    }, [main, branches]);
+
+    const toggleRevealBranch = (bi) => {
+        setRevealedBranches((prev) => {
+            const next = new Set(prev);
+            if (next.has(bi)) next.delete(bi);
+            else next.add(bi);
+            return next;
+        });
+    };
+
+    const spine = React.useMemo(() => _deriveSpine(main, safeBranches), [main, safeBranches]);
     const branchWord = _kcmT(t, 'a11y.branch', 'Branch');
 
     React.useLayoutEffect(() => {
@@ -141,6 +160,7 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                 const cp2x = midX, cp2y = cardY;
                 newLines.push({
                     key: side + '-' + idx,
+                    branchIdx,
                     d: `M ${bubbleX} ${bubbleY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${cardX} ${cardY}`,
                     bubbleX, bubbleY, cardX, cardY,
                     accent: _conceptAccentFor(branchIdx),
@@ -160,14 +180,44 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
         if (containerRef.current) ro.observe(containerRef.current);
         window.addEventListener('resize', compute);
         return () => { cancelAnimationFrame(rafId); ro.disconnect(); window.removeEventListener('resize', compute); };
-    }, [branches.length, main, main_en, mid]);
+    }, [branches.length, main, main_en, mid, studyMode, revealedBranches.size]);
+
+    const allRevealed = branches.length > 0 && revealedBranches.size >= branches.length;
+    const renderBranchCardContent = (b, bi, accent) => {
+        if (!studyMode || revealedBranches.has(bi)) {
+            return <BranchItem branch={b} bIdx={bi} />;
+        }
+        const detailCount = Array.isArray(b && b.items) ? b.items.length : 0;
+        return (
+            <div
+                data-kcm-masked-branch={bi}
+                className="rounded-2xl border-2 bg-white p-4 shadow-sm text-left space-y-2.5"
+                style={{ borderColor: accent.border }}
+            >
+                <div className="font-bold text-sm text-slate-800 pr-6">{b && b.title ? b.title : `${branchWord} ${bi + 1}`}</div>
+                {detailCount > 0 && (
+                    <p className="text-xs text-slate-600">
+                        {detailCount} {_kcmT(t, 'a11y.details', 'details')}
+                    </p>
+                )}
+                <button
+                    type="button"
+                    data-kcm-reveal-branch={bi}
+                    onClick={() => toggleRevealBranch(bi)}
+                    className="min-h-11 w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                >
+                    <span aria-hidden="true">👁</span>
+                    <span>{_kcmT(t, 'concept_map.reveal_details', 'Reveal details')}</span>
+                </button>
+            </div>
+        );
+    };
 
     return (
         <div
-            ref={containerRef}
             role="group"
             aria-label={`${_kcmT(t, 'a11y.concept_map', 'Concept map')}: ${main || ''}`}
-            className="max-w-7xl mx-auto relative my-12 px-4 flex flex-col md:flex-row items-stretch justify-center"
+            className="max-w-7xl mx-auto my-8 px-4"
         >
             {/* Accessible spine — see _deriveSpine. First in DOM so the main concept is
                 announced before any branch, which the two-column visual order otherwise
@@ -230,6 +280,75 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
             `}</style>
 
             {/* Soft radial backdrop — subtle "halo" behind the whole map, reinforces the center */}
+            {branches.length >= 2 && (
+                <div data-kcm-toolbar className="no-print mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2">
+                    <div role="group" aria-label={_kcmT(t, 'concept_map.focus_branch_aria', 'Focus a branch')} className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-xs font-bold text-indigo-900 mr-1">{_kcmT(t, 'concept_map.focus_label', 'Focus')}:</span>
+                        <button
+                            type="button"
+                            data-kcm-focus-all
+                            aria-pressed={focusedBranch === null}
+                            onClick={() => setFocusedBranch(null)}
+                            className={`min-h-11 rounded-lg px-3 py-1.5 text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${focusedBranch === null ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-indigo-800 border-indigo-200 hover:bg-indigo-100'}`}
+                        >
+                            {_kcmT(t, 'common.all', 'All')}
+                        </button>
+                        {safeBranches.map((b, bi) => {
+                            const accent = _conceptAccentFor(bi);
+                            const isActive = focusedBranch === bi;
+                            return (
+                                <button
+                                    key={bi}
+                                    type="button"
+                                    data-kcm-focus-branch={bi}
+                                    aria-pressed={isActive}
+                                    aria-label={`${branchWord} ${bi + 1}: ${(b && b.title) || ''}`}
+                                    title={(b && b.title) || `${branchWord} ${bi + 1}`}
+                                    onClick={() => setFocusedBranch(prev => (prev === bi ? null : bi))}
+                                    className={'min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg px-2.5 py-1.5 text-xs font-black border-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isActive ? 'text-white' : 'bg-white text-slate-800 hover:bg-slate-50')}
+                                    style={isActive ? { backgroundColor: accent.badge, borderColor: accent.badge } : { borderColor: accent.border }}
+                                >
+                                    {bi + 1}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            data-kcm-study-toggle
+                            aria-pressed={studyMode}
+                            onClick={() => {
+                                setStudyMode((prev) => {
+                                    if (!prev) setRevealedBranches(new Set());
+                                    return !prev;
+                                });
+                            }}
+                            className={`min-h-11 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${studyMode ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-indigo-800 border-indigo-300 hover:bg-indigo-100'}`}
+                        >
+                            <span aria-hidden="true">{studyMode ? '✓' : '🧠'}</span>
+                            <span>{studyMode ? _kcmT(t, 'concept_map.exit_self_test', 'Exit self-test') : _kcmT(t, 'concept_map.self_test', 'Self-test')}</span>
+                        </button>
+                        {studyMode && (
+                            <button
+                                type="button"
+                                data-kcm-reveal-all
+                                onClick={() => setRevealedBranches(allRevealed ? new Set() : new Set(branches.map((_, bi) => bi)))}
+                                className="min-h-11 inline-flex items-center gap-1 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-800 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                            >
+                                {allRevealed
+                                    ? _kcmT(t, 'concept_map.hide_all', 'Hide all')
+                                    : `${_kcmT(t, 'concept_map.reveal_all', 'Reveal all')} (${revealedBranches.size}/${branches.length})`}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <div
+                ref={containerRef}
+                className="relative my-4 flex flex-col md:flex-row items-stretch justify-center"
+            >
             <div
                 className="hidden md:block absolute inset-0 pointer-events-none"
                 aria-hidden="true"
@@ -277,16 +396,19 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                         <feGaussianBlur stdDeviation="1.5" />
                     </filter>
                 </defs>
-                {lines.map(l => (
-                    <g key={l.key}>
+                {lines.map(l => {
+                    const dimmed = focusedBranch !== null && focusedBranch !== l.branchIdx;
+                    const highlighted = focusedBranch !== null && focusedBranch === l.branchIdx;
+                    return (
+                    <g key={l.key} style={{ opacity: dimmed ? 0.16 : 1, transition: 'opacity 180ms ease' }}>
                         {/* Soft outer glow — always drawn in full */}
-                        <path d={l.d} fill="none" stroke="#c7d2fe" strokeWidth={6} strokeLinecap="round" opacity={0.35} filter={`url(#alloflow-concept-line-glow-${uid})`} />
+                        <path d={l.d} fill="none" stroke="#c7d2fe" strokeWidth={highlighted ? 8 : 6} strokeLinecap="round" opacity={0.35} filter={`url(#alloflow-concept-line-glow-${uid})`} />
                         {/* Primary stroke — animated draw-in */}
                         <path
                             d={l.d}
                             fill="none"
                             stroke={`url(#alloflow-concept-line-${uid}-${l.key})`}
-                            strokeWidth={2.5}
+                            strokeWidth={highlighted ? 3.5 : 2.5}
                             strokeLinecap="round"
                             className="alloflow-concept-line-primary"
                             style={{
@@ -325,23 +447,25 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                             }}
                         />
                     </g>
-                ))}
+                    );
+                })}
             </svg>
 
             {/* Left column */}
             <div className="flex-1 flex flex-col justify-between gap-8 py-4 z-10">
                 {left.map((b, i) => {
                     const a = _conceptAccentFor(i);
+                    const dimmed = focusedBranch !== null && focusedBranch !== i;
                     return (
                         <div
                             key={i}
                             ref={el => { leftRefs.current[i] = el; }}
-                            className="flex items-center justify-end group w-full"
+                            className={`flex items-center justify-end group w-full transition-opacity motion-reduce:transition-none ${dimmed ? 'opacity-35' : 'opacity-100'}`}
                         >
                             <div
                                 tabIndex={0}
                                 role="group"
-                                aria-label={`${branchWord} ${i + 1}: ${b.title || ''}`}
+                                aria-label={`${branchWord} ${i + 1}: ${(b && b.title) || ''}`}
                                 className="w-full max-w-xs relative rounded-2xl transition-all motion-reduce:transition-none duration-200 hover:scale-[1.02] motion-reduce:hover:scale-100 focus-visible:outline-none focus-visible:ring-4"
                                 style={{ boxShadow: `0 0 0 0 ${a.ring}`, '--tw-ring-color': a.border }}
                                 onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
@@ -356,7 +480,7 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                                 >
                                     {i + 1}
                                 </div>
-                                <BranchItem branch={b} bIdx={i} />
+                                {renderBranchCardContent(b, i, a)}
                             </div>
                         </div>
                     );
@@ -391,16 +515,17 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                 {right.map((b, i) => {
                     const idx = i + mid;
                     const a = _conceptAccentFor(idx);
+                    const dimmed = focusedBranch !== null && focusedBranch !== idx;
                     return (
                         <div
                             key={idx}
                             ref={el => { rightRefs.current[i] = el; }}
-                            className="flex items-center justify-start group w-full"
+                            className={`flex items-center justify-start group w-full transition-opacity motion-reduce:transition-none ${dimmed ? 'opacity-35' : 'opacity-100'}`}
                         >
                             <div
                                 tabIndex={0}
                                 role="group"
-                                aria-label={`${branchWord} ${idx + 1}: ${b.title || ''}`}
+                                aria-label={`${branchWord} ${idx + 1}: ${(b && b.title) || ''}`}
                                 className="w-full max-w-xs relative rounded-2xl transition-all motion-reduce:transition-none duration-200 hover:scale-[1.02] motion-reduce:hover:scale-100 focus-visible:outline-none focus-visible:ring-4"
                                 style={{ boxShadow: `0 0 0 0 ${a.ring}`, '--tw-ring-color': a.border }}
                                 onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
@@ -415,11 +540,12 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                                 >
                                     {idx + 1}
                                 </div>
-                                <BranchItem branch={b} bIdx={idx} />
+                                {renderBranchCardContent(b, idx, a)}
                             </div>
                         </div>
                     );
                 })}
+            </div>
             </div>
         </div>
     );

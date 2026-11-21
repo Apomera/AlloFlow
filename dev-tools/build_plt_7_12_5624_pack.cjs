@@ -11,6 +11,10 @@ const ensure = (value, length, suffix) => String(value || '').trim().length >= l
 function makeItem(bank, question, batch, position) {
   const answerIndex = (position - 1) % 4;
   const rationale = ensure(question.rationale, 120, 'The response links learner evidence, instruction, access, agency, professional judgment, and monitoring.');
+  const notes = Array.isArray(question.distractorNotes) ? question.distractorNotes : [];
+  if (notes.length !== 3 || notes.some((note) => String(note || '').trim().length < 100)) {
+    throw Error('Missing authored distractorNotes for ' + bank.id + ' #' + position);
+  }
   let distractorIndex = 0;
   const choices = [];
   const choiceRationales = [];
@@ -19,9 +23,10 @@ function makeItem(bank, question, batch, position) {
       choices.push(question.correct);
       choiceRationales.push('Correct. ' + rationale);
     } else {
-      const distractor = question.distractors[distractorIndex++];
+      const distractor = question.distractors[distractorIndex];
+      const note = String(notes[distractorIndex++] || '').trim();
       choices.push(distractor);
-      choiceRationales.push('Not the best answer. "' + distractor + '" conflicts with development, evidence, access, ethics, or the educator’s role. ' + rationale);
+      choiceRationales.push(note);
     }
   }
   return {id:'plt5624-b'+batch+'-'+String(position).padStart(3,'0'),type:'single-choice',domainId:bank.domainId,difficulty:question.difficulty,prompt:batch===1?question.promptA:question.promptB,choices,answerIndex,rationale,references:bank.references.slice(),reviewStatus:'source-reviewed',qaStatus:'qa-passed',qaReviewedAt:'2026-07-16',choiceRationales,skillIds:[bank.id],chapterIds:[bank.chapterId]};

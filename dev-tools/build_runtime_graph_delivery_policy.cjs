@@ -11,8 +11,9 @@ const END = '// END ALLOFLOW_RUNTIME_GRAPH_DELIVERY_POLICY';
 const SOURCES = ['runtime_graph_delivery_policy.js', 'runtime_graph_host.js'];
 const CATALOGS = ['engine_runtime_integrity.json', 'document_runtime_integrity.json', 'data_kernel_runtime_integrity.json'];
 function regular(root, relative) {
-  if (!relative.split('/').every(part => /^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(part) && !['constructor', 'prototype'].includes(part))) throw Error('Unsafe runtime path');
+  if (!relative.split('/').every(part => /^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(part) && !['__proto__', 'constructor', 'prototype'].includes(part))) throw Error('Unsafe runtime path');
   let file = path.resolve(root);
+  if (fs.lstatSync(file).isSymbolicLink()) throw Error('Runtime root is a symlink: ' + file);
   for (const part of relative.split('/')) { file = path.join(file, part); if (fs.lstatSync(file).isSymbolicLink()) throw Error('Runtime path is a symlink: ' + relative); }
   const stat = fs.statSync(file);
   if (!stat.isFile() || stat.size > 128 * 1024 * 1024) throw Error('Runtime file is not bounded: ' + relative);
@@ -20,13 +21,18 @@ function regular(root, relative) {
 }
 function sources(root = ROOT) { return SOURCES.map(file => regular(root, file).toString('utf8').replace(/\r\n/g, '\n').trim()); }
 function readManifest(root = ROOT) {
-  const result = { schemaVersion: 1, assets: {}, graphs: {} };
+  const result = { schemaVersion: 1, assets: Object.create(null), graphs: Object.create(null) };
   for (const file of CATALOGS) {
     const catalog = JSON.parse(regular(root, file));
-    if (catalog.schemaVersion !== 1) throw Error('Unknown runtime catalog');
-    for (const field of ['assets', 'graphs']) for (const [key, value] of Object.entries(catalog[field])) {
-      if (Object.hasOwn(result[field], key)) throw Error('Duplicate runtime record: ' + key);
-      result[field][key] = value;
+    if (!catalog || typeof catalog !== 'object' || Array.isArray(catalog) || catalog.schemaVersion !== 1) throw Error('Unknown runtime catalog');
+    for (const field of ['assets', 'graphs']) {
+      const section = catalog[field];
+      if (!section || typeof section !== 'object' || Array.isArray(section)) throw Error('Invalid runtime catalog section: ' + field);
+      for (const [key, value] of Object.entries(section)) {
+        if (['__proto__', 'constructor', 'prototype'].includes(key)) throw Error('Unsafe runtime record key: ' + key);
+        if (Object.hasOwn(result[field], key)) throw Error('Duplicate runtime record: ' + key);
+        result[field][key] = value;
+      }
     }
   }
   const context = vm.createContext({ URL });
@@ -44,7 +50,7 @@ function assertRuntimeAssets({ root = ROOT, buildDir } = {}) {
     if (bytes.length !== record.bytes || createHash('sha384').update(bytes).digest('hex') !== record.sha384) throw Error('Reviewed runtime bytes differ: ' + id);
     if (record.kind === 'module') require('./build_browser_runtime_graphs.cjs').assertClosedCode(bytes.toString('utf8'));
     if (record.path) {
-      if (!regular(path.join(root, 'desktop/web-app/public'), record.path).equals(bytes)) throw Error('Root/public runtime bytes differ: ' + id);
+      if (!regular(root, 'desktop/web-app/public/' + record.path).equals(bytes)) throw Error('Root/public runtime bytes differ: ' + id);
       if (buildDir && !regular(buildDir, record.path).equals(bytes)) throw Error('Built runtime bytes differ: ' + id);
       records.push({ id, asset: record.path, bytes: record.bytes, sha384: record.sha384 });
     }

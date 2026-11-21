@@ -35,19 +35,25 @@ function ensure(value, minimum, suffix) {
 
 function itemFromSpec(skill, spec, batchNumber, batchPosition) {
   const answerIndex = (batchPosition - 1) % 4;
+  const active = batchNumber === 2 && spec.variantB ? spec.variantB : spec;
   const choices = [];
   const choiceRationales = [];
   let distractorIndex = 0;
-  const rationale = ensure(spec.rationale, 120, 'The correct response most directly addresses the learner, task, evidence, and governing educational principle described in the scenario.');
+  const rationale = ensure(active.rationale, 120, 'The correct response most directly addresses the learner, task, evidence, and governing educational principle described in the scenario.');
+  const distractorNotes = Array.isArray(active.distractorNotes) ? active.distractorNotes : [];
+  if (distractorNotes.length !== 3 || distractorNotes.some((note) => String(note || '').trim().length < 100)) {
+    throw new Error(`Spec ${skill.id} #${batchPosition} (batch ${batchNumber}) must define three authored distractorNotes of at least 100 characters.`);
+  }
 
   for (let choiceIndex = 0; choiceIndex < 4; choiceIndex += 1) {
     if (choiceIndex === answerIndex) {
-      choices.push(spec.correct);
+      choices.push(active.correct);
       choiceRationales.push(ensure('Correct. ' + rationale, 100, 'This option satisfies the complete requirement in the prompt.'));
     } else {
-      const distractor = spec.distractors[distractorIndex];
+      const distractor = active.distractors[distractorIndex];
+      const note = String(distractorNotes[distractorIndex] || '').trim();
       choices.push(distractor);
-      choiceRationales.push(ensure('Not the best answer. “' + distractor + '” does not apply the key requirement in this scenario. ' + rationale, 100, 'Compare the option with the individualized and evidence-based response required by the prompt.'));
+      choiceRationales.push(note);
       distractorIndex += 1;
     }
   }

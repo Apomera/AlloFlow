@@ -125,7 +125,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       + ' .theme-contrast .abs-preset-btn, .theme-contrast .abs-inquiry-preset { background: #000000 !important; border: 2px solid #facc15 !important; color: #ffffff !important; }'
       + ' .theme-contrast .abs-preset-btn:hover, .theme-contrast .abs-inquiry-preset:hover { background: #facc15 !important; color: #000000 !important; }'
       + ' .theme-contrast .abs-stage-card { background: #000000 !important; border: 2px solid #ffffff !important; box-shadow: none !important; color: #ffffff !important; }'
-      + ' .theme-contrast .abs-stage-title, .theme-contrast .abs-stage-sub { color: #facc15 !important; }';
+      + ' .theme-contrast .abs-stage-title, .theme-contrast .abs-stage-sub { color: #facc15 !important; }'
+      + ' .theme-contrast .abs-svg-fx { display: none !important; }';
     document.head.appendChild(_s);
   }
   (function() {
@@ -1712,41 +1713,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         var auraColor = wandTier >= 3 ? '#fde047' : (wandTier >= 2 ? '#fbbf24' : '#a78bfa');
         var auraClass = wandTier >= 3 ? 'abs-wand-aura' : (wandTier >= 2 ? 'abs-wand-flicker' : '');
         var wrapperClass = mood === 'victory' ? 'abs-backflip' : 'abs-float';
+        var hc = !!isContrast;
+        var uid = 'abs-av-' + mood + '-' + wandTier + '-' + robeTier;
         return h('svg', { viewBox: '0 0 120 140', className: wrapperClass, width: 96, height: 112, 'aria-hidden': 'true' },
           h('defs', null,
-            h('radialGradient', { id: 'absVisor' },
-              h('stop', { offset: '0%', stopColor: '#67e8f9' }),
+            h('radialGradient', { id: uid + '-visor', cx: '38%', cy: '32%', r: '72%' },
+              h('stop', { offset: '0%', stopColor: '#a5f3fc' }),
+              h('stop', { offset: '55%', stopColor: '#22d3ee' }),
               h('stop', { offset: '100%', stopColor: '#0e7490' })
             ),
-            wandTier > 0 && h('radialGradient', { id: 'absWandAuraGrad' },
-              h('stop', { offset: '0%', stopColor: auraColor, stopOpacity: auraOpacity + 0.25 }),
-              h('stop', { offset: '60%', stopColor: auraColor, stopOpacity: auraOpacity * 0.45 }),
+            !hc && h('radialGradient', { id: uid + '-head', cx: '36%', cy: '28%', r: '70%' },
+              h('stop', { offset: '0%', stopColor: '#ffffff' }),
+              h('stop', { offset: '62%', stopColor: '#e0e7ff' }),
+              h('stop', { offset: '100%', stopColor: '#a5b4fc' })
+            ),
+            !hc && h('linearGradient', { id: uid + '-hat', x1: '0', y1: '0', x2: '1', y2: '1' },
+              h('stop', { offset: '0%', stopColor: robeTier >= 1 ? '#7c3aed' : '#5b21b6' }),
+              h('stop', { offset: '100%', stopColor: '#2e1065' })
+            ),
+            !hc && h('linearGradient', { id: uid + '-robe', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: robeFill }),
+              h('stop', { offset: '100%', stopColor: '#1e1b4b' })
+            ),
+            !hc && h('radialGradient', { id: uid + '-halo', cx: '50%', cy: '50%', r: '50%' },
+              h('stop', { offset: '0%', stopColor: moodColor, stopOpacity: 0.32 }),
+              h('stop', { offset: '100%', stopColor: moodColor, stopOpacity: 0 })
+            ),
+            wandTier > 0 && h('radialGradient', { id: uid + '-wand', cx: '50%', cy: '50%', r: '50%' },
+              h('stop', { offset: '0%', stopColor: auraColor, stopOpacity: Math.min(1, auraOpacity + 0.30) }),
+              h('stop', { offset: '58%', stopColor: auraColor, stopOpacity: auraOpacity * 0.45 }),
               h('stop', { offset: '100%', stopColor: auraColor, stopOpacity: 0 })
             )
           ),
-          // Wand-tip aura (rendered FIRST so it sits behind the wand stick).
-          wandTier > 0 && h('circle', { cx: 116, cy: 66, r: auraRadius, fill: 'url(#absWandAuraGrad)', className: auraClass }),
-          // Wizard hat
-          h('polygon', { points: '60,2 38,44 82,44', fill: hatFill }),
-          h('polygon', { points: '55,12 55,44 65,44 65,12', fill: '#7c3aed' }),
-          h('circle', { cx: 60, cy: 6, r: 3, fill: '#fbbf24' }),
-          // Body/robe
-          h('ellipse', { cx: 60, cy: 110, rx: 36, ry: 22, fill: robeFill }),
-          // Robe gold accent stripe (tier 2 milestone \u2014 15+ spells)
-          robeTier >= 2 && h('path', { d: 'M 28 108 Q 60 102 92 108', stroke: '#fde047', strokeWidth: 2.5, fill: 'none', strokeLinecap: 'round' }),
-          // Head
-          h('circle', { cx: 60, cy: 70, r: 28, fill: '#e0e7ff', stroke: moodColor, strokeWidth: 2 }),
-          // Visor
-          h('rect', { x: 40, y: 62, width: 40, height: 14, rx: 7, fill: 'url(#absVisor)' }),
-          // Eyes
-          h('circle', { cx: 50, cy: 69, r: 2.5, fill: '#fff' }),
-          h('circle', { cx: 70, cy: 69, r: 2.5, fill: '#fff' }),
+          // Ambient astral crest aura behind AlloBot
+          !hc && h('circle', { className: 'abs-svg-fx', cx: 60, cy: 76, r: 44, fill: 'url(#' + uid + '-halo)' }),
+          !hc && h('ellipse', { className: 'abs-svg-fx', cx: 60, cy: 132, rx: 30, ry: 4.5, fill: '#020617', opacity: 0.48 }),
+          // Wand-tip aura (rendered behind wand stick)
+          wandTier > 0 && !hc && h('circle', { cx: 112, cy: 64, r: auraRadius, fill: 'url(#' + uid + '-wand)', className: 'abs-svg-fx ' + auraClass }),
+          // Wizard hat with flared brim, ribbon & starlight crest
+          h('ellipse', { cx: 60, cy: 45, rx: 28, ry: 5.5, fill: hc ? '#000000' : '#3b0764', stroke: hc ? '#facc15' : '#a78bfa', strokeWidth: 1.2 }),
+          h('polygon', { points: '60,3 38,44 82,44', fill: hc ? '#000000' : 'url(#' + uid + '-hat)', stroke: hc ? '#ffffff' : 'rgba(196,181,253,0.45)', strokeWidth: 1.1, strokeLinejoin: 'round' }),
+          h('polygon', { points: '55,13 55,44 65,44 65,13', fill: hc ? '#facc15' : '#8b5cf6', opacity: hc ? 0.35 : 0.72 }),
+          h('path', { d: 'M 42 40 Q 60 44 78 40', stroke: hc ? '#facc15' : '#fde047', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' }),
+          h('polygon', { points: '60,21 61.5,24.8 65.5,26 61.5,27.2 60,31 58.5,27.2 54.5,26 58.5,24.8', fill: '#fde047' }),
+          h('circle', { cx: 60, cy: 6, r: 3.4, fill: '#fbbf24', stroke: '#fef9c3', strokeWidth: 0.8 }),
+          // Body/robe with beveled collar mantle
+          h('ellipse', { cx: 60, cy: 110, rx: 36, ry: 22, fill: hc ? '#000000' : 'url(#' + uid + '-robe)', stroke: hc ? '#ffffff' : 'rgba(167,139,250,0.42)', strokeWidth: 1.3 }),
+          !hc && h('path', { className: 'abs-svg-fx', d: 'M 33 102 Q 60 95 87 102', stroke: 'rgba(221,214,254,0.28)', strokeWidth: 1.4, fill: 'none', strokeLinecap: 'round' }),
+          // Robe gold accent stripe (tier 2 milestone — 15+ spells)
+          robeTier >= 2 && h('path', { d: 'M 28 109 Q 60 102 92 109', stroke: '#fde047', strokeWidth: 2.6, fill: 'none', strokeLinecap: 'round' }),
+          // Ear-pods + sculpted ceramic head
+          h('rect', { x: 28, y: 63, width: 6, height: 14, rx: 3, fill: hc ? '#facc15' : moodColor }),
+          h('rect', { x: 86, y: 63, width: 6, height: 14, rx: 3, fill: hc ? '#facc15' : moodColor }),
+          h('circle', { cx: 60, cy: 70, r: 28, fill: hc ? '#000000' : 'url(#' + uid + '-head)', stroke: hc ? '#facc15' : moodColor, strokeWidth: 2.2 }),
+          // Curved visor + specular reflection glint
+          h('rect', { x: 40, y: 62, width: 40, height: 15, rx: 7.5, fill: hc ? '#000000' : 'url(#' + uid + '-visor)', stroke: hc ? '#ffffff' : 'rgba(165,243,252,0.55)', strokeWidth: 1 }),
+          !hc && h('path', { className: 'abs-svg-fx', d: 'M 45 65.5 L 75 65.5', stroke: '#ffffff', strokeOpacity: 0.45, strokeWidth: 1.5, strokeLinecap: 'round' }),
+          // Eyes with subtle highlight pupils
+          h('circle', { cx: 50, cy: 69.5, r: 2.7, fill: hc ? '#facc15' : '#ffffff' }),
+          h('circle', { cx: 70, cy: 69.5, r: 2.7, fill: hc ? '#facc15' : '#ffffff' }),
+          !hc && h('circle', { className: 'abs-svg-fx', cx: 50.8, cy: 68.7, r: 0.9, fill: '#ecfeff' }),
+          !hc && h('circle', { className: 'abs-svg-fx', cx: 70.8, cy: 68.7, r: 0.9, fill: '#ecfeff' }),
           // Mouth
-          h('path', { d: sadMouth ? 'M 52 82 Q 60 76 68 82' : 'M 52 80 Q 60 86 68 80', stroke: moodColor, strokeWidth: 2, fill: 'none', strokeLinecap: 'round' }),
-          // Wand stick + tip \u2014 group so the optional idle twist applies cleanly.
+          h('path', { d: sadMouth ? 'M 52 83 Q 60 77 68 83' : 'M 52 81 Q 60 87 68 81', stroke: hc ? '#ffffff' : moodColor, strokeWidth: 2.2, fill: 'none', strokeLinecap: 'round' }),
+          // Wand stick + golden ferrule + faceted crystal tip
           h('g', opts.idleTwist ? { className: 'abs-idle-twist' } : null,
-            h('line', { x1: 92, y1: 96, x2: 116, y2: 66, stroke: '#78350f', strokeWidth: 3, strokeLinecap: 'round' }),
-            h('circle', { cx: 116, cy: 66, r: 5, fill: moodColor, className: 'abs-pulse' })
+            h('line', { x1: 90, y1: 96, x2: 112, y2: 64, stroke: hc ? '#ffffff' : '#92400e', strokeWidth: 3.4, strokeLinecap: 'round' }),
+            h('line', { x1: 106, y1: 72.5, x2: 110, y2: 66.8, stroke: '#fde047', strokeWidth: 4, strokeLinecap: 'round' }),
+            h('circle', { cx: 112, cy: 64, r: 5.2, fill: hc ? '#facc15' : moodColor, stroke: '#ffffff', strokeWidth: 1.1, className: 'abs-pulse' }),
+            !hc && h('circle', { className: 'abs-svg-fx', cx: 110.8, cy: 62.5, r: 1.6, fill: '#ffffff', opacity: 0.9 })
           )
         );
       }
@@ -2085,24 +2120,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   idleTwist: true // Phase C: micro-flourish on the hub avatar
                 }),
                 // Grimoire Mastery Arc Gauge (non-spoiler mastery progress)
-                h('svg', { viewBox: '0 0 60 60', width: 58, height: 58, 'aria-hidden': 'true', className: 'shrink-0 hidden sm:block' },
-                  h('circle', { cx: 30, cy: 30, r: ringRadius, fill: 'rgba(15,23,42,0.45)', stroke: 'rgba(196,181,253,0.28)', strokeWidth: 4.5 }),
-                  h('circle', {
-                    cx: 30, cy: 30, r: ringRadius, fill: 'none',
-                    stroke: wandTierHub >= 3 ? '#fde047' : '#a78bfa', strokeWidth: 4.5, strokeLinecap: 'round',
-                    strokeDasharray: ringCirc.toFixed(1), strokeDashoffset: ringOffset.toFixed(1),
-                    transform: 'rotate(-90 30 30)'
-                  }),
-                  h('text', { x: 30, y: 29, fill: '#f8fafc', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, masteryPct + '%'),
-                  h('text', { x: 30, y: 40, fill: '#ddd6fe', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'T' + wandTierHub)
-                )
+                (function() {
+                  var arcCol = isContrast ? '#facc15' : (wandTierHub >= 3 ? '#fde047' : '#a78bfa');
+                  var tipAng = -Math.PI / 2 + (Math.max(0, Math.min(100, masteryPct)) / 100) * Math.PI * 2;
+                  var tipX = 30 + ringRadius * Math.cos(tipAng);
+                  var tipY = 30 + ringRadius * Math.sin(tipAng);
+                  return h('svg', { viewBox: '0 0 60 60', width: 58, height: 58, 'aria-hidden': 'true', className: 'shrink-0 hidden sm:block' },
+                    !isContrast && h('defs', null,
+                      h('radialGradient', { id: 'abs-mg-well', cx: '50%', cy: '40%', r: '56%' },
+                        h('stop', { offset: '0%', stopColor: '#312e81', stopOpacity: 0.72 }),
+                        h('stop', { offset: '100%', stopColor: '#090d1f', stopOpacity: 0.94 })
+                      ),
+                      h('linearGradient', { id: 'abs-mg-arc', x1: '0', y1: '0', x2: '1', y2: '1' },
+                        h('stop', { offset: '0%', stopColor: wandTierHub >= 3 ? '#fef08a' : '#c4b5fd' }),
+                        h('stop', { offset: '100%', stopColor: wandTierHub >= 3 ? '#f59e0b' : '#38bdf8' })
+                      )
+                    ),
+                    h('circle', { cx: 30, cy: 30, r: 28, fill: isContrast ? '#000000' : 'url(#abs-mg-well)', stroke: isContrast ? '#ffffff' : 'rgba(196,181,253,0.35)', strokeWidth: 1 }),
+                    [0, 1, 2, 3, 4, 5, 6, 7].map(function(ti) {
+                      var ta = (ti / 8) * Math.PI * 2 - Math.PI / 2;
+                      return h('line', { key: 'mt-' + ti, x1: (30 + 25.5 * Math.cos(ta)).toFixed(1), y1: (30 + 25.5 * Math.sin(ta)).toFixed(1), x2: (30 + 27.5 * Math.cos(ta)).toFixed(1), y2: (30 + 27.5 * Math.sin(ta)).toFixed(1), stroke: isContrast ? '#facc15' : 'rgba(221,214,254,0.4)', strokeWidth: 0.9 });
+                    }),
+                    h('circle', { cx: 30, cy: 30, r: ringRadius, fill: 'none', stroke: isContrast ? 'rgba(255,255,255,0.28)' : 'rgba(196,181,253,0.24)', strokeWidth: 4.5 }),
+                    !isContrast && h('circle', {
+                      className: 'abs-svg-fx',
+                      cx: 30, cy: 30, r: ringRadius, fill: 'none',
+                      stroke: arcCol, strokeWidth: 8.5, strokeOpacity: 0.22, strokeLinecap: 'round',
+                      strokeDasharray: ringCirc.toFixed(1), strokeDashoffset: ringOffset.toFixed(1),
+                      transform: 'rotate(-90 30 30)'
+                    }),
+                    h('circle', {
+                      cx: 30, cy: 30, r: ringRadius, fill: 'none',
+                      stroke: isContrast ? '#facc15' : 'url(#abs-mg-arc)', strokeWidth: 4.5, strokeLinecap: 'round',
+                      strokeDasharray: ringCirc.toFixed(1), strokeDashoffset: ringOffset.toFixed(1),
+                      transform: 'rotate(-90 30 30)'
+                    }),
+                    masteryPct > 2 && h('circle', { cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 2.4, fill: '#ffffff', stroke: arcCol, strokeWidth: 1 }),
+                    h('text', { x: 30, y: 29, fill: '#f8fafc', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, masteryPct + '%'),
+                    h('text', { x: 30, y: 40, fill: isContrast ? '#facc15' : '#ddd6fe', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'T' + wandTierHub)
+                  );
+                })()
               ),
               h('div', { className: 'flex-1 min-w-0' },
                 h('div', { className: 'flex flex-wrap items-center gap-2 mb-1.5' },
                   h('span', { className: 'abs-hero-badge' },
                     h('svg', { viewBox: '0 0 20 20', width: 14, height: 14, 'aria-hidden': 'true' },
-                      h('circle', { cx: 10, cy: 10, r: 8, fill: 'none', stroke: '#fde047', strokeWidth: 1.5, strokeDasharray: '3 2' }),
-                      h('polygon', { points: '10,3 11.8,8.2 17,10 11.8,11.8 10,17 8.2,11.8 3,10 8.2,8.2', fill: '#fde047' })
+                      !isContrast && h('defs', null,
+                        h('radialGradient', { id: 'abs-crest-g', cx: '50%', cy: '50%', r: '50%' },
+                          h('stop', { offset: '0%', stopColor: '#fde047', stopOpacity: 0.45 }),
+                          h('stop', { offset: '100%', stopColor: '#fde047', stopOpacity: 0 })
+                        )
+                      ),
+                      !isContrast && h('circle', { className: 'abs-svg-fx', cx: 10, cy: 10, r: 9.2, fill: 'url(#abs-crest-g)' }),
+                      h('circle', { cx: 10, cy: 10, r: 8.2, fill: 'none', stroke: '#fde047', strokeWidth: 1.4, strokeDasharray: '3 2' }),
+                      h('polygon', { points: '10,2.5 12,8 17.5,10 12,12 10,17.5 8,12 2.5,10 8,8', fill: '#fde047' }),
+                      h('circle', { cx: 10, cy: 10, r: 1.7, fill: '#ffffff' })
                     ),
                     t('stem.allobotsage.starbound_spellforge_badge', 'Starbound Spellforge · Retrieval Roguelite')
                   )
@@ -2175,39 +2247,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 height: 124,
                 role: 'img',
                 'aria-label': t('stem.allobotsage.constellation_svg_aria', 'Grimoire constellation showing six STEAM domains connected to the central Spellforge core, with active domains illuminated'),
-                style: { display: 'block', borderRadius: 12, background: isContrast ? '#000000' : 'linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%)', border: isContrast ? '2px solid #ffffff' : '1px solid rgba(139,92,246,0.35)' }
+                style: { display: 'block', borderRadius: 12, background: isContrast ? '#000000' : '#090d1f', border: isContrast ? '2px solid #ffffff' : '1px solid rgba(139,92,246,0.38)' }
               },
-                // Subtle orbital reference rings
-                h('ellipse', { cx: cx, cy: cy, rx: 146, ry: 44, fill: 'none', stroke: isContrast ? '#facc15' : 'rgba(167,139,250,0.22)', strokeWidth: 1, strokeDasharray: '4 4' }),
-                h('ellipse', { cx: cx, cy: cy, rx: 86, ry: 28, fill: 'none', stroke: isContrast ? '#ffffff' : 'rgba(148,163,184,0.18)', strokeWidth: 1 }),
-                // Resonance beams from each domain to central core
+                !isContrast && h('defs', null,
+                  h('radialGradient', { id: 'abs-const-sky', cx: '50%', cy: '50%', r: '62%' },
+                    h('stop', { offset: '0%', stopColor: '#2e1065', stopOpacity: 0.85 }),
+                    h('stop', { offset: '58%', stopColor: '#111834', stopOpacity: 0.96 }),
+                    h('stop', { offset: '100%', stopColor: '#030712', stopOpacity: 1 })
+                  ),
+                  h('radialGradient', { id: 'abs-const-core', cx: '38%', cy: '32%', r: '68%' },
+                    h('stop', { offset: '0%', stopColor: '#6d28d9' }),
+                    h('stop', { offset: '60%', stopColor: '#312e81' }),
+                    h('stop', { offset: '100%', stopColor: '#1e1b4b' })
+                  ),
+                  h('radialGradient', { id: 'abs-const-spec', cx: '32%', cy: '28%', r: '66%' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.58 }),
+                    h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0.05 }),
+                    h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.22 })
+                  )
+                ),
+                // Deep starfield observatory stage
+                h('rect', { x: 0, y: 0, width: 420, height: 124, rx: 12, fill: isContrast ? '#000000' : 'url(#abs-const-sky)' }),
+                !isContrast && [[24,18,1],[44,88,0.8],[94,16,1.1],[186,14,0.9],[240,108,1],[334,15,1.1],[392,26,0.9],[396,86,1.2],[168,108,0.8],[292,16,0.9]].map(function(st, si) {
+                  return h('circle', { key: 'sf-' + si, className: 'abs-svg-fx', cx: st[0], cy: st[1], r: st[2], fill: '#e0e7ff', opacity: 0.45 });
+                }),
+                // Dual astrolabe orbital reference rings
+                h('ellipse', { cx: cx, cy: cy, rx: 152, ry: 46, fill: 'none', stroke: isContrast ? '#facc15' : 'rgba(167,139,250,0.24)', strokeWidth: 1.1, strokeDasharray: '4 4' }),
+                h('ellipse', { cx: cx, cy: cy, rx: 90, ry: 29, fill: 'none', stroke: isContrast ? '#ffffff' : 'rgba(148,163,184,0.22)', strokeWidth: 0.9 }),
+                // Dual-pass glowing resonance conduits from each domain to central Spellforge core
                 constellationNodes.map(function(nd) {
                   var active = !!(sourceTally[nd.key] && sourceTally[nd.key].count > 0);
-                  return h('line', {
-                    key: 'beam-' + nd.key,
-                    x1: nd.x, y1: nd.y, x2: cx, y2: cy,
-                    stroke: active ? (isContrast ? '#facc15' : nd.color) : 'rgba(148,163,184,0.32)',
-                    strokeWidth: active ? 2.4 : 1.2,
-                    strokeDasharray: active ? '' : '3 3'
-                  });
+                  var midX = (nd.x + cx) / 2;
+                  var midY = (nd.y + cy) / 2;
+                  return h('g', { key: 'beam-' + nd.key },
+                    !isContrast && active && h('line', { className: 'abs-svg-fx', x1: nd.x, y1: nd.y, x2: cx, y2: cy, stroke: nd.color, strokeWidth: 6, strokeOpacity: 0.22, strokeLinecap: 'round' }),
+                    h('line', {
+                      x1: nd.x, y1: nd.y, x2: cx, y2: cy,
+                      stroke: active ? (isContrast ? '#facc15' : nd.color) : 'rgba(148,163,184,0.32)',
+                      strokeWidth: active ? 2.2 : 1.2,
+                      strokeDasharray: active ? '' : '3 3',
+                      strokeLinecap: 'round'
+                    }),
+                    active && h('circle', { cx: midX, cy: midY, r: 2.3, fill: isContrast ? '#facc15' : '#ffffff', stroke: isContrast ? '#000000' : nd.color, strokeWidth: 1 })
+                  );
                 }),
-                // Central Spellforge Core
-                h('circle', { cx: cx, cy: cy, r: 19, fill: isContrast ? '#000000' : '#312e81', stroke: isContrast ? '#facc15' : '#c4b5fd', strokeWidth: 2 }),
+                // Central Spellforge Reactor Core
+                !isContrast && h('circle', { className: 'abs-svg-fx', cx: cx, cy: cy, r: 27, fill: '#8b5cf6', opacity: 0.22 }),
+                h('circle', { cx: cx, cy: cy, r: 23, fill: 'none', stroke: isContrast ? '#facc15' : 'rgba(196,181,253,0.45)', strokeWidth: 1, strokeDasharray: '3 3' }),
+                h('circle', { cx: cx, cy: cy, r: 19, fill: isContrast ? '#000000' : 'url(#abs-const-core)', stroke: isContrast ? '#facc15' : '#ddd6fe', strokeWidth: 2 }),
                 h('text', { x: cx, y: cy + 4, fill: '#ffffff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, unlockedSpells.length + '/' + SPELLBOOK.length),
-                // Domain star nodes
+                // Sculpted domain star nodes
                 constellationNodes.map(function(nd) {
                   var tally = sourceTally[nd.key];
                   var count = tally ? tally.count : 0;
                   var active = count > 0;
                   var labelY = nd.y < 60 ? nd.y + 22 : nd.y + 20;
                   return h('g', { key: 'node-' + nd.key },
-                    active && h('circle', { cx: nd.x, cy: nd.y, r: 14, fill: isContrast ? '#facc15' : nd.color, opacity: isContrast ? 0.25 : 0.28 }),
+                    active && !isContrast && h('circle', { className: 'abs-svg-fx', cx: nd.x, cy: nd.y, r: 15.5, fill: nd.color, opacity: 0.26 }),
                     h('circle', {
-                      cx: nd.x, cy: nd.y, r: 9.5,
+                      cx: nd.x, cy: nd.y, r: 9.8,
                       fill: active ? (isContrast ? '#facc15' : nd.color) : '#1e293b',
                       stroke: active ? '#ffffff' : '#94a3b8',
-                      strokeWidth: active ? 2 : 1.4
+                      strokeWidth: active ? 2 : 1.3
                     }),
+                    active && !isContrast && h('circle', { className: 'abs-svg-fx', cx: nd.x, cy: nd.y, r: 9.8, fill: 'url(#abs-const-spec)' }),
                     h('text', { x: nd.x, y: nd.y + 3.5, fill: active ? (isContrast ? '#000000' : '#ffffff') : '#cbd5e1', fontSize: 10, fontWeight: 800, textAnchor: 'middle' }, count),
                     h('text', { x: nd.x, y: labelY, fill: active ? '#f8fafc' : '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, nd.short)
                   );
@@ -2484,18 +2587,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('button', { type: 'button', className: 'abs-inquiry-preset', onClick: function() { setIQ({ aiAssist: 90, learnerEffort: 10, novelty: 7, errorCost: 8 }); } }, t('stem.allobotsage.preset_shortcircuit_risk', 'Short-Circuit Risk')),
             h('button', { type: 'button', className: 'abs-inquiry-preset', onClick: function() { setIQ({ aiAssist: 10, learnerEffort: 85, novelty: 6, errorCost: 9 }); } }, t('stem.allobotsage.preset_high_stakes_solo', 'High-Stakes Solo'))
           ),
-          h('svg', { width: '100%', height: 144, viewBox: '0 0 360 144', role: 'img', 'aria-label': t('stem.allobotsage.workload_learning_risk_chart', 'Workload, learning, and risk chart'), style: { background: '#0a0a1a', borderRadius: 8, marginBottom: 10, border: '1px solid rgba(148,163,184,0.28)' } },
-            h('rect', { x: 18, y: 18, width: 162, height: 54, fill: 'rgba(34,197,94,0.09)' }),
-            h('rect', { x: 180, y: 72, width: 162, height: 54, fill: 'rgba(239,68,68,0.10)' }),
-            h('line', { x1: 180, y1: 18, x2: 180, y2: 126, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
-            h('line', { x1: 18, y1: 72, x2: 342, y2: 72, stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
-            h('text', { x: 180, y: 13, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, t('stem.allobotsage.high_learning', 'High Learning')),
-            h('text', { x: 180, y: 139, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, t('stem.allobotsage.low_learning', 'Low Learning')),
-            h('text', { x: 24, y: 68, fill: '#86efac', fontSize: 10, fontWeight: 700 }, t('stem.allobotsage.safe_axis', 'Safe')),
-            h('text', { x: 336, y: 68, fill: '#fca5a5', fontSize: 10, fontWeight: 700, textAnchor: 'end' }, t('stem.allobotsage.risky_axis', 'Risky')),
-            h('circle', { cx: 24 + Math.min(312, Math.max(0, risk * 24 + 156)), cy: 72 - Math.min(46, Math.max(-46, learnGain * 5)), r: 7, fill: sm.color, stroke: '#ffffff', strokeWidth: 2 }),
-            h('text', { x: 180, y: 92, fill: sm.color, fontSize: 11, textAnchor: 'middle', fontWeight: 800 }, sm.label)
-          ),
+          (function() {
+            var dotX = 24 + Math.min(312, Math.max(0, risk * 24 + 156));
+            var dotY = 72 - Math.min(46, Math.max(-46, learnGain * 5));
+            var pillY = dotY > 72 ? 32 : 98;
+            return h('svg', { width: '100%', height: 144, viewBox: '0 0 360 144', role: 'img', 'aria-label': t('stem.allobotsage.workload_learning_risk_chart', 'Workload, learning, and risk chart'), style: { background: isContrast ? '#000000' : '#060a18', borderRadius: 10, marginBottom: 10, border: isContrast ? '2px solid #ffffff' : '1px solid rgba(148,163,184,0.30)' } },
+              !isContrast && h('defs', null,
+                h('radialGradient', { id: 'abs-iq-well', cx: '50%', cy: '50%', r: '62%' },
+                  h('stop', { offset: '0%', stopColor: '#131d36' }),
+                  h('stop', { offset: '100%', stopColor: '#030712' })
+                ),
+                h('linearGradient', { id: 'abs-iq-good', x1: '0', y1: '0', x2: '1', y2: '1' },
+                  h('stop', { offset: '0%', stopColor: '#22c55e', stopOpacity: 0.22 }),
+                  h('stop', { offset: '100%', stopColor: '#22c55e', stopOpacity: 0.03 })
+                ),
+                h('linearGradient', { id: 'abs-iq-bad', x1: '0', y1: '0', x2: '1', y2: '1' },
+                  h('stop', { offset: '0%', stopColor: '#ef4444', stopOpacity: 0.04 }),
+                  h('stop', { offset: '100%', stopColor: '#ef4444', stopOpacity: 0.24 })
+                )
+              ),
+              // Studio quadrant backdrop
+              h('rect', { x: 0, y: 0, width: 360, height: 144, rx: 10, fill: isContrast ? '#000000' : 'url(#abs-iq-well)' }),
+              h('rect', { x: 18, y: 18, width: 162, height: 54, rx: 4, fill: isContrast ? 'rgba(255,255,255,0.06)' : 'url(#abs-iq-good)' }),
+              h('rect', { x: 180, y: 72, width: 162, height: 54, rx: 4, fill: isContrast ? 'rgba(250,204,21,0.08)' : 'url(#abs-iq-bad)' }),
+              h('rect', { x: 18, y: 18, width: 324, height: 108, rx: 4, fill: 'none', stroke: isContrast ? '#ffffff' : 'rgba(148,163,184,0.22)', strokeWidth: 0.9 }),
+              // Cross-axis dividers
+              h('line', { x1: 180, y1: 18, x2: 180, y2: 126, stroke: isContrast ? '#ffffff' : '#64748b', strokeWidth: 1, strokeDasharray: '3 3' }),
+              h('line', { x1: 18, y1: 72, x2: 342, y2: 72, stroke: isContrast ? '#ffffff' : '#64748b', strokeWidth: 1, strokeDasharray: '3 3' }),
+              // Laser crosshair projections to axes from active operating point
+              h('line', { x1: dotX, y1: 18, x2: dotX, y2: 126, stroke: isContrast ? '#facc15' : sm.color, strokeWidth: 0.9, strokeDasharray: '2 3', opacity: 0.45 }),
+              h('line', { x1: 18, y1: dotY, x2: 342, y2: dotY, stroke: isContrast ? '#facc15' : sm.color, strokeWidth: 0.9, strokeDasharray: '2 3', opacity: 0.45 }),
+              // Axis labels
+              h('text', { x: 180, y: 13, fill: isContrast ? '#facc15' : '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, t('stem.allobotsage.high_learning', 'High Learning')),
+              h('text', { x: 180, y: 139, fill: isContrast ? '#facc15' : '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, t('stem.allobotsage.low_learning', 'Low Learning')),
+              h('text', { x: 24, y: 68, fill: isContrast ? '#ffffff' : '#86efac', fontSize: 10, fontWeight: 700 }, t('stem.allobotsage.safe_axis', 'Safe')),
+              h('text', { x: 336, y: 68, fill: isContrast ? '#facc15' : '#fca5a5', fontSize: 10, fontWeight: 700, textAnchor: 'end' }, t('stem.allobotsage.risky_axis', 'Risky')),
+              // Luminous telemetry beacon at operating point
+              !isContrast && h('circle', { className: 'abs-svg-fx', cx: dotX, cy: dotY, r: 14, fill: sm.color, opacity: 0.22 }),
+              h('circle', { cx: dotX, cy: dotY, r: 7.5, fill: isContrast ? '#facc15' : sm.color, stroke: '#ffffff', strokeWidth: 2 }),
+              !isContrast && h('circle', { className: 'abs-svg-fx', cx: dotX - 2, cy: dotY - 2, r: 2.1, fill: '#ffffff', opacity: 0.85 }),
+              // Non-colliding frosted state badge pill
+              h('rect', { x: 102, y: pillY - 12, width: 156, height: 18, rx: 9, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.88)', stroke: isContrast ? '#facc15' : sm.color, strokeWidth: 1 }),
+              h('text', { x: 180, y: pillY, fill: isContrast ? '#facc15' : sm.color, fontSize: 10.5, textAnchor: 'middle', fontWeight: 800 }, sm.label)
+            );
+          })(),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', { style: { fontSize: 11 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, t('stem.allobotsage.ai_assistance', 'AI assistance (%)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.aiAssist)),
@@ -3974,21 +4109,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   { level: 'med',  label: t('stem.allobotsage.pretty_sure_2', 'Pretty sure'), icon: '\uD83E\uDD14' },
                   { level: 'high', label: t('stem.allobotsage.knew_it', 'Knew it'),     icon: '\uD83D\uDD25' }
                 ];
-                var W = 240, Hh = 100, padL = 8, padB = 24, padT = 8, bw = 50, gap = 22;
+                var W = 240, Hh = 104, padL = 12, padB = 26, padT = 12, bw = 50, gap = 22;
                 var sy = function(p) { return padT + (Hh - padT - padB) * (1 - p / 100); };
-                return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 300, display: 'block', margin: '0 auto 8px' }, role: 'img', 'aria-label': t('stem.allobotsage.accuracy_by_stated_confidence_well_cal', 'Accuracy by stated confidence; well-calibrated bars rise from Guessing to Knew it.') },
-                  h('line', { x1: padL + bw / 2, y1: sy(50), x2: padL + 2 * (bw + gap) + bw / 2, y2: sy(90), stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }),
+                var x1Ref = padL + bw / 2;
+                var x3Ref = padL + 2 * (bw + gap) + bw / 2;
+                return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 300, display: 'block', margin: '0 auto 8px', borderRadius: 8 }, role: 'img', 'aria-label': t('stem.allobotsage.accuracy_by_stated_confidence_well_cal', 'Accuracy by stated confidence; well-calibrated bars rise from Guessing to Knew it.') },
+                  !isContrast && h('defs', null,
+                    h('linearGradient', { id: 'abs-cal-well', x1: '0', y1: '0', x2: '0', y2: '1' },
+                      h('stop', { offset: '0%', stopColor: '#f8fafc' }),
+                      h('stop', { offset: '100%', stopColor: '#f1f5f9' })
+                    ),
+                    h('linearGradient', { id: 'abs-cal-good', x1: '0', y1: '0', x2: '0', y2: '1' },
+                      h('stop', { offset: '0%', stopColor: '#34d399' }),
+                      h('stop', { offset: '100%', stopColor: '#15803d' })
+                    ),
+                    h('linearGradient', { id: 'abs-cal-warn', x1: '0', y1: '0', x2: '0', y2: '1' },
+                      h('stop', { offset: '0%', stopColor: '#fbbf24' }),
+                      h('stop', { offset: '100%', stopColor: '#d97706' })
+                    )
+                  ),
+                  // Recessed studio calibration well
+                  h('rect', { x: 0, y: 0, width: W, height: Hh, rx: 8, fill: isContrast ? '#000000' : 'url(#abs-cal-well)', stroke: isContrast ? '#ffffff' : 'rgba(148,163,184,0.32)', strokeWidth: 1 }),
+                  // Horizontal grid references (50%, 100%) + baseline
+                  [50, 100].map(function(gv) {
+                    return h('line', { key: 'cg-' + gv, x1: padL - 4, y1: sy(gv), x2: W - 8, y2: sy(gv), stroke: isContrast ? 'rgba(255,255,255,0.22)' : 'rgba(148,163,184,0.28)', strokeWidth: 0.7, strokeDasharray: '2 2' });
+                  }),
+                  h('line', { x1: padL - 4, y1: Hh - padB, x2: W - 8, y2: Hh - padB, stroke: isContrast ? '#ffffff' : '#94a3b8', strokeWidth: 1 }),
+                  // Well-calibrated reference slope line
+                  h('line', { x1: x1Ref, y1: sy(50), x2: x3Ref, y2: sy(90), stroke: isContrast ? '#facc15' : '#6366f1', strokeWidth: 1.4, strokeDasharray: '3 3', opacity: 0.75 }),
                   order.map(function(o, i) {
                     var rc = runConfidence[o.level], tot = rc.right + rc.wrong, x = padL + i * (bw + gap);
-                    if (tot === 0) return h('text', { key: i, x: x + bw / 2, y: sy(0) - 4, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8' }, '\u2014');
-                    var pct = Math.round(rc.right / tot * 100), col = pct >= 70 ? '#16a34a' : '#f59e0b';
-                    return h('g', { key: i },
-                      h('rect', { x: x, y: sy(pct), width: bw, height: (Hh - padB) - sy(pct), rx: 3, fill: col, opacity: 0.85 }),
-                      h('text', { x: x + bw / 2, y: sy(pct) - 3, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: col }, pct + '%'),
+                    var targetY = sy(50 + i * 20);
+                    if (tot === 0) return h('g', { key: i },
+                      h('text', { x: x + bw / 2, y: sy(0) - 4, textAnchor: 'middle', fontSize: 9, fill: isContrast ? '#ffffff' : '#94a3b8' }, '\u2014'),
                       h('text', { x: x + bw / 2, y: Hh - padB + 12, textAnchor: 'middle', fontSize: 10 }, o.icon),
-                      h('text', { x: x + bw / 2, y: Hh - padB + 21, textAnchor: 'middle', fontSize: 7.5, fill: '#64748b' }, o.label));
+                      h('text', { x: x + bw / 2, y: Hh - padB + 21, textAnchor: 'middle', fontSize: 7.5, fill: isContrast ? '#facc15' : '#64748b' }, o.label)
+                    );
+                    var pct = Math.round(rc.right / tot * 100), col = pct >= 70 ? '#16a34a' : '#d97706';
+                    var barH = Math.max(2, (Hh - padB) - sy(pct));
+                    return h('g', { key: i },
+                      h('rect', { x: x, y: sy(pct), width: bw, height: barH, rx: 4, fill: isContrast ? '#facc15' : (pct >= 70 ? 'url(#abs-cal-good)' : 'url(#abs-cal-warn)'), stroke: isContrast ? '#ffffff' : col, strokeWidth: 0.8 }),
+                      !isContrast && h('rect', { className: 'abs-svg-fx', x: x + 2, y: sy(pct) + 1, width: bw - 4, height: Math.min(3, barH * 0.35), rx: 1.5, fill: '#ffffff', opacity: 0.35 }),
+                      h('circle', { cx: x + bw / 2, cy: targetY, r: 2.3, fill: '#ffffff', stroke: isContrast ? '#facc15' : '#6366f1', strokeWidth: 1.1 }),
+                      h('text', { x: x + bw / 2, y: sy(pct) - 3, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: isContrast ? '#facc15' : col }, pct + '%'),
+                      h('text', { x: x + bw / 2, y: Hh - padB + 12, textAnchor: 'middle', fontSize: 10 }, o.icon),
+                      h('text', { x: x + bw / 2, y: Hh - padB + 21, textAnchor: 'middle', fontSize: 7.5, fill: isContrast ? '#ffffff' : '#475569', fontWeight: 700 }, o.label));
                   }),
-                  h('text', { x: W - 2, y: sy(90) - 3, textAnchor: 'end', fontSize: 7, fill: '#94a3b8', fontStyle: 'italic' }, t('stem.allobotsage.well_calibrated', 'well-calibrated \u2192'))
+                  h('text', { x: W - 6, y: sy(90) - 4, textAnchor: 'end', fontSize: 7.5, fill: isContrast ? '#facc15' : '#6366f1', fontWeight: 700, fontStyle: 'italic' }, t('stem.allobotsage.well_calibrated', 'well-calibrated \u2192'))
                 );
               })(),
               h('div', { className: 'grid grid-cols-3 gap-2 text-center' },

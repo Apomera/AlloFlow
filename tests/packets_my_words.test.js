@@ -757,10 +757,16 @@ describe('the page as files: the one page that may reach other websites', () => 
     expect(script).not.toMatch(/method\s*:\s*'(?!GET')|body\s*:|FormData|headers\s*:/);
     // Every element is made with a tag the script names itself.
     const made = [...script.matchAll(/\bel\(([^,)]*)/g)].map((m) => m[1]);
-    expect([...new Set(made)].sort()).toEqual(["'button'", "'img'", "'li'", "'p'"]);
+    expect([...new Set(made)].sort()).toEqual(["'button'", "'h2'", "'img'", "'li'", "'p'", "'script'", "'section'", "'ul'"]);
     expect(script.match(/createElement(?:NS)?\(/g)).toEqual(['createElement(']);
-    // A picture address is set in three places: a result (an address checked against the named hosts) and two saved pictures (data: addresses).
-    expect(script.match(/[\w$().'-]+\.src = [\w.]+/g)).toEqual(["$('saved-picture').src = picture.dataUri", 'image.src = picture.show', 'image.src = entry.picture.dataUri']);
+    // Every .src assignment is audited: saved pictures (data:), checked online result host, built-in offline diagram SVG (data:), and same-origin word_picture_matcher.js.
+    expect(script.match(/[\w$().'-]+\.src = ['\w.]+/g)).toEqual([
+      "$('saved-picture').src = picture.dataUri",
+      'image.src = picture.show',
+      'image.src = entry.picture.dataUri',
+      "script.src = 'word_picture_matcher.js'",
+      'img.src = uri',
+    ]);
     expect(script).not.toMatch(/\.(?:href|action|srcset)\s*=[^=]/);
     // Local storage holds one setting, under one key, and only when the teacher asks.
     expect(script.match(/\.setItem\(/g)).toEqual(['.setItem(']);

@@ -3183,7 +3183,8 @@ window.StemLab = window.StemLab || {
       React.useEffect(function() {
         var canvas = canvasRef.current; if (!canvas) return;
         _plSetupHiDPI(canvas, 720, 360);
-        var gfx = canvas.getContext('2d');
+        var gfx = canvas.getContext && canvas.getContext('2d');
+        if (!gfx) return;
         // Apply the DPR scale every frame so all subsequent draw calls
         // are in logical (CSS) pixels regardless of the internal buffer.
         gfx.setTransform(canvas._plDpr, 0, 0, canvas._plDpr, 0, 0);
@@ -3192,6 +3193,61 @@ window.StemLab = window.StemLab || {
         if ('imageSmoothingQuality' in gfx) gfx.imageSmoothingQuality = 'high';
         var W = canvas._plLogicalW;
         var H = canvas._plLogicalH;
+        var hasRadial = typeof gfx.createRadialGradient === 'function';
+        var hasLinear = typeof gfx.createLinearGradient === 'function';
+        var plReduced = false;
+        try {
+          plReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        } catch (e) {}
+        function _plRoundRectPath(x, y, rw, rh, rad) {
+          var r = Math.min(rad, rw / 2, rh / 2);
+          gfx.beginPath();
+          gfx.moveTo(x + r, y);
+          gfx.lineTo(x + rw - r, y);
+          gfx.arcTo(x + rw, y, x + rw, y + r, r);
+          gfx.lineTo(x + rw, y + rh - r);
+          gfx.arcTo(x + rw, y + rh, x + rw - r, y + rh, r);
+          gfx.lineTo(x + r, y + rh);
+          gfx.arcTo(x, y + rh, x, y + rh - r, r);
+          gfx.lineTo(x, y + r);
+          gfx.arcTo(x, y, x + r, y, r);
+          gfx.closePath();
+        }
+        function _plDrawActorToken(ax, ay, rad, baseColor, highlightColor, strokeColor, label, textColor, fontPx) {
+          // Grounded elliptical contact shadow
+          gfx.save();
+          gfx.fillStyle = 'rgba(2,6,23,0.42)';
+          gfx.beginPath();
+          gfx.ellipse(ax + 1.4, ay + rad * 0.62, rad * 0.96, rad * 0.48, 0, 0, Math.PI * 2);
+          gfx.fill();
+          // 3D specular radial jersey shading
+          if (hasRadial) {
+            var sg = gfx.createRadialGradient(ax - rad * 0.34, ay - rad * 0.34, rad * 0.12, ax, ay, rad);
+            sg.addColorStop(0, highlightColor);
+            sg.addColorStop(0.55, baseColor);
+            sg.addColorStop(1, '#0f172a');
+            gfx.fillStyle = sg;
+          } else {
+            gfx.fillStyle = baseColor;
+          }
+          gfx.beginPath();
+          gfx.arc(ax, ay, rad, 0, Math.PI * 2);
+          gfx.fill();
+          gfx.strokeStyle = strokeColor;
+          gfx.lineWidth = 1.25;
+          gfx.stroke();
+          // Subtle top-left specular crescent
+          gfx.strokeStyle = 'rgba(255,255,255,0.45)';
+          gfx.lineWidth = 1;
+          gfx.beginPath();
+          gfx.arc(ax, ay, rad - 1.4, -Math.PI * 0.85, -Math.PI * 0.25);
+          gfx.stroke();
+          gfx.fillStyle = textColor;
+          gfx.font = 'bold ' + fontPx + 'px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText(label, ax, ay + (fontPx * 0.35));
+          gfx.restore();
+        }
         // PL: "Hot Hand" momentum made visible ON THE FIELD. When the student
         // is on a 3+ completion streak ("ON FIRE"), the ball's motion trail
         // burns ember-orange and a warm vignette frames the field — so the
@@ -3212,18 +3268,41 @@ window.StemLab = window.StemLab || {
         function fy(worldY) { return marginT + (worldY / fWid) * fieldPxH; }
 
         if (isSoccer) {
-          // ── Soccer pitch render (FIFA spec) ──
-          // Bright pitch green + crisp white markings, centered halfway line,
-          // center circle, two penalty boxes, two goal areas, penalty spots,
-          // penalty arcs, corner arcs, goal markers.
-          gfx.fillStyle = '#1e5d2e';   // pitch green
+          // ── Soccer pitch render (FIFA spec) with stadium floodlight atmosphere ──
+          if (hasLinear) {
+            var sApron = gfx.createLinearGradient(0, 0, 0, H);
+            sApron.addColorStop(0, '#10351b');
+            sApron.addColorStop(0.5, '#194d27');
+            sApron.addColorStop(1, '#0e2d17');
+            gfx.fillStyle = sApron;
+          } else {
+            gfx.fillStyle = '#1e5d2e';
+          }
           gfx.fillRect(0, 0, W, H);
-          gfx.fillStyle = '#2a7a3a';
+          if (hasRadial) {
+            var sTurf = gfx.createRadialGradient(W * 0.5, H * 0.46, 30, W * 0.5, H * 0.5, W * 0.62);
+            sTurf.addColorStop(0, '#339448');
+            sTurf.addColorStop(0.62, '#277738');
+            sTurf.addColorStop(1, '#1c5a2a');
+            gfx.fillStyle = sTurf;
+          } else {
+            gfx.fillStyle = '#2a7a3a';
+          }
           gfx.fillRect(fx(0), fy(0), fx(PITCH_LENGTH) - fx(0), fy(PITCH_WIDTH) - fy(0));
           // Mowing stripes (low contrast bands every 7m)
           gfx.fillStyle = 'rgba(0,0,0,0.07)';
           for (var ms = 0; ms < PITCH_LENGTH; ms += 14) {
             gfx.fillRect(fx(ms), fy(0), fx(ms + 7) - fx(ms), fy(PITCH_WIDTH) - fy(0));
+          }
+          // Subtle corner stadium floodlight blooms
+          if (hasRadial) {
+            [[0, 0], [W, 0], [0, H], [W, H]].forEach(function(fc) {
+              var fg = gfx.createRadialGradient(fc[0], fc[1], 4, fc[0], fc[1], 130);
+              fg.addColorStop(0, 'rgba(255,253,235,0.12)');
+              fg.addColorStop(1, 'rgba(255,253,235,0)');
+              gfx.fillStyle = fg;
+              gfx.fillRect(0, 0, W, H);
+            });
           }
           gfx.strokeStyle = '#fafafa';
           gfx.lineWidth = 2;
@@ -3336,16 +3415,55 @@ window.StemLab = window.StemLab || {
           }
           // Skip the football-specific scene entirely
         } else {
-        // Field background
-        gfx.fillStyle = '#1e3a26';
+        // Stadium apron + floodlit football turf with mowed 5-yard stripes
+        if (hasLinear) {
+          var fApron = gfx.createLinearGradient(0, 0, 0, H);
+          fApron.addColorStop(0, '#0f2317');
+          fApron.addColorStop(0.5, '#193724');
+          fApron.addColorStop(1, '#0d1f14');
+          gfx.fillStyle = fApron;
+        } else {
+          gfx.fillStyle = '#1e3a26';
+        }
         gfx.fillRect(0, 0, W, H);
-        // Field of play (between end zones)
-        gfx.fillStyle = '#2a5a3a';
-        gfx.fillRect(fx(END_ZONE_DEPTH), marginT, fx(FIELD_LENGTH - END_ZONE_DEPTH) - fx(END_ZONE_DEPTH), fieldPxH);
-        // End zones — slightly darker
-        gfx.fillStyle = '#1a3a1a';
+        // Field of play (between end zones) with soft center floodlight illumination
+        var playX0 = fx(END_ZONE_DEPTH), playW = fx(FIELD_LENGTH - END_ZONE_DEPTH) - playX0;
+        if (hasRadial) {
+          var fTurf = gfx.createRadialGradient(W * 0.5, H * 0.46, 28, W * 0.5, H * 0.5, W * 0.6);
+          fTurf.addColorStop(0, '#347347');
+          fTurf.addColorStop(0.65, '#285c39');
+          fTurf.addColorStop(1, '#1e462b');
+          gfx.fillStyle = fTurf;
+        } else {
+          gfx.fillStyle = '#2a5a3a';
+        }
+        gfx.fillRect(playX0, marginT, playW, fieldPxH);
+        // Subtle 5-yard mowed turf bands
+        gfx.fillStyle = 'rgba(0,0,0,0.065)';
+        for (var bandY = 10; bandY < 110; bandY += 10) {
+          gfx.fillRect(fx(bandY), marginT, fx(bandY + 5) - fx(bandY), fieldPxH);
+        }
+        // End zones — rich deeper stadium shade with subtle diagonal athletic stripes
+        gfx.fillStyle = '#163421';
         gfx.fillRect(fx(0), marginT, fx(END_ZONE_DEPTH) - fx(0), fieldPxH);
         gfx.fillRect(fx(FIELD_LENGTH - END_ZONE_DEPTH), marginT, fx(FIELD_LENGTH) - fx(FIELD_LENGTH - END_ZONE_DEPTH), fieldPxH);
+        gfx.save();
+        gfx.strokeStyle = 'rgba(255,255,255,0.07)';
+        gfx.lineWidth = 4;
+        [0, FIELD_LENGTH - END_ZONE_DEPTH].forEach(function(ezStart) {
+          var ex0 = fx(ezStart), ew = fx(ezStart + END_ZONE_DEPTH) - ex0;
+          gfx.save();
+          gfx.beginPath(); gfx.rect(ex0, marginT, ew, fieldPxH); gfx.clip();
+          for (var dOff = -fieldPxH; dOff < ew + fieldPxH; dOff += 18) {
+            gfx.beginPath(); gfx.moveTo(ex0 + dOff, marginT); gfx.lineTo(ex0 + dOff + 42, marginT + fieldPxH); gfx.stroke();
+          }
+          gfx.restore();
+        });
+        gfx.restore();
+        // Crisp field outer sideline border
+        gfx.strokeStyle = 'rgba(255,255,255,0.65)';
+        gfx.lineWidth = 1.6;
+        gfx.strokeRect(fx(0), marginT, fx(FIELD_LENGTH) - fx(0), fieldPxH);
         // Yard lines every 5 yards, with 10-yard lines bolder + numbered
         gfx.strokeStyle = 'rgba(255,255,255,0.35)';
         gfx.lineWidth = 1;
@@ -3372,12 +3490,17 @@ window.StemLab = window.StemLab || {
           gfx.beginPath(); gfx.moveTo(hpx, fy(HASH_LEFT)); gfx.lineTo(hpx, fy(HASH_LEFT) + 3); gfx.stroke();
           gfx.beginPath(); gfx.moveTo(hpx, fy(HASH_RIGHT)); gfx.lineTo(hpx, fy(HASH_RIGHT) - 3); gfx.stroke();
         }
-        // Line of scrimmage — bold blue line at d.losX
+        // Line of scrimmage — dual-pass luminous blue laser at d.losX
         var losPx = fx(d.losX);
-        gfx.strokeStyle = '#60a5fa';
-        gfx.lineWidth = 2;
+        gfx.save();
+        gfx.strokeStyle = 'rgba(96,165,250,0.28)';
+        gfx.lineWidth = 7;
         gfx.beginPath(); gfx.moveTo(losPx, marginT); gfx.lineTo(losPx, marginT + fieldPxH); gfx.stroke();
-        gfx.fillStyle = '#60a5fa';
+        gfx.strokeStyle = '#60a5fa';
+        gfx.lineWidth = 2.2;
+        gfx.beginPath(); gfx.moveTo(losPx, marginT); gfx.lineTo(losPx, marginT + fieldPxH); gfx.stroke();
+        gfx.restore();
+        gfx.fillStyle = '#93c5fd';
         gfx.font = 'bold 10px system-ui';
         gfx.fillText('LOS', losPx, marginT + fieldPxH + 14);
 
@@ -3418,24 +3541,31 @@ window.StemLab = window.StemLab || {
           });
         }
 
-        // ── Routes ──
+        // ── Routes (dual-pass luminous amber trajectory + subtle turf shadow) ──
         if (d.showRoutes) {
           formation.forEach(function(p) {
             if (!p.route || p.route.length < 2) return;
-            gfx.strokeStyle = '#fbbf24';
-            gfx.lineWidth = 2;
+            gfx.save();
+            gfx.lineCap = 'round';
+            gfx.lineJoin = 'round';
+            gfx.strokeStyle = 'rgba(251,191,36,0.24)';
+            gfx.lineWidth = 5.5;
             gfx.beginPath();
             p.route.forEach(function(pt, idx) {
               var px = fx(pt.x), py = fy(pt.y);
               if (idx === 0) gfx.moveTo(px, py); else gfx.lineTo(px, py);
             });
             gfx.stroke();
+            gfx.strokeStyle = '#fbbf24';
+            gfx.lineWidth = 2.2;
+            gfx.stroke();
+            gfx.restore();
             // Arrowhead at end
             if (p.route.length >= 2) {
               var a = p.route[p.route.length - 2];
               var b = p.route[p.route.length - 1];
               var ang = Math.atan2(fy(b.y) - fy(a.y), fx(b.x) - fx(a.x));
-              gfx.fillStyle = '#fbbf24';
+              gfx.fillStyle = '#fde047';
               gfx.beginPath();
               gfx.moveTo(fx(b.x), fy(b.y));
               gfx.lineTo(fx(b.x) - 8 * Math.cos(ang - 0.4), fy(b.y) - 8 * Math.sin(ang - 0.4));
@@ -3447,65 +3577,63 @@ window.StemLab = window.StemLab || {
         }
         } // end !isSoccer (football scene)
 
-        // ── Soccer passing-network arrows (concept overlay) ──
-        // Draw arrows between player IDs from the active concept's `passes`.
-        // Skipped for football modes since the route lines already serve
-        // as movement cues there.
+        // ── Soccer passing-network arrows (dual-pass golden luminous vectors) ──
         if (isSoccer && concept && concept.passes && d.showRoutes !== false) {
-          gfx.strokeStyle = '#fbbf24';
-          gfx.lineWidth = 2;
-          gfx.fillStyle = '#fbbf24';
           concept.passes.forEach(function(pair) {
             var from = formation.find(function(p) { return p.id === pair[0]; });
             var to = formation.find(function(p) { return p.id === pair[1]; });
             if (!from || !to) return;
             var ax = fx(from.x), ay = fy(from.y);
             var bx = fx(to.x), by = fy(to.y);
-            gfx.beginPath();
-            gfx.moveTo(ax, ay); gfx.lineTo(bx, by);
+            gfx.save();
+            gfx.lineCap = 'round';
+            gfx.strokeStyle = 'rgba(251,191,36,0.22)';
+            gfx.lineWidth = 5.5;
+            gfx.beginPath(); gfx.moveTo(ax, ay); gfx.lineTo(bx, by); gfx.stroke();
+            gfx.strokeStyle = '#fbbf24';
+            gfx.lineWidth = 2.1;
             gfx.stroke();
             // Arrowhead
             var ang = Math.atan2(by - ay, bx - ax);
+            gfx.fillStyle = '#fde047';
             gfx.beginPath();
             gfx.moveTo(bx, by);
             gfx.lineTo(bx - 7 * Math.cos(ang - 0.4), by - 7 * Math.sin(ang - 0.4));
             gfx.lineTo(bx - 7 * Math.cos(ang + 0.4), by - 7 * Math.sin(ang + 0.4));
             gfx.closePath();
             gfx.fill();
+            gfx.restore();
           });
         }
 
-        // ── Defenders ──
-        // 11 red dots: 4 DL just past LOS, 3 LBs underneath, 4 DBs in
-        // their assigned spots (man for Cover 1, zone-centroid for the
-        // others). Drawn BEFORE offensive players so the offense reads
-        // on top. Dot color is red across the board; the role label
-        // ('DL' / 'LB' / 'CB' / 'S' / 'NB') reads inside.
+        // ── Defenders (3D specular radial-shaded tokens with grounded shadows) ──
         defenders.forEach(function(D) {
           var dpx = fx(D.x), dpy = fy(D.y);
-          gfx.fillStyle = '#ef4444';
-          gfx.beginPath(); gfx.arc(dpx, dpy, 5.5, 0, Math.PI * 2); gfx.fill();
-          gfx.strokeStyle = '#0f172a';
-          gfx.lineWidth = 1;
-          gfx.stroke();
-          gfx.fillStyle = '#fafafa';
-          gfx.font = 'bold 7px system-ui';
-          gfx.textAlign = 'center';
-          gfx.fillText(D.role, dpx, dpy + 2.5);
+          _plDrawActorToken(dpx, dpy, 5.8, '#ef4444', '#fca5a5', '#0f172a', D.role, '#fafafa', 7);
         });
 
-        // ── Players ──
-        // During an active run, players walk along their routes; otherwise
-        // they sit at snap (or end-of-route) positions. We use d.runT as
-        // the elapsed time. After the route phase ends, players hold at
-        // their end-of-route positions while the ball is in flight.
+        // ── Players (with grounded shadows, specular depth & live route motion trails) ──
         var runT = d.runT || 0;
         var isAnimating = !!d.runActive || (d.runT > 0 && d.runT < TOTAL_DURATION);
         formation.forEach(function(p) {
           var pos;
           if (isAnimating && p.route && p.route.length >= 2) {
-            // During route phase, lerp; after, hold at end of route.
             pos = positionAtTime(p, Math.min(runT, ROUTE_DURATION));
+            // Luminous fading motion trail behind active route runner
+            if (!plReduced && runT > 0.05) {
+              var trEnd = Math.min(runT, ROUTE_DURATION);
+              gfx.save();
+              for (var rti = 1; rti <= 5; rti++) {
+                var rt = trEnd - rti * 0.08;
+                if (rt < 0) break;
+                var rp = positionAtTime(p, rt);
+                gfx.fillStyle = 'rgba(253,224,71,' + ((1 - rti / 6) * 0.34).toFixed(2) + ')';
+                gfx.beginPath();
+                gfx.arc(fx(rp.x), fy(rp.y), Math.max(1.5, 4.6 - rti * 0.65), 0, Math.PI * 2);
+                gfx.fill();
+              }
+              gfx.restore();
+            }
           } else {
             pos = { x: p.x, y: p.y };
           }
@@ -3513,33 +3641,41 @@ window.StemLab = window.StemLab || {
           var isOpen = d.showOpen && p.id === openReceiverId && !isAnimating;
           var fill = p.role === 'QB' ? '#fbbf24'
                    : p.role === 'OL' ? '#94a3b8'
-                   : p.role === 'WR' || p.role === 'TE' ? '#fafafa'
+                   : p.role === 'WR' || p.role === 'TE' ? '#f8fafc'
                    : p.role === 'RB' ? '#f97316'
                    : '#cbd5e1';
+          var hiCol = p.role === 'QB' ? '#fef9c3'
+                    : p.role === 'RB' ? '#fed7aa'
+                    : '#ffffff';
           if (isOpen) {
-            gfx.fillStyle = 'rgba(16,185,129,0.35)';
-            gfx.beginPath(); gfx.arc(px, py, 12, 0, Math.PI * 2); gfx.fill();
+            if (hasRadial) {
+              var og = gfx.createRadialGradient(px, py, 4, px, py, 16);
+              og.addColorStop(0, 'rgba(52,211,153,0.58)');
+              og.addColorStop(1, 'rgba(16,185,129,0)');
+              gfx.fillStyle = og;
+              gfx.beginPath(); gfx.arc(px, py, 16, 0, Math.PI * 2); gfx.fill();
+            } else {
+              gfx.fillStyle = 'rgba(16,185,129,0.35)';
+              gfx.beginPath(); gfx.arc(px, py, 12, 0, Math.PI * 2); gfx.fill();
+            }
+            gfx.strokeStyle = 'rgba(110,231,183,0.85)';
+            gfx.lineWidth = 1.6;
+            gfx.beginPath(); gfx.arc(px, py, 11.5, 0, Math.PI * 2); gfx.stroke();
           }
           if (!isSoccer && p.id === pickedPlayerId && !isAnimating) {
+            gfx.save();
+            gfx.strokeStyle = 'rgba(250,204,21,0.34)';
+            gfx.lineWidth = 5.5;
+            gfx.beginPath(); gfx.arc(px, py, 10.5, 0, Math.PI * 2); gfx.stroke();
             gfx.strokeStyle = '#facc15';
-            gfx.lineWidth = 2.5;
-            gfx.beginPath(); gfx.arc(px, py, 10, 0, Math.PI * 2); gfx.stroke();
+            gfx.lineWidth = 2.2;
+            gfx.beginPath(); gfx.arc(px, py, 10.5, 0, Math.PI * 2); gfx.stroke();
+            gfx.restore();
           }
-          gfx.fillStyle = fill;
-          gfx.beginPath(); gfx.arc(px, py, 6, 0, Math.PI * 2); gfx.fill();
-          gfx.strokeStyle = '#0f172a';
-          gfx.lineWidth = 1;
-          gfx.stroke();
-          gfx.fillStyle = '#0f172a';
-          gfx.font = 'bold 8px system-ui';
-          gfx.textAlign = 'center';
-          gfx.fillText(p.id, px, py + 3);
+          _plDrawActorToken(px, py, 6.4, fill, hiCol, '#0f172a', p.id, '#0f172a', 8);
         });
 
-        // ── Soccer ball traveling along the passing sequence ──
-        // During an active run, the ball walks each pass over
-        // SOCCER_PASS_DURATION seconds. The current segment + linear
-        // progress within the segment come from runT.
+        // ── Soccer ball traveling along the passing sequence (with luminous trail + arrival halo) ──
         if (isSoccer && d.runActive && concept && concept.passes && concept.passes.length) {
           var passes = concept.passes;
           var sIdx = Math.min(passes.length - 1, Math.floor(runT / SOCCER_PASS_DURATION));
@@ -3552,24 +3688,47 @@ window.StemLab = window.StemLab || {
             var by = fromP.y + (toP.y - fromP.y) * sFrac;
             var bpx = fx(bx);
             var bpy = fy(by);
-            // Soccer ball — white circle with black hex outline (soft white
-            // glow so the moving ball reads against the pitch green)
+            // Highlight the active pass segment (dual-pass glow)
             gfx.save();
-            gfx.shadowColor = 'rgba(250,250,250,0.9)';
-            gfx.shadowBlur = 9;
+            gfx.lineCap = 'round';
+            gfx.strokeStyle = 'rgba(251,191,36,0.28)';
+            gfx.lineWidth = 8;
+            gfx.beginPath(); gfx.moveTo(fx(fromP.x), fy(fromP.y)); gfx.lineTo(fx(toP.x), fy(toP.y)); gfx.stroke();
+            gfx.strokeStyle = 'rgba(253,224,71,0.92)';
+            gfx.lineWidth = 3;
+            gfx.stroke();
+            gfx.restore();
+            // Luminous motion trail behind the traveling soccer ball
+            if (!plReduced) {
+              for (var sti = 1; sti <= 6; sti++) {
+                var sf = sFrac - sti * 0.055;
+                if (sf < 0) break;
+                var stx = fx(fromP.x + (toP.x - fromP.x) * sf);
+                var sty = fy(fromP.y + (toP.y - fromP.y) * sf);
+                gfx.fillStyle = 'rgba(255,255,255,' + ((1 - sti / 7) * 0.48).toFixed(2) + ')';
+                gfx.beginPath(); gfx.arc(stx, sty, Math.max(1.4, 4.4 - sti * 0.55), 0, Math.PI * 2); gfx.fill();
+              }
+            }
+            // Grounded shadow beneath ball
+            gfx.fillStyle = 'rgba(2,6,23,0.38)';
+            gfx.beginPath(); gfx.ellipse(bpx + 1.5, bpy + 4.2, 4.8, 2.3, 0, 0, Math.PI * 2); gfx.fill();
+            // Soccer ball with specular highlight
+            gfx.save();
+            gfx.shadowColor = 'rgba(250,250,250,0.95)';
+            gfx.shadowBlur = 11;
             gfx.fillStyle = '#fafafa';
-            gfx.beginPath(); gfx.arc(bpx, bpy, 5, 0, Math.PI * 2); gfx.fill();
+            gfx.beginPath(); gfx.arc(bpx, bpy, 5.2, 0, Math.PI * 2); gfx.fill();
             gfx.restore();
             gfx.strokeStyle = '#1a1a1a';
-            gfx.lineWidth = 1;
+            gfx.lineWidth = 1.1;
             gfx.stroke();
-            // Highlight the active pass segment
-            gfx.strokeStyle = 'rgba(251,191,36,0.85)';
-            gfx.lineWidth = 3;
-            gfx.beginPath();
-            gfx.moveTo(fx(fromP.x), fy(fromP.y));
-            gfx.lineTo(fx(toP.x), fy(toP.y));
-            gfx.stroke();
+            // Arrival burst ring near receiver
+            if (!plReduced && sFrac > 0.78) {
+              var arriveProg = (sFrac - 0.78) / 0.22;
+              gfx.strokeStyle = 'rgba(74,222,128,' + ((1 - arriveProg) * 0.85).toFixed(2) + ')';
+              gfx.lineWidth = 2;
+              gfx.beginPath(); gfx.arc(fx(toP.x), fy(toP.y), 7 + arriveProg * 14, 0, Math.PI * 2); gfx.stroke();
+            }
           }
         }
 
@@ -3629,62 +3788,102 @@ window.StemLab = window.StemLab || {
               gfx.arc(tpos.px, tpos.py, Math.max(1.2, trad), 0, Math.PI * 2);
               gfx.fill();
             }
-            // Leading edge — the football itself
+            // Leading edge — grounded turf shadow beneath parabolic arc + football sprite
             var current = _ballAt(throwT);
             var bpx = current.px;
             var bpy = current.py;
-            // Draw the football — small brown ellipse (warm glow matching
-            // the amber arc guide so the leading edge pops over the trail)
-            gfx.save();
-            gfx.shadowColor = _onFire ? 'rgba(239,68,68,0.95)' : 'rgba(251,191,36,0.85)';
-            gfx.shadowBlur = _onFire ? 14 : 10;
-            gfx.fillStyle = '#7c2d12';
+            var groundShadowY = fy(qb.y + (ry - qb.y) * throwT);
+            var altNorm = Math.sin(throwT * Math.PI);
+            gfx.fillStyle = 'rgba(2,6,23,' + (0.36 - altNorm * 0.16).toFixed(2) + ')';
             gfx.beginPath();
-            gfx.ellipse(bpx, bpy, 5, 3, 0, 0, Math.PI * 2);
+            gfx.ellipse(bpx, groundShadowY + 2, 5.2 - altNorm * 1.4, 2.4 - altNorm * 0.6, 0, 0, Math.PI * 2);
+            gfx.fill();
+            // Draw the football — small brown ellipse with warm specular glow
+            gfx.save();
+            gfx.shadowColor = _onFire ? 'rgba(239,68,68,0.95)' : 'rgba(251,191,36,0.9)';
+            gfx.shadowBlur = _onFire ? 15 : 11;
+            gfx.fillStyle = '#92400e';
+            gfx.beginPath();
+            gfx.ellipse(bpx, bpy, 5.4, 3.2, 0, 0, Math.PI * 2);
             gfx.fill();
             gfx.restore();
             gfx.strokeStyle = '#fafafa';
-            gfx.lineWidth = 1;
+            gfx.lineWidth = 1.1;
             gfx.beginPath(); gfx.moveTo(bpx - 3, bpy); gfx.lineTo(bpx + 3, bpy); gfx.stroke();
           }
         }
 
-        // ── Outcome callout ──
-        // After the ball arrives, hold the result on screen for OUTCOME_HOLD
-        // seconds. Renders a banner over the field with the verdict.
-        // Soccer + football share the banner format; the texts differ.
+        // ── Outcome callout + radial catch/collision burst halo ──
         var soccerBannerVisible = isSoccer && d.runOutcome && d.runOutcome.sport === 'soccer'
           && (!d.runActive) && runT >= soccerPassesCount * SOCCER_PASS_DURATION;
         var footballBannerVisible = !isSoccer && d.runOutcome && runT > ROUTE_DURATION + THROW_DURATION;
         if (soccerBannerVisible) {
           var sro = d.runOutcome;
           var sxg = sro.xG || 0;
-          var sBannerColor = sxg > 0.30 ? 'rgba(16,185,129,0.85)'
-                           : sxg > 0.10 ? 'rgba(251,191,36,0.85)'
-                           : 'rgba(239,68,68,0.85)';
+          var sAccent = sxg > 0.30 ? '#10b981' : sxg > 0.10 ? '#fbbf24' : '#ef4444';
+          var sBannerColor = sxg > 0.30 ? 'rgba(16,185,129,0.92)'
+                           : sxg > 0.10 ? 'rgba(251,191,36,0.92)'
+                           : 'rgba(239,68,68,0.92)';
+          // Luminous arrival burst halo on final soccer attacker
+          var sFinalP = formation.find(function(p) { return p.id === sro.finalReceiverId; });
+          if (sFinalP && hasRadial) {
+            var sbx = fx(sFinalP.x), sby = fy(sFinalP.y);
+            var sBurst = gfx.createRadialGradient(sbx, sby, 3, sbx, sby, 24);
+            sBurst.addColorStop(0, sxg > 0.30 ? 'rgba(52,211,153,0.62)' : 'rgba(251,191,36,0.52)');
+            sBurst.addColorStop(1, 'rgba(52,211,153,0)');
+            gfx.fillStyle = sBurst;
+            gfx.beginPath(); gfx.arc(sbx, sby, 24, 0, Math.PI * 2); gfx.fill();
+          }
           var sBannerText = '⚽ ' + (sro.finalReceiverId || 'Final attacker') + ' arrives · xG ' + sxg.toFixed(2);
+          _plRoundRectPath(W / 2 - 156, marginT + fieldPxH / 2 - 20, 312, 40, 12);
           gfx.fillStyle = sBannerColor;
-          gfx.fillRect(W / 2 - 150, marginT + fieldPxH / 2 - 18, 300, 36);
+          gfx.fill();
+          gfx.strokeStyle = '#ffffff';
+          gfx.lineWidth = 1.5;
+          gfx.stroke();
           gfx.fillStyle = '#0f172a';
           gfx.font = 'bold 14px system-ui';
           gfx.textAlign = 'center';
           gfx.textBaseline = 'middle';
           gfx.fillText(sBannerText, W / 2, marginT + fieldPxH / 2);
           gfx.textBaseline = 'alphabetic';
-          gfx.font = '11px system-ui';
+          gfx.fillStyle = '#f8fafc';
+          gfx.font = 'bold 11px system-ui';
           var sQual = sxg > 0.30 ? 'high-quality chance' : sxg > 0.10 ? 'decent shot' : 'low-percentage shot';
-          gfx.fillText('(' + sQual + ' — toggle xG heatmap to see why)', W / 2, marginT + fieldPxH / 2 + 28);
+          gfx.fillText('(' + sQual + ' — toggle xG heatmap to see why)', W / 2, marginT + fieldPxH / 2 + 30);
         }
         if (footballBannerVisible) {
           var ro = d.runOutcome;
-          var bannerColor = ro.location === 'caught' ? 'rgba(16,185,129,0.85)'
-                          : ro.location === 'brokenup' ? 'rgba(251,191,36,0.85)'
-                          : 'rgba(239,68,68,0.85)';
+          var rcvId = ro.receiverId;
+          var rcv = formation.find(function(p) { return p.id === rcvId; });
+          var rcvEP = rcv ? receiverEndPoint(rcv) : null;
+          // Radial catch / pass-breakup interaction burst halo at target point
+          if (rcvEP) {
+            var ibx = fx(rcvEP.x), iby = fy(rcvEP.y);
+            var burstRgb = ro.location === 'caught' ? '52,211,153' : ro.location === 'brokenup' ? '251,191,36' : '248,113,113';
+            if (hasRadial) {
+              var ibg = gfx.createRadialGradient(ibx, iby, 4, ibx, iby, 26);
+              ibg.addColorStop(0, 'rgba(' + burstRgb + ',0.68)');
+              ibg.addColorStop(1, 'rgba(' + burstRgb + ',0)');
+              gfx.fillStyle = ibg;
+              gfx.beginPath(); gfx.arc(ibx, iby, 26, 0, Math.PI * 2); gfx.fill();
+            }
+            gfx.strokeStyle = 'rgba(' + burstRgb + ',0.88)';
+            gfx.lineWidth = 2;
+            gfx.beginPath(); gfx.arc(ibx, iby, 15, 0, Math.PI * 2); gfx.stroke();
+          }
+          var bannerColor = ro.location === 'caught' ? 'rgba(16,185,129,0.92)'
+                          : ro.location === 'brokenup' ? 'rgba(251,191,36,0.92)'
+                          : 'rgba(239,68,68,0.92)';
           var bannerText = ro.location === 'caught' ? '✅ COMPLETE to ' + ro.receiverId
                         : ro.location === 'brokenup' ? '✋ Pass broken up at ' + ro.receiverId
                         : '❌ Incomplete';
+          _plRoundRectPath(W / 2 - 138, marginT + fieldPxH / 2 - 20, 276, 40, 12);
           gfx.fillStyle = bannerColor;
-          gfx.fillRect(W / 2 - 130, marginT + fieldPxH / 2 - 18, 260, 36);
+          gfx.fill();
+          gfx.strokeStyle = '#ffffff';
+          gfx.lineWidth = 1.5;
+          gfx.stroke();
           gfx.fillStyle = '#0f172a';
           gfx.font = 'bold 14px system-ui';
           gfx.textAlign = 'center';
@@ -3692,23 +3891,17 @@ window.StemLab = window.StemLab || {
           gfx.fillText(bannerText, W / 2, marginT + fieldPxH / 2);
           gfx.textBaseline = 'alphabetic';
           if (ro.opennessYd !== undefined) {
-            gfx.font = '11px system-ui';
-            gfx.fillText('(receiver was ' + ro.opennessYd.toFixed(1) + ' yd from nearest defender)', W / 2, marginT + fieldPxH / 2 + 28);
+            gfx.fillStyle = '#f8fafc';
+            gfx.font = 'bold 11px system-ui';
+            gfx.fillText('(receiver was ' + ro.opennessYd.toFixed(1) + ' yd from nearest defender)', W / 2, marginT + fieldPxH / 2 + 30);
           }
-          // EPA line — translates the outcome into expected-points-added.
-          // Computed fresh from the active down + yardsToGoal + receiver
-          // route end-point, so the same throw against a different
-          // down/distance shows different math.
-          var rcvId = ro.receiverId;
-          var rcv = formation.find(function(p) { return p.id === rcvId; });
-          var rcvEP = rcv ? receiverEndPoint(rcv) : null;
           var epaResult = computeEPA(d.yardsToGoal || 75, d.down || 1, ro, rcvEP ? rcvEP.x : null);
           var dEPA = epaResult.dEPA || 0;
           var epaSign = dEPA >= 0 ? '+' : '';
           gfx.font = 'bold 11px system-ui';
-          gfx.fillStyle = dEPA >= 0 ? '#10b981' : '#ef4444';
+          gfx.fillStyle = dEPA >= 0 ? '#6ee7b7' : '#fca5a5';
           gfx.fillText('EPA: ' + epaSign + dEPA.toFixed(2) + '  (pre ' + epaResult.preEP.toFixed(1) + ' → post ' + epaResult.postEP.toFixed(1) + ')',
-                       W / 2, marginT + fieldPxH / 2 + 44);
+                       W / 2, marginT + fieldPxH / 2 + 46);
         }
         // ── "ON FIRE" warm vignette ──
         // Ember frame around the field on a 3+ streak. Pulses subtly with
@@ -3914,20 +4107,29 @@ window.StemLab = window.StemLab || {
                 style: playLabSecondaryButtonStyle({ padding: '6px 10px', minHeight: 40 })
               }, __alloT('stem.playlab.back', '← Back')),
               h('svg', { width: 46, height: 46, viewBox: '0 0 64 64', style: { flexShrink: 0 }, 'aria-hidden': 'true', focusable: 'false' },
-                h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: ctx.isContrast ? '#000000' : (isSoccer ? '#064e3b' : '#0f172a'), stroke: ctx.isContrast ? '#00ff00' : (isSoccer ? '#34d399' : '#38bdf8'), strokeWidth: 2 }),
+                !ctx.isContrast && h('defs', null,
+                  h('radialGradient', { id: 'pl-hero-emblem-bg', cx: '35%', cy: '30%', r: '72%' },
+                    h('stop', { offset: '0%', stopColor: isSoccer ? '#047857' : '#1e3a5f' }),
+                    h('stop', { offset: '100%', stopColor: isSoccer ? '#022c22' : '#090f1d' })
+                  )
+                ),
+                h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: ctx.isContrast ? '#000000' : 'url(#pl-hero-emblem-bg)', stroke: ctx.isContrast ? '#00ff00' : (isSoccer ? '#34d399' : '#38bdf8'), strokeWidth: 2 }),
                 isSoccer
                   ? h('g', null,
                       h('rect', { x: 10, y: 14, width: 44, height: 36, rx: 3, fill: 'none', stroke: ctx.isContrast ? '#ffffff' : 'rgba(255,255,255,0.45)', strokeWidth: 1.5 }),
                       h('line', { x1: 32, y1: 14, x2: 32, y2: 50, stroke: ctx.isContrast ? '#ffffff' : 'rgba(255,255,255,0.4)', strokeWidth: 1.4 }),
                       h('circle', { cx: 32, cy: 32, r: 7, fill: 'none', stroke: ctx.isContrast ? '#ffffff' : 'rgba(255,255,255,0.4)', strokeWidth: 1.4 }),
+                      !ctx.isContrast && h('path', { d: 'M18 40 Q28 24 44 22', fill: 'none', stroke: '#fde047', strokeWidth: 5.5, opacity: 0.25, strokeLinecap: 'round' }),
                       h('path', { d: 'M18 40 Q28 24 44 22', fill: 'none', stroke: '#fde047', strokeWidth: 2.2, strokeDasharray: '3 2', strokeLinecap: 'round' }),
                       h('circle', { cx: 18, cy: 40, r: 3.5, fill: '#38bdf8' }),
                       h('circle', { cx: 44, cy: 22, r: 3.5, fill: '#4ade80' }),
-                      h('circle', { cx: 44, cy: 22, r: 6.5, fill: 'none', stroke: '#4ade80', strokeWidth: 1.5 })
+                      h('circle', { cx: 44, cy: 22, r: 6.8, fill: 'none', stroke: '#4ade80', strokeWidth: 1.5, opacity: 0.85 })
                     )
                   : h('g', null,
                       h('line', { x1: 10, y1: 42, x2: 54, y2: 42, stroke: ctx.isContrast ? '#ffffff' : 'rgba(148,163,184,0.55)', strokeWidth: 1.6, strokeDasharray: '4 3' }),
+                      !ctx.isContrast && h('path', { d: 'M18 42 L18 26 L30 18', fill: 'none', stroke: '#fbbf24', strokeWidth: 6, opacity: 0.24, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                       h('path', { d: 'M18 42 L18 26 L30 18', fill: 'none', stroke: '#fbbf24', strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                      !ctx.isContrast && h('path', { d: 'M46 42 L46 22', fill: 'none', stroke: '#34d399', strokeWidth: 6, opacity: 0.24, strokeLinecap: 'round' }),
                       h('path', { d: 'M46 42 L46 22', fill: 'none', stroke: '#34d399', strokeWidth: 2.4, strokeLinecap: 'round' }),
                       h('circle', { cx: 18, cy: 42, r: 3.4, fill: '#38bdf8' }),
                       h('circle', { cx: 46, cy: 42, r: 3.4, fill: '#38bdf8' }),

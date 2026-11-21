@@ -210,22 +210,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
     c.globalAlpha = o.alpha == null ? 1 : o.alpha;
     c.lineCap = 'round'; c.lineJoin = 'round';
     var wheel = function(cx) {
-      c.strokeStyle = '#0f172a'; c.lineWidth = 3;
+      c.strokeStyle = '#0f172a'; c.lineWidth = 3.2;
       c.beginPath(); c.arc(cx, -10, 10, 0, 2 * Math.PI); c.stroke();
-      c.strokeStyle = 'rgba(15,23,42,0.45)'; c.lineWidth = 1;
+      // Brushed alloy wheel rim highlight
+      c.strokeStyle = 'rgba(226,232,240,0.85)'; c.lineWidth = 1.1;
+      c.beginPath(); c.arc(cx, -10, 8.2, 0, 2 * Math.PI); c.stroke();
+      c.strokeStyle = 'rgba(148,163,184,0.55)'; c.lineWidth = 0.85;
       for (var i = 0; i < 4; i++) {
         var a = rot + i * Math.PI / 4;
-        c.beginPath(); c.moveTo(cx - 9 * Math.cos(a), -10 - 9 * Math.sin(a)); c.lineTo(cx + 9 * Math.cos(a), -10 + 9 * Math.sin(a)); c.stroke();
+        c.beginPath(); c.moveTo(cx - 8 * Math.cos(a), -10 - 8 * Math.sin(a)); c.lineTo(cx + 8 * Math.cos(a), -10 + 8 * Math.sin(a)); c.stroke();
       }
+      c.fillStyle = '#cbd5e1'; c.beginPath(); c.arc(cx, -10, 1.8, 0, 2 * Math.PI); c.fill();
     };
     wheel(-17); wheel(17);
+    // Machined silver rear cassette + front chainring + chain line
+    c.fillStyle = '#cbd5e1'; c.strokeStyle = '#475569'; c.lineWidth = 0.8;
+    c.beginPath(); c.arc(-17, -10, 3.3, 0, 2 * Math.PI); c.fill(); c.stroke();
+    c.beginPath(); c.arc(0, -10, 4.4, 0, 2 * Math.PI); c.fill(); c.stroke();
+    c.strokeStyle = '#334155'; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(-17, -13.2); c.lineTo(0, -14.3); c.moveTo(-17, -6.8); c.lineTo(0, -5.7); c.stroke();
     if (o.braking) { c.fillStyle = '#ef4444'; c.beginPath(); c.arc(-27, -22, 3.2, 0, 2 * Math.PI); c.fill(); }
-    // frame
-    c.strokeStyle = o.frame || '#e11d48'; c.lineWidth = 3.2;
+    // Anodized metallic frame + crisp specular tube highlight
+    c.strokeStyle = o.frame || '#e11d48'; c.lineWidth = 3.4;
     c.beginPath();
     c.moveTo(-17, -10); c.lineTo(0, -10); c.lineTo(-6, -29); c.lineTo(-17, -10);
     c.moveTo(-6, -29); c.lineTo(11, -29); c.lineTo(0, -10);
     c.moveTo(11, -29); c.lineTo(17, -10);
+    c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,0.42)'; c.lineWidth = 1;
+    c.beginPath();
+    c.moveTo(-6, -29.5); c.lineTo(11, -29.5); c.moveTo(11, -29); c.lineTo(0, -10.5);
     c.stroke();
     c.strokeStyle = '#0f172a'; c.lineWidth = 3;
     c.beginPath(); c.moveTo(-11, -31); c.lineTo(-2, -31); c.moveTo(10, -30); c.lineTo(15, -36); c.stroke();
@@ -480,27 +494,114 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
     return out;
   }
   // Turn the spec into meshes. Returns the group, a list of pickable meshes and one material list per part.
-  function buildBike3D(THREE) {
+  function buildBike3D(THREE, shaderUniforms, isContrast) {
     var group = new THREE.Group(), meshes = [], partMats = {};
     var up = new THREE.Vector3(0, 1, 0);
+    var hasPhys = typeof THREE.MeshPhysicalMaterial === 'function';
+    var anodizedParts = {
+      frame: 1, fork: 1, stem: 1, bars: 1, handlebar: 1, seatpost: 1, headtube: 1,
+      top_tube: 1, down_tube: 1, seat_tube: 1, head_tube: 1, chainstay: 1, seatstay: 1, caliper: 1
+    };
+    var alloyParts = {
+      chainring: 1, cassette: 1, crank: 1, pedals: 1, brakes: 1, brake_lever: 1,
+      rd: 1, fd: 1, chain: 1, wheels: 1, hubs: 1, hub: 1, rims: 1, rim: 1, spokes: 1
+    };
+    var matteParts = { tires: 1, tire: 1, saddle: 1, grips: 1 };
+
+    function applyBikeSheenShader(mat, kind) {
+      if (isContrast || !shaderUniforms || !mat || typeof mat.onBeforeCompile !== 'function') return mat;
+      mat.customProgramCacheKey = function() { return 'bikelab-sheen-' + kind + '-v1'; };
+      mat.onBeforeCompile = function(shader) {
+        shader.uniforms.uTime = shaderUniforms.uTime;
+        shader.uniforms.uSpeed = shaderUniforms.uSpeed;
+        shader.uniforms.uKind = { value: kind === 'anodized' ? 0.0 : 1.0 };
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'varying vec3 vBkWorldPos;',
+            'varying vec3 vBkWorldNorm;'
+          ].join('\n'))
+          .replace('#include <begin_vertex>', [
+            '#include <begin_vertex>',
+            'vec4 bkWp = modelMatrix * vec4(transformed, 1.0);',
+            'vBkWorldPos = bkWp.xyz;',
+            'vBkWorldNorm = normalize(mat3(modelMatrix) * objectNormal);'
+          ].join('\n'));
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'uniform float uTime;',
+            'uniform float uSpeed;',
+            'uniform float uKind;',
+            'varying vec3 vBkWorldPos;',
+            'varying vec3 vBkWorldNorm;'
+          ].join('\n'))
+          .replace('#include <dithering_fragment>', [
+            'vec3 bkN = normalize(vBkWorldNorm);',
+            'vec3 bkV = normalize(cameraPosition - vBkWorldPos);',
+            'float bkNdotV = clamp(abs(dot(bkN, bkV)), 0.0, 1.0);',
+            'float bkFres = pow(1.0 - bkNdotV, 2.7);',
+            'vec3 bkL = normalize(vec3(0.45, 0.80, 0.55));',
+            'vec3 bkH = normalize(bkV + bkL);',
+            'if (uKind < 0.5) {',
+            '  // Anodized clearcoat metallic frame: dual-tone cyan/teal flake & clearcoat Fresnel rim',
+            '  float bkSweep = 0.65 + 0.35 * sin(vBkWorldPos.x * 0.9 - uTime * (1.2 + uSpeed * 0.8));',
+            '  float bkSpec = pow(clamp(dot(bkN, bkH), 0.0, 1.0), 36.0);',
+            '  vec3 bkRim = mix(vec3(0.18, 0.86, 0.92), vec3(0.95, 0.99, 1.0), bkFres);',
+            '  gl_FragColor.rgb += bkRim * bkFres * 0.30 * bkSweep + vec3(0.94, 0.98, 1.0) * bkSpec * 0.24;',
+            '} else {',
+            '  // Brushed-alloy drivetrain: anisotropic machined highlight streak',
+            '  vec3 bkRef = abs(bkN.y) < 0.92 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);',
+            '  vec3 bkT = normalize(cross(bkN, bkRef));',
+            '  float bkAniso = pow(1.0 - abs(dot(bkT, bkH)), 10.0);',
+            '  float bkBrush = 0.78 + 0.22 * sin(dot(vBkWorldPos, vec3(12.0, 14.0, 8.0)) + uTime * 0.9);',
+            '  gl_FragColor.rgb += vec3(0.90, 0.95, 1.0) * (bkAniso * bkBrush * 0.28 + bkFres * 0.16);',
+            '}',
+            '#include <dithering_fragment>'
+          ].join('\n'));
+      };
+      return mat;
+    }
+
     bikeModelSpec().forEach(function(p) {
-      var geo, mesh;
-      var mat = new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.55, metalness: 0.25 });
+      var geo, mesh, mat;
+      var pid = p.part || '';
+      var isAnodized = !!anodizedParts[pid];
+      var isAlloy = !!alloyParts[pid] || p.kind === 'disc';
+      var isMatte = !!matteParts[pid] || p.color === '#111827' || p.color === '#0f172a' || p.color === '#1e293b';
+      if (hasPhys && isAnodized && !isMatte) {
+        mat = applyBikeSheenShader(new THREE.MeshPhysicalMaterial({
+          color: p.color, roughness: 0.22, metalness: 0.74,
+          clearcoat: 0.92, clearcoatRoughness: 0.10
+        }), 'anodized');
+      } else if (hasPhys && isAlloy && !isMatte) {
+        mat = applyBikeSheenShader(new THREE.MeshPhysicalMaterial({
+          color: p.color, roughness: 0.20, metalness: 0.88,
+          clearcoat: 0.45, clearcoatRoughness: 0.18
+        }), 'alloy');
+      } else {
+        mat = new THREE.MeshStandardMaterial({
+          color: p.color,
+          roughness: isMatte ? 0.82 : (isAlloy ? 0.24 : 0.46),
+          metalness: isMatte ? 0.06 : (isAlloy ? 0.84 : 0.45)
+        });
+        if (!isMatte && (isAnodized || isAlloy)) applyBikeSheenShader(mat, isAnodized ? 'anodized' : 'alloy');
+      }
       if (p.hidden) { mat.transparent = true; mat.opacity = 0; mat.depthWrite = false; }
       if (p.kind === 'tube') {
         var a = new THREE.Vector3(p.a[0], p.a[1], p.a[2]), b = new THREE.Vector3(p.b[0], p.b[1], p.b[2]);
         var dir = b.clone().sub(a), len = dir.length();
-        geo = new THREE.CylinderGeometry(p.r, p.r, len, 12);
+        geo = new THREE.CylinderGeometry(p.r, p.r, len, 14);
         mesh = new THREE.Mesh(geo, mat);
         mesh.position.copy(a).add(b).multiplyScalar(0.5);
         mesh.quaternion.setFromUnitVectors(up, dir.normalize());
       } else if (p.kind === 'torus' || p.kind === 'arc') {
-        geo = new THREE.TorusGeometry(p.R, p.r, 10, p.kind === 'arc' ? 24 : 56, p.kind === 'arc' ? p.sweep : Math.PI * 2);
+        geo = new THREE.TorusGeometry(p.R, p.r, 12, p.kind === 'arc' ? 24 : 56, p.kind === 'arc' ? p.sweep : Math.PI * 2);
         mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(p.c[0], p.c[1], p.c[2]);
         if (p.kind === 'arc') mesh.rotation.z = p.start;
       } else if (p.kind === 'disc') {
-        geo = new THREE.CylinderGeometry(p.R, p.R, p.len, 32);
+        geo = new THREE.CylinderGeometry(p.R, p.R, p.len, 36);
         mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(p.c[0], p.c[1], p.c[2]);
         mesh.rotation.x = Math.PI / 2;
@@ -1407,11 +1508,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           }
           ctx2d.lineTo(W, H);
           ctx2d.closePath();
-          // Ground fill — color by surface at camera position
+          // Ground fill — gradient depth by surface at camera position
           var cSurf = terrain.profile(camX).kind;
-          var fill = cSurf === 'dirt' ? '#78350f' : cSurf === 'wet' ? '#475569' : cSurf === 'sand' ? '#fcd34d' : '#334155';
-          ctx2d.fillStyle = fill;
+          var gGrad = ctx2d.createLinearGradient(0, centerY - 24, 0, H);
+          if (cSurf === 'dirt') { gGrad.addColorStop(0, '#92400e'); gGrad.addColorStop(1, '#451a03'); }
+          else if (cSurf === 'wet') { gGrad.addColorStop(0, '#475569'); gGrad.addColorStop(1, '#1e293b'); }
+          else if (cSurf === 'sand') { gGrad.addColorStop(0, '#fcd34d'); gGrad.addColorStop(1, '#b45309'); }
+          else { gGrad.addColorStop(0, '#334155'); gGrad.addColorStop(1, '#0f172a'); }
+          ctx2d.fillStyle = gGrad;
           ctx2d.fill();
+          // Rolling-road motion parallax stripes along the terrain contour
+          ctx2d.save();
+          ctx2d.strokeStyle = cSurf === 'pavement' ? 'rgba(253,224,71,0.52)' : 'rgba(255,255,255,0.22)';
+          ctx2d.lineWidth = 2;
+          for (var rdx = Math.floor((camX - 50) / 4) * 4; rdx <= camX + 80; rdx += 4) {
+            var rp1 = terrain.profile(rdx), rp2 = terrain.profile(rdx + 2.1);
+            ctx2d.beginPath();
+            ctx2d.moveTo(worldToScreenX(rdx), worldToScreenY(rp1.y) + 8);
+            ctx2d.lineTo(worldToScreenX(rdx + 2.1), worldToScreenY(rp2.y) + 8);
+            ctx2d.stroke();
+          }
+          ctx2d.restore();
           // Surface line highlight
           ctx2d.beginPath();
           for (var wx2 = camX - 50; wx2 <= camX + 80; wx2 += 1) {
@@ -1420,7 +1537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             else ctx2d.lineTo(worldToScreenX(wx2), worldToScreenY(p2.y));
           }
           ctx2d.strokeStyle = cSurf === 'pavement' ? '#fbbf24' : '#f59e0b';
-          ctx2d.lineWidth = 2;
+          ctx2d.lineWidth = 2.4;
           ctx2d.stroke();
 
           // Distance markers every 10 m
@@ -1560,12 +1677,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             ctx2d.fillStyle = '#475569';
             ctx2d.beginPath(); ctx2d.arc(wh.cx, -7, 1.3, 0, 2 * Math.PI); ctx2d.fill();
           });
-          // Frame (triangles)
+          // Machined silver rear cassette + anodized frame + specular highlight
+          ctx2d.fillStyle = '#cbd5e1'; ctx2d.strokeStyle = '#475569'; ctx2d.lineWidth = 0.7;
+          ctx2d.beginPath(); ctx2d.arc(-18, -7, 2.8, 0, 2 * Math.PI); ctx2d.fill(); ctx2d.stroke();
+          ctx2d.beginPath(); ctx2d.arc(0, -14, 3.6, 0, 2 * Math.PI); ctx2d.fill(); ctx2d.stroke();
+          ctx2d.strokeStyle = '#334155'; ctx2d.lineWidth = 0.9;
+          ctx2d.beginPath(); ctx2d.moveTo(-18, -9.8); ctx2d.lineTo(0, -17.5); ctx2d.moveTo(-18, -4.2); ctx2d.lineTo(0, -10.5); ctx2d.stroke();
+          // Frame (anodized triangles + brushed specular highlight)
           ctx2d.strokeStyle = '#f43f5e';
-          ctx2d.lineWidth = 3;
+          ctx2d.lineWidth = 3.2;
           ctx2d.beginPath();
           ctx2d.moveTo(-18, -7); ctx2d.lineTo(0, -22); ctx2d.lineTo(18, -7);
           ctx2d.lineTo(0, -14); ctx2d.lineTo(-10, -22); ctx2d.lineTo(0, -22);
+          ctx2d.stroke();
+          ctx2d.strokeStyle = 'rgba(255,255,255,0.48)';
+          ctx2d.lineWidth = 0.9;
+          ctx2d.beginPath();
+          ctx2d.moveTo(-10, -22.5); ctx2d.lineTo(0, -22.5); ctx2d.lineTo(18, -7.6);
           ctx2d.stroke();
           // Crankset at bottom bracket (0, -14) + rotating pedal crank
           var crankR = 4;
@@ -1660,26 +1788,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           ctx2d.globalAlpha = 1;
           particlesRef.current = newP.slice(-80); // cap so memory stays bounded
 
-          // ── Speed lines at high velocity ──
-          // Thin horizontal streaks sweeping past the bike, brighter when the
-          // relative air velocity (v + headwind) is high. Gives students a
-          // visceral sense of speed and reinforces that headwind compounds
-          // with ground speed to increase drag.
+          // ── Aerodynamic slipstream airflow ribbons colored by drag velocity ──
+          // Smooth curved streamlines deflecting over the rider's helmet & frame,
+          // shifting color smoothly from laminar cyan (low drag) -> amber (mid)
+          // -> crimson-magenta (high aerodynamic drag velocity v + headwind).
           var slVRel = Math.abs(velRef.current + wind);
-          if (slVRel > 4) {
-            var slIntensity = Math.min(1, (slVRel - 4) / 12);
+          if (slVRel > 1.8) {
+            var slIntensity = Math.min(1, (slVRel - 1.8) / 14);
+            var aeroCol = slVRel < 6 ? '56,189,248' : slVRel < 11 ? '251,191,36' : '244,63,94';
+            var flowPhase = _prefersReducedMotion ? 0 : (timeRef.current * slVRel * 24) % 48;
             ctx2d.save();
-            ctx2d.strokeStyle = 'rgba(255,255,255,' + (0.25 * slIntensity) + ')';
-            ctx2d.lineWidth = 1.2;
-            for (var sl = 0; sl < 10; sl++) {
-              var slPhase = (timeRef.current * slVRel * 0.8 + sl * 71) % 200;
-              var slX = W * 1.1 - slPhase;
-              var slY = by - 30 + ((sl * 37) % 70) - 35;
-              var slLen = 14 + slIntensity * 22;
+            ctx2d.lineCap = 'round';
+            var streamOffsets = [-42, -32, -21, -11];
+            streamOffsets.forEach(function(offY, si) {
+              var yBase = by + offY;
+              var lift = si === 0 ? -14 : si === 1 ? -10 : si === 2 ? -5 : 2;
+              var wakeAmp = (si >= 1 ? 5 : 2.5) * (0.4 + slIntensity * 0.8);
+              var wakeWave = _prefersReducedMotion ? 0 : Math.sin(timeRef.current * 9 + si * 1.7) * wakeAmp;
+              var grad = ctx2d.createLinearGradient(bx + 76, yBase, bx - 92, yBase);
+              grad.addColorStop(0, 'rgba(' + aeroCol + ',0)');
+              grad.addColorStop(0.28, 'rgba(' + aeroCol + ',' + (0.28 + 0.44 * slIntensity).toFixed(2) + ')');
+              grad.addColorStop(0.65, 'rgba(' + aeroCol + ',' + (0.36 + 0.48 * slIntensity).toFixed(2) + ')');
+              grad.addColorStop(1, 'rgba(' + aeroCol + ',0)');
+              // Soft aerodynamic ribbon halo
+              ctx2d.strokeStyle = grad;
+              ctx2d.lineWidth = 4.2 + slIntensity * 2;
+              ctx2d.globalAlpha = 0.32;
               ctx2d.beginPath();
-              ctx2d.moveTo(slX, slY);
-              ctx2d.lineTo(slX + slLen, slY + 1);
+              ctx2d.moveTo(bx + 76, yBase);
+              ctx2d.quadraticCurveTo(bx + 18, yBase + lift * 0.8, bx - 10, yBase + lift);
+              ctx2d.quadraticCurveTo(bx - 48, yBase + lift * 0.4 + wakeWave, bx - 92, yBase - wakeWave * 0.7);
               ctx2d.stroke();
+              // Crisp laminar-to-wake streamline core
+              ctx2d.globalAlpha = 0.88;
+              ctx2d.lineWidth = 1.5;
+              ctx2d.setLineDash([18, 12]);
+              ctx2d.lineDashOffset = flowPhase;
+              ctx2d.stroke();
+              ctx2d.setLineDash([]);
+            });
+            // Subtle turbulent trailing vortex curls in the rider's low-pressure slipstream pocket
+            if (slVRel > 5) {
+              ctx2d.globalAlpha = 0.25 + slIntensity * 0.35;
+              ctx2d.strokeStyle = 'rgb(' + aeroCol + ')';
+              ctx2d.lineWidth = 1.3;
+              for (var vi = 0; vi < 2; vi++) {
+                var vx = bx - 36 - vi * 20;
+                var vy = by - 25 + (vi === 0 ? -4 : 6);
+                var vRot = _prefersReducedMotion ? vi : (timeRef.current * (6 + slVRel * 0.3) * (vi === 0 ? 1 : -1));
+                ctx2d.beginPath();
+                ctx2d.arc(vx, vy, 4.5 + slIntensity * 2.5, vRot, vRot + Math.PI * 1.45);
+                ctx2d.stroke();
+              }
             }
             ctx2d.restore();
           }
@@ -1700,19 +1860,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             var vRelVec = v + wind;
             var dragF = 0.5 * RHO_AIR * bike.cdA * vRelVec * Math.abs(vRelVec);
             var pedalF = coasting ? 0 : pedalDriveForce(bike, gearRatioFor(bike, gear), v, power, riderMass); // same model as the physics step
-            var maxF = Math.max(50, Math.abs(pedalF), rollingF, dragF, Math.abs(gravP), normalN);
+            var maxF = Math.max(50, Math.abs(pedalF), rollingF, Math.abs(dragF), Math.abs(gravP), normalN);
             var pxScale = 80 / maxF;
 
             // Gravity (straight down)
             drawVector(ctx2d, bx, by - 22, 0, m * G * pxScale, '#ef4444', 'mg');
             // Normal (perpendicular to ground, away)
             drawVector(ctx2d, bx, by - 22, -Math.sin(a) * normalN * pxScale, -Math.cos(a) * normalN * pxScale, '#3b82f6', 'N');
-            // Pedal thrust (along ground, forward)
-            drawVector(ctx2d, bx, by - 22, Math.cos(a) * pedalF * pxScale, Math.sin(a) * pedalF * pxScale, '#10b981', 'F_pedal');
-            // Drag (opposing motion)
-            drawVector(ctx2d, bx, by - 22, -Math.cos(a) * dragF * pxScale, -Math.sin(a) * dragF * pxScale, '#a855f7', 'F_drag');
-            // Rolling (opposing motion)
-            drawVector(ctx2d, bx, by - 10, -Math.cos(a) * rollingF * pxScale, -Math.sin(a) * rollingF * pxScale, '#f59e0b', 'F_roll');
+            // Pedal thrust (along ground, forward; canvas y increases downward)
+            drawVector(ctx2d, bx, by - 22, Math.cos(a) * pedalF * pxScale, -Math.sin(a) * pedalF * pxScale, '#10b981', 'F_pedal');
+            // Drag (opposing motion; canvas y increases downward)
+            drawVector(ctx2d, bx, by - 22, -Math.cos(a) * dragF * pxScale, Math.sin(a) * dragF * pxScale, '#a855f7', 'F_drag');
+            // Rolling (opposing motion; canvas y increases downward)
+            drawVector(ctx2d, bx, by - 10, -Math.cos(a) * rollingF * pxScale, Math.sin(a) * rollingF * pxScale, '#f59e0b', 'F_roll');
           }
 
           // Energy graph (top-right corner)
@@ -1896,26 +2056,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var drawVector = function(ctx2d, x, y, dx, dy, color, label) {
           var len = Math.sqrt(dx * dx + dy * dy);
           if (len < 2) return;
+          ctx2d.save();
+          ctx2d.lineCap = 'round';
+          // Glowing force vector underlay
+          ctx2d.strokeStyle = color;
+          ctx2d.globalAlpha = 0.32;
+          ctx2d.lineWidth = 7.5;
+          ctx2d.beginPath(); ctx2d.moveTo(x, y); ctx2d.lineTo(x + dx, y + dy); ctx2d.stroke();
+          // Crisp force shaft
+          ctx2d.globalAlpha = 1;
           ctx2d.strokeStyle = color;
           ctx2d.fillStyle = color;
-          ctx2d.lineWidth = 2.5;
+          ctx2d.lineWidth = 2.6;
           ctx2d.beginPath();
           ctx2d.moveTo(x, y);
           ctx2d.lineTo(x + dx, y + dy);
           ctx2d.stroke();
-          // arrowhead
+          // Sculpted arrowhead
           var ang = Math.atan2(dy, dx);
           ctx2d.beginPath();
           ctx2d.moveTo(x + dx, y + dy);
-          ctx2d.lineTo(x + dx - 8 * Math.cos(ang - 0.4), y + dy - 8 * Math.sin(ang - 0.4));
-          ctx2d.lineTo(x + dx - 8 * Math.cos(ang + 0.4), y + dy - 8 * Math.sin(ang + 0.4));
+          ctx2d.lineTo(x + dx - 9 * Math.cos(ang - 0.38), y + dy - 9 * Math.sin(ang - 0.38));
+          ctx2d.lineTo(x + dx - 9 * Math.cos(ang + 0.38), y + dy - 9 * Math.sin(ang + 0.38));
           ctx2d.closePath(); ctx2d.fill();
-          // label
+          // Glowing telemetry pill badge
           ctx2d.font = 'bold 11px monospace';
-          ctx2d.fillStyle = '#0f172a';
-          ctx2d.fillRect(x + dx + 4, y + dy - 8, 50, 14);
+          var tw = Math.max(42, ctx2d.measureText(label).width + 10);
+          var bx2 = x + dx + 5, by2 = y + dy - 9;
+          ctx2d.fillStyle = 'rgba(15,23,42,0.92)';
+          ctx2d.strokeStyle = color;
+          ctx2d.lineWidth = 1.2;
+          ctx2d.beginPath();
+          if (ctx2d.roundRect) ctx2d.roundRect(bx2, by2, tw, 16, 4); else ctx2d.rect(bx2, by2, tw, 16);
+          ctx2d.fill(); ctx2d.stroke();
           ctx2d.fillStyle = color;
-          ctx2d.fillText(label, x + dx + 8, y + dy + 3);
+          ctx2d.fillText(label, bx2 + 5, by2 + 12);
+          ctx2d.restore();
         };
 
         var drawEnergyGraph = function(ctx2d, W, _H) {
@@ -2270,8 +2446,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var cadenceState = useState(85);
         var cadence = cadenceState[0], setCadence = cadenceState[1];
 
-        var chainringT = bike.chainringT[ringIdx];
-        var cogT = bike.cassetteT[cogIdx];
+        var safeRingIdx = Math.max(0, Math.min(ringIdx, bike.chainringT.length - 1));
+        var safeCogIdx = Math.max(0, Math.min(cogIdx, bike.cassetteT.length - 1));
+        var chainringT = bike.chainringT[safeRingIdx];
+        var cogT = bike.cassetteT[safeCogIdx];
         var ratio = chainringT / cogT;
         // Wheel circumference (m)
         var wheelCirc = 2 * Math.PI * bike.wheelR;
@@ -3045,7 +3223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-5' },
                   h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-3' }, t('stem.bikelab.rider_measurements', 'Rider Measurements')),
                   h('label', { htmlFor: 'bikelab-fit-height', className: 'text-sm font-bold text-slate-700 flex justify-between' },
-                    h('span', null, t('stem.bikelab.height', 'Height')), h('span', { className: 'text-sky-700' }, heightCm + ' cm · ' + Math.floor(heightCm / 2.54 / 12) + ' ft ' + Math.round(heightCm / 2.54 % 12) + ' in')),
+                    h('span', null, t('stem.bikelab.height', 'Height')), h('span', { className: 'text-sky-700' }, (function() { var totalIn = Math.round(heightCm / 2.54); return heightCm + ' cm · ' + Math.floor(totalIn / 12) + ' ft ' + (totalIn % 12) + ' in'; })())),
                   h('input', { id: 'bikelab-fit-height', type: 'range', min: 105, max: 210, value: heightCm,
                     onChange: function(e) { var v = parseInt(e.target.value); setHeightCm(v); upd('fitHeightCm', v); },
                     className: 'w-full mt-1 accent-sky-500' }),
@@ -3801,7 +3979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             if (newV < s.hillMinSpeed) s.hillMinSpeed = newV;
             if (newV < 2.0) s.hillCrawlTime += dt;
           }
-          if (t.seg.wet && newX >= t.seg.wet.start && newX <= t.seg.wet.start + 5) {
+          if (t.seg.wet && newX >= t.seg.wet.start && newX <= t.seg.wet.end && dt > 0) {
             var decel = (prevVelRef.current - newV) / dt;
             if (braking && newV > 3 && decel > 3.5) s.wetBrakingHard = true;
           }
@@ -4251,19 +4429,237 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             canvas.style.touchAction = 'none'; canvas.style.cursor = 'grab';
             host.appendChild(canvas);
             var scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(32, W / H, 0.1, 200);
-            scene.add(new THREE.HemisphereLight(0xffffff, 0x94a3b8, 0.95));
-            var sun = new THREE.DirectionalLight(0xffffff, 0.75); sun.position.set(6, 14, 10); scene.add(sun);
-            var ground = new THREE.Mesh(new THREE.CircleGeometry(9.5, 48), new THREE.MeshBasicMaterial({ color: 0xdbe3ec }));
+            var isHC3d = !!(isContrast || (typeof document !== 'undefined' && ((document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) || (document.body && document.body.classList && document.body.classList.contains('theme-contrast')))));
+            var isReduced3d = (function() {
+              try { return !!(_prefersReducedMotion || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)); }
+              catch (e) { return !!_prefersReducedMotion; }
+            })();
+            var hasShaderMat3d = typeof THREE.ShaderMaterial === 'function';
+            var windUniforms = {
+              uTime: { value: 2.1 },
+              uSpeed: { value: 1.0 },
+              uDrag: { value: 0.46 },
+              uHC: { value: isHC3d ? 1.0 : 0.0 }
+            };
+            // Studio 3-point lighting rig for crisp brushed alloy & anodized frame speculars
+            scene.add(new THREE.HemisphereLight(0xf0f9ff, 0x64748b, 1.05));
+            var sun = new THREE.DirectionalLight(0xfff4e0, 1.25); sun.position.set(8, 15, 11); scene.add(sun);
+            var rimL = new THREE.DirectionalLight(0x7dd3fc, 0.85); rimL.position.set(-10, 9, -9); scene.add(rimL);
+
+            // Animated rolling-road tarmac perspective-stripe advection deck (WebGL1/GLSL ES 1.00)
+            var groundMat;
+            if (!isHC3d && hasShaderMat3d) {
+              groundMat = new THREE.ShaderMaterial({
+                uniforms: {
+                  uTime: windUniforms.uTime,
+                  uSpeed: windUniforms.uSpeed
+                },
+                vertexShader: [
+                  'varying vec2 vUv;',
+                  'varying vec3 vWorldPos;',
+                  'void main() {',
+                  '  vUv = uv;',
+                  '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+                  '  vWorldPos = wp.xyz;',
+                  '  gl_Position = projectionMatrix * viewMatrix * wp;',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uTime;',
+                  'uniform float uSpeed;',
+                  'varying vec2 vUv;',
+                  'varying vec3 vWorldPos;',
+                  'float bkHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+                  'void main() {',
+                  '  vec2 d = (vUv - 0.5) * 2.0;',
+                  '  float r = length(d);',
+                  '  if (r > 1.0) discard;',
+                  '  float advX = vWorldPos.x + uTime * (4.6 * uSpeed);',
+                  '  float grain = bkHash(floor(vec2(advX * 7.5, vWorldPos.z * 7.5))) * 0.055;',
+                  '  vec3 tarmac = vec3(0.11, 0.15, 0.21) + vec3(grain);',
+                  '  // Perspective rolling-road lane stripes & wind-tunnel calibration grid',
+                  '  float centerLane = exp(-pow(vWorldPos.z * 7.5, 2.0)) * smoothstep(0.15, 0.35, sin(advX * 2.1));',
+                  '  float sideRails = exp(-pow((abs(vWorldPos.z) - 2.95) * 9.0, 2.0));',
+                  '  float crossTicks = smoothstep(0.94, 0.99, abs(cos(advX * 1.65))) * smoothstep(4.2, 0.5, abs(vWorldPos.z));',
+                  '  vec3 col = tarmac;',
+                  '  col = mix(col, vec3(0.95, 0.78, 0.24), centerLane * 0.78);',
+                  '  col = mix(col, vec3(0.24, 0.78, 0.96), (sideRails * 0.65 + crossTicks * 0.28));',
+                  '  // Soft tire contact shadows beneath rear (-4.3) and front (+6.0) axles',
+                  '  float shRear = exp(-pow((vWorldPos.x + 4.3) * 0.65, 2.0) - pow(vWorldPos.z * 1.4, 2.0));',
+                  '  float shFront = exp(-pow((vWorldPos.x - 6.0) * 0.65, 2.0) - pow(vWorldPos.z * 1.4, 2.0));',
+                  '  col *= (1.0 - clamp((shRear + shFront) * 0.52, 0.0, 0.6));',
+                  '  float rimGlow = exp(-pow((r - 0.97) * 26.0, 2.0));',
+                  '  col += vec3(0.22, 0.74, 0.97) * rimGlow * 0.45;',
+                  '  float alpha = smoothstep(1.0, 0.92, r);',
+                  '  gl_FragColor = vec4(col, alpha);',
+                  '}'
+                ].join('\n'),
+                transparent: true
+              });
+            } else {
+              groundMat = new THREE.MeshStandardMaterial({ color: 0xdbe5f0, roughness: 0.55, metalness: 0.12 });
+            }
+            var ground = new THREE.Mesh(new THREE.CircleGeometry(9.5, 48), groundMat);
             ground.rotation.x = -Math.PI / 2; ground.position.set(0.85, -0.03, 0); scene.add(ground);
-            var bike = buildBike3D(THREE); scene.add(bike.group);
+            var stageRing = new THREE.Mesh(new THREE.TorusGeometry(9.3, 0.06, 8, 64), new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.25, metalness: 0.75, emissive: 0x0284c7, emissiveIntensity: 0.3 }));
+            stageRing.rotation.x = Math.PI / 2; stageRing.position.set(0.85, -0.01, 0); scene.add(stageRing);
+
+            var bike = buildBike3D(THREE, windUniforms, isHC3d); scene.add(bike.group);
+
+            // Laminar-to-turbulent wind-tunnel drag slipstream ribbons + glowing force-vector plasma sleeves
+            if (!isHC3d && hasShaderMat3d) {
+              var ribbonGeo = new THREE.PlaneGeometry(17.0, 0.36, 44, 3);
+              var ribbonSpecs = [
+                { y: 9.2, z: 0.0, lift: 1.45, phase: 0.0 },
+                { y: 7.4, z: 1.15, lift: 1.15, phase: 1.3 },
+                { y: 7.4, z: -1.15, lift: 1.15, phase: 2.5 },
+                { y: 5.0, z: 1.45, lift: 0.75, phase: 3.7 },
+                { y: 4.8, z: -1.45, lift: 0.75, phase: 4.9 }
+              ];
+              ribbonSpecs.forEach(function(rs) {
+                var rMat = new THREE.ShaderMaterial({
+                  uniforms: {
+                    uTime: windUniforms.uTime,
+                    uSpeed: windUniforms.uSpeed,
+                    uDrag: windUniforms.uDrag,
+                    uLift: { value: rs.lift },
+                    uPhase: { value: rs.phase }
+                  },
+                  vertexShader: [
+                    'uniform float uTime;',
+                    'uniform float uSpeed;',
+                    'uniform float uDrag;',
+                    'uniform float uLift;',
+                    'uniform float uPhase;',
+                    'varying vec2 vUv;',
+                    'varying float vWake;',
+                    'void main() {',
+                    '  vUv = uv;',
+                    '  vec3 pos = position;',
+                    '  // Streamline curves smoothly over the bicycle silhouette',
+                    '  float deflect = exp(-pow((pos.x - 1.6) * 0.25, 2.0)) * uLift;',
+                    '  // Downstream laminar-to-turbulent vortex wake oscillation behind x < -0.6',
+                    '  float wake = smoothstep(0.5, -5.5, pos.x);',
+                    '  float freq = 1.35 + uDrag * 1.1;',
+                    '  float turbY = sin(pos.x * freq + uTime * (4.2 * uSpeed) + uPhase) * (0.32 + uDrag * 0.45) * wake;',
+                    '  float turbZ = cos(pos.x * (freq * 0.85) + uTime * (3.6 * uSpeed) + uPhase * 1.4) * (0.28 + uDrag * 0.36) * wake;',
+                    '  pos.y += deflect + turbY;',
+                    '  pos.z += turbZ;',
+                    '  vWake = wake;',
+                    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);',
+                    '}'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform float uTime;',
+                    'uniform float uSpeed;',
+                    'uniform float uDrag;',
+                    'uniform float uPhase;',
+                    'varying vec2 vUv;',
+                    'varying float vWake;',
+                    'void main() {',
+                    '  float flow = fract(vUv.x * 3.5 + uTime * (0.62 * uSpeed) + uPhase * 0.17);',
+                    '  float packet = smoothstep(0.0, 0.22, flow) * smoothstep(1.0, 0.58, flow);',
+                    '  float coreY = exp(-pow((vUv.y - 0.5) * 4.8, 2.0));',
+                    '  float ends = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x);',
+                    '  vec3 laminarCol = vec3(0.20, 0.86, 1.0);',
+                    '  vec3 turbulentCol = vec3(0.98, 0.36, 0.28);',
+                    '  vec3 col = mix(laminarCol, turbulentCol, clamp(vWake * (0.55 + uDrag * 0.85), 0.0, 1.0));',
+                    '  float alpha = clamp((0.22 + packet * 0.78) * coreY * ends * 0.58, 0.0, 0.72);',
+                    '  if (alpha < 0.015) discard;',
+                    '  gl_FragColor = vec4(col, alpha);',
+                    '}'
+                  ].join('\n'),
+                  transparent: true,
+                  depthWrite: false,
+                  side: THREE.DoubleSide,
+                  blending: THREE.AdditiveBlending || THREE.NormalBlending
+                });
+                var rMesh = new THREE.Mesh(ribbonGeo, rMat);
+                rMesh.position.set(0.5, rs.y, rs.z);
+                rMesh.renderOrder = 3;
+                scene.add(rMesh);
+              });
+
+              // Glowing force-vector plasma sleeves (forward drive thrust & opposing aerodynamic drag)
+              var makeForceSleeve = function(x, y, z, dirX, colHex) {
+                var sleeveGroup = new THREE.Group();
+                var fMat = new THREE.ShaderMaterial({
+                  uniforms: {
+                    uTime: windUniforms.uTime,
+                    uCol: { value: new THREE.Color(colHex) }
+                  },
+                  vertexShader: [
+                    'varying vec2 vUv;',
+                    'varying vec3 vNorm;',
+                    'varying vec3 vView;',
+                    'void main() {',
+                    '  vUv = uv;',
+                    '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+                    '  vNorm = normalize(mat3(modelMatrix) * normal);',
+                    '  vView = normalize(cameraPosition - wp.xyz);',
+                    '  gl_Position = projectionMatrix * viewMatrix * wp;',
+                    '}'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform float uTime;',
+                    'uniform vec3 uCol;',
+                    'varying vec2 vUv;',
+                    'varying vec3 vNorm;',
+                    'varying vec3 vView;',
+                    'void main() {',
+                    '  float fres = pow(1.0 - clamp(abs(dot(normalize(vNorm), normalize(vView))), 0.0, 1.0), 1.8);',
+                    '  float pulse = 0.55 + 0.45 * sin(vUv.y * 16.0 - uTime * 5.2);',
+                    '  vec3 col = mix(uCol, vec3(0.98, 0.99, 1.0), fres * 0.55 + pulse * 0.20);',
+                    '  float alpha = clamp((0.36 + fres * 0.54) * (0.72 + pulse * 0.28), 0.0, 0.85);',
+                    '  gl_FragColor = vec4(col, alpha);',
+                    '}'
+                  ].join('\n'),
+                  transparent: true,
+                  depthWrite: false,
+                  blending: THREE.AdditiveBlending || THREE.NormalBlending
+                });
+                var shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 2.2, 14, 1, true), fMat);
+                shaft.rotation.z = dirX > 0 ? -Math.PI / 2 : Math.PI / 2;
+                sleeveGroup.add(shaft);
+                var head = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.68, 14), fMat);
+                head.rotation.z = dirX > 0 ? -Math.PI / 2 : Math.PI / 2;
+                head.position.x = dirX * 1.42;
+                sleeveGroup.add(head);
+                sleeveGroup.position.set(x, y, z);
+                sleeveGroup.renderOrder = 4;
+                scene.add(sleeveGroup);
+              };
+              makeForceSleeve(9.0, 3.4, 0, 1, 0x22d3ee);   // Forward drive thrust plasma vector
+              makeForceSleeve(-7.6, 6.2, 0, -1, 0xfb7185); // Aerodynamic drag wake plasma vector
+            }
+
             var target = new THREE.Vector3(0.85, 4.7, 0), ray = new THREE.Raycaster();
-            var S = { az: 0.55, el: 0.22, dist: 27, raf: 0 };
+            var S = { az: 0.55, el: 0.22, dist: 27, raf: 0, liveLoop: !isReduced3d && !isHC3d };
             var aim = function() {
               camera.position.set(target.x + S.dist * Math.sin(S.az) * Math.cos(S.el), target.y + S.dist * Math.sin(S.el), target.z + S.dist * Math.cos(S.az) * Math.cos(S.el));
               camera.lookAt(target); camera.updateMatrixWorld();
             };
-            var draw = function() { S.raf = 0; aim(); renderer.render(scene, camera); };
+            var draw = function(now) {
+              S.raf = 0;
+              if (dead) return;
+              if (S.liveLoop && typeof now === 'number') {
+                windUniforms.uTime.value = (now * 0.001) % 1000.0;
+              }
+              aim();
+              renderer.render(scene, camera);
+              if (S.liveLoop && (typeof document === 'undefined' || !document.hidden)) {
+                S.raf = requestAnimationFrame(draw);
+              }
+            };
             var request = function() { if (!S.raf) S.raf = requestAnimationFrame(draw); };
+            var onVis3d = function() {
+              if (typeof document !== 'undefined' && document.hidden) {
+                if (S.raf) { cancelAnimationFrame(S.raf); S.raf = 0; }
+              } else if (S.liveLoop) {
+                request();
+              }
+            };
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVis3d);
             var clampView = function() { S.el = Math.max(-0.05, Math.min(1.45, S.el)); S.dist = Math.max(13, Math.min(42, S.dist)); };
             var pick = function(ev) {
               var r = canvas.getBoundingClientRect();
@@ -4324,10 +4720,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             };
             cleanup = function() {
               if (S.raf) cancelAnimationFrame(S.raf);
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVis3d);
               if (ro) ro.disconnect();
               canvas.removeEventListener('pointerdown', onDown); canvas.removeEventListener('pointermove', onMove);
               canvas.removeEventListener('pointerup', onUp); canvas.removeEventListener('pointercancel', onUp); canvas.removeEventListener('pointerleave', onLeave);
-              scene.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+              scene.traverse(function(o) {
+                if (o.geometry && typeof o.geometry.dispose === 'function') o.geometry.dispose();
+                if (o.material) {
+                  var ms = Array.isArray(o.material) ? o.material : [o.material];
+                  ms.forEach(function(m) {
+                    if (!m) return;
+                    ['map', 'roughnessMap', 'metalnessMap', 'normalMap', 'emissiveMap'].forEach(function(slot) {
+                      if (m[slot] && typeof m[slot].dispose === 'function') m[slot].dispose();
+                    });
+                    if (typeof m.dispose === 'function') m.dispose();
+                  });
+                }
+              });
               canvas._bikelabTearingDown = true; // our own loss must not raise the paused panel
               renderer.dispose(); try { var gl = renderer.getContext(); if (!gl.isContextLost()) renderer.forceContextLoss(); } catch (e) {}
               if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
@@ -5061,7 +5470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
                 h('div', { className: 'text-xs uppercase font-bold tracking-wider text-slate-600' }, t('stem.bikelab.round', 'Round')),
-                h('div', { className: 'text-2xl font-black text-amber-700' }, gameMode === 'idle' ? '—' : (Math.min(roundIdx + (gameMode === 'done' ? 0 : 1), ROUND_COUNT) + ' / ' + ROUND_COUNT))
+                h('div', { className: 'text-2xl font-black text-amber-700' }, gameMode === 'idle' ? '—' : gameMode === 'done' ? (ROUND_COUNT + ' / ' + ROUND_COUNT) : (Math.min(roundIdx + 1, ROUND_COUNT) + ' / ' + ROUND_COUNT))
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
                 h('div', { className: 'text-xs uppercase font-bold tracking-wider text-slate-600' }, t('stem.bikelab.avg_correct', 'Avg (Correct)')),

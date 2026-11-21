@@ -259,14 +259,12 @@ if [[ "${SKIP_COMMENT_BUDGET:-0}" != "1" ]]; then
   } || true
 fi
 
-# ── Step 0.76: cloud deploy mirror + config parity (ADVISORY) ──────
+# ── Step 0.76: cloud deploy mirror + config parity ────────────────
 if [[ "${SKIP_CLOUD_PARITY:-0}" != "1" ]]; then
-  {
-    echo ""
-    echo "=== Step 0.76: cloud deploy mirror and config parity (advisory) ==="
-    node dev-tools/check_cloud_deploy_parity.cjs
-    echo "=== end Step 0.76 ==="
-  } || true
+  echo ""
+  echo "=== Step 0.76: cloud deploy mirror and config parity ==="
+  node dev-tools/check_cloud_deploy_parity.cjs
+  echo "=== end Step 0.76 ==="
 fi
 
 # ── Step 0.8: behavioural gate (tests affected by this change) ─────
@@ -483,7 +481,11 @@ elif [[ -z "$FIREBASE_PROJECT" || "$FIREBASE_PROJECT" == "YOUR_PROJECT_ID" ]]; t
   echo "  Skipped: no school-owned Firebase project is configured."
   echo "  Cloudflare /app/ remains the public student shell; the maintainer demo is never used as a fallback."
 else
-  (cd desktop/web-app && npx firebase deploy --only hosting --project "$FIREBASE_PROJECT")
+  if [[ ! "$FIREBASE_PROJECT" =~ ^[a-z0-9][a-z0-9-]{4,29}$ ]]; then
+    echo "  ✗ Refusing invalid Firebase project ID: $FIREBASE_PROJECT"
+    exit 1
+  fi
+  (cd desktop/web-app && npx --no-install firebase deploy --only hosting --project "$FIREBASE_PROJECT")
   FIREBASE_DEPLOYED=1
   FIREBASE_URL="${ALLOFLOW_FIREBASE_HOST_URL:-https://${FIREBASE_PROJECT}.web.app}"
   echo "  ✓ Firebase deploy complete ($FIREBASE_PROJECT)."
@@ -600,10 +602,12 @@ else
 
   # ── Check 1: hash consistency (local, deterministic) ──
   echo "  [1/4] Hash consistency…"
-  ROOT_VER=$(grep -m1 "var pluginCdnVersion = " AlloFlowANTI.txt 2>/dev/null | sed -E "s/.*'([^']*)'.*/\1/")
-  MIRROR_VER=$(grep -m1 "var pluginCdnVersion = " desktop/web-app/src/AlloFlowANTI.txt 2>/dev/null | sed -E "s/.*'([^']*)'.*/\1/")
+  ROOT_VER=$(grep -m1 "var pluginCdnVersion = " AlloFlowANTI.txt 2>/dev/null | sed -E "s/.*'([^']*)'.*/\1/" || true)
+  MIRROR_VER=$(grep -m1 "var pluginCdnVersion = " desktop/web-app/src/AlloFlowANTI.txt 2>/dev/null | sed -E "s/.*'([^']*)'.*/\1/" || true)
   if [[ -z "${ROOT_VER:-}" ]]; then
     pv_fail "could not read pluginCdnVersion from AlloFlowANTI.txt"
+  elif [[ ! "$ROOT_VER" =~ ^[a-f0-9]{7,40}$ ]]; then
+    pv_fail "pluginCdnVersion @${ROOT_VER} is not a valid hexadecimal commit hash"
   else
     # build.js stamps the full sha; BUILD_HASH is --short. Compare the commits, not the spellings.
     ROOT_COMMIT=$(git rev-parse --verify --quiet "${ROOT_VER}^{commit}" 2>/dev/null || true)
@@ -628,7 +632,7 @@ else
   # ── Check 2: Firebase host reachable when a school-owned target deployed ──
   if [[ "$FIREBASE_DEPLOYED" == "1" && -n "$FIREBASE_URL" ]]; then
     echo "  [2/4] Firebase host ($FIREBASE_URL)…"
-    FB_RESP=$(curl -s -o /dev/null -w "%{http_code} %{size_download}" "$FIREBASE_URL" 2>/dev/null || echo "000 0")
+    FB_RESP=$(curl -s --connect-timeout 15 --max-time 60 --proto =https --proto-redir =https -o /dev/null -w "%{http_code} %{size_download}" "$FIREBASE_URL" 2>/dev/null || echo "000 0")
     FB_CODE=${FB_RESP%% *}; FB_SIZE=${FB_RESP##* }
     if [[ "$FB_CODE" == "200" && "${FB_SIZE:-0}" -gt 1000 ]]; then
       pv_ok "host returned 200 (${FB_SIZE} bytes)"
@@ -645,12 +649,16 @@ else
   STALE=()
   for mod in "${CDN_MODULES[@]}"; do
     [[ -f "$mod" ]] || { pv_warn "local $mod missing — skipping CDN check"; continue; }
+    if ! git cat-file -e "HEAD:$mod" 2>/dev/null; then
+      pv_warn "$mod not committed in HEAD — skipping CDN hash check"
+      continue
+    fi
     # Compare against the COMMITTED module (what Cloudflare builds from), NOT the working tree —
     # a generated module can re-drift locally (e.g. a duplicate registration block), which would
     # make a genuinely-fresh CDN copy look "stale". HEAD is what was pushed, so it's the truth.
     LOCAL_MD5=$(git show "HEAD:$mod" 2>/dev/null | md5sum | awk '{print $1}')
-    TMP=$(mktemp)
-    HCODE=$(curl -sL -o "$TMP" -w "%{http_code}" "$CDN_BASE/$mod?v=$BUILD_HASH" 2>/dev/null || echo "000")
+    TMP=$(mktemp "$DEPLOY_TMP/verify.XXXXXX")
+    HCODE=$(curl -sL --connect-timeout 15 --max-time 60 --proto =https --proto-redir =https -o "$TMP" -w "%{http_code}" "$CDN_BASE/$mod?v=$BUILD_HASH" 2>/dev/null || echo "000")
     if [[ "$HCODE" != "200" || ! -s "$TMP" ]]; then
       pv_fail "$mod → HTTP ${HCODE} / empty (CDN unreachable or misconfigured)"
       rm -f "$TMP"; continue
@@ -672,11 +680,11 @@ else
     STILL=()
     for mod in "${STALE[@]}"; do
       # Compare against the COMMITTED module (what Cloudflare builds from), NOT the working tree —
-    # a generated module can re-drift locally (e.g. a duplicate registration block), which would
-    # make a genuinely-fresh CDN copy look "stale". HEAD is what was pushed, so it's the truth.
-    LOCAL_MD5=$(git show "HEAD:$mod" 2>/dev/null | md5sum | awk '{print $1}')
-      TMP=$(mktemp)
-      curl -sL -o "$TMP" "$CDN_BASE/$mod?v=$BUILD_HASH" 2>/dev/null || true
+      # a generated module can re-drift locally (e.g. a duplicate registration block), which would
+      # make a genuinely-fresh CDN copy look "stale". HEAD is what was pushed, so it's the truth.
+      LOCAL_MD5=$(git show "HEAD:$mod" 2>/dev/null | md5sum | awk '{print $1}')
+      TMP=$(mktemp "$DEPLOY_TMP/verify.XXXXXX")
+      curl -sL --connect-timeout 15 --max-time 60 --proto =https --proto-redir =https -H "Cache-Control: no-cache, no-store" -o "$TMP" "$CDN_BASE/$mod?v=${BUILD_HASH}-r${attempt}" 2>/dev/null || true
       CDN_MD5=$(md5sum "$TMP" | awk '{print $1}'); rm -f "$TMP"
       if [[ "$CDN_MD5" == "$LOCAL_MD5" ]]; then
         pv_ok "$mod now fresh (md5 matches local)"
@@ -684,7 +692,7 @@ else
         STILL+=("$mod")
       fi
     done
-    STALE=("${STILL[@]}")
+    STALE=("${STILL[@]+"${STILL[@]}"}")
   done
   if [[ ${#STALE[@]} -gt 0 ]]; then
     pv_warn "${#STALE[@]} module(s) still stale after ${CDN_RETRIES} retries: ${STALE[*]}"
@@ -712,8 +720,8 @@ else
     VERA_QUERY="${POST_VERIFY_CACHE_BUST}-${VERAPDF_ATTEMPT}"
 
     if [[ $VERA_HTML_VALID -ne 1 ]]; then
-      VERA_HTML_TMP=$(mktemp)
-      VERA_HTML_CODE=$(curl -sSL -H "Cache-Control: no-cache, no-store" -H "Pragma: no-cache" -o "$VERA_HTML_TMP" -w "%{http_code}" "$CDN_BASE/$VERAPDF_VALIDATOR_ROUTE?verify=$VERA_QUERY" 2>/dev/null || echo "000")
+      VERA_HTML_TMP=$(mktemp "$DEPLOY_TMP/verify.XXXXXX")
+      VERA_HTML_CODE=$(curl -sSL --connect-timeout 15 --max-time 60 --proto =https --proto-redir =https -H "Cache-Control: no-cache, no-store" -H "Pragma: no-cache" -o "$VERA_HTML_TMP" -w "%{http_code}" "$CDN_BASE/$VERAPDF_VALIDATOR_ROUTE?verify=$VERA_QUERY" 2>/dev/null || echo "000")
       if [[ "$VERA_HTML_CODE" != "200" || ! -s "$VERA_HTML_TMP" ]]; then
         VERA_HTML_REASON="HTTP ${VERA_HTML_CODE} / empty"
       elif ! grep -Fq "Independent PDF/UA-1 validator" "$VERA_HTML_TMP" || ! grep -Fq "type: 'verapdf-ready'" "$VERA_HTML_TMP" || ! grep -Fq "boot();" "$VERA_HTML_TMP"; then
@@ -725,9 +733,9 @@ else
     fi
 
     if [[ $VERA_JAR_VALID -ne 1 ]]; then
-      VERA_JAR_TMP=$(mktemp)
-      VERA_JAR_HEADERS=$(mktemp)
-      VERA_JAR_CODE=$(curl -sSL -H "Cache-Control: no-cache, no-store" -H "Pragma: no-cache" -D "$VERA_JAR_HEADERS" -o "$VERA_JAR_TMP" -w "%{http_code}" "$CDN_BASE/$VERAPDF_CLI_JAR_ROUTE?verify=$VERA_QUERY" 2>/dev/null || echo "000")
+      VERA_JAR_TMP=$(mktemp "$DEPLOY_TMP/verify.XXXXXX")
+      VERA_JAR_HEADERS=$(mktemp "$DEPLOY_TMP/verify.XXXXXX")
+      VERA_JAR_CODE=$(curl -sSL --connect-timeout 15 --max-time 60 --proto =https --proto-redir =https -H "Cache-Control: no-cache, no-store" -H "Pragma: no-cache" -D "$VERA_JAR_HEADERS" -o "$VERA_JAR_TMP" -w "%{http_code}" "$CDN_BASE/$VERAPDF_CLI_JAR_ROUTE?verify=$VERA_QUERY" 2>/dev/null || echo "000")
       VERA_JAR_TYPE=$(awk 'BEGIN { IGNORECASE=1 } /^content-type:/ { value=$0 } END { sub(/\r$/, "", value); sub(/^[^:]*:[[:space:]]*/, "", value); print tolower(value) }' "$VERA_JAR_HEADERS")
       VERA_JAR_SIZE=$(wc -c < "$VERA_JAR_TMP" | tr -d '[:space:]')
       VERA_JAR_MAGIC=$(od -An -tx1 -N4 "$VERA_JAR_TMP" 2>/dev/null | tr -d '[:space:]')

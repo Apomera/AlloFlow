@@ -67,8 +67,15 @@ function relativeDisplay(repoRoot, filePath) {
   return path.relative(repoRoot, filePath).split(path.sep).join('/');
 }
 
-function readRequired(filePath, label, errors) {
+function readRequired(filePath, label, errors, rejectSymlink = false) {
   try {
+    if (rejectSymlink) {
+      const lstat = fs.lstatSync(filePath);
+      if (lstat.isSymbolicLink() || !lstat.isFile()) {
+        errors.push(`${label} must be a regular non-symlink file: ${filePath}`);
+        return null;
+      }
+    }
     return fs.readFileSync(filePath);
   } catch (error) {
     errors.push(`${label} is missing or unreadable: ${filePath} (${error.message})`);
@@ -87,7 +94,7 @@ function validateModuleContracts({ repoRoot, appBuildDir, contracts = MODULE_CON
     const source = readRequired(sourcePath, `${contract.file} source`, errors);
     const canonical = readRequired(canonicalPath, `${contract.file} canonical module`, errors);
     const publicMirror = readRequired(publicPath, `${contract.file} public mirror`, errors);
-    const desktopArtifact = readRequired(desktopPath, `${contract.file} desktop artifact`, errors);
+    const desktopArtifact = readRequired(desktopPath, `${contract.file} desktop artifact`, errors, true);
 
     if (source && canonical) {
       const expected = Buffer.from(contract.render(source.toString('utf8')), 'utf8');
@@ -127,6 +134,27 @@ function normalizeBuildReference(reference) {
     throw new Error(`unsafe build artifact path: ${reference}`);
   }
   return normalized;
+}
+
+function assertRegularArtifactInsideRoot(appBuildDir, artifactPath, reference) {
+  const realRoot = fs.realpathSync(appBuildDir);
+  const relParts = path.relative(path.resolve(appBuildDir), artifactPath).split(path.sep).filter(Boolean);
+  let cursor = path.resolve(appBuildDir);
+  for (const part of relParts) {
+    cursor = path.join(cursor, part);
+    const stat = fs.lstatSync(cursor);
+    if (stat.isSymbolicLink()) {
+      throw new Error(`build artifact traverses a symbolic link: ${reference}`);
+    }
+  }
+  const finalStat = fs.lstatSync(artifactPath);
+  if (finalStat.isSymbolicLink() || !finalStat.isFile()) return false;
+  const realArtifact = fs.realpathSync(artifactPath);
+  const realRel = path.relative(realRoot, realArtifact);
+  if (!realRel || realRel.startsWith('..') || path.isAbsolute(realRel)) {
+    throw new Error(`build artifact escapes desktop/app-build: ${reference}`);
+  }
+  return true;
 }
 
 function resolveBuildReference(appBuildDir, reference) {
@@ -182,7 +210,7 @@ function validateBuildArtifacts({ appBuildDir }) {
       }
       try {
         const artifact = resolveBuildReference(appBuildDir, reference);
-        if (!fs.existsSync(artifact) || !fs.statSync(artifact).isFile()) {
+        if (!fs.existsSync(artifact) || !assertRegularArtifactInsideRoot(appBuildDir, artifact, reference)) {
           errors.push(`asset-manifest.json references a missing file: ${reference}`);
         }
       } catch (error) {
@@ -204,7 +232,7 @@ function validateBuildArtifacts({ appBuildDir }) {
     for (const reference of entrypoints) {
       try {
         const artifact = resolveBuildReference(appBuildDir, reference);
-        if (!fs.existsSync(artifact) || !fs.statSync(artifact).isFile()) {
+        if (!fs.existsSync(artifact) || !assertRegularArtifactInsideRoot(appBuildDir, artifact, reference)) {
           errors.push(`asset-manifest entrypoint is missing: ${reference}`);
         }
       } catch (error) {
@@ -216,18 +244,27 @@ function validateBuildArtifacts({ appBuildDir }) {
   if (files && files['main.js']) {
     try {
       const mainBundle = fs.readFileSync(resolveBuildReference(appBuildDir, files['main.js']), 'utf8');
-      const injectedNames = new Set(
-        Array.from(mainBundle.matchAll(/\b(REACT_APP_[A-Z0-9_]+):/g), (match) => match[1])
-      );
+      const injectedNames = new Set();
       const injectedValues = new Map();
-      for (const match of mainBundle.matchAll(/\b(REACT_APP_[A-Z0-9_]+):("(?:\\.|[^"\\])*")/g)) {
-        const values = injectedValues.get(match[1]) || new Set();
-        values.add(JSON.parse(match[2]));
-        injectedValues.set(match[1], values);
+      const nonLiteralNames = new Set();
+      for (const match of mainBundle.matchAll(/\b(REACT_APP_[A-Z0-9_]+):(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|([^,}\s]+))/g)) {
+        const name = match[1];
+        injectedNames.add(name);
+        if (match[2] !== undefined) {
+          const values = injectedValues.get(name) || new Set();
+          values.add(JSON.parse('"' + match[2] + '"'));
+          injectedValues.set(name, values);
+        } else if (match[3] !== undefined) {
+          const values = injectedValues.get(name) || new Set();
+          values.add(match[3].replace(/\\'/g, "'").replace(/\\\\/g, '\\'));
+          injectedValues.set(name, values);
+        } else {
+          nonLiteralNames.add(name);
+        }
       }
       for (const [name, expected] of Object.entries(DESKTOP_REACT_ENV)) {
         const values = injectedValues.get(name);
-        if (!injectedNames.has(name) || !values || values.size !== 1 || !values.has(expected)) {
+        if (!injectedNames.has(name) || nonLiteralNames.has(name) || !values || values.size !== 1 || !values.has(expected)) {
           errors.push(
             `compiled main bundle must inject ${name}=${JSON.stringify(expected)}; found `
             + (values ? JSON.stringify(Array.from(values)) : 'no deterministic string value')
@@ -239,7 +276,7 @@ function validateBuildArtifacts({ appBuildDir }) {
           errors.push(`compiled main bundle contains an unapproved environment value: ${name}`);
         }
       }
-      if (/AIza[0-9A-Za-z_-]{20,}/.test(mainBundle)) {
+      if (/(?<![A-Za-z0-9_-])AIza[0-9A-Za-z_-]{35}(?![A-Za-z0-9_-])/.test(mainBundle)) {
         errors.push('compiled main bundle contains a baked Google API key.');
       }
     } catch (error) {
@@ -298,7 +335,7 @@ function validateBuildArtifacts({ appBuildDir }) {
       for (const reference of precache) {
         try {
           const artifact = resolveBuildReference(appBuildDir, reference);
-          if (!fs.existsSync(artifact) || !fs.statSync(artifact).isFile()) {
+          if (!fs.existsSync(artifact) || !assertRegularArtifactInsideRoot(appBuildDir, artifact, reference)) {
             errors.push(`sw.js precaches a missing file: ${reference}`);
           }
         } catch (error) {

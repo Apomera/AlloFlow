@@ -105,7 +105,15 @@
     } catch (err) { /* sessionStorage unavailable */ }
   }
 
+  var deliveryEpoch = 0;
+  try {
+    if (window.location && (window.location.hash || window.location.search) && window.history && typeof window.history.replaceState === 'function') {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  } catch (err) { /* ignore opaque origins */ }
+
   function forgetConnection() {
+    deliveryEpoch += 1;
     try { window.localStorage.removeItem(STORE_KEY); } catch (err) { /* nothing to clear */ }
     try { if (window.sessionStorage) window.sessionStorage.removeItem(TOKEN_KEY); } catch (err) { /* nothing to clear */ }
     state.delivery = { execUrl: '', token: '', owner: '', selfTest: null, busy: false, message: '', tone: 'warn' };
@@ -117,9 +125,15 @@
   function postToScript(url, body) {
     return window.fetch(url, {
       method: 'POST',
+      credentials: 'omit',
+      cache: 'no-store',
+      referrerPolicy: 'no-referrer',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(body)
-    }).then(function (response) { return response.json(); });
+    }).then(function (response) {
+      if (response && response.ok === false) throw new Error('HTTP ' + response.status);
+      return response.json();
+    });
   }
 
   function deliveryClient() {
@@ -571,9 +585,11 @@
   function doSelfTest() {
     var built = deliveryClient();
     if (!built.ok) return;
+    var reqEpoch = ++deliveryEpoch;
     state.delivery.busy = true;
     render();
     built.value.selfTest().then(function (result) {
+      if (reqEpoch !== deliveryEpoch) return;
       state.delivery.busy = false;
       if (!result.ok) {
         state.delivery.message = result.errors[0].message;
@@ -585,6 +601,7 @@
       }
       render();
     }, function () {
+      if (reqEpoch !== deliveryEpoch) return;
       state.delivery.busy = false;
       state.delivery.message = 'The self-test could not reach the script.';
       state.delivery.tone = 'stop';
@@ -1324,12 +1341,14 @@
       render();
       return;
     }
+    var reqEpoch = ++deliveryEpoch;
     state.delivery.busy = true;
     render();
     built.value.deliver(state.draft, fixtures.SAMPLE_FIELD_MAP, {
       teacherEmail: state.sendTo,
       allowedDomain: state.delivery.selfTest && state.delivery.selfTest.allowedDomain
     }).then(function (result) {
+      if (reqEpoch !== deliveryEpoch) return;
       state.delivery.busy = false;
       state.sendResult = result.ok
         ? { ok: true, message: 'Saved and shared with ' + result.value.sharedWith
@@ -1338,6 +1357,7 @@
       render();
       say(state.sendResult.message);
     }, function (err) {
+      if (reqEpoch !== deliveryEpoch) return;
       state.delivery.busy = false;
       state.sendResult = { ok: false, message: 'Could not reach the script. Nothing was saved. (' + (err && err.message ? err.message : 'network error') + ')' };
       render();

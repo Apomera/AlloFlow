@@ -91,6 +91,8 @@ function deploymentControl(name) {
     return ['_worker.js', '_worker.bundle', '_routes.json', 'functions', 'functions-filepath-routing-config.json',
       'wrangler.toml', 'wrangler.json', 'wrangler.jsonc', '.wrangler', '.assetsignore', '.cfignore', '.gitignore',
       '.ignore', '.git', '.hg', '.svn', 'node_modules', '.ds_store', 'firebase.json', '.firebaserc'].includes(lower)
+      || /^wrangler\..*\.(?:toml|json|jsonc)$/.test(lower)
+      || /^firebase\..*\.json$/.test(lower)
       || /^\.env(?:\.|$)|^\.dev\.vars(?:\.|$)/.test(lower);
   });
 }
@@ -218,12 +220,54 @@ function collectChecks(options, dependencies = {}) {
 function hasDotSegment(rel) {
   return String(rel || '').split('/').some(part => part.startsWith('.'));
 }
+function globToRegex(pattern) {
+  let out = '';
+  for (let i = 0; i < pattern.length; i++) {
+    const ch = pattern[i];
+    if (ch === '*') {
+      if (pattern[i + 1] === '*') {
+        if (pattern[i + 2] === '/') { out += '(?:.*/)?'; i += 2; }
+        else { out += '.*'; i += 1; }
+      } else {
+        out += '[^/]*';
+      }
+    } else if (ch === '?') {
+      out += '[^/]';
+    } else if (/[.+^${}()|[\]\\]/.test(ch)) {
+      out += '\\' + ch;
+    } else {
+      out += ch;
+    }
+  }
+  return out;
+}
 function parseAssetsIgnore(text) {
-  return String(text || '').split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#'))
-    .map(rule => rule.replace(/^\/+|\/+$/g, '')).filter(Boolean);
+  const rules = [];
+  for (const rawLine of String(text || '').split(/\r?\n/)) {
+    let line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    let negated = false;
+    if (line.startsWith('!')) { negated = true; line = line.slice(1).trim(); }
+    if (!line) continue;
+    const anchored = line.startsWith('/');
+    const dirOnly = line.endsWith('/');
+    const clean = line.replace(/^\/+|\/+$/g, '');
+    if (!clean) continue;
+    const hasSlash = clean.includes('/');
+    const body = globToRegex(clean);
+    const prefix = (anchored || hasSlash) ? '^' : '(?:^|/)';
+    const suffix = dirOnly ? '(?:/|$)' : '(?:/.*|$)';
+    rules.push({ negated, regex: new RegExp(prefix + body + suffix, 'i') });
+  }
+  return rules;
 }
 function matchesAssetsIgnore(rel, rules) {
-  return rules.some(rule => rel === rule || rel.startsWith(rule + '/'));
+  const normalized = String(rel || '').replace(/\\/g, '/').replace(/^\/+/, '');
+  let ignored = false;
+  for (const rule of rules) {
+    if (rule.regex.test(normalized)) ignored = !rule.negated;
+  }
+  return ignored;
 }
 function collectCandidateInputs(ctx) {
   noSymlinkAncestors(ctx.root);
@@ -317,54 +361,60 @@ function createCandidate(options, dependencies = {}) {
   const output = path.resolve(options.output || ''), build = path.join(ctx.root, 'desktop/web-app/public'), rootApp = path.join(ctx.root, 'app');
   if (!options.output || fs.existsSync(output) || output === ctx.root || withinDirectory(output, build) || withinDirectory(output, rootApp)) fail('candidate output must be a new separate directory');
   noSymlinkAncestors(output, true);
-  // Assemble and hash the complete hosted tree before copying.
+  // Stream one file at a time (read -> hash -> write) instead of buffering all ~4.3 GiB in RAM.
   const sources = collectCandidateInputs(ctx);
   if (!sources.size || sources.size > MAX_FILES) fail('artifact manifest is missing or exceeds Cloudflare Pages bounds');
   const sortedRels = [...sources.keys()].sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
+  requireHostedFiles(sortedRels.map(rel => ({ path: 'site/' + rel })));
   const preCopy = [];
-  const buffers = new Map();
-  for (const rel of sortedRels) {
-    const bytes = readSafeFile(sources.get(rel));
-    preCopy.push({ path: 'site/' + rel, bytes: bytes.length, sha256: sha256(bytes) });
-    buffers.set(rel, bytes);
+  try {
+    fs.mkdirSync(path.join(output, 'payload/site'), { recursive: true });
+    noSymlinkAncestors(path.join(output, 'payload/site'));
+    for (const rel of sortedRels) {
+      const bytes = readSafeFile(sources.get(rel));
+      preCopy.push({ path: 'site/' + rel, bytes: bytes.length, sha256: sha256(bytes) });
+      const dest = path.join(output, 'payload/site', rel);
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.writeFileSync(dest, bytes, { flag: 'wx' });
+    }
+    const files = inventory(path.join(output, 'payload'));
+    if (JSON.stringify(preCopy) !== JSON.stringify(files)) fail('complete hosted source changed while copying');
+    const postSources = collectCandidateInputs(ctx);
+    const postRels = [...postSources.keys()].sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
+    if (JSON.stringify(postRels) !== JSON.stringify(sortedRels)) fail('complete hosted source changed during packaging');
+    const postCopy = postRels.map(rel => {
+      const bytes = readSafeFile(postSources.get(rel));
+      return { path: 'site/' + rel, bytes: bytes.length, sha256: sha256(bytes) };
+    });
+    if (JSON.stringify(postCopy) !== JSON.stringify(preCopy)) fail('complete hosted source changed during packaging');
+    checkPayload(path.join(output, 'payload'), files);
+    const manifest = { schemaVersion: 2, repository: REPOSITORY, sourceSha: env.GITHUB_SHA, sourceRef: env.GITHUB_REF, hosting: { ...HOSTING },
+      producer: { runId: Number(env.GITHUB_RUN_ID), runAttempt: Number(env.GITHUB_RUN_ATTEMPT) },
+      createdAt: new Date(ctx.now()).toISOString(), checks, files };
+    fs.writeFileSync(path.join(output, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx' });
+    return manifest;
+  } catch (err) {
+    try { fs.rmSync(output, { recursive: true, force: true }); } catch (_) {}
+    throw err;
   }
-  requireHostedFiles(preCopy);
-  fs.mkdirSync(path.join(output, 'payload/site'), { recursive: true });
-  noSymlinkAncestors(path.join(output, 'payload/site'));
-  for (const rel of sortedRels) {
-    const dest = path.join(output, 'payload/site', rel);
-    fs.mkdirSync(path.dirname(dest), { recursive: true });
-    fs.writeFileSync(dest, buffers.get(rel), { flag: 'wx' });
-  }
-  buffers.clear();
-  const files = inventory(path.join(output, 'payload'));
-  if (JSON.stringify(preCopy) !== JSON.stringify(files)) fail('complete hosted source changed while copying');
-  const postSources = collectCandidateInputs(ctx);
-  const postRels = [...postSources.keys()].sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
-  if (JSON.stringify(postRels) !== JSON.stringify(sortedRels)) fail('complete hosted source changed during packaging');
-  const postCopy = postRels.map(rel => {
-    const bytes = readSafeFile(postSources.get(rel));
-    return { path: 'site/' + rel, bytes: bytes.length, sha256: sha256(bytes) };
-  });
-  if (JSON.stringify(postCopy) !== JSON.stringify(preCopy)) fail('complete hosted source changed during packaging');
-  checkPayload(path.join(output, 'payload'), files);
-  const manifest = { schemaVersion: 2, repository: REPOSITORY, sourceSha: env.GITHUB_SHA, sourceRef: env.GITHUB_REF, hosting: { ...HOSTING },
-    producer: { runId: Number(env.GITHUB_RUN_ID), runAttempt: Number(env.GITHUB_RUN_ATTEMPT) },
-    createdAt: new Date(ctx.now()).toISOString(), checks, files };
-  fs.writeFileSync(path.join(output, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx' });
-  return manifest;
 }
 function stageCandidate(options, dependencies = {}) {
   const result = verifyCandidate(options, dependencies);
   const tempRoot = fs.realpathSync(os.tmpdir()); noSymlinkAncestors(tempRoot);
   const stage = fs.mkdtempSync(path.join(tempRoot, 'alloflow-verified-release-'));
   const payload = path.join(stage, 'payload'), manifest = path.join(stage, 'manifest.json');
-  noSymlinkAncestors(options.payload); noSymlinkAncestors(options.manifest); noSymlinkAncestors(stage);
-  fs.cpSync(path.resolve(options.payload), payload, { recursive: true, dereference: false });
-  fs.copyFileSync(path.resolve(options.manifest), manifest);
-  if (sha256(fs.readFileSync(manifest)) !== result.manifestSha256) fail('manifest changed while staging');
-  checkPayload(payload, result.manifest.files);
-  return stage;
+  try {
+    noSymlinkAncestors(options.payload); noSymlinkAncestors(options.manifest); noSymlinkAncestors(stage);
+    fs.cpSync(path.resolve(options.payload), payload, { recursive: true, dereference: false });
+    const manifestBytes = readSafeFile(path.resolve(options.manifest), 32 * 1024 * 1024);
+    if (sha256(manifestBytes) !== result.manifestSha256) fail('manifest changed while staging');
+    fs.writeFileSync(manifest, manifestBytes, { flag: 'wx' });
+    checkPayload(payload, result.manifest.files);
+    return stage;
+  } catch (err) {
+    try { fs.rmSync(stage, { recursive: true, force: true }); } catch (_) {}
+    throw err;
+  }
 }
 function selftest() {
   const assert = require('node:assert/strict');

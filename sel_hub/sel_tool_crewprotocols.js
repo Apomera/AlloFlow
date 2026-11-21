@@ -416,17 +416,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       var _cpT = (ctx && ctx.theme) || {};
       var _cpHC = !!_cpT.isContrast, _cpL = !_cpHC && !_cpT.isDark;
       var _cp_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _cp_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000'};
-      var _cp_FGL = {'#cbd5e1':'#334155','#7dd3fc':'#075985','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e'}, _cp_FGH = {'#dc2626':'#ffff00','#cbd5e1':'#ffff00','#7dd3fc':'#ffff00','#94a3b8':'#ffff00','#bae6fd':'#ffff00','#e2e8f0':'#ffff00','#e9d5ff':'#ffff00','#10b981':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
-      var _cp_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _cp_BDH = {'#334155':'#ffff00','#0ea5e9':'#ffff00','#1e293b':'#ffff00','#10b981':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#0284c7':'#ffff00','#f59e0b':'#ffff00'};
+      var _cp_FGL = {'#cbd5e1':'#334155','#7dd3fc':'#075985','#bae6fd':'#075985','#10b981':'#047857','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e'}, _cp_FGH = {'#dc2626':'#ffff00','#cbd5e1':'#ffff00','#7dd3fc':'#ffff00','#94a3b8':'#ffff00','#bae6fd':'#ffff00','#e2e8f0':'#ffff00','#e9d5ff':'#ffff00','#10b981':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#3b82f6':'#ffff00','#ec4899':'#ffff00','#fff':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _cp_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _cp_BDH = {'#334155':'#ffff00','#0ea5e9':'#ffff00','#1e293b':'#ffff00','#10b981':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#0284c7':'#ffff00','#f59e0b':'#ffff00'};
       var _cpBg = function(h){ return _cpHC ? (_cp_BGH[h]||h) : (_cpL ? (_cp_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
       // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
       // lighter shade of the SAME hue; backgrounds and borders are untouched.
       var _cp_FGD = {'#dc2626':'#ef4444'};
       var _cpFg = function(h){ return _cpHC ? (_cp_FGH[h]||h) : (_cpL ? (_cp_FGL[h]||h) : (_cp_FGD[h]||h)); };
-      var _cpBd = function(h){ return _cpHC ? (_cp_BDH[h]||h) : (_cpL ? (_cp_BDL[h]||h) : h); };
-      // accent text on the dark shell needs the 300/400 weight (1.4.3)
-      var _cpInk = function(c){ return _cpHC || _cpL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
+      var _cpBd = function(h){ return _cpHC ? (_cp_BDH[h]||'#ffff00') : (_cpL ? (_cp_BDL[h]||h) : h); };
+      // accent text needs AA contrast in Dark, Light, and High Contrast (WCAG 1.4.3)
+      var _cpInk = function(c){
+        if (_cpHC) return '#ffff00';
+        var lc = String(c).toLowerCase();
+        if (_cpL) return {'#0ea5e9':'#0369a1','#a855f7':'#7e22ce','#22c55e':'#15803d','#10b981':'#047857','#f59e0b':'#b45309','#ef4444':'#b91c1c','#dc2626':'#b91c1c','#3b82f6':'#1d4ed8','#ec4899':'#be185d','#6366f1':'#4338ca'}[lc] || c;
+        return {'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[lc] || c;
+      };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -434,6 +439,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _cpBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.crewProtocols || defaultState();
       function setCP(patch) {
@@ -444,14 +451,40 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           return Object.assign({}, prev, { crewProtocols: next });
         });
       }
-      var view = d.view || 'home';
-      function goto(v) { setCP({ view: v }); }
+      function scanCrewText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'crewProtocols', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && (scan.hasCrisis || scan.triggered)) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'crewProtocols', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setCP({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Crew Protocols', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
+      }
+      var VALID_VIEWS = ['home', 'browse', 'crewprompts', 'planner', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'home';
+      function goto(v) { setCP({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'home' }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _cpFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _cpHC ? '#000000' : (_cpL ? '#f1f5f9' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _cpBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _cpFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _cpFg('#7dd3fc'), fontSize: 22, fontWeight: 900 } }, '🪑 Crew Protocols'),
             h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A library of structured group formats for Crew, advisory, and homeroom.')
@@ -472,10 +505,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#0ea5e9' : '#334155'),
-                background: active ? 'rgba(14,165,233,0.18)' : _cpBg('#1e293b'),
+            return h('button', { key: t.id, id: 'cp-tab-' + t.id, onClick: function() { goto(t.id); },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'cp-panel-' + t.id, tabIndex: active ? 0 : -1,
+              style: { padding: '6px 12px', borderRadius: 8, border: (_cpHC ? '2px' : '1px') + ' solid ' + _cpBd(active ? '#0ea5e9' : '#334155'),
+                background: active ? (_cpHC ? '#000000' : (_cpL ? '#e0f2fe' : 'rgba(14,165,233,0.18)')) : _cpBg('#1e293b'),
                 color: active ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -484,7 +517,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _cpFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _cpHC ? '#000000' : (_cpL ? '#f8fafc' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _cpBd('#334155'), fontSize: 11, color: _cpFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Crew protocols are facilitator tools. Restorative circles and hard-conversation formats require training or a trained adult; do not improvise these.'
         );
@@ -495,7 +528,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       // ═══════════════════════════════════════════════════════════
       function renderHome() {
         return h('div', null,
-          h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(14,165,233,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(14,165,233,0.4)', marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 14, background: _cpHC ? '#000000' : (_cpL ? '#f0f9ff' : 'linear-gradient(135deg, rgba(14,165,233,0.16) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_cpHC ? '#ffff00' : 'rgba(14,165,233,0.4)'), marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _cpFg('#bae6fd'), marginBottom: 4 } }, 'Crew is built. It is not assumed.'),
             h('p', { style: { margin: 0, color: _cpFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
               'A class that meets for an hour every day is not automatically a community. Community is built through specific rituals practiced over time. These protocols are the rituals.'
@@ -510,11 +543,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
               return h('button', { key: catId,
                 onClick: function() { setCP({ filter: catId, view: 'browse' }); },
                 'aria-label': 'Browse ' + cat.label,
-                style: { textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid ' + cat.color + '66', borderLeft: '4px solid ' + cat.color, background: _cpBg('#0f172a'), cursor: 'pointer', color: _cpFg('#e2e8f0') } },
+                style: { textAlign: 'left', padding: 14, borderRadius: 10, border: '1px solid ' + (_cpHC ? '#ffff00' : cat.color + '66'), borderLeft: '4px solid ' + _cpBd(cat.color), background: _cpBg('#0f172a'), cursor: 'pointer', color: _cpFg('#e2e8f0') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                   h('span', { style: { fontSize: 22 } }, cat.icon),
-                  h('span', { style: { fontSize: 14, fontWeight: 800, color: _cpFg(cat.color), flex: 1 } }, cat.label),
-                  h('span', { style: { fontSize: 10, color: _cpFg(cat.color), fontWeight: 700 } }, count + ' format' + (count === 1 ? '' : 's'))
+                  h('span', { style: { fontSize: 14, fontWeight: 800, color: _cpInk(_cpFg(cat.color)), flex: 1 } }, cat.label),
+                  h('span', { style: { fontSize: 10, color: _cpInk(_cpFg(cat.color)), fontWeight: 700 } }, count + ' format' + (count === 1 ? '' : 's'))
                 ),
                 h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), lineHeight: 1.55 } }, cat.blurb)
               );
@@ -536,30 +569,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       // ═══════════════════════════════════════════════════════════
       function renderBrowse() {
         var protocols = d.filter ? PROTOCOLS.filter(function(p) { return p.category === d.filter; }) : PROTOCOLS;
+        var plannedList = Array.isArray(d.planned) ? d.planned : [];
 
         return h('div', null,
           // Filter chips
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            h('button', { onClick: function() { setCP({ filter: null }); }, 'aria-label': 'Show all',
-              style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (d.filter === null ? '#0ea5e9' : '#334155'), background: d.filter === null ? 'rgba(14,165,233,0.18)' : _cpBg('#1e293b'), color: _cpFg(d.filter) === null ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'All (' + PROTOCOLS.length + ')'),
+            h('button', { onClick: function() { setCP({ filter: null }); }, 'aria-label': 'Show all', 'aria-pressed': !d.filter,
+              style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + _cpBd(!d.filter ? '#0ea5e9' : '#334155'), background: !d.filter ? (_cpHC ? '#000000' : (_cpL ? '#e0f2fe' : 'rgba(14,165,233,0.18)')) : _cpBg('#1e293b'), color: !d.filter ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'All (' + PROTOCOLS.length + ')'),
             Object.keys(CATEGORIES).map(function(catId) {
               var cat = CATEGORIES[catId];
               var count = PROTOCOLS.filter(function(p) { return p.category === catId; }).length;
               var active = d.filter === catId;
               return h('button', { key: catId, onClick: function() { setCP({ filter: catId }); }, 'aria-label': 'Filter by ' + cat.label, 'aria-pressed': active,
-                style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + (active ? cat.color : '#334155'), background: active ? cat.color + '22' : _cpBg('#1e293b'), color: active ? _cpFg(cat.color) : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, cat.icon + ' ' + cat.label + ' (' + count + ')');
+                style: { padding: '4px 12px', borderRadius: 14, border: '1px solid ' + _cpBd(active ? cat.color : '#334155'), background: active ? (_cpHC ? '#000000' : cat.color + '22') : _cpBg('#1e293b'), color: active ? _cpInk(_cpFg(cat.color)) : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, cat.icon + ' ' + cat.label + ' (' + count + ')');
             })
           ),
 
           // Protocol cards
           protocols.map(function(p) {
             var cat = CATEGORIES[p.category];
-            var isPlanned = (d.planned || []).some(function(x) { return x.protocolId === p.id; });
-            return h('div', { key: p.id, style: { padding: 16, borderRadius: 12, background: _cpBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + cat.color, marginBottom: 12 } },
+            var isPlanned = plannedList.some(function(x) { return x && x.protocolId === p.id; });
+            return h('div', { key: p.id, style: { padding: 16, borderRadius: 12, background: _cpBg('#0f172a'), borderTop: '1px solid ' + _cpBd('#1e293b'), borderRight: '1px solid ' + _cpBd('#1e293b'), borderBottom: '1px solid ' + _cpBd('#1e293b'), borderLeft: '4px solid ' + _cpBd(cat.color), marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 22 } }, cat.icon),
                 h('span', { style: { fontSize: 16, fontWeight: 800, color: _cpFg('#e2e8f0'), flex: 1 } }, p.title),
-                h('span', { style: { fontSize: 10, color: _cpFg(cat.color), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, cat.label)
+                h('span', { style: { fontSize: 10, color: _cpInk(_cpFg(cat.color)), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, cat.label)
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 10, fontSize: 11, color: _cpFg('#94a3b8') } },
                 h('span', null, '⏱ ' + p.time),
@@ -576,23 +610,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                   p.steps.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 4 } }, s); })
                 )
               ),
-              h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', marginBottom: 8, fontSize: 12, color: _cpFg('#e9d5ff'), lineHeight: 1.6 } },
+              h('div', { style: { padding: 10, borderRadius: 6, background: _cpHC ? '#000000' : (_cpL ? '#faf5ff' : 'rgba(168,85,247,0.10)'), border: '1px solid ' + (_cpHC ? '#ffff00' : 'rgba(168,85,247,0.3)'), marginBottom: 8, fontSize: 12, color: _cpFg('#e9d5ff'), lineHeight: 1.6 } },
                 h('strong', null, '💡 Tip: '), p.tips
               ),
               h('div', { style: { fontSize: 11, color: _cpFg('#94a3b8'), fontStyle: 'italic', marginBottom: 10, lineHeight: 1.5 } },
                 h('strong', null, 'Source: '), p.source
               ),
               h('button', { onClick: function() {
-                var planned = (d.planned || []).slice();
-                if (isPlanned) {
-                  planned = planned.filter(function(x) { return x.protocolId !== p.id; });
-                } else {
-                  planned.push({ protocolId: p.id, date: '', notes: '' });
-                }
-                setCP({ planned: planned });
+                setLabToolData(function(prev) {
+                  var prior = (prev && prev.crewProtocols) || defaultState();
+                  var cur = Array.isArray(prior.planned) ? prior.planned.slice() : [];
+                  var exists = cur.some(function(x) { return x && x.protocolId === p.id; });
+                  var nextPlanned = exists
+                    ? cur.filter(function(x) { return x && x.protocolId !== p.id; })
+                    : cur.concat([{ protocolId: p.id, date: '', notes: '' }]);
+                  return Object.assign({}, prev, { crewProtocols: Object.assign({}, prior, { planned: nextPlanned, lastUpdated: todayISO() }) });
+                });
                 if (addToast) addToast(isPlanned ? 'Removed from plan.' : 'Added to plan.', 'info');
-              }, 'aria-label': isPlanned ? 'Remove from plan' : 'Add to plan', 'aria-pressed': isPlanned,
-                style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + cat.color, background: isPlanned ? cat.color : 'transparent', color: isPlanned ? _cpFg('#fff') : _cpInk(cat.color), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+              }, 'aria-label': isPlanned ? ('Remove ' + p.title + ' from plan') : ('Add ' + p.title + ' to plan'), 'aria-pressed': isPlanned,
+                style: { padding: '6px 14px', borderRadius: 6, border: (_cpHC ? '2px' : '1px') + ' solid ' + _cpBd(cat.color), background: isPlanned ? (_cpHC ? '#000000' : '#0369a1') : 'transparent', color: isPlanned ? (_cpHC ? '#ffff00' : '#ffffff') : _cpInk(_cpFg(cat.color)), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
                 isPlanned ? '✓ Saved to plan' : '+ Save to my Crew plan')
             );
           }),
@@ -608,16 +644,24 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
         var prompts = gatherCrewPrompts();
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 12.5, color: _cpFg('#bae6fd'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _cpHC ? '#000000' : (_cpL ? '#f0f9ff' : 'rgba(14,165,233,0.10)'), borderTop: '1px solid ' + (_cpHC ? '#ffff00' : 'rgba(14,165,233,0.3)'), borderRight: '1px solid ' + (_cpHC ? '#ffff00' : 'rgba(14,165,233,0.3)'), borderBottom: '1px solid ' + (_cpHC ? '#ffff00' : 'rgba(14,165,233,0.3)'), borderLeft: '3px solid ' + _cpBd('#0ea5e9'), marginBottom: 14, fontSize: 12.5, color: _cpFg('#bae6fd'), lineHeight: 1.65 } },
             h('strong', null, '💬 ' + prompts.length + ' Crew prompts '),
             'collected from across the SEL Hub. Each one points to a specific evidence-based tool and gives you a 5-15 minute Crew format you can run with little prep. Tap a prompt to open the underlying tool.'
           ),
 
           prompts.length > 0
             ? prompts.map(function(p, i) {
-                return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: _cpBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #10b981', marginBottom: 8 } },
+                var toolName = (typeof ctx.toolLabel === 'function' && ctx.toolLabel(p.toolId)) || p.toolId;
+                return h('button', { key: i, type: 'button',
+                  onClick: function() {
+                    if (typeof ctx.openTool === 'function') ctx.openTool(p.toolId, toolName);
+                    else if (typeof setSelHubTool === 'function') setSelHubTool(p.toolId);
+                  },
+                  'aria-label': 'Open ' + toolName + ' for Crew prompt: ' + p.construct,
+                  style: { display: 'block', width: '100%', textAlign: 'left', padding: 12, borderRadius: 10, background: _cpBg('#0f172a'), borderTop: '1px solid ' + _cpBd('#1e293b'), borderRight: '1px solid ' + _cpBd('#1e293b'), borderBottom: '1px solid ' + _cpBd('#1e293b'), borderLeft: '3px solid ' + _cpBd('#10b981'), marginBottom: 8, cursor: 'pointer', color: _cpFg('#e2e8f0') } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
-                    h('span', { style: { fontSize: 11, color: _cpFg('#10b981'), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, p.toolId)
+                    h('span', { style: { fontSize: 11, color: _cpInk(_cpFg('#10b981')), fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, toolName),
+                    h('span', { style: { marginLeft: 'auto', fontSize: 11, color: _cpFg('#7dd3fc'), fontWeight: 700 } }, 'Open tool →')
                   ),
                   h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic', lineHeight: 1.55 } }, p.construct),
                   h('p', { style: { margin: 0, color: _cpFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } }, p.prompt)
@@ -633,29 +677,36 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       // PLANNER — my Crew plan
       // ═══════════════════════════════════════════════════════════
       function renderPlanner() {
-        var planned = d.planned || [];
+        var planned = Array.isArray(d.planned) ? d.planned : [];
 
         if (planned.length === 0) {
           return h('div', null,
-            h('div', { style: { padding: 20, borderRadius: 12, background: _cpBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
+            h('div', { style: { padding: 20, borderRadius: 12, background: _cpBg('#0f172a'), border: '1px solid ' + _cpBd('#1e293b'), textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '📅'),
               h('div', { style: { color: _cpFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Your Crew plan is empty'),
               h('div', { style: { color: _cpFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Browse protocols and tap "Save to my Crew plan" to build your week.'),
               h('button', { onClick: function() { goto('browse'); }, 'aria-label': 'Browse protocols',
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #0ea5e9', background: 'rgba(14,165,233,0.18)', color: _cpFg('#bae6fd'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Browse protocols')
+                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _cpBd('#0ea5e9'), background: _cpHC ? '#000000' : (_cpL ? '#e0f2fe' : 'rgba(14,165,233,0.18)'), color: _cpFg('#bae6fd'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Browse protocols')
             )
           );
         }
 
         function setEntry(idx, patch) {
-          var nx = planned.slice();
-          nx[idx] = Object.assign({}, nx[idx], patch);
-          setCP({ planned: nx });
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.crewProtocols) || defaultState();
+            var cur = Array.isArray(prior.planned) ? prior.planned.slice() : [];
+            if (!cur[idx]) return prev;
+            cur[idx] = Object.assign({}, cur[idx], patch);
+            return Object.assign({}, prev, { crewProtocols: Object.assign({}, prior, { planned: cur, lastUpdated: todayISO() }) });
+          });
         }
         function remove(idx) {
-          var nx = planned.slice();
-          nx.splice(idx, 1);
-          setCP({ planned: nx });
+          setLabToolData(function(prev) {
+            var prior = (prev && prev.crewProtocols) || defaultState();
+            var cur = Array.isArray(prior.planned) ? prior.planned.slice() : [];
+            cur.splice(idx, 1);
+            return Object.assign({}, prev, { crewProtocols: Object.assign({}, prior, { planned: cur, lastUpdated: todayISO() }) });
+          });
         }
 
         return h('div', null,
@@ -665,13 +716,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
             var p = PROTOCOLS.find(function(pr) { return pr.id === entry.protocolId; });
             if (!p) return null;
             var cat = CATEGORIES[p.category];
-            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: _cpBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + cat.color, marginBottom: 10 } },
+            return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: _cpBg('#0f172a'), borderTop: '1px solid ' + _cpBd('#1e293b'), borderRight: '1px solid ' + _cpBd('#1e293b'), borderBottom: '1px solid ' + _cpBd('#1e293b'), borderLeft: '3px solid ' + _cpBd(cat.color), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 18 } }, cat.icon),
                 h('span', { style: { fontSize: 14, fontWeight: 700, color: _cpFg('#e2e8f0'), flex: 1 } }, p.title),
                 h('span', { style: { fontSize: 10, color: _cpFg('#94a3b8') } }, '⏱ ' + p.time),
-                h('button', { onClick: function() { remove(i); }, 'aria-label': 'Remove from plan',
-                  style: { background: 'transparent', border: '1px solid #475569', color: _cpFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                h('button', { onClick: function() { remove(i); }, 'aria-label': 'Remove ' + p.title + ' from plan',
+                  style: { background: 'transparent', border: '1px solid ' + _cpBd('#475569'), color: _cpFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
                 h('div', null,
@@ -679,14 +730,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
                   h('input', { id: 'cp-date-' + i, type: 'text', value: entry.date || '',
                     placeholder: 'e.g. Mon Sep 15',
                     onChange: function(e) { setEntry(i, { date: e.target.value }); },
-                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 12 } })
+                    onBlur: function(e) { scanCrewText(e.target.value); },
+                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid ' + _cpBd('#334155'), background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 12 } })
                 ),
                 h('div', null,
                   h('label', { htmlFor: 'cp-notes-' + i, style: { display: 'block', fontSize: 10, color: _cpFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'Notes'),
                   h('input', { id: 'cp-notes-' + i, type: 'text', value: entry.notes || '',
                     placeholder: 'Specific framing, who to focus on, etc.',
                     onChange: function(e) { setEntry(i, { notes: e.target.value }); },
-                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 12 } })
+                    onBlur: function(e) { scanCrewText(e.target.value); },
+                    style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid ' + _cpBd('#334155'), background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 12 } })
                 )
               )
             );
@@ -694,7 +747,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
 
           h('div', { style: { display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print my plan',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #075985 0%, #0369a1 100%)', color: _cpFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: _cpHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _cpHC ? '#000000' : 'linear-gradient(135deg, #075985 0%, #0369a1 100%)', color: _cpHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 14 } },
               '🖨 Print my plan')
           ),
 
@@ -706,23 +759,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       // PRINT
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
-        var planned = d.planned || [];
+        var planned = Array.isArray(d.planned) ? d.planned : [];
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(14,165,233,0.10)', borderRadius: 8, border: '1px solid rgba(14,165,233,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _cpHC ? '#000000' : (_cpL ? '#f0f9ff' : 'rgba(14,165,233,0.10)'), borderRadius: 8, border: '1px solid ' + (_cpHC ? '#ffff00' : 'rgba(14,165,233,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _cpFg('#bae6fd'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print my Crew plan.')),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #075985 0%, #0369a1 100%)', color: _cpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _cpHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _cpHC ? '#000000' : 'linear-gradient(135deg, #075985 0%, #0369a1 100%)', color: _cpHC ? '#ffff00' : '#ffffff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('planner'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _cpBg('#1e293b'), color: _cpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _cpBd('#475569'), background: _cpBg('#1e293b'), color: _cpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'crew-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _cpBg('#fff'), color: _cpFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _cpBg('#fff'), color: _cpFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _cpBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
-              '#crew-print-region, #crew-print-region * { visibility: visible !important; } ' +
+              '#crew-print-region, #crew-print-region * { visibility: visible !important; background: #fff !important; color: #0f172a !important; border-color: #cbd5e1 !important; } ' +
               '#crew-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
@@ -834,7 +887,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Crew Protocols Library' },
         header(),
         navTabs(),
-        body
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _cpBand) : null,
+        h('div', { role: 'tabpanel', id: 'cp-panel-' + view, 'aria-labelledby': 'cp-tab-' + view }, body)
       );
     }
   });

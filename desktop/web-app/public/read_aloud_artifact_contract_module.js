@@ -240,6 +240,12 @@ const ReadAloudArtifactContract = (() => {
         return Math.max(0, Math.floor(value.length * 3 / 4) - padding);
     }
 
+    function readStrictNumber(value) {
+        if (value == null || typeof value === 'boolean' || typeof value === 'object') return NaN;
+        if (typeof value === 'string' && !value.trim()) return NaN;
+        return Number(value);
+    }
+
     function normalizeBase64(value, path, errors, maxClipBytes) {
         if (typeof value !== 'string' || !value) {
             errors.push(issue('missing-audio-data', path, path + ' must contain base64 audio.'));
@@ -263,7 +269,7 @@ const ReadAloudArtifactContract = (() => {
             return null;
         }
         const remainder = clean.length % 4;
-        if (remainder === 1) {
+        if (remainder === 1 || (clean.indexOf('=') !== -1 && remainder !== 0) || clean.replace(/=/g, '').length < 2) {
             errors.push(issue('invalid-base64', path, 'Embedded audio has invalid base64 length.'));
             return null;
         }
@@ -293,13 +299,13 @@ const ReadAloudArtifactContract = (() => {
         });
         const rateValue = value.synthesisRate == null ? value.speed : value.synthesisRate;
         if (rateValue != null) {
-            const rate = Number(rateValue);
+            const rate = readStrictNumber(rateValue);
             if (!Number.isFinite(rate) || rate <= 0 || rate > 4) {
                 errors.push(issue('invalid-synthesis-rate', path + '.synthesisRate', 'Synthesis rate must be greater than 0 and at most 4.'));
             } else output.synthesisRate = rate;
         }
         if (value.voiceResolverVersion != null) {
-            const version = Number(value.voiceResolverVersion);
+            const version = readStrictNumber(value.voiceResolverVersion);
             if (!Number.isFinite(version) || version <= 0 || !Number.isInteger(version)) {
                 errors.push(issue('invalid-voice-resolver-version', path + '.voiceResolverVersion', 'Voice resolver version must be a positive integer.'));
             } else output.voiceResolverVersion = version;
@@ -332,7 +338,7 @@ const ReadAloudArtifactContract = (() => {
         }
         const encoded = normalizeBase64(value.base64, path + '.base64', errors, limits.maxClipBytes);
         if (!encoded) return null;
-        if (value.byteLength != null && Number(value.byteLength) !== encoded.byteLength) {
+        if (value.byteLength != null && readStrictNumber(value.byteLength) !== encoded.byteLength) {
             errors.push(issue('audio-byte-length-mismatch', path + '.byteLength', 'Declared audio byteLength does not match the base64 payload.'));
         }
         budget.totalAudioBytes += encoded.byteLength;
@@ -356,7 +362,7 @@ const ReadAloudArtifactContract = (() => {
 
     function readOrder(value, fallback, path, errors) {
         if (value == null) return fallback;
-        const order = Number(value);
+        const order = readStrictNumber(value);
         if (!Number.isInteger(order) || order < 0 || order > 1000000) {
             errors.push(issue('invalid-order', path, path + ' must be a non-negative integer.'));
             return fallback;
@@ -481,7 +487,7 @@ const ReadAloudArtifactContract = (() => {
     }
 
     function normalizeRole(value, path, errors) {
-        const aliases = {
+        const aliases = Object.assign(Object.create(null), {
             user: 'learner',
             learner: 'learner',
             assistant: 'persona',
@@ -489,7 +495,7 @@ const ReadAloudArtifactContract = (() => {
             persona: 'persona',
             educator: 'educator',
             narrator: 'narrator',
-        };
+        });
         const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
         if (!aliases[raw]) {
             errors.push(issue(
@@ -530,7 +536,7 @@ const ReadAloudArtifactContract = (() => {
                 let craftValid = true;
                 ['good', 'neutral', 'poor', 'coached', 'freeform'].forEach((kind) => {
                     const raw = input.questionCraft[kind];
-                    const value = raw == null ? 0 : Number(raw);
+                    const value = raw == null ? 0 : readStrictNumber(raw);
                     if (!Number.isInteger(value) || value < 0 || value > 999) {
                         craftValid = false;
                         errors.push(issue('invalid-question-craft-count', 'questionCraft.' + kind, 'questionCraft counts must be integers from 0 to 999.'));

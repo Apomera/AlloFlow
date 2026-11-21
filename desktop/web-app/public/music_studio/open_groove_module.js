@@ -405,6 +405,7 @@
     var mountedRef = React.useRef(true);
     var streamRef = React.useRef(null);
     var recorderRef = React.useRef(null);
+    var recordingStartingRef = React.useRef(false);
     var recorderChunksRef = React.useRef([]);
     var fileInputRef = React.useRef(null);
     var musicXmlInputRef = React.useRef(null);
@@ -2569,6 +2570,12 @@
       if (!file) return;
       if (file.type && file.type.indexOf('audio/') !== 0) {
         addToast('Choose an audio file for the selected pad.', 'error');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+      if (typeof file.size === 'number' && file.size > 15 * 1024 * 1024) {
+        addToast('Audio sample exceeds the 15 MB safety limit.', 'error');
+        if (fileInputRef.current) fileInputRef.current.value = '';
         return;
       }
       var cleanName = String(file.name || 'Imported Sample').replace(/\.[^.]+$/, '') || 'Imported Sample';
@@ -2754,12 +2761,17 @@
     }
 
     function startRecording() {
+      if (recordingStartingRef.current || streamRef.current || (recorderRef.current && recorderRef.current.state !== 'inactive')) {
+        return;
+      }
       if (!A || !A.ogCanRecordAudio || !A.ogCanRecordAudio()) {
         createOwnedSampleSlot(null);
         addToast('Microphone recording is unavailable here, so I created an owned sample slot instead.', 'info');
         return;
       }
+      recordingStartingRef.current = true;
       root.navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+        recordingStartingRef.current = false;
         if (!mountedRef.current) {
           if (stream && typeof stream.getTracks === 'function') {
             try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
@@ -2767,10 +2779,32 @@
           return;
         }
         streamRef.current = stream;
-        var recorder = new root.MediaRecorder(stream);
+        var recorder;
+        try {
+          recorder = new root.MediaRecorder(stream);
+        } catch (recErr) {
+          if (stream && typeof stream.getTracks === 'function') {
+            try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+          }
+          if (streamRef.current === stream) streamRef.current = null;
+          setRecording(false);
+          addToast('Recording was not started: ' + (recErr && recErr.message || 'recorder unavailable'), 'error');
+          return;
+        }
         recorderChunksRef.current = [];
         recorder.ondataavailable = function (ev) {
           if (ev.data && ev.data.size) recorderChunksRef.current.push(ev.data);
+        };
+        recorder.onerror = function (ev) {
+          if (stream && typeof stream.getTracks === 'function') {
+            try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+          }
+          if (streamRef.current === stream) streamRef.current = null;
+          if (recorderRef.current === recorder) recorderRef.current = null;
+          recorderChunksRef.current = [];
+          if (!mountedRef.current) return;
+          setRecording(false);
+          addToast('Recording stopped due to an audio error: ' + (ev && ev.error && ev.error.message || 'unknown error'), 'error');
         };
         recorder.onstop = function () {
           var blob = new Blob(recorderChunksRef.current, { type: recorder.mimeType || 'audio/webm' });
@@ -2778,7 +2812,7 @@
             stream.getTracks().forEach(function (track) { track.stop(); });
           }
           if (streamRef.current === stream) streamRef.current = null;
-          recorderRef.current = null;
+          if (recorderRef.current === recorder) recorderRef.current = null;
           if (!mountedRef.current) return;
           setRecording(false);
           if (blob.size) createOwnedSampleSlot(blob);
@@ -2788,6 +2822,7 @@
         setRecording(true);
         ogAnnounce('Recording selected pad');
       }).catch(function (err) {
+        recordingStartingRef.current = false;
         if (!mountedRef.current) return;
         setRecording(false);
         addToast('Recording was not started: ' + (err && err.message || 'permission unavailable'), 'error');

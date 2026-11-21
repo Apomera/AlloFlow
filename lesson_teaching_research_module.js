@@ -43,13 +43,19 @@
   var SUBJECT_LABEL = { mathematics: 'mathematics', reading: 'reading and literacy', writing: 'writing', science: 'science', 'social-studies': 'social studies and history', 'world-languages': 'world languages', arts: 'arts and music', 'health-pe': 'health and physical education', technology: 'technology and computer science', other: 'the stated topic' };
   var GRADE_TERMS = { 'early-childhood': 'preschool kindergarten', primary: 'primary grades', 'upper-elementary': 'elementary', middle: 'middle school', secondary: 'high school', postsecondary: 'postsecondary', unknown: '' };
 
+  var hasOwn = Object.prototype.hasOwnProperty;
+  var ENTITY_MAP = Object.assign(Object.create(null), {
+    amp: '&', nbsp: ' ', quot: '"', apos: "'", rsquo: "'", lsquo: "'", ndash: '-', mdash: '-', lt: '<', gt: '>'
+  });
+  var KEYWORD_RE_CACHE = Object.create(null);
+
   function problem(message, name) { var error = new Error(message); error.name = name || 'Error'; return error; }
   function abortError() { return problem('Teaching research was canceled.', 'AbortError'); }
   function checkCanceled(signal) { if (signal && signal.aborted) throw abortError(); }
   function catalogById(id) { for (var i = 0; i < CATALOG.length; i++) if (CATALOG[i].id === id) return CATALOG[i]; return null; }
   function guideUrl(entry) { return GUIDE_BASE + entry.guide; }
   function guideIdFromUrl(value) {
-    if (typeof value !== 'string' || !value || /[\u0000-\u0020\\]/.test(value)) return null;
+    if (typeof value !== 'string' || !value || value.length > 512 || /[\u0000-\u0020\\]/.test(value)) return null;
     try {
       var url = new URL(value);
       if (url.protocol !== 'https:' || url.hostname !== 'ies.ed.gov' || url.port || url.username || url.password || url.search) return null;
@@ -62,9 +68,10 @@
   }
   function isSupportedUrl(value) { return guideIdFromUrl(value) !== null; }
   function safeProxyUrl(value, guide) {
+    if (typeof value !== 'string' || !value || value.length > 512 || /[\u0000-\u0020\\]/.test(value)) return false;
     try {
       var url = new URL(value);
-      return url.protocol === 'https:' && url.hostname === 'r.jina.ai' && !url.username && !url.password && !url.port && !url.search
+      return url.protocol === 'https:' && url.hostname === 'r.jina.ai' && !url.username && !url.password && !url.port && !url.search && !url.hash
         && guideIdFromUrl(url.pathname.slice(1)) === guide;
     } catch (_) { return false; }
   }
@@ -122,6 +129,7 @@
       while (true) {
         var part = await abortable(reader.read(), signal);
         if (part.done) break;
+        if (!part.value || typeof part.value.byteLength !== 'number') continue;
         bytes += part.value.byteLength;
         if (bytes > MAX_BYTES) throw problem('Public guidance exceeds the 100 KB retrieval limit.');
         chunks.push(decoder.decode(part.value, { stream: true }));
@@ -144,7 +152,7 @@
     checkCanceled(options.signal);
     var guide = guideIdFromUrl(url);
     if (guide === null) throw problem('Teaching research reads only the official WWC practice guides in its catalog.');
-    if (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) {
+    if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloOfflineOnly === true)) {
       throw problem('Public guidance web retrieval is disabled while student AI restrictions are active.');
     }
     var canonical = GUIDE_BASE + guide;
@@ -177,7 +185,7 @@
         return number > 0 && number <= 0x10ffff ? String.fromCodePoint(number) : ' ';
       })
       .replace(/&(amp|nbsp|quot|apos|rsquo|lsquo|ndash|mdash|lt|gt);/gi, function (_, name) {
-        return { amp: '&', nbsp: ' ', quot: '"', apos: "'", rsquo: "'", lsquo: "'", ndash: '-', mdash: '-', lt: '<', gt: '>' }[name.toLowerCase()];
+        return ENTITY_MAP[name.toLowerCase()] || ' ';
       }).replace(/[\u2018\u2019]/g, "'").replace(/\r/g, '');
   }
   function normalize(value) { return plainText(value).replace(/\s+/g, ' ').trim(); }
@@ -192,7 +200,7 @@
    * sentence. Unnumbered recommendations followed by "Learn More About This Recommendation" are also captured. */
   function parseRecommendations(pageText, entry) {
     var lines = pageText.split('\n').map(function (line) { return line.replace(/\s+/g, ' ').trim(); });
-    var found = [], seen = {};
+    var found = [], seen = Object.create(null);
     function push(number, rating, sentence) {
       var text = sentence.replace(/\s*\[.*$/, '').trim();
       if (text.length < 25 || text.length > 600 || /https?:\/\//i.test(text)) return;
@@ -283,14 +291,20 @@
   function keywordHits(haystack, keywords) {
     var lower = String(haystack || '').toLowerCase(), hits = [];
     keywords.forEach(function (keyword) {
-      var escaped = keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
-      if (new RegExp('(?:^|[^\\p{L}\\p{N}])' + escaped + '(?=$|[^\\p{L}\\p{N}])', 'u').test(lower)) hits.push(keyword);
+      var k = keyword.toLowerCase();
+      var re = KEYWORD_RE_CACHE[k];
+      if (!re) {
+        var escaped = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+        re = new RegExp('(?:^|[^\\p{L}\\p{N}])' + escaped + '(?=$|[^\\p{L}\\p{N}])', 'u');
+        KEYWORD_RE_CACHE[k] = re;
+      }
+      if (re.test(lower)) hits.push(keyword);
     });
     return hits;
   }
   function lessonContext(context) {
     context = context || {};
-    var subject = Object.prototype.hasOwnProperty.call(SUBJECT_QUERY, context.subject) ? context.subject : 'other';
+    var subject = hasOwn.call(SUBJECT_QUERY, context.subject) ? context.subject : 'other';
     var gradeNumber = normalizeGradeNumber(context.grade);
     return {
       subject: subject, gradeNumber: gradeNumber, gradeLabel: String(context.grade == null ? '' : context.grade).trim().slice(0, 80) || 'unspecified', band: gradeBandOf(gradeNumber),
@@ -303,12 +317,13 @@
     var lesson = lessonContext(context), vocabulary = [];
     CATALOG.forEach(function (entry) { entry.keywords.forEach(function (keyword) { if (vocabulary.indexOf(keyword) < 0) vocabulary.push(keyword); }); });
     var topicTerms = keywordHits(lesson.topic + '\n' + String(context && context.goal || '').slice(0, 600), vocabulary).slice(0, 3);
-    return ('site:ies.ed.gov/ncee/wwc/PracticeGuide ' + SUBJECT_QUERY[lesson.subject] + ' ' + (GRADE_TERMS[lesson.band] || '') + ' ' + topicTerms.join(' ')).replace(/\s+/g, ' ').trim();
+    var bandTerm = hasOwn.call(GRADE_TERMS, lesson.band) ? GRADE_TERMS[lesson.band] : '';
+    return ('site:ies.ed.gov/ncee/wwc/PracticeGuide ' + SUBJECT_QUERY[lesson.subject] + ' ' + bandTerm + ' ' + topicTerms.join(' ')).replace(/\s+/g, ' ').trim();
   }
   function selectCandidates(context, searchResults) {
     var lesson = lessonContext(context);
-    var boosted = {};
-    (Array.isArray(searchResults) ? searchResults : []).forEach(function (result) {
+    var boosted = Object.create(null);
+    (Array.isArray(searchResults) ? searchResults.slice(0, 50) : []).forEach(function (result) {
       var guide = guideIdFromUrl(result && (result.url || result.link));
       if (guide !== null) boosted[guide] = true;
     });

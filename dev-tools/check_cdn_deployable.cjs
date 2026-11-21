@@ -28,9 +28,10 @@
  * Exit: non-zero on a blocking failure. set -e in deploy.sh aborts the deploy.
  */
 'use strict';
-const { execSync, spawnSync } = require('child_process');
-const fs = require('fs');
+const { execFileSync, spawnSync } = require('child_process');
+const path = require('path');
 
+const ROOT = path.resolve(__dirname, '..');
 const QUIET = process.argv.includes('--quiet');
 const SKIP_NPM10 = process.argv.includes('--skip-npm10');
 const HARD = 25 * 1024 * 1024;   // Cloudflare per-file limit
@@ -40,45 +41,68 @@ const CLOUD_NPM = '10.9.2';      // npm in Cloudflare's build image (from build 
 let failed = false;
 const log = (m) => { if (!QUIET) console.log(m); };
 
-// â”€â”€ (1) asset size: HEAD tree + currently-staged files â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── (1) asset size: HEAD tree (excluding staged deletions) + staged index blobs ──
 const offenders = [];
 const warnings = [];
 try {
-  const tree = execSync('git ls-tree -r -l HEAD', { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-  for (const line of tree.split('\n')) {
-    const m = line.match(/^\S+\s+blob\s+\S+\s+(\d+)\t(.+)$/);
+  const deleted = new Set(
+    execFileSync('git', ['diff', '--cached', '--name-only', '-z', '--diff-filter=D'], {
+      cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+    }).split('\0').filter(Boolean)
+  );
+  const staged = execFileSync('git', ['diff', '--cached', '--name-only', '-z', '--diff-filter=ACMR'], {
+    cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+  }).split('\0').filter(Boolean);
+  const stagedSet = new Set(staged);
+
+  const tree = execFileSync('git', ['ls-tree', '-r', '-l', '-z', 'HEAD'], {
+    cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+  });
+  for (const entry of tree.split('\0')) {
+    if (!entry) continue;
+    const m = entry.match(/^\S+\s+blob\s+\S+\s+(\d+)\t(.+)$/);
     if (!m) continue;
+    const p = m[2];
+    if (deleted.has(p) || stagedSet.has(p)) continue;
     const size = Number(m[1]);
-    if (size >= HARD) offenders.push({ path: m[2], size, where: 'HEAD' });
-    else if (size >= WARN) warnings.push({ path: m[2], size, where: 'HEAD' });
+    if (size >= HARD) offenders.push({ path: p, size, where: 'HEAD' });
+    else if (size >= WARN) warnings.push({ path: p, size, where: 'HEAD' });
   }
-  // Staged-but-uncommitted additions/modifications (Step 1 commits these next).
-  const staged = execSync('git diff --cached --name-only --diff-filter=AM', { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
-    .split('\n').map(s => s.trim()).filter(Boolean);
-  for (const p of staged) {
-    let size = 0;
-    try { size = fs.statSync(p).size; } catch (_) { continue; }
-    if (size >= HARD) offenders.push({ path: p, size, where: 'staged' });
-    else if (size >= WARN) warnings.push({ path: p, size, where: 'staged' });
+  // Measure the actual staged index blob sizes (never working-tree statSync).
+  if (staged.length) {
+    const batchInput = staged.map((p) => `:${p}`).join('\n') + '\n';
+    const batchOut = execFileSync('git', ['cat-file', '--batch-check=%(objecttype) %(objectsize)'], {
+      cwd: ROOT, input: batchInput, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+    });
+    const lines = batchOut.split(/\r?\n/);
+    for (let i = 0; i < staged.length; i++) {
+      const p = staged[i];
+      const parts = (lines[i] || '').trim().split(/\s+/);
+      if (parts[0] !== 'blob') continue;
+      const size = Number(parts[1]);
+      if (!Number.isFinite(size)) continue;
+      if (size >= HARD) offenders.push({ path: p, size, where: 'staged' });
+      else if (size >= WARN) warnings.push({ path: p, size, where: 'staged' });
+    }
   }
 } catch (e) {
-  console.error('âœ— check_cdn_deployable: git scan failed: ' + e.message);
+  console.error('✗ check_cdn_deployable: git scan failed: ' + e.message);
   process.exit(1);
 }
 const mib = (n) => (n / 1048576).toFixed(1) + ' MiB';
 if (offenders.length) {
   failed = true;
-  console.error('âœ— ' + offenders.length + ' tracked/staged file(s) at or over Cloudflare\'s 25 MiB per-file limit â€” the CDN deploy WILL fail (the ffmpeg-core.wasm class):');
+  console.error('✗ ' + offenders.length + ' tracked/staged file(s) at or over Cloudflare\'s 25 MiB per-file limit — the CDN deploy WILL fail (the ffmpeg-core.wasm class):');
   offenders.forEach(o => console.error('   - ' + mib(o.size) + '  ' + o.path + '  [' + o.where + ']'));
   console.error('  Untrack it (git rm --cached <path>) and add a scoped .gitignore; keep the file on disk if Firebase/desktop need it.');
 }
-warnings.forEach(w => console.error('  âš  ' + mib(w.size) + '  ' + w.path + ' â€” within 5 MiB of the 25 MiB Cloudflare limit (advisory).'));
-if (!offenders.length) log('  âœ“ no tracked/staged file â‰¥ 25 MiB (largest-band warnings: ' + warnings.length + ').');
+warnings.forEach(w => console.error('  ⚠ ' + mib(w.size) + '  ' + w.path + ' — within 5 MiB of the 25 MiB Cloudflare limit (advisory).'));
+if (!offenders.length) log('  ✓ no tracked/staged file ≥ 25 MiB (largest-band warnings: ' + warnings.length + ').');
 
-// â”€â”€ (2) npm-10 lock compatibility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── (2) npm-10 lock compatibility ────────────────────────────────────────
 if (!SKIP_NPM10) {
   const r = spawnSync('npx', ['-y', 'npm@' + CLOUD_NPM, 'ci', '--dry-run', '--ignore-scripts'], {
-    encoding: 'utf8', shell: process.platform === 'win32', timeout: 240000, maxBuffer: 16 * 1024 * 1024,
+    cwd: ROOT, encoding: 'utf8', shell: process.platform === 'win32', timeout: 240000, maxBuffer: 16 * 1024 * 1024,
   });
   const out = (r.stdout || '') + '\n' + (r.stderr || '');
   const lockBroken = /Missing:.*from lock file|code EUSAGE/.test(out);

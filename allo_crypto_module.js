@@ -128,7 +128,11 @@
     return bytes;
   }
   function _parseJSON(bytes, failureCode) {
-    try { return JSON.parse(_dec.decode(bytes)); } catch (e) { throw new Error(failureCode || 'INVALID_ENCRYPTED_JSON'); }
+    try {
+      return JSON.parse(_dec.decode(bytes), function (key, val) {
+        return (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : val;
+      });
+    } catch (e) { throw new Error(failureCode || 'INVALID_ENCRYPTED_JSON'); }
   }
 
   async function _deriveBits(password, salt, iterations, bits) {
@@ -177,7 +181,10 @@
   async function verifyPassword(password, env) {
     if (typeof password !== 'string' || !password) return false;
     var parsed;
-    try { parsed = _validatePasswordHashEnvelope(env); } catch (e) { return false; }
+    try {
+      _passwordBytes(password, 'verifyPassword');
+      parsed = _validatePasswordHashEnvelope(env);
+    } catch (e) { return false; }
     var hash = await _deriveBits(password, parsed.salt, parsed.iter, parsed.hash.length * 8);
     return _timingSafeEqual(hash, parsed.hash);
   }
@@ -194,7 +201,7 @@
     var iv = _randomBytes(12); // GCM standard IV size
     var key = await _deriveAesKey(password, salt, iter);
     var env = { v: ENVELOPE_VERSION, kind: 'alloenc', alg: 'AES-256-GCM', kdf: 'PBKDF2-SHA256', iter: iter, salt: _b64(salt), iv: _b64(iv) };
-    var ct = new Uint8Array(await _subtle().encrypt({ name: 'AES-GCM', iv: iv, additionalData: _passwordEnvelopeAad(env) }, key, _serializeJSON(obj, 'encryptJSON value')));
+    var ct = new Uint8Array(await _subtle().encrypt({ name: 'AES-GCM', iv: iv, tagLength: 128, additionalData: _passwordEnvelopeAad(env) }, key, _serializeJSON(obj, 'encryptJSON value')));
     env.ct = _b64(ct);
     return env;
   }
@@ -205,7 +212,7 @@
     _passwordBytes(password, 'decryptJSON');
     var parsed = _validateEncryptedEnvelope(env);
     var key = await _deriveAesKey(password, parsed.salt, parsed.iter);
-    var algorithm = { name: 'AES-GCM', iv: parsed.iv };
+    var algorithm = { name: 'AES-GCM', iv: parsed.iv, tagLength: 128 };
     if (env.v === ENVELOPE_VERSION) algorithm.additionalData = _passwordEnvelopeAad(env);
     var pt;
     try {
@@ -262,14 +269,22 @@
     _passwordBytes(password, 'wrapVaultKey');
     var material = _vaultKeyMaterial && _vaultKeyMaterial.get(dek);
     if (!material) throw new Error('Vault key was not created or unlocked by this AlloCrypto instance.');
+    var snapshot = new Uint8Array(material);
     var iter = _optionIterations(options);
     var salt = _randomBytes(16);
     var iv = _randomBytes(12);
     var env = { v: ENVELOPE_VERSION, kind: 'allovault-key', alg: 'AES-256-GCM', kdf: 'PBKDF2-SHA256', iter: iter, salt: _b64(salt), iv: _b64(iv) };
-    var kek = await _deriveAesKey(password, salt, iter);
-    var ct = await _subtle().encrypt({ name: 'AES-GCM', iv: iv, additionalData: _vaultWrapAad(env) }, kek, material);
-    env.ct = _b64(new Uint8Array(ct));
-    return env;
+    try {
+      var kek = await _deriveAesKey(password, salt, iter);
+      if (!_vaultKeyMaterial || _vaultKeyMaterial.get(dek) !== material) {
+        throw new Error('Vault key was destroyed before wrapping completed.');
+      }
+      var ct = await _subtle().encrypt({ name: 'AES-GCM', iv: iv, tagLength: 128, additionalData: _vaultWrapAad(env) }, kek, snapshot);
+      env.ct = _b64(new Uint8Array(ct));
+      return env;
+    } finally {
+      snapshot.fill(0);
+    }
   }
   async function unwrapVaultKey(env, password) {
     _passwordBytes(password, 'unwrapVaultKey');
@@ -277,7 +292,7 @@
     var kek = await _deriveAesKey(password, parsed.salt, parsed.iter);
     var material;
     try {
-      material = new Uint8Array(await _subtle().decrypt({ name: 'AES-GCM', iv: parsed.iv, additionalData: _vaultWrapAad(env) }, kek, parsed.ct));
+      material = new Uint8Array(await _subtle().decrypt({ name: 'AES-GCM', iv: parsed.iv, tagLength: 128, additionalData: _vaultWrapAad(env) }, kek, parsed.ct));
     } catch (e) {
       throw new Error('WRONG_PASSWORD_OR_CORRUPT');
     }
@@ -304,7 +319,10 @@
     }
   }
 
-  function _canonicalize(value, seen) {
+  var MAX_AAD_DEPTH = 32;
+  function _canonicalize(value, seen, depth) {
+    var level = depth || 0;
+    if (level > MAX_AAD_DEPTH) throw new Error('AAD nesting exceeds maximum depth.');
     if (value === null || typeof value === 'string' || typeof value === 'boolean') return value;
     if (typeof value === 'number') {
       if (!Number.isFinite(value)) throw new Error('AAD contains a non-finite number.');
@@ -313,7 +331,7 @@
     if (Array.isArray(value)) {
       if (seen.indexOf(value) !== -1) throw new Error('AAD must not contain cycles.');
       seen.push(value);
-      var array = value.map(function (item) { return _canonicalize(item, seen); });
+      var array = value.map(function (item) { return _canonicalize(item, seen, level + 1); });
       seen.pop();
       return array;
     }
@@ -321,11 +339,12 @@
       if (Object.prototype.toString.call(value) !== '[object Object]') throw new Error('AAD must be a plain JSON value.');
       if (seen.indexOf(value) !== -1) throw new Error('AAD must not contain cycles.');
       seen.push(value);
-      var object = {};
+      var object = Object.create(null);
       Object.keys(value).sort().forEach(function (key) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') throw new Error('AAD contains an unsafe property key.');
         var child = value[key];
         if (child === undefined || typeof child === 'function' || typeof child === 'symbol') throw new Error('AAD must be JSON-serializable.');
-        object[key] = _canonicalize(child, seen);
+        object[key] = _canonicalize(child, seen, level + 1);
       });
       seen.pop();
       return object;
@@ -358,7 +377,7 @@
     _assertVaultKey(dek);
     var additionalData = _recordAad(aad);
     var iv = _randomBytes(12);
-    var ct = await _subtle().encrypt({ name: 'AES-GCM', iv: iv, additionalData: additionalData }, dek, _serializeJSON(value, 'encryptRecord value'));
+    var ct = await _subtle().encrypt({ name: 'AES-GCM', iv: iv, tagLength: 128, additionalData: additionalData }, dek, _serializeJSON(value, 'encryptRecord value'));
     return { v: ENVELOPE_VERSION, kind: 'allovault-record', alg: 'AES-256-GCM', codec: 'json-utf8', iv: _b64(iv), ct: _b64(new Uint8Array(ct)) };
   }
   async function decryptRecord(env, dek, aad) {
@@ -366,7 +385,7 @@
     var parsed = _validateRecordEnvelope(env);
     var pt;
     try {
-      pt = await _subtle().decrypt({ name: 'AES-GCM', iv: parsed.iv, additionalData: _recordAad(aad) }, dek, parsed.ct);
+      pt = await _subtle().decrypt({ name: 'AES-GCM', iv: parsed.iv, tagLength: 128, additionalData: _recordAad(aad) }, dek, parsed.ct);
     } catch (e) {
       throw new Error('WRONG_KEY_OR_CORRUPT');
     }
@@ -438,7 +457,7 @@
     return compact.match(/.{1,4}/g).join('-');
   }
   function normalizeRecoveryCode(input) {
-    if (typeof input !== 'string') throw new Error('Recovery code is required.');
+    if (typeof input !== 'string' || input.length > 256) throw new Error('Recovery code is required.');
     var compact = input.toUpperCase().replace(/[\s-]+/g, '');
     if (compact.length !== RECOVERY_CODE_PAYLOAD_CHARS + RECOVERY_CODE_CHECK_CHARS) {
       throw new Error('Recovery code has an invalid length.');
@@ -449,7 +468,12 @@
     var payload = compact.slice(0, RECOVERY_CODE_PAYLOAD_CHARS);
     var suppliedCheck = compact.slice(RECOVERY_CODE_PAYLOAD_CHARS);
     var bytes = _recoveryDecodePayload(payload);
-    var expectedCheck = _recoveryEncodeChecksum(bytes);
+    var expectedCheck;
+    try {
+      expectedCheck = _recoveryEncodeChecksum(bytes);
+    } finally {
+      bytes.fill(0);
+    }
     var diff = 0;
     for (var j = 0; j < RECOVERY_CODE_CHECK_CHARS; j++) diff |= suppliedCheck.charCodeAt(j) ^ expectedCheck.charCodeAt(j);
     if (diff !== 0) throw new Error('Recovery code checksum is not valid.');
@@ -460,8 +484,12 @@
   }
   function generateRecoveryCode() {
     var bytes = _randomBytes(RECOVERY_CODE_BYTES);
-    var compact = _recoveryEncodeBytes(bytes) + _recoveryEncodeChecksum(bytes);
-    return _formatRecoveryCode(compact);
+    try {
+      var compact = _recoveryEncodeBytes(bytes) + _recoveryEncodeChecksum(bytes);
+      return _formatRecoveryCode(compact);
+    } finally {
+      bytes.fill(0);
+    }
   }
   var AlloCrypto = {
     hashPassword: hashPassword,

@@ -39,7 +39,8 @@ async function verifyReleaseResponse(response, assetUrl) {
     const expected = RELEASE_ASSETS.get(assetUrl);
     if (!expected || !Number.isSafeInteger(expected.bytes) || expected.bytes < 0
         || expected.bytes > MAX_RELEASE_ASSET_BYTES || !/^[a-f0-9]{96}$/.test(expected.sha384)
-        || !response || response.status !== 200) throw new Error('[SW] unapproved release asset: ' + assetUrl);
+        || !response || response.status !== 200
+        || (response.type && response.type !== 'basic' && response.type !== 'default')) throw new Error('[SW] unapproved release asset: ' + assetUrl);
     const reader = response.clone().body?.getReader();
     if (!reader) throw new Error('[SW] release asset has no readable body');
     const bytes = new Uint8Array(expected.bytes);
@@ -73,11 +74,11 @@ const releaseUnavailable = () => new Response('This approved AlloFlow release is
 });
 
 const cacheable = response => response && response.status === 200
-    && (!response.type || response.type === 'basic')
+    && (!response.type || response.type === 'basic' || response.type === 'default')
     && !response.headers.has('Set-Cookie')
     && !/(?:^|,)\s*(?:private|no-store)(?:\s|,|=|$)/i.test(response.headers.get('Cache-Control') || '')
     && !/\b(?:authorization|cookie)\b/i.test(response.headers.get('Vary') || '')
-    && response.headers.get('Vary') !== '*';
+    && !/(?:^|,)\s*\*\s*(?:,|$)/.test(response.headers.get('Vary') || '');
 
 async function releaseResponse(assetUrl) {
     const cache = await caches.open(CACHE_NAME);
@@ -112,12 +113,15 @@ async function releaseResponse(assetUrl) {
 const RUNTIME_ASSET_PATH = /^\/(?:[A-Za-z0-9_-]+\/)?(?:runtime_assets|duckdb-assets)\//;
 async function runtimeAssetResponse(request) {
     const cache = await caches.open(CACHE_NAME);
-    if (request.cache !== 'no-store') {
+    if (request.cache === 'no-store') {
+        await cache.delete(request.url).catch(() => {});
+    } else {
         const stored = await cache.match(request.url);
         if (cacheable(stored)) return stored;
     }
     const response = await fetch(request.url, { cache: request.cache === 'no-store' ? 'no-store' : 'no-cache', credentials: 'omit' });
-    if (response.status === 200 && cacheable(response)) cache.put(request.url, response.clone()).catch(() => {});
+    const isHtmlFallback = /^\s*text\/html\b/i.test(response.headers.get('Content-Type') || '');
+    if (response.status === 200 && cacheable(response) && !isHtmlFallback) cache.put(request.url, response.clone()).catch(() => {});
     return response;
 }
 
@@ -189,10 +193,16 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
     if (event.request.method !== 'GET') return;
-    if (url.origin !== self.location.origin && event.request.mode !== 'navigate') return;
+    if (url.origin !== self.location.origin) return;
 
-    if (url.origin === self.location.origin && RUNTIME_ASSET_PATH.test(url.pathname) && !url.search
-        && event.request.mode !== 'navigate' && !event.request.headers.has('Authorization')) {
+    if (RUNTIME_ASSET_PATH.test(url.pathname) && !url.search
+        && event.request.mode !== 'navigate'
+        && !event.request.headers.has('Authorization')
+        && !event.request.headers.has('X-Allo-Lan-Token')
+        && !event.request.headers.has('X-Allo-Desktop-Token')
+        && !event.request.headers.has('X-Firebase-AppCheck')
+        && !/(?:^|,)\s*no-store(?:\s|,|$)/i.test(event.request.headers.get('Cache-Control') || '')
+        && !/(?:^|\/)api(?:\/|$)/i.test(url.pathname)) {
         event.respondWith(runtimeAssetResponse(event.request));
         return;
     }
@@ -268,9 +278,14 @@ self.addEventListener('fetch', (event) => {
                 // A new release cache must not inherit a still-fresh HTTP
                 // cache entry for an unchanged local module URL.
                 return fetch(event.request, { cache: 'no-cache' }).then((response) => {
-                    if (cacheable(response)) cache.put(event.request, response.clone());
+                    const isHtmlFallback = /\.(?:m?js|css)$/i.test(url.pathname)
+                        && /^\s*text\/html\b/i.test(response.headers.get('Content-Type') || '');
+                    if (cacheable(response) && !isHtmlFallback) cache.put(event.request, response.clone()).catch(() => {});
                     return response;
-                });
+                }).catch(() => new Response(
+                    'Network error and no cache available.',
+                    { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'text/plain' } }
+                ));
             }))
         );
         return;
@@ -284,7 +299,7 @@ self.addEventListener('fetch', (event) => {
             // silently failed on every request). Same pattern as the handlers above.
             if (cacheable(response)) {
                 const copy = response.clone();
-                caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+                caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
             }
             return response;
         }).catch(() => caches.open(CACHE_NAME).then(cache => cache.match(event.request)).then((response) => cacheable(response) ? response : new Response(

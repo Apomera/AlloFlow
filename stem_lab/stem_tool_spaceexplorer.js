@@ -1692,49 +1692,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   }
 
   function drawSpectrum(ctx, W, H, bands) {
-    ctx.fillStyle = '#020a20'; ctx.fillRect(0, 0, W, H);
+    if (!ctx) return;
+    var hasLG = typeof ctx.createLinearGradient === 'function';
+    var hasRG = typeof ctx.createRadialGradient === 'function';
+    if (hasLG) {
+      var spBg = ctx.createLinearGradient(0, 0, 0, H);
+      spBg.addColorStop(0, '#02081c'); spBg.addColorStop(0.55, '#071430'); spBg.addColorStop(1, '#030a1e');
+      ctx.fillStyle = spBg;
+    } else {
+      ctx.fillStyle = '#020a20';
+    }
+    ctx.fillRect(0, 0, W, H);
     // Wavelength range: we plot 1-5 μm (the near-IR window most compounds
     // share). The silicate 10μm band is rendered as a right-edge arrow since
     // it sits off-scale — teaches students that real spectra span huge ranges.
     var minLam = 1, maxLam = 5;
     var padL = 28, padR = 16, padT = 14, padB = 20;
     var plotX = padL, plotY = padT, plotW = W - padL - padR, plotH = H - padT - padB;
+    // Spectral false-color IR shimmer bar along bottom of plot well
+    if (hasLG) {
+      var irBar = ctx.createLinearGradient(plotX, 0, plotX + plotW, 0);
+      irBar.addColorStop(0, 'rgba(56,189,248,0.22)');
+      irBar.addColorStop(0.32, 'rgba(99,102,241,0.20)');
+      irBar.addColorStop(0.65, 'rgba(236,72,153,0.20)');
+      irBar.addColorStop(1, 'rgba(251,146,60,0.22)');
+      ctx.fillStyle = irBar;
+      ctx.fillRect(plotX, plotY + plotH - 5, plotW, 5);
+    }
+    // Subtle horizontal observatory gridlines
+    ctx.strokeStyle = 'rgba(148,163,184,0.14)'; ctx.lineWidth = 0.8;
+    for (var gy = 1; gy <= 3; gy++) {
+      var gpy = plotY + (gy / 4) * plotH;
+      ctx.beginPath(); ctx.moveTo(plotX, gpy); ctx.lineTo(plotX + plotW, gpy); ctx.stroke();
+    }
     // Axes
-    ctx.strokeStyle = 'rgba(148,163,184,0.4)'; ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(148,163,184,0.52)'; ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(plotX, plotY); ctx.lineTo(plotX, plotY + plotH);
     ctx.lineTo(plotX + plotW, plotY + plotH);
     ctx.stroke();
     // Tick marks every 1 μm
-    ctx.fillStyle = '#94a3b8'; ctx.font = '9px ui-monospace, monospace'; ctx.textAlign = 'center';
+    ctx.fillStyle = '#cbd5e1'; ctx.font = '9px ui-monospace, monospace'; ctx.textAlign = 'center';
     for (var lam = minLam; lam <= maxLam; lam++) {
       var tx = plotX + ((lam - minLam) / (maxLam - minLam)) * plotW;
       ctx.beginPath(); ctx.moveTo(tx, plotY + plotH); ctx.lineTo(tx, plotY + plotH + 3); ctx.stroke();
       ctx.fillText(lam + '\u03BCm', tx, plotY + plotH + 13);
     }
-    // Baseline continuum (a gentle curve representing stellar/thermal light)
-    ctx.strokeStyle = 'rgba(125,211,252,0.85)'; ctx.lineWidth = 1.5;
-    ctx.beginPath();
+    // Compute continuum + absorption troughs once for gradient fill & dual-pass luminous trace
+    var pts = [];
     for (var px = 0; px <= plotW; px++) {
       var frac = px / plotW;
       var baseY = plotY + plotH * 0.25 + Math.sin(frac * 3.2) * 4;
-      // Subtract absorption dips at each band
       var absorb = 0;
       bands.forEach(function(b) {
         if (b > maxLam) return;
         var bx = ((b - minLam) / (maxLam - minLam)) * plotW;
         var d = Math.abs(px - bx);
-        var sigma = 10; // pixel width of band
+        var sigma = 10;
         absorb += Math.exp(-(d * d) / (2 * sigma * sigma)) * plotH * 0.55;
       });
-      var y = baseY + absorb;
-      if (px === 0) ctx.moveTo(plotX + px, y); else ctx.lineTo(plotX + px, y);
+      pts.push([plotX + px, baseY + absorb]);
     }
+    if (hasLG && pts.length > 1) {
+      var areaG = ctx.createLinearGradient(0, plotY, 0, plotY + plotH);
+      areaG.addColorStop(0, 'rgba(56,189,248,0.28)');
+      areaG.addColorStop(0.65, 'rgba(99,102,241,0.10)');
+      areaG.addColorStop(1, 'rgba(2,10,32,0)');
+      ctx.fillStyle = areaG;
+      ctx.beginPath();
+      ctx.moveTo(plotX, plotY + plotH);
+      for (var ai = 0; ai < pts.length; ai++) ctx.lineTo(pts[ai][0], pts[ai][1]);
+      ctx.lineTo(plotX + plotW, plotY + plotH); ctx.closePath(); ctx.fill();
+    }
+    // Dual-pass luminous continuum trace
+    ctx.save();
+    ctx.strokeStyle = 'rgba(56,189,248,0.28)'; ctx.lineWidth = 5; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    for (var g1 = 0; g1 < pts.length; g1++) { if (g1 === 0) ctx.moveTo(pts[g1][0], pts[g1][1]); else ctx.lineTo(pts[g1][0], pts[g1][1]); }
     ctx.stroke();
-    // Mark each band with a subtle label above axis
+    ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    for (var g2 = 0; g2 < pts.length; g2++) { if (g2 === 0) ctx.moveTo(pts[g2][0], pts[g2][1]); else ctx.lineTo(pts[g2][0], pts[g2][1]); }
+    ctx.stroke();
+    ctx.restore();
+    // Mark each absorption dip with glowing trough halo + dashed beacon
     bands.forEach(function(b) {
       if (b > maxLam) {
-        // Off-scale marker (e.g., silicate at 10μm) — arrow at right edge
         ctx.fillStyle = '#fbbf24';
         ctx.beginPath();
         ctx.moveTo(plotX + plotW - 2, plotY + plotH * 0.5);
@@ -1746,9 +1789,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         return;
       }
       var bx = plotX + ((b - minLam) / (maxLam - minLam)) * plotW;
-      ctx.strokeStyle = 'rgba(251,191,36,0.4)'; ctx.setLineDash([2, 3]);
+      var dipY = plotY + plotH * 0.80;
+      if (hasRG) {
+        var dipH = ctx.createRadialGradient(bx, dipY, 1, bx, dipY, 12);
+        dipH.addColorStop(0, 'rgba(251,191,36,0.55)'); dipH.addColorStop(1, 'rgba(251,191,36,0)');
+        ctx.fillStyle = dipH; ctx.beginPath(); ctx.arc(bx, dipY, 12, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.strokeStyle = 'rgba(251,191,36,0.5)'; ctx.setLineDash([2, 3]);
       ctx.beginPath(); ctx.moveTo(bx, plotY); ctx.lineTo(bx, plotY + plotH); ctx.stroke();
       ctx.setLineDash([]);
+      ctx.fillStyle = '#fde047'; ctx.beginPath(); ctx.arc(bx, dipY, 2.5, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#fbbf24'; ctx.font = '9px ui-monospace, monospace'; ctx.textAlign = 'center';
       ctx.fillText(b.toFixed(2), bx, plotY + 10);
     });
@@ -1863,14 +1913,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       mg.addColorStop(0, 'rgba(200,200,220,0.15)'); mg.addColorStop(0.5, 'rgba(255,255,255,0.08)'); mg.addColorStop(1, 'rgba(100,100,120,0.1)');
       ctx.fillStyle = mg; ctx.fill();
     }
+    // Spherical night-side terminator shadow for crisp 3D depth (non-asteroid worlds)
+    if (dest.id !== 'asteroid' && typeof ctx.createRadialGradient === 'function') {
+      var termG = ctx.createRadialGradient(cx - r * 0.45, cy - r * 0.35, r * 0.35, cx + r * 0.25, cy + r * 0.2, r * 1.15);
+      termG.addColorStop(0, 'rgba(0,0,0,0)');
+      termG.addColorStop(0.68, 'rgba(2,6,23,0.18)');
+      termG.addColorStop(1, 'rgba(2,6,23,0.62)');
+      ctx.fillStyle = termG;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    }
     ctx.restore();
-    // Atmosphere glow
+    // Multi-band luminous atmospheric limb scattering & exoplanet rim halo
     ctx.save();
-    ctx.globalAlpha = 0.2;
     ctx.globalCompositeOperation = 'lighter';
-    var ag = ctx.createRadialGradient(cx, cy, r, cx, cy, r * 1.2);
-    ag.addColorStop(0, dest.color); ag.addColorStop(1, 'transparent');
-    ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(cx, cy, r * 1.2, 0, Math.PI * 2); ctx.fill();
+    if (typeof ctx.createRadialGradient === 'function') {
+      ctx.globalAlpha = 0.28;
+      var ag = ctx.createRadialGradient(cx, cy, r * 0.92, cx, cy, r * 1.32);
+      ag.addColorStop(0, lightenColor(dest.color, 45));
+      ag.addColorStop(0.45, dest.color);
+      ag.addColorStop(1, 'transparent');
+      ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(cx, cy, r * 1.32, 0, Math.PI * 2); ctx.fill();
+    }
+    if (dest.id !== 'asteroid') {
+      ctx.globalAlpha = 0.52;
+      ctx.strokeStyle = lightenColor(dest.color, 65);
+      ctx.lineWidth = Math.max(1.2, r * 0.045);
+      ctx.beginPath(); ctx.arc(cx, cy, r - 0.5, Math.PI * 0.85, Math.PI * 1.65); ctx.stroke();
+    }
     ctx.restore();
   }
 
@@ -1886,20 +1955,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // STARFIELD HELPER (shared with Moon Mission)
+  // STARFIELD HELPER (shared with Moon Mission) — layered cosmic nebula & parallax stars
   // ═══════════════════════════════════════════════════════════════
   function drawStarfield(ctx, W, H, tick, count) {
+    if (!ctx) return;
+    // Soft deep-space nebula clouds & distant stellar corona glow
+    if (typeof ctx.createRadialGradient === 'function') {
+      ctx.save();
+      var neb1 = ctx.createRadialGradient(W * 0.22, H * 0.34, 4, W * 0.22, H * 0.34, Math.max(W, H) * 0.45);
+      neb1.addColorStop(0, 'rgba(99,102,241,0.18)'); neb1.addColorStop(0.5, 'rgba(56,189,248,0.07)'); neb1.addColorStop(1, 'rgba(2,0,16,0)');
+      ctx.fillStyle = neb1; ctx.fillRect(0, 0, W, H);
+      var neb2 = ctx.createRadialGradient(W * 0.78, H * 0.68, 4, W * 0.78, H * 0.68, Math.max(W, H) * 0.42);
+      neb2.addColorStop(0, 'rgba(168,85,247,0.15)'); neb2.addColorStop(0.55, 'rgba(236,72,153,0.05)'); neb2.addColorStop(1, 'rgba(2,0,16,0)');
+      ctx.fillStyle = neb2; ctx.fillRect(0, 0, W, H);
+      var sunC = ctx.createRadialGradient(W * 0.08, H * 0.14, 1, W * 0.08, H * 0.14, Math.min(W, H) * 0.34);
+      sunC.addColorStop(0, 'rgba(254,249,195,0.45)'); sunC.addColorStop(0.28, 'rgba(251,191,36,0.14)'); sunC.addColorStop(1, 'rgba(251,191,36,0)');
+      ctx.fillStyle = sunC; ctx.fillRect(0, 0, W, H);
+      ctx.restore();
+    }
     var seed = 7919;
     var s = seed;
     function rng() { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }
-    var colors = ['#fff','#fff','#fff','#fff','#fff','#b8c8ff','#b8c8ff','#fff5d0','#ffd8b0'];
+    var colors = ['#fff','#fff','#fff','#fff','#bae6fd','#b8c8ff','#c7d2fe','#fff5d0','#ffd8b0'];
+    var t = tick || 0;
     for (var i = 0; i < (count || 80); i++) {
-      var sx = rng() * W, sy = rng() * H;
-      var sr = 0.3 + rng() * 1.2;
+      var layer = i % 3;
+      var drift = (t * (0.015 + layer * 0.018)) % W;
+      var sx = (rng() * W - drift + W) % W, sy = rng() * H;
+      var sr = (0.3 + rng() * 0.9) * (0.75 + layer * 0.25);
       var sc = colors[Math.floor(rng() * colors.length)];
-      ctx.globalAlpha = 0.3 + 0.7 * Math.abs(Math.sin((tick || 0) * 0.002 + i * 1.7));
+      var tw = 0.32 + 0.68 * Math.abs(Math.sin(t * 0.0025 + i * 1.7));
+      ctx.globalAlpha = tw;
       ctx.fillStyle = sc;
       ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
+      // Subtle diffraction cross-glint on brightest foreground stars
+      if (layer === 2 && sr > 1.25 && tw > 0.72) {
+        ctx.strokeStyle = sc; ctx.lineWidth = 0.5; ctx.globalAlpha = tw * 0.45;
+        ctx.beginPath(); ctx.moveTo(sx - sr * 3, sy); ctx.lineTo(sx + sr * 3, sy);
+        ctx.moveTo(sx, sy - sr * 3); ctx.lineTo(sx, sy + sr * 3); ctx.stroke();
+      }
     }
     ctx.globalAlpha = 1;
   }
@@ -3885,6 +3979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   if (!cvEl || cvEl._briefInit) return;
                   cvEl._briefInit = true;
                   var ctx2 = cvEl.getContext('2d');
+                  if (!ctx2) return;
                   var W = cvEl.offsetWidth || 400, H = cvEl.offsetHeight || 200;
                   cvEl.width = W * 2; cvEl.height = H * 2; ctx2.scale(2, 2);
                   var tick = 0;
@@ -3894,17 +3989,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     if (!_prefersReducedMotion) tick++;
                     ctx2.fillStyle = '#020010'; ctx2.fillRect(0, 0, W, H);
                     drawStarfield(ctx2, W, H, tick, 100);
-                    drawPlanet(ctx2, W * 0.6, H * 0.5, Math.min(W, H) * 0.35, destination, tick);
-                    // Ship approach dot
+                    var pR = Math.min(W, H) * 0.35;
+                    // Luminous curved orbital transfer trajectory into planetary capture
                     var shipX = W * 0.15 + Math.sin(tick * 0.008) * W * 0.05;
                     var shipY = H * 0.5 + Math.cos(tick * 0.006) * H * 0.08;
+                    var tgtX = W * 0.6 - pR * 0.95, tgtY = H * 0.5 - pR * 0.18;
                     ctx2.save();
-                    ctx2.shadowColor = 'rgba(125,211,252,0.9)'; ctx2.shadowBlur = 8;
-                    ctx2.fillStyle = '#e0f2fe'; ctx2.beginPath(); ctx2.arc(shipX, shipY, 2.5, 0, Math.PI * 2); ctx2.fill();
+                    ctx2.strokeStyle = 'rgba(56,189,248,0.18)'; ctx2.lineWidth = 4.5;
+                    ctx2.beginPath(); ctx2.moveTo(shipX, shipY); ctx2.quadraticCurveTo(W * 0.36, H * 0.24, tgtX, tgtY); ctx2.stroke();
+                    ctx2.strokeStyle = 'rgba(125,211,252,0.58)'; ctx2.lineWidth = 1.2; ctx2.setLineDash([4, 4]);
+                    ctx2.beginPath(); ctx2.moveTo(shipX, shipY); ctx2.quadraticCurveTo(W * 0.36, H * 0.24, tgtX, tgtY); ctx2.stroke();
+                    ctx2.setLineDash([]);
                     ctx2.restore();
-                    ctx2.strokeStyle = 'rgba(255,255,255,0.12)'; ctx2.lineWidth = 0.5;
-                    ctx2.beginPath(); ctx2.moveTo(shipX, shipY);
-                    ctx2.lineTo(W * 0.6 - Math.min(W, H) * 0.35, H * 0.5); ctx2.stroke();
+                    drawPlanet(ctx2, W * 0.6, H * 0.5, pR, destination, tick);
+                    // Ship approach beacon with glowing ion plume
+                    ctx2.save();
+                    if (typeof ctx2.createRadialGradient === 'function') {
+                      var ionG = ctx2.createRadialGradient(shipX - 7, shipY + 2, 1, shipX - 7, shipY + 2, 11);
+                      ionG.addColorStop(0, 'rgba(56,189,248,0.75)'); ionG.addColorStop(1, 'rgba(56,189,248,0)');
+                      ctx2.fillStyle = ionG; ctx2.beginPath(); ctx2.arc(shipX - 7, shipY + 2, 11, 0, Math.PI * 2); ctx2.fill();
+                    }
+                    ctx2.shadowColor = 'rgba(125,211,252,0.95)'; ctx2.shadowBlur = 10;
+                    ctx2.fillStyle = '#e0f2fe'; ctx2.beginPath(); ctx2.arc(shipX, shipY, 2.8, 0, Math.PI * 2); ctx2.fill();
+                    ctx2.restore();
                     // Vignette
                     var vg = ctx2.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.3, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
                     vg.addColorStop(0, 'transparent'); vg.addColorStop(1, 'rgba(0,0,0,0.4)');
@@ -4384,6 +4491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ref: function(cvEl) {
                 if (!cvEl) return;
                 var ctx = cvEl.getContext('2d');
+                if (!ctx) return;
                 var W = cvEl.offsetWidth || 400, H = cvEl.offsetHeight || 120;
                 var _tw = W * 2, _th = H * 2;
                 if (cvEl.width !== _tw) cvEl.width = _tw;
@@ -4395,19 +4503,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 // Static render (no animation loop needed — redraws on each React render)
                 ctx.fillStyle = '#020010'; ctx.fillRect(0, 0, W, H);
                 drawStarfield(ctx, W, H, turn * 100, 80);
-                // Planet (size based on mission progress)
+                // Planet (size based on mission progress) + luminous approach trajectory
                 var progress = Math.min(1, turn / maxTurns);
                 var planetR = 15 + progress * 35;
-                drawPlanet(ctx, W * 0.75, H * 0.5, planetR, destination, turn * 50);
-                // Ship silhouette (left side, approaching planet)
                 var shipX = W * 0.15 + progress * W * 0.35;
                 var shipY = H * 0.5 + Math.sin(turn * 0.5) * 5;
+                ctx.save();
+                ctx.strokeStyle = 'rgba(56,189,248,0.22)'; ctx.lineWidth = 3.5;
+                ctx.beginPath(); ctx.moveTo(W * 0.08, H * 0.54); ctx.quadraticCurveTo(W * 0.42, H * 0.28, W * 0.75 - planetR, H * 0.5); ctx.stroke();
+                ctx.strokeStyle = 'rgba(125,211,252,0.52)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+                ctx.beginPath(); ctx.moveTo(W * 0.08, H * 0.54); ctx.quadraticCurveTo(W * 0.42, H * 0.28, W * 0.75 - planetR, H * 0.5); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.restore();
+                drawPlanet(ctx, W * 0.75, H * 0.5, planetR, destination, turn * 50);
+                // Ship silhouette with glowing ion exhaust cone
+                if (typeof ctx.createRadialGradient === 'function') {
+                  var exh = ctx.createRadialGradient(shipX - 11, shipY, 1, shipX - 11, shipY, 12);
+                  exh.addColorStop(0, 'rgba(103,232,249,0.85)'); exh.addColorStop(0.5, 'rgba(56,189,248,0.28)'); exh.addColorStop(1, 'rgba(56,189,248,0)');
+                  ctx.fillStyle = exh; ctx.beginPath(); ctx.arc(shipX - 11, shipY, 12, 0, Math.PI * 2); ctx.fill();
+                }
                 ctx.fillStyle = '#c0c8d0';
                 ctx.fillRect(shipX - 8, shipY - 2, 12, 4);
-                ctx.fillStyle = '#e8ecf0';
+                ctx.fillStyle = '#f8fafc';
                 ctx.beginPath(); ctx.moveTo(shipX + 4, shipY); ctx.lineTo(shipX + 8, shipY - 3); ctx.lineTo(shipX + 8, shipY + 3); ctx.closePath(); ctx.fill();
-                ctx.fillStyle = 'rgba(56,189,248,0.3)';
-                ctx.beginPath(); ctx.arc(shipX - 9, shipY, 3, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'rgba(103,232,249,0.75)';
+                ctx.beginPath(); ctx.arc(shipX - 9, shipY, 2.6, 0, Math.PI * 2); ctx.fill();
                 // Crew avatars (bottom strip)
                 if (crew.length > 0) {
                   ctx.font = '8px system-ui'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,0.5)';
@@ -4510,6 +4630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   ref: function(cvEl) {
                     if (!cvEl) return;
                     var cx2 = cvEl.getContext('2d');
+                    if (!cx2) return;
                     var W2 = cvEl.offsetWidth || 360, H2 = cvEl.offsetHeight || 110;
                     var _tw2 = W2 * 2, _th2 = H2 * 2;
                     if (cvEl.width !== _tw2) cvEl.width = _tw2;

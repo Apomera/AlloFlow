@@ -590,7 +590,7 @@
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "e9a013d643de18d8c8cda6e887058d2160a96534acc01a056bd4e3650d7ea396",
+      "sourceItemsSha256": "e4096941430fb9e1f99420e608434f33f8d8fa1d98a8526d96af5d600c53e1a8",
       "learningLibrarySha256": "af0034d320e1030821b073d10ca09edc82e150a1acd38fde2e01b46e89491e02"
     },
     {
@@ -598,15 +598,15 @@
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "b7bbe263218d2d0c537c57033807537948067803c0f712a50b466743a754fd2a",
-      "learningLibrarySha256": "36a054934e2b038c6056b529a2e63de35860589905c1996223d82454190b2b98"
+      "sourceItemsSha256": "cf1ee63735aa49108bb6b703fbb4121fb55a7923bb7ac3a414a7a1185aef07f6",
+      "learningLibrarySha256": "3f14ea8225ff759f0838e2085abd5defa477fa283a0e2a8f3b90ae2e287fd00c"
     },
     {
       "stem": "praxis_core_5752",
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "3fbc133d48a1113a622a21cbee1285098a285b39c73c674fbce79cb13ba4f960",
+      "sourceItemsSha256": "5eaeb4561c729d802d03bd5b784b72f645264cef41176f7ffc977e540d94c9ec",
       "learningLibrarySha256": "e1577181905ab167b83767e8205e46c25e06026330dc8eeee1377f4b5d2123d1"
     },
     {
@@ -614,8 +614,8 @@
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "86f2f7405effae7db189ad13fc564db7c134b13160c1e38c5988c7a0479f73f4",
-      "learningLibrarySha256": "cb94bb475971b064c52d5d889f26e01805f6a69907dcafa659c838fcb031a069"
+      "sourceItemsSha256": "9472f1b0a80b5489a684c645d2869e0ed75b66441e3e7fdb24dacc7f3c39cc1d",
+      "learningLibrarySha256": "d4f97f1df4a61ab1c54587c2a2de7f1941ca32ab0e7b6d04634ac355f19a899e"
     },
     {
       "stem": "school_counselor_5422",

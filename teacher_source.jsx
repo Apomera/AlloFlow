@@ -4,6 +4,17 @@
 var _alloFocusTrigger = null;
 function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
 function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+function _alloTeacherRunConfirmed(message, opts, onConfirmed, onCancelled) {
+  if (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.confirm === 'function') {
+    window.AlloFlowUX.confirm(message, opts)
+      .then(function (ok) { if (ok) onConfirmed(); else if (onCancelled) onCancelled(); })
+      .catch(function () { if (onCancelled) onCancelled(); });
+    return;
+  }
+  var ok = typeof window !== 'undefined' && typeof window.confirm === 'function' ? !!window.confirm(message) : false;
+  if (ok) onConfirmed();
+  else if (onCancelled) onCancelled();
+}
 
 // Host doorway for AI-only teacher actions (disabled + reason + setup link); null on old hosts.
 function _teacherAiDoor(t, kind) {
@@ -1789,12 +1800,18 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const applyImportedRoster = (text, sourceNote) => {
     try {
       const prepared = prepareImportedRoster(text);
-      if (!window.confirm(replaceRosterMessage(prepared.groupsCount, prepared.studentsCount, sourceNote))) {
-        const message = 'Roster replacement cancelled. Nothing changed.';
-        announceRoster(message, 'info');
-        return { ok: false, message };
-      }
-      return commitImportedRoster(prepared);
+      let syncResult = { ok: false, message: 'Roster replacement cancelled. Nothing changed.' };
+      _alloTeacherRunConfirmed(
+        replaceRosterMessage(prepared.groupsCount, prepared.studentsCount, sourceNote),
+        { title: 'Replace current roster?', confirmText: 'Replace roster', cancelText: 'Keep current roster', tone: 'warning' },
+        () => { syncResult = commitImportedRoster(prepared); },
+        () => {
+          const message = 'Roster replacement cancelled. Nothing changed.';
+          announceRoster(message, 'info');
+          syncResult = { ok: false, message };
+        }
+      );
+      return syncResult;
     } catch(err) {
       console.error('Invalid roster JSON:', err);
       const message = err?.message || 'This file is not a valid roster.';
@@ -1889,16 +1906,21 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   };
   const handleSaveSyncKey = () => {
     if (!linkedSyncKey || !rosterKey?.classId) return;
-    if (!window.confirm('Save this class’s Google Classroom sync key? Anyone with this file and access to the Classroom class could match codenames to students. Keep it private like a password, and load it only on your own devices.')) return;
-    let url = null;
-    try {
-      url = URL.createObjectURL(new Blob([JSON.stringify({ type: ALLO_CLASSROOM_SYNC_KEY_FILE_TYPE, version: 1, classId: rosterKey.classId, key: linkedSyncKey })], { type: 'application/json' }));
-      const anchor = document.createElement('a');
-      anchor.href = url; anchor.download = 'alloflow-classroom-sync-key.json';
-      document.body.appendChild(anchor); anchor.click(); anchor.remove();
-      announceRoster('Sync key saved. Load it on another device’s copy of this class to sync there.', 'success');
-    } catch (_) { announceRoster('The sync key file could not be saved.', 'error'); }
-    finally { if (url) setTimeout(() => URL.revokeObjectURL(url), 1000); }
+    _alloTeacherRunConfirmed(
+      'Save this class’s Google Classroom sync key? Anyone with this file and access to the Classroom class could match codenames to students. Keep it private like a password, and load it only on your own devices.',
+      { title: 'Save Google Classroom sync key?', confirmText: 'Save sync key', cancelText: 'Cancel', tone: 'warning' },
+      () => {
+        let url = null;
+        try {
+          url = URL.createObjectURL(new Blob([JSON.stringify({ type: ALLO_CLASSROOM_SYNC_KEY_FILE_TYPE, version: 1, classId: rosterKey.classId, key: linkedSyncKey })], { type: 'application/json' }));
+          const anchor = document.createElement('a');
+          anchor.href = url; anchor.download = 'alloflow-classroom-sync-key.json';
+          document.body.appendChild(anchor); anchor.click(); anchor.remove();
+          announceRoster('Sync key saved. Load it on another device’s copy of this class to sync there.', 'success');
+        } catch (_) { announceRoster('The sync key file could not be saved.', 'error'); }
+        finally { if (url) setTimeout(() => URL.revokeObjectURL(url), 1000); }
+      }
+    );
   };
   const handleLoadSyncKey = event => {
     const file = event.target?.files?.[0];
@@ -1918,9 +1940,15 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     reader.readAsText(file);
   };
   const handleUnlinkClassroom = () => {
-    if (!rosterKey?.classId || !window.confirm('Unlink this class from Google Classroom on this device? The roster stays as it is. Later Classroom reads cannot update it unless you load its saved sync key.')) return;
-    setClassroomSyncKeys(store => alloSetClassroomSyncKey(store, rosterKey.classId, ''));
-    announceRoster('This class is no longer linked to Google Classroom on this device.', 'success');
+    if (!rosterKey?.classId) return;
+    _alloTeacherRunConfirmed(
+      'Unlink this class from Google Classroom on this device? The roster stays as it is. Later Classroom reads cannot update it unless you load its saved sync key.',
+      { title: 'Unlink Google Classroom?', confirmText: 'Unlink class', cancelText: 'Keep linked', tone: 'warning' },
+      () => {
+        setClassroomSyncKeys(store => alloSetClassroomSyncKey(store, rosterKey.classId, ''));
+        announceRoster('This class is no longer linked to Google Classroom on this device.', 'success');
+      }
+    );
   };
   const beginPrivateLabelEdit = codename => { setEditingLabelFor(codename); setLabelDraft(classPrivateLabels[codename] || ''); };
   const commitPrivateLabel = codename => {
@@ -1938,31 +1966,36 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           onBlur={() => commitPrivateLabel(codename)}
           onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); commitPrivateLabel(codename); } else if (event.key === 'Escape') { event.preventDefault(); setEditingLabelFor(null); setLabelDraft(''); } }}
           aria-label={'Private label for ' + codename + ' (this device only)'}
-          className={`min-h-9 w-28 rounded-lg border px-2 text-[11px] focus:outline-none focus:ring-2 ${tone === 'amber' ? 'border-amber-300 focus:ring-amber-300 text-amber-900' : 'border-indigo-300 focus:ring-indigo-300 text-indigo-900'}`} />
+          className={`min-h-9 w-28 rounded-lg border px-2 text-xs focus:outline-none focus:ring-2 ${tone === 'amber' ? 'border-amber-300 focus:ring-amber-300 text-amber-900' : 'border-indigo-300 focus:ring-indigo-300 text-indigo-900'}`} />
       );
     }
     return (
       <button type="button" onClick={() => beginPrivateLabelEdit(codename)} title="Private label: stays on this device, never exported or shared"
         aria-label={(label ? 'Edit private label for ' : 'Add private label for ') + codename}
-        className={`min-h-9 rounded-lg border border-dashed px-2 text-[11px] font-semibold ${tone === 'amber' ? 'border-amber-300 text-amber-900 hover:bg-amber-100' : 'border-indigo-300 text-indigo-900 hover:bg-indigo-100'}`}>
+        className={`min-h-9 rounded-lg border border-dashed px-2 text-xs font-semibold ${tone === 'amber' ? 'border-amber-300 text-amber-900 hover:bg-amber-100' : 'border-indigo-300 text-indigo-900 hover:bg-indigo-100'}`}>
         {label || '+ label'}
       </button>
     );
   };
   const handleRestoreRosterImport = () => {
     if (!rosterImportUndo?.roster) return;
-    if (!window.confirm('Restore the roster that was open before the last import? Any changes made since that import will be replaced.')) return;
-    const previous = rosterImportUndo;
-    setRosterKey(previous.roster);
-    setNewStudentGroup('');
-    setExpandedGroup(null);
-    setSessionNoteDrafts({});
-    setSessionPlanDrafts({});
-    setSessionPlannerStatus({});
-    setRosterStudentQuery('');
-    setShowPrintOptions(false);
-    setRosterImportUndo(null);
-    announceRoster(`Previous roster restored: ${previous.groupCount} groups and ${previous.studentCount} codenames.`, 'success');
+    _alloTeacherRunConfirmed(
+      'Restore the roster that was open before the last import? Any changes made since that import will be replaced.',
+      { title: 'Restore previous roster?', confirmText: 'Restore roster', cancelText: 'Keep current roster', tone: 'warning' },
+      () => {
+        const previous = rosterImportUndo;
+        setRosterKey(previous.roster);
+        setNewStudentGroup('');
+        setExpandedGroup(null);
+        setSessionNoteDrafts({});
+        setSessionPlanDrafts({});
+        setSessionPlannerStatus({});
+        setRosterStudentQuery('');
+        setShowPrintOptions(false);
+        setRosterImportUndo(null);
+        announceRoster(`Previous roster restored: ${previous.groupCount} groups and ${previous.studentCount} codenames.`, 'success');
+      }
+    );
   };
   const handleExport = () => {
     const safeRoster = alloEnsureTeacherRosterIdentity(rosterKey || { groups: {}, students: {} });
@@ -1989,36 +2022,47 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   };
   const handleStoreRosterExport = () => {
     if (isParentMode || isIndependentMode) return;
-    let cleanup;
+    let manifest;
     try {
-      const manifest = alloBuildStoreRosterManifest(rosterKey);
-      if (!window.confirm('Download class and learner IDs with codenames for authorized School Store review? These are pseudonymous identifiers, not anonymous data. Check that codenames contain no real names. This file does not link students, authorize access, or award points.')) {
-        announceRoster('Store review download cancelled. No roster records changed.');
-        return;
-      }
-      storeExportCleanupRef.current?.();
-      const url = URL.createObjectURL(new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' }));
-      const link = document.createElement('a');
-      let timer, cleaned = false;
-      cleanup = () => {
-        if (cleaned) return;
-        cleaned = true;
-        window.clearTimeout(timer);
-        URL.revokeObjectURL(url);
-        link.remove();
-        if (storeExportCleanupRef.current === cleanup) storeExportCleanupRef.current = null;
-      };
-      storeExportCleanupRef.current = cleanup;
-      link.href = url;
-      link.download = 'class.alloflow-store-roster.json';
-      document.body.appendChild(link);
-      link.click();
-      timer = window.setTimeout(cleanup, 1000);
-      announceRoster('Store review file downloaded. Give it only to your authorized Store administrator for manual matching. No records or points changed.', 'success');
+      manifest = alloBuildStoreRosterManifest(rosterKey);
     } catch (error) {
-      cleanup?.();
       announceRoster(error?.message || 'The Store review file could not be prepared.', 'error');
+      return;
     }
+    _alloTeacherRunConfirmed(
+      'Download class and learner IDs with codenames for authorized School Store review? These are pseudonymous identifiers, not anonymous data. Check that codenames contain no real names. This file does not link students, authorize access, or award points.',
+      { title: 'Download School Store review file?', confirmText: 'Download review file', cancelText: 'Cancel', tone: 'warning' },
+      () => {
+        let cleanup;
+        try {
+          storeExportCleanupRef.current?.();
+          const url = URL.createObjectURL(new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' }));
+          const link = document.createElement('a');
+          let timer, cleaned = false;
+          cleanup = () => {
+            if (cleaned) return;
+            cleaned = true;
+            window.clearTimeout(timer);
+            URL.revokeObjectURL(url);
+            link.remove();
+            if (storeExportCleanupRef.current === cleanup) storeExportCleanupRef.current = null;
+          };
+          storeExportCleanupRef.current = cleanup;
+          link.href = url;
+          link.download = 'class.alloflow-store-roster.json';
+          document.body.appendChild(link);
+          link.click();
+          timer = window.setTimeout(cleanup, 1000);
+          announceRoster('Store review file downloaded. Give it only to your authorized Store administrator for manual matching. No records or points changed.', 'success');
+        } catch (error) {
+          cleanup?.();
+          announceRoster(error?.message || 'The Store review file could not be prepared.', 'error');
+        }
+      },
+      () => {
+        announceRoster('Store review download cancelled. No roster records changed.');
+      }
+    );
   };
   const handlePrintRosterWorksheet = event => {
     const trigger = event.currentTarget;
@@ -2152,11 +2196,16 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     const affected = getStudentsInGroup(gId).length;
     const affectedGoals = (Array.isArray(rosterKey?.classGoals) ? rosterKey.classGoals : []).filter(goal => goal && goal.team === 'group:' + gId).length;
     const goalNotice = affectedGoals ? ` ${affectedGoals} active group goal${affectedGoals === 1 ? '' : 's'} will also be removed.` : '';
-    if (!window.confirm(`Delete “${group?.name || 'this group'}”? ${affected} student${affected === 1 ? '' : 's'} will remain in the roster as Unassigned.${goalNotice}`)) return;
-    setRosterKey(prev => alloEnsureTeacherRosterIdentity(alloRemoveTeacherGroupReferences(prev, gId)));
-    setNewStudentGroup(current => current === gId ? '' : current);
-    setExpandedGroup(current => current === gId ? null : current);
-    announceRoster('Group "' + (group?.name || 'Untitled group') + '" deleted. ' + affected + ' codename' + (affected === 1 ? '' : 's') + ' moved to Unassigned.', 'success');
+    _alloTeacherRunConfirmed(
+      `Delete “${group?.name || 'this group'}”? ${affected} student${affected === 1 ? '' : 's'} will remain in the roster as Unassigned.${goalNotice}`,
+      { title: 'Delete group?', confirmText: 'Delete group', cancelText: 'Keep group', tone: 'warning' },
+      () => {
+        setRosterKey(prev => alloEnsureTeacherRosterIdentity(alloRemoveTeacherGroupReferences(prev, gId)));
+        setNewStudentGroup(current => current === gId ? '' : current);
+        setExpandedGroup(current => current === gId ? null : current);
+        announceRoster('Group "' + (group?.name || 'Untitled group') + '" deleted. ' + affected + ' codename' + (affected === 1 ? '' : 's') + ' moved to Unassigned.', 'success');
+      }
+    );
   };
   const handleUpdateGroupProfile = (gId, field, value) => {
     const safeValue = typeof value === 'string'
@@ -2209,54 +2258,59 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     announceRoster('Codename "' + codename + '" added' + (targetGroup ? ' to ' + groups[targetGroup].name : ' as Unassigned') + '.', 'success');
   };
   const handleRemoveStudent = (name) => {
-    if (!window.confirm(`Delete ${name} from the roster? This removes the codename and its linked preferences, individual progress, participant lists, and seating references. De-identified class activity totals and teacher notes remain. Assessment Center records are kept and can be removed separately in its Records manager.`)) return;
-    alloPurgeRemovedStudentLocalStores({
-      codename: name,
-      learnerId: rosterKey?.learnerIds?.[name] || '',
-      classId: String(rosterKey?.classId || '').trim(),
-      className: String(rosterKey?.className || '').trim(),
-      privateLabelClassKey,
-    });
-    setRosterKey(prev => {
-      const learnerId = prev.learnerIds?.[name];
-      const ns = { ...prev.students }; delete ns[name];
-      const ni = { ...(prev.learnerIds || {}) }; delete ni[name];
-      const nr = { ...(prev.learnerPreferences || {}) };
-      if (learnerId) delete nr[learnerId];
-      delete nr[name];
-      const np = { ...(prev.progressHistory || {}) }; delete np[name];
-      const nh = (Array.isArray(prev.sessionHistory) ? prev.sessionHistory : []).map(session => {
-        const removedOrganizer = session.participants?.[name]?.organizer || null;
-        const participants = { ...(session.participants || {}) }; delete participants[name];
-        const insightBrief = session.insightBrief && typeof session.insightBrief === 'object' ? {
-          ...session.insightBrief,
-          followUpCodenames: (session.insightBrief.followUpCodenames || []).filter(codename => codename !== name),
-          evidenceCohorts: (session.insightBrief.evidenceCohorts || []).map(cohort => {
-            const codenames = (cohort.codenames || []).filter(codename => codename !== name);
-            return { ...cohort, codenames, count: codenames.length };
-          }).filter(cohort => cohort.count > 0),
-        } : session.insightBrief;
-        const organizerActivity = session.organizerActivity && typeof session.organizerActivity === 'object' ? {
-          ...session.organizerActivity,
-          participantCount: Math.max(0, Number(session.organizerActivity.participantCount || 0) - (removedOrganizer ? 1 : 0)),
-          statusCounts: removedOrganizer ? {
-            ...(session.organizerActivity.statusCounts || {}),
-            [removedOrganizer.status]: Math.max(0, Number(session.organizerActivity.statusCounts?.[removedOrganizer.status] || 0) - 1),
-          } : session.organizerActivity.statusCounts,
-          followUpCodenames: (session.organizerActivity.followUpCodenames || []).filter(codename => codename !== name),
-        } : null;
-        const nextSession = { ...session, participants, insightBrief, absentCodenames: (session.absentCodenames || []).filter(codename => codename !== name) };
-        if (organizerActivity?.participantCount > 0) nextSession.organizerActivity = organizerActivity;
-        else delete nextSession.organizerActivity;
-        return nextSession;
-      });
-      const seating = alloRemoveTeacherStudentReferences(prev.seating, name);
-      const next = { ...prev, students: ns, learnerIds: ni, learnerPreferences: nr, progressHistory: np, sessionHistory: nh };
-      if (seating !== prev.seating) next.seating = seating;
-      return next;
-    });
-    setPrivateLabels(store => alloDropTeacherPrivateLabel(store, privateLabelClassKey, name));
-    announceRoster('Codename "' + name + '" deleted from the roster.', 'success');
+    _alloTeacherRunConfirmed(
+      `Delete ${name} from the roster? This removes the codename and its linked preferences, individual progress, participant lists, and seating references. De-identified class activity totals and teacher notes remain. Assessment Center records are kept and can be removed separately in its Records manager.`,
+      { title: 'Delete codename from roster?', confirmText: 'Delete codename', cancelText: 'Keep codename', tone: 'warning' },
+      () => {
+        alloPurgeRemovedStudentLocalStores({
+          codename: name,
+          learnerId: rosterKey?.learnerIds?.[name] || '',
+          classId: String(rosterKey?.classId || '').trim(),
+          className: String(rosterKey?.className || '').trim(),
+          privateLabelClassKey,
+        });
+        setRosterKey(prev => {
+          const learnerId = prev.learnerIds?.[name];
+          const ns = { ...prev.students }; delete ns[name];
+          const ni = { ...(prev.learnerIds || {}) }; delete ni[name];
+          const nr = { ...(prev.learnerPreferences || {}) };
+          if (learnerId) delete nr[learnerId];
+          delete nr[name];
+          const np = { ...(prev.progressHistory || {}) }; delete np[name];
+          const nh = (Array.isArray(prev.sessionHistory) ? prev.sessionHistory : []).map(session => {
+            const removedOrganizer = session.participants?.[name]?.organizer || null;
+            const participants = { ...(session.participants || {}) }; delete participants[name];
+            const insightBrief = session.insightBrief && typeof session.insightBrief === 'object' ? {
+              ...session.insightBrief,
+              followUpCodenames: (session.insightBrief.followUpCodenames || []).filter(codename => codename !== name),
+              evidenceCohorts: (session.insightBrief.evidenceCohorts || []).map(cohort => {
+                const codenames = (cohort.codenames || []).filter(codename => codename !== name);
+                return { ...cohort, codenames, count: codenames.length };
+              }).filter(cohort => cohort.count > 0),
+            } : session.insightBrief;
+            const organizerActivity = session.organizerActivity && typeof session.organizerActivity === 'object' ? {
+              ...session.organizerActivity,
+              participantCount: Math.max(0, Number(session.organizerActivity.participantCount || 0) - (removedOrganizer ? 1 : 0)),
+              statusCounts: removedOrganizer ? {
+                ...(session.organizerActivity.statusCounts || {}),
+                [removedOrganizer.status]: Math.max(0, Number(session.organizerActivity.statusCounts?.[removedOrganizer.status] || 0) - 1),
+              } : session.organizerActivity.statusCounts,
+              followUpCodenames: (session.organizerActivity.followUpCodenames || []).filter(codename => codename !== name),
+            } : null;
+            const nextSession = { ...session, participants, insightBrief, absentCodenames: (session.absentCodenames || []).filter(codename => codename !== name) };
+            if (organizerActivity?.participantCount > 0) nextSession.organizerActivity = organizerActivity;
+            else delete nextSession.organizerActivity;
+            return nextSession;
+          });
+          const seating = alloRemoveTeacherStudentReferences(prev.seating, name);
+          const next = { ...prev, students: ns, learnerIds: ni, learnerPreferences: nr, progressHistory: np, sessionHistory: nh };
+          if (seating !== prev.seating) next.seating = seating;
+          return next;
+        });
+        setPrivateLabels(store => alloDropTeacherPrivateLabel(store, privateLabelClassKey, name));
+        announceRoster('Codename "' + name + '" deleted from the roster.', 'success');
+      }
+    );
   };
   const handleMoveStudent = (name, toGroup) => {
     const targetGroup = toGroup && groups[toGroup] ? toGroup : '';
@@ -2386,7 +2440,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           {privateLabelsAllowed && <button type="button" onClick={() => setShowPrivateLabels(value => !value)} aria-pressed={showPrivateLabels} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-1.5 ${showPrivateLabels ? 'bg-slate-800 text-white hover:bg-slate-900' : 'bg-slate-100 text-slate-800 hover:bg-slate-200'}`} title="Your own note beside each codename, kept only in this browser. Hidden again every time the roster closes.">
             <Eye size={14} /> {showPrivateLabels ? (t('roster.hide_private_labels') || 'Hide my private labels') : (t('roster.show_private_labels') || 'Show my private labels')}
           </button>}
-          {privateLabelsAllowed && showPrivateLabels && <p className="w-full text-xs text-slate-700" role="note">Private labels stay in this browser only. They are never exported, printed, shared to a live session, sent to the Store, or given to an AI. Hide them before projecting.{Object.keys(classPrivateLabels).length > 0 && <> <button type="button" onClick={() => { if (window.confirm('Delete every private label for this class from this browser?')) setPrivateLabels(store => alloClearTeacherPrivateLabels(store, privateLabelClassKey)); }} className="underline font-bold text-red-800">Clear private labels for this class</button></>}</p>}
+          {privateLabelsAllowed && showPrivateLabels && <p className="w-full text-xs text-slate-700" role="note">Private labels stay in this browser only. They are never exported, printed, shared to a live session, sent to the Store, or given to an AI. Hide them before projecting.{Object.keys(classPrivateLabels).length > 0 && <> <button type="button" onClick={() => _alloTeacherRunConfirmed('Delete every private label for this class from this browser?', { title: 'Clear private labels?', confirmText: 'Clear private labels', cancelText: 'Keep private labels', tone: 'warning' }, () => setPrivateLabels(store => alloClearTeacherPrivateLabels(store, privateLabelClassKey)))} className="underline font-bold text-red-800">Clear private labels for this class</button></>}</p>}
           <button type="button" onClick={handleExport} disabled={!rosterKey} className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40">
             <Download size={14} /> {t('roster.export') || 'Export JSON'}
           </button>
@@ -2589,7 +2643,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                 </label>
               </div>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-[11px] text-cyan-900">These options are temporary. Names and locations remain handwritten and are never stored in AlloFlow.</p>
+                <p className="text-xs text-cyan-900">These options are temporary. Names and locations remain handwritten and are never stored in AlloFlow.</p>
                 <button type="button" onClick={handlePrintRosterWorksheet} disabled={!studentCodenames.length} className="min-h-10 shrink-0 rounded-lg bg-cyan-800 px-3 text-xs font-bold text-white hover:bg-cyan-900 disabled:opacity-40"><Printer size={14} className="mr-1 inline" /> Print with these options</button>
               </div>
             </section>
@@ -2610,7 +2664,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                 </label>
                 {normalizedStudentQuery && <button type="button" onClick={() => setRosterStudentQuery('')} className="min-h-10 rounded-lg border border-slate-300 bg-slate-50 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100">Clear search</button>}
               </div>
-              <p id="roster-student-search-status" role="status" aria-live="polite" className="mt-2 text-[11px] text-slate-600">{normalizedStudentQuery ? `${studentMatchCount} of ${studentCodenames.length} codenames match.` : `${studentCodenames.length} codenames available.`}</p>
+              <p id="roster-student-search-status" role="status" aria-live="polite" className="mt-2 text-xs text-slate-600">{normalizedStudentQuery ? `${studentMatchCount} of ${studentCodenames.length} codenames match.` : `${studentCodenames.length} codenames available.`}</p>
             </section>
           )}
           {normalizedStudentQuery && studentMatchCount === 0 && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-900">No codenames match “{rosterStudentQuery.trim()}”.</p>}
@@ -2627,7 +2681,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                   <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: group.color || '#4F46E5' }} />
                   <div className="flex-1 min-w-0">
                     <div className="font-bold text-sm text-slate-800 truncate">{group.name}</div>
-                    <div className="text-[11px] text-slate-600">{normalizedStudentQuery ? `${shownStudents.length} of ${gStudents.length} matching` : `${gStudents.length} student${gStudents.length !== 1 ? 's' : ''}`} · {group.profile?.gradeLevel || '—'} · {group.profile?.leveledTextLanguage || '—'}</div>
+                    <div className="text-xs text-slate-600">{normalizedStudentQuery ? `${shownStudents.length} of ${gStudents.length} matching` : `${gStudents.length} student${gStudents.length !== 1 ? 's' : ''}`} · {group.profile?.gradeLevel || '—'} · {group.profile?.leveledTextLanguage || '—'}</div>
                   </div>
                   <ChevronDown size={16} className={`text-slate-600 transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                 </button>
@@ -2660,14 +2714,14 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       <ProfileField label={t('roster.custom') || 'Custom Instr.'} value={group.profile?.leveledTextCustomInstructions} field="leveledTextCustomInstructions" gId={gId} />
                     </div>
                     <div>
-                      <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('roster.students_in_group') || 'Students'}</div>
+                      <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('roster.students_in_group') || 'Students'}</div>
                       <div className="flex flex-wrap gap-1.5">
                         {shownStudents.map(name => (
                           <span key={name} className="inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-medium">
                             {name}
                             {renderPrivateLabel(name, 'indigo')}
                             {rosterKey?.progressHistory?.[name]?.length > 0 && (
-                              <span className="text-[11px] bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded-full font-mono" title={`${rosterKey.progressHistory[name].length} sessions`}>
+                              <span className="text-xs bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded-full font-mono" title={`${rosterKey.progressHistory[name].length} sessions`}>
                                 {rosterKey.progressHistory[name].length}s
                               </span>
                             )}
@@ -2721,7 +2775,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
            <div className="mt-4 pt-4 border-t border-slate-100">
              <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                <Users size={14} /> {t('roster.manage_students') || 'Manage Students'}
-               <span className="ml-auto text-[11px] font-medium normal-case tracking-normal text-slate-500">{studentCodenames.length}/{ALLO_ROSTER_MAX_STUDENTS}</span>
+               <span className="ml-auto text-xs font-medium normal-case tracking-normal text-slate-600">{studentCodenames.length}/{ALLO_ROSTER_MAX_STUDENTS}</span>
              </div>
              <div className="flex flex-col gap-2">
                <p className="text-xs text-slate-700">Add a codename only. Use the printable worksheet for a private handwritten name and location mapping.</p>
@@ -2766,20 +2820,20 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
            </div>
           {visibleUnassigned.length > 0 && (
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mt-2">
-              <div className="text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1.5">{t('roster.unassigned_students') || 'Unassigned Students'}</div>
+              <div className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-1.5">{t('roster.unassigned_students') || 'Unassigned Students'}</div>
               <div className="flex flex-wrap gap-1.5">
                 {visibleUnassigned.map(name => (
                   <span key={name} className="inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-white text-amber-800 rounded-xl text-xs font-medium border border-amber-200">
                     {name}
                     {renderPrivateLabel(name, 'amber')}
                     {rosterKey?.progressHistory?.[name]?.length > 0 && (
-                      <span className="text-[11px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded-full font-mono ml-0.5" title={`${rosterKey.progressHistory[name].length} sessions`}>
+                      <span className="text-xs bg-amber-100 text-amber-800 px-1 py-0.5 rounded-full font-mono ml-0.5" title={`${rosterKey.progressHistory[name].length} sessions`}>
                         {rosterKey.progressHistory[name].length}s
                       </span>
                     )}
                     <select onChange={e => handleMoveStudent(name, e.target.value)} value={students[name] || ''}
                       aria-label={'Move ' + name + ' to group'}
-                      className="min-h-9 max-w-[10rem] rounded-lg border border-amber-300 bg-white px-2 text-[11px] focus:outline-none focus:ring-2 focus:ring-amber-300 cursor-pointer text-amber-800 ml-1">
+                      className="min-h-9 max-w-[10rem] rounded-lg border border-amber-300 bg-white px-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-300 cursor-pointer text-amber-800 ml-1">
                       <option value="">Unassigned</option>
                       {groupIds.map(gId => <option key={gId} value={gId}>{groups[gId].name}</option>)}
                     </select>
@@ -2820,7 +2874,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                 </label>
                 <fieldset className="mt-3">
                   <legend className="text-xs font-bold text-violet-950">Favorite themes</legend>
-                  <p className="mt-0.5 text-[11px] text-violet-800">Favorites appear first in this learner's reading-theme picker.</p>
+                  <p className="mt-0.5 text-xs text-violet-800">Favorites appear first in this learner's reading-theme picker.</p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {ALLO_TEACHER_READING_THEME_OPTIONS.map(option => {
                       const selected = favorites.includes(option.id);
@@ -2829,7 +2883,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                   </div>
                 </fieldset>
                 <div className="mt-3 flex items-center justify-between gap-3 border-t border-violet-200 pt-3">
-                  <span className="text-[11px] text-violet-800">Choice priority: learner → saved preference → group → class → device.</span>
+                  <span className="text-xs text-violet-800">Choice priority: learner → saved preference → group → class → device.</span>
                   <button type="button" onClick={() => handleResetLearnerReadingPreference(readingPreferencesStudent)} className="min-h-9 shrink-0 rounded-lg border border-violet-300 bg-white px-3 text-xs font-bold text-violet-900 hover:bg-violet-100">Reset to defaults</button>
                 </div>
               </section>
@@ -2840,7 +2894,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               <summary className="cursor-pointer font-bold text-sm text-cyan-900">Saved session history ({rosterKey.sessionHistory.length})</summary>
               <div role="group" className="mt-3 rounded-lg border border-cyan-100 bg-white p-2" aria-label="Saved session history filters">
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <label className="text-[11px] font-bold text-cyan-900">Focus
+                  <label className="text-xs font-bold text-cyan-900">Focus
                     <select value={sessionHistoryFocus} onChange={event => setSessionHistoryFocus(event.target.value)} className="mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800" aria-label="Filter saved sessions by follow-up focus">
                       <option value="all">All saved sessions</option>
                       <option value="follow_up">Needs follow-up</option>
@@ -2849,7 +2903,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       <option value="planned">Has follow-up plan</option>
                     </select>
                   </label>
-                  <label className="text-[11px] font-bold text-cyan-900">Activity
+                  <label className="text-xs font-bold text-cyan-900">Activity
                     <select value={sessionHistoryActivityKind} onChange={event => setSessionHistoryActivityKind(event.target.value)} className="mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800" aria-label="Filter saved sessions by activity type">
                       <option value="all">All activity types</option>
                       {sessionActivityKinds.map(kind => <option key={kind} value={kind}>{kind.replace(/_/g, ' ')}</option>)}
@@ -2864,17 +2918,17 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                     <summary className="cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2">
                       <span>{session.endedAt ? new Date(session.endedAt).toLocaleString() : 'Saved session'}</span>
                       <span className="text-cyan-700">{Object.keys(session.participants || {}).length} present</span>
-                      <span className="text-slate-500">{session.mode === 'mailbox' ? 'Mailbox' : 'Firebase'}</span>
+                      <span className="text-slate-600">{session.mode === 'mailbox' ? 'Mailbox' : 'Firebase'}</span>
                     </summary>
                     <div className="mt-2 text-xs text-slate-600 space-y-1">
                       <div className="flex justify-end">
-                        <button type="button" onClick={() => downloadRosterSessionEvidenceCsv(session)} className="min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-100" aria-label="Download this privacy-safe session evidence report as CSV">Download evidence CSV</button>
+                        <button type="button" onClick={() => downloadRosterSessionEvidenceCsv(session)} className="min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-xs font-bold text-cyan-900 hover:bg-cyan-100" aria-label="Download this privacy-safe session evidence report as CSV">Download evidence CSV</button>
                       </div>
                       {typeof session.durationMinutes === 'number' && <p>Duration: {session.durationMinutes} min</p>}
                       <div className="rounded-lg border border-violet-100 bg-violet-50/60 p-2" data-session-follow-up-planner={session.id}>
                         <p className="font-bold text-violet-900">Post-session follow-up</p>
-                        <p className="mt-0.5 text-[11px] text-violet-700">Local planning only. Nothing is sent or assigned until you choose an action.</p>
-                        <label className="mt-2 block text-[11px] font-bold text-slate-700">Codename-only private note
+                        <p className="mt-0.5 text-xs text-violet-700">Local planning only. Nothing is sent or assigned until you choose an action.</p>
+                        <label className="mt-2 block text-xs font-bold text-slate-700">Codename-only private note
                           <textarea
                             value={noteDraftFor(session)}
                             onChange={event => setSessionNoteDrafts(previous => ({ ...previous, [session.id]: event.target.value.slice(0, 1000) }))}
@@ -2885,7 +2939,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                           />
                           <span className="mt-1 block font-normal text-violet-700">Use codenames only. This note is stored on this device and included in roster backups.</span>
                         </label>
-                        <button type="button" onClick={() => saveSessionNote(session)} className="min-h-9 rounded-lg border border-violet-300 bg-white px-2 text-[11px] font-bold text-violet-900">Save codename note</button>
+                        <button type="button" onClick={() => saveSessionNote(session)} className="min-h-9 rounded-lg border border-violet-300 bg-white px-2 text-xs font-bold text-violet-900">Save codename note</button>
                         {(() => {
                           const draft = planDraftFor(session);
                           const savedPlan = normalizeRosterSessionFollowUpPlan(session.followUpPlan);
@@ -2899,36 +2953,36 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                           const liveActionLabel = savedPlan?.audience === 'cohort' ? 'Assign to current live cohort' : 'Present to current live class';
                           return (
                             <div className="mt-2 border-t border-violet-100 pt-2">
-                              {safeFollowUpResources.length === 0 && <p className="mb-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-900">Create or restore a student-safe resource in History to prepare this follow-up. Any saved plan remains available to review or clear.</p>}
+                              {safeFollowUpResources.length === 0 && <p className="mb-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">Create or restore a student-safe resource in History to prepare this follow-up. Any saved plan remains available to review or clear.</p>}
                               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                <label className="text-[11px] font-bold text-slate-700">Existing resource
+                                <label className="text-xs font-bold text-slate-700">Existing resource
                                   <select value={draft.resourceId} disabled={safeFollowUpResources.length === 0 || liveSending} onChange={event => setSessionPlanDrafts(previous => ({ ...previous, [session.id]: { ...draft, resourceId: event.target.value } }))} aria-label={'Choose follow-up resource for session ' + session.id} className="mt-1 min-h-9 w-full rounded-lg border border-violet-200 bg-white px-2 text-xs text-slate-800 disabled:bg-slate-100">
                                     {safeFollowUpResources.length === 0 && <option value="">No student-safe resources in History</option>}
                                     {safeFollowUpResources.map(item => <option key={item.id} value={item.id}>{item.title || item.type || 'Untitled resource'}</option>)}
                                   </select>
                                 </label>
-                                <label className="text-[11px] font-bold text-slate-700">Planned audience
+                                <label className="text-xs font-bold text-slate-700">Planned audience
                                   <select value={draft.audienceKey} disabled={liveSending} onChange={event => setSessionPlanDrafts(previous => ({ ...previous, [session.id]: { ...draft, audienceKey: event.target.value } }))} aria-label={'Choose follow-up audience for session ' + session.id} className="mt-1 min-h-9 w-full rounded-lg border border-violet-200 bg-white px-2 text-xs text-slate-800">
                                     <option value="class">Whole class</option>
                                     {supportCohorts.map(cohort => <option key={cohort.code} value={'cohort:' + cohort.code}>{cohort.label} ({cohort.count})</option>)}
                                   </select>
                                 </label>
                               </div>
-                              <p className="mt-2 text-[11px] text-slate-600">Planned audience is a private distribution reminder. Prepared links are shareable, not recipient-restricted. When a live session is active, the explicit live action below re-resolves current recipients before using the existing class or individual delivery controls.</p>
-                              {planDirty && <p role="status" className="mt-2 text-[11px] font-bold text-amber-800">Save your plan changes before opening, assigning, or presenting this resource.</p>}
+                              <p className="mt-2 text-xs text-slate-600">Planned audience is a private distribution reminder. Prepared links are shareable, not recipient-restricted. When a live session is active, the explicit live action below re-resolves current recipients before using the existing class or individual delivery controls.</p>
+                              {planDirty && <p role="status" className="mt-2 text-xs font-bold text-amber-800">Save your plan changes before opening, assigning, or presenting this resource.</p>}
                               <div className="mt-2 flex flex-wrap gap-2">
-                                <button type="button" onClick={() => saveSessionPlan(session)} disabled={safeFollowUpResources.length === 0 || liveSending} className="min-h-9 rounded-lg border border-violet-300 bg-violet-100 px-2 text-[11px] font-bold text-violet-900 disabled:cursor-not-allowed disabled:opacity-50">Save follow-up plan</button>
-                                {savedResource && typeof onOpenFollowUpResource === 'function' && <button type="button" onClick={() => onOpenFollowUpResource(savedResource)} disabled={planDirty || liveSending} className="min-h-9 rounded-lg border border-sky-300 bg-sky-50 px-2 text-[11px] font-bold text-sky-900 disabled:cursor-not-allowed disabled:opacity-50">Open planned resource</button>}
-                                {savedResource && typeof onPrepareFollowUpAssignment === 'function' && <button type="button" onClick={() => onPrepareFollowUpAssignment(savedResource)} disabled={planDirty || liveSending} className="min-h-9 rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-[11px] font-bold text-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">Prepare assignment link</button>}
-                                {canSendToLive && <button type="button" onClick={() => sendSessionPlanToLive(session)} disabled={liveActionInFlight} aria-label={liveActionLabel + ' from saved follow-up plan'} className="min-h-9 rounded-lg border border-fuchsia-300 bg-fuchsia-50 px-2 text-[11px] font-bold text-fuchsia-900 disabled:cursor-not-allowed disabled:opacity-50">{liveSending ? (savedPlan.audience === 'cohort' ? 'Assigning…' : 'Presenting…') : liveActionLabel}</button>}
-                                {savedPlan && <button type="button" onClick={() => setSessionPlanStatus(session, savedPlan.status === 'completed' ? 'planned' : 'completed')} disabled={planDirty || liveSending} className="min-h-9 rounded-lg border border-slate-300 bg-white px-2 text-[11px] font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{savedPlan.status === 'completed' ? 'Reopen plan' : 'Mark complete'}</button>}
-                                {savedPlan && <button type="button" onClick={() => clearSessionPlan(session)} disabled={liveSending} className="min-h-9 rounded-lg border border-rose-200 bg-white px-2 text-[11px] font-bold text-rose-700 disabled:cursor-not-allowed disabled:opacity-50">Clear plan</button>}
+                                <button type="button" onClick={() => saveSessionPlan(session)} disabled={safeFollowUpResources.length === 0 || liveSending} className="min-h-9 rounded-lg border border-violet-300 bg-violet-100 px-2 text-xs font-bold text-violet-900 disabled:cursor-not-allowed disabled:opacity-50">Save follow-up plan</button>
+                                {savedResource && typeof onOpenFollowUpResource === 'function' && <button type="button" onClick={() => onOpenFollowUpResource(savedResource)} disabled={planDirty || liveSending} className="min-h-9 rounded-lg border border-sky-300 bg-sky-50 px-2 text-xs font-bold text-sky-900 disabled:cursor-not-allowed disabled:opacity-50">Open planned resource</button>}
+                                {savedResource && typeof onPrepareFollowUpAssignment === 'function' && <button type="button" onClick={() => onPrepareFollowUpAssignment(savedResource)} disabled={planDirty || liveSending} className="min-h-9 rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-xs font-bold text-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">Prepare assignment link</button>}
+                                {canSendToLive && <button type="button" onClick={() => sendSessionPlanToLive(session)} disabled={liveActionInFlight} aria-label={liveActionLabel + ' from saved follow-up plan'} className="min-h-9 rounded-lg border border-fuchsia-300 bg-fuchsia-50 px-2 text-xs font-bold text-fuchsia-900 disabled:cursor-not-allowed disabled:opacity-50">{liveSending ? (savedPlan.audience === 'cohort' ? 'Assigning…' : 'Presenting…') : liveActionLabel}</button>}
+                                {savedPlan && <button type="button" onClick={() => setSessionPlanStatus(session, savedPlan.status === 'completed' ? 'planned' : 'completed')} disabled={planDirty || liveSending} className="min-h-9 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50">{savedPlan.status === 'completed' ? 'Reopen plan' : 'Mark complete'}</button>}
+                                {savedPlan && <button type="button" onClick={() => clearSessionPlan(session)} disabled={liveSending} className="min-h-9 rounded-lg border border-rose-200 bg-white px-2 text-xs font-bold text-rose-700 disabled:cursor-not-allowed disabled:opacity-50">Clear plan</button>}
                               </div>
-                              {savedPlan && <p className="mt-2 text-[11px] text-violet-800"><span className="font-bold">{savedPlan.status === 'completed' ? 'Completed' : 'Planned'}:</span> {savedPlan.resourceTitle} · {savedPlan.cohortLabel}{!savedResource ? ' · resource no longer available in History' : ''}</p>}
+                              {savedPlan && <p className="mt-2 text-xs text-violet-800"><span className="font-bold">{savedPlan.status === 'completed' ? 'Completed' : 'Planned'}:</span> {savedPlan.resourceTitle} · {savedPlan.cohortLabel}{!savedResource ? ' · resource no longer available in History' : ''}</p>}
                             </div>
                           );
                         })()}
-                        {sessionPlannerStatus[session.id] && <p role="status" aria-live="polite" className="mt-2 text-[11px] font-bold text-violet-800">{sessionPlannerStatus[session.id]}</p>}
+                        {sessionPlannerStatus[session.id] && <p role="status" aria-live="polite" className="mt-2 text-xs font-bold text-violet-800">{sessionPlannerStatus[session.id]}</p>}
                       </div>
                       {Array.isArray(session.liveActivities) && session.liveActivities.length > 0 && (
                         <p><span className="font-bold">Live activity evidence:</span> {session.liveActivities.length} activit{session.liveActivities.length === 1 ? 'y' : 'ies'} · {session.liveActivities.reduce((sum, activity) => sum + (activity.submitted || 0), 0)} submissions · {session.liveActivities.reduce((sum, activity) => sum + (activity.revised || 0), 0)} revisions</p>
@@ -2944,8 +2998,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                               {session.insightBrief.evidenceCohorts.map(cohort => (
                                 <details key={cohort.code} className={'rounded border p-1.5 ' + (cohort.intent === 'celebrate' ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50')}>
                                   <summary className="cursor-pointer font-bold text-slate-700">{cohort.label} - {cohort.count}</summary>
-                                  <p className="mt-1 text-[11px] text-slate-600">{cohort.recommendedAction}</p>
-                                  <p className="mt-1 text-[11px] text-slate-600">{(cohort.codenames || []).join(', ')}</p>
+                                  <p className="mt-1 text-xs text-slate-600">{cohort.recommendedAction}</p>
+                                  <p className="mt-1 text-xs text-slate-600">{(cohort.codenames || []).join(', ')}</p>
                                 </details>
                               ))}
                             </div>
@@ -2970,11 +3024,11 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                     </div>
                   </details>
                 ))}
-                {filteredSessionHistory.length > 10 && <p className="text-[11px] text-cyan-800">Showing the 10 most recent matching sessions of {filteredSessionHistory.length}. Export JSON for the complete retained history.</p>}
+                {filteredSessionHistory.length > 10 && <p className="text-xs text-cyan-800">Showing the 10 most recent matching sessions of {filteredSessionHistory.length}. Export JSON for the complete retained history.</p>}
               </div>
             </details>
           )}          {rosterKey && (
-            <div className="flex flex-wrap gap-3 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium">
+            <div className="flex flex-wrap gap-3 pt-3 border-t border-slate-100 text-xs text-slate-600 font-medium">
               <span>{groupIds.length} group{groupIds.length !== 1 ? 's' : ''}</span>
               <span>{Object.keys(students).length} student{Object.keys(students).length !== 1 ? 's' : ''}</span>
               <span>{getUnassigned().length} unassigned</span>
@@ -3045,7 +3099,7 @@ const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
                 x={x + barWidth / 2}
                 y={y - 5}
                 textAnchor="middle"
-                className="fill-slate-500 text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none"
+                className="fill-slate-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none"
               >
                 {d.value}
               </text>
@@ -3053,7 +3107,7 @@ const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
                 x={x + barWidth / 2}
                 y={height - 5}
                 textAnchor="middle"
-                className="fill-slate-400 text-[11px] uppercase tracking-wider font-medium"
+                className="fill-slate-400 text-xs uppercase tracking-wider font-medium"
               >
                 {d.label.length > 5 ? d.label.substring(0, 4) + '.' : d.label}
               </text>
@@ -3272,7 +3326,7 @@ const StudentConceptQuestOverlay = React.memo(({ sessionData, user, activeSessio
               const isLocked = room.kind === 'boss' && (quest.sigils || []).length < (neededSigils);
               const lockedSuffix = isLocked ? tr('room_locked_suffix', ', locked until more concept sigils are earned') : '';
               const currentSuffix = isCurrent ? tr('room_current_suffix', ', current room') : '';
-              return <button key={room.id} type="button" disabled={!isAdjacent || isLocked || quest.phase !== 'explore' || escapeState.isPaused || isSubmitting} onClick={() => writeChoice('questVotes', room.id)} style={{ left: `clamp(3.5rem, ${room.x}%, calc(100% - 3.5rem))`, top: `${room.y}%` }} className={`min-h-20 min-w-0 break-words sm:absolute sm:min-h-14 sm:w-24 sm:-translate-x-1/2 sm:-translate-y-1/2 rounded-xl border-2 p-1 text-center text-[11px] font-bold focus:outline-none focus:ring-4 focus:ring-yellow-300 ${isCurrent ? 'border-yellow-300 bg-yellow-500 text-slate-900' : isAdjacent && !isLocked ? 'border-cyan-300 bg-indigo-800 hover:bg-indigo-700' : isVisited ? 'border-emerald-500 bg-slate-800' : 'border-slate-600 bg-slate-900 text-slate-300'} disabled:cursor-default`} aria-pressed={myVote === room.id} aria-current={isCurrent ? 'location' : undefined} aria-label={tr('room_aria', '{name}, {kind}{locked}{current}', { name: room.name, kind: tr(`room_kind_${room.kind}`, room.kind), locked: lockedSuffix, current: currentSuffix })}><span className="block text-xl" aria-hidden="true">{isLocked ? '🔒' : room.emoji}</span>{room.name}</button>;
+              return <button key={room.id} type="button" disabled={!isAdjacent || isLocked || quest.phase !== 'explore' || escapeState.isPaused || isSubmitting} onClick={() => writeChoice('questVotes', room.id)} style={{ left: `clamp(3.5rem, ${room.x}%, calc(100% - 3.5rem))`, top: `${room.y}%` }} className={`min-h-20 min-w-0 break-words sm:absolute sm:min-h-14 sm:w-24 sm:-translate-x-1/2 sm:-translate-y-1/2 rounded-xl border-2 p-1 text-center text-xs font-bold focus:outline-none focus:ring-4 focus:ring-yellow-300 ${isCurrent ? 'border-yellow-300 bg-yellow-500 text-slate-900' : isAdjacent && !isLocked ? 'border-cyan-300 bg-indigo-800 hover:bg-indigo-700' : isVisited ? 'border-emerald-500 bg-slate-800' : 'border-slate-600 bg-slate-900 text-slate-300'} disabled:cursor-default`} aria-pressed={myVote === room.id} aria-current={isCurrent ? 'location' : undefined} aria-label={tr('room_aria', '{name}, {kind}{locked}{current}', { name: room.name, kind: tr(`room_kind_${room.kind}`, room.kind), locked: lockedSuffix, current: currentSuffix })}><span className="block text-xl" aria-hidden="true">{isLocked ? '🔒' : room.emoji}</span>{room.name}</button>;
             })}
           </div>
           <div className="mt-3 rounded-xl bg-indigo-950/60 p-3"><p className="font-bold">{currentRoom?.emoji} {currentRoom?.name}</p><p className="text-sm text-indigo-100">{tr('concept_label', 'Concept: {concept}', { concept: currentRoom?.concept || '' })}</p>
@@ -4861,19 +4915,19 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 aria-label="Confidence check summary"
               >
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-indigo-900">Confidence check</span>
-                  <span className="text-[11px] font-semibold text-indigo-700">Diagnostic only — never changes points</span>
+                  <span className="text-xs font-black uppercase tracking-wider text-indigo-900">Confidence check</span>
+                  <span className="text-xs font-semibold text-indigo-700">Diagnostic only — never changes points</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {liveConfidenceTiles.map((tile) => (
                     <div key={tile.key} className={`rounded-lg border px-2 py-1.5 ${tile.tone}`}>
                       <div className="text-lg font-black">{liveConfidenceBuckets[tile.key] || 0}</div>
-                      <div className="text-[10px] font-bold">{tile.label}</div>
+                      <div className="text-xs font-bold">{tile.label}</div>
                     </div>
                   ))}
                 </div>
                 {(liveQuestionSummary.confidenceMissingCount > 0 || liveQuestionSummary.confidenceAwaitingReviewCount > 0) && (
-                  <p className="mt-2 text-[11px] font-medium text-indigo-800">
+                  <p className="mt-2 text-xs font-medium text-indigo-800">
                     {liveQuestionSummary.confidenceMissingCount || 0} without confidence · {liveQuestionSummary.confidenceAwaitingReviewCount || 0} awaiting teacher review
                   </p>
                 )}
@@ -4929,7 +4983,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                             </div>
                             <div className="text-right min-w-[50px]">
                                 <div className="font-black text-slate-800 text-sm">{stat.value}</div>
-                                <div className="text-[11px] text-slate-600 font-mono">{stat.percent}%</div>
+                                <div className="text-xs text-slate-600 font-mono">{stat.percent}%</div>
                             </div>
                         </div>
                     </div>
@@ -5226,7 +5280,8 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         if (phase === 'answering' || bossBattleEnded || quizWriteRef.current) return;
         try {
             const nextIdx = currentQuestionIndex + 1;
-            if (nextIdx >= generatedContent?.data.questions.length) return;
+            const totalQs = Array.isArray(generatedContent?.data?.questions) ? generatedContent.data.questions.length : 0;
+            if (nextIdx >= totalQs) return;
             const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
             await writeQuiz(sessionRef, {
                 "quizState.currentQuestionIndex": nextIdx,
@@ -5267,16 +5322,16 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         };
         return (
             <div className="mt-5 w-full max-w-sm mx-auto text-left bg-black/30 rounded-xl p-3 max-h-44 overflow-y-auto">
-                <div className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">{t('quiz.boss.debrief_title') || 'Battle debrief — accuracy by question'}</div>
+                <div className="text-xs font-black uppercase tracking-widest text-white/70 mb-2">{t('quiz.boss.debrief_title') || 'Battle debrief — accuracy by question'}</div>
                 {log.map((e, i) => (
                     <div key={i} className="flex items-center gap-2 mb-1" title={qText(e.questionIndex)}>
-                        <span className="text-[10px] font-bold text-white/80 w-7 shrink-0">Q{(e.questionIndex ?? i) + 1}</span>
+                        <span className="text-xs font-bold text-white/80 w-7 shrink-0">Q{(e.questionIndex ?? i) + 1}</span>
                         <div className="flex-1 h-2.5 bg-white/15 rounded-full overflow-hidden">
                             <div className={`h-full ${e.accuracy >= 70 ? 'bg-emerald-400' : e.accuracy >= 40 ? 'bg-amber-400' : 'bg-rose-500'}`} style={{ width: `${Math.max(4, e.accuracy)}%` }}></div>
                         </div>
-                        <span className="text-[10px] font-bold text-white w-9 text-right shrink-0">{e.accuracy}%</span>
+                        <span className="text-xs font-bold text-white w-9 text-right shrink-0">{e.accuracy}%</span>
                         {log.length > 1 && e === worst && e.accuracy < 70 && (
-                            <span className="text-[9px] font-black text-rose-200 bg-rose-900/60 border border-rose-400/40 rounded px-1 py-0.5 shrink-0" title={t('quiz.boss.debrief_reteach_title') || 'Lowest accuracy — a reteach candidate'}>{t('quiz.boss.debrief_reteach') || 'reteach?'}</span>
+                            <span className="text-xs font-black text-rose-200 bg-rose-900/60 border border-rose-400/40 rounded px-1 py-0.5 shrink-0" title={t('quiz.boss.debrief_reteach_title') || 'Lowest accuracy — a reteach candidate'}>{t('quiz.boss.debrief_reteach') || 'reteach?'}</span>
                         )}
                     </div>
                 ))}
@@ -5361,7 +5416,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     const handleSetGroupLanguage = onSetGroupLanguage;
     const handleSetGroupProfile = onSetGroupProfile;
     const handleDeleteGroup = onDeleteGroup;
-    const availableResources = generatedContent?.data.resources || [];
+    const availableResources = generatedContent?.data?.resources || [];
     const activeGroups = useMemo(() => Object.entries(groups).filter(([_, g]) => g !== null), [groups]);
     return (
         <div className="bg-white rounded-2xl shadow-xl border border-slate-400 overflow-hidden mb-6 animate-in motion-reduce:animate-none slide-in-from-top-4 duration-500" aria-busy={quizBusy}>
@@ -5452,9 +5507,9 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                     const pct = s && s.total > 0 ? Math.round((s.met / s.total) * 100) : null;
                     return <li key={c.id || i} className="flex flex-wrap items-center gap-2">
                       <span className="text-slate-700">{typeof c.statement === 'string' ? c.statement : ''}</span>
-                      <span className="font-mono text-[10px] text-indigo-700 bg-indigo-50 border border-indigo-100 rounded px-1">{c.id}</span>
+                      <span className="font-mono text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 rounded px-1">{c.id}</span>
                       {pct === null
-                        ? <span className="text-[11px] text-slate-500">no scored answers yet</span>
+                        ? <span className="text-xs text-slate-600">no scored answers yet</span>
                         : <span className={`font-bold ${pct >= 80 ? 'text-emerald-700' : pct >= 60 ? 'text-amber-700' : 'text-rose-700'}`} data-criterion-mastery={c.id}>{`${pct}% met (${s.met}/${s.total})`}</span>}
                     </li>;
                   })}
@@ -5487,11 +5542,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-bold text-indigo-900">{group.name}</span>
-                                            <button type="button" onClick={() => handleDeleteGroup(gid)} className="text-[11px] text-red-600 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded">{t('groups.remove_button')}</button>
+                                            <button type="button" onClick={() => handleDeleteGroup(gid)} className="text-xs text-red-600 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded">{t('groups.remove_button')}</button>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[11px] uppercase font-bold text-slate-600">{t('groups.resource_label')}</span>
+                                        <span className="text-xs uppercase font-bold text-slate-600">{t('groups.resource_label')}</span>
                                         <select aria-label={t('common.selection')}
                                             value={group.resourceId || ""} data-help-key="quiz_group_resource_select"
                                             onChange={(e) => handleSetGroupResource(gid, e.target.value)}
@@ -5504,18 +5559,18 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                             ))}
                                         </select>
                                         {isPushingResource[gid] === 'pushing' && (
-                                            <span className="flex items-center gap-1 text-[10px] text-purple-600 font-bold whitespace-nowrap">
+                                            <span className="flex items-center gap-1 text-xs text-purple-600 font-bold whitespace-nowrap">
                                                 <RefreshCw size={11} className="animate-spin motion-reduce:animate-none" /> {t('groups.pushing') || 'Pushing…'}
                                             </span>
                                         )}
                                         {isPushingResource[gid] === 'success' && (
-                                            <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold whitespace-nowrap">
+                                            <span className="flex items-center gap-1 text-xs text-emerald-600 font-bold whitespace-nowrap">
                                                 <CheckCircle2 size={11} /> {t('groups.pushed') || 'Sent'}
                                             </span>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[11px] uppercase font-bold text-slate-600">{t('groups.language_label') || 'Quiz Language'}</span>
+                                        <span className="text-xs uppercase font-bold text-slate-600">{t('groups.language_label') || 'Quiz Language'}</span>
                                         <select aria-label={t('common.selection')}
                                             value={group.language || ""} data-help-key="quiz_group_language_select"
                                             onChange={(e) => handleSetGroupLanguage(gid, e.target.value)}
@@ -5536,7 +5591,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[11px] uppercase font-bold text-slate-600">{t('groups.reading_level_label') || 'Reading Level'}</span>
+                                        <span className="text-xs uppercase font-bold text-slate-600">{t('groups.reading_level_label') || 'Reading Level'}</span>
                                         <select aria-label={t('common.reading_level')}
                                             value={group.readingLevel || ""} data-help-key="group_reading_level_select"
                                             onChange={(e) => handleSetGroupProfile(gid, 'readingLevel', e.target.value || null)}
@@ -5557,7 +5612,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[11px] uppercase font-bold text-slate-600">{t('groups.visual_density_label') || 'Visuals'}</span>
+                                        <span className="text-xs uppercase font-bold text-slate-600">{t('groups.visual_density_label') || 'Visuals'}</span>
                                         <select aria-label={t('common.visual_density')}
                                             value={group.visualDensity || "normal"} data-help-key="group_visual_density_select"
                                             onChange={(e) => handleSetGroupProfile(gid, 'visualDensity', e.target.value)}
@@ -5570,7 +5625,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[11px] uppercase font-bold text-slate-600">{t('groups.tts_speed_label') || 'TTS Speed'}</span>
+                                        <span className="text-xs uppercase font-bold text-slate-600">{t('groups.tts_speed_label') || 'TTS Speed'}</span>
                                         <select aria-label={t('common.tts_speed')}
                                             value={group.ttsSpeed ?? 1.0} data-help-key="group_tts_speed_select"
                                             onChange={(e) => handleSetGroupProfile(gid, 'ttsSpeed', parseFloat(e.target.value))}
@@ -5585,16 +5640,16 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <label className="flex items-center gap-1 text-[11px] font-bold text-slate-600 cursor-pointer" title={t('groups.karaoke_tooltip') || 'Auto-enable word highlighting for this group'}>
+                                        <label className="flex items-center gap-1 text-xs font-bold text-slate-600 cursor-pointer" title={t('groups.karaoke_tooltip') || 'Auto-enable word highlighting for this group'}>
                                             <input type="checkbox" checked={group.karaokeMode || false} onChange={(e) => handleSetGroupProfile(gid, 'karaokeMode', e.target.checked)} className="rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
                                             {t('groups.karaoke_label') || 'Karaoke Mode'}
                                         </label>
                                     <div className="flex items-center gap-3 mt-1">
-                                        <label className="flex items-center gap-1 text-[11px] font-bold text-slate-600 cursor-pointer" title={t('common.toggle_emoji_usage_for_this_group')}>
+                                        <label className="flex items-center gap-1 text-xs font-bold text-slate-600 cursor-pointer" title={t('common.toggle_emoji_usage_for_this_group')}>
                                             <input type="checkbox" checked={group.profile?.useEmojis || false} onChange={(e) => handleSetGroupProfile(gid, 'useEmojis', e.target.checked)} className="rounded border-slate-300 text-indigo-500 focus:ring-indigo-400" />
                                             {t('roster.emojis_label') || 'Use Emojis'}
                                         </label>
-                                        <select aria-label={t('common.text_format')} value={group.profile?.textFormat || 'Standard Text'} onChange={(e) => handleSetGroupProfile(gid, 'textFormat', e.target.value)} className="text-[11px] p-1 rounded border border-slate-400 bg-slate-50">
+                                        <select aria-label={t('common.text_format')} value={group.profile?.textFormat || 'Standard Text'} onChange={(e) => handleSetGroupProfile(gid, 'textFormat', e.target.value)} className="text-xs p-1 rounded border border-slate-400 bg-slate-50">
                                             <option value="Standard Text">{t('roster.format_standard') || 'Standard'}</option>
                                             <option value="Bullet Points">{t('roster.format_bullets') || 'Bullets'}</option>
                                             <option value="Outline">{t('roster.format_outline') || 'Outline'}</option>
@@ -5618,7 +5673,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                     return (
                                         <div key={uid} className={`relative p-2 rounded border text-xs ${groupName ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-100'}`}>
                                             <div className="font-bold truncate" title={student.displayName}>{student.displayName || "Anonymous"}</div>
-                                            <div className={`mt-1 text-[11px] font-mono truncat ${groupName ? 'text-indigo-600' : 'text-slate-600'}`}>
+                                            <div className={`mt-1 text-xs font-mono truncat ${groupName ? 'text-indigo-600' : 'text-slate-600'}`}>
                                                 {groupName || t('groups.main_class')}
                                             </div>
                                             <select aria-label={t('common.selection')}
@@ -5649,13 +5704,13 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                          <span className="text-xs font-bold text-slate-600 uppercase tracking-widest block mb-2">
                              {t('quiz.question_progress', {
                                  current: currentQuestionIndex + 1,
-                                 total: generatedContent?.data.questions.length
+                                 total: Array.isArray(generatedContent?.data?.questions) ? generatedContent.data.questions.length : 0
                              })}
                          </span>
-                         {question.imageUrl && (
+                         {question?.imageUrl && (
                              <img
                                  src={question.imageUrl}
-                                 alt={String(question.imageAlt || question.question || t('quiz.question_image') || 'Question image')}
+                                 alt={String(question.imageAltText || question.imageAlt || question.question || t('quiz.question_image') || 'Question image')}
                                  loading="eager"
                                  decoding="async"
                                  onError={(event) => { event.currentTarget.hidden = true; }}
@@ -5671,7 +5726,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                : 'Teacher-review item — game scoring pauses until an evaluative item.'}
                            </div>
                          )}
-                         {Array.isArray(question.optionImageUrls) && question.optionImageUrls.some(Boolean) && (
+                         {Array.isArray(question?.optionImageUrls) && question.optionImageUrls.some(Boolean) && (
                              <div
                                  className="mt-4 grid grid-cols-2 gap-2"
                                  data-live-quiz-presenter-option-grid="true"
@@ -5713,11 +5768,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                          </button>
                          {showQuizRoutingPanel && (
                              <div className="mt-2 space-y-2">
-                                 <p className="text-[11px] text-amber-700 leading-snug">
+                                 <p className="text-xs text-amber-700 leading-snug">
                                      When a student answers, auto-assign them to a group. Use this for <strong>choice</strong> (e.g., "Pirate Crew vs Space Crew") or <strong>formative-assessment</strong> routing. Group resources can then be staged per group via the Groups panel above.
                                  </p>
                                  {groupEntriesForRouting.length === 0 && (
-                                     <p className="text-[11px] text-red-700 italic">{t('teacher.quiz_routing.no_groups_warning') || 'Create at least one group in the Groups panel above before adding routing rules.'}</p>
+                                     <p className="text-xs text-red-700 italic">{t('teacher.quiz_routing.no_groups_warning') || 'Create at least one group in the Groups panel above before adding routing rules.'}</p>
                                  )}
                                  {currentRules.map(rule => {
                                      const hiddenIds = Array.isArray(rule.then.hiddenResourceIds) ? rule.then.hiddenResourceIds : [];
@@ -5735,14 +5790,14 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                        return (
                                          <div key={rule.id} className="bg-white border border-sky-200 rounded p-1.5 text-xs space-y-1">
                                            <div className="flex flex-wrap items-center gap-1">
-                                             <span className="px-1 py-0.5 rounded bg-sky-100 text-sky-800 text-[10px] font-bold uppercase tracking-wide">Confidence</span>
+                                             <span className="px-1 py-0.5 rounded bg-sky-100 text-sky-800 text-xs font-bold uppercase tracking-wide">Confidence</span>
                                              <span className="text-slate-700">{patternLabel} across {across.map(i => `Q${i + 1}`).join(', ')}</span>
                                              <span className="text-slate-600">→</span>
                                              <select
                                                  value={rule.then.groupId || ''}
                                                  onChange={e => updateQuizRoutingRule(rule.id, { then: { groupId: e.target.value } })}
                                                  aria-label="Destination group"
-                                                 className="border border-slate-300 rounded px-1 py-0.5 text-[11px]"
+                                                 className="border border-slate-300 rounded px-1 py-0.5 text-xs"
                                              >
                                                <option value="">— pick group —</option>
                                                {groupEntriesForRouting.map(([gid, g]) => <option key={gid} value={gid}>{g.name || gid}</option>)}
@@ -5753,7 +5808,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                                  className="ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
                                              >✕</button>
                                            </div>
-                                           <div className="text-[10px] text-slate-500 italic pl-1">
+                                           <div className="text-xs text-slate-600 italic pl-1">
                                              Screening heuristic, not a measurement: fires only when ≥2 of these items match the pattern (with a confidence report). Use it to start a conversation, not to label a learner.
                                            </div>
                                          </div>
@@ -5764,12 +5819,12 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                        return (
                                          <div key={rule.id} className="bg-white border border-purple-200 rounded p-1.5 text-xs space-y-1">
                                            <div className="flex flex-wrap items-center gap-1">
-                                             <span className="px-1 py-0.5 rounded bg-purple-100 text-purple-800 text-[10px] font-bold uppercase tracking-wide">Aggregation</span>
+                                             <span className="px-1 py-0.5 rounded bg-purple-100 text-purple-800 text-xs font-bold uppercase tracking-wide">Aggregation</span>
                                              <span className="text-slate-700">
                                                {String(rule.when.aggregate)} of items {across.map(i => `Q${i + 1}`).join(', ') || '(none)'} {rule.when.predicate} {String(rule.when.value)}
                                              </span>
                                              {across.length < 2 && (
-                                               <span className="ml-1 text-[10px] text-red-700 italic">— needs ≥2 items to fire</span>
+                                               <span className="ml-1 text-xs text-red-700 italic">— needs ≥2 items to fire</span>
                                              )}
                                              <button type="button"
                                                  onClick={() => removeQuizRoutingRule(rule.id)}
@@ -5777,7 +5832,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                                  className="ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
                                              >✕</button>
                                            </div>
-                                           <div className="text-[10px] text-slate-500 italic pl-1">
+                                           <div className="text-xs text-slate-600 italic pl-1">
                                              Aggregation-rule editing lands in a future update. Pre-authored or AI-generated rules can be deleted but not edited inline yet.
                                            </div>
                                          </div>
@@ -5829,20 +5884,20 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                            students whose answer matches this rule. Empty list = no resources hidden. */}
                                        {hideableResources.length > 0 && (
                                          <details className="mt-1">
-                                           <summary className="text-[11px] text-slate-600 cursor-pointer hover:text-slate-800">
+                                           <summary className="text-xs text-slate-600 cursor-pointer hover:text-slate-800">
                                              {hiddenIds.length > 0
                                                ? `→ Also hide ${hiddenIds.length} resource${hiddenIds.length === 1 ? '' : 's'}`
                                                : '→ Also hide resources (optional)'}
                                            </summary>
                                            <div className="mt-1 pl-2 pt-1 border-t border-amber-100 space-y-0.5 max-h-32 overflow-y-auto">
-                                             <p className="text-[10px] text-slate-500 italic mb-1">
+                                             <p className="text-xs text-slate-600 italic mb-1">
                                                Students whose answer matches this rule won't see the checked resources in their history panel. Other students still see everything.
                                              </p>
                                              {hideableResources.map(item => {
                                                const isChecked = hiddenIds.indexOf(item.id) !== -1;
                                                const label = item.title || (item.data && item.data.title) || item.type || item.id;
                                                return (
-                                                 <label key={item.id} className="flex items-center gap-1.5 text-[11px] text-slate-700 hover:bg-amber-50 rounded px-1 py-0.5 cursor-pointer">
+                                                 <label key={item.id} className="flex items-center gap-1.5 text-xs text-slate-700 hover:bg-amber-50 rounded px-1 py-0.5 cursor-pointer">
                                                    <input
                                                      type="checkbox"
                                                      checked={isChecked}
@@ -5850,7 +5905,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                                      aria-label={`Hide ${label} from students matching this rule`}
                                                      className="cursor-pointer"
                                                    />
-                                                   <span className="text-slate-500 uppercase text-[9px] font-bold min-w-[40px]">{item.type}</span>
+                                                   <span className="text-slate-600 uppercase text-xs font-bold min-w-[40px]">{item.type}</span>
                                                    <span className="truncate flex-1">{label}</span>
                                                  </label>
                                                );
@@ -5868,7 +5923,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                      measurement-reliable for placement decisions per the
                                      CBM-style discipline Aaron applies in Word Sounds). */}
                                  {_currentQuestionIsLikert ? (
-                                   <div className="rounded border border-purple-200 bg-purple-50 px-2 py-1.5 text-[11px] text-purple-900 leading-snug">
+                                   <div className="rounded border border-purple-200 bg-purple-50 px-2 py-1.5 text-xs text-purple-900 leading-snug">
                                      <strong className="font-bold">Likert routing:</strong> single-item Likert routing is refused — a single self-report tick is not measurement-reliable. Multi-item aggregation rules (avg / min / max across ≥2 items) are supported by the router and can be pre-authored or AI-generated; in-editor rule creation lands in a future update.
                                    </div>
                                  ) : (
@@ -6052,7 +6107,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                      )}
                      {(phase === 'revealed' || bossBattleEnded) && !liveQuestionSummary.unscored && liveAnswerGuide && (
                          <div className="mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 shadow-sm z-10">
-                             <span className="block text-[11px] font-black uppercase tracking-widest text-green-600 mb-1">{t('quiz.correct_answer_label')}</span>
+                             <span className="block text-xs font-black uppercase tracking-widest text-green-600 mb-1">{t('quiz.correct_answer_label')}</span>
                              <span className="text-lg font-bold">{_quizLiveMd().inline(liveAnswerGuide)}</span>
                          </div>
                      )}
@@ -6061,6 +6116,126 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         </div>
     );
 });
+const _tdNormalizeSurveyList = (raw) => {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  if (typeof raw === 'object') {
+    const out = [];
+    Object.values(raw).forEach((entry) => {
+      if (Array.isArray(entry)) entry.forEach((row) => { if (row && typeof row === 'object') out.push(row); });
+      else if (entry && typeof entry === 'object') out.push(entry);
+    });
+    return out;
+  }
+  return [];
+};
+
+const _tdSurveyConstructScore = (row, constructKey) => {
+  if (!row || typeof row !== 'object') return null;
+  const aliases = constructKey === 'perceived_usefulness'
+    ? ['perceived_usefulness', 'usefulness', 'pu']
+    : constructKey === 'ease_of_use'
+      ? ['ease_of_use', 'ease', 'peou']
+      : ['intention', 'behavioral_intention', 'bi'];
+  if (row.construct && aliases.includes(String(row.construct).toLowerCase()) && row.score !== undefined && row.score !== null) {
+    const n = Number(row.score);
+    return Number.isFinite(n) ? n : null;
+  }
+  const source = (row.answers && typeof row.answers === 'object') ? row.answers : row;
+  for (let i = 0; i < aliases.length; i += 1) {
+    const val = source[aliases[i]];
+    if (val !== undefined && val !== null && val !== '') {
+      const n = Number(val);
+      if (Number.isFinite(n)) return n;
+    }
+  }
+  return null;
+};
+
+const _tdEvaluateQuizForStudent = (quiz, responses) => {
+  const questions = Array.isArray(quiz?.data?.questions) ? quiz.data.questions : [];
+  if (!questions.length) return { total: 0, correct: 0, scorePct: null, missedQuestions: [] };
+  const quizResp = (responses && responses[quiz.id]) || null;
+  const snapshot = quizResp && typeof quizResp === 'object' && !Array.isArray(quizResp)
+    ? (quizResp.assessmentSubmitted || quizResp.assessmentDraft || null)
+    : null;
+  const snapshotItems = snapshot && Array.isArray(snapshot.items) ? snapshot.items : null;
+  const grader = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuizLiveAggregators;
+  const normText = (v) => String(v == null ? '' : v).trim().toLowerCase();
+  const resolveOptIdx = (opts, cand) => {
+    if (!Array.isArray(opts) || !opts.length || cand === undefined || cand === null) return -1;
+    if (typeof cand === 'number' && Number.isInteger(cand)) return (cand >= 0 && cand < opts.length) ? cand : -1;
+    const s = String(cand).trim();
+    if (!s) return -1;
+    const low = normText(s);
+    const byText = opts.findIndex((o) => normText(o && typeof o === 'object' ? (o.text || o.label || o.value) : o) === low);
+    if (byText >= 0) return byText;
+    if (/^[A-Za-z]$/.test(s)) {
+      const li = s.toUpperCase().charCodeAt(0) - 65;
+      if (li >= 0 && li < opts.length) return li;
+    }
+    if (/^\d+$/.test(s)) {
+      const ni = Number(s);
+      if (ni >= 0 && ni < opts.length) return ni;
+    }
+    return -1;
+  };
+  let correct = 0;
+  const missedQuestions = [];
+  questions.forEach((q, qIdx) => {
+    if (!q) return;
+    let isCorrect = false;
+    const snapRow = snapshotItems ? (snapshotItems.find((it) => it && Number(it.questionIndex) === qIdx) || snapshotItems[qIdx]) : null;
+    if (snapRow && snapRow.answered) {
+      if (grader && typeof grader.evaluateAssessmentItem === 'function') {
+        try {
+          const ev = grader.evaluateAssessmentItem(q, snapRow.answer, quiz.data?.scoringPolicy);
+          if (ev && ev.scorable) {
+            isCorrect = ev.verdict === 'correct' || (typeof ev.score === 'number' && typeof ev.maxScore === 'number' && ev.maxScore > 0 && ev.score >= ev.maxScore);
+          }
+        } catch (_) { /* fall through */ }
+      }
+      if (!isCorrect && snapRow.answer !== undefined && snapRow.answer !== null) {
+        const a = snapRow.answer;
+        const opts = Array.isArray(q.options) ? q.options : [];
+        if (q.type === 'multi-select' || Array.isArray(a.selectedIndices)) {
+          const expectedRaw = Array.isArray(q.correctIndices) ? q.correctIndices : (Array.isArray(q.correctAnswers) ? q.correctAnswers : []);
+          const expected = expectedRaw.map((c) => resolveOptIdx(opts, c)).filter((n) => n >= 0).sort((x, y) => x - y);
+          const chosen = (Array.isArray(a.selectedIndices) ? a.selectedIndices : []).map(Number).filter((n) => Number.isInteger(n) && n >= 0).sort((x, y) => x - y);
+          isCorrect = expected.length > 0 && expected.length === chosen.length && expected.every((v, i) => v === chosen[i]);
+        } else if (a.optionIndex !== undefined || a.optionText !== undefined) {
+          const keyCand = q.correctIndex !== undefined && q.correctIndex !== null ? q.correctIndex : (q.correct !== undefined && q.correct !== null ? q.correct : q.correctAnswer);
+          const expectedIdx = resolveOptIdx(opts, keyCand);
+          const chosenIdx = typeof a.optionIndex === 'number' ? a.optionIndex : resolveOptIdx(opts, a.optionText);
+          if (expectedIdx >= 0 && chosenIdx >= 0) isCorrect = expectedIdx === chosenIdx;
+          else if (a.optionText && q.correctAnswer != null) isCorrect = normText(a.optionText) === normText(q.correctAnswer);
+        } else if (a.text !== undefined || a.value !== undefined) {
+          const studentVal = normText(a.text !== undefined ? a.text : a.value);
+          const accepted = [q.expectedFill, q.correctAnswer, q.answer, q.correctValue]
+            .concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : [])
+            .filter((v) => v !== undefined && v !== null && String(v).trim() !== '')
+            .map(normText);
+          isCorrect = Boolean(studentVal) && accepted.includes(studentVal);
+        }
+      }
+    } else if (quizResp && quizResp[qIdx] !== undefined && quizResp[qIdx] !== null) {
+      const legacyResp = quizResp[qIdx];
+      const opts = Array.isArray(q.options) ? q.options : [];
+      const keyCand = q.correctIndex !== undefined && q.correctIndex !== null ? q.correctIndex : (q.correct !== undefined && q.correct !== null ? q.correct : q.correctAnswer);
+      const expectedIdx = resolveOptIdx(opts, keyCand);
+      const chosenIdx = resolveOptIdx(opts, legacyResp);
+      if (expectedIdx >= 0 && chosenIdx >= 0) {
+        isCorrect = expectedIdx === chosenIdx;
+      } else {
+        isCorrect = normText(legacyResp) === normText(q.correctAnswer != null ? q.correctAnswer : q.answer);
+      }
+    }
+    if (isCorrect) correct += 1;
+    else if (q.question) missedQuestions.push(q.question);
+  });
+  return { total: questions.length, correct, scorePct: (correct / questions.length) * 100, missedQuestions };
+};
+
 const calculateAnalyticsMetrics = (dashboardData) => {
   if (!dashboardData || !Array.isArray(dashboardData) || dashboardData.length === 0) {
     return {
@@ -6094,37 +6269,13 @@ const calculateAnalyticsMetrics = (dashboardData) => {
     if (quizItems.length > 0) {
         studentHasQuiz = true;
         quizItems.forEach(quiz => {
-            const questions = quiz.data?.questions || [];
-            if (questions.length === 0) return;
-            let correctCount = 0;
-            questions.forEach((q, qIdx) => {
-                const studentResponse = responses[quiz.id]?.[qIdx];
-                if (studentResponse !== undefined && studentResponse !== null) {
-                    let selectedOptionText = studentResponse;
-                    if (!isNaN(parseInt(studentResponse)) && q.options && q.options[studentResponse]) {
-                         selectedOptionText = q.options[studentResponse];
-                    }
-                    const cleanSelected = String(selectedOptionText).trim().toLowerCase();
-                    const cleanCorrect = String(q.correctAnswer).trim().toLowerCase();
-                    if (cleanSelected === cleanCorrect) {
-                        correctCount++;
-                    } else {
-                        const qText = q.question;
-                        if (!missedQuestionsFrequency[qText]) {
-                            missedQuestionsFrequency[qText] = 0;
-                        }
-                        missedQuestionsFrequency[qText]++;
-                    }
-                } else {
-                    const qText = q.question;
-                    if (!missedQuestionsFrequency[qText]) {
-                        missedQuestionsFrequency[qText] = 0;
-                    }
-                    missedQuestionsFrequency[qText]++;
-                }
+            const evaluated = _tdEvaluateQuizForStudent(quiz, responses);
+            if (evaluated.total === 0) return;
+            evaluated.missedQuestions.forEach((qText) => {
+                if (!missedQuestionsFrequency[qText]) missedQuestionsFrequency[qText] = 0;
+                missedQuestionsFrequency[qText]++;
             });
-            const score = (correctCount / questions.length) * 100;
-            totalQuizPercentage += score;
+            totalQuizPercentage += evaluated.scorePct;
             totalQuizzesCount++;
         });
     }
@@ -6191,7 +6342,7 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
                              <g key={i} className="group cursor-pointer">
                                  <circle cx={x} cy={y} r="5" className="fill-white stroke-indigo-600 stroke-2 transition-all motion-reduce:transition-none duration-300 group-hover:r-7 group-hover:fill-indigo-50" />
                                  <foreignObject x={Math.min(width - 120, Math.max(0, x - 60))} y={y - 50} width="120" height="50" className="opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none pointer-events-none z-10">
-                                     <div className="bg-slate-800 text-white text-[11px] px-3 py-2 rounded-lg text-center shadow-xl">
+                                     <div className="bg-slate-800 text-white text-xs px-3 py-2 rounded-lg text-center shadow-xl">
                                          <div className="font-bold">{new Date(l.timestamp).toLocaleDateString()}</div>
                                          <div className="text-yellow-300 font-mono">{l.xp} XP</div>
                                      </div>
@@ -6201,7 +6352,7 @@ const LongitudinalProgressChart = React.memo(({ logs }) => {
                     })}
                 </svg>
             </div>
-            <div className="flex justify-between text-[11px] text-slate-600 font-medium mt-2 px-2">
+            <div className="flex justify-between text-xs text-slate-600 font-medium mt-2 px-2">
                 <span>{t('dashboard.progress_chart.label_start')}: {new Date(logs[0].timestamp).toLocaleDateString()}</span>
                 <span>{t('dashboard.progress_chart.label_current')}: {new Date(logs[logs.length-1].timestamp).toLocaleDateString()}</span>
             </div>
@@ -6299,19 +6450,37 @@ const _BUILTIN_METRIC_REGISTRY = [
       const sfMap = new Map();
       const sfTitles = new Map();
       const sfFrameCounts = new Map();
+      const scaffoldBlankPattern = /(\[(?!\s*\d+(?:\s*[,;-]\s*\d+)*\s*\])[^\]\n]*\](?!\())/;
       (dashboardData || []).forEach(s => {
         const hist = s.history || [];
         const sfItems = hist.filter(h => h && h.type === 'sentence-frames');
         sfItems.forEach(item => {
-          sfTitles.set(item.id, item.title || 'Sentence Frames');
+          const gid = String(item.id);
+          sfTitles.set(gid, item.title || 'Sentence Frames');
           const studentResps = (s.responses && s.responses[item.id]) || {};
           const items = (item.data && Array.isArray(item.data.items)) ? item.data.items : [];
-          items.forEach((_, idx) => {
-            const responseVal = studentResps[idx];
-            const filled = responseVal !== undefined && responseVal !== null && String(responseVal).trim().length > 0;
-            sfMap.set(`${s.id}:${item.id}:${idx}`, filled);
-            sfFrameCounts.set(item.id, Math.max(sfFrameCounts.get(item.id) || 0, idx + 1));
-          });
+          if (item.data && item.data.mode !== 'list' && typeof item.data.text === 'string' && !items.length) {
+            const blankKeys = [];
+            item.data.text.split(scaffoldBlankPattern).forEach((_, rIdx) => {
+              if (rIdx % 2 === 1) blankKeys.push('paragraph-' + rIdx);
+            });
+            blankKeys.forEach((bKey) => {
+              const responseVal = studentResps[bKey];
+              const filled = responseVal !== undefined && responseVal !== null && String(responseVal).trim().length > 0;
+              sfMap.set(`${s.id}:${gid}:${bKey}`, filled);
+            });
+            if (blankKeys.length) sfFrameCounts.set(gid, Math.max(sfFrameCounts.get(gid) || 0, blankKeys.length));
+          } else {
+            let visibleCount = 0;
+            items.forEach((entry, idx) => {
+              if (entry && (entry.isSelected === false || entry.selected === false)) return;
+              visibleCount += 1;
+              const responseVal = studentResps[idx];
+              const filled = responseVal !== undefined && responseVal !== null && String(responseVal).trim().length > 0;
+              sfMap.set(`${s.id}:${gid}:${idx}`, filled);
+            });
+            if (visibleCount) sfFrameCounts.set(gid, Math.max(sfFrameCounts.get(gid) || 0, visibleCount));
+          }
         });
       });
       const results = [];
@@ -6321,7 +6490,7 @@ const _BUILTIN_METRIC_REGISTRY = [
         const studentsAttempted = new Set();
         for (const [key, filled] of sfMap.entries()) {
           const [studentId, gid] = key.split(':');
-          if (gid !== genId) continue;
+          if (gid !== String(genId)) continue;
           totalStudentFrames++;
           if (filled) { filledFrames++; studentsAttempted.add(studentId); }
         }
@@ -6599,13 +6768,13 @@ const AllToolActivityPanel = React.memo(({ student, t }) => {
     <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm mb-6" data-help-key="dashboard_all_tool_activity">
       <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4 flex items-center gap-2">
         🧰 {t('dashboard.all_tool_activity') || 'All Tool Activity'}
-        <span className="text-[10px] font-normal italic text-slate-500 normal-case">({active.length} tool{active.length === 1 ? '' : 's'} used)</span>
+        <span className="text-xs font-normal italic text-slate-600 normal-case">({active.length} tool{active.length === 1 ? '' : 's'} used)</span>
       </h4>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
         {active.map(e => (
           <div key={e.id} className={`${_metricTileColor(e.color)} border rounded-lg p-3 text-center`}>
             <div className="text-2xl font-black">{e.n}</div>
-            <div className="text-[10px] font-bold uppercase mt-1 leading-tight">{e.icon} {e.label}</div>
+            <div className="text-xs font-bold uppercase mt-1 leading-tight">{e.icon} {e.label}</div>
           </div>
         ))}
       </div>
@@ -6710,16 +6879,16 @@ const _NotebookQualityCard = ({ tone, label, value, suffix, denom, hint }) => {
     green:  { bg: 'bg-emerald-50',  border: 'border-emerald-300',  text: 'text-emerald-800',  num: 'text-emerald-700'  },
     amber:  { bg: 'bg-amber-50',    border: 'border-amber-300',    text: 'text-amber-800',    num: 'text-amber-700'    },
     red:    { bg: 'bg-rose-50',     border: 'border-rose-300',     text: 'text-rose-800',     num: 'text-rose-700'     },
-    gray:   { bg: 'bg-slate-50',    border: 'border-slate-300',    text: 'text-slate-600',    num: 'text-slate-500'    },
+    gray:   { bg: 'bg-slate-50',    border: 'border-slate-300',    text: 'text-slate-600',    num: 'text-slate-600'    },
   })[tone];
   return (
     <div className={`${palette.bg} ${palette.border} border rounded-lg p-3`} title={hint}>
       <div className="flex items-baseline justify-between mb-1">
-        <span className={`text-[10px] font-bold uppercase tracking-wider ${palette.text}`}>{label}</span>
-        {denom ? <span className="text-[10px] text-slate-500 font-mono">{denom}</span> : null}
+        <span className={`text-xs font-bold uppercase tracking-wider ${palette.text}`}>{label}</span>
+        {denom ? <span className="text-xs text-slate-600 font-mono">{denom}</span> : null}
       </div>
       <div className={`text-2xl font-black ${palette.num}`}>{value === null || value === undefined ? '—' : value}{suffix || ''}</div>
-      {hint ? <div className="text-[10px] text-slate-600 mt-1 leading-snug">{hint}</div> : null}
+      {hint ? <div className="text-xs text-slate-600 mt-1 leading-snug">{hint}</div> : null}
     </div>
   );
 };
@@ -6741,7 +6910,7 @@ const CrossToolMisconceptionsSection = React.memo(({ dashboardData, t }) => {
       <p className="text-xs text-slate-600 mb-4 italic">{t('dashboard.cross_misconceptions.subtitle') || 'Structural gaps in student work across non-quiz tools. Each pattern is a class-wide instructional opportunity.'}</p>
       {signals.noteTaking.length > 0 && (
         <div className="mb-4">
-          <h4 className="text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-2">📓 {t('dashboard.cross_misconceptions.notebook_label') || 'Note-taking field gaps'}</h4>
+          <h4 className="text-xs font-bold text-violet-700 uppercase tracking-wider mb-2">📓 {t('dashboard.cross_misconceptions.notebook_label') || 'Note-taking field gaps'}</h4>
           <ul className="space-y-2">
             {signals.noteTaking.slice(0, 6).map((s, i) => (
               <li key={i} className="bg-orange-50 border-l-4 border-orange-400 rounded-r-md p-3">
@@ -6757,7 +6926,7 @@ const CrossToolMisconceptionsSection = React.memo(({ dashboardData, t }) => {
       )}
       {signals.sentenceFrames.length > 0 && (
         <div className="mb-4">
-          <h4 className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-2">✍️ {t('dashboard.cross_misconceptions.frames_label') || 'Sentence-frame response gaps'}</h4>
+          <h4 className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2">✍️ {t('dashboard.cross_misconceptions.frames_label') || 'Sentence-frame response gaps'}</h4>
           <ul className="space-y-2">
             {signals.sentenceFrames.slice(0, 5).map((s, i) => (
               <li key={i} className="bg-indigo-50 border-l-4 border-indigo-400 rounded-r-md p-3">
@@ -6773,7 +6942,7 @@ const CrossToolMisconceptionsSection = React.memo(({ dashboardData, t }) => {
       )}
       {signals.conceptSort.length > 0 && (
         <div>
-          <h4 className="text-[11px] font-bold text-rose-700 uppercase tracking-wider mb-2">🃏 {t('dashboard.cross_misconceptions.concept_sort_label') || 'Concept Sort misplacement patterns'}</h4>
+          <h4 className="text-xs font-bold text-rose-700 uppercase tracking-wider mb-2">🃏 {t('dashboard.cross_misconceptions.concept_sort_label') || 'Concept Sort misplacement patterns'}</h4>
           <ul className="space-y-2">
             {signals.conceptSort.slice(0, 6).map((s, i) => (
               <li key={i} className="bg-rose-50 border-l-4 border-rose-400 rounded-r-md p-3">
@@ -6812,7 +6981,7 @@ const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAd
       return (
           <button type="button"
               onClick={() => setExpanded(true)}
-              className="mt-3 text-xs font-bold text-slate-500 hover:text-indigo-700 flex items-center gap-1.5 transition-colors motion-reduce:transition-none"
+              className="mt-3 text-xs font-bold text-slate-600 hover:text-indigo-700 flex items-center gap-1.5 transition-colors motion-reduce:transition-none"
               data-help-key="dashboard_teacher_comment_add"
               aria-label={t('dashboard.comments.add_aria') || 'Add a private teacher comment to this resource'}
           >
@@ -6822,10 +6991,10 @@ const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAd
   }
   return (
       <div className="mt-3 border-t border-slate-200 pt-3" data-help-key="dashboard_teacher_comment_thread">
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
               💬 {t('dashboard.comments.label') || 'Teacher notes'}
               {list.length > 0 && <span className="text-slate-600 normal-case font-normal">({list.length})</span>}
-              <span className="ml-auto text-slate-500 normal-case font-normal italic">{t('dashboard.comments.privacy_note') || 'Private to you — never shared with student'}</span>
+              <span className="ml-auto text-slate-600 normal-case font-normal italic">{t('dashboard.comments.privacy_note') || 'Private to you — never shared with student'}</span>
           </div>
           {list.length > 0 && (
               <ul className="space-y-2 mb-3">
@@ -6840,7 +7009,7 @@ const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAd
                                   title={t('dashboard.comments.delete_tooltip') || 'Delete this comment'}
                               >✕</button>
                           </div>
-                          <div className="text-[10px] text-slate-500 mt-1 font-mono">{new Date(c.timestamp).toLocaleString()}</div>
+                          <div className="text-xs text-slate-600 mt-1 font-mono">{new Date(c.timestamp).toLocaleString()}</div>
                       </li>
                   ))}
               </ul>
@@ -6865,7 +7034,7 @@ const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAd
                       <button
                           type="button"
                           onClick={() => setExpanded(false)}
-                          className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700"
+                          className="px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-700"
                       >{t('common.cancel') || 'Cancel'}</button>
                   )}
               </div>
@@ -7046,35 +7215,35 @@ Return ONLY JSON:
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="bg-violet-50 rounded-xl p-3 text-center border border-violet-200">
           <div className="text-2xl font-black text-violet-700">{agg.studentsWithNotebook}</div>
-          <div className="text-[10px] font-bold text-violet-600 uppercase mt-1">{t('dashboard.class_notebook.students_with') || 'Students using'}</div>
+          <div className="text-xs font-bold text-violet-600 uppercase mt-1">{t('dashboard.class_notebook.students_with') || 'Students using'}</div>
         </div>
         {agg.cornell > 0 && <div className="bg-indigo-50 rounded-xl p-3 text-center border border-indigo-200">
           <div className="text-2xl font-black text-indigo-700">{agg.cornell}</div>
-          <div className="text-[10px] font-bold text-indigo-600 uppercase mt-1">📓 Cornell</div>
+          <div className="text-xs font-bold text-indigo-600 uppercase mt-1">📓 Cornell</div>
         </div>}
         {agg.labReport > 0 && <div className="bg-sky-50 rounded-xl p-3 text-center border border-sky-200">
           <div className="text-2xl font-black text-sky-700">{agg.labReport}</div>
-          <div className="text-[10px] font-bold text-sky-600 uppercase mt-1">🧪 Lab Report</div>
+          <div className="text-xs font-bold text-sky-600 uppercase mt-1">🧪 Lab Report</div>
         </div>}
         {agg.readingResponse > 0 && <div className="bg-fuchsia-50 rounded-xl p-3 text-center border border-fuchsia-200">
           <div className="text-2xl font-black text-fuchsia-700">{agg.readingResponse}</div>
-          <div className="text-[10px] font-bold text-fuchsia-600 uppercase mt-1">📖 Reading</div>
+          <div className="text-xs font-bold text-fuchsia-600 uppercase mt-1">📖 Reading</div>
         </div>}
         {agg.doubleEntry > 0 && <div className="bg-rose-50 rounded-xl p-3 text-center border border-rose-200">
           <div className="text-2xl font-black text-rose-700">{agg.doubleEntry}</div>
-          <div className="text-[10px] font-bold text-rose-600 uppercase mt-1">✍️ Double-Entry</div>
+          <div className="text-xs font-bold text-rose-600 uppercase mt-1">✍️ Double-Entry</div>
         </div>}
         {agg.guidedNotes > 0 && <div className="bg-emerald-50 rounded-xl p-3 text-center border border-emerald-200">
           <div className="text-2xl font-black text-emerald-700">{agg.guidedNotes}</div>
-          <div className="text-[10px] font-bold text-emerald-600 uppercase mt-1">📝 Guided</div>
+          <div className="text-xs font-bold text-emerald-600 uppercase mt-1">📝 Guided</div>
         </div>}
         {agg.qAndA > 0 && <div className="bg-cyan-50 rounded-xl p-3 text-center border border-cyan-200">
           <div className="text-2xl font-black text-cyan-700">{agg.qAndA}</div>
-          <div className="text-[10px] font-bold text-cyan-600 uppercase mt-1">❓ Q&amp;A</div>
+          <div className="text-xs font-bold text-cyan-600 uppercase mt-1">❓ Q&amp;A</div>
         </div>}
         {agg.anchorChart > 0 && <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-200">
           <div className="text-2xl font-black text-amber-700">{agg.anchorChart}</div>
-          <div className="text-[10px] font-bold text-amber-600 uppercase mt-1">📋 Anchor Chart</div>
+          <div className="text-xs font-bold text-amber-600 uppercase mt-1">📋 Anchor Chart</div>
         </div>}
       </div>
       {agg.feedbackRequests > 0 && (
@@ -7089,8 +7258,8 @@ Return ONLY JSON:
       {Array.isArray(qualitySignals) && qualitySignals.length > 0 && (
         <div className="mb-4" data-help-key="dashboard_class_notebook_quality_signals">
           <div className="flex items-center justify-between mb-2">
-            <h5 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('dashboard.class_notebook.quality_signals_label') || 'Quality Signals (research thresholds)'}</h5>
-            <span className="text-[10px] text-slate-500 italic">{t('dashboard.class_notebook.quality_signals_legend') || 'green = healthy · amber = partial · red = needs attention'}</span>
+            <h5 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('dashboard.class_notebook.quality_signals_label') || 'Quality Signals (research thresholds)'}</h5>
+            <span className="text-xs text-slate-600 italic">{t('dashboard.class_notebook.quality_signals_legend') || 'green = healthy · amber = partial · red = needs attention'}</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {qualitySignals.map((sig) => (
@@ -7116,7 +7285,7 @@ Return ONLY JSON:
         <div className="space-y-3 mt-4 bg-slate-50 rounded-xl p-4 border border-slate-200">
           {insights.classSummary && (
             <div className="bg-white border border-slate-200 rounded-md p-3">
-              <div className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">{t('dashboard.class_notebook.overview_label') || 'Class overview'}</div>
+              <div className="text-xs font-black text-slate-600 uppercase tracking-wider mb-1">{t('dashboard.class_notebook.overview_label') || 'Class overview'}</div>
               <div className="text-sm text-slate-700 leading-relaxed">{insights.classSummary}</div>
             </div>
           )}
@@ -7131,7 +7300,7 @@ Return ONLY JSON:
           ))}
           {insights.celebration && (
             <div className="bg-emerald-50 border-2 border-emerald-300 rounded-md p-3">
-              <div className="text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1">🌱 {t('dashboard.class_notebook.celebration_label') || 'Class strength'}</div>
+              <div className="text-xs font-black text-emerald-800 uppercase tracking-wider mb-1">🌱 {t('dashboard.class_notebook.celebration_label') || 'Class strength'}</div>
               <div className="text-sm text-slate-700 leading-relaxed">{insights.celebration}</div>
             </div>
           )}
@@ -7309,7 +7478,7 @@ const LearnerProgressView = React.memo(({
                             >
                                 <span className="min-w-0 break-words">{child.name}</span>
                                 {child.sessions.length > 0 && (
-                                    <span className="text-[11px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-mono">
+                                    <span className="text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-mono">
                                         {child.sessions.length} {progressText('learner.sessions', 'Sessions')}
                                     </span>
                                 )}
@@ -7344,7 +7513,7 @@ const LearnerProgressView = React.memo(({
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-indigo-900 shadow-lg relative">
                             <Trophy size={28} className="text-indigo-900 fill-current" />
-                            <div className="absolute -bottom-2 bg-indigo-900 text-yellow-200 text-[11px] font-black px-2 py-0.5 rounded-full border border-white">
+                            <div className="absolute -bottom-2 bg-indigo-900 text-yellow-200 text-xs font-black px-2 py-0.5 rounded-full border border-white">
                                 Lvl {globalLevel}
                             </div>
                         </div>
@@ -7378,7 +7547,7 @@ const LearnerProgressView = React.memo(({
                                     <span className="text-lg">🔥</span>
                                     <div>
                                         <div className="text-sm font-black text-orange-600">{wordSoundsScore.streak} Streak</div>
-                                        <div className="text-[11px] text-orange-700 font-bold uppercase">{t('learner.current_run')}</div>
+                                        <div className="text-xs text-orange-700 font-bold uppercase">{t('learner.current_run')}</div>
                                     </div>
                                 </div>
                             )}
@@ -7399,7 +7568,7 @@ const LearnerProgressView = React.memo(({
                                         <span className="text-lg">📅</span>
                                         <div>
                                             <div className="text-sm font-black text-red-600">{dayStreak} Days</div>
-                                            <div className="text-[11px] text-red-600 font-bold uppercase">{t('learner.daily_streak')}</div>
+                                            <div className="text-xs text-red-600 font-bold uppercase">{t('learner.daily_streak')}</div>
                                         </div>
                                     </div>
                                 ) : null;
@@ -7407,14 +7576,14 @@ const LearnerProgressView = React.memo(({
                         </div>
                     )}
                     <div className="space-y-1.5">
-                        <div className="flex justify-between text-[11px] font-bold text-slate-600 uppercase">
+                        <div className="flex justify-between text-xs font-bold text-slate-600 uppercase">
                             <span>Level {globalLevel}</span>
                             <span>{Math.round(globalProgress)}%</span>
                         </div>
                         <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all motion-reduce:transition-none duration-1000 rounded-full" style={{ width: `${Math.max(5, globalProgress)}%` }} />
                         </div>
-                        <div className="flex justify-between text-[11px] font-mono text-slate-600">
+                        <div className="flex justify-between text-xs font-mono text-slate-600">
                             <span>{currentLevelXP} XP</span>
                             <span>{globalXPNext} XP to next</span>
                         </div>
@@ -7434,7 +7603,7 @@ const LearnerProgressView = React.memo(({
                         ].map(item => (
                             <div key={item.label} className={`${item.color} rounded-lg px-3 py-2 text-center`}>
                                 <div className="text-lg font-black">{item.icon} {item.value}</div>
-                                <div className="text-[11px] font-bold uppercase tracking-wider">{item.label}</div>
+                                <div className="text-xs font-bold uppercase tracking-wider">{item.label}</div>
                             </div>
                         ))}
                     </div>
@@ -7468,13 +7637,13 @@ const LearnerProgressView = React.memo(({
                                         replacing it: the gap between the two is the signal about
                                         whether a skill is secure or still propped up by retries. */}
                                     <div className="flex justify-between items-center mt-1.5">
-                                        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('learner.ws_first_try_accuracy')}</span>
-                                        <span className="text-[11px] font-black text-slate-700">
+                                        <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('learner.ws_first_try_accuracy')}</span>
+                                        <span className="text-xs font-black text-slate-700">
                                             {stats.wsFirstTryAccuracy}% <span className="font-bold text-slate-600">({stats.wsFirstTryCorrect}/{stats.wsGradedTotal})</span>
                                         </span>
                                     </div>
                                     {stats.wsHasPracticeOnly && (
-                                        <div className="text-[10px] text-slate-600 mt-1 leading-snug">
+                                        <div className="text-xs text-slate-600 mt-1 leading-snug">
                                             {t('learner.ws_practice_only_note')}
                                         </div>
                                     )}
@@ -7482,7 +7651,7 @@ const LearnerProgressView = React.memo(({
                             )}
                             {stats.masteredPhonemes.length > 0 && (
                                 <div>
-                                    <div className="text-[11px] font-bold text-green-800 uppercase tracking-wider mb-1.5">
+                                    <div className="text-xs font-bold text-green-800 uppercase tracking-wider mb-1.5">
                                         ✨ {stats.masteredPhonemes.length} Sounds Mastered
                                     </div>
                                     <div className="flex flex-wrap gap-1">
@@ -7501,7 +7670,7 @@ const LearnerProgressView = React.memo(({
                             )}
                             {showDiagnostics && stats.practicingPhonemes.length > 0 && (
                                 <div>
-                                    <div className="text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-1.5">
+                                    <div className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-1.5">
                                         🔄 {stats.practicingPhonemes.length} Sounds In Progress
                                     </div>
                                     <div className="flex flex-wrap gap-1">
@@ -7540,7 +7709,7 @@ const LearnerProgressView = React.memo(({
                                         {earned.map(m => (
                                             <div key={m.name} className="bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2 text-center min-w-[80px] hover:shadow-sm transition-shadow motion-reduce:transition-none" title={m.desc}>
                                                 <div className="text-xl">{m.icon}</div>
-                                                <div className="text-[11px] font-bold text-yellow-800 mt-0.5">{m.name}</div>
+                                                <div className="text-xs font-bold text-yellow-800 mt-0.5">{m.name}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -7552,12 +7721,12 @@ const LearnerProgressView = React.memo(({
                                 )}
                                 {showDiagnostics && locked.length > 0 && (
                                     <div>
-                                        <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('learner.coming_up')}</div>
+                                        <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('learner.coming_up')}</div>
                                         <div className="flex flex-wrap gap-1.5">
                                             {locked.slice(0, 4).map(m => (
                                                 <div key={m.name} className="bg-slate-50 border border-slate-400 rounded-lg px-2 py-1.5 text-center opacity-50" title={m.desc}>
                                                     <div className="text-sm grayscale">{m.icon}</div>
-                                                    <div className="text-[11px] font-bold text-slate-600">{m.name}</div>
+                                                    <div className="text-xs font-bold text-slate-600">{m.name}</div>
                                                 </div>
                                             ))}
                                         </div>
@@ -7581,15 +7750,15 @@ const LearnerProgressView = React.memo(({
                         <div className="grid grid-cols-3 gap-3 mb-3">
                             <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
                                 <div className="text-lg font-black text-blue-700">{todayXP.reduce((s,e) => s + (e.points || 0), 0)}</div>
-                                <div className="text-[11px] font-bold text-blue-700 uppercase">{t('learner.xp_earned')}</div>
+                                <div className="text-xs font-bold text-blue-700 uppercase">{t('learner.xp_earned')}</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
                                 <div className="text-lg font-black text-blue-700">{todayXP.length}</div>
-                                <div className="text-[11px] font-bold text-blue-700 uppercase">Activities</div>
+                                <div className="text-xs font-bold text-blue-700 uppercase">Activities</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-blue-100">
                                 <div className="text-lg font-black text-blue-700">{todayWords.filter(w => w.correct).length}/{todayWords.length}</div>
-                                <div className="text-[11px] font-bold text-blue-700 uppercase">{t('learner.words_today')}</div>
+                                <div className="text-xs font-bold text-blue-700 uppercase">{t('learner.words_today')}</div>
                             </div>
                         </div>
                         {todayXP.length > 0 && (
@@ -7629,24 +7798,24 @@ const LearnerProgressView = React.memo(({
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekTotalXP}</div>
-                                <div className="text-[11px] font-bold text-emerald-700 uppercase">{t('learner.xp_this_week')}</div>
+                                <div className="text-xs font-bold text-emerald-700 uppercase">{t('learner.xp_this_week')}</div>
                                 {xpDelta !== 0 && (
-                                    <div className={`text-[11px] font-bold mt-0.5 ${xpDelta > 0 ? 'text-green-500' : 'text-red-400'}`}>
+                                    <div className={`text-xs font-bold mt-0.5 ${xpDelta > 0 ? 'text-green-500' : 'text-red-400'}`}>
                                         {xpDelta > 0 ? '↑' : '↓'} {Math.abs(xpDelta)} vs last week
                                     </div>
                                 )}
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekXP.length}</div>
-                                <div className="text-[11px] font-bold text-emerald-700 uppercase">Activities</div>
+                                <div className="text-xs font-bold text-emerald-700 uppercase">Activities</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekWords.length}</div>
-                                <div className="text-[11px] font-bold text-emerald-700 uppercase">{t('learner.words_this_week')}</div>
+                                <div className="text-xs font-bold text-emerald-700 uppercase">{t('learner.words_this_week')}</div>
                             </div>
                             <div className="bg-white rounded-xl p-3 text-center border border-emerald-100">
                                 <div className="text-lg font-black text-emerald-700">{weekAccuracy !== null ? weekAccuracy + '%' : '—'}</div>
-                                <div className="text-[11px] font-bold text-emerald-700 uppercase">{progressText("learner.ws_accuracy", "Word Sounds Accuracy")}</div>
+                                <div className="text-xs font-bold text-emerald-700 uppercase">{progressText("learner.ws_accuracy", "Word Sounds Accuracy")}</div>
                             </div>
                         </div>
                         {weekGames.length > 0 && (
@@ -7675,24 +7844,24 @@ const LearnerProgressView = React.memo(({
                             {/* Denominator is the graded count, not the practice volume —
                                 wsCorrect can only come from rows that could have been wrong. */}
                             <div className="text-lg font-black text-slate-700">{stats.wsCorrect}/{stats.wsGradedTotal}</div>
-                            <div className="text-[11px] font-bold text-slate-600 uppercase">{t('learner.words_correct')}</div>
+                            <div className="text-xs font-bold text-slate-600 uppercase">{t('learner.words_correct')}</div>
                         </div>
                         <div className="bg-white rounded-xl p-3 border border-slate-400 text-center">
                             <div className="text-lg font-black text-slate-700">{Object.keys(phonemeMastery).length}</div>
-                            <div className="text-[11px] font-bold text-slate-600 uppercase">{t('learner.phonemes_touched')}</div>
+                            <div className="text-xs font-bold text-slate-600 uppercase">{t('learner.phonemes_touched')}</div>
                         </div>
                         <div className="bg-white rounded-xl p-3 border border-slate-400 text-center">
                             <div className="text-lg font-black text-slate-700">{stats.sessionCount}</div>
-                            <div className="text-[11px] font-bold text-slate-600 uppercase">Sessions</div>
+                            <div className="text-xs font-bold text-slate-600 uppercase">Sessions</div>
                         </div>
                         <div className="bg-white rounded-xl p-3 border border-slate-400 text-center">
                             <div className="text-lg font-black text-slate-700">{stats.labelChallenges}</div>
-                            <div className="text-[11px] font-bold text-slate-600 uppercase">{t('learner.label_challenges')}</div>
+                            <div className="text-xs font-bold text-slate-600 uppercase">{t('learner.label_challenges')}</div>
                         </div>
                     </div>
                     {pointHistory.length > 0 && (
                         <div>
-                            <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2">{t('learner.recent_activity')}</h4>
+                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('learner.recent_activity')}</h4>
                             <div className="space-y-1 max-h-32 overflow-y-auto">
                                 {pointHistory.slice(0, 10).map((entry, i) => (
                                     <div key={entry.id || i} className="flex justify-between items-center text-xs px-2 py-1 rounded hover:bg-white">
@@ -7901,7 +8070,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   const getCurrentFilteredStudents = React.useCallback(() => {
       return (dashboardData || []).filter(s => {
           if (studentFilter === 'probes') return s.probeHistory && Object.keys(s.probeHistory).length > 0;
-          if (studentFilter === 'surveys') return s.surveyResponses && s.surveyResponses.length > 0;
+          if (studentFilter === 'surveys') return _tdNormalizeSurveyList(s.surveyResponses).length > 0;
           if (studentFilter === 'notebook') return (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'));
           if (studentFilter === 'graded') return gradedIds.has(s.id);
           if (studentFilter === 'ungraded') return !gradedIds.has(s.id);
@@ -8138,21 +8307,14 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       const quizzes = history.filter(h => h.type === 'quiz');
       if (quizzes.length === 0) return 0;
       let totalPct = 0;
+      let scoredQuizzes = 0;
       quizzes.forEach(quiz => {
-          const questions = quiz.data?.questions || [];
-          if (!questions.length) return;
-          let correct = 0;
-          questions.forEach((q, i) => {
-              const resp = responses[quiz.id]?.[i];
-              if (resp !== undefined) {
-                   let val = resp;
-                   if (!isNaN(parseInt(resp)) && q.options && q.options[resp]) val = q.options[resp];
-                   if (String(val).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase()) correct++;
-              }
-          });
-          totalPct += (correct / questions.length) * 100;
+          const evaluated = _tdEvaluateQuizForStudent(quiz, responses);
+          if (evaluated.total === 0) return;
+          totalPct += evaluated.scorePct;
+          scoredQuizzes += 1;
       });
-      return Math.round(totalPct / quizzes.length);
+      return scoredQuizzes > 0 ? Math.round(totalPct / scoredQuizzes) : 0;
   };
   const studentAvg = selectedStudent ? getStudentAvgScore(selectedStudent) : 0;
   const handleClearAll = (event) => {
@@ -8166,17 +8328,24 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       if (addToast) addToast(t('dashboard.toasts.dashboard_cleared'), "info");
   };
   const handleExportResearchPDF = async () => {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      if (addToast) addToast('PDF library is still loading. Please try again in a moment.', 'error');
+      return;
+    }
     addToast('Generating research report...', 'info');
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const date = new Date().toLocaleDateString();
     // Compute TAM data
-    const allSurveys = dashboardData.flatMap(s => s.surveyResponses || []);
+    const allSurveys = dashboardData.flatMap(s => _tdNormalizeSurveyList(s.surveyResponses));
     const tamConstructs = { usefulness: [], ease: [], intention: [] };
     allSurveys.forEach(r => {
-        if (r.construct === 'usefulness' && r.score !== undefined) tamConstructs.usefulness.push(r.score);
-        if (r.construct === 'ease' && r.score !== undefined) tamConstructs.ease.push(r.score);
-        if (r.construct === 'intention' && r.score !== undefined) tamConstructs.intention.push(r.score);
+        const u = _tdSurveyConstructScore(r, 'perceived_usefulness');
+        const e = _tdSurveyConstructScore(r, 'ease_of_use');
+        const i = _tdSurveyConstructScore(r, 'intention');
+        if (u !== null) tamConstructs.usefulness.push(u);
+        if (e !== null) tamConstructs.ease.push(e);
+        if (i !== null) tamConstructs.intention.push(i);
     });
     const calcStats = arr => {
         if (!arr.length) return { n: 0, mean: 'N/A', sd: 'N/A' };
@@ -8289,14 +8458,14 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
             <h2 style="font-size: 16px; font-weight: bold; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 5px;">${t('teacher.research.appendix_a_heading') || 'Appendix A: Individual Student Data'}</h2>
             ${dashboardData.filter(s => {
                                           if (studentFilter === 'probes') return s.probeHistory && Object.keys(s.probeHistory).length > 0;
-                                          if (studentFilter === 'surveys') return s.surveyResponses && s.surveyResponses.length > 0;
+                                          if (studentFilter === 'surveys') return _tdNormalizeSurveyList(s.surveyResponses).length > 0;
                                           if (studentFilter === 'notebook') return (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'));
                                           if (studentFilter === 'graded') return gradedIds.has(s.id);
                                           if (studentFilter === 'ungraded') return !gradedIds.has(s.id);
                                           return true;
                                       }).map((student, idx) => {
                 const sProbes = student.probeHistory ? Object.values(student.probeHistory).flat() : [];
-                const sSurveys = student.surveyResponses || [];
+                const sSurveys = _tdNormalizeSurveyList(student.surveyResponses);
                 const sQuizzes = (student.history || []).filter(h => h.type === "quiz");
                 const sExplore = (student.history || []).filter(h => h.type === "explore-challenge");
                 const sSessions = student.sessionCounter || 0;
@@ -8352,13 +8521,28 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                     ${sQuizzes.length > 0 ? `
                     <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t('teacher.research.quiz_scores_label') || 'Quiz Scores:'}</p>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
-                        ${sQuizzes.map(q => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #ede9fe; color: #5b21b6; font-weight: bold;">${q.score !== undefined ? q.score : "—"}${q.label ? " " + q.label : ""}</span>`).join("")}
+                        ${sQuizzes.map(q => {
+                            const ev = _tdEvaluateQuizForStudent(q, student.responses || {});
+                            const scoreTxt = ev.scorePct !== null ? Math.round(ev.scorePct) + '%' : (q.score !== undefined ? q.score : '—');
+                            const labelTxt = q.title || q.label || '';
+                            return `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #ede9fe; color: #5b21b6; font-weight: bold;">${scoreTxt}${labelTxt ? " " + _tdEscapeHtml(labelTxt) : ""}</span>`;
+                        }).join("")}
                     </div>
                     ` : ""}
                     ${sSurveys.length > 0 ? `
                     <p style="font-size: 10px; font-weight: bold; color: #555; margin-bottom: 4px;">${t('teacher.research.survey_responses_label') || 'Survey Responses:'}</p>
                     <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                        ${sSurveys.map(s => `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #fce7f3; color: #9d174d; font-weight: bold;">${s.construct || "—"}: ${s.score !== undefined ? s.score + "/5" : "—"}</span>`).join("")}
+                        ${sSurveys.map(sr => {
+                            if (sr.construct && sr.score !== undefined) {
+                                return `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #fce7f3; color: #9d174d; font-weight: bold;">${_tdEscapeHtml(sr.construct)}: ${sr.score}/5</span>`;
+                            }
+                            const parts = [
+                                ['Usefulness', _tdSurveyConstructScore(sr, 'perceived_usefulness')],
+                                ['Ease', _tdSurveyConstructScore(sr, 'ease_of_use')],
+                                ['Intention', _tdSurveyConstructScore(sr, 'intention')],
+                            ].filter(([, v]) => v !== null).map(([k, v]) => `${k}: ${v}/5`);
+                            return `<span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: #fce7f3; color: #9d174d; font-weight: bold;">${parts.length ? parts.join(', ') : 'Recorded'}</span>`;
+                        }).join("")}
                     </div>
                     ` : ""}
                 </div>
@@ -8389,6 +8573,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     document.body.removeChild(container);
   };
   const handleExportAnalyticsPDF = async () => {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+          if (addToast) addToast('PDF library is still loading. Please try again in a moment.', 'error');
+          return;
+      }
       addToast(t('dashboard.toasts.generating_report'), "info");
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -8432,7 +8620,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                 </div>
                 <div style="flex: 1; padding: 20px; background: #f5f3ff; border: 1px solid #e9d5ff; border-radius: 8px; text-align: center;">
                     <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #6b21a8;">${t('research.survey_responses')}</div>
-                    <div style="font-size: 32px; font-weight: bold; color: #9333ea;">${dashboardData.reduce((sum, s) => sum + (s.surveyResponses ? s.surveyResponses.length : 0), 0)}</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #9333ea;">${dashboardData.reduce((sum, s) => sum + _tdNormalizeSurveyList(s.surveyResponses).length, 0)}</div>
                 </div>
                 <div style="flex: 1; padding: 20px; background: #ecfdf5; border: 1px solid #bbf7d0; border-radius: 8px; text-align: center;">
                     <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #065f46;">${t('class_analytics.total_sessions')}</div>
@@ -8549,20 +8737,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         let quizCount = 0;
         const quizzes = student.history.filter(h => h.type === 'quiz');
         quizzes.forEach(quiz => {
-            const questions = quiz.data?.questions || [];
-            if (questions.length === 0) return;
-            let correct = 0;
-            const studentResps = student.responses && student.responses[quiz.id] ? student.responses[quiz.id] : {};
-            questions.forEach((q, i) => {
-                const resp = studentResps[i];
-                if (resp !== undefined && resp !== null) {
-                    let val = resp;
-                    if (!isNaN(parseInt(resp)) && q.options && q.options[resp]) val = q.options[resp];
-                    if (String(val).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase()) correct++;
-                }
-            });
-            const score = (correct / questions.length) * 100;
-            totalQuizScore += score;
+            const evaluated = _tdEvaluateQuizForStudent(quiz, student.responses || {});
+            if (evaluated.total === 0) return;
+            totalQuizScore += evaluated.scorePct;
             quizCount++;
         });
         const quizAvg = quizCount > 0 ? Math.round(totalQuizScore / quizCount) + "%" : "N/A";
@@ -8570,7 +8747,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         const probeCount = student.probeHistory ? Object.values(student.probeHistory).flat().length : 0;
         const wcpmProbes = student.probeHistory ? Object.values(student.probeHistory).flat().filter(x => x && x.wcpm !== undefined) : [];
         const avgWcpm = wcpmProbes.length > 0 ? (wcpmProbes.reduce((sum,x) => sum + x.wcpm, 0) / wcpmProbes.length).toFixed(0) : 'N/A';
-        const surveyCount = student.surveyResponses ? student.surveyResponses.length : 0;
+        const surveyCount = _tdNormalizeSurveyList(student.surveyResponses).length;
         const sessionCount = student.sessionCounter || 0;
         // Notebook activity columns
         const hist = student.history || [];
@@ -8764,11 +8941,11 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                             <div className="w-1/2 flex flex-col justify-center gap-2">
                                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
                                     <div className="text-2xl font-black text-indigo-900">{studentAvg}%</div>
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase">{t('dashboard.charts.student_avg')}</div>
+                                    <div className="text-xs font-bold text-slate-600 uppercase">{t('dashboard.charts.student_avg')}</div>
                                 </div>
                                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
                                     <div className="text-xl font-bold text-slate-600">{analytics.averageScore}%</div>
-                                    <div className="text-[11px] font-bold text-slate-600 uppercase">{t('dashboard.charts.class_avg')}</div>
+                                    <div className="text-xs font-bold text-slate-600 uppercase">{t('dashboard.charts.class_avg')}</div>
                                 </div>
                             </div>
                         </div>
@@ -8791,8 +8968,8 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                              {selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && (
                                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
                                      <div className="text-2xl font-black text-amber-700">{Object.values(selectedStudent.probeHistory).flat().length}</div>
-                                     <div className="text-[11px] font-bold text-amber-600 uppercase mt-1">{t('probes.probe_results')}</div>
-                                     <div className="text-[11px] text-slate-600 mt-2">
+                                     <div className="text-xs font-bold text-amber-600 uppercase mt-1">{t('probes.probe_results')}</div>
+                                     <div className="text-xs text-slate-600 mt-2">
                                          {Object.keys(selectedStudent.probeHistory).map(name => (
                                              <div key={name} className="flex justify-between">
                                                  <span>{name}</span>
@@ -8805,14 +8982,14 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                              {selectedStudent.interventionLogs && selectedStudent.interventionLogs.length > 0 && (
                                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
                                      <div className="text-2xl font-black text-blue-700">{selectedStudent.interventionLogs.length}</div>
-                                     <div className="text-[11px] font-bold text-blue-600 uppercase mt-1">{t('research.intervention_logs')}</div>
+                                     <div className="text-xs font-bold text-blue-600 uppercase mt-1">{t('research.intervention_logs')}</div>
                                  </div>
                              )}
                              {selectedStudent.surveyResponses && selectedStudent.surveyResponses.length > 0 && (
                                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
                                      <div className="text-2xl font-black text-purple-700">{selectedStudent.surveyResponses.length}</div>
-                                     <div className="text-[11px] font-bold text-purple-600 uppercase mt-1">{t('research.survey_responses')}</div>
-                                     <div className="text-[11px] text-slate-600 mt-2">
+                                     <div className="text-xs font-bold text-purple-600 uppercase mt-1">{t('research.survey_responses')}</div>
+                                     <div className="text-xs text-slate-600 mt-2">
                                          {selectedStudent.surveyResponses.slice(-1).map((r, i) => (
                                              <div key={i}>Latest: {r.type || 'survey'} ({new Date(r.timestamp || Date.now()).toLocaleDateString()})</div>
                                          ))}
@@ -8822,9 +8999,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                              {selectedStudent.sessionCounter !== undefined && (
                                  <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
                                      <div className="text-2xl font-black text-emerald-700">{selectedStudent.sessionCounter}</div>
-                                     <div className="text-[11px] font-bold text-emerald-600 uppercase mt-1">{t('research.sessions_completed')}</div>
+                                     <div className="text-xs font-bold text-emerald-600 uppercase mt-1">{t('research.sessions_completed')}</div>
                                      {selectedStudent.fidelityLog && selectedStudent.fidelityLog.length > 0 && (
-                                         <div className="text-[11px] text-slate-600 mt-2">{selectedStudent.fidelityLog.length} fidelity records</div>
+                                         <div className="text-xs text-slate-600 mt-2">{selectedStudent.fidelityLog.length} fidelity records</div>
                                      )}
                                  </div>
                              )}
@@ -8849,8 +9026,8 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                  return (
                                      <div className="bg-violet-50 rounded-xl p-4 border border-violet-200" data-help-key="dashboard_notebook_activity_tile">
                                          <div className="text-2xl font-black text-violet-700">{totalNotebook}</div>
-                                         <div className="text-[11px] font-bold text-violet-600 uppercase mt-1">{t('dashboard.notebook_activity') || 'Notebook Activity'}</div>
-                                         <div className="text-[11px] text-slate-600 mt-2 space-y-0.5">
+                                         <div className="text-xs font-bold text-violet-600 uppercase mt-1">{t('dashboard.notebook_activity') || 'Notebook Activity'}</div>
+                                         <div className="text-xs text-slate-600 mt-2 space-y-0.5">
                                              {byType['cornell-notes'] > 0 && <div className="flex justify-between"><span>📓 Cornell</span><span className="font-bold">{byType['cornell-notes']}</span></div>}
                                              {byType['lab-report'] > 0 && <div className="flex justify-between"><span>🧪 Lab Report</span><span className="font-bold">{byType['lab-report']}</span></div>}
                                              {byType['reading-response'] > 0 && <div className="flex justify-between"><span>📖 Reading</span><span className="font-bold">{byType['reading-response']}</span></div>}
@@ -8866,7 +9043,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                          </div>
                          {selectedStudent.probeHistory && Object.keys(selectedStudent.probeHistory).length > 0 && (
                              <div className="mt-4 space-y-2">
-                                 <h5 className="text-[11px] font-bold text-slate-600 uppercase">{t('research.recent_probe_results')}</h5>
+                                 <h5 className="text-xs font-bold text-slate-600 uppercase">{t('research.recent_probe_results')}</h5>
                                  <div className="space-y-1.5">
                                      {Object.entries(selectedStudent.probeHistory).flatMap(([name, probes]) =>
                                          probes.slice(-3).map((p, i) => (
@@ -8888,11 +9065,11 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                          )}
                          {selectedStudent.externalCBMScores && Object.keys(selectedStudent.externalCBMScores).length > 0 && (
                              <div className="mt-4">
-                                 <h5 className="text-[11px] font-bold text-slate-600 uppercase mb-2">{t('research.external_cbm_scores')}</h5>
+                                 <h5 className="text-xs font-bold text-slate-600 uppercase mb-2">{t('research.external_cbm_scores')}</h5>
                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                      {Object.entries(selectedStudent.externalCBMScores).map(([source, scores]) => (
                                          <div key={source} className="bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
-                                             <div className="text-[11px] font-bold text-slate-600 uppercase">{source}</div>
+                                             <div className="text-xs font-bold text-slate-600 uppercase">{source}</div>
                                              {Array.isArray(scores) ? scores.slice(-1).map((s, i) => (
                                                  <div key={i} className="text-sm font-bold text-slate-800">{s.score || s.value || JSON.stringify(s)}</div>
                                              )) : <div className="text-sm font-bold text-slate-800">{JSON.stringify(scores)}</div>}
@@ -8999,12 +9176,13 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                          </div>
                          {/* Bulk actions toolbar — operates on whichever students are currently visible (after the filter chip). */}
                          {(() => {
-                             const filteredCount = getCurrentFilteredStudents().length;
-                             const filteredNotebookCount = getCurrentFilteredStudents().filter(s => (s.history || []).some(h => h && h.type === 'note-taking')).length;
+                             const filteredStudents = getCurrentFilteredStudents();
+                             const filteredCount = filteredStudents.length;
+                             const filteredNotebookCount = filteredStudents.filter(s => (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'))).length;
                              if (filteredCount === 0) return null;
                              return (
                                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap bg-slate-50 border border-slate-200 rounded-xl p-2" data-help-key="dashboard_bulk_actions_toolbar">
-                                     <span className="text-[10px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider pl-1 sm:pl-2 pr-1 w-full sm:w-auto">
+                                     <span className="text-xs sm:text-xs font-bold text-slate-600 uppercase tracking-wider pl-1 sm:pl-2 pr-1 w-full sm:w-auto">
                                          {t('dashboard.bulk.label') || 'Bulk actions'} ({filteredCount}):
                                      </span>
                                      <button type="button"
@@ -9036,7 +9214,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                              {[
                                  ["all", "👥 All", dashboardData.length],
                                  ["probes", "📊 Has Probes", dashboardData.filter(s => s.probeHistory && Object.keys(s.probeHistory).length > 0).length],
-                                 ["surveys", "📝 Has Surveys", dashboardData.filter(s => s.surveyResponses && s.surveyResponses.length > 0).length],
+                                 ["surveys", "📝 Has Surveys", dashboardData.filter(s => _tdNormalizeSurveyList(s.surveyResponses).length > 0).length],
                                  ["notebook", "📓 Has Notebook", dashboardData.filter(s => (s.history || []).some(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart'))).length],
                                  ["graded", "✅ Graded", dashboardData.filter(s => gradedIds.has(s.id)).length],
                                  ["ungraded", "⬜ Ungraded", dashboardData.filter(s => !gradedIds.has(s.id)).length],
@@ -9058,7 +9236,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                      </tr>
                                  </thead>
                                  <tbody className="divide-y divide-slate-100">
-                                     {dashboardData.map((student, idx) => {
+                                     {getCurrentFilteredStudents().map((student, idx) => {
                                          const level = getStudentLevel(student.history);
                                          const isGraded = gradedIds.has(student.id);
                                          return (
@@ -9075,19 +9253,19 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                          )}
                                                      </div>
                                                      {student.studentNickname}
-                                                     {isGraded && <span className="text-[11px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded ml-2 uppercase tracking-wider">{t('dashboard.table.graded')}</span>}
+                                                     {isGraded && <span className="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded ml-2 uppercase tracking-wider">{t('dashboard.table.graded')}</span>}
                                                  
-                                                      {student.probeHistory && Object.keys(student.probeHistory).length > 0 && <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={Object.values(student.probeHistory).flat().length + ' probes'}>📊</span>}
-                                                      {student.surveyResponses && student.surveyResponses.length > 0 && <span className="text-[11px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200" title={student.surveyResponses.length + ' surveys'}>📝</span>}
-                                                      {student.sessionCounter > 0 && <span className="text-[11px] font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200" title={student.sessionCounter + ' sessions'}>🔄</span>}
+                                                      {student.probeHistory && Object.keys(student.probeHistory).length > 0 && <span className="text-xs font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={Object.values(student.probeHistory).flat().length + ' probes'}>📊</span>}
+                                                      {student.surveyResponses && student.surveyResponses.length > 0 && <span className="text-xs font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded ml-1 border border-purple-200" title={student.surveyResponses.length + ' surveys'}>📝</span>}
+                                                      {student.sessionCounter > 0 && <span className="text-xs font-bold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded ml-1 border border-cyan-200" title={student.sessionCounter + ' sessions'}>🔄</span>}
                                                       {(() => {
                                                           const noteCount = (student.history || []).filter(h => h && (h.type === 'note-taking' || h.type === 'anchor-chart')).length;
-                                                          return noteCount > 0 ? <span className="text-[11px] font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded ml-1 border border-violet-200" title={noteCount + ' notebook entries (notes + anchor charts)'}>📓</span> : null;
+                                                          return noteCount > 0 ? <span className="text-xs font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded ml-1 border border-violet-200" title={noteCount + ' notebook entries (notes + anchor charts)'}>📓</span> : null;
                                                       })()}
                                                       {(() => {
                                                           // Count teacher comments across all this student's resources
                                                           const commentCount = Array.from(teacherComments.keys()).filter(k => k.startsWith(`${_notesStudentId(student)}:`)).reduce((sum, k) => sum + (teacherComments.get(k) || []).length, 0);
-                                                          return commentCount > 0 ? <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={commentCount + ' private teacher notes on this student\'s work'}>💬</span> : null;
+                                                          return commentCount > 0 ? <span className="text-xs font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded ml-1 border border-amber-200" title={commentCount + ' private teacher notes on this student\'s work'}>💬</span> : null;
                                                       })()}
                                                   </td>
                                                  <td className="p-4 text-slate-600 font-mono text-xs">
@@ -9207,10 +9385,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                 const allProbes = dashboardData.flatMap(s => 
                                     s.probeHistory ? Object.values(s.probeHistory).flat() : []
                                 );
-                                const allSurveys = dashboardData.flatMap(s => s.surveyResponses || []);
+                                const allSurveys = dashboardData.flatMap(s => _tdNormalizeSurveyList(s.surveyResponses));
                                 const totalSessions = dashboardData.reduce((sum, s) => sum + (s.sessionCounter || 0), 0);
                                 const studentsWithProbes = dashboardData.filter(s => s.probeHistory && Object.keys(s.probeHistory).length > 0).length;
-                                const studentsWithSurveys = dashboardData.filter(s => s.surveyResponses && s.surveyResponses.length > 0).length;
+                                const studentsWithSurveys = dashboardData.filter(s => _tdNormalizeSurveyList(s.surveyResponses).length > 0).length;
                                 
                                 if (allProbes.length === 0 && allSurveys.length === 0 && totalSessions === 0) return null;
                                 
@@ -9224,17 +9402,17 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                         React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-4' },
                                             React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, allProbes.length),
-                                                React.createElement('div', { className: 'text-[11px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.total_probes'))),
+                                                React.createElement('div', { className: 'text-xs font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.total_probes'))),
                                             React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, studentsWithProbes),
-                                                React.createElement('div', { className: 'text-[11px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.students_assessed'))),
+                                                React.createElement('div', { className: 'text-xs font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.students_assessed'))),
                                             (() => {
                                                 const wcpmProbes = allProbes.filter(p => p.wcpm !== undefined);
                                                 if (wcpmProbes.length === 0) return null;
                                                 const avgWcpm = Math.round(wcpmProbes.reduce((s,p) => s + p.wcpm, 0) / wcpmProbes.length);
                                                 return React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
                                                     React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, avgWcpm),
-                                                    React.createElement('div', { className: 'text-[11px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_wcpm')));
+                                                    React.createElement('div', { className: 'text-xs font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_wcpm')));
                                             })(),
                                             (() => {
                                                 const dcpmProbes = allProbes.filter(p => p.dcpm !== undefined);
@@ -9242,7 +9420,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                 const avgDcpm = Math.round(dcpmProbes.reduce((s,p) => s + p.dcpm, 0) / dcpmProbes.length);
                                                 return React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
                                                     React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, avgDcpm),
-                                                    React.createElement('div', { className: 'text-[11px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_dcpm')));
+                                                    React.createElement('div', { className: 'text-xs font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_dcpm')));
                                             })(),
                                             (() => {
                                                 const accProbes = allProbes.filter(p => p.accuracy !== undefined);
@@ -9250,7 +9428,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                 const avgAcc = Math.round(accProbes.reduce((s,p) => s + p.accuracy, 0) / accProbes.length * 100);
                                                 return React.createElement('div', { className: 'bg-amber-50 rounded-xl p-4 text-center border border-amber-100' },
                                                     React.createElement('div', { className: 'text-3xl font-black text-amber-700' }, avgAcc + '%'),
-                                                    React.createElement('div', { className: 'text-[11px] font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_accuracy')));
+                                                    React.createElement('div', { className: 'text-xs font-bold text-amber-500 uppercase mt-1' }, t('dashboard.insights.avg_accuracy')));
                                             })()
                                         )
                                     ),
@@ -9261,10 +9439,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                         React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-4 mb-4' },
                                             React.createElement('div', { className: 'bg-purple-50 rounded-xl p-4 text-center border border-purple-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-purple-700' }, allSurveys.length),
-                                                React.createElement('div', { className: 'text-[11px] font-bold text-purple-500 uppercase mt-1' }, t('dashboard.insights.total_responses'))),
+                                                React.createElement('div', { className: 'text-xs font-bold text-purple-500 uppercase mt-1' }, t('dashboard.insights.total_responses'))),
                                             React.createElement('div', { className: 'bg-purple-50 rounded-xl p-4 text-center border border-purple-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-purple-700' }, studentsWithSurveys),
-                                                React.createElement('div', { className: 'text-[11px] font-bold text-purple-500 uppercase mt-1' }, t('dashboard.insights.respondents')))
+                                                React.createElement('div', { className: 'text-xs font-bold text-purple-500 uppercase mt-1' }, t('dashboard.insights.respondents')))
                                         ),
                                         (() => {
                                             const tamIds = ['perceived_usefulness', 'ease_of_use', 'intention'];
@@ -9272,7 +9450,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                             const tamColors = { perceived_usefulness: 'text-blue-700', ease_of_use: 'text-green-700', intention: 'text-indigo-700' };
                                             const tamBgs = { perceived_usefulness: 'bg-blue-50 border-blue-100', ease_of_use: 'bg-green-50 border-green-100', intention: 'bg-indigo-50 border-indigo-100' };
                                             const constructs = tamIds.map(id => {
-                                                const scores = allSurveys.filter(s => s.answers && s.answers[id] !== undefined).map(s => s.answers[id]);
+                                                const scores = allSurveys.map(sr => _tdSurveyConstructScore(sr, id)).filter(v => v !== null);
                                                 if (scores.length === 0) return null;
                                                 const avg = (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(1);
                                                 return { id, label: tamLabels[id], avg, n: scores.length, color: tamColors[id], bg: tamBgs[id] };
@@ -9287,7 +9465,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                             React.createElement('span', { className: 'text-xs text-slate-600 mb-1' }, '/ 5.0')),
                                                         React.createElement('div', { className: 'w-full bg-slate-200 rounded-full h-2 mt-2 overflow-hidden' },
                                                             React.createElement('div', { className: 'h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all motion-reduce:transition-none', style: { width: (parseFloat(c.avg) / 5 * 100) + '%' } })),
-                                                        React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1' }, 'n = ' + c.n + ' responses')
+                                                        React.createElement('div', { className: 'text-xs text-slate-600 mt-1' }, 'n = ' + c.n + ' responses')
                                                     )
                                                 )
                                             );
@@ -9300,17 +9478,17 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                         React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-4' },
                                             React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-emerald-700' }, totalSessions),
-                                                React.createElement('div', { className: 'text-[11px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.total_sessions'))),
+                                                React.createElement('div', { className: 'text-xs font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.total_sessions'))),
                                             React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100' },
                                                 React.createElement('div', { className: 'text-3xl font-black text-emerald-700' }, 
                                                     dashboardData.length > 0 ? (totalSessions / dashboardData.length).toFixed(1) : '0'),
-                                                React.createElement('div', { className: 'text-[11px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.avg_per_student'))),
+                                                React.createElement('div', { className: 'text-xs font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.avg_per_student'))),
                                             (() => {
                                                 const totalFidelity = dashboardData.reduce((sum, s) => sum + (s.fidelityLog ? s.fidelityLog.length : 0), 0);
                                                 if (totalFidelity === 0) return null;
                                                 return React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100' },
                                                     React.createElement('div', { className: 'text-3xl font-black text-emerald-700' }, totalFidelity),
-                                                    React.createElement('div', { className: 'text-[11px] font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.fidelity_records')));
+                                                    React.createElement('div', { className: 'text-xs font-bold text-emerald-500 uppercase mt-1' }, t('dashboard.insights.fidelity_records')));
                                             })()
                                         )
                                     ),
@@ -9330,14 +9508,14 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                         const h = Math.max(4, (p.wcpm / maxWcpm) * chartH);
                                                         const color = p.wcpm >= 100 ? '#059669' : p.wcpm >= 60 ? '#d97706' : '#dc2626';
                                                         return React.createElement('div', { key: i, className: 'flex flex-col items-center', style: { width: barW + 'px' } },
-                                                            React.createElement('div', { className: 'text-[11px] font-bold mb-1', style: { color } }, p.wcpm),
+                                                            React.createElement('div', { className: 'text-xs font-bold mb-1', style: { color } }, p.wcpm),
                                                             React.createElement('div', { style: { width: (barW - 4) + 'px', height: h + 'px', background: color, borderRadius: '4px 4px 0 0', transition: 'height 0.3s ease' } }),
-                                                            React.createElement('div', { className: 'text-[11px] text-slate-600 mt-1 text-center', style: { width: barW + 'px' } }, 
+                                                            React.createElement('div', { className: 'text-xs text-slate-600 mt-1 text-center', style: { width: barW + 'px' } }, 
                                                                 p.date ? new Date(p.date).toLocaleDateString('en', { month: 'short', day: 'numeric' }) : '')
                                                         );
                                                     })
                                                 ),
-                                                React.createElement('div', { className: 'flex items-center gap-4 text-[11px] text-slate-600' },
+                                                React.createElement('div', { className: 'flex items-center gap-4 text-xs text-slate-600' },
                                                     React.createElement('span', null, '🟢 ≥100 WCPM'),
                                                     React.createElement('span', null, '🟡 60-99 WCPM'),
                                                     React.createElement('span', null, '🔴 <60 WCPM'),
@@ -9394,19 +9572,19 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                              <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
                                                  <div className="bg-emerald-50 rounded-xl p-3 sm:p-4 text-center border border-emerald-100">
                                                      <div className="text-xl sm:text-2xl font-black text-emerald-700">{stations.length}</div>
-                                                     <div className="text-[10px] sm:text-xs text-emerald-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.stations_created') || 'Stations Created'}</div>
+                                                     <div className="text-xs sm:text-xs text-emerald-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.stations_created') || 'Stations Created'}</div>
                                                  </div>
                                                  <div className="bg-teal-50 rounded-xl p-3 sm:p-4 text-center border border-teal-100">
                                                      <div className="text-xl sm:text-2xl font-black text-teal-700">
                                                          {new Set(stations.flatMap(s => s.tools)).size}
                                                      </div>
-                                                     <div className="text-[10px] sm:text-xs text-teal-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.unique_tools_used') || 'Unique Tools Used'}</div>
+                                                     <div className="text-xs sm:text-xs text-teal-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.unique_tools_used') || 'Unique Tools Used'}</div>
                                                  </div>
                                                  <div className="bg-indigo-50 rounded-xl p-3 sm:p-4 text-center border border-indigo-100">
                                                      <div className="text-xl sm:text-2xl font-black text-indigo-700">
                                                          {xpLog.filter(e => e.stationId).length}
                                                      </div>
-                                                     <div className="text-[10px] sm:text-xs text-indigo-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.station_xp_events') || 'Station XP Events'}</div>
+                                                     <div className="text-xs sm:text-xs text-indigo-600 font-bold mt-1 leading-tight">{t('teacher.stem_stations.station_xp_events') || 'Station XP Events'}</div>
                                                  </div>
                                              </div>
                                              {stations.map((st) => {
@@ -9418,7 +9596,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                              <div className="flex items-center gap-2 flex-wrap min-w-0">
                                                                  <span className="text-lg shrink-0">📌</span>
                                                                  <h4 className="font-bold text-sm text-slate-800 truncate">{st.name}</h4>
-                                                                 <span className="bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                                                                 <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full shrink-0">
                                                                      {st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}
                                                                  </span>
                                                              </div>
@@ -9426,7 +9604,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                                  <span className="text-xs text-slate-600 hidden sm:inline">
                                                                      {new Date(st.createdAt).toLocaleDateString()}
                                                                  </span>
-                                                                 <span className="bg-indigo-100 text-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                                                                 <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full">
                                                                      {totalXP} XP
                                                                  </span>
                                                              </div>
@@ -9436,7 +9614,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                                  const registry = window.STEM_TOOL_REGISTRY || [];
                                                                  const meta = registry.find(r => r.id === toolId);
                                                                  return (
-                                                                     <span key={toolId} className="bg-white text-slate-600 text-[11px] font-medium px-2 py-1 rounded-lg border border-slate-400">
+                                                                     <span key={toolId} className="bg-white text-slate-600 text-xs font-medium px-2 py-1 rounded-lg border border-slate-400">
                                                                          🧪 {meta ? meta.name : toolId}
                                                                      </span>
                                                                  );
@@ -9662,9 +9840,14 @@ const CicoCardsView = ({ rosterKey, onBack }) => {
     setSelected(learnerId); setToAdd(''); setNotice(toAdd + ' now has a daily check-in card.');
   };
   const remove = () => {
-    if (!window.confirm('Remove ' + codenameByLearner[active] + "'s card and delete every rating on this device? This cannot be undone.")) return;
-    update(c => { delete c.students[active]; });
-    setSelected(''); setNotice('Card removed and its ratings deleted from this device.');
+    _alloTeacherRunConfirmed(
+      'Remove ' + codenameByLearner[active] + "'s card and delete every rating on this device? This cannot be undone.",
+      { title: 'Remove daily check-in card?', confirmText: 'Remove card', cancelText: 'Keep card', tone: 'warning' },
+      () => {
+        update(c => { delete c.students[active]; });
+        setSelected(''); setNotice('Card removed and its ratings deleted from this device.');
+      }
+    );
   };
   const sendToWorksheet = () => {
     const result = alloCicoAddToStoreWorksheet(classId, active, codenameByLearner[active], date);

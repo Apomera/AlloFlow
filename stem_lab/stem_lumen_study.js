@@ -263,7 +263,7 @@
     for (var i = 0; i < adapters.length; i += 1) {
       var adapter = adapters[i];
       try {
-        var raw = adapter.direct ? await adapter.fn(candidate.url) : await adapter.fn(candidate.url, null, null);
+        var raw = adapter.direct ? await adapter.fn(candidateUrl) : await adapter.fn(candidateUrl, null, null);
         var record = raw && typeof raw === 'object' ? raw : {};
         var text = E.cleanFetchedWebText(record.text || record.content || record.body || raw || '');
         if (!(options && options.withMetadata)) return text;
@@ -347,7 +347,7 @@
       h('label', { className: 'block text-sm font-bold mt-3' }, 'Note title', h('input', { value: saved.title, maxLength: 240, onChange: function (ev) { var title = ev.target.value; props.setProject(function (p) { return E.editSavedNote(p, saved.id, { title: title, annotation: saved.annotation || '' }); }); }, className: 'block border rounded-lg p-2 w-full font-normal' })),
       h('label', { className: 'block text-sm font-bold mt-3' }, 'My annotation (saved automatically)', h('textarea', { value: saved.annotation || '', rows: 3, maxLength: 8000, onChange: function (ev) { var value = ev.target.value; props.setProject(function (p) { return E.editSavedNote(p, saved.id, { title: saved.title, annotation: value }); }); }, className: 'block border rounded-lg p-2 w-full font-normal' })),
       h('div', { className: 'flex gap-2 flex-wrap mt-2' },
-        !saved.stale && saved.type !== 'grounded-note' && saved.citations && nodes.some(function (n) { return n.id === saved.citations[0].evidenceId; }) ? button('Continue this entry', function () { setNodeId(saved.citations[0].evidenceId); setMode(saved.type === 'bookmark' ? 'reflection' : saved.type); if (saved.type === 'vocabulary') { setDrafts(function (all) { var next = Object.assign({}, all); next[saved.citations[0].evidenceId + '|vocabulary'] = saved; return next; }); } props.setActiveNote(''); }) : null,
+        !saved.stale && saved.type !== 'grounded-note' && saved.citations && saved.citations[0] && nodes.some(function (n) { return n.id === saved.citations[0].evidenceId; }) ? button('Continue this entry', function () { setNodeId(saved.citations[0].evidenceId); setMode(saved.type === 'bookmark' ? 'reflection' : saved.type); if (saved.type === 'vocabulary') { setDrafts(function (all) { var next = Object.assign({}, all); next[saved.citations[0].evidenceId + '|vocabulary'] = saved; return next; }); } props.setActiveNote(''); }) : null,
         button('Close note', function () { props.setActiveNote(''); }))) : null;
     return h('section', { ref: panelRef, tabIndex: -1, 'aria-label': 'Reading workspace', className: 'mb-4 p-4 rounded-2xl border border-teal-300 bg-teal-50 text-slate-900 outline-none focus:ring-2 focus:ring-teal-700' },
       h('h3', { className: 'font-extrabold text-lg m-0' }, 'Read & reflect'),
@@ -419,6 +419,8 @@
     var _callCount = React.useState(0), callCount = _callCount[0], setCallCount = _callCount[1];
     var sessionRef = React.useRef({ count: 0, lastAt: 0 });
     var searchSessionRef = React.useRef({ count: 0, lastAt: 0 });
+    var projectGenRef = React.useRef(0);
+    React.useEffect(function () { return function () { projectGenRef.current += 1; }; }, []);
 
     var role = ctx && ctx.isTeacherMode === false ? 'learner' : 'teacher';
     var scope = E.readingScope(ctx);
@@ -457,9 +459,9 @@
     var currentSource = project.sources.find(function (source) { return source.id === currentSourceId; });
     var currentChanged = !!(currentText && currentSource && currentSource.contentHash !== currentHash);
     var currentAvailable = !!currentText;
-    var nodeById = {};
+    var nodeById = Object.create(null);
     project.evidenceNodes.forEach(function (node) { nodeById[node.id] = node; });
-    var sourceById = {};
+    var sourceById = Object.create(null);
     project.sources.forEach(function (source) { sourceById[source.id] = source; });
 
     function announce(message) {
@@ -521,23 +523,30 @@
       var files = selectedFiles.slice(0, D.MAX_FILES_PER_IMPORT || 5);
       if (!files.length) { setError('Choose at least one document to import.'); return; }
       setFileBusy(true);
-      var next = project, imported = 0, failed = 0;
+      var gen = projectGenRef.current;
+      var extractedSpecs = [], failed = 0;
       for (var i = 0; i < files.length; i++) {
         var file = files[i], key = fileKey(file);
         setFileStatus(function (previous) { var copy = Object.assign({}, previous); copy[key] = { state: 'extracting', message: 'Extracting locally…' }; return copy; });
         try {
           var spec = await D.extractLocalDocument(file, { root: root, evidence: E });
-          next = E.upsertSource(next, spec);
-          imported++;
+          if (gen !== projectGenRef.current) return;
+          extractedSpecs.push(spec);
           setFileStatus(function (previous) { var copy = Object.assign({}, previous); copy[key] = { state: 'imported', message: 'Imported as evidence' }; return copy; });
         } catch (err) {
+          if (gen !== projectGenRef.current) return;
           failed++;
           var message = err && err.message ? err.message : 'This document could not be extracted.';
           setFileStatus(function (previous) { var copy = Object.assign({}, previous); copy[key] = { state: 'failed', message: message }; return copy; });
         }
       }
+      if (gen !== projectGenRef.current) return;
+      var imported = extractedSpecs.length;
       if (imported) {
-        setProject(next); clearStudyOutput();
+        setProject(function (previous) {
+          return extractedSpecs.reduce(function (acc, spec) { return E.upsertSource(acc, spec); }, previous);
+        });
+        clearStudyOutput();
         announce(imported + ' local document' + (imported === 1 ? '' : 's') + ' imported as evidence.');
       }
       setFileMessage(imported + ' imported' + (failed ? ' · ' + failed + ' not added' : '') + '. File contents stayed on this device.');
@@ -584,8 +593,9 @@
       var chosen = discoverResults.filter(function (candidate) { return selectedDiscovery[candidate.id] && importStatus[candidate.id] !== 'imported'; });
       if (!chosen.length) { setError('Select at least one discovery result to import.'); return; }
       setError(''); setImportBusy(true); setDiscoverMessage('Importing selected pages as full evidence sources…');
-      var nextProject = project;
+      var gen = projectGenRef.current;
       var nextStatus = Object.assign({}, importStatus);
+      var importedSpecs = [];
       var importedIds = [];
       var failures = [];
       for (var i = 0; i < chosen.length; i++) {
@@ -593,23 +603,28 @@
         nextStatus[candidate.id] = 'fetching'; setImportStatus(Object.assign({}, nextStatus));
         try {
           var snapshot = await fetchDiscoveredSource(ctx, candidate, { withMetadata: true });
+          if (gen !== projectGenRef.current) return;
           var stamp = snapshot.fetchedAt || new Date().toISOString();
           var importedCandidate = Object.assign({}, candidate, { url: snapshot.url, title: snapshot.title || candidate.title });
           var spec = E.discoveryCandidateToSourceSpec(importedCandidate, snapshot.text, stamp);
-          nextProject = E.upsertSource(nextProject, spec);
+          importedSpecs.push(spec);
           importedIds.push(spec.id);
           nextStatus[candidate.id] = 'imported';
         } catch (err) {
+          if (gen !== projectGenRef.current) return;
           nextStatus[candidate.id] = 'failed';
           failures.push(candidate.title + ': ' + (err.message || 'import failed'));
         }
         setImportStatus(Object.assign({}, nextStatus));
       }
-      nextProject = E.recordStudyEvent(nextProject, {
-        action: 'web-source-import', outcome: importedIds.length ? (failures.length ? 'partial' : 'imported') : 'rejected',
-        reasonCode: failures.length ? 'some-fetches-failed' : '', sourceIds: importedIds
+      if (gen !== projectGenRef.current) return;
+      setProject(function (previous) {
+        var updated = importedSpecs.reduce(function (acc, spec) { return E.upsertSource(acc, spec); }, previous);
+        return E.recordStudyEvent(updated, {
+          action: 'web-source-import', outcome: importedIds.length ? (failures.length ? 'partial' : 'imported') : 'rejected',
+          reasonCode: failures.length ? 'some-fetches-failed' : '', sourceIds: importedIds
+        });
       });
-      setProject(nextProject);
       var remainingSelection = Object.assign({}, selectedDiscovery);
       importedIds.forEach(function (sourceId) {
         var candidateId = sourceId.replace(/^src_/, '');
@@ -737,6 +752,7 @@
     }
 
     function newProject() {
+      projectGenRef.current += 1;
       var fresh = initialProjectFromContext(ctx) || E.makeProject({ title: 'Lumen study project' });
       setProject(fresh);
       setActiveNote(''); setQuestion(''); setRetrieved([]); setAnswer(null); setError(''); setViewerEvidenceId(''); setSourceLabelDrafts({});
@@ -752,7 +768,7 @@
       : storageStatus === 'saving' ? 'Saving…' : 'Preparing storage…';
 
     var allSourceLabels = [];
-    var labelSeen = {};
+    var labelSeen = Object.create(null);
     project.sources.forEach(function (source) {
       (source.labels || []).forEach(function (label) {
         var key = label.toLowerCase();
@@ -761,7 +777,7 @@
     });
     allSourceLabels.sort(function (a, b) { return a.localeCompare(b); });
     var eligibleIds = E.eligibleSourceIds(project);
-    var eligibleLookup = {};
+    var eligibleLookup = Object.create(null);
     eligibleIds.forEach(function (id) { eligibleLookup[id] = true; });
     var eligibleEvidenceCount = project.evidenceNodes.filter(function (node) { return eligibleLookup[node.sourceId] && !node.stale; }).length;
     var visibleSources = project.retrievalLabel ? project.sources.filter(function (source) {
@@ -782,26 +798,26 @@
           }),
           h('div', { className: 'min-w-0 flex-1' },
             h('label', { htmlFor: 'lumen-source-active-' + sourceDomId, className: 'font-bold text-sm text-slate-800 m-0 break-words cursor-pointer' }, source.title),
-            h('p', { className: 'text-[11px] text-slate-500 mt-1 mb-0' }, count + ' evidence passage' + (count === 1 ? '' : 's') + ' · version ' + source.version + (eligibleLookup[source.id] ? ' · in study scope' : ' · excluded')),
-            source.fileName ? h('p', { className: 'text-[10px] text-slate-500 mt-1 mb-0' }, (source.fileFormat || source.type || 'file').toUpperCase() + ' · ' + Math.max(1, Number(source.documentPartCount) || 1) + ' document part' + (Number(source.documentPartCount) === 1 ? '' : 's') + ' · extracted locally') : null,
+            h('p', { className: 'text-xs text-slate-500 mt-1 mb-0' }, count + ' evidence passage' + (count === 1 ? '' : 's') + ' · version ' + source.version + (eligibleLookup[source.id] ? ' · in study scope' : ' · excluded')),
+            source.fileName ? h('p', { className: 'text-xs text-slate-500 mt-1 mb-0' }, (source.fileFormat || source.type || 'file').toUpperCase() + ' · ' + Math.max(1, Number(source.documentPartCount) || 1) + ' document part' + (Number(source.documentPartCount) === 1 ? '' : 's') + ' · extracted locally') : null,
             (source.labels || []).length ? h('div', { className: 'mt-2 flex gap-1 flex-wrap', 'aria-label': 'Source labels' }, source.labels.map(function (label) {
-              return h('span', { key: label, className: 'px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 text-[10px] font-bold' }, label);
+              return h('span', { key: label, className: 'px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 text-xs font-bold' }, label);
             })) : null,
             h('div', { className: 'mt-2 flex gap-3 flex-wrap' },
-              firstNode ? h('button', { type: 'button', onClick: function () { openEvidenceViewer(firstNode.id); }, className: 'text-[11px] text-cyan-800 underline font-bold' }, 'View source snapshot') : null,
+              firstNode ? h('button', { type: 'button', onClick: function () { openEvidenceViewer(firstNode.id); }, className: 'text-xs text-cyan-800 underline font-bold' }, 'View source snapshot') : null,
               source.locator ? (E.canonicalWebUrl(source.locator)
-                ? h('a', { href: E.canonicalWebUrl(source.locator), target: '_blank', rel: 'noopener noreferrer', className: 'text-[11px] text-blue-700 underline break-all' }, 'Open original source')
-                : h('span', { className: 'text-[11px] text-slate-500 break-all' }, source.locator)) : null),
+                ? h('a', { href: E.canonicalWebUrl(source.locator), target: '_blank', rel: 'noopener noreferrer', className: 'text-xs text-blue-700 underline break-all' }, 'Open original source')
+                : h('span', { className: 'text-xs text-slate-500 break-all' }, source.locator)) : null),
             h('details', { className: 'mt-2' },
-              h('summary', { className: 'text-[11px] text-violet-800 underline font-bold cursor-pointer' }, 'Edit labels'),
-              h('label', { htmlFor: 'lumen-source-labels-' + sourceDomId, className: 'block mt-2 text-[11px] font-bold text-slate-700' }, 'Labels, separated by commas'),
+              h('summary', { className: 'text-xs text-violet-800 underline font-bold cursor-pointer' }, 'Edit labels'),
+              h('label', { htmlFor: 'lumen-source-labels-' + sourceDomId, className: 'block mt-2 text-xs font-bold text-slate-700' }, 'Labels, separated by commas'),
               h('div', { className: 'mt-1 flex gap-2' },
                 h('input', {
                   id: 'lumen-source-labels-' + sourceDomId, value: labelValue, maxLength: 400,
                   onChange: function (event) { updateLabelDraft(source.id, event.target.value); },
                   className: 'min-w-0 flex-1 rounded-lg border border-slate-300 p-2 text-xs', placeholder: 'For example: primary source, vocabulary'
                 }),
-                h('button', { type: 'button', onClick: function () { saveSourceLabels(source); }, className: 'px-2 py-1 rounded-lg bg-violet-700 text-white text-[11px] font-bold' }, 'Save labels')))),
+                h('button', { type: 'button', onClick: function () { saveSourceLabels(source); }, className: 'px-2 py-1 rounded-lg bg-violet-700 text-white text-xs font-bold' }, 'Save labels')))),
           h('button', { type: 'button', className: 'text-xs text-rose-700 underline p-1', onClick: function () { removeSource(source.id); }, 'aria-label': 'Remove source ' + source.title }, 'Remove')));
     });
 
@@ -815,12 +831,12 @@
         tabIndex: -1,
         className: 'p-3 rounded-xl border ' + (active ? 'border-amber-600 bg-amber-50' : 'border-slate-200 bg-white')
       },
-        h('div', { className: 'flex items-center gap-2 text-[11px] font-bold text-slate-600' },
+        h('div', { className: 'flex items-center gap-2 text-xs font-bold text-slate-600' },
           h('span', { className: 'inline-flex items-center justify-center w-5 h-5 rounded-full bg-cyan-100 text-cyan-800' }, String(index + 1)),
           h('span', null, source.title || 'Source'),
           h('span', { className: 'font-normal text-slate-400' }, node.locatorLabel)),
         h('p', { className: 'text-sm leading-6 text-slate-800 mt-2 mb-0 whitespace-pre-wrap' }, node.content),
-        h('button', { type: 'button', onClick: function () { openEvidenceViewer(node.id); }, className: 'mt-2 text-[11px] text-cyan-800 underline font-bold' }, 'Inspect stored passage'));
+        h('button', { type: 'button', onClick: function () { openEvidenceViewer(node.id); }, className: 'mt-2 text-xs text-cyan-800 underline font-bold' }, 'Inspect stored passage'));
     });
 
     var viewerPanel = null;
@@ -841,8 +857,8 @@
         h('div', { className: 'flex items-start gap-3' },
           h('div', { className: 'flex-1 min-w-0' },
             h('h3', { id: 'lumen-source-viewer-title', className: 'font-extrabold text-cyan-950 m-0 break-words' }, viewerSource.title),
-            h('p', { className: 'mt-1 mb-0 text-[11px] text-cyan-900' }, 'Stored snapshot · source version ' + viewerNode.sourceVersion + ' · ' + viewerNode.locatorLabel),
-            h('p', { className: 'mt-1 mb-0 text-[10px] text-slate-600' }, 'Characters ' + start + '–' + end + (sourceDate ? ' · imported ' + sourceDate : '') + ' · passage hash ' + viewerNode.contentHash)),
+            h('p', { className: 'mt-1 mb-0 text-xs text-cyan-900' }, 'Stored snapshot · source version ' + viewerNode.sourceVersion + ' · ' + viewerNode.locatorLabel),
+            h('p', { className: 'mt-1 mb-0 text-xs text-slate-600' }, 'Characters ' + start + '–' + end + (sourceDate ? ' · imported ' + sourceDate : '') + ' · passage hash ' + viewerNode.contentHash)),
           h('button', { type: 'button', onClick: function () { setViewerEvidenceId(''); }, className: 'text-xs text-slate-700 underline', 'aria-label': 'Close source viewer' }, 'Close')),
         h('div', { className: 'mt-3 p-3 rounded-xl border border-cyan-200 bg-white text-sm leading-6 whitespace-pre-wrap text-slate-700' },
           beforeContext ? h('span', { className: 'text-slate-500' }, (start > 240 ? '…' : '') + beforeContext) : null,
@@ -869,7 +885,7 @@
               var node = nodeById[id];
               return h('button', {
                 key: id, type: 'button',
-                className: 'px-2 py-1 rounded-full bg-cyan-100 text-cyan-900 text-[11px] font-bold hover:bg-cyan-200',
+                className: 'px-2 py-1 rounded-full bg-cyan-100 text-cyan-900 text-xs font-bold hover:bg-cyan-200',
                 onClick: function () {
                   openEvidenceViewer(id);
                   try { var el = document.getElementById('lumen-evidence-' + id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
@@ -885,7 +901,7 @@
         h('div', { className: 'min-w-0' },
           h('h2', { className: 'font-extrabold text-lg text-slate-900 m-0' }, 'Study Sources'),
           h('p', { className: 'text-xs text-slate-600 m-0' }, 'Ask, inspect and save only what your evidence supports.')),
-        h('span', { role: 'status', 'aria-live': 'polite', className: 'ml-auto text-[11px] text-slate-500' }, storageLabel),
+        h('span', { role: 'status', 'aria-live': 'polite', className: 'ml-auto text-xs text-slate-500' }, storageLabel),
         scope !== role + '|' + String(ctx.studentNickname || 'default') ? h('button', { type: 'button', className: 'min-h-[44px] text-sm underline', onClick: async function () {
           var legacyStore = E.createProjectStore({ storageDB: storageApi(ctx), localStorage: localStorageApi(), scope: role + '|' + String(ctx.studentNickname || 'default') });
           var legacy = await legacyStore.load();
@@ -907,25 +923,25 @@
         h('aside', { 'aria-labelledby': 'lumen-sources-title' },
           h('div', { className: 'flex items-center gap-2 flex-wrap' },
             h('h3', { id: 'lumen-sources-title', className: 'font-extrabold text-sm text-slate-800 m-0' }, 'Project sources (' + project.sources.length + ')'),
-            h('span', { className: 'text-[11px] text-slate-500' }, eligibleIds.length + ' in current study scope'),
+            h('span', { className: 'text-xs text-slate-500' }, eligibleIds.length + ' in current study scope'),
             h('div', { className: 'ml-auto flex gap-2' },
               h('button', { type: 'button', onClick: function () { setShowDiscover(!showDiscover); setShowAdd(false); setShowFiles(false); }, className: 'text-xs font-bold text-blue-800 underline', 'aria-expanded': showDiscover, 'aria-controls': 'lumen-discover-panel' }, showDiscover ? 'Close discovery' : 'Discover web sources'),
               h('button', { type: 'button', onClick: function () { setShowFiles(!showFiles); setShowDiscover(false); setShowAdd(false); }, className: 'text-xs font-bold text-emerald-800 underline', 'aria-expanded': showFiles, 'aria-controls': 'lumen-file-panel' }, showFiles ? 'Close files' : 'Import files'),
               h('button', { type: 'button', onClick: function () { setShowAdd(!showAdd); setShowDiscover(false); setShowFiles(false); }, className: 'text-xs font-bold text-amber-800 underline', 'aria-expanded': showAdd }, showAdd ? 'Close' : 'Paste source'))),
 
           allSourceLabels.length ? h('div', { className: 'mt-3 p-2 rounded-lg border border-violet-200 bg-violet-50' },
-            h('label', { htmlFor: 'lumen-study-label-filter', className: 'block text-[11px] font-bold text-violet-950' }, 'Study source label'),
+            h('label', { htmlFor: 'lumen-study-label-filter', className: 'block text-xs font-bold text-violet-950' }, 'Study source label'),
             h('select', {
               id: 'lumen-study-label-filter', value: project.retrievalLabel || '',
               onChange: function (event) { changeRetrievalLabel(event.target.value); },
               className: 'mt-1 w-full rounded-lg border border-violet-500 bg-white p-2 text-xs'
             }, h('option', { value: '' }, 'All active sources'), allSourceLabels.map(function (label) { return h('option', { key: label, value: label }, label); })),
-            h('p', { className: 'mt-1 mb-0 text-[10px] text-violet-800' }, 'This filter affects both the source list and retrieval. Individual source switches still apply.')) : null,
+            h('p', { className: 'mt-1 mb-0 text-xs text-violet-800' }, 'This filter affects both the source list and retrieval. Individual source switches still apply.')) : null,
 
           showFiles ? h('section', { id: 'lumen-file-panel', 'aria-labelledby': 'lumen-file-title', className: 'mt-3 p-3 rounded-xl border border-emerald-300 bg-emerald-50/70' },
             h('h4', { id: 'lumen-file-title', className: 'font-extrabold text-sm text-emerald-950 m-0' }, 'Import local documents'),
             h('p', { className: 'mt-1 mb-0 text-xs text-slate-700' }, 'PDF, Word, PowerPoint, spreadsheets, text, Markdown, CSV, and EPUB are extracted into a stored text snapshot with page, slide, sheet, or section context when available.'),
-            h('p', { className: 'mt-2 mb-0 p-2 rounded-lg border border-emerald-300 bg-white text-[11px] text-emerald-950' }, 'Privacy: document contents stay on this device and are not sent to AI during import. Parser code may be downloaded from AlloFlow’s configured library CDN when it is not already cached.'),
+            h('p', { className: 'mt-2 mb-0 p-2 rounded-lg border border-emerald-300 bg-white text-xs text-emerald-950' }, 'Privacy: document contents stay on this device and are not sent to AI during import. Parser code may be downloaded from AlloFlow’s configured library CDN when it is not already cached.'),
             h('form', { onSubmit: importSelectedFiles, className: 'mt-3' },
               h('label', { htmlFor: 'lumen-local-files', className: 'block text-xs font-bold text-slate-800' }, 'Choose up to ' + (D ? D.MAX_FILES_PER_IMPORT : 5) + ' documents'),
               h('input', { id: 'lumen-local-files', type: 'file', multiple: true, accept: D ? D.ACCEPT : '', disabled: fileBusy || !D,
@@ -936,8 +952,8 @@
                 var status = fileStatus[fileKey(file)];
                 return h('li', { key: fileKey(file), className: 'p-2 rounded-lg border border-emerald-200 bg-white text-xs' },
                   h('p', { className: 'm-0 font-bold break-words' }, file.name),
-                  h('p', { className: 'mt-1 mb-0 text-[10px] text-slate-500' }, Math.max(1, Math.ceil((Number(file.size) || 0) / 1024)) + ' KB'),
-                  status ? h('p', { role: 'status', className: 'mt-1 mb-0 text-[11px] ' + (status.state === 'failed' ? 'text-rose-800' : status.state === 'imported' ? 'text-emerald-800 font-bold' : 'text-blue-800') }, status.message) : null);
+                  h('p', { className: 'mt-1 mb-0 text-xs text-slate-500' }, Math.max(1, Math.ceil((Number(file.size) || 0) / 1024)) + ' KB'),
+                  status ? h('p', { role: 'status', className: 'mt-1 mb-0 text-xs ' + (status.state === 'failed' ? 'text-rose-800' : status.state === 'imported' ? 'text-emerald-800 font-bold' : 'text-blue-800') }, status.message) : null);
               })) : null,
               h('button', { type: 'submit', disabled: fileBusy || !D || !selectedFiles.length, className: 'mt-3 w-full px-3 py-2 rounded-lg bg-emerald-700 text-white text-xs font-bold disabled:opacity-50' }, fileBusy ? 'Extracting documents locally…' : 'Import selected documents')),
             fileMessage ? h('p', { role: 'status', 'aria-live': 'polite', className: 'mt-2 mb-0 text-xs font-semibold text-emerald-900' }, fileMessage) : null) : null,
@@ -945,19 +961,19 @@
           showDiscover ? h('section', { id: 'lumen-discover-panel', 'aria-labelledby': 'lumen-discover-title', className: 'mt-3 p-3 rounded-xl border border-blue-300 bg-blue-50/70' },
             h('h4', { id: 'lumen-discover-title', className: 'font-extrabold text-sm text-blue-950 m-0' }, 'Discover sources on the web'),
             h('p', { className: 'mt-1 mb-0 text-xs text-slate-700' }, 'Search results are candidates, not evidence. Lumen imports and hashes the full readable page before it can support an answer.'),
-            h('p', { className: 'mt-2 mb-0 p-2 rounded-lg border border-amber-300 bg-amber-50 text-[11px] text-amber-950' }, 'Privacy: your search terms are sent to the configured web-search service. Importing first uses AlloFlow’s authenticated, size-limited page importer when available; a configured legacy web-text service may be used only when that endpoint is unavailable. Do not include learner names, private information or signed/tokenized links.'),
+            h('p', { className: 'mt-2 mb-0 p-2 rounded-lg border border-amber-300 bg-amber-50 text-xs text-amber-950' }, 'Privacy: your search terms are sent to the configured web-search service. Importing first uses AlloFlow’s authenticated, size-limited page importer when available; a configured legacy web-text service may be used only when that endpoint is unavailable. Do not include learner names, private information or signed/tokenized links.'),
             h('form', { onSubmit: discoverSources, className: 'mt-3' },
               h('label', { htmlFor: 'lumen-discover-query', className: 'block text-xs font-bold text-slate-800' }, 'What sources do you want to find?'),
               h('div', { className: 'mt-1 flex flex-col sm:flex-row gap-2' },
                 h('input', { id: 'lumen-discover-query', type: 'search', value: discoverQuery, onChange: function (e) { setDiscoverQuery(e.target.value); }, disabled: discoveryBusy || importBusy, maxLength: E.MAX_DISCOVERY_QUERY_CHARS, className: 'flex-1 rounded-lg border border-slate-300 p-2 text-sm', placeholder: 'For example: evidence-based vocabulary instruction middle school' }),
                 h('button', { type: 'submit', disabled: discoveryBusy || importBusy || !hasWebSearch(ctx), className: 'px-3 py-2 rounded-lg bg-blue-700 text-white text-xs font-bold disabled:opacity-50' }, discoveryBusy ? 'Searching…' : 'Search web'))),
             !hasWebSearch(ctx) ? h('p', { role: 'status', className: 'mt-2 text-xs text-rose-800' }, 'Web search is not configured in this environment. You can still paste source text.') : null,
-            h('p', { className: 'mt-2 mb-0 text-[11px] text-slate-500' }, searchCount + '/' + SESSION_SEARCH_LIMIT + ' discovery searches used this session.'),
+            h('p', { className: 'mt-2 mb-0 text-xs text-slate-500' }, searchCount + '/' + SESSION_SEARCH_LIMIT + ' discovery searches used this session.'),
             discoverMessage ? h('p', { role: 'status', 'aria-live': 'polite', className: 'mt-2 mb-0 text-xs font-semibold text-blue-900' }, discoverMessage) : null,
             discoverResults.length ? h('div', { className: 'mt-3' },
               h('div', { className: 'flex gap-3 items-center mb-2' },
-                h('button', { type: 'button', className: 'text-[11px] underline text-slate-700', onClick: function () { var all = {}; discoverResults.forEach(function (c) { if (importStatus[c.id] !== 'imported') all[c.id] = true; }); setSelectedDiscovery(all); } }, 'Select all'),
-                h('button', { type: 'button', className: 'text-[11px] underline text-slate-700', onClick: function () { setSelectedDiscovery({}); } }, 'Clear selection')),
+                h('button', { type: 'button', className: 'text-xs underline text-slate-700', onClick: function () { var all = {}; discoverResults.forEach(function (c) { if (importStatus[c.id] !== 'imported') all[c.id] = true; }); setSelectedDiscovery(all); } }, 'Select all'),
+                h('button', { type: 'button', className: 'text-xs underline text-slate-700', onClick: function () { setSelectedDiscovery({}); } }, 'Clear selection')),
               h('ul', { className: 'space-y-2 list-none p-0 m-0' }, discoverResults.map(function (candidate) {
                 var state = importStatus[candidate.id] || 'candidate';
                 return h('li', { key: candidate.id, className: 'p-3 rounded-lg border border-blue-200 bg-white' },
@@ -965,10 +981,10 @@
                     h('input', { type: 'checkbox', checked: !!selectedDiscovery[candidate.id], disabled: importBusy || state === 'imported', onChange: function () { toggleDiscoverySelection(candidate.id); }, 'aria-label': 'Select ' + candidate.title + ' for import', className: 'mt-1' }),
                     h('div', { className: 'min-w-0 flex-1' },
                       h('a', { href: candidate.url, target: '_blank', rel: 'noopener noreferrer', className: 'font-bold text-sm text-blue-800 underline break-words' }, candidate.title),
-                      h('p', { className: 'mt-1 mb-0 text-[10px] text-slate-500 break-all' }, candidate.url),
+                      h('p', { className: 'mt-1 mb-0 text-xs text-slate-500 break-all' }, candidate.url),
                       candidate.snippet ? h('p', { className: 'mt-2 mb-0 text-xs leading-5 text-slate-700' }, candidate.snippet) : null,
-                      h('p', { className: 'mt-1 mb-0 text-[10px] text-slate-500' }, 'Search preview only — not used as evidence · ' + candidate.searchProvider),
-                      state !== 'candidate' ? h('p', { role: 'status', className: 'mt-1 mb-0 text-[11px] font-bold ' + (state === 'failed' ? 'text-rose-700' : state === 'imported' ? 'text-emerald-700' : 'text-blue-700') }, state === 'fetching' ? 'Retrieving full page…' : state === 'imported' ? 'Imported as evidence source' : 'Could not import — open and paste the source text') : null)));
+                      h('p', { className: 'mt-1 mb-0 text-xs text-slate-500' }, 'Search preview only — not used as evidence · ' + candidate.searchProvider),
+                      state !== 'candidate' ? h('p', { role: 'status', className: 'mt-1 mb-0 text-xs font-bold ' + (state === 'failed' ? 'text-rose-700' : state === 'imported' ? 'text-emerald-700' : 'text-blue-700') }, state === 'fetching' ? 'Retrieving full page…' : state === 'imported' ? 'Imported as evidence source' : 'Could not import — open and paste the source text') : null)));
               })),
               h('button', { type: 'button', disabled: importBusy || !discoverResults.some(function (c) { return selectedDiscovery[c.id] && importStatus[c.id] !== 'imported'; }), onClick: importSelectedSources, className: 'mt-3 w-full px-3 py-2 rounded-lg bg-emerald-700 text-white text-xs font-bold disabled:opacity-50' }, importBusy ? 'Importing full pages…' : 'Import selected sources')) : null) : null,
 
@@ -991,21 +1007,23 @@
             h('div', { className: 'mt-2 flex flex-col sm:flex-row gap-2 items-stretch' },
               h('textarea', { id: 'lumen-study-question', value: question, onChange: function (e) { setQuestion(e.target.value); }, disabled: busy, rows: 2, maxLength: 2000, className: 'flex-1 rounded-xl border border-slate-300 p-3 text-sm', placeholder: 'For example: What evidence explains why the policy changed?' }),
               h('button', { type: 'submit', disabled: busy || !eligibleEvidenceCount, className: 'px-4 rounded-xl bg-gradient-to-br from-amber-700 to-orange-700 text-white text-sm font-extrabold disabled:opacity-50' }, busy ? 'Checking…' : 'Find grounded answer')),
-            h('p', { className: 'text-[11px] text-slate-500 mt-2 mb-0' }, eligibleIds.length + ' of ' + project.sources.length + (project.sources.length === 1 ? ' source is' : ' sources are') + ' in the current study scope. Lumen retrieves passages locally, sends only those selected passages to your configured AI, and requires an exact verified support excerpt for every claim.'),
-            h('p', { className: 'text-[11px] text-slate-500 mt-1 mb-0' }, callCount + '/' + SESSION_CALL_LIMIT + ' AI study calls used this session. A short cooldown prevents accidental repeat requests.')),
+            h('p', { className: 'text-xs text-slate-500 mt-2 mb-0' }, eligibleIds.length + ' of ' + project.sources.length + (project.sources.length === 1 ? ' source is' : ' sources are') + ' in the current study scope. Lumen retrieves passages locally, sends only those selected passages to your configured AI, and requires an exact verified support excerpt for every claim.'),
+            h('p', { className: 'text-xs text-slate-500 mt-1 mb-0' }, callCount + '/' + SESSION_CALL_LIMIT + ' AI study calls used this session. A short cooldown prevents accidental repeat requests.')),
           answerView ? h('div', { className: 'mt-4' }, answerView) : null,
           viewerPanel,
           retrieved.length ? h('section', { 'aria-labelledby': 'lumen-retrieved-title', className: 'mt-4' },
             h('div', { className: 'flex items-end gap-2' },
               h('h3', { id: 'lumen-retrieved-title', className: 'font-extrabold text-sm text-slate-800 m-0' }, 'Retrieved evidence'),
-              h('p', { className: 'text-[11px] text-slate-500 m-0' }, retrieved.length + ' locally ranked passage' + (retrieved.length === 1 ? '' : 's'))),
+              h('p', { className: 'text-xs text-slate-500 m-0' }, retrieved.length + ' locally ranked passage' + (retrieved.length === 1 ? '' : 's'))),
             h('div', { className: 'mt-2 space-y-2' }, evidenceCards)) : null)));
   }
 
   function render(ctx) {
-    if (ctx && ctx.readingSource && ctx.readingSource.ownerScope && ctx.readingSource.ownerScope !== evidenceApi().readingScope(ctx)) ctx = Object.assign({}, ctx, { readingSource: null });
+    var E = evidenceApi();
+    var scope = E && typeof E.readingScope === 'function' ? E.readingScope(ctx) : 'loading';
+    if (E && ctx && ctx.readingSource && ctx.readingSource.ownerScope && ctx.readingSource.ownerScope !== scope) ctx = Object.assign({}, ctx, { readingSource: null });
     var React = ctx && ctx.React;
-    return React && React.createElement ? React.createElement(StudyComponent, { ctx: ctx, key: evidenceApi().readingScope(ctx) + '|' + String(ctx.readingSource && ctx.readingSource.requestId || '') }) : null;
+    return React && React.createElement ? React.createElement(StudyComponent, { ctx: ctx, key: scope + '|' + String(ctx && ctx.readingSource && ctx.readingSource.requestId || '') }) : null;
   }
 
   return Object.freeze({

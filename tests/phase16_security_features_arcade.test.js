@@ -226,7 +226,7 @@ describe('Phase 16 Wave 1 — Security, providers, agent-core & subdir engines',
     const engine = ogRoot.OpenGrooveAudio.ogCreateAudioEngine({ gain: 0 });
     expect(engine.master.gain.value).toBe(0);
     expect(ogRoot.OpenGrooveAudio.ogRegisterSampleBuffer('__proto__', {})).toBe(false);
-    expect(read('music_studio/open_groove_scheduler.js')).toContain('drumVoice: pad && pad.proceduralVoice ? JSON.parse(JSON.stringify(pad.proceduralVoice)) : null');
+    expect(read('music_studio/open_groove_scheduler.js')).toContain('drumVoice: pad && pad.proceduralVoice ? safeClone(pad.proceduralVoice) : null');
     expect(read('dictionary_loader.js')).toContain('var STOPWORDS = Object.assign(Object.create(null)');
     expect(read('agent_core_blueprint_service_module.js')).toContain('var rawByTool = Object.create(null);');
   });

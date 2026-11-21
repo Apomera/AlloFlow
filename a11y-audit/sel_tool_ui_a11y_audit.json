@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T19:40:47.243Z",
+  "generatedAt": "2026-11-19T23:27:37.733Z",
   "toolCount": 72,
   "themesAudited": [
     "light",
@@ -493,7 +493,7 @@
     {
       "id": "conflicttheater",
       "label": "Conflict Theater (Beta)",
-      "renderedBytes": 40863,
+      "renderedBytes": 41439,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -501,7 +501,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 13621,
+          "renderedBytes": 13813,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -510,7 +510,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 13621,
+          "renderedBytes": 13813,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -519,7 +519,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 13621,
+          "renderedBytes": 13813,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

@@ -233,18 +233,24 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   const descId = 'student-submit-modal-desc';
   const summaryId = 'student-submit-summary-title';
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const submitInFlightRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; }; }, []);
   // The student already chose a codename on the way in: send as that one, and
   // show the pickers only when they ask to change it (or none was chosen).
   const [changingName, setChangingName] = useState(false);
   // A receipt that stays until the student closes it; the toast alone was gone in seconds.
   const [receipt, setReceipt] = useState(null);
   const receiptDoneRef = useRef(null);
-  useEffect(() => { if (isOpen) { setChangingName(false); setReceipt(null); } }, [isOpen]);
+  useEffect(() => { if (isOpen) { setChangingName(false); setReceipt(null); setSubmitError(''); } }, [isOpen]);
   useEffect(() => { if (receipt && receiptDoneRef.current) receiptDoneRef.current.focus(); }, [receipt]);
   const say = (key, fallback) => { try { const v = key ? t(key) : ''; return typeof v === 'string' && v && v !== key ? v : fallback; } catch (_) { return fallback; } };
   const submitVoiceScopeRef = useRef(null);
-  const adjectives = t('codenames.adjectives', { returnObjects: true }) || [];
-  const animals = t('codenames.animals', { returnObjects: true }) || [];
+  const rawAdjectives = t('codenames.adjectives', { returnObjects: true });
+  const rawAnimals = t('codenames.animals', { returnObjects: true });
+  const adjectives = Array.isArray(rawAdjectives) ? rawAdjectives : [];
+  const animals = Array.isArray(rawAnimals) ? rawAnimals : [];
   const parseNickname = useCallback((nickname) => {
     if (!nickname || typeof nickname !== 'string') return { adj: '', animal: '' };
     const parts = nickname.trim().split(' ');
@@ -280,6 +286,8 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   }, [isOpen, currentNickname, parseNickname, randomizeName]);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const submittingRef = useRef(submitting);
+  submittingRef.current = submitting;
   const focusTrapRef = useRef(null);
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -291,6 +299,31 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     const trap = { root: dialog };
     focusTrapRef.current = trap;
     if (stack) stack.push(trap);
+    const lockState = typeof window !== 'undefined'
+      ? (window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, overflow: '' })
+      : null;
+    if (lockState && typeof document !== 'undefined' && document.body) {
+      if (lockState.count === 0) lockState.overflow = document.body.style.overflow;
+      lockState.count += 1;
+      document.body.style.overflow = 'hidden';
+    }
+    const hiddenNodes = [];
+    const liveSel = '[aria-live], [role="status"], [role="alert"], [role="log"], [data-toast-region]';
+    if (typeof document !== 'undefined' && dialog) {
+      const rootEl = document.getElementById('root');
+      const siblings = rootEl ? Array.from(rootEl.children) : Array.from(document.body?.children || []);
+      siblings.forEach((node) => {
+        if (!node || node === dialog || node.contains(dialog)) return;
+        if (/^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(node.tagName)) return;
+        if (node.matches?.(liveSel) || node.querySelector?.(liveSel)) return;
+        const hadInert = node.hasAttribute('inert');
+        const prevHidden = node.getAttribute('aria-hidden');
+        if (!hadInert) node.setAttribute('inert', '');
+        try { node.inert = true; } catch (_) {}
+        node.setAttribute('aria-hidden', 'true');
+        hiddenNodes.push({ node, hadInert, prevHidden });
+      });
+    }
     const isTopTrap = () => {
       if (!stack || !stack.length) return true;
       const top = stack[stack.length - 1];
@@ -310,6 +343,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
+        if (submittingRef.current) return;
         if (typeof onCloseRef.current === 'function') onCloseRef.current();
         return;
       }
@@ -345,6 +379,17 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     return () => {
       window.clearTimeout(focusTimer);
       document.removeEventListener('keydown', onDocKeyDown);
+      hiddenNodes.forEach(({ node, hadInert, prevHidden }) => {
+        try {
+          if (!hadInert) { node.removeAttribute('inert'); node.inert = false; }
+          if (prevHidden === null) node.removeAttribute('aria-hidden');
+          else node.setAttribute('aria-hidden', prevHidden);
+        } catch (_) {}
+      });
+      if (lockState && typeof document !== 'undefined' && document.body) {
+        lockState.count = Math.max(0, lockState.count - 1);
+        if (lockState.count === 0) document.body.style.overflow = lockState.overflow;
+      }
       if (stack) {
         const idx = stack.lastIndexOf(trap);
         if (idx >= 0) stack.splice(idx, 1);
@@ -413,15 +458,27 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       : say('modals.submit_receipt_file_body', 'Your work is in a file on this device. Your teacher does not have it yet: send them the file or upload it to your LMS.');
   const handleSubmit = async () => {
     const fullName = getFullName();
-    if (!selectedAdj || !selectedAnimal || submitting || receipt) return false;
+    if (!selectedAdj || !selectedAnimal || submitInFlightRef.current || submitting || receipt) return false;
+    submitInFlightRef.current = true;
     setSubmitting(true);
+    setSubmitError('');
     try {
       const completed = await Promise.resolve(onSubmit(fullName, stats));
       const succeeded = completed !== false && !(completed && completed.ok === false);
-      if (succeeded) setReceipt({ delivery: (completed && completed.delivery) || (mailboxDelivery ? 'mailbox' : 'download'), name: fullName, time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) });
+      if (succeeded && mountedRef.current) {
+        setReceipt({ delivery: (completed && completed.delivery) || (mailboxDelivery ? 'mailbox' : 'download'), name: fullName, time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) });
+      } else if (!succeeded && mountedRef.current) {
+        const msg = (completed && typeof completed === 'object' && (completed.error || completed.message || completed.narration))
+          || say('modals.submit_error', 'Could not send your work right now. Please try again.');
+        setSubmitError(String(msg));
+      }
       return succeeded ? (completed || true) : false;
+    } catch (_) {
+      if (mountedRef.current) setSubmitError(say('modals.submit_error', 'Could not send your work right now. Please try again.'));
+      return false;
     } finally {
-      setSubmitting(false);
+      submitInFlightRef.current = false;
+      if (mountedRef.current) setSubmitting(false);
     }
   };
   submitVoiceScopeRef.current = {
@@ -485,6 +542,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     if (e.key === 'Escape') {
       e.preventDefault();
       e.stopPropagation();
+      if (submittingRef.current) return;
       onClose();
       return;
     }
@@ -532,8 +590,9 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       >
         <button
             type="button"
-            onClick={onClose}
-            className={cx('absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors motion-reduce:transition-none', styles.secondary, styles.focusOffset)}
+            disabled={submitting}
+            onClick={() => { if (!submittingRef.current) onClose(); }}
+            className={cx('absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors motion-reduce:transition-none', styles.secondary, styles.focusOffset)}
             aria-label={t('common.close')}
         >
             <X size={20} aria-hidden="true" />
@@ -556,14 +615,14 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
           </div>
         ) : (<React.Fragment>
         <div className="mb-6">
-            <label className={cx('block text-xs font-bold uppercase tracking-wider mb-2 text-center', styles.muted)}>{nameLabel}</label>
+            <p className={cx('block text-xs font-bold uppercase tracking-wider mb-2 text-center', styles.muted)}>{nameLabel}</p>
             <div className={cx('p-4 rounded-xl', styles.panelSoft)}>
                 {pickingName && (
                 <div className="flex gap-2 mb-3">
                     <select
                         value={selectedAdj}
                         onChange={(e) => setSelectedAdj(e.target.value)}
-                        className={cx('w-1/2 p-2 rounded-lg border font-bold text-sm focus:ring-2 outline-none cursor-pointer', styles.input)}
+                        className={cx('w-1/2 min-h-11 p-2 rounded-lg border font-bold text-sm focus:ring-2 outline-none cursor-pointer', styles.input)}
                         aria-label={t('modals.entry.select_adjective')}
                         data-help-key="entry_adjective"
                     >
@@ -574,7 +633,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                     <select
                         value={selectedAnimal}
                         onChange={(e) => setSelectedAnimal(e.target.value)}
-                        className={cx('w-1/2 p-2 rounded-lg border font-bold text-sm focus:ring-2 outline-none cursor-pointer', styles.input)}
+                        className={cx('w-1/2 min-h-11 p-2 rounded-lg border font-bold text-sm focus:ring-2 outline-none cursor-pointer', styles.input)}
                         aria-label={t('modals.entry.select_animal')}
                         data-help-key="entry_animal"
                     >
@@ -584,8 +643,8 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                     </select>
                 </div>
                 )}
-                <div className={cx('flex items-center justify-between p-3 rounded-xl shadow-sm', styles.panel)} role="status" aria-live="polite">
-                    <div className={cx('text-xl font-black tracking-tight truncate mr-2', styles.title)}>
+                <div className={cx('flex items-center justify-between p-3 rounded-xl shadow-sm', styles.panel)}>
+                    <div role="status" aria-live="polite" className={cx('text-xl font-black tracking-tight truncate mr-2', styles.title)}>
                         {selectedAdj} {selectedAnimal}
                     </div>
                     {pickingName ? (
@@ -606,7 +665,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
             </div>
         </div>
         <div role="group" className={cx('rounded-xl p-4 mb-6', styles.panelSoft)} aria-labelledby={summaryId}>
-            <h4 id={summaryId} className={cx('text-xs font-bold uppercase tracking-widest mb-3 border-b pb-2', styles.muted)}>{t('modals.work_summary')}</h4>
+            <h3 id={summaryId} className={cx('text-xs font-bold uppercase tracking-widest mb-3 border-b pb-2', styles.muted)}>{t('modals.work_summary')}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <div className={cx('flex items-center gap-2 text-sm', styles.text)}>
                     <CheckSquare size={16} className="text-teal-500" aria-hidden="true"/>
@@ -630,6 +689,11 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
             </div>
         </div>
         <div className="flex flex-col gap-3">
+            {submitError && (
+                <p role="alert" className={cx('rounded-xl border px-3 py-2 text-xs font-bold text-center', styles.needsWork)}>
+                    {submitError}
+                </p>
+            )}
             <button
                 type="button"
                 aria-label={submitLabel}
@@ -663,7 +727,7 @@ const DraftFeedbackInterface = React.memo(({
   status = 'writing',
   rubricCriteria = [],
   gradingDetails = null,
-  draftText,
+  draftText = '',
   setDraftText,
   previousDraft,
   onSubmit,
@@ -676,17 +740,21 @@ const DraftFeedbackInterface = React.memo(({
   const themeContext = useContext(window.AlloThemeContext || StudentInteractionThemeFallbackContext);
   const styles = getStudentInteractionThemeStyles(themeContext);
   const renderRubric = () => {
-    if (!gradingDetails || !gradingDetails.breakdown) return null;
+    if (!gradingDetails || !Array.isArray(gradingDetails.breakdown)) return null;
+    const hasRawScore = typeof gradingDetails.rawScore === 'number' && Number.isFinite(gradingDetails.rawScore);
     return (
       <div className={cx('rounded-xl shadow-sm overflow-hidden mb-6', styles.panel)}>
         <div className={cx('p-4 border-b flex justify-between items-center', styles.panelSoft)}>
           <h3 className={cx('font-bold', styles.title)}>{t('mastery.feedback')} & {t('mastery.score')}</h3>
-          <div className={cx('px-4 py-1 rounded-full text-sm font-black border', status === 'mastery' ? styles.positive : styles.stat)}>
-            {t('mastery.score')}: {gradingDetails.rawScore}/100
-          </div>
+          {hasRawScore && (
+            <div className={cx('px-4 py-1 rounded-full text-sm font-black border', status === 'mastery' ? styles.positive : styles.stat)}>
+              {t('mastery.score')}: {gradingDetails.rawScore}/100
+            </div>
+          )}
         </div>
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-slate-200/40">
           {gradingDetails.breakdown.map((grade, idx) => {
+            if (!grade || typeof grade !== 'object') return null;
             return (
               <div key={idx} className="p-4 md:p-6">
                 <div className="mb-3 flex justify-between items-end">
@@ -732,7 +800,7 @@ const DraftFeedbackInterface = React.memo(({
                 <div className="mt-4 flex justify-end">
                     <button type="button"
                         onClick={onSubmit}
-                        disabled={!draftText.trim()}
+                        disabled={!String(draftText || '').trim()}
                         className={cx('font-bold py-3 px-8 rounded-full transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95 disabled:opacity-60 disabled:scale-100 flex items-center gap-2', styles.primary)}
                     >
                         {t('mastery.submit_feedback')} <ArrowRight size={18} />
@@ -753,7 +821,7 @@ const DraftFeedbackInterface = React.memo(({
                 <RefreshCw size={24} className="animate-spin motion-reduce:animate-none" />
             </div>
         </div>
-        <h3 className={cx('mt-6 text-xl font-bold animate-pulse motion-reduce:animate-none', styles.title)}>{t('mastery.analyzing')}</h3>
+        <h2 className={cx('mt-6 text-xl font-bold animate-pulse motion-reduce:animate-none', styles.title)}>{t('mastery.analyzing')}</h2>
         <p className={cx('mt-2', styles.text)}>{t('mastery.criteria_check')}</p>
       </div>
     );
@@ -767,37 +835,41 @@ const DraftFeedbackInterface = React.memo(({
                      <RefreshCw size={24} />
                  </div>
                  <div>
-                     <h2 className={cx('text-xl font-black', styles.title)} role="status" aria-live="polite">{t('mastery.revision_required')}</h2>
+                     <h2 className={cx('text-xl font-black', styles.title)}>{t('mastery.revision_required')}</h2>
+                     <span className="sr-only" role="status" aria-live="polite">{t('mastery.revision_required')}</span>
                      <p className={cx('text-sm', styles.text)}>{t('mastery.revision_desc')}</p>
                  </div>
              </div>
              <div className="flex items-center gap-2">
-                 <div className={cx('hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm mr-2', styles.panel)}>
-                     <Star size={16} className="text-yellow-500 fill-current" />
-                     <span className={cx('text-xs font-bold', styles.text)}>{t('mastery.current_progress')}: {gradingDetails?.rawScore}/100</span>
-                 </div>
+                 {typeof gradingDetails?.rawScore === 'number' && Number.isFinite(gradingDetails.rawScore) && (
+                   <div className={cx('hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm mr-2', styles.panel)}>
+                       <Star size={16} className="text-yellow-500 fill-current" aria-hidden="true" />
+                       <span className={cx('text-xs font-bold', styles.text)}>{t('mastery.current_progress')}: {gradingDetails.rawScore}/100</span>
+                   </div>
+                 )}
                  <button type="button" onClick={onCancel} className={cx('min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full', styles.secondary)} aria-label={t('common.close')}><X size={20}/></button>
              </div>
         </div>
         {renderRubric()}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="flex flex-col gap-2">
-                <label className={cx('text-xs font-bold uppercase tracking-wider flex items-center gap-2', styles.muted)}>
-                    <History size={14} /> {t('mastery.locked_draft', { count: draftCount })}
-                </label>
-                <div className={cx('p-6 rounded-xl h-96 overflow-y-auto font-serif relative whitespace-pre-wrap', styles.panelSoft)}>
+                <div id="mastery-locked-draft-heading" className={cx('text-xs font-bold uppercase tracking-wider flex items-center gap-2', styles.muted)}>
+                    <History size={14} aria-hidden="true" /> {t('mastery.locked_draft', { count: draftCount })}
+                </div>
+                <div role="region" aria-labelledby="mastery-locked-draft-heading" className={cx('p-6 rounded-xl h-96 overflow-y-auto font-serif relative whitespace-pre-wrap', styles.panelSoft)}>
                     <div className={cx('absolute top-4 right-4', styles.muted)}>
-                        <Lock size={20} />
+                        <Lock size={20} aria-hidden="true" />
                     </div>
                     {previousDraft}
                 </div>
             </div>
             <div className="flex flex-col gap-2">
-                <label className={cx('text-xs font-bold uppercase tracking-wider flex items-center gap-2', styles.title)}>
-                    <BookOpen size={14} /> {t('mastery.new_draft', { count: draftCount + 1 })}
+                <label htmlFor="mastery-new-draft-textarea" className={cx('text-xs font-bold uppercase tracking-wider flex items-center gap-2', styles.title)}>
+                    <BookOpen size={14} aria-hidden="true" /> {t('mastery.new_draft', { count: draftCount + 1 })}
                 </label>
                 <div className="relative h-96">
                     <textarea
+                        id="mastery-new-draft-textarea"
                         aria-label={t('mastery.new_draft', { count: draftCount + 1 }) || 'New draft'}
                         value={draftText}
                         onChange={(e) => setDraftText(e.target.value)}
@@ -810,7 +882,8 @@ const DraftFeedbackInterface = React.memo(({
         <div className="sticky bottom-6 z-50 flex justify-center">
             <button type="button"
                 onClick={onSubmit}
-                className={cx('font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-3 active:scale-95', styles.primary)}
+                disabled={!String(draftText || '').trim()}
+                className={cx('font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-3 active:scale-95 disabled:opacity-60 disabled:scale-100 disabled:cursor-not-allowed', styles.primary)}
             >
                 {t('mastery.submit_revision')} <ArrowRight size={20} />
             </button>
@@ -824,11 +897,12 @@ const DraftFeedbackInterface = React.memo(({
         <div className="mb-8 relative inline-block">
             <div className="absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse motion-reduce:animate-none" aria-hidden="true"></div>
             <Trophy size={120} className="text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto" aria-hidden="true" />
-            <div className="absolute -top-4 -right-12 bg-white border-2 border-amber-500 text-amber-800 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md">
+            <div className={cx('absolute -top-4 -right-12 border-2 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md', styles.stat)}>
                 {t('mastery.mastery_achieved')}
             </div>
         </div>
-        <h2 className={cx('text-5xl font-black mb-4 tracking-tight', styles.title)} role="status" aria-live="polite">{t('mastery.excellent_work')}</h2>
+        <h2 className={cx('text-5xl font-black mb-4 tracking-tight', styles.title)}>{t('mastery.excellent_work')}</h2>
+        <span className="sr-only" role="status" aria-live="polite">{t('mastery.excellent_work')}</span>
         <p className={cx('text-xl mb-8 max-w-2xl mx-auto', styles.text)}>
             {t('mastery.mastery_desc')}
         </p>
@@ -848,9 +922,9 @@ const DraftFeedbackInterface = React.memo(({
         </div>
         {gradingDetails?.feedback?.strength && (
              <div className={cx('p-6 rounded-2xl shadow-sm text-left mb-8 max-w-3xl mx-auto', styles.panel)}>
-                 <h4 className={cx('font-bold flex items-center gap-2 mb-2', styles.title)}>
-                     <Star size={16} className="text-yellow-500 fill-current"/> {t('mastery.teacher_feedback')}
-                 </h4>
+                 <h3 className={cx('font-bold flex items-center gap-2 mb-2', styles.title)}>
+                     <Star size={16} className="text-yellow-500 fill-current" aria-hidden="true"/> {t('mastery.teacher_feedback')}
+                 </h3>
                  <p className={cx('italic', styles.text)}>"{gradingDetails.feedback.strength}"</p>
              </div>
         )}

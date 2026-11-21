@@ -116,6 +116,8 @@ function LiveSessionDockView(props) {
     requestEndLiveSession
   } = props;
   const [showOrganizerReview, setShowOrganizerReview] = React.useState(false);
+  const [confirmStopOrganizer, setConfirmStopOrganizer] = React.useState(false);
+  const [confirmRemoveGoalId, setConfirmRemoveGoalId] = React.useState('');
   const reviewApi = window.AlloModules?.ViewRenderers;
   const reviewLabel = reviewApi?.organizerReviewText?.(props.t, 'review_title', 'Review organizer reflections') || 'Review organizer reflections';
   const imageApi = window.AlloModules?.LiveAac;
@@ -495,8 +497,6 @@ function LiveSessionDockView(props) {
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       style: dockGroupLabel
     }, t('live_dock.group_organizer') || 'Live organizer activity'), /*#__PURE__*/React.createElement("section", {
-      role: "status",
-      "aria-live": "polite",
       "aria-label": t('live_dock.organizer_status_aria') || 'Live visual organizer activity status',
       style: {
         padding: '0.65rem',
@@ -518,6 +518,8 @@ function LiveSessionDockView(props) {
         fontSize: '1.1rem'
       }
     }, "\uD83E\uDDE9"), /*#__PURE__*/React.createElement("div", {
+      role: "status",
+      "aria-live": "polite",
       style: {
         flex: '1 1 180px',
         minWidth: 0
@@ -579,11 +581,21 @@ function LiveSessionDockView(props) {
     }, interactiveOrganizerRetrying ? 'Retrying…' : `Retry waiting/failed (${retryableLiveOrganizerUids.length})`), /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: interactiveOrganizerSync.status === 'stopping',
-      onClick: () => broadcastInteractiveOrganizer(null),
+      onClick: () => {
+        if (!confirmStopOrganizer) {
+          setConfirmStopOrganizer(true);
+          return;
+        }
+        setConfirmStopOrganizer(false);
+        broadcastInteractiveOrganizer(null);
+      },
+      onBlur: () => {
+        if (confirmStopOrganizer) setConfirmStopOrganizer(false);
+      },
       style: {
-        border: '1px solid #fca5a5',
+        border: confirmStopOrganizer ? '1px solid #dc2626' : '1px solid #fca5a5',
         borderRadius: 7,
-        background: '#fff1f2',
+        background: confirmStopOrganizer ? '#fee2e2' : '#fff1f2',
         color: '#b91c1c',
         padding: '0.3rem 0.5rem',
         fontSize: '0.68rem',
@@ -591,7 +603,7 @@ function LiveSessionDockView(props) {
         cursor: interactiveOrganizerSync.status === 'stopping' ? 'wait' : 'pointer',
         opacity: interactiveOrganizerSync.status === 'stopping' ? 0.65 : 1
       }
-    }, interactiveOrganizerSync.status === 'stopping' ? t('live_dock.stopping') || 'Stopping…' : t('live_dock.stop_for_students') || 'Stop for students'))), countBadges.length > 0 && /*#__PURE__*/React.createElement("div", {
+    }, interactiveOrganizerSync.status === 'stopping' ? t('live_dock.stopping') || 'Stopping…' : confirmStopOrganizer ? t('live_dock.confirm_stop') || 'Confirm stop' : t('live_dock.stop_for_students') || 'Stop for students'))), countBadges.length > 0 && /*#__PURE__*/React.createElement("div", {
       role: "group",
       "aria-label": t('live_dock.organizer_summary_aria') || 'Student activity launch summary',
       style: {
@@ -864,6 +876,8 @@ function LiveSessionDockView(props) {
     }
   }, formatTime(studyTimeLeft)) : null), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    role: "switch",
+    "aria-checked": Boolean(sessionData && sessionData.mode === 'sync'),
     style: dockCardStyle,
     onClick: () => toggleSessionMode()
   }, /*#__PURE__*/React.createElement("span", {
@@ -1142,40 +1156,44 @@ function LiveSessionDockView(props) {
       maxHeight: 130,
       overflowY: 'auto'
     }
-  }, recentHavenRecognition.map(event => /*#__PURE__*/React.createElement("li", {
-    key: event.id,
-    style: {
-      display: 'grid',
-      gridTemplateColumns: '1fr auto',
-      gap: 4,
-      padding: '0.3rem 0.38rem',
-      borderRadius: 6,
-      background: 'white',
-      border: '1px solid #bbf7d0',
-      fontSize: '0.64rem',
-      color: '#365314'
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontWeight: 800,
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap'
-    }
-  }, event.studentName + ' · ' + event.reasonLabel), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontWeight: 900
-    }
-  }, "+", event.amount), /*#__PURE__*/React.createElement("time", {
-    dateTime: new Date(event.at).toISOString(),
-    style: {
-      gridColumn: '1 / -1',
-      color: '#64748b'
-    }
-  }, new Date(event.at).toLocaleTimeString([], {
-    hour: 'numeric',
-    minute: '2-digit'
-  }))))) : null, /*#__PURE__*/React.createElement("p", {
+  }, recentHavenRecognition.map(event => {
+    const hasValidAt = Number.isFinite(Number(event.at));
+    const eventDate = hasValidAt ? new Date(Number(event.at)) : null;
+    return /*#__PURE__*/React.createElement("li", {
+      key: event.id,
+      style: {
+        display: 'grid',
+        gridTemplateColumns: '1fr auto',
+        gap: 4,
+        padding: '0.3rem 0.38rem',
+        borderRadius: 6,
+        background: 'white',
+        border: '1px solid #bbf7d0',
+        fontSize: '0.64rem',
+        color: '#365314'
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 800,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap'
+      }
+    }, event.studentName + ' · ' + event.reasonLabel), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 900
+      }
+    }, "+", event.amount), eventDate ? /*#__PURE__*/React.createElement("time", {
+      dateTime: eventDate.toISOString(),
+      style: {
+        gridColumn: '1 / -1',
+        color: '#64748b'
+      }
+    }, eventDate.toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit'
+    })) : null);
+  })) : null, /*#__PURE__*/React.createElement("p", {
     style: {
       margin: '0.3rem 0 0',
       fontSize: '0.6rem',
@@ -1311,20 +1329,29 @@ function LiveSessionDockView(props) {
       }, "\uD83C\uDFAF Met \xB7 +", goal.tokens), /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => {
+          if (confirmRemoveGoalId !== goal.id) {
+            setConfirmRemoveGoalId(goal.id);
+            return;
+          }
+          setConfirmRemoveGoalId('');
           saveGoals(goals.filter(item => item.id !== goal.id));
           if (openChecklistGoalId === goal.id) setOpenChecklistGoalId(null);
         },
-        "aria-label": 'Remove goal ' + goal.label,
+        onBlur: () => {
+          if (confirmRemoveGoalId === goal.id) setConfirmRemoveGoalId('');
+        },
+        "aria-label": confirmRemoveGoalId === goal.id ? 'Confirm remove goal ' + goal.label : 'Remove goal ' + goal.label,
         style: {
-          border: 'none',
-          background: 'transparent',
-          color: '#64748b',
-          fontSize: '0.72rem',
+          border: confirmRemoveGoalId === goal.id ? '1px solid #dc2626' : 'none',
+          borderRadius: 6,
+          background: confirmRemoveGoalId === goal.id ? '#fee2e2' : 'transparent',
+          color: confirmRemoveGoalId === goal.id ? '#b91c1c' : '#64748b',
+          fontSize: confirmRemoveGoalId === goal.id ? '0.62rem' : '0.72rem',
           fontWeight: 900,
           cursor: 'pointer',
-          padding: '0.1rem 0.2rem'
+          padding: confirmRemoveGoalId === goal.id ? '0.18rem 0.35rem' : '0.1rem 0.2rem'
         }
-      }, "\u2715")), checklistOpen ? /*#__PURE__*/React.createElement("div", {
+      }, confirmRemoveGoalId === goal.id ? 'Remove?' : '✕')), checklistOpen ? /*#__PURE__*/React.createElement("div", {
         style: {
           display: 'flex',
           flexDirection: 'column',
@@ -1472,11 +1499,13 @@ function LiveSessionDockView(props) {
     })), /*#__PURE__*/React.createElement("div", {
       style: {
         display: 'flex',
+        flexWrap: 'wrap',
         gap: 6
       }
     }, /*#__PURE__*/React.createElement("label", {
       style: {
-        flex: 1,
+        flex: '1 1 110px',
+        minWidth: 0,
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
@@ -1492,6 +1521,8 @@ function LiveSessionDockView(props) {
       }),
       "aria-label": t('class_goals.mode_aria') || 'Whole team together, or each student individually',
       style: {
+        width: '100%',
+        minWidth: 0,
         border: '1px solid #bae6fd',
         borderRadius: 6,
         background: 'white',
@@ -1505,7 +1536,8 @@ function LiveSessionDockView(props) {
       value: "independent"
     }, "Each student"))), /*#__PURE__*/React.createElement("label", {
       style: {
-        flex: 1,
+        flex: '1 1 110px',
+        minWidth: 0,
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
@@ -1521,6 +1553,8 @@ function LiveSessionDockView(props) {
       }),
       "aria-label": t('class_goals.scope_aria') || 'Which students this goal covers',
       style: {
+        width: '100%',
+        minWidth: 0,
         border: '1px solid #bae6fd',
         borderRadius: 6,
         background: 'white',
@@ -1572,11 +1606,13 @@ function LiveSessionDockView(props) {
     }, "Load seating pods as teams\u2026") : null, /*#__PURE__*/React.createElement("div", {
       style: {
         display: 'flex',
+        flexWrap: 'wrap',
         gap: 6
       }
     }, /*#__PURE__*/React.createElement("label", {
       style: {
-        flex: 1,
+        flex: '1 1 90px',
+        minWidth: 0,
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
@@ -1592,6 +1628,8 @@ function LiveSessionDockView(props) {
       }),
       "aria-label": t('class_goals.tokens_aria') || 'Tokens awarded per student when this goal is met',
       style: {
+        width: '100%',
+        minWidth: 0,
         border: '1px solid #bae6fd',
         borderRadius: 6,
         background: 'white',
@@ -1605,7 +1643,8 @@ function LiveSessionDockView(props) {
       value: 2
     }, "+2"))), /*#__PURE__*/React.createElement("label", {
       style: {
-        flex: 1,
+        flex: '1 1 90px',
+        minWidth: 0,
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
@@ -1622,6 +1661,8 @@ function LiveSessionDockView(props) {
       }),
       "aria-label": t('class_goals.allowance_aria') || 'Exceptions allowed while still meeting the goal',
       style: {
+        width: '100%',
+        minWidth: 0,
         border: '1px solid #bae6fd',
         borderRadius: 6,
         background: 'white',
@@ -1635,11 +1676,13 @@ function LiveSessionDockView(props) {
     }, n === 0 ? 'None' : 'Up to ' + n))))), /*#__PURE__*/React.createElement("div", {
       style: {
         display: 'flex',
+        flexWrap: 'wrap',
         gap: 6
       }
     }, /*#__PURE__*/React.createElement("label", {
       style: {
-        flex: 1.4,
+        flex: '1.4 1 120px',
+        minWidth: 0,
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
@@ -1725,6 +1768,10 @@ function LiveSessionDockView(props) {
       onClick: () => {
         const label = draft.label.trim().slice(0, 80);
         if (!label) return;
+        if (goals.length >= 20) {
+          if (typeof addToast === 'function') addToast(t('live_dock.class_goals_limit') || 'You have reached the 20 class-goal limit. Remove an older goal before adding a new one.', 'info');
+          return;
+        }
         const requestedGroupId = typeof draft.team === 'string' && draft.team.indexOf('group:') === 0 ? draft.team.slice(6) : '';
         const goalTeam = requestedGroupId && !(rosterKey && rosterKey.groups && rosterKey.groups[requestedGroupId]) ? 'class' : draft.team;
         const goal = normalizeClassGoal({
@@ -1984,7 +2031,7 @@ function LiveSessionDockView(props) {
           borderRadius: 6,
           padding: '0.05rem 0.3rem'
         }
-      }, organizerProgressLabel) : null, MailboxImageStatus && _alloMbBridgeActive() && imageEvidenceFor(targetId || viewing).hasImages && /*#__PURE__*/React.createElement(MailboxImageStatus, {
+      }, organizerProgressLabel) : null, MailboxImageStatus && typeof _alloMbBridgeActive === 'function' && _alloMbBridgeActive() && imageEvidenceFor(targetId || viewing).hasImages && /*#__PURE__*/React.createElement(MailboxImageStatus, {
         sessionKey: JSON.stringify([activeSessionAppId || '', activeSessionCode || '']),
         recipientId: uid,
         entry: entry,
@@ -2008,8 +2055,8 @@ function LiveSessionDockView(props) {
         }) || 'Manage Word Sounds audio for ' + (entry.name || 'student'),
         title: wsAudioStatus === 'unsupported' ? t('word_sounds.audio_teacher_unsupported_title') || "This learner's browser cannot play the prepared format. Open audio review and regenerate compatible clips." : wsAudioStatus === 'blocked' && !wsAudioStalled ? t('word_sounds.audio_teacher_blocked_title') || 'The learner must tap Try sound again on their device.' : t('word_sounds.audio_teacher_resend_title') || 'Resend prepared audio to this learner, or open audio review if the source pack is incomplete.',
         onClick: async () => {
-          const resourceId = entry.viewingResourceId || entry.resourceId || sessionData?.currentResourceId || null;
-          const resource = (generatedContent?.id === resourceId ? generatedContent : history.find(item => item && item.id === resourceId)) || null;
+          const resourceId = entry.viewingResourceId || targetId || sessionData?.currentResourceId || null;
+          const resource = (generatedContent?.id === resourceId ? generatedContent : (history || []).find(item => item && item.id === resourceId)) || null;
           if (!resource || resource.type !== 'word-sounds') {
             addToast(t('word_sounds.audio_open_resource_missing_toast') || 'Open the Word Sounds resource, then review its missing audio.', 'info');
             return;
@@ -2029,6 +2076,7 @@ function LiveSessionDockView(props) {
             });
             return;
           }
+          if (typeof setShowLiveDock === 'function') setShowLiveDock(false);
           handleRestoreView(resource, {
             suppressLiveFollow: true
           });
@@ -2056,12 +2104,13 @@ function LiveSessionDockView(props) {
         }) || 'Review and repair audio for ' + (entry.name || 'student'),
         title: t('word_sounds.audio_review_repair_title') || 'Open the Word Sounds audio review to replace a persistently damaged clip.',
         onClick: () => {
-          const resourceId = entry.viewingResourceId || entry.resourceId || sessionData?.currentResourceId || null;
-          const resource = (generatedContent?.id === resourceId ? generatedContent : history.find(item => item && item.id === resourceId)) || null;
+          const resourceId = entry.viewingResourceId || targetId || sessionData?.currentResourceId || null;
+          const resource = (generatedContent?.id === resourceId ? generatedContent : (history || []).find(item => item && item.id === resourceId)) || null;
           if (!resource || resource.type !== 'word-sounds') {
             addToast(t('word_sounds.audio_open_resource_review_toast') || 'Open the Word Sounds resource, then review its audio.', 'info');
             return;
           }
+          if (typeof setShowLiveDock === 'function') setShowLiveDock(false);
           handleRestoreView(resource, {
             suppressLiveFollow: true
           });

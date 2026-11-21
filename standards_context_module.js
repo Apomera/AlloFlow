@@ -24,9 +24,11 @@
     'adaptation-prohibited'
   ];
 
+  var hasOwn = Object.prototype.hasOwnProperty;
+
   function text(value, limit) {
     if (value === undefined || value === null) return '';
-    var out = String(value).replace(/\s+/g, ' ').trim();
+    var out = String(value).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
     return out.slice(0, limit || MAX_FIELD);
   }
 
@@ -34,11 +36,26 @@
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
-  function uniqueStrings(values, limit) {
+  function safeUrl(value, limit) {
+    var raw = text(value, limit || MAX_FIELD);
+    if (!raw) return '';
+    if (typeof URL === 'function') {
+      try {
+        var parsed = new URL(raw);
+        if ((parsed.protocol !== 'https:' && parsed.protocol !== 'http:') || parsed.username || parsed.password) return '';
+        return parsed.href.slice(0, limit || MAX_FIELD);
+      } catch (_) {
+        return '';
+      }
+    }
+    return /^https?:\/\/[^@\s]+$/i.test(raw) ? raw : '';
+  }
+
+  function uniqueSafeUrls(values, limit) {
     var out = [];
     var list = Array.isArray(values) ? values : [];
     for (var i = 0; i < list.length && out.length < (limit || MAX_URLS); i++) {
-      var item = text(list[i], MAX_FIELD);
+      var item = safeUrl(list[i], MAX_FIELD);
       if (item && out.indexOf(item) === -1) out.push(item);
     }
     return out;
@@ -47,6 +64,7 @@
   function pick(obj, keys) {
     if (!isObject(obj)) return '';
     for (var i = 0; i < keys.length; i++) {
+      if (!hasOwn.call(obj, keys[i])) continue;
       var value = text(obj[keys[i]], MAX_FIELD);
       if (value) return value;
     }
@@ -71,12 +89,14 @@
       80
     );
     if (TEXT_ACCESS_EXPECTATIONS.indexOf(expectation) === -1) expectation = 'unspecified';
+    var basis = text(source.basis || source.source || source.authority, 240);
+    var safeSourceUrl = safeUrl(source.sourceUrl || source.url, MAX_FIELD);
     return {
       textAccessExpectation: expectation,
-      basis: text(source.basis || source.source || source.authority, 240),
-      sourceUrl: text(source.sourceUrl || source.url, MAX_FIELD),
+      basis: basis,
+      sourceUrl: safeSourceUrl,
       notes: text(source.notes || source.description, MAX_FIELD),
-      sourced: !!(source.sourceUrl || source.url || source.basis || source.authority)
+      sourced: !!(safeSourceUrl || basis)
     };
   }
 
@@ -86,7 +106,11 @@
     var label = pick(source, ['label', 'title', 'name', 'standard', 'statement', 'description', 'text']) || code;
     var statement = pick(source, ['text', 'statement', 'description', 'officialText', 'definition']);
     var relationships = [];
-    var rawRelationships = [].concat(source.relationships || [], source.relatedStandards || [], source.prerequisites || []);
+    var rawRelationships = [].concat(
+      Array.isArray(source.relationships) ? source.relationships.slice(0, MAX_RELATIONSHIPS) : [],
+      Array.isArray(source.relatedStandards) ? source.relatedStandards.slice(0, MAX_RELATIONSHIPS) : [],
+      Array.isArray(source.prerequisites) ? source.prerequisites.slice(0, MAX_RELATIONSHIPS) : []
+    );
     for (var i = 0; i < rawRelationships.length && relationships.length < MAX_RELATIONSHIPS; i++) {
       var relationship = normalizeRelationship(rawRelationships[i]);
       if (relationship) relationships.push(relationship);
@@ -101,8 +125,8 @@
       jurisdiction: pick(source, ['jurisdiction', 'region', 'state', 'country']),
       grade: pick(source, ['grade', 'gradeLevel', 'band']),
       subject: pick(source, ['subject', 'discipline']),
-      sourceUrl: pick(source, ['sourceUrl', 'url', 'officialUrl']),
-      sourceUrls: uniqueStrings(source.sourceUrls, MAX_URLS),
+      sourceUrl: safeUrl(pick(source, ['sourceUrl', 'url', 'officialUrl']), MAX_FIELD),
+      sourceUrls: uniqueSafeUrls(source.sourceUrls, MAX_URLS),
       relationships: relationships,
       instructionalConstraints: normalizeInstructionalConstraints(
         source.instructionalConstraints || source.textAccessPolicy
@@ -116,13 +140,13 @@
   }
 
   function extractEntries(source) {
-    if (Array.isArray(source)) return source;
+    if (Array.isArray(source)) return source.slice(0, MAX_ENTRIES);
     if (typeof source === 'string') {
-      return source.split(/[;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean);
+      return source.slice(0, MAX_INPUT * 4).split(/[;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean).slice(0, MAX_ENTRIES);
     }
     if (!isObject(source)) return [];
-    if (Array.isArray(source.standards)) return source.standards;
-    if (Array.isArray(source.entries)) return source.entries;
+    if (Array.isArray(source.standards)) return source.standards.slice(0, MAX_ENTRIES);
+    if (Array.isArray(source.entries)) return source.entries.slice(0, MAX_ENTRIES);
     if (source.standard !== undefined) return [source.standard];
     if (source.code || source.standardCode || source.identifier || source.id || source.label || source.title || source.text) return [source];
     return [];
@@ -156,11 +180,11 @@
       MAX_INPUT
     );
     var promptText = buildPrompt(entries, text(sourceObject.promptText || inputText, MAX_PROMPT));
-    var sourceUrls = uniqueStrings([].concat(
-      sourceObject.sourceUrls || [],
-      sourceObject.sourceUrl || [],
+    var sourceUrls = uniqueSafeUrls([].concat(
+      Array.isArray(sourceObject.sourceUrls) ? sourceObject.sourceUrls : [],
+      sourceObject.sourceUrl ? [sourceObject.sourceUrl] : [],
       entries.reduce(function (all, entry) {
-        return all.concat(entry.sourceUrl || [], entry.sourceUrls || []);
+        return all.concat(entry.sourceUrl ? [entry.sourceUrl] : [], entry.sourceUrls || []);
       }, [])
     ), MAX_URLS);
     var provider = text(sourceObject.provider || sourceObject.resolver || opts.provider, 160) || 'user-input';

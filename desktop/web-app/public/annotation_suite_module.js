@@ -18,10 +18,16 @@ var require_tmp_annotation_suite_entry = __commonJS({
     })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
       "use strict";
       var VERSION = "1.0.0";
-      var STANCES = ["supports", "complicates", "context", "language", "question"];
-      var COLORS = { supports: "green", complicates: "pink", context: "blue", language: "yellow", question: "blue" };
+      var hasOwn = Object.prototype.hasOwnProperty;
+      var STANCES = Object.freeze(["supports", "complicates", "context", "language", "question"]);
+      var COLORS = Object.freeze({ supports: "green", complicates: "pink", context: "blue", language: "yellow", question: "blue" });
       function clip(value, limit) {
-        return String(value == null ? "" : value).replace(/\s+/g, " ").trim().slice(0, limit || 500);
+        return String(value == null ? "" : value).replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, limit || 500);
+      }
+      function safeUrl(value, limit) {
+        var cleaned = clip(value, limit || 500);
+        if (!cleaned) return "";
+        return /^https?:\/\/[^\s]+$/i.test(cleaned) ? cleaned : "";
       }
       function redact(value) {
         return clip(value, 1800).replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[email omitted]").replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[identifier omitted]").replace(/\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/g, "[phone omitted]").replace(/\b[ACGTUN]{40,}\b/gi, "[nucleic-acid sequence omitted]").replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi, "[protein sequence omitted]");
@@ -36,37 +42,42 @@ var require_tmp_annotation_suite_entry = __commonJS({
         return (hash >>> 0).toString(16).padStart(8, "0");
       }
       function createHandoff(input) {
-        input = input || {};
-        var source = input.source || {};
+        input = input && typeof input === "object" ? input : {};
+        var source = input.source && typeof input.source === "object" ? input.source : {};
         var excerpts = (Array.isArray(input.excerpts) ? input.excerpts : []).slice(0, 10).map(function(row, index) {
-          return { excerptId: "excerpt-" + (index + 1), sentenceIndex: Math.max(1, Number(row && row.sentenceIndex) || index + 1), excerpt: redact(row && row.excerpt).slice(0, 360) };
+          var rawIdx = Number(row && row.sentenceIndex);
+          var sentenceIndex = Number.isFinite(rawIdx) && rawIdx >= 1 ? Math.min(1e6, Math.floor(rawIdx)) : index + 1;
+          return { excerptId: "excerpt-" + (index + 1), sentenceIndex, excerpt: redact(row && row.excerpt).slice(0, 360) };
         }).filter(function(row) {
           return !!row.excerpt;
         });
         if (!excerpts.length) return { ok: false, reason: "At least one bounded concordance excerpt is required." };
-        var sourceRecordId = clip(input.sourceRecordId, 180) || "text-" + stableId([source.title, source.creator, source.edition, source.stableUrl].join("|"));
+        var stableUrl = safeUrl(source.stableUrl, 500);
+        var sourceRecordId = clip(input.sourceRecordId, 180) || "text-" + stableId([source.title, source.creator, source.edition, stableUrl].join("|"));
         return { ok: true, handoff: {
           schemaVersion: 1,
           bridgeVersion: VERSION,
-          handoffId: "annotation-handoff-" + stableId(sourceRecordId + "|" + input.queryTerm + "|" + excerpts.map(function(row) {
+          handoffId: "annotation-handoff-" + stableId(sourceRecordId + "|" + clip(input.queryTerm, 80) + "|" + excerpts.map(function(row) {
             return row.excerpt;
           }).join("|")),
           sourceRecordId,
           queryTerm: clip(input.queryTerm, 80),
-          source: { title: redact(source.title).slice(0, 180), creator: redact(source.creator).slice(0, 180), edition: redact(source.edition).slice(0, 220), stableUrl: clip(source.stableUrl, 500), context: redact(source.context).slice(0, 1200) },
+          source: { title: redact(source.title).slice(0, 180), creator: redact(source.creator).slice(0, 180), edition: redact(source.edition).slice(0, 220), stableUrl, context: redact(source.context).slice(0, 1200) },
           excerpts,
           createdAt: clip(input.createdAt, 80) || (/* @__PURE__ */ new Date()).toISOString()
         } };
       }
       function createAnnotation(handoff, input) {
-        input = input || {};
-        if (!handoff || !Array.isArray(handoff.excerpts)) return { ok: false, reason: "A valid inquiry handoff is required." };
+        input = input && typeof input === "object" ? input : {};
+        if (!handoff || typeof handoff !== "object" || !Array.isArray(handoff.excerpts) || typeof handoff.handoffId !== "string" || !handoff.handoffId) {
+          return { ok: false, reason: "A valid inquiry handoff is required." };
+        }
         var excerptId = clip(input.excerptId, 80);
         var target = handoff.excerpts.find(function(row) {
-          return row.excerptId === excerptId;
+          return row && row.excerptId === excerptId;
         });
         if (!target) return { ok: false, reason: "Choose a current excerpt." };
-        var stance = STANCES.indexOf(input.stance) === -1 ? "language" : input.stance;
+        var stance = typeof input.stance === "string" && STANCES.indexOf(input.stance) !== -1 ? input.stance : "language";
         var note = redact(input.note).slice(0, 900);
         if (note.length < 12) return { ok: false, reason: "Write an annotation of at least 12 characters." };
         var createdAt = clip(input.createdAt, 80) || (/* @__PURE__ */ new Date()).toISOString();
@@ -77,7 +88,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
           x: 32,
           y: 64 + handoff.excerpts.indexOf(target) * 76,
           content: note,
-          color: COLORS[stance],
+          color: hasOwn.call(COLORS, stance) ? COLORS[stance] : "yellow",
           author: "student",
           authorName: redact(input.authorName).slice(0, 80),
           createdAt,
@@ -86,14 +97,26 @@ var require_tmp_annotation_suite_entry = __commonJS({
         } };
       }
       function validateAnnotation(handoff, annotation) {
-        if (!annotation || annotation.kind !== "note" || !annotation.inquiryTarget) return false;
-        if (STANCES.indexOf(annotation.inquiryStance) === -1 || clip(annotation.content, 900).length < 12) return false;
-        return !!(handoff && annotation.inquiryTarget.handoffId === handoff.handoffId && handoff.excerpts.some(function(row) {
-          return row.excerptId === annotation.inquiryTarget.excerptId;
-        }));
+        if (!handoff || typeof handoff !== "object" || typeof handoff.handoffId !== "string" || !handoff.handoffId || !Array.isArray(handoff.excerpts)) return false;
+        if (!annotation || typeof annotation !== "object" || annotation.kind !== "note" || !annotation.inquiryTarget || typeof annotation.inquiryTarget !== "object") return false;
+        if (typeof annotation.inquiryStance !== "string" || STANCES.indexOf(annotation.inquiryStance) === -1 || typeof annotation.content !== "string" || clip(annotation.content, 900).length < 12) return false;
+        return annotation.inquiryTarget.handoffId === handoff.handoffId && handoff.excerpts.some(function(row) {
+          return row && row.excerptId === annotation.inquiryTarget.excerptId;
+        });
+      }
+      function cloneTarget(t2) {
+        if (!t2 || typeof t2 !== "object") return null;
+        return {
+          handoffId: clip(t2.handoffId, 120),
+          sourceRecordId: clip(t2.sourceRecordId, 180),
+          queryTerm: clip(t2.queryTerm, 80),
+          excerptId: clip(t2.excerptId, 80),
+          sentenceIndex: Number.isFinite(Number(t2.sentenceIndex)) && Number(t2.sentenceIndex) >= 1 ? Math.min(1e6, Math.floor(Number(t2.sentenceIndex))) : 1,
+          excerpt: redact(t2.excerpt).slice(0, 360)
+        };
       }
       function summarizeForCapture(handoff, annotations) {
-        var valid = (Array.isArray(annotations) ? annotations : []).filter(function(annotation) {
+        var valid = (Array.isArray(annotations) ? annotations.slice(0, 200) : []).filter(function(annotation) {
           return validateAnnotation(handoff, annotation);
         }).slice(0, 20);
         var counts = {};
@@ -110,16 +133,18 @@ var require_tmp_annotation_suite_entry = __commonJS({
           queryTerm: handoff && handoff.queryTerm,
           annotationCounts: counts,
           annotations: valid.map(function(annotation) {
-            return { id: annotation.id, stance: annotation.inquiryStance, note: redact(annotation.content).slice(0, 900), target: annotation.inquiryTarget };
+            return { id: clip(annotation.id, 120), stance: annotation.inquiryStance, note: redact(annotation.content).slice(0, 900), target: cloneTarget(annotation.inquiryTarget) };
           })
         };
       }
       function toAnnotationSuitePayload(handoff, annotations) {
-        return { docTitle: (handoff && handoff.source && handoff.source.title || "Text Inquiry excerpts") + " \u2014 close reading", annotations: (Array.isArray(annotations) ? annotations : []).filter(function(annotation) {
+        var baseTitle = redact(handoff && handoff.source && handoff.source.title).slice(0, 180) || "Text Inquiry excerpts";
+        var valid = (Array.isArray(annotations) ? annotations.slice(0, 200) : []).filter(function(annotation) {
           return validateAnnotation(handoff, annotation);
-        }) };
+        }).slice(0, 20);
+        return { docTitle: baseTitle + " \u2014 close reading", annotations: valid };
       }
-      return { version: VERSION, stances: STANCES.slice(), createHandoff, createAnnotation, validateAnnotation, summarizeForCapture, toAnnotationSuitePayload };
+      return Object.freeze({ version: VERSION, stances: STANCES.slice(), createHandoff, createAnnotation, validateAnnotation, summarizeForCapture, toAnnotationSuitePayload });
     });
     const STICKER_ICONS = {
       star: "\u2B50",
@@ -259,8 +284,10 @@ var require_tmp_annotation_suite_entry = __commonJS({
         e.preventDefault();
         e.stopPropagation();
         const el = e.currentTarget;
-        const startTop = parseFloat(el.style.top) || s.y;
-        const startLeft = parseFloat(el.style.left) || s.x;
+        const parsedTop = parseFloat(el.style.top);
+        const parsedLeft = parseFloat(el.style.left);
+        const startTop = Number.isFinite(parsedTop) ? parsedTop : s.y;
+        const startLeft = Number.isFinite(parsedLeft) ? parsedLeft : s.x;
         const offsetTop = startTop - s.y;
         const offsetLeft = startLeft - s.x;
         const startCX = e.clientX;
@@ -346,8 +373,10 @@ var require_tmp_annotation_suite_entry = __commonJS({
         e.preventDefault();
         e.stopPropagation();
         const step = e.shiftKey ? 40 : 10;
-        const nextX = Math.max(0, Math.min(host.clientWidth - 14, annotation.x + movement.x * step));
-        const nextY = Math.max(0, Math.min(host.clientHeight - 14, annotation.y + movement.y * step));
+        const sw = host.scrollWidth || host.clientWidth || 999999;
+        const sh = host.scrollHeight || host.clientHeight || 999999;
+        const nextX = Math.max(0, Math.min(sw - 14, annotation.x + movement.x * step));
+        const nextY = Math.max(0, Math.min(sh - 14, annotation.y + movement.y * step));
         onMove(annotation.id, nextX, nextY, true);
         announceAnnotationMove(`Annotation moved ${movement.label}${e.shiftKey ? " by a larger step" : ""}.`);
       };
@@ -387,13 +416,12 @@ var require_tmp_annotation_suite_entry = __commonJS({
       );
     }
     function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
-      if (!a) return null;
-      const palette = _ownAnno(NOTE_COLORS, a.color) || NOTE_COLORS.yellow;
-      const [expanded, setExpanded] = React.useState(!a.content);
-      const [draft, setDraft] = React.useState(a.content || "");
+      const [expanded, setExpanded] = React.useState(!(a && a.content));
+      const [draft, setDraft] = React.useState(a && a.content || "");
+      const noteContent = a ? a.content : "";
       React.useEffect(function() {
-        setDraft(a.content || "");
-      }, [a.content]);
+        setDraft(noteContent || "");
+      }, [noteContent]);
       const taRef = React.useRef(null);
       const wasDraggedRef = React.useRef(false);
       React.useEffect(function() {
@@ -404,6 +432,9 @@ var require_tmp_annotation_suite_entry = __commonJS({
           }
         }
       }, [expanded]);
+      if (!a) return null;
+      const palette = _ownAnno(NOTE_COLORS, a.color) || NOTE_COLORS.yellow;
+      const isEditable = typeof onChange === "function";
       const title = buildStickerTitle(a) || "Note";
       const commit = function() {
         setExpanded(false);
@@ -449,6 +480,8 @@ var require_tmp_annotation_suite_entry = __commonJS({
       return /* @__PURE__ */ React.createElement(
         "div",
         {
+          "data-allo-note-expanded": "true",
+          "data-allo-anno": "true",
           className: "absolute z-50 select-text shadow-lg rounded-lg",
           style: {
             top: a.y - 14,
@@ -466,7 +499,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
         /* @__PURE__ */ React.createElement(
           "div",
           {
-            className: "flex items-center justify-between gap-2 px-2 py-1 text-[10px] font-bold uppercase tracking-wide rounded-t-lg",
+            className: "flex items-center justify-between gap-2 px-2 py-1 text-xs font-bold uppercase tracking-wide rounded-t-lg",
             style: { background: palette.border, color: palette.text }
           },
           /* @__PURE__ */ React.createElement("span", null, "\u{1F4DD} ", a.author === "teacher" ? "Teacher note" : a.authorName || "Student note"),
@@ -475,9 +508,9 @@ var require_tmp_annotation_suite_entry = __commonJS({
             {
               type: "button",
               onClick: commit,
-              className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold",
+              className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-xs font-bold",
               "aria-label": t("a11y.save_note"),
-              title: "Save & close"
+              title: isEditable ? "Save & close" : "Close"
             },
             "\u2713"
           ), typeof onDelete === "function" && /* @__PURE__ */ React.createElement(
@@ -490,7 +523,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
               onClick: function() {
                 onDelete(a.id);
               },
-              className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold",
+              className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-xs font-bold",
               "aria-label": t("a11y.delete_note"),
               title: "Delete"
             },
@@ -502,10 +535,22 @@ var require_tmp_annotation_suite_entry = __commonJS({
           {
             ref: taRef,
             value: draft,
+            readOnly: !isEditable,
             onChange: function(e) {
-              setDraft(e.target.value);
+              if (isEditable) setDraft(e.target.value);
             },
-            onBlur: commit,
+            onBlur: function(e) {
+              const box = e.currentTarget && e.currentTarget.closest && e.currentTarget.closest("[data-allo-note-expanded]");
+              if (box && e.relatedTarget && box.contains(e.relatedTarget)) return;
+              commit();
+            },
+            onKeyDown: function(e) {
+              if (e.key === "Escape") {
+                e.preventDefault();
+                e.stopPropagation();
+                commit();
+              }
+            },
             placeholder: t("placeholders.type_note"),
             rows: 3,
             className: "w-full p-2 text-xs resize-y bg-transparent outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600",
@@ -516,9 +561,9 @@ var require_tmp_annotation_suite_entry = __commonJS({
       );
     }
     function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
-      if (!a) return null;
       const [expanded, setExpanded] = React.useState(false);
       const wasDraggedRef = React.useRef(false);
+      if (!a) return null;
       const title = buildStickerTitle(a) || "Voice note";
       const dur = typeof a.durationSec === "number" ? Math.round(a.durationSec) : null;
       const hasAudio = !!a.audioBase64;
@@ -562,6 +607,8 @@ var require_tmp_annotation_suite_entry = __commonJS({
       return /* @__PURE__ */ React.createElement(
         "div",
         {
+          "data-allo-note-expanded": "true",
+          "data-allo-anno": "true",
           className: "absolute z-50 select-text shadow-lg rounded-lg",
           style: {
             top: a.y - 14,
@@ -579,7 +626,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
         /* @__PURE__ */ React.createElement(
           "div",
           {
-            className: "flex items-center justify-between gap-2 px-2 py-1 text-[10px] font-bold uppercase tracking-wide rounded-t-lg",
+            className: "flex items-center justify-between gap-2 px-2 py-1 text-xs font-bold uppercase tracking-wide rounded-t-lg",
             style: { background: accent, color: "white" }
           },
           /* @__PURE__ */ React.createElement("span", null, "\u{1F3A4} ", isT ? "Teacher voice note" : a.authorName || "Voice note", dur != null ? " \u2022 " + dur + "s" : ""),
@@ -590,7 +637,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
               onClick: function() {
                 setExpanded(false);
               },
-              className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-[10px] font-bold",
+              className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-white text-xs font-bold",
               style: { color: accent },
               "aria-label": t("a11y.close_voice_note"),
               title: "Close"
@@ -603,7 +650,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
               onClick: function() {
                 onDelete(a.id);
               },
-              className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-[10px] font-bold",
+              className: "inline-flex min-h-6 min-w-6 items-center justify-center px-1.5 py-0.5 rounded bg-white/70 hover:bg-red-100 text-xs font-bold",
               style: { color: accent },
               "aria-label": t("a11y.delete_voice_note"),
               title: "Delete"
@@ -620,7 +667,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
             className: "w-full",
             style: { height: 32 }
           }
-        ) : /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic px-1 py-2" }, "No audio attached (recording may have failed)."))
+        ) : /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic px-1 py-2" }, "No audio attached (recording may have failed)."))
       );
     }
     function RecordingOverlay({ x, y, elapsedSec, onStop, onCancel }) {
@@ -649,7 +696,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
           {
             type: "button",
             onClick: onCancel,
-            className: "min-h-6 px-2 py-1 rounded text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200",
+            className: "min-h-6 px-2 py-1 rounded text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200",
             "aria-label": t("a11y.cancel_recording")
           },
           "Cancel"
@@ -658,7 +705,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
           {
             type: "button",
             onClick: onStop,
-            className: "min-h-6 px-3 py-1 rounded text-[11px] font-bold text-white bg-red-600 hover:bg-red-700 flex items-center gap-1",
+            className: "min-h-6 px-3 py-1 rounded text-xs font-bold text-white bg-red-600 hover:bg-red-700 flex items-center gap-1",
             "aria-label": t("a11y.stop_save_recording")
           },
           /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 bg-white" }),
@@ -694,21 +741,13 @@ var require_tmp_annotation_suite_entry = __commonJS({
       }), /* @__PURE__ */ React.createElement(
         "div",
         {
-          className: "absolute pointer-events-auto z-30",
+          className: "group absolute pointer-events-auto z-30",
           style: {
             top: a.rects[0].y,
             left: a.rects[0].x,
             width: a.rects[0].w,
             height: a.rects[0].h,
             background: "transparent"
-          },
-          onMouseEnter: function(e) {
-            const btn = e.currentTarget.querySelector("button");
-            if (btn) btn.style.opacity = "1";
-          },
-          onMouseLeave: function(e) {
-            const btn = e.currentTarget.querySelector("button");
-            if (btn) btn.style.opacity = "0";
           }
         },
         typeof onDelete === "function" && /* @__PURE__ */ React.createElement(
@@ -719,7 +758,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
               e.stopPropagation();
               onDelete(a.id);
             },
-            className: "absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none",
+            className: "absolute pointer-events-auto opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 transition-opacity motion-reduce:transition-none",
             style: {
               top: -12,
               right: -12,
@@ -823,14 +862,15 @@ var require_tmp_annotation_suite_entry = __commonJS({
         const ry = Math.max(1, (bbh - w * 2) / 2);
         shapeNode = /* @__PURE__ */ React.createElement("ellipse", { cx: localX(cx), cy: localY(cy), rx, ry, fill: "none", stroke, strokeWidth: w });
       }
-      const title = buildStickerTitle(a) || (DRAW_SHAPE_LABELS[shape] || "Drawing");
+      const shapeLabel = _ownAnno(DRAW_SHAPE_LABELS, shape) || "Drawing";
+      const title = buildStickerTitle(a) || shapeLabel;
       return /* @__PURE__ */ React.createElement(
         "div",
         {
           role: "group",
           className: "absolute pointer-events-none z-40",
           style: { top: svgY, left: svgX, width: svgW, height: svgH },
-          "aria-label": (DRAW_SHAPE_LABELS[shape] || "Drawing") + ": " + title,
+          "aria-label": shapeLabel + ": " + title,
           title
         },
         /* @__PURE__ */ React.createElement("svg", { width: svgW, height: svgH, style: { display: "block", overflow: "visible" }, "aria-hidden": "true" }, shapeNode),
@@ -842,7 +882,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
               e.stopPropagation();
               onDelete(a.id);
             },
-            className: "absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none",
+            className: "absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 transition-opacity motion-reduce:transition-none",
             style: {
               top: 0,
               right: 0,
@@ -859,12 +899,6 @@ var require_tmp_annotation_suite_entry = __commonJS({
               justifyContent: "center",
               color: "#475569",
               lineHeight: 1
-            },
-            onMouseEnter: function(e) {
-              e.currentTarget.style.opacity = "1";
-            },
-            onMouseLeave: function(e) {
-              e.currentTarget.style.opacity = "0";
             },
             "aria-label": t("a11y.delete_drawing"),
             title: "Delete drawing"
@@ -905,11 +939,20 @@ var require_tmp_annotation_suite_entry = __commonJS({
       }
       return false;
     }
-    function DrawingCapture({ active, color, width, shape, onCommit, onErase, annotations }) {
+    function DrawingCapture({ active, color, width, shape, onCommit, onErase, annotations, isTeacher }) {
       const [stroke, setStroke] = React.useState(null);
+      const strokeRef = React.useRef(null);
       const [eraseCursor, setEraseCursor] = React.useState(null);
       const hostRef = React.useRef(null);
       const drawingRef = React.useRef(false);
+      React.useEffect(function() {
+        if (!active) {
+          drawingRef.current = false;
+          strokeRef.current = null;
+          setStroke(null);
+          setEraseCursor(null);
+        }
+      }, [active]);
       const sh = shape || "free";
       const isErase = sh === "erase";
       if (!active) return null;
@@ -922,6 +965,8 @@ var require_tmp_annotation_suite_entry = __commonJS({
         if (!Array.isArray(annotations) || typeof onErase !== "function") return;
         for (let i = 0; i < annotations.length; i++) {
           const a = annotations[i];
+          if (!a) continue;
+          if (isTeacher === false && a.author !== "student") continue;
           if (_annotationHit(a, x, y, ERASER_RADIUS)) {
             onErase(a.id);
           }
@@ -943,11 +988,9 @@ var require_tmp_annotation_suite_entry = __commonJS({
           performErase(x, y);
           return;
         }
-        if (sh === "free") {
-          setStroke({ shape: "free", points: [{ x, y }], color, width });
-        } else {
-          setStroke({ shape: sh, start: { x, y }, end: { x, y }, color, width });
-        }
+        const initial = sh === "free" ? { shape: "free", points: [{ x, y }], color, width } : { shape: sh, start: { x, y }, end: { x, y }, color, width };
+        strokeRef.current = initial;
+        setStroke(initial);
       }
       function pointerMove(e) {
         if (drawingRef.current) {
@@ -966,15 +1009,18 @@ var require_tmp_annotation_suite_entry = __commonJS({
           return;
         }
         if (!drawingRef.current) return;
-        setStroke(function(prev) {
-          if (!prev) return prev;
-          if (prev.shape === "free") {
-            const last = prev.points[prev.points.length - 1];
-            if (last && Math.abs(last.x - x) < 1.2 && Math.abs(last.y - y) < 1.2) return prev;
-            return Object.assign({}, prev, { points: prev.points.concat([{ x, y }]) });
-          }
-          return Object.assign({}, prev, { end: { x, y } });
-        });
+        const prev = strokeRef.current;
+        if (!prev) return;
+        let next;
+        if (prev.shape === "free") {
+          const last = prev.points[prev.points.length - 1];
+          if (last && Math.abs(last.x - x) < 1.2 && Math.abs(last.y - y) < 1.2) return;
+          next = Object.assign({}, prev, { points: prev.points.concat([{ x, y }]) });
+        } else {
+          next = Object.assign({}, prev, { end: { x, y } });
+        }
+        strokeRef.current = next;
+        setStroke(next);
       }
       function pointerUp(e) {
         if (!drawingRef.current) {
@@ -991,7 +1037,8 @@ var require_tmp_annotation_suite_entry = __commonJS({
         if (isErase) {
           return;
         }
-        const prev = stroke;
+        const prev = strokeRef.current || stroke;
+        strokeRef.current = null;
         setStroke(null);
         if (!prev || typeof onCommit !== "function") return;
         if (prev.shape === "free") {
@@ -1077,29 +1124,34 @@ var require_tmp_annotation_suite_entry = __commonJS({
         ) : null
       );
     }
-    function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onHighlightDelete, onVoiceDelete, onDrawDelete, onMove }) {
+    function Overlay({ annotations, mode, isTeacher, onNoteChange, onNoteDelete, onHighlightDelete, onVoiceDelete, onDrawDelete, onMove, t: hostT }) {
+      if (typeof hostT === "function") _captureHostT({ t: hostT });
       if (!Array.isArray(annotations) || annotations.length === 0) return null;
       const migrated = migrateLegacyShape(annotations);
       const dragMode = !mode || mode === "off";
+      function canModify(a) {
+        if (isTeacher) return true;
+        return !!(a && a.author === "student");
+      }
       function canDrag(a) {
         if (!dragMode || !onMove) return false;
-        if (isTeacher) return true;
-        return a && a.author === "student";
+        return canModify(a);
       }
       return /* @__PURE__ */ React.createElement(React.Fragment, null, migrated.map(function(a) {
         if (!a) return null;
+        const allowed = canModify(a);
         if (a.kind === "note") {
-          return /* @__PURE__ */ React.createElement(NoteBubble, { key: a.id, a, onChange: onNoteChange, onDelete: onNoteDelete, draggable: canDrag(a), onMove });
+          return /* @__PURE__ */ React.createElement(NoteBubble, { key: a.id, a, onChange: allowed ? onNoteChange : void 0, onDelete: allowed ? onNoteDelete : void 0, draggable: canDrag(a), onMove });
         }
         if (a.kind === "highlight") {
-          return /* @__PURE__ */ React.createElement(HighlightOverlay, { key: a.id, a, onDelete: onHighlightDelete });
+          return /* @__PURE__ */ React.createElement(HighlightOverlay, { key: a.id, a, onDelete: allowed ? onHighlightDelete : void 0 });
         }
         if (a.kind === "voice") {
           if (a.pending) return null;
-          return /* @__PURE__ */ React.createElement(VoiceNoteBubble, { key: a.id, a, onDelete: onVoiceDelete, draggable: canDrag(a), onMove });
+          return /* @__PURE__ */ React.createElement(VoiceNoteBubble, { key: a.id, a, onDelete: allowed ? onVoiceDelete : void 0, draggable: canDrag(a), onMove });
         }
         if (a.kind === "draw") {
-          return /* @__PURE__ */ React.createElement(DrawingOverlay, { key: a.id, a, onDelete: onDrawDelete });
+          return /* @__PURE__ */ React.createElement(DrawingOverlay, { key: a.id, a, onDelete: allowed ? onDrawDelete : void 0 });
         }
         return /* @__PURE__ */ React.createElement(StickerNode, { key: a.id, s: a, draggable: canDrag(a), onMove });
       }));
@@ -1270,8 +1322,8 @@ var require_tmp_annotation_suite_entry = __commonJS({
           onChange: function(e) {
             onPickTemplate(e.target.value);
           },
-          className: "text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 max-w-[150px]",
-          "aria-label": t("a11y.note_template"),
+          className: "text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 max-w-[150px]",
+          "aria-label": tt("a11y.note_template"),
           title: noteTemplate ? "Template active: next note auto-fills" : "Pick a template to auto-fill the next note",
           style: { minHeight: 24 }
         },
@@ -1286,7 +1338,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
           onClick: onClear,
           className: "w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full",
           title: "Clear all annotations",
-          "aria-label": t("a11y.clear_all_annotations")
+          "aria-label": tt("a11y.clear_all_annotations")
         },
         Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
       )), mode === "highlight" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in motion-reduce:animate-none slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, HIGHLIGHT_COLOR_KEYS.map(function(key) {
@@ -1313,7 +1365,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
           onClick: onClear,
           className: "w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full",
           title: "Clear all annotations",
-          "aria-label": t("a11y.clear_all_annotations")
+          "aria-label": tt("a11y.clear_all_annotations")
         },
         Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
       )), mode === "draw" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 animate-in motion-reduce:animate-none slide-in-from-left-2 duration-200 border-s border-slate-200 ps-1" }, DRAW_SHAPES.map(function(sh) {
@@ -1416,7 +1468,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
           onClick: onClear,
           className: "w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full",
           title: "Clear all annotations",
-          "aria-label": t("a11y.clear_all_annotations")
+          "aria-label": tt("a11y.clear_all_annotations")
         },
         Trash2 ? /* @__PURE__ */ React.createElement(Trash2, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u{1F5D1}")
       )));
@@ -1681,7 +1733,9 @@ var require_tmp_annotation_suite_entry = __commonJS({
         }
         let id = typeof raw.id === "string" && raw.id && !/^(__proto__|constructor|prototype)$/.test(raw.id) ? raw.id.slice(0, 120) : typeof raw.id === "number" && Number.isFinite(raw.id) ? raw.id : null;
         if (id == null || existingIds.has(String(id))) {
-          id = Date.now() + Math.floor(Math.random() * 1e3);
+          do {
+            id = Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+          } while (existingIds.has(String(id)));
         }
         existingIds.add(String(id));
         let author = raw.author === "teacher" || raw.author === "student" ? raw.author : "student";
@@ -1795,7 +1849,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
     function annotationPreview(a) {
       if (!a) return "";
       const kind = a.kind || "sticker";
-      if (kind === "sticker") return (STICKER_ICONS[a.type] || "") + " " + (a.type || "sticker");
+      if (kind === "sticker") return (_ownAnno(STICKER_ICONS, a.type) || "") + " " + (a.type || "sticker");
       if (kind === "note") {
         const c = (a.content || "").trim();
         return "\u{1F4DD} " + (c ? c.length > 60 ? c.slice(0, 60) + "\u2026" : c : "(empty note)");
@@ -1807,6 +1861,9 @@ var require_tmp_annotation_suite_entry = __commonJS({
       if (kind === "voice") {
         const d = typeof a.durationSec === "number" ? Math.round(a.durationSec) + "s" : "";
         return "\u{1F3A4} Voice note" + (d ? " (" + d + ")" : "");
+      }
+      if (kind === "draw") {
+        return "\u270F\uFE0F " + (_ownAnno(DRAW_SHAPE_LABELS, a.shape || "free") || "Drawing");
       }
       return "";
     }
@@ -1827,6 +1884,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
       const visible = annotations.filter(function(a) {
         if (!a) return false;
         if (filter === "teacher") return a.author === "teacher";
+        if (filter === "student") return a.author === "student";
         if (filter === "mine") {
           return isTeacher ? a.author === "teacher" : a.author === "student";
         }
@@ -1848,7 +1906,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
             onClick: function() {
               setFilter(key);
             },
-            className: "min-h-6 px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors motion-reduce:transition-none " + (active ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"),
+            className: "min-h-6 px-2 py-0.5 rounded-full text-xs font-bold transition-colors motion-reduce:transition-none " + (active ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"),
             "aria-pressed": active
           },
           label,
@@ -1870,7 +1928,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
           {
             type: "button",
             onClick: onImport,
-            className: "min-h-6 px-2 py-0.5 text-[10px] font-bold text-slate-600 hover:text-indigo-700 rounded hover:bg-white border border-slate-300",
+            className: "min-h-6 px-2 py-0.5 text-xs font-bold text-slate-600 hover:text-indigo-700 rounded hover:bg-white border border-slate-300",
             "aria-label": "Import annotations from a saved file",
             title: "Import annotations from a file (e.g., a student's downloaded annotations)"
           },
@@ -1880,14 +1938,14 @@ var require_tmp_annotation_suite_entry = __commonJS({
           {
             type: "button",
             onClick: onClose,
-            className: "inline-flex min-h-6 min-w-6 items-center justify-center p-1 text-slate-500 hover:text-red-500 rounded-full hover:bg-white",
+            className: "inline-flex min-h-6 min-w-6 items-center justify-center p-1 text-slate-600 hover:text-red-500 rounded-full hover:bg-white",
             "aria-label": "Close annotation list",
             title: "Close"
           },
           X ? /* @__PURE__ */ React.createElement(X, { size: 14 }) : /* @__PURE__ */ React.createElement("span", null, "\u2715")
         ))),
-        /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-3 py-2 border-b border-slate-200", role: "group", "aria-label": "Filter annotations" }, Pill("all", "All", counts.total), Pill("teacher", "Teacher", counts.teacher), Pill("mine", isTeacher ? "Teacher" : "Mine", mineCount)),
-        /* @__PURE__ */ React.createElement("div", { className: "overflow-y-auto flex-1 px-1 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-indigo-600", style: { minHeight: 100 }, role: "list", "aria-label": "Annotations", tabIndex: 0 }, visible.length === 0 && /* @__PURE__ */ React.createElement("div", { role: "listitem", className: "px-3 py-6 text-center text-[11px] text-slate-600 italic" }, "No annotations match this filter."), visible.map(function(a) {
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-3 py-2 border-b border-slate-200", role: "group", "aria-label": "Filter annotations" }, Pill("all", "All", counts.total), Pill("teacher", "Teacher", counts.teacher), isTeacher ? Pill("student", "Students", counts.student) : Pill("mine", "Mine", mineCount)),
+        /* @__PURE__ */ React.createElement("div", { className: "overflow-y-auto flex-1 px-1 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-indigo-600", style: { minHeight: 100 }, role: "list", "aria-label": "Annotations", tabIndex: 0 }, visible.length === 0 && /* @__PURE__ */ React.createElement("div", { role: "listitem", className: "px-3 py-6 text-center text-xs text-slate-600 italic" }, "No annotations match this filter."), visible.map(function(a) {
           const isTeacherAnno = a.author === "teacher";
           const canDelete = isTeacher || a.author === "student";
           const title = buildStickerTitle(a);
@@ -1909,7 +1967,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
                 "aria-label": "Jump to " + annotationPreview(a) + " from " + title
               },
               /* @__PURE__ */ React.createElement("div", { className: "font-medium text-slate-800 truncate" }, annotationPreview(a)),
-              /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5 truncate" }, title || (isTeacherAnno ? "Teacher" : "Student"))
+              /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 mt-0.5 truncate" }, title || (isTeacherAnno ? "Teacher" : "Student"))
             ), canDelete && /* @__PURE__ */ React.createElement(
               "button",
               {
@@ -2140,6 +2198,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
       const displayAnnotations = useCardHighlightLayout(contentEl, hostEl, annotations, recoveryCache);
       const isTeacher = props.isTeacher !== false;
       const authorName = props.authorName || "";
+      _captureHostT(props);
       const tt = typeof props.t === "function" ? props.t : function(k) {
         return k;
       };
@@ -2164,10 +2223,17 @@ var require_tmp_annotation_suite_entry = __commonJS({
       const [drawShape, setDrawShape] = React.useState("free");
       const [showList, setShowList] = React.useState(false);
       const [recording, setRecording] = React.useState(null);
-      const history = props.historyStore || /* @__PURE__ */ new Map();
+      const fallbackHistoryRef = React.useRef(null);
+      if (!fallbackHistoryRef.current) fallbackHistoryRef.current = /* @__PURE__ */ new Map();
+      const history = props.historyStore || fallbackHistoryRef.current;
       if (!history.has(props.documentKey)) history.set(props.documentKey, []);
       const undoRef = React.useRef(history.get(props.documentKey));
       const [undoCount, setUndoCount] = React.useState(undoRef.current.length);
+      const onChangeRef = React.useRef(props.onChange);
+      onChangeRef.current = props.onChange;
+      const documentKeyRef = React.useRef(props.documentKey);
+      documentKeyRef.current = props.documentKey;
+      const prevDocRef = React.useRef({ key: props.documentKey, list: annotations });
       const latest = React.useRef(annotations);
       latest.current = annotations;
       const aliveRef = React.useRef(true);
@@ -2175,9 +2241,10 @@ var require_tmp_annotation_suite_entry = __commonJS({
       const requestRef = React.useRef(null);
       const inputRef = React.useRef(null);
       const timersRef = React.useRef({ tick: null, cap: null });
-      const emit = function(next) {
-        latest.current = next;
-        if (typeof props.onChange === "function") props.onChange(next, props.documentKey);
+      const emit = function(next, targetKey) {
+        const key = arguments.length > 1 ? targetKey : documentKeyRef.current;
+        if (key === documentKeyRef.current) latest.current = next;
+        if (typeof onChangeRef.current === "function") onChangeRef.current(next, key);
       };
       const canEdit = function(a) {
         return !!a && (isTeacher || a.author === "student");
@@ -2216,10 +2283,36 @@ var require_tmp_annotation_suite_entry = __commonJS({
             return a && a.id !== cur.id;
           });
         };
-        for (let i = 0; i < undoRef.current.length; i++) undoRef.current[i] = withoutPending(undoRef.current[i]);
-        if (latest.current.some(function(a) {
-          return a && a.id === cur.id;
-        })) emit(withoutPending(latest.current));
+        const bucket = cur.undoBucket || undoRef.current;
+        for (let i = 0; i < bucket.length; i++) bucket[i] = withoutPending(bucket[i]);
+        const isSameDoc = !("documentKey" in cur) || documentKeyRef.current === cur.documentKey;
+        let restored = null;
+        if (isSameDoc) {
+          restored = latest.current;
+          if (latest.current.some(function(a) {
+            return a && a.id === cur.id;
+          })) {
+            restored = withoutPending(latest.current);
+            emit(restored, cur.documentKey);
+          }
+        } else if (prevDocRef.current && prevDocRef.current.key === cur.documentKey && Array.isArray(prevDocRef.current.list)) {
+          restored = prevDocRef.current.list;
+          if (prevDocRef.current.list.some(function(a) {
+            return a && a.id === cur.id;
+          })) {
+            restored = withoutPending(prevDocRef.current.list);
+            emit(restored, cur.documentKey);
+          }
+        }
+        if (restored && bucket.length > 0) {
+          const top = bucket[bucket.length - 1];
+          if (Array.isArray(top) && top.length === restored.length && top.every(function(a, i) {
+            return a === restored[i];
+          })) {
+            bucket.pop();
+          }
+        }
+        if (bucket === undoRef.current && aliveRef.current) setUndoCount(undoRef.current.length);
       };
       const stopVoice = function(cancel) {
         requestRef.current = null;
@@ -2245,6 +2338,21 @@ var require_tmp_annotation_suite_entry = __commonJS({
         }
         stopTracks(cur.stream);
       };
+      React.useEffect(function() {
+        return function() {
+          stopVoice(true);
+        };
+      }, [props.documentKey]);
+      React.useEffect(function() {
+        const store = props.historyStore || fallbackHistoryRef.current;
+        if (!store.has(props.documentKey)) store.set(props.documentKey, []);
+        const bucket = store.get(props.documentKey);
+        undoRef.current = bucket;
+        setUndoCount(bucket.length);
+      }, [props.documentKey, props.historyStore]);
+      React.useEffect(function() {
+        prevDocRef.current = { key: props.documentKey, list: annotations };
+      }, [props.documentKey, annotations]);
       const startVoice = async function(placeholder) {
         if (recorderRef.current || requestRef.current) return;
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === "undefined") {
@@ -2276,7 +2384,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
           toast(say("errors.microphone_access_denied", "The microphone is not available."), "error");
           return;
         }
-        const cur = { recorder, stream, chunks: [], id: placeholder.id, started: Date.now(), cancelled: false, stopping: false };
+        const cur = { recorder, stream, chunks: [], id: placeholder.id, started: Date.now(), cancelled: false, stopping: false, documentKey: documentKeyRef.current, undoBucket: undoRef.current };
         recorderRef.current = cur;
         recorder.ondataavailable = function(event) {
           if (!cur.cancelled && event.data && event.data.size > 0) cur.chunks.push(event.data);
@@ -2287,11 +2395,11 @@ var require_tmp_annotation_suite_entry = __commonJS({
         };
         recorder.onstop = function() {
           stopTracks(stream);
-          if (cur.cancelled || !aliveRef.current) return;
+          if (cur.cancelled || !aliveRef.current || documentKeyRef.current !== cur.documentKey) return;
           const mimeType = recorder.mimeType || cur.chunks[0] && cur.chunks[0].type || "audio/webm";
           const reader = new FileReader();
           reader.onloadend = function() {
-            if (cur.cancelled || !aliveRef.current) return;
+            if (cur.cancelled || !aliveRef.current || documentKeyRef.current !== cur.documentKey) return;
             recorderRef.current = null;
             const base64 = String(reader.result || "").split(",")[1];
             if (!base64) {
@@ -2306,8 +2414,9 @@ var require_tmp_annotation_suite_entry = __commonJS({
               toast(say("toasts.voice_note_too_long_save", "That voice note is too long to save."), "warning");
               return;
             }
-            for (let i = 0; i < undoRef.current.length; i++) undoRef.current[i] = attachAudioToVoiceNote(undoRef.current[i], cur.id, payload);
-            emit(next);
+            const bucket = cur.undoBucket || undoRef.current;
+            for (let i = 0; i < bucket.length; i++) bucket[i] = attachAudioToVoiceNote(bucket[i], cur.id, payload);
+            emit(next, cur.documentKey);
           };
           reader.readAsDataURL(new Blob(cur.chunks, { type: mimeType }));
         };
@@ -2527,7 +2636,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
           "aria-label": say("annotation.toggle_list_aria", "Toggle annotation list")
         },
         say("annotation.list_button", "\u{1F4CB} List"),
-        total > 0 && /* @__PURE__ */ React.createElement("span", { className: "ms-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none" }, total)
+        total > 0 && /* @__PURE__ */ React.createElement("span", { className: "ms-0.5 bg-indigo-600 text-white text-xs font-bold rounded-full px-1.5 py-0.5 leading-none" }, total)
       ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveAnnotations, className: "min-h-11 min-w-11 px-3 py-2 text-xs font-bold rounded inline-flex items-center justify-center", "aria-label": say("annotation.save_aria", "Save annotations") }, say("annotation.save_button", "Save annotations")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: function() {
         if (inputRef.current) inputRef.current.click();
       }, className: "min-h-11 min-w-11 px-3 py-2 text-xs font-bold rounded inline-flex items-center justify-center", "aria-label": say("annotation.import_aria", "Import annotations") }, say("annotation.import_button", "Import")), /* @__PURE__ */ React.createElement("input", { ref: inputRef, type: "file", accept: ".json,application/json", hidden: true, onChange: importFile, "aria-label": say("annotation.import_aria", "Import annotations") })), portal(
@@ -2560,6 +2669,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
             width: drawWidth,
             shape: drawShape,
             annotations: displayAnnotations,
+            isTeacher,
             onCommit: function(stroke) {
               const next = createDrawingFromStroke(stroke, { isTeacher, authorName });
               if (next) commit(latest.current.concat([next]));

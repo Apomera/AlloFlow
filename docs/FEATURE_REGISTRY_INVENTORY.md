@@ -9,19 +9,19 @@ narrative lives in `FEATURE_INVENTORY.md`; this file is the count-and-name layer
 
 | Registry | Count |
 | --- | ---: |
-| commands | 203 |
+| commands | 204 |
 | panels | 34 |
-| resourceTypes | 24 |
-| sidebarControls | 18 |
+| resourceTypes | 25 |
+| sidebarControls | 19 |
 | stemTools | 152 |
 | selTools | 72 |
-| alloPacks | 64 |
+| alloPacks | 67 |
 | hubCards | 73 |
 | appsScripts | 6 |
-| modules | 220 |
+| modules | 222 |
 | langPacks | 63 |
-| unitTestFiles | 7978 |
-| e2eSpecs | 1718 |
+| unitTestFiles | 9601 |
+| e2eSpecs | 1956 |
 
 ## Command palette
 
@@ -145,6 +145,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | open_video_studio | Open Video Studio | teacher | videoStudio |  |
 | open_voice_settings | Open voice settings | all | readThisPage |  |
 | open_wizard | Start the lesson wizard | all | notebook |  |
+| open_word_sounds | Open Word Sounds |  |  |  |
 | pause_read_this_page | Pause page reading | all |  |  |
 | pipeline_downloads | Go to pipeline downloads | teacher |  |  |
 | pipeline_fix_again | Run the accessibility fix again | teacher |  |  |
@@ -274,7 +275,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 
 ## Generation dispatcher resource types
 
-`adventure`, `alignment-report`, `analysis`, `anchor-chart`, `applied-challenge`, `brainstorm`, `concept-sort`, `dbq`, `faq`, `gemini-bridge`, `glossary`, `image`, `lesson-plan`, `math`, `mcq`, `memory-aid`, `note-taking`, `outline`, `persona`, `quiz`, `reflection`, `sentence-frames`, `simplified`, `timeline`
+`adventure`, `alignment-report`, `analysis`, `anchor-chart`, `applied-challenge`, `brainstorm`, `concept-sort`, `dbq`, `faq`, `gemini-bridge`, `glossary`, `image`, `lesson-plan`, `math`, `mcq`, `memory-aid`, `note-taking`, `outline`, `persona`, `quiz`, `reflection`, `sentence-frames`, `simplified`, `timeline`, `word-sounds`
 
 ## Sidebar controls and their options
 
@@ -282,11 +283,11 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | --- | --- |
 | anchor_chart_type | auto, comparison, concept-map, criteria-success, misconception, process, question-guide, reference, routine, strategy, vocabulary, worked-example |
 | concept_sort_image_mode | always, auto, never |
-| Image style source | inherit, override |
 | math_mode | Conceptual, Difficulty Ladder, Fluency Maze, Fluency Probes, Problem Set Generator, Real-World Application, Spiral Review, Step-by-Step |
 | math_subject | Algebra, Biology, Calculus, Chemistry, Computer Science, Earth Science, Economics, General Math, Geometry, Physics |
 | note_taking_template | cornell-notes, double-entry, guided-notes, lab-report, q-and-a, reading-response |
 | outline_structure | 3D Concept Space, Cause and Effect, Claim-Evidence-Reasoning, Fishbone, Flow Chart, Frayer Model, KWL Chart, Key Concept Map, Memory Palace, Problem Solution, See-Think-Wonder, Story Map, Structured Outline, T-Chart, Venn Diagram |
+| quiz_duration_preset | custom, five, reasoning, recommended, two |
 | scaffolds_type | Discussion Prompts, Paragraph Frame, Sentence Starters |
 | select (Same as Source Text…) | 10th Grade, 11th Grade, 12th Grade, 1st Grade, 2nd Grade, 3rd Grade, 4th Grade, 5th Grade, 6th Grade, 7th Grade, 8th Grade, 9th Grade, College, Kindergarten, Same as Global Level, Same as Source Text |
 | simplified_dok | Level 1: Recall & Reproduction, Level 2: Skill/Concept, Level 3: Strategic Thinking, Level 4: Extended Thinking, Mixed |
@@ -298,6 +299,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | timeline.settings.mode_label | auto, cause-effect, chronological, hierarchy, intensity, lifecycle, narrative, procedural, size |
 | visuals_art_style | 3D Render, Comic Book Style, Isometric Diagram, Line Art, Pixel Art, Technical Blueprint, Watercolor, custom |
 | visuals_layout_mode | auto, before-after, comparison, labeled-diagram, sequence, single |
+| visuals.image_style_source_aria | inherit, override |
 
 ## STEM Lab tools (152)
 
@@ -309,15 +311,15 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | allobotsage | AlloBot: Starbound Sage |
 | alphafold | AlphaFold Explorer launcher + AI bridge |
 | anatomy | Human Anatomy Explorer |
-| angles | Angle Explorer Plugin (Enhanced) |
+| angles | Angle Explorer |
 | applab | AppLab: AI Mini-App Generator |
 | aquaculture | AquacultureLab: Mussel Farm Sim |
 | aquarium | Aquarium Ecosystem Simulator |
 | arccity | Arc City (Phase 1: Line District → Arc Heights) |
 | archstudio | Architecture Studio / Brick Builder |
-| areamodel | Area Model Plugin (Enhanced v3) |
+| areamodel | Area Model (deep rebuild 2026-11-03) |
 | areaperimeter | Area & Perimeter Lab |
-| arithmetic | Arithmetic Strategy Studio - whole-number operations with visual reasoning. |
+| arithmetic | Arithmetic Strategy Studio |
 | artstudio | STEAM Lab Art Studio Tools |
 | assessmentliteracy | Assessment Literacy Lab |
 | astronomy | Night Sky & Astronomy Lab |
@@ -328,10 +330,10 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | behaviorlab | Behavior Lab |
 | bikelab | BikeLab: Physics & Repair |
 | birdlab | BirdLab: I-Spy Ornithology / Species ID |
-| brainatlas | ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ── |
+| brainatlas | Brain Atlas Explorer |
 | bridgelab | Bridge Engineering Lab |
-| butterfly | Butterfly Habitat Lab: a local summer habitat investigation, not a migration model. |
-| calculus | window.StemLab = window.StemLab \|\| { registerTool: function(){}, registerModule: function(){} }; |
+| butterfly | Butterfly Habitat Lab |
+| calculus | Calculus |
 | cell | Cell Biology Simulator |
 | cellatlas | Cell Atlas Lab |
 | cellular | Cellular Automaton Lab |
@@ -340,20 +342,20 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | circuit | Circuit Builder Plugin (Enhanced v2) |
 | circuitshelf | Circuit Shelf (Falstad CircuitJS1 + Predict-Explore-Explain coach) |
 | citylab | City Planning Lab |
-| climateExplorer | ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ── |
+| climateExplorer | Climate Explorer |
 | coasterlab | Coaster Lab (3-D roller coaster physics & simulation inspection) |
-| coding | ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ── |
+| coding | Coding Playground |
 | companionplanting | Companion Planting Lab |
-| consciousness | 'use strict'; |
+| consciousness | Consciousness Theory Lab |
 | coordgrid | Coordinate Grid Plugin (Enhanced v3) |
-| coralreef | Coral Reef Survey Lab: survey a reef with the methods reef monitors use |
+| coralreef | Coral Reef Survey Lab |
 | cyberdefense | Cyber Defense Lab |
 | datalab | Data Lab (CODAP + Socratic tutor) launcher + AI bridge |
 | dataplot | STEAM Lab Data Plotter (Enhanced v2) |
-| datastudio | stem_tool_creative.js — STEAM Lab Creative Tools |
+| datastudio | Charts & Graphs |
 | decomposer | Standalone Material Decomposer (ES5) |
 | dinolab | Dino Lab (Paleontology Studio) |
-| dissection | ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ── |
+| dissection | Virtual Dissection Lab |
 | dna | DNA / Genetics Lab  v3.0 |
 | echolocation | Bat Echolocation & Sound Physics Lab |
 | echotrainer | Echo Navigator: 3D Spatial Audio Echolocation Trainer |
@@ -362,11 +364,11 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | eligibility | Diagnosis, Evaluation & School Eligibility |
 | epidemic | Epidemic Modeling Lab  v4.0 |
 | evolab | EvoLab: Evolution & Natural Selection |
-| fieldjourneys | var __defProp = Object.defineProperty; |
+| fieldjourneys | Field Journeys (Pilot) |
 | fireecology | Fire Ecology & Indigenous Land Stewardship |
 | firstresponse | First Response Lab |
 | fisherlab | FisherLab: Boating & Fishing Sim |
-| flightsim | ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ── |
+| flightsim | SkySchool: Educational Flight Simulator |
 | forge | the Tool Forge: a plugin-authoring harness for STEAM Lab / |
 | fractions | Fraction Lab |
 | freeforms | Free Forms: a constructive 3D "World of Forms" |
@@ -378,14 +380,14 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | geometryworld | Geometry World: 3D Block-Based Math Explorer |
 | geometryworld_builder | Geometry World Builder enhancement |
 | geosandbox | 3D Geometry Sandbox |
-| gisstudio | GIS Studio - accessible, Maine-first geographic information systems lab. |
+| gisstudio | GIS Studio |
 | graphcalc | Graphing Calculator (ES5) |
 | heatlab | Heat & Thermodynamics Lab |
 | inequality | Inequality Grapher |
 | kitchenlab | Kitchen Lab (Cooking & Food Safety) |
 | lawnavigator | Education Law Navigator |
 | learning_lab | Learning Lab |
-| lifeskills | Life Skills Lab  v5.23 |
+| lifeskills | Life Skills Lab  v5.42 |
 | llm_literacy | AI Literacy Lab |
 | logiclab | Logic Lab |
 | lumen | Lumen (LIVE; honest evidence-COMMUNICATION instrument) |
@@ -398,7 +400,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | moleculeshelf | Molecule Shelf (Mol* viewer + Notice-Wonder coach) |
 | money | Money Math |
 | moonmission | Apollo Moon Mission Simulator |
-| multtable | Multiplication Table Plugin (Enhanced v3) |
+| multtable | Multiplication Table (deep rebuild v4, 2026-11-03) |
 | music | Music Synthesizer |
 | nuclearlab | Nuclear & Radiation Lab |
 | numberline | Number Line Plugin (Enhanced v3) |
@@ -410,10 +412,10 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | papertrail | PaperTrail: official documents, decoded |
 | parentinglab | Science of Parenting Lab |
 | particlelab3d | Particle Lab 3D |
-| perception | Perception Lab: original SVG experiments; no external graphics or runtime dependencies. |
-| pets | ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ── |
+| perception | Perception Lab |
+| pets | Science of Pets Lab |
 | physics | Physics Simulator |
-| platetectonics | ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEAM Lab tools ── |
+| platetectonics | Plate Tectonics |
 | playlab | Sports Play & Coverage Lab |
 | printingpress | PrintingPress |
 | printlab | Print Lab |
@@ -422,14 +424,14 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | raptorhunt | Raptor Hunt: Predator Physics + Biology |
 | ratios | Ratios, Rates & Proportions Lab |
 | renewables | Renewables Lab |
-| roadready | ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ── |
+| roadready | RoadReady: Driver's Ed & Automotive Science Lab |
 | rocks | Rocks & Minerals + Rock Cycle tools |
 | scaleexplorer | Scale Explorer (powers of ten) |
 | schoolbehaviortoolkit | School Behavior Toolkit |
 | semiconductor | Semiconductor Lab Plugin v3.0 |
 | simshelf | Sim Shelf (PhET simulations + POE coach) launcher + AI bridge |
 | singing | Singing & Vocal Lab |
-| skatelab | Skate Lab — a physics-first 2D / 3D motion workbench. |
+| skatelab | Skate Lab |
 | solarsystem | Solar System Explorer |
 | sourcebook | open visual-source finder for education and art |
 | spacecolony | Kepler Colony |
@@ -437,20 +439,20 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | spacestation | Space Station (ISS engineering + astronaut life) |
 | statslab | Statistics Lab |
 | stewardship | Maine Stewardship Campaigns hub |
-| swimlab | ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ── |
+| swimlab | SwimLab |
 | throwlab | Sports Physics Lab |
 | timeline | Timeline Studio (TimelineJS + AI document→timeline) |
 | timeschedule | Time & Schedule Lab |
-| titration | ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ── |
+| titration | Titration Lab |
 | trajectorycomputing | Trajectory Computing Lab |
 | treelab | Tree Life Lab |
-| typingpractice | ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ── |
-| unitconvert | window.StemLab = window.StemLab \|\| { registerTool: function(){}, registerModule: function(){} }; |
+| typingpractice | Typing Practice |
+| unitconvert | Unit Converter |
 | universe | Universe Time-Lapse Explorer |
 | volume | 3D Volume Explorer Plugin (Enhanced v4) |
 | watercycle | Water Cycle Interactive Simulator |
 | wave | Wave Simulator |
-| weathersystems | Weather Systems & Forecasting Lab |
+| weathersystems | Weather Systems & Forecasting |
 | weldlab | WeldLab: Welding & Metal Joining |
 | wheelandfire | Wheel & Fire: Pottery Lab |
 | worldbuilder | World Builder: Collaborative Literary RPG |
@@ -505,7 +507,7 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | peersupport | Peer Support Coach |
 | perma | PERMA Wellbeing Profile |
 | perspective | Perspective-Taking Lab |
-| practicejourneys | var __defProp = Object.defineProperty; |
+| practicejourneys | Practice Journeys (Pilot) |
 | quietquestions | Quiet Questions: Inner Inquiry Practice |
 | restorativecircle | Restorative Circle Process |
 | safety | Safety & Boundaries |
@@ -533,74 +535,77 @@ Every user-reachable action has a palette entry. `roles` is who may run it; `ope
 | windowoftolerance | Window of Tolerance |
 | zones | Emotion Zones Plugin (Enhanced v2) |
 
-## AlloPacks (64)
+## AlloPacks (67)
 
 | file | title | grade | standards |
 | --- | --- | --- | --- |
+| academic_discourse_more_practice_grade6 | Thinking Together: More Practice | 6th Grade | CCSS.ELA-LITERACY.SL.6.1 (engage effectively in a range of collaborative discussions with diverse partners on grade 6 topics, texts and issues, building on othe |
 | academic_discourse_reading_space_grade6 | Thinking Together: A Reading-Space Decision | 6th Grade | CCSS.ELA-LITERACY.SL.6.1 (engage effectively in a range of collaborative discussions with diverse partners on grade 6 topics, texts and issues, building on othe |
-| american_revolution_causes_grade5 | Causes of the American Revolution — How a Fight Becomes a War | 5th Grade | C3 D2.His.1.3-5 (create and use a chronological sequence of related events); C3 D2.His.14.3-5 (explain probable causes and effects of events and developments); |
-| ancient_egypt_grade6 | Why Cities Grew on the Nile — Surplus, Specialists, and Writing | 6th Grade | C3 Framework D2.His.14.6-8 (explain multiple causes and effects of events and developments in the past); C3 Framework D2.Geo.5.6-8 (analyze the combinations of |
-| area_perimeter_grade4 | Area and Perimeter — The Fence and the Floor | 3rd-4th Grade | CCSS.MATH.CONTENT.3.MD.C.7 (relate area to the operations of multiplication and addition); CCSS.MATH.CONTENT.3.MD.D.8 (solve real world problems involving perim |
-| argument_evidence_grade6 | Says Who? — Claims, Evidence, and the Reasoning in Between | 6th Grade | CCSS.ELA-LITERACY.RI.6.8 (trace and evaluate the argument and specific claims in a text, distinguishing claims that are supported by reasons and evidence from c |
-| body_systems_grade6 | Body Systems — The Team That Keeps You Alive | 6th Grade | NGSS MS-LS1-3 (use argument supported by evidence for how the body is a system of interacting subsystems composed of groups of cells); CCSS.ELA-LITERACY.RST.6-8 |
-| cell_structure_grade7 | The Cell — The Smallest Living Factory | 7th Grade | NGSS MS-LS1-1 (conduct an investigation to provide evidence that living things are made of cells, either one cell or many); NGSS MS-LS1-2 (develop and use a mod |
-| central_idea_grade7 | Central Idea and Evidence — Reading Like a Detective | 7th Grade | CCSS.ELA-LITERACY.RI.7.2 (determine two or more central ideas in a text and analyze their development over the course of the text); CCSS.ELA-LITERACY.RI.7.1 (ci |
-| chemical_reactions_grade8 | Did Anything New Actually Form? — Reactions and Conservation of Mass | 8th Grade | NGSS MS-PS1-2 (analyze and interpret data on the properties of substances before and after the substances interact to determine if a chemical reaction has occur |
-| constitution_grade8 | The Constitution — Rules for the Rule-Makers | 8th Grade | C3 D2.Civ.4.6-8 (explain the powers and limits of government institutions); C3 D2.Civ.3.6-8 (examine the origins and purposes of rules, laws, and key constituti |
-| context_clues_grade3 | The Words Around the Word — Working Out What It Means | 3rd Grade | CCSS.ELA-LITERACY.L.3.4.A (use sentence-level context as a clue to the meaning of a word or phrase); CCSS.ELA-LITERACY.L.3.4.B (determine the meaning of a new w |
-| crew_ask_grade6_8 | Crew Launch Week 5: Asking for What You Need | 6th-8th Grade | King Middle School HOWL Perseverance (advocate for learning through questions); CASEL Relationship Skills (communicating effectively; seeking or offering suppor |
-| crew_attention_grade6_8 | Crew Launch Week 9: Where Your Attention Goes | 6th-8th Grade | King Middle School HOWL Responsibility (participate fully and mindfully); CASEL Self-Management (managing one's emotions; using planning and organizational skil |
-| crew_feedback_grade6_8 | Crew Launch Week 6: Feedback Is Information, Not a Verdict | 6th-8th Grade | King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (having a growth mindset |
-| crew_halfway_grade6_8 | Crew Launch Week 10: The Six-Week Check | 6th-8th Grade | King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (setting personal goals; |
-| crew_norms_grade6_8 | Crew Launch Week 1: Norms We Can Name and Keep | 6th-8th Grade | King Middle School HOWL Respect (work cooperatively with others); CASEL Relationship Skills (teamwork and collaborative problem-solving; communicating effective |
-| crew_perspective_grade6_8 | Crew Launch Week 7: Two Sides of One Story | 6th-8th Grade | King Middle School HOWL Respect (work cooperatively with others); CASEL Social Awareness (taking others' perspectives; recognizing situational demands); CASEL R |
-| crew_repair_grade6_8 | Crew Launch Week 2: Repair When Something Goes Wrong | 6th-8th Grade | King Middle School HOWL Respect (steward community resources and materials); CASEL Responsible Decision-Making (evaluating consequences of actions; contributing |
-| crew_story_grade6_8 | Crew Launch Week 12: The Story of Your Trimester | 6th-8th Grade | King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (integrating personal an |
-| crew_system_grade6_8 | Crew Launch Week 4: One System for the Week | 6th-8th Grade | King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (planning and organizati |
-| crew_teamwork_grade6_8 | Crew Launch Week 11: Your Part of the Whole | 6th-8th Grade | King Middle School HOWL Perseverance (produce high quality work; advocate for learning through questions); CASEL Relationship Skills (teamwork and collaborative |
-| crew_upstander_grade6_8 | Crew Launch Week 8: Small Moves, Not Big Speeches | 6th-8th Grade | King Middle School HOWL Respect (respectful member of the King community); CASEL Social Awareness (demonstrating empathy and compassion; understanding and expre |
-| crew_zones_grade6_8 | Crew Launch Week 3: Where Am I Right Now? | 6th-8th Grade | King Middle School HOWL Responsibility (participate fully and mindfully); CASEL Self-Awareness (identifying one's emotions; linking feelings, values, and though |
-| data_and_typical_grade6 | What Counts as Typical — Reading Data Honestly | 6th Grade | CCSS.MATH.CONTENT.6.SP.A.1 (recognize a statistical question as one that anticipates variability in the data and accounts for it in the answers); CCSS.MATH.CONT |
-| day_night_sky_grade1 | Day Sky, Night Sky — Why the Sky Changes | 1st Grade | NGSS 1-ESS1-1 (use observations of the sun, moon, and stars to describe patterns that can be predicted); CCSS.ELA-LITERACY.RI.1.1 (ask and answer questions abou |
-| decimal_place_value_grade5 | Same Digits, Different Values — Decimals | 5th Grade | CCSS.MATH.CONTENT.5.NBT.A.3 (read, write, and compare decimals to thousandths using place-value reasoning) |
-| ecosystems_food_webs_grade5 | Food Webs — Who Eats Whom, and What Happens Next | 5th Grade | NGSS 5-LS2-1 (develop a model to describe the movement of matter among plants, animals, decomposers, and the environment); NGSS 5-PS3-1 (use models to describe |
-| energy_transfer_grade4 | Energy Moves — How Things Make Other Things Happen | 4th Grade | NGSS 4-PS3-1 (use evidence to construct an explanation relating the speed of an object to the energy of that object); NGSS 4-PS3-2 (make observations to provide |
-| equal_groups_grade3 | Equal Groups — What Multiplication Really Means | 3rd Grade | CCSS.MATH.CONTENT.3.OA.A.1 (interpret products of whole numbers, e.g., interpret 5 x 7 as the total number of objects in 5 groups of 7 objects each); CCSS.MATH. |
-| figurative_language_grade5 | Figurative Language — Say It Sideways | 5th Grade | CCSS.ELA-LITERACY.L.5.5 (demonstrate understanding of figurative language, word relationships, and nuances); CCSS.ELA-LITERACY.L.5.5.A (interpret figurative lan |
-| forces_motion_grade3 | Forces and Motion — Pushes, Pulls, and Why Things Stop | 3rd Grade | NGSS 3-PS2-1 (plan and conduct an investigation to provide evidence of the effects of balanced and unbalanced forces on the motion of an object); NGSS 3-PS2-2 ( |
-| fractions_number_line_grade4 | Fractions on the Number Line — Finding the Space Between | 3rd-4th Grade | CCSS.MATH.CONTENT.3.NF.A.2 (understand a fraction as a number on the number line); CCSS.MATH.CONTENT.3.NF.A.3 (explain equivalence of fractions and compare frac |
-| habitats_diversity_grade2 | Who Lives Here? — Comparing Habitats | 2nd Grade | NGSS 2-LS4-1 (observe plants and animals to compare the diversity of life in different habitats) |
-| linear_equations_grade8 | Linear Equations — Slope, Start, and the Story a Line Tells | 8th Grade | CCSS.MATH.CONTENT.8.EE.B.5 (graph proportional relationships, interpreting the unit rate as the slope); CCSS.MATH.CONTENT.8.EE.B.6 (use similar triangles to exp |
-| local_government_grade4 | Who Decided That? — Local Government and How Rules Change | 4th Grade | C3 Framework D2.Civ.2.3-5 (explain how a democracy relies on people's responsible participation); C3 Framework D2.Civ.12.3-5 (explain how rules and laws change |
-| magnetism_grade6 | Magnetism — Invisible Push and Pull | 6th-7th Grade | NGSS MS-PS2-3 (ask questions about data to determine the factors that affect the strength of electric and magnetic forces); NGSS MS-PS2-5 (conduct an investigat |
-| main_idea_grade4 | Main Idea — What Is This Really About? | 4th-5th Grade | CCSS.ELA-LITERACY.RI.4.2 (determine the main idea of a text and explain how it is supported by key details); CCSS.ELA-LITERACY.RI.5.2 (determine two or more mai |
-| making_ten_grade1 | Ten Is a Friendly Number — Making Ten to Add | 1st Grade | CCSS.MATH.CONTENT.1.OA.C.6 (add and subtract within 20, using strategies such as making ten and decomposing a number leading to a ten); CCSS.MATH.CONTENT.1.OA.B |
-| map_skills_grade3 | Reading a Map — Every Map Leaves Something Out | 3rd Grade | C3 Framework D2.Geo.1.3-5 (construct maps and other graphic representations of both familiar and unfamiliar places); C3 Framework D2.Geo.2.3-5 (use maps and oth |
-| materials_grade2 | Why Windows Are Not Wool — Matching Materials to Jobs | 2nd Grade | NGSS 2-PS1-1 (plan and conduct an investigation to describe and classify different kinds of materials by their observable properties); NGSS 2-PS1-2 (analyze dat |
-| moon_phases_grade6 | Moon Phases and Eclipses — Why the Moon Changes Shape | 6th Grade | NGSS MS-ESS1-1 (develop and use a model of the Earth-Sun-Moon system to describe the cyclic patterns of lunar phases, eclipses of the Sun and Moon, and seasons) |
-| natural_selection_grade8 | Nothing Is Trying — How Natural Selection Actually Works | 8th Grade | NGSS MS-LS4-4 (construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals' probability |
-| photosynthesis_grade7 | Photosynthesis — How Plants Eat Sunlight | 7th Grade | NGSS MS-LS1-6 (construct an explanation for how photosynthesis cycles matter and flows energy); NGSS MS-LS1-7 (develop a model to describe how food is rearrange |
-| place_value_grade2 | Ten Is a Bundle — Place Value to 1000 | 2nd Grade | CCSS.MATH.CONTENT.2.NBT.A.1 (understand that the three digits of a three-digit number represent amounts of hundreds, tens, and ones); CCSS.MATH.CONTENT.2.NBT.A. |
-| plant_needs_grade3 | What Plants Need — The Quiet Life of a Seed | 3rd Grade | NGSS 2-LS2-1 (plan and conduct an investigation to determine if plants need sunlight and water to grow); NGSS 3-LS1-1 (develop models to describe that organisms |
-| plate_tectonics_grade6 | Plate Tectonics — The Earth Puzzle | 6th Grade | NGSS MS-ESS2-3 (analyze and interpret data on the distribution of fossils and rocks to provide evidence of past plate motions); NGSS MS-ESS2-2 (construct an exp |
-| point_of_view_grade4 | Point of View — Who Is Telling This Story? | 4th Grade | CCSS.ELA-LITERACY.RL.4.6 (compare and contrast the point of view from which different stories are narrated, including the difference between first- and third-pe |
-| probability_models_grade7 | Likely Is Not Certain — Probability Models | 7th Grade | CCSS.MATH.CONTENT.7.SP.C.5 (interpret probabilities from zero to one); CCSS.MATH.CONTENT.7.SP.C.6 (compare long-run relative frequencies with predicted probabil |
-| proportional_relationships_grade7 | Proportional Relationships — When Doubling One Doubles the Other | 7th Grade | CCSS.MATH.CONTENT.7.RP.A.2 (recognize and represent proportional relationships between quantities); CCSS.MATH.CONTENT.7.RP.A.2.B (identify the constant of propo |
-| ratios_real_life_grade6 | Ratios in Real Life — Recipes, Maps, and Best Buys | 6th Grade | CCSS.MATH.CONTENT.6.RP.A.1 (understand the concept of a ratio and use ratio language); CCSS.MATH.CONTENT.6.RP.A.2 (understand the concept of a unit rate); CCSS. |
+| american_revolution_causes_grade5 | Causes of the American Revolution — How a Fight Becomes a War — Illustrated Edition | 5th Grade | C3 D2.His.1.3-5 (create and use a chronological sequence of related events); C3 D2.His.14.3-5 (explain probable causes and effects of events and developments); |
+| ancient_egypt_grade6 | Why Cities Grew on the Nile — Surplus, Specialists, and Writing — Illustrated Edition | 6th Grade | C3 Framework D2.His.14.6-8 (explain multiple causes and effects of events and developments in the past); C3 Framework D2.Geo.5.6-8 (analyze the combinations of |
+| area_perimeter_grade4 | Area and Perimeter — The Fence and the Floor — Illustrated Edition | 3rd-4th Grade | CCSS.MATH.CONTENT.3.MD.C.7 (relate area to the operations of multiplication and addition); CCSS.MATH.CONTENT.3.MD.D.8 (solve real world problems involving perim |
+| argument_evidence_grade6 | Says Who? — Claims, Evidence, and the Reasoning in Between — Illustrated Edition | 6th Grade | CCSS.ELA-LITERACY.RI.6.8 (trace and evaluate the argument and specific claims in a text, distinguishing claims that are supported by reasons and evidence from c |
+| body_systems_grade6 | Body Systems — The Team That Keeps You Alive — Illustrated Edition | 6th Grade | NGSS MS-LS1-3 (use argument supported by evidence for how the body is a system of interacting subsystems composed of groups of cells); CCSS.ELA-LITERACY.RST.6-8 |
+| cell_structure_grade7 | The Cell — The Smallest Living Factory — Illustrated Edition | 7th Grade | NGSS MS-LS1-1 (conduct an investigation to provide evidence that living things are made of cells, either one cell or many); NGSS MS-LS1-2 (develop and use a mod |
+| central_idea_grade7 | Central Idea and Evidence — Reading Like a Detective — Illustrated Edition | 7th Grade | CCSS.ELA-LITERACY.RI.7.2 (determine two or more central ideas in a text and analyze their development over the course of the text); CCSS.ELA-LITERACY.RI.7.1 (ci |
+| chemical_reactions_grade8 | Did Anything New Actually Form? — Reactions and Conservation of Mass — Illustrated Edition | 8th Grade | NGSS MS-PS1-2 (analyze and interpret data on the properties of substances before and after the substances interact to determine if a chemical reaction has occur |
+| constitution_grade8 | The Constitution — Rules for the Rule-Makers — Illustrated Edition | 8th Grade | C3 D2.Civ.4.6-8 (explain the powers and limits of government institutions); C3 D2.Civ.3.6-8 (examine the origins and purposes of rules, laws, and key constituti |
+| context_clues_grade3 | The Words Around the Word — Working Out What It Means — Illustrated Edition | 3rd Grade | CCSS.ELA-LITERACY.L.3.4.A (use sentence-level context as a clue to the meaning of a word or phrase); CCSS.ELA-LITERACY.L.3.4.B (determine the meaning of a new w |
+| crew_ask_grade6_8 | Crew Launch Week 5: Asking for What You Need — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Perseverance (advocate for learning through questions); CASEL Relationship Skills (communicating effectively; seeking or offering suppor |
+| crew_attention_grade6_8 | Crew Launch Week 9: Where Your Attention Goes — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Responsibility (participate fully and mindfully); CASEL Self-Management (managing one's emotions; using planning and organizational skil |
+| crew_feedback_grade6_8 | Crew Launch Week 6: Feedback Is Information, Not a Verdict — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (having a growth mindset |
+| crew_halfway_grade6_8 | Crew Launch Week 10: The Six-Week Check — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (setting personal goals; |
+| crew_norms_grade6_8 | Crew Launch Week 1: Norms We Can Name and Keep — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Respect (work cooperatively with others); CASEL Relationship Skills (teamwork and collaborative problem-solving; communicating effective |
+| crew_perspective_grade6_8 | Crew Launch Week 7: Two Sides of One Story — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Respect (work cooperatively with others); CASEL Social Awareness (taking others' perspectives; recognizing situational demands); CASEL R |
+| crew_repair_grade6_8 | Crew Launch Week 2: Repair When Something Goes Wrong — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Respect (steward community resources and materials); CASEL Responsible Decision-Making (evaluating consequences of actions; contributing |
+| crew_story_grade6_8 | Crew Launch Week 12: The Story of Your Trimester — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (integrating personal an |
+| crew_system_grade6_8 | Crew Launch Week 4: One System for the Week — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (planning and organizati |
+| crew_teamwork_grade6_8 | Crew Launch Week 11: Your Part of the Whole — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Perseverance (produce high quality work; advocate for learning through questions); CASEL Relationship Skills (teamwork and collaborative |
+| crew_upstander_grade6_8 | Crew Launch Week 8: Small Moves, Not Big Speeches — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Respect (respectful member of the King community); CASEL Social Awareness (demonstrating empathy and compassion; understanding and expre |
+| crew_zones_grade6_8 | Crew Launch Week 3: Where Am I Right Now? — Illustrated Edition | 6th-8th Grade | King Middle School HOWL Responsibility (participate fully and mindfully); CASEL Self-Awareness (identifying one's emotions; linking feelings, values, and though |
+| data_and_typical_grade6 | What Counts as Typical — Reading Data Honestly — Illustrated Edition | 6th Grade | CCSS.MATH.CONTENT.6.SP.A.1 (recognize a statistical question as one that anticipates variability in the data and accounts for it in the answers); CCSS.MATH.CONT |
+| day_night_sky_grade1 | Day Sky, Night Sky — Why the Sky Changes — Illustrated Edition | 1st Grade | NGSS 1-ESS1-1 (use observations of the sun, moon, and stars to describe patterns that can be predicted); CCSS.ELA-LITERACY.RI.1.1 (ask and answer questions abou |
+| decimal_place_value_grade5 | Same Digits, Different Values — Decimals — Illustrated Edition | 5th Grade | CCSS.MATH.CONTENT.5.NBT.A.3 (read, write, and compare decimals to thousandths using place-value reasoning) |
+| ecosystems_food_webs_grade5 | Food Webs — Who Eats Whom, and What Happens Next — Illustrated Edition | 5th Grade | NGSS 5-LS2-1 (develop a model to describe the movement of matter among plants, animals, decomposers, and the environment); NGSS 5-PS3-1 (use models to describe |
+| energy_transfer_grade4 | Energy Moves — How Things Make Other Things Happen — Illustrated Edition | 4th Grade | NGSS 4-PS3-1 (use evidence to construct an explanation relating the speed of an object to the energy of that object); NGSS 4-PS3-2 (make observations to provide |
+| equal_groups_grade3 | Equal Groups — What Multiplication Really Means — Illustrated Edition | 3rd Grade | CCSS.MATH.CONTENT.3.OA.A.1 (interpret products of whole numbers, e.g., interpret 5 x 7 as the total number of objects in 5 groups of 7 objects each); CCSS.MATH. |
+| figurative_language_grade5 | Figurative Language — Say It Sideways — Illustrated Edition | 5th Grade | CCSS.ELA-LITERACY.L.5.5 (demonstrate understanding of figurative language, word relationships, and nuances); CCSS.ELA-LITERACY.L.5.5.A (interpret figurative lan |
+| forces_motion_grade3 | Forces and Motion — Illustrated Edition | 3rd Grade | NGSS 3-PS2-1 (plan and conduct an investigation to provide evidence of the effects of balanced and unbalanced forces on the motion of an object); NGSS 3-PS2-2 ( |
+| fractions_number_line_grade4 | Fractions on the Number Line — Finding the Space Between — Illustrated Edition | 3rd-4th Grade | CCSS.MATH.CONTENT.3.NF.A.2 (understand a fraction as a number on the number line); CCSS.MATH.CONTENT.3.NF.A.3 (explain equivalence of fractions and compare frac |
+| habitats_diversity_grade2 | Who Lives Here? — Comparing Habitats — Illustrated Edition | 2nd Grade | NGSS 2-LS4-1 (observe plants and animals to compare the diversity of life in different habitats) |
+| linear_equations_grade8 | Linear Equations — Slope, Start, and the Story a Line Tells — Illustrated Edition | 8th Grade | CCSS.MATH.CONTENT.8.EE.B.5 (graph proportional relationships, interpreting the unit rate as the slope); CCSS.MATH.CONTENT.8.EE.B.6 (use similar triangles to exp |
+| local_government_grade4 | Who Decided That? — Local Government and How Rules Change — Illustrated Edition | 4th Grade | C3 Framework D2.Civ.2.3-5 (explain how a democracy relies on people's responsible participation); C3 Framework D2.Civ.12.3-5 (explain how rules and laws change |
+| magnetism_grade6 | Magnetism — Invisible Push and Pull — Illustrated Edition | 6th-7th Grade | NGSS MS-PS2-3 (ask questions about data to determine the factors that affect the strength of electric and magnetic forces); NGSS MS-PS2-5 (conduct an investigat |
+| main_idea_grade4 | Main Idea — What Is This Really About? — Illustrated Edition | 4th-5th Grade | CCSS.ELA-LITERACY.RI.4.2 (determine the main idea of a text and explain how it is supported by key details); CCSS.ELA-LITERACY.RI.5.2 (determine two or more mai |
+| making_ten_grade1 | Ten Is a Friendly Number — Making Ten to Add — Illustrated Edition | 1st Grade | CCSS.MATH.CONTENT.1.OA.C.6 (add and subtract within 20, using strategies such as making ten and decomposing a number leading to a ten); CCSS.MATH.CONTENT.1.OA.B |
+| map_skills_grade3 | Reading a Map — Every Map Leaves Something Out — Illustrated Edition | 3rd Grade | C3 Framework D2.Geo.1.3-5 (construct maps and other graphic representations of both familiar and unfamiliar places); C3 Framework D2.Geo.2.3-5 (use maps and oth |
+| materials_grade2 | Why Windows Are Not Wool — Illustrated Edition | 2nd Grade | NGSS 2-PS1-1 (plan and conduct an investigation to describe and classify different kinds of materials by their observable properties); NGSS 2-PS1-2 (analyze dat |
+| moon_phases_grade6 | Moon Phases and Eclipses — Why the Moon Changes Shape — Illustrated Edition | 6th Grade | NGSS MS-ESS1-1 (develop and use a model of the Earth-Sun-Moon system to describe the cyclic patterns of lunar phases, eclipses of the Sun and Moon, and seasons) |
+| natural_selection_grade8 | Nothing Is Trying — How Natural Selection Actually Works — Illustrated Edition | 8th Grade | NGSS MS-LS4-4 (construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals' probability |
+| paper_bridge_fair_test_grade5_6 | Which Paper Bridge Holds More? Plan a Fair Test | 5th–6th Grade | No formal standards alignment asserted; educator mapping pending. |
+| photosynthesis_grade7 | Photosynthesis — How Plants Eat Sunlight — Illustrated Edition | 7th Grade | NGSS MS-LS1-6 (construct an explanation for how photosynthesis cycles matter and flows energy); NGSS MS-LS1-7 (develop a model to describe how food is rearrange |
+| place_value_grade2 | Ten Is a Bundle — Place Value to 1000 — Illustrated Edition | 2nd Grade | CCSS.MATH.CONTENT.2.NBT.A.1 (understand that the three digits of a three-digit number represent amounts of hundreds, tens, and ones); CCSS.MATH.CONTENT.2.NBT.A. |
+| plant_needs_grade3 | What Plants Need — Illustrated Edition | 3rd Grade | NGSS 2-LS2-1 (plan and conduct an investigation to determine if plants need sunlight and water to grow); NGSS 3-LS1-1 (develop models to describe that organisms |
+| plate_tectonics_grade6 | Plate Tectonics — The Earth Puzzle — Illustrated Edition | 6th Grade | NGSS MS-ESS2-3 (analyze and interpret data on the distribution of fossils and rocks to provide evidence of past plate motions); NGSS MS-ESS2-2 (construct an exp |
+| point_of_view_grade4 | Point of View — Who Is Telling This Story? — Illustrated Edition | 4th Grade | CCSS.ELA-LITERACY.RL.4.6 (compare and contrast the point of view from which different stories are narrated, including the difference between first- and third-pe |
+| probability_models_grade7 | Likely Is Not Certain — Probability Models — Illustrated Edition | 7th Grade | CCSS.MATH.CONTENT.7.SP.C.5 (interpret probabilities from zero to one); CCSS.MATH.CONTENT.7.SP.C.6 (compare long-run relative frequencies with predicted probabil |
+| proportional_relationships_grade7 | Proportional Relationships — When Doubling One Doubles the Other — Illustrated Edition | 7th Grade | CCSS.MATH.CONTENT.7.RP.A.2 (recognize and represent proportional relationships between quantities); CCSS.MATH.CONTENT.7.RP.A.2.B (identify the constant of propo |
+| ratios_real_life_grade6 | Ratios in Real Life — Recipes, Maps, and Best Buys — Illustrated Edition | 6th Grade | CCSS.MATH.CONTENT.6.RP.A.1 (understand the concept of a ratio and use ratio language); CCSS.MATH.CONTENT.6.RP.A.2 (understand the concept of a unit rate); CCSS. |
 | reading_decisions_grade6 | A Decision We Can Explain: Plan, Discuss, Revise, Reflect | 6th Grade | CCSS.ELA-LITERACY.SL.6.1 (engage effectively in a range of collaborative discussions with diverse partners on grade 6 topics, texts and issues, building on othe |
-| rules_and_fairness_grade1 | Why We Have Rules — Fair, Safe, and Together | 1st Grade | C3 Framework D2.Civ.1.K-2 (describe roles and responsibilities of people in authority); C3 Framework D2.Civ.6.K-2 (describe how communities work to accomplish c |
-| scarcity_choice_grade7 | Everything Has a Cost — Scarcity, Choice, and What You Gave Up | 7th Grade | C3 Framework D2.Eco.1.6-8 (explain how economic decisions affect the well-being of individuals, businesses, and society); C3 Framework D2.Eco.2.6-8 (evaluate al |
-| simple_machines_grade5 | Simple Machines — Trading Distance for Strength | 5th-6th Grade | NGSS 3-5-ETS1-1 (define a simple design problem reflecting a need, with criteria and constraints); NGSS 3-5-ETS1-2 (generate and compare multiple possible solut |
-| sound_vibration_grade1 | Feel the Buzz — Sound and Vibration | 1st Grade | NGSS 1-PS4-1 (investigate evidence that vibrating materials can make sound and sound can make materials vibrate) |
-| states_of_matter_grade4 | States of Matter — Same Stuff, Different Behavior | 4th-5th Grade | NGSS 5-PS1-1 (develop a model to describe that matter is made of particles too small to be seen); NGSS 5-PS1-2 (measure and graph quantities to provide evidence |
-| story_retell_grade2 | Tell It Back — Beginning, Middle, and End | 2nd Grade | CCSS.ELA-LITERACY.RL.2.5 (describe the overall structure of a story, including how the beginning introduces it and the ending concludes the action); CCSS.ELA-LI |
-| theme_development_grade8 | What the Story Is Really Saying — Tracing Theme | 8th Grade | CCSS.ELA-LITERACY.RL.8.2 (determine a theme or central idea of a text and analyze its development over the course of the text, including its relationship to the |
-| then_and_now_grade2 | Then and Now — How Life Changes Over Time | 2nd Grade | C3 Framework D2.His.1.K-2 (create a chronological sequence of multiple events); C3 Framework D2.His.2.K-2 (compare life in the past to life today); C3 Framework |
-| volume_grade5 | Filling Space — Volume and Why You Multiply Three Numbers | 5th Grade | CCSS.MATH.CONTENT.5.MD.C.3 (recognize volume as an attribute of solid figures and understand concepts of volume measurement); CCSS.MATH.CONTENT.5.MD.C.4 (measur |
-| water_cycle_grade6 | The Water Cycle — Earth's Recycling System | 6th Grade | NGSS MS-ESS2-4 (water cycling through Earth systems driven by sunlight and gravity); CCSS.ELA-LITERACY.RST.6-8.4 (determine the meaning of symbols, key terms, a |
-| weather_vs_climate_grade5 | Weather vs. Climate — Today's Mood, Decades of Personality | 5th-6th Grade | NGSS 3-ESS2-2 (obtain and combine information to describe climates in different world regions); NGSS MS-ESS2-5 (collect data to provide evidence for how the mot |
-| weathering_erosion_grade4 | Break, Move, Settle — Changing Land | 4th Grade | NGSS 4-ESS2-1 (use observations or measurements as evidence of weathering effects or erosion rates) |
-| word_families_grade1 | Learn One, Read Many — Word Families | 1st Grade | CCSS.ELA-LITERACY.RF.1.2.A (distinguish long from short vowel sounds in spoken single-syllable words); CCSS.ELA-LITERACY.RF.1.2.C (isolate and pronounce initial |
+| rules_and_fairness_grade1 | Why We Have Rules — Fair, Safe, and Together — Illustrated Edition | 1st Grade | C3 Framework D2.Civ.1.K-2 (describe roles and responsibilities of people in authority); C3 Framework D2.Civ.6.K-2 (describe how communities work to accomplish c |
+| scarcity_choice_grade7 | Everything Has a Cost — Scarcity, Choice, and What You Gave Up — Illustrated Edition | 7th Grade | C3 Framework D2.Eco.1.6-8 (explain how economic decisions affect the well-being of individuals, businesses, and society); C3 Framework D2.Eco.2.6-8 (evaluate al |
+| simple_machines_grade5 | Simple Machines — Trading Distance for Strength — Illustrated Edition | 5th-6th Grade | NGSS 3-5-ETS1-1 (define a simple design problem reflecting a need, with criteria and constraints); NGSS 3-5-ETS1-2 (generate and compare multiple possible solut |
+| sound_vibration_grade1 | Feel the Buzz — Sound and Vibration — Illustrated Edition | 1st Grade | NGSS 1-PS4-1 (investigate evidence that vibrating materials can make sound and sound can make materials vibrate) |
+| source_media_literacy_grade7_8 | Before You Share: Follow the Source, Check the Claim — Illustrated Edition | 7th–8th Grade | No formal standards alignment asserted; educator mapping pending. |
+| states_of_matter_grade4 | States of Matter — Illustrated Edition | 4th-5th Grade | NGSS 5-PS1-1 (develop a model to describe that matter is made of particles too small to be seen); NGSS 5-PS1-2 (measure and graph quantities to provide evidence |
+| story_retell_grade2 | Tell It Back — Beginning, Middle, and End — Illustrated Edition | 2nd Grade | CCSS.ELA-LITERACY.RL.2.5 (describe the overall structure of a story, including how the beginning introduces it and the ending concludes the action); CCSS.ELA-LI |
+| theme_development_grade8 | What the Story Is Really Saying — Tracing Theme — Illustrated Edition | 8th Grade | CCSS.ELA-LITERACY.RL.8.2 (determine a theme or central idea of a text and analyze its development over the course of the text, including its relationship to the |
+| then_and_now_grade2 | Then and Now — How Life Changes Over Time — Illustrated Edition | 2nd Grade | C3 Framework D2.His.1.K-2 (create a chronological sequence of multiple events); C3 Framework D2.His.2.K-2 (compare life in the past to life today); C3 Framework |
+| volume_grade5 | Filling Space — Volume and Why You Multiply Three Numbers — Illustrated Edition | 5th Grade | CCSS.MATH.CONTENT.5.MD.C.3 (recognize volume as an attribute of solid figures and understand concepts of volume measurement); CCSS.MATH.CONTENT.5.MD.C.4 (measur |
+| water_cycle_grade6 | The Water Cycle — Earth's Recycling System — Illustrated Pilot | 6th Grade | NGSS MS-ESS2-4 (water cycling through Earth systems driven by sunlight and gravity); CCSS.ELA-LITERACY.RST.6-8.4 (determine the meaning of symbols, key terms, a |
+| weather_vs_climate_grade5 | Weather vs. Climate — Illustrated Edition | 5th-6th Grade | NGSS 3-ESS2-2 (obtain and combine information to describe climates in different world regions); NGSS MS-ESS2-5 (collect data to provide evidence for how the mot |
+| weathering_erosion_grade4 | Break, Move, Settle — Changing Land — Illustrated Edition | 4th Grade | NGSS 4-ESS2-1 (use observations or measurements as evidence of weathering effects or erosion rates) |
+| word_families_grade1 | Learn One, Read Many — Word Families — Illustrated Edition | 1st Grade | CCSS.ELA-LITERACY.RF.1.2.A (distinguish long from short vowel sounds in spoken single-syllable words); CCSS.ELA-LITERACY.RF.1.2.C (isolate and pronounce initial |
 
 ## Hub cards
 
@@ -632,8 +637,8 @@ choose_practice_set, foundations (Foundations), general (General), id, list_prac
 | educator_evaluation_share |  | MYSELF / USER_DEPLOYING | userinfo.email, drive | (portal, no wire actions) |
 | leadership_hub_backup |  | ANYONE_ANONYMOUS / USER_DEPLOYING | drive.file | (portal, no wire actions) |
 | school_rewards |  | DOMAIN / USER_DEPLOYING | userinfo.email, spreadsheets, drive, script.send_mail, script.scriptapp | (portal, no wire actions) |
-| session_mailbox | 24 | ANYONE_ANONYMOUS / USER_DEPLOYING | drive.file, script.external_request | activityupsert, auth, claim, clonepack, closeall, ddel, deliver, deliverform, delpack, dget, dpatch, dset, end, extendpack, fetchpage, getactivityadmin, getactivitysummary, getpack, hello, join, joinactivity, moderateactivity, mysessions, open, putpack, putsubmission, recv, rotateadmin, send |
-| walkthrough_records |  | ANYONE_ANONYMOUS / USER_DEPLOYING | drive.file, script.send_mail | (portal, no wire actions) |
+| session_mailbox | 32 | ANYONE_ANONYMOUS / USER_DEPLOYING | userinfo.email, drive.file, script.external_request | activityupsert, auth, claim, clonepack, closeall, ddel, deliver, deliverform, delpack, dget, dpatch, dset, end, extendpack, fetchpage, getactivityadmin, getactivitysummary, getpack, getsubmission, hello, join, joinactivity, listsubmissions, marksubmissions, moderateactivity, mysessions, open, putpack, putsubmission, recv, rotateadmin, send |
+| walkthrough_records |  | ANYONE_ANONYMOUS / USER_DEPLOYING | userinfo.email, drive.file, script.send_mail | (portal, no wire actions) |
 
 ## Export formats (Document Builder)
 
@@ -646,11 +651,11 @@ choose_practice_set, foundations (Foundations), general (General), id, list_prac
 
 acholi, amharic, arabic, bengali, burmese, chin_falam, chin_hakha, chinese_simplified, chinese_traditional, dari, dutch, esperanto, farsi, french, french_canadian, german, greek, gujarati, haitian_creole, hausa, hebrew, hindi, hmong, igbo, indonesian, italian, japanese, kannada, karen, khmer, kinyarwanda, kirundi, korean, lao, latin, lingala, maay_maay, malayalam, marathi, marshallese, nepali, pashto, polish, portuguese_angola, portuguese_brazil, portuguese_portugal, punjabi, romanian, russian, somali, spanish_castilian, spanish_latin_america, swahili, tagalog, tamil, telugu, thai, tigrinya, turkish, ukrainian, urdu, vietnamese, yoruba
 
-## CDN modules registered in build.js (220)
+## CDN modules registered in build.js (222)
 
-accessibility_evidence_module.js, accessibility_lab_module.js, adaptive_controller_module.js, adventure_handlers_module.js, adventure_module.js, adventure_session_handlers_module.js, agent_core_blueprint_service_module.js, agent_core_contracts_module.js, agent_core_ui_adapter_module.js, allo_command_context_module.js, allo_crypto_module.js, allo_data_module.js, allo_device_vault_module.js, allo_quest_contract_module.js, allo_recovery_vault_integration_module.js, allo_vr_module.js, allobot_module.js, allohaven_module.js, alt_text_module.js, anchor_charts_module.js, annotation_suite_module.js, app_styles_module.js, applied_challenge_module.js, audio_banks_module.js, audio_helpers_module.js, audit_remediator_module.js, behavior_lens_module.js, behavior_lens_workspace_module.js, brand_profile_editor_module.js, brand_profile_module.js, canvas_tips_module.js, catalog_module.js, cinematic_studio_module.js, concept_graph_3d_module.js, concept_graph_engine_module.js, concept_map_handlers_module.js, concept_pictionary_module.js, concept_quest_solo_module.js, concept_quest_teacher_module.js, content_engine_module.js, device_access_code_module.js, doc_builder_renderer_module.js, doc_pipeline_module.js, educator_evaluation_module.js, escape_room_module.js, export_handlers_module.js, export_module.js, firestore_sync_module.js, fluency_module.js, games_module.js, gemini_api_module.js, generate_dispatcher_module.js, generation_helpers_module.js, generation_matrix_module.js, glb_library_module.js, glossary_helpers_module.js, guided_mode_config_module.js, host_handlers_module.js, image_asset_editor_module.js, immersive_reader_module.js, instructional_context_module.js, karaoke_audio_store_module.js, key_concept_map_module.js, label_positions_module.js, landmark_module.js, large_file_module.js, learning_web_explorer_module.js, learning_web_registry_module.js, lesson_teaching_research_module.js, lesson_teaching_script_host_module.js, lesson_teaching_script_module.js, lexical_graph_module.js, lingua_practice_module.js, live_aac_module.js, live_polling_module.js, mailbox_script_source_module.js, maine_sld_practice_module.js, math_create_module.js, math_fluency_module.js, math_helpers_module.js, math_manipulative_grader_module.js, memory_aid_module.js, memory_palace_module.js, mind_map_module.js, misc_components_module.js, misc_handlers_module.js, module_scope_extras_module.js, note_taking_templates_module.js, own_sources_module.js, pd_core_module.js, persona_session_artifact_module.js, persona_ui_module.js, personas_module.js, phase_k_helpers_module.js, phase_n_misc_helpers_module.js, phase_o_misc_handlers_module.js, poet_tree_module.js, prim3d_module.js, printable_model_module.js, prompts_library_module.js, pure_helpers_module.js, question_board_contract_module.js, question_board_transport_module.js, question_board_view_module.js, quickstart_module.js, read_aloud_artifact_audio_module.js, read_aloud_artifact_contract_module.js, read_aloud_audio_service_module.js, reading_library_module.js, remediation_audio_module.js, report_writer_module.js, resource_read_aloud_module.js, review_document_session_module.js, safety_checker_module.js, school_rewards_module.js, seating_chart_module.js, semantic_review_module.js, sensitive_workspace_module.js, session_transport_module.js, shared_activity_module.js, standards_context_module.js, standards_provider_module.js, story_forge_module.js, story_stage_module.js, student_analytics_module.js, student_interaction_module.js, studio_module.js, studio_response_module.js, submission_crypto_module.js, symbol_studio_module.js, teacher_module.js, test_prep_hub_module.js, text_pipeline_helpers_module.js, text_utility_helpers_module.js, timeline_revision_module.js, timeline_studio_module.js, tool_catalog_module.js, tts_module.js, udl_chat_module.js, ui_font_library_module.js, ui_language_selector_module.js, ui_modals_module.js, ui_polish_module.js, utils_pure_module.js, verification_policy_module.js, video_studio_host_bridge_module.js, view_adventure_module.js, view_alignment_report_module.js, view_analysis_module.js, view_assignment_center_module.js, view_brainstorm_module.js, view_canvas_recovery_dialog_module.js, view_cloze_interaction_panel_module.js, view_cold_path_surfaces_module.js, view_concept_sort_module.js, view_confirm_dialog_module.js, view_dbq_module.js, view_directions_composer_module.js, view_directions_result_module.js, view_educator_hub_modal_module.js, view_end_session_preview_module.js, view_export_preview_module.js, view_fab_stack_module.js, view_faq_module.js, view_full_pack_run_module.js, view_gemini_bridge_module.js, view_global_level_up_module.js, view_glossary_module.js, view_guided_mode_banner_module.js, view_header_module.js, view_hints_modal_module.js, view_history_panel_module.js, view_image_module.js, view_info_modal_module.js, view_kokoro_offer_modal_module.js, view_launch_pad_module.js, view_learning_hub_modal_module.js, view_lesson_plan_module.js, view_lesson_teaching_script_module.js, view_live_lesson_run_module.js, view_live_session_dock_module.js, view_math_module.js, view_misc_modals_module.js, view_misc_panels_module.js, view_outline_module.js, view_pdf_audit_module.js, view_persona_chat_module.js, view_persona_workspace_module.js, view_project_settings_module.js, view_prompt_dialog_module.js, view_quiz_module.js, view_renderers_module.js, view_sentence_frames_module.js, view_session_modal_module.js, view_share_session_surfaces_module.js, view_sidebar_panels_module.js, view_sidebar_tabs_nav_module.js, view_simplified_module.js, view_socratic_chat_module.js, view_spotlight_tour_module.js, view_storybook_export_modal_module.js, view_student_join_panel_module.js, view_student_save_adventure_module.js, view_study_timer_modal_module.js, view_submission_inbox_module.js, view_teacher_history_tab_module.js, view_timeline_module.js, view_udl_guide_button_module.js, view_video_library_module.js, view_video_ref_player_module.js, view_visual_supports_modal_module.js, view_word_sounds_preview_module.js, view_xp_modal_module.js, visual_panel_module.js, voice_config_module.js, voice_module.js, word_practice_module.js, word_sounds_module.js, word_sounds_setup_module.js, word_timing_module.js
+accessibility_evidence_module.js, accessibility_lab_module.js, adaptive_controller_module.js, adventure_handlers_module.js, adventure_module.js, adventure_session_handlers_module.js, agent_core_blueprint_service_module.js, agent_core_contracts_module.js, agent_core_ui_adapter_module.js, allo_command_context_module.js, allo_crypto_module.js, allo_data_module.js, allo_device_vault_module.js, allo_quest_contract_module.js, allo_recovery_vault_integration_module.js, allo_vr_module.js, allobot_module.js, allohaven_module.js, alt_text_module.js, anchor_charts_module.js, annotation_suite_module.js, app_styles_module.js, applied_challenge_module.js, audio_banks_module.js, audio_helpers_module.js, audit_remediator_module.js, behavior_lens_module.js, behavior_lens_workspace_module.js, brand_profile_editor_module.js, brand_profile_module.js, canvas_tips_module.js, catalog_module.js, cinematic_studio_module.js, concept_graph_3d_module.js, concept_graph_engine_module.js, concept_map_handlers_module.js, concept_pictionary_module.js, concept_quest_solo_module.js, concept_quest_teacher_module.js, content_engine_module.js, device_access_code_module.js, doc_builder_renderer_module.js, doc_pipeline_module.js, educator_evaluation_module.js, escape_room_module.js, export_handlers_module.js, export_module.js, firestore_sync_module.js, fluency_module.js, games_module.js, gemini_api_module.js, generate_dispatcher_module.js, generation_helpers_module.js, generation_matrix_module.js, glb_library_module.js, glossary_helpers_module.js, guided_mode_config_module.js, host_handlers_module.js, image_asset_editor_module.js, immersive_reader_module.js, instructional_context_module.js, karaoke_audio_store_module.js, key_concept_map_module.js, label_positions_module.js, landmark_module.js, large_file_module.js, learning_web_explorer_module.js, learning_web_registry_module.js, lesson_teaching_research_module.js, lesson_teaching_script_host_module.js, lesson_teaching_script_module.js, lexical_graph_module.js, lingua_practice_module.js, live_aac_module.js, live_polling_module.js, mailbox_script_source_module.js, maine_sld_practice_module.js, math_create_module.js, math_fluency_module.js, math_helpers_module.js, math_manipulative_grader_module.js, memory_aid_module.js, memory_palace_module.js, mind_map_module.js, misc_components_module.js, misc_handlers_module.js, module_scope_extras_module.js, note_taking_templates_module.js, own_sources_module.js, pd_core_module.js, persona_session_artifact_module.js, persona_ui_module.js, personas_module.js, phase_k_helpers_module.js, phase_n_misc_helpers_module.js, phase_o_misc_handlers_module.js, poet_tree_module.js, prim3d_module.js, printable_model_module.js, prompts_library_module.js, pure_helpers_module.js, question_board_contract_module.js, question_board_transport_module.js, question_board_view_module.js, quickstart_module.js, read_aloud_artifact_audio_module.js, read_aloud_artifact_contract_module.js, read_aloud_audio_service_module.js, reading_library_module.js, remediation_audio_module.js, report_writer_module.js, resource_read_aloud_module.js, review_document_session_module.js, safety_checker_module.js, school_rewards_module.js, seating_chart_module.js, semantic_review_module.js, sensitive_workspace_module.js, session_transport_module.js, shared_activity_module.js, speech_setup_module.js, standards_context_module.js, standards_provider_module.js, story_forge_module.js, story_stage_module.js, student_analytics_module.js, student_interaction_module.js, studio_module.js, studio_response_module.js, submission_crypto_module.js, symbol_studio_module.js, teacher_module.js, test_prep_hub_module.js, text_pipeline_helpers_module.js, text_utility_helpers_module.js, timeline_revision_module.js, timeline_studio_module.js, tool_catalog_module.js, tts_module.js, udl_chat_module.js, ui_font_library_module.js, ui_language_selector_module.js, ui_modals_module.js, ui_polish_module.js, utils_pure_module.js, verification_policy_module.js, video_studio_host_bridge_module.js, view_adventure_module.js, view_alignment_report_module.js, view_analysis_module.js, view_assignment_center_module.js, view_brainstorm_module.js, view_canvas_recovery_dialog_module.js, view_cloze_interaction_panel_module.js, view_cold_path_screens_module.js, view_cold_path_surfaces_module.js, view_concept_sort_module.js, view_confirm_dialog_module.js, view_dbq_module.js, view_directions_composer_module.js, view_directions_result_module.js, view_educator_hub_modal_module.js, view_end_session_preview_module.js, view_export_preview_module.js, view_fab_stack_module.js, view_faq_module.js, view_full_pack_run_module.js, view_gemini_bridge_module.js, view_global_level_up_module.js, view_glossary_module.js, view_guided_mode_banner_module.js, view_header_module.js, view_hints_modal_module.js, view_history_panel_module.js, view_image_module.js, view_info_modal_module.js, view_kokoro_offer_modal_module.js, view_launch_pad_module.js, view_learning_hub_modal_module.js, view_lesson_plan_module.js, view_lesson_teaching_script_module.js, view_live_lesson_run_module.js, view_live_session_dock_module.js, view_math_module.js, view_misc_modals_module.js, view_misc_panels_module.js, view_outline_module.js, view_pdf_audit_module.js, view_persona_chat_module.js, view_persona_workspace_module.js, view_project_settings_module.js, view_prompt_dialog_module.js, view_quiz_module.js, view_renderers_module.js, view_sentence_frames_module.js, view_session_modal_module.js, view_share_session_surfaces_module.js, view_sidebar_panels_module.js, view_sidebar_tabs_nav_module.js, view_simplified_module.js, view_socratic_chat_module.js, view_spotlight_tour_module.js, view_storybook_export_modal_module.js, view_student_join_panel_module.js, view_student_save_adventure_module.js, view_study_timer_modal_module.js, view_submission_inbox_module.js, view_teacher_history_tab_module.js, view_timeline_module.js, view_udl_guide_button_module.js, view_video_library_module.js, view_video_ref_player_module.js, view_visual_supports_modal_module.js, view_word_sounds_preview_module.js, view_xp_modal_module.js, visual_panel_module.js, voice_config_module.js, voice_module.js, word_practice_module.js, word_sounds_module.js, word_sounds_setup_module.js, word_timing_module.js
 
 ## Tests
 
-- Unit test files: 7978
-- End-to-end specs: 1718
+- Unit test files: 9601
+- End-to-end specs: 1956

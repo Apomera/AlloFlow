@@ -102,7 +102,7 @@
   // picture, and again to copy it. leftOut counts what was dropped (license, wording, no picture).
   // ---------------------------------------------------------------------------------------------------
   function fromGlobalSymbols(rows, word) {
-    var out = [], seen = {}, left = 0;
+    var out = [], seen = Object.create(null), left = 0;
     (Array.isArray(rows) ? rows : []).forEach(function (row) {
       var picto = isObject(row) && isObject(row.picto) ? row.picto : null, set = picto && isObject(picto.symbolset) ? picto.symbolset : null;
       var show = picto ? httpsOn(picto.image_url, ['globalsymbols.com']) : '';
@@ -211,8 +211,13 @@
   var state = { word: '', searched: '', online: false, run: 0, busy: false };
 
   function storage() { try { return root.localStorage; } catch (_) { return null; } }
+  function safeJsonParse(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
   function kept() {
-    try { var saved = JSON.parse((storage() && storage().getItem(KEEP_KEY)) || 'null'); return !!(saved && saved.online === true); } catch (_) { return false; }
+    try { var saved = safeJsonParse((storage() && storage().getItem(KEEP_KEY)) || 'null'); return !!(saved && saved.online === true); } catch (_) { return false; }
   }
   function keep(on) {
     try {
@@ -238,6 +243,8 @@
     show('saved', false);
     setText('device-said', '');
     setText('online-said', '');
+    setText('offline-said', '');
+    if ($('pics-offline')) empty($('pics-offline'));
   }
   function needWord(saidId) {
     if (state.word) return true;
@@ -331,6 +338,12 @@
         return response.blob().then(function (blob) {
           if (blob && Number(blob.size) > limitBytes) throw new Error('too_big');
           return blob;
+        });
+      }
+      if (typeof response.text === 'function') {
+        return response.text().then(function (text) {
+          if (text.length > limitBytes) throw new Error('too_big');
+          return safeJsonParse(text);
         });
       }
       return response.json();
@@ -491,7 +504,119 @@
     }, function (error) { say(problemText(error, 'The pictures could not be removed.')); });
   }
 
+  // Built-in offline diagrams (word_picture_matcher.js, loaded on demand from this site only, zero external requests).
+  var offlineLoader = null;
+  function getOfflineMatcher() {
+    return root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher) || null;
+  }
+  function loadOfflineMatcher() {
+    if (getOfflineMatcher()) return Promise.resolve(getOfflineMatcher());
+    if (!offlineLoader) {
+      offlineLoader = new Promise(function (resolve) {
+        if (!doc || !doc.head || typeof doc.createElement !== 'function') { resolve(null); return; }
+        var done = false;
+        var finish = function () { if (done) return; done = true; resolve(getOfflineMatcher()); };
+        var timer = root.setTimeout(finish, 4000);
+        var script = el('script');
+        script.src = 'word_picture_matcher.js';
+        script.onload = function () { root.clearTimeout(timer); finish(); };
+        script.onerror = function () { root.clearTimeout(timer); finish(); };
+        doc.head.appendChild(script);
+      });
+    }
+    return offlineLoader;
+  }
+  function svgToDataUri(svg) {
+    if (typeof svg !== 'string' || !svg.trim()) return '';
+    try {
+      if (typeof root.TextEncoder === 'function' && typeof root.btoa === 'function') {
+        var bytes = new root.TextEncoder().encode(svg), bin = '';
+        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return 'data:image/svg+xml;base64,' + root.btoa(bin);
+      }
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    } catch (_) { return ''; }
+  }
+  function mountOfflineSection() {
+    var device = $('device');
+    if (!device || !device.parentNode || $('offline-lib')) return;
+    var section = el('section', 'source');
+    section.id = 'offline-lib';
+    section.setAttribute('aria-labelledby', 'offline-title');
+    var h2 = el('h2', '', 'Built-in diagrams');
+    h2.id = 'offline-title';
+    var about = el('p', 'source-about', 'Browse 696 K-12 curriculum diagrams bundled on this site. Works offline and sends nothing to other websites.');
+    about.id = 'offline-about';
+    var go = el('p', 'source-go');
+    var btn = el('button', 'btn', 'Search built-in diagrams');
+    btn.type = 'button';
+    btn.id = 'offline-search';
+    btn.setAttribute('aria-describedby', 'offline-about');
+    go.appendChild(btn);
+    var saidLine = el('p', 'source-said');
+    saidLine.id = 'offline-said';
+    var list = el('ul', 'pics');
+    list.id = 'pics-offline';
+    add(section, h2, about, go, saidLine, list);
+    device.parentNode.insertBefore(section, device.nextSibling);
+    btn.addEventListener('click', searchOfflineDiagrams);
+  }
+  function searchOfflineDiagrams() {
+    if (!needWord('offline-said')) return;
+    var word = state.word;
+    var saidLine = $('offline-said'), list = $('pics-offline');
+    if (!saidLine || !list) return;
+    setText(saidLine, 'Searching built-in diagrams.');
+    empty(list);
+    loadOfflineMatcher().then(function (matcher) {
+      if (!matcher) {
+        var fail = 'Built-in diagrams could not be loaded on this page.';
+        setText(saidLine, fail); say(fail);
+        return;
+      }
+      var hits = [];
+      if (typeof matcher.searchSymbolsWithDiagrams === 'function') {
+        hits = matcher.searchSymbolsWithDiagrams(word, { preferDiagrams: true, limit: 12 }).filter(function (h) { return h && typeof h.svg === 'string'; });
+      } else if (typeof matcher.getDiagram === 'function') {
+        var one = matcher.getDiagram(word, '', word);
+        if (one && typeof one.svg === 'string') hits = [one];
+      }
+      empty(list);
+      if (!hits.length) {
+        var none = 'No built-in diagram matched "' + word + '". Try choosing a file from your device or searching online.';
+        setText(saidLine, none); say(none);
+        return;
+      }
+      hits.forEach(function (hit) {
+        var uri = svgToDataUri(hit.svg);
+        if (!uri) return;
+        var title = plain(hit.label || hit.alt || hit.word || word, 120);
+        var li = el('li', 'pic');
+        var img = el('img');
+        img.src = uri;
+        img.alt = title;
+        img.width = 160; img.height = 160;
+        var useBtn = el('button', 'btn', 'Use this picture');
+        useBtn.type = 'button';
+        useBtn.setAttribute('aria-label', 'Use ' + title + ' for ' + word);
+        useBtn.addEventListener('click', function () {
+          var targetWord = state.word || word;
+          store.put(targetWord, { picture: { dataUri: uri, credit: { own: true } } }).then(function (entry) {
+            showSaved(targetWord, entry);
+          }, function (error) {
+            var errMsg = problemText(error, 'This picture could not be saved.');
+            setText(saidLine, errMsg); say(errMsg);
+          });
+        });
+        list.appendChild(add(li, img, el('p', 'pic-title', title), el('p', 'pic-by', 'Built-in curriculum diagram'), el('p', 'pic-license', 'AGPL-3.0'), useBtn));
+      });
+      var doneMsg = count(hits.length, 'built-in diagram', 'built-in diagrams') + ' for "' + word + '".';
+      setText(saidLine, doneMsg); say(doneMsg);
+    });
+  }
+
   function start() {
+    mountOfflineSection();
     var input = $('word');
     // Back to the page the teacher came from: Present, Vocab or Symbol Runner via #from=...; else the Word Sounds maker.
     var rawHash = String(root.location && root.location.hash || '');
@@ -550,6 +675,7 @@
     store.available().then(function (yes) {
       show('not-keeping', !yes);
       show('device', yes);
+      show('offline-lib', yes);
       show('online', yes);
       show('mine', yes);
       if (yes) drawMine();

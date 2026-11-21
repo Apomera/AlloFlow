@@ -160,6 +160,8 @@
     var saveStatusState=React.useState(boot.status==='loaded'?'saved':boot.status),saveStatus=saveStatusState[0],setSaveStatus=saveStatusState[1];
     var saveActionState=React.useState(''),saveAction=saveActionState[0],setSaveAction=saveActionState[1];
     var baselineRef=React.useRef(initial.baseline||null),snapshotRef=React.useRef(null),saveControl=React.useRef({raw:boot.raw,signature:'',blocked:boot.status==='invalid'});
+    var archiveRef=React.useRef(archive),recordsRef=React.useRef(records);
+    archiveRef.current=archive; recordsRef.current=records;
     var canvasRef = React.useRef(null), rootRef = React.useRef(null), headingRef = React.useRef(null), feedbackRef = React.useRef(null);
     var strokes = React.useRef(initial.strokes||[]), undo = React.useRef([]), redo = React.useRef([]), drawing = React.useRef(null), raf = React.useRef(null);
     var starting = React.useRef(false), request = React.useRef(0), busy = React.useRef(false), mounted = React.useRef(true), seenSession = React.useRef(false), advancing = React.useRef(false), latest = React.useRef(ctx);
@@ -188,7 +190,7 @@
     function cancelRequest() { request.current++; busy.current = false; setThinking(false); }
     function resetRound() { var reference = rootRef.current && rootRef.current.querySelector("[data-pic-reference]"); if (reference) reference.open = false; cancelRequest(); strokes.current = []; undo.current = []; redo.current = []; drawing.current = null; setAttempts([]); setReview(''); setDescription(''); setReferenceUsed(false); baselineRef.current=null;setBaseline(null);setReflection(''); setError(''); setNotice(''); touch(); }
     function makeRecord(outcome) { return {id:setId+':'+index,concept:plainConcept(current),attempts:attempts.slice(),referenceUsed:referenceUsed,outcome:outcome||review||'reviewed',matched:matched,baseline:baselineRef.current,final:snapshotClues(),reflection:reflection}; }
-    function startSet(list, all) { var draft=current&&(paused||phase==='playing')&&(strokes.current.length||description||baseline||attempts.length)?makeRecord('unfinished'):null;setArchive(portfolioCards(archive,records,draft).slice(-ARCHIVE_LIMIT));setSetId(newSetId());setPaused(false);cancelRequest(); resetRound(); setPool(all || list); setQueue(shuffle(list).slice(0, 5)); setIndex(0); setRecords([]); setEnded(false); setPhase('playing'); }
+    function startSet(list, all) { var draft=current&&(paused||phase==='playing')&&(strokes.current.length||description||baseline||attempts.length)?makeRecord('unfinished'):null;setArchive(portfolioCards(archiveRef.current,recordsRef.current,draft).slice(-ARCHIVE_LIMIT));setSetId(newSetId());setPaused(false);cancelRequest(); resetRound(); setPool(all || list); setQueue(shuffle(list).slice(0, 5)); setIndex(0); setRecords([]); setEnded(false); setPhase('playing'); }
     React.useEffect(function () { mounted.current = true; return function () { mounted.current = false; request.current++; busy.current = false; if (raf.current != null) cancelAnimationFrame(raf.current); }; }, []);
     React.useEffect(function () { starting.current = false; advancing.current = false; if (phase === 'playing') { redraw(); headingRef.current && headingRef.current.focus(); } }, [phase, index, queue]);
     React.useEffect(function () { if (responseMode === 'draw') redraw(); }, [responseMode]);
@@ -241,10 +243,12 @@
     var currentDraft=current&&(paused||phase==='playing')&&(strokes.current.length||description||baseline||attempts.length)?makeRecord('unfinished'):null;
     var galleryCards=portfolioCards(archive,records,currentDraft);
 
-    function position(event) { var rect = canvasRef.current.getBoundingClientRect(); return [Math.max(0, Math.min(720, Math.round((event.clientX-rect.left)*720/rect.width))), Math.max(0, Math.min(480, Math.round((event.clientY-rect.top)*480/rect.height)))]; }
+    function position(event) { var canvas = canvasRef.current, rect = canvas && canvas.getBoundingClientRect(); if (!rect || !rect.width || !rect.height) return [0, 0]; return [Math.max(0, Math.min(720, Math.round((event.clientX-rect.left)*720/rect.width))), Math.max(0, Math.min(480, Math.round((event.clientY-rect.top)*480/rect.height)))]; }
     function pointerDown(event) {
       if (!editable || drawing.current || event.isPrimary === false || (event.button != null && event.button !== 0)) return;
-      if (strokes.current.length >= MAX_STROKES || strokes.current.reduce(function (n, s) { return n+s.points.length; }, 0) >= MAX_POINTS) { setNotice('This canvas is full. Undo a stroke or clear the canvas to keep drawing.'); return; }
+      var totalPoints = strokes.current.reduce(function (n, s) { return n+s.points.length; }, 0);
+      var isShape = tool === 'line' || tool === 'rectangle' || tool === 'ellipse';
+      if (strokes.current.length >= MAX_STROKES || totalPoints + (isShape ? 2 : 1) > MAX_POINTS) { setNotice('This canvas is full. Undo a stroke or clear the canvas to keep drawing.'); return; }
       event.preventDefault(); var point = position(event);
       drawing.current = { pointerId: event.pointerId, stroke: { tool: tool, color: tool === 'eraser' ? '#fff' : color, width: tool === 'eraser' ? Math.max(16, penWidth*4) : penWidth, points: [point] } };
       try { event.currentTarget.setPointerCapture(event.pointerId); } catch (_) {} scheduleDraw();
@@ -253,8 +257,10 @@
       if (!drawing.current || drawing.current.pointerId !== event.pointerId) return;
       event.preventDefault(); var s = drawing.current.stroke, point = position(event), previous = s.points[s.points.length-1];
       if (point[0] === previous[0] && point[1] === previous[1]) return;
-      if (s.tool === 'line' || s.tool === 'rectangle' || s.tool === 'ellipse') s.points = [s.points[0], point];
-      else if (s.points.length < 1200 && strokes.current.reduce(function (n, stroke) { return n+stroke.points.length; }, 0)+s.points.length < MAX_POINTS) s.points.push(point);
+      var usedPoints = strokes.current.reduce(function (n, stroke) { return n+stroke.points.length; }, 0);
+      if (s.tool === 'line' || s.tool === 'rectangle' || s.tool === 'ellipse') {
+        if (usedPoints + 2 <= MAX_POINTS) s.points = [s.points[0], point];
+      } else if (s.points.length < 1200 && usedPoints + s.points.length < MAX_POINTS) s.points.push(point);
       scheduleDraw();
     }
     function pointerUp(event) { if (!drawing.current || drawing.current.pointerId !== event.pointerId) return; pointerMove(event); var stroke = drawing.current.stroke; drawing.current = null; commit(strokes.current.concat([stroke])); try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (_) {} }
@@ -330,7 +336,7 @@
         panel(h('div',null,h('h4',null,'What your clues communicated'),h('p',{'data-pic-summary':true},noAI&&!named?records.length+' concepts reviewed.':named+' of '+records.length+' reviewed concepts named by AI.'),h('p',{className:'pic-muted'},noAI&&!named?'Compare each idea with the lesson and discuss your choices. This is not a grade.':'AI can miss clear drawings or guess from limited clues. Compare the idea with the lesson and discuss your choices. This is not a grade.'))),
         h('ol',{className:'pic-rounds'},records.map(function(record,i){return h('li',{key:i,'data-pic-record':record.concept.term},h('strong',null,record.concept.term),h('div',null,record.matched?'AI named the target in '+record.attempts.length+' guess'+(record.attempts.length===1?'':'es')+'.':record.outcome==='skipped'?'Skipped.':record.outcome==='self'?(noAI?'You reviewed your clues.':'Reviewed without AI.'):'AI used a different name.'),h('div',{className:'pic-muted'},record.referenceUsed?'Glossary reference used.':'No glossary reference opened.'),record.concept.definition?h('p',null,record.concept.definition):null); })),
         !records.length ? h('p',null,'No concepts were reviewed in this set.') : null,
-        h('div',{className:'pic-row'},active&&revisit.length?button('Revisit these concepts',function(){startSet(revisit,pool);},{'data-pic-revisit':true}):null,active&&pool.length?button('Play another set',function(){startSet(pool);},{className:'arcade-pictionary-control pic-primary','data-pic-another':true}):null,active?button('End arcade session',endSession):button('Back to setup',function(){setPhase('idle');})),
+        h('div',{className:'pic-row'},active&&revisit.length?button('Revisit these concepts',function(){startSet(restorePictures(revisit,pool),pool);},{'data-pic-revisit':true}):null,active&&pool.length?button('Play another set',function(){startSet(pool);},{className:'arcade-pictionary-control pic-primary','data-pic-another':true}):null,active?button('End arcade session',endSession):button('Back to setup',function(){setPhase('idle');})),
         active?h('p',{className:'pic-muted'},'More sets use the time already in your arcade session.'):h('p',{className:'pic-muted'},'Return to setup when you are ready for a new session.'));
     } else if (current) {
       var canRevise = !matched && attempts.length<MAX_GUESSES;

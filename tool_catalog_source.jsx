@@ -189,19 +189,39 @@ const TOOL_CATALOG = [
   },
 ];
 
+TOOL_CATALOG.forEach(entry => Object.freeze(entry));
+Object.freeze(TOOL_CATALOG);
+
 // ─── Helpers ───────────────────────────────────────────────────────────────
+
+function _sanitizeCatalogText(value, limit) {
+  return String(value == null ? '' : value)
+    .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, limit || 600);
+}
+
+function _validCatalog(catalog) {
+  if (!Array.isArray(catalog)) return TOOL_CATALOG;
+  return catalog
+    .slice(0, 200)
+    .filter(t => t && typeof t === 'object' && typeof t.id === 'string' && t.id.trim());
+}
 
 // Comma-separated tool IDs, e.g. for "Valid Tools: analysis, simplified, ..."
 function getToolIdsCsv(catalog) {
-  return (catalog || TOOL_CATALOG).map(t => t.id).join(', ');
+  return _validCatalog(catalog).map(t => _sanitizeCatalogText(t.id, 80)).join(', ');
 }
 
 // Markdown bullet block for an LLM prompt: "- **id** — description (whenToUse)"
 function formatToolCatalogForPrompt(catalog) {
-  return (catalog || TOOL_CATALOG)
+  return _validCatalog(catalog)
     .map(t => {
-      const wtu = t.whenToUse ? ' ' + t.whenToUse : '';
-      return `        - **${t.id}**: ${t.description}${wtu}`;
+      const id = _sanitizeCatalogText(t.id, 80);
+      const desc = _sanitizeCatalogText(t.description, 600);
+      const wtu = t.whenToUse ? ' ' + _sanitizeCatalogText(t.whenToUse, 600) : '';
+      return `        - **${id}**: ${desc}${wtu}`;
     })
     .join('\n');
 }
@@ -209,42 +229,45 @@ function formatToolCatalogForPrompt(catalog) {
 // Same as above but with "tool_id — when to use" inline format (used by
 // modifyBlueprintWithAI).
 function formatToolCatalogInline(catalog) {
-  return (catalog || TOOL_CATALOG)
+  return _validCatalog(catalog)
     .map(t => {
-      const wtu = t.whenToUse ? ' ' + t.whenToUse : '';
-      return `        - ${t.id} — ${t.description}${wtu}`;
+      const id = _sanitizeCatalogText(t.id, 80);
+      const desc = _sanitizeCatalogText(t.description, 600);
+      const wtu = t.whenToUse ? ' ' + _sanitizeCatalogText(t.whenToUse, 600) : '';
+      return `        - ${id} — ${desc}${wtu}`;
     })
     .join('\n');
 }
 
 // Lookup by id (returns entry or undefined).
 function getToolEntry(id, catalog) {
-  return (catalog || TOOL_CATALOG).find(t => t.id === id);
+  if (typeof id !== 'string' || !id) return undefined;
+  return _validCatalog(catalog).find(t => t.id === id);
 }
 
 // All tool IDs as an array.
 function getToolIds(catalog) {
-  return (catalog || TOOL_CATALOG).map(t => t.id);
+  return _validCatalog(catalog).map(t => _sanitizeCatalogText(t.id, 80));
 }
 
 // ─── Registration ──────────────────────────────────────────────────────────
 // Publish on window.AlloModules.ToolCatalog AND mirror onto window.* for
 // convenience (modifyBlueprintWithAI reads window.TOOL_CATALOG directly).
 window.AlloModules = window.AlloModules || {};
-window.AlloModules.ToolCatalog = {
+window.AlloModules.ToolCatalog = Object.freeze({
   TOOL_CATALOG,
   getToolIdsCsv,
   formatToolCatalogForPrompt,
   formatToolCatalogInline,
   getToolEntry,
   getToolIds,
-};
+});
 window.TOOL_CATALOG = TOOL_CATALOG;
 window.formatToolCatalogForPrompt = formatToolCatalogForPrompt;
 window.formatToolCatalogInline = formatToolCatalogInline;
 window.getToolIdsCsv = getToolIdsCsv;
 
 if (typeof window._upgradeToolCatalog === 'function') {
-  window._upgradeToolCatalog();
+  try { window._upgradeToolCatalog(); } catch (_) {}
 }
 console.log('[ToolCatalog] ' + TOOL_CATALOG.length + ' tools registered.');

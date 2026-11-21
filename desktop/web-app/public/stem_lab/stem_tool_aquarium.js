@@ -11841,6 +11841,16 @@ window.StemLab = window.StemLab || {
     var options = initialOptions || {};
     var motionQuery = null, reducedMotion = false;
     try { motionQuery = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)'); reducedMotion = !!(motionQuery && motionQuery.matches); } catch (_) {}
+    function isHighContrastActive() {
+      try {
+        return !!(typeof document !== 'undefined' && (
+          (document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) ||
+          (document.body && document.body.classList && document.body.classList.contains('theme-contrast'))
+        ));
+      } catch (_) { return false; }
+    }
+    var hasShaderMaterial = typeof THREE.ShaderMaterial === 'function';
+    var shaderBeautyTime = 1.45;
     var disposed = false, contextLost = false, inViewport = true;
     var animationFrame = 0, motionTime = 0, lastTime = null, lastRender = 0, needsRender = true;
     var width = canvas.clientWidth || 760, height = canvas.clientHeight || 420;
@@ -11852,7 +11862,8 @@ window.StemLab = window.StemLab || {
     var renderer;
     try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'low-power' }); }
     catch (error) { return null; }
-    renderer.setPixelRatio(Math.max(1, Math.min(1.75, window.devicePixelRatio || 1)));
+    var currentPixelRatio = Math.max(1, Math.min(1.75, window.devicePixelRatio || 1));
+    renderer.setPixelRatio(currentPixelRatio);
     renderer.setSize(width, height, false);
     renderer.outputEncoding = THREE.sRGBEncoding;
     if (THREE.ACESFilmicToneMapping !== undefined) renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -11986,11 +11997,31 @@ window.StemLab = window.StemLab || {
       try { ctx = tile.getContext('2d'); } catch (_) { return null; }
       if (!ctx) return null;
       if (kind === 'sand') {
-        ctx.fillStyle = '#ccb995'; ctx.fillRect(0, 0, 256, 256);
-        for (var n = 0; n < 3600; n++) {
-          var tone = Math.floor(100 + noise(n, 7) * 115);
-          ctx.fillStyle = 'rgba(' + tone + ',' + Math.floor(tone * 0.89) + ',' + Math.floor(tone * 0.72) + ',0.34)';
-          ctx.fillRect(noise(n, 5) * 256, noise(n, 13) * 256, 0.5 + noise(n, 8) * 1.4, 0.5 + noise(n, 9) * 1.4);
+        var sandBase = ctx.createLinearGradient(0, 0, 256, 256);
+        sandBase.addColorStop(0, '#d2c09d');
+        sandBase.addColorStop(0.5, '#c7b48f');
+        sandBase.addColorStop(1, '#d0be9b');
+        ctx.fillStyle = sandBase; ctx.fillRect(0, 0, 256, 256);
+        // Subtle current-swept sand ripple bands for tactile depth & bump micro-relief.
+        for (var band = 0; band < 18; band++) {
+          var by = (band / 18) * 256;
+          ctx.strokeStyle = band % 2 ? 'rgba(255,246,225,0.12)' : 'rgba(92,76,54,0.10)';
+          ctx.lineWidth = 4 + noise(band, 19) * 6;
+          ctx.beginPath();
+          ctx.moveTo(-8, by);
+          ctx.bezierCurveTo(85, by + (noise(band, 23) - 0.5) * 14, 170, by - (noise(band, 29) - 0.5) * 14, 264, by);
+          ctx.stroke();
+        }
+        // Fine sand grain layer + mineral quartz/slate specular flecks.
+        for (var n = 0; n < 4200; n++) {
+          var tone = Math.floor(96 + noise(n, 7) * 124);
+          ctx.fillStyle = 'rgba(' + tone + ',' + Math.floor(tone * 0.89) + ',' + Math.floor(tone * 0.73) + ',0.36)';
+          ctx.fillRect(noise(n, 5) * 256, noise(n, 13) * 256, 0.6 + noise(n, 8) * 1.5, 0.6 + noise(n, 9) * 1.5);
+        }
+        for (var sp = 0; sp < 420; sp++) {
+          var sxp = noise(sp, 151) * 256, syp = noise(sp, 157) * 256, sr = 0.7 + noise(sp, 163) * 1.6;
+          ctx.fillStyle = sp % 3 === 0 ? 'rgba(255,250,236,0.42)' : sp % 3 === 1 ? 'rgba(136,118,92,0.34)' : 'rgba(84,78,68,0.28)';
+          ctx.beginPath(); ctx.arc(sxp, syp, sr, 0, Math.PI * 2); ctx.fill();
         }
       } else if (kind === 'bark') {
         ctx.fillStyle = '#a0a0a0'; ctx.fillRect(0,0,256,256);
@@ -12002,15 +12033,33 @@ window.StemLab = window.StemLab || {
         }
       } else if (kind === 'depth') {
         var depthGradient = ctx.createLinearGradient(0, 0, 0, 256);
-        depthGradient.addColorStop(0, '#426f73'); depthGradient.addColorStop(0.45, '#244b55'); depthGradient.addColorStop(1, '#122e3d');
+        depthGradient.addColorStop(0, '#528a8d');
+        depthGradient.addColorStop(0.22, '#346b74');
+        depthGradient.addColorStop(0.56, '#1c4553');
+        depthGradient.addColorStop(0.84, '#102d3c');
+        depthGradient.addColorStop(1, '#091e2b');
         ctx.fillStyle = depthGradient; ctx.fillRect(0, 0, 256, 256);
-        // Lamp pool: the hood lights the middle of the back glass, so the far
-        // corners fall away. Without this the backdrop reads as a flat card.
-        var depthHaze = ctx.createRadialGradient(128, 22, 12, 128, 78, 185);
-        depthHaze.addColorStop(0, 'rgba(150,214,205,0.30)');
-        depthHaze.addColorStop(0.45, 'rgba(110,178,178,0.13)');
-        depthHaze.addColorStop(1, 'rgba(110,178,178,0)');
+        // Upper photic lamp bloom + secondary pelagic scatter layer.
+        var depthHaze = ctx.createRadialGradient(128, 16, 10, 128, 68, 195);
+        depthHaze.addColorStop(0, 'rgba(176,238,228,0.38)');
+        depthHaze.addColorStop(0.35, 'rgba(128,202,198,0.20)');
+        depthHaze.addColorStop(0.7, 'rgba(72,146,158,0.08)');
+        depthHaze.addColorStop(1, 'rgba(72,146,158,0)');
         ctx.fillStyle = depthHaze; ctx.fillRect(0, 0, 256, 256);
+        // Soft angled sub-surface depth shafts baked into the rear water column.
+        for (var rb = 0; rb < 6; rb++) {
+          var rbx = 24 + rb * 42 + (noise(rb, 173) - 0.5) * 14;
+          var rbw = 16 + noise(rb, 179) * 18;
+          var beamGrad = ctx.createLinearGradient(rbx, 0, rbx + 26, 210);
+          beamGrad.addColorStop(0, 'rgba(186,244,234,0.12)');
+          beamGrad.addColorStop(0.55, 'rgba(130,210,206,0.05)');
+          beamGrad.addColorStop(1, 'rgba(130,210,206,0)');
+          ctx.fillStyle = beamGrad;
+          ctx.beginPath();
+          ctx.moveTo(rbx - rbw * 0.4, 0); ctx.lineTo(rbx + rbw * 0.4, 0);
+          ctx.lineTo(rbx + 28 + rbw * 0.8, 215); ctx.lineTo(rbx + 28 - rbw * 0.8, 215);
+          ctx.closePath(); ctx.fill();
+        }
         // Very faint suspended haze so the glass is never perfectly clean.
         for (var d = 0; d < 260; d++) {
           var dx = noise(d, 131) * 256, dy = noise(d, 137) * 256, dr = 6 + noise(d, 139) * 26;
@@ -12020,14 +12069,18 @@ window.StemLab = window.StemLab || {
           speck.addColorStop(1, 'rgba(178,224,216,0)');
           ctx.fillStyle = speck; ctx.fillRect(dx - dr, dy - dr, dr * 2, dr * 2);
         }
-        // A soft settle line where the substrate meets the back glass.
-        var settle = ctx.createLinearGradient(0, 196, 0, 256);
-        settle.addColorStop(0, 'rgba(10,28,36,0)');
-        settle.addColorStop(1, 'rgba(8,24,32,0.42)');
-        ctx.fillStyle = settle; ctx.fillRect(0, 196, 256, 60);
+        // A soft benthic settle line where the substrate meets the back glass.
+        var settle = ctx.createLinearGradient(0, 188, 0, 256);
+        settle.addColorStop(0, 'rgba(8,24,34,0)');
+        settle.addColorStop(0.55, 'rgba(7,22,32,0.24)');
+        settle.addColorStop(1, 'rgba(5,18,27,0.52)');
+        ctx.fillStyle = settle; ctx.fillRect(0, 188, 256, 68);
       } else if (kind === 'shadow') {
-        var shadowGradient = ctx.createRadialGradient(128, 128, 8, 128, 128, 125);
-        shadowGradient.addColorStop(0, 'rgba(0,10,18,0.58)'); shadowGradient.addColorStop(0.55, 'rgba(0,10,18,0.24)'); shadowGradient.addColorStop(1, 'rgba(0,10,18,0)');
+        var shadowGradient = ctx.createRadialGradient(128, 128, 10, 128, 128, 124);
+        shadowGradient.addColorStop(0, 'rgba(2,16,26,0.62)');
+        shadowGradient.addColorStop(0.42, 'rgba(4,22,34,0.34)');
+        shadowGradient.addColorStop(0.75, 'rgba(6,28,40,0.11)');
+        shadowGradient.addColorStop(1, 'rgba(6,28,40,0)');
         ctx.fillStyle = shadowGradient; ctx.fillRect(0, 0, 256, 256);
 
       } else if (kind === 'algae') {
@@ -12047,31 +12100,77 @@ window.StemLab = window.StemLab || {
           ctx.fillStyle=silhouette%2?'rgba(20,50,38,.37)':'rgba(93,123,77,.17)';
           ctx.beginPath();ctx.moveTo(sx-5,256);ctx.bezierCurveTo(sx-13,190,sx+lean-15,sy+20,sx+lean,sy);ctx.bezierCurveTo(sx+lean+8,sy+40,sx+6,180,sx+5,256);ctx.fill();
         }
+      } else if (kind === 'surface-ripple') {
+        ctx.clearRect(0, 0, 256, 256);
+        // Translucent specular wave-crest highlights tiled across the water surface.
+        var surfGrad = ctx.createLinearGradient(0, 0, 256, 256);
+        surfGrad.addColorStop(0, 'rgba(198,246,240,0.45)');
+        surfGrad.addColorStop(0.5, 'rgba(146,222,218,0.28)');
+        surfGrad.addColorStop(1, 'rgba(198,246,240,0.45)');
+        ctx.fillStyle = surfGrad; ctx.fillRect(0, 0, 256, 256);
+        for (var wr = 0; wr < 42; wr++) {
+          var wx = noise(wr, 191) * 256, wy = noise(wr, 197) * 256;
+          var wrx = 12 + noise(wr, 199) * 26, wry = 3 + noise(wr, 211) * 7;
+          var wGrad = ctx.createRadialGradient(wx, wy, 0, wx, wy, wrx);
+          wGrad.addColorStop(0, 'rgba(244,255,252,0.52)');
+          wGrad.addColorStop(0.5, 'rgba(182,244,238,0.18)');
+          wGrad.addColorStop(1, 'rgba(182,244,238,0)');
+          ctx.save(); ctx.translate(wx, wy); ctx.scale(1, wry / wrx);
+          ctx.fillStyle = wGrad; ctx.beginPath(); ctx.arc(0, 0, wrx, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+      } else if (kind === 'particle-orb') {
+        ctx.clearRect(0, 0, 256, 256);
+        // Soft circular refractive micro-bubble / suspended mote sprite.
+        var orb = ctx.createRadialGradient(116, 112, 8, 128, 128, 118);
+        orb.addColorStop(0, 'rgba(255,255,255,0.96)');
+        orb.addColorStop(0.32, 'rgba(218,252,248,0.68)');
+        orb.addColorStop(0.72, 'rgba(156,232,232,0.22)');
+        orb.addColorStop(1, 'rgba(156,232,232,0)');
+        ctx.fillStyle = orb; ctx.fillRect(0, 0, 256, 256);
+      } else if (kind === 'glass-refraction') {
+        ctx.clearRect(0, 0, 256, 256);
+        // Soft vertical meniscus & glass-refraction sheen with bright upper lip.
+        var refGrad = ctx.createLinearGradient(0, 0, 0, 256);
+        refGrad.addColorStop(0, 'rgba(240,255,252,0.95)');
+        refGrad.addColorStop(0.18, 'rgba(186,246,240,0.62)');
+        refGrad.addColorStop(0.55, 'rgba(128,224,224,0.24)');
+        refGrad.addColorStop(1, 'rgba(128,224,224,0)');
+        ctx.fillStyle = refGrad; ctx.fillRect(0, 0, 256, 256);
       } else {
-        // Periodic displaced nodes make a continuous, irregular light network.
+        // Periodic displaced nodes make a continuous, irregular caustic light network.
         // This is a viewing effect, not a measurement of water clarity or chemistry.
-        ctx.clearRect(0,0,256,256);ctx.shadowColor='rgba(207,242,226,.35)';ctx.shadowBlur=2.2;
+        ctx.clearRect(0,0,256,256);ctx.shadowColor='rgba(196,248,236,.42)';ctx.shadowBlur=3.4;
         function lightNode(col,row){var key=((col%5+5)%5)+((row%5+5)%5)*5;return {x:col*51.2+(noise(key,43)-.5)*31,y:row*51.2+(noise(key,57)-.5)*31};}
         for(var row=-1;row<6;row++)for(var col=-1;col<6;col++){
           var node=lightNode(col,row),right=lightNode(col+1,row),below=lightNode(col,row+1),seed=((col%5+5)%5)+((row%5+5)%5)*5;
-          ctx.lineWidth=.65+noise(seed,23)*.8;ctx.strokeStyle='rgba(223,247,225,'+(.23+noise(seed,37)*.22)+')';
+          ctx.lineWidth=.8+noise(seed,23)*.95;ctx.strokeStyle='rgba(228,252,238,'+(.28+noise(seed,37)*.24)+')';
           ctx.beginPath();ctx.moveTo(node.x,node.y);ctx.bezierCurveTo(node.x+(right.x-node.x)*.26,node.y-9,right.x-(right.x-node.x)*.22,right.y+8,right.x,right.y);ctx.stroke();
           ctx.beginPath();ctx.moveTo(node.x,node.y);ctx.bezierCurveTo(node.x+9,node.y+(below.y-node.y)*.25,below.x-8,below.y-(below.y-node.y)*.28,below.x,below.y);ctx.stroke();
+          // Bright refractive caustic knots where wave filaments converge.
+          var knot = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, 11 + noise(seed, 67) * 9);
+          knot.addColorStop(0, 'rgba(244,255,248,0.42)');
+          knot.addColorStop(0.45, 'rgba(170,242,232,0.16)');
+          knot.addColorStop(1, 'rgba(170,242,232,0)');
+          ctx.fillStyle = knot; ctx.beginPath(); ctx.arc(node.x, node.y, 20, 0, Math.PI * 2); ctx.fill();
         }
       }
       if (kind === 'shaft') {
         ctx.clearRect(0, 0, 256, 256);
-        // Horizontal: bright core, feathered sides. Vertical: strongest just
-        // under the lamp, gone before it reaches the substrate.
+        // Horizontal: multi-strand bright caustic core + feathered sides.
+        // Vertical: strongest just under the lamp, fading gently before the substrate.
         var across = ctx.createLinearGradient(0, 0, 256, 0);
         across.addColorStop(0, 'rgba(255,255,255,0)');
-        across.addColorStop(0.5, 'rgba(255,255,255,1)');
+        across.addColorStop(0.24, 'rgba(220,252,248,0.34)');
+        across.addColorStop(0.44, 'rgba(255,255,255,0.92)');
+        across.addColorStop(0.54, 'rgba(245,255,250,1)');
+        across.addColorStop(0.74, 'rgba(210,248,244,0.30)');
         across.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.fillStyle = across; ctx.fillRect(0, 0, 256, 256);
         var down = ctx.createLinearGradient(0, 0, 0, 256);
         down.addColorStop(0, 'rgba(0,0,0,1)');
-        down.addColorStop(0.12, 'rgba(0,0,0,0.92)');
-        down.addColorStop(0.68, 'rgba(0,0,0,0.30)');
+        down.addColorStop(0.14, 'rgba(0,0,0,0.94)');
+        down.addColorStop(0.64, 'rgba(0,0,0,0.34)');
         down.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.globalCompositeOperation = 'destination-in';
         ctx.fillStyle = down; ctx.fillRect(0, 0, 256, 256);
@@ -12088,10 +12187,10 @@ window.StemLab = window.StemLab || {
       }
       var result = new THREE.CanvasTexture(tile);
       result.encoding = THREE.sRGBEncoding;
-      if (kind === 'sand' || kind === 'caustics') { result.wrapS = result.wrapT = THREE.RepeatWrapping; result.repeat.set(kind === 'sand' ? 5 : 3, kind === 'sand' ? 3 : 2); }
+      if (kind === 'sand' || kind === 'caustics' || kind === 'surface-ripple') { result.wrapS = result.wrapT = THREE.RepeatWrapping; result.repeat.set(kind === 'sand' ? 5 : 3, kind === 'sand' ? 3 : 2); }
       persistentTextures.push(result); return result;
     }
-    var sandMap = texture('sand'), depthMap = texture('depth'), causticsMap = texture('caustics'), shadowMap = texture('shadow'), barkMap = texture('bark');
+    var sandMap = texture('sand'), depthMap = texture('depth'), causticsMap = texture('caustics'), shadowMap = texture('shadow'), barkMap = texture('bark'), surfaceRippleMap = texture('surface-ripple'), particleOrbMap = texture('particle-orb'), glassRefractionMap = texture('glass-refraction');
     var frameMat = material(0x18282e, { metalness: 0.5, roughness: 0.38 });frameMat.color.convertSRGBToLinear();
     var trimMat = material(0x729296, { metalness: 0.62, roughness: 0.32 });trimMat.color.convertSRGBToLinear();
     mesh(new THREE.BoxGeometry(12.8, 0.5, 7.15), frameMat, tankGroup, 0, -0.82, 0);
@@ -12099,7 +12198,7 @@ window.StemLab = window.StemLab || {
     mesh(new THREE.BoxGeometry(12.2, 0.28, 6.7), frameMat, tankGroup, 0, -0.34, 0);
     var stageShadow = mesh(new THREE.PlaneGeometry(19, 12), new THREE.MeshBasicMaterial({ map: shadowMap, transparent: true, opacity: 0.75, depthWrite: false }), tankGroup, 0, -1.09, 0);
     stageShadow.rotation.x = -Math.PI / 2; stageShadow.name = 'aquarium-ground-shadow'; scene.add(stageShadow);
-    var sandMaterial = material(0xe2cfac, { map: sandMap, bumpMap: sandMap, bumpScale: .045, roughness: 0.98, metalness: 0, vertexColors: true });
+    var sandMaterial = material(0xe2cfac, { map: sandMap, bumpMap: sandMap, bumpScale: .056, roughness: 0.94, metalness: 0.03, vertexColors: true });
     var substrateEdgeMaterial = sandMaterial.clone();substrateEdgeMaterial.vertexColors=false;
     mesh(new THREE.BoxGeometry(11.9, 0.3, 6.45), substrateEdgeMaterial, tankGroup, 0, -0.13, 0);
     var sandGeometry = new THREE.PlaneGeometry(11.9, 6.45, 64, 36);
@@ -12135,7 +12234,7 @@ window.StemLab = window.StemLab || {
       sandGeometry.attributes.color.needsUpdate=true;
       sandBed.userData.contactFootprints=footprints.length;sandBed.userData.shading='Static soft contact approximation; not a light or chemistry measurement.';
     }
-    var pebbleMat = material(0xa89578, { roughness: 0.96 });
+    var pebbleMat = material(0xa89578, { roughness: 0.74, metalness: 0.06 });
     for (var pebbleIndex = 0; pebbleIndex < 28; pebbleIndex++) {
       var pebble = sphere(tankGroup, pebbleMat, (noise(pebbleIndex, 2) - 0.5) * 11.4, 0.06, (noise(pebbleIndex, 4) - 0.5) * 6, 0.06 + noise(pebbleIndex, 6) * 0.07, 0.035, 0.06, 8);
       pebble.rotation.y = pebbleIndex;pebble.userData.substratePebble=true;pebble.userData.originalScale=pebble.scale.clone();
@@ -12153,7 +12252,97 @@ window.StemLab = window.StemLab || {
     tankEdges.position.y = 2.66; tankGroup.add(tankEdges);
     [-3.34, 3.34].forEach(function(z) { mesh(new THREE.BoxGeometry(12.26, 0.105, 0.115), frameMat, tankGroup, 0, 5.51, z); });
     [-6.07, 6.07].forEach(function(x) { mesh(new THREE.BoxGeometry(0.115, 0.105, 6.68), frameMat, tankGroup, x, 5.51, 0); });
-    var surfaceMaterial = new THREE.MeshPhongMaterial({ color: 0xb3ece2, transparent: true, opacity: 0.15, shininess: 160, specular: 0xffffff, side: THREE.DoubleSide, depthWrite: false });
+    var surfaceMaterial = hasShaderMaterial ? (function() {
+      var mat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: shaderBeautyTime },
+          uColor: { value: new THREE.Color(0xb3ece2) },
+          uOpacity: { value: 0.15 },
+          uAmplitude: { value: 0.025 },
+          uLightActive: { value: 1.0 },
+          uHighContrast: { value: isHighContrastActive() ? 1.0 : 0.0 }
+        },
+        vertexShader: [
+          'uniform float uTime;',
+          'uniform float uAmplitude;',
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec2 vLocalXY;',
+          'varying float vCrest;',
+          'void main() {',
+          '  vUv = uv;',
+          '  vLocalXY = position.xy;',
+          '  float t = uTime;',
+          '  float amp = max(0.008, uAmplitude);',
+          '  float g1 = sin(position.x * 1.65 + position.y * 0.95 + t * 1.45);',
+          '  float g2 = sin(position.x * -1.25 + position.y * 2.15 - t * 1.15);',
+          '  float g3 = sin((position.x * 2.85 + position.y * 2.35) + t * 2.1);',
+          '  float g4 = cos((position.x * 4.2 - position.y * 3.1) - t * 2.55);',
+          '  float microLift = (g1 * 0.42 + g2 * 0.30 + g3 * 0.18 + g4 * 0.10) * amp * 0.38;',
+          '  vec3 displaced = position + vec3(0.0, 0.0, microLift);',
+          '  vCrest = clamp((g1 * 0.45 + g2 * 0.30 + g3 * 0.25) * 0.5 + 0.5, 0.0, 1.0);',
+          '  vec4 worldPosition = modelMatrix * vec4(displaced, 1.0);',
+          '  vWorldPos = worldPosition.xyz;',
+          '  gl_Position = projectionMatrix * viewMatrix * worldPosition;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform vec3 uColor;',
+          'uniform float uOpacity;',
+          'uniform float uAmplitude;',
+          'uniform float uLightActive;',
+          'uniform float uHighContrast;',
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec2 vLocalXY;',
+          'varying float vCrest;',
+          'void main() {',
+          '  if (uHighContrast > 0.5) {',
+          '    float hcEdge = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));',
+          '    float hcLine = 1.0 - smoothstep(0.0, 0.014, hcEdge);',
+          '    gl_FragColor = vec4(uColor, hcLine * 0.28 * clamp(uOpacity * 5.0, 0.0, 1.0));',
+          '    return;',
+          '  }',
+          '  float t = uTime;',
+          '  float amp = clamp(0.45 + uAmplitude * 11.0, 0.45, 2.1);',
+          '  vec2 p = vLocalXY;',
+          '  float dHx = cos(p.x * 1.65 + p.y * 0.95 + t * 1.45) * 0.24',
+          '            - cos(p.x * -1.25 + p.y * 2.15 - t * 1.15) * 0.16',
+          '            + cos(p.x * 3.6 + p.y * 2.7 + t * 2.2) * 0.11',
+          '            + cos(p.x * 6.4 - p.y * 5.1 - t * 2.8) * 0.06;',
+          '  float dHz = cos(p.x * 1.65 + p.y * 0.95 + t * 1.45) * 0.14',
+          '            + cos(p.x * -1.25 + p.y * 2.15 - t * 1.15) * 0.24',
+          '            + cos(p.x * 2.9 - p.y * 4.2 + t * 1.95) * 0.10',
+          '            - sin(p.x * 5.3 + p.y * 6.1 - t * 3.1) * 0.05;',
+          '  vec3 N = normalize(vec3(-dHx * amp * 0.55, 1.0, -dHz * amp * 0.55));',
+          '  vec3 V = normalize(cameraPosition - vWorldPos);',
+          '  float ndv = max(abs(dot(N, V)), 0.001);',
+          '  float fresnel = pow(1.0 - ndv, 3.3);',
+          '  vec3 L1 = normalize(vec3(-0.28, 0.91, 0.30));',
+          '  vec3 L2 = normalize(vec3(0.35, 0.87, -0.24));',
+          '  vec3 H1 = normalize(L1 + V);',
+          '  vec3 H2 = normalize(L2 + V);',
+          '  float spec1 = pow(max(abs(dot(N, H1)), 0.0), 96.0);',
+          '  float spec2 = pow(max(abs(dot(N, H2)), 0.0), 42.0) * 0.45;',
+          '  float edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));',
+          '  float meniscus = (1.0 - smoothstep(0.0, 0.055, edgeDist)) * 0.55;',
+          '  vec3 deepTint = uColor * 0.78;',
+          '  vec3 scatterTint = mix(deepTint, uColor * 1.28 + vec3(0.14, 0.24, 0.22), vCrest * 0.65 + fresnel * 0.35);',
+          '  vec3 specCol = vec3(0.96, 1.0, 0.99) * (spec1 * 1.25 + spec2) * (0.25 + 0.75 * uLightActive);',
+          '  vec3 col = scatterTint + specCol + uColor * meniscus * 0.65;',
+          '  float alpha = clamp(uOpacity * (0.78 + fresnel * 1.95 + meniscus * 0.85) + (spec1 * 0.52 + spec2 * 0.25) * uLightActive * clamp(uOpacity * 7.0, 0.15, 1.0), 0.0, 0.82);',
+          '  gl_FragColor = vec4(col, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      mat.color = new THREE.Color(0xb3ece2);
+      mat.opacity = 0.15;
+      return mat;
+    })() : new THREE.MeshPhongMaterial(Object.assign({ color: 0xb3ece2, transparent: true, opacity: 0.15, shininess: 210, specular: 0xffffff, side: THREE.DoubleSide, depthWrite: false }, surfaceRippleMap ? { map: surfaceRippleMap } : {}));
     // A denser grid so the travelling ripple reads as water rather than as a
     // folding sheet. Rest positions are cached because the displacement is
     // re-derived from them every frame instead of accumulating.
@@ -12165,7 +12354,86 @@ window.StemLab = window.StemLab || {
     surface.name = 'aquarium-water-surface'; surface.userData.ignorePick = true;
     var waterline=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-5.99,5.23,-3.25),new THREE.Vector3(5.99,5.23,-3.25),new THREE.Vector3(5.99,5.23,3.25),new THREE.Vector3(-5.99,5.23,3.25)]),new THREE.LineBasicMaterial({color:0xb3d8d8,transparent:true,opacity:.18,depthWrite:false}));
     waterline.name='aquarium-waterline';waterline.userData.ignorePick=true;tankGroup.add(waterline);
-    var causticMaterial = new THREE.MeshBasicMaterial({ map: causticsMap, color: 0xcbfff0, transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending });
+    var causticMaterial = hasShaderMaterial ? (function() {
+      var mat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: shaderBeautyTime },
+          uColor: { value: new THREE.Color(0xcbfff0) },
+          uOpacity: { value: 0.2 },
+          uHighContrast: { value: isHighContrastActive() ? 1.0 : 0.0 }
+        },
+        vertexShader: [
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vUv = uv;',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform vec3 uColor;',
+          'uniform float uOpacity;',
+          'uniform float uHighContrast;',
+          'varying vec2 vUv;',
+          'vec2 hash22(vec2 p) {',
+          '  p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));',
+          '  return fract(sin(p) * 43758.5453);',
+          '}',
+          'float voronoiCaustic(vec2 uv, float t) {',
+          '  vec2 g = floor(uv);',
+          '  vec2 f = fract(uv);',
+          '  float d1 = 8.0;',
+          '  float d2 = 8.0;',
+          '  for (int y = -1; y <= 1; y++) {',
+          '    for (int x = -1; x <= 1; x++) {',
+          '      vec2 lattice = vec2(float(x), float(y));',
+          '      vec2 h = hash22(g + lattice);',
+          '      vec2 offset = 0.5 + 0.42 * sin(t * 0.85 + 6.28318 * h);',
+          '      vec2 diff = lattice + offset - f;',
+          '      float dist = length(diff);',
+          '      if (dist < d1) { d2 = d1; d1 = dist; }',
+          '      else if (dist < d2) { d2 = dist; }',
+          '    }',
+          '  }',
+          '  float edge = clamp(1.0 - (d2 - d1) * 2.15, 0.0, 1.0);',
+          '  return pow(edge, 3.6);',
+          '}',
+          'float causticField(vec2 uv, float t) {',
+          '  vec2 p1 = uv * vec2(7.6, 4.4) + vec2(t * 0.14, -t * 0.09);',
+          '  vec2 p2 = uv * vec2(11.4, 6.6) + vec2(-t * 0.11, t * 0.13);',
+          '  float v1 = voronoiCaustic(p1, t);',
+          '  float v2 = voronoiCaustic(p2 + vec2(3.7, 1.9), t * 1.15);',
+          '  float wave = 0.5 + 0.5 * sin(uv.x * 24.0 + t * 1.3 + sin(uv.y * 15.0 - t * 0.9) * 1.6);',
+          '  float dualSine = pow(wave, 5.0) * 0.32;',
+          '  return clamp(v1 * 0.82 + v2 * 0.48 + dualSine, 0.0, 1.35);',
+          '}',
+          'void main() {',
+          '  if (uHighContrast > 0.5 || uOpacity <= 0.001) {',
+          '    gl_FragColor = vec4(0.0);',
+          '    return;',
+          '  }',
+          '  float t = uTime;',
+          '  vec2 disp = vec2(0.0055, 0.0032);',
+          '  float cR = causticField(vUv + disp, t);',
+          '  float cG = causticField(vUv, t);',
+          '  float cB = causticField(vUv - disp, t);',
+          '  vec3 prism = vec3(cR * 1.05, cG * 1.02, cB * 1.12);',
+          '  vec2 centered = (vUv - 0.5) * 2.0;',
+          '  float vignette = 1.0 - smoothstep(0.62, 1.08, length(centered * vec2(0.95, 1.0)));',
+          '  float hotspot = pow(cG, 2.2) * 0.45;',
+          '  vec3 col = (uColor * prism + vec3(0.82, 0.98, 1.0) * hotspot) * vignette;',
+          '  float alpha = clamp((cG * 0.85 + hotspot * 0.5) * vignette * uOpacity * 2.1, 0.0, 0.95);',
+          '  gl_FragColor = vec4(col * alpha, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+      mat.color = new THREE.Color(0xcbfff0);
+      mat.opacity = 0.2;
+      return mat;
+    })() : new THREE.MeshBasicMaterial({ map: causticsMap, color: 0xcbfff0, transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending });
     var causticFloor = mesh(new THREE.PlaneGeometry(11.88, 6.4), causticMaterial, tankGroup, 0, 0.095, 0); causticFloor.rotation.x = -Math.PI / 2;causticFloor.name='aquarium-water-shimmer';causticFloor.userData.ignorePick=true;
     var glassGlintMaterial = new THREE.MeshBasicMaterial({ color: 0xdafffa, transparent: true, opacity: 0.13, depthWrite: false });
     [-5.8, 5.8].forEach(function(x) { var glint = mesh(new THREE.PlaneGeometry(0.05, 4.95), glassGlintMaterial, tankGroup, x, 2.7, 3.33); glint.rotation.z = -0.022; });
@@ -12181,27 +12449,28 @@ window.StemLab = window.StemLab || {
     });
     // Meniscus band: the water clings to the glass and reads brighter just
     // below the surface. Sits marginally inside the pane so it never z-fights.
-    var meniscusMaterial = new THREE.MeshBasicMaterial({ color: 0xd2fff4, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
-    var frontMeniscus = mesh(new THREE.PlaneGeometry(11.9, 0.3), meniscusMaterial, glassDetail, 0, 5.12, 3.27);
+    var meniscusMaterial = new THREE.MeshBasicMaterial(Object.assign({ color: 0xd2fff4, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }, glassRefractionMap ? { map: glassRefractionMap } : {}));
+    var frontMeniscus = mesh(new THREE.PlaneGeometry(11.9, 0.34), meniscusMaterial, glassDetail, 0, 5.12, 3.27);
     frontMeniscus.name = 'aquarium-meniscus';
     [-1, 1].forEach(function(side) {
-      var sideMeniscus = mesh(new THREE.PlaneGeometry(6.5, 0.3), meniscusMaterial, glassDetail, side * 5.96, 5.12, 0);
+      var sideMeniscus = mesh(new THREE.PlaneGeometry(6.5, 0.34), meniscusMaterial, glassDetail, side * 5.96, 5.12, 0);
       sideMeniscus.rotation.y = Math.PI / 2;
     });
-    // A soft corner return on the two front verticals, so the pane edges read
-    // as corners rather than as floating lines.
-    var glassCornerMaterial = new THREE.MeshBasicMaterial({ color: 0xdafffa, transparent: true, opacity: 0.09, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    // Soft corner return & beveled refraction highlights on the vertical glass seams.
+    var glassCornerMaterial = new THREE.MeshBasicMaterial({ color: 0xc2fcf4, transparent: true, opacity: 0.11, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
     [-1, 1].forEach(function(side) {
-      var corner = mesh(new THREE.PlaneGeometry(0.16, 5.5), glassCornerMaterial, glassDetail, side * 5.94, 2.68, 3.24);
+      var corner = mesh(new THREE.PlaneGeometry(0.18, 5.5), glassCornerMaterial, glassDetail, side * 5.94, 2.68, 3.24);
       corner.rotation.y = side * 0.5;
+      var innerRefract = mesh(new THREE.PlaneGeometry(0.08, 5.2), glassCornerMaterial, glassDetail, side * 5.84, 2.62, 3.28);
+      innerRefract.rotation.y = side * 0.22;
     });
     // --- Atmosphere layer -------------------------------------------------
-    // Depth cues for the open water: suspended motes, god rays from the lamp,
-    // a sway-ready surface mesh and a soft vignette on the rear glass. Every
-    // piece honours appearance quality, waterShimmer and the night/blue moods,
-    // and each is parented into tankGroup/environmentRoot so disposeGroup(scene)
-    // reclaims it. All are additive-blended and depthWrite:false so they never
-    // occlude a fish the learner is inspecting.
+    // Depth cues for the open water: suspended motes, rising micro-bubbles,
+    // god rays from the lamp, a sway-ready surface mesh and a soft vignette
+    // on the rear glass. Every piece honours appearance quality, waterShimmer
+    // and the night/blue moods, and each is parented into tankGroup so
+    // disposeGroup(scene) reclaims it. All are additive-blended and
+    // depthWrite:false so they never occlude a fish the learner is inspecting.
     var atmosphere = new THREE.Group(); atmosphere.name = 'aquarium-atmosphere';
     atmosphere.userData.ignorePick = true; tankGroup.add(atmosphere);
 
@@ -12210,6 +12479,7 @@ window.StemLab = window.StemLab || {
     // Allocated once at the top tier; the visible subset is chosen per tier
     // through drawRange so a quality change never rebuilds the buffer.
     function moteTierCount(quality){return quality === 'low' ? 0 : quality === 'high' ? 190 : 110;}
+    function microBubbleTierCount(quality){return quality === 'low' ? 0 : quality === 'high' ? 44 : 26;}
     var moteCount = 190;
     var motes = null, moteGeometry = null;
     if (moteCount > 0) {
@@ -12222,7 +12492,7 @@ window.StemLab = window.StemLab || {
       }
       moteGeometry = new THREE.BufferGeometry();
       moteGeometry.setAttribute('position', new THREE.Float32BufferAttribute(motePositions, 3));
-      var moteMaterial = new THREE.PointsMaterial({ color: 0xdff6ef, size: 0.052, sizeAttenuation: true, transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending });
+      var moteMaterial = new THREE.PointsMaterial(Object.assign({ color: 0xdff6ef, size: 0.068, sizeAttenuation: true, transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending }, particleOrbMap ? { map: particleOrbMap, alphaTest: 0.01 } : {}));
       motes = new THREE.Points(moteGeometry, moteMaterial);
       motes.name = 'aquarium-suspended-motes'; motes.userData.ignorePick = true;
       motes.userData.seeds = moteSeeds; motes.userData.rest = motePositions.slice(0);
@@ -12230,13 +12500,149 @@ window.StemLab = window.StemLab || {
       atmosphere.add(motes);
     }
 
-    // God rays: soft angled shafts from the hood lamp down through the water.
-    var rayMaterial = new THREE.MeshBasicMaterial({ map: texture('shaft'), color: 0xdffcf2, transparent: true, opacity: 0.05, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false });
+    // Rising ambient micro-bubbles: fine sparkling O2 micro-bubbles drifting upward
+    // through the water column, gated by quality tier & reduced-motion.
+    var microBubbleCount = 44;
+    var microBubbles = null, microBubbleGeometry = null;
+    var mbPositions = new Float32Array(microBubbleCount * 3), mbSeeds = new Float32Array(microBubbleCount);
+    for (var mb = 0; mb < microBubbleCount; mb++) {
+      mbPositions[mb * 3] = (noise(mb, 223) - 0.5) * 11.1;
+      mbPositions[mb * 3 + 1] = 0.24 + noise(mb, 227) * 4.72;
+      mbPositions[mb * 3 + 2] = (noise(mb, 229) - 0.5) * 5.8;
+      mbSeeds[mb] = noise(mb, 233);
+    }
+    microBubbleGeometry = new THREE.BufferGeometry();
+    microBubbleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(mbPositions, 3));
+    microBubbleGeometry.setAttribute('aSeed', new THREE.Float32BufferAttribute(mbSeeds, 1));
+    var microBubbleMaterial = hasShaderMaterial ? (function() {
+      var mat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: shaderBeautyTime },
+          uColor: { value: new THREE.Color(0xe6fbff) },
+          uOpacity: { value: 0.36 },
+          uPixelRatio: { value: currentPixelRatio },
+          uHighContrast: { value: isHighContrastActive() ? 1.0 : 0.0 }
+        },
+        vertexShader: [
+          'attribute float aSeed;',
+          'uniform float uTime;',
+          'uniform float uPixelRatio;',
+          'varying float vSeed;',
+          'void main() {',
+          '  vSeed = aSeed;',
+          '  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);',
+          '  float wobble = 0.88 + 0.16 * sin(uTime * 2.4 + aSeed * 18.84);',
+          '  float baseSize = (18.0 + 16.0 * aSeed) * wobble * uPixelRatio;',
+          '  gl_PointSize = clamp(baseSize / max(1.2, -mvPosition.z), 2.5, 22.0);',
+          '  gl_Position = projectionMatrix * mvPosition;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform vec3 uColor;',
+          'uniform float uOpacity;',
+          'uniform float uHighContrast;',
+          'varying float vSeed;',
+          'void main() {',
+          '  if (uHighContrast > 0.5 || uOpacity <= 0.005) discard;',
+          '  vec2 p = gl_PointCoord - 0.5;',
+          '  float r = length(p);',
+          '  if (r > 0.49) discard;',
+          '  float rim = smoothstep(0.18, 0.42, r) * (1.0 - smoothstep(0.41, 0.49, r));',
+          '  float core = (1.0 - smoothstep(0.0, 0.36, r)) * 0.28;',
+          '  float spec = pow(max(0.0, 1.0 - length(p - vec2(-0.14, -0.15)) * 4.4), 2.8);',
+          '  float phase = uTime * 1.4 + vSeed * 6.28318 + atan(p.y, p.x);',
+          '  vec3 iridescence = vec3(0.5 + 0.5 * sin(phase), 0.5 + 0.5 * sin(phase + 2.094), 0.5 + 0.5 * sin(phase + 4.188));',
+          '  vec3 col = mix(uColor, uColor * 0.72 + iridescence * 0.55, rim * 0.65) + vec3(1.0) * spec * 0.95;',
+          '  float alpha = clamp((rim * 0.92 + core + spec * 0.85) * uOpacity * 1.45, 0.0, 0.95);',
+          '  gl_FragColor = vec4(col * alpha, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+      mat.color = new THREE.Color(0xe6fbff);
+      mat.opacity = 0.36;
+      return mat;
+    })() : new THREE.PointsMaterial(Object.assign({ color: 0xe6fbff, size: 0.088, sizeAttenuation: true, transparent: true, opacity: 0.36, depthWrite: false, blending: THREE.AdditiveBlending }, particleOrbMap ? { map: particleOrbMap, alphaTest: 0.01 } : {}));
+    microBubbles = new THREE.Points(microBubbleGeometry, microBubbleMaterial);
+    microBubbles.name = 'aquarium-micro-bubbles'; microBubbles.userData.ignorePick = true;
+    microBubbles.userData.seeds = mbSeeds; microBubbles.userData.rest = mbPositions.slice(0);
+    microBubbles.geometry.setDrawRange(0, microBubbleTierCount(appearanceOptions().quality));
+    atmosphere.add(microBubbles);
+
+    // God rays: soft angled sun-caustic shafts from the hood lamp down through the water.
+    var rayMaterial = hasShaderMaterial ? (function() {
+      var mat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: shaderBeautyTime },
+          uColor: { value: new THREE.Color(0xdffcf2) },
+          uOpacity: { value: 0.05 },
+          uHighContrast: { value: isHighContrastActive() ? 1.0 : 0.0 }
+        },
+        vertexShader: [
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec3 vWorldNormal;',
+          'varying float vShaftSeed;',
+          'void main() {',
+          '  vUv = uv;',
+          '  vec4 worldPos = modelMatrix * vec4(position, 1.0);',
+          '  vWorldPos = worldPos.xyz;',
+          '  vWorldNormal = normalize(mat3(modelMatrix) * normal);',
+          '  vShaftSeed = modelMatrix[3].x * 0.73 + modelMatrix[3].z * 1.17;',
+          '  gl_Position = projectionMatrix * viewMatrix * worldPos;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform vec3 uColor;',
+          'uniform float uOpacity;',
+          'uniform float uHighContrast;',
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec3 vWorldNormal;',
+          'varying float vShaftSeed;',
+          'void main() {',
+          '  if (uHighContrast > 0.5 || uOpacity <= 0.001) {',
+          '    gl_FragColor = vec4(0.0);',
+          '    return;',
+          '  }',
+          '  float t = uTime;',
+          '  float horiz = pow(clamp(sin(vUv.x * 3.1415926), 0.0, 1.0), 1.75);',
+          '  float vertTop = 1.0 - smoothstep(0.86, 1.0, vUv.y);',
+          '  float vertBottom = smoothstep(0.0, 0.76, vUv.y);',
+          '  float depthFade = vertTop * vertBottom;',
+          '  float s1 = 0.5 + 0.5 * sin(vUv.x * 16.0 - vUv.y * 2.4 + t * 0.85 + vShaftSeed * 3.1);',
+          '  float s2 = 0.5 + 0.5 * sin(vUv.x * 29.0 + vUv.y * 1.8 - t * 1.15 - vShaftSeed * 2.3);',
+          '  float filaments = 0.48 + 0.34 * pow(s1, 1.8) + 0.28 * pow(s2, 2.2);',
+          '  float dust = 0.88 + 0.12 * sin(vUv.y * 18.0 + t * 0.9 + vShaftSeed * 4.7);',
+          '  vec3 V = normalize(cameraPosition - vWorldPos);',
+          '  float facing = pow(clamp(abs(dot(normalize(vWorldNormal), V)), 0.0, 1.0), 0.55);',
+          '  float beam = horiz * depthFade * filaments * dust * (0.28 + 0.72 * facing);',
+          '  vec3 tint = mix(uColor * 0.85, uColor * 1.18 + vec3(0.06, 0.10, 0.09), vUv.y);',
+          '  float alpha = clamp(beam * uOpacity * 1.65, 0.0, 0.65);',
+          '  gl_FragColor = vec4(tint * alpha, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        toneMapped: false
+      });
+      mat.color = new THREE.Color(0xdffcf2);
+      mat.opacity = 0.05;
+      return mat;
+    })() : new THREE.MeshBasicMaterial({ map: texture('shaft'), color: 0xdffcf2, transparent: true, opacity: 0.05, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false });
     var rayGroup = new THREE.Group(); rayGroup.name = 'aquarium-light-shafts'; rayGroup.userData.ignorePick = true;
-    for (var r = 0; r < 5; r++) {
-      var shaft = mesh(new THREE.PlaneGeometry(0.82 + noise(r, 31) * 0.72, 4.35), rayMaterial, rayGroup, (r - 2) * 2.26 + (noise(r, 37) - 0.5) * 0.7, 3.09, -1.15 + noise(r, 41) * 1.5);
-      shaft.rotation.z = 0.085 + noise(r, 47) * 0.075; shaft.rotation.y = (noise(r, 53) - 0.5) * 0.3;
+    for (var r = 0; r < 7; r++) {
+      var shaftX = (r - 3) * 1.68 + (noise(r, 37) - 0.5) * 0.58;
+      var shaft = mesh(new THREE.PlaneGeometry(0.76 + noise(r, 31) * 0.74, 4.42), rayMaterial, rayGroup, shaftX, 3.09, -1.35 + noise(r, 41) * 1.85);
+      shaft.rotation.z = 0.08 + noise(r, 47) * 0.08; shaft.rotation.y = (noise(r, 53) - 0.5) * 0.34;
       shaft.userData.baseOpacityScale = 0.7 + noise(r, 59) * 0.6; shaft.userData.phase = noise(r, 61);
+      shaft.userData.baseX = shaftX;
     }
     atmosphere.add(rayGroup);
 
@@ -12247,10 +12653,12 @@ window.StemLab = window.StemLab || {
 
     var grid = new THREE.GridHelper(11.4, 12, 0x67dbe5, 0x24576c); grid.scale.z = 6.2 / 11.4; grid.position.y = 0.12; grid.visible = false; tankGroup.add(grid);
     var bubbleRoot = new THREE.Group(); bubbleRoot.name = 'aeration-bubbles'; scene.add(bubbleRoot);
-    var bubbleMaterial = new THREE.MeshPhongMaterial({ color: 0xc9f7ff, transparent: true, opacity: 0.33, shininess: 120, specular: 0xffffff, depthWrite: false });
+    var bubbleMaterial = new THREE.MeshPhongMaterial({ color: 0xdcfbff, transparent: true, opacity: 0.44, shininess: 220, specular: 0xffffff, depthWrite: false });
     for (var bubbleIndex = 0; bubbleIndex < 14; bubbleIndex++) {
-      var bubble = sphere(bubbleRoot, bubbleMaterial, -5.05, 0.3, -2.35, 0.025 + bubbleIndex % 3 * 0.012, undefined, undefined, 8);
+      var baseBubbleScale = 0.026 + bubbleIndex % 3 * 0.013;
+      var bubble = sphere(bubbleRoot, bubbleMaterial, -5.05, 0.3, -2.35, baseBubbleScale, undefined, undefined, 8);
       bubble.userData.phase = bubbleIndex / 14;
+      bubble.userData.baseScale = baseBubbleScale;
     }
     bubbleRoot.visible = false;
 
@@ -13682,18 +14090,21 @@ window.StemLab = window.StemLab || {
       if(nextSignature!==appearanceSignature){
         appearanceSignature=nextSignature;
         var ratio=appearance.quality==='low'?1:appearance.quality==='high'?2:1.5;
-        renderer.setPixelRatio(Math.min(ratio,window.devicePixelRatio||1));renderer.setSize(canvas.clientWidth||760,canvas.clientHeight||420,false);
+        currentPixelRatio=Math.min(ratio,window.devicePixelRatio||1);
+        renderer.setPixelRatio(currentPixelRatio);renderer.setSize(canvas.clientWidth||760,canvas.clientHeight||420,false);
+        if(microBubbleMaterial&&microBubbleMaterial.uniforms&&microBubbleMaterial.uniforms.uPixelRatio)microBubbleMaterial.uniforms.uPixelRatio.value=currentPixelRatio;
         environmentRoot.userData.quality=appearance.quality;environmentRoot.userData.substrate=appearance.substrate;environmentRoot.userData.backdrop=appearance.backdrop;
         sandMaterial.color.set(appearance.substrate==='dark'?0x464e4a:appearance.substrate==='gravel'?0xaca18a:options.saltwater?0xf4dfc0:0xdfcea9).convertSRGBToLinear();
-        sandMaterial.roughness=appearance.substrate==='gravel'?.94:.98;
+        sandMaterial.roughness=appearance.substrate==='gravel'?.88:.94;
         substrateEdgeMaterial.color.copy(sandMaterial.color);substrateEdgeMaterial.roughness=sandMaterial.roughness;
         tankGroup.children.forEach(function(item){if(item.userData.substratePebble){var factor=appearance.substrate==='gravel'?2.2:appearance.substrate==='dark'?1.35:1;item.scale.copy(item.userData.originalScale).multiplyScalar(factor);}});
         pebbleMat.color.set(appearance.substrate==='dark'?0x394844:appearance.substrate==='gravel'?0x80796a:0xa89578).convertSRGBToLinear();
+        pebbleMat.roughness=appearance.substrate==='gravel'?.68:.74;
         backMaterial.map=appearance.backdrop==='black'?null:appearance.backdrop==='planted'?decorativeBackdropMap:depthMap;
         backMaterial.color.set(appearance.backdrop==='black'?0x07100f:options.saltwater?0xb2d4ef:0xc8dfd8).convertSRGBToLinear();backMaterial.needsUpdate=true;
-        // Suspended motes are the most numerous atmosphere element, so the
-        // quality tier governs how many are drawn (low draws none).
+        // Suspended motes and rising micro-bubbles scale with the quality tier (low draws none).
         if(motes){var moteTier=moteTierCount(appearance.quality);motes.geometry.setDrawRange(0,moteTier);motes.visible=moteTier>0&&motes.material.opacity>.01;}
+        if(microBubbles){var mbTier=microBubbleTierCount(appearance.quality);microBubbles.geometry.setDrawRange(0,mbTier);microBubbles.visible=mbTier>0&&microBubbles.material.opacity>.01;}
         // The low tier keeps the surface flat rather than partially rippled:
         // a partial update would strand vertices holding a finer tier's values.
         if(surfaceRipple.animated&&appearance.quality==='low'){
@@ -13774,18 +14185,28 @@ window.StemLab = window.StemLab || {
         waterMaterial.color.copy(waterTint);
         waterMaterial.opacity=(night?.045:.025)+clarityAlgae*.055+bloomCue*.085;
         environmentRoot.userData.clarityCue={algae:+clarityAlgae.toFixed(3),bloom:+bloomCue.toFixed(3)};
+        var hcFlag=isHighContrastActive()?1.0:0.0;
         surfaceMaterial.color.set(blue?0x71b8ee:0xc5f1dd);surfaceMaterial.opacity=night?.025:.075*output;waterline.material.opacity=night?.07:.18;
+        if(surfaceMaterial.uniforms){surfaceMaterial.uniforms.uColor.value.copy(surfaceMaterial.color);surfaceMaterial.uniforms.uOpacity.value=surfaceMaterial.opacity;surfaceMaterial.uniforms.uLightActive.value=night?0.15:output;surfaceMaterial.uniforms.uHighContrast.value=hcFlag;}
         causticMaterial.userData=causticMaterial.userData||{};causticMaterial.userData.baseOpacity=night?0:(blue?.11:.16)*output*appearance.waterShimmer;causticMaterial.opacity=causticMaterial.userData.baseOpacity;causticFloor.visible=causticMaterial.opacity>0;environmentRoot.userData.waterShimmer=appearance.waterShimmer;
+        if(causticMaterial.uniforms){causticMaterial.uniforms.uColor.value.set(blue?0x8cd6ff:marine?0xbef6ff:0xcbfff0);causticMaterial.uniforms.uOpacity.value=causticMaterial.opacity;causticMaterial.uniforms.uHighContrast.value=hcFlag;}
         // Atmosphere follows the same mood the water does: shafts only exist
         // while the lamp is on, motes dim at night, vignette deepens.
         var shaftBase=night?0:(blue?.15:.2)*output*appearance.waterShimmer;
         rayMaterial.color.set(blue?0x9fd8ff:marine?0xdff1ff:0xf2ffe8).convertSRGBToLinear();
         rayMaterial.userData=rayMaterial.userData||{};rayMaterial.userData.baseOpacity=shaftBase;
         rayMaterial.opacity=shaftBase;rayGroup.visible=shaftBase>0;
+        if(rayMaterial.uniforms){rayMaterial.uniforms.uColor.value.copy(rayMaterial.color);rayMaterial.uniforms.uOpacity.value=rayMaterial.opacity;rayMaterial.uniforms.uHighContrast.value=hcFlag;}
         if(motes){
           motes.material.color.set(night?0x9fb4d8:blue?0xbfe4ff:0xe6f8ee).convertSRGBToLinear();
           motes.material.opacity=(night?.14:.3)*gain*(.45+appearance.waterShimmer*.55);
           motes.visible=motes.material.opacity>.01&&motes.geometry.drawRange.count>0;
+        }
+        if(microBubbles){
+          microBubbles.material.color.set(night?0x9ab8d8:blue?0xbce8ff:0xe8fcff).convertSRGBToLinear();
+          microBubbles.material.opacity=(night?.10:.32)*gain*(.35+appearance.waterShimmer*.65);
+          microBubbles.visible=microBubbles.material.opacity>.01&&microBubbles.geometry.drawRange.count>0;
+          if(microBubbles.material.uniforms){microBubbles.material.uniforms.uColor.value.copy(microBubbles.material.color);microBubbles.material.uniforms.uOpacity.value=microBubbles.material.opacity;microBubbles.material.uniforms.uHighContrast.value=hcFlag;}
         }
         var glassLit=night?.25:.6+output*.4;
         glassEdgeMaterial.opacity=.16*glassLit;
@@ -13989,7 +14410,7 @@ window.StemLab = window.StemLab || {
             }
             tx=clamp(tx,-data.boundX,data.boundX);tz=clamp(tz,-data.boundZ,data.boundZ);ty=clamp(ty,data.minY,data.maxY);
             var ease=Math.min(1,.07+dt*3);group.position.x+=(tx-group.position.x)*ease;group.position.z+=(tz-group.position.z)*ease;group.position.y+=(ty-group.position.y)*ease;
-            if(!data.stationary){var heading=Math.atan2(-dz,dx),difference=Math.atan2(Math.sin(heading-group.rotation.y),Math.cos(heading-group.rotation.y));group.rotation.y+=difference*Math.min(1,.09+dt*3);group.rotation.z=data.bottom?0:Math.sin(angle*1.8)*.025;}
+            if(!data.stationary){var heading=Math.atan2(-dz,dx),difference=Math.atan2(Math.sin(heading-group.rotation.y),Math.cos(heading-group.rotation.y));group.rotation.y+=difference*Math.min(1,.09+dt*3);group.rotation.z=data.bottom?0:clamp(Math.sin(angle*1.8)*.026-difference*.11,-.12,.12);}
             var residentShadowMesh=data.residentShadow;
             if(residentShadowMesh){
               var sandTop=.093*sizeY();
@@ -14017,7 +14438,7 @@ window.StemLab = window.StemLab || {
             var clampCue=clamp((data.stress||0)/100,0,1)*.62+(data.health===null?0:clamp((55-data.health)/55,0,1))*.5;
             var finSpread=clamp(1-clampCue,.22,1);
             data.finClampCue=+clampCue.toFixed(3);
-            if(data.tail)data.tail.rotation.y=Math.sin(motionTime*(data.speed*18+3)+data.phase)*(data.shape==='pufferfish'?.075:data.shape==='betta'?.10:data.shape==='angelfish'?.13:data.shape==='tang'?.15:data.shape==='clownfish'?.14:.16+data.activityHealth*.0009)*clamp(1-(data.finClampCue||0)*.55,.35,1);
+            if(data.tail){var tailPhase=motionTime*(data.speed*18+3)+data.phase;var tailWave=Math.sin(tailPhase)*.86+Math.sin(tailPhase*2.0+.55)*.14;data.tail.rotation.y=tailWave*(data.shape==='pufferfish'?.075:data.shape==='betta'?.10:data.shape==='angelfish'?.13:data.shape==='tang'?.15:data.shape==='clownfish'?.14:.16+data.activityHealth*.0009)*clamp(1-(data.finClampCue||0)*.55,.35,1);}
             if(group.bettaMembranes)group.bettaMembranes.forEach(function(tissue,index){
               var geometry=tissue.mesh.geometry,positions=geometry.attributes.position;
               for(var v=0;v<positions.count;v++){var x=tissue.rest[v*3],y=tissue.rest[v*3+1],wave=Math.sin(motionTime*3.3+data.phase+index*.8-x*5+y*3)*.75+Math.sin(motionTime*5.2+data.phase+x*10)*.25;positions.setZ(v,tissue.rest[v*3+2]+.026*tissue.weights[v]*wave);}
@@ -14043,13 +14464,18 @@ window.StemLab = window.StemLab || {
             if(!rig){group.rotation.z=(group.userData.baseRotation||0)+Math.sin(motionTime*.7+phase)*sway;return;}
             // Keep the group upright and bend the geometry instead, so the
             // base stays planted in the substrate rather than tipping with it.
+            // Travelling phase along the frond weight gives submerged leaves a silk-like current ripple.
             group.rotation.z=group.userData.baseRotation||0;
-            var lean=Math.sin(motionTime*.7+phase)*sway*rig.span*1.35;
-            var cross=Math.cos(motionTime*.52+phase*1.3)*sway*rig.span*.75;
+            var leanAmp=sway*rig.span*1.35;
+            var crossAmp=sway*rig.span*.75;
             rig.entries.forEach(function(entry){
               var position=entry.position,rest=entry.rest,weights=entry.weights;
               for(var i=0;i<position.count;i++){
                 var weight=weights[i];
+                if(weight<=0){position.setX(i,rest[i*3]);position.setZ(i,rest[i*3+2]);continue;}
+                var frondPhase=motionTime*.72+phase-weight*1.25;
+                var lean=Math.sin(frondPhase)*leanAmp+Math.sin(frondPhase*1.9+.6)*leanAmp*.16;
+                var cross=Math.cos(frondPhase*.74+phase*.85)*crossAmp;
                 position.setX(i,rest[i*3]+lean*weight);
                 position.setZ(i,rest[i*3+2]+cross*weight);
               }
@@ -14065,7 +14491,9 @@ window.StemLab = window.StemLab || {
               node.scale.setScalar(node.userData.statusRestScale*beat);
             });
           });
-          if(causticsMap){causticsMap.offset.set(Math.sin(motionTime*.08)*.06,motionTime*.006%1);causticMaterial.opacity=(causticMaterial.userData.baseOpacity||0)*(1+Math.sin(motionTime*.45)*.12);}
+          if(causticsMap){causticsMap.offset.set(Math.sin(motionTime*.08)*.06,motionTime*.006%1);}
+          causticMaterial.opacity=(causticMaterial.userData.baseOpacity||0)*(1+Math.sin(motionTime*.45)*.12);
+          if(surfaceRippleMap){surfaceRippleMap.offset.set((motionTime*.024)%1,(Math.sin(motionTime*.18)*.05+motionTime*.012)%1);}
           surface.rotation.z=Math.sin(motionTime*.35)*.0015;
           // Surface chop: two crossing wave trains plus a finer chop, scaled by
           // how much the filter and airstone are actually disturbing the water.
@@ -14096,18 +14524,58 @@ window.StemLab = window.StemLab || {
             }
             moteAttr.needsUpdate=true;
           }
-          // Shafts breathe independently so the light never looks stamped on.
+          // Rising ambient micro-bubbles sparkle gently upward inside the water column.
+          if(microBubbles&&microBubbles.visible){
+            var mbFlow=equipmentState('aerator'),mbSpeed=.12+(mbFlow.installed&&mbFlow.on?mbFlow.intensity*.14:0);
+            var mbAttr=microBubbleGeometry.attributes.position,mbRest=microBubbles.userData.rest,mbSeeds=microBubbles.userData.seeds;
+            var mbDrawn=Math.min(mbSeeds.length,microBubbleGeometry.drawRange.count===Infinity?mbSeeds.length:microBubbleGeometry.drawRange.count);
+            for(var bi=0;bi<mbDrawn;bi++){
+              var bs=mbSeeds[bi],brx=mbRest[bi*3],bry=mbRest[bi*3+1],brz=mbRest[bi*3+2];
+              var brise=(motionTime*(mbSpeed+bs*.09)+bs)%1;
+              mbAttr.setXYZ(bi,
+                clamp(brx+Math.sin(motionTime*(1.1+bs*.9)+bs*9.4)*.14,-5.66,5.66),
+                .24+((bry-.24)/4.72+brise)%1*4.72,
+                clamp(brz+Math.cos(motionTime*(.95+bs*.7)+bs*7.2)*.10,-3.02,3.02));
+            }
+            mbAttr.needsUpdate=true;
+          }
+          // Shafts breathe and sway independently so the caustic light never looks stamped on.
           if(rayGroup.visible){
             var shaftBaseOpacity=(rayMaterial.userData&&rayMaterial.userData.baseOpacity)||0;
             rayGroup.children.forEach(function(shaft){
-              shaft.rotation.z=shaft.userData.baseTilt===undefined?(shaft.userData.baseTilt=shaft.rotation.z):shaft.userData.baseTilt+Math.sin(motionTime*.22+shaft.userData.phase*6.3)*.012;
+              shaft.rotation.z=shaft.userData.baseTilt===undefined?(shaft.userData.baseTilt=shaft.rotation.z):shaft.userData.baseTilt+Math.sin(motionTime*.24+shaft.userData.phase*6.3)*.018;
+              if(shaft.userData.baseX!==undefined){
+                shaft.position.x=shaft.userData.baseX+Math.sin(motionTime*.19+shaft.userData.phase*5.1)*.14;
+              }
             });
-            rayMaterial.opacity=shaftBaseOpacity*(1+Math.sin(motionTime*.38)*.16);
+            rayMaterial.opacity=shaftBaseOpacity*(1+Math.sin(motionTime*.38)*.18);
           }
-          if(bubbleRoot.visible)bubbleRoot.children.forEach(function(bubble){var phase=(motionTime*(.09+bubbleRoot.userData.effectiveOutput*.07)+bubble.userData.phase)%1;bubble.position.set(-tankSize.width/2+.95+Math.sin(phase*12+bubble.userData.phase)*.07,.22+phase*(waterTop()-.25),-tankSize.depth/2+.85+Math.cos(phase*8)*.035);});
+          if(bubbleRoot.visible)bubbleRoot.children.forEach(function(bubble){var phase=(motionTime*(.09+bubbleRoot.userData.effectiveOutput*.07)+bubble.userData.phase)%1;bubble.position.set(-tankSize.width/2+.95+Math.sin(phase*13+bubble.userData.phase*6.2)*.085,.22+phase*(waterTop()-.25),-tankSize.depth/2+.85+Math.cos(phase*9+bubble.userData.phase*4.1)*.045);if(bubble.userData.baseScale){var expand=bubble.userData.baseScale*(1+phase*.28);bubble.scale.set(expand,expand*(1+Math.sin(phase*16)*.06),expand);}});
           if(foodActive)foodRoot.children.forEach(function(particle){var seed=particle.userData.seed,y=foodRoot.userData.sinking?Math.max(.16,waterTop()-.2-feedingAge*(.45+seed%3*.08)):Math.max(waterTop()-1.3,waterTop()-.2-feedingAge*.105);particle.position.set(foodRoot.userData.feedX+particle.userData.offsetX+Math.sin(feedingAge*.5+seed)*.09,y-(seed%3)*.045,foodRoot.userData.feedZ+particle.userData.offsetZ);particle.rotation.set(feedingAge*.28,seed,Math.sin(feedingAge+seed)*.3);particle.visible=feedingAge<7+seed%4;});
           else if(foodRoot.visible){foodRoot.visible=false;creatureRoot.children.forEach(function(group){group.userData.foodInterest=0;});}
           overlayRoot.children.forEach(function(item){var data=item.userData;if(data&&data.isInteractionPulse){var progress=(motionTime*.22+data.phase)%1;if(data.bidirectional)progress=progress<.5?progress*2:(1-progress)*2;item.position.lerpVectors(data.startPoint,data.endPoint,progress);}});
+        }
+        var shaderTime=shaderBeautyTime+motionTime,hcNow=isHighContrastActive()?1.0:0.0;
+        if(surfaceMaterial.uniforms){
+          surfaceMaterial.uniforms.uTime.value=shaderTime;
+          surfaceMaterial.uniforms.uAmplitude.value=surfaceRipple.animated?Math.max(0.014,surfaceRipple.amplitude):0.008;
+          surfaceMaterial.uniforms.uOpacity.value=surfaceMaterial.opacity;
+          surfaceMaterial.uniforms.uHighContrast.value=hcNow;
+        }
+        if(causticMaterial.uniforms){
+          causticMaterial.uniforms.uTime.value=shaderTime;
+          causticMaterial.uniforms.uOpacity.value=causticMaterial.opacity;
+          causticMaterial.uniforms.uHighContrast.value=hcNow;
+        }
+        if(rayMaterial.uniforms){
+          rayMaterial.uniforms.uTime.value=shaderTime;
+          rayMaterial.uniforms.uOpacity.value=rayMaterial.opacity;
+          rayMaterial.uniforms.uHighContrast.value=hcNow;
+        }
+        if(microBubbles&&microBubbles.material&&microBubbles.material.uniforms){
+          microBubbles.material.uniforms.uTime.value=shaderTime;
+          microBubbles.material.uniforms.uOpacity.value=microBubbles.material.opacity;
+          microBubbles.material.uniforms.uHighContrast.value=hcNow;
         }
         syncFocusedCamera(false);needsRender=false;if(controls)controls.update();renderer.render(scene,camera);lastRender=now;
       }

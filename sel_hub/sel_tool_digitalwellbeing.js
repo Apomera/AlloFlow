@@ -4227,16 +4227,32 @@ var EDUCATOR_GUIDES_DIGITAL = [
           ),
           h('div', { role: 'tablist', 'aria-label': 'Digital Wellbeing sections',
                      style: { display: 'flex', flexWrap: 'wrap', gap: 6, borderBottom: '2px solid ' + ACCENT_MED, paddingBottom: 8 } },
-            tabs.map(function(t) {
+            tabs.map(function(t, idx) {
               var active = activeTab === t.id;
               return h('button', {
                 key: t.id,
                 role: 'tab',
+                tabIndex: active ? 0 : -1,
                 'aria-selected': active ? 'true' : 'false',
                 'aria-controls': 'dw-panel-' + t.id,
                 id: 'dw-tab-' + t.id,
                 className: active ? 'dw-tab-active' : '',
                 onClick: function() { upd('activeTab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
+                onKeyDown: function(e) {
+                  var nextIdx = -1;
+                  if (e.key === 'ArrowRight') nextIdx = (idx + 1) % tabs.length;
+                  else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                  else if (e.key === 'Home') nextIdx = 0;
+                  else if (e.key === 'End') nextIdx = tabs.length - 1;
+                  if (nextIdx >= 0) {
+                    e.preventDefault();
+                    var nt = tabs[nextIdx];
+                    upd('activeTab', nt.id);
+                    if (announceToSR) announceToSR(nt.label + ' tab selected');
+                    var el = document.getElementById('dw-tab-' + nt.id);
+                    if (el && el.focus) el.focus();
+                  }
+                },
                 style: {
                   padding: '10px 16px',
                   borderRadius: '10px 10px 0 0',
@@ -4413,7 +4429,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
               }, 'Go to full Toolkit →'),
               h('button', {
                 onClick: function() { openCounselorPacket(result, rows, picks); },
-                style: { padding: '10px 16px', background: _dwC('#0e7490'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '10px 16px', background: _dwCHC ? '#000000' : '#0e7490', color: _dwCHC ? '#ffff00' : '#fff', border: _dwCHC ? '2px solid #ffff00' : 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
               }, '🖨️ Print / share packet'),
               h('button', {
                 onClick: function() {
@@ -4599,8 +4615,10 @@ var EDUCATOR_GUIDES_DIGITAL = [
                   disabled: totalAnswered < SELF_CHECK_QUESTIONS.length,
                   style: {
                     padding: '10px 14px',
-                    background: totalAnswered < SELF_CHECK_QUESTIONS.length ? _dwC('#94a3b8') : '#10b981',
-                    color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                    background: totalAnswered < SELF_CHECK_QUESTIONS.length ? (_dwCHC ? '#000000' : '#64748b') : '#047857',
+                    color: (totalAnswered < SELF_CHECK_QUESTIONS.length && _dwCHC) ? '#ffff00' : '#fff',
+                    border: (totalAnswered < SELF_CHECK_QUESTIONS.length && _dwCHC) ? '1px solid #ffff00' : 'none',
+                    borderRadius: 8, fontWeight: 700,
                     cursor: totalAnswered < SELF_CHECK_QUESTIONS.length ? 'not-allowed' : 'pointer'
                   }
                 }, 'See my result →')
@@ -4624,6 +4642,9 @@ var EDUCATOR_GUIDES_DIGITAL = [
             ? window.SelHub.safeRehearseCheck(rfInput, { toolId: 'digitalwellbeing', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
             : { action: 'continue' };
           if (rfSafety.action === 'block') {
+            if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+              window.SelHub.showCrisisModal({ toolName: 'Digital Wellbeing Studio', contentSnippet: rfInput.slice(0, 120) });
+            }
             upd({ rfLoading: false, rfReply: window.SelHub.rehearseBreakCharacterText(rfSafety.severity), _lastTier: 3 });
             return;
           }
@@ -4687,8 +4708,10 @@ var EDUCATOR_GUIDES_DIGITAL = [
                 'aria-busy': rfLoading ? 'true' : 'false',
                 style: {
                   padding: '8px 14px',
-                  background: (rfLoading || !rfInput.trim() || !_dwAiOn) ? _dwC('#94a3b8') : '#db2777',
-                  color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700,
+                  background: (rfLoading || !rfInput.trim() || !_dwAiOn) ? (_dwCHC ? '#000000' : '#64748b') : '#db2777',
+                  color: ((rfLoading || !rfInput.trim() || !_dwAiOn) && _dwCHC) ? '#ffff00' : '#fff',
+                  border: ((rfLoading || !rfInput.trim() || !_dwAiOn) && _dwCHC) ? '1px solid #ffff00' : 'none',
+                  borderRadius: 6, fontWeight: 700,
                   cursor: (rfLoading || !rfInput.trim() || !_dwAiOn) ? 'not-allowed' : 'pointer',
                   fontSize: 13
                 }
@@ -4822,7 +4845,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
               h('strong', { style: { color: _dwC('#1e40af'), fontSize: 15 } }, fmtHr(sleepStop))),
             h('input', {
               id: 'dw-sleep-stop',
-              type: 'range', min: 18, max: 26, step: 0.25, value: sleepStop,
+              type: 'range', min: 18, max: 26, step: 0.25, value: sleepStop < 18 ? sleepStop + 24 : sleepStop,
               onChange: function(e) {
                 var v = parseFloat(e.target.value);
                 if (v >= 24) v -= 24;
@@ -4872,12 +4895,12 @@ var EDUCATOR_GUIDES_DIGITAL = [
                 position: 'absolute', left: leftPct + '%', width: widthPct + '%',
                 top: 2, bottom: 2,
                 background: _dwCHC ? '#000000' : color,
-                border: '2px solid #fff',
+                border: _dwCHC ? '2px solid #ffff00' : '2px solid #fff',
                 borderRadius: 5,
                 boxShadow: '0 0 0 1px ' + color + ', 0 2px 6px rgba(15, 23, 42, 0.30)',
                 transition: 'all 0.3s ease',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#0f172a', fontWeight: 700, fontSize: 11, lineHeight: 1
+                color: _dwCHC ? '#ffff00' : '#0f172a', fontWeight: 700, fontSize: 11, lineHeight: 1
               } }, widthPct > 14 ? '💤 sleep' : '💤');
             })()
           ),
@@ -4909,7 +4932,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
                 h('div', { style: { fontSize: 12, color: _dwC('#475569'), marginTop: 2 } }, 'It is 1 AM and you just looked up — start the 4-minute reset.')),
               h('button', {
                 onClick: function() { upd({ dsActive: true, dsStep: 0, dsDone: {} }); if (announceToSR) announceToSR('Reset routine started'); },
-                style: { padding: '8px 14px', background: _dwCDark ? '#b91c1c' : _dwC('#dc2626'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                style: { padding: '8px 14px', background: _dwCHC ? '#000000' : (_dwCDark ? '#b91c1c' : '#dc2626'), color: _dwCHC ? '#ffff00' : '#fff', border: _dwCHC ? '2px solid #ffff00' : 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
               }, 'Start reset')
             )
           );
@@ -4980,14 +5003,14 @@ var EDUCATOR_GUIDES_DIGITAL = [
                     if (dsStep < DOOMSCROLL_RESET.length - 1) u.dsStep = dsStep + 1;
                     upd(u);
                   },
-                  style: { padding: '8px 14px', background: _dwCDark ? '#b91c1c' : _dwC('#dc2626'), color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                  style: { padding: '8px 14px', background: _dwCHC ? '#000000' : (_dwCDark ? '#b91c1c' : '#dc2626'), color: _dwCHC ? '#ffff00' : '#fff', border: _dwCHC ? '2px solid #ffff00' : 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                 }, dsStep < DOOMSCROLL_RESET.length - 1 ? 'Done — next →' : 'Done — finish')
               : h('button', {
                   onClick: function() {
                     if (dsStep < DOOMSCROLL_RESET.length - 1) upd('dsStep', dsStep + 1);
                   },
                   disabled: dsStep >= DOOMSCROLL_RESET.length - 1,
-                  style: { padding: '8px 14px', background: _dwCHC ? _dwC('#94a3b8') : '#475569', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                  style: { padding: '8px 14px', background: _dwCHC ? '#000000' : '#475569', color: _dwCHC ? '#ffff00' : '#fff', border: _dwCHC ? '1px solid #ffff00' : 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
                 }, 'Next →')
           )
         );
@@ -5296,8 +5319,10 @@ var EDUCATOR_GUIDES_DIGITAL = [
                 },
                 style: {
                   padding: '8px 14px',
-                  background: cbChoice == null ? _dwC('#94a3b8') : ACCENT_BUTTON,
-                  color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                  background: cbChoice == null ? (_dwCHC ? '#000000' : '#64748b') : ACCENT_BUTTON,
+                  color: (cbChoice == null && _dwCHC) ? '#ffff00' : '#fff',
+                  border: (cbChoice == null && _dwCHC) ? '1px solid #ffff00' : 'none',
+                  borderRadius: 8, fontWeight: 700,
                   cursor: cbChoice == null ? 'not-allowed' : 'pointer'
                 }
               }, cbScenIdx < CB_SCENARIOS.length - 1 ? 'Lock in answer →' : 'Finish scenarios')
@@ -5601,8 +5626,10 @@ var EDUCATOR_GUIDES_DIGITAL = [
                   },
                   style: {
                     padding: '8px 14px',
-                    background: anyPicked ? '#f59e0b' : _dwC('#94a3b8'),
-                    color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                    background: anyPicked ? '#b45309' : (_dwCHC ? '#000000' : '#64748b'),
+                    color: (!anyPicked && _dwCHC) ? '#ffff00' : '#fff',
+                    border: (!anyPicked && _dwCHC) ? '1px solid #ffff00' : 'none',
+                    borderRadius: 8, fontWeight: 700,
                     cursor: anyPicked ? 'pointer' : 'not-allowed', fontSize: 13
                   }
                 }, 'Check my answer')
@@ -5844,11 +5871,26 @@ var EDUCATOR_GUIDES_DIGITAL = [
         return h('div', { id: 'dw-panel-aicompanion', role: 'tabpanel', 'aria-labelledby': 'dw-tab-aicompanion' },
           h('div', { role: 'tablist', 'aria-label': 'AI Companions sections',
             style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) {
+            sections.map(function(s, idx) {
               var active = aicSection === s.id;
               return h('button', {
-                key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                key: s.id, id: 'dw-aic-tab-' + s.id, role: 'tab', tabIndex: active ? 0 : -1, 'aria-selected': active ? 'true' : 'false',
                 onClick: function() { upd('aicSection', s.id); if (announceToSR) announceToSR(s.label + ' opened'); },
+                onKeyDown: function(e) {
+                  var nextIdx = -1;
+                  if (e.key === 'ArrowRight') nextIdx = (idx + 1) % sections.length;
+                  else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + sections.length) % sections.length;
+                  else if (e.key === 'Home') nextIdx = 0;
+                  else if (e.key === 'End') nextIdx = sections.length - 1;
+                  if (nextIdx >= 0) {
+                    e.preventDefault();
+                    var ns = sections[nextIdx];
+                    upd('aicSection', ns.id);
+                    if (announceToSR) announceToSR(ns.label + ' opened');
+                    var el = document.getElementById('dw-aic-tab-' + ns.id);
+                    if (el && el.focus) el.focus();
+                  }
+                },
                 style: {
                   padding: '6px 12px',
                   background: active ? '#7c3aed' : _dwC('#fff'),
@@ -6012,8 +6054,10 @@ var EDUCATOR_GUIDES_DIGITAL = [
                   disabled: totalAnswered < AI_CHECKIN_QUESTIONS.length,
                   style: {
                     padding: '10px 14px',
-                    background: totalAnswered < AI_CHECKIN_QUESTIONS.length ? _dwC('#94a3b8') : '#10b981',
-                    color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                    background: totalAnswered < AI_CHECKIN_QUESTIONS.length ? (_dwCHC ? '#000000' : '#64748b') : '#047857',
+                    color: (totalAnswered < AI_CHECKIN_QUESTIONS.length && _dwCHC) ? '#ffff00' : '#fff',
+                    border: (totalAnswered < AI_CHECKIN_QUESTIONS.length && _dwCHC) ? '1px solid #ffff00' : 'none',
+                    borderRadius: 8, fontWeight: 700,
                     cursor: totalAnswered < AI_CHECKIN_QUESTIONS.length ? 'not-allowed' : 'pointer'
                   }
                 }, 'See my result →')
@@ -6075,7 +6119,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
             h('div', { style: { fontSize: 12, color: _dwC('#991b1b'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 } },
               'Example ' + (aicSycIdx + 1) + ' of ' + AI_SYCOPHANCY_EXAMPLES.length),
             // Chat thread
-            h('div', { 'aria-label': 'Chat message thread example', style: {
+            h('div', { role: 'group', 'aria-label': 'Chat message thread example', style: {
               background: _dwC('#fff'), borderRadius: 12, padding: 14,
               boxShadow: 'inset 0 0 0 1px #e2e8f0',
               display: 'flex', flexDirection: 'column', gap: 10
@@ -6370,11 +6414,26 @@ var EDUCATOR_GUIDES_DIGITAL = [
           h('p', { style: { fontSize: 13, color: _dwC('#475569'), marginBottom: 12, lineHeight: 1.55 } },
             'A reference layer for the rest of the tool — quick definitions, where the research came from, and a separate page for parents, teachers, and counselors who want to use what is here.'),
           h('div', { role: 'tablist', 'aria-label': 'Reference sections', style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
-            sections.map(function(s) {
+            sections.map(function(s, idx) {
               var active = refSection === s.id;
               return h('button', {
-                key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                key: s.id, id: 'dw-ref-tab-' + s.id, role: 'tab', tabIndex: active ? 0 : -1, 'aria-selected': active ? 'true' : 'false',
                 onClick: function() { upd({ refSection: s.id, refExpanded: null }); if (announceToSR) announceToSR(s.label + ' opened'); },
+                onKeyDown: function(e) {
+                  var nextIdx = -1;
+                  if (e.key === 'ArrowRight') nextIdx = (idx + 1) % sections.length;
+                  else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + sections.length) % sections.length;
+                  else if (e.key === 'Home') nextIdx = 0;
+                  else if (e.key === 'End') nextIdx = sections.length - 1;
+                  if (nextIdx >= 0) {
+                    e.preventDefault();
+                    var ns = sections[nextIdx];
+                    upd({ refSection: ns.id, refExpanded: null });
+                    if (announceToSR) announceToSR(ns.label + ' opened');
+                    var el = document.getElementById('dw-ref-tab-' + ns.id);
+                    if (el && el.focus) el.focus();
+                  }
+                },
                 style: {
                   padding: '6px 12px',
                   background: active ? ACCENT_BUTTON : _dwC('#fff'),

@@ -1486,6 +1486,466 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       modelFill.name = 'fr-model-fill';
       api.scene.add(modelFill);
     }
+    var frSceneFx = null;
+    if (!api.contrast) {
+      var envGroup = new THREE.Group();
+      envGroup.name = 'fr-scene-atmosphere';
+      // Atmospheric twilight/night emergency dome (vertex-colored, zero extra textures)
+      var skyGeo = new THREE.SphereGeometry(16, 24, 14, 0, Math.PI * 2, 0, Math.PI * 0.56);
+      var skyPos = skyGeo.attributes.position;
+      var skyColors = new Float32Array(skyPos.count * 3);
+      var horizonCol = new THREE.Color(api.dark ? 0x1e293b : 0xbcd4ea);
+      var zenithCol = new THREE.Color(api.dark ? 0x050914 : 0x7aa2cc);
+      var mixSky = new THREE.Color();
+      for (var si = 0; si < skyPos.count; si++) {
+        var hFrac = Math.max(0, Math.min(1, skyPos.getY(si) / 14));
+        mixSky.copy(horizonCol).lerp(zenithCol, Math.pow(hFrac, 0.72));
+        skyColors[si * 3] = mixSky.r; skyColors[si * 3 + 1] = mixSky.g; skyColors[si * 3 + 2] = mixSky.b;
+      }
+      skyGeo.setAttribute('color', new THREE.BufferAttribute(skyColors, 3));
+      var skyDome = new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({
+        vertexColors: true, side: THREE.BackSide, depthWrite: false, fog: false
+      }));
+      skyDome.name = 'fr-scene-sky-dome';
+      skyDome.position.y = -0.35;
+      skyDome.renderOrder = -2;
+      envGroup.add(skyDome);
+
+      var hasShaderMat = typeof THREE.ShaderMaterial === 'function';
+      var fbmChunk = [
+        'float frHash(vec2 p) {',
+        '  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);',
+        '}',
+        'float frNoise(vec2 p) {',
+        '  vec2 i = floor(p);',
+        '  vec2 f = fract(p);',
+        '  vec2 u = f * f * (3.0 - 2.0 * f);',
+        '  float a = frHash(i);',
+        '  float b = frHash(i + vec2(1.0, 0.0));',
+        '  float c = frHash(i + vec2(0.0, 1.0));',
+        '  float d = frHash(i + vec2(1.0, 1.0));',
+        '  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);',
+        '}',
+        'float frFbm(vec2 p) {',
+        '  float v = 0.0;',
+        '  float a = 0.52;',
+        '  for (int i = 0; i < 3; i++) {',
+        '    v += a * frNoise(p);',
+        '    p = p * 2.04 + vec2(1.7, 9.2);',
+        '    a *= 0.5;',
+        '  }',
+        '  return v;',
+        '}'
+      ].join('\n');
+
+      // Animated GLSL radial hazard & triage perimeter pulse rings framing the training mat
+      var ringUniforms = [];
+      function makePerimeterRingMat(hex, innerR, outerR, dashCount, dirSign, baseOp) {
+        if (!hasShaderMat) {
+          return new THREE.MeshBasicMaterial({
+            color: hex, transparent: true, opacity: baseOp,
+            side: THREE.DoubleSide, depthWrite: false,
+            blending: api.dark ? THREE.AdditiveBlending : THREE.NormalBlending
+          });
+        }
+        var u = {
+          uTime: { value: 2.4 },
+          uColor: { value: new THREE.Color(hex) },
+          uOpacity: { value: baseOp },
+          uInnerR: { value: innerR },
+          uOuterR: { value: outerR },
+          uDashes: { value: dashCount },
+          uDir: { value: dirSign }
+        };
+        ringUniforms.push(u);
+        return new THREE.ShaderMaterial({
+          uniforms: u,
+          vertexShader: [
+            'varying vec2 vRingPos;',
+            'void main() {',
+            '  vRingPos = position.xy;',
+            '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform vec3 uColor;',
+            'uniform float uOpacity;',
+            'uniform float uInnerR;',
+            'uniform float uOuterR;',
+            'uniform float uDashes;',
+            'uniform float uDir;',
+            'varying vec2 vRingPos;',
+            'void main() {',
+            '  float r = length(vRingPos);',
+            '  float rn = clamp((r - uInnerR) / max(0.001, uOuterR - uInnerR), 0.0, 1.0);',
+            '  float ang = atan(vRingPos.y, vRingPos.x);',
+            '  float coreLine = exp(-pow((rn - 0.5) * 6.0, 2.0));',
+            '  float softHalo = sin(rn * 3.1415926);',
+            '  float dash = 0.55 + 0.45 * smoothstep(-0.15, 0.35, sin(ang * uDashes + uTime * 0.72 * uDir));',
+            '  float sweep = 0.72 + 0.28 * sin(ang * 2.0 - uTime * 1.1 * uDir);',
+            '  float radWave = exp(-pow((rn - fract(uTime * 0.38)) * 5.2, 2.0)) * softHalo;',
+            '  float mask = (coreLine * dash * 0.92 + softHalo * 0.24 + radWave * 0.55) * sweep;',
+            '  vec3 col = mix(uColor, vec3(1.0, 0.98, 0.92), coreLine * 0.32 + radWave * 0.28);',
+            '  float alpha = clamp(mask * uOpacity, 0.0, 0.88);',
+            '  if (alpha < 0.008) discard;',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          blending: api.dark ? THREE.AdditiveBlending : THREE.NormalBlending
+        });
+      }
+
+      var hazardRingMat = makePerimeterRingMat(0xf59e0b, 2.50, 2.86, 20.0, 1.0, api.dark ? 0.56 : 0.38);
+      var hazardRing = new THREE.Mesh(new THREE.RingGeometry(2.50, 2.86, 72), hazardRingMat);
+      hazardRing.name = 'fr-hazard-perimeter-ring';
+      hazardRing.rotation.x = -Math.PI / 2;
+      hazardRing.position.set(0, -0.008, -0.36);
+      envGroup.add(hazardRing);
+
+      var triageRingMat = makePerimeterRingMat(0x38bdf8, 2.22, 2.50, 12.0, -1.0, api.dark ? 0.44 : 0.28);
+      var triageRing = new THREE.Mesh(new THREE.RingGeometry(2.22, 2.50, 72), triageRingMat);
+      triageRing.name = 'fr-triage-zone-ring';
+      triageRing.rotation.x = -Math.PI / 2;
+      triageRing.position.set(0, -0.007, -0.36);
+      envGroup.add(triageRing);
+
+      // Volumetric GLSL alternating red/blue EMS beacon cones & Fresnel floor-reflection sweeps (sub-3Hz safe)
+      var beaconRedLight = null, beaconBlueLight = null;
+      if (typeof THREE.PointLight === 'function') {
+        beaconRedLight = new THREE.PointLight(0xef4444, api.dark ? 0.46 : 0.20, 12, 2);
+        beaconRedLight.name = 'fr-beacon-red-light';
+        beaconRedLight.position.set(-4.0, 2.4, -3.2);
+        envGroup.add(beaconRedLight);
+        beaconBlueLight = new THREE.PointLight(0x3b82f6, api.dark ? 0.46 : 0.20, 12, 2);
+        beaconBlueLight.name = 'fr-beacon-blue-light';
+        beaconBlueLight.position.set(4.0, 2.4, -3.2);
+        envGroup.add(beaconBlueLight);
+      }
+
+      function makeBeaconConeMat(hex, phase) {
+        if (!hasShaderMat) {
+          return new THREE.MeshBasicMaterial({
+            color: hex, transparent: true, opacity: api.dark ? 0.11 : 0.05,
+            side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
+          });
+        }
+        return new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 2.4 },
+            uIntensity: { value: api.dark ? 0.24 : 0.11 },
+            uColor: { value: new THREE.Color(hex) },
+            uPhase: { value: phase }
+          },
+          vertexShader: [
+            'varying vec2 vUv;',
+            'varying vec3 vNormView;',
+            'varying vec3 vViewPos;',
+            'void main() {',
+            '  vUv = uv;',
+            '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+            '  vNormView = normalize(normalMatrix * normal);',
+            '  vViewPos = -mv.xyz;',
+            '  gl_Position = projectionMatrix * mv;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uIntensity;',
+            'uniform vec3 uColor;',
+            'uniform float uPhase;',
+            'varying vec2 vUv;',
+            'varying vec3 vNormView;',
+            'varying vec3 vViewPos;',
+            'void main() {',
+            '  float fresnel = pow(clamp(abs(dot(normalize(vNormView), normalize(vViewPos))), 0.0, 1.0), 1.55);',
+            '  float axial = smoothstep(0.0, 0.30, vUv.y) * smoothstep(1.0, 0.84, vUv.y) * pow(max(0.0, vUv.y), 0.85);',
+            '  float rays = 0.80 + 0.20 * sin(vUv.x * 18.849556 + uTime * 0.85 + uPhase);',
+            '  float mist = 0.86 + 0.14 * sin(vUv.y * 12.0 - uTime * 1.1 + uPhase * 2.0);',
+            '  vec3 col = mix(uColor, vec3(1.0, 0.96, 0.98), pow(vUv.y, 2.2) * 0.35);',
+            '  float alpha = clamp(fresnel * axial * rays * mist * uIntensity, 0.0, 0.65);',
+            '  if (alpha < 0.005) discard;',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending
+        });
+      }
+
+      var redConeMat = makeBeaconConeMat(0xef4444, 0.0);
+      var redCone = new THREE.Mesh(new THREE.ConeGeometry(1.65, 3.25, 28, 1, true), redConeMat);
+      redCone.name = 'fr-beacon-red-wash';
+      redCone.position.set(-3.4, 1.3, -2.7);
+      redCone.rotation.z = -0.45;
+      envGroup.add(redCone);
+
+      var blueConeMat = makeBeaconConeMat(0x3b82f6, 3.14159);
+      var blueCone = new THREE.Mesh(new THREE.ConeGeometry(1.65, 3.25, 28, 1, true), blueConeMat);
+      blueCone.name = 'fr-beacon-blue-wash';
+      blueCone.position.set(3.4, 1.3, -2.7);
+      blueCone.rotation.z = 0.45;
+      envGroup.add(blueCone);
+
+      function makeBeaconPoolMat(hex, dirSign, phase) {
+        if (!hasShaderMat) {
+          return new THREE.MeshBasicMaterial({
+            color: hex, transparent: true, opacity: api.dark ? 0.14 : 0.06,
+            side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
+          });
+        }
+        return new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 2.4 },
+            uIntensity: { value: api.dark ? 0.28 : 0.13 },
+            uColor: { value: new THREE.Color(hex) },
+            uDir: { value: dirSign },
+            uPhase: { value: phase }
+          },
+          vertexShader: [
+            'varying vec2 vPos;',
+            'varying vec3 vNormView;',
+            'varying vec3 vViewPos;',
+            'void main() {',
+            '  vPos = position.xy;',
+            '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+            '  vNormView = normalize(normalMatrix * normal);',
+            '  vViewPos = -mv.xyz;',
+            '  gl_Position = projectionMatrix * mv;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uIntensity;',
+            'uniform vec3 uColor;',
+            'uniform float uDir;',
+            'uniform float uPhase;',
+            'varying vec2 vPos;',
+            'varying vec3 vNormView;',
+            'varying vec3 vViewPos;',
+            'void main() {',
+            '  float r = length(vPos) / 1.85;',
+            '  if (r > 1.0) discard;',
+            '  float ang = atan(vPos.y, vPos.x);',
+            '  float radial = pow(1.0 - r, 1.85);',
+            '  float sweep = 0.42 + 0.58 * pow(0.5 + 0.5 * cos(ang - uTime * 1.45 * uDir + uPhase), 2.0);',
+            '  float grazing = pow(1.0 - clamp(abs(dot(normalize(vNormView), normalize(vViewPos))), 0.0, 1.0), 1.35);',
+            '  float fresnelBoost = 0.55 + 0.65 * grazing;',
+            '  float ripple = 0.90 + 0.10 * sin(r * 16.0 - uTime * 1.8 + uPhase);',
+            '  vec3 col = mix(uColor, vec3(1.0, 0.95, 0.96), radial * 0.28);',
+            '  float alpha = clamp(radial * sweep * fresnelBoost * ripple * uIntensity, 0.0, 0.72);',
+            '  if (alpha < 0.005) discard;',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending
+        });
+      }
+
+      var redPoolMat = makeBeaconPoolMat(0xef4444, 1.0, 0.0);
+      var redPool = new THREE.Mesh(new THREE.CircleGeometry(1.85, 36), redPoolMat);
+      redPool.rotation.x = -Math.PI / 2;
+      redPool.position.set(-3.1, -0.009, -2.3);
+      envGroup.add(redPool);
+
+      var bluePoolMat = makeBeaconPoolMat(0x3b82f6, -1.0, 2.4);
+      var bluePool = new THREE.Mesh(new THREE.CircleGeometry(1.85, 36), bluePoolMat);
+      bluePool.rotation.x = -Math.PI / 2;
+      bluePool.position.set(3.1, -0.009, -2.3);
+      envGroup.add(bluePool);
+
+      // Perimeter safety road-flare FBM combustion flames & rising volumetric smoke plumes
+      var flareHalos = [], smokeWisps = [];
+      var flarePositions = [[-2.35, -2.15], [2.35, -2.15], [-2.35, 1.45], [2.35, 1.45]];
+      var flareGeo = hasShaderMat
+        ? new THREE.CylinderGeometry(0.022, 0.095, 0.32, 16, 10, true)
+        : new THREE.SphereGeometry(0.085, 10, 8);
+      var smokeGeo = hasShaderMat
+        ? new THREE.CylinderGeometry(0.24, 0.09, 0.88, 16, 10, true)
+        : new THREE.SphereGeometry(0.11, 10, 8);
+      var flareGlowGeo = hasShaderMat ? new THREE.CircleGeometry(0.42, 24) : null;
+      for (var fli = 0; fli < flarePositions.length; fli++) {
+        var fp = flarePositions[fli];
+        var flSeed = fli * 3.17 + 0.7;
+        var flMat = hasShaderMat ? new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 2.4 },
+            uSeed: { value: flSeed },
+            uIntensity: { value: api.dark ? 0.92 : 0.64 }
+          },
+          vertexShader: [
+            'uniform float uTime;',
+            'uniform float uSeed;',
+            'varying vec2 vUv;',
+            'varying vec3 vNormView;',
+            'varying vec3 vViewPos;',
+            'void main() {',
+            '  vUv = uv;',
+            '  vec3 p = position;',
+            '  float tip = smoothstep(0.0, 1.0, uv.y);',
+            '  p.x += sin(uTime * 3.2 + uv.y * 5.0 + uSeed) * 0.024 * tip;',
+            '  p.z += cos(uTime * 2.7 + uv.y * 4.5 + uSeed * 1.4) * 0.020 * tip;',
+            '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+            '  vNormView = normalize(normalMatrix * normal);',
+            '  vViewPos = -mv.xyz;',
+            '  gl_Position = projectionMatrix * mv;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uSeed;',
+            'uniform float uIntensity;',
+            'varying vec2 vUv;',
+            'varying vec3 vNormView;',
+            'varying vec3 vViewPos;',
+            fbmChunk,
+            'void main() {',
+            '  float facing = pow(clamp(abs(dot(normalize(vNormView), normalize(vViewPos))), 0.0, 1.0), 0.75);',
+            '  float n = frFbm(vec2(vUv.x * 4.0 + uSeed, vUv.y * 3.8 - uTime * 2.1));',
+            '  float n2 = frFbm(vec2(vUv.x * 7.0 - uSeed, vUv.y * 6.0 - uTime * 3.0));',
+            '  float tongue = smoothstep(0.0, 0.16, vUv.y) * smoothstep(1.0, 0.25 + n * 0.42, vUv.y);',
+            '  float body = clamp(tongue * (0.65 + 0.55 * n) * (0.45 + 0.55 * facing), 0.0, 1.0);',
+            '  float core = smoothstep(0.35, 0.85, body * (1.0 - vUv.y * 0.55));',
+            '  float flicker = 0.86 + 0.14 * sin(uTime * 4.8 + uSeed * 2.1);',
+            '  float spark = smoothstep(0.76, 0.94, n2) * smoothstep(0.35, 0.92, vUv.y) * 0.65;',
+            '  vec3 crimson = vec3(0.92, 0.14, 0.06);',
+            '  vec3 orange = vec3(1.0, 0.48, 0.10);',
+            '  vec3 hotCore = vec3(1.0, 0.96, 0.82);',
+            '  vec3 col = mix(crimson, orange, smoothstep(0.15, 0.65, body + n * 0.2));',
+            '  col = mix(col, hotCore, clamp(core + spark, 0.0, 1.0));',
+            '  float alpha = clamp((body + spark * 0.5) * flicker * uIntensity, 0.0, 0.95);',
+            '  if (alpha < 0.015) discard;',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending
+        }) : new THREE.MeshBasicMaterial({
+          color: 0xfb923c, transparent: true, opacity: api.dark ? 0.65 : 0.42,
+          depthWrite: false, blending: THREE.AdditiveBlending
+        });
+        var flMesh = new THREE.Mesh(flareGeo, flMat);
+        flMesh.name = 'fr-scene-flare-' + fli;
+        flMesh.position.set(fp[0], hasShaderMat ? 0.17 : 0.08, fp[1]);
+        envGroup.add(flMesh);
+        var flGroundMat = null;
+        if (hasShaderMat && flareGlowGeo) {
+          flGroundMat = new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: { value: 2.4 },
+              uSeed: { value: flSeed },
+              uIntensity: { value: api.dark ? 0.48 : 0.24 }
+            },
+            vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+            fragmentShader: [
+              'uniform float uTime;',
+              'uniform float uSeed;',
+              'uniform float uIntensity;',
+              'varying vec2 vUv;',
+              'void main() {',
+              '  float d = length(vUv - vec2(0.5)) * 2.0;',
+              '  if (d > 1.0) discard;',
+              '  float g = pow(1.0 - d, 2.2);',
+              '  float flk = 0.86 + 0.14 * sin(uTime * 4.5 + uSeed * 2.3);',
+              '  vec3 col = mix(vec3(0.96, 0.28, 0.08), vec3(1.0, 0.80, 0.36), g);',
+              '  gl_FragColor = vec4(col, g * flk * uIntensity);',
+              '}'
+            ].join('\n'),
+            transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+          });
+          var flGround = new THREE.Mesh(flareGlowGeo, flGroundMat);
+          flGround.name = 'fr-scene-flare-glow-' + fli;
+          flGround.rotation.x = -Math.PI / 2;
+          flGround.position.set(fp[0], -0.006, fp[1]);
+          envGroup.add(flGround);
+        }
+        flareHalos.push({ mesh: flMesh, mat: flMat, groundMat: flGroundMat, phase: fli * 1.57, isShader: hasShaderMat });
+
+        var smMat = hasShaderMat ? new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 2.4 },
+            uSeed: { value: flSeed + 5.1 },
+            uBaseCol: { value: new THREE.Color(api.dark ? 0x94a3b8 : 0x64748b) },
+            uGlowCol: { value: new THREE.Color(0xf97316) },
+            uOpacity: { value: api.dark ? 0.30 : 0.18 }
+          },
+          vertexShader: [
+            'uniform float uTime;',
+            'uniform float uSeed;',
+            'varying vec2 vUv;',
+            'varying vec3 vNormView;',
+            'varying vec3 vViewPos;',
+            'void main() {',
+            '  vUv = uv;',
+            '  vec3 p = position;',
+            '  float rise = smoothstep(0.0, 1.0, uv.y);',
+            '  p.x += sin(uTime * 0.95 + uv.y * 3.4 + uSeed) * 0.085 * rise;',
+            '  p.z += cos(uTime * 0.82 + uv.y * 2.9 + uSeed * 1.3) * 0.065 * rise;',
+            '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+            '  vNormView = normalize(normalMatrix * normal);',
+            '  vViewPos = -mv.xyz;',
+            '  gl_Position = projectionMatrix * mv;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uSeed;',
+            'uniform vec3 uBaseCol;',
+            'uniform vec3 uGlowCol;',
+            'uniform float uOpacity;',
+            'varying vec2 vUv;',
+            'varying vec3 vNormView;',
+            'varying vec3 vViewPos;',
+            fbmChunk,
+            'void main() {',
+            '  float edge = pow(clamp(abs(dot(normalize(vNormView), normalize(vViewPos))), 0.0, 1.0), 1.35);',
+            '  float vFade = smoothstep(0.0, 0.22, vUv.y) * smoothstep(1.0, 0.22, vUv.y);',
+            '  float w1 = frFbm(vec2(vUv.x * 3.0 + uSeed, vUv.y * 2.6 - uTime * 0.44));',
+            '  float w2 = frFbm(vec2(vUv.x * 5.0 - uTime * 0.12, vUv.y * 4.0 - uTime * 0.62 + uSeed));',
+            '  float wisp = smoothstep(0.24, 0.78, w1 * 0.62 + w2 * 0.45);',
+            '  float underLit = pow(1.0 - vUv.y, 2.2) * 0.55;',
+            '  vec3 col = mix(uBaseCol, uGlowCol, underLit);',
+            '  float alpha = clamp(wisp * vFade * edge * uOpacity, 0.0, 0.42);',
+            '  if (alpha < 0.008) discard;',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide
+        }) : new THREE.MeshBasicMaterial({
+          color: api.dark ? 0x94a3b8 : 0x64748b, transparent: true, opacity: api.dark ? 0.14 : 0.08,
+          depthWrite: false
+        });
+        var smMesh = new THREE.Mesh(smokeGeo, smMat);
+        smMesh.name = 'fr-scene-smoke-' + fli;
+        smMesh.position.set(fp[0], hasShaderMat ? 0.54 : 0.26, fp[1]);
+        envGroup.add(smMesh);
+        smokeWisps.push({ mesh: smMesh, mat: smMat, baseX: fp[0], baseZ: fp[1], phase: fli * 0.25, isShader: hasShaderMat });
+      }
+
+      api.scene.add(envGroup);
+      frSceneFx = {
+        dark: !!api.dark,
+        hasShaderMat: hasShaderMat,
+        ringUniforms: ringUniforms,
+        hazardRingMat: hazardRingMat, triageRingMat: triageRingMat,
+        beaconRedLight: beaconRedLight, beaconBlueLight: beaconBlueLight,
+        redConeMat: redConeMat, blueConeMat: blueConeMat,
+        redPoolMat: redPoolMat, bluePoolMat: bluePoolMat,
+        flareHalos: flareHalos, smokeWisps: smokeWisps
+      };
+    }
 
     var skin = material(0xc09478, 12);
     var skinDetail = material(0x8d6650, 6, null, 0x777777);
@@ -3080,6 +3540,78 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         guideRing.scale.setScalar(1 + guidePulse * 0.20);
         guideMat.opacity = reduced ? 0.55 : (0.42 + guidePulse * 0.45);
         if (heartMat.emissive) heartMat.emissive.setRGB(0.18 + compression * 0.42, 0.01, 0.04);
+        if (frSceneFx) {
+          var fxSec = reduced ? 2.4 : tick * 0.001;
+          // Smooth alternating sinusoidal EMS beacon (~0.70 Hz, strictly sub-3Hz safe)
+          var strobe = reduced ? 0.5 : (0.5 + 0.5 * Math.sin(fxSec * 4.4));
+          var redMix = 0.28 + 0.72 * strobe;
+          var blueMix = 0.28 + 0.72 * (1 - strobe);
+          var dk = frSceneFx.dark;
+          if (frSceneFx.beaconRedLight) frSceneFx.beaconRedLight.intensity = (dk ? 0.56 : 0.24) * redMix;
+          if (frSceneFx.beaconBlueLight) frSceneFx.beaconBlueLight.intensity = (dk ? 0.56 : 0.24) * blueMix;
+          if (frSceneFx.hasShaderMat) {
+            if (frSceneFx.redConeMat.uniforms) {
+              frSceneFx.redConeMat.uniforms.uTime.value = fxSec;
+              frSceneFx.redConeMat.uniforms.uIntensity.value = (dk ? 0.28 : 0.13) * redMix;
+            }
+            if (frSceneFx.blueConeMat.uniforms) {
+              frSceneFx.blueConeMat.uniforms.uTime.value = fxSec;
+              frSceneFx.blueConeMat.uniforms.uIntensity.value = (dk ? 0.28 : 0.13) * blueMix;
+            }
+            if (frSceneFx.redPoolMat.uniforms) {
+              frSceneFx.redPoolMat.uniforms.uTime.value = fxSec;
+              frSceneFx.redPoolMat.uniforms.uIntensity.value = (dk ? 0.34 : 0.16) * redMix;
+            }
+            if (frSceneFx.bluePoolMat.uniforms) {
+              frSceneFx.bluePoolMat.uniforms.uTime.value = fxSec;
+              frSceneFx.bluePoolMat.uniforms.uIntensity.value = (dk ? 0.34 : 0.16) * blueMix;
+            }
+            var ringPulse = reduced ? 0.5 : (0.5 + 0.5 * Math.sin(fxSec * 2.1));
+            for (var rui = 0; rui < frSceneFx.ringUniforms.length; rui++) {
+              frSceneFx.ringUniforms[rui].uTime.value = fxSec;
+            }
+            if (frSceneFx.hazardRingMat.uniforms) {
+              frSceneFx.hazardRingMat.uniforms.uOpacity.value = (dk ? 0.44 : 0.28) + ringPulse * 0.20;
+            }
+            if (frSceneFx.triageRingMat.uniforms) {
+              frSceneFx.triageRingMat.uniforms.uOpacity.value = (dk ? 0.34 : 0.22) + (1 - ringPulse) * 0.16;
+            }
+            for (var fxi = 0; fxi < frSceneFx.flareHalos.length; fxi++) {
+              var fh = frSceneFx.flareHalos[fxi];
+              if (fh.mat && fh.mat.uniforms) fh.mat.uniforms.uTime.value = fxSec;
+              if (fh.groundMat && fh.groundMat.uniforms) fh.groundMat.uniforms.uTime.value = fxSec;
+            }
+            for (var smi = 0; smi < frSceneFx.smokeWisps.length; smi++) {
+              var sw = frSceneFx.smokeWisps[smi];
+              if (sw.mat && sw.mat.uniforms) sw.mat.uniforms.uTime.value = fxSec;
+            }
+          } else {
+            frSceneFx.redConeMat.opacity = (dk ? 0.14 : 0.06) * redMix;
+            frSceneFx.blueConeMat.opacity = (dk ? 0.14 : 0.06) * blueMix;
+            frSceneFx.redPoolMat.opacity = (dk ? 0.17 : 0.07) * redMix;
+            frSceneFx.bluePoolMat.opacity = (dk ? 0.17 : 0.07) * blueMix;
+            var ringPulse2 = reduced ? 0.5 : (0.5 + 0.5 * Math.sin(fxSec * 2.1));
+            frSceneFx.hazardRingMat.opacity = (dk ? 0.26 : 0.18) + ringPulse2 * 0.14;
+            frSceneFx.triageRingMat.opacity = (dk ? 0.20 : 0.14) + (1 - ringPulse2) * 0.12;
+            for (var fxi2 = 0; fxi2 < frSceneFx.flareHalos.length; fxi2++) {
+              var fh2 = frSceneFx.flareHalos[fxi2];
+              var flFlicker = reduced ? 1 : (0.82 + 0.24 * Math.sin(fxSec * 4.8 + fh2.phase));
+              fh2.mesh.scale.set(flFlicker, flFlicker * 1.35, flFlicker);
+              fh2.mat.opacity = (dk ? 0.62 : 0.40) * flFlicker;
+            }
+            for (var smi2 = 0; smi2 < frSceneFx.smokeWisps.length; smi2++) {
+              var sw2 = frSceneFx.smokeWisps[smi2];
+              var smProg = reduced ? 0.35 : ((fxSec * 0.28 + sw2.phase) % 1);
+              sw2.mesh.position.set(
+                sw2.baseX + Math.sin(smProg * 4 + smi2) * 0.08,
+                0.16 + smProg * 0.65,
+                sw2.baseZ + Math.cos(smProg * 3 + smi2) * 0.06
+              );
+              sw2.mesh.scale.setScalar(0.65 + smProg * 1.25);
+              sw2.mat.opacity = (dk ? 0.15 : 0.09) * Math.sin(smProg * Math.PI);
+            }
+          }
+        }
         var contactChanged = fitHandContact(depthLab);
         if ((meshes.handContact || meshes.nearPalm || meshes.supportingHand) && typeof api.handInspectionSync === 'function') {
           api.handInspectionSync(contactChanged, meshes.handContact ? hands.visible : true);

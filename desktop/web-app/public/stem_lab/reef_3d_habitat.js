@@ -792,12 +792,16 @@
     'float reefOpticalDepth=max(0.0,reefSurfaceY-vReefWorld.y-0.9);',
     'vec2 reefPoolSurface=vReefWorld.xz+(reefSurfaceY-vReefWorld.y)*vec2(0.42,0.3);',
     'float reefSunFleck=reefCaustic(reefPoolSurface,reefOpticalDepth);',
+    // Subtle shallow-water refractive dispersion adds delicate gold-cyan caustic fringes on sunlit sand and reef shelves.
+    'float reefDispMask=exp(-reefOpticalDepth/9.5)*0.22;',
+    'float reefFleckCool=reefCaustic(reefPoolSurface+vec2(0.022,-0.014),reefOpticalDepth);',
+    'vec3 reefCausticTint=vec3(1.0,0.98,0.88)*reefSunFleck+vec3(-0.08,0.10,0.22)*(reefFleckCool-reefSunFleck)*reefDispMask;',
     'float reefLightPatch=reefNoise(vec3(reefPoolSurface*0.18+vec2(reefCausticTime*0.009,reefCausticTime*0.006),2.7));',
     'float reefPool=smoothstep(0.24,0.76,reefLightPatch);',
     'float reefLightCover=mix(0.29,0.80,reefPool);',
     'reflectedLight.directDiffuse*=mix(1.0,mix(0.90,1.08,reefPool),exp(-reefOpticalDepth/22.0));',
     'float reefFleckDistance=1.0-smoothstep(10.0,27.0,length(vViewPosition));',
-    'totalEmissiveRadiance+=diffuseColor.rgb*vec3(1.0,0.98,0.88)*reefCausticStrength*getShadowMask()*exp(-reefOpticalDepth/11.0)*reefSunFleck*reefLightCover*reefFleckDistance*smoothstep(0.10,0.95,reefSunFace);'
+    'totalEmissiveRadiance+=diffuseColor.rgb*max(reefCausticTint,vec3(0.0))*reefCausticStrength*getShadowMask()*exp(-reefOpticalDepth/11.0)*reefLightCover*reefFleckDistance*smoothstep(0.10,0.95,reefSunFace);'
   ].join('\n');
   // Water soaks up red first: deeper surfaces lose their warm colours.
   var ABSORB = 'diffuseColor.rgb*=mix(vec3(1.0),exp(-vec3(0.14,0.04,0.012)*max(0.0,reefSurfaceY-vReefWorld.y)),0.7);';
@@ -1102,6 +1106,8 @@
         ].join('\n'));
         parts.fRough.push('roughnessFactor=clamp(roughnessFactor+0.04*(reefTissue-0.5)+0.035*reefPolypCups+reefPlantBlade*(-0.04+0.06*(reefBladeGrain-0.5)),0.5,0.95);');
         parts.fNormal.push(surfaceRelief('(reefTissue*0.0007-reefPolypCups*0.00075+reefPolypCollar*0.0005+reefPlantBlade*(reefBladeGrain-0.5)*0.00045)*reefPlantDetail', '0.16'));
+        // Subsurface backlit translucency makes swaying algae blades and soft corals glow gently against the underwater sun.
+        parts.fLighting.push('vec3 reefSssView=normalize(reefWaterEye-vReefWorld);float reefBacklit=pow(max(0.0,dot(-reefSssView,normalize(vec3(0.42,1.0,0.3)))),2.6);float reefThinTip=smoothstep(0.15,0.85,vReefLocal.y/max(reefPlantMotion.z,0.001));reflectedLight.directDiffuse+=diffuseColor.rgb*vec3(0.88,1.02,0.76)*reefBacklit*reefThinTip*mix(0.24,0.38,reefPlantBlade)*exp(-max(0.0,reefSurfaceY-vReefWorld.y)*0.07);');
         applyParts(shader, parts, 'plant');
       };
     }
@@ -1652,13 +1658,15 @@
             'float reefFeather=exp(-3.4*reefAcross*reefAcross)*(1.0-smoothstep(0.60,1.0,reefAcross));',
             'float reefBeamDepth=max(0.0,reefSurfaceY-vReefShaftWorld.y);',
             'float reefFall=smoothstep(0.0,0.28,vReefShaftUv.y)*(1.0-smoothstep(0.94,1.0,vReefShaftUv.y));',
+            'float reefRayRibbon=0.72+0.28*sin((vReefShaftUv.x*16.0+reefBeamWave*1.2)+reefCausticTime*0.32)*(0.6+0.4*cos(vReefShaftUv.x*29.0-reefCausticTime*0.21));',
             'vec3 reefBeamView=vReefShaftWorld-reefWaterEye;float reefBeamDistance=length(reefBeamView);',
             'float reefBeamFade=smoothstep(1.0,3.8,reefBeamDistance)*(1.0-smoothstep(14.0,22.0,reefBeamDistance));',
             'float reefBeamCos=dot(reefBeamView/max(reefBeamDistance,0.001),reefBeamSun);',
             'float reefBeamPhase=0.40+0.60*pow(max(0.0,reefBeamCos),3.0);',
             'float reefBeamPath=1.0-exp(-reefBeamDistance*0.23);',
-            'diffuseColor.rgb*=exp(-vec3(0.052,0.024,0.014)*reefBeamDepth);',
-            'diffuseColor.a*=reefFeather*reefFall*reefBeamFade*reefBeamPhase*reefBeamPath;'
+            'vec3 reefShallowWarm=mix(vec3(0.86,0.98,1.0),vec3(1.05,1.02,0.90),smoothstep(0.4,1.0,vReefShaftUv.y));',
+            'diffuseColor.rgb*=reefShallowWarm*exp(-vec3(0.052,0.024,0.014)*reefBeamDepth);',
+            'diffuseColor.a*=reefFeather*reefFall*reefRayRibbon*reefBeamFade*reefBeamPhase*reefBeamPath;'
           ].join('\n'));
           applyParts(shader, parts, 'shaft');
         };
@@ -1689,15 +1697,17 @@
       mat.onBeforeCompile = function (shader) {
         shader.uniforms.reefWaterEye = U.eye; shader.uniforms.reefSnowCenter = snowU.center; shader.uniforms.reefSnowBox = snowU.box; shader.uniforms.reefSnowTime = snowU.time; shader.uniforms.reefSnowTop = snowU.top;
         var parts = shaderParts();
-        parts.vCommon.push('uniform vec3 reefWaterEye;uniform vec3 reefSnowCenter;uniform vec3 reefSnowBox;uniform float reefSnowTime;uniform float reefSnowTop;attribute vec3 reefSnowDrift;varying float vReefSnowDepth;varying float vReefSnowSeed;varying float vReefSnowVeil;');
+        parts.vCommon.push('uniform vec3 reefWaterEye;uniform vec3 reefSnowCenter;uniform vec3 reefSnowBox;uniform float reefSnowTime;uniform float reefSnowTop;attribute vec3 reefSnowDrift;varying float vReefSnowDepth;varying float vReefSnowSeed;varying float vReefSnowVeil;varying float vReefSnowGlint;');
         parts.vBegin.push('vec3 reefSnowMin=reefSnowCenter-reefSnowBox*0.5;float reefSnowPhase=reefSnowTime*0.19-dot(position.xz,vec2(0.13,0.09));' +
           'vec3 reefSnowSurge=vec3(-0.17*cos(reefSnowPhase),0.05*sin(reefSnowTime*0.13+position.x),-0.12*cos(reefSnowPhase+0.45));' +
           'transformed=reefSnowMin+mod(position+reefSnowDrift*reefSnowTime+reefSnowSurge-reefSnowMin,reefSnowBox);if(transformed.y>reefSnowTop)transformed.y-=reefSnowBox.y;' +
           'vec3 reefSnowEdge=reefSnowBox*0.5-abs(transformed-reefSnowCenter);vReefSnowVeil=smoothstep(0.0,0.7,min(reefSnowEdge.x,min(reefSnowEdge.y,reefSnowEdge.z)));' +
-          'vReefSnowDepth=length(transformed-reefWaterEye);vReefSnowSeed=fract(position.x*0.37+position.y*0.61);');
-        parts.fCommon.push('varying float vReefSnowDepth;varying float vReefSnowSeed;varying float vReefSnowVeil;');
+          'vec3 reefSnowDelta=transformed-reefWaterEye;vReefSnowDepth=length(reefSnowDelta);vReefSnowSeed=fract(position.x*0.37+position.y*0.61);' +
+          'vReefSnowGlint=pow(max(0.0,dot(reefSnowDelta/max(vReefSnowDepth,0.001),normalize(vec3(0.42,1.0,0.3)))),4.0)*(0.55+0.45*sin(reefSnowTime*1.4+vReefSnowSeed*19.0));');
+        parts.fCommon.push('varying float vReefSnowDepth;varying float vReefSnowSeed;varying float vReefSnowVeil;varying float vReefSnowGlint;');
         parts.fColor.push('vec2 reefPc=gl_PointCoord*2.0-1.0;float reefPr=dot(reefPc,reefPc);if(reefPr>1.0)discard;' +
-          'diffuseColor.a*=pow(1.0-reefPr,1.8)*smoothstep(0.6,1.6,vReefSnowDepth)*(1.0-smoothstep(4.0,6.5,vReefSnowDepth))*mix(0.25,0.85,vReefSnowSeed)*vReefSnowVeil;');
+          'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.95,1.0,0.94),vReefSnowGlint*0.48);' +
+          'diffuseColor.a*=pow(1.0-reefPr,1.8)*smoothstep(0.6,1.6,vReefSnowDepth)*(1.0-smoothstep(4.0,6.5,vReefSnowDepth))*mix(0.28,0.90,vReefSnowSeed)*(1.0+vReefSnowGlint*0.45)*vReefSnowVeil;');
         applyParts(shader, parts, 'snow');
         shader.vertexShader = inject(shader.vertexShader, '#include <logdepthbuf_vertex>', 'gl_PointSize*=0.4+0.9*vReefSnowSeed*vReefSnowSeed;', 'snow-size');
       };

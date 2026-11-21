@@ -230,7 +230,7 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
     if (count !== 1) evidenceRosterByNormalizedName[normalized] = null;
   });
   const organizerStatuses = new Set(['loading', 'ready', 'failed', 'working', 'attempted', 'complete']);
-  const organizerTypes = new Set(['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall']);
+  const organizerTypes = new Set(['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'reflection', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall']);
   const boundedOrganizerNumber = (value, max = 100000) => Math.max(0, Math.min(max, Math.round(Number(value) || 0)));
   const readOrganizerReceipt = value => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
@@ -392,7 +392,7 @@ function SessionModal({
   activeSessionAppId,
   activeSessionCode,
   addToast,
-  appId,
+  appId: rawAppId,
   copyToClipboard,
   connectedStudentCount = 0,
   db,
@@ -413,6 +413,7 @@ function SessionModal({
   toggleSessionMode,
   warnLog,
 }) {
+  const appId = activeSessionAppId || rawAppId;
   const noop = () => null;
   const Wifi = window.Wifi || noop;
   const X = window.X || noop;
@@ -667,13 +668,13 @@ function SessionModal({
           <div className={`font-black text-indigo-600 tracking-[0.16em] sm:tracking-widest font-mono ${isProjectionMode ? 'text-6xl sm:text-8xl' : 'text-5xl sm:text-7xl'}`}>
             {activeSessionCode}
           </div>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center gap-1">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center gap-1">
             <Copy size={10} aria-hidden="true"/> {t('session.click_to_copy')}
           </div>
         </button>
         {liveJoinUrl && !isCanvasManagedBackend && (
           <div className={`bg-cyan-50 rounded-xl border border-cyan-200 text-left ${isProjectionMode ? 'mx-auto max-w-5xl p-5 mb-3' : 'p-4 mb-6'}`}>
-            <p className="text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center">{isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'}</p>
+            <p className="text-xs text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center">{isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'}</p>
             <div className="flex justify-center mb-3">
               <div className={`bg-white border border-cyan-200 rounded-lg p-2 flex items-center justify-center shadow-sm ${isProjectionMode ? 'w-[min(52vh,72vw)] h-[min(52vh,72vw)]' : 'w-40 h-40'}`}>
                 {liveQrSvg
@@ -701,18 +702,18 @@ function SessionModal({
                 Print QR <Printer size={12} aria-hidden="true"/>
               </button>
             </div>
-            <p className="text-[11px] text-cyan-800 mt-2 text-center"><span role="status" aria-live="polite" aria-atomic="true">{connectedStudentCount > 0 ? connectedStudentCount + ' student' + (connectedStudentCount === 1 ? '' : 's') + ' connected. ' : ''}</span>{isMailboxSession ? `Ready to scan. This QR uses the mailbox session secret, requires no Firebase sign-in, and expires when the teacher ends the session. ${studentAiLabel}.` : `Ready to scan. ${studentAiPolicy === 'student-byok' ? 'Students may connect their own AI provider for this tab.' : 'AI generation stays off.'} The link stops working when the session ends.`}</p>
+            <p className="text-xs text-cyan-800 mt-2 text-center"><span role="status" aria-live="polite" aria-atomic="true">{connectedStudentCount > 0 ? connectedStudentCount + ' student' + (connectedStudentCount === 1 ? '' : 's') + ' connected. ' : ''}</span>{isMailboxSession ? `Ready to scan. This QR uses the mailbox session secret, requires no Firebase sign-in, and expires when the teacher ends the session. ${studentAiLabel}.` : `Ready to scan. ${studentAiPolicy === 'student-byok' ? 'Students may connect their own AI provider for this tab.' : 'AI generation stays off.'} The link stops working when the session ends.`}</p>
           </div>
         )}
         {!liveJoinUrl && !isCanvasManagedBackend && (
           <div className="mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left">
-            <p className="text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center">{isLocalOnly ? 'Local preview only' : 'Student QR unavailable'}</p>
+            <p className="text-xs text-amber-800 font-bold uppercase tracking-wider mb-1 text-center">{isLocalOnly ? 'Local preview only' : 'Student QR unavailable'}</p>
             <p className="text-xs text-amber-900 text-center">{isLocalOnly ? 'This code was not saved to Firebase, so students cannot join it. Reload, start a new live session, and share only when a QR appears.' : 'This host is not configured as a student join path. Use the class code, local network link, or a student app URL.'}</p>
           </div>
         )}
         {isCanvasManagedBackend && (
           <div className="mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left">
-            <p className="text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center">Scanned QR will not work from this backend</p>
+            <p className="text-xs text-amber-800 font-bold uppercase tracking-wider mb-1 text-center">Scanned QR will not work from this backend</p>
             <p className="text-xs text-amber-900">This session runs on the Firebase project Gemini Canvas provides. Its rules refuse student devices that are not already signed in to Canvas, so a scanned QR would fail on the phone even though the session started correctly here. Two paths do work:</p>
             <ul className="mt-2 space-y-1.5 text-xs text-amber-900">
               <li><b>No student accounts:</b> end this session and start a <b>Class Mailbox QR session</b> instead. Students scan and join with no accounts at all.</li>
@@ -720,16 +721,16 @@ function SessionModal({
             </ul>
             {liveJoinUrl && (
               <details className="mt-2">
-                <summary className="cursor-pointer text-[11px] font-bold text-amber-800">Show the standard join link anyway (for troubleshooting)</summary>
+                <summary className="cursor-pointer text-xs font-bold text-amber-800">Show the standard join link anyway (for troubleshooting)</summary>
                 <input aria-label="Selectable standard join link" readOnly value={liveJoinUrl} onFocus={event => event.target.select()} className="mt-2 min-h-11 w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-amber-500" />
-                <p className="mt-1 text-[11px] text-amber-800">Expect a permission error on the student device. If it joins successfully, the managed rules have changed — worth reporting.</p>
+                <p className="mt-1 text-xs text-amber-800">Expect a permission error on the student device. If it joins successfully, the managed rules have changed — worth reporting.</p>
               </details>
             )}
           </div>
         )}
         {!isProjectionMode && lanJoinUrl && (
           <div className="mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200">
-            <p className="text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1">Local network join link</p>
+            <p className="text-xs text-emerald-700 font-bold uppercase tracking-wider mb-1">Local network join link</p>
             <button type="button"
               aria-label={`${t('common.copy')} ${lanJoinUrl}`}
               onClick={() => copyToClipboard(lanJoinUrl)}
@@ -741,7 +742,7 @@ function SessionModal({
         )}
         {!isProjectionMode && !isMailboxSession && (
           <div className="mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
-            <p className="text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1">{t('session.host_id_share')}</p>
+            <p className="text-xs text-slate-600 font-bold uppercase tracking-wider mb-1">{t('session.host_id_share')}</p>
             <button type="button"
               aria-label={`${t('common.copy')} ${appId}`}
               onClick={() => copyToClipboard(appId)}
@@ -760,7 +761,7 @@ function SessionModal({
               <Users size={20} aria-hidden="true" />
               <div className="text-left">
                 <span className="block">{t('groups.manage_button')}</span>
-                <span className="block text-[11px] font-normal opacity-80">{t('groups.manage_button_desc')}</span>
+                <span className="block text-xs font-normal opacity-80">{t('groups.manage_button_desc')}</span>
               </div>
               <ChevronRight size={18} className="opacity-60" aria-hidden="true"/>
             </button>
@@ -779,7 +780,7 @@ function SessionModal({
               </div>
               <div className="text-left">
                 <span className="block text-xs font-bold uppercase tracking-wider">{sessionData.mode === 'sync' ? t('session.teacher_paced') : t('session.student_paced')}</span>
-                <span className="block text-[11px] opacity-70 font-normal">
+                <span className="block text-xs opacity-70 font-normal">
                   {sessionData.mode === 'sync' ? t('session.teacher_paced_desc') : t('session.student_paced_desc')}
                 </span>
               </div>

@@ -6420,6 +6420,48 @@ window.StemLab = window.StemLab || {
     var waterMaterial = new THREE.MeshPhongMaterial({ color: habitat.waterColor, specular: '#c9e6dc', shininess: 95,
       normalMap: normal, normalScale: new THREE.Vector2(0.58, 0.58), transparent: true, opacity: lagoon ? 0.64 : 0.72, depthWrite: false, side: THREE.DoubleSide });
     waterMaterial.color.convertSRGBToLinear(); waterMaterial.specular.convertSRGBToLinear();
+    var waterUniforms = {
+      uDinoWaterTime: { value: 3.6 },
+      uDinoWaterActive: { value: 1.0 },
+      uDinoWaterGlint: { value: new THREE.Color(habitat.sun || '#ffefd4').convertSRGBToLinear() }
+    };
+    var prevWaterCompile = waterMaterial.onBeforeCompile;
+    var prevWaterKey = waterMaterial.customProgramCacheKey;
+    waterMaterial.onBeforeCompile = function (shader, renderer) {
+      if (typeof prevWaterCompile === 'function') prevWaterCompile.call(this, shader, renderer);
+      shader.uniforms.uDinoWaterTime = waterUniforms.uDinoWaterTime;
+      shader.uniforms.uDinoWaterActive = waterUniforms.uDinoWaterActive;
+      shader.uniforms.uDinoWaterGlint = waterUniforms.uDinoWaterGlint;
+      if (shader.vertexShader.indexOf('vDinoWaterWorld') === -1) {
+        shader.vertexShader = 'varying vec3 vDinoWaterWorld;\n' + shader.vertexShader;
+        shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', [
+          '#include <begin_vertex>',
+          'vDinoWaterWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;'
+        ].join('\n'));
+      }
+      if (shader.fragmentShader.indexOf('uDinoWaterTime') === -1) {
+        shader.fragmentShader = 'uniform float uDinoWaterTime;\nuniform float uDinoWaterActive;\nuniform vec3 uDinoWaterGlint;\nvarying vec3 vDinoWaterWorld;\n' + shader.fragmentShader;
+      }
+      if (shader.fragmentShader.indexOf('#include <tonemapping_fragment>') !== -1 && shader.fragmentShader.indexOf('dinoWaterCaustic') === -1) {
+        shader.fragmentShader = shader.fragmentShader.replace('#include <tonemapping_fragment>', [
+          'if (uDinoWaterActive > 0.5) {',
+          '  vec2 dwP = vDinoWaterWorld.xz * 1.45;',
+          '  float dwW1 = sin(dwP.x * 2.3 + uDinoWaterTime * 1.15 + cos(dwP.y * 1.9 - uDinoWaterTime * 0.78));',
+          '  float dwW2 = sin(dwP.y * 2.7 - uDinoWaterTime * 0.92 + sin(dwP.x * 2.1 + uDinoWaterTime * 0.64));',
+          '  float dinoWaterCaustic = pow(clamp(0.5 + 0.25 * (dwW1 + dwW2), 0.0, 1.0), 3.6);',
+          '  float dwView = clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0);',
+          '  float dwFresnel = pow(1.0 - dwView, 2.8);',
+          '  gl_FragColor.rgb += uDinoWaterGlint * (dinoWaterCaustic * 0.14 + dwFresnel * 0.20) * diffuseColor.a;',
+          '}',
+          '#include <tonemapping_fragment>'
+        ].join('\n'));
+      }
+    };
+    waterMaterial.customProgramCacheKey = function () {
+      var baseKey = typeof prevWaterKey === 'function' ? prevWaterKey.call(this) : '';
+      return baseKey + '|dinolab-water-caustic-v1';
+    };
+    waterMaterial.needsUpdate = true;
     var surface = new THREE.Mesh(waterGeometry, waterMaterial); surface.name = 'dinolab-ripple-surface';
     surface.userData.dinoEnvironment = 'rippling-water'; surface.renderOrder = 1; rig.add(surface);
     var bankMaterial = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: habitat.groundTint, roughness: 1, side: THREE.DoubleSide }) : new THREE.MeshPhongMaterial({ color: habitat.groundTint, shininess: 2, side: THREE.DoubleSide });
@@ -6427,7 +6469,8 @@ window.StemLab = window.StemLab || {
     var bank = new THREE.Mesh(geometry(bankPositions, bankIndices), bankMaterial); bank.name = 'dinolab-water-bank';
     bank.userData.dinoEnvironment = 'shoreline'; bank.receiveShadow = true; rig.add(bank);
     rig.userData.waterBounds = { minX: centerX - waterWidth * 0.52, maxX: centerX + waterWidth * 0.52, minZ: centerZ - waterDepth * 0.72, maxZ: centerZ + waterDepth * 0.72 };
-    return { group: rig, normalMap: normal };
+    rig.userData.waterShaderUniforms = waterUniforms;
+    return { group: rig, normalMap: normal, uniforms: waterUniforms };
   }
 
   function integumentEvidenceFor(dn) {
@@ -18005,7 +18048,7 @@ var CLASSIFY_CASES = [
 
         function clearRemovalFeedback() {
           dustStart = null; dustOrigins = [];
-          if (dust) { dust.count = 0; dust.userData.columnIndices = []; }
+          if (dust) { dust.count = 0; dust.userData.columnIndices = []; if (dust.material && dust.material.opacity != null) dust.material.opacity = .78; }
           if (extraction) { extraction.count = 0; extraction.userData.columnIndices = []; extraction.userData.removedLayers = []; }
         }
         function frame(now) {
@@ -18015,19 +18058,27 @@ var CLASSIFY_CASES = [
           if (size.x !== width || size.y !== height) { renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); }
           cameraPose();
           if (dustStart !== null && dust) {
-            var progress = Math.max(0, (now - dustStart) / 650), object = new window.THREE.Object3D();
+            var progress = Math.max(0, (now - dustStart) / 680), object = new window.THREE.Object3D();
             if (progress >= 1 || reduced) clearRemovalFeedback();
             else {
+              var dustEase = 1 - Math.pow(1 - progress, 2.2);
               dustOrigins.forEach(function (origin, cell) {
-                for (var i = 0; i < 12; i++) { var a = i * 2.39996 + cell, speed = .15 + (i % 5) * .07;
-                  object.position.set(origin.x + Math.cos(a) * progress * speed, origin.y + .28 * Math.sin(progress * Math.PI) + (i % 3) * .03, origin.z + Math.sin(a) * progress * speed);
-                  object.rotation.set(0, 0, 0); object.scale.setScalar(Math.max(.08, 1 - progress)); object.updateMatrix(); dust.setMatrixAt(cell * 12 + i, object.matrix);
+                for (var i = 0; i < 12; i++) {
+                  var a = i * 2.39996 + cell * 1.13 + progress * ((i % 2 ? 1 : -1) * 0.42);
+                  var speed = .14 + (i % 5) * .085;
+                  var loft = (.24 + (i % 4) * .065) * Math.sin(progress * Math.PI * 0.92) + dustEase * (0.08 + (i % 3) * 0.04);
+                  object.position.set(origin.x + Math.cos(a) * dustEase * speed, origin.y + loft, origin.z + Math.sin(a) * dustEase * speed);
+                  object.rotation.set(progress * (1.8 + (i % 3)), progress * (2.2 + (i % 4) * 0.5), progress * 1.4);
+                  var grainScale = (.55 + (i % 3) * .32) * Math.max(.08, 1 - progress * 0.88);
+                  object.scale.set(grainScale * 1.15, grainScale * 0.78, grainScale);
+                  object.updateMatrix(); dust.setMatrixAt(cell * 12 + i, object.matrix);
                 }
                 object.position.set(origin.x, origin.oldTop + .36 * progress, origin.z);
                 object.rotation.set(progress * .06, 0, progress * .04);
                 object.scale.set(1 - progress * .35, Math.max(.06, 1 - progress * .6), 1 - progress * .35); object.updateMatrix(); extraction.setMatrixAt(cell, object.matrix);
               });
               dust.count = dustOrigins.length * 12; dust.instanceMatrix.needsUpdate = true;
+              if (dust.material && dust.material.opacity != null) dust.material.opacity = .78 * (1 - progress * progress);
               extraction.count = dustOrigins.length; extraction.instanceMatrix.needsUpdate = true; extraction.material.opacity = .46 * (1 - progress);
             }
           }
@@ -18531,23 +18582,86 @@ var CLASSIFY_CASES = [
             batch = window.StemLab.makeVoxelBatch(THREE, { capacity: 96, geometry: sediment.geometry, material: soilMaterial, castShadow: true, receiveShadow: true });
             batch.mesh.name = 'dino-sediment-voxels'; batch.mesh.userData.role = 'sediment-voxel'; batch.mesh.userData.columnIndices = []; batch.mesh.userData.sedimentAtlas = sediment.atlas; batch.addTo(scene); pickers.push(batch.mesh);
             var groundMaterial = material(new THREE.MeshStandardMaterial({ color: '#b09c7e', roughness: 1 }));
+            // Deterministic sedimentary strata matrix texture for excavation pad & surrounding badlands cliffs
+            var strataCanvas = document.createElement('canvas'); strataCanvas.width = strataCanvas.height = 256;
+            var strataInk = strataCanvas.getContext('2d'), strataMap = null;
+            if (strataInk) {
+              var strataRng = mulberry32(77319);
+              var strataBands = ['#baa382', '#a88c67', '#c4ae8c', '#987c5a', '#b69c78', '#8d7050', '#c2aa86', '#a38662'];
+              for (var bandY = 0; bandY < 256; ) {
+                var bandH = 6 + Math.floor(strataRng() * 14);
+                strataInk.fillStyle = strataBands[Math.floor(strataRng() * strataBands.length)];
+                strataInk.fillRect(0, bandY, 256, bandH);
+                strataInk.fillStyle = strataRng() > 0.5 ? 'rgba(64,45,26,0.18)' : 'rgba(245,232,204,0.14)';
+                strataInk.fillRect(0, bandY, 256, 1.5);
+                bandY += bandH;
+              }
+              for (var sLine = 0; sLine < 42; sLine++) {
+                var ly = strataRng() * 256;
+                strataInk.strokeStyle = sLine % 3 ? 'rgba(72,52,32,0.16)' : 'rgba(244,230,198,0.18)';
+                strataInk.lineWidth = 0.8 + strataRng() * 1.4;
+                strataInk.beginPath();
+                strataInk.moveTo(0, ly);
+                strataInk.bezierCurveTo(85, ly + (strataRng() - 0.5) * 6, 170, ly + (strataRng() - 0.5) * 6, 256, ly);
+                strataInk.stroke();
+              }
+              for (var fleck = 0; fleck < 1600; fleck++) {
+                strataInk.fillStyle = fleck % 4 === 0 ? 'rgba(255,246,225,0.22)' : 'rgba(66,48,30,0.16)';
+                var fw = 1 + strataRng() * 2.4;
+                strataInk.fillRect(strataRng() * 256, strataRng() * 256, fw, 0.8 + strataRng() * 1.4);
+              }
+              strataMap = new THREE.CanvasTexture(strataCanvas);
+              strataMap.wrapS = strataMap.wrapT = THREE.RepeatWrapping;
+              strataMap.repeat.set(2, 2);
+              strataMap.encoding = THREE.sRGBEncoding;
+              textures.push(strataMap);
+              groundMaterial.map = strataMap;
+              groundMaterial.bumpMap = strataMap;
+              groundMaterial.bumpScale = .012;
+              groundMaterial.needsUpdate = true;
+            }
             var base = new THREE.Mesh(geometry(new THREE.BoxGeometry(7.3, .18, 5.2)), groundMaterial); base.position.y = -.11; base.receiveShadow = true; scene.add(base);
             var ground = new THREE.Mesh(geometry(new THREE.PlaneGeometry(90, 90)), material(new THREE.MeshStandardMaterial({ color: '#b7ab91', roughness: 1 }))); ground.rotation.x = -Math.PI / 2; ground.position.y = -.22; ground.receiveShadow = true; scene.add(ground);
             var rng = mulberry32(63149), pebbleGeometry = geometry(new THREE.DodecahedronGeometry(.18, 0)), pebbleMaterial = material(new THREE.MeshStandardMaterial({ color: '#8c7a61', roughness: 1 }));
             for (var b = 0; b < 54; b++) { var px = (rng() - .5) * 15, pz = (rng() - .5) * 12; if (Math.abs(px) < 4 && Math.abs(pz) < 3) continue; var pebble = new THREE.Mesh(pebbleGeometry, pebbleMaterial); pebble.position.set(px, -.13, pz); pebble.scale.set(.4 + rng(), .35 + rng() * .5, .5 + rng()); pebble.rotation.set(rng(), rng(), rng()); scene.add(pebble); }
-            var cliffMaterial = material(new THREE.MeshStandardMaterial({ color: '#ad9474', roughness: 1, flatShading: true })), cliffGeometry = geometry(new THREE.CylinderGeometry(1.4, 2.4, 2, 5));
+            var cliffMaterial = material(new THREE.MeshStandardMaterial({ color: '#b89f7e', map: strataMap, bumpMap: strataMap, bumpScale: .028, roughness: .96, flatShading: true })), cliffGeometry = geometry(new THREE.CylinderGeometry(1.4, 2.4, 2, 5));
             for (var ridge = 0; ridge < 9; ridge++) { var rock = new THREE.Mesh(cliffGeometry, cliffMaterial); rock.position.set((ridge - 4) * 3.5, .25 + rng() * .3, -9.5 - rng() * 2); rock.scale.set(1 + rng() * .5, .7 + rng(), .8 + rng()); scene.add(rock); }
             // Generic fragment outlines illustrate surface observations, not diagnostic anatomy.
-            var boneCanvas = document.createElement('canvas'); boneCanvas.width = boneCanvas.height = 128;
+            var boneCanvas = document.createElement('canvas'); boneCanvas.width = boneCanvas.height = 256;
             var boneInk = boneCanvas.getContext('2d'), boneRng = mulberry32(45070);
-            boneInk.fillStyle = '#f4ecda'; boneInk.fillRect(0,0,128,128);
-            for (var pore = 0; pore < 1050; pore++) { boneInk.fillStyle = pore % 3 ? 'rgba(103,84,56,.12)' : 'rgba(255,255,255,.45)'; var poreSize = .5 + boneRng() * 2; boneInk.fillRect(boneRng() * 128,boneRng() * 128,poreSize,poreSize); }
-            boneInk.strokeStyle = 'rgba(115,90,54,.13)'; boneInk.lineWidth = .65;
-            for (var seam = 0; seam < 13; seam++) { var bx = boneRng() * 128, by = boneRng() * 128; boneInk.beginPath(); boneInk.moveTo(bx,by); boneInk.quadraticCurveTo(bx + 5,by + 8,bx - 3,by + 16); boneInk.stroke(); }
+            if (boneInk) {
+              var boneWash = boneInk.createLinearGradient(0, 0, 256, 256);
+              boneWash.addColorStop(0, '#f5eedc');
+              boneWash.addColorStop(0.5, '#eadcc0');
+              boneWash.addColorStop(1, '#e1cfa9');
+              boneInk.fillStyle = boneWash; boneInk.fillRect(0,0,256,256);
+              // Longitudinal cortical bone Haversian striations & mineralization bands
+              for (var fiber = 0; fiber < 96; fiber++) {
+                var fx = boneRng() * 256;
+                boneInk.strokeStyle = fiber % 3 === 0 ? 'rgba(255,250,238,0.28)' : 'rgba(118,92,58,0.11)';
+                boneInk.lineWidth = 0.7 + boneRng() * 1.1;
+                boneInk.beginPath();
+                boneInk.moveTo(fx, 0);
+                boneInk.bezierCurveTo(fx + (boneRng() - 0.5) * 8, 85, fx + (boneRng() - 0.5) * 8, 170, fx + (boneRng() - 0.5) * 6, 256);
+                boneInk.stroke();
+              }
+              for (var pore = 0; pore < 2400; pore++) {
+                boneInk.fillStyle = pore % 4 === 0 ? 'rgba(255,252,244,.42)' : (pore % 3 ? 'rgba(98,77,48,.16)' : 'rgba(72,54,32,.20)');
+                var poreSize = .6 + boneRng() * 2.2;
+                boneInk.fillRect(boneRng() * 256,boneRng() * 256,poreSize,poreSize * (0.7 + boneRng() * 0.8));
+              }
+              boneInk.strokeStyle = 'rgba(96,72,42,.22)'; boneInk.lineWidth = .85;
+              for (var seam = 0; seam < 24; seam++) {
+                var bx = boneRng() * 256, by = boneRng() * 256;
+                boneInk.beginPath(); boneInk.moveTo(bx,by);
+                boneInk.quadraticCurveTo(bx + (boneRng() - 0.3) * 14, by + 12 + boneRng() * 14, bx + (boneRng() - 0.5) * 18, by + 26 + boneRng() * 20);
+                boneInk.stroke();
+              }
+            }
             var boneMap = new THREE.CanvasTexture(boneCanvas); boneMap.encoding = THREE.sRGBEncoding; textures.push(boneMap);
-            var boneMaterial = material(new THREE.MeshStandardMaterial({ color: '#e8d7b6', map: boneMap, bumpMap: boneMap, bumpScale: .012, roughness: .82 }));
-            var boneShade = material(new THREE.MeshStandardMaterial({ color: '#cbb89a', map: boneMap, roughness: .9 }));
-            var fractureMaterial = material(new THREE.MeshStandardMaterial({ color: '#ad916a', map: boneMap, bumpMap: boneMap, bumpScale: .008, roughness: 1, side: THREE.DoubleSide }));
+            var boneMaterial = material(new THREE.MeshStandardMaterial({ color: '#e8d7b6', map: boneMap, bumpMap: boneMap, bumpScale: .018, roughness: .78, metalness: 0.02 }));
+            var boneShade = material(new THREE.MeshStandardMaterial({ color: '#cbb89a', map: boneMap, bumpMap: boneMap, bumpScale: .012, roughness: .88 }));
+            var fractureMaterial = material(new THREE.MeshStandardMaterial({ color: '#ad916a', map: boneMap, bumpMap: boneMap, bumpScale: .014, roughness: .96, side: THREE.DoubleSide }));
             function weatherGeometry(value, compact) {
               var positions = value.attributes.position;
               for (var v = 0; v < positions.count; v++) {
@@ -18641,7 +18755,7 @@ var CLASSIFY_CASES = [
             }
             var selectGeo = geometry(new THREE.EdgesGeometry(geometry(new THREE.BoxGeometry(1.10, .055, 1.10)))), selectMat = material(new THREE.LineBasicMaterial({ color: '#fff3aa', depthTest: false }));
             selected = new THREE.LineSegments(selectGeo, selectMat); selected.renderOrder = 5; scene.add(selected);
-            var dustMat = material(new THREE.MeshBasicMaterial({ color: '#dfc29b' })); dust = new THREE.InstancedMesh(geometry(new THREE.BoxGeometry(.045,.035,.045)), dustMat, 108); dust.name = 'dino-excavation-dust'; dust.userData.role = 'excavation-dust'; dust.frustumCulled = false; dust.count = 0; scene.add(dust); instanced.push(dust);
+            var dustMat = material(new THREE.MeshStandardMaterial({ color: '#e6caa0', roughness: .95, metalness: 0, transparent: true, opacity: .78, depthWrite: false })); dust = new THREE.InstancedMesh(geometry(new THREE.IcosahedronGeometry(.024, 0)), dustMat, 108); dust.name = 'dino-excavation-dust'; dust.userData.role = 'excavation-dust'; dust.frustumCulled = false; dust.count = 0; scene.add(dust); instanced.push(dust);
             var extractionMat = material(new THREE.MeshStandardMaterial({ color: '#b99062', map: grainMap, roughness: 1, transparent: true, opacity: .46, depthWrite: false }));
             extraction = new THREE.InstancedMesh(geometry(new THREE.BoxGeometry(.98,.46,.98)), extractionMat, 9); extraction.name = 'dino-removed-sediment'; extraction.userData.role = 'excavation-removal-feedback'; extraction.frustumCulled = false; extraction.count = 0; scene.add(extraction); instanced.push(extraction);
             // Dashed former surfaces compare only an observed completed stroke.
@@ -18929,11 +19043,13 @@ var CLASSIFY_CASES = [
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var el = React.createElement;
-      var d = (ctx.toolData && ctx.toolData.dinoLab) || {};
+      var rawDino = (ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData.dinoLab : null;
+      var d = (rawDino && typeof rawDino === 'object' && !Array.isArray(rawDino)) ? rawDino : {};
       // Section-cue ink: teal-300 was designed for the dark substrate and is
       // invisible (1.19:1) on the light one. Same DOM sniff probability uses;
       // re-evaluated every render, so theme toggles keep it honest.
-      var dinoCueInk = (typeof document !== 'undefined' && document.querySelector('.theme-dark,.theme-contrast,[data-stem-theme=dark],[data-stem-theme=contrast]')) ? '#5eead4' : '#115e59';
+      var isContrastDino = !!ctx.isContrast || (typeof ctx.theme === 'string' && ctx.theme.indexOf('contrast') !== -1) || (typeof document !== 'undefined' && !!document.querySelector('.theme-contrast,[data-stem-theme=contrast]'));
+      var dinoCueInk = isContrastDino ? '#ffff00' : ((typeof document !== 'undefined' && document.querySelector('.theme-dark,[data-stem-theme=dark]')) ? '#5eead4' : '#115e59');
       var FIELD_PROGRESS_VERSION = 1;
       function fieldProgressMap(value) {
         var out = {};
@@ -19316,10 +19432,24 @@ var CLASSIFY_CASES = [
         var active = tab === tb.id;
         return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'data-tab-group': tabGroupFor(tb.id), title: tabGroupFor(tb.id) + ': ' + tb.label, tabIndex: active ? 0 : -1, 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', onKeyDown: function (event) { handleTabKeyDown(event, tabIndex); }, onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { flexShrink: 0, minHeight: 44, padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
       }));
+      var dinoSeenCount = (d.seen && typeof d.seen === 'object' && !Array.isArray(d.seen)) ? Object.keys(d.seen).length : 0;
       var tabNavigation = el('nav', { className: 'dinolab-navigation', 'aria-label': __alloT('stem.dinolab.a11y_dino_lab_section_navigation', 'Dino Lab section navigation'), style: { background: T.deeper } },
-        el('div', { className: 'dinolab-section-cue', style: { display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px 0', color: T.soft, fontSize: 11.5 } },
-          el('div', { className: 'dinolab-wordmark' }, el('span', { 'aria-hidden': 'true', className: 'dinolab-wordmark-symbol' }, 'D.'), el('span', null, el('strong', null, t('stem.dinolab.studio_name', 'Dino Lab')), el('small', null, t('stem.dinolab.studio_subtitle', 'Paleontology studio')))),
+        el('div', { className: 'dinolab-section-cue', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, padding: '7px 12px 0', color: T.soft, fontSize: 11.5 } },
+          el('div', { className: 'dinolab-wordmark' },
+            el('span', { 'aria-hidden': 'true', className: 'dinolab-wordmark-symbol' },
+              el('svg', { width: 24, height: 24, viewBox: '0 0 28 28', 'aria-hidden': 'true', focusable: 'false' },
+                el('path', { d: 'M14 4 A10 10 0 1 1 5.5 19.2 A7 7 0 1 1 18.8 11 A4.2 4.2 0 1 1 11.8 14.5 A2 2 0 1 1 15 13.2', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' }),
+                el('circle', { cx: 14, cy: 14, r: 1.5, fill: 'currentColor' })
+              )
+            ),
+            el('span', null, el('strong', null, t('stem.dinolab.studio_name', 'Dino Lab')), el('small', null, t('stem.dinolab.studio_subtitle', 'Paleontology studio')))
+          ),
           el('span', { className: 'dinolab-current-group', style: { textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 900, color: dinoCueInk } }, t('stem.dinolab.nav_' + (activeTabGroup === 'Practice and teach' ? 'practice' : activeTabGroup.toLowerCase()), activeTabGroup)),
+          el('div', { className: 'dinolab-telemetry-pills', 'aria-label': __alloT('stem.dinolab.telemetry_summary', 'Paleontology catalog summary') },
+            el('span', { className: 'dinolab-telemetry-pill' }, DINOS.length + ' ' + __alloT('stem.dinolab.pill_species', 'species')),
+            el('span', { className: 'dinolab-telemetry-pill' }, PERIODS.length + ' ' + __alloT('stem.dinolab.pill_eras', 'eras')),
+            el('span', { className: 'dinolab-telemetry-pill' }, dinoSeenCount + ' ' + __alloT('stem.dinolab.pill_studied', 'studied'))
+          ),
           el('select', { id: 'dino-section-picker', 'aria-label': __alloT('stem.dinolab.jump_to_section', 'Jump to a lab section'), value: tab, onChange: function (event) { var target = event.target.value; if (!TABS.some(function (tb) { return tb.id === target; })) return; upd('tab', target); focusSoon('dinotab-' + target); }, style: { marginLeft: 'auto', flex: '0 1 260px', minWidth: 0, maxWidth: '70%', minHeight: 44, padding: '7px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.panel, color: T.text, fontSize: 13, fontWeight: 700 } },
             [['Discover', 'nav_discover'], ['Investigate', 'nav_investigate'], ['Explain', 'nav_explain'], ['Practice and teach', 'nav_practice']].map(function (group) {
               return el('optgroup', { key: group[0], label: t('stem.dinolab.' + group[1], group[0]) }, TABS.filter(function (tb) { return tabGroupFor(tb.id) === group[0]; }).map(function (tb) { return el('option', { key: tb.id, value: tb.id }, tb.label); }));
@@ -20292,12 +20422,65 @@ var CLASSIFY_CASES = [
               sunGlow.addColorStop(1, 'rgba(255,214,143,0)');
               skyContext.fillStyle = sunGlow;
               skyContext.fillRect(300, 0, 212, 160);
-              skyContext.fillStyle = habitat.cloud;
-              [[42, 82, 126, 13], [196, 104, 104, 10], [328, 91, 82, 8]].forEach(function (cloud) {
+              if (!studio) {
+                // Warm Mesozoic Rayleigh horizon glow & volcanic atmospheric haze band
+                var horizonScatter = skyContext.createLinearGradient(0, 126, 0, 214);
+                horizonScatter.addColorStop(0, 'rgba(255,214,158,0)');
+                horizonScatter.addColorStop(0.55, 'rgba(255,208,146,0.22)');
+                horizonScatter.addColorStop(0.84, 'rgba(230,174,126,0.16)');
+                horizonScatter.addColorStop(1, 'rgba(180,152,130,0)');
+                skyContext.fillStyle = horizonScatter;
+                skyContext.fillRect(0, 126, 512, 88);
+                // Distant volcanic caldera silhouette & soft translucent ash-steam plumes
+                skyContext.save();
+                skyContext.fillStyle = 'rgba(72,66,76,0.24)';
                 skyContext.beginPath();
-                skyContext.ellipse(cloud[0], cloud[1], cloud[2], cloud[3], 0, 0, Math.PI * 2);
+                skyContext.moveTo(0, 198);
+                skyContext.lineTo(54, 174);
+                skyContext.lineTo(86, 152);
+                skyContext.lineTo(96, 154);
+                skyContext.lineTo(132, 180);
+                skyContext.lineTo(222, 188);
+                skyContext.lineTo(298, 168);
+                skyContext.lineTo(318, 164);
+                skyContext.lineTo(366, 186);
+                skyContext.lineTo(448, 178);
+                skyContext.lineTo(512, 192);
+                skyContext.lineTo(512, 206);
+                skyContext.lineTo(0, 206);
+                skyContext.closePath();
                 skyContext.fill();
-              });
+                // Rising warm backlit volcanic vapor wisps
+                [[91, 148, 22, 11], [104, 134, 34, 14], [126, 122, 46, 13], [312, 158, 18, 9], [326, 147, 28, 11]].forEach(function (plume, idx) {
+                  var pGrad = skyContext.createRadialGradient(plume[0], plume[1], 1, plume[0], plume[1], plume[2]);
+                  pGrad.addColorStop(0, idx < 3 ? 'rgba(246,232,216,0.22)' : 'rgba(236,226,214,0.15)');
+                  pGrad.addColorStop(0.6, 'rgba(196,184,178,0.08)');
+                  pGrad.addColorStop(1, 'rgba(180,172,168,0)');
+                  skyContext.fillStyle = pGrad;
+                  skyContext.beginPath();
+                  skyContext.ellipse(plume[0], plume[1], plume[2], plume[3], -0.14, 0, Math.PI * 2);
+                  skyContext.fill();
+                });
+                skyContext.restore();
+                // Layered sunlit Mesozoic cloud banks
+                [[46, 82, 128, 14], [196, 102, 108, 12], [332, 90, 88, 10]].forEach(function (cloud) {
+                  var cGrad = skyContext.createLinearGradient(cloud[0], cloud[1] - cloud[3], cloud[0], cloud[1] + cloud[3]);
+                  cGrad.addColorStop(0, 'rgba(255,248,236,0.34)');
+                  cGrad.addColorStop(0.55, habitat.cloud);
+                  cGrad.addColorStop(1, 'rgba(92,102,116,0.10)');
+                  skyContext.fillStyle = cGrad;
+                  skyContext.beginPath();
+                  skyContext.ellipse(cloud[0], cloud[1], cloud[2], cloud[3], 0, 0, Math.PI * 2);
+                  skyContext.fill();
+                });
+              } else {
+                skyContext.fillStyle = habitat.cloud;
+                [[42, 82, 126, 13], [196, 104, 104, 10], [328, 91, 82, 8]].forEach(function (cloud) {
+                  skyContext.beginPath();
+                  skyContext.ellipse(cloud[0], cloud[1], cloud[2], cloud[3], 0, 0, Math.PI * 2);
+                  skyContext.fill();
+                });
+              }
               if (studio) {
                 var studioPool = skyContext.createRadialGradient(256, 114, 18, 256, 114, 258);
                 studioPool.addColorStop(0, 'rgba(126,169,188,0.16)');
@@ -20438,7 +20621,18 @@ var CLASSIFY_CASES = [
             // Draw the faded floor before translucent life surfaces and contact
             // stamps, while opaque specimen depth continues to occlude it.
             if (studio) ground.renderOrder = -1;
-            var habitatPlants = [], waterScenery = null;
+            var habitatPlants = [], waterScenery = null, mesozoicMistRings = [];
+            var mesozoicAtmoDome = null, mesozoicMotes = null, studioMotes = null;
+            var mesozoicShaderUniforms = [];
+            function isDinoHighContrast() {
+              if (typeof document !== 'undefined') {
+                if ((document.body && document.body.classList && document.body.classList.contains('theme-contrast')) ||
+                    (document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast'))) return true;
+                if (canvas && canvas.closest && canvas.closest('.theme-contrast, [data-stem-theme="contrast"]')) return true;
+              }
+              return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(forced-colors: active)').matches);
+            }
+            var initialDinoContrast = isDinoHighContrast();
             if (!studio) {
               var landscape = dinoHabitatLandscape(THREE, habitat, len, groundWidth, groundDepth, String(dn.id).split('').reduce(function (seed, char) { return ((seed * 31) + char.charCodeAt(0)) >>> 0; }, 97));
               var terrainApron = landscape.getObjectByName('dino-expanded-terrain');
@@ -20451,6 +20645,277 @@ var CLASSIFY_CASES = [
                 terrainApron.material.dispose(); terrainApron.material = groundMaterial;
               }
               scene.add(landscape);
+              // Translucent Mesozoic valley & volcanic horizon mist veils (disposed by disposeObject on unmount)
+              var mistCanvas = document.createElement('canvas');
+              mistCanvas.width = 512; mistCanvas.height = 128;
+              var mistCtx = mistCanvas.getContext('2d');
+              if (mistCtx) {
+                var mistRng = mulberry32(88421);
+                var mistGrad = mistCtx.createLinearGradient(0, 0, 0, 128);
+                mistGrad.addColorStop(0, 'rgba(255,255,255,0)');
+                mistGrad.addColorStop(0.32, 'rgba(255,248,236,0.38)');
+                mistGrad.addColorStop(0.68, 'rgba(244,236,226,0.52)');
+                mistGrad.addColorStop(1, 'rgba(235,228,220,0)');
+                mistCtx.fillStyle = mistGrad;
+                mistCtx.fillRect(0, 0, 512, 128);
+                for (var wisp = 0; wisp < 26; wisp++) {
+                  var wx = mistRng() * 512, wy = 34 + mistRng() * 60;
+                  var wr = 24 + mistRng() * 58, wh = 8 + mistRng() * 16;
+                  var wGrad = mistCtx.createRadialGradient(wx, wy, 1, wx, wy, wr);
+                  wGrad.addColorStop(0, 'rgba(255,244,228,0.22)');
+                  wGrad.addColorStop(1, 'rgba(255,244,228,0)');
+                  mistCtx.fillStyle = wGrad;
+                  mistCtx.beginPath();
+                  mistCtx.ellipse(wx, wy, wr, wh, 0, 0, Math.PI * 2);
+                  mistCtx.fill();
+                }
+                var mistTex = new THREE.CanvasTexture(mistCanvas);
+                mistTex.wrapS = THREE.RepeatWrapping;
+                mistTex.wrapT = THREE.ClampToEdgeWrapping;
+                if (THREE.sRGBEncoding !== undefined) mistTex.encoding = THREE.sRGBEncoding;
+                if (THREE.SRGBColorSpace !== undefined) mistTex.colorSpace = THREE.SRGBColorSpace;
+                var mistBaseRadius = Math.max(20, (landscape.userData && landscape.userData.outerRadius ? landscape.userData.outerRadius * 0.56 : len * 2.2));
+                var mistHeight = Math.max(2.6, len * 0.28);
+                var mistTint = new THREE.Color(habitat.fog || '#9aa497').lerp(new THREE.Color(habitat.skyHorizon || '#d8c9b0'), 0.45).convertSRGBToLinear();
+                [
+                  { r: mistBaseRadius, h: mistHeight, y: mistHeight * 0.34, opacity: 0.22, speed: 0.0085 },
+                  { r: mistBaseRadius * 1.38, h: mistHeight * 1.45, y: mistHeight * 0.56, opacity: 0.16, speed: -0.0052 }
+                ].forEach(function (band, bandIdx) {
+                  var mTex = bandIdx === 0 ? mistTex : mistTex.clone();
+                  if (bandIdx > 0) { mTex.needsUpdate = true; mTex.repeat.set(2, 1); }
+                  var mMat = new THREE.MeshBasicMaterial({
+                    color: mistTint, map: mTex, transparent: true, opacity: band.opacity,
+                    depthWrite: false, side: THREE.DoubleSide, fog: true
+                  });
+                  var mGeo = new THREE.CylinderGeometry(band.r, band.r * 1.05, band.h, 48, 1, true);
+                  var mMesh = new THREE.Mesh(mGeo, mMat);
+                  mMesh.name = 'dinolab-mesozoic-mist-' + (bandIdx + 1);
+                  mMesh.userData.dinoEnvironment = 'atmospheric-mist';
+                  mMesh.position.y = band.y;
+                  mMesh.renderOrder = -2;
+                  mMesh.visible = !initialDinoContrast;
+                  scene.add(mMesh);
+                  mesozoicMistRings.push({ mesh: mMesh, speed: band.speed });
+                });
+              }
+              // Custom WebGL1 / GLSL ES 1.00 Mesozoic golden-amber horizon scattering & volcanic thermal haze dome
+              if (typeof THREE.ShaderMaterial === 'function') {
+                var atmoUniforms = {
+                  uTime: { value: 4.2 },
+                  uSunDir: { value: sun.position.clone().normalize() },
+                  uHorizonColor: { value: new THREE.Color(habitat.skyHorizon || '#e3c090').convertSRGBToLinear() },
+                  uEmberColor: { value: new THREE.Color('#ff8e3c').convertSRGBToLinear() },
+                  uZenithColor: { value: new THREE.Color(habitat.skyTop || '#2c4c6b').convertSRGBToLinear() }
+                };
+                var atmoMat = new THREE.ShaderMaterial({
+                  uniforms: atmoUniforms,
+                  vertexShader: [
+                    'varying vec3 vDinoAtmoDir;',
+                    'void main() {',
+                    '  vDinoAtmoDir = normalize(position);',
+                    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                    '}'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform float uTime;',
+                    'uniform vec3 uSunDir;',
+                    'uniform vec3 uHorizonColor;',
+                    'uniform vec3 uEmberColor;',
+                    'uniform vec3 uZenithColor;',
+                    'varying vec3 vDinoAtmoDir;',
+                    'void main() {',
+                    '  vec3 d = normalize(vDinoAtmoDir);',
+                    '  float elev = clamp(d.y, -0.1, 1.0);',
+                    '  float horizonBand = exp(-abs(elev - 0.045) * 11.5);',
+                    '  float az = atan(d.z, d.x);',
+                    '  float strata = 0.5 + 0.5 * sin(az * 4.0 + uTime * 0.14 + sin(elev * 18.0 - uTime * 0.22));',
+                    '  float sunAlign = max(dot(d, normalize(uSunDir)), 0.0);',
+                    '  float mieScatter = pow(sunAlign, 5.0) * 0.55 + pow(sunAlign, 22.0) * 0.45;',
+                    '  float volcanicGlow = exp(-pow(elev - 0.015, 2.0) * 180.0) * (0.45 + 0.55 * sin(az * 2.0 - 1.1 + uTime * 0.18));',
+                    '  vec3 col = mix(uHorizonColor, uEmberColor, clamp(volcanicGlow * 0.55 + mieScatter * 0.32, 0.0, 1.0));',
+                    '  col = mix(col, uZenithColor, smoothstep(0.18, 0.65, elev) * 0.35);',
+                    '  float alpha = clamp(horizonBand * (0.19 + 0.11 * strata) + mieScatter * 0.18 + volcanicGlow * 0.14, 0.0, 0.42);',
+                    '  alpha *= smoothstep(-0.08, 0.02, elev) * (1.0 - smoothstep(0.42, 0.85, elev));',
+                    '  gl_FragColor = vec4(col, alpha);',
+                    '}'
+                  ].join('\n'),
+                  transparent: true,
+                  depthWrite: false,
+                  side: THREE.BackSide,
+                  fog: false
+                });
+                var atmoRadius = Math.max(120, len * 9.5);
+                mesozoicAtmoDome = new THREE.Mesh(new THREE.SphereGeometry(atmoRadius, 32, 16), atmoMat);
+                mesozoicAtmoDome.name = 'dinolab-mesozoic-atmo-dome';
+                mesozoicAtmoDome.userData.dinoEnvironment = 'mesozoic-atmosphere';
+                mesozoicAtmoDome.raycast = function () {};
+                mesozoicAtmoDome.renderOrder = -3;
+                mesozoicAtmoDome.visible = !initialDinoContrast;
+                scene.add(mesozoicAtmoDome);
+                mesozoicShaderUniforms.push(atmoUniforms);
+
+                // Custom WebGL1 / GLSL ES 1.00 drifting sunlit fern-spore, volcanic ash & warm ember motes
+                if (typeof THREE.Points === 'function') {
+                  var moteCount = 140;
+                  var moteRng = mulberry32(String(dn.id || 'dino').split('').reduce(function (s, ch) { return ((s * 31) + ch.charCodeAt(0)) >>> 0; }, 7713));
+                  var motePos = new Float32Array(moteCount * 3);
+                  var motePhase = new Float32Array(moteCount);
+                  var moteSize = new Float32Array(moteCount);
+                  var moteKind = new Float32Array(moteCount);
+                  var moteSpreadX = Math.max(12, groundWidth * 0.72);
+                  var moteSpreadZ = Math.max(10, groundDepth * 0.82);
+                  var moteCeiling = Math.max(3.6, ht * 1.95);
+                  for (var mi = 0; mi < moteCount; mi++) {
+                    motePos[mi * 3] = (moteRng() - 0.5) * moteSpreadX;
+                    motePos[mi * 3 + 1] = 0.25 + moteRng() * moteCeiling;
+                    motePos[mi * 3 + 2] = (moteRng() - 0.5) * moteSpreadZ;
+                    motePhase[mi] = moteRng() * Math.PI * 2;
+                    moteSize[mi] = 2.6 + moteRng() * 5.2;
+                    var kindRoll = moteRng();
+                    moteKind[mi] = kindRoll < 0.58 ? 0.0 : (kindRoll < 0.86 ? 1.0 : 2.0);
+                  }
+                  var moteGeo = new THREE.BufferGeometry();
+                  moteGeo.setAttribute('position', new THREE.Float32BufferAttribute(motePos, 3));
+                  moteGeo.setAttribute('aPhase', new THREE.Float32BufferAttribute(motePhase, 1));
+                  moteGeo.setAttribute('aSize', new THREE.Float32BufferAttribute(moteSize, 1));
+                  moteGeo.setAttribute('aKind', new THREE.Float32BufferAttribute(moteKind, 1));
+                  var moteUniforms = {
+                    uTime: { value: 4.2 },
+                    uCeiling: { value: moteCeiling },
+                    uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
+                    uSporeColor: { value: new THREE.Color('#ffe7a8').convertSRGBToLinear() },
+                    uAshColor: { value: new THREE.Color('#d8cfc4').convertSRGBToLinear() },
+                    uEmberColor: { value: new THREE.Color('#ff9642').convertSRGBToLinear() }
+                  };
+                  var moteMat = new THREE.ShaderMaterial({
+                    uniforms: moteUniforms,
+                    vertexShader: [
+                      'attribute float aPhase;',
+                      'attribute float aSize;',
+                      'attribute float aKind;',
+                      'uniform float uTime;',
+                      'uniform float uCeiling;',
+                      'uniform float uPixelRatio;',
+                      'varying float vKind;',
+                      'varying float vTwinkle;',
+                      'void main() {',
+                      '  vec3 p = position;',
+                      '  float driftSpeed = aKind > 1.5 ? 0.28 : (aKind > 0.5 ? 0.14 : 0.19);',
+                      '  float rise = mod(p.y + uTime * driftSpeed + aPhase * 0.4, max(uCeiling, 1.0));',
+                      '  p.y = 0.18 + rise;',
+                      '  p.x += sin(uTime * 0.34 + aPhase + rise * 0.9) * 0.42;',
+                      '  p.z += cos(uTime * 0.29 + aPhase * 1.3 + rise * 0.7) * 0.36;',
+                      '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);',
+                      '  float dist = max(-mvPos.z, 0.8);',
+                      '  gl_PointSize = clamp(aSize * uPixelRatio * (11.0 / dist), 1.6, 15.0);',
+                      '  vKind = aKind;',
+                      '  vTwinkle = 0.58 + 0.42 * sin(uTime * 1.45 + aPhase * 2.1);',
+                      '  gl_Position = projectionMatrix * mvPos;',
+                      '}'
+                    ].join('\n'),
+                    fragmentShader: [
+                      'uniform vec3 uSporeColor;',
+                      'uniform vec3 uAshColor;',
+                      'uniform vec3 uEmberColor;',
+                      'varying float vKind;',
+                      'varying float vTwinkle;',
+                      'void main() {',
+                      '  vec2 uv = gl_PointCoord - vec2(0.5);',
+                      '  float r = length(uv);',
+                      '  if (r > 0.5) discard;',
+                      '  float glow = smoothstep(0.5, 0.04, r);',
+                      '  float core = smoothstep(0.26, 0.0, r);',
+                      '  vec3 col = vKind > 1.5 ? uEmberColor : (vKind > 0.5 ? uAshColor : uSporeColor);',
+                      '  col += vec3(0.24, 0.18, 0.08) * core;',
+                      '  float baseAlpha = vKind > 1.5 ? 0.62 : (vKind > 0.5 ? 0.34 : 0.48);',
+                      '  gl_FragColor = vec4(col, glow * glow * baseAlpha * vTwinkle);',
+                      '}'
+                    ].join('\n'),
+                    transparent: true,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending
+                  });
+                  mesozoicMotes = new THREE.Points(moteGeo, moteMat);
+                  mesozoicMotes.name = 'dinolab-mesozoic-motes';
+                  mesozoicMotes.userData.dinoEnvironment = 'mesozoic-motes';
+                  mesozoicMotes.raycast = function () {};
+                  mesozoicMotes.frustumCulled = false;
+                  mesozoicMotes.renderOrder = 2;
+                  mesozoicMotes.visible = !initialDinoContrast;
+                  scene.add(mesozoicMotes);
+                  mesozoicShaderUniforms.push(moteUniforms);
+                }
+              }
+            } else if (!props.shapeStudy && typeof THREE.ShaderMaterial === 'function' && typeof THREE.Points === 'function') {
+              // Subtle gallery spotlight air motes in studio mode (non-occluding, bypassed in High-Contrast)
+              var stCount = 44;
+              var stRng = mulberry32(41809);
+              var stPos = new Float32Array(stCount * 3);
+              var stPhase = new Float32Array(stCount);
+              var stSize = new Float32Array(stCount);
+              var stSpan = Math.max(4.5, len * 1.15);
+              var stCeil = Math.max(2.6, ht * 1.85);
+              for (var sti = 0; sti < stCount; sti++) {
+                var stAng = stRng() * Math.PI * 2;
+                var stRad = stSpan * (0.45 + stRng() * 0.55);
+                stPos[sti * 3] = Math.cos(stAng) * stRad;
+                stPos[sti * 3 + 1] = 0.4 + stRng() * stCeil;
+                stPos[sti * 3 + 2] = Math.sin(stAng) * stRad;
+                stPhase[sti] = stRng() * Math.PI * 2;
+                stSize[sti] = 2.0 + stRng() * 2.8;
+              }
+              var stGeo = new THREE.BufferGeometry();
+              stGeo.setAttribute('position', new THREE.Float32BufferAttribute(stPos, 3));
+              stGeo.setAttribute('aPhase', new THREE.Float32BufferAttribute(stPhase, 1));
+              stGeo.setAttribute('aSize', new THREE.Float32BufferAttribute(stSize, 1));
+              var stUniforms = {
+                uTime: { value: 4.2 },
+                uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
+                uColor: { value: new THREE.Color('#dcecf8').convertSRGBToLinear() }
+              };
+              var stMat = new THREE.ShaderMaterial({
+                uniforms: stUniforms,
+                vertexShader: [
+                  'attribute float aPhase;',
+                  'attribute float aSize;',
+                  'uniform float uTime;',
+                  'uniform float uPixelRatio;',
+                  'varying float vAlpha;',
+                  'void main() {',
+                  '  vec3 p = position;',
+                  '  p.x += sin(uTime * 0.22 + aPhase) * 0.18;',
+                  '  p.y += sin(uTime * 0.18 + aPhase * 1.4) * 0.14;',
+                  '  p.z += cos(uTime * 0.20 + aPhase * 0.9) * 0.18;',
+                  '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);',
+                  '  float dist = max(-mvPos.z, 1.0);',
+                  '  gl_PointSize = clamp(aSize * uPixelRatio * (8.5 / dist), 1.4, 8.0);',
+                  '  vAlpha = 0.14 + 0.10 * sin(uTime * 0.95 + aPhase * 1.9);',
+                  '  gl_Position = projectionMatrix * mvPos;',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform vec3 uColor;',
+                  'varying float vAlpha;',
+                  'void main() {',
+                  '  float r = length(gl_PointCoord - vec2(0.5));',
+                  '  if (r > 0.5) discard;',
+                  '  float soft = smoothstep(0.5, 0.05, r);',
+                  '  gl_FragColor = vec4(uColor, soft * soft * vAlpha);',
+                  '}'
+                ].join('\n'),
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+              });
+              studioMotes = new THREE.Points(stGeo, stMat);
+              studioMotes.name = 'dinolab-studio-motes';
+              studioMotes.userData.dinoEnvironment = 'studio-motes';
+              studioMotes.raycast = function () {};
+              studioMotes.frustumCulled = false;
+              studioMotes.renderOrder = 2;
+              studioMotes.visible = !initialDinoContrast;
+              scene.add(studioMotes);
+              mesozoicShaderUniforms.push(stUniforms);
             }
             function habitatGroundHeight(x, z) {
               return dinoHabitatClearingHeight(habitat, groundWidth, groundDepth, x, z);
@@ -20675,6 +21140,56 @@ var CLASSIFY_CASES = [
                 if (renderer.capabilities && renderer.capabilities.getMaxAnisotropy) featherTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
                 featherVaneMat.map = featherTexture;
               }
+            }
+            // Naturalistic sunlit organic dermal/scale subsurface & feather-edge Fresnel specular rim (strictly post-lighting, light-modulated, High-Contrast bypassed)
+            var dinoRimUniformState = {
+              dinoRimBypass: { value: initialDinoContrast ? 1.0 : 0.0 },
+              dinoSubsurfaceTint: { value: new THREE.Color(studio ? '#d8e9f5' : '#f2b872').convertSRGBToLinear() }
+            };
+            function applyMesozoicRimSheen(mat, strength, rimHex) {
+              if (!mat || strength <= 0) return;
+              var prevCompile = mat.onBeforeCompile;
+              var prevKeyFn = mat.customProgramCacheKey;
+              var rimColor = new THREE.Color(rimHex).convertSRGBToLinear();
+              mat.onBeforeCompile = function (shader, rendererArg) {
+                if (typeof prevCompile === 'function') prevCompile.call(this, shader, rendererArg);
+                shader.uniforms.dinoRimColor = { value: rimColor };
+                shader.uniforms.dinoRimStrength = { value: strength };
+                shader.uniforms.dinoRimBypass = dinoRimUniformState.dinoRimBypass;
+                shader.uniforms.dinoSubsurfaceTint = dinoRimUniformState.dinoSubsurfaceTint;
+                if (shader.fragmentShader.indexOf('uniform vec3 dinoRimColor;') === -1) {
+                  shader.fragmentShader = 'uniform vec3 dinoRimColor;\nuniform float dinoRimStrength;\nuniform float dinoRimBypass;\nuniform vec3 dinoSubsurfaceTint;\n' + shader.fragmentShader;
+                }
+                if (shader.fragmentShader.indexOf('#include <tonemapping_fragment>') !== -1 && shader.fragmentShader.indexOf('dinoMesozoicRim') === -1) {
+                  shader.fragmentShader = shader.fragmentShader.replace('#include <tonemapping_fragment>', [
+                    'if (dinoRimBypass < 0.5) {',
+                    '  vec3 dinoN = normalize(normal);',
+                    '  vec3 dinoV = normalize(vViewPosition);',
+                    '  float dinoRimFacing = clamp(abs(dot(dinoN, dinoV)), 0.0, 1.0);',
+                    '  float dinoMesozoicRim = pow(1.0 - dinoRimFacing, 2.35) * dinoRimStrength;',
+                    '  float dinoDermalSpec = pow(1.0 - dinoRimFacing, 4.4) * dinoRimStrength * 0.52;',
+                    '  float dinoUpWrap = clamp(dinoN.y * 0.5 + 0.5, 0.25, 1.0);',
+                    '  float dinoRimLuma = clamp(dot(reflectedLight.directDiffuse + reflectedLight.indirectDiffuse, vec3(1.15)), 0.08, 1.0);',
+                    '  vec3 dinoSubsurf = mix(dinoRimColor, dinoSubsurfaceTint, 0.35) * dinoMesozoicRim + dinoRimColor * dinoDermalSpec * dinoUpWrap;',
+                    '  gl_FragColor.rgb += dinoSubsurf * dinoRimLuma * diffuseColor.a;',
+                    '}',
+                    '#include <tonemapping_fragment>'
+                  ].join('\n'));
+                }
+              };
+              mat.customProgramCacheKey = function () {
+                var baseKey = typeof prevKeyFn === 'function' ? prevKeyFn.call(this) : '';
+                return baseKey + '|dinolab-mesozoic-rim-v2';
+              };
+              mat.needsUpdate = true;
+            }
+            var rimWarmHex = studio ? '#cfe4f2' : (habitat.sun || '#ffefd4');
+            applyMesozoicRimSheen(bodyMat, lifeSurface ? 0.11 : 0.05, rimWarmHex);
+            applyMesozoicRimSheen(headMat, lifeSurface ? 0.12 : 0.05, rimWarmHex);
+            applyMesozoicRimSheen(anatomyAccentMat, lifeSurface ? 0.10 : 0.045, rimWarmHex);
+            if (!(integument.pattern === 'iridescent' && integument.directEvidence)) {
+              applyMesozoicRimSheen(featherVaneMat, lifeSurface ? 0.17 : 0.075, rimWarmHex);
+              if (contourCoatMat) applyMesozoicRimSheen(contourCoatMat, lifeSurface ? 0.15 : 0.065, rimWarmHex);
             }
             // Back-face casting avoids self-shadow fragments on overlapping closed skin.
             // Set this after cloning so surface relief and thin feather coats keep their shadows.
@@ -24919,7 +25434,26 @@ if (/Ceratops/i.test(cladeName)) {
                 var motionRunning = !motionPausedRef.current && !reducedMotionRef.current && !props.shapeStudy;
                 var motionDelta = dinoMotionStep(motionClockRef.current, performance.now(), motionRunning);
                 var idleTime = motionClockRef.current.elapsed;
-                if (waterScenery) waterScenery.normalMap.offset.set(idleTime * 0.008, idleTime * 0.004);
+                var shaderTime = (reducedMotionRef.current && idleTime === 0) ? 4.2 : idleTime;
+                var hcBypass = isDinoHighContrast();
+                dinoRimUniformState.dinoRimBypass.value = hcBypass ? 1.0 : 0.0;
+                if (waterScenery) {
+                  waterScenery.normalMap.offset.set(idleTime * 0.008, idleTime * 0.004);
+                  if (waterScenery.uniforms) {
+                    waterScenery.uniforms.uDinoWaterTime.value = shaderTime;
+                    waterScenery.uniforms.uDinoWaterActive.value = hcBypass ? 0.0 : 1.0;
+                  }
+                }
+                mesozoicShaderUniforms.forEach(function (u) {
+                  if (u && u.uTime) u.uTime.value = shaderTime;
+                });
+                if (mesozoicAtmoDome) mesozoicAtmoDome.visible = !hcBypass;
+                if (mesozoicMotes) mesozoicMotes.visible = !hcBypass;
+                if (studioMotes) studioMotes.visible = !hcBypass;
+                mesozoicMistRings.forEach(function (ring) {
+                  ring.mesh.visible = !hcBypass;
+                  ring.mesh.rotation.y = idleTime * ring.speed;
+                });
                 habitatPlants.forEach(function (plant) {
                   plant.mesh.rotation.z = Math.sin(idleTime * 0.72 + plant.phase) * 0.014;
                   plant.mesh.rotation.x = Math.cos(idleTime * 0.58 + plant.phase) * 0.008;
@@ -28689,8 +29223,55 @@ var evidenceRoute = [
       function renderMissionDeck() {
         var savedProgress = fieldProgressIsValid(d.field3dProgress) ? d.field3dProgress : fieldProgressRecordFor(d);
         var savedSpecies = fieldProgressIsValid(savedProgress) ? byId(savedProgress.speciesId) : null;
+        var activeEraFilter = typeof d.filterPeriod === 'string' ? d.filterPeriod : 'all';
+        var eraCounts = {
+          triassic: DINOS.filter(function (x) { return x.period === 'triassic'; }).length,
+          jurassic: DINOS.filter(function (x) { return x.period === 'jurassic'; }).length,
+          cretaceous: DINOS.filter(function (x) { return x.period === 'cretaceous'; }).length
+        };
+        var eraTotal = Math.max(1, eraCounts.triassic + eraCounts.jurassic + eraCounts.cretaceous);
+        var triW = Math.round((eraCounts.triassic / eraTotal) * 580);
+        var jurW = Math.round((eraCounts.jurassic / eraTotal) * 580);
+        var creW = Math.max(40, 580 - triW - jurW);
         return el('div', { 'data-dinolab-command': 'true' },
           renderTimeInquiry(),
+          el('section', {
+            className: 'dinolab-era-strip',
+            'aria-label': __alloT('stem.dinolab.era_workbench_aria', 'Mesozoic timeline overview and quick era filter')
+          },
+            el('div', { className: 'dinolab-era-strip-head' },
+              el('span', { className: 'dinolab-era-strip-title' }, __alloT('stem.dinolab.mesozoic_span_title', 'Mesozoic Catalog Distribution (252–66 Ma)')),
+              el('span', { className: 'dinolab-era-strip-meta' }, __alloT('stem.dinolab.mesozoic_span_sub', 'Triassic · Jurassic · Cretaceous · K–Pg boundary 66 Ma'))
+            ),
+            el('svg', { viewBox: '0 0 640 48', width: '100%', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', maxHeight: 54 } },
+              el('rect', { x: 2, y: 2, width: 636, height: 44, rx: 8, fill: 'var(--allo-stem-canvas,#0f172a)', stroke: 'var(--allo-stem-border,#334155)', strokeWidth: 1.2 }),
+              el('rect', { x: 14, y: 12, width: triW, height: 14, fill: '#b45309' }),
+              el('rect', { x: 14 + triW, y: 12, width: jurW, height: 14, fill: '#0f766e' }),
+              el('rect', { x: 14 + triW + jurW, y: 12, width: creW, height: 14, fill: '#4338ca' }),
+              el('line', { x1: 594, y1: 8, x2: 594, y2: 32, stroke: 'var(--dino-accent)', strokeWidth: 2, strokeDasharray: '3 2' }),
+              el('text', { x: 14, y: 40, fontSize: 10.5, fontWeight: 700, fill: 'var(--dino-ink)' }, 'Triassic (' + eraCounts.triassic + ') · 252–201 Ma'),
+              el('text', { x: 245, y: 40, fontSize: 10.5, fontWeight: 700, fill: 'var(--dino-ink)' }, 'Jurassic (' + eraCounts.jurassic + ') · 201–145 Ma'),
+              el('text', { x: 462, y: 40, fontSize: 10.5, fontWeight: 700, fill: 'var(--dino-ink)' }, 'Cretaceous (' + eraCounts.cretaceous + ') · 145–66 Ma')
+            ),
+            el('div', { className: 'dinolab-era-presets', role: 'group', 'aria-label': __alloT('stem.dinolab.quick_era_filters', 'Quick era catalog filters') },
+              el('span', { className: 'dinolab-era-preset-label' }, __alloT('stem.dinolab.quick_era_label', 'Quick filter:')),
+              [
+                { id: 'all', label: __alloT('stem.dinolab.era_all', 'All Eras') },
+                { id: 'triassic', label: __alloT('stem.dinolab.era_triassic', 'Triassic') },
+                { id: 'jurassic', label: __alloT('stem.dinolab.era_jurassic', 'Jurassic') },
+                { id: 'cretaceous', label: __alloT('stem.dinolab.era_cretaceous', 'Cretaceous') }
+              ].map(function (era) {
+                var active = activeEraFilter === era.id;
+                return el('button', {
+                  key: era.id,
+                  type: 'button',
+                  className: 'dinolab-era-chip',
+                  'aria-pressed': active ? 'true' : 'false',
+                  onClick: function () { upd('filterPeriod', era.id); announceToSR(__alloT('stem.dinolab.era_filter_sr', 'Filtered dinosaur catalog to ') + era.label); }
+                }, era.label);
+              })
+            )
+          ),
           !timeInquiryState(d.timeInquiry).started || timeInquiryState(d.timeInquiry).step === 4 ? renderLearningRoutes() : null,
           savedSpecies ? el('section', { className: 'dinolab-resume-card', 'aria-label': __alloT('stem.dinolab.a11y_saved_dino_lab_investigation', 'Saved Dino Lab investigation'), style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, padding: 12, marginBottom: 14, borderRadius: 10, background: T.deeper, border: '1px solid ' + T.border } },
             el('div', { style: { flex: '1 1 180px', fontSize: 13, lineHeight: 1.6 } },
@@ -28710,7 +29291,7 @@ var evidenceRoute = [
         '@media(max-width:480px){.dinolab-root #dinopanel{padding:10px!important}.dinolab-root .dinolab-tablist{padding:8px!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:thin}.dinolab-root .dinolab-section-cue{padding-left:10px!important;padding-right:10px!important}.dinolab-root .dinolab-3d-viewer{min-height:340px!important}.dinolab-root .dinolab-3d-canvas{height:340px!important}.dinolab-root .dinolab-3d-readouts{left:7px!important;right:7px!important;top:7px!important;gap:4px!important;max-height:70px}.dinolab-root .dinolab-3d-camera-readout{right:7px!important;bottom:58px!important;font-size:10px!important}.dinolab-root .dinolab-3d-status{left:7px!important;right:7px!important;bottom:7px!important;font-size:10px!important;padding:6px 8px!important}.dinolab-root .dinolab-3d-view-controls{align-items:stretch!important}.dinolab-root .dinolab-3d-view-controls>button{flex:1 1 72px}}';
       accessibilityStyles += '.dinolab-root .dinolab-evidence-workspace>*{min-width:0}.dinolab-root [data-evidence-workbench] select{max-width:100%}@media(max-width:760px){.dinolab-root .dinolab-evidence-workspace{grid-template-columns:minmax(0,1fr)!important}}';
       accessibilityStyles += [
-        '.dinolab-root{--dino-accent:color-mix(in srgb,var(--allo-stem-text,#f1f5f9) 72%,#0d9488);--dino-on-accent:var(--allo-stem-canvas,#0f172a);--dino-tint:color-mix(in srgb,var(--allo-stem-panel,#1e293b) 92%,#14b8a6);--dino-paper:color-mix(in srgb,var(--allo-stem-panel,#1e293b) 89%,#c9ac7d);--dino-ink:var(--allo-stem-text,#f1f5f9);--dino-fossil:color-mix(in srgb,var(--allo-stem-panel,#1e293b) 42%,#b89864);--dino-fossil-shadow:color-mix(in srgb,var(--allo-stem-text,#f1f5f9) 22%,#9a774a)}',
+        '.dinolab-root{--dino-accent:#0f766e;--dino-on-accent:#ffffff;--dino-tint:color-mix(in srgb,var(--allo-stem-panel,#1e293b) 92%,#14b8a6);--dino-paper:color-mix(in srgb,var(--allo-stem-panel,#1e293b) 89%,#c9ac7d);--dino-ink:var(--allo-stem-text,#f1f5f9);--dino-fossil:color-mix(in srgb,var(--allo-stem-panel,#1e293b) 42%,#b89864);--dino-fossil-shadow:color-mix(in srgb,var(--allo-stem-text,#f1f5f9) 22%,#9a774a)}.theme-dark .dinolab-root,[data-stem-theme=dark] .dinolab-root{--dino-accent:#5eead4;--dino-on-accent:#0f172a}',
         '.dinolab-root .dinolab-anatomy-page,.dinolab-root [data-evidence-workbench]{max-width:1240px;margin-inline:auto}.dinolab-root .dinolab-evidence-heading{padding:18px 22px;margin-bottom:16px;border:1px solid var(--allo-stem-border,#334155);border-left:4px solid var(--dino-accent);border-radius:4px 16px 16px 4px;background:linear-gradient(110deg,var(--dino-tint),var(--allo-stem-panel,#1e293b))}.dinolab-root .dinolab-evidence-heading>p:first-child{color:var(--dino-accent)}.dinolab-root .dinolab-evidence-heading h2{font-family:Georgia,Times,serif;font-size:clamp(28px,3vw,37px)!important;letter-spacing:-.025em;line-height:1.2!important}.dinolab-root .dinolab-evidence-heading>p:last-child{margin-bottom:0!important}',
         '.dinolab-root .dinolab-evidence-cases>button{display:flex;align-items:center;gap:14px;border-radius:14px!important;background:var(--allo-stem-panel,#1e293b)!important;box-shadow:0 2px 5px #00000008}.dinolab-root .dinolab-evidence-cases>button[aria-pressed=true]{border-color:var(--dino-accent)!important;box-shadow:inset 0 0 0 1px var(--dino-accent);background:var(--dino-tint)!important}.dinolab-root .dinolab-evidence-thumb{display:flex;align-items:center;justify-content:center;flex:0 0 88px;height:68px;padding:7px;border:1px solid var(--allo-stem-border,#334155);border-radius:10px;background:var(--dino-paper);box-sizing:border-box;overflow:hidden}.dinolab-root .dinolab-evidence-thumb svg{max-height:100%}.dinolab-root .dinolab-evidence-case-copy{min-width:0;display:block}.dinolab-root .dinolab-evidence-case-meta{display:block;font-size:11px;font-weight:600;color:var(--allo-stem-text-soft,#94a3b8);margin-bottom:5px}.dinolab-root .dinolab-evidence-case-title{display:block;font-size:16px;font-weight:800;line-height:1.4}.dinolab-root .dinolab-evidence-case-state{display:inline-block;margin-top:7px;font-size:10px;font-weight:700;color:var(--dino-accent)}',
         '.dinolab-root .dinolab-evidence-steps{gap:0!important;border-bottom:1px solid var(--allo-stem-border,#334155);padding-bottom:1px;margin-bottom:18px!important}.dinolab-root .dinolab-evidence-steps>button{background:transparent!important;border:0!important;border-bottom:3px solid transparent!important;border-radius:0!important;min-height:46px;text-decoration:none!important;margin-bottom:-2px}.dinolab-root .dinolab-evidence-steps>button[aria-current=step]{border-bottom-color:var(--dino-accent)!important;color:var(--dino-accent)!important}',
@@ -28760,6 +29341,7 @@ var evidenceRoute = [
         '.theme-contrast .dinolab-root .dinolab-entry-investigation,.theme-contrast .dinolab-root .dinolab-study-plate{background:var(--allo-stem-panel,#000)}@media(forced-colors:active){.dinolab-root .dinolab-entry-investigation,.dinolab-root .dinolab-study-plate{background:Canvas}.dinolab-root .dinolab-entry-primary{background:ButtonFace!important;color:ButtonText!important;border:2px solid ButtonText!important}.dinolab-root .dinolab-tablist>button[aria-selected=true]{color:HighlightText!important;background:Highlight!important}.dinolab-root .dinolab-route-card{border:1px solid ButtonText}.dinolab-root .dinolab-route-card svg,.dinolab-root .dinolab-study-plate svg{color:CanvasText!important}}'
       ].join('');
       accessibilityStyles += '.dinolab-root.is-field-focus #dinopanel{max-width:none;padding:10px!important}';
+      accessibilityStyles += '.dinolab-root .dinolab-telemetry-pills{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.dinolab-root .dinolab-telemetry-pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;background:var(--allo-stem-panel,#1e293b);color:var(--dino-ink);border:1px solid var(--allo-stem-border,#334155)}.dinolab-root .dinolab-era-strip{margin-bottom:18px;padding:14px 16px;border-radius:14px;border:1px solid var(--allo-stem-border,#334155);background:var(--allo-stem-panel,#1e293b);display:flex;flex-direction:column;gap:10px}.dinolab-root .dinolab-era-strip-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}.dinolab-root .dinolab-era-strip-title{font-size:12px;font-weight:800;color:var(--dino-ink)}.dinolab-root .dinolab-era-strip-meta{font-size:11px;color:var(--allo-stem-text-soft,#94a3b8)}.dinolab-root .dinolab-era-presets{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.dinolab-root .dinolab-era-preset-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--allo-stem-text-soft,#94a3b8)}.dinolab-root .dinolab-era-chip{min-height:44px;padding:8px 14px;border-radius:10px;border:1px solid var(--allo-stem-border,#334155);background:var(--allo-stem-canvas,#0f172a);color:var(--dino-ink);font-size:12px;font-weight:700;cursor:pointer}.dinolab-root .dinolab-era-chip[aria-pressed=true]{background:var(--dino-accent)!important;color:var(--dino-on-accent)!important;border-color:var(--dino-accent)!important}.theme-contrast .dinolab-root .dinolab-telemetry-pill,.theme-contrast .dinolab-root .dinolab-era-strip,.theme-contrast .dinolab-root .dinolab-era-chip{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}.theme-contrast .dinolab-root .dinolab-era-chip[aria-pressed=true]{background:#ffff00!important;color:#000!important;border-color:#ffff00!important}@media(forced-colors:active){.dinolab-root .dinolab-telemetry-pill,.dinolab-root .dinolab-era-strip{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.dinolab-root .dinolab-era-chip{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.dinolab-root .dinolab-era-chip[aria-pressed=true]{background:Highlight!important;color:HighlightText!important}}';
       return el('div', { className: 'dinolab-root' + (fieldFocusActive ? ' is-field-focus' : ''), style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), fieldFocusActive ? null : tabNavigation, el('div', { id: 'dinopanel', role: fieldFocusActive ? 'region' : 'tabpanel', 'aria-labelledby': fieldFocusActive ? null : 'dinotab-' + tab, 'aria-label': fieldFocusActive ? '3D Field Station focused workspace' : null, style: { padding: fieldFocusActive ? 10 : 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
     }
   });

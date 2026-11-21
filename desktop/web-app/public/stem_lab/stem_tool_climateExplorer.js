@@ -334,6 +334,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // ── State ──
       var safeObj = function(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; };
       var d = safeObj(safeObj(labToolData).climateExplorer);
+      var xpAwarded = safeObj(d.xpAwarded);
+      var _xpAwardedLocal = {};
+      function awardXPOnce(key, amount) {
+        if (!key || xpAwarded[key] || _xpAwardedLocal[key]) return false;
+        _xpAwardedLocal[key] = true;
+        setLabToolData(function(prev) {
+          var copy = Object.assign({}, safeObj(prev));
+          var ce = Object.assign({}, safeObj(copy.climateExplorer));
+          var map = Object.assign({}, safeObj(ce.xpAwarded));
+          if (map[key]) return prev;
+          map[key] = Date.now();
+          ce.xpAwarded = map;
+          copy.climateExplorer = ce;
+          return copy;
+        });
+        awardXP(amount);
+        return true;
+      }
       function upd(k, v) {
         setLabToolData(function(prev) {
           var copy = Object.assign({}, safeObj(prev));
@@ -667,7 +685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           if (opener) opener._ceCopyPending = null;
           upd({exportStatus:copied?'copied':'manual',exportedReport:copied?null:report});
           earnBadge('reporter');
-          if (copied) { awardXP(10); return; }
+          if (copied) { awardXPOnce('export-report', 10); return; }
           // A late clipboard response must not take focus away from a student
           // who has moved on. Check again after React has rendered the panel.
           if (opener && document.activeElement === opener && opener.getAttribute('data-ce-export-tab') === originTab) {
@@ -719,7 +737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           next[item.id] = { targetFreq: targetFreq, started: Date.now(), checkins: 0 };
           notice=t('stem.climateExplorer.carbon_pledge_added','Pledge saved for {habit}: target {target} {unit}.').replace('{habit}',item.label).replace('{target}',targetFreq).replace('{unit}',item.unit);
           playSound('hope');
-          awardXP(10);
+          awardXPOnce('pledge-' + item.id, 10);
         }
         upd({pledges:next,carbonStatus:notice});
         if(removed&&fromTracker){var remaining=Object.keys(next),index=previousIds.indexOf(item.id),nextId=remaining[Math.min(index,remaining.length-1)];focusClimate(nextId?'ce-carbon-checkin-'+nextId:'ce-carbon-pledges');}
@@ -730,10 +748,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       function pledgeCheckin(itemId) {
         var next=normalizedCarbonPledges(d.pledges),item=carbonHabitById(itemId);
         if (!next[itemId]||!item) return;
-        next[itemId]=Object.assign({},next[itemId],{checkins:Math.min(Number.MAX_SAFE_INTEGER,next[itemId].checkins+1),lastCheckin:Date.now()});
+        var now = Date.now();
+        var todayKey = new Date(now).toDateString();
+        var prevCheckin = next[itemId].lastCheckin;
+        if (Number.isFinite(prevCheckin) && new Date(prevCheckin).toDateString() === todayKey) {
+          var alreadyNotice = t('stem.climateExplorer.carbon_checkin_already_today', 'Already checked in today for {habit}. Come back tomorrow!').replace('{habit}', item.label);
+          upd({ carbonStatus: alreadyNotice });
+          return;
+        }
+        next[itemId]=Object.assign({},next[itemId],{checkins:Math.min(Number.MAX_SAFE_INTEGER,next[itemId].checkins+1),lastCheckin:now});
         var notice=t('stem.climateExplorer.carbon_checkin_saved','Check-in {number} saved for {habit}.').replace('{number}',next[itemId].checkins).replace('{habit}',item.label);
         playSound('correct');
-        awardXP(3);
+        awardXPOnce('checkin-' + itemId + '-' + todayKey, 3);
         upd({pledges:next,carbonStatus:notice});
         if (next[itemId].checkins >= 7) earnBadge('consistent');
       }
@@ -962,7 +988,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var granularExpanded = d.granularExpanded || {}; // { category: true }
       var granularCompareOpen = d.granularCompareOpen || false;
       var carbonPledges=normalizedCarbonPledges(d.pledges);
-      if(Object.keys(granularFreq).filter(function(id){return granularFreq[id]>0;}).length>=5&&!badges.habitMaster)setTimeout(function(){earnBadge('habitMaster');},0);
 
       // Compute annual kg for a single item given current frequency
       function itemAnnualKg(item, freq) {
@@ -995,6 +1020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         var next = Object.assign({}, granularFreq);
         next[itemId] = Math.max(0,Math.min(item.max,Math.round(freq)));
         upd('granularFreq', next);
+        if(Object.keys(next).filter(function(id){return next[id]>0;}).length>=5&&!badges.habitMaster)earnBadge('habitMaster');
         playSound('slider');
       }
 
@@ -1201,6 +1227,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         var changed=['rsSolar','rsWind','rsHydro','rsNuclear','rsStorage','rsTimespan'].some(function(key){return Object.prototype.hasOwnProperty.call(patch,key)&&patch[key]!==renewablesState[key];});
         if(changed){patch.rsAIRequestId=null;if(d.rsAIRequestId||d.rsAIResponse||d.rsAIStatus)patch.rsAIStatus='changed';}
         upd(patch);
+        var nextMix = {
+          rsSolar: Object.prototype.hasOwnProperty.call(patch, 'rsSolar') ? patch.rsSolar : rsSolar,
+          rsWind: Object.prototype.hasOwnProperty.call(patch, 'rsWind') ? patch.rsWind : rsWind,
+          rsHydro: Object.prototype.hasOwnProperty.call(patch, 'rsHydro') ? patch.rsHydro : rsHydro,
+          rsNuclear: Object.prototype.hasOwnProperty.call(patch, 'rsNuclear') ? patch.rsNuclear : rsNuclear,
+          rsStorage: Object.prototype.hasOwnProperty.call(patch, 'rsStorage') ? patch.rsStorage : rsStorage
+        };
+        var nextFossil = Math.max(0, 100 - nextMix.rsSolar - nextMix.rsWind - nextMix.rsHydro - nextMix.rsNuclear);
+        if (nextFossil <= 5 && renewablesReliabilityFor(nextMix) >= RELIABILITY_TARGET && !badges.netZero) {
+          earnBadge('netZero');
+        }
       }
       function changeRenewablesSlider(key,value,label){
         var patch=key==='rsStorage'?{rsStorage:Math.max(0,Math.min(100,Math.round(value)||0))}:rebalanceMix(key,value);
@@ -1343,27 +1380,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);
           c.setTransform(dpr,0,0,dpr,0,0);
           c.fillStyle='#0f172a';c.fillRect(0,0,width,height);
+          var hasStudio=typeof c.createLinearGradient==='function'&&typeof c.save==='function'&&typeof c.restore==='function'&&typeof c.closePath==='function';
+          if(hasStudio){
+            c.save();
+            var keelingBg=c.createLinearGradient(0,0,0,height);
+            keelingBg.addColorStop(0,'#0b1428');keelingBg.addColorStop(0.5,'#0f1c34');keelingBg.addColorStop(1,'#091224');
+            c.fillStyle=keelingBg;c.beginPath();c.moveTo(0,0);c.lineTo(width,0);c.lineTo(width,height);c.lineTo(0,height);c.closePath();c.fill();
+            c.restore();
+          }
           var left=46,right=12,plotWidth=width-left-right,plotHeight=128;
           var firstYear=KEELING_DATA[0].y,lastYear=KEELING_DATA[KEELING_DATA.length-1].y;
           function x(year){return left+(year-firstYear)/(lastYear-firstYear)*plotWidth;}
           function drawPlot(options){
             function y(value){return options.top+plotHeight-(value-options.min)/(options.max-options.min)*plotHeight;}
+            if(hasStudio){
+              c.save();
+              var wellGrad=c.createLinearGradient(0,options.top,0,options.top+plotHeight);
+              wellGrad.addColorStop(0,'rgba(15,23,42,0.72)');wellGrad.addColorStop(1,'rgba(30,41,59,0.28)');
+              c.fillStyle=wellGrad;c.beginPath();c.moveTo(left,options.top);c.lineTo(width-right,options.top);c.lineTo(width-right,options.top+plotHeight);c.lineTo(left,options.top+plotHeight);c.closePath();c.fill();
+              c.restore();
+            }
             c.fillStyle='#f1f5f9';c.font='bold 14px system-ui';c.textAlign='left';c.textBaseline='alphabetic';
             c.fillText(options.title,12,options.top-34);
             c.fillStyle='#cbd5e1';c.font='12px system-ui';c.fillText(options.subtitle,12,options.top-16);
             c.lineWidth=1;c.setLineDash([]);
             options.ticks.forEach(function(tick){
-              var py=y(tick);c.strokeStyle='#64748b';c.beginPath();c.moveTo(left,py);c.lineTo(width-right,py);c.stroke();
+              var py=y(tick);
+              c.strokeStyle=tick===0&&options.min<0?'rgba(148,163,184,0.75)':'rgba(100,116,139,0.48)';
+              c.beginPath();c.moveTo(left,py);c.lineTo(width-right,py);c.stroke();
               c.fillStyle='#e2e8f0';c.font='12px system-ui';c.textAlign='right';c.fillText(options.tickLabel(tick),left-8,py+4);
             });
             [firstYear,1990,lastYear].forEach(function(year){
-              var px=x(year);c.strokeStyle='#64748b';c.beginPath();c.moveTo(px,options.top);c.lineTo(px,options.top+plotHeight);c.stroke();
+              var px=x(year);c.strokeStyle='rgba(100,116,139,0.48)';c.beginPath();c.moveTo(px,options.top);c.lineTo(px,options.top+plotHeight);c.stroke();
               c.fillStyle='#e2e8f0';c.font='12px system-ui';c.textAlign=year===firstYear?'left':year===lastYear?'right':'center';
               c.fillText(String(year),px,options.top+plotHeight+22);
             });
+            if(hasStudio&&options.data.length>1){
+              c.save();
+              var areaGrad=c.createLinearGradient(0,options.top,0,options.top+plotHeight);
+              var isWarm=options.key==='t';
+              areaGrad.addColorStop(0,isWarm?'rgba(251,191,36,0.34)':'rgba(56,189,248,0.36)');
+              areaGrad.addColorStop(0.65,isWarm?'rgba(249,115,22,0.12)':'rgba(59,130,246,0.12)');
+              areaGrad.addColorStop(1,'rgba(15,23,42,0.0)');
+              c.beginPath();
+              options.data.forEach(function(point,index){var px=x(point.y),py=y(point[options.key]);if(index)c.lineTo(px,py);else c.moveTo(px,py);});
+              var lastPt=options.data[options.data.length-1],firstPt=options.data[0];
+              c.lineTo(x(lastPt.y),options.top+plotHeight);c.lineTo(x(firstPt.y),options.top+plotHeight);c.closePath();
+              c.fillStyle=areaGrad;c.fill();
+              c.strokeStyle=isWarm?'rgba(251,191,36,0.26)':'rgba(96,165,250,0.30)';
+              c.lineWidth=6;c.lineJoin='round';c.lineCap='round';c.setLineDash([]);
+              c.beginPath();
+              options.data.forEach(function(point,index){var px=x(point.y),py=y(point[options.key]);if(index)c.lineTo(px,py);else c.moveTo(px,py);});
+              c.stroke();
+              c.restore();
+            }
             c.strokeStyle=options.color;c.lineWidth=2.5;c.setLineDash(options.dash);c.beginPath();
             options.data.forEach(function(point,index){var px=x(point.y),py=y(point[options.key]);if(index)c.lineTo(px,py);else c.moveTo(px,py);});
-            c.stroke();c.setLineDash([]);c.fillStyle=options.color;
+            c.stroke();c.setLineDash([]);
+            if(hasStudio&&options.data.length>0){
+              c.save();
+              var endP=options.data[options.data.length-1],endX=x(endP.y),endY=y(endP[options.key]);
+              var isWarmEnd=options.key==='t';
+              var haloColor=isWarmEnd?'rgba(251,191,36,0.30)':'rgba(96,165,250,0.32)';
+              if(!isWarmEnd){
+                var crossP=options.data.find(function(pt){return pt.y===2015;});
+                if(crossP){
+                  c.fillStyle='rgba(56,189,248,0.22)';c.beginPath();c.arc(x(crossP.y),y(crossP.ppm),8,0,Math.PI*2);c.fill();
+                  c.strokeStyle='rgba(125,211,252,0.65)';c.lineWidth=1.2;c.beginPath();c.arc(x(crossP.y),y(crossP.ppm),6,0,Math.PI*2);c.stroke();
+                }
+              }
+              c.fillStyle=haloColor;c.beginPath();c.arc(endX,endY,9.5,0,Math.PI*2);c.fill();
+              c.strokeStyle=isWarmEnd?'rgba(253,224,71,0.85)':'rgba(147,197,253,0.9)';c.lineWidth=1.5;c.beginPath();c.arc(endX,endY,6.5,0,Math.PI*2);c.stroke();
+              c.restore();
+            }
+            c.fillStyle=options.color;
             options.data.forEach(function(point){
               var px=x(point.y),py=y(point[options.key]);
               if(options.square)c.fillRect(px-3,py-3,6,6);
@@ -1632,20 +1722,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         c.scale(dpr, dpr);
         var cx = w / 2, cy = h / 2, r = 65, inner = 40;
         var segs = [
-          { val: ct.transport, color: '#3b82f6', label: t('stem.climateExplorer.transport_2', 'Transport') },
-          { val: ct.food, color: '#f59e0b', label: t('stem.climateExplorer.food', 'Food') },
-          { val: ct.energy, color: '#ef4444', label: t('stem.climateExplorer.energy', 'Energy') },
-          { val: ct.waste, color: '#22c55e', label: t('stem.climateExplorer.waste', 'Waste') }
+          { val: ct.transport, color: '#3b82f6', hi: '#93c5fd', lo: '#1d4ed8', label: t('stem.climateExplorer.transport_2', 'Transport') },
+          { val: ct.food, color: '#f59e0b', hi: '#fde68a', lo: '#b45309', label: t('stem.climateExplorer.food', 'Food') },
+          { val: ct.energy, color: '#ef4444', hi: '#fca5a5', lo: '#b91c1c', label: t('stem.climateExplorer.energy', 'Energy') },
+          { val: ct.waste, color: '#22c55e', hi: '#86efac', lo: '#15803d', label: t('stem.climateExplorer.waste', 'Waste') }
         ];
+        var hasRichDonut = typeof c.createRadialGradient === 'function' && typeof c.stroke === 'function';
+        if (hasRichDonut) {
+          c.save();
+          c.beginPath(); c.arc(cx, cy, r + 4, 0, Math.PI * 2);
+          c.strokeStyle = 'rgba(148,163,184,0.16)'; c.lineWidth = 2; c.stroke();
+          c.beginPath(); c.arc(cx, cy, (r + inner) / 2, 0, Math.PI * 2);
+          c.strokeStyle = 'rgba(15,23,42,0.22)'; c.lineWidth = r - inner; c.stroke();
+          c.restore();
+        }
         var total = ct.total || 1;
         var angle = -Math.PI / 2;
         segs.forEach(function(s) {
           var sweep = (s.val / total) * Math.PI * 2;
           c.beginPath(); c.arc(cx, cy, r, angle, angle + sweep); c.arc(cx, cy, inner, angle + sweep, angle, true); c.closePath();
-          c.save(); c.shadowColor = s.color; c.shadowBlur = 8; c.fillStyle = s.color; c.fill(); c.restore();
+          c.save(); c.shadowColor = s.color; c.shadowBlur = 10;
+          if (hasRichDonut && sweep > 0.001) {
+            var segGrad = c.createRadialGradient(cx, cy, inner * 0.9, cx, cy, r * 1.05);
+            segGrad.addColorStop(0, s.lo); segGrad.addColorStop(0.55, s.color); segGrad.addColorStop(1, s.hi);
+            c.fillStyle = segGrad;
+          } else {
+            c.fillStyle = s.color;
+          }
+          c.fill();
+          if (hasRichDonut && sweep > 0.02) {
+            c.shadowBlur = 0;
+            c.strokeStyle = 'rgba(255,255,255,0.28)'; c.lineWidth = 1;
+            c.beginPath(); c.arc(cx, cy, r - 0.8, angle + 0.02, angle + sweep - 0.02); c.stroke();
+          }
+          c.restore();
           // Category names and values appear in the scalable HTML legend.
           angle += sweep;
         });
+        if (hasRichDonut) {
+          c.save();
+          c.beginPath(); c.arc(cx, cy, inner - 3, 0, Math.PI * 2);
+          c.strokeStyle = 'rgba(148,163,184,0.25)'; c.lineWidth = 1.2; c.stroke();
+          c.restore();
+        }
         // Center text
         c.save();
         c.fillStyle = quizColors.text;
@@ -1669,15 +1788,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         var c = canvas.getContext('2d');
         if (!c) { canvas._tlKey = null; return; }
         c.scale(dpr, dpr);
+        var hasGrad = typeof c.createLinearGradient === 'function' && typeof c.save === 'function' && typeof c.restore === 'function' && typeof c.closePath === 'function';
         // An opaque plotting surface keeps the graphic readable in every
         // theme. All labels and annual values also have scalable HTML copies.
-        c.fillStyle = '#0f172a'; c.fillRect(0, 0, w, h);
+        if (hasGrad) {
+          var tlBg = c.createLinearGradient(0, 0, 0, h);
+          tlBg.addColorStop(0, '#091326'); tlBg.addColorStop(1, '#0f1c34');
+          c.fillStyle = tlBg;
+        } else {
+          c.fillStyle = '#0f172a';
+        }
+        c.fillRect(0, 0, w, h);
         var pad = { l: 40, r: 24, t: 20, b: 32 };
         var gw = w - pad.l - pad.r, gh = h - pad.t - pad.b;
         var maxGt = Math.max(baseline * 1.05, 40);
         function x(i) { return pad.l + (i / Math.max(1, tl.length - 1)) * gw; }
         function y(gt) { return pad.t + (1 - gt / maxGt) * gh; }
-        c.strokeStyle = '#334155'; c.lineWidth = 1;
+        var endGt = tl[tl.length - 1].gt;
+        if (hasGrad) {
+          c.save();
+          // Subtle safe-zone atmospheric wash below the 20 Gt Paris milestone
+          var safeTop = y(20), safeBot = y(0);
+          var safeGrad = c.createLinearGradient(0, safeTop, 0, safeBot);
+          safeGrad.addColorStop(0, 'rgba(34,197,94,0.12)'); safeGrad.addColorStop(1, 'rgba(34,197,94,0.02)');
+          c.beginPath(); c.moveTo(pad.l, safeTop); c.lineTo(w - pad.r, safeTop); c.lineTo(w - pad.r, safeBot); c.lineTo(pad.l, safeBot); c.closePath();
+          c.fillStyle = safeGrad; c.fill();
+          c.restore();
+        }
+        c.strokeStyle = 'rgba(71,85,105,0.55)'; c.lineWidth = 1;
         for (var g = 0; g <= maxGt; g += 10) { c.beginPath(); c.moveTo(pad.l, y(g)); c.lineTo(w - pad.r, y(g)); c.stroke(); }
         // Distinct line patterns identify all three series without color.
         c.strokeStyle = '#e2e8f0'; c.lineWidth = 2; c.setLineDash([10, 5]);
@@ -1685,10 +1823,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         c.strokeStyle = '#fbbf24'; c.setLineDash([2, 5]);
         c.beginPath(); c.moveTo(pad.l, y(20)); c.lineTo(w - pad.r, y(20)); c.stroke();
         c.setLineDash([]);
+        if (hasGrad && tl.length > 1) {
+          c.save();
+          var areaG = c.createLinearGradient(0, pad.t, 0, pad.t + gh);
+          var onTarget = endGt <= 20;
+          areaG.addColorStop(0, onTarget ? 'rgba(52,211,153,0.34)' : 'rgba(56,189,248,0.34)');
+          areaG.addColorStop(1, 'rgba(15,23,42,0.0)');
+          c.beginPath(); c.moveTo(x(0), y(tl[0].gt));
+          for (var ja = 1; ja < tl.length; ja++) c.lineTo(x(ja), y(tl[ja].gt));
+          c.lineTo(x(tl.length - 1), y(0)); c.lineTo(x(0), y(0)); c.closePath();
+          c.fillStyle = areaG; c.fill();
+          // Soft outer luminous halo stroke under the trajectory
+          c.beginPath(); c.moveTo(x(0), y(tl[0].gt));
+          for (var jg = 1; jg < tl.length; jg++) c.lineTo(x(jg), y(tl[jg].gt));
+          c.strokeStyle = onTarget ? 'rgba(52,211,153,0.30)' : 'rgba(56,189,248,0.30)';
+          c.lineWidth = 7; c.lineJoin = 'round'; c.lineCap = 'round'; c.stroke();
+          c.restore();
+        }
         c.beginPath(); c.moveTo(x(0), y(tl[0].gt));
         for (var j = 1; j < tl.length; j++) c.lineTo(x(j), y(tl[j].gt));
-        var endGt = tl[tl.length - 1].gt;
         c.strokeStyle = '#38bdf8'; c.lineWidth = 3; c.stroke();
+        if (hasGrad) {
+          c.save();
+          var bx = x(tl.length - 1), by = y(endGt);
+          c.beginPath(); c.arc(bx, by, 10, 0, Math.PI * 2);
+          c.fillStyle = endGt <= 20 ? 'rgba(52,211,153,0.28)' : 'rgba(56,189,248,0.28)'; c.fill();
+          c.beginPath(); c.arc(bx, by, 6.5, 0, Math.PI * 2);
+          c.strokeStyle = endGt <= 20 ? 'rgba(110,231,183,0.9)' : 'rgba(125,211,252,0.9)'; c.lineWidth = 1.5; c.stroke();
+          c.restore();
+        }
         c.beginPath(); c.arc(x(tl.length - 1), y(endGt), 4, 0, Math.PI * 2);
         c.fillStyle = '#38bdf8'; c.fill();
         c.fillStyle = '#e2e8f0'; c.font = '600 11px system-ui'; c.textAlign = 'right';
@@ -1946,57 +2109,189 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   if (!heroReduced()) heroTick++;
                   var sig = cv._ceSignal != null ? cv._ceSignal : 0.4;
                   var dpr = 2;
-                  // Space
-                  g.fillStyle = '#020617';
+                  // Deep-space atmospheric backdrop with subtle upper cosmos gradient
+                  var hasLG = typeof g.createLinearGradient === 'function';
+                  if (hasLG) {
+                    var skyG = g.createLinearGradient(0, 0, 0, H * dpr);
+                    skyG.addColorStop(0, '#01040f');
+                    skyG.addColorStop(0.65, '#040b1d');
+                    skyG.addColorStop(1, '#07142b');
+                    g.fillStyle = skyG;
+                  } else {
+                    g.fillStyle = '#020617';
+                  }
                   g.fillRect(0, 0, W * dpr, H * dpr);
+                  // Soft distant solar corona glow at upper-left
+                  var sunHalo = g.createRadialGradient(W * 0.14 * dpr, H * 0.12 * dpr, 2 * dpr, W * 0.14 * dpr, H * 0.12 * dpr, W * 0.24 * dpr);
+                  sunHalo.addColorStop(0, 'rgba(254,240,138,0.28)');
+                  sunHalo.addColorStop(0.35, 'rgba(250,204,21,0.09)');
+                  sunHalo.addColorStop(1, 'rgba(250,204,21,0)');
+                  g.fillStyle = sunHalo;
+                  g.fillRect(0, 0, W * dpr, H * dpr);
+                  // Layered starfield with cool-blue and warm-gold star tints
                   for (var si = 0; si < heroStars.length; si++) {
                     var st = heroStars[si];
-                    g.globalAlpha = 0.25 + 0.5 * (0.5 + 0.5 * Math.sin(heroTick * 0.02 + st.tw));
-                    g.fillStyle = '#e2e8f0';
-                    g.fillRect(st.x * W * dpr, st.y * H * dpr, st.r * dpr, st.r * dpr);
+                    g.globalAlpha = 0.28 + 0.58 * (0.5 + 0.5 * Math.sin(heroTick * 0.02 + st.tw));
+                    g.fillStyle = si % 5 === 0 ? '#bae6fd' : si % 7 === 0 ? '#fef08a' : '#e2e8f0';
+                    g.beginPath();
+                    g.arc(st.x * W * dpr, st.y * H * dpr, st.r * 0.72 * dpr, 0, Math.PI * 2);
+                    g.fill();
                   }
                   g.globalAlpha = 1;
                   // Earth limb — a big circle whose centre sits below the strip
                   var R = W * 0.62, cx = W / 2, cy = H + R * 0.72;
-                  // Atmosphere glow: blue (healthy) → amber → red (hot), by signal
+                  // Multi-band atmospheric Rayleigh limb glow: sapphire/cyan (healthy) → amber → crimson (hot)
                   var ar = lerpCh(56, 239, sig), ag = lerpCh(189, 68, sig), ab = lerpCh(248, 68, sig);
-                  var atmoGrad = g.createRadialGradient(cx * dpr, cy * dpr, (R - 6) * dpr, cx * dpr, cy * dpr, (R + 30 + sig * 26) * dpr);
-                  atmoGrad.addColorStop(0, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.5)');
-                  atmoGrad.addColorStop(0.5, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.16)');
+                  var atmoGrad = g.createRadialGradient(cx * dpr, cy * dpr, (R - 6) * dpr, cx * dpr, cy * dpr, (R + 38 + sig * 30) * dpr);
+                  atmoGrad.addColorStop(0, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.62)');
+                  atmoGrad.addColorStop(0.28, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.28)');
+                  atmoGrad.addColorStop(0.65, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.09)');
                   atmoGrad.addColorStop(1, 'rgba(' + ar + ',' + ag + ',' + ab + ',0)');
                   g.fillStyle = atmoGrad;
                   g.fillRect(0, 0, W * dpr, H * dpr);
-                  // Planet body
-                  var bodyGrad = g.createRadialGradient(cx * dpr, (cy - R * 0.2) * dpr, R * 0.4 * dpr, cx * dpr, cy * dpr, R * dpr);
-                  bodyGrad.addColorStop(0, '#0b3d6b');
-                  bodyGrad.addColorStop(0.75, '#0a2c50');
-                  bodyGrad.addColorStop(1, '#061a33');
+                  // Layered radiative energy-balance beams (incoming solar shortwave + greenhouse IR return)
+                  var phaseAnim = heroReduced() ? 0.35 : ((heroTick * 0.012) % 1);
+                  g.save();
+                  // Incoming solar shortwave beams from upper-left
+                  for (var sb = 0; sb < 2; sb++) {
+                    var sx0 = W * (0.14 + sb * 0.06) * dpr, sy0 = H * 0.08 * dpr;
+                    var sx1 = W * (0.30 + sb * 0.09) * dpr, sy1 = H * 0.68 * dpr;
+                    if (hasLG) {
+                      var swG = g.createLinearGradient(sx0, sy0, sx1, sy1);
+                      swG.addColorStop(0, 'rgba(254,240,138,0.52)');
+                      swG.addColorStop(0.6, 'rgba(250,204,21,0.24)');
+                      swG.addColorStop(1, 'rgba(250,204,21,0.03)');
+                      g.strokeStyle = swG;
+                    } else {
+                      g.strokeStyle = 'rgba(250,204,21,0.28)';
+                    }
+                    g.lineWidth = (2.2 - sb * 0.5) * dpr;
+                    g.beginPath(); g.moveTo(sx0, sy0); g.lineTo(sx1, sy1); g.stroke();
+                    // Traveling solar photon pulse
+                    var spT = (phaseAnim + sb * 0.45) % 1;
+                    g.fillStyle = 'rgba(254,249,195,' + (0.65 * Math.sin(spT * Math.PI)).toFixed(3) + ')';
+                    g.beginPath();
+                    g.arc(sx0 + (sx1 - sx0) * spT, sy0 + (sy1 - sy0) * spT, 2.4 * dpr, 0, Math.PI * 2);
+                    g.fill();
+                  }
+                  // Reflected shortwave albedo ray off polar ice/cloud band (stronger when cool)
+                  var albedoVis = Math.max(0.18, 0.55 - sig * 0.32);
+                  g.strokeStyle = 'rgba(186,230,253,' + albedoVis.toFixed(3) + ')';
+                  g.lineWidth = 1.4 * dpr;
+                  g.beginPath();
+                  g.moveTo(W * 0.30 * dpr, H * 0.64 * dpr);
+                  g.lineTo(W * 0.42 * dpr, H * 0.14 * dpr);
+                  g.stroke();
+                  // Outgoing surface IR & greenhouse-trapped downward re-emission arcs (scales with sig)
+                  var irCount = 2 + Math.round(sig * 2);
+                  for (var ir = 0; ir < irCount; ir++) {
+                    var irX = W * (0.52 + ir * 0.105) * dpr;
+                    var irBaseY = H * 0.72 * dpr;
+                    var irTopY = H * (0.24 - sig * 0.05) * dpr;
+                    var irAlpha = 0.22 + sig * 0.34;
+                    if (hasLG) {
+                      var irG = g.createLinearGradient(irX, irBaseY, irX, irTopY);
+                      irG.addColorStop(0, 'rgba(251,146,60,' + irAlpha.toFixed(3) + ')');
+                      irG.addColorStop(0.55, 'rgba(249,115,22,' + (irAlpha * 0.85).toFixed(3) + ')');
+                      irG.addColorStop(1, 'rgba(239,68,68,0.04)');
+                      g.strokeStyle = irG;
+                    } else {
+                      g.strokeStyle = 'rgba(251,146,60,0.32)';
+                    }
+                    g.lineWidth = 1.6 * dpr;
+                    g.beginPath();
+                    g.moveTo(irX, irBaseY);
+                    g.quadraticCurveTo(irX + 7 * dpr, (irBaseY + irTopY) * 0.5, irX - 2 * dpr, irTopY);
+                    g.stroke();
+                    // Greenhouse re-emission return loop when forcing is present
+                    if (sig > 0.22) {
+                      g.strokeStyle = 'rgba(251,113,133,' + (0.14 + sig * 0.28).toFixed(3) + ')';
+                      g.lineWidth = 1.2 * dpr;
+                      g.beginPath();
+                      g.moveTo(irX + 3 * dpr, H * 0.36 * dpr);
+                      g.quadraticCurveTo(irX + 16 * dpr, H * 0.52 * dpr, irX + 6 * dpr, irBaseY);
+                      g.stroke();
+                    }
+                  }
+                  g.restore();
+                  // Planet body with sunlit oceanic specular sheen
+                  var bodyGrad = g.createRadialGradient((cx - R * 0.14) * dpr, (cy - R * 0.32) * dpr, R * 0.18 * dpr, cx * dpr, cy * dpr, R * dpr);
+                  bodyGrad.addColorStop(0, '#135c96');
+                  bodyGrad.addColorStop(0.42, '#0b3d6b');
+                  bodyGrad.addColorStop(0.8, '#082747');
+                  bodyGrad.addColorStop(1, '#041226');
                   g.fillStyle = bodyGrad;
                   g.beginPath();
                   g.arc(cx * dpr, cy * dpr, R * dpr, 0, Math.PI * 2);
                   g.fill();
-                  // Drifting land blotches, clipped to the limb
+                  // Clipped planetary details: continents, ocean-ice albedo cap, drifting cloud veil, and horizon rim
                   g.save();
                   g.beginPath(); g.arc(cx * dpr, cy * dpr, R * dpr, 0, Math.PI * 2); g.clip();
-                  g.fillStyle = 'rgba(34,120,72,0.5)';
+                  // Subtle sunlit ocean specular highlight
+                  var oceanSpec = g.createRadialGradient(W * 0.32 * dpr, H * 0.72 * dpr, 4 * dpr, W * 0.32 * dpr, H * 0.72 * dpr, W * 0.26 * dpr);
+                  oceanSpec.addColorStop(0, 'rgba(125,211,252,0.22)');
+                  oceanSpec.addColorStop(1, 'rgba(125,211,252,0)');
+                  g.fillStyle = oceanSpec;
+                  g.fillRect(0, 0, W * dpr, H * dpr);
+                  // Drifting continents with soft coastal shelf glow
                   for (var lb = 0; lb < 7; lb++) {
                     var lbSeed = Math.sin(lb * 73.7) * 4375.4; lbSeed -= Math.floor(lbSeed);
                     var lbx = ((lbSeed + heroTick * 0.0002) % 1) * W;
                     var lby = H - (0.12 + (lb % 3) * 0.1) * H;
+                    var lrx = (14 + lb * 5) * dpr, lry = (6 + (lb % 3) * 3) * dpr;
+                    g.fillStyle = 'rgba(20,184,166,0.22)';
                     g.beginPath();
-                    g.ellipse(lbx * dpr, lby * dpr, (14 + lb * 5) * dpr, (6 + (lb % 3) * 3) * dpr, lb * 0.6, 0, Math.PI * 2);
+                    g.ellipse(lbx * dpr, lby * dpr, lrx * 1.18, lry * 1.24, lb * 0.6, 0, Math.PI * 2);
+                    g.fill();
+                    g.fillStyle = 'rgba(34,139,84,0.58)';
+                    g.beginPath();
+                    g.ellipse(lbx * dpr, lby * dpr, lrx, lry, lb * 0.6, 0, Math.PI * 2);
+                    g.fill();
+                  }
+                  // Ocean-ice albedo cap (expands when cool, retreats when warming rises)
+                  var iceExtent = Math.max(0.28, 1 - sig * 0.68);
+                  var iceGrad = g.createRadialGradient(W * 0.24 * dpr, H * 0.78 * dpr, 2 * dpr, W * 0.24 * dpr, H * 0.78 * dpr, (58 * iceExtent) * dpr);
+                  iceGrad.addColorStop(0, 'rgba(240,249,255,0.72)');
+                  iceGrad.addColorStop(0.55, 'rgba(186,230,253,0.34)');
+                  iceGrad.addColorStop(1, 'rgba(186,230,253,0)');
+                  g.fillStyle = iceGrad;
+                  g.beginPath();
+                  g.ellipse(W * 0.24 * dpr, H * 0.78 * dpr, (56 * iceExtent) * dpr, (15 * iceExtent) * dpr, -0.18, 0, Math.PI * 2);
+                  g.fill();
+                  // Translucent drifting cloud wisps
+                  g.fillStyle = 'rgba(226,232,240,0.24)';
+                  for (var cl = 0; cl < 5; cl++) {
+                    var clSeed = Math.sin(cl * 51.9) * 3191.3; clSeed -= Math.floor(clSeed);
+                    var clx = ((clSeed + heroTick * 0.00045) % 1) * W;
+                    var cly = H - (0.08 + (cl % 3) * 0.09) * H;
+                    g.beginPath();
+                    g.ellipse(clx * dpr, cly * dpr, (22 + cl * 4) * dpr, (3.2 + (cl % 2) * 1.4) * dpr, -0.08, 0, Math.PI * 2);
                     g.fill();
                   }
                   g.restore();
+                  // Crisp glowing atmospheric horizon rim right along the Earth limb
+                  g.save();
+                  g.strokeStyle = 'rgba(' + lerpCh(125, 252, sig) + ',' + lerpCh(211, 165, sig) + ',' + lerpCh(252, 165, sig) + ',0.72)';
+                  g.lineWidth = 2.2 * dpr;
+                  g.beginPath();
+                  g.arc(cx * dpr, cy * dpr, (R + 1.2) * dpr, Math.PI * 1.12, Math.PI * 1.88);
+                  g.stroke();
+                  g.restore();
                   // CO₂ particles rising off the limb — density follows the signal
                   var molCount = Math.round(6 + sig * 40);
-                  g.fillStyle = 'rgba(203,213,225,0.5)';
                   for (var mj = 0; mj < molCount && mj < mols.length; mj++) {
                     var mo = mols[mj];
                     var mProg = ((heroTick * 0.003 * mo.sp + mo.ph) % 1);
                     var mx = mo.x * W + Math.sin(heroTick * 0.02 + mo.ph) * 6;
                     var my = H - mProg * H * 0.85;
-                    g.globalAlpha = 0.55 * Math.sin(mProg * Math.PI);
+                    var mA = 0.58 * Math.sin(mProg * Math.PI);
+                    g.globalAlpha = mA * 0.35;
+                    g.fillStyle = sig > 0.55 ? '#fb923c' : '#93c5fd';
+                    g.beginPath();
+                    g.arc(mx * dpr, my * dpr, (mo.r * 2.1) * dpr, 0, Math.PI * 2);
+                    g.fill();
+                    g.globalAlpha = mA;
+                    g.fillStyle = '#e2e8f0';
                     g.beginPath();
                     g.arc(mx * dpr, my * dpr, mo.r * dpr, 0, Math.PI * 2);
                     g.fill();
@@ -2220,7 +2515,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       quizSubmitted = true;
                       upd({quizAnswer:oi,quizTotal:quizTotal+1,quizCorrect:quizCorrect+(isCorrect?1:0)});
                       playSound(oi === q.a ? 'correct' : 'wrong');
-                      if (isCorrect) awardXP(10);
+                      if (isCorrect) awardXPOnce('quiz-' + quizIdx, 10);
                       if (quizCorrect + (oi === q.a ? 1 : 0) >= 8) earnBadge('quizChampion');
                       focusClimate('ce-quiz-feedback');
                     },
@@ -2433,7 +2728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   var labels = { school: '\uD83C\uDFEB School', city: '\uD83C\uDFD9\uFE0F City', country: '\uD83C\uDDFA\uD83C\uDDF8 Country' };
                   return el('button', { key:s,id:'ce-carbon-scale-'+s,type:'button','aria-pressed':ccScale===s,'aria-labelledby':'ce-carbon-scale-label-'+s,'aria-describedby':'ce-carbon-scale-result',onClick:function() {
                     if(ccScale===s)return;
-                    upd('ccScale',s); awardXP(5); playSound('calculate');
+                    upd('ccScale',s); awardXPOnce('scale-' + s, 5); playSound('calculate');
                     var nsc={};['school','city','country'].forEach(function(known){if(scalesViewed[known]===true)nsc[known]=true;});nsc[s]=true;upd('scalesViewed',nsc);
                     if(Object.keys(nsc).length>=3&&!badges.dataDiver)earnBadge('dataDiver');
                     upd('carbonStatus',t('stem.climateExplorer.carbon_scale_updated','Scale selected: {scale}. The shared-choice estimate has been updated.').replace('{scale}',labels[s]));
@@ -2589,11 +2884,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 return el('div', { style:{marginTop:16,padding:14,borderRadius:12,background:quizColors.raised,border:'1px solid '+quizColors.border} },
                   el('div', { style:{color:quizColors.text,fontSize:14,fontWeight:800,marginBottom:8} }, '💡 Your biggest-leverage changes'),
                   suggestions.map(function(s, si) {
+                    var unitParts = String(s.item.unit || '').split('/');
+                    var unitNoun = (unitParts[0] || '').replace(/s$/, '');
+                    var unitPeriod = unitParts[1] || 'week';
                     return el('div', { key:si,style:{display:'flex',flexWrap:'wrap',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:8,background:quizColors.panel,marginBottom:6} },
                       el('span', { 'aria-hidden':true,style:{fontSize:16} }, s.item.emoji),
                       el('div', { style:{flex:'1 1 160px',minWidth:0,color:quizColors.text,fontSize:13,lineHeight:1.5} },
                         'Cut ', el('strong', null, s.item.label.toLowerCase()), ' by one ',
-                        el('strong', null, s.item.unit.replace(/s$/, '').split('/')[0]), ' per week:'),
+                        el('strong', null, unitNoun), ' per ' + unitPeriod + ':'),
                       el('div', { style:{color:quizColors.correct,fontSize:13,fontWeight:800,fontFamily:'monospace'} }, '−' + Math.round(s.savings) + ' kg/yr')
                     );
                   })
@@ -2756,9 +3054,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
               // ── Model boundary, matching every other tab in this tool ──
               el('div',{style:{fontSize:13,lineHeight:1.6,marginTop:8,color:quizColors.muted}},
-                t('stem.climateExplorer.renewables_boundary', 'Teaching model: shares of one grid, with rounded capacity-credit values in the range grid operators report. It is not a grid simulator, a cost model, or a forecast for any real power system.')),
-
-              rsFossil <= 5 && !rsBrownout && !badges.netZero && (function() { earnBadge('netZero'); return null; })()
+                t('stem.climateExplorer.renewables_boundary', 'Teaching model: shares of one grid, with rounded capacity-credit values in the range grid operators report. It is not a grid simulator, a cost model, or a forecast for any real power system.'))
             ),
 
             // Timespan selector
@@ -4359,14 +4655,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               }
               var eventState = { fundingBonusNextYear: path.fundingBonusNextYear || 0, activeMods: (path.activeMods || []).slice() };
               ev.apply(drifted, eventState);
-              // Severity scaling
+              // Severity scaling: amplify negative shocks in harder modes and dampen positive windfalls (and vice versa in optimist mode)
               var sev = diff.severity || 1;
               if (sev !== 1) {
+                var scaleEventDelta = function(delta) { return delta < 0 ? delta * sev : delta / sev; };
                 for (var di = 0; di < drifted.length; di++) {
                   var sp = drifted[di]; var pr = pre[di];
-                  sp.decarb = pathwayClamp(pr.decarb + (sp.decarb - pr.decarb) * sev, 0, 100);
-                  sp.resilience = pathwayClamp(pr.resilience + (sp.resilience - pr.resilience) * sev, 0, 100);
-                  sp.support = pathwayClamp(pr.support + (sp.support - pr.support) * sev, 0, 100);
+                  sp.decarb = pathwayClamp(pr.decarb + scaleEventDelta(sp.decarb - pr.decarb), 0, 100);
+                  sp.resilience = pathwayClamp(pr.resilience + scaleEventDelta(sp.resilience - pr.resilience), 0, 100);
+                  sp.support = pathwayClamp(pr.support + scaleEventDelta(sp.support - pr.support), 0, 100);
                 }
               }
               // Cascade rules
@@ -4427,7 +4724,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               if (s.id === 'buildings')       return { icon: '\u2668\ufe0f', text: Math.round(pct * 5500) + ' Maine homes on heat pumps' };
               if (s.id === 'workingLands')    return { icon: '\ud83c\udf32', text: Math.round(pct * 60000) + ' acres protected for working-lands carbon' };
               if (s.id === 'adaptation')      return { icon: '\ud83c\udf0a', text: Math.round(s.resilience * 0.8) + ' coastal communities with adaptation plans' };
-              if (s.id === 'climateJustice')  return { icon: '\u2696\ufe0f', text: Math.round(s.support * 1.3) + '% of climate funds reaching frontline communities' };
+              if (s.id === 'climateJustice')  return { icon: '\u2696\ufe0f', text: Math.min(100, Math.round(s.support * 1.3)) + '% of climate funds reaching frontline communities' };
               return { icon: '\ud83c\udf0d', text: '' };
             }
 
@@ -4963,18 +5260,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('p', { style: { fontSize:14,fontWeight:800,color:quizColors.text,margin:'0 0 8px' } }, '🌍 How the greenhouse effect actually works'),
                 el('svg', { id:'fh-energy-diagram',viewBox: '0 0 320 160', width: '100%', style: { maxWidth: 380, display: 'block', margin: '0 auto 8px' }, role: 'img', 'aria-label': t('stem.climateExplorer.energy_balance_diagram_shortwave_sunli', 'Energy-balance diagram: shortwave sunlight passes through the greenhouse-gas layer and warms the surface; the surface radiates infrared, some of which the gas layer absorbs and re-emits back downward, trapping heat.') },
                   el('defs', null,
+                    el('linearGradient', { id: 'fhSkyGrad', x1: '0', y1: '0', x2: '0', y2: '1' },
+                      el('stop', { offset: '0%', stopColor: '#040917' }),
+                      el('stop', { offset: '70%', stopColor: '#0b162c' }),
+                      el('stop', { offset: '100%', stopColor: '#0f223d' })),
+                    el('linearGradient', { id: 'fhGhgGrad', x1: '0', y1: '0', x2: '0', y2: '1' },
+                      el('stop', { offset: '0%', stopColor: 'rgba(56,189,248,0.14)' }),
+                      el('stop', { offset: '50%', stopColor: 'rgba(14,116,144,0.42)' }),
+                      el('stop', { offset: '100%', stopColor: 'rgba(56,189,248,0.16)' })),
+                    el('linearGradient', { id: 'fhSurfGrad', x1: '0', y1: '0', x2: '1', y2: '0' },
+                      el('stop', { offset: '0%', stopColor: '#0369a1' }),
+                      el('stop', { offset: '38%', stopColor: '#047857' }),
+                      el('stop', { offset: '78%', stopColor: '#065f46' }),
+                      el('stop', { offset: '100%', stopColor: '#0e7490' })),
+                    el('radialGradient', { id: 'fhSunCorona', cx: '50%', cy: '50%', r: '50%' },
+                      el('stop', { offset: '0%', stopColor: '#fef08a', stopOpacity: 0.95 }),
+                      el('stop', { offset: '45%', stopColor: '#facc15', stopOpacity: 0.45 }),
+                      el('stop', { offset: '100%', stopColor: '#facc15', stopOpacity: 0 })),
                     el('marker', { id: 'fhSun', markerWidth: 7, markerHeight: 7, refX: 3, refY: 6, orient: 'auto' }, el('polygon', { points: '0,0 6,0 3,6', fill: '#facc15' })),
                     el('marker', { id: 'fhIR', markerWidth: 7, markerHeight: 7, refX: 3, refY: 6, orient: 'auto' }, el('polygon', { points: '0,0 6,0 3,6', fill: '#fb923c' }))),
-                  el('rect', { x: 0, y: 0, width: 320, height: 160, fill:'#0b1220',rx:8 }),
-                  el('rect', { x:1,y:44,width:318,height:28,fill:'#163744',stroke:'#67e8f9',strokeWidth:1.5,strokeDasharray:'5 4' }),
-                  el('rect', { x:0,y:140,width:320,height:20,fill:'#047857' }),
-                  el('circle',{cx:26,cy:18,r:10,fill:'#facc15'}),
+                  el('rect', { x: 0, y: 0, width: 320, height: 160, fill: 'url(#fhSkyGrad)', rx: 8 }),
+                  // Subtle background stars above the atmosphere band
+                  [{x:82,y:14,r:1},{x:126,y:24,r:1.2},{x:164,y:12,r:0.9},{x:228,y:22,r:1.1},{x:278,y:15,r:1.3},{x:302,y:28,r:0.9}].map(function(st,idx){
+                    return el('circle',{key:'st'+idx,cx:st.x,cy:st.y,r:st.r,fill:'#cbd5e1',opacity:0.55});
+                  }),
+                  el('rect', { x:1,y:44,width:318,height:28,fill:'url(#fhGhgGrad)',stroke:'#67e8f9',strokeWidth:1.5,strokeDasharray:'5 4' }),
+                  el('rect', { x:0,y:140,width:320,height:20,fill:'url(#fhSurfGrad)' }),
+                  el('line', { x1:0,y1:140,x2:320,y2:140,stroke:'#34d399',strokeWidth:1.2,opacity:0.75 }),
+                  // Glowing sun corona + core
+                  el('circle',{cx:26,cy:18,r:21,fill:'url(#fhSunCorona)'}),
+                  el('circle',{cx:26,cy:18,r:9.5,fill:'#fde047',stroke:'#fef9c3',strokeWidth:1.2}),
+                  // Dual-pass luminous shortwave & IR beams
+                  el('line', { x1: 38, y1: 22, x2: 92, y2: 137, stroke: 'rgba(250,204,21,0.32)', strokeWidth: 6, strokeLinecap: 'round' }),
                   el('line', { x1: 38, y1: 22, x2: 92, y2: 137, stroke: '#facc15', strokeWidth: 2, markerEnd: 'url(#fhSun)' }),
+                  el('line', { x1: 168, y1: 138, x2: 198, y2: 8, stroke: 'rgba(251,146,60,0.30)', strokeWidth: 6, strokeLinecap: 'round' }),
                   el('line', { x1: 168, y1: 138, x2: 198, y2: 8, stroke: '#fb923c', strokeWidth: 2, markerEnd: 'url(#fhIR)' }),
+                  el('line', { x1: 244, y1: 138, x2: 258, y2: 60, stroke: 'rgba(251,146,60,0.28)', strokeWidth: 5.5, strokeLinecap: 'round' }),
                   el('line', { x1: 244, y1: 138, x2: 258, y2: 60, stroke: '#fb923c', strokeWidth: 2 }),
+                  el('circle', { cx: 258, cy: 60, r: 7, fill: 'rgba(251,146,60,0.28)' }),
+                  el('circle', { cx: 258, cy: 60, r: 3, fill: '#fdba74' }),
+                  el('line', { x1: 258, y1: 60, x2: 238, y2: 136, stroke: 'rgba(251,146,60,0.24)', strokeWidth: 5, strokeLinecap: 'round' }),
                   el('line', { x1: 258, y1: 60, x2: 238, y2: 136, stroke: '#fb923c', strokeWidth: 2, strokeDasharray: '4 3', markerEnd: 'url(#fhIR)' }),
-                  [{x:78,y:104,n:1},{x:180,y:108,n:2},{x:250,y:108,n:3}].map(function(point){return el('g',{key:point.n},
-                    el('circle',{cx:point.x,cy:point.y,r:17,fill:'#0b1220',stroke:'#e2e8f0',strokeWidth:1.5}),
+                  [{x:78,y:104,n:1,c:'#facc15'},{x:180,y:108,n:2,c:'#fb923c'},{x:250,y:108,n:3,c:'#67e8f9'}].map(function(point){return el('g',{key:point.n},
+                    el('circle',{cx:point.x,cy:point.y,r:19,fill:point.c,opacity:0.16}),
+                    el('circle',{cx:point.x,cy:point.y,r:16.5,fill:'#0b1220',stroke:'#e2e8f0',strokeWidth:1.5}),
                     el('text',{x:point.x,y:point.y,fill:'#e2e8f0',fontSize:14,fontWeight:700,textAnchor:'middle',dominantBaseline:'central'},point.n));})),
                 el('ol',{id:'fh-energy-key',style:{fontSize:13,color:quizColors.text,lineHeight:1.6,margin:'0 0 12px',paddingLeft:24}},
                   el('li',null,t('stem.climateExplorer.forcing_energy_sunlight','Sunlight passes through the greenhouse-gas layer (dashed band) and warms Earth’s surface (green strip).')),

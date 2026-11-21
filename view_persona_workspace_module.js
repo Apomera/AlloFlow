@@ -45,9 +45,10 @@ function PersonaWorkspaceView({
       if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest("details:not([open])");
       if (closedDetails && !(el.tagName === "SUMMARY" && el.parentElement === closedDetails)) return false;
-      if (typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
+      const view = dialog.ownerDocument && dialog.ownerDocument.defaultView;
+      if (view && typeof view.getComputedStyle === "function") {
         for (let cur = el; cur && cur !== dialog; cur = cur.parentElement) {
-          const st = window.getComputedStyle(cur);
+          const st = view.getComputedStyle(cur);
           if (st && (st.display === "none" || st.visibility === "hidden")) return false;
         }
       }
@@ -82,22 +83,46 @@ function PersonaWorkspaceView({
       className: `min-h-11 px-3 py-1.5 rounded-md text-xs font-bold transition-all motion-reduce:transition-none ${personaState.mode === "panel" ? "bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200" : "text-yellow-700 hover:bg-yellow-100"}`
     },
     t("persona.mode_panel")
-  )), isTeacherMode && /* @__PURE__ */ React.createElement("label", { className: "min-h-11 flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-[11px] font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("span", null, t("persona.resume_retention")), /* @__PURE__ */ React.createElement("select", { "aria-label": t("persona.resume_retention"), disabled: isProcessing || isGeneratingPersona, defaultValue: (() => {
-    try {
-      return String(normalizePersonaResumeDays(localStorage.getItem("allo_persona_resume_days")));
-    } catch (_) {
-      return "14";
-    }
-  })(), onChange: async (e) => {
-    try {
-      const retentionDays = normalizePersonaResumeDays(e.target.value);
-      localStorage.setItem("allo_persona_resume_days", String(retentionDays));
-      if (retentionDays === 0 && !await clearPersonaResumeSnapshots()) throw new Error("clear failed");
-      addToast(t("persona.retention_updated"), "success");
-    } catch (_) {
-      addToast(t("persona.retention_update_failed"), "error");
-    }
-  }, className: "min-h-11 rounded border border-slate-300 bg-white px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement("option", { value: "0" }, t("persona.retention_off")), /* @__PURE__ */ React.createElement("option", { value: "7" }, "7 ", t("persona.days")), /* @__PURE__ */ React.createElement("option", { value: "14" }, "14 ", t("persona.days")), /* @__PURE__ */ React.createElement("option", { value: "30" }, "30 ", t("persona.days"))))), (() => {
+  )), isTeacherMode && /* @__PURE__ */ React.createElement("label", { className: "min-h-11 flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-[11px] font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("span", null, t("persona.resume_retention")), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": t("persona.resume_retention"),
+      disabled: isProcessing || isGeneratingPersona,
+      defaultValue: (() => {
+        try {
+          return String(normalizePersonaResumeDays(localStorage.getItem("allo_persona_resume_days")));
+        } catch (_) {
+          return "14";
+        }
+      })(),
+      onChange: async (e) => {
+        const selectEl = e.currentTarget;
+        const prevVal = (() => {
+          try {
+            return String(normalizePersonaResumeDays(localStorage.getItem("allo_persona_resume_days")));
+          } catch (_) {
+            return "14";
+          }
+        })();
+        try {
+          const retentionDays = normalizePersonaResumeDays(e.target.value);
+          if (retentionDays === 0 && !await clearPersonaResumeSnapshots()) {
+            throw new Error("clear failed");
+          }
+          localStorage.setItem("allo_persona_resume_days", String(retentionDays));
+          addToast(t("persona.retention_updated"), "success");
+        } catch (_) {
+          if (selectEl) selectEl.value = prevVal;
+          addToast(t("persona.retention_update_failed"), "error");
+        }
+      },
+      className: "min-h-11 rounded border border-slate-300 bg-white px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "0" }, t("persona.retention_off")),
+    /* @__PURE__ */ React.createElement("option", { value: "7" }, "7 ", t("persona.days")),
+    /* @__PURE__ */ React.createElement("option", { value: "14" }, "14 ", t("persona.days")),
+    /* @__PURE__ */ React.createElement("option", { value: "30" }, "30 ", t("persona.days"))
+  ))), (() => {
     const sourceBinding = generatedContent?.config?.personaSource;
     const groundingMetadata = sourceBinding?.groundingMetadata ?? generatedContent?.config?.groundingMetadata;
     const grounding = extractPersonaGroundingDisclosure(groundingMetadata);
@@ -299,10 +324,11 @@ function PersonaWorkspaceView({
         "button",
         {
           type: "button",
+          "aria-label": (t("persona.remove_quest") || "Remove") + " " + (t("persona.quest") || "Quest") + " " + (questIndex + 1),
           onClick: () => updatePersonaTeacherEditor({
             quests: personaTeacherEditor.quests.filter((_, index) => index !== questIndex)
           }),
-          className: "min-h-11 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className: "min-h-11 rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
         },
         t("persona.remove_quest") || "Remove"
       ))), /* @__PURE__ */ React.createElement(
@@ -321,12 +347,12 @@ function PersonaWorkspaceView({
               }]
             });
           },
-          className: "min-h-11 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className: "min-h-11 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
         },
         "+ ",
         t("persona.add_quest") || "Add quest"
       ))),
-      /* @__PURE__ */ React.createElement("div", { className: "sticky bottom-0 flex justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPersonaTeacherEditor(null), className: "min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100" }, t("common.cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePersonaTeacherEditor, className: "min-h-11 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700" }, t("persona.save_changes") || t("common.save")))
+      /* @__PURE__ */ React.createElement("div", { className: "sticky bottom-0 flex justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPersonaTeacherEditor(null), className: "min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" }, t("common.cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePersonaTeacherEditor, className: "min-h-11 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" }, t("persona.save_changes") || t("common.save")))
     )
   )));
 }

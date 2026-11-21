@@ -1056,7 +1056,7 @@ function sanitizeConfigPatch(input) {
     assertAllowedObject(input.liveSession, ['mode', 'requireExplicitCloud', 'lan'], 'live session');
     const clean = {};
     if (Object.prototype.hasOwnProperty.call(input.liveSession, 'mode')) {
-      if (!LIVE_SESSION_MODES[input.liveSession.mode]) throw new Error('Unknown live session mode.');
+      if (typeof input.liveSession.mode !== 'string' || !Object.prototype.hasOwnProperty.call(LIVE_SESSION_MODES, input.liveSession.mode)) throw new Error('Unknown live session mode.');
       clean.mode = input.liveSession.mode;
     }
     if (Object.prototype.hasOwnProperty.call(input.liveSession, 'requireExplicitCloud')) {
@@ -1438,7 +1438,8 @@ async function startManagedApp(config = readConfig(), origin) {
     }
 
     const launch = getManagedAppLaunch(config);
-    if (!launch.cwd.startsWith(REPO_ROOT) || !fs.existsSync(launch.cwd)) {
+    const relLaunch = path.relative(REPO_ROOT, launch.cwd);
+    if (relLaunch.startsWith('..') || path.isAbsolute(relLaunch) || !fs.existsSync(launch.cwd)) {
       return {
         ...buildManagedAppStatus(config, existingProbe, origin),
         status: 'launch-error',
@@ -1563,7 +1564,7 @@ function getSchoolBoxConfig(config) {
 
 function getLiveSessionConfig(config) {
   const live = deepMerge(DEFAULT_CONFIG.liveSession, config.liveSession || {});
-  const mode = LIVE_SESSION_MODES[live.mode] ? live.mode : DEFAULT_CONFIG.liveSession.mode;
+  const mode = typeof live.mode === 'string' && Object.prototype.hasOwnProperty.call(LIVE_SESSION_MODES, live.mode) ? live.mode : DEFAULT_CONFIG.liveSession.mode;
   return {
     ...live,
     mode,
@@ -2941,7 +2942,7 @@ function servePresenterPage(res, code) {
 async function getLiveSessionStatus(config = readConfig(), origin = getDefaultRuntimeOrigin(), options = {}) {
   const isPublicLan = Boolean(options && options.publicLan);
   const live = getLiveSessionConfig(config);
-  const modeInfo = LIVE_SESSION_MODES[live.mode] || LIVE_SESSION_MODES[DEFAULT_CONFIG.liveSession.mode];
+  const modeInfo = (typeof live.mode === 'string' && Object.prototype.hasOwnProperty.call(LIVE_SESSION_MODES, live.mode)) ? LIVE_SESSION_MODES[live.mode] : LIVE_SESSION_MODES[DEFAULT_CONFIG.liveSession.mode];
   const hasByoFirebaseMetadata = Boolean(live.firebase.projectId || live.firebase.appId);
   const cloudSessionAllowed = Boolean(modeInfo.cloudSession && (
     live.mode !== 'byo-firebase' || hasByoFirebaseMetadata
@@ -3781,6 +3782,8 @@ function redactConfig(config) {
 }
 
 function jsonResponse(res, statusCode, body) {
+  if (!res || res.writableEnded || res.destroyed) return;
+  if (res.headersSent) { try { res.end(); } catch (_) {} return; }
   const text = JSON.stringify(body, null, 2);
   res.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
@@ -3791,6 +3794,8 @@ function jsonResponse(res, statusCode, body) {
 }
 
 function textResponse(res, statusCode, body) {
+  if (!res || res.writableEnded || res.destroyed) return;
+  if (res.headersSent) { try { res.end(); } catch (_) {} return; }
   res.writeHead(statusCode, {
     'Content-Type': 'text/plain; charset=utf-8',
     'Cache-Control': 'no-store',
@@ -4035,30 +4040,46 @@ async function fetchVerifiedHttpsDownload(initialUrl, label, signal) {
 async function downloadEngineFile(url, destination, label, expectedSha256) {
   const signal = managedEngine.abortController ? managedEngine.abortController.signal : undefined;
   const response = await fetchVerifiedHttpsDownload(url, label, signal);
-  if (!response.ok || !response.body) throw new Error(label + ' download failed (HTTP ' + response.status + ').');
+  if (!response.ok || !response.body) {
+    try { await response.body?.cancel(); } catch (_) {}
+    throw new Error(label + ' download failed (HTTP ' + response.status + ').');
+  }
   const totalBytes = Number(response.headers.get('content-length')) || 0;
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   const freeBytes = await getFreeDiskBytes(path.dirname(destination));
   // Teacher laptops run close to full; a 2GB model landing on a 98%-full disk
   // is worse than no model. Require the download size plus real headroom.
   if (freeBytes !== null && totalBytes && freeBytes < totalBytes + 1.5 * 1024 * 1024 * 1024) {
+    try { await response.body?.cancel(); } catch (_) {}
     throw new Error('Not enough disk space for the ' + label + ': it needs ' + Math.round(totalBytes / 1048576) +
       ' MB plus working headroom, but only ' + Math.round(freeBytes / 1048576) + ' MB is free. Free up space, then try again.');
   }
   managedEngine.download = { file: label, receivedBytes: 0, totalBytes };
   const temp = destination + '.download';
-  await new Promise((resolveDone, rejectDone) => {
-    const output = fs.createWriteStream(temp);
-    const reader = require('stream').Readable.fromWeb(response.body);
-    reader.on('data', (chunk) => { managedEngine.download.receivedBytes += chunk.length; });
-    reader.on('error', rejectDone);
-    output.on('error', rejectDone);
-    output.on('finish', resolveDone);
-    reader.pipe(output);
-  });
-  await verifyDownloadIntegrity(temp, expectedDownloadSha256(url, expectedSha256), label);
-  fs.renameSync(temp, destination);
-  managedEngine.download = null;
+  try {
+    await new Promise((resolveDone, rejectDone) => {
+      const output = fs.createWriteStream(temp);
+      const reader = require('stream').Readable.fromWeb(response.body);
+      const fail = (err) => {
+        try { reader.destroy(); } catch (_) {}
+        try { output.destroy(); } catch (_) {}
+        rejectDone(err);
+      };
+      reader.on('data', (chunk) => { managedEngine.download.receivedBytes += chunk.length; });
+      reader.on('error', fail);
+      output.on('error', fail);
+      output.on('finish', resolveDone);
+      reader.pipe(output);
+    });
+    await verifyDownloadIntegrity(temp, expectedDownloadSha256(url, expectedSha256), label);
+    fs.renameSync(temp, destination);
+  } catch (err) {
+    try { await response.body?.cancel(); } catch (_) {}
+    try { fs.rmSync(temp, { force: true }); } catch (_) {}
+    throw err;
+  } finally {
+    managedEngine.download = null;
+  }
 }
 
 function assertSafeArchiveEntryNames(entries, maxEntries = 5000) {
@@ -4149,7 +4170,22 @@ async function expandEngineZip(zipPath, destDir) {
       assertNoSymlinksInDir(destDir);
       return;
     }
-    const extractZip = createWindowsZipExtractor({ fs, path, spawnSync });
+    const runWinExtract = createWindowsZipExtractor({});
+    const extractZip = (archivePath, destinationDir) => runWinExtract({
+      archivePath: path.resolve(archivePath),
+      destinationDir: path.resolve(destinationDir),
+      format: 'zip',
+      limits: { maxEntries: 5000 },
+      resolveEntryPath: (entryName) => {
+        assertSafeArchiveEntryNames([entryName]);
+        const resolved = path.resolve(destinationDir, String(entryName || ''));
+        const rel = path.relative(path.resolve(destinationDir), resolved);
+        if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) {
+          throw new Error('Engine archive contains an unsafe path entry.');
+        }
+        return resolved;
+      },
+    });
     await extractZip(zipPath, destDir);
     assertNoSymlinksInDir(destDir);
     return;
@@ -4207,6 +4243,10 @@ async function ensureEngineBinary(config, arch) {
   }
   if (!binary) {
     if (!url) throw new Error('No engine binary is published for this platform (' + process.platform + '/' + arch + ').');
+    const pinnedSha = expectedDownloadSha256(url, engine.binarySha256);
+    if (!pinnedSha) {
+      throw new Error('A custom engine binary URL requires a pinned SHA-256 checksum before it can be downloaded or executed.');
+    }
     throwIfEngineStopRequested();
     managedEngine.phase = 'downloading-binary';
     appendEngineLog('Downloading engine binary (' + arch + '): ' + url);
@@ -4214,7 +4254,7 @@ async function ensureEngineBinary(config, arch) {
     // (llama.cpp ships .zip on Windows and .tar.gz on macOS).
     const archiveExt = /\.(tar\.gz|tgz)$/i.test(url) ? '.tar.gz' : '.zip';
     const zipPath = path.join(archDir, 'llama-server-download' + archiveExt);
-    await downloadEngineFile(url, zipPath, 'engine program', engine.binarySha256);
+    await downloadEngineFile(url, zipPath, 'engine program', pinnedSha);
     throwIfEngineStopRequested();
     await expandEngineZip(zipPath, archDir);
     try { fs.unlinkSync(zipPath); } catch (_) {}
@@ -4356,13 +4396,31 @@ async function fetchEngineJson(url, body, timeoutMs = 25000) {
   }
 }
 
+async function fetchLoopbackProbe(url, timeoutMs = 3000, parentSignal = null) {
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  if (parentSignal) {
+    if (parentSignal.aborted) controller.abort();
+    else parentSignal.addEventListener('abort', cancel, { once: true });
+  }
+  const timer = setTimeout(cancel, timeoutMs);
+  try {
+    return await fetch(url, { headers: { Accept: 'application/json' }, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+    if (parentSignal) { try { parentSignal.removeEventListener('abort', cancel); } catch (_) {} }
+  }
+}
+
 async function resolveEngineApiModel(status) {
   try {
-    const response = await fetch(status.baseUrl + '/v1/models', { headers: { Accept: 'application/json' } });
+    const response = await fetchLoopbackProbe(status.baseUrl + '/v1/models', 4000);
     if (response.ok) {
       const data = await response.json();
       const first = Array.isArray(data.data) && data.data[0] ? data.data[0] : null;
       if (first && first.id) return String(first.id);
+    } else {
+      try { await response.body?.cancel(); } catch (_) {}
     }
   } catch (_) {}
   return status.capability?.modelId || status.model?.name || 'local-model';
@@ -4516,7 +4574,8 @@ async function launchEngineProcess(config, arch) {
   // while the health poll below happily got 200 from the impostor — the
   // status would claim success for a process that is not ours.
   try {
-    const squatter = await fetch('http://127.0.0.1:' + engine.port + '/health');
+    const squatter = await fetchLoopbackProbe('http://127.0.0.1:' + engine.port + '/health', 2500, managedEngine.abortController?.signal || null);
+    try { await squatter.body?.cancel(); } catch (_) {}
     if (squatter.ok) {
       throw Object.assign(new Error('Port ' + engine.port + ' is already in use — probably an engine left over from an earlier session. ' +
         'Close it (Task Manager: llama-server.exe) or change localEngine.port, then start again.'), { isPortSquatter: true });
@@ -4579,7 +4638,8 @@ async function launchEngineProcess(config, arch) {
       throw new Error(managedEngine.lastError || 'The engine process exited during startup — see /api/engine/logs.');
     }
     try {
-      const health = await fetch('http://127.0.0.1:' + engine.port + '/health');
+      const health = await fetchLoopbackProbe('http://127.0.0.1:' + engine.port + '/health', 3000, managedEngine.abortController?.signal || null);
+      try { await health.body?.cancel(); } catch (_) {}
       if (health.ok) {
         managedEngine.phase = 'running';
         appendEngineLog('Engine is healthy and serving the OpenAI-compatible API (' + arch + ').');
@@ -4737,28 +4797,44 @@ const PRIMARY_ASR_ARCH = 'x64';
 async function downloadAsrFile(url, destination, label, expectedSha256) {
   const signal = managedAsr.abortController ? managedAsr.abortController.signal : undefined;
   const response = await fetchVerifiedHttpsDownload(url, label, signal);
-  if (!response.ok || !response.body) throw new Error(label + ' download failed (HTTP ' + response.status + ').');
+  if (!response.ok || !response.body) {
+    try { await response.body?.cancel(); } catch (_) {}
+    throw new Error(label + ' download failed (HTTP ' + response.status + ').');
+  }
   const totalBytes = Number(response.headers.get('content-length')) || 0;
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   const freeBytes = await getFreeDiskBytes(path.dirname(destination));
   if (freeBytes !== null && totalBytes && freeBytes < totalBytes + 1.5 * 1024 * 1024 * 1024) {
+    try { await response.body?.cancel(); } catch (_) {}
     throw new Error('Not enough disk space for the ' + label + ': it needs ' + Math.round(totalBytes / 1048576) +
       ' MB plus working headroom, but only ' + Math.round(freeBytes / 1048576) + ' MB is free. Free up space, then try again.');
   }
   managedAsr.download = { file: label, receivedBytes: 0, totalBytes };
   const temp = destination + '.download';
-  await new Promise((resolveDone, rejectDone) => {
-    const output = fs.createWriteStream(temp);
-    const reader = require('stream').Readable.fromWeb(response.body);
-    reader.on('data', (chunk) => { managedAsr.download.receivedBytes += chunk.length; });
-    reader.on('error', rejectDone);
-    output.on('error', rejectDone);
-    output.on('finish', resolveDone);
-    reader.pipe(output);
-  });
-  await verifyDownloadIntegrity(temp, expectedDownloadSha256(url, expectedSha256), label);
-  fs.renameSync(temp, destination);
-  managedAsr.download = null;
+  try {
+    await new Promise((resolveDone, rejectDone) => {
+      const output = fs.createWriteStream(temp);
+      const reader = require('stream').Readable.fromWeb(response.body);
+      const fail = (err) => {
+        try { reader.destroy(); } catch (_) {}
+        try { output.destroy(); } catch (_) {}
+        rejectDone(err);
+      };
+      reader.on('data', (chunk) => { managedAsr.download.receivedBytes += chunk.length; });
+      reader.on('error', fail);
+      output.on('error', fail);
+      output.on('finish', resolveDone);
+      reader.pipe(output);
+    });
+    await verifyDownloadIntegrity(temp, expectedDownloadSha256(url, expectedSha256), label);
+    fs.renameSync(temp, destination);
+  } catch (err) {
+    try { await response.body?.cancel(); } catch (_) {}
+    try { fs.rmSync(temp, { force: true }); } catch (_) {}
+    throw err;
+  } finally {
+    managedAsr.download = null;
+  }
 }
 
 async function ensureAsrBinary(config, arch) {
@@ -4780,11 +4856,15 @@ async function ensureAsrBinary(config, arch) {
   }
   if (!binary) {
     if (!url) throw new Error('No ASR binary is published for this platform (' + process.platform + '/' + arch + ').');
+    const pinnedSha = expectedDownloadSha256(url, asr.binarySha256);
+    if (!pinnedSha) {
+      throw new Error('A custom ASR binary URL requires a pinned SHA-256 checksum before it can be downloaded or executed.');
+    }
     throwIfAsrStopRequested();
     managedAsr.phase = 'downloading-binary';
     appendAsrLog('Downloading ASR binary (' + arch + '): ' + url);
     const zipPath = path.join(archDir, 'whisper-server-download.zip');
-    await downloadAsrFile(url, zipPath, 'speech-to-text program', asr.binarySha256);
+    await downloadAsrFile(url, zipPath, 'speech-to-text program', pinnedSha);
     throwIfAsrStopRequested();
     await expandEngineZip(zipPath, archDir);
     try { fs.unlinkSync(zipPath); } catch (_) {}
@@ -4866,7 +4946,8 @@ async function launchAsrProcess(config, arch) {
   // Port preflight: whisper-server has no /health, so probe the root page —
   // if anything already answers here, don't let a poll mistake it for ours.
   try {
-    const squatter = await fetch('http://127.0.0.1:' + asr.port + '/');
+    const squatter = await fetchLoopbackProbe('http://127.0.0.1:' + asr.port + '/', 2500, managedAsr.abortController?.signal || null);
+    try { await squatter.body?.cancel(); } catch (_) {}
     if (squatter.ok) {
       throw Object.assign(new Error('Port ' + asr.port + ' is already in use — probably a whisper-server left over from an earlier session. ' +
         'Close it (Task Manager: whisper-server.exe) or change localAsr.port, then start again.'), { isPortSquatter: true });
@@ -4908,7 +4989,8 @@ async function launchAsrProcess(config, arch) {
       throw new Error(managedAsr.lastError || 'The whisper-server process exited during startup — see /api/asr/logs.');
     }
     try {
-      const probe = await fetch('http://127.0.0.1:' + asr.port + '/');
+      const probe = await fetchLoopbackProbe('http://127.0.0.1:' + asr.port + '/', 3000, managedAsr.abortController?.signal || null);
+      try { await probe.body?.cancel(); } catch (_) {}
       if (probe.ok) {
         managedAsr.phase = 'running';
         appendAsrLog('ASR is healthy and serving /inference (' + arch + ').');
@@ -5070,11 +5152,13 @@ async function probeUrl(url, timeoutMs = 1200) {
       signal: controller.signal,
       headers: { Accept: 'application/json,text/html;q=0.8,*/*;q=0.1' },
     });
-    return {
+    const result = {
       reachable: response.ok,
       status: response.status,
       statusText: response.statusText,
     };
+    try { await response.body?.cancel(); } catch (_) {}
+    return result;
   } catch (error) {
     return {
       reachable: false,
@@ -5965,7 +6049,15 @@ async function handleApi(req, res, url) {
         managedEngine.lastProbe = null;
       }
     }
-    const saved = writeConfig(deepMerge(config, patch));
+    const merged = deepMerge(config, patch);
+    if (merged.localEngine && merged.localEngine.binaryUrl) {
+      const mergedPin = expectedDownloadSha256(merged.localEngine.binaryUrl, merged.localEngine.binarySha256 || '');
+      if (!mergedPin) {
+        jsonResponse(res, 400, { error: 'A custom engine binary URL also needs its SHA-256 checksum, so the download can be verified before it is run.' });
+        return;
+      }
+    }
+    const saved = writeConfig(merged);
     jsonResponse(res, 200, redactConfig(saved));
     return;
   }
@@ -6184,12 +6276,22 @@ async function handleApi(req, res, url) {
         'content-length': String(payload.length),
       },
     }, (up) => {
+      if (res.destroyed || res.writableEnded) {
+        up.destroy();
+        return;
+      }
+      up.on('error', () => {
+        if (!res.destroyed) res.destroy();
+      });
       res.writeHead(up.statusCode || 502, {
         ...BASE_RESPONSE_HEADERS,
         'Cache-Control': 'no-store',
         'Content-Type': up.headers['content-type'] || 'application/json',
       });
       up.pipe(res);
+    });
+    res.on('close', () => {
+      if (!res.writableEnded) upstream.destroy();
     });
     upstream.on('timeout', () => {
       upstream.destroy(new Error('timeout'));

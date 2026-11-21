@@ -65,10 +65,15 @@ function disproDateStamp() {
 // in-district comparison group is too small to be reliable, states compare
 // the group's risk against ALL OTHER STUDENTS IN THE STATE instead. The
 // admin supplies those two statewide numbers; validation mirrors group rows.
+function disproNum(v) {
+  if (v == null || String(v).trim() === '') return NaN;
+  return Number(v);
+}
+
 function disproNormalizeAlt(altComparison) {
   if (!altComparison) return null;
-  const enrollment = Number(altComparison.enrollment);
-  const students = Number(altComparison.students);
+  const enrollment = disproNum(altComparison.enrollment);
+  const students = disproNum(altComparison.students);
   if (!Number.isFinite(enrollment) || enrollment <= 0 || Math.floor(enrollment) !== enrollment) return null;
   if (!Number.isFinite(students) || students < 0 || Math.floor(students) !== students) return null;
   if (students > enrollment) return null;
@@ -83,9 +88,13 @@ function disproCompute(groups, altComparison) {
   const seenNames = new Set();
   (groups || []).forEach((g, i) => {
     const name = String((g && g.name) || '').trim();
-    const enrollment = Number(g && g.enrollment);
-    const students = Number(g && g.students);
-    if (!name && !(enrollment > 0) && !(students > 0)) return; // blank row — ignore
+    const rawEnroll = g && g.enrollment;
+    const rawStudents = g && g.students;
+    const hasEnroll = rawEnroll != null && String(rawEnroll).trim() !== '';
+    const hasStudents = rawStudents != null && String(rawStudents).trim() !== '';
+    if (!name && !hasEnroll && !hasStudents) return; // blank row — ignore
+    const enrollment = disproNum(rawEnroll);
+    const students = disproNum(rawStudents);
     if (!name) { errors.push({ row: i, message: 'Row ' + (i + 1) + ' has counts but no group name.' }); return; }
     if (!Number.isFinite(enrollment) || enrollment < 0 || Math.floor(enrollment) !== enrollment) {
       errors.push({ row: i, message: '"' + name + '": enrollment must be a whole number.' }); return;
@@ -203,9 +212,11 @@ function disproParsePaste(text) {
     const parts = disproSplitRow(t).map((p) => p.trim());
     if (parts.length < 3) { skipped.push(t); return; }
     const name = parts[0];
-    // Number('') is 0 — a header like "Group,Enrollment,Students" would parse
-    // as zeros. An empty cleaned string must be NaN so headers get skipped.
-    const numOf = (s) => { const c = String(s).replace(/[^0-9.-]/g, ''); return c === '' ? NaN : Number(c); };
+    // Reject headers containing words alongside digits (e.g. "Enrollment (2025)" or "ODR (1+)")
+    const numOf = (s) => {
+      const c = String(s).trim().replace(/,/g, '');
+      return /^-?\d+(?:\.\d+)?$/.test(c) ? Number(c) : NaN;
+    };
     const enrollment = numOf(parts[1]);
     const students = numOf(parts[2]);
     if (!name || !Number.isFinite(enrollment) || !Number.isFinite(students)) { skipped.push(t); return; }
@@ -303,7 +314,7 @@ function DisproChart({ rows, tt }) {
         {ticks.map((v) => (
           <g key={v}>
             <line x1={x(v)} x2={x(v)} y1={MT - 4} y2={H - MB} stroke={v === 1 ? '#898781' : '#e1e0d9'} strokeWidth={v === 1 ? '1.5' : '1'} strokeDasharray={v === 1 ? '4 3' : 'none'} />
-            <text x={x(v)} y={H - 8} textAnchor="middle" fontSize="10" fill="#898781">{v}</text>
+            <text x={x(v)} y={H - 8} textAnchor="middle" fontSize="10" fill="#52514e">{v}</text>
           </g>
         ))}
         {!ticks.includes(1) && <line x1={x(1)} x2={x(1)} y1={MT - 4} y2={H - MB} stroke="#898781" strokeWidth="1.5" strokeDasharray="4 3" />}
@@ -343,7 +354,8 @@ function DisproTrendChart({ trend, tt }) {
   const px = (i) => ML + (n === 1 ? PW / 2 : (i * PW) / (n - 1));
   const py = (v) => MT + PH - (Math.min(v, axisMax) / axisMax) * PH;
   const yTicks = [];
-  for (let v = 0; v <= axisMax + 0.001; v += (axisMax > 4 ? 1 : 0.5)) yTicks.push(Math.round(v * 2) / 2);
+  const yStep = axisMax <= 4 ? 0.5 : Math.max(1, Math.ceil(axisMax / 8));
+  for (let v = 0; v <= axisMax + 0.001; v += yStep) yTicks.push(Math.round(v * 2) / 2);
   const ends = labelable ? trend.groups.map((g, gi) => {
     const arr = trend.series[g];
     let last = -1;
@@ -357,7 +369,7 @@ function DisproTrendChart({ trend, tt }) {
     <div>
       <div className="flex flex-wrap gap-3 mt-1" aria-hidden="true">
         {trend.groups.map((g, gi) => (
-          <span key={g} className="inline-flex items-center gap-1.5 text-[11px] text-slate-600">
+          <span key={g} className="inline-flex items-center gap-1.5 text-xs text-slate-600">
             <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: DISPRO_TREND_COLORS[gi] }} />
             {g}
           </span>
@@ -369,12 +381,12 @@ function DisproTrendChart({ trend, tt }) {
           {yTicks.map((v) => (
             <g key={v}>
               <line x1={ML} x2={ML + PW} y1={py(v)} y2={py(v)} stroke={v === 1 ? '#898781' : '#e1e0d9'} strokeWidth={v === 1 ? '1.5' : '1'} strokeDasharray={v === 1 ? '4 3' : 'none'} />
-              <text x={ML - 5} y={py(v) + 3.5} textAnchor="end" fontSize="10" fill="#898781">{v}</text>
+              <text x={ML - 5} y={py(v) + 3.5} textAnchor="end" fontSize="10" fill="#52514e">{v}</text>
             </g>
           ))}
           <text x={ML + 4} y={py(1) - 4} fontSize="9" fill="#52514e">{tt('dispro.chart_parity', 'parity (1.0)')}</text>
           {trend.points.map((p, i) => (
-            <text key={p.id} x={px(i)} y={H - 8} textAnchor="middle" fontSize="10" fill="#898781">{p.date}</text>
+            <text key={p.id} x={px(i)} y={H - 8} textAnchor="middle" fontSize="10" fill="#52514e">{p.date}</text>
           ))}
           {trend.groups.map((g, gi) => {
             const arr = trend.series[g];
@@ -405,9 +417,9 @@ function DisproTrendChart({ trend, tt }) {
         </svg>
       </div>
       <details className="mt-1">
-        <summary className="text-[11px] text-slate-600 underline decoration-dotted cursor-pointer min-h-8 inline-flex items-center">{tt('dispro.trend_table', 'Data table')}</summary>
+        <summary className="text-xs text-slate-600 underline decoration-dotted cursor-pointer min-h-11 inline-flex items-center">{tt('dispro.trend_table', 'Data table')}</summary>
         <div className="overflow-x-auto">
-          <table className="mt-1 text-[11px] border-collapse">
+          <table className="mt-1 text-xs border-collapse">
             <thead>
               <tr>
                 <th scope="col" className="text-left p-1 text-slate-600">{tt('dispro.col_group', 'Group')}</th>
@@ -426,7 +438,7 @@ function DisproTrendChart({ trend, tt }) {
         </div>
       </details>
       {trend.omitted.length > 0 && (
-        <p className="text-[10px] text-amber-800 mt-1">{tt('dispro.trend_omitted', 'Not charted (over the 8-series limit):')} {trend.omitted.join(', ')} — {tt('dispro.trend_omitted_hint', 'still present in each saved analysis.')}</p>
+        <p className="text-xs text-amber-800 mt-1">{tt('dispro.trend_omitted', 'Not charted (over the 8-series limit):')} {trend.omitted.join(', ')} — {tt('dispro.trend_omitted_hint', 'still present in each saved analysis.')}</p>
       )}
     </div>
   );
@@ -460,7 +472,7 @@ function DisproResults({ analysis, result, tt }) {
                 <td className={'p-1.5 text-center font-bold ' + (r.riskRatio != null && r.riskRatio >= 2 ? 'text-rose-800' : 'text-slate-800')}>
                   {disproFmtRatio(r.riskRatio)}
                   {r.altRiskRatio != null && (r.flags.indexOf('small_comparison') !== -1 || r.flags.indexOf('zero_comparison_risk') !== -1) && (
-                    <span className="block text-[10px] font-normal text-slate-600">{tt('dispro.alt_short', 'alt')} {r.altRiskRatio.toFixed(2)}</span>
+                    <span className="block text-xs font-normal text-slate-600">{tt('dispro.alt_short', 'alt')} {r.altRiskRatio.toFixed(2)}</span>
                   )}
                 </td>
                 <td className="p-1.5 text-center text-slate-700">{disproFmtPct(r.outcomeShare)} vs {disproFmtPct(r.enrollShare)}</td>
@@ -479,7 +491,7 @@ function DisproResults({ analysis, result, tt }) {
       </div>
       <DisproChart rows={result.rows} tt={tt} />
       {result.altComparison && (
-        <p className="mt-2 text-[10px] text-slate-600 bg-slate-100 border border-slate-200 rounded-lg p-2">
+        <p className="mt-2 text-xs text-slate-600 bg-slate-100 border border-slate-200 rounded-lg p-2">
           <span className="font-bold">{tt('dispro.alt_note_title', 'Alternate comparison on file:')}</span>{' '}
           {result.altComparison.label} — {result.altComparison.students}/{result.altComparison.enrollment} ({disproFmtPct(result.altComparison.risk, 2)}).{' '}
           {tt('dispro.alt_note', 'Where the in-district comparison is flagged unstable, the table shows the alternate risk ratio (group risk ÷ this risk) beneath the standard one — the 34 CFR 300.647 pattern for small comparison groups.')}
@@ -488,14 +500,14 @@ function DisproResults({ analysis, result, tt }) {
       {flagged.length > 0 && (
         <div className="mt-2 bg-amber-50 border border-amber-300 rounded-xl p-3">
           <h4 className="text-xs font-bold text-amber-900">{tt('dispro.flags_title', '† Stability cautions')}</h4>
-          <ul className="mt-1 space-y-0.5 text-[11px] text-amber-900 list-disc pl-4">
+          <ul className="mt-1 space-y-0.5 text-xs text-amber-900 list-disc pl-4">
             {flagged.map((r) => r.flags.map((f) => (
               <li key={r.name + f}><span className="font-bold">{r.name}:</span> {tt('dispro.flag_' + f, DISPRO_FLAG_TEXT[f])}</li>
             )))}
           </ul>
         </div>
       )}
-      <p className="mt-2 text-[10px] text-slate-500">
+      <p className="mt-2 text-xs text-slate-600">
         {tt('dispro.integrity_note', 'Risk ratios compare each group to all other students (the federal comparison method) and describe patterns in this data — they do not establish causes, and no threshold here constitutes a formal finding: states set their own risk-ratio thresholds and minimum cell/n-sizes under 34 CFR 300.647, typically over multiple years. Elevated numbers are a prompt for root-cause review (referral practices, policy application, climate), not a verdict. Counts must be unduplicated students. All computation happens on this device.')}
       </p>
     </div>
@@ -522,16 +534,30 @@ function DisproAnalyzerPanel(props) {
     ],
     altComparison: { label: 'All other students statewide', enrollment: '', students: '' },
   });
-  const [analyses, setAnalyses] = React.useState(() => { const a = disproLoad(DISPRO_ANALYSES_KEY, []); return Array.isArray(a) ? a : []; });
+  const [analyses, setAnalyses] = React.useState(() => {
+    const a = disproLoad(DISPRO_ANALYSES_KEY, []);
+    return Array.isArray(a) ? a.filter((x) => x && typeof x === 'object' && Array.isArray(x.groups)) : [];
+  });
   const [draft, setDraft] = React.useState(() => {
     const d = disproLoad(DISPRO_DRAFT_KEY, null);
-    return (d && typeof d === 'object' && Array.isArray(d.groups)) ? d : blankDraft();
+    if (d && typeof d === 'object' && Array.isArray(d.groups)) {
+      return {
+        ...blankDraft(),
+        ...d,
+        title: typeof d.title === 'string' ? d.title : '',
+        outcomeLabel: typeof d.outcomeLabel === 'string' && d.outcomeLabel ? d.outcomeLabel : DISPRO_OUTCOME_PRESETS[0],
+        date: typeof d.date === 'string' && d.date ? d.date : disproDateStamp(),
+      };
+    }
+    return blankDraft();
   });
   const [tab, setTab] = React.useState('analyze');
   const [viewId, setViewId] = React.useState(null);
   const [pasteOpen, setPasteOpen] = React.useState(false);
   const [pasteText, setPasteText] = React.useState('');
   const [armDelete, setArmDelete] = React.useState(null);
+  const [armClear, setArmClear] = React.useState(false);
+  const backdropDownRef = React.useRef(false);
   const dialogRef = React.useRef(null);
 
   React.useEffect(() => { disproStore(DISPRO_ANALYSES_KEY, analyses); }, [analyses]);
@@ -584,8 +610,14 @@ function DisproAnalyzerPanel(props) {
       if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = el.closest('details:not([open])');
       if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
-      const st = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
-      return !st || (st.display !== 'none' && st.visibility !== 'hidden');
+      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+        for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+          if (cur === dialog) break;
+        }
+      }
+      return true;
     });
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();
@@ -656,7 +688,7 @@ function DisproAnalyzerPanel(props) {
     if (!result.valid) { addToast(tt('dispro.save_invalid', 'Fix the data errors and include at least two groups before saving.'), 'warning'); return; }
     const record = {
       id: disproNextId(),
-      title: draft.title.trim() || (draft.outcomeLabel + ' — ' + draft.date),
+      title: String(draft.title || '').trim() || ((draft.outcomeLabel || DISPRO_OUTCOME_PRESETS[0]) + ' — ' + (draft.date || disproDateStamp())),
       outcomeLabel: draft.outcomeLabel,
       date: draft.date,
       savedAt: Date.now(),
@@ -690,7 +722,13 @@ function DisproAnalyzerPanel(props) {
   ];
 
   return (
-    <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4"
+      style={{ zIndex: 260 }}
+      role="presentation"
+      onMouseDown={(e) => { backdropDownRef.current = (e.target === e.currentTarget); }}
+      onClick={(e) => { const allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget) onClose(); }}
+    >
       <div ref={dialogRef} tabIndex={-1} data-help-key="dispro_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="dispro-title" onClick={(e) => e.stopPropagation()}>
         {/* Solid, not /95: the host dark theme restyles bg-slate-50 only, so a translucent header stayed light under light text. */}
         <div className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl">
@@ -793,12 +831,21 @@ function DisproAnalyzerPanel(props) {
                 <div className="mt-1.5 flex flex-wrap gap-2">
                   <button type="button" onClick={addRow} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100">+ {tt('dispro.add_row', 'Add group')}</button>
                   <button type="button" aria-expanded={pasteOpen} onClick={() => setPasteOpen((v) => !v)} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100"><span aria-hidden="true">📋</span> {tt('dispro.paste_toggle', 'Paste rows')}</button>
-                  <button type="button" onClick={() => setDraft((d) => ({ ...blankDraft(), outcomeLabel: d.outcomeLabel }))} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100">{tt('dispro.clear', 'Clear')}</button>
+                  <button type="button" onClick={() => {
+                    const hasData = (draft.groups || []).some((g) => g && (String(g.name || '').trim() || String(g.enrollment || '').trim() || String(g.students || '').trim()));
+                    if (hasData && !armClear) {
+                      setArmClear(true);
+                      disproAnnounce(tt('dispro.clear_arm_announce', 'Activate Clear again to erase all entered counts.'));
+                      return;
+                    }
+                    setArmClear(false);
+                    setDraft((d) => ({ ...blankDraft(), outcomeLabel: d.outcomeLabel }));
+                  }} className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold ' + (armClear ? 'bg-rose-600 text-white border-rose-700' : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-100')}>{armClear ? tt('dispro.clear_confirm', 'Tap again to clear') : tt('dispro.clear', 'Clear')}</button>
                   <button type="button" onClick={saveAnalysis} className="min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700">{tt('dispro.save', 'Save analysis')}</button>
                 </div>
                 {pasteOpen && (
                   <div className="mt-2">
-                    <label htmlFor="dispro-paste" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('dispro.paste_label', 'One line per group: group, enrollment, students with outcome (comma, tab, or semicolon separated — a header row is skipped automatically)')}</label>
+                    <label htmlFor="dispro-paste" className="block text-xs font-bold text-slate-600 mb-0.5">{tt('dispro.paste_label', 'One line per group: group, enrollment, students with outcome (comma, tab, or semicolon separated — a header row is skipped automatically)')}</label>
                     <textarea id="dispro-paste" rows={5} value={pasteText} onChange={(e) => setPasteText(e.target.value)}
                       placeholder={'Group,Enrollment,Students\nStudents with IEPs,120,18\nAll other students,880,44'}
                       className="w-full text-xs font-mono border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
@@ -806,31 +853,31 @@ function DisproAnalyzerPanel(props) {
                   </div>
                 )}
                 <details className="mt-2">
-                  <summary className="text-[11px] text-slate-600 underline decoration-dotted cursor-pointer min-h-11 inline-flex items-center">{tt('dispro.alt_toggle', 'Alternate comparison (optional — for small comparison groups)')}</summary>
+                  <summary className="text-xs text-slate-600 underline decoration-dotted cursor-pointer min-h-11 inline-flex items-center">{tt('dispro.alt_toggle', 'Alternate comparison (optional — for small comparison groups)')}</summary>
                   <div className="mt-1 flex flex-wrap gap-2 items-end">
                     <div className="flex-1 min-w-40">
-                      <label htmlFor="dispro-alt-label" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('dispro.alt_label', 'Comparison population')}</label>
+                      <label htmlFor="dispro-alt-label" className="block text-xs font-bold text-slate-600 mb-0.5">{tt('dispro.alt_label', 'Comparison population')}</label>
                       <input id="dispro-alt-label" type="text" value={(draft.altComparison && draft.altComparison.label) || ''}
                         onChange={(e) => setDraft((d) => ({ ...d, altComparison: { ...(d.altComparison || {}), label: e.target.value } }))}
                         className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                     </div>
                     <div className="w-28">
-                      <label htmlFor="dispro-alt-enroll" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('dispro.col_enrollment', 'Enrollment')}</label>
+                      <label htmlFor="dispro-alt-enroll" className="block text-xs font-bold text-slate-600 mb-0.5">{tt('dispro.col_enrollment', 'Enrollment')}</label>
                       <input id="dispro-alt-enroll" type="text" inputMode="numeric" value={(draft.altComparison && draft.altComparison.enrollment) || ''}
                         onChange={(e) => setDraft((d) => ({ ...d, altComparison: { ...(d.altComparison || {}), enrollment: e.target.value } }))}
                         className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                     </div>
                     <div className="w-32">
-                      <label htmlFor="dispro-alt-students" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('dispro.col_students_short2', 'Students w/ outcome')}</label>
+                      <label htmlFor="dispro-alt-students" className="block text-xs font-bold text-slate-600 mb-0.5">{tt('dispro.col_students_short2', 'Students w/ outcome')}</label>
                       <input id="dispro-alt-students" type="text" inputMode="numeric" value={(draft.altComparison && draft.altComparison.students) || ''}
                         onChange={(e) => setDraft((d) => ({ ...d, altComparison: { ...(d.altComparison || {}), students: e.target.value } }))}
                         className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                     </div>
                   </div>
-                  <p className="text-[10px] text-slate-600 mt-1">{tt('dispro.alt_hint', 'When a comparison group inside the building is too small to be reliable, states compare against all other students statewide (the 34 CFR 300.647 alternate risk ratio). Enter those statewide counts here; the alternate ratio appears beneath any flagged standard ratio.')}</p>
+                  <p className="text-xs text-slate-600 mt-1">{tt('dispro.alt_hint', 'When a comparison group inside the building is too small to be reliable, states compare against all other students statewide (the 34 CFR 300.647 alternate risk ratio). Enter those statewide counts here; the alternate ratio appears beneath any flagged standard ratio.')}</p>
                 </details>
                 {result.errors.length > 0 && (
-                  <ul className="mt-2 space-y-0.5 text-[11px] text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 list-disc pl-5" role="alert">
+                  <ul className="mt-2 space-y-0.5 text-xs text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 list-disc pl-5" role="alert">
                     {result.errors.map((e, i) => <li key={i}>{e.message}</li>)}
                   </ul>
                 )}
@@ -839,7 +886,7 @@ function DisproAnalyzerPanel(props) {
               {result.rows.length >= 2 && result.errors.length === 0 ? (
                 <DisproResults analysis={draft} result={result} tt={tt} />
               ) : (
-                <p className="mt-2 text-[11px] text-slate-500">{tt('dispro.need_rows', 'Enter at least two groups (e.g. the group of interest and everyone else, or every demographic group) — results appear automatically.')}</p>
+                <p className="mt-2 text-xs text-slate-600">{tt('dispro.need_rows', 'Enter at least two groups (e.g. the group of interest and everyone else, or every demographic group) — results appear automatically.')}</p>
               )}
               {result.valid && (
                 <div className="mt-2">
@@ -874,7 +921,7 @@ function DisproAnalyzerPanel(props) {
             return (
               <div>
                 <h3 className="text-sm font-bold text-slate-700 mb-1">{tt('dispro.trends_title', 'Risk ratios over time')}</h3>
-                <p className="text-[11px] text-slate-500 mb-2">{tt('dispro.trends_hint', 'Save analyses of the same outcome across periods (semesters, years) with matching group names — each outcome with two or more saved analyses charts here. States typically evaluate significant disproportionality over multiple years, so a single elevated point is a prompt to keep measuring, not a pattern.')}</p>
+                <p className="text-xs text-slate-600 mb-2">{tt('dispro.trends_hint', 'Save analyses of the same outcome across periods (semesters, years) with matching group names — each outcome with two or more saved analyses charts here. States typically evaluate significant disproportionality over multiple years, so a single elevated point is a prompt to keep measuring, not a pattern.')}</p>
                 {trends.length === 0 && <p className="text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3">{tt('dispro.trends_empty', 'No outcome has two or more saved analyses yet. Save at least two (same outcome label, different dates) on the Analyze tab.')}</p>}
                 {trends.map((trend) => (
                   <div key={trend.outcomeLabel} className="bg-white border border-slate-300 rounded-xl p-3 mb-3">
@@ -897,7 +944,7 @@ function DisproAnalyzerPanel(props) {
                       className="w-full min-h-11 flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-left">
                       <span className="min-w-0">
                         <span className="block font-bold text-sm text-slate-800">{a.title}</span>
-                        <span className="block text-[10px] text-slate-500">{a.date} · {a.groups.length} {tt('dispro.groups_short', 'groups')}</span>
+                        <span className="block text-xs text-slate-600">{a.date} · {a.groups.length} {tt('dispro.groups_short', 'groups')}</span>
                       </span>
                       <span aria-hidden="true" className="shrink-0 text-slate-600">›</span>
                     </button>
@@ -905,7 +952,7 @@ function DisproAnalyzerPanel(props) {
                 ))}
               </ul>
               {analyses.length > 0 && (
-                <p className="mt-3 text-[10px] text-slate-500">{tt('dispro.storage_note', 'Analyses live only in this browser’s storage. Gemini Canvas may not persist storage between sessions — export the CSV for anything you need to keep.')}</p>
+                <p className="mt-3 text-xs text-slate-600">{tt('dispro.storage_note', 'Analyses live only in this browser’s storage. Gemini Canvas may not persist storage between sessions — export the CSV for anything you need to keep.')}</p>
               )}
             </div>
           )}

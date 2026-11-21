@@ -30,6 +30,7 @@ import {
   randomToken,
   sha256Base64Url,
 } from "./security";
+import { exactLengthBodyStream } from "./request-bounds";
 
 function htmlResponse(body: string, nonce: string): Response {
   return new Response(body, {
@@ -321,9 +322,16 @@ async function uploadDocument(
     throw new PilotError("not_found", 404);
   }
   let rejected = false;
+  let createdByThisPut = false;
 
   try {
-    const stored = await env.DOCUMENTS.put(upload.object_key, request.body, {
+    const boundedBody = exactLengthBodyStream(
+      request.body,
+      sizeBytes,
+      new PilotError("document_size_not_allowed", 413),
+      new PilotError("upload_state_conflict", 409),
+    );
+    const stored = await env.DOCUMENTS.put(upload.object_key, boundedBody, {
       httpMetadata: {
         contentType: "application/pdf",
         cacheControl: "no-store",
@@ -332,6 +340,7 @@ async function uploadDocument(
         etagDoesNotMatch: "*",
       },
     });
+    createdByThisPut = Boolean(stored);
     if (!stored || stored.size !== sizeBytes) {
       throw new PilotError("upload_state_conflict", 409);
     }
@@ -372,7 +381,9 @@ async function uploadDocument(
     );
   } catch (error) {
     if (!rejected) {
-      await env.DOCUMENTS.delete(upload.object_key).catch(() => undefined);
+      if (createdByThisPut) {
+        await env.DOCUMENTS.delete(upload.object_key).catch(() => undefined);
+      }
       await rejectUpload(env, uploadId).catch(() => undefined);
     }
     throw error;
@@ -406,35 +417,40 @@ async function downloadDocument(
   if (!object) {
     throw new PilotError("result_missing", 410);
   }
-  if (!resultObjectMatchesJob(ownedJob, object)) {
-    throw new PilotError("result_integrity_failed", 502);
-  }
+  try {
+    if (!resultObjectMatchesJob(ownedJob, object)) {
+      throw new PilotError("result_integrity_failed", 502);
+    }
 
-  const job = await consumeDownloadGrant(
-    env,
-    jobId,
-    await sha256Base64Url(token),
-  );
-  if (
-    job.institution_id !== identity.institutionId ||
-    job.owner_id !== identity.ownerId ||
-    job.result_key !== ownedJob.result_key ||
-    job.result_size_bytes !== ownedJob.result_size_bytes ||
-    job.result_sha256 !== ownedJob.result_sha256
-  ) {
-    throw new PilotError("result_integrity_failed", 502);
-  }
+    const job = await consumeDownloadGrant(
+      env,
+      jobId,
+      await sha256Base64Url(token),
+    );
+    if (
+      job.institution_id !== identity.institutionId ||
+      job.owner_id !== identity.ownerId ||
+      job.result_key !== ownedJob.result_key ||
+      job.result_size_bytes !== ownedJob.result_size_bytes ||
+      job.result_sha256 !== ownedJob.result_sha256
+    ) {
+      throw new PilotError("result_integrity_failed", 502);
+    }
 
-  await noteDownload(env, config, jobId);
-  return new Response(object.body, {
-    headers: noStoreHeaders({
-      "Content-Type": "application/pdf",
-      "Content-Length": String(object.size),
-      "Content-Disposition":
-        'attachment; filename="alloflow-remediated.pdf"',
-      "Content-Security-Policy": "default-src 'none'; sandbox",
-    }),
-  });
+    await noteDownload(env, config, jobId);
+    return new Response(object.body, {
+      headers: noStoreHeaders({
+        "Content-Type": "application/pdf",
+        "Content-Length": String(object.size),
+        "Content-Disposition":
+          'attachment; filename="alloflow-remediated.pdf"',
+        "Content-Security-Policy": "default-src 'none'; sandbox",
+      }),
+    });
+  } catch (error) {
+    await object.body?.cancel().catch(() => undefined);
+    throw error;
+  }
 }
 
 export async function handleDocumentTransfer(

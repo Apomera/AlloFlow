@@ -21,6 +21,7 @@ export function createAdapters(tree) {
     intro:'Follow the water from forest to mainstem. Choose where to put your effort, then return each year to see what changed.',
     disclosure:'An educational watershed model, not a forecast. Quality, connectivity, and support are 0–100 model indices. Regional context recognizes Indigenous-led restoration; the narrator does not speak for a Tribal Nation.',
     start(seed,config={}) {
+      if(!config||typeof config!=='object'||Array.isArray(config))throw new Error('Unsupported watershed settings.');
       const difficulty=config.difficulty||'coordinator';
       if(!Object.hasOwn(water.difficulties,difficulty)||Object.keys(config).some(k=>k!=='difficulty'))throw new Error('Unsupported watershed settings.');
       return water.start({seed,difficulty});
@@ -67,6 +68,7 @@ export function createAdapters(tree) {
     intro:'Three trees. Nine habitat patches. Guide a grove through weather and renewal, and see which descendants take root.',
     disclosure:'An educational grove scenario using Tree Life Lab’s existing physiology and seeded events. Shared priorities are a game abstraction. A new arrival counts as established only after surviving a later annual update.',
     start(seed,config={}) {
+      if(!config||typeof config!=='object'||Array.isArray(config))throw new Error('Unsupported grove settings.');
       const mode=config.mode||'deck';
       if(!['deck','generated'].includes(mode)||Object.keys(config).some(k=>k!=='mode'))throw new Error('Unsupported grove settings.');
       return tree.groveStart({version:1,seed,mode,choices:[]});

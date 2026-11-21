@@ -40,50 +40,61 @@ const LargeFileHandler = {
     isProcessing: false,
     cancelRequested: false,
     needsChunking(file) {
-        return file.size > this.MAX_CHUNK_SIZE_BYTES;
+        return !!(file && typeof file.size === 'number' && Number.isFinite(file.size) && file.size > this.MAX_CHUNK_SIZE_BYTES);
     },
     getFileType(file) {
-        const type = file.type.toLowerCase();
+        if (!file || typeof file !== 'object') return 'unknown';
+        const type = typeof file.type === 'string' ? file.type.toLowerCase() : '';
         if (type.startsWith('audio/')) return 'audio';
         if (type.startsWith('video/')) return 'video';
         if (type === 'application/pdf') return 'pdf';
-        const ext = file.name.split('.').pop().toLowerCase();
+        const name = typeof file.name === 'string' ? file.name : '';
+        const dotIdx = name.lastIndexOf('.');
+        const ext = dotIdx >= 0 ? name.slice(dotIdx + 1).toLowerCase() : '';
         if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'].includes(ext)) return 'audio';
         if (['mp4', 'webm', 'mov', 'avi'].includes(ext)) return 'video';
         if (ext === 'pdf') return 'pdf';
         return 'unknown';
     },
     readFileAsArrayBuffer(file) {
+        if (!file) return Promise.reject(new Error('No media file selected.'));
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
             reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.onabort = () => reject(new Error('File read was aborted'));
             reader.readAsArrayBuffer(file);
         });
     },
     formatDuration(seconds) {
+        if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0) return '0s';
         const mins = Math.floor(seconds / 60);
         const secs = Math.round(seconds % 60);
         if (mins === 0) return `${secs}s`;
         return `${mins}m ${secs}s`;
     },
     async _decodeMediaFile(file, readMessage, onProgress = () => {}) {
+        const reportProgress = (cur, tot, msg) => {
+            if (typeof onProgress === 'function') {
+                try { onProgress(cur, tot, msg); } catch (_) {}
+            }
+        };
         if (!file) {
             throw new Error('No media file selected.');
         }
-        if (typeof file.size === 'number' && file.size > this.MAX_FILE_SIZE_BYTES) {
+        if (typeof file.size === 'number' && (!Number.isFinite(file.size) || file.size < 0 || file.size > this.MAX_FILE_SIZE_BYTES)) {
             throw new Error('File exceeds the 500 MB large-file safety limit.');
         }
-        onProgress(0, 1, readMessage);
+        reportProgress(0, 1, readMessage);
         const arrayBuffer = await this.readFileAsArrayBuffer(file);
-        if (arrayBuffer && arrayBuffer.byteLength > this.MAX_FILE_SIZE_BYTES) {
+        if (!arrayBuffer || typeof arrayBuffer.byteLength !== 'number' || arrayBuffer.byteLength > this.MAX_FILE_SIZE_BYTES) {
             throw new Error('File exceeds the 500 MB large-file safety limit.');
         }
         const audioCtx = getGlobalAudioContext();
         if (!audioCtx) {
             throw new Error('Web Audio API not supported');
         }
-        onProgress(0, 1, 'Decoding audio...');
+        reportProgress(0, 1, 'Decoding audio...');
         const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
         const totalDuration = audioBuffer.duration;
         if (!Number.isFinite(totalDuration) || totalDuration < 0 || totalDuration > this.MAX_AUDIO_DURATION_SECONDS) {
@@ -92,23 +103,38 @@ const LargeFileHandler = {
         return { audioCtx, audioBuffer };
     },
     async _chunkAndTranscribeAudioBuffer(audioCtx, audioBuffer, transcribeChunk, onProgress = () => {}) {
+        if (typeof transcribeChunk !== 'function') {
+            throw new Error('Transcription handler is required.');
+        }
+        const reportProgress = (cur, tot, msg) => {
+            if (typeof onProgress === 'function') {
+                try { onProgress(cur, tot, msg); } catch (_) {}
+            }
+        };
         const totalDuration = audioBuffer.duration;
         const sampleRate = audioBuffer.sampleRate;
         const numberOfChannels = audioBuffer.numberOfChannels;
+        if (!Number.isFinite(sampleRate) || sampleRate < 1000 || sampleRate > 384000) {
+            throw new Error('Unsupported audio sample rate.');
+        }
+        if (!Number.isFinite(numberOfChannels) || numberOfChannels < 1 || numberOfChannels > 32) {
+            throw new Error('Unsupported audio channel count.');
+        }
         const chunkCount = Math.ceil(totalDuration / this.CHUNK_DURATION_SECONDS);
-        onProgress(0, chunkCount, `Preparing ${chunkCount} chunks...`);
+        reportProgress(0, chunkCount, `Preparing ${chunkCount} chunks...`);
         const transcripts = [];
         for (let i = 0; i < chunkCount; i++) {
             if (this.cancelRequested) {
                 throw new Error('Cancelled');
             }
-            onProgress(i + 1, chunkCount, `Transcribing chunk ${i + 1} of ${chunkCount}...`);
+            reportProgress(i + 1, chunkCount, `Transcribing chunk ${i + 1} of ${chunkCount}...`);
             const startSample = Math.floor(i * this.CHUNK_DURATION_SECONDS * sampleRate);
             const endSample = Math.min(
                 Math.floor((i + 1) * this.CHUNK_DURATION_SECONDS * sampleRate),
                 audioBuffer.length
             );
             const chunkLength = endSample - startSample;
+            if (chunkLength <= 0) continue;
             const chunkBuffer = audioCtx.createBuffer(
                 numberOfChannels,
                 chunkLength,
@@ -144,29 +170,40 @@ const LargeFileHandler = {
         }
     },
     audioBufferToWav(buffer) {
-        const originalSampleRate = buffer.sampleRate;
+        if (!buffer || typeof buffer.getChannelData !== 'function') {
+            throw new Error('Invalid audio buffer.');
+        }
+        const originalSampleRate = Number(buffer.sampleRate);
+        if (!Number.isFinite(originalSampleRate) || originalSampleRate < 1000 || originalSampleRate > 384000) {
+            throw new Error('Unsupported audio sample rate.');
+        }
         const targetSampleRate = this.TARGET_SAMPLE_RATE;
         const format = 1;
         const bitDepth = 16;
         const numChannels = 1;
-        const originalLength = buffer.length;
+        const originalLength = Math.max(0, Math.floor(Number(buffer.length) || 0));
+        const maxOriginalSamples = Math.ceil(originalSampleRate * this.MAX_AUDIO_DURATION_SECONDS);
+        if (originalLength > maxOriginalSamples) {
+            throw new Error('Audio buffer exceeds the 4-hour processing limit.');
+        }
         const monoData = new Float32Array(originalLength);
-        const channelCount = Math.max(1, buffer.numberOfChannels || 1);
+        const channelCount = Math.min(32, Math.max(1, Math.floor(Number(buffer.numberOfChannels) || 1)));
         const channels = Array.from({ length: channelCount }, (_, ch) => buffer.getChannelData(ch));
         if (channelCount === 1) {
-            monoData.set(channels[0]);
+            monoData.set(channels[0].subarray(0, originalLength));
         } else {
             const invChannels = 1 / channelCount;
             for (let i = 0; i < originalLength; i++) {
                 let sum = 0;
                 for (let ch = 0; ch < channelCount; ch++) {
-                    sum += channels[ch][i];
+                    sum += channels[ch][i] || 0;
                 }
                 monoData[i] = sum * invChannels;
             }
         }
         const resampleRatio = targetSampleRate / originalSampleRate;
-        const newLength = originalLength > 0 ? Math.floor(originalLength * resampleRatio) : 0;
+        const maxResampledSamples = targetSampleRate * this.MAX_AUDIO_DURATION_SECONDS;
+        const newLength = originalLength > 0 ? Math.min(maxResampledSamples, Math.floor(originalLength * resampleRatio)) : 0;
         const resampledData = new Float32Array(newLength);
         if (originalLength > 0) {
             for (let i = 0; i < newLength; i++) {
@@ -207,14 +244,20 @@ const LargeFileHandler = {
         return new Blob([wavBuffer], { type: 'audio/wav' });
     },
     blobToBase64(blob) {
+        if (!blob) return Promise.reject(new Error('No blob provided for base64 conversion'));
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => {
                 const dataUrl = reader.result;
-                const base64 = dataUrl.split(',')[1];
-                resolve(base64);
+                const commaIdx = typeof dataUrl === 'string' ? dataUrl.indexOf(',') : -1;
+                if (commaIdx < 0) {
+                    reject(new Error('Failed to convert to base64'));
+                    return;
+                }
+                resolve(dataUrl.slice(commaIdx + 1));
             };
             reader.onerror = () => reject(new Error('Failed to convert to base64'));
+            reader.onabort = () => reject(new Error('Base64 conversion was aborted'));
             reader.readAsDataURL(blob);
         });
     },
@@ -224,7 +267,14 @@ const LargeFileHandler = {
     async extractAudioFromVideo(videoFile, onProgress = () => {}) {
         const { audioBuffer } = await this._decodeMediaFile(videoFile, 'Extracting audio from video...', onProgress);
         const wavBlob = this.audioBufferToWav(audioBuffer);
-        const audioFileName = String(videoFile.name || 'video').replace(/\.[^.]+$/, '') + '.wav';
+        const rawBase = String((videoFile && videoFile.name) || 'video')
+            .replace(/[\u0000-\u001F\u007F]/g, '')
+            .replace(/[/\\]/g, '_')
+            .replace(/\.[^.]+$/, '')
+            .replace(/^\.+/, '')
+            .trim()
+            .slice(0, 120);
+        const audioFileName = (rawBase || 'video') + '.wav';
         return new File([wavBlob], audioFileName, { type: 'audio/wav' });
     },
     async processVideoFile(file, transcribeChunk, onProgress = () => {}) {
@@ -288,7 +338,7 @@ const LargeFileTranscriptionModal = React.memo(({
                 if (!processingRef.current) {
                     event.preventDefault();
                     event.stopPropagation();
-                    closeRef.current();
+                    if (typeof closeRef.current === 'function') closeRef.current();
                 }
                 return;
             }
@@ -314,8 +364,9 @@ const LargeFileTranscriptionModal = React.memo(({
     }, [isOpen]);
 
     if (!isOpen || !file) return null;
-    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    const estimatedChunks = Math.ceil(file.size / (15 * 1024 * 1024));
+    const safeFileSize = (typeof file.size === 'number' && Number.isFinite(file.size) && file.size >= 0) ? file.size : 0;
+    const fileSizeMB = (safeFileSize / (1024 * 1024)).toFixed(1);
+    const estimatedChunks = Math.ceil(safeFileSize / (15 * 1024 * 1024));
     const chunkTotal = Math.max(0, Number(totalChunks) || 0);
     const chunkProgress = Math.max(0, Math.min(chunkTotal, Number(progress) || 0));
     const progressPercent = chunkTotal > 0 ? Math.round((chunkProgress / chunkTotal) * 100) : 0;

@@ -600,20 +600,21 @@
 
   // ── Delimited text (paste a table, class survey merge) ──
   function parseDelimited(text) {
-    var src = String(text || '').replace(/\r\n?/g, '\n');
-    var firstLine = src.split('\n')[0] || '';
+    var src = String(text || '').slice(0, 2 * 1024 * 1024).replace(/\r\n?/g, '\n');
+    var firstNl = src.indexOf('\n');
+    var firstLine = firstNl === -1 ? src : src.slice(0, firstNl);
     var delim = firstLine.indexOf('\t') !== -1 ? '\t' : (firstLine.indexOf(';') !== -1 && firstLine.indexOf(',') === -1 ? ';' : ',');
     var rows = [], row = [], cur = '', q = false;
     for (var i = 0; i < src.length && rows.length < 2001; i++) {
       var ch = src[i];
       if (q) {
-        if (ch === '"') { if (src[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch;
+        if (ch === '"') { if (src[i + 1] === '"') { if (cur.length < 256) cur += '"'; i++; } else q = false; } else if (cur.length < 256) cur += ch;
       } else if (ch === '"' && cur === '') q = true;
-      else if (ch === delim) { row.push(cur); cur = ''; }
-      else if (ch === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
-      else cur += ch;
+      else if (ch === delim) { if (row.length < 30) row.push(cur); cur = ''; }
+      else if (ch === '\n') { if (row.length < 30) row.push(cur); rows.push(row); row = []; cur = ''; }
+      else if (cur.length < 256) cur += ch;
     }
-    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+    if (cur !== '' || row.length) { if (row.length < 30) row.push(cur); rows.push(row); }
     return rows.map(function (r) { return r.slice(0, 30).map(function (c) { return c.trim().slice(0, 200); }); })
       .filter(function (r) { return r.some(function (c) { return c !== ''; }); }).slice(0, 2001);
   }
@@ -1040,7 +1041,7 @@
   var pluginAlive = false;
   var pluginWin = null; // the tutor plugin's window (nested inside CODAP) — captured from its alive ping
   var history = [];   // {role:'student'|'tutor', text} — in-memory only
-  var pending = {};   // id → {resolve, timer}
+  var pending = Object.create(null);   // id → {resolve, timer}
   var openerOrigin = null;
   var pluginOrigin = null;
 
@@ -1150,7 +1151,7 @@
       return;
     }
     if (data.type === 'allodatalab-plugin-alive') {
-      if (event.origin !== window.location.origin) return;
+      if (!event.origin || event.origin === 'null' || event.origin !== window.location.origin) return;
       if (pluginWin && event.source !== pluginWin) {
         if (!pluginWin.closed) return;
         forgetPlugin();
@@ -1172,7 +1173,7 @@
     if (data.type === 'allodatalab-codap-component-changed') { if (fromPlugin) onCodapComponentChanged(); return; }
     var trustedResponse = (data.type === 'allodatalab-ai-response' && fromOpener)
       || ((data.type === 'allodatalab-snapshot' || data.type === 'allodatalab-dataset-created' || data.type === 'allodatalab-graph-report' || data.type === 'allodatalab-items-added') && fromPlugin);
-    if (trustedResponse && data.id && pending[data.id]) {
+    if (trustedResponse && typeof data.id === 'string' && Object.prototype.hasOwnProperty.call(pending, data.id)) {
       var entry = pending[data.id];
       delete pending[data.id];
       clearTimeout(entry.timer);
@@ -1832,11 +1833,14 @@
     var ds = currentDataset();
     if (!isSurvey(ds)) return;
     var res = surveyRowsFromText(surveyPaste.value, ds.attributes);
-    res.rows.forEach(function (r) { surveyRows.push(r); });
+    var room = Math.max(0, 2000 - surveyRows.length);
+    var toAdd = res.rows.slice(0, room);
+    var dropped = res.rows.length - toAdd.length;
+    toAdd.forEach(function (r) { surveyRows.push(r); });
     surveyPaste.value = '';
-    surveyStatus.textContent = fill(S('survey_pasted'), { added: res.rows.length, skipped: res.skipped });
+    surveyStatus.textContent = fill(S('survey_pasted'), { added: toAdd.length, skipped: res.skipped + dropped });
     renderTable(ds);
-    if (res.rows.length && surveyContext()) sendSurveyRows(res.rows).then(function (ok) { if (ok) surveySent = Math.min(surveySent + res.rows.length, surveyRows.length); });
+    if (toAdd.length && surveyContext()) sendSurveyRows(toAdd).then(function (ok) { if (ok) surveySent = Math.min(surveySent + toAdd.length, surveyRows.length); });
   }
 
   // ── Make the graph: ask CODAP (documented component API) what is on the axes ──

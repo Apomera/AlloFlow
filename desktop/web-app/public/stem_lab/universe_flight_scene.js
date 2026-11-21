@@ -1810,6 +1810,11 @@
     // reveal a broad warm concentration, cooler lobes and branching lanes.
     // Lanes reduce emitted light; they do not model dust extinction.
     '  vec3 sourceColor = a_color; float bandGain = 1.0;',
+    // Enrich spectral starlight chroma separation (sapphire O/B, crisp A/F, golden G/K, warm coral M) before dust & Doppler shifts.
+    '  if (isCloud < 0.5) {',
+    '    float starLuma = dot(sourceColor, vec3(0.2126, 0.7152, 0.0722));',
+    '    sourceColor = clamp(mix(vec3(starLuma), sourceColor, 1.24), 0.0, 1.0);',
+    '  }',
     '  if (u_galacticBand > 0.5 && isCloud > 0.5 && a_size > 600.0 && a_size < 1600.0) {',
     '    float sourceRadius = length(a_position);',
     '    if (sourceRadius > 16000.0 && sourceRadius < 50000.0) {',
@@ -1824,11 +1829,11 @@
     '      float laneA = 1.0-smoothstep(0.011,0.034,abs(latitude-(0.014*sin(longitude*2.0-0.7)+0.009*sin(longitude*4.0+0.4))));',
     '      float laneB = 1.0-smoothstep(0.012,0.031,abs(latitude-(0.058+0.018*sin(longitude*3.0+0.9))));',
     '      float laneC = 1.0-smoothstep(0.013,0.035,abs(latitude-(-0.056+0.021*sin(longitude*2.0-1.3))));',
-    '      float lanes = clamp(1.0-0.57*laneA-0.30*laneB-0.24*laneC,0.30,1.0);',
+    '      float lanes = clamp(1.0-0.61*laneA-0.33*laneB-0.26*laneC,0.26,1.0);',
     '      float broad = 0.5+0.5*cos(longitude*4.0+latitude*17.0+0.5)*sin(longitude*2.0-0.4);',
-    '      bandGain = clamp(1.420536728*(0.82+0.78*warm+0.18*cool+0.15*broad)*lanes,0.30,2.30);',
-    '      sourceColor = mix(sourceColor,vec3(0.84,0.58,0.36),0.50*warm);',
-    '      sourceColor = mix(sourceColor,vec3(0.37,0.52,0.77),0.35*cool*(1.0-0.7*warm));',
+    '      bandGain = clamp(1.46*(0.80+0.88*warm+0.24*cool+0.18*broad)*lanes,0.26,2.45);',
+    '      sourceColor = mix(sourceColor,vec3(0.92,0.62,0.36),0.56*warm);',
+    '      sourceColor = mix(sourceColor,vec3(0.35,0.56,0.88),0.42*cool*(1.0-0.68*warm));',
     '    }',
     '  }',
     '  float shift = clamp(log(max(D, 0.0001)) * 0.42, -0.85, 0.85);',
@@ -1845,11 +1850,12 @@
     // Subpixel clouds fade with projected area instead of becoming a bright
     // minimum-size dot. The diffuse surface carries their collective light.
     '  float coverage = min(1.0, pow(projectedSize / minimumSize, 2.0));',
-    '  v_light = a_light * bandGain * u_exposure * exposure * mix(1.0, coverage, isCloud) * mix(1.0 - quadBlend, quadBlend, max(u_stellarQuad, u_cloudQuad));',
+    '  float magBoost = mix(1.0 + 0.18 * smoothstep(0.45, 1.25, a_light), 1.0, isCloud);',
+    '  v_light = a_light * magBoost * bandGain * u_exposure * exposure * mix(1.0, coverage, isCloud) * mix(1.0 - quadBlend, quadBlend, max(u_stellarQuad, u_cloudQuad));',
     // Nearby generated wisps fade through the observer instead of filling the
     // view with a capped billboard. This is an emission approximation.
     '  if (a_cloud >= 5.0) v_light *= smoothstep(0.35, 2.8, distance / max(a_size, 0.00001));',
-    '  v_cloudRelief = vec2(dot(n,normalize(vec3(0.83,0.21,0.51))),dot(n,normalize(vec3(-0.31,0.93,0.20)))) * 0.16;',
+    '  v_cloudRelief = vec2(dot(n,normalize(vec3(0.83,0.21,0.51))),dot(n,normalize(vec3(-0.31,0.93,0.20)))) * 0.22;',
     '  v_cloud = isCloud;',
     '  float rotation = fract(a_cloud) * 6.28318530718;',
     '  v_cloudProfile = vec3(mod(max(0.0, floor(a_cloud) - 1.0), 4.0), cos(rotation), sin(rotation));',

@@ -71,18 +71,37 @@
   const memoryLearnerAlt = (card, base) => base?.mode === 'student-authored' && typeof card?.visualAlt === 'string' && !!card.visualAlt.trim() && card.visualAlt !== (base.visualAlt || '') && !['vision', 'planning'].includes(card.visualAltSource);
   const supports =type => ['memory-aid', 'applied-challenge', 'note-taking', 'anchor-chart'].includes(type);
   const same = (a,b) => JSON.stringify(a) === JSON.stringify(b);
+  const own = (obj, prop) => !!obj && Object.prototype.hasOwnProperty.call(obj, prop);
+  const hasId = value => value !== null && value !== undefined && value !== '';
+  const noteRowId = (row, key, idx) => hasId(row?.id) ? String(row.id) : (key === 'blanks' ? 'blank-' : key + '-') + idx;
   function anchorSections(data) {
     const seen = new Set();
     return (Array.isArray(data?.sections) ? data.sections : []).filter(Boolean).map((section, index) => {
-      let id = String(section.id || 'section-' + index); if (seen.has(id)) id += '-' + index; seen.add(id);
+      const baseId = hasId(section.id) ? String(section.id) : 'section-' + index;
+      let id = baseId, s = index;
+      while (seen.has(id)) { id = baseId + '-' + s; s++; }
+      seen.add(id);
       const bulletSeen = new Set();
       const bullets = Array.isArray(section.bullets) ? section.bullets : [];
-      const bulletIds = bullets.map((_, i) => { let key = String(section.bulletIds?.[i] || id + '-bullet-' + i); if (bulletSeen.has(key)) key += '-' + i; bulletSeen.add(key); return key; });
+      const bulletIds = bullets.map((_, i) => {
+        const rawKey = section.bulletIds?.[i];
+        const baseKey = hasId(rawKey) ? String(rawKey) : id + '-bullet-' + i;
+        let key = baseKey, b = i;
+        while (bulletSeen.has(key)) { key = baseKey + '-' + b; b++; }
+        bulletSeen.add(key);
+        return key;
+      });
       return { ...section, id, bullets, bulletIds };
     });
   }
   function anchorAnswers(data, value) {
-    return Object.fromEntries(anchorSections(data).map(section => [section.id, Object.fromEntries(section.bulletIds.map((id, i) => [id, String(value?.[section.id]?.[id] ?? value?.[section.id]?.[i] ?? '').slice(0,12000)]))]));
+    return Object.fromEntries(anchorSections(data).map(section => {
+      const secVal = own(value, section.id) && value[section.id] && typeof value[section.id] === 'object' ? value[section.id] : null;
+      return [section.id, Object.fromEntries(section.bulletIds.map((id, i) => {
+        const raw = secVal ? (own(secVal, id) ? secVal[id] : (own(secVal, String(i)) ? secVal[String(i)] : '')) : '';
+        return [id, String(raw ?? '').slice(0,12000)];
+      }))];
+    }));
   }
   // AI feedback stays while the learner revises; a submission marks whether it was
   // about an earlier draft, from the fingerprint the view stored with it.
@@ -100,16 +119,16 @@
   function legacyNotes(data) {
     const base = pick(data, ['notes', 'summary', 'hypothesis', 'data', 'analysis', 'conclusion', 'thinkings', 'connection', 'notesExtra', 'connections', 'feedback', 'feedbackCount', 'prevFeedbackScore']);
     if (data.templateType === 'reading-response') Object.assign(base,pick(data,['favoriteLine','question','pageRange']));
-    if (Array.isArray(data.entries)) base.entries = data.entries.map(row => ({ id: row.id, response: row.response || '' }));
-    if (Array.isArray(data.blanks)) base.blanks = data.blanks.map((row, i) => ({ id: row.id || 'blank-' + i, studentAnswer: row.studentAnswer || '' }));
+    if (Array.isArray(data.entries)) base.entries = data.entries.map((row, i) => ({ id: noteRowId(row, 'entries', i), response: row.response || '' }));
+    if (Array.isArray(data.blanks)) base.blanks = data.blanks.map((row, i) => ({ id: noteRowId(row, 'blanks', i), studentAnswer: row.studentAnswer || '' }));
     return base;
   }
   function noteResponseField(key, value) {
-    if (key === 'blanks') return (Array.isArray(value) ? value : []).map((row, i) => ({ id: row.id || 'blank-' + i, studentAnswer: String(row.studentAnswer || '') }));
+    if (key === 'blanks') return (Array.isArray(value) ? value : []).map((row, i) => ({ id: noteRowId(row, 'blanks', i), studentAnswer: String(row.studentAnswer || '') }));
     return value;
   }
-  function mergeNoteRows(original, rows) {
-    return (rows || []).map((row, i) => ({ ...(original || []).find((old, idx) => String(old.id || 'blank-' + idx) === String(row.id || 'blank-' + i)), ...row }));
+  function mergeNoteRows(original, rows, key = 'blanks') {
+    return (rows || []).map((row, i) => ({ ...(original || []).find((old, idx) => noteRowId(old, key, idx) === noteRowId(row, key, i)), ...row }));
   }
   function safeNoteTree(value, depth = 0) {
     if (depth > 5) return null;
@@ -135,8 +154,8 @@
       if (Array.isArray(value)) {
         const originalRows = Array.isArray(original[key]) ? original[key] : [];
         out[key] = value.slice(0,100).map((row,index) => {
-          const before = originalRows.find((r,i)=>String(r.id || i)===String(row.id || index)) || {};
-          const result = { id: String(row.id || key + '-' + index) };
+          const before = originalRows.find((r,i)=>noteRowId(r, key, i)===noteRowId(row, key, index)) || {};
+          const result = { id: noteRowId(row, key, index) };
           const fields = key === 'blanks' ? ['studentAnswer'] : key === 'entries' ? ['quote','response'] : key === 'pairs' ? ['question','answer'] : ['text'];
           fields.forEach(field => { if (key === 'notes' || field === 'studentAnswer' || (key === 'entries' && field === 'response') || !same(row[field], before[field])) { if (typeof row[field] === 'string') result[field] = row[field].slice(0,12000); } });
           return result;
@@ -188,7 +207,7 @@
     if (resource.type === 'anchor-chart') return { ...resource, data: { ...data, sections: anchorSections(data), ...pick(response, anchorFields), studentAnswers: anchorAnswers(data, response?.studentAnswers || data.studentAnswers) } };
     if (resource.type === 'note-taking') {
       const fields = pick(response, noteFields), merged = { ...data, ...fields };
-      ['blanks', 'entries', 'cues', 'notes', 'pairs', 'materials', 'procedure'].forEach(key => { if (fields[key]) merged[key] = mergeNoteRows(data[key], fields[key]); });
+      ['blanks', 'entries', 'cues', 'notes', 'pairs', 'materials', 'procedure'].forEach(key => { if (fields[key]) merged[key] = mergeNoteRows(data[key], fields[key], key); });
       return { ...resource, data: merged };
     }
     if (!response) return resource.type === 'memory-aid' ? { ...resource, data: { ...data, cards: memoryCards(data) } } : resource;
@@ -255,10 +274,10 @@
     else if (resource.type === 'anchor-chart') { Object.entries(data.studentAnswers).forEach(([section,answers])=>Object.entries(answers).forEach(([id,value])=>walk(value,section+'-'+id))); }
     else if (resource.type === 'applied-challenge') {
       walk(data.workspace, '');
-      (data.evidenceLedger || []).forEach((row, index) => ['claim', 'evidence', 'tradeoff'].forEach(key => walk(row[key], 'ledger-' + index + '-' + key)));
-      Object.entries(data.criteriaCheck || {}).forEach(([key, item]) => walk(item.note, 'selfcheck-' + key));
+      (Array.isArray(data.evidenceLedger) ? data.evidenceLedger : []).forEach((row, index) => { if (!record(row)) return; ['claim', 'evidence', 'tradeoff'].forEach(key => walk(row[key], 'ledger-' + index + '-' + key)); });
+      Object.entries(record(data.criteriaCheck) ? data.criteriaCheck : {}).forEach(([key, item]) => { if (record(item)) walk(item.note, 'selfcheck-' + key); });
       walk(data.validationCycles, 'checks');
-    } else (data.cards || []).forEach(card => { walk(card.studentDraft, card.id + '-draft'); walk(card.studentReasoning, card.id + '-reasoning'); walk(card.visualAlt, card.id + '-visual-description'); (card.studentConnections || []).forEach((row,index) => { walk(row.cue,card.id+'-connection-'+index+'-cue'); walk(row.explanation,card.id+'-connection-'+index+'-explanation'); }); });
+    } else (Array.isArray(data.cards) ? data.cards : []).forEach(card => { if (!record(card)) return; walk(card.studentDraft, card.id + '-draft'); walk(card.studentReasoning, card.id + '-reasoning'); walk(card.visualAlt, card.id + '-visual-description'); (Array.isArray(card.studentConnections) ? card.studentConnections : []).forEach((row,index) => { if (!record(row)) return; walk(row.cue,card.id+'-connection-'+index+'-cue'); walk(row.explanation,card.id+'-connection-'+index+'-explanation'); }); });
     return entries;
   }
   function projectForExport(resource, response) {
@@ -312,7 +331,7 @@
         if (['feedbackCount','prevFeedbackScore'].includes(key)) { if (typeof value!=='number' || !Number.isFinite(value)) throw new Error('Invalid feedback score'); }
         else if (key==='feedback') { if (value!==null && !record(value)) throw new Error('Invalid feedback'); }
         else if (key==='connection') { if (!record(value) || Object.values(value).some(v=>typeof v!=='string')) throw new Error('Invalid connection'); }
-        else if (Array.isArray(value)) { if (value.some(row=>Object.values(row).some(v=>typeof v!=='string'))) throw new Error('Invalid note text'); }
+        else if (['cues','notes','entries','blanks','pairs','materials','procedure'].includes(key) || (key==='connections' && Array.isArray(value))) { if (!Array.isArray(value) || value.some(row=>!record(row) || Object.values(row).some(v=>typeof v!=='string'))) throw new Error('Invalid note text'); }
         else if (typeof value!=='string') throw new Error('Invalid note text');
       }
     } else {

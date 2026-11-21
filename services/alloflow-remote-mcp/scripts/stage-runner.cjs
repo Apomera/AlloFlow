@@ -34,6 +34,9 @@ const baseSourceFiles = [
   'desktop/mcp/remediation_verification.cjs',
   'desktop/mcp/remediation_narration_plan.cjs',
   'desktop/mcp/zip_writer.cjs',
+  'desktop/mcp/accessible_html_edit.cjs',
+  'desktop/mcp/scan_reading_corrections.cjs',
+  'desktop/mcp/remediation_chromium_pdf.cjs',
   'accessibility_evidence_module.js',
   'verification_policy_module.js',
   'doc_builder_renderer_module.js',
@@ -45,8 +48,9 @@ const validatorSourceFiles = [
   'verapdf/THIRD_PARTY_NOTICES.md',
 ];
 const vendorManifestSource = 'desktop/mcp/vendor/manifest.json';
+const vendorManifestPath = assertRegularSourceFile(repoRoot, vendorManifestSource);
 let vendorManifest;
-try { vendorManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, vendorManifestSource), 'utf8')); } catch (error) {
+try { vendorManifest = JSON.parse(fs.readFileSync(vendorManifestPath, 'utf8')); } catch (error) {
   throw new Error(`Unable to read ${vendorManifestSource}: ${error.message}`);
 }
 if (!vendorManifest || vendorManifest.schema !== 1 || !Array.isArray(vendorManifest.files) || !vendorManifest.files.length) {
@@ -147,7 +151,8 @@ function expectedManifest() {
 }
 
 function runnerGeminiBase() {
-  const dockerfile = fs.readFileSync(runnerDockerfilePath, 'utf8');
+  const safeDockerfile = assertRegularSourceFile(serviceRoot, 'runner/Dockerfile');
+  const dockerfile = fs.readFileSync(safeDockerfile, 'utf8');
   const match = /(?:^|\s)ALLOFLOW_MCP_GEMINI_BASE=([^\s\\]+)/m
     .exec(dockerfile);
   if (!match) {
@@ -229,9 +234,12 @@ function releaseContractText(manifest) {
 }
 
 function verifyStagedContext() {
-  const stat = fs.statSync(destination, { throwIfNoEntry: false });
-  if (!stat || !stat.isDirectory()) {
-    throw new Error(`Runner context is missing; run npm run runner:stage first: ${destination}`);
+  const stat = fs.lstatSync(destination, { throwIfNoEntry: false });
+  if (!stat || stat.isSymbolicLink() || !stat.isDirectory()) {
+    throw new Error(`Runner context is missing or unsafe; run npm run runner:stage first: ${destination}`);
+  }
+  if (!isInside(fs.realpathSync.native(serviceRoot), fs.realpathSync.native(destination))) {
+    throw new Error(`Runner context escapes service root: ${destination}`);
   }
   const expected = expectedManifest();
   const expectedPaths = [...expected.files.map((file) => file.path), 'manifest.json'].sort();
@@ -267,8 +275,8 @@ if (checkOnly) {
   process.exit(0);
 }
 
-const temporary = `${destination}.tmp-${process.pid}`;
-fs.rmSync(temporary, { recursive: true, force: true });
+const temporary = `${destination}.tmp-${crypto.randomUUID()}`;
+const backup = `${destination}.bak-${crypto.randomUUID()}`;
 fs.mkdirSync(temporary, { recursive: true, mode: 0o700 });
 
 const manifest = {
@@ -276,16 +284,15 @@ const manifest = {
   files: [],
 };
 
+let movedOldToBackup = false;
+let movedTempToDest = false;
 try {
   for (const relative of sourceFiles) {
-    const source = sourcePaths.get(relative);
     const target = path.resolve(temporary, relative);
     if (!isInside(temporary, target)) throw new Error(`Refusing unsafe target: ${relative}`);
     fs.mkdirSync(path.dirname(target), { recursive: true, mode: 0o700 });
-    fs.copyFileSync(source, target, fs.constants.COPYFILE_EXCL);
     const bytes = canonicalSourceBytes(relative);
-    const stagedBytes = fs.readFileSync(target);
-    if (!stagedBytes.equals(bytes)) fs.writeFileSync(target, bytes);
+    fs.writeFileSync(target, bytes, { flag: 'wx', mode: 0o600 });
     manifest.files.push(fileRecord(relative, bytes));
   }
 
@@ -295,11 +302,30 @@ try {
     { encoding: 'utf8', flag: 'wx', mode: 0o600 },
   );
 
-  fs.rmSync(destination, { recursive: true, force: true });
+  const existingDest = fs.lstatSync(destination, { throwIfNoEntry: false });
+  if (existingDest) {
+    if (existingDest.isSymbolicLink() || !existingDest.isDirectory()) {
+      throw new Error(`Refusing to overwrite unsafe staging destination: ${destination}`);
+    }
+    fs.renameSync(destination, backup);
+    movedOldToBackup = true;
+  }
   fs.renameSync(temporary, destination);
+  movedTempToDest = true;
   atomicWriteFile(releaseContractPath, releaseContractText(manifest));
+  if (movedOldToBackup) {
+    try { fs.rmSync(backup, { recursive: true, force: true }); } catch {}
+  }
 } catch (error) {
-  fs.rmSync(temporary, { recursive: true, force: true });
+  if (movedTempToDest && movedOldToBackup) {
+    try {
+      fs.rmSync(destination, { recursive: true, force: true });
+      fs.renameSync(backup, destination);
+    } catch {}
+  } else if (movedOldToBackup && !fs.existsSync(destination)) {
+    try { fs.renameSync(backup, destination); } catch {}
+  }
+  try { fs.rmSync(temporary, { recursive: true, force: true }); } catch {}
   throw error;
 }
 

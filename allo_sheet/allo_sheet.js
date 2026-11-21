@@ -518,8 +518,17 @@
       state.aiAvailable = false;
       state.hostReportsAi = false;
       state.pairingExpiresAt = 0;
-      state.canvasValidated = false;
-      state.canvasMode = false;
+      if (!state.canvasMode && !state.localTables.length) {
+        state.canvasValidated = false;
+      }
+      if (state.pendingAgent) {
+        var expiredPending = state.pendingAgent;
+        state.pendingAgent = null;
+        if (expiredPending.timer) clearTimeout(expiredPending.timer);
+        if (typeof expiredPending.reject === 'function') {
+          expiredPending.reject(new Error('AlloSheet pairing expired. Reopen this window from AlloFlow.'));
+        }
+      }
       updateHostAiDisclosure();
       updateAgentAvailability();
       announce('AlloSheet pairing expired. Reopen this window from AlloFlow.');
@@ -532,7 +541,7 @@
       state.hostReportsAi = data.ai === true;
       state.aiAvailable = state.hostReportsAi && state.hostAiTrusted;
       try { state.connectedHost = new URL(event.origin).hostname; } catch (_) {}
-      if (state.canvasCandidate && isCanvasOpenerOrigin(event.origin)) {
+      if (!state.canvasValidated && state.canvasCandidate && isCanvasOpenerOrigin(event.origin)) {
         enableCanvasMode(event.origin);
       }
       updateHostAiDisclosure();
@@ -682,7 +691,7 @@
   function canvasColumns(header) {
     var used = Object.create(null);
     return (header || []).slice(0, Sheet.MAX_COLUMNS).map(function (value, index) {
-      var original = String(value == null ? '' : value);
+      var original = String(value == null ? '' : value).replace(/[\r\n\t]+/g, ' ').trim();
       if (
         original.length > 160
         || Sheet.safeText(original, 160) !== original
@@ -824,10 +833,10 @@
       }
       var keyToField = Object.create(null);
       var columnDetails = [];
-      var allowedColumnTypes = {
+      var allowedColumnTypes = Object.assign(Object.create(null), {
         text: true, number: true, boolean: true, date: true,
         datetime: true, duration: true, category: true
-      };
+      });
       var rawFields = table.columns.map(function (column, columnIndex) {
         if (!inboundPlainObject(column)) {
           throw inboundArtifactError('Column ' + (columnIndex + 1) + ' in ' + tableId + ' is invalid.');
@@ -1993,10 +2002,11 @@
         return;
       }
       var fileName = safeLocalFileName(file.name || 'allosheet.csv');
+      var csvTitle = Sheet.safeText(String(file.name || 'Imported CSV').replace(/\.csv$/i, ''), 160).replace(/[\r\n\t]+/g, ' ').trim().slice(0, 160) || 'Imported CSV';
       var savePoint = localTableSnapshot(columns, records);
       installLocalTables([{
         id: 'imported_csv',
-        title: String(file.name || 'Imported CSV').replace(/\.csv$/i, '') || 'Imported CSV',
+        title: csvTitle,
         columns: columns,
         records: records,
         fileName: fileName,
@@ -2006,7 +2016,7 @@
         truncated: false
       }], {
         kind: 'csv',
-        workspaceTitle: String(file.name || 'Imported CSV').replace(/\.csv$/i, '') || 'Imported CSV',
+        workspaceTitle: csvTitle,
         workspaceCreatedAt: new Date().toISOString(),
         origin: createLocalOrigin(
           'csv',
@@ -2669,6 +2679,10 @@
       if (engineIsReady()) return finishManagedEngine();
       return await startManagedEngine();
     } catch (error) {
+      if (state.enginePollTimer) {
+        window.clearTimeout(state.enginePollTimer);
+        state.enginePollTimer = null;
+      }
       if (state.canvasMode) return false;
       state.serviceReady = false;
       state.managedEngine.phase = 'error';
@@ -2977,6 +2991,13 @@
       views[key].button.tabIndex = active ? 0 : -1;
       views[key].panel.hidden = !active;
     });
+    if (casebookUi) {
+      if (view !== 'casebook' && typeof casebookUi.abortVoice === 'function') {
+        casebookUi.abortVoice('view-hidden');
+      } else if (view === 'casebook' && typeof casebookUi.refresh === 'function') {
+        casebookUi.refresh();
+      }
+    }
   }
 
   function clearValuesConsent() {
@@ -3242,6 +3263,7 @@
         byId('undoButton').disabled = false;
         discardPlan({ moveFocus: false, silent: true });
         renderDataTable();
+        if (casebookUi && typeof casebookUi.refresh === 'function') casebookUi.refresh();
         setView('table');
         byId('dataTableScroll').focus();
         text(byId('canvasFileStatus'), 'Local changes are not saved automatically. Download the current table CSV when you are finished.');
@@ -3307,6 +3329,7 @@
         applyCanvasChanges(undoChanges, true);
         clearUndoState('The last local AlloSheet change was undone.');
         renderDataTable();
+        if (casebookUi && typeof casebookUi.refresh === 'function') casebookUi.refresh();
         setView('table');
         byId('dataTableScroll').focus();
         text(byId('canvasFileStatus'), 'The last local change was undone. Download the current table CSV when you are finished.');

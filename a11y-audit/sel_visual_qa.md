@@ -1,8 +1,6 @@
 # SEL Visual QA
 
-> **Generated audit snapshot (2026-07-09):** This report captures one harness run from the generated timestamp below. Rerun the SEL visual QA harness before treating pass/fail counts or screenshots as current.
-
-Generated: 2026-07-03T00:28:18.091Z
+Generated: 2026-11-21T03:58:08.660Z
 
 Harness: public module visual fixture
 
@@ -95,3 +93,4 @@ Screenshots: a11y-audit\sel_visual_qa
 - PASS no-horizontal-page-overflow
 - PASS no-unexpected-container-overflow
 - PASS no-clipped-controls
+

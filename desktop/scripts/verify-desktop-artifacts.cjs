@@ -4,6 +4,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const yaml = require(require.resolve('js-yaml', { paths: [path.resolve(__dirname, '..')] }));
 
 const desktopRoot = path.resolve(__dirname, '..');
 const distDir = path.resolve(process.env.ALLOFLOW_DESKTOP_DIST_DIR || path.join(desktopRoot, 'dist'));
@@ -26,7 +27,10 @@ function fail(message) {
 
 function fileInfo(filePath) {
   try {
-    const stats = fs.statSync(filePath);
+    const stats = fs.lstatSync(filePath);
+    if (stats.isSymbolicLink() || !stats.isFile()) {
+      return { exists: false, size: 0, modified: '' };
+    }
     return { exists: true, size: stats.size, modified: stats.mtime.toISOString() };
   } catch (_) {
     return { exists: false, size: 0, modified: '' };
@@ -34,9 +38,14 @@ function fileInfo(filePath) {
 }
 
 function hashFile(filePath, algorithm, encoding) {
+  const stats = fs.lstatSync(filePath);
+  if (stats.isSymbolicLink() || !stats.isFile()) {
+    throw new Error('Refusing to hash non-regular file or symlink: ' + filePath);
+  }
   const hash = crypto.createHash(algorithm);
   const buffer = Buffer.allocUnsafe(4 * 1024 * 1024);
-  const descriptor = fs.openSync(filePath, 'r');
+  const openFlags = fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0);
+  const descriptor = fs.openSync(filePath, openFlags);
   try {
     let bytesRead = 0;
     do {
@@ -84,56 +93,52 @@ function unquote(value) {
 
 function parseUpdaterMetadata(text, fileName) {
   const entries = new Map();
-  let inFiles = false;
-  let currentFile = '';
-  let legacyPath = '';
-  let legacyHash = '';
-
-  for (const rawLine of text.split(/\r?\n/)) {
-    const trimmed = rawLine.trim();
-    const indent = rawLine.length - rawLine.trimStart().length;
-    if (trimmed === 'files:') {
-      inFiles = true;
-      currentFile = '';
-      continue;
-    }
-    if (inFiles && indent === 0 && trimmed) {
-      inFiles = false;
-      currentFile = '';
-    }
-    if (inFiles) {
-      const urlMatch = trimmed.match(/^-\s+url:\s*(.+?)\s*$/);
-      if (urlMatch) {
-        currentFile = unquote(urlMatch[1]);
-        if (entries.has(currentFile)) {
-          fail(fileName + ' contains a duplicate updater entry: ' + currentFile);
-        } else {
-          entries.set(currentFile, { sha512: '' });
-        }
+  let parsed;
+  try {
+    parsed = yaml.load(text, { schema: yaml.JSON_SCHEMA });
+  } catch (error) {
+    fail(fileName + ' is invalid YAML: ' + (error && error.message ? error.message : String(error)));
+    return { entries, legacyPath: '', legacyHash: '', version: '' };
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    fail(fileName + ' root YAML value must be a mapping');
+    return { entries, legacyPath: '', legacyHash: '', version: '' };
+  }
+  const parsedVersion = typeof parsed.version === 'string' || typeof parsed.version === 'number'
+    ? String(parsed.version).trim()
+    : '';
+  if (!Array.isArray(parsed.files)) {
+    fail(fileName + ' must contain a files[] sequence');
+  } else {
+    for (const item of parsed.files) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        fail(fileName + ' contains a malformed files[] item');
         continue;
       }
-      const entryHashMatch = trimmed.match(/^sha512:\s*(.+?)\s*$/);
-      if (entryHashMatch) {
-        if (!currentFile || !entries.has(currentFile)) {
-          fail(fileName + ' contains a sha512 without a preceding files[].url');
-        } else {
-          entries.get(currentFile).sha512 = unquote(entryHashMatch[1]);
-        }
+      const url = typeof item.url === 'string' ? item.url.trim() : '';
+      const sha512 = typeof item.sha512 === 'string' ? item.sha512.trim() : '';
+      if (!url) {
+        fail(fileName + ' contains a files[] entry without url');
         continue;
       }
-    }
-    if (indent === 0) {
-      const pathMatch = trimmed.match(/^path:\s*(.+?)\s*$/);
-      if (pathMatch) legacyPath = unquote(pathMatch[1]);
-      const hashMatch = trimmed.match(/^sha512:\s*(.+?)\s*$/);
-      if (hashMatch) legacyHash = unquote(hashMatch[1]);
+      if (entries.has(url)) {
+        fail(fileName + ' contains a duplicate updater entry: ' + url);
+      } else {
+        entries.set(url, { sha512 });
+      }
     }
   }
-  return { entries, legacyPath, legacyHash };
+  const legacyPath = typeof parsed.path === 'string' ? parsed.path.trim() : '';
+  const legacyHash = typeof parsed.sha512 === 'string' ? parsed.sha512.trim() : '';
+  return { entries, legacyPath, legacyHash, version: parsedVersion };
 }
 
 function requireMetadata(fileName, expectedFiles) {
   const metadataPath = path.join(distDir, fileName);
+  if (!fileInfo(metadataPath).exists) {
+    fail(fileName);
+    return;
+  }
   let text = '';
   try {
     text = fs.readFileSync(metadataPath, 'utf8');
@@ -146,12 +151,10 @@ function requireMetadata(fileName, expectedFiles) {
     return;
   }
 
-  const versionMatch = text.match(/^version:\s*['"]?([^'"\r\n]+)['"]?\s*$/m);
-  if (!versionMatch || versionMatch[1].trim() !== version) {
+  const metadata = parseUpdaterMetadata(text, fileName);
+  if (metadata.version !== version) {
     fail(fileName + ' version does not match package.json (' + version + ')');
   }
-
-  const metadata = parseUpdaterMetadata(text, fileName);
   const expectedSet = new Set(expectedFiles);
   const actualHashes = new Map();
 
@@ -209,6 +212,10 @@ function requireMetadata(fileName, expectedFiles) {
 
 function requireChecksumManifest(fileName, expectedFiles) {
   const manifestPath = path.join(distDir, fileName);
+  if (!fileInfo(manifestPath).exists) {
+    fail(fileName);
+    return;
+  }
   let text = '';
   try {
     text = fs.readFileSync(manifestPath, 'ascii');

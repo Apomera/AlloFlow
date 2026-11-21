@@ -12,14 +12,45 @@
   var MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
   var HANDLE_RE = /^asset_[A-Za-z0-9_-]{8,128}$/;
   var ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
+  var FORBIDDEN_META_KEY_RE = /^(?:path|url|uri|data|filePath|localPath)$|(?:^|[_-]|(?=[A-Z]))(?:api|access|private|auth|signing|client)?[_-]?keys?$|token|secret|password|passwd|credential|authorization|bearer|cookie/i;
   var DEFAULT_MAX_ASSETS = 256;
   var DEFAULT_MAX_ASSET_BYTES = 25 * 1024 * 1024;
   var DEFAULT_MAX_TOTAL_BYTES = 100 * 1024 * 1024;
 
+  function looksLikeActiveMarkup(bytes) {
+    if (!bytes || bytes.byteLength < 4) return false;
+    var limit = Math.min(bytes.byteLength, 64);
+    var head = '';
+    for (var i = 0; i < limit; i++) head += String.fromCharCode(bytes[i]);
+    return /^\s*(?:<\?xml|<!doctype\s+html|<html\b|<svg\b|<script\b)/i.test(head);
+  }
+
+  function matchesMagicBytes(bytes, mimeType) {
+    if (!bytes || bytes.byteLength < 4) return false;
+    if (mimeType === 'image/png') {
+      return bytes.byteLength >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47
+        && bytes[4] === 0x0D && bytes[5] === 0x0A && bytes[6] === 0x1A && bytes[7] === 0x0A;
+    }
+    if (mimeType === 'image/jpeg') {
+      return bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+    }
+    if (mimeType === 'image/webp') {
+      return bytes.byteLength >= 12 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46
+        && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+    }
+    return false;
+  }
+
   function cloneBytes(bytes) {
+    if (!bytes) return null;
     if (bytes instanceof Uint8Array) return new Uint8Array(bytes);
-    if (bytes instanceof ArrayBuffer) return new Uint8Array(bytes.slice(0));
     if (typeof Buffer !== 'undefined' && Buffer.isBuffer && Buffer.isBuffer(bytes)) return new Uint8Array(bytes);
+    if (ArrayBuffer.isView(bytes)) {
+      return new Uint8Array(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+    }
+    if (bytes instanceof ArrayBuffer || Object.prototype.toString.call(bytes) === '[object ArrayBuffer]') {
+      return new Uint8Array(bytes.slice(0));
+    }
     return null;
   }
 
@@ -78,7 +109,13 @@
       if (records.size >= maxAssets) throw new Error('Managed asset count limit reached');
       if (totalBytes + bytes.byteLength > maxTotalBytes) throw new Error('Managed asset total byte limit reached');
       if (MIME_TYPES.indexOf(value.mimeType) === -1) throw new Error('Unsupported managed asset MIME type');
-      if (value.path !== undefined || value.url !== undefined || value.data !== undefined || value.apiKey !== undefined || value.authorization !== undefined) {
+      if (looksLikeActiveMarkup(bytes) || (opts.verifyMagicBytes === true && !matchesMagicBytes(bytes, value.mimeType))) {
+        throw new Error('Asset bytes do not match the declared raster MIME type');
+      }
+      var hasForbiddenField = Object.keys(value).some(function (k) {
+        return value[k] !== undefined && FORBIDDEN_META_KEY_RE.test(k);
+      });
+      if (hasForbiddenField) {
         throw new Error('Paths, URLs, embedded data, and credentials are not accepted by the managed asset store');
       }
       var handle = String(createId());
@@ -127,6 +164,30 @@
       return cloneMetadata(record);
     }
 
+    function detach(handle, target) {
+      var record = requireHandle(handle);
+      var value = target || {};
+      if (typeof value.artifactId !== 'string' || !ID_RE.test(value.artifactId)) throw new Error('Valid artifactId is required');
+      if (value.slot !== undefined && (typeof value.slot !== 'string' || !ID_RE.test(value.slot))) throw new Error('Valid artifact slot is required');
+      record.attachments = record.attachments.filter(function (item) {
+        if (item.artifactId !== value.artifactId) return true;
+        if (value.slot !== undefined && item.slot !== value.slot) return true;
+        return false;
+      });
+      return cloneMetadata(record);
+    }
+
+    function detachAllForArtifact(artifactId) {
+      if (typeof artifactId !== 'string' || !ID_RE.test(artifactId)) throw new Error('Valid artifactId is required');
+      var detached = 0;
+      records.forEach(function (record) {
+        var before = record.attachments.length;
+        record.attachments = record.attachments.filter(function (item) { return item.artifactId !== artifactId; });
+        if (record.attachments.length < before) detached += (before - record.attachments.length);
+      });
+      return detached;
+    }
+
     function remove(handle) {
       var record = requireHandle(handle);
       if (record.attachments.length) throw new Error('Attached assets cannot be removed');
@@ -145,6 +206,8 @@
       getMetadata: getMetadata,
       readBytesForAdapter: readBytesForAdapter,
       attach: attach,
+      detach: detach,
+      detachAllForArtifact: detachAllForArtifact,
       remove: remove,
       getStats: getStats
     };

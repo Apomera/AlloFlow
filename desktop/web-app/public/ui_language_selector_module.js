@@ -157,6 +157,20 @@ const UiLanguageSelector = (props = {}) => {
     if (endonym === entry.value) return entry.value + suffix;
     return endonym + " \u2014 " + entry.value + suffix;
   };
+  const _langAiUsable = () => {
+    if (typeof window === "undefined") return true;
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true) {
+      return false;
+    }
+    if (typeof window.__alloAiUsable === "function") {
+      try {
+        return Boolean(window.__alloAiUsable("text"));
+      } catch (_) {
+      }
+    }
+    return true;
+  };
+  const aiTranslationAllowed = _langAiUsable();
   const handleChange = (e) => {
     const val = e.target.value;
     if (val === "Custom") {
@@ -167,12 +181,15 @@ const UiLanguageSelector = (props = {}) => {
     }
   };
   const handleManualSubmit = () => {
-    if (manualInput.trim()) {
-      setUiLanguage(manualInput.trim());
-      setManualInput("");
-    }
+    const cleaned = String(manualInput || "").replace(/[\u0000-\u001f\u007f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 60);
+    if (!cleaned) return;
+    const isDeployed = commonLanguages.some((l) => l.value.toLowerCase() === cleaned.toLowerCase());
+    if (!isDeployed && !_langAiUsable()) return;
+    setUiLanguage(cleaned);
+    setManualInput("");
   };
   const handleRegenerate = () => {
+    if (!_langAiUsable()) return;
     const _setConfirm = typeof props.setConfirmDialog === "function" ? props.setConfirmDialog : typeof window !== "undefined" ? window.setConfirmDialog : null;
     const message = languageCopy("language_selector.confirm_regenerate", "Regenerate language pack?");
     if (typeof _setConfirm === "function") {
@@ -201,7 +218,7 @@ const UiLanguageSelector = (props = {}) => {
     },
     commonLanguages.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang.value, value: lang.value }, optionLabel(lang))),
     /* @__PURE__ */ React.createElement("option", { value: "Custom" }, languageCopy("language_selector.custom_option", "Custom..."))
-  ), currentUiLanguage !== "English" && /* @__PURE__ */ React.createElement(
+  ), currentUiLanguage !== "English" && aiTranslationAllowed && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -254,7 +271,8 @@ const UiLanguageSelector = (props = {}) => {
       type: "text",
       ref: manualInputRef,
       value: manualInput,
-      onChange: (e) => setManualInput(e.target.value),
+      maxLength: 60,
+      onChange: (e) => setManualInput(e.target.value.slice(0, 60)),
       onKeyDown: (e) => {
         if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
         if (e.key === "Enter") handleManualSubmit();

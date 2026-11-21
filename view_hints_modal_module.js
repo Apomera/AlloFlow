@@ -37,8 +37,8 @@ function HintsModal({
   handleGenerateLessonIdeas,
   handleSaveExtensionToHistory,
   handleSetShowHintsModalToFalse,
-  hintHistory,
-  history,
+  hintHistory: rawHintHistory,
+  history: rawHistory,
   isGeneratingExtension,
   renderFormattedText,
   t,
@@ -55,6 +55,8 @@ function HintsModal({
   const hintsAiOff = !!(hintsAiDoor && (hintsAiDoor.disabled || hintsAiDoor.available === false));
   const hintsAiTitle = hintsAiOff ? hintsAiDoor.title || typeof t === "function" && t("ai.setup_required") || "Set up AI to use this feature" : void 0;
   const dialogRef = React.useRef(null);
+  const hintHistory = Array.isArray(rawHintHistory) ? rawHintHistory : [];
+  const history = Array.isArray(rawHistory) ? rawHistory : [];
   const messages = Array.isArray(toastHistory) ? toastHistory : [];
   const [tab, setTab] = React.useState(initialTab === "messages" && messages.length ? "messages" : "hints");
   const hintStatus = isGeneratingExtension ? t("hints.synthesizing") : `${t("hints.title")}: ${hintHistory.length}`;
@@ -201,13 +203,14 @@ function HintsModal({
       onClick: handleGenerateLessonIdeas,
       disabled: isGeneratingExtension || history.length === 0 || hintsAiOff,
       "aria-busy": isGeneratingExtension,
+      "aria-describedby": hintsAiOff || history.length === 0 ? "hints-generate-disabled-reason" : void 0,
       title: hintsAiTitle,
       className: "w-full min-h-11 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center justify-center gap-2",
       "data-help-key": "hints_generate_extension"
     },
     isGeneratingExtension ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 16, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Sparkles, { size: 16, className: "text-yellow-400 fill-current", "aria-hidden": "true" }),
     isGeneratingExtension ? t("hints.synthesizing") : t("hints.generate_extensions")
-  ))), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, hintStatus)));
+  ), (hintsAiOff || history.length === 0) && /* @__PURE__ */ React.createElement("p", { id: "hints-generate-disabled-reason", className: "mt-2 text-center text-xs font-medium text-slate-600" }, hintsAiOff ? hintsAiTitle || t?.("hints.ai_unavailable") || "AI lesson ideas are unavailable right now. Connect an AI provider to generate new ideas." : t?.("hints.need_history_reason") || "Create or open a lesson resource first to generate extension ideas."))), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, hintStatus)));
 }
 
   window.AlloModules = window.AlloModules || {};

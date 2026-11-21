@@ -44,6 +44,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
+
+  // Bespoke Vocal Pitch & Singing Studio workbench polish + Light/Dark/High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-singing-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-singing-studio-css';
+    st.textContent = [
+      '.sing-studio-hero { background: linear-gradient(135deg, #1b0a1a 0%, #3a0f2c 52%, #241038 100%); border: 1px solid rgba(251,113,133,0.38); border-radius: 18px; padding: 14px 16px; color: #fff1f2; box-shadow: 0 16px 34px -22px rgba(24,5,20,0.88); min-width: 0; }',
+      '.sing-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-width: 0; }',
+      '.sing-hero-identity { display: flex; align-items: flex-start; gap: 12px; flex: 1 1 300px; min-width: 0; }',
+      '.sing-emblem-box { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, rgba(244,63,94,0.34), rgba(27,10,26,0.92)); border: 1.5px solid rgba(253,164,175,0.56); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 6px 16px rgba(20,5,18,0.55); }',
+      '.sing-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(244,63,94,0.22); border: 1px solid rgba(253,164,175,0.50); color: #fecdd3; font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }',
+      '.sing-back-btn { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; border-radius: 10px; background: rgba(20,8,24,0.78); border: 1px solid rgba(253,164,175,0.42); color: #fff1f2; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.sing-back-btn:hover { background: rgba(190,18,60,0.45); border-color: #fda4af; color: #ffffff; }',
+      '.sing-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(253,164,175,0.22); min-width: 0; }',
+      '.sing-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(18,7,22,0.82); border: 1px solid rgba(253,164,175,0.36); color: #ffe4e6; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.sing-vocal-schematic { margin-top: 10px; padding: 7px 10px; border-radius: 12px; background: rgba(16,6,20,0.78); border: 1px solid rgba(253,164,175,0.26); }',
+      '.sing-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(253,164,175,0.22); }',
+      '.sing-starter-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #fecdd3; }',
+      '.sing-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(18,7,22,0.86); border: 1px solid rgba(253,164,175,0.40); color: #fff1f2; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.sing-starter-chip:hover:not(:disabled) { background: rgba(190,18,60,0.44); border-color: #fda4af; color: #ffffff; }',
+      '.sing-starter-chip[data-active="true"] { background: #be123c; border-color: #fecdd3; color: #ffffff; }',
+      '.sing-tab-btn { min-height: 40px; }',
+      '.sing-studio-hero button:focus-visible, [data-stem-tool-shell="singing"] button:focus-visible { outline: 2.5px solid #fda4af; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="singing"] .sing-studio-hero { background: #000000 !important; background-image: none !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="singing"] .sing-emblem-box, .theme-contrast [data-stem-tool-shell="singing"] .sing-subject-badge, .theme-contrast [data-stem-tool-shell="singing"] .sing-telemetry-pill, .theme-contrast [data-stem-tool-shell="singing"] .sing-vocal-schematic { background: #000000 !important; background-image: none !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="singing"] .sing-starter-label, .theme-contrast [data-stem-tool-shell="singing"] .sing-studio-hero h2, .theme-contrast [data-stem-tool-shell="singing"] .sing-studio-hero p { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="singing"] .sing-starter-chip, .theme-contrast [data-stem-tool-shell="singing"] .sing-back-btn { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="singing"] .sing-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="singing"] .sing-tab-hero { background: #000000 !important; background-image: none !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="singing"] .sing-tab-hero h3, .theme-contrast [data-stem-tool-shell="singing"] .sing-tab-hero p { color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -527,21 +561,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   function drawPitchRoll(canvas, history, opts) {
     if (!canvas) return;
     var c = canvas.getContext('2d');
+    if (!c) return;
     var W = canvas.width;
     var H = canvas.height;
     var isDark = opts && opts.isDark;
     var minMidi = (opts && opts.minMidi) || 36; // C2
     var maxMidi = (opts && opts.maxMidi) || 84; // C6
+    var reduced = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     c.clearRect(0, 0, W, H);
-    c.fillStyle = isDark ? '#0f172a' : '#f1f5f9';
+    if (typeof c.createLinearGradient === 'function') {
+      var bgGrad = c.createLinearGradient(0, 0, 0, H);
+      if (isDark) {
+        bgGrad.addColorStop(0, '#090f1f');
+        bgGrad.addColorStop(0.55, '#0f172a');
+        bgGrad.addColorStop(1, '#111c34');
+      } else {
+        bgGrad.addColorStop(0, '#f8fafc');
+        bgGrad.addColorStop(1, '#eef2f7');
+      }
+      c.fillStyle = bgGrad;
+    } else {
+      c.fillStyle = isDark ? '#0f172a' : '#f1f5f9';
+    }
     c.fillRect(0, 0, W, H);
 
-    var labelW = 32;
+    var labelW = 34;
     var plotX = labelW;
     var plotW = W - labelW;
     var plotH = H;
     var midiRange = maxMidi - minMidi;
+
+    // Subtle octave acoustic bands & gutter separator
+    for (var octM = minMidi; octM < maxMidi; octM += 12) {
+      if (Math.floor(octM / 12) % 2 === 0) {
+        var yTop = plotH - ((Math.min(maxMidi, octM + 12) - minMidi) / midiRange) * plotH;
+        var yBot = plotH - ((octM - minMidi) / midiRange) * plotH;
+        c.fillStyle = isDark ? 'rgba(56,189,248,0.035)' : 'rgba(99,102,241,0.035)';
+        c.fillRect(plotX, yTop, plotW, yBot - yTop);
+      }
+    }
+    c.fillStyle = isDark ? 'rgba(15,23,42,0.72)' : 'rgba(226,232,240,0.55)';
+    c.fillRect(0, 0, labelW - 1, H);
+    c.strokeStyle = isDark ? 'rgba(148,163,184,0.2)' : 'rgba(148,163,184,0.45)';
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo(labelW - 0.5, 0); c.lineTo(labelW - 0.5, H); c.stroke();
 
     // Horizontal gridlines at each note with labels
     c.font = '8px monospace';
@@ -550,21 +614,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var noteInfo = midiToNoteName(m);
       var noteY = plotH - ((m - minMidi) / midiRange) * plotH;
 
-      // Only draw C and E and G and A lines for readability
       var isC = noteInfo.note === 'C';
       var isNatural = noteInfo.note.indexOf('#') === -1;
 
       if (isC) {
-        c.strokeStyle = isDark ? '#334155' : '#cbd5e1';
+        c.strokeStyle = isDark ? 'rgba(99,102,241,0.34)' : 'rgba(148,163,184,0.7)';
         c.lineWidth = 1;
         c.beginPath();
         c.moveTo(plotX, noteY);
         c.lineTo(W, noteY);
         c.stroke();
-        c.fillStyle = isDark ? '#94a3b8' : '#475569';
-        c.fillText(noteInfo.str, labelW - 3, noteY + 3);
+        c.fillStyle = isDark ? '#cbd5e1' : '#334155';
+        c.fillText(noteInfo.str, labelW - 4, noteY + 3);
       } else if (isNatural) {
-        c.strokeStyle = isDark ? '#1e293b' : '#e2e8f0';
+        c.strokeStyle = isDark ? 'rgba(30,41,59,0.75)' : 'rgba(226,232,240,0.85)';
         c.lineWidth = 0.5;
         c.beginPath();
         c.moveTo(plotX, noteY);
@@ -582,52 +645,112 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       return;
     }
 
-    // Glow effect
-    c.shadowColor = '#f43f5e';
-    c.shadowBlur = 6;
-
-    c.beginPath();
-    c.lineWidth = 2.5;
-    c.strokeStyle = '#f43f5e';
-    var started = false;
+    // Collect valid pitch points for luminous ribbon + harmonic overtone ghost
+    var segments = [];
+    var curSeg = [];
     for (var i = 0; i < history.length; i++) {
       var entry = history[i];
-      if (!entry || entry.midi <= 0) { started = false; continue; }
+      if (!entry || entry.midi <= 0) {
+        if (curSeg.length) { segments.push(curSeg); curSeg = []; }
+        continue;
+      }
       var px = plotX + (i / (history.length - 1)) * plotW;
       var py = plotH - ((entry.midi - minMidi) / midiRange) * plotH;
-      if (py < 0 || py > H) { started = false; continue; }
-      if (!started) {
-        c.stroke();
-        c.beginPath();
-        var centsAbs = Math.abs(entry.cents || 0);
-        c.strokeStyle = centsAbs <= 10 ? '#22c55e' : centsAbs <= 25 ? '#eab308' : '#ef4444';
-        c.moveTo(px, py);
-        started = true;
-      } else {
-        var centsAbs = Math.abs(entry.cents || 0);
-        c.strokeStyle = centsAbs <= 10 ? '#22c55e' : centsAbs <= 25 ? '#eab308' : '#ef4444';
-        c.lineTo(px, py);
+      if (py < 0 || py > H) {
+        if (curSeg.length) { segments.push(curSeg); curSeg = []; }
+        continue;
       }
+      var centsAbs = Math.abs(entry.cents || 0);
+      var segColor = centsAbs <= 10 ? '#22c55e' : centsAbs <= 25 ? '#eab308' : '#f43f5e';
+      var overtoneY = plotH - ((entry.midi + 12 - minMidi) / midiRange) * plotH;
+      curSeg.push({ x: px, y: py, color: segColor, overtoneY: overtoneY });
     }
-    c.stroke();
-    c.shadowBlur = 0;
+    if (curSeg.length) segments.push(curSeg);
 
-    // Current pitch dot
+    // Subtle harmonic overtone waterfall ghost (+1 octave resonance shimmer)
+    c.save();
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+    segments.forEach(function(seg) {
+      if (seg.length < 2) return;
+      c.beginPath();
+      var hasOvertone = false;
+      for (var oi = 0; oi < seg.length; oi++) {
+        if (seg[oi].overtoneY >= 2 && seg[oi].overtoneY <= H - 2) {
+          if (!hasOvertone) { c.moveTo(seg[oi].x, seg[oi].overtoneY); hasOvertone = true; }
+          else c.lineTo(seg[oi].x, seg[oi].overtoneY);
+        }
+      }
+      if (hasOvertone) {
+        c.strokeStyle = isDark ? 'rgba(56,189,248,0.22)' : 'rgba(99,102,241,0.18)';
+        c.lineWidth = 4;
+        c.stroke();
+      }
+      // Luminous translucent ribbon wash beneath the vocal pitch trace
+      if (typeof c.createLinearGradient === 'function') {
+        var ribGrad = c.createLinearGradient(0, 0, 0, H);
+        ribGrad.addColorStop(0, isDark ? 'rgba(244,63,94,0.22)' : 'rgba(244,63,94,0.16)');
+        ribGrad.addColorStop(0.6, isDark ? 'rgba(139,92,246,0.14)' : 'rgba(139,92,246,0.09)');
+        ribGrad.addColorStop(1, 'rgba(15,23,42,0)');
+        c.beginPath();
+        c.moveTo(seg[0].x, H);
+        for (var ri = 0; ri < seg.length; ri++) c.lineTo(seg[ri].x, seg[ri].y);
+        c.lineTo(seg[seg.length - 1].x, H);
+        c.closePath();
+        c.fillStyle = ribGrad;
+        c.fill();
+      }
+      // Soft outer bloom + crisp inner tuning-colored pitch filament
+      for (var si = 1; si < seg.length; si++) {
+        var aPt = seg[si - 1], bPt = seg[si];
+        c.save();
+        c.shadowColor = bPt.color;
+        c.shadowBlur = 10;
+        c.strokeStyle = bPt.color;
+        c.lineWidth = 5;
+        c.globalAlpha = 0.28;
+        c.beginPath(); c.moveTo(aPt.x, aPt.y); c.lineTo(bPt.x, bPt.y); c.stroke();
+        c.globalAlpha = 0.96;
+        c.lineWidth = 2.6;
+        c.beginPath(); c.moveTo(aPt.x, aPt.y); c.lineTo(bPt.x, bPt.y); c.stroke();
+        c.restore();
+      }
+    });
+    c.restore();
+
+    // Current pitch dot with luminous resonance halo
     var last = history[history.length - 1];
     if (last && last.midi > 0) {
       var dotY = plotH - ((last.midi - minMidi) / midiRange) * plotH;
       var cAbs = Math.abs(last.cents || 0);
-      var dotColor = cAbs <= 10 ? '#22c55e' : cAbs <= 25 ? '#eab308' : '#ef4444';
+      var dotColor = cAbs <= 10 ? '#22c55e' : cAbs <= 25 ? '#eab308' : '#f43f5e';
+      var pulse = reduced ? 0.5 : (0.5 + 0.5 * Math.sin((typeof performance !== 'undefined' ? performance.now() : 0) * 0.008));
+      c.save();
       c.beginPath();
-      c.arc(W - 8, dotY, 5, 0, 2 * Math.PI);
+      c.arc(W - 8, dotY, 8 + pulse * 4, 0, 2 * Math.PI);
+      c.strokeStyle = dotColor;
+      c.globalAlpha = 0.35;
+      c.lineWidth = 1.5;
+      c.stroke();
+      c.globalAlpha = 1;
+      c.shadowColor = dotColor;
+      c.shadowBlur = 12;
+      c.beginPath();
+      c.arc(W - 8, dotY, 5.2, 0, 2 * Math.PI);
       c.fillStyle = dotColor;
       c.fill();
+      c.shadowBlur = 0;
+      c.beginPath();
+      c.arc(W - 9.2, dotY - 1.2, 1.8, 0, 2 * Math.PI);
+      c.fillStyle = 'rgba(255,255,255,0.85)';
+      c.fill();
+      c.restore();
 
       // Note label near dot
       c.font = 'bold 11px sans-serif';
-      c.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
+      c.fillStyle = isDark ? '#f1f5f9' : '#0f172a';
       c.textAlign = 'right';
-      c.fillText(last.noteStr || '', W - 18, dotY - 8);
+      c.fillText(last.noteStr || '', W - 20, Math.max(12, dotY - 8));
     }
   }
 
@@ -638,40 +761,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var L = labels || {};
     if (!canvas) return;
     var c = canvas.getContext('2d');
+    if (!c) return;
     var W = canvas.width;
     var H = canvas.height;
     c.clearRect(0, 0, W, H);
 
-    c.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    if (typeof c.createLinearGradient === 'function') {
+      var bgG = c.createLinearGradient(0, 0, 0, H);
+      bgG.addColorStop(0, isDark ? '#0f172a' : '#f8fafc');
+      bgG.addColorStop(1, isDark ? '#1e293b' : '#f1f5f9');
+      c.fillStyle = bgG;
+    } else {
+      c.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    }
     c.fillRect(0, 0, W, H);
 
-    var barY = 14;
+    var barY = 16;
     var barH = 14;
     var barX = 30;
     var barW = W - 60;
     var center = barX + barW / 2;
 
     // Background track
-    c.fillStyle = isDark ? '#334155' : '#e2e8f0';
+    c.fillStyle = isDark ? '#1e293b' : '#e2e8f0';
     c.fillRect(barX, barY, barW, barH);
-
-    // Green zone in center (±10 cents)
-    var greenW = (10 / 50) * (barW / 2);
-    c.fillStyle = isDark ? 'rgba(34, 197, 94, 0.25)' : 'rgba(34, 197, 94, 0.2)';
-    c.fillRect(center - greenW, barY, greenW * 2, barH);
+    c.strokeStyle = isDark ? 'rgba(148,163,184,0.28)' : 'rgba(100,116,139,0.35)';
+    c.lineWidth = 1;
+    c.strokeRect(barX + 0.5, barY + 0.5, barW - 1, barH - 1);
 
     // Yellow zone (±10 to ±25)
+    var greenW = (10 / 50) * (barW / 2);
     var yellowW = (25 / 50) * (barW / 2);
-    c.fillStyle = isDark ? 'rgba(234, 179, 8, 0.15)' : 'rgba(234, 179, 8, 0.12)';
+    c.fillStyle = isDark ? 'rgba(234, 179, 8, 0.22)' : 'rgba(234, 179, 8, 0.16)';
     c.fillRect(center - yellowW, barY, yellowW - greenW, barH);
     c.fillRect(center + greenW, barY, yellowW - greenW, barH);
 
-    // Center line
-    c.strokeStyle = isDark ? '#94a3b8' : '#475569';
+    // Luminous emerald zone in center (±10 cents)
+    c.fillStyle = isDark ? 'rgba(34, 197, 94, 0.34)' : 'rgba(34, 197, 94, 0.26)';
+    c.fillRect(center - greenW, barY, greenW * 2, barH);
+
+    // Fine calibration ticks every 10 cents
+    c.strokeStyle = isDark ? 'rgba(148,163,184,0.35)' : 'rgba(71,85,105,0.3)';
+    c.lineWidth = 1;
+    for (var tc = -40; tc <= 40; tc += 10) {
+      if (tc === 0) continue;
+      var tx = center + (tc / 50) * (barW / 2);
+      c.beginPath(); c.moveTo(tx, barY + barH - 4); c.lineTo(tx, barY + barH); c.stroke();
+    }
+
+    // Center zero-cent beacon line
+    c.strokeStyle = isDark ? '#e2e8f0' : '#334155';
     c.lineWidth = 2;
     c.beginPath();
-    c.moveTo(center, barY - 2);
-    c.lineTo(center, barY + barH + 2);
+    c.moveTo(center, barY - 3);
+    c.lineTo(center, barY + barH + 3);
     c.stroke();
 
     // Labels
@@ -682,25 +825,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     c.fillText(L.sharp || 'Sharp', barX + barW - 10, barY + barH + 12);
     c.fillText('0', center, barY + barH + 12);
 
-    // Needle
+    // Luminous active fill from center to needle + glowing chevron pointer
     var clampedCents = Math.min(50, Math.max(-50, cents || 0));
     var needleX = center + (clampedCents / 50) * (barW / 2);
     var cAbs = Math.abs(clampedCents);
     var needleColor = cAbs <= 10 ? '#22c55e' : cAbs <= 25 ? '#eab308' : '#ef4444';
 
-    c.beginPath();
-    c.moveTo(needleX, barY - 4);
-    c.lineTo(needleX - 4, barY - 10);
-    c.lineTo(needleX + 4, barY - 10);
-    c.closePath();
+    c.save();
     c.fillStyle = needleColor;
+    c.globalAlpha = 0.42;
+    c.fillRect(Math.min(center, needleX), barY + 2, Math.abs(needleX - center), barH - 4);
+    c.globalAlpha = 1;
+    c.shadowColor = needleColor;
+    c.shadowBlur = 8;
+    c.beginPath();
+    c.moveTo(needleX, barY - 2);
+    c.lineTo(needleX - 5, barY - 9);
+    c.lineTo(needleX + 5, barY - 9);
+    c.closePath();
     c.fill();
+    c.strokeStyle = needleColor;
+    c.lineWidth = 2;
+    c.beginPath(); c.moveTo(needleX, barY); c.lineTo(needleX, barY + barH); c.stroke();
+    c.restore();
 
     // Cents value
     c.font = 'bold 10px sans-serif';
     c.fillStyle = needleColor;
     c.textAlign = 'center';
-    c.fillText((clampedCents > 0 ? '+' : '') + Math.round(clampedCents) + '\u00A2', needleX, barY - 13);
+    c.fillText((clampedCents > 0 ? '+' : '') + Math.round(clampedCents) + '\u00A2', needleX, barY - 12);
   }
 
   /**
@@ -710,11 +863,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var L = labels || {};
     if (!canvas) return;
     var c = canvas.getContext('2d');
+    if (!c) return;
     var W = canvas.width;
     var H = canvas.height;
     c.clearRect(0, 0, W, H);
 
-    c.fillStyle = isDark ? '#0f172a' : '#f1f5f9';
+    if (typeof c.createLinearGradient === 'function') {
+      var bgGrad = c.createLinearGradient(0, 0, 0, H);
+      bgGrad.addColorStop(0, isDark ? '#090e1c' : '#f8fafc');
+      bgGrad.addColorStop(1, isDark ? '#131d36' : '#eef2ff');
+      c.fillStyle = bgGrad;
+    } else {
+      c.fillStyle = isDark ? '#0f172a' : '#f1f5f9';
+    }
     c.fillRect(0, 0, W, H);
 
     if (!history || history.length < 10) {
@@ -733,8 +894,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var centerY = H / 2;
     var scaleY = H / 100; // ±50 cents maps to full height
 
+    // Healthy vibrato ideal envelope corridor (±15¢ to ±40¢)
+    c.fillStyle = isDark ? 'rgba(139,92,246,0.10)' : 'rgba(139,92,246,0.08)';
+    c.fillRect(30, centerY - 40 * scaleY, W - 30, 25 * scaleY);
+    c.fillRect(30, centerY + 15 * scaleY, W - 30, 25 * scaleY);
+
     // Grid lines
-    c.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+    c.strokeStyle = isDark ? 'rgba(71,85,105,0.45)' : '#cbd5e1';
     c.lineWidth = 0.5;
     c.setLineDash([3, 3]);
     var gridCents = [-40, -20, 0, 20, 40];
@@ -752,29 +918,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     c.setLineDash([]);
 
     // Center line (bolder)
-    c.strokeStyle = isDark ? '#475569' : '#94a3b8';
+    c.strokeStyle = isDark ? 'rgba(148,163,184,0.55)' : '#94a3b8';
     c.lineWidth = 1;
     c.beginPath();
     c.moveTo(30, centerY);
     c.lineTo(W, centerY);
     c.stroke();
 
-    // Draw deviation waveform
-    c.beginPath();
-    c.strokeStyle = '#8b5cf6';
-    c.lineWidth = 2;
-    c.shadowColor = '#8b5cf6';
-    c.shadowBlur = 4;
+    // Compute smooth points
+    var vPts = [];
     for (var i = 0; i < history.length; i++) {
-      var deviation = (history[i].midi - mean) * 100; // in cents
+      var deviation = (history[i].midi - mean) * 100;
       var px = 30 + (i / (history.length - 1)) * (W - 30);
-      var py = centerY - deviation * scaleY;
-      py = Math.max(4, Math.min(H - 4, py));
-      if (i === 0) c.moveTo(px, py);
-      else c.lineTo(px, py);
+      var py = Math.max(4, Math.min(H - 4, centerY - deviation * scaleY));
+      vPts.push({ x: px, y: py });
     }
+
+    // Translucent ribbon fill from center axis to vibrato trace
+    c.save();
+    c.beginPath();
+    c.moveTo(vPts[0].x, centerY);
+    for (var fi = 0; fi < vPts.length; fi++) c.lineTo(vPts[fi].x, vPts[fi].y);
+    c.lineTo(vPts[vPts.length - 1].x, centerY);
+    c.closePath();
+    if (typeof c.createLinearGradient === 'function') {
+      var fillG = c.createLinearGradient(0, 0, 0, H);
+      fillG.addColorStop(0, 'rgba(232,121,249,0.24)');
+      fillG.addColorStop(0.5, 'rgba(139,92,246,0.06)');
+      fillG.addColorStop(1, 'rgba(56,189,248,0.24)');
+      c.fillStyle = fillG;
+    } else {
+      c.fillStyle = 'rgba(139,92,246,0.16)';
+    }
+    c.fill();
+
+    // Multi-pass luminous vibrato filament (outer neon halo + bright core)
+    var strokeStyle = '#a855f7';
+    if (typeof c.createLinearGradient === 'function') {
+      var lineG = c.createLinearGradient(30, 0, W, 0);
+      lineG.addColorStop(0, '#38bdf8');
+      lineG.addColorStop(0.5, '#a855f7');
+      lineG.addColorStop(1, '#f472b6');
+      strokeStyle = lineG;
+    }
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+    c.beginPath();
+    for (var li = 0; li < vPts.length; li++) {
+      if (li === 0) c.moveTo(vPts[li].x, vPts[li].y);
+      else c.lineTo(vPts[li].x, vPts[li].y);
+    }
+    c.shadowColor = '#a855f7';
+    c.shadowBlur = 10;
+    c.strokeStyle = strokeStyle;
+    c.lineWidth = 4.5;
+    c.globalAlpha = 0.28;
     c.stroke();
-    c.shadowBlur = 0;
+    c.globalAlpha = 1;
+    c.lineWidth = 2.2;
+    c.stroke();
+    // Luminous live tip dot
+    var tip = vPts[vPts.length - 1];
+    c.beginPath();
+    c.arc(tip.x, tip.y, 4, 0, Math.PI * 2);
+    c.fillStyle = '#f472b6';
+    c.fill();
+    c.restore();
   }
 
   /**
@@ -1477,9 +1686,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     ctx.clearRect(0, 0, W, H);
 
-    // Background
-    ctx.fillStyle = isDark ? '#1e293b' : '#f8fafc';
-    ctx.fillRect(0, 0, W, H);
+    // Background studio gradient & subtle sagittal reference grid
+    if (typeof ctx.createLinearGradient === 'function') {
+      var bgGrad = ctx.createLinearGradient(0, 0, LW, LH);
+      if (isDark) {
+        bgGrad.addColorStop(0, '#0b1224');
+        bgGrad.addColorStop(0.55, '#132038');
+        bgGrad.addColorStop(1, '#1a2742');
+      } else {
+        bgGrad.addColorStop(0, '#f8fafc');
+        bgGrad.addColorStop(1, '#eef4fb');
+      }
+      ctx.fillStyle = bgGrad;
+    } else {
+      ctx.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+    }
+    ctx.fillRect(0, 0, LW, LH);
+    ctx.save();
+    ctx.strokeStyle = isDark ? 'rgba(148,163,184,0.06)' : 'rgba(100,116,139,0.08)';
+    ctx.lineWidth = 1;
+    for (var gx = 40; gx < LW; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, LH); ctx.stroke(); }
+    for (var gy = 40; gy < LH; gy += 40) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(LW, gy); ctx.stroke(); }
+    ctx.restore();
 
     var o = opts || {};
     var breathPhase = o.breathPhase || 0; // 0..1 cycle
@@ -1688,21 +1916,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     ctx.closePath();
     ctx.fill();
 
-    // Phonation: sound waves emanating upward from folds
-    if (animMode === 'phonation' && foldOpen < 0.4) {
+    // Phonation & Vowel Shaping: luminous vocal-tract acoustic resonance waves & harmonic glow
+    if (animMode === 'phonation' || animMode === 'vowel') {
       ctx.save();
-      var waveAlpha = 0.15 + Math.abs(Math.sin(animFrame * 0.1)) * 0.3;
-      ctx.strokeStyle = 'rgba(244,114,182,' + waveAlpha + ')';
-      ctx.lineWidth = 1;
-      for (var wi = 0; wi < 4; wi++) {
-        var wy = foldY - 10 - wi * 12;
-        var wAmp = 4 + wi * 2;
+      var reducedAnim = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var phaseT = reducedAnim ? 0 : animFrame;
+      var waveAlpha = animMode === 'phonation' ? (0.28 + Math.abs(Math.sin(phaseT * 0.1)) * 0.42) : 0.36;
+      // Resonant pharyngeal & oral formant standing-wave glow halos
+      if (typeof ctx.createRadialGradient === 'function') {
+        var f1Glow = ctx.createRadialGradient(larynxX, larynxTop - 28, 4, larynxX, larynxTop - 28, 36);
+        f1Glow.addColorStop(0, 'rgba(244,114,182,' + (waveAlpha * 0.45) + ')');
+        f1Glow.addColorStop(1, 'rgba(244,114,182,0)');
+        ctx.fillStyle = f1Glow;
+        ctx.beginPath(); ctx.arc(larynxX, larynxTop - 28, 36, 0, Math.PI * 2); ctx.fill();
+
+        var f2Glow = ctx.createRadialGradient(118, 108, 4, 118, 108, 44);
+        f2Glow.addColorStop(0, 'rgba(56,189,248,' + (waveAlpha * 0.36) + ')');
+        f2Glow.addColorStop(1, 'rgba(56,189,248,0)');
+        ctx.fillStyle = f2Glow;
+        ctx.beginPath(); ctx.arc(118, 108, 44, 0, Math.PI * 2); ctx.fill();
+      }
+      // Rising luminous standing acoustic waves along the pharynx
+      ctx.lineCap = 'round';
+      for (var wi = 0; wi < 5; wi++) {
+        var wy = foldY - 10 - wi * 14;
+        var wAmp = 3.5 + wi * 1.4;
         ctx.beginPath();
-        for (var wx = -15; wx <= 15; wx++) {
-          var sy = wy + Math.sin((wx + animFrame * 3) * 0.3) * wAmp;
-          if (wx === -15) ctx.moveTo(larynxX + wx, sy);
+        for (var wx = -14; wx <= 14; wx += 2) {
+          var sy = wy + Math.sin((wx + phaseT * (pitchHigh ? 4.5 : 2.8)) * 0.32) * wAmp;
+          if (wx === -14) ctx.moveTo(larynxX + wx, sy);
           else ctx.lineTo(larynxX + wx, sy);
         }
+        ctx.shadowColor = wi % 2 === 0 ? '#f472b6' : '#38bdf8';
+        ctx.shadowBlur = 6;
+        ctx.strokeStyle = wi % 2 === 0 ? ('rgba(244,114,182,' + waveAlpha + ')') : ('rgba(56,189,248,' + (waveAlpha * 0.85) + ')');
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+      }
+      // Radiating acoustic wavefront arcs projecting out from the lips
+      ctx.shadowBlur = 0;
+      for (var arcI = 0; arcI < 3; arcI++) {
+        var arcProg = reducedAnim ? ((arcI + 0.5) / 3) : (((phaseT * 0.03) + arcI / 3) % 1);
+        var arcR = 14 + arcProg * 44;
+        var arcAlpha = (1 - arcProg) * 0.55;
+        ctx.strokeStyle = 'rgba(56,189,248,' + arcAlpha + ')';
+        ctx.lineWidth = 2 - arcProg * 1.1;
+        ctx.beginPath();
+        ctx.arc(62, 106, arcR, Math.PI * 0.72, Math.PI * 1.28);
         ctx.stroke();
       }
       ctx.restore();
@@ -1942,52 +2202,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     }
     ctx.restore();
 
-    // ── AIR FLOW PARTICLES (breathing animation) ──
+    // ── AIR FLOW RINGS & PARTICLES (breathing animation) ──
     if (animMode === 'breathing') {
       ctx.save();
       var isInhale = breathPhase < 0.5;
-      var particleColor = isInhale ? 'rgba(96,165,250,' : 'rgba(96,165,250,';
-      // Draw particles along the airway
-      var particleCount = 8;
+      var flowRgb = isInhale ? '56,189,248' : '244,114,182';
+      // Smooth concentric breath-support airflow rings around lungs & diaphragm
+      for (var ringI = 0; ringI < 3; ringI++) {
+        var ringP = ((breathPhase * 2 + ringI / 3) % 1);
+        var ringScale = isInhale ? (0.4 + ringP * 0.85) : (1.25 - ringP * 0.85);
+        var ringAlpha = Math.sin(ringP * Math.PI) * 0.34;
+        ctx.strokeStyle = 'rgba(' + flowRgb + ',' + ringAlpha + ')';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.ellipse(175, 326 + breathOffset * 0.4, 72 * ringScale, 32 * ringScale, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      // Smooth laminar airway flow guide ribbon
+      ctx.strokeStyle = 'rgba(' + flowRgb + ',0.22)';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(75, 102);
+      ctx.quadraticCurveTo(175, 110, tracheaX, 175);
+      ctx.lineTo(tracheaX, 305);
+      ctx.stroke();
+      // Draw smooth glowing airflow particles along the airway
+      var particleCount = 10;
       for (var pi = 0; pi < particleCount; pi++) {
         var pPhase = ((breathPhase * 2 + pi / particleCount) % 1);
-        var pAlpha = 0.3 + Math.sin(pPhase * Math.PI) * 0.5;
-        var pSize = 2 + Math.sin(pPhase * Math.PI) * 1.5;
-        ctx.fillStyle = particleColor + pAlpha + ')';
+        var pAlpha = 0.35 + Math.sin(pPhase * Math.PI) * 0.6;
+        var pSize = 2.4 + Math.sin(pPhase * Math.PI) * 1.8;
+        var drift = Math.sin(pPhase * Math.PI * 4 + pi * 1.7);
 
         // Path: from diaphragm up through trachea, larynx, pharynx, out mouth
         var py, px;
         if (isInhale) {
-          // Particles move inward: mouth → lungs
           var t = pPhase;
           if (t < 0.3) {
-            // In the mouth/pharynx area
             px = 75 + t * 300;
-            py = 90 + t * 150;
+            py = 96 + t * 145;
           } else if (t < 0.6) {
-            // Through pharynx/larynx
-            px = tracheaX + (Math.random() - 0.5) * 8;
+            px = tracheaX + drift * 5;
             py = pharynxTop + (t - 0.3) * 400;
           } else {
-            // Into lungs
-            px = tracheaX + (Math.random() - 0.5) * 40;
-            py = 280 + (t - 0.6) * 200;
+            px = tracheaX + drift * 28;
+            py = 280 + (t - 0.6) * 180;
           }
         } else {
-          // Particles move outward: lungs → mouth
           var t2 = pPhase;
           if (t2 < 0.3) {
-            px = tracheaX + (Math.random() - 0.5) * 30;
+            px = tracheaX + drift * 24;
             py = 330 - t2 * 200;
           } else if (t2 < 0.6) {
-            px = tracheaX + (Math.random() - 0.5) * 8;
+            px = tracheaX + drift * 5;
             py = 220 - (t2 - 0.3) * 300;
           } else {
             px = 175 - (t2 - 0.6) * 250;
-            py = 120 - (t2 - 0.6) * 80;
+            py = 120 - (t2 - 0.6) * 65;
           }
         }
 
+        ctx.fillStyle = 'rgba(' + flowRgb + ',' + (pAlpha * 0.28) + ')';
+        ctx.beginPath();
+        ctx.arc(px, py, pSize * 2.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(' + flowRgb + ',' + pAlpha + ')';
         ctx.beginPath();
         ctx.arc(px, py, pSize, 0, Math.PI * 2);
         ctx.fill();
@@ -8891,6 +9171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         }
         cv.style.display = 'block';
         const g = cv.getContext('2d');
+        if (!g) return;
         g.setTransform(dpr, 0, 0, dpr, 0, 0);
         this._draw(g, w, h, k, now, pts, fresh, side);
       }
@@ -8901,11 +9182,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         const ppc = (h / 2 - 3) / RANGE; // pixels per cent
         const yOf = (cents) => mid - Math.max(-RANGE, Math.min(RANGE, cents)) * ppc;
         g.clearRect(0, 0, w, h);
-        // The plate.
-        g.fillStyle = 'rgba(22, 14, 18, 0.84)';
+        // The plate with warm acoustic studio vignette.
+        if (typeof g.createLinearGradient === 'function') {
+          const plateG = g.createLinearGradient(0, 0, 0, h);
+          plateG.addColorStop(0, 'rgba(26, 16, 26, 0.92)');
+          plateG.addColorStop(0.5, 'rgba(18, 12, 22, 0.88)');
+          plateG.addColorStop(1, 'rgba(26, 16, 26, 0.92)');
+          g.fillStyle = plateG;
+        } else {
+          g.fillStyle = 'rgba(22, 14, 18, 0.84)';
+        }
         rr(g, 0.5, 0.5, w - 1, h - 1, 8 * k);
         g.fill();
-        g.strokeStyle = 'rgba(245, 236, 223, 0.28)';
+        g.strokeStyle = 'rgba(245, 236, 223, 0.32)';
         g.lineWidth = 1;
         g.stroke();
         // The corridors, to scale: close (+-60) and a bit off (+-100) behind, spot on (+-30) in front.
@@ -8919,7 +9208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         };
         band(100, c.off, 0.1);
         band(60, c.near, 0.16);
-        band(30, c.tune, 0.3);
+        band(30, c.tune, 0.32);
         g.globalAlpha = 0.9;
         g.strokeStyle = c.tune;
         g.lineWidth = 1;
@@ -8945,7 +9234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           const x = 8 + f * (w - 16);
           return side === 'left' ? w - x : x;
         };
-        g.lineWidth = 2.3 * Math.min(1.3, k);
+        const scaleK = Math.min(1.3, k);
         g.lineCap = 'round';
         g.lineJoin = 'round';
         let prev = null;
@@ -8957,8 +9246,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           const x = xOf(p.t);
           const y = yOf(p.cents);
           if (prev && Math.abs(x - prev.x) < w * 0.25 && joins(prev.cents / 100, p.cents / 100)) {
-            g.globalAlpha = 0.35 + 0.65 * (1 - (now - p.t) / SPAN);
-            g.strokeStyle = this.c[levelFor(p.cents)];
+            const ageFade = 0.35 + 0.65 * (1 - (now - p.t) / SPAN);
+            const segColor = this.c[levelFor(p.cents)];
+            // Soft outer neon ribbon halo
+            g.globalAlpha = ageFade * 0.32;
+            g.strokeStyle = segColor;
+            g.lineWidth = 5.2 * scaleK;
+            g.beginPath();
+            g.moveTo(prev.x, prev.y);
+            g.lineTo(x, y);
+            g.stroke();
+            // Crisp glowing inner pitch filament
+            g.globalAlpha = ageFade;
+            g.lineWidth = 2.4 * scaleK;
             g.beginPath();
             g.moveTo(prev.x, prev.y);
             g.lineTo(x, y);
@@ -8967,15 +9267,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           prev = { x, y, cents: p.cents };
         }
         g.globalAlpha = 1;
-        // The voice now: a dot where the trail ends, coloured by band.
+        // The voice now: luminous beacon dot where the trail ends, coloured by band.
         const level = levelFor(fresh.cents);
+        const fx = xOf(fresh.t), fy = yOf(fresh.cents);
+        g.save();
+        g.globalAlpha = 0.35;
         g.fillStyle = this.c[level];
         g.beginPath();
-        g.arc(xOf(fresh.t), yOf(fresh.cents), 4 * Math.min(1.3, k), 0, Math.PI * 2);
+        g.arc(fx, fy, 7.5 * scaleK, 0, Math.PI * 2);
         g.fill();
+        g.globalAlpha = 1;
+        g.shadowColor = this.c[level];
+        g.shadowBlur = 8;
+        g.beginPath();
+        g.arc(fx, fy, 4.2 * scaleK, 0, Math.PI * 2);
+        g.fill();
+        g.shadowBlur = 0;
         g.strokeStyle = '#fff6e6';
         g.lineWidth = 1.2;
         g.stroke();
+        g.restore();
         g.restore();
         // What a listener hears (the middle through the vibrato), as a number.
         const centre = this.trace.centre(0.4);
@@ -13200,7 +13511,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var canvasNarrate = ctx.canvasNarrate;
 
       return (function() {
-        var d = (labToolData.singing) || {};
+        var _rawSing = labToolData && labToolData.singing;
+        var d = (_rawSing && typeof _rawSing === 'object' && !Array.isArray(_rawSing)) ? _rawSing : {};
+        var isSingLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
         var upd = function(key, val) {
           var _k = {};
           _k[key] = val;
@@ -13224,14 +13537,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         }
 
         // ── Persisted state ──
-        var rangeLow = d.rangeLow || null;
-        var rangeHigh = d.rangeHigh || null;
-        var rangeHistory = d.rangeHistory || [];
-        var intervalsCorrect = d.intervalsCorrect || 0;
-        var intervalScores = d.intervalScores || {};
-        var achievedHealthyVibrato = d.achievedHealthyVibrato || false;
-        var warmUpsCompleted = d.warmUpsCompleted || 0;
-        var bestStreak = d.bestStreak || 0;
+        var _singInt = function(v) { return (typeof v === 'number' && isFinite(v) && v >= 0) ? Math.floor(v) : 0; };
+        var rangeLow = (typeof d.rangeLow === 'number' && isFinite(d.rangeLow) && d.rangeLow >= 21 && d.rangeLow <= 108) ? Math.round(d.rangeLow) : null;
+        var rangeHigh = (typeof d.rangeHigh === 'number' && isFinite(d.rangeHigh) && d.rangeHigh >= 21 && d.rangeHigh <= 108) ? Math.round(d.rangeHigh) : null;
+        var rangeHistory = Array.isArray(d.rangeHistory) ? d.rangeHistory : [];
+        var intervalsCorrect = _singInt(d.intervalsCorrect);
+        var intervalScores = (d.intervalScores && typeof d.intervalScores === 'object' && !Array.isArray(d.intervalScores)) ? d.intervalScores : {};
+        var achievedHealthyVibrato = !!d.achievedHealthyVibrato;
+        var warmUpsCompleted = _singInt(d.warmUpsCompleted);
+        var bestStreak = _singInt(d.bestStreak);
 
         // ── Tab state ──
         var TABS = [
@@ -15855,38 +16169,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           // 1.23:1 there. Light mode is untouched.
           style: isDark ? { background: '#0f172a', borderRadius: 12, padding: 12 } : undefined
         },
-          // Header
-          h('div', { className: 'flex items-center justify-between' },
-            h('div', { className: 'flex items-center gap-3' },
-              h('button', {
-                className: btnSecondary + ' flex items-center gap-1',
-                onClick: function() {
-                  if (isRecording) stopMic();
-                  stopRefTone();
-                  setStemLabTool(null);
+          // Header — Bespoke Vocal Acoustics & Singing Studio Workbench
+          (function() {
+            var rangeText = (rangeLow && rangeHigh)
+              ? (midiToNoteName(rangeLow).str + '\u2013' + midiToNoteName(rangeHigh).str)
+              : __alloT('stem.singing.range_unmeasured', 'Not mapped yet');
+            var activeAcousticStage = (activeTab === 'warmups') ? 0
+              : (activeTab === 'pitch' || activeTab === 'range' || activeTab === 'mirror') ? 1
+              : (activeTab === 'resoHunt') ? 2 : 3;
+            var isSingAssessTab = activeTab === 'intervals' || activeTab === 'sightread' || activeTab === 'resoHunt';
+            var activeTabMeta = TABS.find(function(tb) { return tb.id === activeTab; }) || TABS[0];
+            return h('section', { className: 'sing-studio-hero', 'aria-label': __alloT('stem.singing.hero_aria', 'Singing Studio workbench header') },
+              h('div', { className: 'sing-hero-top' },
+                h('div', { className: 'sing-hero-identity' },
+                  h('button', {
+                    type: 'button',
+                    className: 'sing-back-btn',
+                    onClick: function() {
+                      if (isRecording) stopMic();
+                      stopRefTone();
+                      setStemLabTool(null);
+                    },
+                    'aria-label': __alloT('stem.singing.go_back_to_stem_lab_tool_list', 'Go back to STEAM Lab tool list')
+                  },
+                    ArrowLeft && h(ArrowLeft, { size: 15 }),
+                    __alloT('stem.singing.back', 'Back')),
+                  h('div', { className: 'sing-emblem-box', 'aria-hidden': 'true' },
+                    h('svg', { width: 32, height: 32, viewBox: '0 0 36 36', fill: 'none' },
+                      h('rect', { x: 13, y: 5, width: 10, height: 15, rx: 5, stroke: '#fda4af', strokeWidth: 2, fill: 'rgba(244,63,94,0.22)' }),
+                      h('path', { d: 'M9 17 a9 9 0 0 0 18 0', stroke: '#fecdd3', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' }),
+                      h('line', { x1: 18, y1: 26, x2: 18, y2: 31, stroke: '#fda4af', strokeWidth: 2, strokeLinecap: 'round' }),
+                      h('line', { x1: 13, y1: 31, x2: 23, y2: 31, stroke: '#fda4af', strokeWidth: 2, strokeLinecap: 'round' }),
+                      h('path', { d: 'M3 14 Q 6 9, 8 14', stroke: '#38bdf8', strokeWidth: 1.8, strokeLinecap: 'round', fill: 'none' }),
+                      h('path', { d: 'M28 14 Q 30 9, 33 14', stroke: '#38bdf8', strokeWidth: 1.8, strokeLinecap: 'round', fill: 'none' })
+                    )
+                  ),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('span', { className: 'sing-subject-badge' }, __alloT('stem.singing.subject_badge', 'Vocal Acoustics · Intonation · Ear Training')),
+                    h('h2', { className: 'text-lg font-black text-white flex items-center gap-2 mt-1 mb-0' },
+                      __alloT('stem.singing.singing_lab', 'Singing Lab')),
+                    h('p', { className: 'text-xs text-rose-100 mt-0.5 mb-0' },
+                      __alloT('stem.singing.pitch_training_vocal_range_vibrato_int', 'Pitch training, vocal range, vibrato & interval singing'))
+                  )
+                ),
+                // Recording indicator
+                isRecording && h('div', {
+                  className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-red-900/80 border border-red-300 text-red-100',
+                  role: 'status',
+                  'aria-live': 'polite'
+                }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-400' + (reducedMotion ? '' : ' animate-pulse') }), __alloT('stem.singing.listening_2', 'Listening'))
+              ),
+              h('div', { className: 'sing-telemetry-strip', role: 'group', 'aria-label': __alloT('stem.singing.telemetry_aria', 'Live vocal studio telemetry') },
+                h('span', { className: 'sing-telemetry-pill' }, __alloFmt('stem.singing.pill_studio', 'Studio: {m}', { m: activeTabMeta.label })),
+                h('span', { className: 'sing-telemetry-pill' }, __alloFmt('stem.singing.pill_range', 'Range: {r}', { r: rangeText })),
+                h('span', { className: 'sing-telemetry-pill' }, isRecording ? __alloT('stem.singing.pill_mic_on', 'Mic: Listening') : __alloT('stem.singing.pill_mic_ready', 'Mic: Standby')),
+                h('span', { className: 'sing-telemetry-pill' }, __alloFmt('stem.singing.pill_streak', 'Best Streak: {n}', { n: bestStreak }))
+              ),
+              h('div', { className: 'sing-vocal-schematic' },
+                h('svg', {
+                  viewBox: '0 0 580 54',
+                  style: { width: '100%', height: 'auto', maxHeight: 56, display: 'block' },
+                  role: 'img',
+                  'aria-label': __alloT('stem.singing.schematic_aria', 'Vocal acoustic chain from breath support through vocal fold pitch, vocal tract resonance, and intonation analysis')
                 },
-                'aria-label': t('stem.singing.go_back_to_stem_lab_tool_list', 'Go back to STEAM Lab tool list')
-              },
-                ArrowLeft && h(ArrowLeft, { size: 14 }),
-                t('stem.singing.back', 'Back')),
-              h('div', null,
-                h('h2', { className: headingClass + ' text-lg flex items-center gap-2' },
-                  h('span', null, '\uD83C\uDFA4'), t('stem.singing.singing_lab', 'Singing Lab')),
-                h('p', { className: subTextClass },
-                  t('stem.singing.pitch_training_vocal_range_vibrato_int', 'Pitch training, vocal range, vibrato & interval singing')))),
-            // Recording indicator
-            isRecording && h('div', {
-              className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ' +
-                (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-700'),
-              role: 'status',
-              'aria-live': 'polite'
-            }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' + (reducedMotion ? '' : ' animate-pulse') }), t('stem.singing.listening_2', 'Listening'))),
+                  h('line', { x1: 126, y1: 27, x2: 156, y2: 27, stroke: '#fda4af', strokeWidth: 2, strokeDasharray: '4 3' }),
+                  h('line', { x1: 272, y1: 27, x2: 302, y2: 27, stroke: '#fda4af', strokeWidth: 2, strokeDasharray: '4 3' }),
+                  h('line', { x1: 418, y1: 27, x2: 448, y2: 27, stroke: '#fda4af', strokeWidth: 2, strokeDasharray: '4 3' }),
+                  [
+                    { x: 10, w: 116, tag: '1. BREATH', val: __alloT('stem.singing.chain_breath', 'Warm-up Flow'), idx: 0 },
+                    { x: 156, w: 116, tag: '2. PITCH (f0)', val: __alloT('stem.singing.chain_pitch', 'Hz & Cents'), idx: 1 },
+                    { x: 302, w: 116, tag: '3. FORMANTS', val: __alloT('stem.singing.chain_resonance', 'Tone & Ring'), idx: 2 },
+                    { x: 448, w: 122, tag: '4. PHRASING', val: __alloT('stem.singing.chain_phrasing', 'Vibrato & Ear'), idx: 3 }
+                  ].map(function(node) {
+                    var on = activeAcousticStage === node.idx;
+                    return h('g', { key: node.tag },
+                      h('rect', {
+                        x: node.x, y: 6, width: node.w, height: 42, rx: 9,
+                        fill: on ? 'rgba(244,63,94,0.32)' : 'rgba(22,8,24,0.88)',
+                        stroke: on ? '#fecdd3' : 'rgba(253,164,175,0.40)',
+                        strokeWidth: on ? 2 : 1.2
+                      }),
+                      h('text', { x: node.x + node.w / 2, y: 22, textAnchor: 'middle', fill: '#fecdd3', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, node.tag),
+                      h('text', { x: node.x + node.w / 2, y: 38, textAnchor: 'middle', fill: '#ffffff', fontSize: 11, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, node.val)
+                    );
+                  })
+                )
+              ),
+              (!isSingAssessTab && !isSingLocked) && h('div', { className: 'sing-starter-bar', role: 'group', 'aria-label': __alloT('stem.singing.quick_starters_aria', 'Quick vocal studio sessions') },
+                h('span', { className: 'sing-starter-label' }, __alloT('stem.singing.quick_starters_label', 'Quick Sessions:')),
+                [
+                  { id: 'warmups', label: __alloT('stem.singing.starter_warmup', 'Vocal Warm-ups') },
+                  { id: 'pitch', label: __alloT('stem.singing.starter_pitch', 'Pitch Match') },
+                  { id: 'mirror', label: __alloT('stem.singing.starter_mirror', 'Voice Mirror') },
+                  { id: 'range', label: __alloT('stem.singing.starter_range', 'Map Vocal Range') }
+                ].map(function(stItem) {
+                  return h('button', {
+                    key: stItem.id,
+                    type: 'button',
+                    className: 'sing-starter-chip',
+                    'data-active': activeTab === stItem.id ? 'true' : 'false',
+                    'aria-pressed': activeTab === stItem.id ? 'true' : 'false',
+                    onClick: function() { setActiveTab(stItem.id); }
+                  }, stItem.label);
+                })
+              )
+            );
+          })(),
 
           // Tab navigation
           h('div', {
             className: 'flex gap-1 p-1 rounded-xl overflow-x-auto ' + (isDark ? 'bg-slate-800' : 'bg-slate-100'),
             role: 'tablist',
-            'aria-label': t('stem.singing.singing_lab_sections', 'Singing Lab sections')
+            'aria-label': __alloT('stem.singing.singing_lab_sections', 'Singing Lab sections')
           },
             TABS.map(function(tab) {
               var isActive = activeTab === tab.id;
@@ -15896,7 +16290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 'aria-selected': isActive ? 'true' : 'false',
                 'aria-controls': 'singing-panel-' + tab.id,
                 tabIndex: isActive ? 0 : -1,
-                className: 'flex-1 px-2 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-rose-400 ' +
+                className: 'sing-tab-btn flex-1 px-2 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-rose-400 ' +
                   (isActive
                     ? (isDark ? 'bg-rose-600 text-white shadow-sm' : 'bg-white text-rose-700 shadow-sm')
                     : (isDark ? 'transition-colors text-slate-200 hover:bg-slate-700 hover:text-white active:scale-[0.97]' : 'transition-colors text-slate-600 hover:text-slate-700')),
@@ -15920,21 +16314,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           // ── Topic-accent hero band (per tab) ──
           (function() {
             var TAB_META = {
-              pitch:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '🎯', title: t('stem.singing.pitch_detective_2', 'Pitch Detective'),           hint: t('stem.singing.sing_into_the_mic_the_lab_tracks_frequ', 'Sing into the mic; the lab tracks frequency in real time. Trained singers hold pitch within ±5 cents (1/20th of a semitone) — that is what perfect-pitch matching looks like.') },
-              mirror:    { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '\u2728', title: t('stem.singing.vs_tab_mirror_title', 'Voice Mirror — see your sound'), hint: t('stem.singing.vs_tab_mirror_hint', 'Sing or play and watch it become light: pitch, tuning, vibrato, steadiness and ring, with optional meters.') },
-              library:   { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '🎶', title: t('stem.singing.vs_tab_library_title', 'Song Library — sing with the piano'), hint: t('stem.singing.vs_tab_library_hint', 'Pick a public-domain song, hear it with piano, then sing along: every note is checked as it passes and you get a score and the spots to practise.') },
-              range:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎹', title: t('stem.singing.vocal_range_your_tessitura', 'Vocal Range — your tessitura'), hint: t('stem.singing.most_untrained_voices_span_1_5_2_octav', 'Most untrained voices span 1.5–2 octaves; trained classical singers reach 3+. Range expansion is mostly about REGISTER blending, not just stretching higher and lower.') },
-              vibrato:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🌊', title: t('stem.singing.vibrato_lab_2', 'Vibrato Lab'),                hint: t('stem.singing.healthy_vibrato_5_7_hz_oscillation_60_', 'Healthy vibrato: 5–7 Hz oscillation, ~60–100 cents wide. Slower = wobble; faster = tremor. Vibrato is a function of relaxed breath support, not a separate technique.') },
-              intervals: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🎵', title: t('stem.singing.interval_singer_ear_training', 'Interval Singer — ear training'), hint: t('stem.singing.major_3rd_vs_minor_3rd_is_the_single_m', 'Major 3rd vs minor 3rd is the single most-confused interval pair for beginners. Mnemonics: M3 = "Oh when the saints," m3 = "Greensleeves." Builds relative pitch.') },
-              warmups:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '❤️', title: __alloT('stem.singing.warm_ups', 'Warm-ups'),                  hint: t('stem.singing.lip_trills_sirens_before_any_sustained', 'Lip trills + sirens before any sustained singing. 5–10 minutes of low-intensity warm-up halves the risk of vocal-fold strain. Skipping warm-ups is the #1 cause of preventable vocal injury.') },
-              sightread: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🎼', title: t('stem.singing.sight_reading_2', 'Sight reading'),              hint: t('stem.singing.solf_ge_do_re_mi_letter_names_for_sigh', 'Solfège (do-re-mi) > letter names for sight-singing because the syllables encode interval relationships, not just pitch labels. Movable do beats fixed do for tonal music.') },
-              resoHunt:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '🎙️', title: t('stem.singing.resonance_lab_discover_your_vocal_tone', 'Resonance Lab — discover your vocal tone'), hint: t('stem.singing.two_sliders_throat_openness_and_soft_p', 'Two sliders — throat openness and soft palate lift — combine into four tone qualities (rich, bright, warm, nasal). No score, no reveal: experiment, log, and explain what you find.') }
+              pitch:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '🎯', title: __alloT('stem.singing.pitch_detective_2', 'Pitch Detective'),           hint: __alloT('stem.singing.sing_into_the_mic_the_lab_tracks_frequ', 'Sing into the mic; the lab tracks frequency in real time. Trained singers hold pitch within ±5 cents (1/20th of a semitone) — that is what perfect-pitch matching looks like.') },
+              mirror:    { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '\u2728', title: __alloT('stem.singing.vs_tab_mirror_title', 'Voice Mirror — see your sound'), hint: __alloT('stem.singing.vs_tab_mirror_hint', 'Sing or play and watch it become light: pitch, tuning, vibrato, steadiness and ring, with optional meters.') },
+              library:   { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '🎶', title: __alloT('stem.singing.vs_tab_library_title', 'Song Library — sing with the piano'), hint: __alloT('stem.singing.vs_tab_library_hint', 'Pick a public-domain song, hear it with piano, then sing along: every note is checked as it passes and you get a score and the spots to practise.') },
+              range:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎹', title: __alloT('stem.singing.vocal_range_your_tessitura', 'Vocal Range — your tessitura'), hint: __alloT('stem.singing.most_untrained_voices_span_1_5_2_octav', 'Most untrained voices span 1.5–2 octaves; trained classical singers reach 3+. Range expansion is mostly about REGISTER blending, not just stretching higher and lower.') },
+              vibrato:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🌊', title: __alloT('stem.singing.vibrato_lab_2', 'Vibrato Lab'),                hint: __alloT('stem.singing.healthy_vibrato_5_7_hz_oscillation_60_', 'Healthy vibrato: 5–7 Hz oscillation, ~60–100 cents wide. Slower = wobble; faster = tremor. Vibrato is a function of relaxed breath support, not a separate technique.') },
+              intervals: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🎵', title: __alloT('stem.singing.interval_singer_ear_training', 'Interval Singer — ear training'), hint: __alloT('stem.singing.major_3rd_vs_minor_3rd_is_the_single_m', 'Major 3rd vs minor 3rd is the single most-confused interval pair for beginners. Mnemonics: M3 = "Oh when the saints," m3 = "Greensleeves." Builds relative pitch.') },
+              warmups:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '❤️', title: __alloT('stem.singing.warm_ups', 'Warm-ups'),                  hint: __alloT('stem.singing.lip_trills_sirens_before_any_sustained', 'Lip trills + sirens before any sustained singing. 5–10 minutes of low-intensity warm-up halves the risk of vocal-fold strain. Skipping warm-ups is the #1 cause of preventable vocal injury.') },
+              sightread: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🎼', title: __alloT('stem.singing.sight_reading_2', 'Sight reading'),              hint: __alloT('stem.singing.solf_ge_do_re_mi_letter_names_for_sigh', 'Solfège (do-re-mi) > letter names for sight-singing because the syllables encode interval relationships, not just pitch labels. Movable do beats fixed do for tonal music.') },
+              resoHunt:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '🎙️', title: __alloT('stem.singing.resonance_lab_discover_your_vocal_tone', 'Resonance Lab — discover your vocal tone'), hint: __alloT('stem.singing.two_sliders_throat_openness_and_soft_p', 'Two sliders — throat openness and soft palate lift — combine into four tone qualities (rich, bright, warm, nasal). No score, no reveal: experiment, log, and explain what you find.') }
             };
             var meta = TAB_META[activeTab] || TAB_META.pitch;
             // Accent at 55% (light) or 45% toward white (dark) clears 4.5:1 on the tint.
             var heroInk = 'rgb(' + [1, 3, 5].map(function(i) { var c = parseInt(meta.accent.substr(i, 2), 16); return Math.round(isDark ? c + (255 - c) * 0.45 : c * 0.55); }).join(',') + ')';
             return h('div', {
-              className: 'mt-2',
+              className: 'sing-tab-hero mt-2',
               style: {
                 padding: '12px 14px',
                 borderRadius: 12,

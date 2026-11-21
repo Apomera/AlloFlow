@@ -125,13 +125,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
       var _subBg = function(h){ return _subHC ? (_sub_BGH[h]||h) : (_subL ? (_sub_BGL[h]||h) : h); };
       var _subFg = function(h){ return _subHC ? (_sub_FGH[h]||h) : (_subL ? (_sub_FGL[h]||h) : h); };
       var _subBd = function(h){ return _subHC ? (_sub_BDH[h]||h) : (_subL ? (_sub_BDL[h]||h) : h); };
-      // accent text on the dark shell needs the 300/400 weight (1.4.3)
-      var _subInk = function(c){ return _subHC || _subL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
+      // accent text on the dark shell needs the 300/400 weight (1.4.3); High Contrast maps all ink to #ffff00
+      var _subInk = function(c){ return _subHC ? '#ffff00' : (_subL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c)); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _subBand = ctx.gradeBand || 'high';
 
       var d = labToolData.substancePsychoed || defaultState();
       function setSU(patch) {
@@ -141,6 +143,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
           next.lastUpdated = todayISO();
           return Object.assign({}, prev, { substancePsychoed: next });
         });
+      }
+      function scanSubstanceText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed) return false;
+        try {
+          if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+            var res = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'substancepsychoed', onSafetyFlag: onSafetyFlag });
+            if (res && res.action === 'block') {
+              setSU({ _crisisTier: 3 });
+              if (typeof window.SelHub.showCrisisModal === 'function') {
+                window.SelHub.showCrisisModal({ toolName: 'Substance Use', contentSnippet: trimmed });
+              }
+              return true;
+            }
+          }
+        } catch (_) {}
+        return false;
       }
       var view = d.view || 'home';
       function goto(v) { setSU({ view: v }); }
@@ -171,10 +190,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
         ];
         return h('div', { role: 'tablist', 'aria-label': 'Substance Use sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
+            return h('button', {
+              id: 'sub-tab-' + t.id,
+              key: t.id,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(ev) {
+                var nextIdx = idx;
+                if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+                else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                else if (ev.key === 'Home') nextIdx = 0;
+                else if (ev.key === 'End') nextIdx = tabs.length - 1;
+                else return;
+                ev.preventDefault();
+                goto(tabs[nextIdx].id);
+                setTimeout(function() {
+                  var nextBtn = document.getElementById('sub-tab-' + tabs[nextIdx].id);
+                  if (nextBtn) nextBtn.focus();
+                }, 0);
+              },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'sub-panel-' + t.id, tabIndex: active ? 0 : -1,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#64748b' : '#334155'),
                 background: active ? 'rgba(100,116,139,0.30)' : _subBg('#1e293b'),
                 color: active ? _subFg('#e2e8f0') : _subFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
@@ -441,49 +477,64 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             h('textarea', { id: 'su-rel', value: d.myRelationship || '',
               placeholder: 'Right now I...',
               onChange: function(e) { setSU({ myRelationship: e.target.value }); },
+              onBlur: function(e) { scanSubstanceText(e.target.value); },
               style: { width: '100%', minHeight: 100, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _subBg('#1e293b'), color: _subFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.75, resize: 'vertical' } })
           ),
 
           // Three MI rulers
-          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
-            h('div', { style: { fontSize: 12, color: _subFg('#fde68a'), fontWeight: 800, marginBottom: 8 } }, '⭐ Importance (0-10): how important is it to you to change something about your use?'),
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-              h('input', { type: 'range', min: 0, max: 10, value: d.importance,
-                onChange: function(e) { setSU({ importance: parseInt(e.target.value, 10) }); },
-                style: { flex: 1 }, 'aria-label': 'Importance' }),
-              h('span', { style: { fontSize: 16, fontWeight: 800, color: _subFg('#fde68a'), minWidth: 50, textAlign: 'right' } }, d.importance + ' / 10')
-            )
-          ),
-
-          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
-            h('div', { style: { fontSize: 12, color: _subFg('#bbf7d0'), fontWeight: 800, marginBottom: 8 } }, '💪 Confidence (0-10): if you decided to change, how confident are you that you could?'),
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-              h('input', { type: 'range', min: 0, max: 10, value: d.confidence,
-                onChange: function(e) { setSU({ confidence: parseInt(e.target.value, 10) }); },
-                style: { flex: 1 }, 'aria-label': 'Confidence' }),
-              h('span', { style: { fontSize: 16, fontWeight: 800, color: _subFg('#bbf7d0'), minWidth: 50, textAlign: 'right' } }, d.confidence + ' / 10')
-            )
-          ),
-
-          h('div', { style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
-            h('div', { style: { fontSize: 12, color: _subFg('#e9d5ff'), fontWeight: 800, marginBottom: 8 } }, '🚪 Readiness (0-10): how ready are you to actually try changing?'),
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-              h('input', { type: 'range', min: 0, max: 10, value: d.readiness,
-                onChange: function(e) { setSU({ readiness: parseInt(e.target.value, 10) }); },
-                style: { flex: 1 }, 'aria-label': 'Readiness' }),
-              h('span', { style: { fontSize: 16, fontWeight: 800, color: _subFg('#e9d5ff'), minWidth: 50, textAlign: 'right' } }, d.readiness + ' / 10')
-            )
-          ),
-
-          // The MI move
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
-            h('label', { htmlFor: 'su-why', style: { display: 'block', fontSize: 12, color: _subFg('#bae6fd'), fontWeight: 800, marginBottom: 6 } }, 'Why a ' + d.importance + ' on importance and not a ' + Math.max(0, d.importance - 2) + '?'),
-            h('div', { style: { fontSize: 11, color: _subFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, 'The MI move: what is keeping importance at ' + d.importance + ' instead of lower? This surfaces the reasons FOR change. Those are the reasons that build motivation.'),
-            h('textarea', { id: 'su-why', value: d.whyChange || '',
-              placeholder: 'It\'s a ' + d.importance + ' and not a ' + Math.max(0, d.importance - 2) + ' because...',
-              onChange: function(e) { setSU({ whyChange: e.target.value }); },
-              style: { width: '100%', minHeight: 90, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _subBg('#1e293b'), color: _subFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
-          ),
+          (function() {
+            var imp = (d.importance !== undefined && d.importance !== null && Number.isFinite(Number(d.importance))) ? Number(d.importance) : 5;
+            var conf = (d.confidence !== undefined && d.confidence !== null && Number.isFinite(Number(d.confidence))) ? Number(d.confidence) : 5;
+            var rdy = (d.readiness !== undefined && d.readiness !== null && Number.isFinite(Number(d.readiness))) ? Number(d.readiness) : 5;
+            var lower = Math.max(0, imp - 2);
+            var miLabel = imp === 0
+              ? 'What would it take to move importance from a 0 to a 2?'
+              : ('Why a ' + imp + ' on importance and not a ' + lower + '?');
+            var miHint = imp === 0
+              ? 'Even if change feels unimportant right now, imagining what might shift it by 2 points surfaces what matters most to you.'
+              : ('The MI move: what is keeping importance at ' + imp + ' instead of lower? This surfaces the reasons FOR change. Those are the reasons that build motivation.');
+            var miPlaceholder = imp === 0
+              ? 'It might move from a 0 to a 2 if...'
+              : ('It\'s a ' + imp + ' and not a ' + lower + ' because...');
+            return [
+              h('div', { key: 'mi-imp', style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
+                h('div', { style: { fontSize: 12, color: _subFg('#fde68a'), fontWeight: 800, marginBottom: 8 } }, '⭐ Importance (0-10): how important is it to you to change something about your use?'),
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('input', { type: 'range', min: 0, max: 10, value: imp,
+                    onChange: function(e) { setSU({ importance: parseInt(e.target.value, 10) }); },
+                    style: { flex: 1 }, 'aria-label': 'Importance' }),
+                  h('span', { style: { fontSize: 16, fontWeight: 800, color: _subFg('#fde68a'), minWidth: 50, textAlign: 'right' } }, imp + ' / 10')
+                )
+              ),
+              h('div', { key: 'mi-conf', style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
+                h('div', { style: { fontSize: 12, color: _subFg('#bbf7d0'), fontWeight: 800, marginBottom: 8 } }, '💪 Confidence (0-10): if you decided to change, how confident are you that you could?'),
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('input', { type: 'range', min: 0, max: 10, value: conf,
+                    onChange: function(e) { setSU({ confidence: parseInt(e.target.value, 10) }); },
+                    style: { flex: 1 }, 'aria-label': 'Confidence' }),
+                  h('span', { style: { fontSize: 16, fontWeight: 800, color: _subFg('#bbf7d0'), minWidth: 50, textAlign: 'right' } }, conf + ' / 10')
+                )
+              ),
+              h('div', { key: 'mi-rdy', style: { padding: 14, borderRadius: 10, background: _subBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
+                h('div', { style: { fontSize: 12, color: _subFg('#e9d5ff'), fontWeight: 800, marginBottom: 8 } }, '🚪 Readiness (0-10): how ready are you to actually try changing?'),
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('input', { type: 'range', min: 0, max: 10, value: rdy,
+                    onChange: function(e) { setSU({ readiness: parseInt(e.target.value, 10) }); },
+                    style: { flex: 1 }, 'aria-label': 'Readiness' }),
+                  h('span', { style: { fontSize: 16, fontWeight: 800, color: _subFg('#e9d5ff'), minWidth: 50, textAlign: 'right' } }, rdy + ' / 10')
+                )
+              ),
+              h('div', { key: 'mi-why', style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+                h('label', { htmlFor: 'su-why', style: { display: 'block', fontSize: 12, color: _subFg('#bae6fd'), fontWeight: 800, marginBottom: 6 } }, miLabel),
+                h('div', { style: { fontSize: 11, color: _subFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic', lineHeight: 1.5 } }, miHint),
+                h('textarea', { id: 'su-why', value: d.whyChange || '',
+                  placeholder: miPlaceholder,
+                  onChange: function(e) { setSU({ whyChange: e.target.value }); },
+                  onBlur: function(e) { scanSubstanceText(e.target.value); },
+                  style: { width: '100%', minHeight: 90, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _subBg('#1e293b'), color: _subFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' } })
+              )
+            ];
+          })(),
 
           softPointer()
         );
@@ -622,7 +673,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             'A one-page reference for staff, families, peer educators, or yourself. The framework is honest (use exists on a spectrum, not abstinence-or-failure), the safety information is real (overdose response, naloxone, Good Samaritan laws), and the help pathways are open. Not a substitute for clinical assessment.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #475569 0%, #64748b 100%)', color: _subFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _subHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _subHC ? '#000000' : 'linear-gradient(135deg, #475569 0%, #64748b 100%)', color: _subFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +
@@ -718,7 +769,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Substance Use Psychoeducation' },
         header(),
         navTabs(),
-        body
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _subBand))
+          : null,
+        h('div', { id: 'sub-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'sub-tab-' + view }, body)
       );
     }
   });

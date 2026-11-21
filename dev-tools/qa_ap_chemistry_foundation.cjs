@@ -320,14 +320,36 @@ for (let left = 0; left < prompts.length; left += 1) {
 }
 requireCondition(nearDuplicatePairs.length === 0, 'prompt-originality', 'Exact or conservative high-similarity pilot prompts were detected.', { asset: 'pack' });
 
+const diagrams = Array.isArray(library.diagrams) ? library.diagrams : [];
+const diagramPlacements = Array.isArray(library.diagramPlacements) ? library.diagramPlacements : [];
+const diagramIds = new Set(diagrams.map((diagram) => diagram.id));
+const sectionIdSet = new Set(sections.map((section) => section.id));
 requireCondition(
   chapters.length === 9 && sections.length === 27 && checks.length === 27 &&
-    Array.isArray(library.flashcards) && library.flashcards.length === 9 &&
+    Array.isArray(library.flashcards) && library.flashcards.length === 27 &&
     Array.isArray(library.memoryAids) && library.memoryAids.length === 9 &&
+    library.memoryAids.every((aid) => typeof aid.content === 'string' && aid.content.length >= 20 && Array.isArray(aid.tags) && typeof aid.domain === 'string' && aid.domain.length > 0) &&
+    diagrams.length === 9 && diagramPlacements.length === 9 &&
     library.summary?.chapters === 9 && library.summary?.sections === 27 && library.summary?.knowledgeChecks === 27 &&
+    library.summary?.flashcards === 27 && library.summary?.diagrams === 9 && library.summary?.diagramPlacements === 9 &&
     library.summary?.richLessonPrototypes === 9,
   'library-inventory', 'The native AP Chemistry library inventory does not match its nine-unit structured-lesson declaration.', { asset: 'learning-library' }
 );
+for (const diagram of diagrams) {
+  requireCondition(
+    diagram.spec?.nodes?.length === 4 && diagram.spec?.edges?.length === 3 &&
+      diagram.accessibility?.textEquivalent?.length === 4 && diagram.accessibility?.fallbackMode === 'ordered-text-equivalent' &&
+      diagram.unscored === true && diagram.officialItem === false && diagram.releaseEligible === false,
+    'library-content-structure', 'Each optional Chemistry reasoning-flow diagram must provide 4 nodes, 3 edges, an ordered text equivalent, and unscored release-blocked boundaries.', { asset: 'learning-library', recordId: diagram.id }
+  );
+}
+for (const placement of diagramPlacements) {
+  requireCondition(
+    diagramIds.has(placement.diagramId) && sectionIdSet.has(placement.sectionId) &&
+      placement.fallbackMode === 'diagram-text-equivalent' && placement.requiredForComprehension === false && placement.releaseEligible === false,
+    'library-content-structure', 'Each Chemistry diagram placement must resolve to a declared diagram and lesson section without requiring visuals for comprehension.', { asset: 'learning-library', recordId: placement.id }
+  );
+}
 requireCondition(
   chapters.every((chapter, index) => chapter.id === `ap-chem-ch-${String(index + 1).padStart(2, '0')}` &&
     expectedUnits.includes(chapter.domainId) && chapter.sections?.length === 3 && chapter.knowledgeChecks?.length === 3 &&

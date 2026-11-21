@@ -30,13 +30,15 @@ function spedVaultBackend() {
     const sw = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SensitiveWorkspace;
     if (!sw || typeof sw.getStatus !== 'function') return { mode: 'local', storage: localStorage };
     const phase = sw.getStatus()?.phase;
+    if (phase === 'new') return { mode: 'local', storage: localStorage };
     if (phase === 'ready') {
       const sess = typeof sw.getSession === 'function' ? sw.getSession('sped-timelines') : null;
       if (sess && sess.storage) return { mode: 'vault', storage: sess.storage };
     }
-    if (phase === 'locked' || phase === 'setup' || phase === 'locking') return { mode: 'locked', storage: null };
-  } catch (_) {}
-  return { mode: 'local', storage: localStorage };
+    return { mode: 'locked', storage: null };
+  } catch (_) {
+    return { mode: 'locked', storage: null };
+  }
 }
 
 function spedLoad(key, fallback) {
@@ -91,6 +93,7 @@ function spedParseDate(s) {
 }
 
 function spedFmt(dt) {
+  if (!dt || !(dt instanceof Date) || Number.isNaN(dt.getTime())) return null;
   return dt.toISOString().slice(0, 10);
 }
 
@@ -99,11 +102,12 @@ function spedFmt(dt) {
 // true anniversary).
 function spedAnniversary(dateStr, years) {
   const dt = spedParseDate(dateStr);
-  if (!dt) return null;
+  if (!dt || !Number.isFinite(years)) return null;
   const y = dt.getUTCFullYear() + years;
   const mo = dt.getUTCMonth();
   const d = dt.getUTCDate();
   let out = new Date(Date.UTC(y, mo, d));
+  if (Number.isNaN(out.getTime())) return null;
   if (out.getUTCMonth() !== mo) out = new Date(Date.UTC(y, mo + 1, 0)); // Feb 29 overflow -> last day of Feb
   return spedFmt(out);
 }
@@ -111,7 +115,9 @@ function spedAnniversary(dateStr, years) {
 function spedAddDays(dateStr, days) {
   const dt = spedParseDate(dateStr);
   if (!dt || !Number.isFinite(days)) return null;
-  return spedFmt(new Date(dt.getTime() + days * 86400000));
+  const clamped = Math.max(-36500, Math.min(36500, Math.trunc(days)));
+  const out = new Date(dt.getTime() + clamped * 86400000);
+  return spedFmt(out);
 }
 
 // Prefill only — always editable in the UI.
@@ -341,14 +347,17 @@ function SpedTimelinesPanel(props) {
   const today = spedToday();
   const rollup = spedRollup(cases, today);
 
+  const [dueDateManual, setDueDateManual] = React.useState(false);
+  const backdropDownRef = React.useRef(false);
+
   const updateForm = (patch) => {
+    if (patch.dueDate !== undefined) setDueDateManual(!!patch.dueDate);
     setForm((f) => {
       const next = { ...f, ...patch };
       // Recompute the prefill when type/keyDate change, UNLESS the user
       // already hand-edited the due date to something else.
       if (patch.type !== undefined || patch.keyDate !== undefined) {
-        const oldAuto = spedDefaultDue(f.type, f.keyDate, config.evalDays);
-        if (!f.dueDate || f.dueDate === oldAuto) {
+        if (!dueDateManual || !f.dueDate) {
           next.dueDate = spedDefaultDue(next.type, next.keyDate, config.evalDays) || '';
         }
       }
@@ -367,6 +376,7 @@ function SpedTimelinesPanel(props) {
       dueDate: form.dueDate, completedAt: null,
     };
     setCases((list) => [...list, record]);
+    setDueDateManual(false);
     setForm((f) => ({ ...f, code: '', keyDate: '', dueDate: '' }));
     addToast(tt('spedtl.added', 'Timeline added.'), 'success');
   };
@@ -393,10 +403,33 @@ function SpedTimelinesPanel(props) {
         const rawText = String(reader.result || '');
         if (rawText.length > MAX_SPED_IMPORT_BYTES) throw new Error('file exceeds 10 MB safety limit');
         const data = JSON.parse(rawText, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
-        if (!data || data.kind !== 'alloflow-sped-timelines') { addToast(tt('spedtl.import_bad', 'That file is not a SpEd Timelines export.'), 'error'); return; }
+        if (!data || data.kind !== 'alloflow-sped-timelines' || !Array.isArray(data.cases)) { addToast(tt('spedtl.import_bad', 'That file is not a SpEd Timelines export.'), 'error'); return; }
+        const sanitized = data.cases
+          .filter((x) => x && typeof x === 'object' && typeof x.id === 'string' && x.id.trim())
+          .map((x) => {
+            const rawType = String(x.type || 'annual');
+            const validType = SPED_TYPES.some((ty) => ty.id === rawType) ? rawType : 'annual';
+            return {
+              id: String(x.id).trim().slice(0, 120),
+              code: String(x.code || '').trim().slice(0, 80),
+              type: validType,
+              provider: String(x.provider || '').trim().slice(0, 120),
+              keyDate: spedParseDate(x.keyDate) ? String(x.keyDate) : '',
+              dueDate: spedParseDate(x.dueDate) ? String(x.dueDate) : '',
+              completedAt: spedParseDate(x.completedAt) ? String(x.completedAt) : null,
+            };
+          })
+          .filter((x) => x.code && x.dueDate);
         setCases((list) => {
           const have = new Set(list.map((x) => x.id));
-          return [...list, ...((data.cases || []).filter((x) => x && x.id && !have.has(x.id)))];
+          const merged = list.slice();
+          sanitized.forEach((x) => {
+            if (!have.has(x.id)) {
+              have.add(x.id);
+              merged.push(x);
+            }
+          });
+          return merged;
         });
         addToast(tt('spedtl.import_toast', 'Import merged.'), 'success');
       } catch (e) {
@@ -415,7 +448,13 @@ function SpedTimelinesPanel(props) {
   const typeLabel = (id) => (SPED_TYPES.find((x) => x.id === id) || {}).label || id;
 
   return (
-    <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4"
+      style={{ zIndex: 260 }}
+      role="presentation"
+      onMouseDown={(e) => { backdropDownRef.current = (e.target === e.currentTarget); }}
+      onClick={(e) => { const allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget) onClose(); }}
+    >
       <div ref={dialogRef} tabIndex={-1} data-help-key="spedtl_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="spedtl-title" onClick={(e) => e.stopPropagation()}>
         {/* Solid, not /95: the host dark theme restyles bg-slate-50 only, so a translucent header stayed light under light text. */}
         <div className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl">
@@ -451,12 +490,12 @@ function SpedTimelinesPanel(props) {
         </div>
 
           {typeof onOpenEligibility === 'function' && (
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="mt-2 px-4 flex flex-wrap items-center gap-2">
               <button type="button" onClick={() => onOpenEligibility('elig-documents-title')}
                 className="min-h-11 px-3 py-2 rounded-lg border border-violet-300 bg-violet-50 text-violet-800 text-xs font-bold hover:bg-violet-100">
                 {tt('spedtl.eligibility_link', 'Review evaluation, eligibility & safeguards')}
               </button>
-              <span className="text-[10px] text-slate-500">{tt('spedtl.eligibility_link_note', 'Opens the generic guide; no timeline data is transferred.')}</span>
+              <span className="text-xs text-slate-600">{tt('spedtl.eligibility_link_note', 'Opens the generic guide; no timeline data is transferred.')}</span>
             </div>
           )}
         <div className="p-4" role="tabpanel" id="spedtl-tabpanel" aria-labelledby={'spedtl-tab-' + tab} tabIndex={-1}>
@@ -466,7 +505,7 @@ function SpedTimelinesPanel(props) {
                 {['overdue', 'urgent', 'soon', 'ok'].map((band) => (
                   <div key={band} className={'p-3 rounded-xl border text-center ' + SPED_BAND_META[band].cls}>
                     <span className="block text-2xl font-bold">{rollup.counts[band]}</span>
-                    <span className="block text-[11px] font-bold">{tt('spedtl.band_' + band, SPED_BAND_META[band].label)}</span>
+                    <span className="block text-xs font-bold">{tt('spedtl.band_' + band, SPED_BAND_META[band].label)}</span>
                   </div>
                 ))}
               </div>
@@ -493,13 +532,15 @@ function SpedTimelinesPanel(props) {
                           <td className="p-1.5 text-slate-700">{c.provider || '—'}</td>
                           <td className="p-1.5 text-center text-slate-700">{c.dueDate || '—'}</td>
                           <td className="p-1.5 text-center">
-                            <span className={'inline-block px-1.5 py-0.5 rounded border text-[10px] font-bold ' + SPED_BAND_META[c.band].cls}>
+                            <span className={'inline-block px-1.5 py-0.5 rounded border text-xs font-bold ' + SPED_BAND_META[c.band].cls}>
                               {c.daysUntil == null ? '—' : (c.daysUntil < 0 ? (Math.abs(c.daysUntil) + ' ' + tt('spedtl.days_over', 'over')) : c.daysUntil)}
                             </span>
                           </td>
                           <td className="p-1.5 text-center">
-                            <input type="checkbox" checked={false} onChange={() => setDone(c.id, true)}
-                              aria-label={tt('spedtl.done_aria', 'Mark complete:') + ' ' + c.code + ' ' + typeLabel(c.type)} className="w-4 h-4" />
+                            <label className="min-w-11 min-h-11 inline-flex items-center justify-center cursor-pointer">
+                              <input type="checkbox" checked={false} onChange={() => setDone(c.id, true)}
+                                aria-label={tt('spedtl.done_aria', 'Mark complete:') + ' ' + c.code + ' ' + typeLabel(c.type)} className="w-4 h-4" />
+                            </label>
                           </td>
                         </tr>
                       ))}
@@ -520,7 +561,7 @@ function SpedTimelinesPanel(props) {
                   </ul>
                 </div>
               )}
-              <p className="mt-3 text-[10px] text-slate-500">
+              <p className="mt-3 text-xs text-slate-600">
                 {tt('spedtl.integrity_note', 'Due dates are working prefills: the evaluation clock uses the IDEA fallback of 60 calendar days from consent (34 CFR 300.301(c)) unless you set a different count, and annual/triennial dates are anniversaries. States set their own timeframes — several count school days, which a calendar can’t compute — so always confirm against your state rule and district calendar. Urgency bands (14/30 days) are working conventions, not legal thresholds.')}
               </p>
             </div>
@@ -530,7 +571,7 @@ function SpedTimelinesPanel(props) {
             <div>
               <div className="bg-white border border-slate-300 rounded-xl p-3 mb-3">
                 <h3 className="text-sm font-bold text-slate-700 mb-1">{tt('spedtl.add_title', 'Add a timeline')}</h3>
-                <p className="text-[10px] text-slate-500 mb-2">{tt('spedtl.code_note', 'Use initials or a code, not full names — this tool needs deadlines, not student records.')}</p>
+                <p className="text-xs text-slate-600 mb-2">{tt('spedtl.code_note', 'Use initials or a code, not full names — this tool needs deadlines, not student records.')}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label htmlFor="spedtl-code" className="block text-xs font-bold text-slate-600 mb-1">{tt('spedtl.code_label', 'Student code / initials')}</label>
@@ -551,7 +592,7 @@ function SpedTimelinesPanel(props) {
                   </div>
                   <div>
                     <label htmlFor="spedtl-due" className="block text-xs font-bold text-slate-600 mb-1">{tt('spedtl.due_label', 'Due date (prefilled — confirm against your state rule)')}</label>
-                    <input id="spedtl-due" type="date" value={form.dueDate} onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
+                    <input id="spedtl-due" type="date" value={form.dueDate} onChange={(e) => updateForm({ dueDate: e.target.value })}
                       className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                   </div>
                   <div>
@@ -562,8 +603,15 @@ function SpedTimelinesPanel(props) {
                   <div className="flex items-end gap-2">
                     <div className="w-28">
                       <label htmlFor="spedtl-evaldays" className="block text-xs font-bold text-slate-600 mb-1">{tt('spedtl.evaldays_label', 'Eval days')}</label>
-                      <input id="spedtl-evaldays" type="text" inputMode="numeric" value={config.evalDays}
-                        onChange={(e) => setConfig((c) => ({ ...c, evalDays: e.target.value.replace(/[^0-9]/g, '') }))}
+                      <input id="spedtl-evaldays" type="text" inputMode="numeric" maxLength={4} value={config.evalDays}
+                        onChange={(e) => {
+                          const rawDigits = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+                          const nextDays = rawDigits === '' ? '' : String(Math.min(3650, Number(rawDigits)));
+                          setConfig((c) => ({ ...c, evalDays: nextDays }));
+                          if (!dueDateManual) {
+                            setForm((f) => (f.type === 'initial_eval' && f.keyDate ? { ...f, dueDate: spedDefaultDue(f.type, f.keyDate, nextDays) || '' } : f));
+                          }
+                        }}
                         className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                     </div>
                     <button type="button" onClick={addCase} className="min-h-11 flex-1 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700">{tt('spedtl.add', 'Add')}</button>
@@ -576,12 +624,14 @@ function SpedTimelinesPanel(props) {
               <ul className="space-y-1">
                 {rollup.cases.map((c) => (
                   <li key={c.id} className={'flex items-center gap-2 p-2 rounded-xl border text-xs ' + (c.band === 'overdue' ? 'bg-rose-50 border-rose-300' : 'bg-white border-slate-300')}>
-                    <input type="checkbox" checked={!!c.completedAt} onChange={(e) => setDone(c.id, e.target.checked)}
-                      aria-label={tt('spedtl.done_aria', 'Mark complete:') + ' ' + c.code + ' ' + typeLabel(c.type)} className="w-4 h-4 shrink-0" />
+                    <label className="min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 cursor-pointer">
+                      <input type="checkbox" checked={!!c.completedAt} onChange={(e) => setDone(c.id, e.target.checked)}
+                        aria-label={tt('spedtl.done_aria', 'Mark complete:') + ' ' + c.code + ' ' + typeLabel(c.type)} className="w-4 h-4 shrink-0" />
+                    </label>
                     <span className={'min-w-0 flex-1 ' + (c.completedAt ? 'line-through text-slate-600' : 'text-slate-700')}>
                       <span className="font-bold">{c.code}</span> · {typeLabel(c.type)}{c.provider ? (' · ' + c.provider) : ''}
                     </span>
-                    <span className="shrink-0 text-[10px] text-slate-500">
+                    <span className="shrink-0 text-xs text-slate-600">
                       {c.completedAt ? (tt('spedtl.done_on', 'done') + ' ' + c.completedAt) : ((c.dueDate || '—') + (c.daysUntil != null && c.daysUntil < 0 ? (' · ' + Math.abs(c.daysUntil) + ' ' + tt('spedtl.days_over', 'over')) : ''))}
                     </span>
                     <button type="button"
@@ -590,7 +640,7 @@ function SpedTimelinesPanel(props) {
                         else { setArmDelete(c.id); spedAnnounce(tt('spedtl.delete_arm_announce', 'Activate delete again to permanently remove this timeline.')); }
                       }}
                       aria-label={(armDelete === c.id ? tt('spedtl.delete_confirm_aria', 'Confirm delete') : tt('spedtl.delete_aria', 'Delete')) + ' ' + c.code + ' ' + typeLabel(c.type)}
-                      className={'shrink-0 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-[11px] font-bold ' + (armDelete === c.id ? 'bg-rose-600 text-white' : 'text-slate-600 hover:text-rose-700 hover:bg-rose-50')}
+                      className={'shrink-0 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-xs font-bold ' + (armDelete === c.id ? 'bg-rose-600 text-white' : 'text-slate-600 hover:text-rose-700 hover:bg-rose-50')}
                     >{armDelete === c.id ? tt('spedtl.delete_confirm_short', 'Sure?') : '✕'}</button>
                   </li>
                 ))}
@@ -604,7 +654,7 @@ function SpedTimelinesPanel(props) {
                 <input ref={importInputRef} type="file" accept="application/json,.json" className="sr-only" aria-label={tt('spedtl.import_aria', 'Choose a SpEd Timelines export file')}
                   onChange={(e) => { const f = e.target.files && e.target.files[0]; try { e.target.value = ''; } catch (_) {} if (f) importJson(f); }} />
               </div>
-              <p className="mt-2 text-[10px] text-slate-500">{tt('spedtl.storage_note', 'Timelines live only in this browser’s storage — export after changes (Gemini Canvas may not persist storage between sessions). Imports merge; they never overwrite newer local work.')}</p>
+              <p className="mt-2 text-xs text-slate-600">{tt('spedtl.storage_note', 'Timelines live only in this browser’s storage — export after changes (Gemini Canvas may not persist storage between sessions). Imports merge; they never overwrite newer local work.')}</p>
             </div>
           )}
         </div>

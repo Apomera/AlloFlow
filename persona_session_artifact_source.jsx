@@ -29,6 +29,7 @@ const PersonaSessionArtifact = (() => {
         if (!contract
             || typeof contract.buildPrivatePersonaSessionArtifact !== 'function'
             || typeof contract.serializeReadAloudArtifact !== 'function'
+            || typeof contract.parseReadAloudArtifact !== 'function'
             || typeof contract.validateReadAloudArtifact !== 'function'
             || typeof contract.stableIdFromParts !== 'function') {
             throw runtimeError('contract-unavailable',
@@ -45,6 +46,7 @@ const PersonaSessionArtifact = (() => {
 
     function safeStableId(value) {
         const text = cleanText(value, 240);
+        if (text === '__proto__' || text === 'constructor' || text === 'prototype') return null;
         return /^[A-Za-z0-9](?:[A-Za-z0-9._:-]{0,239})$/.test(text) ? text : null;
     }
 
@@ -94,7 +96,7 @@ const PersonaSessionArtifact = (() => {
         const text = cleanText(value, 12000);
         if (!text) return [];
         const boundedMax = Math.max(80, Math.min(1200, Math.floor(Number(maxChars) || 320)));
-        const sentenceUnits = text.match(/[^.!?…]+(?:[.!?…]+(?=\s|$)|$)/gu) || [text];
+        const sentenceUnits = text.split(/(?<=[.!?…]+["'”’)\]]*)\s+/u).filter(Boolean);
         const units = [];
         sentenceUnits.forEach((unit) => {
             splitLongUnit(cleanText(unit, 12000), boundedMax).forEach((part) => { if (part) units.push(part); });
@@ -289,8 +291,10 @@ const PersonaSessionArtifact = (() => {
                     message: 'No selected/default voice or explicit speaker voice was supplied.' });
                 continue;
             }
-            const request = Object.freeze(Object.assign({}, planItem, { voice,
-                synthesisRate: Number(options.synthesisRate || input.synthesisRate || 1) }));
+            const rawRate = options.synthesisRate != null ? options.synthesisRate : input.synthesisRate;
+            const parsedRate = (rawRate == null || typeof rawRate === 'boolean' || typeof rawRate === 'object' || (typeof rawRate === 'string' && !rawRate.trim())) ? 1 : Number(rawRate);
+            const synthesisRate = Number.isFinite(parsedRate) && parsedRate > 0 && parsedRate <= 4 ? parsedRate : 1;
+            const request = Object.freeze(Object.assign({}, planItem, { voice, synthesisRate }));
             try {
                 const prepared = await prepareNarration(request);
                 const audio = prepared && prepared.audio ? prepared.audio : prepared;
@@ -312,8 +316,8 @@ const PersonaSessionArtifact = (() => {
         return { artifact, normalization: normalized, narration };
     }
 
-    function assertPrivateArtifact(artifact, contract) {
-        const validation = contract.validateReadAloudArtifact(artifact);
+    function assertPrivateArtifact(artifact, contract, limits) {
+        const validation = contract.validateReadAloudArtifact(artifact, limits);
         if (!validation.ok || !artifact || artifact.artifactType !== contract.TYPES.PERSONA_SESSION) {
             throw runtimeError('invalid-private-artifact', 'Only a valid private Persona session artifact may use this runtime.');
         }
@@ -361,6 +365,12 @@ const PersonaSessionArtifact = (() => {
                     unreadable.push({ key, code: 'not-a-persona-session' });
                     continue;
                 }
+                const privacy = validated.privacy;
+                if (!privacy || privacy.ownerOnly !== true || privacy.private !== true
+                    || privacy.localOnly !== true || privacy.shareable !== false) {
+                    unreadable.push({ key, code: 'privacy-policy-violation' });
+                    continue;
+                }
                 let audioClips = 0;
                 const messages = (validated.session && validated.session.messages) || [];
                 messages.forEach((message) => (message.chunks || []).forEach((chunk) => {
@@ -398,7 +408,7 @@ const PersonaSessionArtifact = (() => {
             throw runtimeError('artifact-not-found', 'No saved Persona session was found under this id.');
         }
         const artifact = contract.parseReadAloudArtifact(serialized, options.limits);
-        return assertPrivateArtifact(artifact, contract);
+        return assertPrivateArtifact(artifact, contract, options.limits);
     }
 
     async function deletePrivateSessionArtifact(key, options = {}) {
@@ -415,7 +425,7 @@ const PersonaSessionArtifact = (() => {
 
     async function persistPrivateSessionArtifact(artifact, options = {}) {
         const contract = getContract(options.contract);
-        const validated = assertPrivateArtifact(artifact, contract);
+        const validated = assertPrivateArtifact(artifact, contract, options.limits);
         const storage = options.deviceStorage;
         if (!storage || typeof storage.set !== 'function') {
             throw runtimeError('device-storage-required',
@@ -448,7 +458,7 @@ const PersonaSessionArtifact = (() => {
                 'A private Persona artifact download must be explicitly initiated by its owner.');
         }
         const contract = getContract(options.contract);
-        const validated = assertPrivateArtifact(artifact, contract);
+        const validated = assertPrivateArtifact(artifact, contract, options.limits);
         const doc = options.document || (typeof document !== 'undefined' ? document : null);
         const urlApi = options.URL || (typeof URL !== 'undefined' ? URL : null);
         const BlobCtor = options.Blob || (typeof Blob !== 'undefined' ? Blob : null);
@@ -466,7 +476,7 @@ const PersonaSessionArtifact = (() => {
         finally {
             if (typeof anchor.remove === 'function') anchor.remove();
             const revoke = () => urlApi.revokeObjectURL(blobUrl);
-            if (typeof setTimeout === 'function') setTimeout(revoke, 0); else revoke();
+            if (typeof setTimeout === 'function') setTimeout(revoke, 15000); else revoke();
         }
         return { filename: anchor.download, bytes: byteLength(serialized) };
     }
@@ -484,7 +494,7 @@ const PersonaSessionArtifact = (() => {
     }
 
     function resolveOwnerHtmlLocale(rawLanguage) {
-        const LANGUAGE_MAP = {
+        const LANGUAGE_MAP = Object.assign(Object.create(null), {
             english: 'en', spanish: 'es', french: 'fr', german: 'de', portuguese: 'pt',
             italian: 'it', russian: 'ru', 'simplified chinese': 'zh-CN', 'chinese (simplified)': 'zh-CN',
             'traditional chinese': 'zh-TW', 'chinese (traditional)': 'zh-TW', chinese: 'zh-CN',
@@ -493,7 +503,7 @@ const PersonaSessionArtifact = (() => {
             ukrainian: 'uk', polish: 'pl', turkish: 'tr', arabic: 'ar', hebrew: 'he',
             urdu: 'ur', persian: 'fa', farsi: 'fa', pashto: 'ps', yiddish: 'yi',
             'kurdish (sorani)': 'ckb', sorani: 'ckb', sindhi: 'sd', uyghur: 'ug', divehi: 'dv',
-        };
+        });
         const RTL_SUBTAGS = new Set(['ar', 'he', 'iw', 'ur', 'fa', 'ps', 'yi', 'sd', 'ug', 'ckb', 'dv']);
         const raw = cleanText(rawLanguage, 100);
         const lower = raw.toLowerCase();
@@ -511,7 +521,7 @@ const PersonaSessionArtifact = (() => {
 
     function buildOwnerHtmlDocument(artifact, options = {}) {
         const contract = getContract(options.contract);
-        const validated = assertPrivateArtifact(artifact, contract);
+        const validated = assertPrivateArtifact(artifact, contract, options.limits);
         const title = cleanText(validated.title, 300) || 'Private Persona conversation';
         const language = cleanText(validated.language, 100) || 'English';
         const locale = resolveOwnerHtmlLocale(language);
@@ -537,9 +547,11 @@ const PersonaSessionArtifact = (() => {
         });
         let audioClips = 0;
         const messageHtml = messages.map((message) => {
-            const role = message && message.role === 'learner' ? 'learner' : 'persona';
-            const speaker = escapeHtmlText(cleanText(message && message.speaker, 160)
-                || (role === 'learner' ? 'Learner' : 'Persona'));
+            const rawRole = message && typeof message.role === 'string' ? message.role : '';
+            const role = rawRole === 'learner' || rawRole === 'educator' || rawRole === 'narrator' ? rawRole : 'persona';
+            const fallbackSpeaker = role === 'learner' ? 'Learner' : role === 'educator' ? 'Educator' : role === 'narrator' ? 'Narrator' : 'Persona';
+            const rawSpeaker = cleanText(message && message.speaker, 160) || fallbackSpeaker;
+            const speaker = escapeHtmlText(rawSpeaker);
             const chunks = (Array.isArray(message && message.chunks) ? message.chunks : []).map((chunk) => {
                 const text = escapeHtmlText(chunk && chunk.text);
                 const audio = chunk && chunk.audio && typeof chunk.audio === 'object' ? chunk.audio : null;
@@ -547,7 +559,7 @@ const PersonaSessionArtifact = (() => {
                 if (audio && audio.base64 && audio.mime) {
                     audioClips += 1;
                     var cleanBase64 = escapeHtmlText(String(audio.base64 || '').replace(/\s+/g, ''));
-                    var clipLabel = escapeHtmlText((speaker || 'Message') + ' audio clip');
+                    var clipLabel = escapeHtmlText((rawSpeaker || 'Message') + ' audio clip');
                     audioHtml = '<audio class="narration" controls preload="metadata" aria-label="' + clipLabel + '"><source src="data:'
                         + escapeHtmlText(audio.mime) + ';base64,' + cleanBase64 + '" type="'
                         + escapeHtmlText(audio.mime) + '" /></audio>';
@@ -567,9 +579,12 @@ const PersonaSessionArtifact = (() => {
             + '.privacy{background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;font-family:system-ui,sans-serif;font-size:0.85em;color:#78350f;margin-bottom:28px;}\n'
             + '.turn{margin-bottom:18px;padding:14px 16px;border-radius:12px;page-break-inside:avoid;}\n'
             + '.turn.learner{background:#eff6ff;border:1px solid #bfdbfe;margin-left:32px;margin-inline-start:32px;margin-inline-end:0;}\n'
+            + '.turn.educator{background:#ecfdf5;border:1px solid #a7f3d0;margin-left:16px;margin-inline-start:16px;margin-inline-end:16px;}\n'
+            + '.turn.narrator{background:#f8fafc;border:1px solid #cbd5e1;font-style:italic;}\n'
             + '.turn.persona{background:#ffffff;border:1px solid #e5e7eb;margin-right:32px;margin-inline-end:32px;margin-inline-start:0;box-shadow:0 1px 3px rgba(0,0,0,0.05);}\n'
             + '.speaker{font-family:system-ui,sans-serif;font-weight:700;font-size:0.8em;text-transform:uppercase;letter-spacing:0.06em;color:#4b5563;margin-bottom:6px;}\n'
             + '.turn.learner .speaker{color:#1d4ed8;}\n'
+            + '.turn.educator .speaker{color:#047857;}\n'
             + '.chunk{margin:0 0 8px;}\n'
             + 'audio.narration{width:100%;max-width:420px;display:block;margin:2px 0 10px;}\n'
             + '.sourcing{background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:10px 14px;font-family:system-ui,sans-serif;font-size:0.85em;color:#3730a3;margin-top:28px;}\n'
@@ -616,7 +631,7 @@ const PersonaSessionArtifact = (() => {
         finally {
             if (typeof anchor.remove === 'function') anchor.remove();
             const revoke = () => urlApi.revokeObjectURL(blobUrl);
-            if (typeof setTimeout === 'function') setTimeout(revoke, 0); else revoke();
+            if (typeof setTimeout === 'function') setTimeout(revoke, 15000); else revoke();
         }
         return { filename, bytes: byteLength(built.html), stats: built.stats };
     }
@@ -633,7 +648,7 @@ const PersonaSessionArtifact = (() => {
       };
       const mode = state?.mode === 'panel' ? 'panel' : 'single';
       const participants = mode === 'panel'
-          ? (state?.selectedCharacters || []).slice(0, 2)
+          ? (Array.isArray(state?.selectedCharacters) ? state.selectedCharacters : []).slice(0, 2)
           : [state?.selectedCharacter].filter(Boolean);
       const participantData = participants.map(character => ({
           name: cleanValue(character?.name, 120),
@@ -643,7 +658,7 @@ const PersonaSessionArtifact = (() => {
       const transcript = (Array.isArray(state?.chatHistory) ? state.chatHistory : [])
           .slice(-24)
           .map(message => {
-              const speaker = message?.role === 'user'
+              const speaker = (message?.role === 'user' || message?.role === 'learner' || message?.role === 'student')
                   ? 'Student'
                   : cleanValue(message?.speakerName || (mode === 'panel' ? 'Panelist' : participantData[0]?.name || 'Character'), 120);
               return speaker + ': ' + cleanValue(message?.text, 1200);

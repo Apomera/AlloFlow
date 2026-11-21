@@ -431,11 +431,16 @@ const worker = {
       return registrationGuard;
     }
 
-    const oauthResponse = await createOAuthProvider(env).fetch(
-      request,
-      env,
-      ctx,
-    );
+    let oauthResponse: Response;
+    try {
+      oauthResponse = await createOAuthProvider(env).fetch(
+        request,
+        env,
+        ctx,
+      );
+    } catch (error) {
+      return jsonError(error);
+    }
     return enforcePublicClientDiscoveryMetadata(
       request,
       oauthResponse,

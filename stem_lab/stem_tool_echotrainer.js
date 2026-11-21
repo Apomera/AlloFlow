@@ -496,27 +496,158 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
   // ══════════════════════════════════════════════════════════
   // 3D SCENE BUILDER (Three.js)
   // ══════════════════════════════════════════════════════════
-  function build3DScene(THREE, map, agents) {
+  function build3DScene(THREE, map, agents, isContrast) {
     var SCALE = 0.05;
+    var contrast = !!isContrast;
+    var hasShaderMat = typeof THREE.ShaderMaterial === 'function';
+    var acousticTimeUniform = { value: 2.1 };
     var scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x020308); // barely-there deep blue (matches echolocation) so pings bloom against atmosphere, not dead pixels
-    scene.fog = new THREE.Fog(0x020308, 8, 40);
-    var ambient = new THREE.AmbientLight(0xffffff, 0.02);
+    var envBg = map && map.type === 'cave' ? 0x030510
+      : map && map.type === 'forest' ? 0x02080e
+      : map && map.type === 'urban' ? 0x040511
+      : 0x02040b;
+    scene.background = new THREE.Color(envBg);
+    scene.fog = new THREE.Fog(envBg, 6, 38);
+
+    var ambient = new THREE.AmbientLight(0xcbe8ff, 0.03);
     scene.add(ambient);
+    var hemi = typeof THREE.HemisphereLight === 'function'
+      ? new THREE.HemisphereLight(0x7dd3fc, 0x0b1120, 0.06)
+      : null;
+    if (hemi) scene.add(hemi);
+    var rimLight = typeof THREE.DirectionalLight === 'function'
+      ? new THREE.DirectionalLight(0x60a5fa, 0.08)
+      : null;
+    if (rimLight) {
+      rimLight.position.set(16, 22, -14);
+      scene.add(rimLight);
+    }
+    var sonarLight = typeof THREE.PointLight === 'function'
+      ? new THREE.PointLight(0x38bdf8, 0, 16)
+      : null;
+    if (sonarLight) {
+      sonarLight.position.set(20, 1.6, 35);
+      scene.add(sonarLight);
+    }
+
+    var hasStdMat = typeof THREE.MeshStandardMaterial === 'function';
+    var hasEdges = typeof THREE.EdgesGeometry === 'function' && typeof THREE.LineSegments === 'function';
+
+    // Procedural acoustic floor grid DataTexture (disposed on scene cleanup)
+    var floorTex = null;
+    if (typeof THREE.DataTexture === 'function') {
+      var fSz = 64, fBuf = new Uint8Array(fSz * fSz * 4);
+      for (var fy = 0; fy < fSz; fy++) {
+        for (var fx = 0; fx < fSz; fx++) {
+          var onMajor = (fx === 0 || fy === 0 || fx === 1 || fy === 1);
+          var onMinor = (fx === 32 || fy === 32);
+          var base = onMajor ? 88 : (onMinor ? 46 : 16);
+          var fi = (fy * fSz + fx) * 4;
+          fBuf[fi] = Math.round(base * 0.55);
+          fBuf[fi + 1] = Math.round(base * 0.82);
+          fBuf[fi + 2] = Math.min(255, Math.round(base * 1.25));
+          fBuf[fi + 3] = 255;
+        }
+      }
+      floorTex = new THREE.DataTexture(fBuf, fSz, fSz, THREE.RGBAFormat);
+      floorTex.wrapS = THREE.RepeatWrapping;
+      floorTex.wrapT = THREE.RepeatWrapping;
+      floorTex.repeat.set(22, 22);
+      floorTex.needsUpdate = true;
+    }
+
     var floorGeo = new THREE.PlaneGeometry(50, 50);
-    var floorMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    floorMat.userData = { baseColor: new THREE.Color(0x1a1a2e), ref: 0.3, mat: 'concrete' };
+    var floorMat = hasStdMat
+      ? new THREE.MeshStandardMaterial({
+          color: 0x050812,
+          emissive: new THREE.Color(0x000000),
+          map: floorTex || null,
+          roughness: 0.78,
+          metalness: 0.22
+        })
+      : new THREE.MeshBasicMaterial({ color: 0x000000 });
+    floorMat.userData = { baseColor: new THREE.Color(0x1e293b), ref: 0.3, mat: 'concrete', isPbr: hasStdMat };
     var floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
-    floor.position.y = 0;
+    floor.position.set(20, 0, 20);
     floor.userData = { mapX: 400, mapY: 400, ref: 0.3, mat: 'concrete', glowUntil: 0, glowAmt: 0, kind: 'floor' };
     scene.add(floor);
+
     var meshes = [];
     var agentMeshes = [];
+    var edgeLines = [];
+    var goalHalos = [];
+
     function getGlowBase(matName) {
       var gc = GLOW_COLORS[matName] || GLOW_COLORS.concrete;
       return new THREE.Color(gc[0] / 255, gc[1] / 255, gc[2] / 255);
     }
+    function makeAcousticMat(matName, ref) {
+      var baseCol = getGlowBase(matName);
+      if (hasStdMat) {
+        var isMetal = matName === 'metal' || matName === 'car';
+        var isGlass = matName === 'glass';
+        var isGoal = matName === 'goal';
+        var m = new THREE.MeshStandardMaterial({
+          color: 0x000000,
+          emissive: new THREE.Color(0x000000),
+          roughness: isGlass ? 0.14 : isMetal ? 0.28 : isGoal ? 0.22 : matName === 'wood' ? 0.76 : 0.84,
+          metalness: isMetal ? 0.78 : isGoal ? 0.65 : isGlass ? 0.18 : 0.08,
+          transparent: isGlass,
+          opacity: isGlass ? 0.82 : 1.0
+        });
+        var glowUni = { value: 0.0 };
+        var rimColUni = { value: baseCol.clone().lerp(new THREE.Color(0x7dd3fc), 0.35) };
+        if (!contrast) {
+          m.onBeforeCompile = function (shader) {
+            shader.uniforms.uEtGlow = glowUni;
+            shader.uniforms.uEtTime = acousticTimeUniform;
+            shader.uniforms.uEtRimCol = rimColUni;
+            shader.vertexShader = shader.vertexShader
+              .replace('#include <common>', '#include <common>\nvarying vec3 vEtWorldPos;')
+              .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvEtWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+            shader.fragmentShader = shader.fragmentShader
+              .replace('#include <common>', [
+                '#include <common>',
+                'uniform float uEtGlow;',
+                'uniform float uEtTime;',
+                'uniform vec3 uEtRimCol;',
+                'varying vec3 vEtWorldPos;'
+              ].join('\n'))
+              .replace('#include <emissivemap_fragment>', [
+                '#include <emissivemap_fragment>',
+                'if (uEtGlow > 0.005) {',
+                '  float etFres = pow(1.0 - clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0), 2.5);',
+                '  float etBand = smoothstep(0.76, 0.98, 0.5 + 0.5 * sin(vEtWorldPos.y * 15.0 - uEtTime * 1.4));',
+                '  totalEmissiveRadiance += uEtRimCol * (etFres * 0.78 + etBand * 0.16) * uEtGlow;',
+                '}'
+              ].join('\n'));
+          };
+          m.customProgramCacheKey = function () { return 'et-acoustic-contour-fresnel-v1'; };
+        }
+        m.userData = { baseColor: baseCol, ref: ref, mat: matName, isPbr: true, _acousticGlowUniform: glowUni };
+        return m;
+      }
+      var mb = new THREE.MeshBasicMaterial({ color: 0x000000 });
+      mb.userData = { baseColor: baseCol, ref: ref, mat: matName, isPbr: false };
+      return mb;
+    }
+    function attachAcousticEdges(parentMesh, geo, baseCol) {
+      if (!hasEdges) return null;
+      var eGeo = new THREE.EdgesGeometry(geo);
+      var eMat = new THREE.LineBasicMaterial({
+        color: baseCol.clone(),
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+      var lines = new THREE.LineSegments(eGeo, eMat);
+      parentMesh.add(lines);
+      edgeLines.push({ lines: lines, owner: parentMesh, baseColor: baseCol });
+      return lines;
+    }
+
     for (var wi = 0; wi < map.walls.length; wi++) {
       var w = map.walls[wi];
       var dx = w.x2 - w.x1, dy = w.y2 - w.y1;
@@ -525,8 +656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var wallHeight = 3.0;
       var wallThick = 0.15;
       var wGeo = new THREE.BoxGeometry(wLen, wallHeight, wallThick);
-      var wMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-      wMat.userData = { baseColor: getGlowBase(w.mat), ref: w.ref, mat: w.mat };
+      var wMat = makeAcousticMat(w.mat, w.ref);
       var wMesh = new THREE.Mesh(wGeo, wMat);
       var midX = ((w.x1 + w.x2) / 2) * SCALE;
       var midZ = ((w.y1 + w.y2) / 2) * SCALE;
@@ -534,6 +664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var angle = Math.atan2(dy, dx);
       wMesh.rotation.y = -angle;
       wMesh.userData = { mapX: (w.x1 + w.x2) / 2, mapY: (w.y1 + w.y2) / 2, ref: w.ref, mat: w.mat, glowUntil: 0, glowAmt: 0, kind: 'wall' };
+      attachAcousticEdges(wMesh, wGeo, wMat.userData.baseColor);
       scene.add(wMesh);
       meshes.push(wMesh);
     }
@@ -542,18 +673,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var oRadius = obj.r * SCALE;
       var oMesh;
       if (obj.isGoal) {
-        var oGeo = new THREE.SphereGeometry(oRadius, 16, 12);
-        var oMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        oMat.userData = { baseColor: getGlowBase('goal'), ref: obj.ref, mat: 'goal' };
+        var oGeo = new THREE.SphereGeometry(oRadius, 20, 16);
+        var oMat = makeAcousticMat('goal', obj.ref);
         oMesh = new THREE.Mesh(oGeo, oMat);
-        oMesh.position.set(obj.x * SCALE, oRadius + 0.1, obj.y * SCALE);
+        oMesh.position.set(obj.x * SCALE, oRadius + 0.18, obj.y * SCALE);
+        // Target echo-return highlight halos around the goal beacon
+        if (typeof THREE.TorusGeometry === 'function') {
+          var gRing1 = new THREE.Mesh(
+            new THREE.TorusGeometry(oRadius * 1.45, 0.032, 8, 36),
+            new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })
+          );
+          gRing1.rotation.x = Math.PI / 2;
+          oMesh.add(gRing1);
+          var gRing2 = new THREE.Mesh(
+            new THREE.TorusGeometry(oRadius * 1.85, 0.024, 8, 36),
+            new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })
+          );
+          gRing2.rotation.x = Math.PI / 3;
+          oMesh.add(gRing2);
+          goalHalos.push({ owner: oMesh, r1: gRing1, r2: gRing2 });
+        }
       } else {
         var cylHeight = 2.0 + oRadius * 4;
-        var oGeo2 = new THREE.CylinderGeometry(oRadius, oRadius, cylHeight, 12);
-        var oMat2 = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        oMat2.userData = { baseColor: getGlowBase(obj.mat), ref: obj.ref, mat: obj.mat };
+        var oGeo2 = new THREE.CylinderGeometry(oRadius, oRadius, cylHeight, 14);
+        var oMat2 = makeAcousticMat(obj.mat, obj.ref);
         oMesh = new THREE.Mesh(oGeo2, oMat2);
         oMesh.position.set(obj.x * SCALE, cylHeight / 2, obj.y * SCALE);
+        attachAcousticEdges(oMesh, oGeo2, oMat2.userData.baseColor);
       }
       oMesh.userData = { mapX: obj.x, mapY: obj.y, ref: obj.ref, mat: obj.mat, glowUntil: 0, glowAmt: 0, kind: 'object', isGoal: !!obj.isGoal };
       scene.add(oMesh);
@@ -562,55 +708,276 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     for (var ami = 0; ami < agents.length; ami++) {
       var ag = agents[ami];
       var aMesh;
-      if (ag.kind === 'car') {
-        var carGeo = new THREE.BoxGeometry(2.0, 1.2, 1.0);
-        var carMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        carMat.userData = { baseColor: getGlowBase('car'), ref: ag.ref, mat: 'car' };
-        aMesh = new THREE.Mesh(carGeo, carMat);
-        aMesh.position.set(ag.x * SCALE, 0.6, ag.y * SCALE);
-      } else if (ag.kind === 'bat') {
-        var batGeo = new THREE.SphereGeometry(0.18, 8, 6);
-        var batMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        batMat.userData = { baseColor: getGlowBase('flesh'), ref: ag.ref, mat: 'flesh' };
-        aMesh = new THREE.Mesh(batGeo, batMat);
-        aMesh.position.set(ag.x * SCALE, 2.5, ag.y * SCALE);
-      } else if (ag.kind === 'bird') {
-        var birdGeo = new THREE.SphereGeometry(0.12, 8, 6);
-        var birdMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        birdMat.userData = { baseColor: getGlowBase('flesh'), ref: ag.ref, mat: 'flesh' };
-        aMesh = new THREE.Mesh(birdGeo, birdMat);
-        aMesh.position.set(ag.x * SCALE, 3.0, ag.y * SCALE);
-      } else if (ag.kind === 'deer') {
-        var deerGeo = new THREE.BoxGeometry(0.8, 1.3, 1.4);
-        var deerMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        deerMat.userData = { baseColor: getGlowBase('flesh'), ref: ag.ref, mat: 'flesh' };
-        aMesh = new THREE.Mesh(deerGeo, deerMat);
-        aMesh.position.set(ag.x * SCALE, 0.65, ag.y * SCALE);
-      } else if (ag.kind === 'jogger') {
-        var jogGeo = new THREE.BoxGeometry(0.4, 1.7, 0.4);
-        var jogMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        jogMat.userData = { baseColor: getGlowBase('flesh'), ref: ag.ref, mat: 'flesh' };
-        aMesh = new THREE.Mesh(jogGeo, jogMat);
-        aMesh.position.set(ag.x * SCALE, 0.85, ag.y * SCALE);
-      } else if (ag.kind === 'cyclist') {
-        var cycGeo = new THREE.BoxGeometry(0.5, 1.3, 1.2);
-        var cycMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        cycMat.userData = { baseColor: getGlowBase('car'), ref: ag.ref, mat: 'car' };
-        aMesh = new THREE.Mesh(cycGeo, cycMat);
-        aMesh.position.set(ag.x * SCALE, 0.65, ag.y * SCALE);
-      } else {
-        var pedGeo = new THREE.BoxGeometry(0.5, 1.7, 0.5);
-        var pedMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        pedMat.userData = { baseColor: getGlowBase('flesh'), ref: ag.ref, mat: 'flesh' };
-        aMesh = new THREE.Mesh(pedGeo, pedMat);
-        aMesh.position.set(ag.x * SCALE, 0.85, ag.y * SCALE);
-      }
+      var aGeo, aMatName, aY;
+      if (ag.kind === 'car') { aGeo = new THREE.BoxGeometry(2.0, 1.2, 1.0); aMatName = 'car'; aY = 0.6; }
+      else if (ag.kind === 'bat') { aGeo = new THREE.SphereGeometry(0.18, 10, 8); aMatName = 'flesh'; aY = 2.5; }
+      else if (ag.kind === 'bird') { aGeo = new THREE.SphereGeometry(0.12, 10, 8); aMatName = 'flesh'; aY = 3.0; }
+      else if (ag.kind === 'deer') { aGeo = new THREE.BoxGeometry(0.8, 1.3, 1.4); aMatName = 'flesh'; aY = 0.65; }
+      else if (ag.kind === 'jogger') { aGeo = new THREE.BoxGeometry(0.4, 1.7, 0.4); aMatName = 'flesh'; aY = 0.85; }
+      else if (ag.kind === 'cyclist') { aGeo = new THREE.BoxGeometry(0.5, 1.3, 1.2); aMatName = 'car'; aY = 0.65; }
+      else { aGeo = new THREE.BoxGeometry(0.5, 1.7, 0.5); aMatName = 'flesh'; aY = 0.85; }
+      var aMat = makeAcousticMat(aMatName, ag.ref);
+      aMesh = new THREE.Mesh(aGeo, aMat);
+      aMesh.position.set(ag.x * SCALE, aY, ag.y * SCALE);
       aMesh.userData = { mapX: ag.x, mapY: ag.y, ref: ag.ref, mat: ag.mat, glowUntil: 0, glowAmt: 0, kind: 'agent', agentKind: ag.kind, agentId: ag.id };
+      attachAcousticEdges(aMesh, aGeo, aMat.userData.baseColor);
       scene.add(aMesh);
       meshes.push(aMesh);
       agentMeshes.push({ mesh: aMesh, agent: ag });
     }
-    return { scene: scene, meshes: meshes, agentMeshes: agentMeshes, SCALE: SCALE, ambient: ambient };
+
+    // Pooled glowing expanding ultrasonic 3D Fresnel acoustic wavefront shells & interference rings
+    var waveRings = [];
+    var useWaveShaders = hasShaderMat && !contrast;
+    if (typeof THREE.RingGeometry === 'function') {
+      var floorRingGeo = new THREE.RingGeometry(useWaveShaders ? 0.58 : 0.92, 1.0, useWaveShaders ? 64 : 48);
+      var shellGeo = (useWaveShaders && typeof THREE.SphereGeometry === 'function')
+        ? new THREE.SphereGeometry(1.0, 28, 16, 0, Math.PI * 2, 0, Math.PI * 0.56)
+        : null;
+      var fallbackEarGeo = !shellGeo ? new THREE.RingGeometry(0.96, 1.0, 48) : null;
+      for (var wri = 0; wri < 6; wri++) {
+        var floorRingMat = useWaveShaders ? new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 2.1 },
+            uOpacity: { value: 0.0 },
+            uAge: { value: 0.0 },
+            uColLead: { value: new THREE.Color(0x38bdf8) },
+            uColTrail: { value: new THREE.Color(0x818cf8) }
+          },
+          vertexShader: [
+            'varying vec2 vRingPos;',
+            'void main() {',
+            '  vRingPos = position.xy;',
+            '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uOpacity;',
+            'uniform float uAge;',
+            'uniform vec3 uColLead;',
+            'uniform vec3 uColTrail;',
+            'varying vec2 vRingPos;',
+            'void main() {',
+            '  float r = length(vRingPos);',
+            '  float rn = clamp((r - 0.58) / 0.42, 0.0, 1.0);',
+            '  float ang = atan(vRingPos.y, vRingPos.x);',
+            '  float leadCrest = exp(-pow((rn - 0.92) * 14.0, 2.0));',
+            '  float harmonics = pow(0.5 + 0.5 * sin(rn * 22.0 - uTime * 7.5 + sin(ang * 6.0) * 0.6), 2.2) * smoothstep(0.0, 0.35, rn) * smoothstep(1.0, 0.72, rn);',
+            '  float shimmer = 0.84 + 0.16 * cos(ang * 8.0 - uTime * 2.2 + uAge * 5.0);',
+            '  float mask = (leadCrest * 1.05 + harmonics * 0.52) * shimmer;',
+            '  vec3 col = mix(uColTrail, uColLead, smoothstep(0.25, 0.92, rn));',
+            '  col = mix(col, vec3(0.92, 0.98, 1.0), leadCrest * 0.55);',
+            '  float alpha = clamp(mask * uOpacity, 0.0, 0.92);',
+            '  if (alpha < 0.008) discard;',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+        }) : new THREE.MeshBasicMaterial({
+          color: 0x38bdf8, transparent: true, opacity: 0,
+          side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
+        });
+        var floorRing = new THREE.Mesh(floorRingGeo, floorRingMat);
+        floorRing.rotation.x = -Math.PI / 2;
+        floorRing.position.y = 0.06;
+        floorRing.visible = false;
+        scene.add(floorRing);
+
+        var earRing;
+        if (shellGeo) {
+          var shellMat = new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: { value: 2.1 },
+              uOpacity: { value: 0.0 },
+              uColA: { value: new THREE.Color(0x38bdf8) },
+              uColB: { value: new THREE.Color(0x818cf8) }
+            },
+            vertexShader: [
+              'varying vec3 vLocalPos;',
+              'varying vec3 vNormView;',
+              'varying vec3 vViewPos;',
+              'void main() {',
+              '  vLocalPos = position;',
+              '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+              '  vNormView = normalize(normalMatrix * normal);',
+              '  vViewPos = -mv.xyz;',
+              '  gl_Position = projectionMatrix * mv;',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime;',
+              'uniform float uOpacity;',
+              'uniform vec3 uColA;',
+              'uniform vec3 uColB;',
+              'varying vec3 vLocalPos;',
+              'varying vec3 vNormView;',
+              'varying vec3 vViewPos;',
+              'void main() {',
+              '  float fres = pow(1.0 - clamp(abs(dot(normalize(vNormView), normalize(vViewPos))), 0.0, 1.0), 2.1);',
+              '  float hFade = smoothstep(-0.18, 0.14, vLocalPos.y) * smoothstep(1.0, 0.35, vLocalPos.y);',
+              '  float bands = 0.55 + 0.45 * pow(0.5 + 0.5 * sin(vLocalPos.y * 20.0 - uTime * 6.5), 2.0);',
+              '  float az = atan(vLocalPos.z, vLocalPos.x);',
+              '  float interf = 0.78 + 0.22 * sin(az * 10.0 + vLocalPos.y * 12.0 - uTime * 3.0);',
+              '  vec3 col = mix(uColB, uColA, clamp(fres + 0.25, 0.0, 1.0));',
+              '  float alpha = clamp((fres * 0.88 + 0.10) * hFade * bands * interf * uOpacity, 0.0, 0.58);',
+              '  if (alpha < 0.008) discard;',
+              '  gl_FragColor = vec4(col, alpha);',
+              '}'
+            ].join('\n'),
+            transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+          });
+          earRing = new THREE.Mesh(shellGeo, shellMat);
+          earRing.position.y = 0.04;
+          earRing.visible = false;
+          scene.add(earRing);
+        } else {
+          earRing = new THREE.Mesh(
+            fallbackEarGeo,
+            new THREE.MeshBasicMaterial({
+              color: 0x818cf8, transparent: true, opacity: 0,
+              side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
+            })
+          );
+          earRing.rotation.x = -Math.PI / 2;
+          earRing.position.y = 1.35;
+          earRing.visible = false;
+          scene.add(earRing);
+        }
+        waveRings.push({ floorRing: floorRing, earRing: earRing, isShell: !!shellGeo, isShader: useWaveShaders });
+      }
+    }
+
+    // Pooled shimmering obstacle echo-reflection ripple rings (WebGL1 / GLSL ES 1.00)
+    var echoRipples = [];
+    if (useWaveShaders && typeof THREE.RingGeometry === 'function') {
+      var echoRippleGeo = new THREE.RingGeometry(0.14, 1.0, 48);
+      for (var eri = 0; eri < 12; eri++) {
+        var erMat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 2.1 },
+            uProgress: { value: 1.0 },
+            uOpacity: { value: 0.0 },
+            uColor: { value: new THREE.Color(0x7dd3fc) }
+          },
+          vertexShader: [
+            'varying vec2 vPos;',
+            'void main() {',
+            '  vPos = position.xy;',
+            '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uProgress;',
+            'uniform float uOpacity;',
+            'uniform vec3 uColor;',
+            'varying vec2 vPos;',
+            'void main() {',
+            '  float r = length(vPos);',
+            '  float rn = clamp((r - 0.14) / 0.86, 0.0, 1.0);',
+            '  float ang = atan(vPos.y, vPos.x);',
+            '  float crest = exp(-pow((rn - clamp(uProgress, 0.05, 0.95)) * 10.0, 2.0));',
+            '  float ripple = pow(0.5 + 0.5 * sin(rn * 20.0 - uProgress * 14.0), 2.5) * smoothstep(1.0, 0.25, rn);',
+            '  float shimmer = 0.82 + 0.18 * sin(ang * 6.0 + uTime * 3.0);',
+            '  float alpha = clamp((crest * 0.95 + ripple * 0.35) * shimmer * uOpacity, 0.0, 0.82);',
+            '  if (alpha < 0.008) discard;',
+            '  vec3 col = mix(uColor, vec3(0.95, 0.99, 1.0), crest * 0.48);',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+        });
+        var erMesh = new THREE.Mesh(echoRippleGeo, erMat);
+        erMesh.rotation.x = -Math.PI / 2;
+        erMesh.position.set(0, 0.09, 0);
+        erMesh.visible = false;
+        scene.add(erMesh);
+        echoRipples.push({ mesh: erMesh, mat: erMat, birth: -9999, owner: null });
+      }
+    }
+
+    // Drifting room/cave/forest ambient acoustic dust motes (pure GPU Points ShaderMaterial)
+    var dustPoints = null;
+    var dustUniforms = null;
+    if (useWaveShaders && typeof THREE.Points === 'function' && typeof THREE.BufferGeometry === 'function') {
+      var dustCount = 108;
+      var dustPos = new Float32Array(dustCount * 3);
+      var dustSeed = new Float32Array(dustCount);
+      var mapW = (map && map.W ? map.W : 800) * SCALE;
+      var mapH = (map && map.H ? map.H : 800) * SCALE;
+      var dSeed = 1337;
+      function dRand() { dSeed = (dSeed * 16807) % 2147483647; return (dSeed - 1) / 2147483646; }
+      for (var di = 0; di < dustCount; di++) {
+        dustPos[di * 3] = 1.5 + dRand() * Math.max(4, mapW - 3.0);
+        dustPos[di * 3 + 1] = 0.25 + dRand() * 2.85;
+        dustPos[di * 3 + 2] = 1.5 + dRand() * Math.max(4, mapH - 3.0);
+        dustSeed[di] = dRand();
+      }
+      var dustGeo = new THREE.BufferGeometry();
+      dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+      dustGeo.setAttribute('aSeed', new THREE.BufferAttribute(dustSeed, 1));
+      var dustColHex = map && map.type === 'cave' ? 0x93c5fd
+        : map && map.type === 'forest' ? 0x6ee7b7
+        : map && map.type === 'urban' ? 0xc4b5fd
+        : 0x7dd3fc;
+      dustUniforms = {
+        uTime: { value: 2.1 },
+        uSonarBoost: { value: 0.0 },
+        uOpacity: { value: 0.34 },
+        uColor: { value: new THREE.Color(dustColHex) }
+      };
+      var dustMat = new THREE.ShaderMaterial({
+        uniforms: dustUniforms,
+        vertexShader: [
+          'attribute float aSeed;',
+          'uniform float uTime;',
+          'varying float vSeed;',
+          'void main() {',
+          '  vSeed = aSeed;',
+          '  vec3 p = position;',
+          '  float ph = aSeed * 6.2831853;',
+          '  p.x += sin(uTime * (0.28 + aSeed * 0.22) + ph) * 0.22;',
+          '  p.y += sin(uTime * (0.22 + aSeed * 0.18) + ph * 1.4) * 0.14;',
+          '  p.z += cos(uTime * (0.25 + aSeed * 0.20) + ph * 0.9) * 0.22;',
+          '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+          '  float sz = (22.0 + aSeed * 18.0) / max(0.8, -mv.z);',
+          '  gl_PointSize = clamp(sz, 1.8, 7.5);',
+          '  gl_Position = projectionMatrix * mv;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uSonarBoost;',
+          'uniform float uOpacity;',
+          'uniform vec3 uColor;',
+          'varying float vSeed;',
+          'void main() {',
+          '  float d = length(gl_PointCoord - vec2(0.5));',
+          '  if (d > 0.5) discard;',
+          '  float g = pow(1.0 - d * 2.0, 2.2);',
+          '  float tw = 0.65 + 0.35 * sin(uTime * (1.1 + vSeed * 1.4) + vSeed * 21.0);',
+          '  vec3 col = mix(uColor, vec3(0.92, 0.98, 1.0), uSonarBoost * 0.45);',
+          '  float a = clamp(g * tw * uOpacity * (0.55 + uSonarBoost * 0.85), 0.0, 0.78);',
+          '  if (a < 0.008) discard;',
+          '  gl_FragColor = vec4(col, a);',
+          '}'
+        ].join('\n'),
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+      });
+      dustPoints = new THREE.Points(dustGeo, dustMat);
+      dustPoints.frustumCulled = false;
+      scene.add(dustPoints);
+    }
+
+    return {
+      scene: scene, meshes: meshes, agentMeshes: agentMeshes, SCALE: SCALE,
+      ambient: ambient, hemi: hemi, rimLight: rimLight, sonarLight: sonarLight,
+      floor: floor, edgeLines: edgeLines, goalHalos: goalHalos, waveRings: waveRings,
+      echoRipples: echoRipples, echoRippleIdx: 0,
+      acousticTimeUniform: acousticTimeUniform,
+      dustPoints: dustPoints, dustUniforms: dustUniforms
+    };
   }
 
   function rayHit(px, py, dx, dy, x1, y1, x2, y2) {
@@ -1135,7 +1502,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         if (!THREE) return;
         var map = mapRef.current; var agents = agentsRef.current; var player = playerRef.current;
         if (!map) return;
-        var sd = build3DScene(THREE, map, agents);
+        var sd = build3DScene(THREE, map, agents, !!isContrast);
         sceneDataRef.current = sd;
         var SCALE = sd.SCALE;
         var camera = new THREE.PerspectiveCamera(75, 1, 0.1, 120);
@@ -1451,30 +1818,124 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             }
           }
           var activePulses = []; var nowMs = Date.now();
+          var etReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          var etSec = etReduced ? 2.1 : now * 0.001;
+          if (sd.acousticTimeUniform) sd.acousticTimeUniform.value = etSec;
+          var maxSonarFlash = 0;
           for (var spi = 0; spi < pulsesRef.current.length; spi++) {
             var pulse = pulsesRef.current[spi]; var age = (nowMs - pulse.birth) / 1000; var pulseRadiusPx = age * SPEED_OF_SOUND * 0.5; var pulseIntensity = Math.max(0, 1 - age * 1.5);
             if (pulseIntensity <= 0) continue; activePulses.push(pulse);
+            if (pulseIntensity > maxSonarFlash) maxSonarFlash = pulseIntensity;
             for (var mi = 0; mi < sd.meshes.length; mi++) {
               var mesh = sd.meshes[mi]; var mData = mesh.userData; if (mData.kind === 'floor') continue;
               var mdx = mData.mapX - pulse.x; var mdy = mData.mapY - pulse.y; var mDist = Math.sqrt(mdx * mdx + mdy * mdy);
-              var band = (mData.kind === 'agent') ? 25 : 20;
-              if (Math.abs(mDist - pulseRadiusPx) < band) { var bandFade = 1 - Math.abs(mDist - pulseRadiusPx) / band; var glow = pulseIntensity * bandFade * (mData.ref || 0.5); if (glow > mData.glowAmt) { mData.glowAmt = glow; } }
+              var band = (mData.kind === 'agent') ? 28 : 22;
+              if (Math.abs(mDist - pulseRadiusPx) < band) {
+                var bandFade = 1 - Math.abs(mDist - pulseRadiusPx) / band;
+                var glow = pulseIntensity * bandFade * (mData.ref || 0.5);
+                if (glow > mData.glowAmt) { mData.glowAmt = glow; }
+                // Spawn shimmering obstacle echo-reflection ripple ring when sonar strikes an obstacle
+                if (sd.echoRipples && sd.echoRipples.length && currentViewMode !== 'audio' && glow > 0.16 && (!mData._lastRippleMs || nowMs - mData._lastRippleMs > 420)) {
+                  mData._lastRippleMs = nowMs;
+                  var erSlot = sd.echoRipples[sd.echoRippleIdx % sd.echoRipples.length];
+                  sd.echoRippleIdx = (sd.echoRippleIdx + 1) % sd.echoRipples.length;
+                  erSlot.birth = nowMs;
+                  erSlot.mesh.position.set(mData.mapX * SCALE, 0.09, mData.mapY * SCALE);
+                  var baseC = mesh.material && mesh.material.userData && mesh.material.userData.baseColor;
+                  if (baseC && erSlot.mat.uniforms && erSlot.mat.uniforms.uColor) {
+                    erSlot.mat.uniforms.uColor.value.copy(baseC);
+                  }
+                }
+              }
             }
           }
           pulsesRef.current = activePulses;
+          // Expanding 3D Fresnel ultrasonic wavefront shells & floor interference rings
+          if (sd.waveRings && sd.waveRings.length) {
+            for (var wri2 = 0; wri2 < sd.waveRings.length; wri2++) {
+              var wrPair = sd.waveRings[wri2];
+              var wpPulse = (currentViewMode !== 'audio' && wri2 < activePulses.length) ? activePulses[wri2] : null;
+              if (wpPulse) {
+                var wpAge = (nowMs - wpPulse.birth) / 1000;
+                var wpRad = Math.max(0.2, wpAge * SPEED_OF_SOUND * 0.5 * SCALE);
+                var wpAlpha = Math.max(0, 1 - wpAge * 1.5);
+                wrPair.floorRing.visible = true;
+                wrPair.floorRing.position.set(wpPulse.x * SCALE, 0.06, wpPulse.y * SCALE);
+                wrPair.floorRing.scale.setScalar(wpRad);
+                if (wrPair.isShader && wrPair.floorRing.material.uniforms) {
+                  wrPair.floorRing.material.uniforms.uTime.value = etSec;
+                  wrPair.floorRing.material.uniforms.uAge.value = wpAge;
+                  wrPair.floorRing.material.uniforms.uOpacity.value = wpAlpha * (etReduced ? 0.45 : 0.85);
+                } else {
+                  wrPair.floorRing.material.opacity = wpAlpha * (etReduced ? 0.35 : 0.62);
+                }
+                wrPair.earRing.visible = !etReduced;
+                if (!etReduced) {
+                  if (wrPair.isShell) {
+                    wrPair.earRing.position.set(wpPulse.x * SCALE, 0.04, wpPulse.y * SCALE);
+                    wrPair.earRing.scale.set(wpRad, Math.min(3.4, wpRad * 0.68), wpRad);
+                    if (wrPair.earRing.material.uniforms) {
+                      wrPair.earRing.material.uniforms.uTime.value = etSec;
+                      wrPair.earRing.material.uniforms.uOpacity.value = wpAlpha * 0.48;
+                    }
+                  } else {
+                    wrPair.earRing.position.set(wpPulse.x * SCALE, 1.35, wpPulse.y * SCALE);
+                    wrPair.earRing.scale.setScalar(wpRad * 0.96);
+                    wrPair.earRing.material.opacity = wpAlpha * 0.26;
+                  }
+                }
+              } else {
+                wrPair.floorRing.visible = false;
+                wrPair.earRing.visible = false;
+              }
+            }
+          }
+          // Update shimmering obstacle echo-reflection ripples
+          if (sd.echoRipples && sd.echoRipples.length) {
+            for (var eri2 = 0; eri2 < sd.echoRipples.length; eri2++) {
+              var er = sd.echoRipples[eri2];
+              var erAge = (nowMs - er.birth) / 1000;
+              if (currentViewMode !== 'audio' && erAge >= 0 && erAge < 0.92) {
+                var erProg = etReduced ? 0.42 : (erAge / 0.92);
+                er.mesh.visible = true;
+                er.mesh.scale.setScalar(0.55 + erProg * 2.15);
+                if (er.mat.uniforms) {
+                  er.mat.uniforms.uTime.value = etSec;
+                  er.mat.uniforms.uProgress.value = erProg;
+                  er.mat.uniforms.uOpacity.value = (1 - erProg) * (etReduced ? 0.38 : 0.72);
+                }
+              } else {
+                er.mesh.visible = false;
+              }
+            }
+          }
+          // Update drifting room/cave ambient dust motes
+          if (sd.dustPoints && sd.dustUniforms) {
+            var showDust = currentViewMode !== 'audio';
+            sd.dustPoints.visible = showDust;
+            if (showDust) {
+              sd.dustUniforms.uTime.value = etSec;
+              sd.dustUniforms.uSonarBoost.value = currentViewMode === 'reveal' ? 0.45 : maxSonarFlash;
+              sd.dustUniforms.uOpacity.value = currentViewMode === 'reveal' ? 0.28 : (0.16 + maxSonarFlash * 0.46);
+            }
+          }
+          if (sd.sonarLight) {
+            sd.sonarLight.position.set(player.x * SCALE, 1.55, player.y * SCALE);
+            sd.sonarLight.intensity = currentViewMode === 'audio' ? 0 : (currentViewMode === 'reveal' ? 0.55 : maxSonarFlash * (etReduced ? 1.0 : 1.85));
+          }
           for (var gdi = 0; gdi < sd.meshes.length; gdi++) {
             var gm = sd.meshes[gdi];
             if (gm.userData.glowAmt > 0) {
               if (gm.userData.kind !== 'agent') {
                 if (!gm.userData.peakGlow || gm.userData.glowAmt > gm.userData.peakGlow) { gm.userData.peakGlow = gm.userData.glowAmt; }
-                var ghostTarget = Math.min(diff.ghostMax, (gm.userData.peakGlow || 0) * 0.12);
+                var ghostTarget = Math.min(diff.ghostMax, (gm.userData.peakGlow || 0) * 0.14);
                 if (!gm.userData.ghostGlow || gm.userData.ghostGlow < ghostTarget) { gm.userData.ghostGlow = ghostTarget; }
               }
-              gm.userData.glowAmt = Math.max(0, gm.userData.glowAmt - 1.2 * dt);
+              gm.userData.glowAmt = Math.max(0, gm.userData.glowAmt - 1.15 * dt);
             }
             if (gm.userData.kind !== 'agent' && gm.userData.ghostGlow > 0) { gm.userData.ghostGlow = Math.max(0, gm.userData.ghostGlow - diff.ghostDecay * dt); }
           }
-          var sinePulse = Math.sin(now * 0.003) * 0.05;
+          var sinePulse = etReduced ? 0 : Math.sin(now * 0.003) * 0.05;
           for (var agl = 0; agl < sd.agentMeshes.length; agl++) {
             var agMesh = sd.agentMeshes[agl]; var agKind = agMesh.agent.kind;
             var baseGlow = agKind === 'car' ? 0.32 : agKind === 'pedestrian' ? 0.18 : agKind === 'deer' ? 0.15 : agKind === 'bird' ? 0.08 : agKind === 'jogger' ? 0.15 : agKind === 'cyclist' ? 0.22 : 0.1;
@@ -1483,13 +1944,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
           for (var mci = 0; mci < sd.meshes.length; mci++) {
             var cm = sd.meshes[mci]; var cmMat = cm.material; var cmUD = cmMat.userData; if (!cmUD || !cmUD.baseColor) continue;
-            if (currentViewMode === 'reveal') { cmMat.color.copy(cmUD.baseColor); }
-            else if (currentViewMode === 'audio') { cmMat.color.setHex(0x000000); }
-            else { var ga = cm.userData.glowAmt || 0; var ghostG = cm.userData.ghostGlow || 0; var effectiveGlow = Math.max(ga, ghostG); cmMat.color.setRGB(cmUD.baseColor.r * effectiveGlow, cmUD.baseColor.g * effectiveGlow, cmUD.baseColor.b * effectiveGlow); }
+            var effG = 0;
+            if (currentViewMode === 'reveal') {
+              effG = 1.0;
+              cmMat.color.copy(cmUD.baseColor);
+              if (cmUD.isPbr && cmMat.emissive) cmMat.emissive.setRGB(cmUD.baseColor.r * 0.28, cmUD.baseColor.g * 0.28, cmUD.baseColor.b * 0.28);
+            } else if (currentViewMode === 'audio') {
+              effG = 0;
+              cmMat.color.setHex(0x000000);
+              if (cmUD.isPbr && cmMat.emissive) cmMat.emissive.setHex(0x000000);
+            } else {
+              var ga = cm.userData.glowAmt || 0; var ghostG = cm.userData.ghostGlow || 0;
+              effG = Math.max(ga, ghostG);
+              if (cmUD.isPbr && cmMat.emissive) {
+                cmMat.color.setRGB(cmUD.baseColor.r * effG * 0.55, cmUD.baseColor.g * effG * 0.55, cmUD.baseColor.b * effG * 0.55);
+                cmMat.emissive.setRGB(cmUD.baseColor.r * effG * 0.92, cmUD.baseColor.g * effG * 0.92, cmUD.baseColor.b * effG * 0.92);
+              } else {
+                cmMat.color.setRGB(cmUD.baseColor.r * effG, cmUD.baseColor.g * effG, cmUD.baseColor.b * effG);
+              }
+            }
+            cm.userData._effGlow = effG;
+            if (cmUD._acousticGlowUniform) cmUD._acousticGlowUniform.value = effG;
           }
-          if (currentViewMode === 'reveal') { sd.scene.children[2].material.color.setHex(0x1a1a2e); } else { sd.scene.children[2].material.color.setHex(0x000000); }
-          sd.ambient.intensity = currentViewMode === 'reveal' ? 0.7 : 0.02;
-          sd.scene.fog.far = currentViewMode === 'reveal' ? 100 : 40;
+          if (sd.edgeLines) {
+            for (var eli = 0; eli < sd.edgeLines.length; eli++) {
+              var elItem = sd.edgeLines[eli];
+              var eg = elItem.owner.userData._effGlow || 0;
+              elItem.lines.visible = eg > 0.015;
+              elItem.lines.material.opacity = currentViewMode === 'reveal' ? 0.36 : Math.min(0.95, eg * 1.25);
+            }
+          }
+          if (sd.goalHalos) {
+            for (var ghi = 0; ghi < sd.goalHalos.length; ghi++) {
+              var gh = sd.goalHalos[ghi];
+              var gg = gh.owner.userData._effGlow || 0;
+              var showH = currentViewMode !== 'audio' && gg > 0.02;
+              gh.r1.visible = showH; gh.r2.visible = showH;
+              if (showH) {
+                if (!etReduced) {
+                  gh.r1.rotation.z = now * 0.0014;
+                  gh.r2.rotation.y = -now * 0.0019;
+                  var gPulse = 0.94 + Math.sin(now * 0.005) * 0.08;
+                  gh.r1.scale.setScalar(gPulse);
+                  gh.r2.scale.setScalar(1.04 - (gPulse - 0.94));
+                }
+                gh.r1.material.opacity = Math.min(0.88, gg * 0.95);
+                gh.r2.material.opacity = Math.min(0.65, gg * 0.7);
+              }
+            }
+          }
+          if (sd.floor && sd.floor.material) {
+            var fMat = sd.floor.material;
+            if (currentViewMode === 'reveal') {
+              fMat.color.setHex(0x334155);
+              if (fMat.emissive) fMat.emissive.setHex(0x0c1a30);
+            } else if (currentViewMode === 'audio') {
+              fMat.color.setHex(0x000000);
+              if (fMat.emissive) fMat.emissive.setHex(0x000000);
+            } else {
+              var fGlow = maxSonarFlash * 0.28;
+              fMat.color.setRGB(0.05 + fGlow * 0.5, 0.08 + fGlow * 0.7, 0.14 + fGlow);
+              if (fMat.emissive) fMat.emissive.setRGB(fGlow * 0.15, fGlow * 0.35, fGlow * 0.55);
+            }
+          }
+          sd.ambient.intensity = currentViewMode === 'reveal' ? 0.65 : 0.03;
+          if (sd.hemi) sd.hemi.intensity = currentViewMode === 'reveal' ? 0.72 : (currentViewMode === 'audio' ? 0 : 0.14);
+          if (sd.rimLight) sd.rimLight.intensity = currentViewMode === 'reveal' ? 0.62 : (currentViewMode === 'audio' ? 0 : 0.22);
+          sd.scene.fog.far = currentViewMode === 'reveal' ? 96 : 38;
 
           // Camera height: crouch lowers camera
           var camHeight = isCrouching ? 0.8 : 1.5;
@@ -1593,20 +2114,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           for (var osi = 0; osi < agentSounds.length; osi++) { try { agentSounds[osi].osc.stop(); } catch(e) {} } agentOscRef.current = [];
           for (var amsi = 0; amsi < ambientNodes.length; amsi++) { try { ambientNodes[amsi].osc.stop(); } catch(e) {} } ambientSoundsRef.current = [];
           try{ if(renderer && renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
+          try {
+            if (sd && sd.scene && sd.scene.traverse) {
+              var _dGeo = new Set(), _dMat = new Set(), _dTex = new Set();
+              var _texKeys = ['map', 'alphaMap', 'aoMap', 'bumpMap', 'emissiveMap', 'metalnessMap', 'normalMap', 'roughnessMap'];
+              sd.scene.traverse(function(node) {
+                if (node.geometry && node.geometry.dispose && !_dGeo.has(node.geometry)) { _dGeo.add(node.geometry); node.geometry.dispose(); }
+                if (node.material) {
+                  var ms = Array.isArray(node.material) ? node.material : [node.material];
+                  ms.forEach(function(m) {
+                    if (!m || _dMat.has(m)) return;
+                    _dMat.add(m);
+                    for (var tk = 0; tk < _texKeys.length; tk++) {
+                      var tx = m[_texKeys[tk]];
+                      if (tx && tx.dispose && !_dTex.has(tx)) { _dTex.add(tx); tx.dispose(); }
+                    }
+                    if (m.dispose) m.dispose();
+                  });
+                }
+              });
+            }
+          } catch(e) {}
           if (renderer) { try { renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); } catch(e) {} if (renderer.domElement && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); } }
           rendererRef.current = null; sceneDataRef.current = null;
           if (document.pointerLockElement) { try { document.exitPointerLock(); } catch(e) {} }
           document.removeEventListener('pointerlockchange', onPointerLockChange); document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('keydown', onKeyDown); document.removeEventListener('keyup', onKeyUp);
         };
-      }, [seed, envType, has3D, viewMode, diffId]);
+      }, [seed, envType, has3D, viewMode, diffId, isContrast]);
 
       // ══════════════════════════════════════════════════════════
       // 2D MINIMAP / STANDALONE FALLBACK
       // ══════════════════════════════════════════════════════════
       useEffect(function() {
         if (!canvasRef.current) return;
-        var canvas = canvasRef.current; var gfx = canvas.getContext('2d'); var running = true; var rafId2d = 0; var goalCheckTimer2d = 0;
+        var canvas = canvasRef.current; var gfx = canvas.getContext('2d');
+        if (!gfx) return;
+        var running = true; var rafId2d = 0; var goalCheckTimer2d = 0;
         function loop2d() {
           if (!running) return; rafId2d = requestAnimationFrame(loop2d);
           // Live-read tool state so the minimap (and the 2D fallback when
@@ -1637,13 +2181,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             if (player._bumpCooldown > 0) player._bumpCooldown--;
             updateAgents(agents, (1 / 60) * diff.agentSpeedMult, map);
           }
-          gfx.clearRect(0, 0, W, H); gfx.fillStyle = isMinimap ? 'rgba(8,8,16,0.85)' : '#080810'; gfx.fillRect(0, 0, W, H);
+          var etReduced2d = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          gfx.clearRect(0, 0, W, H);
+          // Deep phosphor-CRT radar backdrop with subtle radial scope vignette
+          var scopeBg = gfx.createRadialGradient(W * 0.5, H * 0.5, 8, W * 0.5, H * 0.5, Math.max(W, H) * 0.65);
+          scopeBg.addColorStop(0, isMinimap ? 'rgba(10,18,34,0.92)' : '#070d1a');
+          scopeBg.addColorStop(1, isMinimap ? 'rgba(3,6,14,0.96)' : '#02040a');
+          gfx.fillStyle = scopeBg;
+          gfx.fillRect(0, 0, W, H);
           gfx.save(); gfx.translate(ox, oy); gfx.scale(scale, scale);
+
+          // Phosphor acoustic radar range rings & bearing reticle around player
+          gfx.save();
+          gfx.strokeStyle = isMinimap ? 'rgba(56,189,248,0.12)' : 'rgba(56,189,248,0.11)';
+          gfx.lineWidth = isMinimap ? 1.5 : 1;
+          var rangeSteps = isMinimap ? [140, 280] : [100, 200, 320, 440];
+          for (var rgI = 0; rgI < rangeSteps.length; rgI++) {
+            gfx.beginPath(); gfx.arc(player.x, player.y, rangeSteps[rgI], 0, Math.PI * 2); gfx.stroke();
+          }
+          if (!isMinimap) {
+            gfx.strokeStyle = 'rgba(56,189,248,0.06)';
+            gfx.beginPath(); gfx.moveTo(player.x - 450, player.y); gfx.lineTo(player.x + 450, player.y); gfx.stroke();
+            gfx.beginPath(); gfx.moveTo(player.x, player.y - 450); gfx.lineTo(player.x, player.y + 450); gfx.stroke();
+          }
+          gfx.restore();
+
           var currentViewMode2d = d.viewMode || 'echo'; var showMap = isMinimap || currentViewMode2d === 'reveal';
           if (showMap) {
-            gfx.lineWidth = isMinimap ? 2 : 3;
-            map.walls.forEach(function(w) { gfx.strokeStyle = w.mat === 'metal' ? '#94a3b8' : w.mat === 'wood' ? '#a16207' : w.mat === 'glass' ? '#7dd3fc55' : '#475569'; gfx.beginPath(); gfx.moveTo(w.x1, w.y1); gfx.lineTo(w.x2, w.y2); gfx.stroke(); });
-            map.objects.forEach(function(o) { gfx.fillStyle = o.isGoal ? '#fbbf24' : o.mat === 'metal' ? '#94a3b8' : o.mat === 'wood' ? '#92400e' : '#94a3b8'; gfx.beginPath(); gfx.arc(o.x, o.y, o.r, 0, Math.PI * 2); gfx.fill(); if (o.isGoal && !isMinimap) { gfx.fillStyle = '#080810'; gfx.font = 'bold 14px sans-serif'; gfx.textAlign = 'center'; gfx.fillText('\u2B50', o.x, o.y + 5); } });
+            gfx.save();
+            gfx.lineCap = 'round';
+            gfx.lineWidth = isMinimap ? 2.5 : 3.2;
+            map.walls.forEach(function(w) {
+              var wCol = w.mat === 'metal' ? '#bae6fd' : w.mat === 'wood' ? '#d97706' : w.mat === 'glass' ? 'rgba(125,211,252,0.5)' : '#64748b';
+              gfx.strokeStyle = wCol;
+              gfx.shadowColor = w.mat === 'metal' ? 'rgba(56,189,248,0.35)' : 'rgba(99,102,241,0.18)';
+              gfx.shadowBlur = isMinimap ? 2 : 5;
+              gfx.beginPath(); gfx.moveTo(w.x1, w.y1); gfx.lineTo(w.x2, w.y2); gfx.stroke();
+            });
+            gfx.shadowBlur = 0;
+            var goalPulse2d = etReduced2d ? 1 : (0.85 + Math.sin(Date.now() * 0.005) * 0.15);
+            map.objects.forEach(function(o) {
+              if (o.isGoal) {
+                var gHalo = gfx.createRadialGradient(o.x, o.y, o.r * 0.3, o.x, o.y, o.r * 2.1 * goalPulse2d);
+                gHalo.addColorStop(0, 'rgba(251,191,36,0.45)');
+                gHalo.addColorStop(1, 'rgba(251,191,36,0)');
+                gfx.fillStyle = gHalo;
+                gfx.beginPath(); gfx.arc(o.x, o.y, o.r * 2.1 * goalPulse2d, 0, Math.PI * 2); gfx.fill();
+              }
+              gfx.fillStyle = o.isGoal ? '#fbbf24' : o.mat === 'metal' ? '#cbd5e1' : o.mat === 'wood' ? '#b45309' : '#64748b';
+              gfx.beginPath(); gfx.arc(o.x, o.y, o.r, 0, Math.PI * 2); gfx.fill();
+              if (o.isGoal && !isMinimap) { gfx.fillStyle = '#080810'; gfx.font = 'bold 14px sans-serif'; gfx.textAlign = 'center'; gfx.fillText('\u2B50', o.x, o.y + 5); }
+            });
+            gfx.restore();
           }
           if (showMap || isMinimap) {
             for (var dai = 0; dai < agents.length; dai++) { var da = agents[dai]; gfx.fillStyle = da.kind === 'car' ? '#ffc47c' : da.kind === 'bat' ? '#c4b5fd' : da.kind === 'deer' ? '#a3e635' : da.kind === 'bird' ? '#67e8f9' : da.kind === 'jogger' ? '#fb923c' : da.kind === 'cyclist' ? '#f472b6' : '#ff9c9c'; gfx.beginPath(); gfx.arc(da.x, da.y, isMinimap ? 5 : 8, 0, Math.PI * 2); gfx.fill(); }
@@ -1655,7 +2244,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               for (var hy = 0; hy < 40; hy++) {
                 var cv = cGrid2[hx][hy];
                 if (cv > 0.05) {
-                  gfx.fillStyle = 'rgba(99,102,241,' + (cv * 0.25) + ')';
+                  gfx.fillStyle = 'rgba(56,189,248,' + (cv * 0.24) + ')';
                   gfx.fillRect(hx * 20, hy * 20, 20, 20);
                 }
               }
@@ -1664,7 +2253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           if (!isMinimap) {
             if (!player._trail) player._trail = [];
             if (player._trail.length === 0 || Math.abs(player.x - player._trail[player._trail.length - 1].x) > 5 || Math.abs(player.y - player._trail[player._trail.length - 1].y) > 5) { player._trail.push({ x: player.x, y: player.y }); if (player._trail.length > 200) player._trail.shift(); }
-            for (var ti2 = 0; ti2 < player._trail.length; ti2++) { var trailAlpha = (ti2 / player._trail.length) * 0.15; gfx.fillStyle = 'rgba(99,102,241,' + trailAlpha + ')'; gfx.beginPath(); gfx.arc(player._trail[ti2].x, player._trail[ti2].y, 2, 0, Math.PI * 2); gfx.fill(); }
+            for (var ti2 = 0; ti2 < player._trail.length; ti2++) { var trailAlpha = (ti2 / player._trail.length) * 0.22; gfx.fillStyle = 'rgba(56,189,248,' + trailAlpha + ')'; gfx.beginPath(); gfx.arc(player._trail[ti2].x, player._trail[ti2].y, 2, 0, Math.PI * 2); gfx.fill(); }
           }
           if ((currentViewMode2d === 'echo' || isMinimap) && pulsesRef.current.length > 0) {
             var nowEv = Date.now();
@@ -1672,20 +2261,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             pulsesRef.current.forEach(function(pulse) {
               var evAge = (nowEv - pulse.birth) / 1000; var evRadius = evAge * SPEED_OF_SOUND * 0.5; var evAlpha = Math.max(0, 1 - evAge * 1.5);
               if (evAlpha <= 0) return;
-              gfx.strokeStyle = 'rgba(120,180,255,' + (evAlpha * 0.2) + ')'; gfx.lineWidth = 2; gfx.beginPath(); gfx.arc(pulse.x, pulse.y, evRadius, 0, Math.PI * 2); gfx.stroke();
+              // Crisp phosphor leading wavefront + soft trailing acoustic wake
+              gfx.strokeStyle = 'rgba(56,189,248,' + (evAlpha * 0.55) + ')'; gfx.lineWidth = isMinimap ? 3 : 2.5; gfx.beginPath(); gfx.arc(pulse.x, pulse.y, evRadius, 0, Math.PI * 2); gfx.stroke();
+              if (evRadius > 10) {
+                gfx.strokeStyle = 'rgba(129,140,248,' + (evAlpha * 0.22) + ')'; gfx.lineWidth = isMinimap ? 6 : 8; gfx.beginPath(); gfx.arc(pulse.x, pulse.y, evRadius - 5, 0, Math.PI * 2); gfx.stroke();
+              }
               if (!isMinimap) {
-                map.walls.forEach(function(w) { var wx = w.x2 - w.x1, wy = w.y2 - w.y1; var wl2 = wx * wx + wy * wy; if (wl2 < 1) return; for (var svi = 0; svi <= 4; svi++) { var t2 = svi / 4; var pvx = w.x1 + wx * t2, pvy = w.y1 + wy * t2; var dx2 = pvx - pulse.x, dy2 = pvy - pulse.y; var dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2); if (Math.abs(dist2 - evRadius) < 15) { var intensity = evAlpha * w.ref * (1 - Math.abs(dist2 - evRadius) / 15); var color = w.mat === 'metal' ? '200,220,255' : w.mat === 'wood' ? '180,140,80' : w.mat === 'glass' ? '150,220,255' : '100,160,220'; gfx.fillStyle = 'rgba(' + color + ',' + (intensity * 0.7) + ')'; gfx.beginPath(); gfx.arc(pvx, pvy, 6, 0, Math.PI * 2); gfx.fill(); } } });
-                map.objects.forEach(function(o) { var odx = o.x - pulse.x, ody = o.y - pulse.y; var odist = Math.sqrt(odx * odx + ody * ody); if (Math.abs(odist - evRadius) < o.r + 10) { var oIntensity = evAlpha * o.ref * (1 - Math.abs(odist - evRadius) / (o.r + 10)); var oColor = o.isGoal ? '255,220,50' : o.mat === 'metal' ? '200,220,255' : '100,160,220'; gfx.fillStyle = 'rgba(' + oColor + ',' + (oIntensity * 0.6) + ')'; gfx.beginPath(); gfx.arc(o.x, o.y, o.r + 3, 0, Math.PI * 2); gfx.fill(); gfx.strokeStyle = 'rgba(' + oColor + ',' + (oIntensity * 0.9) + ')'; gfx.lineWidth = 2; gfx.beginPath(); gfx.arc(o.x, o.y, o.r, 0, Math.PI * 2); gfx.stroke(); } });
-                for (var eai = 0; eai < agents.length; eai++) { var ea = agents[eai]; var eadx = ea.x - pulse.x, eady = ea.y - pulse.y; var eadist = Math.sqrt(eadx * eadx + eady * eady); if (Math.abs(eadist - evRadius) < ea.radius + 12) { var eaInt = evAlpha * ea.ref * (1 - Math.abs(eadist - evRadius) / (ea.radius + 12)); var eaColor = ea.kind === 'car' ? '255,196,124' : ea.kind === 'bat' ? '196,181,253' : ea.kind === 'deer' ? '163,230,53' : ea.kind === 'bird' ? '103,232,249' : ea.kind === 'jogger' ? '251,146,60' : ea.kind === 'cyclist' ? '244,114,182' : '255,156,156'; gfx.fillStyle = 'rgba(' + eaColor + ',' + (eaInt * 0.6) + ')'; gfx.beginPath(); gfx.arc(ea.x, ea.y, ea.radius + 3, 0, Math.PI * 2); gfx.fill(); } }
+                map.walls.forEach(function(w) { var wx = w.x2 - w.x1, wy = w.y2 - w.y1; var wl2 = wx * wx + wy * wy; if (wl2 < 1) return; for (var svi = 0; svi <= 6; svi++) { var t2 = svi / 6; var pvx = w.x1 + wx * t2, pvy = w.y1 + wy * t2; var dx2 = pvx - pulse.x, dy2 = pvy - pulse.y; var dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2); if (Math.abs(dist2 - evRadius) < 18) { var intensity = evAlpha * w.ref * (1 - Math.abs(dist2 - evRadius) / 18); var color = w.mat === 'metal' ? '186,230,253' : w.mat === 'wood' ? '245,158,11' : w.mat === 'glass' ? '125,211,252' : '96,165,250'; var wHalo = gfx.createRadialGradient(pvx, pvy, 1, pvx, pvy, 11); wHalo.addColorStop(0, 'rgba(' + color + ',' + (intensity * 0.85) + ')'); wHalo.addColorStop(1, 'rgba(' + color + ',0)'); gfx.fillStyle = wHalo; gfx.beginPath(); gfx.arc(pvx, pvy, 11, 0, Math.PI * 2); gfx.fill(); } } });
+                map.objects.forEach(function(o) { var odx = o.x - pulse.x, ody = o.y - pulse.y; var odist = Math.sqrt(odx * odx + ody * ody); if (Math.abs(odist - evRadius) < o.r + 14) { var oIntensity = evAlpha * o.ref * (1 - Math.abs(odist - evRadius) / (o.r + 14)); var oColor = o.isGoal ? '253,224,71' : o.mat === 'metal' ? '224,242,254' : '125,211,252'; var oHalo = gfx.createRadialGradient(o.x, o.y, o.r * 0.4, o.x, o.y, o.r + 14); oHalo.addColorStop(0, 'rgba(' + oColor + ',' + (oIntensity * 0.72) + ')'); oHalo.addColorStop(1, 'rgba(' + oColor + ',0)'); gfx.fillStyle = oHalo; gfx.beginPath(); gfx.arc(o.x, o.y, o.r + 14, 0, Math.PI * 2); gfx.fill(); gfx.strokeStyle = 'rgba(' + oColor + ',' + (oIntensity * 0.95) + ')'; gfx.lineWidth = 2.2; gfx.beginPath(); gfx.arc(o.x, o.y, o.r, 0, Math.PI * 2); gfx.stroke(); } });
+                for (var eai = 0; eai < agents.length; eai++) { var ea = agents[eai]; var eadx = ea.x - pulse.x, eady = ea.y - pulse.y; var eadist = Math.sqrt(eadx * eadx + eady * eady); if (Math.abs(eadist - evRadius) < ea.radius + 14) { var eaInt = evAlpha * ea.ref * (1 - Math.abs(eadist - evRadius) / (ea.radius + 14)); var eaColor = ea.kind === 'car' ? '255,196,124' : ea.kind === 'bat' ? '196,181,253' : ea.kind === 'deer' ? '163,230,53' : ea.kind === 'bird' ? '103,232,249' : ea.kind === 'jogger' ? '251,146,60' : ea.kind === 'cyclist' ? '244,114,182' : '255,156,156'; var aHalo = gfx.createRadialGradient(ea.x, ea.y, 2, ea.x, ea.y, ea.radius + 10); aHalo.addColorStop(0, 'rgba(' + eaColor + ',' + (eaInt * 0.8) + ')'); aHalo.addColorStop(1, 'rgba(' + eaColor + ',0)'); gfx.fillStyle = aHalo; gfx.beginPath(); gfx.arc(ea.x, ea.y, ea.radius + 10, 0, Math.PI * 2); gfx.fill(); } }
               }
             });
             gfx.restore();
           }
           if (!isMinimap && player._bumpCooldown > 15) { gfx.fillStyle = 'rgba(239,68,68,' + ((player._bumpCooldown - 15) / 5 * 0.15) + ')'; gfx.fillRect(0, 0, map.W, map.H); }
-          gfx.fillStyle = '#6366f1'; gfx.beginPath(); gfx.arc(player.x, player.y, isMinimap ? 5 : 8, 0, Math.PI * 2); gfx.fill();
-          gfx.strokeStyle = '#a5b4fc'; gfx.lineWidth = isMinimap ? 1 : 2; gfx.beginPath(); gfx.moveTo(player.x, player.y);
-          gfx.lineTo(player.x + Math.cos(player.angle) * (isMinimap ? 12 : 22), player.y + Math.sin(player.angle) * (isMinimap ? 12 : 22)); gfx.stroke();
-          if (!isMinimap) { gfx.strokeStyle = 'rgba(99,102,241,0.15)'; gfx.lineWidth = 1; gfx.beginPath(); gfx.arc(player.x, player.y, 80, player.angle - 0.33 * Math.PI, player.angle + 0.33 * Math.PI); gfx.stroke(); }
+          // Forward acoustic listening cone gradient
+          if (!isMinimap) {
+            var coneGrad = gfx.createRadialGradient(player.x, player.y, 4, player.x, player.y, 96);
+            coneGrad.addColorStop(0, 'rgba(56,189,248,0.22)');
+            coneGrad.addColorStop(1, 'rgba(56,189,248,0)');
+            gfx.fillStyle = coneGrad;
+            gfx.beginPath(); gfx.moveTo(player.x, player.y);
+            gfx.arc(player.x, player.y, 96, player.angle - 0.33 * Math.PI, player.angle + 0.33 * Math.PI);
+            gfx.closePath(); gfx.fill();
+            gfx.strokeStyle = 'rgba(56,189,248,0.28)'; gfx.lineWidth = 1.2; gfx.beginPath(); gfx.arc(player.x, player.y, 84, player.angle - 0.33 * Math.PI, player.angle + 0.33 * Math.PI); gfx.stroke();
+          }
+          var pGlow = gfx.createRadialGradient(player.x, player.y, 1, player.x, player.y, isMinimap ? 12 : 18);
+          pGlow.addColorStop(0, 'rgba(56,189,248,0.65)');
+          pGlow.addColorStop(1, 'rgba(56,189,248,0)');
+          gfx.fillStyle = pGlow; gfx.beginPath(); gfx.arc(player.x, player.y, isMinimap ? 12 : 18, 0, Math.PI * 2); gfx.fill();
+          gfx.fillStyle = '#38bdf8'; gfx.beginPath(); gfx.arc(player.x, player.y, isMinimap ? 5.5 : 8, 0, Math.PI * 2); gfx.fill();
+          gfx.strokeStyle = '#e0f2fe'; gfx.lineWidth = isMinimap ? 1.5 : 2.2; gfx.beginPath(); gfx.moveTo(player.x, player.y);
+          gfx.lineTo(player.x + Math.cos(player.angle) * (isMinimap ? 14 : 24), player.y + Math.sin(player.angle) * (isMinimap ? 14 : 24)); gfx.stroke();
           if (!isMinimap) {
             gfx.save(); gfx.translate(map.W - 30, 40); gfx.strokeStyle = 'rgba(148,163,184,0.3)'; gfx.lineWidth = 1;
             gfx.beginPath(); gfx.moveTo(0, -16); gfx.lineTo(0, 16); gfx.stroke(); gfx.beginPath(); gfx.moveTo(-16, 0); gfx.lineTo(16, 0); gfx.stroke();
@@ -1751,7 +2358,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         }
         loop2d();
         return function() { running = false; if (rafId2d) { try { cancelAnimationFrame(rafId2d); } catch (_) {} rafId2d = 0; } };
-      }, [seed, envType, has3D, viewMode, diffId]);
+      }, [seed, envType, has3D, viewMode, diffId, isContrast]);
 
       function cycleViewMode() {
         var modes = ['echo', 'audio', 'reveal']; var idx = modes.indexOf(d.viewMode || 'echo'); var next = modes[(idx + 1) % modes.length];
@@ -1927,22 +2534,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         h('details', { open: false, style: { marginBottom: '8px', borderRadius: '12px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
           h('summary', { style: { padding: '10px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' } }, t('stem.echotrainer.how_echolocation_works', '\uD83D\uDCDA How Echolocation Works')),
           h('div', { style: { padding: '12px 14px', background: isDark ? '#0f172a' : '#fff' } },
-            h('svg', { viewBox: '0 0 500 160', width: '100%', height: 'auto', style: { maxHeight: '140px' }, 'aria-label': t('stem.echotrainer.diagram_showing_how_echolocation_works', 'Diagram showing how echolocation works: a click travels to a wall, bounces back, and the time delay tells you the distance') },
-              h('rect', { x: 0, y: 0, width: 500, height: 160, fill: isDark ? '#0f172a' : '#f8fafc', rx: 8 }),
+            h('svg', { viewBox: '0 0 500 172', width: '100%', preserveAspectRatio: 'xMidYMid meet', style: { display: 'block', width: '100%', height: 'auto', maxHeight: '150px' }, 'aria-label': t('stem.echotrainer.diagram_showing_how_echolocation_works', 'Diagram showing how echolocation works: a click travels to a wall, bounces back, and the time delay tells you the distance') },
+              h('rect', { x: 0, y: 0, width: 500, height: 172, fill: isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc'), rx: 8 }),
               h('circle', { cx: 60, cy: 80, r: 18, fill: '#6366f1', opacity: 0.9 }),
               h('text', { x: 60, y: 85, textAnchor: 'middle', fontSize: '16', fill: '#fff' }, '\uD83C\uDFA7'),
-              h('text', { x: 60, y: 115, textAnchor: 'middle', fontSize: '10.5', fill: isDark ? '#cbd5e1' : '#475569', fontWeight: 700 }, 'You'),
-              h('rect', { x: 410, y: 20, width: 12, height: 120, fill: '#475569', rx: 3 }),
-              h('text', { x: 416, y: 155, textAnchor: 'middle', fontSize: '10.5', fill: isDark ? '#cbd5e1' : '#475569', fontWeight: 700 }, t('stem.echotrainer.wall', 'Wall')),
+              h('text', { x: 60, y: 115, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontWeight: 700 }, 'You'),
+              h('rect', { x: 410, y: 20, width: 12, height: 112, fill: isContrast ? '#ffff00' : '#475569', rx: 3 }),
+              h('text', { x: 416, y: 150, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontWeight: 700 }, t('stem.echotrainer.wall', 'Wall')),
               h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 2, opacity: 0.7 }, h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', from: '0.7', to: '0', dur: '2s', repeatCount: 'indefinite' })),
               h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.5 }, h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', from: '0.5', to: '0', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' })),
               h('circle', { cx: 410, cy: 70, r: 0, fill: 'none', stroke: '#22c55e', strokeWidth: 2, opacity: 0 }, h('animate', { attributeName: 'r', from: '0', to: '180', dur: '2s', begin: '1s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', values: '0;0.6;0', dur: '2s', begin: '1s', repeatCount: 'indefinite' })),
-              h('line', { x1: 90, y1: 68, x2: 200, y2: 68, stroke: '#a78bfa', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowOut)' }),
-              h('text', { x: 145, y: 60, textAnchor: 'middle', fontSize: '10', fill: isDark ? '#c4b5fd' : '#6d28d9', fontWeight: 700 }, t('stem.echotrainer.click', 'Click \u2192')),
-              h('line', { x1: 390, y1: 92, x2: 280, y2: 92, stroke: '#4ade80', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowBack)' }),
-              h('text', { x: 335, y: 108, textAnchor: 'middle', fontSize: '10', fill: isDark ? '#4ade80' : '#15803d', fontWeight: 700 }, t('stem.echotrainer.echo', '\u2190 Echo')),
-              h('rect', { x: 170, y: 124, width: 160, height: 26, rx: 6, fill: isDark ? '#1e293b' : '#f0f9ff', stroke: isDark ? '#334155' : '#bae6fd' }),
-              h('text', { x: 250, y: 141, textAnchor: 'middle', fontSize: '10.5', fill: isDark ? '#7dd3fc' : '#0369a1', fontWeight: 700 }, t('stem.echotrainer.delay_distance_2_343_m_s', 'Delay = Distance \u00d7 2 \u00f7 343 m/s')),
+              h('line', { x1: 90, y1: 68, x2: 200, y2: 68, stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowOut)' }),
+              h('text', { x: 145, y: 60, textAnchor: 'middle', fontSize: '10', fill: isContrast ? '#ffff00' : (isDark ? '#c4b5fd' : '#6d28d9'), fontWeight: 700 }, t('stem.echotrainer.click', 'Click \u2192')),
+              h('line', { x1: 390, y1: 92, x2: 280, y2: 92, stroke: isContrast ? '#00ff00' : '#4ade80', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowBack)' }),
+              h('text', { x: 332, y: 109, textAnchor: 'middle', fontSize: '10', fill: isContrast ? '#00ff00' : (isDark ? '#4ade80' : '#15803d'), fontWeight: 700 }, t('stem.echotrainer.echo', '\u2190 Echo')),
+              h('rect', { x: 170, y: 128, width: 160, height: 26, rx: 6, fill: isContrast ? '#000000' : (isDark ? '#1e293b' : '#f0f9ff'), stroke: isContrast ? '#ffff00' : (isDark ? '#334155' : '#bae6fd') }),
+              h('text', { x: 250, y: 145, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#7dd3fc' : '#0369a1'), fontWeight: 700 }, t('stem.echotrainer.delay_distance_2_343_m_s', 'Delay = Distance \u00d7 2 \u00f7 343 m/s')),
               h('defs', null, h('marker', { id: 'arrowOut', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#a78bfa' })), h('marker', { id: 'arrowBack', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#4ade80' })))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '10px', fontSize: '10px' } },

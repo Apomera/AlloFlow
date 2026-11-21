@@ -74,9 +74,20 @@
   // Sanitize a saved learner route against the current organizer. Unknown and
   // duplicate ids are dropped; newly generated loci are appended in source order.
   // The entrance is always first, so a stale customization can never break a walk.
+  function _mpUnsafeKey(k) { return k === '__proto__' || k === 'constructor' || k === 'prototype'; }
+  function _mpSafeTextureUrl(url) {
+    if (typeof url !== 'string') return false;
+    var s = url.trim();
+    if (!s || s.length > 8 * 1024 * 1024 || /[\u0000-\u001f\\]/.test(s)) return false;
+    if (/^data:/i.test(s)) return /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=_\s-]+$/i.test(s);
+    if (/^blob:/i.test(s)) return true;
+    if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(s)) return false;
+    return true;
+  }
+
   function normalizeRouteOrder(defaultRoute, preferredOrder) {
     var base = Array.isArray(defaultRoute) ? defaultRoute.filter(function (id) { return id !== '__entry'; }) : [];
-    var allowed = {}, seen = {}, ordered = ['__entry'];
+    var allowed = Object.create(null), seen = Object.create(null), ordered = ['__entry'];
     base.forEach(function (id) { allowed[id] = true; });
     (Array.isArray(preferredOrder) ? preferredOrder : []).forEach(function (id) {
       if (allowed[id] && !seen[id]) { seen[id] = true; ordered.push(id); }
@@ -570,7 +581,7 @@
   // what sighted users SEE decorating the frame (the decoration is a retrieval
   // cue, not the answer). PURE: the caller supplies the labels.
   function _decorLabel(decor, id) {
-    var v = decor && decor[id];
+    var v = decor && Object.prototype.hasOwnProperty.call(decor, id) ? decor[id] : null;
     return (typeof v === 'string' && v.trim()) ? v.trim() : '';
   }
 
@@ -779,8 +790,8 @@
     var s = String(text || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
     var a = s.indexOf('{'), b = s.lastIndexOf('}');
     if (a >= 0 && b > a) s = s.slice(a, b + 1);
-    var parsed; try { parsed = JSON.parse(s); } catch (e) { return null; }
-    if (!parsed || typeof parsed !== 'object') return null;
+    var parsed; try { parsed = JSON.parse(s, function (k, val) { return _mpUnsafeKey(k) ? undefined : val; }); } catch (e) { return null; }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
     var v = String(parsed.verdict || '').toLowerCase();
     if (v !== 'ok' && v !== 'enhance' && v !== 'reject') return null;
     return {
@@ -873,13 +884,20 @@
     if (!a || !b) return false;
     return String(a).slice(0, 10) === String(b).slice(0, 10);
   }
-  function _addDays(iso, days) { return new Date(_parseDay(iso) + days * 86400000).toISOString(); }
+  function _addDays(iso, days) {
+    var ms = _parseDay(iso) + (isNum(days) ? days : 0) * 86400000;
+    return new Date(isFinite(ms) ? ms : 0).toISOString();
+  }
 
   // prevMastery + a recall walk's per-locus results (+ now) → updated mastery map.
   function updateMastery(prevMastery, resultsMap, nowISO) {
-    var m = Object.assign({}, prevMastery || {});
+    var m = {};
+    if (prevMastery && typeof prevMastery === 'object') {
+      Object.keys(prevMastery).forEach(function (k) { if (!_mpUnsafeKey(k)) m[k] = prevMastery[k]; });
+    }
     var results = resultsMap || {};
     Object.keys(results).forEach(function (id) {
+      if (_mpUnsafeKey(id)) return;
       var s = _strengthOf(results[id]);
       var prev = (Object.prototype.hasOwnProperty.call(m, id) && m[id]) || { reps: 0 };
       var prevReps = isNum(prev.reps) ? prev.reps : 0;
@@ -1031,23 +1049,57 @@
       window.__cg3dThreePromise = optPromise;
       return optPromise;
     }
-    var srcUrl = opts.threeUrl || THREE_URL;
-    if (window._isDesktopBundledApp === true && /^https?:/i.test(String(srcUrl))
-      && !/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)/i.test(String(srcUrl))) {
+    var srcUrl = String(opts.threeUrl || THREE_URL).trim();
+    if (!srcUrl || /^(?:javascript|data|blob|vbscript|file):/i.test(srcUrl) || /^\/\//.test(srcUrl)) {
+      return Promise.reject(new Error('Unsupported three.js script URL'));
+    }
+    var isRemoteHttp = /^https?:/i.test(srcUrl);
+    var isLoopback = /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)/i.test(srcUrl);
+    if (isRemoteHttp && !isLoopback && !/^https:/i.test(srcUrl)) {
+      return Promise.reject(new Error('Insecure three.js script URL'));
+    }
+    if (window._isDesktopBundledApp === true && isRemoteHttp && !isLoopback) {
       return Promise.reject(new Error('External three.js CDN is disabled in Desktop mode'));
     }
-    window.__cg3dThreePromise = new Promise(function (resolve, reject) {
+    if (typeof URL === 'function' && typeof window !== 'undefined' && window.location && window.location.href) {
       try {
-        var s = document.createElement('script');
+        var parsedUrl = new URL(srcUrl, window.location.href);
+        if (parsedUrl.protocol !== 'https:' && !(parsedUrl.protocol === 'http:' && /^(?:localhost|127\.0\.0\.1|\[::1\])$/.test(parsedUrl.hostname))) {
+          return Promise.reject(new Error('Unsupported three.js script protocol'));
+        }
+        if (window._isDesktopBundledApp === true && !/^(?:localhost|127\.0\.0\.1|\[::1\])$/.test(parsedUrl.hostname) && parsedUrl.origin !== window.location.origin) {
+          return Promise.reject(new Error('External three.js CDN is disabled in Desktop mode'));
+        }
+      } catch (_) {}
+    }
+    window.__cg3dThreePromise = new Promise(function (resolve, reject) {
+      var settled = false, timer = null, s = null;
+      function finish(err, val) {
+        if (settled) return;
+        settled = true;
+        if (timer) { clearTimeout(timer); timer = null; }
+        if (err) {
+          if (s && s.parentNode) { try { s.parentNode.removeChild(s); } catch (_) {} }
+          reject(err);
+        } else {
+          resolve(val);
+        }
+      }
+      try {
+        s = document.createElement('script');
         if (srcUrl === THREE_URL) s.integrity = 'sha384-WgG62qhSmnkOoW866eO1eLJd4HfFyZ2f8XnAK/VJR9mv/JffD14EgnvgpNEw3MmF';
         s.crossOrigin = 'anonymous';
         s.referrerPolicy = 'no-referrer';
+        if (typeof window.__alloConfigureTrustedScript === 'function') {
+          window.__alloConfigureTrustedScript(s, srcUrl);
+        }
         s.src = srcUrl;
         s.async = true;
-        s.onload = function () { window.THREE ? resolve(window.THREE) : reject(new Error('three.js loaded but window.THREE missing')); };
-        s.onerror = function () { reject(new Error('failed to load three.js')); };
+        s.onload = function () { window.THREE ? finish(null, window.THREE) : finish(new Error('three.js loaded but window.THREE missing')); };
+        s.onerror = function () { finish(new Error('failed to load three.js')); };
+        timer = setTimeout(function () { finish(new Error('three.js load timed out')); }, 20000);
         document.head.appendChild(s);
-      } catch (e) { reject(e); }
+      } catch (e) { finish(e); }
     }).catch(function (err) {
       window.__cg3dThreePromise = null;
       throw err;
@@ -1336,7 +1388,7 @@
         var btn = idx >= 0 && state.routePanel
           ? state.routePanel.querySelector('[data-route-index="' + idx + '"]') : null;
         if (btn) {
-          var desc = recall ? describeLocusForRecall(palace, id, t2, decor) : describeLocusForSR(palace, id, t2, decor);
+          var desc = recall ? describeLocusForRecall(palace, id, t, decor) : describeLocusForSR(palace, id, t, decor);
           btn.textContent = desc;
           btn.setAttribute('aria-label', 'Locus ' + idx + '. ' + desc);
         }
@@ -1394,7 +1446,8 @@
     state.cleanup.push(function () { if (visualStyles.parentNode) visualStyles.parentNode.removeChild(visualStyles); });
     state.renderer = renderer;
 
-    var theme = THEMES[opts && opts.theme] || THEMES.gallery;
+    var themeKey = opts && typeof opts.theme === 'string' && Object.prototype.hasOwnProperty.call(THEMES, opts.theme) ? opts.theme : 'gallery';
+    var theme = THEMES[themeKey] || THEMES.gallery;
     var _textureAnisotropy = 1;
     try { _textureAnisotropy = Math.max(1, Math.min(8, renderer.capabilities.getMaxAnisotropy())); } catch (eAniso) {}
     try { renderer.toneMappingExposure = theme.exposure || 1.1; } catch (eExposure) {}
@@ -2189,6 +2242,7 @@
     // placard) is the CUE, the label is the ANSWER and stays hidden until earned.
     var recall = !!opts.recall;
     var frameMeshes = [], frameRefs = {}, _emptyBeacons = [];
+    Object.setPrototypeOf(frameRefs, null);
     var texLoader = new THREE.TextureLoader();
     // Depth-relief "statues": when a locus has BOTH a color image and a grayscale depth
     // map (white = near), the flat frame canvas is swapped for a subdivided plane whose
@@ -2197,14 +2251,14 @@
     var depths = (opts && opts.depths) || {};
     var RELIEF_DEPTH = 26;                    // world-units of max displacement (frame is 175×130)
     function applyRelief(ref, routeNo, color, img, depth) {
-      if (!ref || !ref.canvasMesh || !img || !depth) return false;
+      if (!ref || !ref.canvasMesh || !_mpSafeTextureUrl(img) || !_mpSafeTextureUrl(depth)) return false;
       try {
         ref.imageRequest = (ref.imageRequest || 0) + 1;
-        var ctex = texLoader.load(img, function () { try { ref.mat.needsUpdate = true; } catch (e) {} }, undefined,
-          function () { try { if (state.disposed || ref.mat !== m2) return; ctex.dispose(); ref.mat.map = makeCardTexture(THREE, routeNo, color); ref.mat.displacementMap = null; dtex.dispose(); ref.mat.displacementScale = 0; ref.mat.displacementBias = 0; ref.mat.needsUpdate = true; ref.hasImage = false; ref.empty = !_sculptedIds[ref.locus.id]; } catch (e2) {} });
+        var ctex = texLoader.load(img, function () { try { if (state.disposed || ref.mat !== m2) { if (ctex && ctex.dispose) ctex.dispose(); return; } ref.mat.needsUpdate = true; } catch (e) {} }, undefined,
+          function () { try { if (ctex && ctex.dispose) ctex.dispose(); if (dtex && dtex.dispose) dtex.dispose(); if (state.disposed || ref.mat !== m2) return; ref.mat.map = makeCardTexture(THREE, routeNo, color); ref.mat.displacementMap = null; ref.mat.displacementScale = 0; ref.mat.displacementBias = 0; ref.mat.needsUpdate = true; ref.hasImage = false; ref.empty = !_sculptedIds[ref.locus.id]; } catch (e2) {} });
         if (THREE.sRGBEncoding) ctex.encoding = THREE.sRGBEncoding;
         ctex.anisotropy = _textureAnisotropy;
-        var dtex = texLoader.load(depth, undefined, undefined, function () { if (!state.disposed && ref.mat === m2) { m2.displacementMap = null; m2.displacementScale = 0; m2.displacementBias = 0; m2.needsUpdate = true; } dtex.dispose(); }); dtex.anisotropy = _textureAnisotropy;   // decode-fail → flat (bias 0 ≙ no displacement data)
+        var dtex = texLoader.load(depth, function () { try { if (state.disposed || ref.mat !== m2) { if (dtex && dtex.dispose) dtex.dispose(); return; } m2.needsUpdate = true; } catch (e) {} }, undefined, function () { if (!state.disposed && ref.mat === m2) { m2.displacementMap = null; m2.displacementScale = 0; m2.displacementBias = 0; m2.needsUpdate = true; } if (dtex && dtex.dispose) dtex.dispose(); }); dtex.anisotropy = _textureAnisotropy;   // decode-fail → flat (bias 0 ≙ no displacement data)
         var m2 = new THREE.MeshStandardMaterial({
           map: ctex, displacementMap: dtex,
           displacementScale: RELIEF_DEPTH, displacementBias: -RELIEF_DEPTH * 0.2,
@@ -2285,7 +2339,7 @@
       g2.rotation.y = (l.faceYaw != null) ? l.faceYaw : (l.faceDir > 0 ? 0 : Math.PI);   // face into the (radial) room
       // Frame border + canvas. The border carries an (initially dark) emissive in
       // the room accent so the CURRENT locus can glow — tick pulses emissiveIntensity.
-      var savedRecall = recall && opts.recallState && opts.recallState[l.id];
+      var savedRecall = recall && opts.recallState && Object.prototype.hasOwnProperty.call(opts.recallState, l.id) && opts.recallState[l.id];
       var initialCaption = recall && !(savedRecall && savedRecall.revealed) ? '?' : l.label;
       var borderMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.8), roughness: 0.38, metalness: 0.28, emissive: new THREE.Color(color), emissiveIntensity: 0 });
       if (displayBackGeo) {
@@ -2353,13 +2407,14 @@
         } catch (eW) {}
       }
       var mat = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false });
-      var img = images[l.id];
+      var rawImg = images && Object.prototype.hasOwnProperty.call(images, l.id) ? images[l.id] : null;
+      var img = _mpSafeTextureUrl(rawImg) ? rawImg : null;
       if (img) {
         // TextureLoader decodes asynchronously — a corrupt data-URL surfaces via the
         // onError callback, NOT a synchronous throw — so fall back to the numbered card
         // there too, or a bad image would render as a blank frame.
         try {
-          var tx = texLoader.load(img, undefined, undefined, function () { try { if (state.disposed || mat.map !== tx) return; tx.dispose(); mat.map = makeCardTexture(THREE, routeNo, color); mat.needsUpdate = true; } catch (e2) {} });
+          var tx = texLoader.load(img, function () { try { if (state.disposed || mat.map !== tx) { if (tx && tx.dispose) tx.dispose(); } } catch (e2) {} }, undefined, function () { try { if (tx && tx.dispose) tx.dispose(); if (state.disposed || mat.map !== tx) return; mat.map = makeCardTexture(THREE, routeNo, color); mat.needsUpdate = true; } catch (e2) {} });
           if (THREE.sRGBEncoding) tx.encoding = THREE.sRGBEncoding; tx.anisotropy = _textureAnisotropy; mat.map = tx;
         } catch (e) { mat.map = makeCardTexture(THREE, routeNo, color); }
       } else {
@@ -2451,7 +2506,8 @@
       frameRefs[l.id] = { group: g2, label: lab, captionText: initialCaption, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh, masteryRing: masteryRing, stopRing: stopRing, emptyBeacon: emptyBeacon, idx: routeNo, hasImage: !!img, busy: false, empty: isEmptyLocus };
       if (frameRefs[l.id].empty) borderMat.emissiveIntensity = 0.12;
       // Existing relief pair (reload path): upgrade the flat frame in place.
-      if (img && depths[l.id]) applyRelief(frameRefs[l.id], routeNo, color, img, depths[l.id]);
+      var depthVal = depths && Object.prototype.hasOwnProperty.call(depths, l.id) ? depths[l.id] : null;
+      if (img && depthVal) applyRelief(frameRefs[l.id], routeNo, color, img, depthVal);
     });
 
     if (groundShadePositions.length) {
@@ -2889,9 +2945,9 @@
     var objects = (opts && opts.objects) || {};
     var P3D = window.AlloModules && window.AlloModules.Prim3D;
     var SCULPT_UNIT = 90;                    // a touch bigger than the original 70
-    var _sculptedIds = {};                   // guard against placing a locus twice
-    var _sculptRefs = {};                    // id → {ped, fig} so refine can replace them
-    var _sculptSeq = {};                     // id → token; a late async glb resolve for a replaced/cleared locus is dropped
+    var _sculptedIds = Object.create(null);                   // guard against placing a locus twice
+    var _sculptRefs = Object.create(null);                    // id → {ped, fig} so refine can replace them
+    var _sculptSeq = Object.create(null);                     // id → token; a late async glb resolve for a replaced/cleared locus is dropped
     // objects[id] can be a Prim3D recipe OR a CC0-library reference
     // ({ glbItem: 'sprout', ±scale/rotY/tint }) resolved via GlbLibrary.loadModel —
     // real .glb when the catalog has one, its Prim3D fallback recipe otherwise.
@@ -2954,13 +3010,13 @@
       } catch (e) {}
     }
     if (objects) {
-      palace.loci.forEach(function (l) { if (objects[l.id]) placeSculpture(l, objects[l.id]); });
+      palace.loci.forEach(function (l) { if (Object.prototype.hasOwnProperty.call(objects, l.id) && objects[l.id]) placeSculpture(l, objects[l.id]); });
     }
     // ── Live one-by-one reveal API (called as furnish/sculpt generate each item,
     //    so results appear as they finish instead of all-at-once after a remount) ──
     state.setLocusImage = function (id, img) {
       var ref = frameRefs[id];
-      if (state.disposed || !ref || !ref.mat || !img) return;
+      if (state.disposed || !ref || !ref.mat || !_mpSafeTextureUrl(img)) return;
       var token = (ref.imageRequest = (ref.imageRequest || 0) + 1);
       // Retain the current artwork until decoding succeeds. Late loads cannot
       // resurrect cleared artwork or replace a newer image/relief.
@@ -3067,7 +3123,7 @@
     var landmarks = (opts && opts.landmarks) || {};
     if (P3D && landmarks) {
       (palace.rooms || []).forEach(function (room) {
-        var rec = landmarks[room.key];
+        var rec = Object.prototype.hasOwnProperty.call(landmarks, room.key) ? landmarks[room.key] : null;
         if (!rec || room.key === '__entry') return;
         try {
           var big = P3D.buildObject(THREE, rec, { unit: 150 });
@@ -4621,9 +4677,11 @@
     function enterVR(btn) {
       if (!navigator.xr) return;
       if (btn) btn.disabled = true;
+      var activeSession = null;
       navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] })
         .then(function (session) {
-          if (state.disposed) { try { session.end(); } catch (e) {} return; }
+          activeSession = session;
+          if (state.disposed) { try { Promise.resolve(session.end()).catch(function () {}); } catch (e) {} return; }
           _seatUserForVR();
           freeMode = false;                           // headset owns the view; disable WASD/drag
           state.xrActive = true;
@@ -4647,18 +4705,27 @@
             if (!state.disposed) { if (state._resumeLoop) state._resumeLoop(); else tick(); }   // resume the 2D window-rAF loop (clears any off-screen pause)
           });
           return Promise.resolve(renderer.xr.setSession(session)).then(function () {
-            if (state.disposed) { try { session.end(); } catch (e) {} return; }
+            if (state.disposed) { try { Promise.resolve(session.end()).catch(function () {}); } catch (e) {} return; }
             renderer.setAnimationLoop(tick);
             if (live) live.textContent = _tr(t, 'memory_palace.vr_entered', 'Entered VR. Look around and walk the palace.');
           });
         })
         .catch(function () {
+          state.xrActive = false;
+          try { renderer.setAnimationLoop(null); } catch (e) {}
+          _unseatVR();
+          if (activeSession) { try { Promise.resolve(activeSession.end()).catch(function () {}); } catch (e) {} }
           if (btn) btn.disabled = false;
+          _setFocusCardState();
+          _setCompletionCardState();
+          _setGuidedTetherState();
+          _setArrivalHaloState();
+          if (!state.disposed) { if (state._resumeLoop) state._resumeLoop(); else tick(); }
           if (live) live.textContent = _tr(t, 'memory_palace.vr_failed', 'Could not start VR.');
         });
     }
     state.cleanup.push(function () {
-      try { var s = renderer.xr && renderer.xr.getSession && renderer.xr.getSession(); if (s) s.end(); } catch (e) {}
+      try { var s = renderer.xr && renderer.xr.getSession && renderer.xr.getSession(); if (s) Promise.resolve(s.end()).catch(function () {}); } catch (e) {}
       try { renderer.setAnimationLoop(null); } catch (e) {}
     });
     try {
@@ -4944,7 +5011,11 @@
           var rl = new THREE.Line(rg, new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.85 }));
           rl.scale.z = 6; rl.userData.decorative = true;   // aim-beam length (rig-local; picking uses the true ray)
           c.add(rl);
-          (function (ctrl) { ctrl.addEventListener('selectstart', function () { _xrTrigger(ctrl); }); })(c);
+          (function (ctrl) {
+            var onSelect = function () { _xrTrigger(ctrl); };
+            ctrl.addEventListener('selectstart', onSelect);
+            state.cleanup.push(function () { try { ctrl.removeEventListener('selectstart', onSelect); } catch (e) {} });
+          })(c);
           xrRig.add(c); _xrCtrls.push(c);
           // grip mesh — a small controller-ish box so the student sees their hands
           var gp = renderer.xr.getControllerGrip(ci);
@@ -5290,6 +5361,7 @@
             mats.forEach(function (mx) {
               if (!mx) return;
               if (mx.map && mx.map.dispose) { try { mx.map.dispose(); } catch (e) {} }
+              if (mx.displacementMap && mx.displacementMap.dispose) { try { mx.displacementMap.dispose(); } catch (e) {} }
               if (mx.dispose) { try { mx.dispose(); } catch (e) {} }
             });
           });

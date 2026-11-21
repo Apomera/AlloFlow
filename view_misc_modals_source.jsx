@@ -455,6 +455,7 @@ function UDLGuideModal(props) {
       setIsDictationMode(false);
   }, [setIsDictationMode]);
   const closeGuide = React.useCallback(() => {
+      setChatMenuOpen(false);
       stopLegacyDictation();
       setIsConversationMode(false);
       handleSetShowUDLGuideToFalse();
@@ -467,6 +468,8 @@ function UDLGuideModal(props) {
   // re-rendered closeGuide identity cannot re-fire the effect and steal focus.
   const guideRef = React.useRef(null);
   const closeGuideRef = React.useRef(closeGuide);
+  const [confirmDeleteTemplateId, setConfirmDeleteTemplateId] = React.useState('');
+  const [confirmDeleteArchiveId, setConfirmDeleteArchiveId] = React.useState('');
   closeGuideRef.current = closeGuide;
   // The Stage 6 preview overlay declares aria-modal="true" but sat inside the
   // panel with nothing enforcing it: Tab walked straight out of the overlay
@@ -482,6 +485,10 @@ function UDLGuideModal(props) {
       const overlay = previewRef.current;
       if (!overlay) return undefined;
       const previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
+      const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+      const trap = { root: overlay };
+      trapStack.push(trap);
+      const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
       const focusable = () => Array.from(overlay.querySelectorAll(
           'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
       )).filter(el => {
@@ -494,8 +501,9 @@ function UDLGuideModal(props) {
       });
       (focusable()[0] || overlay).focus();
       const onKey = (ev) => {
+          if (!isTopTrap()) return;
           if (ev.key === 'Escape') {
-              if (ev.isComposing || ev.keyCode === 229) return;
+              if (ev.isComposing || ev.nativeEvent?.isComposing || ev.keyCode === 229) return;
               // Consume it so the panel-level handler does not also close the
               // whole conversation on the same press.
               ev.preventDefault();
@@ -509,7 +517,7 @@ function UDLGuideModal(props) {
           const first = items[0];
           const last = items[items.length - 1];
           const active = document.activeElement;
-          if (!overlay.contains(active)) { ev.preventDefault(); first.focus(); return; }
+          if (!overlay.contains(active) || active === overlay) { ev.preventDefault(); (ev.shiftKey ? last : first).focus(); return; }
           if (ev.shiftKey && active === first) { ev.preventDefault(); last.focus(); }
           else if (!ev.shiftKey && active === last) { ev.preventDefault(); first.focus(); }
       };
@@ -518,8 +526,11 @@ function UDLGuideModal(props) {
       document.addEventListener('keydown', onKey, true);
       return () => {
           document.removeEventListener('keydown', onKey, true);
+          const wasTop = isTopTrap();
+          const idx = trapStack.indexOf(trap);
+          if (idx !== -1) trapStack.splice(idx, 1);
           try {
-              if (previousFocus && typeof previousFocus.focus === 'function' && document.contains(previousFocus)) previousFocus.focus();
+              if (wasTop && previousFocus && typeof previousFocus.focus === 'function' && document.contains(previousFocus)) previousFocus.focus();
           } catch (_) {}
       };
   }, [blueprintPreview]);
@@ -528,10 +539,11 @@ function UDLGuideModal(props) {
       const previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
       const onKey = (ev) => {
           if (ev.key !== 'Escape') return;
-          if (ev.isComposing || ev.keyCode === 229) return;
-          // Let the overflow menu and the preview overlay consume Escape first;
+          if (ev.isComposing || ev.nativeEvent?.isComposing || ev.keyCode === 229) return;
+          // Let the overflow menu, preview overlay, and any active modal dialog consume Escape first;
           // one press should close one layer, not the whole conversation.
           if (ev.defaultPrevented) return;
+          if (Array.isArray(window.__alloFocusTrapStack) && window.__alloFocusTrapStack.length > 0) return;
           const root = guideRef.current;
           if (root && root.querySelector('[data-testid="bp-preview-overlay"]')) return;
           ev.preventDefault();
@@ -569,6 +581,9 @@ function UDLGuideModal(props) {
   // resources land in full view while the conversation stays alive. Local state
   // on purpose: the component stays mounted for the whole session.
   const [isCollapsed, setIsCollapsed] = useState(false);
+  React.useEffect(() => {
+      if (!showUDLGuide || isCollapsed) setChatMenuOpen(false);
+  }, [showUDLGuide, isCollapsed]);
   const [dirtyFields, setDirtyFields] = useState({});
   const markFieldsDirty = (id, dirty) => setDirtyFields(previous => {
       if (!!previous[id] === dirty) return previous;
@@ -666,7 +681,7 @@ function UDLGuideModal(props) {
                             setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.talk_hint') || 'Listening for app commands. You can also ask a question or describe a multi-step request; proposed actions appear in a plan card you review before anything runs. Try “open the learning hub”, “read this page”, or “where is the export button?” Say “pause listening” to pause or “stop listening” to finish. Privacy note: this uses your selected recognition engine. On-device Whisper keeps recognition audio on this device; a browser speech service may send command audio to its provider; Gemini cloud transcription sends each completed spoken turn to Gemini only when you explicitly select it.' }]);
                         }
                     }}
-                    className={`hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? (voicePaused ? 'bg-amber-400 text-indigo-900 border-amber-500' : 'bg-red-600 text-white border-red-400 motion-safe:animate-pulse') : 'border-white/40'}`}
+                    className={`hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-xs font-bold border ${alloVoiceActive ? (voicePaused ? 'bg-amber-400 text-indigo-900 border-amber-500' : 'bg-red-600 text-white border-red-400 motion-safe:animate-pulse') : 'border-white/40'}`}
                     title={alloVoiceActive ? (voicePaused ? t('chat_guide.talk_stop_paused_tooltip', 'Stop the paused AlloBot voice session') : t('chat_guide.talk_stop_tooltip', 'Stop AlloBot command listening')) : t('chat_guide.talk_start_tooltip', 'Start AlloBot command listening')}
                 >
                     <Headphones size={12}/> {alloVoiceActive ? (voicePaused ? t('chat_guide.talk_paused', 'Paused') : (t('chat_guide.talk_on') || 'Listening')) : (t('chat_guide.talk') || 'Talk')}
@@ -683,10 +698,10 @@ function UDLGuideModal(props) {
                         stopLegacyDictation();
                         const loop = window.__alloVoiceLoop;
                         if (!loop) return;
-                        if (voicePaused) { Promise.resolve(loop.resume()).then((ok) => setVoicePaused(!ok)); }
+                        if (voicePaused) { Promise.resolve(loop.resume()).then((ok) => setVoicePaused(!ok)).catch(() => setVoicePaused(true)); }
                         else { loop.pause(); setVoicePaused(true); }
                     }}
-                    className={`hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${voicePaused ? 'bg-amber-400 text-indigo-900 border-amber-500' : 'border-white/40'}`}
+                    className={`hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-xs font-bold border ${voicePaused ? 'bg-amber-400 text-indigo-900 border-amber-500' : 'border-white/40'}`}
                     title={voicePaused ? t('chat_guide.resume_tooltip', 'Resume AlloBot command listening') : t('chat_guide.pause_tooltip', 'Pause AlloBot command listening and release its microphone session')}
                 >
                     {voicePaused ? (t('chat_guide.resume', 'Resume')) : (t('chat_guide.pause', 'Pause'))}
@@ -716,7 +731,7 @@ function UDLGuideModal(props) {
                             onKeyDown={(ev) => {
                                 if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp' && ev.key !== 'Home' && ev.key !== 'End') return;
                                 ev.preventDefault();
-                                const items = Array.from(ev.currentTarget.querySelectorAll('[role^="menuitem"]'));
+                                const items = Array.from(ev.currentTarget.querySelectorAll('[role^="menuitem"]:not(:disabled):not([aria-disabled="true"])'));
                                 if (!items.length) return;
                                 const at = items.indexOf(document.activeElement);
                                 const next = ev.key === 'Home' ? 0
@@ -732,11 +747,12 @@ function UDLGuideModal(props) {
                                 <Eye size={14} className="mt-0.5 shrink-0"/>
                                 <span>
                                     <span className="font-bold">{t('chat_guide.show_me', 'Point things out on screen')}</span>
-                                    <span className="block text-[11px] text-slate-500">{isShowMeMode ? t('common.on', 'On') : t('common.off', 'Off')} — {t('chat_guide.show_me_desc', 'Asking “where is…” always points, with or without this.')}</span>
+                                    <span className="block text-xs text-slate-600">{isShowMeMode ? t('common.on', 'On') : t('common.off', 'Off')} — {t('chat_guide.show_me_desc', 'Asking “where is…” always points, with or without this.')}</span>
                                 </span>
                             </button>
                             {props.canReviseLesson === true && <button role="menuitem" type="button"
-                                disabled={isChatProcessing}
+                                disabled={isChatProcessing || aiOff}
+                                title={aiTitle}
                                 onClick={() => { handleSendUDLMessage({ action: 'lesson-revision-start' }); setChatMenuOpen(false); }}
                                 className="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100 disabled:opacity-40" style={{ minHeight: 44 }}>
                                 <span className="font-bold">{tx('chat_guide.revision_title', 'Revise existing lesson')}</span>
@@ -837,7 +853,7 @@ function UDLGuideModal(props) {
                           ))}
                       </div>
                       {idx === udlMessages.length - 1 && (
-                          <p className={`mt-2 text-[11px] italic ${chatStyles.subText}`}>
+                          <p className={`mt-2 text-xs italic ${chatStyles.subText}`}>
                               {t('chat_guide.chips.or_type') || '…or just type your answer below.'}
                           </p>
                       )}
@@ -855,7 +871,7 @@ function UDLGuideModal(props) {
               throw away work they are in the middle of. */}
           {!activeBlueprint && Array.isArray(lessonTemplates) && lessonTemplates.length > 0 && (
             <div className="w-full" data-testid="bp-template-picker">
-              <p className={`text-[11px] mb-1 ${chatStyles.subText}`}>
+              <p className={`text-xs mb-1 ${chatStyles.subText}`}>
                 {t('blueprint.template_picker_title') || 'Start from one of your templates:'}
               </p>
               <ul className="space-y-1">
@@ -886,12 +902,17 @@ function UDLGuideModal(props) {
                     <button
                       type="button"
                       data-testid="bp-template-delete"
-                      onClick={() => handleDeleteLessonTemplate(tpl.id)}
-                      aria-label={`${t('blueprint.template_delete') || 'Delete template'}: ${tpl.name}`}
-                      title={t('blueprint.template_delete') || 'Delete template'}
-                      className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+                      onClick={() => {
+                        if (confirmDeleteTemplateId !== tpl.id) { setConfirmDeleteTemplateId(tpl.id); return; }
+                        setConfirmDeleteTemplateId('');
+                        handleDeleteLessonTemplate(tpl.id);
+                      }}
+                      onBlur={() => { if (confirmDeleteTemplateId === tpl.id) setConfirmDeleteTemplateId(''); }}
+                      aria-label={`${confirmDeleteTemplateId === tpl.id ? 'Confirm delete template' : (t('blueprint.template_delete') || 'Delete template')}: ${tpl.name}`}
+                      title={confirmDeleteTemplateId === tpl.id ? 'Click again to delete template' : (t('blueprint.template_delete') || 'Delete template')}
+                      className={`inline-flex items-center justify-center min-w-11 min-h-11 text-xs px-2 py-1.5 rounded border ${confirmDeleteTemplateId === tpl.id ? 'border-rose-500 bg-rose-50 text-rose-800 font-bold' : 'border-slate-300 text-slate-700 hover:bg-slate-100'}`}
                     >
-                      ×
+                      {confirmDeleteTemplateId === tpl.id ? 'Delete?' : '×'}
                     </button>
                   </li>
                 ))}
@@ -906,7 +927,7 @@ function UDLGuideModal(props) {
               are keyboard-operable, not announce-only. */}
           {!activeBlueprint && Array.isArray(archivedPlans) && archivedPlans.length > 0 && (
             <div className="w-full" data-testid="bp-archive-picker">
-              <p className={`text-[11px] mb-1 ${chatStyles.subText}`}>
+              <p className={`text-xs mb-1 ${chatStyles.subText}`}>
                 {t('blueprint.archive_title') || 'Previous plans:'}
               </p>
               <ul className="space-y-1">
@@ -929,12 +950,17 @@ function UDLGuideModal(props) {
                       type="button"
                       data-testid="bp-archive-delete"
                       data-help-key="blueprint_archive_delete_btn"
-                      onClick={() => handleDeleteArchivedPlan(rec.id)}
-                      aria-label={`${t('blueprint.archive_delete') || 'Delete archived plan'}: ${rec.name}`}
-                      title={t('blueprint.archive_delete') || 'Delete archived plan'}
-                      className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+                      onClick={() => {
+                        if (confirmDeleteArchiveId !== rec.id) { setConfirmDeleteArchiveId(rec.id); return; }
+                        setConfirmDeleteArchiveId('');
+                        handleDeleteArchivedPlan(rec.id);
+                      }}
+                      onBlur={() => { if (confirmDeleteArchiveId === rec.id) setConfirmDeleteArchiveId(''); }}
+                      aria-label={`${confirmDeleteArchiveId === rec.id ? 'Confirm delete archived plan' : (t('blueprint.archive_delete') || 'Delete archived plan')}: ${rec.name}`}
+                      title={confirmDeleteArchiveId === rec.id ? 'Click again to delete archived plan' : (t('blueprint.archive_delete') || 'Delete archived plan')}
+                      className={`inline-flex items-center justify-center min-w-11 min-h-11 text-xs px-2 py-1.5 rounded border ${confirmDeleteArchiveId === rec.id ? 'border-rose-500 bg-rose-50 text-rose-800 font-bold' : 'border-slate-300 text-slate-700 hover:bg-slate-100'}`}
                     >
-                      ×
+                      {confirmDeleteArchiveId === rec.id ? 'Delete?' : '×'}
                     </button>
                   </li>
                 ))}
@@ -1089,12 +1115,16 @@ function UDLGuideModal(props) {
                 <p className={`text-sm ${chatStyles.subText}`} data-testid="bp-preview-unsupported">
                   {t('blueprint.preview_unsupported') || 'This resource type opens in its own view rather than a preview.'}
                 </p>
-              ) : (
+              ) : (typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function') ? (
                 <div
                   className="allo-preview-body text-sm"
                   data-testid="bp-preview-body"
-                  dangerouslySetInnerHTML={{ __html: (typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function') ? window.sanitizeHtml(blueprintPreview.html || '') : String(blueprintPreview.html || '') }}
+                  dangerouslySetInnerHTML={{ __html: window.sanitizeHtml(blueprintPreview.html || '') }}
                 />
+              ) : (
+                <p className={`text-sm ${chatStyles.subText}`} data-testid="bp-preview-sanitizer-unavailable">
+                  {t('blueprint.preview_unavailable') || 'Safe preview is unavailable right now. Open this resource directly from History.'}
+                </p>
               )}
             </div>
           </div>
@@ -1116,7 +1146,7 @@ function UDLGuideModal(props) {
           <div id="udl-standard-tools" hidden={!standardToolsOpen}>
           <div className={`mb-3 p-2 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : theme === 'contrast' ? 'bg-black border-white' : 'bg-slate-50 border-slate-200'}`}>
               <div className="flex justify-between items-center mb-2">
-                  <label className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}`}>
+                  <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}`}>
                       <Search size={10} /> {t('standards.finder_header')}
                   </label>
               </div>
@@ -1132,7 +1162,12 @@ function UDLGuideModal(props) {
                       type="text"
                       value={aiStandardQuery}
                       onChange={(e) => setAiStandardQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleFindStandards()}
+                      onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.isComposing && !e.nativeEvent?.isComposing && e.keyCode !== 229 && !isFindingStandards && aiStandardQuery.trim() && !aiOff) {
+                              e.preventDefault();
+                              handleFindStandards();
+                          }
+                      }}
                       placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder')}
                       className={`flex-grow text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`}
                   />
@@ -1174,10 +1209,10 @@ function UDLGuideModal(props) {
                               className={`w-full text-left p-2 min-h-[24px] transition-colors group flex flex-col gap-1 ${theme === 'dark' ? 'hover:bg-indigo-900/50' : theme === 'contrast' ? 'hover:bg-yellow-900' : 'hover:bg-green-50'}`}
                           >
                               <span className="flex justify-between items-start gap-1">
-                                  <span className={`text-[11px] font-bold px-1 rounded border ${theme === 'dark' ? 'bg-indigo-900 text-indigo-200 border-indigo-700' : theme === 'contrast' ? 'bg-black text-yellow-400 border-yellow-400' : 'bg-indigo-50 text-indigo-700 border-indigo-100'}`}>{std.code}</span>
-                                  <span className={`text-[11px] uppercase ml-auto ${chatStyles.subText}`}>{std.framework}</span>
+                                  <span className={`text-xs font-bold px-1 rounded border ${theme === 'dark' ? 'bg-indigo-900 text-indigo-200 border-indigo-700' : theme === 'contrast' ? 'bg-black text-yellow-400 border-yellow-400' : 'bg-indigo-50 text-indigo-700 border-indigo-100'}`}>{std.code}</span>
+                                  <span className={`text-xs uppercase ml-auto ${chatStyles.subText}`}>{std.framework}</span>
                               </span>
-                              <span className={`block text-[11px] leading-snug line-clamp-2 ${chatStyles.text}`}>
+                              <span className={`block text-xs leading-snug line-clamp-2 ${chatStyles.text}`}>
                                   {std.description}
                               </span>
                           </button>
@@ -1188,7 +1223,7 @@ function UDLGuideModal(props) {
           </div>
           <div className={`mb-3 p-2 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : theme === 'contrast' ? 'bg-black border-white' : 'bg-slate-50 border-slate-200'}`}>
               <div className="flex justify-between items-center mb-1.5">
-                  <label className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}`}>
+                  <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}`}>
                       <ShieldCheck size={10} /> {t('standards.consult_header')}
                   </label>
               </div>
@@ -1232,7 +1267,7 @@ function UDLGuideModal(props) {
                       aria-label={t('standards.consult_btn_title')}
                       data-help-key="chat_consult_btn" disabled={aiOff}
                       onClick={() => handleSendUDLMessage(t('standards.prompts.identify_key_standards', { framework: udlStandardFramework, grade: udlStandardGrade }))}
-                      className={`p-1.5 rounded transition-colors border ${theme === 'dark' ? 'bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800' : theme === 'contrast' ? 'bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200'}`}
+                      className={`p-1.5 rounded transition-colors border disabled:opacity-50 disabled:cursor-not-allowed ${theme === 'dark' ? 'bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800' : theme === 'contrast' ? 'bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200'}`}
                       title={aiTitle || t('standards.consult_btn_title')}
                   >
                       <ArrowRight size={14} />
@@ -1273,6 +1308,7 @@ function UDLGuideModal(props) {
                 value={udlInput}
                 onChange={(e) => setUdlInput(e.target.value)}
                 onKeyDown={(e) => {
+                    if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
                     if (e.key !== 'Enter') return;
                     e.preventDefault();
                     // Match the Send button's gate. A disabled button alone
@@ -1307,7 +1343,7 @@ function UDLGuideModal(props) {
 // tool directory, because it tests browser capabilities that affect AI,
 // files, storage, and pop-up workflows.
 function PlatformDiagnosticsSection(props) {
-  const { t } = props;
+  const { t, onCloseModal } = props;
   const [platProbe, setPlatProbe] = React.useState(null);
   const [probeRunning, setProbeRunning] = React.useState(false);
 
@@ -1559,7 +1595,7 @@ function PlatformDiagnosticsSection(props) {
         <div className="bg-violet-100 p-1.5 rounded-lg"><Cpu size={14} className="text-violet-600"/></div>
         <div>
           <h4 id="ai-platform-diagnostics-title" className="text-xs font-black text-slate-700 uppercase tracking-wider">{t('platform_diag.header') || 'Platform & Browser Diagnostics'}</h4>
-          <p className="text-[11px] text-slate-600 mt-0.5">Check capabilities that affect AI, files, storage, and pop-up workflows.</p>
+          <p className="text-xs text-slate-600 mt-0.5">Check capabilities that affect AI, files, storage, and pop-up workflows.</p>
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -1576,25 +1612,25 @@ function PlatformDiagnosticsSection(props) {
             Folding it in rather than deleting it keeps the one thing it is good for
             (Canvas storage-persistence bug reports) without a second door wearing
             the storage manager's label. Ctrl+Alt+Shift+D still opens it too. */}
-        <button type="button" data-help-ignore="true" onClick={() => { if (typeof window.__alloOpenDeviceStorageProbe === 'function') window.__alloOpenDeviceStorageProbe(); }} className="bg-white text-violet-700 border-2 border-violet-200 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-50">
+        <button type="button" data-help-ignore="true" onClick={() => { if (typeof window.__alloOpenDeviceStorageProbe === 'function') { if (typeof onCloseModal === 'function') onCloseModal(); window.__alloOpenDeviceStorageProbe(); } }} className="bg-white text-violet-700 border-2 border-violet-200 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-50">
           💾 {t('platform_diag.storage_probe') || 'Test device storage'}
         </button>
       </div>
-      <p className="text-[10px] text-slate-500 mt-2">Use this when a feature behaves differently across environments. Copy the report and include it when asking for help.</p>
-      <p className="text-[10px] text-slate-500 mt-1">{t('platform_diag.storage_probe_hint') || 'Test device storage only checks whether this browser can keep data. To see, restore, or erase your saved resource packs, use Local storage and downloads above.'}</p>
+      <p className="text-xs text-slate-600 mt-2">Use this when a feature behaves differently across environments. Copy the report and include it when asking for help.</p>
+      <p className="text-xs text-slate-600 mt-1">{t('platform_diag.storage_probe_hint') || 'Test device storage only checks whether this browser can keep data. To see, restore, or erase your saved resource packs, use Local storage and downloads above.'}</p>
       {platProbe && (
         <>
-          <div className="mt-3 bg-white border border-slate-300 rounded-lg p-2 text-[11px]" role="region" aria-labelledby="ai-platform-results-title">
+          <div className="mt-3 bg-white border border-slate-300 rounded-lg p-2 text-xs" role="region" aria-labelledby="ai-platform-results-title">
             <div className="flex items-center justify-between gap-2 mb-1">
               <span id="ai-platform-results-title" className="font-bold text-slate-700">{t('platform_diag.results') || 'Results'} — {platProbe.when}</span>
-              <button type="button" onClick={copyProbeReport} aria-label={t('platform_diag.copy') || 'Copy report'} className="min-h-11 shrink-0 px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold hover:bg-slate-200">
+              <button type="button" onClick={copyProbeReport} aria-label={t('platform_diag.copy') || 'Copy report'} className="min-h-11 shrink-0 px-2 py-0.5 bg-slate-100 rounded text-xs font-bold hover:bg-slate-200">
                 📋 {t('platform_diag.copy') || 'Copy report'}
               </button>
             </div>
             <ul className="space-y-0.5">
               {platProbe.rows.map((row, index) => (
                 <li key={index} className="flex gap-1.5">
-                  <span className={'shrink-0 font-bold ' + (row.status === 'pass' ? 'text-green-700' : row.status === 'fail' ? 'text-red-700' : row.status === 'warn' ? 'text-amber-700' : 'text-slate-500')}>
+                  <span className={'shrink-0 font-bold ' + (row.status === 'pass' ? 'text-green-700' : row.status === 'fail' ? 'text-red-700' : row.status === 'warn' ? 'text-amber-700' : 'text-slate-600')}>
                     {row.status === 'pass' ? '✓' : row.status === 'fail' ? '✗' : row.status === 'warn' ? '⚠' : 'ℹ'}
                   </span>
                   <span className="min-w-0"><span className="font-bold">{row.name}:</span> {row.detail}</span>
@@ -1728,33 +1764,33 @@ function ModelDiagnosticsSection(props) {
 
       {/* ── 0. Session usage meter + quota status ── */}
       <div className="mb-3 bg-violet-50/60 border border-violet-200 rounded-lg p-2.5">
-        <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">⛽ {t('model_diag.usage_header') || 'Your Gemini usage (this session)'}</p>
+        <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">⛽ {t('model_diag.usage_header') || 'Your Gemini usage (this session)'}</p>
         {_sessionCallTotal === 0 ? (
-          <p className="text-[11px] text-slate-600">{t('model_diag.usage_none') || 'No AI calls yet this session.'}</p>
+          <p className="text-xs text-slate-600">{t('model_diag.usage_none') || 'No AI calls yet this session.'}</p>
         ) : (
-          <p className="text-[11px] text-slate-700">
+          <p className="text-xs text-slate-700">
             <span className="font-bold">{_sessionCallTotal}</span> {t('model_diag.usage_calls') || 'AI call(s):'}{' '}
             {_sessionTotals.map((pair, i) => <span key={i} className="font-mono">{pair[0]} ×{pair[1]}{i < _sessionTotals.length - 1 ? ' · ' : ''}</span>)}
           </p>
         )}
         {_quotaHits.length > 0 ? (
-          <p className="text-[11px] text-red-700 font-bold mt-1">🛑 {t('model_diag.quota_hit') || 'Quota limit (HTTP 429) hit this session'} — {new Date(_quotaHits[_quotaHits.length - 1].at).toLocaleTimeString()} ({_quotaHits[_quotaHits.length - 1].model}). {t('model_diag.quota_hit_advice') || 'If retries keep failing, the daily quota is spent — free-tier quotas reset around midnight Pacific.'}</p>
+          <p className="text-xs text-red-700 font-bold mt-1">🛑 {t('model_diag.quota_hit') || 'Quota limit (HTTP 429) hit this session'} — {new Date(_quotaHits[_quotaHits.length - 1].at).toLocaleTimeString()} ({_quotaHits[_quotaHits.length - 1].model}). {t('model_diag.quota_hit_advice') || 'If retries keep failing, the daily quota is spent — free-tier quotas reset around midnight Pacific.'}</p>
         ) : (
-          <p className="text-[11px] text-green-700 mt-1">✓ {t('model_diag.quota_ok') || 'No quota errors this session.'}</p>
+          <p className="text-xs text-green-700 mt-1">✓ {t('model_diag.quota_ok') || 'No quota errors this session.'}</p>
         )}
-        <p className="text-[10px] text-slate-500 mt-1">{t('model_diag.usage_caveat') || 'Honest limits of this meter: Google does not let apps see your remaining balance, so this counts AlloFlow’s own calls and resets when the page reloads. A 429 error is the only definitive “quota reached” signal — when one happens, a red banner appears at the top of the app (dismissable) and it’s recorded here.'}</p>
+        <p className="text-xs text-slate-600 mt-1">{t('model_diag.usage_caveat') || 'Honest limits of this meter: Google does not let apps see your remaining balance, so this counts AlloFlow’s own calls and resets when the page reloads. A 429 error is the only definitive “quota reached” signal — when one happens, a red banner appears at the top of the app (dismissable) and it’s recorded here.'}</p>
       </div>
 
       {/* ── 1. Requested → Served ledger ── */}
       <div className="mb-3">
-        <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('model_diag.served_header') || 'Models actually used this session'}</p>
+        <p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('model_diag.served_header') || 'Models actually used this session'}</p>
         {usageEntries.length === 0 ? (
           <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-            <p className="text-[11px] text-slate-600 italic">{t('model_diag.no_calls_yet') || 'No AI calls completed yet this session. Run an audit, generate text, or use any AI feature to populate.'}</p>
+            <p className="text-xs text-slate-600 italic">{t('model_diag.no_calls_yet') || 'No AI calls completed yet this session. Run an audit, generate text, or use any AI feature to populate.'}</p>
           </div>
         ) : (
           <div className="bg-slate-50 rounded-lg border border-slate-100 overflow-x-auto">
-            <table className="text-[11px] w-full">
+            <table className="text-xs w-full">
               <thead>
                 <tr className="bg-slate-100 text-slate-700">
                   <th scope="col" className="text-left p-1.5 font-bold">{t('model_diag.col_requested') || 'Requested'}</th>
@@ -1779,30 +1815,30 @@ function ModelDiagnosticsSection(props) {
             </table>
           </div>
         )}
-        <p className="text-[10px] text-slate-600 mt-1 italic">{t('model_diag.served_hint') || '⇄ marks a row where Google served a different model than the one requested (silent reroute by the API).'}</p>
+        <p className="text-xs text-slate-600 mt-1 italic">{t('model_diag.served_hint') || '⇄ marks a row where Google served a different model than the one requested (silent reroute by the API).'}</p>
       </div>
 
       {/* ── 2. Catalog ── */}
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1.5">
-          <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('model_diag.catalog_header') || 'Available models for your API key'}</p>
+          <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('model_diag.catalog_header') || 'Available models for your API key'}</p>
           <button
             type="button"
             onClick={refreshCatalog}
             disabled={catalogLoading}
-            className="text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded hover:bg-indigo-200 disabled:opacity-50 active:scale-95"
+            className="text-xs font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded hover:bg-indigo-200 disabled:opacity-50 active:scale-95"
           >
             {catalogLoading ? (t('model_diag.loading') || '⏳ Loading...') : ((catalogFetched ? '↻ ' : '↓ ') + (t('model_diag.refresh') || 'Fetch catalog'))}
           </button>
         </div>
         {catalogError && (
           <div className="bg-red-50 p-2 rounded-lg border border-red-100 mb-2">
-            <p className="text-[11px] text-red-700 font-medium">⚠ {catalogError}</p>
+            <p className="text-xs text-red-700 font-medium">⚠ {catalogError}</p>
           </div>
         )}
         {catalog.length > 0 && (
           <div className="bg-slate-50 rounded-lg border border-slate-100 max-h-40 overflow-y-auto">
-            <table className="text-[10px] w-full">
+            <table className="text-xs w-full">
               <thead className="sticky top-0 bg-slate-100">
                 <tr className="text-slate-700">
                   <th scope="col" className="text-left p-1 font-bold">{t('model_diag.col_id') || 'Model'}</th>
@@ -1825,19 +1861,19 @@ function ModelDiagnosticsSection(props) {
           </div>
         )}
         {!catalogFetched && !catalogError && (
-          <p className="text-[10px] text-slate-500 italic">{t('model_diag.click_to_load') || 'Click "Fetch catalog" to query Google for the list of models your key can access.'}</p>
+          <p className="text-xs text-slate-600 italic">{t('model_diag.click_to_load') || 'Click "Fetch catalog" to query Google for the list of models your key can access.'}</p>
         )}
       </div>
 
       {/* ── 3. Current model map + per-slot overrides ── */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('model_diag.map_header') || 'Current model map (what the app requests)'}</p>
+          <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('model_diag.map_header') || 'Current model map (what the app requests)'}</p>
           {Object.keys(storedOverrides).length > 0 && (
             <button
               type="button"
               onClick={clearAllOverrides}
-              className="text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-700 px-2 py-1 rounded hover:bg-slate-300 active:scale-95"
+              className="text-xs font-bold uppercase tracking-wider bg-slate-200 text-slate-700 px-2 py-1 rounded hover:bg-slate-300 active:scale-95"
               title={t('model_diag.clear_all_tt') || 'Remove every per-slot override and revert to app defaults'}
             >
               {t('model_diag.clear_all') || '↩ Clear overrides'}
@@ -1848,15 +1884,16 @@ function ModelDiagnosticsSection(props) {
           {slots.map((slot) => {
             const current = (GEMINI_MODELS && GEMINI_MODELS[slot]) || '(not set)';
             const overridden = !!storedOverrides[slot];
-            const inCatalog = (catalog.length === 0) || catalog.some(m => m.id === current);
+            const activeModel = storedOverrides[slot] || current;
+            const inCatalog = (catalog.length === 0) || catalog.some(m => m.id === activeModel);
             return (
-              <div key={slot + ':' + refreshKey} className="flex items-center gap-1.5 text-[11px]">
+              <div key={slot + ':' + refreshKey} className="flex items-center gap-1.5 text-xs">
                 <span className="font-bold text-slate-700 uppercase tracking-wider w-14 shrink-0">{slot}</span>
                 {catalog.length > 0 ? (
                   <select
                     defaultValue={storedOverrides[slot] || ''}
                     onChange={(e) => saveOverride(slot, e.target.value)}
-                    className="flex-1 p-1 text-[11px] border border-slate-200 rounded bg-white font-mono text-slate-700"
+                    className="flex-1 p-1 text-xs border border-slate-200 rounded bg-white font-mono text-slate-700"
                     aria-label={(t('model_diag.slot_aria') || 'Model override for slot') + ': ' + slot}
                   >
                     <option value="">{(t('model_diag.use_default_prefix') || 'Use app default') + ' (' + current + ')'}</option>
@@ -1866,18 +1903,18 @@ function ModelDiagnosticsSection(props) {
                   <span className="flex-1 font-mono text-slate-700">{current}</span>
                 )}
                 {overridden && !inCatalog && catalog.length > 0 && (
-                  <span className="text-[10px] text-amber-700 font-bold whitespace-nowrap" title={t('model_diag.not_in_catalog_tt') || 'This override is not in your current model catalog — may 404 at request time'}>⚠ {t('model_diag.not_in_catalog') || 'not in catalog'}</span>
+                  <span className="text-xs text-amber-700 font-bold whitespace-nowrap" title={t('model_diag.not_in_catalog_tt') || 'This override is not in your current model catalog — may 404 at request time'}>⚠ {t('model_diag.not_in_catalog') || 'not in catalog'}</span>
                 )}
                 {overridden && (inCatalog || catalog.length === 0) && (
-                  <span className="text-[10px] text-indigo-700 font-bold" title={t('model_diag.overridden_tt') || 'You have overridden this slot'}>✎</span>
+                  <span className="text-xs text-indigo-700 font-bold" title={t('model_diag.overridden_tt') || 'You have overridden this slot'}>✎</span>
                 )}
               </div>
             );
           })}
         </div>
-        <p className="text-[10px] text-slate-500 mt-1.5 italic">⚡ {t('model_diag.reload_hint') || 'Reload the page after changing a model override for it to take effect.'}</p>
+        <p className="text-xs text-slate-600 mt-1.5 italic">⚡ {t('model_diag.reload_hint') || 'Reload the page after changing a model override for it to take effect.'}</p>
         {_isCanvasEnv && (
-          <p className="text-[10px] text-slate-500 mt-0.5 italic">{t('model_diag.canvas_hint') || 'In Gemini Canvas, available models are determined by Google and may be a narrower set than public GA.'}</p>
+          <p className="text-xs text-slate-600 mt-0.5 italic">{t('model_diag.canvas_hint') || 'In Gemini Canvas, available models are determined by Google and may be a narrower set than public GA.'}</p>
         )}
       </div>
     </div>
@@ -1903,21 +1940,67 @@ function AIBackendModalBody(props) {
     && document.body.classList.contains('alloflow-launchpad-active');
   const aiBackendOverlayZ = launchPadActive ? 2147483002 : (props.showStemLab ? 10490 : undefined);
   const aiBackendDialogRef = React.useRef(null);
+  const aiBackendBackdropDownRef = React.useRef(null);
+  const aiBackendTrapRef = React.useRef(null);
   React.useEffect(() => {
     const dialog = aiBackendDialogRef.current;
     if (!dialog) return undefined;
     const previouslyFocused = document.activeElement;
+    const isolatedSiblings = [];
+    let branch = dialog.parentElement || dialog;
+    while (branch && branch.parentElement && branch !== document.body) {
+      const parent = branch.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
+        isolatedSiblings.push({
+          el: sibling,
+          hadInert: sibling.hasAttribute('inert'),
+          prevAriaHidden: sibling.getAttribute('aria-hidden'),
+        });
+        sibling.inert = true;
+        sibling.setAttribute('inert', '');
+        sibling.setAttribute('aria-hidden', 'true');
+      });
+      branch = parent;
+    }
+    const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+    const alloScrollLocked = !!document.body;
+    if (alloScrollLocked && ++alloScrollLock.count === 1) {
+      alloScrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    }
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    aiBackendTrapRef.current = trap;
+    trapStack.push(trap);
     try { dialog.focus({ preventScroll: true }); }
     catch (_) { try { dialog.focus(); } catch (_) {} }
     return () => {
-      if (previouslyFocused && previouslyFocused !== document.body && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') {
+      if (alloScrollLocked) {
+        alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
+        if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+      }
+      isolatedSiblings.forEach(({ el, hadInert, prevAriaHidden }) => {
+        if (!el || !el.isConnected) return;
+        if (!hadInert) { el.inert = false; el.removeAttribute('inert'); }
+        if (prevAriaHidden === null) el.removeAttribute('aria-hidden');
+        else if (prevAriaHidden !== 'true') el.setAttribute('aria-hidden', prevAriaHidden);
+      });
+      const wasTop = trapStack[trapStack.length - 1] === trap;
+      const idx = trapStack.indexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      if (aiBackendTrapRef.current === trap) aiBackendTrapRef.current = null;
+      if (wasTop && previouslyFocused && previouslyFocused !== document.body && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') {
         try { previouslyFocused.focus({ preventScroll: true }); }
         catch (_) { try { previouslyFocused.focus(); } catch (_) {} }
       }
     };
   }, []);
   const [confirmForgetKey, setConfirmForgetKey] = React.useState(false);
+  const [confirmForgetCloudKey, setConfirmForgetCloudKey] = React.useState(false);
   const handleAIBackendDialogKeyDown = (event) => {
+    const trapStack = window.__alloFocusTrapStack;
+    if (Array.isArray(trapStack) && trapStack.length > 0 && aiBackendTrapRef.current && trapStack[trapStack.length - 1] !== aiBackendTrapRef.current) return;
     if (event.key === 'Escape') {
       if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
@@ -2125,6 +2208,8 @@ function AIBackendModalBody(props) {
         if (keyLock && typeof keyLock.forgetAiKey === 'function') keyLock.forgetAiKey();
         if (isStudentAiSetup) window.dispatchEvent(new CustomEvent('alloflow:student-ai-config-changed'));
       }
+      setKeyLockTick((tick) => tick + 1);
+      try { window.dispatchEvent(new CustomEvent('alloflow:ai-config-changed')); } catch (_) {}
     } catch (_) {}
   };
   const populateModelSelect = (select, emptyLabel, models, selectedValue = '') => {
@@ -2393,7 +2478,7 @@ function AIBackendModalBody(props) {
   };
   const renderUrlField = () => (
     <div>
-        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.server_url_label') || 'Server URL'}</label>
+        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.server_url_label') || 'Server URL'}</label>
         <input
             data-help-key="ai_backend_custom_url_input"
             id="ai-backend-url" aria-label={t('ai_backend.server_url_aria') || 'Custom AI backend URL'}
@@ -2414,7 +2499,7 @@ function AIBackendModalBody(props) {
   // host never uses this key in student mode whichever provider it belongs to.
   const renderTeacherKeyTermsNotice = () => (
     <div id="ai-backend-key-terms" className="mb-3 rounded-xl border-2 border-rose-200 bg-rose-50/70 p-3">
-        <p className="text-[11px] font-black uppercase tracking-wider text-rose-800">
+        <p className="text-xs font-black uppercase tracking-wider text-rose-800">
             {t('ai_backend.key_terms_kicker') || 'For teachers only'}
         </p>
         <p className="mt-1 text-xs leading-relaxed text-rose-900">
@@ -2431,7 +2516,7 @@ function AIBackendModalBody(props) {
     const status = keyLockStatus();
     if (!status) return null;
     if (status.saved && !status.unsaved && !status.plaintextOnDevice) {
-      return <p id="ai-backend-key-lock-state" role="status" className="mt-2 text-[11px] font-bold text-emerald-800">{t('ai_backend.key_lock_saved_state') || 'Saved on this device and locked with your educator access code.'}</p>;
+      return <p id="ai-backend-key-lock-state" role="status" className="mt-2 text-xs font-bold text-emerald-800">{t('ai_backend.key_lock_saved_state') || 'Saved on this device and locked with your educator access code.'}</p>;
     }
     if (!status.unsaved && !status.plaintextOnDevice) return null;
     const configured = keyLockApi().isConfigured();
@@ -2443,7 +2528,7 @@ function AIBackendModalBody(props) {
                 ? (t('ai_backend.key_lock_plaintext_warning') || 'This key is saved on this device without protection. Lock it so nobody else using this device can read it.')
                 : (t('ai_backend.key_lock_tab_only') || 'This key works until you close this tab. To keep it on this device, lock it with your educator access code.')}
           </p>
-          <label htmlFor="ai-backend-key-lock-code" className="mt-2 block text-[11px] font-bold text-amber-900">
+          <label htmlFor="ai-backend-key-lock-code" className="mt-2 block text-xs font-bold text-amber-900">
               {configured ? (t('ai_backend.key_lock_code_label') || 'Educator access code') : (t('ai_backend.key_lock_create_label') || 'Create an educator access code (at least 6 characters)')}
           </label>
           <div className="mt-1 flex flex-col gap-2 sm:flex-row">
@@ -2453,22 +2538,22 @@ function AIBackendModalBody(props) {
                   autoComplete={configured ? 'current-password' : 'new-password'}
                   value={keyLockCode}
                   onChange={(e) => setKeyLockCode(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); save(); } }}
+                  onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && !keyLockBusy && keyLockCode) { e.preventDefault(); save(); } }}
                   className="min-h-11 flex-1 rounded-xl border-2 border-amber-300 bg-white p-2 text-sm text-slate-800"
               />
               <button type="button" disabled={keyLockBusy || !keyLockCode} onClick={save} className="min-h-11 rounded-xl bg-amber-800 px-3 py-2 text-xs font-bold text-white hover:bg-amber-900 disabled:opacity-60">
                   {t('ai_backend.key_lock_save_btn') || 'Save and lock key'}
               </button>
           </div>
-          {!configured && <p className="mt-2 text-[11px] leading-relaxed text-amber-900">{t('ai_backend.key_lock_create_hint') || 'You will also use this code to enter teacher mode on this device. If you forget it, you can remove the saved key and enter it again.'}</p>}
-          {keyLockMessage && <p role="status" className="mt-2 text-[11px] font-bold text-amber-950">{keyLockMessage}</p>}
+          {!configured && <p className="mt-2 text-xs leading-relaxed text-amber-900">{t('ai_backend.key_lock_create_hint') || 'You will also use this code to enter teacher mode on this device. If you forget it, you can remove the saved key and enter it again.'}</p>}
+          {keyLockMessage && <p role="status" className="mt-2 text-xs font-bold text-amber-950">{keyLockMessage}</p>}
       </div>
     );
   };
   const renderApiKeyField = (labelText, hintText) => (
     <div>
         {!isStudentAiSetup && renderTeacherKeyTermsNotice()}
-        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{labelText || t('ai_backend.api_key_label') || 'API Key'} <span className="normal-case font-normal text-slate-600">{hintText || t('ai_backend.api_key_hint') || '(cloud providers only)'}</span></label>
+        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{labelText || t('ai_backend.api_key_label') || 'API Key'} <span className="normal-case font-normal text-slate-600">{hintText || t('ai_backend.api_key_hint') || '(cloud providers only)'}</span></label>
         <input
             data-help-key="ai_backend_api_key_input"
             id="ai-backend-apikey" aria-label={t('ai_backend.api_key_aria') || 'Custom AI backend API key'}
@@ -2490,10 +2575,16 @@ function AIBackendModalBody(props) {
           <button
             type="button"
             data-help-key="ai_backend_forget_gemini_key"
-            onClick={forgetGeminiCloudServicesKey}
-            className="mt-2 min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+            onClick={() => {
+              const hasLockedSavedKey = Boolean(keyLockStatus()?.saved);
+              if (hasLockedSavedKey && !confirmForgetCloudKey) { setConfirmForgetCloudKey(true); return; }
+              setConfirmForgetCloudKey(false);
+              forgetGeminiCloudServicesKey();
+            }}
+            onBlur={() => { if (confirmForgetCloudKey) setConfirmForgetCloudKey(false); }}
+            className={`mt-2 min-h-11 rounded-lg border px-3 py-2 text-xs font-bold ${confirmForgetCloudKey ? 'border-rose-500 bg-rose-50 text-rose-800 hover:bg-rose-100' : 'border-slate-300 bg-white text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800'}`}
           >
-            Forget saved Gemini key
+            {confirmForgetCloudKey ? 'Confirm forget saved Gemini key' : 'Forget saved Gemini key'}
           </button>
         )}
     </div>
@@ -2503,7 +2594,7 @@ function AIBackendModalBody(props) {
     if (isStudentAiSetup || String(cfg.backend || 'gemini') === 'gemini') return null;
     return (
       <div id="ai-backend-gemini-services-section" tabIndex={-1} className="rounded-xl border-2 border-sky-100 bg-sky-50/70 p-3">
-        <label htmlFor="ai-backend-gemini-services-key" className="block text-[11px] font-bold text-sky-900 uppercase tracking-wider mb-1.5">
+        <label htmlFor="ai-backend-gemini-services-key" className="block text-xs font-bold text-sky-900 uppercase tracking-wider mb-1.5">
           Gemini cloud-services key <span className="normal-case font-normal text-sky-800">(optional)</span>
         </label>
         <input
@@ -2526,12 +2617,18 @@ function AIBackendModalBody(props) {
         <button
           type="button"
           data-help-key="ai_backend_forget_gemini_services_key"
-          onClick={forgetGeminiCloudServicesKey}
-          className="mt-2 min-h-11 rounded-lg border border-sky-300 bg-white px-3 py-2 text-xs font-bold text-sky-900 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+          onClick={() => {
+            const hasLockedSavedKey = Boolean(keyLockStatus()?.saved);
+            if (hasLockedSavedKey && !confirmForgetCloudKey) { setConfirmForgetCloudKey(true); return; }
+            setConfirmForgetCloudKey(false);
+            forgetGeminiCloudServicesKey();
+          }}
+          onBlur={() => { if (confirmForgetCloudKey) setConfirmForgetCloudKey(false); }}
+          className={`mt-2 min-h-11 rounded-lg border px-3 py-2 text-xs font-bold ${confirmForgetCloudKey ? 'border-rose-500 bg-rose-50 text-rose-800 hover:bg-rose-100' : 'border-sky-300 bg-white text-sky-900 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800'}`}
         >
-          Forget saved Gemini key
+          {confirmForgetCloudKey ? 'Confirm forget saved Gemini key' : 'Forget saved Gemini key'}
         </button>
-        <p id="ai-backend-gemini-services-help" className="mt-1 text-[11px] leading-relaxed text-sky-900">
+        <p id="ai-backend-gemini-services-help" className="mt-1 text-xs leading-relaxed text-sky-900">
           Used only for Gemini cloud features you explicitly select, including Gemini voice transcription. Your primary text AI remains {GUIDED_BACKEND_LABELS[String(cfg.backend || '')] || String(cfg.backend || 'the selected backend')}.
         </p>
       </div>
@@ -2541,7 +2638,7 @@ function AIBackendModalBody(props) {
     <div id="ai-backend-engine-strip" style={{ display: 'none' }} aria-live="polite" ref={(node) => { if (node && !node.dataset.engineInit) { node.dataset.engineInit = '1'; setTimeout(refreshEngineStrip, 0); } }}></div>
   );
   const guidedStepHeading = (text) => (
-    <p ref={guidedHeadingRef} tabIndex={-1} role="status" aria-live="polite" className="text-[11px] font-black text-violet-700 uppercase tracking-wider outline-none">{text}</p>
+    <p ref={guidedHeadingRef} tabIndex={-1} role="status" aria-live="polite" className="text-xs font-black text-violet-700 uppercase tracking-wider outline-none">{text}</p>
   );
   const guidedBackBtn = (target) => (
     <button type="button" data-help-key="ai_backend_guided_back_btn" onClick={() => { setGuidedReady(false); setGuidedView(target); }} className="text-xs font-bold text-slate-600 hover:text-violet-700 transition-colors">◀ {t('ai_backend.guided_back') || 'Back'}</button>
@@ -2552,10 +2649,10 @@ function AIBackendModalBody(props) {
         <span className="flex items-center gap-2">
             <span aria-hidden="true">{emoji}</span>
             <span className="font-black text-sm text-slate-800">{title}</span>
-            {badge && <span className="ml-auto text-[10px] font-black uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">{badge}</span>}
+            {badge && <span className="ml-auto text-xs font-black uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">{badge}</span>}
         </span>
         <span className="block text-xs text-slate-600 mt-1 leading-relaxed">{body}</span>
-        {req && <span className="block text-[11px] text-slate-600 mt-1">{req}</span>}
+        {req && <span className="block text-xs text-slate-600 mt-1">{req}</span>}
     </button>
   );
   const renderGuidedStep = () => {
@@ -2575,7 +2672,7 @@ function AIBackendModalBody(props) {
             Saying it here is the only honest place: before the teacher commits to
             this route and builds a lesson around an image tool. */}
         <div className="mt-3 rounded-xl border-2 border-amber-200 bg-amber-50/70 p-3">
-            <p className="text-[11px] font-black uppercase tracking-wider text-amber-800">
+            <p className="text-xs font-black uppercase tracking-wider text-amber-800">
                 {t('ai_backend.gemini_images_kicker') || 'Text yes, pictures no'}
             </p>
             <p className="mt-1 text-xs leading-relaxed text-amber-900">
@@ -2600,7 +2697,7 @@ function AIBackendModalBody(props) {
                 defaultChecked={!!readAIBackendConfig().contributePledge}
                 onChange={(e) => {
                     const current = readAIBackendConfig();
-                    writeAIBackendConfig({ ...current, contributePledge: e.target.checked });
+                    writeAIBackendConfig({ ...current, contributePledge: e.target.checked }, { preserveValidation: true });
                 }}
             />
             <span className="text-xs leading-relaxed text-violet-900">
@@ -2618,7 +2715,7 @@ function AIBackendModalBody(props) {
                 </a>
             </span>
         </label>
-        <p className="text-[11px] text-slate-600">{t('ai_backend.guided_gemini_key_note_teacher') || 'Stored only on this device and never used in student mode.'}</p>
+        <p className="text-xs text-slate-600">{t('ai_backend.guided_gemini_key_note_teacher') || 'Stored only on this device and never used in student mode.'}</p>
         {guidedBackBtn('choose')}
       </div>
     );
@@ -2644,7 +2741,7 @@ function AIBackendModalBody(props) {
                   onClick={() => { applyBackendChoice(app.id); setGuidedReady(false); setGuidedView('connect-detail:' + app.id); }}
                   className="text-left border-2 border-slate-200 rounded-xl p-3 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99] motion-reduce:transition-none motion-reduce:transform-none">
                   <span className="block font-black text-xs text-slate-800">{app.title}</span>
-                  <span className="block text-[11px] text-slate-600 mt-0.5">{app.body}</span>
+                  <span className="block text-xs text-slate-600 mt-0.5">{app.body}</span>
               </button>
             ))}
         </div>
@@ -2673,7 +2770,7 @@ function AIBackendModalBody(props) {
       <div className="space-y-3">
         {guidedStepHeading(t('ai_backend.guided_choose_kicker') || 'First-time setup · Choose your AI')}
         <p className="text-xs text-slate-600 leading-relaxed">{t('ai_backend.guided_intro') || "AlloFlow uses an AI engine to create lessons, read aloud, and answer questions. Pick how you'd like it to work — you can change this any time."}</p>
-        {connected && <p className="text-[11px] font-bold text-green-800 bg-green-50 border border-green-100 rounded-xl p-2">✅ {(t('ai_backend.guided_connected_chip') || 'Connected —') + ' ' + (GUIDED_BACKEND_LABELS[currentBackend] || currentBackend)}</p>}
+        {connected && <p className="text-xs font-bold text-green-800 bg-green-50 border border-green-100 rounded-xl p-2">✅ {(t('ai_backend.guided_connected_chip') || 'Connected —') + ' ' + (GUIDED_BACKEND_LABELS[currentBackend] || currentBackend)}</p>}
         {/* Canvas-first card (W7, 2026-08-16): the zero-setup path. A visitor who
             arrived keyless (deep link, shared shell) is one click from the full
             free experience instead of a key hunt. The share URL comes from
@@ -2717,6 +2814,7 @@ function AIBackendModalBody(props) {
   // so the button never reached the screen its label promises.
   const openDeviceStorageManager = () => {
     if (typeof window.__alloOpenStorageRecoveryManager === 'function') {
+      if (typeof setShowAIBackendModal === 'function') setShowAIBackendModal(false);
       window.__alloOpenStorageRecoveryManager();
       return;
     }
@@ -2753,7 +2851,13 @@ function AIBackendModalBody(props) {
         <div
           data-ai-backend-modal-overlay="true"
           style={{ zIndex: aiBackendOverlayZ }}
-          className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
+          className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300"
+          onMouseDown={(e) => { aiBackendBackdropDownRef.current = (e.target === e.currentTarget); }}
+          onClick={(e) => {
+            const allow = aiBackendBackdropDownRef.current !== false;
+            aiBackendBackdropDownRef.current = null;
+            if (e.target === e.currentTarget && allow) setShowAIBackendModal(false);
+          }}>
           <div ref={aiBackendDialogRef} data-help-key="ai_backend_modal_panel" data-student-ai-setup="false" className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={handleAIBackendDialogKeyDown} onClick={e => e.stopPropagation()}>
             <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-4 text-violet-900">
@@ -2761,14 +2865,14 @@ function AIBackendModalBody(props) {
                 <h3 id="ai-backend-title" className="font-black text-lg">{t('ai_backend.key_lock_locked_title') || 'Saved AI key is locked'}</h3>
             </div>
             <p className="text-sm leading-relaxed text-slate-700">{t('ai_backend.key_lock_locked_body') || 'Enter your educator access code to use or change the AI key saved on this device.'}</p>
-            <label htmlFor="ai-backend-key-unlock-code" className="mt-4 block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.key_lock_code_label') || 'Educator access code'}</label>
+            <label htmlFor="ai-backend-key-unlock-code" className="mt-4 block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.key_lock_code_label') || 'Educator access code'}</label>
             <input
                 id="ai-backend-key-unlock-code"
                 type="password"
                 autoComplete="current-password"
                 value={keyLockCode}
                 onChange={(e) => setKeyLockCode(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); unlock(); } }}
+                onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && !keyLockBusy && keyLockCode) { e.preventDefault(); unlock(); } }}
                 className="min-h-11 w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
             />
             {keyLockMessage && <p role="status" className="mt-2 text-xs font-bold text-rose-800">{keyLockMessage}</p>}
@@ -2825,7 +2929,13 @@ function AIBackendModalBody(props) {
              2026-08-17). The launch pad is higher still, so its explicit setting
              doorway must win even if a mounted lab remains behind that surface. */
           style={{ zIndex: aiBackendOverlayZ }}
-          className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
+          className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300"
+          onMouseDown={(e) => { aiBackendBackdropDownRef.current = (e.target === e.currentTarget); }}
+          onClick={(e) => {
+            const allow = aiBackendBackdropDownRef.current !== false;
+            aiBackendBackdropDownRef.current = null;
+            if (e.target === e.currentTarget && allow) setShowAIBackendModal(false);
+          }}>
           <div ref={aiBackendDialogRef} data-help-key="ai_backend_modal_panel" data-student-ai-setup={isStudentAiSetup ? 'true' : 'false'} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={handleAIBackendDialogKeyDown} onClick={e => e.stopPropagation()}>
             {isStudentAiSetup && <style>{`
               [data-student-ai-setup="true"] #ai-backend-engine-strip,
@@ -2861,7 +2971,7 @@ function AIBackendModalBody(props) {
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <h4 id="ai-backend-guided-storage-title" className="text-xs font-black text-cyan-950">{t('canvas_settings.local_storage_title') || 'Saved work on this device'}</h4>
-                        <p className="mt-1 text-[11px] leading-relaxed text-cyan-900">{t('canvas_settings.local_storage_hint') || 'Open your saved resource packs to restore, pin, export, or erase them. Also shows space used and the offline voice models such as Whisper and Kokoro.'}</p>
+                        <p className="mt-1 text-xs leading-relaxed text-cyan-900">{t('canvas_settings.local_storage_hint') || 'Open your saved resource packs to restore, pin, export, or erase them. Also shows space used and the offline voice models such as Whisper and Kokoro.'}</p>
                       </div>
                       <button type="button" data-help-key="ai_backend_guided_storage_btn" onClick={openDeviceStorageManager} className="min-h-11 shrink-0 rounded-xl border-2 border-cyan-600 bg-white px-4 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
                         {t('canvas_settings.local_storage_btn') || 'Open saved work'}
@@ -2871,7 +2981,7 @@ function AIBackendModalBody(props) {
                 )}
                 {advancedOpen && (<>
                 <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.provider_label') || 'Provider'}</label>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.provider_label') || 'Provider'}</label>
                     <select
                         data-help-key="ai_backend_provider_select"
                         aria-label={t('ai_backend.provider_aria') || 'AI Backend Provider'}
@@ -2901,7 +3011,7 @@ function AIBackendModalBody(props) {
                 {renderApiKeyField()}
                 {renderGeminiCloudServicesField()}
                 {(readAIBackendConfig().wolframAppId || '') ? (<div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.wolfram_label') || 'Wolfram Alpha App ID'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.wolfram_hint') || '(optional — enhances math)'}</span></label>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.wolfram_label') || 'Wolfram Alpha App ID'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.wolfram_hint') || '(optional — enhances math)'}</span></label>
                     <input
                         data-help-key="ai_backend_wolfram_input"
                         id="ai-backend-wolfram" aria-label={t('ai_backend.wolfram_aria') || 'Custom backend Wolfram App ID'}
@@ -2910,18 +3020,18 @@ function AIBackendModalBody(props) {
                         defaultValue={readAIBackendConfig().wolframAppId || ''}
                         onChange={(e) => {
                             const current = readAIBackendConfig();
-                            writeAIBackendConfig({ ...current, wolframAppId: e.target.value });
+                            writeAIBackendConfig({ ...current, wolframAppId: e.target.value }, { preserveValidation: true });
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
-                    <p className="text-[11px] text-slate-600 mt-1">{t('ai_backend.wolfram_unused_note') || 'No tool uses this yet. It is kept on this device only; clear the box to remove it.'}</p>
+                    <p className="text-xs text-slate-600 mt-1">{t('ai_backend.wolfram_unused_note') || 'No tool uses this yet. It is kept on this device only; clear the box to remove it.'}</p>
                 </div>) : null}
                 </>)}
                 {/* ─── Ready banner (guided path, after a successful test) ─── */}
                 {!advancedOpen && guidedReady && (
                   <div className="rounded-xl border border-green-200 bg-green-50 p-3">
                     <p className="text-xs font-black text-green-900">✅ {(t('ai_backend.guided_ready') || "You're ready — AlloFlow is using") + ' ' + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || 'gemini'] || readAIBackendConfig().backend) + '.'}</p>
-                    <p className="text-[11px] text-green-800 mt-1">{t('ai_backend.guided_ready_note') || 'Your choice is active now — close this window and start working.'}</p>
+                    <p className="text-xs text-green-800 mt-1">{t('ai_backend.guided_ready_note') || 'Your choice is active now — close this window and start working.'}</p>
                     <button type="button" data-help-key="ai_backend_guided_done_btn" onClick={() => setShowAIBackendModal(false)} className="mt-2 bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-800 transition-all active:scale-95">{t('ai_backend.guided_done') || 'Done'}</button>
                   </div>
                 )}
@@ -3018,6 +3128,7 @@ function AIBackendModalBody(props) {
                     {advancedOpen && <button type="button"
                         onClick={() => {
                             clearAIBackendConfig();
+                            setConfigRevision((revision) => revision + 1);
                             const p = document.getElementById('ai-backend-provider');
                             const u = document.getElementById('ai-backend-url');
                             const k = document.getElementById('ai-backend-apikey');
@@ -3054,7 +3165,7 @@ function AIBackendModalBody(props) {
                     </div>
                     <div className="space-y-3">
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.default_model_label') || 'Default Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.default_model_hint') || '(text generation)'}</span></label>
+                            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.default_model_label') || 'Default Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.default_model_hint') || '(text generation)'}</span></label>
                             <select
                                 data-help-key="ai_backend_model_select"
                                 aria-label={t('ai_backend.default_model_aria') || 'Default AI model'}
@@ -3072,7 +3183,7 @@ function AIBackendModalBody(props) {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.fallback_model_label') || 'Fallback Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.fallback_model_hint') || '(rate-limit cascade)'}</span></label>
+                            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.fallback_model_label') || 'Fallback Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.fallback_model_hint') || '(rate-limit cascade)'}</span></label>
                             <select
                                 aria-label={t('ai_backend.fallback_model_aria') || 'Fallback AI model'}
                                 id="ai-backend-model-fallback"
@@ -3088,7 +3199,7 @@ function AIBackendModalBody(props) {
                                 <option value="">{t('ai_backend.same_as_default') || 'Same as default'}</option>
                             </select>
                         </div>
-                        <p className="text-[11px] text-slate-600 italic">💡 Click "Test Connection" above to auto-populate available models from your backend.</p>
+                        <p className="text-xs text-slate-600 italic">💡 Click "Test Connection" above to auto-populate available models from your backend.</p>
                     </div>
                 </div>
 
@@ -3105,7 +3216,7 @@ function AIBackendModalBody(props) {
                         defaultValue={readAIBackendConfig().ttsProvider || 'auto'}
                         onChange={(e) => {
                             const current = readAIBackendConfig();
-                            writeAIBackendConfig({ ...current, ttsProvider: e.target.value });
+                            writeAIBackendConfig({ ...current, ttsProvider: e.target.value }, { preserveValidation: true });
                         }}
                         className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
                     >
@@ -3116,7 +3227,7 @@ function AIBackendModalBody(props) {
                         <option value="off">🔇 Off (disable narration)</option>
                     </select>
                     <div className="mt-2 bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                        <p className="text-[11px] text-emerald-700 font-medium leading-relaxed">
+                        <p className="text-xs text-emerald-700 font-medium leading-relaxed">
                             <strong>Auto:</strong> Gemini voices for cloud backends, Edge TTS voices for local backends.
                             Narrator voice selection is in the header bar (🎧 button).
                         </p>
@@ -3138,7 +3249,7 @@ function AIBackendModalBody(props) {
                         defaultValue={readAIBackendConfig().imageProvider || 'auto'}
                         onChange={(e) => {
                             const current = readAIBackendConfig();
-                            writeAIBackendConfig({ ...current, imageProvider: e.target.value });
+                            writeAIBackendConfig({ ...current, imageProvider: e.target.value }, { preserveValidation: true });
                         }}
                         className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
                     >
@@ -3149,7 +3260,7 @@ function AIBackendModalBody(props) {
                         <option value="off">🚫 Off (disable image generation)</option>
                     </select>
                     <div className="mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100">
-                        <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
+                        <p className="text-xs text-amber-700 font-medium leading-relaxed">
                             <strong>Imagen:</strong> Google Cloud (requires Blaze plan). High quality, fast.
                         </p>
                         <p className="text-[11px] text-amber-800 mt-1">
@@ -3159,17 +3270,17 @@ function AIBackendModalBody(props) {
                 </div>
 
                 {/* ─── Section 5: AI Model Diagnostics (shared with Canvas modal) ─── */}
-                {!isStudentAiSetup && <AllobotSearchSettings t={t} />}
+                {!isStudentAiSetup && !(typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true)) && <AllobotSearchSettings t={t} />}
                 {!isStudentAiSetup && <ModelDiagnosticsSection t={t} _isCanvasEnv={_isCanvasEnv} GEMINI_MODELS={GEMINI_MODELS} />}
-                {!isStudentAiSetup && <PlatformDiagnosticsSection t={t} />}
+                {!isStudentAiSetup && <PlatformDiagnosticsSection t={t} onCloseModal={() => { if (typeof setShowAIBackendModal === 'function') setShowAIBackendModal(false); }} />}
 
                 {/* ─── Section 6: Device Storage (parity with the Canvas Advanced
                      Settings modal, 2026-07-14) — opens the on-device storage
                      manager (review/export/erase). On this deployed surface the
                      backend is the app origin's own IndexedDB; same panel. */}
                 <div id="ai-backend-device-storage-section" className="border-t border-slate-100 pt-4">
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</label>
-                    <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.device_storage_hint') || 'Work and settings are saved on this device only — nothing goes to a server. Review, export, or erase what is stored here.'}</p>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</label>
+                    <p className="text-xs text-slate-600 mb-2">{t('canvas_settings.device_storage_hint') || 'Work and settings are saved on this device only — nothing goes to a server. Review, export, or erase what is stored here.'}</p>
                     <button type="button"
                         onClick={openDeviceStorageManager}
                         className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
@@ -3184,13 +3295,14 @@ function AIBackendModalBody(props) {
                      opening from here reaches the errors log AND the read-aloud/TTS
                      trace tab with zero captured errors. */}
                 <div id="ai-backend-diagnostics-section" className="border-t border-slate-100 pt-4">
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.diagnostics_label') || 'Diagnostics & Logs'}</label>
-                    <p className="text-[11px] text-slate-600 mb-2">{t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'}</p>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.diagnostics_label') || 'Diagnostics & Logs'}</label>
+                    <p className="text-xs text-slate-600 mb-2">{t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'}</p>
                     <button type="button"
                         onClick={() => {
                             if (typeof window.__alloOpenDiagnosticsLog !== 'function') return;
                             let hasErrors = false;
                             try { hasErrors = (window.AlloModules.ErrorReporter.getBuffer() || []).length > 0; } catch (e) {}
+                            if (typeof setShowAIBackendModal === 'function') setShowAIBackendModal(false);
                             window.__alloOpenDiagnosticsLog(hasErrors ? 'errors' : 'tts');
                         }}
                         className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
@@ -3201,12 +3313,12 @@ function AIBackendModalBody(props) {
 
                 {/* ─── Active Config Summary ─── */}
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                    <p className="text-xs text-slate-600 font-medium leading-relaxed">
                         <strong className="text-slate-600">Active:</strong>{' '}
                         {(() => { try { const c = readAIBackendConfig(); return c.backend ? (c.backend.charAt(0).toUpperCase() + c.backend.slice(1)) + (c.baseUrl ? ' → ' + c.baseUrl : '') : 'Gemini (default)'; } catch { return 'Gemini (default)'; } })()}
                     </p>
-                    {!isStudentAiSetup && <p className="text-[11px] text-slate-600 font-medium mt-1">⚡ {t('ai_backend.reload_after_change') || 'Reload page after changing backend to apply.'}</p>}
-                    {isStudentAiSetup && <p className="text-[11px] text-slate-600 font-medium mt-1">{t('ai_backend.student_verified_note') || 'Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified.'}</p>}
+                    {!isStudentAiSetup && <p className="text-xs text-slate-600 font-medium mt-1">⚡ {t('ai_backend.reload_after_change') || 'Reload page after changing backend to apply.'}</p>}
+                    {isStudentAiSetup && <p className="text-xs text-slate-600 font-medium mt-1">{t('ai_backend.student_verified_note') || 'Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified.'}</p>}
                 </div>
                 </>)}
 

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-20T07:00:28.245Z",
+  "generatedAt": "2026-11-21T04:12:35.311Z",
   "packId": "praxis-special-education-learning-disabilities-5383",
   "standard": {
     "label": "AlloFlow 5383 source, blueprint, feedback, learning, source-parity, key-integrity, encoding, and editorial QA v2",
@@ -9,21 +9,27 @@
   "summary": {
     "totalItems": 500,
     "sourceItems": 200,
-    "allItemsReviewed": 500,
+    "allItemsReviewed": 200,
     "passedItems": 500,
     "findings": [],
     "status": "pass",
-    "distinctSourceContentKernels": 111,
-    "parallelSourceVariants": 89,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
+    "distinctSourceContentKernels": 103,
+    "parallelSourceVariants": 97,
+    "distinctIndependentContentKernels": 103,
+    "parallelIndependentVariants": 97,
     "guidedReasoningItems": 300,
     "independentQuestionTarget": 500,
-    "newIndependentItemsNeeded": 389,
+    "newIndependentItemsNeeded": 397,
     "structuralStatus": "pass",
     "contentDistinctnessStatus": "target-not-met",
     "assistantReviewVerdict": "reviewed-target-not-met",
     "diagnosticBanks": 5,
     "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
     "sourceDiagnosticBanks": 2,
+    "assistantAuthoredIndependentBanks": 0,
+    "independentDiagnosticBanks": 2,
     "guidedReviewBanks": 3,
     "learningActivityBanks": 5
   },
@@ -33,10 +39,14 @@
     "batchSize": 100,
     "learningActivityBanks": 5,
     "sourceItems": 200,
-    "distinctSourceContentKernels": 111,
-    "parallelSourceVariants": 89,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
+    "distinctSourceContentKernels": 103,
+    "parallelSourceVariants": 97,
+    "distinctIndependentContentKernels": 103,
+    "parallelIndependentVariants": 97,
     "guidedReasoningItems": 300,
-    "newIndependentItemsNeeded": 389,
+    "newIndependentItemsNeeded": 397,
     "structurallyReviewedItems": 500,
     "reviewer": "OpenAI Codex",
     "examItemReview": "reviewed-target-not-met",
@@ -45,7 +55,7 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
     "findings": []
   },
   "contentBinding": {
@@ -53,8 +63,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "6ee7569f03f7034513f92df8450db44bddfb927398e888a524d14adebda2a61e",
-    "learningLibrarySha256": "2eee2c4fedb13728431f244d69710782afbb5d48c976c79e104c4a980baf10d7",
+    "sourceItemsSha256": "982c287cd862a300c994ee2f56141e8dc2804552b4e13c9656c9f500e24fcd0e",
+    "learningLibrarySha256": "0741346a881038abe18695ad80a8afbfa5a64dbdf3eb7ac89da3ddf1f5f725ca",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

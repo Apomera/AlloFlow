@@ -40,7 +40,8 @@ function _promptIsolateSiblings(dialog) {
   while (node && body && node.parentElement) {
     const parent = node.parentElement;
     Array.from(parent.children).forEach((child) => {
-      if (!child || child === node || seen.has(child) || !child.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(child.tagName) || typeof child.matches === "function" && child.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
+      const liveSel = '[aria-live], [role="status"], [role="alert"], [data-toast-region]';
+      if (!child || child === node || seen.has(child) || !child.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(child.tagName) || typeof child.matches === "function" && child.matches(liveSel) || typeof child.querySelector === "function" && !!child.querySelector(liveSel)) return;
       seen.add(child);
       const hadInert = child.hasAttribute("inert");
       const prevInert = child.inert;
@@ -217,10 +218,13 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
   const [error, setError] = React.useState(null);
   const inputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
+  const backdropDownRef = React.useRef(null);
   const settledRef = React.useRef(false);
   const choiceMode = Array.isArray(promptDialog.choices);
   const choices = choiceMode ? promptDialog.choices.filter((choice) => choice && choice.value != null && String(choice.value)) : [];
   const validChoice = choices.some((choice) => String(choice.value) === value);
+  const checkedChoiceIndex = choices.findIndex((choice) => String(choice.value) === value);
+  const initialChoiceFocusIndex = checkedChoiceIndex >= 0 ? checkedChoiceIndex : 0;
   const handleCancel = React.useCallback(() => {
     if (settledRef.current) return;
     settledRef.current = true;
@@ -235,13 +239,18 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
   const handleSubmit = React.useCallback(() => {
     if (settledRef.current) return;
     if (choiceMode && !validChoice) {
-      setError(_promptCopy(t, "prompt_dialog.choose_source", "Choose a source before continuing."));
+      setError(promptDialog.emptyChoiceMessage || _promptCopy(t, "prompt_dialog.choose_source", "Choose a source before continuing."));
       return;
     }
     if (typeof promptDialog.validate === "function") {
-      const err = promptDialog.validate(value);
-      if (err) {
-        setError(err);
+      try {
+        const err = promptDialog.validate(value);
+        if (err) {
+          setError(err);
+          return;
+        }
+      } catch (validationError) {
+        setError(validationError && validationError.message || _promptCopy(t, "prompt_dialog.invalid_value", "Please enter a valid value."));
         return;
       }
     }
@@ -255,11 +264,18 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
   _promptUseFocusTrap(dialogRef, true, handleCancel);
   React.useEffect(() => {
     settledRef.current = false;
-    setValue(promptDialog.defaultValue != null ? String(promptDialog.defaultValue) : "");
+    const nextValue = promptDialog.defaultValue != null ? String(promptDialog.defaultValue) : "";
+    setValue(nextValue);
     setError(null);
     try {
-      inputRef.current && inputRef.current.focus();
-      if (inputRef.current && inputRef.current.select) inputRef.current.select();
+      if (Array.isArray(promptDialog.choices) && dialogRef.current) {
+        const radios = Array.from(dialogRef.current.querySelectorAll('input[type="radio"]'));
+        const targetRadio = radios.find((radio) => radio.value === nextValue) || radios[0];
+        if (targetRadio) targetRadio.focus();
+      } else {
+        inputRef.current && inputRef.current.focus();
+        if (inputRef.current && inputRef.current.select) inputRef.current.select();
+      }
     } catch (_) {
     }
   }, [promptDialog]);
@@ -288,7 +304,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
     },
     placeholder: promptDialog.placeholder || "",
     maxLength: promptDialog.maxLength,
-    className: "w-full border-2 border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl px-4 py-3 text-sm outline-none transition-all text-slate-800 placeholder:text-slate-600",
+    className: "w-full border-2 border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl px-4 py-3 text-sm outline-none transition-all motion-reduce:transition-none text-slate-800 placeholder:text-slate-600",
     "aria-label": promptDialog.message,
     "aria-invalid": !!error,
     "aria-describedby": error ? "alloflow-prompt-error" : void 0
@@ -298,8 +314,13 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
     {
       role: "presentation",
       className: "fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none",
+      onMouseDown: (e) => {
+        backdropDownRef.current = e.target === e.currentTarget;
+      },
       onClick: (e) => {
-        if (e.target === e.currentTarget) handleCancel();
+        const allowBackdropClose = backdropDownRef.current !== false;
+        backdropDownRef.current = null;
+        if (e.target === e.currentTarget && allowBackdropClose) handleCancel();
       }
     },
     /* @__PURE__ */ React.createElement(
@@ -313,13 +334,13 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
         onKeyDown: handleDialogKeyDown,
         className: "allo-docsuite bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-6 animate-in zoom-in-95 duration-200 motion-reduce:animate-none border-2 border-slate-200"
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0" }, /* @__PURE__ */ React.createElement(Edit3, { size: 20, className: "text-indigo-600", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h3", { id: "alloflow-prompt-title", className: "text-lg font-bold text-slate-800 flex-1 " + (choiceMode ? "min-w-0 break-words" : "truncate") }, promptDialog.title || t("common.enter_value") || "Enter Value"), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0" }, /* @__PURE__ */ React.createElement(Edit3, { size: 20, className: "text-indigo-600", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h2", { id: "alloflow-prompt-title", className: "text-lg font-bold text-slate-800 flex-1 " + (choiceMode ? "min-w-0 break-words" : "truncate") }, promptDialog.title || t("common.enter_value") || "Enter Value"), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           "aria-label": t("common.close") || "Close",
           onClick: handleCancel,
-          className: "w-11 h-11 shrink-0 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300"
+          className: "w-11 h-11 shrink-0 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-700"
         },
         /* @__PURE__ */ React.createElement(X, { size: 16, "aria-hidden": "true" })
       )),
@@ -327,11 +348,11 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
       choiceMode ? /* @__PURE__ */ React.createElement("fieldset", { className: "min-w-0 space-y-3", "aria-describedby": error ? "alloflow-prompt-error" : void 0 }, /* @__PURE__ */ React.createElement("legend", { className: "sr-only" }, promptDialog.message), choices.map((choice, index) => {
         const choiceValue = String(choice.value);
         const checked = value === choiceValue;
-        return /* @__PURE__ */ React.createElement("label", { key: choiceValue, className: "flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition-colors focus-within:ring-4 focus-within:ring-indigo-500/20 " + (checked ? "border-indigo-600 bg-indigo-50" : "border-slate-300 bg-white hover:border-indigo-400") }, /* @__PURE__ */ React.createElement(
+        return /* @__PURE__ */ React.createElement("label", { key: choiceValue, className: "flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition-colors motion-reduce:transition-none focus-within:ring-4 focus-within:ring-indigo-500/20 " + (checked ? "border-indigo-600 bg-indigo-50" : "border-slate-300 bg-white hover:border-indigo-400") }, /* @__PURE__ */ React.createElement(
           "input",
           {
-            ref: index === 0 ? inputRef : void 0,
-            "data-autofocus": index === 0 ? true : void 0,
+            ref: index === initialChoiceFocusIndex ? inputRef : void 0,
+            "data-autofocus": index === initialChoiceFocusIndex ? true : void 0,
             type: "radio",
             name: "alloflow-prompt-choice",
             value: choiceValue,
@@ -352,7 +373,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
         {
           type: "button",
           onClick: handleCancel,
-          className: "min-h-11 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-300"
+          className: "min-h-11 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-600"
         },
         promptDialog.cancelText || t("common.cancel") || "Cancel"
       ), /* @__PURE__ */ React.createElement(
@@ -361,7 +382,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
           type: "button",
           onClick: handleSubmit,
           disabled: choiceMode && !validChoice,
-          className: "min-h-11 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-indigo-500/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className: "min-h-11 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors motion-reduce:transition-none shadow-lg shadow-indigo-500/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
         },
         promptDialog.confirmText || t("common.ok") || "OK"
       ))

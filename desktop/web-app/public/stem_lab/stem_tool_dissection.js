@@ -40,8 +40,8 @@
 [data-dissection-root] button, [data-dissection-root] input, [data-dissection-root] summary { font: inherit; }
 [data-dissection-root] button { min-height: 2.75rem; }
 [data-dissection-root] summary { min-height: 2.75rem; }
-[data-dissection-root] [class*="text-[10px]"] { font-size: .75rem !important; line-height: 1.4 !important; }
-[data-dissection-root] [class*="text-[11px]"] { font-size: .8125rem !important; line-height: 1.4 !important; }
+[data-dissection-root] [class*="text-xs"] { font-size: .75rem !important; line-height: 1.4 !important; }
+[data-dissection-root] [class*="text-xs"] { font-size: .8125rem !important; line-height: 1.4 !important; }
 [data-dissection-root] :where(button, input, textarea, summary, [tabindex]) { scroll-margin-block: 5rem; }
 [data-dissection-root] button:focus-visible,
 [data-dissection-root] input:focus-visible,
@@ -3704,10 +3704,61 @@
     var fitPoints = [], fitTarget = new THREE.Vector3(0.415, 0, 0);
     var settings = { yaw: -0.65, elevation: 0.45, distance: 6.8, open: true, selected: 'lens' };
     var api = { disposed: false, renderCount: 0 };
+    var isReducedMotion = !!(typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var isHighContrast = !!(typeof document !== 'undefined' && ((document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) || (canvas && typeof canvas.closest === 'function' && canvas.closest('.theme-contrast'))));
+    var eyeUniforms = {
+      uTime: { value: 1.65 },
+      uHighContrast: { value: isHighContrast ? 1.0 : 0.0 }
+    };
+    var beaconGroup = null, beaconRing = null, beaconUniforms = null;
+    var lastAnimTs = 0;
+    var PART_ANCHORS = {
+      cornea: [-1.56, 0.0, 0.0],
+      sclera: [0.0, -1.48, 0.55],
+      iris: [-1.16, 0.42, 0.34],
+      lens: [-0.77, 0.0, 0.0],
+      retina: [1.32, -0.35, 0.25],
+      optic_nerve: [2.05, -0.13, 0.0]
+    };
     function geometry(value) { geometries.push(value); return value; }
     function material(color, opacity) {
-      var result = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide, shininess: 38,
-        transparent: opacity < 1, opacity: opacity, depthWrite: opacity >= 1 });
+      var isWet = opacity < 1;
+      var result = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide, shininess: isWet ? 96 : 64,
+        specular: 0xd8f0fc, transparent: isWet, opacity: opacity, depthWrite: opacity >= 1 });
+      var selUniform = { value: 0.0 };
+      result._alloSelUniform = selUniform;
+      if (typeof result.onBeforeCompile === 'function') {
+        result.onBeforeCompile = function (shader) {
+          shader.uniforms.uTime = eyeUniforms.uTime;
+          shader.uniforms.uHighContrast = eyeUniforms.uHighContrast;
+          shader.uniforms.uSelected = selUniform;
+          shader.uniforms.uWetness = { value: isWet ? 1.0 : 0.68 };
+          shader.vertexShader = shader.vertexShader
+            .replace('#include <common>', '#include <common>\nvarying vec3 vTissuePos;')
+            .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTissuePos = transformed;');
+          shader.fragmentShader = shader.fragmentShader
+            .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uHighContrast;\nuniform float uSelected;\nuniform float uWetness;\nvarying vec3 vTissuePos;')
+            .replace('#include <lights_fragment_end>', [
+              '#include <lights_fragment_end>',
+              'if (uHighContrast < 0.5) {',
+              '  vec3 tN = normalize(normal);',
+              '  vec3 tV = normalize(geometry.viewDir);',
+              '  float tNdotV = clamp(abs(dot(tN, tV)), 0.0, 1.0);',
+              '  float tissueRim = pow(1.0 - tNdotV, 2.35);',
+              '  vec3 keyDir = normalize(vec3(-0.42, 0.72, 0.55));',
+              '  float wrapDiff = clamp((dot(tN, keyDir) + 0.55) / 1.55, 0.0, 1.0);',
+              '  vec3 halfVec = normalize(keyDir + tV);',
+              '  float wetGlint = pow(clamp(dot(tN, halfVec), 0.0, 1.0), 42.0) * uWetness;',
+              '  float microCell = 0.5 + 0.5 * sin(vTissuePos.x * 16.0 + vTissuePos.y * 14.0 + uTime * 0.45);',
+              '  vec3 sssTint = mix(diffuseColor.rgb, vec3(0.98, 0.68, 0.58), 0.42);',
+              '  vec3 moistSheen = sssTint * (wrapDiff * 0.14 + tissueRim * 0.30) + vec3(0.76, 0.92, 1.0) * (wetGlint * 0.34 + tissueRim * 0.12 * microCell);',
+              '  vec3 selectGlow = vec3(1.0, 0.84, 0.38) * (uSelected * (0.20 + 0.42 * tissueRim) * (0.88 + 0.12 * sin(uTime * 2.6)));',
+              '  totalEmissiveRadiance += moistSheen + selectGlow;',
+              '}'
+            ].join('\n'));
+        };
+        result.customProgramCacheKey = function () { return 'diss-eye-moist-tissue-v2'; };
+      }
       materials.push(result); return result;
     }
     // The optical axis is X: anterior at negative X, posterior at positive X.
@@ -3732,13 +3783,25 @@
       var result = new THREE.Mesh(shape, material(color, opacity == null ? 1 : opacity));
       result.userData.partId = id; meshes.push(result); scene.add(result); return result;
     }
+    function orientBeacon() {
+      if (beaconRing && camera) beaconRing.quaternion.copy(camera.quaternion);
+    }
     function schedule() {
       if (disposed || lost || !visible || document.hidden || frame) return;
-      frame = requestAnimationFrame(function () {
+      frame = requestAnimationFrame(function (ts) {
         frame = 0;
         if (disposed || lost || !visible || document.hidden) return;
+        if (!isReducedMotion && !isHighContrast) {
+          var dtSec = lastAnimTs ? Math.min(0.08, Math.max(0, (ts - lastAnimTs) / 1000)) : 0.016;
+          lastAnimTs = ts;
+          eyeUniforms.uTime.value += dtSec;
+        }
+        orientBeacon();
         try { renderer.render(scene, camera); api.renderCount++; canvas.dataset.eyeRenderedView = settings.preset || 'oblique'; canvas.dataset.eyeRenderedSelection = settings.selected; }
-        catch (e) { lost = true; onFault('unavailable'); }
+        catch (e) { lost = true; onFault('unavailable'); return; }
+        if (!isReducedMotion && !isHighContrast && visible && !document.hidden && !disposed && !lost) {
+          schedule();
+        }
       });
     }
     // Cached world-space vertices include the whole shell so opening it does not move the camera.
@@ -3776,7 +3839,17 @@
         var selected = entry.userData.partId === settings.selected;
         entry.material.emissive.setHex(selected ? 0x665018 : 0x000000);
         entry.material.emissiveIntensity = selected ? 0.48 : 0;
+        if (entry.material._alloSelUniform) entry.material._alloSelUniform.value = selected ? 1.0 : 0.0;
       });
+      if (beaconGroup) {
+        var anchor = PART_ANCHORS[settings.selected] || PART_ANCHORS.lens;
+        beaconGroup.position.set(anchor[0], anchor[1], anchor[2]);
+        var partInfo = DISSECTION_EYE_STUDY_PARTS.find(function (p) { return p.id === settings.selected; });
+        if (beaconUniforms && beaconUniforms.uColor) {
+          beaconUniforms.uColor.value.set(isHighContrast ? '#ffff00' : (partInfo ? partInfo.color : '#38bdf8'));
+        }
+        orientBeacon();
+      }
       canvas.dataset.eyeSelected = settings.selected;
       canvas.dataset.eyeShell = settings.open ? 'open' : 'whole';
       schedule();
@@ -3834,9 +3907,9 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
       renderer.setClearColor(0x102b3c, 1); renderer.outputEncoding = THREE.sRGBEncoding;
       scene = new THREE.Scene(); camera = new THREE.PerspectiveCamera(43, 1, 0.1, 40);
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x36516a, 0.65));
-      var key = new THREE.DirectionalLight(0xfff4dc, 0.65); key.position.set(-3, 5, 4); scene.add(key);
-      var rim = new THREE.DirectionalLight(0x83cfff, 0.32); rim.position.set(4, 2, -3); scene.add(rim);
+      scene.add(new THREE.HemisphereLight(0xf1f8ff, 0x2a435a, 0.68));
+      var key = new THREE.DirectionalLight(0xfff5e0, 0.86); key.position.set(-3, 5, 4); scene.add(key);
+      var rim = new THREE.DirectionalLight(0x7dd3fc, 0.48); rim.position.set(4, 2, -3); scene.add(rim);
       [['sclera',1.55,'#ddd9cf',0.63],['retina',1.43,'#f09a7c',0.86]].forEach(function (entry) {
         var whole = coat(entry[1], entry[3], Math.PI - 0.045, false);
         var open = coat(entry[1], entry[3], Math.PI - 0.045, true);
@@ -3858,6 +3931,131 @@
         var positions = (shell ? shell.whole : part.geometry).getAttribute('position');
         for (var i = 0; i < positions.count; i++) fitPoints.push(new THREE.Vector3().fromBufferAttribute(positions, i).applyMatrix4(part.matrixWorld));
       });
+      // Volumetric surgical-lamp light-cone haze (outside pickable meshes & fitPoints; bypassed in HC)
+      if (!isHighContrast && typeof THREE.ShaderMaterial === 'function' && typeof THREE.CylinderGeometry === 'function') {
+        var hazeGeo = geometry(new THREE.CylinderGeometry(0.46, 2.55, 5.2, 32, 1, true));
+        var hazeMat = new THREE.ShaderMaterial({
+          uniforms: { uTime: eyeUniforms.uTime },
+          vertexShader: [
+            'varying vec2 vUv;',
+            'varying vec3 vNorm;',
+            'varying vec3 vView;',
+            'void main() {',
+            '  vUv = uv;',
+            '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);',
+            '  vNorm = normalize(normalMatrix * normal);',
+            '  vView = normalize(-mvPos.xyz);',
+            '  gl_Position = projectionMatrix * mvPos;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'varying vec2 vUv;',
+            'varying vec3 vNorm;',
+            'varying vec3 vView;',
+            'void main() {',
+            '  float edgeSoft = pow(abs(dot(normalize(vNorm), normalize(vView))), 1.45);',
+            '  float vertFade = smoothstep(0.0, 0.36, vUv.y) * smoothstep(1.0, 0.06, vUv.y);',
+            '  float wisp = 0.72 + 0.28 * sin(vUv.x * 18.84955 + uTime * 0.42) * sin(vUv.y * 10.0 - uTime * 0.30);',
+            '  vec3 lampCol = mix(vec3(0.84, 0.94, 1.0), vec3(1.0, 0.98, 0.92), vUv.y);',
+            '  float alpha = clamp(edgeSoft * vertFade * wisp * 0.115, 0.0, 0.16);',
+            '  gl_FragColor = vec4(lampCol, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending
+        });
+        materials.push(hazeMat);
+        var hazeMesh = new THREE.Mesh(hazeGeo, hazeMat);
+        hazeMesh.position.set(-1.15, 2.05, 1.35);
+        hazeMesh.rotation.set(0.38, 0.0, -0.42);
+        hazeMesh.renderOrder = 2;
+        scene.add(hazeMesh);
+      }
+      // Luminous Fresnel active-organ selection / anatomical pin beacon (outside pickable meshes & fitPoints)
+      if (typeof THREE.Group === 'function' && typeof THREE.ShaderMaterial === 'function') {
+        beaconGroup = new THREE.Group();
+        beaconUniforms = {
+          uTime: eyeUniforms.uTime,
+          uColor: { value: new THREE.Color(isHighContrast ? '#ffff00' : '#f6d365') }
+        };
+        var coreGeo = geometry(new THREE.SphereGeometry(0.11, 20, 14));
+        var coreMat = new THREE.ShaderMaterial({
+          uniforms: beaconUniforms,
+          vertexShader: [
+            'varying vec3 vNorm;',
+            'varying vec3 vView;',
+            'void main() {',
+            '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);',
+            '  vNorm = normalize(normalMatrix * normal);',
+            '  vView = normalize(-mvPos.xyz);',
+            '  gl_Position = projectionMatrix * mvPos;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform vec3 uColor;',
+            'varying vec3 vNorm;',
+            'varying vec3 vView;',
+            'void main() {',
+            '  float ndotv = clamp(abs(dot(normalize(vNorm), normalize(vView))), 0.0, 1.0);',
+            '  float fres = pow(1.0 - ndotv, 1.85);',
+            '  float pulse = 0.80 + 0.20 * sin(uTime * 2.8);',
+            '  vec3 col = mix(uColor, vec3(1.0, 1.0, 1.0), ndotv * 0.55 + fres * 0.25);',
+            '  float alpha = clamp((0.35 + 0.65 * fres) * pulse, 0.0, 0.95);',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthTest: false,
+          depthWrite: false
+        });
+        materials.push(coreMat);
+        var coreMesh = new THREE.Mesh(coreGeo, coreMat);
+        coreMesh.renderOrder = 18;
+        beaconGroup.add(coreMesh);
+        if (typeof THREE.RingGeometry === 'function') {
+          var ringGeo = geometry(new THREE.RingGeometry(0.13, 0.34, 48));
+          var ringMat = new THREE.ShaderMaterial({
+            uniforms: beaconUniforms,
+            vertexShader: [
+              'varying vec2 vPos;',
+              'void main() {',
+              '  vPos = position.xy;',
+              '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime;',
+              'uniform vec3 uColor;',
+              'varying vec2 vPos;',
+              'void main() {',
+              '  float r = length(vPos);',
+              '  float ang = atan(vPos.y, vPos.x);',
+              '  float baseRing = exp(-pow((r - 0.20) * 42.0, 2.0));',
+              '  float waveR = 0.16 + 0.16 * fract(uTime * 0.42);',
+              '  float waveRing = exp(-pow((r - waveR) * 34.0, 2.0)) * (1.0 - smoothstep(0.24, 0.34, waveR));',
+              '  float crossTicks = smoothstep(0.92, 0.99, abs(cos(ang * 2.0))) * exp(-pow((r - 0.26) * 28.0, 2.0));',
+              '  vec3 col = mix(uColor, vec3(1.0, 0.99, 0.92), 0.35);',
+              '  float alpha = clamp(baseRing * 0.78 + waveRing * 0.62 + crossTicks * 0.55, 0.0, 0.92);',
+              '  if (alpha < 0.02) discard;',
+              '  gl_FragColor = vec4(col, alpha);',
+              '}'
+            ].join('\n'),
+            transparent: true,
+            depthTest: false,
+            depthWrite: false,
+            side: THREE.DoubleSide
+          });
+          materials.push(ringMat);
+          beaconRing = new THREE.Mesh(ringGeo, ringMat);
+          beaconRing.renderOrder = 17;
+          beaconGroup.add(beaconRing);
+        }
+        scene.add(beaconGroup);
+      }
       canvas._dissEyeStudy = api;
       [['pointerdown',down],['pointermove',move],['pointerup',up],['pointercancel',cancel],['lostpointercapture',cancel],
         ['webglcontextlost',contextLost],['webglcontextrestored',contextRestored]].forEach(function (entry) { canvas.addEventListener(entry[0], entry[1]); });
@@ -13553,24 +13751,27 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
               if (sceneDetail) {
                 ctx.save();
                 // Recessed stainless tray well with a sealed inner gasket and reflected rim light.
-                var trayWellGradient = ctx.createRadialGradient(W * 0.48, H * 0.40, Math.min(W, H) * 0.08, W * 0.50, H * 0.48, Math.max(W, H) * 0.72);
-                trayWellGradient.addColorStop(0, 'rgba(148,163,184,0.045)');
-                trayWellGradient.addColorStop(0.72, 'rgba(15,23,42,0.035)');
-                trayWellGradient.addColorStop(1, 'rgba(2,6,23,0.24)');
+                // Directional museum-grade surgical lamp pool enriches the stainless tray depth.
+                var trayLampXY = { overhead: [W * 0.48, H * 0.36], left: [W * 0.24, H * 0.44], right: [W * 0.76, H * 0.44], raking: [W * 0.28, H * 0.66] }[lightDirection] || [W * 0.48, H * 0.36];
+                var trayWellGradient = ctx.createRadialGradient(trayLampXY[0], trayLampXY[1], Math.min(W, H) * 0.06, W * 0.50, H * 0.48, Math.max(W, H) * 0.74);
+                trayWellGradient.addColorStop(0, 'rgba(226,238,248,0.085)');
+                trayWellGradient.addColorStop(0.45, 'rgba(148,163,184,0.042)');
+                trayWellGradient.addColorStop(0.76, 'rgba(15,23,42,0.06)');
+                trayWellGradient.addColorStop(1, 'rgba(2,6,23,0.30)');
                 ctx.fillStyle = trayWellGradient;
                 if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(10, 10, W - 20, H - 20, 16); ctx.fill(); }
                 else ctx.fillRect(10, 10, W - 20, H - 20);
-                ctx.strokeStyle = 'rgba(226,232,240,0.13)'; ctx.lineWidth = 1.2;
+                ctx.strokeStyle = 'rgba(241,245,249,0.20)'; ctx.lineWidth = 1.3;
                 if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(11.5, 11.5, W - 23, H - 23, 15); ctx.stroke(); }
                 else ctx.strokeRect(11.5, 11.5, W - 23, H - 23);
-                ctx.strokeStyle = 'rgba(35,65,72,0.20)'; ctx.lineWidth = 1.2;
+                ctx.strokeStyle = 'rgba(35,65,72,0.24)'; ctx.lineWidth = 1.25;
                 if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(17, 17, W - 34, H - 34, 11); ctx.stroke(); }
                 else ctx.strokeRect(17, 17, W - 34, H - 34);
-                var trayTopBevel = ctx.createLinearGradient(0, 4, 0, 30);
-                trayTopBevel.addColorStop(0, 'rgba(255,255,255,0.15)'); trayTopBevel.addColorStop(1, 'rgba(255,255,255,0)');
+                var trayTopBevel = ctx.createLinearGradient(0, 4, 0, 32);
+                trayTopBevel.addColorStop(0, 'rgba(255,255,255,0.20)'); trayTopBevel.addColorStop(1, 'rgba(255,255,255,0)');
                 ctx.fillStyle = trayTopBevel; ctx.fillRect(7, 7, W - 14, 28);
                 var trayBottomBevel = ctx.createLinearGradient(0, H - 38, 0, H - 6);
-                trayBottomBevel.addColorStop(0, 'rgba(2,6,23,0)'); trayBottomBevel.addColorStop(1, 'rgba(2,6,23,0.42)');
+                trayBottomBevel.addColorStop(0, 'rgba(2,6,23,0)'); trayBottomBevel.addColorStop(1, 'rgba(2,6,23,0.46)');
                 ctx.fillStyle = trayBottomBevel; ctx.fillRect(7, H - 38, W - 14, 31);
                 // Keep fine tray markings with the detailed workspace; the scale bar remains in both views.
                 if (detailedCanvasHud) {
@@ -13760,15 +13961,17 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                 ctx.font = 'bold 7px Inter, system-ui'; ctx.fillStyle = 'rgba(226,232,240,0.78)';
                 fillPanelText('INSTRUMENT BAY', instrumentBayX, instrumentBayW, 9, instrumentBayY + 12);
 
-                // Scalpel with a brushed handle and a distinct beveled blade.
+                // Scalpel with brushed surgical-steel handle and crisp beveled blade specular.
                 ctx.save(); ctx.translate(instrumentBayX + 34, instrumentBayY + 33); ctx.rotate(-0.28);
                 var bayScalpelHandle = ctx.createLinearGradient(-24, -3, 13, 3);
-                bayScalpelHandle.addColorStop(0, '#475569'); bayScalpelHandle.addColorStop(0.48, '#cbd5e1'); bayScalpelHandle.addColorStop(1, '#64748b');
+                bayScalpelHandle.addColorStop(0, '#475569'); bayScalpelHandle.addColorStop(0.42, '#e2e8f0'); bayScalpelHandle.addColorStop(0.65, '#94a3b8'); bayScalpelHandle.addColorStop(1, '#475569');
                 ctx.fillStyle = bayScalpelHandle; ctx.fillRect(-24, -2.4, 37, 4.8);
-                ctx.strokeStyle = 'rgba(248,250,252,0.45)'; ctx.lineWidth = 0.65; ctx.strokeRect(-24, -2.4, 37, 4.8);
+                ctx.strokeStyle = 'rgba(255,255,255,0.62)'; ctx.lineWidth = 0.7; ctx.strokeRect(-24, -2.4, 37, 4.8);
                 ctx.beginPath(); ctx.moveTo(13, -2.6); ctx.lineTo(28, -1.4); ctx.lineTo(31, 0); ctx.lineTo(13, 2.6); ctx.closePath();
-                var bayBlade = ctx.createLinearGradient(13, -3, 30, 3); bayBlade.addColorStop(0, '#94a3b8'); bayBlade.addColorStop(0.5, '#f8fafc'); bayBlade.addColorStop(1, '#64748b');
+                var bayBlade = ctx.createLinearGradient(13, -3, 30, 3); bayBlade.addColorStop(0, '#94a3b8'); bayBlade.addColorStop(0.45, '#ffffff'); bayBlade.addColorStop(1, '#475569');
                 ctx.fillStyle = bayBlade; ctx.fill(); ctx.strokeStyle = '#334155'; ctx.lineWidth = 0.55; ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,255,255,0.88)'; ctx.lineWidth = 0.65;
+                ctx.beginPath(); ctx.moveTo(14, -1.3); ctx.lineTo(29, -0.4); ctx.stroke();
                 ctx.restore();
 
                 // Forceps keep a visible spring gap and fine gripping tips.
@@ -13939,23 +14142,22 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   ctx.clip(); ctx.shadowBlur = 0;
                   ctx.translate(x, y); ctx.scale(rx, ry);
 
-                  // Large-scale volume does most of the work. The original fill remains the
-                  // organ's color; lighting uses neutral multiply/screen rather than repainting it.
+                  // Large-scale volume & soft organ-layer depth shading. Neutral multiply/screen preserves base color.
                   ctx.globalCompositeOperation = 'multiply';
                   var volume = ctx.createLinearGradient(lightX * 1.35, lightY * 1.35, -lightX * 1.35, -lightY * 1.35);
                   volume.addColorStop(0, 'rgba(25,15,20,0)');
-                  volume.addColorStop(0.42, 'rgba(25,15,20,0.025)');
-                  volume.addColorStop(0.78, 'rgba(25,15,20,' + (0.17 * detail).toFixed(3) + ')');
-                  volume.addColorStop(1, 'rgba(25,15,20,' + (0.43 * detail).toFixed(3) + ')');
+                  volume.addColorStop(0.42, 'rgba(25,15,20,0.032)');
+                  volume.addColorStop(0.76, 'rgba(22,12,18,' + (0.20 * detail).toFixed(3) + ')');
+                  volume.addColorStop(1, 'rgba(18,10,16,' + (0.48 * detail).toFixed(3) + ')');
                   ctx.fillStyle = volume; ctx.fillRect(-1.5, -1.5, 3, 3);
                   var edge = ctx.createRadialGradient(lightX * 0.12, lightY * 0.12, 0.18, 0, 0, 1.32);
-                  edge.addColorStop(0, 'rgba(30,17,24,0)'); edge.addColorStop(0.64, 'rgba(30,17,24,0.015)');
-                  edge.addColorStop(1, 'rgba(30,17,24,' + ((spongy ? 0.22 : 0.32) * detail).toFixed(3) + ')');
+                  edge.addColorStop(0, 'rgba(30,17,24,0)'); edge.addColorStop(0.62, 'rgba(30,17,24,0.022)');
+                  edge.addColorStop(1, 'rgba(24,12,20,' + ((spongy ? 0.26 : 0.36) * detail).toFixed(3) + ')');
                   ctx.fillStyle = edge; ctx.fillRect(-1.5, -1.5, 3, 3);
                   ctx.globalCompositeOperation = 'screen';
                   var broadSheen = ctx.createRadialGradient(lightX * 0.46, lightY * 0.46, 0.03, lightX * 0.18, lightY * 0.18, capsule ? 1.16 : 0.96);
-                  broadSheen.addColorStop(0, 'rgba(255,234,214,' + ((capsule ? 0.28 : 0.20) * detail * (smoothSurface ? 0.48 + materialGloss * 0.52 : 1)).toFixed(3) + ')');
-                  broadSheen.addColorStop(0.46, 'rgba(255,234,214,' + (0.075 * detail * (smoothSurface ? 0.48 + materialGloss * 0.52 : 1)).toFixed(3) + ')');
+                  broadSheen.addColorStop(0, 'rgba(255,238,220,' + ((capsule ? 0.32 : 0.23) * detail * (smoothSurface ? 0.48 + materialGloss * 0.52 : 1)).toFixed(3) + ')');
+                  broadSheen.addColorStop(0.46, 'rgba(255,234,214,' + (0.09 * detail * (smoothSurface ? 0.48 + materialGloss * 0.52 : 1)).toFixed(3) + ')');
                   broadSheen.addColorStop(1, 'rgba(255,234,214,0)');
                   ctx.fillStyle = broadSheen; ctx.fillRect(-1.5, -1.5, 3, 3);
                   ctx.globalCompositeOperation = 'source-over'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -14090,17 +14292,22 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                     tissueGrain(realistic ? 76 : 44, /kidney/.test(key) ? '0.12' : '0.15');
                   }
 
-                  // A narrow, restrained wet highlight reinforces the same lamp direction.
-                  // Broad capsule highlights remain wider than muscular or lobulated tissue.
+                  // Twin-lobe wet serous highlight reinforces lamp direction & moist organ clarity.
                   ctx.globalCompositeOperation = 'screen';
                   var wetRadius = capsule || serosa ? 0.52 : 0.33;
                   if (smoothSurface) wetRadius *= 1.18 - materialMoisture * 0.32;
                   var wet = ctx.createRadialGradient(lightX * 0.58, lightY * 0.58, 0, lightX * 0.54, lightY * 0.54, wetRadius);
                   var wetStrength = smoothSurface ? materialGloss : (d.specimenCondition === 'dehydrated' ? 0.30 : 1);
-                  wet.addColorStop(0, 'rgba(255,242,225,' + ((spongy ? 0.12 : 0.22) * detail * wetStrength).toFixed(3) + ')');
-                  wet.addColorStop(0.34, 'rgba(255,242,225,' + (0.06 * detail * wetStrength).toFixed(3) + ')');
+                  wet.addColorStop(0, 'rgba(255,248,236,' + ((spongy ? 0.15 : 0.27) * detail * wetStrength).toFixed(3) + ')');
+                  wet.addColorStop(0.32, 'rgba(255,242,225,' + (0.08 * detail * wetStrength).toFixed(3) + ')');
                   wet.addColorStop(1, 'rgba(255,242,225,0)');
                   ctx.fillStyle = wet; ctx.fillRect(-1.5, -1.5, 3, 3);
+                  if (smoothSurface) {
+                    var wetPin = ctx.createRadialGradient(lightX * 0.62, lightY * 0.62, 0, lightX * 0.62, lightY * 0.62, wetRadius * 0.34);
+                    wetPin.addColorStop(0, 'rgba(255,255,252,' + (0.20 * detail * wetStrength).toFixed(3) + ')');
+                    wetPin.addColorStop(1, 'rgba(255,255,252,0)');
+                    ctx.fillStyle = wetPin; ctx.fillRect(-1.5, -1.5, 3, 3);
+                  }
                 } finally { ctx.restore(); }
               }
 
@@ -14163,8 +14370,8 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   // It is subdued in Guided mode so it does not resemble a marked flow route.
                   ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
                   ctx.shadowColor = 'rgba(0,0,0,0)';
-                  ctx.globalAlpha *= realistic ? 0.18 : 0.10;
-                  ctx.strokeStyle = light; ctx.lineWidth = Math.max(width * 0.14, Math.min(width * 0.24, 0.42)); ctx.stroke();
+                  ctx.globalAlpha *= realistic ? 0.24 : 0.13;
+                  ctx.strokeStyle = light; ctx.lineWidth = Math.max(width * 0.15, Math.min(width * 0.25, 0.46)); ctx.stroke();
                 } finally { ctx.restore(); }
               }
 
@@ -20922,13 +21129,20 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   ctx.setLineDash([3, 3]); ctx.strokeStyle = pinAccessible ? '#facc15' : 'rgba(226,232,240,0.48)'; ctx.lineWidth = pinAccessible ? 1.8 : 1;
                   ctx.beginPath(); ctx.moveTo(openingCenter.x * W, openingCenter.y * H); ctx.lineTo(pinX, pinY); ctx.stroke(); ctx.setLineDash([]);
                 }
-                // The elevated shaft casts away from the active lab light.
-                ctx.strokeStyle = pinAccessible ? '#020617' : 'rgba(2,6,23,0.42)'; ctx.lineWidth = pinAccessible ? 4.8 : 4;
+                // The elevated shaft casts away from the active lab light, with brushed surgical-steel specular gradient.
+                ctx.strokeStyle = pinAccessible ? '#020617' : 'rgba(2,6,23,0.48)'; ctx.lineWidth = pinAccessible ? 4.8 : 4.2;
                 ctx.beginPath(); ctx.moveTo(pinX - pinLightVector.x * pinShadowOffset, pinY - pinLightVector.y * pinShadowOffset);
                 ctx.lineTo(pinHeadX - pinLightVector.x * pinShadowOffset, pinHeadY - pinLightVector.y * pinShadowOffset); ctx.stroke();
-                ctx.strokeStyle = pinAccessible ? '#f8fafc' : '#94a3b8'; ctx.lineWidth = pinAccessible ? 3.2 : 2.6;
+                if (!pinAccessible && ctx.createLinearGradient) {
+                  var pinShaftGrad = ctx.createLinearGradient(pinX, pinY, pinHeadX, pinHeadY);
+                  pinShaftGrad.addColorStop(0, '#64748b'); pinShaftGrad.addColorStop(0.45, '#e2e8f0'); pinShaftGrad.addColorStop(1, '#94a3b8');
+                  ctx.strokeStyle = pinShaftGrad;
+                } else {
+                  ctx.strokeStyle = pinAccessible ? '#f8fafc' : '#94a3b8';
+                }
+                ctx.lineWidth = pinAccessible ? 3.2 : 2.7;
                 ctx.beginPath(); ctx.moveTo(pinX, pinY); ctx.lineTo(pinHeadX, pinHeadY); ctx.stroke();
-                ctx.strokeStyle = pinAccessible ? '#facc15' : 'rgba(248,250,252,0.82)'; ctx.lineWidth = 0.9;
+                ctx.strokeStyle = pinAccessible ? '#facc15' : 'rgba(255,255,255,0.92)'; ctx.lineWidth = 1.0;
                 ctx.beginPath(); ctx.moveTo(pinX + pinOutY, pinY - pinOutX); ctx.lineTo(pinHeadX + pinOutY, pinHeadY - pinOutX); ctx.stroke();
                 // Concentric collar and depth notch make the insertion site legible without relying on pin color.
                 ctx.fillStyle = pinAccessible ? '#020617' : 'rgba(51,65,85,0.88)';
@@ -20942,7 +21156,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                 pinHeadGradient.addColorStop(0, '#ffffff');
                 pinHeadGradient.addColorStop(0.34, pinIdx % 2 ? '#7dd3fc' : '#f9a8d4');
                 pinHeadGradient.addColorStop(1, pinIdx % 2 ? '#0369a1' : '#be185d');
-                ctx.fillStyle = pinHeadGradient; ctx.strokeStyle = pinAccessible ? '#f8fafc' : 'rgba(255,255,255,0.82)'; ctx.lineWidth = pinAccessible ? 2.1 : 1.15;
+                ctx.fillStyle = pinHeadGradient; ctx.strokeStyle = pinAccessible ? '#f8fafc' : 'rgba(255,255,255,0.86)'; ctx.lineWidth = pinAccessible ? 2.1 : 1.15;
                 ctx.beginPath();
                 if (pinIdx % 2) {
                   ctx.moveTo(pinHeadX, pinHeadY - pinHeadRadius); ctx.lineTo(pinHeadX + pinHeadRadius, pinHeadY);
@@ -20951,6 +21165,12 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   ctx.arc(pinHeadX, pinHeadY, pinHeadRadius, 0, Math.PI * 2);
                 }
                 ctx.fill(); ctx.stroke();
+                if (!pinAccessible) {
+                  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+                  ctx.beginPath();
+                  ctx.arc(pinHeadX + pinLightVector.x * pinHeadRadius * 0.34, pinHeadY + pinLightVector.y * pinHeadRadius * 0.34, Math.max(1.1, pinHeadRadius * 0.22), 0, Math.PI * 2);
+                  ctx.fill();
+                }
                 ctx.restore();
               }
               (canvasProcedure.pins || []).forEach(drawCommittedRetractionPin);
@@ -21101,15 +21321,19 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
               }
 
-              // Nervous system tracing overlay
+              // Nervous system tracing overlay (subtle backlit nerve contrast; reduced-motion safe)
 
               if (!d.quizMode && d.traceNervous) {
-
+                var nerveMotionReduced = false;
+                try { nerveMotionReduced = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (_nmErr) {}
+                ctx.save();
                 ctx.setLineDash([3, 5]);
-
-                ctx.lineDashOffset = -dissTick * 0.5;
-
-                ctx.lineWidth = 1.5; ctx.globalAlpha = 0.7;
+                ctx.lineDashOffset = nerveMotionReduced ? 0 : (-dissTick * 0.5);
+                ctx.lineWidth = 1.65; ctx.globalAlpha = 0.82;
+                if (!highContrastEnabled) {
+                  ctx.shadowColor = 'rgba(216,180,254,0.62)';
+                  ctx.shadowBlur = 5;
+                }
 
                 if (spec.bodyShape === 'frog') {
 
@@ -21254,7 +21478,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                 }
 
                 ctx.setLineDash([]); ctx.lineDashOffset = 0;
-
+                ctx.restore();
                 ctx.globalAlpha = 1;
 
               }
@@ -23660,14 +23884,16 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   ctx.beginPath();
                   if (toolId === 'scalpel') {
                     ctx.moveTo(-44, side * 4.2); ctx.lineTo(-12, side * 4.2);
-                    ctx.moveTo(-7, side * 3.4); ctx.lineTo(12, side * 1.7);
+                    ctx.moveTo(-7, side * 3.4); ctx.lineTo(14, side * 1.3);
+                    ctx.moveTo(-3, side * 1.4); ctx.lineTo(15, side * 0.3);
                   } else if (toolId === 'scissors') {
                     ctx.moveTo(-6, 0); ctx.lineTo(26, side * (7 + toolCalibration.scissorsAperture / 100 * 6));
                     ctx.arc(-19, side * 9, 6.2, 0.18, Math.PI - 0.18);
                   } else if (toolId === 'forceps') {
                     ctx.moveTo(-36, side * 5.1); ctx.quadraticCurveTo(-3, side * 2.4, 19, side * 1.5);
                   } else if (toolId === 'pin') {
-                    ctx.moveTo(-22, side * 0.7); ctx.lineTo(14, side * 0.7);
+                    ctx.moveTo(-22, side * 0.7); ctx.lineTo(15, side * 0.7);
+                    ctx.moveTo(-18, -side * 0.35); ctx.lineTo(10, -side * 0.35);
                   } else if (toolId === 'dropper') {
                     ctx.moveTo(-25, side * 2.8); ctx.lineTo(9, side * 2.8);
                     ctx.arc(-32, 0, 8.8, side > 0 ? 0.15 : Math.PI + 0.15, side > 0 ? Math.PI - 0.15 : Math.PI * 2 - 0.15);
@@ -27912,40 +28138,40 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
               React.createElement("section", { className: "diss-view-group", "data-diss-view-group": "accessibility", role: "group", "aria-label": __alloT('stem.dissection.view_group_accessibility', 'Accessibility') },
                 React.createElement("h4", { className: "diss-view-group__title" }, __alloT('stem.dissection.view_group_accessibility', 'Accessibility')),
                 React.createElement("div", { className: "diss-view-control-grid" },
-                  React.createElement("button", { disabled: !!d.quizMode, "aria-label": d.quizMode ? __alloT('stem.dissection.a11y_organ_name_labels_hidden_during_assessment', 'Organ name labels hidden during assessment') : __alloT('stem.dissection.a11y_toggle_organ_name_labels', 'Toggle organ name labels'), "aria-pressed": !d.quizMode && d.labelMode !== 'hidden', onClick: function () { upd('labelMode', d.labelMode === 'hidden' ? 'show' : 'hidden'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (!d.quizMode && d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83C\uDFF7 Labels ' + (!d.quizMode && d.labelMode !== 'hidden' ? 'on' : 'off')),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_high_contrast_mode', 'Toggle high contrast mode'), "aria-pressed": highContrastEnabled, onClick: function () { setAccessibilityPreference('highContrast', !highContrastEnabled, 'High contrast'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (highContrastEnabled ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200') }, '\u2600 High contrast ' + (highContrastEnabled ? 'on' : 'off')),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_additional_reduced_motion_operating_syst', 'Toggle additional reduced motion; operating system reduced motion settings are always honored'), "aria-pressed": reducedMotionEnabled, onClick: function () { setAccessibilityPreference('reducedMotion', !reducedMotionEnabled, 'Reduced motion'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (reducedMotionEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, reducedMotionEnabled ? '\u23F8 Reduced motion on' : '\u25B6 Reduced motion off'),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_larger_interface_text', 'Toggle larger interface text'), "aria-pressed": largeTextEnabled, onClick: function () { setAccessibilityPreference('largeText', !largeTextEnabled, 'Larger interface text'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (largeTextEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, largeTextEnabled ? 'A+ Larger text on' : 'A Larger text off'),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_simplified_step_instructions', 'Toggle simplified step instructions'), "aria-pressed": simplifiedInstructions, onClick: function () { setAccessibilityPreference('simplifiedInstructions', !simplifiedInstructions, 'Simplified instructions'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (simplifiedInstructions ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, simplifiedInstructions ? 'Simple steps on' : 'Simple steps off'),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_dissection_sound_effects', 'Toggle dissection sound effects'), "aria-pressed": d.soundEnabled !== false, onClick: function () { var enabled = d.soundEnabled === false; try { window.__alloDissectionSoundEnabled = enabled; } catch (e) {} upd('soundEnabled', enabled); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.soundEnabled !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.soundEnabled !== false ? '\uD83D\uDD0A Sound on' : '\uD83D\uDD07 Sound off'),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_tactile_instrument_feedback', 'Toggle tactile instrument feedback'), "aria-pressed": d.tactileFeedback !== false, onClick: function () { upd('tactileFeedback', d.tactileFeedback === false); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.tactileFeedback !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.tactileFeedback !== false ? '\u223F Tactile on' : '\u223F Tactile off')
+                  React.createElement("button", { disabled: !!d.quizMode, "aria-label": d.quizMode ? __alloT('stem.dissection.a11y_organ_name_labels_hidden_during_assessment', 'Organ name labels hidden during assessment') : __alloT('stem.dissection.a11y_toggle_organ_name_labels', 'Toggle organ name labels'), "aria-pressed": !d.quizMode && d.labelMode !== 'hidden', onClick: function () { upd('labelMode', d.labelMode === 'hidden' ? 'show' : 'hidden'); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (!d.quizMode && d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83C\uDFF7 Labels ' + (!d.quizMode && d.labelMode !== 'hidden' ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_high_contrast_mode', 'Toggle high contrast mode'), "aria-pressed": highContrastEnabled, onClick: function () { setAccessibilityPreference('highContrast', !highContrastEnabled, 'High contrast'); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (highContrastEnabled ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200') }, '\u2600 High contrast ' + (highContrastEnabled ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_additional_reduced_motion_operating_syst', 'Toggle additional reduced motion; operating system reduced motion settings are always honored'), "aria-pressed": reducedMotionEnabled, onClick: function () { setAccessibilityPreference('reducedMotion', !reducedMotionEnabled, 'Reduced motion'); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (reducedMotionEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, reducedMotionEnabled ? '\u23F8 Reduced motion on' : '\u25B6 Reduced motion off'),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_larger_interface_text', 'Toggle larger interface text'), "aria-pressed": largeTextEnabled, onClick: function () { setAccessibilityPreference('largeText', !largeTextEnabled, 'Larger interface text'); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (largeTextEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, largeTextEnabled ? 'A+ Larger text on' : 'A Larger text off'),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_simplified_step_instructions', 'Toggle simplified step instructions'), "aria-pressed": simplifiedInstructions, onClick: function () { setAccessibilityPreference('simplifiedInstructions', !simplifiedInstructions, 'Simplified instructions'); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (simplifiedInstructions ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, simplifiedInstructions ? 'Simple steps on' : 'Simple steps off'),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_dissection_sound_effects', 'Toggle dissection sound effects'), "aria-pressed": d.soundEnabled !== false, onClick: function () { var enabled = d.soundEnabled === false; try { window.__alloDissectionSoundEnabled = enabled; } catch (e) {} upd('soundEnabled', enabled); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (d.soundEnabled !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.soundEnabled !== false ? '\uD83D\uDD0A Sound on' : '\uD83D\uDD07 Sound off'),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_tactile_instrument_feedback', 'Toggle tactile instrument feedback'), "aria-pressed": d.tactileFeedback !== false, onClick: function () { upd('tactileFeedback', d.tactileFeedback === false); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (d.tactileFeedback !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.tactileFeedback !== false ? '\u223F Tactile on' : '\u223F Tactile off')
                 )
               ),
               React.createElement("section",
                 { className: "diss-view-group", "data-diss-view-group": "specimen", role: "group", "aria-label": __alloT('stem.dissection.view_group_specimen', 'Specimen display') },
-                React.createElement("h4", { className: "diss-view-group__title" }, __alloT('stem.dissection.view_group_specimen', 'Specimen display')), React.createElement("div", { className: "diss-view-subgroup-grid" }, React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "presentation", role: "group", "aria-labelledby": "diss-view-subgroup-presentation" }, React.createElement("h5", { id: "diss-view-subgroup-presentation", className: "diss-view-subgroup__title" }, 'Anatomy and presentation'), React.createElement("p", { id: "diss-view-presentation-help", className: "diss-view-help" }, !advancedWorkspace ? 'Essentials uses Guided presentation. Select Advanced workspace to use the other presentation modes.' : (visualRealism === 'realistic' ? 'Realistic uses richer materials, natural landmark variation, and reduced teaching emphasis.' : visualRealism === 'accessible' ? 'Accessible applies high contrast, larger visual targets, and slower animation. High contrast and slow animation stay active when you change presentation.' : 'Guided uses balanced materials and visible technique targets.')), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-describedby": "diss-view-presentation-help", disabled: !advancedWorkspace, "aria-label": __alloT('stem.dissection.a11y_visual_presentation_cycle_guided_realistic_and', 'Visual presentation: cycle guided, realistic, and accessible'), onClick: function () { setVisualRealism(visualRealism === 'guided' ? 'realistic' : (visualRealism === 'realistic' ? 'accessible' : 'guided')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2726 Visuals: ' + (visualRealism === 'realistic' ? 'Realistic' : visualRealism === 'accessible' ? 'Accessible' : 'Guided')),
-                  !d.quizMode && React.createElement(React.Fragment, null, React.createElement("button", { id: "diss-view-cycle", disabled: !!d.practicalMode, "aria-label": d.practicalMode ? __alloT('stem.dissection.a11y_anatomical_view_locked_during_timed_practical', 'Anatomical view locked during timed practical') : __alloT('stem.dissection.a11y_anatomical_view_cycle_dorsal_ventral_lateral_and_internal', 'Anatomical view: cycle dorsal, ventral, lateral, and internal'), onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'view toolbar'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB View: ' + anatomicalView),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_layer_cross_section', 'Toggle schematic layer map'), "aria-pressed": crossSectionMode, onClick: function () { upd('crossSectionMode', !crossSectionMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (crossSectionMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A4 Layer map ' + (crossSectionMode ? 'on' : 'off')),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_specimen_condition_cycle_standard_preserved_deh', 'Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen'), onClick: function () { var conditions = ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen']; upd('specimenCondition', conditions[(conditions.indexOf(specimenCondition) + 1) % conditions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Condition: ' + specimenCondition),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_curated_anatomical_relationships', 'Toggle curated anatomical relationships'), "aria-pressed": relationshipMode, onClick: function () { upd('relationshipMode', !relationshipMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2194 Relationships ' + (relationshipMode ? 'on' : 'off')),
-                  React.createElement("button", { "aria-describedby": "diss-view-quality-help", "aria-label": __alloT('stem.dissection.a11y_rendering_quality_cycle_auto_high_and_balanced', 'Rendering quality: cycle auto, high, and balanced'), onClick: function () { var qualities = ['auto', 'high', 'balanced']; upd('renderQuality', qualities[(qualities.indexOf(renderQuality) + 1) % qualities.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2699 Quality: ' + renderQuality))), !d.quizMode && React.createElement("p", { id: "diss-view-quality-help", className: "diss-view-help diss-view-help--after diss-advanced-only" }, 'Quality balances animation smoothness with device load.')), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "inspection", role: "group", "aria-labelledby": "diss-view-subgroup-inspection" }, React.createElement("h5", { id: "diss-view-subgroup-inspection", className: "diss-view-subgroup__title" }, 'Local inspection'), React.createElement("p", { id: "diss-view-inspection-help", className: "diss-view-help" }, advancedWorkspace ? 'Magnify a local area and choose its tissue depth. Specimen zoom stays separate.' : 'Local lens inspection is available in Advanced workspace.'), React.createElement("div", { className: "diss-view-control-grid" }, !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help", disabled: !advancedWorkspace, "aria-label": __alloT('stem.dissection.a11y_toggle_movable_inspection_lens', 'Toggle movable inspection lens'), "aria-pressed": inspectionLens, onClick: function () { upd('inspectionLens', !inspectionLens); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (inspectionLens ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83D\uDD0D Lens ' + (inspectionLens ? 'on' : 'off')),
-                  !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help diss-view-pin-help", disabled: !advancedWorkspace, "aria-label": lensPinned ? __alloT('stem.dissection.a11y_release_pinned_inspection_target', 'Release pinned inspection target') : __alloT('stem.dissection.a11y_pin_inspection_lens_to_selected_structure_or_current_pointer', 'Pin inspection lens to selected structure or current pointer'), "aria-pressed": lensPinned, onClick: toggleInspectionPin, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (lensPinned ? 'bg-cyan-700 text-white' : 'bg-white text-blue-700 border border-blue-200') }, lensPinned ? '\u2316 Unpin lens' : '\u2316 Pin lens'),
-                  !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help", disabled: !advancedWorkspace, "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_magnification_2_4_or_6_times', 'Cycle inspection magnification: 2, 4, or 6 times'), onClick: cycleLensMagnification, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2295 Magnify ' + lensMagnification + 'x'),
-                  !d.quizMode && React.createElement("button", { id: "diss-lens-focus-depth", disabled: !advancedWorkspace, "aria-describedby": "diss-view-inspection-help", "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_focus_depth_surface_structure', 'Cycle inspection focus depth: surface, structure, or deep'), onClick: cycleLensFocusDepth, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Focus: ' + lensFocusDepth)), React.createElement("p", { id: "diss-view-pin-help", className: "diss-view-help diss-view-help--after" }, 'Select a structure or move over the specimen before pinning.')), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "scene", role: "group", "aria-labelledby": "diss-view-subgroup-scene" }, React.createElement("h5", { id: "diss-view-subgroup-scene", className: "diss-view-subgroup__title" }, 'Scene and landmarks'), React.createElement("p", { id: "diss-view-scene-help", className: "diss-view-help" }, advancedWorkspace ? 'Choose instrument, landmark, and depth cues for the specimen.' : 'Essentials uses the default scene display. Select Advanced workspace to adjust depth and landmark cues.'), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_detailed_pointer_following_instrument_vi', 'Toggle detailed pointer-following instrument visuals and contact response'), "aria-pressed": instrumentVisuals, onClick: function () { upd('instrumentVisuals', !instrumentVisuals); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (instrumentVisuals ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2692 Visual tools ' + (instrumentVisuals ? 'on' : 'off')),
-                  !d.quizMode && React.createElement("button", { disabled: !advancedWorkspace, "aria-describedby": "diss-view-inspection-help diss-view-scene-help", "aria-label": __alloT('stem.dissection.a11y_toggle_docked_macro_inspection_view', 'Toggle docked macro inspection view'), "aria-pressed": macroInset, onClick: function () { upd('macroInset', !macroInset); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (macroInset ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A3 Macro view ' + (macroInset ? 'on' : 'off')),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_specimen_specific_surface_and_tray_depth', 'Toggle specimen-specific surface and tray depth details'), "aria-pressed": sceneDetail, onClick: function () { upd('sceneDetail', !sceneDetail); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (sceneDetail ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2726 Scene detail ' + (sceneDetail ? 'on' : 'off')),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_anatomical_depth_atlas_with_shape_coded', 'Toggle anatomical depth atlas with shape-coded landmarks'), "aria-pressed": depthAtlasEnabled, onClick: function () { var nextDepthAtlas = !depthAtlasEnabled; upd('depthAtlas', nextDepthAtlas); setProcedureFeedback('Depth atlas ' + (nextDepthAtlas ? 'enabled. Surface, mid-depth, and deep structures now use distinct landmark shapes.' : 'disabled. Standard landmark pins remain visible.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (depthAtlasEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25C8 Depth atlas ' + (depthAtlasEnabled ? 'on' : 'off')),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_responsive_tissue_relief_lighting_around', 'Toggle responsive tissue relief lighting around visible structures'), "aria-pressed": tissueReliefEnabled, onClick: function () { var nextTissueRelief = !tissueReliefEnabled; upd('tissueRelief', nextTissueRelief); setProcedureFeedback('Tissue relief ' + (nextTissueRelief ? 'enabled. Structure elevation and recess cues now respond to the inspection light.' : 'disabled. Flat anatomical shading remains active.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (tissueReliefEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25D2 Tissue relief ' + (tissueReliefEnabled ? 'on' : 'off')),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_animated_direction_markers_for_curated_a', 'Toggle animated direction markers for curated anatomical relationships'), "aria-pressed": relationshipMotion, onClick: function () { upd('relationshipMotion', !relationshipMotion); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMotion ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2192 Flow motion ' + (relationshipMotion ? 'on' : 'off')),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_selected_structure_focus_isolation', 'Toggle selected-structure focus isolation'), "aria-pressed": focusMode, onClick: function () { upd('focusMode', !focusMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (focusMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25CE Focus mode ' + (focusMode ? 'on' : 'off')),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_subtle_pointer_responsive_specimen_depth', 'Toggle subtle pointer-responsive specimen depth'), "aria-pressed": parallaxDepth, onClick: function () { upd('parallaxDepth', !parallaxDepth); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (parallaxDepth ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, 'Depth motion ' + (parallaxDepth ? 'on' : 'off'))), null), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "reference", role: "group", "aria-labelledby": "diss-view-subgroup-reference" }, React.createElement("h5", { id: "diss-view-subgroup-reference", className: "diss-view-subgroup__title" }, 'Reference and variation'), React.createElement("p", { id: "diss-view-reference-help", className: "diss-view-help" }, !advancedWorkspace ? 'Saved-frame split comparison is available in Advanced workspace. Capture a frame in Lab tools to choose a reference.' : (referenceEvidence ? 'Compare the live specimen with Frame ' + evidenceFrameNumber(referenceEvidence) + ' from ' + evidenceLayerLabel(referenceEvidence) + '.' : 'Capture a frame in Lab tools to enable the live/reference split.')), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-describedby": "diss-view-reference-help", "aria-label": __alloT('stem.dissection.a11y_toggle_live_and_reference_split_comparison', 'Toggle live and reference split comparison'), "aria-pressed": splitComparison && !!referenceEvidence, disabled: !referenceEvidence, onClick: function () { upd('splitComparison', !splitComparison); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (splitComparison && referenceEvidence ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') + (!referenceEvidence ? ' opacity-50 cursor-not-allowed' : '') }, 'Split compare ' + (splitComparison && referenceEvidence ? 'on' : 'off')),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_generate_another_deterministic_specimen_variati', 'Generate another deterministic specimen variation'), onClick: function () { upd('variationSeed', variationSeed + 1); setProcedureFeedback('Loaded specimen variation ' + (variationSeed + 1) + '. Landmark shifts are small and deterministic.'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB Variation ' + variationSeed),
-                  React.createElement("button", { "aria-describedby": "diss-view-tissue-help", "aria-label": 'Tissue: ' + (d.beforeTechniqueView ? 'before' : 'after') + ' technique. Activate to show the tissue ' + (d.beforeTechniqueView ? 'after' : 'before') + ' the technique.', onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (d.beforeTechniqueView ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.beforeTechniqueView ? '\u25C0 Tissue: before' : '\u25B6 Tissue: after')), React.createElement("p", { id: "diss-view-tissue-help", className: "diss-view-help diss-view-help--after" }, 'Tissue before/after changes the displayed technique overlay. Your recorded technique stays saved.')))),
+                React.createElement("h4", { className: "diss-view-group__title" }, __alloT('stem.dissection.view_group_specimen', 'Specimen display')), React.createElement("div", { className: "diss-view-subgroup-grid" }, React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "presentation", role: "group", "aria-labelledby": "diss-view-subgroup-presentation" }, React.createElement("h5", { id: "diss-view-subgroup-presentation", className: "diss-view-subgroup__title" }, 'Anatomy and presentation'), React.createElement("p", { id: "diss-view-presentation-help", className: "diss-view-help" }, !advancedWorkspace ? 'Essentials uses Guided presentation. Select Advanced workspace to use the other presentation modes.' : (visualRealism === 'realistic' ? 'Realistic uses richer materials, natural landmark variation, and reduced teaching emphasis.' : visualRealism === 'accessible' ? 'Accessible applies high contrast, larger visual targets, and slower animation. High contrast and slow animation stay active when you change presentation.' : 'Guided uses balanced materials and visible technique targets.')), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-describedby": "diss-view-presentation-help", disabled: !advancedWorkspace, "aria-label": __alloT('stem.dissection.a11y_visual_presentation_cycle_guided_realistic_and', 'Visual presentation: cycle guided, realistic, and accessible'), onClick: function () { setVisualRealism(visualRealism === 'guided' ? 'realistic' : (visualRealism === 'realistic' ? 'accessible' : 'guided')); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2726 Visuals: ' + (visualRealism === 'realistic' ? 'Realistic' : visualRealism === 'accessible' ? 'Accessible' : 'Guided')),
+                  !d.quizMode && React.createElement(React.Fragment, null, React.createElement("button", { id: "diss-view-cycle", disabled: !!d.practicalMode, "aria-label": d.practicalMode ? __alloT('stem.dissection.a11y_anatomical_view_locked_during_timed_practical', 'Anatomical view locked during timed practical') : __alloT('stem.dissection.a11y_anatomical_view_cycle_dorsal_ventral_lateral_and_internal', 'Anatomical view: cycle dorsal, ventral, lateral, and internal'), onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'view toolbar'); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB View: ' + anatomicalView),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_layer_cross_section', 'Toggle schematic layer map'), "aria-pressed": crossSectionMode, onClick: function () { upd('crossSectionMode', !crossSectionMode); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (crossSectionMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A4 Layer map ' + (crossSectionMode ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_specimen_condition_cycle_standard_preserved_deh', 'Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen'), onClick: function () { var conditions = ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen']; upd('specimenCondition', conditions[(conditions.indexOf(specimenCondition) + 1) % conditions.length]); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Condition: ' + specimenCondition),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_curated_anatomical_relationships', 'Toggle curated anatomical relationships'), "aria-pressed": relationshipMode, onClick: function () { upd('relationshipMode', !relationshipMode); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (relationshipMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2194 Relationships ' + (relationshipMode ? 'on' : 'off')),
+                  React.createElement("button", { "aria-describedby": "diss-view-quality-help", "aria-label": __alloT('stem.dissection.a11y_rendering_quality_cycle_auto_high_and_balanced', 'Rendering quality: cycle auto, high, and balanced'), onClick: function () { var qualities = ['auto', 'high', 'balanced']; upd('renderQuality', qualities[(qualities.indexOf(renderQuality) + 1) % qualities.length]); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2699 Quality: ' + renderQuality))), !d.quizMode && React.createElement("p", { id: "diss-view-quality-help", className: "diss-view-help diss-view-help--after diss-advanced-only" }, 'Quality balances animation smoothness with device load.')), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "inspection", role: "group", "aria-labelledby": "diss-view-subgroup-inspection" }, React.createElement("h5", { id: "diss-view-subgroup-inspection", className: "diss-view-subgroup__title" }, 'Local inspection'), React.createElement("p", { id: "diss-view-inspection-help", className: "diss-view-help" }, advancedWorkspace ? 'Magnify a local area and choose its tissue depth. Specimen zoom stays separate.' : 'Local lens inspection is available in Advanced workspace.'), React.createElement("div", { className: "diss-view-control-grid" }, !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help", disabled: !advancedWorkspace, "aria-label": __alloT('stem.dissection.a11y_toggle_movable_inspection_lens', 'Toggle movable inspection lens'), "aria-pressed": inspectionLens, onClick: function () { upd('inspectionLens', !inspectionLens); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (inspectionLens ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83D\uDD0D Lens ' + (inspectionLens ? 'on' : 'off')),
+                  !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help diss-view-pin-help", disabled: !advancedWorkspace, "aria-label": lensPinned ? __alloT('stem.dissection.a11y_release_pinned_inspection_target', 'Release pinned inspection target') : __alloT('stem.dissection.a11y_pin_inspection_lens_to_selected_structure_or_current_pointer', 'Pin inspection lens to selected structure or current pointer'), "aria-pressed": lensPinned, onClick: toggleInspectionPin, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (lensPinned ? 'bg-cyan-700 text-white' : 'bg-white text-blue-700 border border-blue-200') }, lensPinned ? '\u2316 Unpin lens' : '\u2316 Pin lens'),
+                  !d.quizMode && React.createElement("button", { "aria-describedby": "diss-view-inspection-help", disabled: !advancedWorkspace, "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_magnification_2_4_or_6_times', 'Cycle inspection magnification: 2, 4, or 6 times'), onClick: cycleLensMagnification, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2295 Magnify ' + lensMagnification + 'x'),
+                  !d.quizMode && React.createElement("button", { id: "diss-lens-focus-depth", disabled: !advancedWorkspace, "aria-describedby": "diss-view-inspection-help", "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_focus_depth_surface_structure', 'Cycle inspection focus depth: surface, structure, or deep'), onClick: cycleLensFocusDepth, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Focus: ' + lensFocusDepth)), React.createElement("p", { id: "diss-view-pin-help", className: "diss-view-help diss-view-help--after" }, 'Select a structure or move over the specimen before pinning.')), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "scene", role: "group", "aria-labelledby": "diss-view-subgroup-scene" }, React.createElement("h5", { id: "diss-view-subgroup-scene", className: "diss-view-subgroup__title" }, 'Scene and landmarks'), React.createElement("p", { id: "diss-view-scene-help", className: "diss-view-help" }, advancedWorkspace ? 'Choose instrument, landmark, and depth cues for the specimen.' : 'Essentials uses the default scene display. Select Advanced workspace to adjust depth and landmark cues.'), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_detailed_pointer_following_instrument_vi', 'Toggle detailed pointer-following instrument visuals and contact response'), "aria-pressed": instrumentVisuals, onClick: function () { upd('instrumentVisuals', !instrumentVisuals); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (instrumentVisuals ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2692 Visual tools ' + (instrumentVisuals ? 'on' : 'off')),
+                  !d.quizMode && React.createElement("button", { disabled: !advancedWorkspace, "aria-describedby": "diss-view-inspection-help diss-view-scene-help", "aria-label": __alloT('stem.dissection.a11y_toggle_docked_macro_inspection_view', 'Toggle docked macro inspection view'), "aria-pressed": macroInset, onClick: function () { upd('macroInset', !macroInset); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (macroInset ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A3 Macro view ' + (macroInset ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_specimen_specific_surface_and_tray_depth', 'Toggle specimen-specific surface and tray depth details'), "aria-pressed": sceneDetail, onClick: function () { upd('sceneDetail', !sceneDetail); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (sceneDetail ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2726 Scene detail ' + (sceneDetail ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_anatomical_depth_atlas_with_shape_coded', 'Toggle anatomical depth atlas with shape-coded landmarks'), "aria-pressed": depthAtlasEnabled, onClick: function () { var nextDepthAtlas = !depthAtlasEnabled; upd('depthAtlas', nextDepthAtlas); setProcedureFeedback('Depth atlas ' + (nextDepthAtlas ? 'enabled. Surface, mid-depth, and deep structures now use distinct landmark shapes.' : 'disabled. Standard landmark pins remain visible.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (depthAtlasEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25C8 Depth atlas ' + (depthAtlasEnabled ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_responsive_tissue_relief_lighting_around', 'Toggle responsive tissue relief lighting around visible structures'), "aria-pressed": tissueReliefEnabled, onClick: function () { var nextTissueRelief = !tissueReliefEnabled; upd('tissueRelief', nextTissueRelief); setProcedureFeedback('Tissue relief ' + (nextTissueRelief ? 'enabled. Structure elevation and recess cues now respond to the inspection light.' : 'disabled. Flat anatomical shading remains active.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (tissueReliefEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25D2 Tissue relief ' + (tissueReliefEnabled ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_animated_direction_markers_for_curated_a', 'Toggle animated direction markers for curated anatomical relationships'), "aria-pressed": relationshipMotion, onClick: function () { upd('relationshipMotion', !relationshipMotion); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (relationshipMotion ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2192 Flow motion ' + (relationshipMotion ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_selected_structure_focus_isolation', 'Toggle selected-structure focus isolation'), "aria-pressed": focusMode, onClick: function () { upd('focusMode', !focusMode); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (focusMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25CE Focus mode ' + (focusMode ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_subtle_pointer_responsive_specimen_depth', 'Toggle subtle pointer-responsive specimen depth'), "aria-pressed": parallaxDepth, onClick: function () { upd('parallaxDepth', !parallaxDepth); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (parallaxDepth ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, 'Depth motion ' + (parallaxDepth ? 'on' : 'off'))), null), !d.quizMode && React.createElement("section", { className: "diss-view-subgroup", "data-diss-view-subgroup": "reference", role: "group", "aria-labelledby": "diss-view-subgroup-reference" }, React.createElement("h5", { id: "diss-view-subgroup-reference", className: "diss-view-subgroup__title" }, 'Reference and variation'), React.createElement("p", { id: "diss-view-reference-help", className: "diss-view-help" }, !advancedWorkspace ? 'Saved-frame split comparison is available in Advanced workspace. Capture a frame in Lab tools to choose a reference.' : (referenceEvidence ? 'Compare the live specimen with Frame ' + evidenceFrameNumber(referenceEvidence) + ' from ' + evidenceLayerLabel(referenceEvidence) + '.' : 'Capture a frame in Lab tools to enable the live/reference split.')), React.createElement("div", { className: "diss-view-control-grid" }, React.createElement("button", { "aria-describedby": "diss-view-reference-help", "aria-label": __alloT('stem.dissection.a11y_toggle_live_and_reference_split_comparison', 'Toggle live and reference split comparison'), "aria-pressed": splitComparison && !!referenceEvidence, disabled: !referenceEvidence, onClick: function () { upd('splitComparison', !splitComparison); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (splitComparison && referenceEvidence ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') + (!referenceEvidence ? ' opacity-50 cursor-not-allowed' : '') }, 'Split compare ' + (splitComparison && referenceEvidence ? 'on' : 'off')),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_generate_another_deterministic_specimen_variati', 'Generate another deterministic specimen variation'), onClick: function () { upd('variationSeed', variationSeed + 1); setProcedureFeedback('Loaded specimen variation ' + (variationSeed + 1) + '. Landmark shifts are small and deterministic.'); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB Variation ' + variationSeed),
+                  React.createElement("button", { "aria-describedby": "diss-view-tissue-help", "aria-label": 'Tissue: ' + (d.beforeTechniqueView ? 'before' : 'after') + ' technique. Activate to show the tissue ' + (d.beforeTechniqueView ? 'after' : 'before') + ' the technique.', onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold " + (d.beforeTechniqueView ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.beforeTechniqueView ? '\u25C0 Tissue: before' : '\u25B6 Tissue: after')), React.createElement("p", { id: "diss-view-tissue-help", className: "diss-view-help diss-view-help--after" }, 'Tissue before/after changes the displayed technique overlay. Your recorded technique stays saved.')))),
               React.createElement("section", { className: "diss-view-group", "data-diss-view-group": "lighting", role: "group", "aria-label": __alloT('stem.dissection.view_group_lighting', 'Lighting and motion') },
                 React.createElement("h4", { className: "diss-view-group__title" }, __alloT('stem.dissection.view_group_lighting', 'Lighting and motion')),
                 React.createElement("div", { className: "diss-view-control-grid" },
                   !d.quizMode && React.createElement(React.Fragment, null,
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_lab_light_cycle_neutral_warm_and_cool', 'Lab light: cycle neutral, warm, and cool'), onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDCA1 ' + labLight + ' light'),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_lab_light_cycle_neutral_warm_and_cool', 'Lab light: cycle neutral, warm, and cool'), onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDCA1 ' + labLight + ' light'),
                   React.createElement("label", { className: "diss-light-intensity", "data-tone": currentIllumination.tone, htmlFor: "diss-light-intensity-range" },
                 React.createElement("span", null, 'Illumination intensity · ' + currentIllumination.label),
                 React.createElement("output", { htmlFor: "diss-light-intensity-range" }, lightIntensity + '%'),
@@ -27956,16 +28182,16 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   onBlur: function () { var result = illuminationAssessmentData(currentProcedure, lightIntensity); setProcedureFeedback('Illumination ' + lightIntensity + ' percent: ' + result.label + '. ' + result.suggestion, result.score >= 72 ? 'success' : 'caution'); }
                 })
               ),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_laboratory_light_direction_cycle_overhead_left', 'Laboratory light direction: cycle overhead, left, right, and raking'), onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2198 Light angle: ' + lightDirection)
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_laboratory_light_direction_cycle_overhead_left', 'Laboratory light direction: cycle overhead, left, right, and raking'), onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2198 Light angle: ' + lightDirection)
                 ),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_animation_speed_cycle_normal_slow_and_fast', 'Animation speed: cycle normal, slow, and fast'), onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal'))
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_animation_speed_cycle_normal_slow_and_fast', 'Animation speed: cycle normal, slow, and fast'), onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal'))
                 )
               ),
               React.createElement("section", { className: "diss-view-group", "data-diss-view-group": "workspace", role: "group", "aria-label": __alloT('stem.dissection.view_group_workspace', 'Workspace actions') },
                 React.createElement("h4", { className: "diss-view-group__title" }, __alloT('stem.dissection.view_group_workspace', 'Workspace actions')),
                 React.createElement("div", { className: "diss-view-control-grid" },
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_enter_fullscreen_specimen_mode_with_view_and_to', 'Enter fullscreen specimen mode with view and tool controls'), "aria-controls": "diss-fullscreen-dock", onClick: function (event) { enterDissectionFullscreen(event.currentTarget); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u26F6 Fullscreen'),
-                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_print_clean_dissection_report', 'Print clean dissection report'), onClick: function () { try { setProcedureFeedback('Print view opened. Choose a printer or save the report as a PDF.'); window.print(); } catch (e) { if (addToast) addToast('Print is unavailable in this view.', 'error'); setProcedureFeedback('Print is unavailable in this view.', 'caution'); } }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDDA8 Print')
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_enter_fullscreen_specimen_mode_with_view_and_to', 'Enter fullscreen specimen mode with view and tool controls'), "aria-controls": "diss-fullscreen-dock", onClick: function (event) { enterDissectionFullscreen(event.currentTarget); }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\u26F6 Fullscreen'),
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_print_clean_dissection_report', 'Print clean dissection report'), onClick: function () { try { setProcedureFeedback('Print view opened. Choose a printer or save the report as a PDF.'); window.print(); } catch (e) { if (addToast) addToast('Print is unavailable in this view.', 'error'); setProcedureFeedback('Print is unavailable in this view.', 'caution'); } }, className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDDA8 Print')
                 )
               )
             ),
@@ -27978,15 +28204,15 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                 React.createElement("div", { className: "diss-lab-tool-actions" }, React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_ruler', 'Ruler'), "aria-pressed": !!d.rulerMode,
                 onClick: function () { setObservationPointMode(d.rulerMode ? null : 'measure'); },
                 title: 'Ruler' + ' — Measure distances on the specimen',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.rulerMode ? 'bg-emerald-700 text-white' : 'transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-[0.97]')
+                className: "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (d.rulerMode ? 'bg-emerald-700 text-white' : 'transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-[0.97]')
               }, '\uD83D\uDCCF ' + 'Ruler'), React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_annotate', 'Annotate'), "aria-pressed": !!d.annotateMode,
                 onClick: function () { setObservationPointMode(d.annotateMode ? null : 'annotate'); },
                 title: 'Annotate' + ' — Draw annotations on the canvas',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.annotateMode ? 'bg-emerald-700 text-white' : 'transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-[0.97]')
+                className: "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (d.annotateMode ? 'bg-emerald-700 text-white' : 'transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-[0.97]')
               }, '\u270F ' + 'Annotate'), React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_clear_annotations', 'Clear annotations'), disabled: !(d.annotations || []).length,
                 onClick: clearObservationMarks,
                 title: 'Clear annotations \u2014 Remove annotation marks from the current specimen',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-emerald-700 border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
               }, '\u232B Clear annotations'))
               ),
               React.createElement("section", { className: "diss-lab-tool-group", "data-lab-tools-group": "evidence", role: "group", "aria-labelledby": "diss-lab-evidence-heading" },
@@ -28004,7 +28230,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                 "data-evidence-capture": true,
                 onClick: captureVisualEvidence,
                 title: visualEvidence.length > evidenceFrameLimit ? 'Evidence notebook over capture capacity — download or remove frames to make room' : (visualEvidence.length >= evidenceFrameLimit ? 'Evidence notebook full — download or remove a frame first' : 'Capture evidence — Save a lightweight frame in the specimen notebook'),
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-[0.97]"
+                className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-[0.97]"
               }, visualEvidence.length >= evidenceFrameLimit ? 'Evidence full · manage notebook' : 'Capture evidence'), React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_download_full_canvas_png', 'Download full canvas PNG'), "data-canvas-download": true,
                   onClick: function () {
                     var sourceCanvas = null;
@@ -28053,7 +28279,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   copyLabReport();
                 },
                 "aria-label": __alloT('stem.dissection.a11y_copy_lab_report_to_clipboard', 'Copy lab report to clipboard'),
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200"
+                className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-emerald-700 border border-emerald-200"
               }, 'Copy lab report'),
                 !d.quizMode && !d.practicalMode && React.createElement('details', { className: 'diss-observation-export diss-report-export', open: !!d._labReportPreviewOpen,
                   onToggle: function (event) { if (event.currentTarget.open !== !!d._labReportPreviewOpen) upd('_labReportPreviewOpen', event.currentTarget.open); } },
@@ -28069,7 +28295,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   )
                 ),
                 React.createElement("div", { className: "diss-lab-reset-boundary" }, React.createElement("button", { id: "diss-reset-specimen", title: __alloT('stem.dissection.a11y_reset_progress_for_this_specimen', 'Reset progress for this specimen'), "aria-expanded": !!d.resetConfirmPending, "aria-controls": d.resetConfirmPending ? "diss-reset-confirmation" : undefined, onClick: requestSpecimenReset,
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-700 border border-red-300"
+                className: "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-red-700 border border-red-300"
               }, '\u21BA Reset specimen'), d.resetConfirmPending && !activeDissectionSaveIssue && React.createElement("div", { id: "diss-reset-confirmation", className: "diss-reset-confirm", role: "group", "aria-labelledby": "diss-reset-confirm-title" },
                 React.createElement("p", { id: "diss-reset-confirm-title", role: "alert", "aria-live": "assertive", "aria-atomic": "true" }, 'Reset ' + spec.name + '? This permanently removes viewed structures, verified identifications, notes, inquiry records, evidence frames, quiz progress, and technique attempts. Accessibility preferences are preserved.'),
                 React.createElement("button", { id: "diss-reset-confirm", type: "button", "data-confirm": "true", onClick: confirmSpecimenReset }, 'Confirm reset'),
@@ -28097,11 +28323,11 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
               }, '3D eye study'), React.createElement("p", { id: "diss-study-eye-help" }, 'Explore the eye schematic from different viewpoints.')), React.createElement("div", { className: "diss-study-activity", "data-study-activity": "flashcards" }, React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_flashcard', 'Flashcard'), "aria-describedby": "diss-study-flashcard-help", "aria-pressed": !!d.flashcardMode,
                 onClick: function () { if (d.flashcardMode) updMany({ flashcardMode: false, _flashcardPractice: null }); else openFlashcardPractice(); },
                 title: 'Flashcard' + ' — Review organs with flip cards',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.flashcardMode ? 'bg-violet-600 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
+                className: "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (d.flashcardMode ? 'bg-violet-600 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
               }, 'Flashcard'), React.createElement("p", { id: "diss-study-flashcard-help" }, 'Recall functions, reveal the reference answer, and mark cards to review.')), React.createElement("div", { className: "diss-study-activity", "data-study-activity": "compare" }, React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_compare', 'Compare'), "aria-describedby": "diss-study-compare-help", "aria-pressed": !!d.compareMode,
                 onClick: function () { if (d.compareMode) upd('compareMode', false); else { closeTimedPractical(); upd('eyeStudyMode', false); upd('guidedMode', false); upd('quizMode', false); upd('flashcardMode', false); upd('compareMode', true); } },
                 title: 'Compare' + ' — Compare organs across specimens',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.compareMode ? 'bg-cyan-700 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
+                className: "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (d.compareMode ? 'bg-cyan-700 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
               }, 'Compare'), React.createElement("p", { id: "diss-study-compare-help" }, sel ? (dissectionComparisonGroup(specimen, sel.id) ? 'Compare ' + sel.name + ' across reference specimens.' : 'No cross-specimen comparison is mapped for ' + sel.name + '. Select another structure to compare.') : 'Choose a structure to see whether reference comparisons are available.')))
               ),
               React.createElement("section", { className: "diss-study-tool-group diss-advanced-only", "data-study-tools-group": "practical", role: "group", "aria-labelledby": "diss-study-practical-heading" },
@@ -28130,7 +28356,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   } else closeTimedPractical();
                 },
                 title: 'Practical — timed identification with a specimen hotspot and accessible answer choices',
-                className: "diss-advanced-only px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.practicalMode ? 'bg-red-600 text-white' + (!reducedMotionEnabled ? ' animate-pulse' : '') : 'transition-colors bg-white text-orange-700 border border-orange-200 hover:bg-orange-100 active:scale-[0.97]')
+                className: "diss-advanced-only px-2.5 py-1 rounded-lg text-xs font-semibold transition-all " + (d.practicalMode ? 'bg-red-600 text-white' + (!reducedMotionEnabled ? ' animate-pulse' : '') : 'transition-colors bg-white text-orange-700 border border-orange-200 hover:bg-orange-100 active:scale-[0.97]')
               }, d.practicalMode ? 'End timed practical' : 'Start 2-minute timed practical'),
                 d.practicalMode && React.createElement("output", { id: "diss-practical-time-status", className: "diss-study-time", role: "timer", "aria-live": "off", "aria-atomic": "true" }, 'Timed practical: ' + formatAccessibleDuration(d.practicalTimer || 0))
               )
@@ -28600,13 +28826,13 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   ) : null,
                   React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_reset_specimen_view', 'Reset specimen view to 100%'),
                     onClick: function (e) { resetCanvasView(e); },
-                    className: "transition-colors px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 active:scale-[0.97]"
+                    className: "transition-colors px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 active:scale-[0.97]"
                   }, '\u21BA Reset specimen view to 100%'),
                   sel ? React.createElement("button", {
                     type: "button",
                     "aria-label": "Frame selected structure " + sel.name,
                     onClick: frameSelectedStructure,
-                    className: "transition-colors px-2 py-0.5 rounded text-[11px] font-bold bg-teal-100 text-teal-800 border border-teal-300 hover:bg-teal-200 active:scale-[0.97]"
+                    className: "transition-colors px-2 py-0.5 rounded text-xs font-bold bg-teal-100 text-teal-800 border border-teal-300 hover:bg-teal-200 active:scale-[0.97]"
                   }, '\u25CE Frame ' + sel.name) : null
                 ),
 
@@ -28897,7 +29123,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                       React.createElement("p", { className: "diss-readiness__cue" }, currentToolReadiness.cue)
                     ),
                     activeInstrument === 'scalpel' && React.createElement("div", { className: "diss-procedure__controls", role: "group", "aria-label": __alloT('stem.dissection.a11y_scalpel_depth', 'Scalpel depth') },
-                      React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, 'Depth:'),
+                      React.createElement("span", { className: "text-xs font-bold text-slate-600" }, 'Depth:'),
                       ['shallow', 'deep'].map(function (depth) {
                         return React.createElement("button", { type: "button", key: depth, "aria-pressed": (d.incisionDepth || 'shallow') === depth, onClick: function () { upd('incisionDepth', depth); setProcedureFeedback(depth === 'shallow' ? 'Shallow depth selected. The scalpel is ready when orientation is complete.' : 'Deep practice depth selected. It will be blocked to protect underlying structures.', depth === 'shallow' ? 'success' : 'caution'); } }, depth === 'shallow' ? 'Shallow' : 'Deep (practice warning)');
                       })
@@ -29801,9 +30027,9 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                   sel.clinical && React.createElement("div", { className: "diss-clinical-reference bg-amber-50 rounded-lg p-2 border border-amber-200" },
 
-                    React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, '\uD83C\uDFE5 ' + __alloT('stem.dissection.human_clinical_connection', 'Human/clinical connection')),
+                    React.createElement("span", { className: "text-xs font-bold text-amber-700" }, '\uD83C\uDFE5 ' + __alloT('stem.dissection.human_clinical_connection', 'Human/clinical connection')),
 
-                    React.createElement("p", { className: "text-[11px] text-amber-600 leading-relaxed mt-0.5" }, sel.clinical)
+                    React.createElement("p", { className: "text-xs text-amber-600 leading-relaxed mt-0.5" }, sel.clinical)
 
                   ),
 
@@ -30018,7 +30244,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                       },
 
-                      className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-600 hover:to-purple-600"
+                      className: "flex-1 px-2 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-600 hover:to-purple-600"
 
                     }, '\uD83E\uDD16 ' + 'AI Explain'),
 
@@ -30034,7 +30260,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                       "aria-label": "Copy " + sel.name + " information to clipboard",
 
-                      className: "transition-colors px-2 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]"
+                      className: "transition-colors px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]"
 
                     }, '\uD83D\uDCCB ' + 'Copy')
 
@@ -30209,7 +30435,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                     React.createElement("h3", { id: "diss-quiz-title", className: "text-sm font-black text-amber-900" }, '\uD83E\uDDE0 ' + 'Identify'),
 
-                    React.createElement("span", { className: "text-[11px] font-bold text-green-700 ml-auto" }, d.practicalMode
+                    React.createElement("span", { className: "text-xs font-bold text-green-700 ml-auto" }, d.practicalMode
                       ? ('Recorded ' + (d.quizTotal || 0))
                       : ('First attempt ' + assessmentFirstAttemptScore + '/' + assessmentFirstAttemptTotal + ' · Question ' + Math.min(quizSessionLimit, (Number(d.quizTotal) || 0) + 1) + '/' + quizSessionLimit))
 
@@ -30290,8 +30516,8 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   }, (!d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit ? 'View assessment summary' : 'Next Question') + ' \u2192'),
 
                   d.quizExplanation && React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-white border border-amber-200" },
-                    React.createElement("span", { className: "text-[11px] font-bold text-amber-600" }, '\uD83D\uDCA1 '),
-                    React.createElement("span", { className: "text-[11px] text-slate-600 leading-relaxed" }, d.quizExplanation)
+                    React.createElement("span", { className: "text-xs font-bold text-amber-600" }, '\uD83D\uDCA1 '),
+                    React.createElement("span", { className: "text-xs text-slate-600 leading-relaxed" }, d.quizExplanation)
                   )
 
                 ),
@@ -30323,7 +30549,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                 React.createElement("div", { className: "bg-slate-50 rounded-xl border p-3" },
 
-                  React.createElement("div", { className: "text-[11px] font-bold text-slate-600 mb-1" }, 'Layer Progress'),
+                  React.createElement("div", { className: "text-xs font-bold text-slate-600 mb-1" }, 'Layer Progress'),
 
                   spec.layers.map(function (layer) {
 
@@ -30331,9 +30557,9 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                     return React.createElement("div", { key: layer.id, className: "flex items-center gap-2 py-0.5" },
 
-                      React.createElement("span", { className: "text-[11px] " + (done ? 'line-through text-slate-600' : 'text-slate-600') }, layer.icon + ' ' + layer.name),
+                      React.createElement("span", { className: "text-xs " + (done ? 'line-through text-slate-600' : 'text-slate-600') }, layer.icon + ' ' + layer.name),
 
-                      done && React.createElement("span", { className: "text-[11px] text-green-500 ml-auto" }, '\u2713')
+                      done && React.createElement("span", { className: "text-xs text-green-500 ml-auto" }, '\u2713')
 
                     );
 
@@ -30341,40 +30567,40 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                   React.createElement("div", { className: "mt-2 pt-2 border-t border-slate-200" },
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed mb-1" }, __alloT('stem.dissection.' + (specimen) + '_desc', spec.desc)),
+                    React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-1" }, __alloT('stem.dissection.' + (specimen) + '_desc', spec.desc)),
                     React.createElement("p", { className: "diss-science-scope" }, __alloT('stem.dissection.comparative_model_notice', 'Comparative learning model: specimen observations and human clinical connections are labeled separately. Anatomy varies by species, age, preservation, and individual.')),
 
                     React.createElement("div", { className: "grid grid-cols-2 gap-1 mt-1" },
 
                       spec.kingdom && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, 'Kingdom'),
+                        React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase" }, 'Kingdom'),
 
-                        React.createElement("p", { className: "text-[11px] text-slate-600" }, spec.kingdom)
+                        React.createElement("p", { className: "text-xs text-slate-600" }, spec.kingdom)
 
                       ),
 
                       spec.phylum && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, 'Phylum'),
+                        React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase" }, 'Phylum'),
 
-                        React.createElement("p", { className: "text-[11px] text-slate-600" }, spec.phylum)
+                        React.createElement("p", { className: "text-xs text-slate-600" }, spec.phylum)
 
                       ),
 
                       spec.habitat && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, 'Habitat'),
+                        React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase" }, 'Habitat'),
 
-                        React.createElement("p", { className: "text-[11px] text-slate-600" }, spec.habitat)
+                        React.createElement("p", { className: "text-xs text-slate-600" }, spec.habitat)
 
                       ),
 
                       spec.lifespan && React.createElement("div", null,
 
-                        React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, 'Lifespan'),
+                        React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase" }, 'Lifespan'),
 
-                        React.createElement("p", { className: "text-[11px] text-slate-600" }, spec.lifespan)
+                        React.createElement("p", { className: "text-xs text-slate-600" }, spec.lifespan)
 
                       )
 
@@ -30403,11 +30629,11 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   return React.createElement("details", { className: "diss-biology-fact diss-disclosure diss-disclosure--inset bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200" }, React.createElement("summary", { className: "text-amber-800" }, 'Biology fact'),
                     React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
                       React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, '\uD83D\uDCA1'),
-                      React.createElement("span", { className: "text-[11px] font-bold text-amber-700" }, 'Did You Know?')
+                      React.createElement("span", { className: "text-xs font-bold text-amber-700" }, 'Did You Know?')
                     ),
                     React.createElement("div", { id: factReadingId, role: "status", "aria-live": "polite", "aria-atomic": "true" },
-                      React.createElement("p", { className: "diss-biology-fact__position text-[11px]" }, 'Fact ' + (factIdx + 1) + ' of ' + facts.length),
-                      React.createElement("p", { className: "text-[11px] text-amber-800 leading-relaxed" }, facts[factIdx])
+                      React.createElement("p", { className: "diss-biology-fact__position text-xs" }, 'Fact ' + (factIdx + 1) + ' of ' + facts.length),
+                      React.createElement("p", { className: "text-xs text-amber-800 leading-relaxed" }, facts[factIdx])
                     ),
                     facts.length > 1 && React.createElement("div", { className: "diss-biology-fact__nav", role: "group", "aria-label": __alloT("stem.dissection.a11y_biology_fact_navigation", "Biology fact navigation") },
                       React.createElement("button", { type: "button", "aria-label": __alloT("stem.dissection.a11y_previous_biology_fact", "Previous biology fact"), "aria-controls": factReadingId, onClick: function () { browseFact(-1); } }, 'Previous'),
@@ -30422,9 +30648,9 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                   React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                    React.createElement("span", { className: "text-[11px] font-bold text-blue-700" }, '\uD83D\uDCCA Learning evidence'),
+                    React.createElement("span", { className: "text-xs font-bold text-blue-700" }, '\uD83D\uDCCA Learning evidence'),
 
-                    React.createElement("span", { className: "text-[11px] font-bold " + (masteryComplete ? 'text-green-700' : 'text-blue-700') }, masteryOverallPct + '%')
+                    React.createElement("span", { className: "text-xs font-bold " + (masteryComplete ? 'text-green-700' : 'text-blue-700') }, masteryOverallPct + '%')
 
                   ),
 
@@ -30434,11 +30660,11 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                   ),
 
-                  React.createElement("div", { className: "mt-1 text-[11px] text-blue-700" }, 'Observation: ' + exploredCount + ' of ' + totalOrgansInSpecimen + ' structures viewed'),
+                  React.createElement("div", { className: "mt-1 text-xs text-blue-700" }, 'Observation: ' + exploredCount + ' of ' + totalOrgansInSpecimen + ' structures viewed'),
                   React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2", "aria-label": __alloT('stem.dissection.a11y_learning_evidence_dimensions', 'Learning evidence dimensions') },
                     masteryDimensions.map(function (dimension) {
                       return React.createElement("div", { key: dimension.id, className: "rounded-lg border border-blue-100 bg-white/80 p-2" },
-                        React.createElement("div", { className: "diss-evidence-metric-heading flex items-center justify-between gap-2 text-[11px]" },
+                        React.createElement("div", { className: "diss-evidence-metric-heading flex items-center justify-between gap-2 text-xs" },
                           React.createElement("span", { className: "font-semibold text-slate-700" }, dimension.label),
                           React.createElement("span", { className: "font-bold text-blue-800" }, dimension.value + '%')
                         ),
@@ -30448,14 +30674,14 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                       );
                     })
                   ),
-                  React.createElement("div", { className: "mt-1 text-[11px] text-slate-600" }, verifiedIdentificationCount + '/' + verifiedIdentificationGoal + ' guided identifications verified \u00B7 ' + specimenEvidenceCount + '/' + totalOrgansInSpecimen + ' evidence records \u00B7 completed first-attempt assessment ' + assessmentRecordedScore + '/' + assessmentRecordedTotal),
+                  React.createElement("div", { className: "mt-1 text-xs text-slate-600" }, verifiedIdentificationCount + '/' + verifiedIdentificationGoal + ' guided identifications verified \u00B7 ' + specimenEvidenceCount + '/' + totalOrgansInSpecimen + ' evidence records \u00B7 completed first-attempt assessment ' + assessmentRecordedScore + '/' + assessmentRecordedTotal),
                   !d.quizMode && quizReviewIds.length > 0 && React.createElement("button", { id: "diss-review-missed-structures", type: "button", className: "mt-2 min-h-11 w-full rounded-lg border border-amber-500 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100", onClick: function () { restartAssessmentSession(true); } }, 'Review ' + quizReviewIds.length + ' missed ' + (quizReviewIds.length === 1 ? 'structure' : 'structures')),
 
                   React.createElement("div", { className: "mt-2" },
 
-                    React.createElement("div", { className: "text-[11px] font-bold " + (masteryComplete ? 'text-green-700' : 'text-amber-800') }, masteryComplete ? '\u2713 Verified investigation complete' : (progressPct >= 100 ? 'Viewing milestone reached' : 'Practice in progress')),
+                    React.createElement("div", { className: "text-xs font-bold " + (masteryComplete ? 'text-green-700' : 'text-amber-800') }, masteryComplete ? '\u2713 Verified investigation complete' : (progressPct >= 100 ? 'Viewing milestone reached' : 'Practice in progress')),
 
-                    React.createElement("div", { className: "text-[11px] text-emerald-700 mt-0.5" },
+                    React.createElement("div", { className: "text-xs text-emerald-700 mt-0.5" },
 
                       masteryComplete ? 'Technique, observation, evidence, and understanding all meet the practice criteria.' : (progressPct >= 100 ? 'Viewing every structure is a milestone, not proof of identification. Complete the remaining evidence and understanding checks.' : 'Continue the investigation; the log distinguishes viewing from verified understanding.')
 
@@ -30492,7 +30718,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                       "aria-label": masteryComplete ? "Copy verified completion summary to clipboard" : "Copy practice log to clipboard",
 
-                      className: "mt-1 px-2 py-1 rounded-lg text-[11px] font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white"
+                      className: "mt-1 px-2 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white"
 
                     }, masteryComplete ? '\uD83C\uDF93 Copy verified summary' : 'Copy practice log')
 
@@ -30506,7 +30732,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                 React.createElement("details", { className: "diss-disclosure diss-disclosure--inset bg-gradient-to-br from-slate-50 to-gray-50 border border-slate-400" }, React.createElement("summary", { className: "text-slate-800" }, 'Specimen stats'),
 
-                  React.createElement("div", { className: "text-[11px] font-bold text-slate-700 mb-1" }, '\uD83D\uDCC8 ' + 'Specimen Stats'),
+                  React.createElement("div", { className: "text-xs font-bold text-slate-700 mb-1" }, '\uD83D\uDCC8 ' + 'Specimen Stats'),
 
                   React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" },
 
@@ -30514,7 +30740,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                       React.createElement("div", { className: "text-lg font-bold text-blue-600 tracking-tight" }, String(totalOrgansInSpecimen)),
 
-                      React.createElement("div", { className: "text-[11px] text-slate-600" }, 'Structures')
+                      React.createElement("div", { className: "text-xs text-slate-600" }, 'Structures')
 
                     ),
 
@@ -30522,7 +30748,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                       React.createElement("div", { className: "text-lg font-bold text-emerald-600 tracking-tight" }, String(spec.layers.length)),
 
-                      React.createElement("div", { className: "text-[11px] text-slate-600" }, 'Layers')
+                      React.createElement("div", { className: "text-xs text-slate-600" }, 'Layers')
 
                     ),
 
@@ -30530,7 +30756,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                       React.createElement("div", { className: "text-lg font-bold text-amber-600 tracking-tight" }, String(assessmentRecordedScore)),
 
-                      React.createElement("div", { className: "text-[11px] text-slate-600" }, 'First-attempt score')
+                      React.createElement("div", { className: "text-xs text-slate-600" }, 'First-attempt score')
 
                     ),
 
@@ -30544,7 +30770,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                       })()),
 
-                      React.createElement("div", { className: "text-[11px] text-slate-600" }, 'Time')
+                      React.createElement("div", { className: "text-xs text-slate-600" }, 'Time')
 
                     )
 
@@ -30630,18 +30856,18 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                   })[state];
                   return React.createElement("details", { className: "diss-advanced-only diss-disclosure diss-disclosure--inset rounded-xl", "data-dissection-inquiry": true, style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } }, React.createElement("summary", { style: { color: sm.color } }, 'Advanced inquiry simulator'),
                     React.createElement("h4", { id: "diss-inquiry-title", className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, '🔬 Dissection Inquiry — Explore the Outcome'),
-                    React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, 'Set specimen size, dissection depth, care level, and time pressure, then observe how the modeled outcome changes. The result updates live; record a hypothesis or pattern you notice.'),
+                    React.createElement("p", { className: "text-xs opacity-85 mb-2 leading-snug" }, 'Set specimen size, dissection depth, care level, and time pressure, then observe how the modeled outcome changes. The result updates live; record a hypothesis or pattern you notice.'),
                     React.createElement("div", { id: "diss-inquiry-result", role: "status", "aria-live": "polite", "aria-atomic": "true" },
-                      React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, 'Modeled outcome: ' + sm.label),
-                      React.createElement("p", { className: "text-[10px] mb-2" }, sm.desc),
+                      React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-xs font-bold mb-2", style: { background: sm.color, color: '#000' } }, 'Modeled outcome: ' + sm.label),
+                      React.createElement("p", { className: "text-xs mb-2" }, sm.desc),
                       React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                         [
                           { label: 'Damage index', val: damage.toFixed(1) },
                           { label: 'Insight score', val: insight.toFixed(1) }
                         ].map(function(m) {
                           return React.createElement("div", { key: m.label, className: "p-1 rounded text-center", style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                            React.createElement("div", { className: "text-[10px]" }, m.label),
-                            React.createElement("div", { className: "text-[11px] font-bold font-mono", style: { color: sm.color } }, m.val)
+                            React.createElement("div", { className: "text-xs" }, m.label),
+                            React.createElement("div", { className: "text-xs font-bold font-mono", style: { color: sm.color } }, m.val)
                           );
                         })
                       )
@@ -30656,19 +30882,19 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                       React.createElement("text", { x: 8, y: 78, fill: '#475569', fontSize: 8 }, 'low')
                     ),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
-                      React.createElement("div", { className: "text-[10px]" },
+                      React.createElement("div", { className: "text-xs" },
                         React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("label", { htmlFor: "diss-inquiry-size" }, 'Specimen size (cm)'), React.createElement("output", { htmlFor: "diss-inquiry-size", className: "font-mono font-bold", style: { color: sm.color } }, iq.specimenSize)),
                         React.createElement("input", { id: "diss-inquiry-size", type: 'range', min: 2, max: 30, step: 1, value: iq.specimenSize, "aria-valuetext": iq.specimenSize + ' centimeters', "aria-describedby": "diss-inquiry-disclaimer", onChange: function(e) { setKey('specimenSize', parseInt(e.target.value, 10)); }, className: "w-full min-h-11" })
                       ),
-                      React.createElement("div", { className: "text-[10px]" },
+                      React.createElement("div", { className: "text-xs" },
                         React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("label", { htmlFor: "diss-inquiry-depth" }, 'Dissection depth'), React.createElement("output", { htmlFor: "diss-inquiry-depth", className: "font-mono font-bold", style: { color: sm.color } }, iq.layerDepth + '/5')),
                         React.createElement("input", { id: "diss-inquiry-depth", type: 'range', min: 1, max: 5, step: 1, value: iq.layerDepth, "aria-valuetext": 'level ' + iq.layerDepth + ' of 5', "aria-describedby": "diss-inquiry-disclaimer", onChange: function(e) { setKey('layerDepth', parseInt(e.target.value, 10)); }, className: "w-full min-h-11" })
                       ),
-                      React.createElement("div", { className: "text-[10px]" },
+                      React.createElement("div", { className: "text-xs" },
                         React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("label", { htmlFor: "diss-inquiry-care" }, 'Care level'), React.createElement("output", { htmlFor: "diss-inquiry-care", className: "font-mono font-bold", style: { color: sm.color } }, iq.careLevel + '/10')),
                         React.createElement("input", { id: "diss-inquiry-care", type: 'range', min: 1, max: 10, step: 1, value: iq.careLevel, "aria-valuetext": 'level ' + iq.careLevel + ' of 10', "aria-describedby": "diss-inquiry-disclaimer", onChange: function(e) { setKey('careLevel', parseInt(e.target.value, 10)); }, className: "w-full min-h-11" })
                       ),
-                      React.createElement("div", { className: "text-[10px]" },
+                      React.createElement("div", { className: "text-xs" },
                         React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("label", { htmlFor: "diss-inquiry-time" }, 'Time pressure'), React.createElement("output", { htmlFor: "diss-inquiry-time", className: "font-mono font-bold", style: { color: sm.color } }, iq.timePress + '/10')),
                         React.createElement("input", { id: "diss-inquiry-time", type: 'range', min: 1, max: 10, step: 1, value: iq.timePress, "aria-valuetext": 'level ' + iq.timePress + ' of 10', "aria-describedby": "diss-inquiry-disclaimer", onChange: function(e) { setKey('timePress', parseInt(e.target.value, 10)); }, className: "w-full min-h-11" })
                       )
@@ -30679,22 +30905,22 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                         setIQ({ log: iq.log.concat([{ t: t, sz: iq.specimenSize, dp: iq.layerDepth, c: iq.careLevel, tp: iq.timePress }]) });
                         var logMessage = 'Inquiry approach logged for ' + spec.name + ': ' + sm.label + ', damage index ' + damage.toFixed(1) + ', insight score ' + insight.toFixed(1) + '.';
                         setProcedureFeedback(logMessage, 'success');
-                      }, className: "flex-1 min-h-11 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this approach'),
+                      }, className: "flex-1 min-h-11 px-2 py-1 rounded text-xs font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this approach'),
                       React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_reset_inquiry_simulator_inputs', 'Reset inquiry simulator inputs'), onClick: function() {
                         setIQ({ specimenSize: 8, layerDepth: 1, careLevel: 5, timePress: 5 });
                         setProcedureFeedback('Inquiry simulator inputs reset. Saved approaches and written responses were preserved.', 'working');
-                      }, className: "min-h-11 px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#cbd5e1', border: '1px solid #64748b', cursor: 'pointer' } }, 'Reset inputs')
+                      }, className: "min-h-11 px-2 py-1 rounded text-xs", style: { background: '#0a0a1a', color: '#cbd5e1', border: '1px solid #64748b', cursor: 'pointer' } }, 'Reset inputs')
                     ),
-                    iq.log.length > 0 && React.createElement("section", { className: "p-1.5 rounded text-[10px] mb-2", role: "log", "aria-label": __alloT('stem.dissection.a11y_saved_inquiry_approaches', 'Saved inquiry approaches'), "aria-live": "polite", "aria-relevant": "additions", tabIndex: 0, style: { background: '#0a0a1a', maxHeight: 110, overflow: 'auto', border: '1px solid #64748b' } },
+                    iq.log.length > 0 && React.createElement("section", { className: "p-1.5 rounded text-xs mb-2", role: "log", "aria-label": __alloT('stem.dissection.a11y_saved_inquiry_approaches', 'Saved inquiry approaches'), "aria-live": "polite", "aria-relevant": "additions", tabIndex: 0, style: { background: '#0a0a1a', maxHeight: 110, overflow: 'auto', border: '1px solid #64748b' } },
                       React.createElement("h5", { className: "font-bold mb-1" }, 'Saved approaches (' + iq.log.length + '/20)'),
                       React.createElement("ol", { className: "m-0 pl-4 font-mono" },
                         iq.log.slice(-5).map(function(e, i) { return React.createElement("li", { key: e.t + '|' + e.sz + '|' + e.dp + '|' + i }, (e.t ? e.t + ' · ' : '') + e.state + ' · size ' + e.sz + ' cm · depth ' + e.dp + '/5 · care ' + e.c + '/10 · time ' + e.tp + '/10 · damage ' + e.dmg + ' · insight ' + e.ins); })
                       )
                     ),
-                    React.createElement("label", { htmlFor: "diss-inquiry-hypothesis", className: "block text-[10px] font-bold mb-1" }, 'Your hypothesis: which factor will matter most, and why?'),
-                    React.createElement("textarea", { id: "diss-inquiry-hypothesis", value: iq.hypothesis, maxLength: 2000, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.dissection.predict_how_size_depth_care_or_time_pressure','Predict how size, depth, care, or time pressure will change the modeled outcome...'), className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                    React.createElement("button", { type: "button", "aria-expanded": !!iq.stuckRevealed, "aria-controls": iq.stuckRevealed ? "diss-inquiry-open-questions" : undefined, onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); }, className: "min-h-11 px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #64748b', cursor: 'pointer' } }, iq.stuckRevealed ? 'Hide open questions' : "🤔 I'm stuck — show open questions"),
-                    iq.stuckRevealed && React.createElement("div", { id: "diss-inquiry-open-questions", className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                    React.createElement("label", { htmlFor: "diss-inquiry-hypothesis", className: "block text-xs font-bold mb-1" }, 'Your hypothesis: which factor will matter most, and why?'),
+                    React.createElement("textarea", { id: "diss-inquiry-hypothesis", value: iq.hypothesis, maxLength: 2000, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.dissection.predict_how_size_depth_care_or_time_pressure','Predict how size, depth, care, or time pressure will change the modeled outcome...'), className: "w-full p-1.5 rounded text-xs mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                    React.createElement("button", { type: "button", "aria-expanded": !!iq.stuckRevealed, "aria-controls": iq.stuckRevealed ? "diss-inquiry-open-questions" : undefined, onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); }, className: "min-h-11 px-2 py-1 rounded text-xs font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #64748b', cursor: 'pointer' } }, iq.stuckRevealed ? 'Hide open questions' : "🤔 I'm stuck — show open questions"),
+                    iq.stuckRevealed && React.createElement("div", { id: "diss-inquiry-open-questions", className: "p-2 rounded text-xs mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                       React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
                       React.createElement("ul", { className: "pl-4 m-0" },
                         React.createElement("li", null, 'Which assumptions make specimen size affect the model, and would they apply equally to an earthworm and a pig?'),
@@ -30703,15 +30929,15 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
                         React.createElement("li", null, 'What assumptions would make depth 5, care 10, and time pressure 1 realistic or unrealistic?')
                       )
                     ),
-                    React.createElement("label", { htmlFor: "diss-inquiry-understood", className: "flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1" },
+                    React.createElement("label", { htmlFor: "diss-inquiry-understood", className: "flex items-center gap-2 text-xs font-bold cursor-pointer mb-1" },
                       React.createElement("input", { id: "diss-inquiry-understood", type: 'checkbox', checked: iq.understood, "aria-controls": iq.understood ? "diss-inquiry-explanation" : undefined, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                       React.createElement("span", null, 'I can explain why this combination of size, depth, care, and time pressure yields this outcome.')
                     ),
                     iq.understood && React.createElement("div", { id: "diss-inquiry-explanation" },
-                      React.createElement("label", { htmlFor: "diss-inquiry-explanation-text", className: "block text-[10px] font-bold mb-1" }, 'Explain the modeled relationship in your own words'),
-                      React.createElement("textarea", { id: "diss-inquiry-explanation-text", value: iq.explanation, maxLength: 3000, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.dissection.explain_how_the_four_inputs_affect_the_model','Explain how the four inputs affect the model, then name one limitation...'), className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })
+                      React.createElement("label", { htmlFor: "diss-inquiry-explanation-text", className: "block text-xs font-bold mb-1" }, 'Explain the modeled relationship in your own words'),
+                      React.createElement("textarea", { id: "diss-inquiry-explanation-text", value: iq.explanation, maxLength: 3000, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.dissection.explain_how_the_four_inputs_affect_the_model','Explain how the four inputs affect the model, then name one limitation...'), className: "w-full p-1.5 rounded text-xs mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })
                     ),
-                    React.createElement("p", { id: "diss-inquiry-disclaimer", role: "note", className: "m-0 text-[10px] italic" }, 'Inquiry widget — no score, no reveal, no answer dump. Damage and insight indices are pedagogical heuristics, not lab-grade rubrics or predictions of an actual specimen. Real outcomes depend on preservation, instruments, anatomy, and technique.')
+                    React.createElement("p", { id: "diss-inquiry-disclaimer", role: "note", className: "m-0 text-xs italic" }, 'Inquiry widget — no score, no reveal, no answer dump. Damage and insight indices are pedagogical heuristics, not lab-grade rubrics or predictions of an actual specimen. Real outcomes depend on preservation, instruments, anatomy, and technique.')
                   );
                 })(),
 
@@ -30750,7 +30976,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
                     ].map(function (g) {
 
-                      return React.createElement("div", { key: g.term, className: "text-[11px]" },
+                      return React.createElement("div", { key: g.term, className: "text-xs" },
 
                         React.createElement("span", { className: "font-bold text-violet-700" }, g.term + ': '),
 

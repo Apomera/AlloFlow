@@ -424,12 +424,43 @@ function _vpGradeLabelsLocally(keys, answers, isFillBlank, t) {
 }
 const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel, onRegenerateFrame, onDeleteFrame, onDuplicateFrame, onReorderFrame, onSetPanelFps, onUpdateLabel, onUpdatePanel, language, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini, readOnlyDrawings, onRetryFailed }) => {
   const [labelsHidden, setLabelsHidden] = React.useState(false);
+  const [answerKeyRevealed, setAnswerKeyRevealed] = React.useState(false);
+  const [confirmClearDrawings, setConfirmClearDrawings] = React.useState(false);
   const [editingLabel, setEditingLabel] = React.useState(null);
-  const [altBusyIdx, setAltBusyIdx] = React.useState(null);
+  const [altBusyMap, setAltBusyMap] = React.useState({});
   const [altErrors, setAltErrors] = React.useState({});
   const altRequestsRef = React.useRef({});
-  React.useEffect(() => () => {
-    altRequestsRef.current = {};
+  const vpMountedRef = React.useRef(true);
+  const activeDragCleanupsRef = React.useRef(/* @__PURE__ */ new Set());
+  const exportTimersRef = React.useRef([]);
+  const uploadReadersRef = React.useRef(/* @__PURE__ */ new Set());
+  React.useEffect(() => {
+    vpMountedRef.current = true;
+    return () => {
+      vpMountedRef.current = false;
+      altRequestsRef.current = {};
+      activeDragCleanupsRef.current.forEach((fn) => {
+        try {
+          fn();
+        } catch (_) {
+        }
+      });
+      activeDragCleanupsRef.current.clear();
+      exportTimersRef.current.forEach((id) => {
+        try {
+          clearTimeout(id);
+        } catch (_) {
+        }
+      });
+      exportTimersRef.current = [];
+      uploadReadersRef.current.forEach((r) => {
+        try {
+          r.abort();
+        } catch (_) {
+        }
+      });
+      uploadReadersRef.current.clear();
+    };
   }, []);
   const renderAltField = (panel, panelIdx) => {
     const Field = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ImageAltField;
@@ -437,13 +468,14 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
     if (!isTeacherMode || !Field || typeof onUpdatePanel !== "function" || !panel || !panel.imageUrl) return null;
     const poster = panelDescribedImage(panel, imageOverrides[panelIdx]);
     const stale = panelDescriptionStale(panel, imageOverrides[panelIdx], A);
+    const visionFn = typeof window !== "undefined" && typeof window.callGeminiVision === "function" ? window.callGeminiVision : null;
+    const canRegenerateAlt = _vpAiUsable("vision", visionFn);
     const regenerate = async () => {
-      const vision = typeof window.callGeminiVision === "function" ? window.callGeminiVision : null;
-      if (!A || !vision || altRequestsRef.current[panelIdx]) return;
+      if (!A || !canRegenerateAlt || !visionFn || altRequestsRef.current[panelIdx]) return;
       const before = { alt: panel.alt, altSource: panel.altSource, altHash: panel.altHash, decorative: panel.decorative, imageUrl: panel.imageUrl };
       const request = {};
       altRequestsRef.current = { ...altRequestsRef.current, [panelIdx]: request };
-      setAltBusyIdx(panelIdx);
+      setAltBusyMap((prev) => ({ ...prev, [panelIdx]: true }));
       setAltErrors((prev) => {
         if (!prev[panelIdx]) return prev;
         const next = { ...prev };
@@ -451,8 +483,8 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
         return next;
       });
       try {
-        const [r] = await A.draftAlts([{ id: panelIdx, dataUrl: poster, context: panel.caption || panel.imagenPrompt || panel.motionPrompt }], { language, callGeminiVision: vision });
-        if (r && altRequestsRef.current[panelIdx] === request) {
+        const [r] = await A.draftAlts([{ id: panelIdx, dataUrl: poster, context: panel.caption || panel.imagenPrompt || panel.motionPrompt }], { language, callGeminiVision: visionFn });
+        if (r && vpMountedRef.current && altRequestsRef.current[panelIdx] === request) {
           onUpdatePanel(
             panelIdx,
             { alt: r.decorative ? "" : r.alt, altSource: r.source, decorative: r.decorative === true, altHash: A.hashImage(poster) },
@@ -460,7 +492,7 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
           );
         }
       } catch (_) {
-        if (altRequestsRef.current[panelIdx] === request) {
+        if (vpMountedRef.current && altRequestsRef.current[panelIdx] === request) {
           const key = "a11y.alt.regenerate_failed", translated = typeof t === "function" ? t(key) : "";
           setAltErrors((prev) => ({ ...prev, [panelIdx]: translated && translated !== key ? translated : "The image description could not be generated. Try again or write a description." }));
         }
@@ -469,7 +501,12 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
           const next = { ...altRequestsRef.current };
           delete next[panelIdx];
           altRequestsRef.current = next;
-          setAltBusyIdx(null);
+          if (vpMountedRef.current) setAltBusyMap((prev) => {
+            if (!prev[panelIdx]) return prev;
+            const n = { ...prev };
+            delete n[panelIdx];
+            return n;
+          });
         }
       }
     };
@@ -482,10 +519,10 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
         value: panel.alt || "",
         source: stale ? "stale" : panel.altSource || "",
         decorative: panel.decorative === true,
-        busy: altBusyIdx === panelIdx,
+        busy: !!altBusyMap[panelIdx],
         onChange: (value) => onUpdatePanel(panelIdx, { alt: value, altSource: "author", altHash: A ? A.hashImage(poster) : panel.altHash }),
         onDecorativeChange: (flag) => onUpdatePanel(panelIdx, { decorative: flag }),
-        onRegenerate: regenerate
+        onRegenerate: canRegenerateAlt ? regenerate : void 0
       }),
       altErrors[panelIdx] ? React.createElement("p", { role: "alert", style: { marginTop: 4, fontSize: 12, color: "#b91c1c" } }, altErrors[panelIdx]) : null
     );
@@ -545,8 +582,8 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
   const handleImageUpload = (panelIdx, e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      const message = t?.("alerts.image_file_required") || "Choose an image file (PNG, JPEG, GIF, or WebP).";
+    if (!/^image\/(png|jpeg|gif|webp|avif)$/i.test(file.type || "")) {
+      const message = t?.("alerts.image_file_required") || "Choose an image file (PNG, JPEG, GIF, WebP, or AVIF).";
       setImageUploadErrors((prev) => ({ ...prev, [panelIdx]: message }));
       e.target.value = "";
       return;
@@ -557,6 +594,7 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
       e.target.value = "";
       return;
     }
+    e.target.value = "";
     setImageUploadErrors((prev) => {
       if (!prev[panelIdx]) return prev;
       const next = { ...prev };
@@ -564,8 +602,19 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
       return next;
     });
     const reader = new FileReader();
+    uploadReadersRef.current.add(reader);
+    reader.onerror = () => {
+      uploadReadersRef.current.delete(reader);
+      if (!vpMountedRef.current) return;
+      const message = t?.("visuals.upload_failed") || "The image could not be read. Please try another file.";
+      setImageUploadErrors((prev) => ({ ...prev, [panelIdx]: message }));
+    };
     reader.onload = (ev) => {
-      setImageOverrides((prev) => ({ ...prev, [panelIdx]: ev.target.result }));
+      uploadReadersRef.current.delete(reader);
+      if (!vpMountedRef.current) return;
+      const res = ev.target && ev.target.result;
+      if (typeof res !== "string" || !res.startsWith("data:image/")) return;
+      setImageOverrides((prev) => ({ ...prev, [panelIdx]: res }));
     };
     reader.readAsDataURL(file);
   };
@@ -640,7 +689,7 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
     setIsAnalyzing(true);
     try {
       const teacherLabelsList = [
-        ...visualPlan.panels.flatMap((p, i) => (p.labels || []).map((l, li) => ({ panel: i, text: l, type: "ai", labelIdx: li }))),
+        ...visualPlan.panels.flatMap((p, i) => (p.labels || []).map((l, li) => ({ panel: i, text: typeof l === "string" ? l : String(l && l.text || ""), type: "ai", labelIdx: li }))),
         ...Object.entries(userLabels).flatMap(([i, labels]) => labels.map((l) => ({ panel: parseInt(i), text: l.text, x: l.x, y: l.y, type: "teacher" })))
       ];
       let studentLabelsList;
@@ -691,23 +740,26 @@ Return ONLY valid JSON:
   "labelResults": [{"studentLabel": "...", "matchedTeacherLabel": "...", "verdict": "correct|close|incorrect", "note": "brief explanation"}]
 }`;
       const rawResult = await callGemini(analysisPrompt);
+      if (!vpMountedRef.current) return;
       let parsed;
-      try {
-        const jsonMatch = rawResult.match(/\{[\s\S]*\}/);
-        parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawResult);
-      } catch (e) {
-        parsed = { score: 50, totalCorrect: 0, totalExpected: teacherLabelsList.length, feedback: "Analysis complete.", labelResults: [] };
+      const jsonMatch = typeof rawResult === "string" ? rawResult.match(/\{[\s\S]*\}/) : null;
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawResult);
+      if (!parsed || typeof parsed !== "object" || typeof parsed.score !== "number" || !Number.isFinite(parsed.score) || parsed.score < 0 || parsed.score > 100) {
+        throw new Error("Label challenge evaluator returned an invalid score.");
       }
+      parsed.labelResults = Array.isArray(parsed.labelResults) ? parsed.labelResults : [];
       setChallengeResult(parsed);
       setChallengeSubmitted(true);
       setShowComparison(true);
       if (onChallengeSubmit) onChallengeSubmit(parsed);
     } catch (err) {
       console.error("[LabelChallenge] Analysis failed:", err);
-      setChallengeResult({ score: 0, feedback: "Could not analyze labels. Try again.", labelResults: [] });
-      setChallengeSubmitted(true);
+      if (vpMountedRef.current) {
+        setChallengeResult({ score: null, error: true, feedback: "Could not analyze labels right now. Your answers are still here \u2014 please try again.", labelResults: [] });
+        setShowComparison(true);
+      }
     } finally {
-      setIsAnalyzing(false);
+      if (vpMountedRef.current) setIsAnalyzing(false);
     }
   };
   const handleToggleChallenge = (type) => {
@@ -719,6 +771,7 @@ Return ONLY valid JSON:
       setChallengeResult(null);
       setStudentLabels({});
       setFillBlankAnswers({});
+      setAnswerKeyRevealed(false);
       setShowComparison(false);
     }
   };
@@ -727,6 +780,7 @@ Return ONLY valid JSON:
     setFillBlankAnswers({});
     setChallengeSubmitted(false);
     setChallengeResult(null);
+    setAnswerKeyRevealed(false);
     setShowComparison(false);
   };
   const pushVisualSnapshot = () => {
@@ -880,23 +934,36 @@ Return ONLY valid JSON:
     }));
   };
   const handleLabelMouseDown = (panelIdx, labelId, e) => {
-    e.preventDefault();
-    e.stopPropagation();
     const control = e.currentTarget;
     const el = control.closest?.(".visual-label") || control;
+    if (!el || el.dataset.alloDragging === "1") return;
+    e.preventDefault();
+    e.stopPropagation();
     const container = el.parentElement;
     if (!container) return;
+    el.dataset.alloDragging = "1";
+    const isPointer = e.type === "pointerdown";
+    if (isPointer && typeof control.setPointerCapture === "function" && e.pointerId != null) {
+      try {
+        control.setPointerCapture(e.pointerId);
+      } catch (_) {
+      }
+    }
     const containerRect = container.getBoundingClientRect();
     const startX = e.clientX;
     const startY = e.clientY;
     const startLabel = (userLabels[panelIdx] || []).find((l) => l.id === labelId);
-    if (!startLabel) return;
+    if (!startLabel) {
+      delete el.dataset.alloDragging;
+      return;
+    }
     const origX = startLabel.x;
     const origY = startLabel.y;
     let lastX = origX, lastY = origY;
     el.style.cursor = "grabbing";
     el.style.zIndex = "10";
     const onMove = (ev) => {
+      if (isPointer && ev.type === "mousemove") return;
       const dx = (ev.clientX - startX) / containerRect.width * 100;
       const dy = (ev.clientY - startY) / containerRect.height * 100;
       lastX = Math.max(0, Math.min(90, origX + dx));
@@ -904,9 +971,25 @@ Return ONLY valid JSON:
       el.style.left = lastX + "%";
       el.style.top = lastY + "%";
     };
-    const onUp = () => {
+    let finished = false;
+    const onUp = (ev) => {
+      if (finished) return;
+      if (isPointer && ev && ev.type === "mouseup") return;
+      finished = true;
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
+      if (isPointer && typeof control.releasePointerCapture === "function" && e.pointerId != null) {
+        try {
+          control.releasePointerCapture(e.pointerId);
+        } catch (_) {
+        }
+      }
+      setTimeout(() => {
+        delete el.dataset.alloDragging;
+      }, 0);
       el.style.cursor = "grab";
       el.style.zIndex = "4";
       setUserLabels((prev) => ({
@@ -916,8 +999,26 @@ Return ONLY valid JSON:
         )
       }));
     };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
+    const removeDragListeners = () => {
+      if (isPointer) {
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+        document.removeEventListener("pointercancel", onUp);
+      } else {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+      }
+      activeDragCleanupsRef.current.delete(removeDragListeners);
+    };
+    activeDragCleanupsRef.current.add(removeDragListeners);
+    if (isPointer) {
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+      document.addEventListener("pointercancel", onUp);
+    } else {
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    }
   };
   const getKeyboardMovement = (e) => ({
     ArrowLeft: { x: -1, y: 0, label: "left" },
@@ -1043,12 +1144,21 @@ Return ONLY valid JSON:
     }
   };
   const handleAiLabelMouseDown = (panelIdx, labelIdx, e) => {
-    e.preventDefault();
-    e.stopPropagation();
     const control = e.currentTarget;
     const el = control.closest?.(".visual-label") || control;
+    if (!el || el.dataset.alloDragging === "1") return;
+    e.preventDefault();
+    e.stopPropagation();
     const container = el.parentElement;
     if (!container) return;
+    el.dataset.alloDragging = "1";
+    const isPointer = e.type === "pointerdown";
+    if (isPointer && typeof control.setPointerCapture === "function" && e.pointerId != null) {
+      try {
+        control.setPointerCapture(e.pointerId);
+      } catch (_) {
+      }
+    }
     const containerRect = container.getBoundingClientRect();
     const startX = e.clientX;
     const startY = e.clientY;
@@ -1061,6 +1171,7 @@ Return ONLY valid JSON:
     el.style.zIndex = "10";
     el.style.transform = "none";
     const onMove = (ev) => {
+      if (isPointer && ev.type === "mousemove") return;
       moved = true;
       const dx = (ev.clientX - startX) / containerRect.width * 100;
       const dy = (ev.clientY - startY) / containerRect.height * 100;
@@ -1069,9 +1180,25 @@ Return ONLY valid JSON:
       el.style.left = lastLeft + "%";
       el.style.top = lastTop + "%";
     };
-    const onUp = () => {
+    let finished = false;
+    const onUp = (ev) => {
+      if (finished) return;
+      if (isPointer && ev && ev.type === "mouseup") return;
+      finished = true;
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
+      if (isPointer && typeof control.releasePointerCapture === "function" && e.pointerId != null) {
+        try {
+          control.releasePointerCapture(e.pointerId);
+        } catch (_) {
+        }
+      }
+      setTimeout(() => {
+        delete el.dataset.alloDragging;
+      }, 0);
       el.style.cursor = "grab";
       el.style.zIndex = "4";
       if (moved) {
@@ -1081,41 +1208,86 @@ Return ONLY valid JSON:
         }));
       }
     };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
+    const removeDragListeners = () => {
+      if (isPointer) {
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+        document.removeEventListener("pointercancel", onUp);
+      } else {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+      }
+      activeDragCleanupsRef.current.delete(removeDragListeners);
+    };
+    activeDragCleanupsRef.current.add(removeDragListeners);
+    if (isPointer) {
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+      document.addEventListener("pointercancel", onUp);
+    } else {
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    }
   };
   const handleAnchorMouseDown = (panelIdx, labelKey, labelType, e) => {
+    const targetEl = e.currentTarget || e.target;
+    if (!targetEl || targetEl.dataset?.alloDragging === "1") return;
     e.preventDefault();
     e.stopPropagation();
-    const svg = e.target.closest("svg");
+    const svg = targetEl.closest("svg");
     if (!svg) return;
+    if (targetEl.dataset) targetEl.dataset.alloDragging = "1";
+    const isPointer = e.type === "pointerdown";
+    if (isPointer && typeof targetEl.setPointerCapture === "function" && e.pointerId != null) {
+      try {
+        targetEl.setPointerCapture(e.pointerId);
+      } catch (_) {
+      }
+    }
     const svgRect = svg.getBoundingClientRect();
     const startX = e.clientX;
     const startY = e.clientY;
-    let curX = parseFloat(e.target.getAttribute("cx"));
-    let curY = parseFloat(e.target.getAttribute("cy"));
+    let curX = parseFloat(targetEl.getAttribute("cx"));
+    let curY = parseFloat(targetEl.getAttribute("cy"));
     const origX = curX, origY = curY;
-    e.target.style.cursor = "grabbing";
-    e.target.setAttribute("r", "2.5");
-    e.target.setAttribute("opacity", "1");
+    targetEl.style.cursor = "grabbing";
+    targetEl.setAttribute("r", "2.5");
+    targetEl.setAttribute("opacity", "1");
     const onMove = (ev) => {
+      if (isPointer && ev.type === "mousemove") return;
       const dx = (ev.clientX - startX) / svgRect.width * 100;
       const dy = (ev.clientY - startY) / svgRect.height * 100;
       curX = Math.max(0, Math.min(100, origX + dx));
       curY = Math.max(0, Math.min(100, origY + dy));
-      e.target.setAttribute("cx", curX);
-      e.target.setAttribute("cy", curY);
-      const line = e.target.previousElementSibling;
+      targetEl.setAttribute("cx", curX);
+      targetEl.setAttribute("cy", curY);
+      const line = targetEl.previousElementSibling;
       if (line && line.tagName === "line") {
         line.setAttribute("x2", curX);
         line.setAttribute("y2", curY);
       }
     };
-    const onUp = () => {
+    let finished = false;
+    const onUp = (ev) => {
+      if (finished) return;
+      if (isPointer && ev && ev.type === "mouseup") return;
+      finished = true;
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
-      e.target.style.cursor = "";
-      e.target.setAttribute("r", "1.8");
+      if (isPointer && typeof targetEl.releasePointerCapture === "function" && e.pointerId != null) {
+        try {
+          targetEl.releasePointerCapture(e.pointerId);
+        } catch (_) {
+        }
+      }
+      setTimeout(() => {
+        if (targetEl.dataset) delete targetEl.dataset.alloDragging;
+      }, 0);
+      targetEl.style.cursor = "";
+      targetEl.setAttribute("r", "1.8");
       if (labelType === "ai") {
         setAiLabelAnchors((prev) => ({
           ...prev,
@@ -1130,8 +1302,26 @@ Return ONLY valid JSON:
         }));
       }
     };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
+    const removeDragListeners = () => {
+      if (isPointer) {
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+        document.removeEventListener("pointercancel", onUp);
+      } else {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+      }
+      activeDragCleanupsRef.current.delete(removeDragListeners);
+    };
+    activeDragCleanupsRef.current.add(removeDragListeners);
+    if (isPointer) {
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+      document.addEventListener("pointercancel", onUp);
+    } else {
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    }
   };
   const handlePanelDragStart = (e, panelIdx) => {
     e.dataTransfer.setData("text/plain", panelIdx.toString());
@@ -1163,8 +1353,19 @@ Return ONLY valid JSON:
   };
   const handleDrawStart = (e, panelIdx) => {
     if (!drawingMode) return;
+    const svgEl = e.currentTarget;
+    if (e.type === "mousedown" && svgEl?.dataset?.pointerDrawing === "1") return;
+    if (e.type === "pointerdown") {
+      if (svgEl?.dataset) svgEl.dataset.pointerDrawing = "1";
+      if (typeof svgEl?.setPointerCapture === "function" && e.pointerId != null) {
+        try {
+          svgEl.setPointerCapture(e.pointerId);
+        } catch (_) {
+        }
+      }
+    }
     e.preventDefault();
-    const pos = getRelativePos(e, e.currentTarget);
+    const pos = getRelativePos(e, svgEl);
     if (drawingMode === "freehand" || drawingMode === "highlight") {
       setCurrentPath({ panelIdx, type: drawingMode, color: drawingColor, points: [pos] });
     } else {
@@ -1173,14 +1374,28 @@ Return ONLY valid JSON:
   };
   const handleDrawMove = (e) => {
     if (!drawingMode) return;
+    const svgEl = e.currentTarget;
+    if (e.type === "mousemove" && svgEl?.dataset?.pointerDrawing === "1") return;
     if (currentPath) {
-      const panel = e.currentTarget;
-      const pos = getRelativePos(e, panel);
+      const pos = getRelativePos(e, svgEl);
       setCurrentPath((prev) => prev ? { ...prev, points: [...prev.points, pos] } : null);
     }
   };
   const handleDrawEnd = (e) => {
     if (!drawingMode) return;
+    const svgEl = e.currentTarget;
+    if (e.type === "mouseup" && svgEl?.dataset?.pointerDrawing === "1") return;
+    if (e.type === "pointerup" || e.type === "pointercancel") {
+      if (typeof svgEl?.releasePointerCapture === "function" && e.pointerId != null) {
+        try {
+          svgEl.releasePointerCapture(e.pointerId);
+        } catch (_) {
+        }
+      }
+      setTimeout(() => {
+        if (svgEl?.dataset) delete svgEl.dataset.pointerDrawing;
+      }, 0);
+    }
     if (currentPath) {
       pushVisualSnapshot();
       setDrawings((prev) => ({
@@ -1189,7 +1404,7 @@ Return ONLY valid JSON:
       }));
       setCurrentPath(null);
     } else if (drawingStart) {
-      const panel = e.currentTarget;
+      const panel = svgEl;
       const endPos = getRelativePos(e, panel);
       const shape = {
         panelIdx: drawingStart.panelIdx,
@@ -1219,10 +1434,14 @@ Return ONLY valid JSON:
         className: "drawing-overlay",
         viewBox: "0 0 100 100",
         preserveAspectRatio: "none",
+        onPointerDown: (e) => handleDrawStart(e, panelIdx),
+        onPointerMove: handleDrawMove,
+        onPointerUp: handleDrawEnd,
+        onPointerCancel: handleDrawEnd,
         onMouseDown: (e) => handleDrawStart(e, panelIdx),
         onMouseMove: handleDrawMove,
         onMouseUp: handleDrawEnd,
-        style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 3, pointerEvents: drawingMode ? "auto" : "none" }
+        style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 3, pointerEvents: drawingMode ? "auto" : "none", touchAction: drawingMode ? "none" : void 0 }
       },
       panelDrawings.map((d, idx) => {
         if (d.type === "freehand" && d.points.length > 1) {
@@ -1309,6 +1528,7 @@ Return ONLY valid JSON:
       };
       (panel.labels || []).forEach((l, li) => {
         const override = aiLabelPositions[panelIdx + "-" + li];
+        const anchorOverride = aiLabelAnchors[panelIdx + "-" + li];
         let lx, ly;
         if (override) {
           lx = parseFloat(override.left) || 50;
@@ -1318,7 +1538,10 @@ Return ONLY valid JSON:
           lx = pos.left ? parseFloat(pos.left) : pos.right ? 100 - parseFloat(pos.right) : 50;
           ly = pos.top ? parseFloat(pos.top) : 50;
         }
-        drawLine(lx, ly, 50, 50, "#6366f1", 1.5, [6, 4]);
+        const ax = anchorOverride && anchorOverride.x !== void 0 ? anchorOverride.x : l && l.anchorX !== void 0 ? l.anchorX : 50;
+        const ay = anchorOverride && anchorOverride.y !== void 0 ? anchorOverride.y : l && l.anchorY !== void 0 ? l.anchorY : 50;
+        drawLine(lx, ly, ax, ay, "#6366f1", 1.5, [6, 4]);
+        if (anchorOverride || l && l.anchorX !== void 0) drawDot(ax, ay, 4, "#6366f1");
       });
       (userLabels[panelIdx] || []).forEach((l) => {
         const tx = l.anchorX !== void 0 ? l.anchorX : 50;
@@ -1333,7 +1556,7 @@ Return ONLY valid JSON:
         drawDot(tx, ty, 3, "#8b5cf6");
       });
       drawingsFor(panelIdx).forEach((d) => {
-        if (d.type === "freehand" && d.points?.length > 1) {
+        if ((d.type === "freehand" || d.type === "highlight") && d.points?.length > 1) {
           ctx.beginPath();
           ctx.strokeStyle = d.color;
           ctx.lineWidth = d.type === "highlight" ? 8 : 1.5;
@@ -1342,12 +1565,23 @@ Return ONLY valid JSON:
           ctx.stroke();
           ctx.globalAlpha = 1;
         } else if (d.type === "arrow" && d.start && d.end) {
+          const sx = d.start.x / 100 * cw, sy = d.start.y / 100 * ch;
+          const ex = d.end.x / 100 * cw, ey = d.end.y / 100 * ch;
           ctx.beginPath();
           ctx.strokeStyle = d.color;
           ctx.lineWidth = 1.5;
-          ctx.moveTo(d.start.x / 100 * cw, d.start.y / 100 * ch);
-          ctx.lineTo(d.end.x / 100 * cw, d.end.y / 100 * ch);
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(ex, ey);
           ctx.stroke();
+          const angle = Math.atan2(ey - sy, ex - sx);
+          const headLen = 10;
+          ctx.beginPath();
+          ctx.fillStyle = d.color;
+          ctx.moveTo(ex, ey);
+          ctx.lineTo(ex - headLen * Math.cos(angle - Math.PI / 6), ey - headLen * Math.sin(angle - Math.PI / 6));
+          ctx.lineTo(ex - headLen * Math.cos(angle + Math.PI / 6), ey - headLen * Math.sin(angle + Math.PI / 6));
+          ctx.closePath();
+          ctx.fill();
         } else if (d.type === "circle" && d.start && d.end) {
           const cx = (d.start.x + d.end.x) / 2 / 100 * cw;
           const cy = (d.start.y + d.end.y) / 2 / 100 * ch;
@@ -1385,7 +1619,8 @@ Return ONLY valid JSON:
         ctx.textAlign = "center";
         ctx.fillText(text, rx + tw / 2, ry + th / 2);
       };
-      if (!labelsHidden) {
+      const hideChallengeKeyInExport = isStudentChallenge && !challengeSubmitted && !answerKeyRevealed;
+      if (!labelsHidden && !hideChallengeKeyInExport) {
         (panel.labels || []).forEach((l, li) => {
           const override = aiLabelPositions[panelIdx + "-" + li];
           let lx, ly;
@@ -1400,9 +1635,11 @@ Return ONLY valid JSON:
           drawLabel(l.text || l, lx, ly, "#ffffff", "#6366f1", "#1e1b4b");
         });
       }
-      (userLabels[panelIdx] || []).forEach((l) => {
-        drawLabel(l.text, l.x, l.y, "#f5f3ff", "#8b5cf6", "#1e1b4b");
-      });
+      if (!hideChallengeKeyInExport) {
+        (userLabels[panelIdx] || []).forEach((l) => {
+          drawLabel(l.text, l.x, l.y, "#f5f3ff", "#8b5cf6", "#1e1b4b");
+        });
+      }
       (studentLabels[panelIdx] || []).forEach((l) => {
         let bgColor = "#dbeafe", borderColor = "#3b82f6";
         if (challengeSubmitted && challengeResult?.labelResults) {
@@ -1505,7 +1742,8 @@ Return ONLY valid JSON:
           stroke: "white",
           strokeWidth: "0.4",
           opacity: "0",
-          style: { cursor: "grab", pointerEvents: "all", transition: "opacity 0.2s, r 0.15s" },
+          style: { cursor: "grab", pointerEvents: "all", touchAction: "none", transition: "opacity 0.2s, r 0.15s" },
+          onPointerDown: (e) => handleAnchorMouseDown(panelIdx, pt.key, pt.type, e),
           onMouseDown: (e) => handleAnchorMouseDown(panelIdx, pt.key, pt.type, e),
           onKeyDown: (e) => handleAnchorKeyDown(panelIdx, pt.key, pt.type, tx, ty, e),
           tabIndex: "0",
@@ -1594,6 +1832,7 @@ Return ONLY valid JSON:
       const topTrap = trapStack && trapStack[trapStack.length - 1];
       if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === "function" && topTrap.root.contains(dialog))) return;
       if (event.key === "Escape") {
+        if (_vpIsImeComposing(event)) return;
         event.preventDefault();
         event.stopPropagation();
         setShowComparison(false);
@@ -1660,14 +1899,19 @@ Return ONLY valid JSON:
       style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", background: addingLabelPanel !== null ? "#4f46e5" : "white", color: addingLabelPanel !== null ? "white" : "#475569", fontSize: "12px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }
     },
     "\u2795 Add Label"
-  )), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "2px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleUndo, disabled: labelHistoryIndex <= 0, title: t("common.undo"), "aria-label": t("common.undo"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer", fontSize: "14px", opacity: labelHistoryIndex <= 0 ? 0.4 : 1 } }, "\u21A9\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleRedo, disabled: labelHistoryIndex >= labelHistory.length - 1, title: t("common.redo"), "aria-label": t("common.redo"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer", fontSize: "14px", opacity: labelHistoryIndex >= labelHistory.length - 1 ? 0.4 : 1 } }, "\u21AA\uFE0F")), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "3px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDrawingMode(drawingMode === "freehand" ? null : "freehand"), className: drawingMode === "freehand" ? "active" : "", title: t("common.freehand_draw"), "aria-label": t("common.freehand_draw"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "freehand" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "freehand" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDrawingMode(drawingMode === "arrow" ? null : "arrow"), className: drawingMode === "arrow" ? "active" : "", title: t("common.draw_arrow"), "aria-label": t("common.draw_arrow"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "arrow" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "arrow" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u27A1\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDrawingMode(drawingMode === "circle" ? null : "circle"), className: drawingMode === "circle" ? "active" : "", title: t("common.draw_circle"), "aria-label": t("common.draw_circle"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "circle" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "circle" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u2B55"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setDrawingMode(drawingMode === "highlight" ? null : "highlight"), className: drawingMode === "highlight" ? "active" : "", title: t("common.highlighter"), "aria-label": t("common.highlighter"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "highlight" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "highlight" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u{1F58D}\uFE0F")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "3px", alignItems: "center" } }, ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#1e293b"].map((c) => {
+  )), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "2px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleUndo, disabled: labelHistoryIndex <= 0, title: t("common.undo"), "aria-label": t("common.undo"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer", fontSize: "14px", opacity: labelHistoryIndex <= 0 ? 0.4 : 1 } }, "\u21A9\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleRedo, disabled: labelHistoryIndex >= labelHistory.length - 1, title: t("common.redo"), "aria-label": t("common.redo"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer", fontSize: "14px", opacity: labelHistoryIndex >= labelHistory.length - 1 ? 0.4 : 1 } }, "\u21AA\uFE0F")), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "3px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": drawingMode === "freehand", onClick: () => setDrawingMode(drawingMode === "freehand" ? null : "freehand"), className: drawingMode === "freehand" ? "active" : "", title: t("common.freehand_draw"), "aria-label": t("common.freehand_draw"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "freehand" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "freehand" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": drawingMode === "arrow", onClick: () => setDrawingMode(drawingMode === "arrow" ? null : "arrow"), className: drawingMode === "arrow" ? "active" : "", title: t("common.draw_arrow"), "aria-label": t("common.draw_arrow"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "arrow" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "arrow" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u27A1\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": drawingMode === "circle", onClick: () => setDrawingMode(drawingMode === "circle" ? null : "circle"), className: drawingMode === "circle" ? "active" : "", title: t("common.draw_circle"), "aria-label": t("common.draw_circle"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "circle" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "circle" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u2B55"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": drawingMode === "highlight", onClick: () => setDrawingMode(drawingMode === "highlight" ? null : "highlight"), className: drawingMode === "highlight" ? "active" : "", title: t("common.highlighter"), "aria-label": t("common.highlighter"), style: { padding: "4px 8px", borderRadius: "6px", border: drawingMode === "highlight" ? "1px solid #4f46e5" : "1px solid #e2e8f0", background: drawingMode === "highlight" ? "#eef2ff" : "white", cursor: "pointer", fontSize: "14px" } }, "\u{1F58D}\uFE0F")), /* @__PURE__ */ React.createElement("div", { role: "radiogroup", "aria-label": t?.("common.drawing_color") || "Drawing color", style: { display: "flex", gap: "3px", alignItems: "center" } }, ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#1e293b"].map((c) => {
     const colorName = { "#ef4444": "Red", "#f59e0b": "Amber", "#22c55e": "Green", "#3b82f6": "Blue", "#8b5cf6": "Purple", "#1e293b": "Dark" }[c] || c;
     return /* @__PURE__ */ React.createElement(
       "div",
       {
         key: c,
         onClick: () => setDrawingColor(c),
-        onKeyDown: (e) => (e.key === "Enter" || e.key === " ") && setDrawingColor(c),
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setDrawingColor(c);
+          }
+        },
         role: "radio",
         "aria-checked": drawingColor === c,
         "aria-label": `${colorName} drawing color`,
@@ -1676,13 +1920,40 @@ Return ONLY valid JSON:
         style: { width: 24, height: 24, borderRadius: "50%", background: c, border: drawingColor === c ? "2px solid #1e293b" : "2px solid transparent", cursor: "pointer", transition: "transform 0.15s", transform: drawingColor === c ? "scale(1.2)" : "scale(1)" }
       }
     );
-  })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
-    setDrawings({});
-  }, title: t("common.clear_drawings"), "aria-label": t("common.clear_all_drawings"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #fecaca", background: "#fff1f2", color: "#b91c1c", cursor: "pointer", fontSize: "12px", fontWeight: 600, marginLeft: "auto" } }, "\u{1F5D1}\uFE0F Clear"), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), !isStudentChallenge && /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
-      onClick: () => orderedPanels.forEach((_, i) => setTimeout(() => handleExportPanel(i), i * 500)),
+      onClick: () => {
+        const hasDrawings = Object.values(drawings || {}).some((list) => Array.isArray(list) && list.length > 0);
+        if (hasDrawings && !confirmClearDrawings) {
+          setConfirmClearDrawings(true);
+          return;
+        }
+        setConfirmClearDrawings(false);
+        if (hasDrawings) pushVisualSnapshot();
+        setDrawings({});
+      },
+      onBlur: () => {
+        if (confirmClearDrawings) setConfirmClearDrawings(false);
+      },
+      title: confirmClearDrawings ? "Click again to clear drawings (Undo available)" : t("common.clear_drawings"),
+      "aria-label": confirmClearDrawings ? "Confirm clear all drawings" : t("common.clear_all_drawings"),
+      style: { padding: "4px 8px", borderRadius: "6px", border: confirmClearDrawings ? "1px solid #dc2626" : "1px solid #fecaca", background: confirmClearDrawings ? "#dc2626" : "#fff1f2", color: confirmClearDrawings ? "white" : "#b91c1c", cursor: "pointer", fontSize: "12px", fontWeight: 600, marginLeft: "auto" }
+    },
+    confirmClearDrawings ? "Confirm clear?" : "\u{1F5D1}\uFE0F Clear"
+  ), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), !isStudentChallenge && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => {
+        orderedPanels.forEach((_, i) => {
+          const tid = setTimeout(() => {
+            if (vpMountedRef.current) handleExportPanel(i);
+          }, i * 500);
+          exportTimersRef.current.push(tid);
+        });
+      },
       title: t("common.download_all_panels_as_png_images"),
       "aria-label": t("common.export_all_panels_as_png_images"),
       style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #cbd5e1", background: "white", color: "#475569", fontSize: "12px", fontWeight: 600, cursor: "pointer" }
@@ -1746,7 +2017,7 @@ Return ONLY valid JSON:
       style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #4f46e5", background: "#4f46e5", color: "white", fontSize: "12px", fontWeight: 700, cursor: isAnalyzing ? "wait" : "pointer", opacity: (isFillBlank ? Object.values(fillBlankAnswers).filter((v) => v && v.trim()).length === 0 : Object.keys(studentLabels).length === 0) ? 0.5 : 1 }
     },
     isAnalyzing ? "\u23F3 Analyzing..." : "\u2705 Submit Answers"
-  ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#6366f1", fontWeight: 600 } }, isFillBlank ? `${Object.values(fillBlankAnswers).filter((v) => v && v.trim()).length} answer${Object.values(fillBlankAnswers).filter((v) => v && v.trim()).length !== 1 ? "s" : ""} filled` : `${Object.values(studentLabels).flat().length} label${Object.values(studentLabels).flat().length !== 1 ? "s" : ""} placed`)), challengeSubmitted && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowComparison(!showComparison), "aria-label": showComparison ? "Hide label comparison results" : "Show label comparison results", "aria-expanded": showComparison, style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #6366f1", background: showComparison ? "#4f46e5" : "#eef2ff", color: showComparison ? "white" : "#4f46e5", fontSize: "12px", fontWeight: 600, cursor: "pointer" } }, showComparison ? "\u{1F4CB} Hide Comparison" : "\u{1F4CB} Show Comparison"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleResetChallenge, "aria-label": t("common.reset_the_challenge_and_try_again"), style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#b45309", fontSize: "12px", fontWeight: 600, cursor: "pointer" } }, "\u{1F504} Try Again"), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-label": `Your score is ${challengeResult?.score || 0} percent`, style: { fontSize: "13px", fontWeight: 800, color: challengeResult?.score >= 80 ? "#16a34a" : challengeResult?.score >= 50 ? "#f59e0b" : "#ef4444" } }, "Score: ", challengeResult?.score || 0, "%"))), visualPlan.title && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", margin: "0 0 10px 0", padding: "8px 16px", background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #c7d2fe 100%)", borderRadius: "10px", border: "1px solid rgba(99,102,241,0.2)" } }, /* @__PURE__ */ React.createElement("h3", { style: { fontSize: "15px", fontWeight: 800, color: "#312e81", margin: 0, letterSpacing: "0.02em", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" } }, visualPlan.title), visualPlan.layout && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#6366f1", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" } }, visualPlan.layout.replace("-", " "), " view")), isStudentChallenge && !challengeSubmitted && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "10px 16px", background: isFillBlank ? "linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%)" : "linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%)", borderRadius: "10px", border: isFillBlank ? "1px solid #86efac" : "1px solid #93c5fd", marginBottom: "8px" } }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { fontSize: "14px", fontWeight: 700, color: isFillBlank ? "#166534" : "#1e40af" } }, "\u{1F3C6} Label Challenge: ", isFillBlank ? "Fill in the Blanks" : "Label from Scratch"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", color: isFillBlank ? "#16a34a" : "#3b82f6", marginTop: "2px" } }, isFillBlank ? "Type the correct label in each blank field. Use your own words \u2014 synonyms and paraphrases are accepted!" : 'Click "\u2795 Add Label" then click on the diagram to place labels. Edit text by typing in the label.')), /* @__PURE__ */ React.createElement("div", { className: `visual-panel-grid layout-${visualPlan.layout || "single"}`, "data-labels-hidden": labelsHidden ? "true" : void 0 }, orderedPanels.map((panel, panelIdx) => /* @__PURE__ */ React.createElement(React.Fragment, { key: panel.id || panelIdx }, /* @__PURE__ */ React.createElement("figure", { className: "visual-panel", style: { position: "relative" }, "aria-label": `Diagram panel ${panelIdx + 1}${panel.role ? ": " + panel.role : ""}` }, panel.role && /* @__PURE__ */ React.createElement("span", { className: "visual-panel-role", style: { display: "block", textAlign: "center", fontWeight: 800 } }, panel.role === "before" ? "\u2B05\uFE0F Before" : panel.role === "after" ? "\u27A1\uFE0F After" : panel.role === "step" ? `Step ${panelIdx + 1}` : panel.role === "left" || panel.role === "right" ? panel.title || (panel.caption && panel.caption.match(/\*\*(.+?)\*\*/) ? panel.caption.match(/\*\*(.+?)\*\*/)[1] : panel.caption ? panel.caption.replace(/\*\*(.+?)\*\*/g, "$1").split(/\s+/).slice(0, 4).join(" ") : `Panel ${panelIdx + 1}`) : panel.role), /* @__PURE__ */ React.createElement("div", { style: { position: "relative", overflow: "hidden", background: "#f1f5f9" }, className: addingLabelPanel !== null ? "adding-label" : "" }, addingLabelPanel !== null && /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#6366f1", fontWeight: 600 } }, isFillBlank ? `${Object.values(fillBlankAnswers).filter((v) => v && v.trim()).length} answer${Object.values(fillBlankAnswers).filter((v) => v && v.trim()).length !== 1 ? "s" : ""} filled` : `${Object.values(studentLabels).flat().length} label${Object.values(studentLabels).flat().length !== 1 ? "s" : ""} placed`)), challengeSubmitted && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowComparison(!showComparison), "aria-label": showComparison ? "Hide label comparison results" : "Show label comparison results", "aria-expanded": showComparison, style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #6366f1", background: showComparison ? "#4f46e5" : "#eef2ff", color: showComparison ? "white" : "#4f46e5", fontSize: "12px", fontWeight: 600, cursor: "pointer" } }, showComparison ? "\u{1F4CB} Hide Comparison" : "\u{1F4CB} Show Comparison"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleResetChallenge, "aria-label": t("common.reset_the_challenge_and_try_again"), style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #f59e0b", background: "#fffbeb", color: "#b45309", fontSize: "12px", fontWeight: 600, cursor: "pointer" } }, "\u{1F504} Try Again"), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-label": `Your score is ${challengeResult?.score || 0} percent`, style: { fontSize: "13px", fontWeight: 800, color: challengeResult?.score >= 80 ? "#16a34a" : challengeResult?.score >= 50 ? "#f59e0b" : "#ef4444" } }, "Score: ", challengeResult?.score || 0, "%"))), visualPlan.title && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", margin: "0 0 10px 0", padding: "8px 16px", background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #c7d2fe 100%)", borderRadius: "10px", border: "1px solid rgba(99,102,241,0.2)" } }, /* @__PURE__ */ React.createElement("h3", { style: { fontSize: "15px", fontWeight: 800, color: "#312e81", margin: 0, letterSpacing: "0.02em", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" } }, visualPlan.title), visualPlan.layout && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#6366f1", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" } }, visualPlan.layout.replace("-", " "), " view")), isStudentChallenge && !challengeSubmitted && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "10px 16px", background: isFillBlank ? "linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%)" : "linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%)", borderRadius: "10px", border: isFillBlank ? "1px solid #86efac" : "1px solid #93c5fd", marginBottom: "8px" } }, /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { fontSize: "14px", fontWeight: 700, color: isFillBlank ? "#166534" : "#1e40af" } }, "\u{1F3C6} Label Challenge: ", isFillBlank ? "Fill in the Blanks" : "Label from Scratch"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", color: isFillBlank ? "#16a34a" : "#3b82f6", marginTop: "2px" } }, isFillBlank ? _vpAiUsable("text", callGemini) ? "Type the correct label in each blank field. Use your own words \u2014 synonyms and paraphrases are accepted!" : "Type the matching label in each blank field (exact or near-exact spelling)." : 'Click "\u2795 Add Label" then click on the diagram to place labels. Edit text by typing in the label.')), /* @__PURE__ */ React.createElement("div", { className: `visual-panel-grid layout-${visualPlan.layout || "single"}`, "data-labels-hidden": labelsHidden ? "true" : void 0 }, orderedPanels.map((panel, panelIdx) => /* @__PURE__ */ React.createElement(React.Fragment, { key: panel.id || panelIdx }, /* @__PURE__ */ React.createElement("figure", { className: "visual-panel", style: { position: "relative" }, "aria-label": `Diagram panel ${panelIdx + 1}${panel.role ? ": " + panel.role : ""}` }, panel.role && /* @__PURE__ */ React.createElement("span", { className: "visual-panel-role", style: { display: "block", textAlign: "center", fontWeight: 800 } }, panel.role === "before" ? "\u2B05\uFE0F Before" : panel.role === "after" ? "\u27A1\uFE0F After" : panel.role === "step" ? `Step ${panelIdx + 1}` : panel.role === "left" || panel.role === "right" ? panel.title || (panel.caption && panel.caption.match(/\*\*(.+?)\*\*/) ? panel.caption.match(/\*\*(.+?)\*\*/)[1] : panel.caption ? panel.caption.replace(/\*\*(.+?)\*\*/g, "$1").split(/\s+/).slice(0, 4).join(" ") : `Panel ${panelIdx + 1}`) : panel.role), /* @__PURE__ */ React.createElement("div", { style: { position: "relative", overflow: "hidden", background: "#f1f5f9" }, className: addingLabelPanel !== null ? "adding-label" : "" }, addingLabelPanel !== null && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1837,22 +2108,23 @@ Return ONLY valid JSON:
   })() : panel.failed ? /* @__PURE__ */ React.createElement("div", { "data-panel-failed": "true", style: { minHeight: 120, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, background: "#fef2f2", color: "#7f1d1d", textAlign: "center" } }, /* @__PURE__ */ React.createElement("p", { role: "status", style: { margin: 0, fontSize: 13, fontWeight: 600 } }, ts("visuals.panel_failed") || "This picture could not be made."), isTeacherMode && typeof onRetryFailed === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (e) => {
     e.stopPropagation();
     onRetryFailed();
-  }, style: { minHeight: 44, padding: "6px 12px", borderRadius: 8, border: "1px solid #b91c1c", background: "white", color: "#7f1d1d", fontSize: 13, fontWeight: 700, cursor: "pointer" } }, ts("visuals.panel_failed_retry") || "Make the pictures again")) : /* @__PURE__ */ React.createElement("div", { style: { height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", color: "#475569" } }, /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none", style: { width: 24, height: 24, border: "3px solid #cbd5e1", borderTopColor: "#6366f1", borderRadius: "50%" } })), !labelsHidden && (!isStudentChallenge || isFillBlank) && renderLeaderLines(panel, panelIdx), renderDrawingSVG(panelIdx), isStudentChallenge && renderStudentLeaderLines(panelIdx), panel.labels && panel.labels.map((label, labelIdx) => {
+  }, style: { minHeight: 44, padding: "6px 12px", borderRadius: 8, border: "1px solid #b91c1c", background: "white", color: "#7f1d1d", fontSize: 13, fontWeight: 700, cursor: "pointer" } }, ts("visuals.panel_failed_retry") || "Make the pictures again")) : /* @__PURE__ */ React.createElement("div", { style: { height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", color: "#475569" } }, /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none", style: { width: 24, height: 24, border: "3px solid #cbd5e1", borderTopColor: "#6366f1", borderRadius: "50%" } })), !labelsHidden && (!isStudentChallenge || isFillBlank) && renderLeaderLines(panel, panelIdx), renderDrawingSVG(panelIdx), isStudentChallenge && renderStudentLeaderLines(panelIdx), panel.labels && !(labelsHidden || isStudentChallenge && !isFillBlank && !answerKeyRevealed) && panel.labels.map((label, labelIdx) => {
     const defaultPos = LABEL_POSITIONS[label.position] || LABEL_POSITIONS["bottom-center"];
     const overridePos = aiLabelPositions[panelIdx + "-" + labelIdx];
     const pos = overridePos ? { position: "absolute", left: overridePos.left, top: overridePos.top } : defaultPos;
-    const isEditing = editingLabel?.panelIdx === panelIdx && editingLabel?.labelIdx === labelIdx;
+    const isEditing = isTeacherMode && editingLabel?.panelIdx === panelIdx && editingLabel?.labelIdx === labelIdx;
+    const showFillInput = isStudentChallenge && isFillBlank && !answerKeyRevealed;
     return /* @__PURE__ */ React.createElement(
       "div",
       {
         key: labelIdx,
         className: "visual-label",
-        style: { ...pos, display: labelsHidden || isStudentChallenge && !isFillBlank ? "none" : "flex", alignItems: "center", gap: "4px", background: isStudentChallenge && isFillBlank ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)", padding: "6px 14px", borderRadius: "8px", border: isStudentChallenge && isFillBlank ? "2px solid #86efac" : "2px solid rgba(99,102,241,0.5)", boxShadow: isStudentChallenge && isFillBlank ? "0 2px 12px rgba(22,163,74,0.2)" : "0 2px 12px rgba(99,102,241,0.2)", fontWeight: 800, fontSize: "13px", color: "#1e1b4b", cursor: isStudentChallenge && isFillBlank ? "text" : "grab", userSelect: "none", touchAction: "none", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" },
-        title: isStudentChallenge && isFillBlank ? "Type the correct label" : "Label controls",
+        style: { ...pos, display: "flex", alignItems: "center", gap: "4px", background: showFillInput ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)", padding: "6px 14px", borderRadius: "8px", border: showFillInput ? "2px solid #86efac" : "2px solid rgba(99,102,241,0.5)", boxShadow: showFillInput ? "0 2px 12px rgba(22,163,74,0.2)" : "0 2px 12px rgba(99,102,241,0.2)", fontWeight: 800, fontSize: "13px", color: "#1e1b4b", cursor: showFillInput ? "text" : "grab", userSelect: "none", touchAction: "none", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" },
+        title: showFillInput ? "Type the correct label" : "Label controls",
         role: "group",
-        "aria-label": isStudentChallenge && isFillBlank ? `Blank label ${labelIdx + 1} \u2014 type your answer` : `Label ${label.text || label} controls`
+        "aria-label": showFillInput ? `Blank label ${labelIdx + 1} \u2014 type your answer` : `Label ${label.text || label} controls`
       },
-      isStudentChallenge && isFillBlank ? /* @__PURE__ */ React.createElement(
+      showFillInput ? /* @__PURE__ */ React.createElement(
         "input",
         {
           autoFocus: false,
@@ -1882,6 +2154,7 @@ Return ONLY valid JSON:
         {
           type: "button",
           className: "label-move-btn",
+          onPointerDown: (e) => handleAiLabelMouseDown(panelIdx, labelIdx, e),
           onMouseDown: (e) => handleAiLabelMouseDown(panelIdx, labelIdx, e),
           onKeyDown: (e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -1893,12 +2166,12 @@ Return ONLY valid JSON:
           "aria-describedby": "visual-label-move-instructions",
           "aria-keyshortcuts": "Enter ArrowUp ArrowDown ArrowLeft ArrowRight",
           "aria-label": `Label: ${label.text || label}. Press Enter to edit; use arrow keys to move.`,
-          style: { border: "none", background: "transparent", color: "inherit", font: "inherit", fontWeight: "inherit", padding: "4px", minHeight: "32px", cursor: "grab" }
+          style: { border: "none", background: "transparent", color: "inherit", font: "inherit", fontWeight: "inherit", padding: "4px", minHeight: "32px", cursor: "grab", touchAction: "none" }
         },
         /* @__PURE__ */ React.createElement("span", { style: { pointerEvents: "none" } }, label.text)
       ),
-      !(isStudentChallenge && isFillBlank) && !isEditing && renderPlaceLabelButton(panelIdx, "ai", labelIdx, label.text || label),
-      !(isStudentChallenge && isFillBlank) && /* @__PURE__ */ React.createElement(
+      !showFillInput && !isEditing && renderPlaceLabelButton(panelIdx, "ai", labelIdx, label.text || label),
+      isTeacherMode && !showFillInput && typeof onUpdateLabel === "function" && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -1915,15 +2188,15 @@ Return ONLY valid JSON:
         "\u2715"
       )
     );
-  }), (userLabels[panelIdx] || []).map((uLabel, uIdx) => {
+  }), !(labelsHidden || isStudentChallenge && !isFillBlank && !answerKeyRevealed) && (userLabels[panelIdx] || []).map((uLabel, uIdx) => {
     const fillKey = "user-" + panelIdx + "-" + uLabel.id;
-    const isUserFillBlank = isStudentChallenge && isFillBlank;
+    const isUserFillBlank = isStudentChallenge && isFillBlank && !answerKeyRevealed;
     return /* @__PURE__ */ React.createElement(
       "div",
       {
         key: `user-${uLabel.id}`,
         className: "visual-label",
-        style: { position: "absolute", display: labelsHidden || isStudentChallenge && !isFillBlank ? "none" : "flex", alignItems: "center", gap: "4px", left: `${uLabel.x}%`, top: `${uLabel.y}%`, borderColor: isUserFillBlank ? "#86efac" : "#8b5cf6", background: isUserFillBlank ? "rgba(255,255,255,0.95)" : "rgba(245,243,255,0.95)", zIndex: 4, padding: "4px 10px", borderRadius: "8px", border: isUserFillBlank ? "2px solid #86efac" : "2px solid rgba(139,92,246,0.5)", boxShadow: isUserFillBlank ? "0 2px 12px rgba(22,163,74,0.2)" : "0 2px 8px rgba(139,92,246,0.15)", fontSize: "13px", fontWeight: 700, color: "#1e1b4b", cursor: isUserFillBlank ? "text" : "grab", userSelect: "none", touchAction: "none" },
+        style: { position: "absolute", display: "flex", alignItems: "center", gap: "4px", left: `${uLabel.x}%`, top: `${uLabel.y}%`, borderColor: isUserFillBlank ? "#86efac" : "#8b5cf6", background: isUserFillBlank ? "rgba(255,255,255,0.95)" : "rgba(245,243,255,0.95)", zIndex: 4, padding: "4px 10px", borderRadius: "8px", border: isUserFillBlank ? "2px solid #86efac" : "2px solid rgba(139,92,246,0.5)", boxShadow: isUserFillBlank ? "0 2px 12px rgba(22,163,74,0.2)" : "0 2px 8px rgba(139,92,246,0.15)", fontSize: "13px", fontWeight: 700, color: "#1e1b4b", cursor: isUserFillBlank ? "text" : "grab", userSelect: "none", touchAction: "none" },
         role: "group",
         "aria-label": isUserFillBlank ? "Fill in this label" : uLabel.text + " label controls",
         title: isUserFillBlank ? "Type the correct label" : "Label controls"
@@ -1962,6 +2235,7 @@ Return ONLY valid JSON:
         {
           type: "button",
           className: "label-move-btn",
+          onPointerDown: (e) => handleLabelMouseDown(panelIdx, uLabel.id, e),
           onMouseDown: (e) => handleLabelMouseDown(panelIdx, uLabel.id, e),
           onKeyDown: (e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -1973,7 +2247,7 @@ Return ONLY valid JSON:
           "aria-describedby": "visual-label-move-instructions",
           "aria-keyshortcuts": "Enter ArrowUp ArrowDown ArrowLeft ArrowRight",
           "aria-label": uLabel.text + ". Press Enter to edit; use arrow keys to move.",
-          style: { border: "none", background: "transparent", color: "inherit", font: "inherit", fontWeight: "inherit", padding: "4px", minHeight: "32px", cursor: "grab" }
+          style: { border: "none", background: "transparent", color: "inherit", font: "inherit", fontWeight: "inherit", padding: "4px", minHeight: "32px", cursor: "grab", touchAction: "none" }
         },
         /* @__PURE__ */ React.createElement("span", { style: { pointerEvents: "none" } }, uLabel.text)
       ),
@@ -2030,7 +2304,7 @@ Return ONLY valid JSON:
     challengeSubmitted && challengeResult?.labelResults?.find((r) => r.studentLabel === sLabel.text)?.verdict === "correct" && /* @__PURE__ */ React.createElement("span", null, "\u2705"),
     challengeSubmitted && challengeResult?.labelResults?.find((r) => r.studentLabel === sLabel.text)?.verdict === "close" && /* @__PURE__ */ React.createElement("span", null, "\u{1F7E1}"),
     challengeSubmitted && challengeResult?.labelResults?.find((r) => r.studentLabel === sLabel.text)?.verdict === "incorrect" && /* @__PURE__ */ React.createElement("span", null, "\u274C")
-  )), /* @__PURE__ */ React.createElement("div", { className: "visual-panel-actions" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "visual-panel-actions" }, isTeacherMode && onRefinePanel && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2039,7 +2313,7 @@ Return ONLY valid JSON:
       title: "Refine this panel"
     },
     "\u270F\uFE0F"
-  ), /* @__PURE__ */ React.createElement(
+  ), (!isStudentChallenge || challengeSubmitted || answerKeyRevealed) && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2057,7 +2331,7 @@ Return ONLY valid JSON:
       title: t("common.download_gif") || "Download GIF"
     },
     "\u{1F39E}\uFE0F"
-  ), onAnimatePanel && /* @__PURE__ */ React.createElement(
+  ), isTeacherMode && onAnimatePanel && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2077,7 +2351,7 @@ Return ONLY valid JSON:
     "input",
     {
       type: "file",
-      accept: "image/*",
+      accept: "image/png,image/jpeg,image/gif,image/webp,image/avif",
       ref: (el) => {
         if (el) fileInputRefs.current[panelIdx] = el;
       },
@@ -2135,7 +2409,7 @@ Return ONLY valid JSON:
     "figcaption",
     {
       className: "visual-caption",
-      style: { textAlign: "center", cursor: "pointer", transition: "background 0.2s", background: speakingCaptionIdx === panelIdx ? "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)" : "#f8fafc", color: "#1e293b" },
+      style: { display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", textAlign: "center", cursor: "pointer", transition: "background 0.2s", background: speakingCaptionIdx === panelIdx ? "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)" : "#f8fafc", color: "#1e293b" },
       onClick: () => handleCaptionTTS(panelIdx),
       onDoubleClick: (e) => {
         e.stopPropagation();
@@ -2146,7 +2420,36 @@ Return ONLY valid JSON:
       title: t("common.click_to_hear_u2022_double_click_to_edit")
     },
     /* @__PURE__ */ React.createElement("span", { dangerouslySetInnerHTML: { __html: sanitizeHtml((captionOverrides[panelIdx] || panel.caption).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")) } }),
-    speakingCaptionIdx === panelIdx && /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "6px", fontSize: "10px" } }, "\u{1F50A}")
+    speakingCaptionIdx === panelIdx && /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "6px", fontSize: "10px" } }, "\u{1F50A}"),
+    !isStudentChallenge && /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        role: "button",
+        tabIndex: 0,
+        "data-visual-caption-edit": panelIdx,
+        className: "no-print",
+        onClick: (e) => {
+          e.stopPropagation();
+          if (window.speechSynthesis) window.speechSynthesis.cancel();
+          setSpeakingCaptionIdx(null);
+          setEditingCaptionIdx(panelIdx);
+        },
+        onKeyDown: (e) => {
+          if (_vpIsImeComposing(e)) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            e.stopPropagation();
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+            setSpeakingCaptionIdx(null);
+            setEditingCaptionIdx(panelIdx);
+          }
+        },
+        "aria-label": `Edit caption for panel ${panelIdx + 1}`,
+        title: t("common.edit") || "Edit caption",
+        style: { flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: "32px", minWidth: "44px", padding: "2px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", background: "#ffffff", color: "#334155", fontSize: "11px", fontWeight: 600, cursor: "pointer" }
+      },
+      t("common.edit") || "Edit"
+    )
   ))), refiningPanelIdx === panelIdx && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, marginTop: 6, padding: "6px 8px", background: "#fafafe", borderRadius: "8px", border: "1px solid #e0e7ff" } }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -2190,7 +2493,10 @@ Return ONLY valid JSON:
         if (e.key === "Enter") handleAnimateSubmit(panelIdx);
       },
       autoFocus: true,
-      "aria-label": t("common.animate_input_aria") || `Motion description for Panel ${panelIdx + 1}`,
+      "aria-label": (() => {
+        const _v = t("common.animate_input_aria");
+        return _v && !/\$\{/.test(_v) ? _v : `Motion description for Panel ${panelIdx + 1}`;
+      })(),
       style: { flex: 1, padding: "6px 10px", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }
     }
   ), /* @__PURE__ */ React.createElement(
@@ -2215,7 +2521,7 @@ Return ONLY valid JSON:
       style: { minWidth: 44, minHeight: 44, padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
     },
     "\u2715"
-  )), /* @__PURE__ */ React.createElement("p", { style: { fontSize: 10, color: "#64748b", margin: "4px 2px 0", lineHeight: 1.4 } }, t("common.animate_hint") || "Best for processes \u2014 mitosis, water cycle, motion. Static images stay clearer for anatomy or vocabulary.")), panel.frames && panel.frames.length > 1 && (onRegenerateFrame || onDeleteFrame) && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, padding: "6px 8px", background: "#fafafe", borderRadius: "8px", border: "1px solid #e0e7ff" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: "#475569", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" } }, t("common.frames_label") || "Frames", " (", panel.frames.length, ")"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, overflowX: "auto", paddingBottom: 4 } }, panel.frames.map((frameUrl, fIdx) => {
+  )), /* @__PURE__ */ React.createElement("p", { style: { fontSize: 10, color: "#64748b", margin: "4px 2px 0", lineHeight: 1.4 } }, t("common.animate_hint") || "Best for processes \u2014 mitosis, water cycle, motion. Static images stay clearer for anatomy or vocabulary.")), isTeacherMode && panel.frames && panel.frames.length > 1 && (onRegenerateFrame || onDeleteFrame) && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, padding: "6px 8px", background: "#fafafe", borderRadius: "8px", border: "1px solid #e0e7ff" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: "#475569", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" } }, t("common.frames_label") || "Frames", " (", panel.frames.length, ")"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, overflowX: "auto", paddingBottom: 4 } }, panel.frames.map((frameUrl, fIdx) => {
     const src = typeof frameUrl === "string" && frameUrl.startsWith("data:") ? frameUrl : "data:image/png;base64," + frameUrl;
     const isAnchor = fIdx === 0;
     const isRegenOpen = regenFrame && regenFrame.panelIdx === panelIdx && regenFrame.frameIdx === fIdx;
@@ -2228,7 +2534,11 @@ Return ONLY valid JSON:
           setRegenFrame({ panelIdx, frameIdx: fIdx });
           setRegenInput("");
         },
-        "aria-label": isAnchor ? t("common.frame_anchor_aria") || `Frame ${fIdx + 1} (anchor \u2014 editing this cascades through the chain)` : t("common.frame_regen_aria") || `Regenerate frame ${fIdx + 1}`,
+        "aria-label": (() => {
+          const _v = isAnchor ? t("common.frame_anchor_aria") : t("common.frame_regen_aria");
+          if (_v && !/\$\{/.test(_v)) return _v;
+          return isAnchor ? `Frame ${fIdx + 1} (anchor \u2014 editing this cascades through the chain)` : `Regenerate frame ${fIdx + 1}`;
+        })(),
         title: isAnchor ? t("common.frame_anchor_title") || "Anchor frame \u2014 edits cascade through the rest of the animation" : t("common.frame_regen_title") || "Click to regenerate this frame",
         style: {
           padding: 0,
@@ -2247,7 +2557,10 @@ Return ONLY valid JSON:
       {
         type: "button",
         onClick: () => onDeleteFrame(panelIdx, fIdx),
-        "aria-label": t("common.frame_delete_aria") || `Delete frame ${fIdx + 1}`,
+        "aria-label": (() => {
+          const _v = t("common.frame_delete_aria");
+          return _v && !/\$\{/.test(_v) ? _v : `Delete frame ${fIdx + 1}`;
+        })(),
         title: t("common.frame_delete_title") || "Delete this frame",
         style: { position: "absolute", top: -8, right: -8, width: 24, height: 24, borderRadius: "50%", background: "#b91c1c", color: "white", border: "none", fontSize: 12, lineHeight: 1, cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }
       },
@@ -2257,7 +2570,10 @@ Return ONLY valid JSON:
       {
         type: "button",
         onClick: () => onReorderFrame(panelIdx, fIdx, fIdx - 1),
-        "aria-label": t("common.frame_move_left_aria") || `Move frame ${fIdx + 1} earlier`,
+        "aria-label": (() => {
+          const _v = t("common.frame_move_left_aria");
+          return _v && !/\$\{/.test(_v) ? _v : `Move frame ${fIdx + 1} earlier`;
+        })(),
         title: t("common.frame_move_left_title") || "Move earlier",
         style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: "2px 4px", borderRadius: 3 }
       },
@@ -2267,7 +2583,10 @@ Return ONLY valid JSON:
       {
         type: "button",
         onClick: () => onDuplicateFrame(panelIdx, fIdx),
-        "aria-label": t("common.frame_duplicate_aria") || `Duplicate frame ${fIdx + 1}`,
+        "aria-label": (() => {
+          const _v = t("common.frame_duplicate_aria");
+          return _v && !/\$\{/.test(_v) ? _v : `Duplicate frame ${fIdx + 1}`;
+        })(),
         title: t("common.frame_duplicate_title") || "Duplicate this frame",
         style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: "2px 4px", borderRadius: 3 }
       },
@@ -2277,7 +2596,10 @@ Return ONLY valid JSON:
       {
         type: "button",
         onClick: () => onReorderFrame(panelIdx, fIdx, fIdx + 1),
-        "aria-label": t("common.frame_move_right_aria") || `Move frame ${fIdx + 1} later`,
+        "aria-label": (() => {
+          const _v = t("common.frame_move_right_aria");
+          return _v && !/\$\{/.test(_v) ? _v : `Move frame ${fIdx + 1} later`;
+        })(),
         title: t("common.frame_move_right_title") || "Move later",
         style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: "2px 4px", borderRadius: 3 }
       },
@@ -2293,7 +2615,10 @@ Return ONLY valid JSON:
       step: "1",
       value: panel.fps || 3,
       onChange: (e) => onSetPanelFps(panelIdx, parseInt(e.target.value, 10)),
-      "aria-label": t("common.speed_aria") || `Animation speed in frames per second, currently ${panel.fps || 3}`,
+      "aria-label": (() => {
+        const _v = t("common.speed_aria");
+        return _v && !/\$\{/.test(_v) ? _v : `Animation speed in frames per second, currently ${panel.fps || 3}`;
+      })(),
       style: { flex: 1, accentColor: "#7c3aed" }
     }
   ), /* @__PURE__ */ React.createElement("span", { style: { fontVariantNumeric: "tabular-nums", minWidth: 36, textAlign: "right" } }, panel.fps || 3, " fps")), regenFrame && regenFrame.panelIdx === panelIdx && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4, marginTop: 6 } }, regenFrame.frameIdx === 0 && /* @__PURE__ */ React.createElement("p", { style: { fontSize: 10, color: "#92400e", margin: "0 2px", lineHeight: 1.4, background: "#fef3c7", padding: "4px 8px", borderRadius: 4 } }, t("common.anchor_cascade_warning") || "\u2693 Editing the anchor cascades through every frame \u2014 the whole animation will rebuild."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(
@@ -2301,13 +2626,19 @@ Return ONLY valid JSON:
     {
       value: regenInput,
       onChange: (e) => setRegenInput(e.target.value),
-      placeholder: regenFrame.frameIdx === 0 ? t("common.regen_anchor_placeholder") || 'What should change in the anchor? e.g. "make it nighttime"' : t("common.regen_frame_placeholder") || `What should change in frame ${regenFrame.frameIdx + 1}? (blank = re-roll with default motion)`,
+      placeholder: regenFrame.frameIdx === 0 ? t("common.regen_anchor_placeholder") || 'What should change in the anchor? e.g. "make it nighttime"' : (() => {
+        const _v = t("common.regen_frame_placeholder");
+        return _v && !/\$\{/.test(_v) ? _v : `What should change in frame ${regenFrame.frameIdx + 1}? (blank = re-roll with default motion)`;
+      })(),
       onKeyDown: (e) => {
         if (_vpIsImeComposing(e)) return;
         if (e.key === "Enter") handleRegenFrameSubmit();
       },
       autoFocus: true,
-      "aria-label": t("common.regen_frame_aria") || `Describe motion for frame ${regenFrame.frameIdx + 1}`,
+      "aria-label": (() => {
+        const _v = t("common.regen_frame_aria");
+        return _v && !/\$\{/.test(_v) ? _v : `Describe motion for frame ${regenFrame.frameIdx + 1}`;
+      })(),
       style: { flex: 1, padding: "6px 10px", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }
     }
   ), /* @__PURE__ */ React.createElement(
@@ -2336,14 +2667,15 @@ Return ONLY valid JSON:
     "div",
     {
       style: { position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.45)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", animation: prefersReducedMotion ? "none" : "fadeIn 0.2s ease-out" },
-      onClick: (e) => {
+      onMouseDown: (e) => {
         if (e.target === e.currentTarget) setShowComparison(false);
       },
       role: "dialog",
       "aria-modal": "true",
       "aria-label": t("common.label_challenge_results")
     },
-    /* @__PURE__ */ React.createElement("div", { ref: comparisonDialogRef, tabIndex: -1, style: { background: "white", borderRadius: "16px", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", maxWidth: "520px", width: "90%", maxHeight: "80vh", display: "flex", flexDirection: "column", animation: prefersReducedMotion ? "none" : "slideUp 0.25s ease-out", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e2e8f0", background: "linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "18px", fontWeight: 800, color: "#166534" } }, "\u{1F3C6} ", placeT("visual_panel.challenge_results_title", "Label Challenge Results")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowComparison(false), style: { minWidth: 44, minHeight: 44, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#374151", padding: "4px 8px", borderRadius: "6px", lineHeight: 1 }, "aria-label": t("common.close_results") }, "\u2715")), /* @__PURE__ */ React.createElement("div", { style: { padding: "20px", overflowY: "auto", flex: 1 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: challengeResult.score >= 80 ? "#f0fdf4" : challengeResult.score >= 50 ? "#fffbeb" : "#fef2f2", borderRadius: "12px", border: `2px solid ${challengeResult.score >= 80 ? "#86efac" : challengeResult.score >= 50 ? "#fde68a" : "#fecaca"}`, minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: challengeResult.score >= 80 ? "#16a34a" : challengeResult.score >= 50 ? "#f59e0b" : "#ef4444" } }, challengeResult.score, "%"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, placeT("common.score", "Score"))), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: "#eef2ff", borderRadius: "12px", border: "2px solid #c7d2fe", minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: "#4f46e5" } }, challengeResult.totalCorrect || 0, "/", challengeResult.totalExpected || 0), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, placeT("common.correct", "Correct"))), (challengeResult.totalClose || 0) > 0 && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: "#fffbeb", borderRadius: "12px", border: "2px solid #fde68a", minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: "#f59e0b" } }, challengeResult.totalClose), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, placeT("visual_panel.verdict_close", "Close")))), /* @__PURE__ */ React.createElement("p", { style: { textAlign: "center", fontSize: "15px", color: "#374151", fontWeight: 500, margin: "0 0 16px 0", fontStyle: "italic", lineHeight: 1.5 } }, challengeResult.feedback), challengeResult.labelResults && challengeResult.labelResults.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gap: "8px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "13px", fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" } }, t("word_sounds.label_details")), challengeResult.labelResults.map((r, ri) => /* @__PURE__ */ React.createElement("div", { key: ri, style: { display: "flex", alignItems: "flex-start", gap: "10px", padding: "10px 14px", background: r.verdict === "correct" ? "#f0fdf4" : r.verdict === "close" ? "#fffbeb" : "#fef2f2", borderRadius: "10px", border: `1px solid ${r.verdict === "correct" ? "#bbf7d0" : r.verdict === "close" ? "#fde68a" : "#fecaca"}`, fontSize: "13px", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "18px", flexShrink: 0, marginTop: "1px" } }, r.verdict === "correct" ? "\u2705" : r.verdict === "close" ? "\u{1F7E1}" : "\u274C"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { color: "#1e293b" } }, r.studentLabel), /* @__PURE__ */ React.createElement("div", { style: { color: "#6b7280", marginTop: "2px" } }, r.note)))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "10px", justifyContent: "center", padding: "16px 20px", borderTop: "1px solid #e2e8f0", background: "#f8fafc" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    /* @__PURE__ */ React.createElement("div", { ref: comparisonDialogRef, tabIndex: -1, style: { background: "white", borderRadius: "16px", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", maxWidth: "520px", width: "90%", maxHeight: "80vh", display: "flex", flexDirection: "column", animation: prefersReducedMotion ? "none" : "slideUp 0.25s ease-out", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e2e8f0", background: "linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "18px", fontWeight: 800, color: "#166534" } }, "\u{1F3C6} ", placeT("visual_panel.challenge_results_title", "Label Challenge Results")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowComparison(false), style: { minWidth: 44, minHeight: 44, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#374151", padding: "4px 8px", borderRadius: "6px", lineHeight: 1 }, "aria-label": t("common.close_results") }, "\u2715")), /* @__PURE__ */ React.createElement("div", { style: { padding: "20px", overflowY: "auto", flex: 1 } }, !challengeResult.error && typeof challengeResult.score === "number" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "center", gap: "16px", marginBottom: "16px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: challengeResult.score >= 80 ? "#f0fdf4" : challengeResult.score >= 50 ? "#fffbeb" : "#fef2f2", borderRadius: "12px", border: `2px solid ${challengeResult.score >= 80 ? "#86efac" : challengeResult.score >= 50 ? "#fde68a" : "#fecaca"}`, minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: challengeResult.score >= 80 ? "#15803d" : challengeResult.score >= 50 ? "#b45309" : "#b91c1c" } }, challengeResult.score, "%"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#4b5563", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, placeT("common.score", "Score"))), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: "#eef2ff", borderRadius: "12px", border: "2px solid #c7d2fe", minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: "#4338ca" } }, challengeResult.totalCorrect || 0, "/", challengeResult.totalExpected || 0), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#4b5563", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, placeT("common.correct", "Correct"))), (challengeResult.totalClose || 0) > 0 && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "12px 24px", background: "#fffbeb", borderRadius: "12px", border: "2px solid #fde68a", minWidth: "90px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", fontWeight: 900, color: "#b45309" } }, challengeResult.totalClose), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#4b5563", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" } }, placeT("visual_panel.verdict_close", "Close")))), /* @__PURE__ */ React.createElement("p", { style: { textAlign: "center", fontSize: "15px", color: "#374151", fontWeight: 500, margin: "0 0 16px 0", fontStyle: "italic", lineHeight: 1.5 } }, challengeResult.feedback), challengeResult.labelResults && challengeResult.labelResults.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gap: "8px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "13px", fontWeight: 700, color: "#374151", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" } }, t("word_sounds.label_details")), challengeResult.labelResults.map((r, ri) => /* @__PURE__ */ React.createElement("div", { key: ri, style: { display: "flex", alignItems: "flex-start", gap: "10px", padding: "10px 14px", background: r.verdict === "correct" ? "#f0fdf4" : r.verdict === "close" ? "#fffbeb" : "#fef2f2", borderRadius: "10px", border: `1px solid ${r.verdict === "correct" ? "#bbf7d0" : r.verdict === "close" ? "#fde68a" : "#fecaca"}`, fontSize: "13px", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "18px", flexShrink: 0, marginTop: "1px" } }, r.verdict === "correct" ? "\u2705" : r.verdict === "close" ? "\u{1F7E1}" : "\u274C"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { color: "#1e293b" } }, r.studentLabel), /* @__PURE__ */ React.createElement("div", { style: { color: "#4b5563", marginTop: "2px" } }, r.note)))))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "10px", justifyContent: "center", padding: "16px 20px", borderTop: "1px solid #e2e8f0", background: "#f8fafc" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      setAnswerKeyRevealed(true);
       setLabelsHidden(false);
       setShowComparison(false);
     }, style: { minHeight: 44, padding: "10px 24px", borderRadius: "10px", border: "1px solid #6366f1", background: "#4f46e5", color: "white", fontSize: "14px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s" } }, "\u{1F441}\uFE0F ", placeT("visual_panel.show_answer_key", "Show Answer Key")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowComparison(false), style: { minHeight: 44, padding: "10px 24px", borderRadius: "10px", border: "1px solid #d1d5db", background: "white", color: "#374151", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" } }, t("ui_common.close"))))

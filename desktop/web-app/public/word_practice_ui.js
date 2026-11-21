@@ -1102,6 +1102,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
             resolve(core && core.safePicture ? core.safePicture(out) : out);
           };
           img.onerror = () => { win.clearTimeout(timer); reject(new Error('decode')); };
+          if (/^https:/i.test(raw)) img.crossOrigin = 'anonymous';
           img.src = raw;
         });
         if (rendered) return rendered;
@@ -1145,7 +1146,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     const review = new Set(pack.reviewItemIds);
     const annotationStore = new Map(pack.items.map(item => [item.id, item.annotations || []]));
     const editGuard = trackWordSetEdits(review, annotationStore, core);
-    let preparedAudioRevision = 0, preparedAudioPending = false;
+    let preparedAudioRevision = 0, preparedAudioPending = false, cardContentRevision = 0;
     const audioSnapshot = value => JSON.stringify(value.items.map(item => [item.id, item.wordAudio, item.wordAudioProvenance, item.wordAudioOriginal, item.phonemes.map(sound => [sound.label, sound.audio, sound.provenance, sound.audioOriginal])]));
     const glossaryEntryIds = new Set(typeof context.onSaveCardAnnotations === 'function' ? pack.items.map(item => item.id) : []);
     function remember(current) { current.items.forEach(item => catalogue.set(item.id, item)); }
@@ -1185,11 +1186,19 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     if (!inlineHost) { dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true'); }
     dialog.setAttribute('aria-label', tx('word_practice.title', 'Present & Export')); overlay.appendChild(dialog);
     setLanguage(dialog, uiLanguage);
-    const hiddenSiblings = inlineHost ? [] : Array.from(doc.body.children).filter(node => node !== overlay && !['SCRIPT', 'STYLE'].includes(node.tagName)).map(node => ({ node, inert: node.inert }));
+    const hiddenSiblings = inlineHost ? [] : Array.from(doc.body.children).filter(node => node !== overlay && !['SCRIPT', 'STYLE'].includes(node.tagName) && !(node.matches && node.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) && !(node.querySelector && node.querySelector('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))).map(node => ({ node, inert: node.inert }));
     hiddenSiblings.forEach(({ node }) => { node.inert = true; });
-    const priorOverflow = inlineHost ? '' : doc.body.style.overflow;
+    const scrollLockState = !inlineHost ? (root.__alloScrollLockState = root.__alloScrollLockState || { count: 0, previousOverflow: '' }) : null;
+    const focusTrapStack = !inlineHost ? (root.__alloFocusTrapStack = root.__alloFocusTrapStack || []) : null;
+    const focusTrapEntry = !inlineHost ? { root: dialog } : null;
     if (inlineHost) inlineHost.replaceChildren(overlay);
-    else { doc.body.style.overflow = 'hidden'; doc.body.appendChild(overlay); }
+    else {
+      if (scrollLockState.count === 0) scrollLockState.previousOverflow = doc.body.style.overflow;
+      scrollLockState.count += 1;
+      doc.body.style.overflow = 'hidden';
+      focusTrapStack.push(focusTrapEntry);
+      doc.body.appendChild(overlay);
+    }
     const make = (tag, text, parent, cls) => { const node = doc.createElement(tag); if (text != null) { node.textContent = text; if (dialogTextLanguages.has(text)) setLanguage(node, dialogTextLanguages.get(text)); } if (cls) node.className = cls; (parent || dialog).appendChild(node); return node; };
     const header = make('div', null, dialog, 'awp-head'); make(inlineHost ? 'h2' : 'h1', tx('word_practice.title', 'Present & Export'), header);
     const headerActions = make('div', null, header, 'awp-row');
@@ -1621,6 +1630,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       const updateItem = entry => entry ? { ...entry, definition: core.text(definition, 1000), example: core.text(example, 1000), textEdited: true } : entry;
       if (catalogue.has(entryId)) catalogue.set(entryId, updateItem(catalogue.get(entryId)));
       pack = core.normalizeInput({ ...pack, words: pack.items.map(item => item.id === entryId ? updateItem(item) : item), options: options() });
+      cardContentRevision += 1;
       remember(pack); lastPictureKey = ''; previewContentKey = ''; updateCoverage();
     }
     function applyWordPicture(entryId, src, alt, attribution) {
@@ -1634,19 +1644,24 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       };
       if (catalogue.has(entryId)) catalogue.set(entryId, updateItem(catalogue.get(entryId)));
       pack = core.normalizeInput({ ...pack, words: pack.items.map(item => item.id === entryId ? updateItem(item) : item), options: options() });
+      cardContentRevision += 1;
       remember(pack); includePictures.checked = true; lastPictureKey = ''; previewContentKey = ''; updateCoverage();
     }
     function clearWordPicture(entryId) {
       const stripItem = entry => entry ? { ...entry, image: '', imageAlt: '', imageDecorative: false, imageAltHash: '', imageAttribution: null, picture: null } : entry;
       if (catalogue.has(entryId)) catalogue.set(entryId, stripItem(catalogue.get(entryId)));
       pack = core.normalizeInput({ ...pack, words: pack.items.map(item => item.id === entryId ? stripItem(item) : item), options: options() });
+      cardContentRevision += 1;
       remember(pack); lastPictureKey = ''; previewContentKey = ''; updateCoverage();
     }
     async function populateSymbolGrid(gridNode, row, query) {
+      const reqId = (Number(gridNode._awpSymReq) || 0) + 1;
+      gridNode._awpSymReq = reqId;
       gridNode.replaceChildren();
       const empty = make('p', tx('word_practice.searching_symbols', 'Loading symbols…'), gridNode, 'awp-note');
       try {
         const list = await findSymbols(query);
+        if (closed || !gridNode.isConnected || gridNode._awpSymReq !== reqId) return;
         gridNode.replaceChildren();
         if (!list.length) { make('p', tx('word_practice.no_symbols_found', 'No built-in symbols matched that search. Try Import image… to use your own picture.'), gridNode, 'awp-note'); return; }
         list.slice(0, 24).forEach(sym => {
@@ -1666,6 +1681,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
           }, btn);
         });
       } catch (err) {
+        if (closed || !gridNode.isConnected || gridNode._awpSymReq !== reqId) return;
         gridNode.replaceChildren(); empty.textContent = (err && err.message) || 'Could not load symbols.'; gridNode.appendChild(empty);
       }
     }
@@ -1930,7 +1946,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       const media = root.AlloWordPracticeMedia;
       if (opts.includeAudio !== false && media && typeof media.everyDeviceAudio === 'function' && typeof media.needsEveryDeviceAudio === 'function' && media.needsEveryDeviceAudio(current)) {
         status.textContent = tx('word_practice.preparing_audio_every_device', 'Getting the sounds ready to play on every device…');
-        const audio = await media.everyDeviceAudio(current);
+        const audio = await media.everyDeviceAudio(current, { signal: run.controller.signal });
         if (!isCurrentOperation(run)) return;
         fileInput = audio.pack;
         const left = audio.failed + audio.kept;
@@ -2057,7 +2073,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       // A file starts a new set, even when its language/word spelling matches.
       // Neither removed words nor their recordings belong to the imported set.
       review.clear(); imported.reviewItemIds?.forEach(id => review.add(id));
-      preparedAudioRevision = 0; preparedAudioPending = false;
+      preparedAudioRevision = 0; preparedAudioPending = false; cardContentRevision = 0;
       pack = imported; catalogue.clear(); annotationStore.clear(); glossaryEntryIds.clear(); pack.items.forEach(item => annotationStore.set(item.id, item.annotations || [])); remember(pack); previewId = ''; previewIndex = 0; previewMode = ''; previewRevealed = false; previewPickerKey = ''; fill(); editGuard.saved(); status.textContent = tx('word_practice.set_opened', 'Word set opened.');
     }));
     setup.addEventListener('change', event => { if (event.target === batchImageInput || event.target === rowImageInput || (event.target && event.target.classList && (event.target.classList.contains('awp-picture-alt') || event.target.classList.contains('awp-symbol-search')))) return; updateCoverage(); });
@@ -2068,8 +2084,10 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     wordsInput.addEventListener('input', scheduleCoverage); repetitions.addEventListener('input', scheduleCoverage);
     function trap(event) {
       if (inlineHost) return;
-      if (event.key === 'Escape' && !doc.fullscreenElement && !(event.isComposing || event.keyCode === 229)) { event.preventDefault(); requestClose(); return; }
+      if (focusTrapStack && focusTrapStack.length && focusTrapStack[focusTrapStack.length - 1] !== focusTrapEntry) return;
+      if (event.key === 'Escape' && !doc.fullscreenElement && !(event.isComposing || event.keyCode === 229)) { event.preventDefault(); event.stopPropagation(); requestClose(); return; }
       if (event.key !== 'Tab') return;
+      event.stopPropagation();
       const scope = doc.fullscreenElement && doc.fullscreenElement.contains(playerHost) ? doc.fullscreenElement : dialog;
       const candidates = Array.from(scope.querySelectorAll('button,input,textarea,select,summary,a[href],[tabindex="0"]')).filter(node => !node.disabled && !node.closest('[hidden]') && (!node.closest('details:not([open])') || node.tagName === 'SUMMARY') && node.getClientRects().length);
       if (!candidates.length) { event.preventDefault(); return; }
@@ -2096,11 +2114,18 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       if (context.signal) context.signal.removeEventListener('abort', close);
       closeReading(); overlay.remove();
       hiddenSiblings.forEach(({ node, inert }) => { if (node.isConnected) node.inert = inert; });
-      if (!inlineHost) doc.body.style.overflow = priorOverflow;
+      if (focusTrapStack && focusTrapEntry) {
+        const idx = focusTrapStack.lastIndexOf(focusTrapEntry);
+        if (idx >= 0) focusTrapStack.splice(idx, 1);
+      }
+      if (scrollLockState) {
+        scrollLockState.count = Math.max(0, scrollLockState.count - 1);
+        if (scrollLockState.count === 0) doc.body.style.overflow = scrollLockState.previousOverflow;
+      }
       if (previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus(); if (!inlineHost && active === controller) active = null;
     }
     overlay.addEventListener('keydown', trap); fill();
-    editGuard.watchContent(() => JSON.stringify([titleInput.value.trim(), core.parseWords(wordsInput.value, { lineSeparated: true }), preparedAudioRevision]));
+    editGuard.watchContent(() => JSON.stringify([titleInput.value.trim(), core.parseWords(wordsInput.value, { lineSeparated: true }), preparedAudioRevision, cardContentRevision]));
     if (!inlineHost) titleInput.focus();
     const controller = {
       close,

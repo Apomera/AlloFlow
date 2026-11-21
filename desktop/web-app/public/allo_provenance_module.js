@@ -193,7 +193,7 @@
       // export, so no integrity-facing surface can render one beside an answer.
       var provided = [];
       if (Array.isArray(e.supportsProvided)) {
-        var seen = {};
+        var seen = Object.create(null);
         for (var i = 0; i < e.supportsProvided.length && provided.length < 12; i++) {
           var name = clampStr(e.supportsProvided[i], 40);
           if (!name || seen[name]) continue;
@@ -384,7 +384,7 @@
       // flush produces counts that are simply wrong rather than merely late.
       flush: function () { return Promise.all([flushEdits(), flushSupports()]); },
       // export waits for every in-flight append so the head is final.
-      export: function () { return chain.then(function () { return exportNow(); }); },
+      export: function () { return chain.catch(function () {}).then(function () { return exportNow(); }); },
       // ★★ Constraint 8 enforced at the DATA layer, not the view layer. The
       // integrity export physically cannot carry scaffold intensity or the
       // student's own words: promptLevel and promptPreview are deleted from
@@ -395,7 +395,7 @@
       // export is verified by its own recomputed chain — see verifyLedger's
       // lens handling.
       exportForSubmission: function () {
-        return chain.then(function () {
+        return chain.catch(function () {}).then(function () {
           var full = exportNow();
           var stripped = full.events.map(function (e) {
             var copy = visibleBody(e);
@@ -408,7 +408,7 @@
       // MTSS/RTI lane. Separate consumer, separate transport, separate
       // consent — never rendered beside the integrity view.
       exportForSupport: function () {
-        return chain.then(function () {
+        return chain.catch(function () {}).then(function () {
           var full = exportNow();
           return { version: LEDGER_VERSION, lens: 'support', startedWallClock: startedWallClock, events: full.events.slice(), head: full.head };
         });
@@ -429,6 +429,7 @@
         return Promise.resolve(headOk ? { ok: true, events: evts.length } : { ok: false, brokenAt: evts.length, reason: 'head mismatch' });
       }
       var evt = evts[i];
+      if (!evt || typeof evt !== 'object') return Promise.resolve({ ok: false, brokenAt: i, reason: 'malformed event' });
       // Always recomputable: the visible-field commitment. On a full export
       // the whole-event commitment is checked too; on an integrity export the
       // hidden fields are absent by design, so f is verified as a link only.
@@ -476,6 +477,7 @@
     var kinds = { access: 0, generative: 0, unattributed: 0 };
     for (var i = 0; i < evts.length; i++) {
       var e = evts[i];
+      if (!e || typeof e !== 'object') continue;
       if (e.type === 'session' && (e.action === 'start' || e.action === 'resume')) sessions++;
       // ★ ASYMMETRY, deliberate and worth understanding. The population rule
       // (§15.4) is applied to `support` events but NOT to `ai` events: every
@@ -508,7 +510,11 @@
         kinds[classifySupport(e.kind)] += n;
       }
       if (e.type === 'edit') edits++;
-      if (e.type === 'paste') pasteEvents.push({ t: e.t, chars: e.chars, sourceHint: e.sourceHint });
+      if (e.type === 'paste') {
+        var pasteItem = { t: e.t, chars: e.chars, sourceHint: e.sourceHint };
+        if (e.assistiveTech === true) pasteItem.assistiveTech = true;
+        pasteEvents.push(pasteItem);
+      }
       if (lastT !== null) activeMs += Math.min(120000, Math.max(0, e.t - lastT));
       lastT = e.t;
     }
@@ -545,27 +551,36 @@
   // Support-fade lens: prompt-level series over time for MTSS/RTI progress
   // views (Leadership Hub). Consumed by team-facing surfaces ONLY — never
   // rendered beside the integrity summary.
+  function _safeMapKey(k) {
+    var s = String(k || '').trim();
+    if (!s || s === '__proto__' || s === 'constructor' || s === 'prototype') return 'unspecified';
+    return s;
+  }
+
   function summarizeSupport(exported) {
-    var evts = (exported && exported.events) || [];
+    var evts = (exported && Array.isArray(exported.events) && exported.events) || [];
     var series = [];
-    var bySupport = {};
+    var bySupport = Object.create(null);
     var counts = { model: 0, guided: 0, hint: 0, none: 0 };
     for (var i = 0; i < evts.length; i++) {
       var e = evts[i];
+      if (!e || typeof e !== 'object') continue;
       if (e.type !== 'ai' && e.type !== 'support') continue;
       var level = PROMPT_LEVELS.indexOf(e.promptLevel) >= 0 ? e.promptLevel : 'none';
       // A support event carries a bucketed count; an ai event is one call.
       var n = e.type === 'support' ? Math.max(1, parseInt(e.count, 10) || 1) : 1;
       counts[level] += n;
-      var name = String(e.type === 'support' ? e.kind : e.support) || 'unspecified';
+      var name = _safeMapKey(e.type === 'support' ? e.kind : e.support);
       bySupport[name] = (bySupport[name] || 0) + n;
       series.push({ t: e.t, promptLevel: level, support: name, count: n });
     }
+    var plainBySupport = {};
+    Object.keys(bySupport).forEach(function (k) { plainBySupport[k] = bySupport[k]; });
     // bySupport lives HERE, in the fade lens, where naming a scaffold is the
     // point: a team watching support fade needs to know which scaffold faded.
     return {
       promptLevelCounts: counts,
-      bySupport: bySupport,
+      bySupport: plainBySupport,
       coverage: COVERAGE_NOTE,
       neverObservable: NEVER_OBSERVABLE.slice(),
       series: series.slice(0, 2000)
@@ -605,21 +620,24 @@
     if (!supportExport || supportExport.lens === 'integrity') {
       return { ok: false, reason: 'wrong-lens' };
     }
-    var evts = supportExport.events || [];
-    var bySupport = {};
+    var evts = (Array.isArray(supportExport.events) && supportExport.events) || [];
+    var bySupportMap = Object.create(null);
     for (var i = 0; i < evts.length; i++) {
       var e = evts[i];
+      if (!e || typeof e !== 'object') continue;
       if (e.type !== 'ai' && e.type !== 'support') continue;
-      var name = String(e.type === 'support' ? e.kind : e.support) || 'unspecified';
+      var name = _safeMapKey(e.type === 'support' ? e.kind : e.support);
       var n = e.type === 'support' ? Math.max(1, parseInt(e.count, 10) || 1) : 1;
       var level = PROMPT_LEVELS.indexOf(e.promptLevel) >= 0 ? e.promptLevel : 'none';
-      var row = bySupport[name] || (bySupport[name] = {
+      var row = bySupportMap[name] || (bySupportMap[name] = {
         uses: 0, kind: classifySupport(name),
         levels: { model: 0, guided: 0, hint: 0, none: 0 }
       });
       row.uses += n;
       row.levels[level] += n;
     }
+    var bySupport = {};
+    Object.keys(bySupportMap).forEach(function (k) { bySupport[k] = bySupportMap[k]; });
     return {
       ok: true,
       codename: clampStr(m.codename, 60),
@@ -635,20 +653,26 @@
   // nothing that reads progressHistory can reach it.
   function mergeFadeRecord(store, record, retentionLimit) {
     var limit = Math.max(1, parseInt(retentionLimit, 10) || 30);
-    var next = {};
+    var next = Object.create(null);
     var src = store && typeof store === 'object' ? store : {};
-    Object.keys(src).forEach(function (k) { next[k] = (src[k] || []).slice(); });
-    if (!record || record.ok === false || !record.codename) return next;
-    var list = (next[record.codename] || []).filter(function (r) {
-      return !record.sessionId || r.sessionId !== record.sessionId;
+    Object.keys(src).forEach(function (k) {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+      next[k] = Array.isArray(src[k]) ? src[k].slice() : [];
     });
-    list.push({
-      sessionId: record.sessionId,
-      timestamp: record.timestamp,
-      bySupport: record.bySupport
-    });
-    next[record.codename] = list.slice(-limit);
-    return next;
+    if (record && record.ok !== false && record.codename && record.codename !== '__proto__' && record.codename !== 'constructor' && record.codename !== 'prototype') {
+      var list = (Array.isArray(next[record.codename]) ? next[record.codename] : []).filter(function (r) {
+        return !record.sessionId || (r && r.sessionId !== record.sessionId);
+      });
+      list.push({
+        sessionId: record.sessionId,
+        timestamp: record.timestamp,
+        bySupport: record.bySupport
+      });
+      next[record.codename] = list.slice(-limit);
+    }
+    var out = {};
+    Object.keys(next).forEach(function (k) { out[k] = next[k]; });
+    return out;
   }
 
   // ★ THE CHOKEPOINT. Every read of a student's fade history goes through here,
@@ -670,8 +694,8 @@
       return { ok: false, reason: 'no-purpose', periods: [] };
     }
     var key = String(codename || '');
-    if (!key) return { ok: false, reason: 'no-codename', periods: [] };
-    var list = (store && store[key]) || [];
+    if (!key || key === '__proto__' || key === 'constructor' || key === 'prototype') return { ok: false, reason: 'no-codename', periods: [] };
+    var list = (store && typeof store === 'object' && Object.prototype.hasOwnProperty.call(store, key) && Array.isArray(store[key])) ? store[key] : [];
     return { ok: true, codename: key, purpose: String(access.purpose).slice(0, 120), periods: list.slice() };
   }
 
@@ -780,8 +804,9 @@
         h('span', { key: 'b' }, model.coverage)
       ]);
     }
-    return h('section', { 'aria-labelledby': 'allo-fade-title', style: { border: '1px solid #e2e8f0', borderRadius: 8, padding: 10 } }, [
-      h('h3', { key: 'h', id: 'allo-fade-title', style: { fontSize: '0.9rem', fontWeight: 700, margin: 0 } },
+    var fadeTitleId = React.useId ? React.useId() : 'allo-fade-title';
+    return h('section', { 'aria-labelledby': fadeTitleId, style: { border: '1px solid #e2e8f0', borderRadius: 8, padding: 10, background: '#ffffff', color: '#0f172a' } }, [
+      h('h3', { key: 'h', id: fadeTitleId, style: { fontSize: '0.9rem', fontWeight: 700, margin: 0, color: '#0f172a' } },
         t('fade.title', 'Support over time') + (model.codename ? ' — ' + model.codename : '')),
       h('p', { key: 'note', style: { fontSize: '0.78rem', color: '#475569', marginTop: 6 } }, model.teamNote),
       h('table', { key: 'tbl', style: { width: '100%', marginTop: 8, fontSize: '0.78rem', borderCollapse: 'collapse' } }, [
@@ -1006,7 +1031,8 @@
     var lines = [];
     for (var i = 0; i < evts.length && lines.length < 400; i++) {
       var e = evts[i];
-      var min = Math.round(e.t / 60000);
+      if (!e || typeof e !== 'object') continue;
+      var min = Math.round((Number(e.t) || 0) / 60000);
       var at = min < 1 ? 'right away' : 'at ' + min + ' min';
       if (e.type === 'session') lines.push(e.action === 'start' ? 'You started working.' : e.action === 'resume' ? 'You came back to it ' + at + '.' : 'You finished this session ' + at + '.');
       else if (e.type === 'paste') lines.push('You pasted in about ' + e.chars + ' characters ' + at + (e.sourceHint === 'intra-app' ? ' (from your own work in AlloFlow).' : '.'));
@@ -1088,6 +1114,7 @@
     var h = React.createElement;
     var t = (props && props.t) || function (k, f) { return f || k; };
     var model = (props && props.model) || null;
+    var workStoryTitleId = React.useId ? React.useId() : 'allo-work-story-title';
     var open = React.useState(false);
     var isOpen = open[0], setOpen = open[1];
     if (!model) return null;
@@ -1097,17 +1124,17 @@
     // record is exactly the 'decline reads as concealment' failure. Amendment
     // and deletion rights run through the district under FERPA, which is where
     // they always ran — a self-serve button was never that mechanism.
-    return h('section', { className: 'rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700', 'aria-labelledby': 'allo-work-story-title' },
+    return h('section', { className: 'rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700', 'aria-labelledby': workStoryTitleId },
       h('div', { className: 'p-3' },
-        h('div', { id: 'allo-work-story-title', className: 'text-sm font-bold flex items-center gap-2' }, '📖 ' + t('work_story.title', 'Your Work Story')),
-        h('p', { className: 'text-xs mt-1 opacity-80' }, model.summary),
+        h('h3', { id: workStoryTitleId, className: 'text-sm font-bold flex items-center gap-2' }, h('span', { 'aria-hidden': 'true' }, '📖'), t('work_story.title', 'Your Work Story')),
+        h('p', { className: 'text-xs mt-1 text-slate-700 dark:text-slate-300' }, model.summary),
         h('p', { className: 'text-xs mt-2' }, model.whyTeacherSees),
         h('p', { className: 'text-xs mt-1 font-semibold' }, model.useOurSupports),
         h('button', {
           type: 'button',
           onClick: function () { setOpen(!isOpen); },
           'aria-expanded': isOpen ? 'true' : 'false',
-          className: 'mt-2 text-xs underline'
+          className: 'mt-2 min-h-11 inline-flex items-center px-2 text-xs underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600'
         }, isOpen ? t('work_story.hide', 'Hide the details') : t('work_story.show', 'See everything in it')),
         isOpen ? h('div', { className: 'mt-2 text-xs' },
           h('ol', { className: 'list-decimal ml-4 space-y-0.5' }, model.lines.map(function (line, i) { return h('li', { key: i }, line); })),
@@ -1138,43 +1165,63 @@
     var h = React.createElement;
     var t = (props && props.t) || function (k, f) { return f || k; };
     var q = props && props.question;
-    var st = React.useState({ mode: 'text', text: '', choice: '', speaking: false });
+    var qKey = q && (q.id || q.question || '');
+    var cpTitleId = React.useId ? React.useId() : 'allo-cp-title';
+    var st = React.useState({ mode: 'text', text: '', choice: '', speaking: false, speechNotice: '' });
     var s = st[0], set = st[1];
+    // All hooks MUST run unconditionally before `if (!q) return null;` (Rules of Hooks).
+    var speechRecRef = React.useRef(null);
+    var speechMountedRef = React.useRef(true);
+    React.useEffect(function () {
+      speechMountedRef.current = true;
+      return function () {
+        speechMountedRef.current = false;
+        if (speechRecRef.current) {
+          try { speechRecRef.current.abort(); } catch (_) {}
+          speechRecRef.current = null;
+        }
+      };
+    }, []);
+    React.useEffect(function () {
+      if (speechRecRef.current) {
+        try { speechRecRef.current.abort(); } catch (_) {}
+        speechRecRef.current = null;
+      }
+      set({ mode: 'text', text: '', choice: '', speaking: false, speechNotice: '' });
+    }, [qKey]);
     if (!q) return null;
     var onAnswer = (props && props.onAnswer) || function () {};
     var onDefer = (props && props.onDefer) || function () {};
     var onMisfit = (props && props.onMisfit) || function () {};
     var allowed = (props && props.allowedSupports) || CHECKPOINT_ALWAYS_ALLOWED;
     var choices = (props && props.choices) || [];
+    var speechSupported = Boolean(GLOBAL.SpeechRecognition || GLOBAL.webkitSpeechRecognition);
 
     var modeBtn = function (id, label) {
       return h('button', {
         key: id, type: 'button',
-        onClick: function () { set(Object.assign({}, s, { mode: id })); },
+        onClick: function () { set(function (prev) { return Object.assign({}, prev, { mode: id, speechNotice: '' }); }); },
         'aria-pressed': s.mode === id ? 'true' : 'false',
-        className: 'text-xs px-2 py-1 rounded border ' + (s.mode === id ? 'bg-indigo-100 border-indigo-300' : 'border-slate-300')
+        className: 'min-h-11 text-xs px-3 py-2 rounded border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (s.mode === id ? 'bg-indigo-100 border-indigo-400 text-indigo-950 font-semibold' : 'bg-white border-slate-300 text-slate-800')
       }, label);
     };
     // Speaking uses the app's speech-to-text (an allowed accommodation) and
     // becomes text the student can edit. Which engine runs depends on the device,
     // and Chrome's built-in one sends audio to Google, so the label promises nothing.
-    var speechRecRef = React.useRef ? React.useRef(null) : { current: null };
-    var speechMountedRef = React.useRef ? React.useRef(true) : { current: true };
-    if (React.useEffect) {
-      React.useEffect(function () {
-        speechMountedRef.current = true;
-        return function () {
-          speechMountedRef.current = false;
-          if (speechRecRef.current) {
-            try { speechRecRef.current.abort(); } catch (_) {}
-            speechRecRef.current = null;
-          }
-        };
-      }, []);
-    }
-    var startSpeaking = function () {
+    var toggleSpeaking = function () {
+      if (s.speaking) {
+        if (speechRecRef.current) {
+          try { speechRecRef.current.stop ? speechRecRef.current.stop() : speechRecRef.current.abort(); } catch (_) {}
+          speechRecRef.current = null;
+        }
+        set(function (prev) { return Object.assign({}, prev, { speaking: false }); });
+        return;
+      }
       var SR = GLOBAL.SpeechRecognition || GLOBAL.webkitSpeechRecognition;
-      if (!SR) return;
+      if (!SR) {
+        set(function (prev) { return Object.assign({}, prev, { speechNotice: t('checkpoint.speech_unsupported', 'Voice dictation is not supported in this browser. Type your answer below instead.') }); });
+        return;
+      }
       try {
         if (speechRecRef.current) {
           try { speechRecRef.current.abort(); } catch (_) {}
@@ -1186,26 +1233,26 @@
           if (!speechMountedRef.current) return;
           var said = '';
           for (var i = 0; i < ev.results.length; i++) said += ev.results[i][0].transcript;
-          set(function (prev) { return Object.assign({}, prev, { text: (prev.text ? prev.text + ' ' : '') + said, speaking: false }); });
+          set(function (prev) { return Object.assign({}, prev, { text: (prev.text ? prev.text + ' ' : '') + said, speaking: false, speechNotice: '' }); });
         };
         rec.onerror = function () { if (speechMountedRef.current) set(function (prev) { return Object.assign({}, prev, { speaking: false }); }); };
         rec.onend = function () {
           if (speechRecRef.current === rec) speechRecRef.current = null;
           if (speechMountedRef.current) set(function (prev) { return Object.assign({}, prev, { speaking: false }); });
         };
-        set(Object.assign({}, s, { speaking: true }));
+        set(function (prev) { return Object.assign({}, prev, { speaking: true, speechNotice: '' }); });
         rec.start();
-      } catch (_) { if (speechMountedRef.current) set(Object.assign({}, s, { speaking: false })); }
+      } catch (_) { if (speechMountedRef.current) set(function (prev) { return Object.assign({}, prev, { speaking: false }); }); }
     };
 
-    return h('section', { className: 'rounded-2xl border border-indigo-200 bg-indigo-50/40 p-3 mb-4', 'aria-labelledby': 'allo-cp-title' },
-      h('div', { id: 'allo-cp-title', className: 'text-sm font-bold' }, '💬 ' + t('checkpoint.title', 'A quick check-in about your work')),
-      h('blockquote', { className: 'text-xs mt-2 p-2 rounded bg-white border-l-4 border-indigo-300' }, '“' + q.sourceExcerpt + '”'),
-      h('p', { className: 'text-sm mt-2 font-medium' }, q.question),
-      h('p', { className: 'text-[11px] mt-1 opacity-70' },
+    return h('section', { className: 'rounded-2xl border border-indigo-200 bg-indigo-50 text-slate-900 p-3 mb-4', 'aria-labelledby': cpTitleId },
+      h('h3', { id: cpTitleId, className: 'text-sm font-bold text-slate-900 flex items-center gap-1.5' }, h('span', { 'aria-hidden': 'true' }, '💬'), t('checkpoint.title', 'A quick check-in about your work')),
+      h('blockquote', { className: 'text-xs mt-2 p-2 rounded bg-white text-slate-900 border-l-4 border-indigo-400' }, '“' + q.sourceExcerpt + '”'),
+      h('p', { className: 'text-sm mt-2 font-medium text-slate-900' }, q.question),
+      h('p', { className: 'text-xs mt-1 text-slate-700' },
         t('checkpoint.support_note', 'Still available while you answer: ') + allowed.slice(0, 4).join(', ').replace(/_/g, ' ') +
         t('checkpoint.support_note2', '. Only the answer helper is paused.')),
-      h('div', { className: 'flex gap-1 mt-2 flex-wrap' }, [
+      h('div', { className: 'flex gap-1.5 mt-2 flex-wrap' }, [
         modeBtn('text', t('checkpoint.mode_text', '⌨️ Type')),
         modeBtn('audio', t('checkpoint.mode_audio', '🎤 Speak')),
         choices.length > 1 ? modeBtn('choice', t('checkpoint.mode_choice', '☑️ Choose')) : null,
@@ -1213,27 +1260,30 @@
       ].filter(Boolean)),
       s.mode === 'choice'
         ? h('div', { className: 'mt-2 flex flex-col gap-1' }, choices.map(function (c, i) {
-            return h('label', { key: i, className: 'text-xs flex items-start gap-2' },
+            return h('label', { key: i, className: 'min-h-11 text-xs flex items-center gap-2 cursor-pointer' },
               // Radio group scoped to THIS question. A fixed name works only
               // while exactly one checkpoint is on screen — the moment two
               // render together (a review view, say) a shared name silently
               // links them, so choosing an answer to one clears the other.
-              h('input', { type: 'radio', name: 'allo-cp-choice-' + (q.id || 'cp'), checked: s.choice === c, onChange: function () { set(Object.assign({}, s, { choice: c })); } }),
+              h('input', { type: 'radio', name: 'allo-cp-choice-' + (q.id || 'cp'), checked: s.choice === c, onChange: function () { set(function (prev) { return Object.assign({}, prev, { choice: c }); }); } }),
               h('span', null, c));
           }))
         : s.mode === 'point'
-          ? h('p', { className: 'text-xs mt-2' }, t('checkpoint.point_help', 'Click the sentence in your work that this is about, then press Answer.'))
+          ? h('p', { className: 'text-xs mt-2 text-slate-800' }, t('checkpoint.point_help', 'Click the sentence in your work that this is about, then press Answer.'))
           : h('div', { className: 'mt-2' },
               s.mode === 'audio' ? h('button', {
-                type: 'button', onClick: startSpeaking,
-                className: 'text-xs px-2 py-1 rounded border border-slate-300 mb-1'
-              }, s.speaking ? t('checkpoint.listening', '🔴 Listening — say your answer') : t('checkpoint.speak_to_text', '🎤 Speak your answer (it becomes text you can edit)')) : null,
+                type: 'button', onClick: toggleSpeaking,
+                disabled: !speechSupported && !s.speaking,
+                'aria-pressed': s.speaking ? 'true' : 'false',
+                className: 'min-h-11 text-xs px-3 py-2 rounded border border-slate-300 bg-white text-slate-900 mb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-60'
+              }, s.speaking ? t('checkpoint.listening', '🔴 Listening — click to stop') : (speechSupported ? t('checkpoint.speak_to_text', '🎤 Speak your answer (it becomes text you can edit)') : t('checkpoint.speech_unavailable', '🎤 Voice dictation unavailable in this browser'))) : null,
+              s.speechNotice ? h('p', { role: 'status', className: 'text-xs text-slate-700 mb-1' }, s.speechNotice) : null,
               h('textarea', {
                 value: s.text,
-                onChange: function (e) { set(Object.assign({}, s, { text: e.target.value })); },
+                onChange: function (e) { var v = e.target.value; set(function (prev) { return Object.assign({}, prev, { text: v }); }); },
                 rows: 3,
                 'aria-label': t('checkpoint.answer_label', 'Your answer'),
-                className: 'w-full text-sm p-2 rounded border border-slate-300'
+                className: 'w-full text-sm p-2 rounded border border-slate-300 bg-white text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600'
               })),
       h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
         // NO PRODUCTION FLOOR: Answer is never disabled on how much was
@@ -1243,14 +1293,14 @@
         h('button', {
           type: 'button',
           onClick: function () { onAnswer(s.mode === 'choice' ? s.choice : s.text, s.mode); },
-          className: 'text-xs px-3 py-1 rounded bg-indigo-600 text-white'
+          className: 'min-h-11 text-xs px-3 py-2 rounded bg-indigo-600 text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-1'
         }, t('checkpoint.answer', 'Answer')),
-        h('button', { type: 'button', onClick: function () { onDefer(); }, className: 'text-xs px-3 py-1 rounded border border-slate-300' },
+        h('button', { type: 'button', onClick: function () { onDefer(); }, className: 'min-h-11 text-xs px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600' },
           t('checkpoint.later', 'I’ll come back to this')),
-        h('button', { type: 'button', onClick: function () { onMisfit(); }, className: 'text-xs px-3 py-1 rounded border border-slate-300' },
+        h('button', { type: 'button', onClick: function () { onMisfit(); }, className: 'min-h-11 text-xs px-3 py-2 rounded border border-slate-300 bg-white text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600' },
           t('checkpoint.misfit', 'This question doesn’t fit my work'))
       ),
-      h('p', { className: 'text-[11px] mt-2 opacity-70' },
+      h('p', { className: 'text-xs mt-2 text-slate-700' },
         t('checkpoint.no_grade', 'This is not graded here, there is no timer, and your work stays open while you answer.'))
     );
   }

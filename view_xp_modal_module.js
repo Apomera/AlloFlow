@@ -30,6 +30,21 @@ function XPModal({
   const dialogRef = React.useRef(null);
   const progressPercent = Math.max(0, Math.min(100, Math.round(Number(globalProgress) || 0)));
   const historyEntries = Array.isArray(pointHistory) ? pointHistory.filter(Boolean) : [];
+  const xpText = (key, fallback) => {
+    const v = typeof t === "function" ? t(key) : "";
+    return v && v !== key ? v : fallback;
+  };
+  const remainingXP = Math.max(0, (Number(globalXPNext) || 0) - (Number(currentLevelXP) || 0));
+  const activityBreakdown = React.useMemo(() => {
+    const totals = /* @__PURE__ */ new Map();
+    historyEntries.forEach((entry) => {
+      const label = String(entry.activity || "").trim();
+      const pts = Number(entry.points) || 0;
+      if (!label || pts <= 0) return;
+      totals.set(label, (totals.get(label) || 0) + pts);
+    });
+    return Array.from(totals.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  }, [historyEntries]);
   const formatXpTime = (ts) => {
     if (ts == null || ts === "") return "";
     const d = new Date(ts);
@@ -40,12 +55,10 @@ function XPModal({
     if (!dialog) return void 0;
     const previousFocus = document.activeElement;
     const isolatedSiblings = [];
-    let branch = dialog;
-    while (branch && branch.parentElement && branch.parentElement !== document.body) {
-      branch = branch.parentElement;
-    }
-    if (branch && branch.parentElement === document.body) {
-      Array.from(document.body.children).forEach((sibling) => {
+    let branch = dialog.parentElement || dialog;
+    while (branch && branch.parentElement && branch !== document.body) {
+      const parent = branch.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
         if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === "function" && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
         isolatedSiblings.push({
           el: sibling,
@@ -57,6 +70,7 @@ function XPModal({
         sibling.setAttribute("inert", "");
         sibling.setAttribute("aria-hidden", "true");
       });
+      branch = parent;
     }
     const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
     const alloScrollLocked = !!document.body;
@@ -147,7 +161,7 @@ function XPModal({
       style: { width: `${progressPercent}%` }
     },
     /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite] motion-reduce:animate-none", "aria-hidden": "true" })
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-mono font-bold text-slate-600 mt-1.5" }, /* @__PURE__ */ React.createElement("span", null, currentLevelXP, " ", t("common.xp")), /* @__PURE__ */ React.createElement("span", null, globalXPNext, " ", t("common.xp"), " \xB7 ", t("learner.level"), " ", globalLevel + 1))), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("h3", { id: "xp-history-title", className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(HistoryIcon, { size: 12, "aria-hidden": "true" }), " ", t("modals.xp_history")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1", "aria-labelledby": "xp-history-title", tabIndex: historyEntries.length > 0 ? 0 : void 0 }, historyEntries.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-center text-slate-600 text-xs italic py-4" }, t("student_dashboard.no_activities")) : historyEntries.slice(0, 20).map((entry, idx) => {
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-mono font-bold text-slate-600 mt-1.5" }, /* @__PURE__ */ React.createElement("span", null, currentLevelXP, " ", t("common.xp")), /* @__PURE__ */ React.createElement("span", null, globalXPNext, " ", t("common.xp"), " \xB7 ", t("learner.level"), " ", globalLevel + 1)), remainingXP > 0 && /* @__PURE__ */ React.createElement("p", { "data-xp-remaining": true, className: "mt-2 text-center text-xs font-bold text-indigo-800 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1" }, xpText("modals.xp_to_next_level", "{xp} XP to Level {level}").replace("{xp}", String(remainingXP)).replace("{level}", String((Number(globalLevel) || 0) + 1)))), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("h3", { id: "xp-history-title", className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(HistoryIcon, { size: 12, "aria-hidden": "true" }), " ", t("modals.xp_history")), activityBreakdown.length >= 2 && /* @__PURE__ */ React.createElement("div", { "data-xp-activity-summary": true, className: "mb-3 flex flex-wrap gap-1.5" }, activityBreakdown.map(([label, pts]) => /* @__PURE__ */ React.createElement("span", { key: label, className: "inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-green-700" }, /* @__PURE__ */ React.createElement("span", { className: "truncate max-w-[11rem]" }, label), /* @__PURE__ */ React.createElement("span", null, "+", pts, " XP")))), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1", "aria-labelledby": "xp-history-title", tabIndex: historyEntries.length > 0 ? 0 : void 0 }, historyEntries.length === 0 ? /* @__PURE__ */ React.createElement("li", { className: "text-center text-slate-600 text-xs italic py-4" }, t("student_dashboard.no_activities")) : historyEntries.slice(0, 20).map((entry, idx) => {
     const timeLabel = formatXpTime(entry.timestamp);
     return /* @__PURE__ */ React.createElement("li", { key: entry.id ?? idx, className: "flex justify-between items-center text-sm p-2 rounded hover:bg-slate-50 transition-colors motion-reduce:transition-none border-b border-slate-50 last:border-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 truncate max-w-[200px]", title: entry.activity }, entry.activity), timeLabel ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, timeLabel) : null), /* @__PURE__ */ React.createElement("span", { className: "font-black text-green-700" }, "+", entry.points, " XP"));
   }))), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, t("common.progress"), ": ", progressPercent, "%")));

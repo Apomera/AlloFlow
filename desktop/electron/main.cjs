@@ -517,9 +517,12 @@ async function autoStartAlloFlowApp() {
 // web/mail schemes a "click a link" gesture legitimately needs.
 function openExternalIfSafe(url) {
   try {
-    const scheme = new URL(url).protocol;
+    const raw = String(url == null ? '' : url);
+    if (!raw || /[\u0000-\u001f\u007f]/.test(raw)) throw new Error('Control character in external URL');
+    const parsed = new URL(raw);
+    const scheme = parsed.protocol;
     if (scheme === 'http:' || scheme === 'https:' || scheme === 'mailto:') {
-      Promise.resolve(shell.openExternal(url)).catch((err) => {
+      Promise.resolve(shell.openExternal(parsed.href)).catch((err) => {
         logLine('External open failed: ' + String((err && err.message) || err));
       });
       return true;
@@ -763,6 +766,7 @@ function configurePrivateApiRequestHeaders(targetWindow) {
     ) {
       requestHeaders['X-Allo-Desktop-Token'] = PRIVATE_API_TOKEN;
     }
+    knownAlloSheetSessionCookies.add('electron_key');
     if (trustedCompanionOrigin) {
       cachedAlloSheetPrivateAuth = typeof runtime.getAlloSheetPrivateBrowserAuth === 'function'
         ? runtime.getAlloSheetPrivateBrowserAuth()
@@ -772,13 +776,18 @@ function configurePrivateApiRequestHeaders(targetWindow) {
     if (privateAuth && privateAuth.sessionCookieName) {
       knownAlloSheetSessionCookies.add(privateAuth.sessionCookieName);
     }
-    const trustedGristFrame = Boolean(
-      trustedCompanionOrigin
-      && privateAuth
-      && isTrustedAlloSheetGristFrameRequest(
-        details, trustedCompanionOrigin, privateAuth.origin
-      )
-    );
+    let trustedGristFrame = false;
+    try {
+      trustedGristFrame = Boolean(
+        trustedCompanionOrigin
+        && privateAuth
+        && isTrustedAlloSheetGristFrameRequest(
+          details, trustedCompanionOrigin, privateAuth.origin
+        )
+      );
+    } catch (_) {
+      trustedGristFrame = false;
+    }
     requestHeaders = applyAlloSheetRequestAuth(
       requestHeaders,
       details.url,
@@ -835,8 +844,9 @@ function closeCoachOverlay() {
   }
 }
 
-function startCoachWindowTracker(handle) {
+function startCoachWindowTracker(handle, requestEpoch) {
   if (process.platform !== 'win32' || !/^[0-9]+$/.test(String(handle || ''))) return Promise.resolve(null);
+  if (requestEpoch != null && requestEpoch !== coachOverlayEpoch) return Promise.resolve(null);
   if (coachWindowTracker && coachTrackedHandle === handle) return Promise.resolve(coachTrackedBounds);
   stopCoachWindowTracker();
   const powershell = path.join(String(process.env.SystemRoot || 'C:\\Windows'),
@@ -868,6 +878,7 @@ function startCoachWindowTracker(handle) {
   };
   const timeout = setTimeout(() => settle(null), 1600);
   const acceptLine = (line) => {
+    if (coachWindowTracker !== child) return;
     let event;
     try { event = JSON.parse(String(line || '').trim()); } catch (_) { return; }
     if (event.closed) {
@@ -912,10 +923,11 @@ function startCoachWindowTracker(handle) {
   return firstBounds.finally(() => clearTimeout(timeout));
 }
 
-async function resolveTrackedCoachWindow(sourceLabel) {
+async function resolveTrackedCoachWindow(sourceLabel, requestEpoch) {
   if (process.platform !== 'win32') return null;
+  const isStale = () => requestEpoch != null && requestEpoch !== coachOverlayEpoch;
   const label = String(sourceLabel || '').slice(0, 260);
-  if (!label) { stopCoachWindowTracker(); return null; }
+  if (!label) { if (!isStale()) stopCoachWindowTracker(); return null; }
   if (coachWindowTracker && coachTrackedSourceLabel === label && coachTrackedBounds) {
     return { bounds: coachTrackedBounds, sourceId: '', handle: coachTrackedHandle, active: coachTrackedActive };
   }
@@ -925,12 +937,14 @@ async function resolveTrackedCoachWindow(sourceLabel) {
       types: ['window'], thumbnailSize: { width: 0, height: 0 }, fetchWindowIcons: false,
     });
   } catch (_) {
-    stopCoachWindowTracker();
+    if (!isStale()) stopCoachWindowTracker();
     return null;
   }
+  if (isStale()) return null;
   const selected = selectUniqueWindowSource(sources, label);
-  if (!selected || !selected.handle) { stopCoachWindowTracker(); return null; }
-  const bounds = await startCoachWindowTracker(selected.handle);
+  if (!selected || !selected.handle) { if (!isStale()) stopCoachWindowTracker(); return null; }
+  const bounds = await startCoachWindowTracker(selected.handle, requestEpoch);
+  if (isStale()) return null;
   if (!bounds) { stopCoachWindowTracker(); return null; }
   coachTrackedSourceLabel = label;
   return { bounds, sourceId: selected.id, handle: selected.handle, active: coachTrackedActive };
@@ -945,9 +959,8 @@ async function updateCoachOverlay(rawPayload) {
     ? payload.displaySurface : '';
   let trackedWindow = null;
   if (displaySurface === 'window') {
-    trackedWindow = await resolveTrackedCoachWindow(payload.sourceLabel);
+    trackedWindow = await resolveTrackedCoachWindow(payload.sourceLabel, requestEpoch);
     if (requestEpoch !== coachOverlayEpoch) {
-      stopCoachWindowTracker();
       return { visible: false, stale: true };
     }
   } else {
@@ -993,6 +1006,7 @@ async function updateCoachOverlay(rawPayload) {
     });
     coachOverlayWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
     coachOverlayWindow.webContents.on('will-navigate', (event) => { event.preventDefault(); });
+    coachOverlayWindow.webContents.on('will-redirect', (event) => { event.preventDefault(); });
     coachOverlayWindow.webContents.on('will-attach-webview', (event) => { event.preventDefault(); });
     coachOverlayWindow.setIgnoreMouseEvents(true, { forward: true });
     coachOverlayWindow.setAlwaysOnTop(true, 'floating');
@@ -1104,9 +1118,18 @@ function createMainWindow() {
       };
     }
     // In-app popup views (accessibility reports, print previews, export
-    // windows) open via window.open with about:blank/blob:/data: URLs —
+    // windows) open via window.open with about:blank or same-origin blob: URLs —
     // allow those as child windows without preload or subframe Node privileges.
-    if (url === 'about:blank' || url.startsWith('blob:') || url.startsWith('data:')) {
+    let commandOrigin = '';
+    let bundledOrigin = '';
+    try { commandOrigin = getCommandCenterUrl() ? new URL(getCommandCenterUrl()).origin : ''; } catch (_) {}
+    try { bundledOrigin = getBundledAppOrigin() ? new URL(getBundledAppOrigin()).origin : ''; } catch (_) {}
+    const isSameOriginBlob = (u) => Boolean(
+      (commandOrigin && u.startsWith('blob:' + commandOrigin + '/'))
+      || (bundledOrigin && u.startsWith('blob:' + bundledOrigin + '/'))
+    );
+    const isSafeInlineData = (u) => /^data:(?:image\/(?:png|jpeg|webp|gif)|application\/pdf|text\/plain)(?:[;,])/i.test(u);
+    if (url === 'about:blank' || isSameOriginBlob(url) || isSafeInlineData(url)) {
       return {
         action: 'allow',
         overrideBrowserWindowOptions: {
@@ -1134,11 +1157,13 @@ function createMainWindow() {
         openExternalIfSafe(url);
         return { action: 'deny' };
       });
-      childWindow.webContents.on('will-navigate', (event, url) => {
+      const guardWhiteboardUrl = (event, url) => {
         if (isAllowedWhiteboardPage(url)) return;
         event.preventDefault();
         openExternalIfSafe(url);
-      });
+      };
+      childWindow.webContents.on('will-navigate', guardWhiteboardUrl);
+      childWindow.webContents.on('will-redirect', guardWhiteboardUrl);
       return;
     }
     if (isAllowedAlloSheetPopup(details && details.url)) {
@@ -1147,47 +1172,61 @@ function createMainWindow() {
       trustedAlloSheetWebContents.set(childId, companionOrigin);
       childWindow.once('closed', () => {
         trustedAlloSheetWebContents.delete(childId);
-        cachedAlloSheetPrivateAuth = null;
+        if (trustedAlloSheetWebContents.size === 0) cachedAlloSheetPrivateAuth = null;
       });
       childWindow.webContents.setWindowOpenHandler(({ url }) => {
         openExternalIfSafe(url);
         return { action: 'deny' };
       });
-      childWindow.webContents.on('will-navigate', (event, url) => {
+      const guardAlloSheetUrl = (event, url) => {
         try {
           const parsed = new URL(url);
           if (parsed.origin === companionOrigin && parsed.pathname === '/app/allo_sheet/allo_sheet.html') return;
         } catch (_) {}
         event.preventDefault();
         openExternalIfSafe(url);
-      });
+      };
+      childWindow.webContents.on('will-navigate', guardAlloSheetUrl);
+      childWindow.webContents.on('will-redirect', guardAlloSheetUrl);
       return;
     }
     childWindow.webContents.setWindowOpenHandler(({ url: nextUrl }) => {
       openExternalIfSafe(nextUrl);
       return { action: 'deny' };
     });
-    childWindow.webContents.on('will-navigate', (event, nextUrl) => {
+    const guardChildUrl = (event, nextUrl) => {
       let commandOrigin = '';
+      let bundledOrigin = '';
       try {
         commandOrigin = getCommandCenterUrl() ? new URL(getCommandCenterUrl()).origin : '';
       } catch (_) {}
-      if (nextUrl === 'about:blank' || (commandOrigin && nextUrl.startsWith('blob:' + commandOrigin))) return;
+      try {
+        bundledOrigin = getBundledAppOrigin() ? new URL(getBundledAppOrigin()).origin : '';
+      } catch (_) {}
+      if (
+        nextUrl === 'about:blank'
+        || (commandOrigin && nextUrl.startsWith('blob:' + commandOrigin + '/'))
+        || (bundledOrigin && nextUrl.startsWith('blob:' + bundledOrigin + '/'))
+      ) return;
       event.preventDefault();
       openExternalIfSafe(nextUrl);
-    });
+    };
+    childWindow.webContents.on('will-navigate', guardChildUrl);
+    childWindow.webContents.on('will-redirect', guardChildUrl);
   });
 
   mainWindow.webContents.on('will-attach-webview', (event) => {
     event.preventDefault();
   });
 
-  mainWindow.webContents.on('will-navigate', (event, url) => {
+  const guardMainWindowUrl = (event, url) => {
     if (!isSameOrigin(url, getCommandCenterUrl())) {
       event.preventDefault();
       openExternalIfSafe(url);
     }
-  });
+  };
+  mainWindow.webContents.on('will-navigate', guardMainWindowUrl);
+  mainWindow.webContents.on('will-redirect', guardMainWindowUrl);
 
   configurePrivateApiRequestHeaders(mainWindow);
   mainWindow.loadURL(getCommandCenterUrl());
@@ -1332,8 +1371,12 @@ handleTrustedIpc('alloflow-desktop:coach-overlay-hide', async () => {
 const EXPORT_FILE_EXTS = new Set(['.pdf', '.html', '.htm', '.csv', '.json', '.txt', '.md', '.docx', '.pptx', '.xlsx', '.epub', '.brf', '.xml', '.png', '.jpg', '.jpeg', '.webp']);
 const WINDOWS_RESERVED_NAME = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i;
 function safeExportName(name, maxLength) {
-  const cleaned = String(name == null ? '' : name).replace(/[\\/:*?"<>|]/g, '_').replace(/[. ]+$/, '').slice(0, maxLength || 180);
-  // Trailing dots and spaces are stripped above, so "." and ".." arrive here empty.
+  const cleaned = String(name == null ? '' : name)
+    .replace(/[\u0000-\u001f\u007f]/g, '')
+    .replace(/[\\/:*?"<>|]/g, '_')
+    .slice(0, maxLength || 180)
+    .replace(/[. ]+$/, '');
+  // Trailing dots and spaces are stripped AFTER slicing, so "." and ".." arrive here empty.
   if (!cleaned || WINDOWS_RESERVED_NAME.test(cleaned)) return null;
   return cleaned;
 }
@@ -1380,14 +1423,14 @@ handleTrustedIpc('remediation:save-files', async (_event, payload) => {
     fs.mkdirSync(baseDir, { recursive: true });
     const realBaseDir = fs.realpathSync(baseDir);
     const relBase = path.relative(selectedRoot, realBaseDir);
-    if (!relBase || relBase.startsWith('..') || path.isAbsolute(relBase)) {
+    if (!relBase || relBase === '..' || relBase.startsWith('..' + path.sep) || path.isAbsolute(relBase)) {
       return { error: 'Export folder escaped selected directory' };
     }
 
     let saved = 0;
     let skipped = 0;
     let totalBytes = 0;
-    const writeFlags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | (fs.constants.O_NOFOLLOW || 0);
+    const writeFlags = fs.constants.O_WRONLY | fs.constants.O_CREAT | (fs.constants.O_NOFOLLOW || 0);
     for (const f of files) {
       if (!f || !f.name || typeof f.data !== 'string') continue;
       const safe = safeExportFileName(f.name);
@@ -1404,6 +1447,8 @@ handleTrustedIpc('remediation:save-files', async (_event, payload) => {
       }
       const fd = fs.openSync(targetPath, writeFlags, 0o600);
       try {
+        if (!fs.fstatSync(fd).isFile()) { skipped++; continue; }
+        fs.ftruncateSync(fd, 0);
         fs.writeFileSync(fd, buf);
       } finally {
         fs.closeSync(fd);
@@ -1425,7 +1470,8 @@ handleTrustedIpc('remediation:reveal-path', async (_event, targetPath) => {
     if (!isRevealableExportDir(targetPath)) {
       return { error: 'Only a folder AlloFlow saved can be opened' };
     }
-    await shell.openPath(fs.realpathSync(targetPath));
+    const openError = await shell.openPath(fs.realpathSync(targetPath));
+    if (openError) return { error: String(openError) };
     return { success: true };
   } catch (error) {
     return { error: String((error && error.message) || error) };
@@ -1459,7 +1505,7 @@ function resolveApprovedRemediationFile(filePath) {
     const realTarget = fs.realpathSync(filePath);
     for (const root of approvedRemediationRoots) {
       const rel = path.relative(root, realTarget);
-      if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) return realTarget;
+      if (rel && rel !== '..' && !rel.startsWith('..' + path.sep) && !path.isAbsolute(rel)) return realTarget;
     }
     return '';
   } catch (_) {
@@ -1525,8 +1571,23 @@ handleTrustedIpc('remediation:read-file-base64', async (_event, filePath) => {
     if (!realTarget || !REMEDIATION_EXTS.has(path.extname(realTarget).toLowerCase())) {
       return { error: 'File not found' };
     }
-    const buf = fs.readFileSync(realTarget);
-    if (buf.length > MAX_REMEDIATION_READ_BYTES) return { error: 'File too large' };
+    const fd = fs.openSync(realTarget, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
+    let buf;
+    try {
+      const st = fs.fstatSync(fd);
+      if (!st.isFile()) return { error: 'File not found' };
+      if (st.size > MAX_REMEDIATION_READ_BYTES) return { error: 'File too large' };
+      buf = Buffer.alloc(st.size);
+      let offset = 0;
+      while (offset < st.size) {
+        const n = fs.readSync(fd, buf, offset, st.size - offset, offset);
+        if (n <= 0) break;
+        offset += n;
+      }
+      if (offset < st.size) buf = buf.subarray(0, offset);
+    } finally {
+      fs.closeSync(fd);
+    }
     const mimeType = REMEDIATION_MIME_BY_EXT[path.extname(realTarget).toLowerCase()];
     return { base64: buf.toString('base64'), sizeBytes: buf.length, mimeType };
   } catch (error) {
@@ -1576,16 +1637,16 @@ app.whenReady().then(async () => {
     } catch (_) {}
     return false;
   };
-  session.defaultSession.setPermissionCheckHandler((webContents, permission, requestingOrigin) => {
+  session.defaultSession.setPermissionCheckHandler((_webContents, permission, requestingOrigin) => {
     if (!allowedPermissions.has(permission)) return false;
-    return isAllowedPermissionOrigin(requestingOrigin || (webContents && webContents.getURL()));
+    return isAllowedPermissionOrigin(requestingOrigin);
   });
-  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback, details) => {
+  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback, details) => {
     if (!allowedPermissions.has(permission)) {
       callback(false);
       return;
     }
-    const candidate = (details && details.requestingUrl) || (webContents && webContents.getURL());
+    const candidate = (details && details.requestingUrl) || '';
     callback(isAllowedPermissionOrigin(candidate));
   });
   prepareDesktopRuntimeHome();

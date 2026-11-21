@@ -8259,12 +8259,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   function beatBeeWings(avatar, clock, effort, reduced) {
     var wings = avatar && avatar.userData && avatar.userData.wings;
     if (!wings) return;
-    var amp = 0.30 + 0.55 * Math.max(0, Math.min(1, effort == null ? 0.5 : effort));
+    var clampedEffort = Math.max(0, Math.min(1, effort == null ? 0.5 : effort));
+    var amp = 0.30 + 0.55 * clampedEffort;
     for (var wi = 0; wi < wings.length; wi++) {
       var w = wings[wi];
       var swing = reduced ? 0 : Math.sin(clock * 0.055 + w.pair * 0.9) * amp;
       w.pivot.rotation.z = w.side * (0.16 + swing);
       w.pivot.rotation.x = reduced ? 0 : Math.sin(clock * 0.055 + w.pair * 0.9 + 1.2) * 0.18;
+      if (w.blur) {
+        w.blur.visible = !reduced && clampedEffort > 0.12;
+        if (w.blur.visible) {
+          w.blur.scale.set(0.040 + clampedEffort * 0.012, 0.008 + clampedEffort * 0.010, 0.019 + clampedEffort * 0.005);
+          if (w.blur.material && w.blur.material.uniforms) {
+            if (w.blur.material.uniforms.uTime) w.blur.material.uniforms.uTime.value = reduced ? 1.2 : clock * 0.012;
+            if (w.blur.material.uniforms.uEffort) w.blur.material.uniforms.uEffort.value = clampedEffort;
+          }
+        }
+      }
     }
   }
 
@@ -12687,11 +12698,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     opts = opts || {};
     var bodyColor = opts.body || 0xfbbf24;
     var group = new THREE.Group();
-    var bodyMat = new THREE.MeshPhongMaterial({ color: bodyColor, shininess: 18 });
-    var darkMat = new THREE.MeshPhongMaterial({ color: opts.dark == null ? 0x27201a : opts.dark, shininess: 6 });
+    var bodyMat = new THREE.MeshPhongMaterial({ color: bodyColor, shininess: 54, specular: 0xfff3c4, emissive: 0x2b1502, emissiveIntensity: 0.12 });
+    var darkMat = new THREE.MeshPhongMaterial({ color: opts.dark == null ? 0x27201a : opts.dark, shininess: 32, specular: 0x64748b });
     // Wings stay small and faint on purpose: at bay scale a bright opaque wing
     // is the largest thing on the model and the bee stops reading as a bee.
-    var wingMat = new THREE.MeshPhongMaterial({ color: 0xeaf4ff, transparent: true, opacity: 0.30, shininess: 60, side: THREE.DoubleSide, depthWrite: false });
+    var wingMat = new THREE.MeshPhongMaterial({ color: 0xf0f9ff, transparent: true, opacity: 0.36, shininess: 110, specular: 0xe0f2fe, side: THREE.DoubleSide, depthWrite: false });
+    var isContrastBee = opts.body === 0xffffff && opts.dark === 0x000000;
+    var wingBlurMat = (!isContrastBee && typeof THREE.ShaderMaterial === 'function')
+      ? new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 1.2 },
+            uEffort: { value: 0.5 }
+          },
+          vertexShader: [
+            'varying vec2 vUv;',
+            'varying vec3 vNormalDir;',
+            'varying vec3 vViewDir;',
+            'void main() {',
+            '  vUv = uv;',
+            '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);',
+            '  vNormalDir = normalize(normalMatrix * normal);',
+            '  vViewDir = normalize(-mvPos.xyz);',
+            '  gl_Position = projectionMatrix * mvPos;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform float uEffort;',
+            'varying vec2 vUv;',
+            'varying vec3 vNormalDir;',
+            'varying vec3 vViewDir;',
+            'void main() {',
+            '  float ndv = abs(dot(normalize(vNormalDir), normalize(vViewDir)));',
+            '  float fresnel = pow(1.0 - clamp(ndv, 0.0, 1.0), 1.8);',
+            '  float streak = 0.55 + 0.45 * sin(vUv.x * 26.0 + uTime * 22.0 + vUv.y * 14.0);',
+            '  float shimmer = 0.5 + 0.5 * sin(uTime * 16.0 + vUv.x * 12.0);',
+            '  float iridPhase = fresnel * 5.2 + vUv.x * 4.0 + uTime * 1.8;',
+            '  vec3 irid = vec3(0.76 + 0.24 * sin(iridPhase), 0.86 + 0.14 * sin(iridPhase + 2.094), 0.96 + 0.04 * sin(iridPhase + 4.188));',
+            '  vec3 warmGlint = vec3(1.0, 0.94, 0.74) * shimmer * 0.32;',
+            '  vec3 col = mix(vec3(0.88, 0.96, 1.0), irid, 0.62) + warmGlint;',
+            '  float feather = smoothstep(0.0, 0.28, vUv.y) * smoothstep(1.0, 0.72, vUv.y);',
+            '  float alpha = clamp((0.14 + 0.22 * uEffort) * (0.45 + 0.55 * streak) * (0.45 + 0.75 * fresnel) * (0.35 + 0.65 * feather), 0.0, 0.52);',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        })
+      : new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.15, side: THREE.DoubleSide, depthWrite: false });
     var abdomen = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), bodyMat);
     abdomen.scale.set(0.030, 0.028, 0.048); abdomen.position.z = 0.028; group.add(abdomen);
     var thorax = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), darkMat);
@@ -12699,14 +12755,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var band = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), darkMat);
     band.scale.set(0.031, 0.029, 0.009); band.position.z = 0.030; group.add(band);
     var wings = [];
+    var wingGeo = new THREE.SphereGeometry(1, 6, 5);
     [-1, 1].forEach(function (side) {
       var pivot = new THREE.Group();
       pivot.position.set(0, 0.020, -0.016);
-      var blade = new THREE.Mesh(new THREE.SphereGeometry(1, 6, 5), wingMat);
+      var blade = new THREE.Mesh(wingGeo, wingMat);
       blade.scale.set(0.036, 0.003, 0.016);
       blade.position.x = side * 0.034;
-      pivot.add(blade); group.add(pivot);
-      wings.push({ pivot: pivot, side: side, pair: 0 });
+      pivot.add(blade);
+      var blur = new THREE.Mesh(wingGeo, wingBlurMat);
+      blur.scale.set(0.044, 0.012, 0.020);
+      blur.position.set(side * 0.035, 0.002, 0);
+      blur.visible = false;
+      pivot.add(blur);
+      group.add(pivot);
+      wings.push({ pivot: pivot, side: side, pair: 0, blur: blur });
     });
     group.userData.wings = wings;
     if (opts.scale) group.scale.setScalar(opts.scale);
@@ -12888,6 +12951,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     api.scene.add(anchor);
 
     var contrast = !!api.contrast;
+    var hasShader = !contrast && typeof THREE.ShaderMaterial === 'function';
+    var combWaxUniforms = [];
     function colorOf(id) {
       if (contrast) return '#ffffff';
       for (var i = 0; i < HIVE_3D_PARTS.length; i++) if (HIVE_3D_PARTS[i].id === id) return HIVE_3D_PARTS[i].color;
@@ -12955,10 +13020,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       }
       var cellGeo = new THREE.CylinderGeometry(r * 0.94, r * 0.94, 0.020, 6);
       cellGeo.rotateX(Math.PI / 2);           // hex face toward the viewer
+      var cellMat = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        shininess: contrast ? 0 : 48,
+        specular: contrast ? 0x000000 : 0xfde68a,
+        emissive: contrast ? 0x000000 : 0x2d1703,
+        emissiveIntensity: contrast ? 0 : 0.22
+      });
+      if (!contrast) {
+        var waxU = {
+          uTime: { value: 1.6 },
+          uHoneyGlow: { value: 0.45 },
+          uWarmth: { value: 0.72 }
+        };
+        combWaxUniforms.push(waxU);
+        cellMat.onBeforeCompile = function (shader) {
+          shader.uniforms.uWaxTime = waxU.uTime;
+          shader.uniforms.uHoneyGlow = waxU.uHoneyGlow;
+          shader.uniforms.uWarmth = waxU.uWarmth;
+          shader.fragmentShader = 'uniform float uWaxTime;\nuniform float uHoneyGlow;\nuniform float uWarmth;\n' +
+            shader.fragmentShader.replace('#include <dithering_fragment>', [
+              'vec3 waxN = normalize(vNormal);',
+              'vec3 waxV = normalize(vViewPosition);',
+              'float waxFresnel = pow(1.0 - clamp(dot(waxN, waxV), 0.0, 1.0), 2.35);',
+              'float waxBacklight = pow(clamp(1.0 - abs(dot(waxN, waxV)) * 0.75, 0.0, 1.0), 1.6);',
+              'float amberLuma = smoothstep(0.36, 0.92, gl_FragColor.r * 0.68 + gl_FragColor.g * 0.32);',
+              'float honeyPulse = 0.86 + 0.14 * sin(uWaxTime * 1.35 + gl_FragCoord.x * 0.015 + gl_FragCoord.y * 0.012);',
+              'vec3 sssAmber = vec3(0.46, 0.24, 0.03) * waxFresnel * (0.42 + amberLuma * 0.58) * (0.55 + uHoneyGlow * 0.65) * honeyPulse;',
+              'vec3 sssCore = vec3(0.24, 0.11, 0.015) * waxBacklight * amberLuma * uWarmth * (0.45 + uHoneyGlow * 0.55);',
+              'gl_FragColor.rgb += sssAmber + sssCore;',
+              '#include <dithering_fragment>'
+            ].join('\n'));
+        };
+        cellMat.customProgramCacheKey = function () { return 'bh-beeswax-sss-v2'; };
+      }
       var batch = makeBatch(THREE, {
         capacity: cells.length,
         geometry: cellGeo,
-        material: new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: contrast ? 0 : 14, specular: contrast ? 0x000000 : 0x3f4650 })
+        material: cellMat
       });
       batch.mesh.position.z = z;
       parentGroup.add(batch.mesh);
@@ -13387,8 +13486,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     // everything else on screen.
     var meadowGroup = new THREE.Group();
     var meadowBlooms = [];
-    var bloomStemMat = mat('stand', { color: contrast ? '#ffffff' : '#2f6b34', shininess: 3 });
-    var bloomHeadGeo = new THREE.SphereGeometry(0.036, 7, 6);
+    var bloomStemMat = mat('stand', { color: contrast ? '#ffffff' : '#2f6b34', shininess: 6 });
+    var bloomHeadGeo = new THREE.SphereGeometry(0.036, 8, 6);
+    var bloomAntherGeo = new THREE.SphereGeometry(0.015, 7, 5);
+    var bloomAntherMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xfacc15, shininess: contrast ? 0 : 72, specular: contrast ? 0x000000 : 0xfffbeb, emissive: contrast ? 0x000000 : 0x92400e, emissiveIntensity: contrast ? 0 : 0.32 });
     var bloomStemGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.15, 5);
     for (var mb = 0; mb < 26; mb++) {
       var bloomAngle = mb * 2.399;
@@ -13398,8 +13499,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var stem = new THREE.Mesh(bloomStemGeo, bloomStemMat);
       stem.position.set(bx, -1.19, bz);
       meadowGroup.add(stem);
-      var head = new THREE.Mesh(bloomHeadGeo, mat('stand', { color: contrast ? '#ffffff' : '#e879b0', shininess: 26 }));
+      var head = new THREE.Mesh(bloomHeadGeo, mat('stand', { color: contrast ? '#ffffff' : '#e879b0', shininess: 42 }));
       head.position.set(bx, -1.10, bz);
+      var anther = new THREE.Mesh(bloomAntherGeo, bloomAntherMat);
+      anther.position.set(0, 0.022, 0);
+      head.add(anther);
       meadowGroup.add(head);
       meadowBlooms.push({ stem: stem, head: head, hue: mb % 4, phase: mb * 0.7 });
     }
@@ -13585,6 +13689,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var waggleRunAxis = new THREE.Mesh(new THREE.BoxGeometry(0.052, 0.0055, 0.0035), waggleTraceMat);
     waggleRunAxis.position.set(0, 0, 0.001);
     waggleTraceGroup.add(waggleRunAxis);
+    var waggleRibbonMat = null;
+    if (hasShader) {
+      waggleRibbonMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0.8 },
+          uPollen: { value: 0.5 },
+          uIntensity: { value: 0.7 }
+        },
+        vertexShader: [
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vUv = uv;',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uPollen;',
+          'uniform float uIntensity;',
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vec2 p = (vUv - 0.5) * vec2(0.168, 0.106);',
+          '  float minD = 9.0;',
+          '  float trailGlow = 0.0;',
+          '  float phaseNow = mod(uTime, 6.2831853);',
+          '  for (int i = 0; i < 24; i++) {',
+          '    float s = float(i) * (6.2831853 / 24.0);',
+          '    vec2 q = vec2(sin(s) * 0.054, sin(s * 2.0) * 0.027);',
+          '    float d = length(p - q);',
+          '    minD = min(minD, d);',
+          '    float behind = mod(phaseNow - s + 6.2831853, 6.2831853) / 6.2831853;',
+          '    float tail = exp(-behind * 4.2);',
+          '    trailGlow = max(trailGlow, exp(-d * 105.0) * tail);',
+          '  }',
+          '  float loopRibbon = exp(-minD * 145.0) * 0.52;',
+          '  float runCore = exp(-abs(p.y) * 125.0) * smoothstep(0.044, 0.008, abs(p.x));',
+          '  float buzz = 0.72 + 0.28 * sin(uTime * 14.0 + p.x * 160.0);',
+          '  float pollenSpark = exp(-minD * 82.0) * pow(max(0.0, sin(vUv.x * 46.0 - uTime * 3.8) * cos(vUv.y * 34.0 + uTime * 2.9)), 6.0) * (0.35 + uPollen * 0.85);',
+          '  vec3 amber = vec3(1.0, 0.78, 0.22);',
+          '  vec3 nectar = vec3(1.0, 0.96, 0.68);',
+          '  vec3 pheromone = vec3(0.98, 0.56, 0.14);',
+          '  vec3 col = amber * loopRibbon + mix(pheromone, nectar, trailGlow) * trailGlow * 1.45 + nectar * runCore * buzz * 0.55 + vec3(1.0, 0.94, 0.55) * pollenSpark;',
+          '  float edgeFade = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x) * smoothstep(0.0, 0.12, vUv.y) * smoothstep(1.0, 0.88, vUv.y);',
+          '  float alpha = clamp((loopRibbon * 0.55 + trailGlow * 1.15 + runCore * 0.35 + pollenSpark * 0.8) * edgeFade * uIntensity, 0.0, 0.92);',
+          '  if (alpha < 0.01) discard;',
+          '  gl_FragColor = vec4(col, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide
+      });
+      var waggleRibbonMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.168, 0.106), waggleRibbonMat);
+      waggleRibbonMesh.name = 'waggle-pheromone-ribbon';
+      waggleRibbonMesh.position.set(0, 0, 0.002);
+      waggleTraceGroup.add(waggleRibbonMesh);
+    }
     waggleDanceFloor.add(waggleTraceGroup);
     var waggleScoutBee = build3dMiniBee(THREE, { body: contrast ? 0xffffff : 0xf59e0b, dark: contrast ? 0x000000 : 0x241d16, scale: 0.56 });
     waggleScoutBee.name = 'waggle-scout-bee';
@@ -13693,7 +13855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var superRipenersGroup = new THREE.Group();
     superRipenersGroup.name = 'super-honey-ripeners';
     var capGlintGeo = new THREE.CylinderGeometry(0.022, 0.022, 0.005, 6);
-    var capGlintMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xfef9c3, shininess: 36, transparent: true, opacity: 0.88 });
+    var capGlintMat = new THREE.MeshPhongMaterial({ color: contrast ? 0xffffff : 0xfef08a, shininess: contrast ? 0 : 96, specular: contrast ? 0x000000 : 0xffffff, emissive: contrast ? 0x000000 : 0x78350f, emissiveIntensity: contrast ? 0 : 0.28, transparent: true, opacity: 0.92 });
     var superCapGlints = [];
     for (var cgi = 0; cgi < 3; cgi++) {
       var glint = new THREE.Mesh(capGlintGeo, capGlintMat);
@@ -13740,6 +13902,191 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     }
     broodNurseGroup.visible = false;
     anchor.add(broodNurseGroup);
+
+    // GLSL Warm Beeswax Subsurface-Scattering Glow Veil, Golden-Hour Volumetric Sunbeams & Drifting Golden Pollen Motes (raycast-safe: added to anchor, never picks; bypassed in High-Contrast)
+    var combAmberGlowGroup = new THREE.Group();
+    combAmberGlowGroup.name = 'hive-beeswax-sss-glow';
+    var combAmberGlowMat = null;
+    if (hasShader) {
+      combAmberGlowMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 1.6 },
+          uHoneyFill: { value: 0.4 },
+          uVitality: { value: 0.75 }
+        },
+        vertexShader: [
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vUv = uv;',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uHoneyFill;',
+          'uniform float uVitality;',
+          'varying vec2 vUv;',
+          'float hexDist(vec2 p) {',
+          '  p = abs(p);',
+          '  return max(dot(p, normalize(vec2(1.0, 1.73205))), p.x);',
+          '}',
+          'void main() {',
+          '  vec2 uv = (vUv - 0.5) * vec2(14.0, 6.5);',
+          '  vec2 r = vec2(1.0, 1.73205);',
+          '  vec2 h = r * 0.5;',
+          '  vec2 a = mod(uv, r) - h;',
+          '  vec2 b = mod(uv - h, r) - h;',
+          '  vec2 gv = dot(a, a) < dot(b, b) ? a : b;',
+          '  float hd = hexDist(gv);',
+          '  float cellInner = smoothstep(0.49, 0.14, hd);',
+          '  float cellRim = smoothstep(0.36, 0.48, hd) * (1.0 - smoothstep(0.47, 0.52, hd));',
+          '  float radial = 1.0 - smoothstep(0.18, 0.62, length((vUv - vec2(0.5, 0.54)) * vec2(1.05, 1.25)));',
+          '  float archHoney = smoothstep(0.52 - uHoneyFill * 0.25, 0.96, vUv.y);',
+          '  float breath = 0.84 + 0.16 * sin(uTime * 1.2 + vUv.x * 5.0 - vUv.y * 3.5);',
+          '  vec3 deepAmber = vec3(0.95, 0.52, 0.06);',
+          '  vec3 liquidGold = vec3(1.0, 0.84, 0.30);',
+          '  vec3 col = mix(deepAmber, liquidGold, clamp(cellInner * 0.72 + archHoney * 0.45, 0.0, 1.0)) + vec3(1.0, 0.94, 0.66) * cellRim * 0.45;',
+          '  float mask = clamp((radial * 0.68 + archHoney * (0.35 + uHoneyFill * 0.65)) * (0.38 + cellInner * 0.62), 0.0, 1.0);',
+          '  float edgeSoft = smoothstep(0.0, 0.08, vUv.x) * smoothstep(1.0, 0.92, vUv.x) * smoothstep(0.0, 0.08, vUv.y) * smoothstep(1.0, 0.92, vUv.y);',
+          '  float alpha = clamp(mask * edgeSoft * breath * (0.14 + uHoneyFill * 0.18 + uVitality * 0.10), 0.0, 0.44);',
+          '  gl_FragColor = vec4(col * alpha, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide
+      });
+      var combAmberMesh = new THREE.Mesh(new THREE.PlaneGeometry(BW - 0.18, broodH - 0.16), combAmberGlowMat);
+      combAmberMesh.position.set(0, broodY - 0.02, patternZ + 0.017);
+      combAmberGlowGroup.add(combAmberMesh);
+    }
+    combAmberGlowGroup.visible = hasShader;
+    anchor.add(combAmberGlowGroup);
+
+    var hiveSunbeamsGroup = new THREE.Group();
+    hiveSunbeamsGroup.name = 'hive-golden-sunbeams';
+    var hiveSunbeamMat = null;
+    if (hasShader) {
+      hiveSunbeamMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 1.6 },
+          uStrength: { value: 0.24 }
+        },
+        vertexShader: [
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec3 vWorldNormal;',
+          'varying float vSeed;',
+          'void main() {',
+          '  vUv = uv;',
+          '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+          '  vWorldPos = wp.xyz;',
+          '  vWorldNormal = normalize(mat3(modelMatrix) * normal);',
+          '  vSeed = modelMatrix[3].x * 2.1 + modelMatrix[3].z * 1.7;',
+          '  gl_Position = projectionMatrix * viewMatrix * wp;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uStrength;',
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec3 vWorldNormal;',
+          'varying float vSeed;',
+          'void main() {',
+          '  if (uStrength <= 0.005) discard;',
+          '  float horiz = pow(clamp(sin(vUv.x * 3.1415926), 0.0, 1.0), 1.85);',
+          '  float vert = smoothstep(0.0, 0.72, vUv.y) * (1.0 - smoothstep(0.86, 1.0, vUv.y));',
+          '  float strand1 = 0.5 + 0.5 * sin(vUv.x * 14.0 + uTime * 0.45 + vSeed * 2.7);',
+          '  float strand2 = 0.5 + 0.5 * sin(vUv.x * 24.0 - uTime * 0.62 - vSeed * 1.9);',
+          '  float rays = 0.46 + 0.34 * pow(strand1, 1.7) + 0.24 * pow(strand2, 2.2);',
+          '  vec3 V = normalize(cameraPosition - vWorldPos);',
+          '  float facing = pow(clamp(abs(dot(normalize(vWorldNormal), V)), 0.0, 1.0), 0.6);',
+          '  vec3 gold = mix(vec3(1.0, 0.82, 0.42), vec3(1.0, 0.96, 0.78), vUv.y);',
+          '  float alpha = clamp(horiz * vert * rays * (0.25 + 0.75 * facing) * uStrength, 0.0, 0.36);',
+          '  gl_FragColor = vec4(gold * alpha, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide
+      });
+      var hiveBeamGeo = new THREE.PlaneGeometry(0.95, 2.55);
+      for (var hbi = 0; hbi < 4; hbi++) {
+        var hBeam = new THREE.Mesh(hiveBeamGeo, hiveSunbeamMat);
+        hBeam.position.set(-0.92 + hbi * 0.62, 0.08, -0.58 + (hbi % 2) * 0.46);
+        hBeam.rotation.z = -0.34 - (hbi % 2) * 0.05;
+        hBeam.rotation.y = (hbi - 1.5) * 0.24;
+        hiveSunbeamsGroup.add(hBeam);
+      }
+    }
+    hiveSunbeamsGroup.visible = hasShader;
+    anchor.add(hiveSunbeamsGroup);
+
+    var hivePollenMotes = null;
+    var hivePollenMat = null;
+    if (hasShader && THREE.BufferGeometry && THREE.Float32BufferAttribute) {
+      var hpmCount = 64;
+      var hpmPos = new Float32Array(hpmCount * 3);
+      var hpmSeed = new Float32Array(hpmCount);
+      for (var hpi = 0; hpi < hpmCount; hpi++) {
+        var hpa = hpi * 2.39996;
+        var hpr = 0.55 + (hpi % 9) * 0.14;
+        hpmPos[hpi * 3] = Math.cos(hpa) * hpr;
+        hpmPos[hpi * 3 + 1] = -1.10 + ((hpi * 0.173) % 1) * 1.95;
+        hpmPos[hpi * 3 + 2] = Math.sin(hpa) * hpr * 0.85;
+        hpmSeed[hpi] = (hpi * 0.6180339) % 1;
+      }
+      var hpmGeo = new THREE.BufferGeometry();
+      hpmGeo.setAttribute('position', new THREE.Float32BufferAttribute(hpmPos, 3));
+      hpmGeo.setAttribute('aSeed', new THREE.Float32BufferAttribute(hpmSeed, 1));
+      hivePollenMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 1.6 },
+          uOpacity: { value: 0.72 }
+        },
+        vertexShader: [
+          'attribute float aSeed;',
+          'uniform float uTime;',
+          'varying float vSeed;',
+          'varying float vTwinkle;',
+          'void main() {',
+          '  vSeed = aSeed;',
+          '  vec3 p = position;',
+          '  float t = uTime * (0.45 + aSeed * 0.35) + aSeed * 6.28318;',
+          '  p.x += sin(t * 0.9) * 0.12;',
+          '  p.y = -1.10 + mod((p.y + 1.10) + uTime * (0.045 + aSeed * 0.04), 1.95);',
+          '  p.z += cos(t * 0.75 + aSeed * 3.1) * 0.10;',
+          '  vTwinkle = 0.55 + 0.45 * sin(uTime * 2.2 + aSeed * 19.0);',
+          '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);',
+          '  gl_PointSize = clamp((16.0 + 14.0 * aSeed) / max(0.8, -mvPos.z), 2.2, 12.0);',
+          '  gl_Position = projectionMatrix * mvPos;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uOpacity;',
+          'varying float vSeed;',
+          'varying float vTwinkle;',
+          'void main() {',
+          '  if (uOpacity <= 0.01) discard;',
+          '  float r = length(gl_PointCoord - 0.5);',
+          '  if (r > 0.5) discard;',
+          '  float core = pow(1.0 - smoothstep(0.0, 0.48, r), 2.1);',
+          '  vec3 col = mix(vec3(1.0, 0.78, 0.22), vec3(1.0, 0.97, 0.76), core);',
+          '  float alpha = clamp(core * vTwinkle * uOpacity, 0.0, 0.9);',
+          '  gl_FragColor = vec4(col * alpha, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+      hivePollenMotes = new THREE.Points(hpmGeo, hivePollenMat);
+      hivePollenMotes.name = 'hive-golden-pollen-motes';
+      anchor.add(hivePollenMotes);
+    }
     // Season palettes for the ground. Autumn is not just "browner": the forage
     // is over, which is the point the colour is there to make.
     var SEASON_PAD_COLORS = ['#4e8a3f', '#3f6b3a', '#7a6b2e', '#5c6b58'];
@@ -14024,6 +14371,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var waggleAzimuth = 0.42 + seasonIndex * 0.58;
         waggleTraceGroup.rotation.z = waggleAzimuth;
         var wt = reduced ? 0 : clock * 0.0026;
+        if (waggleRibbonMat && waggleRibbonMat.uniforms) {
+          waggleRibbonMat.uniforms.uTime.value = reduced ? 0.8 : wt;
+          waggleRibbonMat.uniforms.uPollen.value = pollenLevel;
+          waggleRibbonMat.uniforms.uIntensity.value = 0.45 + traffic * 0.55;
+        }
         var wLocalX = Math.sin(wt) * 0.054;
         var wLocalY = Math.sin(wt * 2) * 0.027;
         var cosA = Math.cos(waggleAzimuth), sinA = Math.sin(waggleAzimuth);
@@ -14167,6 +14519,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           bee.userData.phoreticMite.visible = !wintering && varroa >= 0.10 && Math.floor(fj / 3) < Math.ceil(varroa * 8);
         }
       }
+
+      var shaderSec = reduced ? 1.6 : (1.6 + clock * 0.001);
+      for (var cwi = 0; cwi < combWaxUniforms.length; cwi++) {
+        combWaxUniforms[cwi].uTime.value = shaderSec;
+        combWaxUniforms[cwi].uHoneyGlow.value = 0.22 + honeyFill * 0.78;
+        combWaxUniforms[cwi].uWarmth.value = wintering ? (0.35 + clusterWarmth * 0.65) : (0.55 + traffic * 0.45);
+      }
+      if (combAmberGlowMat) {
+        combAmberGlowGroup.visible = !contrast && (honeyFill > 0.04 || broodFill > 0.06);
+        combAmberGlowGroup.position.set(0, broodFrameGroup.position.y + broodFrontGroup.position.y, broodFrontGroup.position.z);
+        combAmberGlowGroup.rotation.y = broodFrontGroup.rotation.y;
+        combAmberGlowMat.uniforms.uTime.value = shaderSec;
+        combAmberGlowMat.uniforms.uHoneyFill.value = honeyFill;
+        combAmberGlowMat.uniforms.uVitality.value = wintering ? clusterWarmth : Math.max(broodFill, traffic);
+      }
+      if (hiveSunbeamMat) {
+        hiveSunbeamsGroup.visible = !contrast && !wintering;
+        hiveSunbeamMat.uniforms.uTime.value = shaderSec;
+        hiveSunbeamMat.uniforms.uStrength.value = seasonIndex === 2 ? 0.18 : seasonIndex === 0 ? 0.22 : 0.27;
+      }
+      if (hivePollenMotes && hivePollenMat) {
+        hivePollenMotes.visible = !contrast && !wintering && (pollenLevel > 0.04 || traffic > 0.08);
+        hivePollenMat.uniforms.uTime.value = shaderSec;
+        hivePollenMat.uniforms.uOpacity.value = 0.38 + Math.max(pollenLevel, traffic) * 0.48;
+      }
     }
 
     return { meshes: meshes, picks: picks, anchor: anchor, frame: frame };
@@ -14269,6 +14646,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     api.scene.add(anchor);
 
     var contrast = !!api.contrast;
+    var hasShader = !contrast && typeof THREE.ShaderMaterial === 'function';
+    var combWaxUniforms = [];
     function colorOf(id) {
       if (contrast) return '#ffffff';
       for (var i = 0; i < QUEEN_3D_PARTS.length; i++) if (QUEEN_3D_PARTS[i].id === id) return QUEEN_3D_PARTS[i].color;
@@ -14924,6 +15303,126 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     });
     var animationClock = 0, lastFrameTime = null;
 
+    // GLSL Golden-Hour Volumetric Meadow Sunbeams & Drifting Golden Pollen Motes (raycast-safe: added to anchor, never picks; bypassed in High-Contrast)
+    var meadowSunbeamsGroup = new THREE.Group();
+    meadowSunbeamsGroup.name = 'meadow-golden-sunbeams';
+    var meadowSunbeamMat = null;
+    if (hasShader) {
+      meadowSunbeamMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 1.6 },
+          uStrength: { value: 0.22 }
+        },
+        vertexShader: [
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec3 vWorldNormal;',
+          'varying float vSeed;',
+          'void main() {',
+          '  vUv = uv;',
+          '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+          '  vWorldPos = wp.xyz;',
+          '  vWorldNormal = normalize(mat3(modelMatrix) * normal);',
+          '  vSeed = modelMatrix[3].x * 1.4 + modelMatrix[3].z * 2.1;',
+          '  gl_Position = projectionMatrix * viewMatrix * wp;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uStrength;',
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec3 vWorldNormal;',
+          'varying float vSeed;',
+          'void main() {',
+          '  if (uStrength <= 0.005) discard;',
+          '  float horiz = pow(clamp(sin(vUv.x * 3.1415926), 0.0, 1.0), 1.8);',
+          '  float vert = smoothstep(0.0, 0.70, vUv.y) * (1.0 - smoothstep(0.86, 1.0, vUv.y));',
+          '  float s1 = 0.5 + 0.5 * sin(vUv.x * 15.0 + uTime * 0.42 + vSeed * 2.4);',
+          '  float s2 = 0.5 + 0.5 * sin(vUv.x * 26.0 - uTime * 0.58 - vSeed * 1.8);',
+          '  float rays = 0.48 + 0.32 * pow(s1, 1.8) + 0.24 * pow(s2, 2.2);',
+          '  vec3 V = normalize(cameraPosition - vWorldPos);',
+          '  float facing = pow(clamp(abs(dot(normalize(vWorldNormal), V)), 0.0, 1.0), 0.6);',
+          '  vec3 gold = mix(vec3(1.0, 0.80, 0.36), vec3(1.0, 0.96, 0.78), vUv.y);',
+          '  float alpha = clamp(horiz * vert * rays * (0.25 + 0.75 * facing) * uStrength, 0.0, 0.34);',
+          '  gl_FragColor = vec4(gold * alpha, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide
+      });
+      var mBeamGeo = new THREE.PlaneGeometry(1.15, 2.35);
+      for (var mbi2 = 0; mbi2 < 5; mbi2++) {
+        var mBeam = new THREE.Mesh(mBeamGeo, meadowSunbeamMat);
+        mBeam.position.set(-1.85 + mbi2 * 0.92, GROUND_Y + 1.08, -0.45 + (mbi2 % 2) * 0.58);
+        mBeam.rotation.z = -0.30 - (mbi2 % 2) * 0.05;
+        mBeam.rotation.y = (mbi2 - 2) * 0.16;
+        meadowSunbeamsGroup.add(mBeam);
+      }
+    }
+    meadowSunbeamsGroup.visible = hasShader;
+    anchor.add(meadowSunbeamsGroup);
+
+    var meadowPollenMotes = null;
+    var meadowPollenMat = null;
+    if (hasShader && THREE.BufferGeometry && THREE.Float32BufferAttribute) {
+      var mpmCount = 78;
+      var mpmPos = new Float32Array(mpmCount * 3);
+      var mpmSeed = new Float32Array(mpmCount);
+      for (var mpi = 0; mpi < mpmCount; mpi++) {
+        mpmPos[mpi * 3] = -2.45 + ((mpi * 0.381966) % 1) * 4.90;
+        mpmPos[mpi * 3 + 1] = GROUND_Y + 0.12 + ((mpi * 0.197) % 1) * 1.45;
+        mpmPos[mpi * 3 + 2] = -1.15 + ((mpi * 0.618033) % 1) * 2.30;
+        mpmSeed[mpi] = (mpi * 0.754877) % 1;
+      }
+      var mpmGeo = new THREE.BufferGeometry();
+      mpmGeo.setAttribute('position', new THREE.Float32BufferAttribute(mpmPos, 3));
+      mpmGeo.setAttribute('aSeed', new THREE.Float32BufferAttribute(mpmSeed, 1));
+      meadowPollenMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 1.6 },
+          uOpacity: { value: 0.68 }
+        },
+        vertexShader: [
+          'attribute float aSeed;',
+          'uniform float uTime;',
+          'varying float vTwinkle;',
+          'void main() {',
+          '  vec3 p = position;',
+          '  float t = uTime * (0.42 + aSeed * 0.34) + aSeed * 6.28318;',
+          '  p.x += sin(t * 0.85) * 0.16;',
+          '  p.y = -0.50 + mod((p.y + 0.50) + uTime * (0.04 + aSeed * 0.035), 1.45);',
+          '  p.z += cos(t * 0.72 + aSeed * 3.2) * 0.14;',
+          '  vTwinkle = 0.55 + 0.45 * sin(uTime * 2.1 + aSeed * 17.0);',
+          '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);',
+          '  gl_PointSize = clamp((15.0 + 13.0 * aSeed) / max(0.8, -mvPos.z), 2.0, 11.0);',
+          '  gl_Position = projectionMatrix * mvPos;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uOpacity;',
+          'varying float vTwinkle;',
+          'void main() {',
+          '  if (uOpacity <= 0.01) discard;',
+          '  float r = length(gl_PointCoord - 0.5);',
+          '  if (r > 0.5) discard;',
+          '  float core = pow(1.0 - smoothstep(0.0, 0.48, r), 2.1);',
+          '  vec3 col = mix(vec3(1.0, 0.80, 0.24), vec3(1.0, 0.97, 0.78), core);',
+          '  float alpha = clamp(core * vTwinkle * uOpacity, 0.0, 0.88);',
+          '  gl_FragColor = vec4(col * alpha, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+      meadowPollenMotes = new THREE.Points(mpmGeo, meadowPollenMat);
+      meadowPollenMotes.name = 'meadow-golden-pollen-motes';
+      anchor.add(meadowPollenMotes);
+    }
+
     var mapCanvas = null;
     function frame(nowMs, sceneProps, reduced) {
       var sp = sceneProps || {};
@@ -15266,6 +15765,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           spoke.rotation.z = -cAng;
         }
       }
+
+      var qShaderSec = (reduced || sp.paused) ? 1.6 : (1.6 + clock * 0.001);
+      if (meadowSunbeamMat) {
+        meadowSunbeamsGroup.visible = !contrast && seasonIndex !== 3;
+        meadowSunbeamMat.uniforms.uTime.value = qShaderSec;
+        meadowSunbeamMat.uniforms.uStrength.value = seasonIndex === 2 ? 0.16 : 0.24;
+      }
+      if (meadowPollenMotes && meadowPollenMat) {
+        meadowPollenMotes.visible = !contrast && seasonIndex !== 3;
+        meadowPollenMat.uniforms.uTime.value = qShaderSec;
+        meadowPollenMat.uniforms.uOpacity.value = 0.42 + forageRate * 0.44;
+      }
     }
 
     return { meshes: meshes, picks: picks, anchor: anchor, frame: frame };
@@ -15336,11 +15847,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       // Fills {value1}-style placeholders, so a translation can reorder them.
       var __alloFill = function (template, values) { return __alloOneWord(String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; })); };
       var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
-      var ArrowLeft = ctx.icons.ArrowLeft;
+      var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
-      var isContrast = !!ctx.isContrast;
-      var isDark = !!ctx.isDark || isContrast;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+      var isDark = !!(ctx.isDark || ctx.theme === 'dark') || isContrast;
       var callGemini = ctx.callGemini;
       var gradeLevel = ctx.gradeLevel;
       var _beeGradeRaw = String(gradeLevel == null ? '' : gradeLevel);
@@ -15363,7 +15874,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       }
 
       return (function() {
-        var rawBeeState = labToolData.beehive;
+        var rawBeeState = (labToolData && typeof labToolData === 'object') ? labToolData.beehive : null;
         var recovery = React.useMemo(function() { return bhRecoverBeehiveState(rawBeeState || {}); }, [rawBeeState]);
         var d = recovery.state;
         React.useEffect(function() {
@@ -21659,11 +22170,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.font = '10px system-ui'; c.fillStyle = '#164e63';
               c.fillText('Wing fanning drives off water', px, pY + 38);
 
-              // Open comb cell with amber liquid
+              // Open comb cell with warm translucent beeswax depth & golden nectar meniscus shimmer
               var cellY = pY + pH * 0.5;
+              var _hcReduced = beePrefersReducedMotion();
               c.save(); c.translate(px, cellY);
-              // Hexagonal cell
-              c.fillStyle = '#e5a04e'; c.strokeStyle = '#92400e'; c.lineWidth = 2;
+              // Hexagonal beeswax cell with inner bevel & amber specular wall
+              var waxWallGrad = c.createLinearGradient(-34, -34, 34, 34);
+              waxWallGrad.addColorStop(0, '#f6c76d');
+              waxWallGrad.addColorStop(0.5, '#d98c2b');
+              waxWallGrad.addColorStop(1, '#92400e');
+              c.fillStyle = waxWallGrad; c.strokeStyle = '#78350f'; c.lineWidth = 2;
               c.beginPath();
               for (var cc = 0; cc < 6; cc++) {
                 var ccA = cc * 1.047 + 0.524;
@@ -21672,21 +22188,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 cc === 0 ? c.moveTo(ccx, ccy) : c.lineTo(ccx, ccy);
               }
               c.closePath(); c.fill(); c.stroke();
-              // Liquid (ripples)
-              c.fillStyle = '#fbbf24';
+              // Translucent golden nectar body with radial amber depth
+              var nectarDepthGrad = c.createRadialGradient(-7, -7, 3, 0, 2, 30);
+              nectarDepthGrad.addColorStop(0, '#fef08a');
+              nectarDepthGrad.addColorStop(0.42, '#fbbf24');
+              nectarDepthGrad.addColorStop(1, '#b45309');
+              c.fillStyle = nectarDepthGrad;
               c.beginPath();
               for (var cr = 0; cr < 6; cr++) {
                 var crA = cr * 1.047 + 0.524;
-                var crR = 28 + Math.sin(t2 * 0.05 + cr) * 1;
+                var crR = 28 + (_hcReduced ? 0 : Math.sin(t2 * 0.05 + cr) * 1);
                 var crx = Math.cos(crA) * crR;
                 var cry = Math.sin(crA) * crR;
                 cr === 0 ? c.moveTo(crx, cry) : c.lineTo(crx, cry);
               }
               c.closePath(); c.fill();
-              // Surface shimmer
-              c.strokeStyle = 'rgba(255,255,255,0.5)'; c.lineWidth = 0.8;
-              c.beginPath(); c.ellipse(0, -2, 18 + Math.sin(t2 * 0.06) * 3, 3, 0, 0, 3.14);
+              // Golden meniscus highlight & specular crescent
+              var menShift = _hcReduced ? 0 : Math.sin(t2 * 0.06) * 2.5;
+              c.strokeStyle = 'rgba(255,251,235,0.78)'; c.lineWidth = 1.4;
+              c.beginPath(); c.ellipse(-2, -3, 18 + menShift, 3.6, -0.08, 0.15, Math.PI - 0.15);
               c.stroke();
+              c.fillStyle = 'rgba(255,255,255,0.46)';
+              c.beginPath(); c.ellipse(-10, -11, 5.5, 2.2, -0.45, 0, 6.28); c.fill();
               c.restore();
 
               // Bee fanning on the rim (wings beating rapidly)
@@ -28110,30 +28633,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = '#22c55e'; c.globalAlpha = 0.7;
                 c.beginPath(); c.ellipse(fl.x + sw * 0.3, fl.y + 8, 3, 1.5, sw * 0.2, 0, 6.28); c.fill();
                 c.globalAlpha = 1;
-                // Petals (6-petal with glow; dimmed during dearth)
-                c.save(); c.shadowColor = fl.col; c.shadowBlur = 3;
+                // Petals (layered 6-petal sunlit depth; dimmed during dearth)
+                var _flReduced = beePrefersReducedMotion();
+                c.save(); c.shadowColor = fl.col; c.shadowBlur = 4;
                 if (ls.inDearth) c.globalAlpha = 0.62;
                 for (var p = 0; p < 6; p++) {
-                  var pa = p * 1.047 + t2 * 0.002;
+                  var pa = p * 1.047 + (_flReduced ? 0 : t2 * 0.002);
+                  var pCx = fl.x + sw + Math.cos(pa) * bsz * 0.45, pCy = fl.y + Math.sin(pa) * bsz * 0.45;
                   c.fillStyle = fl.col; c.beginPath();
-                  c.ellipse(fl.x + sw + Math.cos(pa) * bsz * 0.45, fl.y + Math.sin(pa) * bsz * 0.45, bsz * 0.35, bsz * 0.18, pa, 0, 6.28);
+                  c.ellipse(pCx, pCy, bsz * 0.36, bsz * 0.19, pa, 0, 6.28);
+                  c.fill();
+                  // Sunlit petal highlight crescent
+                  c.fillStyle = 'rgba(255,255,255,0.24)'; c.beginPath();
+                  c.ellipse(pCx - bsz * 0.06, pCy - bsz * 0.06, bsz * 0.18, bsz * 0.08, pa, 0, 6.28);
                   c.fill();
                 }
                 c.restore();
                 // Nectar-flow richness ring & droplet glint during healthy blooms
                 if (!ls.inDearth && (season === 0 || season === 1 || (season === 2 && gardenPollinators > 0)) && (flHabitat >= 55 || gardenBonus > 0) && flIdx % 2 === 0) {
                   c.save();
-                  c.strokeStyle = 'rgba(253,224,71,0.46)';
-                  c.lineWidth = 0.9;
+                  c.strokeStyle = 'rgba(253,224,71,0.52)';
+                  c.lineWidth = 1.0;
                   c.beginPath();
-                  c.arc(fl.x + sw, fl.y, bsz * (0.72 + 0.10 * Math.sin(t2 * 0.05 + flIdx)), 0, 6.28);
+                  c.arc(fl.x + sw, fl.y, bsz * (0.72 + (_flReduced ? 0 : 0.10 * Math.sin(t2 * 0.05 + flIdx))), 0, 6.28);
                   c.stroke();
                   c.restore();
                 }
-                // Center
-                c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(fl.x + sw, fl.y, bsz * 0.22, 0, 6.28); c.fill();
+                // Warm golden pollen center with sunlit anther gleam
+                var polGrad = c.createRadialGradient(fl.x + sw - bsz * 0.08, fl.y - bsz * 0.08, 0.3, fl.x + sw, fl.y, bsz * 0.28);
+                polGrad.addColorStop(0, '#fef9c3');
+                polGrad.addColorStop(0.55, '#fbbf24');
+                polGrad.addColorStop(1, '#b45309');
+                c.fillStyle = polGrad; c.beginPath(); c.arc(fl.x + sw, fl.y, bsz * 0.24, 0, 6.28); c.fill();
                 if (!ls.inDearth && (flHabitat >= 55 || gardenBonus > 0) && flIdx % 2 === 0) {
-                  c.fillStyle = '#fef08a'; c.beginPath(); c.arc(fl.x + sw - 0.4, fl.y - 0.4, bsz * 0.09, 0, 6.28); c.fill();
+                  c.fillStyle = '#fffbeb'; c.beginPath(); c.arc(fl.x + sw - bsz * 0.07, fl.y - bsz * 0.07, bsz * 0.09, 0, 6.28); c.fill();
                 }
               });
 
@@ -29684,8 +30217,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillText(ls.colonyName ? String(ls.colonyName).slice(0, 14).toUpperCase() : 'HIVE #1', hiveX + 15, hiveY + 10);
               c.restore();
 
-              // Honeycomb grid (larger, more visible)
+              // Honeycomb grid (warm translucent beeswax cell depth & golden nectar meniscus shimmer)
               var csz = 6;
+              var _combReduced = beePrefersReducedMotion();
               var hpct = Math.min(1, safeHoney / 60);
               var spct = Math.min(1 - hpct, Math.max(0, (ls.syrup || 0) / 30));
               var bpct = Math.min(1, (brood || 3000) / 8000);
@@ -29695,8 +30229,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var cy2 = hiveY + 16 + hy2 * (csz * 1.8);
                   // A real frame: honey arch on top (plus sky-aqua fed syrup cells when fed), pollen band under it, brood below.
                   var ct = (hy2 < 2) ? (hx / 5 < hpct ? 'honey' : (hx / 5 < hpct + spct ? 'syrup' : 'empty')) : (hy2 === 2) ? (hx / 5 < Math.min(1, (pollen || 0) / 10) ? 'pollen' : 'empty') : (hx / 5 < bpct ? 'brood' : 'empty');
-                  c.fillStyle = ct === 'honey' ? '#f59e0b' : ct === 'syrup' ? '#38bdf8' : ct === 'brood' ? '#fdba74' : ct === 'pollen' ? '#facc15' : '#e8d5a0';
-                  c.globalAlpha = ct === 'empty' ? 0.35 : 0.85;
+                  if (ct === 'honey') {
+                    var hcCellG = c.createRadialGradient(cx2 - csz * 0.26, cy2 - csz * 0.26, 0.5, cx2, cy2, csz * 1.05);
+                    hcCellG.addColorStop(0, '#fef08a');
+                    hcCellG.addColorStop(0.55, '#f59e0b');
+                    hcCellG.addColorStop(1, '#b45309');
+                    c.fillStyle = hcCellG;
+                  } else if (ct === 'brood') {
+                    var brCellG = c.createRadialGradient(cx2 - csz * 0.22, cy2 - csz * 0.22, 0.5, cx2, cy2, csz);
+                    brCellG.addColorStop(0, '#fed7aa');
+                    brCellG.addColorStop(1, '#c27834');
+                    c.fillStyle = brCellG;
+                  } else {
+                    c.fillStyle = ct === 'syrup' ? '#38bdf8' : ct === 'pollen' ? '#facc15' : '#e8d5a0';
+                  }
+                  c.globalAlpha = ct === 'empty' ? 0.35 : 0.90;
                   c.beginPath();
                   for (var hh = 0; hh < 6; hh++) {
                     var ha = hh * 1.047 + 0.524;
@@ -29704,7 +30251,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     hh === 0 ? c.moveTo(px, py) : c.lineTo(px, py);
                   }
                   c.closePath(); c.fill();
-                  c.strokeStyle = '#a07810'; c.lineWidth = 0.4; c.globalAlpha = 0.5; c.stroke();
+                  c.strokeStyle = ct === 'honey' ? '#92400e' : '#a07810'; c.lineWidth = 0.55; c.globalAlpha = 0.58; c.stroke();
+                  if (ct === 'honey') {
+                    // Golden nectar meniscus specular glint
+                    var menAlpha = _combReduced ? 0.52 : (0.42 + 0.24 * Math.sin(t2 * 0.04 + hx * 1.1 + hy2 * 1.7));
+                    c.strokeStyle = 'rgba(255,251,235,' + menAlpha.toFixed(2) + ')';
+                    c.lineWidth = 0.85; c.globalAlpha = 1;
+                    c.beginPath();
+                    c.arc(cx2 - csz * 0.14, cy2 - csz * 0.12, csz * 0.44, Math.PI * 1.1, Math.PI * 1.85);
+                    c.stroke();
+                  }
                 }
               }
               c.globalAlpha = 1;
@@ -30414,10 +30970,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   }
                 }
 
-                // Body glow
+                // Body glow + dorsal chitin sheen
+                var _beeReduced = beePrefersReducedMotion();
                 c.save();
                 c.shadowColor = b.bumble ? '#fb923c' : '#fbbf24';
-                c.shadowBlur = b.bumble ? 5 : 3;
+                c.shadowBlur = b.bumble ? 5 : 3.5;
                 c.fillStyle = b.bumble ? '#fb923c' : '#fbbf24';
                 c.beginPath();
                 // Bumblebees are rounder (0.7 aspect) vs worker bees (0.6)
@@ -30429,7 +30986,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.beginPath(); c.ellipse(b.x, b.y, b.sz * 1.25, b.sz * 0.95, angle, 0, 6.28); c.fill();
                   c.restore();
                 }
-                // Stripes — bumblebees get THREE bold stripes, workers keep two
+                // Stripes — bumblebees get THREE bold stripes, workers keep two + crisp dorsal chitin highlight
                 c.fillStyle = '#292524';
                 c.save(); c.translate(b.x, b.y); c.rotate(angle);
                 if (b.bumble) {
@@ -30440,10 +30997,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.fillRect(-b.sz * 0.15, -b.sz * 0.5, b.sz * 0.25, b.sz);
                   c.fillRect(b.sz * 0.25, -b.sz * 0.4, b.sz * 0.2, b.sz * 0.8);
                 }
+                c.fillStyle = 'rgba(255,251,235,0.45)';
+                c.beginPath(); c.ellipse(-b.sz * 0.12, -b.sz * 0.24, b.sz * 0.46, b.sz * 0.14, 0, 0, 6.28); c.fill();
                 c.restore();
-                // Wings (animated, translucent)
-                var wy = Math.sin(b.wp) * 2.5;
-                c.globalAlpha = 0.35; c.fillStyle = '#bfdbfe';
+                // Wings (subtle motion-blur envelope + crisp translucent wing gleam; reduced-motion safe)
+                var wy = _beeReduced ? 0 : Math.sin(b.wp) * 2.2;
+                if (!_beeReduced) {
+                  c.globalAlpha = 0.18; c.fillStyle = '#e0f2fe';
+                  c.beginPath(); c.ellipse(b.x - Math.sin(angle) * 1.5, b.y - b.sz * 0.45, b.sz * 0.72, b.sz * 0.42, angle - 0.25, 0, 6.28); c.fill();
+                }
+                c.globalAlpha = 0.44; c.fillStyle = '#e0f2fe';
                 c.beginPath(); c.ellipse(b.x - Math.sin(angle) * 2, b.y - b.sz * 0.4 + wy, b.sz * 0.55, b.sz * 0.25, angle - 0.4, 0, 6.28); c.fill();
                 c.beginPath(); c.ellipse(b.x + Math.sin(angle) * 1, b.y - b.sz * 0.5 - wy * 0.5, b.sz * 0.4, b.sz * 0.2, angle + 0.3, 0, 6.28); c.fill();
                 c.globalAlpha = 1;
@@ -33317,20 +33880,20 @@ var i = 0;
             var shared = {
               trunk: mat(0x7c4a2d), leaf: mat(0x217a3a), leafLight: mat(0x43a047),
               stone: mat(0x94a3b8), roof: mat(0x475569), pole: mat(0xcbd5e1),
-              stem: mat(0x15803d), wing: mat(0xdbeafe, { transparent: true, opacity: 0.34, depthWrite: false, roughness: 0.3, side: THREE.DoubleSide }),
-              drone: mat(0xfbbf24), dark: mat(0x292524), bird: mat(0x1e293b),
+              stem: mat(0x15803d), wing: mat(0xe0f2fe, { transparent: true, opacity: 0.38, depthWrite: false, roughness: 0.14, metalness: 0.12, emissive: 0x7dd3fc, emissiveIntensity: 0.16, side: THREE.DoubleSide }),
+              drone: mat(0xfbbf24, { roughness: 0.34, metalness: 0.12, emissive: 0x451a03, emissiveIntensity: 0.08 }), dark: mat(0x292524, { roughness: 0.36, metalness: 0.14 }), bird: mat(0x1e293b),
               // Thorax fuzz reads as hair by being rougher and paler than the
               // abdomen plates; the eye is near-black and glossy so the drone's
               // wrap-around eyes catch a highlight and the head is legible.
               fuzz: mat(0xd8a13a, { roughness: 1, metalness: 0 }),
-              eye: mat(0x1c1917, { roughness: 0.25, metalness: 0.1 }),
-              pollen: mat(0xf59e0b, { emissive: 0xb45309, emissiveIntensity: 0.35, roughness: 0.9 }),
-              rival: mat(0xd97706),
+              eye: mat(0x1c1917, { roughness: 0.20, metalness: 0.14 }),
+              pollen: mat(0xf59e0b, { emissive: 0xd97706, emissiveIntensity: 0.48, roughness: 0.52 }),
+              rival: mat(0xd97706, { roughness: 0.38, metalness: 0.10 }),
               butterflyWing: mat(0xffffff, { vertexColors:true, roughness:.86, side:THREE.DoubleSide }),
               grass: mat(0x2f7d3f, { roughness: 1 }),
-              queen: mat(0xf59e0b, { emissive: 0x7c2d12, emissiveIntensity: 0.45 }),
-              boost: mat(0xfacc15, { emissive: 0xca8a04, emissiveIntensity: 0.9 }),
-              flower: [0xf472b6, 0xfbbf24, 0xa78bfa, 0xfb923c, 0x34d399, 0xf87171, 0x60a5fa].map(function(col) { return mat(col, { emissive: col, emissiveIntensity: 0.25 }); })
+              queen: mat(0xf59e0b, { emissive: 0x7c2d12, emissiveIntensity: 0.48, roughness: 0.32, metalness: 0.12 }),
+              boost: mat(0xfacc15, { emissive: 0xca8a04, emissiveIntensity: 0.95, roughness: 0.38 }),
+              flower: [0xf472b6, 0xfbbf24, 0xa78bfa, 0xfb923c, 0x34d399, 0xf87171, 0x60a5fa].map(function(col) { return mat(col, { emissive: col, emissiveIntensity: 0.28, roughness: 0.56 }); })
             };
             var sphere = new THREE.SphereGeometry(1, 12, 8);
             var smallSphere = new THREE.SphereGeometry(1, 8, 6);
@@ -33409,11 +33972,20 @@ var i = 0;
                 petalBrush.clearRect(0, 0, 64, 64);
                 for (var petalIndex = 0; petalIndex < 6; petalIndex++) {
                   var petalAngle = petalIndex * Math.PI / 3;
-                  petalBrush.fillStyle = '#fffaf1'; petalBrush.beginPath();
-                  petalBrush.ellipse(32 + Math.cos(petalAngle) * 14, 32 + Math.sin(petalAngle) * 14, 14, 8, petalAngle, 0, Math.PI * 2); petalBrush.fill();
+                  var pxC = 32 + Math.cos(petalAngle) * 14, pyC = 32 + Math.sin(petalAngle) * 14;
+                  var petalGrad = petalBrush.createRadialGradient(32, 32, 4, pxC, pyC, 16);
+                  petalGrad.addColorStop(0, '#f3e2c3');
+                  petalGrad.addColorStop(0.55, '#fffaf1');
+                  petalGrad.addColorStop(1, '#ffffff');
+                  petalBrush.fillStyle = petalGrad; petalBrush.beginPath();
+                  petalBrush.ellipse(pxC, pyC, 14.5, 8.2, petalAngle, 0, Math.PI * 2); petalBrush.fill();
                 }
-                petalBrush.fillStyle = '#bf7922'; petalBrush.beginPath(); petalBrush.arc(32, 32, 8, 0, Math.PI * 2); petalBrush.fill();
-                petalBrush.fillStyle = '#ffdc76'; petalBrush.beginPath(); petalBrush.arc(30, 30, 5, 0, Math.PI * 2); petalBrush.fill();
+                var pollenCenterGrad = petalBrush.createRadialGradient(30, 30, 1, 32, 32, 9);
+                pollenCenterGrad.addColorStop(0, '#fffbeb');
+                pollenCenterGrad.addColorStop(0.45, '#fde047');
+                pollenCenterGrad.addColorStop(1, '#b45309');
+                petalBrush.fillStyle = pollenCenterGrad; petalBrush.beginPath(); petalBrush.arc(32, 32, 8.5, 0, Math.PI * 2); petalBrush.fill();
+                petalBrush.fillStyle = '#ffffff'; petalBrush.beginPath(); petalBrush.arc(29.5, 29.5, 2.2, 0, Math.PI * 2); petalBrush.fill();
                 var petalTexture = new THREE.CanvasTexture(petalCanvas); petalTexture.encoding = THREE.sRGBEncoding;
                 var blossomMaterial = mat(0xffffff, { map: petalTexture, alphaTest: 0.38, side: THREE.DoubleSide, roughness: 0.95 });
                 var blossoms = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), blossomMaterial, 1600);
@@ -33580,6 +34152,125 @@ var i = 0;
               sunDisc.position.set(-120, 260, 160).normalize().multiplyScalar(1180);
             }
             objects.sunDisc = sunDisc;
+            // GLSL Golden-Hour Volumetric Sunbeams & Drifting Meadow Pollen Motes (bypassed in High-Contrast & eco tier; disposed cleanly by disposeThreeWorld)
+            var droneSunbeamsGroup = null, droneSunbeamMat = null, dronePollenMotes = null, dronePollenMat = null;
+            if (typeof THREE.ShaderMaterial === 'function') {
+              droneSunbeamsGroup = new THREE.Group();
+              droneSunbeamsGroup.name = 'drone-golden-sunbeams';
+              droneSunbeamMat = new THREE.ShaderMaterial({
+                uniforms: {
+                  uTime: { value: 1.6 },
+                  uStrength: { value: 0.16 }
+                },
+                vertexShader: [
+                  'varying vec2 vUv;',
+                  'varying vec3 vWorldPos;',
+                  'varying vec3 vWorldNormal;',
+                  'varying float vSeed;',
+                  'void main() {',
+                  '  vUv = uv;',
+                  '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+                  '  vWorldPos = wp.xyz;',
+                  '  vWorldNormal = normalize(mat3(modelMatrix) * normal);',
+                  '  vSeed = modelMatrix[3].x * 0.02 + modelMatrix[3].z * 0.015;',
+                  '  gl_Position = projectionMatrix * viewMatrix * wp;',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uTime;',
+                  'uniform float uStrength;',
+                  'varying vec2 vUv;',
+                  'varying vec3 vWorldPos;',
+                  'varying vec3 vWorldNormal;',
+                  'varying float vSeed;',
+                  'void main() {',
+                  '  if (uStrength <= 0.005) discard;',
+                  '  float horiz = pow(clamp(sin(vUv.x * 3.1415926), 0.0, 1.0), 1.9);',
+                  '  float vert = smoothstep(0.0, 0.65, vUv.y) * (1.0 - smoothstep(0.84, 1.0, vUv.y));',
+                  '  float s1 = 0.5 + 0.5 * sin(vUv.x * 16.0 + uTime * 0.38 + vSeed * 4.0);',
+                  '  float s2 = 0.5 + 0.5 * sin(vUv.x * 27.0 - uTime * 0.52 - vSeed * 3.1);',
+                  '  float rays = 0.46 + 0.34 * pow(s1, 1.8) + 0.22 * pow(s2, 2.2);',
+                  '  vec3 V = normalize(cameraPosition - vWorldPos);',
+                  '  float facing = pow(clamp(abs(dot(normalize(vWorldNormal), V)), 0.0, 1.0), 0.65);',
+                  '  vec3 gold = mix(vec3(1.0, 0.85, 0.48), vec3(1.0, 0.97, 0.82), vUv.y);',
+                  '  float alpha = clamp(horiz * vert * rays * (0.22 + 0.78 * facing) * uStrength, 0.0, 0.28);',
+                  '  gl_FragColor = vec4(gold * alpha, alpha);',
+                  '}'
+                ].join('\n'),
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+                side: THREE.DoubleSide
+              });
+              var dBeamGeo = new THREE.PlaneGeometry(110, 340);
+              for (var dbi = 0; dbi < 5; dbi++) {
+                var dBeam = new THREE.Mesh(dBeamGeo, droneSunbeamMat);
+                dBeam.position.set(-220 + dbi * 110, 155, -160 - dbi * 220);
+                dBeam.rotation.z = -0.32;
+                dBeam.rotation.y = (dbi - 2) * 0.14;
+                droneSunbeamsGroup.add(dBeam);
+              }
+              scene.add(droneSunbeamsGroup);
+              if (THREE.BufferGeometry && THREE.Float32BufferAttribute) {
+                var dpmCount = 140;
+                var dpmPos = new Float32Array(dpmCount * 3);
+                var dpmSeed = new Float32Array(dpmCount);
+                for (var dpi = 0; dpi < dpmCount; dpi++) {
+                  dpmPos[dpi * 3] = (((dpi * 0.381966) % 1) - 0.5) * 320;
+                  dpmPos[dpi * 3 + 1] = 8 + ((dpi * 0.197) % 1) * 180;
+                  dpmPos[dpi * 3 + 2] = -((dpi * 0.618033) % 1) * 320;
+                  dpmSeed[dpi] = (dpi * 0.754877) % 1;
+                }
+                var dpmGeo = new THREE.BufferGeometry();
+                dpmGeo.setAttribute('position', new THREE.Float32BufferAttribute(dpmPos, 3));
+                dpmGeo.setAttribute('aSeed', new THREE.Float32BufferAttribute(dpmSeed, 1));
+                dronePollenMat = new THREE.ShaderMaterial({
+                  uniforms: {
+                    uTime: { value: 1.6 },
+                    uOpacity: { value: 0.58 }
+                  },
+                  vertexShader: [
+                    'attribute float aSeed;',
+                    'uniform float uTime;',
+                    'varying float vTwinkle;',
+                    'void main() {',
+                    '  vec3 p = position;',
+                    '  float t = uTime * (0.45 + aSeed * 0.35) + aSeed * 6.28318;',
+                    '  p.x += sin(t * 0.7) * 6.5;',
+                    '  p.y = 6.0 + mod(p.y + uTime * (2.2 + aSeed * 2.4), 180.0);',
+                    '  p.z += cos(t * 0.6 + aSeed * 2.5) * 6.5;',
+                    '  vTwinkle = 0.5 + 0.5 * sin(uTime * 2.3 + aSeed * 19.0);',
+                    '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);',
+                    '  gl_PointSize = clamp((160.0 + 140.0 * aSeed) / max(12.0, -mvPos.z), 1.8, 9.5);',
+                    '  gl_Position = projectionMatrix * mvPos;',
+                    '}'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform float uOpacity;',
+                    'varying float vTwinkle;',
+                    'void main() {',
+                    '  if (uOpacity <= 0.01) discard;',
+                    '  float r = length(gl_PointCoord - 0.5);',
+                    '  if (r > 0.5) discard;',
+                    '  float core = pow(1.0 - smoothstep(0.0, 0.48, r), 2.1);',
+                    '  vec3 col = mix(vec3(1.0, 0.82, 0.30), vec3(1.0, 0.98, 0.82), core);',
+                    '  float alpha = clamp(core * vTwinkle * uOpacity, 0.0, 0.82);',
+                    '  gl_FragColor = vec4(col * alpha, alpha);',
+                    '}'
+                  ].join('\n'),
+                  transparent: true,
+                  depthWrite: false,
+                  blending: THREE.AdditiveBlending
+                });
+                dronePollenMotes = new THREE.Points(dpmGeo, dronePollenMat);
+                dronePollenMotes.name = 'drone-golden-pollen-motes';
+                scene.add(dronePollenMotes);
+              }
+            }
+            objects.droneSunbeams = droneSunbeamsGroup;
+            objects.droneSunbeamMat = droneSunbeamMat;
+            objects.dronePollenMotes = dronePollenMotes;
+            objects.dronePollenMat = dronePollenMat;
             // ── Ground detail ──
             // Speed over an empty plane is unreadable: without near-field texture
             // the bee appears to hover no matter how fast it goes. Grass tufts give
@@ -33858,11 +34549,15 @@ var i = 0;
               var stem = mesh(cylinder, shared.stem, [0.45, 8 * (fl.bloom || 1), 0.45]); stem.position.y = 4 * (fl.bloom || 1); group.add(stem);
               var bloomGroup = new THREE.Group(); bloomGroup.position.y = 8 * (fl.bloom || 1);
               for (var pet = 0; pet < 6; pet++) {
-                var petal = mesh(sphere, shared.flower[idx % shared.flower.length], [1.7, 0.55, 2.4]);
+                var petal = mesh(sphere, shared.flower[idx % shared.flower.length], [1.75, 0.58, 2.45]);
                 var pa = pet * Math.PI / 3; petal.position.set(Math.cos(pa) * 2.1, 0, Math.sin(pa) * 2.1); bloomGroup.add(petal);
+                var innerPetal = mesh(sphere, shared.flower[(idx + 1) % shared.flower.length], [0.92, 0.42, 1.35]);
+                var ipa = pa + Math.PI / 6; innerPetal.position.set(Math.cos(ipa) * 1.15, 0.32, Math.sin(ipa) * 1.15); bloomGroup.add(innerPetal);
               }
-              bloomGroup.add(mesh(sphere, shared.boost, [1.05, 1.05, 1.05])); group.add(bloomGroup);
-              if (fl.hasNectar !== false) { var halo = mesh(ring, basic(0xfef08a, { transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false })); halo.rotation.x = -Math.PI / 2; halo.scale.set(0.9, 0.9, 0.9); halo.position.y = 0.25; group.add(halo); }
+              var pollenCrown = mesh(sphere, shared.boost, [1.12, 0.95, 1.12]); pollenCrown.position.y = 0.24; bloomGroup.add(pollenCrown);
+              var pollenGleam = mesh(smallSphere, shared.pollen, [0.58, 0.42, 0.58]); pollenGleam.position.set(-0.22, 0.95, -0.18); bloomGroup.add(pollenGleam);
+              group.add(bloomGroup);
+              if (fl.hasNectar !== false) { var halo = mesh(ring, basic(0xfef08a, { transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false })); halo.rotation.x = -Math.PI / 2; halo.scale.set(0.9, 0.9, 0.9); halo.position.y = 0.25; group.add(halo); }
               scene.add(group); objects.flowers.push({ group: group, bloom: bloomGroup, halo: group.children[group.children.length - 1], flower: fl });
             });
             (ds.clouds || []).forEach(function(cl) {
@@ -34193,6 +34888,24 @@ var i = 0;
               o.skyDome.material.color.copy(skyColor).lerp(new THREE.Color(0xffffff), 0.18);
               if (o.sunDisc) o.sunDisc.lookAt(t.camera.position);
             }
+            var droneHc = !!(typeof document !== 'undefined' && ((document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) || (document.body && document.body.classList && document.body.classList.contains('theme-contrast'))));
+            var droneAtmoActive = !droneHc && t.qualityTier !== 'eco' && !fieldStudy;
+            var droneShaderSec = (prefersReducedMotion || ds.paused) ? 1.6 : (1.6 + now * 0.001);
+            if (o.droneSunbeams && o.droneSunbeamMat) {
+              o.droneSunbeams.visible = droneAtmoActive;
+              if (droneAtmoActive) {
+                o.droneSunbeamMat.uniforms.uTime.value = droneShaderSec;
+                o.droneSunbeamMat.uniforms.uStrength.value = 0.16 * Math.max(0.5, visibilityScale);
+              }
+            }
+            if (o.dronePollenMotes && o.dronePollenMat) {
+              o.dronePollenMotes.visible = droneAtmoActive;
+              if (droneAtmoActive) {
+                o.dronePollenMotes.position.set(ds.x || 0, 0, (ds.z || 0) + 60);
+                o.dronePollenMat.uniforms.uTime.value = droneShaderSec;
+                o.dronePollenMat.uniforms.uOpacity.value = 0.55 * Math.max(0.5, visibilityScale);
+              }
+            }
             if (o.flightTrail) {
               var trail = _droneFlightTrail.current ? bhDroneFlightTrail(ds) : { segments: [] };
               var trailGroup = o.flightTrail, scratch = trailGroup.userData;
@@ -34384,7 +35097,7 @@ var i = 0;
               line.material.opacity = activeWindSpeed > 0.05 ? 0.18 + Math.min(0.34, activeWindSpeed * 0.13) : 0.08;
               line.visible = ds.phase !== 'end' && !fieldStudy;
             });
-            o.flowers.forEach(function(item, idx) { var active = !item.flower.collected && item.flower.hasNectar !== false; item.group.visible = true; item.bloom.scale.setScalar(active ? 1 + 0.08 * Math.sin(now * 0.006 + idx) : 0.48); if (item.halo) item.halo.visible = active && !fieldStudy; });
+            o.flowers.forEach(function(item, idx) { var active = !item.flower.collected && item.flower.hasNectar !== false; item.group.visible = true; item.bloom.scale.setScalar(active ? (prefersReducedMotion ? 1 : 1 + 0.08 * Math.sin(now * 0.006 + idx)) : 0.48); if (item.halo) item.halo.visible = active && !fieldStudy; });
             // Read the current preference without restarting the persistent world.
             var thermalMotionReduced = beePrefersReducedMotion();
             o.thermals.forEach(function(group, index) {
@@ -40872,8 +41585,8 @@ var i = 0;
                 h('span', { className: 'bee-flow-destination' }, h('span', { className: 'bee-flow-number', 'aria-hidden': 'true' }, index + 1), renderFlowStepEmblem(step.id), h('strong', null, step.label)),
                 h('span', { className: 'bee-flow-hint' }, step.hint),
                 h('svg', { className: 'bee-flow-step-meter', 'data-flow-step-meter': step.id, 'data-flow-state': sVis.state, viewBox: '0 0 100 5', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' },
-                  h('rect', { className: 'bee-flow-meter-track', x: 0.5, y: 0.5, width: 99, height: 4, rx: 2 }),
-                  h('rect', { className: 'bee-flow-meter-fill', 'data-flow-state': sVis.state, x: 0.5, y: 0.5, width: sVis.fillWidth, height: 4, rx: 2 }))));
+                  h('rect', { className: 'bee-flow-meter-track', x: 0.5, y: 0.5, width: 99, height: 4 }),
+                  h('rect', { className: 'bee-flow-meter-fill', 'data-flow-state': sVis.state, x: 0.5, y: 0.5, width: sVis.fillWidth, height: 4 }))));
             })));
         }
         // One source for the next-step advice, shared by the coach panel and the command bar.
@@ -43304,7 +44017,7 @@ var i = 0;
                 h('span', { className: 'rounded-full border px-2 py-1 text-[0.625rem] font-black ' + (dk ? 'border-white/15 text-slate-100' : 'border-slate-300 text-slate-800') }, badgeLabel)),
               h('svg', { className: 'bee-plan-integrity-bar', 'data-plan-integrity-bar': 'true', 'data-integrity-verdict': pVis.verdictState, viewBox: '0 0 180 10', preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false' },
                 pVis.segments.map(function(seg) {
-                  return h('rect', { key: 'ps-' + seg.index, className: 'bee-plan-field-slot', 'data-plan-field-slot': String(seg.index), 'data-slot-state': seg.state, x: seg.x, y: 2, width: seg.width, height: 6, rx: 1.5 });
+                  return h('rect', { key: 'ps-' + seg.index, className: 'bee-plan-field-slot', 'data-plan-field-slot': String(seg.index), 'data-slot-state': seg.state, x: seg.x, y: 2, width: seg.width, height: 6 });
                 })),
               h('ol', { 'data-plan-registration-sequence': 'true', className: 'm-0 p-0', 'aria-label': __alloT('stem.beehive.a11y_plan_timing_sequence', 'Plan timing sequence') }, timingStages.map(function(stage, index) {
                 return h('li', { key: stage.id, 'data-plan-registration-node': stage.id, 'data-sequence-state': stage.state, 'aria-label': (index + 1) + '. ' + stage.label + ': ' + stage.meta },
@@ -44102,13 +44815,36 @@ var i = 0;
         var pollinationCanvasReading = beeView === 'pollination' ? bhPollinationReading(d.pollinationLab) : null;
         var beeWorkspace = h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '140', 'data-beehive-colony-model': experimentProvenance.modelVersion, 'data-beehive-seed': simulationSeed, 'data-beehive-run': experimentProvenance.runSerial, 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': __alloT('stem.beehive.a11y_beehive_simulations_and_learning_environment', 'Beehive simulations and learning environment'), className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
           // Header
-          h('div', { 'data-beehive-hero': 'true', className: 'relative overflow-hidden rounded-2xl border p-3 sm:p-4 flex flex-col gap-3 ' + (dk ? 'border-amber-700/30 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/35' : 'border-amber-200 bg-gradient-to-r from-white via-amber-50/70 to-emerald-50/55') },
+          h('div', {
+            'data-beehive-hero': 'true',
+            className: 'relative overflow-hidden rounded-2xl border p-3 sm:p-4 flex flex-col gap-3 ' + (dk ? 'border-amber-700/30 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/35' : 'border-amber-200 bg-gradient-to-r from-white via-amber-50/70 to-emerald-50/55'),
+            style: isContrast ? { backgroundColor: '#000000', backgroundImage: 'none', border: '2px solid #ffff00', color: '#ffffff' } : undefined
+          },
             h('div', { className: 'bee-hero-heading flex items-center gap-3 min-w-0' },
-              h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'grid min-h-[44px] min-w-[44px] shrink-0 place-items-center rounded-xl border transition-colors ' + (dk ? 'border-slate-700 hover:bg-slate-700' : 'border-slate-200 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.back', 'Back') }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' })),
-              h('div', { className: 'bee-hero-copy min-w-0' },
+              h('button', {
+                type: 'button',
+                onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
+                className: 'grid min-h-[44px] min-w-[44px] shrink-0 place-items-center rounded-xl border transition-colors ' + (dk ? 'border-slate-700 hover:bg-slate-700' : 'border-slate-200 hover:bg-slate-100'),
+                style: isContrast ? { backgroundColor: '#000000', borderColor: '#ffff00', color: '#ffff00' } : undefined,
+                'aria-label': __alloT('stem.beehive.back', 'Back')
+              }, ArrowLeft ? h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' }) : '\u2190'),
+              // Bespoke inline SVG Honeycomb + Worker Bee Emblem
+              h('svg', { width: 46, height: 46, viewBox: '0 0 48 48', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0 } },
+                h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : (dk ? '#1c1406' : '#fef3c7'), stroke: isContrast ? '#ffff00' : '#d97706', strokeWidth: 1.6 }),
+                h('polygon', { points: '17,12 24,8 31,12 31,20 24,24 17,20', fill: 'none', stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 1.6 }),
+                h('polygon', { points: '10,24 17,20 24,24 24,32 17,36 10,32', fill: 'none', stroke: isContrast ? '#00ffff' : '#d97706', strokeWidth: 1.5 }),
+                h('polygon', { points: '24,24 31,20 38,24 38,32 31,36 24,32', fill: 'none', stroke: isContrast ? '#66ff66' : '#d97706', strokeWidth: 1.5 }),
+                h('ellipse', { cx: 24, cy: 25, rx: 5.5, ry: 4, fill: isContrast ? '#ffff00' : '#f59e0b', stroke: isContrast ? '#000000' : '#78350f', strokeWidth: 1.2 }),
+                h('line', { x1: 22, y1: 21.5, x2: 22, y2: 28.5, stroke: isContrast ? '#000000' : '#451a03', strokeWidth: 1.6 }),
+                h('line', { x1: 26, y1: 21.5, x2: 26, y2: 28.5, stroke: isContrast ? '#000000' : '#451a03', strokeWidth: 1.6 }),
+                h('ellipse', { cx: 22, cy: 19, rx: 3.2, ry: 1.8, fill: isContrast ? '#ffffff' : 'rgba(255,255,255,0.85)' }),
+                h('ellipse', { cx: 26, cy: 19, rx: 3.2, ry: 1.8, fill: isContrast ? '#ffffff' : 'rgba(255,255,255,0.85)' })
+              ),
+              h('div', { className: 'bee-hero-copy min-w-0 flex-1' },
                 h('div', { className: 'mb-1 flex flex-wrap items-center gap-1.5' },
                   h('span', { className: 'rounded-full bg-amber-500/15 px-2 py-0.5 text-[0.625rem] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Interactive systems lab'),
                   h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wide ' + (dk ? 'text-emerald-300' : 'text-emerald-700') }, '3 connected perspectives'),
+                  h('span', { className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-bold', style: isContrast ? { backgroundColor: '#000000', color: '#ffff00', border: '1px solid #ffff00' } : { backgroundColor: dk ? 'rgba(15,23,42,0.72)' : '#fffbeb', color: dk ? '#fde68a' : '#78350f', border: '1px solid ' + (dk ? 'rgba(251,191,36,0.35)' : '#fcd34d') } }, 'Grades ' + beeGradeBand),
                   h('span', { 'data-beehive-mode-signal': 'true', className: 'text-[0.625rem] font-black uppercase tracking-wide' },
                     h('span', { className: 'h-2 w-2 shrink-0 rounded-full ' + beeRoleVisual(viewMode).dot, 'aria-hidden': 'true' }),
                     viewMode === 'queen' ? 'Colony network' : viewMode === 'drone' ? 'Drone flight' : 'Apiary view',
@@ -44117,6 +44853,28 @@ var i = 0;
                 h('p', { className: 'mt-0.5 text-xs font-medium sm:text-sm ' + (dk ? 'text-slate-200' : 'text-slate-600') }, (viewMode === 'queen' ? __alloT('stem.beehive.tagline_network', 'A strategy game: balance workers, comb and chemical signals to out-compete a rival colony')
                   : viewMode === 'drone' ? __alloT('stem.beehive.tagline_drone', 'Fly a drone bee to the congregation area and reach a queen before his energy runs out')
                   : d.colonyName ? String(d.colonyName) + (d.queenName ? ' · Queen ' + String(d.queenName) : '') + ' · ' + __alloT('stem.beehive.tagline_named', 'keep your colony alive for a whole year') : __alloT('stem.beehive.tagline_year', 'Keep a honeybee colony alive for a whole year: 10,000 workers and one queen to start'))))),
+            // Live Non-Spoiler Apiary Telemetry SVG Ribbon (hidden while Quiz panel is open)
+            !quizOpen && !ctx.quizMode && h('div', {
+              'data-beehive-telemetry-strip': 'true',
+              className: 'rounded-xl px-3 py-2',
+              style: isContrast
+                ? { backgroundColor: '#000000', border: '1px solid #ffff00' }
+                : { backgroundColor: dk ? 'rgba(2,6,23,0.62)' : '#1c1408', border: '1px solid ' + (dk ? 'rgba(251,191,36,0.28)' : 'rgba(217,119,6,0.35)') }
+            },
+              h('svg', {
+                viewBox: '0 0 640 44',
+                className: 'w-full h-auto block',
+                role: 'img',
+                'aria-label': 'Colony telemetry: ' + (seasonNames[season] || 'Spring') + ' Day ' + day + ', ' + Math.round(workers).toLocaleString() + ' workers, ' + Math.round(honey) + ' pounds food stores, ' + Math.round(colonyHealth) + ' percent colony stability'
+              },
+                h('text', { x: 10, y: 17, fill: isContrast ? '#ffff00' : '#fde68a', fontSize: 11, fontWeight: 800 }, (seasonNames[season] || 'Spring') + ' · Day ' + day),
+                h('text', { x: 200, y: 17, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'Workers: ' + Math.round(workers).toLocaleString()),
+                h('text', { x: 375, y: 17, fill: isContrast ? '#00ffff' : '#7dd3fc', fontSize: 11, fontWeight: 700 }, 'Stores: ' + Math.round(honey) + ' lb'),
+                h('text', { x: 630, y: 17, textAnchor: 'end', fill: isContrast ? '#66ff66' : '#86efac', fontSize: 11, fontWeight: 700 }, 'Stability: ' + Math.round(colonyHealth) + '%'),
+                h('rect', { x: 10, y: 26, width: 620, height: 10, rx: 5, fill: '#1e293b', stroke: isContrast ? '#ffffff' : '#475569', strokeWidth: 1 }),
+                h('rect', { x: 10, y: 26, width: Math.max(8, Math.round(Math.max(0, Math.min(100, colonyHealth)) / 100 * 620)), height: 10, rx: 5, fill: isContrast ? '#ffff00' : (colonyHealth >= 70 ? '#10b981' : colonyHealth >= 40 ? '#f59e0b' : '#ef4444') })
+              )
+            ),
             // Named tools keep their existing panel and focus lifecycles.
             h('div', { 'data-beehive-tools': 'true', className: 'bee-toolbox', role: 'group', 'aria-labelledby': 'beehive-tools-title' },
               h('div', { className: 'bee-toolbox-heading' },

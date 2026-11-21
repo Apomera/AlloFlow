@@ -304,14 +304,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _oriT = (ctx && ctx.theme) || {};
       var _oriHC = !!_oriT.isContrast, _oriL = !_oriHC && !_oriT.isDark;
-      var _ori_BGL = {'#0f172a':'#f8fafc','#0b1220':'#f1f5f9'}, _ori_BGH = {'#0f172a':'#000000','#0b1220':'#000000'};
-      var _ori_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fbbf24':'#854d0e','#86efac':'#166534','#7dd3fc':'#075985','#fca5a5':'#991b1b','#fecaca':'#b91c1c'}, _ori_FGH = {'#dc2626':'#ffff00','#7c3aed':'#ffff00','#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#e2e8f0':'#ffff00','#fbbf24':'#ffff00','#86efac':'#ffff00','#7dd3fc':'#ffff00','#fca5a5':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00'};
-      var _ori_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb'}, _ori_BDH = {'#334155':'#ffff00','#a78bfa':'#ffff00','#1e293b':'#ffff00','#ef4444':'#ffff00','#86efac':'#ffff00','#a855f7':'#ffff00'};
+      var _ori_BGL = {'#0f172a':'#f8fafc','#0b1220':'#f1f5f9','#1e293b':'#ffffff'}, _ori_BGH = {'#0f172a':'#000000','#0b1220':'#000000','#1e293b':'#000000'};
+      var _ori_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#475569','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fbbf24':'#854d0e','#86efac':'#166534','#7dd3fc':'#075985','#fca5a5':'#991b1b','#fecaca':'#b91c1c','#bbf7d0':'#166534','#0ea5e9':'#0369a1','#a855f7':'#7e22ce','#f59e0b':'#92400e','#16a34a':'#166534','#0d9488':'#0f766e','#ec4899':'#be185d'}, _ori_FGH = {'#dc2626':'#ffff00','#7c3aed':'#ffff00','#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#e2e8f0':'#ffff00','#fbbf24':'#ffff00','#86efac':'#ffff00','#7dd3fc':'#ffff00','#fca5a5':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00','#0ea5e9':'#ffff00','#a855f7':'#ffff00','#f59e0b':'#ffff00','#16a34a':'#ffff00','#0d9488':'#ffff00','#ec4899':'#ffff00'};
+      var _ori_BDL = {'#334155':'#cbd5e1','#1e293b':'#cbd5e1'}, _ori_BDH = {'#334155':'#ffff00','#a78bfa':'#ffff00','#1e293b':'#ffff00','#ef4444':'#ffff00','#86efac':'#ffff00','#a855f7':'#ffff00'};
       var _oriBg = function(h){ return _oriHC ? (_ori_BGH[h]||h) : (_oriL ? (_ori_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
       // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
       // lighter shade of the SAME hue; backgrounds and borders are untouched.
-      var _ori_FGD = {'#dc2626':'#ef4444','#7c3aed':'#a78bfa'};
+      var _ori_FGD = {'#dc2626':'#ef4444','#7c3aed':'#a78bfa','#a855f7':'#c084fc','#16a34a':'#4ade80','#0d9488':'#2dd4bf','#ec4899':'#f472b6'};
       var _oriFg = function(h){ return _oriHC ? (_ori_FGH[h]||h) : (_oriL ? (_ori_FGL[h]||h) : (_ori_FGD[h]||h)); };
       var _oriBd = function(h){ return _oriHC ? (_ori_BDH[h]||h) : (_oriL ? (_ori_BDL[h]||h) : h); };
       var React = ctx.React;
@@ -322,21 +322,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
 
-      var d = labToolData.orientations || defaultState();
+      var rawD = labToolData.orientations;
+      var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : defaultState();
       function setOR(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.orientations) || defaultState();
+          var prior = (prev && prev.orientations && typeof prev.orientations === 'object' && !Array.isArray(prev.orientations)) ? prev.orientations : defaultState();
           return Object.assign({}, prev, { orientations: Object.assign({}, prior, patch) });
         });
       }
 
-      var view = d.view || 'library';
+      var VALID_VIEWS = ['library', 'detail', 'compare', 'compass', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'library';
       function goto(v) { setOR({ view: v, detailId: null, compareId: null }); }
 
       function header() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _oriFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _oriHC ? '#000000' : (_oriL ? '#ffffff' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _oriBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _oriFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _oriFg('#c4b5fd'), fontSize: 22, fontWeight: 900 } }, '🧭 Orientations'),
             h('div', { style: { fontSize: 12, color: _oriFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Ways of living, compared. Eight traditions, big questions, honest limits.')
@@ -351,14 +353,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           { id: 'compass', label: 'Compass', icon: '🧭' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
-        return h('div', { role: 'tablist',
+        return h('div', { role: 'tablist', 'aria-label': 'Orientations sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = (view === t.id) || (t.id === 'library' && view === 'detail');
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#a78bfa' : '#334155'),
-                background: active ? 'rgba(167,139,250,0.18)' : '#1e293b',
+            return h('button', { key: t.id, id: 'ori-tab-' + t.id, onClick: function() { goto(t.id); },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'ori-panel',
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _oriBd('#a78bfa') : _oriBd('#334155')),
+                background: active ? (_oriHC ? '#000000' : 'rgba(167,139,250,0.18)') : _oriBg('#1e293b'),
                 color: active ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -367,7 +369,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
 
       function softPointer() {
         return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _oriFg('#94a3b8'), lineHeight: 1.55, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _oriHC ? '#000000' : (_oriL ? '#f8fafc' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _oriBd('#334155'), fontSize: 11, color: _oriFg('#94a3b8'), lineHeight: 1.55, fontStyle: 'italic' }
         },
           'This tool offers honest summary. It is not authoritative on any of these traditions. Each is lived in real communities by real practitioners; if you find yourself drawn to one, follow that to its actual teachers and texts.'
         );
@@ -377,17 +379,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       // LIBRARY
       // ═══════════════════════════════════════════════════════
       function renderLibrary() {
-        if (view === 'detail' && d.detailId) {
-          return renderDetail(d.detailId);
+        var detailTradition = (view === 'detail' && d.detailId) ? TRADITIONS.find(function(x) { return x.id === d.detailId; }) : null;
+        if (detailTradition) {
+          return renderDetail(detailTradition);
         }
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: _oriFg('#e9d5ff'), lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _oriHC ? '#000000' : 'rgba(167,139,250,0.10)', borderTop: '1px solid ' + (_oriHC ? '#ffff00' : 'rgba(167,139,250,0.3)'), borderRight: '1px solid ' + (_oriHC ? '#ffff00' : 'rgba(167,139,250,0.3)'), borderBottom: '1px solid ' + (_oriHC ? '#ffff00' : 'rgba(167,139,250,0.3)'), borderLeft: '3px solid ' + _oriBd('#a78bfa'), marginBottom: 14, fontSize: 13, color: _oriFg('#e9d5ff'), lineHeight: 1.6 } },
             '📚 Eight traditions, each with substantive content. The point is not to pick a winner; the point is to know what is available, see what disagrees with what, and notice what each can\'t do well.'
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
             TRADITIONS.map(function(t) {
               return h('button', { key: t.id, onClick: function() { setOR({ view: 'detail', detailId: t.id }); },
-                style: { padding: 14, borderRadius: 10, border: '1.5px solid ' + t.color + '66', background: _oriBg('#0f172a'), cursor: 'pointer', textAlign: 'left' } },
+                style: { padding: 14, borderRadius: 10, border: '1.5px solid ' + (_oriHC ? '#ffff00' : t.color + '66'), background: _oriBg('#0f172a'), cursor: 'pointer', textAlign: 'left' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 24 } }, t.icon),
                   h('strong', { style: { color: _oriFg(t.color), fontSize: 14 } }, t.name)
@@ -404,15 +407,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       // ═══════════════════════════════════════════════════════
       // DETAIL
       // ═══════════════════════════════════════════════════════
-      function renderDetail(id) {
-        var t = TRADITIONS.find(function(x) { return x.id === id; });
-        if (!t) return renderLibrary();
+      function renderDetail(traditionOrId) {
+        var t = (traditionOrId && typeof traditionOrId === 'object') ? traditionOrId : TRADITIONS.find(function(x) { return x.id === traditionOrId; });
+        if (!t) return null;
         return h('div', null,
           h('button', { onClick: function() { setOR({ view: 'library', detailId: null }); }, 'aria-label': 'Back to traditions',
-            style: { marginBottom: 12, background: 'transparent', border: '1px solid #334155', color: _oriFg('#cbd5e1'), borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, '← Traditions'),
+            style: { marginBottom: 12, background: 'transparent', border: '1px solid ' + _oriBd('#334155'), color: _oriFg('#cbd5e1'), borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, '← Traditions'),
 
           // Hero
-          h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + t.color + '24 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid ' + t.color + '66', borderLeft: '4px solid ' + t.color, marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 14, background: _oriHC ? '#000000' : (_oriL ? '#f8fafc' : ('linear-gradient(135deg, ' + t.color + '24 0%, rgba(15,23,42,0.4) 100%)')), border: '1px solid ' + (_oriHC ? '#ffff00' : t.color + '66'), borderLeft: '4px solid ' + (_oriHC ? '#ffff00' : t.color), marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } },
               h('span', { style: { fontSize: 38 } }, t.icon),
               h('h3', { style: { margin: 0, color: _oriFg(t.color), fontSize: 22, fontWeight: 800 } }, t.name)
@@ -490,10 +493,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           // Question picker
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 6, marginBottom: 14 } },
             QUESTIONS.map(function(qq) {
-              var picked = qid === qq.id;
+              var picked = q.id === qq.id;
               return h('button', { key: qq.id, onClick: function() { pickQ(qq.id); }, 'aria-pressed': picked,
-                style: { padding: '10px 12px', borderRadius: 8, border: '1.5px solid ' + (picked ? '#a78bfa' : '#334155'),
-                  background: picked ? 'rgba(167,139,250,0.18)' : '#1e293b',
+                style: { padding: '10px 12px', borderRadius: 8, border: '1.5px solid ' + (picked ? _oriBd('#a78bfa') : _oriBd('#334155')),
+                  background: picked ? (_oriHC ? '#000000' : 'rgba(167,139,250,0.18)') : _oriBg('#1e293b'),
                   color: picked ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 12.5, fontWeight: 700, textAlign: 'left' } },
                 qq.icon + ' ' + qq.label);
             })
@@ -502,11 +505,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           // Eight answers
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 } },
             TRADITIONS.map(function(t) {
-              return h('div', { key: t.id, style: { padding: 12, borderRadius: 10, background: _oriBg('#0f172a'), borderLeft: '3px solid ' + t.color } },
+              return h('div', { key: t.id, style: { padding: 12, borderRadius: 10, background: _oriBg('#0f172a'), borderLeft: '3px solid ' + (_oriHC ? '#ffff00' : t.color) } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 18 } }, t.icon),
                   h('strong', { style: { color: _oriFg(t.color), fontSize: 13 } }, t.name),
-                  h('button', { onClick: function() { setOR({ view: 'detail', detailId: t.id }); }, style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + t.color + '66', color: _oriFg(t.color), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10.5, fontWeight: 700 } }, 'Full →')
+                  h('button', { onClick: function() { setOR({ view: 'detail', detailId: t.id }); }, 'aria-label': 'Read full entry for ' + t.name, style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + (_oriHC ? '#ffff00' : t.color + '66'), color: _oriFg(t.color), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10.5, fontWeight: 700 } }, 'Full →')
                 ),
                 h('p', { style: { margin: 0, color: _oriFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.65 } }, answerFor(t))
               );
@@ -563,9 +566,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
 
       // ═══ WORLDVIEW COMPASS ═══
       function renderCompass() {
-        var cx = d.compassX || 'unit', cy = d.compassY || 'ground';
         function axisById(id) { for (var i = 0; i < AXES.length; i++) if (AXES[i].id === id) return AXES[i]; return AXES[0]; }
-        var aX = axisById(cx), aY = axisById(cy);
+        var aX = axisById(d.compassX || 'unit'), aY = axisById(d.compassY || 'ground');
+        var cx = aX.id, cy = aY.id;
         var W = 600, H = 440, mL = 76, mR = 30, mT = 44, mB = 74;
         var pw = W - mL - mR, ph = H - mT - mB;
         function px(v) { return mL + v * pw; }
@@ -578,7 +581,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
               var active = ax.id === current;
               return h('button', { key: ax.id, onClick: function () { var patch = {}; patch[side === 'X' ? 'compassX' : 'compassY'] = ax.id; setOR(patch); },
                 'aria-pressed': active,
-                style: { padding: '4px 9px', borderRadius: 7, border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? 'rgba(167,139,250,0.18)' : '#1e293b', color: active ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, ax.label);
+                style: { padding: '4px 9px', borderRadius: 7, border: '1px solid ' + (active ? _oriBd('#a78bfa') : _oriBd('#334155')), background: active ? (_oriHC ? '#000000' : 'rgba(167,139,250,0.18)') : _oriBg('#1e293b'), color: active ? _oriFg('#e9d5ff') : _oriFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, ax.label);
             })
           );
         }
@@ -617,7 +620,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           nodes
         );
         function caveat(ax) {
-          return h('div', { style: { padding: '8px 11px', borderRadius: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', fontSize: 11.5, color: _oriFg('#cbd5e1'), lineHeight: 1.55, marginBottom: 8 } },
+          return h('div', { style: { padding: '8px 11px', borderRadius: 8, background: _oriHC ? '#000000' : (_oriL ? '#f8fafc' : 'rgba(15,23,42,0.6)'), border: '1px solid ' + _oriBd('#334155'), fontSize: 11.5, color: _oriFg('#cbd5e1'), lineHeight: 1.55, marginBottom: 8 } },
             h('b', { style: { color: _oriFg('#c4b5fd') } }, ax.label + ': '), ax.left + ' ↔ ' + ax.right + '. ', h('span', { style: { fontStyle: 'italic', color: _oriFg('#94a3b8') } }, ax.caveat));
         }
         return h('div', null,
@@ -651,10 +654,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       else if (view === 'about') body = renderAbout();
       else body = renderLibrary();
 
+      var activeTabId = view === 'detail' ? 'library' : view;
       return h('div', { style: { maxWidth: 860, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Orientations: comparative philosophy' },
         header(),
         navTabs(),
-        body
+        h('div', { id: 'ori-panel', role: 'tabpanel', 'aria-labelledby': 'ori-tab-' + activeTabId }, body)
       );
     }
   });

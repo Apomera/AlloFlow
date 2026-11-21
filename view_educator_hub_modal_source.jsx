@@ -55,7 +55,10 @@ function _loadEducatorAlloSheetBridge() {
         reject(new Error('AlloSheet loaded without its host bridge.'));
       }
     };
-    script.onerror = () => reject(new Error('AlloSheet could not be loaded.'));
+    script.onerror = () => {
+      try { script.remove(); } catch (_) {}
+      reject(new Error('AlloSheet could not be loaded.'));
+    };
     document.head.appendChild(script);
   }).catch((error) => {
     _educatorAlloSheetBridgePromise = null;
@@ -78,7 +81,7 @@ function EducatorHubModal(props) {
     addToast = (() => {}),
     setIsAccessibilityLabOpen, setIsCommunityCatalogOpen, setIsSymbolStudioOpen,
     setPdfAuditResult, setPdfBatchMode, setPendingPdfBase64, setPendingPdfFile,
-    setShowBehaviorLens, setShowClassAnalytics = (() => {}), setIsResearchSuiteOpen = (() => {}), setShowEducatorHub, setShowMindMap = (() => {}), setShowReportWriter, setShowCinematicStudio = (() => {}), showEducatorHub, t,
+    setShowBehaviorLens, setShowClassAnalytics = (() => {}), setIsResearchSuiteOpen = (() => {}), setShowEducatorHub, setShowMindMap = (() => {}), setShowReportWriter, setShowCinematicStudio = (() => {}), showEducatorHub, t = (() => ''),
     userRole = '',
     // Role scoping (X7, 2026-08-17): family mode sets isTeacherMode true, so
     // without these the hub showed a parent every school-professional surface.
@@ -87,6 +90,7 @@ function EducatorHubModal(props) {
     // prop pass is pinned by tests/educator_hub_role_scope.test.js).
     isParentMode = false,
     isIndependentMode = false,
+    isTeacherMode,
     setShowRecentQrShares = (() => {}),
     beginPdfDocumentIntake = (() => null),
     isPdfDocumentIntakeCurrent = (() => true),
@@ -145,7 +149,11 @@ function EducatorHubModal(props) {
     }
     return out;
   };
+  const isOpen = showEducatorHub !== false && isTeacherMode !== false;
+  const hideSchoolProfessional = Boolean(isParentMode || isIndependentMode);
+  const hideFromFamily = Boolean(isParentMode);
   const dialogRef = React.useRef(null);
+  const backdropMouseDownRef = React.useRef(false);
   const pdfBatchIntakeRef = React.useRef(null);
   const educatorHubMountedRef = React.useRef(true);
   const [pdfBatchIntakeProgress, setPdfBatchIntakeProgress] = React.useState(null);
@@ -181,9 +189,19 @@ function EducatorHubModal(props) {
       if (pdfBatchIntakeRef.current === job) pdfBatchIntakeRef.current = null;
     };
   }, []);
-  const closeHandlerRef = React.useRef(setShowEducatorHub);
-  closeHandlerRef.current = setShowEducatorHub;
+  const requestCloseHub = () => {
+    if (pdfBatchIntakeRef.current) {
+      _cancelPdfBatchIntake(true);
+    }
+    if (typeof setShowEducatorHub === 'function') setShowEducatorHub(false);
+  };
+  const closeHandlerRef = React.useRef(requestCloseHub);
+  closeHandlerRef.current = requestCloseHub;
   React.useEffect(function () {
+    if (!isOpen) {
+      if (pdfBatchIntakeRef.current) _cancelPdfBatchIntake(false);
+      return undefined;
+    }
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
@@ -212,11 +230,16 @@ function EducatorHubModal(props) {
     // Ref-counted shared body scroll lock — see window.__alloScrollLockState.
     // Without it the page behind the hub scrolls under a touch drag, which on
     // a phone reads as the tiles sliding away and not coming back.
-    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '', overflow: '' });
     let scrollLocked = false;
     try {
+      if (++scrollLock.count === 1) {
+        const prevOverflow = document.body.style.overflow;
+        scrollLock.prev = prevOverflow;
+        scrollLock.overflow = prevOverflow;
+        document.body.style.overflow = 'hidden';
+      }
       scrollLocked = true;
-      if (++scrollLock.count === 1) { scrollLock.prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
     } catch (_) {}
     const isTopTrap = function () { return trapStack[trapStack.length - 1] === trap; };
     const getFocusable = function () {
@@ -244,7 +267,7 @@ function EducatorHubModal(props) {
       if (!dialog.isConnected) return;
       if (event.key === 'Escape') {
         if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
-        event.preventDefault(); event.stopPropagation(); closeHandlerRef.current && closeHandlerRef.current(false); return;
+        event.preventDefault(); event.stopPropagation(); closeHandlerRef.current && closeHandlerRef.current(); return;
       }
       if (event.key !== 'Tab') return;
       const focusable = getFocusable();
@@ -260,7 +283,9 @@ function EducatorHubModal(props) {
       try {
         if (scrollLocked) {
           scrollLock.count = Math.max(0, scrollLock.count - 1);
-          if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
+          if (scrollLock.count === 0) {
+            document.body.style.overflow = scrollLock.prev ?? scrollLock.overflow ?? scrollLock.prevOverflow ?? scrollLock.previousOverflow ?? '';
+          }
         }
       } catch (_) {}
       isolated.forEach(function ({ sibling, hadInert, prevInert, ariaHidden }) {
@@ -279,7 +304,7 @@ function EducatorHubModal(props) {
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
-  }, []);
+  }, [isOpen]);
 
   const _openAlloSheet = () => {
     const bridge = window.AlloSheetHostBridge;
@@ -306,6 +331,7 @@ function EducatorHubModal(props) {
     catch (_) { return []; }
   });
   const [hubFavoritesOnly, setHubFavoritesOnly] = React.useState(false);
+  const [hubSectionFilter, setHubSectionFilter] = React.useState('all');
   const [hubManageFavorites, setHubManageFavorites] = React.useState(false);
   const [hubVisibleCount, setHubVisibleCount] = React.useState(0);
   const [hubUsageCounts, setHubUsageCounts] = React.useState(() => {
@@ -345,6 +371,7 @@ function EducatorHubModal(props) {
     try { localStorage.setItem('alloflow_hub_educator_role', hubRoleOverride); } catch (_) {}
   }, [hubRoleOverride]);
   React.useEffect(() => {
+    if (!isOpen) return undefined;
     const grid = hubGridRef.current;
     if (!grid) return undefined;
     const shells = Array.from(grid.querySelectorAll('[data-hub-id]'));
@@ -359,25 +386,26 @@ function EducatorHubModal(props) {
     };
     grid.addEventListener('click', remember, true);
     return () => grid.removeEventListener('click', remember, true);
-  }, []);
+  }, [isOpen, hideSchoolProfessional, hideFromFamily]);
   React.useEffect(() => {
     const grid = hubGridRef.current;
     if (!grid) return;
     const query = hubQuery.trim().toLowerCase();
     const shells = Array.from(grid.querySelectorAll('[data-hub-id]'));
     const visibleSections = new Set();
+    const filtered = Boolean(query || hubFavoritesOnly || hubSectionFilter !== 'all');
     let count = 0;
     shells.forEach((shell) => {
       const text = (shell.textContent || '').toLowerCase();
       const sectionCollapsed = hubCollapsedSections.includes(shell.dataset.hubSection);
-      const visible = (!query || text.includes(query)) && (!hubFavoritesOnly || hubFavoriteIds.includes(shell.dataset.hubId)) && (!sectionCollapsed || query || hubFavoritesOnly);
+      const sectionMatches = hubSectionFilter === 'all' || shell.dataset.hubSection === hubSectionFilter;
+      const visible = sectionMatches && (!query || text.includes(query)) && (!hubFavoritesOnly || hubFavoriteIds.includes(shell.dataset.hubId)) && (!sectionCollapsed || filtered);
       shell.hidden = !visible;
       shell.setAttribute('aria-hidden', visible ? 'false' : 'true');
       if (visible) { visibleSections.add(shell.dataset.hubSection); count += 1; }
     });
     Array.from(grid.querySelectorAll('[data-hub-section-heading]')).forEach((heading) => {
       const sectionId = heading.dataset.hubSectionHeading;
-      const filtered = Boolean(query || hubFavoritesOnly);
       const visible = !filtered || visibleSections.has(sectionId);
       heading.hidden = !visible;
       const toggle = heading.querySelector('[data-hub-section-toggle]');
@@ -389,18 +417,24 @@ function EducatorHubModal(props) {
       }
     });
     setHubVisibleCount(count);
-  }, [hubQuery, hubFavoritesOnly, hubFavoriteIds, hubCards, hubCollapsedSections]);
-  // Hidden from parent/independent homes: Leadership Hub (contains the
-  // school-role-gated Principal Evaluation portal), Professional Development,
-  // and Report Writer (clinical reports). Everything else — Document Hub,
-  // Whiteboard, Page Designer, Lumen, Accessibility Lab and peers — is
-  // genuinely useful to a home-schooling parent and stays (F1's spirit,
-  // MODE_AUDIT_2026-08-03.md). Polls & Sign-ups stays visible as the recorded
-  // reversible default.
-  const hideSchoolProfessional = Boolean(isParentMode || isIndependentMode);
-  // Assessment Center, Dynamic Assessment and BehaviorLens hold student records and
-  // clinical tools a family should not open (K5, 2026-09-28): hidden in family mode only.
-  const hideFromFamily = Boolean(isParentMode);
+  }, [hubQuery, hubFavoritesOnly, hubSectionFilter, hubFavoriteIds, hubCards, hubCollapsedSections]);
+  const hubSections = [
+    { id: 'start', label: tr('educator_hub.section_start_title', 'Start here') },
+    { id: 'plan', label: tr('educator_hub.section_plan_title', 'Plan and create') },
+    { id: 'teach', label: tr('educator_hub.section_teach_title', 'Teach and assess') },
+    { id: 'access', label: tr('educator_hub.section_access_title', 'Access and review') },
+    { id: 'extend', label: tr('educator_hub.section_extend_title', 'Extend and discover') },
+  ].filter((sec) => hubCards.some((card) => card.section === sec.id));
+  const launchSingleVisibleHubMatch = () => {
+    const grid = hubGridRef.current;
+    if (!grid || !hubQuery.trim()) return;
+    const visibleShells = Array.from(grid.querySelectorAll('[data-hub-id]')).filter((el) => !el.hidden);
+    if (visibleShells.length === 1) {
+      const launch = visibleShells[0].querySelector('[data-hub-launch]');
+      if (launch) launch.click();
+    }
+  };
+  // Role flags (hideSchoolProfessional / hideFromFamily) are derived above so effects stay in sync with role changes.
   const hubRolePreference = hubRoleOverride || userRole || 'educator';
   const hubRoleRaw = String(hubRolePreference).toLowerCase();
   const hubRoleKey = hubRoleRaw.includes('clin') ? 'clinician' : (hubRoleRaw.includes('lead') || hubRoleRaw.includes('admin') || hubRoleRaw.includes('principal') || hubRoleRaw.includes('coach')) ? 'leader' : hubRoleRaw.includes('student') ? 'student' : hubRoleRaw.includes('family') ? 'family' : 'educator';
@@ -410,25 +444,47 @@ function EducatorHubModal(props) {
   const hubRecommendedIds = Array.from(new Set([...(hubRoleRecommendations[hubRoleKey] || hubRoleRecommendations.educator), ...hubUsageRankedIds])).slice(0, 5);
   const recommendedCards = hubRecommendedIds.map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
   const quickCards = Array.from(new Set([...hubFavoriteIds, ...hubRecentIds])).map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
+  if (!isOpen) return null;
   return (
-        <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={() => setShowEducatorHub(false)}>
+        <div
+          className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4"
+          style={{ zIndex: 260 }}
+          role="presentation"
+          onMouseDown={(e) => { backdropMouseDownRef.current = (e.target === e.currentTarget); }}
+          onClick={(e) => { if (e.target === e.currentTarget && backdropMouseDownRef.current) requestCloseHub(); backdropMouseDownRef.current = false; }}
+        >
           {/* allo-docsuite: portal modal rendered OUTSIDE the .allo-docsuite content wrapper,
               so the theme-dark gradient/text remaps never reached its pastel cards. Opting into
               the scope class inherits the existing dark remap (from-*-50 -> dark, text -> light).
               No-op in light mode (all .allo-docsuite rules are .theme-dark / .theme-contrast). */}
-          <div ref={dialogRef} tabIndex={-1} data-help-key="educator_hub_modal_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="educator-hub-title" aria-describedby="educator-hub-subtitle" onClick={(e) => e.stopPropagation()}>
+          <div ref={dialogRef} tabIndex={-1} data-help-key="educator_hub_modal_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="educator-hub-title" aria-describedby="educator-hub-subtitle">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 id="educator-hub-title" className="text-xl font-bold text-slate-800 flex items-center gap-2"><span aria-hidden="true">🛠️</span> {t('educator_hub.title') || 'Educator Tools'}</h2>
                 <p id="educator-hub-subtitle" className="text-sm text-slate-600 mt-1">{t('educator_hub.subtitle') || 'Professional tools for educators and clinicians'}</p>
               </div>
-              <button type="button" onClick={() => setShowEducatorHub(false)} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('educator_hub.close_aria') || 'Close educator tools'}>✕</button>
+              <button type="button" onClick={requestCloseHub} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('educator_hub.close_aria') || 'Close educator tools'}>✕</button>
             </div>
 
             <div className="mb-4 space-y-3" role="search" aria-label={tr('hub.search_label', 'Search tools')}>
               <div className="flex flex-col sm:flex-row gap-2">
                 <label htmlFor="educator-hub-search" className="sr-only">{tr('hub.search_label', 'Search tools')}</label>
-                <input id="educator-hub-search" data-help-key="educator_hub_search" type="search" value={hubQuery} onChange={(event) => setHubQuery(event.target.value)} placeholder={tr('hub.search_placeholder', 'Search tools by name, purpose, or workflow')} className="min-h-11 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input
+                  id="educator-hub-search"
+                  data-help-key="educator_hub_search"
+                  type="search"
+                  value={hubQuery}
+                  onChange={(event) => setHubQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      launchSingleVisibleHubMatch();
+                    }
+                  }}
+                  placeholder={tr('hub.search_placeholder', 'Search tools by name, purpose, or workflow')}
+                  className="min-h-11 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
                 {hubQuery && <button type="button" data-help-key="educator_hub_search_clear" onClick={() => setHubQuery('')} className="min-h-11 px-3 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">{tr('hub.clear_search', 'Clear')}</button>}
                 <button type="button" data-help-key="educator_hub_favorites_only" aria-pressed={hubFavoritesOnly} onClick={() => setHubFavoritesOnly((value) => !value)} className="min-h-11 px-3 rounded-xl border border-amber-300 bg-amber-50 text-sm font-bold text-amber-800 hover:bg-amber-100">{hubFavoritesOnly ? '★ ' : '☆ '}{tr('hub.favorites_only', 'Favorites')}</button>
                 <button type="button" data-help-key="educator_hub_manage_favorites" aria-expanded={hubManageFavorites} onClick={() => setHubManageFavorites((value) => !value)} className="min-h-11 px-3 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">{tr('hub.manage_favorites', 'Manage favorites')}</button>
@@ -443,6 +499,34 @@ function EducatorHubModal(props) {
                     <option value="family">{tr('hub.role_family', 'Families')}</option>
                 </select>
               </div>
+              {hubSections.length >= 2 && (
+                <div data-hub-section-filter-bar="true" className="flex flex-wrap items-center gap-1.5" role="group" aria-label={tr('hub.filter_by_category', 'Filter tools by category')}>
+                  <button
+                    type="button"
+                    data-hub-section-filter="all"
+                    aria-pressed={hubSectionFilter === 'all'}
+                    onClick={() => setHubSectionFilter('all')}
+                    className={'min-h-11 rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (hubSectionFilter === 'all' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50')}
+                  >
+                    {tr('hub.section_all', 'All')}
+                  </button>
+                  {hubSections.map((sec) => {
+                    const selected = hubSectionFilter === sec.id;
+                    return (
+                      <button
+                        key={sec.id}
+                        type="button"
+                        data-hub-section-filter={sec.id}
+                        aria-pressed={selected}
+                        onClick={() => setHubSectionFilter(selected ? 'all' : sec.id)}
+                        className={'min-h-11 rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (selected ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50')}
+                      >
+                        {sec.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               {recommendedCards.length > 0 && (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3" role="region" data-help-key="educator_hub_recommended" aria-label={tr('hub.recommended', 'Recommended tools')}>
                   <div className="flex items-center justify-between gap-2 mb-2">
@@ -463,7 +547,7 @@ function EducatorHubModal(props) {
                     {hubCards.map((card) => (
                       <div key={card.id} className="flex items-center gap-2 rounded-lg bg-white border border-slate-200 p-2">
                         <button type="button" onClick={() => activateHubCard(card.id)} className="min-h-10 flex-1 text-left text-sm font-semibold text-slate-700 hover:text-indigo-700">{card.label}</button>
-                        <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes(card.id)} aria-label={hubFavoriteIds.includes(card.id) ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + card.label : tr('hub.add_favorite', 'Add to favorites') + ': ' + card.label} onClick={() => toggleHubFavorite(card.id)} className="min-w-9 min-h-9 rounded-full text-amber-800 text-lg hover:bg-amber-50">{hubFavoriteIds.includes(card.id) ? '★' : '☆'}</button>
+                        <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes(card.id)} aria-label={hubFavoriteIds.includes(card.id) ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + card.label : tr('hub.add_favorite', 'Add to favorites') + ': ' + card.label} onClick={() => toggleHubFavorite(card.id)} className="min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-amber-800 text-lg hover:bg-amber-50">{hubFavoriteIds.includes(card.id) ? '★' : '☆'}</button>
                       </div>
                     ))}
                   </div>
@@ -471,18 +555,45 @@ function EducatorHubModal(props) {
               )}
               {quickCards.length > 0 && (
                 <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3" role="region" data-help-key="educator_hub_quick_access" aria-label={tr('hub.quick_access', 'Quick access')}>
-                  <div className="flex items-center justify-between gap-2 mb-2"><h3 className="text-xs font-black uppercase tracking-wide text-indigo-800">{tr('hub.quick_access', 'Quick access')}</h3><span className="text-[11px] text-indigo-700">{tr('hub.quick_access_hint', 'Recent and favorite tools')}</span></div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xs font-black uppercase tracking-wide text-indigo-800">{tr('hub.quick_access', 'Quick access')}</h3>
+                      <span className="text-[11px] text-indigo-700">{tr('hub.quick_access_hint', 'Recent and favorite tools')}</span>
+                    </div>
+                    {hubRecentIds.length > 0 && (
+                      <button
+                        type="button"
+                        data-hub-clear-recent="true"
+                        onClick={() => setHubRecentIds([])}
+                        className="min-h-11 rounded-lg border border-indigo-200 bg-white px-2.5 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                      >
+                        {tr('hub.clear_recent', 'Clear recent')}
+                      </button>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {quickCards.map((card) => (
                       <div key={card.id} className="inline-flex items-center rounded-lg border border-indigo-200 bg-white shadow-sm">
-                        <button type="button" onClick={() => activateHubCard(card.id)} className="min-h-10 px-3 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50">{card.label}</button>
-                        <button type="button" aria-pressed={hubFavoriteIds.includes(card.id)} aria-label={hubFavoriteIds.includes(card.id) ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + card.label : tr('hub.add_favorite', 'Add to favorites') + ': ' + card.label} onClick={() => toggleHubFavorite(card.id)} className="min-w-9 min-h-10 border-l border-indigo-200 text-amber-800 text-lg hover:bg-amber-50">{hubFavoriteIds.includes(card.id) ? '★' : '☆'}</button>
+                        <button type="button" onClick={() => activateHubCard(card.id)} className="min-h-11 px-3 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50">{card.label}</button>
+                        <button type="button" aria-pressed={hubFavoriteIds.includes(card.id)} aria-label={hubFavoriteIds.includes(card.id) ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + card.label : tr('hub.add_favorite', 'Add to favorites') + ': ' + card.label} onClick={() => toggleHubFavorite(card.id)} className="min-w-11 min-h-11 inline-flex items-center justify-center border-l border-indigo-200 text-amber-800 text-lg hover:bg-amber-50">{hubFavoriteIds.includes(card.id) ? '★' : '☆'}</button>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
               <p className="sr-only" aria-live="polite">{hubVisibleCount} {tr('hub.tools_available', 'tools available')}</p>
+              {hubVisibleCount === 0 && (hubQuery.trim() || hubFavoritesOnly || hubSectionFilter !== 'all') && (
+                <div role="status" className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
+                  <p className="text-sm font-bold text-slate-700">{tr('hub.no_matching_tools', 'No tools match your current filters.')}</p>
+                  <button
+                    type="button"
+                    onClick={() => { setHubQuery(''); setHubFavoritesOnly(false); setHubSectionFilter('all'); }}
+                    className="mt-2 min-h-11 px-4 py-2 rounded-xl border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                  >
+                    {tr('hub.clear_filters', 'Clear filters')}
+                  </button>
+                </div>
+              )}
             </div>
             <div ref={hubGridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="start">
@@ -504,7 +615,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('lesson')} aria-label={hubFavoriteIds.includes('lesson') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Help me build a lesson' : tr('hub.add_favorite', 'Add to favorites') + ': Help me build a lesson'} title={hubFavoriteIds.includes('lesson') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('lesson'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('lesson') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('lesson')} aria-label={hubFavoriteIds.includes('lesson') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Help me build a lesson' : tr('hub.add_favorite', 'Add to favorites') + ': Help me build a lesson'} title={hubFavoriteIds.includes('lesson') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('lesson'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('lesson') ? '★' : '☆'}</button>
               </div>
               <div className="relative group" data-hub-id="lumen" data-hub-label="Lumen" data-hub-section="start">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_lumen_card" onClick={() => { setShowEducatorHub(false); setLabToolData(prev => ({ ...prev, lumen: { ...((prev && prev.lumen) || {}), mode: 'home' } })); setStemLabTool('lumen'); setShowStemLab(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
@@ -515,7 +626,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('lumen')} aria-label={hubFavoriteIds.includes('lumen') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Lumen' : tr('hub.add_favorite', 'Add to favorites') + ': Lumen'} title={hubFavoriteIds.includes('lumen') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('lumen'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('lumen') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('lumen')} aria-label={hubFavoriteIds.includes('lumen') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Lumen' : tr('hub.add_favorite', 'Add to favorites') + ': Lumen'} title={hubFavoriteIds.includes('lumen') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('lumen'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('lumen') ? '★' : '☆'}</button>
               </div>
               <div className="relative group" data-hub-id="document" data-hub-label="Document Hub" data-hub-section="start">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_document_hub_card" onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
@@ -526,7 +637,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('document')} aria-label={hubFavoriteIds.includes('document') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Document Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Document Hub'} title={hubFavoriteIds.includes('document') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('document'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('document') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('document')} aria-label={hubFavoriteIds.includes('document') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Document Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Document Hub'} title={hubFavoriteIds.includes('document') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('document'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('document') ? '★' : '☆'}</button>
               </div>
               <div className="relative group" data-hub-id="whiteboard" data-hub-label="Whiteboard" data-hub-section="start">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_whiteboard_card" onClick={() => { setShowEducatorHub(false); try { openWhiteboard(); } catch (_e) {} }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
@@ -537,7 +648,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('whiteboard')} aria-label={hubFavoriteIds.includes('whiteboard') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Whiteboard' : tr('hub.add_favorite', 'Add to favorites') + ': Whiteboard'} title={hubFavoriteIds.includes('whiteboard') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('whiteboard'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('whiteboard') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('whiteboard')} aria-label={hubFavoriteIds.includes('whiteboard') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Whiteboard' : tr('hub.add_favorite', 'Add to favorites') + ': Whiteboard'} title={hubFavoriteIds.includes('whiteboard') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('whiteboard'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('whiteboard') ? '★' : '☆'}</button>
               </div>
                             <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="plan">
                 <div className="flex items-start justify-between gap-3">
@@ -557,7 +668,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('throughline')} aria-label={hubFavoriteIds.includes('throughline') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Learning Web: Unit Path' : tr('hub.add_favorite', 'Add to favorites') + ': Learning Web: Unit Path'} title={hubFavoriteIds.includes('throughline') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('throughline'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('throughline') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('throughline')} aria-label={hubFavoriteIds.includes('throughline') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Learning Web: Unit Path' : tr('hub.add_favorite', 'Add to favorites') + ': Learning Web: Unit Path'} title={hubFavoriteIds.includes('throughline') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('throughline'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('throughline') ? '★' : '☆'}</button>
               </div>              <div className="relative group" data-hub-id="page-designer" data-hub-label="Page Designer" data-hub-section="plan">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_allo_studio_card" onClick={() => { setShowEducatorHub(false); setIsAlloStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
@@ -567,7 +678,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('page-designer')} aria-label={hubFavoriteIds.includes('page-designer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Page Designer' : tr('hub.add_favorite', 'Add to favorites') + ': Page Designer'} title={hubFavoriteIds.includes('page-designer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('page-designer'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('page-designer') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('page-designer')} aria-label={hubFavoriteIds.includes('page-designer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Page Designer' : tr('hub.add_favorite', 'Add to favorites') + ': Page Designer'} title={hubFavoriteIds.includes('page-designer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('page-designer'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('page-designer') ? '★' : '☆'}</button>
               </div>
               <div className="relative group" data-hub-id="video-studio" data-hub-label="Video Studio" data-hub-section="plan">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_video_studio_card" onClick={() => { setShowEducatorHub(false); setIsVideoStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
@@ -578,7 +689,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('video-studio')} aria-label={hubFavoriteIds.includes('video-studio') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Video Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Video Studio'} title={hubFavoriteIds.includes('video-studio') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('video-studio'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('video-studio') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('video-studio')} aria-label={hubFavoriteIds.includes('video-studio') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Video Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Video Studio'} title={hubFavoriteIds.includes('video-studio') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('video-studio'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('video-studio') ? '★' : '☆'}</button>
               </div>
               <div className="relative group" data-hub-id="symbol-studio" data-hub-label="Symbol Studio" data-hub-section="plan">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
@@ -589,7 +700,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('symbol-studio')} aria-label={hubFavoriteIds.includes('symbol-studio') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Symbol Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Symbol Studio'} title={hubFavoriteIds.includes('symbol-studio') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('symbol-studio'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('symbol-studio') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('symbol-studio')} aria-label={hubFavoriteIds.includes('symbol-studio') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Symbol Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Symbol Studio'} title={hubFavoriteIds.includes('symbol-studio') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('symbol-studio'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('symbol-studio') ? '★' : '☆'}</button>
               </div>
               <div className="relative group" data-hub-id="allosheet" data-hub-label="AlloSheet" data-hub-section="plan">
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_allosheet_card" onClick={_openAlloSheet} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
@@ -600,7 +711,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('allosheet')} aria-label={hubFavoriteIds.includes('allosheet') ? tr('hub.remove_favorite', 'Remove from favorites') + ': AlloSheet' : tr('hub.add_favorite', 'Add to favorites') + ': AlloSheet'} title={hubFavoriteIds.includes('allosheet') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('allosheet'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('allosheet') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('allosheet')} aria-label={hubFavoriteIds.includes('allosheet') ? tr('hub.remove_favorite', 'Remove from favorites') + ': AlloSheet' : tr('hub.add_favorite', 'Add to favorites') + ': AlloSheet'} title={hubFavoriteIds.includes('allosheet') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('allosheet'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('allosheet') ? '★' : '☆'}</button>
               </div>
                             <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="teach">
                 <div className="flex items-start justify-between gap-3">
@@ -620,7 +731,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('polls-signups')} aria-label={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Polls & Sign-ups' : tr('hub.add_favorite', 'Add to favorites') + ': Polls & Sign-ups'} title={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('polls-signups'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('polls-signups') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('polls-signups')} aria-label={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Polls & Sign-ups' : tr('hub.add_favorite', 'Add to favorites') + ': Polls & Sign-ups'} title={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('polls-signups'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('polls-signups') ? '★' : '☆'}</button>
               </div>
               {!hideFromFamily && (
               <div className="relative group" data-hub-id="assessment-center" data-hub-label="Assessment Center" data-hub-section="teach">
@@ -632,7 +743,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('assessment-center')} aria-label={hubFavoriteIds.includes('assessment-center') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Assessment Center' : tr('hub.add_favorite', 'Add to favorites') + ': Assessment Center'} title={hubFavoriteIds.includes('assessment-center') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('assessment-center'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('assessment-center') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('assessment-center')} aria-label={hubFavoriteIds.includes('assessment-center') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Assessment Center' : tr('hub.add_favorite', 'Add to favorites') + ': Assessment Center'} title={hubFavoriteIds.includes('assessment-center') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('assessment-center'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('assessment-center') ? '★' : '☆'}</button>
               </div>
               )}
               {!hideFromFamily && (
@@ -645,7 +756,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('dynamic-assessment')} aria-label={hubFavoriteIds.includes('dynamic-assessment') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Dynamic Assessment' : tr('hub.add_favorite', 'Add to favorites') + ': Dynamic Assessment'} title={hubFavoriteIds.includes('dynamic-assessment') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('dynamic-assessment'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('dynamic-assessment') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('dynamic-assessment')} aria-label={hubFavoriteIds.includes('dynamic-assessment') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Dynamic Assessment' : tr('hub.add_favorite', 'Add to favorites') + ': Dynamic Assessment'} title={hubFavoriteIds.includes('dynamic-assessment') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('dynamic-assessment'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('dynamic-assessment') ? '★' : '☆'}</button>
               </div>
               )}
               {!hideFromFamily && (
@@ -658,7 +769,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('behavior-lens')} aria-label={hubFavoriteIds.includes('behavior-lens') ? tr('hub.remove_favorite', 'Remove from favorites') + ': BehaviorLens' : tr('hub.add_favorite', 'Add to favorites') + ': BehaviorLens'} title={hubFavoriteIds.includes('behavior-lens') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('behavior-lens'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('behavior-lens') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('behavior-lens')} aria-label={hubFavoriteIds.includes('behavior-lens') ? tr('hub.remove_favorite', 'Remove from favorites') + ': BehaviorLens' : tr('hub.add_favorite', 'Add to favorites') + ': BehaviorLens'} title={hubFavoriteIds.includes('behavior-lens') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('behavior-lens'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('behavior-lens') ? '★' : '☆'}</button>
               </div>
               )}
               {!hideSchoolProfessional && (
@@ -671,7 +782,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('report-writer')} aria-label={hubFavoriteIds.includes('report-writer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Report Writer' : tr('hub.add_favorite', 'Add to favorites') + ': Report Writer'} title={hubFavoriteIds.includes('report-writer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('report-writer'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('report-writer') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('report-writer')} aria-label={hubFavoriteIds.includes('report-writer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Report Writer' : tr('hub.add_favorite', 'Add to favorites') + ': Report Writer'} title={hubFavoriteIds.includes('report-writer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('report-writer'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('report-writer') ? '★' : '☆'}</button>
               </div>
               )}
                             <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="access">
@@ -777,13 +888,14 @@ function EducatorHubModal(props) {
                               files: acceptedPdfFiles
                           }));
                       } catch (error) {
-                          addToast(tr('educator_hub.batch_start_failed', 'Could not start the PDF batch: {error}', { error: String((error && error.message) || error || 'unknown error') }), 'error');
+                          if (educatorHubMountedRef.current) addToast(tr('educator_hub.batch_start_failed', 'Could not start the PDF batch: {error}', { error: String((error && error.message) || error || 'unknown error') }), 'error');
                           return;
                       }
+                      if (!educatorHubMountedRef.current) return;
                       const intakeJob = { token: intakeToken, reader: null, cancelRead: null, cancelled: false };
                       pdfBatchIntakeRef.current = intakeJob;
                       const intakeIsCurrent = () => {
-                          if (intakeJob.cancelled || pdfBatchIntakeRef.current !== intakeJob) return false;
+                          if (!educatorHubMountedRef.current || intakeJob.cancelled || pdfBatchIntakeRef.current !== intakeJob) return false;
                           try { return isPdfDocumentIntakeCurrent(intakeToken); }
                           catch (_) { return false; }
                       };
@@ -916,7 +1028,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('pdf-accessibility')} aria-label={hubFavoriteIds.includes('pdf-accessibility') ? tr('hub.remove_favorite', 'Remove from favorites') + ': PDF Accessibility' : tr('hub.add_favorite', 'Add to favorites') + ': PDF Accessibility'} title={hubFavoriteIds.includes('pdf-accessibility') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('pdf-accessibility'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('pdf-accessibility') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('pdf-accessibility')} aria-label={hubFavoriteIds.includes('pdf-accessibility') ? tr('hub.remove_favorite', 'Remove from favorites') + ': PDF Accessibility' : tr('hub.add_favorite', 'Add to favorites') + ': PDF Accessibility'} title={hubFavoriteIds.includes('pdf-accessibility') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('pdf-accessibility'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('pdf-accessibility') ? '★' : '☆'}</button>
               </div>
               {pdfBatchIntakeProgress && (
                 <div className="col-span-full rounded-xl border border-teal-300 bg-teal-50 p-3" role="status" aria-live="polite" aria-label="PDF batch preparation progress">
@@ -951,7 +1063,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('accessibility-lab')} aria-label={hubFavoriteIds.includes('accessibility-lab') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Accessibility Lab' : tr('hub.add_favorite', 'Add to favorites') + ': Accessibility Lab'} title={hubFavoriteIds.includes('accessibility-lab') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('accessibility-lab'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('accessibility-lab') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('accessibility-lab')} aria-label={hubFavoriteIds.includes('accessibility-lab') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Accessibility Lab' : tr('hub.add_favorite', 'Add to favorites') + ': Accessibility Lab'} title={hubFavoriteIds.includes('accessibility-lab') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('accessibility-lab'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('accessibility-lab') ? '★' : '☆'}</button>
               </div>
                             <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="extend">
                 <div className="flex items-start justify-between gap-3">
@@ -971,7 +1083,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('community-catalog')} aria-label={hubFavoriteIds.includes('community-catalog') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Community Catalog' : tr('hub.add_favorite', 'Add to favorites') + ': Community Catalog'} title={hubFavoriteIds.includes('community-catalog') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('community-catalog'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('community-catalog') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('community-catalog')} aria-label={hubFavoriteIds.includes('community-catalog') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Community Catalog' : tr('hub.add_favorite', 'Add to favorites') + ': Community Catalog'} title={hubFavoriteIds.includes('community-catalog') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('community-catalog'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('community-catalog') ? '★' : '☆'}</button>
               </div>
               {!hideSchoolProfessional && (
               <div className="relative group" data-hub-id="research-suite" data-hub-label="Research Suite" data-hub-section="extend">
@@ -983,7 +1095,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('research-suite')} aria-label={hubFavoriteIds.includes('research-suite') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Research Suite' : tr('hub.add_favorite', 'Add to favorites') + ': Research Suite'} title={hubFavoriteIds.includes('research-suite') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('research-suite'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('research-suite') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('research-suite')} aria-label={hubFavoriteIds.includes('research-suite') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Research Suite' : tr('hub.add_favorite', 'Add to favorites') + ': Research Suite'} title={hubFavoriteIds.includes('research-suite') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('research-suite'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('research-suite') ? '★' : '☆'}</button>
               </div>
               )}
               {!hideSchoolProfessional && (
@@ -996,7 +1108,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('professional-development')} aria-label={hubFavoriteIds.includes('professional-development') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Professional Development' : tr('hub.add_favorite', 'Add to favorites') + ': Professional Development'} title={hubFavoriteIds.includes('professional-development') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('professional-development'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('professional-development') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('professional-development')} aria-label={hubFavoriteIds.includes('professional-development') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Professional Development' : tr('hub.add_favorite', 'Add to favorites') + ': Professional Development'} title={hubFavoriteIds.includes('professional-development') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('professional-development'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('professional-development') ? '★' : '☆'}</button>
               </div>
               )}
               {!hideSchoolProfessional && (
@@ -1009,7 +1121,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('leadership-hub')} aria-label={hubFavoriteIds.includes('leadership-hub') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Leadership Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Leadership Hub'} title={hubFavoriteIds.includes('leadership-hub') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('leadership-hub'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('leadership-hub') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('leadership-hub')} aria-label={hubFavoriteIds.includes('leadership-hub') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Leadership Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Leadership Hub'} title={hubFavoriteIds.includes('leadership-hub') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('leadership-hub'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('leadership-hub') ? '★' : '☆'}</button>
               </div>
               )}
               {!hideSchoolProfessional && (
@@ -1022,7 +1134,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('school-rewards')} aria-label={hubFavoriteIds.includes('school-rewards') ? tr('hub.remove_favorite', 'Remove from favorites') + ': School Rewards & Store' : tr('hub.add_favorite', 'Add to favorites') + ': School Rewards & Store'} title={hubFavoriteIds.includes('school-rewards') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('school-rewards'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('school-rewards') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('school-rewards')} aria-label={hubFavoriteIds.includes('school-rewards') ? tr('hub.remove_favorite', 'Remove from favorites') + ': School Rewards & Store' : tr('hub.add_favorite', 'Add to favorites') + ': School Rewards & Store'} title={hubFavoriteIds.includes('school-rewards') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('school-rewards'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('school-rewards') ? '★' : '☆'}</button>
               </div>
               )}
               {!hideSchoolProfessional && (
@@ -1035,7 +1147,7 @@ function EducatorHubModal(props) {
                 </div>
               </button>
 
-                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('communications-studio')} aria-label={hubFavoriteIds.includes('communications-studio') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Communications Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Communications Studio'} title={hubFavoriteIds.includes('communications-studio') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('communications-studio'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('communications-studio') ? '★' : '☆'}</button>
+                <button type="button" data-hub-favorite="true" data-help-key="educator_hub_favorite" aria-pressed={hubFavoriteIds.includes('communications-studio')} aria-label={hubFavoriteIds.includes('communications-studio') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Communications Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Communications Studio'} title={hubFavoriteIds.includes('communications-studio') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('communications-studio'); }} className="absolute top-2 right-2 z-10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-300 text-amber-800 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('communications-studio') ? '★' : '☆'}</button>
               </div>
               )}
             </div>

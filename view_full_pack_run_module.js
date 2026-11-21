@@ -137,7 +137,7 @@ function FullPackRunView(props) {
     id: "guided-delivery-panel-title",
     className: "text-sm font-black text-indigo-900"
   }, t('fullpack.delivery_title') || 'Preview, Package & Deliver'), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[11px] leading-relaxed text-slate-600"
+    className: "mt-1 text-xs leading-relaxed text-slate-600"
   }, t('fullpack.delivery_help') || 'Choose formats by purpose. You can use more than one route, for example an accessible Word handout plus a Homework QR.'), deliveryGroups.length > 0 && /*#__PURE__*/React.createElement("div", {
     role: "list",
     "aria-label": t('a11y.export_families') || 'Available export and delivery families',
@@ -147,49 +147,49 @@ function FullPackRunView(props) {
     key: group.id,
     className: "rounded-xl border border-indigo-100 bg-indigo-50/60 p-2"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] font-black text-indigo-900"
+    className: "text-xs font-black text-indigo-900"
   }, group.label), /*#__PURE__*/React.createElement("div", {
-    className: "mt-0.5 text-[10px] leading-relaxed text-slate-600"
+    className: "mt-0.5 text-xs leading-relaxed text-slate-600"
   }, group.options.join(' · '))))), /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[10px] leading-relaxed text-slate-600"
+    className: "mt-2 text-xs leading-relaxed text-slate-600"
   }, t('fullpack.delivery_notes') || 'QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.'), isRunActive && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "data-testid": "full-pack-delivery-locked",
-    className: "mt-2 text-[11px] font-semibold text-slate-700"
+    className: "mt-2 text-xs font-semibold text-slate-700"
   }, t('fullpack.delivery_wait_run') || 'Delivery opens when the Full Pack run finishes.'), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: isRunActive,
     onClick: () => openExportPreview('print'),
-    className: "min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
+    className: "min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, t('fullpack.delivery_document_builder') || 'Open Document Builder'), typeof openExportPreview === 'function' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-testid": "full-pack-export-html",
     disabled: isRunActive,
     onClick: () => openExportPreview('html'),
-    className: "min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-900 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
+    className: "min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-900 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, t('fullpack.delivery_interactive_html') || 'Export Interactive HTML'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-testid": "full-pack-export-worksheet",
     disabled: isRunActive,
     onClick: () => openExportPreview('worksheet'),
-    className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px] font-bold text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
+    className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, t('fullpack.delivery_printable_worksheet') || 'Export Printable Worksheet')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: isRunActive,
     onClick: createGuidedHomeworkShare,
-    className: "min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
+    className: "min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-800 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, t('fullpack.delivery_homework_qr') || 'Create Homework QR'), !isIndependentMode && !isParentMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: isRunActive,
     onClick: () => setShowSessionStartOptions(true),
-    className: "min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-900 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-1"
+    className: "min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-1"
   }, t('fullpack.delivery_teach_live') || 'Teach live'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: isRunActive || !latestStudentShare,
     onClick: testLatestStudentLink,
-    className: "min-h-11 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-bold text-amber-900 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-1"
+    className: "min-h-11 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-1"
   }, t('fullpack.delivery_test_link') || 'Test latest student link'))), /*#__PURE__*/React.createElement("details", {
     "data-testid": "full-pack-options",
     className: "group/options mb-1 rounded-2xl text-white"
@@ -224,7 +224,7 @@ function FullPackRunView(props) {
     className: "w-4 h-4 text-indigo-600 rounded cursor-pointer border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-white focus-visible:ring-indigo-600"
   }), /*#__PURE__*/React.createElement("label", {
     htmlFor: "autoConfigToggle",
-    className: "min-h-11 text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none inline-flex items-center gap-1"
+    className: "min-h-11 text-xs font-bold uppercase tracking-wider cursor-pointer select-none inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 10,
     "aria-hidden": "true",
@@ -494,15 +494,15 @@ function FullPackRunView(props) {
     }, fullPackRun.status === 'ready' ? `${t('fullpack.panel_plan') || 'Full Pack plan'}. ${total} ${t('fullpack.selected') || 'selected'}.` : `${t('fullpack.panel_progress') || 'Full Pack progress'}. ${settled} of ${total} ${t('fullpack.finished') || 'finished'}.`), /*#__PURE__*/React.createElement("div", {
       className: "flex items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5"
     }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] font-black uppercase tracking-wide text-slate-800"
+      className: "text-xs font-black uppercase tracking-wide text-slate-800"
     }, fullPackRun.status === 'ready' ? t('fullpack.panel_plan') || 'Full Pack plan' : t('fullpack.panel_progress') || 'Full Pack progress'), /*#__PURE__*/React.createElement("div", {
-      className: "mt-0.5 text-[10px] text-slate-600"
+      className: "mt-0.5 text-xs text-slate-600"
     }, planSummaries.length ? `${planSelected} ${t('fullpack.resources_in_pack') || 'resources in your pack'}` : t('fullpack.preparing_plan') || 'Preparing generation plan…')), /*#__PURE__*/React.createElement("span", {
-      className: `shrink-0 rounded-full border px-2 py-1 text-[9px] font-black uppercase tracking-wide ${statusStyles[fullPackRun.status] || statusStyles.queued}`
+      className: `shrink-0 rounded-full border px-2 py-1 text-xs font-black uppercase tracking-wide ${statusStyles[fullPackRun.status] || statusStyles.queued}`
     }, statusLabels[fullPackRun.status] || fullPackRun.status)), fullPackRun.persistenceWarning && /*#__PURE__*/React.createElement("div", {
       "data-testid": "full-pack-storage-warning",
       role: "status",
-      className: "mx-3 mt-2 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] leading-relaxed text-amber-950"
+      className: "mx-3 mt-2 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-950"
     }, /*#__PURE__*/React.createElement(AlertTriangle, {
       size: 14,
       "aria-hidden": "true",
@@ -512,7 +512,7 @@ function FullPackRunView(props) {
     }, t('blueprint.saved_run_warning') || 'Saved-run warning', ":"), " ", fullPackRun.persistenceWarning)), fullPackRun.status === 'ready' && planChanges.length > 0 && /*#__PURE__*/React.createElement("div", {
       role: "status",
       "aria-live": "polite",
-      className: "mx-3 mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] leading-relaxed text-amber-950"
+      className: "mx-3 mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-950"
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-black"
     }, t('fullpack.settings_changed') || 'Settings changed after this plan was created'), /*#__PURE__*/React.createElement("div", {
@@ -565,7 +565,7 @@ function FullPackRunView(props) {
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-black"
     }, t('fullpack.capacity_preview') || 'Capacity preview'), providerSummary && /*#__PURE__*/React.createElement("div", {
-      className: "flex min-w-0 items-center gap-1 text-[9px] font-semibold"
+      className: "flex min-w-0 items-center gap-1 text-xs font-semibold"
     }, /*#__PURE__*/React.createElement(Cpu, {
       size: 11,
       "aria-hidden": "true"
@@ -606,7 +606,7 @@ function FullPackRunView(props) {
     }, "~", Math.max(1, planMinutes)), /*#__PURE__*/React.createElement("span", {
       className: "min-w-0 truncate"
     }, t('fullpack.minutes') || 'minutes'))), /*#__PURE__*/React.createElement("div", {
-      className: "mt-1 text-[10px] text-slate-600"
+      className: "mt-1 text-xs text-slate-600"
     }, usesObservedEstimate ? t('fullpack.estimate_observed') || 'Estimate uses recent timings from this device' : t('fullpack.estimate_defaults') || 'Estimate uses provider defaults'))), localizedCapacityWarnings.length > 0 && /*#__PURE__*/React.createElement("div", {
       "data-testid": "full-pack-capacity-warnings",
       role: "status",
@@ -617,7 +617,7 @@ function FullPackRunView(props) {
     }, warning)))), fullPackRun.status !== 'ready' && total > 0 && /*#__PURE__*/React.createElement("div", {
       className: "px-3 pt-2.5"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "mb-1 flex justify-between text-[10px] font-bold text-slate-600"
+      className: "mb-1 flex justify-between text-xs font-bold text-slate-600"
     }, /*#__PURE__*/React.createElement("span", null, settled, " of ", total, " ", t('fullpack.finished') || 'finished'), /*#__PURE__*/React.createElement("span", null, progress, "%")), /*#__PURE__*/React.createElement("div", {
       className: "h-2 overflow-hidden rounded-full bg-slate-200",
       role: "progressbar",
@@ -653,13 +653,13 @@ function FullPackRunView(props) {
       return /*#__PURE__*/React.createElement("div", {
         key: section.groupId || section.runId || sectionIndex
       }, groupRuns.length > 0 && /*#__PURE__*/React.createElement("div", {
-        className: "mb-1.5 text-[10px] font-black uppercase tracking-wide text-indigo-800"
+        className: "mb-1.5 text-xs font-black uppercase tracking-wide text-indigo-800"
       }, section.groupName || `Group ${sectionIndex + 1}`), /*#__PURE__*/React.createElement("div", {
         className: "space-y-1.5"
       }, rows.length === 0 && /*#__PURE__*/React.createElement("div", {
-        className: "rounded-lg border border-dashed border-slate-200 px-2.5 py-2 text-[10px] text-slate-600"
+        className: "rounded-lg border border-dashed border-slate-200 px-2.5 py-2 text-xs text-slate-600"
       }, t('fullpack.waiting_group') || 'Waiting to plan this group…'), rows.length > 0 && visibleRows.length === 0 && /*#__PURE__*/React.createElement("div", {
-        className: "rounded-lg border border-dashed border-emerald-200 bg-emerald-50/60 px-2.5 py-2 text-[10px] text-emerald-800"
+        className: "rounded-lg border border-dashed border-emerald-200 bg-emerald-50/60 px-2.5 py-2 text-xs text-emerald-800"
       }, t('fullpack.completed_hidden') || 'Completed resources are hidden.'), visibleRows.map((row, index) => {
         const rowKey = row.key || `${row.type}-${index}`;
         // Plan rows used to print the raw internal resource id, so the pack
@@ -679,7 +679,7 @@ function FullPackRunView(props) {
         const rowVariantGrades = Array.from(new Set(rowGenerationVariants.map(variant => variant && variant.grade).filter(Boolean)));
         const rowVariantLanguages = Array.from(new Set(rowGenerationVariants.map(variant => variant && variant.language).filter(Boolean)));
         const rowStatus = /*#__PURE__*/React.createElement("span", {
-          className: `shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold ${statusStyles[row.status] || statusStyles.queued}`
+          className: `shrink-0 rounded-full border px-2 py-0.5 text-xs font-bold ${statusStyles[row.status] || statusStyles.queued}`
         }, statusLabels[row.status] || row.status || t('fullpack.status_queued') || 'Queued', row.elapsedMs ? ` · ${Math.max(1, Math.round(row.elapsedMs / 1000))}s` : '');
         if (fullPackRun.status === 'ready') {
           const snapshot = section.settingsSnapshot || originalPlanSettings;
@@ -697,15 +697,15 @@ function FullPackRunView(props) {
           }, rowTitle), /*#__PURE__*/React.createElement("span", {
             className: "flex shrink-0 items-center gap-1.5"
           }, row.status === 'queued' ? /*#__PURE__*/React.createElement("span", {
-            className: "text-[11px] font-semibold text-indigo-700"
+            className: "text-xs font-semibold text-indigo-700"
           }, t('fullpack.edit_resource') || 'Edit') : row.status === 'reuse' ? /*#__PURE__*/React.createElement("span", {
-            className: "text-[11px] font-semibold text-emerald-800"
+            className: "text-xs font-semibold text-emerald-800"
           }, t('fullpack.already_available') || 'Already available') : rowStatus, /*#__PURE__*/React.createElement(ChevronDown, {
             size: 13,
             "aria-hidden": "true",
             className: "text-slate-600 transition-transform motion-reduce:transition-none group-open/plan:rotate-180"
           }))), /*#__PURE__*/React.createElement("div", {
-            className: "space-y-2 border-t border-slate-200 bg-white px-2.5 py-2 text-[10px] leading-relaxed text-slate-700"
+            className: "space-y-2 border-t border-slate-200 bg-white px-2.5 py-2 text-xs leading-relaxed text-slate-700"
           }, /*#__PURE__*/React.createElement("label", {
             className: "block font-bold text-slate-900"
           }, /*#__PURE__*/React.createElement("span", {
@@ -716,7 +716,7 @@ function FullPackRunView(props) {
             "data-group-id": sectionGroupId || '',
             value: row.type,
             onChange: event => handleChangeFullPackPlanResourceType(planResourceKey, event.target.value, sectionGroupId),
-            className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
+            className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
             "aria-label": (t('fullpack.resource_type') || 'Resource type') + ': ' + rowTitle
           }, rowTypeOptions.map(type => {
             const disabled = type === 'alignment-report' && !sectionHasStandards && type !== row.type;
@@ -739,7 +739,7 @@ function FullPackRunView(props) {
             value: row.directive || '',
             onChange: event => handleEditFullPackPlanResourceDirective(planResourceKey, event.target.value, sectionGroupId),
             placeholder: t('fullpack.standard_guidance') || 'Standard generation guidance',
-            className: "w-full resize-y rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-medium leading-relaxed text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+            className: "w-full resize-y rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-medium leading-relaxed text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
             "aria-label": (t('fullpack.instruction') || 'Instruction') + ': ' + rowTitle
           })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
             className: "font-bold text-slate-900"
@@ -799,7 +799,7 @@ function FullPackRunView(props) {
             "data-group-id": sectionGroupId || '',
             disabled: index <= 0,
             onClick: () => handleMoveFullPackPlanResource(planResourceKey, index - 1, sectionGroupId),
-            className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
+            className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
             "aria-label": (t('fullpack.move_up') || 'Move up') + ': ' + rowTitle
           }, /*#__PURE__*/React.createElement(ArrowUp, {
             size: 11,
@@ -811,7 +811,7 @@ function FullPackRunView(props) {
             "data-group-id": sectionGroupId || '',
             disabled: index >= rows.length - 1,
             onClick: () => handleMoveFullPackPlanResource(planResourceKey, index + 1, sectionGroupId),
-            className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
+            className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
             "aria-label": (t('fullpack.move_down') || 'Move down') + ': ' + rowTitle
           }, /*#__PURE__*/React.createElement(ArrowDown, {
             size: 11,
@@ -823,7 +823,7 @@ function FullPackRunView(props) {
             "data-group-id": sectionGroupId || '',
             disabled: rows.length <= 1,
             onClick: () => handleRemoveFullPackPlanResource(planResourceKey, sectionGroupId),
-            className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600",
+            className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600",
             "aria-label": (t('fullpack.remove_resource_aria') || 'Remove resource from plan') + ': ' + rowTitle,
             title: rows.length <= 1 ? t('fullpack.keep_one_resource') || 'Keep at least one resource in the plan' : t('fullpack.remove_resource') || 'Remove from plan'
           }, /*#__PURE__*/React.createElement(Trash2, {
@@ -837,7 +837,7 @@ function FullPackRunView(props) {
         }, /*#__PURE__*/React.createElement("div", {
           className: "min-w-0"
         }, /*#__PURE__*/React.createElement("div", {
-          className: "truncate text-[11px] font-bold text-slate-800"
+          className: "truncate text-xs font-bold text-slate-800"
         }, rowTitle), safeRowReason && /*#__PURE__*/React.createElement("div", {
           "data-testid": "full-pack-failure-reason",
           "data-failure-code": safeRowReason.code,
@@ -886,7 +886,7 @@ function FullPackRunView(props) {
         value: sectionAdaptedTextPolicy,
         onChange: event => handleSetFullPackPlanAdaptedTextPolicy(event.target.value, sectionGroupId),
         disabled: sectionAdaptedTextPolicy === 'prohibited',
-        className: "min-h-11 w-full rounded-lg border border-indigo-300 bg-white px-2 py-1.5 text-[10px] font-bold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
+        className: "min-h-11 w-full rounded-lg border border-indigo-300 bg-white px-2 py-1.5 text-xs font-bold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
         "aria-label": (t('fullpack.adapted_policy') || 'Adapted-text plan policy') + (section.groupName ? `: ${section.groupName}` : '')
       }, /*#__PURE__*/React.createElement("option", {
         value: "include"
@@ -936,7 +936,7 @@ function FullPackRunView(props) {
       })), /*#__PURE__*/React.createElement("div", {
         className: "flex flex-wrap items-end gap-2 border-t border-slate-200 px-2.5 py-2"
       }, /*#__PURE__*/React.createElement("label", {
-        className: "min-w-0 flex-1 text-[9px] font-bold uppercase tracking-wide text-slate-700"
+        className: "min-w-0 flex-1 text-xs font-bold uppercase tracking-wide text-slate-700"
       }, /*#__PURE__*/React.createElement("span", {
         className: "mb-1 block"
       }, t('fullpack.add_resource') || 'Add resource'), /*#__PURE__*/React.createElement("select", {
@@ -944,7 +944,7 @@ function FullPackRunView(props) {
         "data-group-id": sectionGroupId || '',
         value: fullPackAddType,
         onChange: event => setFullPackAddType(event.target.value),
-        className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-semibold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+        className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
       }, fullPackEditableTypes.map(type => {
         const disabled = type === 'alignment-report' && !sectionHasStandards || type === 'simplified' && sectionAdaptedTextPolicy === 'prohibited';
         const label = type === 'simplified' ? t('common.adapted_text') || 'Adapted text' : getDefaultTitle(type) || String(type).replace(/-/g, ' ');
@@ -962,7 +962,7 @@ function FullPackRunView(props) {
           directive: ''
         }, sectionGroupId),
         disabled: !fullPackAddType || fullPackAddType === 'alignment-report' && !sectionHasStandards,
-        className: "inline-flex min-h-11 items-center gap-1 rounded-lg bg-indigo-700 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+        className: "inline-flex min-h-11 items-center gap-1 rounded-lg bg-indigo-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
       }, /*#__PURE__*/React.createElement(Plus, {
         size: 12,
         "aria-hidden": "true"
@@ -981,12 +981,12 @@ function FullPackRunView(props) {
     }, /*#__PURE__*/React.createElement("p", null, t('fullpack.troubleshooting_help') || 'Technical details for investigating a problem. These reports describe the generation process, not your teaching materials.'), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap items-center gap-2"
     }, elapsedSeconds > 0 && /*#__PURE__*/React.createElement("span", {
-      className: "me-auto text-[10px] font-semibold text-slate-600"
+      className: "me-auto text-xs font-semibold text-slate-600"
     }, t('fullpack.run') || 'Run', " ", fullPackRun.runId?.slice(-8), " \xB7 ", elapsedSeconds, "s"), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-testid": "full-pack-copy-diagnostics",
       onClick: handleCopyFullPackDiagnostics,
-      className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+      className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
     }, /*#__PURE__*/React.createElement(Copy, {
       size: 12,
       "aria-hidden": "true"
@@ -994,7 +994,7 @@ function FullPackRunView(props) {
       type: "button",
       "data-testid": "full-pack-download-diagnostics",
       onClick: handleDownloadFullPackDiagnostics,
-      className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+      className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
     }, /*#__PURE__*/React.createElement(Download, {
       size: 12,
       "aria-hidden": "true"
@@ -1006,7 +1006,7 @@ function FullPackRunView(props) {
       "data-testid": "full-pack-toggle-completed",
       "aria-pressed": !showCompletedFullPackRows,
       onClick: () => setShowCompletedFullPackRows(value => !value),
-      className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-emerald-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
+      className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
     }, showCompletedFullPackRows ? /*#__PURE__*/React.createElement(EyeOff, {
       size: 12,
       "aria-hidden": "true"
@@ -1018,7 +1018,7 @@ function FullPackRunView(props) {
       "data-testid": "full-pack-refresh-plan",
       disabled: !aiCapability.text,
       onClick: handlePlanFullPack,
-      className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+      className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
     }, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12,
       "aria-hidden": "true"
@@ -1027,7 +1027,7 @@ function FullPackRunView(props) {
       "data-testid": "full-pack-retry",
       disabled: !aiCapability.text,
       onClick: handleRetryFailedFullPack,
-      className: "inline-flex min-h-11 items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+      className: "inline-flex min-h-11 items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
     }, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12,
       "aria-hidden": "true"
@@ -1035,14 +1035,14 @@ function FullPackRunView(props) {
       type: "button",
       "data-testid": "full-pack-open-error-log",
       onClick: handleOpenGenerationErrorLog,
-      className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[10px] font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2"
+      className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2"
     }, /*#__PURE__*/React.createElement(AlertTriangle, {
       size: 12,
       "aria-hidden": "true"
     }), t('fullpack.open_error_log') || 'Open error log'), !['running', 'retrying', 'planning'].includes(fullPackRun.status) && /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: handleDismissFullPackRun,
-      className: "min-h-11 rounded-lg px-2.5 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+      className: "min-h-11 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
     }, t('fullpack.dismiss') || 'Dismiss')));
   })());
 }

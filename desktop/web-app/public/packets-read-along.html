@@ -69,7 +69,7 @@
     <ul aria-labelledby="cannot-title">
       <li>Run AI. It makes no speech: it only plays the recordings that were made here.</li>
       <li>Connect to the internet. The file tells the browser to refuse every connection, and the browser enforces it.</li>
-      <li>Listen to the student. It never uses the microphone or the camera.</li>
+      <li>Listen to the student, unless you turn on optional student voice practice in step 4 (which stays in the student's browser tab only and is never saved or sent). It never uses the camera.</li>
     </ul>
     <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
       <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
@@ -113,6 +113,38 @@
         <span class="hint" id="text-hint">Up to 6,000 letters and 120 sentences. Each sentence can have its own recording, or you can save a reading file with Syllables and Reading tools without recordings. To choose the breaks yourself, put each sentence on its own line. An empty line starts a new paragraph.</span>
         <textarea id="f-text" rows="8" maxlength="6000" aria-describedby="text-hint text-said"></textarea>
         <span class="hint" id="text-said" role="status"></span>
+        <span class="ra-stats" id="passage-stats" hidden></span>
+        <p class="row">
+          <button type="button" class="btn btn-small" id="passage-load">Load passage from a .txt or .md file</button>
+          <input type="file" id="passage-file" accept=".txt,.md,text/plain,text/markdown" aria-label="A plain text or markdown passage file" hidden>
+        </p>
+        <span class="hint" id="passage-problem" role="alert"></span>
+      </div>
+      <div class="field">
+        <label for="f-page-mode">Pages</label>
+        <select id="f-page-mode" aria-describedby="page-mode-hint">
+          <option value="auto">Separate pages (automatic)</option>
+          <option value="scroll">All on one page (scroll down)</option>
+          <option value="custom">Separate pages where I split them</option>
+        </select>
+        <span class="hint" id="page-mode-hint">Show the whole passage on one scrollable page, split automatically into pages, or choose your own page breaks (put --- on its own line, or use Split page in step 3). Start a line with # for a heading.</span>
+      </div>
+      <div class="field">
+        <label for="f-lang">Passage language</label>
+        <select id="f-lang" aria-describedby="lang-hint">
+          <option value="en">English</option>
+          <option value="es">Spanish (Español)</option>
+          <option value="fr">French (Français)</option>
+          <option value="de">German (Deutsch)</option>
+          <option value="ar">Arabic (العربية, right-to-left)</option>
+          <option value="he">Hebrew (עברית, right-to-left)</option>
+          <option value="fa">Farsi (فارسی, right-to-left)</option>
+          <option value="ur">Urdu (اردو, right-to-left)</option>
+          <option value="zh">Chinese (中文)</option>
+          <option value="ja">Japanese (日本語)</option>
+          <option value="vi">Vietnamese (Tiếng Việt)</option>
+        </select>
+        <span class="hint" id="lang-hint">Right-to-left languages set the file direction automatically. Record non-English passages with your microphone in step 3.</span>
       </div>
     </section>
 
@@ -123,10 +155,35 @@
       <div class="field">
         <label for="f-voice">Which voice</label>
         <select id="f-voice" aria-describedby="voice-hint">
-          <option value="af_heart">Heart, a woman's voice (US English)</option>
-          <option value="af_bella">Bella, a woman's voice (US English)</option>
-          <option value="am_adam">Adam, a man's voice (US English)</option>
-          <option value="am_michael">Michael, a man's voice (US English)</option>
+          <optgroup label="US English">
+            <option value="af_heart">Heart, a warm woman's voice (US English)</option>
+            <option value="af_bella">Bella, a woman's voice (US English)</option>
+            <option value="af_nova">Nova, a clear woman's voice (US English)</option>
+            <option value="af_sky">Sky, a bright woman's voice (US English)</option>
+            <option value="af_sarah">Sarah, a gentle woman's voice (US English)</option>
+            <option value="af_nicole">Nicole, a soft woman's voice (US English)</option>
+            <option value="af_alloy">Alloy, a balanced woman's voice (US English)</option>
+            <option value="af_aoede">Aoede, a melodic woman's voice (US English)</option>
+            <option value="af_jessica">Jessica, a friendly woman's voice (US English)</option>
+            <option value="af_kore">Kore, a calm woman's voice (US English)</option>
+            <option value="af_river">River, a smooth woman's voice (US English)</option>
+            <option value="am_adam">Adam, a man's voice (US English)</option>
+            <option value="am_michael">Michael, a deep man's voice (US English)</option>
+            <option value="am_echo">Echo, a resonant man's voice (US English)</option>
+            <option value="am_eric">Eric, a steady man's voice (US English)</option>
+            <option value="am_fenrir">Fenrir, a bold man's voice (US English)</option>
+            <option value="am_liam">Liam, a calm man's voice (US English)</option>
+            <option value="am_onyx">Onyx, a rich man's voice (US English)</option>
+            <option value="am_puck">Puck, a lively man's voice (US English)</option>
+          </optgroup>
+          <optgroup label="British English">
+            <option value="bf_emma">Emma, a woman's voice (British English)</option>
+            <option value="bf_isabella">Isabella, a woman's voice (British English)</option>
+            <option value="bf_alice">Alice, a woman's voice (British English)</option>
+            <option value="bf_lily">Lily, a woman's voice (British English)</option>
+            <option value="bm_george">George, a man's voice (British English)</option>
+            <option value="bm_lewis">Lewis, a man's voice (British English)</option>
+          </optgroup>
         </select>
         <span class="hint" id="voice-hint">The voice reads English. A recording keeps the voice it was made with.</span>
       </div>
@@ -150,6 +207,9 @@
         <button type="button" class="btn btn-primary" id="make-all" disabled>Make the recordings</button>
         <button type="button" class="btn" id="stop" hidden>Stop</button>
       </p>
+      <p class="ra-rec-opt">
+        <label class="radio"><input type="checkbox" id="auto-advance-rec"> <span>When recording with your voice, move right to the next unrecorded sentence after Stop</span></label>
+      </p>
       <p id="make-said" class="result-sub" role="status">Type a passage in step 1 first.</p>
       <p id="make-problem" class="actions-note" role="alert"></p>
       <ol id="line-rows" class="voice-rows ra-rows" aria-label="The sentences and their recordings"></ol>
@@ -161,9 +221,49 @@
       <p id="file-said" class="result-line" role="status">Type a passage in step 1 to build the file.</p>
       <p id="file-sub" class="result-sub"></p>
       <p id="file-problem" class="actions-note" role="alert"></p>
-      <p class="ra-print-opt" id="print-syl-wrap" hidden>
-        <label class="radio"><input type="checkbox" id="print-syl"> <span>Show syllable dots on paper</span></label>
-      </p>
+      <div class="ra-file-opts">
+        <div class="ra-support-grid">
+          <p class="ra-print-opt ra-support-card">
+            <label class="radio"><input type="checkbox" id="f-pos"> <span><strong>Parts of speech</strong><small class="hint">Highlight nouns, verbs, adjectives, and adverbs with offline dictionaries and grammar rules. No AI.</small></span></label>
+          </p>
+          <p class="ra-print-opt ra-support-card">
+            <label class="radio"><input type="checkbox" id="f-dict"> <span><strong>Word meanings</strong><small class="hint">Tap any word for an offline definition from Simple English Wiktionary and WordNet. No AI.</small></span></label>
+            <span class="hint" id="dict-said" role="status"></span>
+          </p>
+          <p class="ra-print-opt ra-support-card">
+            <label class="radio"><input type="checkbox" id="f-dict-pics"> <span><strong>Offline word pictures</strong><small class="hint">Pair Mulberry Symbols, OpenMoji, 696 K-12 curriculum diagrams, and your saved pictures from <a href="packets-pictures.html" target="_blank" rel="noopener">Find a picture</a>. No AI.</small></span></label>
+            <span class="hint" id="pics-said" role="status"></span>
+          </p>
+          <p class="ra-print-opt ra-support-card">
+            <label class="radio"><input type="checkbox" id="f-simple-bar"> <span><strong>Simple toolbar for early readers</strong><small class="hint">Keep only Read to me, Syllables, and Word meanings in front; tuck extra views under More tools.</small></span></label>
+          </p>
+          <p class="ra-print-opt ra-support-card">
+            <label class="radio"><input type="checkbox" id="f-device-voice"> <span><strong>Tap a word to hear it (local device voice)</strong><small class="hint">Uses only a voice already installed on the student's device (never an internet voice) for single words or unrecorded lines.</small></span></label>
+          </p>
+          <p class="ra-print-opt ra-support-card">
+            <label class="radio"><input type="checkbox" id="f-student-mic"> <span><strong>Student voice practice</strong><small class="hint">Let students record and listen back to their own voice. Stays in their tab only and is never saved or sent.</small></span></label>
+          </p>
+        </div>
+        <p class="ra-print-opt" id="print-syl-wrap" hidden>
+          <label class="radio"><input type="checkbox" id="print-syl"> <span>Show syllable dots on paper</span></label>
+        </p>
+        <p class="ra-print-opt" id="print-bold-wrap" hidden>
+          <label class="radio"><input type="checkbox" id="print-bold"> <span>Bold word starts on paper</span></label>
+        </p>
+        <p class="ra-print-opt" id="print-dict-wrap" hidden>
+          <label class="radio"><input type="checkbox" id="print-dict"> <span>Include word meanings on paper</span></label>
+        </p>
+      </div>
+      <details class="ra-preview" id="live-preview" hidden>
+        <summary>Preview how students will see page 1</summary>
+        <div class="ra-preview-body">
+          <div class="ra-preview-bar">
+            <span class="hint" id="preview-meta"></span>
+            <label class="radio ra-preview-toggle" id="preview-syl-wrap" hidden><input type="checkbox" id="preview-syl"> <span>Show syllable dots</span></label>
+          </div>
+          <div class="ra-preview-card" id="preview-card" aria-live="polite"></div>
+        </div>
+      </details>
       <div class="actions actions-file">
         <a class="btn" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
         <button type="button" class="btn" id="print" hidden>Print on paper</button>

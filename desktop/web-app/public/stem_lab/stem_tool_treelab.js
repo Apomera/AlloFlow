@@ -2768,6 +2768,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         new THREE.Color(mixHex(groundNear, '#4a3a24', 0.35)).getHex(),
         api.dark ? 0.30 : 0.48
       ));
+      // Warm golden forest rim light catching canopy silhouettes & bark ridges
+      if (lightLevel > 0.15 && typeof THREE.DirectionalLight === 'function') {
+        var rimLight = new THREE.DirectionalLight(
+          new THREE.Color(mixHex(sunHex, '#fde68a', 0.45)).getHex(),
+          (api.dark ? 0.26 : 0.38) * lightLevel
+        );
+        rimLight.position.set(-sunDir.x * 5.2, Math.max(1.2, sunDir.y * 4.5 + 1.0), -sunDir.z * 5.2);
+        group.add(rimLight);
+      }
     }
 
     // ── Trunk: curved, tapered, fluted, with a root flare. ──
@@ -2899,6 +2908,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     }
     trunkGroup.userData.labelAnchor = new THREE.Vector3(0, trunkH * 0.46, 0);
     trunkGroup.userData.noSelectionScale = true;
+
+    // ── Animated GLSL Xylem (upward sapphire water) & Phloem (downward golden sugar)
+    //    vascular transport streams hugging the trunk bark (WebGL1 / GLSL ES 1.00).
+    //    Skipped in high-contrast mode and on dead trees; frozen cleanly under reduced motion. ──
+    var vascularUniforms = null;
+    if (!flat && alive && typeof THREE.ShaderMaterial === 'function' && typeof THREE.CylinderGeometry === 'function') {
+      var vascLen = trunkH * 0.94;
+      var vascGeo = new THREE.CylinderGeometry(
+        Math.max(0.004, trunkTopR * 1.18),
+        Math.max(0.005, trunkR * 1.18),
+        vascLen, 24, 14, true
+      );
+      var vPos = vascGeo.attributes.position;
+      for (var vi = 0; vi < vPos.count; vi++) {
+        var vx = vPos.getX(vi), vy = vPos.getY(vi), vz = vPos.getZ(vi);
+        var vt = clamp((vy + vascLen * 0.5) / Math.max(0.001, vascLen), 0, 1);
+        var vk = Math.pow(vt, 1.7);
+        vPos.setXYZ(vi, vx + leanAmt * 0.8 * vk, vy, vz - leanAmt * 0.45 * vk);
+      }
+      vPos.needsUpdate = true;
+      vascGeo.computeVertexNormals();
+      var waterFlux = clamp((1 - visual.waterStress * 0.72) * (bare ? 0.28 : 1.0), 0.18, 1.0);
+      var sugarFlux = clamp((1 - visual.carbonStress * 0.65) * (bare ? 0.25 : 0.95), 0.18, 1.0);
+      vascularUniforms = {
+        uTime: { value: reduced ? 2.35 : 0.0 },
+        uWaterFlux: { value: waterFlux },
+        uSugarFlux: { value: sugarFlux },
+        uXylemCol: { value: new THREE.Color(api.dark ? 0x38bdf8 : 0x0ea5e9) },
+        uPhloemCol: { value: new THREE.Color(api.dark ? 0xfbbf24 : 0xf59e0b) },
+        uOpacity: { value: api.dark ? 0.52 : 0.42 }
+      };
+      var vascMat = new THREE.ShaderMaterial({
+        uniforms: vascularUniforms,
+        vertexShader: [
+          'varying vec2 vUv;',
+          'varying vec3 vNormView;',
+          'varying vec3 vViewPos;',
+          'void main() {',
+          '  vUv = uv;',
+          '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+          '  vNormView = normalize(normalMatrix * normal);',
+          '  vViewPos = -mv.xyz;',
+          '  gl_Position = projectionMatrix * mv;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uWaterFlux;',
+          'uniform float uSugarFlux;',
+          'uniform vec3 uXylemCol;',
+          'uniform vec3 uPhloemCol;',
+          'uniform float uOpacity;',
+          'varying vec2 vUv;',
+          'varying vec3 vNormView;',
+          'varying vec3 vViewPos;',
+          'void main() {',
+          '  float endFade = smoothstep(0.0, 0.14, vUv.y) * smoothstep(1.0, 0.82, vUv.y);',
+          '  float facing = clamp(abs(dot(normalize(vNormView), normalize(vViewPos))), 0.0, 1.0);',
+          '  float rimSoft = smoothstep(0.08, 0.55, facing);',
+          '  float ang = vUv.x * 6.2831853;',
+          '  // Upward blue xylem water filaments (spiral slightly with grain)',
+          '  float xTrack = 0.5 + 0.5 * sin(ang * 5.0 + vUv.y * 4.2);',
+          '  float xStrand = smoothstep(0.76, 0.98, xTrack);',
+          '  float xWave = 0.5 + 0.5 * sin(vUv.y * 22.0 - uTime * 2.6 + sin(ang * 5.0) * 1.4);',
+          '  float xPulse = pow(xWave, 2.4) * xStrand * uWaterFlux;',
+          '  // Downward golden phloem sugar sieve streams (interleaved between xylem)',
+          '  float pTrack = 0.5 + 0.5 * sin(ang * 5.0 + 3.1415926 - vUv.y * 3.1);',
+          '  float pStrand = smoothstep(0.78, 0.985, pTrack);',
+          '  float pWave = 0.5 + 0.5 * sin(vUv.y * 18.0 + uTime * 2.0 + cos(ang * 5.0) * 1.2);',
+          '  float pPulse = pow(pWave, 2.6) * pStrand * uSugarFlux;',
+          '  vec3 xGlow = mix(uXylemCol, vec3(0.82, 0.96, 1.0), xPulse * 0.45) * (xStrand * 0.16 + xPulse * 0.95);',
+          '  vec3 pGlow = mix(uPhloemCol, vec3(1.0, 0.96, 0.78), pPulse * 0.45) * (pStrand * 0.14 + pPulse * 0.92);',
+          '  float alpha = clamp((xStrand * 0.12 + xPulse * 0.72 + pStrand * 0.10 + pPulse * 0.68) * endFade * rimSoft * uOpacity, 0.0, 0.85);',
+          '  if (alpha < 0.01) discard;',
+          '  gl_FragColor = vec4(xGlow + pGlow, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        side: THREE.FrontSide,
+        blending: THREE.AdditiveBlending
+      });
+      var vascMesh = new THREE.Mesh(vascGeo, vascMat);
+      vascMesh.name = 'tree-vascular-streams';
+      vascMesh.position.y = trunkH * 0.5;
+      vascMesh.renderOrder = 3;
+      trunkGroup.add(vascMesh);
+    }
+
     meshes.trunk = trunkGroup;
     group.add(trunkGroup);
 
@@ -3131,6 +3229,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     //    back-to-front sort that no instanced mesh can give you, and the usual symptom
     //    is leaves winking in and out as the camera turns. ──
     var cards = null, cardMat = null;
+    var canopyShaderUniforms = null;
+    function attachCanopyShader(targetMat) {
+      if (flat || !targetMat) return;
+      if (!canopyShaderUniforms) {
+        canopyShaderUniforms = {
+          uWindTime: { value: reduced ? 1.4 : 0.0 },
+          uWindAmp: { value: 0.0 },
+          uSunDir: { value: sunDir.clone() },
+          uSunCol: { value: new THREE.Color(mixHex(sunHex, '#fef08a', 0.45)) },
+          uTranslucency: { value: clamp((0.26 + 0.56 * lightLevel) * (1.0 - visual.carbonStress * 0.25), 0.14, 0.88) }
+        };
+      }
+      targetMat.onBeforeCompile = function (shader) {
+        shader.uniforms.uWindTime = canopyShaderUniforms.uWindTime;
+        shader.uniforms.uWindAmp = canopyShaderUniforms.uWindAmp;
+        shader.uniforms.uSunDir = canopyShaderUniforms.uSunDir;
+        shader.uniforms.uSunCol = canopyShaderUniforms.uSunCol;
+        shader.uniforms.uTranslucency = canopyShaderUniforms.uTranslucency;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'uniform float uWindTime;',
+            'uniform float uWindAmp;',
+            'uniform vec3 uSunDir;',
+            'varying vec3 vTreeSunViewDir;',
+            'varying float vTreeLeafEdge;'
+          ].join('\n'))
+          .replace('#include <begin_vertex>', [
+            '#include <begin_vertex>',
+            'float leafTipW = clamp(position.y + 0.5, 0.0, 1.0);',
+            'vTreeLeafEdge = clamp(length(position.xy) * 1.45, 0.0, 1.0);',
+            'float leafPhase = position.x * 3.7 + position.y * 2.9;',
+            '#ifdef USE_INSTANCING',
+            '  leafPhase += instanceMatrix[3].x * 4.3 + instanceMatrix[3].y * 3.1 + instanceMatrix[3].z * 3.7;',
+            '#endif',
+            'float flutterA = sin(uWindTime * 2.35 + leafPhase);',
+            'float flutterB = cos(uWindTime * 1.85 + leafPhase * 1.37);',
+            'transformed.x += flutterA * uWindAmp * (0.35 + 0.65 * leafTipW);',
+            'transformed.z += flutterB * uWindAmp * 0.72 * (0.35 + 0.65 * leafTipW);',
+            'transformed.y += sin(uWindTime * 3.05 + leafPhase * 0.75) * uWindAmp * 0.24 * leafTipW;',
+            'vTreeSunViewDir = normalize((viewMatrix * vec4(uSunDir, 0.0)).xyz);'
+          ].join('\n'));
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'uniform vec3 uSunCol;',
+            'uniform float uTranslucency;',
+            'varying vec3 vTreeSunViewDir;',
+            'varying float vTreeLeafEdge;'
+          ].join('\n'))
+          .replace('#include <envmap_fragment>', [
+            'vec3 treeViewDir = normalize(vViewPosition);',
+            'float treeBacklit = pow(clamp(dot(-vTreeSunViewDir, treeViewDir), 0.0, 1.0), 2.5);',
+            'float treeWrap = clamp((abs(dot(normal, vTreeSunViewDir)) + 0.45) / 1.45, 0.0, 1.0);',
+            'float treeSss = (0.28 * treeWrap + 0.92 * treeBacklit) * (0.65 + 0.35 * vTreeLeafEdge) * uTranslucency;',
+            'vec3 chloroTint = mix(diffuseColor.rgb * vec3(1.18, 1.36, 0.56), uSunCol, 0.38);',
+            'outgoingLight += chloroTint * treeSss * 0.52;',
+            '#include <envmap_fragment>'
+          ].join('\n'));
+      };
+      targetMat.customProgramCacheKey = function () { return 'tree-canopy-sss-wind-v1'; };
+    }
     var leafTex = cardSpec.length ? leafTexture(THREE, needle) : null;
     if (leafTex) {
       cardMat = new THREE.MeshPhongMaterial({
@@ -3142,6 +3302,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // A neutral fill avoids tinting yellow and brown autumn leaves green.
         cardMat.emissive = new THREE.Color(0x10100e);
         cardMat.userData._preserveBaseEmissive = true;
+        attachCanopyShader(cardMat);
       }
       cardMat.userData._keepOpaqueOnRecede = true;
       cards = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), cardMat, cardSpec.length);
@@ -3256,6 +3417,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     fineRoots.renderOrder = 3;
     rootGroup.add(fineRoots);
     registerPick(fineRoots, 'roots');
+
+    // Subterranean mycorrhizal hyphae web & bioluminescent nutrient-flow pulses
+    var mycoPulsePoints = null, mycoPulsePos = null, mycoPulseSeeds = [];
+    if (!flat && alive && structuralEnds.length && typeof THREE.BufferGeometry === 'function') {
+      // Delicate glowing fungal hyphae connecting lateral root tips underground
+      if (typeof THREE.LineSegments === 'function' && typeof THREE.LineBasicMaterial === 'function') {
+        var hyphaVerts = [];
+        for (var hi = 0; hi < structuralEnds.length; hi++) {
+          var ha = structuralEnds[hi].end;
+          var hb = structuralEnds[(hi + 1) % structuralEnds.length].end;
+          var hMidX = (ha.x + hb.x) * 0.52;
+          var hMidY = (ha.y + hb.y) * 0.5 - rootDepth * 0.08;
+          var hMidZ = (ha.z + hb.z) * 0.52;
+          hyphaVerts.push(ha.x * 0.72, ha.y * 0.72, ha.z * 0.72, hMidX, hMidY, hMidZ);
+          hyphaVerts.push(hMidX, hMidY, hMidZ, hb.x * 0.72, hb.y * 0.72, hb.z * 0.72);
+          hyphaVerts.push(ha.x * 0.48, ha.y * 0.48, ha.z * 0.48, hb.x * 0.88, hb.y * 0.88, hb.z * 0.88);
+        }
+        var hyphaGeo = new THREE.BufferGeometry();
+        hyphaGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(hyphaVerts), 3));
+        var hyphaMat = new THREE.LineBasicMaterial({
+          color: api.dark ? 0x5eead4 : 0x2dd4bf,
+          transparent: true, opacity: api.dark ? 0.34 : 0.24,
+          depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+        });
+        var hyphaLines = new THREE.LineSegments(hyphaGeo, hyphaMat);
+        hyphaLines.renderOrder = 4;
+        rootGroup.add(hyphaLines);
+      }
+
+      // Bioluminescent nutrient/water pulses gliding along the root arteries
+      if (typeof THREE.Points === 'function' && typeof THREE.ShaderMaterial === 'function') {
+        var pulsePerRoot = 4;
+        var pulseTotal = structuralEnds.length * pulsePerRoot;
+        mycoPulsePos = new Float32Array(pulseTotal * 3);
+        var pIdx = 0;
+        for (var pi3 = 0; pi3 < structuralEnds.length; pi3++) {
+          var pend = structuralEnds[pi3].end;
+          for (var pj = 0; pj < pulsePerRoot; pj++) {
+            var frac0 = (pj + 0.3) / pulsePerRoot;
+            mycoPulseSeeds.push({ end: pend, offset: frac0, inward: pj % 2 === 0 });
+            mycoPulsePos[pIdx * 3] = pend.x * frac0;
+            mycoPulsePos[pIdx * 3 + 1] = pend.y * frac0;
+            mycoPulsePos[pIdx * 3 + 2] = pend.z * frac0;
+            pIdx++;
+          }
+        }
+        var mpGeo = new THREE.BufferGeometry();
+        mpGeo.setAttribute('position', new THREE.BufferAttribute(mycoPulsePos, 3));
+        var mpMat = new THREE.ShaderMaterial({
+          uniforms: {
+            uCol: { value: new THREE.Color(api.dark ? 0x67e8f9 : 0x34d399) },
+            uOp: { value: api.dark ? 0.78 : 0.62 }
+          },
+          vertexShader: 'void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = clamp(22.0 / max(0.8, -mv.z), 3.0, 9.0); gl_Position = projectionMatrix * mv; }',
+          fragmentShader: 'uniform vec3 uCol; uniform float uOp; void main() { float d = length(gl_PointCoord - vec2(0.5)); if (d > 0.5) discard; float g = pow(1.0 - d * 2.0, 1.9); gl_FragColor = vec4(mix(uCol, vec3(1.0, 0.98, 0.85), g * 0.5), g * uOp); }',
+          transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending
+        });
+        mycoPulsePoints = new THREE.Points(mpGeo, mpMat);
+        mycoPulsePoints.renderOrder = 5;
+        rootGroup.add(mycoPulsePoints);
+      }
+    }
+
     rootGroup.userData.labelAnchor = new THREE.Vector3(0, -rootDepth * 0.38, 0);
     rootGroup.userData.noSelectionScale = true;
     meshes.roots = rootGroup;
@@ -3365,6 +3589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         cloneMat.emissive = new THREE.Color(0x0b1f10);
         cloneMat.userData._preserveBaseEmissive = true;
         cloneMat.userData._keepOpaqueOnRecede = true;
+        attachCanopyShader(cloneMat);
         cloneLeafMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), cloneMat, cloneCards.length);
         if (api.wantShadow) cloneLeafMesh.castShadow = true;
         var cdum = new THREE.Object3D();
@@ -3852,6 +4077,122 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       group.add(snowMesh);
     }
 
+    // Dappled sunlit forest shafts angling through the canopy (pure GLSL, no extra canvas)
+    var forestShafts = [];
+    if (!flat && lightLevel > 0.25 && typeof THREE.ShaderMaterial === 'function' && typeof THREE.PlaneGeometry === 'function') {
+      var shaftSpanH = Math.max(1.4, H * 1.15);
+      var shaftSpanW = Math.max(0.28, crownR * 0.52);
+      var fShaftGeo = new THREE.PlaneGeometry(shaftSpanW, shaftSpanH);
+      for (var fsi = 0; fsi < 3; fsi++) {
+        var fOp = (api.dark ? 0.14 : 0.12) * lightLevel;
+        var fMat = new THREE.ShaderMaterial({
+          uniforms: {
+            uCol: { value: new THREE.Color(mixHex(sunHex, '#fef3c7', 0.45)) },
+            uOp: { value: fOp },
+            uTime: { value: 0.0 },
+            uSeed: { value: fsi * 2.3 }
+          },
+          vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+          fragmentShader: 'uniform vec3 uCol; uniform float uOp; uniform float uTime; uniform float uSeed; varying vec2 vUv; void main() { float xFade = smoothstep(0.0, 0.36, vUv.x) * smoothstep(1.0, 0.64, vUv.x); float yFade = smoothstep(0.0, 0.35, vUv.y) * smoothstep(1.0, 0.72, vUv.y); float dapple = 0.74 + 0.26 * sin(vUv.x * 11.0 + uTime * 0.65 + uSeed) * cos(vUv.y * 6.0 - uTime * 0.4); gl_FragColor = vec4(uCol, xFade * yFade * dapple * uOp); }',
+          transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+        });
+        var fMesh = new THREE.Mesh(fShaftGeo, fMat);
+        var fAng = sunAz + (fsi - 1) * 0.55;
+        fMesh.position.set(Math.cos(fAng) * crownR * 0.35, H * 0.52, Math.sin(fAng) * crownR * 0.35);
+        fMesh.rotation.set(0, fAng + 0.4, -0.26);
+        fMesh.userData._baseOp = fOp;
+        fMesh.renderOrder = 2;
+        group.add(fMesh);
+        forestShafts.push(fMesh);
+      }
+    }
+
+    // ── Drifting sunlit forest pollen & spore motes (pure GPU GLSL Points ShaderMaterial)
+    //    Skipped in high-contrast mode; frozen to a serene sunlit beauty frame under reduced motion. ──
+    var pollenUniforms = null;
+    if (!flat && alive && lightLevel > 0.12 && typeof THREE.Points === 'function' &&
+        typeof THREE.ShaderMaterial === 'function' && typeof THREE.BufferGeometry === 'function') {
+      var pollenCount = season === 'winter' ? 28 : 68;
+      var pollenPos = new Float32Array(pollenCount * 3);
+      var pollenSeed = new Float32Array(pollenCount);
+      var pollenWarmth = new Float32Array(pollenCount);
+      var prnd = seeded(6143);
+      var pRad = Math.max(crownR * 1.55, lawnR * 0.45, 0.85);
+      var pSpanY = Math.max(1.1, crownTopY * 1.05);
+      for (var pmi = 0; pmi < pollenCount; pmi++) {
+        var pa = prnd() * 6.2831853;
+        var pr = pRad * (0.22 + Math.sqrt(prnd()) * 0.85);
+        pollenPos[pmi * 3] = Math.cos(pa) * pr;
+        pollenPos[pmi * 3 + 1] = 0.14 + prnd() * pSpanY;
+        pollenPos[pmi * 3 + 2] = Math.sin(pa) * pr;
+        pollenSeed[pmi] = prnd();
+        pollenWarmth[pmi] = prnd();
+      }
+      var pollenGeo = new THREE.BufferGeometry();
+      pollenGeo.setAttribute('position', new THREE.BufferAttribute(pollenPos, 3));
+      pollenGeo.setAttribute('aSeed', new THREE.BufferAttribute(pollenSeed, 1));
+      pollenGeo.setAttribute('aWarmth', new THREE.BufferAttribute(pollenWarmth, 1));
+      var pollenGold = season === 'winter' ? '#e0f2fe' : mixHex(sunHex, '#fef08a', 0.55);
+      var pollenGreen = season === 'autumn' ? '#fdba74' : (season === 'winter' ? '#bae6fd' : '#bef264');
+      pollenUniforms = {
+        uTime: { value: reduced ? 1.8 : 0.0 },
+        uWind: { value: 0.0 },
+        uColA: { value: new THREE.Color(pollenGold) },
+        uColB: { value: new THREE.Color(pollenGreen) },
+        uOp: { value: (api.dark ? 0.66 : 0.54) * clamp(0.45 + lightLevel * 0.65, 0.35, 1.0) }
+      };
+      var pollenMat = new THREE.ShaderMaterial({
+        uniforms: pollenUniforms,
+        vertexShader: [
+          'attribute float aSeed;',
+          'attribute float aWarmth;',
+          'uniform float uTime;',
+          'uniform float uWind;',
+          'varying float vSeed;',
+          'varying float vWarmth;',
+          'void main() {',
+          '  vSeed = aSeed;',
+          '  vWarmth = aWarmth;',
+          '  vec3 p = position;',
+          '  float ph = aSeed * 6.2831853;',
+          '  float drift = 0.055 + 0.095 * uWind;',
+          '  p.x += sin(uTime * (0.42 + aSeed * 0.35) + ph) * drift;',
+          '  p.y += sin(uTime * (0.31 + aWarmth * 0.28) + ph * 1.7) * 0.075;',
+          '  p.z += cos(uTime * (0.38 + aSeed * 0.29) + ph * 1.3) * drift;',
+          '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+          '  float sz = (14.0 + aSeed * 12.0) / max(0.75, -mv.z);',
+          '  gl_PointSize = clamp(sz, 2.2, 10.5);',
+          '  gl_Position = projectionMatrix * mv;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform vec3 uColA;',
+          'uniform vec3 uColB;',
+          'uniform float uOp;',
+          'varying float vSeed;',
+          'varying float vWarmth;',
+          'void main() {',
+          '  float d = length(gl_PointCoord - vec2(0.5));',
+          '  if (d > 0.5) discard;',
+          '  float halo = pow(1.0 - d * 2.0, 2.1);',
+          '  float core = smoothstep(0.24, 0.0, d);',
+          '  float glint = 0.72 + 0.28 * sin(uTime * (1.4 + vSeed * 1.2) + vSeed * 19.0);',
+          '  vec3 col = mix(uColA, uColB, vWarmth);',
+          '  col = mix(col, vec3(1.0, 0.99, 0.92), core * 0.55);',
+          '  gl_FragColor = vec4(col, (halo * 0.75 + core * 0.35) * glint * uOp);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+      var pollenPoints = new THREE.Points(pollenGeo, pollenMat);
+      pollenPoints.name = 'tree-forest-pollen';
+      pollenPoints.renderOrder = 4;
+      group.add(pollenPoints);
+    }
+
     // Dead trees keep their frame but lose their colour, so "it died" is visible in
     // the picture and not only in the toast that has already gone.
     if (!alive) {
@@ -4106,8 +4447,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }
       }
 
+      if (canopyShaderUniforms) {
+        canopyShaderUniforms.uWindAmp.value = reducedFrame ? 0.0 : clamp(gust * 0.068, 0.0, 0.12);
+        canopyShaderUniforms.uWindTime.value = reducedFrame ? 1.4 : t;
+        canopyShaderUniforms.uTranslucency.value = clamp(
+          (0.26 + 0.56 * lightLevel) * (1.0 - visualNow.carbonStress * 0.25),
+          0.14, 0.88
+        );
+      }
+      if (vascularUniforms) {
+        vascularUniforms.uTime.value = reducedFrame ? 2.35 : t;
+        vascularUniforms.uWaterFlux.value = clamp((1 - visualNow.waterStress * 0.72) * (bare ? 0.28 : 1.0), 0.18, 1.0);
+        vascularUniforms.uSugarFlux.value = clamp((1 - visualNow.carbonStress * 0.65) * (bare ? 0.25 : 0.95), 0.18, 1.0);
+      }
+      if (pollenUniforms) {
+        pollenUniforms.uTime.value = reducedFrame ? 1.8 : t;
+        pollenUniforms.uWind.value = reducedFrame ? 0.0 : clamp(gust, 0.0, 1.5);
+      }
+
       if (reducedFrame) return;
       if (sky) sky.rotation.y = t * 0.004;
+      for (var fsk = 0; fsk < forestShafts.length; fsk++) {
+        var fsh = forestShafts[fsk];
+        if (fsh.material && fsh.material.uniforms) {
+          fsh.material.uniforms.uTime.value = t;
+        }
+      }
+      if (mycoPulsePoints && mycoPulsePos && mycoPulseSeeds.length) {
+        for (var mpi = 0; mpi < mycoPulseSeeds.length; mpi++) {
+          var mps = mycoPulseSeeds[mpi];
+          var rawF = (mps.offset + t * (mps.inward ? -0.18 : 0.14)) % 1;
+          var frac = rawF < 0 ? rawF + 1 : rawF;
+          mycoPulsePos[mpi * 3] = mps.end.x * frac;
+          mycoPulsePos[mpi * 3 + 1] = mps.end.y * frac;
+          mycoPulsePos[mpi * 3 + 2] = mps.end.z * frac;
+        }
+        mycoPulsePoints.geometry.attributes.position.needsUpdate = true;
+      }
 
       // A slow shared circuit with per-bird radius, height and phase.
       if (birdMesh) birdMesh.visible = !reducedFrame;
@@ -6502,7 +6878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           var itemTone = tone(FACTOR_HUE(item.id));
           var valueLabel = item.label + ': ' + item.value + (limiting
             ? '. ' + __alloT('stem.treelab.current_limit', 'Current limiting factor') : '');
-          return h('div', {
+          return h('div', { role: 'group',
             key: item.id,
             className: 'allo-tree-habitat-item' + (limiting ? ' is-limiting' : ''),
             'aria-label': valueLabel,
@@ -7976,7 +8352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           [earned.comparison, __alloT('stem.treelab.discovery_pair', 'A fair comparison')],
           [earned.reflection, __alloT('stem.treelab.discovery_reflection', 'An idea explained')]
         ].filter(function (item) { return item[0]; });
-        return items.length ? h('div', { key: 'notebook', className: 'allo-tree-discovery-notebook', 'aria-label': __alloT('stem.treelab.discovery_notebook', 'Field notebook') },
+        return items.length ? h('div', { role: 'group', key: 'notebook', className: 'allo-tree-discovery-notebook', 'aria-label': __alloT('stem.treelab.discovery_notebook', 'Field notebook') },
           [items.map(function (item, i) { return h('span', { key: i }, '\u2713 ' + item[1]); }),
           Array.isArray(d.fieldNotes) && d.fieldNotes.length ? foldPanel('saved-notes', __alloT('stem.treelab.saved_explanations', 'My explanations'), d.fieldNotes.filter(function (note) { return note && typeof note === 'object'; }).map(function (note, i) { return h('p', { key: i }, (note.outcome ? __alloT('stem.treelab.age_label', 'Age') + ' ' + note.outcome.ageBefore + ' → ' + note.outcome.ageAfter + ': ' : '') + String(note.explanation || '')); })) : null]) : null;
       }
@@ -9746,7 +10122,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           pushKeyed(advancedKids, trialComparisonPanel(), 'grow-trial-comparison');
           if (tree.rings.length > 0) pushKeyed(advancedKids, ringPanel(), 'grow-rings');
         }
-        pushKeyed(kids, h('div', {
+        pushKeyed(kids, h('div', { role: 'group',
           id: 'treelab-advanced-work', className: 'allo-tree-advanced-work', hidden: !advancedOpen,
           'aria-label': __alloT('stem.treelab.advanced_workspace', 'Advanced evidence workspace')
         }, advancedKids), 'grow-advanced-work');
@@ -9978,7 +10354,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
         var children = [
           heading(__alloT('stem.treelab.investigation_title', 'Investigation studio'),
             __alloT('stem.treelab.investigation_sub', 'Freeze a starting tree, predict what will happen, run a controlled trial, and explain the evidence.')),
-          h('div', { key: 'steps', 'aria-label': __alloT('stem.treelab.investigation_steps', 'Investigation steps'), style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 7, marginBottom: 13 } }, [
+          h('div', { role: 'group', key: 'steps', 'aria-label': __alloT('stem.treelab.investigation_steps', 'Investigation steps'), style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 7, marginBottom: 13 } }, [
             ['1', __alloT('stem.treelab.step_predict', 'Predict')],
             ['2', __alloT('stem.treelab.step_run', 'Run')],
             ['3', __alloT('stem.treelab.step_explain', 'Explain')]
@@ -10449,25 +10825,74 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           var hgt = clamp((r.widthMm / maxW) * (H - 18), 1, H - 18);
           return h('rect', {
             key: 'r' + i, x: i * bw, y: (H - 14) - hgt, width: Math.max(0.6, bw * 0.82), height: hgt,
-            fill: isContrast ? (r.stress ? '#ff6666' : '#ffff00') : (r.stress ? '#dc2626' : '#a16207')
+            fill: isContrast ? (r.stress ? '#ff6666' : '#ffff00') : (r.stress ? 'url(#tlRingStress)' : 'url(#tlRingWood)')
           });
         });
+        // Microscopic concentric ring cross-section inset (last 18 years)
+        var coreRings = rings.slice(-18);
+        var coreTotal = 0;
+        for (var ci = 0; ci < coreRings.length; ci++) coreTotal += Math.max(0.15, coreRings[ci].widthMm);
+        var coreAcc = 0;
+        var coreCircles = [];
+        if (coreRings.length > 0 && coreTotal > 0) {
+          for (var cj = 0; cj < coreRings.length; cj++) {
+            coreAcc += Math.max(0.15, coreRings[cj].widthMm);
+            var rad = 2.5 + (coreAcc / coreTotal) * 19.5;
+            coreCircles.push(h('circle', {
+              key: 'cc' + cj, cx: 26, cy: 26, r: rad.toFixed(2), fill: 'none',
+              stroke: isContrast
+                ? (coreRings[cj].stress ? '#ff6666' : '#ffff00')
+                : (coreRings[cj].stress ? '#ef4444' : (cj % 2 ? '#d97706' : '#92400e')),
+              strokeWidth: coreRings[cj].stress ? 0.9 : 0.65, opacity: 0.9
+            }));
+          }
+        }
         return card([
           heading(__alloT('stem.treelab.rings_growth', 'Growth rings'),
             atLeast(band, 'g68')
               ? __alloT('stem.treelab.rings_sub_g68', 'One bar per year, red where the tree ran a deficit. Rings usually narrow with age even in a healthy tree: the same volume of wood spread around a longer circumference is thinner.')
               : __alloT('stem.treelab.rings_sub_k2', 'One bar for each year. Taller means the tree grew a wider ring that year.')),
-          h('svg', {
-            key: 'svg', viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'none',
-            style: { width: '100%', height: 120, background: T.cardAlt, borderRadius: 8, border: '1px solid ' + T.border },
-            role: 'img',
-            'aria-label': __alloT('stem.treelab.alt_rings_pre', 'Ring width for the last ') + rings.length + ' '
-              + __alloT('stem.treelab.year_many', 'years') + '. '
-              + __alloT('stem.treelab.alt_rings_widest', 'Widest ring ') + round(maxW, 2) + ' '
-              + __alloT('stem.treelab.millimetres', 'millimetres') + '.'
-          }, bars.concat([
-            h('line', { key: 'base', x1: 0, y1: H - 14, x2: W, y2: H - 14, stroke: T.border, strokeWidth: 0.5 })
-          ])),
+          h('div', { key: 'wrap', style: { display: 'flex', gap: 10, alignItems: 'center' } }, [
+            h('svg', {
+              key: 'svg', viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'none',
+              style: { flex: 1, minWidth: 0, height: 120, background: T.cardAlt, borderRadius: 8, border: '1px solid ' + T.border },
+              role: 'img',
+              'aria-label': __alloT('stem.treelab.alt_rings_pre', 'Ring width for the last ') + rings.length + ' '
+                + __alloT('stem.treelab.year_many', 'years') + '. '
+                + __alloT('stem.treelab.alt_rings_widest', 'Widest ring ') + round(maxW, 2) + ' '
+                + __alloT('stem.treelab.millimetres', 'millimetres') + '.'
+            }, [
+              h('defs', { key: 'defs' }, [
+                h('linearGradient', { key: 'gw', id: 'tlRingWood', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+                  h('stop', { key: 'a', offset: '0%', stopColor: '#eab308' }),
+                  h('stop', { key: 'b', offset: '55%', stopColor: '#b45309' }),
+                  h('stop', { key: 'c', offset: '100%', stopColor: '#78350f' })
+                ]),
+                h('linearGradient', { key: 'gs', id: 'tlRingStress', x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, [
+                  h('stop', { key: 'a', offset: '0%', stopColor: '#f87171' }),
+                  h('stop', { key: 'b', offset: '100%', stopColor: '#b91c1c' })
+                ])
+              ]),
+              h('line', { key: 'g1', x1: 0, y1: (H - 14) * 0.35, x2: W, y2: (H - 14) * 0.35, stroke: T.border, strokeWidth: 0.35, strokeDasharray: '2 2', opacity: 0.5 }),
+              h('line', { key: 'g2', x1: 0, y1: (H - 14) * 0.68, x2: W, y2: (H - 14) * 0.68, stroke: T.border, strokeWidth: 0.35, strokeDasharray: '2 2', opacity: 0.5 })
+            ].concat(bars, [
+              h('line', { key: 'base', x1: 0, y1: H - 14, x2: W, y2: H - 14, stroke: T.border, strokeWidth: 0.6 })
+            ])),
+            h('svg', {
+              key: 'core', viewBox: '0 0 52 52', width: 72, height: 72, 'aria-hidden': 'true', focusable: 'false',
+              style: { flex: '0 0 auto', borderRadius: '50%', background: isContrast ? '#000' : (isDark ? '#1c140e' : '#fef3c7'), border: '2px solid ' + (isContrast ? '#ffff00' : '#78350f') }
+            }, [
+              h('defs', { key: 'cd' }, [
+                h('radialGradient', { key: 'cg', id: 'tlCoreWood', cx: '50%', cy: '50%', r: '50%' }, [
+                  h('stop', { key: 'a', offset: '0%', stopColor: isDark ? '#5c3a1e' : '#f5d08a' }),
+                  h('stop', { key: 'b', offset: '78%', stopColor: isDark ? '#7c4e24' : '#fde68a' }),
+                  h('stop', { key: 'c', offset: '100%', stopColor: '#451a03' })
+                ])
+              ]),
+              !isContrast ? h('circle', { key: 'bg', cx: 26, cy: 26, r: 24, fill: 'url(#tlCoreWood)' }) : null,
+              h('circle', { key: 'pith', cx: 26, cy: 26, r: 1.6, fill: isContrast ? '#ffff00' : '#78350f' })
+            ].concat(coreCircles))
+          ]),
           limitBand(),
           h('div', { key: 'lg', style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginTop: 4 } }, [
             h('span', { key: 'a' }, __alloT('stem.treelab.year', 'Year') + ' ' + (rings.length ? rings[0].year : 0)),
@@ -10744,7 +11169,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
             atLeast(band, 'g68')
               ? __alloT('stem.treelab.curves_sub_g68', 'Each panel sweeps ONE condition across its whole range and leaves the other three where you set them. Upward on every panel is gross photosynthesis in kg of carbon a year, on one shared scale. The dot is where this tree is standing, and a curve that has gone flat under the dot is telling you that more of that input buys nothing.')
               : __alloT('stem.treelab.curves_sub_k2', 'Each picture shows what happens if you change just one thing. Higher means more sugar made. The dot is where your tree is now.')),
-          h('div', { key: 'key', className: 'allo-tree-curve-key', 'aria-label': __alloT('stem.treelab.curve_key_label', 'How to read the response curves') }, [
+          h('div', { role: 'group', key: 'key', className: 'allo-tree-curve-key', 'aria-label': __alloT('stem.treelab.curve_key_label', 'How to read the response curves') }, [
             h('span', { key: 'now' }, [h('i', { key: 'm', className: 'allo-tree-curve-mark is-now', 'aria-hidden': 'true' }), __alloT('stem.treelab.curve_key_now', 'your tree now')]),
             h('span', { key: 'best' }, [h('i', { key: 'm', className: 'allo-tree-curve-mark is-best', 'aria-hidden': 'true' }), __alloT('stem.treelab.curve_key_best', 'best result from changing only this factor')]),
             h('span', { key: 'flat' }, [h('i', { key: 'm', className: 'allo-tree-curve-mark is-flat', 'aria-hidden': 'true' }), __alloT('stem.treelab.curve_key_flat', 'flat means something else is limiting')]),
@@ -10799,7 +11224,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
                   : __alloT('stem.treelab.stopped_starvation', 'This tree ran out of usable carbon. Its stored history remains evidence for planning the next run.'))
               ])
             ]),
-            h('div', { key: 'chain', className: 'allo-tree-stopped-chain', 'aria-label': __alloT('stem.treelab.stopped_sequence', 'What changes when photosynthesis stops') }, stoppedSteps.map(function (step, i) {
+            h('div', { role: 'group', key: 'chain', className: 'allo-tree-stopped-chain', 'aria-label': __alloT('stem.treelab.stopped_sequence', 'What changes when photosynthesis stops') }, stoppedSteps.map(function (step, i) {
               return h('div', { key: i, className: 'allo-tree-stopped-step' }, [
                 h('strong', { key: 't' }, (i + 1) + '. ' + step.title),
                 h('span', { key: 'c' }, step.copy)
@@ -11346,7 +11771,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           key: 'profile', className: 'allo-tree-strategy-profile', role: 'group',
           'aria-label': band === 'k2' ? __alloT('stem.treelab.strategy_signature_k2', 'How this way works') : __alloT('stem.treelab.strategy_signature', 'Strategy signature')
         }, metrics.map(function (m) {
-          return h('div', { key: m.key, className: 'allo-tree-strategy-metric', 'aria-label': m.label + ': ' + m.value }, [
+          return h('div', { role: 'group', key: m.key, className: 'allo-tree-strategy-metric', 'aria-label': m.label + ': ' + m.value }, [
             h('div', { key: 'h', className: 'allo-tree-strategy-metric-head' }, [
               h('span', { key: 'l' }, m.label),
               h('strong', { key: 'v' }, m.value)
@@ -12829,7 +13254,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           { icon: '\u2191', kicker: __alloT('stem.treelab.greatest_height', 'Greatest height reached'), name: __alloT('stem.treelab.species_' + tallest.sp.id, tallest.sp.name), detail: round(tallest.tree.heightM, 1) + ' m' },
           { icon: '\uD83C\uDF3F', kicker: __alloT('stem.treelab.still_alive_at', 'Still alive at') + ' ' + years + ' ' + __alloT('stem.treelab.yr', 'yr'), name: alive.length + ' / ' + runs.length, detail: alive.length ? aliveNames : __alloT('stem.treelab.none_survived', 'No species survived the full run') }
         ];
-        return h('div', {
+        return h('div', { role: 'group',
           key: 'insights', className: 'allo-tree-compare-insights',
           'aria-label': __alloT('stem.treelab.run_reveals', 'What this run reveals')
         }, [
@@ -12860,7 +13285,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           h('div', { key: 'label', className: 'allo-tree-species-traits-label' }, __alloT('stem.treelab.strategy_signature', 'Strategy signature')),
           h('div', { key: 'meters', className: 'allo-tree-species-trait-meters' }, traits.map(function (trait) {
             var pct = Math.round(clamp(trait.value, 0, 1) * 100);
-            return h('div', { key: trait.key, className: 'allo-tree-species-trait', 'aria-label': trait.label + ': ' + pct + '%' }, [
+            return h('div', { role: 'group', key: trait.key, className: 'allo-tree-species-trait', 'aria-label': trait.label + ': ' + pct + '%' }, [
               h('div', { key: 'h', className: 'allo-tree-species-trait-head' }, [
                 h('span', { key: 'l' }, trait.label),
                 h('strong', { key: 'v' }, pct + '%')
@@ -13169,7 +13594,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
                 progress.right + ' / ' + progress.total + ' ' + __alloT('stem.treelab.finale_score', 'ideas connected on your latest attempts'))
             ])
           ]),
-          h('div', {
+          h('div', { role: 'group',
             key: 'ladder', className: 'allo-tree-quiz-reasoning-ladder',
             'aria-label': __alloT('stem.treelab.explanation_structure', 'Explanation structure')
           }, ladder.map(function (step) {
@@ -13378,7 +13803,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               }, { small: true })
             ]) : null
           ]) : null,
-          h('div', { key: 'nav', className: 'allo-tree-quiz-nav', 'aria-label': __alloT('stem.treelab.question_navigation', 'Question navigation') }, [
+          h('div', { role: 'group', key: 'nav', className: 'allo-tree-quiz-nav', 'aria-label': __alloT('stem.treelab.question_navigation', 'Question navigation') }, [
             btn('prev', '← ' + __alloT('stem.treelab.prev', 'Previous'), function () { updMulti({ quizIdx: Math.max(0, idx - 1), quizPick: null }); }, { small: true, disabled: idx === 0 }),
             h('span', { key: 'position', className: 'allo-tree-quiz-nav-position' },
               (idx + 1) + ' / ' + pool.length),
@@ -13953,7 +14378,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
           'data-tree-chapter': activeTab.id,
           'aria-labelledby': 'treelab-chapter-title'
         }, [
-          h('span', { key: 'n', className: 'allo-tree-chapter-number', 'aria-label': __alloT('stem.treelab.chapter_position', 'Chapter') + ' ' + (activeTabIndex + 1) + ' ' + __alloT('stem.treelab.of', 'of') + ' ' + TABS.length },
+          h('span', { role: 'note', key: 'n', className: 'allo-tree-chapter-number', 'aria-label': __alloT('stem.treelab.chapter_position', 'Chapter') + ' ' + (activeTabIndex + 1) + ' ' + __alloT('stem.treelab.of', 'of') + ' ' + TABS.length },
             (activeTabIndex + 1) + ' / ' + TABS.length),
           h('div', { key: 'copy' }, [
             h('h2', { key: 't', id: 'treelab-chapter-title', className: 'allo-tree-chapter-title', tabIndex: -1 }, activeTab.chapterTitle),

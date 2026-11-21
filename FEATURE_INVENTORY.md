@@ -14,16 +14,25 @@
 > [architecture.md](architecture.md). The two documents pair deliberately:
 > feature inventory for product/educator review, architecture for engineering review.
 
-> **Dated audit baseline — July 3, 2026:** The live local workspace now contains
-> 111 STEM tool files, 116 registered STEM plugin IDs, 70 SEL tool files,
-> 151 top-level `build.js` module definitions, 111 root source/module pairs,
-> 413 test files, and about 2.70M canonical-ish source lines after excluding
-> deploy mirrors and generated source/module pairs. These figures are a point-in-time baseline, not current totals. As of July 18, the live registries contain 126 STEM tool files / 127 STEM IDs and 70 SEL tools. The older May/June counts
-> below are kept for history where they describe point-in-time sections. For
-> the current evidence-based review, see
-> [docs/codebase_review_2026-07-03.md](docs/codebase_review_2026-07-03.md).
-> For file-level unique-code size review, see
-> [docs/code_size_inventory_2026-07-03.csv](docs/code_size_inventory_2026-07-03.csv).
+> **Snapshot — November 20, 2026 (from the registry, not memory):** 152 STEM
+> Lab tools, 72 SEL Hub tools, 67 AlloPacks, 204 command-palette commands,
+> 34 panels, 25 resource types, 222 `build.js` CDN modules, 63 language packs,
+> 6 Apps Scripts, ~9.6K unit test files and ~2K end-to-end specs. The host
+> monolith `AlloFlowANTI.txt` is 50,394 lines / 3.27 MB. Every STEM and SEL
+> tool ID is required to appear somewhere in this document
+> (`tests/feature_inventory_coverage.test.js`). Older dated counts further
+> down (May–August) are historical snapshots and are labelled as such. For the
+> July evidence-based review, see
+> [docs/codebase_review_2026-07-03.md](docs/codebase_review_2026-07-03.md); for
+> the November product review, see
+> [docs/product_review_2026-11-09.md](docs/product_review_2026-11-09.md).
+>
+> **What changed since the last narrative pass (Sept–Nov 2026):** see
+> [§14](#14-september--november-2026-additions) (AlloFlow Packets, Word Sounds
+> overhaul, Class Analytics, platform/compliance) and
+> [§15](#15-teacher-workflow-learning-activities--platform-services) (teacher
+> workflow surfaces, learning activities, command palette and AlloPacks,
+> platform services), plus the SEL expansion in [§5.9](#59-sel-hub-expansion-junenovember-2026).
 
 > **Deployment/privacy addendum - July 9, 2026:** the current local-first
 > product framing is AlloFlow Desktop first, with Desktop LAN / Local Network
@@ -33,17 +42,17 @@
 > current. Public privacy wording should say "FERPA-aligned/supports" rather
 > than "guaranteed compliant."
 
-**Generated:** 2026-05-09 (headline counts last reconciled June 20, 2026 — see §13.12 for the running delta table; the dated entries in §3–§12 are point-in-time snapshots)
+**Generated:** 2026-05-09; last narrative pass 2026-11-20 (headline counts in the snapshot callout above; §13.12 is the May running delta table and the dated entries in §3–§13 are point-in-time snapshots)
 **Codebase scale:** July 3, 2026 local review found ~5.69M physical code lines including generated/deploy mirrors, ~4.07M exact-hash unique code lines, and ~2.70M canonical-ish source lines after excluding deploy mirrors and generated root module pairs. See the current audit note above for caveats.
-**Monolith size:** 55,296 physical lines / 3,300,564 bytes as of August 13, 2026 (the synchronized canonical app-shell commit). The first three safe extraction batches moved AppStyles, Live AAC, SharedActivity, and GuidedModeConfig into canonical core CDN modules. GuidedModeConfig removed a net 6,912 bytes / 49 physical lines per shell while retaining synchronous saved-progress sanitizers and an accessible hard-timeout recovery path; `AlloFlowANTI.txt` remains the Gemini Canvas orchestration source.
+**Monolith size:** 50,394 physical lines / 3,270,400 bytes as of November 20, 2026 (down from 55,296 lines on August 13 as extraction continued: cold-path screens/surfaces, guided-mode config, persona workspace and other view modules moved to CDN modules; see `docs/anti_extraction_plan_2026-11-09.md`). Earlier extraction batches moved AppStyles, Live AAC, SharedActivity, and GuidedModeConfig into canonical core CDN modules; `AlloFlowANTI.txt` remains the Gemini Canvas orchestration source.
 **Inventory scope:** 720+ grouped and granular entries in this evolving catalog; do not treat this taxonomy count as a count of distinct shipped tools
 - ~95 monolith-level features across 16 categories + 25 deep-dive subsections (§3.17–§3.41)
-- **126 STEM Lab tool files / 127 registered STEM plugin IDs** across math, science, engineering, ecology, life skills, creative, strategy, technology, speech/music, and applied simulation domains. The registered-ID count is higher than the file count because some files preserve aliases or export paired IDs.
+- **152 STEM Lab tool files** (registry count, Nov 20 2026) across math, science, engineering, ecology, life skills, creative, strategy, technology, speech/music, and applied simulation domains. Some files register aliases or paired IDs, so registered plugin IDs can exceed the file count.
 - **July 2026 additions surfaced by code review:** AlloStudio (`studio_module.js` / `studio_core.js`) is the born-accessible flyer, worksheet, and digital-art object editor with explicit reading order, alt/decorative image gates, and process/provenance history. Open Groove Studio (`music_studio/open_groove_core.js`, `open_groove_scheduler.js`, `open_groove_audio.js`, `open_groove_module.js`) is a browser-based groovebox/composition studio covering pads, rhythm, synthesis, samples, notation concepts, timing math, and license-aware audio assets.
-- **70 SEL Hub tools** (+ 2 infrastructure files: `sel_hub_module.js` registry shell + `sel_safety_layer.js` shared safety infrastructure) mapped to CASEL competencies + Civic & Hope. See §5.8 for the cross-cutting safety pipeline (defense-in-depth pre-flight regex gate layered on top of the assessSafety LLM checks).
+- **72 SEL Hub tools** (+ 2 infrastructure files: `sel_hub_module.js` registry shell + `sel_safety_layer.js` shared safety infrastructure) mapped to CASEL competencies + Civic & Hope. §5.1–§5.6 cover the original set; §5.9 covers the June–November expansion (clinical skills, psychoeducation, person-centred planning). See §5.8 for the cross-cutting safety pipeline (defense-in-depth pre-flight regex gate layered on top of the assessSafety LLM checks).
 - **New June 2026 subsystems** (built after the bulk of §3–§12 was written): Cinematic Studio (`cinematic_studio_module.js` — agentic document→video, client-side WebCodecs/Remotion), in-app Professional Development (`pd_core_module.js` + `catalog/pd/`), Research Hub + 3 Research Lanes (`research_lane_*_module.js`), Lumen, Dynamic Assessment, Live Polling, Translation Feedback (`translation_feedback_module.js`), Learning Web: Unit Path (legacy Throughline runtime in `mind_map_module.js`), footnotes + APA/MLA/Chicago `DOC_MODES`, PDF redaction + fillable AcroForm worksheets, native tagged-PDF output, in-app structural checks, and local veraPDF/PDF-UA QA workflows in the doc pipeline.
 - ~290 deep-feature enumerations inside major subsystems (Doc Pipeline 35+ exports, Behavior Lens 15+, Symbol Studio 10+, AlloHaven 4+18, AlloBot Sage 19+5+3, Quiz subsystem 4 modes + AI grader + live aggregator, Adventure 7 components + handlers, Voice + TTS multi-provider, Adaptive Controller gamepad layer, 28 view modules, 20 infrastructure modules, **5 SEL Hub Rehearse tabs with multi-turn role-play + scene generation + break-character coach + end-reflect**, etc.)
-**Inventory completeness:** ~99% — remaining gaps are translation-string libraries, individual quest content, and per-tool internal sub-modes that are largely cosmetic. Every major subsystem and every CDN module is now documented with discoverability.
+**Inventory completeness:** every STEM and SEL tool is named (enforced by `tests/feature_inventory_coverage.test.js`), and the user-facing CDN modules are described in §3, §14 and §15. Not every one of the 222 `build.js` modules is described individually: internal helper modules are listed in §15.5 rather than given rows. Remaining gaps are translation-string libraries, individual quest content, and per-tool internal sub-modes.
 **Bugs fixed during this audit:** 6 net new (Report Writer never loaded, Immersive Reader null overwrites, Teacher Dashboard 10 components unregistered, WordSoundsReviewPanel duplicate registration, view_misc_modals null registrations, GeminiBridgeView deleted-but-consumed) + additional May 11-15 fixes (ExportPreviewView missing `history` prop, doc_pipeline missing `setError`/`pdfBatchSummary`, teacher `LearnerProgressView` missing `isTeacherMode`, word_sounds probe-mode `probeActivity` crash, Space Colony minimap `ctx` typo, Crisis Companion exit-button silent no-op, misleading "monitored for your safety" copy in 5 tools, **launch pad Learning Tools modal showed only after second click** (setTimeout race), **Physics target-destruction mode stale closure** (first-target-disappears + projectile-passes-through-targets, 2-in-1), **Skylab takeoff bleached ground + jolt + missing motion cue**, **Tier 1 bug-fix pass (May 15) on annotation-suite drag**: Rules-of-Hooks violation in NoteBubble/VoiceNoteBubble, drag flooding undo stack with intermediate positions, missing right/bottom drag clamp) — see §7
 **Distribution model:** Runs as a Gemini Canvas artifact; districts pay $0 by riding existing Google Education Gemini quotas. **Primary CDN migrated to Cloudflare Pages** (`alloflow-cdn.pages.dev`, May 12 2026); jsdelivr/GitHub is fallback (25 MiB per-file cap; m4a/mp4/onnx gitignored).
 
@@ -70,15 +79,18 @@ This inventory complements those by adding **discoverability paths** (where in t
 1. [How to navigate this document](#1-how-to-navigate)
 2. [Architectural primer](#2-architectural-primer)
 3. [Monolith features (16 categories)](#3-monolith-features)
-4. [STEM Lab tools (111 files / 116 registered plugin IDs)](#4-stem-lab-tools)
-5. [SEL Hub tools (70 tools + safety/standards infrastructure)](#5-sel-hub-tools)
+4. [STEM Lab tools (152 tool files)](#4-stem-lab-tools)
+5. [SEL Hub tools (72 tools + safety/standards infrastructure)](#5-sel-hub-tools)
 6. [Discoverability cheat sheet](#6-discoverability-cheat-sheet)
 7. [Status & known gaps](#7-status--known-gaps)
 8. [Architectural patterns by family](#8-architectural-patterns)
 9. [Cross-references](#9-cross-references)
 10. [Annotation Suite — cross-cutting feature (May 14-15 2026)](#10-annotation-suite)
-11. [Doc Pipeline export-side capabilities (May 14-15 2026 expansion)](#11-doc-pipeline-export-capabilities)
-12. [Physics + Flightsim refinements (May 14-15 2026)](#12-physics-flightsim-refinements)
+11. [Doc Pipeline export-side capabilities (May 14-15 2026 expansion)](#11-doc-pipeline-export-side-capabilities)
+12. [Physics + Flightsim refinements (May 14-15 2026)](#12-physics--flightsim-refinements)
+13. [May 14 – May 17 2026 additions (historical)](#13-may-14--may-17-2026-additions-this-inventory-revision)
+14. [September – November 2026 additions (Packets, Word Sounds, Class Analytics, platform)](#14-september--november-2026-additions)
+15. [Teacher workflow, learning activities & platform services](#15-teacher-workflow-learning-activities--platform-services)
 
 ---
 
@@ -465,6 +477,8 @@ Picker also includes: search/filter, recent-blocks (max 5 per session), category
 
 ### 3.22 Word Sounds Studio — internal modes & sub-features
 
+> **Partly outdated (Nov 20 2026).** The UI name is now "Word Sounds", the module is 29,099 lines with setup split into `word_sounds_setup_module.js`, setup is plan-first, prep is AI-free via the Orton-Gillingham sound dictionary, and pictures are Mulberry/OpenMoji symbols. See [§14.2](#142-word-sounds-studio-overhaul-octnov-2026) for the current feature list and the itemised corrections to this section.
+
 `word_sounds_module.js` is 24,623 lines (second-largest module). Beyond the activity tabs, it has substantial mode-switching logic that materially changes the student experience:
 
 **Assessment modes**
@@ -794,7 +808,7 @@ This makes Persona Chat closer to a narrative role-play game than a chatbot — 
 
 ## 4. STEM Lab tools
 
-150 self-contained interactive tools, accessed via the **STEM Lab modal** (`showStemLab=true`). Each registers via `window.StemLab.registerTool(id, config)` and shows up as a tile in the modal grid grouped by subject.
+152 self-contained interactive tools (registry count, Nov 20 2026), accessed via the **STEM Lab modal** (`showStemLab=true`). Each registers via `window.StemLab.registerTool(id, config)` and shows up as a tile in the modal grid grouped by subject. Tools added after the §4.1–§4.9 tables were last balanced are listed in [§4.10](#410-tools-added-after-the-category-tables-were-last-balanced).
 
 ### 4.1 Mathematics (27 tools)
 *(Includes `geometryProver`, registered as a second tool inside `stem_tool_geo.js`. Also note: `fractionViz` is an alias for `fractions` — both registered in `stem_tool_fractions.js` pointing to the same plugin object.)*
@@ -810,7 +824,7 @@ This makes Persona Chat closer to a narrative role-play game than a chatbot — 
 | `unitConvert` | Unit Converter | Visual comparison, quiz, AI word-problem generation | 6-12 |
 | `protractor` *(file: `stem_tool_angles.js`)* | Angles Explorer | Interactive protractor with classification, real-world examples, polygon angles, clock calculator, badges | 3-8 |
 | `areamodel` | Area Model | Visual multiplication with area model grids, distributive property, partial products, 12 badges | 3-5 |
-| `coordinate` *(file: `stem_tool_coordgrid.js`)* | Coordinate Grid | Plot points, draw lines, calculate slope/distance/midpoint, 10 badges | 6-9 |
+| `coordinate` *(file: `stem_tool_coordgrid.js`, id `coordgrid`)* | Coordinate Grid | 3 tabs (Explore, Quadrant Tour, Real-World Maps: chess, battleship, lat/long). Plot points and lines; slope/distance/midpoint challenges; 10 badges. Grade-band pass (Nov 3 2026): 5 = quadrant I, 6 = four quadrants + polygons, 8 = Pythagoras + slope; seven generated tasks with named misconceptions, hint ladders, a keyboard grid cursor and "describe my points". Optional AI tutor (free-text question, safety-gated since 2026-11-20; see §5.9.1) | 5-8 |
 | `geometryWorld` | Geometry World | 3D block-based math explorer with AI voxel geometry lessons + WebXR VR support | 6-12 |
 | `volume` | Volume Explorer | 3D volume explorer for composite shapes (standalone, distinct from monolith Volume Builder) | 6-9 |
 | `geoSandbox` | GeoSandbox | 3D geometry sandbox with formulas + STL export | 9-12 |
@@ -824,11 +838,8 @@ This makes Persona Chat closer to a narrative role-play game than a chatbot — 
 | `geometryProver` | Geometry Prover | Theorem exploration, proof construction, discover geometric relationships (registered as 2nd tool inside `stem_tool_geo.js`) | 6-12 |
 | `areaPerimeter` | Area & Perimeter Lab | Tile, compare, decompose, and investigate 2-D shapes while building area and perimeter reasoning. | unreviewed |
 | `arithmeticStudio` | Arithmetic Strategy Studio | Learn addition, subtraction, multiplication, and division through models, strategies, estimation, and mistake analysis. | unreviewed |
-| `base10` | Math Manipulatives | Base-10 blocks, abacus, slide rule & place value quiz. | unreviewed |
-| `coordinate` | Coordinate Grid | Plot points, draw lines, calculate slope/distance/midpoint with sound effects and badges. | unreviewed |
 | `dataLab` | CODAP Data Science | Real data science in CODAP — the Concord Consortium’s open data workspace — with an AlloFlow Socratic tutor beside it that asks questions about YOUR data instead of giving answers. | unreviewed |
 | `lumen` | Lumen Research Canvas | Study sources or analyze data in one evidence workspace where every claim stays connected to what supports it. | unreviewed |
-| `protractor` | Angle Explorer | Measure and construct angles. Classify acute, right, obtuse, and reflex. | unreviewed |
 | `ratioLab` | Ratios, Rates & Proportions Lab | Explore ratio tables, double number lines, unit rates, percents, and proportional relationships. | unreviewed |
 | `timeSchedule` | Time & Schedule Lab | Link analog and digital clocks, model elapsed time, reason about schedules, and convert 12/24-hour time. | unreviewed |
 
@@ -962,7 +973,7 @@ This makes Persona Chat closer to a narrative role-play game than a chatbot — 
 
 | ID | Display name | Purpose | Grade band |
 |---|---|---|---|
-| `llmLiteracy` | AI Literacy Lab | Tokenization, next-token prediction, temperature, hallucination, UDL-framed guidance | 6-12 |
+| `llmLiteracy` *(file: `stem_tool_llm_literacy.js`, id `llm_literacy`)* | AI Literacy Lab | 7 sections: 1. How LLMs Work (tokens, next-token prediction, temperature demo + free-prompt playground) · 2. Why LLMs Get Things Wrong (hallucination gallery) · 3. Prompt Craft (weak-vs-strong A/B, live iteration workshop, prompt journal) · 4. Prompt Anatomy (12 phrases) · 5. Hallucination Spotter · 6. When to Use AI (UDL scaffold-vs-substitute, personal coach) · 7. Quick Reference (printable). Live Gemini calls; only the temperature playground is safety-checked (see §5.9.1) | 6-12 |
 | `alloBotSage` | AlloBot: Starbound Sage | Roguelite spell-crafter — retrieval-practice-as-combat. **19 spells** each tied to a different STEM tool's mastery (Quantum Leap, Gravity Well, Solar Flare, Nebula Cloak, Fraction Fire, Algebra Arc, Geometry Grasp, Road Ward, Signal Sigil, Hypermile Hex, Phonic Bolt, Rhyme Ring, Narrative Nova, Verb Vortex, Focus Flare, Context Cipher, Home Row Focus, Fluent Keys, Ready Words). **5+ regular enemies** (Void Imp, Data Gremlin, Star Wraith, Rune Moth, Signal Shade) + **3 named bosses** (Lichcopy, Void Leviathan, Paradox Clone). Multiple sectors with bossPool gating. Each spell-cast surfaces a quiz prompt from the linked tool's domain (e.g., reading-fluency questions to cast Phonic Bolt). | 6-12 |
 | `typingPractice` | Typing Practice | Disability-first keyboarding: dyslexia font, motor-planning windows, large-key visual keyboard, IEP-workflow | K-12 |
 | `a11yAuditor` | Digital Accessibility Lab | WCAG 2.1 AA audit for websites, HTML, documents | 6-12 |
@@ -1002,6 +1013,19 @@ This makes Persona Chat closer to a narrative role-play game than a chatbot — 
 
 **Multi-module tools (≥4 sub-modules):** DNA Lab (11), Chemistry Lab (8), Punnett Square (8), Baking Science (7), Optics Lab (8), Economics (5), Conflict Theater (5 scenes / 8 characters / 8 scenarios)
 
+### 4.10 Tools added after the category tables were last balanced
+
+Added November 20, 2026 from source (`registerTool` metadata, headers and tabs). The subsection each tool belongs to is given in the first column.
+
+| Belongs in | ID | Display name | Purpose | Grade band |
+|---|---|---|---|---|
+| §4.2 | `coralreef` *(registers `coralReef`)* | Coral Reef Survey Lab | Survey fictional teaching reefs with Reef Check methods: a 20 m point-intercept transect (40 points, 7 substrate categories) and a 100 m² fish belt. Then run a reef-health scenario model 30 years forward (heatwaves, grazing fish, runoff) and survey the result. Includes an NGSS MS-ETS1 design challenge and an optional 3-D dive (`reef_3d_habitat.js` + `reef_3d_engine.js`). Every model parameter cites its source. No AI | unreviewed |
+| §4.2 | `perception` *(registers `perceptionLab`)* | Perception Lab | Seven adjustable illusion experiments (Brightness & context, Size & surroundings/Ebbinghaus, Müller-Lyer, Café wall, Necker cube, Moiré, Ponzo), each run predict → compare → reveal measurements → explain. Adds a 3-D illusion gallery with puzzles and geometry reveals, saved observations, and an inquiry report. Original SVG, no external dependencies. No AI | unreviewed |
+| §4.9 | `eligibility` *(registers `diagnosisEligibility`)* | Diagnosis, Evaluation & School Eligibility | Explains why a DSM diagnosis is not IDEA eligibility. Compares clinical diagnosis, IDEA and Section 504; follows the 6-step evaluation path (Concern → Consent → Sources → Team → Written → Review); quotes 34 CFR §300.8 verbatim from `law_corpus/` with source links (IDEA 300.8–300.504, 504 regs 104.35/104.36). Six open-question case scenarios ask which question the team still has to answer, and students can build a printable meeting-prep guide without entering student data. **Never decides eligibility, services or placement**; does not reproduce copyrighted DSM-5-TR criteria. No AI | unreviewed |
+| §4.1 (companion module, not a tile) | `geometryworld_builder` *(enhancement to `geometryWorld`; no own `registerTool`)* | Geometry World Builder | Adds a Free Build Sandbox to Geometry World: build an original connected structure from cubes, halves, slabs, wedges and quarter pieces (≤1,500 blocks), measure and revise it, and send a selected creation to Print Lab. Also supports editable world import/export (`alloflow-geometry-world/2` JSON/ZIP, ≤512 KB) and a "Build on this workspace" create mode. Loaded as a dependency of `stem_tool_geometryworld.js` (App.jsx dependency map). Reuses Geometry World's rendering and tools rather than forking them | unreviewed |
+
+*`perception` registers category `science` and could equally sit beside `consciousnessLab` in §4.9 (its catalog card was updated from "six" to "seven" experiments on 2026-11-20 to match the code).*
+
 ### Multi-module STEM tool sub-feature breakdown
 
 When sub-modules count as discrete features, the STEM surface expands beyond the 111 tool files / 116 registered IDs into well over 140 distinct activities. Full enumeration:
@@ -1022,7 +1046,7 @@ When sub-modules count as discrete features, the STEM surface expands beyond the
 
 ## 5. SEL Hub tools
 
-70 tools plus shared safety/standards infrastructure. Accessed via the **SEL Hub modal** (`showSelHub=true`). Many cite specific clinical/research frameworks (CASEL, Neff, Dweck, Kuypers, Bridges, AFSP, SAMHSA, QPR, Sources of Strength, Olweus, Gilligan, Noddings, Rawls, Indigenous wisdom traditions).
+72 tools plus shared safety/standards infrastructure. Accessed via the **SEL Hub modal** (`showSelHub=true`). §5.1–§5.6 cover the original tools; §5.9 covers the June–November 2026 expansion and reconciles the per-competency totals. Many cite specific clinical/research frameworks (CASEL, Neff, Dweck, Kuypers, Bridges, AFSP, SAMHSA, QPR, Sources of Strength, Olweus, Gilligan, Noddings, Rawls, Indigenous wisdom traditions).
 
 ### 5.1 Self-Awareness (8 tools)
 
@@ -1095,7 +1119,7 @@ When sub-modules count as discrete features, the STEM surface expands beyond the
 
 ### 5.8 Cross-cutting safety pipeline (added May 13-14 2026)
 
-A single regex-based safety gate (`window.SelHub.safeRehearseCheck`, backed by `window.SafetyContentChecker` on `window.__alloShared`) now protects **33 student-free-text AI surfaces** across **18 SEL Hub tools** plus **1 STEM Lab surface**. Critical-tier content (self_harm or harm_to_others keyword categories) aborts the AI call, swaps the output for a coach-style break-character message, surfaces the loud red crisis-resources block (988 / Crisis Text Line / trusted adult), and fires `onSafetyFlag` (which writes to `localStorage` in solo mode and surfaces to a hosting teacher in live sessions). High-tier content (bullying, concerning_content) lets the AI turn proceed but appends a soft "if this is close to real, talking to a trusted adult is always an option" reminder.
+A single regex-based safety gate (`window.SelHub.safeRehearseCheck`, backed by `window.SafetyContentChecker` on `window.__alloShared`) now protects **33 student-free-text AI surfaces** across **18 SEL Hub tools** plus **3 STEM Lab surfaces** (AI Literacy Lab; two of them added 2026-11-20). Critical-tier content (self_harm or harm_to_others keyword categories) aborts the AI call, swaps the output for a coach-style break-character message, surfaces the loud red crisis-resources block (988 / Crisis Text Line / trusted adult), and fires `onSafetyFlag` (recorded on this device only, in every mode: per `sel_safety_layer.js` `_inLiveSession`, no path currently delivers a flag to a teacher, so no copy may promise one). High-tier content (bullying, concerning_content) lets the AI turn proceed but appends a soft "if this is close to real, talking to a trusted adult is always an option" reminder.
 
 **Wired surfaces inventory:**
 
@@ -1123,13 +1147,187 @@ A single regex-based safety gate (`window.SelHub.safeRehearseCheck`, backed by `
 | Conflict Studio | 2 | Role-play sendRPMessage + mediation sendMedMessage (defense in depth on top of existing assessSafety) |
 | Conflict Theater | 1 | Multi-character sendTurn — break-character on first responder if critical |
 | **STEM Lab** | | |
-| LLM Literacy Lab | 1 | Temperature playground (only STEM AI surface explicitly invites "type ANY prompt"; AlloBot Sage audited and confirmed safe — quiz-gen not chat) |
+| LLM Literacy Lab | 3 | Temperature playground, Prompt Craft live workshop (`runLive`) and When-to-Use-AI coach (`runMyCoach`). **Fixed 2026-11-20:** until then only the playground was checked, for the critical tier only, and the other two sent student text to `callGemini` unchecked. All three now go through a render-scoped `aiSafetyGate` (the shared `safeRehearseCheck` when the SEL Hub is loaded, otherwise the same `SafetyContentChecker` mapping): critical blocks with 988/741741 copy, high appends the trusted-adult nudge, and both fire `ctx.onSafetyFlag` when the host provides it. Guarded by `tests/safety_gaps_audit_2026_11_20.test.js`, which also fails on any new unreviewed `callGemini` call in the tool |
 
 **Coverage architecture**: every tool that captures `safeCoach()` results now also stores `result.tier` into a tool-local `_lastTier` state field (or appends a `_crisis` marker into chat history for tools using `React.useState` directly like Social Lab). The crisis-resources render is conditional on `_lastTier >= 3` and is placed at the top of each tool's render so it persists across sub-tab navigation. For tools that don't have `_lastTier`-style state (Social Lab specifically), the chat-render explicitly handles `msg.role === 'coach'` entries and embeds `renderCrisisResources` inline.
 
 **Defense in depth**: every legacy coach tab's `else { callGemini(...) }` fallback path (used only if `window.SelHub.safeCoach` somehow doesn't load) was hardened to call `safeRehearseCheck` synchronously before the unguarded `callGemini`, so even the failure path has at least keyword-level protection.
 
 **Disclosure rewrite**: the previously-shipped "This space is monitored for your safety" copy in 5 AI-coach intros (Upstander, Compassion, Friendship, Transitions, Growth Mindset) was misleading in solo mode (no adult was monitoring; the keyword check writes to `localStorage` only). All 5 now call `renderSafetyDisclosure` which picks the truthful variant based on `activeSessionCode`. Upstander's coach tab title also renamed from "Safe Space" → "Talk it through" because the old label implied adult-supervised safety the tool doesn't actually provide.
+
+### 5.9 SEL Hub expansion (June–November 2026)
+
+33 tools added after §5.1–§5.6 were written. They are grouped by the hub section each one registers into (`category` in `registerTool`; for all 33 this matches the card's section in `sel_hub_module.js`). The hub now has 9 sections. Self-Awareness, Social Awareness, Relationship Skills and Responsible Decision-Making are CASEL competencies. Self-Regulation is CASEL Self-Management. Inner Work, Care of Self, Self-Direction and Stewardship are AlloFlow's own sections. **None of the 33 makes a text-generation AI call.** One (`somaticreset`) can read aloud through `ctx.callTTS`.
+
+#### Self-Awareness (+3)
+
+| ID | Display name | Purpose | Grade band | Notes |
+|---|---|---|---|---|
+| `viastrengths` | VIA Strengths | Simplified self-sort of the 24 VIA character strengths: rate each, pick a top 5, reflect on signature strengths. Tabs: Overview / Self-Sort / Reflect / Print view / About | 6-12 | Registers `viaStrengths`. Peterson & Seligman (2004); sends students to viacharacter.org for the validated survey. Reflective practice. No AI |
+| `wheeloflife` | Wheel of Life | Spider chart of 8 life domains, each rated 1-10. Tabs: My Wheel / Rate / Reflect / Print view / About | 5-12 | Registers `wheelOfLife`. Coaching tradition (Meyer; Co-Active Coaching); "not a validated psychometric". Reflective practice. No AI |
+| `perma` | PERMA Wellbeing | 24-item self-check on Positive emotion, Engagement, Relationships, Meaning, Accomplishment (+ Health); bar-chart profile; reflection per domain. Tabs: Overview / My profile / Reflect / Print / About | 5-12 | Seligman wellbeing theory; pairs with VIA Strengths. Reflective practice. No AI |
+
+#### Self-Regulation (CASEL Self-Management) (+9)
+
+| ID | Display name | Purpose | Grade band | Notes |
+|---|---|---|---|---|
+| `anxietytoolkit` | Anxiety Toolkit | CBT anxiety tools. First visit opens a 3-question triage (thoughts of self-harm, intensity 1-10, basic needs); answering "yes" to self-harm shows a crisis routing card. Tabs: What is anxiety / Worry tree / Worry time / Decatastrophize / Grounding / My patterns / Print / About | 5-12 | Registers `anxietyToolkit`. Beck Institute, AACAP, ADAA. 988 and Crisis Text Line are hardcoded in the triage card. Research-informed. No AI |
+| `behavioralactivation` | Behavioral Activation | Plan small activities, log them, rate mastery and pleasure, view mood-activity patterns. Tabs: Overview / Plan / Log + rate / Patterns / Print / About | 6-12 | Registers `behavioralActivation`. Lewinsohn, Jacobson, Martell. Research-informed. No AI |
+| `bigfeelings` | Big Feelings (Anger) | Anger psychoeducation and skills. Tabs: What anger is / The choice point / Hassle log / My triggers / My cool-downs / Print / About | 6-12 | Registers `bigFeelings`. Lochman's Coping Power plus the CBT-for-anger evidence base. Research-informed. No AI |
+| `sensoryregulation` | Sensory Regulation | Neurodiversity-affirming profile across 8 sensory systems, a sensory-diet plan, and matching school accommodations. Tabs: What is sensory? / My profile / Sensory diet / Accommodations / Print / About | 6-12 | Registers `sensoryRegulation`. Ayres, Dunn, autistic-led scholarship; identity-first language. Limited approach evidence; the badge note says "sensory diet" / ASI efficacy claims are weakly supported. No AI |
+| `somaticreset` | Body & Breath Reset | Pick one of 7 body zones (head & face … whole body / not sure), then follow a short, chair-friendly breathing, stillness or gentle-movement protocol. Optional private before/after check-in, summary, history | K-12 | Registers `somaticReset`. "Not diagnosis or treatment". Reflective practice. No text AI; guidance can be read aloud via `ctx.callTTS` (device voice when student AI is off) |
+| `stressbucket` | Stress Bucket | Visual capacity model: stressors pour in, coping "taps" drain out. Tabs: My Bucket / Edit / Reflect / Print view / About | 6-12 | Registers `stressBucket`. Brabban & Turkington (2002), NHS IAPT / Mind UK; states it is "NOT a claim that all stress is individually removable". Limited approach evidence. No AI |
+| `substancepsychoed` | Substance Use | Harm-reduction psychoeducation. Tabs: Framework / Adolescent brain / By substance (alcohol, cannabis, nicotine, opioids, stimulants, benzos, hallucinogens) / When use is a problem / My reflection / Getting help / Handout / About | 6-12 | Registers `substancePsychoed`. NOT a screener, NOT abstinence-only; SAMHSA and naloxone referrals; reflection is MI-aligned. Limited approach evidence. No AI |
+| `tipp` | TIPP | DBT crisis-survival skills for acute distress: Temperature, Intense exercise, Paced breathing, Paired muscle relaxation. Tabs: I need this now / My log / Pocket card / About | 5-12 | DBT Distress Tolerance (Linehan). The in-crisis note points to Crisis Companion and 988. Research-informed. No AI |
+| `windowoftolerance` | Window of Tolerance | Map your own signs of hyperarousal, the window, and hypoarousal, plus triggers and practices that bring you back; includes a check-in. Tabs: My Window / Edit / Check in / Print view / About | 6-12 | Registers `windowOfTolerance`. Siegel (1999); flags the polyvagal framing as contested. Limited approach evidence. No AI |
+
+#### Inner Work (+3)
+
+| ID | Display name | Purpose | Grade band | Notes |
+|---|---|---|---|---|
+| `quietquestions` | Quiet Questions | One open-ended query per week, from 20 rotating questions on attention, longing, difficulty, connection and becoming. Tabs: This week / All questions / My practice / About | 5-12 | Registers `quietQuestions`. Inspired by Quaker query practice; secular. Reflective practice. No AI |
+| `orientations` | Orientations | "Ways of Living, Compared": 8 traditions (Daoism, Zen, Stoicism, Existentialism, Confucian ethics, Ubuntu, Indigenous relationality, Care Ethics) set against big life questions; each has a "what it cannot do well" panel. Tabs: Traditions / Compare on a question / Compass / About | 6-12 | Non-prescriptive. Reflective practice. No AI |
+| `thoughtrecord` | CBT Thought Record | 7-column record (situation, emotion, automatic thought, evidence for/against, balanced thought, re-rating), saved over time. Tabs: New entry / Past entries / Print view / About | 5-12 | Registers `thoughtRecord`. Beck, Burns. Research-informed. No AI |
+
+#### Care of Self (+9)
+
+| ID | Display name | Purpose | Grade band | Notes |
+|---|---|---|---|---|
+| `careconstellations` | Care Constellations | Relational map of the care you receive and give, with a Care Pulse. Tabs: My constellation / Care Pulse / Add a connection / Reflect / Print / About: Care of Self | 5-12 | Registers `careConstellations`. Rejects the consumerist "self-care" frame. Reflective practice. No AI |
+| `ecomap` | Ecomap | Person-in-environment map: the systems around you, each rated for strength, stress and energy direction. Tabs: My Ecomap / List / Edit / Reflect / Print view / About | 5-12 | Hartman (1978); for reflection, not assessment. Reflective practice. No AI |
+| `circlesofsupport` | Circles of Support | Four concentric rings: Intimacy, Friendship, Participation, Exchange (paid). Tabs: My Circles / Edit / Reflect / Print view / About | 3-12 | Registers `circlesOfSupport`. Forest & Snow (Inclusion Press); person-centered planning. Reflective practice. No AI |
+| `genogram` | Genogram | Three-generation family map using standard family-systems symbols. Tabs: My Genogram / People / Relationships / Print view / About | 8-12 | Bowen; McGoldrick, Gerson & Petry. "Self-understanding, NOT clinical assessment"; includes safe-framing guidance. Reflective practice. No AI |
+| `griefloss` | Grief & Loss | Self-companion for grief: death of a person or pet, family change, lost friendships, identity and ambiguous loss. Tabs: Overview / Name the loss / The four tasks / Letter / Rituals / Print / About | 5-12 | Registers `griefLoss`. Worden's Tasks of Mourning, Dual Process Model; refers to clinical support, Crisis Companion and 988. Limited approach evidence. No AI |
+| `traumapsychoed` | Understanding Trauma | Trauma psychoeducation. Tabs: What trauma is / Types / Neurobiology / Responses / SAMHSA 6 / Pathways to healing / Handout / About | 6-12 | Registers `traumaPsychoed`. Explicitly NOT a screener (no ACEs questionnaire); SAMHSA principles, Herman's stages; written for students and educators. Limited approach evidence. No AI |
+| `bodystory` | Body Story | Body acceptance and embodiment. Tabs: Frame / What my body does / Where the pressure comes from / The critical voice / Media diet / Print / About | 6-12 | Registers `bodyStory`. Tylka body appreciation, intuitive eating, media literacy; NOT weight-focused, NOT a screener; eating-disorder helpline and 988 referral. Limited approach evidence. No AI |
+| `identitysupport` | Identity Support | Affirming space for gender identity and sexual/romantic orientation. Tabs: Welcome / Vocabulary / Exploring identity / Finding community / Safety + crisis / For allies / Print / About | 5-12 | Registers `identitySupport`. Trevor Project, GLSEN, PFLAG. Research-informed. No AI |
+| `disabilityvoices` | Disability Voices | Quotes, context, reading list and organizations from autistic and disabled advocates (Ne'eman, Grandin, Milton, Kupferstein, Asasumasu, Baggs, Brown, Berne). Tabs: Voices / Reading list / Organizations / About this tool | 6-12 | Registers `disabilityVoices`. Centers the people disability practice was "done TO". Not in the evidence-badge map (no badge). No AI |
+
+#### Self-Direction (+3)
+
+| ID | Display name | Purpose | Grade band | Notes |
+|---|---|---|---|---|
+| `onepageprofile` | One-Page Profile | Printable person-centered profile in three parts: what people like about me, what is important to me, how best to support me. Tabs: My profile / Edit / Print view / About | 3-12 | Registers `onePageProfile`. Helen Sanderson Associates format; for IEP meetings, transitions, substitutes, Crew intros. Reflective practice. No AI |
+| `valuescommittedaction` | Values & Action | Sort values, name your top ones, and turn each into a small committed action for this week. Tabs: Overview / Sort values / My top values / Committed actions / Print / About | 5-12 | Registers `valuesCommittedAction`. ACT with DNA-V adolescent framing. Research-informed. No AI |
+| `careercompass` | Career Compass | 36-item RIASEC self-check that gives a top-3 Holland code; browse careers, the 16 federal Career Clusters, and next steps (shadow days, info interviews, CTE, apprenticeships). Tabs: Overview / My code / Careers / Clusters / Next steps / Print / About | 6-12 | Registers `careerCompass`. Holland; sends students to the O*NET Interest Profiler (mynextmove.org). Limited approach evidence. No AI |
+
+#### Relationship Skills (+5)
+
+| ID | Display name | Purpose | Grade band | Notes |
+|---|---|---|---|---|
+| `dearman` | DEAR MAN | Builds a seven-step script for a hard ask (guided or all steps at once), plus a self-paced Rehearse mode with cue levels (Full text / Short prompt / From memory). Tabs: Build a script / My script / Rehearse / Print / About | 5-12 | Registers `dearMan`. DBT Interpersonal Effectiveness (Linehan). Rehearse has **no AI partner**, unlike the §5.2/§5.4 Rehearse tabs; it carries a "Safety first" note. Research-informed. No AI |
+| `motivationalinterviewing` | Motivational Interviewing | OARS skills, the Importance/Confidence/Readiness rulers, Change Talk, and applying MI to yourself. Tabs: Overview / OARS skills / The rulers / Change talk / On myself / Print / About | 6-12 | Registers `motivationalInterviewing`. Miller & Rollnick. Research-informed. No AI |
+| `crewprotocols` | Crew Protocols | Library of group formats for Crew/advisory (community builders, openings/closings, restorative circles, reflection, celebration, hard-conversation guides), a roll-up of Crew prompts from across the hub, and a Crew planner. Tabs: Overview / Browse / Crew prompts / My Crew plan / Print / About | 3-12 | Registers `crewProtocols`. EL Education Crew, Restorative Practices, Tribes, Responsive Classroom. Limited approach evidence. No AI |
+| `healthyrelationships` | Healthy Relationships | Healthy / unhealthy / abusive spectrum across 8 dimensions, a relationship check, consent, and dating-violence safety with helplines. Tabs: The spectrum / Check a relationship / Consent / Safety + help / Print / About | 6-12 | Registers `healthyRelationships`. Loveisrespect / NDVH; inclusive of queer, neurodivergent and disabled people; helpline cards (988 etc.). Limited approach evidence. No AI |
+| `practicejourneys` | Practice Journeys (Pilot) | Four connected encounters practicing self-advocacy. Respond with choices, your own words, or both; keep a journal; replay another path | 5-12 | Registers `practiceJourneys`. Generated bundle (`dev-tools/campaign-adventure-pilot/build-in-app.cjs`) sharing an engine with STEM `fieldJourneys`. Character replies are authored; on-screen copy says written responses are "not graded or sent to an AI service"; storage is session-only; the optional narrator hook is not wired. The registry desc says "group project", the card says "asking for support". No AI |
+
+#### Stewardship (+1)
+
+| ID | Display name | Purpose | Grade band | Notes |
+|---|---|---|---|---|
+| `landplace` | Land & Place | Stewardship Studio for an ongoing relationship with local land. Tabs: What is this place? / Three threads (history, ecology, present) / Build acknowledgment / Beyond acknowledgment / Reflection journal | 8-12 | Registers `landPlace`. Treats land acknowledgment as practice, not performance; Wabanaki-led organizations are the authoritative voices. Reflective practice. No AI |
+
+#### 5.9.1 Safety coverage of the 33 expansion tools (audited November 20, 2026)
+
+Method: case-sensitive grep of each `sel_tool_<id>.js` for `safeCoach`, `safeRehearseCheck`, `renderCrisisResources`, `renderResourceFooter`, `renderSafetyDisclosure`, `onSafetyFlag`, `assessSafety`, `SafetyContentChecker`, content-warning patterns (`contentWarning`, `cwAck` …), and `callGemini`. "Free-text" = number of `textarea` elements. "Crisis refs" = whether the file hardcodes 988 / crisis-line copy itself.
+
+| ID | safeCoach | safeRehearseCheck | renderCrisisResources | renderResourceFooter | renderSafetyDisclosure | CW gate | AI calls (`callGemini`) | Free-text | Crisis refs |
+|---|---|---|---|---|---|---|---|---|---|
+| `anxietytoolkit` | — | — | Yes, in the "yes" crisis card (since 2026-11-20) | — | — | Triage gate (not a CW); a "yes" fires `onSafetyFlag` (since 2026-11-20) | None | 8 | Yes (988, 741741; now the fallback) |
+| `behavioralactivation` | — | — | — | — | — | — | None | 0 | Yes |
+| `bigfeelings` | — | — | — | — | — | — | None | 2 | — |
+| `bodystory` | — | — | — | — | — | — | None | 2 | Yes |
+| `careconstellations` | — | — | — | — | — | — | None | 2 | — |
+| `careercompass` | — | — | — | — | — | — | None | 0 | — |
+| `circlesofsupport` | — | — | — | — | — | — | None | 0 | — |
+| `crewprotocols` | — | — | — | — | — | — | None | 0 | — |
+| `dearman` | — | — | — | — | — | — | None | 2 | — |
+| `disabilityvoices` | — | — | — | — | — | — | None | 0 | — |
+| `ecomap` | — | — | — | — | — | — | None | 1 | — |
+| `genogram` | — | — | — | — | — | — | None | 1 | — |
+| `griefloss` | — | — | — | — | — | — | None | 4 | Yes |
+| `healthyrelationships` | — | — | — | — | — | — | None | 0 | Yes |
+| `identitysupport` | — | — | — | — | — | — | None | 3 | Yes |
+| `landplace` | — | — | — | — | — | — | None | 6 | — |
+| `motivationalinterviewing` | — | — | — | — | — | — | None | 1 | — |
+| `onepageprofile` | — | — | — | — | — | — | None | 0 | — |
+| `orientations` | — | — | — | — | — | — | None | 0 | — |
+| `perma` | — | — | — | — | — | — | None | 0 | — |
+| `practicejourneys` | — | — | — | — | — | — | None (stated in UI) | 2 | — |
+| `quietquestions` | — | — | — | — | — | — | None | 2 | — |
+| `sensoryregulation` | — | — | — | — | — | — | None | 1 | — |
+| `somaticreset` | — | — | — | — | — | — | None (TTS only) | 0 | — |
+| `stressbucket` | — | — | — | — | — | — | None | 0 | Yes |
+| `substancepsychoed` | — | — | — | — | — | — | None | 2 | Yes |
+| `thoughtrecord` | — | — | — | — | — | — | None | 5 | — |
+| `tipp` | — | — | — | — | — | — | None | 0 | Yes |
+| `traumapsychoed` | — | — | — | — | — | — | None | 0 | Yes |
+| `valuescommittedaction` | — | — | — | — | — | — | None | 0 | — |
+| `viastrengths` | — | — | — | — | — | — | None | 1 | — |
+| `wheeloflife` | — | — | — | — | — | — | None | 2 | — |
+| `windowoftolerance` | — | — | — | — | — | — | None | 0 | — |
+
+`onSafetyFlag`, `assessSafety`, `SafetyContentChecker` and `hasCoachConsent` also appear 0 times in all 33 files.
+
+**Findings**
+
+1. **No AI-on-free-text gap in the 33.** None calls `callGemini`, so the §5.8 rule (every AI surface that takes student free text goes through `safeCoach`/`safeRehearseCheck`) has nothing to cover here. This includes `dearman`'s Rehearse tab and `practicejourneys`' written responses.
+2. **The shared safety layer is not used at all.** Ten of the 33 hardcode their own crisis copy, and the wording and line lists vary from tool to tool. They do not call `renderCrisisResources` (988 / Maine Crisis Line / NAMI Maine / Trevor / Crisis Text Line) or `renderResourceFooter`, so they will not pick up future changes to the canonical block. Sensitive-content tools (`traumapsychoed`, `griefloss`, `substancepsychoed`, `healthyrelationships`, `identitysupport`, `bodystory`) have no content-warning gate. Compare `crisiscompanion`, `conflicttheater`, `emotions` and `zones`, which do.
+3. **No keyword check on free-text entries — resolved for all 26 text-input tools (2026-11-20).** Originally the ~47 textareas and text inputs across the 33 tools got no keyword check and never fired `onSafetyFlag`. Four passes on 2026-11-20 wired `safeRehearseCheck` + `scanForCrisis` fallback + `showCrisisModal` + top-level `renderCrisisResources` across every SEL expansion tool that accepts student-typed text (26/26): Wave 15–16 covered 9 (`anxietytoolkit`, `behavioralactivation`, `bigfeelings`, `dearman`, `healthyrelationships`, `identitysupport`, `stressbucket`, `substancepsychoed`, `windowoftolerance`), the follow-up passes covered 12 hand-authored textarea tools (`griefloss`, `thoughtrecord`, `bodystory`, `genogram`, `ecomap`, `careconstellations`, `quietquestions`, `sensoryregulation`, `motivationalinterviewing`, `viastrengths`, `wheeloflife`, `landplace`) and 4 text-input tools (`circlesofsupport`, `crewprotocols`, `onepageprofile`, `valuescommittedaction`), and the pilot source (`dev-tools/campaign-adventure-pilot/app.mjs` + `native-view.mjs`) was wired and rebuilt for `practicejourneys` (and STEM `fieldjourneys`). In addition, `onSafetyFlag: handleAiSafetyFlag` is now wired end-to-end from `AlloFlowANTI.txt` / `App.jsx` through `stem_lab/stem_lab_module.js` into every STEM tool's `ctx`. All are verified by `tests/safety_gaps_audit_2026_11_20.test.js`. Note that even where flags fire, the safety layer records them on the device only and alerts no adult in any mode.
+4. **`anxietytoolkit` asked directly about self-harm and did not escalate — fixed 2026-11-20.** The check-in asks about suicidal thoughts (`triageSuicidal`). A "yes" used to show a hardcoded crisis card only, with no flag, and the answer stayed in saved tool data. Now a "yes" fires one critical `onSafetyFlag` (`source: 'sel_anxietyToolkit_triage'`, no free text), the card renders the shared `renderCrisisResources` block (its nested `role="alert"` dropped so it is announced once; the old list remains as the fallback), and the answer is cleared whenever the student leaves the check-in. Covered by `tests/safety_gaps_audit_2026_11_20.test.js` (renders the tool with React).
+
+**Related findings outside the 33 (STEM Lab):**
+
+- **`stem_tool_llm_literacy.js` had two AI surfaces that sent student free text to `callGemini` with no safety check — fixed 2026-11-20 (see the §5.8 LLM Literacy row):**
+  - **Prompt Craft "live iteration workshop":** `runLive` sent the student's own prompt verbatim.
+  - **When to Use AI "my situation" coach:** `runMyCoach` interpolated the student-written situation and skill into the prompt.
+
+  The Temperature playground was the only guarded surface, calling `SafetyContentChecker.check()` directly and blocking only on `critical`, without firing `onSafetyFlag`. All three now share `aiSafetyGate`.
+- `stem_tool_coordgrid.js` AI tutor (`askAITutor`) sent the student's free-text question to `callGemini` without a check. **Fixed 2026-11-20:** a local `tutorSafetyGate` (same mapping as AI Literacy Lab: shared `safeRehearseCheck` when loaded, else `SafetyContentChecker`) skips the AI with crisis lines on critical wording, appends the trusted-adult note on high, and fires `ctx.onSafetyFlag` when provided.
+- `stem_tool_worldbuilder.js` (SEL + restorative-justice literary RPG) sent student free text to `callGemini` unchecked across 5 surfaces (`respondToNPC`, `craftItem`, `buildStructure`, `performBattleAction`, `performAction`). **Fixed 2026-11-20:** `wbSafetyGate` guards all 5 (full `safeRehearseCheck` on SEL NPC dialogue; self-harm and real-world threats blocked on RPG actions while permitting fantasy battle verbs like "attack"/"shoot"), fires `ctx.onSafetyFlag`, and renders a top-level crisis banner.
+- `sel_tool_zones.js` calls `callGemini` (L34227, L34716) without a safety wrapper, but both prompts are built only from zone, band and preset text, with no student free text. **Not a gap.**
+
+#### 5.9.2 Reconciliation: SEL tools documented elsewhere or not at all
+
+§5.1–5.6 list 32 tools and §5.9 adds 33, which leaves **7** `sel_tool_*.js` files with no row anywhere:
+
+| ID | Display name | Purpose | Grade band | Notes |
+|---|---|---|---|---|
+| `costbenefit` | Cost-Benefit Grid | DBT 2x2 grid: short- and long-term pros and cons of a decision, side by side | 5-12 | Registers `costBenefit`; Inner Work. Linehan. Research-informed. No AI. **Not mentioned anywhere in the doc** |
+| `howl` | HOWL Tracker | Habits of Work and Learning: weekly self-assessment, quarterly goals, trend chart, Crew conversation prompts | 3-12 | Registers `howlTracker`; Self-Direction. EL Education HOWL framework; built for the Crew/King middle-school pilot. Includes 988 refs; no AI. Mentioned only indirectly, as memory file `project_sel_hub_howl_mapping.md` (§ "Memory files") |
+| `maps` | MAPS | Making Action Plans: 8 prompts in order (My Story, Dream, Nightmare, Who I Am, Gifts, Needs, Action Plan, First Steps) | 5-12 | Self-Direction. Pearpoint, O'Brien & Forest (Inclusion Press). Reflective practice. No AI. Not mentioned |
+| `path` | PATH | Planning Alternative Tomorrows with Hope: 8 stages from a long-horizon North Star back to first steps in two weeks | 5-12 | Self-Direction. Pearpoint, O'Brien & Forest; pairs with MAPS. Reflective practice. No AI. Not mentioned |
+| `sfbt` | Solution-Focused | SFBT exercises: Miracle Question, Scaling (0-10), exception-finding, compliments | 5-12 | Inner Work. de Shazer & Berg. Limited approach evidence. No AI. Not mentioned |
+| `sleep` | Sleep & Rest | Age-aware sleep psychoeducation: age-based guidance, self-check, sleep diary, 8 common barriers with what works, and when to ask an adult or clinician | 5-12 | Self-Regulation. CDC, AAP, NSF, Carskadon. Limited approach evidence. No AI. Not mentioned |
+| `sourcesofstrength` | Sources of Strength | Map 8 protective factors (Family, Friends, Mentors, Healthy Activities, Generosity, Spirituality, Medical Access, Mental Health Access) | 6-12 | Registers `sourcesOfStrength`; Care of Self. Wyman et al.; the card says it is "an adaptation, not delivery of the evaluated school program"; complements Crisis Companion. Research-informed. No AI. The doc names the *framework* only (in `peersupport` and `crisiscompanion` rows), not this tool |
+
+**Registered-category mismatches found while reconciling (existing tools):**
+- `crisiscompanion` registers `category: 'peer-support'`, which is not a hub section key. Its card is placed statically under Care of Self.
+- `selfadvocacy` registers `'self-awareness'` but its card sits under Self-Direction.
+- `conflicttheater` registers no category; its card supplies `_cat: 'relationship-skills'`.
+
+**Corrected totals by hub section (sums to 72):**
+
+| Hub section (`sel_hub_module.js`) | Tools in §5.1–5.6 | New in §5.9 | §5.9.2 | **Total** |
+|---|---|---|---|---|
+| Self-Awareness | 4 (`zones`, `emotions`, `strengths`, `advocacy`) | 3 | 0 | **7** |
+| Self-Regulation (CASEL Self-Management) | 3 (`coping`, `transitions`, `digitalWellbeing`) | 9 | 1 (`sleep`) | **13** |
+| Inner Work | 1 (`mindfulness`) | 3 | 2 (`costbenefit`, `sfbt`) | **6** |
+| Care of Self | 2 (`compassion`, `crisiscompanion`) | 9 | 1 (`sourcesofstrength`) | **12** |
+| Self-Direction | 4 (`goals`, `growthmindset`, `execfunction`, `selfadvocacy`) | 3 | 3 (`howl`, `maps`, `path`) | **10** |
+| Social Awareness | 5 (`perspective`, `community`, `upstander`, `cultureexplorer`, `voicedetective`) | 0 | 0 | **5** |
+| Relationship Skills | 8 (`conflict`, `conflicttheater`, `friendship`, `social`, `sociallab`, `peersupport`, `teamwork`, `restorativecircle`) | 5 | 0 | **13** |
+| Responsible Decision-Making | 4 (`decisions`, `safety`, `journal`, `ethicalreasoning`) | 0 | 0 | **4** |
+| Stewardship | 1 (`civicaction`) | 1 | 0 | **2** |
+| **Total** | **32** | **33** | **7** | **72** |
+
+The §5.1–5.6 headings predate the hub's re-sectioning, so some existing rows sit under a different heading than their live card:
+- §5.1 lists `journal` (now Decision-Making), `growthmindset` (now Self-Direction), `compassion` (now Care of Self) and `perspective` / `voicedetective` (now Social Awareness).
+- §5.2 lists `mindfulness` (now Inner Work) and `advocacy` (now Self-Awareness).
+- §5.3 lists `ethicalreasoning` (now Decision-Making).
+- §5.5 lists `crisiscompanion` (now Care of Self).
+
+Card count = registered count = 72, with no orphan cards or modules.
 
 ---
 
@@ -1701,4 +1899,339 @@ placeholders, prefers-reduced-motion gaps, transition durations.
 
 ---
 
-**End of inventory.** This evolving catalog contains **720+ grouped and granular entries**; that taxonomy count is not a count of distinct shipped tools. Current live totals are 126 STEM tool files / 127 registered STEM plugin IDs and 70 SEL Hub tools. The current top-level module map lives in `build.js`. The catalog also includes expanded document-pipeline exports, AlloStudio, Open Groove Studio, Video/Cinematic Studio work, cross-cutting annotation features, teacher-dashboard expansion, and overlapping personalized student-kit surfaces.
+## 14. September – November 2026 additions
+
+Drafted November 20, 2026 from `git log --since=2026-09-01 --no-merges` plus the working tree. Each row is dated by commit (`YYYY-MM-DD`, short hash); numbers are quoted from commit messages or files, and where a later commit changed a number both are given.
+
+### 14.1 AlloFlow Packets
+
+**What it is:** a teacher makes **one self-contained HTML file** (a "packet") in the browser. A student
+opens it in Chrome, Edge or Safari with **no internet, no account and no AI** and saves a
+**results file** (CSV/JSON) at the end. The teacher adds those files up on a results page, or
+drops them into the app's Class Analytics. The public wording is "Runs without AI. No accounts."
+That wording was adopted 2026-11-11 (`4c6e9b523d`) because the recorded sounds were made ahead of
+time with computer voices, some of them AI voices.
+
+**Where it lives:** root `packets*.html/.js/.css` (website pages), `packet_*_builder.js` (one builder per
+file kind), `packets_*.js` (shared runtime: `packets_handoff.js`, `packets_my_words.js`,
+`packets_reopen.js`, `packets_results_reader.js`, `packets_verify_core.js`, `packets_voice_engine.js`,
+`packets_audio_kit.js`, `packets_zip.js`, `packets_vocab_bank_en.js`, `packets_vocab_media.js`).
+The student file's player and `buildHtml` live in `word_sounds_take_home_loader.js`. The Word Sounds
+lesson builder is `word_sounds_packet_builder.js`. File formats are documented in
+[docs/packets-file-formats.md](docs/packets-file-formats.md) (as of 2026-11-19), and the task board in
+`docs/packets-task-board-2026-11-13.md`. Gates: `dev-tools/check_packets_a11y.cjs`
+(`npm run check:packets-a11y`) and `dev-tools/check_packets_smoke.cjs`. There are 59 tracked `tests/packets_*` files. The 2026-11-17 commit reported 60 Packets test files / 1,183 tests.
+
+**Discoverability:** the website front door is `packets.html`. It is grouped by goal into **Practice**
+(Word Sounds / math facts / vocabulary / quick naming), **Check progress** (math check / 1-minute
+naming check / vocabulary check) and **Results and more** (Add up results / Present & print word
+cards / Check it yourself), plus "Open a practice file or check" (grouping added 2026-11-18,
+`5248221f44`). The site's `index.html` and `tools.html` got "one quiet entry" (2026-11-11, `451a8f0cdb`).
+A "Quick Practice & Checks" menu item was added to the primary, mobile and no-JS menus on 165 site
+pages (2026-11-14, `4e4a4bf41b`). In the app, use Word Sounds → **"Take-home file"**, Assessment Center
+math checks / custom Math Fluency setup → **"Save as a file for home"**, and Class Analytics →
+**"Add take-home results"** (see §14.3).
+
+| Feature | Purpose | Discoverability | Users | Module / file | Date |
+|---|---|---|---|---|---|
+| Take-home results as CSV + standalone packet builder | The student file saves a CSV (code name, finish date/time on every row), offers "Copy for a spreadsheet" and an "About this file" panel, checks saved results for edits, and enforces a no-network rule with a hashed script. A builder that runs in both browser and node, with a word picker, word list and first-pass blocklist | Word Sounds → Take-home file | Teacher, student | `word_sounds_packet_builder.js`, `word_sounds_take_home_loader.js`, `dev-tools/make_word_sounds_packet.cjs` | 2026-11-11 `49465de2af` |
+| Website front door + Word Sounds packet maker | `packets.html` (what a packet is, what it can and cannot do, how a school can check it) and `packets-make.html`: three steps (what to practice → which words → make the file), recorded sounds only. Pages load nothing from other hosts and use a strict CSP with no inline script/style | `packets.html` → Make Word Sounds practice | Teacher | `packets.html`, `packets-make.html/.js` | 2026-11-11 `ecb54adc5a` |
+| Check mode + first math checks | Engine "check" mode (internally `probe`): one try, no feedback, a wall-clock countdown that survives reload, number keypad, practice items first, scrambled answers, optional teacher code that locks the answers screen, score row in results. First checks are Quantity Discrimination, Missing Number and Math Fluency (digits-correct scoring), plus teacher-made sets | `packets.html` → Check progress → Make a math check | Teacher, student | `packet_check_builder.js`, `check_adapters/*`, `dev-tools/make_check_packet.cjs` | 2026-11-11 `c9751e968a` |
+| Math check page, check-a-file page, IT guide | `packets-check.html` (three ready checks or own problems; masked teacher code). `packets-verify.html` ("Look inside a file": reports policy, script hashes and anything that could reach outside, with line numbers; three sample files, one deliberately altered). `packets-it.html`: one-sheet guide for school IT with seven checks that need no trust in the site | Front door → Check it yourself → Look inside a file / Guide for school IT | Teacher, IT, privacy officer | `packets-check.*`, `packets-verify.*`, `packets_verify_core.js`, `packets-it.html` | 2026-11-11 `451a8f0cdb` |
+| Results page ("Add up results") | Reads results files in the browser and shows the group and each learner over time (charts, typed goal line, print, summary CSV, one-file bundle). Connects to nothing and keeps nothing unless the teacher turns that on. Group box shows the median at 5–9 learners; the middle half (IQR) only from 10 learners; "not a published benchmark" note on every box | Front door → Results and more → Add up results | Teacher | `packets-results.*`, `packets_results_reader.js` | 2026-11-11 `4c6e9b523d`, `50718e1d2e` |
+| Pictures (Mulberry + OpenMoji) | Mulberry symbols (CC BY-SA 4.0, v3.6.1) vendored and matched conservatively. "Include pictures" in the website maker and the app's take-home dialog. Pictures never appear in a check. OpenMoji is used where Mulberry has none (2026-11-13) | Maker step 2 → Include pictures | Teacher, student | `word_sounds_symbols_en.js`, `word_sounds_symbols/` | 2026-11-11 `4c6e9b523d`; 2026-11-13 `7f4a9d730e` |
+| Picture labels in English + 56 languages | Five strings for pictures in student files (machine-translated; native review still owed) | Automatic by UI language | Student | `ui_strings.js`, `lang/*.js` | 2026-11-11 `9a5034c383` |
+| Device word store + "Find a picture" | `packets_my_words.js` keeps a teacher's own sound split, recording and picture+credit in IndexedDB, with size limits and a blocked-storage path; nothing is sent. `packets-pictures.html` is the only page that may reach other sites, and only after search is turned on (Global Symbols, Openverse, Wikimedia Commons; PD/CC0/CC BY/CC BY-SA only; policy names exactly five hosts) | Maker → "Edit this word" → Use my own picture / Find a picture online | Teacher | `packets_my_words.js`, `packets-pictures.*` | 2026-11-11 `31501e6bce` |
+| Teacher's own words in the maker | "Edit this word" panel: set sounds and letters (so names become usable), "Record it yourself" (kept on device as 16-bit WAV), own picture. Validated limits: clip WAV/MP3 400 KB, picture PNG/JPEG/safe SVG 200 KB. Maker states "Words you type, including names, are saved in the file and its results" | Maker step 2 | Teacher | `packets-make.js`, `packets_my_words.js` | 2026-11-11 `9dd96ad489`; 2026-11-12 `767b9a09e1` |
+| Math fact practice files | Practice (not checks) with Cover / Copy / Compare and fact rehearsal; results readers group them as "Math facts" with new/known fact breakdowns; no score, tiers or "Needs support" flag. Subtraction and division fact sets added 2026-11-14. Recall time from "Cover it" to first answer recorded (`recallMs`, `recall_median_ms`) 2026-11-17 | Front door → Practice → Make math fact practice | Teacher, student | `packet_math_practice_builder.js`, `packets-math-practice.*` | 2026-11-11 `9dd96ad489`; 11-12 `96f45e11f9`; 11-17 `4000c45e2b` |
+| Paper copy of a math check | "Print a paper copy": a learner sheet with the same problems in the same order, plus a teacher page (administration, scoring as the file does, answer key, paper-vs-screen caution). Fits US Letter and A4 | Make a math check → Step 3 → Print a paper copy | Teacher | `packets-check-print.css` | 2026-11-11 `a583142c02`; 11-12 `7e9c64eaec` |
+| Word choice, stages and blocklist | Word familiarity from CYP-LEX (children's-book lexicon, CC BY 4.0). Stage table as data tied to Common Core RF codes (England table alongside). Two-tier blocklist (hard + `[soft]`) | Maker step 1–2 (stage-first flow, 2026-11-14) | Teacher | `data/word_sounds_stages_en.json`, `data/word_sounds_blocklist_en.txt` | 2026-11-11 `4c2fa130b0`, `2ea83bbf39` |
+| "Choose the words yourself" + Custom length | Searchable checklist of every fitting word (sounds, picture yes/no); Custom length 1–40 words (engine max 40 questions per activity); "Include pictures" always explains its state | Maker step 2 | Teacher | `packets-make.js` | 2026-11-12 `f30f25bceb` |
+| Reading tools in every file | "Aa" panel: text size, colors (usual/high contrast/soft), WCAG 1.4.12 spacing, reading focus, **2× magnifier lens**. About 15 KB per file. Tools used are counted per item and in a check's `tools_used=` | Student file → Aa | Student | `word_sounds_take_home_loader.js` | 2026-11-12 `98daea8e65` |
+| Vocabulary practice/check | Offline definition bank from Simple English Wiktionary, Wiktionary and Open English WordNet: 2,547 words AI-assisted checked (2026-11-13), then 6,234 words / 10,295 senses after the K-8 science and social-studies pass (2026-11-14). Wrong answers never match any meaning; optional online lookup page | Front door → Make vocabulary practice / check | Teacher, student | `packet_vocab_builder.js`, `packets-vocab.*`, `packets-vocab-lookup.*`, `packets_vocab/` | 2026-11-13 `7f4a9d730e`; 11-14 `4e4a4bf41b` |
+| Open a file on phones/tablets | `packets-open.html` runs saved files in a sandboxed frame with a progress/save bridge | Front door → Open a practice file or check | Student | `packets-open.*` | 2026-11-13 `7f4a9d730e` |
+| Maker conveniences | Reopen a file I made; one file per student (.zip); print word cards; per-code-name progress; Untimed accommodation for checks (kept apart from timed results); Dark/Ocean/Sunny/Forest colors; Hear all; "Read the choices" | Maker step 3; student file | Teacher, student | `packets_reopen.js`, `packets_zip.js`, `packets-print-cards.*` | 2026-11-13 `7f4a9d730e` |
+| Teacher preview with live edit ("Try it") | `packets-try.html` toolbar: Remove question, Change wrong answers, Move up/down, Undo, Reset, per-item picture opt-out. Unedited files stay byte-identical. **Present mode** (2026-11-18) slides the preview chrome away and hides answers for showing a group; a Question order editor follows the saved order | Any maker → Try the file → Present | Teacher | `packets-try.*`, `packets_handoff.js` | 2026-11-14 `1efc8ad157`; 11-18 `d135110dc5` |
+| Answer audit | 2,961 generated builds (526,287 questions) verified to have one unambiguous correct choice across 12 defect classes (0 findings) | — (QA) | Maintainers | `tests/packets_answer_audit_2026_11_13.test.js` | 2026-11-14 `4e4a4bf41b` |
+| Symbol Runner | Quick naming practice or a 1-minute naming check for letters, letter sounds, numbers, words and dot patterns. Item ids mark whether the two things on a card agree (`-match`/`-conflict`). Microphone off by default. Read-aloud grid with on-device Whisper (teacher-allowed, 2026-11-18). In the app it is the second tab of Fluency Maze | Front door → Make quick naming practice / Make a 1-minute naming check | Teacher, student | `packet_symbol_runner_builder.js`, `packets-symbol-runner.*`, `symbol_runner_core.js` | 2026-11-15 `cf1747d6d6`; 11-17 `4000c45e2b`; 11-18 `d135110dc5` |
+| Read-along, voice page, fonts | **Make a read-along**: one Kokoro recording per sentence and one student file that reads aloud with sentence highlighting. Opt-in **voice page** (an on-device computer voice for words that have no recording). Student-file **Letters** tool (Lexend, Atkinson Hyperlegible, Book, Rounded) and **Syllables** tool. About page and file-format docs | Front door → "With optional computer voice (AI, runs on this device)" | Teacher, student | `packet_read_along_builder.js`, `packets-read-along.*`, `packets-voice.*`, `packets_voice_engine.js` | 2026-11-17 `6028e1d31d` |
+| Student end screen + spoken directions | Practice end screen with one big "Save my work" button and a "For grown-ups" fold. Quantity Discrimination and Missing Number checks carry a Kokoro recording of their Get-ready lines (play only on press; `directions_heard` counted) | Student file | Student | `packets_check_directions.js`, `dev-tools/build_packets_check_directions.cjs` | 2026-11-17 `4000c45e2b` |
+| Present & print word cards | Present vocabulary and word-sound cards on screen, switch card pictures, save as HTML or PowerPoint in the browser | Front door → Results and more | Teacher | `packets-present-export.*` | 2026-11-15 `cf1747d6d6` (page added) |
+| Maker levels named by skill | Word Sounds levels named by skill ("Level 1: Short vowels") with a "Grade for each level" key; activities mixed by default; Break it Down redone with colored tiles and drag. Answer-leak fixes (Sound Counting, Word Scramble, Spelling Bee) | Maker step 1 | Teacher | `packets-make.js`, `word_sounds_packet_builder.js` | 2026-11-18 `d135110dc5` |
+| Accessibility gate | `check:packets-a11y`: 139 states, 0 findings (11-13) → 144/144 states, 0 findings (11-14, 11-17). All 14 `packets*.html` clean in the 2026-11-15 WCAG audit | — (CI) | Maintainers | `dev-tools/check_packets_a11y.cjs` | 2026-11-13 `7f4a9d730e`; 11-17 `4000c45e2b` |
+| Hosting / CSP | Website pages are published with the GitHub Pages site (`check_pages_publish.cjs` targets `apomera.github.io/AlloFlow/`, 900 MB budget). Word audio shards are served from Cloudflare Pages (`alloflow-cdn.pages.dev/word_audio_shards/`). Packets voice/read-along CSP allow that origin (2026-11-19). Cloudflare Pages `_headers` CSP/framing and an `.assetsignore` trim of 1,006 non-runtime files (84.3% of Cloudflare's 20,000-file cap) landed 2026-11-14 | — | IT | `_config.yml`, `dev-tools/check_pages_publish.cjs`, `word_audio_shard_client.js` | 2026-11-15 `7a6123d51b`; 11-19 `63c3ead695`; 11-14 `4e4a4bf41b` |
+
+**Recorded word audio (sharded store).**
+
+| Item | Detail | Date |
+|---|---|---|
+| Batch generator | `dev-tools/build_word_sounds_word_audio.cjs`: voices suitable unrecorded words with Kokoro (same engine/voice/trim as the bank), most useful stages first, into per-letter shards. Resumable; per-clip checks (length, silence, clipping, cut-off tail); holds multi-pronunciation words for a person; stops cleanly when disk space is low | 2026-11-11 `a52576d6f1` |
+| Repack + on-demand fetch | `dev-tools/repack_word_sounds_word_audio.cjs` regroups into files of ≤40 words (sha256-verified swap). The maker fetches the index once, then only the shards holding that file's words. Privacy wording: the server sees which shard files were asked for, not which words | 2026-11-11 `2ea83bbf39` |
+| 5,711 words / 156 shards | 36 MB, largest shard 273 KB; "signal checks only; no person has listened" | 2026-11-12 `8f5903733c` |
+| Kokoro bank re-voiced | 1,072-word Kokoro bank (10.19 MB) re-voiced with carrier-sentence prosody (−20.04 LUFS, 0 clipping); gain-only pass on the 173-word Gemini bank | 2026-11-14 `4e4a4bf41b` |
+| 33,441-word dictionary; 8,955 shard clips | Wordlist/phoneme dictionary expanded to **33,441** attested words (CMUdict, app lists, CYP-LEX, Simple Wiktionary/Wiktionary/WordNet, NAWL/Zipf ≥ 2.0, inflections, 15-word science supplement). +2,329 newly voiced words, giving **8,955 clips in 239 shards** at that commit (all 6,944 default-familiar usable words recorded) | 2026-11-14 `1efc8ad157` |
+| Remaining ~23k words voiced | "Voice remaining 23k dictionary words in word_audio_shards (Kokoro af_heart)" | 2026-11-14 `ed1bdbb40f` |
+| Current store (from `word_audio_shards/index.json`) | **32,204 words in 823 shard files**, 355,681,648 bytes. Engine `kokoro-js@1.2.1` / `Kokoro-82M-v1.0-ONNX` (fp32, WebGPU), voice `af_heart`, en-US. Carrier sentence "Here is the word… {word}." cut before the word, −20 LUFS, Opus 64 kbps mono WebM. `humanReviewed: false`. `review.txt` lists 36 words voiced from a second text form, to listen to first. Index updated 2026-11-16 | index file |
+| Shard client wired into the app | `word_audio_shard_client.js` (`window.AlloWordAudioShards`): tries the relative `word_audio_shards/`, then `_ALLOFLOW_CDN_BASE`, then `alloflow-cdn.pages.dev`. Wired into TTS, Word Sounds, Word Sounds setup and Word Practice | 2026-11-14 `956d5fd813`; 2026-11-15 `7a6123d51b` |
+| Live Kokoro TTS | Single-word carrier-sentence cut recipe in `kokoro_tts_loader.js`. Earlier (2026-09-14, `7225393f79`): 60 s stall watchdog with one automatic retry; download label corrected to ~88 MB | 2026-11-14 `4e4a4bf41b` |
+
+---
+
+### 14.2 Word Sounds Studio overhaul (Oct–Nov 2026)
+
+> Renamed: as of 2026-11-10 (`94704af0e4`) the UI says **"Word Sounds"**, not "Word Sounds Studio".
+> Main files: `word_sounds_module.js` (29,099 lines on 2026-11-20), `word_sounds_setup_source.jsx` →
+> `word_sounds_setup_module.js`, `word_sounds_core.js`, `word_sounds_take_home_loader.js`,
+> `word_sounds_phonemes_en.js`, `word_sounds_pronunciations.js`, `word_sounds_wordlist_en.js`.
+
+| Feature | Purpose | Discoverability | Users | Module | Date |
+|---|---|---|---|---|---|
+| CMU pronunciation dictionary | Vendored CMUdict (`data/vendor/cmudict`, with licence) → `word_sounds_pronunciations.js`; syllable-count, review-panel and playback fixes; readiness contract | Setup → check-words / syllable review | Teacher | `word_sounds_pronunciations.js`, `word_sounds_readiness_contract.js` | 2026-10-16 `2adff44c51` |
+| Recommended order + mastery setting | "Use recommended order" (rhyme/syllables → families → single sounds → swap → letters/spelling/reading) with Undo; "Move on after 2/3/4 right in a row" (`lessonPlanConfig.masteryThreshold`); dark/high-contrast pass (axe: 0 findings) | Setup → Lesson plan | Teacher | `word_sounds_setup_source.jsx` | 2026-11-08 `7599c60316` |
+| Audio/instruction fixes | Overlong Gemini short-word clips re-requested as the bare word. A Kokoro voice choice is never swapped for the cloud voice. One AlloBot call suggests syllable counts for unknown words, and the teacher still confirms | Setup | Teacher | `tts_source.jsx`, setup | 2026-11-08 `cfb0f32631` |
+| Lesson planner chat + lesson scripts | "Describe your goals" became a back-and-forth planner ("Ask a question" / "Suggest changes" with numbered proposals). Lesson script "Students work" choice (in app / Present / paper / oral / mixed). Take-home results mark "(help)" | Setup → Describe your goals; Lesson script | Teacher | setup, `word_sounds_module.js` | 2026-11-09 `6091c17d0c` |
+| Worksheets + Present | Worksheets: Version A/B/C or New mix, Easier (2 choices), Blank/Review sheets, Sorting cards, answer key placement, "What to say" page, Large print, "Edit in Page Designer". Present: reshuffle, Pick a student, 1–9 keys / P to replay. Offline Present file (sounds converted for iPad, embedded reading font, think timer) | Word Sounds → Printables / Present | Teacher | `word_sounds_module.js` | 2026-11-09 `05426f677a` |
+| Holistic-review fix batch | Anchor card no longer shows the answer. Every wrong pick logged. Recap keyed by activity+word; Practice Missed Words replays in each word's own activity; apostrophes/hyphens handled; "Stop practicing?" confirm | Player | Student, teacher | `word_sounds_module.js` | 2026-11-09 `b38ca18141` |
+| **Plan-first setup** | "The lesson plan is the lesson": six one-tap starting points, a no-AI suggestion from the selected words, one length control (Short/Regular/Long), "Let students choose from all activities", Change activities / Fine-tune. **Removed:** Enable Lesson Plan checkbox, both per-session sliders, Word Count, prepare-scope select | Word Sounds → setup | Teacher | `word_sounds_setup_source.jsx` | 2026-11-10 `94704af0e4` |
+| **Ready-made lists** | One "Add a ready-made list" picker (rhyming families, digraphs, blends, sight words, compound and longer words) replaces the Word Family, Sight Words and both syllable bank cards; 104 vetted compound words. Syllable activities top up from built-in lists instead of blocking Prepare | Setup → Add a ready-made list | Teacher | setup | 2026-11-10 `94704af0e4` |
+| **Student screen + answer cards** | One-row header with a More panel; full-screen centred column; pinned feedback row; phone-fit tracing. Sound-only choices: tap plays and selects, large Check submits; a missed card is crossed out and the answer card is marked and spoken. 3 choices at Easy, 4 at Medium | Player | Student | `word_sounds_module.js` | 2026-11-10 `94704af0e4` |
+| **Skill strands** | Activities grouped into six strands with a one-line skill each: Syllables and rhyme · Hearing sounds · Letters and sounds · Spelling · Reading words · Reading sentences. One name per activity everywhere | Activity menu / setup | Teacher, student | `ui_strings.js` `strand_*` | 2026-11-10 `94704af0e4` |
+| **Orton-Gillingham sound dictionary / AI-free prep** | `word_sounds_phonemes_en.js` (31,067 CMUdict words at launch, alternates kept; built by `dev-tools/build_word_sounds_phonemes.cjs --check`). `OG_CONVENTIONS` in `word_sounds_core.js`: digraphs as one sound, blends separate, r-controlled units, schwa flagged, x/qu as two sounds, -le, -ed, silent letters, welded ng/nk. Rhymes, families, blending choices and Sight & Spell misspellings are computed from the dictionary. **A 10-word CVC or Hearing-sounds lesson now makes no AI text call (was 10).** Sentence/story calls happen only when a reading activity is planned | Setup → Prepare lesson (automatic) | Teacher | `word_sounds_core.js`, `word_sounds_phonemes_en.js` | 2026-11-10 `7ccabd0016` |
+| Child-safe answer choices | 18 blocked/borderline words removed from Sound Sort/rhyme choices (`NOT_OFFERED`); no crash on ~73 unsplittable words | Player | Student | `word_sounds_core.js` | 2026-11-11 `5069238bee` |
+| **Two-sound letter chips** | Sound Mapping: one box per phoneme. A spelling for two sounds (qu, x, u in *cute*, le) is one chip spanning two boxes (app and take-home). Later: chips play the word's own sound with an "s says /z/ here" note (2026-11-18) | Sound Mapping activity | Student | `word_sounds_module.js`, take-home loader | 2026-11-11 `b0ea43d567`; 11-18 `d135110dc5` |
+| Auto extra practice | With Auto difficulty, extra practice starts when fewer than half of first tries are right (missed words first), ends after two in a row or at the item limit, and shows in the teacher recap | Lesson with Auto difficulty | Student, teacher | `word_sounds_module.js` | 2026-11-11 `b0ea43d567` |
+| **Results tables + CSV** | Teacher-only "Download results (CSV)" in the player; Class Analytics Word Sounds by skill, recent sessions, most frequent wrong answers; session and by-skill CSVs | Player (teacher); Class Analytics | Teacher | `word_sounds_module.js`, `student_analytics_module.js` | 2026-11-11 `b0ea43d567` |
+| **Take-home results CSV + Class Analytics drop-in** | See §14.1/§14.3. Sound Mapping prefers the commoner of two fitting spellings (126 words improved) | Word Sounds → Take-home file; Class Analytics → Add take-home results | Teacher | `word_sounds_take_home_loader.js`, `student_analytics_module.js` | 2026-11-11 `49465de2af` |
+| **Batch recorded word audio** | Kokoro word-clip store for Word Sounds and Packets (details in §14.1) | Automatic (has-recording flag in word list) | — | `dev-tools/build_word_sounds_word_audio.cjs`, `word_audio_shards/` | 2026-11-11 → 11-16 |
+| Letter Trace + distractor guards | School ball-and-stick stroke guides with numbered start dots and case choice. Vocabulary distractor checks (Quiz/Glossary/Detective); 74-pair homophone guard in Missing Letter | Letter Trace activity | Student | `word_sounds_module.js` | 2026-11-14 `4e4a4bf41b` |
+| Find Sounds / answer leaks | Find Sounds names first, middle and last. Fixes so Sound Counting Easy no longer puts the answer 3rd every time, Word Scramble cannot start solved and Spelling Bee hints cannot fill the word. Break it Down touch drag | Player | Student | `word_sounds_module.js` | 2026-11-18 `5248221f44`, `d135110dc5` |
+| Probes / checks | Word Sounds probe mode is still in code (`probeMode`/`isProbeMode`). The new **Packets check mode** stores `mode: probe` internally and `check` in results since 2026-11-12. Readers treat both the same (`docs/packets-file-formats.md`) | Packets → Check progress | Teacher | take-home loader | 2026-11-11 `c9751e968a` |
+
+**What §3.22 currently says that is now outdated:**
+- "`word_sounds_module.js` is 24,623 lines": it is **29,099** lines (2026-11-20). Setup now lives in a separate `word_sounds_setup_module.js`.
+- The title "Word Sounds Studio": the UI name has been **"Word Sounds"** since 2026-11-10.
+- **Phoneme Audio Bank** "human-recorded phoneme audio (vs. TTS)": there is now also a machine-made **Kokoro word-clip store** (32,204 words, `word_audio_shards/`), and `index.json` marks it `humanReviewed: false`.
+- **Linguistic infrastructure** lists only `PHONEME_KEYWORDS`, homophone/rime clusters and heuristic `estimateFirstPhoneme`. Add the CMUdict-based sound dictionary, `OG_CONVENTIONS`, the CYP-LEX familiarity filter, the stage table (`data/word_sounds_stages_en.json`) and the two-tier blocklist. Phoneme estimation is no longer only heuristic.
+- **Activity types** ("Rhyme matching, Blending, Phoneme manipulation, Syllable counting, Isolation, Tracing") is incomplete. Commits name Sound Mapping, Break it Down, Sound Sort, Word Families, Find Sounds, Blend Sounds, Sound Counting, Word Scramble, Spelling Bee, Sight & Spell, Missing Letter, Letter Trace and Read & Match, grouped by the six skill strands.
+- The closing note that "Spelling Bee / Sound Sort / Letter Tracing … worth a UI walkthrough": these names now appear as activities in 2026-11 commits (Letter Trace, Sound Sort, Spelling Bee). The REFLECTIVE_JOURNAL question can be closed.
+- **AAC Mode** "Imagen-generated picture-symbols": take-home/Packets pictures are now **Mulberry/OpenMoji** symbols (no image generation).
+- Setup controls such as the Enable Lesson Plan checkbox, per-session sliders and Word Count were **removed** 2026-11-10.
+- New since: take-home files, worksheets, Present / offline Present file, planner chat, lesson scripts, results CSV, skill strands.
+
+---
+
+### 14.3 Class Analytics, Assessment Center & Math
+
+| Feature | Purpose | Discoverability | Users | Module | Date |
+|---|---|---|---|---|---|
+| Math tools review rounds 2–3 | Fixes across Algebra CAS, Coordinate Grid, Inequality, Logic Lab, Manipulatives, Money, Multiplication Table, Probability, Ratios, Stats Lab, Unit Convert, Volume, Angles and Math Fluency, plus the fixed math probe forms and their generator; 61 new test files/fixtures | STEAM Lab math tools | Student | `stem_lab/*`, `math_fluency_module.js` | 2026-10-20 `6c5db0f903` |
+| Glossary screening → Assessment Center | Glossary's screening dialog moved into the Assessment Center | Assessment Center | Teacher | host handlers | 2026-10-20 `53427a48ca` |
+| Class Analytics: Word Sounds by skill | By-skill tables, recent sessions and most frequent wrong answers per student; session/by-skill CSV; tables also in the student report | Class Analytics → student | Teacher | `student_analytics_module.js` | 2026-11-11 `b0ea43d567` |
+| Class Analytics: "Add take-home results" | Reads many CSV/JSON results files at once, files each under learner + day finished, counts a session once, flags edited files, and shows Word Sounds over time by skill | Class Analytics → Add take-home results | Teacher | `student_analytics_module.js` | 2026-11-11 `49465de2af` |
+| Class Analytics reads **check files** | Also reads Math Fluency, Missing Number, Quantity Discrimination and teacher-made check files, filed under the app's measure and marked take-home. **Home results are kept out of benchmarks, tiers, growth rates and averages** and shown beside supervised results by date. The plugin loader now registers `packet_check_builder.js`, `word_sounds_phonemes_en.js` and `word_sounds_pronunciations.js` in `build.js` | Class Analytics → Add take-home results | Teacher | `student_analytics_module.js`, `build.js` | 2026-11-11 `defd1337f3` |
+| "Save as a file for home" (math) | Beside the Assessment Center math checks and on the custom Math Fluency setup; builds the same check packet as the website | Assessment Center / Math Fluency setup | Teacher | `math_fluency_module.js`, `packet_check_builder.js` | 2026-11-11 `defd1337f3` |
+| Math Fluency review fixes | Text answer box (digits + one leading minus). OS keyboard stays closed with the large keypad. "End this session?" pauses the clock. Results/Teacher Report as full-screen sheets. Fixed comparable form hides practice pickers; practice is no longer called a probe; live digits/min after 15 s; Strategy Coach tip for multiples of ten | Math Fluency | Student, teacher | `math_fluency_module.js` | 2026-11-11 `232a83d3b3` |
+| Fluency Maze fixes | 3D maze start crash fixed (loads Three.js itself); double-scored keyboard answers fixed; Chase mode monster sleeps until 3 steps away; loops in chase mazes; overhead camera default; minimap/welcome/summary polish | Fluency Maze | Student | `math_fluency_module.js` | 2026-11-11 `232a83d3b3` |
+| Assessment Center probes | Missing Number and Quantity Discrimination run full screen on the teacher's device, hand the device back before results, and save finished runs to the student record. Missing Number gets a text box + Enter | Assessment Center | Teacher, student | `math_fluency_module.js` | 2026-11-11 `232a83d3b3` |
+| Math Studio | Rows wrap on phones; style chips only in From Topic; hint under a disabled Generate; clearer Assessment Builder labels | Sidebar → Math | Teacher | `view_math_source.jsx`, `math_create_module.js` | 2026-11-11 `232a83d3b3` |
+| Packets results in readers | Math facts group (11-12); "Reading tools used" count/detail from `tools_used` in the results page and Class Analytics (11-14) | Class Analytics; `packets-results.html` | Teacher | `packets_results_reader.js`, `student_analytics_module.js` | 2026-11-12 `96f45e11f9`; 11-14 `1efc8ad157` |
+| Symbol Runner in the app | Second tab of Fluency Maze: recordings load, mic off, finished rounds award points and keep a best per symbol set, teacher tools in a fold | Fluency Maze → Symbol Runner tab | Student | `symbol_runner_core.js` | 2026-11-17 `4000c45e2b` |
+| Quiz "Quick Check mode" | Optional one tap, no retries (`quickCheckMode`, default false) | Quiz setup | Teacher | `view_quiz_source.jsx` | 2026-11-14 `1efc8ad157` |
+| Dynamic Assessment i18n + privacy | 85 stale Dynamic Assessment keys hand-translated in 22 language waves; clinician notes redacted via a shared identifier scrubber | Dynamic Assessment | Clinician, teacher | lang packs; `b50df58e40` | 2026-09-21 `6e35637aa2`…`591deea1a2` |
+| STEM Solver | Spiral Review and Difficulty Ladder make real problem sets; Volume Builder no longer shows the answer during a challenge | STEM Solver | Student | — | 2026-11-18 `5248221f44` |
+
+---
+
+### 14.4 Platform, accessibility & compliance (Sept–Nov 2026)
+
+| Feature | Purpose | Discoverability | Users | Module / evidence | Date |
+|---|---|---|---|---|---|
+| WCAG 2.2 enhancement pass + VPAT update | Earlier pass in the series | — | Compliance | `548a67131e` | 2026-09-26 |
+| **WCAG 2.2 AA platform audit** | Platform-wide static, unit and Playwright audit (Chromium 148, axe-core 4.12.1; contrast, 1.4.12, 2.4.11, 2.5.8, 2.5.3 probes) of all 55 A/AA criteria and 24 catalog cards. Status still "Pending determination"; no manual AT testing. Report: `reports/wcag-audit-2026-11-15/README.md`, summary in `a11y-audit/WCAG-2.2-current-audit.md`. Follow-up R1119 waves A–W (committed 11-19): exported worksheets 80/80, AA/HC misses 497 → 0; 50/50 hub states axe-clean; unlabeled form controls 72 → 0 | — | Compliance, district reviewers | `tests/wcag_audit_2026_11_15.test.js` | 2026-11-15 `cf1747d6d6`; 11-19 `34e0cbbf36` |
+| **VPAT v1.17** | `VPAT-2.5-WCAG-AlloFlow.md` updated for product v1.17 (release 2026-11-09); report date 2026-11-19 in the committed version. It remains an incomplete working draft, not an ITI-certified conformance claim | Repo root | Compliance | `VPAT-2.5-WCAG-AlloFlow.md` | 2026-11-15 `cf1747d6d6`; 11-19 `34e0cbbf36` |
+| Security hardening Pass 4–6 | "Zero-UX" security fixes with regression suites | — | IT, maintainers | `tests/pass4/5/6_zero_ux_security.test.js` | 2026-11-14 `274914f9d6` |
+| Security/FERPA Track 3 | Deferred hardening + security/FERPA enhancements | — | IT | `tests/deferred_security_hardening_20261115.test.js`, `tests/track3_security_ferpa_enhancements_20261115.test.js` | 2026-11-15 `cf1747d6d6` |
+| **Security, FERPA, shell-boundary hardening Passes 8–22** | Findings F-96…F-191: CSS-escape mXSS, CDN publish exclusions for dotfiles/tokens, owner-scoped FERPA isolation in PocketBase, DEK zeroing, SHA-384 SRI pins across CDN loaders, CSV/TSV formula-injection guards, prototype-safe JSON importers and size caps, SEL crisis fail-closed and prompt fencing, Remote MCP OAuth/DNS-rebinding checks, standalone-HTML CSPs. Adds the **shell boundary rule** to `AGENTS.md` (root `index.html` = marketing page; never copy it into `desktop/`; use `dev-tools/mirror_deliverables.cjs`) | — | IT, maintainers | `tests/track4_security_ferpa_hardening_20261119.test.js`, `dev-tools/mirror_deliverables.cjs` | 2026-11-19 `34e0cbbf36` |
+| **Magnifier lens** (student tool) | Round lens enlarging whatever is under the pointer/finger (text, pictures, canvases) at 1.5×/2×/3×. Lives in a shadow root, inert and aria-hidden; follows focus; arrow keys move it; Escape turns it off; remembered in localStorage | Student tools (FAB) → Focus → Magnifier | Student | `view_fab_stack_source.jsx`; `tests/fab_stack_magnifier.test.js` | 2026-11-12 `d9d8dd334f` |
+| **Page Designer in 56 languages** | 609 interface strings moved into `ui_strings` and all 56 packs. A4 pages, document language and text direction in every export; opens a Word Sounds worksheet as an editable document | Word Sounds printables → Edit in Page Designer | Teacher | `ui_strings.js`, `lang/*` | 2026-11-09 `05426f677a`, `b38ca18141` |
+| PDF/EPUB remediation updates | EPUB `content.xhtml` always has `lang`/`xml:lang`; svg/mathml declared from serialized content (fixes EPUBCheck OPF-015); RTL language sets `dir=rtl`; alt-text/decorative edits fix ARIA; Windows cancel kills the child tree; "Complete (needs review)" label. Earlier: verified tagged PDFs via the MCP lane, Arabic/RTL fixes, alt text from the structure answer (2026-10-19) | PDF Audit / remediation | Teacher, specialist | doc pipeline, MCP lane | 2026-11-19 `e1adb67bde`; 10-19 `f20d398b5c` |
+| `<html lang>`/`dir` follow UI language | `applyUiDocumentLanguage` promotes ModuleScopeExtras for a non-English UI so Somali/Arabic pages are not read as English/LTR during the ~50 s background load (WCAG 3.1.1) | Automatic | All | `AlloFlowANTI.txt`; `tests/ui_lang_attr.test.js` | 2026-11-12 `09456d7abc` |
+| Script loader retry | When a manifest-listed `alloflow-cdn.pages.dev` asset fails (e.g. an older Canvas build's integrity pin vs a newer file), the loader retries once from jsDelivr at the manifest's `fallbackCommit` with the same integrity | Automatic | All | script loader | 2026-11-11 `dfd1fe1404` |
+| Onboarding | Role-first Launch Pad with "Continue last workspace", optional Guided paths (prepared photosynthesis example, no AI), Family first steps (10-16). Onboarding round 2 gate cues + first-screen translations in 56 packs (11-13) | First launch | All | `docs/onboarding-integration-2026-10-14.txt` | 2026-10-16 `a023e75fa4`; 11-13 `7f4a9d730e` |
+| Tour / Help Mode accuracy | About 520 Help Mode entries and all 36 tour texts checked against real controls and corrected; tests tie tour/help numbers to controls; tour no longer skips the AI Guide step; Quick Start can continue into Guided Mode. Clear History confirms; single delete offers Undo | Help Mode; tour | All | `help_strings.js` | 2026-11-18 `5248221f44` |
+| Sidebar "Make activities from" + 3-group tool list | "Based on" became "Make activities from" and shows only when there are ≥2 texts or a selection needs fixing. The full, unsearched tool list reads under three headings matching the Find a tool filters (Make accessible / Engage / Assess & deliver) | Sidebar | Teacher | `view_sidebar_panels_source.jsx` | 2026-11-11 `74cc8a0780` |
+| Gemini Canvas launcher releases | Link bumps v1.3 (09-02) → v1.19 (11-19). v1.17 on 11-09 (`f73d5966fb`); **v1.18** on 11-16 (`8c9dd01b65`); **v1.19** on 11-19 (`cbaac28434`, link `Jdve7XySpYhT`). Versions older than 1.10 retired (10-25 `1499a80fd3`); the Canvas button carries no baked share link (10-28 `8ff3f64f8a`); Canvas white-screen fix + guard (11-07 `5e86cbf150`) | Launcher / in-app Canvas button | All | launcher, `release.json` | 2026-09-02 → 11-19 |
+| STEAM Lab-wide mute/read-aloud | One audio gate: app mute suspends lab AudioContexts (mic/recording/export left alone). `stemBeep` fixed (72 silent calls). Read aloud buttons in 23 tools now speak when pressed. Logic Lab tone-length bug fixed | STEAM Lab header mute; tool Read aloud | Student | STEAM Lab host | 2026-11-11 `044358686b` |
+| Bird Lab / Raptor Lab | Bird Lab "living skies"/illustrated reference views (09-26). Raptor Wind Hover / Fish Dive / Fish Thief modes (11-07). Spring season, snow tracks, seven new species (4 woodland birds + 3 flyable hawks) (11-11). Bird Lab 3D saves progress; Raptor flight debrief (wing loading, aspect ratio) and "Compare your flights" CER (11-11). Lifelike songbirds (11-12). Raptor Hunt 23 species (11-13) | STEAM Lab → Bird Lab / Raptor Lab | Student | `stem_tool_birdlab.js`, `birdlab_3d_*.js`, `stem_tool_raptorhunt.js` | 09-26 `ab76174ac4`; 11-07 `b3cdbac0a1`; 11-11 `ef12ad08a2`, `5355fb3543`; 11-12 `3572a0bd18` |
+| Bike Lab | Real ring/cog gear model (gears were backwards), "Where does my power go?", predict-then-test braking, Gearing Lab challenges, 3D parts explorer, redrawn Helmet Fit, Maine night-light law fact fix, "For teachers" block | STEAM Lab → Bike Lab | Student | `stem_tool_bikelab.js` | 2026-11-11 `2ce8446fbb` |
+| Road Ready | 51 commits Sept–Nov. Tool catalog grouped by learner goal replaces the tile wall (09-22); i18n of the permit bank; rounds 40–42 + Ride-Along (11-13) | STEAM Lab → Road Ready | Student | `stem_tool_roadready.js` | 09-22 `cba8c413b3`; 11-13 `7f4a9d730e` |
+| Night Sky & Astronomy / SkySchool | 3D Observatory tab with real HYG-catalog sky for a place and time (09-05). One "Your sky" place, computed Tonight, eclipse calendar 2027–2030, seasons/Moon predict-then-check (11-11). SkySchool first takeoff works (hands-off climb 674 fpm at 72 kt), crash review, rewritten lift lessons (11-11) | STEAM Lab → Night Sky / SkySchool | Student | `stem_tool_astronomy.js`, `stem_tool_flightsim.js` | 09-05 `7c7990f6e0`; 11-11 `9b00bff682` |
+| Coral Reef | Living reef dive with reef sounds (10-20); Reef photographer photo mode (11-07); full-screen dive with on-view controls and stable Nearby rows (11-11) | STEAM Lab → Coral Reef | Student | `stem_tool_coralreef.js`, `reef_3d_*.js` | 10-20 `0b2b9f97ce`; 11-07 `2c4e1d53e9`; 11-11 `e9c873328c` |
+| **Area Model deep rebuild** | Header "deep rebuild 2026-11-03". Tabs: Basic Grid, Distributive, Partial Products (whole + decimal), Algorithm Bridge, Fraction Sides, Algebra Tiles, Word Problems. Answers hidden until commit; named mistakes + second try; reveals earn no credit; grades 3/4/5/6+ | STEAM Lab → Area Model | Student | `stem_lab/stem_tool_areamodel.js` (+4,018/−1,146 in the commit) | 2026-11-07 `b3cdbac0a1` |
+| **Multiplication Table deep rebuild (v4)** | Header "deep rebuild v4, 2026-11-03". Tabs Practice / Arrays & groups / Patterns. Named mistakes, strategy hint before reveal, fading worked examples, smart practice from `factScores`, fair XP (no speed rewards), keyboard grids, teacher panel. Area/Perimeter also rebuilt in the same commit | STEAM Lab → Multiplication Table | Student | `stem_lab/stem_tool_multtable.js` (+3,718/−1,099) | 2026-11-07 `b3cdbac0a1` |
+| Cell Simulator deep enhancement | Ten-lane rebuild: new Stem Cells mode (Waddington landscape, iPS reprogramming), layered Inside the Cell interiors, Petri dish darkfield/phase contrast, animated Osmosis Lab, redrawn Cell Processes; 24 new tests | STEAM Lab → Cell Simulator | Student | `stem_lab/stem_tool_cell.js` | 2026-10-19 `08d5e4b322` |
+| Dissection Lab | Sept rounds (canvas resolution, keyboard path, probe-trace fix, round 33 on 09-06). Oct 23–26 accessibility series: stable biology facts, keyboard access + evidence URL safety, focus through assessment transitions, disclosure/confirmation a11y, practical results and control names, assessment focus/contrast | STEAM Lab → Dissection Lab | Student | `stem_lab/stem_tool_dissection.js` | 09-06 `d070e95cad`; 10-23 `f2d867389c` → 10-26 `f3ecb4149e` |
+
+---
+
+## 15. Teacher workflow, learning activities & platform services
+
+> Added November 20, 2026. Names, ids and counts come from
+> [`docs/FEATURE_REGISTRY_INVENTORY.md`](docs/FEATURE_REGISTRY_INVENTORY.md) and from module headers
+> and host wiring (`AlloFlowANTI.txt`, `allo_commands_source.jsx`). Command ids are command-palette ids
+> (Ctrl/⌘+K; voice and AlloBot chat use the same ids). "Panel" means a registry panel id. Modules load
+> lazily from the CDN unless noted.
+
+### 15.1 Teacher workflow surfaces
+
+| Feature | Purpose | Discoverability | Users | Module |
+|---|---|---|---|---|
+| **Assignment Center / Share & Collect** | Presentation-only view of shared assignments: activity draft, sanitized per-assignment rows (links, QR, collection status), callback actions. The host keeps raw records, private link material and mailbox config | `open_share_collect` → panel `recentQrShares`. Related: `share_assignment` and `preview_assignment_as_student` (teacher, gated) | Teacher | `view_assignment_center_module.js` (`AlloModules.AssignmentCenter`) |
+| **Submission Inbox** | Batch upload and decrypt of offline HTML worksheet submissions (`<nickname>-<doc>-<date>.alloflow.html`) using the class key file (`class-key.alloflow`) downloaded at class setup. Lists, reviews and exports student work | Roster panel → Submission inbox. Command: `open_submission_inbox` (teacher) | Teacher | `view_submission_inbox_module.js` (~7.8k-line source) |
+| **Submission crypto** | Web Crypto wrapper. "Save my work" in an exported HTML worksheet encrypts responses with the class public key, and only the teacher's key file decrypts them | Runs automatically inside exported worksheets and the Inbox | Student (encrypt) / teacher (decrypt) | `submission_crypto_module.js` |
+| **Driving Questions Board** | A third shared-activity type (`question_board`, badge "QB"), alongside word cloud/rating, survey, availability and sign-up. Students post and see questions under board rules. The contract module holds the rules with no transport, and the transport module runs them through the Class Mailbox `activity*` actions | Opened as a shared activity, in the same sidecar as the other live activities. The student view is rendered by `shared_activity_module.js` | Teacher (host/moderate), student (post) | `question_board_contract_module.js`, `question_board_transport_module.js`, `question_board_view_module.js` |
+| **Seating Chart** | Drag-and-drop classroom map bound to the roster key. Templates: rows, pairs, pods, horseshoe. Click-assign students, then set constraints (keep apart/together, front of room, near teacher/door, away from windows, fixed seat). A local deterministic solver places students. Exports SVG/printable HTML | Roster key → Seating Chart (`CDNModuleGate` "🪑 Seating Chart"). Also read by the Live Session Dock and BehaviorLens | Teacher | `seating_chart_module.js` |
+| **School Rewards & Store** | Leadership/Educator Hub tool for school-wide recognition points and a school store. Setup lives inside the tool, following the Educator Evaluation pattern, and is backed by the district-deployed `school_rewards` Apps Script. AlloBot chat answers "help me set up school store" with a local guide | Educator Hub → *School Rewards & Store*. Leadership Hub → *School Rewards & Store* (`rewards`) | Admin, teacher | `school_rewards_module.js` + `apps_script/school_rewards` |
+| **Test Prep Hub** | Reusable exam-pack practice workspace with practice sets, read-aloud of questions and choices, and a hands-free voice mode (mic closes during synthesis, browser-speech fallback for short prompts). The registry lists 15 hub actions (`start_practice`, `practice_read_choices`, ...) | Learning Hub → *Test Prep Hub*. Commands: `open_test_prep_hub` (panel `testPrepHub`), `start_test_prep_hands_free`, `test_prep_hands_free_status` | Student, teacher | `test_prep_hub_module.js` (~7.8k-line source) |
+| **Reading Library** | Browse and read openly licensed texts: StoryWeaver/Pratham Books picture books (CC BY 4.0) plus curated public/open education sources. Mirrored text, metadata, read-aloud cue timings and attribution ship in `reading_library/` | Learning Hub → *Reading Library*. Commands: `open_reading_library`, or `find_reading` with natural language ("find books about volcanoes") → panel `readingLibrary` | All | `reading_library_module.js` |
+| **Lesson Teaching Script** | Optional teacher script attached to a saved lesson plan. It follows the plan's subject, objectives, grade, language and scoped materials, with versions, undo and tab-scoped draft recovery. The script lines also appear read-only under each plan phase | Lesson Plan view → *Teaching script* section | Teacher | `lesson_teaching_script_module.js` (data contract), `lesson_teaching_script_host_module.js` (saved-plan orchestration), `view_lesson_teaching_script_module.js` (UI) |
+| **Teaching-script research** | Retrieves matching What Works Clearinghouse practice guides by subject, topic and grade band. Keeps only recommendations found verbatim in the fetched guide text. Allowlisted reader, no model calls, no learner data | Inside the Teaching script section | Teacher | `lesson_teaching_research_module.js` |
+| **Live Session Center (dock)** | Teacher control dock for a running class session: at-a-glance session health, per-resource delivery receipts, polls, groups, Pictionary and quick checks | `open_live_session_center` (only while a session is active). Related: `open_live_poll`, `open_quick_check`, `open_group_tools`, `open_class_session` | Teacher | `view_live_session_dock_module.js` |
+| **Live Lesson Run** | Sequence and audience controller inside the Live Session Center. Steps through the unit's History order and chooses what students see. It holds no lesson state and makes no session writes itself | Live Session Center → lesson run controls | Teacher | `view_live_lesson_run_module.js` |
+| **Educator Growth & Evaluation** | Supervision and evaluation workspace with framework profiles for Pennsylvania Act 13, Portland (Maine) and Maine PEPG. The same component serves the hub modal, a standalone principal shell and an authenticated district portal. Records use Sensitive Workspace | Leadership Hub → *Educator Evaluation*. The portal is backed by the `educator_evaluation` / `educator_evaluation_share` Apps Scripts | Admin, evaluator, educator | `educator_evaluation_module.js` (~7.2k-line source) |
+| **Maine SLD Case Lab** | Educator practice in Maine specific-learning-disability eligibility reasoning, using fictional student records | Leadership Hub → *Maine SLD Case Lab* (`maineSldPractice`) | Special educators, evaluators | `maine_sld_practice_module.js` |
+| **Educator Hub modal** | Launcher for 22 professional tools (lesson help, Lumen, Document Hub, Whiteboard, Unit Path, Page Designer, Video/Symbol Studio, AlloSheet, Polls & Sign-ups, Assessment Center, Dynamic Assessment, BehaviorLens, Report Writer, PDF Accessibility, Accessibility Lab, Community Catalog, Research Suite, PD, Leadership Hub, School Rewards, Communications Studio) | Header → Educator Hub. Command: `open_educator_hub` (panel `educatorHub`) | Teacher | `view_educator_hub_modal_module.js` |
+| **Learning Hub modal** | Launcher for 16 learner tools (Lumen Study, Reading Library, STEAM Lab, Text Inquiry Studio, Lingua Practice, Test Prep, SEL Hub, Screen Coach, Research Hub, Learning Web: Explore, Timeline Studio, StoryForge, LitLab, PoetTree, Open Groove, AlloHaven). Each button closes the modal and opens its tool | Header → Learning Hub. Command: `open_learning_hub` (panel `learningHub`) | All | `view_learning_hub_modal_module.js` |
+| **Assignment Directions composer + result** | The teacher writes student-facing directions and goals. The result view shows the prepared directions after the host has evaluated objectives and run student-safety filtering. Goal progress uses the shared quest contract | Teacher: `edit_assignment_directions` (gated). Student: `open_assignment_directions`, `read_assignment_directions`, `next_assignment_step`, `show_success_criteria` | Teacher, student | `view_directions_composer_module.js`, `view_directions_result_module.js`, `allo_quest_contract_module.js` |
+| **Full Pack run** | Plans and generates a full lesson pack (a reviewed generation matrix per resource row). Shows run status and the delivery chooser, and in Guided Mode records "learner view tested" evidence | Sidebar → Full Pack panel. Commands: `plan_full_pack`, `generate_full_pack` (teacher) | Teacher | `view_full_pack_run_module.js` |
+| **Standards provider + context** | Gives every standards-aware path the same bounded teacher standards input. Lookups use a bundled local snapshot: no network, and no "verified" claim from a fuzzy match | Used behind the scenes by standards fields in lesson generation and alignment reports. No separate UI | Teacher (indirect) | `standards_provider_module.js`, `standards_context_module.js` |
+| **Use my own sources** | A single seam for the teacher's imported documents: opens the right Lumen project, counts its documents and adds new ones. Used by the source generator's research stage, its toggle, the Quick Start toggle, the import control and Report Writer | Source generator / Quick Start → "Use my own sources" toggle and import control | Teacher | `own_sources_module.js` |
+| **Semantic Review (Review Studio)** | Reviews the HTML semantics (headings, table header scope, etc.) that the tagged-PDF structure tree is built from, before export | Document Builder (`open_document_builder` → panel `exportPreview`) → review step | Teacher | `semantic_review_module.js` |
+
+### 15.2 Learning activities
+
+| Feature | Purpose | Discoverability | Users | Module |
+|---|---|---|---|---|
+| **Memory Palace** | Method-of-loci 3D walk. A generated outline becomes a palace: a central hub with one room per branch, facts on framed wall loci in reading order, and mnemonic images built with Prim3D and GLB assets. Optional VR | Outline tool → structure **Memory Palace** (`outline_structure`). Also appears in AlloHaven | Student, teacher | `memory_palace_module.js` |
+| **Concept Quest (solo)** | Game layer over assessment items. Game rules, local progress persistence and AI narration are kept separate, and explanations show only fact-checked wording | Opens from the Quiz/Assess view. Also used by Escape Room | Student | `concept_quest_solo_module.js` (+ `concept_quest_solo_question_source.jsx`) |
+| **Concept Quest (teacher)** | Live-session teacher controls for running Concept Quest with a class (prompts and events) | Teacher panel during a live session | Teacher | `concept_quest_teacher_module.js` |
+| **Concept Pictionary / Sketch Response** | Two live drawing modes on one engine. *Pictionary*: student drawers on a shared canvas while classmates guess. *Sketch Response*: private student boards collected into a teacher gallery, with moderated anonymous reveal and targeted follow-up resources. Uses a WebRTC star topology | `open_pictionary_host` (teacher, needs an active session). Live Session Center | Teacher, student | `concept_pictionary_module.js` |
+| **Memory Aid Studio** | Lesson-aware mnemonics and retrieval cues. Facts that must stay accurate are kept apart from the personalizable cue. Three AI-authorship roles, with a student-created path always available. 62-language UI strings. Exportable | Generation resource type `memory-aid` | Teacher, student | `memory_aid_module.js` |
+| **Anchor Charts** | Poster-style class reference (title + labeled sections, bullets, icons) with a hand-drawn look. AI drafts the chart, and the class and teacher refine it. 12 chart types | Resource type `anchor-chart`. Sidebar `anchor_chart_type` (auto, comparison, concept-map, criteria-success, misconception, process, question-guide, reference, routine, strategy, vocabulary, worked-example) | Teacher, student | `anchor_charts_module.js` |
+| **ConceptGraph engine** | Shared spatial graph format (`acg/v1`): data, layout and an accessibility outline. Used by the Visual Organizer concept map, Unit Path and Learning Web | Underlies concept maps and Learning Web. No direct entry | All (indirect) | `concept_graph_engine_module.js` |
+| **ConceptGraph 3D** | Orbitable WebGL view of an `acg/v1` graph: nodes grouped by strand into depth planes, typed edges | Outline → **3D Concept Space** structure. Learning Web: Unit Path (`open_mind_map`) | Student, teacher | `concept_graph_3d_module.js` |
+| **Lexical Graph** | Sense-aware word relationships (`LexicalGraph/v1`) with a readable accessibility outline and an adapter into `acg/v1` | Inside Lingua Practice | Language learners | `lexical_graph_module.js` |
+| **Timeline Studio** | Standalone tool that opens the TimelineJS companion window. Events can come from pasted text (limited to what the passage supports) or other grounded input modes | Learning Hub → *Timeline Studio*. `open_timeline_studio` (panel `timelineStudio`) | All | `timeline_studio_module.js`. Sequence validation and revision: `timeline_revision_module.js` |
+| **Lingua Practice** | Language-learning workspace. Its own UI follows the learner's *known* language, including free-typed custom languages | Learning Hub → *Lingua Practice*. `open_lingua_practice` (panel `linguaPractice`) | Student, independent learner | `lingua_practice_module.js` |
+| **Word Practice** | Classroom presenter and portable HTML player for a word set (up to 200 words), with pictures, audio, translations, word origin, annotations and PPTX export. Uses the phoneme audio bank for English | Glossary view → Word Practice. Word Sounds → *Share → Word Practice* | Teacher, student | `word_practice_module.js` (generated from `word_practice_{core,media,ui}.js`) |
+| **Landmark** | Large Prim3D structures that serve as earned or curated building-scale landmarks in 3D worlds | AlloHaven (`open_allohaven`) | Student | `landmark_module.js` |
+| **Applied Challenge Studio** | Lesson-grounded transfer and problem-solving tasks. Challenge selection, AI agency, teacher-checkable facts and student work are kept separate. AI coaching is saved beside the student's work and never overwrites it | Resource type `applied-challenge`. Exportable through the doc pipeline | Teacher, student | `applied_challenge_module.js` |
+| **Math Studio (Math Create)** | Former STEM Lab "Create" tab: From Topic / From My Content / Solve One generation plus the Assessment Builder. Output goes to the math view and Resources | Math tool → Create. `open_assessment_builder` (teacher, gated) | Teacher | `math_create_module.js` |
+| **Math manipulative grader** | Shared answer checking and grading for math manipulatives, including case-sensitive chemical formulas, across preparation, session checks and grading | Inside the Math view | Student, teacher | `math_manipulative_grader_module.js` |
+| **Learning Web: Explore** | Accessible, read-only 2D renderer for `acg/v1` graphs or registry snapshots. The SVG overview sits beside an always-visible node outline and relationship table with provenance | Learning Hub → *Learning Web: Explore*. `open_learning_web_explorer` (panel `learningWebExplorer`) | All | `learning_web_explorer_module.js` |
+| **Learning Web registry** | Stores bounded, versioned `acg/v1` snapshots indexed by the resources they describe, so graph views can hand off to each other | Behind Explore and Unit Path | All (indirect) | `learning_web_registry_module.js` |
+
+### 15.3 Command palette & AlloPacks
+
+**Command palette.** One registry (`buildAlloCommands` in `allo_commands_source.jsx`) feeds three
+inputs: the keyboard palette, the AlloBot chat router and the voice loop.
+
+- **How to open it:** **Ctrl+K / ⌘K**, or the `alloflow:open-command-palette` event, which the
+  "command-palette card" in About → Start here uses. Saying a command with voice control
+  (`voice_start`) or typing it to AlloBot runs the same command.
+- **Size:** **204** command entries in the registry (Nov 20 2026). By `roles`: **85 `all`**, **53 `teacher`**,
+  **12 `student`**, and **54** with no single-role value. Those 54 are multi-role "author"
+  commands (teacher/parent/independent, e.g. `generate_quiz`, `export_pack`) plus
+  tutorial-, resource- and blueprint-scope adapters (`tutorial_next`, `resource_open`, `advice`, ...).
+  49 commands open one of the **34 registry panels**. **6** are `gated` (confirmation or
+  feature gate): `create_activity_rubric`, `edit_assignment_directions`, `open_assessment_builder`,
+  `open_udl_guide`, `preview_assignment_as_student`, `share_assignment`.
+- **Guardrails:** every run is announced (screen-reader announcement + toast), and destructive
+  commands ask for confirmation ("Press Enter again"). Student and parent modes see only the
+  commands allowed for their audience, and student AI-off blocks AI commands. Matching is
+  deterministic, with no AI: the palette and voice accept a match score of 60+, while chat needs
+  80+ before it previews a command. Multi-step plans stop at any step that needs its own confirmation.
+- **Examples:** `create_lesson` ("create a lesson about volcanoes for grade 5"), `find_reading`,
+  `open_stem_tool`, `read_this_page`, `toggle_reading_ruler`, `switch_theme`, `set_ui_language`,
+  `translate_document` (teacher), `send_teacher_signal` / `submit_work` (student),
+  `open_command_blueprints` / `start_lesson_blueprint` (teacher Blueprint Mode), `pipeline_*`
+  (PDF accessibility fix-run controls), `onboarding_*` (role and setup choice).
+
+**AlloPacks (ready-made lessons).** An AlloPack is a portable, reviewed lesson project saved as
+`<slug>.allopack.json`. Top-level keys: `allopack` (metadata: title, author, license, language,
+gradeLevel, standards, standardsContext, instructionalContext, reviewStatus, attribution,
+illustrations), `sourceTopic`, `history` (the lesson's generated resources), `provenance` and `spec`.
+
+- **Where they live:** `allopacks/current/` (67 packs). Authoring inputs are in
+  `allopacks/authoring/`, media in `allopacks/media/`, and per-pack image shot lists in
+  `allopacks/*.IMAGES.md` (text-free artwork policy, with alt text reviewed against the artwork).
+  Published entries are indexed in `catalog/index.json` / `catalog/published_allopacks.json`.
+- **How a teacher opens one:** Educator Hub → **Community Catalog** (`open_community_catalog`,
+  panel `communityCatalog`) → Browse. Filter cards by grade/subject, then download the JSON or
+  load it into the current session (the manifest comes from the GitHub-hosted catalog). A loaded
+  pack can be shared to students as an encoded link (pack carried in the URL hash via
+  `ALLO_QR_PACK_PARAM`, with an AI-policy flag) or through the Class Mailbox (`putpack`/`getpack`).
+- **Coverage (64 packs summarised below; the 3 added since — `academic_discourse_more_practice_grade6`,
+  `paper_bridge_fair_test_grade5_6`, `source_media_literacy_grade7_8` — add Gr 6 discourse practice, a
+  Gr 5–6 fair-test engineering pack and a Gr 7–8 media-literacy pack):**
+
+| Strand | Packs | Grades | Standards cited |
+|---|---:|---|---|
+| Science | 21 | 1–8 (e.g. Day/Night Sky Gr 1, Food Webs Gr 5, Plate Tectonics Gr 6, Natural Selection Gr 8) | NGSS (+ CCSS RST) |
+| Mathematics | 12 | 1–8 (Making Ten Gr 1 → Linear Equations Gr 8) | CCSS Math |
+| ELA / literacy | 11 | 1–8 (Word Families Gr 1 → Theme Development Gr 8) | CCSS ELA (RF, RL, RI, L, SL) |
+| Social studies | 8 | 1–8 (Rules & Fairness Gr 1 → Constitution Gr 8) | C3 Framework |
+| SEL: Crew Launch weeks 1–12 | 12 | 6–8 | CASEL + King Middle School HOWL |
+
+By grade band: Gr 1 – 5 · Gr 2 – 5 · Gr 3 – 5 (+2 spanning Gr 3–4) · Gr 4 – 4 (+2 spanning
+Gr 4–5) · Gr 5 – 5 (+2 spanning Gr 5–6) · Gr 6 – 10 (+1 spanning Gr 6–7) · Gr 7 – 6 · Gr 8 – 5 ·
+Gr 6–8 (Crew) – 12.
+
+### 15.4 Platform & data services
+
+**Apps Scripts (teacher- or district-owned Google deployments; all `executeAs: USER_DEPLOYING`):**
+
+| Script | Access | Scopes | Purpose |
+|---|---|---|---|
+| `session_mailbox` (Class Mailbox, `VERSION = 32`) | Anyone (anonymous) | `userinfo.email`, `drive.file`, `script.external_request` | A meeting point for live sessions and homework packs that the teacher owns. Actions: session `open/join/send/recv/end/closeall`, packs `putpack/getpack/clonepack/extendpack/delpack`, submissions `putsubmission`, Drive delivery `deliver/deliverform` (Google Doc / Google Form export), shared activities `activityupsert/joinactivity/moderateactivity/getactivitysummary`, key-value `dget/dset/dpatch/ddel`, `rotateadmin`, `fetchpage`. The app embeds the script source for copy-to-deploy (`mailbox_script_source_module.js`) and routes resources through one candidate filter (`session_transport_module.js`) |
+| `school_rewards` | Domain | `userinfo.email`, `spreadsheets`, `drive`, `script.send_mail`, `script.scriptapp` | Back end for School Rewards & Store (portal) |
+| `educator_evaluation` | Domain | `userinfo.email`, `spreadsheets`, `documents`, `drive`, `script.send_mail` | Authenticated district portal for Educator Evaluation |
+| `educator_evaluation_share` | Myself | `userinfo.email`, `drive` | Private principal web app: validates one exported educator packet, files it in the principal's Drive (`AlloFlow Evaluations`), grants one reviewed view/comment permission and confirms it by reading it back. A handoff tool, not a record system |
+| `leadership_hub_backup` | Anyone (anonymous) | `drive.file` | Leader-owned script: writes the Leadership Hub's backup JSON as dated files into one Drive folder in the district's Education tenancy, with a bounded history. Not a system of record |
+| `walkthrough_records` | Anyone (anonymous) | `userinfo.email`, `drive.file`, `script.send_mail` | Principal-owned delivery: writes approved walkthrough feedback to the principal's Drive, shares each file with exactly one named teacher, and sends a notification that contains no feedback text |
+
+| Feature | Purpose | Discoverability | Users | Module |
+|---|---|---|---|---|
+| **Device recovery vault** | Optional encrypted-at-rest version of the workspace recovery store, saved with optimistic concurrency (revision + compare-and-swap). The integration module also migrates the old plaintext store in one atomic step | Storage and recovery manager (Canvas recovery dialog) and vault unlock prompts | Teacher | `allo_device_vault_module.js`, `allo_recovery_vault_integration_module.js` |
+| **Educator access code** | Optional code that adds friction to educator UI on shared devices. Only a salted PBKDF2 verifier is stored. It is **not** an authorization boundary and does not decrypt saved work | Teacher settings / misc modals (set, enter, clear code) | Teacher | `device_access_code_module.js` |
+| **Sensitive Workspace** | Protected clinical records kept in the encrypted vault and atomic device storage, with no shared clinical server. Field-level approval and legal-hold rules. Separate from UI access codes | Used by BehaviorLens, Dynamic Assessment, Educator Evaluation and MTSS Triage | Clinicians, special educators, evaluators | `sensitive_workspace_module.js` |
+| **allo_crypto** | Client-side Web Crypto helpers: password verifiers and authenticated encryption. No server, and deliberately no password recovery | Shared service | (internal service) | `allo_crypto_module.js` |
+| **Brand Profile + editor** | Saved school brand (colors, fonts, logo, header/footer) shared by the Document Builder and the PDF remediation pipeline. Validated with WCAG contrast checks, stored in localStorage. The editor creates, edits and selects profiles | Document Builder → brand settings (opens the Brand Profile editor) | Teacher, admin | `brand_profile_module.js`, `brand_profile_editor_module.js` |
+| **AlloVR** | One reusable WebXR layer (enter/exit, rig, controllers, locomotion, comfort vignette, grab) for three.js scenes. Feature-detected, so it does nothing on non-XR devices | "Enter VR" in 3D STEM tools (e.g. Solar System, Galaxy, Molecule, Geometry World, Moon Mission, Echolocation) and Memory Palace | Student | `allo_vr_module.js` |
+| **Prim3D** | Gemini designs 3D objects as JSON recipes of primitive shapes (`p3d/1`), all inside Canvas with no model downloads | Memory Palace, AlloHaven, ConceptGraph 3D, Landmark | Student | `prim3d_module.js` |
+| **GLB Library** | Catalog and loader for CC0 low-poly `.glb` collectibles (`glblib/1`) that students buy with earned tokens. The header says the engine ships ahead of the real assets | AlloHaven shop, Memory Palace | Student | `glb_library_module.js` |
+| **Printable models (3D print preflight)** | Browser-side checks of supported 3D handoff formats, advisory geometry metrics, a privacy-minimized submission package and binary STL export. It never declares a model safe to print, so staff and the school slicer have the final say | STEM Lab → Print Lab and other 3D STEM tools | Student, makerspace staff | `printable_model_module.js` |
+| **Video Library** | Curated AlloFlow product videos streamed from the AlloFlow CDN (no third-party player or tracking cookies, and playback is not recorded) | About tab → "Start here" → Video Library (`alloflow:open-video-library`) | All | `view_video_library_module.js` |
+| **Video reference player** | Plays Video Studio `video-ref` history cards. The pack JSON carries only metadata and a thumbnail. Video bytes stay in local files and are never uploaded | Click a video-ref card in History/Resources | Teacher, student | `view_video_ref_player_module.js` |
+| **Video Studio host bridge** | Popup bridge between the app and Video Studio. Only configuration labels cross it. Saves a pack-safe `video-ref` card and supports Demo Autopilot planning through AlloBot | `open_video_studio` (panel `videoStudio`) | Teacher | `video_studio_host_bridge_module.js` |
+| **Quick Start wizard** | 4-step guided lesson start: source mode (including storybook), fetching a source from a URL, the "Use my own sources" toggle with duplicate-name handling, and grade/settings | Host `showWizard` starts `true`, but every Launch Pad path suppresses it (product review 2026-11-09, B14), so in practice it is reached via "Re-run Setup Wizard" or `open_wizard` "Start the lesson wizard" | Teacher | `quickstart_module.js` (`QuickStartWizard`) |
+| **Speech setup** | One place to choose how speech becomes text, download an on-device recognition model (tiny 39 MB / base 73 MB / small 238 MB) and run an 8-second mic test | Opens when dictation or voice needs setup (`alloflow:speech-setup-needed`) or from voice settings (`alloflow:open-speech-setup`) | All | `speech_setup_module.js` |
+| **Kokoro offer** | When cloud speech is unavailable, offers to download Kokoro (~88 MB in-browser offline voice). The voice catalog covers Gemini, Kokoro and Edge TTS voices | Appears automatically when cloud TTS fails | All | `view_kokoro_offer_modal_module.js`, `voice_config_module.js` |
+| **Durable read-aloud / karaoke audio** | Read-aloud audio is stored sentence by sentence, so teachers can vet and replace individual sentences and reuse audio across sessions. The audio service works the same for every resource type. Word-level karaoke timing is estimated deterministically from the audio. Narration is added to exports only when the owner asks (default voice Kore) | Read-aloud / karaoke controls on resources and Immersive Reader. "Include narration" on export/save | All | `karaoke_audio_store_module.js`, `read_aloud_audio_service_module.js`, `resource_read_aloud_module.js`, `read_aloud_artifact_audio_module.js`, `read_aloud_artifact_contract_module.js`, `word_timing_module.js` |
+| **Canvas recovery dialog** | "Continue where you left off?" when a saved device workspace exists. Modes: checking, unlock protected saved work, error, and a full **Storage and recovery manager**. Remembers a Deny for the visit and offers the approval window | Appears automatically on load. Manager is reachable from storage/recovery settings | Teacher, independent learner | `view_canvas_recovery_dialog_module.js` |
+| **Agent Core (Blueprint service)** | Versioned contracts (CapabilityManifest, Blueprint, Job, Provenance, MCP tool classification) and a headless Auto-Fill Blueprint service (create → revise → validate → preview/dry-run → approval → plan execution) with injected AI functions. The UI adapter keeps the existing Auto-Fill state shape while every boundary goes through the contracts | Blueprint Mode: `start_lesson_blueprint`, `run_lesson_blueprint`, `rebuild_lesson_step`, `open_command_blueprints`. Also AlloBot chat | Teacher | `agent_core_contracts_module.js`, `agent_core_blueprint_service_module.js`, `agent_core_ui_adapter_module.js` |
+
+### 15.5 Internal modules (not user-facing on their own)
+
+ `standards_provider` / `standards_context`
+(listed above for completeness; no UI), `question_board_contract` (rules only),
+`allo_quest_contract` (shared goal/progress vocabulary for directions, quests and other engines),
+`concept_graph_engine`, `learning_web_registry`, `lexical_graph` (data layer under Lingua),
+`allo_crypto`, `allo_recovery_vault_integration`, `session_transport`, `mailbox_script_source`
+(embedded Code.gs text), `read_aloud_artifact_contract`, `word_timing`, `voice_config`,
+`agent_core_contracts`, `agent_core_ui_adapter`, `timeline_revision`, `instructional_context`
+(instructional-text and complexity contract that standards-aware generation uses).
+
+---
+
+**End of inventory.** This evolving catalog contains **720+ grouped and granular entries**; that taxonomy count is not a count of distinct shipped tools. Live totals (152 STEM tool files, 72 SEL Hub tools, 67 AlloPacks, 204 commands, 222 `build.js` modules as of November 20, 2026) come from [`docs/FEATURE_REGISTRY_INVENTORY.md`](docs/FEATURE_REGISTRY_INVENTORY.md). The catalog also includes expanded document-pipeline exports, AlloStudio, Open Groove Studio, Video/Cinematic Studio work, AlloFlow Packets, cross-cutting annotation features, teacher-dashboard expansion, and overlapping personalized student-kit surfaces.

@@ -4,10 +4,12 @@ version: "3.8"
 
 services:
   frontend:
-    image: nginx:alpine
+    image: nginx:alpine@sha256:a3554c0d0b48177b1413c26e01f695334428020d9df01243fbae3e11cfd17417
     container_name: alloflow-schoolbox-frontend
+    security_opt:
+      - no-new-privileges:true
     ports:
-      - "${WEB_PORT:-32174}:80"
+      - "${ALLOFLOW_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-32174}:80"
     volumes:
       - ../app-build:/usr/share/nginx/html:ro
       - ../../word_audio_shards:/usr/share/nginx/html/word_audio_shards:ro
@@ -21,13 +23,15 @@ services:
     restart: unless-stopped
 
   pocketbase:
-    image: ghcr.io/muchobien/pocketbase:latest
+    image: ghcr.io/muchobien/pocketbase:latest@sha256:9a0be68a80ca1348ba8d15f217b3f983be4c094b3c571a09b3ebdeb357259338
     container_name: alloflow-schoolbox-pocketbase
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "${ALLOFLOW_BACKEND_BIND_ADDRESS:-127.0.0.1}:${PB_PORT:-8090}:8090"
     volumes:
       - pocketbase_data:/pb/pb_data
-      - ./pocketbase/pb_schema.json:/pb/pb_migrations/schema.json:ro
+      - ./pocketbase/pb_migrations:/pb/pb_migrations:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
@@ -37,8 +41,10 @@ services:
       retries: 3
 
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:latest@sha256:4c5b27871a3239a717048f9b93057680a51b60c8119a7016aebb57f938e25e35
     container_name: alloflow-schoolbox-ollama
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "${ALLOFLOW_BACKEND_BIND_ADDRESS:-127.0.0.1}:${OLLAMA_PORT:-11434}:11434"
     volumes:
@@ -46,8 +52,10 @@ services:
     restart: unless-stopped
 
   piper:
-    image: rhasspy/wyoming-piper:latest
+    image: rhasspy/wyoming-piper:latest@sha256:7d39aafac409c2b6b09d999ed04d84c311d632e558b35baa60fad6aac722af7a
     container_name: alloflow-schoolbox-piper
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "${ALLOFLOW_BACKEND_BIND_ADDRESS:-127.0.0.1}:${PIPER_PORT:-10200}:10200"
     volumes:
@@ -56,12 +64,15 @@ services:
     restart: unless-stopped
 
   searxng:
-    image: searxng/searxng:latest
+    image: searxng/searxng:latest@sha256:5ed0323b5f5f8701264ef65e239a2bd83cb57098f2b971fa30bf79c06eeae271
     container_name: alloflow-schoolbox-searxng
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "${ALLOFLOW_BACKEND_BIND_ADDRESS:-127.0.0.1}:${SEARCH_PORT:-8888}:8080"
     environment:
       - SEARXNG_BASE_URL=http://localhost:${SEARCH_PORT:-8888}
+      - SEARXNG_SECRET=${SEARXNG_SECRET:?Set SEARXNG_SECRET to a 32-byte random hex string}
     volumes:
       - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
       - searxng_data:/etc/searxng

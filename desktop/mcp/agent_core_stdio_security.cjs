@@ -21,9 +21,12 @@ function utf8Decoder() { return new TextDecoder('utf-8', { fatal: true, ignoreBO
 function readConfigurationJson(filePath, limits = LIMITS) {
   let fd;
   try {
-    fd = fs.openSync(filePath, fs.constants.O_RDONLY | (fs.constants.O_NONBLOCK || 0));
+    const ls = fs.lstatSync(filePath);
+    if (ls.isSymbolicLink() || !ls.isFile() || ls.size > limits.configBytes) throw new Error();
+    fd = fs.openSync(filePath, fs.constants.O_RDONLY | (fs.constants.O_NONBLOCK || 0) | (fs.constants.O_NOFOLLOW || 0));
     const before = fs.fstatSync(fd);
     if (!before.isFile() || before.size > limits.configBytes) throw new Error();
+    if (ls.ino && (before.ino !== ls.ino || before.dev !== ls.dev)) throw new Error();
     const bytes = Buffer.alloc(before.size + 1); let used = 0;
     while (used < bytes.length) {
       const count = fs.readSync(fd, bytes, used, bytes.length - used, used);
@@ -63,7 +66,8 @@ class BoundedJobs {
     }
     return () => {
       this.sweep(); this.delete(record.job.jobId);
-      while (this.records.size >= this.limits.jobs || this.bytes + bytes > this.limits.totalJobBytes) this.delete(this.records.keys().next().value);
+      const maxJobs = Math.max(1, Number(this.limits.jobs) || 1);
+      while (this.records.size > 0 && (this.records.size >= maxJobs || this.bytes + bytes > this.limits.totalJobBytes)) this.delete(this.records.keys().next().value);
       this.records.set(record.job.jobId, { record, bytes, expires: this.now() + this.limits.jobTtlMs }); this.bytes += bytes;
     };
   }
@@ -94,10 +98,16 @@ class BoundedOutput {
   flush() {
     if (this.closed || this.writing || this.blocked || !this.queue.length) return;
     const item = this.queue.shift(); this.writing = true;
-    const accepted = this.stream.write(item.line, () => {
-      if (this.closed) return;
-      this.bytes -= item.bytes; this.writing = false; this.flush(); this.pressure(this.blocked);
-    });
+    let accepted;
+    try {
+      accepted = this.stream.write(item.line, () => {
+        if (this.closed) return;
+        this.bytes -= item.bytes; this.writing = false; this.flush(); this.pressure(this.blocked);
+      });
+    } catch (_) {
+      this.fail();
+      return;
+    }
     if (!accepted) { this.blocked = true; this.pressure(true); }
   }
   get idle() { return !this.writing && !this.queue.length; }
@@ -111,7 +121,18 @@ class BoundedInput {
     this.stream = stream; this.limits = limits; this.dispatch = dispatch; this.oversized = oversized; this.malformed = malformed; this.idle = idle; this.failure = failure;
     this.queue = []; this.queuedBytes = 0; this.active = 0; this.frame = ''; this.frameBytes = 0;
     this.decoder = utf8Decoder(); this.discarding = false; this.tail = null; this.outputBlocked = false; this.ended = false; this.pumping = false; this.closed = false;
-    stream.on('data', chunk => { this.tail = this.tail ? Buffer.concat([this.tail, chunk]) : chunk; this.pump(); });
+    stream.on('data', chunk => {
+      if (this.closed) return;
+      const nextLen = (this.tail ? this.tail.length : 0) + chunk.length;
+      const maxTail = this.limits.lineBytes + this.limits.queuedBytes;
+      if (nextLen > maxTail) {
+        this.close();
+        this.failure(new Error('Input buffer exceeded local transport limit.'));
+        return;
+      }
+      this.tail = this.tail ? Buffer.concat([this.tail, chunk]) : chunk;
+      this.pump();
+    });
     stream.on('end', () => { this.ended = true; this.pump(); });
     stream.on('error', failure);
   }
@@ -157,7 +178,12 @@ class BoundedInput {
         this.tail = end < 0 ? null : this.tail.subarray(end + 1);
         if (end >= 0) this.finishFrame();
       }
-      if (this.saturated) this.stream.pause(); else this.stream.resume();
+      if (this.saturated) {
+        if (this.tail && this.tail.length && this.tail.buffer.byteLength > this.tail.length * 2) {
+          this.tail = Buffer.from(this.tail);
+        }
+        this.stream.pause();
+      } else this.stream.resume();
       if (this.ended && !this.tail?.length && !this.saturated && (this.frameBytes || this.discarding)) this.finishFrame();
       this.run();
       if (this.ended && !this.tail?.length && !this.frameBytes && !this.active && !this.queue.length) this.idle();

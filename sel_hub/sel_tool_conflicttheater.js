@@ -1677,7 +1677,7 @@ window.SelHub = window.SelHub || {
                 ),
                 h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', fontSize: 18 } },
                   charsInScenario.map(function(c) {
-                    return h('span', { key: c.id, title: c.name, 'aria-label': c.name }, c.avatar);
+                    return h('span', { role: 'note', key: c.id, title: c.name, 'aria-label': c.name }, c.avatar);
                   })
                 ),
                 h('p', { style: { fontSize: 11, color: _cftFg('#cbd5e1'), margin: 0, lineHeight: 1.5 } }, sc.setup.length > 140 ? sc.setup.slice(0, 140) + '...' : sc.setup),
@@ -2066,7 +2066,7 @@ window.SelHub = window.SelHub || {
         ),
         characters.map(function(c) {
           var mood = charMoods[c.id] || 'calm';
-          return h('div', { key: c.id, 'aria-label': c.name + ' is ' + mood, style: { textAlign: 'center', minWidth: 70 } },
+          return h('div', { role: 'group', key: c.id, 'aria-label': c.name + ' is ' + mood, style: { textAlign: 'center', minWidth: 70 } },
             h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, c.name),
             h('div', { style: { fontSize: 11, color: _cftFg('#cbd5e1'), textTransform: 'capitalize' } }, mood)
           );
@@ -2369,7 +2369,7 @@ window.SelHub = window.SelHub || {
       return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } }, head,
         card([
           _crT.url ? h('video', { key: 'v', id: 'cr-play', src: _crT.url, controls: true, playsInline: true, style: { width: '100%', borderRadius: 10, background: '#000' } }) : h('p', { key: 'nv', style: { color: fg('#94a3b8'), fontSize: 12 } }, 'The recording was already released.'),
-          a && a.arc.length ? h('div', { key: 'arc', 'aria-label': 'Conflict arc', style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 } }, a.arc.map(function(ph, i) {
+          a && a.arc.length ? h('div', { role: 'group', key: 'arc', 'aria-label': 'Conflict arc', style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 } }, a.arc.map(function(ph, i) {
             return h('button', { key: i, onClick: function() { seek(ph.t); }, style: { fontSize: 10.5, padding: '3px 8px', borderRadius: 999, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), cursor: 'pointer' } }, ph.phase + ' ' + _crFmtT(ph.t));
           })) : null,
           caption

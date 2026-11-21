@@ -143,6 +143,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _lanBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.landPlace || defaultState();
       function setLP(patch) {
@@ -150,6 +152,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
           var prior = (prev && prev.landPlace) || defaultState();
           return Object.assign({}, prev, { landPlace: Object.assign({}, prior, patch) });
         });
+      }
+      function scanLandText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'landPlace', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'landPlace', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setLP({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Land & Place', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
       }
 
       var view = d.view || 'overview';
@@ -317,6 +344,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
               h('textarea', {
                 value: (d.threadNotes || {})[t.id] || '',
                 onChange: function(e) { updateNote(t.id, e.target.value); },
+                onBlur: function(e) { scanLandText(e.target.value); },
                 placeholder: 'Write what you have learned, what you do not know yet, what you want to keep finding out.',
                 style: { width: '100%', minHeight: 80, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
@@ -358,7 +386,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #0ea5e9' } },
               h('label', { htmlFor: 'land-ack-where', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#7dd3fc'), marginBottom: 4 } }, '1. Where you are'),
               h('div', { id: 'land-ack-where-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Be specific. A town, a neighborhood, a building, a watershed.'),
-              h('textarea', { id: 'land-ack-where', 'aria-describedby': 'land-ack-where-help', value: ack.where, onChange: function(e) { updateAck('where', e.target.value); },
+              h('textarea', { id: 'land-ack-where', 'aria-describedby': 'land-ack-where-help', value: ack.where, onChange: function(e) { updateAck('where', e.target.value); }, onBlur: function(e) { scanLandText(e.target.value); },
                 placeholder: 'I am writing this from...',
                 style: { width: '100%', minHeight: 40, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
@@ -368,7 +396,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #16a34a' } },
               h('label', { htmlFor: 'land-ack-whose', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#86efac'), marginBottom: 4 } }, '2. Whose land it is'),
               h('div', { id: 'land-ack-whose-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Name the nation(s). For Maine: the Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, or Abenaki, depending on where you specifically are. Multiple nations may have ties to the same place.'),
-              h('textarea', { id: 'land-ack-whose', 'aria-describedby': 'land-ack-whose-help', value: ack.whose, onChange: function(e) { updateAck('whose', e.target.value); },
+              h('textarea', { id: 'land-ack-whose', 'aria-describedby': 'land-ack-whose-help', value: ack.whose, onChange: function(e) { updateAck('whose', e.target.value); }, onBlur: function(e) { scanLandText(e.target.value); },
                 placeholder: 'This is the ancestral homeland of...',
                 style: { width: '100%', minHeight: 40, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
@@ -378,7 +406,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #f59e0b' } },
               h('label', { htmlFor: 'land-ack-honesty', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#fbbf24'), marginBottom: 4 } }, '3. Honesty about what acknowledgment is'),
               h('div', { id: 'land-ack-honesty-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'Name that an acknowledgment is not the same as returning land or honoring treaties. Refuse to use this moment to feel good without committing to anything.'),
-              h('textarea', { id: 'land-ack-honesty', 'aria-describedby': 'land-ack-honesty-help', value: ack.honesty, onChange: function(e) { updateAck('honesty', e.target.value); },
+              h('textarea', { id: 'land-ack-honesty', 'aria-describedby': 'land-ack-honesty-help', value: ack.honesty, onChange: function(e) { updateAck('honesty', e.target.value); }, onBlur: function(e) { scanLandText(e.target.value); },
                 placeholder: 'I want to be honest that an acknowledgment by itself...',
                 style: { width: '100%', minHeight: 50, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
@@ -388,7 +416,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             h('div', { style: { marginBottom: 10, padding: 10, background: _lanBg('#0f172a'), borderRadius: 8, borderLeft: '3px solid #a855f7' } },
               h('label', { htmlFor: 'land-ack-commit', style: { display: 'block', fontSize: 12, fontWeight: 700, color: _lanFg('#c4b5fd'), marginBottom: 4 } }, '4. A specific commitment you can keep'),
               h('div', { id: 'land-ack-commit-help', style: { fontSize: 11, color: _lanFg('#94a3b8'), marginBottom: 6 } }, 'One concrete action. Follow a Wabanaki-led organization, donate, attend an event, support a policy, learn the treaty history. Specific is better than grand.'),
-              h('textarea', { id: 'land-ack-commit', 'aria-describedby': 'land-ack-commit-help', value: ack.commit, onChange: function(e) { updateAck('commit', e.target.value); },
+              h('textarea', { id: 'land-ack-commit', 'aria-describedby': 'land-ack-commit-help', value: ack.commit, onChange: function(e) { updateAck('commit', e.target.value); }, onBlur: function(e) { scanLandText(e.target.value); },
                 placeholder: 'I am committing to...',
                 style: { width: '100%', minHeight: 50, padding: 6, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
@@ -498,6 +526,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             h('label', { style: { display: 'block', fontSize: 12, color: _lanFg('#94a3b8'), fontWeight: 700, marginBottom: 6 } }, 'New entry'),
             h('textarea', { id: 'landplace-new-entry',
               placeholder: 'What did you notice this week about the place you live? What did you learn? What are you still confused about?',
+              onBlur: function(e) { scanLandText(e.target.value); },
               style: { width: '100%', minHeight: 100, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginBottom: 8 }
             }),
             h('button', { onClick: addEntry, 'aria-label': 'Save journal entry',
@@ -538,6 +567,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
         header(),
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('landPlace', h, ctx) : null),
         navTabs(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _lanBand) : null,
         body
       );
     }

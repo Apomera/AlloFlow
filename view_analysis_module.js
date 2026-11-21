@@ -89,6 +89,8 @@ const needsStackedMarkFont = text => typeof text === 'string' && /[\u1EA0-\u1EF9
 function AnalysisView(props) {
   // State reads
   var t = props.t;
+  var _bionicSub = typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function' ? window.__alloUseBionic() : false;
+  void _bionicSub;
   var analysisAiDoor = _analysisAiDoor(t),
     analysisAiOff = !!(analysisAiDoor?.disabled || analysisAiDoor?.available === false);
   var analysisAiTitle = analysisAiOff ? analysisAiDoor?.title || typeof t === 'function' && t('ai.setup_required') || 'Set up AI to use this feature' : undefined;
@@ -164,10 +166,27 @@ function AnalysisView(props) {
   const readingRoleLabel = readingProfile.role === 'primary' ? roleMainLabel : readingProfile.role === 'supplemental' ? roleSupportingLabel : roleNoneLabel;
   const readingFormLabel = readingProfile.form === 'adapted' ? analysisLabel('common.adapted_text', 'Adapted text') : readingProfile.form === 'same-text-supported' ? analysisLabel('analysis.form_supported', 'Original with supports') : analysisLabel('analysis.form_original', 'Original text');
   const mainNeedsReview = readingProfile.form === 'adapted' && readingProfile.role === 'primary' && !(readingProfile.replacementAuthorization?.authorized === true && readingProfile.replacementAuthorization?.source === 'educator');
-  const changeReadingRole = nextRole => {
+  const passageMountedRef = React.useRef(true);
+  React.useEffect(() => {
+    passageMountedRef.current = true;
+    return () => {
+      passageMountedRef.current = false;
+    };
+  }, []);
+  const activeResourceIdRef = React.useRef(generatedContent?.id);
+  activeResourceIdRef.current = generatedContent?.id;
+  const grammarFixInFlightRef = React.useRef(false);
+  const changeReadingRole = async nextRole => {
     const adaptedPrimary = readingProfile.form === 'adapted' && nextRole === 'primary';
     if (adaptedPrimary && !(readingProfile.role === 'primary' && readingProfile.replacementAuthorization?.authorized === true && readingProfile.replacementAuthorization?.source === 'educator')) {
-      if (!window.confirm(analysisLabel('analysis.confirm_adapted_main', 'Use this adapted text as a main reading for this lesson? This records your explicit teacher designation. The original will remain available.'))) return;
+      const msg = analysisLabel('analysis.confirm_adapted_main', 'Use this adapted text as a main reading for this lesson? This records your explicit teacher designation. The original will remain available.');
+      const confirmed = typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.confirm === 'function' ? await window.AlloFlowUX.confirm(msg, {
+        title: analysisLabel('analysis.confirm_adapted_main_title', 'Use adapted text as main reading?'),
+        confirmText: analysisLabel('common.confirm', 'Confirm'),
+        cancelText: analysisLabel('common.cancel', 'Cancel'),
+        tone: 'warning'
+      }).catch(() => false) : typeof window !== 'undefined' && typeof window.confirm === 'function' ? window.confirm(msg) : false;
+      if (!confirmed || !passageMountedRef.current) return;
     }
     props.onInstructionalRoleChange?.(generatedContent, nextRole, {
       authorizeReplacement: adaptedPrimary
@@ -189,22 +208,23 @@ function AnalysisView(props) {
     try {
       await props.onRecheckAnalysis(generatedContent);
     } catch (_) {
-      addToast?.(analysisLabel('analysis.recheck_failed', 'The check did not finish. You can retry with the edited text.'), 'error');
+      if (passageMountedRef.current) addToast?.(analysisLabel('analysis.recheck_failed', 'The check did not finish. You can retry with the edited text.'), 'error');
     } finally {
       recheckInFlight.current = false;
-      setCheckingEditedSource(false);
+      if (passageMountedRef.current) setCheckingEditedSource(false);
     }
   }
   const asText = value => typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '';
   const isUnreadableNote = value => !!value && typeof value === 'object';
   const isRecord = value => !!value && typeof value === 'object' && !Array.isArray(value);
+  const isSafeObjectKey = key => typeof key === 'string' && key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
   const pipelineApi = window.AlloModules?.TextPipelineHelpers;
   const sameLanguage = (a, b) => typeof pipelineApi?.isSameLanguage === 'function' ? pipelineApi.isSameLanguage(a, b) : asText(a).trim().toLowerCase() === asText(b).trim().toLowerCase();
   // The reader's language on THIS device: the teacher's for the report, a student's for the passage.
   const appLanguage = asText(props.currentUiLanguage).trim() || 'English';
   const baseReportLanguage = asText(analysisData.reportLanguage || generatedContent?.config?.language).trim();
   const reportTranslations = isRecord(analysisData.reportTranslations) ? analysisData.reportTranslations : {};
-  const reportLanguages = Object.keys(reportTranslations).filter(language => language.trim() && language !== baseReportLanguage && isRecord(reportTranslations[language]));
+  const reportLanguages = Object.keys(reportTranslations).filter(language => isSafeObjectKey(language) && language.trim() && language !== baseReportLanguage && isRecord(reportTranslations[language]));
   const chosenReportLanguage = analysisData.displayReportLanguage;
   const preferredReportLanguage = chosenReportLanguage && (chosenReportLanguage === baseReportLanguage || reportLanguages.includes(chosenReportLanguage)) ? chosenReportLanguage : [baseReportLanguage, ...reportLanguages].find(language => sameLanguage(language, appLanguage)) || baseReportLanguage;
   // Persist only the display preference so reopening and exporting use the chosen report.
@@ -268,6 +288,8 @@ function AnalysisView(props) {
   };
   const concepts = reportData.concepts ?? analysisData.concepts;
   const conceptList = (Array.isArray(concepts) ? concepts : [concepts]).map(asText).filter(concept => concept.trim());
+  const rawVocabulary = analysisData.vocabulary ?? analysisData.tier2Words ?? reportData.vocabulary;
+  const vocabularyList = (Array.isArray(rawVocabulary) ? rawVocabulary : rawVocabulary ? [rawVocabulary] : []).map(asText).filter(term => term.trim());
   const baseReadingLevel = isRecord(analysisData.readingLevel) ? analysisData.readingLevel : null;
   const readingLevel = baseReadingLevel ? {
     ...baseReadingLevel,
@@ -283,7 +305,7 @@ function AnalysisView(props) {
   // Fit to the lesson's targets. The reading-level gap comes from the local Flesch-Kincaid
   // measurement and the grade calibration table, never from the AI's estimate. Depth of
   // Knowledge is the AI's estimate, shown with its reason.
-  const fillLabel = (text, values) => String(text).replace(/\{(\w+)\}/g, (match, key) => values[key] != null ? values[key] : match);
+  const fillLabel = (text, values) => String(text).replace(/\{(\w+)\}/g, (match, key) => values && Object.prototype.hasOwnProperty.call(values, key) && values[key] != null ? values[key] : match);
   const savedAnalysisTargets = isRecord(analysisData.analysisTargets) ? analysisData.analysisTargets : {};
   const currentAnalysisTargets = isRecord(props.currentAnalysisTargets) ? props.currentAnalysisTargets : null;
   const targetPair = targets => [asText(targets?.grade).trim(), asText(targets?.dok).trim()];
@@ -415,7 +437,7 @@ function AnalysisView(props) {
       drafts: {
         ...state.drafts,
         [key]: state.drafts[key] || {
-          id: generatedContent.id,
+          id: generatedContent?.id,
           source: sourceText,
           index,
           idea,
@@ -625,14 +647,14 @@ function AnalysisView(props) {
   const showAiRating = !accuracyVerified && baseAccuracy.verificationNote !== 'search-unavailable' && !/^not (?:web-)?verified$/i.test(accuracyRating);
   const accuracyBadge = accuracyVerified ? /*#__PURE__*/React.createElement("span", {
     "data-accuracy-verification": "web-search",
-    className: `px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border ${ratingKey(accuracyRating) === 'high' || accuracyRating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`
+    className: `px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide border ${ratingKey(accuracyRating) === 'high' || accuracyRating.toLowerCase().includes('high') ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`
   }, fillLabel(analysisLabel('analysis.accuracy_ai_rating', 'AI rating: {rating}'), {
     rating: accuracyRatingLabel
   })) : /*#__PURE__*/React.createElement("span", {
     "data-accuracy-verification": "ai-estimate",
     className: "flex flex-wrap items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "px-2 py-0.5 rounded-full text-[11px] font-bold tracking-wide border bg-slate-100 text-slate-700 border-slate-300"
+    className: "px-2 py-0.5 rounded-full text-xs font-bold tracking-wide border bg-slate-100 text-slate-700 border-slate-300"
   }, analysisLabel('analysis.accuracy_ai_estimate', 'AI estimate, not verified')), showAiRating && /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-600"
   }, fillLabel(analysisLabel('analysis.accuracy_ai_rating', 'AI rating: {rating}'), {
@@ -686,6 +708,7 @@ function AnalysisView(props) {
     } catch (err) {
       warnLog('Factual fix failed:', err);
     }
+    if (!passageMountedRef.current) return;
     if (result && result.ok === true && typeof result.corrected === 'string' && typeof result.original === 'string') {
       setFactualProposal({
         ...result,
@@ -693,7 +716,7 @@ function AnalysisView(props) {
       });
       return;
     }
-    const message = result && factualFixMessages[result.reason];
+    const message = result && typeof result.reason === 'string' && Object.prototype.hasOwnProperty.call(factualFixMessages, result.reason) ? factualFixMessages[result.reason] : null;
     addToast(message ? message() : t('process.correction_error') || 'The correction could not be prepared. Please try again.', message ? 'warning' : 'error');
   };
   const applyFactualProposal = async () => {
@@ -704,7 +727,15 @@ function AnalysisView(props) {
       addToast(t('process.grammar_fix_failed') || 'The source editor is unavailable. Please reload and try again.', 'error');
       return;
     }
-    const applied = await props.onCorrectAnalysisText(proposal.resourceId, proposal.original, proposal.corrected, []);
+    let applied;
+    try {
+      applied = await props.onCorrectAnalysisText(proposal.resourceId, proposal.original, proposal.corrected, []);
+    } catch (err) {
+      warnLog('Applying factual fix failed:', err);
+      if (passageMountedRef.current) setFactualProposal(proposal);
+      addToast(t('process.correction_error') || 'The correction could not be applied. Please try again.', 'error');
+      return;
+    }
     if (applied === false) {
       addToast(analysisLabel('analysis.factual_fix_source_changed', 'The source changed after this fix was prepared, so it was not applied. Prepare the fix again.'), 'warning');
       return;
@@ -777,7 +808,7 @@ function AnalysisView(props) {
   }, analysisLabel('analysis.factual_fix_discard', 'Discard'))));
   const normalizedText = text => asText(text).trim().replace(/\s+/g, ' ');
   const sourceTranslationMap = isRecord(analysisData.sourceTranslations) ? analysisData.sourceTranslations : {};
-  const sourceTranslations = Object.entries(sourceTranslationMap).filter(([language, text]) => language.trim() && typeof text === 'string' && text.trim() && normalizedText(text) !== normalizedText(analysisData.originalText) && language.trim().toLowerCase() !== asText(analysisData.sourceLanguage).trim().toLowerCase());
+  const sourceTranslations = Object.entries(sourceTranslationMap).filter(([language, text]) => isSafeObjectKey(language) && language.trim() && typeof text === 'string' && text.trim() && normalizedText(text) !== normalizedText(analysisData.originalText) && language.trim().toLowerCase() !== asText(analysisData.sourceLanguage).trim().toLowerCase());
   // Passage languages. The original stays first and selected; this device's app language
   // leads the prepared versions. Only teachers add versions (students cannot run AI).
   const passageVersions = sourceTranslations.slice().sort((a, b) => (sameLanguage(b[0], appLanguage) ? 1 : 0) - (sameLanguage(a[0], appLanguage) ? 1 : 0));
@@ -785,7 +816,11 @@ function AnalysisView(props) {
     id: null,
     language: ''
   });
-  const [passageBusy, setPassageBusy] = React.useState('');
+  const [passageBusy, setPassageBusy] = React.useState({
+    id: null,
+    key: ''
+  });
+  const activePassageBusy = passageBusy.id === generatedContent?.id ? passageBusy.key : '';
   const shownPassageLanguage = passageView.id === generatedContent?.id && passageVersions.some(([language]) => language === passageView.language) ? passageView.language : '';
   const shownPassage = shownPassageLanguage ? sourceTranslationMap[shownPassageLanguage] : null;
   const passageFontStyle = needsStackedMarkFont(shownPassage) || needsStackedMarkFont(analysisData.originalText) ? {
@@ -838,11 +873,15 @@ function AnalysisView(props) {
     return added ? added[0] : '';
   };
   const addPassageLanguage = async language => {
-    if (passageBusy || !generatedContent) return;
+    if (activePassageBusy || !generatedContent) return;
     const id = generatedContent.id;
-    setPassageBusy(language);
+    setPassageBusy({
+      id,
+      key: language
+    });
     try {
       const added = await translatePassageInto(language, id, analysisData.originalText);
+      if (!passageMountedRef.current) return;
       if (!added) {
         addToast?.(fillLabel(analysisLabel('analysis.passage_same_language', 'The passage is already in {language}.'), {
           language: uiName(language)
@@ -855,31 +894,41 @@ function AnalysisView(props) {
       });
     } catch (error) {
       warnLog?.('Passage translation failed', error);
-      addToast?.(fillLabel(analysisLabel('analysis.passage_translation_failed', 'The {language} passage did not finish. Try again.'), {
+      if (passageMountedRef.current) addToast?.(fillLabel(analysisLabel('analysis.passage_translation_failed', 'The {language} passage did not finish. Try again.'), {
         language: uiName(language)
       }), 'error');
     } finally {
-      setPassageBusy('');
+      if (passageMountedRef.current) setPassageBusy(prev => prev.id === id && prev.key === language ? {
+        id: null,
+        key: ''
+      } : prev);
     }
   };
   const refreshPassageVersions = async () => {
-    if (passageBusy || !generatedContent || !refreshLanguages.length) return;
+    if (activePassageBusy || !generatedContent || !refreshLanguages.length) return;
     const id = generatedContent.id;
     const expectedText = analysisData.originalText;
-    setPassageBusy('refresh');
+    setPassageBusy({
+      id,
+      key: 'refresh'
+    });
     try {
       for (const language of refreshLanguages) {
+        if (!passageMountedRef.current) break;
         try {
           await translatePassageInto(language, id, expectedText);
         } catch (error) {
           warnLog?.('Passage translation failed', error);
-          addToast?.(fillLabel(analysisLabel('analysis.passage_translation_failed', 'The {language} passage did not finish. Try again.'), {
+          if (passageMountedRef.current) addToast?.(fillLabel(analysisLabel('analysis.passage_translation_failed', 'The {language} passage did not finish. Try again.'), {
             language: uiName(language)
           }), 'error');
         }
       }
     } finally {
-      setPassageBusy('');
+      if (passageMountedRef.current) setPassageBusy(prev => prev.id === id && prev.key === 'refresh' ? {
+        id: null,
+        key: ''
+      } : prev);
     }
   };
   const dismissPassageRefresh = () => updateAnalysisResource(item => {
@@ -952,17 +1001,17 @@ function AnalysisView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-refresh-passage-versions": true,
-    disabled: !!passageBusy || isProcessing || analysisAiOff,
+    disabled: !!activePassageBusy || isProcessing || analysisAiOff,
     title: analysisAiTitle,
-    "aria-busy": passageBusy === 'refresh',
+    "aria-busy": activePassageBusy === 'refresh',
     onClick: refreshPassageVersions,
     className: "min-h-9 rounded-lg bg-indigo-700 px-3 font-bold text-white focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50"
-  }, passageBusy === 'refresh' ? analysisLabel('status.translating', 'Translating…') : fillLabel(analysisLabel('analysis.update_passage_versions', 'Update the passage in {languages}'), {
+  }, activePassageBusy === 'refresh' ? analysisLabel('status.translating', 'Translating…') : fillLabel(analysisLabel('analysis.update_passage_versions', 'Update the passage in {languages}'), {
     languages: refreshLanguageList
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-dismiss-passage-refresh": true,
-    disabled: !!passageBusy,
+    disabled: !!activePassageBusy,
     onClick: dismissPassageRefresh,
     className: "min-h-9 rounded-lg border border-amber-400 bg-white px-3 font-bold text-amber-950 hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50"
   }, analysisLabel('analysis.passage_versions_not_needed', 'Not needed')))), passageVersions.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -998,12 +1047,12 @@ function AnalysisView(props) {
     type: "button",
     key: language,
     "data-add-passage-language": language,
-    disabled: !!passageBusy || isProcessing || analysisAiOff,
+    disabled: !!activePassageBusy || isProcessing || analysisAiOff,
     title: analysisAiTitle,
-    "aria-busy": passageBusy === language,
+    "aria-busy": activePassageBusy === language,
     onClick: () => addPassageLanguage(language),
     className: "min-h-9 rounded-lg border border-dashed border-indigo-300 bg-white px-3 text-xs font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-50"
-  }, passageBusy === language ? analysisLabel('status_steps.translating', 'Translating…') : /*#__PURE__*/React.createElement(React.Fragment, null, "+ ", languageLabel(language))))), shownPassage && isTeacherMode && /*#__PURE__*/React.createElement("p", {
+  }, activePassageBusy === language ? analysisLabel('status_steps.translating', 'Translating…') : /*#__PURE__*/React.createElement(React.Fragment, null, "+ ", languageLabel(language))))), shownPassage && isTeacherMode && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
   }, analysisLabel('analysis.source_translation_note', 'This companion translation does not replace the original source used for activities or reading-level results.')));
   const reportLanguageControl = reportLanguages.length > 0 && /*#__PURE__*/React.createElement("section", {
@@ -1029,6 +1078,115 @@ function AnalysisView(props) {
   }, analysisLabel('analysis.report_correction_note', 'Select the original report language to correct or dismiss findings.')));
   const includeTitle = analysisLabel('analysis.include_in_correction', 'Include in correction');
   const ignoreTitle = analysisLabel('analysis.ignore_this_error', 'Ignore this error');
+  const [speakingPassage, setSpeakingPassage] = React.useState(false);
+  const speakingPassageRef = React.useRef(false);
+  speakingPassageRef.current = speakingPassage;
+  const stopPassageSpeech = () => {
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop();
+    } catch (_) {}
+    try {
+      if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel();
+    } catch (_) {}
+    setSpeakingPassage(false);
+  };
+  React.useEffect(() => {
+    if (speakingPassageRef.current) stopPassageSpeech();
+  }, [generatedContent?.id, shownPassageLanguage]);
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const onSpeechState = e => {
+      if (speakingPassageRef.current && e && e.detail && e.detail.isPlaying === false) setSpeakingPassage(false);
+    };
+    window.addEventListener('allo-speech-state', onSpeechState);
+    return () => {
+      window.removeEventListener('allo-speech-state', onSpeechState);
+      if (speakingPassageRef.current) {
+        try {
+          if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop();
+        } catch (_) {}
+        try {
+          if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel();
+        } catch (_) {}
+      }
+    };
+  }, []);
+  const activePassageText = String(shownPassage && !isEditingAnalysis ? shownPassage : generatedContent?.data?.originalText || '').trim();
+  const canSpeakPassage = Boolean(activePassageText && typeof window !== 'undefined' && (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function' || window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function'));
+  const toggleSpeakPassage = () => {
+    if (!activePassageText) return;
+    if (speakingPassage) {
+      stopPassageSpeech();
+      return;
+    }
+    const lang = (shownPassage && !isEditingAnalysis ? shownPassageLanguage : asText(analysisData.sourceLanguage)) || 'English';
+    try {
+      if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+        setSpeakingPassage(true);
+        Promise.resolve(window.AlloSpeechPlayer.speak(activePassageText, {
+          language: lang
+        })).catch(() => {
+          if (passageMountedRef.current) setSpeakingPassage(false);
+        });
+        return;
+      }
+      if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+        window.speechSynthesis.cancel();
+        const u = new window.SpeechSynthesisUtterance(activePassageText);
+        u.onend = () => {
+          if (passageMountedRef.current) setSpeakingPassage(false);
+        };
+        u.onerror = () => {
+          if (passageMountedRef.current) setSpeakingPassage(false);
+        };
+        setSpeakingPassage(true);
+        window.speechSynthesis.speak(u);
+      }
+    } catch (_) {
+      if (passageMountedRef.current) setSpeakingPassage(false);
+    }
+  };
+  const jumpToAnalysisSection = secId => {
+    try {
+      const el = typeof document !== 'undefined' ? document.getElementById(secId) : null;
+      if (!el) return;
+      const reduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (typeof el.scrollIntoView === 'function') el.scrollIntoView({
+        behavior: reduced ? 'auto' : 'smooth',
+        block: 'start'
+      });
+      if (typeof el.focus === 'function') el.focus({
+        preventScroll: true
+      });
+    } catch (_) {}
+  };
+  const openGrammarBadgeCount = (Array.isArray(analysisData.grammar) ? analysisData.grammar : []).filter(g => {
+    if (typeof g !== 'string') return false;
+    if (g.startsWith('✓ FIXED:') || g.startsWith('✓ DISMISSED:')) return false;
+    const clean = g.trim().toLowerCase().replace(/[.,;!]+$/, '');
+    if (!clean || ['none', 'n/a', 'no errors', 'no issues', 'none detected', 'no grammar errors', 'no spelling errors'].includes(clean)) return false;
+    if (/^(none|no errors|no issues|no grammar|no spelling|none detected|no significant)/i.test(clean)) return false;
+    if (clean.includes('no grammar errors') || clean.includes('no spelling errors') || clean.includes('no significant errors')) return false;
+    return true;
+  }).length;
+  const renderHeaderDescription = rawHtml => {
+    const src = asText(rawHtml);
+    if (!src) return null;
+    const parts = [];
+    const re = /<(strong|b)>([\s\S]*?)<\/\1>/gi;
+    let last = 0;
+    let match;
+    let idx = 0;
+    while ((match = re.exec(src)) !== null) {
+      if (match.index > last) parts.push(src.slice(last, match.index).replace(/<[^>]*>/g, ''));
+      parts.push(/*#__PURE__*/React.createElement("strong", {
+        key: 'hdr-' + idx++
+      }, match[2].replace(/<[^>]*>/g, '')));
+      last = re.lastIndex;
+    }
+    if (last < src.length) parts.push(src.slice(last).replace(/<[^>]*>/g, ''));
+    return parts;
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, isTeacherMode ? readingRoleControl : readWithSupportsButton, isTeacherMode && needsRecheck && /*#__PURE__*/React.createElement("section", {
@@ -1070,7 +1228,7 @@ function AnalysisView(props) {
     end
   })), /*#__PURE__*/React.createElement("blockquote", {
     className: "my-2 border-l-2 pl-2"
-  }, sourceText.slice(start, Math.min(end, start + 150)), end - start > 150 ? '…' : ''), /*#__PURE__*/React.createElement("p", null, [rangeText(report.readingLevel?.range), report.readingLevel?.explanation].map(asText).filter(Boolean).join(' · ')), Array.isArray(report.concepts) && /*#__PURE__*/React.createElement("p", null, report.concepts.map(asText).filter(Boolean).join(', ')), report.depthOfKnowledge?.level && /*#__PURE__*/React.createElement("p", null, "DOK ", asText(report.depthOfKnowledge.level), " · ", asText(report.depthOfKnowledge.reason)), /*#__PURE__*/React.createElement("p", null, [ratingText(report.accuracy?.rating), report.accuracy?.reason].map(asText).filter(Boolean).join(' · ')), partial && factReader && factReader({
+  }, sourceText.slice(start, Math.min(end, start + 150)), end - start > 150 ? '…' : ''), /*#__PURE__*/React.createElement("p", null, [rangeText(report.readingLevel?.range), report.readingLevel?.explanation].map(asText).filter(Boolean).join(' · ')), Array.isArray(report.concepts) && /*#__PURE__*/React.createElement("p", null, report.concepts.map(asText).filter(Boolean).join(', ')), Array.isArray(report.vocabulary) && report.vocabulary.length > 0 && /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("strong", null, analysisLabel('output.analysis_vocabulary', 'Key Vocabulary'), ":"), " ", report.vocabulary.map(asText).filter(Boolean).join(', ')), report.depthOfKnowledge?.level && /*#__PURE__*/React.createElement("p", null, "DOK ", asText(report.depthOfKnowledge.level), " · ", asText(report.depthOfKnowledge.reason)), /*#__PURE__*/React.createElement("p", null, [ratingText(report.accuracy?.rating), report.accuracy?.reason].map(asText).filter(Boolean).join(' · ')), partial && factReader && factReader({
     ...report.accuracy,
     verification: 'ai-estimate'
   }).map((row, i) => /*#__PURE__*/React.createElement("p", {
@@ -1080,11 +1238,34 @@ function AnalysisView(props) {
   }, asText(note)))))), isTeacherMode && !needsRecheck && reportLanguageControl, isTeacherMode && !needsRecheck && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 p-4 rounded-lg border border-slate-400 mb-6"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-slate-800",
-    dangerouslySetInnerHTML: {
-      __html: t('analysis.header_description')
-    }
-  })), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm text-slate-800"
+  }, renderHeaderDescription(t('analysis.header_description')))), /*#__PURE__*/React.createElement("nav", {
+    "data-analysis-jump-nav": true,
+    "aria-label": analysisLabel('analysis.jump_nav_aria', 'Jump to analysis section'),
+    className: "no-print mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 shadow-sm"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold uppercase tracking-wider text-slate-600 mr-1"
+  }, analysisLabel('common.jump_to', 'Jump to'), ":"), [{
+    id: 'analysis-sec-complexity',
+    label: analysisLabel('output.analysis_complexity', 'Complexity & Concepts')
+  }, {
+    id: 'analysis-sec-verification',
+    label: analysisLabel('output.analysis_verification', 'Verification')
+  }, {
+    id: 'analysis-sec-grammar',
+    label: analysisLabel('output.analysis_grammar', 'Grammar') + (openGrammarBadgeCount > 0 ? ` (${openGrammarBadgeCount})` : '')
+  }, {
+    id: 'analysis-sec-source',
+    label: analysisLabel('output.common_original', 'Original Text')
+  }].map(item => /*#__PURE__*/React.createElement("button", {
+    key: item.id,
+    type: "button",
+    "data-analysis-jump": item.id,
+    onClick: () => jumpToAnalysisSection(item.id),
+    className: "min-h-11 rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-800 transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"
+  }, item.label))), /*#__PURE__*/React.createElement("div", {
+    id: "analysis-sec-complexity",
+    tabIndex: -1,
     className: "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-5 rounded-xl border border-slate-400 shadow-sm flex flex-col"
@@ -1104,9 +1285,9 @@ function AnalysisView(props) {
     className: "text-xs font-bold text-slate-600"
   }, t('analysis.readability.fk_score')), /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded cursor-help border border-indigo-100",
-    title: `${t('analysis.readability.formula')}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n\n${t('analysis.readability.words')}: ${fitStats.words}\n${t('analysis.readability.sentences')}: ${fitStats.sentences}\n${t('analysis.readability.syllables')}: ${fitStats.syllables}\n\nASL (${t('analysis.readability.asl')}): ${(fitStats.words / fitStats.sentences).toFixed(2)}\nASW (${t('analysis.readability.asw')}): ${(fitStats.syllables / fitStats.words).toFixed(2)}`
+    title: `${t('analysis.readability.formula')}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n\n${t('analysis.readability.words')}: ${fitStats.words}\n${t('analysis.readability.sentences')}: ${fitStats.sentences}\n${t('analysis.readability.syllables')}: ${fitStats.syllables}\n\nASL (${t('analysis.readability.asl')}): ${fitStats.sentences > 0 ? (fitStats.words / fitStats.sentences).toFixed(2) : '0.00'}\nASW (${t('analysis.readability.asw')}): ${fitStats.words > 0 ? (fitStats.syllables / fitStats.words).toFixed(2) : '0.00'}`
   }, fitStats.score)), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-3 gap-2 text-[11px] text-slate-600 text-center"
+    className: "grid grid-cols-3 gap-2 text-xs text-slate-600 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 rounded p-1 border border-slate-100"
   }, /*#__PURE__*/React.createElement("span", {
@@ -1128,7 +1309,40 @@ function AnalysisView(props) {
   }, conceptList.map((concept, idx) => /*#__PURE__*/React.createElement("span", {
     key: idx,
     className: "bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm font-medium border border-indigo-100"
-  }, formatInlineText(concept, false)))))), targetFitCard, learnerBarriersCard, /*#__PURE__*/React.createElement("div", {
+  }, formatInlineText(concept, false)))), vocabularyList.length > 0 && /*#__PURE__*/React.createElement("div", {
+    "data-analysis-vocabulary": true,
+    className: "mt-4 pt-4 border-t border-slate-100"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-between gap-2 mb-3"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "text-xs font-bold text-slate-600 uppercase tracking-wider"
+  }, analysisLabel('output.analysis_vocabulary', 'Key Vocabulary'), " (", vocabularyList.length, ")"), (typeof props.onSendVocabToFocus === 'function' || typeof props.onGenerateGlossaryFromVocab === 'function') && /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2"
+  }, typeof props.onSendVocabToFocus === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-analysis-send-vocab": true,
+    onClick: () => {
+      const added = props.onSendVocabToFocus(vocabularyList);
+      if (typeof addToast === 'function') addToast(added === 0 ? analysisLabel('analysis.vocab_already_in_focus', 'Those vocabulary terms are already in Vocabulary Focus.') : fillLabel(analysisLabel('analysis.vocab_sent_to_focus', 'Added {count} vocabulary terms to Vocabulary Focus.'), {
+        count: typeof added === 'number' ? added : vocabularyList.length
+      }), 'success');
+    },
+    className: "min-h-8 rounded-md border border-teal-600 bg-white px-2.5 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-teal-600 focus-visible:outline-offset-2"
+  }, analysisLabel('analysis.send_vocab_focus', 'Use as Vocabulary Focus')), typeof props.onGenerateGlossaryFromVocab === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-analysis-build-glossary": true,
+    disabled: isProcessing || analysisAiOff,
+    title: analysisAiTitle,
+    onClick: () => props.onGenerateGlossaryFromVocab(vocabularyList),
+    className: "min-h-8 rounded-md bg-teal-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-teal-800 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-teal-700 focus-visible:outline-offset-2"
+  }, analysisLabel('analysis.build_glossary_vocab', 'Build Glossary')))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 content-start"
+  }, vocabularyList.map((term, idx) => /*#__PURE__*/React.createElement("span", {
+    key: idx,
+    className: "bg-teal-50 text-teal-800 px-3 py-1 rounded-md text-sm font-medium border border-teal-200"
+  }, formatInlineText(term, false))))))), targetFitCard, learnerBarriersCard, /*#__PURE__*/React.createElement("div", {
+    id: "analysis-sec-verification",
+    tabIndex: -1,
     className: "bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-3 mb-3"
@@ -1139,7 +1353,7 @@ function AnalysisView(props) {
   }, formatInlineText(asText(accuracy.reason), false)), asText(accuracy.verificationDetails) && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 pt-4 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("h5", {
-    className: "text-[11px] font-bold text-blue-700 uppercase tracking-wider mb-2 flex items-center gap-1"
+    className: "text-xs font-bold text-blue-700 uppercase tracking-wider mb-2 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Search, {
     size: 10
   }), " ", t('analysis.verification_details')), /*#__PURE__*/React.createElement("div", {
@@ -1201,7 +1415,7 @@ function AnalysisView(props) {
     }, row.text)))), hasDiscrepancies && /*#__PURE__*/React.createElement("div", {
       className: "bg-red-50 p-3 rounded border border-red-100 relative"
     }, /*#__PURE__*/React.createElement("h5", {
-      className: "text-[11px] font-bold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1"
+      className: "text-xs font-bold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1"
     }, /*#__PURE__*/React.createElement(AlertCircle, {
       size: 10
     }), " ", t('analysis.discrepancies')), /*#__PURE__*/React.createElement("div", {
@@ -1221,7 +1435,7 @@ function AnalysisView(props) {
       }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
         text: d.slice(DISCREPANCY_FIXED_PREFIX.length)
       }), " ", /*#__PURE__*/React.createElement("span", {
-        className: "inline-block align-middle px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-200 text-green-900"
+        className: "inline-block align-middle px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide bg-green-200 text-green-900"
       }, analysisLabel('analysis.factual_fixed_tag', 'Fixed in source'))));
       const isSelected = isTranslatedReport || selectedDiscrepancies.has(i);
       return /*#__PURE__*/React.createElement("div", {
@@ -1298,6 +1512,7 @@ function AnalysisView(props) {
     // note forever, so a teacher who had dealt with all of them still saw
     // "3 Issues".
     const openGrammarErrors = realGrammarErrors.filter(g => !isResolvedNote(g));
+    const openSelectedGrammarCount = rawGrammarNotes.filter((g, i) => selectedGrammarErrors.has(i) && typeof g === 'string' && !isInvalidGrammarNote(g) && !isResolvedNote(g)).length;
     // Dismiss / restore are pure list edits: no AI call, no text rewrite.
     // Restore exists because a mis-click would otherwise silently discard a
     // real issue with no way back.
@@ -1325,7 +1540,9 @@ function AnalysisView(props) {
     // Notes describe the source; the displayed text is a translation, so an AI fix would edit the wrong text.
     const canFixGrammar = canChangeReportNotes && !isTranslatedDisplay;
     const handleFixGrammarErrors = async () => {
-      if (!canFixGrammar || !generatedContent?.data?.originalText || selectedGrammarErrors.size === 0) return;
+      if (isProcessing || grammarFixInFlightRef.current || !canFixGrammar || !analysisData.originalText || selectedGrammarErrors.size === 0) return;
+      const targetResourceId = generatedContent?.id;
+      grammarFixInFlightRef.current = true;
       setIsProcessing(true);
       setGenerationStep(t('process.fixing_grammar') || 'Fixing grammar errors...');
       try {
@@ -1334,7 +1551,7 @@ function AnalysisView(props) {
         // text that is correct.
         const isFixable = g => typeof g === 'string' && !isInvalidGrammarNote(g) && !isResolvedNote(g);
         const errorsToFix = rawGrammarNotes.filter((g, i) => selectedGrammarErrors.has(i) && isFixable(g));
-        const originalText = generatedContent?.data.originalText;
+        const originalText = analysisData.originalText;
         if (errorsToFix.length === 0) {
           addToast(t('process.grammar_fix_failed') || 'No errors selected to fix.', 'warning');
           return;
@@ -1378,7 +1595,11 @@ ${safeOriginalText}
           }
           raw = await callGemini(fixPrompt, false, false, null);
         }
-        const cleaned = (typeof raw === 'string' ? raw : raw && raw.text || '').trim().replace(/^```(?:[a-z]+)?\s*/i, '').replace(/\s*```$/, '').replace(/^["']|["']$/g, '').trim();
+        let cleaned = (typeof raw === 'string' ? raw : raw && raw.text || '').trim().replace(/^```(?:[a-z]+)?\s*/i, '').replace(/\s*```$/, '').trim();
+        const origTrimmed = String(originalText || '').trim();
+        if (cleaned.length >= 2 && (cleaned.startsWith('"') && cleaned.endsWith('"') && !(origTrimmed.startsWith('"') && origTrimmed.endsWith('"')) || cleaned.startsWith("'") && cleaned.endsWith("'") && !(origTrimmed.startsWith("'") && origTrimmed.endsWith("'")))) {
+          cleaned = cleaned.slice(1, -1).trim();
+        }
         if (!cleaned) {
           addToast(t('process.grammar_fix_failed') || 'Failed to fix grammar errors.', 'error');
           return;
@@ -1397,31 +1618,36 @@ ${safeOriginalText}
           addToast(t('process.grammar_fix_failed') || 'The source editor is unavailable. Please reload and try again.', 'error');
           return;
         }
-        const applied = await props.onCorrectAnalysisText(generatedContent.id, originalText, cleaned, errorsToFix);
+        const applied = await props.onCorrectAnalysisText(targetResourceId, originalText, cleaned, errorsToFix);
         if (applied === false) {
           addToast(t('analysis.grammar_source_changed') || 'The source changed while the correction was being prepared. Review it and try again.', 'warning');
           return;
         }
         addToast(t('process.grammar_fixed') || 'Grammar errors fixed!', 'success');
-        setSelectedGrammarErrors(new Set());
+        if (passageMountedRef.current && activeResourceIdRef.current === targetResourceId) {
+          setSelectedGrammarErrors(new Set());
+        }
       } catch (err) {
         warnLog('Grammar fix error:', err);
         addToast(t('process.grammar_fix_failed') || 'Failed to fix grammar errors.', 'error');
       } finally {
+        grammarFixInFlightRef.current = false;
         setIsProcessing(false);
         setGenerationStep('');
       }
     };
     return /*#__PURE__*/React.createElement("div", {
+      id: "analysis-sec-grammar",
+      tabIndex: -1,
       className: "bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3 mb-3"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-xs font-bold text-slate-600 uppercase tracking-wider"
     }, t('output.analysis_grammar')), hasGrammarErrors && openGrammarErrors.length > 0 && /*#__PURE__*/React.createElement("span", {
-      className: "px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border bg-amber-100 text-amber-700 border-amber-200"
+      className: "px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide border bg-amber-100 text-amber-700 border-amber-200"
     }, openGrammarErrors.length, " ", openGrammarErrors.length === 1 ? analysisLabel('analysis.issue_singular', 'Issue') : analysisLabel('analysis.issue_plural', 'Issues')), hasGrammarErrors && openGrammarErrors.length === 0 && /*#__PURE__*/React.createElement("span", {
-      className: "px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border bg-green-100 text-green-700 border-green-200"
+      className: "px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide border bg-green-100 text-green-700 border-green-200"
     }, t('analysis.grammar_all_resolved') || 'All resolved')), hasGrammarErrors ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       className: "space-y-2 mb-3"
     }, rawGrammarNotes.map((note, idx) => {
@@ -1451,7 +1677,7 @@ ${safeOriginalText}
       }), /*#__PURE__*/React.createElement("div", {
         className: `flex-1 text-sm text-slate-700 leading-relaxed ${!isSelected && !isFixed && !isDismissed || isDismissed ? 'line-through text-slate-600' : ''}`
       }, formatInlineText(bareNote, false), isDismissed && /*#__PURE__*/React.createElement("span", {
-        className: "ml-2 not-italic no-underline inline-block align-middle px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-slate-200 text-slate-600"
+        className: "ml-2 not-italic no-underline inline-block align-middle px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide bg-slate-200 text-slate-600"
       }, t('analysis.grammar_dismissed_tag') || 'Dismissed')), canChangeReportNotes && !isFixed && !isDismissed && /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => dismissGrammarNote(idx),
@@ -1465,14 +1691,14 @@ ${safeOriginalText}
         type: "button",
         onClick: () => restoreGrammarNote(idx),
         "aria-label": `${t('analysis.grammar_restore_one') || 'Restore'}: ${bareNote.slice(0, 80)}`,
-        className: "shrink-0 ml-1 min-h-6 inline-flex items-center justify-center px-2 py-0.5 rounded text-[11px] font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-slate-400 transition-colors"
+        className: "shrink-0 ml-1 min-h-6 inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-slate-400 transition-colors"
       }, t('analysis.grammar_restore_one') || 'Restore'));
     })), isTeacherMode && isTranslatedDisplay && openGrammarErrors.length > 0 && /*#__PURE__*/React.createElement("p", {
       className: "mb-3 text-xs text-slate-700"
     }, analysisLabel('analysis.grammar_translated_note', 'These notes describe the source text, not the translation shown here, so Fix Grammar is off. Dismiss each note once you have handled it.')), canFixGrammar && openGrammarErrors.length > 0 && /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: handleFixGrammarErrors,
-      disabled: isProcessing || selectedGrammarErrors.size === 0 || analysisAiOff && !window.ai?.languageModel,
+      disabled: isProcessing || openSelectedGrammarCount === 0 || analysisAiOff && !window.ai?.languageModel,
       title: analysisAiOff && !window.ai?.languageModel ? analysisAiTitle : undefined,
       "aria-busy": isProcessing,
       className: "w-full flex items-center justify-center gap-2 bg-white border border-amber-700 text-amber-800 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1481,7 +1707,7 @@ ${safeOriginalText}
       className: "animate-spin motion-reduce:animate-none"
     }) : /*#__PURE__*/React.createElement(Wand2, {
       size: 12
-    }), t('analysis.fix_grammar_button') || 'Fix Grammar Errors', " (", selectedGrammarErrors.size, ")"), canChangeReportNotes && realGrammarErrors.length > 0 && openGrammarErrors.length === 0 && /*#__PURE__*/React.createElement("button", {
+    }), t('analysis.fix_grammar_button') || 'Fix Grammar Errors', " (", openSelectedGrammarCount, ")"), canChangeReportNotes && realGrammarErrors.length > 0 && openGrammarErrors.length === 0 && /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: () => {
         updateAnalysisResource(prev => ({
@@ -1516,19 +1742,29 @@ ${safeOriginalText}
     onClick: undoAnalysisSourceEdit,
     className: "min-h-11 rounded-full border border-violet-300 bg-white px-3 font-bold text-violet-800 hover:bg-violet-100"
   }, analysisLabel('analysis.source_updated_undo', 'Undo this change'))), /*#__PURE__*/React.createElement("div", {
+    id: "analysis-sec-source",
+    tabIndex: -1,
     className: "bg-slate-50 p-6 rounded-xl border border-slate-400 relative group"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center mb-3 flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider"
-  }, shownPassage && !isEditingAnalysis ? /*#__PURE__*/React.createElement(React.Fragment, null, analysisLabel('analysis.translated_passage', 'Translated passage'), " · ", languageLabel(shownPassageLanguage)) : t('output.common_original')), isTeacherMode && /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2"
-  }, /*#__PURE__*/React.createElement("button", {
+  }, shownPassage && !isEditingAnalysis ? /*#__PURE__*/React.createElement(React.Fragment, null, analysisLabel('analysis.translated_passage', 'Translated passage'), " · ", languageLabel(shownPassageLanguage)) : t('output.common_original')), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2"
+  }, canSpeakPassage && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-analysis-listen": true,
+    "aria-pressed": speakingPassage,
+    onClick: toggleSpeakPassage,
+    className: "no-print min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border border-indigo-300 bg-white text-indigo-800 hover:bg-indigo-50 transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, speakingPassage ? '⏹' : '🔊'), /*#__PURE__*/React.createElement("span", null, speakingPassage ? analysisLabel('common.stop', 'Stop') : analysisLabel('common.listen', 'Listen'))), isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     title: t('common.download_audio'),
     "data-help-key": "analysis_download_audio",
-    onClick: () => handleDownloadAudio && (shownPassage && !isEditingAnalysis ? handleDownloadAudio(shownPassage, 'passage-' + (shownPassageLanguage.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'translated'), 'dl-analysis-source', shownPassageLanguage) : handleDownloadAudio(generatedContent?.data?.originalText, 'original-source-text', 'dl-analysis-source')),
-    disabled: downloadingContentId === 'dl-analysis-source' || !generatedContent?.data?.originalText,
+    onClick: () => handleDownloadAudio && (shownPassage && !isEditingAnalysis ? handleDownloadAudio(shownPassage, 'passage-' + (shownPassageLanguage.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'translated'), 'dl-analysis-source', shownPassageLanguage) : handleDownloadAudio(analysisData.originalText, 'original-source-text', 'dl-analysis-source')),
+    disabled: downloadingContentId === 'dl-analysis-source' || !analysisData.originalText,
     className: "flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
   }, downloadingContentId === 'dl-analysis-source' ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
@@ -1544,7 +1780,7 @@ ${safeOriginalText}
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditingAnalysis ? t('common.done') : t('common.edit')))), isTeacherMode && analysisAiOff && typeof window.AlloAiSetupNotice === 'function' && /*#__PURE__*/React.createElement("div", {
+  }), isEditingAnalysis ? t('common.done') : t('common.edit'))))), isTeacherMode && analysisAiOff && typeof window.AlloAiSetupNotice === 'function' && /*#__PURE__*/React.createElement("div", {
     "data-analysis-ai-setup": true,
     className: "mb-2"
   }, /*#__PURE__*/React.createElement(window.AlloAiSetupNotice, {
@@ -1590,7 +1826,7 @@ ${safeOriginalText}
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('formatting.bold') || 'Bold',
-    onClick: () => handleFormatText('bold', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
+    onClick: () => handleFormatText('bold', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.bold')
   }, /*#__PURE__*/React.createElement(Bold, {
@@ -1599,7 +1835,7 @@ ${safeOriginalText}
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('formatting.italic') || 'Italic',
-    onClick: () => handleFormatText('italic', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
+    onClick: () => handleFormatText('italic', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.italic')
   }, /*#__PURE__*/React.createElement(Italic, {
@@ -1607,7 +1843,7 @@ ${safeOriginalText}
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('formatting.highlight') || 'Highlight',
-    onClick: () => handleFormatText('highlight', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
+    onClick: () => handleFormatText('highlight', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.highlight')
   }, /*#__PURE__*/React.createElement(Highlighter, {
@@ -1617,19 +1853,19 @@ ${safeOriginalText}
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('formatting.h1') || 'Heading 1',
-    onClick: () => handleFormatText('h1', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
+    onClick: () => handleFormatText('h1', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h1')
   }, "H1"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('formatting.h2') || 'Heading 2',
-    onClick: () => handleFormatText('h2', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
+    onClick: () => handleFormatText('h2', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h2')
   }, "H2"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('formatting.h3') || 'Heading 3',
-    onClick: () => handleFormatText('h3', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
+    onClick: () => handleFormatText('h3', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h3') || 'Heading 3'
   }, "H3"), /*#__PURE__*/React.createElement("div", {
@@ -1637,7 +1873,7 @@ ${safeOriginalText}
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('formatting.list') || 'Bulleted list',
-    onClick: () => handleFormatText('list', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
+    onClick: () => handleFormatText('list', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.list')
   }, /*#__PURE__*/React.createElement(List, {
@@ -1645,7 +1881,7 @@ ${safeOriginalText}
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('formatting.numlist') || 'Numbered list',
-    onClick: () => handleFormatText('numlist', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
+    onClick: () => handleFormatText('numlist', analysisEditorRef, analysisData.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.numlist') || 'Numbered List'
   }, /*#__PURE__*/React.createElement(ListOrdered, {
@@ -1655,7 +1891,7 @@ ${safeOriginalText}
     return TableChartTools ? /*#__PURE__*/React.createElement(TableChartTools, {
       t: t,
       textareaRef: analysisEditorRef,
-      getText: () => generatedContent?.data.originalText,
+      getText: () => analysisData.originalText,
       onChange: handleAnalysisTextChange,
       tone: "indigo"
     }) : null;
@@ -1663,12 +1899,12 @@ ${safeOriginalText}
     "aria-label": t('common.edit_source_text') || 'Edit source text',
     "data-allo-textundo": "analysis",
     ref: analysisEditorRef,
-    value: generatedContent?.data.originalText,
+    value: analysisData.originalText,
     onChange: e => handleAnalysisTextChange(e.target.value),
     className: "w-full min-h-[300px] bg-white p-4 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-sm text-slate-700 font-serif leading-relaxed resize-y",
     style: passageFontStyle,
     placeholder: t('common.edit_source_text'),
-    spellCheck: "false"
+    spellCheck: true
   })) : /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-slate-700 font-serif leading-relaxed max-w-none",
     style: passageFontStyle
@@ -1676,12 +1912,12 @@ ${safeOriginalText}
     "data-passage-shown": shownPassageLanguage,
     lang: shownPassageLanguage && shownPassageLanguage !== 'English' && typeof window !== 'undefined' && typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode(shownPassageLanguage) : undefined
   }, renderFormattedText(shownPassage, false)) : (() => {
-    const _fullOrig = generatedContent?.data?.originalText || '';
+    const _fullOrig = analysisData.originalText || '';
     const {
       body: _bodyNoRefs,
       references: _refs
     } = splitReferencesFromBody(_fullOrig);
-    return /*#__PURE__*/React.createElement(React.Fragment, null, renderFormattedText(_bodyNoRefs, false), generatedContent?.data.rawEnglishText && generatedContent?.data.translatedText && normalizedText(generatedContent.data.rawEnglishText) !== normalizedText(_fullOrig) && /*#__PURE__*/React.createElement("div", {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, renderFormattedText(_bodyNoRefs, false), analysisData.rawEnglishText && analysisData.translatedText && normalizedText(analysisData.rawEnglishText) !== normalizedText(_fullOrig) && /*#__PURE__*/React.createElement("div", {
       lang: "en",
       className: "mt-8 pt-8 border-t border-slate-200 opacity-80"
     }, /*#__PURE__*/React.createElement("h4", {
@@ -1689,7 +1925,7 @@ ${safeOriginalText}
     }, /*#__PURE__*/React.createElement(FileText, {
       size: 14,
       "aria-hidden": "true"
-    }), " ", t('output.original_source_label')), renderFormattedText(generatedContent?.data.rawEnglishText, false)), _refs && /*#__PURE__*/React.createElement(SourceReferencesPanel, {
+    }), " ", t('output.original_source_label')), renderFormattedText(analysisData.rawEnglishText, false)), _refs && /*#__PURE__*/React.createElement(SourceReferencesPanel, {
       referencesText: _refs
     }));
   })())));

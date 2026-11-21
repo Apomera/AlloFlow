@@ -31,6 +31,7 @@ const RELEASED = {
   29: '772445ad4b5e130e544e266a4046643d62eb50532b94f3c64d98aad80a1e0d7c', // 2026-11-07
   30: '49094945b27b859190932a198ac8aa8a319c57e4d6093bd679837ee4695b65b8', // 2026-11-16: v29 plus the two unversioned changes of 2026-11-14
   31: '7f4a8f89b36da157e61fb8e3f1518c56cf6fa7610ef0738996e7dc9d63612b83', // 2026-11-19: Phase 18 prototype-safe maps/lookups & UrlFetchApp catch
+  32: '72247fa7fae20c71b53137141e9ecf2edc9e4a11de48be52628690b9fa67096c', // 2026-11-20: Phase 27 admin auth rate-limit, locked rotation/retention/delPack, SSRF & prototype hardening
 };
 
 describe('Class Mailbox script version', () => {

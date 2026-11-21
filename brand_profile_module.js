@@ -52,8 +52,30 @@
   };
 
   // ── Storage constants ────────────────────────────────────────────────────
+  var hasOwn = Object.prototype.hasOwnProperty;
   var STORAGE_KEY = 'alloBrandProfiles_v1';
   var CURRENT_SCHEMA_VERSION = 1;
+  var MAX_STORE_JSON_CHARS = 5 * 1024 * 1024;
+  var MAX_IMPORT_JSON_CHARS = 2 * 1024 * 1024;
+  var MAX_PROFILES = 50;
+  var _storeFrozen = false;
+
+  function _isUnsafeKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+  }
+  function _stripCtrl(value) {
+    return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
+  }
+  function _safeJsonParse(raw, maxChars) {
+    if (typeof raw !== 'string') throw new Error('Expected JSON string');
+    if (maxChars && raw.length > maxChars) throw new Error('JSON payload exceeds maximum size');
+    return JSON.parse(raw, function (key, val) {
+      return _isUnsafeKey(key) ? undefined : val;
+    });
+  }
+  function _hasOwnProfile(profiles, id) {
+    return !!(profiles && typeof id === 'string' && id && !_isUnsafeKey(id) && hasOwn.call(profiles, id));
+  }
 
   // ── Defaults ─────────────────────────────────────────────────────────────
   var DEFAULT_COLORS = {
@@ -98,8 +120,7 @@
   }
   function isValidHex(value) {
     if (typeof value !== 'string') return false;
-    var h = value.replace('#', '').trim();
-    return /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(h);
+    return /^#?(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value.trim());
   }
   // Font-family values are interpolated RAW into export <style> blocks downstream
   // (the export pipeline sanitizes customExportCSS but not brand-derived fonts), so a
@@ -111,7 +132,11 @@
     if (typeof value !== 'string') return null;
     var v = value.trim();
     if (!v || v.length > 200) return null;
-    return /^[a-zA-Z0-9 ,.'"À-ɏ-]+$/.test(v) ? v : null;
+    if (!/^[a-zA-Z0-9 ,.'"À-ɏ-]+$/.test(v)) return null;
+    var singleQuotes = (v.match(/'/g) || []).length;
+    var doubleQuotes = (v.match(/"/g) || []).length;
+    if (singleQuotes % 2 !== 0 || doubleQuotes % 2 !== 0) return null;
+    return v;
   }
 
   // ── Escape helpers for HTML emission ─────────────────────────────────────
@@ -141,6 +166,7 @@
   }
   function uniqueId(name, existingIds) {
     var slug = slugify(name);
+    if (_isUnsafeKey(slug)) slug = 'brand-' + slug;
     if (!existingIds[slug]) return slug;
     var n = 2;
     while (existingIds[slug + '-' + n]) n++;
@@ -151,34 +177,49 @@
   // Single read/write surface so all schema migration runs in one place.
   function _readStore() {
     var raw;
-    try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { warnLog('localStorage read failed', e); return _emptyStore(); }
-    if (!raw) return _emptyStore();
+    try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { warnLog('localStorage read failed', e); _storeFrozen = false; return _emptyStore(); }
+    if (!raw) { _storeFrozen = false; return _emptyStore(); }
     var parsed;
-    try { parsed = JSON.parse(raw); } catch (e) {
+    try { parsed = _safeJsonParse(raw, MAX_STORE_JSON_CHARS); } catch (e) {
       warnLog('Stored brand profiles corrupted — starting fresh. Raw length:', raw ? raw.length : 0);
+      _storeFrozen = false;
       return _emptyStore();
     }
     return _migrate(parsed);
   }
   function _writeStore(store) {
+    if (_storeFrozen) {
+      warnLog('Refusing write: stored brand profiles schema is newer than this build supports.');
+      return false;
+    }
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); return true; }
     catch (e) { warnLog('localStorage write failed (quota?)', e); return false; }
   }
   function _emptyStore() {
-    return { schemaVersion: CURRENT_SCHEMA_VERSION, activeProfileId: null, profiles: {} };
+    return { schemaVersion: CURRENT_SCHEMA_VERSION, activeProfileId: null, profiles: Object.create(null) };
   }
   function _migrate(store) {
-    if (!store || typeof store !== 'object') return _emptyStore();
-    var v = store.schemaVersion || 0;
+    if (!store || typeof store !== 'object' || Array.isArray(store)) { _storeFrozen = false; return _emptyStore(); }
+    var v = typeof store.schemaVersion === 'number' && Number.isFinite(store.schemaVersion) ? store.schemaVersion : 0;
     // No migrations yet — v1 is initial. Add `if (v < 2) { ... }` blocks here.
     if (v > CURRENT_SCHEMA_VERSION) {
+      _storeFrozen = true;
       warnLog('Stored schema version (' + v + ') is newer than this build supports ('
         + CURRENT_SCHEMA_VERSION + '). Falling back to read-only mode.');
+      return { schemaVersion: v, activeProfileId: null, profiles: Object.create(null) };
     }
-    if (!store.profiles || typeof store.profiles !== 'object') store.profiles = {};
-    if (!Object.prototype.hasOwnProperty.call(store, 'activeProfileId')) store.activeProfileId = null;
-    store.schemaVersion = CURRENT_SCHEMA_VERSION;
-    return store;
+    _storeFrozen = false;
+    var cleanProfiles = Object.create(null);
+    if (store.profiles && typeof store.profiles === 'object' && !Array.isArray(store.profiles)) {
+      Object.keys(store.profiles).slice(0, MAX_PROFILES).forEach(function (key) {
+        if (!_isUnsafeKey(key) && store.profiles[key] && typeof store.profiles[key] === 'object') {
+          cleanProfiles[key] = store.profiles[key];
+        }
+      });
+    }
+    var activeId = (typeof store.activeProfileId === 'string' && _hasOwnProfile(cleanProfiles, store.activeProfileId))
+      ? store.activeProfileId : null;
+    return { schemaVersion: CURRENT_SCHEMA_VERSION, activeProfileId: activeId, profiles: cleanProfiles };
   }
 
   // ── Normalization ────────────────────────────────────────────────────────
@@ -192,7 +233,8 @@
     var _mergedColors = Object.assign({}, DEFAULT_COLORS, src.colors || {});
     var colors = {};
     Object.keys(DEFAULT_COLORS).forEach(function (ck) {
-      colors[ck] = isValidHex(_mergedColors[ck]) ? _mergedColors[ck] : DEFAULT_COLORS[ck];
+      var rawColor = _mergedColors[ck];
+      colors[ck] = isValidHex(rawColor) ? ('#' + rawColor.trim().replace(/^#/, '')) : DEFAULT_COLORS[ck];
     });
     // Likewise sanitize the font stacks (see _safeFontStack) so a stored/imported brand
     // can never inject markup through font-family. Unsafe → default (body) / null (heading).
@@ -202,10 +244,10 @@
       heading: (_mergedFonts.heading == null) ? null : (_safeFontStack(_mergedFonts.heading) || null)
     };
     var header = src.header && typeof src.header === 'object'
-      ? { text: String(src.header.text || ''), showLogo: !!src.header.showLogo }
+      ? { text: _stripCtrl(src.header.text || '').slice(0, 500), showLogo: !!src.header.showLogo }
       : { text: '', showLogo: false };
     var footer = src.footer && typeof src.footer === 'object'
-      ? { text: String(src.footer.text || ''), showPageNumber: !!src.footer.showPageNumber }
+      ? { text: _stripCtrl(src.footer.text || '').slice(0, 500), showPageNumber: !!src.footer.showPageNumber }
       : { text: '', showPageNumber: false };
     var MAX_LOGO_DATA_CHARS = 750 * 1024;
     function _safeLogoSrc(raw) {
@@ -214,27 +256,32 @@
       if (!trimmed || trimmed.length > MAX_LOGO_DATA_CHARS) return '';
       return /^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(trimmed) ? trimmed : '';
     }
+    function _safeLogoDim(raw) {
+      var n = Number(raw);
+      return (Number.isFinite(n) && n > 0 && n <= 4096) ? Math.round(n) : null;
+    }
     var safeLogoUrl = (src.logo && typeof src.logo === 'object') ? _safeLogoSrc(src.logo.src) : '';
     var logo = null;
     if (safeLogoUrl) {
       logo = {
         src: safeLogoUrl,
-        alt: String(src.logo.alt || ''),
-        width: Number(src.logo.width) || null,
-        height: Number(src.logo.height) || null
+        alt: _stripCtrl(src.logo.alt || '').slice(0, 500),
+        width: _safeLogoDim(src.logo.width),
+        height: _safeLogoDim(src.logo.height)
       };
     }
+    var cleanId = (typeof src.id === 'string' && src.id && !_isUnsafeKey(src.id) && src.id.length <= 80) ? src.id : null;
     return {
-      id: src.id || null,  // assigned by saveBrandProfile if missing
-      name: String(src.name || '').slice(0, 80),
+      id: cleanId,  // assigned by saveBrandProfile if missing
+      name: _stripCtrl(src.name || '').slice(0, 80),
       logo: logo,
       colors: colors,
       fonts: fonts,
       header: header,
       footer: footer,
-      createdFrom: src.createdFrom || 'manual',
-      created: src.created || null,  // assigned by saveBrandProfile if missing
-      modified: src.modified || null
+      createdFrom: _stripCtrl(src.createdFrom || 'manual').slice(0, 40) || 'manual',
+      created: src.created ? _stripCtrl(src.created).slice(0, 64) : null,  // assigned by saveBrandProfile if missing
+      modified: src.modified ? _stripCtrl(src.modified).slice(0, 64) : null
     };
   }
 
@@ -245,15 +292,20 @@
     if (!profile || typeof profile !== 'object') {
       return { ok: false, errors: ['Profile is missing or not an object'], warnings: [] };
     }
+    var rawName = typeof profile.name === 'string' ? _stripCtrl(profile.name) : '';
     var n = _normalize(profile);
-    if (!n.name || n.name.trim().length === 0) errors.push('Profile name is required');
-    if (n.name && n.name.length > 80) errors.push('Profile name must be 80 characters or fewer');
+    if (!rawName || rawName.trim().length === 0) errors.push('Profile name is required');
+    if (rawName.length > 80) errors.push('Profile name must be 80 characters or fewer');
 
-    // Color validity
+    // Color validity — validate raw supplied colors before _normalize defaults them
+    var rawColors = (profile.colors && typeof profile.colors === 'object') ? profile.colors : {};
     var colorKeys = Object.keys(DEFAULT_COLORS);
     for (var i = 0; i < colorKeys.length; i++) {
       var k = colorKeys[i];
-      if (!isValidHex(n.colors[k])) errors.push('Color "' + k + '" must be a valid hex (#rrggbb or #rgb)');
+      var hasRawColor = Object.prototype.hasOwnProperty.call(rawColors, k) && rawColors[k] !== undefined;
+      if (hasRawColor ? !isValidHex(rawColors[k]) : !isValidHex(n.colors[k])) {
+        errors.push('Color "' + k + '" must be a valid hex (#rrggbb or #rgb)');
+      }
     }
     // Font validity — fonts are interpolated into export CSS, so reject CSS/markup-bearing
     // values rather than silently swapping them (the user should know their input was rejected).
@@ -295,15 +347,14 @@
   // ── Read API ─────────────────────────────────────────────────────────────
   function getActiveBrandProfile() {
     var store = _readStore();
-    if (!store.activeProfileId) return null;
-    var p = store.profiles[store.activeProfileId];
-    return p ? _normalize(p) : null;
+    if (!_hasOwnProfile(store.profiles, store.activeProfileId)) return null;
+    return _normalize(store.profiles[store.activeProfileId]);
   }
   function getBrandProfile(profileId) {
-    if (!profileId) return null;
+    if (!profileId || typeof profileId !== 'string') return null;
     var store = _readStore();
-    var p = store.profiles[profileId];
-    return p ? _normalize(p) : null;
+    if (!_hasOwnProfile(store.profiles, profileId)) return null;
+    return _normalize(store.profiles[profileId]);
   }
   function listBrandProfiles() {
     var store = _readStore();
@@ -323,12 +374,18 @@
 
     var n = _normalize(profile);
     var store = _readStore();
+    if (_storeFrozen) {
+      return { ok: false, id: null, errors: ['Brand profile storage is read-only (written by a newer version).'], warnings: v.warnings };
+    }
     // Build a same-shape ID lookup (slug → already-taken) once.
-    var taken = {};
+    var taken = Object.create(null);
     Object.keys(store.profiles).forEach(function (id) { taken[id] = true; });
+    var isUpdate = _hasOwnProfile(store.profiles, n.id);
+    if (!isUpdate && Object.keys(store.profiles).length >= MAX_PROFILES) {
+      return { ok: false, id: null, errors: ['Maximum number of brand profiles (' + MAX_PROFILES + ') reached.'], warnings: v.warnings };
+    }
     // If updating an existing profile by id, allow overwrite. If new, mint a unique id.
-    if (!n.id || !store.profiles[n.id]) {
-      delete taken[n.id || ''];  // not actually taken if it doesn't exist
+    if (!isUpdate) {
       n.id = uniqueId(n.name, taken);
     }
     // Stamps. Caller passes them or we accept a stable placeholder — Date.now is
@@ -346,9 +403,9 @@
     return { ok: ok, id: n.id, errors: [], warnings: v.warnings };
   }
   function deleteBrandProfile(profileId) {
-    if (!profileId) return false;
+    if (!profileId || typeof profileId !== 'string') return false;
     var store = _readStore();
-    if (!store.profiles[profileId]) return false;
+    if (_storeFrozen || !_hasOwnProfile(store.profiles, profileId)) return false;
     delete store.profiles[profileId];
     if (store.activeProfileId === profileId) {
       // Pick the next-most-recent as the new active, or null.
@@ -356,12 +413,13 @@
       store.activeProfileId = remaining.length > 0 ? remaining[0] : null;
     }
     var ok = _writeStore(store);
-    if (ok) _dispatchChange(store.activeProfileId, store.activeProfileId ? _normalize(store.profiles[store.activeProfileId]) : null);
+    if (ok) _dispatchChange(store.activeProfileId, _hasOwnProfile(store.profiles, store.activeProfileId) ? _normalize(store.profiles[store.activeProfileId]) : null);
     return ok;
   }
   function setActiveBrandProfile(profileId) {
     var store = _readStore();
-    if (profileId !== null && !store.profiles[profileId]) {
+    if (_storeFrozen) return false;
+    if (profileId !== null && !_hasOwnProfile(store.profiles, profileId)) {
       warnLog('Cannot set active brand to unknown profileId:', profileId);
       return false;
     }
@@ -393,10 +451,13 @@
     return JSON.stringify(safe, null, 2);
   }
   function importBrandProfile(jsonString) {
+    if (typeof jsonString !== 'string') {
+      return { ok: false, id: null, errors: ['Not valid JSON: expected a string'] };
+    }
     var parsed;
-    try { parsed = JSON.parse(jsonString); }
-    catch (e) { return { ok: false, id: null, errors: ['Not valid JSON: ' + e.message] }; }
-    if (!parsed || parsed._alloFormat !== 'alloflow.brand-profile') {
+    try { parsed = _safeJsonParse(jsonString, MAX_IMPORT_JSON_CHARS); }
+    catch (e) { return { ok: false, id: null, errors: ['Not valid JSON: ' + String(e && e.message || 'parse failed').slice(0, 160)] }; }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || parsed._alloFormat !== 'alloflow.brand-profile') {
       return { ok: false, id: null, errors: ['Not an AlloFlow brand profile export (missing _alloFormat tag)'] };
     }
     if (parsed._formatVersion && parsed._formatVersion > CURRENT_SCHEMA_VERSION) {
@@ -446,7 +507,7 @@
       '.brand-header { background: ' + c.heading + '; color: ' + c.bg + '; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; }',
       '.brand-header img { max-height: 48px; width: auto; }',
       '.brand-footer { border-top: 1px solid ' + c.cardBorder + '; color: ' + c.body + '; padding: 0.5rem 1rem; font-size: 0.875rem; display: flex; justify-content: space-between; }',
-      '@media print { body { background: #ffffff !important; } .section { page-break-inside: avoid; } .brand-header, .brand-footer { background: ' + c.heading + ' !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }'
+      '@media print { body { background: #ffffff !important; } .section { page-break-inside: avoid; } .brand-header { background: ' + c.heading + ' !important; color: ' + c.bg + ' !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }'
     ].join('\n');
   }
 

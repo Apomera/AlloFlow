@@ -180,7 +180,7 @@ module.exports = {
       'data-locked': String(!lockedOn),
       role: 'group',
       'aria-label': L.symbol_runner_lane_group,
-      style: 'display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:460px;width:100%;box-sizing:border-box;margin:0 auto 14px;padding:8px;border-radius:16px;background:var(--soft);border:2px solid var(--muted)',
+      style: 'display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:var(--sr-lane,460px);width:100%;box-sizing:border-box;margin:0 auto 14px;padding:8px;border-radius:16px;background:var(--soft);border:2px solid var(--muted)',
     });
 
     var laneButtons = [];
@@ -338,7 +338,7 @@ module.exports = {
     var choiceGroup = ctx.el('div', {
       role: 'group',
       'aria-label': L.symbol_runner_keys,
-      style: 'display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:440px;margin:0 auto',
+      style: 'display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:var(--sr-keys,440px);margin:0 auto',
     });
 
     var shapeMap = { red: '●', blue: '▲', green: '■', gold: '★' };

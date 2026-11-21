@@ -10,7 +10,9 @@ const AllobotEvidence = (() => {
     try {
       const url = new URL(String(value || ''));
       if (url.protocol !== 'https:' || url.username || url.password) return '';
-      if (!url.hostname.includes('.') || /^(localhost|127\.|10\.|192\.168\.|169\.254\.|0\.)/i.test(url.hostname) || /\.(local|internal)$/i.test(url.hostname)) return '';
+      const host = String(url.hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
+      if (!host || !host.includes('.') || host.includes(':')) return '';
+      if (/^(?:localhost|127\.|10\.|192\.168\.|169\.254\.|0\.|172\.(?:1[6-9]|2\d|3[01])\.|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|22[4-9]\.|2[3-5]\d\.)/i.test(host) || /\.(?:local|internal|localhost)$/i.test(host)) return '';
       return url.href;
     } catch (_) { return ''; }
   };

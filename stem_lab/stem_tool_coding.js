@@ -680,6 +680,14 @@
         while (diff < -180) diff += 360;
         totalAngle += Math.abs(diff);
       }
+      if (dist < 15 && lines.length >= 3) {
+        var aLast = Math.atan2(last.y2 - last.y1, last.x2 - last.x1);
+        var aFirst = Math.atan2(first.y2 - first.y1, first.x2 - first.x1);
+        var closeDiff = (aFirst - aLast) * 180 / Math.PI;
+        while (closeDiff > 180) closeDiff -= 360;
+        while (closeDiff < -180) closeDiff += 360;
+        totalAngle += Math.abs(closeDiff);
+      }
       return { closed: dist < 15, turns: totalAngle, segments: lines.length };
     }
     function blocksToText(blks, indent) {
@@ -918,14 +926,15 @@
           if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: 250, y2: 250, color: t.color, width: t.width }); }
           t.x = 250; t.y = 250; t.angle = -90;
         } else if (b.type === 'while') {
-          if (!b._iterCount) b._iterCount = 0;
-          if (b._iterCount < 1000 && evalCondition(b.condition || 'x < 450', t, vars)) {
-            b._iterCount++;
+          var iterCount = b._simIterCount || 0;
+          if (iterCount < 1000 && evalCondition(b.condition || 'x < 450', t, vars)) {
             var whileBody = flattenBlocks(b.children || []);
-            var whileMarker = Object.assign({}, b);
+            var whileMarker = Object.assign({}, b, { _simIterCount: iterCount + 1 });
             copyWork += flat.length + whileBody.length;
             flat = flat.slice(0, idx + 1).concat(whileBody).concat([whileMarker]).concat(flat.slice(idx + 1));
-          } else { if (b._iterCount >= 1000 && evalCondition(b.condition || 'x < 450', t, vars)) diag.cappedWhile = true; b._iterCount = 0; }
+          } else if (iterCount >= 1000 && evalCondition(b.condition || 'x < 450', t, vars)) {
+            diag.cappedWhile = true;
+          }
         } else if (b.type === 'function') {
           vars['__func_' + (b.funcName || 'myShape')] = b.children || [];
         } else if (b.type === 'callFunction') {
@@ -1191,63 +1200,76 @@
             // Rotate around X axis (elevation)
             var ry2 = ry * Math.cos(cx) - rz * Math.sin(cx);
             var rz2 = ry * Math.sin(cx) + rz * Math.cos(cx);
-            // Simple perspective division (camera at z=800)
-            var perspective = 800 / (800 + ry2);
+            // Simple perspective division (camera at z=800), clamped to prevent near-plane singularity
+            var perspective = 800 / Math.max(40, 800 + ry2);
             var sx = 250 + rx * perspective * cameraZoom;
             var sy = 250 - rz2 * perspective * cameraZoom; // Y flipped for screen coords
             return { x: sx, y: sy, depth: ry2, scale: perspective };
           }
 
-          // ── 3D Line Renderer with Depth Sorting ──
+          // ── 3D Line Renderer with Depth Sorting (dual-pass luminous trail) ──
           function render3DLines(ctx3d, lines3dArr) {
             if (!ctx3d || lines3dArr.length === 0) return;
+            var isHC3 = !!(highContrastMode || isHostContrast);
             // Sort by average depth (painter's algorithm — draw far lines first)
             var sorted = lines3dArr.slice().sort(function(a, b) {
               var da = (project3D(a.x1 - 250, a.y1 - 250, a.z1).depth + project3D(a.x2 - 250, a.y2 - 250, a.z2).depth) / 2;
               var db = (project3D(b.x1 - 250, b.y1 - 250, b.z1).depth + project3D(b.x2 - 250, b.y2 - 250, b.z2).depth) / 2;
               return db - da; // Far first
             });
+            ctx3d.lineCap = 'round';
             for (var i = 0; i < sorted.length; i++) {
               var l = sorted[i];
               var p1 = project3D(l.x1 - 250, l.y1 - 250, l.z1);
               var p2 = project3D(l.x2 - 250, l.y2 - 250, l.z2);
               var avgScale = (p1.scale + p2.scale) / 2;
-              // Depth-based opacity and width
-              var opacity = Math.max(0.2, Math.min(1.0, avgScale));
-              var lineWidth = Math.max(0.5, (l.width || 2) * avgScale);
-              var strokeCol = l.color || '#6366f1';
-              ctx3d.beginPath();
-              ctx3d.moveTo(p1.x, p1.y);
-              ctx3d.lineTo(p2.x, p2.y);
-              ctx3d.strokeStyle = strokeCol;
-              ctx3d.lineWidth = lineWidth;
+              var opacity = Math.max(0.25, Math.min(1.0, avgScale));
+              var lineWidth = Math.max(0.8, (l.width || 2) * avgScale);
+              var strokeCol = isHC3 ? '#ffffff' : (l.color || '#6366f1');
+              // Pass 1: outer phosphor bloom ribbon
+              if (!isHC3) {
+                ctx3d.beginPath(); ctx3d.moveTo(p1.x, p1.y); ctx3d.lineTo(p2.x, p2.y);
+                ctx3d.strokeStyle = strokeCol; ctx3d.lineWidth = lineWidth + 4.5 * avgScale;
+                ctx3d.globalAlpha = opacity * 0.22; ctx3d.shadowBlur = 0; ctx3d.stroke();
+              }
+              // Pass 2: primary luminous trace
+              ctx3d.beginPath(); ctx3d.moveTo(p1.x, p1.y); ctx3d.lineTo(p2.x, p2.y);
+              ctx3d.strokeStyle = strokeCol; ctx3d.lineWidth = isHC3 ? Math.max(2.5, lineWidth) : lineWidth;
               ctx3d.globalAlpha = opacity;
-              ctx3d.lineCap = 'round';
-              // Neon trail — the turtle's path glows in its own colour (scales with depth)
-              ctx3d.shadowColor = strokeCol;
-              ctx3d.shadowBlur = Math.max(2, 6 * avgScale);
+              ctx3d.shadowColor = strokeCol; ctx3d.shadowBlur = isHC3 ? 0 : Math.max(2, 7 * avgScale);
               ctx3d.stroke();
+              // Pass 3: crisp specular core filament
+              if (!isHC3 && lineWidth >= 1.5) {
+                ctx3d.beginPath(); ctx3d.moveTo(p1.x, p1.y); ctx3d.lineTo(p2.x, p2.y);
+                ctx3d.strokeStyle = 'rgba(255,255,255,0.52)'; ctx3d.lineWidth = Math.max(0.6, lineWidth * 0.3);
+                ctx3d.globalAlpha = opacity * 0.75; ctx3d.shadowBlur = 0; ctx3d.stroke();
+              }
             }
             ctx3d.globalAlpha = 1.0;
             ctx3d.shadowBlur = 0;
           }
 
-          // ── 3D Grid Floor ──
+          // ── 3D Grid Floor (studio major/minor hierarchy) ──
           function render3DGrid(ctx3d) {
             var gridSize = 200;
             var step = 40;
-            ctx3d.globalAlpha = 0.15;
-            ctx3d.strokeStyle = '#94a3b8';
-            ctx3d.lineWidth = 0.5;
             for (var gx = -gridSize; gx <= gridSize; gx += step) {
               var p1 = project3D(gx, -gridSize, 0);
               var p2 = project3D(gx, gridSize, 0);
+              var isMajor = gx === 0 || Math.abs(gx) === gridSize;
+              ctx3d.globalAlpha = isMajor ? 0.34 : 0.14;
+              ctx3d.strokeStyle = isMajor ? '#38bdf8' : '#94a3b8';
+              ctx3d.lineWidth = isMajor ? 1.0 : 0.6;
               ctx3d.beginPath(); ctx3d.moveTo(p1.x, p1.y); ctx3d.lineTo(p2.x, p2.y); ctx3d.stroke();
             }
             for (var gy = -gridSize; gy <= gridSize; gy += step) {
-              var p1 = project3D(-gridSize, gy, 0);
-              var p2 = project3D(gridSize, gy, 0);
-              ctx3d.beginPath(); ctx3d.moveTo(p1.x, p1.y); ctx3d.lineTo(p2.x, p2.y); ctx3d.stroke();
+              var p3 = project3D(-gridSize, gy, 0);
+              var p4 = project3D(gridSize, gy, 0);
+              var isMajorY = gy === 0 || Math.abs(gy) === gridSize;
+              ctx3d.globalAlpha = isMajorY ? 0.34 : 0.14;
+              ctx3d.strokeStyle = isMajorY ? '#38bdf8' : '#94a3b8';
+              ctx3d.lineWidth = isMajorY ? 1.0 : 0.6;
+              ctx3d.beginPath(); ctx3d.moveTo(p3.x, p3.y); ctx3d.lineTo(p4.x, p4.y); ctx3d.stroke();
             }
             ctx3d.globalAlpha = 1.0;
           }
@@ -1806,14 +1828,21 @@
             // Thin animation driver: compute the whole run once via the pure
             // CodingInterp.simulate, then replay its frames on a timer. Single
             // source of truth for execution; cancellation honors the run token.
+            var initLines3D = cumulativeMode ? lines3D.slice() : [];
+            var initExtraTurtles = cumulativeMode ? extraTurtles : [];
+            var initPitch = cumulativeMode ? pitchAngle : 0;
+            var initYaw = cumulativeMode ? yawAngle : 0;
+            var initRoll = cumulativeMode ? rollAngle : 0;
+            var initZ = cumulativeMode ? turtleZ : 0;
             var sim = simOverride || CodingInterp.simulate(blks, turtle, {
-              startLines: lines, startLines3D: lines3D, extraTurtles: extraTurtles,
-              pitchAngle: pitchAngle, yawAngle: yawAngle, rollAngle: rollAngle, turtleZ: turtleZ,
+              startLines: lines, startLines3D: initLines3D, extraTurtles: initExtraTurtles,
+              pitchAngle: initPitch, yawAngle: initYaw, rollAngle: initRoll, turtleZ: initZ,
               project3D: project3D
             });
             var frames = sim.frames;
             var replayLines = lines.slice();
-            var replay3D = lines3D.slice();
+            var replay3D = initLines3D.slice();
+            var recordedFrames = [];
             var idx = 0;
             function fireAudio(a) {
               if (!a) return;
@@ -1843,8 +1872,8 @@
               if (fr.add && fr.add.length) replayLines = replayLines.concat(fr.add);
               if (fr.add3D && fr.add3D.length) replay3D = replay3D.concat(fr.add3D);
               fireAudio(fr.audio);
-              updMulti({ turtle: fr.turtle, lines: replayLines.slice(), stepIdx: idx, running: true, _vars: fr.vars, pitchAngle: fr.pitchAngle, yawAngle: fr.yawAngle, rollAngle: fr.rollAngle, turtleZ: fr.turtleZ, lines3D: replay3D.slice(), extraTurtles: fr.extraTurtles });
-              recordFrame(fr.turtle, replayLines, idx);
+              recordedFrames.push({ turtle: Object.assign({}, fr.turtle), lines: replayLines.slice(), stepIdx: idx });
+              updMulti({ turtle: fr.turtle, lines: replayLines.slice(), stepIdx: idx, running: true, timelineFrames: recordedFrames.slice(), _vars: fr.vars, pitchAngle: fr.pitchAngle, yawAngle: fr.yawAngle, rollAngle: fr.rollAngle, turtleZ: fr.turtleZ, lines3D: replay3D.slice(), extraTurtles: fr.extraTurtles });
               idx++;
               _codeStepTimer = setTimeout(step, spd || 200);
             }
@@ -1891,9 +1920,15 @@
               startTurtle = { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
               startLines = [];
             }
-            var _sim = CodingInterp.simulate(blks, startTurtle, { startLines: startLines, startLines3D: lines3D, extraTurtles: extraTurtles, pitchAngle: pitchAngle, yawAngle: yawAngle, rollAngle: rollAngle, turtleZ: turtleZ, project3D: project3D });
+            var startLines3D = cumulativeMode ? lines3D.slice() : [];
+            var startExtraTurtles = cumulativeMode ? extraTurtles : [];
+            var startPitch = cumulativeMode ? pitchAngle : 0;
+            var startYaw = cumulativeMode ? yawAngle : 0;
+            var startRoll = cumulativeMode ? rollAngle : 0;
+            var startZ = cumulativeMode ? turtleZ : 0;
+            var _sim = CodingInterp.simulate(blks, startTurtle, { startLines: startLines, startLines3D: startLines3D, extraTurtles: startExtraTurtles, pitchAngle: startPitch, yawAngle: startYaw, rollAngle: startRoll, turtleZ: startZ, project3D: project3D });
             var _codeErrs = buildCodeErrors(_parseErrs, _sim.diagnostics);
-            updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0, timelineFrames: [], timelinePos: -1, turtleZ: 0, lines3D: [], rollAngle: 0, _vars: {}, _codeErrors: _codeErrs.length ? _codeErrs : null });
+            updMulti({ turtle: startTurtle, lines: startLines, running: true, stepIdx: 0, timelineFrames: [], timelinePos: -1, turtleZ: startZ, lines3D: startLines3D, pitchAngle: startPitch, yawAngle: startYaw, rollAngle: startRoll, extraTurtles: startExtraTurtles, _vars: {}, _codeErrors: _codeErrs.length ? _codeErrs : null });
             if (_codeErrs.length && typeof announceToSR === 'function') { try { announceToSR(_codeErrs.length + ' issue' + (_codeErrs.length > 1 ? 's' : '') + ' in your code. ' + _codeErrs.slice(0, 3).join(' ')); } catch (e) {} }
             setTimeout(function () {
               executeBlocks(blks, startTurtle, startLines, function (finalTurtle, finalLines) {
@@ -2015,7 +2050,7 @@
           }
 
           function handleDebugHelp() {
-            if (!callGemini || !aiHintsEnabled || challengeIdx < 0) {
+            if (!callGemini || !aiHintsEnabled || challengeIdx < 0 || challengeIdx >= CHALLENGES.length) {
               if (addToast) addToast('Select a challenge first!', 'info');
               return;
             }
@@ -2396,7 +2431,7 @@
           if (typeof document !== 'undefined') {
             // Re-point to this render's handlers — the once-attached listener
             // otherwise fires first-render closures (stale undo/redo/run/running).
-            window.__codingKB = { undo: handleUndo, redo: handleRedo, run: handleRun, running: running || robotRunning, stop: stopRun };
+            window.__codingKB = { undo: handleUndo, redo: handleRedo, run: playgroundMode === 'robot' ? handleRobotRun : handleRun, running: running || robotRunning, stop: stopRun };
             var _kbHandler = function(e) {
               // Only handle if Coding Playground is active
               if (!document.querySelector('.coding-run-btn') && !document.querySelector('.coding-robot-run-btn')) return;
@@ -2424,6 +2459,189 @@
           var canvasClickHandler = handleCanvasClick;
 
 
+          function codingRRect(c2, x, y, rw, rh, rad) {
+            var r = Math.min(rad, rw / 2, rh / 2);
+            c2.beginPath();
+            c2.moveTo(x + r, y); c2.lineTo(x + rw - r, y); c2.quadraticCurveTo(x + rw, y, x + rw, y + r);
+            c2.lineTo(x + rw, y + rh - r); c2.quadraticCurveTo(x + rw, y + rh, x + rw - r, y + rh);
+            c2.lineTo(x + r, y + rh); c2.quadraticCurveTo(x, y + rh, x, y + rh - r);
+            c2.lineTo(x, y + r); c2.quadraticCurveTo(x, y, x + r, y);
+            c2.closePath();
+          }
+
+          // ── 2D Studio Turtle Canvas Pass (enhances host canvas without altering user drawing semantics) ──
+          function draw2DStudioCanvas() {
+            if (show3D || !canvasRef || !canvasRef.current) return;
+            var cvs = canvasRef.current;
+            var ctx = cvs.getContext('2d');
+            if (!ctx) return;
+            var W = 500, H = 500;
+            if (cvs.width !== W) cvs.width = W;
+            if (cvs.height !== H) cvs.height = H;
+            var hc = !!(highContrastMode || isHostContrast);
+
+            // Studio stage backdrop
+            ctx.fillStyle = hc ? '#000000' : '#090f1f';
+            ctx.fillRect(0, 0, W, H);
+            if (!hc && typeof ctx.createRadialGradient === 'function') {
+              var bgG = ctx.createRadialGradient(W * 0.5, H * 0.45, 20, W * 0.5, H * 0.5, W * 0.72);
+              if (bgG && typeof bgG.addColorStop === 'function') {
+                bgG.addColorStop(0, 'rgba(30,58,138,0.22)');
+                bgG.addColorStop(0.65, 'rgba(15,23,42,0.08)');
+                bgG.addColorStop(1, 'rgba(2,6,23,0.48)');
+                ctx.fillStyle = bgG; ctx.fillRect(0, 0, W, H);
+              }
+            }
+
+            // Crisp minor/major coordinate grid & glowing principal axes
+            if (showGrid) {
+              ctx.strokeStyle = hc ? '#1f1f1f' : 'rgba(148,163,184,0.09)'; ctx.lineWidth = 0.6;
+              ctx.beginPath();
+              for (var gx = 25; gx < W; gx += 25) { if (gx % 100 === 0) continue; ctx.moveTo(gx, 0); ctx.lineTo(gx, H); }
+              for (var gy = 25; gy < H; gy += 25) { if (gy % 100 === 0) continue; ctx.moveTo(0, gy); ctx.lineTo(W, gy); }
+              ctx.stroke();
+
+              ctx.strokeStyle = hc ? '#333333' : 'rgba(99,102,241,0.18)'; ctx.lineWidth = 0.9;
+              ctx.beginPath();
+              for (var mgx = 100; mgx < W; mgx += 100) { ctx.moveTo(mgx, 0); ctx.lineTo(mgx, H); }
+              for (var mgy = 100; mgy < H; mgy += 100) { ctx.moveTo(0, mgy); ctx.lineTo(W, mgy); }
+              ctx.stroke();
+            }
+
+            // Principal center axes + origin target reticle
+            if (!hc) {
+              ctx.strokeStyle = 'rgba(56,189,248,0.16)'; ctx.lineWidth = 3.5;
+              ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+            }
+            ctx.strokeStyle = hc ? '#4a4a4a' : 'rgba(148,163,184,0.34)'; ctx.lineWidth = 1.1;
+            ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+            if (!hc) {
+              ctx.strokeStyle = 'rgba(56,189,248,0.42)'; ctx.lineWidth = 1.1;
+              ctx.beginPath(); ctx.arc(W / 2, H / 2, 5, 0, Math.PI * 2); ctx.stroke();
+            }
+
+            // Dual-pass luminous user-drawn trail segments (exact coordinates, colors & widths preserved!)
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            for (var li = 0; li < drawnLines.length; li++) {
+              var ln = drawnLines[li];
+              var lw = hc ? Math.max(3, (ln.width || 2) + 1) : (ln.width || 2);
+              var col = hc ? '#ffffff' : (ln.color || '#6366f1');
+              // Pass 1: luminous outer phosphor halo
+              if (!hc) {
+                ctx.save();
+                ctx.globalAlpha = 0.22;
+                ctx.strokeStyle = col; ctx.lineWidth = lw + 5;
+                ctx.beginPath(); ctx.moveTo(ln.x1, ln.y1); ctx.lineTo(ln.x2, ln.y2); ctx.stroke();
+                ctx.restore();
+              }
+              // Pass 2: crisp primary segment
+              ctx.save();
+              ctx.strokeStyle = col; ctx.lineWidth = lw;
+              if (!hc) { ctx.shadowColor = col; ctx.shadowBlur = 6; }
+              ctx.beginPath(); ctx.moveTo(ln.x1, ln.y1); ctx.lineTo(ln.x2, ln.y2); ctx.stroke();
+              ctx.restore();
+              // Pass 3: subtle specular core filament
+              if (!hc && lw >= 2) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255,255,255,0.44)'; ctx.lineWidth = Math.max(0.65, lw * 0.28);
+                ctx.beginPath(); ctx.moveTo(ln.x1, ln.y1); ctx.lineTo(ln.x2, ln.y2); ctx.stroke();
+                ctx.restore();
+              }
+            }
+
+            // Helper to draw directional turtle halo + cursor
+            function drawTurtleCursor(tObj, isMain) {
+              var tx = tObj.x, ty = tObj.y, ta = tObj.angle * Math.PI / 180;
+              var penCol = hc ? '#ffff00' : (tObj.color || '#6366f1');
+              if (!hc) {
+                // Soft concentric directional halo & heading ray
+                ctx.save(); ctx.translate(tx, ty);
+                if (typeof ctx.createRadialGradient === 'function') {
+                  var haloR = isMain ? 32 : 20;
+                  var gHalo = ctx.createRadialGradient(0, 0, 2, 0, 0, haloR);
+                  if (gHalo && typeof gHalo.addColorStop === 'function') {
+                    gHalo.addColorStop(0, isMain ? 'rgba(74,222,128,0.42)' : 'rgba(56,189,248,0.34)');
+                    gHalo.addColorStop(0.55, isMain ? 'rgba(56,189,248,0.14)' : 'rgba(56,189,248,0.08)');
+                    gHalo.addColorStop(1, 'rgba(56,189,248,0)');
+                    ctx.fillStyle = gHalo; ctx.beginPath(); ctx.arc(0, 0, haloR, 0, Math.PI * 2); ctx.fill();
+                  }
+                }
+                // Heading compass reticle ring + forward aiming ray
+                ctx.strokeStyle = running && isMain ? 'rgba(250,204,21,0.65)' : 'rgba(125,211,252,0.42)';
+                ctx.lineWidth = 1.2;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.arc(0, 0, isMain ? 24 : 15, 0, Math.PI * 2); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.strokeStyle = penCol; ctx.globalAlpha = 0.65; ctx.lineWidth = 1.4;
+                ctx.beginPath(); ctx.moveTo(Math.cos(ta) * 14, Math.sin(ta) * 14); ctx.lineTo(Math.cos(ta) * 34, Math.sin(ta) * 34); ctx.stroke();
+                ctx.restore();
+              }
+              if (showTurtle) {
+                ctx.save(); ctx.translate(tx, ty); ctx.rotate(ta + Math.PI / 2);
+                var ts = isMain ? 1.45 : 1.05; ctx.scale(ts, ts);
+                ctx.fillStyle = '#4ade80';
+                [[-8, -4], [8, -4], [-8, 6], [8, 6]].forEach(function(p) { ctx.beginPath(); ctx.ellipse(p[0], p[1], 3.5, 5.5, 0, 0, Math.PI * 2); ctx.fill(); });
+                ctx.fillStyle = '#15803d'; ctx.beginPath(); ctx.ellipse(0, 1, 11, 13, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.ellipse(0, 1, 9, 11, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#15803d'; ctx.lineWidth = 0.8;
+                ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(0, 12); ctx.moveTo(-9, 1); ctx.lineTo(9, 1); ctx.moveTo(-7, -5); ctx.lineTo(7, 7); ctx.moveTo(7, -5); ctx.lineTo(-7, 7); ctx.stroke();
+                ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.beginPath(); ctx.ellipse(-2.5, -3.5, 3.8, 5, -0.3, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#4ade80'; ctx.beginPath(); ctx.ellipse(0, -15, 6, 6, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-3, -16, 2.4, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(3, -16, 2.4, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(-3, -16.5, 1.2, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(3, -16.5, 1.2, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#15803d'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(0, -13.5, 3, 0.2, Math.PI - 0.2); ctx.stroke();
+                ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 13); ctx.quadraticCurveTo(4, 19, 1, 22); ctx.stroke();
+                ctx.restore();
+              } else {
+                ctx.save(); ctx.translate(tx, ty); ctx.rotate(ta + Math.PI / 2);
+                ctx.fillStyle = hc ? '#ffff00' : '#4ade80'; ctx.strokeStyle = hc ? '#000000' : '#dcfce7'; ctx.lineWidth = 1.6;
+                ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(-8, 10); ctx.lineTo(0, 5); ctx.lineTo(8, 10); ctx.closePath();
+                ctx.fill(); ctx.stroke();
+                ctx.restore();
+              }
+              if (tObj.penDown !== false) {
+                ctx.save();
+                if (!hc) { ctx.shadowColor = penCol; ctx.shadowBlur = 8; }
+                ctx.fillStyle = penCol; ctx.beginPath(); ctx.arc(tx, ty, 3.6, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.1; ctx.stroke();
+                ctx.restore();
+              }
+            }
+            (extraTurtles || []).forEach(function(et) { if (et && typeof et.x === 'number') drawTurtleCursor(et, false); });
+            drawTurtleCursor(turtleState, true);
+
+            // Studio frame & corner reticles
+            if (!hc) {
+              ctx.strokeStyle = running ? 'rgba(74,222,128,0.45)' : 'rgba(129,140,248,0.28)';
+              ctx.lineWidth = 1.2; ctx.strokeRect(0.6, 0.6, W - 1.2, H - 1.2);
+              var cr = 10;
+              ctx.strokeStyle = running ? '#4ade80' : '#38bdf8'; ctx.lineWidth = 1.6;
+              ctx.beginPath();
+              ctx.moveTo(2, 2 + cr); ctx.lineTo(2, 2); ctx.lineTo(2 + cr, 2);
+              ctx.moveTo(W - 2 - cr, 2); ctx.lineTo(W - 2, 2); ctx.lineTo(W - 2, 2 + cr);
+              ctx.moveTo(2, H - 2 - cr); ctx.lineTo(2, H - 2); ctx.lineTo(2 + cr, H - 2);
+              ctx.moveTo(W - 2 - cr, H - 2); ctx.lineTo(W - 2, H - 2); ctx.lineTo(W - 2, H - 2 - cr);
+              ctx.stroke();
+            }
+
+            // Frosted telemetry HUD badges
+            if (showCoords) {
+              codingRRect(ctx, 6, H - 28, 198, 22, 6);
+              ctx.fillStyle = hc ? '#000000' : 'rgba(15,23,42,0.82)'; ctx.fill();
+              ctx.strokeStyle = hc ? '#ffff00' : 'rgba(125,211,252,0.36)'; ctx.lineWidth = 1; ctx.stroke();
+              ctx.fillStyle = turtleState.penDown ? (hc ? '#00ff00' : '#4ade80') : '#fb7185';
+              ctx.beginPath(); ctx.arc(16, H - 17, 3.2, 0, Math.PI * 2); ctx.fill();
+              ctx.fillStyle = hc ? '#ffff00' : '#e2e8f0'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+              ctx.fillText('(' + Math.round(turtleState.x) + ', ' + Math.round(turtleState.y) + ')  ' + Math.round((turtleState.angle + 90 + 360) % 360) + '\u00b0', 24, H - 17);
+            }
+            var segTxt = running && stepIdx >= 0 ? ('STEP ' + (stepIdx + 1) + ' \u00b7 ' + drawnLines.length + ' seg') : (drawnLines.length + ' segments');
+            codingRRect(ctx, W - 144, H - 28, 138, 22, 6);
+            ctx.fillStyle = hc ? '#000000' : 'rgba(15,23,42,0.82)'; ctx.fill();
+            ctx.strokeStyle = hc ? '#ffff00' : (running ? 'rgba(74,222,128,0.55)' : 'rgba(129,140,248,0.36)'); ctx.lineWidth = 1; ctx.stroke();
+            ctx.fillStyle = hc ? '#ffff00' : (running ? '#86efac' : '#e2e8f0'); ctx.font = 'bold 11px monospace'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+            ctx.fillText(segTxt, W - 12, H - 17);
+          }
+
           // ── 3D Canvas Overlay Rendering ──
           // When show3D is true, this runs after the normal 2D draw pass
           // and overlays the 3D grid, axes, and re-renders all lines with perspective
@@ -2432,13 +2650,23 @@
             var canvas = canvasRef.current;
             var ctx = canvas.getContext('2d');
             if (!ctx) return;
+            var hc3 = !!(highContrastMode || isHostContrast);
 
             // Clear canvas completely for 3D render
             ctx.clearRect(0, 0, 500, 500);
 
-            // Dark background
-            ctx.fillStyle = '#0a0e1a';
+            // Studio cosmic backdrop
+            ctx.fillStyle = hc3 ? '#000000' : '#070b18';
             ctx.fillRect(0, 0, 500, 500);
+            if (!hc3 && typeof ctx.createRadialGradient === 'function') {
+              var bg3 = ctx.createRadialGradient(250, 220, 20, 250, 250, 340);
+              if (bg3 && typeof bg3.addColorStop === 'function') {
+                bg3.addColorStop(0, 'rgba(20,184,166,0.16)');
+                bg3.addColorStop(0.6, 'rgba(15,23,42,0.06)');
+                bg3.addColorStop(1, 'rgba(2,6,23,0.5)');
+                ctx.fillStyle = bg3; ctx.fillRect(0, 0, 500, 500);
+              }
+            }
 
             // 3D Ground Grid
             if (show3DGrid) {
@@ -2466,12 +2694,16 @@
               var tp = project3D(turtleState.x - 250, turtleState.y - 250, turtleZ);
               ctx.save();
               ctx.translate(tp.x, tp.y);
-              // Soft glow halo under the turtle "pen" so it reads as the active drawing point
-              var tGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, 16 * tp.scale);
-              tGlow.addColorStop(0, 'rgba(94,234,212,0.45)');
-              tGlow.addColorStop(1, 'rgba(94,234,212,0)');
-              ctx.fillStyle = tGlow;
-              ctx.beginPath(); ctx.arc(0, 0, 16 * tp.scale, 0, Math.PI * 2); ctx.fill();
+              var glowR = Math.max(0.5, Math.min(200, isFinite(tp.scale) ? 18 * tp.scale : 18));
+              if (!hc3 && typeof ctx.createRadialGradient === 'function') {
+                var tGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, glowR);
+                if (tGlow && typeof tGlow.addColorStop === 'function') {
+                  tGlow.addColorStop(0, 'rgba(94,234,212,0.55)');
+                  tGlow.addColorStop(1, 'rgba(94,234,212,0)');
+                  ctx.fillStyle = tGlow;
+                  ctx.beginPath(); ctx.arc(0, 0, glowR, 0, Math.PI * 2); ctx.fill();
+                }
+              }
               ctx.rotate((turtleState.angle + 90) * Math.PI / 180);
               ctx.font = (18 * tp.scale).toFixed(0) + 'px sans-serif';
               ctx.textAlign = 'center';
@@ -2481,26 +2713,25 @@
               ctx.restore();
             }
 
-            // 3D HUD
-            ctx.globalAlpha = 0.7;
-            ctx.fillStyle = 'rgba(0,0,0,0.6)';
-            ctx.fillRect(4, 4, 110, 48);
-            ctx.fillStyle = '#5eead4';
-            ctx.font = 'bold 9px monospace';
+            // Frosted 3D telemetry HUD
+            codingRRect(ctx, 6, 6, 128, 52, 7);
+            ctx.fillStyle = hc3 ? '#000000' : 'rgba(15,23,42,0.82)'; ctx.fill();
+            ctx.strokeStyle = hc3 ? '#ffff00' : 'rgba(45,212,191,0.42)'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.fillStyle = hc3 ? '#ffff00' : '#5eead4';
+            ctx.font = 'bold 10px monospace';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
-            ctx.fillText('3D MODE', 8, 7);
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '8px monospace';
-            ctx.fillText('cam: ' + Math.round(cameraRotX) + '\u00b0/' + Math.round(cameraRotZ) + '\u00b0', 8, 19);
-            ctx.fillText('zoom: ' + (cameraZoom * 100).toFixed(0) + '%', 8, 29);
-            ctx.fillText('lines: ' + lines3D.length + ' | z: ' + Math.round(turtleZ), 8, 39);
-            ctx.globalAlpha = 1.0;
+            ctx.fillText('3D ORBIT STAGE', 12, 10);
+            ctx.fillStyle = hc3 ? '#ffffff' : '#cbd5e1';
+            ctx.font = '9px monospace';
+            ctx.fillText('cam: ' + Math.round(cameraRotX) + '\u00b0/' + Math.round(cameraRotZ) + '\u00b0', 12, 23);
+            ctx.fillText('zoom: ' + (cameraZoom * 100).toFixed(0) + '%', 12, 34);
+            ctx.fillText('lines: ' + lines3D.length + ' | z: ' + Math.round(turtleZ), 12, 45);
           }
 
-          // Auto-trigger 3D render on state changes
-          if (show3D && canvasRef && canvasRef.current) {
-            setTimeout(draw3DOverlay, 50);
+          // Auto-trigger 2D Studio or 3D render after host commit
+          if (canvasRef && canvasRef.current) {
+            setTimeout(show3D ? draw3DOverlay : draw2DStudioCanvas, 45);
           }
 
           // ── Render ──
@@ -2690,10 +2921,17 @@
                 React.createElement("div", { className: "inline-block px-2.5 py-1 rounded-full text-[0.6875rem] font-bold mb-2", style: { backgroundColor: isHostContrast ? '#ffff00' : sm.color, color: '#000000' } }, sm.label + ' · ~' + totalOps.toExponential(1) + ' ops · ~' + (msAt1GHz < 1 ? (msAt1GHz * 1000).toFixed(2) + ' µs' : msAt1GHz < 1000 ? msAt1GHz.toFixed(1) + ' ms' : (msAt1GHz / 1000).toFixed(1) + ' s')),
                 React.createElement("p", { className: "text-[0.6875rem] opacity-85 mb-2" }, sm.desc),
                 React.createElement("svg", { role: "img", "aria-label": "Big-O growth comparison chart. Current estimate: " + sm.label + ", approximately " + totalOps.toExponential(1) + " operations.", width: '100%', height: 132, viewBox: '0 0 360 132', style: { backgroundColor: '#0a0a1a', borderRadius: 8, marginBottom: 8, border: '1px solid ' + (isHostContrast ? '#ffff00' : '#1e293b') } },
+                  React.createElement("defs", null,
+                    React.createElement("linearGradient", { id: "coding-bigo-well", x1: "0", y1: "0", x2: "0", y2: "1" },
+                      React.createElement("stop", { offset: "0%", stopColor: isHostContrast ? "#000000" : "#0b1124" }),
+                      React.createElement("stop", { offset: "100%", stopColor: isHostContrast ? "#000000" : "#050814" })
+                    )
+                  ),
+                  React.createElement("rect", { x: 34, y: 12, width: 240, height: 80, rx: 4, fill: "url(#coding-bigo-well)", stroke: isHostContrast ? "#ffff00" : "rgba(99,102,241,0.22)", strokeWidth: 1 }),
                   [28, 50, 72, 92].map(function(gy) { return React.createElement("line", { key: gy, x1: 34, y1: gy, x2: 274, y2: gy, stroke: '#1e293b', strokeDasharray: gy === 92 ? undefined : '3 3' }); }),
-                  React.createElement("line", { x1: 34, y1: 12, x2: 34, y2: 92, stroke: '#475569', strokeWidth: 1.5 }),
-                  React.createElement("line", { x1: 34, y1: 92, x2: 274, y2: 92, stroke: '#475569', strokeWidth: 1.5 }),
-                  // Reference curves: O(1) O(log n) O(n) O(n²) O(2^n)
+                  React.createElement("line", { x1: 34, y1: 12, x2: 34, y2: 92, stroke: '#64748b', strokeWidth: 1.5 }),
+                  React.createElement("line", { x1: 34, y1: 92, x2: 274, y2: 92, stroke: '#64748b', strokeWidth: 1.5 }),
+                  // Reference curves: O(1) O(log n) O(n) O(n²) O(2^n) with luminous glow
                   [
                     { lab: 'O(1)', col: '#4ade80', yLeg: 88, f: function() { return 1; } },
                     { lab: 'O(log n)', col: '#22d3ee', yLeg: 71, f: function(nn) { return Math.log2(nn); } },
@@ -2708,12 +2946,15 @@
                       pts += x.toFixed(1) + ',' + y.toFixed(1) + ' ';
                     }
                     return React.createElement("g", { key: c.lab },
-                      React.createElement("polyline", { points: pts.trim(), fill: 'none', stroke: c.col, strokeWidth: 1.6, opacity: 0.72 }),
+                      !isHostContrast && React.createElement("polyline", { points: pts.trim(), fill: 'none', stroke: c.col, strokeWidth: 4.6, strokeLinecap: 'round', opacity: 0.2 }),
+                      React.createElement("polyline", { points: pts.trim(), fill: 'none', stroke: c.col, strokeWidth: 1.7, strokeLinecap: 'round', opacity: 0.85 }),
                       React.createElement("text", { x: 282, y: c.yLeg, fill: c.col, fontSize: 10, fontWeight: 700 }, c.lab));
                   }),
-                  React.createElement("line", { x1: dotX, y1: dotY, x2: dotX, y2: 92, stroke: isHostContrast ? '#ffff00' : sm.color, strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.75 }),
-                  React.createElement("line", { x1: 34, y1: dotY, x2: dotX, y2: dotY, stroke: isHostContrast ? '#ffff00' : sm.color, strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.75 }),
+                  React.createElement("line", { x1: dotX, y1: dotY, x2: dotX, y2: 92, stroke: isHostContrast ? '#ffff00' : sm.color, strokeWidth: 1.1, strokeDasharray: '2 2', opacity: 0.8 }),
+                  React.createElement("line", { x1: 34, y1: dotY, x2: dotX, y2: dotY, stroke: isHostContrast ? '#ffff00' : sm.color, strokeWidth: 1.1, strokeDasharray: '2 2', opacity: 0.8 }),
+                  !isHostContrast && React.createElement("circle", { cx: dotX, cy: dotY, r: 10, fill: sm.color, opacity: 0.24 }),
                   React.createElement("circle", { cx: dotX, cy: dotY, r: 5, fill: isHostContrast ? '#00ff00' : sm.color, stroke: '#ffffff', strokeWidth: 1.8 }),
+                  !isHostContrast && React.createElement("circle", { cx: dotX - 1.3, cy: dotY - 1.3, r: 1.3, fill: '#ffffff', opacity: 0.85 }),
                   React.createElement("text", { x: 154, y: 116, fill: isHostContrast ? '#ffff00' : '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'Log scale · Your config at n = ' + iq.n)
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
@@ -3087,6 +3328,7 @@
                     ref: function(cvEl) {
                       if (!cvEl) return;
                       var ctx = cvEl.getContext('2d');
+                      if (!ctx) return;
                       var W = cvEl.offsetWidth || 500, H = cvEl.offsetHeight || 380;
                       var _tw = W * 2, _th = H * 2;
                       if (cvEl.width !== _tw) cvEl.width = _tw;
@@ -3095,50 +3337,93 @@
                       // reset the transform is conditional now, so scale() would COMPOUND.
                       ctx.setTransform(2, 0, 0, 2, 0, 0);
                       ctx.clearRect(0, 0, W, H);
+                      var hcR = !!(highContrastMode || isHostContrast);
                       var grid = robotGrid;
+                      ctx.fillStyle = hcR ? '#000000' : '#080e1d'; ctx.fillRect(0, 0, W, H);
+                      if (!hcR && typeof ctx.createRadialGradient === 'function') {
+                        var rBg = ctx.createRadialGradient(W * 0.5, H * 0.45, 20, W * 0.5, H * 0.5, Math.max(W, H) * 0.65);
+                        if (rBg && typeof rBg.addColorStop === 'function') {
+                          rBg.addColorStop(0, 'rgba(16,185,129,0.12)');
+                          rBg.addColorStop(1, 'rgba(2,6,23,0.45)');
+                          ctx.fillStyle = rBg; ctx.fillRect(0, 0, W, H);
+                        }
+                      }
                       if (!grid || grid.length === 0) {
-                        ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-                        ctx.fillStyle = '#475569'; ctx.font = '14px sans-serif';
+                        ctx.fillStyle = hcR ? '#ffff00' : '#94a3b8'; ctx.font = 'bold 14px sans-serif';
                         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                         ctx.fillText('Select a challenge to begin!', W / 2, H / 2);
                         return;
                       }
                       var size = grid.length;
-                      var cellW = Math.min(W, H) * 0.85 / size;
+                      var cellW = Math.min(W, H) * 0.84 / size;
                       var offX = (W - cellW * size) / 2;
                       var offY = (H - cellW * size) / 2;
-                      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+                      // Recessed board frame
+                      codingRRect(ctx, offX - 5, offY - 5, cellW * size + 10, cellW * size + 10, 10);
+                      ctx.fillStyle = hcR ? '#000000' : 'rgba(15,23,42,0.92)'; ctx.fill();
+                      ctx.strokeStyle = hcR ? '#ffff00' : 'rgba(52,211,153,0.34)'; ctx.lineWidth = 1.5; ctx.stroke();
+
                       for (var gy = 0; gy < size; gy++) {
                         for (var gx = 0; gx < size; gx++) {
                           var cell = grid[gy][gx];
                           var cx = offX + gx * cellW, cy = offY + gy * cellW;
-                          if (cell.wall) { ctx.fillStyle = '#374151'; }
-                          else if (cell.painted) { ctx.fillStyle = '#1e3a5f'; }
-                          else if (cell.goal) { ctx.fillStyle = '#064e3b'; }
-                          else { ctx.fillStyle = '#1e293b'; }
-                          ctx.fillRect(cx + 1, cy + 1, cellW - 2, cellW - 2);
-                          ctx.strokeStyle = '#334155'; ctx.lineWidth = 0.5;
-                          ctx.strokeRect(cx + 1, cy + 1, cellW - 2, cellW - 2);
+                          var tileRad = Math.max(2, Math.min(6, cellW * 0.12));
+                          codingRRect(ctx, cx + 1.5, cy + 1.5, cellW - 3, cellW - 3, tileRad);
+                          if (cell.wall) { ctx.fillStyle = hcR ? '#333333' : '#334155'; }
+                          else if (cell.painted) { ctx.fillStyle = hcR ? '#003366' : '#1e3a8a'; }
+                          else if (cell.goal) { ctx.fillStyle = hcR ? '#004422' : '#064e3b'; }
+                          else { ctx.fillStyle = hcR ? '#000000' : ((gx + gy) % 2 === 0 ? '#162033' : '#11192b'); }
+                          ctx.fill();
+                          ctx.strokeStyle = hcR ? '#ffffff' : (cell.goal ? 'rgba(52,211,153,0.65)' : cell.painted ? 'rgba(96,165,250,0.5)' : 'rgba(71,85,105,0.45)');
+                          ctx.lineWidth = cell.goal ? 1.4 : 0.7;
+                          ctx.stroke();
                           if (cell.wall) {
-                            ctx.fillStyle = '#4b5563';
+                            ctx.fillStyle = hcR ? '#666666' : '#475569';
                             for (var bx = 0; bx < 3; bx++) for (var by = 0; by < 3; by++) {
-                              ctx.fillRect(cx + 3 + bx * (cellW / 3 - 1), cy + 3 + by * (cellW / 3 - 1), cellW / 3 - 3, cellW / 3 - 3);
+                              ctx.fillRect(cx + 4 + bx * (cellW / 3 - 1.5), cy + 4 + by * (cellW / 3 - 1.5), cellW / 3 - 4, cellW / 3 - 4);
+                            }
+                            if (!hcR) {
+                              ctx.strokeStyle = 'rgba(226,232,240,0.22)'; ctx.lineWidth = 1;
+                              ctx.beginPath(); ctx.moveTo(cx + 4, cy + 3); ctx.lineTo(cx + cellW - 4, cy + 3); ctx.stroke();
                             }
                           }
                           if (cell.gem) {
-                            ctx.fillStyle = '#34d399'; ctx.font = 'bold ' + (cellW * 0.45) + 'px sans-serif';
+                            if (!hcR && typeof ctx.createRadialGradient === 'function') {
+                              var gemG = ctx.createRadialGradient(cx + cellW / 2, cy + cellW / 2, 1, cx + cellW / 2, cy + cellW / 2, cellW * 0.4);
+                              if (gemG && typeof gemG.addColorStop === 'function') {
+                                gemG.addColorStop(0, 'rgba(52,211,153,0.45)'); gemG.addColorStop(1, 'rgba(52,211,153,0)');
+                                ctx.fillStyle = gemG; ctx.beginPath(); ctx.arc(cx + cellW / 2, cy + cellW / 2, cellW * 0.4, 0, Math.PI * 2); ctx.fill();
+                              }
+                            }
+                            ctx.save();
+                            if (!hcR) { ctx.shadowColor = '#34d399'; ctx.shadowBlur = 8; }
+                            ctx.fillStyle = '#34d399'; ctx.font = 'bold ' + (cellW * 0.46) + 'px sans-serif';
                             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                             ctx.fillText('\u2666', cx + cellW / 2, cy + cellW / 2);
+                            ctx.restore();
                           }
                           if (cell.goal && !cell.wall) {
-                            ctx.fillStyle = '#10b981'; ctx.font = 'bold ' + (cellW * 0.4) + 'px sans-serif';
+                            if (!hcR) {
+                              ctx.strokeStyle = 'rgba(52,211,153,0.45)'; ctx.lineWidth = 1.3;
+                              ctx.beginPath(); ctx.arc(cx + cellW / 2, cy + cellW / 2, cellW * 0.36, 0, Math.PI * 2); ctx.stroke();
+                            }
+                            ctx.fillStyle = '#34d399'; ctx.font = 'bold ' + (cellW * 0.42) + 'px sans-serif';
                             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                             ctx.fillText('\uD83C\uDFC1', cx + cellW / 2, cy + cellW / 2);
                           }
                         }
                       }
+                      // Dual-pass luminous robot execution trail
                       if (robotTrail.length > 1) {
-                        ctx.strokeStyle = 'rgba(99,102,241,0.4)'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+                        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                        if (!hcR) {
+                          ctx.strokeStyle = 'rgba(99,102,241,0.28)'; ctx.lineWidth = 8;
+                          ctx.beginPath();
+                          ctx.moveTo(offX + robotTrail[0].x * cellW + cellW / 2, offY + robotTrail[0].y * cellW + cellW / 2);
+                          for (var ti0 = 1; ti0 < robotTrail.length; ti0++) ctx.lineTo(offX + robotTrail[ti0].x * cellW + cellW / 2, offY + robotTrail[ti0].y * cellW + cellW / 2);
+                          ctx.stroke();
+                        }
+                        ctx.strokeStyle = hcR ? '#ffff00' : '#818cf8'; ctx.lineWidth = 3;
                         ctx.beginPath();
                         ctx.moveTo(offX + robotTrail[0].x * cellW + cellW / 2, offY + robotTrail[0].y * cellW + cellW / 2);
                         for (var ti = 1; ti < robotTrail.length; ti++) {
@@ -3149,23 +3434,36 @@
                       var rx = offX + robotPos.x * cellW + cellW / 2;
                       var ry = offY + robotPos.y * cellW + cellW / 2;
                       var rr = cellW * 0.35;
-                      ctx.fillStyle = '#6366f1'; ctx.beginPath(); ctx.arc(rx, ry, rr, 0, Math.PI * 2); ctx.fill();
-                      ctx.strokeStyle = '#818cf8'; ctx.lineWidth = 2; ctx.stroke();
+                      // Directional robot aura halo + chassis bevel
+                      if (!hcR && typeof ctx.createRadialGradient === 'function') {
+                        var robHalo = ctx.createRadialGradient(rx, ry, rr * 0.3, rx, ry, rr * 1.85);
+                        if (robHalo && typeof robHalo.addColorStop === 'function') {
+                          robHalo.addColorStop(0, 'rgba(129,140,248,0.45)'); robHalo.addColorStop(1, 'rgba(129,140,248,0)');
+                          ctx.fillStyle = robHalo; ctx.beginPath(); ctx.arc(rx, ry, rr * 1.85, 0, Math.PI * 2); ctx.fill();
+                        }
+                      }
+                      ctx.save();
+                      if (!hcR) { ctx.shadowColor = '#818cf8'; ctx.shadowBlur = 10; }
+                      ctx.fillStyle = '#4f46e5'; ctx.beginPath(); ctx.arc(rx, ry, rr, 0, Math.PI * 2); ctx.fill();
+                      ctx.strokeStyle = hcR ? '#ffff00' : '#a5b4fc'; ctx.lineWidth = 2.2; ctx.stroke();
+                      ctx.restore();
                       var arrowDirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
-                      var ad = arrowDirs[robotPos.dir];
-                      ctx.fillStyle = '#fff'; ctx.beginPath();
+                      var ad = arrowDirs[robotPos.dir] || [1, 0];
+                      ctx.fillStyle = '#ffffff'; ctx.beginPath();
                       ctx.moveTo(rx + ad[0] * rr * 0.9, ry + ad[1] * rr * 0.9);
-                      ctx.lineTo(rx + ad[0] * rr * 0.3 - ad[1] * rr * 0.5, ry + ad[1] * rr * 0.3 + ad[0] * rr * 0.5);
-                      ctx.lineTo(rx + ad[0] * rr * 0.3 + ad[1] * rr * 0.5, ry + ad[1] * rr * 0.3 - ad[0] * rr * 0.5);
-                      ctx.fill();
-                      ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(4, 4, 140, 24);
-                      ctx.fillStyle = '#94a3b8'; ctx.font = '10px monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-                      ctx.fillText('Pos: (' + robotPos.x + ',' + robotPos.y + ')  Dir: ' + ['\u2191','\u2192','\u2193','\u2190'][robotPos.dir], 8, 8);
+                      ctx.lineTo(rx + ad[0] * rr * 0.25 - ad[1] * rr * 0.52, ry + ad[1] * rr * 0.25 + ad[0] * rr * 0.52);
+                      ctx.lineTo(rx + ad[0] * rr * 0.25 + ad[1] * rr * 0.52, ry + ad[1] * rr * 0.25 - ad[0] * rr * 0.52);
+                      ctx.closePath(); ctx.fill();
+                      codingRRect(ctx, 6, 6, 152, 24, 6);
+                      ctx.fillStyle = hcR ? '#000000' : 'rgba(15,23,42,0.82)'; ctx.fill();
+                      ctx.strokeStyle = hcR ? '#ffff00' : 'rgba(129,140,248,0.4)'; ctx.lineWidth = 1; ctx.stroke();
+                      ctx.fillStyle = hcR ? '#ffff00' : '#e2e8f0'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+                      ctx.fillText('Pos: (' + robotPos.x + ',' + robotPos.y + ')  Dir: ' + ['\u2191','\u2192','\u2193','\u2190'][robotPos.dir], 14, 18);
                     }
                   })
                 ),
-                // Robot Program
-                codeMode !== 'visual' && React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '200px', overflowY: 'auto' } },
+                // Robot Program controls (always visible in Robot mode, including Visual Blocks)
+                React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '200px', overflowY: 'auto' } },
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
                     React.createElement("div", { className: "flex gap-1" },
@@ -3176,7 +3474,7 @@
                       }, t('stem.coding.clear_2', "\uD83D\uDDD1 Clear")),
                       React.createElement("button", { "aria-label": t('stem.coding.reset_robot_grid', "Reset robot grid"),
                         onClick: function() {
-                          if (robotChallengeIdx >= 0) {
+                          if (robotChallengeIdx >= 0 && robotChallengeIdx < ROBOT_CHALLENGES.length) {
                             var ch = ROBOT_CHALLENGES[robotChallengeIdx];
                             var grid = generateGrid(ch.size, ch.walls, ch.gems, ch.goal, ch.start);
                             updMulti({ robotGrid: grid, robotPos: { x: ch.start[0], y: ch.start[1], dir: ch.startDir }, robotTrail: [{ x: ch.start[0], y: ch.start[1] }], robotRunning: false });
@@ -3185,20 +3483,20 @@
                         className: "px-2 py-1 rounded text-[0.6875rem] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, t('stem.coding.reset_2', "\u21BA Reset")),
                       React.createElement("button", { type: "button", "aria-label": t('stem.coding.run_robot_program','Run robot program'), onClick: handleRobotRun,
-                        disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
+                        disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0 || robotChallengeIdx >= ROBOT_CHALLENGES.length,
                         className: "coding-robot-run-btn min-h-11 px-3 py-2 rounded text-[0.6875rem] font-bold transition-all " +
-                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-800" : "bg-slate-700 text-slate-300 cursor-not-allowed")
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 && robotChallengeIdx < ROBOT_CHALLENGES.length ? "bg-emerald-700 text-white hover:bg-emerald-800" : "bg-slate-700 text-slate-300 cursor-not-allowed")
                       }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run"),
                       robotRunning && React.createElement("button", { type: "button", "aria-label": t('stem.coding.stop_robot_program_playback','Stop robot program playback'), onClick: stopRun,
                         className: "min-h-11 px-3 py-2 rounded text-[0.6875rem] font-bold bg-red-600 text-white hover:bg-red-700 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                       }, t('stem.coding.stop_2', "\u25A0 Stop"))
                     )
                   ),
-                  robotBlocks.length === 0 ?
+                  codeMode !== 'visual' && (robotBlocks.length === 0 ?
                     React.createElement("p", { className: "text-[0.6875rem] text-slate-300 text-center py-3 italic" }, t('stem.coding.click_commands_from_the_toolbox_to_bui', "Click commands from the toolbox to build your program!")) :
                     React.createElement("div", { className: "space-y-1" },
                       robotBlocks.map(function (b, bi) { return renderRobotNode(b, [bi], 0); })
-                    )
+                    ))
                 )
               ),
               // Right sidebar — Robot Challenges
@@ -3765,7 +4063,7 @@
               React.createElement("div", { className: "bg-slate-900 bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-xl p-3 border border-indigo-700/30" },
                 React.createElement("h4", { className: "text-xs font-bold text-indigo-300 mb-1" }, t('stem.coding.cs_concepts', "🔬 CS Concepts")),
                 React.createElement("p", { className: "text-[0.6875rem] text-indigo-200/70 leading-relaxed" },
-                  challengeIdx >= 0 ? '📖 This challenge teaches: ' + CHALLENGES[challengeIdx].concept + '. ' + CHALLENGES[challengeIdx].desc :
+                  (challengeIdx >= 0 && challengeIdx < CHALLENGES.length) ? '📖 This challenge teaches: ' + CHALLENGES[challengeIdx].concept + '. ' + CHALLENGES[challengeIdx].desc :
                     'Computational thinking is the foundation of all computer science. Sequencing puts steps in order. Loops repeat steps efficiently. Variables store data. Conditionals make decisions. Together they let you create anything!'
                 )
               ),

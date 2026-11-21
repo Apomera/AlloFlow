@@ -1052,6 +1052,69 @@ window.StemLab = window.StemLab || {
         hc:    { up: '#ffff00', down: '#000000', bd: '#ffffff' }
       }[mtTheme];
 
+      // ── Multiplication Array & Factor Lattice Studio SVG defs (skipped in High-Contrast) ──
+      var mtRich = mtTheme !== 'hc';
+      var mtDark = mtTheme === 'dark';
+      function mtDefs(id) {
+        if (!mtRich) return null;
+        return h('defs', { key: 'mt-defs-' + id },
+          h('linearGradient', { id: 'mt-mat-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: mtDark ? '#0f172a' : '#f8fafc' }),
+            h('stop', { offset: '100%', stopColor: mtDark ? '#1e293b' : '#f1f5f9' })
+          ),
+          h('linearGradient', { id: 'mt-whole-' + id, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#fffbeb' }),
+            h('stop', { offset: '100%', stopColor: '#fef3c7' })
+          ),
+          h('linearGradient', { id: 'mt-part1-' + id, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#eff6ff' }),
+            h('stop', { offset: '100%', stopColor: '#bfdbfe' })
+          ),
+          h('linearGradient', { id: 'mt-part2-' + id, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#fffbeb' }),
+            h('stop', { offset: '100%', stopColor: '#fde68a' })
+          ),
+          h('linearGradient', { id: 'mt-tile-a-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#eff6ff' }),
+            h('stop', { offset: '100%', stopColor: '#bfdbfe' })
+          ),
+          h('linearGradient', { id: 'mt-tile-b-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#dbeafe' }),
+            h('stop', { offset: '100%', stopColor: '#93c5fd' })
+          ),
+          h('linearGradient', { id: 'mt-tile-sq-' + id, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#fef3c7' }),
+            h('stop', { offset: '100%', stopColor: '#f59e0b', stopOpacity: 0.48 })
+          ),
+          h('linearGradient', { id: 'mt-twin1-' + id, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#f5f3ff' }),
+            h('stop', { offset: '100%', stopColor: '#ddd6fe' })
+          ),
+          h('linearGradient', { id: 'mt-twin2-' + id, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#fdf2f8' }),
+            h('stop', { offset: '100%', stopColor: '#fbcfe8' })
+          ),
+          h('linearGradient', { id: 'mt-sheen-' + id, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.45 }),
+            h('stop', { offset: '45%', stopColor: '#ffffff', stopOpacity: 0.08 }),
+            h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0.06 })
+          ),
+          h('radialGradient', { id: 'mt-bead-blue-' + id, cx: '32%', cy: '28%', r: '70%' },
+            h('stop', { offset: '0%', stopColor: '#93c5fd' }),
+            h('stop', { offset: '38%', stopColor: '#2563eb' }),
+            h('stop', { offset: '100%', stopColor: '#1e3a8a' })
+          ),
+          h('radialGradient', { id: 'mt-bead-amber-' + id, cx: '32%', cy: '28%', r: '70%' },
+            h('stop', { offset: '0%', stopColor: '#fde68a' }),
+            h('stop', { offset: '38%', stopColor: '#d97706' }),
+            h('stop', { offset: '100%', stopColor: '#92400e' })
+          ),
+          h('filter', { id: 'mt-sh-' + id, x: '-20%', y: '-20%', width: '140%', height: '140%' },
+            h('feDropShadow', { dx: 0, dy: 1.5, stdDeviation: 1.6, floodColor: '#0f172a', floodOpacity: 0.22 })
+          )
+        );
+      }
+
       var maxNum = 12;
 
       // ── Speed Run session state (never saved) ──
@@ -1786,6 +1849,7 @@ window.StemLab = window.StemLab || {
       // ── Keyboard shortcuts: only while the practice panel itself has focus ──
       var kbRef = React.useRef(null);
       kbRef.current = function(e) {
+        if (mtTab !== 'practice') return;
         // The listener lives on window, so it must check the tool is on screen.
         if (!document.querySelector('[data-multtable-command]')) return;
         // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
@@ -1997,12 +2061,15 @@ window.StemLab = window.StemLab || {
                 a === 1 ? t('stem.multtable.frame_one_row', '1 row') : fmt(t('stem.multtable.frame_rows', '{a} rows'), { a: a })),
               h('div', { role: 'img', 'data-mt-frame': vKey, 'data-mt-frame-parts': cut ? cut + ',' + (a - cut) : '', 'aria-label': cut ? liveLabel + ' ' + saidFor(cut) : liveLabel, style: { width: fw, minWidth: 0, flexShrink: 1 } },
                 h('svg', { viewBox: '0 0 ' + fw + ' ' + fh, 'aria-hidden': 'true', focusable: 'false', style: { width: '100%', height: 'auto', display: 'block' } },
+                  mtDefs('ef'),
                   marks,
-                  !cut && h('rect', { x: edge, y: edge, width: b * cell, height: a * cell, fill: ink.whole }),
-                  cut > 0 && h('rect', { x: edge, y: edge, width: b * cell, height: cut * cell, fill: ink.first }),
-                  cut > 0 && h('rect', { x: edge, y: edge + cut * cell, width: b * cell, height: (a - cut) * cell, fill: ink.second }),
-                  h('rect', { x: edge, y: edge, width: b * cell, height: a * cell, fill: 'none', stroke: ink.edge, strokeWidth: 3 }),
+                  !cut && h('rect', { x: edge, y: edge, width: b * cell, height: a * cell, rx: mtRich ? 3 : 0, fill: mtRich ? 'url(#mt-whole-ef)' : ink.whole, filter: mtRich ? 'url(#mt-sh-ef)' : undefined }),
+                  cut > 0 && h('rect', { x: edge, y: edge, width: b * cell, height: cut * cell, fill: mtRich ? 'url(#mt-part1-ef)' : ink.first }),
+                  cut > 0 && h('rect', { x: edge, y: edge + cut * cell, width: b * cell, height: (a - cut) * cell, fill: mtRich ? 'url(#mt-part2-ef)' : ink.second }),
+                  h('rect', { x: edge, y: edge, width: b * cell, height: a * cell, rx: mtRich ? 3 : 0, fill: 'none', stroke: ink.edge, strokeWidth: 3, filter: mtRich ? 'url(#mt-sh-ef)' : undefined }),
                   cut > 0 && h('line', { x1: edge, x2: edge + b * cell, y1: edge + cut * cell, y2: edge + cut * cell, stroke: ink.line, strokeWidth: 3, strokeDasharray: '6 4' }),
+                  mtRich && cut > 0 && h('polygon', { points: (edge - 3.5) + ',' + (edge + cut * cell) + ' ' + edge + ',' + (edge + cut * cell - 3.5) + ' ' + (edge + 3.5) + ',' + (edge + cut * cell) + ' ' + edge + ',' + (edge + cut * cell + 3.5), fill: '#f59e0b', stroke: '#ffffff', strokeWidth: 1 }),
+                  mtRich && cut > 0 && h('polygon', { points: (edge + b * cell - 3.5) + ',' + (edge + cut * cell) + ' ' + (edge + b * cell) + ',' + (edge + cut * cell - 3.5) + ' ' + (edge + b * cell + 3.5) + ',' + (edge + cut * cell) + ' ' + (edge + b * cell) + ',' + (edge + cut * cell + 3.5), fill: '#f59e0b', stroke: '#ffffff', strokeWidth: 1 }),
                   cut > 0 && h('text', { x: edge + b * cell / 2, y: edge + cut * cell / 2 + 5, textAnchor: 'middle', fontSize: 15, fontWeight: 800, fill: ink.text }, cut),
                   cut > 0 && h('text', { x: edge + b * cell / 2, y: edge + cut * cell + (a - cut) * cell / 2 + 5, textAnchor: 'middle', fontSize: 15, fontWeight: 800, fill: ink.text }, a - cut)))),
             h('p', { className: 'text-xs text-slate-800 text-center' }, t('stem.multtable.frame_empty_note', 'The dots appear when you build it.')),
@@ -2109,11 +2176,24 @@ window.StemLab = window.StemLab || {
                 var cFill1 = hcV ? '#000000' : '#ede9fe', cStr1 = hcV ? '#ffff00' : '#6d28d9';
                 var cFill2 = hcV ? '#000000' : '#fce7f3', cStr2 = hcV ? '#ffffff' : '#be185d';
                 var cTxt = hcV ? '#ffff00' : '#4c1d95';
+                var y1 = Math.round((maxH - h1) / 2) + 4, y2 = Math.round((maxH - h2) / 2) + 4;
+                var grid1 = [], grid2 = [];
+                if (!hcV) {
+                  for (var gr1 = 1; gr1 < a; gr1++) grid1.push(h('line', { key: 'g1r' + gr1, x1: 8, y1: y1 + gr1 * (h1 / a), x2: 8 + w1, y2: y1 + gr1 * (h1 / a), stroke: '#6d28d9', strokeOpacity: 0.22, strokeWidth: 0.7 }));
+                  for (var gc1 = 1; gc1 < b; gc1++) grid1.push(h('line', { key: 'g1c' + gc1, x1: 8 + gc1 * (w1 / b), y1: y1, x2: 8 + gc1 * (w1 / b), y2: y1 + h1, stroke: '#6d28d9', strokeOpacity: 0.22, strokeWidth: 0.7 }));
+                  for (var gr2 = 1; gr2 < b; gr2++) grid2.push(h('line', { key: 'g2r' + gr2, x1: w1 + 44, y1: y2 + gr2 * (h2 / b), x2: w1 + 44 + w2, y2: y2 + gr2 * (h2 / b), stroke: '#be185d', strokeOpacity: 0.22, strokeWidth: 0.7 }));
+                  for (var gc2 = 1; gc2 < a; gc2++) grid2.push(h('line', { key: 'g2c' + gc2, x1: w1 + 44 + gc2 * (w2 / a), y1: y2, x2: w1 + 44 + gc2 * (w2 / a), y2: y2 + h2, stroke: '#be185d', strokeOpacity: 0.22, strokeWidth: 0.7 }));
+                }
                 return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, 'aria-hidden': 'true', focusable: 'false', className: 'mt-1.5', style: { width: '100%', maxWidth: Math.min(svgW * 1.3, 240), height: 'auto', display: 'block' } },
-                  h('rect', { x: 8, y: Math.round((maxH - h1) / 2) + 4, width: w1, height: h1, rx: 3, fill: cFill1, stroke: cStr1, strokeWidth: 2 }),
+                  mtDefs('ct'),
+                  h('rect', { x: 8, y: y1, width: w1, height: h1, rx: 3, fill: hcV ? cFill1 : 'url(#mt-twin1-ct)', stroke: cStr1, strokeWidth: 2, filter: hcV ? undefined : 'url(#mt-sh-ct)' }),
+                  grid1,
+                  !hcV && h('rect', { x: 8, y: y1, width: w1, height: h1, rx: 3, fill: 'url(#mt-sheen-ct)' }),
                   h('text', { x: 8 + w1 / 2, y: svgH - 4, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: cTxt }, a + '×' + b),
                   h('text', { x: w1 + 28, y: Math.round(maxH / 2) + 8, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: cTxt }, '='),
-                  h('rect', { x: w1 + 44, y: Math.round((maxH - h2) / 2) + 4, width: w2, height: h2, rx: 3, fill: cFill2, stroke: cStr2, strokeWidth: 2 }),
+                  h('rect', { x: w1 + 44, y: y2, width: w2, height: h2, rx: 3, fill: hcV ? cFill2 : 'url(#mt-twin2-ct)', stroke: cStr2, strokeWidth: 2, filter: hcV ? undefined : 'url(#mt-sh-ct)' }),
+                  grid2,
+                  !hcV && h('rect', { x: w1 + 44, y: y2, width: w2, height: h2, rx: 3, fill: 'url(#mt-sheen-ct)' }),
                   h('text', { x: w1 + 44 + w2 / 2, y: svgH - 4, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: cTxt }, b + '×' + a)
                 );
               })(),
@@ -2456,8 +2536,11 @@ window.StemLab = window.StemLab || {
           var dmW = dmQ * 22 + 30, dmH = dmD * 22 + 20;
           return h('figure', { className: 'mt-2', 'data-mt-hint-picture': 'true' },
             h('div', { style: { overflowX: 'auto' } },
-              h('svg', { viewBox: '0 0 ' + dmW + ' ' + dmH, role: 'img', 'aria-label': dmLabel, style: { minWidth: Math.min(dmW, 320), width: '100%', maxWidth: dmW * 1.4, maxHeight: 300, display: 'block', background: '#fff' } },
-                Array.from({ length: dmD * dmQ }, function(_, i) { var r = Math.floor(i / dmQ), c = i % dmQ; return h('circle', { key: i, cx: 15 + c * 22, cy: 15 + r * 22, r: 6.5, fill: r % 2 ? '#b45309' : '#1d4ed8' }); }))),
+              h('svg', { viewBox: '0 0 ' + dmW + ' ' + dmH, role: 'img', 'aria-label': dmLabel, style: { minWidth: Math.min(dmW, 320), width: '100%', maxWidth: dmW * 1.4, maxHeight: 300, display: 'block', background: '#fff', borderRadius: mtRich ? 8 : 0 } },
+                mtDefs('hdm'),
+                mtRich && h('rect', { x: 1, y: 1, width: dmW - 2, height: dmH - 2, rx: 7, fill: 'url(#mt-mat-hdm)', stroke: '#cbd5e1', strokeWidth: 1 }),
+                mtRich && Array.from({ length: dmD }, function(_, r) { return h('rect', { key: 'rb' + r, x: 5, y: 5 + r * 22, width: dmQ * 22 + 20, height: 20, rx: 4, fill: r % 2 ? 'rgba(217,119,6,0.08)' : 'rgba(37,99,235,0.07)' }); }),
+                Array.from({ length: dmD * dmQ }, function(_, i) { var r = Math.floor(i / dmQ), c = i % dmQ; return h('circle', { key: i, cx: 15 + c * 22, cy: 15 + r * 22, r: 6.5, fill: mtRich ? (r % 2 ? 'url(#mt-bead-amber-hdm)' : 'url(#mt-bead-blue-hdm)') : (r % 2 ? '#b45309' : '#1d4ed8'), stroke: mtRich ? '#ffffff' : undefined, strokeWidth: mtRich ? 0.8 : undefined, filter: mtRich ? 'url(#mt-sh-hdm)' : undefined }); }))),
             h('figcaption', { className: 'text-xs text-slate-800 mt-1' }, dmLabel));
         }
         if (ch.mode === 'div' || ch.mode === 'missing') { rows = ch.mode === 'div' ? Number(ch.divisor) : Number(ch.known); cols = factAnswer(ch); }
@@ -2481,8 +2564,13 @@ window.StemLab = window.StemLab || {
               : fmt(t('stem.multtable.hint_picture_rows', '{r} rows of {c} dots. Skip-count the rows.'), { r: rows, c: cols })));
         return h('figure', { className: 'mt-2', 'data-mt-hint-picture': 'true' },
           h('div', { style: { overflowX: 'auto' } },
-            h('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'aria-label': label, style: { minWidth: Math.min(w, 320), width: '100%', maxWidth: w * 1.4, maxHeight: 300, display: 'block', background: '#fff' } },
-              Array.from({ length: rows * cols }, function(_, i) { var r = Math.floor(i / cols), c = i % cols; return h('circle', { key: i, cx: 15 + c * 22, cy: 15 + r * 22, r: 6.5, fill: r < split ? '#1d4ed8' : '#b45309', 'data-hint-part': r < split ? 'first' : 'second' }); }),
+            h('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'aria-label': label, style: { minWidth: Math.min(w, 320), width: '100%', maxWidth: w * 1.4, maxHeight: 300, display: 'block', background: '#fff', borderRadius: mtRich ? 8 : 0 } },
+              mtDefs('hp'),
+              mtRich && h('rect', { x: 1, y: 1, width: w - 2, height: ht - 2, rx: 7, fill: 'url(#mt-mat-hp)', stroke: '#cbd5e1', strokeWidth: 1 }),
+              mtRich && h('rect', { x: 4, y: 4, width: cols * 22 + 22, height: split * 22 - 2, rx: 5, fill: 'rgba(37,99,235,0.08)' }),
+              mtRich && rest > 0 && h('rect', { x: 4, y: 6 + split * 22, width: cols * 22 + 22, height: rest * 22 - 2, rx: 5, fill: 'rgba(217,119,6,0.09)' }),
+              Array.from({ length: rows * cols }, function(_, i) { var r = Math.floor(i / cols), c = i % cols; return h('circle', { key: i, cx: 15 + c * 22, cy: 15 + r * 22, r: 6.5, fill: mtRich ? (r < split ? 'url(#mt-bead-blue-hp)' : 'url(#mt-bead-amber-hp)') : (r < split ? '#1d4ed8' : '#b45309'), stroke: mtRich ? '#ffffff' : undefined, strokeWidth: mtRich ? 0.8 : undefined, filter: mtRich ? 'url(#mt-sh-hp)' : undefined, 'data-hint-part': r < split ? 'first' : 'second' }); }),
+              mtRich && rest > 0 && h('line', { x1: 4, y1: 4 + split * 22, x2: cols * 22 + 8, y2: 4 + split * 22, stroke: '#0f172a', strokeWidth: 5.5, strokeOpacity: 0.14 }),
               rest > 0 && h('line', { x1: 4, y1: 4 + split * 22, x2: cols * 22 + 8, y2: 4 + split * 22, stroke: '#0f172a', strokeWidth: 2, strokeDasharray: '5 3' }))),
           h('figcaption', { className: 'text-xs text-slate-800 mt-1' }, label));
       }
@@ -2519,9 +2607,17 @@ window.StemLab = window.StemLab || {
               style: { minHeight: 44, padding: '6px 12px', border: '2px solid #9d174d', borderRadius: 8, background: split === value ? '#9d174d' : '#fff', color: split === value ? '#fff' : '#831843', fontWeight: 800 } }, value + ' + ' + (rows - value) + ' ' + t('stem.multtable.rows_label', 'rows'));
           })),
           h('div', { role: 'region', tabIndex: 0, 'aria-label': t('stem.multtable.strategy_array_scroll', 'Scrollable strategy dot array'), style: { overflowX: 'auto', marginTop: 12 } },
-            h('svg', { viewBox: '0 0 ' + w + ' ' + height, role: 'img', 'aria-label': rows + TIMES + cols + ' = ' + split + TIMES + cols + ' + ' + rest + TIMES + cols, style: { minWidth: w, width: '100%', maxHeight: 380, display: 'block', background: '#fff' }, 'data-fact-strategy-array': true },
-              Array.from({ length: rows * cols }, function(_, i) { var row = Math.floor(i / cols), col = i % cols; return h('circle', { key: i, cx: 26 + col * 26, cy: 30 + row * 26, r: 7, fill: row < split ? svgInk.first : svgInk.second, 'data-strategy-part': row < split ? 'first' : 'second' }); }),
+            h('svg', { viewBox: '0 0 ' + w + ' ' + height, role: 'img', 'aria-label': rows + TIMES + cols + ' = ' + split + TIMES + cols + ' + ' + rest + TIMES + cols, style: { minWidth: w, width: '100%', maxHeight: 380, display: 'block', background: '#fff', borderRadius: mtRich ? 10 : 0 }, 'data-fact-strategy-array': true },
+              mtDefs('fs'),
+              mtRich && h('rect', { x: 2, y: 2, width: w - 4, height: height - 4, rx: 9, fill: 'url(#mt-mat-fs)', stroke: '#cbd5e1', strokeWidth: 1 }),
+              mtRich && h('rect', { x: 14, y: 16, width: cols * 26 - 2, height: split * 26 - 1, rx: 6, fill: 'rgba(37,99,235,0.08)', stroke: 'rgba(37,99,235,0.22)', strokeWidth: 1 }),
+              mtRich && rest > 0 && h('rect', { x: 14, y: 19 + split * 26, width: cols * 26 - 2, height: rest * 26 - 1, rx: 6, fill: 'rgba(217,119,6,0.09)', stroke: 'rgba(217,119,6,0.24)', strokeWidth: 1 }),
+              Array.from({ length: rows * cols }, function(_, i) { var row = Math.floor(i / cols), col = i % cols; return h('circle', { key: i, cx: 26 + col * 26, cy: 30 + row * 26, r: 7, fill: mtRich ? (row < split ? 'url(#mt-bead-blue-fs)' : 'url(#mt-bead-amber-fs)') : (row < split ? svgInk.first : svgInk.second), stroke: mtRich ? '#ffffff' : undefined, strokeWidth: mtRich ? 0.9 : undefined, filter: mtRich ? 'url(#mt-sh-fs)' : undefined, 'data-strategy-part': row < split ? 'first' : 'second' }); }),
+              mtRich && rest > 0 && h('line', { x1: 12, y1: 17 + split * 26, x2: cols * 26 + 12, y2: 17 + split * 26, stroke: svgInk.line, strokeWidth: 6, strokeOpacity: 0.14 }),
               rest > 0 && h('line', { x1: 12, y1: 17 + split * 26, x2: cols * 26 + 12, y2: 17 + split * 26, stroke: svgInk.line, strokeWidth: 2, strokeDasharray: '5 3' }),
+              mtRich && h('path', { d: 'M ' + (cols * 26 + 15) + ' 18 H ' + (cols * 26 + 19) + ' V ' + (15 + split * 26) + ' H ' + (cols * 26 + 15), fill: 'none', stroke: svgInk.first, strokeWidth: 1.5, strokeOpacity: 0.6 }),
+              mtRich && rest > 0 && h('path', { d: 'M ' + (cols * 26 + 15) + ' ' + (20 + split * 26) + ' H ' + (cols * 26 + 19) + ' V ' + (16 + rows * 26) + ' H ' + (cols * 26 + 15), fill: 'none', stroke: svgInk.num2, strokeWidth: 1.5, strokeOpacity: 0.6 }),
+              mtRich && h('path', { d: 'M 16 ' + (height - 25) + ' V ' + (height - 21) + ' H ' + (cols * 26 + 10) + ' V ' + (height - 25), fill: 'none', stroke: svgInk.text, strokeWidth: 1.4, strokeOpacity: 0.5 }),
               h('text', { x: cols * 26 + 24, y: 24 + split * 13, fill: svgInk.first, fontSize: 16, fontWeight: 800 }, split),
               rest > 0 && h('text', { x: cols * 26 + 24, y: 24 + split * 26 + rest * 13, fill: svgInk.num2, fontSize: 16, fontWeight: 800 }, rest),
               h('text', { x: cols * 13 + 13, y: height - 5, textAnchor: 'middle', fill: svgInk.text, fontSize: 16, fontWeight: 800 }, cols + ' ' + t('stem.multtable.dots_each_row', 'in each row')))),
@@ -2649,9 +2745,21 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'relative flex-shrink-0', style: { width: 92, height: 92 } },
               h('svg', { viewBox: '0 0 100 100', width: 92, height: 92, role: 'img',
                 'aria-label': fmt(t('stem.multtable.score_label', 'Score: {score} out of {total}'), { score: _mt.score, total: _mt.total }) },
+                mtDefs('rg'),
+                mtRich && h('circle', { cx: 50, cy: 50, r: 44, fill: 'url(#mt-mat-rg)', stroke: 'rgba(148,163,184,0.35)', strokeWidth: 1 }),
+                mtRich && Array.from({ length: 12 }, function(_, ti) {
+                  var ang = (ti * 30 - 90) * Math.PI / 180;
+                  return h('line', { key: 'tk' + ti, x1: (50 + Math.cos(ang) * 43.5).toFixed(1), y1: (50 + Math.sin(ang) * 43.5).toFixed(1), x2: (50 + Math.cos(ang) * 46.5).toFixed(1), y2: (50 + Math.sin(ang) * 46.5).toFixed(1), stroke: '#94a3b8', strokeWidth: ti % 3 === 0 ? 1.5 : 0.9, strokeOpacity: 0.6 });
+                }),
                 h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.35)', strokeWidth: 9 }),
+                mtRich && h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 14, strokeOpacity: 0.16, strokeLinecap: 'round',
+                  strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' }),
                 h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
-                  strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                  strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' }),
+                mtRich && pct > 0 && (function() {
+                  var endA = ((pct / 100) * 360 - 90) * Math.PI / 180;
+                  return h('circle', { cx: (50 + Math.cos(endA) * rad).toFixed(1), cy: (50 + Math.sin(endA) * rad).toFixed(1), r: 3.5, fill: '#ffffff', stroke: tierColor, strokeWidth: 2 });
+                })()
               ),
               h('div', { 'aria-hidden': 'true', style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                 h('div', { style: { fontSize: 20, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
@@ -3102,9 +3210,30 @@ window.StemLab = window.StemLab || {
       }
       function renderRect(w, hgt, key, labelText) {
         var unit = Math.max(4, Math.min(16, Math.floor(260 / Math.max(w, hgt, 1))));
-        var W = hgt * unit + 2, H = w * unit + 2, cells = [];
+        var pad = mtRich ? 5 : 1;
+        var rw = hgt * unit, rh = w * unit;
+        var W = rw + pad * 2, H = rh + pad * 2, cells = [];
+        var isSq = w === hgt && w > 1;
+        var rid = 'fx-' + w + 'x' + hgt;
+        if (mtRich) {
+          cells.push(mtDefs(rid));
+          cells.push(h('rect', { key: 'sh', x: pad, y: pad, width: rw, height: rh, rx: 2, fill: '#ffffff', filter: 'url(#mt-sh-' + rid + ')' }));
+        }
         if (w * hgt <= 400) {
-          for (var r = 0; r < w; r++) for (var c = 0; c < hgt; c++) cells.push(h('rect', { key: r + '-' + c, x: 1 + c * unit, y: 1 + r * unit, width: unit, height: unit, fill: (r + c) % 2 ? '#bfdbfe' : '#dbeafe', stroke: '#1e3a8a', strokeWidth: 1 }));
+          for (var r = 0; r < w; r++) for (var c = 0; c < hgt; c++) {
+            var diag = isSq && r === c;
+            cells.push(h('rect', { key: r + '-' + c, x: pad + c * unit, y: pad + r * unit, width: unit, height: unit,
+              fill: mtRich ? (diag ? 'url(#mt-tile-sq-' + rid + ')' : ((r + c) % 2 ? 'url(#mt-tile-b-' + rid + ')' : 'url(#mt-tile-a-' + rid + ')')) : ((r + c) % 2 ? '#bfdbfe' : '#dbeafe'),
+              stroke: '#1e3a8a', strokeWidth: mtRich ? 0.9 : 1 }));
+          }
+        }
+        if (mtRich) {
+          cells.push(h('rect', { key: 'sheen', x: pad, y: pad, width: rw, height: rh, fill: 'url(#mt-sheen-' + rid + ')', style: { pointerEvents: 'none' } }));
+          cells.push(h('rect', { key: 'glow', x: pad, y: pad, width: rw, height: rh, rx: 2, fill: 'none', stroke: isSq ? '#d97706' : '#2563eb', strokeWidth: 4.5, strokeOpacity: 0.2 }));
+          cells.push(h('rect', { key: 'rim', x: pad, y: pad, width: rw, height: rh, rx: 2, fill: 'none', stroke: isSq ? '#b45309' : '#1e3a8a', strokeWidth: 1.6 }));
+          [[pad, pad], [pad + rw, pad], [pad + rw, pad + rh], [pad, pad + rh]].forEach(function(pt, ci) {
+            cells.push(h('circle', { key: 'cn' + ci, cx: pt[0], cy: pt[1], r: 2.2, fill: isSq ? '#f59e0b' : '#2563eb', stroke: '#ffffff', strokeWidth: 0.9 }));
+          });
         }
         return h('svg', { key: key, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': labelText, style: { width: Math.min(W, 280), maxWidth: '100%', height: 'auto', display: 'block', background: '#fff' } }, cells);
       }
@@ -3586,21 +3715,33 @@ window.StemLab = window.StemLab || {
             : fmt(t('stem.multtable.wp_pic_howmany', '{p} in groups of {b}. How many groups are there?'), { p: a * b, b: b });
         }
         var u = 18, W, H, kids = [];
+        if (mtRich) kids.push(mtDefs('wp'));
         if (cmp) {
           W = a * b * 8 + 20; H = 70;
-          kids.push(h('rect', { key: 's', x: 10, y: 10, width: b * 8, height: 18, fill: '#bfdbfe', stroke: '#1e3a8a' }));
-          for (var k = 0; k < a; k++) kids.push(h('rect', { key: 'l' + k, x: 10 + k * b * 8, y: 40, width: b * 8, height: 18, fill: k % 2 ? '#fde68a' : '#fef3c7', stroke: '#78350f' }));
+          if (mtRich) kids.push(h('rect', { key: 'mat', x: 1, y: 1, width: W - 2, height: H - 2, rx: 7, fill: 'url(#mt-mat-wp)', stroke: '#cbd5e1', strokeWidth: 1 }));
+          kids.push(h('rect', { key: 's', x: 10, y: 10, width: b * 8, height: 18, rx: mtRich ? 3 : 0, fill: mtRich ? 'url(#mt-tile-b-wp)' : '#bfdbfe', stroke: '#1e3a8a', strokeWidth: 1.4, filter: mtRich ? 'url(#mt-sh-wp)' : undefined }));
+          if (mtRich) kids.push(h('rect', { key: 'ss', x: 10, y: 10, width: b * 8, height: 18, rx: 3, fill: 'url(#mt-sheen-wp)' }));
+          for (var k = 0; k < a; k++) kids.push(h('rect', { key: 'l' + k, x: 10 + k * b * 8, y: 40, width: b * 8, height: 18, rx: mtRich ? 2 : 0, fill: mtRich ? (k % 2 ? 'url(#mt-part2-wp)' : 'url(#mt-whole-wp)') : (k % 2 ? '#fde68a' : '#fef3c7'), stroke: '#78350f', strokeWidth: 1.3 }));
+          if (mtRich) kids.push(h('rect', { key: 'ls', x: 10, y: 40, width: a * b * 8, height: 18, rx: 2, fill: 'url(#mt-sheen-wp)' }));
         } else {
           W = b * u + 20; H = a * u + 20;
+          if (mtRich) kids.push(h('rect', { key: 'mat', x: 1, y: 1, width: W - 2, height: H - 2, rx: 7, fill: 'url(#mt-mat-wp)', stroke: '#cbd5e1', strokeWidth: 1 }));
+          if (mtRich && !area) {
+            for (var rr = 0; rr < a; rr++) kids.push(h('rect', { key: 'rb' + rr, x: 6, y: 10 + rr * u + 1, width: b * u + 8, height: u - 2, rx: 4, fill: rr % 2 ? 'rgba(217,119,6,0.08)' : 'rgba(37,99,235,0.07)' }));
+          }
           for (var r = 0; r < a; r++) for (var c = 0; c < b; c++) {
             kids.push(area
-              ? h('rect', { key: r + '-' + c, x: 10 + c * u, y: 10 + r * u, width: u, height: u, fill: (r + c) % 2 ? '#bfdbfe' : '#dbeafe', stroke: '#1e3a8a' })
-              : h('circle', { key: r + '-' + c, cx: 10 + c * u + u / 2, cy: 10 + r * u + u / 2, r: 6, fill: r % 2 ? '#b45309' : '#1d4ed8' }));
+              ? h('rect', { key: r + '-' + c, x: 10 + c * u, y: 10 + r * u, width: u, height: u, fill: mtRich ? ((r + c) % 2 ? 'url(#mt-tile-b-wp)' : 'url(#mt-tile-a-wp)') : ((r + c) % 2 ? '#bfdbfe' : '#dbeafe'), stroke: '#1e3a8a', strokeWidth: 1 })
+              : h('circle', { key: r + '-' + c, cx: 10 + c * u + u / 2, cy: 10 + r * u + u / 2, r: 6, fill: mtRich ? (r % 2 ? 'url(#mt-bead-amber-wp)' : 'url(#mt-bead-blue-wp)') : (r % 2 ? '#b45309' : '#1d4ed8'), stroke: mtRich ? '#ffffff' : undefined, strokeWidth: mtRich ? 0.8 : undefined, filter: mtRich ? 'url(#mt-sh-wp)' : undefined }));
+          }
+          if (mtRich && area) {
+            kids.push(h('rect', { key: 'as', x: 10, y: 10, width: b * u, height: a * u, fill: 'url(#mt-sheen-wp)' }));
+            kids.push(h('rect', { key: 'af', x: 10, y: 10, width: b * u, height: a * u, fill: 'none', stroke: '#1e3a8a', strokeWidth: 1.8 }));
           }
         }
         return h('figure', { className: 'mt-2', 'data-mt-wp-picture': full ? 'full' : 'hint' },
           h('div', { style: { overflowX: 'auto' } },
-            h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': label, style: { width: Math.min(W, 320), maxWidth: '100%', height: 'auto', display: 'block', background: '#fff' } }, kids)),
+            h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': label, style: { width: Math.min(W, 320), maxWidth: '100%', height: 'auto', display: 'block', background: '#fff', borderRadius: mtRich ? 8 : 0 } }, kids)),
           h('figcaption', { className: 'text-xs text-slate-800 mt-1' }, label));
       }
       function renderWords() {
@@ -4164,12 +4305,24 @@ window.StemLab = window.StemLab || {
                   h('button', { type: 'button', onClick: function() { stopRunQuietly(); setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-pink-300', style: { minWidth: 44, minHeight: 44 }, 'aria-label': t('stem.multtable.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
                   h('span', { className: 'inline-flex items-center justify-center rounded-xl border border-pink-200/30 bg-white/10 p-1.5 shrink-0', 'aria-hidden': 'true' },
                     h('svg', { viewBox: '0 0 36 36', width: 28, height: 28, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block' } },
-                      h('rect', { x: 2, y: 2, width: 32, height: 32, rx: 7, fill: mtTheme === 'hc' ? '#000000' : '#500724', stroke: mtTheme === 'hc' ? '#ffff00' : '#f9a8d4', strokeWidth: 1.6 }),
+                      mtRich && h('defs', null,
+                        h('linearGradient', { id: 'mt-em-bg', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                          h('stop', { offset: '0%', stopColor: '#831843' }),
+                          h('stop', { offset: '100%', stopColor: '#3b0764' })
+                        ),
+                        h('linearGradient', { id: 'mt-em-diag', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                          h('stop', { offset: '0%', stopColor: '#fde68a' }),
+                          h('stop', { offset: '100%', stopColor: '#f472b6' })
+                        )
+                      ),
+                      h('rect', { x: 2, y: 2, width: 32, height: 32, rx: 7, fill: mtTheme === 'hc' ? '#000000' : 'url(#mt-em-bg)', stroke: mtTheme === 'hc' ? '#ffff00' : '#f9a8d4', strokeWidth: 1.6 }),
+                      mtRich && h('line', { x1: 7, y1: 7, x2: 29, y2: 29, stroke: '#f472b6', strokeWidth: 3, strokeOpacity: 0.26, strokeLinecap: 'round' }),
                       [0, 1, 2].map(function(gr) {
                         return [0, 1, 2].map(function(gc) {
                           var diag = gr === gc;
                           return h('rect', { key: gr + '-' + gc, x: 7 + gc * 8, y: 7 + gr * 8, width: 6, height: 6, rx: 1.5,
-                            fill: diag ? (mtTheme === 'hc' ? '#ffff00' : '#f472b6') : (mtTheme === 'hc' ? '#ffffff' : 'rgba(255,255,255,0.32)') });
+                            fill: diag ? (mtTheme === 'hc' ? '#ffff00' : 'url(#mt-em-diag)') : (mtTheme === 'hc' ? '#ffffff' : 'rgba(255,255,255,0.34)'),
+                            stroke: diag && mtRich ? '#ffffff' : undefined, strokeOpacity: diag && mtRich ? 0.55 : undefined, strokeWidth: diag && mtRich ? 0.6 : undefined });
                         });
                       })
                     )

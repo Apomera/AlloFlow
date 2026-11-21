@@ -503,13 +503,13 @@
     var learner = plain(data.learner != null ? data.learner : data.learnerName);
     var session = plain(data.sessionId);
     var seconds = Math.round((Number(data.durationMs) || 0) / 1000);
-    return data.items.map(function (it, i) {
+    return data.items.slice(0, MAX_ITEMS).map(function (it, i) {
       it = it && typeof it === 'object' ? it : {};
       var activity = plain(it.activity);
       var practice = !!it.practice || activity === 'letter_tracing';
       var supports = it.supports && typeof it.supports === 'object' ? Object.keys(it.supports).map(function (k) { return k + ':' + plain(it.supports[k]); }).join(';') : '';
       return [FORMAT, session, plain(packet.id), plain(packet.version), plain(packet.form), plain(packet.mode), learner,
-        plain(data.startedLocal), plain(data.finishedLocal), seconds, Number(it.n) || i + 1, plain(it.itemId), activity, plain(titles[activity]),
+        plain(data.startedLocal), plain(data.finishedLocal), seconds, Number(it.n) || i + 1, plain(it.itemId), activity, plain(own(titles, activity) ? titles[activity] : ''),
         practice ? 0 : 1, plain(it.word), plain(it.target), (Array.isArray(it.responses) ? it.responses : []).map(plain).join(' | '),
         it.correct ? 1 : 0, it.firstTry ? 1 : 0, Number(it.attempts) || 0, Math.max(0, Math.round(Number(it.ms) || 0)), supports, plain(it.flag)]
         .concat(probe ? [count(it.digitsCorrect), count(it.digitsPossible)] : []).map(csvCell).join(',');
@@ -740,7 +740,11 @@
       var got;
       if (head === '{' || head === '[') {
         var data = null;
-        try { data = JSON.parse(source); } catch (_) { data = null; }
+        try {
+          data = JSON.parse(source, function (k, v) {
+            return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+          });
+        } catch (_) { data = null; }
         if (data && typeof data === 'object' && !Array.isArray(data) && data.kind === BUNDLE_KIND) {
           var bundle = readBundle(data);
           return bundle.ok ? { ok: true, name: name, reason: '', why: '', sessions: [], bundle: bundle } : refuse(bundle.reason, name);
@@ -1106,7 +1110,10 @@
     var opts = options || {};
     var maxFiles = Math.max(1, Math.min(MAX_FILES, Number(opts.maxFiles) || MAX_FILES));
     var maxBytes = Math.max(1, Math.min(MAX_BYTES, Number(opts.maxBytes) || MAX_BYTES));
-    var bytes = input instanceof Uint8Array ? input : (input && typeof input.byteLength === 'number' ? new Uint8Array(input) : null);
+    var bytes = input instanceof Uint8Array
+      ? input
+      : (ArrayBuffer.isView(input) ? new Uint8Array(input.buffer, input.byteOffset, input.byteLength)
+        : (input && typeof input.byteLength === 'number' ? new Uint8Array(input) : null));
     if (!bytes || !bytes.byteLength) return { ok: false, why: REASONS.empty, entries: [], skipped: [], leftOut: 0 };
     if (bytes.byteLength > MAX_ZIP_BYTES) return { ok: false, why: 'This .zip file is larger than 50 MB. Unzip it on your device and drop the results files in smaller groups.', entries: [], skipped: [], leftOut: 0 };
     if (bytes.byteLength < 22) return { ok: false, why: 'This .zip file could not be read.', entries: [], skipped: [], leftOut: 0 };
@@ -1129,8 +1136,15 @@
       for (var k = 0; k < arr.length; k++) s += String.fromCharCode(arr[k]);
       return s;
     };
+    var MAX_SKIPPED = 500, MAX_CD_ENTRIES = 2000;
     var entries = [], skipped = [], leftOut = 0, totalOut = 0, cursor = cdOffset, cdEnd = cdOffset + cdSize;
-    for (var i = 0; i < totalEntries && cursor + 46 <= cdEnd; i++) {
+    var pushSkipped = function (name, why) {
+      if (skipped.length < MAX_SKIPPED) skipped.push({ name: name, why: why });
+      else leftOut++;
+    };
+    var entryLimit = Math.min(totalEntries, MAX_CD_ENTRIES);
+    if (totalEntries > MAX_CD_ENTRIES) leftOut += totalEntries - MAX_CD_ENTRIES;
+    for (var i = 0; i < entryLimit && cursor + 46 <= cdEnd; i++) {
       if (u32le(bytes, cursor) !== 0x02014b50) break;
       var flags = u16le(bytes, cursor + 8);
       var method = u16le(bytes, cursor + 10);
@@ -1146,38 +1160,40 @@
       cursor = nextCursor;
       var clean = zipCleanName(rawName);
       if (zipSkipMeta(clean)) continue;
-      if (/\.zip$/i.test(clean)) { skipped.push({ name: clean, why: 'Nested .zip folders are not opened. Unzip it on your device first.' }); continue; }
-      if (/\.html?$/i.test(clean)) { skipped.push({ name: clean, why: 'This is a web page (.html), not a results file.' }); continue; }
-      if (!/\.(csv|json)$/i.test(clean)) { skipped.push({ name: clean, why: 'Not a CSV or JSON results file.' }); continue; }
+      if (/\.zip$/i.test(clean)) { pushSkipped(clean, 'Nested .zip folders are not opened. Unzip it on your device first.'); continue; }
+      if (/\.html?$/i.test(clean)) { pushSkipped(clean, 'This is a web page (.html), not a results file.'); continue; }
+      if (!/\.(csv|json)$/i.test(clean)) { pushSkipped(clean, 'Not a CSV or JSON results file.'); continue; }
       if (entries.length >= maxFiles) { leftOut++; continue; }
-      if (flags & 1) { skipped.push({ name: clean, why: 'Password-protected files inside a .zip cannot be read.' }); continue; }
-      if (uncompSize > maxBytes || totalOut + uncompSize > MAX_ZIP_TOTAL_OUT) { skipped.push({ name: clean, why: REASONS.too_big }); continue; }
-      if (localOff + 30 > bytes.byteLength || u32le(bytes, localOff) !== 0x04034b50) { skipped.push({ name: clean, why: REASONS.unreadable }); continue; }
+      if (flags & 1) { pushSkipped(clean, 'Password-protected files inside a .zip cannot be read.'); continue; }
+      var remainingBudget = Math.max(0, MAX_ZIP_TOTAL_OUT - totalOut);
+      var entryCap = Math.min(maxBytes, remainingBudget);
+      if (uncompSize > entryCap || remainingBudget === 0) { pushSkipped(clean, REASONS.too_big); continue; }
+      if (localOff + 30 > bytes.byteLength || u32le(bytes, localOff) !== 0x04034b50) { pushSkipped(clean, REASONS.unreadable); continue; }
       var lNameLen = u16le(bytes, localOff + 26);
       var lExtraLen = u16le(bytes, localOff + 28);
       var dataStart = localOff + 30 + lNameLen + lExtraLen;
       var dataEnd = dataStart + compSize;
-      if (dataEnd > bytes.byteLength) { skipped.push({ name: clean, why: REASONS.unreadable }); continue; }
+      if (dataEnd > bytes.byteLength) { pushSkipped(clean, REASONS.unreadable); continue; }
       var payload = bytes.subarray(dataStart, dataEnd);
       var outBytes = null;
       if (method === 0) {
-        if (payload.byteLength > maxBytes) { skipped.push({ name: clean, why: REASONS.too_big }); continue; }
+        if (payload.byteLength > entryCap) { pushSkipped(clean, REASONS.too_big); continue; }
         outBytes = payload;
       } else if (method === 8) {
-        try { outBytes = await inflateRawBounded(payload, maxBytes); }
+        try { outBytes = await inflateRawBounded(payload, entryCap); }
         catch (err) {
           var code = err && err.message;
-          if (code === 'too_big') skipped.push({ name: clean, why: REASONS.too_big });
-          else if (code === 'no_deflate') skipped.push({ name: clean, why: 'This browser cannot open compressed .zip files. Unzip the folder first, then drop the files here.' });
-          else skipped.push({ name: clean, why: REASONS.unreadable });
+          if (code === 'too_big') pushSkipped(clean, REASONS.too_big);
+          else if (code === 'no_deflate') pushSkipped(clean, 'This browser cannot open compressed .zip files. Unzip the folder first, then drop the files here.');
+          else pushSkipped(clean, REASONS.unreadable);
           continue;
         }
       } else {
-        skipped.push({ name: clean, why: 'This file uses an unsupported .zip compression method.' });
+        pushSkipped(clean, 'This file uses an unsupported .zip compression method.');
         continue;
       }
       totalOut += outBytes.byteLength;
-      if (totalOut > MAX_ZIP_TOTAL_OUT) { skipped.push({ name: clean, why: REASONS.too_big }); break; }
+      if (totalOut > MAX_ZIP_TOTAL_OUT) { pushSkipped(clean, REASONS.too_big); break; }
       entries.push({ name: clean, text: decodeUtf8(outBytes), bytes: outBytes.byteLength });
     }
     if (!entries.length && !skipped.length) return { ok: false, why: 'This .zip folder has no CSV or JSON results files in it.', entries: [], skipped: [], leftOut: leftOut };

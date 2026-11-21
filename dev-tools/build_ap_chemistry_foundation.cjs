@@ -9,6 +9,7 @@ const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const { AP_FRAMEWORK_TOPIC_IDS, frameworkSourceFor } = require('./ap_framework_topics.cjs');
 const { AP_CHEMISTRY_UNIT_SECTIONS } = require('./ap_chemistry_lesson_sections.cjs');
 const { AP_CHEMISTRY_WORKSHOPS: SPECS, AP_CHEMISTRY_WORKSHOP_REVIEW_NOTE } = require('./ap_chemistry_workshops.cjs');
+const { buildApChemistryDiagrams } = require('./ap_chemistry_diagrams.cjs');
 
 // Which lesson section an item routes to, by its framework topic. Section 01 is
 // the original unit lesson; sections 02 and 03 are split out by topic.
@@ -1179,8 +1180,42 @@ function buildLibrary() {
       foundationPrototype: true,
     };
   });
-  const flashcards = chapters.map((chapter, index) => ({ id: `ap-chem-card-${String(index + 1).padStart(2, '0')}`, chapterId: chapter.id, domainId: chapter.domainId, front: `What is the central reasoning move for ${chapter.title}?`, back: chapter.objectives[0], references: unitReferences(index + 1), reviewStatus: 'source-reviewed-editorial-pass', releaseEligible: false }));
-  const memoryAids = chapters.map((chapter, index) => ({ id: `ap-chem-aid-${String(index + 1).padStart(2, '0')}`, chapterId: chapter.id, domainId: chapter.domainId, title: `${chapter.domain} reasoning cue`, text: `Name the particles, write the governing relationship, check units and signs, and state what the evidence supports.`, references: unitReferences(index + 1), reviewStatus: 'source-reviewed-editorial-pass', releaseEligible: false }));
+  const flashcards = chapters.flatMap((chapter, index) => chapter.sections.map((section, sectionIndex) => ({
+    id: sectionIndex === 0
+      ? `ap-chem-card-${String(index + 1).padStart(2, '0')}`
+      : `ap-chem-card-${String(index + 1).padStart(2, '0')}-s${sectionIndex + 1}`,
+    chapterId: chapter.id,
+    sectionId: section.id,
+    domainId: chapter.domainId,
+    domain: chapter.domain,
+    front: sectionIndex === 0
+      ? `What is the central reasoning move for ${chapter.title}?`
+      : `What key chemical principle and boundary govern ${section.heading}?`,
+    back: sectionIndex === 0
+      ? chapter.objectives[0]
+      : ((section.content || '').split('. ').slice(0, 2).join('. ').replace(/\.+$/, '') + '.'),
+    references: unitReferences(index + 1),
+    reviewStatus: 'source-reviewed-editorial-pass',
+    releaseEligible: false,
+  })));
+  const memoryAids = chapters.map((chapter, index) => {
+    const body = `Name the particles, write the governing relationship, check units and signs, and state what the evidence supports. Anchor terms: ${(chapter.sections[0].keyTerms || []).slice(0, 3).join(', ') || chapter.domain}.`;
+    return {
+      id: `ap-chem-aid-${String(index + 1).padStart(2, '0')}`,
+      chapterId: chapter.id,
+      domainId: chapter.domainId,
+      domain: chapter.domain,
+      type: 'reasoning cue',
+      title: `${chapter.domain} reasoning cue`,
+      content: body,
+      text: body,
+      tags: (chapter.sections[0].keyTerms || []).slice(0, 4),
+      references: unitReferences(index + 1),
+      reviewStatus: 'source-reviewed-editorial-pass',
+      releaseEligible: false,
+    };
+  });
+  const { diagrams, diagramPlacements } = buildApChemistryDiagrams(chapters);
   const objectiveCatalog = buildObjectiveCatalog();
   return {
     schemaVersion: 1,
@@ -1219,11 +1254,12 @@ function buildLibrary() {
     },
     sourceCatalog: [{ id: 'ap-chemistry-ced-2024', title: 'AP Chemistry Course and Exam Description', organization: 'College Board', url: CED_URL, credibility: 'Current public course framework and content boundaries used for blueprint verification.', sourceType: 'official-blueprint', reviewedAt: verifiedAt }, { id: 'ap-chemistry-course-page', title: 'AP Chemistry course and exam page', organization: 'College Board', url: COURSE_URL, credibility: 'Public course overview and exam resources used for blueprint verification.', sourceType: 'official-course-page', reviewedAt: verifiedAt }, { id: 'openstax-chemistry-2e', title: 'Chemistry 2e Open Textbook', organization: 'OpenStax, Rice University', url: OPENSTAX_URL, credibility: 'Open college-level chemistry reference used for factual cross-checking only.', sourceType: 'open-textbook-reference', reviewedAt: verifiedAt }],
     chapters,
+    diagrams,
     flashcards,
     memoryAids,
-    diagramPlacements: [],
+    diagramPlacements,
     constructedResponseWorkshops: buildWorkshops(),
-    summary: { chapters: chapters.length, sections: chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0), knowledgeChecks: chapters.reduce((sum, chapter) => sum + chapter.knowledgeChecks.length, 0), flashcards: flashcards.length, memoryAids: memoryAids.length, diagrams: 0, diagramPlacements: 0, constructedResponseWorkshops: SPECS.length, sourceReviewedConstructedResponseWorkshops: SPECS.length, richLessonPrototypes: chapters.filter((chapter) => chapter.foundationPrototype).length, sourceReviewedChapters: chapters.length, sourceReviewedFlashcards: flashcards.length, sourceReviewedMemoryAids: memoryAids.length, releaseEligibleRecords: 0 },
+    summary: { chapters: chapters.length, sections: chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0), knowledgeChecks: chapters.reduce((sum, chapter) => sum + chapter.knowledgeChecks.length, 0), flashcards: flashcards.length, memoryAids: memoryAids.length, diagrams: diagrams.length, diagramPlacements: diagramPlacements.length, constructedResponseWorkshops: SPECS.length, sourceReviewedConstructedResponseWorkshops: SPECS.length, richLessonPrototypes: chapters.filter((chapter) => chapter.foundationPrototype).length, sourceReviewedChapters: chapters.length, sourceReviewedFlashcards: flashcards.length, sourceReviewedMemoryAids: memoryAids.length, releaseEligibleRecords: 0 },
     accessibility: { contentForm: 'text-first, linear lessons and single-choice items', essentialVisualItems: 0, diagramsRequiredForComprehension: false, diagramFallbackMode: 'ordered-text-equivalent', independentReviewStatus: 'pending', productionScreenReaderValidationStatus: 'pending', productionVoiceValidationStatus: 'pending' },
     rightsPolicy: { secureCollegeBoardContentUsed: false, copiedOrRephrasedCollegeBoardQuestions: false, copiedCollegeBoardRubricText: false, sourceProseOrFiguresReproduced: false, diagramSpecificationsOriginal: true, authoringBasis: 'Independent original wording informed by public blueprint metadata and factual cross-checks.', publicSourceUse: 'Blueprint alignment and factual verification only; no source prose, figures, or assessment content reproduced.', openStaxUse: 'Factual cross-checking and links only; no textbook prose, figures, or assessment content reproduced.', status: 'pending-independent-rights-review' },
     releaseGates: { internalStructuralValidation: 'pending-build-qa', independentRightsReview: 'pending', independentAccessibilityReview: 'pending', apChemistrySubjectExpertReview: 'pending', productionValidation: 'pending', fieldTesting: 'not-started', psychometricCalibration: 'not-started', cedAndPolicyReverification: 'required-before-release', releaseEligible: false },

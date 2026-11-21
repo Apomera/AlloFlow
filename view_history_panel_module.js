@@ -353,7 +353,8 @@ function HistoryPanel(props) {
   const FolderOpen = window.FolderOpen || noop;
   const FolderPlus = window.FolderPlus || noop;
   const GripVertical = window.GripVertical || noop;
-  const History = window.History || noop;
+  const _rawHistoryIcon = window.AlloIcons && window.AlloIcons.History || window.History;
+  const History = typeof _rawHistoryIcon === "function" && !(_rawHistoryIcon.prototype && "pushState" in _rawHistoryIcon.prototype) ? _rawHistoryIcon : noop;
   const Lock = window.Lock || noop;
   const Maximize = window.Maximize || noop;
   const Minimize = window.Minimize || noop;
@@ -433,13 +434,14 @@ function HistoryPanel(props) {
     setShowStemLab,
     setStemLabTab,
     t,
-    units,
+    units: rawUnits,
     onVisualizeUnit,
     sourceRecord = null,
     activeSelStation = null,
     setActiveSelStation = (() => {
     })
   } = props;
+  const units = Array.isArray(rawUnits) ? rawUnits : [];
   const historyThemeContext = React.useContext(window.AlloThemeContext || HistoryThemeFallbackContext);
   const historyTheme = historyThemeContext && (historyThemeContext.theme === "dark" || historyThemeContext.theme === "contrast") ? historyThemeContext.theme : "light";
   const getInstructionalTextProfile = (item) => {
@@ -650,6 +652,8 @@ function HistoryPanel(props) {
   };
   const [isOrganizing, setIsOrganizing] = React.useState(false);
   const [resourceActionsId, setResourceActionsId] = React.useState(null);
+  const [, setStationListTick] = React.useState(0);
+  const [confirmDeleteStationKey, setConfirmDeleteStationKey] = React.useState("");
   const resourceUiText = (key, fallback) => {
     const value = t(key);
     return value && value !== key ? value : fallback;
@@ -1092,7 +1096,7 @@ function HistoryPanel(props) {
       role: "menu",
       "aria-label": t("history.more_actions_aria"),
       onKeyDown: handleMoreActionsMenuKeyDown,
-      className: "rp-menu-surface absolute right-0 top-full z-[90] mt-1 w-64 rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-2xl shadow-slate-900/15"
+      className: "rp-menu-surface absolute right-0 top-full z-[90] mt-1 w-64 max-w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-2xl shadow-slate-900/15"
     },
     !isCanvas && /* @__PURE__ */ React.createElement(
       "button",
@@ -1116,7 +1120,7 @@ function HistoryPanel(props) {
         role: "menuitem",
         onClick: () => {
           closeMoreActions(false);
-          projectFileInputRef.current.click();
+          projectFileInputRef?.current?.click();
         },
         className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
         "data-help-key": "history_load_project"
@@ -1171,8 +1175,7 @@ function HistoryPanel(props) {
       /* @__PURE__ */ React.createElement(Lock, { size: 15, "aria-hidden": "true" }),
       /* @__PURE__ */ React.createElement("span", null, t("history.save_student"))
     ),
-    /* @__PURE__ */ React.createElement("div", { role: "separator", className: "my-1 h-px bg-slate-200" }),
-    /* @__PURE__ */ React.createElement(
+    isTeacherMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { role: "separator", className: "my-1 h-px bg-slate-200" }), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -1187,7 +1190,7 @@ function HistoryPanel(props) {
       },
       /* @__PURE__ */ React.createElement(Share2, { size: 15, "aria-hidden": "true" }),
       /* @__PURE__ */ React.createElement("span", null, t("history.share_resource_pack"))
-    ),
+    )),
     isTeacherMode && /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -1308,7 +1311,17 @@ function HistoryPanel(props) {
       placeholder: t("history.new_unit_placeholder"),
       className: "min-h-11 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
       autoFocus: true,
-      onKeyDown: (e) => e.key === "Enter" && createUnit()
+      onKeyDown: (e) => {
+        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+        if (e.key === "Enter") {
+          e.preventDefault();
+          createUnit();
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSetIsUnitModalOpenToFalse();
+        }
+      }
     }
   ), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "history_save_unit_btn", onClick: createUnit, className: "min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800" }, t("common.save")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "history_cancel_unit_btn", onClick: handleSetIsUnitModalOpenToFalse, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white" }, t("common.cancel"))), canMoveInBulk && unfiledCount > 0 && /* @__PURE__ */ React.createElement("label", { className: "mt-2 flex min-h-11 cursor-pointer items-center gap-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement(
     "input",
@@ -1326,50 +1339,59 @@ function HistoryPanel(props) {
     } catch (_) {
     }
     if (!Array.isArray(stations) || stations.length === 0) return null;
-    return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} STEM Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-emerald-50 px-1.5 py-0.5 text-xs text-emerald-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        key: st.id,
-        onClick: () => {
-          setActiveStation(st);
-          setShowStemLab(true);
-          setStemLabTab && setStemLabTab("explore");
-        },
-        className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 cursor-pointer transition-colors hover:border-emerald-300 hover:bg-emerald-50/60"
-      },
-      /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-emerald-50 text-emerald-700 shrink-0" }, "\u{1F52C}"),
-      /* @__PURE__ */ React.createElement(
-        "button",
+    return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} STEM Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-emerald-50 px-1.5 py-0.5 text-xs text-emerald-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => {
+      const delKey = "stem:" + st.id;
+      const confirming = confirmDeleteStationKey === delKey;
+      return /* @__PURE__ */ React.createElement(
+        "div",
         {
-          type: "button",
-          onClick: (e) => {
-            e.stopPropagation();
-            setActiveStation(st);
-            setShowStemLab(true);
-            setStemLabTab && setStemLabTab("explore");
-          },
-          className: "min-w-0 flex-grow rounded-lg text-left"
+          key: st.id,
+          className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 transition-colors hover:border-emerald-300 hover:bg-emerald-50/60"
         },
-        /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-bold text-slate-800 truncate" }, st.name),
-        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, st.tools.length, " tool", st.tools.length !== 1 ? "s" : "")
-      ),
-      /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: (e) => {
-            e.stopPropagation();
-            const updated = stations.filter((s) => s.id !== st.id);
-            localStorage.setItem("alloflow_stem_stations", JSON.stringify(updated));
-            if (activeStation && activeStation.id === st.id) setActiveStation(null);
-            addToast && addToast(_hpCopy(t, "history.station_removed", "Station removed"));
+        /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-emerald-50 text-emerald-700 shrink-0", "aria-hidden": "true" }, "\u{1F52C}"),
+        /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              setActiveStation(st);
+              setShowStemLab(true);
+              setStemLabTab && setStemLabTab("explore");
+            },
+            className: "min-h-11 min-w-0 flex-grow rounded-lg text-left"
           },
-          className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 transition-colors hover:bg-red-50",
-          "aria-label": t("history.delete_station_aria") || "Delete station"
-        },
-        /* @__PURE__ */ React.createElement(X, { size: 12 })
-      )
-    ))));
+          /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-bold text-slate-800 truncate" }, st.name),
+          /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, (st.tools || []).length, " tool", (st.tools || []).length !== 1 ? "s" : "")
+        ),
+        isTeacherMode && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              if (!confirming) {
+                setConfirmDeleteStationKey(delKey);
+                return;
+              }
+              setConfirmDeleteStationKey("");
+              const updated = stations.filter((s) => s.id !== st.id);
+              try {
+                localStorage.setItem("alloflow_stem_stations", JSON.stringify(updated));
+              } catch (_) {
+              }
+              if (activeStation && activeStation.id === st.id) setActiveStation(null);
+              setStationListTick((n) => n + 1);
+              addToast && addToast(_hpCopy(t, "history.station_removed", "Station removed"));
+            },
+            onBlur: () => {
+              if (confirming) setConfirmDeleteStationKey("");
+            },
+            className: `min-h-11 min-w-11 px-2 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${confirming ? "bg-red-600 text-white hover:bg-red-700" : "text-red-700 hover:bg-red-50"}`,
+            "aria-label": confirming ? `Confirm delete station ${st.name}` : t("history.delete_station_aria") || "Delete station"
+          },
+          confirming ? "Delete?" : /* @__PURE__ */ React.createElement(X, { size: 12, "aria-hidden": "true" })
+        )
+      );
+    })));
   })(), (() => {
     let stations = [];
     try {
@@ -1378,50 +1400,62 @@ function HistoryPanel(props) {
     }
     if ((!Array.isArray(stations) || !stations.length) && Array.isArray(window.__alloflowSelStations)) stations = window.__alloflowSelStations;
     if (!Array.isArray(stations) || stations.length === 0) return null;
-    return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} SEL Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-pink-50 px-1.5 py-0.5 text-xs text-pink-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        key: st.id,
-        onClick: () => {
-          setActiveSelStation(st);
-          setShowSelHub(true);
-          setSelHubTab && setSelHubTab("explore");
-        },
-        className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 cursor-pointer transition-colors hover:border-pink-300 hover:bg-pink-50/60"
-      },
-      /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-pink-50 text-pink-700 shrink-0" }, "\u{1F496}"),
-      /* @__PURE__ */ React.createElement(
-        "button",
+    return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} SEL Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-pink-50 px-1.5 py-0.5 text-xs text-pink-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => {
+      const delKey = "sel:" + st.id;
+      const confirming = confirmDeleteStationKey === delKey;
+      return /* @__PURE__ */ React.createElement(
+        "div",
         {
-          type: "button",
-          onClick: (e) => {
-            e.stopPropagation();
-            setActiveSelStation(st);
-            setShowSelHub(true);
-            setSelHubTab && setSelHubTab("explore");
-          },
-          className: "min-w-0 flex-grow rounded-lg text-left"
+          key: st.id,
+          className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 transition-colors hover:border-pink-300 hover:bg-pink-50/60"
         },
-        /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-bold text-slate-800 truncate" }, st.name),
-        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, (st.tools || []).length, " tool", (st.tools || []).length !== 1 ? "s" : "", (st.quests || []).length > 0 ? ` \xB7 ${st.quests.length} quest${st.quests.length !== 1 ? "s" : ""}` : "")
-      ),
-      /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: (e) => {
-            e.stopPropagation();
-            const updated = stations.filter((s) => s.id !== st.id);
-            localStorage.setItem("alloflow_sel_stations", JSON.stringify(updated));
-            if (activeSelStation && activeSelStation.id === st.id) setActiveSelStation(null);
-            addToast && addToast(_hpCopy(t, "history.sel_station_removed", "SEL Station removed"));
+        /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-pink-50 text-pink-700 shrink-0", "aria-hidden": "true" }, "\u{1F496}"),
+        /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              setActiveSelStation(st);
+              setShowSelHub(true);
+              setSelHubTab && setSelHubTab("explore");
+            },
+            className: "min-h-11 min-w-0 flex-grow rounded-lg text-left"
           },
-          className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 transition-colors hover:bg-red-50",
-          "aria-label": `Delete SEL Station ${st.name}`
-        },
-        /* @__PURE__ */ React.createElement(X, { size: 12 })
-      )
-    ))));
+          /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-bold text-slate-800 truncate" }, st.name),
+          /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, (st.tools || []).length, " tool", (st.tools || []).length !== 1 ? "s" : "", (st.quests || []).length > 0 ? ` \xB7 ${st.quests.length} quest${st.quests.length !== 1 ? "s" : ""}` : "")
+        ),
+        isTeacherMode && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              if (!confirming) {
+                setConfirmDeleteStationKey(delKey);
+                return;
+              }
+              setConfirmDeleteStationKey("");
+              const updated = stations.filter((s) => s.id !== st.id);
+              try {
+                localStorage.setItem("alloflow_sel_stations", JSON.stringify(updated));
+              } catch (_) {
+              }
+              if (typeof window !== "undefined" && Array.isArray(window.__alloflowSelStations)) {
+                window.__alloflowSelStations = updated;
+              }
+              if (activeSelStation && activeSelStation.id === st.id) setActiveSelStation(null);
+              setStationListTick((n) => n + 1);
+              addToast && addToast(_hpCopy(t, "history.sel_station_removed", "SEL Station removed"));
+            },
+            onBlur: () => {
+              if (confirming) setConfirmDeleteStationKey("");
+            },
+            className: `min-h-11 min-w-11 px-2 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${confirming ? "bg-red-600 text-white hover:bg-red-700" : "text-red-700 hover:bg-red-50"}`,
+            "aria-label": confirming ? `Confirm delete SEL Station ${st.name}` : `Delete SEL Station ${st.name}`
+          },
+          confirming ? "Delete?" : /* @__PURE__ */ React.createElement(X, { size: 12, "aria-hidden": "true" })
+        )
+      );
+    })));
   })(), /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -1526,6 +1560,17 @@ function HistoryPanel(props) {
             type: "text",
             value: editTitle,
             onChange: (e) => setEditTitle(e.target.value),
+            onKeyDown: (e) => {
+              if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+              if (e.key === "Enter") {
+                e.preventDefault();
+                finishResourceRename(e, itemInstanceId);
+              } else if (e.key === "Escape") {
+                e.preventDefault();
+                e.stopPropagation();
+                finishResourceRename(e, itemInstanceId, true);
+              }
+            },
             className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
             autoFocus: true
           }

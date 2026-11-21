@@ -32,7 +32,8 @@
   var Copy = _lazyIcon('Copy');
   var ArrowUpRight = _lazyIcon('ArrowUpRight');
 
-  // Preserve split-index keys used by existing student projects and voice inputs.
+  function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+// Preserve split-index keys used by existing student projects and voice inputs.
 // Numeric citations ([1], [2, 3]) and Markdown links ([text](url)) are not blanks.
 const SCAFFOLD_BLANK_PATTERN = /(\[(?!\s*\d+(?:\s*[,;-]\s*\d+)*\s*\])[^\]\n]*\](?!\())/;
 function scaffoldParagraphParts(text) {
@@ -47,6 +48,25 @@ function serializeScaffoldParagraph(text, responses, missing = '_____') {
 function isScaffoldParagraphComplete(text, responses) {
   const blanks = scaffoldParagraphParts(text).filter(part => part.responseKey);
   return blanks.length > 0 && blanks.every(part => String((responses || {})[part.responseKey] || '').trim());
+}
+function _scaffoldTranslationTarget(artifact) {
+  const api = window.AlloModules?.TextPipelineHelpers;
+  if (typeof api?.getArtifactTranslationTarget === 'function') return api.getArtifactTranslationTarget(artifact);
+  return [artifact?.config?.translationPolicy?.target, artifact?.translationPolicy?.target, artifact?.translationTarget, artifact?.config?.translationTarget, artifact?.config?.attachedTranslationTarget].find(value => typeof value === 'string' && value.trim()) || 'English';
+}
+function _scaffoldTranslationAttributes(artifact) {
+  const api = window.AlloModules?.TextPipelineHelpers;
+  if (typeof api?.getArtifactTranslationTextAttributes === 'function') return api.getArtifactTranslationTextAttributes(artifact);
+  const target = _scaffoldTranslationTarget(artifact);
+  const helpers = window.AlloModules?.ModuleScopeExtras;
+  const lang = helpers?.getSpeechLangCode?.(target) || window.AlloFlowLang?.bcp47Full?.(target) || (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/i.test(target) ? target : target === 'English' ? 'en' : 'und');
+  return {
+    lang,
+    dir: helpers?.getContentDirection?.(target) || 'auto',
+    style: {
+      textAlign: 'start'
+    }
+  };
 }
 function SentenceFramesView(props) {
   // State reads
@@ -100,7 +120,7 @@ function SentenceFramesView(props) {
   const draftOpenerRef = React.useRef(null);
   const scaffoldData = generatedContent?.data;
   const usableItems = Array.isArray(scaffoldData?.items) ? scaffoldData.items : [];
-  const isUsableItem = item => Boolean(item && typeof item.text === 'string' && item.text.trim() && (isTeacherMode || isEditingScaffolds || item.isSelected !== false && item.selected !== false));
+  const isUsableItem = item => Boolean(item && typeof item.text === 'string' && (isEditingScaffolds || item.text.trim()) && (isTeacherMode || isEditingScaffolds || item.isSelected !== false && item.selected !== false));
   const isAssessmentLockdown = !isTeacherMode && !isIndependentMode && Boolean(props.assessmentMode || props.isAssessmentMode || generatedContent?.config?.assessmentMode || generatedContent?.data?.assessmentMode || typeof window !== 'undefined' && window.__alloAssessmentMode === true);
   const canViewRubric = Boolean(isTeacherMode || generatedContent?.data?.rubric && !isAssessmentLockdown);
   const textAiDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
@@ -115,7 +135,8 @@ function SentenceFramesView(props) {
   // A Mastery Check draft belongs to the scaffold it was started on.
   const sessionResourceId = gradingSession.resourceId;
   const ownsSession = prev => !!prev && String(prev.resourceId) === String(sessionResourceId);
-  const isSessionOpen = !!gradingSession.isOpen && (sessionResourceId == null || String(sessionResourceId) === String(generatedContent?.id));
+  const effectiveEditingScaffolds = Boolean(isTeacherMode && isEditingScaffolds);
+  const isSessionOpen = !!gradingSession.isOpen && textAiUsable && (sessionResourceId == null || String(sessionResourceId) === String(generatedContent?.id));
   const wasSessionOpenRef = React.useRef(isSessionOpen);
   const restoreDraftOpenerFocus = () => {
     const candidate = draftOpenerRef.current && draftOpenerRef.current.isConnected ? draftOpenerRef.current : gradingTriggerRef.current;
@@ -126,6 +147,32 @@ function SentenceFramesView(props) {
       } catch (_) {}
     }
   };
+  const [draftCopied, setDraftCopied] = React.useState(false);
+  const draftCopiedTimerRef = React.useRef(null);
+  const [activeTierFilter, setActiveTierFilter] = React.useState('all');
+  const [speakingDraft, setSpeakingDraft] = React.useState(false);
+  const draftSpeechListenerRef = React.useRef(null);
+  const bionicOn = typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function' ? window.__alloUseBionic() : false;
+  const stopDraftSpeechListener = () => {
+    if (draftSpeechListenerRef.current && typeof window !== 'undefined') {
+      window.removeEventListener('allo-speech-state', draftSpeechListenerRef.current);
+      draftSpeechListenerRef.current = null;
+    }
+  };
+  React.useEffect(() => () => {
+    if (draftCopiedTimerRef.current) {
+      clearTimeout(draftCopiedTimerRef.current);
+      draftCopiedTimerRef.current = null;
+    }
+  }, []);
+  React.useEffect(() => {
+    setActiveTierFilter('all');
+    stopDraftSpeechListener();
+    setSpeakingDraft(false);
+    return () => {
+      stopDraftSpeechListener();
+    };
+  }, [generatedContent?.id]);
   React.useEffect(() => {
     if (wasSessionOpenRef.current && !isSessionOpen) {
       if (typeof document !== 'undefined' && (!document.activeElement || document.activeElement === document.body || !document.activeElement.isConnected)) {
@@ -134,7 +181,7 @@ function SentenceFramesView(props) {
     }
     wasSessionOpenRef.current = isSessionOpen;
   }, [isSessionOpen]);
-  if (!scaffoldData || (scaffoldData.mode === 'list' ? !usableItems.some(isUsableItem) : typeof scaffoldData.text !== 'string' || !scaffoldData.text.trim())) {
+  if (!scaffoldData || !effectiveEditingScaffolds && (scaffoldData.mode === 'list' ? !usableItems.some(isUsableItem) : typeof scaffoldData.text !== 'string' || !scaffoldData.text.trim())) {
     return /*#__PURE__*/React.createElement("div", {
       role: "status",
       className: "rounded-xl border border-slate-300 bg-slate-50 p-5 text-slate-700"
@@ -211,14 +258,165 @@ function SentenceFramesView(props) {
       }
     }
   };
+  const assembleStudentDraft = () => {
+    const resKey = generatedContent?.id || 'current';
+    const respMap = studentResponses[resKey] || {};
+    if (scaffoldData?.mode === 'paragraph' && typeof scaffoldData?.text === 'string') {
+      return serializeScaffoldParagraph(scaffoldData.text, respMap, '_____').trim();
+    }
+    return usableItems.map((item, idx) => {
+      if (!isUsableItem(item)) return '';
+      const ans = String(respMap[idx] || '').trim();
+      if (!ans) return '';
+      const stem = String(item.text || '').trim();
+      return stem.includes('___') ? stem.replace(/_{2,}/, ans) : stem ? stem + ' ' + ans : ans;
+    }).filter(Boolean).join('\n\n');
+  };
+  const handleCopyAssembledDraft = () => {
+    const assembled = assembleStudentDraft();
+    if (!assembled) return;
+    const markCopied = () => {
+      setDraftCopied(true);
+      if (draftCopiedTimerRef.current) clearTimeout(draftCopiedTimerRef.current);
+      draftCopiedTimerRef.current = setTimeout(() => {
+        draftCopiedTimerRef.current = null;
+        setDraftCopied(false);
+      }, 2000);
+    };
+    if (typeof copyToClipboard === 'function') {
+      copyToClipboard(assembled);
+      markCopied();
+    } else if (typeof window !== 'undefined' && typeof window.alloCopyText === 'function') {
+      window.alloCopyText(assembled);
+      markCopied();
+    } else if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard.writeText(assembled).then(markCopied).catch(() => {});
+    }
+  };
+  const handleListenAssembledDraft = () => {
+    const player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
+    const finished = () => {
+      stopDraftSpeechListener();
+      setSpeakingDraft(false);
+    };
+    stopDraftSpeechListener();
+    if (speakingDraft) {
+      if (player && typeof player.stop === 'function') player.stop();else if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+      setSpeakingDraft(false);
+      return;
+    }
+    const spoken = assembleStudentDraft().replace(/_{2,}/g, ' blank ').replace(/\s+/g, ' ').trim();
+    if (!spoken) return;
+    if (player && typeof player.speak === 'function') {
+      let ourId = null;
+      const onState = e => {
+        const d = e.detail || {};
+        if (ourId === null) {
+          if (d.isPlaying) ourId = d.currentId;
+          return;
+        }
+        if (!d.isPlaying || d.currentId !== ourId) finished();
+      };
+      draftSpeechListenerRef.current = onState;
+      window.addEventListener('allo-speech-state', onState);
+      setSpeakingDraft(true);
+      const langOpt = leveledTextLanguage && leveledTextLanguage !== 'English' ? {
+        language: leveledTextLanguage
+      } : {};
+      Promise.resolve(player.speak(spoken, langOpt)).then(res => {
+        if (res === null && ourId === null) finished();
+      }, finished);
+    } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+      setSpeakingDraft(true);
+      window.speechSynthesis.cancel();
+      const u = new window.SpeechSynthesisUtterance(spoken);
+      if (leveledTextLanguage && typeof window.languageToTTSCode === 'function') {
+        try {
+          u.lang = window.languageToTTSCode(leveledTextLanguage);
+        } catch (_) {}
+      }
+      u.onend = finished;
+      u.onerror = finished;
+      window.speechSynthesis.speak(u);
+    }
+  };
+  const assembledDraftText = !isTeacherMode ? assembleStudentDraft() : '';
+  const hasAssembledDraft = !isTeacherMode && Boolean(assembledDraftText);
+  const currentRespMap = studentResponses[generatedContent?.id] || {};
+  const draftStats = (() => {
+    if (scaffoldData?.mode === 'paragraph' && typeof scaffoldData?.text === 'string') {
+      const blanks = scaffoldParagraphParts(scaffoldData.text).filter(p => p.responseKey);
+      const filled = blanks.filter(p => String(currentRespMap[p.responseKey] || '').trim()).length;
+      const words = blanks.map(p => String(currentRespMap[p.responseKey] || '')).join(' ').split(/\s+/).filter(Boolean).length;
+      return {
+        filled,
+        total: blanks.length,
+        words,
+        isParagraph: true
+      };
+    }
+    let total = 0,
+      filled = 0;
+    const chunks = [];
+    usableItems.forEach((item, idx) => {
+      if (!isUsableItem(item)) return;
+      total += 1;
+      const v = String(currentRespMap[idx] || '').trim();
+      if (v) {
+        filled += 1;
+        chunks.push(v);
+      }
+    });
+    return {
+      filled,
+      total,
+      words: chunks.join(' ').split(/\s+/).filter(Boolean).length,
+      isParagraph: false
+    };
+  })();
+  const studentCombinedLower = Object.values(currentRespMap).filter(v => typeof v === 'string').join(' ').toLowerCase();
+  const isWordBankTermUsed = word => {
+    if (!studentCombinedLower || !word) return false;
+    const needle = String(word).trim().toLowerCase();
+    if (!needle) return false;
+    if (/^[a-z0-9\s'-]+$/i.test(needle)) {
+      const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return new RegExp('(?:^|[^a-z0-9])' + escaped + '(?:$|[^a-z0-9])', 'i').test(studentCombinedLower);
+    }
+    return studentCombinedLower.indexOf(needle) !== -1;
+  };
+  const usedWordBankCount = !isTeacherMode && !isEditingScaffolds && wordBank.length > 0 ? wordBank.reduce((n, w) => n + (isWordBankTermUsed(w) ? 1 : 0), 0) : 0;
+  const tierCounts = {
+    emerging: 0,
+    expanding: 0,
+    bridging: 0
+  };
+  if (scaffoldData?.mode === 'list') {
+    usableItems.forEach(item => {
+      if (!isUsableItem(item)) return;
+      const tier = tierOf(item);
+      if (tier) tierCounts[tier] += 1;
+    });
+  }
+  const presentTiers = ['emerging', 'expanding', 'bridging'].filter(k => tierCounts[k] > 0);
+  const showTierFilter = scaffoldData?.mode === 'list' && !isEditingScaffolds && !isSessionOpen && presentTiers.length >= 2;
+  const effectiveTierFilter = showTierFilter && presentTiers.includes(activeTierFilter) ? activeTierFilter : 'all';
+  const bt = s => bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function' ? window.__alloBionicReact(s) : s;
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex flex-wrap justify-between items-start gap-4",
+    className: "bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex flex-wrap justify-between items-center gap-4",
     "data-help-key": "scaffolds_goal_panel"
   }, isTeacherMode && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-rose-800 flex-grow"
-  }, /*#__PURE__*/React.createElement("strong", null, t('about.action_title')), " ", t('about.action_desc')), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("strong", null, t('about.action_title')), " ", t('about.action_desc')), !isTeacherMode && !isSessionOpen && draftStats.total > 0 && /*#__PURE__*/React.createElement("div", {
+    "data-scaffolds-progress": true,
+    className: "flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: `inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${draftStats.filled === draftStats.total ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-white text-rose-900 border-rose-200'}`
+  }, draftStats.filled === draftStats.total ? '✓ ' + label(draftStats.isParagraph ? 'scaffolds.all_blanks_filled' : 'scaffolds.all_prompts_started', draftStats.isParagraph ? `All ${draftStats.total} blanks filled` : `All ${draftStats.total} prompts started`) : label(draftStats.isParagraph ? 'scaffolds.blanks_progress' : 'scaffolds.prompts_progress', draftStats.isParagraph ? `${draftStats.filled} / ${draftStats.total} blanks filled` : `${draftStats.filled} / ${draftStats.total} prompts started`).replace('{filled}', String(draftStats.filled)).replace('{total}', String(draftStats.total))), draftStats.words > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-semibold text-rose-800"
+  }, draftStats.words, " ", draftStats.words === 1 ? label('common.word', 'word') : label('common.words', 'words'))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-3 ml-auto"
   }, ['saving', 'saved', 'error'].includes(studentWorkStatus) && /*#__PURE__*/React.createElement("div", {
     role: "status",
@@ -246,7 +444,32 @@ function SentenceFramesView(props) {
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     "aria-hidden": "true"
-  }), " ", t('common.reset')), textAiUsable && /*#__PURE__*/React.createElement("button", {
+  }), " ", t('common.reset')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-scaffolds-listen-draft": true,
+    disabled: !hasAssembledDraft && !speakingDraft,
+    "aria-pressed": speakingDraft,
+    onClick: handleListenAssembledDraft,
+    className: `min-h-11 flex items-center gap-1 text-xs font-bold border px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 ${speakingDraft ? 'bg-rose-100 text-rose-900 border-rose-400 hover:bg-rose-200' : 'bg-white text-indigo-800 border-indigo-300 hover:bg-indigo-50'}`,
+    title: speakingDraft ? label('common.stop', 'Stop reading') : label('scaffolds.listen_draft_title', 'Hear your completed writing read aloud'),
+    "aria-label": speakingDraft ? label('a11y.stop_reading', 'Stop reading') : label('scaffolds.listen_draft_aria', 'Listen to my draft')
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, speakingDraft ? '⏹️' : '🔊'), speakingDraft ? label('common.stop', 'Stop') : label('scaffolds.listen_draft', 'Listen to draft')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-scaffolds-copy-draft": true,
+    disabled: !hasAssembledDraft,
+    onClick: handleCopyAssembledDraft,
+    className: "min-h-11 flex items-center gap-1 text-xs font-bold text-slate-800 bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2",
+    title: label('scaffolds.copy_draft_title', 'Copy your completed writing draft'),
+    "aria-label": label('scaffolds.copy_draft_aria', 'Copy my completed draft')
+  }, draftCopied ? /*#__PURE__*/React.createElement(CheckCircle2, {
+    size: 12,
+    "aria-hidden": "true"
+  }) : /*#__PURE__*/React.createElement(Copy, {
+    size: 12,
+    "aria-hidden": "true"
+  }), draftCopied ? label('common.copied', 'Copied!') : label('scaffolds.copy_draft', 'Copy my draft')), textAiUsable && /*#__PURE__*/React.createElement("button", {
     ref: gradingTriggerRef,
     type: "button",
     onClick: () => {
@@ -289,26 +512,59 @@ function SentenceFramesView(props) {
     className: "bg-amber-50 border border-amber-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-baseline justify-between gap-2 mb-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("h4", {
     id: wordBankHeadingId,
     className: "text-xs font-bold text-amber-900 uppercase tracking-wider"
   }, label('scaffolds.word_bank', 'Word bank')), !isTeacherMode && !isEditingScaffolds && /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] font-medium text-amber-800"
+    "data-scaffold-word-bank-count": true,
+    className: `text-xs font-bold px-2 py-0.5 rounded-full border ${usedWordBankCount === wordBank.length ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-white text-amber-900 border-amber-300'}`
+  }, label('scaffolds.word_bank_used_count', '{used}/{total} used').replace('{used}', String(usedWordBankCount)).replace('{total}', String(wordBank.length)))), !isTeacherMode && !isEditingScaffolds && /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-medium text-amber-800"
   }, label('scaffolds.word_bank_hint', 'Click a word to insert it'))), /*#__PURE__*/React.createElement("ul", {
     className: "flex flex-wrap gap-2"
-  }, wordBank.map((word, i) => /*#__PURE__*/React.createElement("li", {
-    key: i
-  }, !isTeacherMode && !isEditingScaffolds ? /*#__PURE__*/React.createElement("button", {
+  }, wordBank.map((word, i) => {
+    const used = !isTeacherMode && !isEditingScaffolds && isWordBankTermUsed(word);
+    return /*#__PURE__*/React.createElement("li", {
+      key: i
+    }, !isTeacherMode && !isEditingScaffolds ? /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      dir: "auto",
+      "data-word-bank-used": used ? 'true' : 'false',
+      onMouseDown: e => e.preventDefault(),
+      onClick: () => insertWordBankTerm(word),
+      "aria-label": `${label('scaffolds.insert_word', 'Insert word')}: ${word}${used ? ' (' + label('scaffolds.word_used', 'used') + ')' : ''}`,
+      className: `min-h-11 px-3 py-1.5 rounded-full border text-sm font-semibold active:scale-95 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 cursor-pointer ${used ? 'bg-emerald-50 border-emerald-400 text-emerald-900 hover:bg-emerald-100' : 'bg-white border-amber-300 text-amber-950 hover:bg-amber-100 hover:border-amber-500'}`
+    }, used && /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true",
+      className: "mr-1 text-emerald-700"
+    }, "✓"), bt(word)) : /*#__PURE__*/React.createElement("span", {
+      dir: "auto",
+      className: "inline-block px-3 py-1 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950"
+    }, bt(word)));
+  }))), showTierFilter && /*#__PURE__*/React.createElement("div", {
+    "data-scaffolds-tier-filter": true,
+    "data-scaffold-tier": "filter",
+    role: "group",
+    "aria-label": label('scaffolds.filter_by_tier', 'Filter writing supports by level'),
+    className: "flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold text-slate-600"
+  }, label('scaffolds.tier_filter_label', 'Level:')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    dir: "auto",
-    onMouseDown: e => e.preventDefault(),
-    onClick: () => insertWordBankTerm(word),
-    "aria-label": `${label('scaffolds.insert_word', 'Insert word')}: ${word}`,
-    className: "min-h-11 px-3 py-1.5 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950 hover:bg-amber-100 hover:border-amber-500 active:scale-95 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 cursor-pointer"
-  }, word) : /*#__PURE__*/React.createElement("span", {
-    dir: "auto",
-    className: "inline-block px-3 py-1 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950"
-  }, word))))), isSessionOpen ? /*#__PURE__*/React.createElement(ErrorBoundary, {
+    "data-tier-filter": "all",
+    "aria-pressed": effectiveTierFilter === 'all',
+    onClick: () => setActiveTierFilter('all'),
+    className: `min-h-11 px-3 py-1 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 ${effectiveTierFilter === 'all' ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`
+  }, label('common.all', 'All'), " (", draftStats.total, ")"), presentTiers.map(tierKey => /*#__PURE__*/React.createElement("button", {
+    key: tierKey,
+    type: "button",
+    "data-tier-filter": tierKey,
+    "aria-pressed": effectiveTierFilter === tierKey,
+    onClick: () => setActiveTierFilter(tierKey),
+    className: `min-h-11 px-3 py-1 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 ${effectiveTierFilter === tierKey ? 'bg-rose-700 text-white border-rose-700' : TIER_CLASSES[tierKey] + ' hover:opacity-90'}`
+  }, label(TIER_LABELS[tierKey][0], TIER_LABELS[tierKey][1]), " (", tierCounts[tierKey], ")"))), isSessionOpen ? /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: label('scaffolds.draft_feedback_error', 'Draft feedback encountered an error. Please try again.')
   }, /*#__PURE__*/React.createElement(DraftFeedbackInterface, {
     status: gradingSession.status,
@@ -332,7 +588,7 @@ function SentenceFramesView(props) {
     }
   })) : generatedContent?.data?.mode === 'list' ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-4"
-  }, usableItems.map((item, idx) => isUsableItem(item) ? /*#__PURE__*/React.createElement("div", {
+  }, usableItems.map((item, idx) => isUsableItem(item) && (effectiveTierFilter === 'all' || tierOf(item) === effectiveTierFilter) ? /*#__PURE__*/React.createElement("div", {
     key: idx,
     className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-200 transition-colors motion-reduce:transition-none",
     "data-help-key": "scaffolds_item"
@@ -344,29 +600,28 @@ function SentenceFramesView(props) {
     className: "w-full min-w-0"
   }, tierOf(item) && /*#__PURE__*/React.createElement("span", {
     "data-scaffold-tier": tierOf(item),
-    className: `inline-block mb-1 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-wider ${TIER_CLASSES[tierOf(item)]}`
-  }, label(TIER_LABELS[tierOf(item)][0], TIER_LABELS[tierOf(item)][1])), isEditingScaffolds ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
+    className: `inline-block mb-1 px-2 py-0.5 rounded-full border text-xs font-bold uppercase tracking-wider ${TIER_CLASSES[tierOf(item)]}`
+  }, label(TIER_LABELS[tierOf(item)][0], TIER_LABELS[tierOf(item)][1])), effectiveEditingScaffolds ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('scaffolds.edit_item') || `Edit scaffold item ${idx + 1}`,
     value: item.text,
     onChange: e => handleScaffoldChange(idx, 'text', e.target.value),
     className: "w-full text-lg font-medium text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none font-serif",
     rows: getRows(item.text)
-  }), (item.text_en || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", {
+  }), (item.text_en !== undefined || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", _extends({}, _scaffoldTranslationAttributes(generatedContent), {
     "aria-label": t('scaffolds.edit_item_translation') || `Edit scaffold item ${idx + 1} translation`,
     value: item.text_en || '',
     onChange: e => handleScaffoldChange(idx, 'text_en', e.target.value, true),
     className: "w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none",
     rows: getRows(item.text_en || ''),
     placeholder: t('common.placeholder_translation')
-  })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     id: `scaffold-prompt-${generatedContent.id}-${idx}`,
     lang: leveledTextLanguage && leveledTextLanguage !== 'English' && typeof window !== 'undefined' && typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode(leveledTextLanguage) : undefined,
     dir: "auto",
     className: "text-lg break-words font-medium text-slate-800 mb-1 font-serif px-2 py-1"
-  }, item.text), leveledTextLanguage !== 'English' && item.text_en && /*#__PURE__*/React.createElement("p", {
-    lang: "en",
+  }, bt(item.text)), item.text_en && /*#__PURE__*/React.createElement("p", _extends({}, _scaffoldTranslationAttributes(generatedContent), {
     className: "text-sm text-slate-600 italic px-2"
-  }, item.text_en), /*#__PURE__*/React.createElement("textarea", {
+  }), bt(item.text_en)), /*#__PURE__*/React.createElement("textarea", {
     "aria-label": `${label('scaffolds.student_response', 'Student response')} ${visibleItemNumbers[idx]}`,
     "aria-describedby": `scaffold-prompt-${generatedContent.id}-${idx}`,
     value: studentResponses[generatedContent.id]?.[idx] || '',
@@ -382,7 +637,18 @@ function SentenceFramesView(props) {
     className: "w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-600 focus:border-rose-600 focus-visible:outline-2 focus-visible:outline-rose-600 focus-visible:outline-offset-2 resize-y bg-slate-50 focus:bg-white transition-all motion-reduce:transition-none font-sans",
     rows: 3,
     placeholder: isDiscussionPrompts ? label('scaffolds.discussion_placeholder', 'Write your response to the question...') : t('scaffolds.sentence_placeholder')
-  })), /*#__PURE__*/React.createElement("div", {
+  }), typeof window !== 'undefined' && typeof window.AlloDictationButton === 'function' && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2"
+  }, React.createElement(window.AlloDictationButton, {
+    t,
+    language: leveledTextLanguage,
+    label: label('scaffolds.dictate_response', 'Dictate response'),
+    onTranscript: spoken => {
+      const prev = String(studentResponses[generatedContent.id]?.[idx] || '');
+      const sep = prev && !/\s$/.test(prev) ? ' ' : '';
+      handleStudentInput(generatedContent.id, idx, prev + sep + spoken);
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 border-b border-slate-100 border-dashed w-full"
   })))) : null)) : /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 sm:p-8 rounded-xl border border-slate-400 shadow-sm",
@@ -419,21 +685,20 @@ function SentenceFramesView(props) {
     placeholder: part.replace(/[\[\]]/g, '')
   }) : /*#__PURE__*/React.createElement("span", {
     key: i
-  }, part))), (isEditingScaffolds && leveledTextLanguage !== 'English' || generatedContent?.data?.text_en) && /*#__PURE__*/React.createElement("div", {
+  }, bt(part)))), (isEditingScaffolds && (leveledTextLanguage !== 'English' || generatedContent?.data?.text_en !== undefined) || generatedContent?.data?.text_en) && /*#__PURE__*/React.createElement("div", {
     className: "mt-8 pt-6 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2"
-  }, t('common.english_translation')), isEditingScaffolds ? /*#__PURE__*/React.createElement("textarea", {
+  }, /^english$/i.test(_scaffoldTranslationTarget(generatedContent)) ? t('common.english_translation') : label('translate.companion_label', 'Companion translation') + ' (' + _scaffoldTranslationTarget(generatedContent) + ')'), isEditingScaffolds ? /*#__PURE__*/React.createElement("textarea", _extends({}, _scaffoldTranslationAttributes(generatedContent), {
     "aria-label": t('scaffolds.edit_paragraph_translation') || 'Edit paragraph frame translation',
     value: generatedContent?.data?.text_en || '',
     onChange: e => handleScaffoldTextChange('text_en', e.target.value),
     className: "w-full text-slate-600 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 resize-none transition-all motion-reduce:transition-none",
     rows: getRows(generatedContent?.data?.text_en || ''),
     placeholder: t('common.placeholder_translation')
-  }) : generatedContent?.data?.text_en && /*#__PURE__*/React.createElement("p", {
-    lang: "en",
+  })) : generatedContent?.data?.text_en && /*#__PURE__*/React.createElement("p", _extends({}, _scaffoldTranslationAttributes(generatedContent), {
     className: "text-slate-600 italic leading-relaxed px-2 py-1"
-  }, generatedContent?.data?.text_en))), canViewRubric && /*#__PURE__*/React.createElement("div", {
+  }), bt(generatedContent?.data?.text_en)))), canViewRubric && /*#__PURE__*/React.createElement("div", {
     className: "mt-1 pt-4 border-t border-rose-100 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap justify-between items-center gap-2 mb-3"
@@ -481,7 +746,7 @@ function SentenceFramesView(props) {
     size: 12,
     "aria-hidden": "true"
   }), " ", t('scaffolds.rubric_copy'))))), generatedContent?.data?.rubric && /*#__PURE__*/React.createElement("div", {
-    className: `bg-white p-4 rounded-xl border border-slate-400 relative shadow-sm transition-all motion-reduce:transition-none ${rubricZoom ? 'text-[11px]' : ''}`
+    className: `bg-white p-4 rounded-xl border border-slate-400 relative shadow-sm transition-all motion-reduce:transition-none ${rubricZoom ? 'text-xs' : ''}`
   }, /*#__PURE__*/React.createElement("style", null, rubricZoom ? `
                                     .rubric-container table th, .rubric-container table td { padding: 4px !important; line-height: 1.2 !important; }
                                     .rubric-container h1, .rubric-container h2, .rubric-container h3 { font-size: 1em !important; margin: 0.5em 0 !important; }
@@ -550,7 +815,7 @@ function SentenceFramesView(props) {
     className: "flex justify-between font-bold text-slate-700"
   }, /*#__PURE__*/React.createElement("span", null, gradeText(s.criteria)), /*#__PURE__*/React.createElement("span", null, gradeText(s.score))), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 text-xs italic"
-  }, gradeText(s.comment))))), /*#__PURE__*/React.createElement("div", {
+  }, bt(gradeText(s.comment)))))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-3 text-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-green-50 p-3 rounded border border-green-200"
@@ -561,7 +826,7 @@ function SentenceFramesView(props) {
     "aria-hidden": "true"
   }), " ", t('dashboard.grading.glow_label')), /*#__PURE__*/React.createElement("p", {
     className: "text-green-800"
-  }, gradeText(gradeFeedback.glow))), /*#__PURE__*/React.createElement("div", {
+  }, bt(gradeText(gradeFeedback.glow)))), /*#__PURE__*/React.createElement("div", {
     className: "bg-orange-50 p-3 rounded border border-orange-200"
   }, /*#__PURE__*/React.createElement("strong", {
     className: "text-orange-800 block mb-1 flex items-center gap-1"
@@ -570,7 +835,7 @@ function SentenceFramesView(props) {
     "aria-hidden": "true"
   }), " ", t('dashboard.grading.grow_label')), /*#__PURE__*/React.createElement("p", {
     className: "text-orange-800"
-  }, gradeText(gradeFeedback.grow))))), /*#__PURE__*/React.createElement("button", {
+  }, bt(gradeText(gradeFeedback.grow)))))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleSetGradingResultToNull,
     className: "min-h-11 text-xs font-semibold text-indigo-700 hover:text-indigo-900 underline w-full text-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"

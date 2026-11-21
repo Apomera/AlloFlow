@@ -1691,16 +1691,17 @@ async function _init() {
   _loadStartedAt = Date.now();
   console.log('[PyodideRuntime] Initializing… (~10MB download on first load)');
   await _loadPyodideScript();
-  _pyodide = await window.loadPyodide({ indexURL: PYODIDE_CDN });
+  const py = await window.loadPyodide({ indexURL: PYODIDE_CDN });
   // Inject both Python modules into the Pyodide filesystem so we can
   // `import report_checks` / `import poetry_checks` cleanly from any caller.
-  _pyodide.runPython('import sys; sys.path.insert(0, "/")');
-  _pyodide.FS.writeFile('/report_checks.py', REPORT_CHECKS_PY);
-  _pyodide.FS.writeFile('/poetry_checks.py', POETRY_CHECKS_PY);
+  py.runPython('import sys; sys.path.insert(0, "/")');
+  py.FS.writeFile('/report_checks.py', REPORT_CHECKS_PY);
+  py.FS.writeFile('/poetry_checks.py', POETRY_CHECKS_PY);
   // Eager import of report_checks to surface any syntax errors at boot.
   // poetry_checks is imported lazily because it depends on `pronouncing`
   // which has to be pip-installed on first use.
-  _pyodide.runPython('import report_checks');
+  py.runPython('import report_checks');
+  _pyodide = py;
   const elapsed = ((Date.now() - _loadStartedAt) / 1000).toFixed(1);
   console.log(`[PyodideRuntime] Ready in ${elapsed}s`);
   return _pyodide;
@@ -1825,13 +1826,19 @@ const PyodideRuntime = {
     } catch (_) {
       return verifyFormJs(form, poemText, targetWord);
     }
-    py.globals.set('_pc_form_json', JSON.stringify(form || {}));
-    py.globals.set('_pc_poem_text', poemText || '');
-    py.globals.set('_pc_target_word', targetWord);
-    const result = py.runPython(
-      'import poetry_checks; ' +
-      'poetry_checks.verify_form(_pc_form_json, _pc_poem_text, _pc_target_word)'
-    );
+    let result;
+    try {
+      py.globals.set('_pc_form_json', JSON.stringify(form || {}));
+      py.globals.set('_pc_poem_text', poemText || '');
+      py.globals.set('_pc_target_word', targetWord);
+      result = py.runPython(
+        'import poetry_checks; ' +
+        'poetry_checks.verify_form(_pc_form_json, _pc_poem_text, _pc_target_word)'
+      );
+    } catch (e) {
+      console.error('[PyodideRuntime] runPoetryCheck failed; falling back to JS:', e);
+      return verifyFormJs(form, poemText, targetWord);
+    }
     try { return _applySharedSyllables(JSON.parse(result)); }
     catch (e) {
       console.error('[PyodideRuntime] runPoetryCheck returned non-JSON:', typeof result);

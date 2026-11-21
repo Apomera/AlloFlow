@@ -41,91 +41,109 @@
     var PDFNumber = PDFLib.PDFNumber; // audit #22: real class so an integer-MCID /K leaf passes instanceof
     var nm = function (n) { return PDFName.of(n); };
     var resolve = function (o) { return (o instanceof PDFRef) ? ctx.lookup(o) : o; };
+    var decodePdfString = function (raw) {
+      var o = resolve(raw);
+      if (o == null) return '';
+      try {
+        if (typeof o.decodeText === 'function') return String(o.decodeText() || '');
+        if (typeof o.asString === 'function') return String(o.asString() || '');
+        var s = String(o);
+        return s.replace(/^\(|\)$/g, '');
+      } catch (_) { return ''; }
+    };
     var elems = [];
+    var activeRefs = new Set();
 
     function walk(objIn, depth, parentRole) {
+      var refKey = (objIn instanceof PDFRef) ? String(objIn) : '';
+      if (refKey && activeRefs.has(refKey)) return false;
       var obj = resolve(objIn);
       if (depth > 60 || obj == null) return false;
-      if (obj instanceof PDFArray) {
-        var _any = false;
-        for (var i = 0; i < obj.size(); i++) { if (walk(obj.get(i), depth + 1, parentRole)) _any = true; }
-        return _any;
-      }
-      if (obj instanceof PDFNumber) return true;
-      if (!(obj instanceof PDFDict)) return false;
-      var S = obj.get(nm('S'));
-      if (!S) {
-        var _t0 = String(obj.get(nm('Type')) || '');
-        if (_t0 === '/MCR' || _t0 === '/OBJR') return true;
-        var k0 = obj.get(nm('K'));
-        if (k0 != null) return walk(k0, depth + 1, parentRole);
-        return false;
-      }
-      var role = String(S).replace(/^\//, '');
-      var K = obj.get(nm('K'));
-      var hasContent = false, hasChild = false, pgRef = null;
-      if (K != null) {
-        var kr = resolve(K);
-        var items;
-        if (kr instanceof PDFArray) {
-          items = [];
-          for (var j = 0; j < kr.size(); j++) items.push(resolve(kr.get(j)));
-        } else {
-          items = [kr];
+      if (refKey) activeRefs.add(refKey);
+      try {
+        if (obj instanceof PDFArray) {
+          var _any = false;
+          for (var i = 0; i < obj.size(); i++) { if (walk(obj.get(i), depth + 1, parentRole)) _any = true; }
+          return _any;
         }
-        for (var x = 0; x < items.length; x++) {
-          var it = items[x];
-          if (it instanceof PDFNumber) hasContent = true; // integer MCID = marked content on the page (audit #22: was a constructor-NAME duck-type that mis-classed under the minified bundle → false-FAIL orphan)
-          else if (it instanceof PDFDict) {
-            var t = it.get(nm('Type'));
-            var ts = t ? String(t) : '';
-            if (ts === '/MCR' || ts === '/OBJR') { hasContent = true; if (ts === '/MCR' && !pgRef) pgRef = it.get(nm('Pg')); }
-            else if (it.get(nm('S'))) hasChild = true;
-            else hasContent = true;
+        if (obj instanceof PDFNumber) return true;
+        if (!(obj instanceof PDFDict)) return false;
+        var S = obj.get(nm('S'));
+        if (!S) {
+          var _t0 = String(obj.get(nm('Type')) || '');
+          if (_t0 === '/MCR' || _t0 === '/OBJR') return true;
+          var k0 = obj.get(nm('K'));
+          if (k0 != null) return walk(k0, depth + 1, parentRole);
+          return false;
+        }
+        var role = String(S).replace(/^\//, '');
+        var K = obj.get(nm('K'));
+        var hasContent = false, hasChild = false, pgRef = null;
+        if (K != null) {
+          var kr = resolve(K);
+          var items;
+          if (kr instanceof PDFArray) {
+            items = [];
+            for (var j = 0; j < kr.size(); j++) items.push(resolve(kr.get(j)));
+          } else {
+            items = [kr];
+          }
+          for (var x = 0; x < items.length; x++) {
+            var it = items[x];
+            if (it instanceof PDFNumber) hasContent = true; // integer MCID = marked content on the page (audit #22: was a constructor-NAME duck-type that mis-classed under the minified bundle → false-FAIL orphan)
+            else if (it instanceof PDFDict) {
+              var t = it.get(nm('Type'));
+              var ts = t ? String(t) : '';
+              if (ts === '/MCR' || ts === '/OBJR') { hasContent = true; if (ts === '/MCR' && !pgRef) pgRef = it.get(nm('Pg')); }
+              else if (it.get(nm('S'))) hasChild = true;
+              else hasContent = true;
+            }
           }
         }
+        // ActualText VALUE (not just presence): needed for the pure-marker
+        // /Lbl exemption — non-ASCII reloads as a hex string unless decoded.
+        var atObj = resolve(obj.get(nm('ActualText')));
+        var atText = decodePdfString(atObj);
+        // /Scope DETECTION (audit #10, 2026-06-15): the "Every TH has /Scope" rule below previously
+        // tested only for the PRESENCE of an /A attribute dict, so a TH whose /A carried layout attrs
+        // (e.g. O:/Table seeded after a ColSpan/RowSpan edit) but NO /Scope key falsely PASSED — a
+        // false-PASS in the credibility-bearing byte validator. /A may be a single attribute dict OR
+        // an array of them, and either may be an indirect ref — scan them all for an actual /Scope key.
+        var aObj = obj.get(nm('A'));
+        var hasScope = false;
+        if (aObj) {
+          var ar = resolve(aObj);
+          var aItems = [];
+          if (ar instanceof PDFArray) { for (var ai = 0; ai < ar.size(); ai++) aItems.push(resolve(ar.get(ai))); }
+          else { aItems.push(ar); }
+          for (var ax = 0; ax < aItems.length; ax++) { var ad = aItems[ax]; if (ad instanceof PDFDict && ad.get(nm('Scope'))) { hasScope = true; break; } }
+        }
+        var _myIdx = elems.length;
+        var altObj = resolve(obj.get(nm('Alt')));
+        var altText = decodePdfString(altObj);
+        var _pgKey = String(pgRef || obj.get(nm('Pg')) || '');
+        var elemLang = decodePdfString(obj.get(nm('Lang'))).trim();
+        elems.push({
+          role: role,
+          parentRole: parentRole || '',
+          hasK: K != null,
+          hasContent: hasContent,
+          hasChild: hasChild,
+          hasAlt: altText.trim().length > 0,
+          altText: altText,
+          page: pageIndex && pageIndex.has(_pgKey) ? pageIndex.get(_pgKey) : null,
+          hasActualText: !!atObj && atText.trim().length > 0,
+          actualText: atText,
+          hasA: !!aObj,
+          hasScope: hasScope,
+          hasLang: elemLang.length > 0,
+          hasID: !!resolve(obj.get(nm('ID'))),
+        });
+        if (K != null) { var _sub = walk(K, depth + 1, role); if (_sub) elems[_myIdx].hasDescContent = true; }
+        return hasContent || !!elems[_myIdx].hasDescContent;
+      } finally {
+        if (refKey) activeRefs.delete(refKey);
       }
-      // ActualText VALUE (not just presence): needed for the pure-marker
-      // /Lbl exemption — non-ASCII reloads as a hex string unless decoded.
-      var atObj = obj.get(nm('ActualText'));
-      var atText = '';
-      try { atText = atObj ? (typeof atObj.decodeText === 'function' ? atObj.decodeText() : String(atObj)) : ''; } catch (_) { atText = ''; }
-      // /Scope DETECTION (audit #10, 2026-06-15): the "Every TH has /Scope" rule below previously
-      // tested only for the PRESENCE of an /A attribute dict, so a TH whose /A carried layout attrs
-      // (e.g. O:/Table seeded after a ColSpan/RowSpan edit) but NO /Scope key falsely PASSED — a
-      // false-PASS in the credibility-bearing byte validator. /A may be a single attribute dict OR
-      // an array of them, and either may be an indirect ref — scan them all for an actual /Scope key.
-      var aObj = obj.get(nm('A'));
-      var hasScope = false;
-      if (aObj) {
-        var ar = resolve(aObj);
-        var aItems = [];
-        if (ar instanceof PDFArray) { for (var ai = 0; ai < ar.size(); ai++) aItems.push(resolve(ar.get(ai))); }
-        else { aItems.push(ar); }
-        for (var ax = 0; ax < aItems.length; ax++) { var ad = aItems[ax]; if (ad instanceof PDFDict && ad.get(nm('Scope'))) { hasScope = true; break; } }
-      }
-      var _myIdx = elems.length;
-      var altObj = obj.get(nm('Alt')), altText = '';
-      try { altText = altObj ? (typeof altObj.decodeText === 'function' ? altObj.decodeText() : String(altObj)) : ''; } catch (_) { altText = ''; }
-      var _pgKey = String(pgRef || obj.get(nm('Pg')) || '');
-      elems.push({
-        role: role,
-        parentRole: parentRole || '',
-        hasK: K != null,
-        hasContent: hasContent,
-        hasChild: hasChild,
-        hasAlt: !!altObj,
-        altText: altText,
-        page: pageIndex && pageIndex.has(_pgKey) ? pageIndex.get(_pgKey) : null,
-        hasActualText: !!atObj,
-        actualText: atText,
-        hasA: !!aObj,
-        hasScope: hasScope,
-        hasLang: !!obj.get(nm('Lang')),
-        hasID: !!obj.get(nm('ID')),
-      });
-      if (K != null) { var _sub = walk(K, depth + 1, role); if (_sub) elems[_myIdx].hasDescContent = true; }
-      return hasContent || !!elems[_myIdx].hasDescContent;
     }
 
     var rootK = stRoot && stRoot.get ? stRoot.get(nm('K')) : null;
@@ -194,26 +212,39 @@
       return { error: 'Failed to load PDF bytes: ' + (e && e.message), checks: [], summary: { overall: 'ERROR', pass: 0, fail: 0 } };
     }
 
-    // Probe for encryption separately — load with ignoreEncryption=false to detect.
+    // Avoid a second full PDFDocument.load when pdf-lib exposes doc.isEncrypted directly.
     var isEncrypted = false;
-    try {
-      await PDFDocument.load(bytes, { ignoreEncryption: false });
-    } catch (e) {
-      isEncrypted = /encrypted|password/i.test((e && e.message) || '');
+    if (typeof doc.isEncrypted === 'boolean') {
+      isEncrypted = doc.isEncrypted;
+    } else {
+      try {
+        await PDFDocument.load(bytes, { ignoreEncryption: false });
+      } catch (e) {
+        isEncrypted = /encrypted|password/i.test((e && e.message) || '');
+      }
     }
 
     var ctx = doc.context;
     var catalog = doc.catalog;
     var nm = function (n) { return PDFName.of(n); };
     var resolve = function (o) { return (o instanceof PDFRef) ? ctx.lookup(o) : o; };
+    var decodeCatalogStr = function (raw) {
+      var o = resolve(raw);
+      if (o == null) return '';
+      try {
+        if (typeof o.decodeText === 'function') return String(o.decodeText() || '');
+        if (typeof o.asString === 'function') return String(o.asString() || '');
+        return String(o).replace(/^\(|\)$/g, '');
+      } catch (_) { return ''; }
+    };
 
     var stRoot = resolve(catalog.get(nm('StructTreeRoot')));
     var markInfo = resolve(catalog.get(nm('MarkInfo')));
-    var markedRaw = markInfo && markInfo.get ? markInfo.get(nm('Marked')) : null;
-    var langRaw = catalog.get(nm('Lang'));
+    var markedRaw = markInfo && markInfo.get ? resolve(markInfo.get(nm('Marked'))) : null;
+    var langRaw = decodeCatalogStr(catalog.get(nm('Lang'))).trim();
     var pages = doc.getPages();
     var viewerPrefs = resolve(catalog.get(nm('ViewerPreferences')));
-    var displayDocTitle = viewerPrefs && viewerPrefs.get ? viewerPrefs.get(nm('DisplayDocTitle')) : null;
+    var displayDocTitle = viewerPrefs && viewerPrefs.get ? resolve(viewerPrefs.get(nm('DisplayDocTitle'))) : null;
     var outlines = resolve(catalog.get(nm('Outlines')));
     // /Info lives in the TRAILER, not the catalog — the old catalog lookup
     // made this rule fail on every document, including the pipeline's own
@@ -281,13 +312,13 @@
         var lAnnots = resolve(pages[lp].node.get(nm('Annots')));
         if (!lAnnots || typeof lAnnots.size !== 'function' || lAnnots.size() === 0) continue;
         pagesWithAnnots++;
-        if (String(pages[lp].node.get(nm('Tabs')) || '') === '/S') pagesWithAnnotsTabsS++;
+        if (String(resolve(pages[lp].node.get(nm('Tabs'))) || '') === '/S') pagesWithAnnotsTabsS++;
         for (var la = 0; la < lAnnots.size(); la++) {
           var annot = resolve(lAnnots.get(la));
           if (!annot || !annot.get) continue;
-          if (String(annot.get(nm('Subtype')) || '') !== '/Link') continue;
+          if (String(resolve(annot.get(nm('Subtype'))) || '') !== '/Link') continue;
           linkAnnotsTotal++;
-          if (annot.get(nm('Contents'))) linkAnnotsWithContents++;
+          if (decodeCatalogStr(annot.get(nm('Contents'))).trim().length > 0) linkAnnotsWithContents++;
           if (annot.get(nm('StructParent')) != null) linkAnnotsWithStructParent++;
         }
       }
@@ -307,7 +338,7 @@
         else if (metaBytes) xmpText = new TextDecoder('utf-8').decode(metaBytes);
       }
     } catch (_) { xmpUnreadable = true; }
-    var uaDeclaredInXmp = xmpText.indexOf('<pdfuaid:part>1</pdfuaid:part>') !== -1;
+    var uaDeclaredInXmp = /<pdfuaid:part>\s*1\s*<\/pdfuaid:part>|\bpdfuaid:part\s*=\s*["']1["']/i.test(xmpText);
     var xmpDcTitleMatch = xmpText.match(/<dc:title\b[^>]*>([\s\S]*?)<\/dc:title>/i);
     var xmpDcTitleText = xmpDcTitleMatch ? xmpDcTitleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
     var hasParentTree = !!(stRoot && stRoot.get && resolve(stRoot.get(nm('ParentTree'))));
@@ -335,8 +366,10 @@
       containment.checked++;
       if (want.indexOf(el.parentRole) === -1 && containment.bad.length < 8) containment.bad.push(el.role + ' in ' + (el.parentRole || '(root)'));
     }
+    var byRoleMap = Object.create(null);
+    for (var k = 0; k < elems.length; k++) byRoleMap[elems[k].role] = (byRoleMap[elems[k].role] || 0) + 1;
     var byRole = {};
-    for (var k = 0; k < elems.length; k++) byRole[elems[k].role] = (byRole[elems[k].role] || 0) + 1;
+    Object.keys(byRoleMap).forEach(function (rk) { if (rk !== '__proto__' && rk !== 'constructor' && rk !== 'prototype') byRole[rk] = byRoleMap[rk]; });
     var thElems = elems.filter(function (e) { return e.role === 'TH'; });
     var cellElems = elems.filter(function (e) { return e.role === 'TH' || e.role === 'TD'; });
     var figures = elems.filter(function (e) { return e.role === 'Figure'; });

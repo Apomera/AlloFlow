@@ -263,11 +263,12 @@
                 if (typeof token !== 'string' || !token || token.length > 8192 || !/^[A-Za-z0-9._~+\/-]+=*$/.test(token)) fail('AUTH_REQUIRED');
                 const result = await task(ctx, token);
                 stopped(ctx);
-                status = { phase: 'complete', code: null };
+                if (!disposed) status = { phase: 'complete', code: null };
                 return result;
             } catch (error) {
                 const code = ctx.controller.signal.aborted ? ctx.abortCode : error instanceof ImportError ? error.code : 'MALFORMED_RESPONSE';
-                status = { phase: code === 'CANCELLED' ? 'cancelled' : code === 'DISPOSED' ? 'disposed' : 'error', code };
+                if (disposed) status = { phase: 'disposed', code: 'DISPOSED' };
+                else status = { phase: code === 'CANCELLED' ? 'cancelled' : code === 'DISPOSED' ? 'disposed' : 'error', code };
                 // A failed operation invalidates old course selections; retry starts at class listing.
                 selectedIds.clear();
                 throw new ImportError(code);

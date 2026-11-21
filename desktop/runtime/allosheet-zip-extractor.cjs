@@ -79,8 +79,10 @@ function runTar(spawnImpl, command, args, options = {}) {
       shell: false,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
-    let stdout = Buffer.alloc(0);
-    let stderr = Buffer.alloc(0);
+    const stdoutChunks = [];
+    const stderrChunks = [];
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
     let settled = false;
 
     const finish = (error, result) => {
@@ -90,13 +92,17 @@ function runTar(spawnImpl, command, args, options = {}) {
       if (error) reject(error);
       else resolve(result);
     };
-    const append = (current, chunk, limit, label) => {
-      const next = Buffer.concat([current, Buffer.from(chunk)]);
-      if (next.length > limit) {
+    const appendChunk = (chunks, currentBytes, chunk, limit, label) => {
+      if (settled) return currentBytes;
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      const nextBytes = currentBytes + buf.length;
+      if (nextBytes > limit) {
         try { child.kill(); } catch (_) {}
         finish(new Error(`The archive ${label} exceeded its safety limit.`));
+        return nextBytes;
       }
-      return next;
+      chunks.push(buf);
+      return nextBytes;
     };
     const onAbort = () => {
       try { child.kill(); } catch (_) {}
@@ -113,13 +119,15 @@ function runTar(spawnImpl, command, args, options = {}) {
       options.signal.addEventListener('abort', onAbort, { once: true });
     }
     if (child.stdout) child.stdout.on('data', (chunk) => {
-      stdout = append(stdout, chunk, options.maxStdoutBytes || MAX_LISTING_BYTES, 'listing');
+      stdoutBytes = appendChunk(stdoutChunks, stdoutBytes, chunk, options.maxStdoutBytes || MAX_LISTING_BYTES, 'listing');
     });
     if (child.stderr) child.stderr.on('data', (chunk) => {
-      stderr = append(stderr, chunk, options.maxStderrBytes || MAX_ERROR_BYTES, 'diagnostic output');
+      stderrBytes = appendChunk(stderrChunks, stderrBytes, chunk, options.maxStderrBytes || MAX_ERROR_BYTES, 'diagnostic output');
     });
     child.once('error', (error) => finish(error));
-    child.once('exit', (code) => {
+    child.once('close', (code) => {
+      const stdout = Buffer.concat(stdoutChunks, stdoutBytes);
+      const stderr = Buffer.concat(stderrChunks, stderrBytes);
       if (code !== 0) {
         const detail = stderr.toString('utf8').replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 500);
         finish(new Error(`Grist Desktop archive extraction failed (exit ${code})${detail ? `: ${detail}` : '.'}`));

@@ -37,10 +37,12 @@
   var UTF8_NAMES = 0x0800, DOS_DATE = 0x21; // 1980-01-01, 00:00
 
   function uniqueName(raw, seen) {
-    var clean = String(raw || 'file').replace(/[\\]/g, '/').replace(/^\/+/, '');
+    var clean = String(raw || 'file').replace(/[\x00-\x1f\x7f]/g, '').replace(/[\\]/g, '/').replace(/^\/+/, '');
     var parts = clean.split('/').map(function (seg) {
       return seg.replace(/[:*?"<>|]/g, '-').trim();
-    }).filter(Boolean);
+    }).filter(function (seg) {
+      return seg && seg !== '.' && seg !== '..';
+    });
     var basePath = parts.join('/') || 'file';
     var key = basePath.toLowerCase();
     if (!seen[key]) { seen[key] = true; return basePath; }
@@ -96,21 +98,30 @@
   // The files back out of a .zip this writer made (store only), for tests and checks: [{ name, bytes, crcOk }].
   function readZip(bytes) {
     var b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    if (b.length < 22) return [];
     var r16 = function (p) { return b[p] | (b[p + 1] << 8); };
     var r32 = function (p) { return (b[p] | (b[p + 1] << 8) | (b[p + 2] << 16) | (b[p + 3] << 24)) >>> 0; };
     var end = -1;
-    for (var p = b.length - 22; p >= 0; p--) if (r32(p) === 0x06054b50) { end = p; break; }
+    var minEocd = Math.max(0, b.length - 65557);
+    for (var p = b.length - 22; p >= minEocd; p--) if (r32(p) === 0x06054b50) { end = p; break; }
     if (end < 0) return [];
     var n = r16(end + 10), at = r32(end + 16), out = [];
+    var totalBytes = 0, maxTotalBytes = b.length * 2;
     var decode = typeof TextDecoder === 'function' ? function (x) { return new TextDecoder('utf-8').decode(x); } : function (x) { return String.fromCharCode.apply(null, x); };
     for (var i = 0; i < n; i++) {
-      if (r32(at) !== 0x02014b50) break;
+      if (at + 46 > end || r32(at) !== 0x02014b50) break;
+      var method = r16(at + 10);
+      if (method !== 0) break;
       var size = r32(at + 20), nameLength = r16(at + 28), extra = r16(at + 30), note = r16(at + 32), local = r32(at + 42), crc = r32(at + 16);
+      var nextAt = at + 46 + nameLength + extra + note;
+      if (nextAt > end || local + 30 > end || r32(local) !== 0x04034b50) break;
       var name = decode(b.subarray(at + 46, at + 46 + nameLength));
       var from = local + 30 + r16(local + 26) + r16(local + 28);
+      if (from > end || from + size > end || totalBytes + size > maxTotalBytes) break;
+      totalBytes += size;
       var data = b.subarray(from, from + size);
       out.push({ name: name, bytes: data, crcOk: crc32(data) === crc });
-      at += 46 + nameLength + extra + note;
+      at = nextAt;
     }
     return out;
   }

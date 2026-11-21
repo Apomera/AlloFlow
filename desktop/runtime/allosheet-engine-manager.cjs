@@ -481,24 +481,13 @@ function inspectExtractedTree(root, limits) {
 
 const MAX_DOWNLOAD_REDIRECTS = 5;
 
+const { isPublicIp } = require('./web-source-fetch.cjs');
+
 function isPrivateOrLoopbackHost(hostname) {
-  const host = String(hostname || '').trim().toLowerCase().replace(/^\[|\]$/g, '');
+  const host = String(hostname || '').trim().toLowerCase().replace(/^\[|\]$/g, '').replace(/\.+$/, '');
   if (!host) return true;
   if (host === 'localhost' || host.endsWith('.localhost') || host === 'metadata.google.internal') return true;
-  if (host === '::1' || host === '::' || host === '0:0:0:0:0:0:0:1' || host === '0:0:0:0:0:0:0:0') return true;
-  if (/^(?:fc|fd)[0-9a-f]{2}:/i.test(host) || /^fe[89ab][0-9a-f]:/i.test(host)) return true;
-  const v4Mapped = host.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
-  const ip = v4Mapped ? v4Mapped[1] : host;
-  const octets = ip.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (octets) {
-    const a = Number(octets[1]);
-    const b = Number(octets[2]);
-    if (a === 0 || a === 10 || a === 127) return true;
-    if (a === 169 && b === 254) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-    if (a === 100 && b >= 64 && b <= 127) return true;
-  }
+  if (net.isIP(host)) return !isPublicIp(host);
   return false;
 }
 
@@ -1262,9 +1251,11 @@ function createAlloSheetEngineManager(options = {}) {
         clearTimeout(timer);
         child.removeListener('message', onMessage);
         child.removeListener('exit', onExit);
+        child.removeListener('error', onError);
         if (error) reject(error);
         else resolve(auth);
       };
+      const onError = (err) => finish(err instanceof Error ? err : new Error(String(err || 'The managed Grist server failed to start.')));
       const onMessage = (message) => {
         if (state.child !== child || !message || message.type !== AUTH_MESSAGE_TYPE) return;
         const electronKey = String(message.electronKey || '');
@@ -1291,6 +1282,7 @@ function createAlloSheetEngineManager(options = {}) {
       if (timer.unref) timer.unref();
       child.on('message', onMessage);
       child.once('exit', onExit);
+      child.once('error', onError);
     });
   }
 

@@ -24,7 +24,7 @@ const RULE = "default-src 'none'; script-src 'self'; style-src 'self'; img-src '
 // 2026-11-12, deliberately: the picture list, the Word Sounds builder (for its picture credits and its drawing check) and
 // the loader of recordings and pictures (packets_vocab_media.js). Without fetch (jsdom) the page makes files without them.
 const SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_zip.js', 'packets_handoff.js', 'packets_my_words.js', BANK_FILE,
-  'word_sounds_symbols_en.js', 'word_picture_matcher.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', SCRIPT];
+  'word_sounds_symbols_en.js', 'word_picture_matcher.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', 'packets-print-cards.js', SCRIPT];
 const BRITISH = /practis|standardis|licence|colour|\bmarking\b|\bmarked\b|\btick(?:ed|s)?\b|USB stick|\bwhilst\b|\bmaths\b|favour|behaviour|\bcentre\b/i;
 const ALLOWED_AI_SENTENCES = ['Runs without AI.', 'This page runs without AI.', 'This page runs without AI. No account. Nothing you choose leaves your device.', 'Run AI.',
   // 2026-11-13 (teacher-journey pass): where AI was used ahead of time, said plainly, as the Word Sounds pages name their AI voices.
@@ -53,11 +53,11 @@ describe('the page as a file', () => {
     expect(head.indexOf(meta)).toBeLessThan(Math.min(...head.filter((n) => n.matches('script, link')).map((n) => head.indexOf(n))));
     expect([...doc.querySelectorAll('script')].map((s) => s.getAttribute('src'))).toEqual(SCRIPTS);
     expect([...doc.querySelectorAll('script')].every((s) => s.defer && !s.textContent.trim())).toBe(true);
-    expect([...doc.querySelectorAll('link[rel="stylesheet"]')].map((l) => l.getAttribute('href'))).toEqual(['packets.css', 'packets-make.css', 'packets-vocab.css']);
+    expect([...doc.querySelectorAll('link[rel="stylesheet"]')].map((l) => l.getAttribute('href'))).toEqual(['packets.css', 'packets-make.css', 'packets-print-cards.css', 'packets-vocab.css']);
     expect(doc.querySelectorAll('style, [style]')).toHaveLength(0);
     for (const node of doc.querySelectorAll('*')) for (const a of node.attributes) expect(/^on/i.test(a.name), node.tagName + ' ' + a.name).toBe(false);
     // Every file it names exists, but the word list, which another job is building (the tests stand it in).
-    for (const src of SCRIPTS.concat(['packets.css', 'packets-make.css', 'packets-vocab.css', 'packets-mark.svg'])) if (src !== BANK_FILE) expect(existsSync(src), src).toBe(true);
+    for (const src of SCRIPTS.concat(['packets.css', 'packets-make.css', 'packets-print-cards.css', 'packets-vocab.css', 'packets-mark.svg'])) if (src !== BANK_FILE) expect(existsSync(src), src).toBe(true);
     expect(read(PAGE) + read(SCRIPT) + read('packets-vocab.css')).not.toMatch(/https?:\/\/|\/\/[a-z0-9-]+\.[a-z]{2,}\//i);
     expect(read(SCRIPT)).not.toMatch(/\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|innerHTML|document\.write|\beval\s*\(|new Function/);
   });

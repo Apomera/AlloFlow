@@ -41,7 +41,8 @@
 
   function redactString(value) {
     return String(value == null ? '' : value)
-      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted]')
+      .slice(0, 2000)
+      .replace(/[A-Z0-9._%+-]+@(?:[A-Z0-9-]+\.)+[A-Z]{2,}/gi, '[redacted]')
       .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[redacted]')
       .replace(/(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g, '[redacted]')
       .replace(/\b(?:AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9_-]{20,}|Bearer\s+[A-Za-z0-9._~+/=-]{16,})\b/g, '[redacted]');
@@ -50,9 +51,20 @@
   function safeUrl(value) {
     try {
       var parsed = new URL(String(value || '').trim());
+      if (parsed.username || parsed.password) return '';
       return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.toString() : '';
     } catch (_) {
       return '';
+    }
+  }
+
+  function parseHttpsEndpoint(value) {
+    try {
+      var parsed = new URL(String(value || '').trim());
+      if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.hash) return null;
+      return parsed;
+    } catch (_) {
+      return null;
     }
   }
 
@@ -72,15 +84,16 @@
   }
 
   function compareMetadataField(expected, observed) {
+    var cleanObserved = clean(observed || '', 320);
     var left=clean(expected||'',240).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-    var right=clean(observed||'',320).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-    if(!left)return {kind:'neutral',label:'Not provided',observed:observed||'Not recorded'};
+    var right=cleanObserved.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+    if(!left)return {kind:'neutral',label:'Not provided',observed:cleanObserved||'Not recorded'};
     if(!right)return {kind:'warn',label:'Not found',observed:'Not returned by the page'};
-    if(left===right||left.indexOf(right)>=0||right.indexOf(left)>=0)return {kind:'ok',label:'Likely match',observed:observed};
+    if(left===right||left.indexOf(right)>=0||right.indexOf(left)>=0)return {kind:'ok',label:'Likely match',observed:cleanObserved};
     var words=left.split(' ').filter(function(word){return word.length>2;});
     var hits=words.filter(function(word){return right.indexOf(word)>=0;}).length;
-    if(words.length&&hits/words.length>=0.5)return {kind:'warn',label:'Partial match',observed:observed};
-    return {kind:'error',label:'Possible mismatch',observed:observed};
+    if(words.length&&hits/words.length>=0.5)return {kind:'warn',label:'Partial match',observed:cleanObserved};
+    return {kind:'error',label:'Possible mismatch',observed:cleanObserved};
   }
 
   function assessConfidence(input) {
@@ -237,7 +250,7 @@
     var scope = scopeFor(options.scope);
     var searchQuery = scopedQuery(safeQuery, scope);
     var requested = Number(options.maxResults);
-    var maxResults = Number.isFinite(requested) ? Math.max(1, Math.min(requested, MAX_RESULTS)) : DEFAULT_RESULTS;
+    var maxResults = Number.isFinite(requested) ? Math.max(1, Math.min(Math.floor(requested), MAX_RESULTS)) : DEFAULT_RESULTS;
     if (safeQuery.length < 3) throw new Error('Enter at least three characters for a source search.');
     if (isDesktopOffline()) throw new Error('Web source search is disabled in offline Desktop mode.');
     if (isManagedSearchDisabled()) throw new Error('Web source search is disabled by managed organization policy.');
@@ -262,9 +275,10 @@
       };
     }
 
-    var endpoint = proxyUrl();
-    if (!/^https:\/\//i.test(endpoint)) throw new Error('A secure source-search proxy is not configured.');
-    var requestUrl = endpoint + (endpoint.indexOf('?') >= 0 ? '&' : '?')
+    var endpoint = parseHttpsEndpoint(proxyUrl());
+    if (!endpoint) throw new Error('A secure source-search proxy is not configured.');
+    var baseEndpoint = endpoint.toString();
+    var requestUrl = baseEndpoint + (endpoint.search ? '&' : '?')
       + 'q=' + encodeURIComponent(searchQuery) + '&num=' + String(maxResults);
     var response;
     try {
@@ -295,9 +309,10 @@
     if (isDesktopOffline()) throw new Error('Metadata verification is disabled in offline Desktop mode.');
     if (isManagedSearchDisabled()) throw new Error('Metadata verification is disabled by managed organization policy.');
     if (root.navigator && root.navigator.onLine === false) throw new Error('This window is offline. Metadata verification is unavailable.');
-    var endpoint = metadataProxyUrl();
-    if (!/^https:\/\//i.test(endpoint)) throw new Error('A secure metadata proxy is not configured.');
-    var requestUrl = endpoint + (endpoint.indexOf('?') >= 0 ? '&' : '?') + 'url=' + encodeURIComponent(safe);
+    var endpoint = parseHttpsEndpoint(metadataProxyUrl());
+    if (!endpoint) throw new Error('A secure metadata proxy is not configured.');
+    var baseEndpoint = endpoint.toString();
+    var requestUrl = baseEndpoint + (endpoint.search ? '&' : '?') + 'url=' + encodeURIComponent(safe);
     var started = Date.now();
     var response;
     try {
@@ -308,6 +323,17 @@
     if (!response || !response.ok) throw new Error(metadataErrorMessage(response && response.status || 0));
     var data;
     try { data = await response.json(); } catch (_) { throw new Error('The metadata service returned invalid data.'); }
+    var rawSignals = data && data.metadata && data.metadata.signals && typeof data.metadata.signals === 'object' && !Array.isArray(data.metadata.signals)
+      ? data.metadata.signals
+      : null;
+    var hasOwn = Object.prototype.hasOwnProperty;
+    var cleanSignals = rawSignals ? {
+      jsonLd: Boolean(hasOwn.call(rawSignals, 'jsonLd') && rawSignals.jsonLd),
+      citationMeta: Boolean(hasOwn.call(rawSignals, 'citationMeta') && rawSignals.citationMeta),
+      canonical: Boolean(hasOwn.call(rawSignals, 'canonical') && rawSignals.canonical),
+      doi: Boolean(hasOwn.call(rawSignals, 'doi') && rawSignals.doi),
+      isbn: Boolean(hasOwn.call(rawSignals, 'isbn') && rawSignals.isbn),
+    } : {};
     return {
       ok: true,
       url: safe,
@@ -324,7 +350,7 @@
         type: clean(data && data.metadata && data.metadata.type || '', 80),
         doi: clean(data && data.metadata && data.metadata.doi || '', 180),
         isbn: clean(data && data.metadata && data.metadata.isbn || '', 32),
-        signals: data && data.metadata && data.metadata.signals && typeof data.metadata.signals === 'object' ? data.metadata.signals : {},
+        signals: cleanSignals,
       },
       source: clean(data && data.source || 'Metadata check', 80),
       elapsedMs: Date.now() - started,
@@ -332,11 +358,11 @@
     };
   }
 
-  return {
+  return Object.freeze({
     version: '1.2.0',
     defaultProxyUrl: DEFAULT_PROXY_URL,
     defaultMetadataProxyUrl: DEFAULT_METADATA_PROXY_URL,
-    sourceScopes: SOURCE_SCOPES,
+    sourceScopes: Object.freeze(SOURCE_SCOPES),
     preferredDomainFor: preferredDomainFor,
     compareMetadataField: compareMetadataField,
     assessConfidence: assessConfidence,
@@ -344,5 +370,5 @@
     normalizeResults: normalizeResults,
     search: search,
     verifyMetadata: verifyMetadata,
-  };
+  });
 });

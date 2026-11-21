@@ -134,6 +134,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _qqBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.quietQuestions || defaultState();
       function setQQ(patch) {
@@ -141,6 +143,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
           var prior = (prev && prev.quietQuestions) || defaultState();
           return Object.assign({}, prev, { quietQuestions: Object.assign({}, prior, patch) });
         });
+      }
+      function scanQuietText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'quietQuestions', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'quietQuestions', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setQQ({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Quiet Questions', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
       }
       var view = d.view || 'this-week';
       function goto(v) { setQQ({ view: v }); }
@@ -253,6 +280,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
             h('div', { style: { fontSize: 11, color: _qqFg('#64748b'), marginBottom: 8, fontStyle: 'italic' } }, 'Try a starter if it helps: "' + RESPONSE_PROMPTS[currentIdx % RESPONSE_PROMPTS.length] + '"'),
             h('textarea', { id: draftId,
               placeholder: 'What is here?',
+              onBlur: function(e) { scanQuietText(e.target.value); },
               style: { width: '100%', minHeight: 130, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' }
             }),
 
@@ -264,6 +292,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
               ),
               h('textarea', { id: 'qq-crew-version',
                 placeholder: 'A shorter version, only what you would actually want shared. Saved separately from your private response.',
+                onBlur: function(e) { scanQuietText(e.target.value); },
                 style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginTop: 8 }
               })
             ),
@@ -455,6 +484,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       return h('div', { style: { maxWidth: 820, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Quiet Questions' },
         header(),
         navTabs(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _qqBand) : null,
         body
       );
     }

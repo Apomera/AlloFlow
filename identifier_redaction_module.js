@@ -57,6 +57,8 @@
   ['student', 'learner', 'teacher', 'parent', 'mother', 'father', 'caregiver', 'guardian', 'observer', 'participant', 'child', 'adult', 'sibling', 'family', 'peer', 'clinician', 'evaluator'].forEach(word => COMMON_WORD_NAMES.add(word));
 
   const escapeRegExp = (value) => String(value == null ? '' : value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const WB_START = '(?<![\\p{L}\\p{N}_])';
+  const WB_END = '(?![\\p{L}\\p{N}_])';
 
   // Split a name into { safe, risky } parts. `safe` can be redacted without
   // touching ordinary prose; `risky` collides with common English and is left
@@ -77,18 +79,23 @@
       return { safe: safe, risky: risky };
   };
 
+  const MAX_PEOPLE_ENTRIES = 100;
+  const MAX_TARGET_ITEMS = 100;
+  const MAX_NAME_LEN = 160;
+  const MAX_PENDING_REVIEWS = 50;
+
   // Collect { name, token } for the student plus every other person the clinician
   // named. `people`: [{ name, role }] where role is a label like 'Mother'.
   const redactionEntries = (opts) => {
       const o = opts || {};
       const entries = [];
-      const primary = String(o.studentName == null ? '' : o.studentName).trim();
+      const primary = String(o.studentName == null ? '' : o.studentName).trim().slice(0, MAX_NAME_LEN);
       if (primary) entries.push({ name: primary, token: '[Student]' });
-      (Array.isArray(o.people) ? o.people : []).forEach(entry => {
-          if (!entry) return;
-          const nm = String(entry.name == null ? '' : entry.name).trim();
+      (Array.isArray(o.people) ? o.people.slice(0, MAX_PEOPLE_ENTRIES) : []).forEach(entry => {
+          if (!entry || typeof entry !== 'object') return;
+          const nm = String(entry.name == null ? '' : entry.name).trim().slice(0, MAX_NAME_LEN);
           if (!nm) return;
-          const role = String(entry.role || 'Name').trim() || 'Name';
+          const role = String(entry.role || 'Name').replace(/[\[\]\u0000-\u001f\u007f]/g, '').trim().slice(0, 48) || 'Name';
           entries.push({ name: nm, token: '[' + role + ']' });
       });
       return entries;
@@ -101,7 +108,7 @@
       const entries = redactionEntries(opts);
       // Redact a complete email before names: replacing "Jordan" first in
       // jordan@school.example would otherwise leave [Student]@school.example.
-      out = out.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[EMAIL]');
+      out = out.replace(/\b[A-Z0-9._%+-]{1,64}@[A-Z0-9.-]{1,253}\.[A-Z]{2,24}\b/gi, '[EMAIL]');
 
       // Pass 1: every FULL multi-word name, longest first. This must complete
       // before any single-part pass, or a shared family surname gets claimed by
@@ -110,12 +117,17 @@
       entries.slice()
           .sort((a, b) => b.name.length - a.name.length)
           .forEach(function (item) {
-              const seq = item.name.split(/\s+/).filter(Boolean).map(escapeRegExp);
+              const seq = item.name.split(/\s+/).filter(Boolean).slice(0, 8).map(escapeRegExp);
               if (seq.length < 2) return;
-              // Whitespace-tolerant so double spaces and line wraps still match.
-              out = out.replace(new RegExp('\\b' + seq.join('[\\s\\n]+') + '\\b', 'gi'), item.token);
-              // "Surname, First" as rosters and protocols print it.
-              out = out.replace(new RegExp('\\b' + seq.slice().reverse().join(',[\\s\\n]+') + '\\b', 'gi'), item.token);
+              // Use a replacer function so custom roles containing "$" (e.g. "$&")
+              // can never be interpreted as RegExp replacement patterns.
+              const replacer = () => item.token;
+              // Whitespace-tolerant Unicode word boundaries so accented & non-Latin
+              // names (José, Álvarez, Arabic/CJK/Cyrillic) are redacted reliably.
+              out = out.replace(new RegExp(WB_START + seq.join('[\\s\\n]+') + WB_END, 'giu'), replacer);
+              // "Surname, First [Middle]" as rosters and protocols print it.
+              var surnameFirst = seq[seq.length - 1] + ',[\\s\\n]+' + seq.slice(0, -1).join('[\\s\\n]+');
+              out = out.replace(new RegExp(WB_START + surnameFirst + WB_END, 'giu'), replacer);
           });
 
       // Pass 2: single name parts. A part shared by more than one person is
@@ -134,16 +146,16 @@
           .sort((a, b) => b.part.length - a.part.length)
           .forEach(function (rec) {
               const token = rec.tokens.length === 1 ? rec.tokens[0] : '[NAME]';
-              out = out.replace(new RegExp('\\b' + escapeRegExp(rec.part) + '\\b', 'gi'), token);
+              out = out.replace(new RegExp(WB_START + escapeRegExp(rec.part) + WB_END, 'giu'), () => token);
           });
 
       // Structured identifiers. Order matters: SSN before the generic phone
       // pattern, which would otherwise consume a 9-digit run.
-      out = out.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[EMAIL]');
+      out = out.replace(/\b[A-Z0-9._%+-]{1,64}@[A-Z0-9.-]{1,253}\.[A-Z]{2,24}\b/gi, '[EMAIL]');
       out = out.replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]');
-      out = out.replace(/(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/g, '[PHONE]');
+      out = out.replace(/(?<![\dA-Za-z])(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/g, '[PHONE]');
       out = out.replace(/\b(?:student\s*id|district\s*id|medicaid|case\s*(?:no|number)|dob)\s*[:#-]?\s*[A-Z0-9/-]+\b/gi, '[IDENTIFIER]');
-      out = out.replace(/\b\d{1,5}\s+[A-Z][A-Za-z]*\s+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Court|Ct|Way|Place|Pl|Terrace|Ter)\b\.?/gi, '[ADDRESS]');
+      out = out.replace(/\b\d{1,5}\s+(?:[A-Z][A-Za-z0-9'.-]*\s+){1,4}(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Court|Ct|Way|Place|Pl|Terrace|Ter)\b\.?/gi, '[ADDRESS]');
       // Calendar dates ONLY. Ages, durations and grade levels are clinical data.
       out = out.replace(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/g, '[DATE]');
       out = out.replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s*\d{2,4}\b/gi, '[DATE]');
@@ -157,7 +169,7 @@
       const opts = options || {};
       const src = String(text == null ? '' : text);
       const hasName = !!String(opts.studentName == null ? '' : opts.studentName).trim();
-      const present = (word) => new RegExp('\\b' + escapeRegExp(word) + '\\b', 'i').test(src);
+      const present = (word) => new RegExp(WB_START + escapeRegExp(word) + WB_END, 'iu').test(src);
       const risky = [];
       redactionEntries(opts).forEach(function (item) {
           nameRedactionParts(item.name).risky.forEach(function (p) {
@@ -167,7 +179,7 @@
       // Titled people the clinician never entered -- a grandmother, a classmate's
       // parent, a consulting specialist -- so unlisted names still get flagged.
       const titled = [];
-      const titleRe = /\b(?:Mr|Mrs|Ms|Miss|Dr|Prof|Coach|Principal|Nurse)\.?\s+([A-Z][a-z]{2,})\b/g;
+      const titleRe = /\b(?:Mr|Mrs|Ms|Miss|Dr|Prof|Coach|Principal|Nurse)\.?\s+([\p{Lu}][\p{L}'-]{2,})(?![\p{L}\p{N}_])/gu;
       let m;
       while ((m = titleRe.exec(src)) !== null) {
           if (titled.indexOf(m[1]) === -1) titled.push(m[1]);
@@ -187,7 +199,7 @@
       const opts = options || {};
       const tokens = Array.from(new Set(['[Student]', '[NAME]', '[EMAIL]', '[SSN]', '[PHONE]', '[IDENTIFIER]', '[ADDRESS]', '[DATE]', '[REMOVED]'].concat(redactionEntries(opts).map(entry => entry.token))));
       const tokenPattern = new RegExp('(' + tokens.map(escapeRegExp).join('|') + ')', 'g');
-      const targets = Array.isArray(opts.identifiers) ? opts.identifiers : [];
+      const targets = Array.isArray(opts.identifiers) ? opts.identifiers.slice(0, MAX_TARGET_ITEMS) : [];
       // Existing placeholders are opaque, including when a known person's
       // literal name is "Student". Repeated review must not nest [Student].
       const out = text.split(tokenPattern).map(part => {
@@ -195,10 +207,10 @@
           const value = scrubIdentifiers(part, opts).split(tokenPattern).map(chunk => {
               if (tokens.includes(chunk)) return chunk;
               let cleaned = chunk;
-              targets.map(item => String(item || '').trim()).filter(Boolean)
+              targets.map(item => String(item || '').trim().slice(0, MAX_NAME_LEN)).filter(Boolean)
                   .sort((a, b) => b.length - a.length).forEach(item => {
-                      const pattern = item.split(/\s+/).map(escapeRegExp).join('\\s+');
-                      cleaned = cleaned.replace(new RegExp(pattern, 'gi'), '[REMOVED]');
+                      const pattern = item.split(/\s+/).slice(0, 12).map(escapeRegExp).join('\\s+');
+                      cleaned = cleaned.replace(new RegExp(pattern, 'gi'), () => '[REMOVED]');
                   });
               return cleaned;
           }).join('');
@@ -229,18 +241,23 @@
               media: entry.options.media || null
           } : null;
       };
-      const notify = () => onChange(currentReview());
+      const notify = () => { try { onChange(currentReview()); } catch (_) {} };
       const remove = (entry, value, error, shouldNotify = true) => {
           const wasCurrent = queue[0] === entry;
           const index = queue.indexOf(entry);
           if (index < 0) return;
           queue.splice(index, 1);
-          if (entry.options.signal && entry.abortListener) entry.options.signal.removeEventListener('abort', entry.abortListener);
+          try {
+              if (entry.options.signal && entry.abortListener) entry.options.signal.removeEventListener('abort', entry.abortListener);
+          } catch (_) {}
           if (error) entry.reject(error); else entry.resolve(value);
           if (wasCurrent && shouldNotify) notify();
       };
       return {
           request(prompt, options) {
+              if (queue.length >= MAX_PENDING_REVIEWS) {
+                  return Promise.reject(new Error('Too many pending AI review requests.'));
+              }
               const input = options || {};
               const opts = {
                   ...input,
@@ -273,7 +290,9 @@
               }
               const value = edited || {};
               if (typeof value.prompt !== 'string' || !value.prompt.trim()) return { sent: false, changed: false };
-              const opts = { ...entry.options, identifiers: entry.options.identifiers.concat(Array.isArray(value.identifiers) ? value.identifiers : []) };
+              const addedTargets = Array.isArray(value.identifiers) ? value.identifiers : [];
+              const mergedTargets = Array.from(new Set(addedTargets.concat(entry.options.identifiers)));
+              const opts = { ...entry.options, identifiers: mergedTargets };
               const prepared = prepareSensitivePrompt(value.prompt, opts);
               const query = entry.searchQuery === undefined ? undefined : prepareSensitivePrompt(typeof value.searchQuery === 'string' ? value.searchQuery : '', opts).text;
               // If an edit introduced identifiers, show the newly scrubbed copy
@@ -357,22 +376,28 @@
           }
       };
       const keyDown = event => {
-          if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancel(); return; }
+          if (event.key === 'Escape' && !event.isComposing) { event.preventDefault(); event.stopPropagation(); cancel(); return; }
           if (event.key !== 'Tab') return;
           event.stopPropagation();
-          const items = Array.from(dialogRef.current?.querySelectorAll('button:not([disabled]), textarea, input, [tabindex="0"]') || []).filter(node => !node.hidden);
+          const items = Array.from(dialogRef.current?.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])') || []).filter(node => !node.hidden);
+          if (!items.length) return;
           const first = items[0], last = items[items.length - 1];
-          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
-          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+          const active = document.activeElement;
+          const idx = items.indexOf(active);
+          if (idx === -1) { event.preventDefault(); (event.shiftKey ? last : first)?.focus(); }
+          else if (event.shiftKey && active === first) { event.preventDefault(); last?.focus(); }
+          else if (!event.shiftKey && active === last) { event.preventDefault(); first?.focus(); }
       };
       const field = { width: '100%', boxSizing: 'border-box', color: '#0f172a', background: '#fff', border: '1px solid #64748b', borderRadius: 6, padding: 10, font: 'inherit' };
+      const secondaryBtn = { padding: '10px 16px', minHeight: 44, color: '#0f172a', background: '#f8fafc', border: '1px solid #475569', borderRadius: 6, fontWeight: 600, cursor: 'pointer' };
       const analysis = review.analysis || {};
       return h('div', { role: 'presentation', style: { position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 12 }, onClick: event => { event.stopPropagation(); if (event.target === event.currentTarget) cancel(); } },
           h('section', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT("identifier_redaction.a11y_review_what_ai_receives", 'Review what AI receives'), onKeyDown: keyDown, style: { width: '100%', maxWidth: 820, maxHeight: '92vh', overflowY: 'auto', background: '#fff', color: '#0f172a', borderRadius: 12, padding: 20, boxSizing: 'border-box', textAlign: 'left' } },
               h('h2', { style: { fontSize: 22, margin: '0 0 12px' } }, __alloT("identifier_redaction.a11y_review_what_ai_receives", 'Review what AI receives')),
               review.label && h('p', null, review.label),
               h('p', null, 'This is the outgoing copy. Your original notes stay unchanged. Common identifiers were removed automatically, but other names, school details, and identifying context may remain. Only send information your organization permits to the configured AI provider.'),
-              analysis.riskyNameParts?.length > 0 && h('p', { role: 'status' }, 'Some entered names are also ordinary words. Check them in the text below and remove identifying uses.'),
+              analysis.riskyNameParts?.length > 0 && h('p', { role: 'status', style: { padding: 10, background: '#fefce8', color: '#713f12', border: '1px solid #a16207', borderRadius: 6 } }, 'Some entered names are also ordinary words (' + analysis.riskyNameParts.join(', ') + '). Check them in the text below and remove identifying uses.'),
+              analysis.unlistedTitledNames?.length > 0 && h('p', { role: 'status', style: { padding: 10, background: '#fff7ed', color: '#7c2d12', border: '1px solid #c2410c', borderRadius: 6 } }, 'Possible unlisted titled names found (' + analysis.unlistedTitledNames.join(', ') + '). Review or add them below before sending.'),
               h('label', { style: { display: 'block', fontWeight: 700, marginBottom: 6 } }, __alloT("identifier_redaction.a11y_text_to_send", 'Text to send'), h('textarea', { 'aria-label': __alloT("identifier_redaction.a11y_text_to_send", 'Text to send'), 'data-sensitive-review-initial': true, rows: 12, value: prompt, onChange: event => { setPrompt(event.target.value); setConfirmed(false); }, style: field })),
               review.searchQuery !== undefined && h('label', { style: { display: 'block', fontWeight: 700, marginTop: 12 } }, __alloT("identifier_redaction.a11y_search_query_to_send", 'Search query to send'), h('input', { 'aria-label': __alloT("identifier_redaction.a11y_search_query_to_send", 'Search query to send'), value: query, onChange: event => { setQuery(event.target.value); setConfirmed(false); }, style: field })),
               h('label', { style: { display: 'block', fontWeight: 700, marginTop: 12 } }, __alloT("identifier_redaction.a11y_additional_names_or_details_to_remove", 'Additional names or details to remove'), h('input', { 'aria-label': __alloT("identifier_redaction.a11y_additional_names_or_details_to_remove", 'Additional names or details to remove'), value: identifiers, onChange: event => { setIdentifiers(event.target.value); setConfirmed(false); }, placeholder: __alloT("identifier_redaction.a11y_separate_each_name_or_detail_with_a_comma", 'Separate each name or detail with a comma'), style: field })),
@@ -382,12 +407,12 @@
                   if (review.searchQuery !== undefined) setQuery(prepareSensitivePrompt(query, opts).text);
                   setConfirmed(false);
                   setNotice('Listed details removed from this copy. Review the text again.');
-              }, style: { marginTop: 8, padding: 10, minHeight: 44 } }, 'Remove listed details'),
+              }, style: Object.assign({}, secondaryBtn, { marginTop: 8, padding: '10px 14px', opacity: !identifiers.trim() ? 0.55 : 1 }) }, 'Remove listed details'),
               review.media && h('p', { role: 'note', style: { padding: 12, background: '#fff7ed', color: '#7c2d12' } }, 'A recording or image is also attached (' + String(review.media.mime || 'media') + '). Text removal does not anonymize faces, voices, images, or video. Continue only if your organization permits sending this attachment to the configured provider.'),
               notice && h('p', { role: 'status' }, notice),
               h('label', { style: { display: 'flex', gap: 10, alignItems: 'flex-start', margin: '16px 0' } }, h('input', { type: 'checkbox', checked: confirmed, onChange: event => setConfirmed(event.target.checked) }), 'I reviewed this outgoing text' + (review.media ? ' and the attached media' : '') + ' and am permitted to send it.'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 } },
-                  h('button', { type: 'button', onClick: cancel, style: { padding: '10px 16px', minHeight: 44 } }, 'Cancel'),
+                  h('button', { type: 'button', onClick: cancel, style: secondaryBtn }, 'Cancel'),
                   h('button', { type: 'button', disabled: !confirmed || !prompt.trim(), onClick: accept, style: { padding: '10px 16px', minHeight: 44, background: !confirmed || !prompt.trim() ? '#e2e8f0' : '#075985', color: !confirmed || !prompt.trim() ? '#475569' : '#fff', border: '1px solid #64748b', borderRadius: 6 } }, 'Send reviewed copy')
               )
           )

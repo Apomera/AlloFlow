@@ -68,9 +68,25 @@ class FluxSecurity:
         try:
             if any(sum(k.lower() == field for k, _ in pairs) > 1 for field in (b'host', b'origin', b'authorization', b'content-length')):
                 raise IntakeError(400, 'ambiguous-headers')
+            has_host_header = b'host' in headers
+            require_host = has_host_header or scope.get('http_version') in ('1.1', '2', '3')
             raw_host = headers.get(b'host', b'').decode('latin-1').strip()
-            if raw_host:
-                host_only = (urlsplit('http://' + raw_host).hostname or '').lower()
+            if require_host:
+                if not raw_host or len(raw_host) > 255 or any(ord(c) <= 32 or ord(c) == 127 for c in raw_host):
+                    raise IntakeError(403, 'host-not-allowed')
+                try:
+                    parsed_host = urlsplit('http://' + raw_host)
+                    if (parsed_host.username or parsed_host.password or parsed_host.path
+                            or parsed_host.query or parsed_host.fragment):
+                        raise IntakeError(403, 'host-not-allowed')
+                    port = parsed_host.port
+                    if port is not None and not (1 <= port <= 65535):
+                        raise IntakeError(403, 'host-not-allowed')
+                    host_only = (parsed_host.hostname or '').lower()
+                except ValueError:
+                    raise IntakeError(403, 'host-not-allowed') from None
+                if not host_only or host_only.endswith('.'):
+                    raise IntakeError(403, 'host-not-allowed')
                 allowed_hosts = {'localhost', '127.0.0.1', '::1', 'flux'}
                 for o in self.origins:
                     oh = (urlsplit(o).hostname or '').lower()

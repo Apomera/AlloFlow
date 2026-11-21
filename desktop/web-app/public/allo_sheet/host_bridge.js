@@ -28,11 +28,14 @@
   var MAX_COLUMNS = 40;
   var MAX_ROWS = 200;
   var MAX_CELL_CHARS = 1200;
-  var BLOCKED_KEYS = { __proto__: true, constructor: true, prototype: true };
-  var COLUMN_TYPES = {
+  var BLOCKED_KEYS = Object.create(null);
+  BLOCKED_KEYS['__proto__'] = true;
+  BLOCKED_KEYS.constructor = true;
+  BLOCKED_KEYS.prototype = true;
+  var COLUMN_TYPES = Object.assign(Object.create(null), {
     text: true, number: true, boolean: true, date: true,
     datetime: true, duration: true, category: true
-  };
+  });
 
   function companionUrl() {
     try {
@@ -203,16 +206,19 @@
     if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(sourceTool)) {
       throw artifactFailure('The source tool identifier is invalid.');
     }
+    var safeSingleLine = function (value, max) {
+      return safeText(value, max).replace(/[\r\n\t]+/g, ' ').trim().slice(0, max);
+    };
     var source = {
       tool: sourceTool,
-      label: safeText(input.source.label || sourceTool, 100).trim() || sourceTool
+      label: safeSingleLine(input.source.label || sourceTool, 100) || sourceTool
     };
-    if (input.source.version != null) source.version = safeText(input.source.version, 40);
+    if (input.source.version != null) source.version = safeSingleLine(input.source.version, 40);
 
     if (!Array.isArray(input.tables) || !input.tables.length || input.tables.length > MAX_TABLES) {
       throw artifactFailure('A transfer must contain between 1 and 5 tables.');
     }
-    var seenTables = {};
+    var seenTables = Object.create(null);
     var tables = input.tables.map(function (table, tableIndex) {
       if (!isPlainObject(table)) throw artifactFailure('Transferred table ' + (tableIndex + 1) + ' is invalid.');
       var tableId = safeArtifactKey(table.id, 'Table identifier', 80);
@@ -221,8 +227,8 @@
       if (!Array.isArray(table.columns) || !table.columns.length || table.columns.length > MAX_COLUMNS) {
         throw artifactFailure('Each transferred table must contain between 1 and 40 columns.');
       }
-      var seenColumns = {};
-      var seenLabels = {};
+      var seenColumns = Object.create(null);
+      var seenLabels = Object.create(null);
       var columns = table.columns.map(function (column, columnIndex) {
         if (!isPlainObject(column)) {
           throw artifactFailure('Column ' + (columnIndex + 1) + ' in ' + tableId + ' is invalid.');
@@ -284,7 +290,7 @@
       );
       return {
         id: tableId,
-        title: safeText(table.title || tableId, 160).trim() || tableId,
+        title: safeSingleLine(table.title || tableId, 160) || tableId,
         columns: columns,
         rows: rows,
         rowCount: rows.length,
@@ -299,16 +305,16 @@
       kind: TABULAR_KIND,
       version: 1,
       source: source,
-      title: safeText(input.title || source.label + ' tables', 180).trim() || source.label + ' tables',
-      createdAt: safeText(input.createdAt || new Date().toISOString(), 60),
+      title: safeSingleLine(input.title || source.label + ' tables', 180) || source.label + ' tables',
+      createdAt: safeSingleLine(input.createdAt || new Date().toISOString(), 60),
       classification: {
-        level: safeText(classificationInput.level || 'education-data', 80),
+        level: safeSingleLine(classificationInput.level || 'education-data', 80) || 'education-data',
         studentIdentifierIncluded: classificationInput.studentIdentifierIncluded === true
           || classificationInput.identifierIncluded === true,
         freeTextNotesIncluded: classificationInput.freeTextNotesIncluded === true
       },
       privacy: {
-        scope: safeText(privacyInput.scope || 'educator-selected', 80),
+        scope: safeSingleLine(privacyInput.scope || 'educator-selected', 80) || 'educator-selected',
         identifierIncluded: privacyInput.identifierIncluded === true
           || classificationInput.studentIdentifierIncluded === true
           || classificationInput.identifierIncluded === true,
@@ -336,9 +342,10 @@
     return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true;
   }
 
-  function reply(source, requestId, payload) {
+  function reply(source, requestId, payload, expectedToken) {
     try {
-      if (!source || source.closed || !targetOrigin() || !isBridgeTokenFresh()) return;
+      if (!source || source.closed || !popup || source !== popup || !targetOrigin() || !isBridgeTokenFresh()) return;
+      if (expectedToken && bridgeToken !== expectedToken) return;
       source.postMessage(Object.assign({}, payload || {}, {
         type: 'allosheet-ai-response',
         requestId: requestId,
@@ -687,6 +694,8 @@
       reply(event.source, requestId, { error: 'Selected-value sharing was not confirmed.' });
       return;
     }
+    var requestSource = event.source;
+    var requestToken = bridgeToken;
     busy = true;
     try {
       var response = await window.callGemini(buildPrompt(instruction, snapshot), true, false, 0.2);
@@ -694,11 +703,11 @@
         ? response
         : (response && (response.text || response.output || response.response)) || '';
       if (!String(responseText || '').trim()) throw new Error('The assistant returned an empty response.');
-      reply(event.source, requestId, { text: safeText(responseText, 100000) });
+      reply(requestSource, requestId, { text: safeText(responseText, 100000) }, requestToken);
     } catch (error) {
-      reply(event.source, requestId, {
+      reply(requestSource, requestId, {
         error: safeText(error && error.message || 'The AlloFlow AI connection is unavailable.', 300)
-      });
+      }, requestToken);
     } finally {
       busy = false;
     }
@@ -766,6 +775,9 @@
     } catch (_) { launcher = null; }
     if (popup && !popup.closed && !isBridgeTokenFresh()) expirePairing();
     if (!popup || popup.closed) {
+      if (popup || activeTransfer || transferQueue.length) {
+        closePopupConnection('AlloSheet closed before this transfer finished.');
+      }
       bridgeReady = false;
       issueBridgeToken();
       // The DOCUMENT's origin, not the URL's. These differ: a blob: document

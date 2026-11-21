@@ -9,6 +9,35 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   if (document.head) document.head.appendChild(st);
 })();
 
+// Bespoke Petrology & Rock Cycle workbench styling + Light/Dark/High-Contrast parity
+(function() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-rocks-studio-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-rocks-studio-css';
+  st.textContent = [
+    '.rk-studio-deck, .rc-studio-hero { background: linear-gradient(135deg, #1a120b 0%, #331e10 54%, #1e2433 100%); border: 1px solid rgba(251,191,36,0.36); border-radius: 16px; padding: 14px 16px; color: #fffbeb; box-shadow: 0 14px 30px -20px rgba(15,10,5,0.85); margin-bottom: 12px; min-width: 0; }',
+    '.rk-hero-row, .rc-hero-row { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; min-width: 0; }',
+    '.rk-emblem-box, .rc-emblem-box { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, rgba(217,119,6,0.34), rgba(26,18,11,0.92)); border: 1.5px solid rgba(252,211,77,0.55); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 6px 16px rgba(15,10,5,0.55); }',
+    '.rk-subject-badge, .rc-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: rgba(217,119,6,0.22); border: 1px solid rgba(252,211,77,0.50); color: #fde68a; font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }',
+    '.rk-telemetry-strip, .rc-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(252,211,77,0.22); min-width: 0; }',
+    '.rk-telemetry-pill, .rc-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(20,14,9,0.84); border: 1px solid rgba(252,211,77,0.36); color: #fef3c7; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+    '.rk-cycle-schematic, .rc-cycle-schematic { margin-top: 10px; padding: 7px 10px; border-radius: 12px; background: rgba(18,12,8,0.80); border: 1px solid rgba(252,211,77,0.26); }',
+    '.rk-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(252,211,77,0.22); }',
+    '.rk-starter-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #fde68a; }',
+    '.rk-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(20,14,9,0.88); border: 1px solid rgba(252,211,77,0.42); color: #fffbeb; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+    '.rk-starter-chip:hover:not(:disabled) { background: rgba(180,83,9,0.45); border-color: #fde68a; color: #ffffff; }',
+    '.rk-starter-chip[data-active="true"] { background: #b45309; border-color: #fde68a; color: #ffffff; }',
+    '.rk-starter-chip:focus-visible { outline: 2.5px solid #fcd34d; outline-offset: 2px; }',
+    '.theme-contrast .rk-explorer, .theme-contrast [data-rc-workspace] { background: #000000 !important; color: #ffff00 !important; }',
+    '.theme-contrast .rk-studio-deck, .theme-contrast .rc-studio-hero, .theme-contrast [data-rockcycle-command], .theme-contrast .rk-explorer .rk-mode-nav, .theme-contrast .rk-explorer .rk-progress { background: #000000 !important; background-image: none !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+    '.theme-contrast .rk-emblem-box, .theme-contrast .rc-emblem-box, .theme-contrast .rk-subject-badge, .theme-contrast .rc-subject-badge, .theme-contrast .rk-telemetry-pill, .theme-contrast .rc-telemetry-pill, .theme-contrast .rk-cycle-schematic, .theme-contrast .rc-cycle-schematic, .theme-contrast .rk-explorer .rk-brand-mark { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+    '.theme-contrast .rk-starter-label, .theme-contrast .rk-studio-deck h4, .theme-contrast .rk-studio-deck p, .theme-contrast .rc-studio-hero p, .theme-contrast [data-rc-workspace] h2, .theme-contrast [data-rc-workspace] h3 { color: #ffff00 !important; }',
+    '.theme-contrast .rk-starter-chip, .theme-contrast .rk-explorer .rk-mode-button, .theme-contrast [data-rc-workspace] [data-rc-jump] { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+    '.theme-contrast .rk-starter-chip[data-active="true"], .theme-contrast .rk-explorer .rk-mode-button[aria-pressed="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
+  ].join('\n');
+  document.head.appendChild(st);
+})();
+
 // =================================================================
 // stem_tool_rocks.js - Rocks & Minerals + Rock Cycle tools
 // Extracted from stem_tool_science.js for modular loading
@@ -1267,12 +1296,37 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     var pearly = lus.indexOf('pearly') !== -1;
     var silky = lus.indexOf('silky') !== -1;
     var adamantine = lus.indexOf('adamantine') !== -1;
+    var resinous = lus.indexOf('resinous') !== -1 || lus.indexOf('waxy') !== -1 || lus.indexOf('greasy') !== -1;
 
     var vaultId = 'rkvault-' + id;
     var faceId = 'rkface-' + id;
+    var lusterGradId = 'rklus-' + id;
 
     // Backing plate: a soft vignette rather than flat slate, so pale minerals
     // stay visible and the crystal reads as sitting in a display case.
+    var lusterDef = metallic
+      ? h('linearGradient', { id: lusterGradId, x1: '0%', y1: '100%', x2: '100%', y2: '0%' },
+        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.08 }),
+        h('stop', { offset: '36%', stopColor: '#ffffff', stopOpacity: 0.88 }),
+        h('stop', { offset: '52%', stopColor: '#0f172a', stopOpacity: 0.36 }),
+        h('stop', { offset: '72%', stopColor: '#fef3c7', stopOpacity: 0.62 }),
+        h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 }))
+      : pearly
+        ? h('radialGradient', { id: lusterGradId, cx: '38%', cy: '36%', r: '58%' },
+          h('stop', { offset: '0%', stopColor: '#fffbeb', stopOpacity: 0.62 }),
+          h('stop', { offset: '42%', stopColor: '#dbeafe', stopOpacity: 0.36 }),
+          h('stop', { offset: '72%', stopColor: '#f5d0fe', stopOpacity: 0.22 }),
+          h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 }))
+        : resinous
+          ? h('radialGradient', { id: lusterGradId, cx: '40%', cy: '38%', r: '60%' },
+            h('stop', { offset: '0%', stopColor: '#fef08a', stopOpacity: 0.45 }),
+            h('stop', { offset: '55%', stopColor: '#f59e0b', stopOpacity: 0.16 }),
+            h('stop', { offset: '100%', stopColor: '#78350f', stopOpacity: 0 }))
+          : h('linearGradient', { id: lusterGradId, x1: '12%', y1: '8%', x2: '82%', y2: '86%' },
+            h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: adamantine ? 0.82 : 0.62 }),
+            h('stop', { offset: '38%', stopColor: '#e0f2fe', stopOpacity: adamantine ? 0.26 : 0.14 }),
+            h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 }));
+
     kids.push(h('defs', { key: 'defs' },
       h('radialGradient', { id: vaultId, cx: '38%', cy: '30%', r: '78%' },
         h('stop', { offset: '0%', stopColor: '#5b6b80' }),
@@ -1280,9 +1334,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       // Face shading: crystals are faceted, so light falls off across each face
       // instead of filling it evenly.
       h('linearGradient', { id: faceId, x1: '0%', y1: '0%', x2: '60%', y2: '100%' },
-        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.30 }),
+        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: metallic ? 0.38 : 0.30 }),
         h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0.02 }),
-        h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.30 }))
+        h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: metallic ? 0.42 : 0.30 })),
+      lusterDef
     ));
     kids.push(h('rect', { key: 'plate', x: 0, y: 0, width: S, height: S, rx: S * 0.16, fill: 'url(#' + vaultId + ')' }));
     // Contact shadow under the crystal.
@@ -1524,42 +1579,70 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
     // ── Lustre ──
     if (metallic) {
-      // Hard, bright specular band — the giveaway that it looks like metal.
-      kids.push(h('polygon', { key: 'spec', points: [(c - S * 0.22) + ',' + (c + S * 0.10), (c - S * 0.05) + ',' + (c - S * 0.22), (c + S * 0.06) + ',' + (c - S * 0.20), (c - S * 0.12) + ',' + (c + S * 0.12)].join(' '), fill: 'rgba(255,255,255,0.72)' }));
-      kids.push(h('circle', { key: 'glint', cx: c + S * 0.13, cy: c - S * 0.13, r: S * 0.035, fill: '#ffffff' }));
+      // Hard, high-contrast dual-band metallic specular reflection — unmistakable metal gleam.
+      kids.push(h('polygon', { key: 'spec', points: [(c - S * 0.24) + ',' + (c + S * 0.12), (c - S * 0.05) + ',' + (c - S * 0.24), (c + S * 0.10) + ',' + (c - S * 0.21), (c - S * 0.10) + ',' + (c + S * 0.14)].join(' '), fill: 'url(#' + lusterGradId + ')', pointerEvents: 'none' }));
+      kids.push(h('polygon', { key: 'spec2', points: [(c + S * 0.02) + ',' + (c + S * 0.14), (c + S * 0.14) + ',' + (c - S * 0.10), (c + S * 0.20) + ',' + (c - S * 0.07), (c + S * 0.08) + ',' + (c + S * 0.16)].join(' '), fill: 'rgba(255,255,255,0.34)', pointerEvents: 'none' }));
+      kids.push(h('path', {
+        key: 'glintStar',
+        d: 'M' + (c + S * 0.13).toFixed(1) + ',' + (c - S * 0.20).toFixed(1) + ' L' + (c + S * 0.15).toFixed(1) + ',' + (c - S * 0.13).toFixed(1) + ' L' + (c + S * 0.20).toFixed(1) + ',' + (c - S * 0.13).toFixed(1) + ' L' + (c + S * 0.15).toFixed(1) + ',' + (c - S * 0.11).toFixed(1) + ' L' + (c + S * 0.13).toFixed(1) + ',' + (c - S * 0.06).toFixed(1) + ' L' + (c + S * 0.11).toFixed(1) + ',' + (c - S * 0.11).toFixed(1) + ' L' + (c + S * 0.06).toFixed(1) + ',' + (c - S * 0.13).toFixed(1) + ' L' + (c + S * 0.11).toFixed(1) + ',' + (c - S * 0.15).toFixed(1) + ' Z',
+        fill: '#ffffff', opacity: 0.92, pointerEvents: 'none'
+      }));
+      kids.push(h('circle', { key: 'glint', cx: c + S * 0.13, cy: c - S * 0.13, r: S * 0.032, fill: '#ffffff' }));
     } else if (adamantine) {
-      // Brilliant, diamond-like: multiple sharp sparkles.
-      [[0.14, -0.16, 0.055], [-0.16, 0.06, 0.04], [0.04, 0.18, 0.032]].forEach(function (s, i) {
+      // Brilliant, diamond-like: internal crystal sheen + sharp multi-ray sparkles.
+      kids.push(h('path', {
+        key: 'adamGleam',
+        d: 'M' + (c - S * 0.14).toFixed(1) + ',' + (c - S * 0.08).toFixed(1) + ' Q' + (c - S * 0.02).toFixed(1) + ',' + (c - S * 0.22).toFixed(1) + ' ' + (c + S * 0.14).toFixed(1) + ',' + (c - S * 0.08).toFixed(1) + ' L' + (c + S * 0.02).toFixed(1) + ',' + (c + S * 0.04).toFixed(1) + ' Z',
+        fill: 'url(#' + lusterGradId + ')', opacity: 0.78, pointerEvents: 'none'
+      }));
+      [[0.14, -0.16, 0.062], [-0.16, 0.06, 0.046], [0.04, 0.18, 0.036]].forEach(function (s, i) {
         kids.push(h('path', {
           key: 'spark' + i,
           d: 'M' + (c + S * s[0]) + ',' + (c + S * s[1] - S * s[2]) + ' L' + (c + S * s[0] + S * s[2] * 0.35) + ',' + (c + S * s[1]) + ' L' + (c + S * s[0]) + ',' + (c + S * s[1] + S * s[2]) + ' L' + (c + S * s[0] - S * s[2] * 0.35) + ',' + (c + S * s[1]) + ' Z',
-          fill: '#ffffff', opacity: 0.9,
+          fill: '#ffffff', opacity: 0.94,
         }));
       });
       if (id === 'diamond') {
         // "Fire": the rainbow flashes its description names, which is what
         // tells a diamond from a clear crystal of the same shape.
         [['#ef4444', -0.05, -0.20], ['#3b82f6', 0.16, 0.02], ['#f59e0b', -0.14, 0.16]].forEach(function (fz, k) {
-          kids.push(h('circle', { key: 'fire' + k, cx: (c + S * fz[1]).toFixed(1), cy: (c + S * fz[2]).toFixed(1), r: (S * 0.03).toFixed(2), fill: fz[0], opacity: 0.85 }));
+          kids.push(h('circle', { key: 'fireGlow' + k, cx: (c + S * fz[1]).toFixed(1), cy: (c + S * fz[2]).toFixed(1), r: (S * 0.055).toFixed(2), fill: fz[0], opacity: 0.24, pointerEvents: 'none' }));
+          kids.push(h('circle', { key: 'fire' + k, cx: (c + S * fz[1]).toFixed(1), cy: (c + S * fz[2]).toFixed(1), r: (S * 0.03).toFixed(2), fill: fz[0], opacity: 0.9 }));
         });
       }
     } else if (pearly) {
-      // Soft, spread iridescent sheen across the cleavage face.
-      kids.push(h('ellipse', { key: 'pearl', cx: c - S * 0.06, cy: c - S * 0.06, rx: S * 0.20, ry: S * 0.12, fill: 'rgba(255,255,255,0.42)', transform: 'rotate(-22 ' + (c - S * 0.06) + ' ' + (c - S * 0.06) + ')' }));
+      // Soft, opalescent iridescent sheen across the cleavage face.
+      kids.push(h('ellipse', { key: 'pearl', cx: c - S * 0.05, cy: c - S * 0.05, rx: S * 0.23, ry: S * 0.14, fill: 'url(#' + lusterGradId + ')', transform: 'rotate(-22 ' + (c - S * 0.05) + ' ' + (c - S * 0.05) + ')', pointerEvents: 'none' }));
+      kids.push(h('ellipse', { key: 'pearlCore', cx: c - S * 0.09, cy: c - S * 0.09, rx: S * 0.10, ry: S * 0.045, fill: 'rgba(255,255,255,0.48)', transform: 'rotate(-24 ' + (c - S * 0.09) + ' ' + (c - S * 0.09) + ')', pointerEvents: 'none' }));
     } else if (silky) {
-      // Fine parallel fibres.
+      // Fine parallel fibres with a luminous satin sheen band across the fibers.
       for (var f = 0; f < 7; f++) {
-        kids.push(h('line', { key: 'silk' + f, x1: c - S * 0.22 + f * S * 0.07, y1: c - S * 0.24, x2: c - S * 0.26 + f * S * 0.07, y2: c + S * 0.24, stroke: 'rgba(255,255,255,0.30)', strokeWidth: 0.6 }));
+        kids.push(h('line', { key: 'silk' + f, x1: c - S * 0.22 + f * S * 0.07, y1: c - S * 0.24, x2: c - S * 0.26 + f * S * 0.07, y2: c + S * 0.24, stroke: 'rgba(255,255,255,0.34)', strokeWidth: 0.65 }));
       }
+      kids.push(h('path', {
+        key: 'silkSheen',
+        d: 'M' + (c - S * 0.24).toFixed(1) + ',' + (c - S * 0.05).toFixed(1) + ' Q' + c.toFixed(1) + ',' + (c - S * 0.14).toFixed(1) + ' ' + (c + S * 0.24).toFixed(1) + ',' + (c - S * 0.02).toFixed(1) + ' Q' + c.toFixed(1) + ',' + (c + S * 0.06).toFixed(1) + ' ' + (c - S * 0.24).toFixed(1) + ',' + (c - S * 0.05).toFixed(1) + ' Z',
+        fill: 'rgba(255,255,255,0.36)', pointerEvents: 'none'
+      }));
+    } else if (resinous) {
+      // Warm translucent honey-waxy subsurface glow.
+      kids.push(h('ellipse', { key: 'resinGlow', cx: c - S * 0.06, cy: c - S * 0.07, rx: S * 0.19, ry: S * 0.13, fill: 'url(#' + lusterGradId + ')', transform: 'rotate(-24 ' + (c - S * 0.06) + ' ' + (c - S * 0.07) + ')', pointerEvents: 'none' }));
+      kids.push(h('ellipse', { key: 'resinRim', cx: c - S * 0.10, cy: c - S * 0.11, rx: S * 0.075, ry: S * 0.04, fill: 'rgba(255,251,235,0.52)', transform: 'rotate(-28 ' + (c - S * 0.10) + ' ' + (c - S * 0.11) + ')', pointerEvents: 'none' }));
     } else if (earthy) {
       // Matte, dusty — deliberately NO highlight; that absence is the diagnostic.
       for (var e = 0; e < 22; e++) {
         var er = rkSeed(id + e)();
-        kids.push(h('circle', { key: 'dust' + e, cx: (c - S * 0.28 + er * S * 0.56).toFixed(1), cy: (c - S * 0.28 + rkSeed(id + 'y' + e)() * S * 0.56).toFixed(1), r: 0.5, fill: 'rgba(0,0,0,0.28)' }));
+        kids.push(h('circle', { key: 'dust' + e, cx: (c - S * 0.28 + er * S * 0.56).toFixed(1), cy: (c - S * 0.28 + rkSeed(id + 'y' + e)() * S * 0.56).toFixed(1), r: 0.55, fill: 'rgba(0,0,0,0.30)' }));
       }
     } else {
-      // Vitreous (glassy) — the default: one clean, contained highlight.
-      kids.push(h('ellipse', { key: 'vit', cx: c - S * 0.09, cy: c - S * 0.11, rx: S * 0.10, ry: S * 0.06, fill: 'rgba(255,255,255,0.55)', transform: 'rotate(-30 ' + (c - S * 0.09) + ' ' + (c - S * 0.11) + ')' }));
+      // Vitreous (glassy) — crisp clearcoat rim crescent + internal crystal catchlight.
+      kids.push(h('path', {
+        key: 'vitRim',
+        d: 'M' + (c - S * 0.19).toFixed(1) + ',' + (c - S * 0.02).toFixed(1) + ' Q' + (c - S * 0.14).toFixed(1) + ',' + (c - S * 0.22).toFixed(1) + ' ' + (c + S * 0.04).toFixed(1) + ',' + (c - S * 0.19).toFixed(1),
+        fill: 'none', stroke: 'rgba(255,255,255,0.68)', strokeWidth: (S * 0.032).toFixed(2), strokeLinecap: 'round', pointerEvents: 'none'
+      }));
+      kids.push(h('ellipse', { key: 'vit', cx: c - S * 0.09, cy: c - S * 0.11, rx: S * 0.10, ry: S * 0.055, fill: 'rgba(255,255,255,0.60)', transform: 'rotate(-30 ' + (c - S * 0.09) + ' ' + (c - S * 0.11) + ')' }));
+      kids.push(h('ellipse', { key: 'vitInner', cx: c + S * 0.08, cy: c + S * 0.10, rx: S * 0.06, ry: S * 0.03, fill: 'rgba(224,242,254,0.28)', transform: 'rotate(-30 ' + (c + S * 0.08) + ' ' + (c + S * 0.10) + ')', pointerEvents: 'none' }));
     }
 
     return h('svg', {
@@ -4413,19 +4496,144 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     // visible, the cubic packing legible.
     var ATOM_SCALE = 0.46;
 
+    // Mineral-luster-calibrated 3D PBR material profiles + custom WebGL1/GLSL ES 1.00
+    // per-luster optical shaders (prismatic Fresnel dispersion, thin-film iridescence,
+    // anisotropic metallic sheen, silky chatoyancy) + studio turntable calibration ring.
+    var mLuster = String((m && m.luster) || '').toLowerCase();
+    var isMetLuster = mLuster.indexOf('metallic') !== -1;
+    var isAdamLuster = mLuster.indexOf('adamantine') !== -1;
+    var isSilkyLuster = mLuster.indexOf('silky') !== -1 || mLuster.indexOf('fibrous') !== -1;
+    var isPearlLuster = mLuster.indexOf('pearly') !== -1 || mLuster.indexOf('iridesc') !== -1 || isSilkyLuster;
+    var isEarthLuster = mLuster.indexOf('earthy') !== -1;
+    var isResinLuster = mLuster.indexOf('resinous') !== -1 || mLuster.indexOf('waxy') !== -1 || mLuster.indexOf('greasy') !== -1;
+    var lusterShaderMode = isMetLuster ? 2 : (isSilkyLuster ? 3 : (isPearlLuster ? 1 : ((isEarthLuster || isResinLuster) ? 4 : 0)));
+    var crystalUniforms = {
+      uTime: { value: 1.85 },
+      uDispersion: { value: isAdamLuster ? 1.0 : (lusterShaderMode === 0 ? 0.58 : 0.45) },
+      uMode: { value: lusterShaderMode * 1.0 },
+      uDark: { value: api.dark ? 1.0 : 0.0 }
+    };
+
+    function applyCrystalLusterShader(mat, cacheTag) {
+      if (api.contrast || !mat || typeof mat.onBeforeCompile !== 'function') return mat;
+      mat.customProgramCacheKey = function () { return 'rk-crystal-luster-' + cacheTag + '-' + lusterShaderMode; };
+      mat.onBeforeCompile = function (shader) {
+        shader.uniforms.uTime = crystalUniforms.uTime;
+        shader.uniforms.uDispersion = crystalUniforms.uDispersion;
+        shader.uniforms.uMode = crystalUniforms.uMode;
+        shader.uniforms.uDark = crystalUniforms.uDark;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'varying vec3 vRkWorldPos;',
+            'varying vec3 vRkWorldNorm;'
+          ].join('\n'))
+          .replace('#include <begin_vertex>', [
+            '#include <begin_vertex>',
+            'vec4 rkWp = modelMatrix * vec4(transformed, 1.0);',
+            'vRkWorldPos = rkWp.xyz;',
+            'vRkWorldNorm = normalize(mat3(modelMatrix) * objectNormal);'
+          ].join('\n'));
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'uniform float uTime;',
+            'uniform float uDispersion;',
+            'uniform float uMode;',
+            'uniform float uDark;',
+            'varying vec3 vRkWorldPos;',
+            'varying vec3 vRkWorldNorm;'
+          ].join('\n'))
+          .replace('#include <dithering_fragment>', [
+            'vec3 rkN = normalize(vRkWorldNorm);',
+            'vec3 rkV = normalize(cameraPosition - vRkWorldPos);',
+            'float rkNdotV = clamp(abs(dot(rkN, rkV)), 0.0, 1.0);',
+            'float rkFresnel = pow(1.0 - rkNdotV, 2.8);',
+            'float rkPhase = dot(vRkWorldPos, vec3(1.9, 2.7, 1.4)) + uTime * 0.55;',
+            'if (uMode < 0.5) {',
+            '  // Prismatic Fresnel chromatic dispersion for vitreous & adamantine crystals',
+            '  vec3 rkPrism = 0.5 + 0.5 * cos(6.28318 * (rkFresnel * 1.15 + 0.12 * sin(rkPhase)) + vec3(0.0, 2.094, 4.188));',
+            '  float rkSparkle = pow(clamp(dot(reflect(-rkV, rkN), normalize(vec3(0.45, 0.82, 0.35))), 0.0, 1.0), 22.0);',
+            '  gl_FragColor.rgb += (rkPrism * rkFresnel * 0.42 + vec3(1.0, 0.98, 0.94) * rkSparkle * 0.28) * uDispersion;',
+            '} else if (uMode < 1.5) {',
+            '  // Thin-film iridescent play-of-color (pearlescent / labradorite opalescence)',
+            '  vec3 rkIrid = 0.5 + 0.5 * cos(6.28318 * (rkNdotV * 1.85 + 0.22 * sin(rkPhase * 0.7)) + vec3(0.15, 2.25, 4.35));',
+            '  gl_FragColor.rgb += rkIrid * (0.14 + 0.36 * rkFresnel);',
+            '} else if (uMode < 2.5) {',
+            '  // Anisotropic metallic specular sheen (pyrite / galena / magnetite)',
+            '  vec3 rkRef = abs(rkN.y) < 0.92 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);',
+            '  vec3 rkT = normalize(cross(rkN, rkRef));',
+            '  vec3 rkH = normalize(rkV + normalize(vec3(0.55, 0.78, 0.42)));',
+            '  float rkAniso = pow(1.0 - abs(dot(rkT, rkH)), 8.0) * (0.65 + 0.35 * sin(rkPhase));',
+            '  gl_FragColor.rgb += mix(vec3(1.0, 0.91, 0.70), vec3(0.82, 0.90, 1.0), rkFresnel) * (rkAniso * 0.28 + rkFresnel * 0.22);',
+            '} else if (uMode < 3.5) {',
+            '  // Silky chatoyancy band (fibrous satin cat-eye glide)',
+            '  float rkBand = pow(1.0 - abs(dot(rkV, normalize(vec3(0.2, 0.94, 0.25)))), 5.0);',
+            '  float rkStripe = 0.72 + 0.28 * sin(vRkWorldPos.y * 18.0 + uTime * 1.2);',
+            '  gl_FragColor.rgb += vec3(0.96, 0.94, 1.0) * (rkBand * rkStripe * 0.26 + rkFresnel * 0.16);',
+            '} else {',
+            '  // Subtle waxy/resinous subsurface warm rim',
+            '  gl_FragColor.rgb += vec3(1.0, 0.84, 0.58) * rkFresnel * 0.14;',
+            '}',
+            '#include <dithering_fragment>'
+          ].join('\n'));
+      };
+      return mat;
+    }
+
+    function rkAtomMaterial(def) {
+      var atomCol = api.contrast ? 0xffffff : def.color;
+      var emCol = api.contrast ? 0x000000 : def.color;
+      var emInt = api.contrast ? 0 : (api.dark ? 0.16 : 0.06);
+      if (!api.contrast && THREE.MeshPhysicalMaterial && (isAdamLuster || isPearlLuster || (!isMetLuster && !isEarthLuster && !isResinLuster))) {
+        return applyCrystalLusterShader(new THREE.MeshPhysicalMaterial({
+          color: atomCol,
+          metalness: isPearlLuster ? 0.14 : (isAdamLuster ? 0.08 : 0.05),
+          roughness: isAdamLuster ? 0.06 : (isPearlLuster ? 0.30 : 0.16),
+          clearcoat: isAdamLuster ? 1.0 : (isPearlLuster ? 0.58 : 0.86),
+          clearcoatRoughness: isAdamLuster ? 0.04 : (isPearlLuster ? 0.24 : 0.08),
+          reflectivity: isAdamLuster ? 1.0 : 0.88,
+          emissive: emCol,
+          emissiveIntensity: isAdamLuster ? (api.dark ? 0.22 : 0.10) : emInt
+        }), 'phys');
+      }
+      if (THREE.MeshStandardMaterial) {
+        return applyCrystalLusterShader(new THREE.MeshStandardMaterial({
+          color: atomCol,
+          metalness: api.contrast ? 0.05 : (isMetLuster ? 0.86 : (isEarthLuster ? 0.02 : 0.08)),
+          roughness: api.contrast ? 0.38 : (isMetLuster ? 0.18 : (isEarthLuster ? 0.84 : (isResinLuster ? 0.40 : 0.24))),
+          emissive: emCol,
+          emissiveIntensity: isMetLuster ? (api.dark ? 0.14 : 0.04) : emInt
+        }), 'std');
+      }
+      return applyCrystalLusterShader(new THREE.MeshPhongMaterial({
+        color: atomCol,
+        shininess: isMetLuster ? 115 : (isAdamLuster ? 130 : (isEarthLuster ? 12 : 76)),
+        specular: isMetLuster ? 0xfff3d1 : (isAdamLuster ? 0xffffff : 0x556677),
+        emissive: emCol,
+        emissiveIntensity: emInt
+      }), 'phong');
+    }
+
+    // Subtle luster-calibrated rim light attached to anchor (auto-cleaned on mineral switch)
+    if (THREE.PointLight && !api.contrast) {
+      var rimTint = isMetLuster ? 0xffe4b5 : (isAdamLuster ? 0xe0f2fe : (isPearlLuster ? 0xf5d0fe : 0xbae6fd));
+      var crystalRimLight = new THREE.PointLight(rimTint, isMetLuster ? 0.95 : (isAdamLuster ? 0.85 : 0.58), 14);
+      crystalRimLight.position.set(-2.6, 2.8, -2.4);
+      anchor.add(crystalRimLight);
+      var crystalFillLight = new THREE.PointLight(0xffffff, isMetLuster ? 0.55 : 0.38, 12);
+      crystalFillLight.position.set(2.4, -1.4, 2.8);
+      anchor.add(crystalFillLight);
+    }
+
     var geoCache = {};
+    var matCache = {};
     atoms.forEach(function (at, idx) {
       var def = RK_ATOM[at.sp] || RK_ATOM.X;
       var key = at.sp;
-      if (!geoCache[key]) geoCache[key] = new THREE.SphereGeometry(def.r * ATOM_SCALE, 20, 14);
-      var mat = new THREE.MeshPhongMaterial({
-        color: api.contrast ? 0xffffff : def.color,
-        shininess: 58,
-        specular: 0x333333,
-        emissive: api.contrast ? 0x000000 : def.color,
-        emissiveIntensity: api.dark ? 0.18 : 0.06
-      });
-      var mesh = new THREE.Mesh(geoCache[key], mat);
+      if (!geoCache[key]) geoCache[key] = new THREE.SphereGeometry(def.r * ATOM_SCALE, 24, 18);
+      if (!matCache[key]) matCache[key] = rkAtomMaterial(def);
+      var mesh = new THREE.Mesh(geoCache[key], matCache[key]);
       mesh.position.set((at.x - cx) * SCALE, (at.y - cy) * SCALE + 0.3, (at.z - cz) * SCALE);
       if (api.wantShadow) { mesh.castShadow = true; mesh.receiveShadow = true; }
       mesh.userData.partId = 'atom-' + at.sp;
@@ -4437,8 +4645,14 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
     // Bonds between near neighbours, so the arrangement reads as a framework
     // rather than a cloud of loose spheres.
-    var bondMat = new THREE.MeshPhongMaterial({ color: api.contrast ? 0xffffff : 0x94a3b8, shininess: 20 });
-    var bondGeo = new THREE.CylinderGeometry(0.032, 0.032, 1, 8);
+    var bondMat = THREE.MeshStandardMaterial
+      ? new THREE.MeshStandardMaterial({
+        color: api.contrast ? 0xffffff : (isMetLuster ? 0xcbd5e1 : 0x94a3b8),
+        metalness: api.contrast ? 0.05 : (isMetLuster ? 0.72 : 0.38),
+        roughness: api.contrast ? 0.42 : (isMetLuster ? 0.24 : 0.34)
+      })
+      : new THREE.MeshPhongMaterial({ color: api.contrast ? 0xffffff : 0x94a3b8, shininess: 32 });
+    var bondGeo = new THREE.CylinderGeometry(0.032, 0.032, 1, 10);
     // Bond budget. This was 220, which four structures exceeded — calcite wants
     // 315 and the three sheet silicates want 291 each. The loop walks i
     // ascending and the sheets are pushed layer by layer, so the atoms that
@@ -4539,7 +4753,78 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       }
     }
 
-    return { meshes: meshes, picks: picks, anchor: anchor };
+    // Subtle glowing studio turntable calibration ring & recessed geothermal magma shimmer
+    if (!api.contrast && typeof THREE.ShaderMaterial === 'function') {
+      var ringAccent = isMetLuster ? [1.0, 0.78, 0.32]
+        : (isAdamLuster ? [0.48, 0.88, 1.0]
+          : (isPearlLuster ? [0.88, 0.68, 1.0] : [0.96, 0.72, 0.36]));
+      var ringGeo = new THREE.PlaneGeometry(4.4, 4.4, 1, 1);
+      var ringMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: crystalUniforms.uTime,
+          uAccent: { value: new THREE.Vector3(ringAccent[0], ringAccent[1], ringAccent[2]) },
+          uDark: crystalUniforms.uDark
+        },
+        vertexShader: [
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vUv = uv;',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform vec3 uAccent;',
+          'uniform float uDark;',
+          'varying vec2 vUv;',
+          'float rkHash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+          'float rkNoise2(vec2 p) {',
+          '  vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);',
+          '  return mix(mix(rkHash2(i), rkHash2(i + vec2(1.0, 0.0)), u.x),',
+          '             mix(rkHash2(i + vec2(0.0, 1.0)), rkHash2(i + vec2(1.0, 1.0)), u.x), u.y);',
+          '}',
+          'void main() {',
+          '  vec2 p = (vUv - 0.5) * 2.0;',
+          '  float r = length(p);',
+          '  if (r > 0.98) discard;',
+          '  float ang = atan(p.y, p.x + 1e-5);',
+          '  // Vernier calibration ring & cardinal reticle ticks',
+          '  float outerRing = exp(-pow((r - 0.82) * 34.0, 2.0));',
+          '  float innerRing = exp(-pow((r - 0.56) * 42.0, 2.0)) * 0.55;',
+          '  float fineTick = smoothstep(0.92, 0.99, abs(cos(ang * 18.0))) * smoothstep(0.76, 0.80, r) * smoothstep(0.90, 0.85, r);',
+          '  float majorTick = smoothstep(0.97, 0.998, abs(cos(ang * 6.0))) * smoothstep(0.71, 0.76, r) * smoothstep(0.93, 0.88, r);',
+          '  float sweep = 0.55 + 0.45 * pow(max(0.0, cos(ang - uTime * 0.85)), 4.0);',
+          '  // Recessed incandescent geothermal magma core shimmer at plinth center',
+          '  float coreMask = smoothstep(0.46, 0.08, r);',
+          '  float m1 = rkNoise2(p * 5.2 + vec2(uTime * 0.16, -uTime * 0.12));',
+          '  float m2 = rkNoise2(p * 10.5 - vec2(uTime * 0.22, uTime * 0.14));',
+          '  float vein = smoothstep(0.56, 0.86, 1.0 - abs(m1 - 0.5) * 2.3) * (0.5 + 0.5 * m2);',
+          '  vec3 magmaCol = mix(vec3(0.85, 0.22, 0.04), vec3(1.0, 0.72, 0.18), vein);',
+          '  vec3 ringCol = uAccent * (outerRing * sweep + innerRing + fineTick * 0.45 + majorTick * 0.85);',
+          '  vec3 col = ringCol + magmaCol * vein * coreMask * (uDark > 0.5 ? 0.48 : 0.30);',
+          '  float alpha = clamp((outerRing * sweep * 0.65 + innerRing * 0.42 + fineTick * 0.28 + majorTick * 0.55 + vein * coreMask * 0.36) * (uDark > 0.5 ? 0.92 : 0.68), 0.0, 0.82);',
+          '  if (alpha < 0.015) discard;',
+          '  gl_FragColor = vec4(col, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        blending: api.dark ? (THREE.AdditiveBlending || THREE.NormalBlending) : THREE.NormalBlending
+      });
+      var ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.rotation.x = -Math.PI / 2;
+      ringMesh.position.y = -1.62;
+      ringMesh.renderOrder = 1;
+      anchor.add(ringMesh);
+    }
+
+    var crystalFrame = function (now, sceneProps, reduced) {
+      crystalUniforms.uTime.value = reduced ? 1.85 : (now * 0.001) % 1000.0;
+      anchor.position.y = reduced ? 0 : Math.sin(now * 0.0012) * 0.035;
+    };
+
+    return { meshes: meshes, picks: picks, anchor: anchor, frame: crystalFrame };
   }
 
   // Identity-stable ref, same discipline as the two canvases in this file: an
@@ -5045,8 +5330,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     // massive (and 'sheets', which buildScene assembles from plates instead)
     return jitter(new THREE.DodecahedronGeometry(1.05, 1), 0.14);
   }
-  function rkSpecimenMaterial(THREE, m, env) {
+  function rkSpecimenMaterial(THREE, m, env, uniforms, contrast) {
     var cls = rkLusterClass(m);
+    var mLuster = String((m && m.luster) || '').toLowerCase();
+    var isAdam = mLuster.indexOf('adamantine') !== -1;
+    var isSilky = mLuster.indexOf('silky') !== -1 || mLuster.indexOf('fibrous') !== -1;
     var color = new THREE.Color((m && m.color) || '#cbd5e1');
     var mat;
     if (cls === 'metallic') {
@@ -5068,6 +5356,63 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     } else {
       mat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.0, roughness: 1.0, flatShading: true });
     }
+    if (!contrast && uniforms && mat && typeof mat.onBeforeCompile === 'function') {
+      var spMode = cls === 'metallic' ? 2 : (isSilky ? 3 : (cls === 'pearly' ? 1 : (cls === 'glassy' ? 0 : 4)));
+      var spDisp = isAdam ? 1.0 : 0.62;
+      mat.customProgramCacheKey = function () { return 'rk-specimen-luster-' + spMode + (isAdam ? '-ad' : ''); };
+      mat.onBeforeCompile = function (shader) {
+        shader.uniforms.uTime = uniforms.uTime;
+        shader.uniforms.uSpMode = { value: spMode * 1.0 };
+        shader.uniforms.uSpDisp = { value: spDisp };
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'varying vec3 vSpWorldPos;',
+            'varying vec3 vSpWorldNorm;'
+          ].join('\n'))
+          .replace('#include <begin_vertex>', [
+            '#include <begin_vertex>',
+            'vec4 spWp = modelMatrix * vec4(transformed, 1.0);',
+            'vSpWorldPos = spWp.xyz;',
+            'vSpWorldNorm = normalize(mat3(modelMatrix) * objectNormal);'
+          ].join('\n'));
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', [
+            '#include <common>',
+            'uniform float uTime;',
+            'uniform float uSpMode;',
+            'uniform float uSpDisp;',
+            'varying vec3 vSpWorldPos;',
+            'varying vec3 vSpWorldNorm;'
+          ].join('\n'))
+          .replace('#include <dithering_fragment>', [
+            'vec3 spN = normalize(vSpWorldNorm);',
+            'vec3 spV = normalize(cameraPosition - vSpWorldPos);',
+            'float spNdotV = clamp(abs(dot(spN, spV)), 0.0, 1.0);',
+            'float spF = pow(1.0 - spNdotV, 2.6);',
+            'float spP = dot(vSpWorldPos, vec3(2.2, 3.1, 1.8)) + uTime * 0.45;',
+            'if (uSpMode < 0.5) {',
+            '  vec3 prism = 0.5 + 0.5 * cos(6.28318 * (spF * 1.2 + 0.1 * sin(spP)) + vec3(0.0, 2.094, 4.188));',
+            '  float glint = pow(clamp(dot(reflect(-spV, spN), normalize(vec3(0.42, 0.85, 0.32))), 0.0, 1.0), 28.0);',
+            '  gl_FragColor.rgb += (prism * spF * 0.38 + vec3(1.0) * glint * 0.34) * uSpDisp;',
+            '} else if (uSpMode < 1.5) {',
+            '  vec3 irid = 0.5 + 0.5 * cos(6.28318 * (spNdotV * 2.1 + 0.18 * sin(spP)) + vec3(0.1, 2.2, 4.3));',
+            '  gl_FragColor.rgb += irid * (0.14 + 0.38 * spF);',
+            '} else if (uSpMode < 2.5) {',
+            '  vec3 spRef = abs(spN.y) < 0.92 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);',
+            '  vec3 spT = normalize(cross(spN, spRef));',
+            '  vec3 spH = normalize(spV + normalize(vec3(0.5, 0.82, 0.4)));',
+            '  float aniso = pow(1.0 - abs(dot(spT, spH)), 10.0);',
+            '  gl_FragColor.rgb += vec3(1.0, 0.96, 0.86) * (aniso * 0.30 + spF * 0.18);',
+            '} else if (uSpMode < 3.5) {',
+            '  float chat = pow(1.0 - abs(dot(spV, normalize(vec3(0.18, 0.95, 0.22)))), 6.0);',
+            '  float fib = 0.7 + 0.3 * sin(vSpWorldPos.y * 22.0 + uTime * 1.1);',
+            '  gl_FragColor.rgb += vec3(0.98, 0.95, 1.0) * (chat * fib * 0.30 + spF * 0.16);',
+            '}',
+            '#include <dithering_fragment>'
+          ].join('\n'));
+      };
+    }
     return mat;
   }
   function rkBuildSpecimenScene(THREE, api) {
@@ -5076,8 +5421,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     if (!m) return { meshes: meshes, picks: picks, anchor: null };
     var anchor = new THREE.Group();
     api.scene.add(anchor);
+    var spUniforms = { uTime: { value: 1.85 }, uDark: { value: api.dark ? 1.0 : 0.0 } };
     var env = rkSpecimenEnvMap(THREE);
-    var mat = rkSpecimenMaterial(THREE, m, env);
+    var mat = rkSpecimenMaterial(THREE, m, env, spUniforms, api.contrast);
     var body = new THREE.Group();
     var i;
     if (rkFormClass(m) === 'sheets') {
@@ -5108,6 +5454,51 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     floor.position.y = -0.95;
     floor.receiveShadow = api.wantShadow;
     anchor.add(floor);
+    // Neutral studio turntable calibration ring + subtle geothermal glow ring (never spoils luster class)
+    if (!api.contrast && typeof THREE.ShaderMaterial === 'function') {
+      var benchRingGeo = new THREE.PlaneGeometry(4.65, 4.65, 1, 1);
+      var benchRingMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: spUniforms.uTime,
+          uDark: spUniforms.uDark
+        },
+        vertexShader: [
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vUv = uv;',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime;',
+          'uniform float uDark;',
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vec2 p = (vUv - 0.5) * 2.0;',
+          '  float r = length(p);',
+          '  if (r > 0.98 || r < 0.56) discard;',
+          '  float ang = atan(p.y, p.x + 1e-5);',
+          '  float ring = exp(-pow((r - 0.88) * 38.0, 2.0));',
+          '  float inner = exp(-pow((r - 0.66) * 44.0, 2.0)) * 0.45;',
+          '  float ticks = smoothstep(0.93, 0.99, abs(cos(ang * 18.0))) * smoothstep(0.81, 0.84, r) * smoothstep(0.94, 0.91, r);',
+          '  float sweep = 0.55 + 0.45 * pow(max(0.0, cos(ang - uTime * 0.65)), 5.0);',
+          '  vec3 col = mix(vec3(0.94, 0.78, 0.44), vec3(1.0, 0.54, 0.16), smoothstep(0.60, 0.72, r) * (1.0 - smoothstep(0.72, 0.80, r)));',
+          '  float alpha = clamp((ring * sweep * 0.58 + inner * 0.36 + ticks * 0.35) * (uDark > 0.5 ? 0.88 : 0.56), 0.0, 0.72);',
+          '  if (alpha < 0.015) discard;',
+          '  gl_FragColor = vec4(col, alpha);',
+          '}'
+        ].join('\n'),
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        blending: api.dark ? (THREE.AdditiveBlending || THREE.NormalBlending) : THREE.NormalBlending
+      });
+      var benchRing = new THREE.Mesh(benchRingGeo, benchRingMat);
+      benchRing.rotation.x = -Math.PI / 2;
+      benchRing.position.y = -0.942;
+      benchRing.renderOrder = 1;
+      anchor.add(benchRing);
+    }
     // A lamp glint sphere in the reflection direction helps metal/glass show
     // a hard highlight even without the env map.
     var lamp = new THREE.PointLight(0xfff2d6, 0.9, 12);
@@ -5115,6 +5506,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     anchor.add(lamp);
     meshes.specimen = body;
     var frame = function (now, sceneProps, reduced) {
+      spUniforms.uTime.value = reduced ? 1.85 : (now * 0.001) % 1000.0;
       if (reduced) return;
       body.rotation.y = (now * 0.00035) % (Math.PI * 2);
     };
@@ -6689,7 +7081,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         h('text', { x: 128, y: 227, textAnchor: 'middle', fontSize: 22, fill: '#f0fdfa', fontFamily: 'ui-monospace,monospace', letterSpacing: 1 }, hasMass ? mass.toFixed(1) + ' g' : '— g'))),
       h('figure', { className:'rk-density-instrument', 'data-rk-density-instrument':'cylinder' },
       h('figcaption', null, tr('cylinder_caption', 'Volume · 0.1 mL readout')),
-      h('svg', { viewBox:'250 28 230 245', width:'100%', role:'img', 'aria-label':cylinderLabel, 'data-rk-density-cylinder':true },
+      h('svg', { viewBox:'250 20 230 253', width:'100%', role:'img', 'aria-label':cylinderLabel, 'data-rk-density-cylinder':true },
         h('path', { className:'rk-density-instrument-grid', d:'M268 35H462M268 75H462M268 115H462M268 155H462M268 195H462M268 235H462M280 28V254M320 28V254M360 28V254M400 28V254M440 28V254', fill:'none', stroke:'#e0e9e4', strokeWidth:1, 'aria-hidden':true }),
         h('ellipse', { cx:354, cy:255, rx:63, ry:6, fill:'#d5e0da', 'aria-hidden':true }),
         h('line', { x1:268, x2:464, y1:260, y2:260, stroke:'#7b9394', strokeWidth:1.5 }),
@@ -6883,7 +7275,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
       // ── Tool body (rocks) ──
       return (function() {
-const d = labToolData.rocks || {};
+const _rawRocksD = labToolData && labToolData.rocks;
+const d = (_rawRocksD && typeof _rawRocksD === 'object' && !Array.isArray(_rawRocksD)) ? _rawRocksD : {};
+const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
 
           const upd = (key, val) => updMulti({ [key]: val });
 
@@ -8310,14 +8704,29 @@ const d = labToolData.rocks || {};
               ctx.fillStyle = sunGlow;
               ctx.fillRect(sunX - W * 0.12, sunY - W * 0.12, W * 0.24, W * 0.24);
               ctx.beginPath(); ctx.arc(sunX, sunY, 11 * dpr, 0, Math.PI * 2); ctx.fillStyle = '#fff7cc'; ctx.fill();
-              // Distant ridge for depth.
+              // Distant ridges (two atmospheric depth tiers) + horizon mist.
+              ctx.beginPath();
+              ctx.moveTo(W * 0.24, H * 0.5);
+              ctx.lineTo(W * 0.33, H * 0.36); ctx.lineTo(W * 0.41, H * 0.41); ctx.lineTo(W * 0.49, H * 0.33);
+              ctx.lineTo(W * 0.57, H * 0.39); ctx.lineTo(W * 0.67, H * 0.34); ctx.lineTo(W * 0.75, H * 0.5);
+              ctx.closePath();
+              ctx.fillStyle = 'rgba(125,163,196,0.38)';
+              ctx.fill();
               ctx.beginPath();
               ctx.moveTo(W * 0.30, H * 0.5);
               ctx.lineTo(W * 0.38, H * 0.40); ctx.lineTo(W * 0.45, H * 0.44); ctx.lineTo(W * 0.52, H * 0.37);
               ctx.lineTo(W * 0.58, H * 0.43); ctx.lineTo(W * 0.66, H * 0.39); ctx.lineTo(W * 0.72, H * 0.5);
               ctx.closePath();
-              ctx.fillStyle = 'rgba(91,122,154,0.55)';
+              var ridgeGrad = ctx.createLinearGradient(0, H * 0.36, 0, H * 0.5);
+              ridgeGrad.addColorStop(0, 'rgba(71,105,138,0.68)');
+              ridgeGrad.addColorStop(1, 'rgba(186,226,248,0.34)');
+              ctx.fillStyle = ridgeGrad;
               ctx.fill();
+              var horizonMist = ctx.createLinearGradient(0, H * 0.43, 0, H * 0.505);
+              horizonMist.addColorStop(0, 'rgba(224,242,254,0)');
+              horizonMist.addColorStop(1, 'rgba(224,242,254,0.42)');
+              ctx.fillStyle = horizonMist;
+              ctx.fillRect(0, H * 0.43, W, H * 0.075);
               // Clouds: three clusters drifting right, wrapping.
               for (i = 0; i < 3; i++) {
                 var cxC = ((W * (0.15 + i * 0.33) + tick * (0.35 + i * 0.12) * dpr) % (W * 1.3)) - W * 0.15;
@@ -8540,15 +8949,34 @@ const d = labToolData.rocks || {};
 
               // ── Magma chamber + conduit + aureole ──
               const mgX = W * 0.18, mgY = H * 0.76, mgRx = W * 0.085, mgRy = H * 0.11;
-              // Heat halo, then aureole ring: country rock baked around the pluton.
-              var halo = ctx.createRadialGradient(mgX, mgY, mgRx * 0.8, mgX, mgY, mgRx * 1.9);
-              halo.addColorStop(0, 'rgba(249,115,22,0.30)'); halo.addColorStop(1, 'rgba(249,115,22,0)');
-              ctx.fillStyle = halo; ctx.fillRect(mgX - mgRx * 2, mgY - mgRy * 2.4, mgRx * 4, mgRy * 4.8);
+              // Heat halo, baked contact-metamorphic skarn rim, then aureole ring: country rock baked around the pluton.
+              var halo = ctx.createRadialGradient(mgX, mgY, mgRx * 0.65, mgX, mgY, mgRx * 2.15);
+              halo.addColorStop(0, 'rgba(251,146,60,0.44)');
+              halo.addColorStop(0.5, 'rgba(220,38,38,0.22)');
+              halo.addColorStop(1, 'rgba(249,115,22,0)');
+              ctx.fillStyle = halo; ctx.fillRect(mgX - mgRx * 2.2, mgY - mgRy * 2.5, mgRx * 4.4, mgRy * 5.0);
+              // Subtle glowing heat fractures radiating from the magma chamber into the country rock.
               ctx.save();
-              ctx.setLineDash([3 * dpr, 4 * dpr]); ctx.strokeStyle = 'rgba(251,191,36,0.55)'; ctx.lineWidth = 1.5 * dpr;
+              ctx.strokeStyle = 'rgba(251,146,60,' + (0.38 + Math.sin(tick * 0.04) * 0.12).toFixed(3) + ')';
+              ctx.lineWidth = 1.1 * dpr;
+              for (i = 0; i < 6; i++) {
+                var crackA = -2.5 + i * 0.95;
+                var crx0 = mgX + Math.cos(crackA) * mgRx * 0.95, cry0 = mgY + Math.sin(crackA) * mgRy * 0.95;
+                var crx1 = mgX + Math.cos(crackA + 0.12) * mgRx * 1.48, cry1 = mgY + Math.sin(crackA + 0.12) * mgRy * 1.48;
+                ctx.beginPath(); ctx.moveTo(crx0, cry0);
+                ctx.quadraticCurveTo((crx0 + crx1) * 0.5 + 3 * dpr, (cry0 + cry1) * 0.5 - 2 * dpr, crx1, cry1);
+                ctx.stroke();
+              }
+              ctx.restore();
+              ctx.save();
+              ctx.setLineDash([3 * dpr, 4 * dpr]); ctx.strokeStyle = 'rgba(251,191,36,0.65)'; ctx.lineWidth = 1.6 * dpr;
               ctx.beginPath(); ctx.ellipse(mgX, mgY, mgRx * 1.45, mgRy * 1.45, 0, 0, Math.PI * 2); ctx.stroke();
               ctx.restore();
-              // Feeder conduit.
+              // Feeder conduit with thermal side-glow.
+              ctx.save();
+              ctx.strokeStyle = 'rgba(249,115,22,0.30)'; ctx.lineWidth = 11 * dpr;
+              ctx.beginPath(); ctx.moveTo(mgX, mgY - mgRy * 0.8); ctx.quadraticCurveTo(W * 0.18, H * 0.62, W * 0.181, H * 0.14); ctx.stroke();
+              ctx.restore();
               ctx.beginPath();
               ctx.moveTo(mgX - 7 * dpr, mgY - mgRy * 0.8);
               ctx.quadraticCurveTo(W * 0.172, H * 0.62, W * 0.176, H * 0.14);
@@ -8556,7 +8984,7 @@ const d = labToolData.rocks || {};
               ctx.quadraticCurveTo(W * 0.187, H * 0.62, mgX + 7 * dpr, mgY - mgRy * 0.8);
               ctx.closePath();
               const conduitGrad = ctx.createLinearGradient(0, H * 0.14, 0, mgY);
-              conduitGrad.addColorStop(0, '#fbbf24'); conduitGrad.addColorStop(0.4, '#c2410c'); conduitGrad.addColorStop(1, '#ea580c');
+              conduitGrad.addColorStop(0, '#fef08a'); conduitGrad.addColorStop(0.35, '#f97316'); conduitGrad.addColorStop(1, '#ea580c');
               ctx.fillStyle = conduitGrad; ctx.fill();
               // Irregular chamber, deterministic wobble.
               ctx.beginPath();
@@ -8568,13 +8996,13 @@ const d = labToolData.rocks || {};
                 if (mi === 0) ctx.moveTo(mxp, myp); else ctx.lineTo(mxp, myp);
               }
               ctx.closePath();
-              const magmaGrad = ctx.createRadialGradient(mgX - mgRx * 0.2, mgY - mgRy * 0.2, 0, mgX, mgY, mgRx * 1.25);
-              magmaGrad.addColorStop(0, '#fde047'); magmaGrad.addColorStop(0.42, '#ea580c'); magmaGrad.addColorStop(1, '#7f1d1d');
+              const magmaGrad = ctx.createRadialGradient(mgX - mgRx * 0.18, mgY - mgRy * 0.18, 0, mgX, mgY, mgRx * 1.28);
+              magmaGrad.addColorStop(0, '#fef9c3'); magmaGrad.addColorStop(0.24, '#fde047'); magmaGrad.addColorStop(0.58, '#ea580c'); magmaGrad.addColorStop(1, '#7f1d1d');
               ctx.fillStyle = magmaGrad; ctx.fill();
-              ctx.strokeStyle = 'rgba(69,26,3,0.75)'; ctx.lineWidth = 2 * dpr; ctx.stroke();
+              ctx.strokeStyle = 'rgba(69,26,3,0.78)'; ctx.lineWidth = 2 * dpr; ctx.stroke();
               // Convection cells inside the chamber.
               ctx.save();
-              ctx.strokeStyle = 'rgba(253,224,71,0.45)'; ctx.lineWidth = 1.5 * dpr;
+              ctx.strokeStyle = 'rgba(254,249,195,0.58)'; ctx.lineWidth = 1.6 * dpr;
               for (i = 0; i < 3; i++) {
                 var ca = tick * 0.02 + i * 2.1;
                 ctx.beginPath(); ctx.ellipse(mgX + (i - 1) * mgRx * 0.45, mgY, mgRx * 0.28, mgRy * 0.5, 0, ca, ca + 3.6); ctx.stroke();
@@ -8588,12 +9016,16 @@ const d = labToolData.rocks || {};
               ctx.lineTo(W * 0.80, H * 0.06); ctx.lineTo(W * 0.83, H * 0.02); ctx.lineTo(W * 0.86, H * 0.06);
               ctx.lineTo(W * 0.985, H * 0.52);
               ctx.closePath();
-              const mtGrad = ctx.createLinearGradient(W * 0.82, H * 0.02, W * 0.82, H * 0.52);
-              mtGrad.addColorStop(0, '#e5e7eb'); mtGrad.addColorStop(0.35, '#9ca3af'); mtGrad.addColorStop(1, '#374151');
+              const mtGrad = ctx.createLinearGradient(W * 0.74, H * 0.02, W * 0.90, H * 0.52);
+              mtGrad.addColorStop(0, '#e5e7eb'); mtGrad.addColorStop(0.35, '#94a3b8'); mtGrad.addColorStop(1, '#334155');
               ctx.fillStyle = mtGrad; ctx.fill();
-              // Tilted strata on the mountain face.
+              // Tilted strata on the mountain face + sunlit/shadow ridge facet depth.
               ctx.save(); ctx.clip();
-              ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1.2 * dpr;
+              ctx.beginPath();
+              ctx.moveTo(W * 0.83, H * 0.02); ctx.lineTo(W * 0.86, H * 0.06); ctx.lineTo(W * 0.985, H * 0.52); ctx.lineTo(W * 0.835, H * 0.52);
+              ctx.closePath();
+              ctx.fillStyle = 'rgba(15,23,42,0.22)'; ctx.fill();
+              ctx.strokeStyle = 'rgba(0,0,0,0.20)'; ctx.lineWidth = 1.2 * dpr;
               for (i = 0; i < 7; i++) { ctx.beginPath(); ctx.moveTo(W * 0.62, H * (0.30 + i * 0.035)); ctx.lineTo(W * 0.98, H * (0.16 + i * 0.05)); ctx.stroke(); }
               // Snow cap.
               ctx.beginPath();
@@ -8615,14 +9047,14 @@ const d = labToolData.rocks || {};
                 for (let x = fx1; x >= fx0; x -= 4) ctx.lineTo(x, foldY(i + 1, x));
                 ctx.closePath();
                 ctx.fillStyle = foldCols[i]; ctx.fill();
-                ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                ctx.strokeStyle = 'rgba(0,0,0,0.28)'; ctx.lineWidth = 0.9 * dpr; ctx.stroke();
               }
               // Foliation. "The minerals lined up" is what metamorphic means, so
               // the lines follow the fold surfaces rather than running flat, and
               // garnet porphyroblasts sit across the fabric the way they do in a
               // real schist — the same relationship the thin section describes.
               ctx.save();
-              ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 0.8 * dpr;
+              ctx.strokeStyle = 'rgba(255,255,255,0.34)'; ctx.lineWidth = 0.85 * dpr;
               for (i = 0; i < 6; i++) {
                 for (j = 1; j <= 3; j++) {
                   ctx.beginPath();
@@ -8638,10 +9070,18 @@ const d = labToolData.rocks || {};
                 var pbX = fx0 + (fx1 - fx0) * (0.09 + ((i * 0.139) % 0.82));
                 var pbB = i % 5;
                 var pbY = foldY(pbB, pbX) + (foldY(pbB + 1, pbX) - foldY(pbB, pbX)) * 0.5;
-                ctx.beginPath(); ctx.arc(pbX, pbY, 2.6 * dpr, 0, Math.PI * 2);
-                ctx.fillStyle = '#7f1d1d'; ctx.fill();
-                ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 0.7 * dpr; ctx.stroke();
+                ctx.beginPath(); ctx.arc(pbX, pbY, 2.8 * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = '#9f1239'; ctx.fill();
+                ctx.strokeStyle = 'rgba(0,0,0,0.48)'; ctx.lineWidth = 0.7 * dpr; ctx.stroke();
+                ctx.beginPath(); ctx.arc(pbX - 0.8 * dpr, pbY - 0.8 * dpr, 0.85 * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,241,242,0.85)'; ctx.fill();
               }
+              // Subtle tectonic compression stress-field aura beneath the mountain root.
+              var pressGlow = ctx.createRadialGradient(W * 0.80, H * 0.74, W * 0.02, W * 0.80, H * 0.74, W * 0.17);
+              pressGlow.addColorStop(0, 'rgba(196,181,253,' + (0.16 + Math.sin(tick * 0.04) * 0.05).toFixed(3) + ')');
+              pressGlow.addColorStop(1, 'rgba(139,92,246,0)');
+              ctx.fillStyle = pressGlow;
+              ctx.fillRect(W * 0.62, H * 0.56, W * 0.36, H * 0.36);
               ctx.restore();
 
               // Rain squall over the range and rockfall down its flank: the cause
@@ -9072,6 +9512,82 @@ const d = labToolData.rocks || {};
               }))
 
             ),
+
+            // Petrology Studio Workbench Deck
+            (function () {
+              var isRocksAssess = mode === 'quiz' || mode === 'mystery' || mode === 'weathHunt';
+              var doneChallenges = (Array.isArray(d.completedChallenges) ? d.completedChallenges : []).length;
+              var activeFamIdx = (mode === 'landscape' || mode === 'rocks') ? 0 : (mode === 'minerals' || mode === 'workbench' || mode === 'densityLab') ? 1 : 2;
+              var rocksStarters = [
+                { id: 'rocks', label: __alloT('stem.rocks.starter_catalogue', 'Rock Catalogue') },
+                { id: 'workbench', label: __alloT('stem.rocks.starter_workbench', 'Mineral Test Bench') },
+                { id: 'densityLab', label: __alloT('stem.rocks.starter_density', 'Density Lab') },
+                { id: 'fieldwork', label: __alloT('stem.rocks.starter_fieldwork', 'Field Cases') }
+              ];
+              return React.createElement('section', { className: 'rk-studio-deck', 'aria-label': __alloT('stem.rocks.studio_deck_aria', 'Petrology and Mineralogy workbench summary') },
+                React.createElement('div', { className: 'rk-hero-row' },
+                  React.createElement('div', { className: 'rk-emblem-box', 'aria-hidden': 'true' },
+                    React.createElement('svg', { width: 32, height: 32, viewBox: '0 0 36 36', fill: 'none', 'aria-hidden': 'true' },
+                      React.createElement('polygon', { points: '18,4 30,13 26,30 10,30 6,13', stroke: '#fcd34d', strokeWidth: 2, fill: 'rgba(217,119,6,0.24)' }),
+                      React.createElement('polyline', { points: '6,13 18,18 30,13', stroke: '#fde68a', strokeWidth: 1.6, fill: 'none' }),
+                      React.createElement('line', { x1: 18, y1: 18, x2: 18, y2: 30, stroke: '#fb923c', strokeWidth: 1.6 }),
+                      React.createElement('line', { x1: 18, y1: 4, x2: 18, y2: 18, stroke: '#fef3c7', strokeWidth: 1.4 }),
+                      React.createElement('circle', { cx: 18, cy: 18, r: 2.2, fill: '#38bdf8' })
+                    )
+                  ),
+                  React.createElement('div', { style: { flex: 1, minWidth: 200 } },
+                    React.createElement('span', { className: 'rk-subject-badge' }, __alloT('stem.rocks.subject_badge', 'Petrology · Mineralogy · Field Geology')),
+                    React.createElement('p', { style: { margin: '5px 0 0', fontSize: 12.5, lineHeight: 1.45, color: '#fef3c7' } }, __alloT('stem.rocks.studio_subcopy', 'Classify igneous, sedimentary, and metamorphic specimens using Mohs hardness, streak, cleavage, luster, and density measurements.'))
+                  )
+                ),
+                React.createElement('div', { className: 'rk-telemetry-strip', role: 'group', 'aria-label': __alloT('stem.rocks.telemetry_aria', 'Geology lab telemetry') },
+                  React.createElement('span', { className: 'rk-telemetry-pill' }, __alloT('stem.rocks.pill_lab', 'Lab:') + ' ' + currentActivity.label),
+                  React.createElement('span', { className: 'rk-telemetry-pill' }, __alloT('stem.rocks.pill_rp', 'Research:') + ' ' + (typeof d.researchPoints === 'number' && isFinite(d.researchPoints) ? d.researchPoints : 0) + ' RP'),
+                  React.createElement('span', { className: 'rk-telemetry-pill' }, __alloT('stem.rocks.pill_challenges', 'Challenges:') + ' ' + doneChallenges + '/' + ROCKS_CHALLENGES.length)
+                ),
+                React.createElement('div', { className: 'rk-cycle-schematic' },
+                  React.createElement('svg', {
+                    viewBox: '0 0 580 54',
+                    style: { width: '100%', height: 'auto', maxHeight: 56, display: 'block' },
+                    role: 'img',
+                    'aria-label': __alloT('stem.rocks.classification_schematic_aria', 'Three major rock families: igneous from cooling magma, sedimentary from compressed layers, and metamorphic from heat and pressure')
+                  },
+                    React.createElement('line', { x1: 182, y1: 27, x2: 208, y2: 27, stroke: '#fb923c', strokeWidth: 2, strokeDasharray: '4 3' }),
+                    React.createElement('line', { x1: 372, y1: 27, x2: 398, y2: 27, stroke: '#38bdf8', strokeWidth: 2, strokeDasharray: '4 3' }),
+                    [
+                      { x: 10, w: 172, k: 'IGNEOUS', v: __alloT('stem.rocks.fam_igneous_cue', 'Magma & Crystal Size'), stroke: '#fb923c', idx: 0 },
+                      { x: 208, w: 164, k: 'SEDIMENTARY', v: __alloT('stem.rocks.fam_sed_cue', 'Strata, Grains & Fossils'), stroke: '#38bdf8', idx: 1 },
+                      { x: 398, w: 172, k: 'METAMORPHIC', v: __alloT('stem.rocks.fam_meta_cue', 'Heat, Pressure & Bands'), stroke: '#c084fc', idx: 2 }
+                    ].map(function (stNode) {
+                      var on = activeFamIdx === stNode.idx;
+                      return React.createElement('g', { key: stNode.k },
+                        React.createElement('rect', {
+                          x: stNode.x, y: 6, width: stNode.w, height: 42, rx: 9,
+                          fill: on ? 'rgba(217,119,6,0.28)' : 'rgba(20,14,9,0.88)',
+                          stroke: on ? '#fde68a' : stNode.stroke,
+                          strokeWidth: on ? 2 : 1.2
+                        }),
+                        React.createElement('text', { x: stNode.x + stNode.w / 2, y: 22, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, stNode.k),
+                        React.createElement('text', { x: stNode.x + stNode.w / 2, y: 38, textAnchor: 'middle', fill: '#ffffff', fontSize: 11, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, stNode.v)
+                      );
+                    })
+                  )
+                ),
+                (!isRocksAssess && !isRocksLocked) && React.createElement('div', { className: 'rk-starter-bar', role: 'group', 'aria-label': __alloT('stem.rocks.quick_starters_aria', 'Quick geology lab starters') },
+                  React.createElement('span', { className: 'rk-starter-label' }, __alloT('stem.rocks.quick_starters_label', 'Quick Stations:')),
+                  rocksStarters.map(function (stItem) {
+                    return React.createElement('button', {
+                      key: stItem.id,
+                      type: 'button',
+                      className: 'rk-starter-chip',
+                      'data-active': mode === stItem.id ? 'true' : 'false',
+                      'aria-pressed': mode === stItem.id ? 'true' : 'false',
+                      onClick: function () { upd('mode', stItem.id); }
+                    }, stItem.label);
+                  })
+                )
+              );
+            })(),
 
             // Challenges Progress Card
             React.createElement("details", {
@@ -16182,7 +16698,8 @@ const d = labToolData.rocks || {};
 
       // ── Tool body (rockCycle) ──
       return (function() {
-const d = labToolData.rockCycle || {};
+const _rawRcD = labToolData && labToolData.rockCycle;
+const d = (_rawRcD && typeof _rawRcD === 'object' && !Array.isArray(_rawRcD)) ? _rawRcD : {};
         // Every read below gates on truthiness, which a saved STRING passes;
         // .asked / .score / .concept then come back undefined. Declared here,
         // in the render scope, because the uses span several callbacks.
@@ -16731,20 +17248,26 @@ const d = labToolData.rockCycle || {};
 
               // ── Magma chamber (bottom) ──
               var magmaY = cH * 0.88;
-              var magmaGrad = ctx.createRadialGradient(cW / 2, cH, cW * 0.1, cW / 2, cH, cW * 0.5);
-              magmaGrad.addColorStop(0, 'rgba(255,100,0,0.8)');
-              magmaGrad.addColorStop(0.5, 'rgba(220,38,38,0.5)');
+              var magmaGrad = ctx.createRadialGradient(cW / 2, cH, cW * 0.08, cW / 2, cH, cW * 0.54);
+              magmaGrad.addColorStop(0, 'rgba(255,140,20,0.88)');
+              magmaGrad.addColorStop(0.45, 'rgba(220,38,38,0.56)');
               magmaGrad.addColorStop(1, 'rgba(180,20,0,0)');
               ctx.fillStyle = magmaGrad;
               ctx.fillRect(0, magmaY, cW, cH - magmaY);
               var chX = W * 0.5, chY = H * 0.95, flick = rcFreezeMotion ? 0 : Math.sin(tick * 0.05) * 0.06;
+              // Warm contact-metamorphic crust aura above the magma reservoir.
+              var crustAura = ctx.createRadialGradient(chX, chY - H * 0.05, W * 0.06, chX, chY - H * 0.05, W * 0.24);
+              crustAura.addColorStop(0, 'rgba(251,146,60,' + (0.28 + flick * 0.5).toFixed(3) + ')');
+              crustAura.addColorStop(1, 'rgba(180,40,10,0)');
+              ctx.fillStyle = crustAura;
+              ctx.fillRect(chX - W * 0.24, chY - H * 0.24, W * 0.48, H * 0.28);
               var chG = ctx.createRadialGradient(chX, chY, 4 * dpr, chX, chY, W * 0.17);
-              chG.addColorStop(0, 'rgba(255,237,160,0.95)'); chG.addColorStop(0.35, 'rgba(251,146,60,0.9)');
-              chG.addColorStop(0.75, 'rgba(220,38,38,' + (0.55 + flick).toFixed(3) + ')'); chG.addColorStop(1, 'rgba(127,29,29,0)');
+              chG.addColorStop(0, 'rgba(254,249,195,0.98)'); chG.addColorStop(0.32, 'rgba(251,146,60,0.92)');
+              chG.addColorStop(0.75, 'rgba(220,38,38,' + (0.60 + flick).toFixed(3) + ')'); chG.addColorStop(1, 'rgba(127,29,29,0)');
               ctx.fillStyle = chG;
               ctx.beginPath(); ctx.ellipse(chX, chY, W * 0.17, H * 0.09, 0, 0, Math.PI * 2); ctx.fill();
               // Magma convection currents (animated flow lines)
-              ctx.strokeStyle = 'rgba(255,200,80,0.22)'; ctx.lineWidth = 2 * dpr;
+              ctx.strokeStyle = 'rgba(254,240,138,0.32)'; ctx.lineWidth = 2.1 * dpr;
               for (var mci = 0; mci < 4; mci++) {
                 var mcOff = ((tick * 0.3 + mci * 60) % 240) - 40;
                 var mcXCenter = cW * (0.15 + mci * 0.22);
@@ -16765,7 +17288,7 @@ const d = labToolData.rockCycle || {};
                 }
                 ctx.beginPath();
                 ctx.arc(lp.x * dpr, lp.y * dpr, lp.size * dpr, 0, Math.PI * 2);
-                ctx.fillStyle = 'hsla(' + Math.round(lp.life * 60) + ',100%,55%,' + (lp.life * 0.8) + ')';
+                ctx.fillStyle = 'hsla(' + Math.round(lp.life * 60) + ',100%,58%,' + (lp.life * 0.84) + ')';
                 ctx.fill();
               }
               // The dike: magma rising from the chamber to the volcano.
@@ -16773,19 +17296,25 @@ const d = labToolData.rockCycle || {};
               ctx.save(); ctx.lineCap = 'round';
               ctx.beginPath(); ctx.moveTo(chX, chY - H * 0.07);
               ctx.bezierCurveTo(chX - 8 * dpr, H * 0.8, chX + 6 * dpr, H * 0.72, volX, volBaseY);
-              ctx.strokeStyle = 'rgba(251,146,60,0.35)'; ctx.lineWidth = 10 * dpr; ctx.stroke();
-              ctx.strokeStyle = 'rgba(253,224,71,' + (0.75 + flick).toFixed(3) + ')'; ctx.lineWidth = 3 * dpr; ctx.stroke();
+              ctx.strokeStyle = 'rgba(234,88,12,0.22)'; ctx.lineWidth = 17 * dpr; ctx.stroke();
+              ctx.strokeStyle = 'rgba(251,146,60,0.44)'; ctx.lineWidth = 10 * dpr; ctx.stroke();
+              ctx.strokeStyle = 'rgba(254,240,138,' + (0.85 + flick).toFixed(3) + ')'; ctx.lineWidth = 3.2 * dpr; ctx.stroke();
               ctx.restore();
 
               // Mountains: uplifted and snow-capped, where rain wears rock down.
               var MTN = [[0, 0.65], [0.04, 0.47], [0.09, 0.53], [0.15, 0.36], [0.21, 0.5], [0.27, 0.43], [0.35, 0.65]];
               var mtnG = ctx.createLinearGradient(0, H * 0.36, 0, SURF);
-              mtnG.addColorStop(0, '#6b7280'); mtnG.addColorStop(1, '#3f3a45');
+              mtnG.addColorStop(0, '#7c8598'); mtnG.addColorStop(0.55, '#524b5d'); mtnG.addColorStop(1, '#37323f');
               ctx.fillStyle = mtnG;
               ctx.beginPath(); ctx.moveTo(0, SURF);
               MTN.forEach(function (p) { ctx.lineTo(p[0] * W, p[1] * H); });
               ctx.closePath(); ctx.fill();
-              ctx.fillStyle = 'rgba(241,245,249,0.92)';
+              // Sculpted sunlit vs shadow alpine facets on the main peaks.
+              ctx.fillStyle = 'rgba(15,23,42,0.28)';
+              [[0.15, 0.36, 0.21, 0.50, 0.16, 0.65], [0.27, 0.43, 0.35, 0.65, 0.26, 0.65]].forEach(function (sf) {
+                ctx.beginPath(); ctx.moveTo(sf[0] * W, sf[1] * H); ctx.lineTo(sf[2] * W, sf[3] * H); ctx.lineTo(sf[4] * W, sf[5] * H); ctx.closePath(); ctx.fill();
+              });
+              ctx.fillStyle = 'rgba(241,245,249,0.94)';
               [[0.15, 0.36], [0.27, 0.43], [0.04, 0.47]].forEach(function (pk) {
                 var kx = pk[0] * W, ky = pk[1] * H;
                 ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(kx - 12 * dpr, ky + 13 * dpr); ctx.lineTo(kx - 4 * dpr, ky + 9 * dpr);
@@ -17474,12 +18003,57 @@ const d = labToolData.rockCycle || {};
 
             React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
-              React.createElement("button", { type: 'button', onClick: () => setStemLabTool(null), className: "transition-colors grid h-10 w-10 shrink-0 place-items-center border border-slate-200 hover:bg-slate-100 rounded-xl active:scale-[0.97]", 'aria-label': __alloT('stem.rocks.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { type: 'button', onClick: () => setStemLabTool(null), className: "transition-colors grid h-11 w-11 shrink-0 place-items-center border border-slate-200 hover:bg-slate-100 rounded-xl active:scale-[0.97]", 'aria-label': __alloT('stem.rocks.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" + onHostInk }, "\uD83E\uDEA8 " + __alloT('stem.rocks.rock_cycle_title', "Rock Cycle")),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-orange-100 text-orange-800 text-sm font-bold rounded-full" }, __alloT('stem.rocks.animated_badge', "ANIMATED"))
 
+            ),
+
+            React.createElement('section', { className: 'rc-studio-hero', 'aria-label': __alloT('stem.rocks.rc_studio_aria', 'Rock Cycle crustal recycling workbench header') },
+              React.createElement('div', { className: 'rc-hero-row' },
+                React.createElement('div', { className: 'rc-emblem-box', 'aria-hidden': 'true' },
+                  React.createElement('svg', { width: 32, height: 32, viewBox: '0 0 36 36', fill: 'none', 'aria-hidden': 'true' },
+                    React.createElement('circle', { cx: 18, cy: 18, r: 12, stroke: '#fcd34d', strokeWidth: 2, strokeDasharray: '16 6', fill: 'none' }),
+                    React.createElement('circle', { cx: 18, cy: 6, r: 3.2, fill: '#fb923c' }),
+                    React.createElement('circle', { cx: 28, cy: 24, r: 3.2, fill: '#38bdf8' }),
+                    React.createElement('circle', { cx: 8, cy: 24, r: 3.2, fill: '#c084fc' })
+                  )
+                ),
+                React.createElement('div', { style: { flex: 1, minWidth: 200 } },
+                  React.createElement('span', { className: 'rc-subject-badge' }, __alloT('stem.rocks.rc_subject_badge', 'Earth Systems · Crustal Recycling · Energy & Time')),
+                  React.createElement('p', { style: { margin: '5px 0 0', fontSize: 12.5, lineHeight: 1.45, color: '#fef3c7' } }, __alloT('stem.rocks.rc_studio_subcopy', 'Trace how magma, surface weathering, burial, and tectonic heat continuously recycle rock families along branching geological pathways.'))
+                )
+              ),
+              React.createElement('div', { className: 'rc-cycle-schematic' },
+                React.createElement('svg', {
+                  viewBox: '0 0 580 54',
+                  style: { width: '100%', height: 'auto', maxHeight: 56, display: 'block' },
+                  role: 'img',
+                  'aria-label': __alloT('stem.rocks.rc_cycle_schematic_aria', 'Rock cycle transformation paths connecting igneous, sedimentary, and metamorphic rock families')
+                },
+                  React.createElement('line', { x1: 182, y1: 27, x2: 208, y2: 27, stroke: '#fb923c', strokeWidth: 2, strokeDasharray: '4 3' }),
+                  React.createElement('line', { x1: 372, y1: 27, x2: 398, y2: 27, stroke: '#38bdf8', strokeWidth: 2, strokeDasharray: '4 3' }),
+                  [
+                    { x: 10, w: 172, id: 'igneous', k: 'IGNEOUS', v: __alloT('stem.rocks.rc_ig_tag', 'Melt & Crystallize'), stroke: '#fb923c' },
+                    { x: 208, w: 164, id: 'sedimentary', k: 'SEDIMENTARY', v: __alloT('stem.rocks.rc_sed_tag', 'Weather & Cement'), stroke: '#38bdf8' },
+                    { x: 398, w: 172, id: 'metamorphic', k: 'METAMORPHIC', v: __alloT('stem.rocks.rc_meta_tag', 'Heat & Pressure'), stroke: '#c084fc' }
+                  ].map(function (stNode) {
+                    var on = d.selectedRock === stNode.id;
+                    return React.createElement('g', { key: stNode.id },
+                      React.createElement('rect', {
+                        x: stNode.x, y: 6, width: stNode.w, height: 42, rx: 9,
+                        fill: on ? 'rgba(217,119,6,0.32)' : 'rgba(20,14,9,0.88)',
+                        stroke: on ? '#fde68a' : stNode.stroke,
+                        strokeWidth: on ? 2 : 1.2
+                      }),
+                      React.createElement('text', { x: stNode.x + stNode.w / 2, y: 22, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, stNode.k),
+                      React.createElement('text', { x: stNode.x + stNode.w / 2, y: 38, textAnchor: 'middle', fill: '#ffffff', fontSize: 11, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, stNode.v)
+                    );
+                  })
+                )
+              )
             ),
 
             

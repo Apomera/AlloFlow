@@ -61,9 +61,12 @@ window.StemLab = window.StemLab || {
       '#allo-game-studio .gs-card-hover { transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease; }',
       '#allo-game-studio .gs-card-hover:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -10px rgba(136,19,55,0.28); }',
       '#allo-game-studio button:focus-visible, #allo-game-studio select:focus-visible, #allo-game-studio input:focus-visible, #allo-game-studio textarea:focus-visible { outline: 3px solid #be123c !important; outline-offset: 2px !important; }',
+      '@keyframes gs-halo-pulse { 0%, 100% { filter: drop-shadow(0 2px 3px rgba(2,6,23,0.75)) drop-shadow(0 0 4px rgba(251,191,36,0.55)); } 50% { filter: drop-shadow(0 2px 3px rgba(2,6,23,0.75)) drop-shadow(0 0 9px rgba(251,191,36,0.9)); } }',
+      '#allo-game-studio .gs-glow-collect { animation: gs-halo-pulse 2.2s ease-in-out infinite; }',
       '.theme-contrast #allo-game-studio .gs-hero, .theme-contrast #allo-game-studio .gs-panel, .theme-contrast #allo-game-studio .gs-bezel { background: #000000 !important; color: #ffffff !important; border-color: #fbbf24 !important; box-shadow: none !important; }',
+      '.theme-contrast #allo-game-studio .gs-glow-collect { animation: none !important; filter: none !important; }',
       '.theme-contrast #allo-game-studio button:focus-visible { outline-color: #ffff00 !important; }',
-      '@media (prefers-reduced-motion: reduce) { #allo-game-studio .gs-card-hover, #allo-game-studio .gs-panel { transition: none !important; transform: none !important; } }'
+      '@media (prefers-reduced-motion: reduce) { #allo-game-studio .gs-card-hover, #allo-game-studio .gs-panel { transition: none !important; transform: none !important; } #allo-game-studio .gs-glow-collect { animation: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -496,8 +499,8 @@ window.StemLab = window.StemLab || {
         check: function (d) { return Object.keys((d && d.challengeCompleted) || {}).length >= 1; },
         progress: function (d) { return Object.keys((d && d.challengeCompleted) || {}).length >= 1 ? 'Done' : 'Not yet'; } },
       { id: 'gs_playtest', label: 'Win a playtest of your own level', icon: '🏆',
-        check: function (d) { return !!(d && d.playWon); },
-        progress: function (d) { return (d && d.playWon) ? 'Won' : 'Keep testing'; } }
+        check: function (d) { return !!(d && (d.everWon || d.playWon)); },
+        progress: function (d) { return (d && (d.everWon || d.playWon)) ? 'Won' : 'Keep testing'; } }
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
@@ -519,19 +522,20 @@ window.StemLab = window.StemLab || {
       var a11yClick = ctx.a11yClick;
       var canvasNarrate = ctx.canvasNarrate;
 
+      var _gsAiLoadingState = React.useState(false);
+      var aiLoading = _gsAiLoadingState[0], setAiLoading = _gsAiLoadingState[1];
       return (function() {
         // == State ==
         var _gs = labToolData && labToolData.gameStudio || {};
+        // ── Canvas narration: init (render-level, debounced by host) ──
+        if (typeof canvasNarrate === 'function') {
+          canvasNarrate('gameStudio', 'init', {
+            first: 'Game Studio loaded. Design and build interactive games using a visual editor with sprites, physics, and event scripting.',
+            repeat: 'Game Studio active.',
+            terse: 'Game Studio.'
+          }, { debounce: 800 });
+        }
         var upd = function(patch) {
-
-          // ── Canvas narration: init ──
-          if (typeof canvasNarrate === 'function') {
-            canvasNarrate('gameStudio', 'init', {
-              first: 'Game Studio loaded. Design and build interactive games using a visual editor with sprites, physics, and event scripting.',
-              repeat: 'Game Studio active.',
-              terse: 'Game Studio.'
-            }, { debounce: 800 });
-          }
           setLabToolData(function(prev) {
             return Object.assign({}, prev, { gameStudio: Object.assign({}, prev && prev.gameStudio || {}, patch) });
           });
@@ -603,7 +607,6 @@ window.StemLab = window.StemLab || {
         // Projects
         var projectName = _gs.projectName || 'My Game';
         var aiPrompt = _gs.aiPrompt || '';
-        var aiLoading = _gs.aiLoading || false;
         var aiResult = _gs.aiResult || null;
 
         // == Tabs ==
@@ -682,7 +685,9 @@ window.StemLab = window.StemLab || {
               var landDirs = [[1,0],[-1,0],[0,1],[0,-1]];
               var landed = false;
               for (var li = 0; li < landDirs.length; li++) {
-                var lk = (tp[0]+landDirs[li][0]) + ',' + (tp[1]+landDirs[li][1]);
+                var lx = tp[0] + landDirs[li][0], ly = tp[1] + landDirs[li][1];
+                if (lx < 0 || lx >= gridW || ly < 0 || ly >= gridH) continue;
+                var lk = lx + ',' + ly;
                 var ld = newT[lk] || 'empty';
                 if (WALKABLE[ld] && ld !== 'portal' && ld !== 'door') {
                   newT[lk] = 'player';
@@ -751,14 +756,23 @@ window.StemLab = window.StemLab || {
               if (sDest === 'gem') { nScore += 50; }
               if (sDest === 'key') { nKeys++; }
               if (sDest === 'heart') { nLives++; }
-              if (sDest === 'flag') { won = true; nScore += 100; msg = '\uD83C\uDFC6 You Win!'; break; }
+              if (sDest === 'flag') {
+                won = true;
+                var sBonus = Math.max(0, 500 - nMoves * 2);
+                nScore += 100 + sBonus;
+                msg = '\uD83C\uDFC6 You Win! Score: ' + nScore + ' (efficiency bonus: +' + sBonus + ')';
+                newT[snx + ',' + sny] = 'player';
+                if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 10, 'completed game');
+                if (addToast) addToast('\uD83C\uDFC6 You Win! Score: ' + nScore, 'success');
+                break;
+              }
               if (sDest === 'lava' || sDest === 'spikes') {
                 nLives--;
                 if (nLives <= 0) { dead = true; msg = '\uD83D\uDC80 Game Over!'; break; }
               }
               slideX = snx; slideY = sny;
               newT[snx + ',' + sny] = 'player';
-              if ((newT[snk] || sDest) !== 'ice') break; // stop sliding when leaving ice
+              if (sDest !== 'ice') break; // stop sliding when leaving ice
               nMoves++;
             }
             if (!msg) msg = '\uD83E\uDEF5 Wheee! Ice slide!';
@@ -791,15 +805,16 @@ window.StemLab = window.StemLab || {
               }
 
               var enx = ep[0] + edx, eny = ep[1] + edy;
+              var inBounds = enx >= 0 && enx < gridW && eny >= 0 && eny < gridH;
               var enk = enx + ',' + eny;
-              var eDest = newT[enk] || 'empty';
+              var eDest = inBounds ? (newT[enk] || 'empty') : 'wall';
 
-              if (eDest === 'player') {
+              if (inBounds && eDest === 'player') {
                 // Enemy catches player
                 nLives--;
                 msg = '\uD83D\uDC7E Caught by enemy! -1 life';
                 if (nLives <= 0) { dead = true; msg = '\uD83D\uDC80 Game Over!'; }
-              } else if (WALKABLE[eDest] && eDest !== 'door' && eDest !== 'key' && eDest !== 'coin' && eDest !== 'flag' && eDest !== 'portal' && eDest !== 'heart' && eDest !== 'gem' && eDest !== 'treasure' && eDest !== 'player') {
+              } else if (inBounds && WALKABLE[eDest] && eDest !== 'door' && eDest !== 'key' && eDest !== 'coin' && eDest !== 'flag' && eDest !== 'portal' && eDest !== 'heart' && eDest !== 'gem' && eDest !== 'treasure' && eDest !== 'player') {
                 // Move enemy
                 delete newT[ek];
                 newT[enk] = 'enemy';
@@ -812,9 +827,9 @@ window.StemLab = window.StemLab || {
                 newDirs[ek] = rev;
               }
             });
-            upd({ tiles: newT, playScore: nScore, playLives: nLives, playKeys: nKeys, playMoves: nMoves, playCoinsCollected: nCoins, playMessage: msg, playWon: won, playDead: dead, enemyDirs: newDirs });
+            upd({ tiles: newT, playScore: nScore, playLives: nLives, playKeys: nKeys, playMoves: nMoves, playCoinsCollected: nCoins, playMessage: msg, playWon: won, everWon: !!(_gs.everWon || won), playDead: dead, enemyDirs: newDirs });
           } else {
-            upd({ tiles: newT, playScore: nScore, playLives: nLives, playKeys: nKeys, playMoves: nMoves, playCoinsCollected: nCoins, playMessage: msg, playWon: won, playDead: dead });
+            upd({ tiles: newT, playScore: nScore, playLives: nLives, playKeys: nKeys, playMoves: nMoves, playCoinsCollected: nCoins, playMessage: msg, playWon: won, everWon: !!(_gs.everWon || won), playDead: dead });
           }
         }
 
@@ -1041,6 +1056,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 TILE_PALETTE.map(function(t) {
                   return h('button', { key: t.id,
+                    'aria-label': t.label,
                     'aria-pressed': selectedTile === t.id,
                     onClick: function() { upd({ selectedTile: t.id, brushTool: 'brush' }); },
                     className: 'w-9 h-9 rounded-lg border-2 flex items-center justify-center text-sm transition-all cursor-pointer ' +
@@ -1052,10 +1068,18 @@ window.StemLab = window.StemLab || {
               )
             ),
 
-            // Tile grid viewport frame
+            // Tile grid viewport frame — atmospheric layered studio stage backdrop
             h('div', {
               className: 'gs-panel rounded-2xl border-2 border-rose-300 bg-slate-900 p-3 overflow-auto',
-              style: { maxHeight: '440px' }
+              style: {
+                maxHeight: '440px',
+                background: gameType === 'platformer'
+                  ? 'linear-gradient(180deg, #0b1936 0%, #172554 54%, #0f172a 100%)'
+                  : gameType === 'puzzle'
+                    ? 'radial-gradient(circle at 50% 30%, #1e1b4b 0%, #0f172a 65%, #020617 100%)'
+                    : 'radial-gradient(circle at 50% 35%, #11243a 0%, #0f172a 68%, #020617 100%)',
+                boxShadow: 'inset 0 0 32px rgba(2,6,23,0.72), 0 12px 28px -12px rgba(15,23,42,0.55)'
+              }
             },
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[0.6875rem] font-bold text-slate-300 mb-2' },
                 h('span', null, '🗺️ ' + projectName + ' (' + gridW + '×' + gridH + ')'),
@@ -1067,8 +1091,9 @@ window.StemLab = window.StemLab || {
                 style: {
                   display: 'grid',
                   gridTemplateColumns: 'repeat(' + gridW + ', 1fr)',
-                  gap: '1px', background: '#334155', border: '2px solid #475569', borderRadius: '8px', overflow: 'hidden',
-                  maxWidth: Math.min(gridW * 30, 720) + 'px', margin: '0 auto'
+                  gap: '1px', background: 'rgba(51,65,85,0.68)', border: '2px solid rgba(148,163,184,0.42)', borderRadius: '10px', overflow: 'hidden',
+                  maxWidth: Math.min(gridW * 30, 720) + 'px', margin: '0 auto',
+                  boxShadow: '0 10px 26px rgba(2,6,23,0.55)'
                 }
               },
                 Array.from({ length: gridW * gridH }, function(_, i) {
@@ -1078,6 +1103,16 @@ window.StemLab = window.StemLab || {
                   var tInfo = TILE_MAP[tId] || TILE_MAP.empty;
                   var danger = showDanger ? dangerAt(tiles, x, y) : 0;
                   var dangerOverlay = danger > 0 ? 'rgba(239,68,68,' + Math.min(0.65, danger * 0.16) + ')' : null;
+                  var isSolidTile = tId === 'wall' || tId === 'platform' || tId === 'door' || tId === 'ice' || tId === 'grass' || tId === 'sand';
+                  var isBeaconTile = tId === 'player' || tId === 'flag' || tId === 'portal' || tId === 'coin' || tId === 'gem' || tId === 'key' || tId === 'heart' || tId === 'lava' || tId === 'enemy';
+                  var emptyShade = (x + y) % 2 === 0 ? 'rgba(15,23,42,0.82)' : 'rgba(22,33,54,0.84)';
+                  var tileBg = dangerOverlay || (tId === 'empty' ? emptyShade : tInfo.color);
+                  var tileShadow = tId === 'player' ? 'inset 0 0 12px rgba(167,139,250,0.65), 0 0 8px rgba(139,92,246,0.5)'
+                    : tId === 'flag' ? 'inset 0 0 12px rgba(52,211,153,0.65)'
+                    : tId === 'portal' ? 'inset 0 0 12px rgba(192,132,252,0.7)'
+                    : tId === 'lava' ? 'inset 0 0 10px rgba(251,146,60,0.8)'
+                    : isSolidTile ? 'inset 0 2px 0 rgba(255,255,255,0.28), inset 0 -2px 0 rgba(2,6,23,0.42)'
+                    : undefined;
                   var paintTile = function() {
                     if (brushTool === 'eyedropper') { upd({ selectedTile: tId, brushTool: 'brush' }); }
                     else if (brushTool === 'eraser') { var nt = Object.assign({}, tiles); delete nt[k]; upd({ tiles: nt }); }
@@ -1103,12 +1138,15 @@ window.StemLab = window.StemLab || {
                     },
                     style: {
                       width: '100%', aspectRatio: '1',
-                      background: dangerOverlay || tInfo.color,
+                      background: tileBg,
+                      boxShadow: tileShadow,
                       cursor: 'crosshair', display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: Math.min(22, Math.floor(560 / gridW)) + 'px',
                       userSelect: 'none', minWidth: '12px', minHeight: '12px'
                     }
-                  }, (showDanger && danger > 0 && tId === 'empty') ? h('span', { style: { fontSize: '11px', fontWeight: 900, color: '#ffffff' } }, danger) : (tInfo.emoji || ''));
+                  }, (showDanger && danger > 0 && tId === 'empty')
+                    ? h('span', { style: { fontSize: '11px', fontWeight: 900, color: '#ffffff' } }, danger)
+                    : (tInfo.emoji ? h('span', { style: { filter: isBeaconTile ? 'drop-shadow(0 2px 2px rgba(2,6,23,0.72))' : 'drop-shadow(0 1px 1px rgba(2,6,23,0.45))' } }, tInfo.emoji) : ''));
                 })
               )
             ),
@@ -1193,24 +1231,44 @@ window.StemLab = window.StemLab || {
                           upd({ spritePixels: np });
                         }
                       },
-                      style: { background: px || (((sx + sy) % 2 === 0) ? '#f1f5f9' : '#e2e8f0'), cursor: 'crosshair' }
+                      style: {
+                        background: px || (((sx + sy) % 2 === 0) ? '#f1f5f9' : '#e2e8f0'),
+                        boxShadow: px ? 'inset 0 1px 0 rgba(255,255,255,0.34), inset 0 -1px 0 rgba(15,23,42,0.22)' : undefined,
+                        borderRight: spriteMirror && sx === 7 ? '1px solid rgba(225,29,72,0.55)' : undefined,
+                        cursor: 'crosshair'
+                      }
                     });
                   })
                 ),
-                // Live multi-scale SVG preview strip (light & dark tile preview)
+                // Live multi-scale SVG preview strip (specular bevel + grounded contact shadow)
                 (function() {
-                  var rects = Object.keys(spritePixels).map(function(pk) {
+                  var keys = Object.keys(spritePixels);
+                  var rects = keys.map(function(pk) {
                     var xy = pk.split(',');
-                    return h('rect', { key: pk, x: parseInt(xy[0], 10), y: parseInt(xy[1], 10), width: 1, height: 1, fill: spritePixels[pk] });
+                    var rx = parseInt(xy[0], 10), ry = parseInt(xy[1], 10);
+                    return h('rect', { key: pk, x: rx, y: ry, width: 1, height: 1, fill: spritePixels[pk] });
+                  });
+                  var specTop = keys.filter(function(pk) {
+                    var xy = pk.split(',');
+                    return !spritePixels[xy[0] + ',' + (parseInt(xy[1], 10) - 1)];
+                  }).map(function(pk) {
+                    var xy = pk.split(',');
+                    return h('rect', { key: 'sp' + pk, x: parseInt(xy[0], 10), y: parseInt(xy[1], 10), width: 1, height: 0.28, fill: 'rgba(255,255,255,0.38)' });
                   });
                   return h('div', { className: 'flex items-center justify-between gap-2 pt-2 border-t border-slate-200 flex-wrap' },
                     h('span', { className: 'text-xs font-bold text-slate-700' }, '👁️ ' + __alloT('stem.gamestudio.live_preview', 'Live Sprite Preview')),
                     h('div', { className: 'flex items-center gap-2' },
                       h('div', { className: 'p-1.5 rounded-lg border border-slate-300 bg-slate-50 flex items-center justify-center', title: __alloT('stem.gamestudio.preview_2x_light', '2× light preview') },
-                        h('svg', { viewBox: '0 0 16 16', width: 32, height: 32, style: { shapeRendering: 'crispEdges', display: 'block' }, 'aria-hidden': 'true' }, rects)
+                        h('svg', { viewBox: '0 0 16 18', width: 32, height: 36, style: { shapeRendering: 'crispEdges', display: 'block' }, 'aria-hidden': 'true' },
+                          keys.length > 0 && h('ellipse', { cx: 8, cy: 16.4, rx: 5.2, ry: 1.1, fill: 'rgba(15,23,42,0.18)', style: { shapeRendering: 'auto' } }),
+                          rects, specTop
+                        )
                       ),
-                      h('div', { className: 'p-1.5 rounded-lg border border-slate-600 bg-slate-900 flex items-center justify-center', title: __alloT('stem.gamestudio.preview_3x_dark', '3× dark arcade preview') },
-                        h('svg', { viewBox: '0 0 16 16', width: 48, height: 48, style: { shapeRendering: 'crispEdges', display: 'block' }, 'aria-hidden': 'true' }, rects)
+                      h('div', { className: 'p-1.5 rounded-lg border border-slate-600 flex items-center justify-center', style: { background: 'radial-gradient(circle at 50% 42%, #1e293b 0%, #090e1c 100%)', boxShadow: 'inset 0 0 12px rgba(2,6,23,0.85)' }, title: __alloT('stem.gamestudio.preview_3x_dark', '3× dark arcade preview') },
+                        h('svg', { viewBox: '0 0 16 18', width: 48, height: 54, style: { shapeRendering: 'crispEdges', display: 'block' }, 'aria-hidden': 'true' },
+                          keys.length > 0 && h('ellipse', { cx: 8, cy: 16.4, rx: 5.5, ry: 1.2, fill: 'rgba(0,0,0,0.55)', style: { shapeRendering: 'auto' } }),
+                          rects, specTop
+                        )
                       )
                     )
                   );
@@ -1259,7 +1317,7 @@ window.StemLab = window.StemLab || {
                   h('input', { type: 'text', value: aiPrompt, onChange: function(e) { upd({ aiPrompt: e.target.value }); }, placeholder: __alloT('stem.gamestudio.a_fire_breathing_dragon', 'a fire-breathing dragon...'), 'aria-label': __alloT('stem.gamestudio.ai_sprite_generation_prompt', 'AI sprite generation prompt'), className: 'w-full text-xs border border-purple-600 rounded-lg px-2 py-1.5' }),
                   h('button', { onClick: function() {
                       if (!aiPrompt.trim()) return;
-                      upd({ aiLoading: true });
+                      setAiLoading(true);
                       callImagen('Pixel art game sprite 16x16: ' + aiPrompt + '. Simple, clear, colorful, white background.', 256)
                         .then(function(imgUrl) {
                           var img = new Image(); img.crossOrigin = 'anonymous';
@@ -1274,15 +1332,16 @@ window.StemLab = window.StemLab || {
                                 np[(i % 16) + ',' + Math.floor(i / 16)] = '#' + ((1 << 24) + (data[idx] << 16) + (data[idx + 1] << 8) + data[idx + 2]).toString(16).slice(1);
                               }
                             }
-                            upd({ spritePixels: np, aiLoading: false, aiResult: '\u2705 Sprite generated!' });
+                            setAiLoading(false);
+                            upd({ spritePixels: np, aiResult: '\u2705 Sprite generated!' });
                           };
-                          img.onerror = function() { upd({ aiLoading: false, aiResult: '\u274C Image load error' }); };
+                          img.onerror = function() { setAiLoading(false); upd({ aiResult: '\u274C Image load error' }); };
                           img.src = imgUrl;
-                        }).catch(function(e) { upd({ aiLoading: false, aiResult: '\u274C ' + e.message }); });
+                        }).catch(function(e) { setAiLoading(false); upd({ aiResult: '\u274C ' + e.message }); });
                     },
                     disabled: aiLoading,
                     className: 'w-full px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all ' +
-                      (aiLoading ? 'bg-gray-400' : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600')
+                      (aiLoading ? 'bg-slate-600' : 'bg-gradient-to-r from-purple-700 to-pink-700 hover:from-purple-800 hover:to-pink-800')
                   }, aiLoading ? '\u23F3 Generating...' : '\u2728 AI Generate Sprite')
                 ),
                 // Clear
@@ -1420,7 +1479,7 @@ window.StemLab = window.StemLab || {
                           var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
                           arr.splice(ri, 1); ne[activeSprite] = arr; upd({ events: ne });
                         },
-                        className: 'ml-auto text-rose-300 hover:text-red-500 transition-colors text-sm font-bold'
+                        className: 'ml-auto text-rose-700 hover:text-red-700 transition-colors text-sm font-bold'
                       }, '\u2715')
                     ),
                     advancedCode && h('pre', { className: 'mt-2 p-2 rounded-lg bg-slate-900 text-green-400 text-[0.6875rem] font-mono overflow-x-auto' }, genCode(rule))
@@ -1469,10 +1528,22 @@ window.StemLab = window.StemLab || {
                  'bg-blue-50 text-blue-700 border border-blue-200')
             }, playMessage),
 
-            // Game grid
+            // Live playtest arcade viewport with atmospheric stage backdrop & luminous halos
             h('div', {
-              className: 'rounded-xl border-2 ' + (isPlaying ? 'border-green-400' : 'border-rose-300') + ' bg-slate-900 p-1 overflow-auto outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1',
-              style: { maxHeight: '450px' },
+              role: 'application',
+              'aria-label': __alloT('stem.gamestudio.play_viewport_aria', 'Game playtest viewport. Use arrow keys or WASD to move.'),
+              className: 'rounded-xl border-2 ' + (playWon ? 'border-emerald-400' : playDead ? 'border-rose-500' : isPlaying ? 'border-green-400' : 'border-rose-300') + ' bg-slate-900 p-2 overflow-auto outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1',
+              style: {
+                maxHeight: '450px',
+                background: gameType === 'platformer'
+                  ? 'linear-gradient(180deg, #0b1936 0%, #1e3a5f 58%, #0f172a 100%)'
+                  : gameType === 'puzzle'
+                    ? 'radial-gradient(circle at 50% 35%, #231942 0%, #0f172a 68%, #020617 100%)'
+                    : 'radial-gradient(circle at 50% 40%, #11223a 0%, #0b1324 68%, #020617 100%)',
+                boxShadow: isPlaying
+                  ? 'inset 0 0 32px rgba(2,6,23,0.78), 0 0 18px rgba(52,211,153,0.22)'
+                  : 'inset 0 0 32px rgba(2,6,23,0.78)'
+              },
               tabIndex: 0,
               onKeyDown: onPlayKey
             },
@@ -1480,7 +1551,7 @@ window.StemLab = window.StemLab || {
                 style: {
                   display: 'grid',
                   gridTemplateColumns: 'repeat(' + gridW + ', 1fr)',
-                  gap: '1px', background: 'var(--allo-stem-panel, #1e293b)'
+                  gap: '1px', background: 'rgba(30,41,59,0.55)', borderRadius: '8px', overflow: 'hidden'
                 }
               },
                 Array.from({ length: gridW * gridH }, function(_, i) {
@@ -1488,16 +1559,40 @@ window.StemLab = window.StemLab || {
                   var k = x + ',' + y;
                   var tId = tiles[k] || 'empty';
                   var tInfo = TILE_MAP[tId] || TILE_MAP.empty;
+                  var isSolid = tId === 'wall' || tId === 'platform' || tId === 'door' || tId === 'ice' || tId === 'grass' || tId === 'sand';
+                  var isCollect = tId === 'coin' || tId === 'gem' || tId === 'key' || tId === 'heart' || tId === 'flag' || tId === 'portal';
+                  var playCellBg = tId === 'empty'
+                    ? ((x + y) % 2 === 0 ? 'rgba(15,23,42,0.72)' : 'rgba(19,30,50,0.76)')
+                    : tId === 'player'
+                      ? 'radial-gradient(circle at 50% 45%, rgba(167,139,250,0.45), ' + tInfo.color + ' 72%)'
+                      : tId === 'flag'
+                        ? 'radial-gradient(circle at 50% 45%, rgba(52,211,153,0.48), ' + tInfo.color + ' 72%)'
+                        : tId === 'portal'
+                          ? 'radial-gradient(circle at 50% 45%, rgba(216,180,254,0.58), ' + tInfo.color + ' 72%)'
+                          : tId === 'lava'
+                            ? 'radial-gradient(circle at 50% 50%, #fb923c, #dc2626 78%)'
+                            : tInfo.color;
+                  var playShadow = tId === 'player' ? '0 0 12px rgba(139,92,246,0.88), inset 0 1px 0 rgba(255,255,255,0.4)'
+                    : tId === 'flag' ? '0 0 10px rgba(52,211,153,0.7), inset 0 1px 0 rgba(255,255,255,0.35)'
+                    : tId === 'portal' ? '0 0 10px rgba(192,132,252,0.75)'
+                    : tId === 'enemy' ? '0 0 9px rgba(244,63,94,0.68)'
+                    : tId === 'lava' ? 'inset 0 0 8px rgba(254,215,170,0.65)'
+                    : isSolid ? 'inset 0 2px 0 rgba(255,255,255,0.28), inset 0 -2px 0 rgba(2,6,23,0.45)'
+                    : undefined;
                   return h('div', {
                     key: k,
                     style: {
                       aspectRatio: '1',
-                      background: tId === 'empty' ? '#0f172a' : tInfo.color,
+                      background: playCellBg,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: Math.min(20, Math.floor(500 / gridW)) + 'px',
-                      minWidth: '10px', minHeight: '10px', transition: 'background 0.15s', boxShadow: tId === 'player' ? '0 0 10px rgba(139,92,246,0.85)' : undefined
+                      minWidth: '10px', minHeight: '10px', transition: 'background 0.15s',
+                      boxShadow: playShadow
                     }
-                  }, tInfo.emoji || '');
+                  }, tInfo.emoji ? h('span', {
+                    className: isCollect ? 'gs-glow-collect' : undefined,
+                    style: { filter: tId === 'player' ? 'drop-shadow(0 2px 3px rgba(2,6,23,0.85)) drop-shadow(0 0 5px rgba(196,181,253,0.85))' : 'drop-shadow(0 2px 2px rgba(2,6,23,0.72))' }
+                  }, tInfo.emoji) : '');
                 })
               )
             ),
@@ -1521,19 +1616,22 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 justify-center flex-wrap' },
               h('button', { onClick: function() {
                   if (isPlaying) {
-                    upd({ isPlaying: false });
+                    var restored = _gs.playBackupTiles ? Object.assign({}, _gs.playBackupTiles) : tiles;
+                    upd({ isPlaying: false, tiles: restored, playBackupTiles: null, playMessage: null, playWon: false, playDead: false });
                   } else {
-                    upd({ isPlaying: true, playScore: 0, playLives: 3, playKeys: 0, playMoves: 0, playMessage: null, playWon: false, playDead: false, playCoinsCollected: 0, enemyDirs: {} });
+                    var startTiles = _gs.playBackupTiles ? Object.assign({}, _gs.playBackupTiles) : Object.assign({}, tiles);
+                    upd({ isPlaying: true, tiles: startTiles, playBackupTiles: Object.assign({}, startTiles), playScore: 0, playLives: 3, playKeys: 0, playMoves: 0, playMessage: null, playWon: false, playDead: false, playCoinsCollected: 0, enemyDirs: {} });
                   }
                 },
                 className: 'px-4 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-md ' +
-                  (isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600')
+                  (isPlaying ? 'bg-red-700 hover:bg-red-800' : 'bg-green-700 hover:bg-green-800')
               }, isPlaying ? '\u23F9 Stop' : '\u25B6\uFE0F Start Game'),
               (playWon || playDead) && h('button', { 'aria-label': __alloT('stem.gamestudio.play_again', 'Play Again'),
                 onClick: function() {
-                  upd({ isPlaying: true, playScore: 0, playLives: 3, playKeys: 0, playMoves: 0, playMessage: null, playWon: false, playDead: false, playCoinsCollected: 0, enemyDirs: {} });
+                  var resetTiles = _gs.playBackupTiles ? Object.assign({}, _gs.playBackupTiles) : Object.assign({}, tiles);
+                  upd({ isPlaying: true, tiles: resetTiles, playBackupTiles: Object.assign({}, resetTiles), playScore: 0, playLives: 3, playKeys: 0, playMoves: 0, playMessage: null, playWon: false, playDead: false, playCoinsCollected: 0, enemyDirs: {} });
                 },
-                className: 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-700 hover:bg-blue-600 shadow-md transition-all'
+                className: 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 shadow-md transition-all'
               }, __alloT('stem.gamestudio.play_again_2', '\uD83D\uDD04 Play Again')),
               h('div', { className: 'text-[0.6875rem] text-slate-600 self-center ml-2' }, __alloT('stem.gamestudio.arrow_keys_wasd_to_move_click_game_are', 'Arrow keys / WASD to move \u2022 Click game area first'))
             ),
@@ -1567,15 +1665,16 @@ window.StemLab = window.StemLab || {
             // AI Playtest Advisor
             callGemini && h('div', { className: 'p-3 rounded-xl border border-purple-200 bg-purple-50' },
               h('button', { onClick: function() {
-                  upd({ aiLoading: true, aiResult: null });
+                  setAiLoading(true);
+                  upd({ aiResult: null });
                   var st = JSON.stringify({ gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, events: events });
                   callGemini('You are a game design advisor for students. Analyze this game and give 3-5 short, constructive suggestions. Consider: win conditions, balance, variety, enemy placement, fun factor. Game: ' + st)
-                    .then(function(res) { upd({ aiLoading: false, aiResult: '\uD83E\uDDE0 ' + res }); })
-                    .catch(function() { upd({ aiLoading: false, aiResult: '\u274C AI error' }); });
+                    .then(function(res) { setAiLoading(false); upd({ aiResult: '\uD83E\uDDE0 ' + res }); })
+                    .catch(function() { setAiLoading(false); upd({ aiResult: '\u274C AI error' }); });
                 },
                 disabled: aiLoading,
                 className: 'w-full px-3 py-2 text-xs font-bold text-white rounded-lg transition-all ' +
-                  (aiLoading ? 'bg-gray-400' : 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600')
+                  (aiLoading ? 'bg-slate-600' : 'bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-800 hover:to-indigo-800')
               }, aiLoading ? '\u23F3 Analyzing...' : '\uD83E\uDDE0 AI Review My Game'),
               aiResult && aiResult.indexOf('\uD83E\uDDE0') === 0 && h('div', {
                 className: 'mt-2 p-3 rounded-lg bg-white border border-purple-200 text-xs text-slate-700 whitespace-pre-wrap leading-relaxed'
@@ -1602,18 +1701,26 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'text-[0.6875rem] font-bold text-indigo-700' }, 'COMPLETED')
                 )
               ),
-              // Visual Game Loop SVG (Input -> Update -> Render)
-              h('svg', { viewBox: '0 0 360 44', className: 'w-full max-w-md mx-auto block', role: 'img', 'aria-label': __alloT('stem.gamestudio.game_loop_diagram_aria', 'Game loop diagram: Input feeds Update, which feeds Render, looping at 60 frames per second') },
-                h('rect', { x: 6, y: 8, width: 94, height: 28, rx: 8, fill: '#ffffff', stroke: '#4f46e5', strokeWidth: 1.5 }),
-                h('text', { x: 53, y: 26, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#312e81' }, '1. INPUT'),
-                h('path', { d: 'M102 22 L128 22', stroke: '#4f46e5', strokeWidth: 2, strokeLinecap: 'round' }),
-                h('polygon', { points: '125,18 133,22 125,26', fill: '#4f46e5' }),
-                h('rect', { x: 134, y: 8, width: 94, height: 28, rx: 8, fill: '#ffffff', stroke: '#7c3aed', strokeWidth: 1.5 }),
-                h('text', { x: 181, y: 26, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#4c1d95' }, '2. UPDATE'),
-                h('path', { d: 'M230 22 L256 22', stroke: '#7c3aed', strokeWidth: 2, strokeLinecap: 'round' }),
-                h('polygon', { points: '253,18 261,22 253,26', fill: '#7c3aed' }),
-                h('rect', { x: 262, y: 8, width: 92, height: 28, rx: 8, fill: '#ffffff', stroke: '#be123c', strokeWidth: 1.5 }),
-                h('text', { x: 308, y: 26, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#881337' }, '3. RENDER')
+              // Visual Game Loop SVG (Input -> Update -> Render -> 60fps cycle)
+              h('svg', { viewBox: '0 0 360 54', className: 'w-full max-w-md mx-auto block', role: 'img', 'aria-label': __alloT('stem.gamestudio.game_loop_diagram_aria', 'Game loop diagram: Input feeds Update, which feeds Render, looping at 60 frames per second') },
+                h('defs', null,
+                  h('linearGradient', { id: 'gs-loop-node', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff' }),
+                    h('stop', { offset: '100%', stopColor: '#eef2ff' })
+                  )
+                ),
+                h('path', { d: 'M308 36 C308 49, 53 49, 53 38', fill: 'none', stroke: '#6366f1', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.72 }),
+                h('polygon', { points: '49,40 53,34 57,40', fill: '#6366f1', opacity: 0.85 }),
+                h('rect', { x: 6, y: 6, width: 94, height: 28, rx: 8, fill: 'url(#gs-loop-node)', stroke: '#4f46e5', strokeWidth: 1.6 }),
+                h('text', { x: 53, y: 24, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#312e81' }, '1. INPUT'),
+                h('path', { d: 'M102 20 L128 20', stroke: '#4f46e5', strokeWidth: 2, strokeLinecap: 'round' }),
+                h('polygon', { points: '125,16 133,20 125,24', fill: '#4f46e5' }),
+                h('rect', { x: 134, y: 6, width: 94, height: 28, rx: 8, fill: 'url(#gs-loop-node)', stroke: '#7c3aed', strokeWidth: 1.6 }),
+                h('text', { x: 181, y: 24, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#4c1d95' }, '2. UPDATE'),
+                h('path', { d: 'M230 20 L256 20', stroke: '#7c3aed', strokeWidth: 2, strokeLinecap: 'round' }),
+                h('polygon', { points: '253,16 261,20 253,24', fill: '#7c3aed' }),
+                h('rect', { x: 262, y: 6, width: 92, height: 28, rx: 8, fill: 'url(#gs-loop-node)', stroke: '#be123c', strokeWidth: 1.6 }),
+                h('text', { x: 308, y: 24, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#881337' }, '3. RENDER')
               ),
               // Progress bar
               h('div', { className: 'h-2.5 rounded-full bg-indigo-200 overflow-hidden' },
@@ -1885,12 +1992,18 @@ window.StemLab = window.StemLab || {
                     reader.onload = function(ev) {
                       try {
                         var data = JSON.parse(ev.target.result, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
+                        if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid object');
+                        var safeW = Math.max(4, Math.min(24, Math.floor(Number(data.gridW)) || 16));
+                        var safeH = Math.max(4, Math.min(18, Math.floor(Number(data.gridH)) || 12));
+                        var safeType = ['topdown', 'platformer', 'puzzle'].indexOf(data.gameType) >= 0 ? data.gameType : 'topdown';
                         upd({
-                          projectName: data.name || 'Imported Game',
-                          gridW: data.gridW || 16, gridH: data.gridH || 12,
-                          gameType: data.gameType || 'topdown',
-                          tiles: data.tiles || {}, sprites: data.sprites || {},
-                          events: data.events || {}, spritePixels: data.spritePixels || {}
+                          projectName: typeof data.name === 'string' && data.name.trim() ? data.name.trim().slice(0, 80) : 'Imported Game',
+                          gridW: safeW, gridH: safeH,
+                          gameType: safeType,
+                          tiles: (data.tiles && typeof data.tiles === 'object' && !Array.isArray(data.tiles)) ? data.tiles : {},
+                          sprites: (data.sprites && typeof data.sprites === 'object' && !Array.isArray(data.sprites)) ? data.sprites : {},
+                          events: (data.events && typeof data.events === 'object' && !Array.isArray(data.events)) ? data.events : {},
+                          spritePixels: (data.spritePixels && typeof data.spritePixels === 'object' && !Array.isArray(data.spritePixels)) ? data.spritePixels : {}
                         });
                         if (addToast) addToast('\uD83D\uDCE5 Game imported!', 'success');
                       } catch(err) { if (addToast) addToast('\u274C Invalid file', 'error'); }
@@ -1936,13 +2049,18 @@ window.StemLab = window.StemLab || {
                     if (!el || !el.value.trim()) return;
                     try {
                       var json = decodeURIComponent(escape(atob(el.value.trim())));
-                      var data = JSON.parse(json);
+                      var data = JSON.parse(json, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
+                      if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid share code');
+                      var safeW = Math.max(4, Math.min(24, Math.floor(Number(data.gridW)) || 16));
+                      var safeH = Math.max(4, Math.min(18, Math.floor(Number(data.gridH)) || 12));
+                      var safeType = ['topdown', 'platformer', 'puzzle'].indexOf(data.gameType) >= 0 ? data.gameType : 'topdown';
                       upd({
-                        projectName: data.name || 'Shared Game',
-                        gridW: data.gridW || 16, gridH: data.gridH || 12,
-                        gameType: data.gameType || 'topdown',
-                        tiles: data.tiles || {}, sprites: data.sprites || {},
-                        events: data.events || {}
+                        projectName: typeof data.name === 'string' && data.name.trim() ? data.name.trim().slice(0, 80) : 'Shared Game',
+                        gridW: safeW, gridH: safeH,
+                        gameType: safeType,
+                        tiles: (data.tiles && typeof data.tiles === 'object' && !Array.isArray(data.tiles)) ? data.tiles : {},
+                        sprites: (data.sprites && typeof data.sprites === 'object' && !Array.isArray(data.sprites)) ? data.sprites : {},
+                        events: (data.events && typeof data.events === 'object' && !Array.isArray(data.events)) ? data.events : {}
                       });
                       el.value = '';
                       if (addToast) addToast('\uD83D\uDCE5 Game loaded!', 'success');
@@ -2009,11 +2127,11 @@ window.StemLab = window.StemLab || {
             else if (diffScore < 6) state = 'hard';
             else state = 'expert';
             var sm = {
-              veryEasy: { label: __alloT('stem.gamestudio.very_easy', '🟢 Very Easy'), color: '#059669', bg: '#ecfdf5', border: '#86efac', deaths: 0, time: '< 2 min' },
-              easy:     { label: __alloT('stem.gamestudio.easy', '🟢 Easy'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', deaths: 1, time: '2-5 min' },
-              medium:   { label: __alloT('stem.gamestudio.medium', '🟡 Medium'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', deaths: 4, time: '5-15 min' },
-              hard:     { label: __alloT('stem.gamestudio.hard', '🟠 Hard'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', deaths: 12, time: '15-45 min' },
-              expert:   { label: __alloT('stem.gamestudio.expert', '🔴 Expert'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', deaths: 40, time: '1+ hours' }
+              veryEasy: { label: __alloT('stem.gamestudio.very_easy', '🟢 Very Easy'), color: '#047857', bg: '#ecfdf5', border: '#86efac', deaths: 0, time: '< 2 min' },
+              easy:     { label: __alloT('stem.gamestudio.easy', '🟢 Easy'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9', deaths: 1, time: '2-5 min' },
+              medium:   { label: __alloT('stem.gamestudio.medium', '🟡 Medium'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d', deaths: 4, time: '5-15 min' },
+              hard:     { label: __alloT('stem.gamestudio.hard', '🟠 Hard'), color: '#c2410c', bg: '#fff7ed', border: '#fdba74', deaths: 12, time: '15-45 min' },
+              expert:   { label: __alloT('stem.gamestudio.expert', '🔴 Expert'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', deaths: 40, time: '1+ hours' }
             }[state];
             // Build SVG difficulty curve from 11 progress points (clamped inside chart bounds)
             var curvePoints = [];
@@ -2043,7 +2161,7 @@ window.StemLab = window.StemLab || {
                 ),
                 h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, __alloT('stem.gamestudio.five_sliders_for_level_parameters_widg', 'Five sliders for level parameters. Widget classifies overall difficulty into 5 discrete tiers and renders the difficulty progression curve. No score on your tuning — the inquiry is in finding what shapes the curve.')),
                 // Discrete state marker
-                h('div', { className: 'p-3.5 rounded-xl text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                h('div', { className: 'gs-panel p-3.5 rounded-xl text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-lg font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-xs text-slate-800 font-semibold mt-1' }, '~' + sm.deaths + ' deaths typical · completion time ' + sm.time),
                   h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1 font-mono' }, 'Composite difficulty score = ' + diffScore.toFixed(2))

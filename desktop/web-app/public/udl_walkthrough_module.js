@@ -459,6 +459,7 @@ function udlwalkAggregate(sessions, roster) {
         totals[gid].noOpp += 1;
         return;
       }
+      if (UDLWALK_RATINGS.indexOf(rating) === -1) return;
       cell[rating] += 1;
       cell.rated += 1;
       totals[gid][rating] += 1;
@@ -636,16 +637,16 @@ function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
       type: "button",
       onClick: onCycle,
       "aria-label": lookFor.guideline + ". " + lookFor.prompt + " Current: " + stateLabel + ". Activate to cycle observed, partial, not observed, unrated.",
-      className: "shrink-0 min-w-11 min-h-11 rounded-lg border-2 font-bold text-lg inline-flex items-center justify-center " + (meta ? meta.chip : "bg-slate-50 text-slate-500 border-slate-300")
+      className: "shrink-0 min-w-11 min-h-11 rounded-lg border-2 font-bold text-lg inline-flex items-center justify-center " + (meta ? meta.chip : "bg-slate-50 text-slate-600 border-slate-300")
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, meta ? meta.short : "·")
-  ), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-800 leading-snug" }, lookFor.prompt), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-2" }, meta && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold px-1.5 py-0.5 rounded border " + meta.chip }, tt("udlwalk.rating_" + rating, meta.label)), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-800 leading-snug" }, lookFor.prompt), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-2" }, meta && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold px-1.5 py-0.5 rounded border " + meta.chip }, tt("udlwalk.rating_" + rating, meta.label)), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: onNoOpp,
       "aria-pressed": rating === "no_opp",
-      className: "min-h-11 px-3 py-1.5 rounded border text-[10px] font-bold " + (rating === "no_opp" ? UDLWALK_RATING_META.no_opp.chip : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50")
+      className: "min-h-11 px-3 py-1.5 rounded border text-xs font-bold " + (rating === "no_opp" ? UDLWALK_RATING_META.no_opp.chip : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50")
     },
     tt("udlwalk.no_opp", "No opportunity")
   ), /* @__PURE__ */ React.createElement(
@@ -654,7 +655,7 @@ function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
       type: "button",
       onClick: () => setShowExamples((v) => !v),
       "aria-expanded": showExamples,
-      className: "min-h-11 px-3 py-1.5 rounded text-[10px] text-slate-600 underline decoration-dotted hover:text-slate-800"
+      className: "min-h-11 px-3 py-1.5 rounded text-xs text-slate-600 underline decoration-dotted hover:text-slate-800"
     },
     tt("udlwalk.examples", "Examples")
   ), /* @__PURE__ */ React.createElement(
@@ -663,7 +664,7 @@ function UdlWalkLookForCard({ lookFor, entry, onCycle, onNoOpp, onNote, tt }) {
       type: "button",
       onClick: () => setShowNote((v) => !v),
       "aria-expanded": showNote,
-      className: "min-h-11 px-3 py-1.5 rounded text-[10px] text-slate-600 underline decoration-dotted hover:text-slate-800"
+      className: "min-h-11 px-3 py-1.5 rounded text-xs text-slate-600 underline decoration-dotted hover:text-slate-800"
     },
     entry && entry.note ? tt("udlwalk.edit_note", "Edit note") : tt("udlwalk.add_note", "Add note")
   )), showExamples && /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 text-xs text-slate-600 list-disc pl-4 space-y-0.5" }, lookFor.examples.map((ex, i) => /* @__PURE__ */ React.createElement("li", { key: i }, ex))), showNote && /* @__PURE__ */ React.createElement(
@@ -708,7 +709,7 @@ function UdlWalkTrendChart({ trend, tt }) {
   for (let i = 1; i < ends.length; i += 1) {
     if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14;
   }
-  return /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.trend_title", "Trend by principle")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3 mt-1", "aria-hidden": "true" }, UDLWALK_PRINCIPLES.map((p) => /* @__PURE__ */ React.createElement("span", { key: p.id, className: "inline-flex items-center gap-1.5 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-3 rounded-sm", style: { backgroundColor: UDLWALK_TREND_COLORS[p.id] } }), tt("udlwalk.principle_" + p.id, p.label)))), /* @__PURE__ */ React.createElement("div", { className: "overflow-x-auto" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.trend_title", "Trend by principle")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3 mt-1", "aria-hidden": "true" }, UDLWALK_PRINCIPLES.map((p) => /* @__PURE__ */ React.createElement("span", { key: p.id, className: "inline-flex items-center gap-1.5 text-xs text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-3 rounded-sm", style: { backgroundColor: UDLWALK_TREND_COLORS[p.id] } }), tt("udlwalk.principle_" + p.id, p.label)))), /* @__PURE__ */ React.createElement("div", { className: "overflow-x-auto" }, /* @__PURE__ */ React.createElement(
     "svg",
     {
       viewBox: "0 0 " + W + " " + H,
@@ -717,8 +718,8 @@ function UdlWalkTrendChart({ trend, tt }) {
       role: "img",
       "aria-label": tt("udlwalk.trend_aria", "Line chart of the share of look-fors rated observed, per UDL principle, by month. The full values are in the data table below.")
     },
-    [0, 0.25, 0.5, 0.75, 1].map((v) => /* @__PURE__ */ React.createElement("g", { key: v }, /* @__PURE__ */ React.createElement("line", { x1: ML, x2: ML + PW, y1: py(v), y2: py(v), stroke: v === 0 ? "#c3c2b7" : "#e1e0d9", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { x: ML - 5, y: py(v) + 3.5, textAnchor: "end", fontSize: "10", fill: "#898781" }, Math.round(v * 100), "%"))),
-    trend.buckets.map((b, i) => i % tickEvery === 0 || i === n - 1 ? /* @__PURE__ */ React.createElement("text", { key: b, x: px(i), y: H - 6, textAnchor: "middle", fontSize: "10", fill: "#898781" }, udlwalkMonthLabel(b)) : null),
+    [0, 0.25, 0.5, 0.75, 1].map((v) => /* @__PURE__ */ React.createElement("g", { key: v }, /* @__PURE__ */ React.createElement("line", { x1: ML, x2: ML + PW, y1: py(v), y2: py(v), stroke: v === 0 ? "#c3c2b7" : "#e1e0d9", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { x: ML - 5, y: py(v) + 3.5, textAnchor: "end", fontSize: "10", fill: "#52514e" }, Math.round(v * 100), "%"))),
+    trend.buckets.map((b, i) => i % tickEvery === 0 || i === n - 1 ? /* @__PURE__ */ React.createElement("text", { key: b, x: px(i), y: H - 6, textAnchor: "middle", fontSize: "10", fill: "#52514e" }, udlwalkMonthLabel(b)) : null),
     UDLWALK_PRINCIPLES.map((p) => {
       const arr = trend.series[p.id];
       const color = UDLWALK_TREND_COLORS[p.id];
@@ -735,10 +736,10 @@ function UdlWalkTrendChart({ trend, tt }) {
       return /* @__PURE__ */ React.createElement("g", { key: p.id }, segments.map((seg, si) => seg.length > 1 ? /* @__PURE__ */ React.createElement("polyline", { key: si, points: seg.map((pt) => pt[0] + "," + pt[1]).join(" "), fill: "none", stroke: color, strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) : null), arr.map((cell, i) => cell ? /* @__PURE__ */ React.createElement("circle", { key: i, cx: px(i), cy: py(cell.rate), r: "4", fill: color, stroke: "#ffffff", strokeWidth: "2" }, /* @__PURE__ */ React.createElement("title", null, p.label + " · " + udlwalkMonthLabel(trend.buckets[i]) + " · " + Math.round(cell.rate * 100) + "% (n=" + cell.n + ")")) : null));
     }),
     ends.map((e) => /* @__PURE__ */ React.createElement("text", { key: e.p.id, x: ML + PW + 8, y: e.y + 3.5, fontSize: "11", fontWeight: "600", fill: "#52514e" }, tt("udlwalk.principle_" + e.p.id, e.p.label), " ", Math.round(e.rate * 100), "%"))
-  )), /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] text-slate-600 underline decoration-dotted cursor-pointer min-h-8 inline-flex items-center" }, tt("udlwalk.trend_table", "Data table")), /* @__PURE__ */ React.createElement("table", { className: "mt-1 text-[11px] border-collapse" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1 text-slate-600" }, tt("udlwalk.trend_month", "Month")), UDLWALK_PRINCIPLES.map((p) => /* @__PURE__ */ React.createElement("th", { key: p.id, scope: "col", className: "text-left p-1 text-slate-600" }, tt("udlwalk.principle_" + p.id, p.label))))), /* @__PURE__ */ React.createElement("tbody", null, trend.buckets.map((b, i) => /* @__PURE__ */ React.createElement("tr", { key: b, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1 font-normal text-slate-700" }, udlwalkMonthLabel(b)), UDLWALK_PRINCIPLES.map((p) => {
+  )), /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "text-xs text-slate-600 underline decoration-dotted cursor-pointer min-h-8 inline-flex items-center" }, tt("udlwalk.trend_table", "Data table")), /* @__PURE__ */ React.createElement("table", { className: "mt-1 text-xs border-collapse" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1 text-slate-600" }, tt("udlwalk.trend_month", "Month")), UDLWALK_PRINCIPLES.map((p) => /* @__PURE__ */ React.createElement("th", { key: p.id, scope: "col", className: "text-left p-1 text-slate-600" }, tt("udlwalk.principle_" + p.id, p.label))))), /* @__PURE__ */ React.createElement("tbody", null, trend.buckets.map((b, i) => /* @__PURE__ */ React.createElement("tr", { key: b, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1 font-normal text-slate-700" }, udlwalkMonthLabel(b)), UDLWALK_PRINCIPLES.map((p) => {
     const cell = trend.series[p.id][i];
     return /* @__PURE__ */ React.createElement("td", { key: p.id, className: "p-1 text-slate-700" }, cell ? Math.round(cell.rate * 100) + "% (n=" + cell.n + ")" : "—");
-  })))))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, tt("udlwalk.trend_note", 'Share of look-fors rated "observed" per month; "no opportunity" is excluded. Months with no rated items for a principle are gaps, not zeros.')));
+  })))))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tt("udlwalk.trend_note", 'Share of look-fors rated "observed" per month; "no opportunity" is excluded. Months with no rated items for a principle are gaps, not zeros.')));
 }
 function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack, onDelete, onEdit, onToggleShared }) {
   const [armDelete, setArmDelete] = React.useState(false);
@@ -775,8 +776,8 @@ function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack
     armDelete ? tt("udlwalk.delete_confirm", "Tap again to delete") : tt("udlwalk.delete", "Delete")
   ))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-300 bg-white p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-slate-800" }, udlwalkTeacherDisplay(teacher, anonymize)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, session.date, " · ", session.durationMin != null ? session.durationMin + " " + tt("udlwalk.minutes", "min") : "", " ·", " ", session.observer && session.observer.initials ? tt("udlwalk.observer_short", "obs.") + " " + session.observer.initials + " · " : "", (UDLWALK_GROUPINGS.find((g) => g.id === (session.context && session.context.grouping)) || {}).label || "", " ·", " ", (UDLWALK_PHASES.find((p) => p.id === (session.context && session.context.lessonPhase)) || {}).label || ""), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("h5", { className: "text-sm font-bold text-green-800" }, tt("udlwalk.strengths", "Strengths observed")), fb.strengths.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tt("udlwalk.no_strengths", 'Nothing was rated "observed" on this visit.')), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-1.5" }, fb.strengths.map((lf) => /* @__PURE__ */ React.createElement("li", { key: lf.id, className: "text-xs text-slate-700 bg-green-50 border border-green-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, lf.guideline, ":"), " ", lf.prompt)))), fb.consider && /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("h5", { className: "text-sm font-bold text-amber-800" }, tt("udlwalk.consider", "One thing to consider")), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-xs text-slate-700 bg-amber-50 border border-amber-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, fb.consider.guideline, ":"), " ", fb.consider.prompt), fb.suggestion && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-slate-600" }, fb.suggestion))), (session.studentIndicators || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("h5", { className: "text-sm font-bold text-sky-800" }, tt("udlwalk.student_moments", "Student moments")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 flex flex-wrap gap-1.5" }, (session.studentIndicators || []).map((m, i) => {
     const ind = UDLWALK_STUDENT_INDICATORS.find((s) => s.id === m.id);
-    return /* @__PURE__ */ React.createElement("li", { key: i, className: "text-[10px] font-bold px-2 py-1 rounded-full bg-sky-100 text-sky-800 border border-sky-300" }, ind ? ind.label : m.id);
-  }))), session.summaryNote && /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.summary_note", "Observer note")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 mt-1 whitespace-pre-wrap" }, session.summaryNote)), /* @__PURE__ */ React.createElement("p", { className: "mt-4 text-[10px] text-slate-500 border-t border-slate-200 pt-2" }, tt("udlwalk.integrity_note", "UDL-aligned look-fors based on the CAST UDL Guidelines 3.0 structure — not a validated fidelity instrument. Growth-framed: instructional-practice data, not teacher evaluation. All data stays on this device."))));
+    return /* @__PURE__ */ React.createElement("li", { key: i, className: "text-xs font-bold px-2 py-1 rounded-full bg-sky-100 text-sky-800 border border-sky-300" }, ind ? ind.label : m.id);
+  }))), session.summaryNote && /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.summary_note", "Observer note")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 mt-1 whitespace-pre-wrap" }, session.summaryNote)), /* @__PURE__ */ React.createElement("p", { className: "mt-4 text-xs text-slate-600 border-t border-slate-200 pt-2" }, tt("udlwalk.integrity_note", "UDL-aligned look-fors based on the CAST UDL Guidelines 3.0 structure — not a validated fidelity instrument. Growth-framed: instructional-practice data, not teacher evaluation. All data stays on this device."))));
 }
 function UdlWalkthroughPanel(props) {
   const { onClose, t, addToast = (() => {
@@ -1028,6 +1029,14 @@ function UdlWalkthroughPanel(props) {
   const saveDraft = () => {
     if (!draft) return;
     if (draft.editingId) {
+      const exists = sessions.some((x) => x.id === draft.editingId);
+      if (!exists) {
+        setDraft(null);
+        setTab("sessions");
+        setViewSessionId(null);
+        addToast(tt("udlwalk.deleted_while_editing", "That visit was deleted while being edited."), "warning");
+        return;
+      }
       setSessions((s) => s.map((x) => x.id === draft.editingId ? {
         ...x,
         context: draft.context,
@@ -1076,7 +1085,16 @@ function UdlWalkthroughPanel(props) {
     setTab("observe");
     udlwalkAnnounce(tt("udlwalk.editing_announce", "Editing a saved visit. Save to apply changes."));
   };
+  const [armDiscard, setArmDiscard] = React.useState(false);
+  const backdropDownRef = React.useRef(false);
   const discardDraft = () => {
+    const hasWork = Boolean(draft && (Object.values(draft.evidence || {}).some((e) => e && (e.rating || String(e.note || "").trim())) || Array.isArray(draft.studentIndicators) && draft.studentIndicators.length > 0 || String(draft.summaryNote || "").trim()));
+    if (hasWork && !armDiscard) {
+      setArmDiscard(true);
+      udlwalkAnnounce(tt("udlwalk.discard_arm_announce", "Activate Discard again to permanently erase this walkthrough draft."));
+      return;
+    }
+    setArmDiscard(false);
     setDraft(null);
     udlwalkAnnounce(tt("udlwalk.discarded_announce", "Walkthrough discarded."));
   };
@@ -1120,11 +1138,58 @@ function UdlWalkthroughPanel(props) {
         }
         setRoster((r) => {
           const have = new Set(r.map((x) => x.id));
-          return [...r, ...(data.roster || []).filter((x) => x && x.id && !have.has(x.id))];
+          const merged = [...r];
+          const usedCodes = new Set(r.map((x) => x && x.code).filter(Boolean));
+          (Array.isArray(data.roster) ? data.roster : []).forEach((x) => {
+            if (!x || typeof x !== "object" || typeof x.id !== "string" || !x.id.trim() || have.has(x.id)) return;
+            const id = x.id.trim().slice(0, 120);
+            have.add(id);
+            const rawCode = typeof x.code === "string" ? x.code.trim().slice(0, 40) : "";
+            const code = rawCode && !usedCodes.has(rawCode) ? rawCode : udlwalkNextTeacherCode(merged);
+            usedCodes.add(code);
+            merged.push({
+              id,
+              code,
+              name: typeof x.name === "string" ? x.name.trim().slice(0, 120) : "",
+              grade: typeof x.grade === "string" ? x.grade.trim().slice(0, 40) : "",
+              subject: typeof x.subject === "string" ? x.subject.trim().slice(0, 80) : "",
+              notes: typeof x.notes === "string" ? x.notes.slice(0, 1e3) : "",
+              archived: !!x.archived
+            });
+          });
+          return merged;
         });
         setSessions((s) => {
           const have = new Set(s.map((x) => x.id));
-          const merged = [...s, ...(data.sessions || []).filter((x) => x && x.id && !have.has(x.id))];
+          const incoming = (Array.isArray(data.sessions) ? data.sessions : []).filter((x) => x && typeof x === "object" && typeof x.id === "string" && x.id.trim() && !have.has(x.id.trim())).map((x) => {
+            const rawEvidence = x.evidence && typeof x.evidence === "object" && !Array.isArray(x.evidence) ? x.evidence : {};
+            const cleanEvidence = {};
+            Object.keys(rawEvidence).forEach((k) => {
+              const entry = rawEvidence[k];
+              if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+                cleanEvidence[k] = {
+                  rating: typeof entry.rating === "string" ? entry.rating : "",
+                  note: typeof entry.note === "string" ? entry.note.slice(0, 2e3) : ""
+                };
+              }
+            });
+            const rawContext = x.context && typeof x.context === "object" && !Array.isArray(x.context) ? x.context : {};
+            return {
+              ...x,
+              id: x.id.trim().slice(0, 120),
+              teacherId: typeof x.teacherId === "string" ? x.teacherId.trim().slice(0, 120) : "",
+              date: typeof x.date === "string" ? x.date.slice(0, 20) : udlwalkDateStamp(),
+              startedAt: Number.isFinite(Number(x.startedAt)) ? Number(x.startedAt) : Date.now(),
+              evidence: cleanEvidence,
+              studentIndicators: Array.isArray(x.studentIndicators) ? x.studentIndicators.filter((v) => typeof v === "string").slice(0, 50) : [],
+              summaryNote: typeof x.summaryNote === "string" ? x.summaryNote.slice(0, 4e3) : "",
+              context: {
+                grouping: typeof rawContext.grouping === "string" ? rawContext.grouping : "",
+                phase: typeof rawContext.phase === "string" ? rawContext.phase : ""
+              }
+            };
+          });
+          const merged = [...s, ...incoming];
           merged.sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0));
           return merged;
         });
@@ -1148,322 +1213,342 @@ function UdlWalkthroughPanel(props) {
     { id: "building", label: tt("udlwalk.tab_building", "Building"), icon: "🏫" },
     { id: "setup", label: tt("udlwalk.tab_setup", "Roster & setup"), icon: "⚙️" }
   ];
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "udlwalk_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "udlwalk-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "udlwalk-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🚪"), " ", tt("udlwalk.title", "UDL Walkthrough")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("udlwalk.subtitle", "Growth-framed classroom visits through a UDL lens — data stays on this device."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("udlwalk.close_aria", "Close UDL Walkthrough") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("udlwalk.tabs_aria", "Walkthrough sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
-    "button",
+  return /* @__PURE__ */ React.createElement(
+    "div",
     {
-      key: tb.id,
-      type: "button",
-      role: "tab",
-      id: "udlwalk-tab-" + tb.id,
-      "aria-selected": tab === tb.id,
-      "aria-controls": "udlwalk-tabpanel",
-      tabIndex: tab === tb.id ? 0 : -1,
-      "data-help-key": "udlwalk_tab",
-      onClick: () => {
-        setTab(tb.id);
-        if (tb.id !== "sessions") setViewSessionId(null);
+      className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4",
+      style: { zIndex: 260 },
+      role: "presentation",
+      onMouseDown: (e) => {
+        backdropDownRef.current = e.target === e.currentTarget;
       },
-      onKeyDown: (e) => {
-        if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
-        let next = null;
-        if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
-        else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
-        else if (e.key === "Home") next = 0;
-        else if (e.key === "End") next = tabs.length - 1;
-        if (next == null) return;
-        e.preventDefault();
-        const id = tabs[next].id;
-        setTab(id);
-        if (id !== "sessions") setViewSessionId(null);
-        const el = document.getElementById("udlwalk-tab-" + id);
-        if (el) el.focus();
-      },
-      className: "min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 " + (tab === tb.id ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100")
+      onClick: (e) => {
+        const allow = backdropDownRef.current;
+        backdropDownRef.current = false;
+        if (allow && e.target === e.currentTarget) onClose();
+      }
     },
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, tb.icon),
-    " ",
-    tb.label
-  )))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "udlwalk-tabpanel", "aria-labelledby": "udlwalk-tab-" + tab, tabIndex: -1 }, tab === "observe" && !draft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("udlwalk.pick_teacher", "Who are you visiting?")), roster.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3 mb-3" }, tt("udlwalk.empty_roster", 'No classrooms yet — add them under "Roster & setup", or quick-add one below.')), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4" }, roster.filter((r) => !r.archived).map((r) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: r.id,
-      type: "button",
-      onClick: () => startDraft(r.id),
-      className: "min-h-11 p-3 rounded-xl border border-indigo-300 bg-white hover:bg-indigo-50 text-left"
-    },
-    /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-indigo-800" }, udlwalkTeacherDisplay(r, config.anonymizeTeachers)),
-    /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500" }, [r.grade, r.subject].filter(Boolean).join(" · ") || r.code)
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-end bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-quick-name", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("udlwalk.quick_add_name", "Teacher name (optional — a code is assigned either way)")), /* @__PURE__ */ React.createElement("input", { id: "udlwalk-quick-name", type: "text", value: newTeacherName, onChange: (e) => setNewTeacherName(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" })), /* @__PURE__ */ React.createElement("div", { className: "w-24" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-quick-grade", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("udlwalk.quick_add_grade", "Grade")), /* @__PURE__ */ React.createElement("input", { id: "udlwalk-quick-grade", type: "text", value: newTeacherGrade, onChange: (e) => setNewTeacherGrade(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addTeacher, className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("udlwalk.quick_add", "Add")))), tab === "observe" && draft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-slate-800 text-sm" }, udlwalkTeacherDisplay(teacherById(draft.teacherId), config.anonymizeTeachers)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600", "aria-live": "off" }, draft.editingId ? tt("udlwalk.editing_saved", "Editing saved visit") + " · " + ((sessions.find((s) => s.id === draft.editingId) || {}).date || "") : elapsedMin + " " + tt("udlwalk.minutes_elapsed", "min elapsed"), " · ", ratedCount, "/", UDLWALK_LOOK_FORS.length, " ", tt("udlwalk.rated", "rated"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: discardDraft, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100" }, draft.editingId ? tt("udlwalk.discard_edits", "Discard edits") : tt("udlwalk.discard", "Discard")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveDraft, className: "min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800" }, draft.editingId ? tt("udlwalk.save_edits", "Save changes") : tt("udlwalk.save", "Save visit")))), /* @__PURE__ */ React.createElement("fieldset", { className: "flex flex-wrap gap-1.5 mb-1.5" }, /* @__PURE__ */ React.createElement("legend", { className: "sr-only" }, tt("udlwalk.grouping_legend", "Grouping during this visit")), UDLWALK_GROUPINGS.map((g) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: g.id,
-      type: "button",
-      "aria-pressed": draft.context.grouping === g.id,
-      onClick: () => setDraft((d) => ({ ...d, context: { ...d.context, grouping: g.id } })),
-      className: "min-h-11 px-3 py-1.5 rounded-full border text-xs font-bold " + (draft.context.grouping === g.id ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
-    },
-    tt("udlwalk.grouping_" + g.id, g.label)
-  ))), /* @__PURE__ */ React.createElement("fieldset", { className: "flex flex-wrap gap-1.5 mb-3" }, /* @__PURE__ */ React.createElement("legend", { className: "sr-only" }, tt("udlwalk.phase_legend", "Lesson phase during this visit")), UDLWALK_PHASES.map((p) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: p.id,
-      type: "button",
-      "aria-pressed": draft.context.lessonPhase === p.id,
-      onClick: () => setDraft((d) => ({ ...d, context: { ...d.context, lessonPhase: p.id } })),
-      className: "min-h-11 px-3 py-1.5 rounded-full border text-xs font-bold " + (draft.context.lessonPhase === p.id ? "bg-sky-700 text-white border-sky-700" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
-    },
-    tt("udlwalk.phase_" + p.id, p.label)
-  ))), UDLWALK_PRINCIPLES.map((pr) => {
-    const items = UDLWALK_LOOK_FORS.filter((lf) => lf.principle === pr.id);
-    const done = items.filter((lf) => draft.evidence[lf.id] && draft.evidence[lf.id].rating).length;
-    const open = openPrinciple === pr.id;
-    return /* @__PURE__ */ React.createElement("div", { key: pr.id, className: "mb-2" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "udlwalk_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "udlwalk-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "udlwalk-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🚪"), " ", tt("udlwalk.title", "UDL Walkthrough")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("udlwalk.subtitle", "Growth-framed classroom visits through a UDL lens — data stays on this device."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("udlwalk.close_aria", "Close UDL Walkthrough") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("udlwalk.tabs_aria", "Walkthrough sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
       "button",
       {
+        key: tb.id,
         type: "button",
-        "aria-expanded": open,
-        onClick: () => setOpenPrinciple(open ? null : pr.id),
-        className: "w-full min-h-11 flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100"
+        role: "tab",
+        id: "udlwalk-tab-" + tb.id,
+        "aria-selected": tab === tb.id,
+        "aria-controls": "udlwalk-tabpanel",
+        tabIndex: tab === tb.id ? 0 : -1,
+        "data-help-key": "udlwalk_tab",
+        onClick: () => {
+          setTab(tb.id);
+          if (tb.id !== "sessions") setViewSessionId(null);
+        },
+        onKeyDown: (e) => {
+          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+          let next = null;
+          if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
+          else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
+          else if (e.key === "Home") next = 0;
+          else if (e.key === "End") next = tabs.length - 1;
+          if (next == null) return;
+          e.preventDefault();
+          const id = tabs[next].id;
+          setTab(id);
+          if (id !== "sessions") setViewSessionId(null);
+          const el = document.getElementById("udlwalk-tab-" + id);
+          if (el) el.focus();
+        },
+        className: "min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 " + (tab === tb.id ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100")
       },
-      /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm text-slate-800" }, tt("udlwalk.principle_" + pr.id, pr.label), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-xs text-slate-500" }, "(", pr.hint, ")")),
-      /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, done, "/", items.length, " ", /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, open ? "▾" : "▸"))
-    ), open && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5" }, items.map((lf) => /* @__PURE__ */ React.createElement(
-      UdlWalkLookForCard,
-      {
-        key: lf.id,
-        lookFor: lf,
-        entry: draft.evidence[lf.id],
-        onCycle: () => cycleRating(lf.id),
-        onNoOpp: () => setNoOpp(lf.id),
-        onNote: (note) => setNote(lf.id, note),
-        tt
-      }
-    ))));
-  }), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-expanded": momentPickerOpen,
-      onClick: () => setMomentPickerOpen((v) => !v),
-      className: "min-h-11 w-full px-3 py-2 rounded-xl bg-sky-700 text-white text-sm font-bold hover:bg-sky-800"
-    },
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "✨"),
-    " ",
-    tt("udlwalk.student_moment", "Student moment"),
-    " ",
-    draft.studentIndicators.length > 0 ? "(" + draft.studentIndicators.length + ")" : ""
-  ), momentPickerOpen && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5" }, UDLWALK_STUDENT_INDICATORS.map((ind) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: ind.id,
-      type: "button",
-      onClick: () => logMoment(ind.id),
-      className: "min-h-11 p-2 rounded-lg border border-sky-300 bg-white hover:bg-sky-50 text-left"
-    },
-    /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold text-sky-800" }, tt("udlwalk." + ind.id, ind.label)),
-    /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500" }, ind.detail)
-  )))), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-summary", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("udlwalk.summary_label", "Observer note (optional)")), /* @__PURE__ */ React.createElement(
-    "textarea",
-    {
-      id: "udlwalk-summary",
-      rows: 2,
-      value: draft.summaryNote,
-      onChange: (e) => setDraft((d) => ({ ...d, summaryNote: e.target.value })),
-      className: "w-full text-sm border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ))), tab === "sessions" && viewSession && /* @__PURE__ */ React.createElement(
-    UdlWalkFeedbackCard,
-    {
-      session: viewSession,
-      teacher: teacherById(viewSession.teacherId),
-      anonymize: config.anonymizeTeachers,
-      addToast,
-      tt,
-      onBack: () => setViewSessionId(null),
-      onEdit: () => {
-        if (draft && !draft.editingId) {
-          addToast(tt("udlwalk.edit_blocked", "Finish or discard the walkthrough in progress first."), "warning");
-          return;
-        }
-        editSession(viewSession);
-      },
-      onToggleShared: () => setSessions((s) => s.map((x) => x.id === viewSession.id ? { ...x, sharedWithTeacher: !x.sharedWithTeacher } : x)),
-      onDelete: () => {
-        setSessions((s) => s.filter((x) => x.id !== viewSession.id));
-        setViewSessionId(null);
-        addToast(tt("udlwalk.deleted_toast", "Visit deleted."), "info");
-      }
-    }
-  ), tab === "sessions" && !viewSession && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("udlwalk.sessions_title", "Saved visits")), sessions.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("udlwalk.no_sessions", "No visits saved yet. Start one from the Observe tab.")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, sessions.map((s) => {
-    const teacher = teacherById(s.teacherId);
-    const rated = Object.values(s.evidence || {}).filter((e) => e && e.rating && e.rating !== "no_opp");
-    const obs = rated.filter((e) => e.rating === "observed").length;
-    return /* @__PURE__ */ React.createElement("li", { key: s.id }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, tb.icon),
+      " ",
+      tb.label
+    )))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "udlwalk-tabpanel", "aria-labelledby": "udlwalk-tab-" + tab, tabIndex: -1 }, tab === "observe" && !draft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("udlwalk.pick_teacher", "Who are you visiting?")), roster.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3 mb-3" }, tt("udlwalk.empty_roster", 'No classrooms yet — add them under "Roster & setup", or quick-add one below.')), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4" }, roster.filter((r) => !r.archived).map((r) => /* @__PURE__ */ React.createElement(
       "button",
       {
+        key: r.id,
         type: "button",
-        onClick: () => setViewSessionId(s.id),
-        className: "w-full min-h-11 flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-left"
+        onClick: () => startDraft(r.id),
+        className: "min-h-11 p-3 rounded-xl border border-indigo-300 bg-white hover:bg-indigo-50 text-left"
       },
-      /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-slate-800" }, udlwalkTeacherDisplay(teacher, config.anonymizeTeachers)), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500" }, s.date, " · ", s.durationMin, " ", tt("udlwalk.minutes", "min"), s.observer && s.observer.initials ? " · " + tt("udlwalk.observer_short", "obs.") + " " + s.observer.initials : "", " · ", (s.studentIndicators || []).length, " ", tt("udlwalk.moments_short", "moments"))),
-      /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-right" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold text-green-700" }, obs, "/", rated.length, " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, tt("udlwalk.observed_short", "observed"))), s.sharedWithTeacher && /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] font-bold text-green-700" }, tt("udlwalk.shared_badge", "✓ shared")))
-    ));
-  }))), tab === "building" && (() => {
-    const agg = udlwalkAggregate(sessions, roster);
-    const sessionLabel = (s) => udlwalkTeacherDisplay(teacherById(s.teacherId), config.anonymizeTeachers) + " · " + s.date + " · " + s.durationMin + " " + tt("udlwalk.minutes", "min") + (s.observer && s.observer.initials ? " · " + s.observer.initials : "");
-    const sessA = sessions.find((s) => s.id === irA) || null;
-    const sessB = sessions.find((s) => s.id === irB) || null;
-    const agreement = sessA && sessB && sessA.id !== sessB.id ? udlwalkAgreement(sessA, sessB) : null;
-    const cellView = (c) => {
-      if (!c || !c.rated) return { text: "—", cls: "bg-slate-50 text-slate-600" };
-      const rate = c.observed / c.rated;
-      const cls = rate >= 0.7 ? "bg-green-100 text-green-900" : rate >= 0.4 ? "bg-amber-100 text-amber-900" : "bg-rose-100 text-rose-900";
-      return { text: Math.round(rate * 100) + "%", n: c.rated, cls };
-    };
-    return /* @__PURE__ */ React.createElement("div", null, sessions.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("udlwalk.building_empty", "The building view fills in as visits are saved. Start on the Observe tab.")), sessions.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "overflow-x-auto bg-white border border-slate-300 rounded-xl p-2" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-xs border-collapse" }, /* @__PURE__ */ React.createElement("caption", { className: "text-left text-sm font-bold text-slate-700 p-1" }, tt("udlwalk.heatmap_caption", 'Share of ratings marked "observed", by guideline')), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 text-slate-600" }, tt("udlwalk.heatmap_guideline", "Guideline")), agg.grades.map((g) => /* @__PURE__ */ React.createElement("th", { key: g, scope: "col", className: "p-1.5 text-slate-600" }, g === UDLWALK_UNGRADED ? tt("udlwalk.ungraded", "No grade") : g)), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-700 font-bold" }, tt("udlwalk.heatmap_all", "All")))), /* @__PURE__ */ React.createElement("tbody", null, UDLWALK_GUIDELINES.map((g) => {
-      const total = cellView(agg.totals[g.id]);
-      return /* @__PURE__ */ React.createElement("tr", { key: g.id, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1.5 font-normal text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, g.label), " ", /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500" }, "(", (UDLWALK_PRINCIPLES.find((p) => p.id === g.principle) || {}).label, ")")), agg.grades.map((grade) => {
-        const v = cellView(agg.cells[g.id][grade]);
-        {
-        }
-        return /* @__PURE__ */ React.createElement("td", { key: grade, className: "p-1.5 text-center rounded " + v.cls }, v.text, v.n ? /* @__PURE__ */ React.createElement("span", { className: "text-[9px]" }, " (n=", v.n, ")") : null);
-      }), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center font-bold rounded " + total.cls }, total.text, total.n ? /* @__PURE__ */ React.createElement("span", { className: "text-[9px]" }, " (n=", total.n, ")") : null));
-    })))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5" }, tt("udlwalk.heatmap_note", '"No opportunity" ratings are excluded from every denominator. A small n is thin evidence, not a verdict.')), (() => {
-      const trend = udlwalkTrend(sessions);
-      if (trend.buckets.length < 2) {
-        return /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, tt("udlwalk.trend_pending", "Trend lines appear once visits span two or more months."));
-      }
-      return /* @__PURE__ */ React.createElement(UdlWalkTrendChart, { trend, tt });
-    })(), agg.pdSignals.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-indigo-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-indigo-800" }, tt("udlwalk.pd_title", "PD signals")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500" }, tt("udlwalk.pd_note", "Lowest observed-rates with at least " + agg.minN + " rated observations building-wide — framed as PD topics, not verdicts.")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 space-y-1" }, agg.pdSignals.map((sig) => {
-      const g = UDLWALK_GUIDELINES.find((x) => x.id === sig.id);
-      return /* @__PURE__ */ React.createElement("li", { key: sig.id, className: "text-xs text-slate-700 bg-indigo-50 border border-indigo-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, g ? g.label : sig.id), " — ", Math.round(sig.rate * 100), "% ", tt("udlwalk.observed_short", "observed"), " (n=", sig.n, "). ", UDLWALK_SUGGESTIONS[g ? g.principle : ""] || "", typeof window !== "undefined" && typeof window.__alloOpenPdCatalog === "function" && /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-indigo-800" }, udlwalkTeacherDisplay(r, config.anonymizeTeachers)),
+      /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, [r.grade, r.subject].filter(Boolean).join(" · ") || r.code)
+    ))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-end bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-quick-name", className: "block text-xs font-bold text-slate-600 mb-0.5" }, tt("udlwalk.quick_add_name", "Teacher name (optional — a code is assigned either way)")), /* @__PURE__ */ React.createElement("input", { id: "udlwalk-quick-name", type: "text", value: newTeacherName, onChange: (e) => setNewTeacherName(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" })), /* @__PURE__ */ React.createElement("div", { className: "w-24" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-quick-grade", className: "block text-xs font-bold text-slate-600 mb-0.5" }, tt("udlwalk.quick_add_grade", "Grade")), /* @__PURE__ */ React.createElement("input", { id: "udlwalk-quick-grade", type: "text", value: newTeacherGrade, onChange: (e) => setNewTeacherGrade(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addTeacher, className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("udlwalk.quick_add", "Add")))), tab === "observe" && draft && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-slate-800 text-sm" }, udlwalkTeacherDisplay(teacherById(draft.teacherId), config.anonymizeTeachers)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600", "aria-live": "off" }, draft.editingId ? tt("udlwalk.editing_saved", "Editing saved visit") + " · " + ((sessions.find((s) => s.id === draft.editingId) || {}).date || "") : elapsedMin + " " + tt("udlwalk.minutes_elapsed", "min elapsed"), " · ", ratedCount, "/", UDLWALK_LOOK_FORS.length, " ", tt("udlwalk.rated", "rated"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: discardDraft, className: "min-h-11 px-3 py-2 rounded-lg border text-sm font-bold " + (armDiscard ? "bg-rose-600 text-white border-rose-700" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-100") }, armDiscard ? tt("udlwalk.discard_confirm", "Tap again to discard") : draft.editingId ? tt("udlwalk.discard_edits", "Discard edits") : tt("udlwalk.discard", "Discard")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveDraft, className: "min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800" }, draft.editingId ? tt("udlwalk.save_edits", "Save changes") : tt("udlwalk.save", "Save visit")))), /* @__PURE__ */ React.createElement("fieldset", { className: "flex flex-wrap gap-1.5 mb-1.5" }, /* @__PURE__ */ React.createElement("legend", { className: "sr-only" }, tt("udlwalk.grouping_legend", "Grouping during this visit")), UDLWALK_GROUPINGS.map((g) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: g.id,
+        type: "button",
+        "aria-pressed": draft.context.grouping === g.id,
+        onClick: () => setDraft((d) => ({ ...d, context: { ...d.context, grouping: g.id } })),
+        className: "min-h-11 px-3 py-1.5 rounded-full border text-xs font-bold " + (draft.context.grouping === g.id ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
+      },
+      tt("udlwalk.grouping_" + g.id, g.label)
+    ))), /* @__PURE__ */ React.createElement("fieldset", { className: "flex flex-wrap gap-1.5 mb-3" }, /* @__PURE__ */ React.createElement("legend", { className: "sr-only" }, tt("udlwalk.phase_legend", "Lesson phase during this visit")), UDLWALK_PHASES.map((p) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: p.id,
+        type: "button",
+        "aria-pressed": draft.context.lessonPhase === p.id,
+        onClick: () => setDraft((d) => ({ ...d, context: { ...d.context, lessonPhase: p.id } })),
+        className: "min-h-11 px-3 py-1.5 rounded-full border text-xs font-bold " + (draft.context.lessonPhase === p.id ? "bg-sky-700 text-white border-sky-700" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
+      },
+      tt("udlwalk.phase_" + p.id, p.label)
+    ))), UDLWALK_PRINCIPLES.map((pr) => {
+      const items = UDLWALK_LOOK_FORS.filter((lf) => lf.principle === pr.id);
+      const done = items.filter((lf) => draft.evidence[lf.id] && draft.evidence[lf.id].rating).length;
+      const open = openPrinciple === pr.id;
+      return /* @__PURE__ */ React.createElement("div", { key: pr.id, className: "mb-2" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
-          onClick: () => window.__alloOpenPdCatalog({ guideline: sig.id }),
-          className: "mt-1.5 min-h-11 inline-flex items-center px-3 py-2 text-[11px] font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-100"
+          "aria-expanded": open,
+          onClick: () => setOpenPrinciple(open ? null : pr.id),
+          className: "w-full min-h-11 flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100"
         },
-        tt("udlwalk.pd_find_modules", "Find related PD modules")
-      ));
-    }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.coverage_title", "Coverage")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500" }, tt("udlwalk.coverage_note", "Walkthrough initiatives die from uneven coverage — who has not had a visit lately?")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1" }, agg.coverage.map((c) => {
-      const teacher = teacherById(c.teacherId);
-      return /* @__PURE__ */ React.createElement("li", { key: c.teacherId, className: "text-xs p-2 rounded-lg border " + (c.visits === 0 ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-slate-50 border-slate-200 text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, udlwalkTeacherDisplay(teacher, config.anonymizeTeachers)), " — ", c.visits === 0 ? tt("udlwalk.coverage_never", "no visits yet") : c.visits + " " + tt("udlwalk.coverage_visits", "visit(s), last") + " " + c.lastDate);
-    }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.research_title", "Research export (de-identified)")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500" }, tt("udlwalk.research_note", "Teacher codes only — never names. Free-text notes are excluded (they can contain names); only their presence is exported. Building name is omitted.")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
-      const rows = udlwalkResearchRows(sessions, roster);
-      if (!rows.length) {
-        addToast(tt("udlwalk.research_empty", "No rated evidence to export yet."), "warning");
-        return;
-      }
-      udlwalkDownload("udl-walkthrough-research-" + udlwalkDateStamp() + ".csv", "text/csv;charset=utf-8", "\uFEFF" + udlwalkCsv(rows), addToast, tt("udlwalk.export_toast", "Export started — check your downloads."), tt("udlwalk.export_failed", "Export failed: "));
-    }, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("udlwalk.research_csv", "Research CSV")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
-      const rows = udlwalkResearchRows(sessions, roster);
-      if (!rows.length) {
-        addToast(tt("udlwalk.research_empty", "No rated evidence to export yet."), "warning");
-        return;
-      }
-      const payload = { kind: "alloflow-udl-walkthrough-research", version: 1, exportedAt: (/* @__PURE__ */ new Date()).toISOString(), framework: config.frameworkVersion || UDLWALK_FRAMEWORK, rows };
-      udlwalkDownload("udl-walkthrough-research-" + udlwalkDateStamp() + ".json", "application/json", JSON.stringify(payload, null, 2), addToast, tt("udlwalk.export_toast", "Export started — check your downloads."), tt("udlwalk.export_failed", "Export failed: "));
-    }, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("udlwalk.research_json", "Research JSON")))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.ir_title", "Inter-rater check")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500" }, tt("udlwalk.ir_note", 'Two observers record the same lesson on their own devices, one imports the other’s export (Roster & setup tab), then compare the two visits here. Exact-match agreement on items both observers rated; "no opportunity" counts as a rating.')), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-ir-a", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("udlwalk.ir_a", "Observer A visit")), /* @__PURE__ */ React.createElement("select", { id: "udlwalk-ir-a", value: irA, onChange: (e) => setIrA(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tt("udlwalk.ir_pick", "Choose a visit…")), sessions.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.id, value: s.id }, sessionLabel(s))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-ir-b", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("udlwalk.ir_b", "Observer B visit")), /* @__PURE__ */ React.createElement("select", { id: "udlwalk-ir-b", value: irB, onChange: (e) => setIrB(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tt("udlwalk.ir_pick", "Choose a visit…")), sessions.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.id, value: s.id }, sessionLabel(s)))))), irA && irB && irA === irB && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2" }, tt("udlwalk.ir_same", "Choose two different visits.")), agreement && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-700" }, agreement.bothRated === 0 ? /* @__PURE__ */ React.createElement("p", { className: "bg-amber-50 border border-amber-200 rounded-lg p-2 text-amber-900" }, tt("udlwalk.ir_none", "These two visits have no look-fors that both observers rated.")) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-slate-800" }, Math.round(agreement.pct * 100), "% ", tt("udlwalk.ir_agree", "agreement"), " (", agreement.agree, "/", agreement.bothRated, " ", tt("udlwalk.ir_both", "items both rated"), agreement.onlyOne ? "; " + agreement.onlyOne + " " + tt("udlwalk.ir_only_one", "rated by only one observer") : "", ")", agreement.kappa != null ? " · κ = " + agreement.kappa.toFixed(2) : ""), agreement.kappa != null && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-0.5" }, tt("udlwalk.ir_kappa_note", "κ is Cohen’s kappa — agreement corrected for chance. Raw percent agreement overstates reliability when most ratings fall in one category; report κ for research use.")), agreement.disagreements.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 space-y-1" }, agreement.disagreements.map((d) => /* @__PURE__ */ React.createElement("li", { key: d.id, className: "bg-rose-50 border border-rose-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, d.guideline), " (", d.id, "): A = ", (UDLWALK_RATING_META[d.a] || {}).label, ", B = ", (UDLWALK_RATING_META[d.b] || {}).label))))))));
-  })(), tab === "setup" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-end mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-28" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-observer", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("udlwalk.observer_label", "Your initials")), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      id: "udlwalk-observer",
-      type: "text",
-      maxLength: 6,
-      value: config.observerInitials || "",
-      onChange: (e) => setConfig((c) => ({ ...c, observerInitials: e.target.value })),
-      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-observer-role", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("udlwalk.observer_role_label", "Role")), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      id: "udlwalk-observer-role",
-      value: config.observerRole || "admin",
-      onChange: (e) => setConfig((c) => ({ ...c, observerRole: e.target.value })),
-      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "admin" }, tt("udlwalk.role_admin", "Administrator")),
-    /* @__PURE__ */ React.createElement("option", { value: "coach" }, tt("udlwalk.role_coach", "Instructional coach")),
-    /* @__PURE__ */ React.createElement("option", { value: "specialist" }, tt("udlwalk.role_specialist", "Specialist / clinician")),
-    /* @__PURE__ */ React.createElement("option", { value: "other" }, tt("udlwalk.role_other", "Other"))
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mb-2" }, tt("udlwalk.observer_note", "Stamped on each saved visit so merged data from two observers stays attributable — required for the inter-rater check.")), /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-building", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("udlwalk.building_label", "Building name (appears on exports only)")), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      id: "udlwalk-building",
-      type: "text",
-      value: config.buildingName,
-      onChange: (e) => setConfig((c) => ({ ...c, buildingName: e.target.value })),
-      className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-pressed": !!config.anonymizeTeachers,
-      onClick: () => setConfig((c) => ({ ...c, anonymizeTeachers: !c.anonymizeTeachers })),
-      className: "mt-2 min-h-11 px-3 py-2 rounded-lg border text-sm font-bold " + (config.anonymizeTeachers ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100")
-    },
-    config.anonymizeTeachers ? tt("udlwalk.anon_on", "Anonymized: codes shown instead of names") : tt("udlwalk.anon_off", "Show teacher names (activate to anonymize)")
-  )), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("udlwalk.roster_title", "Classrooms")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 mb-3" }, [...roster].sort((a, b) => (a.archived ? 1 : 0) - (b.archived ? 1 : 0)).map((r) => /* @__PURE__ */ React.createElement("li", { key: r.id, className: "flex items-center gap-2 border rounded-xl p-2 " + (r.archived ? "bg-slate-100 border-slate-200 opacity-70" : "bg-white border-slate-300") }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-300" }, r.code), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "text",
-      value: r.name,
-      "aria-label": tt("udlwalk.roster_name_aria", "Teacher name") + " " + r.code,
-      onChange: (e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, name: e.target.value } : x)),
-      placeholder: tt("udlwalk.name_placeholder", "Name (optional)"),
-      className: "flex-1 min-w-0 min-h-11 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "text",
-      value: r.grade,
-      "aria-label": tt("udlwalk.roster_grade_aria", "Grade for") + " " + r.code,
-      onChange: (e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, grade: e.target.value } : x)),
-      placeholder: tt("udlwalk.grade_placeholder", "Grade"),
-      className: "w-16 min-h-11 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "text",
-      value: r.subject,
-      "aria-label": tt("udlwalk.roster_subject_aria", "Subject for") + " " + r.code,
-      onChange: (e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, subject: e.target.value } : x)),
-      placeholder: tt("udlwalk.subject_placeholder", "Subject"),
-      className: "w-20 min-h-11 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-pressed": !!r.archived,
-      onClick: () => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, archived: !x.archived } : x)),
-      "aria-label": (r.archived ? tt("udlwalk.restore_aria", "Restore") : tt("udlwalk.archive_aria", "Archive")) + " " + (r.name || r.code),
-      className: "shrink-0 min-h-11 px-3 py-1.5 rounded border text-[10px] font-bold " + (r.archived ? "bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
-    },
-    r.archived ? tt("udlwalk.restore", "Restore") : tt("udlwalk.archive", "Archive")
-  )))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-end bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-new-name", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("udlwalk.quick_add_name", "Teacher name (optional — a code is assigned either way)")), /* @__PURE__ */ React.createElement("input", { id: "udlwalk-new-name", type: "text", value: newTeacherName, onChange: (e) => setNewTeacherName(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" })), /* @__PURE__ */ React.createElement("div", { className: "w-24" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-new-grade", className: "block text-[10px] font-bold text-slate-600 mb-0.5" }, tt("udlwalk.quick_add_grade", "Grade")), /* @__PURE__ */ React.createElement("input", { id: "udlwalk-new-grade", type: "text", value: newTeacherGrade, onChange: (e) => setNewTeacherGrade(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addTeacher, className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("udlwalk.quick_add", "Add"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportJson, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("udlwalk.export", "Export data (JSON)")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
-    if (importInputRef.current) importInputRef.current.click();
-  }, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬆️"), " ", tt("udlwalk.import", "Import export file")), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      ref: importInputRef,
-      type: "file",
-      accept: "application/json,.json",
-      className: "sr-only",
-      "aria-label": tt("udlwalk.import_aria", "Choose a UDL Walkthrough export file"),
-      onChange: (e) => {
-        const f = e.target.files && e.target.files[0];
-        try {
-          e.target.value = "";
-        } catch (_) {
+        /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm text-slate-800" }, tt("udlwalk.principle_" + pr.id, pr.label), " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-xs text-slate-600" }, "(", pr.hint, ")")),
+        /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, done, "/", items.length, " ", /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, open ? "▾" : "▸"))
+      ), open && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5" }, items.map((lf) => /* @__PURE__ */ React.createElement(
+        UdlWalkLookForCard,
+        {
+          key: lf.id,
+          lookFor: lf,
+          entry: draft.evidence[lf.id],
+          onCycle: () => cycleRating(lf.id),
+          onNoOpp: () => setNoOpp(lf.id),
+          onNote: (note) => setNote(lf.id, note),
+          tt
         }
-        if (f) importJson(f);
+      ))));
+    }), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-expanded": momentPickerOpen,
+        onClick: () => setMomentPickerOpen((v) => !v),
+        className: "min-h-11 w-full px-3 py-2 rounded-xl bg-sky-700 text-white text-sm font-bold hover:bg-sky-800"
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "✨"),
+      " ",
+      tt("udlwalk.student_moment", "Student moment"),
+      " ",
+      draft.studentIndicators.length > 0 ? "(" + draft.studentIndicators.length + ")" : ""
+    ), momentPickerOpen && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5" }, UDLWALK_STUDENT_INDICATORS.map((ind) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: ind.id,
+        type: "button",
+        onClick: () => logMoment(ind.id),
+        className: "min-h-11 p-2 rounded-lg border border-sky-300 bg-white hover:bg-sky-50 text-left"
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold text-sky-800" }, tt("udlwalk." + ind.id, ind.label)),
+      /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, ind.detail)
+    )))), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-summary", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("udlwalk.summary_label", "Observer note (optional)")), /* @__PURE__ */ React.createElement(
+      "textarea",
+      {
+        id: "udlwalk-summary",
+        rows: 2,
+        value: draft.summaryNote,
+        onChange: (e) => setDraft((d) => ({ ...d, summaryNote: e.target.value })),
+        className: "w-full text-sm border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       }
-    }
-  )), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[10px] text-slate-500" }, tt("udlwalk.setup_note", "Gemini Canvas may not persist browser storage between sessions — export after observing if you need the data to survive. Imports merge; they never overwrite newer local work."))))));
+    ))), tab === "sessions" && viewSession && /* @__PURE__ */ React.createElement(
+      UdlWalkFeedbackCard,
+      {
+        session: viewSession,
+        teacher: teacherById(viewSession.teacherId),
+        anonymize: config.anonymizeTeachers,
+        addToast,
+        tt,
+        onBack: () => setViewSessionId(null),
+        onEdit: () => {
+          if (draft && draft.editingId !== viewSession.id) {
+            addToast(tt("udlwalk.edit_blocked", "Finish or discard the walkthrough in progress first."), "warning");
+            return;
+          }
+          editSession(viewSession);
+        },
+        onToggleShared: () => setSessions((s) => s.map((x) => x.id === viewSession.id ? { ...x, sharedWithTeacher: !x.sharedWithTeacher } : x)),
+        onDelete: () => {
+          if (draft && draft.editingId === viewSession.id) setDraft(null);
+          setSessions((s) => s.filter((x) => x.id !== viewSession.id));
+          setViewSessionId(null);
+          addToast(tt("udlwalk.deleted_toast", "Visit deleted."), "info");
+        }
+      }
+    ), tab === "sessions" && !viewSession && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("udlwalk.sessions_title", "Saved visits")), sessions.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("udlwalk.no_sessions", "No visits saved yet. Start one from the Observe tab.")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, sessions.map((s) => {
+      const teacher = teacherById(s.teacherId);
+      const rated = Object.values(s.evidence || {}).filter((e) => e && e.rating && e.rating !== "no_opp");
+      const obs = rated.filter((e) => e.rating === "observed").length;
+      return /* @__PURE__ */ React.createElement("li", { key: s.id }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setViewSessionId(s.id),
+          className: "w-full min-h-11 flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-left"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-slate-800" }, udlwalkTeacherDisplay(teacher, config.anonymizeTeachers)), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, s.date, " · ", s.durationMin, " ", tt("udlwalk.minutes", "min"), s.observer && s.observer.initials ? " · " + tt("udlwalk.observer_short", "obs.") + " " + s.observer.initials : "", " · ", (s.studentIndicators || []).length, " ", tt("udlwalk.moments_short", "moments"))),
+        /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-right" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold text-green-700" }, obs, "/", rated.length, " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-600" }, tt("udlwalk.observed_short", "observed"))), s.sharedWithTeacher && /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold text-green-700" }, tt("udlwalk.shared_badge", "✓ shared")))
+      ));
+    }))), tab === "building" && (() => {
+      const agg = udlwalkAggregate(sessions, roster);
+      const sessionLabel = (s) => udlwalkTeacherDisplay(teacherById(s.teacherId), config.anonymizeTeachers) + " · " + s.date + " · " + s.durationMin + " " + tt("udlwalk.minutes", "min") + (s.observer && s.observer.initials ? " · " + s.observer.initials : "");
+      const sessA = sessions.find((s) => s.id === irA) || null;
+      const sessB = sessions.find((s) => s.id === irB) || null;
+      const agreement = sessA && sessB && sessA.id !== sessB.id ? udlwalkAgreement(sessA, sessB) : null;
+      const cellView = (c) => {
+        if (!c || !c.rated) return { text: "—", cls: "bg-slate-50 text-slate-600" };
+        const rate = c.observed / c.rated;
+        const cls = rate >= 0.7 ? "bg-green-100 text-green-900" : rate >= 0.4 ? "bg-amber-100 text-amber-900" : "bg-rose-100 text-rose-900";
+        return { text: Math.round(rate * 100) + "%", n: c.rated, cls };
+      };
+      return /* @__PURE__ */ React.createElement("div", null, sessions.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("udlwalk.building_empty", "The building view fills in as visits are saved. Start on the Observe tab.")), sessions.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "overflow-x-auto bg-white border border-slate-300 rounded-xl p-2" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-xs border-collapse" }, /* @__PURE__ */ React.createElement("caption", { className: "text-left text-sm font-bold text-slate-700 p-1" }, tt("udlwalk.heatmap_caption", 'Share of ratings marked "observed", by guideline')), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 text-slate-600" }, tt("udlwalk.heatmap_guideline", "Guideline")), agg.grades.map((g) => /* @__PURE__ */ React.createElement("th", { key: g, scope: "col", className: "p-1.5 text-slate-600" }, g === UDLWALK_UNGRADED ? tt("udlwalk.ungraded", "No grade") : g)), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-700 font-bold" }, tt("udlwalk.heatmap_all", "All")))), /* @__PURE__ */ React.createElement("tbody", null, UDLWALK_GUIDELINES.map((g) => {
+        const total = cellView(agg.totals[g.id]);
+        return /* @__PURE__ */ React.createElement("tr", { key: g.id, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1.5 font-normal text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, g.label), " ", /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, "(", (UDLWALK_PRINCIPLES.find((p) => p.id === g.principle) || {}).label, ")")), agg.grades.map((grade) => {
+          const v = cellView(agg.cells[g.id][grade]);
+          {
+          }
+          return /* @__PURE__ */ React.createElement("td", { key: grade, className: "p-1.5 text-center rounded " + v.cls }, v.text, v.n ? /* @__PURE__ */ React.createElement("span", { className: "text-xs" }, " (n=", v.n, ")") : null);
+        }), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center font-bold rounded " + total.cls }, total.text, total.n ? /* @__PURE__ */ React.createElement("span", { className: "text-xs" }, " (n=", total.n, ")") : null));
+      })))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1.5" }, tt("udlwalk.heatmap_note", '"No opportunity" ratings are excluded from every denominator. A small n is thin evidence, not a verdict.')), (() => {
+        const trend = udlwalkTrend(sessions);
+        if (trend.buckets.length < 2) {
+          return /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tt("udlwalk.trend_pending", "Trend lines appear once visits span two or more months."));
+        }
+        return /* @__PURE__ */ React.createElement(UdlWalkTrendChart, { trend, tt });
+      })(), agg.pdSignals.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-indigo-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-indigo-800" }, tt("udlwalk.pd_title", "PD signals")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("udlwalk.pd_note", "Lowest observed-rates with at least " + agg.minN + " rated observations building-wide — framed as PD topics, not verdicts.")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 space-y-1" }, agg.pdSignals.map((sig) => {
+        const g = UDLWALK_GUIDELINES.find((x) => x.id === sig.id);
+        return /* @__PURE__ */ React.createElement("li", { key: sig.id, className: "text-xs text-slate-700 bg-indigo-50 border border-indigo-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, g ? g.label : sig.id), " — ", Math.round(sig.rate * 100), "% ", tt("udlwalk.observed_short", "observed"), " (n=", sig.n, "). ", UDLWALK_SUGGESTIONS[g ? g.principle : ""] || "", typeof window !== "undefined" && typeof window.__alloOpenPdCatalog === "function" && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              if (typeof onClose === "function") onClose();
+              window.__alloOpenPdCatalog({ guideline: sig.id });
+            },
+            className: "mt-1.5 min-h-11 inline-flex items-center px-3 py-2 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-100"
+          },
+          tt("udlwalk.pd_find_modules", "Find related PD modules")
+        ));
+      }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.coverage_title", "Coverage")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("udlwalk.coverage_note", "Walkthrough initiatives die from uneven coverage — who has not had a visit lately?")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1" }, agg.coverage.map((c) => {
+        const teacher = teacherById(c.teacherId);
+        return /* @__PURE__ */ React.createElement("li", { key: c.teacherId, className: "text-xs p-2 rounded-lg border " + (c.visits === 0 ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-slate-50 border-slate-200 text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, udlwalkTeacherDisplay(teacher, config.anonymizeTeachers)), " — ", c.visits === 0 ? tt("udlwalk.coverage_never", "no visits yet") : c.visits + " " + tt("udlwalk.coverage_visits", "visit(s), last") + " " + c.lastDate);
+      }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.research_title", "Research export (de-identified)")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("udlwalk.research_note", "Teacher codes only — never names. Free-text notes are excluded (they can contain names); only their presence is exported. Building name is omitted.")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+        const rows = udlwalkResearchRows(sessions, roster);
+        if (!rows.length) {
+          addToast(tt("udlwalk.research_empty", "No rated evidence to export yet."), "warning");
+          return;
+        }
+        udlwalkDownload("udl-walkthrough-research-" + udlwalkDateStamp() + ".csv", "text/csv;charset=utf-8", "\uFEFF" + udlwalkCsv(rows), addToast, tt("udlwalk.export_toast", "Export started — check your downloads."), tt("udlwalk.export_failed", "Export failed: "));
+      }, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("udlwalk.research_csv", "Research CSV")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+        const rows = udlwalkResearchRows(sessions, roster);
+        if (!rows.length) {
+          addToast(tt("udlwalk.research_empty", "No rated evidence to export yet."), "warning");
+          return;
+        }
+        const payload = { kind: "alloflow-udl-walkthrough-research", version: 1, exportedAt: (/* @__PURE__ */ new Date()).toISOString(), framework: config.frameworkVersion || UDLWALK_FRAMEWORK, rows };
+        udlwalkDownload("udl-walkthrough-research-" + udlwalkDateStamp() + ".json", "application/json", JSON.stringify(payload, null, 2), addToast, tt("udlwalk.export_toast", "Export started — check your downloads."), tt("udlwalk.export_failed", "Export failed: "));
+      }, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("udlwalk.research_json", "Research JSON")))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("udlwalk.ir_title", "Inter-rater check")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("udlwalk.ir_note", 'Two observers record the same lesson on their own devices, one imports the other’s export (Roster & setup tab), then compare the two visits here. Exact-match agreement on items both observers rated; "no opportunity" counts as a rating.')), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-ir-a", className: "block text-xs font-bold text-slate-600 mb-0.5" }, tt("udlwalk.ir_a", "Observer A visit")), /* @__PURE__ */ React.createElement("select", { id: "udlwalk-ir-a", value: irA, onChange: (e) => setIrA(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tt("udlwalk.ir_pick", "Choose a visit…")), sessions.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.id, value: s.id }, sessionLabel(s))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-ir-b", className: "block text-xs font-bold text-slate-600 mb-0.5" }, tt("udlwalk.ir_b", "Observer B visit")), /* @__PURE__ */ React.createElement("select", { id: "udlwalk-ir-b", value: irB, onChange: (e) => setIrB(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tt("udlwalk.ir_pick", "Choose a visit…")), sessions.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.id, value: s.id }, sessionLabel(s)))))), irA && irB && irA === irB && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2" }, tt("udlwalk.ir_same", "Choose two different visits.")), agreement && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-700" }, agreement.bothRated === 0 ? /* @__PURE__ */ React.createElement("p", { className: "bg-amber-50 border border-amber-200 rounded-lg p-2 text-amber-900" }, tt("udlwalk.ir_none", "These two visits have no look-fors that both observers rated.")) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-slate-800" }, Math.round(agreement.pct * 100), "% ", tt("udlwalk.ir_agree", "agreement"), " (", agreement.agree, "/", agreement.bothRated, " ", tt("udlwalk.ir_both", "items both rated"), agreement.onlyOne ? "; " + agreement.onlyOne + " " + tt("udlwalk.ir_only_one", "rated by only one observer") : "", ")", agreement.kappa != null ? " · κ = " + agreement.kappa.toFixed(2) : ""), agreement.kappa != null && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, tt("udlwalk.ir_kappa_note", "κ is Cohen’s kappa — agreement corrected for chance. Raw percent agreement overstates reliability when most ratings fall in one category; report κ for research use.")), agreement.disagreements.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 space-y-1" }, agreement.disagreements.map((d) => /* @__PURE__ */ React.createElement("li", { key: d.id, className: "bg-rose-50 border border-rose-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, d.guideline), " (", d.id, "): A = ", (UDLWALK_RATING_META[d.a] || {}).label, ", B = ", (UDLWALK_RATING_META[d.b] || {}).label))))))));
+    })(), tab === "setup" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-end mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-28" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-observer", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("udlwalk.observer_label", "Your initials")), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "udlwalk-observer",
+        type: "text",
+        maxLength: 6,
+        value: config.observerInitials || "",
+        onChange: (e) => setConfig((c) => ({ ...c, observerInitials: e.target.value })),
+        className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-observer-role", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("udlwalk.observer_role_label", "Role")), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        id: "udlwalk-observer-role",
+        value: config.observerRole || "admin",
+        onChange: (e) => setConfig((c) => ({ ...c, observerRole: e.target.value })),
+        className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "admin" }, tt("udlwalk.role_admin", "Administrator")),
+      /* @__PURE__ */ React.createElement("option", { value: "coach" }, tt("udlwalk.role_coach", "Instructional coach")),
+      /* @__PURE__ */ React.createElement("option", { value: "specialist" }, tt("udlwalk.role_specialist", "Specialist / clinician")),
+      /* @__PURE__ */ React.createElement("option", { value: "other" }, tt("udlwalk.role_other", "Other"))
+    ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, tt("udlwalk.observer_note", "Stamped on each saved visit so merged data from two observers stays attributable — required for the inter-rater check.")), /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-building", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("udlwalk.building_label", "Building name (appears on exports only)")), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "udlwalk-building",
+        type: "text",
+        value: config.buildingName,
+        onChange: (e) => setConfig((c) => ({ ...c, buildingName: e.target.value })),
+        className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-pressed": !!config.anonymizeTeachers,
+        onClick: () => setConfig((c) => ({ ...c, anonymizeTeachers: !c.anonymizeTeachers })),
+        className: "mt-2 min-h-11 px-3 py-2 rounded-lg border text-sm font-bold " + (config.anonymizeTeachers ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100")
+      },
+      config.anonymizeTeachers ? tt("udlwalk.anon_on", "Anonymized: codes shown instead of names") : tt("udlwalk.anon_off", "Show teacher names (activate to anonymize)")
+    )), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("udlwalk.roster_title", "Classrooms")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 mb-3" }, [...roster].sort((a, b) => (a.archived ? 1 : 0) - (b.archived ? 1 : 0)).map((r) => /* @__PURE__ */ React.createElement("li", { key: r.id, className: "flex items-center gap-2 border rounded-xl p-2 " + (r.archived ? "bg-slate-100 border-slate-200 opacity-70" : "bg-white border-slate-300") }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-xs font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-300" }, r.code), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "text",
+        value: r.name,
+        "aria-label": tt("udlwalk.roster_name_aria", "Teacher name") + " " + r.code,
+        onChange: (e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, name: e.target.value } : x)),
+        placeholder: tt("udlwalk.name_placeholder", "Name (optional)"),
+        className: "flex-1 min-w-0 min-h-11 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "text",
+        value: r.grade,
+        "aria-label": tt("udlwalk.roster_grade_aria", "Grade for") + " " + r.code,
+        onChange: (e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, grade: e.target.value } : x)),
+        placeholder: tt("udlwalk.grade_placeholder", "Grade"),
+        className: "w-16 min-h-11 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "text",
+        value: r.subject,
+        "aria-label": tt("udlwalk.roster_subject_aria", "Subject for") + " " + r.code,
+        onChange: (e) => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, subject: e.target.value } : x)),
+        placeholder: tt("udlwalk.subject_placeholder", "Subject"),
+        className: "w-20 min-h-11 border border-slate-200 rounded px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-pressed": !!r.archived,
+        onClick: () => setRoster((list) => list.map((x) => x.id === r.id ? { ...x, archived: !x.archived } : x)),
+        "aria-label": (r.archived ? tt("udlwalk.restore_aria", "Restore") : tt("udlwalk.archive_aria", "Archive")) + " " + (r.name || r.code),
+        className: "shrink-0 min-h-11 px-3 py-1.5 rounded border text-xs font-bold " + (r.archived ? "bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
+      },
+      r.archived ? tt("udlwalk.restore", "Restore") : tt("udlwalk.archive", "Archive")
+    )))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-end bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-new-name", className: "block text-xs font-bold text-slate-600 mb-0.5" }, tt("udlwalk.quick_add_name", "Teacher name (optional — a code is assigned either way)")), /* @__PURE__ */ React.createElement("input", { id: "udlwalk-new-name", type: "text", value: newTeacherName, onChange: (e) => setNewTeacherName(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" })), /* @__PURE__ */ React.createElement("div", { className: "w-24" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "udlwalk-new-grade", className: "block text-xs font-bold text-slate-600 mb-0.5" }, tt("udlwalk.quick_add_grade", "Grade")), /* @__PURE__ */ React.createElement("input", { id: "udlwalk-new-grade", type: "text", value: newTeacherGrade, onChange: (e) => setNewTeacherGrade(e.target.value), className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addTeacher, className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("udlwalk.quick_add", "Add"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportJson, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("udlwalk.export", "Export data (JSON)")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      if (importInputRef.current) importInputRef.current.click();
+    }, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬆️"), " ", tt("udlwalk.import", "Import export file")), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        ref: importInputRef,
+        type: "file",
+        accept: "application/json,.json",
+        className: "sr-only",
+        "aria-label": tt("udlwalk.import_aria", "Choose a UDL Walkthrough export file"),
+        onChange: (e) => {
+          const f = e.target.files && e.target.files[0];
+          try {
+            e.target.value = "";
+          } catch (_) {
+          }
+          if (f) importJson(f);
+        }
+      }
+    )), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-xs text-slate-600" }, tt("udlwalk.setup_note", "Gemini Canvas may not persist browser storage between sessions — export after observing if you need the data to survive. Imports merge; they never overwrite newer local work.")))))
+  );
 }
 
   window.AlloModules = window.AlloModules || {};

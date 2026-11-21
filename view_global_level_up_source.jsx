@@ -39,13 +39,13 @@ function GlobalLevelUpModal({
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
     const isolatedSiblings = [];
+    const seenSiblings = new Set();
     let branch = dialog;
-    while (branch && branch.parentElement && branch.parentElement !== document.body) {
-      branch = branch.parentElement;
-    }
-    if (branch && branch.parentElement === document.body) {
-      Array.from(document.body.children).forEach((sibling) => {
-        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
+    while (branch && branch.parentElement) {
+      const parent = branch.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (!sibling || sibling === branch || seenSiblings.has(sibling) || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
+        seenSiblings.add(sibling);
         isolatedSiblings.push({
           el: sibling,
           hadInert: sibling.hasAttribute('inert'),
@@ -56,6 +56,8 @@ function GlobalLevelUpModal({
         sibling.setAttribute('inert', '');
         sibling.setAttribute('aria-hidden', 'true');
       });
+      if (parent === document.body) break;
+      branch = parent;
     }
     // Shared scroll-lock counter: only the last dialog to close unlocks the page.
     const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
@@ -131,8 +133,17 @@ function GlobalLevelUpModal({
     };
   }, []);
 
+  const dragStartedInsideRef = React.useRef(false);
   return (
-    <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-500 motion-reduce:animate-none" onClick={handleSetShowGlobalLevelUpToFalse}>
+    <div
+      role="presentation"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-500 motion-reduce:animate-none"
+      onMouseDown={(event) => { dragStartedInsideRef.current = event.target !== event.currentTarget; }}
+      onClick={(event) => {
+        if (dragStartedInsideRef.current) { dragStartedInsideRef.current = false; return; }
+        if (event.target === event.currentTarget) handleSetShowGlobalLevelUpToFalse();
+      }}
+    >
       <div aria-hidden="true" className="motion-reduce:hidden"><ConfettiExplosion /></div>
       <div
         ref={dialogRef}
@@ -142,6 +153,7 @@ function GlobalLevelUpModal({
         aria-labelledby="global-level-up-title"
         aria-describedby="global-level-up-description"
         className="allo-docsuite bg-white rounded-3xl p-5 sm:p-8 md:p-12 text-center shadow-2xl border-4 border-yellow-400 relative overflow-y-auto max-h-[calc(100vh-1rem)] max-w-sm w-full transform transition-all animate-in zoom-in-50 duration-500 motion-reduce:animate-none motion-reduce:transform-none"
+        onMouseDown={() => { dragStartedInsideRef.current = true; }}
         onClick={(event) => event.stopPropagation()}
       >
         <div aria-hidden="true" className="absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(250,204,21,1)0%,rgba(255,255,255,0)70%)] animate-pulse motion-reduce:animate-none"></div>

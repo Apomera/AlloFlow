@@ -110,11 +110,11 @@
     var s = String(lang).toLowerCase().trim();
     if (Object.prototype.hasOwnProperty.call(LANG_TO_VOICE, s)) return LANG_TO_VOICE[s];
     if (Object.prototype.hasOwnProperty.call(CODE_ALIASES, s)) return CODE_ALIASES[s];
-    if (ESPEAK_VOICES[s]) return s;
+    if (Object.prototype.hasOwnProperty.call(ESPEAK_VOICES, s)) return s;
     var primary = s.split(/[-_]/)[0];
     if (primary === 'en') return 'en-us';
     if (Object.prototype.hasOwnProperty.call(CODE_ALIASES, primary)) return CODE_ALIASES[primary];
-    if (ESPEAK_VOICES[primary]) return primary;
+    if (Object.prototype.hasOwnProperty.call(ESPEAK_VOICES, primary)) return primary;
     return null;
   }
 

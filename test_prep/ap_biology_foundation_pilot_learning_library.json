@@ -12275,12 +12275,495 @@
       "foundationPrototype": true
     }
   ],
-  "diagrams": [],
-  "diagramPlacements": [],
+  "diagrams": [
+    {
+      "id": "ap-bio-flow-01",
+      "domainId": "chemistry-of-life",
+      "title": "Water polarity and macromolecule structure-to-function flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "bonds",
+            "label": "Polar covalent bonds & hydrogen bonding"
+          },
+          {
+            "id": "monomers",
+            "label": "Dehydration synthesis links monomers"
+          },
+          {
+            "id": "folding",
+            "label": "R-group & base interactions set 3D shape"
+          },
+          {
+            "id": "function",
+            "label": "Shape & polarity govern biological function"
+          }
+        ],
+        "edges": [
+          {
+            "from": "bonds",
+            "to": "monomers"
+          },
+          {
+            "from": "monomers",
+            "to": "folding"
+          },
+          {
+            "from": "folding",
+            "to": "function"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Polar covalent bonds create partial charges and hydrogen bonding networks in water and functional groups.",
+          "Dehydration synthesis removes water to join monomers into directional polymers, whereas hydrolysis breaks them.",
+          "Noncovalent interactions and covalent disulfide bridges fold proteins and pair nucleic acid strands into specific 3D structures.",
+          "Changing monomer sequence, pH, or temperature alters structure and therefore alters catalytic, transport, or information function."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-flow-02",
+      "domainId": "cells",
+      "title": "Membrane selectivity, compartmentalization, and water potential flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "bilayer",
+            "label": "Amphipathic phospholipid bilayer + proteins"
+          },
+          {
+            "id": "gradient",
+            "label": "Solute & electrochemical gradients"
+          },
+          {
+            "id": "transport",
+            "label": "Passive diffusion vs. ATP-driven active transport"
+          },
+          {
+            "id": "homeostasis",
+            "label": "Water potential & compartmentalized homeostasis"
+          }
+        ],
+        "edges": [
+          {
+            "from": "bilayer",
+            "to": "gradient"
+          },
+          {
+            "from": "gradient",
+            "to": "transport"
+          },
+          {
+            "from": "transport",
+            "to": "homeostasis"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "The amphipathic phospholipid bilayer restricts large or charged solutes while embedded proteins provide selective channels and pumps.",
+          "Concentration, charge, and solute gradients establish the direction of passive movement and the solute potential component of water potential.",
+          "Passive transport moves solutes down gradients without direct ATP input, whereas active transport uses energy to move solutes against gradients.",
+          "Net water flows from higher to lower water potential, and eukaryotic organelles maintain distinct internal environments for incompatible reactions."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-flow-03",
+      "domainId": "cellular-energetics",
+      "title": "Enzyme catalysis and coupled energy-transfer flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "enzyme",
+            "label": "Enzyme lowers activation energy via active site"
+          },
+          {
+            "id": "capture",
+            "label": "Light reactions & oxidation harvest high-energy electrons"
+          },
+          {
+            "id": "chemiosmosis",
+            "label": "Proton gradient drives ATP synthase"
+          },
+          {
+            "id": "coupling",
+            "label": "ATP & electron carriers power cellular work"
+          }
+        ],
+        "edges": [
+          {
+            "from": "enzyme",
+            "to": "capture"
+          },
+          {
+            "from": "capture",
+            "to": "chemiosmosis"
+          },
+          {
+            "from": "chemiosmosis",
+            "to": "coupling"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Enzymes stabilize transition states to lower activation energy without changing overall free-energy change, and respond to inhibitors, pH, and temperature.",
+          "Photosynthesis captures light energy into ATP and NADPH, while cellular respiration oxidizes organic molecules to load NADH and FADH2.",
+          "Electron transport chains pump protons across thylakoid or inner mitochondrial membranes so chemiosmosis drives ATP synthesis.",
+          "Cells couple exergonic ATP hydrolysis to endergonic biosynthesis, transport, and carbon fixation while conserving matter and energy."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-flow-04",
+      "domainId": "cell-communication-and-cell-cycle",
+      "title": "Signal transduction, feedback, and cell-cycle checkpoint flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "reception",
+            "label": "Ligand binds specific membrane or intracellular receptor"
+          },
+          {
+            "id": "transduction",
+            "label": "Phosphorylation cascade & second messengers amplify"
+          },
+          {
+            "id": "response",
+            "label": "Gene expression, enzyme activity, or checkpoint control"
+          },
+          {
+            "id": "feedback",
+            "label": "Negative or positive feedback regulates the system"
+          }
+        ],
+        "edges": [
+          {
+            "from": "reception",
+            "to": "transduction"
+          },
+          {
+            "from": "transduction",
+            "to": "response"
+          },
+          {
+            "from": "response",
+            "to": "feedback"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "A chemical signal binds a complementary receptor on the plasma membrane or inside the target cell, triggering a conformational change.",
+          "Relay proteins, phosphorylation cascades, and second messengers amplify and route the signal to specific intracellular targets.",
+          "Target responses alter enzyme activity, open channels, change transcription, or advance cyclin-CDK cell-cycle checkpoints (G1, G2, M).",
+          "Negative feedback restores a set point, positive feedback amplifies a transition, and checkpoint failure permits unregulated division."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-flow-05",
+      "domainId": "heredity",
+      "title": "Meiotic variation and inheritance-pattern evidence flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "meiosis",
+            "label": "Crossing over & independent assortment in Meiosis I"
+          },
+          {
+            "id": "gametes",
+            "label": "Haploid gametes unite randomly at fertilization"
+          },
+          {
+            "id": "ratios",
+            "label": "Compare observed progeny to expected ratios"
+          },
+          {
+            "id": "model",
+            "label": "Distinguish Mendelian, linked, sex-linked, or non-nuclear"
+          }
+        ],
+        "edges": [
+          {
+            "from": "meiosis",
+            "to": "gametes"
+          },
+          {
+            "from": "gametes",
+            "to": "ratios"
+          },
+          {
+            "from": "ratios",
+            "to": "model"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Meiosis halves chromosome number while crossing over and independent assortment generate genetically diverse combinations of alleles.",
+          "Random fertilization combines haploid gametes to produce diploid offspring with predictable probability distributions.",
+          "Chi-square tests compare observed phenotype counts against expected genetic ratios to evaluate whether chance alone explains deviations.",
+          "Systematic departures point to gene linkage, sex-linked inheritance, epistasis, incomplete dominance, environmental effects, or mitochondrial inheritance."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-flow-06",
+      "domainId": "gene-expression-and-regulation",
+      "title": "Replication, gene expression, and regulatory control flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "dna",
+            "label": "Semiconservative 5-to-3 DNA replication"
+          },
+          {
+            "id": "transcription",
+            "label": "RNA polymerase transcribes & eukaryotic mRNA processes"
+          },
+          {
+            "id": "translation",
+            "label": "Ribosome & tRNAs translate codons into polypeptide"
+          },
+          {
+            "id": "regulation",
+            "label": "Operons, transcription factors, & epigenetics tune output"
+          }
+        ],
+        "edges": [
+          {
+            "from": "dna",
+            "to": "transcription"
+          },
+          {
+            "from": "transcription",
+            "to": "translation"
+          },
+          {
+            "from": "translation",
+            "to": "regulation"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "DNA polymerases synthesize complementary strands 5-prime to 3-prime on leading and lagging strands using base-pairing rules.",
+          "RNA polymerase transcribes DNA into RNA; eukaryotes add a 5-prime cap, poly-A tail, and splice introns to generate mature or alternative mRNAs.",
+          "Ribosomes read mRNA codons sequentially with charged tRNAs to assemble amino acids into polypeptides whose mutations vary by codon impact.",
+          "Prokaryotic operons and eukaryotic chromatin remodeling, enhancers, and microRNAs regulate when and how much protein each cell produces."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-flow-07",
+      "domainId": "natural-selection",
+      "title": "Population variation, evolutionary mechanisms, and phylogeny flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "variation",
+            "label": "Random mutation & recombination create heritable variation"
+          },
+          {
+            "id": "mechanisms",
+            "label": "Selection, genetic drift, & gene flow shift allele frequencies"
+          },
+          {
+            "id": "equilibrium",
+            "label": "Test allele frequencies against Hardy-Weinberg null model"
+          },
+          {
+            "id": "speciation",
+            "label": "Reproductive isolation drives divergence & cladograms"
+          }
+        ],
+        "edges": [
+          {
+            "from": "variation",
+            "to": "mechanisms"
+          },
+          {
+            "from": "mechanisms",
+            "to": "equilibrium"
+          },
+          {
+            "from": "equilibrium",
+            "to": "speciation"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Mutations and sexual recombination arise randomly with respect to need, supplying heritable phenotypic variation within a population.",
+          "Natural selection favors traits increasing relative reproductive success in a given environment, while drift and gene flow alter frequencies non-adaptively.",
+          "Hardy-Weinberg equations provide a non-evolving baseline; sustained departures indicate at least one evolutionary mechanism is acting.",
+          "Reproductive barriers split lineages into distinct species, whose shared derived characters and molecular data support phylogenetic hypotheses."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-flow-08",
+      "domainId": "ecology",
+      "title": "Energy flow, population dynamics, and community stability flow",
+      "type": "optional-concept-flow",
+      "spec": {
+        "nodes": [
+          {
+            "id": "energy",
+            "label": "Primary producers fix energy; ~10% transfers per trophic level"
+          },
+          {
+            "id": "populations",
+            "label": "Exponential vs. carrying-capacity-limited logistic growth"
+          },
+          {
+            "id": "interactions",
+            "label": "Competition, predation, mutualism, & keystone effects"
+          },
+          {
+            "id": "resilience",
+            "label": "Biodiversity & disturbance shape ecosystem stability"
+          }
+        ],
+        "edges": [
+          {
+            "from": "energy",
+            "to": "populations"
+          },
+          {
+            "from": "populations",
+            "to": "interactions"
+          },
+          {
+            "from": "interactions",
+            "to": "resilience"
+          }
+        ]
+      },
+      "accessibility": {
+        "textEquivalent": [
+          "Autotrophs convert solar or chemical energy into biomass while heat loss at each trophic step limits food-chain energy transfer.",
+          "Unconstrained populations grow exponentially, whereas density-dependent limits slow growth toward carrying capacity K in logistic models.",
+          "Species interactions—including keystone predators and invasive competitors—restructure trophic cascades and realized niches.",
+          "Higher genetic and species diversity generally buffers ecosystems against environmental disturbances and supports nutrient cycling."
+        ],
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false
+    }
+  ],
+  "diagramPlacements": [
+    {
+      "id": "ap-bio-placement-01",
+      "diagramId": "ap-bio-flow-01",
+      "sectionId": "ap-bio-ch-01-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-placement-02",
+      "diagramId": "ap-bio-flow-02",
+      "sectionId": "ap-bio-ch-02-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-placement-03",
+      "diagramId": "ap-bio-flow-03",
+      "sectionId": "ap-bio-ch-03-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-placement-04",
+      "diagramId": "ap-bio-flow-04",
+      "sectionId": "ap-bio-ch-04-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-placement-05",
+      "diagramId": "ap-bio-flow-05",
+      "sectionId": "ap-bio-ch-05-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-placement-06",
+      "diagramId": "ap-bio-flow-06",
+      "sectionId": "ap-bio-ch-06-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-placement-07",
+      "diagramId": "ap-bio-flow-07",
+      "sectionId": "ap-bio-ch-07-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-bio-placement-08",
+      "diagramId": "ap-bio-flow-08",
+      "sectionId": "ap-bio-ch-08-section-01",
+      "fallbackMode": "diagram-text-equivalent",
+      "requiredForComprehension": false,
+      "releaseEligible": false
+    }
+  ],
   "flashcards": [
     {
       "id": "ap-bio-card-01",
       "chapterId": "ap-bio-ch-01",
+      "sectionId": "ap-bio-ch-01-section-01",
       "domainId": "chemistry-of-life",
       "domain": "Chemistry of Life",
       "front": "Relate polarity, hydrogen bonding, dehydration and hydrolysis, and macromolecular structure to biological function.",
@@ -12294,8 +12777,41 @@
       "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
     },
     {
+      "id": "ap-bio-card-01-s2",
+      "chapterId": "ap-bio-ch-01",
+      "sectionId": "ap-bio-ch-01-section-02",
+      "domainId": "chemistry-of-life",
+      "domain": "Chemistry of Life",
+      "front": "What key biological mechanism and boundary govern Carbohydrates and lipids?",
+      "back": "Carbohydrates are built from monosaccharide monomers joined by dehydration synthesis into disaccharides and polysaccharides. The same monomer can produce polymers with different properties: starch and glycogen store energy in plants and animals, while cellulose forms plant cell walls because its linkages create straight, hydrogen-bonded fibers that most animal enzymes cannot digest.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/books/biology-2e/pages/4-introduction"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-01-s3",
+      "chapterId": "ap-bio-ch-01",
+      "sectionId": "ap-bio-ch-01-section-03",
+      "domainId": "chemistry-of-life",
+      "domain": "Chemistry of Life",
+      "front": "What key biological mechanism and boundary govern Nucleic acids and proteins?",
+      "back": "Nucleic acids are polymers of nucleotides, each with a sugar, a phosphate, and a nitrogenous base. DNA uses deoxyribose and thymine and forms an antiparallel double helix held by base pairing; RNA uses ribose and uracil and is usually single-stranded.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/books/biology-2e/pages/4-introduction"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
       "id": "ap-bio-card-02",
       "chapterId": "ap-bio-ch-02",
+      "sectionId": "ap-bio-ch-02-section-01",
       "domainId": "cells",
       "domain": "Cells",
       "front": "Predict movement across membranes and explain why surface-area-to-volume ratio and organelle compartmentalization affect cell function.",
@@ -12309,8 +12825,41 @@
       "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
     },
     {
+      "id": "ap-bio-card-02-s2",
+      "chapterId": "ap-bio-ch-02",
+      "sectionId": "ap-bio-ch-02-section-02",
+      "domainId": "cells",
+      "domain": "Cells",
+      "front": "What key biological mechanism and boundary govern Cell structure, cell size, and the plasma membrane?",
+      "back": "Eukaryotic cells organize work into membrane-bound compartments: ribosomes build proteins, the endoplasmic reticulum and Golgi modify and route them, lysosomes digest, mitochondria and chloroplasts transform energy, and the nucleus houses DNA. Prokaryotic cells lack these internal compartments but still carry out the same essential chemistry.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/books/biology-2e/pages/4-introduction"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-02-s3",
+      "chapterId": "ap-bio-ch-02",
+      "sectionId": "ap-bio-ch-02-section-03",
+      "domainId": "cells",
+      "domain": "Cells",
+      "front": "What key biological mechanism and boundary govern Tonicity, osmoregulation, and the origins of cells?",
+      "back": "Tonicity describes how a solution affects a cell’s water balance. In a hypotonic solution water enters; animal cells may burst while walled cells become turgid.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/books/biology-2e/pages/4-introduction"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
       "id": "ap-bio-card-03",
       "chapterId": "ap-bio-ch-03",
+      "sectionId": "ap-bio-ch-03-section-01",
       "domainId": "cellular-energetics",
       "domain": "Cellular Energetics",
       "front": "Explain how enzyme activity, electron transfer, and energy coupling influence photosynthesis and cellular respiration.",
@@ -12324,8 +12873,41 @@
       "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
     },
     {
+      "id": "ap-bio-card-03-s2",
+      "chapterId": "ap-bio-ch-03",
+      "sectionId": "ap-bio-ch-03-section-02",
+      "domainId": "cellular-energetics",
+      "domain": "Cellular Energetics",
+      "front": "What key biological mechanism and boundary govern Photosynthesis?",
+      "back": "Photosynthesis converts light energy into chemical energy in two linked stages. In the light-dependent reactions, pigments in the thylakoid membranes absorb light, water is split to release oxygen, electrons move through an electron transport chain that pumps protons into the thylakoid space, and the resulting gradient drives ATP synthase; NADP+ is reduced to NADPH.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-03-s3",
+      "chapterId": "ap-bio-ch-03",
+      "sectionId": "ap-bio-ch-03-section-03",
+      "domainId": "cellular-energetics",
+      "domain": "Cellular Energetics",
+      "front": "What key biological mechanism and boundary govern Cellular respiration and fermentation?",
+      "back": "Cellular respiration releases the chemical energy of glucose in stages. Glycolysis in the cytosol splits glucose into pyruvate, producing a small amount of ATP and NADH without oxygen.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
       "id": "ap-bio-card-04",
       "chapterId": "ap-bio-ch-04",
+      "sectionId": "ap-bio-ch-04-section-01",
       "domainId": "cell-communication-and-cell-cycle",
       "domain": "Cell Communication and Cell Cycle",
       "front": "Predict how receptor pathways, feedback loops, and checkpoints affect cellular responses.",
@@ -12339,8 +12921,41 @@
       "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
     },
     {
+      "id": "ap-bio-card-04-s2",
+      "chapterId": "ap-bio-ch-04",
+      "sectionId": "ap-bio-ch-04-section-02",
+      "domainId": "cell-communication-and-cell-cycle",
+      "domain": "Cell Communication and Cell Cycle",
+      "front": "What key biological mechanism and boundary govern Feedback and homeostasis?",
+      "back": "Organisms maintain internal conditions within a range using feedback. In negative feedback, a change in a regulated variable triggers a response that opposes the change, returning the variable toward its set point, as when insulin lowers blood glucose after a meal and glucagon raises it during fasting.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-04-s3",
+      "chapterId": "ap-bio-ch-04",
+      "sectionId": "ap-bio-ch-04-section-03",
+      "domainId": "cell-communication-and-cell-cycle",
+      "domain": "Cell Communication and Cell Cycle",
+      "front": "What key biological mechanism and boundary govern The cell cycle and its regulation?",
+      "back": "The eukaryotic cell cycle moves through interphase, in which the cell grows in G1, replicates its DNA in S, and prepares in G2, and then through mitosis and cytokinesis, which divide the copied chromosomes and the cytoplasm into two genetically identical cells. Cells that stop dividing rest in G0.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
       "id": "ap-bio-card-05",
       "chapterId": "ap-bio-ch-05",
+      "sectionId": "ap-bio-ch-05-section-01",
       "domainId": "heredity",
       "domain": "Heredity",
       "front": "Use meiosis, probability, and inheritance models to explain genetic variation and phenotype patterns.",
@@ -12354,8 +12969,41 @@
       "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
     },
     {
+      "id": "ap-bio-card-05-s2",
+      "chapterId": "ap-bio-ch-05",
+      "sectionId": "ap-bio-ch-05-section-02",
+      "domainId": "heredity",
+      "domain": "Heredity",
+      "front": "What key biological mechanism and boundary govern Mendelian genetics and probability?",
+      "back": "Mendel’s work shows that traits are passed by discrete units, now called alleles, that separate during gamete formation and recombine at fertilization. The law of segregation states that each gamete receives one allele of each gene; the law of independent assortment states that alleles of different genes on different chromosomes sort independently.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-05-s3",
+      "chapterId": "ap-bio-ch-05",
+      "sectionId": "ap-bio-ch-05-section-03",
+      "domainId": "heredity",
+      "domain": "Heredity",
+      "front": "What key biological mechanism and boundary govern Non-Mendelian inheritance and environmental effects?",
+      "back": "Many traits do not follow simple dominant-recessive patterns. In incomplete dominance the heterozygote shows an intermediate phenotype, and in codominance both alleles are expressed.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
       "id": "ap-bio-card-06",
       "chapterId": "ap-bio-ch-06",
+      "sectionId": "ap-bio-ch-06-section-01",
       "domainId": "gene-expression-and-regulation",
       "domain": "Gene Expression and Regulation",
       "front": "Trace information from DNA through RNA and protein and predict consequences of mutations or regulatory changes.",
@@ -12369,8 +13017,41 @@
       "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
     },
     {
+      "id": "ap-bio-card-06-s2",
+      "chapterId": "ap-bio-ch-06",
+      "sectionId": "ap-bio-ch-06-section-02",
+      "domainId": "gene-expression-and-regulation",
+      "domain": "Gene Expression and Regulation",
+      "front": "What key biological mechanism and boundary govern Transcription, translation, and gene regulation?",
+      "back": "Gene expression begins with transcription, in which RNA polymerase reads a DNA template strand and synthesizes a complementary messenger RNA. In eukaryotes the transcript is capped, given a poly-A tail, and spliced to remove introns before it leaves the nucleus.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-06-s3",
+      "chapterId": "ap-bio-ch-06",
+      "sectionId": "ap-bio-ch-06-section-03",
+      "domainId": "gene-expression-and-regulation",
+      "domain": "Gene Expression and Regulation",
+      "front": "What key biological mechanism and boundary govern Mutations and biotechnology?",
+      "back": "Mutations are changes in DNA sequence. A point mutation may be silent if the new codon specifies the same amino acid, missense if it changes an amino acid, or nonsense if it creates a stop codon.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
       "id": "ap-bio-card-07",
       "chapterId": "ap-bio-ch-07",
+      "sectionId": "ap-bio-ch-07-section-01",
       "domainId": "natural-selection",
       "domain": "Natural Selection",
       "front": "Use population data, evolutionary mechanisms, and phylogenetic evidence to explain relatedness and change.",
@@ -12384,12 +13065,77 @@
       "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
     },
     {
+      "id": "ap-bio-card-07-s2",
+      "chapterId": "ap-bio-ch-07",
+      "sectionId": "ap-bio-ch-07-section-02",
+      "domainId": "natural-selection",
+      "domain": "Natural Selection",
+      "front": "What key biological mechanism and boundary govern Population genetics and Hardy-Weinberg?",
+      "back": "Evolution is a change in allele frequencies in a population over generations. The Hardy-Weinberg principle describes a population in which frequencies do not change: no mutation, no migration, a very large population, random mating, and no selection.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-07-s3",
+      "chapterId": "ap-bio-ch-07",
+      "sectionId": "ap-bio-ch-07-section-03",
+      "domainId": "natural-selection",
+      "domain": "Natural Selection",
+      "front": "What key biological mechanism and boundary govern Evidence, phylogeny, speciation, and the origin of life?",
+      "back": "Evidence for evolution comes from fossils, comparative anatomy including homologous and vestigial structures, embryology, biogeography, and molecular comparisons of DNA and proteins. Shared features that reflect common ancestry are used to build phylogenetic trees, in which nodes represent common ancestors and branch lengths may represent time or amount of change.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
       "id": "ap-bio-card-08",
       "chapterId": "ap-bio-ch-08",
+      "sectionId": "ap-bio-ch-08-section-01",
       "domainId": "ecology",
       "domain": "Ecology",
       "front": "Analyze energy flow, population growth, species interactions, biodiversity, and ecosystem disruption.",
       "back": "Energy enters most ecosystems through primary producers and decreases at successive trophic levels as organisms use energy for metabolism and release heat. Population growth reflects births, deaths, immigration, emigration, and limiting factors.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-08-s2",
+      "chapterId": "ap-bio-ch-08",
+      "sectionId": "ap-bio-ch-08-section-02",
+      "domainId": "ecology",
+      "domain": "Ecology",
+      "front": "What key biological mechanism and boundary govern Population and community ecology?",
+      "back": "A population grows exponentially when resources are unlimited, but in real environments growth slows as it approaches the carrying capacity, producing a logistic curve. Density-dependent factors such as competition, predation, and disease act more strongly as a population becomes crowded; density-independent factors such as storms and temperature act regardless of size.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-08-s3",
+      "chapterId": "ap-bio-ch-08",
+      "sectionId": "ap-bio-ch-08-section-03",
+      "domainId": "ecology",
+      "domain": "Ecology",
+      "front": "What key biological mechanism and boundary govern Biodiversity and ecosystem disruption?",
+      "back": "Biodiversity includes the number of species in a community, their relative abundance, and the genetic variation within them. Communities with higher diversity tend to recover more readily from disturbance because different species respond differently and some can fill roles others lose.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -13239,15 +13985,15 @@
     "chapters": 8,
     "sections": 24,
     "knowledgeChecks": 24,
-    "flashcards": 8,
+    "flashcards": 24,
     "memoryAids": 8,
-    "diagrams": 0,
-    "diagramPlacements": 0,
+    "diagrams": 8,
+    "diagramPlacements": 8,
     "constructedResponseWorkshops": 8,
     "sourceReviewedConstructedResponseWorkshops": 8,
     "richLessonPrototypes": 8,
     "sourceReviewedChapters": 8,
-    "sourceReviewedFlashcards": 8,
+    "sourceReviewedFlashcards": 24,
     "sourceReviewedMemoryAids": 8,
     "releaseEligibleRecords": 0
   },

@@ -11,8 +11,9 @@ function _alloParsePreviewMarkdown(text) {
             .replace(/\x60([^\x60]+)\x60/g, (_, code) => hold('<code>' + code + '</code>'))
             .replace(/\\([\\*_{}\[\]()#+.!-])/g, (_, literal) => hold(literal))
             .replace(/\[([^\]]+)\]\(([^\s)]+)\)/g, (_, label, url) => {
-                const safeUrl = /^(?:https?:|mailto:|tel:|resource:|#|\/|\.)/i.test(url) ? url : '#';
-                return hold('<a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer">' + emphasis(label) + '</a>');
+                const safeUrl = !url.includes('\u0000') && /^(?:https?:|mailto:|tel:|resource:|#|\/(?![\/\\])|\.)/i.test(url) ? url : '#';
+                const targetAttrs = /^https?:/i.test(safeUrl) ? ' target="_blank" rel="noopener noreferrer"' : '';
+                return hold('<a href="' + safeUrl + '"' + targetAttrs + '>' + emphasis(label) + '</a>');
             });
         let rendered = emphasis(content);
         for (let pass = 0; pass <= tokens.length && rendered.includes('\u0000'); pass++) {
@@ -20,7 +21,7 @@ function _alloParsePreviewMarkdown(text) {
         }
         return rendered;
     };
-    const lines = String(text).replace(/\\n/g, '\n').replace(/\r\n?/g, '\n').split('\n');
+    const lines = String(text).replace(/\\n(?![a-zA-Z])/g, '\n').replace(/\r\n?/g, '\n').split('\n');
     let html = '';
     const lists = [];
     const closeList = () => {
@@ -9311,7 +9312,7 @@ var _alloFixStructuralFoundations = function (html, options) {
   if (_wanted('page-title') && /<head[\s>]/i.test(out) && !/<title\b(?:[^>"']|"[^"]*"|'[^']*')*>[^<]+<\/title\s*>/i.test(out)) {
     var headingMatch = out.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i) || out.match(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/i);
     var titleText = headingMatch ? _plain(headingMatch[1]).slice(0, 240) : '';
-    if (titleText) _changed('page-title', out.replace(/<\/head>/i, '<title>' + _textEsc(titleText) + '</title>\n</head>'), 'Derived the page title from an existing heading.');
+    if (titleText) _changed('page-title', out.replace(/<\/head>/i, () => '<title>' + _textEsc(titleText) + '</title>\n</head>'), 'Derived the page title from an existing heading.');
   }
 
   // Promote an existing heading only when its text exactly matches the existing title.
@@ -9509,7 +9510,7 @@ function _redactDocHtml(html, targets, opts) {
   let doc;
   try { doc = new DOMParser().parseFromString(String(html == null ? '' : html), 'text/html'); }
   catch (_) { const _re0 = { html: String(html == null ? '' : html), count: 0, redacted: [] }; return _re0; }
-  const root = doc.body || doc.documentElement;
+  const root = doc.documentElement || doc.body;
   let count = 0; const hit = new Set();
   const res = list.map((needle) => new RegExp(needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+'), flags));
   const _scrub = (s) => {
@@ -9561,7 +9562,7 @@ function _redactionLeaks(html, targets) {
   let hay = '';
   try {
     const doc = new DOMParser().parseFromString(String(html == null ? '' : html), 'text/html');
-    hay = ((doc.body || doc.documentElement || {}).textContent) || '';
+    hay = ((doc.documentElement || doc.body || {}).textContent) || '';
     // Re-scan EVERY attribute value (not just alt/title/aria-label) so PII surviving in
     // href / value / placeholder / content / data-* etc. is never vouched "clean". Skip
     // data: blobs (base64 — no readable PII and they bloat the haystack).
@@ -17516,13 +17517,33 @@ var createDocPipeline = function(deps) {
         warnLog('[SurgicalThenAI] WARNING: ' + lostFigTokens.length + ' image placeholder figure(s) were dropped by AI — recovering originals');
         // Re-insert lost figures before </body> so users can re-attach.
         const recovered = lostFigTokens.map(tok => figStripped.map[tok]).join('\n');
-        if (reassembled.includes('</body>')) reassembled = reassembled.replace('</body>', recovered + '\n</body>');
+        if (reassembled.includes('</body>')) reassembled = reassembled.replace('</body>', () => recovered + '\n</body>');
         else reassembled = reassembled + '\n' + recovered;
       }
     } catch (e) { warnLog('[SurgicalThenAI] figure-recovery threw:', e); }
     warnLog('[SurgicalThenAI] Done: ' + surgicalFixCount + ' surgical fixes, ' + geminiPassCount + ' Gemini passes, ' + rejectedChunks + ' rejected chunks');
     return { html: reassembled, surgicalFixCount: surgicalFixCount, geminiPassCount: geminiPassCount, rejectedChunks: rejectedChunks };
   };
+
+  const TIER2_RULE_IDS = new Set([
+    'image-alt',
+    'image-redundant-alt',
+    'color-contrast',
+    'link-name',
+    'button-name',
+    'label',
+    'td-headers-attr',
+    'th-has-data-cells',
+    'scope-attr-valid',
+    'list',
+    'listitem',
+    'definition-list',
+    'dlitem',
+    'aria-valid-attr',
+    'aria-valid-attr-value',
+    'aria-allowed-attr',
+    'empty-heading',
+  ]);
 
   const clusterAxeViolationsByAncestor = (htmlContent, axeResult) => {
     if (!axeResult || typeof DOMParser === 'undefined') return [];
@@ -36754,7 +36775,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           var footerPat2 = [/(<p[^>]*>.*?(?:copyright|©|\u00a9|generated|created|source:|author:).*?<\/p>)\s*<\/main>/i];
           for (var fp2 = 0; fp2 < footerPat2.length; fp2++) {
             var fm2 = accessibleHtml.match(footerPat2[fp2]);
-            if (fm2) { accessibleHtml = accessibleHtml.replace(fm2[0], '</main>\n<footer role="contentinfo">' + fm2[1] + '</footer>'); aiFixCount++; break; }
+            if (fm2) { accessibleHtml = accessibleHtml.replace(fm2[0], () => '</main>\n<footer role="contentinfo">' + fm2[1] + '</footer>'); aiFixCount++; break; }
           }
         }
 
@@ -38268,9 +38289,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
               _recoveredFigures +
               '\n</section>';
             if (accessibleHtml.includes('</main>')) {
-              accessibleHtml = accessibleHtml.replace('</main>', recoverySection + '\n</main>');
+              accessibleHtml = accessibleHtml.replace('</main>', () => recoverySection + '\n</main>');
             } else if (accessibleHtml.includes('</body>')) {
-              accessibleHtml = accessibleHtml.replace('</body>', recoverySection + '\n</body>');
+              accessibleHtml = accessibleHtml.replace('</body>', () => recoverySection + '\n</body>');
             } else {
               accessibleHtml = accessibleHtml + '\n' + recoverySection;
             }
@@ -48488,19 +48509,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       if (!text) return '';
       const headingOffset = Math.max(0, (Number(opts && opts.minHeadingLevel) || 1) - 1);
       const headingLevel = (base) => Math.min(6, base + headingOffset);
-      // Fix literal \n characters that sometimes come from AI responses or JSON parsing
-      let processedText = String(text).replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"');
-      // Strip JSON wrapper artifacts (e.g., ["\n\n...\n"] from malformed responses)
-      if (processedText.startsWith('["') || processedText.startsWith('[ "')) {
-        processedText = processedText.replace(/^\s*\[\s*"/, '').replace(/"\s*\]\s*$/, '');
-      }
-      processedText = processedText.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
+      // Extract [[CHART:{...}]] blocks before unescaping literal \n/\t/\" so chart JSON stays valid,
+      // and guard \n/\t with (?![a-zA-Z]) so LaTeX commands (\times, \theta, \neq, \text, \to) survive intact.
+      let processedText = String(text);
       const chartTokens = [];
       processedText = processedText.replace(/\[\[CHART:\s*(\{[\s\S]*?\})\s*\]\]/gi, (_, jsonBody) => {
           const tok = '\u0000CHART' + chartTokens.length + '\u0000';
           chartTokens.push(_renderChartBlock(jsonBody));
           return '\n' + tok + '\n';
       });
+      processedText = processedText.replace(/\\n\\n/g, '\n\n').replace(/\\n(?![a-z])/g, '\n').replace(/\\t(?![a-zA-Z])/g, '\t').replace(/\\"/g, '"');
+      // Strip JSON wrapper artifacts (e.g., ["\n\n...\n"] from malformed responses)
+      if (processedText.startsWith('["') || processedText.startsWith('[ "')) {
+        processedText = processedText.replace(/^\s*\[\s*"/, '').replace(/"\s*\]\s*$/, '');
+      }
+      processedText = processedText.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
       const isRtl = isRtlLang(leveledTextLanguage);
       const align = isRtl ? 'right' : 'left';
       const _safeMdUrl = (u) => { const v = String(u == null ? '' : u).trim(); return /^(https?:|mailto:|tel:|resource:|#|\/|\.)/i.test(v) ? v.replace(/"/g, '&quot;') : '#'; };
@@ -48912,9 +48935,22 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (!gItem || gItem.isSelected === false) return;
               if (gItem.term) termMap.set(String(gItem.term).toLowerCase(), gItem);
               if (leveledTextLanguage !== 'English' && gItem.translations && gItem.translations[leveledTextLanguage]) {
-                  const transString = String(gItem.translations[leveledTextLanguage]);
-                  const possibleTerm = (transString.includes(':') ? transString.split(':')[0] : transString).trim();
-                  if (possibleTerm.length > 1) {
+                  const rawVal = gItem.translations[leveledTextLanguage];
+                  let transString = '';
+                  let possibleTerm = '';
+                  if (rawVal && typeof rawVal === 'object' && !Array.isArray(rawVal)) {
+                      transString = typeof rawVal.text === 'string' ? rawVal.text.trim() : (typeof rawVal.translation === 'string' ? rawVal.translation.trim() : '');
+                      possibleTerm = (typeof rawVal.term === 'string' ? rawVal.term.trim() : (typeof rawVal.word === 'string' ? rawVal.word.trim() : ''));
+                      if (!possibleTerm && transString) {
+                          const sp = transString.search(/[:：]/);
+                          possibleTerm = (sp >= 0 ? transString.slice(0, sp) : transString).trim();
+                      }
+                  } else if (typeof rawVal === 'string') {
+                      transString = rawVal.trim();
+                      const sp = transString.search(/[:：]/);
+                      possibleTerm = (sp >= 0 ? transString.slice(0, sp) : transString).trim();
+                  }
+                  if (possibleTerm && (possibleTerm.length > 1 || /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u0e00-\u0e7f]/.test(possibleTerm))) {
                       termMap.set(possibleTerm.toLowerCase(), gItem);
                       canonicalByEntry.set(gItem, possibleTerm);
                   }
@@ -49016,9 +49052,23 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               let transWord = '';
               let transInfo = '';
               if (leveledTextLanguage !== 'English' && gItem.translations && gItem.translations[leveledTextLanguage]) {
-                  const rawTr = String(gItem.translations[leveledTextLanguage]).trim();
-                  transWord = (rawTr.includes(':') ? rawTr.split(':')[0] : rawTr).trim();
-                  transInfo = rawTr;
+                  const rawVal = gItem.translations[leveledTextLanguage];
+                  if (rawVal && typeof rawVal === 'object' && !Array.isArray(rawVal)) {
+                      const objText = typeof rawVal.text === 'string' ? rawVal.text.trim() : (typeof rawVal.translation === 'string' ? rawVal.translation.trim() : '');
+                      const objTerm = typeof rawVal.term === 'string' ? rawVal.term.trim() : (typeof rawVal.word === 'string' ? rawVal.word.trim() : '');
+                      const objDef = typeof rawVal.def === 'string' ? rawVal.def.trim() : (typeof rawVal.definition === 'string' ? rawVal.definition.trim() : (typeof rawVal.meaning === 'string' ? rawVal.meaning.trim() : ''));
+                      transInfo = objText || [objTerm, objDef].filter(Boolean).join(': ');
+                      if (objTerm) transWord = objTerm;
+                      else if (transInfo) {
+                          const sp = transInfo.search(/[:：]/);
+                          transWord = (sp >= 0 ? transInfo.slice(0, sp) : transInfo).trim();
+                      }
+                  } else if (typeof rawVal === 'string') {
+                      const rawTr = rawVal.trim();
+                      const sp = rawTr.search(/[:：]/);
+                      transWord = (sp >= 0 ? rawTr.slice(0, sp) : rawTr).trim();
+                      transInfo = rawTr;
+                  }
               }
               const infoParts = [];
               if (eng) infoParts.push(eng);
@@ -49028,7 +49078,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (!infoText) return;
               termMap.set(eng.toLowerCase(), gItem);
               labelMap.set(gItem, infoText);
-              if (transWord && transWord.length > 1) termMap.set(transWord.toLowerCase(), gItem);
+              if (transWord && (transWord.length > 1 || /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u0e00-\u0e7f]/.test(transWord))) termMap.set(transWord.toLowerCase(), gItem);
           });
           const sortedTerms = Array.from(termMap.keys()).sort((a, b) => b.length - a.length);
           if (sortedTerms.length === 0) return passageHtml;
@@ -49039,7 +49089,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           let pat;
           try {
               const br = [];
-              if (bound.length) br.push('(?<![\\p{L}\\p{N}])(?:' + bound.join('|') + ')(?![\\p{L}\\p{N}])');
+              if (bound.length) br.push('(?<![\\p{L}\\p{M}\\p{N}])(?:' + bound.join('|') + ')(?![\\p{L}\\p{M}\\p{N}])');
               if (sub.length) br.push('(?:' + sub.join('|') + ')');
               pat = new RegExp('(' + br.join('|') + ')', 'giu');
           } catch (_) {
@@ -52161,6 +52211,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <p><strong>${t('simplified.level_estimate_label')}:</strong> ${readingLevelDisplay}</p>
                       <p><strong>${t('output.analysis_accuracy')}:</strong> ${escape(source.accuracy?.rating)} - ${escape(reason)}</p>
                       <p><strong>${t('output.analysis_concepts')}:</strong> ${reportList(report.concepts, source.concepts).join(', ')}</p>
+                      ${Array.isArray(source.vocabulary) && source.vocabulary.length ? `<p><strong>${(t('output.analysis_vocabulary') && t('output.analysis_vocabulary') !== 'output.analysis_vocabulary') ? t('output.analysis_vocabulary') : 'Key Vocabulary'}:</strong> ${source.vocabulary.map(v => escape(String(v || ''))).filter(Boolean).join(', ')}</p>` : ''}
                       <p><strong>${t('output.analysis_grammar')}:</strong> ${reportList(selectedGrammar, source.grammar).join('; ')}</p>
                   </div>
                   <div class="analysis-original-source" dir="${direction(text(source.sourceLanguage || item.config?.language))}" style="margin-top:15px; color: #475569;">${parseMarkdownToHTML(publicSource)}</div>
@@ -53209,7 +53260,8 @@ function projectStudentGuideData(data, mode) {
           const renderHeader = (key) => {
               const translated = t(`lesson_headers.${modeKey}.${key}`);
               if (currentUiLanguage !== 'English') {
-                  const english = UI_STRINGS.lesson_headers[modeKey][key];
+                  const _uiStrings = (typeof window !== 'undefined' && (window.UI_STRINGS || window.AlloModules?.UiStrings)) || null;
+                  const english = _uiStrings?.lesson_headers?.[modeKey]?.[key] || '';
                   if (english && translated !== english) {
                       return `${translated} <span style="font-weight:400; font-size:0.9em; opacity:0.7; margin-left: 4px;">(${english})</span>`;
                   }
@@ -54839,6 +54891,9 @@ function projectStudentGuideData(data, mode) {
           : '';
         const rid = _escAttr(item && item.id ? item.id : ('resource-' + idx));
         let wrappedHtml = String(html || '');
+        if (typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicHtml === 'function') {
+          wrappedHtml = window.__alloBionicHtml(wrappedHtml, { lang: (item && item.language) || leveledTextLanguage || '' });
+        }
         const leadingStylesMatch = wrappedHtml.match(/^\s*((?:<style(?:\s[^>]*)?>[\s\S]*?<\/style>\s*)+)/i);
         if (leadingStylesMatch) {
           const leadingStyles = leadingStylesMatch[1];

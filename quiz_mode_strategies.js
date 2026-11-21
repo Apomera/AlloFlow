@@ -163,9 +163,20 @@
     },
   };
 
-  // Helper: safe lookup with back-compat fallback to exit-ticket.
+  var hasOwn = Object.prototype.hasOwnProperty;
+  function stripCtl(s) {
+    return String(s == null ? '' : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+  }
+  function deepFreeze(obj) {
+    if (!obj || typeof obj !== 'object' || Object.isFrozen(obj)) return obj;
+    Object.keys(obj).forEach(function (k) { deepFreeze(obj[k]); });
+    return Object.freeze(obj);
+  }
+  deepFreeze(STRATEGIES);
+
+  // Helper: safe own-key lookup with back-compat fallback to exit-ticket.
   function getStrategy(modeKey) {
-    if (modeKey && STRATEGIES[modeKey]) return STRATEGIES[modeKey];
+    if (typeof modeKey === 'string' && hasOwn.call(STRATEGIES, modeKey)) return STRATEGIES[modeKey];
     return STRATEGIES['exit-ticket'];
   }
 
@@ -200,57 +211,66 @@
   }
 
   function reviewSources(history) {
-    return (Array.isArray(history) ? history : []).filter(function (item) {
+    return (Array.isArray(history) ? history.slice(-500) : []).filter(function (item) {
       return item && item.id && item.type === 'analysis' && item.data && typeof item.data.originalText === 'string' && item.data.originalText.trim();
     }).map(function (item) {
       return {
-        id: String(item.id), title: String(item.title || item.data.title || 'Analyzed lesson').slice(0, 160),
-        date: String(item.createdAt || item.timestamp || item.date || '').slice(0, 80),
+        id: stripCtl(item.id).slice(0, 160), title: stripCtl(item.title || item.data.title || 'Analyzed lesson').slice(0, 160),
+        date: stripCtl(item.createdAt || item.timestamp || item.date || '').slice(0, 80),
         text: item.data.originalText,
-        concepts: Array.from(new Set((Array.isArray(item.data.concepts) ? item.data.concepts : []).filter(function (value) { return typeof value === 'string' && value.trim(); }).map(function (value) { return value.trim().slice(0, 160); }))).slice(0, 30)
+        concepts: Array.from(new Set((Array.isArray(item.data.concepts) ? item.data.concepts.slice(0, 100) : []).filter(function (value) { return typeof value === 'string' && value.trim(); }).map(function (value) { return stripCtl(value).trim().slice(0, 160); }))).slice(0, 30)
       };
     }).reverse().filter(function (item, index, all) { return all.findIndex(function (other) { return other.id === item.id; }) === index; }).slice(0, 40);
   }
 
   function resolveReviewContext(history, ids, concepts) {
-    var selectedIds = Array.isArray(ids) ? ids.map(String).slice(0, 4) : [];
+    var selectedIds = Array.isArray(ids) ? ids.slice(0, 4).map(function (id) { return stripCtl(id).slice(0, 160); }) : [];
     var sources = reviewSources(history).filter(function (source) { return selectedIds.indexOf(source.id) >= 0; });
     var available = Array.from(new Set(sources.reduce(function (all, source) { return all.concat(source.concepts); }, [])));
-    var selected = Array.isArray(concepts) ? concepts.filter(function (concept) { return available.indexOf(concept) >= 0; }) : available;
+    var selected = Array.isArray(concepts) ? concepts.slice(0, 100).filter(function (concept) { return available.indexOf(concept) >= 0; }) : available;
     return { sourceIds: sources.map(function (source) { return source.id; }), sources: sources, concepts: Array.from(new Set(selected)).slice(0, 30), fallback: sources.length === 0 };
   }
 
   function resolveCriteriaCoverage(criteria, selectedIds, count, questions) {
-    var available = (Array.isArray(criteria) ? criteria : []).filter(function (criterion) { return criterion && criterion.id && (criterion.statement || criterion.text); }).map(function (criterion) {
-      return { id: String(criterion.id).slice(0, 160), statement: String(criterion.statement || criterion.text).slice(0, 600) };
+    var available = (Array.isArray(criteria) ? criteria.slice(0, 200) : []).filter(function (criterion) { return criterion && criterion.id && (criterion.statement || criterion.text); }).map(function (criterion) {
+      return { id: stripCtl(criterion.id).slice(0, 160), statement: stripCtl(criterion.statement || criterion.text).slice(0, 600) };
     }).filter(function (criterion, index, all) { return all.findIndex(function (other) { return other.id === criterion.id; }) === index; }).slice(0, 20);
-    var limit = Math.max(0, Math.floor(Number(count) || 0));
+    var parsedCount = Number(count);
+    var limit = Number.isFinite(parsedCount) ? Math.max(0, Math.min(20, Math.floor(parsedCount))) : 0;
     var selected = (Array.isArray(selectedIds) ? available.filter(function (criterion) { return selectedIds.indexOf(criterion.id) >= 0; }) : available).slice(0, limit).map(function (criterion) { return criterion.id; });
-    var covered = selected.filter(function (id) { return (Array.isArray(questions) ? questions : []).some(function (q) { return q && (q.criterionId === id || q.conceptLabel === id); }); });
+    var qList = Array.isArray(questions) ? questions.slice(0, 200) : [];
+    var covered = selected.filter(function (id) { return qList.some(function (q) { return q && (q.criterionId === id || q.conceptLabel === id); }); });
     return { available: available, selectedIds: selected, coveredIds: covered, uncoveredIds: available.filter(function (criterion) { return covered.indexOf(criterion.id) < 0; }).map(function (criterion) { return criterion.id; }) };
   }
 
   function contentReviewSignature(question) {
-    var q = question || {}, shape = {};
-    ['type', 'question', 'options', 'optionFeedback', 'correctAnswer', 'correctAnswers', 'expectedFill', 'acceptableAlternatives', 'expectedAnswer', 'rubric', 'studentCriteria', 'items', 'presentedOrder', 'orderingPrinciple', 'pairs', 'wrongPairIndex', 'correctPartnerForWrong', 'candidatePartners', 'answerOptions', 'evidenceOptions', 'correctEvidence', 'correctValue', 'unit', 'acceptableUnits', 'tolerance', 'numericSettings', 'sourceEvidence', 'transferPrompt', 'transferCriteria'].forEach(function (key) { if (q[key] !== undefined) shape[key] = q[key]; });
-    var value = JSON.stringify(shape), hash = 2166136261;
+    var q = (question && typeof question === 'object') ? question : {}, shape = {};
+    ['type', 'question', 'options', 'optionFeedback', 'correctAnswer', 'correctAnswers', 'expectedFill', 'acceptableAlternatives', 'expectedAnswer', 'rubric', 'studentCriteria', 'items', 'presentedOrder', 'orderingPrinciple', 'pairs', 'wrongPairIndex', 'correctPartnerForWrong', 'candidatePartners', 'answerOptions', 'evidenceOptions', 'correctEvidence', 'correctValue', 'unit', 'acceptableUnits', 'tolerance', 'numericSettings', 'sourceEvidence', 'transferPrompt', 'transferCriteria'].forEach(function (key) {
+      if (hasOwn.call(q, key) && q[key] !== undefined) shape[key] = q[key];
+    });
+    var value;
+    try { value = JSON.stringify(shape) || '{}'; }
+    catch (_) { value = String(shape.type || '') + '|' + String(shape.question || ''); }
+    var hash = 2166136261;
     for (var i = 0; i < value.length; i++) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619); }
     return 'content-' + (hash >>> 0).toString(16);
   }
 
   function normalizeContentReview(raw, questions, sourceText, offset) {
-    var rows = raw && Array.isArray(raw.items) ? raw.items : [];
+    var rows = raw && Array.isArray(raw.items) ? raw.items.slice(0, 500) : [];
     var source = String(sourceText || '').replace(/\s+/g, ' ').trim();
-    return (Array.isArray(questions) ? questions : []).map(function (q, index) {
-      var questionIdx = (offset || 0) + index;
+    var parsedOffset = Number(offset);
+    var baseOffset = Number.isFinite(parsedOffset) && parsedOffset >= 0 ? Math.floor(parsedOffset) : 0;
+    return (Array.isArray(questions) ? questions.slice(0, 200) : []).map(function (q, index) {
+      var questionIdx = baseOffset + index;
       var matches = rows.filter(function (row) { return row && row.questionIdx === questionIdx; });
       var row = matches.length === 1 ? matches[0] : null;
-      var quote = row && typeof row.evidenceQuote === 'string' ? row.evidenceQuote.replace(/\s+/g, ' ').trim().slice(0, 600) : '';
+      var quote = row && typeof row.evidenceQuote === 'string' ? stripCtl(row.evidenceQuote).replace(/\s+/g, ' ').trim().slice(0, 600) : '';
       var quoted = quote.length >= 8 && source.indexOf(quote) >= 0;
       var status = row && ['supported', 'review', 'unclear'].indexOf(row.status) >= 0 ? row.status : 'unclear';
       if (status === 'supported' && !quoted) status = 'unclear';
       return { questionIdx: questionIdx, itemSignature: contentReviewSignature(q), status: status,
-        reason: row && typeof row.reason === 'string' ? row.reason.slice(0, 600) : 'Content review did not return an item result. Teacher review is needed.',
+        reason: row && typeof row.reason === 'string' ? stripCtl(row.reason).slice(0, 600) : 'Content review did not return an item result. Teacher review is needed.',
         evidenceQuote: quoted ? quote : '' };
     });
   }
@@ -269,13 +289,14 @@
       'numeric-response': ['Recalculate the answer independently.', 'Check tolerance, units, conversion policy, and value/unit credit.']
     };
     return { status: 'teacher-review-required', method: 'local-checks', provisional: true, sourceExcerptLimited: false,
-      items: (Array.isArray(questions) ? questions : []).map(function (q, index) {
-        var type = q && q.type || 'mcq';
-        var quote = q && typeof q.sourceEvidence === 'string' ? q.sourceEvidence.replace(/\s+/g, ' ').trim().slice(0, 600) : '';
+      items: (Array.isArray(questions) ? questions.slice(0, 200) : []).map(function (q, index) {
+        var type = (q && typeof q.type === 'string' && q.type) ? q.type : 'mcq';
+        var quote = q && typeof q.sourceEvidence === 'string' ? stripCtl(q.sourceEvidence).replace(/\s+/g, ' ').trim().slice(0, 600) : '';
         var matches = quote.length >= 8 && source.indexOf(quote) >= 0;
+        var list = hasOwn.call(checklists, type) ? checklists[type] : ['Review the prompt, answer key, and instructional fit.'];
         return { questionIdx: index, itemSignature: contentReviewSignature(q), status: matches ? 'review' : 'unclear',
           reason: matches ? 'The quotation occurs in the source. A teacher must still verify that it supports the answer and instructional target.' : 'No matching source quotation was provided. Check the answer and its source support before using this item.',
-          evidenceQuote: matches ? quote : '', checklist: (checklists[type] || ['Review the prompt, answer key, and instructional fit.']).slice() };
+          evidenceQuote: matches ? quote : '', checklist: list.slice() };
       }) };
   }
 

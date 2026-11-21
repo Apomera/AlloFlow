@@ -1721,8 +1721,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     var h = hs === '' ? 0 : Number(hs);
     var m = ms === '' ? 0 : Number(ms);
     var clock = item.answerType === 'clock';
+    if (clock && (hs === '' || h < 0 || h > 23)) return { valid: false, correct: false, misconception: null, answer: NaN };
     var text = h + ':' + pad2(m);
-    function same(hh, mm) { return clock ? (hh % 12 === item.ah % 12 && mm === item.am) : (hh === item.ah && mm === item.am); }
+    function same(hh, mm) {
+      if (!clock) return hh === item.ah && mm === item.am;
+      if (hh < 0 || hh > 23 || mm !== item.am) return false;
+      return hh === item.ah || hh === ((item.ah % 12) || 12);
+    }
     if (same(h, m)) return { valid: true, correct: true, misconception: null, answer: text };
     if (m >= 60 && same(h + Math.floor(m / 60), m % 60)) return { valid: true, correct: false, misconception: 'regroupMinutes', answer: text };
     var traps = Array.isArray(item.traps) ? item.traps : [];
@@ -3789,6 +3794,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var bg = spacing
             ? 'repeating-linear-gradient(90deg,transparent 0,transparent calc(' + spacing + '% - 2px),' + gapColor + ' calc(' + spacing + '% - 2px),' + gapColor + ' ' + spacing + '%)'
             : 'none';
+          var barGloss = isContrast ? bg : (bg === 'none'
+            ? 'linear-gradient(180deg, rgba(255,255,255,0.36) 0%, rgba(255,255,255,0.06) 44%, rgba(15,23,42,0.18) 100%)'
+            : bg + ', linear-gradient(180deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.06) 44%, rgba(15,23,42,0.18) 100%)');
           var tickNote = !plan || !(count > 0) ? '' : plan.ticks < 1
             ? fill(t('stem.unitconvert.bar_less_than_one', 'Less than one whole {unit}, so no ticks.'), { unit: unitShort(unit) })
             : plan.every === 1
@@ -3796,8 +3804,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               : fill(t('stem.unitconvert.bar_ticks_group', 'Each section is {every} {unit}.'), { every: fmtN(plan.every), unit: unitShort(unit) });
           return h('div', { key: index },
             h('p', { className: 'text-sm font-bold text-slate-800 mb-1' }, fmt(count) + ' ' + unitShort(unit)),
-            h('div', { style: { height: 28, border: '2px solid ' + (isDarkUI ? '#94a3b8' : '#475569'), borderRadius: 4, background: gapColor, overflow: 'hidden' } },
-              h('div', { 'data-equal-quantity-bar': index, 'data-tick-every': plan ? plan.every : 0, style: { height: '100%', width: Number(count) === 0 ? '0%' : '100%', background: fillColor, backgroundImage: bg } })
+            h('div', { style: { height: 28, border: '2px solid ' + (isDarkUI ? '#94a3b8' : '#475569'), borderRadius: 6, background: gapColor, overflow: 'hidden', boxShadow: isContrast ? undefined : 'inset 0 2px 4px rgba(15,23,42,0.14), 0 2px 6px rgba(15,23,42,0.08)' } },
+              h('div', { 'data-equal-quantity-bar': index, 'data-tick-every': plan ? plan.every : 0, style: { height: '100%', width: Number(count) === 0 ? '0%' : '100%', background: fillColor, backgroundImage: barGloss, boxShadow: isContrast ? undefined : 'inset 0 1.5px 0 rgba(255,255,255,0.5)' } })
             ),
             tickNote && h('p', { className: 'text-xs text-slate-700 mt-0.5' }, tickNote)
           );
@@ -3810,26 +3818,67 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var smallW = Math.max(1.5, BW / ratio);
           var tickable = ratio <= 60 && Math.abs(ratio - Math.round(ratio)) < 1e-9;
           var ticks = [];
-          if (tickable) for (var i = 1; i < Math.round(ratio); i++) ticks.push(X0 + BW * i / ratio);
+          if (tickable) for (var i = 1; i < Math.round(ratio); i++) ticks.push({ x: X0 + BW * i / ratio, major: (ratio >= 10 && i % 5 === 0) });
           var ratioText = fmtN(ratio);
           var desc = fill(t('stem.unitconvert.size_desc', 'One {big} equals {ratio} {small}. One {small} is 1/{ratio} of a {big}.'), { big: unitShort(cmp.big), small: unitShort(cmp.small), ratio: ratioText });
           var bigFill = isContrast ? '#000000' : (isDarkUI ? '#0b2a33' : '#cffafe');
           var bigStroke = isContrast ? '#ffff00' : (isDarkUI ? '#22d3ee' : '#0e7490');
           var smallFill = isContrast ? '#00ff00' : (isDarkUI ? '#818cf8' : '#4338ca');
           var labelFill = isContrast ? '#ffffff' : (isDarkUI ? '#f1f5f9' : '#0f172a');
+          var drawSmallW = Math.max(4, smallW);
           return h('figure', { className: 'mt-3 rounded-xl border bg-white p-3 shadow-sm', 'data-unit-size-model': true },
             h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
               h('figcaption', { className: 'text-sm font-bold text-slate-800' }, t('stem.unitconvert.size_title', 'How big is one of each unit?')),
               h('span', { className: 'rounded-full px-2.5 py-0.5 text-xs font-extrabold border', style: isContrast ? { background: '#000000', color: '#ffff00', borderColor: '#ffff00', fontVariantNumeric: 'tabular-nums' } : isDarkUI ? { background: '#0b2a33', color: '#67e8f9', borderColor: '#0e7490', fontVariantNumeric: 'tabular-nums' } : { background: '#ecfeff', color: '#0e7490', borderColor: '#a5f3fc', fontVariantNumeric: 'tabular-nums' } }, '1 ' + unitShort(cmp.big) + ' = ' + ratioText + ' ' + unitShort(cmp.small))
             ),
-            h('svg', { viewBox: '0 0 ' + W + ' 88', width: '100%', role: 'img', 'aria-labelledby': 'uc-size-title uc-size-desc', className: 'mt-2', style: { maxWidth: 520, display: 'block' } },
+            h('svg', { viewBox: '0 0 ' + W + ' 92', width: '100%', role: 'img', 'aria-labelledby': 'uc-size-title uc-size-desc', className: 'mt-2', style: { maxWidth: 520, display: 'block' } },
               h('title', { id: 'uc-size-title' }, t('stem.unitconvert.size_title', 'How big is one of each unit?')),
               h('desc', { id: 'uc-size-desc' }, desc),
-              h('rect', { x: X0, y: 8, width: BW, height: 24, rx: 4, fill: bigFill, stroke: bigStroke, strokeWidth: 2 }),
-              ticks.map(function(x, k) { return h('line', { key: k, x1: x, x2: x, y1: 8, y2: 32, stroke: bigStroke, strokeWidth: 1 }); }),
+              !isContrast && h('defs', null,
+                h('linearGradient', { id: 'ucRulerMetal', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: isDarkUI ? '#164e63' : '#ecfeff' }),
+                  h('stop', { offset: '45%', stopColor: bigFill }),
+                  h('stop', { offset: '100%', stopColor: isDarkUI ? '#082f49' : '#a5f3fc' })
+                ),
+                h('linearGradient', { id: 'ucSmallGloss', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: isDarkUI ? '#a5b4fc' : '#6366f1' }),
+                  h('stop', { offset: '48%', stopColor: smallFill }),
+                  h('stop', { offset: '100%', stopColor: isDarkUI ? '#4f46e5' : '#312e81' })
+                )
+              ),
+              // Brushed-steel / borosilicate ruler bar shadow + body
+              !isContrast && h('rect', { x: X0 + 1, y: 10, width: BW, height: 24, rx: 4, fill: 'rgba(15,23,42,0.14)' }),
+              h('rect', { x: X0, y: 8, width: BW, height: 24, rx: 4, fill: isContrast ? bigFill : 'url(#ucRulerMetal)', stroke: bigStroke, strokeWidth: 2 }),
+              !isContrast && h('line', { x1: X0 + 3, y1: 10.5, x2: X0 + BW - 3, y2: 10.5, stroke: 'rgba(255,255,255,0.68)', strokeWidth: 1.5, strokeLinecap: 'round' }),
+              // Vernier graduated tick hierarchy
+              ticks.map(function(tk, k) {
+                return h('line', { key: k, x1: tk.x, x2: tk.x, y1: 8, y2: tk.major ? 32 : 22, stroke: bigStroke, strokeWidth: tk.major ? 1.5 : 1, strokeOpacity: tk.major ? 0.95 : 0.65 });
+              }),
+              // Category-specific metrology instrument detail (borosilicate beaker for volume, steel balance for weight)
+              !isContrast && d.category === 'volume' && h('g', { key: 'vol-beaker', transform: 'translate(258, 42)', 'aria-hidden': 'true' },
+                h('rect', { x: 4, y: 12, width: 22, height: 22, rx: 2, fill: isDarkUI ? 'rgba(34,211,238,0.34)' : 'rgba(14,116,144,0.28)' }),
+                h('ellipse', { cx: 15, cy: 12, rx: 11, ry: 2.5, fill: 'rgba(255,255,255,0.55)', stroke: bigStroke, strokeWidth: 0.9 }),
+                h('rect', { x: 6, y: 6, width: 3.5, height: 26, rx: 1.5, fill: 'rgba(255,255,255,0.48)' }),
+                h('path', { d: 'M 1 4 L 4 7 L 4 34 Q 4 36 6 36 L 24 36 Q 26 36 26 34 L 26 7 L 29 4', fill: 'none', stroke: bigStroke, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                [12, 19, 26].map(function(by) { return h('line', { key: 'bt' + by, x1: 18, y1: by, x2: 24, y2: by, stroke: bigStroke, strokeWidth: 1, strokeOpacity: 0.8 }); })
+              ),
+              !isContrast && d.category === 'weight' && h('g', { key: 'wt-balance', transform: 'translate(254, 46)', 'aria-hidden': 'true' },
+                h('line', { x1: 16, y1: 6, x2: 16, y2: 30, stroke: bigStroke, strokeWidth: 2, strokeLinecap: 'round' }),
+                h('path', { d: 'M 9 32 L 23 32', stroke: bigStroke, strokeWidth: 2.4, strokeLinecap: 'round' }),
+                h('line', { x1: 4, y1: 10, x2: 28, y2: 10, stroke: isDarkUI ? '#e2e8f0' : '#475569', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                h('path', { d: 'M 4 10 L 1 20 L 7 20 Z M 28 10 L 25 20 L 31 20 Z', fill: 'none', stroke: bigStroke, strokeWidth: 1.1 }),
+                h('path', { d: 'M 0 20 Q 4 24 8 20 Z M 24 20 Q 28 24 32 20 Z', fill: smallFill, opacity: 0.85 })
+              ),
+              // Subtle conversion-bridge guide connecting 1 small unit to first division on the big ruler
+              !isContrast && h('path', {
+                d: 'M ' + (X0 + drawSmallW) + ' 55 L ' + (X0 + drawSmallW) + ' 32',
+                fill: 'none', stroke: isDarkUI ? '#818cf8' : '#4f46e5', strokeWidth: 1.2, strokeDasharray: '3 2', strokeOpacity: 0.7
+              }),
               h('text', { x: X0, y: 47, fontSize: 11, fill: labelFill, fontWeight: 700 }, '1 ' + unitShort(cmp.big)),
-              h('rect', { x: X0, y: 55, width: Math.max(4, smallW), height: 20, rx: 3, fill: smallFill }),
-              h('text', { x: Math.min(X0 + Math.max(4, smallW) + 6, W - 64), y: 69, fontSize: 11, fill: labelFill, fontWeight: 700 }, '1 ' + unitShort(cmp.small))
+              !isContrast && h('rect', { x: X0 + 1, y: 57, width: drawSmallW, height: 20, rx: 3, fill: 'rgba(15,23,42,0.16)' }),
+              h('rect', { x: X0, y: 55, width: drawSmallW, height: 20, rx: 3, fill: isContrast ? smallFill : 'url(#ucSmallGloss)', stroke: isContrast ? '#00ff00' : (isDarkUI ? '#c7d2fe' : '#312e81'), strokeWidth: isContrast ? 0 : 1 }),
+              !isContrast && drawSmallW >= 8 && h('line', { x1: X0 + 2, y1: 57.5, x2: X0 + drawSmallW - 2, y2: 57.5, stroke: 'rgba(255,255,255,0.6)', strokeWidth: 1.2, strokeLinecap: 'round' }),
+              h('text', { x: Math.min(X0 + drawSmallW + 6, W - 64), y: 69, fontSize: 11, fill: labelFill, fontWeight: 700 }, '1 ' + unitShort(cmp.small))
             ),
             h('p', { className: 'mt-1 text-sm text-slate-800' }, desc),
             !tickable && h('p', { className: 'text-xs text-slate-700' }, t('stem.unitconvert.size_too_many', 'There are too many small units to draw each one, so only one is shown to scale.'))
@@ -4071,7 +4120,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var blockFill = isContrast ? '#ffff00' : isDarkUI ? '#818cf8' : '#4338ca';
           var edge = isContrast ? '#000000' : isDarkUI ? '#0f172a' : '#ffffff';
           var blocks = [];
-          for (var i = 0; i < n; i++) blocks.push(h('div', { key: i, 'data-stack-block': true, style: { width: (100 / target) + '%', height: '100%', background: blockFill, boxShadow: 'inset -1px 0 0 ' + edge, flexShrink: 0 } }));
+          for (var i = 0; i < n; i++) blocks.push(h('div', { key: i, 'data-stack-block': true, style: { width: (100 / target) + '%', height: '100%', background: blockFill, backgroundImage: isContrast ? undefined : 'linear-gradient(180deg, rgba(255,255,255,0.36) 0%, rgba(255,255,255,0.06) 45%, rgba(15,23,42,0.22) 100%)', boxShadow: isContrast ? ('inset -1px 0 0 ' + edge) : ('inset 0 1.5px 0 rgba(255,255,255,0.5), inset -1px 0 0 ' + edge), flexShrink: 0 } }));
           return h('section', { 'data-unit-stacker': pair.id, 'aria-labelledby': 'uc-stack-title', className: 'mt-3 rounded-xl border border-slate-300 bg-white p-3' },
             h('h4', { id: 'uc-stack-title', className: 'text-sm font-black text-slate-900' },
               fill(t('stem.unitconvert.stack_title', 'Unit stacker: fill 1 {big} with {small} blocks'), { big: big, small: small })),
@@ -4374,31 +4423,55 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             !hideConversionResult && temperatureCheck.valid && unitSizeModel(),
             renderStacker(),
 
-            // Temperature thermometer visual
-            d.category === 'temperature' && temperatureCheck.valid && Number.isFinite(result) && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-4 flex items-center justify-center gap-10', role: 'img', 'aria-label': fill(t('stem.unitconvert.thermo_aria', 'Two thermometers at the same temperature: {value} {from} and {result} {to}.'), { value: formatTemperatureNumber(conversionValue), from: d.fromUnit, result: formatTemperatureNumber(result), to: d.toUnit }) },
+            // Temperature thermometer visual — borosilicate glass tubes with glowing thermal columns & meniscus
+            d.category === 'temperature' && temperatureCheck.valid && Number.isFinite(result) && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-4 flex items-center justify-center gap-8 sm:gap-10', role: 'img', 'aria-label': fill(t('stem.unitconvert.thermo_aria', 'Two thermometers at the same temperature: {value} {from} and {result} {to}.'), { value: formatTemperatureNumber(conversionValue), from: d.fromUnit, result: formatTemperatureNumber(result), to: d.toUnit }) },
               (function() {
                 var toCelsius = function(val, unit) {
                   if (unit === '°C') return val;
                   if (unit === '°F') return (val - 32) * 5 / 9;
                   return val - 273.15;
                 };
-                var thermo = function(val, unit, color) {
+                var thermo = function(val, unit, color, glowHex) {
                   var pct = Math.min(100, Math.max(4, ((toCelsius(val, unit) + 50) / 150) * 100));
                   return h('div', { key: unit + color, className: 'text-center' },
                     h('p', { className: 'text-xs font-bold mb-1.5', style: { color: isContrast ? '#ffff00' : (isDarkUI ? '#f1f5f9' : '#0f172a'), fontVariantNumeric: 'tabular-nums' } }, formatUnitNumber(val, 4) + ' ' + unit),
-                    h('div', { className: 'relative w-9 h-28 mx-auto rounded-full overflow-hidden border-2', style: { background: isContrast ? '#000000' : (isDarkUI ? '#0f172a' : '#e2e8f0'), borderColor: isContrast ? '#ffffff' : (isDarkUI ? '#64748b' : '#94a3b8') } },
-                      h('div', { className: 'absolute bottom-0 left-0 right-0 rounded-full transition-all duration-700', style: { backgroundColor: isContrast ? '#ffff00' : color, height: pct + '%' } }),
-                      [25, 50, 75].map(function(tk) {
-                        return h('div', { key: tk, 'aria-hidden': 'true', style: { position: 'absolute', left: 0, right: 0, bottom: tk + '%', height: 1, background: isContrast ? '#ffffff' : 'rgba(15,23,42,0.22)' } });
+                    h('div', { className: 'relative w-10 h-32 mx-auto rounded-full overflow-hidden border-2', style: {
+                      background: isContrast ? '#000000' : (isDarkUI ? 'linear-gradient(90deg, #0f172a 0%, #1e293b 45%, #0f172a 100%)' : 'linear-gradient(90deg, #cbd5e1 0%, #f8fafc 42%, #e2e8f0 100%)'),
+                      borderColor: isContrast ? '#ffffff' : (isDarkUI ? '#64748b' : '#94a3b8'),
+                      boxShadow: isContrast ? undefined : 'inset 2px 0 4px rgba(255,255,255,0.65), inset -2px 0 4px rgba(15,23,42,0.16), 0 4px 10px rgba(15,23,42,0.14)'
+                    } },
+                      // Glowing liquid thermal column
+                      h('div', { className: 'absolute bottom-0 left-1 right-1 rounded-t-full transition-all duration-700', style: {
+                        backgroundColor: isContrast ? '#ffff00' : color,
+                        backgroundImage: isContrast ? undefined : ('linear-gradient(90deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.08) 38%, rgba(15,23,42,0.22) 100%)'),
+                        boxShadow: isContrast ? undefined : ('0 0 12px ' + glowHex + ', inset 0 2px 3px rgba(255,255,255,0.65)'),
+                        height: pct + '%'
+                      } }),
+                      // Borosilicate glass vertical specular reflection streak
+                      !isContrast && h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 6, bottom: 6, left: 4, width: 4, borderRadius: 999, background: 'linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.16))', pointerEvents: 'none' } }),
+                      // Fine etched laboratory graduation ticks (major + minor)
+                      [12.5, 25, 37.5, 50, 62.5, 75, 87.5].map(function(tk, idx) {
+                        var isMajor = idx % 2 === 1;
+                        return h('div', { key: tk, 'aria-hidden': 'true', style: { position: 'absolute', left: isMajor ? 0 : '50%', right: 0, bottom: tk + '%', height: isMajor ? 1.5 : 1, background: isContrast ? '#ffffff' : (isDarkUI ? 'rgba(241,245,249,0.42)' : 'rgba(15,23,42,0.34)'), pointerEvents: 'none' } });
                       })
                     ),
-                    h('div', { className: 'w-9 h-9 rounded-full mx-auto mt-1 border-2', style: { backgroundColor: isContrast ? '#ffff00' : color, borderColor: isContrast ? '#ffffff' : 'transparent' } })
+                    // Sculpted spherical glass bulb with specular catchlight & thermal glow
+                    h('div', { className: 'relative w-11 h-11 rounded-full mx-auto -mt-2 border-2', style: {
+                      backgroundColor: isContrast ? '#ffff00' : color,
+                      backgroundImage: isContrast ? undefined : 'radial-gradient(circle at 32% 28%, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.18) 30%, transparent 52%, rgba(15,23,42,0.34) 100%)',
+                      borderColor: isContrast ? '#ffffff' : (isDarkUI ? '#94a3b8' : '#64748b'),
+                      boxShadow: isContrast ? undefined : ('0 0 14px ' + glowHex + ', 0 4px 10px rgba(15,23,42,0.22)')
+                    } })
                   );
                 };
                 return [
-                  thermo(conversionValue, d.fromUnit, isDarkUI ? '#22d3ee' : '#0e7490'),
-                  h('span', { key: 'arr', className: 'text-2xl mt-8', style: { color: isContrast ? '#ffff00' : (isDarkUI ? '#cbd5e1' : '#475569') }, 'aria-hidden': 'true' }, '→'),
-                  thermo(result, d.toUnit, isDarkUI ? '#a5b4fc' : '#4338ca')
+                  thermo(conversionValue, d.fromUnit, isDarkUI ? '#22d3ee' : '#0891b2', 'rgba(34,211,238,0.55)'),
+                  h('svg', { key: 'arr', width: 44, height: 34, viewBox: '0 0 44 34', className: 'mt-4 shrink-0', 'aria-hidden': 'true' },
+                    h('path', { d: 'M 4 22 Q 22 4 38 20', fill: 'none', stroke: isContrast ? '#ffff00' : (isDarkUI ? '#38bdf8' : '#0e7490'), strokeWidth: isContrast ? 2.5 : 6, strokeOpacity: isContrast ? 1 : 0.16, strokeLinecap: 'round' }),
+                    h('path', { d: 'M 4 22 Q 22 4 38 20', fill: 'none', stroke: isContrast ? '#ffff00' : (isDarkUI ? '#67e8f9' : '#0e7490'), strokeWidth: 2.2, strokeLinecap: 'round', strokeDasharray: '4 2.5' }),
+                    h('path', { d: 'M 33 13 L 40 21 L 31 22', fill: 'none', stroke: isContrast ? '#ffff00' : (isDarkUI ? '#67e8f9' : '#0e7490'), strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+                  ),
+                  thermo(result, d.toUnit, isDarkUI ? '#a5b4fc' : '#4f46e5', 'rgba(129,140,248,0.55)')
                 ];
               })()
             ),
@@ -4620,19 +4693,23 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('svg', { viewBox: '0 0 ' + W + ' 96', width: '100%', role: 'img', 'aria-labelledby': 'uc-nl-title uc-nl-desc', style: { maxWidth: 520 } },
               h('title', { id: 'uc-nl-title' }, t('stem.unitconvert.numberline_title', 'Elapsed time on a number line')),
               h('desc', { id: 'uc-nl-desc' }, desc),
-              h('line', { x1: X0 - 8, x2: X0 + XW + 8, y1: Y, y2: Y, stroke: ink, strokeWidth: 2 }),
-              points.map(function(m, k) {
-                var x = xAt(m);
-                return h('g', { key: 'p' + k },
-                  h('line', { x1: x, x2: x, y1: Y - 6, y2: Y + 6, stroke: ink, strokeWidth: 2 }),
-                  h('text', { x: x, y: Y + 22, fontSize: 10, fontWeight: 700, fill: ink, textAnchor: k === 0 ? 'start' : k === points.length - 1 ? 'end' : 'middle' }, hideEnd && k === points.length - 1 ? '?' : formatClock(m)));
-              }),
+              h('line', { x1: X0 - 8, x2: X0 + XW + 8, y1: Y, y2: Y, stroke: ink, strokeWidth: 2.2, strokeLinecap: 'round' }),
               jumps.map(function(j, k) {
                 var x1 = xAt(j.from), x2 = xAt(j.to);
                 var mid = (x1 + x2) / 2;
                 return h('g', { key: 'j' + k },
-                  h('path', { d: 'M ' + x1 + ' ' + (Y - 4) + ' Q ' + mid + ' ' + (Y - 40) + ' ' + x2 + ' ' + (Y - 4), fill: 'none', stroke: arc, strokeWidth: 2.5 }),
-                  h('text', { x: mid, y: Y - 26, fontSize: 10, fontWeight: 700, fill: arc, textAnchor: 'middle' }, '+' + durationText(j.d)));
+                  !isContrast && h('path', { d: 'M ' + x1 + ' ' + (Y - 4) + ' Q ' + mid + ' ' + (Y - 40) + ' ' + x2 + ' ' + (Y - 4), fill: 'none', stroke: arc, strokeWidth: 6, strokeOpacity: 0.16, strokeLinecap: 'round' }),
+                  h('path', { d: 'M ' + x1 + ' ' + (Y - 4) + ' Q ' + mid + ' ' + (Y - 40) + ' ' + x2 + ' ' + (Y - 4), fill: 'none', stroke: arc, strokeWidth: 2.5, strokeLinecap: 'round' }),
+                  h('path', { d: 'M ' + (x2 - 5) + ' ' + (Y - 11) + ' L ' + x2 + ' ' + (Y - 4) + ' L ' + (x2 - 6) + ' ' + (Y - 4), fill: 'none', stroke: arc, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                  h('text', { x: mid, y: Y - 27, fontSize: 10, fontWeight: 700, fill: arc, textAnchor: 'middle' }, '+' + durationText(j.d)));
+              }),
+              points.map(function(m, k) {
+                var x = xAt(m);
+                return h('g', { key: 'p' + k },
+                  h('line', { x1: x, x2: x, y1: Y - 6, y2: Y + 6, stroke: ink, strokeWidth: 2 }),
+                  !isContrast && h('circle', { cx: x, cy: Y, r: 6, fill: arc, fillOpacity: 0.18 }),
+                  h('circle', { cx: x, cy: Y, r: 3, fill: arc, stroke: isDarkUI ? '#0f172a' : '#ffffff', strokeWidth: 1.2 }),
+                  h('text', { x: x, y: Y + 22, fontSize: 10, fontWeight: 700, fill: ink, textAnchor: k === 0 ? 'start' : k === points.length - 1 ? 'end' : 'middle' }, hideEnd && k === points.length - 1 ? '?' : formatClock(m)));
               })
             ),
             h('ol', { className: 'mt-1 space-y-0.5 text-xs text-slate-800', 'aria-label': t('stem.unitconvert.numberline_jumps', 'Jumps on the number line') },
@@ -5651,28 +5728,115 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             if (isMetricPrefixHidden()) { cancelMetricPrefixFrame(); return; }
             var labels = mpLabelsRef.current || { exampleText: 'Example: {example}', footerText: '', examples: {} };
             var t = reducedMotion ? 8 : (performance.now() - start) / 1000;
-            c2.fillStyle = '#0c1a2e';
+            var hasLin = typeof c2.createLinearGradient === 'function';
+            var hasRad = typeof c2.createRadialGradient === 'function';
+            var hasPath = typeof c2.beginPath === 'function' && typeof c2.stroke === 'function' && typeof c2.moveTo === 'function' && typeof c2.lineTo === 'function';
+            var hasArc = hasPath && typeof c2.arc === 'function' && typeof c2.fill === 'function';
+            var hasQuad = hasPath && typeof c2.quadraticCurveTo === 'function';
+            // Studio metrology slate backdrop with subtle radial spotlight
+            if (hasRad) {
+              var bgG = c2.createRadialGradient(W * 0.5, H * 0.35, 16, W * 0.5, H * 0.5, Math.max(W, H) * 0.78);
+              bgG.addColorStop(0, '#132a47');
+              bgG.addColorStop(0.58, '#0c1a2e');
+              bgG.addColorStop(1, '#060e1a');
+              c2.fillStyle = bgG;
+            } else {
+              c2.fillStyle = '#0c1a2e';
+            }
             c2.fillRect(0, 0, W, H);
             var cellW = (W - 30) / prefixes.length;
             var blink = Math.floor((t * 0.5) % prefixes.length);
+            var baseIdx = 4; // 10^0 base unit
+            var tileY = H * 0.28;
+            var tileH = H * 0.44;
+            // Fine vernier brushed-steel graduation ticks along top rail
+            if (hasPath) {
+              c2.save();
+              c2.strokeStyle = 'rgba(148,163,184,0.20)';
+              c2.lineWidth = 1;
+              c2.beginPath(); c2.moveTo(15, tileY - 5); c2.lineTo(W - 15, tileY - 5); c2.stroke();
+              for (var vt = 0; vt <= 36; vt++) {
+                var vx = 15 + (W - 30) * (vt / 36);
+                var vh = vt % 4 === 0 ? 6 : 3;
+                c2.beginPath(); c2.moveTo(vx, tileY - 5); c2.lineTo(vx, tileY - 5 - vh); c2.stroke();
+              }
+              c2.restore();
+            }
+            // Luminous animated scale-conversion bridge arc from base (10^0) to active prefix
+            if (hasQuad && blink !== baseIdx) {
+              var xBase = 15 + baseIdx * cellW + (cellW - 4) / 2;
+              var xCur = 15 + blink * cellW + (cellW - 4) / 2;
+              var xMid = (xBase + xCur) / 2;
+              var arcY = Math.max(8, tileY - Math.min(34, 16 + Math.abs(blink - baseIdx) * 4.5));
+              var curColor = prefixes[blink].color;
+              c2.save();
+              c2.strokeStyle = curColor;
+              c2.globalAlpha = 0.22;
+              c2.lineWidth = 6;
+              c2.beginPath(); c2.moveTo(xBase, tileY - 2); c2.quadraticCurveTo(xMid, arcY, xCur, tileY - 2); c2.stroke();
+              c2.globalAlpha = 0.92;
+              c2.lineWidth = 1.8;
+              if (typeof c2.setLineDash === 'function') c2.setLineDash([4, 3]);
+              c2.beginPath(); c2.moveTo(xBase, tileY - 2); c2.quadraticCurveTo(xMid, arcY, xCur, tileY - 2); c2.stroke();
+              if (typeof c2.setLineDash === 'function') c2.setLineDash([]);
+              // Traveling photon pulse along the conversion bridge arc (gated on !reducedMotion)
+              if (hasArc) {
+                var u = reducedMotion ? 0.5 : ((t * 0.9) % 1);
+                var inv = 1 - u;
+                var bx = inv * inv * xBase + 2 * inv * u * xMid + u * u * xCur;
+                var by = inv * inv * (tileY - 2) + 2 * inv * u * arcY + u * u * (tileY - 2);
+                c2.shadowColor = curColor; c2.shadowBlur = 10;
+                c2.fillStyle = '#ffffff';
+                c2.beginPath(); c2.arc(bx, by, 3, 0, Math.PI * 2); c2.fill();
+              }
+              c2.restore();
+            }
             prefixes.forEach(function(p, i) {
               var x = 15 + i * cellW;
-              var y = H * 0.2;
+              var y = tileY;
               var sel = i === blink;
+              var tileW = cellW - 4;
+              // Ambient glow halo behind active prefix tile
+              if (sel && hasRad && hasArc) {
+                c2.save();
+                var glowG = c2.createRadialGradient(x + tileW / 2, y + tileH / 2, 4, x + tileW / 2, y + tileH / 2, Math.max(tileW, tileH) * 0.85);
+                glowG.addColorStop(0, p.color);
+                glowG.addColorStop(1, 'rgba(12,26,46,0)');
+                c2.globalAlpha = 0.28;
+                c2.fillStyle = glowG;
+                c2.beginPath(); c2.arc(x + tileW / 2, y + tileH / 2, Math.max(tileW, tileH) * 0.85, 0, Math.PI * 2); c2.fill();
+                c2.restore();
+              }
               c2.save();
               if (sel) { c2.shadowColor = p.color; c2.shadowBlur = 16; }
               c2.fillStyle = p.color;
-              c2.globalAlpha = sel ? 1 : 0.7;
-              c2.fillRect(x, y, cellW - 4, H * 0.5);
+              c2.globalAlpha = sel ? 1 : 0.72;
+              c2.fillRect(x, y, tileW, tileH);
+              // Translucent glass top-bevel highlight on each scale tile
+              if (hasLin) {
+                var gSheen = c2.createLinearGradient(x, y, x, y + tileH);
+                gSheen.addColorStop(0, 'rgba(255,255,255,0.42)');
+                gSheen.addColorStop(0.35, 'rgba(255,255,255,0.08)');
+                gSheen.addColorStop(1, 'rgba(15,23,42,0.24)');
+                c2.fillStyle = gSheen;
+                c2.fillRect(x, y, tileW, tileH);
+              }
               c2.restore();
-              c2.fillStyle = sel ? '#0c1a2e' : (p.exp === 0 ? '#0c1a2e' : 'rgba(0,0,0,0.7)');
+              if (typeof c2.strokeRect === 'function') {
+                c2.save();
+                c2.strokeStyle = sel ? '#ffffff' : 'rgba(255,255,255,0.22)';
+                c2.lineWidth = sel ? 1.5 : 0.8;
+                c2.strokeRect(x + 0.5, y + 0.5, tileW - 1, tileH - 1);
+                c2.restore();
+              }
+              c2.fillStyle = sel ? '#0c1a2e' : (p.exp === 0 ? '#0c1a2e' : 'rgba(0,0,0,0.75)');
               c2.font = 'bold 14px serif';
               c2.textAlign = 'center';
-              c2.fillText(p.sym || '—', x + cellW / 2, y + 22);
+              c2.fillText(p.sym || '—', x + cellW / 2, y + 20);
               c2.font = 'bold 9px sans-serif';
-              c2.fillText(p.name, x + cellW / 2, y + 38);
+              c2.fillText(p.name, x + cellW / 2, y + 35);
               c2.font = 'bold 10px monospace';
-              c2.fillText('10' + String(p.exp).split('').map(function(ch) { return ch === '-' ? '⁻' : '⁰¹²³⁴⁵⁶⁷⁸⁹'.charAt(Number(ch)); }).join(''), x + cellW / 2, y + 54);
+              c2.fillText('10' + String(p.exp).split('').map(function(ch) { return ch === '-' ? '⁻' : '⁰¹²³⁴⁵⁶⁷⁸⁹'.charAt(Number(ch)); }).join(''), x + cellW / 2, y + 50);
             });
             // Selected info
             var cur = prefixes[blink];
@@ -5690,7 +5854,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               'giga': 'Gm = Sun-Earth',
               'tera': 'Tm = Jupiter-Sun'
             };
-            c2.fillText(labels.exampleText.split('{example}').join(labels.examples[cur.name] || examples[cur.name] || ''), W / 2, H - 24);
+            c2.fillText(labels.exampleText.split('{example}').join(labels.examples[cur.name] || examples[cur.name] || ''), W / 2, H - 22);
             c2.fillStyle = 'rgba(0,0,0,0.85)';
             c2.fillRect(8, H - 14, W - 16, 12);
             c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#93c5fd'; c2.textAlign = 'center';

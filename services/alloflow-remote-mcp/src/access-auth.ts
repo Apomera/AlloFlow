@@ -195,7 +195,7 @@ function consentPage(
 </form>
 <p class="privacy">AlloFlow stores a pseudonymous account identifier. It does not store your email address in document-job metadata.</p>`,
     nonce,
-    `alloflow_consent=${csrf}; Max-Age=${AUTH_STATE_TTL_SECONDS}; Path=/authorize; Secure; HttpOnly; SameSite=Strict`,
+    `__Host-alloflow_consent=${csrf}; Max-Age=${AUTH_STATE_TTL_SECONDS}; Path=/; Secure; HttpOnly; SameSite=Strict`,
   );
 }
 
@@ -206,9 +206,17 @@ async function beginAuthorization(
   assertAccessConfiguration(env);
   const config = getPilotConfig(env);
   const helpers = oauthHelpers(env);
-  const oauthRequest = (await helpers.parseAuthRequest(
-    request,
-  )) as AuthRequest as OAuthAuthorizationRequest;
+  let oauthRequest: OAuthAuthorizationRequest;
+  try {
+    oauthRequest = (await helpers.parseAuthRequest(
+      request,
+    )) as AuthRequest as OAuthAuthorizationRequest;
+  } catch (error) {
+    if (error instanceof PilotError) {
+      throw error;
+    }
+    throw new PilotError("invalid_request", 400);
+  }
   const scopes = validateAuthRequest(oauthRequest, config.origin);
   const client = await helpers.lookupClient(oauthRequest.clientId);
   if (!client || !env.OAUTH_KV) {
@@ -253,7 +261,7 @@ async function continueAuthorization(
   );
   const form = new URLSearchParams(formText);
   const consentId = form.get("consent_id");
-  const csrf = cookieValue(request, "alloflow_consent");
+  const csrf = cookieValue(request, "__Host-alloflow_consent");
   if (
     typeof consentId !== "string" ||
     !/^[A-Za-z0-9_-]{43}$/u.test(consentId) ||
@@ -310,11 +318,11 @@ async function continueAuthorization(
   });
   redirectHeaders.append(
     "Set-Cookie",
-    "alloflow_consent=; Max-Age=0; Path=/authorize; Secure; HttpOnly; SameSite=Strict",
+    "__Host-alloflow_consent=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Strict",
   );
   redirectHeaders.append(
     "Set-Cookie",
-    `alloflow_oauth_state=${browserBind}; Max-Age=${AUTH_STATE_TTL_SECONDS}; Path=/oauth/callback; Secure; HttpOnly; SameSite=Lax`,
+    `__Host-alloflow_oauth_state=${browserBind}; Max-Age=${AUTH_STATE_TTL_SECONDS}; Path=/; Secure; HttpOnly; SameSite=Lax`,
   );
   return new Response(null, {
     status: 302,
@@ -347,6 +355,7 @@ async function exchangeAccessCode(
     signal: AbortSignal.timeout(15_000),
   });
   if (!response.ok) {
+    await response.body?.cancel().catch(() => undefined);
     throw new PilotError("institution_login_failed", 401);
   }
   return readJson<AccessTokenResponse>(response);
@@ -524,7 +533,7 @@ async function finishAuthorization(
   ) {
     throw new PilotError("authorization_state_invalid", 400);
   }
-  const browserBind = cookieValue(request, "alloflow_oauth_state");
+  const browserBind = cookieValue(request, "__Host-alloflow_oauth_state");
   const stored = await env.OAUTH_KV.get<StoredAccessState>(
     stateKey("access", state),
     "json",
@@ -569,7 +578,7 @@ async function finishAuthorization(
   const callbackHeaders = noStoreHeaders({ Location: redirectTo });
   callbackHeaders.append(
     "Set-Cookie",
-    "alloflow_oauth_state=; Max-Age=0; Path=/oauth/callback; Secure; HttpOnly; SameSite=Lax",
+    "__Host-alloflow_oauth_state=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Lax",
   );
   return new Response(null, {
     status: 302,
@@ -699,22 +708,31 @@ async function refreshAccessToken(
       description: "Institution authorization must be renewed.",
     });
   }
-  const response = await fetch(env.ACCESS_TOKEN_URL as string, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/json",
-    },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      refresh_token: principal.upstreamRefreshToken,
-      client_id: env.ACCESS_CLIENT_ID as string,
-      client_secret: env.ACCESS_CLIENT_SECRET as string,
-    }),
-    redirect: "error",
-    signal: AbortSignal.timeout(15_000),
-  });
+  let response: Response;
+  try {
+    response = await fetch(env.ACCESS_TOKEN_URL as string, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: principal.upstreamRefreshToken,
+        client_id: env.ACCESS_CLIENT_ID as string,
+        client_secret: env.ACCESS_CLIENT_SECRET as string,
+      }),
+      redirect: "error",
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch {
+    throw new OAuthError("temporarily_unavailable", {
+      description: "Institution identity service is temporarily unavailable.",
+      statusCode: 503,
+    });
+  }
   if (!response.ok) {
+    await response.body?.cancel().catch(() => undefined);
     if (response.status === 400 || response.status === 401) {
       throw new OAuthError("invalid_grant", {
         description: "Institution authorization must be renewed.",
@@ -725,8 +743,25 @@ async function refreshAccessToken(
       statusCode: 503,
     });
   }
-  const token = await readJson<AccessTokenResponse>(response);
-  const { subject } = await verifyAccessIdToken(env, token.id_token);
+  let token: AccessTokenResponse;
+  let subject: string;
+  try {
+    token = await readJson<AccessTokenResponse>(response);
+    ({ subject } = await verifyAccessIdToken(env, token.id_token));
+  } catch (error) {
+    if (error instanceof OAuthError) {
+      throw error;
+    }
+    if (error instanceof PilotError && error.code === "institution_identity_invalid") {
+      throw new OAuthError("invalid_grant", {
+        description: "Institution authorization must be renewed.",
+      });
+    }
+    throw new OAuthError("temporarily_unavailable", {
+      description: "Institution identity service is temporarily unavailable.",
+      statusCode: 503,
+    });
+  }
   if (!constantTimeEqual(subject, principal.upstreamSubject)) {
     throw new OAuthError("invalid_grant", {
       description: "Institution authorization must be renewed.",
@@ -745,7 +780,14 @@ export async function revalidateAccessGrant(
   options: TokenExchangeCallbackOptions,
   env: PilotEnv,
 ): Promise<TokenExchangeCallbackResult> {
-  assertAccessConfiguration(env);
+  try {
+    assertAccessConfiguration(env);
+  } catch {
+    throw new OAuthError("temporarily_unavailable", {
+      description: "Institution identity service is temporarily unavailable.",
+      statusCode: 503,
+    });
+  }
   const principal = principalFromProps(options.props);
   if (!(await principalIsBoundToEnvironment(principal, env))) {
     throw new OAuthError("invalid_grant", {

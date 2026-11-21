@@ -629,29 +629,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   .replace('{pct}', String(readinessPct)),
                 style: { width: '100%', height: 'auto', display: 'block' }
               },
+                /* Aquatic depth gradient & sunlit caustic sheen defs */
+                !isContrast && h('defs', null,
+                  h('linearGradient', { id: 'sw-tl-water', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#0c2740' }),
+                    h('stop', { offset: '55%', stopColor: '#081a2c' }),
+                    h('stop', { offset: '100%', stopColor: '#04101d' })),
+                  h('linearGradient', { id: 'sw-tl-ray', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#7dd3fc', stopOpacity: 0.16 }),
+                    h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: 0 }))),
                 /* Backdrop */
-                h('rect', { x: 0, y: 0, width: 640, height: 124, rx: 12, fill: isContrast ? '#000000' : '#081826', stroke: isContrast ? '#ffff00' : '#1e3a5f', strokeWidth: 1.4 }),
+                h('rect', { x: 0, y: 0, width: 640, height: 124, rx: 12, fill: isContrast ? '#000000' : 'url(#sw-tl-water)', stroke: isContrast ? '#ffff00' : '#1e3a5f', strokeWidth: 1.4 }),
+                !isContrast && h('g', { opacity: 0.85 },
+                  h('polygon', { points: '42,0 116,0 74,124 14,124', fill: 'url(#sw-tl-ray)' }),
+                  h('polygon', { points: '205,0 282,0 236,124 176,124', fill: 'url(#sw-tl-ray)' }),
+                  h('path', { d: 'M16,42 Q90,34 166,42 T320,42 T436,42', fill: 'none', stroke: '#38bdf8', strokeWidth: 1, opacity: 0.22 }),
+                  h('path', { d: 'M24,78 Q106,70 188,78 T352,78 T434,78', fill: 'none', stroke: '#7dd3fc', strokeWidth: 0.9, opacity: 0.15 })),
                 /* Left: 1-1-10 Cold Water Survival Rule Visual */
                 h('text', { x: 18, y: 24, fill: isContrast ? '#ffff00' : '#7dd3fc', fontSize: 11, fontWeight: 900, fontFamily: 'system-ui, sans-serif', letterSpacing: '0.06em' },
                   'COLD-WATER 1-1-10 SURVIVAL TIMELINE'),
                 h('text', { x: 432, y: 24, textAnchor: 'end', fill: isContrast ? '#ffffff' : '#94a3b8', fontSize: 10, fontWeight: 700, fontFamily: 'system-ui, sans-serif' },
                   'Float first \u00B7 Control breath'),
-                /* Timeline track */
+                /* Timeline track + subtle luminous glow underlay */
                 h('line', { x1: 32, y1: 62, x2: 416, y2: 62, stroke: isContrast ? '#ffff00' : '#334155', strokeWidth: 4, strokeLinecap: 'round' }),
+                !isContrast && h('line', { x1: 32, y1: 62, x2: 158, y2: 62, stroke: '#38bdf8', strokeWidth: 9, opacity: 0.18, strokeLinecap: 'round' }),
+                !isContrast && h('line', { x1: 158, y1: 62, x2: 296, y2: 62, stroke: '#f59e0b', strokeWidth: 9, opacity: 0.16, strokeLinecap: 'round' }),
+                !isContrast && h('line', { x1: 296, y1: 62, x2: 416, y2: 62, stroke: '#ef4444', strokeWidth: 9, opacity: 0.16, strokeLinecap: 'round' }),
                 h('line', { x1: 32, y1: 62, x2: 158, y2: 62, stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 4, strokeLinecap: 'round' }),
                 h('line', { x1: 158, y1: 62, x2: 296, y2: 62, stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 4, strokeLinecap: 'round' }),
                 h('line', { x1: 296, y1: 62, x2: 416, y2: 62, stroke: isContrast ? '#ff6b6b' : '#ef4444', strokeWidth: 4, strokeLinecap: 'round' }),
                 /* Node 1: 1 MIN */
+                !isContrast && h('circle', { cx: 64, cy: 62, r: 20, fill: '#38bdf8', opacity: 0.16 }),
                 h('circle', { cx: 64, cy: 62, r: 14, fill: isContrast ? '#000000' : '#0369a1', stroke: isContrast ? '#00ffff' : '#7dd3fc', strokeWidth: 2 }),
                 h('text', { x: 64, y: 66, textAnchor: 'middle', fill: '#ffffff', fontSize: 10.5, fontWeight: 900, fontFamily: 'system-ui, sans-serif' }, '1m'),
                 h('text', { x: 64, y: 92, textAnchor: 'middle', fill: isContrast ? '#00ffff' : '#e0f2fe', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'Control Breath'),
                 h('text', { x: 64, y: 107, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#94a3b8', fontSize: 10, fontFamily: 'system-ui, sans-serif' }, 'Gasp reflex passes'),
                 /* Node 2: 10 MIN */
+                !isContrast && h('circle', { cx: 224, cy: 62, r: 20, fill: '#f59e0b', opacity: 0.15 }),
                 h('circle', { cx: 224, cy: 62, r: 14, fill: isContrast ? '#000000' : '#b45309', stroke: isContrast ? '#ffff00' : '#fde68a', strokeWidth: 2 }),
                 h('text', { x: 224, y: 66, textAnchor: 'middle', fill: '#ffffff', fontSize: 10.5, fontWeight: 900, fontFamily: 'system-ui, sans-serif' }, '10m'),
                 h('text', { x: 224, y: 92, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#fef3c7', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'Self-Rescue Window'),
                 h('text', { x: 224, y: 107, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#94a3b8', fontSize: 10, fontFamily: 'system-ui, sans-serif' }, 'Meaningful motion'),
                 /* Node 3: 1 HR */
+                !isContrast && h('circle', { cx: 378, cy: 62, r: 20, fill: '#ef4444', opacity: 0.15 }),
                 h('circle', { cx: 378, cy: 62, r: 14, fill: isContrast ? '#000000' : '#991b1b', stroke: isContrast ? '#ff6b6b' : '#fca5a5', strokeWidth: 2 }),
                 h('text', { x: 378, y: 66, textAnchor: 'middle', fill: '#ffffff', fontSize: 10.5, fontWeight: 900, fontFamily: 'system-ui, sans-serif' }, '1hr'),
                 h('text', { x: 378, y: 92, textAnchor: 'middle', fill: isContrast ? '#ff6b6b' : '#fecaca', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'HELP + Float'),
@@ -1107,33 +1127,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       function svgFrame(opts) {
         // opts: { phase, body: [{type, ...}], arrows: [{x1,y1,x2,y2,color,label}], caption }
         var W = 160, H = 90;
+        var uid = 'sw-' + String(opts.caption || opts.phase || 'f').replace(/[^a-z0-9]/gi, '').slice(0, 12);
+        var surfY = H * 0.52;
         var children = [];
-        // Water surface
+        // Translucent sunlit water volume + diagonal caustic shafts + shimmering caustic floor ripples
+        if (!isContrast) {
+          children.push(h('rect', { key: 'water', x: 0, y: surfY, width: W, height: H - surfY, fill: 'url(#' + uid + '-w)' }));
+          children.push(h('polygon', { key: 'ray1', points: '24,' + surfY + ' 54,' + surfY + ' 38,' + H + ' 8,' + H, fill: 'url(#' + uid + '-r)' }));
+          children.push(h('polygon', { key: 'ray2', points: '88,' + surfY + ' 124,' + surfY + ' 106,' + H + ' 72,' + H, fill: 'url(#' + uid + '-r)' }));
+          children.push(h('path', { key: 'caust1', d: 'M10,74 Q36,68 62,74 T114,74 T154,74', fill: 'none', stroke: isDark ? '#7dd3fc' : '#ffffff', strokeWidth: 1.1, opacity: isDark ? 0.24 : 0.42 }));
+          children.push(h('path', { key: 'caust2', d: 'M18,83 Q48,78 78,83 T138,83', fill: 'none', stroke: isDark ? '#38bdf8' : '#e0f2fe', strokeWidth: 0.9, opacity: isDark ? 0.2 : 0.36 }));
+          // Laminar hydrodynamic flow streamlines & trailing vortex eddies + rising bubble trails
+          children.push(h('path', { key: 'lam1', d: 'M14,57 Q52,53 86,58 T148,57', fill: 'none', stroke: isDark ? '#38bdf8' : '#0284c7', strokeWidth: 0.9, strokeDasharray: '6 4', opacity: 0.34 }));
+          children.push(h('path', { key: 'lam2', d: 'M18,67 Q58,64 96,68 T146,66', fill: 'none', stroke: isDark ? '#67e8f9' : '#0369a1', strokeWidth: 0.85, strokeDasharray: '5 4', opacity: 0.28 }));
+          children.push(h('path', { key: 'eddy1', d: 'M122,63 A5,5 0 1,1 117,68', fill: 'none', stroke: isDark ? '#a5f3fc' : '#0284c7', strokeWidth: 0.95, opacity: 0.45 }));
+          children.push(h('path', { key: 'eddy2', d: 'M134,58 A4,4 0 1,0 130,62', fill: 'none', stroke: isDark ? '#7dd3fc' : '#0369a1', strokeWidth: 0.85, opacity: 0.36 }));
+          [[112, 64, 1.5], [118, 57, 1.2], [126, 52, 1.6], [104, 69, 1.1], [44, 62, 1.2]].forEach(function(bb, bbi) {
+            children.push(h('circle', { key: 'bub' + bbi, cx: bb[0], cy: bb[1], r: bb[2], fill: 'rgba(224,242,254,0.45)', stroke: '#bae6fd', strokeWidth: 0.5 }));
+          });
+        } else {
+          children.push(h('rect', { key: 'water', x: 0, y: surfY, width: W, height: H - surfY, fill: '#000000', opacity: 0.5 }));
+        }
+        // Dual-pass glowing water meniscus surface wave
+        children.push(h('path', { key: 'waveGlow',
+          d: 'M0,' + surfY + ' Q' + (W * 0.25) + ',' + (surfY - 4) + ' ' + (W * 0.5) + ',' + surfY + ' T' + W + ',' + surfY,
+          stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 3.4, fill: 'none', opacity: isContrast ? 0.35 : 0.28 }));
         children.push(h('path', { key: 'wave',
-          d: 'M0,' + (H * 0.55) + ' Q' + (W * 0.25) + ',' + (H * 0.5) + ' ' + (W * 0.5) + ',' + (H * 0.55) + ' T' + W + ',' + (H * 0.55),
-          stroke: '#0284c7', strokeWidth: 1, fill: 'none', opacity: 0.6, style: { filter: 'drop-shadow(0 0 2px rgba(56,189,248,0.9))' } }));
-        children.push(h('rect', { key: 'water', x: 0, y: H * 0.55, width: W, height: H * 0.45, fill: '#0c4a6e', opacity: 0.18 }));
-        // Body parts
+          d: 'M0,' + surfY + ' Q' + (W * 0.25) + ',' + (surfY - 4) + ' ' + (W * 0.5) + ',' + surfY + ' T' + W + ',' + surfY,
+          stroke: isContrast ? '#00ffff' : (isDark ? '#bae6fd' : '#0284c7'), strokeWidth: 1.3, fill: 'none', opacity: 0.88 }));
+        // Body parts with subtle silhouette contrast halo
         (opts.body || []).forEach(function(b, bi) {
           if (b.type === 'line') children.push(h('line', { key: 'b' + bi, x1: b.x1, y1: b.y1, x2: b.x2, y2: b.y2, stroke: b.color || '#f0f9ff', strokeWidth: b.width || 2.5, strokeLinecap: 'round' }));
-          else if (b.type === 'circle') children.push(h('circle', { key: 'b' + bi, cx: b.cx, cy: b.cy, r: b.r, fill: b.color || '#f0f9ff', stroke: b.stroke || 'none', strokeWidth: b.strokeWidth || 0 }));
-          else if (b.type === 'ellipse') children.push(h('ellipse', { key: 'b' + bi, cx: b.cx, cy: b.cy, rx: b.rx, ry: b.ry, fill: b.color || '#f0f9ff', stroke: b.stroke || 'none', strokeWidth: b.strokeWidth || 0, transform: b.transform || '' }));
+          else if (b.type === 'circle') children.push(h('circle', { key: 'b' + bi, cx: b.cx, cy: b.cy, r: b.r, fill: b.color || '#f0f9ff', stroke: b.stroke || (isDark ? 'rgba(8,24,38,0.6)' : 'rgba(15,23,42,0.28)'), strokeWidth: b.strokeWidth || 0.7 }));
+          else if (b.type === 'ellipse') children.push(h('ellipse', { key: 'b' + bi, cx: b.cx, cy: b.cy, rx: b.rx, ry: b.ry, fill: b.color || '#f0f9ff', stroke: b.stroke || (isDark ? 'rgba(8,24,38,0.6)' : 'rgba(15,23,42,0.28)'), strokeWidth: b.strokeWidth || 0.7, transform: b.transform || '' }));
           else if (b.type === 'path') children.push(h('path', { key: 'b' + bi, d: b.d, stroke: b.color || '#f0f9ff', strokeWidth: b.width || 2.5, fill: b.fill || 'none', strokeLinecap: 'round' }));
         });
-        // Arrows
+        // Glowing thrust / buoyancy / drag force arrows
         (opts.arrows || []).forEach(function(a, ai) {
-          children.push(h('line', { key: 'a' + ai, x1: a.x1, y1: a.y1, x2: a.x2, y2: a.y2, stroke: a.color || '#fbbf24', strokeWidth: 1.5, markerEnd: 'url(#wsArrow)' }));
-          if (a.label) children.push(h('text', { key: 'al' + ai, x: (a.x1 + a.x2) / 2 + (a.labelDx || 4), y: (a.y1 + a.y2) / 2 + (a.labelDy || -3), fontSize: 7, fill: a.color || '#fbbf24', fontFamily: 'system-ui, sans-serif' }, a.label));
+          var aCol = a.color || '#fbbf24';
+          if (!isContrast) {
+            children.push(h('line', { key: 'ag' + ai, x1: a.x1, y1: a.y1, x2: a.x2, y2: a.y2, stroke: aCol, strokeWidth: 4.5, strokeLinecap: 'round', opacity: 0.28 }));
+          }
+          children.push(h('line', { key: 'a' + ai, x1: a.x1, y1: a.y1, x2: a.x2, y2: a.y2, stroke: aCol, strokeWidth: 1.7, strokeLinecap: 'round', markerEnd: 'url(#' + uid + '-arr)' }));
+          if (a.label) {
+            var lx = (a.x1 + a.x2) / 2 + (a.labelDx || 4);
+            var ly = (a.y1 + a.y2) / 2 + (a.labelDy || -3);
+            children.push(h('text', { key: 'al' + ai, x: lx, y: ly, fontSize: 7.5, fontWeight: 700, fill: isContrast ? '#ffff00' : (isDark ? aCol : '#0f172a'), fontFamily: 'system-ui, sans-serif' }, a.label));
+          }
         });
         return h('div', { style: { textAlign: 'center' } },
           h('svg', {
             width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
             role: 'img',
             'aria-label': __alloT('stem.swimlab.stroke_phase_diagram', 'Swimming stroke phase diagram') + (opts.caption ? ': ' + opts.caption : ''),
-            style: { background: isDark || isContrast ? 'linear-gradient(180deg, #10283c 0%, #0a1d2e 55%, #06141f 100%)' : 'linear-gradient(180deg, #e0f2fe 0%, #bae6fd 55%, #7dd3fc 100%)', borderRadius: 6, border: '1px solid ' + T.border }
+            style: { background: isContrast ? '#000000' : (isDark ? 'linear-gradient(180deg, #0d2438 0%, #091b2c 52%, #05111d 100%)' : 'linear-gradient(180deg, #e0f2fe 0%, #bae6fd 52%, #7dd3fc 100%)'), borderRadius: 8, border: '1px solid ' + T.border }
           },
             h('defs', null,
-              h('marker', { id: 'wsArrow', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto', markerUnits: 'strokeWidth' },
+              h('linearGradient', { id: uid + '-w', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: isDark ? '#0284c7' : '#38bdf8', stopOpacity: isDark ? 0.34 : 0.28 }),
+                h('stop', { offset: '100%', stopColor: isDark ? '#082f49' : '#0284c7', stopOpacity: isDark ? 0.62 : 0.42 })),
+              h('linearGradient', { id: uid + '-r', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#e0f2fe', stopOpacity: isDark ? 0.24 : 0.42 }),
+                h('stop', { offset: '100%', stopColor: '#7dd3fc', stopOpacity: 0 })),
+              h('marker', { id: uid + '-arr', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto', markerUnits: 'strokeWidth' },
                 h('path', { d: 'M0,0 L0,6 L6,3 z', fill: '#fbbf24' }))
             ),
             children
@@ -1608,6 +1664,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               { k: 'Length', v: 'Most rip currents end just past the breaking waves (50-100 yards offshore). They do NOT pull you "out to sea" forever.' },
               { k: 'Frequency', v: 'Cause about 80% of beach lifeguard rescues per the US Lifesaving Association (USLA).' }
             ]
+          ),
+
+          /* Hydrodynamic Rip Current & Parallel Escape Vector Diagram */
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 12, marginBottom: 14 } },
+            h('svg', {
+              viewBox: '0 0 560 190',
+              role: 'img',
+              'aria-label': __alloT('stem.swimlab.rip_hydrodynamics_diagram', 'Top-down rip current hydrodynamics diagram showing breaking surf bars on left and right, a narrow dark-blue offshore rip neck flowing out to sea, and a green parallel-to-shore escape path returning safely through the breakers.'),
+              style: { width: '100%', maxWidth: 560, height: 'auto', display: 'block', margin: '0 auto', borderRadius: 8 }
+            },
+              h('defs', null,
+                h('linearGradient', { id: 'sw-rip-sea', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#082f49' }),
+                  h('stop', { offset: '58%', stopColor: isContrast ? '#000000' : '#0e7490' }),
+                  h('stop', { offset: '84%', stopColor: isContrast ? '#000000' : '#22d3ee', stopOpacity: 0.75 }),
+                  h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#d6b685' })),
+                h('radialGradient', { id: 'sw-rip-head', cx: '50%', cy: '50%', r: '50%' },
+                  h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0.42 }),
+                  h('stop', { offset: '100%', stopColor: '#0284c7', stopOpacity: 0 })),
+                h('marker', { id: 'sw-rip-out', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto' },
+                  h('path', { d: 'M0,0 L0,6 L6,3 z', fill: isContrast ? '#ff6b6b' : '#fb7185' })),
+                h('marker', { id: 'sw-rip-esc', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto' },
+                  h('path', { d: 'M0,0 L0,6 L6,3 z', fill: isContrast ? '#00ff66' : '#34d399' }))),
+              h('rect', { x: 0, y: 0, width: 560, height: 190, rx: 8, fill: isContrast ? '#000000' : 'url(#sw-rip-sea)', stroke: isContrast ? '#ffff00' : '#1e3a5f', strokeWidth: 1.2 }),
+              /* Sandy shoreline at bottom */
+              h('path', { d: 'M0,158 Q140,152 280,158 T560,154 L560,190 L0,190 Z', fill: isContrast ? '#111111' : '#c8a978' }),
+              /* Breaking surf wave crests on left & right sandbars (with calm dark rip gap in center) */
+              [78, 104, 130].map(function(wy, wi) {
+                return h('g', { key: 'brk' + wi },
+                  h('path', { d: 'M14,' + wy + ' Q78,' + (wy - 5) + ' 142,' + wy + ' T224,' + wy, fill: 'none', stroke: isContrast ? '#ffffff' : 'rgba(240,249,255,0.82)', strokeWidth: 3 - wi * 0.4, strokeLinecap: 'round' }),
+                  h('path', { d: 'M336,' + wy + ' Q400,' + (wy - 5) + ' 466,' + wy + ' T546,' + wy, fill: 'none', stroke: isContrast ? '#ffffff' : 'rgba(240,249,255,0.82)', strokeWidth: 3 - wi * 0.4, strokeLinecap: 'round' }));
+              }),
+              /* Deeper rip neck channel & mushrooming rip head */
+              !isContrast && h('ellipse', { cx: 280, cy: 36, rx: 66, ry: 24, fill: 'url(#sw-rip-head)' }),
+              h('path', { d: 'M242,155 Q252,102 248,50 Q280,32 312,50 Q308,102 318,155 Z', fill: isContrast ? 'none' : 'rgba(7,34,56,0.52)', stroke: isContrast ? '#00ffff' : 'rgba(125,211,252,0.35)', strokeWidth: 1.2, strokeDasharray: '4 4' }),
+              /* Offshore feeder & neck streamlines (coral/red flow outward) */
+              h('path', { d: 'M180,146 Q256,144 268,118 L268,46', fill: 'none', stroke: isContrast ? '#ff6b6b' : '#fb7185', strokeWidth: 2.2, markerEnd: 'url(#sw-rip-out)' }),
+              h('path', { d: 'M380,146 Q304,144 292,118 L292,46', fill: 'none', stroke: isContrast ? '#ff6b6b' : '#fb7185', strokeWidth: 2.2, markerEnd: 'url(#sw-rip-out)' }),
+              h('path', { d: 'M280,142 L280,34', fill: 'none', stroke: isContrast ? '#ff6b6b' : '#fda4af', strokeWidth: 4.5, opacity: 0.25 }),
+              h('path', { d: 'M280,142 L280,34', fill: 'none', stroke: isContrast ? '#ff6b6b' : '#fb7185', strokeWidth: 2.2, markerEnd: 'url(#sw-rip-out)' }),
+              /* Glowing emerald parallel escape vector & angled return to shore */
+              h('path', { d: 'M280,96 L388,96 Q430,98 446,148', fill: 'none', stroke: isContrast ? '#00ff66' : '#34d399', strokeWidth: 6, opacity: 0.26, strokeLinecap: 'round' }),
+              h('path', { d: 'M280,96 L388,96 Q430,98 446,148', fill: 'none', stroke: isContrast ? '#00ff66' : '#34d399', strokeWidth: 2.6, strokeLinecap: 'round', markerEnd: 'url(#sw-rip-esc)' }),
+              h('circle', { cx: 280, cy: 96, r: 4.5, fill: '#fef08a', stroke: '#0f172a', strokeWidth: 1.2 }),
+              /* Clean labels */
+              h('text', { x: 280, y: 18, textAnchor: 'middle', fill: isContrast ? '#00ffff' : '#bae6fd', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'RIP HEAD (current dissipates offshore)'),
+              h('text', { x: 104, y: 60, textAnchor: 'middle', fill: '#f8fafc', fontSize: 10, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, 'Breaking waves'),
+              h('text', { x: 422, y: 84, textAnchor: 'middle', fill: isContrast ? '#00ff66' : '#6ee7b7', fontSize: 10.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'Swim parallel → exit'),
+              h('text', { x: 280, y: 178, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#1e293b', fontSize: 11, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'SHORELINE / BEACH')
+            )
           ),
 
           sectionHeader('👁️', 'How to spot one from shore'),
@@ -2843,11 +2949,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               h('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
               h('div', { style: { fontSize: 11.5, color: isContrast ? '#ffffff' : '#334155', marginTop: 4 } }, sm.desc)
             ),
-            // Efficiency-vs-stroke-rate curve: efficiency = length·0.5 + kick·0.3 − |rate−50|·0.4,
-            // a tent peaking at rate ≈ 50. Holding length+kick at the current sliders, sweep rate so
-            // the optimum is visible — the "faster isn't better; lengthen the pull" insight made visual.
+            // Live Interactive Hydrodynamic Flow-Tank Visualizer + Efficiency-vs-Stroke-Rate Curve
             (function() {
-              var L = iq.length, K = iq.kick;
+              var L = iq.length, K = iq.kick, R = iq.rate;
               var effAt = function(r) { return L * 0.5 + K * 0.3 - Math.abs(r - 50) * 0.4; };
               var W = 360, Hc = 132, padL = 36, padR = 16, padT = 22, padB = 26;
               var maxE = L * 0.5 + K * 0.3, minE = maxE - 20, span = Math.max(1, maxE - minE);
@@ -2855,17 +2959,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               var py = function(e) { return padT + (1 - (e - minE) / span) * (Hc - padT - padB); };
               var pts = [];
               for (var r = 0; r <= 100; r += 5) pts.push(px(r).toFixed(1) + ',' + py(effAt(r)).toFixed(1));
-              var curE = effAt(iq.rate);
-              return h('svg', { viewBox: '0 0 ' + W + ' ' + Hc, width: '100%', style: { maxWidth: 420, display: 'block', margin: '0 auto 12px', backgroundColor: isContrast ? '#000000' : '#0b1220', borderRadius: 8, border: isContrast ? '2px solid #ffff00' : '1px solid rgba(8,145,178,0.45)' }, role: 'img', 'aria-label': __alloT('stem.swimlab.efficiency_versus_stroke_rate_with_you', 'Efficiency versus stroke rate. With your current length and kick, efficiency peaks at a moderate stroke rate near 50, not at the fastest rate.') },
-                h('line', { x1: padL, y1: padT, x2: padL, y2: Hc - padB, stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 1.2 }),
-                h('line', { x1: padL, y1: Hc - padB, x2: W - padR, y2: Hc - padB, stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 1.2 }),
-                h('line', { x1: px(50), y1: padT, x2: px(50), y2: Hc - padB, stroke: isContrast ? '#00ff66' : '#22c55e', strokeWidth: 1.4, strokeDasharray: '4 3', opacity: 0.85 }),
-                h('text', { x: px(50), y: padT - 6, fill: isContrast ? '#00ff66' : '#4ade80', fontSize: 10.5, fontWeight: 800, textAnchor: 'middle', fontFamily: 'system-ui, sans-serif' }, __alloT('stem.swimlab.optimal_rate', 'optimal rate')),
-                h('polyline', { points: pts.join(' '), fill: 'none', stroke: isContrast ? '#00ffff' : '#67e8f9', strokeWidth: 2.5 }),
-                h('circle', { cx: px(iq.rate), cy: py(curE), r: 5, fill: isContrast ? '#ffff00' : '#fbbf24', stroke: '#000000', strokeWidth: 1.5 }),
-                h('text', { x: Math.max(padL + 16, Math.min(W - padR - 16, px(iq.rate))), y: Math.max(padT + 12, py(curE) - 9), fill: isContrast ? '#ffff00' : '#fde68a', fontSize: 10.5, textAnchor: 'middle', fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'you'),
-                h('text', { x: (padL + W - padR) / 2, y: Hc - 7, fill: isContrast ? '#ffffff' : '#cbd5e1', fontSize: 10.5, fontWeight: 700, textAnchor: 'middle', fontFamily: 'system-ui, sans-serif' }, __alloT('stem.swimlab.stroke_rate', 'Stroke rate \u2192')),
-                h('text', { x: 8, y: padT + 10, fill: isContrast ? '#ffffff' : '#cbd5e1', fontSize: 10, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, 'eff')
+              var curE = effAt(R);
+              var areaPts = px(0).toFixed(1) + ',' + (Hc - padB) + ' ' + pts.join(' ') + ' ' + px(100).toFixed(1) + ',' + (Hc - padB);
+              // Hydrodynamic flow-tank visual metrics driven by sliders
+              var thrustLen = 28 + (L * 0.42 + K * 0.24);
+              var dragLen = 20 + Math.abs(R - 45) * 0.58 + (100 - L) * 0.22;
+              var turb = Math.max(0, Math.min(1, (Math.max(0, R - 45) / 55) * 0.65 + (Math.max(0, 55 - L) / 55) * 0.45));
+              var bubbleCount = Math.max(3, Math.round(3 + (K / 100) * 8 + turb * 4));
+              return h('div', { style: { display: 'grid', gap: 10, marginBottom: 12 } },
+                /* Sunlit Pool Hydrodynamics Tank SVG: caustics, laminar vs turbulent wake eddies, glowing thrust/drag & rising bubbles */
+                h('svg', {
+                  viewBox: '0 0 360 118',
+                  width: '100%',
+                  role: 'img',
+                  'aria-label': __alloT('stem.swimlab.hydrodynamic_flow_tank', 'Hydrodynamic flow tank showing swimmer streamline, thrust arrow, drag arrow, and wake turbulence for current stroke settings.'),
+                  style: { maxWidth: 420, display: 'block', margin: '0 auto', borderRadius: 10, border: isContrast ? '2px solid #ffff00' : '1px solid rgba(56,189,248,0.45)', background: isContrast ? '#000000' : '#061a2b' }
+                },
+                  h('defs', null,
+                    h('linearGradient', { id: 'sw-tank-bg', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#0c3554' }),
+                      h('stop', { offset: '30%', stopColor: '#082740' }),
+                      h('stop', { offset: '100%', stopColor: '#041322' })),
+                    h('linearGradient', { id: 'sw-tank-ray', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#bae6fd', stopOpacity: 0.24 }),
+                      h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: 0 })),
+                    h('marker', { id: 'sw-arr-thr', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto' },
+                      h('path', { d: 'M0,0 L0,6 L6,3 z', fill: isContrast ? '#00ff66' : '#34d399' })),
+                    h('marker', { id: 'sw-arr-drg', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto' },
+                      h('path', { d: 'M0,0 L0,6 L6,3 z', fill: isContrast ? '#ff6b6b' : '#fb923c' }))),
+                  h('rect', { x: 0, y: 0, width: 360, height: 118, fill: isContrast ? '#000000' : 'url(#sw-tank-bg)' }),
+                  /* Sunlit pool water shafts & shimmering caustic floor ripples */
+                  !isContrast && h('g', null,
+                    h('polygon', { points: '38,24 88,24 64,118 14,118', fill: 'url(#sw-tank-ray)' }),
+                    h('polygon', { points: '148,24 206,24 180,118 124,118', fill: 'url(#sw-tank-ray)' }),
+                    h('polygon', { points: '256,24 310,24 288,118 234,118', fill: 'url(#sw-tank-ray)' }),
+                    h('path', { d: 'M12,102 Q62,95 112,102 T212,102 T312,102 T354,102', fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.2, opacity: 0.26 }),
+                    h('path', { d: 'M26,110 Q86,104 146,110 T266,110 T348,110', fill: 'none', stroke: '#38bdf8', strokeWidth: 1, opacity: 0.2 })),
+                  /* Sunlit meniscus surface wave */
+                  h('path', { d: 'M0,24 Q45,19 90,24 T180,24 T270,24 T360,24', fill: 'none', stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 4, opacity: 0.25 }),
+                  h('path', { d: 'M0,24 Q45,19 90,24 T180,24 T270,24 T360,24', fill: 'none', stroke: isContrast ? '#00ffff' : '#bae6fd', strokeWidth: 1.4 }),
+                  /* Laminar streamlines gliding over swimmer -> turbulent wake oscillations behind */
+                  [46, 62, 78].map(function(sy, si) {
+                    var wakeAmp = 2 + turb * 10;
+                    var dStr = 'M338,' + sy + ' Q258,' + (sy + (si === 0 ? -7 : si === 2 ? 7 : 0)) + ' 172,' + sy
+                      + ' Q134,' + (sy - wakeAmp) + ' 96,' + (sy + wakeAmp * 0.85)
+                      + ' Q58,' + (sy - wakeAmp * 0.7) + ' 18,' + (sy + wakeAmp * 0.5);
+                    return h('g', { key: 'st' + si },
+                      !isContrast && h('path', { d: dStr, fill: 'none', stroke: turb > 0.55 ? '#fb923c' : '#38bdf8', strokeWidth: 3.6, opacity: 0.16 }),
+                      h('path', { d: dStr, fill: 'none', stroke: isContrast ? '#00ffff' : (turb > 0.55 ? '#fdba74' : '#7dd3fc'), strokeWidth: 1.3, strokeDasharray: turb > 0.55 ? '5 4' : '12 5', opacity: 0.82 }));
+                  }),
+                  /* Vortex eddies behind kicking feet when turbulence rises */
+                  [0, 1, 2].map(function(ei) {
+                    var ex = 116 - ei * 28, ey = 54 + (ei % 2 === 0 ? -6 : 12);
+                    var er = 4 + turb * 5.5;
+                    return h('path', { key: 've' + ei, d: 'M' + (ex + er) + ',' + ey + ' A' + er + ',' + er + ' 0 1,' + (ei % 2) + ' ' + ex + ',' + (ey + er * 0.85), fill: 'none', stroke: isContrast ? '#ffff00' : (turb > 0.5 ? '#fbbf24' : '#67e8f9'), strokeWidth: 1.2, opacity: 0.28 + turb * 0.55 });
+                  }),
+                  /* Rising translucent bubble trails behind swimmer */
+                  Array.from({ length: bubbleCount }, function(_, bi) {
+                    var bx = 34 + (bi * 19) % 124;
+                    var by = 82 - ((bi * 13) % 52);
+                    var br = 1.4 + (bi % 3) * 0.85;
+                    return h('circle', { key: 'tb' + bi, cx: bx, cy: by, r: br, fill: isContrast ? 'none' : 'rgba(224,242,254,0.42)', stroke: isContrast ? '#00ffff' : '#bae6fd', strokeWidth: 0.7 });
+                  }),
+                  /* Streamlined swimmer silhouette (facing right, gliding smoothly) */
+                  h('ellipse', { cx: 204, cy: 62, rx: 32, ry: 8.5, fill: isContrast ? '#ffffff' : '#fde68a', stroke: '#0c4a6e', strokeWidth: 1.1 }),
+                  h('circle', { cx: 242, cy: 59, r: 6.5, fill: isContrast ? '#ffffff' : '#fde68a', stroke: '#0c4a6e', strokeWidth: 1.1 }),
+                  h('path', { d: 'M234,58 L266,55', stroke: isContrast ? '#ffffff' : '#fef08a', strokeWidth: 3.4, strokeLinecap: 'round' }),
+                  h('path', { d: 'M212,66 Q204,80 190,78', fill: 'none', stroke: isContrast ? '#ffffff' : '#fde68a', strokeWidth: 3.2, strokeLinecap: 'round' }),
+                  h('path', { d: 'M174,61 L142,' + (57 - (K / 100) * 6) + ' M174,64 L144,' + (69 + (K / 100) * 6), stroke: isContrast ? '#ffffff' : '#fde68a', strokeWidth: 3.2, strokeLinecap: 'round' }),
+                  /* Glowing Thrust (right, emerald) vs Drag (left, amber-coral) force arrows */
+                  !isContrast && h('line', { x1: 246, y1: 42, x2: Math.min(348, 246 + thrustLen), y2: 42, stroke: '#34d399', strokeWidth: 5.5, opacity: 0.28, strokeLinecap: 'round' }),
+                  h('line', { x1: 246, y1: 42, x2: Math.min(348, 246 + thrustLen), y2: 42, stroke: isContrast ? '#00ff66' : '#34d399', strokeWidth: 2.2, strokeLinecap: 'round', markerEnd: 'url(#sw-arr-thr)' }),
+                  h('text', { x: 250, y: 35, fill: isContrast ? '#00ff66' : '#6ee7b7', fontSize: 9.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'THRUST'),
+                  !isContrast && h('line', { x1: 162, y1: 42, x2: Math.max(16, 162 - dragLen), y2: 42, stroke: '#fb923c', strokeWidth: 5.5, opacity: 0.28, strokeLinecap: 'round' }),
+                  h('line', { x1: 162, y1: 42, x2: Math.max(16, 162 - dragLen), y2: 42, stroke: isContrast ? '#ff6b6b' : '#fb923c', strokeWidth: 2.2, strokeLinecap: 'round', markerEnd: 'url(#sw-arr-drg)' }),
+                  h('text', { x: Math.max(18, 162 - dragLen), y: 35, fill: isContrast ? '#ff6b6b' : '#fdba74', fontSize: 9.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, turb > 0.5 ? 'TURBULENT DRAG' : 'LAMINAR DRAG'),
+                  h('text', { x: 10, y: 15, fill: isContrast ? '#ffff00' : '#bae6fd', fontSize: 9.5, fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, turb > 0.55 ? 'WAKE: CHOPPY / VORTEX EDDIES' : 'WAKE: STREAMLINED LAMINAR FLOW')
+                ),
+                h('svg', { viewBox: '0 0 ' + W + ' ' + Hc, width: '100%', style: { maxWidth: 420, display: 'block', margin: '0 auto', backgroundColor: isContrast ? '#000000' : '#0b1220', borderRadius: 8, border: isContrast ? '2px solid #ffff00' : '1px solid rgba(8,145,178,0.45)' }, role: 'img', 'aria-label': __alloT('stem.swimlab.efficiency_versus_stroke_rate_with_you', 'Efficiency versus stroke rate. With your current length and kick, efficiency peaks at a moderate stroke rate near 50, not at the fastest rate.') },
+                  !isContrast && h('defs', null,
+                    h('linearGradient', { id: 'sw-eff-fill', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0.34 }),
+                      h('stop', { offset: '100%', stopColor: '#0284c7', stopOpacity: 0.02 }))),
+                  h('line', { x1: padL, y1: padT, x2: padL, y2: Hc - padB, stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 1.2 }),
+                  h('line', { x1: padL, y1: Hc - padB, x2: W - padR, y2: Hc - padB, stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 1.2 }),
+                  !isContrast && h('polygon', { points: areaPts, fill: 'url(#sw-eff-fill)' }),
+                  h('line', { x1: px(50), y1: padT, x2: px(50), y2: Hc - padB, stroke: isContrast ? '#00ff66' : '#22c55e', strokeWidth: 1.4, strokeDasharray: '4 3', opacity: 0.85 }),
+                  h('text', { x: px(50), y: padT - 6, fill: isContrast ? '#00ff66' : '#4ade80', fontSize: 10.5, fontWeight: 800, textAnchor: 'middle', fontFamily: 'system-ui, sans-serif' }, __alloT('stem.swimlab.optimal_rate', 'optimal rate')),
+                  !isContrast && h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 6.5, opacity: 0.22, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                  h('polyline', { points: pts.join(' '), fill: 'none', stroke: isContrast ? '#00ffff' : '#67e8f9', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                  !isContrast && h('circle', { cx: px(R), cy: py(curE), r: 9.5, fill: '#fbbf24', opacity: 0.28 }),
+                  h('circle', { cx: px(R), cy: py(curE), r: 5, fill: isContrast ? '#ffff00' : '#fbbf24', stroke: '#000000', strokeWidth: 1.5 }),
+                  h('text', { x: Math.max(padL + 16, Math.min(W - padR - 16, px(R))), y: Math.max(padT + 12, py(curE) - 9), fill: isContrast ? '#ffff00' : '#fde68a', fontSize: 10.5, textAnchor: 'middle', fontWeight: 800, fontFamily: 'system-ui, sans-serif' }, 'you'),
+                  h('text', { x: (padL + W - padR) / 2, y: Hc - 7, fill: isContrast ? '#ffffff' : '#cbd5e1', fontSize: 10.5, fontWeight: 700, textAnchor: 'middle', fontFamily: 'system-ui, sans-serif' }, __alloT('stem.swimlab.stroke_rate', 'Stroke rate \u2192')),
+                  h('text', { x: 8, y: padT + 10, fill: isContrast ? '#ffffff' : '#cbd5e1', fontSize: 10, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, 'eff')
+                )
               );
             })(),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },

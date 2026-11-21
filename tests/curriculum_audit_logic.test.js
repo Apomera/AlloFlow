@@ -509,4 +509,81 @@ describe('pacing evidence and metadata hygiene', () => {
     expect(text).toMatch(/vivid dreams/);
     expect(text).not.toMatch(/provisional|Readiness|mismatch|Verified against/);
   });
+
+  it('does not fail accessibility for text-only concept sorts and inspects per-card images when present', () => {
+    const textSort = {
+      id: 'cs-text',
+      type: 'concept-sort',
+      data: {
+        categories: [{ id: 'c1', label: 'Living' }, { id: 'c2', label: 'Nonliving' }],
+        items: [{ id: 'i1', content: 'Tree', categoryId: 'c1' }, { id: 'i2', content: 'Rock', categoryId: 'c2' }],
+      },
+    };
+    const textA11y = helpers.computeContentAccessibility([textSort], {}, '5th Grade');
+    expect(textA11y.totalImages).toBe(0);
+    expect(textA11y.altCoveragePct).toBeNull();
+    expect(textA11y.status).toBe('Aligned');
+
+    const visualSort = {
+      id: 'cs-img',
+      type: 'concept-sort',
+      data: {
+        categories: [{ id: 'c1', label: 'Living' }],
+        items: [
+          { id: 'i1', content: 'Tree', categoryId: 'c1', image: 'data:image/png;base64,AAA', imageAlt: 'Green oak tree with broad leaves' },
+          { id: 'i2', content: 'Rock', categoryId: 'c1', image: 'data:image/png;base64,BBB' },
+        ],
+      },
+    };
+    const visualA11y = helpers.computeContentAccessibility([visualSort], {}, '5th Grade');
+    expect(visualA11y.totalImages).toBe(2);
+    expect(visualA11y.imagesWithAlt).toBe(1);
+    expect(visualA11y.altCoveragePct).toBe(50);
+    expect(visualA11y.status).toBe('Not Aligned');
+  });
+
+  it('harvests quiz reflections, reflection DOK levels, and interactive/visual multimodal coverage', () => {
+    const artifacts = [
+      {
+        id: 'q1',
+        type: 'quiz',
+        data: {
+          questions: [{ type: 'mcq', question: 'What is REM?', dok: 1 }],
+          reflections: [
+            { question: 'Evaluate how sleep deprivation alters memory consolidation.', dok: 3 },
+            { prompt: 'Design a sleep hygiene plan for your week.' },
+          ],
+        },
+      },
+      {
+        id: 'cs1',
+        type: 'concept-sort',
+        data: {
+          categories: [{ id: 'c1', label: 'A' }],
+          items: [{ id: 'i1', content: 'Card', categoryId: 'c1' }],
+        },
+      },
+      {
+        id: 'ac1',
+        type: 'anchor-chart',
+        data: { title: 'Sleep Stages', sections: [{ heading: 'REM', body: 'Dreaming stage.' }] },
+      },
+    ];
+    const harvest = helpers.harvestExistingAuditSignals(artifacts);
+    expect(harvest.quizCounts).toEqual({ total: 3, mcq: 1, reflection: 2 });
+    expect(harvest.dokLevels).toEqual([1, 3]);
+    expect(harvest.untaggedQuizStems).toEqual(['Design a sleep hygiene plan for your week.']);
+    expect(harvest.multimodal.interactive).toBe(true);
+    expect(harvest.multimodal.image).toBe(true);
+
+    const textOnlySortHarvest = helpers.harvestExistingAuditSignals([artifacts[1]]);
+    expect(textOnlySortHarvest.multimodal.interactive).toBe(true);
+    expect(textOnlySortHarvest.multimodal.image).toBe(false);
+
+    const accuracy = helpers.computeContentAccuracy({
+      accuracyRatings: [{ rating: 'Medium', reason: 'Check dates', discrepancyCount: 2, verifiedFactCount: 3 }],
+    });
+    expect(accuracy.recommendations.join(' ')).toContain('2 factual discrepancies');
+    expect(accuracy.recommendations.join(' ')).not.toContain('discrepancyies');
+  });
 });

@@ -57,7 +57,7 @@ const ACTIVITY_KEYS = ['id', 'type', 'title', 'content', 'gate', 'assessmentPoli
 const POLICY_KEYS = ['paste'];
 const PASTE_KEYS = ['mode', 'accessibleAlternative', 'accommodationContact'];
 const GATE_KEYS = ['kind', 'threshold'];
-const CONTENT_KEYS = Object.freeze({
+const CONTENT_KEYS = Object.freeze(Object.assign(Object.create(null), {
   read: ['body', 'keyPoints', 'links'],
   quiz: ['questions'],
   reflect: ['prompt'],
@@ -67,7 +67,7 @@ const CONTENT_KEYS = Object.freeze({
   resource: ['resourceType', 'data', 'instructions'],
   persona: ['personaName', 'personaRole', 'scenario', 'rubric', 'minTurns', 'maxTurns'],
   branching: ['start', 'nodes', 'intro'],
-});
+}));
 const QUESTION_KEYS = ['prompt', 'options', 'correctIndex', 'explanation'];
 const LINK_KEYS = ['label', 'url'];
 const MANIFEST_KEYS = ['schema_version', 'kind', 'generated_at', 'entries', 'paths'];
@@ -154,7 +154,7 @@ function stableValue(value, seen = new Set()) {
   let result;
   if (Array.isArray(value)) result = value.map((item) => stableValue(item, seen));
   else {
-    result = {};
+    result = Object.create(null);
     for (const key of Object.keys(value).sort()) result[key] = stableValue(value[key], seen);
   }
   seen.delete(value);
@@ -344,7 +344,10 @@ function strictPdSchemaChecks(mod, checks) {
       addCheck(checks, contentOk, 'schema-content-object', 'schema', activityPath + '.content',
         'Activity content is an object.', 'Activity content must be an object.');
       if (!contentOk) continue;
-      addOnlyKeysCheck(checks, content, CONTENT_KEYS[activity.type] || [], 'schema-content-fields',
+      const allowedContentKeys = typeof activity.type === 'string' && Object.prototype.hasOwnProperty.call(CONTENT_KEYS, activity.type)
+        ? CONTENT_KEYS[activity.type]
+        : [];
+      addOnlyKeysCheck(checks, content, allowedContentKeys, 'schema-content-fields',
         activityPath + '.content', 'Activity content');
 
       const textBounds = {
@@ -699,6 +702,13 @@ function strictManifestSchemaChecks(manifest, checks) {
     addCheck(checks, Number.isInteger(entry.estMinutes) && entry.estMinutes > 0 && entry.estMinutes <= 1440,
       'catalog-entry-duration-bound', 'catalog', base + '.estMinutes',
       'Catalog duration is within the pd-1.0 bound.', 'Catalog duration must be a bounded positive whole number.');
+    if (entry.udlGuidelines !== undefined) {
+      const guidelinesOk = Array.isArray(entry.udlGuidelines)
+        && entry.udlGuidelines.length <= 32
+        && entry.udlGuidelines.every((item) => boundedText(item, 64, true));
+      addCheck(checks, guidelinesOk, 'catalog-entry-udl-guidelines-bound', 'catalog', base + '.udlGuidelines',
+        'Catalog UDL guidelines list is within the pd-1.0 bound.', 'Catalog UDL guidelines must be a bounded list of guideline identifiers.');
+    }
   }
 
   const paths = manifest.paths === undefined ? [] : manifest.paths;
@@ -738,11 +748,36 @@ function strictManifestSchemaChecks(manifest, checks) {
   return checks.filter((item) => item.status === 'fail').length === failuresBefore;
 }
 
+function readBoundedRegularFile(filePath, maxBytes) {
+  const linkStat = fs.lstatSync(filePath);
+  if (linkStat.isSymbolicLink() || !linkStat.isFile()) return { regular: false, buffer: null };
+  const fd = fs.openSync(filePath, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
+  try {
+    const stat = fs.fstatSync(fd);
+    if (!stat.isFile()) return { regular: false, buffer: null };
+    const cap = maxBytes + 1;
+    if (stat.size > maxBytes) {
+      return { regular: true, buffer: Buffer.alloc(cap) };
+    }
+    const buf = Buffer.allocUnsafe(Math.min(stat.size, cap));
+    let total = 0;
+    while (total < buf.length) {
+      const n = fs.readSync(fd, buf, total, buf.length - total, null);
+      if (n <= 0) break;
+      total += n;
+    }
+    return { regular: true, buffer: buf.subarray(0, total) };
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
 function regularRuntimeFile(filePath) {
   try {
-    const stat = fs.lstatSync(filePath);
-    if (stat.isSymbolicLink() || !stat.isFile() || stat.size > 10 * 1024 * 1024) return null;
-    return fs.readFileSync(filePath);
+    const maxBytes = 10 * 1024 * 1024;
+    const result = readBoundedRegularFile(filePath, maxBytes);
+    if (!result.regular || !result.buffer || result.buffer.length > maxBytes) return null;
+    return result.buffer;
   } catch (_error) {
     return null;
   }
@@ -906,14 +941,26 @@ function listApprovedJsonFiles(directory, root) {
   const found = [];
   let unsafe = false;
   if (!fs.existsSync(directory)) return { files: found, unsafe };
+  let approvedReal;
   try {
     const directoryStat = fs.lstatSync(directory);
     if (directoryStat.isSymbolicLink() || !directoryStat.isDirectory()) return { files: found, unsafe: true };
+    if (isPathInside(root, directory, true) && !lstatChain(root, directory, 'directory')) return { files: found, unsafe: true };
+    approvedReal = realpathNative(directory);
+    if (isPathInside(root, directory, true) && !isPathInside(realpathNative(root), approvedReal, true)) {
+      return { files: found, unsafe: true };
+    }
   } catch (_error) {
     return { files: found, unsafe: true };
   }
 
-  function walk(current) {
+  const MAX_WALK_DEPTH = 16;
+  const MAX_WALK_FILES = LIMITS.MAX_CATALOG_ENTRIES * 2;
+  function walk(current, depth) {
+    if (depth > MAX_WALK_DEPTH || found.length >= MAX_WALK_FILES) {
+      unsafe = true;
+      return;
+    }
     let entries;
     try {
       entries = fs.readdirSync(current, { withFileTypes: true })
@@ -940,12 +987,12 @@ function listApprovedJsonFiles(directory, root) {
         unsafe = true;
         continue;
       }
-      if (stat.isDirectory()) walk(absolute);
+      if (stat.isDirectory()) walk(absolute, depth + 1);
       else if (stat.isFile() && entry.name.toLowerCase().endsWith('.json')) {
         try {
-          const approvedReal = realpathNative(directory);
           const fileReal = realpathNative(absolute);
           if (!isPathInside(approvedReal, fileReal, false)) unsafe = true;
+          else if (found.length >= MAX_WALK_FILES) unsafe = true;
           else found.push(reportPath(root, absolute));
         } catch (_error) {
           unsafe = true;
@@ -954,7 +1001,7 @@ function listApprovedJsonFiles(directory, root) {
     }
   }
 
-  walk(directory);
+  walk(directory, 0);
   return { files: found.sort(), unsafe };
 }
 
@@ -999,11 +1046,12 @@ function inspectPdCatalog(options = {}) {
   let manifestBuffer = null;
 
   try {
-    const manifestStat = fs.lstatSync(manifestFile);
-    const regularManifest = !manifestStat.isSymbolicLink() && manifestStat.isFile();
+    const parentChainOk = !isPathInside(root, manifestFile, false) || lstatChain(root, path.dirname(manifestFile), 'directory');
+    const readRes = parentChainOk ? readBoundedRegularFile(manifestFile, LIMITS.MAX_MANIFEST_BYTES) : { regular: false, buffer: null };
+    const regularManifest = parentChainOk && readRes.regular;
     addCheck(catalogChecks, regularManifest, 'catalog-manifest-regular-file', 'catalog', null,
       'Catalog manifest is a regular file.', 'Catalog manifest must be a regular non-linked file.');
-    if (regularManifest) manifestBuffer = fs.readFileSync(manifestFile);
+    if (regularManifest) manifestBuffer = readRes.buffer;
   } catch (_error) {
     catalogChecks.push(check('catalog-manifest-regular-file', 'catalog', 'error', 'fail', null,
       'Catalog manifest could not be read as a regular file.'));
@@ -1096,9 +1144,9 @@ function inspectPdCatalog(options = {}) {
     representedFiles.add(entry.path);
     let moduleBuffer;
     try {
-      const finalStat = fs.lstatSync(resolved.absolute);
-      if (finalStat.isSymbolicLink() || !finalStat.isFile()) throw new Error('Unsafe file.');
-      moduleBuffer = fs.readFileSync(resolved.absolute);
+      const readRes = readBoundedRegularFile(resolved.absolute, LIMITS.MAX_MODULE_BYTES);
+      if (!readRes.regular || !readRes.buffer) throw new Error('Unsafe file.');
+      moduleBuffer = readRes.buffer;
     } catch (_error) {
       catalogChecks.push(check('catalog-entry-file-read', 'catalog', 'error', 'fail', entryPath + '.path',
         'Approved module file could not be read safely.'));

@@ -1925,9 +1925,65 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
     var W = 2.6, D = 2.6, H = 2.0;
 
+    // Stage C: the convection model drives the scene through sceneProps
+    // { regime, from, rate }. Older hosts pass none, which keeps the original
+    // static roll.
+    var sp = api.sceneProps || {};
+    var fromAbove = sp.from === 'above';
+    var regime = sp.regime || 'rolls';
+    var still = regime === 'conduction' || regime === 'stable';
+    var initTemp = regime === 'plumes' ? 1.0 : (regime === 'rolls' ? 0.68 : 0.38);
+    var htStartTime = Date.now();
+    var htUniforms = {
+      uTime: { value: 3.4 },
+      uTemp: { value: initTemp },
+      uPlumes: { value: regime === 'plumes' ? 1.0 : 0.0 },
+      uStill: { value: still ? 1.0 : 0.0 },
+      uFromAbove: { value: fromAbove ? 1.0 : 0.0 }
+    };
+    var hasHtShader = !contrast && typeof THREE.ShaderMaterial === 'function';
+    var htAddBlend = THREE.AdditiveBlending != null ? THREE.AdditiveBlending : undefined;
+
     // Tank: four thin walls, left open at top and bottom so the plates read as
     // the hot and cold surfaces rather than as part of the glass.
-    var wallMat = mat('tank', { opacity: contrast ? 1 : 0.16, shininess: 60 });
+    var heatPhysical = !contrast && typeof THREE.MeshPhysicalMaterial === 'function';
+    var heatStandard = !contrast && typeof THREE.MeshStandardMaterial === 'function';
+    var wallMat = heatPhysical ? new THREE.MeshPhysicalMaterial({
+      color: 0xb8dcf5, transparent: true, opacity: 0.16,
+      roughness: 0.06, metalness: 0.05, clearcoat: 1.0, clearcoatRoughness: 0.05,
+      reflectivity: 0.95, depthWrite: false
+    }) : mat('tank', { opacity: contrast ? 1 : 0.16, shininess: 60 });
+    // 1. GLSL Fresnel Borosilicate Glass Tank Walls (warm IR bottom reflection + cool lab top rim)
+    if (!contrast && wallMat && typeof wallMat.onBeforeCompile === 'function') {
+      wallMat.customProgramCacheKey = function () { return 'ht-borosilicate-fresnel-v1'; };
+      wallMat.onBeforeCompile = function (shader) {
+        shader.uniforms.uHtTime = htUniforms.uTime;
+        shader.uniforms.uHtTemp = htUniforms.uTemp;
+        shader.uniforms.uHtFromAbove = htUniforms.uFromAbove;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 vHtWorldPos;')
+          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvHtWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>',
+            '#include <common>\n' +
+            'uniform float uHtTime;\n' +
+            'uniform float uHtTemp;\n' +
+            'uniform float uHtFromAbove;\n' +
+            'varying vec3 vHtWorldPos;'
+          )
+          .replace('#include <tonemapping_fragment>',
+            'vec3 htN = normalize(normal);\n' +
+            'vec3 htV = normalize(vViewPosition);\n' +
+            'float htFres = pow(1.0 - abs(dot(htN, htV)), 2.4);\n' +
+            'float yNorm = clamp((vHtWorldPos.y + 1.0) * 0.5, 0.0, 1.0);\n' +
+            'float hotProx = uHtFromAbove > 0.5 ? yNorm : (1.0 - yNorm);\n' +
+            'float shimmer = 0.5 + 0.5 * sin(vHtWorldPos.y * 10.0 - uHtTime * 2.2 + vHtWorldPos.x * 4.0);\n' +
+            'vec3 glassTint = mix(vec3(0.58, 0.88, 1.0), vec3(1.0, 0.54, 0.22), pow(hotProx, 1.8) * uHtTemp * 0.72);\n' +
+            'gl_FragColor.rgb += glassTint * (htFres * 0.44 + shimmer * 0.045 * hotProx * uHtTemp);\n' +
+            '#include <tonemapping_fragment>'
+          );
+      };
+    }
     var wallGeo = [
       [W, H, 0.05, 0, 0, -D / 2],
       [W, H, 0.05, 0, 0, D / 2],
@@ -1942,13 +1998,30 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       wm.position.set(wg[3], wg[4], wg[5]);
       tankGroup.add(wm);
     }
+    if (!contrast && typeof THREE.CylinderGeometry === 'function') {
+      var cornerMat = heatStandard
+        ? new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.72, roughness: 0.25 })
+        : mat('tank', { shininess: 60 });
+      [[-W / 2, -D / 2], [W / 2, -D / 2], [-W / 2, D / 2], [W / 2, D / 2]].forEach(function (cp) {
+        var post = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, H + 0.04, 10), cornerMat);
+        post.position.set(cp[0], 0, cp[1]);
+        tankGroup.add(post);
+      });
+    }
     anchor.add(tankGroup);
     meshes.tank = tankGroup;
     picks.push(tankGroup);
 
     // Hot plate below, cold plate above
     var plate = function (id, y, emissive) {
-      var m = new THREE.Mesh(new THREE.BoxGeometry(W, 0.12, D), mat(id, { emissive: emissive, shininess: 8 }));
+      var pMat = heatStandard ? new THREE.MeshStandardMaterial({
+        color: new THREE.Color(colourOf(id)),
+        emissive: new THREE.Color(emissive || '#000000'),
+        emissiveIntensity: id === 'heater' ? 0.55 : 0.35,
+        metalness: 0.62,
+        roughness: 0.32
+      }) : mat(id, { emissive: emissive, shininess: 8 });
+      var m = new THREE.Mesh(new THREE.BoxGeometry(W, 0.12, D), pMat);
       m.position.set(0, y, 0);
       if (api.wantShadow) { m.castShadow = true; m.receiveShadow = true; }
       anchor.add(m);
@@ -1956,15 +2029,289 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       picks.push(m);
       return m;
     };
-    // Stage C: the convection model drives the scene through sceneProps
-    // { regime, from, rate }. Older hosts pass none, which keeps the original
-    // static roll.
-    var sp = api.sceneProps || {};
-    var fromAbove = sp.from === 'above';
-    var regime = sp.regime || 'rolls';
-    var still = regime === 'conduction' || regime === 'stable';
-    plate('heater', (fromAbove ? 1 : -1) * (H / 2 + 0.06), contrast ? '#000000' : '#5a1010');
-    plate('ceiling', (fromAbove ? -1 : 1) * (H / 2 + 0.06), contrast ? '#000000' : '#0b2b3d');
+    plate('heater', (fromAbove ? 1 : -1) * (H / 2 + 0.06), contrast ? '#000000' : '#7f1d1d');
+    plate('ceiling', (fromAbove ? -1 : 1) * (H / 2 + 0.06), contrast ? '#000000' : '#0c4a6e');
+    var heatPlumeSheath = null;
+    var heatPlumeIsShader = false;
+    var heaterGlowLight = null;
+    var heaterLightBase = 0.55 + initTemp * 0.55;
+    if (!contrast) {
+      if (hasHtShader && typeof THREE.PlaneGeometry === 'function') {
+        var htPlaneVert = [
+          'varying vec2 vUv;',
+          'void main() {',
+          '  vUv = uv;',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+          '}'
+        ].join('\n');
+
+        // 2. GLSL Incandescent Ironbow Blackbody Heater Plate Shader
+        var htHeaterFrag = [
+          'uniform float uTime;',
+          'uniform float uTemp;',
+          'uniform float uStill;',
+          'varying vec2 vUv;',
+          'float htHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }',
+          'float htNoise(vec2 p) {',
+          '  vec2 i = floor(p), f = fract(p);',
+          '  vec2 u = f * f * (3.0 - 2.0 * f);',
+          '  return mix(mix(htHash(i), htHash(i + vec2(1.0, 0.0)), u.x), mix(htHash(i + vec2(0.0, 1.0)), htHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+          '}',
+          'float htFbm(vec2 p) {',
+          '  float v = 0.0, a = 0.52;',
+          '  for (int k = 0; k < 3; k++) { v += a * htNoise(p); p = p * 2.04 + vec2(11.4, 5.7); a *= 0.5; }',
+          '  return v;',
+          '}',
+          'vec3 htIronbow(float x) {',
+          '  vec3 c0 = vec3(0.24, 0.03, 0.16);',
+          '  vec3 c1 = vec3(0.76, 0.14, 0.08);',
+          '  vec3 c2 = vec3(0.99, 0.52, 0.08);',
+          '  vec3 c3 = vec3(1.0, 0.92, 0.56);',
+          '  vec3 c4 = vec3(1.0, 0.99, 0.92);',
+          '  vec3 col = mix(c0, c1, smoothstep(0.0, 0.30, x));',
+          '  col = mix(col, c2, smoothstep(0.26, 0.60, x));',
+          '  col = mix(col, c3, smoothstep(0.56, 0.85, x));',
+          '  return mix(col, c4, smoothstep(0.82, 1.0, x));',
+          '}',
+          'void main() {',
+          '  vec2 p = vUv * 2.0 - 1.0;',
+          '  float r = length(p);',
+          '  float edge = smoothstep(1.05, 0.72, max(abs(p.x), abs(p.y)));',
+          '  float coil = 0.5 + 0.5 * sin(r * 22.0 - uTime * (1.2 + uTemp * 1.4));',
+          '  float n = htFbm(p * 3.2 + vec2(uTime * 0.18, -uTime * 0.14));',
+          '  float centerBias = exp(-r * r * 1.35);',
+          '  float heat = clamp((0.28 + 0.56 * centerBias + 0.22 * n + 0.14 * coil) * (0.45 + 0.65 * uTemp), 0.0, 1.0);',
+          '  vec3 col = htIronbow(heat);',
+          '  float alpha = edge * (0.28 + 0.52 * heat) * mix(0.85, 0.58, uStill * 0.5);',
+          '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.78));',
+          '}'
+        ].join('\n');
+
+        var hotSheen = new THREE.Mesh(
+          new THREE.PlaneGeometry(W * 0.95, D * 0.95),
+          new THREE.ShaderMaterial({
+            uniforms: { uTime: htUniforms.uTime, uTemp: htUniforms.uTemp, uStill: htUniforms.uStill },
+            vertexShader: htPlaneVert,
+            fragmentShader: htHeaterFrag,
+            transparent: true,
+            depthWrite: false,
+            blending: htAddBlend,
+            side: THREE.DoubleSide
+          })
+        );
+        hotSheen.rotation.x = -Math.PI / 2;
+        hotSheen.position.y = (fromAbove ? 1 : -1) * (H / 2 - 0.012);
+        anchor.add(hotSheen);
+
+        // Chilled cryogenic ceiling frost sheen for unmistakable hot-to-cold thermal polarity
+        var coldSheen = new THREE.Mesh(
+          new THREE.PlaneGeometry(W * 0.94, D * 0.94),
+          new THREE.ShaderMaterial({
+            uniforms: { uTime: htUniforms.uTime },
+            vertexShader: htPlaneVert,
+            fragmentShader: [
+              'uniform float uTime;',
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vec2 p = vUv * 2.0 - 1.0;',
+              '  float r = length(p);',
+              '  float edge = smoothstep(1.04, 0.74, max(abs(p.x), abs(p.y)));',
+              '  float wave = 0.5 + 0.5 * sin(r * 14.0 + uTime * 0.9);',
+              '  vec3 col = mix(vec3(0.08, 0.54, 0.92), vec3(0.56, 0.94, 1.0), wave * 0.5 + 0.25);',
+              '  float alpha = edge * (0.14 + 0.12 * exp(-r * r * 0.9) + 0.06 * wave);',
+              '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.34));',
+              '}'
+            ].join('\n'),
+            transparent: true,
+            depthWrite: false,
+            blending: htAddBlend,
+            side: THREE.DoubleSide
+          })
+        );
+        coldSheen.rotation.x = -Math.PI / 2;
+        coldSheen.position.y = (fromAbove ? -1 : 1) * (H / 2 - 0.012);
+        anchor.add(coldSheen);
+
+        // 4. GLSL Rising Radiative Infrared Heat-Haze Shimmer Curtains (crossed soft-feathered planes)
+        var htHazeFrag = [
+          'uniform float uTime;',
+          'uniform float uTemp;',
+          'uniform float uFromAbove;',
+          'uniform float uSeed;',
+          'varying vec2 vUv;',
+          'float hhHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+          'float hhNoise(vec2 p) {',
+          '  vec2 i = floor(p), f = fract(p), u = f * f * (3.0 - 2.0 * f);',
+          '  return mix(mix(hhHash(i), hhHash(i + vec2(1.0, 0.0)), u.x), mix(hhHash(i + vec2(0.0, 1.0)), hhHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+          '}',
+          'void main() {',
+          '  float xFade = smoothstep(0.0, 0.22, vUv.x) * smoothstep(1.0, 0.78, vUv.x);',
+          '  float yFade = smoothstep(0.0, 0.14, vUv.y) * smoothstep(1.0, 0.82, vUv.y);',
+          '  float yFromHot = uFromAbove > 0.5 ? (1.0 - vUv.y) : vUv.y;',
+          '  float riseDir = uFromAbove > 0.5 ? 1.0 : -1.0;',
+          '  float n = hhNoise(vec2(vUv.x * 5.0 + uSeed, vUv.y * 6.5 + riseDir * uTime * (0.65 + uTemp * 0.75)));',
+          '  float mirage = pow(0.5 + 0.5 * sin(vUv.y * 28.0 + riseDir * uTime * (2.6 + uTemp * 2.2) + n * 4.2), 2.6);',
+          '  float decay = exp(-yFromHot * 1.45);',
+          '  vec3 irCol = mix(vec3(0.96, 0.28, 0.24), vec3(1.0, 0.72, 0.30), decay * 0.75 + n * 0.25);',
+          '  float alpha = xFade * yFade * decay * mirage * (0.08 + 0.14 * uTemp);',
+          '  gl_FragColor = vec4(irCol, clamp(alpha, 0.0, 0.28));',
+          '}'
+        ].join('\n');
+
+        var hazeGeo = new THREE.PlaneGeometry(W * 0.86, H * 0.88);
+        var hazeAngles = [Math.PI / 4, -Math.PI / 4];
+        for (var hi = 0; hi < hazeAngles.length; hi++) {
+          var hazeMat = new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: htUniforms.uTime,
+              uTemp: htUniforms.uTemp,
+              uFromAbove: htUniforms.uFromAbove,
+              uSeed: { value: hi * 2.7 + 0.5 }
+            },
+            vertexShader: htPlaneVert,
+            fragmentShader: htHazeFrag,
+            transparent: true,
+            depthWrite: false,
+            blending: htAddBlend,
+            side: THREE.DoubleSide
+          });
+          var hazeMesh = new THREE.Mesh(hazeGeo, hazeMat);
+          hazeMesh.rotation.y = hazeAngles[hi];
+          anchor.add(hazeMesh);
+        }
+      } else if (typeof THREE.PlaneGeometry === 'function') {
+        var hotSheenFb = new THREE.Mesh(
+          new THREE.PlaneGeometry(W * 0.94, D * 0.94),
+          new THREE.MeshBasicMaterial({
+            color: 0xf97316, transparent: true, opacity: 0.22,
+            side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
+          })
+        );
+        hotSheenFb.rotation.x = -Math.PI / 2;
+        hotSheenFb.position.y = (fromAbove ? 1 : -1) * (H / 2 - 0.015);
+        anchor.add(hotSheenFb);
+      }
+
+      // 3. GLSL Volumetric Rayleigh-Bénard FBM Rising Ironbow/Plasma Thermal Convection Plumes
+      if (!still && !fromAbove && typeof THREE.CylinderGeometry === 'function') {
+        if (hasHtShader) {
+          var htPlumeVert = [
+            'uniform float uTime;',
+            'uniform float uTemp;',
+            'uniform float uPlumes;',
+            'uniform float uLayer;',
+            'varying vec2 vUv;',
+            'varying vec3 vWorldPos;',
+            'varying vec3 vWorldNorm;',
+            'varying vec3 vLocalPos;',
+            'void main() {',
+            '  vUv = uv;',
+            '  vec3 p = position;',
+            '  float topFlare = smoothstep(0.55, 1.0, uv.y) * (0.28 + 0.22 * uLayer);',
+            '  float sway = (0.04 + 0.06 * uPlumes) * sin(uv.y * 6.28318 - uTime * (1.8 + uTemp * 1.4) + uLayer * 2.0);',
+            '  p.xz *= (1.0 + topFlare);',
+            '  p.x += sway * smoothstep(0.05, 0.85, uv.y);',
+            '  vLocalPos = p;',
+            '  vec4 wp = modelMatrix * vec4(p, 1.0);',
+            '  vWorldPos = wp.xyz;',
+            '  vWorldNorm = normalize(mat3(modelMatrix) * normal);',
+            '  gl_Position = projectionMatrix * viewMatrix * wp;',
+            '}'
+          ].join('\n');
+
+          var htPlumeFrag = [
+            'uniform float uTime;',
+            'uniform float uTemp;',
+            'uniform float uPlumes;',
+            'uniform float uLayer;',
+            'varying vec2 vUv;',
+            'varying vec3 vWorldPos;',
+            'varying vec3 vWorldNorm;',
+            'varying vec3 vLocalPos;',
+            'float pHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }',
+            'float pNoise(vec2 p) {',
+            '  vec2 i = floor(p), f = fract(p), u = f * f * (3.0 - 2.0 * f);',
+            '  return mix(mix(pHash(i), pHash(i + vec2(1.0, 0.0)), u.x), mix(pHash(i + vec2(0.0, 1.0)), pHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+            '}',
+            'float pFbm(vec2 p) {',
+            '  float v = 0.0, a = 0.54;',
+            '  for (int k = 0; k < 3; k++) { v += a * pNoise(p); p = p * 2.03 + vec2(14.7, 8.3); a *= 0.5; }',
+            '  return v;',
+            '}',
+            'vec3 pIronbowPlasma(float t) {',
+            '  vec3 cool = vec3(0.22, 0.62, 0.98);',
+            '  vec3 mag = vec3(0.78, 0.16, 0.52);',
+            '  vec3 org = vec3(0.99, 0.48, 0.10);',
+            '  vec3 gold = vec3(1.0, 0.90, 0.44);',
+            '  vec3 col = mix(cool, mag, smoothstep(0.0, 0.34, t));',
+            '  col = mix(col, org, smoothstep(0.30, 0.68, t));',
+            '  return mix(col, gold, smoothstep(0.66, 1.0, t));',
+            '}',
+            'void main() {',
+            '  vec3 N = normalize(vWorldNorm);',
+            '  vec3 V = normalize(cameraPosition - vWorldPos);',
+            '  float ndv = abs(dot(N, V));',
+            '  float softEdge = mix(pow(ndv, 0.65), pow(1.0 - ndv, 1.35), uLayer * 0.65);',
+            '  float axial = smoothstep(0.0, 0.16, vUv.y) * smoothstep(1.0, 0.78, vUv.y);',
+            '  float ang = atan(vLocalPos.z, vLocalPos.x);',
+            '  float speed = 0.48 + uTemp * 0.62 + uPlumes * 0.38;',
+            '  vec2 fUv = vec2(ang * 1.65, vUv.y * 4.4 - uTime * speed);',
+            '  float fbm = pFbm(fUv + vec2(sin(vUv.y * 7.0 - uTime * 1.2) * 0.32, 0.0));',
+            '  float thermalGrad = clamp((1.0 - vUv.y * 0.78) * (0.58 + 0.42 * uTemp) + (fbm - 0.45) * 0.45, 0.0, 1.0);',
+            '  vec3 col = pIronbowPlasma(thermalGrad);',
+            '  float density = (0.35 + 0.65 * fbm) * softEdge * axial;',
+            '  float alpha = density * mix(0.36, 0.20, uLayer) * (0.55 + 0.55 * uTemp);',
+            '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.56));',
+            '}'
+          ].join('\n');
+
+          var plumeShells = [
+            { rTop: 0.46, rBot: 0.24, h: H * 0.88, layer: 0.0 },
+            { rTop: 0.80, rBot: 0.38, h: H * 0.90, layer: 1.0 }
+          ];
+          for (var psi = 0; psi < plumeShells.length; psi++) {
+            var ps = plumeShells[psi];
+            var pMatShader = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: htUniforms.uTime,
+                uTemp: htUniforms.uTemp,
+                uPlumes: htUniforms.uPlumes,
+                uLayer: { value: ps.layer }
+              },
+              vertexShader: htPlumeVert,
+              fragmentShader: htPlumeFrag,
+              transparent: true,
+              depthWrite: false,
+              blending: htAddBlend,
+              side: THREE.DoubleSide
+            });
+            var pMesh = new THREE.Mesh(
+              new THREE.CylinderGeometry(ps.rTop, ps.rBot, ps.h, 32, 10, true),
+              pMatShader
+            );
+            pMesh.position.set(0, 0, 0);
+            anchor.add(pMesh);
+            if (psi === 0) {
+              heatPlumeSheath = pMesh;
+              heatPlumeIsShader = true;
+            }
+          }
+        } else {
+          var sheathMat = new THREE.MeshBasicMaterial({
+            color: 0xfb923c, transparent: true, opacity: 0.16,
+            side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
+          });
+          heatPlumeSheath = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.24, H * 0.86, 20, 1, true), sheathMat);
+          heatPlumeSheath.position.set(0, 0, 0);
+          anchor.add(heatPlumeSheath);
+        }
+      }
+      if (typeof THREE.PointLight === 'function') {
+        heaterGlowLight = new THREE.PointLight(0xf97316, heaterLightBase, 5.8, 1.9);
+        heaterGlowLight.position.set(0, (fromAbove ? 1 : -1) * (H / 2 - 0.18), 0);
+        anchor.add(heaterGlowLight);
+      }
+    }
 
     // The rising column in the middle and the falling sheets at the walls, drawn
     // as stacked spheres so the roll reads as moving fluid, not as solid pipe.
@@ -2096,13 +2443,31 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     var frame = function (nowMs, props, reduced) {
       var p = props || {};
       streamGroup.visible = !!reduced && !still;
-      if (still) return;
-      if (reduced) { lastMs = 0; return; }
+      var rate = typeof p.rate === 'number' && isFinite(p.rate) ? p.rate : 0.6;
+      var plumes = p.regime === 'plumes';
+      var liveTemp = plumes ? 1.0 : (still ? 0.38 : clamp(0.48 + rate * 0.28, 0.48, 0.96));
+      htUniforms.uTemp.value = liveTemp;
+      htUniforms.uPlumes.value = plumes ? 1.0 : 0.0;
+      if (reduced) {
+        lastMs = 0;
+        htUniforms.uTime.value = 3.4;
+        if (heaterGlowLight) heaterGlowLight.intensity = heaterLightBase;
+        return;
+      }
       var dt = lastMs ? Math.min(0.1, (nowMs - lastMs) / 1000) : 0;
       lastMs = nowMs;
-      var rate = typeof p.rate === 'number' && isFinite(p.rate) ? p.rate : 0.6;
       clock += dt;
-      var plumes = p.regime === 'plumes';
+      htUniforms.uTime.value = (3.4 + clock) % 3600;
+      if (heaterGlowLight) {
+        heaterGlowLight.intensity = (0.48 + liveTemp * 0.62) * (0.92 + 0.08 * Math.sin(clock * 2.4));
+      }
+      if (still) return;
+      if (heatPlumeSheath && !heatPlumeIsShader) {
+        var pulse = 0.5 + 0.5 * Math.sin(clock * 2.8);
+        heatPlumeSheath.material.opacity = 0.12 + pulse * 0.10;
+        var sc = 0.94 + pulse * 0.10;
+        heatPlumeSheath.scale.set(sc, 1, sc);
+      }
       tracers.forEach(function (q) {
         q.th += rate * dt * (2 - q.lane);
         place(q, q.th, plumes ? Math.sin(clock * 2.3 + q.wob) : 0);
@@ -3225,6 +3590,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           for (i = 0; i <= 10; i++) g.addColorStop(i / 10, rampC(i / 10));
           c.fillStyle = g;
           c.fillRect(kx, ky, kw, kh);
+          // Crisp metallic top-edge bevel highlight + quarter calibration ticks
+          c.fillStyle = 'rgba(255,255,255,0.22)';
+          c.fillRect(kx, ky, kw, Math.max(1, kh * 0.28));
+          c.strokeStyle = 'rgba(2,6,23,0.45)';
+          c.lineWidth = Math.max(1, dpr);
+          for (var tk = 1; tk < 4; tk++) {
+            var tx = kx + kw * (tk / 4);
+            c.beginPath(); c.moveTo(tx, ky + kh * 0.55); c.lineTo(tx, ky + kh); c.stroke();
+          }
           c.strokeStyle = s.glass;
           c.lineWidth = Math.max(1, dpr);
           c.strokeRect(kx, ky, kw, kh);
@@ -3260,6 +3634,26 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           for (i = 0; i < N; i++) {
             c.fillStyle = colourFor(T[i]);
             c.fillRect(pad + i * cellW, top, cellW + 1, barH);
+          }
+          // Metallic brushed conduction-bar specular sheen + hot/cold thermal end-glows
+          if (!isContrast) {
+            var sheenG = c.createLinearGradient(0, top, 0, top + barH);
+            sheenG.addColorStop(0, 'rgba(255,255,255,0.24)');
+            sheenG.addColorStop(0.26, 'rgba(255,255,255,0.06)');
+            sheenG.addColorStop(0.55, 'rgba(0,0,0,0)');
+            sheenG.addColorStop(1, 'rgba(2,6,23,0.22)');
+            c.fillStyle = sheenG;
+            c.fillRect(pad, top, W - pad * 2, barH);
+            var hotEdgeGlow = c.createRadialGradient(pad, top + barH / 2, u(2), pad, top + barH / 2, Math.max(barH * 0.85, u(24)));
+            hotEdgeGlow.addColorStop(0, 'rgba(251,146,60,0.34)');
+            hotEdgeGlow.addColorStop(1, 'rgba(251,146,60,0)');
+            c.fillStyle = hotEdgeGlow;
+            c.fillRect(Math.max(0, pad - u(14)), top - u(4), u(38), barH + u(8));
+            var coldEdgeGlow = c.createLinearGradient(W - pad - u(14), 0, W - pad + u(4), 0);
+            coldEdgeGlow.addColorStop(0, 'rgba(56,189,248,0)');
+            coldEdgeGlow.addColorStop(1, 'rgba(125,211,252,0.24)');
+            c.fillStyle = coldEdgeGlow;
+            c.fillRect(W - pad - u(14), top, u(18), barH);
           }
 
           // The temperature profile along the bar — the actual shape the heat
@@ -3510,11 +3904,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           c.fillStyle = rampC(0);
           c.fillRect(g.tankX, g.tankY, g.tankW, g.plate);
 
-          // Faint guide ellipses, so the circuit still reads when the animation is
-          // frozen for prefers-reduced-motion.
-          c.strokeStyle = s.glass;
-          c.lineWidth = Math.max(1, u(1));
+          // Glowing thermal convection flow ribbons, so the rising/sinking loop reads
+          // vividly in live motion and stays clear when frozen for reduced motion.
           for (k = 0; k < g.cells.length; k++) {
+            var ribbonG = c.createLinearGradient(0, g.cy - g.ry, 0, g.cy + g.ry);
+            ribbonG.addColorStop(0, 'rgba(56,189,248,0.28)');
+            ribbonG.addColorStop(0.5, 'rgba(251,146,60,0.22)');
+            ribbonG.addColorStop(1, 'rgba(239,68,68,0.34)');
+            c.strokeStyle = isContrast ? s.glass : ribbonG;
+            c.lineWidth = isContrast ? Math.max(1, u(1)) : u(4.5);
             c.beginPath();
             c.ellipse(g.cells[k].cx, g.cy, g.rx, g.ry, 0, 0, 6.2832);
             c.stroke();
@@ -3535,7 +3933,21 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               // hot plate — the same inversion this rewrite exists to kill.
               var base = clamp((p[1] - (g.cy - g.ry)) / (2 * g.ry), 0, 1);
               var warmth = clamp(base * 0.8 + (rising ? 0.2 : -0.06), 0, 1);
-              c.fillStyle = rampC(warmth);
+              var parcelCol = rampC(warmth);
+              if (!isContrast) {
+                var haloR = u(10.5);
+                var haloG = c.createRadialGradient(p[0], p[1], u(1.5), p[0], p[1], haloR);
+                haloG.addColorStop(0, parcelCol);
+                haloG.addColorStop(1, 'rgba(0,0,0,0)');
+                c.save();
+                c.globalAlpha = 0.34;
+                c.fillStyle = haloG;
+                c.beginPath();
+                c.arc(p[0], p[1], haloR, 0, 6.2832);
+                c.fill();
+                c.restore();
+              }
+              c.fillStyle = parcelCol;
               c.beginPath();
               c.arc(p[0], p[1], u(5.2), 0, 6.2832);
               c.fill();
@@ -3644,12 +4056,18 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             rad = ((tt * 0.38 + i / 5) % 1) * reach;
             rad = Math.max(srcR, rad);
             var half = Math.min(0.62, Math.atan(spread / rad));
-            // Fade with distance, but never to nothing: a front that vanished
-            // before touching the absorber argued against the caption above it.
-            // Brightness and width follow the emitted power (log scale).
-            c.globalAlpha = (0.25 + clamp(1 - rad / reach, 0, 1) * 0.35) * (0.4 + 0.6 * outStr);
+            var shimmer = reduce ? 1 : (0.90 + 0.14 * Math.sin(tt * 6 + i * 1.4));
+            var baseAlpha = (0.25 + clamp(1 - rad / reach, 0, 1) * 0.35) * (0.4 + 0.6 * outStr) * shimmer;
+            // Soft outer radiative heat-wave bloom + crisp luminous wavefront core
+            c.globalAlpha = baseAlpha * 0.35;
+            c.strokeStyle = '#fb923c';
+            c.lineWidth = u(4.2 + 4 * outStr);
+            c.beginPath();
+            c.arc(srcX, cy, rad, -half, half);
+            c.stroke();
+            c.globalAlpha = Math.min(1, baseAlpha);
             c.strokeStyle = heatRampColour(0.86);
-            c.lineWidth = u(0.8 + 3 * outStr);
+            c.lineWidth = u(0.9 + 3 * outStr);
             c.beginPath();
             c.arc(srcX, cy, rad, -half, half);
             c.stroke();
@@ -3670,15 +4088,14 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
           c.globalAlpha = 1;
 
-          // The emitter, coloured by its temperature on the tool's one ramp. It
-          // only glows once it is hot enough to emit visible red (about 500 C).
-          if (surfC >= 500) {
-            var glow = c.createRadialGradient(srcX, cy, srcR * 0.2, srcX, cy, srcR * 2.2);
-            glow.addColorStop(0, 'rgba(251,191,36,0.55)');
-            glow.addColorStop(1, 'rgba(251,191,36,0)');
-            c.fillStyle = glow;
-            c.beginPath(); c.arc(srcX, cy, srcR * 2.2, 0, 6.2832); c.fill();
-          }
+          // Luminous thermal corona scales with temperature; incandescent glow above 500 C
+          var coronaR = srcR * (surfC >= 500 ? 2.4 : 1.75);
+          var corona = c.createRadialGradient(srcX, cy, srcR * 0.25, srcX, cy, coronaR);
+          corona.addColorStop(0, surfC >= 500 ? 'rgba(251,191,36,0.62)' : 'rgba(249,115,22,0.34)');
+          corona.addColorStop(0.55, surfC >= 500 ? 'rgba(249,115,22,0.22)' : 'rgba(239,68,68,0.12)');
+          corona.addColorStop(1, 'rgba(249,115,22,0)');
+          c.fillStyle = corona;
+          c.beginPath(); c.arc(srcX, cy, coronaR, 0, 6.2832); c.fill();
           c.fillStyle = heatRampColour(surfF);
           c.beginPath(); c.arc(srcX, cy, srcR, 0, 6.2832); c.fill();
           c.strokeStyle = 'rgba(226,232,240,0.85)';
@@ -3689,6 +4106,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // uses, so a colour means one thing across the tool.
           c.fillStyle = heatRampColour(40 / 920);
           c.fillRect(absX, cy - absH / 2, absW, absH);
+          var absRim = c.createLinearGradient(absX - u(6), 0, absX + u(8), 0);
+          absRim.addColorStop(0, 'rgba(251,146,60,0)');
+          absRim.addColorStop(0.5, 'rgba(251,146,60,' + (0.14 + 0.28 * outStr).toFixed(2) + ')');
+          absRim.addColorStop(1, 'rgba(251,146,60,0)');
+          c.fillStyle = absRim;
+          c.fillRect(absX - u(6), cy - absH / 2, u(14), absH);
           c.strokeStyle = 'rgba(226,232,240,0.6)';
           c.lineWidth = Math.max(1, dpr);
           c.strokeRect(absX, cy - absH / 2, absW, absH);
@@ -4264,6 +4687,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       // time, but nothing redrew them when the container changed. Rotating a
       // tablet, or opening the numbers table beside one, left the previous
       // bitmap stretched across the new box until unrelated state moved.
+      var _htChartVisKey = String(d.level || '') + '|' + String(ctx.gradeBand || '') + '|' + (mathsOpen['further:entropy'] ? '1' : '0') + '|' + (mathsOpen['further:heatpumps'] ? '1' : '0') + '|' + (d.teacher && Array.isArray(d.teacher.hidden) ? d.teacher.hidden.join(',') : '');
       React.useEffect(function () {
         if (typeof ResizeObserver !== 'function') return;
         var els = [coolRef.current, curveRef.current, entropyRef.current, hpRef.current].filter(Boolean);
@@ -4276,7 +4700,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         });
         els.forEach(function (n) { ro.observe(n); });
         return function () { ro.disconnect(); };
-      }, []);
+      }, [_htChartVisKey]);
 
       // ── 3D bay: keep the host viewer in step with theme and selection ──
       var pick3d = d.pick3d || null;
@@ -4390,7 +4814,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           refLines: [{ axis: 'x', at: entPeakAt, colour: isDark ? '#34d399' : '#047857', label: t('stem.heatlab.even_split_the_peak', 'even split, the peak') }],
           marker: { x: entSplit, y: entHere, colour: '#fbbf24' }
         });
-      }, [entSplit, isDark, isContrast]);
+      }, [entSplit, isDark, isContrast, _htChartVisKey]);
 
       // ── Heat pumps: the engine run backwards ─────────────────────────
       var hpOut = typeof d.hpOut === 'number' ? d.hpOut : 2;    // outdoor °C
@@ -4422,7 +4846,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           refLines: [{ axis: 'y', at: 1, colour: isDark ? '#f87171' : '#b91c1c', label: t('stem.heatlab.electric_bar_heater_1_0', 'electric bar heater = 1.0'), align: 'left' }],
           marker: hpModel.heating ? { x: hpOut, y: hpRealCOP, colour: '#fbbf24' } : null
         });
-      }, [hpOut, hpIn, isDark, isContrast]);
+      }, [hpOut, hpIn, isDark, isContrast, _htChartVisKey]);
 
       // ── Module 5: engines ────────────────────────────────────────────
       var enginePick = typeof d.enginePick === 'number' ? d.enginePick : null;
@@ -5102,10 +5526,20 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var wl = zones[1].from * g.W, wr = zones[5].to * g.W;
           g.c.fillStyle = col((mugTeaC + mugSurfC) / 2);
           g.c.fillRect(wl, bottom, wr - wl, base);
+          // Subtle IR camera scanline texture + FLIR-style reticle ring around crosshair
+          if (!isContrast) {
+            g.c.fillStyle = 'rgba(0,0,0,0.09)';
+            for (var sy = 0; sy < g.H; sy += Math.max(2, Math.round(g.u(3)))) {
+              g.c.fillRect(0, sy, g.W, Math.max(1, Math.round(g.u(1))));
+            }
+          }
           var cx = mugCross / 100 * g.W, cy = (top + bottom) / 2;
           g.c.lineWidth = g.u(3); g.c.strokeStyle = '#000000';
           g.c.beginPath(); g.c.moveTo(cx, cy - g.u(14)); g.c.lineTo(cx, cy + g.u(14)); g.c.moveTo(cx - g.u(14), cy); g.c.lineTo(cx + g.u(14), cy); g.c.stroke();
-          g.c.lineWidth = g.u(1.5); g.c.strokeStyle = '#00ffff'; g.c.stroke();
+          g.c.beginPath(); g.c.arc(cx, cy, g.u(7), 0, 6.2832); g.c.stroke();
+          g.c.lineWidth = g.u(1.5); g.c.strokeStyle = '#00ffff';
+          g.c.beginPath(); g.c.moveTo(cx, cy - g.u(14)); g.c.lineTo(cx, cy + g.u(14)); g.c.moveTo(cx - g.u(14), cy); g.c.lineTo(cx + g.u(14), cy); g.c.stroke();
+          g.c.beginPath(); g.c.arc(cx, cy, g.u(7), 0, 6.2832); g.c.stroke();
           irLabel(g, fmt(zoneAt(zones, mugCross / 100).T, 1) + ' °C', clamp(cx, g.u(30), g.W - g.u(30)), cy - g.u(24));
           irLabel(g, t('stem.heatlab.ir_mug_tea', 'tea {t} °C').replace('{t}', fmt(mugTeaC, 1)), g.W / 2, top - g.u(10));
           irLabel(g, t('stem.heatlab.ir_mug_surface', 'outer surface {t} °C').replace('{t}', fmt(mugSurfC, 1)), g.W / 2, bottom + base + g.u(9));
@@ -5165,10 +5599,19 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           g.c.setLineDash([g.u(3), g.u(3)]);
           zones.forEach(function (z, i) { if (i) { g.c.beginPath(); g.c.moveTo(z.from * g.W, g.u(22)); g.c.lineTo(z.from * g.W, g.H); g.c.stroke(); } });
           g.c.setLineDash([]);
+          if (!isContrast) {
+            g.c.fillStyle = 'rgba(0,0,0,0.09)';
+            for (var wsy = 0; wsy < g.H; wsy += Math.max(2, Math.round(g.u(3)))) {
+              g.c.fillRect(0, wsy, g.W, Math.max(1, Math.round(g.u(1))));
+            }
+          }
           var cx = wallCross / 100 * g.W, cy = g.H * 0.58;
           g.c.lineWidth = g.u(3); g.c.strokeStyle = '#000000';
           g.c.beginPath(); g.c.moveTo(cx, cy - g.u(14)); g.c.lineTo(cx, cy + g.u(14)); g.c.moveTo(cx - g.u(14), cy); g.c.lineTo(cx + g.u(14), cy); g.c.stroke();
-          g.c.lineWidth = g.u(1.5); g.c.strokeStyle = '#00ffff'; g.c.stroke();
+          g.c.beginPath(); g.c.arc(cx, cy, g.u(7), 0, 6.2832); g.c.stroke();
+          g.c.lineWidth = g.u(1.5); g.c.strokeStyle = '#00ffff';
+          g.c.beginPath(); g.c.moveTo(cx, cy - g.u(14)); g.c.lineTo(cx, cy + g.u(14)); g.c.moveTo(cx - g.u(14), cy); g.c.lineTo(cx + g.u(14), cy); g.c.stroke();
+          g.c.beginPath(); g.c.arc(cx, cy, g.u(7), 0, 6.2832); g.c.stroke();
           irLabel(g, fmt(zoneAt(zones, wallCross / 100).T, 1) + ' °C', clamp(cx, g.u(30), g.W - g.u(30)), cy - g.u(24));
           irLabel(g, t('stem.heatlab.ir_wall_inside', 'inside {t} °C').replace('{t}', fmt(WALL_IN_C, 0)), g.u(6), g.u(11), 'left');
           irLabel(g, t('stem.heatlab.ir_wall_outside', 'outside {t} °C').replace('{t}', fmt(WALL_OUT_C, 0)), g.W - g.u(6), g.u(11), 'right');
@@ -6982,17 +7425,42 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           '[data-ht-hc] :focus-visible{outline:3px solid #00ffff!important;outline-offset:2px}'),
 
         // ── header ──
-        h('div', { className: 'relative overflow-hidden rounded-xl border mb-1 px-3 py-2.5', style: { background: 'linear-gradient(115deg, #2a0f04 0%, #451a03 46%, #0c1a2e 100%)', borderColor: 'rgba(251,146,60,0.4)' } },
-          h('div', { className: 'flex flex-wrap items-center gap-3' },
-            ArrowLeft ? h('button', {
-              onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
-              className: 'p-1.5 rounded-lg transition-colors',
-              style: { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(226,232,240,0.18)' },
-              'aria-label': t('stem.common.back_to_tools', 'Back to tools')
-            }, h(ArrowLeft, { size: 18, className: 'text-slate-100' })) : null,
-            h('div', null,
-              h('h3', { className: 'text-lg font-black tracking-tight text-white' }, t('stem.heatlab.heat_thermodynamics_lab', '🌡️ Heat & Thermodynamics Lab')),
-              h('span', { className: 'text-xs', style: { color: 'rgba(253,186,116,0.9)' } }, t('stem.heatlab.why_heat_moves_where_it_goes', 'Why heat moves, where it goes, and why you never get all of it back'))
+        h('section', {
+          'data-heatlab-hero': 'true',
+          className: 'relative overflow-hidden rounded-2xl border mb-2 px-4 py-3 shadow-lg',
+          style: isContrast
+            ? { backgroundColor: '#000000', color: '#ffffff', border: '2px solid #fbbf24' }
+            : { backgroundColor: '#2a0f04', backgroundImage: 'linear-gradient(115deg, #2a0f04 0%, #451a03 48%, #0c1a2e 100%)', borderColor: 'rgba(251,146,60,0.45)', color: '#ffffff' }
+        },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-3' },
+            h('div', { className: 'flex items-center gap-3 min-w-0' },
+              ArrowLeft ? h('button', {
+                onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
+                className: 'shrink-0 p-2 rounded-lg transition-colors',
+                style: { minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: isContrast ? '#000000' : 'rgba(255,255,255,0.10)', border: '1px solid ' + (isContrast ? '#fbbf24' : 'rgba(226,232,240,0.22)') },
+                'aria-label': t('stem.common.back_to_tools', 'Back to tools')
+              }, h(ArrowLeft, { size: 18, className: 'text-slate-100' })) : null,
+              h('svg', { width: 44, height: 44, viewBox: '0 0 44 44', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+                h('rect', { x: 2, y: 2, width: 40, height: 40, rx: 10, fill: isContrast ? '#000000' : '#1c0c04', stroke: isContrast ? '#fbbf24' : '#fb923c', strokeWidth: 1.5 }),
+                h('rect', { x: 11, y: 8, width: 6, height: 20, rx: 3, fill: 'none', stroke: isContrast ? '#ffffff' : '#fdba74', strokeWidth: 1.6 }),
+                h('circle', { cx: 14, cy: 31, r: 5.5, fill: isContrast ? '#fbbf24' : '#f97316', stroke: isContrast ? '#ffffff' : '#ffedd5', strokeWidth: 1.2 }),
+                h('line', { x1: 14, y1: 14, x2: 14, y2: 28, stroke: isContrast ? '#fbbf24' : '#fb923c', strokeWidth: 2.4 }),
+                h('path', { d: 'M24 14 Q28 11 32 14 T38 14', fill: 'none', stroke: isContrast ? '#fbbf24' : '#fb923c', strokeWidth: 1.8 }),
+                h('path', { d: 'M24 22 Q28 19 32 22 T38 22', fill: 'none', stroke: isContrast ? '#ffffff' : '#fbbf24', strokeWidth: 1.8 }),
+                h('path', { d: 'M24 30 Q28 27 32 30 T38 30', fill: 'none', stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 1.8 })
+              ),
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex flex-wrap items-center gap-1.5 mb-0.5' },
+                  h('span', { 'data-ht-keep': 'true', className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-black uppercase tracking-wider', style: isContrast ? { backgroundColor: '#000000', color: '#fbbf24', border: '1px solid #fbbf24' } : { backgroundColor: '#7c2d12', color: '#ffedd5', border: '1px solid rgba(251,146,60,0.45)' } }, t('stem.heatlab.subject_badge', 'Physics · Thermodynamics'))
+                ),
+                h('h3', { className: 'text-lg sm:text-xl font-black tracking-tight text-white' }, t('stem.heatlab.heat_thermodynamics_lab', '🌡️ Heat & Thermodynamics Lab')),
+                h('span', { 'data-ht-keep': 'true', className: 'text-xs block', style: { color: isContrast ? '#ffffff' : '#fed7aa' } }, t('stem.heatlab.why_heat_moves_where_it_goes', 'Why heat moves, where it goes, and why you never get all of it back'))
+              )
+            ),
+            h('div', { className: 'flex flex-wrap items-center gap-1.5', style: { minWidth: 0 } },
+              h('span', { 'data-ht-keep': 'true', style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, backgroundColor: isContrast ? '#000000' : '#0f172a', color: isContrast ? '#fbbf24' : '#fdba74', border: '1px solid ' + (isContrast ? '#fbbf24' : 'rgba(251,146,60,0.45)') } }, activeMode.label),
+              mode === 'conduction' ? h('span', { 'data-ht-keep': 'true', style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, backgroundColor: isContrast ? '#000000' : '#0f172a', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(226,232,240,0.3)') } }, material.name + ' · ' + fmt(hotEnd, 0) + ' °C') : null,
+              irOn && mode !== 'radiation' ? h('span', { 'data-ht-keep': 'true', style: { fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, backgroundColor: isContrast ? '#000000' : '#164e63', color: isContrast ? '#00ffff' : '#cffafe', border: '1px solid ' + (isContrast ? '#00ffff' : 'rgba(103,232,249,0.45)') } }, t('stem.heatlab.hero_ir_on', 'IR Camera: On')) : null
             )
           )
         ),
@@ -7113,6 +7581,30 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 : { width: '100%', height: '100%', display: 'block', touchAction: 'pan-y' }
             })
           ),
+          // Thermal gradient scale & flow direction key (non-spoiler visual legend)
+          mode === 'conduction' ? h('div', {
+            'data-ht-thermal-scale': 'true',
+            className: 'mt-2 rounded-lg border px-3 py-1.5 flex flex-wrap items-center justify-between gap-2',
+            style: isContrast
+              ? { backgroundColor: '#000000', borderColor: '#fbbf24', color: '#ffffff' }
+              : { backgroundColor: isDark ? 'rgba(15,23,42,0.85)' : '#f8fafc', borderColor: isDark ? 'rgba(251,146,60,0.28)' : '#cbd5e1', color: bodyInk }
+          },
+            h('span', { className: 'text-[0.6875rem] font-bold', style: { color: isContrast ? '#fbbf24' : (isDark ? '#fdba74' : '#9a3412') } },
+              t('stem.heatlab.scale_hot_end', 'Hot end') + ': ' + fmt(hotEnd, 0) + ' °C'),
+            h('svg', { width: 190, height: 18, viewBox: '0 0 190 18', 'aria-hidden': 'true', style: { flex: '1 1 130px', maxWidth: 240, display: 'block' } },
+              h('defs', null,
+                h('linearGradient', { id: 'ht-bar-scale-grad', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                  h('stop', { offset: '0%', stopColor: isContrast ? '#fbbf24' : '#f97316' }),
+                  h('stop', { offset: '50%', stopColor: isContrast ? '#ffffff' : '#f59e0b' }),
+                  h('stop', { offset: '100%', stopColor: isContrast ? '#00ffff' : '#38bdf8' })
+                )
+              ),
+              h('rect', { x: 2, y: 4, width: 186, height: 10, rx: 5, fill: 'url(#ht-bar-scale-grad)', stroke: isContrast ? '#ffffff' : 'rgba(100,116,139,0.45)', strokeWidth: 1 }),
+              h('line', { x1: 95, y1: 2, x2: 95, y2: 16, stroke: isContrast ? '#000000' : '#0f172a', strokeWidth: 1.5 })
+            ),
+            h('span', { className: 'text-[0.6875rem] font-bold', style: { color: isContrast ? '#00ffff' : (isDark ? '#7dd3fc' : '#0369a1') } },
+              t('stem.heatlab.scale_room_end', 'Room') + ': ' + fmt(HEAT_COLD_C, 0) + ' °C · ' + t('stem.heatlab.scale_flow_dir', 'Heat flows Hot → Cool'))
+          ) : null,
           // Keyboard hint, shown while the bar has focus (the aria-label says
           // the same to a screen reader).
           mode === 'conduction' && canvasFocus ? h('p', { 'data-ht-key-hint': 'true', className: 'text-[0.6875rem] mt-1.5 font-bold', style: { color: bodyInk } },
@@ -7202,6 +7694,39 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('span', { className: 'text-[0.625rem]', 'data-ht-speed-note': String(timeScale), style: { color: softInk } },
                 t('stem.heatlab.sim_speed_note', '1 s here = {t} of real time').replace('{t}', heatTimeLabel(timeScale)))
             ),
+            frStage === 'done' ? h('div', {
+              role: 'group',
+              'aria-label': t('stem.heatlab.quick_setups_group', 'Quick conduction experiments'),
+              'data-ht-quick-setups': 'true',
+              className: 'flex flex-wrap items-center gap-1.5 mb-2 rounded-lg border px-2.5 py-2',
+              style: isContrast
+                ? { backgroundColor: '#000000', borderColor: '#fbbf24' }
+                : { backgroundColor: isDark ? 'rgba(15,23,42,0.72)' : '#f8fafc', borderColor: isDark ? 'rgba(148,163,184,0.28)' : '#cbd5e1' }
+            },
+              h('span', { className: 'text-[0.6875rem] font-bold mr-1', style: { color: softInk } }, t('stem.heatlab.quick_setups_lbl', 'Starter setups:')),
+              [
+                { id: 'metal-vs-wood', label: t('stem.heatlab.setup_cu_wood', 'Copper vs Wood (200 °C)'), patch: { raceOn: true, matId: 'copper', matBId: 'wood', hotEnd: 200, timeScale: 'auto' } },
+                { id: 'two-metals', label: t('stem.heatlab.setup_al_steel', 'Aluminium vs Steel (250 °C)'), patch: { raceOn: true, matId: 'aluminium', matBId: 'steel', hotEnd: 250, timeScale: 'auto' } },
+                { id: 'insulator', label: t('stem.heatlab.setup_glass_aerogel', 'Glass vs Aerogel (300 °C)'), patch: { raceOn: true, matId: 'glass', matBId: 'aerogel', hotEnd: 300, timeScale: 'auto' } },
+                { id: 'ir-metal', label: t('stem.heatlab.setup_ir_copper', 'IR Thermal Camera · Copper'), patch: { raceOn: false, matId: 'copper', hotEnd: 220, irOn: true } }
+              ].map(function (st) {
+                return h('button', {
+                  key: st.id,
+                  type: 'button',
+                  onClick: function () {
+                    upd(st.patch);
+                    if (st.patch.matId) pushOnce('materialsTried', st.patch.matId);
+                    if (st.patch.matBId) pushOnce('materialsTried', st.patch.matBId);
+                    var el = canvasRef.current;
+                    if (el && el._heatReset) el._heatReset();
+                    if (typeof beep === 'function') beep();
+                    if (typeof announceToSR === 'function') announceToSR(st.label);
+                  },
+                  className: 'min-h-11 px-3 py-1.5 rounded-full text-[0.6875rem] font-bold transition-colors',
+                  style: neutralBtnStyle(false)
+                }, st.label);
+              })
+            ) : null,
             raceOn && !(frStage === 'predict' && frPairRacing) ? h('p', { className: 'text-[0.6875rem] mb-1', style: { color: softInk } },
               material.id === materialB.id
                 ? t('stem.heatlab.prediction_identical_materials_should_tie', 'Prediction: identical materials should tie.')

@@ -6,7 +6,10 @@
   var MAX_COLUMNS = 40;
   var MAX_CHANGES = 100;
   var MAX_CELL_CHARS = 1200;
-  var BLOCKED_KEYS = { __proto__: true, constructor: true, prototype: true };
+  var BLOCKED_KEYS = Object.create(null);
+  BLOCKED_KEYS['__proto__'] = true;
+  BLOCKED_KEYS.constructor = true;
+  BLOCKED_KEYS.prototype = true;
 
   function clampInt(value, fallback, min, max) {
     var number = Number(value);
@@ -260,11 +263,19 @@
 
   GristRestAdapter.prototype._request = async function (path, options) {
     if (!this.fetchImpl) throw new Error('This browser does not support network requests.');
-    var response = await this.fetchImpl(this.apiBase + path, options || {});
-    var payload = null;
-    try { payload = await response.json(); } catch (_) {}
-    if (!response.ok) throw new Error(safeText(payload && payload.error || ('Request failed with HTTP ' + response.status), 500));
-    return payload || {};
+    var opts = Object.assign({}, options || {});
+    var controller = (typeof AbortController === 'function' && !opts.signal) ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, 25000) : null;
+    if (controller) opts.signal = controller.signal;
+    try {
+      var response = await this.fetchImpl(this.apiBase + path, opts);
+      var payload = null;
+      try { payload = await response.json(); } catch (_) {}
+      if (!response.ok) throw new Error(safeText(payload && payload.error || ('Request failed with HTTP ' + response.status), 500));
+      return payload || {};
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
   };
 
   GristRestAdapter.prototype.getConfig = function () {

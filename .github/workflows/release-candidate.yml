@@ -97,6 +97,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && github.repository == 'Apomera/AlloFlow' && startsWith(github.ref, 'refs/heads/')
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       id-token: write

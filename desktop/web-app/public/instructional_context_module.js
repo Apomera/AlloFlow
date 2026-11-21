@@ -1139,7 +1139,7 @@
   }
 
   function _finiteNumber(value) {
-    if (value === null || value === undefined || (typeof value === 'string' && !value.trim())) return null;
+    if (value === null || value === undefined || typeof value === 'boolean' || (typeof value === 'string' && !value.trim())) return null;
     var numeric = Number(value);
     return Number.isFinite(numeric) ? numeric : null;
   }
@@ -1221,9 +1221,9 @@
   }
 
   function complexityStatus(score, requestedGrade) {
-    var numeric = Number(score);
+    var numeric = _finiteNumber(score);
     var target = getComplexityTarget(requestedGrade);
-    if (!Number.isFinite(numeric) || !target) return 'unavailable';
+    if (numeric === null || !target) return 'unavailable';
     if (numeric < target.fkRange.min) return 'below-target';
     if (numeric > target.fkRange.max) return 'above-target';
     return 'within-target';
@@ -1235,8 +1235,8 @@
     var requestedGrade = normalizeGradeLabel(source.requestedGrade || source.targetGrade || opts.requestedGrade || '', '');
     var calibrationTarget = normalizeGradeLabel(source.calibrationTarget || opts.calibrationTarget || '', '');
     var rawMeasured = source.measuredGrade !== undefined ? source.measuredGrade : source.score;
-    var measured = Number(rawMeasured);
-    var hasMeasured = rawMeasured !== null && rawMeasured !== '' && rawMeasured !== undefined && Number.isFinite(measured);
+    var measured = _finiteNumber(rawMeasured);
+    var hasMeasured = measured !== null;
     var language = cleanText(source.language || opts.language || 'English', 80);
     var fingerprint = cleanText(source.contentFingerprint || opts.contentFingerprint, 120);
     var status = cleanText(source.status, 40);
@@ -1356,7 +1356,7 @@
     var next = clonePlain(normalized);
     var options = isObject(evidence) ? clonePlain(evidence) : {};
     if (content !== undefined) options.contentFingerprint = fingerprintText(content);
-    if (!options.measuredAt && Number.isFinite(Number(options.measuredGrade !== undefined ? options.measuredGrade : options.score))) {
+    if (!options.measuredAt && _finiteNumber(options.measuredGrade !== undefined ? options.measuredGrade : options.score) !== null) {
       options.measuredAt = new Date().toISOString();
     }
     next.complexity = normalizeComplexity(options, normalized.complexity);

@@ -2417,8 +2417,9 @@ window.StemLab = window.StemLab || {
                 } else {
                   upd('predictionStreak', 0);
                 }
-                // One-shot: clear the snapshot so a repeat launch without a
-                // fresh prediction won't double-score.
+                // One-shot: clear both predictedRange and lastPredictionRange so a repeat
+                // launch without a fresh estimate cannot farm XP or streak points.
+                upd('predictedRange', '');
                 upd('lastPredictionRange', null);
               }, 0);
             };
@@ -3169,8 +3170,65 @@ window.StemLab = window.StemLab || {
               var cssW = cW / dpr, cssH = cH / dpr, plotTop = 128 + telemetryExtraHeight;
               var groundY = groundYCSS * dpr;
               var sky = ctx.createLinearGradient(0, 0, 0, cH);
-              sky.addColorStop(0, highContrast ? '#000000' : '#0a1423'); sky.addColorStop(1, highContrast ? '#000000' : '#152c43');
+              if (highContrast) {
+                sky.addColorStop(0, '#000000'); sky.addColorStop(1, '#000000');
+              } else {
+                sky.addColorStop(0, '#060e1d');
+                sky.addColorStop(0.45, '#0e223a');
+                sky.addColorStop(0.74, '#183754');
+                sky.addColorStop(0.84, '#224561');
+                sky.addColorStop(1, '#0c1829');
+              }
               ctx.fillStyle = sky; ctx.fillRect(0, 0, cW, cH);
+              if (!highContrast) {
+                // Subtle distant mountain range silhouette & horizon atmospheric glow behind the plot.
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(launcherX * dpr, plotTop * dpr, Math.max(0, cssW - launcherX - 20) * dpr, Math.max(0, groundYCSS - plotTop) * dpr);
+                ctx.clip();
+                var horGlow = ctx.createLinearGradient(0, groundY - 64 * dpr, 0, groundY);
+                horGlow.addColorStop(0, 'rgba(56,189,248,0)');
+                horGlow.addColorStop(1, 'rgba(56,189,248,0.10)');
+                ctx.fillStyle = horGlow;
+                ctx.fillRect(launcherX * dpr, groundY - 64 * dpr, Math.max(0, cssW - launcherX - 20) * dpr, 64 * dpr);
+                ctx.fillStyle = 'rgba(12,28,46,0.46)';
+                ctx.beginPath();
+                var ridgeSpan = Math.max(120, cssW - launcherX - 20);
+                ctx.moveTo(launcherX * dpr, groundY);
+                for (var rk = 0; rk <= 16; rk++) {
+                  var rFrac = rk / 16;
+                  var rx = (launcherX + rFrac * ridgeSpan) * dpr;
+                  var rh = (14 + Math.sin(rFrac * 9.2 + 0.6) * 10 + Math.cos(rFrac * 17.5) * 6) * dpr;
+                  ctx.lineTo(rx, groundY - Math.max(4 * dpr, rh));
+                }
+                ctx.lineTo((cssW - 20) * dpr, groundY);
+                ctx.closePath();
+                ctx.fill();
+                // Animated wind / air-resistance streamline ribbons when drag is enabled (static in reduced-motion).
+                if (displayParams.airResist) {
+                  var windShift = physMotionReduced ? 0 : ((tick * 1.4) % 90);
+                  ctx.strokeStyle = 'rgba(125,211,252,0.16)';
+                  ctx.lineWidth = 1.2 * dpr;
+                  ctx.lineCap = 'round';
+                  for (var wi = 0; wi < 4; wi++) {
+                    var wy = (plotTop + 26 + wi * Math.max(24, (groundYCSS - plotTop - 44) / 4)) * dpr;
+                    for (var wseg = -1; wseg < 6; wseg++) {
+                      var wx0 = (launcherX + wseg * 90 - windShift + wi * 28) * dpr;
+                      ctx.beginPath();
+                      ctx.moveTo(wx0, wy);
+                      ctx.quadraticCurveTo(wx0 + 22 * dpr, wy - 4 * dpr, wx0 + 44 * dpr, wy);
+                      ctx.stroke();
+                    }
+                  }
+                }
+                ctx.restore();
+                // Ground turf/soil band directly below the range axis.
+                var turfGrad = ctx.createLinearGradient(0, groundY, 0, groundY + 12 * dpr);
+                turfGrad.addColorStop(0, 'rgba(34,197,94,0.16)');
+                turfGrad.addColorStop(1, 'rgba(15,23,42,0)');
+                ctx.fillStyle = turfGrad;
+                ctx.fillRect(launcherX * dpr, groundY, Math.max(0, cssW - launcherX - 20) * dpr, 12 * dpr);
+              }
               var tagQueue = [], tagBoxes = [], markerBoxes = [];
               var labelBounds = { left: launcherX + 8, right: cssW - 28, top: plotTop + 8, bottom: groundYCSS - 8 };
               canvasEl._visualVectors = null;
@@ -3196,7 +3254,13 @@ window.StemLab = window.StemLab || {
                 var endX = x + point.vx * vectorScale, endY = y - point.vy * vectorScale;
                 var arrowLen = point.speed * vectorScale, arrowHead = Math.min(6, arrowLen / 3);
                 var direction = Math.atan2(-point.vy, point.vx);
-                ctx.save(); ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 2 * dpr;
+                ctx.save();
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                if (!highContrast) {
+                  ctx.strokeStyle = 'rgba(147,197,253,0.26)'; ctx.lineWidth = 6 * dpr;
+                  ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(endX * dpr, endY * dpr); ctx.stroke();
+                }
+                ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 2.2 * dpr;
                 ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(endX * dpr, endY * dpr);
                 ctx.moveTo(endX * dpr, endY * dpr); ctx.lineTo((endX - Math.cos(direction - .4) * arrowHead) * dpr, (endY - Math.sin(direction - .4) * arrowHead) * dpr);
                 ctx.moveTo(endX * dpr, endY * dpr); ctx.lineTo((endX - Math.cos(direction + .4) * arrowHead) * dpr, (endY - Math.sin(direction + .4) * arrowHead) * dpr); ctx.stroke();
@@ -3206,7 +3270,11 @@ window.StemLab = window.StemLab || {
                   var length = Math.hypot(toX - x, toY - y);
                   if (length === 0) return;
                   var angle = Math.atan2(toY - y, toX - x), head = Math.min(5, length / 3);
-                  ctx.strokeStyle = color; ctx.lineWidth = 1.5 * dpr; ctx.setLineDash([4 * dpr, 3 * dpr]);
+                  if (!highContrast) {
+                    ctx.save(); ctx.globalAlpha = 0.2; ctx.strokeStyle = color; ctx.lineWidth = 4.2 * dpr; ctx.setLineDash([]);
+                    ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(toX * dpr, toY * dpr); ctx.stroke(); ctx.restore();
+                  }
+                  ctx.strokeStyle = color; ctx.lineWidth = 1.6 * dpr; ctx.setLineDash([4 * dpr, 3 * dpr]);
                   ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(toX * dpr, toY * dpr); ctx.stroke();
                   ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(toX * dpr, toY * dpr);
                   ctx.lineTo((toX - Math.cos(angle - .4) * head) * dpr, (toY - Math.sin(angle - .4) * head) * dpr);
@@ -3383,19 +3451,13 @@ window.StemLab = window.StemLab || {
                 var alpha = isActive ? 1 : overlayMode ? (highContrast ? 1 : .85) : inspection ? .10 : .18;
                 var trajectoryRow = trajectoryRows.filter(function(row) { return row.trail === trail; })[0];
 
-                // Glow layer for active trail
+                // Dual-pass luminous glow aura for active parabolic trajectory
 
-                if (isActive) {
+                if (isActive && !highContrast) {
 
                   ctx.save();
 
-                  ctx.lineWidth = 6 * dpr;
-
                   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-
-                  ctx.globalAlpha = 0.25;
-
-                  ctx.strokeStyle = '#fbbf24';
 
                   ctx.beginPath(); ctx.moveTo(mToScreenX(trail[0].mX) * dpr, mToScreenY(trail[0].mY) * dpr);
 
@@ -3405,7 +3467,9 @@ window.StemLab = window.StemLab || {
 
                   }
 
-                  ctx.stroke(); ctx.restore();
+                  ctx.lineWidth = 10 * dpr; ctx.globalAlpha = 0.14; ctx.strokeStyle = '#38bdf8'; ctx.stroke();
+                  ctx.lineWidth = 5.5 * dpr; ctx.globalAlpha = 0.28; ctx.strokeStyle = '#fbbf24'; ctx.stroke();
+                  ctx.restore();
 
                 }
 
@@ -3676,8 +3740,9 @@ window.StemLab = window.StemLab || {
                     }, 0);
                   }
 
-                  // Spawn enhanced explosion particles (in screen-px space)
+                  // Spawn enhanced impact dust & spark burst particles (gated by reduced motion)
 
+                  if (!physMotionReduced) {
                   var impactSX = mToScreenX(ball.mX);
 
                   var impactSY = groundYCSS;
@@ -3706,6 +3771,7 @@ window.StemLab = window.StemLab || {
 
                     });
 
+                  }
                   }
 
                   // Landing marker with distance (store in meters for label)
@@ -3795,8 +3861,18 @@ window.StemLab = window.StemLab || {
               var angle = displayParams.angle, rad = angle * Math.PI / 180;
               var cxC = launcherX, cyC = mToScreenY(displayParams.launchHeight || 0);
               if (displayParams.launchHeight > 0) {
-                ctx.fillStyle = highContrast ? '#202020' : '#253f58';
+                var pedGrad = ctx.createLinearGradient((cxC - 10) * dpr, 0, (cxC + 10) * dpr, 0);
+                pedGrad.addColorStop(0, highContrast ? '#202020' : '#1b3044');
+                pedGrad.addColorStop(0.5, highContrast ? '#2e2e2e' : '#32516e');
+                pedGrad.addColorStop(1, highContrast ? '#202020' : '#16283a');
+                ctx.fillStyle = pedGrad;
                 ctx.fillRect((cxC - 10) * dpr, cyC * dpr, 20 * dpr, (groundYCSS - cyC) * dpr);
+                ctx.strokeStyle = highContrast ? '#ffffff' : 'rgba(148,163,184,0.45)';
+                ctx.lineWidth = 1 * dpr;
+                ctx.strokeRect((cxC - 10) * dpr, cyC * dpr, 20 * dpr, (groundYCSS - cyC) * dpr);
+                // Structural steel pad footing & cross-bracing ticks on tower
+                ctx.fillStyle = highContrast ? '#444444' : '#475569';
+                ctx.fillRect((cxC - 15) * dpr, groundY - 4 * dpr, 30 * dpr, 4 * dpr);
                 ctx.strokeStyle = scene.axis; ctx.setLineDash([3 * dpr, 4 * dpr]);
                 ctx.beginPath(); ctx.moveTo((cxC - 18) * dpr, groundY); ctx.lineTo((cxC - 18) * dpr, cyC * dpr); ctx.stroke(); ctx.setLineDash([]);
                 if (!inspection || inspection.index !== 0) tag('height', ['h₀ = ' + displayParams.launchHeight + ' m'], cxC, cyC, '#e2e8f0', cxC + 35, cyC + 28, 7);
@@ -3822,9 +3898,24 @@ window.StemLab = window.StemLab || {
               barrelExclusions.forEach(function(box) { ctx.rect(box.x, box.y, box.width, box.height); });
               ctx.clip('evenodd');
               ctx.translate(cxC * dpr, cyC * dpr); ctx.rotate(-rad);
-              ctx.fillStyle = '#64748b'; ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5 * dpr;
+              var barrelGrad = ctx.createLinearGradient(0, -7 * dpr, 0, 7 * dpr);
+              barrelGrad.addColorStop(0, highContrast ? '#666666' : '#94a3b8');
+              barrelGrad.addColorStop(0.35, highContrast ? '#888888' : '#cbd5e1');
+              barrelGrad.addColorStop(0.75, highContrast ? '#444444' : '#475569');
+              barrelGrad.addColorStop(1, highContrast ? '#222222' : '#1e293b');
+              ctx.fillStyle = barrelGrad; ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1.4 * dpr;
               ctx.beginPath(); ctx.moveTo(-28 * dpr, -7 * dpr); ctx.lineTo(-4 * dpr, -4 * dpr); ctx.lineTo(-4 * dpr, 4 * dpr); ctx.lineTo(-28 * dpr, 7 * dpr); ctx.closePath(); ctx.fill(); ctx.stroke();
-              ctx.restore(); ctx.strokeStyle = scene.accent; ctx.lineWidth = 2 * dpr;
+              // Muzzle reinforcement collar & breech band
+              ctx.strokeStyle = highContrast ? '#ffff00' : '#fbbf24'; ctx.lineWidth = 1.6 * dpr;
+              ctx.beginPath(); ctx.moveTo(-6 * dpr, -4.4 * dpr); ctx.lineTo(-6 * dpr, 4.4 * dpr); ctx.stroke();
+              ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 1 * dpr;
+              ctx.beginPath(); ctx.moveTo(-26 * dpr, -3.5 * dpr); ctx.lineTo(-8 * dpr, -2 * dpr); ctx.stroke();
+              ctx.restore();
+              if (!highContrast) {
+                ctx.save(); ctx.strokeStyle = 'rgba(103,232,249,0.28)'; ctx.lineWidth = 4.5 * dpr;
+                ctx.beginPath(); ctx.arc(cxC * dpr, cyC * dpr, 7 * dpr, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+              }
+              ctx.strokeStyle = scene.accent; ctx.lineWidth = 2 * dpr;
               ctx.beginPath(); ctx.arc(cxC * dpr, cyC * dpr, 7 * dpr, 0, Math.PI * 2); ctx.stroke();
               if (!launched) { ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(cxC * dpr, cyC * dpr, 3 * dpr, 0, Math.PI * 2); ctx.fill(); }
               reserveMarker(cxC, cyC, 7);

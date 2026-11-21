@@ -107,14 +107,14 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
-  if (!document.getElementById("concept-pictionary-module-a11y")) {
+  if (typeof document !== 'undefined' && document.head && !document.getElementById("concept-pictionary-module-a11y")) {
     var _s = document.createElement("style");
     _s.id = "concept-pictionary-module-a11y";
     _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @keyframes pic-drawer-pulse-kf { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.55; } } .pic-drawer-pulse { animation: pic-drawer-pulse-kf 0.9s ease-in-out infinite; }";
     document.head.appendChild(_s);
   }
   (function() {
-    if (document.getElementById('allo-live-concept-pictionary')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-concept-pictionary')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-concept-pictionary';
     liveRegion.setAttribute('aria-live', 'polite');

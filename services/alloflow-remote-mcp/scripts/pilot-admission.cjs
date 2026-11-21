@@ -146,6 +146,25 @@ function resultRows(payload) {
   throw new Error("invalid_d1_admission_response");
 }
 
+const D1_SPAWN_TIMEOUT_MS = 120_000;
+
+function parseNonNegativeInt(value) {
+  if (typeof value === "number") {
+    return Number.isSafeInteger(value) && value >= 0 ? value : Number.NaN;
+  }
+  if (typeof value === "string" && /^(?:0|[1-9][0-9]*)$/u.test(value)) {
+    const parsed = Number(value);
+    return Number.isSafeInteger(parsed) ? parsed : Number.NaN;
+  }
+  return Number.NaN;
+}
+
+function singleRow(rows) {
+  return Array.isArray(rows) && rows.length === 1 && rows[0] && typeof rows[0] === "object"
+    ? rows[0]
+    : null;
+}
+
 function executeRemoteSql(configPath, sql, options = {}) {
   const run = options.spawnSync || spawnSync;
   const command = wranglerCommand(configPath, sql);
@@ -153,6 +172,7 @@ function executeRemoteSql(configPath, sql, options = {}) {
     cwd: SERVICE_ROOT,
     encoding: "utf8",
     windowsHide: true,
+    timeout: D1_SPAWN_TIMEOUT_MS,
   });
   if (result.error) throw result.error;
   if (result.status !== 0) {
@@ -174,16 +194,17 @@ async function acquireAdmissions(configPath, operator, reason, token, options = 
     admissionAcquireSql(operator, reason, token),
     options,
   );
+  const row = singleRow(rows);
   if (
-    rows.length !== 1 ||
-    Number(rows[0].admissions_open) !== 0 ||
-    rows[0].pause_token !== token ||
-    rows[0].changed_by !== operator ||
-    rows[0].change_reason !== reason
+    !row ||
+    parseNonNegativeInt(row.admissions_open) !== 0 ||
+    row.pause_token !== token ||
+    row.changed_by !== operator ||
+    row.change_reason !== reason
   ) {
     throw new Error("admission_pause_not_acquired");
   }
-  return rows[0];
+  return row;
 }
 
 async function releaseAdmissions(
@@ -200,19 +221,21 @@ async function releaseAdmissions(
     admissionReleaseSql(operator, acquiredReason, releaseReason, token),
     options,
   );
-  if (rows.length !== 1 || Number(rows[0].admissions_open) !== 1) {
+  const row = singleRow(rows);
+  if (!row || parseNonNegativeInt(row.admissions_open) !== 1) {
     throw new Error("admission_pause_ownership_lost");
   }
-  return rows[0];
+  return row;
 }
 
 async function forceResumeAdmissions(configPath, operator, reason, options = {}) {
   const execute = options.executeSql || executeRemoteSql;
   const rows = await execute(configPath, forceResumeSql(operator, reason), options);
-  if (rows.length !== 1 || Number(rows[0].admissions_open) !== 1) {
+  const row = singleRow(rows);
+  if (!row || parseNonNegativeInt(row.admissions_open) !== 1) {
     throw new Error("admission_pause_not_present");
   }
-  return rows[0];
+  return row;
 }
 
 async function assertAdmissionOwnership(configPath, ownership, options = {}) {
@@ -222,10 +245,11 @@ async function assertAdmissionOwnership(configPath, ownership, options = {}) {
     ownedDrainStatusSql(ownership.operator, ownership.reason, ownership.token),
     options,
   );
-  if (rows.length !== 1 || Number(rows[0].admissions_open) !== 0) {
+  const row = singleRow(rows);
+  if (!row || parseNonNegativeInt(row.admissions_open) !== 0) {
     throw new Error("admission_pause_ownership_lost");
   }
-  return rows[0];
+  return row;
 }
 
 async function drainAdmissions(configPath, options = {}) {
@@ -250,18 +274,19 @@ async function drainAdmissions(configPath, options = {}) {
   const deadline = now() + timeoutSeconds * 1000;
   while (true) {
     const rows = await execute(configPath, statusSql, options);
-    if (rows.length !== 1 || Number(rows[0].admissions_open) !== 0) {
+    const row = singleRow(rows);
+    if (!row || parseNonNegativeInt(row.admissions_open) !== 0) {
       throw new Error(
         options.ownership
           ? "admission_pause_ownership_lost"
           : "admission_drain_requires_pause",
       );
     }
-    const activeJobs = Number(rows[0].active_jobs);
+    const activeJobs = parseNonNegativeInt(row.active_jobs);
     if (!Number.isSafeInteger(activeJobs) || activeJobs < 0) {
       throw new Error("invalid_d1_admission_response");
     }
-    if (activeJobs === 0) return rows[0];
+    if (activeJobs === 0) return row;
     if (now() >= deadline) {
       throw new Error(`admission_drain_timed_out_with_${activeJobs}_active_jobs`);
     }
@@ -269,32 +294,64 @@ async function drainAdmissions(configPath, options = {}) {
   }
 }
 
-function option(argv, name, fallback) {
-  const index = argv.indexOf(name);
-  return index >= 0 && argv[index + 1] ? argv[index + 1] : fallback;
+function parseCliArgs(argv) {
+  const flags = Object.create(null);
+  let force = false;
+  const valueFlags = new Set([
+    "--config",
+    "--timeout-seconds",
+    "--operator",
+    "--reason",
+    "--token",
+    "--acquired-reason",
+  ]);
+  for (let index = 1; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--force") {
+      force = true;
+      continue;
+    }
+    if (valueFlags.has(arg)) {
+      if (index + 1 >= argv.length) {
+        throw new Error(`missing_value_for_${arg.slice(2)}`);
+      }
+      flags[arg] = argv[index + 1];
+      index += 1;
+      continue;
+    }
+    throw new Error("unknown_admission_cli_argument");
+  }
+  return { flags, force };
 }
 
 async function main(argv) {
   const action = argv[0];
-  const configPath = path.resolve(option(argv, "--config", DEFAULT_CONFIG));
-  if (/\.example\./u.test(path.basename(configPath))) {
+  const { flags, force } = parseCliArgs(argv);
+  const opt = (name, fallback) =>
+    Object.prototype.hasOwnProperty.call(flags, name) ? flags[name] : fallback;
+  const configPath = path.resolve(opt("--config", DEFAULT_CONFIG));
+  if (/\.example\./iu.test(path.basename(configPath))) {
     throw new Error("refusing_to_operate_on_example_configuration");
   }
   if (action === "drain") {
-    const timeoutSeconds = Number(option(argv, "--timeout-seconds", DEFAULT_DRAIN_TIMEOUT_SECONDS));
-    const token = option(argv, "--token");
-    const operator = option(argv, "--operator", process.env.ALLOFLOW_RELEASE_OPERATOR);
-    const reason = option(argv, "--reason");
+    const timeoutSeconds = Number(opt("--timeout-seconds", DEFAULT_DRAIN_TIMEOUT_SECONDS));
+    const token = opt("--token");
+    const explicitOperator = opt("--operator");
+    const operator = explicitOperator ?? process.env.ALLOFLOW_RELEASE_OPERATOR;
+    const reason = opt("--reason");
+    if (!token && (explicitOperator || reason)) {
+      throw new Error("admission_drain_ownership_token_required");
+    }
     const ownership = token ? { operator, reason, token } : undefined;
     const row = await drainAdmissions(configPath, { timeoutSeconds, ownership });
-    process.stdout.write(`${JSON.stringify({ ok: true, action, activeJobs: Number(row.active_jobs) })}\n`);
+    process.stdout.write(`${JSON.stringify({ ok: true, action, activeJobs: parseNonNegativeInt(row.active_jobs) })}\n`);
     return;
   }
   if (action === "assert-owned") {
     const ownership = {
-      operator: option(argv, "--operator", process.env.ALLOFLOW_RELEASE_OPERATOR),
-      reason: option(argv, "--reason"),
-      token: option(argv, "--token"),
+      operator: opt("--operator", process.env.ALLOFLOW_RELEASE_OPERATOR),
+      reason: opt("--reason"),
+      token: opt("--token"),
     };
     await assertAdmissionOwnership(configPath, ownership);
     process.stdout.write(`${JSON.stringify({ ok: true, action })}\n`);
@@ -303,20 +360,20 @@ async function main(argv) {
   if (action !== "pause" && action !== "resume") {
     throw new Error("usage_pause_resume_or_drain");
   }
-  const operator = option(argv, "--operator", process.env.ALLOFLOW_RELEASE_OPERATOR);
-  const reason = option(argv, "--reason", `${action} staging release`);
+  const operator = opt("--operator", process.env.ALLOFLOW_RELEASE_OPERATOR);
+  const reason = opt("--reason", `${action} staging release`);
   let row;
   let generatedPauseToken = false;
   if (action === "pause") {
-    const suppliedToken = option(argv, "--token");
+    const suppliedToken = opt("--token");
     const token = suppliedToken || randomUUID();
     generatedPauseToken = !suppliedToken;
     row = await acquireAdmissions(configPath, operator, reason, token);
-  } else if (argv.includes("--force")) {
+  } else if (force) {
     row = await forceResumeAdmissions(configPath, operator, reason);
   } else {
-    const token = option(argv, "--token");
-    const acquiredReason = option(argv, "--acquired-reason");
+    const token = opt("--token");
+    const acquiredReason = opt("--acquired-reason");
     row = await releaseAdmissions(
       configPath,
       operator,

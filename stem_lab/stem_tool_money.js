@@ -531,29 +531,38 @@ window.StemLab = window.StemLab || {
               if (currency !== 'USD' || !USD_BILL_VISUALS[bill.value]) {
                 return React.createElement('div', { 'aria-hidden': true, style: {
                   width: width + 'px', height: height + 'px', borderRadius: compact ? 3 : 5,
-                  background: 'linear-gradient(135deg, ' + bill.color + ', ' + bill.color + 'aa)',
-                  border: '1px solid rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: compact ? 9 : 11, fontWeight: 900, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.35)',
-                  boxShadow: '0 2px 5px rgba(15,23,42,0.18)', position: 'relative', overflow: 'hidden'
-                } }, bill.name);
+                  background: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 2px, transparent 2px, transparent 5px), linear-gradient(125deg, ' + bill.color + ' 0%, ' + bill.color + 'dd 45%, ' + bill.color + 'aa 100%)',
+                  border: '1.5px solid rgba(15,23,42,0.34)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: compact ? 9 : 11, fontWeight: 900, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.45)',
+                  boxShadow: '0 4px 9px rgba(15,23,42,0.24), 0 1px 2px rgba(15,23,42,0.16), inset 0 1px 0 rgba(255,255,255,0.42), inset 0 0 0 2px rgba(255,255,255,0.22)', position: 'relative', overflow: 'hidden'
+                } },
+                  React.createElement('div', { style: { position: 'absolute', inset: compact ? 2 : 3, border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 2, pointerEvents: 'none' } }),
+                  React.createElement('div', { style: { position: 'absolute', inset: 0, background: 'linear-gradient(115deg, rgba(255,255,255,0.22) 0%, transparent 42%, rgba(0,0,0,0.12) 100%)', pointerEvents: 'none' } }),
+                  React.createElement('span', { style: { position: 'relative', zIndex: 1 } }, bill.name)
+                );
               }
               var metaBill = USD_BILL_VISUALS[bill.value];
               var numeral = String(bill.value);
               return React.createElement('div', { 'aria-hidden': true, className: 'allo-money-art', style: {
                 width: width + 'px', height: height + 'px', borderRadius: compact ? 3 : 5, position: 'relative', overflow: 'hidden',
-                background: 'linear-gradient(110deg, ' + metaBill.tint + ' 0%, #f7f8ef 48%, ' + metaBill.tint + ' 100%)',
-                border: '1.5px solid ' + metaBill.accent, boxShadow: '0 2px 6px rgba(15,23,42,0.18), inset 0 0 0 2px rgba(255,255,255,0.55)',
+                background:
+                  'repeating-linear-gradient(45deg, ' + metaBill.accent + '12 0px, ' + metaBill.accent + '12 1px, transparent 1px, transparent 4px),' +
+                  'repeating-linear-gradient(-45deg, ' + metaBill.accent + '10 0px, ' + metaBill.accent + '10 1px, transparent 1px, transparent 4px),' +
+                  'linear-gradient(115deg, ' + metaBill.tint + ' 0%, #f9faf2 44%, #eef2e3 64%, ' + metaBill.tint + ' 100%)',
+                border: '1.5px solid ' + metaBill.accent,
+                boxShadow: '0 4px 10px rgba(15,23,42,0.22), 0 1px 3px rgba(15,23,42,0.14), inset 0 1px 0 rgba(255,255,255,0.85), inset 0 0 0 2px rgba(255,255,255,0.52)',
                 color: '#173f34', fontFamily: 'Georgia, serif'
               } },
-                React.createElement('div', { style: { position: 'absolute', inset: compact ? 2 : 3, border: '1px solid ' + metaBill.accent + '88', borderRadius: 2 } }),
-                React.createElement('span', { style: { position: 'absolute', left: compact ? 4 : 6, top: compact ? 2 : 3, color: metaBill.accent, fontSize: compact ? 10 : 14, lineHeight: 1, fontWeight: 900 } }, numeral),
-                React.createElement('span', { style: { position: 'absolute', right: compact ? 4 : 6, bottom: compact ? 2 : 3, color: metaBill.accent, fontSize: compact ? 10 : 14, lineHeight: 1, fontWeight: 900 } }, numeral),
+                React.createElement('div', { style: { position: 'absolute', inset: compact ? 2 : 3, border: '1px solid ' + metaBill.accent + '99', boxShadow: 'inset 0 0 0 1px ' + metaBill.accent + '33', borderRadius: 2, pointerEvents: 'none' } }),
+                !compact && React.createElement('div', { style: { position: 'absolute', inset: 5, border: '1px dotted ' + metaBill.accent + '55', borderRadius: 1, pointerEvents: 'none' } }),
+                React.createElement('span', { style: { position: 'absolute', left: compact ? 4 : 6, top: compact ? 2 : 3, color: metaBill.accent, fontSize: compact ? 10 : 14, lineHeight: 1, fontWeight: 900, textShadow: '0 1px 0 rgba(255,255,255,0.75)' } }, numeral),
+                React.createElement('span', { style: { position: 'absolute', right: compact ? 4 : 6, bottom: compact ? 2 : 3, color: metaBill.accent, fontSize: compact ? 10 : 14, lineHeight: 1, fontWeight: 900, textShadow: '0 1px 0 rgba(255,255,255,0.75)' } }, numeral),
                 React.createElement('div', { style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: compact ? 1 : 1.5, pointerEvents: 'none' } },
-                  React.createElement('div', { style: { width: compact ? 14 : 21, height: compact ? 14 : 21, borderRadius: '50%', border: '1px solid ' + metaBill.accent, background: 'rgba(255,255,255,0.52)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: metaBill.accent, fontSize: compact ? 7.5 : 10, lineHeight: 1, fontWeight: 900 } }, metaBill.portrait.charAt(0)),
-                  React.createElement('span', { style: { color: metaBill.accent, fontSize: compact ? 5 : 6.5, lineHeight: 1, fontWeight: 900, whiteSpace: 'nowrap', letterSpacing: '.02em' } }, metaBill.portrait)
+                  React.createElement('div', { style: { width: compact ? 14 : 22, height: compact ? 14 : 22, borderRadius: '50%', border: '1.5px double ' + metaBill.accent, background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.85), ' + metaBill.tint + 'cc)', boxShadow: '0 1px 2px rgba(15,23,42,0.16), inset 0 0 0 1px rgba(255,255,255,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: metaBill.accent, fontSize: compact ? 7.5 : 10, lineHeight: 1, fontWeight: 900 } }, metaBill.portrait.charAt(0)),
+                  React.createElement('span', { style: { color: metaBill.accent, fontSize: compact ? 5 : 6.5, lineHeight: 1, fontWeight: 900, whiteSpace: 'nowrap', letterSpacing: '.03em' } }, metaBill.portrait)
                 ),
-                React.createElement('div', { style: { position: 'absolute', right: compact ? 15 : 23, top: compact ? 6 : 9, width: compact ? 7 : 10, height: compact ? 7 : 10, borderRadius: '50%', border: '1px solid ' + metaBill.accent, opacity: .75 } }),
-                bill.value === 100 && React.createElement('div', { style: { position: 'absolute', left: '57%', top: 1, bottom: 1, width: compact ? 2 : 3, background: '#1d9bb6aa', transform: 'rotate(-2deg)' } })
+                React.createElement('div', { style: { position: 'absolute', right: compact ? 14 : 21, top: compact ? 6 : 8, width: compact ? 7 : 11, height: compact ? 7 : 11, borderRadius: '50%', border: '1px dashed ' + metaBill.accent, background: 'radial-gradient(circle, ' + metaBill.accent + '28, transparent 70%)', opacity: .85, pointerEvents: 'none' } }),
+                bill.value === 100 && React.createElement('div', { style: { position: 'absolute', left: '57%', top: 1, bottom: 1, width: compact ? 2 : 3.5, background: 'linear-gradient(180deg, #38bdf8bb, #0284c7cc, #38bdf8bb)', transform: 'rotate(-2deg)', pointerEvents: 'none' } })
               );
             };
 
@@ -569,20 +578,27 @@ window.StemLab = window.StemLab || {
               var metaCoin = currency === 'USD' ? USD_COIN_VISUALS[String(coin.value)] : null;
               var size = metaCoin ? Math.round(metaCoin.diameter * (compact ? 1.35 : 1.75)) : Math.round(coin.size * (compact ? .9 : 1.15));
               var metal = metaCoin ? metaCoin.metal : coin.color;
-              var rim = metaCoin ? metaCoin.rim : 'rgba(0,0,0,.28)';
+              var rim = metaCoin ? metaCoin.rim : 'rgba(0,0,0,.32)';
               // Face shading stops at 20% rim so the face numeral keeps 4.5:1; the rim itself is the edge ring.
               var faceEdge = metaCoin ? '#' + [1, 3, 5].map(function (i) { var a = parseInt(metal.substr(i, 2), 16), b = parseInt(rim.substr(i, 2), 16); return ('0' + Math.round(a * .8 + b * .2).toString(16)).slice(-2); }).join('') : rim;
-              var edgeBackground = metaCoin && metaCoin.edgeType === 'reeded' ? 'repeating-conic-gradient(' + rim + ' 0deg 3deg, #eef1f2 3deg 6deg)' : 'linear-gradient(135deg, rgba(255,255,255,.65), ' + rim + ')';
+              var edgeBackground = metaCoin && metaCoin.edgeType === 'reeded'
+                ? 'repeating-conic-gradient(' + rim + ' 0deg 2.5deg, #f8fafc 2.5deg 4.2deg, ' + metal + ' 4.2deg 6deg)'
+                : 'linear-gradient(135deg, rgba(255,255,255,.82) 0%, ' + metal + ' 48%, ' + rim + ' 100%)';
               return React.createElement('div', { 'aria-hidden': true, className: 'allo-money-art', style: {
                 width: size + 'px', height: size + 'px', borderRadius: '50%', padding: compact ? 2 : 3, boxSizing: 'border-box',
                 background: edgeBackground, border: metaCoin && metaCoin.edgeType === 'lettered' ? '2px dashed ' + rim : '1px solid ' + rim,
-                boxShadow: '0 3px 7px rgba(15,23,42,.24), inset 0 1px 1px rgba(255,255,255,.65)', position: 'relative', flexShrink: 0
+                boxShadow: '0 4px 9px rgba(15,23,42,.28), 0 1px 2px rgba(15,23,42,.20), inset 0 1px 1.5px rgba(255,255,255,.78), inset 0 -1px 2px rgba(15,23,42,.28)', position: 'relative', flexShrink: 0
               } },
                 React.createElement('div', { style: { width: '100%', height: '100%', borderRadius: '50%', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'radial-gradient(circle at 30% 24%, rgba(255,255,255,.85) 0%, rgba(255,255,255,.18) 28%, transparent 30%), radial-gradient(circle at 52% 55%, ' + metal + ', ' + faceEdge + ')',
-                  border: '1px solid rgba(255,255,255,.45)', boxShadow: metaCoin ? 'inset 0 -2px 4px ' + rim + '99' : undefined, color: metaCoin && coin.value === .01 ? '#140a05' : '#111b21', textShadow: '0 1px 0 rgba(255,255,255,.55)'
+                  background:
+                    'radial-gradient(circle at 28% 22%, rgba(255,255,255,.92) 0%, rgba(255,255,255,.32) 22%, transparent 38%),' +
+                    'conic-gradient(from 35deg at 50% 50%, rgba(255,255,255,.22) 0deg, transparent 58deg, rgba(0,0,0,.07) 135deg, rgba(255,255,255,.20) 205deg, transparent 275deg, rgba(0,0,0,.06) 330deg, rgba(255,255,255,.22) 360deg),' +
+                    'radial-gradient(circle at 52% 56%, ' + metal + ' 0%, ' + faceEdge + ' 100%)',
+                  border: '1px solid rgba(255,255,255,.55)',
+                  boxShadow: metaCoin ? ('inset 0 -2px 5px ' + rim + 'aa, inset 0 1.5px 2px rgba(255,255,255,.72)') : 'inset 0 -2px 4px rgba(15,23,42,.24), inset 0 1px 2px rgba(255,255,255,.65)',
+                  color: metaCoin && coin.value === .01 ? '#140a05' : '#111b21', textShadow: '0 1px 0 rgba(255,255,255,.62)'
                 } },
-                  React.createElement('div', { style: { position: 'absolute', inset: compact ? 3 : 4, borderRadius: '50%', border: '1px solid rgba(40,50,55,.32)' } }),
+                  React.createElement('div', { style: { position: 'absolute', inset: compact ? 2.5 : 3.5, borderRadius: '50%', border: '1px solid rgba(30,41,59,.30)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.48)', pointerEvents: 'none' } }),
                   React.createElement('span', { style: { fontSize: compact ? Math.max(8, size * .27) : Math.max(10, size * .25), lineHeight: 1, fontWeight: 900, zIndex: 1 } }, metaCoin ? metaCoin.face : coin.label),
                   !compact && React.createElement('span', { style: { position: 'absolute', left: '50%', bottom: Math.max(3, size * .10), transform: 'translateX(-50%)', fontSize: Math.max(7, size * .12), fontWeight: 900, letterSpacing: '.05em', whiteSpace: 'nowrap' } }, metaCoin ? (metaCoin.edgeType === 'reeded' ? 'REEDS' : metaCoin.edgeType === 'lettered' ? 'EDGE' : 'PLAIN') : '')
                 )
@@ -845,16 +861,18 @@ window.StemLab = window.StemLab || {
             var activeRecipe = d.activeRecipe != null ? d.activeRecipe : null;
             var recipeServings = d.recipeServings || 4;
 
-            // ── Generate store items based on grade ──
-            var storeItems = d.storeItems;
-            // Cached per currency, so a yen store saved with dollar-sized prices is rebuilt.
-            if (!storeItems || (d.storeItemsCurrency || 'USD') !== currency) {
-              storeItems = storeCatalog.filter(function (item) { return item.price <= gc.maxPrice; }).map(function (item) {
-                return isJPY ? Object.assign({}, item, { price: yenFromUsd(item.price) }) : item;
-              });
+            // ── Generate store items based on grade (sync via useEffect — no setState during render) ──
+            var needsStoreSync = !d.storeItems || (d.storeItemsCurrency || 'USD') !== currency;
+            var storeItems = needsStoreSync
+              ? storeCatalog.filter(function (item) { return item.price <= gc.maxPrice; }).map(function (item) {
+                  return isJPY ? Object.assign({}, item, { price: yenFromUsd(item.price) }) : item;
+                })
+              : d.storeItems;
+            React.useEffect(function () {
+              if (!needsStoreSync) return;
               upd('storeItems', storeItems);
               upd('storeItemsCurrency', currency);
-            }
+            }, [needsStoreSync, currency, grade]);
             if (Array.isArray(storeItems)) storeItems = storeItems.map(withStoreId);
             var storeCats = ['All'];
             storeItems.forEach(function (it) { if (storeCats.indexOf(it.cat) === -1) storeCats.push(it.cat); });
@@ -1035,6 +1053,26 @@ window.StemLab = window.StemLab || {
             var crIntro = d.crIntro != null ? d.crIntro : true;
             var crGameOver = d.crGameOver || false;
             var crPatienceTimer = d.crPatienceTimer || null;
+            var crTaxPercent = crCustomer && typeof crCustomer.taxPercent === 'number'
+              ? crCustomer.taxPercent
+              : (crCustomer && crCustomer.hasTax ? 8 : 0);
+
+            React.useEffect(function () {
+              if (!crActive || crPracticeMode || crIntro || crGameOver || !crCustomer || crFb || !crStartTime) return;
+              var maxSec = Math.max(15, 45 - (crWave - 1) * 5);
+              var intervalId = setInterval(function () {
+                var elapsedSec = (Date.now() - crStartTime) / 1000;
+                var pct = Math.max(0, Math.round(100 * (1 - elapsedSec / maxSec)));
+                if (pct <= 0) {
+                  clearInterval(intervalId);
+                  upd('crPatiencePct', 0);
+                  upd('crGameOver', true);
+                } else {
+                  upd('crPatiencePct', pct);
+                }
+              }, 250);
+              return function () { clearInterval(intervalId); };
+            }, [crActive, crPracticeMode, crIntro, crGameOver, crCustomer, crFb, crStartTime, crWave]);
 
             // ── v3 additions (Cashier Rush canvas + AlloBot Coach + Easy difficulty) ──
             var crCanvasOn    = d.crCanvasOn    !== false;            // canvas scene vs legacy text receipt (default ON)
@@ -1308,32 +1346,56 @@ window.StemLab = window.StemLab || {
               c.setTransform(2, 0, 0, 2, 0, 0);
               c.clearRect(0, 0, W, H); // 2x backing store — the scene was rendering blurry at 1x
 
-              // Power-outage backdrop — dark blue-gray with vignette
-              var bgGrad = c.createLinearGradient(0, 0, 0, H);
-              bgGrad.addColorStop(0, '#0f172a');
-              bgGrad.addColorStop(1, '#1e293b');
-              c.fillStyle = bgGrad;
+              // Power-outage backdrop — deep moody store interior with warm overhead pool
+              var hasLinearGrad = typeof c.createLinearGradient === 'function';
+              var hasRadialGrad = typeof c.createRadialGradient === 'function';
+              if (hasLinearGrad) {
+                var bgGrad = c.createLinearGradient(0, 0, 0, H);
+                bgGrad.addColorStop(0, '#090f1d');
+                bgGrad.addColorStop(0.55, '#111c30');
+                bgGrad.addColorStop(1, '#1e293b');
+                c.fillStyle = bgGrad;
+              } else {
+                c.fillStyle = '#0f172a';
+              }
               c.fillRect(0, 0, W, H);
+
+              // Subtle tiled store backwall texture
+              c.strokeStyle = 'rgba(148,163,184,0.06)'; c.lineWidth = 1;
+              for (var tw = 24; tw < W; tw += 32) {
+                c.beginPath(); c.moveTo(tw, 0); c.lineTo(tw, H - 50); c.stroke();
+              }
 
               // Dim grocery shelves establish the checkout setting without competing with the items.
               for (var shelfRow = 0; shelfRow < 2; shelfRow++) {
                 var shelfY = 48 + shelfRow * 46;
-                c.fillStyle = 'rgba(51,65,85,0.72)';
+                c.fillStyle = 'rgba(30,41,59,0.82)';
                 c.fillRect(12, shelfY, W * 0.48, 30);
+                c.fillStyle = 'rgba(148,163,184,0.18)';
+                c.fillRect(12, shelfY + 27, W * 0.48, 3);
                 c.strokeStyle = 'rgba(148,163,184,0.28)'; c.lineWidth = 1;
                 c.strokeRect(12, shelfY, W * 0.48, 30);
                 for (var shelfItem = 0; shelfItem < 9; shelfItem++) {
                   var shelfX = 18 + shelfItem * ((W * 0.46) / 9);
                   var shelfColors = ['#7c2d12', '#164e63', '#365314', '#713f12'];
+                  var shW = Math.max(10, W * 0.026);
+                  var shY = shelfY + 7 + (shelfItem % 2) * 3;
+                  var shH = 20 - (shelfItem % 2) * 3;
                   c.fillStyle = shelfColors[(shelfItem + shelfRow) % shelfColors.length];
-                  c.fillRect(shelfX, shelfY + 7 + (shelfItem % 2) * 3, Math.max(10, W * 0.026), 20 - (shelfItem % 2) * 3);
+                  c.fillRect(shelfX, shY, shW, shH);
+                  c.fillStyle = 'rgba(255,255,255,0.12)';
+                  c.fillRect(shelfX + 1, shY + 1, shW * 0.35, shH - 2);
                 }
               }
 
-              // Hanging lane marker remains readable in the power-outage scene.
+              // Hanging brass-framed lane marker remains readable in the power-outage scene.
               var laneSignX = Math.min(W - 122, Math.max(W * 0.5, 160));
-              c.fillStyle = '#fbbf24';
+              c.strokeStyle = 'rgba(203,213,225,0.45)'; c.lineWidth = 1.5;
+              c.beginPath(); c.moveTo(laneSignX + 14, 0); c.lineTo(laneSignX + 14, 8); c.moveTo(laneSignX + 98, 0); c.lineTo(laneSignX + 98, 8); c.stroke();
+              c.fillStyle = hasLinearGrad ? (function() { var sg = c.createLinearGradient(laneSignX, 8, laneSignX, 42); sg.addColorStop(0, '#fde68a'); sg.addColorStop(0.5, '#fbbf24'); sg.addColorStop(1, '#d97706'); return sg; })() : '#fbbf24';
               c.fillRect(laneSignX, 8, 112, 34);
+              c.strokeStyle = '#fef3c7'; c.lineWidth = 1.2;
+              c.strokeRect(laneSignX + 1, 9, 110, 32);
               c.fillStyle = '#111827';
               c.font = 'bold 12px sans-serif';
               c.textAlign = 'center'; c.textBaseline = 'middle';
@@ -1343,51 +1405,77 @@ window.StemLab = window.StemLab || {
 
               // Candle glow centered on the register (right side). Patience drives the radius.
               var registerX = W < 420 ? W * 0.68 : W * 0.78, registerY = H * 0.55;
-              var glowRadius = (40 + (crPatiencePct / 100) * 120);
-              var glow = c.createRadialGradient(registerX, registerY, 0, registerX, registerY, glowRadius);
-              glow.addColorStop(0, 'rgba(252, 211, 77, 0.55)');
-              glow.addColorStop(0.5, 'rgba(252, 211, 77, 0.18)');
-              glow.addColorStop(1, 'rgba(252, 211, 77, 0)');
-              c.fillStyle = glow;
-              c.fillRect(0, 0, W, H);
+              var glowRadius = (46 + (crPatiencePct / 100) * 130);
+              if (hasRadialGrad) {
+                var glow = c.createRadialGradient(registerX, registerY - 12, 4, registerX, registerY, glowRadius);
+                glow.addColorStop(0, 'rgba(254, 240, 138, 0.65)');
+                glow.addColorStop(0.35, 'rgba(251, 191, 36, 0.28)');
+                glow.addColorStop(0.7, 'rgba(245, 158, 11, 0.08)');
+                glow.addColorStop(1, 'rgba(252, 211, 77, 0)');
+                c.fillStyle = glow;
+                c.fillRect(0, 0, W, H);
+              }
 
-              // Counter (wood grain strip at bottom)
-              var counterGrad = c.createLinearGradient(0, H - 50, 0, H);
-              counterGrad.addColorStop(0, '#78350f');
-              counterGrad.addColorStop(1, '#451a03');
-              c.fillStyle = counterGrad;
+              // Counter (warm polished mahogany shop-counter mat at bottom)
+              if (hasLinearGrad) {
+                var counterGrad = c.createLinearGradient(0, H - 52, 0, H);
+                counterGrad.addColorStop(0, '#9a4a1a');
+                counterGrad.addColorStop(0.14, '#78350f');
+                counterGrad.addColorStop(0.65, '#592308');
+                counterGrad.addColorStop(1, '#3b1503');
+                c.fillStyle = counterGrad;
+              } else {
+                c.fillStyle = '#78350f';
+              }
               c.fillRect(0, H - 50, W, 50);
+              // Polished wood top bevel sheen
+              c.fillStyle = 'rgba(254, 215, 170, 0.28)';
+              c.fillRect(0, H - 50, W, 2.5);
               // Wood grain lines
-              c.strokeStyle = 'rgba(0,0,0,0.2)'; c.lineWidth = 0.5;
+              c.strokeStyle = 'rgba(0,0,0,0.22)'; c.lineWidth = 0.7;
               for (var wg = 0; wg < 5; wg++) {
                 c.beginPath();
-                c.moveTo(0, H - 45 + wg * 8);
-                c.lineTo(W, H - 45 + wg * 8 + (wg % 2 === 0 ? 2 : -2));
+                c.moveTo(0, H - 44 + wg * 8.5);
+                c.lineTo(W, H - 44 + wg * 8.5 + (wg % 2 === 0 ? 2 : -2));
                 c.stroke();
               }
 
               // Conveyor belt, rollers, and direction chevrons create a readable scan path.
               var beltX = 10, beltY = H - 76, beltRight = registerX - 62, beltH = 28;
-              var beltGrad = c.createLinearGradient(0, beltY, 0, beltY + beltH);
-              beltGrad.addColorStop(0, '#64748b');
-              beltGrad.addColorStop(0.48, '#334155');
-              beltGrad.addColorStop(1, '#1e293b');
-              c.fillStyle = beltGrad;
+              // Grounded contact shadow under conveyor
+              c.fillStyle = 'rgba(0,0,0,0.34)';
+              c.fillRect(beltX + 2, beltY + beltH, beltRight - beltX, 4);
+              if (hasLinearGrad) {
+                var beltGrad = c.createLinearGradient(0, beltY, 0, beltY + beltH);
+                beltGrad.addColorStop(0, '#64748b');
+                beltGrad.addColorStop(0.2, '#475569');
+                beltGrad.addColorStop(0.55, '#1e293b');
+                beltGrad.addColorStop(1, '#0f172a');
+                c.fillStyle = beltGrad;
+              } else {
+                c.fillStyle = '#334155';
+              }
               c.fillRect(beltX, beltY, beltRight - beltX, beltH);
+              // Subtle top metallic lip on conveyor frame
+              c.fillStyle = 'rgba(226,232,240,0.32)';
+              c.fillRect(beltX, beltY, beltRight - beltX, 2);
               c.strokeStyle = '#94a3b8'; c.lineWidth = 1.5;
               c.strokeRect(beltX, beltY, beltRight - beltX, beltH);
               c.fillStyle = 'rgba(148,163,184,0.45)';
               for (var rollerX = beltX + 14; rollerX < beltRight - 6; rollerX += 28) {
                 c.beginPath(); c.arc(rollerX, beltY + beltH / 2, 5, 0, Math.PI * 2); c.fill();
+                c.fillStyle = 'rgba(255,255,255,0.28)';
+                c.beginPath(); c.arc(rollerX - 1.5, beltY + beltH / 2 - 1.5, 1.8, 0, Math.PI * 2); c.fill();
+                c.fillStyle = 'rgba(148,163,184,0.45)';
               }
-              c.strokeStyle = 'rgba(251,191,36,0.6)'; c.lineWidth = 2;
+              c.strokeStyle = 'rgba(251,191,36,0.68)'; c.lineWidth = 2;
               for (var chevronX = beltX + 24; chevronX < beltRight - 16; chevronX += 54) {
                 c.beginPath();
                 c.moveTo(chevronX, beltY + 7); c.lineTo(chevronX + 10, beltY + 14); c.lineTo(chevronX, beltY + 21);
                 c.stroke();
               }
 
-              // Items on counter — line them up left-of-register
+              // Items on counter — line them up left-of-register with grounded shadows
               var items = (crCustomer && crCustomer.items) || [];
               var itemSlotW = 54;
               var itemSpacing = Math.min(itemSlotW, (beltRight - 28) / Math.max(1, items.length));
@@ -1395,12 +1483,20 @@ window.StemLab = window.StemLab || {
               items.forEach(function (it, idx) {
                 var ix = startX + idx * itemSpacing;
                 var iy = H - 50 - 56;
+                var drawW = Math.max(18, Math.min(itemSlotW * 0.82, itemSpacing - 4));
+                // Grounded contact shadow on conveyor belt
+                c.fillStyle = 'rgba(2,6,23,0.38)';
+                c.beginPath();
+                if (typeof c.ellipse === 'function') c.ellipse(ix + drawW / 2, iy + 54, drawW * 0.46, 4.5, 0, 0, Math.PI * 2);
+                else c.arc(ix + drawW / 2, iy + 54, drawW * 0.3, 0, Math.PI * 2);
+                c.fill();
                 var drawer = pickItemDrawer(it.name);
-                drawer(c, ix, iy, Math.max(18, Math.min(itemSlotW * 0.82, itemSpacing - 4)), 56, it.name);
+                drawer(c, ix, iy, drawW, 56, it.name);
 
                 // Numbered scan-order badge stays visible even when item shapes are similar.
                 c.fillStyle = '#fbbf24';
                 c.beginPath(); c.arc(ix + 5, iy + 5, 8, 0, Math.PI * 2); c.fill();
+                c.strokeStyle = '#fef3c7'; c.lineWidth = 1; c.stroke();
                 c.fillStyle = '#111827';
                 c.font = 'bold 9px sans-serif';
                 c.textAlign = 'center'; c.textBaseline = 'middle';
@@ -1411,6 +1507,8 @@ window.StemLab = window.StemLab || {
                   ? it.weight + 'lb \u00D7 ' + fmt(it.price)
                   : (it.qty || 1) + ' \u00D7 ' + fmt(it.price);
                 var priceTicketW = Math.max(18, itemSpacing - 4);
+                c.fillStyle = 'rgba(15,23,42,0.28)';
+                c.fillRect(ix + 1.5, H - 43.5, priceTicketW, 16);
                 c.fillStyle = '#fefce8';
                 c.fillRect(ix, H - 45, priceTicketW, 16);
                 c.strokeStyle = '#ca8a04'; c.lineWidth = 1;
@@ -1421,58 +1519,87 @@ window.StemLab = window.StemLab || {
                 c.fillText(priceTag, ix + priceTicketW / 2, H - 37, priceTicketW - 4);
               });
 
-              // Scanner glass and red scan beam mark the handoff into the register.
+              // Scanner glass and luminous scan beam mark the handoff into the register.
               var scannerX = registerX - 98, scannerY = H - 68;
               c.fillStyle = '#111827'; c.fillRect(scannerX, scannerY, 38, 20);
               c.fillStyle = '#1e3a5f'; c.fillRect(scannerX + 4, scannerY + 4, 30, 12);
               c.strokeStyle = '#60a5fa'; c.lineWidth = 1; c.strokeRect(scannerX + 4, scannerY + 4, 30, 12);
-              c.strokeStyle = crFb && crFb.ok ? '#4ade80' : '#ef4444'; c.lineWidth = 2;
-              c.beginPath(); c.moveTo(scannerX + 8, scannerY + 10); c.lineTo(scannerX + 30, scannerY + 10); c.stroke();
+              c.save();
+              var beamColor = crFb && crFb.ok ? '#4ade80' : '#ef4444';
+              c.shadowColor = beamColor; c.shadowBlur = 8;
+              c.strokeStyle = beamColor; c.lineWidth = 2.2;
+              c.beginPath(); c.moveTo(scannerX + 7, scannerY + 10); c.lineTo(scannerX + 31, scannerY + 10); c.stroke();
+              c.restore();
 
-              // Cash register
+              // Cash register — brushed metallic chassis with beveled bezel and glowing candle
               var rW = 100, rH = 80;
               var rx = registerX - rW/2, ry = registerY - rH/2;
-              // Body
-              c.fillStyle = '#374151'; c.fillRect(rx, ry, rW, rH);
-              // Metallic top-light sheen on the register body (candlelit depth)
-              var regSheen = c.createLinearGradient(0, ry, 0, ry + rH);
-              regSheen.addColorStop(0, 'rgba(255,255,255,0.10)');
-              regSheen.addColorStop(0.4, 'rgba(255,255,255,0)');
-              c.fillStyle = regSheen;
+              // Grounded shadow beneath cash register
+              c.fillStyle = 'rgba(2,6,23,0.45)';
+              c.fillRect(rx + 4, ry + rH - 2, rW, 8);
+              // Metallic brushed body
+              if (hasLinearGrad) {
+                var regBody = c.createLinearGradient(rx, ry, rx + rW, ry + rH);
+                regBody.addColorStop(0, '#525f73');
+                regBody.addColorStop(0.35, '#374151');
+                regBody.addColorStop(0.75, '#1f2937');
+                regBody.addColorStop(1, '#111827');
+                c.fillStyle = regBody;
+              } else {
+                c.fillStyle = '#374151';
+              }
               c.fillRect(rx, ry, rW, rH);
-              c.strokeStyle = '#1f2937'; c.lineWidth = 2; c.strokeRect(rx, ry, rW, rH);
-              // LCD screen (dim — power outage)
+              // Brushed steel top edge highlight
+              c.fillStyle = 'rgba(226,232,240,0.34)';
+              c.fillRect(rx + 1, ry + 1, rW - 2, 2.5);
+              c.strokeStyle = '#111827'; c.lineWidth = 2; c.strokeRect(rx, ry, rW, rH);
+              // LCD screen (dim — power outage) with glossy glass highlight
+              c.fillStyle = '#0f172a'; c.fillRect(rx + 7, ry + 7, rW - 14, 26);
               c.fillStyle = '#1e1b4b'; c.fillRect(rx + 8, ry + 8, rW - 16, 24);
-              c.strokeStyle = '#3730a3'; c.lineWidth = 1; c.strokeRect(rx + 8, ry + 8, rW - 16, 24);
+              c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(rx + 8, ry + 8, rW - 16, 8);
+              c.strokeStyle = '#4338ca'; c.lineWidth = 1; c.strokeRect(rx + 8, ry + 8, rW - 16, 24);
               // LCD text — show "OFFLINE" since the power is out
               c.save();
-              c.shadowColor = 'rgba(252, 211, 77, 0.9)'; c.shadowBlur = 8;
-              c.fillStyle = 'rgba(252, 211, 77, 0.65)';
+              c.shadowColor = 'rgba(252, 211, 77, 0.9)'; c.shadowBlur = 9;
+              c.fillStyle = 'rgba(252, 211, 77, 0.78)';
               c.font = 'bold 12px monospace';
               c.textAlign = 'center'; c.textBaseline = 'middle';
               c.fillText('OFFLINE', rx + rW/2, ry + 20);
               c.restore();
-              // Keypad pattern
-              c.fillStyle = '#4b5563';
+              // Tactile sculpted keypad pattern
               for (var kr = 0; kr < 3; kr++) for (var kc = 0; kc < 3; kc++) {
-                c.fillRect(rx + 12 + kc * 26, ry + 40 + kr * 12, 22, 8);
+                var kx = rx + 12 + kc * 26, ky = ry + 40 + kr * 12;
+                c.fillStyle = '#4b5563';
+                c.fillRect(kx, ky, 22, 8);
+                c.fillStyle = 'rgba(255,255,255,0.22)';
+                c.fillRect(kx, ky, 22, 1.5);
+                c.fillStyle = 'rgba(0,0,0,0.35)';
+                c.fillRect(kx, ky + 7, 22, 1);
               }
-              // Candle on top of register
+              // Candle on top of register with warm concentric flame halo
               c.fillStyle = '#fef3c7';
               c.fillRect(rx + rW/2 - 4, ry - 16, 8, 14);
               c.strokeStyle = '#92400e'; c.strokeRect(rx + rW/2 - 4, ry - 16, 8, 14);
+              if (hasRadialGrad && crPatiencePct > 0) {
+                var flameHalo = c.createRadialGradient(rx + rW/2, ry - 22, 1, rx + rW/2, ry - 22, 20);
+                flameHalo.addColorStop(0, 'rgba(254, 243, 199, 0.75)');
+                flameHalo.addColorStop(0.45, 'rgba(251, 191, 36, 0.35)');
+                flameHalo.addColorStop(1, 'rgba(251, 191, 36, 0)');
+                c.fillStyle = flameHalo;
+                c.beginPath(); c.arc(rx + rW/2, ry - 22, 20, 0, Math.PI * 2); c.fill();
+              }
               // Flame (animated by CSS overlay below; this is the static base)
               c.fillStyle = '#fbbf24';
               c.beginPath();
               c.moveTo(rx + rW/2, ry - 16);
-              c.quadraticCurveTo(rx + rW/2 + 4, ry - 22, rx + rW/2, ry - 28);
-              c.quadraticCurveTo(rx + rW/2 - 4, ry - 22, rx + rW/2, ry - 16);
+              c.quadraticCurveTo(rx + rW/2 + 4.5, ry - 22, rx + rW/2, ry - 29);
+              c.quadraticCurveTo(rx + rW/2 - 4.5, ry - 22, rx + rW/2, ry - 16);
               c.fill();
               if (crPatiencePct > 0) {
-                c.fillStyle = 'rgba(254, 243, 199, 0.7)';
+                c.fillStyle = 'rgba(255, 251, 235, 0.9)';
                 c.beginPath();
                 c.moveTo(rx + rW/2, ry - 18);
-                c.quadraticCurveTo(rx + rW/2 + 2, ry - 22, rx + rW/2, ry - 25);
+                c.quadraticCurveTo(rx + rW/2 + 2, ry - 22, rx + rW/2, ry - 25.5);
                 c.quadraticCurveTo(rx + rW/2 - 2, ry - 22, rx + rW/2, ry - 18);
                 c.fill();
               }
@@ -1672,14 +1799,15 @@ window.StemLab = window.StemLab || {
                 if (coupon.type === 'pct') afterCoupon = roundCurrency(subtotal * (1 - coupon.val / 100), currency);
                 else afterCoupon = roundCurrency(Math.max(0, subtotal - coupon.val), currency);
               }
-              var tax = includeTax ? roundCurrency(afterCoupon * taxRate, currency) : 0;
+              var rushTaxRate = includeTax ? 0.08 : 0;
+              var tax = includeTax ? roundCurrency(afterCoupon * rushTaxRate, currency) : 0;
               var total = roundCurrency(afterCoupon + tax, currency);
               var practiceModel = crPracticeMode ? moneyCashierModel({ items: items, coupon: coupon, taxPercent: includeTax ? 8 : 0 }, changeScale) : null;
               if (practiceModel && !practiceModel.ok) return;
               if (practiceModel) { subtotal = practiceModel.subtotal / changeScale; afterCoupon = practiceModel.afterCoupon / changeScale; tax = practiceModel.tax / changeScale; total = practiceModel.total / changeScale; }
               // Pick customer
               var cust = CR_CUSTOMERS[Math.floor(Math.random() * CR_CUSTOMERS.length)];
-              upd('crCustomer', { name: cust.name, emoji: cust.emoji, currencyCode: currency, taxPercent: includeTax ? (crPracticeMode ? 8 : taxRate * 100) : 0, items: items, hasTax: includeTax, coupon: coupon, subtotal: subtotal, correctTotal: total, taxAmt: tax, afterCoupon: afterCoupon });
+              upd('crCustomer', { name: cust.name, emoji: cust.emoji, currencyCode: currency, taxPercent: includeTax ? Math.round(rushTaxRate * 100) : 0, items: items, hasTax: includeTax, coupon: coupon, subtotal: subtotal, correctTotal: total, taxAmt: tax, afterCoupon: afterCoupon });
               upd('crAnswer', ''); upd('crFb', null);
               upd('crStartTime', crPracticeMode ? null : Date.now());
               upd('crPractice', null);
@@ -1746,7 +1874,7 @@ window.StemLab = window.StemLab || {
                   stepText += (ii > 0 ? ' + ' : '') + fmt(price);
                 });
                 stepText += ' = ' + fmt(Math.round(running * 100) / 100);
-                if (crCustomer.hasTax) stepText += '. Then add ' + (taxRate * 100) + '% tax.';
+                if (crCustomer.hasTax) stepText += '. Then add ' + crTaxPercent + '% tax.';
                 botMsg = { text: stepText, kind: 'breakdown', ts: Date.now() };
                 newMood = 'concerned';
               } else if (perfect && newStreak === 3) {
@@ -2201,10 +2329,11 @@ window.StemLab = window.StemLab || {
               var totalContrib = 0;
               var balance = 0;
               var yearly = [{ age: startAge, balance: 0 }];
+              var assumedAnnualSalary = (typeof d.retSalary === 'number' && d.retSalary > 0) ? d.retSalary : 60000;
+              var maxMatchableMonthly = (assumedAnnualSalary / 12) * (Math.max(0, matchCap) / 100);
               for (var m = 0; m < years * 12; m++) {
                 var employeeContrib = monthly;
-                var salaryGuess = monthly * 12 / (matchCap / 100 || 1);
-                var employerContrib = Math.min(monthly, salaryGuess * matchCap / 100) * (matchPct / 100);
+                var employerContrib = Math.min(monthly, maxMatchableMonthly) * (matchPct / 100);
                 var contrib = employeeContrib + employerContrib;
                 totalContrib += contrib;
                 balance = (balance + contrib) * (1 + r);
@@ -2270,6 +2399,19 @@ window.StemLab = window.StemLab || {
             var sgMonthlyNeeded = sgR > 0 ? sgFutureGap / ((Math.pow(1 + sgR, sgMonths) - 1) / sgR) : sgFutureGap / sgMonths;
             var sgWeeklyNeeded = sgMonthlyNeeded * 12 / 52;
             var sgDailyNeeded = sgMonthlyNeeded * 12 / 365;
+            var sgMonthsForMonthly = function (pmt) {
+              if (sgTarget <= sgHave) return 0;
+              if (!(pmt > 0)) return sgMonths;
+              if (sgR > 0) {
+                var num = sgTarget * sgR + pmt;
+                var den = sgHave * sgR + pmt;
+                if (num > den && den > 0) {
+                  return Math.max(1, Math.round(Math.log(num / den) / Math.log(1 + sgR)));
+                }
+                return 1;
+              }
+              return Math.max(1, Math.round(sgRemaining / pmt));
+            };
 
             // ── TABS ──
             var tabs = [
@@ -2851,36 +2993,81 @@ window.StemLab = window.StemLab || {
                         'aria-label': 'Money studio overview for ' + cur.code + ' showing cash, receipt, and savings progress'
                       },
                         React.createElement('defs', null,
+                          React.createElement('radialGradient', { id: 'moneyStudioCounterBg', cx: '32%', cy: '25%', r: '85%' },
+                            React.createElement('stop', { offset: '0%', stopColor: '#0c3b2e' }),
+                            React.createElement('stop', { offset: '60%', stopColor: '#03281f' }),
+                            React.createElement('stop', { offset: '100%', stopColor: '#011913' })
+                          ),
+                          React.createElement('linearGradient', { id: 'moneyStudioMatGrad', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                            React.createElement('stop', { offset: '0%', stopColor: '#0a5e46' }),
+                            React.createElement('stop', { offset: '100%', stopColor: '#04382a' })
+                          ),
                           React.createElement('linearGradient', { id: 'moneyStudioBillGrad', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
-                            React.createElement('stop', { offset: '0%', stopColor: '#bbf7d0' }),
+                            React.createElement('stop', { offset: '0%', stopColor: '#ecfdf5' }),
+                            React.createElement('stop', { offset: '45%', stopColor: '#bbf7d0' }),
                             React.createElement('stop', { offset: '100%', stopColor: '#34d399' })
+                          ),
+                          React.createElement('radialGradient', { id: 'moneyStudioCoinSheen', cx: '30%', cy: '25%', r: '72%' },
+                            React.createElement('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.88)' }),
+                            React.createElement('stop', { offset: '36%', stopColor: 'rgba(255,255,255,0.12)' }),
+                            React.createElement('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.28)' })
+                          ),
+                          React.createElement('linearGradient', { id: 'moneyStudioReceiptGrad', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                            React.createElement('stop', { offset: '0%', stopColor: '#fffef5' }),
+                            React.createElement('stop', { offset: '100%', stopColor: '#fef3c7' })
+                          ),
+                          React.createElement('linearGradient', { id: 'moneyStudioGoalBar', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                            React.createElement('stop', { offset: '0%', stopColor: '#0284c7' }),
+                            React.createElement('stop', { offset: '60%', stopColor: '#38bdf8' }),
+                            React.createElement('stop', { offset: '100%', stopColor: '#a5f3fc' })
                           )
                         ),
-                        React.createElement('rect', { x: 0, y: 0, width: 680, height: 170, rx: 22, fill: '#022c22' }),
-                        React.createElement('rect', { x: 38, y: 30, width: 230, height: 110, rx: 14, fill: '#064e3b', stroke: '#34d399', strokeWidth: 2 }),
-                        React.createElement('text', { x: 58, y: 57, fill: '#a7f3d0', fontSize: 15, fontWeight: '800' }, __alloT('stem.money.cash_mat', 'Cash mat')),
+                        React.createElement('rect', { x: 0, y: 0, width: 680, height: 170, rx: 22, fill: ctx.isContrast ? '#000000' : 'url(#moneyStudioCounterBg)' }),
+                        // Subtle warm brass counter trim line
+                        !ctx.isContrast && React.createElement('rect', { x: 6, y: 6, width: 668, height: 158, rx: 18, fill: 'none', stroke: 'rgba(251,191,36,0.18)', strokeWidth: 1 }),
+                        // Cash Mat with recessed felt bevel & luminous grouping halo
+                        React.createElement('rect', { x: 40, y: 33, width: 230, height: 110, rx: 14, fill: 'rgba(0,0,0,0.34)' }),
+                        React.createElement('rect', { x: 38, y: 30, width: 230, height: 110, rx: 14, fill: ctx.isContrast ? '#000000' : 'url(#moneyStudioMatGrad)', stroke: ctx.isContrast ? '#ffff00' : '#34d399', strokeWidth: 2 }),
+                        !ctx.isContrast && React.createElement('rect', { x: 44, y: 36, width: 218, height: 98, rx: 10, fill: 'none', stroke: 'rgba(167,243,208,0.28)', strokeWidth: 1, strokeDasharray: '4 3' }),
+                        React.createElement('text', { x: 58, y: 55, fill: '#a7f3d0', fontSize: 14, fontWeight: '800' }, __alloT('stem.money.cash_mat', 'Cash mat')),
                         [0, 1, 2].map(function (idx) {
-                          return React.createElement('g', { key: 'focus-bill-' + idx, transform: 'translate(' + (58 + idx * 42) + ' 76)' },
-                            React.createElement('rect', { x: 0, y: 0, width: 76, height: 34, rx: 5, fill: 'url(#moneyStudioBillGrad)', stroke: '#dcfce7', strokeWidth: 1.5 }),
-                            React.createElement('circle', { cx: 38, cy: 17, r: 9, fill: '#047857', opacity: 0.45 }),
-                            React.createElement('text', { x: 38, y: 22, textAnchor: 'middle', fill: '#052e16', fontSize: 13, fontWeight: '900' }, cur.symbol)
+                          return React.createElement('g', { key: 'focus-bill-' + idx, transform: 'translate(' + (58 + idx * 42) + ' 72)' },
+                            React.createElement('rect', { x: 2, y: 3, width: 76, height: 34, rx: 5, fill: 'rgba(0,0,0,0.32)' }),
+                            React.createElement('rect', { x: 0, y: 0, width: 76, height: 34, rx: 5, fill: ctx.isContrast ? '#000000' : 'url(#moneyStudioBillGrad)', stroke: ctx.isContrast ? '#ffffff' : '#dcfce7', strokeWidth: 1.5 }),
+                            React.createElement('rect', { x: 3.5, y: 3.5, width: 69, height: 27, rx: 3, fill: 'none', stroke: ctx.isContrast ? '#ffff00' : '#065f46', strokeWidth: 0.9, strokeDasharray: '3 1.5', opacity: 0.72 }),
+                            React.createElement('circle', { cx: 38, cy: 17, r: 9.5, fill: ctx.isContrast ? '#000000' : '#047857', opacity: ctx.isContrast ? 1 : 0.36, stroke: ctx.isContrast ? '#ffff00' : '#065f46', strokeWidth: 0.8 }),
+                            React.createElement('text', { x: 38, y: 22, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#052e16', fontSize: 13, fontWeight: '900' }, cur.symbol)
                           );
                         }),
                         cur.coins.slice(0, 4).map(function (coin, idx) {
+                          var cx = 78 + idx * 42;
                           return React.createElement('g', { key: 'focus-coin-' + idx },
-                            React.createElement('circle', { cx: 78 + idx * 42, cy: 126, r: 15, fill: coin.color, stroke: '#fef3c7', strokeWidth: 2 }),
-                            React.createElement('text', { x: 78 + idx * 42, y: 131, textAnchor: 'middle', fill: '#1f2937', fontSize: 9, fontWeight: '900' }, coin.label)
+                            React.createElement('ellipse', { cx: cx + 1.5, cy: 129.5, rx: 14.5, ry: 13.5, fill: 'rgba(0,0,0,0.36)' }),
+                            React.createElement('circle', { cx: cx, cy: 126, r: 15, fill: coin.color, stroke: '#fef3c7', strokeWidth: 2, strokeDasharray: idx % 2 === 1 ? '2.5 1.5' : undefined }),
+                            !ctx.isContrast && React.createElement('circle', { cx: cx, cy: 126, r: 14, fill: 'url(#moneyStudioCoinSheen)' }),
+                            React.createElement('circle', { cx: cx, cy: 126, r: 11.5, fill: 'none', stroke: 'rgba(15,23,42,0.32)', strokeWidth: 0.8 }),
+                            React.createElement('text', { x: cx, y: 130.5, textAnchor: 'middle', fill: '#111827', fontSize: 9, fontWeight: '900' }, coin.label)
                           );
                         }),
-                        React.createElement('rect', { x: 305, y: 30, width: 160, height: 110, rx: 12, fill: '#fefce8', stroke: '#facc15', strokeWidth: 2 }),
-                        React.createElement('text', { x: 325, y: 56, fill: '#713f12', fontSize: 15, fontWeight: '900' }, __alloT('stem.money.receipt', 'Receipt')),
-                        React.createElement('line', { x1: 325, y1: 70, x2: 445, y2: 70, stroke: '#ca8a04', strokeWidth: 1.5, strokeDasharray: '5 4' }),
-                        React.createElement('text', { x: 325, y: 94, fill: '#713f12', fontSize: 13, fontWeight: '800' }, __alloT('stem.money.cash_total', 'Cash') + ': ' + (challengeMode ? '?' : fmt(boardTotal))),
-                        React.createElement('text', { x: 325, y: 116, fill: '#713f12', fontSize: 13, fontWeight: '800' }, __alloT('stem.money.cart_total', 'Cart') + ': ' + (challengeMode ? '?' : fmt(cartGrand))),
-                        React.createElement('rect', { x: 505, y: 30, width: 128, height: 110, rx: 14, fill: '#0f172a', stroke: '#38bdf8', strokeWidth: 2 }),
+                        // Thermal receipt with serrated edge & shadow
+                        React.createElement('rect', { x: 308, y: 33, width: 160, height: 108, rx: 12, fill: 'rgba(0,0,0,0.32)' }),
+                        React.createElement('path', {
+                          d: 'M 317 30 L 453 30 Q 465 30 465 42 L 465 135 L 455 141 L 445 135 L 435 141 L 425 135 L 415 141 L 405 135 L 395 141 L 385 135 L 375 141 L 365 135 L 355 141 L 345 135 L 335 141 L 325 135 L 315 141 L 305 135 L 305 42 Q 305 30 317 30 Z',
+                          fill: ctx.isContrast ? '#000000' : 'url(#moneyStudioReceiptGrad)',
+                          stroke: ctx.isContrast ? '#ffff00' : '#facc15',
+                          strokeWidth: 2
+                        }),
+                        React.createElement('text', { x: 325, y: 56, fill: ctx.isContrast ? '#ffff00' : '#713f12', fontSize: 15, fontWeight: '900' }, __alloT('stem.money.receipt', 'Receipt')),
+                        React.createElement('line', { x1: 325, y1: 70, x2: 445, y2: 70, stroke: ctx.isContrast ? '#ffffff' : '#ca8a04', strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                        React.createElement('text', { x: 325, y: 94, fill: ctx.isContrast ? '#ffffff' : '#713f12', fontSize: 13, fontWeight: '800' }, __alloT('stem.money.cash_total', 'Cash') + ': ' + (challengeMode ? '?' : fmt(boardTotal))),
+                        React.createElement('text', { x: 325, y: 116, fill: ctx.isContrast ? '#ffffff' : '#713f12', fontSize: 13, fontWeight: '800' }, __alloT('stem.money.cart_total', 'Cart') + ': ' + (challengeMode ? '?' : fmt(cartGrand))),
+                        // Savings goal panel with luminous progress tube
+                        React.createElement('rect', { x: 508, y: 33, width: 128, height: 110, rx: 14, fill: 'rgba(0,0,0,0.32)' }),
+                        React.createElement('rect', { x: 505, y: 30, width: 128, height: 110, rx: 14, fill: ctx.isContrast ? '#000000' : '#0f172a', stroke: ctx.isContrast ? '#ffffff' : '#38bdf8', strokeWidth: 2 }),
                         React.createElement('text', { x: 569, y: 58, textAnchor: 'middle', fill: '#bae6fd', fontSize: 14, fontWeight: '900' }, __alloT('stem.money.goal', 'Goal')),
                         React.createElement('rect', { x: 527, y: 78, width: 84, height: 14, rx: 7, fill: '#1e293b', stroke: '#64748b', strokeWidth: 1 }),
-                        React.createElement('rect', { x: 527, y: 78, width: Math.max(4, 84 * savingsProgress / 100), height: 14, rx: 7, fill: '#38bdf8' }),
+                        React.createElement('rect', { x: 527, y: 78, width: Math.max(4, 84 * savingsProgress / 100), height: 14, rx: 7, fill: ctx.isContrast ? '#ffff00' : 'url(#moneyStudioGoalBar)' }),
+                        !ctx.isContrast && React.createElement('rect', { x: 529, y: 80, width: Math.max(2, 84 * savingsProgress / 100 - 4), height: 4, rx: 2, fill: 'rgba(255,255,255,0.45)' }),
                         React.createElement('text', { x: 569, y: 116, textAnchor: 'middle', fill: '#e0f2fe', fontSize: 16, fontWeight: '900' }, savingsProgress + '%')
                       )
                     )
@@ -3125,10 +3312,29 @@ window.StemLab = window.StemLab || {
                   placed.length === 0
                     ? React.createElement("div", { className: "text-center py-6 text-slate-600" },
                         React.createElement("svg", { viewBox: "0 0 88 52", width: 72, height: 42, "aria-hidden": "true", focusable: "false", className: "mx-auto mb-2" },
-                          React.createElement("rect", { x: 4, y: 12, width: 80, height: 34, rx: 10, fill: ctx.isContrast ? "#000000" : "#f1f5f9", stroke: ctx.isContrast ? "#ffffff" : "#94a3b8", strokeWidth: 1.8, strokeDasharray: "4 3" }),
-                          React.createElement("circle", { cx: 30, cy: 29, r: 10, fill: ctx.isContrast ? "#fde047" : "#fbbf24", stroke: ctx.isContrast ? "#ffffff" : "#d97706", strokeWidth: 1.6 }),
-                          React.createElement("circle", { cx: 46, cy: 29, r: 8, fill: ctx.isContrast ? "#ffffff" : "#cbd5e1", stroke: ctx.isContrast ? "#000000" : "#64748b", strokeWidth: 1.5 }),
-                          React.createElement("rect", { x: 56, y: 21, width: 20, height: 14, rx: 3, fill: ctx.isContrast ? "#000000" : "#10b981", stroke: ctx.isContrast ? "#fde047" : "#047857", strokeWidth: 1.5 })
+                          React.createElement("defs", null,
+                            React.createElement("radialGradient", { id: "moneyEmptyGold", cx: "32%", cy: "26%", r: "72%" },
+                              React.createElement("stop", { offset: "0%", stopColor: "#fef08a" }),
+                              React.createElement("stop", { offset: "55%", stopColor: "#f59e0b" }),
+                              React.createElement("stop", { offset: "100%", stopColor: "#b45309" })
+                            ),
+                            React.createElement("radialGradient", { id: "moneyEmptySilver", cx: "32%", cy: "26%", r: "72%" },
+                              React.createElement("stop", { offset: "0%", stopColor: "#f8fafc" }),
+                              React.createElement("stop", { offset: "60%", stopColor: "#cbd5e1" }),
+                              React.createElement("stop", { offset: "100%", stopColor: "#64748b" })
+                            ),
+                            React.createElement("linearGradient", { id: "moneyEmptyBill", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+                              React.createElement("stop", { offset: "0%", stopColor: "#6ee7b7" }),
+                              React.createElement("stop", { offset: "100%", stopColor: "#059669" })
+                            )
+                          ),
+                          React.createElement("rect", { x: 4, y: 12, width: 80, height: 34, rx: 10, fill: ctx.isContrast ? "#000000" : "#ecfdf5", stroke: ctx.isContrast ? "#ffffff" : "#6ee7b7", strokeWidth: 1.8, strokeDasharray: "4 3" }),
+                          !ctx.isContrast && React.createElement("ellipse", { cx: 31, cy: 32, rx: 10, ry: 8.5, fill: "rgba(15,23,42,0.14)" }),
+                          React.createElement("circle", { cx: 30, cy: 29, r: 10, fill: ctx.isContrast ? "#fde047" : "url(#moneyEmptyGold)", stroke: ctx.isContrast ? "#ffffff" : "#b45309", strokeWidth: 1.6 }),
+                          !ctx.isContrast && React.createElement("circle", { cx: 30, cy: 29, r: 7.5, fill: "none", stroke: "rgba(255,255,255,0.5)", strokeWidth: 0.8 }),
+                          React.createElement("circle", { cx: 46, cy: 29, r: 8, fill: ctx.isContrast ? "#ffffff" : "url(#moneyEmptySilver)", stroke: ctx.isContrast ? "#000000" : "#64748b", strokeWidth: 1.5, strokeDasharray: ctx.isContrast ? undefined : "2 1.2" }),
+                          React.createElement("rect", { x: 56, y: 21, width: 20, height: 14, rx: 3, fill: ctx.isContrast ? "#000000" : "url(#moneyEmptyBill)", stroke: ctx.isContrast ? "#fde047" : "#047857", strokeWidth: 1.5 }),
+                          React.createElement("rect", { x: 58.5, y: 23.5, width: 15, height: 9, rx: 1.5, fill: "none", stroke: ctx.isContrast ? "#fde047" : "#d1fae5", strokeWidth: 0.8 })
                         ),
                         React.createElement("p", { className: "text-xs font-semibold" }, challengeMode ? __alloT('stem.money.empty_challenge_hint', 'Add coins/bills, then guess the total!') : __alloT('stem.money.empty_practice_hint', 'Click coins or bills to add them here, or try a starter set:')),
                         !challengeMode && React.createElement("div", { className: "flex flex-wrap justify-center gap-1.5 mt-3" },
@@ -3272,23 +3478,42 @@ window.StemLab = window.StemLab || {
                           'aria-label': __alloT('stem.money.value_share_aria', 'Denomination value share bar') + ': ' + segs.map(function (s) { return s.group.name + ' ' + s.pct + '%'; }).join(', '),
                           style: { display: 'block', width: '100%', height: 'auto', maxHeight: '48px' }
                         },
-                          React.createElement('rect', { x: barX, y: barY, width: barW, height: barH, rx: 6, fill: ctx.isContrast ? '#000000' : '#e2e8f0', stroke: ctx.isContrast ? '#ffffff' : '#cbd5e1', strokeWidth: 1 }),
-                          segs.map(function (s, idx) {
-                            return React.createElement('g', { key: 'vseg-' + idx },
-                              React.createElement('rect', {
-                                x: s.x, y: barY, width: Math.min(s.w, Math.max(0, barX + barW - s.x)), height: barH,
-                                rx: idx === 0 || idx === segs.length - 1 ? 4 : 0,
-                                fill: s.fill,
-                                stroke: ctx.isContrast ? '#000000' : '#ffffff',
-                                strokeWidth: 1.2
-                              }),
-                              s.w >= 54 && React.createElement('text', {
-                                x: s.x + s.w / 2, y: barY + 15, textAnchor: 'middle',
-                                fill: ctx.isContrast ? '#000000' : '#ffffff',
-                                style: { fontSize: '10px', fontWeight: 800 }
-                              }, s.pct + '%')
-                            );
-                          }),
+                          React.createElement('defs', null,
+                            React.createElement('linearGradient', { id: 'moneyShareGloss', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                              React.createElement('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.42)' }),
+                              React.createElement('stop', { offset: '45%', stopColor: 'rgba(255,255,255,0.06)' }),
+                              React.createElement('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.22)' })
+                            ),
+                            React.createElement('clipPath', { id: 'moneyShareClip' },
+                              React.createElement('rect', { x: barX, y: barY, width: barW, height: barH, rx: 6 })
+                            )
+                          ),
+                          React.createElement('rect', { x: barX, y: barY + 1, width: barW, height: barH, rx: 6, fill: ctx.isContrast ? '#000000' : 'rgba(15,23,42,0.12)' }),
+                          React.createElement('rect', { x: barX, y: barY, width: barW, height: barH, rx: 6, fill: ctx.isContrast ? '#000000' : '#e2e8f0', stroke: ctx.isContrast ? '#ffffff' : '#94a3b8', strokeWidth: 1.2 }),
+                          React.createElement('g', { clipPath: 'url(#moneyShareClip)' },
+                            segs.map(function (s, idx) {
+                              var segW = Math.min(s.w, Math.max(0, barX + barW - s.x));
+                              return React.createElement('g', { key: 'vseg-' + idx },
+                                React.createElement('rect', {
+                                  x: s.x, y: barY, width: segW, height: barH,
+                                  fill: s.fill,
+                                  stroke: ctx.isContrast ? '#000000' : 'rgba(255,255,255,0.75)',
+                                  strokeWidth: 1.2
+                                }),
+                                !ctx.isContrast && React.createElement('rect', {
+                                  x: s.x, y: barY, width: segW, height: barH,
+                                  fill: 'url(#moneyShareGloss)',
+                                  pointerEvents: 'none'
+                                }),
+                                s.w >= 54 && React.createElement('text', {
+                                  x: s.x + s.w / 2, y: barY + 15, textAnchor: 'middle',
+                                  fill: ctx.isContrast ? '#000000' : '#ffffff',
+                                  style: { fontSize: '10px', fontWeight: 800 }
+                                }, s.pct + '%')
+                              );
+                            })
+                          ),
+                          !ctx.isContrast && React.createElement('line', { x1: barX + 4, y1: barY + 1.5, x2: barX + barW - 4, y2: barY + 1.5, stroke: 'rgba(255,255,255,0.55)', strokeWidth: 1 }),
                           React.createElement('text', { x: barX, y: 40, fill: ctx.isContrast ? '#ffffff' : '#475569', style: { fontSize: '10px', fontWeight: 700 } }, __alloT('stem.money.value_share_label', 'Share of total value by denomination')),
                           React.createElement('text', { x: barX + barW, y: 40, textAnchor: 'end', fill: ctx.isContrast ? '#fde047' : '#047857', style: { fontSize: '10px', fontWeight: 800 } }, fmt(boardTotal))
                         )
@@ -3514,7 +3739,7 @@ window.StemLab = window.StemLab || {
                           'aria-label': 'Power outage checkout for ' + crCustomer.name + '. ' + crCustomer.items.length + ' items on the conveyor: ' +
                             crCustomer.items.map(function(it) { return it.name + ', ' + (it.weight ? it.weight + ' pounds at ' + fmt(it.price) + ' per pound' : (it.qty || 1) + ' at ' + fmt(it.price)); }).join('; ') + '. ' +
                             (crCustomer.coupon ? 'Coupon ' + crCustomer.coupon.label + '. ' : 'No coupon. ') +
-                            (crCustomer.hasTax ? Math.round(taxRate * 100) + ' percent tax applies. ' : 'No tax. ') + 'Enter the transaction total.',
+                            (crCustomer.hasTax ? crTaxPercent + ' percent tax applies. ' : 'No tax. ') + 'Enter the transaction total.',
                           style: { width: '100%', display: 'block', height: 280 }
                         })
                       ),
@@ -3524,7 +3749,7 @@ window.StemLab = window.StemLab || {
                         [
                           { icon: '\uD83D\uDED2', label: __alloT('stem.money.scan_items', 'Scan items'), detail: crCustomer.items.length + ' ' + __alloT('stem.money.items', 'items'), tone: 'border-sky-700/60 bg-sky-950/35 text-sky-200' },
                           { icon: '\uD83C\uDFF7\uFE0F', label: __alloT('stem.money.apply_coupon', 'Apply coupon'), detail: crCustomer.coupon ? crCustomer.coupon.label : __alloT('stem.money.none', 'None'), tone: 'border-violet-700/60 bg-violet-950/35 text-violet-200' },
-                          { icon: '\uD83E\uDDFE', label: __alloT('stem.money.add_tax', 'Add tax'), detail: crCustomer.hasTax ? Math.round(taxRate * 100) + '% ' + __alloT('stem.money.after_coupon', 'after coupon') : __alloT('stem.money.none', 'None'), tone: 'border-orange-700/60 bg-orange-950/35 text-orange-200' },
+                          { icon: '\uD83E\uDDFE', label: __alloT('stem.money.add_tax', 'Add tax'), detail: crCustomer.hasTax ? crTaxPercent + '% ' + __alloT('stem.money.after_coupon', 'after coupon') : __alloT('stem.money.none', 'None'), tone: 'border-orange-700/60 bg-orange-950/35 text-orange-200' },
                           { icon: '\u2328\uFE0F', label: __alloT('stem.money.enter_total', 'Enter total'), detail: crFb ? fmt(crCustomer.correctTotal) : crAnswer ? cur.symbol + crAnswer : __alloT('stem.money.your_answer_2', 'Your answer'), tone: crFb ? (crFb.ok ? 'border-emerald-600 bg-emerald-950/40 text-emerald-200' : 'border-red-600 bg-red-950/40 text-red-200') : 'border-amber-600/70 bg-amber-950/35 text-amber-200' }
                         ].map(function (step, stepIndex) {
                           return React.createElement('div', { key: 'transaction-step-' + stepIndex, role: 'listitem', className: 'rounded-lg border p-2 min-w-0 ' + step.tone },
@@ -3604,7 +3829,7 @@ window.StemLab = window.StemLab || {
                         ) : null,
                         
                         crCustomer.hasTax ? React.createElement("div", { className: "flex justify-between text-zinc-600 text-xs mt-1" },
-                          React.createElement("span", null, "Tax (" + (taxRate*100) + "%)"), React.createElement("span", null, crFb ? fmt(crCustomer.taxAmt) : "???")
+                          React.createElement("span", null, "Tax (" + crTaxPercent + "%)"), React.createElement("span", null, crFb ? fmt(crCustomer.taxAmt) : "???")
                         ) : null
                       )
                     ),
@@ -3626,7 +3851,7 @@ window.StemLab = window.StemLab || {
                             React.createElement('p', { className: 'text-sm font-black text-violet-100' }, '-' + fmt(crCustomer.subtotal - crCustomer.afterCoupon))
                           ),
                           crCustomer.hasTax && React.createElement('div', { className: 'rounded-lg border border-orange-800 bg-orange-950/35 p-2 text-center' },
-                            React.createElement('p', { className: 'text-[0.625rem] font-bold text-orange-300' }, Math.round(taxRate * 100) + '% ' + __alloT('stem.money.tax', 'tax')),
+                            React.createElement('p', { className: 'text-[0.625rem] font-bold text-orange-300' }, crTaxPercent + '% ' + __alloT('stem.money.tax', 'tax')),
                             React.createElement('p', { className: 'text-sm font-black text-orange-100' }, '+' + fmt(crCustomer.taxAmt))
                           ),
                           React.createElement('div', { className: 'rounded-lg border border-emerald-700 bg-emerald-950/40 p-2 text-center' },
@@ -5139,9 +5364,9 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "bg-white rounded-xl p-4 border border-emerald-100" },
                     React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-2" }, __alloT('stem.money.what_if_scenarios', "\uD83D\uDCA1 What If Scenarios")),
                     React.createElement("div", { className: "space-y-2" },
-                      React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Save " + cur.symbol + "5 more/week? Reach goal in ", React.createElement("strong", { className: "text-emerald-700" }, Math.max(1, Math.round(sgRemaining / ((sgWeeklyNeeded + 5) * 52 / 12))) + " months"), " instead of " + sgMonths),
-                      React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Save " + cur.symbol + "10 more/week? Reach goal in ", React.createElement("strong", { className: "text-emerald-700" }, Math.max(1, Math.round(sgRemaining / ((sgWeeklyNeeded + 10) * 52 / 12))) + " months")),
-                      React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.money.double_your_savings_reach_goal_in', "\u2022 Double your savings? Reach goal in "), React.createElement("strong", { className: "text-emerald-700" }, Math.max(1, Math.round(sgMonths / 2)) + " months"))
+                      React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Save " + cur.symbol + "5 more/week? Reach goal in ", React.createElement("strong", { className: "text-emerald-700" }, sgMonthsForMonthly((sgWeeklyNeeded + 5) * 52 / 12) + " months"), " instead of " + sgMonths),
+                      React.createElement("p", { className: "text-xs text-slate-600" }, "\u2022 Save " + cur.symbol + "10 more/week? Reach goal in ", React.createElement("strong", { className: "text-emerald-700" }, sgMonthsForMonthly((sgWeeklyNeeded + 10) * 52 / 12) + " months")),
+                      React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.money.double_your_savings_reach_goal_in', "\u2022 Double your savings? Reach goal in "), React.createElement("strong", { className: "text-emerald-700" }, sgMonthsForMonthly(sgMonthlyNeeded * 2) + " months"))
                     )
                   )
                 ),
@@ -5377,10 +5602,12 @@ window.StemLab = window.StemLab || {
                       cvEl._dbAutoPlay = dollarAutoPlay;
                       if (cvEl._dbAnim) { cvEl._dbForcePaint = true; return; }
                       var c2 = cvEl.getContext('2d');
+                      if (!c2) return;
                       var W = cvEl.offsetWidth || 600;
                       var H = cvEl.offsetHeight || 180;
                       cvEl.width = W * 2; cvEl.height = H * 2;
-                      c2.scale(2, 2);
+                      if (typeof c2.setTransform === 'function') c2.setTransform(2, 0, 0, 2, 0, 0);
+                      else c2.scale(2, 2);
                       var start = performance.now();
                       var lastBlink = -1;
                       var lastSide = '';
@@ -5391,21 +5618,27 @@ window.StemLab = window.StemLab || {
                         var features = cvEl._dbFeatures || [];
                         var manualFeature = Math.max(0, Math.min(features.length - 1, Number(cvEl._dbFeatureIndex) || 0));
                         var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-                        var blink = cvEl._dbAutoPlay && !reduceMotion ? Math.floor((t * 0.42) % features.length) : manualFeature;
-                        // Repaint when the highlighted feature or selected side changes.
+                        var animatePulse = !!(cvEl._dbAutoPlay && !reduceMotion);
+                        var blink = animatePulse ? Math.floor((t * 0.42) % features.length) : manualFeature;
+                        // Repaint when the highlighted feature or selected side changes, or smoothly pulse when animating.
                         if (side !== lastSide) { lastSide = side; lastBlink = -1; }
-                        if (blink === lastBlink && !cvEl._dbForcePaint) { cvEl._dbAnim = requestAnimationFrame(drawDb); return; }
+                        if (!animatePulse && blink === lastBlink && !cvEl._dbForcePaint) { cvEl._dbAnim = requestAnimationFrame(drawDb); return; }
                         cvEl._dbForcePaint = false;
                         lastBlink = blink;
+                        var hasLin = typeof c2.createLinearGradient === 'function';
+                        var hasRad = typeof c2.createRadialGradient === 'function';
                         var compact = W < 620;
                         var bx = compact ? W * 0.08 : W * 0.045;
                         var bw = compact ? W * 0.84 : W * 0.62;
                         var bh = bw / 2.35; // A U.S. note is about 6.14 x 2.61 inches.
                         var by = compact ? 28 : Math.max(48, (H - bh) * 0.34);
                         var ink = '#173f34';
-                        var fineInk = 'rgba(23,63,52,0.62)';
-                        var paper = c2.createLinearGradient(bx, by, bx + bw, by + bh);
-                        paper.addColorStop(0, '#edf2e7'); paper.addColorStop(0.5, '#dfe8d8'); paper.addColorStop(1, '#eef3e9');
+                        var fineInk = 'rgba(23,63,52,0.58)';
+                        var paper = '#e5edd9';
+                        if (hasLin) {
+                          paper = c2.createLinearGradient(bx, by, bx + bw, by + bh);
+                          paper.addColorStop(0, '#f1f5ea'); paper.addColorStop(0.42, '#e2ebd9'); paper.addColorStop(0.68, '#d9e5cf'); paper.addColorStop(1, '#eef3e8');
+                        }
                         function fitText(text, x, y, maxWidth, size, weight, align) {
                           var fitted = size;
                           c2.textAlign = align || 'left';
@@ -5414,6 +5647,19 @@ window.StemLab = window.StemLab || {
                           c2.fillText(text, x, y);
                         }
                         function drawSeal(x, y, radius, fill, top, center, bottom) {
+                          // Scalloped metallic-ink outer gear ring
+                          c2.save();
+                          c2.strokeStyle = fill; c2.lineWidth = 1.4;
+                          c2.beginPath();
+                          var teeth = 24;
+                          for (var ti = 0; ti <= teeth; ti++) {
+                            var ang = (ti / teeth) * Math.PI * 2;
+                            var rr = ti % 2 === 0 ? radius + 2.2 : radius - 0.5;
+                            var tx = x + Math.cos(ang) * rr, ty = y + Math.sin(ang) * rr;
+                            if (ti === 0) c2.moveTo(tx, ty); else c2.lineTo(tx, ty);
+                          }
+                          c2.closePath(); c2.stroke();
+                          c2.restore();
                           c2.fillStyle = fill; c2.beginPath(); c2.arc(x, y, radius, 0, Math.PI * 2); c2.fill();
                           c2.strokeStyle = '#eef3e9'; c2.lineWidth = 1; c2.beginPath(); c2.arc(x, y, radius - 3, 0, Math.PI * 2); c2.stroke();
                           c2.fillStyle = '#eef3e9'; c2.textAlign = 'center'; c2.font = 'bold ' + Math.max(5, radius * 0.27) + 'px serif'; c2.fillText(top, x, y - radius * 0.28);
@@ -5421,18 +5667,50 @@ window.StemLab = window.StemLab || {
                           c2.font = 'bold ' + Math.max(4, radius * 0.22) + 'px serif'; c2.fillText(bottom, x, y + radius * 0.55);
                         }
 
-                        c2.fillStyle = '#022c22'; c2.fillRect(0, 0, W, H);
+                        // Rich emerald baize studio backdrop with radial spotlight pool
+                        if (hasRad) {
+                          var matBg = c2.createRadialGradient(bx + bw * 0.5, by + bh * 0.5, 20, bx + bw * 0.5, by + bh * 0.5, Math.max(W, H) * 0.78);
+                          matBg.addColorStop(0, '#0a4a39');
+                          matBg.addColorStop(0.58, '#042f24');
+                          matBg.addColorStop(1, '#011712');
+                          c2.fillStyle = matBg;
+                        } else {
+                          c2.fillStyle = '#022c22';
+                        }
+                        c2.fillRect(0, 0, W, H);
                         c2.fillStyle = '#a7f3d0'; fitText(side === 'back' ? __alloT('stem.money.back_educational_illustration', 'BACK - EDUCATIONAL ILLUSTRATION') : __alloT('stem.money.front_educational_illustration', 'FRONT - EDUCATIONAL ILLUSTRATION'), bx, 17, bw, compact ? 10 : 12, 'bold');
-                        c2.fillStyle = paper; c2.fillRect(bx, by, bw, bh);
-                        c2.strokeStyle = ink; c2.lineWidth = 2; c2.strokeRect(bx, by, bw, bh);
-                        c2.strokeStyle = fineInk; c2.lineWidth = 0.8; c2.strokeRect(bx + 5, by + 5, bw - 10, bh - 10); c2.strokeRect(bx + 10, by + 10, bw - 20, bh - 20);
 
-                        // Fine-line guilloche border and embedded security fibers.
+                        // Grounded lifted-paper drop shadow beneath the engraved banknote
+                        c2.save();
+                        c2.shadowColor = 'rgba(0, 0, 0, 0.52)';
+                        c2.shadowBlur = 18;
+                        c2.shadowOffsetX = 0;
+                        c2.shadowOffsetY = 8;
+                        c2.fillStyle = paper; c2.fillRect(bx, by, bw, bh);
+                        c2.restore();
+
+                        c2.strokeStyle = ink; c2.lineWidth = 2; c2.strokeRect(bx, by, bw, bh);
+                        c2.strokeStyle = fineInk; c2.lineWidth = 0.85; c2.strokeRect(bx + 5, by + 5, bw - 10, bh - 10); c2.strokeRect(bx + 10, by + 10, bw - 20, bh - 20);
+
+                        // Double-wave guilloche filigree border along all 4 edges + embedded security fibers
                         for (var i = 0; i < 22; i++) {
                           var gx = bx + 12 + i * ((bw - 24) / 21);
                           c2.beginPath(); c2.moveTo(gx, by + 7); c2.quadraticCurveTo(gx + 5, by + 14, gx + 10, by + 7); c2.stroke();
+                          c2.beginPath(); c2.moveTo(gx, by + 12); c2.quadraticCurveTo(gx + 5, by + 5, gx + 10, by + 12); c2.stroke();
                           c2.beginPath(); c2.moveTo(gx, by + bh - 7); c2.quadraticCurveTo(gx + 5, by + bh - 14, gx + 10, by + bh - 7); c2.stroke();
+                          c2.beginPath(); c2.moveTo(gx, by + bh - 12); c2.quadraticCurveTo(gx + 5, by + bh - 5, gx + 10, by + bh - 12); c2.stroke();
                         }
+                        for (var vi = 0; vi < 9; vi++) {
+                          var gy = by + 14 + vi * ((bh - 28) / 8);
+                          c2.beginPath(); c2.moveTo(bx + 7, gy); c2.quadraticCurveTo(bx + 13, gy + 5, bx + 7, gy + 10); c2.stroke();
+                          c2.beginPath(); c2.moveTo(bx + bw - 7, gy); c2.quadraticCurveTo(bx + bw - 13, gy + 5, bx + bw - 7, gy + 10); c2.stroke();
+                        }
+                        // Corner rosette medallions behind corner denominations
+                        [[bx + 19, by + 22], [bx + bw - 19, by + 22], [bx + 19, by + bh - 18], [bx + bw - 19, by + bh - 18]].forEach(function(cp) {
+                          c2.strokeStyle = 'rgba(23,63,52,0.34)'; c2.lineWidth = 0.8;
+                          c2.beginPath(); c2.arc(cp[0], cp[1], 11, 0, Math.PI * 2); c2.stroke();
+                          c2.beginPath(); c2.arc(cp[0], cp[1], 8.5, 0, Math.PI * 2); c2.stroke();
+                        });
                         [[.08,.28,'#dc2626'],[.17,.73,'#2563eb'],[.29,.19,'#dc2626'],[.38,.82,'#2563eb'],[.52,.25,'#2563eb'],[.61,.70,'#dc2626'],[.74,.17,'#2563eb'],[.83,.61,'#dc2626'],[.91,.34,'#2563eb']].forEach(function(fp) {
                           c2.strokeStyle = fp[2]; c2.lineWidth = 1.1; c2.beginPath(); c2.moveTo(bx + bw * fp[0], by + bh * fp[1]); c2.lineTo(bx + bw * fp[0] + 4, by + bh * fp[1] + 2); c2.stroke();
                         });
@@ -5496,10 +5774,32 @@ window.StemLab = window.StemLab || {
                         }
 
                         var anchors = side === 'back' ? [[bx + bw * .27, by + bh * .61],[bx + bw * .27, by + bh * .33],[bx + bw * .27, by + bh * .77],[bx + bw * .73, by + bh * .53],[bx + bw * .73, by + bh * .72],[bx + bw * .73, by + bh * .35]] : [[bx + bw * .5, by + 18],[bx + bw * .4, by + bh * .88],[bx + bw * .17, by + bh * .73],[bx + bw * .2, by + bh * .3],[bx + bw * .26, by + bh * .55],[bx + bw * .74, by + bh * .55]];
+                        var pulsePhase = animatePulse ? (0.5 + 0.5 * Math.sin(t * 4.2)) : 0.65;
                         anchors.forEach(function(a, ai) {
                           var selected = ai === blink;
+                          if (selected) {
+                            c2.save();
+                            if (hasRad) {
+                              var haloR = 16 + pulsePhase * 7;
+                              var halo = c2.createRadialGradient(a[0], a[1], 4, a[0], a[1], haloR);
+                              halo.addColorStop(0, features[ai].color);
+                              halo.addColorStop(0.5, 'rgba(255,255,255,0.22)');
+                              halo.addColorStop(1, 'rgba(255,255,255,0)');
+                              c2.globalAlpha = 0.55;
+                              c2.fillStyle = halo;
+                              c2.beginPath(); c2.arc(a[0], a[1], haloR, 0, Math.PI * 2); c2.fill();
+                            }
+                            c2.globalAlpha = 0.72 - pulsePhase * 0.28;
+                            c2.strokeStyle = features[ai].color;
+                            c2.lineWidth = 1.6;
+                            c2.beginPath(); c2.arc(a[0], a[1], 11 + pulsePhase * 4.5, 0, Math.PI * 2); c2.stroke();
+                            c2.restore();
+                          }
+                          c2.save();
+                          if (selected) { c2.shadowColor = features[ai].color; c2.shadowBlur = 10; }
                           c2.fillStyle = features[ai].color; c2.strokeStyle = selected ? '#fff' : '#064e3b'; c2.lineWidth = selected ? 2.5 : 1;
-                          c2.beginPath(); c2.arc(a[0], a[1], selected ? 8 : 6, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                          c2.beginPath(); c2.arc(a[0], a[1], selected ? 8.5 : 6, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                          c2.restore();
                           c2.fillStyle = '#052e2b'; c2.font = 'bold 8px sans-serif'; c2.textAlign = 'center'; c2.fillText(String(ai + 1), a[0], a[1] + 3);
                         });
 

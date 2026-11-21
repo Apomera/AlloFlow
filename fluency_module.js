@@ -65,7 +65,7 @@
           }
       }
       var accuracy = Math.min(100, denominator > 0 ? Math.round((adjustedCorrectCount / denominator) * 100) : 0);
-      var validDuration = Math.max(1, durationSeconds);
+      var validDuration = Math.max(1, Number(durationSeconds) || 0);
       var minutes = validDuration / 60;
       var wcpm = Math.round(adjustedCorrectCount / minutes);
       return { accuracy: accuracy, wcpm: wcpm, correctWords: adjustedCorrectCount };
@@ -104,6 +104,13 @@
       var safe = /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) ? "'" + raw : raw;
       return '"' + safe.replace(/"/g, '""') + '"';
   }
+  function _fluencyCsvPlainSafe(value) {
+      var raw = String(value == null ? '' : value);
+      if (/^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) || /[,"\r\n]/.test(raw)) {
+          return _fluencyCsvCell(raw);
+      }
+      return raw;
+  }
 
   function exportFluencyCSV(records, options) {
       options = options || {};
@@ -128,7 +135,7 @@
           var passageTitle = (data.sourceText || '').substring(0, 40).replace(/[\n\r,]/g, ' ').trim() || 'Untitled';
           var review = data.review || {};
           var passage = data.passageMetadata || {};
-          return [formatDate(record.timestamp), _fluencyCsvCell(passageTitle), metrics.wcpm || 0, metrics.accuracy || 0, metrics.totalWords || 0, Math.round(metrics.durationSeconds || 0), running.substitutions || 0, running.omissions || 0, running.insertions || 0, running.selfCorrections || 0, '1:' + (running.errorRate || 0), running.readingLevel || 'unknown', review.status || 'unreviewed', _fluencyCsvCell(review.reviewer || ''), review.reviewedAt || '', _fluencyCsvCell(passage.passageId || ''), passage.calibrated === true ? 'yes' : 'no'].join(',');
+          return [_fluencyCsvPlainSafe(formatDate(record.timestamp)), _fluencyCsvCell(passageTitle), metrics.wcpm || 0, metrics.accuracy || 0, metrics.totalWords || 0, Math.round(metrics.durationSeconds || 0), running.substitutions || 0, running.omissions || 0, running.insertions || 0, running.selfCorrections || 0, '1:' + (running.errorRate || 0), running.readingLevel || 'unknown', _fluencyCsvPlainSafe(review.status || 'unreviewed'), _fluencyCsvCell(review.reviewer || ''), _fluencyCsvPlainSafe(review.reviewedAt || ''), _fluencyCsvCell(passage.passageId || ''), passage.calibrated === true ? 'yes' : 'no'].join(',');
       });
       var csv = [headers.join(',')].concat(rows).join('\n');
       var BlobCtor = options.BlobCtor || (typeof Blob !== 'undefined' ? Blob : null);
@@ -178,11 +185,12 @@
           errorRate: 0, scRate: 0, accuracy: 0, totalErrors: 0,
           readingLevel: 'unknown'
       };
-      var readingLevelLabel = rrm.accuracy >= 95 ? 'Independent' : rrm.accuracy >= 90 ? 'Instructional' : 'Frustrational';
+      var readingLevelMap = { independent: 'Independent', instructional: 'Instructional', frustrational: 'Frustrational' };
+      var readingLevelLabel = readingLevelMap[rrm.readingLevel] || (rrm.accuracy >= 95 ? 'Independent' : rrm.accuracy >= 90 ? 'Instructional' : 'Frustrational');
       var wordMarkup = result.wordData.map(function (word) {
           word = word || {};
-          var symbol = word.status === 'correct' ? '✓' : word.status === 'missed' ? '—' : word.status === 'self_corrected' ? 'SC' : '✗';
-          var color = word.status === 'correct' ? '#16a34a' : word.status === 'missed' ? '#dc2626' : word.status === 'self_corrected' ? '#2563eb' : '#ea580c';
+          var symbol = (word.status === 'correct' || word.status === 'stumbled') ? '✓' : word.status === 'missed' ? '—' : word.status === 'self_corrected' ? 'SC' : '✗';
+          var color = (word.status === 'correct' || word.status === 'stumbled') ? '#16a34a' : word.status === 'missed' ? '#dc2626' : word.status === 'self_corrected' ? '#2563eb' : '#ea580c';
           var said = word.said ? '<br/><span style="font-size:9px;color:#94a3b8;">' + _fluencyScoreSheetEscape(word.said) + '</span>' : '';
           return '<span style="display:inline-block;text-align:center;margin:4px 3px;padding:4px 6px;border-radius:6px;border:1px solid ' + color + '20;background:' + color + '08;"><span style="font-size:16px;color:#1e293b;">' + _fluencyScoreSheetEscape(word.word) + '</span><br/><span style="font-size:11px;font-weight:800;color:' + color + ';">' + symbol + '</span>' + said + '</span>';
       }).join('');
@@ -362,17 +370,20 @@
     options = options || {};
     var sampleSize = Math.max(1, Number(options.sampleSize) || 3);
     var valid = (Array.isArray(assessments) ? assessments : []).filter(function (item) {
-      return item && isFinite(Number(item.wcpm != null ? item.wcpm : (item.metrics && item.metrics.wcpm)));
+      if (!item) return false;
+      var rawWcpm = item.wcpm !== undefined ? item.wcpm : (item.metrics && item.metrics.wcpm);
+      return rawWcpm != null && rawWcpm !== '' && isFinite(Number(rawWcpm));
     });
     valid.sort(function (a, b) {
       return new Date(a.timestamp || a.date || 0).getTime() - new Date(b.timestamp || b.date || 0).getTime();
     });
     var sample = valid.slice(-sampleSize);
     var wcpmValues = sample.map(function (item) {
-      return Number(item.wcpm != null ? item.wcpm : item.metrics.wcpm);
+      return Number(item.wcpm !== undefined ? item.wcpm : item.metrics.wcpm);
     });
     var accuracyValues = sample.map(function (item) {
-      return Number(item.accuracy != null ? item.accuracy : (item.metrics && item.metrics.accuracy));
+      var rawAcc = item.accuracy !== undefined ? item.accuracy : (item.metrics && item.metrics.accuracy);
+      return (rawAcc == null || rawAcc === '') ? NaN : Number(rawAcc);
     }).filter(function (value) { return isFinite(value); });
     var metadata = sample.map(function (item) { return item.passageMetadata || {}; });
     var passageIds = metadata.map(function (m) { return m.passageId; }).filter(Boolean);
@@ -419,7 +430,8 @@
   function buildPartnerFluencyResult(options) {
     options = options || {};
     var words = Array.isArray(options.words) ? options.words : tokenizeFluencyPassage(options.passageText);
-    var last = Math.floor(Number(options.lastWordIndex));
+    var rawLast = options.lastWordIndex;
+    var last = (rawLast == null || rawLast === '') ? (words.length - 1) : Math.floor(Number(rawLast));
     if (!isFinite(last)) last = words.length - 1;
     last = Math.min(words.length - 1, last);
     var errorSet = {};
@@ -489,7 +501,8 @@
       var norms = FLUENCY_BENCHMARKS[gradeKey === '0' ? 'K' : gradeKey];
       if (!norms) return { level: 'unknown', target: 0 };
       var seasonKey2 = (season || 'winter').toLowerCase();
-      var target2 = norms[seasonKey2] || norms.winter;
+      var target2 = norms[seasonKey2] != null ? norms[seasonKey2] : norms.winter;
+      if (target2 == null) return { level: 'unknown', target: 0 };
       var ratio2 = target2 > 0 ? wcpm / target2 : 1;
       var level2 = 'well_below';
       if (ratio2 >= 1.1) level2 = 'above';
@@ -833,8 +846,9 @@
     }
     // Append any tail from the longer wordData (unpaired → low confidence).
     var longer = a.length > b.length ? a : b;
-    for (var t = len; t < longer.length; t++) merged.push(Object.assign({ lowConfidence: true, triangulation: 'unpaired' }, longer[t]));
-    var total = agree + divergent;
+    var unpaired = longer.length - len;
+    for (var t = len; t < longer.length; t++) merged.push(Object.assign({}, longer[t], { lowConfidence: true, triangulation: 'unpaired' }));
+    var total = agree + divergent + unpaired;
     return {
       wordData: merged,
       insertions: (geminiResult.insertions || localResult.insertions || []),
@@ -846,7 +860,8 @@
         source: 'triangulated (on-device whisper + cloud)',
         agreementRate: total ? Math.round((agree / total) * 100) : null,
         divergentWordCount: divergent,
-        needsReview: divergent > 0,
+        unpairedWordCount: unpaired,
+        needsReview: divergent > 0 || unpaired > 0,
         note: 'Two independent scorers were compared. Where they disagreed (' + divergent + ' of ' + total + ' words), the more lenient reading was kept and the word flagged — never penalize a reader on a machine disagreement. Review flagged words together.',
         limitationsApplied: 'Cross-check of on-device ASR and cloud analysis. Still a practice signal, not a norm-referenced or standardized measure.'
       }
@@ -961,7 +976,7 @@
     var totalWords = fluencyAlloInteger(fluencyAlloPick(data, ['totalReferenceWordCount'], fluencyAlloPick(metrics, ['totalWords'], words.length)), 0);
     var correctWords = fluencyAlloInteger(fluencyAlloPick(data, ['correctWords'], fluencyAlloPick(metrics, ['correctWords'], null)), 0);
     if (correctWords === 0 && words.length && accuracy != null) correctWords = Math.round(totalWords * accuracy / 100);
-    var date = fluencyAlloDateFor(data);
+    var date = fluencyAlloDateFor(data) || fluencyAlloDateFor(record);
     var calibrated = passage.calibrated === true;
     var benchmarkStatus = calibrated && passage.passageSetId && passage.formId
       ? 'calibrated-form' : 'descriptive-only';
@@ -997,7 +1012,7 @@
     var data = fluencyAlloRecordData(record);
     var attempted = fluencyAlloInteger(fluencyAlloPick(data, ['totalAttempted', 'attempted'], 0), 0);
     var correct = fluencyAlloInteger(fluencyAlloPick(data, ['totalCorrect', 'correct'], 0), 0);
-    var date = fluencyAlloDateFor(data);
+    var date = fluencyAlloDateFor(data) || fluencyAlloDateFor(record);
     return {
       id: 'math-' + (index + 1),
       family: 'math',
@@ -1085,9 +1100,12 @@
       };
       return { values: Object.fromEntries(Object.keys(values).map(function (key) { return [key, fluencyAlloCell(values[key])]; })) };
     });
-    var readingEvidence = readings.length ? summarizeFluencyEvidence(readingSource.filter(function (item) {
+    var readingEvidence = readings.length ? summarizeFluencyEvidence(readingSource.map(function (item) {
       var data = fluencyAlloRecordData(item);
-      return fluencyAlloWithinRange(fluencyAlloDateFor(data), rangeStart);
+      var resolvedDate = fluencyAlloDateFor(data) || fluencyAlloDateFor(item);
+      return Object.assign({}, data, { timestamp: data.timestamp || (item && item.timestamp) || resolvedDate || null, _resolvedDate: resolvedDate });
+    }).filter(function (item) {
+      return fluencyAlloWithinRange(item._resolvedDate, rangeStart);
     }), { sampleSize: 3 }) : null;
     var aggregateAllowed = sortedRecords.length >= FLUENCY_ALLOSHEET_LIMITS.minimumAggregateSessions;
     var aggregateFamilies = {};

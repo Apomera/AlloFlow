@@ -1538,7 +1538,7 @@ export async function createDownloadGrant(
     now + config.uploadTtlSeconds,
     job.output_expires_at,
   );
-  await database(env)
+  const updated = await database(env)
     .prepare(
       `UPDATE jobs
        SET download_grant_hash = ?,
@@ -1549,10 +1549,14 @@ export async function createDownloadGrant(
          AND institution_id = ?
          AND owner_id = ?
          AND status = 'completed'
-         AND deleted_at IS NULL`,
+         AND deleted_at IS NULL
+         AND output_expires_at > ?`,
     )
-    .bind(hash, expiresAt, now, jobId, ...ownerWhere(principal))
+    .bind(hash, expiresAt, now, jobId, ...ownerWhere(principal), now)
     .run();
+  if (updated.meta.changes !== 1) {
+    throw new PilotError("result_not_ready", 409);
+  }
   return {
     job: await getJobForOwner(env, jobId, principal),
     grant,

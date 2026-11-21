@@ -19,14 +19,14 @@ function abort(signal, deadline) {
   if (Date.now() > deadline) reject('preflight time limit exceeded');
 }
 function nameOf(bytes, flags) {
+  if (!(flags & 0x800) && bytes.some(b => b > 127)) reject('ambiguous filename encoding');
   let name;
   try {
-    if (!(flags & 0x800) && bytes.some(b => b > 127)) reject('ambiguous filename encoding');
     name = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   } catch (_) { reject('invalid filename encoding'); }
   if (!name || bytes.length > LIMITS.nameBytes || name !== name.normalize('NFC') || /[\x00-\x1f\x7f<>:"\\|?*%]/.test(name) || name.startsWith('/')) reject('unsafe or noncanonical filename');
   const directory = name.endsWith('/'), segments = (directory ? name.slice(0, -1) : name).split('/');
-  if (segments.length > LIMITS.depth || segments.some(s => !s || s === '.' || s === '..' || /[. ]$/.test(s) || /^(?:con|prn|aux|nul|clock\$|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i.test(s))) reject('unsafe or noncanonical path component');
+  if (segments.length > LIMITS.depth || segments.some(s => !s || s === '.' || s === '..' || /[. ]$/.test(s) || /^(?:con|prn|aux|nul|clock\$|com[0-9¹²³]|lpt[0-9¹²³])(?:[ .]|$)/i.test(s))) reject('unsafe or noncanonical path component');
   return { name, directory, key: segments.join('/').toLowerCase(), segments };
 }
 function extraFields(bytes, nameBytes) {
@@ -63,7 +63,7 @@ function parse(bytes) {
     const nameBytes = bytes.subarray(p + 46, p + 46 + nameLen), item = nameOf(nameBytes, flags);
     extraFields(bytes.subarray(p + 46 + nameLen, p + 46 + nameLen + extraLen), nameBytes);
     const kind = (attributes >>> 16) & 0xf000;
-    if ((kind && kind !== 0x8000 && kind !== 0x4000) || (kind === 0x4000 && !item.directory) || (kind === 0x8000 && item.directory) || ((attributes & 0x10) && !item.directory)) reject('links, special files, or conflicting directory attributes');
+    if ((kind && kind !== 0x8000 && kind !== 0x4000) || (kind === 0x4000 && !item.directory) || (kind === 0x8000 && item.directory) || ((attributes & 0x10) && !item.directory) || (attributes & 0x0408)) reject('links, special files, or conflicting directory attributes');
     if (names.has(item.key)) reject('duplicate or case-colliding filename');
     names.set(item.key, item.directory);
     total += expanded;
@@ -89,11 +89,13 @@ function parse(bytes) {
   return { entries, total };
 }
 function readBounded(filePath) {
-  if (!fs.lstatSync(filePath).isFile()) reject('input must be a regular file');
-  const fd = fs.openSync(filePath, 'r');
+  const ls = fs.lstatSync(filePath);
+  if (ls.isSymbolicLink() || !ls.isFile()) reject('input must be a regular file');
+  const fd = fs.openSync(filePath, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
   try {
     const before = fs.fstatSync(fd);
     if (!before.isFile() || before.size < 22 || before.size > LIMITS.archiveBytes) reject('archive size is outside the allowed range');
+    if (ls.ino && (before.ino !== ls.ino || before.dev !== ls.dev)) reject('input changed while reading');
     const bytes = Buffer.alloc(before.size); let read = 0;
     while (read < bytes.length) {
       const n = fs.readSync(fd, bytes, read, Math.min(65536, bytes.length - read), read);
@@ -109,8 +111,10 @@ async function visit(bytes, entries, options, write) {
   for (const item of entries) {
     abort(options.signal, deadline); let size = 0, crc = -1;
     const data = bytes.subarray(item.dataStart, item.dataEnd);
-    async function* chunks() { for (let p = 0; p < data.length; p += 65536) yield data.subarray(p, p + 65536); }
-    const input = Readable.from(chunks()), output = item.method === 8 ? input.pipe(zlib.createInflateRaw()) : input;
+    async function* chunks() { for (let p = 0; p < data.length; p += 4096) yield data.subarray(p, p + 4096); }
+    const input = Readable.from(chunks());
+    input.on('error', () => {});
+    const output = item.method === 8 ? input.pipe(zlib.createInflateRaw({ maxOutputLength: Math.min(LIMITS.entryBytes, item.expanded) + 1 })) : input;
     const stop = () => output.destroy(Object.assign(Error('EPUB validation cancelled'), { code: 'ALLOFLOW_VALIDATION_CANCELLED' }));
     options.signal?.addEventListener('abort', stop, { once: true });
     try {
@@ -143,8 +147,14 @@ async function extract(filePath, parent, options = {}) {
   const bytes = readBounded(filePath), parsed = parse(bytes);
   // First verify all compressed streams, so corrupt input never reaches an extractor.
   await visit(bytes, parsed.entries, options);
-  const root = fs.mkdtempSync(path.join(parent, 'epub-expanded-'));
+  const root = fs.mkdtempSync(path.join(path.resolve(parent), 'epub-expanded-'));
   let handle = null, currentName = null;
+  const closeHandle = () => {
+    if (handle === null) return;
+    const fd = handle;
+    handle = null;
+    try { fs.closeSync(fd); } catch (_) {}
+  };
   try {
     for (const item of parsed.entries) {
       const target = path.resolve(root, ...item.segments);
@@ -154,7 +164,11 @@ async function extract(filePath, parent, options = {}) {
     }
     await visit(bytes, parsed.entries, options, (item, chunk) => {
       if (item.name !== currentName) {
-        if (handle !== null) fs.closeSync(handle);
+        if (handle !== null) {
+          const prev = handle;
+          handle = null;
+          fs.closeSync(prev);
+        }
         handle = fs.openSync(path.join(root, ...item.segments), fs.constants.O_WRONLY | (fs.constants.O_NOFOLLOW || 0)); currentName = item.name;
       }
       let written = 0;
@@ -162,8 +176,8 @@ async function extract(filePath, parent, options = {}) {
     });
     return root;
   } catch (error) {
-    if (handle !== null) fs.closeSync(handle); handle = null;
+    closeHandle();
     fs.rmSync(root, { recursive: true, force: true }); throw error;
-  } finally { if (handle !== null) fs.closeSync(handle); }
+  } finally { closeHandle(); }
 }
 module.exports = { inspect, extract, snapshot, LIMITS };

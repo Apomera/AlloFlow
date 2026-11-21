@@ -704,9 +704,13 @@
   function saveFile() {
     if (!built) return;
     var url = fileUrl;
-    if (!url) { try { url = URL.createObjectURL(new Blob([built.html], { type: 'text/html' })); } catch (_) { url = ''; } }
+    var temporaryUrl = false;
+    if (!url) {
+      try { url = URL.createObjectURL(new Blob([built.html], { type: 'text/html' })); temporaryUrl = true; } catch (_) { url = ''; }
+    }
     if (!url) return problem('This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.');
     download(url, built.name);
+    if (temporaryUrl) window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
     show('after-code', built.coded);
     show('after-save', true);
     $('after-save').focus();
@@ -1341,6 +1345,11 @@
     show('loading', false);
     goTo(1, true);
     takeHanded();
+    window.addEventListener('pagehide', function () {
+      if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
+      try { dropBatchFile(); } catch (_) {}
+      try { stopPreviewSession(); } catch (_) {}
+    });
   }
 
   try { start(); } catch (error) {

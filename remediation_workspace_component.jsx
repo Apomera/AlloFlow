@@ -19,7 +19,7 @@ function _pdfWorkspaceBatchModel(queue, filter = 'all') {
     done: items.filter(item => item.status === 'done'),
   };
   const counts = Object.fromEntries(Object.entries(groups).map(([key, rows]) => [key, rows.length]));
-  return { counts, rows: groups[filter] || items, percent: items.length ? counts.done / items.length * 100 : 0 };
+  return { counts, rows: Object.prototype.hasOwnProperty.call(groups, filter) ? groups[filter] : items, percent: items.length ? counts.done / items.length * 100 : 0 };
 }
 function _PdfWorkspaceBatchFilters({ model, value, onChange, t }) {
   const say = (key, text) => _pdfWorkspaceText(t, key, text);
@@ -183,6 +183,7 @@ function _PdfWorkspaceAfterFix({ value, disabled, onChange, t }) {
   </label>;
 }
 function _PdfWorkspaceBatchStatus({ item, t }) {
+  if (!item || typeof item !== 'object') return null;
   const say = (key, text) => _pdfWorkspaceText(t, key, text);
   const result = item.result || {};
   const done = item.status === 'done';
@@ -201,14 +202,15 @@ function _PdfPacingPreference({ value, onChange, disabled, t }) {
     </span>
   </label>;
 }
-function _PdfWaitDetails({ wait, pacing }) {
+function _PdfWaitDetails({ wait, pacing, t }) {
+  const say = (key, fallback) => _pdfWorkspaceText(t, key, fallback);
   const fmt = ms => { const sec = Math.floor(Math.max(0, Number(ms) || 0) / 1000); return sec >= 60 ? Math.floor(sec / 60) + 'm ' + sec % 60 + 's' : sec + 's'; };
   const enabled = wait?.extraRequestPacing ?? pacing;
   if (!wait && enabled !== false) return null;
   return <div className="pdf-workspace-wait-details" data-help-key="pdf_wait_summary">
-    <span>Extra request pacing: <strong>{enabled === false ? 'Off' : 'On'}</strong></span>
-    {wait && <><span>Preventive wait: {fmt(wait.pacingMs)}</span><span>Recovery wait: {fmt(wait.recoveryMs)}</span><span>Request queue: {fmt(wait.queueMs)}</span></>}
-    {wait?.budget?.budgetMs > 0 && <span>Recovery allowance remaining: {fmt(wait.budget.remainingMs)}</span>}
+    <span>{say('extra_pacing', 'Extra request pacing')}: <strong>{enabled === false ? say('off', 'Off') : say('on', 'On')}</strong></span>
+    {wait && <><span>{say('preventive_wait', 'Preventive wait')}: {fmt(wait.pacingMs)}</span><span>{say('recovery_wait', 'Recovery wait')}: {fmt(wait.recoveryMs)}</span><span>{say('request_queue', 'Request queue')}: {fmt(wait.queueMs)}</span></>}
+    {wait?.budget?.budgetMs > 0 && <span>{say('recovery_allowance', 'Recovery allowance remaining')}: {fmt(wait.budget.remainingMs)}</span>}
   </div>;
 }
 

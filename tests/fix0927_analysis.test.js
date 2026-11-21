@@ -226,3 +226,75 @@ describe('AI refine source writes only to its own, unchanged resource', () => {
     expect(h.scope.addToast).toHaveBeenCalledWith(expect.any(String), 'warning');
   });
 });
+
+describe('source analysis vocabulary extraction and display', () => {
+  it('requests tiered vocabulary in the analysis prompt and normalizes/deduplicates vocabulary and vocabularyTiers', () => {
+    const normalize = Dispatcher && Dispatcher.normalizeAnalysisResult;
+    expect(DISPATCH_SOURCE).toMatch(/"vocabulary":\s*\[\{\s*"term":\s*"\.\.\.",\s*"tier":\s*"Academic"\s*\}\]/);
+    const res = normalize({
+      readingLevel: '6th-8th Grade',
+      concepts: ['Photosynthesis'],
+      vocabulary: [
+        { term: 'chlorophyll', tier: 'Domain-Specific' },
+        { term: 'analyze', tier: 'Academic' },
+        { term: 'stomata', tier: 'Domain-Specific' },
+        'Chlorophyll',
+        { word: 'transpiration', tier: 'Domain-Specific' },
+      ],
+      accuracy: { rating: 'High', reason: 'Accurate.' },
+      grammar: [],
+    });
+    expect(res.vocabulary).toEqual(['chlorophyll', 'analyze', 'stomata', 'transpiration']);
+    expect(res.vocabularyTiers).toEqual({ tier2: ['analyze'], tier3: ['chlorophyll', 'stomata', 'transpiration'] });
+    const legacy = normalize({ tier2Words: ['analyze', 'infer'] });
+    expect(legacy.vocabulary).toEqual(['analyze', 'infer']);
+    expect(legacy.vocabularyTiers).toEqual({ tier2: ['analyze', 'infer'], tier3: [] });
+    const untiered = normalize({ vocabulary: ['evaporation', 'condensation', 'precipitation'] });
+    expect(untiered.vocabularyTiers.tier2.length + untiered.vocabularyTiers.tier3.length).toBe(3);
+  });
+
+  it('displays Key Vocabulary in teacher mode with action buttons and hides it in student mode', () => {
+    const onSendVocabToFocus = vi.fn(() => 2);
+    const onGenerateGlossaryFromVocab = vi.fn();
+    const teacherProps = makeProps({ concepts: ['Water Cycle'], vocabulary: ['evaporation', 'condensation'] }, { onSendVocabToFocus, onGenerateGlossaryFromVocab });
+    const teacherEl = render(AnalysisView, teacherProps);
+    expect(teacherEl.querySelector('[data-analysis-vocabulary]')).not.toBeNull();
+    expect(teacherEl.textContent).toContain('Key Vocabulary (2)');
+    expect(teacherEl.textContent).toContain('evaporation');
+    expect(teacherEl.textContent).toContain('condensation');
+    act(() => { teacherEl.querySelector('[data-analysis-send-vocab]').click(); });
+    expect(onSendVocabToFocus).toHaveBeenCalledWith(['evaporation', 'condensation']);
+    expect(teacherProps.addToast).toHaveBeenCalledWith('Added 2 vocabulary terms to Vocabulary Focus.', 'success');
+    act(() => { teacherEl.querySelector('[data-analysis-build-glossary]').click(); });
+    expect(onGenerateGlossaryFromVocab).toHaveBeenCalledWith(['evaporation', 'condensation']);
+    const studentEl = render(AnalysisView, makeProps({ concepts: ['Water Cycle'], vocabulary: ['evaporation'] }, { isTeacherMode: false, onReadOriginal: vi.fn(), onSendVocabToFocus, onGenerateGlossaryFromVocab }));
+    expect(studentEl.querySelector('[data-analysis-vocabulary]')).toBeNull();
+    expect(studentEl.textContent).not.toContain('evaporation');
+  });
+
+  it('auto-syncs glossary tier counts on analysis completion and uses the exact analyzed list when matched', () => {
+    expect(DISPATCH_SOURCE).toContain('deps.setGlossaryTier2Count(aT2);');
+    expect(DISPATCH_SOURCE).toContain('deps.setGlossaryTier3Count(aT3);');
+    expect(DISPATCH_SOURCE).toContain('Use this exact list of ${_exactAnalysisTerms.length} vocabulary terms identified from the source analysis');
+    const sidebarSrc = fs.readFileSync(path.resolve(process.cwd(), 'view_sidebar_panels_source.jsx'), 'utf8');
+    expect(sidebarSrc).toContain('data-glossary-analysis-sync');
+    expect(sidebarSrc).toContain('data-glossary-match-analysis');
+  });
+
+  it('connects Source Analysis findings to Adapted Text, Sentence Frames, Concept Sort, and AlloBot counts', () => {
+    expect(DISPATCH_SOURCE).toContain('LEARNER BARRIERS FROM SOURCE ANALYSIS');
+    expect(DISPATCH_SOURCE).toContain('prioritize these lesson/analysis vocabulary terms');
+    expect(DISPATCH_SOURCE).toContain('Key concepts from Source Analysis');
+    const botSrc = fs.readFileSync(path.resolve(process.cwd(), 'allobot_source.jsx'), 'utf8');
+    expect(botSrc).toContain("type === 'scaffolds' || type === 'sentence-frames') ? data?.items");
+    expect(botSrc).toContain("localized('bot_events.educator_quiz_ready_count'");
+    expect(botSrc).toContain('const quizReflections = type === \'quiz\' ? alloBotTipList(data?.reflections) : [];');
+    expect(botSrc).toContain('Array.isArray(glossaryEntry?.data) ? glossaryEntry.data : glossaryEntry?.data?.terms');
+    expect(botSrc).toContain("data?.events || (type === 'timeline' ? data?.items : null)");
+    expect(botSrc).toContain('data?.sections || data?.branches || data?.outline');
+    expect(botSrc).toContain("Array.isArray(data) ? data[0]?.name : null");
+    expect(botSrc).toContain("type === 'alignment' || type === 'alignment-report'");
+    expect(botSrc).toContain("localized('bot_events.educator_glossary_ready_count'");
+    expect(botSrc).toContain("type === 'concept-sort' && categories.length && items.length");
+  });
+});

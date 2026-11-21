@@ -208,7 +208,7 @@ describe('mailbox load counter', () => {
     f.time(START + 60000);
     f.http({ a: 'recv' }); f.http({ a: '<script>' });
     const status = JSON.parse(f.context.doGet().getContent());
-    expect(status).toMatchObject({ ok: true, v: 27 });
+    expect(status).toMatchObject({ ok: true, v: 32 });
     expect(status.load.byAction).toEqual({ hello: 2, dget: 1, recv: 1, other: 1 });
     expect(status.load.perMinute.slice(0, 2)).toEqual([2, 3]);
     f.time(START + 11 * 60000);
@@ -217,6 +217,6 @@ describe('mailbox load counter', () => {
   it('a counter failure never fails the request', () => {
     const f = fixture();
     f.cache.put = () => { throw new Error('cache down'); };
-    expect(f.http({ a: 'hello' })).toMatchObject({ ok: true, v: 27 });
+    expect(f.http({ a: 'hello' })).toMatchObject({ ok: true, v: 32 });
   });
 });

@@ -26,16 +26,22 @@
  * recreation commands rather than guessing or silently falling back.
  */
 
+const crypto = require('crypto');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
+const PRIVATE_TOOLCHAIN = path.join(process.env.LOCALAPPDATA || os.homedir(), 'AlloFlow', 'toolchain');
+
 const NODE_CANDIDATES = [
+  path.join(PRIVATE_TOOLCHAIN, 'alloflow-node22-x64', 'node-v22.16.0-win-x64', 'node.exe'),
   'C:\\tmp\\alloflow-node22-x64\\node-v22.16.0-win-x64\\node.exe',
   'C:\\tmp\\node-v24.11.1-win-x64\\node.exe',
 ];
 
 const WRANGLER_CANDIDATES = [
+  path.join(PRIVATE_TOOLCHAIN, 'alloflow-wrangler-x64', 'node_modules', 'wrangler', 'bin', 'wrangler.js'),
   'C:\\tmp\\alloflow-wrangler-x64\\node_modules\\wrangler\\bin\\wrangler.js',
   'C:\\tmp\\wrangler-cli-x64\\node_modules\\wrangler\\bin\\wrangler.js',
 ];
@@ -58,10 +64,27 @@ docs/CLAUDE_HANDOFF_CLOUDFLARE_WRANGLER_2026-07-26.md:
   & $Node $Npm install --prefix 'C:\\tmp\\alloflow-wrangler-x64' wrangler@4.114.0
 `;
 
+function isSafeRegularFile(candidate) {
+  try {
+    const resolved = path.resolve(candidate);
+    const parsed = path.parse(resolved);
+    const segments = resolved.slice(parsed.root.length).split(path.sep).filter(Boolean);
+    let cur = parsed.root;
+    for (const seg of segments) {
+      cur = path.join(cur, seg);
+      const st = fs.lstatSync(cur);
+      if (st.isSymbolicLink()) return false;
+    }
+    return fs.lstatSync(resolved).isFile();
+  } catch (_) {
+    return false;
+  }
+}
+
 function findFirst(candidates, label) {
-  const hit = candidates.find((p) => fs.existsSync(p));
+  const hit = candidates.find((p) => isSafeRegularFile(p));
   if (!hit) {
-    process.stderr.write(`ERROR: no x64 ${label} found. Looked in:\n`);
+    process.stderr.write(`ERROR: no safe non-symlink x64 ${label} found. Looked in:\n`);
     candidates.forEach((c) => process.stderr.write(`  ${c}\n`));
     process.stderr.write(SETUP_HELP);
     process.exit(1);
@@ -73,6 +96,15 @@ function main() {
   const nodeExe = findFirst(NODE_CANDIDATES, 'Node');
   const wranglerJs = findFirst(WRANGLER_CANDIDATES, 'wrangler');
 
+  const expectedNodeSha256 = String(process.env.ALLOFLOW_WRANGLER_NODE_SHA256 || '').trim().toLowerCase();
+  if (expectedNodeSha256) {
+    const actualSha256 = crypto.createHash('sha256').update(fs.readFileSync(nodeExe)).digest('hex');
+    if (!/^[a-f0-9]{64}$/.test(expectedNodeSha256) || actualSha256 !== expectedNodeSha256) {
+      process.stderr.write(`ERROR: x64 Node SHA-256 mismatch for ${nodeExe}.\n`);
+      process.exit(1);
+    }
+  }
+
   const args = process.argv.slice(2);
 
   // Consume our own --cwd so wrangler never sees it.
@@ -82,7 +114,9 @@ function main() {
     const dir = args[cwdIndex + 1];
     if (!dir) { process.stderr.write('ERROR: --cwd needs a directory\n'); process.exit(2); }
     cwd = path.resolve(process.cwd(), dir);
-    if (!fs.existsSync(cwd)) { process.stderr.write(`ERROR: --cwd not found: ${cwd}\n`); process.exit(2); }
+    let cwdStat = null;
+    try { cwdStat = fs.statSync(cwd); } catch (_) {}
+    if (!cwdStat || !cwdStat.isDirectory()) { process.stderr.write(`ERROR: --cwd is not an existing directory: ${cwd}\n`); process.exit(2); }
     args.splice(cwdIndex, 2);
   }
 
@@ -94,15 +128,19 @@ function main() {
 
   // Confirm the emulated runtime really is x64 before doing anything real —
   // an arm64 node here would fail deep inside wrangler with a confusing error.
-  const probe = spawnSync(nodeExe, ['-p', 'process.arch'], { encoding: 'utf8' });
+  const probe = spawnSync(nodeExe, ['-p', 'process.arch'], { encoding: 'utf8', timeout: 15000, windowsHide: true });
   const arch = String(probe.stdout || '').trim();
-  if (arch !== 'x64') {
+  if (probe.error || probe.status !== 0 || arch !== 'x64') {
     process.stderr.write(`ERROR: ${nodeExe} reports arch "${arch}", expected x64.\n`);
     process.stderr.write(SETUP_HELP);
     process.exit(1);
   }
 
-  const result = spawnSync(nodeExe, [wranglerJs, ...args], { cwd, stdio: 'inherit' });
+  const result = spawnSync(nodeExe, [wranglerJs, ...args], { cwd, stdio: 'inherit', windowsHide: true });
+  if (result.error) {
+    process.stderr.write(`ERROR: failed to execute wrangler: ${result.error.message}\n`);
+    process.exit(1);
+  }
   process.exit(result.status === null ? 1 : result.status);
 }
 

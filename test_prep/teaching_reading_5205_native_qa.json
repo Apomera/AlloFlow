@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-20T07:00:27.328Z",
+  "generatedAt": "2026-11-21T05:21:52.839Z",
   "packId": "praxis-teaching-reading-5205",
   "standard": {
     "label": "AlloFlow Teaching Reading 5205 source, structure, feedback, safety, linkage, and credential-role QA v3",
@@ -63,15 +63,6 @@
     "guidedReviewBanks": 3,
     "learningActivityBanks": 5
   },
-  "contentBinding": {
-    "schemaVersion": 1,
-    "algorithm": "sha256",
-    "reviewedAt": "2026-07-18",
-    "sourceItemCount": 200,
-    "sourceItemsSha256": "51c325b09b7d291b8035e3bf6c87977aadb49d1b8460e61185f021f4bf18674a",
-    "learningLibrarySha256": "37436e9d444d8e56efd03e9bf3cd80e98f82cd3ec798b64e52983f9aa7b2e34d",
-    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
-  },
   "expansion": {
     "independentQuestionTarget": 500,
     "totalLearningActivities": 500,
@@ -96,5 +87,14 @@
     ],
     "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
     "findings": []
+  },
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "0ea2e7d0d4965dadce6814a29a57e4b115785026c24102c8510fee018b2b4d08",
+    "learningLibrarySha256": "f6a23a2a159e5eb45d1953815e10beed9ca716dd32acc4eeaf9d18cac8815265",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

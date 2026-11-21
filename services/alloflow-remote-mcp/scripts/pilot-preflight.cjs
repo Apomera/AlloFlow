@@ -159,29 +159,32 @@ function isExactChatGptRedirectUri(value) {
 
 function validatePilotConfig(config, raw, options = {}) {
   const errors = [];
-  const vars = config.vars || {};
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    return ["pilot configuration must be a JSON object"];
+  }
+  const vars = config.vars && typeof config.vars === "object" ? config.vars : {};
   const route = Array.isArray(config.routes) ? config.routes[0] : undefined;
   const kv = Array.isArray(config.kv_namespaces)
-    ? config.kv_namespaces.find((entry) => entry.binding === "OAUTH_KV")
+    ? config.kv_namespaces.find((entry) => entry?.binding === "OAUTH_KV")
     : undefined;
   const d1 = Array.isArray(config.d1_databases)
-    ? config.d1_databases.find((entry) => entry.binding === "PILOT_DB")
+    ? config.d1_databases.find((entry) => entry?.binding === "PILOT_DB")
     : undefined;
   const r2 = Array.isArray(config.r2_buckets)
-    ? config.r2_buckets.find((entry) => entry.binding === "DOCUMENTS")
+    ? config.r2_buckets.find((entry) => entry?.binding === "DOCUMENTS")
     : undefined;
   const metrics = Array.isArray(config.analytics_engine_datasets)
     ? config.analytics_engine_datasets.find(
-        (entry) => entry.binding === "PILOT_METRICS",
+        (entry) => entry?.binding === "PILOT_METRICS",
       )
     : undefined;
   const workflow = Array.isArray(config.workflows)
     ? config.workflows.find(
-        (entry) => entry.binding === "REMEDIATION_WORKFLOW",
+        (entry) => entry?.binding === "REMEDIATION_WORKFLOW",
       )
     : undefined;
   const rateLimit = Array.isArray(config.ratelimits)
-    ? config.ratelimits.find((entry) => entry.name === "DCR_RATE_LIMITER")
+    ? config.ratelimits.find((entry) => entry?.name === "DCR_RATE_LIMITER")
     : undefined;
   const containers = Array.isArray(config.containers)
     ? config.containers
@@ -201,6 +204,17 @@ function validatePilotConfig(config, raw, options = {}) {
   }
   if (vars.APP_ENV !== "staging" || vars.PILOT_ENABLED !== "true") {
     errors.push("APP_ENV must be staging and PILOT_ENABLED must be true");
+  }
+  if (vars.ALLOW_LOCAL_OAUTH !== "false") {
+    errors.push("ALLOW_LOCAL_OAUTH must be false");
+  }
+  if (
+    typeof vars.GEMINI_MODEL !== "string" ||
+    vars.GEMINI_MODEL.length < 1 ||
+    vars.GEMINI_MODEL.length > 256 ||
+    vars.GEMINI_MODEL !== vars.GEMINI_MODEL.trim()
+  ) {
+    errors.push("GEMINI_MODEL must be a non-empty model identifier");
   }
   if (!isExactChatGptRedirectUri(vars.CHATGPT_REDIRECT_URI)) {
     errors.push(
@@ -275,14 +289,31 @@ function validatePilotConfig(config, raw, options = {}) {
     config.routes.length !== 1 ||
     route.custom_domain !== true ||
     typeof route.pattern !== "string" ||
+    !route.pattern ||
     route.pattern.includes("*")
   ) {
     errors.push("configure exactly one non-wildcard custom domain");
   } else {
     const expectedOrigin = `https://${route.pattern}`;
+    let parsedOrigin = null;
+    try {
+      parsedOrigin = new URL(expectedOrigin);
+    } catch {
+      parsedOrigin = null;
+    }
+    const normalizedHost = parsedOrigin ? parsedOrigin.hostname.replace(/\.+$/u, "") : "";
     if (
+      !parsedOrigin ||
+      parsedOrigin.origin !== expectedOrigin ||
+      route.pattern !== parsedOrigin.hostname ||
+      parsedOrigin.port ||
+      parsedOrigin.username ||
+      parsedOrigin.password ||
+      parsedOrigin.pathname !== "/" ||
+      parsedOrigin.search ||
+      parsedOrigin.hash ||
       vars.PUBLIC_ORIGIN !== expectedOrigin ||
-      /(?:workers|pages)\.dev$/iu.test(route.pattern)
+      /(?:^|\.)(?:workers|pages)\.dev$/iu.test(normalizedHost)
     ) {
       errors.push("PUBLIC_ORIGIN must match a non-workers.dev custom domain");
     }
@@ -303,8 +334,9 @@ function validatePilotConfig(config, raw, options = {}) {
   }
   if (
     !kv ||
-    !/^[a-f0-9]{32}$/iu.test(kv.id || "") ||
-    KNOWN_NON_PILOT_KV_IDS.has(kv.id)
+    typeof kv.id !== "string" ||
+    !/^[a-f0-9]{32}$/iu.test(kv.id) ||
+    KNOWN_NON_PILOT_KV_IDS.has(kv.id.toLowerCase())
   ) {
     errors.push("OAUTH_KV must be a new dedicated 32-hex namespace ID");
   }
@@ -361,9 +393,12 @@ function validatePilotConfig(config, raw, options = {}) {
   }
   if (
     !rateLimit ||
-    !/^[1-9][0-9]*$/u.test(rateLimit.namespace_id || "") ||
+    typeof rateLimit.namespace_id !== "string" ||
+    !/^[1-9][0-9]*$/u.test(rateLimit.namespace_id) ||
     rateLimit.simple?.period !== 60 ||
-    rateLimit.simple?.limit > 30
+    !Number.isSafeInteger(rateLimit.simple?.limit) ||
+    rateLimit.simple.limit < 1 ||
+    rateLimit.simple.limit > 30
   ) {
     errors.push("DCR_RATE_LIMITER must cap registration at 30/minute or less");
   }
@@ -395,7 +430,7 @@ function main(argv) {
       ? argv[configIndex + 1]
       : "wrangler.pilot.local.jsonc",
   );
-  if (/\.example\./u.test(path.basename(configPath))) {
+  if (/\.example\./iu.test(path.basename(configPath))) {
     throw new Error("Refusing to deploy an example configuration.");
   }
   const { raw, config } = readPilotConfig(configPath);

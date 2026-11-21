@@ -621,6 +621,7 @@ function createWordSoundsCore(options = {}) {
     const data = new Map(pool.filter(p => p && typeof p === 'object')
       .map(p => [normalize(p.targetWord || p.word || p.term), p]));
     if (Array.isArray(phonemes) && phonemes.length) data.set(target, {...data.get(target), phonemes});
+    if (Array.isArray(answerPhonemes) && answerPhonemes.length) data.set(correct, {...data.get(correct), phonemes: answerPhonemes});
     const labels = w => ((data.get(w) || {}).phonemes || []).map(soundKey).filter(Boolean);
     const vowels = new Set(['a','e','i','o','u','ay','ee','ie','oa','oo','oo_short','oy','ow','aw','ar','er','or','air','ear','ure','schwa']);
     const rime = w => {
@@ -757,7 +758,7 @@ function createWordSoundsCore(options = {}) {
     const target=edgeSound(word,mode,phonemes) || (targetSound && soundKey(targetSound));
     if(!target) return null;
     if(teacherEdited){const board={version:VERSION,teacherEdited:true,mode,targetChar:soundKey(targetSound||target),difficulty:'medium',options:unique(matches),distractors:unique(distractors)};return validSoundBoard(board,word,pool)?board:null;}
-    const words=unique([...matches,...pool.map(p=>typeof p==='string'?p:(p.word||p.targetWord||p.term))]).filter(w=>w!==word);
+    const words=unique([...matches,...pool.map(p=>typeof p==='string'?p:p && (p.word||p.targetWord||p.term))]).filter(w=>w!==word);
     const sound=w=>edgeSound(w,mode,(data.get(w)||{}).phonemes);
     const yes=words.filter(w=>sound(w)!=null && soundKey(sound(w))===soundKey(target));
     const no=words.filter(w=>sound(w)!=null && soundKey(sound(w))!==soundKey(target));
@@ -903,9 +904,9 @@ function createWordSoundsCore(options = {}) {
     if (key.startsWith('short ') && key.length === 7) key = key.replace('short ', '');
     else if (key.endsWith('_short')) { out.push(key); key = key.replace('_short', ''); }
     else if (key.endsWith(' short')) key = key.replace(' short', '');
-    const special = PHONEME_BANK_SPECIAL[key] || key;
+    const special = Object.prototype.hasOwnProperty.call(PHONEME_BANK_SPECIAL, key) ? PHONEME_BANK_SPECIAL[key] : key;
     out.push(special, lower);
-    const match = PHONEME_BANK_MATCHES[lower] || PHONEME_BANK_MATCHES[special];
+    const match = Object.prototype.hasOwnProperty.call(PHONEME_BANK_MATCHES, lower) ? PHONEME_BANK_MATCHES[lower] : (Object.prototype.hasOwnProperty.call(PHONEME_BANK_MATCHES, special) ? PHONEME_BANK_MATCHES[special] : '');
     if (match) out.push(match);
     return [...new Set(out.filter(Boolean))];
   };
@@ -1904,19 +1905,19 @@ function createWordSoundsCore(options = {}) {
   };
   const activityIds = () => Object.keys(ACTIVITY_SKILLS);
   const activityEnglishName = (id) => {
-    const row = ACTIVITY_SKILLS[id];
+    const row = Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id] : null;
     if (row) return row.name;
     const plain = String(id || '').replace(/_/g, ' ').trim();
     return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : '';
   };
-  const activityLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.activity_' + id, ACTIVITY_SKILLS[id].name) : activityEnglishName(id);
-  const activitySkillLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.skill_' + id, ACTIVITY_SKILLS[id].skill) : '';
-  const activityStrand = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].strand : '';
-  const activityBig5 = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].big5.slice() : [];
+  const activityLabel = (id, translate) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? skillLookup(translate, 'word_sounds.activity_' + id, ACTIVITY_SKILLS[id].name) : activityEnglishName(id);
+  const activitySkillLabel = (id, translate) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? skillLookup(translate, 'word_sounds.skill_' + id, ACTIVITY_SKILLS[id].skill) : '';
+  const activityStrand = (id) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id].strand : '';
+  const activityBig5 = (id) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id].big5.slice() : [];
   const strandOrder = () => SKILL_STRANDS.map(row => row.key);
   const strandRow = (key) => SKILL_STRANDS.find(row => row.key === key) || null;
   const strandLabel = (key, translate) => strandRow(key) ? skillLookup(translate, 'word_sounds.strand_' + key, strandRow(key).name) : '';
-  const big5Label = (key, translate) => BIG5_NAMES[key] ? skillLookup(translate, 'word_sounds.big5_' + key, BIG5_NAMES[key]) : '';
+  const big5Label = (key, translate) => Object.prototype.hasOwnProperty.call(BIG5_NAMES, key) ? skillLookup(translate, 'word_sounds.big5_' + key, BIG5_NAMES[key]) : '';
   const strandBig5 = (key) => strandRow(key) ? strandRow(key).big5.slice() : [];
   const strandBig5Label = (key, translate) => strandBig5(key).map(tag => big5Label(tag, translate)).join(', ');
   // Ids keep their given order inside each strand; unknown ids come last under ''.
@@ -1955,7 +1956,7 @@ function createWordSoundsCore(options = {}) {
   // every activity keeps at least one item and none passes 20. Largest remainders first, so the
   // total is exact whenever the plan can hold it.
   const scaleLessonCounts = (entries, length) => {
-    const rows = planEntries(entries), target = LESSON_LENGTHS[length] ? LESSON_LENGTHS[length].items : 0;
+    const rows = planEntries(entries), target = Object.prototype.hasOwnProperty.call(LESSON_LENGTHS, length) ? LESSON_LENGTHS[length].items : 0;
     if (!rows.length || !target) return rows;
     const weight = rows.reduce((sum, row) => sum + row.count, 0);
     const exact = rows.map(row => row.count / weight * target);
@@ -1979,7 +1980,7 @@ function createWordSoundsCore(options = {}) {
     if (!row) return null;
     const unavailable = Array.isArray(options.unavailable) ? options.unavailable : [];
     const kept = row.activities.filter(([activity]) => !unavailable.includes(activity));
-    const length = LESSON_LENGTHS[options.length] ? options.length : LESSON_LENGTH_DEFAULT;
+    const length = Object.prototype.hasOwnProperty.call(LESSON_LENGTHS, options.length) ? options.length : LESSON_LENGTH_DEFAULT;
     const activities = scaleLessonCounts(kept.map(([activity, weight]) => ({ id: activity, count: weight })), length);
     return { id: row.id, length, masteryThreshold: row.mastery, activities, order: activities.map(activity => activity.id),
       dropped: row.activities.map(([activity]) => activity).filter(activity => unavailable.includes(activity)) };
@@ -2133,7 +2134,7 @@ function createWordSoundsCore(options = {}) {
   let ogTableCache = null;
   const ogTables = () => {
     if (ogTableCache) return ogTableCache;
-    const byKey = {}, byLabel = {}, pairByKey = {}, pairByLabel = {};
+    const byKey = Object.create(null), byLabel = Object.create(null), pairByKey = Object.create(null), pairByLabel = Object.create(null);
     const addLabel = (table, label, grapheme) => { (table[label] = table[label] || new Set()).add(grapheme); };
     Object.entries(OG_SPELLING_TEXT).forEach(([key, text]) => {
       byKey[key] = new Set(text.split(' '));
@@ -2408,7 +2409,7 @@ function createWordSoundsCore(options = {}) {
     // The word written sound by sound with each sound's plainest spelling (said -> sed, was -> woz).
     const plain = { ay: 'ai', ee: 'ee', ie: 'ie', oa: 'oa', oo: 'oo', oo_short: 'oo', schwa: 'u', dh: 'th', zh: 'sh', er: 'er' };
     const bySound = keys.length && keys.every(Boolean)
-      ? keys.map((key, index) => index === keys.length - 1 && key === 'ay' ? 'ay' : index === keys.length - 1 && key === 'ie' ? 'y' : plain[key] || key).join('') : '';
+      ? keys.map((key, index) => index === keys.length - 1 && key === 'ay' ? 'ay' : index === keys.length - 1 && key === 'ie' ? 'y' : (ownKey(plain, key) ? plain[key] : key)).join('') : '';
     const rules = [
       // c, k and ck for /k/.
       [...swap(/ck/, 'k'), ...swap(/c(?![eiyhk])/, 'k'), ...swap(/k(?=[aoulr])/, 'c'), ...swap(/ck/, 'c')],

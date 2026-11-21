@@ -176,6 +176,9 @@ function replaceWithStagedDirectory(stagedDir, targetDir, stagingRoot) {
 function walkFiles(rootDir, files = []) {
   for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
     const fullPath = path.join(rootDir, entry.name);
+    if (entry.isSymbolicLink()) {
+      throw new Error('Refusing to walk symbolic link in desktop build tree: ' + fullPath);
+    }
     if (entry.isDirectory()) walkFiles(fullPath, files);
     else if (entry.isFile()) files.push(fullPath);
   }
@@ -186,7 +189,7 @@ function scanForBakedKeys(rootDir) {
   const hits = [];
   for (const file of walkFiles(rootDir)) {
     const ext = path.extname(file).toLowerCase();
-    if (!['.html', '.js', '.json', '.css', '.txt', '.map'].includes(ext)) continue;
+    if (!['.html', '.js', '.mjs', '.cjs', '.json', '.css', '.txt', '.map'].includes(ext)) continue;
     const text = fs.readFileSync(file, 'utf8');
     const matches = text.match(GOOGLE_API_KEY_PATTERN);
     if (matches) {
@@ -202,7 +205,7 @@ function scanForBakedKeys(rootDir) {
 function sanitizeBakedGoogleKeys(rootDir) {
   for (const file of walkFiles(rootDir)) {
     const ext = path.extname(file).toLowerCase();
-    if (!['.html', '.js', '.json', '.css', '.txt', '.map'].includes(ext)) continue;
+    if (!['.html', '.js', '.mjs', '.cjs', '.json', '.css', '.txt', '.map'].includes(ext)) continue;
     const text = fs.readFileSync(file, 'utf8');
     if (!GOOGLE_API_KEY_PATTERN.test(text)) continue;
     GOOGLE_API_KEY_PATTERN.lastIndex = 0;
@@ -307,8 +310,12 @@ function copyDesktopPublicAssets(buildOutputDir, publicDir = path.join(APP_ROOT,
 }
 
 function buildAndStage({ buildOutputDir, inputFingerprint }) {
+  const sanitizedHostEnv = {};
+  for (const [k, v] of Object.entries(process.env)) {
+    if (!/^REACT_APP_/i.test(k)) sanitizedHostEnv[k] = v;
+  }
   const env = {
-    ...process.env,
+    ...sanitizedHostEnv,
     ALLOFLOW_DESKTOP_BUILD_INPUT_FINGERPRINT: inputFingerprint.sha256,
     BUILD_PATH: buildOutputDir,
     BROWSER: 'none',

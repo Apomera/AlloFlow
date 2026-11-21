@@ -918,23 +918,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           renderer = new T.WebGLRenderer({ antialias: true, alpha: false });
           renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
           if (T.sRGBEncoding !== undefined) renderer.outputEncoding = T.sRGBEncoding;
+          if (T.ACESFilmicToneMapping !== undefined) { renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.06; }
           renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
           var canvas = renderer.domElement;
           canvas.setAttribute('aria-hidden', 'true'); canvas.style.cssText = 'display:block;width:100%;height:100%;touch-action:pan-y';
           host.current.appendChild(canvas);
           var scene = new T.Scene(), camera = new T.PerspectiveCamera(39, 1, 0.1, 240);
-          scene.add(new T.HemisphereLight('#deefff', '#67634b', 0.85));
-          var sun = new T.DirectionalLight('#fff0d5', 1.05); sun.position.set(-12, 20, 9); scene.add(sun);
+          scene.add(new T.HemisphereLight('#e4f3ff', '#5e5b44', 0.90));
+          var sun = new T.DirectionalLight('#fff0d5', 1.08); sun.position.set(-12, 20, 9); scene.add(sun);
           sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
           Object.assign(sun.shadow.camera, { left: -13, right: 13, top: 13, bottom: -13, near: 1, far: 65 });
           sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.04;
-          var fill = new T.DirectionalLight('#c4e4ff', 0.25); fill.position.set(9, 6, -9); scene.add(fill);
+          var fill = new T.DirectionalLight('#c4e4ff', 0.28); fill.position.set(9, 6, -9); scene.add(fill);
+          var rim = new T.DirectionalLight('#ffe2b8', 0.32); rim.position.set(14, 11, -13); scene.add(rim);
           remove.push(function() { if (sun.shadow.map) sun.shadow.map.dispose(); });
           var cache = {};
           function mat(color) { if (!cache[color]) { cache[color] = new T.MeshLambertMaterial({ color: new T.Color(color).convertSRGBToLinear() }); materials.push(cache[color]); } return cache[color]; }
+          var selectedAuraMat = new T.MeshBasicMaterial({ color: new T.Color('#fff5ba').convertSRGBToLinear(), transparent: true, opacity: 0.92, depthWrite: false });
+          var familyAuraMat = new T.MeshBasicMaterial({ color: new T.Color('#f5b83d').convertSRGBToLinear(), transparent: true, opacity: 0.78, depthWrite: false });
+          materials.push(selectedAuraMat, familyAuraMat);
           function geo(g) { geometries.push(g); return g; }
           var sphere = geo(new T.SphereGeometry(1, 18, 12)), cone = geo(new T.ConeGeometry(1, 1, 7)), rockGeo = geo(new T.DodecahedronGeometry(1, 0));
-          var ringGeo = geo(new T.TorusGeometry(0.63, 0.035, 5, 28));
+          var ringGeo = geo(new T.TorusGeometry(0.63, 0.042, 6, 32));
+          var contactShadowGeo = geo(new T.PlaneGeometry(1.15, 1.35));
           function mesh(g, color, parent, x, y, z, sx, sy, sz) {
             var m = new T.Mesh(g, mat(color)); m.position.set(x || 0, y || 0, z || 0); m.scale.set(sx || 1, sy || sx || 1, sz || sx || 1); parent.add(m); return m;
           }
@@ -942,12 +948,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           // procedural surfaces and instancing. No ecosystem simulation state.
           function surface(width, height, paint, repeat) {
             var c = document.createElement('canvas'); c.width = width; c.height = height;
-            var ctx = c.getContext('2d'); paint(ctx, width, height);
+            var ctx = c.getContext('2d'); if (!ctx) return null; paint(ctx, width, height);
             var tex = new T.CanvasTexture(c); textures.push(tex);
             tex.wrapS = tex.wrapT = T.RepeatWrapping; tex.repeat.set(repeat || 1, repeat || 1);
             tex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
             return tex;
           }
+          var contactShadowTex = surface(64, 64, function(ctx, w, ht) {
+            var g = ctx.createRadialGradient(w / 2, ht / 2, 2, w / 2, ht / 2, w * 0.48);
+            g.addColorStop(0, 'rgba(15, 24, 20, 0.44)');
+            g.addColorStop(0.55, 'rgba(15, 24, 20, 0.16)');
+            g.addColorStop(1, 'rgba(15, 24, 20, 0)');
+            ctx.fillStyle = g; ctx.fillRect(0, 0, w, ht);
+          });
+          var contactShadowMat = contactShadowTex ? new T.MeshBasicMaterial({ map: contactShadowTex, transparent: true, opacity: 0.72, depthWrite: false }) : null;
+          if (contactShadowMat) materials.push(contactShadowMat);
           function fixedNoise(n) { var v = Math.sin(n * 78.233 + 17.13) * 43758.5453; return v - Math.floor(v); }
           var groundTexture = surface(256, 256, function(ctx, w, ht) {
             ctx.fillStyle = '#dfdfdf'; ctx.fillRect(0, 0, w, ht);
@@ -1078,7 +1093,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             var winter = key === 'snow', dry = key === 'drought', forest = key === 'forest';
             scene.background = linear(winter ? '#d8e4e9' : dry ? '#d9e2d6' : '#c8dfe1'); scene.fog = new T.Fog(scene.background, 55, 135);
             sun.color.copy(linear(winter ? '#e5efff' : dry ? '#ffe7bd' : forest ? '#e5efd7' : '#fff0d5'));
-            sun.intensity = winter ? 0.88 : dry ? 1.12 : forest ? 0.96 : 1.05;
+            sun.intensity = winter ? 0.88 : dry ? 1.12 : forest ? 0.96 : 1.08;
+            rim.color.copy(linear(winter ? '#d4eeff' : dry ? '#ffd599' : forest ? '#d7f0d2' : '#ffe2b8'));
+            rim.intensity = winter ? 0.34 : dry ? 0.38 : 0.30;
             weatherMat.color.copy(linear(winter ? '#f7fcff' : dry ? '#ead3a0' : forest ? '#d8ead0' : '#eee8bc'));
             weatherMat.size = winter ? 0.13 : dry ? 0.14 : 0.08;
             weatherMat.opacity = winter ? 0.76 : dry ? 0.32 : 0.28;
@@ -1200,7 +1217,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               mesh(sphere, '#735449', body, 0, legH + 0.40, 0.64, 0.07, 0.045, 0.045);
               mesh(sphere, '#e2d7b8', body, 0, legH + 0.34, -0.52, 0.15 + fur * 0.06);
               if (fur > 0.5) for (var tuft = 0; tuft < 3; tuft++) mesh(cone, c, body, (tuft - 1) * 0.15, legH + belly * 1.8, -0.08, 0.1, fur * 0.24, 0.1);
-              var ring = new T.Mesh(ringGeo, mat('#ffd66e')); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; root.add(ring);
+              if (contactShadowMat) {
+                var cShadow = new T.Mesh(contactShadowGeo, contactShadowMat);
+                cShadow.rotation.x = -Math.PI / 2; cShadow.position.y = 0.015;
+                root.add(cShadow);
+              }
+              var ring = new T.Mesh(ringGeo, familyAuraMat); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; root.add(ring);
               body.traverse(function(m) { if (m.isMesh) { if (m.material === mat(c)) m.material = coat(c); m.receiveShadow = true; m.userData.organismId = o.id; hitMeshes.push(m); } });
               residents.push({ root: root, body: body, ring: ring, id: o.id, organism: o, markerBase: legH + 1.11, x: x, z: z, angle: root.rotation.y });
             });
@@ -1241,7 +1263,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               var normal = new T.Vector3(focal ? 0 : slopeX, 1, focal ? 0 : slopeZ).normalize().applyAxisAngle(new T.Vector3(0, 1, 0), -a.root.rotation.y);
               a.ring.quaternion.setFromUnitVectors(new T.Vector3(0, 0, 1), normal);
               a.ring.visible = p.selected === a.id || p.family.has(a.id);
-              a.ring.material = mat(p.selected === a.id ? '#fff8d6' : '#e1ae39');
+              a.ring.material = p.selected === a.id ? selectedAuraMat : familyAuraMat;
+              var auraPulse = motion ? (1 + 0.06 * Math.sin(visualTime * 3.2 + a.id)) : 1;
+              a.ring.scale.set(auraPulse, auraPulse, 1);
               if (!p.compact && p.spotlight && p.spotlight.has(a.id) && a.root.visible) {
                 rangeTransform.position.copy(a.root.position); rangeTransform.position.y += 0.045;
                 rangeTransform.quaternion.copy(a.root.quaternion).multiply(a.ring.quaternion);
@@ -1434,16 +1458,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
   function IslandPortrait(props) {
     var h = props.React.createElement, o = props.organism, shade = IslandModel.value(o, 'shade'), fur = IslandModel.value(o, 'fur'), legs = IslandModel.value(o, 'legs');
-    var color = 'hsl(38 24% ' + (30 + shade * 55) + '%)';
+    var lightL = Math.min(92, 42 + shade * 50), midL = 30 + shade * 52, darkL = Math.max(16, 20 + shade * 42);
+    var color = 'hsl(38 24% ' + midL + '%)';
+    var hiColor = 'hsl(40 30% ' + lightL + '%)';
+    var shColor = 'hsl(35 22% ' + darkL + '%)';
+    var pid = 'ei-p-' + (o && o.id != null ? o.id : Math.round(shade * 100));
     return h('svg', { viewBox: '0 0 100 110', className: 'ei-portrait', 'aria-hidden': true },
-      h('ellipse', { cx: 50, cy: 101, rx: 32, ry: 6, fill: '#244b3522' }),
-      [30, 66].map(function(x) { return h('ellipse', { key: x, cx: x, cy: 86, rx: 9, ry: 8 + legs * 15, fill: color }); }),
-      h('ellipse', { cx: 48, cy: 67 - legs * 5, rx: 29 + fur * 5, ry: 28 + fur * 4, fill: color }),
-      [34, 63].map(function(x) { return h('ellipse', { key: x, cx: x, cy: 22, rx: 8, ry: 17 - fur * 5, fill: color, transform: 'rotate(' + (x < 50 ? -14 : 14) + ' ' + x + ' 22)' }); }),
-      h('ellipse', { cx: 50, cy: 45, rx: 27, ry: 25, fill: color }),
-      [38, 63].map(function(x) { return h('g', { key: x }, h('ellipse', { cx: x, cy: 44, rx: 8, ry: 10, fill: '#fffbea' }), h('ellipse', { cx: x + 1, cy: 45, rx: 4, ry: 6, fill: '#253d36' }), h('circle', { cx: x + 2, cy: 42, r: 1.5, fill: 'white' })); }),
-      h('ellipse', { cx: 50, cy: 56, rx: 4, ry: 3, fill: '#826353' }),
-      h('path', { d: 'M44 62 Q50 66 56 62', stroke: '#695843', fill: 'none', strokeWidth: 1.5 }));
+      h('defs', null,
+        h('radialGradient', { id: pid + '-coat', cx: '36%', cy: '30%', r: '68%' },
+          h('stop', { offset: '0%', stopColor: hiColor }),
+          h('stop', { offset: '58%', stopColor: color }),
+          h('stop', { offset: '100%', stopColor: shColor })),
+        h('radialGradient', { id: pid + '-shadow', cx: '50%', cy: '50%', r: '50%' },
+          h('stop', { offset: '0%', stopColor: '#1e3a2b', stopOpacity: 0.34 }),
+          h('stop', { offset: '100%', stopColor: '#1e3a2b', stopOpacity: 0 }))),
+      h('ellipse', { cx: 50, cy: 101, rx: 35, ry: 7.5, fill: 'url(#' + pid + '-shadow)' }),
+      [30, 66].map(function(x) { return h('ellipse', { key: x, cx: x, cy: 86, rx: 9, ry: 8 + legs * 15, fill: shColor }); }),
+      h('ellipse', { cx: 48, cy: 67 - legs * 5, rx: 29 + fur * 5, ry: 28 + fur * 4, fill: 'url(#' + pid + '-coat)', stroke: shColor, strokeWidth: 0.9 }),
+      [34, 63].map(function(x) {
+        return h('g', { key: x, transform: 'rotate(' + (x < 50 ? -14 : 14) + ' ' + x + ' 22)' },
+          h('ellipse', { cx: x, cy: 22, rx: 8, ry: 17 - fur * 5, fill: 'url(#' + pid + '-coat)', stroke: shColor, strokeWidth: 0.7 }),
+          h('ellipse', { cx: x, cy: 23, rx: 3.8, ry: Math.max(4, 10 - fur * 3.5), fill: '#d6a992', opacity: 0.72 }));
+      }),
+      h('ellipse', { cx: 50, cy: 45, rx: 27, ry: 25, fill: 'url(#' + pid + '-coat)', stroke: shColor, strokeWidth: 0.9 }),
+      h('ellipse', { cx: 43, cy: 33, rx: 12, ry: 6, fill: '#fffdf4', opacity: 0.22 }),
+      [38, 63].map(function(x) { return h('g', { key: x }, h('ellipse', { cx: x, cy: 44, rx: 8, ry: 10, fill: '#fffbea', stroke: '#4d4137', strokeWidth: 0.6 }), h('ellipse', { cx: x + 1, cy: 45, rx: 4.2, ry: 6, fill: '#1f332d' }), h('circle', { cx: x + 2.2, cy: 42, r: 1.7, fill: 'white' }), h('circle', { cx: x - 0.5, cy: 47.5, r: 0.9, fill: '#ffffffaa' })); }),
+      h('ellipse', { cx: 50, cy: 56, rx: 4.2, ry: 3, fill: '#7c5b4b' }),
+      h('path', { d: 'M44 62 Q50 66 56 62', stroke: '#5c4b39', fill: 'none', strokeWidth: 1.6, strokeLinecap: 'round' }));
   }
 
   function IslandFirstDiscovery(props) {
@@ -1485,14 +1526,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         h('span', { className: 'ei-population-mean-key' }, tx('family_population_mean', 'Whole-population mean')),
         h('span', { className: 'ei-family-range-key' }, tx('family_range', 'Family range'))),
       h('svg', { className: 'ei-family-trait-chart', viewBox: '0 0 320 175', role: 'img', 'aria-label': tx('family_chart_alt', 'Family trait mean and full range compared with the whole population. Values use a 0–100 scale. Exact data are in the complete family record.') },
+        h('defs', null,
+          h('linearGradient', { id: 'ei-fam-ribbon-grad', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: '#d9b44a', stopOpacity: 0.36 }),
+            h('stop', { offset: '100%', stopColor: '#a67b24', stopOpacity: 0.14 }))),
         [0, .5, 1].map(function(v) { return h('g', { key: v }, h('line', { x1: 32, x2: 300, y1: y(v), y2: y(v), stroke: '#d4d6c7', strokeDasharray: '2 4' }), h('text', { x: 25, y: y(v) + 4, textAnchor: 'end' }, v * 100)); }),
         frames.filter(function(f, i) { return i > 0 && f.habitat !== frames[i - 1].habitat; }).map(function(f) { return h('line', { key: f.generation, x1: x(f.generation), x2: x(f.generation), y1: 17, y2: 147, stroke: '#7d8f82', strokeDasharray: '2 5', 'data-family-habitat-change': f.generation }); }),
-        h('polygon', { points: ribbon, fill: '#c6a64f', opacity: .25, 'data-family-range-band': true }),
+        h('polygon', { points: ribbon, fill: 'url(#ei-fam-ribbon-grad)', 'data-family-range-band': true }),
         h('polyline', { points: populationLine, fill: 'none', stroke: '#346d69', strokeWidth: 2, strokeDasharray: '5 4', 'data-family-population-line': true }),
-        h('polyline', { points: familyLine, fill: 'none', stroke: '#805b16', strokeWidth: 2.5, 'data-family-mean-line': true }),
+        h('polyline', { points: familyLine, fill: 'none', stroke: '#f5c84c', strokeWidth: 5.5, opacity: 0.24, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+        h('polyline', { points: familyLine, fill: 'none', stroke: '#805b16', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round', 'data-family-mean-line': true }),
         samples.length === 1 && h('circle', { cx: x(samples[0].generation), cy: y(samples[0].traits[trait].mean), r: 3, fill: '#805b16' }),
         populationSamples.length === 1 && h('circle', { cx: x(populationSamples[0].generation), cy: y(populationSamples[0].populationMeans[trait]), r: 2.5, fill: '#346d69' }),
         h('line', { x1: x(current.generation), x2: x(current.generation), y1: 16, y2: 148, stroke: '#293e35', strokeWidth: 1 }),
+        range && h('circle', { cx: x(current.generation), cy: y(range.mean), r: 7.5, fill: '#f5c84c', opacity: 0.28 }),
         range && h('circle', { cx: x(current.generation), cy: y(range.mean), r: 4, stroke: '#fffef7', strokeWidth: 1.5, fill: '#805b16' }),
         current.populationMeans[trait] !== null && h('circle', { cx: x(current.generation), cy: y(current.populationMeans[trait]), r: 3, fill: '#346d69' }),
         h('text', { x: 32, y: 166 }, 'G' + first), last !== first && h('text', { x: 300, y: 166, textAnchor: 'end' }, 'G' + last)),
@@ -3670,15 +3717,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var T = window.THREE; if (!T || !host.current) return fail();
           clearTimeout(timeout); renderer = new T.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
           if (T.sRGBEncoding !== undefined) renderer.outputEncoding = T.sRGBEncoding;
+          if (T.ACESFilmicToneMapping !== undefined) { renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; }
           var canvas = renderer.domElement; canvas.setAttribute('aria-hidden', 'true'); host.current.appendChild(canvas);
           var scene = new T.Scene(); scene.background = new T.Color('#c9e5e9').convertSRGBToLinear(); scene.fog = new T.Fog(new T.Color('#c9e5e9').convertSRGBToLinear(), 95, 180);
           var camera = new T.PerspectiveCamera(43, 1, .1, 260), angle = .38, elevation = Math.atan(.63);
-          scene.add(new T.HemisphereLight('#f0f9ff', '#556148', 1.05)); var sun = new T.DirectionalLight('#fff2d2', 1.1); sun.position.set(-8, 25, 12); scene.add(sun);
+          scene.add(new T.HemisphereLight('#f0f9ff', '#556148', 1.05)); var sun = new T.DirectionalLight('#fff2d2', 1.12); sun.position.set(-8, 25, 12); scene.add(sun);
+          var archRim = new T.DirectionalLight('#bae6fd', 0.34); archRim.position.set(16, 12, -16); scene.add(archRim);
           function geo(g) { geometries.push(g); return g; }
           var cache = {}; function mat(c) { if (!cache[c]) { cache[c] = new T.MeshLambertMaterial({ color: new T.Color(c).convertSRGBToLinear() }); materials.push(cache[c]); } return cache[c]; }
           var sphere = geo(new T.SphereGeometry(1, 12, 8)), cone = geo(new T.ConeGeometry(1, 1, 7)), cylinder = geo(new T.CylinderGeometry(.7, 1, 1, 6)), ring = geo(new T.TorusGeometry(1, .055, 5, 24)), rock = geo(new T.DodecahedronGeometry(1, 0));
+          var archShadowGeo = geo(new T.CircleGeometry(0.42, 16));
+          var archShadowMat = new T.MeshBasicMaterial({ color: 0x16241d, transparent: true, opacity: 0.24, depthWrite: false });
+          materials.push(archShadowMat);
           function mesh(g, c, parent, x, y, z, sx, sy, sz) { var m = new T.Mesh(g, mat(c)); m.position.set(x, y, z); m.scale.set(sx, sy, sz); parent.add(m); return m; }
-          var ocean = mesh(geo(new T.PlaneGeometry(360, 360)), '#2b7487', scene, 0, -.1, 0, 1, 1, 1); ocean.rotation.x = -Math.PI / 2;
+          var oceanMat = typeof T.MeshStandardMaterial === 'function'
+            ? new T.MeshStandardMaterial({ color: new T.Color('#2b7487').convertSRGBToLinear(), roughness: 0.28, metalness: 0.14 })
+            : mat('#2b7487');
+          if (oceanMat !== cache['#2b7487']) materials.push(oceanMat);
+          var ocean = new T.Mesh(geo(new T.PlaneGeometry(360, 360)), oceanMat); ocean.position.set(0, -.1, 0); ocean.rotation.x = -Math.PI / 2; scene.add(ocean);
           // Presentation units only. The model's island coordinates and migration distances stay independent.
           var landScale = .70, heightScale = .90, spread = landScale / .55;
           var centers = ArchipelagoModel.islands.map(function(island) { return { x: island.x * spread, z: 1 + (island.z - 1) * spread }; });
@@ -3787,6 +3843,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   // Fixed pod size: rib thickness is a schematic cue for inherited hardness.
                   [-1, 1].forEach(function(face) { [-1, 0, 1].forEach(function(rib) { var seam = mesh(cylinder, '#805739', group, .18 + rib * .09, .87, .04 + face * (rib === 0 ? .167 : .135), .012 + v * .024, rib === 0 ? .36 : .29, .012 + v * .024); seam.name = 'Shellseed seam'; }); });
                 }
+                var orgShadow = new T.Mesh(archShadowGeo, archShadowMat); orgShadow.rotation.x = -Math.PI / 2; orgShadow.position.y = 0.015; group.add(orgShadow);
                 if (o.id === p.selected) { var halo = mesh(ring, '#f4d573', group, 0, .025, 0, .57, .57, .57); halo.rotation.x = -Math.PI / 2; }
               }); });
             }); draw();

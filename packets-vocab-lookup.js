@@ -110,9 +110,26 @@
       window.clearTimeout(timer);
       if (activeStop === control) activeStop = null;
     };
+    var MAX_DICT_JSON_BYTES = 2 * 1024 * 1024;
+    var safeJsonParse = function (raw) {
+      return JSON.parse(raw, function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      });
+    };
     window.fetch(API + encodeURIComponent(word.toLowerCase()), opts).then(function (reply) {
       if (reply.status === 404) return null;
       if (!reply.ok) { var err = new Error('answered ' + reply.status); err.status = reply.status; throw err; }
+      var cl = Number(reply.headers && typeof reply.headers.get === 'function' ? reply.headers.get('content-length') : NaN);
+      if (isFinite(cl) && cl > MAX_DICT_JSON_BYTES) {
+        if (reply.body && typeof reply.body.cancel === 'function') { try { reply.body.cancel(); } catch (_) {} }
+        throw new Error('response too large');
+      }
+      if (typeof reply.text === 'function') {
+        return reply.text().then(function (text) {
+          if (text.length > MAX_DICT_JSON_BYTES) throw new Error('response too large');
+          return safeJsonParse(text);
+        });
+      }
       return reply.json();
     }).then(function (rows) {
       finish();
@@ -139,7 +156,11 @@
     var picked = doc.querySelector('input[name="meaning"]:checked');
     var m = found.result.list[Number(picked ? picked.value : 0)] || found.result.list[0];
     var key = keyOf(found.word), edits;
-    try { edits = JSON.parse(window.localStorage.getItem(EDITS_KEY) || 'null'); } catch (_) { edits = null; }
+    try {
+      edits = JSON.parse(window.localStorage.getItem(EDITS_KEY) || 'null', function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      });
+    } catch (_) { edits = null; }
     if (!isObject(edits) || edits.v !== 1) edits = { v: 1, words: {}, senses: {} };
     if (!isObject(edits.words)) edits.words = {};
     if (!isObject(edits.senses)) edits.senses = {};
@@ -181,7 +202,7 @@
     var more = /(?:^#|&)more=([^&]*)/.exec(hash);
     if (more) {
       try {
-        var seen = {};
+        var seen = Object.create(null);
         if (firstKey) seen[firstKey] = true;
         decodeURIComponent(more[1]).split(',').forEach(function (part) {
           var w = wordOf(part), k = keyOf(w);

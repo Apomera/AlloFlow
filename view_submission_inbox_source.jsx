@@ -1525,8 +1525,9 @@ function siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml, wrapMain, 
   var stories = siStudentStoryItems(p);
   var annos = siStudentAnnotations(p);
   var numericScores = Object.keys(gradesMap)
-    .map(function (k) { return gradesMap[k] && gradesMap[k].score; })
-    .filter(function (s) { return typeof s === 'number' && Number.isFinite(s); });
+    .map(function (k) { return gradesMap[k]; })
+    .filter(function (g) { return g && g.status !== 'error' && typeof g.score === 'number' && Number.isFinite(g.score); })
+    .map(function (g) { return g.score; });
   var gradableEntries = entries.filter(function (entry) {
     return !entry.isSelfCheck || Object.prototype.hasOwnProperty.call(gradesMap, entry.key);
   });
@@ -1538,8 +1539,13 @@ function siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml, wrapMain, 
   var avgVal = (typeof sumObj.average === 'number' && Number.isFinite(sumObj.average)) ? sumObj.average : fallbackAvg;
   var avgText = avgVal !== null ? (avgVal + '/100') : '—';
   var renderScoreBadge = function (g, isSelfCheck) {
+    if (g && g.status === 'error') {
+      return '<span style="display:inline-block;padding:2px 9px;border-radius:999px;background:#fee2e2;color:#991b1b;font-weight:700;font-size:12px;">Grading error</span>';
+    }
     if (g && typeof g.score === 'number' && Number.isFinite(g.score)) {
-      return '<span style="display:inline-block;padding:2px 9px;border-radius:999px;background:#dcfce7;color:#14532d;font-weight:700;font-size:12px;">' + escHtml(g.score + '/100') + (g.status ? ' · ' + escHtml(g.status) : '') + '</span>';
+      var badgeBg = g.score >= 85 ? '#dcfce7' : (g.score >= 60 ? '#fef3c7' : '#ffe4e6');
+      var badgeFg = g.score >= 85 ? '#14532d' : (g.score >= 60 ? '#92400e' : '#9f1239');
+      return '<span style="display:inline-block;padding:2px 9px;border-radius:999px;background:' + badgeBg + ';color:' + badgeFg + ';font-weight:700;font-size:12px;">' + escHtml(g.score + '/100') + (g.status ? ' · ' + escHtml(g.status) : '') + '</span>';
     }
     if (isSelfCheck) {
       return '<span style="display:inline-block;padding:2px 9px;border-radius:999px;background:#e0f2fe;color:#075985;font-weight:600;font-size:12px;">Self-check (ungraded)</span>';
@@ -1613,6 +1619,24 @@ function siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml, wrapMain, 
       }).join('')
     + '</section>'
   ) : '';
+  var takeHomeSection = (p.takeHome && typeof p.takeHome === 'object') ? (function () {
+    var th = p.takeHome;
+    var items = Array.isArray(th.items) ? th.items : [];
+    var doneCount = items.filter(function (it) { return it && it.done; }).length;
+    var firstTryCount = items.filter(function (it) { return it && it.firstTry; }).length;
+    var itemHtml = items.slice(0, 60).map(function (it) {
+      if (!it || typeof it !== 'object') return '';
+      var label = siResponseText(it.word || it.label || it.prompt || it.item || '', 120);
+      if (!label) return '';
+      return '<span style="display:inline-block;padding:2px 8px;margin:2px 4px 2px 0;border-radius:999px;border:1px solid #cbd5e1;background:#f8fafc;font-size:0.85em;">'
+        + escHtml(siTakeHomeMark(it) + ' ' + label) + '</span>';
+    }).join('');
+    return '<article class="card" style="border:1px solid #bae6fd;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#f0f9ff;break-inside:avoid;">'
+      + '<div style="font-weight:700;color:#075985;margin-bottom:6px;">' + escHtml(siResponseText(th.lessonTitle || docTitle || 'Take-home practice', 180)) + ' <span style="font-weight:600;color:#475569;font-size:0.9em;">(Practice Packet)</span></div>'
+      + '<div style="font-size:0.9em;color:#334155;margin-bottom:6px;"><strong>Completed:</strong> ' + escHtml(doneCount + ' / ' + items.length) + ' &nbsp;|&nbsp; <strong>First try:</strong> ' + escHtml(String(firstTryCount)) + '</div>'
+      + (itemHtml ? '<div>' + itemHtml + '</div>' : '')
+      + '</article>';
+  })() : '';
   var contentTag = wrapMain === false ? 'div' : 'main';
   return {
     title: docTitle + ' - ' + nickname + ' Feedback',
@@ -1625,7 +1649,7 @@ function siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml, wrapMain, 
       + ' &nbsp;|&nbsp; <strong>Average:</strong> ' + escHtml(avgText)
       + ' &nbsp;|&nbsp; <strong>Scored:</strong> ' + escHtml(scoredCount + ' / ' + totalCount) + '</div>'
       + '</header>'
-      + '<' + contentTag + '>' + ((responseCards + extraCards) || '<p style="color:#475569;">No captured responses in this submission.</p>') + annoSection + '</' + contentTag + '>'
+      + '<' + contentTag + '>' + ((responseCards + extraCards + takeHomeSection) || '<p style="color:#475569;">No captured responses in this submission.</p>') + annoSection + '</' + contentTag + '>'
   };
 }
 
@@ -1642,9 +1666,15 @@ function siBuildStudentFeedbackHtml(row, rowGrades, summary, teacherHistory) {
     : (teacherHistory && Array.isArray(teacherHistory.teacherHistory) ? teacherHistory.teacherHistory : undefined);
   var body = siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml, true, resolvedHistory);
   return '<!DOCTYPE html><html lang="' + escHtml(body.lang || 'en') + '"' + (body.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'; img-src data:; media-src data:; base-uri \'none\'; form-action \'none\';">'
+    + '<meta name="referrer" content="no-referrer">'
     + '<title>' + escHtml(body.title) + '</title>'
-    + '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5;color:#0f172a;background:#f8fafc;max-width:820px;margin:0 auto;padding:24px;}@media print{body{background:#fff;padding:12px;}.card{break-inside:avoid;}}</style>'
-    + '</head><body>' + body.html + '</body></html>';
+    + '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5;color:#0f172a;background:#f8fafc;max-width:820px;margin:0 auto;padding:24px;}@media print{body{background:#fff;padding:12px;}.card{break-inside:avoid;}.no-print{display:none !important;}}</style>'
+    + '</head><body>'
+    + '<div class="no-print" style="display:flex;justify-content:flex-end;margin-bottom:12px;">'
+    + '<button type="button" onclick="window.print()" style="padding:6px 14px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Print / Save PDF</button>'
+    + '</div>'
+    + body.html + '</body></html>';
 }
 
 function siBuildBatchFeedbackHtml(items, docLabel, teacherHistory) {
@@ -1677,6 +1707,8 @@ function siBuildBatchFeedbackHtml(items, docLabel, teacherHistory) {
   }).join('');
   var title = siResponseText(labelArg || 'Class Feedback Packet', 200) || 'Class Feedback Packet';
   return '<!DOCTYPE html><html lang="' + escHtml(batchLang) + '"' + (batchDir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'; img-src data:; media-src data:; base-uri \'none\'; form-action \'none\';">'
+    + '<meta name="referrer" content="no-referrer">'
     + '<title>' + escHtml(title) + '</title>'
     + '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5;color:#0f172a;background:#f8fafc;max-width:820px;margin:0 auto;padding:24px;}@media print{body{background:#fff;padding:12px;}.card{break-inside:avoid;}.student-page-break{page-break-after:always;break-after:page;}.student-feedback-sheet{border-bottom:none !important;margin-bottom:0 !important;padding-bottom:0 !important;}.no-print{display:none !important;}}</style>'
     + '</head><body>'
@@ -1967,6 +1999,22 @@ function siLookupTrustedHistoryPrompt(responseKey, history) {
       if (maTarget || maSub) {
         return 'Memory aid ' + maMatch[3] + ' prompt' + (maTarget ? ' (' + siResponseText(maTarget, 200) + ')' : '') + (maSub ? ': ' + siResponseText(maSub, 400) : '');
       }
+    }
+  }
+  var maLiveMatch = bare.match(/^(.+):memory:(.+)$/);
+  if (maLiveMatch) {
+    var maLiveRes = history.find(function (item) { return item && item.type === 'memory-aid' && String(item.id) === maLiveMatch[1]; })
+      || (maLiveMatch[1] === 'memory-aid' ? history.find(function (item) { return item && item.type === 'memory-aid'; }) : null);
+    var maLiveData = maLiveRes && maLiveRes.data && typeof maLiveRes.data === 'object' ? maLiveRes.data : null;
+    var maLiveCards = maLiveData ? (Array.isArray(maLiveData.cards) ? maLiveData.cards : (Array.isArray(maLiveData.targets) ? maLiveData.targets : [])) : [];
+    var maField = maLiveMatch[2].replace(/:free-response$/, '');
+    var maLiveCard = maLiveCards.find(function (c) { return c && c.id && maField.indexOf(String(c.id) + '-') === 0; });
+    if (maLiveCard) {
+      var maRest = maField.slice(String(maLiveCard.id).length + 1);
+      var maLiveTarget = maLiveCard.target || maLiveCard.term || '';
+      var maKindLabel = maRest === 'draft' ? 'draft' : maRest === 'reasoning' ? 'reasoning' : maRest === 'visual-description' ? 'visual description' : maRest.replace(/-/g, ' ');
+      var maPromptTxt = maRest === 'draft' ? (maLiveCard.studentPrompt || '') : maRest === 'reasoning' ? (maLiveCard.reasoningPrompt || '') : '';
+      return 'Memory aid ' + maKindLabel + (maLiveTarget ? ' (' + siResponseText(maLiveTarget, 200) + ')' : '') + (maPromptTxt ? ': ' + siResponseText(maPromptTxt, 400) : '');
     }
   }
   var appliedMatch = bare.match(/^(.+):applied:(.+)$/);
@@ -2342,6 +2390,18 @@ function siResponseManifestMap(payload) {
   return out;
 }
 
+function siIsKnownFreeformKey(key, suffix) {
+  if (SI_AI_FREEFORM_RESPONSE_SUFFIXES.indexOf(suffix) >= 0) return true;
+  if (/:reflection:\d+$/.test(key)) return true;
+  if (/:kwl:\d+$/.test(key)) return true;
+  if (/:math:\d+:work$/.test(key)) return true;
+  if (/:card\d+:draft$/.test(key)) return true;
+  if (/:memory:[^:]+$/.test(key)) return true;
+  if (/:note:(?:summary|hypothesis|data|analysis|conclusion|favorite-?line|thinkings|connection|question|(?:notes|response|answer|cue):\d+)$/.test(key)) return true;
+  if (/:applied:(?!selfcheck-[^:]+:rating$)[^:]+$/.test(key)) return true;
+  return false;
+}
+
 function siResponseRequiresManualReview(entry) {
   if (!entry) return true;
   if (entry.isSelfCheck === true || siIsSelfCheckResponse(entry.key, entry.responseType, entry.questionType)) return false;
@@ -2350,8 +2410,10 @@ function siResponseRequiresManualReview(entry) {
   var keyParts = key.split(':');
   var suffix = keyParts.pop();
   var prevPart = keyParts.length ? keyParts[keyParts.length - 1] : '';
+  var isAppliedField = /:applied:(?!selfcheck-[^:]+:rating$)[^:]+$/.test(key);
+  var isNoteFreeform = /:note:(?:summary|hypothesis|data|analysis|conclusion|favorite-?line|thinkings|connection|question|(?:notes|response|answer|cue):\d+)$/.test(key);
   if (key.indexOf('allo-mcq:') === 0) return true;
-  if (SI_STRUCTURED_RESPONSE_SUFFIXES.indexOf(suffix) >= 0) return true;
+  if (!isAppliedField && !isNoteFreeform && SI_STRUCTURED_RESPONSE_SUFFIXES.indexOf(suffix) >= 0) return true;
   if (/^\d+$/.test(suffix) && (prevPart === 'match' || prevPart === 'order')) return true;
   // Legacy textareas are free response. Legacy interactive blanks are cloze /
   // fill-in fields and need teacher review without a trusted answer adapter.
@@ -2362,15 +2424,15 @@ function siResponseRequiresManualReview(entry) {
   if (entry.payloadSchemaVersion >= 3 || entry.manifestDeclared === true) {
     if (entry.manifestSupported !== true || entry.hasManifest !== true) return true;
   }
-  // Named responses are AI-gradable only when both their stable key suffix
+  // Named responses are AI-gradable only when both their stable key pattern
   // and neutral type identify a free-form field. Neither alone is trusted.
   if (entry.hasManifest === true) {
     if (entry.manualReview === true) return true;
     return SI_AI_FREEFORM_RESPONSE_TYPES.indexOf(type) < 0
-      || SI_AI_FREEFORM_RESPONSE_SUFFIXES.indexOf(suffix) < 0;
+      || !siIsKnownFreeformKey(key, suffix);
   }
   // Backward compatibility for schema-v2 named text responses.
-  if (SI_AI_FREEFORM_RESPONSE_SUFFIXES.indexOf(suffix) >= 0) return false;
+  if (siIsKnownFreeformKey(key, suffix)) return false;
   if (entry.manualReview === true) return true;
   return true;
 }
@@ -2448,7 +2510,13 @@ function siResponseEntryModels(payload) {
     return merged;
   }
   var keys = [];
-  Object.keys(responses).forEach(function(key) { if (keys.indexOf(key) < 0) keys.push(key); });
+  var isEmptyPlainObj = function (v) {
+    return v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 0;
+  };
+  Object.keys(responses).forEach(function(key) {
+    if (isEmptyPlainObj(responses[key]) && !Object.prototype.hasOwnProperty.call(manifest, key)) return;
+    if (keys.indexOf(key) < 0) keys.push(key);
+  });
   if (manifestSupported) Object.keys(manifest).forEach(function(key) { if (keys.indexOf(key) < 0) keys.push(key); });
   return keys.slice(0, SI_RESPONSE_ENTRY_LIMIT).map(function(key, index) {
     var meta = Object.prototype.hasOwnProperty.call(manifest, key) ? manifest[key] : null;
@@ -2620,16 +2688,16 @@ function siPureObjectiveAssessmentGrade(question, row, policy, submitted) {
     if (Number.isInteger(cand)) return (cand >= 0 && cand < opts.length) ? cand : -1;
     var s = String(cand).trim();
     if (!s) return -1;
-    if (/^\d+$/.test(s)) {
-      var n = Number(s);
-      if (n >= 0 && n < opts.length) return n;
-    }
     var low = siAssessmentComparable(s);
     var tIdx = opts.findIndex(function (o) { return siAssessmentComparable(o) === low; });
     if (tIdx >= 0) return tIdx;
     if (/^[A-Za-z]$/.test(s) && opts.length <= 26) {
       var lIdx = s.toUpperCase().charCodeAt(0) - 65;
       if (lIdx >= 0 && lIdx < opts.length) return lIdx;
+    }
+    if (/^\d+$/.test(s)) {
+      var n = Number(s);
+      if (n >= 0 && n < opts.length) return n;
     }
     return -1;
   };
@@ -2983,9 +3051,9 @@ function siAssessmentReport(value, resourceId, history, content) {
     var question = questions ? questions[number - 1] : null;
     var changed = false, versionUnverified = false;
     var signature = typeof row.questionSignature === 'string' ? row.questionSignature : '';
-    if (questions && signature) {
-      if (!signatureFor || !signs(question, signature)) {
-        var bySignature = signatureFor ? questions.filter(function (candidate) { return signs(candidate, signature); }) : [];
+    if (questions && signature && signatureFor) {
+      if (!signs(question, signature)) {
+        var bySignature = questions.filter(function (candidate) { return signs(candidate, signature); });
         question = bySignature.length === 1 ? bySignature[0] : null;
         changed = !question;
       }
@@ -2994,7 +3062,7 @@ function siAssessmentReport(value, resourceId, history, content) {
       question = byText.length === 1 ? byText[0] : null;
       changed = !question;
     }
-    if (question && !signature && ['sequence-sense', 'relation-mismatch'].indexOf(question.type || row.type) >= 0) {
+    if (question && (!signature || !signatureFor) && ['sequence-sense', 'relation-mismatch'].indexOf(question.type || row.type) >= 0) {
       // Legacy positional answers cannot be remapped safely from prompt text.
       // Keep the learner's description available for human review instead.
       question = null;
@@ -3828,7 +3896,9 @@ function siBuildGradebookSummary(entries, groupByStudent) {
   const averages = new Map();
   const byStudent = new Map();
   entries.forEach(entry => {
-    const scores = Object.values(entry.grades || {}).map(g => g.score).filter(s => typeof s === 'number');
+    const scores = Object.values(entry.grades || {})
+      .filter(g => g && g.status !== 'error' && typeof g.score === 'number' && Number.isFinite(g.score))
+      .map(g => g.score);
     averages.set(entry, scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null);
     if (groupByStudent) {
       const key = (entry.nickname || 'unknown').toLowerCase();
@@ -3862,7 +3932,10 @@ function siBuildLmsGradebookCsv(entries, preset) {
   const esc = siCsvCell;
   const avgFor = (entry) => {
     const gMap = (entry && entry.grades) || {};
-    const scores = Object.keys(gMap).map(k => gMap[k] && gMap[k].score).filter(s => typeof s === 'number' && Number.isFinite(s));
+    const scores = Object.keys(gMap)
+      .map(k => gMap[k])
+      .filter(g => g && g.status !== 'error' && typeof g.score === 'number' && Number.isFinite(g.score))
+      .map(g => g.score);
     return {
       gMap,
       scores,
@@ -4003,7 +4076,7 @@ function siBuildLmsGradebookCsv(entries, preset) {
         getStudentDisplay(entry), entry.className, entry.docTitle, entry.submittedAt, entry.gradedAt,
         avg, scores.length, expectedCount, (entry.review && entry.review.state) || 'legacy-unreviewed'
       ];
-      const itemCols = itemKeys.map(k => (gMap[k] && typeof gMap[k].score === 'number') ? gMap[k].score : '');
+      const itemCols = itemKeys.map(k => (gMap[k] && gMap[k].status !== 'error' && typeof gMap[k].score === 'number' && Number.isFinite(gMap[k].score)) ? gMap[k].score : '');
       rows.push(baseCols.concat(itemCols).map(esc).join(','));
     }
   }
@@ -4060,9 +4133,12 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   var _setLlTick = React.useState(0)[1];
   // Student-written adventure preview: '<row idx>|<grade key>' of the story being played.
   const [playingStoryKey, setPlayingStoryKey] = React.useState(null);
+  const aiTextAvailable = typeof window !== 'undefined'
+    && typeof window.callGemini === 'function'
+    && (typeof window.__alloAiAvailable !== 'function' || window.__alloAiAvailable('text') !== false);
   LL_CUR.lang = uiLang; LL_CUR.cache = _llCacheRef.current; // publish snapshot for tr()
   React.useEffect(function () {
-    if (uiLang === 'English' || typeof window === 'undefined' || typeof window.callGemini !== 'function') return undefined;
+    if (uiLang === 'English' || !aiTextAvailable) return undefined;
     var cache = _llCacheRef.current[uiLang] || {}, attempted = _llAttemptedRef.current[uiLang] || {};
     var missing = Object.keys(STR_REG).filter(function (k) { return !cache[k] && !attempted[k]; });
     if (!missing.length) return undefined;
@@ -4132,6 +4208,14 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   const [globalRubricOpen, setGlobalRubricOpen] = useState(false);
   const [bulkGrading, setBulkGrading] = useState(false);
   const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
+  const [queueSearch, setQueueSearch] = useState('');
+  const [queueStatusFilter, setQueueStatusFilter] = useState('all');
+  const [gradebookClassFilter, setGradebookClassFilter] = useState('all');
+  const bulkCancelRef = useRef(false);
+  React.useEffect(() => () => { bulkCancelRef.current = true; }, []);
+  const queueRef = useRef(queue);
+  queueRef.current = queue;
+  const queueLocked = Boolean(decryptingAll || bulkGrading || gradingRow !== null);
   // Gradebook viewer (Phase 3 v2.2, May 12 2026)
   // Reads from localStorage 'alloflow_offline_grades' written by
   // saveRowToGradebook. Refresh tick bumps when we save so the panel
@@ -4518,6 +4602,9 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
     await importSubmissionFiles(files, null);
   };
 
+  const SI_MAX_SUBMISSION_FILE_BYTES = 25 * 1024 * 1024;
+  const siSafeJsonParse = (rawText) => JSON.parse(rawText, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
+
   // Shared by the file picker and the Class Mailbox pickup. Mailbox rows keep
   // their Drive file name so a second pickup skips them. Returns the mailbox
   // files that imported cleanly, which the mailbox then marks as collected.
@@ -4529,6 +4616,13 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       const rowsBefore = newRows.length;
       try {
       try {
+        if (typeof f.size === 'number' && f.size > SI_MAX_SUBMISSION_FILE_BYTES) {
+          newRows.push({
+            fileName: f.name, nickname: '?', status: 'error',
+            error: tr('Submission file is too large (max 25 MB).')
+          });
+          continue;
+        }
         const text = await f.text();
         // CSV results file saved by an AlloFlow Packet (default student download format).
         const looksCsv = /\.csv$/i.test(f.name || '') || text.slice(0, 500).indexOf('alloflow-packet-result/1') >= 0;
@@ -4574,7 +4668,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
         const looksJson = /\.json$/i.test(f.name || '') || text.trim().charAt(0) === '{';
         if (looksJson) {
           try {
-            const p = JSON.parse(text);
+            const p = siSafeJsonParse(text);
             // Take-home packet results: a saved results file, or the same result
             // delivered by the Class Mailbox. A second copy of the same attempt
             // (saved AND sent, or imported twice) is not added again.
@@ -4662,8 +4756,9 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
           });
           continue;
         }
-        const json = match[1].replace(/\\u003c/g, '<');
-        const blob = JSON.parse(json);
+        // JSON.parse natively decodes \u003c escapes inside strings; never string-replace
+        // before parsing (that corrupts literal backslashes before u003c sequences).
+        const blob = siSafeJsonParse(match[1]);
         newRows.push({
           fileName: f.name,
           nickname: blob.nickname || '?',
@@ -4746,7 +4841,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
         const innerTitle = (payload && typeof payload === 'object' && typeof payload.docTitle === 'string')
           ? payload.docTitle.trim()
           : '';
-        setQueue(prev => prev.map((r, idx) => idx === i ? {
+        setQueue(prev => prev.map((r, idx) => (idx === i && r && r.fileName === row.fileName && r.timestamp === row.timestamp) ? {
           ...r,
           nickname: innerNick || r.nickname,
           docTitle: innerTitle || r.docTitle,
@@ -4756,7 +4851,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
         } : r));
         ok++;
       } catch (err) {
-        setQueue(prev => prev.map((r, idx) => idx === i ? { ...r, status: 'error', error: err.message } : r));
+        setQueue(prev => prev.map((r, idx) => (idx === i && r && r.fileName === row.fileName && r.timestamp === row.timestamp) ? { ...r, status: 'error', error: err.message } : r));
         fail++;
       }
     }
@@ -4777,6 +4872,10 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
     return next;
   };
   const removeRow = (idx) => {
+    if (queueLocked || bulkGradingRef.current) {
+      addToast && addToast(tr('Wait for decrypting or grading to finish before removing rows.'), 'info');
+      return;
+    }
     setQueue(prev => prev.filter((_, i) => i !== idx));
     setRubrics(prev => remapRowIndexState(prev, idx));
     setGrades(prev => remapRowIndexState(prev, idx));
@@ -4797,6 +4896,10 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
     });
   };
   const clearQueue = () => {
+    if (queueLocked || bulkGradingRef.current) {
+      addToast && addToast(tr('Wait for decrypting or grading to finish before clearing the queue.'), 'info');
+      return;
+    }
     setQueue([]); setExpandedRow(null); setGradingRow(null); setPendingAnchor(null);
     setRubrics({}); setGrades({}); setReviewedRows({}); setConfirmedLearnerMatches({}); setWorkStoryModels({});
     setAnchors(prev => prev.filter(anchor => !Number.isInteger(anchor.fromSubmissionIdx)));
@@ -4927,9 +5030,9 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       return;
     }
     const callGemini = window.callGemini;
-    if (typeof callGemini !== 'function') {
-      addToast && addToast(tr('Gemini API not ready. Open a regular AlloFlow window first so the API key loads.'), 'error');
-      return;
+    if (!aiTextAvailable || typeof callGemini !== 'function') {
+      if (!opts.silent) addToast && addToast(tr('AI grading requires an active AI setup. You can still score responses manually below.'), 'warn');
+      return { ok: 0, fail: 0, skipped: true, aiUnavailable: true };
     }
     // Calibration samples are resolved per response key in the loop below
     // via siCalibrationSamplesForKey(anchors, key, r.exemplar) so question-specific
@@ -5017,12 +5120,16 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
           calibrationSamples: cappedSamples,
           callGemini: callGemini,
         });
+        const liveRow = queueRef.current && queueRef.current[idx];
+        if (!liveRow || liveRow.fileName !== row.fileName || liveRow.timestamp !== row.timestamp) break;
         setGrades(prev => ({
           ...prev,
           [idx]: { ...(prev[idx] || {}), [key]: { ...result, origin: 'ai' } }
         }));
         if (result.status !== 'error') ok++; else fail++;
       } catch (err) {
+        const liveRow = queueRef.current && queueRef.current[idx];
+        if (!liveRow || liveRow.fileName !== row.fileName || liveRow.timestamp !== row.timestamp) break;
         setGrades(prev => ({
           ...prev,
           [idx]: { ...(prev[idx] || {}), [key]: { status: 'error', feedback: err.message || tr('Grader failed'), score: 0, origin: 'ai' } }
@@ -5042,6 +5149,10 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   // Gemini API isn't hammered + so the teacher can see progress.
   const gradeAllDecrypted = async () => {
     if (bulkGradingRef.current) return;
+    if (!aiTextAvailable) {
+      addToast && addToast(tr('AI grading requires an active AI setup. Score responses manually or configure AI first.'), 'warn');
+      return;
+    }
     if (!(globalRubric.rubric || '').trim()) {
       addToast && addToast(tr('Add a class rubric at the top before bulk grading.'), 'warn');
       setGlobalRubricOpen(true);
@@ -5055,11 +5166,13 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       addToast && addToast(tr('No decrypted submissions to grade.'), 'warn');
       return;
     }
+    bulkCancelRef.current = false;
     bulkGradingRef.current = true;
     setBulkGrading(true);
     setBulkProgress({ current: 0, total: decryptedIdxs.length });
-    let totalOk = 0, totalFail = 0, totalSkipped = 0;
+    let totalOk = 0, totalFail = 0, totalSkipped = 0, cancelled = false;
     for (let i = 0; i < decryptedIdxs.length; i++) {
+      if (bulkCancelRef.current) { cancelled = true; break; }
       const idx = decryptedIdxs[i];
       setBulkProgress({ current: i + 1, total: decryptedIdxs.length });
       const result = await gradeRow(idx, { silent: true });
@@ -5068,16 +5181,17 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
         totalFail += result.fail || 0;
         if (result.skipped) totalSkipped += 1;
       }
+      if (bulkCancelRef.current) { cancelled = true; break; }
     }
     bulkGradingRef.current = false;
     setBulkGrading(false);
     setBulkProgress({ current: 0, total: 0 });
     addToast && addToast(
-      'Bulk grade done: ' + totalOk + ' response' + (totalOk === 1 ? '' : 's') + ' graded across ' +
+      (cancelled ? 'Bulk grade cancelled: ' : 'Bulk grade done: ') + totalOk + ' response' + (totalOk === 1 ? '' : 's') + ' graded across ' +
         (decryptedIdxs.length - totalSkipped) + ' submission' + (decryptedIdxs.length - totalSkipped === 1 ? '' : 's') +
         (totalFail > 0 ? ', ' + totalFail + ' failed' : '') +
         (totalSkipped > 0 ? ', ' + totalSkipped + ' skipped (already fully anchored or no responses)' : ''),
-      totalFail > 0 ? 'warn' : 'success'
+      cancelled ? 'info' : ((totalFail > 0 && totalOk === 0) ? 'error' : (totalFail > 0 ? 'warn' : (totalOk === 0 ? 'info' : 'success')))
     );
   };
   // ── Anchor management (Phase 3 v2: multi-anchor few-shot) ──────
@@ -5245,8 +5359,11 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
     const nickname = row.payload.nickname || 'unknown';
     const docTitle = row.payload.docTitle || 'untitled';
     const className = (classKeyMeta && classKeyMeta.className) || (rosterKey && rosterKey.className) || '';
-    const submissionKey = nickname + '|' + docTitle + '|' + (row.payload.timestamp || '');
-    const priorRecord = siAlloSheetPlainObject(existing[submissionKey]) ? existing[submissionKey] : {};
+    const legacyKey = nickname + '|' + docTitle + '|' + (row.payload.timestamp || '');
+    const submissionKey = className ? (className + '|' + legacyKey) : legacyKey;
+    const priorRecord = siAlloSheetPlainObject(existing[submissionKey])
+      ? existing[submissionKey]
+      : (siAlloSheetPlainObject(existing[legacyKey]) && (!existing[legacyKey].className || existing[legacyKey].className === className) ? existing[legacyKey] : {});
     const reviewSnapshot = reviewedRows[idx];
     const reviewCurrent = isRowReviewCurrent(idx);
     const savedGrades = Object.create(null);
@@ -5483,7 +5600,10 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       }
       for (const k of respKeys) {
         const g = entry.grades[k] || {};
-        const respText = (entry.responses && entry.responses[k]) || '';
+        const rawResp = entry.responses && entry.responses[k];
+        const respText = rawResp == null
+          ? ''
+          : (siAssessmentSnapshot(rawResp) ? siFormatAssessmentSnapshotText(rawResp) : siResponseText(rawResp, 12000));
         rows.push([entry.nickname, entry.className, entry.docTitle, entry.submittedAt, entry.gradedAt, entry.source, k, respText, g.score, g.status, g.feedback, entry.review?.state || 'legacy-unreviewed', entry.rubric].map(esc).join(','));
       }
     }
@@ -5499,27 +5619,38 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
     setTimeout(() => { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
     addToast && addToast('Downloaded gradebook CSV (' + (rows.length - 1) + ' row' + (rows.length - 1 === 1 ? '' : 's') + ').', 'success');
   };
+  const gradebookClasses = React.useMemo(() => {
+    const names = Array.from(new Set(gradebookEntries.map(e => String((e && e.className) || '').trim()).filter(Boolean)));
+    return names.sort((a, b) => a.localeCompare(b));
+  }, [gradebookEntries]);
+  const filteredGradebookEntries = React.useMemo(() => {
+    if (gradebookClassFilter === 'all') return gradebookEntries;
+    return gradebookEntries.filter(e => String((e && e.className) || '').trim() === gradebookClassFilter);
+  }, [gradebookEntries, gradebookClassFilter]);
   // 1-row-per-student LMS summary CSV with dynamic per-item score columns, preset support & UTF-8 BOM.
   const exportGradebookSummaryCsv = () => {
-    if (gradebookEntries.length === 0) {
+    if (filteredGradebookEntries.length === 0) {
       addToast && addToast(tr('Gradebook is empty.'), 'warn');
       return;
     }
-    const built = siBuildLmsGradebookCsv(gradebookEntries, lmsCsvPreset);
+    const built = siBuildLmsGradebookCsv(filteredGradebookEntries, lmsCsvPreset);
     const blob = new Blob(['\uFEFF' + built.csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     const dateStr = new Date().toISOString().slice(0, 10);
+    const classSlug = gradebookClassFilter !== 'all'
+      ? ('_' + gradebookClassFilter.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32))
+      : '';
     a.href = url;
-    a.download = 'alloflow_gradebook_summary_' + built.preset + '_' + dateStr + '.csv';
+    a.download = 'alloflow_gradebook_summary_' + built.preset + classSlug + '_' + dateStr + '.csv';
     document.body.appendChild(a);
     a.click();
     setTimeout(() => { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
     addToast && addToast(tr('Downloaded {preset} summary CSV ({n} submissions).', { preset: built.preset, n: built.rowCount }), 'success');
   };
   const gradebookSummary = React.useMemo(
-    () => gradebookOpen ? siBuildGradebookSummary(gradebookEntries, gradebookGroupBy === 'student') : null,
-    [gradebookEntries, gradebookOpen, gradebookGroupBy]
+    () => gradebookOpen ? siBuildGradebookSummary(filteredGradebookEntries, gradebookGroupBy === 'student') : null,
+    [filteredGradebookEntries, gradebookOpen, gradebookGroupBy]
   );
   const gradebookAvg = entry => gradebookSummary.averages.get(entry);
   const scoreColor = (score) => {
@@ -6353,12 +6484,12 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             ),
             /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8 } },
               /*#__PURE__*/React.createElement('button', {
-                type: 'button', onClick: () => subInputRef.current?.click(),
-                style: { padding: '8px 16px', background: '#15803d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
+                type: 'button', onClick: () => subInputRef.current?.click(), disabled: queueLocked,
+                style: { padding: '8px 16px', background: '#15803d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: queueLocked ? 'not-allowed' : 'pointer', opacity: queueLocked ? 0.55 : 1, fontSize: '0.88rem' }
               }, tr('＋ Add submissions')),
               queue.length > 0 && /*#__PURE__*/React.createElement('button', {
-                type: 'button', onClick: clearQueue,
-                style: { padding: '8px 12px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
+                type: 'button', onClick: clearQueue, disabled: queueLocked,
+                style: { padding: '8px 12px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: queueLocked ? 'not-allowed' : 'pointer', opacity: queueLocked ? 0.55 : 1, fontSize: '0.8rem' }
               }, tr('Clear'))
             )
           ),
@@ -6448,18 +6579,20 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               /*#__PURE__*/React.createElement('button', {
                 type: 'button',
                 onClick: () => { if (!bulkGrading) gradeAllDecrypted(); },
-                disabled: !bulkGrading && ((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()),
+                disabled: !bulkGrading && (!aiTextAvailable || (counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()),
                 'aria-disabled': bulkGrading ? 'true' : undefined,
                 'aria-busy': bulkGrading ? 'true' : undefined,
                 'aria-describedby': bulkGrading ? 'submission-inbox-bulk-progress-label' : undefined,
-                title: (globalRubric.rubric || '').trim()
-                  ? tr('Grade every decrypted submission in the queue with this rubric')
-                  : tr('Set a class rubric first'),
+                title: !aiTextAvailable
+                  ? tr('AI setup required for automatic grading. Score responses manually below.')
+                  : ((globalRubric.rubric || '').trim()
+                    ? tr('Grade every decrypted submission in the queue with this rubric')
+                    : tr('Set a class rubric first')),
                 style: {
                   padding: '8px 16px',
-                  background: (!bulkGrading && ((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim())) ? '#cbd5e1' : '#4f46e5',
+                  background: (!bulkGrading && (!aiTextAvailable || (counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim())) ? '#cbd5e1' : '#4f46e5',
                   color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem',
-                  cursor: bulkGrading ? 'wait' : (((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()) ? 'not-allowed' : 'pointer')
+                  cursor: bulkGrading ? 'wait' : ((!aiTextAvailable || (counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()) ? 'not-allowed' : 'pointer')
                 }
               }, '🎯 Grade entire queue (' + (counts.decrypted || 0) + ')'),
               !bulkGrading && (() => {
@@ -6497,7 +6630,13 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   style: { width: 120, maxWidth: '100%', height: 8, background: '#c7d2fe', borderRadius: 999, overflow: 'hidden' }
                 },
                   /*#__PURE__*/React.createElement('div', { style: { width: (bulkProgress.total ? (bulkProgress.current / bulkProgress.total * 100) : 0) + '%', height: '100%', background: '#4f46e5', transition: 'width 0.3s' } })
-                )
+                ),
+                /*#__PURE__*/React.createElement('button', {
+                  type: 'button',
+                  'data-si-cancel-bulk-grade': 'true',
+                  onClick: () => { bulkCancelRef.current = true; },
+                  style: { padding: '4px 10px', background: 'white', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: 6, fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }
+                }, tr('Cancel'))
               )
             )
           ),
@@ -6602,6 +6741,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                             });
                             if (accepted) deletePreset(key);
                           },
+                          'aria-label': tr('Delete preset') + ': ' + p.name,
                           title: tr('Delete this preset'),
                           style: { padding: '2px 8px', background: 'transparent', color: '#475569', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.7rem', cursor: 'pointer' }
                         }, '✗')
@@ -6667,6 +6807,16 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                 title: tr('Download all saved grades as a CSV spreadsheet'),
                 style: { padding: '6px 12px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
               }, tr('⬇ Export CSV')),
+              gradebookClasses.length > 0 && /*#__PURE__*/React.createElement('select', {
+                'aria-label': tr('Filter gradebook by class'),
+                'data-si-gradebook-class-filter': 'true',
+                value: gradebookClassFilter,
+                onChange: (e) => setGradebookClassFilter(e.target.value),
+                style: { padding: '5px 8px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
+              },
+                /*#__PURE__*/React.createElement('option', { value: 'all' }, tr('All classes')),
+                ...gradebookClasses.map(cls => /*#__PURE__*/React.createElement('option', { key: cls, value: cls }, cls))
+              ),
               /*#__PURE__*/React.createElement('select', {
                 'aria-label': tr('Summary CSV LMS format'),
                 'data-lms-csv-preset': lmsCsvPreset,
@@ -6768,6 +6918,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                       /*#__PURE__*/React.createElement('td', { style: { padding: '6px 12px', textAlign: 'right' } },
                                         /*#__PURE__*/React.createElement('button', {
                                           type: 'button', onClick: (e) => { e.stopPropagation(); deleteGradebookEntry(entry.key); },
+                                          'aria-label': tr('Remove from local gradebook') + ': ' + (entry.nickname || '') + (entry.docTitle ? ' — ' + entry.docTitle : ''),
                                           title: tr('Remove from local gradebook'),
                                           style: { padding: '2px 8px', background: 'transparent', color: '#475569', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.7rem', cursor: 'pointer' }
                                         }, '✗')
@@ -6777,7 +6928,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                 );
                               });
                             })()
-                          : gradebookEntries.map((entry, i) => {
+                          : filteredGradebookEntries.map((entry, i) => {
                               const avg = gradebookAvg(entry);
                               const sc = typeof avg === 'number' ? scoreColor(avg) : { bg: '#f1f5f9', color: '#475569' };
                               const respCount = Object.keys(entry.grades || {}).length;
@@ -6801,6 +6952,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                 /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', textAlign: 'right' } },
                                   /*#__PURE__*/React.createElement('button', {
                                     type: 'button', onClick: () => deleteGradebookEntry(entry.key),
+                                    'aria-label': tr('Remove from local gradebook') + ': ' + (entry.nickname || '') + (entry.docTitle ? ' — ' + entry.docTitle : ''),
                                     title: tr('Remove from local gradebook'),
                                     style: { padding: '4px 10px', background: 'transparent', color: '#475569', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.74rem', cursor: 'pointer' }
                                   }, '✗')
@@ -6851,6 +7003,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     /*#__PURE__*/React.createElement('button', {
                       type: 'button',
                       onClick: () => removeAnchor(i),
+                      'aria-label': tr('Remove calibration anchor') + ' ' + (i + 1),
                       title: tr('Remove this anchor'),
                       style: { padding: '2px 8px', background: 'transparent', color: '#475569', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.75rem', cursor: 'pointer', flexShrink: 0 }
                     }, '✗')
@@ -7051,7 +7204,31 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     ))
               );
             })()
-          : /*#__PURE__*/React.createElement('div', {
+          : /*#__PURE__*/React.createElement('div', null,
+              /*#__PURE__*/React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 10 } },
+                /*#__PURE__*/React.createElement('input', {
+                  type: 'search',
+                  'data-si-queue-search': 'true',
+                  'aria-label': tr('Search submissions by student, document, or filename'),
+                  value: queueSearch,
+                  onChange: e => setQueueSearch(e.target.value),
+                  placeholder: tr('Search student or document…'),
+                  style: { flex: '1 1 200px', minHeight: 36, padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: '0.84rem' }
+                }),
+                /*#__PURE__*/React.createElement('select', {
+                  'data-si-queue-status-filter': 'true',
+                  'aria-label': tr('Filter submissions by status'),
+                  value: queueStatusFilter,
+                  onChange: e => setQueueStatusFilter(e.target.value),
+                  style: { minHeight: 36, padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: '0.84rem', background: 'white', color: '#334155', fontWeight: 600 }
+                },
+                  /*#__PURE__*/React.createElement('option', { value: 'all' }, tr('All statuses')),
+                  /*#__PURE__*/React.createElement('option', { value: 'decrypted' }, tr('Decrypted')),
+                  /*#__PURE__*/React.createElement('option', { value: 'pending' }, tr('Pending')),
+                  /*#__PURE__*/React.createElement('option', { value: 'error' }, tr('Error'))
+                )
+              ),
+              /*#__PURE__*/React.createElement('div', {
               role: 'region',
               'aria-label': tr('Imported submission queue table'),
               tabIndex: 0,
@@ -7067,10 +7244,22 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   )
                 ),
                 /*#__PURE__*/React.createElement('tbody', null,
-                  queue.map((row, idx) => /*#__PURE__*/React.createElement(React.Fragment, { key: idx },
+                  queue.map((row, idx) => ({ row, idx })).filter(({ row }) => {
+                    if (queueStatusFilter !== 'all' && row.status !== queueStatusFilter) return false;
+                    const qText = String(queueSearch || '').trim().toLowerCase();
+                    if (!qText) return true;
+                    const hay = [row.nickname, row.docTitle, row.fileName].map(v => String(v || '').toLowerCase()).join(' ');
+                    return hay.indexOf(qText) !== -1;
+                  }).map(({ row, idx }) => /*#__PURE__*/React.createElement(React.Fragment, { key: idx },
                     /*#__PURE__*/React.createElement('tr', { style: { borderBottom: '1px solid #f1f5f9' } },
                       /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px' } },
                         /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#1e293b' } }, row.nickname),
+                        row.outerNicknameMismatch && /*#__PURE__*/React.createElement('span', {
+                          role: 'status',
+                          'data-si-name-mismatch': 'true',
+                          title: tr('The name on the outer file envelope did not match the encrypted student name inside.'),
+                          style: { display: 'inline-block', marginTop: 3, padding: '2px 7px', borderRadius: 999, background: '#fee2e2', color: '#991b1b', fontSize: '0.7rem', fontWeight: 700 }
+                        }, '⚠ ' + tr('Name mismatch')),
                         row.nickname !== '?' && rosterBadge(rosterMatch(row.nickname)),
                         row.nickname !== '?' && (() => {
                           const match = rosterMatch(row.nickname);
@@ -7106,7 +7295,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                           const delta = (currAvg !== null && priorAvg !== null) ? (currAvg - priorAvg) : null;
                           const currResps = row.payload.responses && typeof row.payload.responses === 'object' ? row.payload.responses : {};
                           const priorResps = latestPrior && latestPrior.responses && typeof latestPrior.responses === 'object' ? latestPrior.responses : {};
-                          const changedCount = Object.keys(currResps).filter(k => String(currResps[k] || '').trim() !== String(priorResps[k] || '').trim()).length;
+                          const changedCount = Object.keys(currResps).filter(k => siResponseText(currResps[k], 12000) !== siResponseText(priorResps[k], 12000)).length;
                           return /*#__PURE__*/React.createElement('div', { style: { marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' } },
                             /*#__PURE__*/React.createElement('span', {
                               style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: '#fef3c7', color: '#92400e', fontSize: '0.7rem', fontWeight: 600 },
@@ -7131,8 +7320,8 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                           style: { marginRight: 6, padding: '4px 10px', background: '#eef2ff', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }
                         }, expandedRow === idx ? 'Hide' : 'View'),
                         /*#__PURE__*/React.createElement('button', {
-                          type: 'button', onClick: () => removeRow(idx),
-                          style: { padding: '4px 10px', background: 'transparent', color: '#475569', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.78rem', cursor: 'pointer' }
+                          type: 'button', onClick: () => removeRow(idx), disabled: queueLocked,
+                          style: { padding: '4px 10px', background: 'transparent', color: '#475569', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.78rem', cursor: queueLocked ? 'not-allowed' : 'pointer', opacity: queueLocked ? 0.45 : 1 }
                         }, tr('Remove'))
                       )
                     ),
@@ -7511,8 +7700,9 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                               /*#__PURE__*/React.createElement('button', {
                                 type: 'button',
                                 onClick: () => gradeRow(idx),
-                                disabled: gradingRow === idx,
-                                style: { padding: '8px 16px', background: '#7c3aed', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: gradingRow === idx ? 'wait' : 'pointer', opacity: gradingRow === idx ? 0.6 : 1 }
+                                disabled: gradingRow === idx || !aiTextAvailable,
+                                title: !aiTextAvailable ? tr('AI setup required for automatic grading. Score responses manually above.') : undefined,
+                                style: { padding: '8px 16px', background: !aiTextAvailable ? '#cbd5e1' : '#7c3aed', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: gradingRow === idx ? 'wait' : (!aiTextAvailable ? 'not-allowed' : 'pointer'), opacity: gradingRow === idx ? 0.6 : 1 }
                               }, gradingRow === idx ? 'Grading…' : tr('🎯 Grade responses')),
                               ...renderRowGradeActions(idx)
                             )
@@ -7527,6 +7717,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   ))
                 )
               )
+            )
             )
       ),
 
@@ -7561,7 +7752,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#475569', fontWeight: 700, marginBottom: 4 } }, tr('Student response')),
             pendingAnchor.responseText
           ),
-          /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: 4 } }, tr('Score (0-100)')),
+          /*#__PURE__*/React.createElement('label', { htmlFor: 'si-pending-anchor-score', style: { display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: 4 } }, tr('Score (0-100)')),
           /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 } },
             /*#__PURE__*/React.createElement('input', {
               type: 'range', min: 0, max: 100, step: 5, 'aria-label': tr(pendingAnchor.mode === 'manual' ? 'Manual score slider' : 'Anchor score slider'),
@@ -7570,14 +7761,16 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               style: { flex: 1 }
             }),
             /*#__PURE__*/React.createElement('input', {
+              id: 'si-pending-anchor-score',
               type: 'number', min: 0, max: 100, 'aria-label': tr(pendingAnchor.mode === 'manual' ? 'Manual score' : 'Anchor score'),
               value: pendingAnchor.score,
               onChange: e => setPendingAnchor({ ...pendingAnchor, score: e.target.value, scoreTouched: true }),
               style: { width: 70, padding: '4px 8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.9rem', textAlign: 'center' }
             })
           ),
-          /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: 4 } }, tr(pendingAnchor.mode === 'manual' ? 'Feedback (optional)' : 'Note (optional — tells the AI why this got that score)')),
+          /*#__PURE__*/React.createElement('label', { htmlFor: 'si-pending-anchor-note', style: { display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: 4 } }, tr(pendingAnchor.mode === 'manual' ? 'Feedback (optional)' : 'Note (optional — tells the AI why this got that score)')),
           /*#__PURE__*/React.createElement('textarea', {
+            id: 'si-pending-anchor-note',
             'aria-label': tr(pendingAnchor.mode === 'manual' ? 'Teacher feedback' : 'Anchor note'),
             value: pendingAnchor.feedback,
             onChange: e => setPendingAnchor({ ...pendingAnchor, feedback: e.target.value }),

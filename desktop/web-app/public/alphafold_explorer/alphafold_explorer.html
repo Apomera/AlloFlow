@@ -2260,7 +2260,7 @@
   var aiAvailable = false;
   var cellAtlasHandoff = null;
   var busy = false;
-  var pending = {};
+  var pending = Object.create(null);
   var reflectIndex = 0;
   var guideIndex = 0;
   var variantBaseSequence = '';
@@ -3317,6 +3317,8 @@
     paeLiveSummary.textContent = 'Loading PAE data for ' + (record.name || record.accession || 'this record') + '.';
     paeLiveReading.textContent = ''; setStatus(paeLiveStatus, 'Loading PAE matrix...', '');
     var options = { method: 'GET' };
+    var paeTimedOut = false;
+    var paeTimer = controller ? setTimeout(function () { paeTimedOut = true; controller.abort(); }, 25000) : null;
     if (controller) options.signal = controller.signal;
     fetch(url, options).then(function (response) {
       if (!response.ok) throw new Error('PAE request returned HTTP ' + response.status);
@@ -3337,11 +3339,13 @@
       setStatus(paeLiveStatus, 'PAE matrix loaded. Select a cell or adjust either residue control.', 'ok');
       drawLivePae();
     }).catch(function (error) {
-      if ((error && error.name === 'AbortError') || paeRequestUrl !== url) return;
+      if (paeRequestUrl !== url) return;
+      if (error && error.name === 'AbortError' && !paeTimedOut) return;
       paeLiveSummary.textContent = 'This record links to PAE information, but its numeric matrix could not be displayed.';
-      paeLiveReading.textContent = String((error && error.message) || error).slice(0, 140);
+      paeLiveReading.textContent = paeTimedOut ? 'PAE request timed out.' : String((error && error.message) || error).slice(0, 140);
       setStatus(paeLiveStatus, 'Live PAE map unavailable; the source link remains available.', 'warn');
     }).finally(function () {
+      if (paeTimer) clearTimeout(paeTimer);
       if (paeController === controller) paeController = null;
     });
   }
@@ -3916,7 +3920,7 @@
       renderCellAtlasReturn();
       return;
     }
-    if (data.type === 'allocaf-ai-response' && data.id && pending[data.id]) {
+    if (data.type === 'allocaf-ai-response' && typeof data.id === 'string' && Object.prototype.hasOwnProperty.call(pending, data.id)) {
       var entry = pending[data.id];
       delete pending[data.id];
       clearTimeout(entry.timer);
@@ -5112,6 +5116,8 @@
     lookupBtn.disabled = true;
     setStatus(lookupStatus, 'Looking up ' + acc + ' in AlphaFold DB...', '');
     var options = { method: 'GET' };
+    var lookupTimedOut = false;
+    var lookupTimer = controller ? setTimeout(function () { lookupTimedOut = true; controller.abort(); }, 20000) : null;
     if (controller) options.signal = controller.signal;
     fetch(API_ROOT + encodeURIComponent(acc), options)
       .then(function (res) {
@@ -5129,10 +5135,16 @@
         return loadStructure(record, 'mmcif', false);
       })
       .catch(function (error) {
-        if (requestVersion !== lookupVersion || isCanceledRequest(error)) return;
+        if (requestVersion !== lookupVersion) return;
+        if (lookupTimedOut) {
+          setStatus(lookupStatus, 'AlphaFold DB lookup timed out. Check your connection and try again.', 'err');
+          return;
+        }
+        if (isCanceledRequest(error)) return;
         setStatus(lookupStatus, String((error && error.message) || error), 'err');
       })
       .finally(function () {
+        if (lookupTimer) clearTimeout(lookupTimer);
         if (requestVersion !== lookupVersion) return;
         lookupController = null;
         lookupBtn.disabled = false;

@@ -118,10 +118,41 @@ function validateReadyPayload(value, expectedRunner) {
   return [...new Set(errors)];
 }
 
+const MAX_CANARY_RESPONSE_BYTES = 64 * 1024;
+const PRINTABLE_ASCII_TOKEN_RE = /^[\x21-\x7e]+$/u;
+
 async function readBoundedJson(response) {
-  const text = await response.text();
-  if (text.length > 64 * 1024) {
+  const declaredLength = Number(response.headers?.get?.("Content-Length"));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_CANARY_RESPONSE_BYTES) {
     throw new Error("canary_response_too_large");
+  }
+  let text;
+  if (response.body && typeof response.body.getReader === "function") {
+    const reader = response.body.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          total += value.byteLength;
+          if (total > MAX_CANARY_RESPONSE_BYTES) {
+            try { await reader.cancel(); } catch {}
+            throw new Error("canary_response_too_large");
+          }
+          chunks.push(Buffer.from(value));
+        }
+      }
+    } finally {
+      try { reader.releaseLock(); } catch {}
+    }
+    text = Buffer.concat(chunks, total).toString("utf8");
+  } else {
+    text = await response.text();
+    if (Buffer.byteLength(text, "utf8") > MAX_CANARY_RESPONSE_BYTES) {
+      throw new Error("canary_response_too_large");
+    }
   }
   try {
     return JSON.parse(text);
@@ -131,16 +162,27 @@ async function readBoundedJson(response) {
 }
 
 async function runReleaseCanary(options) {
-  const origin = new URL(options.origin);
+  let origin;
+  try {
+    origin = new URL(options.origin);
+  } catch {
+    throw new Error("invalid_canary_origin");
+  }
   if (
     origin.protocol !== "https:" ||
+    origin.username ||
+    origin.password ||
     origin.pathname !== "/" ||
     origin.search ||
     origin.hash
   ) {
     throw new Error("invalid_canary_origin");
   }
-  if (typeof options.token !== "string" || options.token.length < 32) {
+  if (
+    typeof options.token !== "string" ||
+    options.token.length < 32 ||
+    !PRINTABLE_ASCII_TOKEN_RE.test(options.token)
+  ) {
     throw new Error("release_canary_secret_required");
   }
   const fetchImpl = options.fetchImpl || globalThis.fetch;
@@ -151,15 +193,30 @@ async function runReleaseCanary(options) {
   let lastError;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     try {
-      const response = await fetchImpl(new URL("/readyz", origin), {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${options.token}`,
-          Accept: "application/json",
-        },
-        redirect: "error",
-        signal: AbortSignal.timeout(60_000),
-      });
+      let response;
+      try {
+        response = await fetchImpl(new URL("/readyz", origin), {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${options.token}`,
+            Accept: "application/json",
+          },
+          redirect: "error",
+          signal: AbortSignal.timeout(60_000),
+        });
+      } catch (fetchError) {
+        if (fetchError instanceof TypeError && /Headers|Authorization|Bearer/iu.test(fetchError.message)) {
+          const err = new Error("release_canary_secret_required");
+          err.retryable = false;
+          throw err;
+        }
+        throw fetchError;
+      }
+      if (!response.ok && response.status < 500) {
+        const error = new Error(`canary_http_${response.status}`);
+        error.retryable = false;
+        throw error;
+      }
       const payload = await readBoundedJson(response);
       const compatibilityErrors = validateReadyPayload(
         payload,
@@ -190,7 +247,7 @@ async function main(argv) {
       ? argv[configIndex + 1]
       : "wrangler.pilot.local.jsonc",
   );
-  if (/\.example\./u.test(path.basename(configPath))) {
+  if (/\.example\./iu.test(path.basename(configPath))) {
     throw new Error("refusing_to_canary_example_configuration");
   }
   const { raw, config } = readPilotConfig(configPath);

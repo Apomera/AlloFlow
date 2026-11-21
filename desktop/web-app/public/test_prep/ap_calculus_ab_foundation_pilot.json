@@ -548,9 +548,9 @@
       "rationale": "A limit uses nearby behavior; both one-sided values approach 5.",
       "choiceRationales": [
         "Best answer. A limit uses nearby behavior; both one-sided values approach 5.",
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined.",
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined.",
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined."
+        "This reports the defined point value f(2)=9 rather than the nearby behavior of f(x) as x approaches 2.",
+        "Adding the nearby trend 5 and the point value f(2)=9 combines two unrelated quantities instead of finding a limit.",
+        "A mismatch between the nearby trend and f(2) breaks continuity, but the two-sided limit still exists because both sides approach 5."
       ],
       "misconceptionTags": [
         "A limit may exist when the function value differs or is undefined."
@@ -664,10 +664,10 @@
       "answerIndex": 1,
       "rationale": "A two-sided limit requires equal left-hand and right-hand limits.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined.",
+        "A one-sided limit from the left alone cannot define a two-sided limit when the right-hand side approaches 7.",
         "Best answer. A two-sided limit requires equal left-hand and right-hand limits.",
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined.",
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined."
+        "Two-sided limits never average disagreeing one-sided limits; the left and right trends must match.",
+        "Approaching 7 from the right establishes only the right-hand limit, not a two-sided limit at x=4."
       ],
       "misconceptionTags": [
         "A limit may exist when the function value differs or is undefined."
@@ -781,10 +781,10 @@
       "answerIndex": 2,
       "rationale": "Factoring reduces the nearby expression to x+3, which approaches 6.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input.",
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input.",
+        "Evaluating the numerator alone at x=3 gives 0, ignoring the 0/0 indeterminate form that requires factoring first.",
+        "This substitutes x=3 without adding the remaining constant in the simplified factor x+3, which approaches 6.",
         "Best answer. Factoring reduces the nearby expression to x+3, which approaches 6.",
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input."
+        "Division by zero at x=3 creates a hole in the graph, not a missing limit, because (x-3) cancels for x near 3."
       ],
       "misconceptionTags": [
         "Cancellation preserves nearby behavior while respecting the excluded input."
@@ -898,9 +898,9 @@
       "answerIndex": 3,
       "rationale": "Rationalizing gives 1/[sqrt(x+4)+2], whose limit is 1/4.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input.",
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input.",
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input.",
+        "Direct substitution produces 0/0, so treating a zero numerator as a zero limit skips rationalizing the radical.",
+        "This drops one of the two 2s in the rationalized denominator sqrt(x+4)+2, which approaches 2+2=4 instead of 2.",
+        "This evaluates the denominator limit sqrt(0+4)+2=4 instead of taking its reciprocal 1/4.",
         "Best answer. Rationalizing gives 1/[sqrt(x+4)+2], whose limit is 1/4."
       ],
       "misconceptionTags": [
@@ -1017,9 +1017,9 @@
       "rationale": "Nearby values approach 2, but the defined value is 4; one redefinition repairs continuity.",
       "choiceRationales": [
         "Best answer. Nearby values approach 2, but the defined value is 4; one redefinition repairs continuity.",
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence.",
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence.",
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence."
+        "Both one-sided limits equal 2 here; a jump discontinuity requires two different finite one-sided limits.",
+        "Because the factor (x-1) cancels cleanly for x not equal to 1, the outputs stay near 2 rather than growing unbounded.",
+        "Continuity at x=1 requires the limit 2 to equal f(1), which fails because f(1) is defined as 4."
       ],
       "misconceptionTags": [
         "Holes, jumps, and infinite discontinuities require different evidence."
@@ -1134,10 +1134,10 @@
       "answerIndex": 1,
       "rationale": "Different finite one-sided limits create a jump.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence.",
+        "A removable discontinuity requires the left-hand and right-hand limits to agree, whereas 2 and 5 differ.",
         "Best answer. Different finite one-sided limits create a jump.",
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence.",
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence."
+        "Both one-sided limits are finite numbers (2 and 5), so the graph has no vertical asymptote at x=0.",
+        "A function cannot be continuous at x=0 when its left-hand and right-hand limits disagree."
       ],
       "misconceptionTags": [
         "Holes, jumps, and infinite discontinuities require different evidence."
@@ -1252,10 +1252,10 @@
       "answerIndex": 2,
       "rationale": "The squared denominator approaches zero through positive values on both sides.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions.",
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions.",
+        "Squaring (x-4) keeps the denominator strictly positive on both sides of x=4, so the quotient cannot turn negative.",
+        "Dividing a fixed positive constant by a tiny positive number grows arbitrarily large instead of shrinking to zero.",
         "Best answer. The squared denominator approaches zero through positive values on both sides.",
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions."
+        "The numerator alone is 2, ignoring that dividing by (x-4)^2 amplifies the quotient without bound near x=4."
       ],
       "misconceptionTags": [
         "Vertical and horizontal asymptotes answer different questions."
@@ -1370,9 +1370,9 @@
       "answerIndex": 3,
       "rationale": "Equal polynomial degrees give the ratio of leading coefficients.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions.",
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions.",
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions.",
+        "A horizontal asymptote at 0 occurs when the denominator has higher degree, not when both degrees are 2.",
+        "This uses the denominator leading coefficient alone instead of dividing the leading coefficients 3 and 1.",
+        "The limit diverges only when the numerator degree exceeds the denominator degree; here both are quadratic.",
         "Best answer. Equal polynomial degrees give the ratio of leading coefficients."
       ],
       "misconceptionTags": [
@@ -1488,9 +1488,9 @@
       "rationale": "Zero lies between the endpoint outputs, and continuity guarantees an interior preimage.",
       "choiceRationales": [
         "Best answer. Zero lies between the endpoint outputs, and continuity guarantees an interior preimage.",
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness.",
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness.",
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness."
+        "The Intermediate Value Theorem guarantees at least one root, but the curve could cross zero multiple times.",
+        "Having f(1)<f(4) does not prevent the function from rising and falling along the interval.",
+        "IVT gives an output value of f itself and says nothing about derivatives or horizontal tangents."
       ],
       "misconceptionTags": [
         "IVT guarantees existence, not uniqueness."
@@ -1604,10 +1604,10 @@
       "answerIndex": 1,
       "rationale": "IVT guarantees existence for every target between the endpoint values.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness.",
+        "Continuity ensures the graph reaches height 3 at least once, not that it crosses y=3 only a single time.",
         "Best answer. IVT guarantees existence for every target between the endpoint values.",
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness.",
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness."
+        "A continuous function need not be linear or even differentiable between endpoints a and b.",
+        "Nothing in the Intermediate Value Theorem prevents a continuous curve from having peaks or valleys inside [a,b]."
       ],
       "misconceptionTags": [
         "IVT guarantees existence, not uniqueness."
@@ -1722,10 +1722,10 @@
       "answerIndex": 2,
       "rationale": "This is the limit definition of the derivative at x=3.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value.",
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value.",
+        "This expression is a limit of slopes of secant lines at x=3, not the function output f(3) itself.",
+        "The first-order difference quotient of f defines the first derivative f prime(3), not the second derivative.",
         "Best answer. This is the limit definition of the derivative at x=3.",
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value."
+        "Average value divides a definite integral by interval length rather than taking the limit of a difference quotient."
       ],
       "misconceptionTags": [
         "A derivative value is a rate, not the function value."
@@ -1840,9 +1840,9 @@
       "answerIndex": 3,
       "rationale": "The difference quotient simplifies to 8+h and approaches 8.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value.",
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value.",
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value.",
+        "This reports the input x=4 rather than the derivative 2x evaluated at x=4.",
+        "Evaluating f(4)=4^2 gives the function height 16 instead of the instantaneous slope f prime(4)=8.",
+        "Multiplying f(4)=16 by 2 confuses the derivative 2x with 2 times x^2.",
         "Best answer. The difference quotient simplifies to 8+h and approaches 8."
       ],
       "misconceptionTags": [
@@ -1958,9 +1958,9 @@
       "rationale": "A derivative requires matching one-sided slopes; this continuous corner has unequal slopes.",
       "choiceRationales": [
         "Best answer. A derivative requires matching one-sided slopes; this continuous corner has unequal slopes.",
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely.",
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely.",
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely."
+        "Absolute value f(x)=|x-2| is continuous everywhere, including at x=2; continuity alone does not ensure differentiability.",
+        "Many differentiable functions cross zero smoothly, such as f(x)=x-2, so f(2)=0 does not block a derivative.",
+        "Smooth curves like (x-2)^2 have a minimum at x=2 and are still differentiable with slope 0 there."
       ],
       "misconceptionTags": [
         "Differentiability implies continuity, but not conversely."
@@ -2074,10 +2074,10 @@
       "answerIndex": 1,
       "rationale": "Differentiability implies continuity, while corners show the converse can fail.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely.",
+        "Corners such as |x| at x=0 are continuous yet not differentiable, so this converse is false.",
         "Best answer. Differentiability implies continuity, while corners show the converse can fail.",
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely.",
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely."
+        "Jump and removable discontinuities have breaks or holes rather than vertical tangent lines.",
+        "Having a zero output says nothing about smoothness, as shown by |x| having f(0)=0 without a derivative."
       ],
       "misconceptionTags": [
         "Differentiability implies continuity, but not conversely."
@@ -2192,10 +2192,10 @@
       "answerIndex": 2,
       "rationale": "Apply the power rule term by term; the constant derivative is zero.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero.",
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero.",
+        "This multiplies each coefficient by the exponent without reducing the power of x by 1.",
+        "This reduces each exponent by 1 but forgets to multiply each term by its original exponent.",
         "Best answer. Apply the power rule term by term; the constant derivative is zero.",
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero."
+        "The constant term 7 has derivative 0 and must disappear rather than remain unchanged."
       ],
       "misconceptionTags": [
         "The derivative of a constant is zero."
@@ -2310,9 +2310,9 @@
       "answerIndex": 3,
       "rationale": "f'(x)=-2x^(-3), so f'(2)=-2/8.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero.",
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero.",
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero.",
+        "This substitutes x=2 into -2x^(-2) instead of reducing the exponent from -2 to -3 to get -2x^(-3).",
+        "Dropping the negative sign from the exponent -2 flips the slope from negative to positive.",
+        "This evaluates 2^2 instead of differentiating x^(-2) into -2/x^3 at x=2.",
         "Best answer. f'(x)=-2x^(-3), so f'(2)=-2/8."
       ],
       "misconceptionTags": [
@@ -2428,9 +2428,9 @@
       "rationale": "Use the standard transcendental derivatives with their constant multiples.",
       "choiceRationales": [
         "Best answer. Use the standard transcendental derivatives with their constant multiples.",
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care.",
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care.",
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care."
+        "The final term ln x was left undifferentiated instead of being replaced by its derivative 1/x.",
+        "The derivative of 3 sin x is +3 cos x, whereas -3 sin x is the second derivative of 3 sin x.",
+        "This misapplies the power rule to e^x and uses 1 instead of 1/x for the derivative of ln x."
       ],
       "misconceptionTags": [
         "Trigonometric signs and ln x require care."
@@ -2544,10 +2544,10 @@
       "answerIndex": 1,
       "rationale": "The derivative is -sin x, and -sin(pi/2)=-1.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care.",
+        "Evaluating cos(pi/2)=0 gives the original function value rather than its derivative -sin(pi/2).",
         "Best answer. The derivative is -sin x, and -sin(pi/2)=-1.",
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care.",
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care."
+        "Forgetting the negative sign in d/dx(cos x)=-sin x yields +sin(pi/2)=1 instead of -1.",
+        "This echoes the input angle x=pi/2 instead of evaluating the derivative -sin(pi/2)."
       ],
       "misconceptionTags": [
         "Trigonometric signs and ln x require care."
@@ -2662,10 +2662,10 @@
       "answerIndex": 2,
       "rationale": "The product rule gives 2xe^x+x^2e^x.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise.",
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise.",
+        "Differentiating x^2 and e^x separately and multiplying ignores the product rule sum f prime g + f g prime.",
+        "This differentiates only the exponential factor e^x while forgetting the term from differentiating x^2.",
         "Best answer. The product rule gives 2xe^x+x^2e^x.",
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise."
+        "In the second product-rule term, the exponential factor e^x was dropped from x^2 times d/dx(e^x)."
       ],
       "misconceptionTags": [
         "Products and quotients do not differentiate componentwise."
@@ -2780,9 +2780,9 @@
       "answerIndex": 3,
       "rationale": "Rewrite as x+1/x or apply the quotient rule.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise.",
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise.",
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise.",
+        "Differentiating numerator and denominator separately gives 2x/1, not a valid quotient rule, and still fails to match 1-1/x^2.",
+        "The derivative of x^(-1) is -x^(-2), so adding 1/x^2 drops the negative sign from the exponent.",
+        "This misapplies the quotient rule by placing x-1 in the denominator instead of x^2 and dropping numerator terms.",
         "Best answer. Rewrite as x+1/x or apply the quotient rule."
       ],
       "misconceptionTags": [
@@ -2898,9 +2898,9 @@
       "rationale": "The chain rule multiplies the outer derivative by 6x.",
       "choiceRationales": [
         "Best answer. The chain rule multiplies the outer derivative by 6x.",
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required.",
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required.",
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required."
+        "This differentiates only the outer fifth power and omits the chain-rule factor 6x from the inner expression.",
+        "Multiplying by the inner derivative 6x is right, but the outer exponent must decrease from 5 to 4.",
+        "This multiplies by 3x^2 itself instead of the derivative of 3x^2+1, which is 6x."
       ],
       "misconceptionTags": [
         "The inner derivative is required."
@@ -3014,10 +3014,10 @@
       "answerIndex": 1,
       "rationale": "Differentiate sine and multiply by the derivative of 2x^3.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required.",
+        "This differentiates the outer sine function but omits the required chain-rule factor d/dx(2x^3)=6x^2.",
         "Best answer. Differentiate sine and multiply by the derivative of 2x^3.",
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required.",
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required."
+        "This multiplies by the undifferentiated inner argument 2x^3 instead of its derivative 6x^2.",
+        "The chain-rule factor 6x^2 is right, but the outer sine function must change to cosine."
       ],
       "misconceptionTags": [
         "The inner derivative is required."
@@ -3131,10 +3131,10 @@
       "answerIndex": 2,
       "rationale": "Implicit differentiation gives 2x+2y(dy/dx)=0.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x.",
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x.",
+        "Solving 2x+2y(dy/dx)=0 divides -2x by 2y to get -x/y, so -y/x inverts the fraction.",
+        "Moving 2x across the equals sign changes its sign to -2x, so dropping the minus sign flips the slope.",
         "Best answer. Implicit differentiation gives 2x+2y(dy/dx)=0.",
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x."
+        "The derivative of y^2 with respect to x is 2y(dy/dx), not y^2(dy/dx), so dividing by y^2 is invalid."
       ],
       "misconceptionTags": [
         "Treat y as a function of x."
@@ -3248,9 +3248,9 @@
       "answerIndex": 3,
       "rationale": "Differentiation gives y+xy'+2yy'=0, so y'=-2/6.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x.",
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x.",
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x.",
+        "Counting y twice in the numerator produces -4/6=-2/3 instead of -y/(x+2y)=-2/6=-1/3.",
+        "Dropping the negative sign when moving y to the right side of y+xy prime+2yy prime=0 reverses the slope.",
+        "Dropping the coefficient 2 when differentiating y^2 gives y+(x+y)y prime=0 and yields -2/4=-1/2 instead of -1/3.",
         "Best answer. Differentiation gives y+xy'+2yy'=0, so y'=-2/6."
       ],
       "misconceptionTags": [
@@ -3367,9 +3367,9 @@
       "rationale": "The inverse derivative is the reciprocal slope at the corresponding input.",
       "choiceRationales": [
         "Best answer. The inverse derivative is the reciprocal slope at the corresponding input.",
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation.",
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation.",
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation."
+        "This takes the reciprocal of the input x=2 instead of the reciprocal of the slope f prime(2)=3.",
+        "This reports f prime(2)=3 directly without taking the reciprocal required by the inverse-derivative formula.",
+        "This takes the reciprocal of the output value f(2)=5 rather than the slope f prime(2)=3."
       ],
       "misconceptionTags": [
         "An inverse derivative is not an inverse formula operation."
@@ -3484,10 +3484,10 @@
       "answerIndex": 1,
       "rationale": "Use u prime over 1+u squared with u=3x.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation.",
+        "This substitutes u=3x into 1/(1+u^2) but forgets to multiply by the inner derivative u prime=3.",
         "Best answer. Use u prime over 1+u squared with u=3x.",
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation.",
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation."
+        "Squaring u=3x gives 9x^2, not 3x^2; the coefficient 3 must also be squared in the denominator.",
+        "The arctan derivative has a plus sign in 1+u^2 and requires the chain-rule factor 3 in the numerator."
       ],
       "misconceptionTags": [
         "An inverse derivative is not an inverse formula operation."
@@ -3601,10 +3601,10 @@
       "answerIndex": 2,
       "rationale": "ln y=x ln x gives y prime over y equal to ln x+1.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help.",
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help.",
+        "This applies the power rule as if the exponent x were a constant, which fails when both base and exponent vary.",
+        "This applies the exponential rule as if the base x were constant, missing the second product-rule term from d/dx(x ln x).",
         "Best answer. ln y=x ln x gives y prime over y equal to ln x+1.",
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help."
+        "This lowers the exponent by 1 without even the factor x or logarithmic differentiation for the variable exponent."
       ],
       "misconceptionTags": [
         "Simplification or logarithmic differentiation may help."
@@ -3718,9 +3718,9 @@
       "answerIndex": 3,
       "rationale": "The expression is a quotient whose exponential numerator is composite.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help.",
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help.",
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help.",
+        "Neither e^(x^2) nor the rational quotient structure can be differentiated using the power rule alone.",
+        "The function is already solved explicitly in terms of x, so implicit differentiation is unnecessary.",
+        "The Fundamental Theorem differentiates integrals with variable limits, not an explicit exponential quotient.",
         "Best answer. The expression is a quotient whose exponential numerator is composite."
       ],
       "misconceptionTags": [
@@ -3836,9 +3836,9 @@
       "rationale": "Differentiate successively three times.",
       "choiceRationales": [
         "Best answer. Differentiate successively three times.",
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative.",
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative.",
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative."
+        "This stops after the second derivative f double prime(x) instead of differentiating one more time.",
+        "This drops the constant -12 obtained from differentiating -12x in the second derivative 12x^2-12x.",
+        "This stops at the first derivative f prime(x) rather than computing the third derivative."
       ],
       "misconceptionTags": [
         "Second derivative is change in the first derivative."
@@ -3952,10 +3952,10 @@
       "answerIndex": 1,
       "rationale": "Acceleration is s double prime =6t-12, which is 6 at t=3.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative.",
+        "Evaluating velocity v(3)=3(3)^2-12(3)+9=0 gives velocity at t=3 instead of acceleration a(3)=6.",
         "Best answer. Acceleration is s double prime =6t-12, which is 6 at t=3.",
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative.",
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative."
+        "This evaluates v(0)=9 or s(3)=0+9 rather than the second derivative a(t)=6t-12 at t=3.",
+        "This evaluates 6t=18 at t=3 while forgetting to subtract the constant term 12 from a(t)=6t-12."
       ],
       "misconceptionTags": [
         "Second derivative is change in the first derivative."
@@ -4070,10 +4070,10 @@
       "answerIndex": 2,
       "rationale": "The derivative is an instantaneous signed rate with compound units.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation.",
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation.",
+        "This confuses the rate of change V prime(5) with the volume V(5) itself, which also cannot be negative.",
+        "An instantaneous rate of -2 L/min at t=5 does not mean total change over all 5 minutes was 2 liters.",
         "Best answer. The derivative is an instantaneous signed rate with compound units.",
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation."
+        "This swaps the input time t=5 minutes with the output rate magnitude 2 liters per minute."
       ],
       "misconceptionTags": [
         "A derivative is a local rate, not accumulation."
@@ -4188,9 +4188,9 @@
       "answerIndex": 3,
       "rationale": "Derivative units are output units divided by input units.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation.",
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation.",
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation.",
+        "Derivative units divide output units by input units (dC/dq), so items per dollar inverts the ratio.",
+        "Dollars are the units of total cost C(q), whereas C prime(q) measures change in dollars per item.",
+        "Differentiating divides by the input unit once; it never squares the input unit or places it in the numerator.",
         "Best answer. Derivative units are output units divided by input units."
       ],
       "misconceptionTags": [
@@ -4306,9 +4306,9 @@
       "rationale": "Differentiate position to obtain velocity s'(t)=3t^2-6t, then evaluate at t=3 to get 9.",
       "choiceRationales": [
         "Best answer. Differentiate position to obtain velocity s'(t)=3t^2-6t, then evaluate at t=3 to get 9.",
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign.",
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign.",
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign."
+        "Evaluating position s(3)=27-27=0 gives the particle location at t=3 rather than its velocity s prime(3)=9.",
+        "This evaluates only 6t=18 or misses the -6t term in v(t)=3t^2-6t at t=3.",
+        "This evaluates only the first term 3t^2=27 of v(t)=3t^2-6t without subtracting 6(3)=18."
       ],
       "misconceptionTags": [
         "Speed increases when velocity and acceleration share a sign."
@@ -4422,10 +4422,10 @@
       "answerIndex": 1,
       "rationale": "Speed increases when nonzero velocity and acceleration have the same sign.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign.",
+        "Positive acceleration increases speed when velocity is also positive; speed decreases only when velocity and acceleration have opposite signs.",
         "Best answer. Speed increases when nonzero velocity and acceleration have the same sign.",
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign.",
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign."
+        "Positive velocity alone tells direction of motion, not whether speed decreases; matching positive acceleration speeds the particle up.",
+        "Constant speed requires zero acceleration (or orthogonal motion), whereas a(3)=6 is nonzero and positive."
       ],
       "misconceptionTags": [
         "Speed increases when velocity and acceleration share a sign."
@@ -4540,10 +4540,10 @@
       "answerIndex": 2,
       "rationale": "Differentiate A=pi r^2 in time and substitute after differentiating.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating.",
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating.",
+        "Using r=2 instead of r=3 in dA/dt=2 pi r (dr/dt) swaps the radius and its rate of change.",
+        "This computes 2 pi r=6 pi while forgetting to multiply by the chain-rule rate dr/dt=2 cm/s.",
         "Best answer. Differentiate A=pi r^2 in time and substitute after differentiating.",
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating."
+        "Substituting r=3 into pi r^2 times dr/dt computes 2 pi r^2=18 pi without differentiating r^2 into 2r."
       ],
       "misconceptionTags": [
         "Substitute instant values after differentiating."
@@ -4658,9 +4658,9 @@
       "answerIndex": 3,
       "rationale": "x dx/dt+y dy/dt=0 gives dy/dt=-6/8.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating.",
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating.",
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating.",
+        "As the base x increases, the top of the ladder slides downward, so dy/dt must be negative rather than positive.",
+        "This inverts the ratio -x/y into -y/x=-8/6=-4/3 when solving 2x(dx/dt)+2y(dy/dt)=0.",
+        "Setting dy/dt equal to dx/dt ignores that x=6 and y=8 have different lengths and opposite directions of change.",
         "Best answer. x dx/dt+y dy/dt=0 gives dy/dt=-6/8."
       ],
       "misconceptionTags": [
@@ -4776,9 +4776,9 @@
       "rationale": "At 4 the value is 2 and derivative is 1/4, so add (1/4)(0.1).",
       "choiceRationales": [
         "Best answer. At 4 the value is 2 and derivative is 1/4, so add (1/4)(0.1).",
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact.",
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact.",
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact."
+        "Multiplying delta x=0.1 by 0.1 instead of the derivative f prime(4)=1/4 underestimates the tangent-line rise.",
+        "Using f prime(4)=1/2 instead of 1/(2 sqrt(4))=1/4 doubles the linear increment from 0.025 to 0.05.",
+        "This starts from x=4 instead of f(4)=sqrt(4)=2 before adding the linear increment (1/4)(0.1)=0.025."
       ],
       "misconceptionTags": [
         "A linearization is local, not exact."
@@ -4892,10 +4892,10 @@
       "answerIndex": 1,
       "rationale": "The local linearization is 1+x.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact.",
+        "This keeps only the linear change f prime(0)(0.03) and drops the base value f(0)=e^0=1.",
         "Best answer. The local linearization is 1+x.",
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact.",
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact."
+        "This misplaces the decimal in delta x=0.03 by adding 0.003 instead of 0.03 to 1.",
+        "This shifts the decimal the wrong way by adding 0.30 instead of 0.03 to the base value 1."
       ],
       "misconceptionTags": [
         "A linearization is local, not exact."
@@ -5009,10 +5009,10 @@
       "answerIndex": 2,
       "rationale": "The 0/0 form becomes e^x/1 after differentiation.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient.",
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient.",
+        "This substitutes x=0 into only the numerator e^x-1 or misreads e^0 as 0 instead of 1 after L Hospital Rule.",
+        "Evaluating e^1 instead of e^0 at x=0 yields e rather than 1.",
         "Best answer. The 0/0 form becomes e^x/1 after differentiation.",
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient."
+        "The 0/0 form is indeterminate rather than undefined; differentiating numerator and denominator gives a finite limit of 1."
       ],
       "misconceptionTags": [
         "The rule does not apply to every quotient."
@@ -5126,9 +5126,9 @@
       "answerIndex": 3,
       "rationale": "The infinity/infinity form becomes (1/x)/1, which approaches zero.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient.",
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient.",
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient.",
+        "Treating infinity/infinity as equal to 1 fails because x grows much faster than ln x as x approaches infinity.",
+        "After L Hospital Rule, (1/x)/1 shrinks to 0 rather than diverging to positive infinity.",
+        "Because 1/x approaches 0 cleanly as x grows without bound, the original limit exists and equals 0.",
         "Best answer. The infinity/infinity form becomes (1/x)/1, which approaches zero."
       ],
       "misconceptionTags": [
@@ -5244,9 +5244,9 @@
       "rationale": "The secant slope is 4 and f prime(c)=2c=4.",
       "choiceRationales": [
         "Best answer. The secant slope is 4 and f prime(c)=2c=4.",
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point.",
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point.",
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point."
+        "At x=1 the derivative is f prime(1)=2, which does not match the average secant slope (9-1)/(3-1)=4.",
+        "At the right endpoint x=3, f prime(3)=6 exceeds the secant slope 4, and MVT guarantees an interior point.",
+        "This reports the secant slope 4 itself rather than solving f prime(c)=2c=4 for the input c=2."
       ],
       "misconceptionTags": [
         "MVT guarantees at least one point."
@@ -5360,10 +5360,10 @@
       "answerIndex": 1,
       "rationale": "The function is continuous but has a corner inside the interval.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point.",
+        "The absolute value function |x| is continuous on all of [-1,1]; its failure is the sharp corner where f prime(0) fails to exist.",
         "Best answer. The function is continuous but has a corner inside the interval.",
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point.",
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point."
+        "Equal endpoint values do not prevent MVT; in fact they satisfy Rolle Theorem whenever differentiability holds.",
+        "The Mean Value Theorem applies to intervals containing negative, zero, or positive inputs alike."
       ],
       "misconceptionTags": [
         "MVT guarantees at least one point."
@@ -5477,10 +5477,10 @@
       "answerIndex": 2,
       "rationale": "The candidates test includes endpoints and every interior point where the derivative is zero or undefined.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate.",
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate.",
+        "An absolute extremum can occur at an interior peak or valley, so checking endpoints alone can miss it.",
+        "Monotonic or clipped curves often attain their absolute maximum or minimum at the interval endpoints.",
         "Best answer. The candidates test includes endpoints and every interior point where the derivative is zero or undefined.",
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate."
+        "Second-derivative values describe concavity, not the heights of f(x) needed to compare absolute extrema."
       ],
       "misconceptionTags": [
         "A critical number is only a candidate."
@@ -5594,9 +5594,9 @@
       "answerIndex": 3,
       "rationale": "The function increases through zero despite its horizontal tangent.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate.",
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate.",
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate.",
+        "At x=0, f(x)=x^3 has neither a maximum nor a minimum because f prime(x)=3x^2 never changes sign.",
+        "A function must have f prime(x)=0 on an entire interval to be constant, not just at one isolated point.",
+        "Having f prime(0)=0 explicitly means the derivative exists and equals 0 at x=0.",
         "Best answer. The function increases through zero despite its horizontal tangent."
       ],
       "misconceptionTags": [
@@ -5714,9 +5714,9 @@
       "rationale": "The derivative changes positive-to-negative at -2 and negative-to-positive at 1.",
       "choiceRationales": [
         "Best answer. The derivative changes positive-to-negative at -2 and negative-to-positive at 1.",
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum.",
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum.",
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum."
+        "A smooth polynomial cannot have two consecutive local minima without a local maximum between them; f prime flips + to - at -2.",
+        "This reverses the sign chart of (x+2)(x-1), which is positive outside (-2,1) and negative inside (-2,1).",
+        "Testing x=0 gives f prime(0)=-2<0, so f is decreasing rather than increasing on (-2,1)."
       ],
       "misconceptionTags": [
         "A zero derivative without sign change need not be an extremum."
@@ -5832,10 +5832,10 @@
       "answerIndex": 1,
       "rationale": "Negative-to-positive means the function changes from decreasing to increasing.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum.",
+        "A zero derivative identifies only a stationary candidate; as x^3 shows, f prime can be 0 without a local minimum.",
         "Best answer. Negative-to-positive means the function changes from decreasing to increasing.",
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum.",
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum."
+        "Changing from increasing to decreasing produces a local maximum, not a local minimum.",
+        "A zero second derivative signals a possible inflection point and does not establish a local minimum."
       ],
       "misconceptionTags": [
         "A zero derivative without sign change need not be an extremum."
@@ -5950,10 +5950,10 @@
       "answerIndex": 2,
       "rationale": "Concavity is upward where 6x-12 is positive.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate.",
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate.",
+        "For x<2, 6x-12 is negative, which makes f concave down rather than concave up.",
+        "Solving 6x-12>0 adds 12 and divides by 6 to get x>2, so x>-2 carries a sign error.",
         "Best answer. Concavity is upward where 6x-12 is positive.",
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate."
+        "Because 6x-12 changes sign at x=2, the function is not concave up across all real numbers."
       ],
       "misconceptionTags": [
         "f double prime equal to zero gives only a candidate."
@@ -6068,9 +6068,9 @@
       "answerIndex": 3,
       "rationale": "A critical point with negative second derivative is locally concave down.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate.",
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate.",
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate.",
+        "A local minimum occurs when f double prime(3)>0 (concave up), whereas f double prime(3)<0 is concave down.",
+        "An inflection point requires f double prime to change sign, not stay strictly negative at a stationary point.",
+        "The second derivative test is inconclusive only when f double prime(3)=0; a negative value proves a local maximum.",
         "Best answer. A critical point with negative second derivative is locally concave down."
       ],
       "misconceptionTags": [
@@ -6188,9 +6188,9 @@
       "rationale": "Positive f' gives increase, while decreasing f' gives negative f double prime.",
       "choiceRationales": [
         "Best answer. Positive f' gives increase, while decreasing f' gives negative f double prime.",
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion.",
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion.",
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion."
+        "Concave up requires f prime to be increasing, whereas here the graph of f prime is decreasing.",
+        "Because f prime lies above the x-axis (f prime>0), f must be increasing rather than decreasing.",
+        "Both behaviors are reversed: positive f prime means f increases, and decreasing f prime means f is concave down."
       ],
       "misconceptionTags": [
         "Optimization needs a contextual conclusion."
@@ -6306,10 +6306,10 @@
       "answerIndex": 1,
       "rationale": "A=x(10-x) is a concave-down quadratic with vertex at x=5.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion.",
+        "A 2 by 8 rectangle has perimeter 20 but area 16, smaller than the maximum area of 25.",
         "Best answer. A=x(10-x) is a concave-down quadratic with vertex at x=5.",
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion.",
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion."
+        "A 4 by 6 rectangle has perimeter 20 and area 24, still less than the 5 by 5 square area of 25.",
+        "A 1 by 9 rectangle has perimeter 20 and area only 9, far below the vertex value at x=5."
       ],
       "misconceptionTags": [
         "Optimization needs a contextual conclusion."
@@ -6423,10 +6423,10 @@
       "answerIndex": 2,
       "rationale": "The integral of 3t^2 from 0 to 2 is 8.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude.",
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude.",
+        "This evaluates t^2=4 at t=2 without using the antiderivative t^3 of 3t^2.",
+        "Evaluating the rate r(2)=3(2)^2=12 gives the final flow rate in L/hr instead of total liters accumulated.",
         "Best answer. The integral of 3t^2 from 0 to 2 is 8.",
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude."
+        "Multiplying the final rate 12 L/hr by 2 hours treats a growing rate as if it were constant over [0,2]."
       ],
       "misconceptionTags": [
         "Net change differs from total magnitude."
@@ -6540,9 +6540,9 @@
       "answerIndex": 3,
       "rationale": "Net change is the signed sum 6+(-2).",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude.",
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude.",
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude.",
+        "Adding the absolute values 6+2=8 computes total variation rather than signed net change.",
+        "This reverses the subtraction to 2-6=-4 instead of adding the signed areas 6+(-2)=4.",
+        "Multiplying 6 by 2 combines the two regions as a product instead of summing their signed areas.",
         "Best answer. Net change is the signed sum 6+(-2)."
       ],
       "misconceptionTags": [
@@ -6659,9 +6659,9 @@
       "rationale": "Width is 1 and the left endpoint heights are 1 and 3.",
       "choiceRationales": [
         "Best answer. Width is 1 and the left endpoint heights are 1 and 3.",
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ.",
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ.",
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ."
+        "Using the midpoint or trapezoidal average gives 6, whereas the left sum uses heights f(0)=1 and f(1)=3.",
+        "Using the right endpoints f(1)=3 and f(2)=5 gives the right Riemann sum 8 rather than the left sum 4.",
+        "Adding all three table values 1+3+5=9 uses three heights for only two subintervals."
       ],
       "misconceptionTags": [
         "Left, right, and midpoint sums differ."
@@ -6776,10 +6776,10 @@
       "answerIndex": 1,
       "rationale": "Each width is 2 and the midpoints are 1 and 3.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ.",
+        "Sampling at x=0 and x=2 builds the left Riemann sum on [0,4], not the midpoint sum.",
         "Best answer. Each width is 2 and the midpoints are 1 and 3.",
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ.",
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ."
+        "Sampling at x=2 and x=4 builds the right Riemann sum on [0,4], not the midpoint sum.",
+        "This uses the total interval length 4 instead of the subinterval width delta x=(4-0)/2=2."
       ],
       "misconceptionTags": [
         "Left, right, and midpoint sums differ."
@@ -6895,10 +6895,10 @@
       "answerIndex": 2,
       "rationale": "The Fundamental Theorem returns the integrand at the moving upper bound.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor.",
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor.",
+        "This differentiates the integrand t^2+1 a second time instead of stopping at the integrand evaluated at x.",
+        "This integrates t^2+1 rather than differentiating the accumulation function G(x).",
         "Best answer. The Fundamental Theorem returns the integrand at the moving upper bound.",
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor."
+        "Evaluating only the constant term or lower bound ignores the variable upper bound x in FTC Part 1."
       ],
       "misconceptionTags": [
         "A composite upper bound adds a derivative factor."
@@ -7014,9 +7014,9 @@
       "answerIndex": 3,
       "rationale": "FTC gives cos(x^2), and the chain rule contributes 2x.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor.",
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor.",
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor.",
+        "This substitutes the upper bound x^2 into cos(t) but forgets to multiply by the chain-rule derivative 2x.",
+        "This differentiates cos(x^2) instead of recognizing that FTC returns the integrand cos(x^2) times 2x.",
+        "This integrates cos(t) to sin(t) instead of differentiating the integral with FTC and the chain rule.",
         "Best answer. FTC gives cos(x^2), and the chain rule contributes 2x."
       ],
       "misconceptionTags": [
@@ -7132,9 +7132,9 @@
       "rationale": "Use antiderivative x^2 and compute 9-1.",
       "choiceRationales": [
         "Best answer. Use antiderivative x^2 and compute 9-1.",
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign.",
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign.",
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign."
+        "Evaluating 2x at the interval length 2 gives 4 instead of applying the antiderivative x^2 from 1 to 3.",
+        "Evaluating the integrand 2x at the upper limit x=3 gives 6 rather than the definite integral 3^2-1^2=8.",
+        "Adding 3^2+1^2=10 adds the endpoint antiderivative values instead of subtracting F(3)-F(1)."
       ],
       "misconceptionTags": [
         "Reversing limits changes sign."
@@ -7248,10 +7248,10 @@
       "answerIndex": 1,
       "rationale": "Additivity over adjacent intervals gives 5+(-2).",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign.",
+        "Multiplying 5 by -2 combines the two interval integrals as a product instead of adding them.",
         "Best answer. Additivity over adjacent intervals gives 5+(-2).",
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign.",
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign."
+        "Subtracting 5-(-2)=7 treats the negative integral as positive instead of summing 5+(-2)=3.",
+        "This doubles the first integral or multiplies magnitudes instead of using additivity 5+(-2)=3."
       ],
       "misconceptionTags": [
         "Reversing limits changes sign."
@@ -7366,10 +7366,10 @@
       "answerIndex": 2,
       "rationale": "Reverse the power rule term by term and include the arbitrary constant.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C.",
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C.",
+        "Differentiating 3x^2 to 6x goes in the wrong direction; integration increases the exponent to x^3.",
+        "The constant -4 must integrate to -4x rather than staying -4.",
         "Best answer. Reverse the power rule term by term and include the arbitrary constant.",
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C."
+        "This divides by 3 without raising the exponent of x^2 from 2 to 3."
       ],
       "misconceptionTags": [
         "Indefinite integrals require +C."
@@ -7484,9 +7484,9 @@
       "answerIndex": 3,
       "rationale": "Let u=x^2+1 so du=2x dx; integrating u^4 gives u^5/5 plus the constant of integration.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C.",
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C.",
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C.",
+        "This multiplies by 2 instead of dividing by the new exponent 5 after substituting u=x^2+1.",
+        "This divides by the original exponent 4 without increasing the power of u from 4 to 5.",
+        "Because 2x dx is absorbed into du, leaving an extra x^2 factor outside the u-power overcounts it.",
         "Best answer. Let u=x^2+1 so du=2x dx; integrating u^4 gives u^5/5 plus the constant of integration."
       ],
       "misconceptionTags": [
@@ -7602,9 +7602,9 @@
       "rationale": "The rate is positively proportional to the current population.",
       "choiceRationales": [
         "Best answer. The rate is positively proportional to the current population.",
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution.",
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution.",
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution."
+        "That describes a constant rate dP/dt=0.04, ignoring the factor P that makes growth proportional to current size.",
+        "The constant 0.04 is a relative growth rate per time unit, not a fixed population size.",
+        "Because +0.04 is positive (with P>0), the population grows rather than decays."
       ],
       "misconceptionTags": [
         "An initial condition selects a particular solution."
@@ -7718,10 +7718,10 @@
       "answerIndex": 1,
       "rationale": "When T-20 is positive, the derivative is negative.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution.",
+        "With k>0 and T>20, dT/dt=-k(T-20) is negative, so temperature falls rather than rises.",
         "Best answer. When T-20 is positive, the derivative is negative.",
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution.",
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution."
+        "Temperature is constant only at equilibrium T=20 where dT/dt=0, not when T>20.",
+        "The derivative drives T asymptotically toward 20 over time rather than causing an instant jump."
       ],
       "misconceptionTags": [
         "An initial condition selects a particular solution."
@@ -7835,10 +7835,10 @@
       "answerIndex": 2,
       "rationale": "Direct differentiation verifies the equation for every input.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution.",
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution.",
+        "This omits the chain-rule factor 2 from differentiating the exponent 2x.",
+        "Matching a differential equation at one input does not verify that it holds across an entire interval.",
         "Best answer. Direct differentiation verifies the equation for every input.",
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution."
+        "Only functions whose derivative equals 2y satisfy y prime=2y; e^x or e^(3x) do not."
       ],
       "misconceptionTags": [
         "One matching point does not verify a solution."
@@ -7952,9 +7952,9 @@
       "answerIndex": 3,
       "rationale": "Verification requires equality throughout an interval, not at isolated points.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution.",
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution.",
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution.",
+        "Sharing the variable x does not make 2x identical to x^2 across real numbers.",
+        "Agreement at x=0 (or x=2) fails verification because a solution must satisfy y prime=y on an entire interval.",
+        "The polynomial x^2 is differentiable everywhere; it fails because its derivative 2x does not equal x^2.",
         "Best answer. Verification requires equality throughout an interval, not at isolated points."
       ],
       "misconceptionTags": [
@@ -8070,9 +8070,9 @@
       "rationale": "Substitution gives slope 1-1=0.",
       "choiceRationales": [
         "Best answer. Substitution gives slope 1-1=0.",
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values.",
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values.",
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values."
+        "Computing -1-1=-2 uses -x-y instead of substituting (1,1) into x-y.",
+        "This reports the x-coordinate or y-coordinate alone instead of computing their difference 1-1=0.",
+        "Adding x+y=1+1=2 uses the wrong sign instead of subtracting y from x."
       ],
       "misconceptionTags": [
         "A field shows local direction, not exact values."
@@ -8186,10 +8186,10 @@
       "answerIndex": 1,
       "rationale": "Equilibria make y prime zero, so solve y(3-y)=0.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values.",
+        "At y=1, y prime=1(3-1)=2 is nonzero, so y=1 is not a constant equilibrium solution.",
         "Best answer. Equilibria make y prime zero, so solve y(3-y)=0.",
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values.",
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values."
+        "Substituting y=-3 gives (-3)(6)=-18 instead of 0; the roots of y(3-y)=0 are 0 and 3.",
+        "Constant solutions exist whenever the right-hand side vanishes, which happens at y=0 and y=3."
       ],
       "misconceptionTags": [
         "A field shows local direction, not exact values."
@@ -8304,10 +8304,10 @@
       "answerIndex": 2,
       "rationale": "dy/y=x dx integrates to ln|y|=x^2/2+C.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard.",
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard.",
+        "This integrates the left side to ln|y| but leaves x undifferentiated on the right instead of integrating to x^2/2.",
+        "Multiplying by y instead of dividing by y treats dy/dx=xy as if it were dy/dx=x/y.",
         "Best answer. dy/y=x dx integrates to ln|y|=x^2/2+C.",
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard."
+        "Integrating x to x^2/2 while forgetting to divide by y skips separating the y variable."
       ],
       "misconceptionTags": [
         "Check equilibria that division may discard."
@@ -8422,9 +8422,9 @@
       "answerIndex": 3,
       "rationale": "The family y=Ce^(2x) and the condition give C=3.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard.",
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard.",
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard.",
+        "This swaps the initial value C=3 with the exponential rate constant k=2.",
+        "This drops the coefficient 2 in the exponent, giving y prime=y instead of y prime=2y.",
+        "This treats dy/dx=2y as a constant-slope linear equation dy/dx=2 rather than exponential growth.",
         "Best answer. The family y=Ce^(2x) and the condition give C=3."
       ],
       "misconceptionTags": [
@@ -8541,9 +8541,9 @@
       "rationale": "From 2=e^(kd), taking logs gives kd=ln 2.",
       "choiceRationales": [
         "Best answer. From 2=e^(kd), taking logs gives kd=ln 2.",
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity.",
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity.",
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity."
+        "Solving e^(kd)=2 requires taking the natural logarithm ln(2) before dividing by d.",
+        "This inverts the fraction when solving kd=ln(2) for k instead of dividing ln(2) by d.",
+        "This applies the logarithm to the doubling time d instead of the growth factor 2."
       ],
       "misconceptionTags": [
         "Logistic growth is fastest at half capacity."
@@ -8658,10 +8658,10 @@
       "answerIndex": 1,
       "rationale": "A logistic rate is greatest at half the carrying capacity.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity.",
+        "At P=0 the growth rate P prime is 0, an equilibrium with no growth at all.",
         "Best answer. A logistic rate is greatest at half the carrying capacity.",
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity.",
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity."
+        "This computes 0.2 times 500=100 instead of taking half of the carrying capacity K=500.",
+        "At carrying capacity P=500, the factor (1-P/500) is zero, so population growth has stopped."
       ],
       "misconceptionTags": [
         "Logistic growth is fastest at half capacity."
@@ -8775,10 +8775,10 @@
       "answerIndex": 2,
       "rationale": "The integral is 9 and interval length is 3.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation.",
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation.",
+        "This reports the definite integral 9 itself without dividing by the interval length 3-0=3.",
+        "Dividing the integral 9 by 3^2=9 divides by the endpoint squared instead of the interval length 3.",
         "Best answer. The integral is 9 and interval length is 3.",
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation."
+        "Multiplying the integral 9 by the interval length 3 multiplies instead of dividing by b-a."
       ],
       "misconceptionTags": [
         "Average value is not total accumulation."
@@ -8892,9 +8892,9 @@
       "answerIndex": 3,
       "rationale": "Divide the integral by interval length 5.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation.",
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation.",
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation.",
+        "Dividing 20 by 8 or miscomputing the interval length gives 2.5 instead of 20/(7-2)=4.",
+        "This reports the interval length 7-2=5 rather than the quotient 20/5=4.",
+        "This returns the definite integral 20 without dividing by the interval width b-a=5.",
         "Best answer. Divide the integral by interval length 5."
       ],
       "misconceptionTags": [
@@ -9011,9 +9011,9 @@
       "rationale": "Displacement is the integral of velocity, [t^3] from 0 to 2.",
       "choiceRationales": [
         "Best answer. Displacement is the integral of velocity, [t^3] from 0 to 2.",
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed.",
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed.",
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed."
+        "Evaluating the derivative a(t)=6t at t=1 or using 3t at t=2 does not integrate v(t)=3t^2.",
+        "Evaluating velocity v(2)=3(2)^2=12 gives the final speed at t=2 instead of integrated displacement.",
+        "Multiplying the final velocity 12 m/s by 2 seconds assumes constant velocity rather than integrating 3t^2."
       ],
       "misconceptionTags": [
         "Displacement is signed; distance integrates speed."
@@ -9128,10 +9128,10 @@
       "answerIndex": 1,
       "rationale": "Final amount equals initial amount plus accumulated net rate.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed.",
+        "I(T)-O(T) is an instantaneous rate at time T, not the total accumulated volume over [0,T].",
         "Best answer. Final amount equals initial amount plus accumulated net rate.",
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed.",
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed."
+        "This drops the initial volume V0 and adds outflow instead of subtracting it from inflow.",
+        "Initial volume adds to accumulated net change rather than multiplying an inflow integral, and outflow is omitted."
       ],
       "misconceptionTags": [
         "Displacement is signed; distance integrates speed."
@@ -9247,10 +9247,10 @@
       "answerIndex": 2,
       "rationale": "Integrate upper minus lower: x-x^2.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions.",
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions.",
+        "Integrating x^2-x subtracts upper from lower on [0,1], producing a negative area.",
+        "This computes only the integral of x^2 on [0,1] instead of the area between y=x and y=x^2.",
         "Best answer. Integrate upper minus lower: x-x^2.",
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions."
+        "This computes only the integral of x on [0,1] without subtracting the integral of x^2."
       ],
       "misconceptionTags": [
         "Unsplit signed integrals may cancel regions."
@@ -9366,9 +9366,9 @@
       "answerIndex": 3,
       "rationale": "Horizontal slices use right minus left.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions.",
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions.",
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions.",
+        "On [0,2], x=2y lies to the right of x=y^2, so y^2-2y reverses right minus left and turns negative.",
+        "Adding the two boundary curves sums their distances instead of measuring the horizontal width between them.",
+        "This integrates the derivative or drops a power of y instead of subtracting the actual boundary curves.",
         "Best answer. Horizontal slices use right minus left."
       ],
       "misconceptionTags": [
@@ -9485,9 +9485,9 @@
       "rationale": "Square cross-sectional area is x squared.",
       "choiceRationales": [
         "Best answer. Square cross-sectional area is x squared.",
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area.",
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area.",
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area."
+        "Integrating side length x without squaring computes 2D area rather than summing square cross-sectional areas.",
+        "Multiplying by pi applies a circular-disk formula instead of a square cross section of area s^2.",
+        "Integrating 4x sums square perimeters rather than square areas x^2."
       ],
       "misconceptionTags": [
         "Base distance is length, not area."
@@ -9602,10 +9602,10 @@
       "answerIndex": 1,
       "rationale": "Radius is d/2, and half of pi r squared is pi d squared over 8.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area.",
+        "This substitutes the diameter d(x) directly for the radius r in (1/2)pi r^2, making the area four times too large.",
         "Best answer. Radius is d/2, and half of pi r squared is pi d squared over 8.",
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area.",
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area."
+        "This uses full-circle area with diameter in place of radius, omitting both halving the diameter and halving the circle.",
+        "This computes the semicircular arc length (half circumference) rather than the semicircular cross-sectional area."
       ],
       "misconceptionTags": [
         "Base distance is length, not area."
@@ -9722,10 +9722,10 @@
       "answerIndex": 2,
       "rationale": "Disk area is pi x, whose integral from 0 to 4 is 8 pi.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii.",
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii.",
+        "Forgetting to integrate x to x^2/2 properly or using upper limit 2 halves the true disk volume 8 pi.",
+        "Omitting the factor 1/2 when integrating x from 0 to 4 doubles the true volume from 8 pi to 16 pi.",
         "Best answer. Disk area is pi x, whose integral from 0 to 4 is 8 pi.",
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii."
+        "Integrating x^2 instead of (sqrt(x))^2=x squares the radius twice and yields 32 pi/3 instead of 8 pi."
       ],
       "misconceptionTags": [
         "A shifted axis changes both radii."
@@ -9842,9 +9842,9 @@
       "answerIndex": 3,
       "rationale": "Outer radius is x and inner radius is x squared.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii.",
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii.",
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii.",
+        "The washer formula squares each radius separately (R^2-r^2), so failing to square x and x^2 is invalid.",
+        "On [0,1], x is greater than x^2, so subtracting R^2 from r^2 reverses outer and inner radii.",
+        "This is the shell integral for rotation about the y-axis, not the washer integral about the x-axis.",
         "Best answer. Outer radius is x and inner radius is x squared."
       ],
       "misconceptionTags": [
@@ -9960,9 +9960,9 @@
       "rationale": "The two-sided nearby behavior approaches 4; the filled point controls f(1), not the limit.",
       "choiceRationales": [
         "Best answer. The two-sided nearby behavior approaches 4; the filled point controls f(1), not the limit.",
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined.",
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined.",
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined."
+        "This reports the x-value x=1 being approached rather than the y-value 4 that the curve approaches.",
+        "The filled point (1,7) gives the function value f(1), which does not control the limit as x approaches 1.",
+        "An open circle at (1,4) with a displaced point at (1,7) breaks continuity, yet both sides still approach 4."
       ],
       "misconceptionTags": [
         "A limit may exist when the function value differs or is undefined."
@@ -10076,10 +10076,10 @@
       "answerIndex": 1,
       "rationale": "Outputs from both sides approach -1, and the missing function value does not prevent the limit.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined.",
+        "Outputs -1.1, -1.01, -0.99, and -0.9 cluster tightly around -1 rather than approaching 0.",
         "Best answer. Outputs from both sides approach -1, and the missing function value does not prevent the limit.",
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined.",
-        "Not best. Recheck this topic move: Separate nearby behavior from the defined function value. Boundary: A limit may exist when the function value differs or is undefined."
+        "This reports the target input x=2 rather than the limiting output value -1 shown in the table.",
+        "Being undefined at x=2 never prevents a limit from existing when nearby outputs converge to -1 from both sides."
       ],
       "misconceptionTags": [
         "A limit may exist when the function value differs or is undefined."
@@ -10193,10 +10193,10 @@
       "answerIndex": 2,
       "rationale": "Factoring the difference of cubes leaves x^2+2x+4, which approaches 12.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input.",
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input.",
+        "Although direct substitution gives 0/0, canceling (x-2) removes the hole and leaves a finite limit of 12.",
+        "Evaluating only x^2=4 at x=2 drops the 2x+4 terms from the factored quadratic x^2+2x+4.",
         "Best answer. Factoring the difference of cubes leaves x^2+2x+4, which approaches 12.",
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input."
+        "Evaluating x^2+2x=8 at x=2 or evaluating 2^3=8 drops the +4 term in the difference-of-cubes quotient."
       ],
       "misconceptionTags": [
         "Cancellation preserves nearby behavior while respecting the excluded input."
@@ -10310,9 +10310,9 @@
       "answerIndex": 3,
       "rationale": "Rewrite as 5[sin(5x)/(5x)] and use the standard sine limit.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input.",
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input.",
-        "Not best. Recheck this topic move: Identify the indeterminate form before factoring or rationalizing. Boundary: Cancellation preserves nearby behavior while respecting the excluded input.",
+        "Evaluating the numerator sin(0)=0 alone ignores the 0/0 indeterminate form of sin(5x)/x.",
+        "Dividing by 5 instead of multiplying by 5 inverts the scaling factor needed to match sin(5x)/(5x).",
+        "Applying lim sin(u)/u=1 directly without matching the denominator to 5x drops the inner coefficient 5.",
         "Best answer. Rewrite as 5[sin(5x)/(5x)] and use the standard sine limit."
       ],
       "misconceptionTags": [
@@ -10429,9 +10429,9 @@
       "rationale": "The left limit is 3, so continuity requires 3+k=3 and therefore k=0.",
       "choiceRationales": [
         "Best answer. The left limit is 3, so continuity requires 3+k=3 and therefore k=0.",
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence.",
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence.",
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence."
+        "Setting 3+k=0 instead of matching the left-hand limit 3 gives k=-3 and creates a jump of 3 units.",
+        "Using k=1 makes the right-hand limit 3(1)+1=4 instead of matching the left-hand limit 1+2=3.",
+        "Setting k equal to the left-hand limit 3 forgets that 3x already contributes 3 at x=1, giving 6 instead of 3."
       ],
       "misconceptionTags": [
         "Holes, jumps, and infinite discontinuities require different evidence."
@@ -10546,10 +10546,10 @@
       "answerIndex": 1,
       "rationale": "The function is unbounded near x=-2, producing a vertical asymptote.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence.",
+        "A jump discontinuity has two finite one-sided limits, whereas 1/(x+2) diverges to minus and plus infinity.",
         "Best answer. The function is unbounded near x=-2, producing a vertical asymptote.",
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence.",
-        "Not best. Recheck this topic move: Compare both one-sided limits and the function value. Boundary: Holes, jumps, and infinite discontinuities require different evidence."
+        "No factor cancels (x+2) in 1/(x+2), so redefining a single point cannot remove the vertical asymptote.",
+        "Because x=-2 makes the denominator zero, f(-2) is undefined and the function is discontinuous there."
       ],
       "misconceptionTags": [
         "Holes, jumps, and infinite discontinuities require different evidence."
@@ -10664,10 +10664,10 @@
       "answerIndex": 2,
       "rationale": "Equal degrees make the limit the ratio 2/5 of the leading coefficients.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions.",
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions.",
+        "Equal cubic degrees in numerator and denominator approach their leading-coefficient ratio 2/5, not 0.",
+        "Both leading terms 2x^3 and 5x^3 are odd powers, so their negative signs cancel as x approaches negative infinity.",
         "Best answer. Equal degrees make the limit the ratio 2/5 of the leading coefficients.",
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions."
+        "A rational function with equal top and bottom degrees approaches a finite horizontal asymptote rather than diverging."
       ],
       "misconceptionTags": [
         "Vertical and horizontal asymptotes answer different questions."
@@ -10782,9 +10782,9 @@
       "answerIndex": 3,
       "rationale": "From the left, x-3 is negative and approaches zero, so its reciprocal decreases without bound.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions.",
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions.",
-        "Not best. Recheck this topic move: Track sign and dominant terms. Boundary: Vertical and horizontal asymptotes answer different questions.",
+        "Approaching 3 from the left means x<3, so x-3 is negative and 1/(x-3) goes to negative, not positive, infinity.",
+        "Dividing 1 by a tiny negative number produces a huge negative magnitude rather than shrinking toward 0.",
+        "Substituting x=0 gives -1/3, and ignoring the x-3 denominator near x=3 misses the vertical asymptote completely.",
         "Best answer. From the left, x-3 is negative and approaches zero, so its reciprocal decreases without bound."
       ],
       "misconceptionTags": [
@@ -10900,9 +10900,9 @@
       "rationale": "Four lies between the endpoint outputs, so IVT guarantees existence but not location or uniqueness.",
       "choiceRationales": [
         "Best answer. Four lies between the endpoint outputs, so IVT guarantees existence but not location or uniqueness.",
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness.",
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness.",
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness."
+        "IVT guarantees at least one input c with f(c)=4, but the graph could cross y=4 multiple times.",
+        "Because f need not be linear between x=2 and x=5, the output 4 need not occur at the midpoint x=3.5.",
+        "Going from f(2)=8 to f(5)=1 allows the curve to rise and fall repeatedly along [2,5]."
       ],
       "misconceptionTags": [
         "IVT guarantees existence, not uniqueness."
@@ -11016,10 +11016,10 @@
       "answerIndex": 1,
       "rationale": "Continuity on the closed interval and an intermediate target value are the required conditions.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness.",
+        "Pointwise differentiability at one endpoint does not ensure continuity across the entire closed interval [a,b].",
         "Best answer. Continuity on the closed interval and an intermediate target value are the required conditions.",
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness.",
-        "Not best. Recheck this topic move: State continuity, interval, and target value. Boundary: IVT guarantees existence, not uniqueness."
+        "If f(a)=f(b), there are no distinct values strictly between them for IVT to target.",
+        "IVT requires continuity on [a,b] and an intermediate value k; critical points are neither required nor sufficient."
       ],
       "misconceptionTags": [
         "IVT guarantees existence, not uniqueness."
@@ -11134,10 +11134,10 @@
       "answerIndex": 2,
       "rationale": "The secant slopes approach -3 from both sides, estimating the tangent slope.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value.",
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value.",
+        "Shifting the decimal place turns the limiting secant slope -3 into -0.3, which disagrees with the table values.",
+        "Secant slopes near -2.98 and -3.02 bracket -3 rather than converging toward 0.",
         "Best answer. The secant slopes approach -3 from both sides, estimating the tangent slope.",
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value."
+        "Dropping the minus sign reverses the direction of the secant slopes from decreasing (-3) to increasing (+3)."
       ],
       "misconceptionTags": [
         "A derivative value is a rate, not the function value."
@@ -11252,9 +11252,9 @@
       "answerIndex": 3,
       "rationale": "The derivative at the input 2 equals the tangent-line slope 5.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value.",
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value.",
-        "Not best. Recheck this topic move: Connect difference quotient, tangent slope, and instantaneous rate. Boundary: A derivative value is a rate, not the function value.",
+        "This records a point height y=5 at x=2 rather than a tangent-line slope at x=2.",
+        "This swaps input and output and uses the second derivative (concavity) instead of the first derivative (slope).",
+        "This reverses the input x=2 and the tangent slope 5 in derivative notation.",
         "Best answer. The derivative at the input 2 equals the tangent-line slope 5."
       ],
       "misconceptionTags": [
@@ -11370,9 +11370,9 @@
       "rationale": "Unequal one-sided derivatives prevent a derivative even though the function is continuous.",
       "choiceRationales": [
         "Best answer. Unequal one-sided derivatives prevent a derivative even though the function is continuous.",
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely.",
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely.",
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely."
+        "The prompt states that f is continuous at c; unequal one-sided slopes create a corner, not a break.",
+        "Averaging the left slope 2 and right slope -1 does not produce a valid two-sided derivative at a corner.",
+        "Adding the left and right slopes 2+(-1)=1 fails because one-sided derivatives must match exactly for f prime(c) to exist."
       ],
       "misconceptionTags": [
         "Differentiability implies continuity, but not conversely."
@@ -11486,10 +11486,10 @@
       "answerIndex": 1,
       "rationale": "Existence of a finite derivative implies continuity, but not an extremum, second derivative, or zero output.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely.",
+        "Differentiability only ensures local smoothness; the slope at c could be nonzero, positive, or negative.",
         "Best answer. Existence of a finite derivative implies continuity, but not an extremum, second derivative, or zero output.",
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely.",
-        "Not best. Recheck this topic move: Inspect corners, cusps, vertical tangents, and discontinuities. Boundary: Differentiability implies continuity, but not conversely."
+        "A function can be once differentiable at c without having a second derivative there, such as x|x| at 0.",
+        "A differentiable function can take any real output value at x=c, not necessarily zero."
       ],
       "misconceptionTags": [
         "Differentiability implies continuity, but not conversely."
@@ -11604,10 +11604,10 @@
       "answerIndex": 2,
       "rationale": "The derivative is 1/(2sqrt(x)), which equals 1/6 at x=9.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero.",
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero.",
+        "Forgetting the factor 1/2 from the exponent 1/2 gives 1/sqrt(9)=1/3 instead of 1/(2 sqrt(9))=1/6.",
+        "Multiplying (1/2) by sqrt(9)=3 instead of dividing by sqrt(9) treats the exponent as +1/2 rather than -1/2.",
         "Best answer. The derivative is 1/(2sqrt(x)), which equals 1/6 at x=9.",
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero."
+        "This computes the denominator 2 sqrt(9)=6 instead of taking its reciprocal 1/6."
       ],
       "misconceptionTags": [
         "The derivative of a constant is zero."
@@ -11722,9 +11722,9 @@
       "answerIndex": 3,
       "rationale": "Rewrite 4/x^3 as 4x^(-3), then apply the power rule to both terms.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero.",
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero.",
-        "Not best. Recheck this topic move: Differentiate term by term and preserve constants. Boundary: The derivative of a constant is zero.",
+        "Differentiating 4x^(-3) lowers the exponent to -4 and introduces a minus sign, rather than raising it to -2.",
+        "The linear term -2x differentiates to the constant -2 rather than keeping the variable x.",
+        "This forgets both the negative exponent sign and the factor -3 when differentiating 4x^(-3).",
         "Best answer. Rewrite 4/x^3 as 4x^(-3), then apply the power rule to both terms."
       ],
       "misconceptionTags": [
@@ -11840,9 +11840,9 @@
       "rationale": "The chain rule gives 2/(2x), which simplifies to 1/x.",
       "choiceRationales": [
         "Best answer. The chain rule gives 2/(2x), which simplifies to 1/x.",
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care.",
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care.",
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care."
+        "This writes 1/u=1/(2x) but omits the chain-rule factor u prime=2, which cancels the 2 in the denominator.",
+        "This multiplies 1/x by 2 as if the constant 2 were outside the logarithm rather than inside ln(2x)=ln 2+ln x.",
+        "Because ln(2x)=ln 2 + ln x, the constant ln 2 differentiates to 0 rather than surviving in the derivative."
       ],
       "misconceptionTags": [
         "Trigonometric signs and ln x require care."
@@ -11956,10 +11956,10 @@
       "answerIndex": 1,
       "rationale": "Differentiate the exponential and multiply by the inner derivative -3.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care.",
+        "This keeps the exponential unchanged without multiplying by the chain-rule derivative -3 of the exponent.",
         "Best answer. Differentiate the exponential and multiply by the inner derivative -3.",
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care.",
-        "Not best. Recheck this topic move: Recall the derivative family before evaluating. Boundary: Trigonometric signs and ln x require care."
+        "This drops the negative sign when taking the derivative of the inner exponent -3x.",
+        "This multiplies by the entire inner exponent -3x instead of its derivative -3."
       ],
       "misconceptionTags": [
         "Trigonometric signs and ln x require care."
@@ -12074,10 +12074,10 @@
       "answerIndex": 2,
       "rationale": "The product rule gives (-1)(4)+(2)(3)=2.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise.",
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise.",
+        "This evaluates only the first product-rule term f prime(1)g(1)=(-1)(4) and omits f(1)g prime(1)=6.",
+        "Adding f prime(1)+g prime(1) or miscombining table entries misses the product-rule sum (-1)(4)+(2)(3)=2.",
         "Best answer. The product rule gives (-1)(4)+(2)(3)=2.",
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise."
+        "This evaluates only the second product-rule term f(1)g prime(1)=(2)(3)=6 and omits (-1)(4)=-4."
       ],
       "misconceptionTags": [
         "Products and quotients do not differentiate componentwise."
@@ -12192,9 +12192,9 @@
       "answerIndex": 3,
       "rationale": "The quotient rule gives [(-1)(4)-(2)(3)]/16=-10/16=-5/8.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise.",
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise.",
-        "Not best. Recheck this topic move: Label factors or numerator and denominator first. Boundary: Products and quotients do not differentiate componentwise.",
+        "Dividing f prime(1)/g prime(1) or dropping the denominator square produces the wrong quotient derivative.",
+        "Adding instead of subtracting in the numerator gives [(-1)(4)+(2)(3)]/16=2/16=1/8 instead of -10/16=-5/8.",
+        "Reversing the quotient-rule numerator to f g prime - f prime g flips the sign from -5/8 to +5/8.",
         "Best answer. The quotient rule gives [(-1)(4)-(2)(3)]/16=-10/16=-5/8."
       ],
       "misconceptionTags": [
@@ -12310,9 +12310,9 @@
       "rationale": "The outer exponential remains unchanged and the inner derivative is cos x.",
       "choiceRationales": [
         "Best answer. The outer exponential remains unchanged and the inner derivative is cos x.",
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required.",
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required.",
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required."
+        "This differentiates the inner exponent in place instead of keeping e^(sin x) intact and multiplying by cos x.",
+        "The chain rule multiplies by d/dx(sin x)=cos x, not by the undifferentiated exponent sin x.",
+        "This reverses the composition order of exponential and trigonometric functions when differentiating."
       ],
       "misconceptionTags": [
         "The inner derivative is required."
@@ -12426,10 +12426,10 @@
       "answerIndex": 1,
       "rationale": "The chain rule gives -(1+x^2)^(-2) times 2x.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required.",
+        "This applies the outer power rule to (1+x^2)^(-1) but omits the inner derivative 2x from the chain rule.",
         "Best answer. The chain rule gives -(1+x^2)^(-2) times 2x.",
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required.",
-        "Not best. Recheck this topic move: Differentiate outer, preserve inner, and multiply by the inner derivative. Boundary: The inner derivative is required."
+        "This drops both the negative sign and the squared denominator from differentiating u^(-1) into -u^(-2) u prime.",
+        "The power rule lowers the exponent from -1 to -2, so the denominator must be (1+x^2)^2 rather than (1+x^2)."
       ],
       "misconceptionTags": [
         "The inner derivative is required."
@@ -12543,10 +12543,10 @@
       "answerIndex": 2,
       "rationale": "Implicit differentiation gives 2x+y+(x+2y)y'=0, so the slope is -(2x+y)/(x+2y)=-4/5.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x.",
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x.",
+        "This inverts -(2x+y)/(x+2y) into -(x+2y)/(2x+y)=-5/4 at (1,2).",
+        "Dropping the minus sign when moving 2x+y across the equals sign flips the slope from -4/5 to +4/5.",
         "Best answer. Implicit differentiation gives 2x+y+(x+2y)y'=0, so the slope is -(2x+y)/(x+2y)=-4/5.",
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x."
+        "This both drops the minus sign and inverts the numerator and denominator of -(2x+y)/(x+2y)."
       ],
       "misconceptionTags": [
         "Treat y as a function of x."
@@ -12660,9 +12660,9 @@
       "answerIndex": 3,
       "rationale": "Differentiate with respect to x: 1=(3y^2+1)dy/dx, then substitute y=1.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x.",
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x.",
-        "Not best. Recheck this topic move: Attach dy/dx when differentiating y terms. Boundary: Treat y as a function of x.",
+        "Differentiating y^3+y gives (3y^2+1)(dy/dx), so dropping the +1 term from d/dx(y) yields 1/3 instead of 1/4.",
+        "Using 2y instead of 3y^2+1 misapplies the power rule to y^3+y at y=1.",
+        "This computes dx/dy=3y^2+1=4 at y=1 without taking the reciprocal to find dy/dx=1/4.",
         "Best answer. Differentiate with respect to x: 1=(3y^2+1)dy/dx, then substitute y=1."
       ],
       "misconceptionTags": [
@@ -12779,9 +12779,9 @@
       "rationale": "The inverse-derivative rule gives 1/f prime of 4, which is -1/2.",
       "choiceRationales": [
         "Best answer. The inverse-derivative rule gives 1/f prime of 4, which is -1/2.",
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation.",
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation.",
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation."
+        "This reports f prime(4)=-2 directly instead of taking its reciprocal -1/2=-0.5.",
+        "Taking the reciprocal of 2 while dropping the negative sign of f prime(4)=-2 flips the inverse slope to positive.",
+        "This negates f prime(4)=-2 without taking the reciprocal required by the inverse-derivative rule."
       ],
       "misconceptionTags": [
         "An inverse derivative is not an inverse formula operation."
@@ -12896,10 +12896,10 @@
       "answerIndex": 1,
       "rationale": "Apply the inverse-sine derivative and multiply by the inner derivative 2.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation.",
+        "This substitutes u=2x into 1/sqrt(1-u^2) but forgets the chain-rule factor u prime=2 in the numerator.",
         "Best answer. Apply the inverse-sine derivative and multiply by the inner derivative 2.",
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation.",
-        "Not best. Recheck this topic move: Use reciprocal slope at corresponding points. Boundary: An inverse derivative is not an inverse formula operation."
+        "Squaring u=2x inside sqrt(1-u^2) gives 4x^2 rather than 2x^2.",
+        "The minus sign belongs to the derivative of arccos(2x), whereas arcsin(2x) has a positive derivative."
       ],
       "misconceptionTags": [
         "An inverse derivative is not an inverse formula operation."
@@ -13013,10 +13013,10 @@
       "answerIndex": 2,
       "rationale": "Log properties or the chain rule reduce the expression to 3 ln(x^2+1), whose derivative is 6x/(x^2+1).",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help.",
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help.",
+        "This brings the exponent 3 down in front of ln(x^2+1) but forgets to multiply by the inner derivative 2x.",
+        "Differentiating ln(u) replaces the logarithm with u prime/u rather than keeping ln(x^2+1) in the result.",
         "Best answer. Log properties or the chain rule reduce the expression to 3 ln(x^2+1), whose derivative is 6x/(x^2+1).",
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help."
+        "This multiplies by x^2 instead of d/dx(x^2+1)=2x when differentiating 3 ln(x^2+1)."
       ],
       "misconceptionTags": [
         "Simplification or logarithmic differentiation may help."
@@ -13130,9 +13130,9 @@
       "answerIndex": 3,
       "rationale": "The two factors require the product rule, while sin(e^x) requires chaining through sine and the exponential.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help.",
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help.",
-        "Not best. Recheck this topic move: Read expression structure from outside inward. Boundary: Simplification or logarithmic differentiation may help.",
+        "The power rule differentiates x^2, but cannot handle the product or the composite factor sin(e^x).",
+        "There is no quotient in x^2 sin(e^x); it is a product containing a nested composition.",
+        "The expression is an explicit function of x, so implicit differentiation does not replace product and chain rules.",
         "Best answer. The two factors require the product rule, while sin(e^x) requires chaining through sine and the exponential."
       ],
       "misconceptionTags": [
@@ -13248,9 +13248,9 @@
       "rationale": "Differentiate f prime of x=1/x once more.",
       "choiceRationales": [
         "Best answer. Differentiate f prime of x=1/x once more.",
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative.",
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative.",
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative."
+        "Differentiating x^(-1) brings down -1 as a coefficient, so omitting the negative sign flips the concavity.",
+        "This differentiates once too many times (with a sign slip) rather than stopping at the second derivative -x^(-2).",
+        "The logarithm does not repeat under differentiation the way e^x does; its second derivative is -1/x^2."
       ],
       "misconceptionTags": [
         "Second derivative is change in the first derivative."
@@ -13364,10 +13364,10 @@
       "answerIndex": 1,
       "rationale": "Successive derivatives are 4t^3, 12t^2, and 24t; at t=2 the value is 48.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative.",
+        "Evaluating s(2)=2^4=16 gives the original position at t=2 instead of the third derivative 24t.",
         "Best answer. Successive derivatives are 4t^3, 12t^2, and 24t; at t=2 the value is 48.",
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative.",
-        "Not best. Recheck this topic move: Track meaning and units of successive derivatives. Boundary: Second derivative is change in the first derivative."
+        "This reports the coefficient 24 of the third derivative 24t without substituting t=2 to get 48.",
+        "Multiplying 24 by t^2=4 instead of t=2 evaluates the wrong power of t in the third derivative 24t."
       ],
       "misconceptionTags": [
         "Second derivative is change in the first derivative."
@@ -13482,10 +13482,10 @@
       "answerIndex": 2,
       "rationale": "A derivative gives the instantaneous rate of change at the stated input, with output units per input unit.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation.",
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation.",
+        "A derivative at t=10 gives an instantaneous rate, not total accumulated change over the interval [0,10].",
+        "This swaps the input time 10 with the rate 12 and treats the rate as a population count.",
         "Best answer. A derivative gives the instantaneous rate of change at the stated input, with output units per input unit.",
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation."
+        "Multiplying 10 hours by 12 people/hour misuses the input t=10 as a factor on the instantaneous rate."
       ],
       "misconceptionTags": [
         "A derivative is a local rate, not accumulation."
@@ -13600,9 +13600,9 @@
       "answerIndex": 3,
       "rationale": "Derivative units are output units divided by input units.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation.",
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation.",
-        "Not best. Recheck this topic move: Name quantity, input, sign, and compound units. Boundary: A derivative is a local rate, not accumulation.",
+        "This inverts output units over input units (dT/dh), giving dh/dT instead of T prime(h).",
+        "Multiplying output and input units corresponds to integrating T(h) dh rather than differentiating T with respect to h.",
+        "Neither temperature nor altitude here is measured in seconds, so time units do not belong in T prime(h).",
         "Best answer. Derivative units are output units divided by input units."
       ],
       "misconceptionTags": [
@@ -13718,9 +13718,9 @@
       "rationale": "The velocity is positive before 1 and after 4; velocity is zero at t=1 and t=4.",
       "choiceRationales": [
         "Best answer. The velocity is positive before 1 and after 4; velocity is zero at t=1 and t=4.",
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign.",
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign.",
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign."
+        "On (1,4), (t-1)(t-4) is negative (moving left), whereas velocity is positive on [0,1) and (4,infinity).",
+        "Because v(t) changes sign from positive to negative at t=1, the particle moves left rather than right on (1,4).",
+        "Velocity is negative throughout (1,4) and zero at t=4, so the particle does not move right across all of (1,infinity)."
       ],
       "misconceptionTags": [
         "Speed increases when velocity and acceleration share a sign."
@@ -13834,10 +13834,10 @@
       "answerIndex": 1,
       "rationale": "At-rest times solve v(t)=s prime of t=3(t-1)(t-3)=0.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign.",
+        "At t=0 velocity is 9, and t=2 is where acceleration 6t-12=0 rather than where velocity is zero.",
         "Best answer. At-rest times solve v(t)=s prime of t=3(t-1)(t-3)=0.",
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign.",
-        "Not best. Recheck this topic move: Keep position, velocity, acceleration, and speed distinct. Boundary: Speed increases when velocity and acceleration share a sign."
+        "Solving a(t)=6t-12=0 finds zero acceleration, not the times when the particle is momentarily at rest (v=0).",
+        "This catches one root of 3(t-1)(t-3)=0 while missing the earlier positive rest time t=1."
       ],
       "misconceptionTags": [
         "Speed increases when velocity and acceleration share a sign."
@@ -13952,10 +13952,10 @@
       "answerIndex": 2,
       "rationale": "From V=(4/3)pi r^3, dV/dt=4pi r^2 dr/dt=48pi.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating.",
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating.",
+        "Using 4 pi r dr/dt instead of 4 pi r^2 dr/dt forgets to square the radius r=2.",
+        "This drops a factor of 2 in 4 pi r^2 dr/dt=4 pi(4)(3)=48 pi.",
         "Best answer. From V=(4/3)pi r^3, dV/dt=4pi r^2 dr/dt=48pi.",
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating."
+        "Swapping r=2 and dr/dt=3 computes 4 pi(3)^2(1) or miscalculates 4(4)(3) as 36 instead of 48."
       ],
       "misconceptionTags": [
         "Substitute instant values after differentiating."
@@ -14070,9 +14070,9 @@
       "answerIndex": 3,
       "rationale": "With h=6, V=2pi r^2, so dV/dt=4pi r dr/dt=4pi.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating.",
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating.",
-        "Not best. Recheck this topic move: Write one relationship before differentiating in time. Boundary: Substitute instant values after differentiating.",
+        "Forgetting the power-rule factor 2 when differentiating 2 pi r^2 gives 2 pi r dr/dt=2 pi instead of 4 pi.",
+        "Substituting h=6 without the cone 1/3 factor or miscomputing 4 pi(2)(0.5) overestimates the rate.",
+        "Omitting the factor 1/3 in V=(1/3)pi r^2 h triples the cone volume rate from 4 pi to 12 pi.",
         "Best answer. With h=6, V=2pi r^2, so dV/dt=4pi r dr/dt=4pi."
       ],
       "misconceptionTags": [
@@ -14188,9 +14188,9 @@
       "rationale": "The tangent-line model is L(x)=x-1, so L(1.02)=0.02.",
       "choiceRationales": [
         "Best answer. The tangent-line model is L(x)=x-1, so L(1.02)=0.02.",
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact.",
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact.",
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact."
+        "Subtracting 0.02 from 1 computes 1-0.02 instead of L(1.02)=0+1(1.02-1)=0.02.",
+        "Because ln(1)=0 rather than 1, adding delta x=0.02 to 1 confuses x=1 with f(1)=0.",
+        "Using x=1.02 incorrectly as 1+1 ignores both f(1)=0 and the small displacement delta x=0.02."
       ],
       "misconceptionTags": [
         "A linearization is local, not exact."
@@ -14304,10 +14304,10 @@
       "answerIndex": 1,
       "rationale": "For a concave-down graph, nearby tangent-line points lie above the curve.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact.",
+        "Tangent lines underestimate curve values when a graph is concave up, whereas sqrt(x) is concave down.",
         "Best answer. For a concave-down graph, nearby tangent-line points lie above the curve.",
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact.",
-        "Not best. Recheck this topic move: Use L(x)=f(a)+f'(a)(x-a) near a. Boundary: A linearization is local, not exact."
+        "A tangent line matches a curved function exactly at the point of tangency, not at nearby inputs.",
+        "Consistent concavity on an interval directly determines whether the tangent line lies above or below the curve."
       ],
       "misconceptionTags": [
         "A linearization is local, not exact."
@@ -14421,10 +14421,10 @@
       "answerIndex": 2,
       "rationale": "Using standard limits or L Hospital rule gives the ratio of the inner coefficients, 3/5.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient.",
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient.",
+        "Treating sin(3x)/sin(5x) like sin(x)/x ignores the distinct inner scaling constants 3 and 5.",
+        "This inverts the ratio of inner derivatives (3 cos 3x)/(5 cos 5x) to 5/3 instead of 3/5.",
         "Best answer. Using standard limits or L Hospital rule gives the ratio of the inner coefficients, 3/5.",
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient."
+        "Multiplying the inner coefficients 3 and 5 combines them instead of forming their quotient 3/5."
       ],
       "misconceptionTags": [
         "The rule does not apply to every quotient."
@@ -14538,9 +14538,9 @@
       "answerIndex": 3,
       "rationale": "The form infinity over infinity permits L Hospital rule, giving lim 1/e^x=0.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient.",
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient.",
-        "Not best. Recheck this topic move: Verify 0/0 or infinity/infinity first. Boundary: The rule does not apply to every quotient.",
+        "Treating infinity/infinity as 1 ignores that exponential growth e^x dominates linear growth x.",
+        "After L Hospital Rule, 1/e^x approaches 0 rather than growing without bound.",
+        "Because 1/e^x converges cleanly to 0 as x approaches infinity, the limit exists and equals 0.",
         "Best answer. The form infinity over infinity permits L Hospital rule, giving lim 1/e^x=0."
       ],
       "misconceptionTags": [
@@ -14656,9 +14656,9 @@
       "rationale": "The secant slope is 3, so 3c^2=3. Of c=-1 and c=1, only c=1 lies in the open interval.",
       "choiceRationales": [
         "Best answer. The secant slope is 3, so 3c^2=3. Of c=-1 and c=1, only c=1 lies in the open interval.",
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point.",
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point.",
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point."
+        "The Mean Value Theorem guarantees c strictly inside the open interval (-1,2), so endpoint c=-1 does not qualify.",
+        "At c=0, f prime(0)=0 does not equal the average secant slope [8-(-1)]/[2-(-1)]=3.",
+        "At endpoint c=2, f prime(2)=12 does not match the secant slope 3 and is outside the open interval (-1,2)."
       ],
       "misconceptionTags": [
         "MVT guarantees at least one point."
@@ -14772,10 +14772,10 @@
       "answerIndex": 1,
       "rationale": "The function is undefined at x=0, so the required continuity hypothesis fails.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point.",
+        "For f(x)=1/x, f(-1)=-1 and f(1)=1 are not equal, and equal endpoints would never disqualify MVT anyway.",
         "Best answer. The function is undefined at x=0, so the required continuity hypothesis fails.",
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point.",
-        "Not best. Recheck this topic move: Verify continuity and differentiability before matching slopes. Boundary: MVT guarantees at least one point."
+        "At x=0, both f(x)=1/x and f prime(x)=-1/x^2 are undefined rather than equal to zero.",
+        "Intervals spanning negative and positive x-values work fine for MVT whenever continuity and differentiability hold."
       ],
       "misconceptionTags": [
         "MVT guarantees at least one point."
@@ -14889,10 +14889,10 @@
       "answerIndex": 2,
       "rationale": "Closed-interval candidates include both endpoints and every interior solution of f prime of x=4x(x^2-2)=0.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate.",
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate.",
+        "This checks endpoints and x=0 but omits the other two interior critical numbers x=-sqrt(2) and x=sqrt(2).",
+        "Checking only the two local minima misses both the interior critical point x=0 and the endpoints x=-3 and x=3.",
         "Best answer. Closed-interval candidates include both endpoints and every interior solution of f prime of x=4x(x^2-2)=0.",
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate."
+        "Solving x^2-4=0 instead of f prime(x)=4x(x^2-2)=0 finds roots of f rather than critical numbers, and omits endpoints."
       ],
       "misconceptionTags": [
         "A critical number is only a candidate."
@@ -15006,9 +15006,9 @@
       "answerIndex": 3,
       "rationale": "Continuity on a closed bounded interval guarantees attainment of both absolute extrema, without uniqueness or differentiability.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate.",
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate.",
-        "Not best. Recheck this topic move: Compare endpoints and interior critical numbers. Boundary: A critical number is only a candidate.",
+        "A continuous function on [a,b] can have zero, one, or infinitely many critical points and still satisfy EVT.",
+        "EVT requires only continuity on [a,b] and guarantees nothing about differentiability.",
+        "Absolute extrema can occur at interior peaks or valleys rather than at the interval endpoints.",
         "Best answer. Continuity on a closed bounded interval guarantees attainment of both absolute extrema, without uniqueness or differentiability."
       ],
       "misconceptionTags": [
@@ -15126,9 +15126,9 @@
       "rationale": "The derivative stays negative through x=0 but changes from negative to positive at x=2.",
       "choiceRationales": [
         "Best answer. The derivative stays negative through x=0 but changes from negative to positive at x=2.",
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum.",
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum.",
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum."
+        "Because x^2 is nonnegative on both sides of 0, f prime(x)=x^2(x-2) stays negative across x=0 with no extremum there.",
+        "At x=0, f prime does not change sign, so x=0 is a flat inflection-like point rather than a local minimum.",
+        "At x=2, f prime changes cleanly from negative to positive, guaranteeing a local minimum there."
       ],
       "misconceptionTags": [
         "A zero derivative without sign change need not be an extremum."
@@ -15244,10 +15244,10 @@
       "answerIndex": 1,
       "rationale": "A positive-to-negative sign change gives a local maximum; a negative-to-positive change gives a local minimum.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum.",
+        "At x=-1, f prime changes from positive to negative, which creates a local maximum rather than a local minimum.",
         "Best answer. A positive-to-negative sign change gives a local maximum; a negative-to-positive change gives a local minimum.",
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum.",
-        "Not best. Recheck this topic move: Build a sign chart around critical numbers. Boundary: A zero derivative without sign change need not be an extremum."
+        "This reverses the First Derivative Test sign rules for both critical numbers -1 and 3.",
+        "Because f prime changes sign at both -1 and 3, both points produce local extrema."
       ],
       "misconceptionTags": [
         "A zero derivative without sign change need not be an extremum."
@@ -15362,10 +15362,10 @@
       "answerIndex": 2,
       "rationale": "A sign change in the second derivative establishes a change in concavity; it does not by itself determine monotonicity.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate.",
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate.",
+        "A sign change in f double prime signals an inflection point, not a local minimum (which requires f prime flipping - to +).",
+        "Second-derivative signs describe concavity alone and do not determine whether f is increasing or decreasing.",
         "Best answer. A sign change in the second derivative establishes a change in concavity; it does not by itself determine monotonicity.",
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate."
+        "An inflection point can occur where the tangent slope f prime(c) is nonzero (for example, sin x at x=0)."
       ],
       "misconceptionTags": [
         "f double prime equal to zero gives only a candidate."
@@ -15480,9 +15480,9 @@
       "answerIndex": 3,
       "rationale": "A positive second derivative makes the graph locally concave up at a stationary point.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate.",
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate.",
-        "Not best. Recheck this topic move: Use second-derivative sign and verify changes. Boundary: f double prime equal to zero gives only a candidate.",
+        "A local maximum occurs when f double prime(c)<0 (concave down), whereas f double prime(c)>0 is concave up.",
+        "Having f double prime(c)>0 means the curve is strictly concave up at c rather than changing concavity.",
+        "The second-derivative test fails only when f double prime(c)=0; a strictly positive value proves a local minimum.",
         "Best answer. A positive second derivative makes the graph locally concave up at a stationary point."
       ],
       "misconceptionTags": [
@@ -15600,9 +15600,9 @@
       "rationale": "The derivative changes from negative to positive, so f changes from decreasing to increasing.",
       "choiceRationales": [
         "Best answer. The derivative changes from negative to positive, so f changes from decreasing to increasing.",
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion.",
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion.",
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion."
+        "Crossing the x-axis from below to above means f prime switches from negative to positive, creating a minimum, not a maximum.",
+        "An inflection point on f corresponds to a local extremum on f prime, not merely a zero crossing of f prime.",
+        "Crossing the x-axis at y=0 means f prime(2)=0 (a horizontal tangent), not an infinite vertical slope."
       ],
       "misconceptionTags": [
         "Optimization needs a contextual conclusion."
@@ -15718,10 +15718,10 @@
       "answerIndex": 1,
       "rationale": "With 2x+y=200, area A=x(200-2x) is maximized at x=50 and y=100.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion.",
+        "This uses 200 m of fence but encloses only 25 times 150=3,750 m^2, below the 5,000 m^2 maximum.",
         "Best answer. With 2x+y=200, area A=x(200-2x) is maximized at x=50 and y=100.",
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion.",
-        "Not best. Recheck this topic move: Translate derivative signs, then state a feasible domain. Boundary: Optimization needs a contextual conclusion."
+        "Making all three sides equal ignores the river boundary and encloses only about 4,444 m^2 instead of 5,000 m^2.",
+        "With x=75 and y=50, area is 3,750 m^2, below the vertex x=50, y=100 giving 5,000 m^2."
       ],
       "misconceptionTags": [
         "Optimization needs a contextual conclusion."
@@ -15835,10 +15835,10 @@
       "answerIndex": 2,
       "rationale": "Displacement adds signed areas, while total distance adds their magnitudes.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude.",
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude.",
+        "This swaps the definitions: displacement uses signed net area (6), while total distance sums absolute areas (14).",
+        "Total distance must make the negative velocity area positive (10+4=14) instead of letting it cancel.",
         "Best answer. Displacement adds signed areas, while total distance adds their magnitudes.",
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude."
+        "Displacement keeps the sign of backward motion (10-4=6) rather than adding both areas as positive."
       ],
       "misconceptionTags": [
         "Net change differs from total magnitude."
@@ -15952,9 +15952,9 @@
       "answerIndex": 3,
       "rationale": "Integrating a rate of cost change over production gives net change in total cost.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude.",
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude.",
-        "Not best. Recheck this topic move: Interpret signed area with contextual units. Boundary: Net change differs from total magnitude.",
+        "Average rate or average cost requires dividing by the number of items, which this definite integral does not do.",
+        "Without adding fixed startup cost C(0), the integral of C prime from 0 to 100 gives only C(100)-C(0), the change in cost.",
+        "Integrating (dollars/item) with respect to items yields dollars, not items per dollar.",
         "Best answer. Integrating a rate of cost change over production gives net change in total cost."
       ],
       "misconceptionTags": [
@@ -16071,9 +16071,9 @@
       "rationale": "Each width is 2, and the right endpoints contribute 2[f(2)+f(4)]=2(5+9)=28.",
       "choiceRationales": [
         "Best answer. Each width is 2, and the right endpoints contribute 2[f(2)+f(4)]=2(5+9)=28.",
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ.",
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ.",
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ."
+        "Using left endpoints f(0)=1 and f(2)=5 gives the left Riemann sum 2(1+5)=12 instead of the right sum 28.",
+        "Averaging left and right sums produces the trapezoidal approximation 20 rather than the right Riemann sum 28.",
+        "Using width 2 on all three table entries 2(1+5+9)=30 or misusing width 4 overcounts the two subintervals."
       ],
       "misconceptionTags": [
         "Left, right, and midpoint sums differ."
@@ -16188,10 +16188,10 @@
       "answerIndex": 1,
       "rationale": "The trapezoidal sum is (2/2)[1+2(5)+9]=20.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ.",
+        "Adding the two right-endpoint heights 5+9=14 omits the width factor and does not apply the trapezoid formula.",
         "Best answer. The trapezoidal sum is (2/2)[1+2(5)+9]=20.",
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ.",
-        "Not best. Recheck this topic move: Identify width and sample point for each rectangle. Boundary: Left, right, and midpoint sums differ."
+        "Computing 2(5+9)=28 gives the right Riemann sum on [0,4] rather than the trapezoidal approximation 20.",
+        "Forgetting the 1/2 in the trapezoid area formula (h/2)(b1+b2) doubles the approximation from 20 to 40."
       ],
       "misconceptionTags": [
         "Left, right, and midpoint sums differ."
@@ -16307,10 +16307,10 @@
       "answerIndex": 2,
       "rationale": "A variable lower bound contributes the negative of the integrand evaluated at that bound.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor.",
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor.",
+        "Because the variable x is the lower limit rather than the upper limit, reversing the bounds introduces a minus sign.",
+        "The constant upper limit 3 contributes 0 when differentiated and does not multiply x^2.",
         "Best answer. A variable lower bound contributes the negative of the integrand evaluated at that bound.",
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor."
+        "This differentiates t^2 instead of using FTC Part 1 to evaluate the integrand t^2 at the moving lower bound."
       ],
       "misconceptionTags": [
         "A composite upper bound adds a derivative factor."
@@ -16426,9 +16426,9 @@
       "answerIndex": 3,
       "rationale": "Differentiate both moving bounds: (x^2)(2x)-x=2x^3-x.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor.",
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor.",
-        "Not best. Recheck this topic move: Evaluate the integrand at a moving bound and use the chain rule. Boundary: A composite upper bound adds a derivative factor.",
+        "This substitutes both limits into t but omits the chain-rule factor 2x for the upper bound x^2.",
+        "This differentiates the bounds 2x and 1 without evaluating the integrand t at x^2 and x correctly.",
+        "This drops the factor of 2 in the chain-rule derivative of the upper bound x^2.",
         "Best answer. Differentiate both moving bounds: (x^2)(2x)-x=2x^3-x."
       ],
       "misconceptionTags": [
@@ -16544,9 +16544,9 @@
       "rationale": "Reversing the limits of integration changes the sign.",
       "choiceRationales": [
         "Best answer. Reversing the limits of integration changes the sign.",
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign.",
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign.",
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign."
+        "Reversing endpoints a and b flips the sign of the integral; an integral is guaranteed 0 only when both limits are equal.",
+        "Keeping +7 ignores that swapping upper and lower limits reverses the orientation of integration.",
+        "Doubling 7 does not follow from swapping limits; reversing limits negates the integral to -7."
       ],
       "misconceptionTags": [
         "Reversing limits changes sign."
@@ -16660,10 +16660,10 @@
       "answerIndex": 1,
       "rationale": "Even-function symmetry makes the contributions on the two halves equal.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign.",
+        "Symmetric cancellation to 0 applies to odd functions, whereas even functions mirror identically across the y-axis.",
         "Best answer. Even-function symmetry makes the contributions on the two halves equal.",
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign.",
-        "Not best. Recheck this topic move: Use orientation and additivity. Boundary: Reversing limits changes sign."
+        "Keeping only the [0,3] piece drops the equal contribution from [-3,0], halving the total integral.",
+        "Because f(-x)=f(x) for an even function, both halves carry the same sign rather than negating."
       ],
       "misconceptionTags": [
         "Reversing limits changes sign."
@@ -16778,10 +16778,10 @@
       "answerIndex": 2,
       "rationale": "Integrate term by term and include both the absolute value in the logarithm and the constant of integration.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C.",
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C.",
+        "This differentiates 4x^3 to 12x^2 instead of integrating it to x^4, and uses a wrong sign/power on 2/x.",
+        "This omits both the absolute value bars needed when x<0 and the arbitrary constant +C.",
         "Best answer. Integrate term by term and include both the absolute value in the logarithm and the constant of integration.",
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C."
+        "The constant multiple 2 stays outside the logarithm as 2 ln|x| rather than moving inside as ln|2x|."
       ],
       "misconceptionTags": [
         "Indefinite integrals require +C."
@@ -16896,9 +16896,9 @@
       "answerIndex": 3,
       "rationale": "The numerator matches the derivative of 3x+1, so direct substitution gives the logarithm.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C.",
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C.",
-        "Not best. Recheck this topic move: Match an inner expression and derivative. Boundary: Indefinite integrals require +C.",
+        "Because du=3 dx already absorbs the numerator 3, keeping an extra factor of 3 outside ln|3x+1| triples the answer.",
+        "This differentiates (3x+1)^(-1) (up to sign/constant) instead of integrating 1/u to ln|u|.",
+        "Canceling 3 from 3/(3x+1) to get 1/(x+1) is algebraically invalid because 3 does not divide the +1 term.",
         "Best answer. The numerator matches the derivative of 3x+1, so direct substitution gives the logarithm."
       ],
       "misconceptionTags": [
@@ -17014,9 +17014,9 @@
       "rationale": "The negative proportionality constant describes continuous exponential decay relative to the current amount.",
       "choiceRationales": [
         "Best answer. The negative proportionality constant describes continuous exponential decay relative to the current amount.",
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution.",
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution.",
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution."
+        "That describes a constant linear rate dQ/dt=-0.1, ignoring the factor Q that scales decay with current size.",
+        "A carrying capacity requires a logistic factor (1-Q/K), whereas dQ/dt=-0.1Q models pure exponential decay.",
+        "Autonomous equations without an explicit t still change whenever dQ/dt is nonzero."
       ],
       "misconceptionTags": [
         "An initial condition selects a particular solution."
@@ -17130,10 +17130,10 @@
       "answerIndex": 1,
       "rationale": "Direct proportionality means the rate equals a constant multiple of the current population.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution.",
+        "Direct proportionality multiplies P by k rather than adding k to P.",
         "Best answer. Direct proportionality means the rate equals a constant multiple of the current population.",
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution.",
-        "Not best. Recheck this topic move: Translate sign, proportionality, and units. Boundary: An initial condition selects a particular solution."
+        "Dividing by k makes the rate inversely proportional to k rather than using k as the proportionality constant.",
+        "This models inverse proportionality to population size P instead of direct proportionality kP."
       ],
       "misconceptionTags": [
         "An initial condition selects a particular solution."
@@ -17247,10 +17247,10 @@
       "answerIndex": 2,
       "rationale": "Verification requires differentiating the proposed solution and checking the equation for all inputs in its domain.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution.",
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution.",
+        "A function with constant slope y prime=1 must be linear with slope 1, not a constant function (whose slope is 0).",
+        "The derivative of x+1 is 1, not x (which is the derivative of x^2/2).",
         "Best answer. Verification requires differentiating the proposed solution and checking the equation for all inputs in its domain.",
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution."
+        "Because d/dx(x+1)=1 identically for every real x, the equation holds everywhere rather than only at x=0."
       ],
       "misconceptionTags": [
         "One matching point does not verify a solution."
@@ -17364,9 +17364,9 @@
       "answerIndex": 3,
       "rationale": "The derivative is e^x, and substituting the function into y-2 also gives e^x.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution.",
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution.",
-        "Not best. Recheck this topic move: Differentiate and substitute into both sides. Boundary: One matching point does not verify a solution.",
+        "The constant +2 differentiates to 0, leaving y prime=e^x rather than e^x+2.",
+        "Substituting y=e^x+2 into y-2 cancels the 2 and gives e^x, not 2.",
+        "Both y prime and y-2 equal e^x for every real number x, not solely at x=0.",
         "Best answer. The derivative is e^x, and substituting the function into y-2 also gives e^x."
       ],
       "misconceptionTags": [
@@ -17482,9 +17482,9 @@
       "rationale": "Substitute the point into the differential equation: -1+2=1.",
       "choiceRationales": [
         "Best answer. Substitute the point into the differential equation: -1+2=1.",
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values.",
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values.",
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values."
+        "This computes -1-2=-3 instead of adding x+y=-1+2=1.",
+        "This uses only the x-coordinate -1 (or flips the sign of 1) rather than evaluating -1+2.",
+        "This adds the magnitudes |-1|+|2|=3, dropping the negative sign on x=-1."
       ],
       "misconceptionTags": [
         "A field shows local direction, not exact values."
@@ -17598,10 +17598,10 @@
       "answerIndex": 1,
       "rationale": "Horizontal segments have slope zero, so x-y=0 and therefore y=x.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values.",
+        "Along y=-x, x-y=2x is nonzero whenever x is nonzero, so slope segments are not horizontal there.",
         "Best answer. Horizontal segments have slope zero, so x-y=0 and therefore y=x.",
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values.",
-        "Not best. Recheck this topic move: Evaluate the derivative at a point. Boundary: A field shows local direction, not exact values."
+        "Along the x-axis y=0, the slope is x-0=x, which is horizontal only at the origin.",
+        "Along the y-axis x=0, the slope is 0-y=-y, which varies with y instead of staying 0."
       ],
       "misconceptionTags": [
         "A field shows local direction, not exact values."
@@ -17716,10 +17716,10 @@
       "answerIndex": 2,
       "rationale": "Separating gives y dy=x dx, so y^2=x^2+C. The initial condition gives C=4 and selects the positive branch.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard.",
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard.",
+        "Integrating x dx to x^2/2 without separating y on the left treats dy/dx=x/y as if it were dy/dx=x.",
+        "Substituting y(0)=2 into y^2=x^2+C gives C=2^2=4 rather than C=2.",
         "Best answer. Separating gives y dy=x dx, so y^2=x^2+C. The initial condition gives C=4 and selects the positive branch.",
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard."
+        "The negative square-root branch gives y(0)=-2, violating the initial condition y(0)=+2."
       ],
       "misconceptionTags": [
         "Check equilibria that division may discard."
@@ -17834,9 +17834,9 @@
       "answerIndex": 3,
       "rationale": "Separate dy/y=-x dx, integrate, exponentiate, and use the initial value to obtain the factor 5.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard.",
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard.",
-        "Not best. Recheck this topic move: Separate variables, integrate, then apply the condition. Boundary: Check equilibria that division may discard.",
+        "Integrating -x dx gives -x^2/2 in the exponent rather than -x.",
+        "The initial condition y(0)=5 multiplies the exponential outside (C=5) rather than multiplying inside the exponent.",
+        "Integrating -x dx without dividing by y skips separating the variable y into ln|y|.",
         "Best answer. Separate dy/y=-x dx, integrate, exponentiate, and use the initial value to obtain the factor 5."
       ],
       "misconceptionTags": [
@@ -17953,9 +17953,9 @@
       "rationale": "The condition Q(h)=Q(0)/2 gives e^(kh)=1/2, so k=-ln(2)/h.",
       "choiceRationales": [
         "Best answer. The condition Q(h)=Q(0)/2 gives e^(kh)=1/2, so k=-ln(2)/h.",
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity.",
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity.",
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity."
+        "For decay to half the initial amount, ln(1/2)=-ln(2) is negative, so a positive k models doubling rather than half-life.",
+        "Solving kh=-ln(2) divides by h rather than multiplying by h.",
+        "Solving e^(kh)=1/2 requires taking the natural logarithm of 1/2 before dividing by h."
       ],
       "misconceptionTags": [
         "Logistic growth is fastest at half capacity."
@@ -18070,10 +18070,10 @@
       "answerIndex": 1,
       "rationale": "Equilibria make the rate zero, which occurs when P=0 or 1-P/K=0.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity.",
+        "At P=K/2 the logistic growth rate is at its maximum, not zero, so P=K/2 is not an equilibrium.",
         "Best answer. Equilibria make the rate zero, which occurs when P=0 or 1-P/K=0.",
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity.",
-        "Not best. Recheck this topic move: Distinguish proportional growth from capacity-limited growth. Boundary: Logistic growth is fastest at half capacity."
+        "The growth-rate constant k does not make kP(1-P/K)=0; the lower equilibrium is P=0.",
+        "Setting kP(1-P/K)=0 yields two constant equilibrium solutions: P=0 and P=K."
       ],
       "misconceptionTags": [
         "Logistic growth is fastest at half capacity."
@@ -18187,10 +18187,10 @@
       "answerIndex": 2,
       "rationale": "The integral over the interval is 10, and dividing by the interval length 2 gives 5.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation.",
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation.",
+        "Evaluating 2x+1 at the midpoint incorrectly or dividing 8 by 2 misses that the integral on [1,3] is 10.",
+        "Computing F(3)=12 minus 4 or misapplying the bounds gives 8 instead of (12-2)/2=5.",
         "Best answer. The integral over the interval is 10, and dividing by the interval length 2 gives 5.",
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation."
+        "This reports the definite integral 10 over [1,3] without dividing by the interval length 3-1=2."
       ],
       "misconceptionTags": [
         "Average value is not total accumulation."
@@ -18304,9 +18304,9 @@
       "answerIndex": 3,
       "rationale": "Continuity guarantees that the average height is attained, but not where or uniquely.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation.",
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation.",
-        "Not best. Recheck this topic move: Divide a definite integral by interval length. Boundary: Average value is not total accumulation.",
+        "Only linear functions are guaranteed to hit their average value at the midpoint; nonlinear curves can hit it elsewhere.",
+        "The Mean Value Theorem for Integrals applies to any continuous function regardless of whether its integral is zero.",
+        "Unlike the derivative Mean Value Theorem, the integral version requires only continuity on [a,b].",
         "Best answer. Continuity guarantees that the average height is attained, but not where or uniquely."
       ],
       "misconceptionTags": [
@@ -18423,9 +18423,9 @@
       "rationale": "Final position equals initial position plus displacement: 5+(-2)=3.",
       "choiceRationales": [
         "Best answer. Final position equals initial position plus displacement: 5+(-2)=3.",
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed.",
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed.",
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed."
+        "Subtracting 5 from -2 computes -2-5=-7 instead of adding initial position 5 plus displacement -2.",
+        "This reports the net displacement alone without adding the starting position s(0)=5.",
+        "Adding 5+2=7 ignores the negative sign on the displacement integral -2."
       ],
       "misconceptionTags": [
         "Displacement is signed; distance integrates speed."
@@ -18540,10 +18540,10 @@
       "answerIndex": 1,
       "rationale": "Distance accumulates speed, so negative velocity contributions must be made positive and sign-change points define the pieces.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed.",
+        "Integrating velocity directly gives signed displacement, allowing positive and negative motion to cancel.",
         "Best answer. Distance accumulates speed, so negative velocity contributions must be made positive and sign-change points define the pieces.",
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed.",
-        "Not best. Recheck this topic move: Use initial amount plus integral of net rate. Boundary: Displacement is signed; distance integrates speed."
+        "Differentiating velocity produces acceleration rather than distance traveled.",
+        "Peak velocity at one instant does not account for how fast or how long the particle moved over the interval."
       ],
       "misconceptionTags": [
         "Displacement is signed; distance integrates speed."
@@ -18659,10 +18659,10 @@
       "answerIndex": 2,
       "rationale": "The curves meet at plus or minus sqrt(2); integrating 4-2x^2 between those bounds gives 16sqrt(2)/3.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions.",
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions.",
+        "Integrating only from 0 to sqrt(2) computes just the right half of the symmetric enclosed region.",
+        "Dropping the sqrt(2) factor when evaluating [4x-(2/3)x^3] at x=sqrt(2) understates the area.",
         "Best answer. The curves meet at plus or minus sqrt(2); integrating 4-2x^2 between those bounds gives 16sqrt(2)/3.",
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions."
+        "This evaluates only the linear term 4x across [-sqrt(2),sqrt(2)] while forgetting to subtract the cubic term (2/3)x^3."
       ],
       "misconceptionTags": [
         "Unsplit signed integrals may cancel regions."
@@ -18778,9 +18778,9 @@
       "answerIndex": 3,
       "rationale": "Using horizontal slices, subtract the left curve x=y^2 from the right curve x=4-y^2 between their intersections.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions.",
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions.",
-        "Not best. Recheck this topic move: Use top minus bottom or right minus left and split if needed. Boundary: Unsplit signed integrals may cancel regions.",
+        "The boundary curves are given as functions of y, so integrating in x from 0 to 4 mismatches variable and bounds.",
+        "Both the intersection bounds (plus/minus sqrt(2)) and the right-minus-left width (4-2y^2) are wrong here.",
+        "Because x=4-y^2 lies to the right of x=y^2 between intersections, 2y^2-4 reverses right minus left and is negative.",
         "Best answer. Using horizontal slices, subtract the left curve x=y^2 from the right curve x=4-y^2 between their intersections."
       ],
       "misconceptionTags": [
@@ -18897,9 +18897,9 @@
       "rationale": "The area formula for an equilateral triangle of side s is sqrt(3)s squared over 4.",
       "choiceRationales": [
         "Best answer. The area formula for an equilateral triangle of side s is sqrt(3)s squared over 4.",
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area.",
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area.",
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area."
+        "This gives the area of an isosceles right triangle with legs s(x), not an equilateral triangle whose height is (sqrt(3)/2)s.",
+        "Multiplying base s by height (sqrt(3)/2)s omits the triangle factor 1/2, doubling the cross-sectional area.",
+        "This is the area of a circle with diameter s(x), not an equilateral triangle."
       ],
       "misconceptionTags": [
         "Base distance is length, not area."
@@ -19014,10 +19014,10 @@
       "answerIndex": 1,
       "rationale": "Each square area is the side length squared, and volume accumulates those areas.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area.",
+        "Integrating the side length without squaring computes the 2D base area instead of summing square cross sections.",
         "Best answer. Each square area is the side length squared, and volume accumulates those areas.",
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area.",
-        "Not best. Recheck this topic move: Write cross-sectional area before integrating. Boundary: Base distance is length, not area."
+        "The factor pi belongs to circular disks, whereas square cross sections have area s^2 with no pi.",
+        "Squaring a difference (sqrt(x)-x)^2 includes the cross term -2x^(3/2) and does not equal x-x^2."
       ],
       "misconceptionTags": [
         "Base distance is length, not area."
@@ -19134,10 +19134,10 @@
       "answerIndex": 2,
       "rationale": "The outer radius is x+1 and the inner radius is 1 because both are measured from the shifted axis.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii.",
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii.",
+        "This uses radius x measured from y=0, ignoring both the shifted axis y=-1 and the inner hollow cylinder.",
+        "A washer integral uses pi(R^2-r^2) with squared radii, not 2 pi times a single linear radius.",
         "Best answer. The outer radius is x+1 and the inner radius is 1 because both are measured from the shifted axis.",
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii."
+        "Distance from y=x down to y=-1 is x-(-1)=x+1, so using x-1 subtracts instead of adding the axis shift."
       ],
       "misconceptionTags": [
         "A shifted axis changes both radii."
@@ -19254,9 +19254,9 @@
       "answerIndex": 3,
       "rationale": "Integrating pi(2-x)^2 from 0 to 2 gives 8pi/3.",
       "choiceRationales": [
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii.",
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii.",
-        "Not best. Recheck this topic move: Measure radii from the axis. Boundary: A shifted axis changes both radii.",
+        "Forgetting to cube 2 cleanly (using 2^2=4 instead of 2^3=8 in (2-x)^3/3) halves the volume.",
+        "Integrating pi(2-x) without squaring the radius computes a linear integral rather than summing circular areas pi r^2.",
+        "Omitting the power-rule denominator 3 when integrating (2-x)^2 triples the true volume 8pi/3.",
         "Best answer. Integrating pi(2-x)^2 from 0 to 2 gives 8pi/3."
       ],
       "misconceptionTags": [
@@ -20316,6 +20316,7 @@
     "remediationPlaybooksIncluded": true,
     "readinessInferenceIncluded": false,
     "handsFreeContentCompatible": true,
+    "optionLevelFeedback": "authored-per-distractor",
     "limitations": [
       "This expanded foundation is not a complete AP Calculus AB exam simulation and does not reproduce the official hybrid digital experience.",
       "Official free-response prompts, scoring rubrics, secure questions, and score conversions are not included or scored.",

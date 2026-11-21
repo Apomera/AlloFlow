@@ -14,7 +14,7 @@ function composePlan(action, { composeFile, envFile, projectName }) {
     start: ['up', '-d', '--pull', 'never', '--no-deps', '--no-build', 'flux'],
     stop: ['stop', 'flux'],
   };
-  if (!commands[action]) throw new Error('Unsupported image operation');
+  if (!Object.prototype.hasOwnProperty.call(commands, action)) throw new Error('Unsupported image operation');
   return { command: 'docker', args: [...prefix, ...commands[action]], cwd: path.dirname(composeFile), shell: false, windowsHide: true };
 }
 

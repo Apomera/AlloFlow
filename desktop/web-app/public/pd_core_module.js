@@ -121,7 +121,7 @@
     if (modulePolicyProblem) return { ok: false, error: modulePolicyProblem };
     if (!Array.isArray(obj.sections) || obj.sections.length === 0) return { ok: false, error: 'A module needs at least one section.' };
 
-    var ids = {};
+    var ids = Object.create(null);
     var counts = { sections: obj.sections.length, activities: 0, gated: 0 };
     for (var s = 0; s < obj.sections.length; s++) {
       var sec = obj.sections[s];
@@ -212,7 +212,7 @@
           if (rType === 'concept-sort') {
             var rCats = rData.categories, rItems = rData.items;
             if (!Array.isArray(rCats) || rCats.length === 0) return { ok: false, error: 'Resource ' + act.id + ' needs data.categories (non-empty array).' };
-            var catIds = {};
+            var catIds = Object.create(null);
             for (var rc = 0; rc < rCats.length; rc++) {
               var rcat = rCats[rc];
               if (!rcat || !isNonEmptyString(rcat.id) || !isNonEmptyString(rcat.label)) return { ok: false, error: 'Resource ' + act.id + ' category ' + (rc + 1) + ' needs id and label.' };
@@ -220,7 +220,7 @@
               catIds[rcat.id] = true;
             }
             if (!Array.isArray(rItems) || rItems.length === 0) return { ok: false, error: 'Resource ' + act.id + ' needs data.items (non-empty array).' };
-            var itemIds = {};
+            var itemIds = Object.create(null);
             for (var ri = 0; ri < rItems.length; ri++) {
               var rit = rItems[ri];
               if (!rit || !isNonEmptyString(rit.id) || !isNonEmptyString(rit.content)) return { ok: false, error: 'Resource ' + act.id + ' item ' + (ri + 1) + ' needs id and content.' };
@@ -254,7 +254,7 @@
           }
           var bIds = Object.keys(bNodes);
           if (bIds.length === 0 || bIds.length > 100) return { ok: false, error: 'Branching ' + act.id + ' needs 1-100 nodes.' };
-          if (!isNonEmptyString(act.content.start) || !bNodes[act.content.start]) {
+          if (!isNonEmptyString(act.content.start) || !Object.prototype.hasOwnProperty.call(bNodes, act.content.start) || !bNodes[act.content.start]) {
             return { ok: false, error: 'Branching ' + act.id + ' needs content.start naming an existing node.' };
           }
           var bEndings = 0;
@@ -275,16 +275,16 @@
               for (var bc = 0; bc < bChoices.length; bc++) {
                 var bChoice = bChoices[bc];
                 if (!bChoice || !isNonEmptyString(bChoice.label)) return { ok: false, error: 'Branching ' + act.id + ' node ' + bIds[bi] + ' choice ' + (bc + 1) + ' needs a label.' };
-                if (!isNonEmptyString(bChoice.to) || !bNodes[bChoice.to]) return { ok: false, error: 'Branching ' + act.id + ' node ' + bIds[bi] + ' choice ' + (bc + 1) + ' must point to an existing node.' };
+                if (!isNonEmptyString(bChoice.to) || !Object.prototype.hasOwnProperty.call(bNodes, bChoice.to) || !bNodes[bChoice.to]) return { ok: false, error: 'Branching ' + act.id + ' node ' + bIds[bi] + ' choice ' + (bc + 1) + ' must point to an existing node.' };
                 if (bChoice.feedback !== undefined && !isNonEmptyString(bChoice.feedback)) return { ok: false, error: 'Branching ' + act.id + ' choice feedback must be non-empty when supplied.' };
               }
             }
           }
           if (!bEndings) return { ok: false, error: 'Branching ' + act.id + ' needs at least one ending node.' };
-          // Every node must be reachable from start, and an ending must be
-          // reachable — an unreachable branch is authored dead weight and an
-          // endless graph would strand the learner.
-          var bSeen = {}; var bQueue = [act.content.start]; var bEndingReachable = false;
+          // Every node must be reachable from start, and every node must be able
+          // to reach an ending — an unreachable branch is authored dead weight
+          // and an inescapable cycle would strand the learner.
+          var bSeen = Object.create(null); var bQueue = [act.content.start]; var bEndingReachable = false;
           while (bQueue.length) {
             var bCur = bQueue.pop();
             if (bSeen[bCur]) continue;
@@ -296,6 +296,35 @@
           if (!bEndingReachable) return { ok: false, error: 'Branching ' + act.id + ' has no ending reachable from start.' };
           for (var bu = 0; bu < bIds.length; bu++) {
             if (!bSeen[bIds[bu]]) return { ok: false, error: 'Branching ' + act.id + ' node ' + bIds[bu] + ' is unreachable from start.' };
+          }
+          var bRev = Object.create(null);
+          var bCanEnd = Object.create(null);
+          var bRevQueue = [];
+          for (var br = 0; br < bIds.length; br++) {
+            var bRid = bIds[br];
+            var bRnode = bNodes[bRid];
+            if (bRnode.ending === true) {
+              bCanEnd[bRid] = true;
+              bRevQueue.push(bRid);
+            } else {
+              (bRnode.choices || []).forEach(function (choice) {
+                if (!bRev[choice.to]) bRev[choice.to] = [];
+                bRev[choice.to].push(bRid);
+              });
+            }
+          }
+          while (bRevQueue.length) {
+            var bTarget = bRevQueue.pop();
+            var bParents = bRev[bTarget] || [];
+            for (var bp = 0; bp < bParents.length; bp++) {
+              if (!bCanEnd[bParents[bp]]) {
+                bCanEnd[bParents[bp]] = true;
+                bRevQueue.push(bParents[bp]);
+              }
+            }
+          }
+          for (var be = 0; be < bIds.length; be++) {
+            if (!bCanEnd[bIds[be]]) return { ok: false, error: 'Branching ' + act.id + ' node ' + bIds[be] + ' cannot reach any ending.' };
           }
         }
         if (act.type === 'persona') {
@@ -434,11 +463,12 @@
       var walkPath = Array.isArray(raw.path) ? raw.path : [];
       var walkOk = walkPath.length > 0 && walkPath[0] === walkContent.start;
       for (var wi = 0; walkOk && wi < walkPath.length - 1; wi++) {
-        var wNode = walkNodes[walkPath[wi]];
+        var wNode = Object.prototype.hasOwnProperty.call(walkNodes, walkPath[wi]) ? walkNodes[walkPath[wi]] : null;
         var wChoices = (wNode && Array.isArray(wNode.choices)) ? wNode.choices : [];
         walkOk = wChoices.some(function (choice) { return choice && choice.to === walkPath[wi + 1]; });
       }
-      var wLast = walkOk ? walkNodes[walkPath[walkPath.length - 1]] : null;
+      var wLastKey = walkPath[walkPath.length - 1];
+      var wLast = (walkOk && Object.prototype.hasOwnProperty.call(walkNodes, wLastKey)) ? walkNodes[wLastKey] : null;
       out.completed = !!(wLast && wLast.ending === true);
     } else if (type === 'persona') {
       // Participation-based: the educator has taken minTurns conversational
@@ -656,7 +686,7 @@
 
   function reviewOnlyKeys(value, allowed) {
     if (!reviewIsObject(value)) return false;
-    var allow = {};
+    var allow = Object.create(null);
     allowed.forEach(function (key) { allow[key] = true; });
     return Object.keys(value).every(function (key) { return !!allow[key]; });
   }
@@ -1115,7 +1145,7 @@
         moduleBinding.activity_ids.length > REVIEW_MAX_ACTIVITIES) {
       return bad('invalid_module_binding', 'module', 'Review evidence requires an exact, bounded module binding.');
     }
-    var expectedIds = {};
+    var expectedIds = Object.create(null);
     for (var mi = 0; mi < moduleBinding.activity_ids.length; mi++) {
       var expectedId = moduleBinding.activity_ids[mi];
       if (!isStableId(expectedId) || expectedIds[expectedId]) return bad('invalid_module_binding', 'module.activity_ids', 'Module activity IDs must be unique stable identifiers.');
@@ -1154,8 +1184,8 @@
     if (!Array.isArray(candidate.activities) || candidate.activities.length !== moduleBinding.activity_ids.length) {
       return bad('activity_mismatch', 'activities', 'Activities must exactly match the module binding.');
     }
-    var activityMap = {};
-    var referenced = {};
+    var activityMap = Object.create(null);
+    var referenced = Object.create(null);
     for (var ai = 0; ai < candidate.activities.length; ai++) {
       var activity = candidate.activities[ai];
       var observation = activity && activity.client_observation;
@@ -1183,9 +1213,9 @@
     if (!Array.isArray(candidate.artifacts) || candidate.artifacts.length > REVIEW_MAX_ARTIFACTS) {
       return bad('artifact_limit', 'artifacts', 'Artifact collection is invalid or too large.');
     }
-    var artifactMap = {};
+    var artifactMap = Object.create(null);
     var aiArtifactFound = false;
-    var artifactKindsByActivity = {};
+    var artifactKindsByActivity = Object.create(null);
     var transcriptArtifactFound = false;
     for (var ar = 0; ar < candidate.artifacts.length; ar++) {
       var artifact = candidate.artifacts[ar];
@@ -1296,7 +1326,7 @@
           !privacy.integrity_summary_included || consent.scopes.indexOf('integrity-summary') === -1) {
         return bad('invalid_integrity_summary', 'integrity_summary', 'Integrity summary is invalid or outside consent.');
       }
-      var integrityRows = {};
+      var integrityRows = Object.create(null);
       var totalIntegrityEvents = 0;
       var totalIntegrityCharacters = 0;
       var totalIntegrityWords = 0;

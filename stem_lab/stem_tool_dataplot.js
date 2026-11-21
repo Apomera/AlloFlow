@@ -3064,7 +3064,7 @@ window.StemLab = window.StemLab || {
         chk('quiz_5', (s.dpScore || dpScore) >= 5);
         chk('streak_5', (s.dpStreak || dpStreak) >= 5);
         chk('all_charts', Object.keys(s.chartsOwn || chartsOwn).length >= 7);
-        chk('saved_3', galleryItems.length >= 3);
+        chk('saved_3', (s.galleryCount != null ? s.galleryCount : galleryItems.length) >= 3);
         chk('csv_export', !!s.csvExported);
         chk('ai_analyst', !!s.aiUsed);
         chk('outlier_found', outliers.length > 0 && (showOutliers || !!s.outliersShown));
@@ -3201,10 +3201,11 @@ window.StemLab = window.StemLab || {
       var saveChart = function() {
         if (n === 0) return;
         var item = { id: 'dp_' + Date.now(), points: points.map(function (p) { return { x: p.x, y: p.y }; }), xLabel: xLabel, yLabel: yLabel, chartType: chartType, n: n, r2: r2Known ? regR2Shown : null, timestamp: Date.now(), kernel: kernelResult ? { recipe: kernelRecipeId || null, sql: kernelSQL, backend: kernelResult.backend, provenance: kernelResult.provenance, rows: kernelResult.rows, notebook: { version: 1, entries: kernelHistory } } : null };
-        var ok = saveGallery(galleryItems.concat([item]));
+        var nextGallery = galleryItems.concat([item]);
+        var ok = saveGallery(nextGallery);
         upd('_galleryRefresh', Date.now());
         if (addToast) addToast(ok ? t('stem.dataplot.toast_saved', 'Chart saved to this device.') : t('stem.dataplot.toast_save_failed', 'This device would not save the chart. Export a CSV to keep a copy.'), ok ? 'success' : 'error');
-        if (ok) checkBadges({});
+        if (ok) checkBadges({ galleryCount: nextGallery.length });
       };
       var loadChart = function(item) {
         var newUndo = pushUndo();
@@ -3265,16 +3266,22 @@ window.StemLab = window.StemLab || {
       var transformData = function(type) {
         if (points.length === 0) return;
         var newUndo = pushUndo();
+        var fullY = points.map(function(p) { return p.y; });
+        var fullMinY = Math.min.apply(null, fullY);
+        var fullMaxY = Math.max.apply(null, fullY);
+        var fullRangeY = fullMaxY - fullMinY;
+        var fullMeanY = fullY.reduce(function(acc, y) { return acc + y; }, 0) / fullY.length;
+        var fullStdDev = Math.sqrt(fullY.reduce(function(acc, y) { return acc + (y - fullMeanY) * (y - fullMeanY); }, 0) / fullY.length);
         var transformed, dropped = 0;
         if (type === 'normalize') {
-          transformed = points.map(function(p) { return { x: p.x, y: yRange > 0 ? Math.round((p.y - yMin_) / yRange * 100 * 100) / 100 : 0 }; });
+          transformed = points.map(function(p) { return { x: p.x, y: fullRangeY > 0 ? Math.round((p.y - fullMinY) / fullRangeY * 100 * 100) / 100 : 0 }; });
         } else if (type === 'standardize') {
-          transformed = points.map(function(p) { return { x: p.x, y: stdDev > 0 ? Math.round((p.y - meanY) / stdDev * 100) / 100 : 0 }; });
+          transformed = points.map(function(p) { return { x: p.x, y: fullStdDev > 0 ? Math.round((p.y - fullMeanY) / fullStdDev * 100) / 100 : 0 }; });
         } else if (type === 'log') {
           transformed = points.filter(function(p) { return p.y > 0; }).map(function(p) { return { x: p.x, y: Math.round(Math.log(p.y) * 100) / 100 }; });
           dropped = points.length - transformed.length;
         } else if (type === 'noise') {
-          var nl = stdDev > 0 ? stdDev * 0.2 : yRange * 0.1 || 1;
+          var nl = fullStdDev > 0 ? fullStdDev * 0.2 : fullRangeY * 0.1 || 1;
           transformed = points.map(function(p) { return { x: p.x, y: Math.round((p.y + (Math.random() * 2 - 1) * nl) * 100) / 100 }; });
         } else if (type === 'sort') {
           transformed = points.slice().sort(function(a, b) { return a.x - b.x; });
@@ -3282,7 +3289,7 @@ window.StemLab = window.StemLab || {
           transformed = points.map(function(p) { return { x: p.y, y: p.x }; });
         }
         if (transformed) {
-          updMulti({ points: transformed, undoStack: newUndo, exploreIdx: -1 });
+          updMulti({ points: transformed, undoStack: newUndo, exploreIdx: -1, view: null, myLine: null });
           say(dropped ? fillT(t('stem.dataplot.sr_log_dropped', 'Log transform applied. {k} points with y of 0 or below were removed, because ln(y) is undefined there. Undo brings them back.'), { k: dropped })
             : fillT(t('stem.dataplot.sr_transform_done', '{name} applied. Undo reverses it.'), { name: transformName(type) }));
           if (soundEnabled) sfxTransform();
@@ -3466,24 +3473,109 @@ window.StemLab = window.StemLab || {
         return parts.join(' ');
       };
 
+      // ── Studio Data Visualization SVG defs & helpers (skipped in High-Contrast) ──
+      var dpRich = !isContrast;
+      var dpWellPath = function (x, y, w, hgt, r) {
+        var rr = Math.min(r || 8, w / 2, hgt / 2);
+        return 'M ' + (x + rr) + ' ' + y + ' H ' + (x + w - rr) + ' Q ' + (x + w) + ' ' + y + ' ' + (x + w) + ' ' + (y + rr) + ' V ' + (y + hgt - rr) + ' Q ' + (x + w) + ' ' + (y + hgt) + ' ' + (x + w - rr) + ' ' + (y + hgt) + ' H ' + (x + rr) + ' Q ' + x + ' ' + (y + hgt) + ' ' + x + ' ' + (y + hgt - rr) + ' V ' + (y + rr) + ' Q ' + x + ' ' + y + ' ' + (x + rr) + ' ' + y + ' Z';
+      };
+      var dpDefs = function (id, clipEl) {
+        if (!dpRich) return clipEl ? h('defs', null, clipEl) : null;
+        var dk = isDarkUI;
+        return h('defs', null,
+          clipEl || null,
+          // Recessed studio plot well gradient
+          h('linearGradient', { id: 'dp-well-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: dk ? '#020617' : '#f1f5f9', stopOpacity: dk ? 0.65 : 0.72 }),
+            h('stop', { offset: '100%', stopColor: dk ? '#1e293b' : '#f8fafc', stopOpacity: dk ? 0.35 : 0.42 })
+          ),
+          // Radial-shaded specular data orbs
+          h('radialGradient', { id: 'dp-dot-' + id, cx: '32%', cy: '28%', r: '70%' },
+            h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.92 }),
+            h('stop', { offset: '36%', stopColor: INK.fill, stopOpacity: 0.96 }),
+            h('stop', { offset: '100%', stopColor: INK.fill, stopOpacity: 1 })
+          ),
+          h('radialGradient', { id: 'dp-bad-' + id, cx: '32%', cy: '28%', r: '70%' },
+            h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.92 }),
+            h('stop', { offset: '36%', stopColor: INK.bad, stopOpacity: 0.96 }),
+            h('stop', { offset: '100%', stopColor: INK.bad, stopOpacity: 1 })
+          ),
+          h('radialGradient', { id: 'dp-pos-' + id, cx: '32%', cy: '28%', r: '70%' },
+            h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.9 }),
+            h('stop', { offset: '38%', stopColor: dc('#047857'), stopOpacity: 0.96 }),
+            h('stop', { offset: '100%', stopColor: dc('#047857'), stopOpacity: 1 })
+          ),
+          h('radialGradient', { id: 'dp-cmpa-' + id, cx: '32%', cy: '28%', r: '70%' },
+            h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.9 }),
+            h('stop', { offset: '38%', stopColor: dc('#1d4ed8'), stopOpacity: 0.96 }),
+            h('stop', { offset: '100%', stopColor: dc('#1d4ed8'), stopOpacity: 1 })
+          ),
+          h('radialGradient', { id: 'dp-cmpb-' + id, cx: '32%', cy: '28%', r: '70%' },
+            h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.9 }),
+            h('stop', { offset: '38%', stopColor: dc('#b45309'), stopOpacity: 0.96 }),
+            h('stop', { offset: '100%', stopColor: dc('#b45309'), stopOpacity: 1 })
+          ),
+          // Beveled vertical bar / histogram / box gradients
+          h('linearGradient', { id: 'dp-bar-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: INK.fill, stopOpacity: 0.98 }),
+            h('stop', { offset: '55%', stopColor: INK.fill, stopOpacity: 0.84 }),
+            h('stop', { offset: '100%', stopColor: INK.fill, stopOpacity: 0.68 })
+          ),
+          h('linearGradient', { id: 'dp-bar-bad-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: INK.bad, stopOpacity: 0.96 }),
+            h('stop', { offset: '100%', stopColor: INK.bad, stopOpacity: 0.68 })
+          ),
+          h('linearGradient', { id: 'dp-box-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: INK.fill, stopOpacity: dk ? 0.36 : 0.30 }),
+            h('stop', { offset: '50%', stopColor: INK.fill, stopOpacity: dk ? 0.22 : 0.16 }),
+            h('stop', { offset: '100%', stopColor: INK.fill, stopOpacity: dk ? 0.30 : 0.24 })
+          ),
+          // Area / confidence-band gradient
+          h('linearGradient', { id: 'dp-area-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: INK.fill, stopOpacity: dk ? 0.28 : 0.22 }),
+            h('stop', { offset: '100%', stopColor: INK.fill, stopOpacity: 0.02 })
+          ),
+          h('linearGradient', { id: 'dp-ci-' + id, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+            h('stop', { offset: '0%', stopColor: INK.line, stopOpacity: 1 }),
+            h('stop', { offset: '50%', stopColor: INK.line, stopOpacity: 0.55 }),
+            h('stop', { offset: '100%', stopColor: INK.line, stopOpacity: 1 })
+          ),
+          // Grounded soft shadow & luminous glow filters
+          h('filter', { id: 'dp-sh-' + id, x: '-20%', y: '-20%', width: '140%', height: '140%' },
+            h('feDropShadow', { dx: 0, dy: 1.5, stdDeviation: 1.8, floodColor: dk ? '#000000' : '#0f172a', floodOpacity: dk ? 0.5 : 0.18 })
+          ),
+          h('filter', { id: 'dp-glow-bad-' + id, x: '-60%', y: '-60%', width: '220%', height: '220%' },
+            h('feDropShadow', { dx: 0, dy: 0, stdDeviation: 2.6, floodColor: INK.bad, floodOpacity: dk ? 0.8 : 0.6 })
+          ),
+          h('filter', { id: 'dp-glow-line-' + id, x: '-20%', y: '-20%', width: '140%', height: '140%' },
+            h('feDropShadow', { dx: 0, dy: 0, stdDeviation: 2.2, floodColor: INK.line, floodOpacity: dk ? 0.65 : 0.42 })
+          )
+        );
+      };
+      var dpWell = function (id, x, y, w, hgt, r) {
+        if (!dpRich) return null;
+        return h('path', { key: 'well-' + id, 'aria-hidden': 'true', d: dpWellPath(x, y, w, hgt, r || 6), fill: 'url(#dp-well-' + id + ')', stroke: INK.grid, strokeOpacity: isDarkUI ? 0.55 : 0.7, strokeWidth: 0.9, style: { pointerEvents: 'none' } });
+      };
+
       var axisTicks = function (ax, horizontal, map, y0, x0) {
         var els = [];
         ax.ticks.forEach(function (v, k) {
           var label = fmtFixed(v, ax.decimals);
+          var isZero = Math.abs(v) < 1e-9;
           if (horizontal) {
             var sx = map(v);
-            if (showGrid) els.push(h('line', { key: 'gx' + k, x1: sx, y1: PT, x2: sx, y2: H - PB, stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }));
+            if (showGrid) els.push(h('line', { key: 'gx' + k, x1: sx, y1: PT, x2: sx, y2: H - PB, stroke: isZero && dpRich ? INK.axis : INK.grid, strokeOpacity: isZero && dpRich ? 0.35 : 0.85, strokeWidth: isZero && dpRich ? 1 : 0.65, strokeDasharray: isZero && dpRich ? undefined : '3 3' }));
             els.push(h('text', { key: 'tx' + k, x: sx, y: H - PB + 15, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, label));
           } else {
             var sy = map(v);
-            if (showGrid) els.push(h('line', { key: 'gy' + k, x1: PL, y1: sy, x2: W - PR, y2: sy, stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }));
+            if (showGrid) els.push(h('line', { key: 'gy' + k, x1: PL, y1: sy, x2: W - PR, y2: sy, stroke: isZero && dpRich ? INK.axis : INK.grid, strokeOpacity: isZero && dpRich ? 0.35 : 0.85, strokeWidth: isZero && dpRich ? 1 : 0.65, strokeDasharray: isZero && dpRich ? undefined : '3 3' }));
             els.push(h('text', { key: 'ty' + k, x: PL - 6, y: sy + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, label));
           }
         });
         return els;
       };
 
-      // Regression line/curve path, clipped to the plot box.
+      // Regression line/curve path, clipped to the plot box (dual-pass luminous under-glow + crisp core).
       var regPath = function() {
         if (n < 2 || !regFit.ok || isK5 || modelHidden) return null;
         var cpts = [], pen = false, x0 = Math.max(xMin, regressionType === 'logarithmic' ? 1e-9 : xMin);
@@ -3493,7 +3585,12 @@ window.StemLab = window.StemLab || {
           cpts.push((pen ? 'L' : 'M') + toSX(cx_).toFixed(1) + ',' + toSY(cy_).toFixed(1)); pen = true;
         }
         if (!cpts.length) return null;
-        return h('path', { d: cpts.join(' '), fill: 'none', stroke: INK.line, strokeWidth: 2.5, strokeDasharray: '7 4', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none', 'data-dataplot-fit': regressionType });
+        var dStr = cpts.join(' ');
+        if (!dpRich) return h('path', { d: dStr, fill: 'none', stroke: INK.line, strokeWidth: 2.5, strokeDasharray: '7 4', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none', 'data-dataplot-fit': regressionType });
+        return h('g', { clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' },
+          h('path', { d: dStr, fill: 'none', stroke: INK.line, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round' }),
+          h('path', { d: dStr, fill: 'none', stroke: INK.line, strokeWidth: 2.6, strokeDasharray: '7 4', strokeLinecap: 'round', 'data-dataplot-fit': regressionType })
+        );
       };
       var ciPath = function() {
         if (!showCI || n < 3 || regressionType !== 'linear' || seRegression === 0 || isK5 || modelHidden) return null;
@@ -3506,7 +3603,7 @@ window.StemLab = window.StemLab || {
           upper.push((ci === 0 ? 'M' : 'L') + toSX(cx).toFixed(1) + ',' + toSY(yPred + margin).toFixed(1));
           lower.unshift('L' + toSX(cx).toFixed(1) + ',' + toSY(yPred - margin).toFixed(1));
         }
-        return h('path', { d: upper.join(' ') + ' ' + lower.join(' ') + ' Z', fill: INK.line, fillOpacity: 0.12, stroke: INK.line, strokeWidth: 0.8, strokeDasharray: '3 3', clipPath: 'url(#dp-plot-clip)' });
+        return h('path', { d: upper.join(' ') + ' ' + lower.join(' ') + ' Z', fill: dpRich ? 'url(#dp-ci-xy)' : INK.line, fillOpacity: 0.12, stroke: INK.line, strokeOpacity: dpRich ? 0.55 : 1, strokeWidth: 0.9, strokeDasharray: '3 3', clipPath: 'url(#dp-plot-clip)' });
       };
 
       // SVG click: add a point (Add mode). Remove mode works on the points themselves.
@@ -3605,7 +3702,8 @@ window.StemLab = window.StemLab || {
           myEval && regressionType === 'linear' && (mySquares === 'ls' || mySquares === 'both') ? squareEls(myEval.resLs, lsCol, 'ls') : null,
           myEval && (mySquares === 'mine' || mySquares === 'both') ? squareEls(myEval.resUser, mineCol, 'mine') : null,
           visiblePoints.map(function (p, i) { return h('line', { key: 'mr' + i, x1: toSX(p.x), y1: toSY(p.y), x2: toSX(p.x), y2: toSY(lineY(myLineEq, p.x)), stroke: mineCol, strokeWidth: 1, strokeDasharray: '2 2', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }); }),
-          h('line', { key: 'myl', x1: toSX(xMin), y1: toSY(lineY(myLineEq, xMin)), x2: toSX(xMax), y2: toSY(lineY(myLineEq, xMax)), stroke: mineCol, strokeWidth: 3, clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none', 'data-dataplot-my-line': true }),
+          dpRich && h('line', { key: 'myl-g', x1: toSX(xMin), y1: toSY(lineY(myLineEq, xMin)), x2: toSX(xMax), y2: toSY(lineY(myLineEq, xMax)), stroke: mineCol, strokeWidth: 8, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }),
+          h('line', { key: 'myl', x1: toSX(xMin), y1: toSY(lineY(myLineEq, xMin)), x2: toSX(xMax), y2: toSY(lineY(myLineEq, xMax)), stroke: mineCol, strokeWidth: 3, strokeLinecap: 'round', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none', 'data-dataplot-my-line': true }),
           [['yA', myXA, myYA], ['yB', myXB, myYB]].map(function (hd) {
             // touch-action is ignored on inline SVG children: without display:block the browser pans and
             // cancels a finger drag after about 20 px. The clear ring is a finger-sized grab area; it stays
@@ -3615,14 +3713,17 @@ window.StemLab = window.StemLab || {
               onPointerDown: function (e) { e.stopPropagation(); lineDragRef.current = hd[0]; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); },
               onClick: function (e) { e.stopPropagation(); } },
               clickMode === 'add' && h('circle', { cx: toSX(hd[1]), cy: toSY(hd[2]), r: 20, fill: 'transparent', style: noPan, 'data-dataplot-my-handle-hit': hd[0] }),
-              h('circle', { cx: toSX(hd[1]), cy: toSY(hd[2]), r: 11, fill: mineCol, stroke: INK.bg, strokeWidth: 2, style: noPan, 'data-dataplot-my-handle': hd[0] }));
+              h('circle', { cx: toSX(hd[1]), cy: toSY(hd[2]), r: 11, fill: mineCol, stroke: INK.bg, strokeWidth: 2, filter: dpRich ? 'url(#dp-sh-xy)' : undefined, style: noPan, 'data-dataplot-my-handle': hd[0] }));
           })
         ] : null;
         var showCursor = cursorOn && xyChart && clickMode === 'add' && !stepMode;
+        var sortedLinePts = chartType === 'line' && n >= 2 ? visiblePoints.slice().sort(function(a,b) { return a.x - b.x; }) : null;
+        var linePathD = sortedLinePts ? sortedLinePts.map(function(p, i) { return (i===0?'M':'L') + toSX(p.x).toFixed(1) + ',' + toSY(p.y).toFixed(1); }).join(' ') : '';
         return h('svg', svgBase(chartType === 'bar' ? t('stem.dataplot.bar_img_label', 'Bar chart of the current data set') : t('stem.dataplot.chart_img_label', 'Chart of the current data set'),
           { onClick: handleSvgClick, onPointerMove: myLineEls ? dragTo : undefined, onPointerUp: myLineEls ? endDrag : undefined, onPointerCancel: myLineEls ? endDrag : undefined, onLostPointerCapture: myLineEls ? endDrag : undefined,
             className: 'w-full rounded-xl border border-teal-200' + ((chartType === 'scatter' || chartType === 'line') && clickMode === 'add' && !stepMode ? ' cursor-crosshair' : '') }),
-          h('defs', null, h('clipPath', { id: 'dp-plot-clip' }, h('rect', { x: PL, y: PT, width: W - PL - PR, height: H - PT - PB }))),
+          dpDefs('xy', h('clipPath', { id: 'dp-plot-clip' }, h('rect', { x: PL, y: PT, width: W - PL - PR, height: H - PT - PB }))),
+          dpWell('xy', PL, PT, W - PL - PR, H - PT - PB, 6),
           axisTicks(axY, false, toSY),
           isBar ? barOrder.map(function (b, k) { return n <= 20 || k % Math.ceil(n / 20) === 0 ? h('text', { key: 'bl' + k, x: barX(k), y: H - PB + 15, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtNum(b.x)) : null; }) : axisTicks(axX, true, toSX),
           axisLabels(),
@@ -3631,13 +3732,15 @@ window.StemLab = window.StemLab || {
             var py = predictY(p.x);
             return dpFin(py) ? h('line', { key: 'r' + i, x1: toSX(p.x), y1: toSY(p.y), x2: toSX(p.x), y2: toSY(py), stroke: isContrast ? '#ff80ff' : dc('#7e22ce'), strokeWidth: 1.5, strokeDasharray: '2 2', clipPath: 'url(#dp-plot-clip)' }) : null;
           }),
-          // Bars grow from zero: up for positive values, down for negative ones.
+          // Bars grow from zero: up for positive values, down for negative ones (beveled studio fills, strictly 1 rect per bar!).
           isBar && barOrder.map(function (b, k) {
             var top = toSY(Math.max(0, b.y)), bottom = toSY(Math.min(0, b.y));
-            return h('rect', { key: 'bar' + k, x: barX(k) - bw / 2, y: top, width: bw, height: Math.max(1, bottom - top), fill: b.y < 0 ? INK.bad : INK.fill, fillOpacity: 0.9, rx: 2, stroke: INK.bg, strokeWidth: 0.5 });
+            return h('rect', { key: 'bar' + k, x: barX(k) - bw / 2, y: top, width: bw, height: Math.max(1, bottom - top), fill: dpRich ? (b.y < 0 ? 'url(#dp-bar-bad-xy)' : 'url(#dp-bar-xy)') : (b.y < 0 ? INK.bad : INK.fill), fillOpacity: dpRich ? 1 : 0.9, rx: 3, stroke: INK.bg, strokeWidth: 0.8, filter: dpRich ? 'url(#dp-sh-xy)' : undefined });
           }),
           isBar && yMin < 0 && h('line', { x1: PL, y1: zeroY, x2: W - PR, y2: zeroY, stroke: INK.axis, strokeWidth: 1.5, 'data-dataplot-zero': true }),
-          chartType === 'line' && n >= 2 && h('path', { d: visiblePoints.slice().sort(function(a,b) { return a.x - b.x; }).map(function(p, i) { return (i===0?'M':'L') + toSX(p.x).toFixed(1) + ',' + toSY(p.y).toFixed(1); }).join(' '), fill: 'none', stroke: INK.fill, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+          chartType === 'line' && n >= 2 && dpRich && h('path', { d: linePathD + ' L' + toSX(sortedLinePts[sortedLinePts.length - 1].x).toFixed(1) + ',' + (H - PB) + ' L' + toSX(sortedLinePts[0].x).toFixed(1) + ',' + (H - PB) + ' Z', fill: 'url(#dp-area-xy)', stroke: 'none', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }),
+          chartType === 'line' && n >= 2 && dpRich && h('path', { d: linePathD, fill: 'none', stroke: INK.fill, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.22 : 0.15, strokeLinecap: 'round', strokeLinejoin: 'round', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }),
+          chartType === 'line' && n >= 2 && h('path', { d: linePathD, fill: 'none', stroke: INK.fill, strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round' }),
           !isBar && visiblePoints.map(function(p, i) {
             var isOutlier = showOutliers && outlierSet[p.x + ',' + p.y], cx = toSX(p.x), cy = toSY(p.y);
             // Points are pictures, not buttons: keyboard users explore and edit through the
@@ -3645,10 +3748,10 @@ window.StemLab = window.StemLab || {
             return h('g', { key: 'pt' + i, 'aria-hidden': 'true', 'data-dataplot-point': i, style: { cursor: clickMode === 'remove' ? 'not-allowed' : undefined },
               onClick: clickMode === 'remove' ? function (e) { e.stopPropagation(); removePoint(points.indexOf(p) >= 0 ? points.indexOf(p) : i, xyChart ? freezePatch() : null); } : undefined },
               h('circle', { cx: cx, cy: cy, r: 11, fill: 'transparent' }),
-              h('circle', { cx: cx, cy: cy, r: isOutlier ? 7 : 5, fill: isOutlier ? INK.bad : INK.fill, stroke: INK.bg, strokeWidth: 1.5 }),
+              h('circle', { cx: cx, cy: cy, r: isOutlier ? 7 : 5, fill: dpRich ? (isOutlier ? 'url(#dp-bad-xy)' : 'url(#dp-dot-xy)') : (isOutlier ? INK.bad : INK.fill), stroke: INK.bg, strokeWidth: 1.5, filter: dpRich ? (isOutlier ? 'url(#dp-glow-bad-xy)' : 'url(#dp-sh-xy)') : undefined }),
               showLabels && h('text', { x: cx, y: cy - 9, textAnchor: 'middle', fill: INK.text, style: { fontSize: '10px', fontWeight: 'bold' } }, '(' + fmtNum(p.x) + ', ' + fmtNum(p.y) + ')'));
           }),
-          explorePt && !isBar && h('circle', { cx: toSX(explorePt.x), cy: toSY(explorePt.y), r: 10, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 3, 'data-dataplot-explore': true }),
+          explorePt && !isBar && h('circle', { cx: toSX(explorePt.x), cy: toSY(explorePt.y), r: 10, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 3, filter: dpRich ? 'url(#dp-glow-line-xy)' : undefined, 'data-dataplot-explore': true }),
           explorePt && isBar && (function () { var k = barOrder.map(function (b) { return b.i; }).indexOf(explorePt.i); return k < 0 ? null : h('rect', { x: barX(k) - bw / 2 - 3, y: PT, width: bw + 6, height: H - PT - PB, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 2.5, 'data-dataplot-explore': true }); })(),
           !isBar && n >= 2 && regPath(),
           !isBar && myLineEls,
@@ -3675,37 +3778,55 @@ window.StemLab = window.StemLab || {
         var startAngle = -Math.PI / 2;
         return h('div', { className: 'rounded-xl border border-teal-200 p-4 flex justify-center', style: { background: INK.bg } },
           h('svg', { role: 'img', 'aria-label': t('stem.dataplot.pie_img_label', 'Pie chart of the current data set'), 'aria-describedby': 'dp-chart-desc', viewBox: '0 0 300 300', width: 260, height: 260, 'data-dataplot-svg': true },
+            dpRich && h('defs', null,
+              h('radialGradient', { id: 'dp-pie-sheen', cx: '32%', cy: '26%', r: '72%' },
+                h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: isDarkUI ? 0.20 : 0.28 }),
+                h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0.03 }),
+                h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: isDarkUI ? 0.22 : 0.10 })
+              ),
+              h('filter', { id: 'dp-pie-sh', x: '-20%', y: '-20%', width: '140%', height: '140%' },
+                h('feDropShadow', { dx: 0, dy: 3, stdDeviation: 4, floodColor: isDarkUI ? '#000000' : '#0f172a', floodOpacity: isDarkUI ? 0.55 : 0.18 })
+              )
+            ),
             !pieParts.length ? h('text', { x: 150, y: 150, textAnchor: 'middle', fill: INK.text, style: { fontSize: '13px' } }, t('stem.dataplot.pie_no_positive', 'No positive values to draw')) :
-            pieParts.map(function(q, i) {
-              var pct = q.value / pieTotal, fillC = isContrast ? cols[i % cols.length] : dc(cols[i % cols.length]), ink = isContrast ? '#000000' : dc('#ffffff');
-              var midA = startAngle + pct * Math.PI;
-              var lx = 150 + 80 * Math.cos(midA), ly = 150 + 80 * Math.sin(midA);
-              var shape;
-              // One slice is the whole circle: an arc from a point back to itself draws nothing.
-              if (pct >= 0.9999) { shape = h('circle', { cx: 150, cy: 150, r: 120, fill: fillC, stroke: INK.bg, strokeWidth: 2 }); lx = 150; ly = 150; }
-              else {
-                var angle = pct * 2 * Math.PI;
-                var x1 = 150 + 120 * Math.cos(startAngle), y1 = 150 + 120 * Math.sin(startAngle);
-                var x2 = 150 + 120 * Math.cos(startAngle + angle), y2 = 150 + 120 * Math.sin(startAngle + angle);
-                shape = h('path', { d: 'M 150 150 L ' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' A 120 120 0 ' + (angle > Math.PI ? 1 : 0) + ' 1 ' + x2.toFixed(1) + ' ' + y2.toFixed(1) + ' Z', fill: fillC, stroke: INK.bg, strokeWidth: 2 });
-              }
-              startAngle += pct * 2 * Math.PI;
-              return h('g', { key: 'pie' + i }, shape, pct > 0.05 && h('text', { x: lx, y: ly + 4, textAnchor: 'middle', fill: ink, style: { fontSize: '12px', fontWeight: 'bold' } }, fmtNum(pct * 100, 0) + '%'));
-            })));
+            h('g', { filter: dpRich ? 'url(#dp-pie-sh)' : undefined },
+              pieParts.map(function(q, i) {
+                var pct = q.value / pieTotal, fillC = isContrast ? cols[i % cols.length] : dc(cols[i % cols.length]), ink = isContrast ? '#000000' : dc('#ffffff');
+                var midA = startAngle + pct * Math.PI;
+                var lx = 150 + 80 * Math.cos(midA), ly = 150 + 80 * Math.sin(midA);
+                var shape;
+                // One slice is the whole circle: an arc from a point back to itself draws nothing.
+                if (pct >= 0.9999) { shape = h('circle', { cx: 150, cy: 150, r: 120, fill: fillC, stroke: INK.bg, strokeWidth: 2 }); lx = 150; ly = 150; }
+                else {
+                  var angle = pct * 2 * Math.PI;
+                  var x1 = 150 + 120 * Math.cos(startAngle), y1 = 150 + 120 * Math.sin(startAngle);
+                  var x2 = 150 + 120 * Math.cos(startAngle + angle), y2 = 150 + 120 * Math.sin(startAngle + angle);
+                  shape = h('path', { d: 'M 150 150 L ' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' A 120 120 0 ' + (angle > Math.PI ? 1 : 0) + ' 1 ' + x2.toFixed(1) + ' ' + y2.toFixed(1) + ' Z', fill: fillC, stroke: INK.bg, strokeWidth: 2 });
+                }
+                startAngle += pct * 2 * Math.PI;
+                return h('g', { key: 'pie' + i }, shape, pct > 0.05 && h('text', { x: lx, y: ly + 4, textAnchor: 'middle', fill: ink, style: { fontSize: '12px', fontWeight: 'bold' } }, fmtNum(pct * 100, 0) + '%'));
+              })
+            ),
+            dpRich && pieParts.length > 0 && h('path', { 'aria-hidden': 'true', d: 'M 150 30 A 120 120 0 1 1 149.9 30 Z', fill: 'url(#dp-pie-sheen)', stroke: 'none', style: { pointerEvents: 'none' } })));
       };
 
       var renderHistogram = function () {
         var hAx = niceAxis(0, maxBinCount, true), plotW = W - PL - PR;
         var hy = function (c) { return (H - PB) - (c - hAx.min) / (hAx.max - hAx.min || 1) * (H - PT - PB); };
         var hx = function (v) { return PL + ((v - yMin_) / (yRange || 1)) * plotW; };
+        var normCol = isContrast ? '#ff80ff' : dc('#6d28d9');
+        var meanCol = isContrast ? '#ff8080' : dc('#b91c1c');
+        var medCol = isContrast ? '#00ffff' : dc('#1d4ed8');
         return h('svg', svgBase(t('stem.dataplot.histogram_img_label', 'Histogram of the current data set')),
+          dpDefs('hist'),
+          dpWell('hist', PL, PT, plotW, H - PT - PB, 6),
           axisTicks(hAx, false, hy),
           h('line', { x1: PL, y1: H-PB, x2: W-PR, y2: H-PB, stroke: INK.axis, strokeWidth: 1.5 }),
           h('line', { x1: PL, y1: PT, x2: PL, y2: H-PB, stroke: INK.axis, strokeWidth: 1.5 }),
           histBins.map(function(bin, i) {
-            var bw = plotW / histBins.length, bx = PL + i * bw, top = hy(bin.count);
+            var bw = plotW / histBins.length, bx = PL + i * bw, top = hy(bin.count), bh = Math.max(0, H - PB - top);
             return h('g', { key: 'hb'+i },
-              h('rect', { x: bx + 1, y: top, width: bw - 2, height: Math.max(0, H - PB - top), fill: INK.fill, fillOpacity: 0.85, rx: 2 }),
+              h('rect', { x: bx + 1, y: top, width: bw - 2, height: bh, fill: dpRich ? 'url(#dp-bar-hist)' : INK.fill, fillOpacity: dpRich ? 1 : 0.85, rx: 3, stroke: dpRich ? INK.bg : undefined, strokeWidth: dpRich ? 0.7 : undefined, filter: dpRich && bh > 0 ? 'url(#dp-sh-hist)' : undefined }),
               h('text', { x: bx + bw / 2, y: H - PB + 14, textAnchor: 'middle', fill: INK.muted, style: { fontSize: histBins.length > 8 ? '9px' : '10px' } }, binLabel(bin)),
               bin.count > 0 && h('text', { x: bx + bw / 2, y: top - 4, textAnchor: 'middle', fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, bin.count));
           }),
@@ -3716,13 +3837,19 @@ window.StemLab = window.StemLab || {
               var ny = normalPDF(nx, meanY, stdDev) * n * bw;
               normPts.push((ni === 0 ? 'M' : 'L') + hx(nx).toFixed(1) + ',' + hy(ny).toFixed(1));
             }
-            return h('path', { d: normPts.join(' '), fill: 'none', stroke: isContrast ? '#ff80ff' : dc('#6d28d9'), strokeWidth: 2, strokeDasharray: '4 2' });
+            var nd = normPts.join(' ');
+            return h('g', { 'aria-hidden': 'true' },
+              dpRich && h('path', { d: nd, fill: 'none', stroke: normCol, strokeWidth: 6.5, strokeOpacity: isDarkUI ? 0.25 : 0.16, strokeLinecap: 'round' }),
+              h('path', { d: nd, fill: 'none', stroke: normCol, strokeWidth: 2.2, strokeDasharray: '4 2', strokeLinecap: 'round' })
+            );
           })(),
           !isK5 && [
-            h('line', { key: 'mean-line', x1: hx(meanY), y1: PT, x2: hx(meanY), y2: H-PB, stroke: isContrast ? '#ff8080' : dc('#b91c1c'), strokeWidth: 1.5, strokeDasharray: '5 3' }),
-            h('text', { key: 'mean-lbl', x: hx(meanY), y: PT + 10, textAnchor: 'middle', fill: isContrast ? '#ff8080' : dc('#b91c1c'), style: { fontSize: '10px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.mean_eq', 'mean {v}'), { v: fmtNum(meanY, 2) })),
-            h('line', { key: 'med-line', x1: hx(yMedian), y1: PT, x2: hx(yMedian), y2: H-PB, stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 1.5, strokeDasharray: '5 3' }),
-            h('text', { key: 'med-lbl', x: hx(yMedian), y: PT + 22, textAnchor: 'middle', fill: isContrast ? '#00ffff' : dc('#1d4ed8'), style: { fontSize: '10px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.median_eq', 'median {v}'), { v: fmtNum(yMedian, 2) }))
+            dpRich && h('line', { key: 'mean-glow', x1: hx(meanY), y1: PT, x2: hx(meanY), y2: H-PB, stroke: meanCol, strokeWidth: 5, strokeOpacity: 0.16 }),
+            h('line', { key: 'mean-line', x1: hx(meanY), y1: PT, x2: hx(meanY), y2: H-PB, stroke: meanCol, strokeWidth: 1.7, strokeDasharray: '5 3' }),
+            h('text', { key: 'mean-lbl', x: hx(meanY), y: PT + 10, textAnchor: 'middle', fill: meanCol, style: { fontSize: '10px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.mean_eq', 'mean {v}'), { v: fmtNum(meanY, 2) })),
+            dpRich && h('line', { key: 'med-glow', x1: hx(yMedian), y1: PT, x2: hx(yMedian), y2: H-PB, stroke: medCol, strokeWidth: 5, strokeOpacity: 0.16 }),
+            h('line', { key: 'med-line', x1: hx(yMedian), y1: PT, x2: hx(yMedian), y2: H-PB, stroke: medCol, strokeWidth: 1.7, strokeDasharray: '5 3' }),
+            h('text', { key: 'med-lbl', x: hx(yMedian), y: PT + 22, textAnchor: 'middle', fill: medCol, style: { fontSize: '10px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.median_eq', 'median {v}'), { v: fmtNum(yMedian, 2) }))
           ],
           h('text', { x: (PL + W - PR) / 2, y: H - 6, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.hist_axis', '{y} (bins)'), { y: yName })),
           h('text', { x: 14, y: (PT + H - PB) / 2, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' }, transform: 'rotate(-90,14,' + ((PT + H - PB) / 2) + ')' }, t('stem.dataplot.count_axis', 'Count'))
@@ -3740,15 +3867,18 @@ window.StemLab = window.StemLab || {
           h('text', { key: 'l-med', x: bx(yMedian), y: 124, textAnchor: 'middle', fill: INK.bad, style: { fontSize: '11px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.median_eq', 'median {v}'), { v: fmtNum(yMedian, 2) }))
         ];
         return h('svg', { role: 'img', 'aria-label': t('stem.dataplot.boxplot_img_label', 'Box plot of the current data set'), 'aria-describedby': 'dp-chart-desc', viewBox: '0 0 ' + W + ' ' + BH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg }, 'data-dataplot-svg': true },
+          dpDefs('box'),
+          dpWell('box', PL, 22, W - PL - PR, 114, 6),
           // Whiskers stop at the most extreme values that are not flagged outliers (first line in the SVG).
-          h('line', { key: 'whisker', x1: bx(wLo), y1: 80, x2: bx(wHi), y2: 80, stroke: INK.axis, strokeWidth: 1.5 }),
-          h('line', { key: 'whisker-lo', x1: bx(wLo), y1: 62, x2: bx(wLo), y2: 98, stroke: INK.axis, strokeWidth: 1.5 }),
-          h('line', { key: 'whisker-hi', x1: bx(wHi), y1: 62, x2: bx(wHi), y2: 98, stroke: INK.axis, strokeWidth: 1.5 }),
-          outliers.map(function(o, i) { return h('circle', { key: 'out'+i, cx: bx(o.y), cy: 80, r: 5, fill: INK.bad, stroke: INK.bg, strokeWidth: 1 }); }),
-          h('rect', { x: bx(q1), y: 55, width: Math.max(2, bx(q3) - bx(q1)), height: 50, fill: INK.fill, fillOpacity: 0.25, stroke: INK.fill, strokeWidth: 2, rx: 4 }),
-          h('line', { x1: bx(yMedian), y1: 55, x2: bx(yMedian), y2: 105, stroke: INK.bad, strokeWidth: 3 }),
+          h('line', { key: 'whisker', x1: bx(wLo), y1: 80, x2: bx(wHi), y2: 80, stroke: INK.axis, strokeWidth: 1.8, strokeLinecap: 'round' }),
+          h('line', { key: 'whisker-lo', x1: bx(wLo), y1: 62, x2: bx(wLo), y2: 98, stroke: INK.axis, strokeWidth: 2, strokeLinecap: 'round' }),
+          h('line', { key: 'whisker-hi', x1: bx(wHi), y1: 62, x2: bx(wHi), y2: 98, stroke: INK.axis, strokeWidth: 2, strokeLinecap: 'round' }),
+          outliers.map(function(o, i) { return h('circle', { key: 'out'+i, cx: bx(o.y), cy: 80, r: 5, fill: dpRich ? 'url(#dp-bad-box)' : INK.bad, stroke: INK.bg, strokeWidth: 1.3, filter: dpRich ? 'url(#dp-glow-bad-box)' : undefined }); }),
+          h('rect', { x: bx(q1), y: 55, width: Math.max(2, bx(q3) - bx(q1)), height: 50, fill: dpRich ? 'url(#dp-box-box)' : INK.fill, fillOpacity: dpRich ? 1 : 0.25, stroke: INK.fill, strokeWidth: 2, rx: 5, filter: dpRich ? 'url(#dp-sh-box)' : undefined }),
+          dpRich && h('line', { x1: bx(yMedian), y1: 55, x2: bx(yMedian), y2: 105, stroke: INK.bad, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.26 : 0.18, strokeLinecap: 'round' }),
+          h('line', { x1: bx(yMedian), y1: 55, x2: bx(yMedian), y2: 105, stroke: INK.bad, strokeWidth: 3.2, strokeLinecap: 'round' }),
           lab,
-          h('line', { x1: PL, y1: 140, x2: W - PR, y2: 140, stroke: INK.axis, strokeWidth: 1 }),
+          h('line', { x1: PL, y1: 140, x2: W - PR, y2: 140, stroke: INK.axis, strokeWidth: 1.2 }),
           bAx.ticks.map(function (v, k) { return h('g', { key: 'bt' + k }, h('line', { x1: bx(v), y1: 140, x2: bx(v), y2: 145, stroke: INK.axis }), h('text', { x: bx(v), y: 158, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, bAx.decimals))); }),
           h('text', { x: W - PR, y: 168, textAnchor: 'end', fill: INK.accent, style: { fontSize: '11px', fontWeight: 'bold' } }, yName)
         );
@@ -3761,16 +3891,19 @@ window.StemLab = window.StemLab || {
         var oToY = function(v) { return (H - PB) - (v / n) * (H - PT - PB); };
         var pathD = cumulativeFreq.map(function(pt, i) { return (i === 0 ? 'M' : 'L') + oToX(pt.x).toFixed(1) + ',' + oToY(pt.y).toFixed(1); }).join(' ');
         return h('svg', svgBase(t('stem.dataplot.ogive_img_label', 'Cumulative frequency graph')),
+          dpDefs('og'),
+          dpWell('og', PL, PT, W - PL - PR, H - PT - PB, 6),
           [0, 25, 50, 75, 100].map(function(pct) {
             var gy = oToY(n * pct / 100);
-            return h('g', { key: 'og'+pct }, h('line', { x1: PL, y1: gy, x2: W-PR, y2: gy, stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }), h('text', { x: PL-6, y: gy+4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, pct + '%'));
+            return h('g', { key: 'og'+pct }, h('line', { x1: PL, y1: gy, x2: W-PR, y2: gy, stroke: INK.grid, strokeWidth: 0.65, strokeDasharray: '3 3' }), h('text', { x: PL-6, y: gy+4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, pct + '%'));
           }),
           axisTicks(oAx, true, oToX),
           h('line', { x1: PL, y1: H-PB, x2: W-PR, y2: H-PB, stroke: INK.axis, strokeWidth: 1.5 }),
           h('line', { x1: PL, y1: PT, x2: PL, y2: H-PB, stroke: INK.axis, strokeWidth: 1.5 }),
-          h('path', { d: pathD + ' L' + oToX(cumulativeFreq[cumulativeFreq.length-1].x).toFixed(1) + ',' + (H-PB) + ' L' + oToX(cumulativeFreq[0].x).toFixed(1) + ',' + (H-PB) + ' Z', fill: INK.fill, fillOpacity: 0.15 }),
-          h('path', { d: pathD, fill: 'none', stroke: INK.fill, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-          cumulativeFreq.map(function(pt, i) { return h('circle', { key: 'op'+i, cx: oToX(pt.x), cy: oToY(pt.y), r: 4, fill: INK.fill, stroke: INK.bg, strokeWidth: 1.5 }); }),
+          h('path', { d: pathD + ' L' + oToX(cumulativeFreq[cumulativeFreq.length-1].x).toFixed(1) + ',' + (H-PB) + ' L' + oToX(cumulativeFreq[0].x).toFixed(1) + ',' + (H-PB) + ' Z', fill: dpRich ? 'url(#dp-area-og)' : INK.fill, fillOpacity: dpRich ? 1 : 0.15 }),
+          dpRich && h('path', { d: pathD, fill: 'none', stroke: INK.fill, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+          h('path', { d: pathD, fill: 'none', stroke: INK.fill, strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+          cumulativeFreq.map(function(pt, i) { return h('circle', { key: 'op'+i, cx: oToX(pt.x), cy: oToY(pt.y), r: 4, fill: dpRich ? 'url(#dp-dot-og)' : INK.fill, stroke: INK.bg, strokeWidth: 1.5, filter: dpRich ? 'url(#dp-sh-og)' : undefined }); }),
           h('text', { x: (PL + W - PR) / 2, y: H - 6, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.ogive_axis', '{y} (running total)'), { y: yName }))
         );
       };
@@ -3785,12 +3918,16 @@ window.StemLab = window.StemLab || {
         var stacks = {}, maxC = 1;
         values.forEach(function (v) { var k = fmtNum(v, 3); stacks[k] = (stacks[k] || 0) + 1; if (stacks[k] > maxC) maxC = stacks[k]; });
         var rStep = Math.min(14, (base - 16) / maxC), rad = Math.max(3, Math.min(6, rStep / 2 - 0.5)), seen = {};
+        var useCustomFill = !!opts.color;
         return h('svg', Object.assign({ role: 'img', 'aria-label': opts.label || t('stem.dataplot.dotplot_img_label', 'Dot plot of the values'), viewBox: '0 0 ' + DW + ' ' + DH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg, maxHeight: (DH + 30) + 'px' } }, opts.svgProps || {}),
+          dpDefs('dp'),
+          dpWell('dp', L - 6, 8, DW - L - R + 12, base - 8, 6),
           opts.children ? opts.children(dx, base) : null,
           values.map(function (v, i) {
             var k = fmtNum(v, 3); seen[k] = (seen[k] || 0) + 1;
             var hl = opts.highlight === i;
-            return h('circle', { key: 'd' + i, cx: dx(v), cy: base - 8 - (seen[k] - 1) * rStep, r: hl ? rad + 2 : rad, fill: hl ? INK.bad : (opts.color || INK.fill), stroke: INK.bg, strokeWidth: 1 });
+            var fillVal = hl ? (dpRich ? 'url(#dp-bad-dp)' : INK.bad) : (useCustomFill || !dpRich ? (opts.color || INK.fill) : 'url(#dp-dot-dp)');
+            return h('circle', { key: 'd' + i, cx: dx(v), cy: base - 8 - (seen[k] - 1) * rStep, r: hl ? rad + 2 : rad, fill: fillVal, stroke: INK.bg, strokeWidth: 1, filter: dpRich && hl ? 'url(#dp-glow-bad-dp)' : undefined });
           }),
           h('line', { x1: L, y1: base, x2: DW - R, y2: base, stroke: INK.axis, strokeWidth: 1.5 }),
           ax.ticks.map(function (v, k) { return h('g', { key: 't' + k }, h('line', { x1: dx(v), y1: base, x2: dx(v), y2: base + 5, stroke: INK.axis }), h('text', { x: dx(v), y: base + 18, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ax.decimals))); }),
@@ -3802,11 +3939,13 @@ window.StemLab = window.StemLab || {
       var pictographSvg = function (cats, unit, label, title) {
         var rowH = 34, PH = 40 + cats.length * rowH, symR = 10;
         return h('svg', { role: 'img', 'aria-label': label, viewBox: '0 0 ' + W + ' ' + PH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg } },
+          dpDefs('pic'),
+          dpWell('pic', 120, 26, W - 132, Math.max(20, cats.length * rowH + 6), 6),
           title ? h('text', { x: 12, y: 18, fill: INK.text, style: { fontSize: '13px', fontWeight: 'bold' } }, title) : null,
           cats.map(function (c, k) {
             var y = 34 + k * rowH + rowH / 2, full = Math.floor(Math.max(0, c.value) / unit), part = (Math.max(0, c.value) - full * unit) / unit >= 0.5, icons = [];
-            for (var j = 0; j < Math.min(full, 20); j++) icons.push(h('circle', { key: 'i' + j, cx: 130 + j * (symR * 2 + 4), cy: y, r: symR, fill: INK.fill }));
-            if (part) { var px = 130 + Math.min(full, 20) * (symR * 2 + 4); icons.push(h('path', { key: 'half', d: 'M ' + px + ' ' + (y - symR) + ' A ' + symR + ' ' + symR + ' 0 0 0 ' + px + ' ' + (y + symR) + ' Z', fill: INK.fill })); }
+            for (var j = 0; j < Math.min(full, 20); j++) icons.push(h('circle', { key: 'i' + j, cx: 130 + j * (symR * 2 + 4), cy: y, r: symR, fill: dpRich ? 'url(#dp-dot-pic)' : INK.fill, filter: dpRich ? 'url(#dp-sh-pic)' : undefined }));
+            if (part) { var px = 130 + Math.min(full, 20) * (symR * 2 + 4); icons.push(h('path', { key: 'half', d: 'M ' + px + ' ' + (y - symR) + ' A ' + symR + ' ' + symR + ' 0 0 0 ' + px + ' ' + (y + symR) + ' Z', fill: dpRich ? 'url(#dp-dot-pic)' : INK.fill })); }
             return h('g', { key: 'row' + k }, h('text', { x: 118, y: y + 4, textAnchor: 'end', fill: INK.text, style: { fontSize: '12px' } }, c.label), icons);
           }),
           h('text', { x: 12, y: PH - 8, fill: INK.muted, style: { fontSize: '11px' } }, fillT(t('stem.dataplot.picto_key', 'Key: each ● = {u}; half a symbol = {h}'), { u: unit, h: fmtNum(unit / 2, 2) })));
@@ -3817,9 +3956,11 @@ window.StemLab = window.StemLab || {
         var cy = function (v) { return (CH - B) - (v - ax.min) / (ax.max - ax.min || 1) * (CH - T - B); };
         var slot = (W - L - 16) / cats.length;
         return h('svg', { role: 'img', 'aria-label': label, viewBox: '0 0 ' + W + ' ' + CH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg } },
+          dpDefs('cbar'),
+          dpWell('cbar', L, T, W - L - 16, CH - T - B, 6),
           title ? h('text', { x: L, y: 16, fill: INK.text, style: { fontSize: '13px', fontWeight: 'bold' } }, title) : null,
-          ax.ticks.map(function (v, k) { return h('g', { key: 't' + k }, h('line', { x1: L, y1: cy(v), x2: W - 16, y2: cy(v), stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }), h('text', { x: L - 6, y: cy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ax.decimals))); }),
-          cats.map(function (c, k) { var x = L + slot * k + slot * 0.2; return h('g', { key: 'b' + k }, h('rect', { x: x, y: cy(c.value), width: slot * 0.6, height: Math.max(1, cy(0) - cy(c.value)), fill: INK.fill, rx: 2 }), h('text', { x: x + slot * 0.3, y: CH - B + 16, textAnchor: 'middle', fill: INK.text, style: { fontSize: '12px' } }, c.label)); }),
+          ax.ticks.map(function (v, k) { return h('g', { key: 't' + k }, h('line', { x1: L, y1: cy(v), x2: W - 16, y2: cy(v), stroke: INK.grid, strokeWidth: 0.65, strokeDasharray: '3 3' }), h('text', { x: L - 6, y: cy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ax.decimals))); }),
+          cats.map(function (c, k) { var x = L + slot * k + slot * 0.2; return h('g', { key: 'b' + k }, h('rect', { x: x, y: cy(c.value), width: slot * 0.6, height: Math.max(1, cy(0) - cy(c.value)), fill: dpRich ? 'url(#dp-bar-cbar)' : INK.fill, rx: 3, filter: dpRich ? 'url(#dp-sh-cbar)' : undefined }), h('text', { x: x + slot * 0.3, y: CH - B + 16, textAnchor: 'middle', fill: INK.text, style: { fontSize: '12px' } }, c.label)); }),
           h('line', { x1: L, y1: cy(0), x2: W - 16, y2: cy(0), stroke: INK.axis, strokeWidth: 1.5 }),
           h('line', { x1: L, y1: T, x2: L, y2: cy(0), stroke: INK.axis, strokeWidth: 1.5 }));
       };
@@ -3833,15 +3974,18 @@ window.StemLab = window.StemLab || {
         var sx = function (x) { return L + (x - ax1.min) / (ax1.max - ax1.min || 1) * (MW - L - R); };
         var sy = function (y) { return (MH - B) - (y - ay1.min) / (ay1.max - ay1.min || 1) * (MH - T - B); };
         return h('svg', { role: 'img', 'aria-label': opts.label || t('stem.dataplot.quiz_scatter_label', 'Scatter plot for this question'), viewBox: '0 0 ' + MW + ' ' + MH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg, maxHeight: '320px' }, 'data-dataplot-quiz-chart': true },
-          ay1.ticks.map(function (v, k) { return h('g', { key: 'y' + k }, h('line', { x1: L, y1: sy(v), x2: MW - R, y2: sy(v), stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }), h('text', { x: L - 6, y: sy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ay1.decimals))); }),
+          dpDefs('ms'),
+          dpWell('ms', L, T, MW - L - R, MH - T - B, 6),
+          ay1.ticks.map(function (v, k) { return h('g', { key: 'y' + k }, h('line', { x1: L, y1: sy(v), x2: MW - R, y2: sy(v), stroke: INK.grid, strokeWidth: 0.65, strokeDasharray: '3 3' }), h('text', { x: L - 6, y: sy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ay1.decimals))); }),
           ax1.ticks.map(function (v, k) { return h('text', { key: 'x' + k, x: sx(v), y: MH - B + 15, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ax1.decimals)); }),
           h('line', { x1: L, y1: MH - B, x2: MW - R, y2: MH - B, stroke: INK.axis, strokeWidth: 1.5 }),
           h('line', { x1: L, y1: T, x2: L, y2: MH - B, stroke: INK.axis, strokeWidth: 1.5 }),
-          opts.line ? h('line', { x1: sx(ax1.min), y1: sy(opts.line.m * ax1.min + opts.line.b), x2: sx(ax1.max), y2: sy(opts.line.m * ax1.max + opts.line.b), stroke: INK.line, strokeWidth: 2, strokeDasharray: '7 4' }) : null,
+          opts.line && dpRich ? h('line', { x1: sx(ax1.min), y1: sy(opts.line.m * ax1.min + opts.line.b), x2: sx(ax1.max), y2: sy(opts.line.m * ax1.max + opts.line.b), stroke: INK.line, strokeWidth: 6.5, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round' }) : null,
+          opts.line ? h('line', { x1: sx(ax1.min), y1: sy(opts.line.m * ax1.min + opts.line.b), x2: sx(ax1.max), y2: sy(opts.line.m * ax1.max + opts.line.b), stroke: INK.line, strokeWidth: 2.2, strokeDasharray: '7 4', strokeLinecap: 'round' }) : null,
           pts.map(function (p, i) {
             var hl = opts.highlight === i;
             return h('g', { key: 'p' + i },
-              h('circle', { cx: sx(p.x), cy: sy(p.y), r: hl ? 8 : 5, fill: hl ? INK.bad : INK.fill, stroke: INK.bg, strokeWidth: 1.5 }),
+              h('circle', { cx: sx(p.x), cy: sy(p.y), r: hl ? 8 : 5, fill: dpRich ? (hl ? 'url(#dp-bad-ms)' : 'url(#dp-dot-ms)') : (hl ? INK.bad : INK.fill), stroke: INK.bg, strokeWidth: 1.5, filter: dpRich ? (hl ? 'url(#dp-glow-bad-ms)' : 'url(#dp-sh-ms)') : undefined }),
               opts.numbered ? h('text', { x: sx(p.x), y: sy(p.y) - 9, textAnchor: 'middle', fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, String(i + 1)) : null);
           }));
       };
@@ -3930,15 +4074,59 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'sr-only' }, t('stem.dataplot.click_mode_label', 'Clicking the chart:')),
               h('button', { type: 'button', 'aria-pressed': clickMode === 'add', style: chipStyle, onClick: function () { upd('clickMode', 'add'); }, className: btnCls(clickMode === 'add') }, t('stem.dataplot.click_add', 'Adds a point')),
               h('button', { type: 'button', 'aria-pressed': clickMode === 'remove', style: chipStyle, onClick: function () { upd('clickMode', 'remove'); }, className: btnCls(clickMode === 'remove') }, t('stem.dataplot.click_remove', 'Removes the point clicked')))),
-          n === 0 && chartType !== 'scatter' && chartType !== 'line' && chartType !== 'bar'
-            ? h('p', { className: 'text-sm text-slate-700 py-6 text-center' + onHostInk }, t('stem.dataplot.add_data_first_chart', 'Add data to draw this chart.'))
-            : chartType === 'pie' ? renderPie()
-            : chartType === 'histogram' ? renderHistogram()
-            : chartType === 'boxplot' ? renderBoxPlot()
-            : chartType === 'ogive' ? renderOgive()
-            : chartType === 'dotplot' ? dotPlotSvg(allY, { label: t('stem.dataplot.dotplot_chart_label', 'Dot plot of the current data set'), axisLabel: yName, svgProps: { 'data-dataplot-svg': true, 'aria-describedby': 'dp-chart-desc' } })
-            : chartType === 'pictograph' ? h('div', { 'data-dataplot-svg-wrap': true }, pictographSvg(barOrder.map(function (b) { return { label: fmtNum(b.x), value: b.y }; }), pictoUnit, t('stem.dataplot.picto_chart_label', 'Pictograph of the current data set'), yName))
-            : chartWithCursor(renderXYChart()),
+          h('div', {
+            'data-dataplot-stage': chartType,
+            style: {
+              borderRadius: 14,
+              padding: 8,
+              backgroundColor: INK.bg,
+              border: '1px solid ' + (isContrast ? '#ffff00' : isDarkUI ? '#334155' : '#cbd5e1'),
+              boxShadow: isContrast ? 'none' : (isDarkUI ? '0 6px 20px rgba(2,6,23,0.45)' : '0 4px 16px rgba(15,23,42,0.06)')
+            }
+          },
+            n === 0 && chartType !== 'scatter' && chartType !== 'line' && chartType !== 'bar'
+              ? h('div', { className: 'py-6 px-4 text-center flex flex-col items-center gap-2' },
+                  h('svg', { width: 52, height: 44, viewBox: '0 0 52 44', 'aria-hidden': 'true' },
+                    h('line', { x1: 6, y1: 38, x2: 46, y2: 38, stroke: INK.axis, strokeWidth: 2 }),
+                    h('line', { x1: 6, y1: 6, x2: 6, y2: 38, stroke: INK.axis, strokeWidth: 2 }),
+                    h('rect', { x: 12, y: 24, width: 7, height: 14, fill: INK.grid }),
+                    h('rect', { x: 23, y: 14, width: 7, height: 24, fill: INK.accent }),
+                    h('rect', { x: 34, y: 20, width: 7, height: 18, fill: INK.grid })
+                  ),
+                  h('p', { className: 'text-sm font-semibold text-slate-700' + onHostInk }, t('stem.dataplot.add_data_first_chart', 'Add data to draw this chart.')))
+              : chartType === 'pie' ? renderPie()
+              : chartType === 'histogram' ? renderHistogram()
+              : chartType === 'boxplot' ? renderBoxPlot()
+              : chartType === 'ogive' ? renderOgive()
+              : chartType === 'dotplot' ? dotPlotSvg(allY, { label: t('stem.dataplot.dotplot_chart_label', 'Dot plot of the current data set'), axisLabel: yName, svgProps: { 'data-dataplot-svg': true, 'aria-describedby': 'dp-chart-desc' } })
+              : chartType === 'pictograph' ? h('div', { 'data-dataplot-svg-wrap': true }, pictographSvg(barOrder.map(function (b) { return { label: fmtNum(b.x), value: b.y }; }), pictoUnit, t('stem.dataplot.picto_chart_label', 'Pictograph of the current data set'), yName))
+              : chartWithCursor(renderXYChart()),
+            n > 0 && h('div', {
+              'data-dataplot-stage-key': 'true',
+              style: {
+                display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginTop: 8, paddingTop: 6,
+                borderTop: '1px solid ' + (isContrast ? '#6b7280' : isDarkUI ? '#1e293b' : '#e2e8f0'),
+                fontSize: 11, fontWeight: 700, color: INK.muted
+              }
+            },
+              h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                h('svg', { width: 12, height: 12, viewBox: '0 0 12 12', 'aria-hidden': 'true' },
+                  h('circle', { cx: 6, cy: 6, r: 4, fill: INK.fill, stroke: INK.bg, strokeWidth: 1 })),
+                t('stem.dataplot.key_points', 'Data points')),
+              !isK5 && !modelHidden && regFit.ok && (chartType === 'scatter' || chartType === 'line') && h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                h('svg', { width: 18, height: 12, viewBox: '0 0 18 12', 'aria-hidden': 'true' },
+                  h('line', { x1: 1, y1: 10, x2: 17, y2: 2, stroke: INK.line, strokeWidth: 2.2 })),
+                regName(regressionType)),
+              !isK5 && !modelHidden && showResiduals && (chartType === 'scatter' || chartType === 'line') && h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                h('svg', { width: 14, height: 12, viewBox: '0 0 14 12', 'aria-hidden': 'true' },
+                  h('line', { x1: 7, y1: 1, x2: 7, y2: 11, stroke: isContrast ? '#ff66ff' : dc('#7c3aed'), strokeWidth: 2, strokeDasharray: '2 2' })),
+                t('stem.dataplot.key_residuals', 'Residuals')),
+              !isK5 && showOutliers && outliers.length > 0 && h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                h('svg', { width: 12, height: 12, viewBox: '0 0 12 12', 'aria-hidden': 'true' },
+                  h('circle', { cx: 6, cy: 6, r: 4.5, fill: 'none', stroke: INK.bad, strokeWidth: 2 })),
+                t('stem.dataplot.key_outliers', 'Outliers'))
+            )
+          ),
           // Text alternative: always rendered, read by aria-describedby.
           h('p', { id: 'dp-chart-desc', 'data-dataplot-description': true, className: 'text-xs text-slate-700 leading-relaxed' + onHostInk }, describeChart()),
           // The model sits right under the chart (6-8: the student's line comes first).
@@ -3977,6 +4165,32 @@ window.StemLab = window.StemLab || {
               h('button', { type: 'button', style: chipStyle, onClick: saveChart, disabled: !n, className: 'px-2 py-1 text-xs font-bold bg-teal-50 text-teal-800 border border-teal-600 rounded-lg disabled:opacity-40' }, t('stem.dataplot.save_2', '💾 Save')),
               n > 0 && codapButton(pointsDataset))
           ),
+          // Quick starter dataset chips (below the chart so first-screen tab budget stays calm)
+          !stepMode && datasetLibrary.length > 0 && h('div', {
+            role: 'group',
+            'aria-label': t('stem.dataplot.quick_starters_group', 'Quick starter datasets'),
+            'data-dataplot-starters': 'true',
+            className: 'flex flex-wrap items-center gap-1.5 rounded-xl px-3 py-2',
+            style: {
+              backgroundColor: isContrast ? '#000000' : isDarkUI ? '#1e293b' : '#f8fafc',
+              border: '1px solid ' + (isContrast ? '#ffff00' : isDarkUI ? '#334155' : '#cbd5e1')
+            }
+          },
+            h('span', { className: 'text-xs font-bold uppercase tracking-wide mr-1', style: { color: INK.muted } }, t('stem.dataplot.quick_starters_label', 'Quick starters:')),
+            datasetLibrary.slice(0, 4).map(function (ds) {
+              return h('button', {
+                key: 'qs-' + ds.id,
+                type: 'button',
+                onClick: function () { upd('dsPick', ds.id); loadDataset(ds); },
+                style: {
+                  minHeight: 44, padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                  backgroundColor: isContrast ? '#000000' : isDarkUI ? '#0f172a' : '#ffffff',
+                  color: isContrast ? '#ffff00' : isDarkUI ? '#5eead4' : '#0f766e',
+                  border: '1px solid ' + (isContrast ? '#ffff00' : isDarkUI ? '#0d9488' : '#0f766e')
+                }
+              }, datasetName(ds));
+            })
+          ),
           // Axis labels and colours (moved below the chart: the first screen is the chart)
           h('div', { className: 'grid grid-cols-1 gap-2 sm:grid-cols-3 items-center', 'data-dataplot-settings': true },
             h('input', { type: 'text', value: xLabel, onChange: function(e) { upd('xLabel', e.target.value.slice(0, 60)); }, placeholder: t('stem.dataplot.x_axis_label', 'X-axis label'), 'aria-label': t('stem.dataplot.x_axis_label_2', 'X-axis label'), className: 'min-w-0 w-full px-2 py-1 text-sm border border-teal-600 rounded-lg', style: chipStyle }),
@@ -3993,9 +4207,11 @@ window.StemLab = window.StemLab || {
             return h('div', { className: 'space-y-1' },
               h('div', { className: 'text-xs font-bold text-violet-800 uppercase' + onHostInk }, t('stem.dataplot.residual_plot', '📉 Residual Plot')),
               h('svg', { role: 'img', 'aria-label': fillT(t('stem.dataplot.residual_img_label_v2', 'Residual plot: {above} points above the model, {below} below. A random scatter around zero means the model fits; a curve or fan shape means it does not.'), { above: residuals.filter(function (r) { return r.r > 0; }).length, below: residuals.filter(function (r) { return r.r < 0; }).length }), viewBox: '0 0 ' + W + ' ' + rH, className: 'w-full rounded-lg border border-violet-200', style: { maxHeight: '150px', background: INK.bg } },
+                dpDefs('res1'),
+                dpWell('res1', PL, 8, W - PL - PR, rH - 18, 6),
                 rAx.ticks.map(function (v, k) { return h('text', { key: 'rt' + k, x: PL - 6, y: rToSY(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '10px' } }, fmtFixed(v, rAx.decimals)); }),
-                h('line', { x1: PL, y1: rToSY(0), x2: W-PR, y2: rToSY(0), stroke: INK.axis, strokeWidth: 1, strokeDasharray: '4 4' }),
-                residuals.map(function(r, i) { return h('circle', { key: 'rp'+i, cx: toSX(r.x), cy: rToSY(r.r), r: 4, fill: r.r > 0 ? (isContrast ? '#80ff80' : dc('#047857')) : INK.bad, stroke: INK.bg, strokeWidth: 1 }); })),
+                h('line', { x1: PL, y1: rToSY(0), x2: W-PR, y2: rToSY(0), stroke: INK.axis, strokeWidth: 1.4, strokeDasharray: '4 4' }),
+                residuals.map(function(r, i) { return h('circle', { key: 'rp'+i, cx: toSX(r.x), cy: rToSY(r.r), r: 4.2, fill: dpRich ? (r.r > 0 ? 'url(#dp-pos-res1)' : 'url(#dp-bad-res1)') : (r.r > 0 ? (isContrast ? '#80ff80' : dc('#047857')) : INK.bad), stroke: INK.bg, strokeWidth: 1.1, filter: dpRich ? 'url(#dp-sh-res1)' : undefined }); })),
               regressionType === 'linear' && n >= 6 && (function () {
                 var pat = residualPattern(visiblePoints);
                 return h('p', { className: 'text-xs text-slate-800' + onHostInk, 'data-dataplot-resid-reading': pat.kind },
@@ -4449,11 +4665,15 @@ window.StemLab = window.StemLab || {
         var CW = W, CH = 250, L = 96, R = 16;
         var cx = function (v) { return L + (v - ax.min) / (ax.max - ax.min || 1) * (CW - L - R); };
         var colA = isContrast ? '#ffff00' : dc('#1d4ed8'), colB = isContrast ? '#00ffff' : dc('#b45309');
-        var dotsRow = function (vals, y0, col) { var seen = {}; return vals.map(function (v, i) { var k = fmtNum(v, 3); seen[k] = (seen[k] || 0) + 1; return h('circle', { key: 'd' + i, cx: cx(v), cy: y0 - (seen[k] - 1) * 9, r: 4, fill: col, stroke: INK.bg, strokeWidth: 1 }); }); };
+        var dotsRow = function (vals, y0, col, gradId) { var seen = {}; return vals.map(function (v, i) { var k = fmtNum(v, 3); seen[k] = (seen[k] || 0) + 1; return h('circle', { key: 'd' + i, cx: cx(v), cy: y0 - (seen[k] - 1) * 9, r: 4.2, fill: dpRich ? 'url(#' + gradId + ')' : col, stroke: INK.bg, strokeWidth: 1 }); }); };
         var boxRow = function (s, y0, col) {
-          return h('g', null, h('line', { x1: cx(s.min), y1: y0, x2: cx(s.max), y2: y0, stroke: col, strokeWidth: 1.5 }),
-            h('rect', { x: cx(s.q1), y: y0 - 10, width: Math.max(2, cx(s.q3) - cx(s.q1)), height: 20, fill: col, fillOpacity: 0.2, stroke: col, strokeWidth: 2 }),
-            h('line', { x1: cx(s.median), y1: y0 - 10, x2: cx(s.median), y2: y0 + 10, stroke: col, strokeWidth: 3 }));
+          return h('g', null,
+            h('line', { x1: cx(s.min), y1: y0, x2: cx(s.max), y2: y0, stroke: col, strokeWidth: 1.8, strokeLinecap: 'round' }),
+            h('line', { x1: cx(s.min), y1: y0 - 6, x2: cx(s.min), y2: y0 + 6, stroke: col, strokeWidth: 1.8, strokeLinecap: 'round' }),
+            h('line', { x1: cx(s.max), y1: y0 - 6, x2: cx(s.max), y2: y0 + 6, stroke: col, strokeWidth: 1.8, strokeLinecap: 'round' }),
+            h('rect', { x: cx(s.q1), y: y0 - 10, width: Math.max(2, cx(s.q3) - cx(s.q1)), height: 20, fill: col, fillOpacity: dpRich ? 0.26 : 0.2, stroke: col, strokeWidth: 2, rx: 3, filter: dpRich ? 'url(#dp-sh-cmp)' : undefined }),
+            dpRich && h('line', { x1: cx(s.median), y1: y0 - 10, x2: cx(s.median), y2: y0 + 10, stroke: col, strokeWidth: 6, strokeOpacity: 0.22, strokeLinecap: 'round' }),
+            h('line', { x1: cx(s.median), y1: y0 - 10, x2: cx(s.median), y2: y0 + 10, stroke: col, strokeWidth: 3.2, strokeLinecap: 'round' }));
         };
         var verdictCentre = ok ? compareVerdict(sA.median, sB.median, 0.05 * ((ax.max - ax.min) || 1)) : '';
         var verdictSpread = ok ? compareVerdict(sA.iqr, sB.iqr, 0.15 * Math.max(sA.iqr, sB.iqr, 1e-9)) : '';
@@ -4496,10 +4716,12 @@ window.StemLab = window.StemLab || {
           : h('div', { className: 'space-y-3' },
             h('h4', { className: 'text-sm font-bold text-slate-900' + onHostInk }, cmpText.title),
             h('svg', { role: 'img', 'aria-label': fillT(t('stem.dataplot.cmp_svg_label', 'Parallel dot plots and box plots of {a} (top) and {b} (bottom) on one shared scale.'), { a: labelA, b: labelB }), viewBox: '0 0 ' + CW + ' ' + CH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg }, 'data-dataplot-compare-svg': true },
+              dpDefs('cmp'),
+              dpWell('cmp', L, 12, CW - L - R, 200, 6),
               h('text', { x: L - 8, y: 64, textAnchor: 'end', fill: colA, style: { fontSize: '12px', fontWeight: 'bold' } }, labelA),
               h('text', { x: L - 8, y: 154, textAnchor: 'end', fill: colB, style: { fontSize: '12px', fontWeight: 'bold' } }, labelB),
-              dotsRow(groupA, 70, colA), boxRow(sA, 94, colA),
-              dotsRow(groupB, 160, colB), boxRow(sB, 184, colB),
+              dotsRow(groupA, 70, colA, 'dp-cmpa-cmp'), boxRow(sA, 94, colA),
+              dotsRow(groupB, 160, colB, 'dp-cmpb-cmp'), boxRow(sB, 184, colB),
               h('line', { x1: L, y1: 214, x2: CW - R, y2: 214, stroke: INK.axis, strokeWidth: 1.5 }),
               ax.ticks.map(function (v, k) { return h('g', { key: 't' + k }, h('line', { x1: cx(v), y1: 214, x2: cx(v), y2: 219, stroke: INK.axis }), h('text', { x: cx(v), y: 233, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ax.decimals))); })),
             h('section', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-400 text-slate-900', 'data-dataplot-cmp-predict': true },
@@ -4620,13 +4842,16 @@ window.StemLab = window.StemLab || {
           : t('stem.dataplot.box_quiz_label', 'Box plot of {title}: minimum {min}, Q1 {q1}, median {med}, Q3 {q3}, maximum {max}.'), { title: title, min: fmtNum(s.min, 2), q1: fmtNum(s.q1, 2), med: fmtNum(s.med, 2), q3: fmtNum(s.q3, 2), max: fmtNum(s.max, 2) });
         return h('div', null, h('p', { className: 'text-xs font-bold text-slate-900 mb-1' }, title),
           h('svg', { role: 'img', 'aria-label': desc, viewBox: '0 0 ' + W + ' ' + BH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg, maxHeight: '190px' }, 'data-dataplot-box-quiz': true },
+            dpDefs('bq'),
+            dpWell('bq', L, 38, W - L - R, 78, 6),
             lab.map(function (l, i) { return h('text', { key: l[0], x: bx(l[1]), y: i % 2 ? 34 : 16, textAnchor: i === 0 ? 'start' : i === 4 ? 'end' : 'middle', fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, fillT(l[2], { v: fmtNum(l[1], 2) })); }),
-            h('line', { x1: bx(s.min), y1: 76, x2: bx(s.q1), y2: 76, stroke: INK.axis, strokeWidth: 2 }),
-            h('line', { x1: bx(s.q3), y1: 76, x2: bx(s.max), y2: 76, stroke: INK.axis, strokeWidth: 2 }),
-            h('line', { x1: bx(s.min), y1: 62, x2: bx(s.min), y2: 90, stroke: INK.axis, strokeWidth: 2 }),
-            h('line', { x1: bx(s.max), y1: 62, x2: bx(s.max), y2: 90, stroke: INK.axis, strokeWidth: 2 }),
-            h('rect', { x: bx(s.q1), y: 52, width: Math.max(2, bx(s.q3) - bx(s.q1)), height: 48, fill: INK.fill, fillOpacity: 0.22, stroke: INK.fill, strokeWidth: 2 }),
-            h('line', { x1: bx(s.med), y1: 52, x2: bx(s.med), y2: 100, stroke: INK.bad, strokeWidth: 3 }),
+            h('line', { x1: bx(s.min), y1: 76, x2: bx(s.q1), y2: 76, stroke: INK.axis, strokeWidth: 2, strokeLinecap: 'round' }),
+            h('line', { x1: bx(s.q3), y1: 76, x2: bx(s.max), y2: 76, stroke: INK.axis, strokeWidth: 2, strokeLinecap: 'round' }),
+            h('line', { x1: bx(s.min), y1: 62, x2: bx(s.min), y2: 90, stroke: INK.axis, strokeWidth: 2, strokeLinecap: 'round' }),
+            h('line', { x1: bx(s.max), y1: 62, x2: bx(s.max), y2: 90, stroke: INK.axis, strokeWidth: 2, strokeLinecap: 'round' }),
+            h('rect', { x: bx(s.q1), y: 52, width: Math.max(2, bx(s.q3) - bx(s.q1)), height: 48, fill: dpRich ? 'url(#dp-box-bq)' : INK.fill, fillOpacity: dpRich ? 1 : 0.22, stroke: INK.fill, strokeWidth: 2, rx: 4, filter: dpRich ? 'url(#dp-sh-bq)' : undefined }),
+            dpRich && h('line', { x1: bx(s.med), y1: 52, x2: bx(s.med), y2: 100, stroke: INK.bad, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.25 : 0.18, strokeLinecap: 'round' }),
+            h('line', { x1: bx(s.med), y1: 52, x2: bx(s.med), y2: 100, stroke: INK.bad, strokeWidth: 3.2, strokeLinecap: 'round' }),
             h('line', { x1: L, y1: 118, x2: W - R, y2: 118, stroke: INK.axis, strokeWidth: 1.5 }),
             ax.ticks.map(function (v, k) { return h('g', { key: 't' + k }, h('line', { x1: bx(v), y1: 118, x2: bx(v), y2: 123, stroke: INK.axis }), h('text', { x: bx(v), y: 137, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ax.decimals))); })));
       };
@@ -4917,7 +5142,7 @@ window.StemLab = window.StemLab || {
         var onMove = function (e) { var which = fitDragRef.current; if (!which) return; var svg = fitSvgRef.current; if (!svg) return; var rect = svg.getBoundingClientRect(); var scale = Math.min(rect.width / W, rect.height / FH) || 1; var offY = (rect.height - FH * scale) / 2; fitMoveEnd(which, fInvY((e.clientY - rect.top - offY) / scale)); };
         var endDrag = function () { if (!fitDragRef.current) return; fitDragRef.current = null; say(fillT(t('stem.dataplot.sr_fit_line_now', 'Your line: {eq}.'), { eq: lineSentence(userLine) })); };
         var handle = function (which, hx, hy) {
-          return h('circle', { key: 'h' + which, cx: fsx(hx), cy: fsy(hy), r: 11, fill: col, stroke: INK.bg, strokeWidth: 2, style: { cursor: 'ns-resize', touchAction: 'none' }, 'data-dataplot-fit-handle': which,
+          return h('circle', { key: 'h' + which, cx: fsx(hx), cy: fsy(hy), r: 11, fill: col, stroke: INK.bg, strokeWidth: 2, filter: dpRich ? 'url(#dp-sh-fit)' : undefined, style: { cursor: 'ns-resize', touchAction: 'none' }, 'data-dataplot-fit-handle': which,
             onPointerDown: function (e) { fitDragRef.current = which; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); } });
         };
         var slider = function (which, hx, val, label) {
@@ -4934,8 +5159,9 @@ window.StemLab = window.StemLab || {
           h('svg', { ref: fitSvgRef, role: 'img', 'aria-label': fillT(t('stem.dataplot.fit_svg_label', 'Scatter plot of {y} against {x}, {n} points, with your line {eq}.'), { y: fitAx[1], x: fitAx[0], n: fitSet.pts.length, eq: lineSentence(userLine) }), 'aria-describedby': 'dp-fit-desc',
             viewBox: '0 0 ' + W + ' ' + FH, className: 'w-full rounded-xl border border-teal-200', style: { maxHeight: '360px', background: INK.bg, touchAction: 'none' }, 'data-dataplot-fit-svg': true,
             onPointerMove: onMove, onPointerUp: endDrag, onPointerCancel: endDrag, onPointerLeave: endDrag },
-            h('defs', null, h('clipPath', { id: 'dp-fit-clip' }, h('rect', { x: PL, y: PT, width: W - PL - PR, height: FH - PT - PB }))),
-            fAxY.ticks.map(function (v, k) { return h('g', { key: 'y' + k }, h('line', { x1: PL, y1: fsy(v), x2: W - PR, y2: fsy(v), stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }), h('text', { x: PL - 6, y: fsy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, fAxY.decimals))); }),
+            dpDefs('fit', h('clipPath', { id: 'dp-fit-clip' }, h('rect', { x: PL, y: PT, width: W - PL - PR, height: FH - PT - PB }))),
+            dpWell('fit', PL, PT, W - PL - PR, FH - PT - PB, 6),
+            fAxY.ticks.map(function (v, k) { return h('g', { key: 'y' + k }, h('line', { x1: PL, y1: fsy(v), x2: W - PR, y2: fsy(v), stroke: INK.grid, strokeWidth: 0.65, strokeDasharray: '3 3' }), h('text', { x: PL - 6, y: fsy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, fAxY.decimals))); }),
             fAxX.ticks.map(function (v, k) { return h('text', { key: 'x' + k, x: fsx(v), y: FH - PB + 15, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, fAxX.decimals)); }),
             h('line', { x1: PL, y1: FH - PB, x2: W - PR, y2: FH - PB, stroke: INK.axis, strokeWidth: 1.5 }),
             h('line', { x1: PL, y1: PT, x2: PL, y2: FH - PB, stroke: INK.axis, strokeWidth: 1.5 }),
@@ -4944,9 +5170,11 @@ window.StemLab = window.StemLab || {
             showLsSq ? fitSquareEls(fitEval.resLs, colL, 'sl') : null,
             showMineSq ? fitSquareEls(fitEval.resUser, col, 'su') : null,
             fitSet.pts.map(function (p, i) { return h('line', { key: 'rs' + i, x1: fsx(p.x), y1: fsy(p.y), x2: fsx(p.x), y2: fsy(userLine.m * p.x + userLine.b), stroke: col, strokeWidth: 1, strokeDasharray: '2 2', clipPath: 'url(#dp-fit-clip)' }); }),
-            fitRevealed && h('line', { x1: fsx(fAxX.min), y1: fsy(ls.m * fAxX.min + ls.b), x2: fsx(fAxX.max), y2: fsy(ls.m * fAxX.max + ls.b), stroke: colL, strokeWidth: 2.5, strokeDasharray: '8 4', clipPath: 'url(#dp-fit-clip)', 'data-dataplot-lsrl': true }),
-            h('line', { x1: fsx(fAxX.min), y1: fsy(userLine.m * fAxX.min + userLine.b), x2: fsx(fAxX.max), y2: fsy(userLine.m * fAxX.max + userLine.b), stroke: col, strokeWidth: 3, clipPath: 'url(#dp-fit-clip)', 'data-dataplot-user-line': true }),
-            fitSet.pts.map(function (p, i) { return h('circle', { key: 'p' + i, cx: fsx(p.x), cy: fsy(p.y), r: 5, fill: INK.fill, stroke: INK.bg, strokeWidth: 1.5 }); }),
+            fitRevealed && dpRich && h('line', { x1: fsx(fAxX.min), y1: fsy(ls.m * fAxX.min + ls.b), x2: fsx(fAxX.max), y2: fsy(ls.m * fAxX.max + ls.b), stroke: colL, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', clipPath: 'url(#dp-fit-clip)' }),
+            fitRevealed && h('line', { x1: fsx(fAxX.min), y1: fsy(ls.m * fAxX.min + ls.b), x2: fsx(fAxX.max), y2: fsy(ls.m * fAxX.max + ls.b), stroke: colL, strokeWidth: 2.5, strokeDasharray: '8 4', strokeLinecap: 'round', clipPath: 'url(#dp-fit-clip)', 'data-dataplot-lsrl': true }),
+            dpRich && h('line', { x1: fsx(fAxX.min), y1: fsy(userLine.m * fAxX.min + userLine.b), x2: fsx(fAxX.max), y2: fsy(userLine.m * fAxX.max + userLine.b), stroke: col, strokeWidth: 8, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', clipPath: 'url(#dp-fit-clip)' }),
+            h('line', { x1: fsx(fAxX.min), y1: fsy(userLine.m * fAxX.min + userLine.b), x2: fsx(fAxX.max), y2: fsy(userLine.m * fAxX.max + userLine.b), stroke: col, strokeWidth: 3, strokeLinecap: 'round', clipPath: 'url(#dp-fit-clip)', 'data-dataplot-user-line': true }),
+            fitSet.pts.map(function (p, i) { return h('circle', { key: 'p' + i, cx: fsx(p.x), cy: fsy(p.y), r: 5, fill: dpRich ? 'url(#dp-dot-fit)' : INK.fill, stroke: INK.bg, strokeWidth: 1.5, filter: dpRich ? 'url(#dp-sh-fit)' : undefined }); }),
             handle('yA', hxA, yA), handle('yB', hxB, yB)),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
             slider('yA', hxA, yA, t('stem.dataplot.fit_left_end', 'Left end of my line (at x = {x}): {y}')),
@@ -5000,12 +5228,14 @@ window.StemLab = window.StemLab || {
         var sx = function (x) { return PL + (x - ax1.min) / (ax1.max - ax1.min || 1) * (W - PL - PR); };
         var sy = function (r) { return (RH - 30) - (r - ar.min) / (ar.max - ar.min || 1) * (RH - 44); };
         return h('svg', { role: 'img', 'aria-label': label, viewBox: '0 0 ' + W + ' ' + RH, className: 'w-full rounded-xl border border-violet-300', style: { background: INK.bg, maxHeight: '220px' }, 'data-dataplot-resid-svg': true },
+          dpDefs('res2'),
+          dpWell('res2', PL, 10, W - PL - PR, RH - 40, 6),
           ar.ticks.map(function (v, k) { return h('text', { key: 'r' + k, x: PL - 6, y: sy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '10px' } }, fmtFixed(v, ar.decimals)); }),
           ax1.ticks.map(function (v, k) { return h('text', { key: 'x' + k, x: sx(v), y: RH - 14, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '10px' } }, fmtFixed(v, ax1.decimals)); }),
           h('line', { x1: PL, y1: sy(0), x2: W - PR, y2: sy(0), stroke: INK.axis, strokeWidth: 1.5, strokeDasharray: '5 4' }),
           h('line', { x1: PL, y1: 10, x2: PL, y2: RH - 30, stroke: INK.axis, strokeWidth: 1 }),
           h('text', { x: 12, y: (RH - 20) / 2, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '11px', fontWeight: 'bold' }, transform: 'rotate(-90,12,' + ((RH - 20) / 2) + ')' }, t('stem.dataplot.residual_word', 'Residual')),
-          res.map(function (r, i) { return h('circle', { key: 'c' + i, cx: sx(r.x), cy: sy(r.r), r: 4.5, fill: r.r >= 0 ? (isContrast ? '#80ff80' : dc('#047857')) : INK.bad, stroke: INK.bg, strokeWidth: 1 }); }));
+          res.map(function (r, i) { return h('circle', { key: 'c' + i, cx: sx(r.x), cy: sy(r.r), r: 4.5, fill: dpRich ? (r.r >= 0 ? 'url(#dp-pos-res2)' : 'url(#dp-bad-res2)') : (r.r >= 0 ? (isContrast ? '#80ff80' : dc('#047857')) : INK.bad), stroke: INK.bg, strokeWidth: 1, filter: dpRich ? 'url(#dp-sh-res2)' : undefined }); }));
       };
       var residDescribe = function (pts, line) {
         var res = pts.slice().sort(function (a, b) { return a.x - b.x; }).map(function (p) { return p.y - (line.m * p.x + line.b); });
@@ -5317,9 +5547,12 @@ window.StemLab = window.StemLab || {
         var mx = Math.max.apply(null, bins.concat([1])), bw = (W - L - R) / nb;
         var hx = function (v) { return L + (v - spAx.min) / (spAx.max - spAx.min || 1) * (W - L - R); };
         return h('svg', { role: 'img', 'aria-label': fillT(t('stem.dataplot.pop_svg_label', 'Histogram of the whole population: {n} values of {what}, mean μ = {mu}, SD σ = {sd}, shape: {shape}.'), { n: spPopVals.length, what: spText.title, mu: fmtNum(spMu, 2), sd: fmtNum(spSigma, 2), shape: shapeName(shapeOf(spPopVals).shape) }), viewBox: '0 0 ' + W + ' ' + HH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg, maxHeight: '180px' }, 'data-dataplot-pop-svg': true },
-          bins.map(function (c, i) { var bh = c / mx * (HH - B - 14); return h('rect', { key: i, x: L + i * bw + 0.5, y: HH - B - bh, width: Math.max(1, bw - 1), height: bh, fill: INK.fill, fillOpacity: 0.85 }); }),
+          dpDefs('pop'),
+          dpWell('pop', L, 8, W - L - R, HH - B - 8, 6),
+          bins.map(function (c, i) { var bh = c / mx * (HH - B - 14); return h('rect', { key: i, x: L + i * bw + 0.5, y: HH - B - bh, width: Math.max(1, bw - 1), height: bh, fill: dpRich ? 'url(#dp-bar-pop)' : INK.fill, fillOpacity: dpRich ? 1 : 0.85, rx: 1.5 }); }),
           h('line', { x1: L, y1: HH - B, x2: W - R, y2: HH - B, stroke: INK.axis, strokeWidth: 1.5 }),
           spAx.ticks.map(function (v, k) { return h('text', { key: 't' + k, x: hx(v), y: HH - B + 15, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, spAx.decimals)); }),
+          dpRich && h('line', { x1: hx(spMu), y1: 8, x2: hx(spMu), y2: HH - B, stroke: INK.line, strokeWidth: 6, strokeOpacity: isDarkUI ? 0.24 : 0.16 }),
           h('line', { x1: hx(spMu), y1: 8, x2: hx(spMu), y2: HH - B, stroke: INK.line, strokeWidth: 2, strokeDasharray: '5 3' }),
           h('text', { x: hx(spMu) + 4, y: 16, fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, 'μ = ' + fmtNum(spMu, 2)));
       };
@@ -5725,14 +5958,34 @@ window.StemLab = window.StemLab || {
               fillT(t('stem.dataplot.inquiry_badge', '{label} · population r = {pop}, this sample r = {obs}'), { label: sm.label, pop: fmtFixed(popR, 2), obs: fmtFixed(observedR, 2) })),
             h('p', { className: 'text-xs mb-1' }, sm.desc),
             attenuated && h('p', { className: 'text-xs mb-2', 'data-dataplot-attenuation': true }, fillT(t('stem.dataplot.inquiry_attenuation', 'Noise changes the population itself: with noise SD {sd}, a relationship set at r = {set} becomes r = {pop} in the whole population. More noise always weakens r; at noise SD 1 the population r equals the slider.'), { sd: fmtFixed(iq.noiseSD, 1), set: fmtFixed(iq.trueR, 2), pop: fmtFixed(popR, 2) })),
-            h('svg', { role: 'img', 'aria-label': fillT(t('stem.dataplot.sampling_img_label_v2', 'Scatter plot of this sample: {n} points, {k} of them outliers. Sample r = {obs}.'), { n: nn, k: iq.outlierCount, obs: fmtFixed(observedR, 2) }), width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
-              h('line', { x1: 20, y1: ipy(0), x2: 300, y2: ipy(0), stroke: '#475569' }),
-              h('line', { x1: ipx(0), y1: 10, x2: ipx(0), y2: 190, stroke: '#475569' }),
+            h('svg', { role: 'img', 'aria-label': fillT(t('stem.dataplot.sampling_img_label_v2', 'Scatter plot of this sample: {n} points, {k} of them outliers. Sample r = {obs}.'), { n: nn, k: iq.outlierCount, obs: fmtFixed(observedR, 2) }), width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 8, marginBottom: 8 } },
+              dpRich && h('defs', null,
+                h('radialGradient', { id: 'dp-iq-well', cx: '50%', cy: '45%', r: '70%' },
+                  h('stop', { offset: '0%', stopColor: '#1e293b', stopOpacity: 0.45 }),
+                  h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.75 })
+                ),
+                h('radialGradient', { id: 'dp-iq-dot', cx: '32%', cy: '28%', r: '70%' },
+                  h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.92 }),
+                  h('stop', { offset: '42%', stopColor: sm.color, stopOpacity: 0.96 }),
+                  h('stop', { offset: '100%', stopColor: sm.color, stopOpacity: 1 })
+                ),
+                h('radialGradient', { id: 'dp-iq-out', cx: '32%', cy: '28%', r: '70%' },
+                  h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.95 }),
+                  h('stop', { offset: '40%', stopColor: '#f87171', stopOpacity: 0.96 }),
+                  h('stop', { offset: '100%', stopColor: '#dc2626', stopOpacity: 1 })
+                ),
+                h('filter', { id: 'dp-iq-glow', x: '-60%', y: '-60%', width: '220%', height: '220%' },
+                  h('feDropShadow', { dx: 0, dy: 0, stdDeviation: 2.2, floodColor: '#f87171', floodOpacity: 0.85 })
+                )
+              ),
+              dpRich && h('path', { 'aria-hidden': 'true', d: dpWellPath(18, 10, 284, 174, 6), fill: 'url(#dp-iq-well)', stroke: '#334155', strokeWidth: 0.9 }),
+              h('line', { x1: 20, y1: ipy(0), x2: 300, y2: ipy(0), stroke: '#475569', strokeDasharray: dpRich ? '4 3' : undefined }),
+              h('line', { x1: ipx(0), y1: 10, x2: ipx(0), y2: 190, stroke: '#475569', strokeDasharray: dpRich ? '4 3' : undefined }),
               xs.map(function(xv, k) {
                 var isOutlier = k >= iq.n;
-                return h('circle', { key: 'p' + k, cx: ipx(xv), cy: ipy(ys[k]), r: isOutlier ? 4 : 2.5, fill: isOutlier ? '#f87171' : sm.color, opacity: 0.85 });
+                return h('circle', { key: 'p' + k, cx: ipx(xv), cy: ipy(ys[k]), r: isOutlier ? 4.2 : 2.8, fill: dpRich ? (isOutlier ? 'url(#dp-iq-out)' : 'url(#dp-iq-dot)') : (isOutlier ? '#f87171' : sm.color), opacity: dpRich ? 0.95 : 0.85, filter: dpRich && isOutlier ? 'url(#dp-iq-glow)' : undefined });
               }),
-              h('text', { x: 160, y: 197, fill: '#cbd5e1', fontSize: 9, textAnchor: 'middle' }, fillT(t('stem.dataplot.inquiry_caption', 'n = {n} points ({k} outliers in red)'), { n: nn, k: iq.outlierCount }))),
+              h('text', { x: 160, y: 196, fill: '#cbd5e1', fontSize: 10, textAnchor: 'middle' }, fillT(t('stem.dataplot.inquiry_caption', 'n = {n} points ({k} outliers in red)'), { n: nn, k: iq.outlierCount }))),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2' },
               [['trueR', t('stem.dataplot.true_population_r_v2', 'Relationship (population r at noise SD 1)'), -1, 1, 0.05, fmtFixed(iq.trueR, 2)], ['n', t('stem.dataplot.sample_size_n', 'Sample size n'), 5, 200, 1, String(iq.n)],
                ['noiseSD', t('stem.dataplot.noise_sd', 'Noise SD'), 0, 3, 0.1, fmtFixed(iq.noiseSD, 1)], ['outlierCount', t('stem.dataplot.outliers_2', 'Outliers'), 0, 10, 1, String(iq.outlierCount)]].map(function (s) {
@@ -5983,19 +6236,45 @@ window.StemLab = window.StemLab || {
         : t('stem.dataplot.tip_default', '💡 Try the histogram with the normal curve, or the Statistics tab to predict the shape first.');
 
       return h('div', { className: 'max-w-4xl mx-auto space-y-3', onKeyDown: handleKey, 'data-dataplot-level': level, 'data-dataplot-root': true, 'data-dp-theme': isDarkUI ? 'dark' : undefined,
-          style: isDarkUI ? { background: '#0f172a', color: '#e2e8f0', colorScheme: 'dark', borderRadius: 12, padding: 10 } : undefined },
+          style: isContrast ? { backgroundColor: '#000000', color: '#ffffff', borderRadius: 14, padding: 10 } : isDarkUI ? { background: '#0f172a', color: '#e2e8f0', colorScheme: 'dark', borderRadius: 14, padding: 10 } : undefined },
         isDarkUI && h('style', null, dataPlotDarkCss()),
-        // ── Header ──
-        h('div', { className: 'flex items-center gap-3 flex-wrap' },
-          !embedded && typeof setStemLabTool === 'function' && h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', style: { minHeight: 44, minWidth: 44 }, 'aria-label': t('stem.dataplot.back', 'Back') }, ArrowLeft ? h(ArrowLeft, { size: 18, className: 'text-slate-700' }) : '←'),
-          h('h3', { className: 'text-lg font-bold text-slate-800' + onHostInk }, embedded ? t('stem.dataplot.regression_mode', '📈 Regression & Residuals') : t('stem.dataplot.data_plotter', '📊 Data Plotter')),
-          h('span', { className: 'text-xs text-slate-700' + onHostInk }, fillT(stepMode ? t('stem.dataplot.n_points_step', '{n} points ({k} of {m} shown)') : t('stem.dataplot.n_points', '{n} points'), { n: n, k: stepIdx, m: points.length })),
-          n >= 2 && !hideHeaderR2 && h('span', { className: 'text-xs font-bold ' + (regR2 > 0.8 ? 'text-emerald-800' : regR2 > 0.5 ? 'text-amber-800' : 'text-red-800') + onHostInk, 'data-dataplot-header-r2': true }, 'R² = ' + fmtFixed(regR2, 3)),
-          h('div', { className: 'ml-auto flex gap-1.5 flex-wrap' },
-            h('button', { type: 'button', style: chipStyle, 'aria-expanded': showBadges, 'aria-label': fillT(t('stem.dataplot.badges_button', 'Badges: {k} of {n} earned'), { k: Object.keys(earnedBadges).length, n: badgeDefs.length }), onClick: function() { upd('showBadges', !showBadges); }, className: 'text-xs font-bold px-2 py-0.5 rounded-full border ' + (showBadges ? 'bg-amber-100 border-amber-700 text-amber-900' : 'bg-slate-100 border-slate-400 text-slate-800') }, '🏅 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
-            h('button', { type: 'button', style: chipStyle, 'aria-expanded': showShortcuts, 'aria-label': showShortcuts ? t('stem.dataplot.hide_keyboard_shortcuts', 'Hide keyboard shortcuts') : t('stem.dataplot.show_keyboard_shortcuts', 'Show keyboard shortcuts'), onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-xs font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-700 text-sky-900' : 'bg-slate-100 border-slate-400 text-slate-800') }, '⌨️'),
-            h('button', { type: 'button', style: chipStyle, 'aria-pressed': soundEnabled, 'aria-label': t('stem.dataplot.sound_effects', 'Sound effects'), onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-2 rounded-full border border-slate-400 bg-slate-100' }, soundEnabled ? '🔊' : '🔇'),
-            typeof setToolSnapshots === 'function' && h('button', { type: 'button', style: chipStyle, 'aria-label': t('stem.dataplot.take_snapshot', 'Take a snapshot of this data'), onClick: function() { setToolSnapshots(function(prev) { return (prev || []).concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: r2Known ? fillT(t('stem.dataplot.snapshot_label', '{n} points, R² {r}'), { n: n, r: fmtFixed(regR2Shown, 2) }) : fillT(t('stem.dataplot.n_points', '{n} points'), { n: n }), data: { points: points.slice() }, timestamp: Date.now() }]); }); say(t('stem.dataplot.sr_snapshot', 'Snapshot saved.')); }, className: 'text-xs font-bold bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5' }, '📸'))
+        // ── Hero Workbench Header ──
+        h('section', {
+          'data-dataplot-hero': 'true',
+          className: 'rounded-2xl p-3.5 sm:p-4 shadow-md',
+          style: isContrast
+            ? { backgroundColor: '#000000', color: '#ffffff', border: '2px solid #ffff00' }
+            : { backgroundColor: '#0f2942', backgroundImage: 'linear-gradient(135deg, #0b192c 0%, #114155 55%, #0f4c5c 100%)', color: '#ffffff', border: '1px solid rgba(94, 234, 212, 0.32)' }
+        },
+          h('div', { className: 'flex items-center gap-3 flex-wrap' },
+            !embedded && typeof setStemLabTool === 'function' && h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'p-2 rounded-lg transition', style: { minHeight: 44, minWidth: 44, backgroundColor: isContrast ? '#000000' : 'rgba(255,255,255,0.12)', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(255,255,255,0.28)'), color: '#ffffff' }, 'aria-label': t('stem.dataplot.back', 'Back') }, ArrowLeft ? h(ArrowLeft, { size: 18 }) : '←'),
+            h('svg', { width: 42, height: 42, viewBox: '0 0 44 44', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+              h('rect', { x: 2, y: 2, width: 40, height: 40, rx: 10, fill: isContrast ? '#000000' : '#0b2538', stroke: isContrast ? '#ffff00' : '#5eead4', strokeWidth: 1.5 }),
+              h('line', { x1: 9, y1: 35, x2: 37, y2: 35, stroke: isContrast ? '#ffffff' : '#94a3b8', strokeWidth: 1.5 }),
+              h('line', { x1: 9, y1: 9, x2: 9, y2: 35, stroke: isContrast ? '#ffffff' : '#94a3b8', strokeWidth: 1.5 }),
+              h('line', { x1: 11, y1: 31, x2: 35, y2: 12, stroke: isContrast ? '#ffff00' : '#2dd4bf', strokeWidth: 2 }),
+              h('circle', { cx: 15, cy: 29, r: 2.6, fill: isContrast ? '#00ffff' : '#38bdf8' }),
+              h('circle', { cx: 22, cy: 21, r: 2.6, fill: isContrast ? '#00ffff' : '#38bdf8' }),
+              h('circle', { cx: 29, cy: 19, r: 2.6, fill: isContrast ? '#00ffff' : '#38bdf8' }),
+              h('circle', { cx: 34, cy: 12, r: 2.8, fill: isContrast ? '#ffff00' : '#fbbf24' })
+            ),
+            h('div', { className: 'min-w-0 flex-1' },
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('span', { className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-black uppercase tracking-wider', style: { backgroundColor: isContrast ? '#000000' : '#0d4a57', color: isContrast ? '#ffff00' : '#99f6e4', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(94,234,212,0.4)') } }, t('stem.dataplot.subject_badge', 'Statistics · Data Lab')),
+                h('span', { className: 'rounded-full px-2 py-0.5 text-[0.625rem] font-bold', style: { backgroundColor: isContrast ? '#000000' : '#0f172a', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255,255,255,0.24)') } }, chartNameText(t, chartType))
+              ),
+              h('div', { className: 'flex items-center gap-2.5 flex-wrap mt-1' },
+                h('h3', { className: 'text-lg font-black tracking-tight', style: { color: '#ffffff' } }, embedded ? t('stem.dataplot.regression_mode', '📈 Regression & Residuals') : t('stem.dataplot.data_plotter', '📊 Data Plotter')),
+                h('span', { className: 'text-xs font-semibold px-2 py-0.5 rounded-full', style: { backgroundColor: isContrast ? '#000000' : '#0f172a', color: isContrast ? '#ffffff' : '#e2e8f0', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255,255,255,0.22)') } }, fillT(stepMode ? t('stem.dataplot.n_points_step', '{n} points ({k} of {m} shown)') : t('stem.dataplot.n_points', '{n} points'), { n: n, k: stepIdx, m: points.length })),
+                n >= 2 && !hideHeaderR2 && h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full', style: { backgroundColor: isContrast ? '#000000' : '#0f172a', color: isContrast ? '#ffff00' : (regR2 > 0.8 ? '#6ee7b7' : regR2 > 0.5 ? '#fcd34d' : '#fca5a5'), border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(255,255,255,0.25)') }, 'data-dataplot-header-r2': true }, 'R² = ' + fmtFixed(regR2, 3))
+              )
+            ),
+            h('div', { className: 'ml-auto flex gap-1.5 flex-wrap' },
+              h('button', { type: 'button', style: chipStyle, 'aria-expanded': showBadges, 'aria-label': fillT(t('stem.dataplot.badges_button', 'Badges: {k} of {n} earned'), { k: Object.keys(earnedBadges).length, n: badgeDefs.length }), onClick: function() { upd('showBadges', !showBadges); }, className: 'text-xs font-bold px-2 py-0.5 rounded-full border ' + (showBadges ? 'bg-amber-100 border-amber-700 text-amber-900' : 'bg-slate-100 border-slate-400 text-slate-800') }, '🏅 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
+              h('button', { type: 'button', style: chipStyle, 'aria-expanded': showShortcuts, 'aria-label': showShortcuts ? t('stem.dataplot.hide_keyboard_shortcuts', 'Hide keyboard shortcuts') : t('stem.dataplot.show_keyboard_shortcuts', 'Show keyboard shortcuts'), onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-xs font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-700 text-sky-900' : 'bg-slate-100 border-slate-400 text-slate-800') }, '⌨️'),
+              h('button', { type: 'button', style: chipStyle, 'aria-pressed': soundEnabled, 'aria-label': t('stem.dataplot.sound_effects', 'Sound effects'), onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-2 rounded-full border border-slate-400 bg-slate-100 text-slate-900' }, soundEnabled ? '🔊' : '🔇'),
+              typeof setToolSnapshots === 'function' && h('button', { type: 'button', style: chipStyle, 'aria-label': t('stem.dataplot.take_snapshot', 'Take a snapshot of this data'), onClick: function() { setToolSnapshots(function(prev) { return (prev || []).concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: r2Known ? fillT(t('stem.dataplot.snapshot_label', '{n} points, R² {r}'), { n: n, r: fmtFixed(regR2Shown, 2) }) : fillT(t('stem.dataplot.n_points', '{n} points'), { n: n }), data: { points: points.slice() }, timestamp: Date.now() }]); }); say(t('stem.dataplot.sr_snapshot', 'Snapshot saved.')); }, className: 'text-xs font-bold bg-slate-100 hover:bg-slate-200 border border-slate-400 text-slate-900 rounded-full px-2 py-0.5' }, '📸'))
+          )
         ),
         renderTeacherPanel(),
         // ── Keyboard help ──

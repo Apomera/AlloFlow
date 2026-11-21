@@ -96,13 +96,17 @@ var SPEECH_SETUP_CSS = [
   '@media (forced-colors: active){.allo-ss-fill{background:Highlight}.allo-ss-button{border:1px solid ButtonText}}'
 ].join('');
 
+var EMPTY_LANG_CONTEXT = typeof React !== 'undefined' && typeof React.createContext === 'function' ? React.createContext(null) : null;
+
 function SpeechSetupPanel(props) {
   var t = props.t || function() { return ''; };
   var onClose = props.onClose || function() {};
   var theme = props.theme === 'dark' || props.theme === 'contrast' ? props.theme : 'light';
   var voiceNow = function() { return window.AlloFlowVoice || null; };
   var V = voiceNow();
-  var languageContext = React.useContext(window.AlloLanguageContext || React.createContext(null)) || {};
+  var activeLangCtx = window.AlloLanguageContext || EMPTY_LANG_CONTEXT;
+  var languageContext = (activeLangCtx && typeof React.useContext === 'function' ? React.useContext(activeLangCtx) : null) || {};
+  var backdropDownRef = React.useRef(false);
   var uiLanguageTag = '';
   try {
     if (languageContext.currentUiLanguage && window.AlloFlowLang && typeof window.AlloFlowLang.bcp47Full === 'function') {
@@ -150,6 +154,31 @@ function SpeechSetupPanel(props) {
     mountedRef.current = true;
     var previousFocus = document.activeElement;
     var dialog = dialogRef.current;
+    var isolatedSiblings = [];
+    if (dialog && typeof document !== 'undefined' && document.body) {
+      var node = dialog;
+      while (node && node.parentElement && node !== document.body) {
+        var parent = node.parentElement;
+        Array.prototype.slice.call(parent.children).forEach(function(sibling) {
+          if (sibling === node || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
+          isolatedSiblings.push({
+            el: sibling,
+            hadInert: sibling.hasAttribute('inert'),
+            prevAriaHidden: sibling.getAttribute('aria-hidden')
+          });
+          sibling.inert = true;
+          sibling.setAttribute('inert', '');
+          sibling.setAttribute('aria-hidden', 'true');
+        });
+        node = parent;
+      }
+    }
+    var alloScrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' })) : null;
+    var alloScrollLocked = !!(alloScrollLock && typeof document !== 'undefined' && document.body);
+    if (alloScrollLocked && ++alloScrollLock.count === 1) {
+      alloScrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    }
     var stack = typeof window !== 'undefined'
       ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || [])
       : null;
@@ -180,7 +209,9 @@ function SpeechSetupPanel(props) {
       var d = dialogRef.current;
       if (!d) return;
       if (d.contains(document.activeElement) && document.activeElement !== d) return;
-      var firstFocusable = getFocusables(d)[0];
+      var focusables = getFocusables(d);
+      var preferred = focusables.find(function(el) { return el.getAttribute && el.getAttribute('data-autofocus') === 'true'; });
+      var firstFocusable = preferred || focusables[0];
       try {
         if (firstFocusable && typeof firstFocusable.focus === 'function') firstFocusable.focus();
         else d.focus();
@@ -257,6 +288,19 @@ function SpeechSetupPanel(props) {
       mountedRef.current = false;
       clearTimeout(focusTimer);
       document.removeEventListener('keydown', onDocKeyDown);
+      if (alloScrollLocked) {
+        alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
+        if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+      }
+      isolatedSiblings.forEach(function(entry) {
+        if (!entry.hadInert) {
+          entry.el.inert = false;
+          entry.el.removeAttribute('inert');
+        }
+        if (entry.prevAriaHidden === null) entry.el.removeAttribute('aria-hidden');
+        else if (entry.prevAriaHidden !== 'true') entry.el.setAttribute('aria-hidden', entry.prevAriaHidden);
+      });
+      var wasTop = isTopTrap();
       if (stack) {
         var idx = stack.lastIndexOf(trap);
         if (idx >= 0) stack.splice(idx, 1);
@@ -267,7 +311,7 @@ function SpeechSetupPanel(props) {
       // Closing stops the microphone. A download keeps going, and reopening shows it.
       if (checkRef.current) { try { checkRef.current.cancel(); } catch (_) {} checkRef.current = null; }
       try {
-        if (previousFocus && previousFocus.isConnected && previousFocus !== document.body && typeof previousFocus.focus === 'function') {
+        if (wasTop && previousFocus && previousFocus.isConnected && previousFocus !== document.body && typeof previousFocus.focus === 'function') {
           previousFocus.focus();
         }
       } catch (_) {}
@@ -275,9 +319,9 @@ function SpeechSetupPanel(props) {
   }, []);
 
   if (!V) {
-    return <div className="allo-ss-backdrop">
+    return <div className="allo-ss-backdrop" role="presentation" onMouseDown={function(e) { backdropDownRef.current = (e.target === e.currentTarget); }} onClick={function(e) { var allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget) onClose(); }}>
       <style>{SPEECH_SETUP_CSS}</style>
-      <div className={'allo-ss allo-ss--' + theme} role="dialog" aria-modal="true" aria-labelledby="allo-ss-title" tabIndex={-1} ref={dialogRef}>
+      <div className={'allo-ss allo-ss--' + theme} role="dialog" aria-modal="true" aria-labelledby="allo-ss-title" tabIndex={-1} ref={dialogRef} onClick={function(e) { e.stopPropagation(); }}>
         <div className="allo-ss-head">
           <h2 id="allo-ss-title">{say(t('speech_setup.title'), 'Speech setup')}</h2>
           <button type="button" className="allo-ss-close" onClick={onClose} aria-label={say(t('speech_setup.close'), 'Close speech setup')}>&times;</button>
@@ -352,31 +396,37 @@ function SpeechSetupPanel(props) {
     V.preloadWhisper(tier, { lang: targetLang }).catch(function() {});
   }
   function startCheck() {
-    if (check.phase === 'listening' || check.phase === 'transcribing' || typeof V.startMicrophoneCheck !== 'function') return;
+    if (checkRef.current || checkPhaseRef.current !== 'idle' || typeof V.startMicrophoneCheck !== 'function') return;
     var status = typeof V.getActiveVoiceSessionStatus === 'function' ? V.getActiveVoiceSessionStatus() : null;
     var stoppedOther = !!(status && status.state && status.state !== 'idle' && status.owner);
     checkPhaseRef.current = 'starting';
     setCheck({ phase: 'starting', level: 0, report: null, error: '', stoppedOther: stoppedOther });
-    var run = V.startMicrophoneCheck({
+    var run = null;
+    run = V.startMicrophoneCheck({
       seconds: TEST_SECONDS,
       lang: lang,
       tier: canUseOnDevice && profile.supported ? testTier : null,
       onLevel: function(level) {
-        if (mountedRef.current) setCheck(function(previous) { return Object.assign({}, previous, { level: level }); });
+        if (checkRef.current !== run || !mountedRef.current) return;
+        var safeLevel = Number.isFinite(level) ? Math.max(0, Math.min(1, level)) : 0;
+        setCheck(function(previous) { return Object.assign({}, previous, { level: safeLevel }); });
       },
       onPhase: function(phase) {
+        if (checkRef.current !== run) return;
         checkPhaseRef.current = phase;
         if (mountedRef.current) setCheck(function(previous) { return Object.assign({}, previous, { phase: phase, level: phase === 'listening' ? previous.level : 0 }); });
       }
     });
     checkRef.current = run;
     run.promise.then(function(report) {
+      if (checkRef.current !== run) return;
       checkRef.current = null;
       checkPhaseRef.current = 'idle';
       if (!mountedRef.current) return;
       setCheck({ phase: 'done', level: 0, report: report, error: '', stoppedOther: stoppedOther });
       bump(function(n) { return n + 1; });
     }, function(error) {
+      if (checkRef.current !== run) return;
       checkRef.current = null;
       checkPhaseRef.current = 'idle';
       if (!mountedRef.current) return;
@@ -414,9 +464,9 @@ function SpeechSetupPanel(props) {
     </div>;
   }
 
-  return <div className="allo-ss-backdrop">
+  return <div className="allo-ss-backdrop" role="presentation" onMouseDown={function(e) { backdropDownRef.current = (e.target === e.currentTarget); }} onClick={function(e) { var allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget) onClose(); }}>
     <style>{SPEECH_SETUP_CSS}</style>
-    <div className={'allo-ss allo-ss--' + theme} role="dialog" aria-modal="true" aria-labelledby="allo-ss-title" aria-describedby="allo-ss-summary" tabIndex={-1} ref={dialogRef} data-testid="speech-setup-panel">
+    <div className={'allo-ss allo-ss--' + theme} role="dialog" aria-modal="true" aria-labelledby="allo-ss-title" aria-describedby="allo-ss-summary" tabIndex={-1} ref={dialogRef} data-testid="speech-setup-panel" onClick={function(e) { e.stopPropagation(); }}>
       <div className="allo-ss-head">
         <h2 id="allo-ss-title">{say(t('speech_setup.title'), 'Speech setup')}</h2>
         <button type="button" className="allo-ss-close" onClick={onClose} aria-label={say(t('speech_setup.close'), 'Close speech setup')}>&times;</button>
@@ -428,7 +478,7 @@ function SpeechSetupPanel(props) {
         <p className="allo-ss-soft" style={{ marginTop: '4px' }}>{say(t('speech_setup.quick_download_note'), 'It only downloads once on this device. You can change the size below.')}</p>
       </div>}
       {download && <div style={{ marginTop: '10px' }}>
-        <p className="allo-ss-soft" role="status">{say(t('speech_setup.download_progress'), 'Downloaded {loaded} of {total} MB. You can keep working while this finishes.', { loaded: download.loadedMb, total: TIER_SIZES_MB[download.tier] })}</p>
+        <p className="allo-ss-soft" role="status">{say(t('speech_setup.download_progress'), 'Downloaded {loaded} of {total} MB. You can keep working while this finishes.', { loaded: download.loadedMb, total: TIER_SIZES_MB[download.tier] || 0 })}</p>
         <div className="allo-ss-track" role="progressbar" aria-label={say(t('speech_setup.download_label'), 'Speech model download')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={download.percent}>
           <div className="allo-ss-fill" style={{ width: download.percent + '%' }} />
         </div>
@@ -498,7 +548,7 @@ function SpeechSetupPanel(props) {
         {check.phase === 'starting' && <p className="allo-ss-soft" role="status" style={{ marginTop: '8px' }}>{say(t('speech_setup.test_starting'), 'Opening the microphone. If your browser asks, choose Allow.')}</p>}
         {check.phase === 'listening' && <div style={{ marginTop: '8px' }}>
           <p className="allo-ss-soft" role="status">{say(t('speech_setup.test_listening'), 'Listening. Speak now.')}</p>
-          <div className="allo-ss-track" aria-hidden="true"><div className="allo-ss-fill" data-testid="speech-setup-level" style={{ width: Math.round(check.level * 100) + '%' }} /></div>
+          <div className="allo-ss-track" aria-hidden="true"><div className="allo-ss-fill" data-testid="speech-setup-level" style={{ width: Math.round((Number.isFinite(check.level) ? Math.max(0, Math.min(1, check.level)) : 0) * 100) + '%' }} /></div>
         </div>}
         {check.phase === 'transcribing' && <p className="allo-ss-soft" role="status" style={{ marginTop: '8px' }}>{say(t('speech_setup.test_transcribing'), 'Turning your speech into text on this device…')}</p>}
         {check.stoppedOther && check.phase === 'done' && <p className="allo-ss-note">{say(t('speech_setup.test_stopped_other'), 'Other listening stopped for this test. Turn it back on when you are ready.')}</p>}

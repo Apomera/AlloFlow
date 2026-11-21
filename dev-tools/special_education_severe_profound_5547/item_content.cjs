@@ -21,16 +21,109 @@ const leadIns={
 'professionalism-advocacy-boundaries':{A:'Within a severe-disabilities educator’s professional role, ',B:'When an educator reflects, advocates, or responds to a safety concern within professional scope, '}};
 const reviewedVariants={
 'complex-support-profiles':{
-0:{A:{prompt:'A learner with severe or profound disabilities uses AAC to select relevant ideas but needs support organizing them in a shared written paragraph. Which response is best?',correct:'Provide an age-respectful model, ensure AAC access, jointly construct an example, use a visual organizer, and fade prompts while preserving the learner’s authorship.',distractors:['Provide identical remediation in every academic area.','Infer that the learner has no ideas because speech is limited.','Have an adult permanently choose and write every response.'],rationale:'The instructional response should presume competence, preserve authorship, and target the observed organization need through accessible communication, explicit modeling, guided participation, and systematic prompt fading.'},B:{prompt:'A student with multiple disabilities usually activates a switch to continue a preferred activity but has stopped responding and appears unusually drowsy. What should guide the team’s immediate response?',correct:'Follow the individualized health and safety plan, check for a possible medical or access change with designated personnel, document observations, and avoid treating the change as refusal.',distractors:['Increase prompting until the student activates the switch.','Remove the switch permanently because the student no longer understands cause and effect.','Wait several days before communicating the change so the team has a larger data set.'],rationale:'A sudden change in alertness and established performance may signal a health, sensory, positioning, fatigue, medication, or access concern. The individualized plan and designated health personnel should guide a timely, documented response before staff make behavioral or ability assumptions.'}},
-3:{A:{prompt:'A learner with severe or profound disabilities shows distress during a noisy group routine but participates in a predictable small group with communication and sensory supports. What perspective is most useful?',correct:'Examine interactions among communication access, sensory conditions, health, task demands, peer structure, supports, and consequences rather than locating the problem only within the learner.',distractors:['Assume distress will occur equally in every setting.','Conclude that peers alone cause the disability.','Remove all group-learning opportunities permanently.'],rationale:'An ecological, person-centered analysis uses the contrast across routines to identify access needs, coordinate supports, teach a usable communication response, and monitor safe, meaningful participation.'},B:{prompt:'A learner with severe or profound disabilities withdraws during an unpredictable activity but participates when the sequence, communication options, and sensory supports are clear. What should the team examine?',correct:'Compare predictability, communication access, sensory and health variables, task demands, supports, and consequences across the two conditions.',distractors:['Assume withdrawal is inevitable because of disability severity.','Remove all new activities from the learner’s program.','Select a consequence without reviewing access or health variables.'],rationale:'The contrasting conditions provide evidence for individualized support. The team should coordinate relevant expertise, preserve learner assent and communication, adjust access, and monitor participation and well-being.'}},
-4:{A:{prompt:'Which evidence is essential when planning age-respectful support for a learner with severe or profound disabilities?',correct:'Integrated evidence about communication, health, sensory and motor access, adaptive and academic skills, preferences, relationships, participation, and performance across settings.',distractors:['A single reading score by itself.','The disability label and physical appearance only.','One adult’s expectations without learner or team evidence.'],rationale:'Person-centered planning integrates multiple sources to identify strengths, preferences, access needs, safety considerations, meaningful goals, and supports across environments. Severity labels alone do not determine a program.'},B:{prompt:'A team is reviewing support needs for a learner with severe or profound disabilities. Which evidence should organize the next program decision?',correct:'Current person-centered data on communication, health, sensory-motor access, adaptive and academic participation, preferences, quality of life, and response to supports across routines.',distractors:['The disability category without current performance data.','A generic program used for every learner with the same label.','One isolated observation without family, learner, or team input.'],rationale:'The next decision should follow current, representative, interdisciplinary evidence and the learner’s preferences and communication. Coordinated supports should promote dignity, safety, participation, learning, and increasing agency.'}}
+0:{
+A:{
+prompt:'A learner with severe or profound disabilities uses AAC to select relevant ideas but needs support organizing them in a shared written paragraph. Which response is best?',
+correct:'Model an age-respectful example with AAC access, use a visual organizer, and fade prompts while preserving authorship.',
+distractors:[
+'Deliver identical remedial drills across every academic subject regardless of the learner’s demonstrated idea-selection strengths.',
+'Conclude that the learner lacks grade-level ideas to contribute because spoken verbal output is limited during class.',
+'Have an adult staff member select the ideas and compose each finished paragraph to keep pace with class deadlines.',
+],
+rationale:'The instructional response should presume competence, preserve authorship, and target the observed organization need through accessible communication, explicit modeling, guided participation, and systematic prompt fading.',
+distractorNotes:[
+'Applying uniform remediation across unaffected domains wastes instructional time and overlooks the learner’s demonstrated strength in selecting relevant ideas through AAC.',
+'Equating limited speech with limited conceptual ideas violates presumption of competence and misreads a communication modality difference as a cognitive deficit.',
+'Having an adult author the paragraph removes learner voice and agency rather than building organized writing skills through visual scaffolds and prompt fading.',
+],
+},
+B:{
+prompt:'A student with multiple disabilities usually activates a switch to continue a preferred activity but has stopped responding and appears unusually drowsy. What should guide the team’s immediate response?',
+correct:'Follow the health and safety plan, check for medical or access changes with staff, and document observations.',
+distractors:[
+'Escalate verbal and hand-over-hand prompting until the student activates the switch for the preferred activity.',
+'Discontinue switch-based instruction because the student appears to have lost cause-and-effect understanding.',
+'Wait several school days before noting the drowsiness so the team can collect a wider behavioral trend first.',
+],
+rationale:'A sudden change in alertness and established performance may signal a health, sensory, positioning, fatigue, medication, or access concern. The individualized plan and designated health personnel should guide a timely, documented response before staff make behavioral or ability assumptions.',
+distractorNotes:[
+'Escalating physical or verbal prompts during unexplained drowsiness ignores a potential medical, seizure, medication, or positioning concern and risks learner safety.',
+'Interpreting an abrupt state change as permanent loss of cause-and-effect skill mistakes a likely health or access barrier for cognitive regression.',
+'Delaying communication with designated nursing or health staff for several days risks missing an urgent medical change that requires prompt attention.',
+],
+},
+},
+3:{
+A:{
+prompt:'A learner with severe or profound disabilities shows distress during a noisy group routine but participates in a predictable small group with communication and sensory supports. What perspective is most useful?',
+correct:'Examine interactions among communication access, sensory load, health, task demands, supports, and consequences.',
+distractors:[
+'Expect the same level of behavioral distress across every school routine because it stems from disability severity.',
+'Attribute the student’s behavioral distress solely to classmates’ social habits during whole-group lessons.',
+'Remove the student permanently from all peer-group instruction and shift entirely to solitary adult-led work.',
+],
+rationale:'An ecological, person-centered analysis uses the contrast across routines to identify access needs, coordinate supports, teach a usable communication response, and monitor safe, meaningful participation.',
+distractorNotes:[
+'Treating distress as inevitable across all settings ignores the learner’s documented success in the predictable small group with sensory and communication supports.',
+'Blaming peers alone overlooks modifiable ecological factors—such as noise level, predictability, and AAC access—that differentiate the two routines.',
+'Permanently removing peer-group opportunities violates LRE principles and denies social belonging when targeted environmental supports can enable inclusive participation.',
+],
+},
+B:{
+prompt:'A learner with severe or profound disabilities withdraws during an unpredictable activity but participates when the sequence, communication options, and sensory supports are clear. What should the team examine?',
+correct:'Compare predictability, communication access, sensory-health factors, task demands, and supports across both routines.',
+distractors:[
+'Treat task withdrawal as an unavoidable characteristic of severe disability rather than an environmental cue.',
+'Eliminate all unfamiliar or novel activities from the student’s schedule to prevent any future withdrawal.',
+'Assign a classroom behavior consequence without reviewing communication, sensory, or health access variables.',
+],
+rationale:'The contrasting conditions provide evidence for individualized support. The team should coordinate relevant expertise, preserve learner assent and communication, adjust access, and monitor participation and well-being.',
+distractorNotes:[
+'Assuming withdrawal is fixed by severity overlooks clear evidence that the learner engages actively when routines, sensory supports, and communication options are transparent.',
+'Eliminating every novel activity narrows life experiences and learning opportunities instead of teaching predictable preview routines and supported transitions.',
+'Applying consequences before examining communication, sensory, or health barriers misdiagnoses an access problem as noncompliance and can escalate distress.',
+],
+},
+},
+4:{
+A:{
+prompt:'Which evidence is essential when planning age-respectful support for a learner with severe or profound disabilities?',
+correct:'Integrated data on communication, health, sensory-motor access, adaptive-academic skills, preferences, and settings.',
+distractors:[
+'A single standardized oral reading score collected during a brief general education screening window.',
+'The student’s primary eligibility label paired with general impressions of physical appearance and diagnosis.',
+'One classroom adult’s personal expectations without input from the learner, family, or related-service specialists.',
+],
+rationale:'Person-centered planning integrates multiple sources to identify strengths, preferences, access needs, safety considerations, meaningful goals, and supports across environments. Severity labels alone do not determine a program.',
+distractorNotes:[
+'A single isolated reading score omits communication, health, sensory-motor, and cross-setting adaptive evidence essential for comprehensive person-centered planning.',
+'Relying on diagnostic labels or physical impressions stereotypes the learner and fails to document actual strengths, preferences, and individualized access supports.',
+'Planning from one adult’s expectations excludes the learner’s voice, family priorities, and interdisciplinary specialist input required under IDEA.',
+],
+},
+B:{
+prompt:'A team is reviewing support needs for a learner with severe or profound disabilities. Which evidence should organize the next program decision?',
+correct:'Current person-centered data on communication, health, access, participation, preferences, and response to supports.',
+distractors:[
+'The student’s disability classification report without updated performance or environmental support data.',
+'A uniform district curriculum package assigned to all learners who share the same support classification.',
+'One isolated classroom observation collected without family, learner, or interdisciplinary team input.',
+],
+rationale:'The next decision should follow current, representative, interdisciplinary evidence and the learner’s preferences and communication. Coordinated supports should promote dignity, safety, participation, learning, and increasing agency.',
+distractorNotes:[
+'Relying on static eligibility labels without current performance data misses how the learner responds to supports and ignores evolving goals and preferences.',
+'Assigning a standardized package by label violates IDEA individualization and overlooks unique communication, health, and sensory-motor requirements.',
+'A single isolated observation lacks cross-setting reliability and omits vital family knowledge, learner preferences, and related-service perspectives.',
+],
+},
+},
 }};
 const stripIns={
 'person-centered-iep-transition':{A:[/^during IEP development,\s*/i]},
 'family-team-paraprofessional':{A:[/^in effective co-teaching,\s*/i]}};
 const lowerFirst=v=>String(v).replace(/^./,c=>c.toLowerCase());
 function composePrompt(id,variant,raw){let body=adapt(raw).trim();for(const pattern of stripIns[id]?.[variant]||[])body=body.replace(pattern,'');return leadIns[id][variant]+lowerFirst(body)}
-function questions(parts,id){return parts.flatMap(([b,a,z])=>source[b].questions.slice(a,z)).map((q,index)=>{const variants=reviewedVariants[id]?.[index]||{},a=variants.A||{},b=variants.B||{};return{...q,promptA:a.prompt||composePrompt(id,'A',q.promptA),promptB:b.prompt||composePrompt(id,'B',q.promptB),correct:adapt(q.correct),distractors:q.distractors.map(adapt),rationale:adapt(q.rationale)+' For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.',...(a.correct?{correctA:adapt(a.correct),distractorsA:a.distractors.map(adapt),rationaleA:adapt(a.rationale)}:{}),...(b.correct?{correctB:adapt(b.correct),distractorsB:b.distractors.map(adapt),rationaleB:adapt(b.rationale)}:{})}})}
+function questions(parts,id){return parts.flatMap(([b,a,z])=>source[b].questions.slice(a,z)).map((q,index)=>{const variants=reviewedVariants[id]?.[index]||{},a=variants.A||{},b=variants.B||{};return{...q,promptA:a.prompt||composePrompt(id,'A',q.promptA),promptB:b.prompt||composePrompt(id,'B',q.promptB),correct:adapt(q.correct),distractors:q.distractors.map(adapt),rationale:adapt(q.rationale)+' For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.',distractorNotes:Array.isArray(q.distractorNotes)?q.distractorNotes.map(adapt):undefined,...(a.correct?{correctA:adapt(a.correct),distractorsA:a.distractors.map(adapt),rationaleA:adapt(a.rationale),distractorNotesA:a.distractorNotes.map(adapt)}:{}),...(b.correct?{correctB:adapt(b.correct),distractorsB:b.distractors.map(adapt),rationaleB:adapt(b.rationale),distractorNotesB:b.distractorNotes.map(adapt)}:{})}})}
 function bank(id,n,key,label,parts,refs=[]){const[domainId,domain]=domains[key];if(!leadIns[id])throw Error('Missing editorial lead-ins for '+id);return{id,chapterId:'sp5547-ch-'+String(n).padStart(2,'0'),domainId,domain,label,references:[ETS,EXAM,IDEA,CEC,...refs],questions:questions(parts,id)}}
 module.exports=[
 bank('development-context-strengths',1,'development','Development, Context, Strengths, and Variability',[[0,0,9]]),

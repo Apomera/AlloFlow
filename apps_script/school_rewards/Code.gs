@@ -432,13 +432,6 @@ function getSchoolRewardsBootstrap() {
   // One PointHolds read per request, not one per student: at roster scale the
   // per-student re-read was the dominant cost of every portal load.
   var actor = currentActor_(), book = book_(), config = configMap_(book), balanceMap = balancesMap_(book), holds = pointHolds_(book);
-  var allStudents = students_(book), students = actor.role === 'admin' ? allStudents : allStudents.filter(function(student) { return student.active; });
-  students.forEach(function(student) {
-    var availability = pointAvailability_(book, student.id, balanceMap, holds);
-    student.balance = availability.balance;
-    student.reservedPoints = availability.reservedPoints;
-    student.availableBalance = availability.availableBalance;
-  });
   var categories = categories_(book);
   var visible = visibleWindow_(book);
   if (actor.role === 'student') {
@@ -453,6 +446,13 @@ function getSchoolRewardsBootstrap() {
       catalog: visible ? catalog_(book).filter(function(item) { return item.active; }) : [], windows: visible ? [visible] : [],
       recentLedger: ownLedger, recentOrders: ownOrders, recentReceipts: receiptDtosForOrders_(book, ownOrderRows), claimCodesReady: claimCodesReady_(book, config) };
   }
+  var allStudents = students_(book), students = actor.role === 'admin' ? allStudents : allStudents.filter(function(student) { return student.active; });
+  students.forEach(function(student) {
+    var availability = pointAvailability_(book, student.id, balanceMap, holds);
+    student.balance = availability.balance;
+    student.reservedPoints = availability.reservedPoints;
+    student.availableBalance = availability.availableBalance;
+  });
   if (actor.role !== 'admin') students = students.map(function(student) { return { id: student.id, firstName: student.firstName, lastInitial: student.lastInitial, grade: student.grade, homeroom: student.homeroom, active: student.active, balance: student.balance, reservedPoints: student.reservedPoints, availableBalance: student.availableBalance }; });
   var catalogItems = catalog_(book), recentOrderRows = actor.role === 'staff' ? [] : orders_(book).slice(-50).reverse();
   var recentLedgerItems = actor.role === 'cashier' ? [] : ledger_(book).slice(-100).reverse();
@@ -957,7 +957,7 @@ function cancelSchoolRewardsPrintRequest(request) {
       if (item.studentId !== actor.studentId) throw srError_('denied', 'Students can cancel only their own request.');
       if (['SUBMITTED', 'REVISION_REQUESTED', 'QUOTED', 'RESERVED', 'CANCELLING'].indexOf(item.status) < 0) throw srError_('invalid_transition', 'This request is already in the print queue. Ask staff to cancel it.');
     } else if (['SUBMITTED', 'REVISION_REQUESTED', 'QUOTED', 'RESERVED', 'QUEUED', 'PRINTING', 'READY', 'CANCELLING'].indexOf(item.status) < 0 && item.status !== 'CANCELLED') throw srError_('invalid_transition', 'This print request cannot be cancelled.');
-    var hold = item.holdId ? pointHoldById_(book, item.holdId) : null;
+    var hold = item.holdId ? pointHoldById_(book, item.holdId) : pointHoldForPurpose_(book, 'PRINT_REQUEST', item.id);
     if (item.status !== 'CANCELLED') {
       if (hold && hold.status === 'ACTIVE') { item.status = 'CANCELLING'; item.updatedAt = at; upsertPrintRequestRow_(book, item); hold.status = 'RELEASED'; hold.updatedAt = at; hold.releasedAt = at; hold.releaseReason = reason; upsertPointHoldRow_(book, hold); }
       item.status = 'CANCELLED'; item.staffReason = reason; item.closedAt = at; item.updatedAt = at; upsertPrintRequestRow_(book, item);
@@ -1070,9 +1070,9 @@ var SR_REDACTION_PLAN = [
   ['PrintModels', 'OwnerStudentId', { Title: SR_REDACTED_TEXT, Description: '', CatalogTitle: '', CatalogDescription: '', CreatorLabel: '' }],
   ['PrintRequests', 'StudentId', { StudentNote: '', StaffReason: '' }],
   ['PrintAssets', 'OwnerStudentId', { FileName: '' }],
-  ['PrintPublications', 'OwnerStudentId', { CatalogTitle: '', CatalogDescription: '', CreatorLabel: '' }],
-  ['MailOutbox', 'StudentId', { PayloadJson: '', Error: '', ResolutionNote: '' }]
+  ['PrintPublications', 'OwnerStudentId', { CatalogTitle: '', CatalogDescription: '', CreatorLabel: '' }]
 ];
+var SR_REDACTED_MAIL_PAYLOAD = '{"redacted":true,"schema":"alloflow-school-rewards-mail/redacted-1"}';
 // Every sheet that holds anything about one student, for answering a records
 // request. Balances, orders and holds carry only ids, amounts and dates.
 var SR_STUDENT_SHEETS = [
@@ -1114,11 +1114,11 @@ function redactSheetRows_(book, sheetName, columnName, value, replacements) {
     for (var i = 0; i < data.length; i++) {
       var mine = String(cell_(data[i][column])) === value;
       if (mine && String(cell_(data[i][target])) !== String(next)) {
-        values.push([next]);
+        values.push([safeRow_([next])[0]]);
         column_changed = true;
         touchedRows[i] = true;
       } else {
-        values.push([data[i][target]]);
+        values.push([safeRow_([data[i][target]])[0]]);
       }
     }
     if (column_changed) sheet.getRange(2, target + 1, values.length, 1).setValues(values);
@@ -1190,6 +1190,20 @@ function redactSchoolRewardsStudent(request) {
       var touched = redactSheetRows_(book, entry[0], entry[1], studentId, replacements);
       if (touched) { cleared[entry[0]] = touched; rows += touched; }
     });
+    if (book.getSheetByName('MailOutbox')) {
+      var mailTouched = 0;
+      mailOutbox_(book).forEach(function(delivery) {
+        if (delivery.studentId !== studentId) return;
+        if (delivery.payloadJson === SR_REDACTED_MAIL_PAYLOAD && !delivery.error && !delivery.resolutionNote) return;
+        delivery.payloadJson = SR_REDACTED_MAIL_PAYLOAD;
+        delivery.error = '';
+        delivery.resolutionNote = '';
+        signMailDelivery_(delivery);
+        upsertMailOutbox_(book, delivery);
+        mailTouched += 1;
+      });
+      if (mailTouched) { cleared.MailOutbox = mailTouched; rows += mailTouched; }
+    }
     if (book.getSheetByName('ClaimTokens')) {
       var claimTouched = redactSheetRows_(book, 'ClaimTokens', 'ClaimedByStudentId', studentId, { Reason: SR_REDACTED_TEXT });
       if (claimTouched) { cleared.ClaimTokens = claimTouched; rows += claimTouched; }
@@ -1451,17 +1465,17 @@ function adminUpsertRewardsMember(value) {
   return locked_(function() { assertAdminInvariant_(member); upsertMemberRow_(book_(), member); appendAudit_({ event: 'MEMBER_UPDATED', type: 'member', id: hash_(member.email).slice(0, 20), summary: 'Membership updated' }, actor); return { ok: true }; });
 }
 function adminUpsertRewardsStudent(value) {
-  var actor = requireRole_(['admin']), student = normalizeStudent_(value, allowedDomain_(), text_(value && value.id, 80, ''));
+  var actor = requireRole_(['admin']), student = normalizeStudent_(value, allowedDomain_(), optionalId_(value && value.id, 'student'));
   return locked_(function() { var saved = upsertStudentRow_(book_(), student); appendAudit_({ event: 'STUDENT_UPDATED', type: 'student', id: saved.id, summary: 'Student roster entry updated' }, actor); return { ok: true, student: saved }; });
 }
 function adminBulkUpsertRewardsStudents(values) {
   var actor = requireRole_(['admin']);
   if (!Array.isArray(values) || !values.length || values.length > SR_MAX_BATCH) throw srError_('bad_roster', 'Upload between 1 and ' + SR_MAX_BATCH + ' students per batch.');
   return locked_(function() {
-    var book = book_(), domain = allowedDomain_(), existing = students_(book), byEmail = {}, byId = {}, seenEmails = {}, seenIds = {}, saved = [];
+    var book = book_(), domain = allowedDomain_(), existing = students_(book), byEmail = Object.create(null), byId = Object.create(null), seenEmails = Object.create(null), seenIds = Object.create(null), saved = [];
     existing.forEach(function(student) { byEmail[student.email] = student; byId[student.id] = student; });
     var normalized = values.map(function(value) {
-      var requestedId = text_(value && value.id, 80, ''), student = normalizeStudent_(value, domain, requestedId);
+      var requestedId = optionalId_(value && value.id, 'student'), student = normalizeStudent_(value, domain, requestedId);
       var matchedId = requestedId ? byId[requestedId] : null, matchedEmail = byEmail[student.email];
       if (matchedEmail && requestedId && matchedEmail.id !== requestedId) throw srError_('duplicate_student', 'That email already belongs to another student on the roster.');
       if (matchedId && matchedEmail && matchedId.id !== matchedEmail.id) throw srError_('duplicate_student', 'The student ID and the email in this row belong to two different students. Check the row.');
@@ -1873,11 +1887,11 @@ function getSchoolRewardsAcknowledgmentReport(request) {
     entry.localDate = reportLocalDate_(entry.at);
     return entry.localDate >= from && entry.localDate <= to;
   });
-  var studentList = students_(book), studentMap = {}, categoryList = categories_(book), categoryMap = {}, staffNames = {};
+  var studentList = students_(book), studentMap = Object.create(null), categoryList = categories_(book), categoryMap = Object.create(null), staffNames = Object.create(null);
   studentList.forEach(function(student) { studentMap[student.id] = student; });
   categoryList.forEach(function(category) { categoryMap[category.id] = category; });
   members_(book).forEach(function(member) { staffNames[member.email] = member.displayName || member.email; });
-  var weeks = {}, byCategory = {}, byGrade = {}, byHomeroom = {}, byStaff = {}, perStudent = {}, bySource = { award: 0, claim_token: 0 }, points = 0;
+  var weeks = Object.create(null), byCategory = Object.create(null), byGrade = Object.create(null), byHomeroom = Object.create(null), byStaff = Object.create(null), perStudent = Object.create(null), bySource = { award: 0, claim_token: 0 }, points = 0;
   for (var week = reportWeekStart_(from); week <= to; week = reportAddDays_(week, 7)) weeks[week] = { weekStart: week, count: 0, points: 0 };
   function bump(map, key, seed, amount) { if (!map[key]) map[key] = seed; map[key].count += 1; map[key].points += amount; return map[key]; }
   acks.forEach(function(entry) {
@@ -1893,7 +1907,7 @@ function getSchoolRewardsAcknowledgmentReport(request) {
   });
   var active = studentList.filter(function(student) { return student.active; });
   function reach(map, field) {
-    var enrolled = {};
+    var enrolled = Object.create(null);
     active.forEach(function(student) { var key = student[field] || ''; if (!enrolled[key]) enrolled[key] = { students: 0, acknowledged: 0 }; enrolled[key].students += 1; if (perStudent[student.id]) enrolled[key].acknowledged += 1; });
     Object.keys(enrolled).forEach(function(key) { if (!map[key]) { map[key] = { count: 0, points: 0 }; map[key][field] = key; } });
     return Object.keys(map).sort().map(function(key) { var row = map[key], group = enrolled[key] || { students: 0, acknowledged: 0 }; row.activeStudents = group.students; row.studentsAcknowledged = group.acknowledged; return row; });
@@ -2372,7 +2386,9 @@ function book_() {
   if (_srVerifiedBookId_ !== id) {
     var file = null;
     try { file = DriveApp.getFileById(id); } catch (_) { file = null; }
-    if (file) { assertPrivateStorage_(file); _srVerifiedBookId_ = id; }
+    if (!file) throw srError_('storage_not_private', 'Private school storage could not be verified. Ask the deployment owner to review Drive sharing before trying again.');
+    assertPrivateStorage_(file);
+    _srVerifiedBookId_ = id;
   }
   return SpreadsheetApp.openById(id);
 }
@@ -2410,7 +2426,7 @@ function initializeSheets_(book) {
   });
 }
 function putConfig_(book, values) { var sheet = sheet_(book, 'Config'), map = configMap_(book); Object.keys(values).forEach(function(key) { map[key] = String(values[key] == null ? '' : values[key]); }); var valuesOut = [['Key', 'Value']]; Object.keys(map).sort().forEach(function(key) { valuesOut.push(safeRow_([key, map[key]])); }); sheet.clearContents(); sheet.getRange(1, 1, valuesOut.length, 2).setValues(valuesOut); sheet.setFrozenRows(1); }
-function configMap_(book) { var map = {}; rows_(sheet_(book, 'Config'), 2).forEach(function(row) { map[String(row[0])] = String(row[1] || ''); }); return map; }
+function configMap_(book) { var map = Object.create(null); rows_(sheet_(book, 'Config'), 2).forEach(function(row) { map[String(row[0])] = String(row[1] || ''); }); return map; }
 
 function members_(book) { return rows_(sheet_(book, 'Members'), 4).map(function(row) { return { email: normalizeEmail_(row[0]), displayName: String(row[1] || ''), role: String(row[2] || ''), active: bool_(row[3]) }; }); }
 function normalizeMember_(value, domain) { value = object_(value); var email = normalizeEmail_(value.email), role = text_(value.role, 20, '').toLowerCase(); if (!email || emailDomain_(email) !== domain) throw srError_('bad_member', 'Use a school email address that ends in the school domain.'); if (SR_ROLES.indexOf(role) < 0) throw srError_('bad_member', 'Choose a role: administrator, staff, or cashier.'); return { email: email, displayName: text_(value.displayName, 120, email.split('@')[0]), role: role, active: value.active !== false }; }
@@ -2418,7 +2434,7 @@ function upsertMemberRow_(book, member) { assertNoPendingClassLinkOperation_(boo
 function assertAdminInvariant_(member) { var count = 0; members_(book_()).forEach(function(item) { if (item.email !== member.email && item.role === 'admin' && item.active) count++; }); if (member.role === 'admin' && member.active) count++; if (!count) throw srError_('admin_required', 'The school needs at least one active administrator, so this account cannot be removed or demoted.'); }
 
 function students_(book) { return rows_(sheet_(book, 'Students'), 9).map(function(row) { return { id: String(row[0] || ''), firstName: String(row[1] || ''), lastInitial: String(row[2] || ''), grade: String(row[3] || ''), homeroom: String(row[4] || ''), email: normalizeEmail_(row[5]), active: bool_(row[6]), createdAt: cell_(row[7]), updatedAt: cell_(row[8]) }; }); }
-function normalizeStudent_(value, domain, existingId) { value = object_(value); var email = normalizeEmail_(value.email), firstName = text_(value.firstName, 80, ''); if (!email || emailDomain_(email) !== domain) throw srError_('bad_student', 'Use the student\'s school Google email, which must end in the school domain.'); if (!firstName) throw srError_('bad_student', 'Student first name is required.'); return { id: existingId || text_(value.id, 80, ''), firstName: firstName, lastInitial: text_(value.lastInitial, 4, '').slice(0, 1).toUpperCase(), grade: text_(value.grade, 20, ''), homeroom: text_(value.homeroom, 80, ''), email: email, active: value.active !== false }; }
+function normalizeStudent_(value, domain, existingId) { value = object_(value); var email = normalizeEmail_(value.email), firstName = text_(value.firstName, 80, ''); if (!email || emailDomain_(email) !== domain) throw srError_('bad_student', 'Use the student\'s school Google email, which must end in the school domain.'); if (!firstName) throw srError_('bad_student', 'Student first name is required.'); return { id: existingId || optionalId_(value.id, 'student'), firstName: firstName, lastInitial: text_(value.lastInitial, 4, '').slice(0, 1).toUpperCase(), grade: text_(value.grade, 20, ''), homeroom: text_(value.homeroom, 80, ''), email: email, active: value.active !== false }; }
 function upsertStudentRow_(book, student) {
   assertNoPendingClassLinkOperation_(book);
   var existing = students_(book), studentId = student.id || uuid_(), createdAt = now_();
@@ -2560,7 +2576,9 @@ function normalizePrintModelInput_(book, value, studentId) {
   if (sourceFormat === 'RECIPE') {
     var recipe = normalizePrintRecipe_(value.recipe), recipeJson = stableJson_(recipe);
     normalized.recipeJson = recipeJson; normalized.contentHash = hash_(recipeJson); normalized.byteSize = recipeJson.length;
-    normalized.unitDeclaration = text_(value.unitDeclaration, 40, 'RECIPE_MM'); normalized.clientPreflightStatus = text_(value.clientPreflightStatus, 30, 'UNKNOWN').toUpperCase();
+    normalized.unitDeclaration = text_(value.unitDeclaration, 40, 'RECIPE_MM');
+    var preflightStatus = text_(value.clientPreflightStatus, 30, 'UNKNOWN').toUpperCase();
+    normalized.clientPreflightStatus = ['PASS', 'WARN', 'UNKNOWN'].indexOf(preflightStatus) >= 0 ? preflightStatus : 'UNKNOWN';
   } else {
     var suppliedHash = text_(value.contentHash, 100, '');
     if (!/^(?:[a-f0-9]{64}|[A-Za-z0-9_-]{43})$/i.test(suppliedHash)) throw srError_('bad_model', 'GLB/STL handoff requires a SHA-256 content hash.');
@@ -2577,7 +2595,7 @@ function normalizePrintRecipe_(value) {
   if (!raw.length || raw.length > 24) throw srError_('bad_model', 'A printable recipe must contain between 1 and 24 parts.');
   var shapes = { box: 1, sphere: 1, cylinder: 1, cone: 1, torus: 1 }, parts = [];
   raw.forEach(function(part) {
-    part = object_(part); var shape = text_(part.shape, 20, '').toLowerCase(); if (!shapes[shape]) throw srError_('bad_model', 'Recipe contains an unsupported shape.');
+    part = object_(part); var shape = text_(part.shape, 20, '').toLowerCase(); if (!Object.prototype.hasOwnProperty.call(shapes, shape)) throw srError_('bad_model', 'Recipe contains an unsupported shape.');
     var sizes = shape === 'box' ? 3 : shape === 'sphere' ? 1 : 2;
     parts.push({ shape: shape, size: normalizeNumberArray_(part.size, sizes, 0.02, 4, 'Part size'), position: normalizeNumberArray_(part.position, 3, -8, 8, 'Part position'), rotation: normalizeNumberArray_(part.rotation, 3, -360, 360, 'Part rotation'), color: printColor_(part.color) });
   });
@@ -2615,7 +2633,7 @@ function printAssetFileName_(value) { var name = text_(value, 160, ''); if (!nam
 function validatePrintAssetMetadata_(model, fileName, mimeType, suppliedHash) {
   var extension = fileName.slice(fileName.lastIndexOf('.') + 1).toUpperCase(); if (extension !== model.sourceFormat) throw srError_('bad_asset', 'The filename extension must match the model source format.');
   var allowed = model.sourceFormat === 'GLB' ? { 'model/gltf-binary': 1, 'application/octet-stream': 1 } : { 'model/stl': 1, 'application/sla': 1, 'application/vnd.ms-pki.stl': 1, 'application/octet-stream': 1 };
-  if (!allowed[mimeType]) throw srError_('bad_asset', 'The uploaded MIME type is not allowed for this model format.');
+  if (!Object.prototype.hasOwnProperty.call(allowed, mimeType)) throw srError_('bad_asset', 'The uploaded MIME type is not allowed for this model format.');
   if (!/^(?:[a-f0-9]{64}|[A-Za-z0-9_-]{43})$/i.test(suppliedHash)) throw srError_('bad_asset', 'A SHA-256 content hash is required.');
 }
 function decodePrintAssetBase64_(encoded) {
@@ -2908,7 +2926,7 @@ function studentLedgerEntry_(entry) { return { id: entry.id, studentId: entry.st
 function ledgerById_(book, entryId) { var list = ledger_(book); for (var i = 0; i < list.length; i++) if (list[i].id === entryId) return list[i]; return null; }
 function reversalExists_(book, entryId) { return ledger_(book).some(function(entry) { return entry.reversesId === entryId; }); }
 
-function balancesMap_(book) { var map = {}; rows_(sheet_(book, 'Balances'), 5).forEach(function(row) { map[String(row[0])] = { studentId: String(row[0]), earned: number_(row[1]), spent: number_(row[2]), balance: number_(row[3]), updatedAt: cell_(row[4]) }; }); return map; }
+function balancesMap_(book) { var map = Object.create(null); rows_(sheet_(book, 'Balances'), 5).forEach(function(row) { map[String(row[0])] = { studentId: String(row[0]), earned: number_(row[1]), spent: number_(row[2]), balance: number_(row[3]), updatedAt: cell_(row[4]) }; }); return map; }
 function balance_(book, studentId) { return balancesMap_(book)[studentId] || { studentId: studentId, earned: 0, spent: 0, balance: 0, updatedAt: '' }; }
 function applyBalance_(book, studentId, earnedDelta, spentDelta) { var value = balance_(book, studentId); value.earned += earnedDelta; value.spent += spentDelta; value.balance = value.earned - value.spent; if (value.balance < 0) throw srError_('insufficient_balance', 'This would take the student below zero points.'); value.updatedAt = now_(); upsert_(sheet_(book, 'Balances'), 5, studentId, safeRow_([studentId, value.earned, value.spent, value.balance, value.updatedAt])); return value; }
 function expectedBalanceFromEntries_(entries, studentId) {
@@ -3427,7 +3445,7 @@ function reconcileMailRunManifestProgress_(book, run) {
   var changed = false;
   while (manifest.i < expectedIndex) {
     var candidate = mailManifestCandidate_(manifest);
-    var deliveryKey = mailDeliveryKey_(run.kind, run.periodKey, candidate.studentId, candidate.guardianId);
+    var deliveryKey = mailDeliveryKey_(run.kind, run.periodKey, candidate.studentId, candidate.guardianId, academicYearStart_(book));
     var matches = primary.filter(function(delivery) { return delivery.deliveryKey === deliveryKey; });
     if (matches.length !== 1) throw srError_('mail_integrity', 'Mail run manifest cannot be reconciled to exactly one signed delivery attempt.');
     advanceMailManifest_(run, manifest);
@@ -4250,11 +4268,11 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
     if (issues.length >= maxIssues) { truncated = true; return; }
     issues.push({ severity: severity, code: code, entityType: entityType, entityId: String(entityId || ''), message: message });
   }
-  function indexBy(items, field) { var out = {}; items.forEach(function(item) { var key = String(item[field] || ''); if (key && !out[key]) out[key] = item; }); return out; }
-  function groupBy(items, keyFn) { var out = {}; items.forEach(function(item) { var key = String(keyFn(item) || ''); if (!out[key]) out[key] = []; out[key].push(item); }); return out; }
+  function indexBy(items, field) { var out = Object.create(null); items.forEach(function(item) { var key = String(item[field] || ''); if (key && !out[key]) out[key] = item; }); return out; }
+  function groupBy(items, keyFn) { var out = Object.create(null); items.forEach(function(item) { var key = String(keyFn(item) || ''); if (!out[key]) out[key] = []; out[key].push(item); }); return out; }
   function ageMs(value) { var parsed = new Date(String(value || '')).getTime(); return isFinite(parsed) ? generatedMs - parsed : null; }
   function flagDuplicateValues(items, keyFn, code, entityType, message) {
-    var counts = {};
+    var counts = Object.create(null);
     items.forEach(function(item) { var key = String(keyFn(item) || ''); if (key) counts[key] = (counts[key] || 0) + 1; });
     Object.keys(counts).forEach(function(key) { if (counts[key] > 1) issue('ERROR', code, entityType, key, message + ' (' + counts[key] + ' rows).'); });
   }
@@ -4276,10 +4294,10 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
   var mailRuns = mailRuns_(book), mailRunById = indexBy(mailRuns, 'id');
   var mailDeliveries = mailOutbox_(book), mailDeliveryById = indexBy(mailDeliveries, 'id');
   if (number_(configMap_(book).schemaVersion) >= 6 && !mailSafetySweepReady_()) issue('ERROR', 'MAIL_SAFETY_SWEEP_MISSING', 'mail_trigger', 'sweepSchoolRewardsMailRuns', 'The signed recurring mail safety sweep is missing or invalid.');
-  var statementProjectionById = {}, guardianProjectionById = {};
+  var statementProjectionById = Object.create(null), guardianProjectionById = Object.create(null);
   rows_(sheet_(book, 'Statements'), 7).forEach(function(row) { statementProjectionById[String(row[0] || '')] = row; });
   rows_(sheet_(book, 'GuardianDigests'), 7).forEach(function(row) { guardianProjectionById[String(row[0] || '')] = row; });
-  var requests = printRequests_(book), requestById = indexBy(requests, 'id'), requestByOrderId = {};
+  var requests = printRequests_(book), requestById = indexBy(requests, 'id'), requestByOrderId = Object.create(null);
   requests.forEach(function(item) { if (item.orderId) requestByOrderId[item.orderId] = item; });
   var holds = pointHolds_(book), holdById = indexBy(holds, 'id');
   var models = printModels_(book), modelById = indexBy(models, 'id');
@@ -4288,7 +4306,7 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
   var lineRows = rows_(sheet_(book, 'OrderLines'), 6).map(function(row) { return { orderId: String(row[0] || ''), catalogId: String(row[1] || ''), itemName: String(row[2] || ''), quantity: number_(row[3]), unitCost: number_(row[4]), lineTotal: number_(row[5]) }; });
   var linesByOrder = groupBy(lineRows, function(line) { return line.orderId; });
   var idempotencyRows = rows_(sheet_(book, 'Idempotency'), 4);
-  var idempotencyKeys = {}; idempotencyRows.forEach(function(row) { idempotencyKeys[String(row[0] || '')] = true; });
+  var idempotencyKeys = Object.create(null); idempotencyRows.forEach(function(row) { idempotencyKeys[String(row[0] || '')] = true; });
   function journalLineProjection(lines) {
     return (lines || []).map(function(line) { return { catalogId: line.catalogId, itemName: line.itemName, quantity: line.quantity, unitCost: line.unitCost, lineTotal: line.lineTotal }; }).sort(function(left, right) { return String(left.catalogId).localeCompare(String(right.catalogId)); });
   }
@@ -4308,6 +4326,9 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
     if (saved.kind === 'reverse') expectedLedger = { id: intent.ledgerId, studentId: intent.studentId, kind: 'REVERSAL', amount: intent.amount, reason: intent.reason, referenceType: 'reversal', referenceId: intent.originalId, reversesId: intent.originalId, actorEmail: intent.actorEmail, actorRole: intent.actorRole, at: intent.at, idempotencyKey: key, categoryId: intent.categoryId || '' };
     if (saved.kind === 'checkout') expectedLedger = { id: intent.ledgerId, studentId: intent.studentId, kind: 'SPEND', amount: -intent.total, reason: 'School store order', referenceType: 'order', referenceId: intent.orderId, reversesId: '', actorEmail: intent.actorEmail, actorRole: intent.actorRole, at: intent.at, idempotencyKey: key, categoryId: '' };
     if (saved.kind === 'refund') expectedLedger = { id: intent.ledgerId, studentId: intent.studentId, kind: 'REFUND', amount: intent.total, reason: intent.reason, referenceType: 'order_refund', referenceId: intent.orderId, reversesId: intent.sourceSpendId, actorEmail: intent.actorEmail, actorRole: intent.actorRole, at: intent.at, idempotencyKey: key, categoryId: '' };
+    var studentRowForJournal = studentById[intent.studentId];
+    var isRedactedLedger = !!(studentRowForJournal && studentRowForJournal.firstName === 'Redacted' && !studentRowForJournal.active && actualLedger && actualLedger.reason === SR_REDACTED_TEXT);
+    if (isRedactedLedger && expectedLedger) expectedLedger.reason = SR_REDACTED_TEXT;
     if (!expectedLedger || !actualLedger || stableJson_(actualLedger) !== stableJson_(expectedLedger)) issue('ERROR', 'JOURNAL_LEDGER_INTENT_MISMATCH', 'idempotency', key, 'Completed journal ledger row does not match its stored intent.');
 
     if (saved.kind === 'claim') {
@@ -4317,7 +4338,8 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
       return;
     }
     if (saved.kind === 'award' || saved.kind === 'reverse') {
-      if (!result.entry || result.entry.id !== intent.ledgerId || (actualLedger && stableJson_(result.entry) !== stableJson_(actualLedger)) || !isFinite(Number(result.balance)) || Number(result.balance) < 0) issue('ERROR', 'JOURNAL_RESULT_INTENT_MISMATCH', 'idempotency', key, 'Completed journal result does not match its ledger intent.');
+      var expectedResultEntry = result.entry && isRedactedLedger ? Object.assign({}, result.entry, { reason: SR_REDACTED_TEXT }) : result.entry;
+      if (!result.entry || result.entry.id !== intent.ledgerId || (actualLedger && stableJson_(expectedResultEntry) !== stableJson_(actualLedger)) || !isFinite(Number(result.balance)) || Number(result.balance) < 0) issue('ERROR', 'JOURNAL_RESULT_INTENT_MISMATCH', 'idempotency', key, 'Completed journal result does not match its ledger intent.');
       if (saved.kind === 'reverse') {
         var original = ledgerById[intent.originalId];
         if (!original || original.kind !== 'EARN' || original.studentId !== intent.studentId || original.amount !== -intent.amount) issue('ERROR', 'JOURNAL_SOURCE_INTENT_MISMATCH', 'idempotency', key, 'Completed reversal journal source award does not match its stored intent.');
@@ -4663,18 +4685,34 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
   };
 }
 
-function locked_(callback) { var lock = LockService.getScriptLock(); if (!lock.tryLock(30000)) throw srError_('busy', 'Someone else is saving right now. Wait a moment and try again.'); try { return callback(); } finally { lock.releaseLock(); } }
+function locked_(callback) {
+  if (locked_._depth > 0) {
+    locked_._depth += 1;
+    try { return callback(); } finally { locked_._depth -= 1; }
+  }
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) throw srError_('busy', 'Someone else is saving right now. Wait a moment and try again.');
+  locked_._depth = 1;
+  try {
+    var result = callback();
+    try { if (typeof SpreadsheetApp !== 'undefined' && typeof SpreadsheetApp.flush === 'function') SpreadsheetApp.flush(); } catch (_) {}
+    return result;
+  } finally {
+    locked_._depth = 0;
+    lock.releaseLock();
+  }
+}
 function rows_(sheet, width) { var last = sheet.getLastRow(); return last < 2 ? [] : sheet.getRange(2, 1, last - 1, width).getValues(); }
 function upsert_(sheet, width, key, row) { var current = rows_(sheet, width); for (var i = 0; i < current.length; i++) if (String(current[i][0]) === String(key)) { sheet.getRange(i + 2, 1, 1, width).setValues([row]); return; } sheet.appendRow(row); }
 function object_(value) { return value && Object.prototype.toString.call(value) === '[object Object]' ? value : {}; }
-function countBy_(items, field) { var counts = {}; items.forEach(function(item) { var key = String(item[field] || 'UNKNOWN'); counts[key] = (counts[key] || 0) + 1; }); return counts; }
+function countBy_(items, field) { var counts = Object.create(null); items.forEach(function(item) { var key = String(item[field] || 'UNKNOWN'); counts[key] = (counts[key] || 0) + 1; }); return counts; }
 function bool_(value) { return value === true || String(value).toLowerCase() === 'true'; }
 function number_(value) { var number = Number(value); return isFinite(number) ? number : 0; }
 function integer_(value, min, max, label) { var number = Number(value); if (!isFinite(number) || Math.floor(number) !== number || number < min || number > max) throw srError_('bad_number', label + ' must be a whole number from ' + min + ' to ' + max + '.'); return number; }
 function text_(value, max, fallback) { var out = String(value == null ? '' : value).replace(/[\u0000-\u001f\u007f]/g, ' ').trim(); return (out || String(fallback || '')).slice(0, max); }
-function id_(value, label) { var out = text_(value, 80, ''); if (!/^[A-Za-z0-9_-]{8,80}$/.test(out)) throw srError_('bad_id', 'A valid ' + label + ' id is required.'); return out; }
+function id_(value, label) { var out = text_(value, 80, ''); if (!/^[A-Za-z0-9_-]{8,80}$/.test(out) || /^(?:__proto__|prototype|constructor|toString|valueOf|hasOwnProperty|isPrototypeOf|propertyIsEnumerable|toLocaleString)$/i.test(out)) throw srError_('bad_id', 'A valid ' + label + ' id is required.'); return out; }
 function optionalId_(value, label) { var out = text_(value, 80, ''); return out ? id_(out, label) : ''; }
-function normalizeEmail_(value) { var email = String(value || '').trim().toLowerCase(); return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : ''; }
+function normalizeEmail_(value) { var email = String(value || '').trim().toLowerCase(); if (!email || email.length > 254) return ''; return /^[a-z0-9.!#$%&'*+/=?^_{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/.test(email) ? email : ''; }
 function normalizeDomain_(value) { var domain = String(value || '').trim().toLowerCase().replace(/^@/, ''); return /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(domain) && domain.indexOf('.') > 0 ? domain : ''; }
 function emailDomain_(email) { return normalizeEmail_(email).split('@')[1] || ''; }
 function activeEmail_() { var email = normalizeEmail_(Session.getActiveUser().getEmail()); if (!email) throw srError_('identity_unavailable', 'Google did not say who is signed in. Sign out, sign back in with your school account, and reload.'); return email; }
@@ -4683,10 +4721,10 @@ function uuid_() { return Utilities.getUuid(); }
 function iso_(value) { if (!value) return ''; var date = new Date(String(value)); if (isNaN(date.getTime())) throw srError_('bad_date', 'Enter a date and time.'); return date.toISOString(); }
 function httpsUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\/[A-Za-z0-9.-]+(?::\d{1,5})?(?:\/[^\s"'<>\\]*)?$/i.test(out) || /[\u0000-\u001f\u007f]/.test(out) || out.length > 600) throw srError_('bad_url', 'Use an HTTPS URL.'); return out; }
 function webAppUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(out)) throw srError_('bad_url', 'Use the Apps Script /exec URL.'); return out; }
-function safeRow_(values) { return values.map(function(value) { return typeof value === 'string' && /^[\t\r\n ]*[=+\-@]/.test(value) ? "'" + value : value; }); }
+function safeRow_(values) { return values.map(function(value) { return typeof value === 'string' && /^(?:[\t\r\n]|[\s\u00A0]*[=+\-@|])/.test(value) ? "'" + value : value; }); }
 function assertPrivateStorage_(item) {
   try {
-    if (!item || item.getSharingAccess() !== DriveApp.Access.PRIVATE || item.isShareableByEditors() || item.getEditors().length || item.getViewers().length) throw new Error('Storage sharing mismatch');
+    if (!item || (typeof item.isTrashed === 'function' && item.isTrashed()) || item.getSharingAccess() !== DriveApp.Access.PRIVATE || item.isShareableByEditors() || item.getEditors().length || item.getViewers().length) throw new Error('Storage sharing mismatch');
   } catch (_) { throw srError_('storage_not_private', 'Private school storage could not be verified. Ask the deployment owner to review Drive sharing before trying again.'); }
   return item;
 }

@@ -16,7 +16,7 @@
   var SIZES = { 4: { cols: 2, rows: 2, name: 'Big' }, 6: { cols: 2, rows: 3, name: 'Medium' }, 12: { cols: 3, rows: 4, name: 'Small' } };
   var DEFAULT_SIZE = 6;
   var LONGEST = 24;   // a word a teacher adds is at most 24 letters (packets_my_words.js LIMITS.wordMax)
-  var SET_ORDER = ['mulberry', 'openmoji'];
+  var SET_ORDER = ['mulberry', 'openmoji', 'diagram'];
   var TEXT = {
     title: 'Word cards',
     print: 'Print',
@@ -28,6 +28,7 @@
     showWord: 'Only the word',
     showPicture: 'Only the picture, for matching games',
     lines: 'Lines to cut along',
+    syllables: 'Show syllable breaks (a\u00b7b\u00b7c)',
     pagesLegend: 'What to print',
     pagesBoth: 'The cards and a word list',
     pagesCards: 'Only the cards',
@@ -47,14 +48,14 @@
   function fill(text, values) { return String(text).replace(/\{(\w+)\}/g, function (all, key) { return values && values[key] != null ? String(values[key]) : all; }); }
   function count(n, one, many) { return n + ' ' + (n === 1 ? one : (many || one + 's')); }
   function cleanWords(list) {
-    var seen = {}, out = [];
+    var seen = Object.create(null), out = [];
     (Array.isArray(list) ? list : []).forEach(function (word) {
       var w = String(word == null ? '' : word).trim();
       if (w && !seen[w]) { seen[w] = true; out.push(w); }
     });
     return out;
   }
-  function sizeOf(value) { var n = Number(value); return SIZES[n] ? n : DEFAULT_SIZE; }
+  function sizeOf(value) { var n = Number(value); return Object.prototype.hasOwnProperty.call(SIZES, n) ? n : DEFAULT_SIZE; }
   // The words, in order, cut into pages of perPage.
   function layout(words, perPage) {
     var per = sizeOf(perPage), pages = [];
@@ -67,15 +68,26 @@
   function isPicture(uri) { return typeof uri === 'string' && /^data:image\/(?:png|jpeg|svg\+xml)[;,]/.test(uri); }
 
   // Which picture each word shows: { uri, set, credit } or null. set is 'own' for a picture the teacher added.
-  function picturesOf(words, own, symbols) {
-    var out = {};
+  // Optional 4th argument matcher (AlloWordPictureMatcher) adds 696 K-12 curriculum diagrams + lemma/compound/concept matching.
+  function picturesOf(words, own, symbols, matcher) {
+    var out = Object.create(null);
+    var symReady = !!(symbols && typeof symbols.get === 'function' && (typeof symbols.ready !== 'function' || symbols.ready()));
     words.forEach(function (word) {
       var entry = own && Object.prototype.hasOwnProperty.call(own, word) ? own[word] : null;
       var picture = entry && entry.picture;
       if (picture && picture.none) { out[word] = null; return; }
       if (picture && isPicture(picture.dataUri)) { out[word] = { uri: picture.dataUri, set: 'own', credit: picture.credit || null }; return; }
       var got = symbols && typeof symbols.get === 'function' && symbols.has(word) ? symbols.get(word) : null;
-      out[word] = got && got.svg ? { uri: svgUri(got.svg), set: got.set || 'mulberry', credit: null } : null;
+      if (got && got.svg) { out[word] = { uri: svgUri(got.svg), set: got.set || 'mulberry', credit: null }; return; }
+      if (matcher && typeof matcher.matchWord === 'function') {
+        var matched = null;
+        try { matched = matcher.matchWord({ word: word }, { symbols: symReady ? symbols : null, preferDiagrams: true }); } catch (_) { matched = null; }
+        if (matched && matched.svg) {
+          out[word] = { uri: svgUri(matched.svg), set: matched.set || (matched.matchTier === 'diagram' || matched.matchType === 'diagram' ? 'diagram' : 'mulberry'), credit: null };
+          return;
+        }
+      }
+      out[word] = null;
     });
     return out;
   }
@@ -85,9 +97,12 @@
   var LICENSE_DEEDS = { 'CC BY-SA 4.0': 'creativecommons.org/licenses/by-sa/4.0' };
   function setCredit(symbols, set) {
     var credits = symbols && symbols.credits ? symbols.credits : null;
-    var credit = credits && credits[set] ? credits[set] : set === 'mulberry' && symbols && symbols.credit ? symbols.credit : null;
-    if (!credit) return '';
-    var deed = LICENSE_DEEDS[credit.license];
+    var credit = credits && Object.prototype.hasOwnProperty.call(credits, set) && credits[set] ? credits[set] : set === 'mulberry' && symbols && symbols.credit ? symbols.credit : null;
+    if (!credit) {
+      if (set === 'diagram') return 'AlloFlow Curriculum Diagrams (AGPL-3.0).';
+      return '';
+    }
+    var deed = Object.prototype.hasOwnProperty.call(LICENSE_DEEDS, credit.license) ? LICENSE_DEEDS[credit.license] : '';
     return credit.set + ' by ' + credit.author + '. License: ' + credit.license + (deed ? ' (' + deed + ')' : '') + '. ' + credit.url;
   }
   function creditsFor(words, pictures, symbols, creditLine) {
@@ -106,13 +121,76 @@
   }
 
   function create(doc, win) {
-    var view = null, nodes = {}, state = null, pictures = {}, run = 0, opener = null, busy = false, note = '';
-    var options = { size: DEFAULT_SIZE, shows: 'both', lines: true, pages: 'both' };
+    var view = null, nodes = {}, state = null, pictures = Object.create(null), run = 0, opener = null, busy = false, note = '';
+    var options = { size: DEFAULT_SIZE, shows: 'both', lines: true, syllables: false, pages: 'both' };
+    var loadingSyllables = false;
 
     function el(tag, className, text) {
       var node = doc.createElement(tag);
       if (className) node.className = className;
       if (text != null) node.textContent = text;
+      return node;
+    }
+    function lookupSyllableParts(word) {
+      var src = (state && state.syllables) || (root.AlloModules && root.AlloModules.SyllableTableEn) || null;
+      if (!src) return null;
+      var lower = String(word).toLowerCase();
+      var found = null;
+      try {
+        if (typeof src === 'function') found = src(lower);
+        else if (typeof src.lookup === 'function') found = src.lookup(lower);
+      } catch (_) { found = null; }
+      if (!found) return null;
+      var parts = Array.isArray(found) ? found : (!found.check && Array.isArray(found.parts) ? found.parts : null);
+      if (!parts || parts.length < 2 || parts.join('').length !== word.length) return null;
+      var out = [], pos = 0;
+      for (var i = 0; i < parts.length; i++) {
+        out.push(word.slice(pos, pos + parts[i].length));
+        pos += parts[i].length;
+      }
+      return out;
+    }
+    function ensureSyllablesLoaded() {
+      if ((state && state.syllables) || (root.AlloModules && root.AlloModules.SyllableTableEn) || loadingSyllables) return;
+      if (!doc || !doc.createElement) return;
+      if (doc.querySelector && doc.querySelector('script[data-allo-syllable-table="1"]')) return;
+      loadingSyllables = true;
+      try {
+        var sc = doc.createElement('script');
+        sc.src = 'syllable_table_en.js';
+        sc.async = true;
+        sc.setAttribute('data-allo-syllable-table', '1');
+        sc.onload = function () { loadingSyllables = false; draw(); };
+        sc.onerror = function () { loadingSyllables = false; };
+        (doc.head || doc.documentElement).appendChild(sc);
+      } catch (_) { loadingSyllables = false; }
+    }
+    function wordNode(tag, className, word) {
+      var text = String(word == null ? '' : word);
+      if (!options.syllables) return el(tag, className, text);
+      var node = el(tag, className);
+      var re = /[A-Za-z]+/g, m, last = 0, splitAny = false;
+      while ((m = re.exec(text))) {
+        if (m.index > last) node.appendChild(doc.createTextNode(text.slice(last, m.index)));
+        var tok = m[0];
+        var parts = tok.length >= 4 ? lookupSyllableParts(tok) : null;
+        if (parts && parts.length > 1) {
+          splitAny = true;
+          for (var i = 0; i < parts.length; i++) {
+            if (i > 0) {
+              var dot = el('span', 'pc-dot', '\u00b7');
+              dot.setAttribute('aria-hidden', 'true');
+              node.appendChild(dot);
+            }
+            node.appendChild(doc.createTextNode(parts[i]));
+          }
+        } else {
+          node.appendChild(doc.createTextNode(tok));
+        }
+        last = m.index + tok.length;
+      }
+      if (last < text.length) node.appendChild(doc.createTextNode(text.slice(last)));
+      if (splitAny) node.setAttribute('data-pc-syllables', '1');
       return node;
     }
     function syncOptionClasses() {
@@ -141,7 +219,7 @@
           if (!input.checked) return;
           options[name] = name === 'size' ? sizeOf(input.value) : input.value;
           syncOptionClasses();
-          if (name === 'shows' && options.shows !== 'word' && state && !state.pictures && (state.symbols || state.own)) {
+          if (name === 'shows' && options.shows !== 'word' && state && !state.pictures && (state.symbols || state.own || state.matcher)) {
             state.pictures = true;
             var mine = ++run;
             note = '';
@@ -199,6 +277,18 @@
       lines.appendChild(box);
       lines.appendChild(el('span', '', TEXT.lines));
       body.appendChild(lines);
+      var sylWrap = el('label', 'radio pc-radio pc-check'), sylBox = el('input');
+      sylBox.type = 'checkbox'; sylBox.id = 'pc-syllables'; sylBox.checked = options.syllables;
+      sylWrap.classList.toggle('is-on', sylBox.checked);
+      sylBox.addEventListener('change', function () {
+        options.syllables = sylBox.checked;
+        syncOptionClasses();
+        if (options.syllables) ensureSyllablesLoaded();
+        draw();
+      });
+      sylWrap.appendChild(sylBox);
+      sylWrap.appendChild(el('span', '', TEXT.syllables));
+      body.appendChild(sylWrap);
       body.appendChild(radios('pages', TEXT.pagesLegend, [['both', TEXT.pagesBoth], ['cards', TEXT.pagesCards], ['list', TEXT.pagesList]]));
       nodes.options.appendChild(body);
       bar.appendChild(nodes.options);
@@ -221,12 +311,12 @@
         card.appendChild(img);
         card.classList.add('pc-has-pic');
       }
-      if (!picture || shows !== 'picture') card.appendChild(el('span', 'pc-word', word));
+      if (!picture || shows !== 'picture') card.appendChild(wordNode('span', 'pc-word', word));
       return card;
     }
     function cardPages(words) {
       var pages = layout(words, options.size), size = SIZES[options.size], out = [];
-      var shown = cardsShow() === 'word' ? {} : pictures;
+      var shown = cardsShow() === 'word' ? Object.create(null) : pictures;
       pages.forEach(function (page, i) {
         var sheet = el('section', 'pc-sheet pc-cards pc-per-' + options.size + (options.lines ? ' pc-lines' : ' pc-nolines'));
         var label = fill(TEXT.cardsPage, { n: i + 1, of: pages.length });
@@ -249,7 +339,7 @@
       sheet.appendChild(el('p', 'pc-list-sub', TEXT.listHeading + ': ' + count(words.length, 'word') + '.'));
       var cols = words.length <= 12 ? 1 : words.length <= 26 ? 2 : 3;
       var list = el('ol', 'pc-words pc-list-cols-' + cols);
-      words.forEach(function (word) { list.appendChild(el('li', '', word)); });
+      words.forEach(function (word) { list.appendChild(wordNode('li', '', word)); });
       sheet.appendChild(list);
       return sheet;
     }
@@ -271,7 +361,7 @@
       nodes.print.disabled = busy || !words.length;
       nodes.options.hidden = !words.length;
       nodes.tip.hidden = !words.length;
-      var canShowPictures = !!(state.pictures || state.symbols || state.own);
+      var canShowPictures = !!(state.pictures || state.symbols || state.own || state.matcher);
       nodes.shows.hidden = !canShowPictures;
       nodes.picturesNote.textContent = !canShowPictures ? TEXT.picturesOff : options.shows !== 'word' ? TEXT.noPictureShowsWord : '';
       nodes.said.textContent = said();
@@ -288,8 +378,8 @@
       return own.then(function (found) {
         if (mine !== run) return;
         var symbols = state.symbols;
-        var needs = !!symbols && state.words.some(function (word) { return !(found && found[word] && found[word].picture) && symbols.has(word); });
-        if (!needs || symbols.ready() || typeof state.loadPictures !== 'function') { pictures = picturesOf(state.words, found, symbols); return; }
+        var needs = !!symbols && state.words.some(function (word) { return !(found && Object.prototype.hasOwnProperty.call(found, word) && found[word] && found[word].picture) && symbols.has(word); });
+        if (!needs || symbols.ready() || typeof state.loadPictures !== 'function') { pictures = picturesOf(state.words, found, symbols, state.matcher); return; }
         busy = true;
         note = fill(TEXT.getting, { mb: (Number(symbols.bytes || 0) / 1e6).toFixed(1) });
         draw();
@@ -297,7 +387,7 @@
           if (mine !== run) return;
           busy = false;
           note = ready ? '' : TEXT.gotNone;
-          pictures = picturesOf(state.words, found, ready ? symbols : null);
+          pictures = picturesOf(state.words, found, ready ? symbols : null, state.matcher);
         });
       });
     }
@@ -306,11 +396,13 @@
       if (!view) build();
       var mine = ++run;
       var s = given || {};
+      var defaultMatcher = root && (root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher)) || null;
       state = { words: cleanWords(s.words), title: String(s.title || '').trim(), pictures: !!s.pictures, symbols: s.symbols || null,
+        matcher: s.matcher !== undefined ? s.matcher : defaultMatcher,
         loadPictures: s.loadPictures || null, own: s.own || null,
         creditLine: typeof s.creditLine === 'function' ? s.creditLine : root && root.AlloPacketMyWords && root.AlloPacketMyWords.creditLine };
-      pictures = {}; busy = false; note = '';
-      options.shows = state.pictures ? 'both' : (state.symbols || state.own ? 'word' : 'both');
+      pictures = Object.create(null); busy = false; note = '';
+      options.shows = state.pictures ? 'both' : (state.symbols || state.own || state.matcher ? 'word' : 'both');
       syncRadioValue('shows', options.shows);
       syncOptionClasses();
       opener = doc.activeElement && doc.activeElement !== doc.body ? doc.activeElement : opener;

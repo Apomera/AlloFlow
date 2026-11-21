@@ -1,8 +1,34 @@
 // Image changes use the host's resource/entry task, shared with AI generation.
 // Mulberry is fetched only when its picker opens, a search is submitted, or a result is selected.
 // Host "Needs AI setup" doorway for teacher AI actions; null on old hosts.
+function _isGlossaryAiBlocked() {
+  if (typeof window === 'undefined') return false;
+  return window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true;
+}
 function glossaryAiDoor(kind, t) {
-  try { return typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null; } catch (_) { return null; }
+  try {
+    const door = typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null;
+    if (door) return door;
+  } catch (_) {}
+  if (_isGlossaryAiBlocked()) {
+    return { disabled: true, title: 'AI image generation is unavailable right now.' };
+  }
+  return null;
+}
+function _isSafeGlossaryMulberryUrl(rawUrl) {
+  if (typeof rawUrl !== 'string' || !rawUrl.trim()) return false;
+  try {
+    const parsed = new URL(rawUrl);
+    if (parsed.protocol !== 'https:') return false;
+    if (parsed.username || parsed.password) return false;
+    const host = (parsed.hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
+    if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) return false;
+    if (/^(0\.|10\.|127\.|169\.254\.|192\.168\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host)) return false;
+    if (host === '::1' || host === '::' || /^(fc|fd|fe80:)/i.test(host) || host.startsWith('::ffff:')) return false;
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 const GLOSSARY_IMAGE_TYPES = /^image\/(png|jpeg|gif|webp|avif)$/i;
 function readGlossaryImageFile(file, signal, allowSvg = false) {
@@ -37,7 +63,7 @@ async function searchGlossaryMulberry(query, signal) {
   const seen = new Set();
   return rows.flatMap(row => {
     const url = row?.picto?.image_url;
-    if (typeof url !== 'string' || !/^https:\/\//i.test(url) || seen.has(url)) return [];
+    if (!_isSafeGlossaryMulberryUrl(url) || seen.has(url)) return [];
     seen.add(url);
     return [{ id: row.picto.id || row.id || url, label: String(row.text || q), url }];
   }).slice(0, 30);
@@ -46,7 +72,7 @@ async function prepareGlossaryMulberry(result, signal) {
   if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
     throw new Error('Online Mulberry symbol download is disabled in offline Desktop mode.');
   }
-  if (!/^https:\/\//i.test(result?.url || '')) throw new Error('This symbol has no usable image.');
+  if (!_isSafeGlossaryMulberryUrl(result?.url)) throw new Error('This symbol has no usable image.');
   const response = await fetch(result.url, { signal, credentials: 'omit', referrerPolicy: 'no-referrer' });
   if (!response.ok) throw new Error('The symbol could not be downloaded. Please try again.');
   const declaredLen = Number(response.headers?.get?.('content-length') || 0);
@@ -77,7 +103,7 @@ async function prepareGlossaryMulberry(result, signal) {
   ctx.fillText('globalsymbols.com/symbolsets/mulberry', 320, 666);
   ctx.fillText('creativecommons.org/licenses/by-sa/4.0/', 320, 682);
   const symbol = canvas.toDataURL('image/png');
-  glossaryCreditBands.set(symbol, 688 - 640);
+  _setGlossaryCreditBand(symbol, 688 - 640);
   return symbol;
 }
 // A classroom photo arrives screened, with AI alt text of the photo itself.
@@ -112,12 +138,23 @@ async function prepareGlossaryPhoto(choice, signal) {
   ctx.fillStyle = '#334155'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
   credit.forEach((text, i) => ctx.fillText(text, width / 2, height + 20 + i * 17, width - 8));
   const photo = canvas.toDataURL('image/jpeg', 0.9);
-  glossaryCreditBands.set(photo, canvas.height - height);
+  _setGlossaryCreditBand(photo, canvas.height - height);
   return photo;
 }
-// The height of the credit band drawn under a prepared picture, by its data URL,
+// The height of the credit band drawn under a prepared picture, keyed by a
+// compact content hash (bounded FIFO to avoid pinning multi-MB data URLs),
 // read once by replace() so an AI refine can take the band off and redraw it.
 const glossaryCreditBands = new Map();
+function _setGlossaryCreditBand(image, height) {
+  const key = glossaryImageDescriptionHash(image);
+  if (glossaryCreditBands.has(key)) glossaryCreditBands.delete(key);
+  while (glossaryCreditBands.size >= 40) {
+    const oldest = glossaryCreditBands.keys().next().value;
+    if (oldest === undefined) break;
+    glossaryCreditBands.delete(oldest);
+  }
+  glossaryCreditBands.set(key, height);
+}
 function glossaryImageReplacement(image, attribution = null, extra = null) {
   return Object.assign({ image, imageAlt: '', imageAltHash: '', imageAltSource: '', imageDecorative: false,
     imageSource: attribution ? 'mulberry' : 'author-upload', imageAttribution: attribution, imageCreditBand: 0 }, extra || {});
@@ -146,6 +183,10 @@ function getGlossaryImageFocusable(dialog) {
   return [...dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], summary, [tabindex]:not([tabindex="-1"])')].filter(element => {
     if (element.disabled || element.hidden || element.getAttribute('aria-hidden') === 'true') return false;
     if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+    if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+      const style = window.getComputedStyle(element);
+      if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+    }
     const closedDetails = element.closest('details:not([open])');
     if (closedDetails && !(element.tagName === 'SUMMARY' && element.parentElement === closedDetails)) return false;
     return true;
@@ -173,7 +214,15 @@ function GlossaryMulberryResult({ result, term, working, buttonClass, onChoose, 
     else if (preview === 'error') retryRef.current?.focus();
   }, [preview, attempt]);
   let previewUrl = result.url;
-  if (attempt) { const url = new URL(result.url); url.searchParams.set('_alloflow_preview_retry', String(attempt)); previewUrl = url.href; }
+  if (attempt) {
+    try {
+      const url = new URL(result.url);
+      url.searchParams.set('_alloflow_preview_retry', String(attempt));
+      previewUrl = url.href;
+    } catch (_) {
+      previewUrl = result.url;
+    }
+  }
   return <div className="min-w-0 rounded-lg border border-slate-300 bg-white p-2">
     <button ref={chooseRef} type="button" disabled={working || preview !== 'ready'} onClick={() => onChoose(previewUrl)} className={buttonClass + ' w-full'} aria-label={text('glossary.images.use_symbol_aria', 'Use {symbol} for {term}').replace('{symbol}', result.label).replace('{term}', term)}>
       <img key={attempt} src={previewUrl} alt="" onLoad={() => setPreview('ready')} onError={() => setPreview('error')} className={preview === 'error' ? 'hidden' : 'h-24 w-full object-contain bg-white'} loading="lazy" />
@@ -233,6 +282,12 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     const trap = { root: dialog };
     trapRef.current = trap;
     stack.push(trap);
+    const scrollLock = (window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, prev: '' });
+    if (scrollLock.count === 0 && document.body) {
+      scrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    }
+    scrollLock.count += 1;
     // Native top-layer dialogs escape the table's overflow and make the app inert.
     if (typeof dialog.showModal === 'function') { if (!dialog.open) dialog.showModal(); }
     else dialog.setAttribute('open', '');
@@ -255,6 +310,10 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
       const index = stack.lastIndexOf(trap);
       if (index !== -1) stack.splice(index, 1);
       trapRef.current = null;
+      scrollLock.count = Math.max(0, scrollLock.count - 1);
+      if (scrollLock.count === 0 && document.body) {
+        document.body.style.overflow = scrollLock.prev;
+      }
       if (typeof dialog.close === 'function' && dialog.open) dialog.close();
     };
   }, [open]);
@@ -308,8 +367,9 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     try {
       const image = await load(task.signal);
       if (!task.isCurrent()) { if (mountedRef.current && task.isOwner()) setError(text('glossary.images.term_changed_loading', 'The term changed while the image loaded. Please try again.')); return; }
-      const creditBand = glossaryCreditBands.get(image) || 0;
-      glossaryCreditBands.delete(image);
+      const bandKey = glossaryImageDescriptionHash(image);
+      const creditBand = glossaryCreditBands.get(bandKey) || 0;
+      glossaryCreditBands.delete(bandKey);
       const saved = task.commit(() => glossaryImageReplacement(image, attribution, Object.assign({ imageCreditBand: creditBand }, typeof extraFor === 'function' ? extraFor(image) : null)));
       if (mountedRef.current) {
         if (saved) recordReplacement(before, image);
@@ -323,7 +383,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     }
   }
   async function generate() {
-    if (!onGenerate || working || aiDoor?.disabled) return;
+    if (!onGenerate || working || aiDoor?.disabled || _isGlossaryAiBlocked()) return;
     const before = glossaryImageSnapshot(item), token = {};
     generationRef.current = token; stopSearch(); setBusy(true); setError(''); setStatus('');
     try {
@@ -371,7 +431,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
     </div>
     {!open && feedback}
     {!open && item.image && descriptionDirty && <p className="text-xs text-slate-600">{text('glossary.images.unsaved_description', 'Unsaved image description draft')}</p>}
-    {open && <dialog ref={dialogRef} tabIndex={-1} aria-modal="true" aria-labelledby={dialogTitleId} onCancel={event => { event.preventDefault(); closeDialog(); }} onKeyDown={event => { const stack = window.__alloFocusTrapStack; if (Array.isArray(stack) && stack.length > 0 && trapRef.current && stack[stack.length - 1] !== trapRef.current) return; if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Tab') { containGlossaryImageDialogFocus(event, dialogRef.current); return; } if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeDialog(); } }} className="fixed inset-0 m-auto max-w-none rounded-xl border border-slate-300 bg-white p-4 text-left text-slate-800 shadow-2xl backdrop:bg-slate-900/60" style={{ width: 'min(40rem, calc(100vw - 2rem))', maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}>
+    {open && <dialog ref={dialogRef} tabIndex={-1} aria-modal="true" aria-labelledby={dialogTitleId} onCancel={event => { event.preventDefault(); closeDialog(); }} onKeyDown={event => { const stack = window.__alloFocusTrapStack; if (Array.isArray(stack) && stack.length > 0 && trapRef.current && stack[stack.length - 1] !== trapRef.current) return; if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Tab') { containGlossaryImageDialogFocus(event, dialogRef.current); return; } if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeDialog(); } }} className="allo-docsuite fixed inset-0 m-auto max-w-none rounded-xl border border-slate-300 bg-white p-4 text-left text-slate-800 shadow-2xl backdrop:bg-slate-900/60" style={{ width: 'min(40rem, calc(100vw - 2rem))', maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto' }}>
       <div className="flex items-start justify-between gap-3">
         <h2 id={dialogTitleId} className="min-w-0 break-words text-lg font-bold">{text('glossary.images.change', 'Change image')}: {item.term}</h2>
         <button type="button" className={buttonClass + ' shrink-0'} onClick={() => closeDialog()}>{text('common.close', 'Close')}</button>

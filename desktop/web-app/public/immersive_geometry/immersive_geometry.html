@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none';">
 <title>AlloFlow — Immersive Stretch Lab</title>
 <!--
   AlloFlow Immersive Geometry — "Stretch Lab" (WebXR companion window).
@@ -642,6 +643,7 @@
 <div id="sceneDescription" class="sr-only">Interactive 3D stretch lab. Use the desktop controls or enter immersive mode to pull labeled X, Z, and Y handles. The formula card explains how length, area, and volume change. Click the highlighted plan or cross-section to hear its slice formula. Press T or Play story for a non-destructive dimension tour.</div>
 
 <a-scene aria-label="Interactive 3D stretch lab" aria-describedby="sceneDescription"
+  inspector="url: ''"
   background="color: #0b1020"
   fog="type: linear; color: #0b1020; near: 8; far: 34"
   renderer="colorManagement: true; antialias: true; physicallyCorrectLights: true"
@@ -1147,7 +1149,9 @@ AFRAME.registerComponent('stretch-lab', {
     this.el.appendChild(this.box);
 
     this.edgeFrame = document.createElement('a-entity');
-    var edgeGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1));
+    var edgeBox = new THREE.BoxGeometry(1, 1, 1);
+    var edgeGeometry = new THREE.EdgesGeometry(edgeBox);
+    edgeBox.dispose();
     this.edgeMaterial = new THREE.LineBasicMaterial({ color: '#e0e7ff', transparent: true, opacity: 0.78, depthWrite: false });
     var edgeLines = new THREE.LineSegments(edgeGeometry, this.edgeMaterial);
     edgeLines.renderOrder = 3;
@@ -1173,7 +1177,9 @@ AFRAME.registerComponent('stretch-lab', {
     this.el.appendChild(this.gestureGhost);
 
     this.comparisonFrame = document.createElement('a-entity');
-    var comparisonGeometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1));
+    var comparisonBox = new THREE.BoxGeometry(1, 1, 1);
+    var comparisonGeometry = new THREE.EdgesGeometry(comparisonBox);
+    comparisonBox.dispose();
     this.comparisonMaterial = new THREE.LineBasicMaterial({ color: '#60a5fa', transparent: true, opacity: 0.82, depthWrite: false, depthTest: false });
     var comparisonLines = new THREE.LineSegments(comparisonGeometry, this.comparisonMaterial);
     comparisonLines.renderOrder = 5;
@@ -2446,6 +2452,11 @@ AFRAME.registerComponent('stretch-lab', {
     if (this.dragTrail && this.dragTrail.parentNode) this.dragTrail.parentNode.removeChild(this.dragTrail);
     if (this.dragTrailGeometry) this.dragTrailGeometry.dispose();
     if (this.dragTrailMaterial) this.dragTrailMaterial.dispose();
+    if (this.el) {
+      while (this.el.firstChild) {
+        try { this.el.removeChild(this.el.firstChild); } catch (_) { break; }
+      }
+    }
   },
 
   emitState: function (message, silent) {
@@ -3336,14 +3347,16 @@ window.addEventListener('load', function () {
     labelWrap.object3D.rotation.set(0, workspacePose.yaw, 0);
   }
 
+  var panelEyeVec = null;
+  var panelCardVec = null;
   function faceMeasurePanelToCamera() {
-    if (!labelWrap || !cameraEl || !window.THREE || labelWrap.object3D.visible === false) return;
+    if (document.hidden || !labelWrap || !cameraEl || !window.THREE || labelWrap.object3D.visible === false) return;
     var cameraObject = cameraEl.getObject3D('camera') || cameraEl.object3D;
-    var eye = new THREE.Vector3();
-    var card = new THREE.Vector3();
-    cameraObject.getWorldPosition(eye);
-    labelWrap.object3D.getWorldPosition(card);
-    var dx = eye.x - card.x, dz = eye.z - card.z;
+    if (!panelEyeVec) panelEyeVec = new THREE.Vector3();
+    if (!panelCardVec) panelCardVec = new THREE.Vector3();
+    cameraObject.getWorldPosition(panelEyeVec);
+    labelWrap.object3D.getWorldPosition(panelCardVec);
+    var dx = panelEyeVec.x - panelCardVec.x, dz = panelEyeVec.z - panelCardVec.z;
     if (dx * dx + dz * dz < 0.0001) return;
     labelWrap.object3D.rotation.set(0, Math.atan2(dx, dz), 0);
   }
@@ -3876,7 +3889,7 @@ window.addEventListener('load', function () {
     if(transferTimer)window.clearTimeout(transferTimer);transferPending=false;transferApplied=data.ok===true;transferStatus.textContent=String(data.message||'').slice(0,500);updateTransferPreview();
   });
   downloadSandbox.addEventListener('click',function(){var state=currentTransferState();if(!state)return;
-    var blob=new Blob([JSON.stringify({schema:'geometry-stretch-companion-v1',state:state,unit:SANDBOX_BRIDGE?SANDBOX_BRIDGE.unit:'unit'},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='stretch-lab-model.json';a.click();window.setTimeout(function(){URL.revokeObjectURL(url);},0);transferStatus.textContent='Model downloaded. In Sandbox, choose Dimensional Stretch → Learn → Import project or Stretch Lab model.';
+    var blob=new Blob([JSON.stringify({schema:'geometry-stretch-companion-v1',state:state,unit:SANDBOX_BRIDGE?SANDBOX_BRIDGE.unit:'unit'},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='stretch-lab-model.json';a.click();window.setTimeout(function(){try{URL.revokeObjectURL(url);}catch(_){}},1500);transferStatus.textContent='Model downloaded. In Sandbox, choose Dimensional Stretch → Learn → Import project or Stretch Lab model.';
   });
   figure.addEventListener('statechange',updateTransferPreview);
   updateTransferPreview();
@@ -4005,7 +4018,7 @@ window.addEventListener('load', function () {
   scene.addEventListener('enter-vr', function () { setImmersiveMode(true); });
   scene.addEventListener('exit-vr', function () { setImmersiveMode(false); });
   var panelFaceTimer = window.setInterval(faceMeasurePanelToCamera, 120);
-  window.addEventListener('pagehide', function () { window.clearInterval(panelFaceTimer); });
+  window.addEventListener('pagehide', function () { window.clearInterval(panelFaceTimer); if (transferTimer) { window.clearTimeout(transferTimer); transferTimer = null; } });
 
   // Boot the figure now that the component is registered and the statechange
   // listener above is ready to catch its first emit. Component initialization

@@ -1,10 +1,13 @@
 /// <reference path="../pb_data/types.d.ts" />
 // PocketBase JS migration enforcing owner-scoped FERPA isolation across all AlloFlow collections.
+// Supports PocketBase v0.23+ (app API, fields, @request.body) with fallback for legacy v0.22 (Dao, schema, @request.data).
 migrate((db) => {
-  const dao = new Dao(db);
+  const isV23 = Boolean(db && typeof db.findCollectionByNameOrId === "function" && typeof db.save === "function");
+  const dao = isV23 ? null : new Dao(db);
+  const reqField = isV23 ? "@request.body" : "@request.data";
   const ownerRead = "@request.auth.id != '' && owner_id = @request.auth.id";
-  const ownerCreate = "@request.auth.id != '' && @request.data.owner_id = @request.auth.id";
-  const ownerUpdate = "@request.auth.id != '' && owner_id = @request.auth.id && @request.data.owner_id = @request.auth.id";
+  const ownerCreate = "@request.auth.id != '' && " + reqField + ".owner_id = @request.auth.id";
+  const ownerUpdate = "@request.auth.id != '' && owner_id = @request.auth.id && (" + reqField + ".owner_id:isset = false || " + reqField + ".owner_id = @request.auth.id)";
 
   const definitions = [
     {
@@ -15,7 +18,7 @@ migrate((db) => {
       createRule: ownerCreate,
       updateRule: ownerUpdate,
       deleteRule: ownerRead,
-      schema: [
+      fields: [
         { name: "owner_id", type: "text", required: true },
         { name: "app_id", type: "text", required: true },
         { name: "code", type: "text", required: true },
@@ -39,10 +42,10 @@ migrate((db) => {
       type: "base",
       listRule: "@request.auth.id != '' && user_id = @request.auth.id",
       viewRule: "@request.auth.id != '' && user_id = @request.auth.id",
-      createRule: "@request.auth.id != '' && @request.data.user_id = @request.auth.id",
-      updateRule: "@request.auth.id != '' && user_id = @request.auth.id && @request.data.user_id = @request.auth.id",
+      createRule: "@request.auth.id != '' && " + reqField + ".user_id = @request.auth.id",
+      updateRule: "@request.auth.id != '' && user_id = @request.auth.id && (" + reqField + ".user_id:isset = false || " + reqField + ".user_id = @request.auth.id)",
       deleteRule: "@request.auth.id != '' && user_id = @request.auth.id",
-      schema: [
+      fields: [
         { name: "app_id", type: "text", required: true },
         { name: "user_id", type: "text", required: true },
         { name: "entries", type: "json" }
@@ -59,7 +62,7 @@ migrate((db) => {
       createRule: ownerCreate,
       updateRule: ownerUpdate,
       deleteRule: ownerRead,
-      schema: [
+      fields: [
         { name: "owner_id", type: "text", required: true },
         { name: "app_id", type: "text", required: true },
         { name: "asset_id", type: "text", required: true },
@@ -78,7 +81,7 @@ migrate((db) => {
       createRule: ownerCreate + " && session_code != '' && student_id != ''",
       updateRule: ownerUpdate,
       deleteRule: ownerRead,
-      schema: [
+      fields: [
         { name: "owner_id", type: "text", required: true },
         { name: "session_code", type: "text", required: true },
         { name: "student_id", type: "text", required: true },
@@ -97,7 +100,7 @@ migrate((db) => {
       createRule: ownerCreate,
       updateRule: null,
       deleteRule: ownerRead,
-      schema: [
+      fields: [
         { name: "owner_id", type: "text", required: true },
         { name: "app_id", type: "text" },
         { name: "prompt", type: "text" },
@@ -110,26 +113,65 @@ migrate((db) => {
     }
   ];
 
+  const ensureFieldsAndIndexes = (collection, def) => {
+    if (isV23 && collection.fields && typeof collection.fields.getByName === "function") {
+      for (const f of def.fields) {
+        if (!collection.fields.getByName(f.name)) {
+          collection.fields.add(new Field(f));
+        }
+      }
+    } else if (collection.schema && typeof collection.schema.getFieldByName === "function") {
+      for (const f of def.fields) {
+        if (!collection.schema.getFieldByName(f.name)) {
+          collection.schema.addField(new SchemaField(f));
+        }
+      }
+    }
+    if (Array.isArray(def.indexes)) {
+      const existingIndexes = Array.isArray(collection.indexes) ? collection.indexes : [];
+      for (const idx of def.indexes) {
+        if (!existingIndexes.includes(idx)) {
+          existingIndexes.push(idx);
+        }
+      }
+      collection.indexes = existingIndexes;
+    }
+  };
+
   for (const def of definitions) {
     let existing = null;
-    try { existing = dao.findCollectionByNameOrId(def.name); } catch (_) { existing = null; }
+    try {
+      existing = isV23 ? db.findCollectionByNameOrId(def.name) : dao.findCollectionByNameOrId(def.name);
+    } catch (_) {
+      existing = null;
+    }
     if (existing) {
+      ensureFieldsAndIndexes(existing, def);
       existing.listRule = def.listRule;
       existing.viewRule = def.viewRule;
       existing.createRule = def.createRule;
       existing.updateRule = def.updateRule;
       existing.deleteRule = def.deleteRule;
-      dao.saveCollection(existing);
+      if (isV23) db.save(existing);
+      else dao.saveCollection(existing);
+    } else if (isV23) {
+      db.save(new Collection(def));
     } else {
-      dao.saveCollection(new Collection(def));
+      const legacyDef = Object.assign({}, def, { schema: def.fields });
+      delete legacyDef.fields;
+      dao.saveCollection(new Collection(legacyDef));
     }
   }
 }, (db) => {
-  const dao = new Dao(db);
+  const isV23 = Boolean(db && typeof db.findCollectionByNameOrId === "function" && typeof db.delete === "function");
+  const dao = isV23 ? null : new Dao(db);
   for (const name of ["images", "student_progress", "session_assets", "teacher_history", "sessions"]) {
     try {
-      const col = dao.findCollectionByNameOrId(name);
-      if (col) dao.deleteCollection(col);
+      const col = isV23 ? db.findCollectionByNameOrId(name) : dao.findCollectionByNameOrId(name);
+      if (col) {
+        if (isV23) db.delete(col);
+        else dao.deleteCollection(col);
+      }
     } catch (_) {}
   }
 });

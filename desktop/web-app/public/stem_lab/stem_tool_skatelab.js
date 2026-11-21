@@ -1045,7 +1045,7 @@ window.StemLab = window.StemLab || {
         }
       }
 
-      if (previous.x < gapM && nextX >= gapM && previous.y < 0) {
+      if (previous.x < gapM && nextX >= gapM && (previous.y < 0 || nextY < 0)) {
         var wallDelta = levelCrossingDelta(previous.x, previous.vx, ax, gapM, dt);
         var wallCrossing = wallDelta == null
           ? interpolateMotionState(previous, next,
@@ -3286,24 +3286,57 @@ window.StemLab = window.StemLab || {
   function drawBackdrop(ctx, width, height, title, subtitle) {
     var compact = width < 520;
     var sky = ctx.createLinearGradient(0, 0, 0, height);
-    sky.addColorStop(0, '#061327');
-    sky.addColorStop(0.48, '#183151');
-    sky.addColorStop(0.76, '#152238');
-    sky.addColorStop(1, '#08111f');
+    sky.addColorStop(0, '#040d1d');
+    sky.addColorStop(0.38, '#102644');
+    sky.addColorStop(0.56, '#233b59');
+    sky.addColorStop(0.76, '#142238');
+    sky.addColorStop(1, '#07101d');
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, width, height);
 
     var horizon = Math.round(height * 0.56);
+    // Warm dusk horizon atmospheric glow & distant mountain ridge silhouette.
     ctx.save();
-    ctx.globalAlpha = compact ? 0.44 : 0.72;
+    if (typeof ctx.createRadialGradient === 'function') {
+      var horGlow = ctx.createRadialGradient(width * 0.68, horizon, 6, width * 0.68, horizon, Math.max(width * 0.45, 180));
+      horGlow.addColorStop(0, 'rgba(246,184,63,0.16)');
+      horGlow.addColorStop(0.5, 'rgba(114,220,232,0.06)');
+      horGlow.addColorStop(1, 'rgba(8,17,31,0)');
+      ctx.fillStyle = horGlow;
+      ctx.fillRect(0, 0, width, horizon + 20);
+    }
+    // Subtle twilight stars overhead.
+    ctx.fillStyle = 'rgba(226,240,255,0.45)';
+    for (var st = 0; st < (compact ? 10 : 20); st++) {
+      var stx = ((st * 137 + 41) % 97) / 97 * width;
+      var sty = ((st * 73 + 19) % 53) / 53 * (horizon * 0.58);
+      ctx.fillRect(stx, sty, st % 3 === 0 ? 1.8 : 1.1, st % 3 === 0 ? 1.8 : 1.1);
+    }
+    // Distant ridge behind the urban skatepark skyline.
+    ctx.fillStyle = 'rgba(12,27,48,0.68)';
+    ctx.beginPath();
+    ctx.moveTo(0, horizon);
+    for (var rk = 0; rk <= 14; rk++) {
+      var rx = width * (rk / 14);
+      var ry = horizon - 26 - Math.sin(rk * 1.15 + 0.4) * 20 - Math.cos(rk * 2.4) * 10;
+      ctx.lineTo(rx, ry);
+    }
+    ctx.lineTo(width, horizon);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = compact ? 0.48 : 0.76;
     ctx.fillStyle = '#0b1728';
     var blockWidth = Math.max(30, Math.round(width / 17));
     for (var building = -1; building < 19; building++) {
       var buildingX = building * blockWidth;
       var buildingH = 18 + ((building * 17 + 31) % 42);
       ctx.fillRect(buildingX, horizon - buildingH, blockWidth - 4, buildingH);
-      ctx.fillStyle = 'rgba(246,184,63,.28)';
+      ctx.fillStyle = 'rgba(246,184,63,.30)';
       if (building % 3 === 0) ctx.fillRect(buildingX + 8, horizon - buildingH + 10, 4, 3);
+      if (building % 4 === 1) ctx.fillRect(buildingX + 16, horizon - buildingH + 18, 4, 3);
       ctx.fillStyle = '#0b1728';
     }
     ctx.restore();
@@ -3328,16 +3361,26 @@ window.StemLab = window.StemLab || {
     ctx.restore();
 
     ctx.save();
-    ctx.strokeStyle = 'rgba(114,220,232,.28)';
+    ctx.strokeStyle = 'rgba(114,220,232,.34)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(width * 0.08, horizon);
     ctx.lineTo(width * 0.08, horizon - 78);
     ctx.lineTo(width * 0.13, horizon - 105);
     ctx.stroke();
-    ctx.fillStyle = 'rgba(114,220,232,.16)';
+    if (typeof ctx.createRadialGradient === 'function') {
+      var lampCone = ctx.createRadialGradient(width * 0.13, horizon - 105, 2, width * 0.13, horizon - 105, 48);
+      lampCone.addColorStop(0, 'rgba(165,243,252,.36)');
+      lampCone.addColorStop(0.45, 'rgba(114,220,232,.10)');
+      lampCone.addColorStop(1, 'rgba(114,220,232,0)');
+      ctx.fillStyle = lampCone;
+      ctx.beginPath();
+      ctx.arc(width * 0.13, horizon - 105, 48, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(224,250,255,.82)';
     ctx.beginPath();
-    ctx.arc(width * 0.13, horizon - 105, 11, 0, Math.PI * 2);
+    ctx.arc(width * 0.13, horizon - 105, 4.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
@@ -3885,16 +3928,45 @@ window.StemLab = window.StemLab || {
     ctx.lineTo(map(-4, -0.35).x, map(-4, -0.35).y);
     ctx.closePath();
     var concrete = ctx.createLinearGradient(0, baseY - sim.rampDepthM * sy, 0, baseY + 20);
-    concrete.addColorStop(0, '#50627a');
-    concrete.addColorStop(0.52, '#2d3c51');
-    concrete.addColorStop(1, '#182437');
+    if (sim.surface.id === 'wood') {
+      concrete.addColorStop(0, '#7c5c40');
+      concrete.addColorStop(0.52, '#4a3525');
+      concrete.addColorStop(1, '#261b14');
+    } else {
+      concrete.addColorStop(0, '#556882');
+      concrete.addColorStop(0.52, '#2d3d53');
+      concrete.addColorStop(1, '#162234');
+    }
     ctx.fillStyle = concrete;
     ctx.fill();
-    ctx.strokeStyle = '#a9bad0';
+    // Structural ramp framing studs & cross-bracing clipped inside the ramp body.
+    if (typeof ctx.clip === 'function') {
+      ctx.save();
+      ctx.clip();
+      ctx.strokeStyle = sim.surface.id === 'wood' ? 'rgba(245,215,175,0.16)' : 'rgba(186,214,242,0.12)';
+      ctx.lineWidth = 1.2;
+      var deckBaseY = map(0, -0.35).y;
+      for (var studX = -3.6; studX <= 3.6; studX += 0.9) {
+        var stTop = map(studX, halfpipeY(studX, sim.rampDepthM));
+        ctx.beginPath();
+        ctx.moveTo(stTop.x, stTop.y + 4);
+        ctx.lineTo(stTop.x, deckBaseY);
+        ctx.stroke();
+        if (Math.abs(studX) > 1.2) {
+          var stAdj = map(studX + (studX < 0 ? 0.9 : -0.9), halfpipeY(studX + (studX < 0 ? 0.9 : -0.9), sim.rampDepthM));
+          ctx.beginPath();
+          ctx.moveTo(stTop.x, stTop.y + 8);
+          ctx.lineTo(stAdj.x, deckBaseY);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+    ctx.strokeStyle = sim.surface.id === 'wax' ? '#9be7f2' : '#b7c8dd';
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    ctx.globalAlpha = sim.surface.id === 'rough' ? 0.34 : 0.19;
+    ctx.globalAlpha = sim.surface.id === 'rough' ? 0.36 : 0.22;
     ctx.strokeStyle = sim.surface.id === 'wax' ? '#72dce8' : '#b3c2d4';
     ctx.lineWidth = 1;
     for (var texture = -3.5; texture <= 3.5; texture += 0.7) {
@@ -3909,12 +3981,21 @@ window.StemLab = window.StemLab || {
     var leftLip = map(-4, sim.rampDepthM);
     var rightLip = map(4, sim.rampDepthM);
     ctx.strokeStyle = '#f6b83f';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 4.2;
+    ctx.lineCap = 'round';
     ctx.beginPath();
     ctx.moveTo(leftLip.x - 18, leftLip.y);
     ctx.lineTo(leftLip.x + 6, leftLip.y);
     ctx.moveTo(rightLip.x - 5, rightLip.y);
     ctx.lineTo(rightLip.x + 19, rightLip.y);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,249,219,0.72)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(leftLip.x - 16, leftLip.y - 1.2);
+    ctx.lineTo(leftLip.x + 4, leftLip.y - 1.2);
+    ctx.moveTo(rightLip.x - 3, rightLip.y - 1.2);
+    ctx.lineTo(rightLip.x + 17, rightLip.y - 1.2);
     ctx.stroke();
 
     // Starting height: the dashed line makes it easy to see each pass rise
@@ -4021,17 +4102,38 @@ window.StemLab = window.StemLab || {
 
     if (config.showTrail) {
       ctx.save();
-      var trailCount = width < 520 ? 5 : 9;
-      var trailStep = Math.min(0.021, 0.35 / Math.max(0.35, sim.motionDuration));
+      var trailCount = width < 520 ? 8 : 14;
+      var trailStep = Math.min(0.016, 0.36 / Math.max(0.35, sim.motionDuration));
+      var trailPts = [];
       for (var trail = 0; trail < trailCount; trail++) {
         var pp = Math.max(0, config.progress - trail * trailStep);
         var ghost = sampleHalfpipe(sim, pp);
         var gp = map(ghost.x, ghost.y);
-        ctx.globalAlpha = 0.25 * (1 - trail / 10);
-        ctx.fillStyle = '#72dce8';
-        ctx.beginPath();
-        ctx.arc(gp.x, gp.y - 14, 4.2, 0, Math.PI * 2);
-        ctx.fill();
+        var keShare = ghost.energy && ghost.energy.total > 0.001
+          ? clamp(ghost.energy.kinetic / ghost.energy.total, 0, 1)
+          : clamp(1 - ghost.y / Math.max(0.5, sim.rampDepthM), 0, 1);
+        trailPts.push({ x: gp.x, y: gp.y - 14, ke: keShare, fade: 1 - trail / trailCount });
+      }
+      ctx.lineCap = 'round';
+      for (var ts = 1; ts < trailPts.length; ts++) {
+        var aPt = trailPts[ts - 1], bPt = trailPts[ts];
+        var trR = Math.round(96 + aPt.ke * 155);
+        var trG = Math.round(215 - aPt.ke * 32);
+        var trB = Math.round(245 - aPt.ke * 182);
+        ctx.strokeStyle = 'rgba(' + trR + ',' + trG + ',' + trB + ',' + (0.42 * aPt.fade).toFixed(3) + ')';
+        ctx.lineWidth = 2.2 + aPt.fade * 4.4;
+        ctx.beginPath(); ctx.moveTo(aPt.x, aPt.y); ctx.lineTo(bPt.x, bPt.y); ctx.stroke();
+      }
+      // Subtle high-speed deck spark glint when kinetic energy dominates near bottom transition (reduced-motion safe).
+      var reducedMotion2D = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reducedMotion2D && trailPts.length > 2 && trailPts[0].ke > 0.72 && !sample.airborne) {
+        ctx.fillStyle = 'rgba(255,232,150,0.75)';
+        for (var spk = 0; spk < 3; spk++) {
+          var sxOff = -8 - spk * 6;
+          ctx.beginPath();
+          ctx.arc(trailPts[0].x + sxOff, trailPts[0].y + 11 - spk * 1.4, 1.8 - spk * 0.35, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
       ctx.restore();
     }
@@ -4144,7 +4246,10 @@ window.StemLab = window.StemLab || {
     ctx.fillStyle = pit;
     ctx.fillRect(left, baseY - 1, Math.max(0, map(sim.gapM, 0).x - left), height - baseY + 1);
 
-    ctx.fillStyle = '#28384d';
+    var launchDeck = ctx.createLinearGradient(0, baseY, 0, height);
+    launchDeck.addColorStop(0, '#3a4f68');
+    launchDeck.addColorStop(1, '#1a2738');
+    ctx.fillStyle = launchDeck;
     ctx.beginPath();
     ctx.moveTo(0, baseY + 34);
     ctx.lineTo(left, baseY);
@@ -4153,24 +4258,39 @@ window.StemLab = window.StemLab || {
     ctx.lineTo(0, height);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = '#a9bad0';
+    ctx.strokeStyle = '#b9c9dd';
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(0, baseY + 34);
     ctx.lineTo(left, baseY);
     ctx.stroke();
+    ctx.strokeStyle = '#f6b83f';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(left - 6, baseY + 2);
+    ctx.lineTo(left + 9, baseY);
+    ctx.stroke();
 
     var landingX = map(sim.gapM, 0).x;
     var landingEndX = map(sim.gapM + sim.landingZoneM, 0).x;
     var platform = ctx.createLinearGradient(0, baseY, 0, height);
-    platform.addColorStop(0, '#43556d');
-    platform.addColorStop(1, '#1d2a3d');
+    platform.addColorStop(0, '#495d77');
+    platform.addColorStop(0.45, '#2b3b52');
+    platform.addColorStop(1, '#162234');
     ctx.fillStyle = platform;
     ctx.fillRect(landingX, baseY, width - landingX, height - baseY);
-    ctx.fillStyle = 'rgba(94,224,146,.24)';
+    // Concrete deck expansion joints & support pilings beneath the landing platform.
+    ctx.save();
+    ctx.strokeStyle = 'rgba(186,214,242,0.14)';
+    ctx.lineWidth = 1.2;
+    for (var pileX = landingX + 24; pileX < width - 12; pileX += 46) {
+      ctx.beginPath(); ctx.moveTo(pileX, baseY + 2); ctx.lineTo(pileX, height); ctx.stroke();
+    }
+    ctx.restore();
+    ctx.fillStyle = 'rgba(94,224,146,.26)';
     ctx.fillRect(landingX, baseY - 10, Math.max(4, landingEndX - landingX), 10);
     ctx.strokeStyle = '#5ee092';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.4;
     ctx.beginPath();
     ctx.moveTo(landingX, baseY);
     ctx.lineTo(landingEndX, baseY);
@@ -9401,10 +9521,10 @@ window.StemLab = window.StemLab || {
           return seen.indexOf(ghostMoonHash) !== -1 ? null : { moonSeen: seen.concat([ghostMoonHash]).slice(-40) };
         });
       }, [ghostMoonHash]);
-      // The canvas footer says when a guess is in.
+      // The canvas footer says when a guess is in, and toggling Predict before each run updates predictionLocked.
       React.useEffect(function() {
         if (!running && canvasRef.current) drawScene(canvasRef.current, sim, playheadRef.current, renderConfig());
-      }, [!!estimateBlocked]);
+      }, [!!estimateBlocked, !!predictionLocked]);
       React.useEffect(function() {
         if (!focusPredictionNextRef.current) return;
         focusPredictionNextRef.current = false;

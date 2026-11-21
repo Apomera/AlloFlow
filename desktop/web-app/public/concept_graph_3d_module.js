@@ -57,8 +57,13 @@
   var BLOOM_BASE = 'https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/';
   var BLOOM_FILES = ['shaders/CopyShader.js', 'shaders/LuminosityHighPassShader.js', 'postprocessing/EffectComposer.js', 'postprocessing/RenderPass.js', 'postprocessing/ShaderPass.js', 'postprocessing/UnrealBloomPass.js'];
 
-  function isNum(v) { return typeof v === 'number' && !isNaN(v); }
+  function isNum(v) { return typeof v === 'number' && isFinite(v); }
   function num(v, d) { return isNum(v) ? v : d; }
+  function _cg3dUnsafeKey(k) { return k === '__proto__' || k === 'constructor' || k === 'prototype'; }
+  function _isSafeNodeImageDataUrl(u, maxLen) {
+    return typeof u === 'string' && u.length <= (maxLen || 3500000)
+      && /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(u);
+  }
   var SR_ONLY = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;';
 
   function engine() { return window.AlloModules && window.AlloModules.ConceptGraphEngine; }
@@ -89,7 +94,7 @@
     var lanes = E ? E.deriveLanes(projected) : [];
     var outline = E ? E.deriveOutline(projected) : { order: (projected.nodes || []).map(function (n) { return n.id; }), hasCycle: false };
 
-    var laneIndex = {};
+    var laneIndex = Object.create(null);
     lanes.forEach(function (l) { laneIndex[l.key == null ? '__none' : l.key] = l.index; });
 
     var nodes = (projected.nodes || []).map(function (n) {
@@ -259,7 +264,8 @@
   // project() consumes). PURE — unit-tested; powers drag-to-arrange write-back.
   function sceneToAxisValues(scene, sx, sy, opts) {
     opts = opts || {};
-    var width = num(opts.width, 2000), height = num(opts.height, 1200);
+    var width = (isNum(opts.width) && opts.width > 0) ? opts.width : 2000;
+    var height = (isNum(opts.height) && opts.height > 0) ? opts.height : 1200;
     var c = (scene && scene.bounds && scene.bounds.center) || { x: 0, y: 0 };
     var x = (isNum(sx) ? sx : 0) + c.x;         // undo centering
     var y = c.y - (isNum(sy) ? sy : 0);         // undo centering + Y flip
@@ -314,7 +320,7 @@
   // checkable sentence of "why" — evidence-grounded, not vibes.
   function _cg3dSanitizeUntrusted(value, maxLen) {
     return String(value == null ? '' : value)
-      .replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '')
+      .replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_]*[^>]*>/gi, '')
       .slice(0, maxLen || 300);
   }
   function _cg3dFenceUntrusted(tag, value, maxLen) {
@@ -335,7 +341,9 @@
     try {
       var m = String(text || '').match(/\{[\s\S]*\}/);
       if (!m) return null;
-      var o = JSON.parse(m[0]);
+      var o = JSON.parse(m[0], function (k, v) { return _cg3dUnsafeKey(k) ? undefined : v; });
+      if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
+      if (o.score == null || o.score === '' || typeof o.score === 'boolean') return null;
       var s = Number(o.score);
       if (!isFinite(s)) return null;
       return { score: Math.max(0, Math.min(1, s)), why: typeof o.why === 'string' ? o.why.slice(0, 240) : '' };
@@ -345,7 +353,10 @@
   function isWebGLAvailable() {
     try {
       var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true');
-      return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+      var gl = window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl'));
+      if (!gl) return false;
+      try { var ext = gl.getExtension('WEBGL_lose_context'); if (ext && typeof ext.loseContext === 'function') ext.loseContext(); } catch (_) {}
+      return true;
     } catch (e) { return false; }
   }
 
@@ -359,6 +370,34 @@
     'https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/postprocessing/UnrealBloomPass.js': 'sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa'
   };
 
+  function _validateScriptUrl(rawUrl, desktopErr) {
+    var u = String(rawUrl == null ? '' : rawUrl).trim();
+    if (!u || /[\u0000-\u001f\u007f]/.test(u)) return { ok: false, error: 'Blocked empty or malformed script URL' };
+    if (/^(?:javascript|data|blob|vbscript|file):/i.test(u) || /^\/\//.test(u)) {
+      return { ok: false, error: 'Blocked unsafe script URL scheme' };
+    }
+    var isLoopback = function (host) { return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]'; };
+    try {
+      var baseHref = (typeof window !== 'undefined' && window.location && window.location.href && /^https?:/i.test(window.location.href))
+        ? window.location.href
+        : 'https://alloflow.invalid/';
+      var parsed = new URL(u, baseHref);
+      if (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && isLoopback(parsed.hostname))) {
+        return { ok: false, error: 'Blocked non-HTTPS script URL' };
+      }
+      if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+        var sameOrigin = false;
+        try { sameOrigin = !!(window.location && window.location.origin && parsed.origin === window.location.origin); } catch (_) {}
+        if (!sameOrigin && !isLoopback(parsed.hostname)) {
+          return { ok: false, error: desktopErr || 'External CDN is disabled in Desktop mode' };
+        }
+      }
+    } catch (_) {
+      return { ok: false, error: 'Invalid script URL' };
+    }
+    return { ok: true, url: u };
+  }
+
   // Lazy-load three.js once (dedup across instances); resolves to window.THREE.
   function loadThree(opts) {
     opts = opts || {};
@@ -370,33 +409,58 @@
       });
     }
     var srcUrl = opts.threeUrl || THREE_URL;
-    if (window._isDesktopBundledApp === true && /^https?:/i.test(String(srcUrl))
-      && !/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)/i.test(String(srcUrl))) {
-      return Promise.reject(new Error('External three.js CDN is disabled in Desktop mode'));
-    }
+    var check = _validateScriptUrl(srcUrl, 'External three.js CDN is disabled in Desktop mode');
+    if (!check.ok) return Promise.reject(new Error(check.error));
+    srcUrl = check.url;
     if (window.__cg3dThreePromise) return window.__cg3dThreePromise;
-    window.__cg3dThreePromise = new Promise(function (resolve, reject) {
+    var p = new Promise(function (resolve, reject) {
+      var settled = false, s = null, timer = null;
+      function finish(err, val) {
+        if (settled) return;
+        settled = true;
+        if (timer) { clearTimeout(timer); timer = null; }
+        if (err) {
+          if (s && s.parentNode) { try { s.parentNode.removeChild(s); } catch (_) {} }
+          reject(err);
+        } else {
+          resolve(val);
+        }
+      }
       try {
-        var s = document.createElement('script');
-        s.src = srcUrl;
-        if (_CG3D_SRI[srcUrl]) s.integrity = _CG3D_SRI[srcUrl];
+        s = document.createElement('script');
         s.crossOrigin = 'anonymous';
         s.referrerPolicy = 'no-referrer';
+        if (Object.prototype.hasOwnProperty.call(_CG3D_SRI, srcUrl)) s.integrity = _CG3D_SRI[srcUrl];
         s.async = true;
-        s.onload = function () { window.THREE ? resolve(window.THREE) : reject(new Error('three.js loaded but window.THREE missing')); };
-        s.onerror = function () { reject(new Error('failed to load three.js')); };
+        s.onload = function () { window.THREE ? finish(null, window.THREE) : finish(new Error('three.js loaded but window.THREE missing')); };
+        s.onerror = function () { finish(new Error('failed to load three.js')); };
+        timer = setTimeout(function () { finish(new Error('timed out loading three.js')); }, 20000);
+        s.src = srcUrl;
         document.head.appendChild(s);
-      } catch (e) { reject(e); }
+      } catch (e) { finish(e); }
     });
-    return window.__cg3dThreePromise;
+    window.__cg3dThreePromise = p;
+    p.catch(function () { if (window.__cg3dThreePromise === p) window.__cg3dThreePromise = null; });
+    return p;
   }
 
   // Sequentially load a script once (dedup by URL). Resolves on load, rejects on error.
   function _cg3dScript(url, useTrustedHelper) {
     return new Promise(function (resolve, reject) {
-      if (window._isDesktopBundledApp === true && /^https?:/i.test(String(url))
-        && !/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)/i.test(String(url))) {
-        return reject(new Error('External bloom CDN disabled in Desktop mode'));
+      var check = _validateScriptUrl(url, 'External bloom CDN disabled in Desktop mode');
+      if (!check.ok) return reject(new Error(check.error));
+      url = check.url;
+      var settled = false, s = null, timer = null;
+      function finish(err) {
+        if (settled) return;
+        settled = true;
+        if (timer) { clearTimeout(timer); timer = null; }
+        if (err) {
+          if (s && s.parentNode) { try { s.parentNode.removeChild(s); } catch (_) {} }
+          reject(err);
+        } else {
+          resolve();
+        }
       }
       try {
         var ex = null;
@@ -407,21 +471,28 @@
             break;
           }
         }
-        if (ex) { if (ex.getAttribute('data-cg3d-done') === '1') return resolve(); ex.addEventListener('load', function () { resolve(); }); ex.addEventListener('error', function () { reject(new Error('x')); }); return; }
-        var s = document.createElement('script');
+        if (ex) {
+          if (ex.getAttribute('data-cg3d-done') === '1') return finish(null);
+          timer = setTimeout(function () { finish(new Error('load timed out: ' + url)); }, 20000);
+          ex.addEventListener('load', function () { finish(null); });
+          ex.addEventListener('error', function () { finish(new Error('load failed: ' + url)); });
+          return;
+        }
+        s = document.createElement('script');
+        s.crossOrigin = 'anonymous';
+        s.referrerPolicy = 'no-referrer';
+        if (Object.prototype.hasOwnProperty.call(_CG3D_SRI, url)) s.integrity = _CG3D_SRI[url];
+        s.async = false; s.setAttribute('data-cg3d-src', url);
+        s.onload = function () { s.setAttribute('data-cg3d-done', '1'); finish(null); };
+        s.onerror = function () { finish(new Error('load failed: ' + url)); };
+        timer = setTimeout(function () { finish(new Error('load timed out: ' + url)); }, 20000);
         if (useTrustedHelper && typeof window.__alloConfigureTrustedScript === 'function') {
           window.__alloConfigureTrustedScript(s, url);
         } else {
           s.src = url;
         }
-        s.async = false; s.setAttribute('data-cg3d-src', url);
-        if (_CG3D_SRI[url]) s.integrity = _CG3D_SRI[url];
-        s.crossOrigin = 'anonymous';
-        s.referrerPolicy = 'no-referrer';
-        s.onload = function () { s.setAttribute('data-cg3d-done', '1'); resolve(); };
-        s.onerror = function () { reject(new Error('load failed: ' + url)); };
         document.head.appendChild(s);
-      } catch (e) { reject(e); }
+      } catch (e) { finish(e); }
     });
   }
   // Best-effort: load the bloom addon chain in order. NEVER rejects — resolves false
@@ -447,7 +518,7 @@
       for (var i = 0; i < scr.length; i++) {
         var src = scr[i].getAttribute('src') || '';
         var m = src.match(/^(.*\/)(?:concept_graph_3d_module|memory_palace_module|prim3d_module|stem_lab\/stem_tool_geosandbox)\.js(\?.*)?$/);
-        if (m) { base = m[1]; q = m[2] || ''; break; }
+        if (m && _validateScriptUrl(m[1] + 'prim3d_module.js' + (m[2] || '')).ok) { base = m[1]; q = m[2] || ''; break; }
       }
     } catch (e) {}
     return _cg3dScript(base + 'prim3d_module.js' + q, true)
@@ -462,12 +533,13 @@
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fill();
   }
   function makeLabelSprite(THREE, text, hex) {
+    var safeText = String(text || '').slice(0, 120);
     var canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true');
     var ctx = canvas.getContext('2d');
     var font = 26, padX = 14, padY = 9;
     ctx.font = '600 ' + font + 'px sans-serif';
-    var tw = Math.ceil(ctx.measureText(text || '').width);
-    canvas.width = Math.max(2, tw + padX * 2); canvas.height = font + padY * 2;
+    var tw = Math.ceil(ctx.measureText(safeText).width);
+    canvas.width = Math.min(2048, Math.max(2, tw + padX * 2)); canvas.height = font + padY * 2;
     ctx.font = '600 ' + font + 'px sans-serif';
     var rad = canvas.height / 2;
     ctx.fillStyle = 'rgba(8,12,26,0.86)'; _roundRect(ctx, 0, 0, canvas.width, canvas.height, rad);   // rounded pill
@@ -475,7 +547,7 @@
     ctx.beginPath();
     if (ctx.roundRect) { ctx.roundRect(1.25, 1.25, canvas.width - 2.5, canvas.height - 2.5, rad - 1); } else { ctx.arc(canvas.width / 2, canvas.height / 2, rad - 2, 0, Math.PI * 2); }
     ctx.stroke();
-    ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'middle'; ctx.fillText(text || '', padX, canvas.height / 2 + 1);
+    ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'middle'; ctx.fillText(safeText, padX, canvas.height / 2 + 1, canvas.width - padX * 2);
     var tex = new THREE.CanvasTexture(canvas);
     if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
     var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
@@ -617,7 +689,7 @@
     }
     buildZones(scene);
 
-    var nodeMeshes = [], nodeById3d = {};
+    var nodeMeshes = [], nodeById3d = Object.create(null);
     // Staggered entrance (motion-safe): spheres pop in one after another so the
     // space "assembles" instead of appearing fully formed.
     var introOK = true; try { introOK = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
@@ -668,14 +740,23 @@
       m.art = obj;
     }
     function renderNodeImage(id, dataUrl) {
-      var m = nodeById3d[id]; if (!m || !dataUrl) return;
+      var m = nodeById3d[id]; if (!m || !_isSafeNodeImageDataUrl(dataUrl)) return;
+      m.artSeq = (m.artSeq || 0) + 1;
       try {
         var tex = new THREE.Texture();
-        var img = new Image();
-        img.onload = function () { if (state.disposed) return; tex.image = img; tex.needsUpdate = true; };
-        try { img.crossOrigin = 'anonymous'; } catch (e) {}
-        img.src = dataUrl;
         var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+        var img = new Image();
+        try { img.referrerPolicy = 'no-referrer'; } catch (e) {}
+        try { img.crossOrigin = 'anonymous'; } catch (e) {}
+        img.onload = function () {
+          if (state.disposed || m.art !== sp) { try { tex.dispose(); } catch (_) {} return; }
+          tex.image = img; tex.needsUpdate = true;
+        };
+        img.onerror = function () {
+          if (m.art === sp) _disposeArt(m);
+          else { try { tex.dispose(); } catch (_) {} }
+        };
+        img.src = dataUrl;
         var rad = 9 * (m.node.size || 1);
         sp.scale.set(ART_IMG_SIZE, ART_IMG_SIZE, 1);
         _placeArt(m, sp, rad + ART_IMG_SIZE * 0.5 + 14);
@@ -684,9 +765,10 @@
     }
     function renderNodeSculpture(id, recipe) {
       var m = nodeById3d[id]; if (!m || !recipe) return;
+      var seq = (m.artSeq = (m.artSeq || 0) + 1);
       var rad = 9 * (m.node.size || 1);
       function build(P3) {
-        if (!P3 || state.disposed || !nodeById3d[id]) return;
+        if (!P3 || state.disposed || !nodeById3d[id] || nodeById3d[id].artSeq !== seq) return;
         try {
           var g = P3.buildObject(THREE, recipe, { unit: rad * 1.7 });   // ~1.7 node-radii tall
           if (g) { _placeArt(nodeById3d[id], g, rad + 8); nodeById3d[id].artMeta = { type: 'sculpture' }; }
@@ -695,7 +777,7 @@
       var P = window.AlloModules && window.AlloModules.Prim3D;
       if (P) build(P); else loadPrim3d().then(build);
     }
-    function clearNodeArt(id) { var m = nodeById3d[id]; if (m) _disposeArt(m); }
+    function clearNodeArt(id) { var m = nodeById3d[id]; if (m) { m.artSeq = (m.artSeq || 0) + 1; _disposeArt(m); } }
     state.setNodeImage = renderNodeImage;
     state.setNodeObject = renderNodeSculpture;
     state.clearNodeArt = clearNodeArt;
@@ -776,7 +858,7 @@
         try { if (ch.geometry) ch.geometry.dispose(); if (ch.material && ch.material.dispose) ch.material.dispose(); } catch (e) {}
         edgeGroup.remove(ch);
       }
-      var nodeColorById = {}; scene.nodes.forEach(function (n) { nodeColorById[n.id] = n.color; });
+      var nodeColorById = Object.create(null); scene.nodes.forEach(function (n) { nodeColorById[n.id] = n.color; });
       scene.links.forEach(function (lk) {
         var a = new THREE.Vector3(lk.from.x, lk.from.y, lk.from.z);
         var b = new THREE.Vector3(lk.to.x, lk.to.y, lk.to.z);
@@ -835,7 +917,8 @@
         mat.opacity = eo.baseOpacity;                                   // restore, then re-map
         if (eo.origColor && mat.color) mat.color.copy(eo.origColor);
         if (weights && mode !== 'off') {
-          var rec = weights[pairKey(eo.fromId, eo.toId)];
+          var pk = pairKey(eo.fromId, eo.toId);
+          var rec = Object.prototype.hasOwnProperty.call(weights, pk) ? weights[pk] : null;
           if (mode === 'mine' || mode === 'ai') {
             var w = rec ? (mode === 'mine' ? rec.w : rec.ai) : null;
             mat.opacity = (w == null || !isFinite(Number(w))) ? 0.08 : constellationOpacity(w);
@@ -934,18 +1017,18 @@
     }
     function applyHighlight(id) {
       var keep = null;
-      if (id) { keep = {}; keep[id] = 1; (scene.adjacency[id] || []).forEach(function (nid) { keep[nid] = 1; }); }
+      if (id) { keep = Object.create(null); keep[id] = 1; (scene.adjacency[id] || []).forEach(function (nid) { keep[nid] = 1; }); }
       setKeep(keep, id);
     }
     function highlightChain(ids, hotId) {   // path/prereq highlight: keep an explicit set
-      var keep = {}; (ids || []).forEach(function (i) { keep[i] = 1; });
+      var keep = Object.create(null); (ids || []).forEach(function (i) { keep[i] = 1; });
       setKeep(keep, hotId);
     }
     var tip = document.createElement('div');
     tip.style.cssText = 'position:absolute;pointer-events:none;z-index:6;background:rgba(2,6,23,0.92);color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:6px 10px;font-size:12px;max-width:240px;display:none;box-shadow:0 6px 18px rgba(0,0,0,0.45);';
     holder.appendChild(tip);
     function showTip(node, ev) {
-      tip.innerHTML = '';
+      tip.textContent = '';
       var ti = document.createElement('div'); ti.style.cssText = 'font-weight:800;margin-bottom:2px;'; ti.textContent = node.label; tip.appendChild(ti);
       if (node.category) { var s = document.createElement('div'); s.style.cssText = 'color:#94a3b8;'; s.textContent = (t('cg3d.tip_strand') || 'Strand') + ': ' + node.category; tip.appendChild(s); }
       var nb = (scene.adjacency[node.id] || []).length;
@@ -1123,7 +1206,7 @@
             // Free the old label's texture+material — otherwise every strand/rename
             // edit leaks a CanvasTexture before destroy() ever runs.
             try { if (m.label.material) { if (m.label.material.map) m.label.material.map.dispose(); m.label.material.dispose(); } } catch (e2) {}
-            m.label = makeLabelSprite(THREE, n.label, n.color);
+            m.label = makeLabelSprite(THREE, m.covered ? (m.coverText || '?') : n.label, n.color);
             var lp2 = m.sphere.position;
             m.label.position.set(lp2.x, lp2.y + rad + 14, lp2.z);
             group.add(m.label);
@@ -1362,7 +1445,7 @@
         button.style.borderColor = current ? '#a5b4fc' : '#475569';
       });
       if (moveFocus) {
-        if (outlineVisible && buttons.length) buttons[currentIndex].focus();
+        if (outlineVisible && buttons[currentIndex]) buttons[currentIndex].focus();
         else if (!outlineVisible) outlineBtn.focus();
       }
       if (live) live.textContent = outlineVisible ? 'Reading-order outline shown.' : 'Reading-order outline hidden.';
@@ -1515,21 +1598,27 @@
           var rl = new THREE.Line(rg, new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.85 }));
           rl.scale.z = 3;                              // 3 m aim beam (picking uses the true ray)
           c.add(rl);
-          (function (ctrl) { ctrl.addEventListener('selectstart', function () { _xrTrigger(ctrl); }); })(c);
-          root.add(c); _xrCtrls.push(c);
+          var onSelect = (function (ctrl) { return function () { _xrTrigger(ctrl); }; })(c);
+          c.addEventListener('selectstart', onSelect);
+          root.add(c); _xrCtrls.push({ obj: c, child: rl, onSelect: onSelect });
           var gp = renderer.xr.getControllerGrip(ci);
-          gp.add(new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.03, 0.09), new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.6, metalness: 0.2 })));
-          root.add(gp); _xrCtrls.push(gp);
+          var gm = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.03, 0.09), new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.6, metalness: 0.2 }));
+          gp.add(gm);
+          root.add(gp); _xrCtrls.push({ obj: gp, child: gm, onSelect: null });
         }
       } catch (e) {}
     }
     function _xrTeardownControllers() {
       _xrClearCaption();
       if (!_xrCtrls) return;
-      _xrCtrls.forEach(function (c) {
+      _xrCtrls.forEach(function (entry) {
         try {
+          var c = entry.obj;
+          if (entry.onSelect && c.removeEventListener) { try { c.removeEventListener('selectstart', entry.onSelect); } catch (_) {} }
+          if (entry.child) { try { c.remove(entry.child); } catch (_) {} }
           root.remove(c);
-          c.traverse(function (o) {
+          var targetObj = entry.child || c;
+          targetObj.traverse(function (o) {
             if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
             var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
             mats.forEach(function (mx) { try { if (mx.map && mx.map.dispose) mx.map.dispose(); mx.dispose(); } catch (e) {} });
@@ -1541,35 +1630,44 @@
     function enterVR(btn) {
       if (!navigator.xr) return;
       if (btn) btn.disabled = true;
+      var seated = false;
       navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] })
         .then(function (session) {
-          if (state.disposed) { try { session.end(); } catch (e) {} return; }
-          _seatForVR();
+          if (state.disposed) { try { Promise.resolve(session.end()).catch(function () {}); } catch (e) {} return; }
+          _seatForVR(); seated = true;
           if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
           try { renderer.xr.setReferenceSpaceType('local-floor'); } catch (e) {}
           _xrSetupControllers();                       // point + trigger = select + caption
           session.addEventListener('end', function () {
             try { renderer.setAnimationLoop(null); } catch (e) {}
             _xrTeardownControllers();
-            _unseatVR();
+            _unseatVR(); seated = false;
             if (btn) btn.disabled = false;
             try { live.textContent = _tr(t, 'cg3d.vr_exited', 'Back to the screen view.'); } catch (e) {}
             if (!state.disposed) tick();             // resume the window-rAF loop
           });
           return Promise.resolve(renderer.xr.setSession(session)).then(function () {
-            if (state.disposed) { try { session.end(); } catch (e) {} return; }
+            if (state.disposed) { try { Promise.resolve(session.end()).catch(function () {}); } catch (e) {} return; }
             renderer.setAnimationLoop(tick);
             try { live.textContent = _tr(t, 'cg3d.vr_entered', 'Entered VR. Your world floats in front of you — look around it.'); } catch (e) {}
           });
         })
         .catch(function () {
+          try { renderer.setAnimationLoop(null); } catch (e) {}
+          _xrTeardownControllers();
+          if (seated) { _unseatVR(); seated = false; }
           if (btn) btn.disabled = false;
           try { live.textContent = _tr(t, 'cg3d.vr_failed', 'Could not start VR.'); } catch (e) {}
+          if (!state.disposed && !state.raf) tick();
         });
     }
+    var _vrBtn = null;
     state.cleanup.push(function () {
-      try { var s = renderer.xr && renderer.xr.getSession && renderer.xr.getSession(); if (s) s.end(); } catch (e) {}
+      _xrTeardownControllers();
+      try { var s = renderer.xr && renderer.xr.getSession && renderer.xr.getSession(); if (s) Promise.resolve(s.end()).catch(function () {}); } catch (e) {}
       try { renderer.setAnimationLoop(null); } catch (e) {}
+      if (_vrBtn && _vrBtn.parentNode) { try { _vrBtn.parentNode.removeChild(_vrBtn); } catch (_) {} _vrBtn = null; }
+      if (planeTex && planeTex.dispose) { try { planeTex.dispose(); } catch (_) {} planeTex = null; }
     });
     try {
       if (navigator.xr && navigator.xr.isSessionSupported) {
@@ -1581,6 +1679,7 @@
           vb.title = _tr(t, 'cg3d.enter_vr_title', 'Enter VR — see your world room-scale (needs a headset)');
           vb.style.cssText = 'position:absolute;right:12px;bottom:108px;z-index:6;border:none;background:#4f46e5;color:#fff;border-radius:999px;padding:8px 14px;min-height:44px;font-size:13px;font-weight:800;cursor:pointer;';   // above the nav gizmo's corner
           vb.onclick = function () { enterVR(vb); };
+          _vrBtn = vb;
           holder.appendChild(vb);
         }).catch(function () {});
       }
@@ -1849,7 +1948,7 @@
       if (id === '__proto__' || id === 'constructor' || id === 'prototype') continue;
       if (!a || typeof a !== 'object') continue;
       if (a.type === 'image') {
-        if (typeof a.dataUrl === 'string' && /^data:image\//i.test(a.dataUrl) && a.dataUrl.length <= maxUrl) {
+        if (_isSafeNodeImageDataUrl(a.dataUrl, maxUrl)) {
           out[id] = { type: 'image', dataUrl: a.dataUrl }; count++;
           if (_mnemonic(a)) out[id].mnemonic = _mnemonic(a);
         }
@@ -1885,6 +1984,7 @@
     container.appendChild(outlineEl);
     function destroy() {
       state.disposed = true;
+      state.pendingArt = [];
       if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
       if (state.onResize) { try { window.removeEventListener('resize', state.onResize); } catch (e) {} state.onResize = null; }
       state.cleanup.forEach(function (fn) { try { fn(); } catch (e) {} });
@@ -1906,11 +2006,13 @@
     }
 
     function flagNodes(statusById, announce) {
+      if (state.disposed) return;
       try { if (state.flagNodes) state.flagNodes(statusById, announce); } catch (e) {}
     }
     // Per-node art bridge. state.setNode* are wired once GL mounts; calls made
     // before then are buffered and flushed in mountGL (mirrors flagNodes).
     function _artCall(fn) {
+      if (state.disposed) return;
       if (state.setNodeImage) { try { fn(); } catch (e) {} }
       else { (state.pendingArt = state.pendingArt || []).push(fn); }
     }
@@ -1954,8 +2056,8 @@
       // Forwarded through state, not closed over: applyConstellation belongs to
       // mountGL and does not exist yet when this object is built. Referencing it
       // directly threw a ReferenceError out of every successful render() call.
-      setConstellation: function (con) { return state.applyConstellation ? state.applyConstellation(con) : undefined; },
-      snapshot: function () { return state.snapshot ? state.snapshot() : null; } };
+      setConstellation: function (con) { return (!state.disposed && state.applyConstellation) ? state.applyConstellation(con) : undefined; },
+      snapshot: function () { return (!state.disposed && state.snapshot) ? state.snapshot() : null; } };
   }
 
   // ── Optional React wrapper (lifecycle-managed). React read lazily. ──

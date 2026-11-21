@@ -3,7 +3,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const skillBanks = require('./reading_specialist_5302/item_content.cjs');
+const { applyChoiceOverrides } = require('./reading_choice_overrides/index.cjs');
+const skillBanks = applyChoiceOverrides(require('./reading_specialist_5302/item_content.cjs'), 'S');
 const root = path.resolve(__dirname, '..');
 const reviewedAt = '2026-07-14';
 const expectedCounts = {
@@ -24,6 +25,8 @@ function ensure(value, minimum, suffix) {
 function itemFromSpec(skill, spec, batchNumber, batchPosition) {
   const answerIndex = (batchPosition - 1) % 4;
   const rationale = ensure(spec.rationale, 120, 'This response best integrates the literacy construct, relevant learner and language evidence, research-supported instruction or assessment, equitable access, specialist scope, and a measurable follow-up decision.');
+  const notes = Array.isArray(spec.distractorNotes) ? spec.distractorNotes : [];
+  if (notes.length !== 3 || notes.some((note) => String(note || '').trim().length < 100)) throw new Error('Missing authored distractorNotes for ' + skill.id + ' #' + batchPosition);
   const choices = [];
   const choiceRationales = [];
   let distractorIndex = 0;
@@ -32,9 +35,10 @@ function itemFromSpec(skill, spec, batchNumber, batchPosition) {
       choices.push(spec.correct);
       choiceRationales.push(ensure('Correct. ' + rationale, 100, 'It addresses the complete literacy decision and appropriate follow-up.'));
     } else {
-      const distractor = spec.distractors[distractorIndex++];
+      const distractor = spec.distractors[distractorIndex];
+      const note = String(notes[distractorIndex++] || '').trim();
       choices.push(distractor);
-      choiceRationales.push(ensure('Not the best answer. "' + distractor + '" misses or conflicts with the controlling reading-specialist principle. ' + rationale, 100, 'Compare construct alignment, evidence, instructional fit, equity, access, and follow-up requirements.'));
+      choiceRationales.push(note);
     }
   }
   return {

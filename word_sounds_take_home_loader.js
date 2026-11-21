@@ -140,6 +140,7 @@
     tools_normal: 'Normal',
     tools_size_1: 'Larger',
     tools_size_2: 'Largest',
+    tools_size_3: 'Extra large',
     tools_colors: 'Colors',
     tools_colors_0: 'Usual',
     tools_colors_1: 'High contrast',
@@ -148,6 +149,7 @@
     tools_colors_4: 'Ocean',
     tools_colors_5: 'Sunny',
     tools_colors_6: 'Forest',
+    tools_colors_7: 'Rose',
     tools_spacing: 'Spacing',
     tools_spacing_1: 'Wider',
     tools_font: 'Letters',
@@ -155,7 +157,11 @@
     tools_font_2: 'Atkinson',
     tools_font_3: 'Book',
     tools_font_4: 'Rounded',
+    tools_font_5: 'Mono',
+    tools_font_6: 'OpenDyslexic',
     tools_focus: 'Reading focus',
+    tools_focus_1: '1 line',
+    tools_focus_2: '3 lines',
     tools_focus_hint: 'Tap a line, or use the up and down arrow keys on the text.',
     tools_lens: 'Magnifier',
     tools_lens_hint: 'Move it with the mouse, or drag the round handle. With the keyboard, go to the handle and use the arrow keys. Esc closes it.',
@@ -179,7 +185,12 @@
     tools_speed: 'Voice speed',
     tools_speed_0: 'Normal',
     tools_speed_1: 'Slower',
+    tools_speed_2: 'Very slow',
+    tools_speed_3: 'Faster',
+    tools_speed_4: 'Fastest',
     tools_speed_hint: 'Plays recorded words and read-aloud slower.',
+    tools_bold: 'Bold start',
+    tools_bold_hint: 'Bolds the start of each word to help your eyes follow the text.',
     tools_no_voice: 'This device has no built-in reading voice.',
     // "Hear all" (hearAllIn): plays or reads each answer choice in turn.
     hear_all: 'Hear all',
@@ -483,9 +494,14 @@
   function takeHomeMailbox(win, target) {
     if (!target || !target.url || !win.fetch) return null;
     var post = function (payload) {
-      return win.fetch(target.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow' })
-        .then(function (r) { return r.json(); })
-        .then(function (data) { if (!data || data.ok !== true) throw new Error((data && data.e) || 'not ok'); return data; });
+      var ctrl = typeof win.AbortController === 'function' ? new win.AbortController() : null;
+      var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 20000) : null;
+      var clear = function () { if (timer !== null) { clearTimeout(timer); timer = null; } };
+      var init = { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow' };
+      if (ctrl) init.signal = ctrl.signal;
+      return win.fetch(target.url, init)
+        .then(function (r) { if (r && r.ok === false) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (data) { clear(); if (!data || data.ok !== true) throw new Error((data && data.e) || 'not ok'); return data; }, function (err) { clear(); throw err; });
     };
     return function (sid, payload) {
       var parts = [];
@@ -1141,7 +1157,7 @@
         var at = 0;
         var pen = 22; // the width of the student's line and of the guide
         // A square that shrinks on a narrow phone (padding-top keeps it square without aspect-ratio).
-        var wrap = ctx.el('div', { 'data-trace-box': '', style: 'position:relative;width:' + size + 'px;max-width:100%;margin:12px auto;border:2px dashed var(--muted);border-radius:16px;background:var(--card);overflow:hidden;touch-action:none' });
+        var wrap = ctx.el('div', { 'data-trace-box': '', style: 'position:relative;width:var(--trace-sz,' + size + 'px);max-width:100%;margin:12px auto;border:2px dashed var(--muted);border-radius:16px;background:var(--card);overflow:hidden;touch-action:none' });
         wrap.appendChild(ctx.el('div', { 'aria-hidden': 'true', style: 'padding-top:100%' }));
         var guide = doc.createElement('canvas');
         var ink = doc.createElement('canvas');
@@ -1888,13 +1904,16 @@
           }
         };
 
+        var chipSlot = function (ci) { return ci % 6; };
+        var chipBg = function (ci) { return 'var(--c' + chipSlot(ci) + 'b,var(--soft))'; };
+        var chipBd = function (ci) { return 'var(--c' + chipSlot(ci) + ',var(--accent))'; };
         var tray = ctx.el('ul', { class: 'row', 'data-map-tray': '', 'aria-label': L.mapping_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:12px' });
         var chipEls = item.chips.map(function (chip, ci) {
           var two = spanOf(ci) > 1;
-          var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-map-tile': String(ci),
+          var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-map-tile': String(ci), 'data-map-c': String(chipSlot(ci)),
             'aria-label': ctx.fmt(L.mapping_pick, { spelling: chip.text }) + (two ? '. ' + ctx.fmt(L.mapping_two_sounds, { spelling: chip.text }) : ''),
             'data-span': two ? String(spanOf(ci)) : null,
-            style: (two ? 'min-width:154px;' : 'min-width:72px;') + 'min-height:56px;font-size:1.5rem;font-weight:700;touch-action:none',
+            style: (two ? 'min-width:var(--map-span,154px);' : 'min-width:var(--map-sz,72px);') + 'min-height:var(--map-h,56px);font-size:1.5rem;font-weight:700;touch-action:none;color:var(--ink);background:' + chipBg(ci) + ';border:3px solid ' + chipBd(ci) + ';box-shadow:0 3px 0 ' + chipBd(ci),
             on: { click: function (e) { if (dragged()) return; onChip(ci, e); }, pointerdown: function (e) { dragStart(e, ci, 'tray', -1); } } }, [chip.text]);
           var li = ctx.el('li', { class: 'row', style: 'gap:6px' }, [pick]);
           tray.appendChild(li);
@@ -1902,7 +1921,7 @@
         });
         var slotList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.mapping_slots });
         var slotEls = slots.map(function (_, si) {
-          var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-map-slot': String(si), style: 'min-width:80px;min-height:80px;font-size:1.5rem;font-weight:700',
+          var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-map-slot': String(si), style: 'min-width:var(--map-box,80px);min-height:var(--map-box,80px);border-width:3px;font-size:1.5rem;font-weight:700',
             on: { click: function (e) { if (dragged()) return; onSlot(si, e); }, pointerdown: function (e) { if (slots[si] != null) dragStart(e, slots[si], 'slot', si); } } });
           var li = ctx.el('li', {}, [btn]);
           slotList.appendChild(li);
@@ -1919,7 +1938,13 @@
           var holding = picked != null && !locked();
           chipEls.forEach(function (c, ci) {
             c.li.hidden = slots.indexOf(ci) >= 0;
-            c.pick.setAttribute('aria-pressed', picked === ci ? 'true' : 'false');
+            var on = picked === ci;
+            var bg = chipBg(ci), bd = chipBd(ci);
+            c.pick.setAttribute('aria-pressed', on ? 'true' : 'false');
+            c.pick.style.background = on ? bd : bg;
+            c.pick.style.color = on ? 'var(--accent-ink)' : 'var(--ink)';
+            c.pick.style.borderColor = bd;
+            c.pick.style.boxShadow = on ? '0 0 0 3px var(--card), 0 0 0 7px ' + bd : '0 3px 0 ' + bd;
             if (locked()) c.pick.setAttribute('aria-disabled', 'true');
           });
           slotEls.forEach(function (el, si) {
@@ -1944,13 +1969,14 @@
               btn.style.position = '';
               btn.textContent = text(ci);
             }
-            btn.style.minWidth = two ? '170px' : '80px';
+            btn.style.minWidth = two ? 'var(--map-span-box,170px)' : 'var(--map-box,80px)';
             if (two) btn.setAttribute('data-span', String(spanOf(ci))); else btn.removeAttribute('data-span');
+            if (ci != null && !bad) btn.setAttribute('data-map-c', String(chipSlot(ci))); else btn.removeAttribute('data-map-c');
             if (bad) btn.setAttribute('data-mapping-error', 'true'); else btn.removeAttribute('data-mapping-error');
             btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
-            btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--accent)';
-            btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : 'var(--soft)';
-            btn.style.color = bad ? 'var(--warn)' : '';
+            btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : chipBd(ci);
+            btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
+            btn.style.color = bad ? 'var(--warn)' : ci == null ? '' : 'var(--ink)';
             btn.style.boxShadow = ci == null && holding ? '0 0 0 3px var(--accent)' : '';
             btn.style.touchAction = ci == null ? 'manipulation' : 'none';
             var baseLabel = ci == null ? ctx.fmt(L.mapping_slot_empty, { n: si + 1 })
@@ -2058,7 +2084,7 @@
             draw();
             // The answer shown: every surprising spelling of the word is explained too.
             item.chips.forEach(function (chip, ci) { note(ci, false); });
-            slotEls.forEach(function (el) { el.btn.style.borderColor = 'var(--ok)'; el.btn.style.background = 'var(--ok-bg)'; el.btn.style.color = ''; });
+            slotEls.forEach(function (el) { el.btn.removeAttribute('data-map-c'); el.btn.style.borderColor = 'var(--ok)'; el.btn.style.background = 'var(--ok-bg)'; el.btn.style.color = ''; });
           },
         };
       },
@@ -3030,9 +3056,13 @@
         var locked = function () { return ctx.isDone(); };
         var halt = function () { token++; };
 
-        // Theme-driven tiles (2026-11-19): follow every Reading Tools color theme (Default, High Contrast, Soft, Dark,
-        // Ocean, Sunny, Forest) and forced-colors via CSS variables, never hardcoded light-only fills or dark ink.
+        // Theme-harmonized multicolored chips: 6 distinct per-theme color slots (--c0..--c5, --c0b..--c5b)
+        // that automatically adapt to every Reading Tools theme (Usual, High Contrast, Soft, Dark, Ocean, Sunny,
+        // Forest, Rose) and forced-colors, with zero hardcoded hex/rgb values in this adapter.
         var still = !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        var chipSlot = function (ci) { return ci % 6; };
+        var chipBg = function (ci) { return 'var(--c' + chipSlot(ci) + 'b,var(--soft))'; };
+        var chipBd = function (ci) { return 'var(--c' + chipSlot(ci) + ',var(--accent))'; };
         // A "goes here" arrow (a character), and a speaker drawn with borders in the tile's own ink, so it is as dark as the
         // letters (an emoji speaker is pale grey on most devices). No drawing element: a file carries none.
         var icon = function (kind) {
@@ -3051,10 +3081,10 @@
           node.textContent = '';
           if (ctx.showLetters) node.appendChild(doc.createTextNode(name(ci))); else node.appendChild(icon('sound'));
         };
-        var tileStyle = function () {
-          return (ctx.showLetters ? 'min-width:64px;height:58px;padding:0 16px;border-radius:999px;' : 'width:64px;height:64px;padding:0;border-radius:50%;')
+        var tileStyle = function (ci) {
+          return (ctx.showLetters ? 'min-width:var(--seg-sz,64px);height:calc(var(--seg-sz,64px) - 6px);padding:0 16px;border-radius:999px;' : 'width:var(--seg-sz,64px);height:var(--seg-sz,64px);padding:0;border-radius:50%;')
             + 'display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:800;color:var(--ink);touch-action:none;'
-            + 'background:var(--soft);border:3px solid var(--accent);box-shadow:0 3px 0 var(--accent)'
+            + 'background:' + chipBg(ci) + ';border:3px solid ' + chipBd(ci) + ';box-shadow:0 3px 0 ' + chipBd(ci)
             + (still ? '' : ';transition:transform .12s ease,box-shadow .12s ease');
         };
         // The line under the boxes: what the last move did (also said through ctx.announce).
@@ -3064,8 +3094,8 @@
         var byKey = function (e) { return !e || e.detail === 0; };
         var tray = ctx.el('ul', { class: 'row', 'data-seg-tray': '', 'aria-label': L.segmentation_tray, style: 'list-style:none;padding:6px 0;margin:8px 0;gap:12px;justify-content:center' });
         var chipEls = item.chips.map(function (chip, ci) {
-          var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-seg-tile': String(ci),
-            'aria-label': ctx.fmt(L.segmentation_pick, { sound: name(ci) }), style: tileStyle(),
+          var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-seg-tile': String(ci), 'data-seg-c': String(chipSlot(ci)),
+            'aria-label': ctx.fmt(L.segmentation_pick, { sound: name(ci) }), style: tileStyle(ci),
             on: { click: function (e) { if (dragged()) return; onChip(ci, e); }, pointerdown: function (e) { dragStart(e, ci, 'tray', -1); } } });
           face(pick, ci);
           var li = ctx.el('li', {}, [pick]);
@@ -3074,7 +3104,7 @@
         });
         var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.segmentation_boxes, style: 'justify-content:center;margin:12px 0 0' });
         var boxEls = boxes.map(function (_, bi) {
-          var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-seg-box': String(bi), style: 'min-width:76px;min-height:76px;border-width:3px;border-radius:16px;font-size:1.25rem;font-weight:800',
+          var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-seg-box': String(bi), style: 'min-width:var(--seg-box,76px);min-height:var(--seg-box,76px);border-width:3px;border-radius:16px;font-size:1.25rem;font-weight:800',
             on: { click: function (e) { if (dragged()) return; onBox(bi, e); }, pointerdown: function (e) { if (boxes[bi] != null) dragStart(e, boxes[bi], 'box', bi); } } });
           boxList.appendChild(ctx.el('li', {}, [btn]));
           return btn;
@@ -3158,22 +3188,25 @@
           chipEls.forEach(function (c, ci) {
             c.li.hidden = boxes.indexOf(ci) >= 0;
             var on = picked === ci;
+            var bg = chipBg(ci), bd = chipBd(ci);
             c.pick.setAttribute('aria-pressed', on ? 'true' : 'false');
-            // Held: it lifts and flips to the theme accent fill/ink with a ring in the accent color.
-            c.pick.style.background = on ? 'var(--accent)' : 'var(--soft)';
+            // Held: it lifts and flips to its own chip accent color with theme accent-ink and a ring.
+            c.pick.style.background = on ? bd : bg;
             c.pick.style.color = on ? 'var(--accent-ink)' : 'var(--ink)';
-            c.pick.style.borderColor = 'var(--accent)';
+            c.pick.style.borderColor = bd;
             c.pick.style.transform = on ? 'translateY(-6px) scale(1.08)' : '';
-            c.pick.style.boxShadow = on ? '0 0 0 3px var(--card), 0 0 0 7px var(--accent)' : '0 3px 0 var(--accent)';
+            c.pick.style.boxShadow = on ? '0 0 0 3px var(--card), 0 0 0 7px ' + bd : '0 3px 0 ' + bd;
             if (locked()) c.pick.setAttribute('aria-disabled', 'true');
           });
           boxEls.forEach(function (btn, bi) {
             var ci = boxes[bi];
             var bad = errors.indexOf(bi) >= 0 && ci != null;
             if (ci == null) { btn.textContent = ''; btn.appendChild(icon('drop')); } else face(btn, ci);
+            if (ci != null && !bad) btn.setAttribute('data-seg-c', String(chipSlot(ci)));
+            else btn.removeAttribute('data-seg-c');
             btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
-            btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--accent)';
-            btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : 'var(--soft)';
+            btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : chipBd(ci);
+            btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
             btn.style.color = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--ink)';
             // While a tile is held, the empty boxes light up: that is where it can go.
             btn.style.boxShadow = holding && ci == null ? '0 0 0 3px var(--accent)' : '';
@@ -3243,6 +3276,44 @@
           if (outcome === 'retry') { errors = bad; draw(); }
         };
 
+        if (typeof ctx.keys === 'function') {
+          ctx.keys(function (key) {
+            if (locked()) return false;
+            var k = String(key == null ? '' : key);
+            if (k === 'Backspace') {
+              for (var bi = n - 1; bi >= 0; bi--) {
+                if (boxes[bi] != null) {
+                  var out = boxes[bi];
+                  halt(); boxes[bi] = null; picked = null; errors = [];
+                  draw();
+                  tell(ctx.fmt(L.segmentation_removed, { sound: name(out), n: bi + 1 }));
+                  return true;
+                }
+              }
+              return false;
+            }
+            if (k === 'Enter') {
+              var ae = doc && doc.activeElement;
+              var onBtn = !!(ae && String(ae.tagName || '').toUpperCase() === 'BUTTON' && ae !== checkBtn && !ae.closest('[hidden]') && !ae.disabled && ae.getAttribute('aria-disabled') !== 'true');
+              if (onBtn || boxes.some(function (x) { return x == null; })) return false;
+              onCheck();
+              return true;
+            }
+            if (/^[1-9]$/.test(k)) {
+              var idx = Number(k) - 1;
+              if (picked != null) {
+                if (idx < n) { placeAt(picked, idx); return true; }
+                return false;
+              }
+              if (idx < chipEls.length && boxes.indexOf(idx) < 0) {
+                onChip(idx, { detail: 1 });
+                return true;
+              }
+            }
+            return false;
+          });
+        }
+
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.segmentation_question }));
         ctx.root.appendChild(ctx.el('p', { class: 'muted', text: L.segmentation_how }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
@@ -3279,6 +3350,7 @@
             }
             draw();
             boxEls.forEach(function (btn) {
+              btn.removeAttribute('data-seg-c');
               btn.style.borderColor = 'var(--ok)';
               btn.style.background = 'var(--ok-bg)';
               btn.style.color = 'var(--ok)';
@@ -4776,7 +4848,7 @@
         var tray = ctx.el('ul', { class: 'row', 'data-ws-tray': '', 'aria-label': L.word_scramble_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:10px' });
         var tiles = item.letters.map(function (letter, ti) {
           var btn = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-ws-tile': String(ti), 'aria-label': ctx.fmt(L.word_scramble_pick, { letter: up(ti) }),
-            style: 'min-width:56px;min-height:56px;font-size:1.5rem;font-weight:700;touch-action:none',
+            style: 'min-width:var(--ws-tile,56px);min-height:var(--ws-tile,56px);font-size:1.5rem;font-weight:700;touch-action:none',
             on: { click: function (e) { if (dragged()) return; onTile(ti, e); }, pointerdown: function (e) { dragStart(e, ti, 'tray', -1); } } }, [up(ti)]);
           var li = ctx.el('li', {}, [btn]);
           tray.appendChild(li);
@@ -4787,7 +4859,7 @@
         target.split('').forEach(function (ch, i) {
           if (fixed(ch)) { boxList.appendChild(ctx.el('li', { 'aria-hidden': 'true', 'data-fixed': '', style: 'display:flex;align-items:center;font-size:1.5rem;font-weight:700' }, [written[i] === ' ' ? ' ' : written[i]])); return; }
           var bi = boxEls.length;
-          var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-ws-box': String(bi), style: 'min-width:60px;min-height:64px;font-size:1.5rem;font-weight:700',
+          var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-ws-box': String(bi), style: 'min-width:var(--ws-box-w,60px);min-height:var(--ws-box-h,64px);font-size:1.5rem;font-weight:700',
             on: { click: function (e) { if (dragged()) return; onBox(bi, e); }, pointerdown: function (e) { if (boxes[bi] != null) dragStart(e, boxes[bi], 'box', bi); } } });
           boxList.appendChild(ctx.el('li', {}, [btn]));
           boxEls.push(btn);
@@ -5537,29 +5609,76 @@
         read_along_intro: 'Listen and follow the words. Press a sentence to hear it again.',
         read_along_text: 'The words to read',
         read_along_page: 'Page {n} of {total}',
+        read_along_sentence: 'Sentence {n} of {total}',
         read_along_play: 'Read to me',
         read_along_stop: 'Stop',
+        read_along_restart: 'Restart',
+        read_along_auto: 'Auto-advance',
         read_along_slower: 'Slower',
         read_along_syllables: 'Syllables',
+        read_along_bold: 'Bold start',
+        read_along_chunk: 'One sentence',
+        read_along_rsvp: 'Focus mode',
+        read_along_crawl: 'Crawl',
+        read_along_pos_labels: 'Show tags',
+        read_along_define: 'Word meanings',
+        read_along_define_hint: 'Tap an underlined word in the passage, or choose one below, to see its meaning.',
+        read_along_define_words: 'Words on this page',
+        read_along_define_close: 'Close meaning',
+        read_along_sent_prev: 'Previous sentence',
+        read_along_sent_next: 'Next sentence',
+        read_along_resume_note: 'You stopped at sentence {n} of {total}.',
+        read_along_resume_go: 'Continue from sentence {n}',
+        read_along_resume_top: 'Start from sentence 1',
+        read_along_pos: 'Parts of speech',
+        read_along_pos_n: 'Noun',
+        read_along_pos_v: 'Verb',
+        read_along_pos_j: 'Adjective',
+        read_along_pos_a: 'Adverb',
+        read_along_rec: 'Record my voice',
+        read_along_rec_stop: 'Stop recording',
+        read_along_rec_play: 'Play my voice',
+        read_along_rec_save: 'Save my recording',
+        read_along_rec_clear: 'Clear',
+        read_along_rec_note: 'Stays on this device only. Nothing is saved or sent.',
+        read_along_rec_recording: 'Recording sentence {n}...',
+        read_along_rec_ready: 'Your recording for sentence {n} is ready to play back.',
+        read_along_rec_denied: 'Microphone permission was refused.',
+        read_along_rec_unsupported: 'This browser cannot record from a microphone here.',
+        read_along_rec_empty: 'Nothing was heard. Try again.',
         read_along_done: 'I have read this page',
         read_along_next: 'Next page',
         read_along_finish: 'Finish',
         read_along_prev: 'Previous page',
         read_along_done_said: 'Good reading.',
       },
-      // p: { lines: [{ text, audio: clip id or '', syl: the text with a dot at each syllable break, para: true when a new paragraph starts here }], heading, page, pages, lang }
+      // p: { lines: [{ text, audio: clip id or '', syl: the text with a dot at each syllable break, pos: compact "i:tag,...", para: true when a new paragraph starts here }], heading, page, pages, pageMode, lang }
       // A clip id names a recording in lesson.audio. A line with no clip is shown and skipped by "Read to me".
       prepare: function (p) {
         p = p || {};
         var line = function (v, max) { return typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : ''; };
         var clip = function (v) { return typeof v === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(v) ? v : ''; };
-        if (!Array.isArray(p.lines) || !p.lines.length || p.lines.length > 60) return { missing: ['lines'] };
+        var maxLines = (p.pageMode === 'scroll' || p.pageMode === 'custom') ? 120 : 60;
+        if (!Array.isArray(p.lines) || !p.lines.length || p.lines.length > maxLines) return { missing: ['lines'] };
         var DOT = String.fromCharCode(183);
         var lines = p.lines.map(function (row) {
           var out = { text: line(row && row.text, 600), audio: clip(row && row.audio) }, syl = line(row && row.syl, 900);
           // Kept only when it is the text itself with dots added: the words a student reads are never changed.
           if (syl && syl !== out.text && syl.split(DOT).join('') === out.text) out.syl = syl;
+          var pos = typeof (row && row.pos) === 'string' && row.pos.length <= 400 && /^(?:\d{1,3}:[nvja](?:,\d{1,3}:[nvja])*)$/.test(row.pos) ? row.pos : '';
+          if (pos) out.pos = pos;
+          if (row && Array.isArray(row.timings) && row.timings.length && row.timings.length <= 120) {
+            var cleanT = [], prevT = 0, validT = true;
+            for (var ti = 0; ti < row.timings.length; ti++) {
+              var tv = Math.round(Number(row.timings[ti]));
+              if (!(tv >= 1 && tv <= 1000) || tv < prevT) { validT = false; break; }
+              cleanT.push(tv);
+              prevT = tv;
+            }
+            if (validT) out.timings = cleanT;
+          }
           if (row && row.para === true) out.para = true;
+          if (row && (row.heading === 1 || row.heading === 2 || row.heading === 3)) out.heading = row.heading;
           return out;
         });
         if (lines.some(function (row) { return !row.text; })) return { missing: ['text for every line'] };
@@ -5567,31 +5686,340 @@
         var page = Math.floor(Number(p.page)) || 1, pages = Math.floor(Number(p.pages)) || 1;
         var item = { lines: lines, lang: lang, page: Math.max(1, page), pages: Math.max(1, pages), word: lines[0].text.slice(0, 60), target: 'read' };
         if (line(p.heading, 120)) item.heading = line(p.heading, 120);
+        if (p.simpleBar === true) item.simpleBar = true;
+        if (p.glossary && typeof p.glossary === 'object' && !Array.isArray(p.glossary)) {
+          var gloss = {}, gCount = 0;
+          Object.keys(p.glossary).forEach(function (k) {
+            if (gCount >= 120 || k.length > 40 || !/^[a-z]{2,24}(?: [a-z]{2,24}){0,2}$/.test(k)) return;
+            var v = p.glossary[k];
+            if (!v || typeof v !== 'object') return;
+            var def = line(v.d, 240);
+            if (!def) return;
+            var entry = { w: line(v.w, 40) || k, d: def };
+            var vp = line(v.p, 24), ve = line(v.e, 200), vImg = clip(v.img), vAlt = line(v.alt, 60);
+            if (vp) entry.p = vp;
+            if (ve) entry.e = ve;
+            if (vImg) { entry.img = vImg; if (vAlt) entry.alt = vAlt; }
+            gloss[k] = entry;
+            gCount++;
+          });
+          if (gCount) item.glossary = gloss;
+        }
         return { item: item };
       },
       render: function (item, ctx) {
-        var L = ctx.L, nodes = [], run = 0, playing = false, from = 0, counted = {};
-        // Persist Syllables in state.tools via ctx.toolPref (survives reloads & packets-open.html), with html attribute fallback.
-        // Reading speed is handled uniformly by Reading tools (Voice speed: Normal / Slower).
-        var top = ctx.root.ownerDocument.documentElement;
-        var readPref = function (prefKey, attr) {
+        var L = ctx.L, nodes = [], paraNodes = [], run = 0, playing = false, from = 0, counted = {};
+        var activeLine = -1, activeWord = -1;
+        // Persist Syllables, Bold start, Chunk view, and Parts of speech filters in state.tools via ctx.toolPref.
+        var doc = ctx.root.ownerDocument, top = doc.documentElement;
+        var readPref = function (prefKey, attr, fallback) {
           if (typeof ctx.toolPref === 'function') {
             var v = ctx.toolPref(prefKey);
             if (v === 0 || v === 1) return v === 1;
           }
-          return top.getAttribute('data-read-along-' + attr) === '1';
+          var raw = top.getAttribute('data-read-along-' + attr);
+          if (raw === '1') return true;
+          if (raw === '0') return false;
+          return !!fallback;
         };
         var remember = function (prefKey, attr, on) {
           if (typeof ctx.toolPref === 'function') ctx.toolPref(prefKey, on ? 1 : 0);
-          if (on) top.setAttribute('data-read-along-' + attr, '1'); else top.removeAttribute('data-read-along-' + attr);
+          top.setAttribute('data-read-along-' + attr, on ? '1' : '0');
         };
         var hasAudio = item.lines.some(function (row) { return !!row.audio; });
-        var hasSyl = item.lines.some(function (row) { return !!row.syl; }), showSyl = hasSyl && readPref('syllables', 'syl');
+        var hasSyl = item.lines.some(function (row) { return !!row.syl; }), showSyl = hasSyl && readPref('syllables', 'syl', false);
+        var hasPos = item.lines.some(function (row) { return !!row.pos; }), showPos = hasPos && readPref('pos', 'pos', false);
+        var gloss = item.glossary && typeof item.glossary === 'object' ? item.glossary : null;
+        var glossKeys = gloss ? Object.keys(gloss) : [];
+        var hasDef = glossKeys.length > 0, showDef = hasDef && readPref('define', 'define', false);
+        var showBold = readPref('bold', 'bold', false);
+        var showPosLabels = readPref('posLabels', 'pos-labels', false);
+        var chunkMode = item.lines.length > 1 && readPref('chunk', 'chunk', false);
+        var autoAdv = !readPref('noAuto', 'no-auto', false);
+        var devVoice = typeof ctx.deviceVoice === 'function' ? ctx.deviceVoice(item.lang) : null;
+        var hasDevVoice = !!(devVoice && typeof devVoice.available === 'function' && devVoice.available());
+        var tapMode = showDef ? 'define' : (hasAudio ? 'sentence' : (hasDevVoice ? 'speak' : (hasSyl ? 'sounds' : 'sentence')));
+        var pausedLine = -1, pausedTime = 0, closeOverlays = null, chunkTimer = 0, chunkAutoOn = false, chunkPaceMs = 3500, chunkMood = 'highlight', twTimer = 0, twFull = false, devReading = false;
+        var win = doc.defaultView || {};
+        var reducedMotion = function () { try { return !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion:reduce)').matches); } catch (_) { return false; } };
+        var posOn = {
+          n: !readPref('posHideN', 'pos-hide-n', false),
+          v: !readPref('posHideV', 'pos-hide-v', false),
+          j: !readPref('posHideJ', 'pos-hide-j', false),
+          a: !readPref('posHideA', 'pos-hide-a', false),
+        };
         var use = function (name) { if (!counted[name]) { counted[name] = true; ctx.support(name); } };
         var press = function (button, on) { button.setAttribute('aria-pressed', String(on)); button.style.background = on ? 'var(--accent)' : ''; button.style.color = on ? 'var(--accent-ink)' : ''; };
         if (item.heading) ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'margin:0 0 4px', text: item.heading }));
-        if (item.pages > 1) ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0 0 8px', 'data-read-along-page': '', text: ctx.fmt(L.read_along_page, { n: item.page, total: item.pages }) }));
+        if (item.pages > 1) ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0 0 4px', 'data-read-along-page': '', text: ctx.fmt(L.read_along_page, { n: item.page, total: item.pages }) }));
+        var sentCounter = item.lines.length > 1 ? ctx.el('p', { class: 'muted', style: 'margin:0 0 4px', 'data-read-along-sentence': '', text: ctx.fmt(L.read_along_sentence || 'Sentence {n} of {total}', { n: 1, total: item.lines.length }) }) : null;
+        var progFill = item.lines.length > 1 ? ctx.el('span', { class: 'ra-progress-fill', style: 'width:' + Math.round(100 / item.lines.length) + '%' }) : null;
+        var progBar = progFill ? ctx.el('div', { class: 'ra-progress', 'aria-hidden': 'true', 'data-read-along-progress': '' }, [progFill]) : null;
+        var dock = ctx.el('div', { class: 'ra-dock' + (item.lines.length > 6 ? ' is-sticky' : ''), 'data-read-along-dock': '' });
+        if (sentCounter) dock.appendChild(sentCounter);
+        if (progBar) dock.appendChild(progBar);
+        ctx.root.appendChild(dock);
+        var resumeBar = null;
+        var savedPlace = typeof ctx.place === 'function' ? Math.floor(Number(ctx.place()) || 0) : 0;
+        if (savedPlace > 0 && savedPlace < item.lines.length) {
+          var resumeGo = ctx.el('button', { type: 'button', class: 'primary', 'data-read-along-resume-go': '', text: ctx.fmt(L.read_along_resume_go || 'Continue from sentence {n}', { n: savedPlace + 1 }) });
+          var resumeTop = ctx.el('button', { type: 'button', 'data-read-along-resume-top': '', text: L.read_along_resume_top || 'Start from sentence 1' });
+          resumeBar = ctx.el('div', { class: 'ra-resume-bar', 'data-read-along-resume': '' }, [
+            ctx.el('p', { style: 'margin:0 0 8px', text: ctx.fmt(L.read_along_resume_note || 'You stopped at sentence {n} of {total}.', { n: savedPlace + 1, total: item.lines.length }) }),
+            ctx.el('div', { class: 'row' }, [resumeGo, resumeTop]),
+          ]);
+          ctx.root.appendChild(resumeBar);
+          resumeGo.addEventListener('click', function () {
+            if (resumeBar) resumeBar.hidden = true;
+            setActiveSentence(savedPlace, false);
+            if (nodes[savedPlace] && typeof nodes[savedPlace].scrollIntoView === 'function') { try { nodes[savedPlace].scrollIntoView({ block: 'center' }); } catch (_) {} }
+            if (nodes[savedPlace] && typeof nodes[savedPlace].focus === 'function') nodes[savedPlace].focus();
+          });
+          resumeTop.addEventListener('click', function () {
+            if (resumeBar) resumeBar.hidden = true;
+            setActiveSentence(0, true);
+            if (nodes[0] && typeof nodes[0].scrollIntoView === 'function') { try { nodes[0].scrollIntoView({ block: 'nearest' }); } catch (_) {} }
+          });
+        }
+        var parsePos = function (spec) {
+          var map = {};
+          if (!spec) return map;
+          spec.split(',').forEach(function (pair) {
+            var p = pair.split(':');
+            if (p.length === 2) map[p[0]] = p[1];
+          });
+          return map;
+        };
+        var wordWeights = function (sentence) {
+          var re = /[A-Za-z\u00b7]+(?:['\u2019][A-Za-z\u00b7]+)*/g, m, list = [];
+          while ((m = re.exec(sentence))) {
+            var clean = m[0].replace(/\u00b7/g, ''), tail = sentence.slice(m.index + m[0].length, m.index + m[0].length + 2);
+            var bonus = /[.!?]/.test(tail) ? 6 : /[,;:]/.test(tail) ? 3 : /-/.test(tail) ? 2 : 0;
+            list.push(Math.max(2, clean.length) + bonus);
+          }
+          return list;
+        };
+        var appendWordContent = function (parent, wordText) {
+          if (!showBold) { parent.appendChild(doc.createTextNode(wordText)); return; }
+          var letters = wordText.replace(/\u00b7/g, '').length;
+          var boldTarget = Math.max(1, Math.ceil(letters * 0.4));
+          var seen = 0, cut = 0;
+          for (var k = 0; k < wordText.length; k++) {
+            cut = k + 1;
+            if (wordText.charAt(k) !== '\u00b7') seen++;
+            if (seen >= boldTarget) break;
+          }
+          parent.appendChild(ctx.el('strong', { class: 'ra-bionic', text: wordText.slice(0, cut) }));
+          if (cut < wordText.length) parent.appendChild(doc.createTextNode(wordText.slice(cut)));
+        };
+        // Paint one sentence node with syllables, POS filter tags, bold-assist, and/or word-level karaoke highlight.
+        var paintLine = function (i) {
+          var n = nodes[i], row = item.lines[i];
+          if (!n || !row) return;
+          var shown = (showSyl && row.syl) ? row.syl : row.text;
+          if (showSyl && row.syl) n.setAttribute('aria-label', row.text);
+          else n.removeAttribute('aria-label');
+          var isKaraoke = activeLine === i && activeWord >= 0;
+          var posMap = (showPos && row.pos) ? parsePos(row.pos) : null;
+          var wordTapActive = showDef || tapMode === 'speak' || tapMode === 'sounds';
+          if (!posMap && !showBold && !isKaraoke && !wordTapActive) {
+            n.textContent = shown;
+            return;
+          }
+          var sylTokens = null;
+          if (tapMode === 'sounds' && row.syl) {
+            sylTokens = [];
+            var sre = /[A-Za-z\u00b7]+(?:['\u2019][A-Za-z\u00b7]+)*/g, sm;
+            while ((sm = sre.exec(row.syl))) sylTokens.push(sm[0]);
+          }
+          n.textContent = '';
+          var re = /[A-Za-z\u00b7]+(?:['\u2019][A-Za-z\u00b7]+)*/g, m, last = 0, wi = 0;
+          var lineTokens = null, phraseAt = null;
+          if (showDef && gloss) {
+            lineTokens = [];
+            var preRe = /[A-Za-z\u00b7]+(?:['\u2019][A-Za-z\u00b7]+)*/g, pm;
+            while ((pm = preRe.exec(shown))) lineTokens.push(pm[0].replace(/\u00b7/g, '').toLowerCase());
+            phraseAt = {};
+            for (var pi = 0; pi < lineTokens.length; pi++) {
+              if (pi + 2 < lineTokens.length) {
+                var p3 = lineTokens[pi] + ' ' + lineTokens[pi + 1] + ' ' + lineTokens[pi + 2];
+                if (Object.prototype.hasOwnProperty.call(gloss, p3)) { phraseAt[pi] = phraseAt[pi + 1] = phraseAt[pi + 2] = p3; continue; }
+              }
+              if (pi + 1 < lineTokens.length) {
+                var p2 = lineTokens[pi] + ' ' + lineTokens[pi + 1];
+                if (Object.prototype.hasOwnProperty.call(gloss, p2)) { phraseAt[pi] = phraseAt[pi + 1] = p2; }
+              }
+            }
+          }
+          while ((m = re.exec(shown))) {
+            if (m.index > last) n.appendChild(doc.createTextNode(shown.slice(last, m.index)));
+            var tag = posMap ? posMap[String(wi)] : '';
+            if (tag && !posOn[tag]) tag = '';
+            var plainWord = m[0].replace(/\u00b7/g, '');
+            var plainKey = plainWord.toLowerCase();
+            var defKey = (showDef && gloss)
+              ? ((phraseAt && phraseAt[wi]) || (plainKey && Object.prototype.hasOwnProperty.call(gloss, plainKey) ? plainKey : ''))
+              : '';
+            var cls = [];
+            if (tag) cls.push('ra-pos', 'ra-pos-' + tag);
+            if (defKey || tapMode === 'speak' || tapMode === 'sounds') cls.push('ra-def-word');
+            if (isKaraoke && wi === activeWord) cls.push('ra-word-active');
+            else if (isKaraoke && wi < activeWord) cls.push('ra-word-past');
+            if (cls.length) {
+              var attrs = { class: cls.join(' ') };
+              if (tag) {
+                attrs['data-pos'] = tag;
+                attrs['data-pos-tag'] = tag === 'n' ? 'N' : tag === 'v' ? 'V' : tag === 'j' ? 'Adj' : 'Adv';
+              }
+              if (defKey) attrs['data-def-word'] = defKey;
+              if (tapMode === 'speak' || tapMode === 'sounds') attrs['data-tap-word'] = plainWord;
+              if (sylTokens && sylTokens[wi]) attrs['data-syl-word'] = sylTokens[wi];
+              if (isKaraoke && wi === activeWord) attrs['data-word-active'] = 'true';
+              var span = ctx.el('span', attrs);
+              appendWordContent(span, m[0]);
+              n.appendChild(span);
+            } else {
+              appendWordContent(n, m[0]);
+            }
+            last = m.index + m[0].length;
+            wi++;
+          }
+          if (last < shown.length) n.appendChild(doc.createTextNode(shown.slice(last)));
+        };
+        var defBox = null, defCard = null, defPickBtns = {}, soundsCard = null, tapBtns = {};
+        var showSounds = function (plainWord, sylWord) {
+          if (!soundsCard || !plainWord) return;
+          var parts = (sylWord && sylWord.indexOf('\u00b7') >= 0) ? sylWord.split('\u00b7') : [plainWord];
+          soundsCard.hidden = false;
+          soundsCard.textContent = '';
+          var headRow = [ctx.el('strong', { text: plainWord + ' (' + parts.length + (parts.length === 1 ? ' syllable)' : ' syllables)') })];
+          if (hasDevVoice) {
+            var hearBtn = ctx.el('button', { type: 'button', 'data-sounds-hear': '', text: 'Hear word' });
+            hearBtn.addEventListener('click', function () { devVoice.speak(plainWord); });
+            headRow.push(hearBtn);
+          }
+          var closeS = ctx.el('button', { type: 'button', 'data-sounds-close': '', text: L.tools_close || 'Close' });
+          closeS.addEventListener('click', function () { soundsCard.hidden = true; });
+          headRow.push(closeS);
+          soundsCard.appendChild(ctx.el('div', { class: 'row', style: 'justify-content:space-between;align-items:center' }, headRow));
+          soundsCard.appendChild(ctx.el('div', { class: 'ra-syl-tiles' }, parts.map(function (pt) { return ctx.el('span', { class: 'ra-syl-tile', text: pt }); })));
+        };
+        var setTapMode = function (mode) {
+          tapMode = mode;
+          if (mode === 'define' && hasDef && !showDef) { showDef = true; remember('define', 'define', true); if (defButton) press(defButton, true); }
+          else if (mode !== 'define' && showDef) { showDef = false; remember('define', 'define', false); if (defButton) press(defButton, false); }
+          if (soundsCard && mode !== 'sounds') soundsCard.hidden = true;
+          Object.keys(tapBtns).forEach(function (k) { press(tapBtns[k], k === tapMode); });
+          paint();
+        };
+        var showDefinition = function (key) {
+          if (!defCard || !gloss || !Object.prototype.hasOwnProperty.call(gloss, key)) return;
+          var entry = gloss[key];
+          defCard.textContent = '';
+          var head = entry.w && entry.w !== key ? key + ' (' + entry.w + ')' : (entry.w || key);
+          var textCol = ctx.el('div', { class: 'ra-def-body' }, [
+            ctx.el('p', { class: 'ra-def-head', text: head + (entry.p ? ' - ' + entry.p : '') }),
+            ctx.el('p', { style: 'margin:4px 0', text: entry.d }),
+            entry.e ? ctx.el('p', { class: 'muted', style: 'margin:4px 0 0', text: '"' + entry.e + '"' }) : null,
+          ]);
+          var imgSrc = entry.img && typeof ctx.image === 'function' ? ctx.image(entry.img) : null;
+          if (imgSrc) {
+            defCard.appendChild(ctx.el('div', { class: 'ra-def-layout' }, [
+              ctx.el('img', { class: 'ra-def-img', src: imgSrc, alt: entry.alt || entry.w || key, 'data-def-img': key }),
+              textCol,
+            ]));
+          } else {
+            defCard.appendChild(textCol);
+          }
+          Object.keys(defPickBtns).forEach(function (k) { defPickBtns[k].setAttribute('aria-pressed', String(k === key)); });
+        };
+        var paint = function () {
+          if (posLegend) posLegend.hidden = !showPos;
+          if (box) {
+            if (showPos && showPosLabels) box.setAttribute('data-pos-tags', '1');
+            else box.removeAttribute('data-pos-tags');
+          }
+          if (defBox) defBox.hidden = !showDef;
+          for (var i = 0; i < nodes.length; i++) paintLine(i);
+        };
+        var chunkNav = null, sentPrevBtn = null, sentNextBtn = null, chunkAutoBtn = null;
+        var stopChunkTimers = function () {
+          if (chunkTimer && win.clearTimeout) { win.clearTimeout(chunkTimer); chunkTimer = 0; }
+          if (twTimer && win.clearInterval) { win.clearInterval(twTimer); twTimer = 0; }
+          twFull = true;
+        };
+        var runTypewriter = function (idx) {
+          if (twTimer && win.clearInterval) { win.clearInterval(twTimer); twTimer = 0; }
+          if (!chunkMode || chunkMood !== 'typewriter' || reducedMotion() || !nodes[idx] || !item.lines[idx]) { twFull = true; return; }
+          var full = (showSyl && item.lines[idx].syl) ? item.lines[idx].syl : item.lines[idx].text;
+          if (full.length <= 2) { twFull = true; return; }
+          twFull = false;
+          var pos = 1;
+          nodes[idx].textContent = full.slice(0, pos);
+          twTimer = win.setInterval(function () {
+            pos += Math.max(1, Math.ceil(full.length / 26));
+            if (pos >= full.length) {
+              win.clearInterval(twTimer); twTimer = 0; twFull = true;
+              paintLine(idx);
+            } else if (nodes[idx]) {
+              nodes[idx].textContent = full.slice(0, pos);
+            }
+          }, 36);
+        };
+        var scheduleChunkTimer = function () {
+          if (chunkTimer && win.clearTimeout) { win.clearTimeout(chunkTimer); chunkTimer = 0; }
+          if (!chunkMode || !chunkAutoOn || playing) return;
+          chunkTimer = win.setTimeout(function () {
+            chunkTimer = 0;
+            if (!chunkMode || !chunkAutoOn || playing) return;
+            if (from >= item.lines.length - 1) {
+              chunkAutoOn = false;
+              if (chunkAutoBtn) press(chunkAutoBtn, false);
+              return;
+            }
+            setActiveSentence(from + 1, true);
+            scheduleChunkTimer();
+          }, chunkPaceMs);
+        };
+        var applyChunkView = function () {
+          if (box) {
+            box.style.fontSize = chunkMode ? '1.75rem' : '1.5rem';
+            if (chunkMode && chunkMood !== 'highlight') box.setAttribute('data-chunk-mood', chunkMood);
+            else box.removeAttribute('data-chunk-mood');
+          }
+          nodes.forEach(function (n, i) {
+            n.hidden = chunkMode && i !== from;
+            if (n.nextSibling && n.nextSibling.nodeType === 3) n.nextSibling.nodeValue = chunkMode ? '' : ' ';
+          });
+          paraNodes.forEach(function (p) { p.hidden = chunkMode; });
+          if (chunkNav) chunkNav.hidden = !chunkMode;
+          if (sentPrevBtn) sentPrevBtn.disabled = from <= 0;
+          if (sentNextBtn) sentNextBtn.disabled = from >= item.lines.length - 1;
+          if (!chunkMode) { chunkAutoOn = false; if (chunkAutoBtn) press(chunkAutoBtn, false); stopChunkTimers(); }
+          else runTypewriter(from);
+        };
+        var mic = typeof ctx.studentMic === 'function' ? ctx.studentMic({
+          getSentence: function () { return { index: from, total: item.lines.length, text: (item.lines[from] && item.lines[from].text) || '' }; },
+        }) : null;
+        var setActiveSentence = function (idx, savePlace) {
+          var clamped = Math.max(0, Math.min(item.lines.length - 1, idx));
+          from = clamped;
+          if (sentCounter) sentCounter.textContent = ctx.fmt(L.read_along_sentence || 'Sentence {n} of {total}', { n: from + 1, total: item.lines.length });
+          if (progFill) progFill.style.width = Math.round(((from + 1) / item.lines.length) * 100) + '%';
+          if (savePlace !== false && typeof ctx.place === 'function') ctx.place(from);
+          if (mic && typeof mic.setSentence === 'function') mic.setSentence(from, item.lines.length);
+          applyChunkView();
+        };
+        var setWordHighlight = function (lineIdx, wordIdx) {
+          var prevLine = activeLine, prevWord = activeWord;
+          if (prevLine === lineIdx && prevWord === wordIdx) return;
+          activeLine = lineIdx;
+          activeWord = wordIdx;
+          if (prevLine >= 0 && prevLine !== lineIdx) paintLine(prevLine);
+          if (lineIdx >= 0) paintLine(lineIdx);
+        };
         var mark = function (index) {
+          if (index < 0 && activeLine >= 0) { var old = activeLine; activeLine = -1; activeWord = -1; paintLine(old); }
           nodes.forEach(function (n, i) {
             var on = i === index;
             n.style.background = on ? 'var(--ok-bg)' : 'none';
@@ -5607,28 +6035,111 @@
           if (index >= 0 && nodes[index] && typeof nodes[index].scrollIntoView === 'function') { try { nodes[index].scrollIntoView({ block: 'nearest' }); } catch (_) {} }
         };
         var playButton = hasAudio ? ctx.el('button', { type: 'button', class: 'primary', 'data-read-along-play': '', text: L.read_along_play }) : null;
+        var devReadButton = (!hasAudio && hasDevVoice) ? ctx.el('button', { type: 'button', class: 'primary', 'data-read-along-device-read': '', text: 'Read with device voice' }) : null;
+        var restartButton = (hasAudio || hasDevVoice || item.lines.length > 1) ? ctx.el('button', { type: 'button', 'data-read-along-restart': '', text: L.read_along_restart || 'Restart' }) : null;
+        var autoButton = ((hasAudio || hasDevVoice) && item.lines.length > 1) ? ctx.el('button', { type: 'button', 'data-read-along-auto': '', text: L.read_along_auto || 'Auto-advance' }) : null;
         var sylButton = hasSyl ? ctx.el('button', { type: 'button', 'data-read-along-syllables': '', text: L.read_along_syllables }) : null;
+        var posButton = hasPos ? ctx.el('button', { type: 'button', 'data-read-along-pos': '', text: L.read_along_pos || 'Parts of speech' }) : null;
+        var defButton = hasDef ? ctx.el('button', { type: 'button', 'data-read-along-define': '', text: L.read_along_define || 'Word meanings' }) : null;
+        var boldButton = ctx.el('button', { type: 'button', 'data-read-along-bold': '', text: L.read_along_bold || 'Bold start' });
+        var chunkButton = item.lines.length > 1 ? ctx.el('button', { type: 'button', 'data-read-along-chunk': '', text: L.read_along_chunk || 'One sentence' }) : null;
+        var rsvpButton = ctx.el('button', { type: 'button', 'data-read-along-rsvp': '', text: L.read_along_rsvp || 'Focus mode' });
+        var crawlButton = ctx.el('button', { type: 'button', 'data-read-along-crawl': '', text: L.read_along_crawl || 'Crawl' });
+        if (autoButton) press(autoButton, autoAdv);
         if (sylButton) press(sylButton, showSyl);
-        // The words as they are, or in syllables. A screen reader is given the plain words either way.
-        var paint = function () {
-          nodes.forEach(function (n, i) {
-            var row = item.lines[i];
-            if (showSyl && row.syl) { n.textContent = row.syl; n.setAttribute('aria-label', row.text); }
-            else { n.textContent = row.text; n.removeAttribute('aria-label'); }
+        if (posButton) press(posButton, showPos);
+        if (defButton) press(defButton, showDef);
+        press(boldButton, showBold);
+        if (chunkButton) press(chunkButton, chunkMode);
+        var posFilterBtns = {};
+        var posLabelsBtn = hasPos ? ctx.el('button', { type: 'button', class: 'ra-pos-pill', 'data-pos-labels': '', 'aria-pressed': String(showPosLabels), text: L.read_along_pos_labels || 'Show tags' }) : null;
+        if (posLabelsBtn) {
+          posLabelsBtn.addEventListener('click', function () {
+            showPosLabels = !showPosLabels;
+            posLabelsBtn.setAttribute('aria-pressed', String(showPosLabels));
+            remember('posLabels', 'pos-labels', showPosLabels);
+            paint();
           });
+        }
+        var posLegend = hasPos ? ctx.el('div', { class: 'ra-pos-legend', role: 'group', 'aria-label': L.read_along_pos || 'Parts of speech', 'data-read-along-pos-legend': '', hidden: !showPos }, [
+          ['n', L.read_along_pos_n || 'Noun', 'posHideN', 'pos-hide-n'],
+          ['v', L.read_along_pos_v || 'Verb', 'posHideV', 'pos-hide-v'],
+          ['j', L.read_along_pos_j || 'Adjective', 'posHideJ', 'pos-hide-j'],
+          ['a', L.read_along_pos_a || 'Adverb', 'posHideA', 'pos-hide-a'],
+        ].map(function (entry) {
+          var code = entry[0], label = entry[1], pref = entry[2], attr = entry[3];
+          var btn = ctx.el('button', { type: 'button', class: 'ra-pos-pill ra-pos ra-pos-' + code, 'data-pos-filter': code, 'aria-pressed': String(posOn[code]), text: label });
+          btn.addEventListener('click', function () {
+            posOn[code] = !posOn[code];
+            btn.setAttribute('aria-pressed', String(posOn[code]));
+            remember(pref, attr, !posOn[code]);
+            paint();
+          });
+          posFilterBtns[code] = btn;
+          return btn;
+        }).concat([posLabelsBtn])) : null;
+        var setPlaying = function (on) {
+          playing = on;
+          if (playButton) playButton.textContent = on ? L.read_along_stop : L.read_along_play;
+          if (devReadButton) devReadButton.textContent = on ? L.read_along_stop : 'Read with device voice';
         };
-        var setPlaying = function (on) { playing = on; if (playButton) playButton.textContent = on ? L.read_along_stop : L.read_along_play; };
-        var halt = function () { run++; ctx.stop(); mark(-1); setPlaying(false); };
+        var halt = function (keepPause) {
+          if (keepPause && playing && !devReading && typeof ctx.audioTime === 'function') {
+            var curT = ctx.audioTime();
+            if (curT > 0.15) { pausedLine = from; pausedTime = curT; }
+            else { pausedLine = -1; pausedTime = 0; }
+          } else {
+            pausedLine = -1; pausedTime = 0;
+          }
+          devReading = false;
+          if (devVoice && typeof devVoice.stop === 'function') devVoice.stop();
+          chunkAutoOn = false;
+          if (chunkAutoBtn) press(chunkAutoBtn, false);
+          stopChunkTimers();
+          run++; ctx.stop(); mark(-1); setPlaying(false);
+          if (mic && typeof mic.halt === 'function') mic.halt();
+          if (!keepPause && typeof closeOverlays === 'function') closeOverlays();
+        };
         var playedAny = false;
+        var makeWordTracker = function (i, mine) {
+          var row = item.lines[i] || {};
+          var timings = Array.isArray(row.timings) && row.timings.length ? row.timings : null;
+          if (timings) {
+            return function (cur, dur) {
+              if (mine !== run || !(dur > 0)) return;
+              var target = Math.max(0, Math.min(1000, Math.round((cur / dur) * 1000)));
+              var wi = timings.length - 1;
+              for (var k = 0; k < timings.length; k++) {
+                if (target <= timings[k]) { wi = k; break; }
+              }
+              setWordHighlight(i, wi);
+            };
+          }
+          var weights = wordWeights(row.text || '');
+          var totalW = weights.reduce(function (a, b) { return a + b; }, 0);
+          if (!weights.length || !totalW) return null;
+          return function (cur, dur) {
+            if (mine !== run || !(dur > 0)) return;
+            var pct = Math.max(0, Math.min(1, cur / dur));
+            var target = pct * totalW, acc = 0, wi = weights.length - 1;
+            for (var k = 0; k < weights.length; k++) {
+              acc += weights[k];
+              if (target <= acc) { wi = k; break; }
+            }
+            setWordHighlight(i, wi);
+          };
+        };
         var playLine = function (i, countSupport) {
           if (!hasAudio || i < 0 || i >= item.lines.length || !item.lines[i].audio) return false;
+          if (resumeBar) resumeBar.hidden = true;
+          pausedLine = -1; pausedTime = 0;
           var mine = ++run;
           setPlaying(false);
-          from = i;
+          setActiveSentence(i, true);
           playedAny = true;
           if (countSupport !== false) ctx.support('lineReplays');
           mark(i);
-          ctx.play(item.lines[i].audio).then(function () { if (mine === run) mark(-1); });
+          ctx.play(item.lines[i].audio, 0, makeWordTracker(i, mine), 0).then(function () { if (mine === run) mark(-1); });
           return true;
         };
         var findAudio = function (start, stepDir) {
@@ -5637,59 +6148,268 @@
           }
           return -1;
         };
-        // The page from line i to its end: each line marked while its recording plays. Stop keeps `from = at` so Read to me resumes where it paused.
+        // The page from line i to its end (or just line i if Auto-advance is off): resumes mid-sentence when paused.
         var readFrom = function (i) {
           if (!hasAudio) return;
+          if (resumeBar) resumeBar.hidden = true;
           var mine = ++run;
           setPlaying(true);
           var step = function (at) {
             if (mine !== run) return;
             while (at < item.lines.length && !item.lines[at].audio) at++;
-            if (at >= item.lines.length) { mark(-1); setPlaying(false); from = 0; return; }
-            from = at;
+            if (at >= item.lines.length) { pausedLine = -1; pausedTime = 0; mark(-1); setPlaying(false); setActiveSentence(0, true); return; }
+            var startSec = (at === pausedLine && pausedTime > 0.15) ? pausedTime : 0;
+            pausedLine = -1; pausedTime = 0;
+            setActiveSentence(at, true);
             playedAny = true;
             mark(at);
-            ctx.play(item.lines[at].audio).then(function (ok) { if (mine !== run) return; if (ok === false) { mark(-1); setPlaying(false); return; } step(at + 1); });
+            ctx.play(item.lines[at].audio, 0, makeWordTracker(at, mine), startSec).then(function (ok) {
+              if (mine !== run) return;
+              if (ok === false) { mark(-1); setPlaying(false); return; }
+              if (!autoAdv) { mark(-1); setPlaying(false); return; }
+              step(at + 1);
+            });
           };
           step(i);
         };
         if (playButton) playButton.addEventListener('click', function () {
-          if (playing) { halt(); return; }
+          if (playing) { halt(true); return; }
           ctx.support('readThroughs');
           readFrom(from);
         });
+        var readDeviceFrom = function (i) {
+          if (!hasDevVoice) return;
+          if (resumeBar) resumeBar.hidden = true;
+          var mine = ++run;
+          devReading = true;
+          setPlaying(true);
+          var step = function (at) {
+            if (mine !== run || !devReading) return;
+            if (at >= item.lines.length) { devReading = false; mark(-1); setPlaying(false); setActiveSentence(0, true); return; }
+            setActiveSentence(at, true);
+            playedAny = true;
+            mark(at);
+            devVoice.speak(item.lines[at].text, function (ok) {
+              if (mine !== run || !devReading) return;
+              if (!ok || !autoAdv) { devReading = false; mark(-1); setPlaying(false); return; }
+              step(at + 1);
+            });
+          };
+          step(i);
+        };
+        if (devReadButton) devReadButton.addEventListener('click', function () {
+          if (playing) { halt(false); return; }
+          ctx.support('readThroughs');
+          readDeviceFrom(from);
+        });
+        if (restartButton) restartButton.addEventListener('click', function () {
+          halt();
+          if (resumeBar) resumeBar.hidden = true;
+          setActiveSentence(0, true);
+          if (nodes[0] && typeof nodes[0].scrollIntoView === 'function') { try { nodes[0].scrollIntoView({ block: 'nearest' }); } catch (_) {} }
+        });
+        if (autoButton) autoButton.addEventListener('click', function () {
+          autoAdv = !autoAdv;
+          remember('noAuto', 'no-auto', !autoAdv);
+          press(autoButton, autoAdv);
+        });
         if (sylButton) sylButton.addEventListener('click', function () { showSyl = !showSyl; remember('syllables', 'syl', showSyl); press(sylButton, showSyl); if (showSyl) use('syllables'); paint(); });
-        var topControls = [];
-        if (playButton) topControls.push(playButton);
-        if (sylButton) topControls.push(sylButton);
-        if (topControls.length) ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin:8px 0' }, topControls));
+        if (posButton) posButton.addEventListener('click', function () { showPos = !showPos; remember('pos', 'pos', showPos); press(posButton, showPos); if (showPos) use('partsOfSpeech'); paint(); });
+        if (defButton) defButton.addEventListener('click', function () {
+          showDef = !showDef;
+          remember('define', 'define', showDef);
+          press(defButton, showDef);
+          if (showDef) { tapMode = 'define'; use('wordMeanings'); }
+          else if (tapMode === 'define') tapMode = hasAudio ? 'sentence' : (hasDevVoice ? 'speak' : 'sentence');
+          Object.keys(tapBtns).forEach(function (k) { press(tapBtns[k], k === tapMode); });
+          paint();
+        });
+        boldButton.addEventListener('click', function () { showBold = !showBold; remember('bold', 'bold', showBold); press(boldButton, showBold); if (showBold) use('boldStart'); paint(); });
+        if (win.MutationObserver && top) {
+          var boldObs = new win.MutationObserver(function () {
+            if (!ctx.root.isConnected) { boldObs.disconnect(); return; }
+            var extBold = top.getAttribute('data-lt-bold') === '1';
+            if (extBold !== showBold) { showBold = extBold; press(boldButton, showBold); paint(); }
+          });
+          boldObs.observe(top, { attributes: true, attributeFilter: ['data-lt-bold'] });
+        }
+        if (chunkButton) chunkButton.addEventListener('click', function () {
+          chunkMode = !chunkMode;
+          remember('chunk', 'chunk', chunkMode);
+          press(chunkButton, chunkMode);
+          if (chunkMode) use('chunkRead');
+          applyChunkView();
+        });
+        var mainControls = [];
+        if (playButton) mainControls.push(playButton);
+        if (devReadButton) mainControls.push(devReadButton);
+        if (restartButton && !item.simpleBar) mainControls.push(restartButton);
+        if (autoButton && !item.simpleBar) mainControls.push(autoButton);
+        if (mainControls.length) dock.appendChild(ctx.el('div', { class: 'ra-bar-main', 'data-read-along-main-bar': '' }, mainControls));
+        var coreStudy = [], extraStudy = [];
+        if (sylButton) coreStudy.push(sylButton);
+        if (posButton) coreStudy.push(posButton);
+        if (defButton) coreStudy.push(defButton);
+        if (item.simpleBar && restartButton) extraStudy.push(restartButton);
+        if (item.simpleBar && autoButton) extraStudy.push(autoButton);
+        extraStudy.push(boldButton);
+        if (chunkButton) extraStudy.push(chunkButton);
+        extraStudy.push(rsvpButton, crawlButton);
+        var tapChoices = [];
+        if (hasAudio) tapChoices.push(['sentence', 'Sentence']);
+        if (hasDevVoice) tapChoices.push(['speak', 'Speak word']);
+        if (hasDef) tapChoices.push(['define', 'Define']);
+        if (hasSyl) tapChoices.push(['sounds', 'Sounds']);
+        if (tapChoices.length >= 2) {
+          var tapNodes = [ctx.el('span', { text: 'Tap:' })];
+          tapChoices.forEach(function (tc) {
+            var b = ctx.el('button', { type: 'button', 'data-tap-mode': tc[0], text: tc[1] });
+            press(b, tc[0] === tapMode);
+            b.addEventListener('click', function () { setTapMode(tc[0]); });
+            tapBtns[tc[0]] = b;
+            tapNodes.push(b);
+          });
+          extraStudy.push(ctx.el('div', { class: 'ra-tap-bar', role: 'group', 'aria-label': 'Tap a word mode', 'data-read-along-tap-bar': '' }, tapNodes));
+        }
+        if (item.simpleBar) {
+          var extraWrap = ctx.el('div', { class: 'ra-extra-tools', 'data-read-along-extra-tools': '', hidden: true }, extraStudy);
+          var moreBtn = ctx.el('button', { type: 'button', 'data-read-along-more-tools': '', 'aria-expanded': 'false', text: 'More tools' });
+          moreBtn.addEventListener('click', function () {
+            var open = extraWrap.hidden;
+            extraWrap.hidden = !open;
+            moreBtn.setAttribute('aria-expanded', String(open));
+            moreBtn.textContent = open ? 'Fewer tools' : 'More tools';
+          });
+          coreStudy.push(moreBtn);
+          ctx.root.appendChild(ctx.el('div', { class: 'ra-tools-bar', role: 'group', 'aria-label': 'Reading helpers', 'data-read-along-tools-bar': '' }, coreStudy.concat([extraWrap])));
+        } else {
+          ctx.root.appendChild(ctx.el('div', { class: 'ra-tools-bar', role: 'group', 'aria-label': 'Reading helpers', 'data-read-along-tools-bar': '' }, coreStudy.concat(extraStudy)));
+        }
+        if (posLegend) ctx.root.appendChild(posLegend);
+        var handleWordClick = function (ev) {
+          if (!ev || !ev.target || typeof ev.target.closest !== 'function') return false;
+          if (showDef) {
+            var hitDef = ev.target.closest('[data-def-word]');
+            if (hitDef) { ev.preventDefault(); ev.stopPropagation(); showDefinition(hitDef.getAttribute('data-def-word')); return true; }
+          }
+          var hitTap = ev.target.closest('[data-tap-word]');
+          if (hitTap) {
+            var wTxt = hitTap.getAttribute('data-tap-word');
+            if (tapMode === 'sounds') {
+              ev.preventDefault(); ev.stopPropagation();
+              showSounds(wTxt, hitTap.getAttribute('data-syl-word') || wTxt);
+              return true;
+            }
+            if (tapMode === 'speak' && hasDevVoice) {
+              ev.preventDefault(); ev.stopPropagation();
+              devVoice.speak(wTxt);
+              return true;
+            }
+          }
+          return false;
+        };
         // data-read: running text, where the shell's reading focus can go.
         var box = ctx.el('div', { role: 'group', 'aria-label': L.read_along_text, lang: item.lang, 'data-read': '', 'data-read-along-text': '',
-          style: 'font-size:1.5rem;line-height:1.9;border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:12px 0;overflow-wrap:anywhere' });
+          style: 'font-size:1.5rem;line-height:1.9;border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:10px 0 12px;overflow-wrap:anywhere' });
         item.lines.forEach(function (row, i) {
-          if (row.para && i > 0) box.appendChild(ctx.el('span', { style: 'display:block;height:.7em', 'aria-hidden': 'true' }));
+          if (row.para && i > 0 && !row.heading) {
+            var spacer = ctx.el('span', { style: 'display:block;height:.7em', 'aria-hidden': 'true' });
+            paraNodes.push(spacer);
+            box.appendChild(spacer);
+          }
+          var isHeading = row.heading === 1 || row.heading === 2 || row.heading === 3;
+          var headingStyle = isHeading ? 'display:block;font-weight:800;margin:' + (i > 0 ? '.65em' : '0') + ' 0 .25em;font-size:' + (row.heading === 1 ? '1.25em' : '1.12em') + ';line-height:1.35;' : '';
           var node;
           if (hasAudio) {
             // A sentence is a button that looks like text: pressing it reads that sentence, and "Read to me" then goes on from it.
             node = ctx.el('button', { type: 'button', 'data-read-along-line': String(i + 1), text: row.text,
-              style: 'display:inline;font:inherit;color:inherit;background:none;border:0;border-radius:6px;padding:6px 6px;margin:0;min-height:0;min-width:36px;text-align:start;cursor:pointer;-webkit-box-decoration-break:clone;box-decoration-break:clone' });
+              style: (isHeading ? headingStyle : 'display:inline;') + 'font:inherit;color:inherit;background:none;border:0;border-radius:6px;padding:6px 6px;margin:' + (isHeading ? (i > 0 ? '.65em 0 .25em' : '0 0 .25em') : '0') + ';min-height:0;min-width:36px;text-align:start;cursor:pointer;-webkit-box-decoration-break:clone;box-decoration-break:clone' + (isHeading ? ';font-weight:800;font-size:' + (row.heading === 1 ? '1.25em' : '1.12em') + ';line-height:1.35' : '') });
+            if (isHeading) node.setAttribute('data-heading', String(row.heading));
             if (!row.audio) {
               node.setAttribute('aria-disabled', 'true');
               node.style.cursor = 'default';
               node.style.opacity = '0.72';
             }
-            node.addEventListener('click', function () { playLine(i, true); });
+            node.addEventListener('click', function (ev) {
+              if (handleWordClick(ev)) return;
+              playLine(i, true);
+            });
           } else {
             // Silent / syllable-only mode: plain reading text with no inert clickable button role.
             node = ctx.el('span', { 'data-read-along-line': String(i + 1), text: row.text,
-              style: 'display:inline;padding:2px 2px' });
+              style: isHeading ? headingStyle + 'padding:2px 2px' : 'display:inline;padding:2px 2px' });
+            if (isHeading) node.setAttribute('data-heading', String(row.heading));
+            if (hasDef || hasSyl || hasDevVoice) {
+              node.addEventListener('click', function (ev) { handleWordClick(ev); });
+            }
           }
           nodes.push(node);
           box.appendChild(node);
-          box.appendChild(ctx.root.ownerDocument.createTextNode(' '));
+          if (!isHeading) box.appendChild(doc.createTextNode(' '));
         });
         ctx.root.appendChild(box);
-        if (showSyl) { paint(); use('syllables'); }
+        if (hasSyl) {
+          soundsCard = ctx.el('div', { class: 'ra-sounds-card', 'aria-live': 'polite', 'data-read-along-sounds-card': '', hidden: true });
+          ctx.root.appendChild(soundsCard);
+        }
+        if (hasDef) {
+          defCard = ctx.el('div', { class: 'ra-def-card', 'aria-live': 'polite', 'data-read-along-def-card': '' }, [
+            ctx.el('p', { class: 'muted', style: 'margin:0', text: L.read_along_define_hint || 'Tap an underlined word in the passage, or choose one below, to see its meaning.' }),
+          ]);
+          var chips = glossKeys.map(function (k) {
+            var b = ctx.el('button', { type: 'button', class: 'ra-def-pick', 'data-def-pick': k, 'aria-pressed': 'false', text: k });
+            b.addEventListener('click', function () { showDefinition(k); });
+            defPickBtns[k] = b;
+            return b;
+          });
+          defBox = ctx.el('div', { class: 'ra-def-box', 'data-read-along-def-box': '', hidden: !showDef }, [
+            defCard,
+            ctx.el('div', { class: 'ra-def-picks', role: 'group', 'aria-label': L.read_along_define_words || 'Words on this page' }, chips),
+          ]);
+          ctx.root.appendChild(defBox);
+        }
+        if (item.lines.length > 1) {
+          sentPrevBtn = ctx.el('button', { type: 'button', 'data-read-along-sent-prev': '', text: L.read_along_sent_prev || 'Previous sentence' });
+          sentNextBtn = ctx.el('button', { type: 'button', 'data-read-along-sent-next': '', text: L.read_along_sent_next || 'Next sentence' });
+          chunkAutoBtn = ctx.el('button', { type: 'button', 'data-chunk-auto-timer': '', text: 'Auto pace' });
+          press(chunkAutoBtn, false);
+          var chunkPaceOut = ctx.el('span', { class: 'muted', 'data-chunk-pace-out': '', text: '3.5s' });
+          var chunkPaceIn = ctx.el('input', { type: 'range', min: '1000', max: '8000', step: '500', value: String(chunkPaceMs), 'aria-label': 'Seconds per sentence', 'data-chunk-pace': '' });
+          var chunkMoodSel = ctx.el('select', { 'aria-label': 'Sentence style', 'data-chunk-mood': '' }, [
+            ctx.el('option', { value: 'highlight', text: 'Sweep' }),
+            ctx.el('option', { value: 'typewriter', text: 'Typewriter' }),
+            ctx.el('option', { value: 'popin', text: 'Pop-In' }),
+            ctx.el('option', { value: 'pulse', text: 'Pulse' }),
+          ]);
+          sentPrevBtn.addEventListener('click', function () { halt(); setActiveSentence(from - 1, true); });
+          sentNextBtn.addEventListener('click', function () { halt(); setActiveSentence(from + 1, true); });
+          chunkAutoBtn.addEventListener('click', function () {
+            chunkAutoOn = !chunkAutoOn;
+            press(chunkAutoBtn, chunkAutoOn);
+            if (chunkAutoOn) scheduleChunkTimer(); else stopChunkTimers();
+          });
+          chunkPaceIn.addEventListener('input', function () {
+            chunkPaceMs = Math.max(1000, Math.min(8000, Number(chunkPaceIn.value) || 3500));
+            chunkPaceOut.textContent = (chunkPaceMs / 1000).toFixed(1) + 's';
+            if (chunkAutoOn) scheduleChunkTimer();
+          });
+          chunkMoodSel.addEventListener('change', function () {
+            chunkMood = chunkMoodSel.value || 'highlight';
+            applyChunkView();
+          });
+          chunkNav = ctx.el('div', { class: 'ra-ov-controls', style: 'margin:8px 0', 'data-read-along-chunk-nav': '', hidden: !chunkMode }, [
+            sentPrevBtn, sentNextBtn, chunkAutoBtn,
+            ctx.el('label', { class: 'ra-ov-range' }, ['Pace ', chunkPaceIn, chunkPaceOut]),
+            ctx.el('label', { class: 'ra-ov-range' }, ['Style ', chunkMoodSel]),
+          ]);
+          ctx.root.appendChild(chunkNav);
+        }
+        if (showSyl || showPos || showBold || showDef || tapMode === 'speak' || tapMode === 'sounds') { paint(); if (showSyl) use('syllables'); if (showPos) use('partsOfSpeech'); if (showBold) use('boldStart'); if (showDef) use('wordMeanings'); }
+        applyChunkView();
+        if (mic && mic.el) {
+          if (typeof mic.setSentence === 'function') mic.setSentence(from, item.lines.length);
+          ctx.root.appendChild(mic.el);
+        }
         var navButtons = [];
         if (item.page > 1 && typeof ctx.goPrev === 'function') {
           var prev = ctx.el('button', { type: 'button', 'data-read-along-prev': '', text: L.read_along_prev });
@@ -5705,27 +6425,401 @@
         });
         navButtons.push(done);
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, navButtons));
-        if (hasAudio && typeof ctx.keys === 'function') {
+        ctx.root.appendChild(ctx.el('details', { class: 'ra-keys-hint', 'data-read-along-keys-hint': '' }, [
+          ctx.el('summary', { text: 'Keyboard shortcuts' }),
+          ctx.el('p', { text: 'Space: play or pause. Left / Right arrows: previous or next sentence. Home / End: first or last sentence. R: replay sentence.' }),
+        ]));
+        // Focus Mode (RSVP / 1-6 word bold-assist) & Cinematic Crawl overlays (100% offline, zero AI, reduced-motion safe).
+        var activeOverlay = null;
+        closeOverlays = function () {
+          if (activeOverlay && typeof activeOverlay.close === 'function') activeOverlay.close(false);
+        };
+        var openRsvp = function () {
+          halt(false);
+          var allWords = [];
+          item.lines.forEach(function (row) {
+            String(row.text || '').split(/\s+/).filter(Boolean).forEach(function (w) { allWords.push(w); });
+          });
+          if (!allWords.length) return;
+          var wpm = 250, chunkSize = 1, chunkIdx = 0, rsvpPlaying = false, punctPauses = true, timer = 0, countdown = 0, rsvpTheme = 'warm', focusColor = '#dc2626';
+          var rsvpThemes = {
+            warm: { bg: '#fdfbf7', ink: '#111827', card: '#ffffff' },
+            dark: { bg: '#0f172a', ink: '#f1f5f9', card: '#1e293b' },
+            sepia: { bg: '#f4ecd8', ink: '#3b2a1a', card: '#fdf6e3' },
+          };
+          var colorOpts = [
+            ['Red', '#dc2626'], ['Blue', '#2563eb'], ['Green', '#16a34a'], ['Purple', '#9333ea'],
+            ['Orange', '#ea580c'], ['Pink', '#db2777'], ['Teal', '#0d9488'],
+          ];
+          var chunksOf = function () {
+            var out = [], step = Math.max(1, chunkSize);
+            for (var i = 0; i < allWords.length; i += step) out.push(allWords.slice(i, i + step));
+            return out;
+          };
+          var chunks = chunksOf();
+          var closeBtn = ctx.el('button', { type: 'button', 'data-rsvp-close': '', text: L.tools_close || 'Close' });
+          var playBtn = ctx.el('button', { type: 'button', class: 'primary', 'data-rsvp-play': '', text: 'Play' });
+          var prevBtn = ctx.el('button', { type: 'button', 'data-rsvp-prev': '', text: 'Previous' });
+          var nextBtn = ctx.el('button', { type: 'button', 'data-rsvp-next': '', text: 'Next' });
+          var resetBtn = ctx.el('button', { type: 'button', 'data-rsvp-restart': '', text: L.read_along_restart || 'Restart' });
+          var punctBtn = ctx.el('button', { type: 'button', 'data-rsvp-punct': '', 'aria-pressed': 'true', text: 'Pause at punctuation' });
+          var wpmInput = ctx.el('input', { type: 'range', min: '100', max: '900', step: '25', value: String(wpm), 'aria-label': 'Words per minute', 'data-rsvp-wpm': '' });
+          var wpmOut = ctx.el('span', { class: 'muted', 'data-rsvp-wpm-out': '', text: wpm + ' wpm' });
+          var sizeInput = ctx.el('input', { type: 'range', min: '1', max: '6', step: '1', value: String(chunkSize), 'aria-label': 'Words per chunk', 'data-rsvp-chunk-size': '' });
+          var sizeOut = ctx.el('span', { class: 'muted', 'data-rsvp-size-out': '', text: '1 word' });
+          var themeSel = ctx.el('select', { 'aria-label': 'Focus mode theme', 'data-rsvp-theme': '' }, [
+            ctx.el('option', { value: 'warm', text: 'Warm' }),
+            ctx.el('option', { value: 'dark', text: 'Dark' }),
+            ctx.el('option', { value: 'sepia', text: 'Sepia' }),
+          ]);
+          var swatchBtns = [];
+          var swatchWrap = ctx.el('div', { class: 'ra-rsvp-swatches', role: 'group', 'aria-label': 'Center letter color', 'data-rsvp-colors': '' }, colorOpts.map(function (co) {
+            var b = ctx.el('button', { type: 'button', class: 'ra-rsvp-swatch', 'data-rsvp-color': co[1], 'aria-label': 'Focus color ' + co[0], 'aria-pressed': String(co[1] === focusColor), style: 'background:' + co[1] });
+            b.addEventListener('click', function () {
+              focusColor = co[1];
+              swatchBtns.forEach(function (sb) { sb.setAttribute('aria-pressed', String(sb.getAttribute('data-rsvp-color') === focusColor)); });
+              drawStage();
+            });
+            swatchBtns.push(b);
+            return b;
+          }));
+          var countOut = ctx.el('span', { class: 'muted', 'data-rsvp-count': '', text: '1 / ' + chunks.length });
+          var stage = ctx.el('div', { class: 'ra-rsvp-stage', 'data-rsvp-stage': '', 'aria-live': 'off' });
+          var dialog = ctx.el('div', { class: 'ra-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': L.read_along_rsvp || 'Focus mode', 'data-rsvp-dialog': '' }, [
+            ctx.el('div', { class: 'ra-ov-head' }, [
+              ctx.el('strong', { text: L.read_along_rsvp || 'Focus mode' }),
+              countOut,
+              closeBtn,
+            ]),
+            ctx.el('div', { class: 'ra-ov-controls' }, [
+              ctx.el('label', { class: 'ra-ov-range' }, ['Words ', sizeInput, sizeOut]),
+              ctx.el('label', { class: 'ra-ov-range' }, ['Speed ', wpmInput, wpmOut]),
+              ctx.el('label', { class: 'ra-ov-range' }, ['Theme ', themeSel]),
+              punctBtn,
+              swatchWrap,
+            ]),
+            stage,
+            ctx.el('div', { class: 'row', style: 'justify-content:center' }, [prevBtn, playBtn, nextBtn, resetBtn]),
+          ]);
+          var applyRsvpTheme = function () {
+            var th = rsvpThemes[rsvpTheme] || rsvpThemes.warm;
+            dialog.style.background = th.bg;
+            dialog.style.color = th.ink;
+            stage.style.background = th.card;
+            stage.style.color = th.ink;
+          };
+          var clearT = function () { if (timer && win.clearTimeout) { win.clearTimeout(timer); timer = 0; } };
+          var delayFor = function (idx) {
+            var ch = chunks[idx] || [];
+            var base = (60000 / Math.max(100, wpm)) * Math.max(1, ch.length);
+            if (!punctPauses || !ch.length) return Math.max(60, base);
+            var tail = ch[ch.length - 1].replace(/["'\u201d\u2019)\]]*$/, '').slice(-1);
+            var mult = /[.!?]/.test(tail) ? 2.0 : /[,;:]/.test(tail) ? 1.4 : 1;
+            return Math.max(60, Math.round(base * mult));
+          };
+          var drawStage = function () {
+            chunks = chunksOf();
+            chunkIdx = Math.max(0, Math.min(chunks.length - 1, chunkIdx));
+            countOut.textContent = (chunkIdx + 1) + ' / ' + chunks.length;
+            wpmOut.textContent = wpm + ' wpm';
+            sizeOut.textContent = chunkSize === 1 ? '1 word' : chunkSize + ' words';
+            swatchWrap.hidden = chunkSize !== 1;
+            prevBtn.disabled = chunkIdx <= 0;
+            nextBtn.disabled = chunkIdx >= chunks.length - 1;
+            playBtn.textContent = rsvpPlaying ? 'Pause' : 'Play';
+            stage.textContent = '';
+            if (countdown > 0) {
+              stage.appendChild(ctx.el('span', { class: 'ra-rsvp-countdown', 'data-rsvp-countdown': String(countdown), text: String(countdown) }));
+              return;
+            }
+            var ch = chunks[chunkIdx] || [];
+            if (chunkSize === 1) {
+              var word = ch[0] || '', mid = Math.floor(word.length / 2);
+              stage.appendChild(doc.createTextNode(word.slice(0, mid)));
+              stage.appendChild(ctx.el('span', { class: 'ra-rsvp-orp', style: 'color:' + focusColor, text: word.charAt(mid) }));
+              stage.appendChild(doc.createTextNode(word.slice(mid + 1)));
+            } else {
+              ch.forEach(function (w, wi) {
+                var cut = Math.max(1, Math.ceil(w.length * 0.4));
+                stage.appendChild(ctx.el('strong', { class: 'ra-bionic', text: w.slice(0, cut) }));
+                if (cut < w.length) stage.appendChild(doc.createTextNode(w.slice(cut)));
+                if (wi < ch.length - 1) stage.appendChild(doc.createTextNode(' '));
+              });
+            }
+          };
+          var tick = function () {
+            clearT();
+            if (!rsvpPlaying) return;
+            if (countdown > 0) {
+              timer = win.setTimeout(function () {
+                if (!rsvpPlaying) return;
+                countdown--;
+                drawStage();
+                tick();
+              }, 500);
+              return;
+            }
+            timer = win.setTimeout(function () {
+              if (!rsvpPlaying) return;
+              if (chunkIdx >= chunks.length - 1) { rsvpPlaying = false; drawStage(); return; }
+              chunkIdx++;
+              drawStage();
+              tick();
+            }, delayFor(chunkIdx));
+          };
+          var toggle = function () {
+            if (rsvpPlaying) { rsvpPlaying = false; countdown = 0; clearT(); drawStage(); return; }
+            var freshStart = chunkIdx === 0 || chunkIdx >= chunks.length - 1;
+            if (chunkIdx >= chunks.length - 1) chunkIdx = 0;
+            countdown = (freshStart && !reducedMotion()) ? 3 : 0;
+            rsvpPlaying = true;
+            drawStage();
+            tick();
+          };
+          var onKey = function (e) {
+            if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); close(true); return; }
+            if (e.target && /^(INPUT|SELECT)$/.test(e.target.tagName)) return;
+            if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); toggle(); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); rsvpPlaying = false; countdown = 0; clearT(); chunkIdx++; drawStage(); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); rsvpPlaying = false; countdown = 0; clearT(); chunkIdx--; drawStage(); }
+            else if (e.key === '+' || e.key === '=') { wpm = Math.min(900, wpm + 25); wpmInput.value = String(wpm); drawStage(); }
+            else if (e.key === '-' || e.key === '_') { wpm = Math.max(100, wpm - 25); wpmInput.value = String(wpm); drawStage(); }
+            else if (e.key === '[') { chunkSize = Math.max(1, chunkSize - 1); sizeInput.value = String(chunkSize); drawStage(); }
+            else if (e.key === ']') { chunkSize = Math.min(6, chunkSize + 1); sizeInput.value = String(chunkSize); drawStage(); }
+            else if (e.key === 'p' || e.key === 'P') { punctPauses = !punctPauses; punctBtn.setAttribute('aria-pressed', String(punctPauses)); }
+          };
+          var close = function (restoreFocus) {
+            rsvpPlaying = false;
+            countdown = 0;
+            clearT();
+            doc.removeEventListener('keydown', onKey, true);
+            if (dialog.parentNode) dialog.parentNode.removeChild(dialog);
+            if (activeOverlay && activeOverlay.dialog === dialog) activeOverlay = null;
+            if (restoreFocus && rsvpButton) rsvpButton.focus();
+          };
+          playBtn.addEventListener('click', toggle);
+          prevBtn.addEventListener('click', function () { rsvpPlaying = false; countdown = 0; clearT(); chunkIdx--; drawStage(); });
+          nextBtn.addEventListener('click', function () { rsvpPlaying = false; countdown = 0; clearT(); chunkIdx++; drawStage(); });
+          resetBtn.addEventListener('click', function () { rsvpPlaying = false; countdown = 0; clearT(); chunkIdx = 0; drawStage(); });
+          punctBtn.addEventListener('click', function () { punctPauses = !punctPauses; punctBtn.setAttribute('aria-pressed', String(punctPauses)); });
+          themeSel.addEventListener('change', function () { rsvpTheme = themeSel.value || 'warm'; applyRsvpTheme(); });
+          wpmInput.addEventListener('input', function () { wpm = Math.max(100, Math.min(900, Number(wpmInput.value) || 250)); drawStage(); });
+          sizeInput.addEventListener('input', function () {
+            var prevSize = chunkSize, wordPos = chunkIdx * prevSize;
+            chunkSize = Math.max(1, Math.min(6, Number(sizeInput.value) || 1));
+            chunkIdx = Math.floor(wordPos / chunkSize);
+            drawStage();
+          });
+          closeBtn.addEventListener('click', function () { close(true); });
+          applyRsvpTheme();
+          activeOverlay = { dialog: dialog, close: close };
+          doc.body.appendChild(dialog);
+          doc.addEventListener('keydown', onKey, true);
+          drawStage();
+          use('focusMode');
+          playBtn.focus();
+        };
+        var openCrawl = function () {
+          halt(false);
+          var paras = [], cur = [];
+          item.lines.forEach(function (row, idx) {
+            if ((row.para || row.heading) && cur.length) { paras.push(cur.join(' ')); cur = []; }
+            cur.push(row.text);
+            if (row.heading) { paras.push(cur.join(' ')); cur = []; }
+            if (idx === item.lines.length - 1 && cur.length) paras.push(cur.join(' '));
+          });
+          var speed = 60, y = 0, crawlPlaying = !reducedMotion(), raf = 0, lastTs = 0, palette = 'gold', ambientOn = false, padCtx = null, padNodes = null;
+          var palettes = {
+            gold: { bg: '#000000', ink: '#fde047' },
+            aqua: { bg: '#061629', ink: '#67e8f9' },
+            paper: { bg: '#111827', ink: '#f9fafb' },
+          };
+          var closeBtn = ctx.el('button', { type: 'button', 'data-crawl-close': '', text: L.tools_close || 'Close' });
+          var playBtn = ctx.el('button', { type: 'button', class: 'primary', 'data-crawl-play': '', text: crawlPlaying ? 'Pause' : 'Play' });
+          var resetBtn = ctx.el('button', { type: 'button', 'data-crawl-restart': '', text: L.read_along_restart || 'Restart' });
+          var ambientBtn = ctx.el('button', { type: 'button', 'data-crawl-ambient': '', 'aria-pressed': 'false', text: 'Ambient sound' });
+          var speedInput = ctx.el('input', { type: 'range', min: '10', max: '140', step: '5', value: String(speed), 'aria-label': 'Crawl speed', 'data-crawl-speed': '' });
+          var speedOut = ctx.el('span', { 'data-crawl-speed-out': '', text: speed + ' px/s' });
+          var themeSel = ctx.el('select', { 'aria-label': 'Crawl colors', 'data-crawl-theme': '' }, [
+            ctx.el('option', { value: 'gold', text: 'Golden' }),
+            ctx.el('option', { value: 'aqua', text: 'Aqua' }),
+            ctx.el('option', { value: 'paper', text: 'Paper' }),
+          ]);
+          var replayEndBtn = ctx.el('button', { type: 'button', class: 'primary', 'data-crawl-replay': '', text: 'Replay' });
+          var endCard = ctx.el('div', { class: 'ra-crawl-end', 'data-crawl-end': '', hidden: true }, [
+            ctx.el('h3', { text: 'THE END' }),
+            replayEndBtn,
+          ]);
+          var textWrap = ctx.el('div', { class: 'ra-crawl-text', 'data-crawl-text': '' }, paras.map(function (p) { return ctx.el('p', { text: p }); }));
+          var viewport = ctx.el('div', { class: 'ra-crawl-view' + (reducedMotion() ? ' is-flat' : ''), 'data-crawl-view': '' }, [textWrap, endCard]);
+          var dialog = ctx.el('div', { class: 'ra-overlay ra-crawl-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': L.read_along_crawl || 'Crawl', 'data-crawl-dialog': '' }, [
+            ctx.el('div', { class: 'ra-ov-head' }, [
+              ctx.el('strong', { text: L.read_along_crawl || 'Crawl' }),
+              closeBtn,
+            ]),
+            ctx.el('div', { class: 'ra-ov-controls' }, [
+              ctx.el('label', { class: 'ra-ov-range' }, ['Speed ', speedInput, speedOut]),
+              ctx.el('label', { class: 'ra-ov-range' }, ['Colors ', themeSel]),
+              ambientBtn,
+              playBtn,
+              resetBtn,
+            ]),
+            viewport,
+          ]);
+          var syncAmbient = function () {
+            if (!ambientOn || !crawlPlaying) {
+              if (padNodes && padNodes.gain) { try { padNodes.gain.gain.setTargetAtTime(0, padCtx.currentTime, 0.25); } catch (_) {} }
+              return;
+            }
+            try {
+              var Ctor = win.AudioContext || win.webkitAudioContext;
+              if (!Ctor) return;
+              if (!padCtx) padCtx = new Ctor();
+              if (padCtx.state === 'suspended' && typeof padCtx.resume === 'function') padCtx.resume();
+              if (!padNodes) {
+                var g = padCtx.createGain();
+                g.gain.value = 0;
+                var lp = padCtx.createBiquadFilter();
+                lp.type = 'lowpass';
+                lp.frequency.value = 600;
+                var oscs = [110, 164.81, 220].map(function (f, oi) {
+                  var o = padCtx.createOscillator();
+                  o.type = oi === 1 ? 'triangle' : 'sine';
+                  o.frequency.value = f;
+                  if (o.detune) o.detune.value = (oi - 1) * 6;
+                  o.connect(g);
+                  o.start();
+                  return o;
+                });
+                g.connect(lp);
+                lp.connect(padCtx.destination);
+                padNodes = { gain: g, oscs: oscs };
+              }
+              padNodes.gain.gain.setTargetAtTime(0.05, padCtx.currentTime, 0.5);
+            } catch (_) {}
+          };
+          var tearAmbient = function () {
+            try {
+              if (padNodes && padNodes.oscs) padNodes.oscs.forEach(function (o) { try { o.stop(); } catch (_) {} });
+              padNodes = null;
+              if (padCtx && typeof padCtx.close === 'function') padCtx.close();
+              padCtx = null;
+            } catch (_) {}
+          };
+          var applyPalette = function () {
+            var pal = palettes[palette] || palettes.gold;
+            dialog.style.background = pal.bg;
+            dialog.style.color = pal.ink;
+          };
+          var stopFrame = function () {
+            if (raf) {
+              if (win.cancelAnimationFrame) win.cancelAnimationFrame(raf);
+              else if (win.clearTimeout) win.clearTimeout(raf);
+              raf = 0;
+            }
+            lastTs = 0;
+          };
+          var stepFrame = function (ts) {
+            if (!crawlPlaying) return;
+            var now = typeof ts === 'number' ? ts : Date.now();
+            if (!lastTs) lastTs = now;
+            var dt = Math.min(100, Math.max(0, now - lastTs)) / 1000;
+            lastTs = now;
+            y -= dt * speed;
+            textWrap.style.transform = 'translateY(' + Math.round(y) + 'px)';
+            var limit = (viewport.clientHeight || 400) + (textWrap.clientHeight || 400);
+            if (y < -limit) { crawlPlaying = false; playBtn.textContent = 'Play'; endCard.hidden = false; stopFrame(); syncAmbient(); return; }
+            raf = win.requestAnimationFrame ? win.requestAnimationFrame(stepFrame) : win.setTimeout(function () { stepFrame(Date.now()); }, 32);
+          };
+          var setCrawlPlay = function (on) {
+            if (on && !endCard.hidden) { y = 0; textWrap.style.transform = 'translateY(0px)'; endCard.hidden = true; }
+            crawlPlaying = !!on;
+            playBtn.textContent = crawlPlaying ? 'Pause' : 'Play';
+            stopFrame();
+            syncAmbient();
+            if (crawlPlaying) raf = win.requestAnimationFrame ? win.requestAnimationFrame(stepFrame) : win.setTimeout(function () { stepFrame(Date.now()); }, 32);
+          };
+          var restartCrawl = function () { endCard.hidden = true; y = 0; textWrap.style.transform = 'translateY(0px)'; setCrawlPlay(true); };
+          var toggleAmbient = function () { ambientOn = !ambientOn; ambientBtn.setAttribute('aria-pressed', String(ambientOn)); syncAmbient(); };
+          var onKey = function (e) {
+            if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); close(true); return; }
+            if (e.target && /^(INPUT|SELECT)$/.test(e.target.tagName)) return;
+            if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); setCrawlPlay(!crawlPlaying); }
+            else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); restartCrawl(); }
+            else if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleAmbient(); }
+          };
+          var close = function (restoreFocus) {
+            crawlPlaying = false;
+            stopFrame();
+            tearAmbient();
+            doc.removeEventListener('keydown', onKey, true);
+            if (dialog.parentNode) dialog.parentNode.removeChild(dialog);
+            if (activeOverlay && activeOverlay.dialog === dialog) activeOverlay = null;
+            if (restoreFocus && crawlButton) crawlButton.focus();
+          };
+          playBtn.addEventListener('click', function () { setCrawlPlay(!crawlPlaying); });
+          viewport.addEventListener('click', function (ev) { if (ev && ev.target === replayEndBtn) return; setCrawlPlay(!crawlPlaying); });
+          replayEndBtn.addEventListener('click', function (ev) { ev.stopPropagation(); restartCrawl(); });
+          resetBtn.addEventListener('click', restartCrawl);
+          ambientBtn.addEventListener('click', toggleAmbient);
+          speedInput.addEventListener('input', function () { speed = Math.max(10, Math.min(140, Number(speedInput.value) || 60)); speedOut.textContent = speed + ' px/s'; });
+          themeSel.addEventListener('change', function () { palette = themeSel.value; applyPalette(); });
+          closeBtn.addEventListener('click', function () { close(true); });
+          applyPalette();
+          activeOverlay = { dialog: dialog, close: close };
+          doc.body.appendChild(dialog);
+          doc.addEventListener('keydown', onKey, true);
+          use('crawlMode');
+          if (crawlPlaying) setCrawlPlay(true);
+          playBtn.focus();
+        };
+        rsvpButton.addEventListener('click', openRsvp);
+        crawlButton.addEventListener('click', openCrawl);
+        if (typeof ctx.keys === 'function') {
           ctx.keys(function (key) {
+            if (activeOverlay) return false;
             var active = ctx.root.ownerDocument.activeElement;
             var onBtn = !!(active && active.tagName === 'BUTTON');
-            if ((key === ' ' || key === 'Spacebar') && !onBtn) {
-              if (playing) halt();
+            if (key === 'Enter' && chunkMode && chunkMood === 'typewriter' && !twFull) {
+              stopChunkTimers();
+              paintLine(from);
+              return true;
+            }
+            if (hasAudio && (key === ' ' || key === 'Spacebar') && !onBtn) {
+              if (playing) halt(true);
               else { ctx.support('readThroughs'); readFrom(from); }
               return true;
             }
+            if (key === 'Home' && item.lines.length > 1) {
+              halt(false);
+              setActiveSentence(0, true);
+              return true;
+            }
+            if (key === 'End' && item.lines.length > 1) {
+              halt(false);
+              setActiveSentence(item.lines.length - 1, true);
+              return true;
+            }
             if (key === 'ArrowRight') {
-              var nextIdx = playedAny ? findAudio(from + 1, 1) : findAudio(0, 1);
-              if (nextIdx >= 0) { playLine(nextIdx, true); return true; }
+              if (chunkMode || !hasAudio) {
+                if (from < item.lines.length - 1) { halt(false); setActiveSentence(from + 1, true); return true; }
+              } else {
+                var nextIdx = playedAny ? findAudio(from + 1, 1) : findAudio(0, 1);
+                if (nextIdx >= 0) { playLine(nextIdx, true); return true; }
+              }
             }
             if (key === 'ArrowLeft') {
-              var prevIdx = playedAny ? findAudio(from - 1, -1) : findAudio(item.lines.length - 1, -1);
-              if (prevIdx >= 0) { playLine(prevIdx, true); return true; }
+              if (chunkMode || !hasAudio) {
+                if (from > 0) { halt(false); setActiveSentence(from - 1, true); return true; }
+              } else {
+                var prevIdx = playedAny ? findAudio(from - 1, -1) : findAudio(item.lines.length - 1, -1);
+                if (prevIdx >= 0) { playLine(prevIdx, true); return true; }
+              }
             }
             return false;
           });
         }
-        var handle = { allowRevisit: true, reveal: function () { halt(); } };
+        var handle = { allowRevisit: true, reveal: function () { halt(false); } };
         if (hasAudio) {
           handle.replay = function () {
             var target = (item.lines[from] && item.lines[from].audio) ? from : findAudio(0, 1);
@@ -5923,7 +7017,7 @@
           'data-locked': String(!lockedOn),
           role: 'group',
           'aria-label': L.symbol_runner_lane_group,
-          style: 'display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:460px;width:100%;box-sizing:border-box;margin:0 auto 14px;padding:8px;border-radius:16px;background:var(--soft);border:2px solid var(--muted)',
+          style: 'display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:var(--sr-lane,460px);width:100%;box-sizing:border-box;margin:0 auto 14px;padding:8px;border-radius:16px;background:var(--soft);border:2px solid var(--muted)',
         });
 
         var laneButtons = [];
@@ -6081,7 +7175,7 @@
         var choiceGroup = ctx.el('div', {
           role: 'group',
           'aria-label': L.symbol_runner_keys,
-          style: 'display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:440px;margin:0 auto',
+          style: 'display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:var(--sr-keys,440px);margin:0 auto',
         });
 
         var shapeMap = { red: '●', blue: '▲', green: '■', gold: '★' };
@@ -6793,8 +7887,8 @@
   // END GENERATED FONTS
   var CSS = [
     // 2026-11-12 look pass: --soft tints the helper buttons; every theme below sets it too.
-    ':root{--bg:#f1f4fc;--card:#fff;--ink:#1d2433;--muted:#4a5468;--accent:#3d3aa8;--accent-ink:#fff;--ok:#1d6b3a;--ok-bg:#e3f4e9;--warn:#8a4b00;--warn-bg:#fff1dc;--line:#c9cede;--focus:#b54700;--soft:#eeeefb;--hover:#00000012}',
-    '@media (prefers-color-scheme:dark){:root{--bg:#141824;--card:#1f2535;--ink:#eef1f8;--muted:#b7bfd2;--accent:#a9a7ff;--accent-ink:#141824;--ok:#8fe0ab;--ok-bg:#163423;--warn:#ffc77a;--warn-bg:#3a2a12;--line:#3a4258;--focus:#ffb070;--soft:#283048;--hover:#ffffff1c}}',
+    ':root{--bg:#f1f4fc;--card:#fff;--ink:#1d2433;--muted:#4a5468;--accent:#3d3aa8;--accent-ink:#fff;--ok:#1d6b3a;--ok-bg:#e3f4e9;--warn:#8a4b00;--warn-bg:#fff1dc;--line:#c9cede;--focus:#b54700;--soft:#eeeefb;--hover:#00000012;--c0:#3d3aa8;--c1:#0e6b6b;--c2:#9a2b67;--c3:#945200;--c4:#216b3b;--c5:#1d56a8;--c0b:#ebecff;--c1b:#dff5f3;--c2b:#fce8f2;--c3b:#fff1db;--c4b:#e3f5e9;--c5b:#e4effd}',
+    '@media (prefers-color-scheme:dark){:root{--bg:#141824;--card:#1f2535;--ink:#eef1f8;--muted:#b7bfd2;--accent:#a9a7ff;--accent-ink:#141824;--ok:#8fe0ab;--ok-bg:#163423;--warn:#ffc77a;--warn-bg:#3a2a12;--line:#3a4258;--focus:#ffb070;--soft:#283048;--hover:#ffffff1c;--c0:#a9a7ff;--c1:#64d8cb;--c2:#f497c8;--c3:#f7c46c;--c4:#80de9d;--c5:#82c0ff;--c0b:#27284a;--c1b:#183539;--c2b:#3c2235;--c3b:#3b2d18;--c4b:#1a3626;--c5b:#1b2f49}}',
     '*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}',
     'main{max-width:760px;margin:0 auto;padding:24px 16px 48px}h1{font-size:1.6rem;margin:0 0 12px;line-height:1.25}h2{font-size:1.35rem;margin:0 0 12px;line-height:1.3}',
     'h1::before{content:"";display:inline-block;width:.5em;height:.5em;margin-inline-end:.5em;border-radius:.12em;background:var(--accent);transform:rotate(45deg)}',
@@ -6844,28 +7938,48 @@
     '@media (max-width:480px){main{padding-top:12px}[data-step] h1{font-size:1rem;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}[data-step] #app>h2:first-child{display:flex;align-items:center;min-height:48px;margin:0 0 8px;padding-inline-end:64px}}',
     '@media (max-width:480px){[data-step] .lt-bar{margin:-56px 0 8px}}',
     '@media (max-width:480px){.choices:not([style]):has(>.choice:nth-child(4)){grid-template-columns:1fr 1fr;gap:10px}.choices:not([style]):has(>.choice:nth-child(4))>.choice:not([style]){flex-direction:column;padding:8px}.choices:not([style]):has(>.choice:nth-child(4))>.choice>button{flex:none;padding-inline:8px;overflow-wrap:anywhere}}',
+    '@media (min-width:960px){:root{--seg-sz:78px;--seg-box:94px;--map-sz:86px;--map-h:66px;--map-box:94px;--map-span:184px;--map-span-box:196px;--ws-tile:70px;--ws-box-w:76px;--ws-box-h:78px;--trace-sz:360px;--sr-lane:680px;--sr-keys:640px}main{max-width:min(1080px,90vw);padding:32px 28px 56px}.card{padding:clamp(24px,3vw,36px) clamp(24px,3.5vw,42px)}.choices{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}.slots{gap:16px}.row{gap:14px}.picture{max-width:220px;max-height:220px}[data-seg-tray]{gap:18px!important;margin:18px 0!important}[data-read-along-text]{max-width:46rem;margin-inline:auto}}',
     // Reading tools (takeHomeTools): attributes on <html> set the size, the colors (the variables above) and the spacing.
-    '[data-lt-size="1"]{font-size:125%}[data-lt-size="2"]{font-size:150%}[data-lt-size] body{font-size:1.125rem}[data-lt-size] button,[data-lt-size] .letters{overflow-wrap:anywhere}',
-    '[data-lt-colors="1"]{--bg:#000;--card:#000;--ink:#fff;--muted:#fff;--accent:#ffeb3b;--accent-ink:#000;--ok:#7dff8f;--ok-bg:#000;--warn:#ffeb3b;--warn-bg:#000;--line:#fff;--focus:#00e5ff;--soft:#000;--hover:#ffffff28}[data-lt-colors="1"] .card,[data-lt-colors="1"] .status{border:3px solid}[data-lt-colors="1"] .progress{background:var(--soft);border:1px solid var(--line)}',
-    '[data-lt-colors="2"]{--bg:#f4ead2;--card:#fdf6e3;--ink:#2a2216;--muted:#4d4230;--accent:#4b3f99;--accent-ink:#fff;--ok:#1f5e33;--ok-bg:#e4efd5;--warn:#7a4100;--warn-bg:#f8e2c0;--line:#bfae86;--focus:#a33f00;--soft:#f6ebcf;--hover:#00000012}',
+    '[data-lt-size="1"]{font-size:125%}[data-lt-size="2"]{font-size:150%}[data-lt-size] body{font-size:1.125rem}[data-lt-size="3"]{font-size:175%}[data-lt-size] button,[data-lt-size] .letters{overflow-wrap:anywhere}',
+    '[data-lt-colors="1"]{--bg:#000;--card:#000;--ink:#fff;--muted:#fff;--accent:#ffeb3b;--accent-ink:#000;--ok:#7dff8f;--ok-bg:#000;--warn:#ffeb3b;--warn-bg:#000;--line:#fff;--focus:#00e5ff;--soft:#000;--hover:#ffffff28;--c0:#ffeb3b;--c1:#00e5ff;--c2:#7dff8f;--c3:#ff8ef0;--c4:#ffb74d;--c5:#9ec5ff;--c0b:#000;--c1b:#000;--c2b:#000;--c3b:#000;--c4b:#000;--c5b:#000}[data-lt-colors="1"] .card,[data-lt-colors="1"] .status{border:3px solid}[data-lt-colors="1"] .progress{background:var(--soft);border:1px solid var(--line)}',
+    '[data-lt-colors="2"]{--bg:#f4ead2;--card:#fdf6e3;--ink:#2a2216;--muted:#4d4230;--accent:#4b3f99;--accent-ink:#fff;--ok:#1f5e33;--ok-bg:#e4efd5;--warn:#7a4100;--warn-bg:#f8e2c0;--line:#bfae86;--focus:#a33f00;--soft:#f6ebcf;--hover:#00000012;--c0:#4b3f99;--c1:#1e665c;--c2:#963c2c;--c3:#855200;--c4:#35632a;--c5:#2c5887;--c0b:#ece6f5;--c1b:#e3f0ea;--c2b:#f7e4dc;--c3b:#f7ebd0;--c4b:#e7f0de;--c5b:#e4ecf2}',
     // 2026-11-12: themes a student may choose (Dark whatever the device says, Ocean, Sunny, Forest); each passes AA in every state (tests/packets_learner_tools.test.js).
-    '[data-lt-colors="3"]{--bg:#141824;--card:#1f2535;--ink:#eef1f8;--muted:#b7bfd2;--accent:#a9a7ff;--accent-ink:#141824;--ok:#8fe0ab;--ok-bg:#163423;--warn:#ffc77a;--warn-bg:#3a2a12;--line:#3a4258;--focus:#ffb070;--soft:#283048;--hover:#ffffff1c;color-scheme:dark}',
-    '[data-lt-colors="4"]{--bg:#e3f1f8;--card:#fff;--ink:#0e2a3b;--muted:#3a5464;--accent:#0b5c86;--accent-ink:#fff;--ok:#17663a;--ok-bg:#e1f3e8;--warn:#8a4500;--warn-bg:#fff0da;--line:#a6c7d8;--focus:#b54700;--soft:#e2f1f9;--hover:#00000012}',
-    '[data-lt-colors="5"]{--bg:#fff3d1;--card:#fffdf7;--ink:#2b2112;--muted:#594827;--accent:#a63f00;--accent-ink:#fff;--ok:#1b6636;--ok-bg:#e2f3e5;--warn:#8a3a00;--warn-bg:#ffe8c2;--line:#dcc386;--focus:#1f4fc4;--soft:#fff0c4;--hover:#00000012}',
-    '[data-lt-colors="6"]{--bg:#e7f2e4;--card:#fbfef9;--ink:#17291b;--muted:#3e5342;--accent:#1f5f55;--accent-ink:#fff;--ok:#1b6331;--ok-bg:#dcf0dc;--warn:#844300;--warn-bg:#fdefd6;--line:#a9c7a6;--focus:#b54700;--soft:#e3f0e2;--hover:#00000012}',
+    '[data-lt-colors="3"]{--bg:#141824;--card:#1f2535;--ink:#eef1f8;--muted:#b7bfd2;--accent:#a9a7ff;--accent-ink:#141824;--ok:#8fe0ab;--ok-bg:#163423;--warn:#ffc77a;--warn-bg:#3a2a12;--line:#3a4258;--focus:#ffb070;--soft:#283048;--hover:#ffffff1c;--c0:#a9a7ff;--c1:#64d8cb;--c2:#f497c8;--c3:#f7c46c;--c4:#80de9d;--c5:#82c0ff;--c0b:#27284a;--c1b:#183539;--c2b:#3c2235;--c3b:#3b2d18;--c4b:#1a3626;--c5b:#1b2f49;color-scheme:dark}',
+    '[data-lt-colors="4"]{--bg:#e3f1f8;--card:#fff;--ink:#0e2a3b;--muted:#3a5464;--accent:#0b5c86;--accent-ink:#fff;--ok:#17663a;--ok-bg:#e1f3e8;--warn:#8a4500;--warn-bg:#fff0da;--line:#a6c7d8;--focus:#b54700;--soft:#e2f1f9;--hover:#00000012;--c0:#0b5c86;--c1:#0c6b66;--c2:#9c3b4c;--c3:#1f6a46;--c4:#48459e;--c5:#8c5200;--c0b:#dff0fa;--c1b:#dcf4f2;--c2b:#fbe7ea;--c3b:#e0f3ea;--c4b:#eaeafd;--c5b:#fdf0dc}',
+    '[data-lt-colors="5"]{--bg:#fff3d1;--card:#fffdf7;--ink:#2b2112;--muted:#594827;--accent:#a63f00;--accent-ink:#fff;--ok:#1b6636;--ok-bg:#e2f3e5;--warn:#8a3a00;--warn-bg:#ffe8c2;--line:#dcc386;--focus:#1f4fc4;--soft:#fff0c4;--hover:#00000012;--c0:#a63f00;--c1:#2e6828;--c2:#1e589c;--c3:#7a307a;--c4:#8a5300;--c5:#0f6868;--c0b:#ffe9d6;--c1b:#e7f4e2;--c2b:#e4effc;--c3b:#f6e6f6;--c4b:#fff1cf;--c5b:#dff3f2}',
+    '[data-lt-colors="6"]{--bg:#e7f2e4;--card:#fbfef9;--ink:#17291b;--muted:#3e5342;--accent:#1f5f55;--accent-ink:#fff;--ok:#1b6331;--ok-bg:#dcf0dc;--warn:#844300;--warn-bg:#fdefd6;--line:#a9c7a6;--focus:#b54700;--soft:#e3f0e2;--hover:#00000012;--c0:#1f5f55;--c1:#2a682c;--c2:#8a4b14;--c3:#8c2f5d;--c4:#1e578c;--c5:#534399;--c0b:#dff2ee;--c1b:#e3f4e3;--c2b:#f9ece0;--c3b:#f9e7f0;--c4b:#e3effa;--c5b:#ece9fa}',
+    '[data-lt-colors="7"]{--bg:#fceef3;--card:#fffafb;--ink:#4a0d26;--muted:#6e1c3e;--accent:#9c144c;--accent-ink:#fff;--ok:#1b6331;--ok-bg:#e1f3e5;--warn:#844300;--warn-bg:#fdefd6;--line:#c98aa3;--focus:#1f4fc4;--soft:#f7dce6;--hover:#00000012;--c0:#9c144c;--c1:#6b2b8a;--c2:#1d6648;--c3:#27519c;--c4:#8f4b00;--c5:#11666b;--c0b:#fce2ec;--c1b:#f2e6fa;--c2b:#e1f4ec;--c3b:#e5eefc;--c4b:#fcf0de;--c5b:#dff3f5}',
     // Each color choice shows its color.
     '[data-tool^=colors-]::before{content:"";display:inline-block;width:.8em;height:.8em;margin-inline-end:.4em;border-radius:50%;border:1px solid var(--ink);vertical-align:-.1em;background:linear-gradient(90deg,#fff 50%,#3d3aa8 50%)}[data-tool=colors-1]::before{background:linear-gradient(90deg,#000 50%,#ffeb3b 50%)}',
-    '[data-tool=colors-2]::before{background:#e8d6a8}[data-tool=colors-3]::before{background:#1f2535}[data-tool=colors-4]::before{background:#0b5c86}[data-tool=colors-5]::before{background:#f6b400}[data-tool=colors-6]::before{background:#1f5f55}',
+    '[data-tool=colors-2]::before{background:#e8d6a8}[data-tool=colors-3]::before{background:#1f2535}[data-tool=colors-4]::before{background:#0b5c86}[data-tool=colors-5]::before{background:#f6b400}[data-tool=colors-6]::before{background:#1f5f55}[data-tool=colors-7]::before{background:#9c144c}',
     '[data-lt-spacing] main *{line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important}[data-lt-spacing] main p{margin-bottom:2em!important}',
     // Letters: the device's own fonts. Buttons and fields take the page's font (font:inherit).
     '[data-lt-font="1"] body,[data-tool=font-1]{font-family:Lexend,system-ui,sans-serif}[data-lt-font="2"] body,[data-tool=font-2]{font-family:"Atkinson Hyperlegible",system-ui,sans-serif}',
     '[data-lt-font="3"] body,[data-tool=font-3]{font-family:Georgia,"Times New Roman",Times,serif}[data-lt-font="4"] body,[data-tool=font-4]{font-family:"Comic Sans MS","Comic Sans","Chalkboard SE","Comic Neue","Comic Relief",system-ui,sans-serif}',
+    '[data-lt-font="5"] body,[data-tool=font-5]{font-family:ui-monospace,"SF Mono",Consolas,monospace}[data-lt-font="6"] body,[data-tool=font-6]{font-family:"OpenDyslexic","OpenDyslexic3","Atkinson Hyperlegible",system-ui,sans-serif}',
     '.lt-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px}.lt-bar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:0 0 8px}.lt-panel{clear:both}.lt-h,.lt-l{font-weight:700;margin:0;min-width:7em}@media (max-width:480px){.lt-g .lt-l{flex-basis:100%}}',
     '.lt-g{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.lt-g p{flex-basis:100%;margin:0}.lt-panel [aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}',
     '.lt-read{position:relative}.lt-shade,.lt-line{position:absolute;left:0;right:0;pointer-events:none}.lt-shade{top:0;bottom:0}.lt-line{outline:3px solid var(--accent);border-radius:6px}',
     '.lt-lens{position:fixed;z-index:1;width:180px;height:180px;border:3px solid;border-radius:50%;overflow:hidden;pointer-events:none;background:var(--bg);box-shadow:0 4px 16px #0006}.lt-lens>main{position:absolute;left:0;top:0;margin:0;max-width:none;transform-origin:0 0}',
     '.lt-grip{position:fixed;z-index:2;padding:0;border-radius:50%;background:var(--accent);color:var(--accent-ink);pointer-events:none}.lt-grip[data-touch]{pointer-events:auto;touch-action:none}',
-    '@media (forced-colors:active){[data-tool-group=colors]{display:none!important}.lt-line,.lt-panel [aria-pressed=true]{outline:3px solid Highlight}.choice.right::after,.progress span{forced-color-adjust:none;background:Highlight;color:HighlightText}[data-feedback]:not(:empty)::before,.done-star::after{forced-color-adjust:none;background:Highlight;color:HighlightText}}@media print{.lt-bar,.lt-panel,.lt-lens{display:none!important}}',
+    '.ra-pos-legend{display:flex;flex-wrap:wrap;gap:10px 8px;align-items:center;margin:6px 0 10px;font-size:.95rem}.ra-pos{border-radius:3px;padding:0 1px}.ra-pos-pill{min-height:36px;padding:4px 10px;font-size:.9rem;background:var(--card);border:1px solid var(--line)}.ra-pos-pill[data-pos-filter][aria-pressed=false]{opacity:.45;text-decoration:line-through}.ra-pos-pill[data-pos-labels][aria-pressed=false]{opacity:.85}',
+    '.ra-pos-n{color:#6d28d9;border-bottom:2px solid #6d28d9}.ra-pos-v{color:#0f766e;border-bottom:3px double #0f766e}.ra-pos-j{color:#1d4ed8;border-bottom:2px dashed #1d4ed8}.ra-pos-a{color:#b45309;border-bottom:2px dotted #b45309}',
+    '[data-lt-colors="1"] .ra-pos-n,[data-lt-colors="3"] .ra-pos-n{color:#e9d5ff;border-bottom-color:#e9d5ff}[data-lt-colors="1"] .ra-pos-v,[data-lt-colors="3"] .ra-pos-v{color:#99f6e4;border-bottom-color:#99f6e4}[data-lt-colors="1"] .ra-pos-j,[data-lt-colors="3"] .ra-pos-j{color:#bfdbfe;border-bottom-color:#bfdbfe}[data-lt-colors="1"] .ra-pos-a,[data-lt-colors="3"] .ra-pos-a{color:#fde68a;border-bottom-color:#fde68a}',
+    '.ra-word-active{background:var(--accent);color:var(--accent-ink);border-radius:4px;padding:0 2px}.ra-bionic{font-weight:800}.ra-resume-bar{margin:8px 0 12px;padding:12px 14px;border:1px solid var(--accent);border-radius:12px;background:var(--soft)}',
+    '.ra-def-word{text-decoration:underline dotted var(--accent);text-underline-offset:.2em;cursor:help}.ra-def-box{margin:10px 0 12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}.ra-def-card{margin:0 0 10px}.ra-def-layout{display:flex;align-items:flex-start;gap:12px}.ra-def-img{width:76px;height:76px;object-fit:contain;border-radius:10px;background:#fff;border:1px solid var(--line);padding:4px;flex-shrink:0}.ra-def-body{min-width:0;flex:1}.ra-def-head{margin:0;font-weight:700}.ra-def-picks{display:flex;flex-wrap:wrap;gap:6px}.ra-def-pick{min-height:36px;padding:4px 10px;font-size:.9rem}.ra-def-pick[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}',
+    '[data-pos-tags="1"] [data-pos-tag]{white-space:nowrap}[data-pos-tags="1"] [data-pos-tag]::after{content:"\\00a0" attr(data-pos-tag);font-size:.56em;font-weight:700;vertical-align:super;opacity:.88}',
+    '.ra-overlay{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;gap:12px;padding:16px;background:var(--bg);color:var(--ink);overflow:auto}.ra-ov-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.ra-ov-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ra-ov-range{display:inline-flex;align-items:center;gap:6px;margin:0;font-weight:600}.ra-ov-range input[type=range]{width:110px;min-height:36px;padding:0;border:0}.ra-ov-range select{min-height:40px;font:inherit;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}',
+    '.ra-rsvp-stage{flex:1;min-height:180px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(2rem,6vw,3.5rem);font-weight:600;border:1px solid var(--line);border-radius:16px;padding:24px;background:var(--card);position:relative}.ra-rsvp-orp{color:var(--warn);font-weight:900;text-decoration:underline}.ra-rsvp-countdown{font-size:clamp(4rem,14vw,7rem);font-weight:900;color:var(--accent)}.ra-rsvp-swatches{display:inline-flex;align-items:center;gap:7px;margin-inline-start:4px}.ra-rsvp-swatch{width:28px;min-width:28px;height:28px;min-height:28px;padding:0;border-radius:50%;border:2px solid transparent}.ra-rsvp-swatch[aria-pressed=true]{border-color:var(--ink);transform:scale(1.12)}',
+    '.ra-crawl-view{flex:1;min-height:220px;overflow:hidden;position:relative;border-radius:14px;padding:24px;perspective:360px;cursor:pointer}.ra-crawl-text{max-width:34rem;margin:0 auto;font-size:clamp(1.35rem,3vw,2rem);line-height:1.8;font-weight:700;transform-origin:50% 100%}.ra-crawl-view:not(.is-flat) .ra-crawl-text{transform:rotateX(18deg)}.ra-crawl-view.is-flat{overflow:auto;perspective:none}.ra-crawl-end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(0,0,0,.72);text-align:center;padding:20px}.ra-crawl-end h3{margin:0;font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:.14em}',
+    '.ra-dock.is-sticky{position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0;border-bottom:1px solid var(--line);margin-bottom:6px}.ra-bar-main{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:6px 0}.ra-tools-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:6px 0 10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}.ra-extra-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;flex-basis:100%;padding-top:8px;border-top:1px dashed var(--line)}.ra-tools-bar button{min-height:38px;padding:6px 11px;font-size:.92rem;border-radius:999px;background:var(--card)}.ra-tools-bar button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}',
+    '.ra-tap-bar{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;padding:3px 6px;border:1px solid var(--line);border-radius:999px;background:var(--card)}.ra-tap-bar>span{font-size:.82rem;font-weight:700;color:var(--muted);padding:0 4px}.ra-tap-bar button{min-height:34px;padding:4px 10px;font-size:.86rem;border-radius:999px}',
+    '.ra-progress{height:5px;border-radius:999px;background:var(--soft);overflow:hidden;margin:4px 0 8px}.ra-progress-fill{display:block;height:100%;background:var(--accent)}',
+    '.ra-sounds-card{margin:10px 0 12px;padding:12px 14px;border:1px solid var(--accent);border-radius:12px;background:var(--soft)}.ra-syl-tiles{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.ra-syl-tile{display:inline-block;padding:6px 12px;border-radius:10px;background:var(--card);border:2px solid var(--accent);font-weight:800;font-size:1.25rem}',
+    '.ra-keys-hint{margin:8px 0;font-size:.88rem;color:var(--muted)}.ra-keys-hint summary{cursor:pointer;font-weight:600}.ra-keys-hint p{margin:6px 0 0}',
+    '[data-read-along-text] button[data-read-along-line]:hover{background:var(--hover)}[data-chunk-mood="popin"] [data-read-along-line]:not([hidden]){font-weight:700;letter-spacing:.01em}[data-chunk-mood="pulse"] [data-read-along-line]:not([hidden]){box-shadow:0 0 0 3px var(--ok-bg),0 0 0 5px var(--accent);border-radius:10px}',
+    '.lt-custom-colors{display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex-basis:100%;margin-top:4px}.lt-custom-colors label{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:.92rem}.lt-custom-colors input[type=color]{width:38px;min-height:38px;padding:2px;border-radius:8px;cursor:pointer}.lt-custom-size{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex-basis:100%;margin-top:4px;font-size:.92rem}.lt-custom-size input[type=range]{width:140px;min-height:36px;padding:0;border:0}',
+    '.ra-mic-bar{margin:12px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}.ra-mic-bar .row{margin:0 0 6px}.ra-mic-note{margin:4px 0 0;font-size:.92rem}',
+    '@media (forced-colors:active){[data-tool-group=colors]{display:none!important}.lt-line,.lt-panel [aria-pressed=true]{outline:3px solid Highlight}.ra-word-active,.choice.right::after,.progress span{forced-color-adjust:none;background:Highlight;color:HighlightText}[data-feedback]:not(:empty)::before,.done-star::after{forced-color-adjust:none;background:Highlight;color:HighlightText}}@media print{.lt-bar,.lt-panel,.lt-lens,.ra-mic-bar,.ra-resume-bar,.ra-def-box{display:none!important}}',
     // 2026-11-13/19: printed with backgrounds off (including Dark / High Contrast), force dark ink on white paper.
     '@media print{:root,[data-lt-colors]{--bg:#fff;--card:#fff;--ink:#000;--muted:#333;--line:#999;--soft:#f5f5f5;--ok:#000;--ok-bg:#fff;--warn:#000;--warn-bg:#fff;color-scheme:light}button.primary{color:inherit;box-shadow:none}}',
   ].join('\n');
@@ -6880,9 +7994,10 @@
   // ---------------------------------------------------------------------------
   function takeHomeTools(o) {
     var doc = o.doc, win = o.win, L = o.L, el = o.el, page = o.page, html = doc.documentElement;
-    var NAMES = { size: ['', 'textLarger', 'textLargest'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest'], spacing: ['', 'spacingWide'], font: ['', 'lettersLexend', 'lettersAtkinson', 'lettersBook', 'lettersRounded'], focus: ['', 'readingFocus'], lens: ['', 'magnifier'], choices: ['', 'readChoices'], directions: ['', ''], speed: ['', ''], sounds: ['', 'soundsMore', 'soundsLess'] };
-    var EXTRA = ['syllables'];
-    var KEYS = Object.keys(NAMES), p = {}, ep = {}, groups = {}, rec = null, text = null, at = 0, painted = '', read = null, noVoiceNote = null;
+    var NAMES = { size: ['', 'textLarger', 'textLargest', 'textExtraLarge'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest', 'colorsRose'], spacing: ['', 'spacingWide'], font: ['', 'lettersLexend', 'lettersAtkinson', 'lettersBook', 'lettersRounded', 'lettersMono', 'lettersOpenDyslexic'], focus: ['', 'readingFocus', 'readingFocus'], lens: ['', 'magnifier'], choices: ['', 'readChoices'], directions: ['', ''], speed: ['', '', '', '', ''], sounds: ['', 'soundsMore', 'soundsLess'], bold: ['', 'boldStart'] };
+    var EXTRA = ['syllables', 'pos', 'posLabels', 'define', 'bold', 'chunk', 'noAuto', 'posHideN', 'posHideV', 'posHideJ', 'posHideA'];
+    var KEYS = Object.keys(NAMES), p = {}, ep = {}, customBg = '', customInk = '', customSize = 0, groups = {}, rec = null, text = null, at = 0, painted = '', read = null, noVoiceNote = null, bionicBusy = false;
+    var HEX = /^#[0-9a-f]{6}$/i;
     var def = function (k) { return k === 'directions' && o.directionsOnce ? 1 : 0; };
     var clean = function (raw) {
       KEYS.forEach(function (k) {
@@ -6894,8 +8009,29 @@
         var v = raw && (raw[k] === 1 || raw[k] === '1') ? 1 : 0;
         ep[k] = v;
       });
+      customBg = raw && typeof raw.customBg === 'string' && HEX.test(raw.customBg) ? raw.customBg : '';
+      customInk = raw && typeof raw.customInk === 'string' && HEX.test(raw.customInk) ? raw.customInk : '';
+      var cs = raw && Number(raw.customSize);
+      customSize = cs >= 14 && cs <= 40 ? Math.round(cs) : 0;
     };
-    var showPanel = function (on) { panel.hidden = !on; aa.setAttribute('aria-expanded', String(on)); };
+    var bgPicker = null, inkPicker = null, sizeSlider = null, sizeOut = null;
+    var mountPickers = function () {
+      if (bgPicker) return;
+      if (groups.size) {
+        sizeOut = el('span', { class: 'muted', text: (customSize || 16) + 'px' });
+        sizeSlider = el('input', { type: 'range', min: '14', max: '40', step: '1', value: String(customSize || 16), 'aria-label': 'Exact text size', 'data-tool-custom-size': '', on: { input: function () { customSize = Number(sizeSlider.value) || 16; apply(); o.store(); } } });
+        groups.size.box.appendChild(el('label', { class: 'lt-custom-size' }, ['Exact size ', sizeSlider, sizeOut]));
+      }
+      if (groups.colors) {
+        bgPicker = el('input', { type: 'color', value: customBg || '#fdfbf7', 'aria-label': 'Custom background color', 'data-tool-custom-bg': '', on: { input: function () { customBg = bgPicker.value; apply(); o.store(); } } });
+        inkPicker = el('input', { type: 'color', value: customInk || '#1e293b', 'aria-label': 'Custom text color', 'data-tool-custom-ink': '', on: { input: function () { customInk = inkPicker.value; apply(); o.store(); } } });
+        groups.colors.box.appendChild(el('div', { class: 'lt-custom-colors' }, [
+          el('label', {}, ['Background ', bgPicker]),
+          el('label', {}, ['Text ', inkPicker]),
+        ]));
+      }
+    };
+    var showPanel = function (on) { if (on) mountPickers(); panel.hidden = !on; aa.setAttribute('aria-expanded', String(on)); };
     var back = function () { showPanel(false); aa.focus(); };
     var group = function (k, title, names, hint) {
       var g = groups[k] = { buttons: names.map(function (name, v) { return el('button', { type: 'button', 'data-tool': k + '-' + v, on: { click: function () { set(k, v); } }, text: name }); }) };
@@ -6908,16 +8044,17 @@
       on: { keydown: function (e) { if (/^Esc/.test(e.key)) { e.preventDefault(); back(); } } } }, [
       el('div', { class: 'lt-top' }, [el('p', { id: 'lt-title', class: 'lt-h', text: L.tools_button }),
         el('button', { type: 'button', 'data-tools-close-top': '', on: { click: back }, text: L.tools_close })]),
-      group('size', L.tools_size, [L.tools_normal, L.tools_size_1, L.tools_size_2]),
-      group('colors', L.tools_colors, [L.tools_colors_0, L.tools_colors_1, L.tools_colors_2, L.tools_colors_3, L.tools_colors_4, L.tools_colors_5, L.tools_colors_6]),
+      group('size', L.tools_size, [L.tools_normal, L.tools_size_1, L.tools_size_2, L.tools_size_3 || 'Extra large']),
+      group('colors', L.tools_colors, [L.tools_colors_0, L.tools_colors_1, L.tools_colors_2, L.tools_colors_3, L.tools_colors_4, L.tools_colors_5, L.tools_colors_6, L.tools_colors_7 || 'Rose']),
       group('spacing', L.tools_spacing, [L.tools_normal, L.tools_spacing_1]),
-      group('font', L.tools_font, [L.tools_colors_0, L.tools_font_1, L.tools_font_2, L.tools_font_3, L.tools_font_4]),
-      group('focus', L.tools_focus, [L.tools_off, L.tools_on], L.tools_focus_hint),
+      group('font', L.tools_font, [L.tools_colors_0, L.tools_font_1, L.tools_font_2, L.tools_font_3, L.tools_font_4, L.tools_font_5 || 'Mono', L.tools_font_6 || 'OpenDyslexic']),
+      group('focus', L.tools_focus, [L.tools_off, L.tools_focus_1 || L.tools_on, L.tools_focus_2 || '3 lines'], L.tools_focus_hint),
       group('lens', L.tools_lens, [L.tools_off, L.tools_on], L.tools_lens_hint),
       group('choices', L.tools_choices, [L.tools_off, L.tools_on], L.tools_choices_hint),
       group('directions', L.tools_directions, [L.tools_directions_0, L.tools_directions_1], L.tools_directions_hint),
-      group('speed', L.tools_speed, [L.tools_speed_0, L.tools_speed_1], L.tools_speed_hint),
+      group('speed', L.tools_speed, [L.tools_speed_0, L.tools_speed_1, L.tools_speed_2 || 'Very slow', L.tools_speed_3 || 'Faster', L.tools_speed_4 || 'Fastest'], L.tools_speed_hint),
       group('sounds', L.tools_sounds, [L.tools_sounds_0, L.tools_sounds_1, L.tools_sounds_2], L.tools_sounds_hint),
+      group('bold', L.tools_bold || 'Bold start', [L.tools_off, L.tools_on], L.tools_bold_hint),
       (noVoiceNote = el('p', { class: 'muted', hidden: true, 'data-tools-no-voice': '', text: L.tools_no_voice })),
       el('div', { class: 'row' }, [
         el('button', { type: 'button', 'data-tools-reset': '', on: { click: function () { clean(); apply(); o.store(); } }, text: L.tools_reset })]),
@@ -6982,7 +8119,9 @@
       var all = lines(), l = all[at = Math.max(0, Math.min(all.length - 1, at))], dim = dark ? 'rgba(0,0,0,.72)' : 'rgba(0,0,0,.45)';
       line.hidden = !l;
       if (!l) { shade.style.background = 'none'; return; }
-      var pad = Math.round((parseFloat(win.getComputedStyle(text).fontSize) || 16) / 5), t = Math.max(0, Math.round(l.t) - pad), b = Math.round(l.b) + pad;
+      var span = p.focus === 2 ? 1 : 0;
+      var lTop = all[Math.max(0, at - span)], lBot = all[Math.min(all.length - 1, at + span)];
+      var pad = Math.round((parseFloat(win.getComputedStyle(text).fontSize) || 16) / 5), t = Math.max(0, Math.round(lTop.t) - pad), b = Math.round(lBot.b) + pad;
       shade.style.background = 'linear-gradient(' + dim + ' ' + t + 'px,transparent ' + t + 'px,transparent ' + b + 'px,' + dim + ' ' + b + 'px)';
       line.style.top = t + 'px'; line.style.height = b - t + 'px';
       // The lens copy follows the band.
@@ -7011,26 +8150,91 @@
       read = now;
       if (box) nearest(box.top + box.height / 2); else if (on) paint();
     };
+    var SKIP_BIONIC = 'script,style,textarea,input,select,option,code,pre,svg,math,.sr,.lt-shade,.lt-line,.ra-bionic,[data-lt-bionic],[data-read-along-text],[aria-hidden=true],[data-seg-tile],[data-seg-box],[data-map-tile],[data-map-slot],[data-ws-tile],[data-ws-box],[data-key],[data-sr-symbol]';
+    var clearBold = function () {
+      var list = o.app.querySelectorAll('[data-lt-bionic]');
+      if (!list.length) return;
+      bionicBusy = true;
+      try {
+        for (var i = 0; i < list.length; i++) {
+          var node = list[i], par = node.parentNode;
+          if (!par) continue;
+          par.replaceChild(doc.createTextNode(node.textContent || ''), node);
+          try { par.normalize(); } catch (_) {}
+        }
+      } finally { bionicBusy = false; }
+    };
+    var paintBold = function () {
+      if (!p.bold) { clearBold(); return; }
+      bionicBusy = true;
+      try {
+        var walk = doc.createTreeWalker(o.app, 4), hits = [], n;
+        while ((n = walk.nextNode())) {
+          var par = n.parentNode;
+          if (!par || !n.nodeValue || !/[A-Za-z\u00C0-\u024F]{2,}/.test(n.nodeValue)) continue;
+          if (par.closest && (par.closest(SKIP_BIONIC) || par.closest('button'))) continue;
+          hits.push(n);
+        }
+        hits.forEach(function (tn) {
+          var par = tn.parentNode;
+          if (!par) return;
+          var raw = tn.nodeValue, wrap = el('span', { 'data-lt-bionic': '1' });
+          var re = /[A-Za-z\u00C0-\u024F]+/g, m, last = 0;
+          while ((m = re.exec(raw))) {
+            if (m.index > last) wrap.appendChild(doc.createTextNode(raw.slice(last, m.index)));
+            var w = m[0];
+            if (w.length < 2) { wrap.appendChild(doc.createTextNode(w)); }
+            else {
+              var cut = Math.max(1, Math.ceil(w.length * 0.4));
+              wrap.appendChild(el('strong', { class: 'ra-bionic', text: w.slice(0, cut) }));
+              if (cut < w.length) wrap.appendChild(doc.createTextNode(w.slice(cut)));
+            }
+            last = m.index + w.length;
+          }
+          if (last < raw.length) wrap.appendChild(doc.createTextNode(raw.slice(last)));
+          par.replaceChild(wrap, tn);
+        });
+      } finally { bionicBusy = false; }
+    };
     var mark = function () {
       if (!rec) return;
       var s = rec.supports = rec.supports && typeof rec.supports === 'object' ? rec.supports : {}, changed = false, forced = false;
       try { forced = win.matchMedia('(forced-colors: active)').matches; } catch (_) {}
-      [NAMES.size[p.size], forced ? '' : NAMES.colors[p.colors], NAMES.spacing[p.spacing], NAMES.font[p.font], text ? NAMES.focus[p.focus] : '', NAMES.lens[p.lens], o.choices ? NAMES.choices[p.choices] : '', o.sounds ? NAMES.sounds[p.sounds] : ''].forEach(function (n) {
+      [NAMES.size[p.size], forced ? '' : NAMES.colors[p.colors], NAMES.spacing[p.spacing], NAMES.font[p.font], text ? NAMES.focus[p.focus] : '', NAMES.lens[p.lens], o.choices ? NAMES.choices[p.choices] : '', o.sounds ? NAMES.sounds[p.sounds] : '', NAMES.bold[p.bold]].forEach(function (n) {
         if (n && !s[n]) { s[n] = 1; changed = true; }
       });
       if (changed) o.save();
     };
     var apply = function () {
-      ['size', 'colors', 'spacing', 'font'].forEach(function (k) { if (p[k]) html.setAttribute('data-lt-' + k, p[k]); else html.removeAttribute('data-lt-' + k); });
+      ['size', 'colors', 'spacing', 'font', 'bold'].forEach(function (k) { if (p[k]) html.setAttribute('data-lt-' + k, p[k]); else html.removeAttribute('data-lt-' + k); });
+      ep.bold = p.bold ? 1 : 0;
+      if (customSize) html.style.fontSize = customSize + 'px';
+      else html.style.removeProperty('font-size');
+      if (sizeSlider) sizeSlider.value = String(customSize || [16, 20, 24, 28][p.size] || 16);
+      if (sizeOut) sizeOut.textContent = (customSize || [16, 20, 24, 28][p.size] || 16) + 'px';
+      if (customBg) { html.style.setProperty('--bg', customBg); html.style.setProperty('--card', customBg); }
+      else { html.style.removeProperty('--bg'); html.style.removeProperty('--card'); }
+      if (customInk) html.style.setProperty('--ink', customInk);
+      else html.style.removeProperty('--ink');
+      if (bgPicker) bgPicker.value = customBg || '#fdfbf7';
+      if (inkPicker) inkPicker.value = customInk || '#1e293b';
       KEYS.forEach(function (k) { groups[k].buttons.forEach(function (b, v) { b.setAttribute('aria-pressed', String(v === p[k])); }); });
       grip.hidden = lens.hidden = !p.lens;
       copy = drag = null;
       if (!p.lens) lens.textContent = '';
+      if (typeof o.onSpeed === 'function') o.onSpeed(o.speed ? ([1, 0.8, 0.6, 1.25, 1.5][p.speed] || 1) : 1);
+      paintBold();
       scan(); queue(); mark();
     };
-    var set = function (k, v) { p[k] = v; apply(); o.store(); };
+    var set = function (k, v) {
+      if (k === 'colors') { customBg = ''; customInk = ''; }
+      if (k === 'size') customSize = 0;
+      p[k] = v; apply(); o.store();
+    };
     if (win.MutationObserver) new win.MutationObserver(function (list) {
+      if (bionicBusy) return;
       if (!list.some(function (m) { return m.target !== shade && m.target !== line && m.target !== grip; })) return;
+      if (p.bold) paintBold();
       scan(); copy = null; queue();
     }).observe(page, { childList: true, subtree: true, attributes: true, characterData: true });
     doc.addEventListener('input', function () { copy = null; queue(); }, true);
@@ -7071,9 +8275,9 @@
     groups.speed.box.hidden = !o.speed;
     groups.sounds.box.hidden = !o.sounds;
     clean(o.prefs);
-    // Letters use the device's own fonts (a file loads nothing). Rounded is offered only where the device has such
+    // Letters use the device's own fonts (a file loads nothing). Rounded and OpenDyslexic are offered only where the device has such
     // a font: a wide word is measured with and without it.
-    var rounded = false;
+    var rounded = false, dyslexic = false;
     try {
       var probe = el('span', { style: 'position:absolute;visibility:hidden;white-space:nowrap;font-size:72px', text: 'mmmmmmmmmmlli' });
       doc.body.appendChild(probe);
@@ -7081,28 +8285,226 @@
       var plain = probe.offsetWidth;
       probe.style.fontFamily = '"Comic Sans MS","Comic Sans","Chalkboard SE","Comic Neue","Comic Relief",monospace';
       rounded = probe.offsetWidth !== plain;
+      probe.style.fontFamily = '"OpenDyslexic","OpenDyslexic3",monospace';
+      dyslexic = probe.offsetWidth !== plain;
       doc.body.removeChild(probe);
     } catch (_) {}
     groups.font.buttons[4].hidden = !rounded;
     if (!rounded && p.font === 4) p.font = 0;
+    if (groups.font.buttons[6]) groups.font.buttons[6].hidden = !dyslexic;
+    if (!dyslexic && p.font === 6) p.font = 0;
     apply();
     return {
-      item: function (r) { rec = r && !r.done ? r : null; scan(); mark(); },
+      item: function (r) { rec = r && !r.done ? r : null; if (p.bold) paintBold(); scan(); mark(); },
       dock: function (h) { h.parentNode.insertBefore(bar, h.nextSibling); h.parentNode.insertBefore(panel, bar.nextSibling); },
       autoRead: function () { return !!o.choices && p.choices === 1; },
       directionsOnce: function () { return !!o.directions && p.directions === 1; },
       slow: function () { return !!o.speed && p.speed === 1; },
+      speedRate: function () { return o.speed ? ([1, 0.8, 0.6, 1.25, 1.5][p.speed] || 1) : 1; },
       noVoice: function (on) { if (noVoiceNote) noVoiceNote.hidden = !on; },
       soundGap: function () { return o.sounds ? [500, 800, 250][p.sounds] || 500 : 500; },
-      getExtra: function (k) { return EXTRA.indexOf(k) >= 0 ? (ep[k] || 0) : null; },
-      setExtra: function (k, v) { if (EXTRA.indexOf(k) < 0) return; ep[k] = v ? 1 : 0; o.store(); },
+      getExtra: function (k) { return k === 'bold' ? (p.bold ? 1 : 0) : (EXTRA.indexOf(k) >= 0 ? (ep[k] || 0) : null); },
+      setExtra: function (k, v) { if (k === 'bold') { set('bold', v ? 1 : 0); return; } if (EXTRA.indexOf(k) < 0) return; ep[k] = v ? 1 : 0; o.store(); },
       prefs: function () {
         var out = null;
         KEYS.forEach(function (k) { if (p[k] !== def(k)) (out = out || {})[k] = p[k]; });
-        EXTRA.forEach(function (k) { if (ep[k]) (out = out || {})[k] = ep[k]; });
+        EXTRA.forEach(function (k) { if (k !== 'bold' && ep[k]) (out = out || {})[k] = ep[k]; });
+        if (customBg) (out = out || {}).customBg = customBg;
+        if (customInk) (out = out || {}).customInk = customInk;
+        if (customSize) (out = out || {}).customSize = customSize;
         return out;
       },
     };
+  }
+
+  // Optional local-only device voice (embedded ONLY when teacher opts into deviceVoice on a read-along file).
+  // Strictly uses voices with localService === true so text is never sent to a cloud speech engine.
+  function takeHomeDeviceVoice(win, lang, getRate) {
+    var syn = win && win.speechSynthesis;
+    var want = String(lang || 'en').toLowerCase().split('-')[0];
+    var pick = function () {
+      if (!syn || typeof syn.getVoices !== 'function') return null;
+      var list = [];
+      try { list = syn.getVoices() || []; } catch (_) { list = []; }
+      var local = list.filter(function (v) { return v && v.localService === true; });
+      if (!local.length) return null;
+      return local.filter(function (v) { return String(v.lang || '').toLowerCase().indexOf(want) === 0; })[0] || local[0];
+    };
+    var stop = function () { try { if (syn && typeof syn.cancel === 'function') syn.cancel(); } catch (_) {} };
+    return {
+      available: function () { return !!pick(); },
+      stop: stop,
+      speak: function (text, onEnd) {
+        var v = pick();
+        if (!v || !win.SpeechSynthesisUtterance || !text) { if (onEnd) onEnd(false); return false; }
+        stop();
+        var u = new win.SpeechSynthesisUtterance(String(text));
+        u.voice = v;
+        u.lang = v.lang || lang || 'en';
+        u.rate = typeof getRate === 'function' ? (getRate() || 1) : 1;
+        var done = false;
+        var fin = function (ok) { if (done) return; done = true; if (onEnd) onEnd(ok); };
+        u.onend = function () { fin(true); };
+        u.onerror = function () { fin(false); };
+        try { syn.speak(u); return true; } catch (_) { fin(false); return false; }
+      },
+    };
+  }
+
+  // Optional local-only student voice practice (embedded ONLY when teacher opts in on a read-along practice file).
+  // Click-gated, in-memory blob URLs per sentence only, never stored in localStorage, never saved to results, never transmitted.
+  function takeHomeStudentMic(doc, win, el, L, opts) {
+    var o = opts || {};
+    var curIdx = 0, curTotal = 1;
+    var clips = {};
+    var recBtn = el('button', { type: 'button', 'data-student-rec': '', text: L.read_along_rec || 'Record my voice' });
+    var playBtn = el('button', { type: 'button', 'data-student-rec-play': '', hidden: true, text: L.read_along_rec_play || 'Play my voice' });
+    var saveBtn = el('button', { type: 'button', 'data-student-rec-save': '', hidden: true, text: L.read_along_rec_save || 'Save my recording' });
+    var clearBtn = el('button', { type: 'button', 'data-student-rec-clear': '', hidden: true, text: L.read_along_rec_clear || 'Clear' });
+    var status = el('p', { class: 'muted ra-mic-note', 'aria-live': 'polite', 'data-student-rec-status': '', text: L.read_along_rec_note || 'Stays on this device only. Nothing is saved or sent.' });
+    var wrap = el('div', { class: 'ra-mic-bar', 'data-student-mic': '' }, [
+      el('div', { class: 'row' }, [recBtn, playBtn, saveBtn, clearBtn]),
+      status,
+    ]);
+    var stream = null, recorder = null, chunks = [], player = null, recording = false, playing = false, timer = 0, alive = true, recTargetIdx = 0;
+    var say = function (tpl, fallback, n) { return String(tpl || fallback).replace(/\{n\}/g, String(n)); };
+    var syncButtons = function () {
+      var clip = clips[curIdx] || null;
+      playBtn.hidden = !clip;
+      saveBtn.hidden = !clip;
+      clearBtn.hidden = !clip;
+      if (!recording) {
+        status.textContent = clip
+          ? say(L.read_along_rec_ready, 'Your recording for sentence {n} is ready to play back.', curIdx + 1)
+          : (L.read_along_rec_note || 'Stays on this device only. Nothing is saved or sent.');
+      }
+    };
+    var stopTracks = function () {
+      if (timer) { win.clearTimeout(timer); timer = 0; }
+      if (stream) { try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} stream = null; }
+    };
+    var stopPlay = function () {
+      playing = false;
+      if (player) { try { player.pause(); player.currentTime = 0; } catch (_) {} player = null; }
+      playBtn.textContent = L.read_along_rec_play || 'Play my voice';
+    };
+    var clearKey = function (key) {
+      var existing = clips[key];
+      if (existing && existing.url) { try { win.URL.revokeObjectURL(existing.url); } catch (_) {} }
+      delete clips[key];
+    };
+    var clearAll = function () {
+      stopPlay();
+      Object.keys(clips).forEach(clearKey);
+      syncButtons();
+    };
+    var halt = function () {
+      stopPlay();
+      if (recorder && recorder.state !== 'inactive') { try { recorder.stop(); } catch (_) {} }
+      recording = false;
+      stopTracks();
+      recBtn.textContent = L.read_along_rec || 'Record my voice';
+    };
+    var cleanup = function () { alive = false; halt(); clearAll(); };
+    win.addEventListener('pagehide', cleanup);
+    win.addEventListener('beforeunload', cleanup);
+    recBtn.addEventListener('click', function () {
+      if (recording) {
+        if (recorder && recorder.state !== 'inactive') { try { recorder.stop(); } catch (_) {} }
+        return;
+      }
+      stopPlay();
+      if (typeof o.getSentence === 'function') {
+        var info = o.getSentence() || {};
+        if (typeof info.index === 'number') curIdx = info.index;
+        if (typeof info.total === 'number' && info.total > 0) curTotal = info.total;
+      }
+      recTargetIdx = curIdx;
+      var media = win.navigator && win.navigator.mediaDevices;
+      if (!media || typeof media.getUserMedia !== 'function' || typeof win.MediaRecorder !== 'function') {
+        status.textContent = L.read_along_rec_unsupported || 'This browser cannot record from a microphone here.';
+        return;
+      }
+      recBtn.disabled = true;
+      var asked;
+      try { asked = media.getUserMedia({ audio: true }); } catch (err) { asked = Promise.reject(err); }
+      Promise.resolve(asked).then(function (s) {
+        recBtn.disabled = false;
+        if (!alive) { try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} return; }
+        stream = s;
+        chunks = [];
+        try { recorder = new win.MediaRecorder(s); } catch (_) {
+          stopTracks();
+          status.textContent = L.read_along_rec_unsupported || 'This browser cannot record from a microphone here.';
+          return;
+        }
+        recorder.ondataavailable = function (ev) { if (ev && ev.data && ev.data.size) chunks.push(ev.data); };
+        recorder.onstop = function () {
+          recording = false;
+          stopTracks();
+          recBtn.textContent = L.read_along_rec || 'Record my voice';
+          if (!alive) return;
+          if (!chunks.length) {
+            status.textContent = L.read_along_rec_empty || 'Nothing was heard. Try again.';
+            return;
+          }
+          var mime = (chunks[0] && chunks[0].type) || recorder.mimeType || 'audio/webm';
+          var blob = new win.Blob(chunks, { type: mime });
+          clearKey(recTargetIdx);
+          clips[recTargetIdx] = { url: win.URL.createObjectURL(blob), mime: mime };
+          syncButtons();
+        };
+        recording = true;
+        recBtn.textContent = L.read_along_rec_stop || 'Stop recording';
+        status.textContent = say(L.read_along_rec_recording, 'Recording sentence {n}...', recTargetIdx + 1);
+        recorder.start();
+        timer = win.setTimeout(function () { if (recorder && recorder.state !== 'inactive') { try { recorder.stop(); } catch (_) {} } }, 60000);
+      }, function () {
+        recBtn.disabled = false;
+        stopTracks();
+        status.textContent = L.read_along_rec_denied || 'Microphone permission was refused.';
+      });
+    });
+    playBtn.addEventListener('click', function () {
+      if (playing) { stopPlay(); return; }
+      var clip = clips[curIdx];
+      if (!clip || !clip.url) return;
+      stopPlay();
+      try {
+        player = new win.Audio(clip.url);
+        playing = true;
+        playBtn.textContent = L.read_along_stop || 'Stop';
+        player.onended = stopPlay;
+        player.onerror = stopPlay;
+        var p = player.play();
+        if (p && typeof p.catch === 'function') p.catch(stopPlay);
+      } catch (_) { stopPlay(); }
+    });
+    saveBtn.addEventListener('click', function () {
+      var clip = clips[curIdx];
+      if (!clip || !clip.url) return;
+      var ext = /mp4|m4a/i.test(clip.mime) ? 'm4a' : /ogg/i.test(clip.mime) ? 'ogg' : /wav/i.test(clip.mime) ? 'wav' : 'webm';
+      var a = el('a', { href: clip.url, download: 'my-reading-sentence-' + (curIdx + 1) + '.' + ext });
+      a.hidden = true;
+      doc.body.appendChild(a);
+      a.click();
+      doc.body.removeChild(a);
+    });
+    clearBtn.addEventListener('click', function () {
+      stopPlay();
+      clearKey(curIdx);
+      syncButtons();
+    });
+    var setSentence = function (index, total) {
+      var nextIdx = Math.max(0, Math.floor(Number(index) || 0));
+      if (typeof total === 'number' && total > 0) curTotal = total;
+      if (nextIdx !== curIdx) {
+        stopPlay();
+        curIdx = nextIdx;
+      }
+      syncButtons();
+    };
+    return { el: wrap, halt: halt, setSentence: setSentence };
   }
 
   // ---------------------------------------------------------------------------
@@ -7311,8 +8713,8 @@
       var card = main.querySelector('.card'), line = card && card.querySelector('[data-feedback]');
       if (line) line.parentNode.insertBefore(soundNote, line); else (card || main).appendChild(soundNote);
     };
-    // rate: optional playback speed (e.g. 0.5 for "Hear it slowly").
-    var play = function (id, rate) {
+    // rate: optional playback speed (e.g. 0.5 for "Hear it slowly"). onProgress(cur, dur): optional word-sweep hook. startAt: optional resume offset in seconds.
+    var play = function (id, rate, onProgress, startAt) {
       stop();
       var src = id && lesson.audio[id];
       if (!src || !tab.owner) return Promise.resolve(false);
@@ -7321,16 +8723,33 @@
       var a = audioEl;
       return new Promise(function (resolve) {
         // A clip that neither ends nor fails (a stalled player) counts as not played after 5 s with no progress.
-        var dog = null, watch = function () { win.clearTimeout(dog); dog = win.setTimeout(function () { settle(false); }, 5000); };
-        var settle = function (ok) { win.clearTimeout(dog); if (mine !== playToken) return; setPlaying(false); a.onended = a.onerror = a.ontimeupdate = null; resolve(ok); };
+        var dog = null, tick = null;
+        var report = function () {
+          if (mine !== playToken || typeof onProgress !== 'function') return;
+          var dur = Number(a.duration), cur = Number(a.currentTime);
+          if (dur > 0 && cur >= 0) { try { onProgress(cur, dur); } catch (_) {} }
+        };
+        var watch = function () { win.clearTimeout(dog); dog = win.setTimeout(function () { settle(false); }, 5000); report(); };
+        var settle = function (ok) { win.clearTimeout(dog); if (tick) { win.clearInterval(tick); tick = null; } if (mine !== playToken) return; setPlaying(false); a.onended = a.onerror = a.ontimeupdate = a.onloadedmetadata = null; resolve(ok); };
         a.onended = function () { settle(true); };
         a.onerror = function () { settle(false); };
         a.ontimeupdate = watch;
-        var slow = !!(tools && tools.slow && tools.slow());
-        var speed = rate > 0 ? rate : (slow ? 0.8 : 1);
+        var speed = rate > 0 ? rate : (tools && tools.speedRate ? tools.speedRate() : (tools && tools.slow && tools.slow() ? 0.8 : 1));
+        var seekSec = Number(startAt) > 0 ? Number(startAt) : 0;
         var p;
         try {
           a.src = src;
+          if (seekSec > 0) {
+            var applySeek = function () {
+              if (mine !== playToken) return;
+              try {
+                var dur = Number(a.duration);
+                a.currentTime = (dur > 0 && seekSec < dur - 0.1) ? seekSec : seekSec;
+              } catch (_) {}
+            };
+            a.onloadedmetadata = applySeek;
+            applySeek();
+          }
           try {
             if ('preservesPitch' in a) a.preservesPitch = true;
             else if ('mozPreservesPitch' in a) a.mozPreservesPitch = true;
@@ -7339,6 +8758,7 @@
           try { a.defaultPlaybackRate = speed; a.playbackRate = speed; } catch (_) {}
           p = a.play();
           setPlaying(true);
+          if (typeof onProgress === 'function' && typeof win.setInterval === 'function') tick = win.setInterval(report, 60);
         } catch (_) { settle(false); return; }
         watch();
         if (p && p.catch) p.catch(function () { settle(false); });
@@ -7596,7 +9016,8 @@
       if (check && check.resume(prior)) return;
       var given = givenName;
       var nameInput = el('input', { id: 'learner-name', type: 'text', autocomplete: 'off', maxlength: '60' });
-      var resumable = prior && prior.index > 0 && !prior.finishedAt;
+      var hasPlace = !!(prior && Array.isArray(prior.items) && prior.items[prior.index || 0] && Number(prior.items[prior.index || 0].place) > 0);
+      var resumable = prior && (prior.index > 0 || hasPlace) && !prior.finishedAt;
       // A finished run is still here: it can be seen (and saved) again. Unsaved results are never erased without asking.
       var finished = !!(prior && prior.finishedAt && Array.isArray(prior.items) && prior.items.length);
       var unsaved = finished ? !(prior.sent || prior.savedFile) : resumable;
@@ -7706,14 +9127,19 @@
         root: area, el: el, fmt: fmt, L: L, item: item, matches: matches, showLetters: !!lesson.showLetters, skipDirections: skipDirections,
         soundGap: function () { return tools && tools.soundGap ? tools.soundGap() : 500; },
         slow: function () { return !!(tools && tools.slow && tools.slow()); },
+        speedRate: function () { return tools && tools.speedRate ? tools.speedRate() : 1; },
         noVoice: function (on) { if (tools && tools.noVoice) tools.noVoice(on); },
         toolPref: function (k, v) { if (!tools) return null; if (arguments.length > 1) { if (tools.setExtra) tools.setExtra(k, v); return v ? 1 : 0; } return tools.getExtra ? tools.getExtra(k) : null; },
+        place: function (v) { if (arguments.length > 0) { var n = Math.max(0, Math.floor(Number(v) || 0)); if (n > 0) rec.place = n; else delete rec.place; save(); return n; } return Math.max(0, Math.floor(Number(rec.place) || 0)); },
+        studentMic: kit.studentMic ? function (opts) { return kit.studentMic(doc, win, el, L, opts); } : null,
+        deviceVoice: kit.deviceVoice ? function (lang) { return kit.deviceVoice(win, lang, function () { return tools && tools.speedRate ? tools.speedRate() : 1; }); } : null,
         keys: function (handler) { if (keyItem) keyItem.keys = handler; },
         keypad: kit.keypad ? function (options) { var pad = kit.keypad(el, win, L, options); if (keyItem) keyItem.pad = pad; return pad; } : null,
         vocabChoice: kit.vocabChoice ? function (it, P, pic) { return kit.vocabChoice(it, ctx, P, pic); } : null,
         goPrev: state.index > 0 ? function () { clockStop(); state.index--; save(); renderItem(); } : null,
         goNext: function () { clockStop(); state.index++; save(); renderItem(); },
         play: play, playAll: playAll, stop: stop, announce: announce,
+        audioTime: function () { return audioEl && Number(audioEl.currentTime) > 0 ? Number(audioEl.currentTime) : 0; },
         hearAll: hearAllIn(area, function (name) { ctx.support(name); }),
         image: function (id) { return (id && lesson.images && lesson.images[id]) || null; },
         ordinal: function (p) { return (L.ordinals && L.ordinals[p]) || String(p + 1); },
@@ -8037,6 +9463,7 @@
       directions: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return !/^(math_|vocab_|read_along$|symbol_runner$|manipulation$|sound_sort$|word_families$)/.test(b.activity); }),
       directionsOnce: !!lesson.instructionsOnce,
       speed: Object.keys(lesson.audio || {}).length > 0 || lesson.blocks.some(function (b) { return b.items.some(function (it) { return it.read === true; }); }),
+      onSpeed: function (rate) { if (audioEl && !audioEl.paused) { try { audioEl.defaultPlaybackRate = rate; audioEl.playbackRate = rate; } catch (_) {} } },
       sounds: lesson.mode !== 'probe' && lesson.blocks.some(function (b) { return /^(blending|syllable_blending|segmentation)$/.test(b.activity); }) }) : null;
     stopBtn = el('button', { type: 'button', hidden: true, 'data-player-stop-audio': '', on: { click: function () {
       var backTo = doc.querySelector('[data-tools-open]') || main.querySelector('h2');
@@ -8338,7 +9765,7 @@
         try {
           synth.cancel();
           var u = new view.SpeechSynthesisUtterance(text);
-          u.voice = v; u.lang = v.lang; u.rate = ctx.slow && ctx.slow() ? 0.78 : 0.9;
+          u.voice = v; u.lang = v.lang; u.rate = ctx.speedRate ? (ctx.speedRate() === 1 ? 0.9 : Math.max(0.5, Math.min(1.5, Math.round(ctx.speedRate() * 0.975 * 100) / 100))) : (ctx.slow && ctx.slow() ? 0.78 : 0.9);
           u.onend = end; u.onerror = end;
           synth.speak(u);
         } catch (_) { end(); }
@@ -8428,7 +9855,77 @@
     hear = !pictured && typeof ctx.hearAll === 'function' ? ctx.hearAll({ stop: hush, before: wake, ready: function () { return !hear.button.hidden && !ctx.isDone(); },
       list: function () { return item.choices.map(function (c, i) { return { box: boxes[i], say: function () { return sayChoice(c); } }; }); } }) : null;
     if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
+    var sylMap = (item && item.syllables) || (ctx && ctx.syllables) || (typeof lesson !== 'undefined' && lesson && lesson.syllables) || null;
+    var hasSyl = !!(sylMap && typeof sylMap === 'object' && Object.keys(sylMap).length);
+    if (hasSyl) {
+      var sylOn = typeof ctx.toolPref === 'function' && ctx.toolPref('syllables') != null
+        ? !!ctx.toolPref('syllables')
+        : !!(doc && doc.documentElement && doc.documentElement.getAttribute('data-vocab-syl') === '1');
+      var applySyl = function (on) {
+        var old = ctx.root.querySelectorAll('[data-v-syl]');
+        for (var oi = 0; oi < old.length; oi++) {
+          var sp = old[oi], par = sp.parentNode;
+          if (par) { par.replaceChild(doc.createTextNode(sp.getAttribute('data-v-raw') || sp.textContent || ''), sp); try { par.normalize(); } catch (_) {} }
+        }
+        if (!on) return;
+        var targets = ctx.root.querySelectorAll('[data-read], [data-choice]');
+        for (var ti = 0; ti < targets.length; ti++) {
+          var walk = doc.createTreeWalker(targets[ti], 4), hits = [], nd;
+          while ((nd = walk.nextNode())) {
+            if (!nd.parentNode || !nd.nodeValue || !/[A-Za-z]{4,}/.test(nd.nodeValue)) continue;
+            if (nd.parentNode.closest && nd.parentNode.closest('.sr,[aria-hidden=true],[data-v-syl]')) continue;
+            hits.push(nd);
+          }
+          hits.forEach(function (tn) {
+            var p = tn.parentNode;
+            if (!p) return;
+            var raw = tn.nodeValue, re = /[A-Za-z]{4,}/g, m, last = 0, matched = false;
+            var wrap = doc.createElement('span');
+            wrap.setAttribute('data-v-syl', '1');
+            wrap.setAttribute('data-v-raw', raw);
+            while ((m = re.exec(raw))) {
+              if (m.index > last) wrap.appendChild(doc.createTextNode(raw.slice(last, m.index)));
+              var w = m[0], low = w.toLowerCase();
+              var sylStr = Object.prototype.hasOwnProperty.call(sylMap, low) ? sylMap[low] : '';
+              var parts = sylStr ? String(sylStr).split('\u00b7') : null;
+              if (parts && parts.length > 1 && parts.join('').length === w.length) {
+                matched = true;
+                var pos = 0;
+                for (var pi = 0; pi < parts.length; pi++) {
+                  if (pi > 0) wrap.appendChild(ctx.el('span', { 'aria-hidden': 'true', style: 'opacity:.6;user-select:none', text: '\u00b7' }));
+                  wrap.appendChild(doc.createTextNode(w.slice(pos, pos + parts[pi].length)));
+                  pos += parts[pi].length;
+                }
+              } else {
+                wrap.appendChild(doc.createTextNode(w));
+              }
+              last = m.index + w.length;
+            }
+            if (!matched) return;
+            if (last < raw.length) wrap.appendChild(doc.createTextNode(raw.slice(last)));
+            p.replaceChild(wrap, tn);
+          });
+        }
+      };
+      var sylBtn = ctx.el('button', {
+        type: 'button',
+        'data-vocab-syllables': '1',
+        'aria-pressed': sylOn ? 'true' : 'false',
+        on: {
+          click: function () {
+            sylOn = !sylOn;
+            sylBtn.setAttribute('aria-pressed', sylOn ? 'true' : 'false');
+            if (typeof ctx.toolPref === 'function') ctx.toolPref('syllables', sylOn);
+            try { if (doc && doc.documentElement) doc.documentElement.setAttribute('data-vocab-syl', sylOn ? '1' : '0'); } catch (_) {}
+            ctx.support('syllables');
+            applySyl(sylOn);
+          }
+        }
+      }, [L.vocab_syllables || 'Syllables (a\u00b7b\u00b7c)']);
+      readRow.appendChild(sylBtn);
+    }
     ctx.root.appendChild(list);
+    if (hasSyl && sylOn) applySyl(true);
     showReaders();
     if (synth) {
       try { synth.onvoiceschanged = showReaders; } catch (_) {}
@@ -8583,9 +10080,9 @@
       return fmt(L.check_seconds, { n: n });
     };
     // The reading tools' names in the supports (takeHomeTools), with the label words the teacher sees.
-    var TOOLS = { textLarger: ['tools_size', 'tools_size_1'], textLargest: ['tools_size', 'tools_size_2'], contrastHigh: ['tools_colors', 'tools_colors_1'],
+    var TOOLS = { textLarger: ['tools_size', 'tools_size_1'], textLargest: ['tools_size', 'tools_size_2'], textExtraLarge: ['tools_size', 'tools_size_3'], contrastHigh: ['tools_colors', 'tools_colors_1'],
       contrastSoft: ['tools_colors', 'tools_colors_2'], colorsDark: ['tools_colors', 'tools_colors_3'], colorsOcean: ['tools_colors', 'tools_colors_4'], colorsSunny: ['tools_colors', 'tools_colors_5'],
-      colorsForest: ['tools_colors', 'tools_colors_6'], spacingWide: ['tools_spacing', 'tools_spacing_1'], lettersLexend: ['tools_font', 'tools_font_1'], lettersAtkinson: ['tools_font', 'tools_font_2'], lettersBook: ['tools_font', 'tools_font_3'], lettersRounded: ['tools_font', 'tools_font_4'], readingFocus: ['tools_focus'], readChoices: ['tools_choices'], magnifier: ['tools_lens'] };
+      colorsForest: ['tools_colors', 'tools_colors_6'], colorsRose: ['tools_colors', 'tools_colors_7'], spacingWide: ['tools_spacing', 'tools_spacing_1'], lettersLexend: ['tools_font', 'tools_font_1'], lettersAtkinson: ['tools_font', 'tools_font_2'], lettersBook: ['tools_font', 'tools_font_3'], lettersRounded: ['tools_font', 'tools_font_4'], lettersMono: ['tools_font', 'tools_font_5'], lettersOpenDyslexic: ['tools_font', 'tools_font_6'], readingFocus: ['tools_focus'], readChoices: ['tools_choices'], magnifier: ['tools_lens'], boldStart: ['tools_bold'] };
     var answerOf = function (item) { return kit.codec.unscramble(item.key, meta.salt, item.id); };
     var markOf = function (entry, answer, response) {
       var scorer = kit.scorers && kit.scorers[entry.activity];
@@ -9135,7 +10632,8 @@
     if (given.more_saves && !given.grown_ups) { labels.grown_ups = given.more_saves; if (!given.grown_ups_file) labels.grown_ups_file = ''; }
     // A sound's name (ctx.sound) shows only with letters on: other files do not carry the words.
     if (!lesson.showLetters) Object.keys(labels).forEach(function (k) { if (/^sound_name_/.test(k)) delete labels[k]; });
-    var renders = '{' + used.map(function (id) { return JSON.stringify(id) + ':' + adapters[id].render.toString(); }).join(',\n') + '}';
+    var stripSrc = function (fn) { return fn.toString().replace(/^[ \t]*\/\/[^\n]*\n/gm, '').replace(/\n +/g, '\n'); };
+    var renders = '{' + used.map(function (id) { return JSON.stringify(id) + ':' + stripSrc(adapters[id].render); }).join(',\n') + '}';
     var pictureParts = pictured ? 'renders=(' + takeHomePictures.toString() + ')(renders,lesson.pictures.rule,labels);\n' : '';
     // A check carries its own flow, the SHA-256 that reads its answers and the
     // scoring of its activities. TextEncoder is stood in for where a browser
@@ -9147,8 +10645,12 @@
       + '};\nkit.check=' + takeHomeCheck.toString() + ';\n';
     var hasVocab = used.some(function (id) { return /^vocab_/.test(id); });
     var hasKeypad = used.some(function (id) { return /^(math_|missing_number$)/.test(id); });
-    var sharedParts = (hasVocab ? 'kit.vocabChoice=' + takeHomeVocab.toString().replace(/\n +/g, '\n') + ';\n' : '')
-      + (hasKeypad ? 'kit.keypad=' + takeHomeKeypad.toString().replace(/\n +/g, '\n') + ';\n' : '');
+    var hasStudentMic = !probe && lesson.studentMic === true && used.indexOf('read_along') >= 0;
+    var hasDeviceVoice = !probe && lesson.deviceVoice === true && used.indexOf('read_along') >= 0;
+    var sharedParts = (hasVocab ? 'kit.vocabChoice=' + stripSrc(takeHomeVocab) + ';\n' : '')
+      + (hasKeypad ? 'kit.keypad=' + stripSrc(takeHomeKeypad) + ';\n' : '')
+      + (hasStudentMic ? 'kit.studentMic=' + stripSrc(takeHomeStudentMic) + ';\n' : '')
+      + (hasDeviceVoice ? 'kit.deviceVoice=' + stripSrc(takeHomeDeviceVoice) + ';\n' : '');
     var mailbox = lesson.submit && /^https:\/\/script\.google\.com\//.test(lesson.submit.url);
     var connect = mailbox ? 'https://script.google.com https://script.googleusercontent.com' : "'none'";
     // The mailbox code travels only in a file that has a mailbox. Line ends are
@@ -9156,7 +10658,7 @@
     // its exact hash. The reading tools go in every file, without their indentation (1 KB less).
     var script = ('\n(function(){"use strict";\nvar lesson=' + safeJson(lesson) + ';\nvar labels=' + safeJson(labels) + ';\nvar matches=' + (hasCore ? core.soundAnswerMatches.toString() : 'null')
       + ';\nvar renders=' + renders + ';\nvar kit={csv:' + packetCsv.toString() + ',\nhash:' + hashText.toString() + ',\ntools:' + takeHomeTools.toString().replace(/\n +/g, '\n') + ',\nmailbox:' + (mailbox ? takeHomeMailbox.toString() : 'null')
-      + '};\n' + sharedParts + checkParts + pictureParts + '(' + takeHomeShell.toString() + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
+      + '};\n' + sharedParts + checkParts + pictureParts + '(' + stripSrc(takeHomeShell) + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
     var digest = sha256(script);
     var csp = "default-src 'none'; script-src " + (digest ? "'sha256-" + digest.base64 + "'" : "'unsafe-inline'") + "; style-src 'unsafe-inline'; media-src data: blob:; img-src data:" + (FONT_CSS ? '; font-src data:' : '')
       + "; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; connect-src " + connect;
@@ -9173,10 +10675,13 @@
         until: probe ? 'the browser storage is cleared; Start over keeps only the learner label and the count of tries' : 'Start over or Practice again' }],
       saves: [{ file: stem + '.csv', format: 'alloflow-packet-result/1' }, { file: stem + '.json', format: RESULT_KIND + ' schemaVersion ' + RESULT_SCHEMA }],
       network: mailbox ? { sendsTo: 'script.google.com', what: 'the results, to the class mailbox of the teacher', when: 'only when the learner presses Send' } : 'none',
-      never: (mailbox ? [] : ['internet connection']).concat(['microphone', 'camera', 'cookies', 'AI']),
+      never: (mailbox ? [] : ['internet connection']).concat(hasStudentMic ? ['camera', 'cookies', 'AI'] : ['microphone', 'camera', 'cookies', 'AI']),
       integrity: 'Each saved file carries a check value (SHA-256, or FNV-1a where the browser cannot make SHA-256). It detects accidental edits, not deliberate ones.',
       csp: csp, scriptSha256: digest ? digest.hex : '', licence: 'AGPL-3.0', licenceUrl: 'gnu.org/licenses/agpl-3.0.html', source: 'github.com/Apomera/AlloFlow', attributions: Array.isArray(opts.attributions) ? opts.attributions.map(str) : [], fonts: FONT_CREDIT || undefined,
     };
+    if (hasStudentMic) {
+      manifest.microphone = 'Optional student voice practice: asks for the microphone only when the student presses Record my voice, keeps the recording in tab memory only until cleared or closed, and never saves or sends it.';
+    }
     if (probe) {
       var all = lesson.blocks.reduce(function (list, b) { return list.concat(b.items); }, []);
       manifest.check = { measure: str(lesson.check.measure), scoreUnit: str(lesson.check.scoreUnit), scoringVersion: lesson.check.scoringVersion || 1, formVersion: lesson.check.formVersion == null ? '' : lesson.check.formVersion,
@@ -9345,7 +10850,7 @@
       });
     };
     var convert = function (id) {
-      return decode(dataUriBytes(lesson.audio[id])).then(function (buffer) {
+      return Promise.resolve().then(function () { return decode(dataUriBytes(lesson.audio[id])); }).then(function (buffer) {
         if (!buffer || !(buffer.duration > 0) || buffer.duration > 60) throw new Error('bad clip');
         var length = Math.max(1, Math.ceil(buffer.duration * PORTABLE_RATE));
         var offline = new Offline(1, length, PORTABLE_RATE);
@@ -9365,7 +10870,7 @@
       });
     };
     return todo.reduce(function (chain, id) { return chain.then(function () { return convert(id); }); }, Promise.resolve())
-      .then(function () { try { if (ctx.close) ctx.close(); } catch (_) {} return report; });
+      .then(function () { try { if (ctx.close) ctx.close(); } catch (_) {} return report; }, function (err) { try { if (ctx.close) ctx.close(); } catch (_) {} throw err; });
   }
 
   // Which activities this build can export, with their names (for the dialog).

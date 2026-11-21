@@ -9,8 +9,11 @@
  */
 const babel = require('@babel/core');
 const fs = require('fs');
+const path = require('path');
+const writeGeneratedAtomic = require('./dev-tools/write_generated_atomic.cjs');
 
-const source = fs.readFileSync('view_analysis_source.jsx', 'utf-8');
+const ROOT = __dirname;
+const source = fs.readFileSync(path.join(ROOT, 'view_analysis_source.jsx'), 'utf-8');
 
 const result = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
@@ -48,6 +51,6 @@ const moduleSrc = `/**
 })();
 `;
 
-fs.writeFileSync('view_analysis_module.js', moduleSrc);
-fs.writeFileSync('desktop/web-app/public/view_analysis_module.js', moduleSrc);
+writeGeneratedAtomic(path.join(ROOT, 'view_analysis_module.js'), moduleSrc);
+writeGeneratedAtomic(path.join(ROOT, 'desktop', 'web-app', 'public', 'view_analysis_module.js'), moduleSrc);
 console.log('Wrote view_analysis_module.js (' + moduleSrc.length + ' bytes)');

@@ -92,6 +92,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _thBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.thoughtRecord || defaultState();
       function setTR(patch) {
@@ -101,6 +103,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
           if (patch.entries) next.lastUpdated = todayISO();
           return Object.assign({}, prev, { thoughtRecord: next });
         });
+      }
+      function scanThoughtText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'thoughtRecord', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'thoughtRecord', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setTR({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'CBT Thought Record', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
       }
       var view = d.view || 'new';
       function goto(v) { setTR({ view: v }); }
@@ -241,6 +268,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             if (addToast) addToast('Add at least a situation or thought before saving.', 'info');
             return;
           }
+          scanThoughtText([draft.situation, draft.emotion1, draft.thought, draft.evidenceFor, draft.evidenceAgainst, draft.balanced].join(' '));
           var entry = Object.assign({}, draft, { id: uid(), date: todayISO() });
           setTR({ entries: (d.entries || []).concat([entry]), activeEntry: null });
           if (addToast) addToast('Saved.', 'success');
@@ -257,6 +285,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             'Where? When? Who was there? What happened? Keep it factual.',
             h('textarea', { id: 'tr-situation', value: draft.situation,
               onChange: function(e) { setDraft({ situation: e.target.value }); },
+              onBlur: function(e) { scanThoughtText(e.target.value); },
               placeholder: 'e.g. In math class on Tuesday, my friend laughed when I got the problem wrong.',
               style: textareaStyle })
           ),
@@ -284,6 +313,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             'What went through your mind right then? The fast, automatic thought, the one underneath the emotion. Write it as-is, even if it seems harsh.',
             h('textarea', { id: 'tr-thought', value: draft.thought,
               onChange: function(e) { setDraft({ thought: e.target.value }); },
+              onBlur: function(e) { scanThoughtText(e.target.value); },
               placeholder: 'e.g. Everyone in class thinks I am dumb.',
               style: textareaStyle })
           ),
@@ -293,6 +323,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             'What facts (not feelings, facts) actually support the thought? Be honest; sometimes there is some real evidence.',
             h('textarea', { id: 'tr-evfor', value: draft.evidenceFor,
               onChange: function(e) { setDraft({ evidenceFor: e.target.value }); },
+              onBlur: function(e) { scanThoughtText(e.target.value); },
               placeholder: 'e.g. I have struggled with this unit. One person did laugh.',
               style: textareaStyle })
           ),
@@ -302,6 +333,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             'What facts do NOT support the thought? Things you know that the automatic thought ignored.',
             h('textarea', { id: 'tr-evagainst', value: draft.evidenceAgainst,
               onChange: function(e) { setDraft({ evidenceAgainst: e.target.value }); },
+              onBlur: function(e) { scanThoughtText(e.target.value); },
               placeholder: 'e.g. Other people got problems wrong too. My friend laughs at everyone, not just me. The teacher said the unit is hard.',
               style: textareaStyle })
           ),
@@ -328,6 +360,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             'Holding the evidence for AND against, what is a more accurate way of seeing this? Not a forced positive; a fair-minded version.',
             h('textarea', { id: 'tr-balanced', value: draft.balanced,
               onChange: function(e) { setDraft({ balanced: e.target.value }); },
+              onBlur: function(e) { scanThoughtText(e.target.value); },
               placeholder: 'e.g. I did get one problem wrong and one person laughed. That does not mean everyone thinks I am dumb; it means this unit is hard and one person reacted that way. I am still learning.',
               style: textareaStyle })
           ),
@@ -555,6 +588,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'CBT Thought Record' },
         header(),
         navTabs(),
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _thBand) : null,
         body
       );
     }

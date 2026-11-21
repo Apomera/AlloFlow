@@ -98,7 +98,7 @@ function srParseThresholds(text) {
 // runs once, and may delete. The setup account becomes the first administrator
 // and the allowed domain must match its email domain (Code.gs enforces both).
 function srSetupSnippet(form) {
-  const quote = (value) => "'" + String(value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n/g, ' ') + "'";
+  const quote = (value) => "'" + String(value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/[\r\n\u2028\u2029]+/g, ' ') + "'";
   const thresholds = srParseThresholds(form.levelThresholds);
   return [
     '// Paste at the END of Code.gs. In the function menu choose',
@@ -179,10 +179,17 @@ function srHandoffHtml(form, snippet, sources) {
 
 function SrHandoff({ form, snippet, tt }) {
   const [state, setState] = React.useState('');
+  const mountedRef = React.useRef(true);
+  React.useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; }; }, []);
   const download = async () => {
     setState('loading');
     const sources = {};
-    for (const file of SR_FILES) { const source = await srFetchPackageFile(file); if (source) sources[file.name] = source; }
+    for (const file of SR_FILES) {
+      const source = await srFetchPackageFile(file);
+      if (!mountedRef.current) return;
+      if (source) sources[file.name] = source;
+    }
+    if (!mountedRef.current) return;
     const missing = SR_FILES.filter((file) => !sources[file.name]).length;
     try {
       const blob = new Blob([srHandoffHtml(form, snippet, sources)], { type: 'text/html;charset=utf-8' });
@@ -191,10 +198,13 @@ function SrHandoff({ form, snippet, tt }) {
       link.href = url; link.download = 'school-rewards-setup-for-it.html';
       document.body.appendChild(link); link.click(); link.remove();
       window.setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
-      setState(missing ? 'partial' : 'downloaded');
-    } catch (_) { setState('failed'); }
+      if (mountedRef.current) setState(missing ? 'partial' : 'downloaded');
+    } catch (_) { if (mountedRef.current) setState('failed'); }
   };
-  const copyText = async () => { setState((await srCopyText(srHandoffText(form, snippet))) ? 'copied' : 'copyfailed'); };
+  const copyText = async () => {
+    const ok = await srCopyText(srHandoffText(form, snippet));
+    if (mountedRef.current) setState(ok ? 'copied' : 'copyfailed');
+  };
   const messages = {
     loading: tt('schoolrewards.handoff_loading', 'Gathering the files…'),
     downloaded: tt('schoolrewards.handoff_downloaded', 'Downloaded school-rewards-setup-for-it.html. Email it to your technology coordinator; it holds every file, the steps, and the setup function.'),
@@ -235,6 +245,12 @@ function SrCopySource({ file, onCopied, tt }) {
   const [manualSource, setManualSource] = React.useState('');
   const sourceRef = React.useRef('');
   const manualRef = React.useRef(null);
+  const timerRef = React.useRef(null);
+  const mountedRef = React.useRef(true);
+  const clearResetTimer = () => {
+    if (timerRef.current) { window.clearTimeout(timerRef.current); timerRef.current = null; }
+  };
+  React.useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; clearResetTimer(); }; }, []);
   const fetchSource = React.useCallback(async () => {
     if (sourceRef.current) return sourceRef.current;
     const source = await srFetchPackageFile(file);
@@ -242,17 +258,24 @@ function SrCopySource({ file, onCopied, tt }) {
     return source;
   }, [file]);
   const finishCopied = () => {
+    clearResetTimer();
     setManualSource('');
     setState('copied');
     if (typeof onCopied === 'function') onCopied();
-    window.setTimeout(() => setState('idle'), 2400);
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = null;
+      if (mountedRef.current) setState('idle');
+    }, 2400);
   };
   const copy = async () => {
+    clearResetTimer();
     setState('loading');
     setManualSource('');
     const source = await fetchSource();
+    if (!mountedRef.current) return;
     if (!source) { setState('invalid'); return; }
-    if (await srCopyText(source)) { finishCopied(); return; }
+    if (await srCopyText(source)) { if (mountedRef.current) finishCopied(); return; }
+    if (!mountedRef.current) return;
     setManualSource(source);
     setState('manual');
   };
@@ -268,8 +291,8 @@ function SrCopySource({ file, onCopied, tt }) {
       <span className="text-xs text-slate-700">{file.name} · <a className="font-bold text-emerald-900 underline" href={sourceHref} target="_blank" rel="noopener noreferrer">{tt('schoolrewards.view_source', 'view source')}</a></span>
       {state === 'invalid' && <span className="rounded-full border border-rose-300 bg-rose-50 px-2 py-0.5 text-xs font-bold text-rose-900" role="status">{tt('schoolrewards.unexpected_source', 'Unexpected source received; nothing copied')}</span>}
     </div>
-    {state === 'manual' && <div className="mt-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status">
-      <p className="m-0 mb-2"><strong>{tt('schoolrewards.clipboard_blocked', 'Clipboard is blocked in this window.')}</strong> {tt('schoolrewards.clipboard_blocked_help', 'The source is selected below: press Ctrl+C (Cmd+C on Mac) to copy it, then paste it into the project. Copying from the box marks this step done.')}</p>
+    {state === 'manual' && <div className="mt-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+      <p role="status" className="m-0 mb-2"><strong>{tt('schoolrewards.clipboard_blocked', 'Clipboard is blocked in this window.')}</strong> {tt('schoolrewards.clipboard_blocked_help', 'The source is selected below: press Ctrl+C (Cmd+C on Mac) to copy it, then paste it into the project. Copying from the box marks this step done.')}</p>
       <label htmlFor={manualId} className="block text-xs font-bold text-amber-950">{file.name} {tt('schoolrewards.source', 'source')}</label>
       <textarea id={manualId} ref={manualRef} className={SR_INPUT + ' mt-1 font-mono text-xs'} readOnly rows={8} value={manualSource} spellCheck={false} onFocus={(event) => event.target.select()} onCopy={finishCopied} />
       <div className="mt-2 flex flex-wrap gap-2">
@@ -280,33 +303,96 @@ function SrCopySource({ file, onCopied, tt }) {
   </div>;
 }
 
+// Strict QR SVG sanitizer: parses via DOMParser and returns a clean SVG element
+// containing only safe geometry tags/attributes (no scripts, foreignObject, or event handlers).
+function srParseSafeQrSvg(raw) {
+  if (typeof raw !== 'string' || !raw.trim()) return null;
+  if (typeof DOMParser !== 'function') return null;
+  try {
+    const doc = new DOMParser().parseFromString(raw, 'image/svg+xml');
+    const root = doc && doc.documentElement;
+    if (!root || root.tagName.toLowerCase() !== 'svg' || doc.querySelector('parsererror')) return null;
+    const allowedTags = new Set(['svg', 'path', 'rect', 'g', 'title', 'polygon', 'circle']);
+    const allowedAttrs = new Set(['xmlns', 'viewbox', 'width', 'height', 'fill', 'stroke', 'stroke-width', 'd', 'x', 'y', 'rx', 'ry', 'cx', 'cy', 'r', 'points', 'transform', 'shape-rendering', 'role', 'aria-label', 'data-test']);
+    const walk = (el) => {
+      Array.from(el.attributes || []).forEach((attr) => {
+        const name = String(attr.name || '').toLowerCase();
+        const val = String(attr.value || '');
+        if (!allowedAttrs.has(name) || name.startsWith('on') || /javascript:|data:|url\s*\(/i.test(val)) {
+          el.removeAttribute(attr.name);
+        }
+      });
+      Array.from(el.children || []).forEach((child) => {
+        if (!allowedTags.has(String(child.tagName || '').toLowerCase())) {
+          child.remove();
+        } else {
+          walk(child);
+        }
+      });
+    };
+    walk(root);
+    if (!root.getAttribute('xmlns')) root.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    return root;
+  } catch (_) {
+    return null;
+  }
+}
+
 // Staff share: the portal link carries no secret (access is domain sign-in plus
 // the roster), so showing it as a QR and a copyable link is safe. Reuses the
 // app shell's single QR implementation when it is present.
 function SrShareWithStaff({ portalUrl, tt, addToast }) {
-  const [svg, setSvg] = React.useState('');
+  const [svgMarkup, setSvgMarkup] = React.useState('');
   const [copied, setCopied] = React.useState(false);
   const qrRequest = React.useRef(0);
-  React.useEffect(() => { qrRequest.current++; setSvg(''); return () => { qrRequest.current++; }; }, [portalUrl]);
+  const qrHostRef = React.useRef(null);
+  const mountedRef = React.useRef(true);
+  const copyTimerRef = React.useRef(null);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (copyTimerRef.current) { window.clearTimeout(copyTimerRef.current); copyTimerRef.current = null; }
+    };
+  }, []);
+  React.useEffect(() => { qrRequest.current++; setSvgMarkup(''); return () => { qrRequest.current++; }; }, [portalUrl]);
+  React.useEffect(() => {
+    const hostEl = qrHostRef.current;
+    if (!hostEl) return;
+    hostEl.replaceChildren();
+    if (!svgMarkup) return;
+    const safeNode = srParseSafeQrSvg(svgMarkup);
+    if (safeNode && typeof document !== 'undefined') {
+      hostEl.appendChild(document.importNode(safeNode, true));
+    }
+  }, [svgMarkup]);
   const createQr = async () => {
     const request = ++qrRequest.current;
-      try {
-        if (typeof window !== 'undefined' && typeof window.__alloMakeQrSvg === 'function') {
-          const markup = await window.__alloMakeQrSvg(portalUrl, 'School Rewards');
-          if (request === qrRequest.current && typeof markup === 'string' && markup) setSvg(markup);
-        }
-      } catch (_) { if (request === qrRequest.current) setSvg(''); }
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloMakeQrSvg === 'function') {
+        const markup = await window.__alloMakeQrSvg(portalUrl, 'School Rewards');
+        if (!mountedRef.current || request !== qrRequest.current) return;
+        const safeNode = srParseSafeQrSvg(markup);
+        setSvgMarkup(safeNode ? new XMLSerializer().serializeToString(safeNode) : '');
+      }
+    } catch (_) { if (mountedRef.current && request === qrRequest.current) setSvgMarkup(''); }
   };
   const copyLink = async () => {
-    if (await srCopyText(portalUrl)) { setCopied(true); window.setTimeout(() => setCopied(false), 2000); return; }
-    addToast(tt('schoolrewards.share_copy_failed', 'Clipboard is blocked here. Select the link and press Ctrl+C.'), 'info');
+    if (await srCopyText(portalUrl)) {
+      if (!mountedRef.current) return;
+      setCopied(true);
+      if (copyTimerRef.current) window.clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = window.setTimeout(() => { copyTimerRef.current = null; if (mountedRef.current) setCopied(false); }, 2000);
+      return;
+    }
+    if (mountedRef.current) addToast(tt('schoolrewards.share_copy_failed', 'Clipboard is blocked here. Select the link and press Ctrl+C.'), 'info');
   };
   return <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3" data-help-key="schoolrewards_share_staff">
     <h4 className="text-sm font-black text-slate-900">{tt('schoolrewards.share_title', 'Share with staff')}</h4>
     <p className="mt-1 text-xs leading-relaxed text-slate-700">{tt('schoolrewards.share_help', 'Teachers, cashiers, and administrators open this same link with their school Google sign-in; the server decides what each role can do. The link holds no secret, so posting it in a staff channel is fine.')}</p>
     <div className="mt-2 flex flex-wrap items-center gap-3">
-      {!svg && <button type="button" className={SR_BTN_QUIET} onClick={createQr} data-help-key="schoolrewards_share_qr">{tt('schoolrewards.share_make_qr', 'Create staff-link QR code')}</button>}
-      {svg ? <figure className="m-0" aria-label={tt('schoolrewards.share_qr_label', 'QR code for the School Rewards portal')}><div className="rounded-lg border border-slate-300 bg-white p-1" style={{ width: 132, height: 132 }} dangerouslySetInnerHTML={{ __html: svg }} /></figure> : null}
+      {!svgMarkup && <button type="button" className={SR_BTN_QUIET} onClick={createQr} data-help-key="schoolrewards_share_qr">{tt('schoolrewards.share_make_qr', 'Create staff-link QR code')}</button>}
+      {svgMarkup ? <figure className="m-0" aria-label={tt('schoolrewards.share_qr_label', 'QR code for the School Rewards portal')}><div ref={qrHostRef} className="rounded-lg border border-slate-300 bg-white p-1" style={{ width: 132, height: 132 }} /></figure> : null}
       <div className="min-w-[220px] flex-1">
         <label htmlFor="schoolrewards-share-link" className="block text-xs font-black text-slate-800">{tt('schoolrewards.share_link', 'Staff link')}</label>
         <input id="schoolrewards-share-link" className={SR_INPUT + ' mt-1 font-mono text-xs'} readOnly value={portalUrl} onFocus={(event) => event.target.select()} />
@@ -335,7 +421,7 @@ function srReadClassroomRoster() {
       (byGroup[groupId] = byGroup[groupId] || []).push(codename);
     });
     const list = Object.keys(groups).map((id) => ({ id, name: String((groups[id] && groups[id].name) || id), codenames: (byGroup[id] || []).slice().sort() }));
-    const unassigned = Object.keys(byGroup).filter((id) => !groups[id]).reduce((all, id) => all.concat(byGroup[id]), []);
+    const unassigned = Object.keys(byGroup).filter((id) => !Object.prototype.hasOwnProperty.call(groups, id)).reduce((all, id) => all.concat(byGroup[id]), []);
     if (unassigned.length) list.push({ id: '', name: 'Unassigned', codenames: unassigned.slice().sort() });
     return { groups: list, total: Object.keys(students).length };
   } catch (_) { return null; }
@@ -386,7 +472,7 @@ function SrRosterBridge({ tt, addToast }) {
     {!roster || !roster.groups.length ? <p className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700" role="status">{tt('schoolrewards.roster_none', 'No classroom roster key was found on this device. Build groups in the Roster Key first, then re-read.')}</p> : <>
       <ul className="mt-3 list-none space-y-2 p-0">
         {roster.groups.map((group) => <li key={group.id || '__unassigned'}>
-          <label className="flex items-center gap-2 text-sm font-bold text-slate-800"><input type="checkbox" className="h-5 w-5 accent-emerald-700" checked={selected.has(group.id)} onChange={() => toggle(group.id)} data-help-key="schoolrewards_roster_group" />{group.name} <span className="font-normal text-slate-600">({group.codenames.length} {group.codenames.length === 1 ? tt('schoolrewards.roster_learner', 'learner') : tt('schoolrewards.roster_learners', 'learners')})</span></label>
+          <label className="min-h-11 flex items-center gap-2 text-sm font-bold text-slate-800 cursor-pointer"><input type="checkbox" className="h-5 w-5 accent-emerald-700" checked={selected.has(group.id)} onChange={() => toggle(group.id)} data-help-key="schoolrewards_roster_group" />{group.name} <span className="font-normal text-slate-600">({group.codenames.length} {group.codenames.length === 1 ? tt('schoolrewards.roster_learner', 'learner') : tt('schoolrewards.roster_learners', 'learners')})</span></label>
         </li>)}
       </ul>
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -405,13 +491,13 @@ const SR_THEME_STYLES = `
 X .bg-white{background:#162032!important}
 X .bg-slate-50,X .bg-slate-100{background:#111a2b!important}
 X .bg-gradient-to-r,X .bg-sky-50{background:#14233d!important}
-X .bg-emerald-50\\/60{background:#0f2a1f!important}
+X .bg-emerald-50,X .bg-emerald-50\\/60{background:#0f2a1f!important}
 X .bg-amber-50{background:#3a2c08!important}
 X .bg-rose-50{background:#3d1520!important}
 X .bg-slate-200{background:#2a3650!important}
 X .text-slate-900,X .text-slate-800,X .text-slate-700,X .text-emerald-900,X .text-emerald-800{color:#e6ebf5!important}
 X .text-slate-600{color:#aab6c8!important}
-X .text-rose-950{color:#ffb3c0!important}
+X .text-rose-950,X .text-rose-900{color:#ffb3c0!important}
 X .text-sky-950{color:#cfe0ff!important}
 X .text-amber-950,X .text-amber-900{color:#ffe9b8!important}
 X .underline{color:#8ab4ff!important}
@@ -424,7 +510,7 @@ X .bg-emerald-700{background:#157347!important;color:#fff!important}
 X .hover\\:bg-emerald-50:hover,X .hover\\:bg-slate-50:hover,X .hover\\:bg-slate-100:hover{background:#1b2740!important}
 X input,X textarea{background:#0f172a!important;color:#e6ebf5!important;border-color:#4a5a78!important}
 X code{background:#1b2740!important;color:#e6ebf5!important}
-Y .bg-white,Y .bg-slate-50,Y .bg-slate-100,Y .bg-gradient-to-r,Y .bg-sky-50,Y .bg-emerald-50\\/60,Y .bg-amber-50,Y .bg-rose-50,Y .bg-slate-200,Y input,Y textarea,Y code{background:#000!important;color:#fff!important}
+Y .bg-white,Y .bg-slate-50,Y .bg-slate-100,Y .bg-gradient-to-r,Y .bg-sky-50,Y .bg-emerald-50,Y .bg-emerald-50\\/60,Y .bg-amber-50,Y .bg-rose-50,Y .bg-slate-200,Y input,Y textarea,Y code{background:#000!important;color:#fff!important}
 Y [class*="text-"]{color:#fff!important}
 Y .underline{color:#fbbf24!important}
 Y [class*="border-"]{border-color:#fff!important;border-width:2px}
@@ -473,6 +559,7 @@ function srReadHandoff() {
 function srPendingAwards(log, handoff) {
   const sessions = log && log.sessions && typeof log.sessions === 'object' ? log.sessions : {};
   const handed = handoff && handoff.ids ? handoff.ids : {};
+  const seenIds = new Set();
   const byName = Object.create(null);
   Object.keys(sessions).forEach((code) => {
     const rows = sessions[code] && sessions[code].rows;
@@ -480,7 +567,8 @@ function srPendingAwards(log, handoff) {
     Object.keys(rows).forEach((codename) => {
       (Array.isArray(rows[codename] && rows[codename].ids) ? rows[codename].ids : []).forEach((raw) => {
         const id = code + '|' + String(raw);
-        if (handed[id]) return;
+        if (handed[id] || seenIds.has(id)) return;
+        seenIds.add(id);
         (byName[codename] || (byName[codename] = [])).push(id);
       });
     });
@@ -519,21 +607,33 @@ function SrRecognitionWorksheet({ recognition, tt, addToast }) {
   const lastHandoff = React.useMemo(() => srReadHandoff().last, [recognition, handoffTick]);
   const downloadAwardFile = () => {
     if (!pending.total) return;
+    const now = Date.now(), fileId = srNewAwardFileId();
     try {
-      const now = Date.now(), fileId = srNewAwardFileId();
       const blob = new Blob([JSON.stringify(srBuildAwardFile(pending, fileId, now), null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url; link.download = 'class.alloflow-store-awards.json';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (_) {
+      addToast(tt('schoolrewards.award_file_failed', 'The Store award file could not be saved in this window.'), 'error');
+      return;
+    }
+    try {
       srMarkHandedOff(pending.ids, fileId, now);
       setHandoffTick((value) => value + 1);
       addToast(tt('schoolrewards.award_file_done', 'Store award file downloaded. Upload it in the School Store under Award, then Award from an AlloFlow file. These tokens are left out of your next file.'), 'success');
-    } catch (_) { addToast(tt('schoolrewards.award_file_failed', 'The Store award file could not be saved in this window.'), 'error'); }
+    } catch (_) {
+      addToast(tt('schoolrewards.award_file_track_failed', 'The Store award file downloaded, but this browser could not record which tokens were exported. Do not download it again or students could be awarded twice.'), 'error');
+    }
   };
   const undoAwardFile = () => {
-    try { srUndoLastHandoff(); } catch (_) {}
+    try {
+      srUndoLastHandoff();
+    } catch (_) {
+      addToast(tt('schoolrewards.award_file_undo_failed', 'Could not update saved export tracking in this browser.'), 'error');
+      return;
+    }
     setHandoffTick((value) => value + 1);
     addToast(tt('schoolrewards.award_file_undone', "The last file's tokens are back. Download a new Store award file when you are ready."), 'info');
   };
@@ -548,9 +648,24 @@ function SrRecognitionWorksheet({ recognition, tt, addToast }) {
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (_) { addToast(tt('schoolrewards.worksheet_download_failed', 'The worksheet could not be downloaded in this window.'), 'error'); }
   };
+  const copyMountedRef = React.useRef(true);
+  const copyTimerRef = React.useRef(null);
+  React.useEffect(() => {
+    copyMountedRef.current = true;
+    return () => {
+      copyMountedRef.current = false;
+      if (copyTimerRef.current) { window.clearTimeout(copyTimerRef.current); copyTimerRef.current = null; }
+    };
+  }, []);
   const copy = async () => {
-    if (await srCopyText(srRecognitionText(recognition))) { setCopied(true); window.setTimeout(() => setCopied(false), 2000); return; }
-    addToast(tt('schoolrewards.worksheet_copy_failed', 'Clipboard is blocked here. Download the CSV instead.'), 'info');
+    if (await srCopyText(srRecognitionText(recognition))) {
+      if (!copyMountedRef.current) return;
+      setCopied(true);
+      if (copyTimerRef.current) window.clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = window.setTimeout(() => { copyTimerRef.current = null; if (copyMountedRef.current) setCopied(false); }, 2000);
+      return;
+    }
+    if (copyMountedRef.current) addToast(tt('schoolrewards.worksheet_copy_failed', 'Clipboard is blocked here. Download the CSV instead.'), 'info');
   };
   return <section aria-labelledby="schoolrewards-worksheet-title" className="rounded-2xl border border-slate-200 bg-white p-4" data-help-key="schoolrewards_recognition_worksheet">
     <h3 id="schoolrewards-worksheet-title" className="text-base font-black text-slate-900">{tt('schoolrewards.worksheet_title', 'Recognition worksheet')}</h3>
@@ -567,15 +682,15 @@ function SrRecognitionWorksheet({ recognition, tt, addToast }) {
         <button type="button" className={SR_BTN_QUIET} onClick={copy} data-help-key="schoolrewards_worksheet_copy">{copied ? tt('schoolrewards.worksheet_copied', 'Copied') : tt('schoolrewards.worksheet_copy', 'Copy as text')}</button>
         <span className="text-xs text-slate-600">{recognition.sessionCode ? tt('schoolrewards.worksheet_session', 'Live session ') + recognition.sessionCode : tt('schoolrewards.worksheet_no_live', 'No live session')}{recognition.sessionCount > 1 ? ' · ' + recognition.sessionCount + tt('schoolrewards.worksheet_sessions_kept', ' sessions kept on this device') : ''}</span>
       </div>
-      <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-slate-900" data-store-award-file>
-        <p>{pending.total ? tt('schoolrewards.award_file_pending', '{n} tokens for {c} codenames are not yet in a Store award file.').replace('{n}', String(pending.total)).replace('{c}', String(pending.rows.length)) : tt('schoolrewards.award_file_none', 'Every token here is already in a Store award file.')}</p>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <button type="button" className={SR_BTN_SECONDARY} onClick={downloadAwardFile} disabled={!pending.total} data-help-key="schoolrewards_award_file">{tt('schoolrewards.award_file_download', 'Download Store award file')}</button>
-          {lastHandoff && <button type="button" className={SR_BTN_QUIET} onClick={undoAwardFile}>{tt('schoolrewards.award_file_undo', "Put the last file's tokens back")}</button>}
-        </div>
-        <p className="mt-2 text-xs text-slate-700">{tt('schoolrewards.award_file_help', 'Staff upload the file in the School Store, review the students it matches through your reviewed class links, and confirm. Each student is awarded once per file.')}</p>
-      </div>
     </>}
+    {(rows.length > 0 || pending.total > 0 || lastHandoff) && <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-slate-900" data-store-award-file>
+      <p>{pending.total ? tt('schoolrewards.award_file_pending', '{n} tokens for {c} codenames are not yet in a Store award file.').replace('{n}', String(pending.total)).replace('{c}', String(pending.rows.length)) : tt('schoolrewards.award_file_none', 'Every token here is already in a Store award file.')}</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <button type="button" className={SR_BTN_SECONDARY} onClick={downloadAwardFile} disabled={!pending.total} data-help-key="schoolrewards_award_file">{tt('schoolrewards.award_file_download', 'Download Store award file')}</button>
+        {lastHandoff && <button type="button" className={SR_BTN_QUIET} onClick={undoAwardFile}>{tt('schoolrewards.award_file_undo', "Put the last file's tokens back")}</button>}
+      </div>
+      <p className="mt-2 text-xs text-slate-700">{tt('schoolrewards.award_file_help', 'Staff upload the file in the School Store, review the students it matches through your reviewed class links, and confirm. Each student is awarded once per file.')}</p>
+    </div>}
   </section>;
 }
 
@@ -717,7 +832,7 @@ function SchoolRewardsPanel(props) {
   }, [portalUrl]);
   const editUrl = value => {
     setUrlDraft(value); setUrlMessage({ text: '', tone: 'info' }); setLaunchAttempt(null);
-    if (srNormalizePortalUrl(value) !== portalUrl) { setStep('verified', false); setHealthHint(false); }
+    if (srNormalizePortalUrl(value) !== portalUrl) { setHealthHint(false); setStep('verified', false); }
   };
   const discardUrl = () => {
     setUrlDraft(portalUrl); setUrlMessage({ text: tt('schoolrewards.url_discarded', 'Unsaved address changes discarded. The saved destination was not changed.'), tone: 'info' });
@@ -727,8 +842,26 @@ function SchoolRewardsPanel(props) {
     if (!launchTarget('check')) return;
     setHealthHint(openWindow('check'));
   };
+  const panelMountedRef = React.useRef(true);
+  const backdropDownRef = React.useRef(null);
+  const safeClose = () => { if (typeof onClose === 'function') onClose(); };
+  const snippetTimerRef = React.useRef(null);
+  React.useEffect(() => {
+    panelMountedRef.current = true;
+    return () => {
+      panelMountedRef.current = false;
+      if (snippetTimerRef.current) { window.clearTimeout(snippetTimerRef.current); snippetTimerRef.current = null; }
+    };
+  }, []);
   const copySnippet = async () => {
-    if (await srCopyText(snippet)) { setSnippetState('copied'); window.setTimeout(() => setSnippetState('idle'), 2400); return; }
+    if (await srCopyText(snippet)) {
+      if (!panelMountedRef.current) return;
+      setSnippetState('copied');
+      if (snippetTimerRef.current) window.clearTimeout(snippetTimerRef.current);
+      snippetTimerRef.current = window.setTimeout(() => { snippetTimerRef.current = null; if (panelMountedRef.current) setSnippetState('idle'); }, 2400);
+      return;
+    }
+    if (!panelMountedRef.current) return;
     setSnippetState('manual');
     addToast(tt('schoolrewards.snippet_copy_failed', 'Clipboard is blocked here. Select the setup function text and press Ctrl+C.'), 'info');
   };
@@ -784,8 +917,14 @@ function SchoolRewardsPanel(props) {
           if (!summary || !summary.contains(el)) return false;
         }
       }
-      const st = typeof window !== 'undefined' && typeof window.getComputedStyle === 'function' ? window.getComputedStyle(el) : null;
-      return !st || (st.display !== 'none' && st.visibility !== 'hidden');
+      if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+        for (let cur = el; cur && cur !== dialog.parentElement; cur = cur.parentElement) {
+          const st = window.getComputedStyle(cur);
+          if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+          if (cur === dialog) break;
+        }
+      }
+      return true;
     });
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();
@@ -851,10 +990,12 @@ function SchoolRewardsPanel(props) {
     const number = SR_STEP_ORDER.indexOf(step) + 1;
     const inputId = 'sr-step-' + step;
     return <li key={step} id={'sr-card-' + step} tabIndex={-1} className={'rounded-2xl border p-4 focus:outline-none focus:ring-2 focus:ring-emerald-600 ' + (done ? 'border-emerald-300 bg-emerald-50/60' : (nextStep === step ? 'border-emerald-700 bg-white shadow-sm' : 'border-slate-200 bg-white'))} data-help-key={'schoolrewards_step_' + step}>
-      <div className="flex items-start gap-3">
-        <input id={inputId} type="checkbox" className="mt-1 h-5 w-5 shrink-0 accent-emerald-700" checked={done} disabled={derived} onChange={derived ? undefined : (event) => setStep(step, event.target.checked)} aria-describedby={inputId + '-body'} />
+      <div className="flex items-start gap-2">
+        <span className="min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 -my-2 -ml-2">
+          <input id={inputId} type="checkbox" className="h-5 w-5 shrink-0 accent-emerald-700" checked={done} disabled={derived} onChange={derived ? undefined : (event) => setStep(step, event.target.checked)} aria-describedby={inputId + '-body'} />
+        </span>
         <div className="min-w-0 flex-1">
-          <label htmlFor={inputId} className={'block text-base font-black ' + (done ? 'text-emerald-900 line-through decoration-2' : 'text-slate-900')}>{number}. {title}</label>
+          <label htmlFor={inputId} className={'block min-h-11 flex items-center text-base font-black cursor-pointer ' + (done ? 'text-emerald-900 line-through decoration-2' : 'text-slate-900')}>{number}. {title}</label>
           <p id={inputId + '-body'} className="mt-1 text-sm leading-relaxed text-slate-700">{body}</p>
           {children}
         </div>
@@ -872,22 +1013,24 @@ function SchoolRewardsPanel(props) {
     <p id="schoolrewards-portal-url-help" className={'mt-2 text-xs leading-relaxed ' + (urlMessage.tone === 'error' ? 'text-rose-900' : 'text-slate-700')} role={urlMessage.text ? 'status' : undefined}>{urlMessage.text || tt('schoolrewards.url_help', 'Only an HTTPS script.google.com address ending in /macros/s/{deployment}/exec is accepted.')}</p>
   </form>;
 
-  return <div className="sr-root fixed inset-0 z-[260] flex items-center justify-center bg-slate-900/60 p-3 sm:p-6" style={{ zIndex: 260 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+  return <div className="sr-root fixed inset-0 z-[260] flex items-center justify-center bg-slate-900/60 p-3 sm:p-6" style={{ zIndex: 260 }}
+    onMouseDown={(event) => { backdropDownRef.current = (event.target === event.currentTarget); }}
+    onClick={(event) => { const allow = backdropDownRef.current !== false; backdropDownRef.current = null; if (event.target === event.currentTarget && allow) safeClose(); }}>
     <style>{SR_THEME_STYLES}</style>
-    <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="schoolrewards-title" aria-describedby="schoolrewards-subtitle" tabIndex={-1} className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl focus:outline-none">
+    <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="schoolrewards-title" aria-describedby="schoolrewards-subtitle" tabIndex={-1} onClick={(event) => event.stopPropagation()} className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl focus:outline-none">
       <header className="border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 px-5 py-4">
         <div className="flex items-start justify-between gap-3">
           <h2 id="schoolrewards-title" className="flex items-center gap-2 text-xl font-black text-slate-900"><span aria-hidden="true">{'🎟️'}</span> {tt('schoolrewards.title', 'School Rewards & Store')}</h2>
         <div className="flex shrink-0 items-center gap-2">
           <a className="inline-flex min-h-11 items-center rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-600" href="https://alloflow-cdn.pages.dev/school-rewards-manual" target="_blank" rel="noopener noreferrer" data-help-key="schoolrewards_manual">{tt('schoolrewards.manual', 'Manual')}</a>
-          <button type="button" onClick={onClose} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600" aria-label={tt('schoolrewards.close', 'Close School Rewards & Store')}>{'✕'}</button>
+          <button type="button" onClick={safeClose} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600" aria-label={tt('schoolrewards.close', 'Close School Rewards & Store')}>{'✕'}</button>
         </div>
         </div>
         <p id="schoolrewards-subtitle" className="mt-2 text-sm text-slate-700">{tt('schoolrewards.path_subtitle', 'Practice with fictional data, join your school’s Store, or set up a shared rewards ledger.')}</p>
       </header>
       <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5">
-        {setupSaveFailed && <div className="rounded-xl border border-amber-500 bg-amber-50 p-4 text-sm text-amber-950" role="status" data-help-key="schoolrewards_persistence_warning">
-          <p>{tt('schoolrewards.setup_local_only', 'Your latest checklist and form changes are kept in this tab only. Local saving failed; closing this tab may lose those changes. Your approvals were not changed.')}</p>
+        {setupSaveFailed && <div className="rounded-xl border border-amber-500 bg-amber-50 p-4 text-sm text-amber-950" data-help-key="schoolrewards_persistence_warning">
+          <p role="status">{tt('schoolrewards.setup_local_only', 'Your latest checklist and form changes are kept in this tab only. Local saving failed; closing this tab may lose those changes. Your approvals were not changed.')}</p>
           <button type="button" className={SR_BTN_SECONDARY + ' mt-2'} onClick={() => persistSetup(setup)} data-help-key="schoolrewards_retry_setup_save">{tt('schoolrewards.retry_setup_save', 'Retry saving')}</button>
         </div>}
         <section aria-labelledby="sr-path-choices" data-help-key="schoolrewards_paths">
@@ -931,8 +1074,8 @@ function SchoolRewardsPanel(props) {
             <h3 id="schoolrewards-launch-title" className="text-base font-black text-slate-900">{tt('schoolrewards.launch_title', 'Launch')}</h3>
             <span className={'rounded-full px-3 py-1 text-xs font-black ' + (connected ? 'bg-emerald-700 text-white' : 'border border-amber-500 bg-white text-amber-900')} data-help-key="schoolrewards_status">{connected ? tt('schoolrewards.status_address_saved', 'Store address saved') : tt('schoolrewards.status_no_address', 'No Store address saved')}</span>
           </div>
-          {urlDirty && <div className="mt-3 rounded-xl border border-amber-500 bg-amber-50 p-3 text-sm text-amber-950" role="status" data-help-key="schoolrewards_unsaved_address">
-            <p>{tt('schoolrewards.unsaved_address', 'You have unsaved address changes. Save or discard them before opening, checking or sharing the Store. The saved destination has not changed.')}</p>
+          {urlDirty && <div className="mt-3 rounded-xl border border-amber-500 bg-amber-50 p-3 text-sm text-amber-950" data-help-key="schoolrewards_unsaved_address">
+            <p role="status">{tt('schoolrewards.unsaved_address', 'You have unsaved address changes. Save or discard them before opening, checking or sharing the Store. The saved destination has not changed.')}</p>
             <button type="button" className={SR_BTN_QUIET + ' mt-2'} onClick={() => { if (path === 'setup') setShowSetup(true); setFocusTarget('schoolrewards-portal-url'); }} data-help-key="schoolrewards_review_address">{tt('schoolrewards.review_address', 'Review address changes')}</button>
           </div>}
           {connected ? <div className="mt-3 space-y-3">
@@ -948,8 +1091,8 @@ function SchoolRewardsPanel(props) {
             <p className="text-xs leading-relaxed text-slate-700">{tt('schoolrewards.launch_help', 'The portal opens in a new tab under Google sign-in; server-side roles decide who can award, check out, or administer. The deployment check page should say "Deployment check passed" and show the school, domain, and your role.')}</p>
           </div> : <p id="sr-path-check" tabIndex={-1} className="mt-2 text-sm leading-relaxed text-slate-700">{tt('schoolrewards.get_approved_address', 'Ask your school administrator for the approved Store address and your staff or cashier access. Save the address here, then open it with your managed school account. Saving does not grant access or verify the deployment.')}</p>}
           {path === 'join' && portalUrlForm}
-          {fallbackTarget && <div className="mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-slate-900" role="status" data-help-key="schoolrewards_launch_feedback">
-            <p>{launchAttempt.dispatched
+          {fallbackTarget && <div className="mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-slate-900" data-help-key="schoolrewards_launch_feedback">
+            <p role="status">{launchAttempt.dispatched
               ? tt('schoolrewards.launch_unconfirmed', 'An opening request was sent to your browser. AlloFlow cannot confirm whether a new tab opened or whether Google allowed access.')
               : tt('schoolrewards.launch_rejected', 'The opening request could not be dispatched. No Store access or deployment result was verified.')}</p>
             <a className={SR_BTN_SECONDARY + ' mt-2'} href={fallbackTarget} target="_blank" rel="noopener noreferrer" data-help-key="schoolrewards_launch_fallback">{launchAttempt.kind === 'check' ? tt('schoolrewards.direct_check', 'Open deployment check directly') : launchAttempt.kind === 'recognition' ? tt('schoolrewards.direct_recognition', 'Open recognition directly') : tt('schoolrewards.direct_store', 'Open saved Store directly')}</a>
@@ -957,6 +1100,12 @@ function SchoolRewardsPanel(props) {
           </div>}
           <p className="mt-3 text-xs leading-relaxed text-slate-700">{tt('schoolrewards.address_is_not_verification', 'A saved address is not a connection test. Read the separate deployment check; AlloFlow and AlloBot cannot see or certify that Google page.')}</p>
           {healthHint && <p className="mt-2 text-xs text-slate-800" role="status" data-help-key="schoolrewards_health_hint">{tt('schoolrewards.health_self_check', 'Read the check in the separate tab and confirm the expected school and role. No verification box was changed automatically.')}</p>}
+          {path === 'join' && <details className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4" data-help-key="schoolrewards_add_later">
+            <summary className="min-h-11 py-2 cursor-pointer font-black text-slate-900">{tt('schoolrewards.add_later', 'Add later: class links, printing, email and reporting')}</summary>
+            <p className="mt-3 text-sm text-slate-700">{tt('schoolrewards.add_later_help', 'Start with staff access, a roster, recognition categories, prizes and a shopping window inside the Store. Add classroom links, Print Lab, guardian email and SIS snapshot imports after the basic award and purchase workflow is working. District reports currently summarize one Store; cross-school administration and live SIS synchronization are not included.')}</p>
+            <SrRosterBridge tt={tt} addToast={addToast} />
+            <SrRecognitionWorksheet recognition={props.recognition || null} tt={tt} addToast={addToast} />
+          </details>}
           {Array.isArray(troubleshooting) && troubleshooting.length > 0 && <details className="mt-3 rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-900" data-help-key="schoolrewards_opening_help">
             <summary className="min-h-11 cursor-pointer py-2 font-bold">{tt('schoolrewards.opening_help', 'Help opening your Store')}</summary>
             <p className="mt-2 text-xs text-slate-700">{tt('schoolrewards.opening_help_local', 'General local guidance, not a diagnosis of your Google account or Store. Nothing is checked or sent by opening these notes.')}</p>
@@ -981,7 +1130,7 @@ function SchoolRewardsPanel(props) {
                 <label className="block text-xs font-black text-slate-800">{tt('schoolrewards.form_domain', 'School sign-in domain')}<span className="block font-normal text-slate-700">{tt('schoolrewards.form_domain_help', 'The part after the @ in your school email, for example lincoln.k12.example. Only accounts on this domain can sign in.')}</span><input className={SR_INPUT + ' mt-1 font-normal'} value={form.allowedDomain || ''} onChange={(event) => setForm('allowedDomain', event.target.value)} placeholder="school.example" inputMode="url" autoComplete="off" spellCheck={false} /></label>
                 <label className="block text-xs font-black text-slate-800">{tt('schoolrewards.form_year', 'Academic year')}<input className={SR_INPUT + ' mt-1 font-normal'} value={form.academicYear || ''} onChange={(event) => setForm('academicYear', event.target.value)} placeholder="2026-27" /></label>
                 <label className="block text-xs font-black text-slate-800">{tt('schoolrewards.form_thresholds', 'Growth levels')}<span className="block font-normal text-slate-700">{tt('schoolrewards.form_thresholds_help', 'Students reach a new level at each number of points. The defaults suit most schools; change them only if you already have levels.')}</span><input className={SR_INPUT + ' mt-1 font-normal'} value={form.levelThresholds || ''} onChange={(event) => setForm('levelThresholds', event.target.value)} placeholder="0, 25, 75, 150, 300" inputMode="numeric" /></label>
-                <label className="flex items-center gap-2 text-sm font-bold text-slate-800 sm:col-span-2"><input type="checkbox" className="h-5 w-5 accent-emerald-700" checked={form.seedHowls !== false} onChange={(event) => setForm('seedHowls', event.target.checked)} />{tt('schoolrewards.form_seed', 'Start with the built-in recognition categories (you can rename or replace them in the portal later)')}</label>
+                <label className="min-h-11 flex items-center gap-2 text-sm font-bold text-slate-800 sm:col-span-2 cursor-pointer"><input type="checkbox" className="h-5 w-5 accent-emerald-700" checked={form.seedHowls !== false} onChange={(event) => setForm('seedHowls', event.target.checked)} />{tt('schoolrewards.form_seed', 'Start with the built-in recognition categories (you can rename or replace them in the portal later)')}</label>
 </div>
             <p className="mt-3 text-sm text-slate-700" data-help-key="schoolrewards_domain_requirement">{tt('schoolrewards.domain_requirement', 'The setup owner, staff and students must currently use the same exact email domain. For example, district.org and students.district.org are different domains. If your school uses both, ask IT to review compatibility before installing; this version does not support multiple sign-in domains.')}</p>
           </section>
@@ -1041,10 +1190,10 @@ function SchoolRewardsPanel(props) {
               </div>)}
           </ol>
           </>}
-        </section>
+        </section></>}
 
-        <details className="rounded-xl border border-slate-200 bg-slate-50 p-4" data-help-key="schoolrewards_add_later">
-          <summary className="cursor-pointer font-black text-slate-900">{tt('schoolrewards.add_later', 'Add later: class links, printing, email and reporting')}</summary>
+        {path === 'setup' && <details className="rounded-xl border border-slate-200 bg-slate-50 p-4" data-help-key="schoolrewards_add_later">
+          <summary className="min-h-11 py-2 cursor-pointer font-black text-slate-900">{tt('schoolrewards.add_later', 'Add later: class links, printing, email and reporting')}</summary>
           <p className="mt-3 text-sm text-slate-700">{tt('schoolrewards.add_later_help', 'Start with staff access, a roster, recognition categories, prizes and a shopping window inside the Store. Add classroom links, Print Lab, guardian email and SIS snapshot imports after the basic award and purchase workflow is working. District reports currently summarize one Store; cross-school administration and live SIS synchronization are not included.')}</p>
           <div className="mb-4 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-slate-900" role="note" data-help-key="schoolrewards_voice_boundary">
             <h3 className="font-black">{tt('schoolrewards.voice_boundary_title', 'Voice awards belong inside the signed-in Store')}</h3>
@@ -1053,8 +1202,7 @@ function SchoolRewardsPanel(props) {
           </div>
         <SrRosterBridge tt={tt} addToast={addToast} />
         <SrRecognitionWorksheet recognition={props.recognition || null} tt={tt} addToast={addToast} />
-        </details>
-        </>}
+        </details>}
       </div>
     </div>
   </div>;

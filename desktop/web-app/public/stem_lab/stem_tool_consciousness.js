@@ -1239,6 +1239,30 @@
   var _netViewer = null;
   var _netNodes = [];
 
+  function makeRadialDiscTexture(THREE, r, g, b, innerAlpha, midStop) {
+    if (typeof THREE.DataTexture !== 'function') return null;
+    var size = 64;
+    var data = new Uint8Array(size * size * 4);
+    var half = (size - 1) * 0.5;
+    var mid = typeof midStop === 'number' ? midStop : 0.45;
+    for (var y = 0; y < size; y++) {
+      for (var x = 0; x < size; x++) {
+        var dx = (x - half) / half;
+        var dy = (y - half) / half;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var falloff = dist >= 1 ? 0 : Math.pow(Math.max(0, 1 - dist), dist < mid ? 1.35 : 2.1);
+        var idx = (y * size + x) * 4;
+        data[idx] = r;
+        data[idx + 1] = g;
+        data[idx + 2] = b;
+        data[idx + 3] = Math.round(255 * Math.min(1, falloff * innerAlpha));
+      }
+    }
+    var tex = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
   function ensureNetViewer() {
     if (_netViewer) return _netViewer;
     if (!window.StemLab || typeof window.StemLab.makeBayViewer !== 'function') return null;
@@ -1252,44 +1276,671 @@
         var meshes = {};
         var picks = [];
         var group = new THREE.Group();
-        var geo = new THREE.SphereGeometry(0.15, 20, 14);
+
+        // Atmospheric studio hemisphere + cool-violet rim lighting (auto-disposed with scene content)
+        if (!api.contrast) {
+          if (typeof THREE.HemisphereLight === 'function') {
+            var hemi = new THREE.HemisphereLight(
+              api.dark ? 0x93c5fd : 0xe0f2fe,
+              api.dark ? 0x1e1b4b : 0x64748b,
+              api.dark ? 0.52 : 0.48
+            );
+            group.add(hemi);
+          }
+          if (typeof THREE.DirectionalLight === 'function') {
+            var rim = new THREE.DirectionalLight(api.dark ? 0xa78bfa : 0x67e8f9, api.dark ? 0.85 : 0.55);
+            rim.position.set(-2.4, 2.2, -3.2);
+            group.add(rim);
+          }
+        }
+
+        // Grounded neural stage pedestal with radial soft studio shadow/coherence glow disc
+        var floorTex = makeRadialDiscTexture(
+          THREE,
+          api.contrast ? 250 : (api.dark ? 124 : 79),
+          api.contrast ? 204 : (api.dark ? 58 : 70),
+          api.contrast ? 21 : (api.dark ? 237 : 229),
+          api.contrast ? 0.24 : (api.dark ? 0.34 : 0.16),
+          0.42
+        );
+        if (floorTex && typeof THREE.PlaneGeometry === 'function') {
+          var floorMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(4.8, 3.2),
+            new THREE.MeshBasicMaterial({
+              map: floorTex,
+              transparent: true,
+              depthWrite: false,
+              side: THREE.DoubleSide
+            })
+          );
+          floorMesh.rotation.x = -Math.PI / 2;
+          floorMesh.position.set(0, -0.76, 0);
+          group.add(floorMesh);
+        }
+
+        var hasShaderMat = typeof THREE.ShaderMaterial === 'function';
+        var useShaders = !api.contrast && hasShaderMat;
+        var envelopeUniforms = null;
+        var synapticPacketMats = [];
+
+        // Translucent GLSL Fresnel cortical envelope (human) or transformer residual-stream frame (model)
+        if (typeof THREE.SphereGeometry === 'function') {
+          if (substrateId === 'human') {
+            var shellMat;
+            if (useShaders) {
+              envelopeUniforms = {
+                uTime: { value: 2.2 },
+                uIgnition: { value: 0.25 },
+                uBaseCol: { value: new THREE.Color(api.dark ? 0x6366f1 : 0x4f46e5) },
+                uIgniteCol: { value: new THREE.Color(api.dark ? 0x38bdf8 : 0x8b5cf6) },
+                uOpacity: { value: api.dark ? 0.36 : 0.24 }
+              };
+              shellMat = new THREE.ShaderMaterial({
+                uniforms: envelopeUniforms,
+                vertexShader: [
+                  'varying vec3 vLocalPos;',
+                  'varying vec3 vNormView;',
+                  'varying vec3 vViewPos;',
+                  'void main() {',
+                  '  vLocalPos = position;',
+                  '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                  '  vNormView = normalize(normalMatrix * normal);',
+                  '  vViewPos = -mv.xyz;',
+                  '  gl_Position = projectionMatrix * mv;',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uTime;',
+                  'uniform float uIgnition;',
+                  'uniform vec3 uBaseCol;',
+                  'uniform vec3 uIgniteCol;',
+                  'uniform float uOpacity;',
+                  'varying vec3 vLocalPos;',
+                  'varying vec3 vNormView;',
+                  'varying vec3 vViewPos;',
+                  'void main() {',
+                  '  float fres = pow(1.0 - clamp(abs(dot(normalize(vNormView), normalize(vViewPos))), 0.0, 1.0), 2.2);',
+                  '  float wave = 0.5 + 0.5 * sin(vLocalPos.x * 10.5 - uTime * 1.45 + cos(vLocalPos.y * 7.5 + vLocalPos.z * 6.0) * 1.1);',
+                  '  float gyri = smoothstep(0.62, 0.98, wave) * (0.35 + 0.65 * uIgnition);',
+                  '  float frontSweep = smoothstep(-0.6, 0.85, vLocalPos.x) * uIgnition;',
+                  '  vec3 col = mix(uBaseCol, uIgniteCol, clamp(fres * 0.65 + frontSweep * 0.55, 0.0, 1.0));',
+                  '  col = mix(col, vec3(0.92, 0.96, 1.0), gyri * fres * 0.45);',
+                  '  float alpha = clamp((fres * 0.86 + gyri * 0.22 + 0.04) * uOpacity * (0.78 + 0.48 * uIgnition), 0.0, 0.62);',
+                  '  if (alpha < 0.006) discard;',
+                  '  gl_FragColor = vec4(col, alpha);',
+                  '}'
+                ].join('\n'),
+                transparent: true,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+                blending: api.dark ? THREE.AdditiveBlending : THREE.NormalBlending
+              });
+            } else {
+              shellMat = typeof THREE.MeshPhysicalMaterial === 'function' && !api.contrast
+                ? new THREE.MeshPhysicalMaterial({
+                    color: api.dark ? 0x6366f1 : 0x4f46e5,
+                    roughness: 0.28,
+                    metalness: 0.05,
+                    clearcoat: 0.45,
+                    clearcoatRoughness: 0.25,
+                    transparent: true,
+                    opacity: api.dark ? 0.09 : 0.06,
+                    depthWrite: false,
+                    side: THREE.DoubleSide
+                  })
+                : new THREE.MeshPhongMaterial({
+                    color: api.contrast ? 0xfacc15 : (api.dark ? 0x6366f1 : 0x4f46e5),
+                    transparent: true,
+                    opacity: api.contrast ? 0.12 : 0.07,
+                    depthWrite: false,
+                    wireframe: !!api.contrast,
+                    side: THREE.DoubleSide
+                  });
+            }
+            var hemiGeo = new THREE.SphereGeometry(1, 28, 20);
+            [-0.24, 0.24].forEach(function (zOff) {
+              var lobe = new THREE.Mesh(hemiGeo, shellMat);
+              lobe.scale.set(1.88, 0.86, 0.62);
+              lobe.position.set(0.05, NET_Y_LIFT + 0.04, zOff);
+              group.add(lobe);
+            });
+            if (typeof THREE.TorusGeometry === 'function') {
+              var meridianMat = new THREE.MeshBasicMaterial({
+                color: api.contrast ? 0xfacc15 : (api.dark ? 0x818cf8 : 0x6366f1),
+                transparent: true,
+                opacity: api.contrast ? 0.35 : 0.16,
+                depthWrite: false
+              });
+              var meridian = new THREE.Mesh(new THREE.TorusGeometry(1.72, 0.008, 8, 64), meridianMat);
+              meridian.rotation.x = Math.PI / 2;
+              meridian.scale.set(1.06, 0.52, 1);
+              meridian.position.set(0.05, NET_Y_LIFT - 0.14, 0);
+              group.add(meridian);
+            }
+          } else if (typeof THREE.PlaneGeometry === 'function') {
+            var layerPlaneGeo = new THREE.PlaneGeometry(0.06, 1.38);
+            var layerXs = [-1.42, -0.78, -0.18, 0.36, 0.92, 1.48];
+            var layerPlaneMat;
+            if (useShaders) {
+              envelopeUniforms = {
+                uTime: { value: 2.2 },
+                uIgnition: { value: 0.25 },
+                uBaseCol: { value: new THREE.Color(api.dark ? 0x38bdf8 : 0x0284c7) },
+                uIgniteCol: { value: new THREE.Color(api.dark ? 0xa78bfa : 0x6366f1) },
+                uOpacity: { value: api.dark ? 0.24 : 0.16 }
+              };
+              layerPlaneMat = new THREE.ShaderMaterial({
+                uniforms: envelopeUniforms,
+                vertexShader: [
+                  'varying vec2 vUv;',
+                  'void main() {',
+                  '  vUv = uv;',
+                  '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                  '}'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform float uTime;',
+                  'uniform float uIgnition;',
+                  'uniform vec3 uBaseCol;',
+                  'uniform vec3 uIgniteCol;',
+                  'uniform float uOpacity;',
+                  'varying vec2 vUv;',
+                  'void main() {',
+                  '  float edgeX = smoothstep(0.0, 0.16, vUv.x) * smoothstep(1.0, 0.84, vUv.x);',
+                  '  float edgeY = smoothstep(0.0, 0.14, vUv.y) * smoothstep(1.0, 0.86, vUv.y);',
+                  '  float border = 1.0 - smoothstep(0.0, 0.10, min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y)));',
+                  '  float scan = 0.65 + 0.35 * sin(vUv.y * 28.0 - uTime * 2.2);',
+                  '  vec3 col = mix(uBaseCol, uIgniteCol, uIgnition * 0.65 + border * 0.35);',
+                  '  float alpha = clamp((edgeX * edgeY * 0.45 * scan + border * 0.72) * uOpacity * (0.8 + 0.45 * uIgnition), 0.0, 0.52);',
+                  '  if (alpha < 0.008) discard;',
+                  '  gl_FragColor = vec4(col, alpha);',
+                  '}'
+                ].join('\n'),
+                transparent: true,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+                blending: api.dark ? THREE.AdditiveBlending : THREE.NormalBlending
+              });
+            } else {
+              layerPlaneMat = new THREE.MeshBasicMaterial({
+                color: api.contrast ? 0x67e8f9 : (api.dark ? 0x38bdf8 : 0x0284c7),
+                transparent: true,
+                opacity: api.contrast ? 0.22 : (api.dark ? 0.11 : 0.08),
+                depthWrite: false,
+                side: THREE.DoubleSide
+              });
+            }
+            layerXs.forEach(function (lx) {
+              var slab = new THREE.Mesh(layerPlaneGeo, layerPlaneMat);
+              slab.position.set(lx, NET_Y_LIFT, 0);
+              slab.rotation.y = Math.PI / 2;
+              slab.scale.set(18, 1, 1);
+              group.add(slab);
+            });
+          }
+        }
+
+        // Neural node spheres with glossy physical/phong finish + GLSL neural-synchrony aura breathing
+        var geo = new THREE.SphereGeometry(0.145, 24, 16);
+        var haloGeo = new THREE.SphereGeometry(useShaders ? 0.26 : 0.225, 18, 14);
         var byStage = {};
+        var nodeHalos = [];
         for (var i = 0; i < nodes.length; i++) {
           var n = nodes[i];
           var hex = api.contrast ? 0xffffff : NET_STAGE_COLORS[n.stage];
-          var mesh = new THREE.Mesh(geo, api.trim(hex, 44));
+          var coreMat = (typeof THREE.MeshPhysicalMaterial === 'function' && !api.contrast)
+            ? new THREE.MeshPhysicalMaterial({
+                color: hex,
+                roughness: 0.22,
+                metalness: 0.12,
+                clearcoat: 0.72,
+                clearcoatRoughness: 0.18,
+                emissive: new THREE.Color(hex),
+                emissiveIntensity: 0.16
+              })
+            : api.trim(hex, 64);
+          if (coreMat && coreMat.userData) {
+            coreMat.userData._preserveBaseEmissive = true;
+          }
+          var mesh = new THREE.Mesh(geo, coreMat);
           mesh.position.set(n.x, n.y + NET_Y_LIFT, n.z);
+
           var holder = new THREE.Group();
           holder.add(mesh);
+
+          if (!api.contrast) {
+            var auraMat = useShaders ? new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 2.2 },
+                uStageLevel: { value: 0.35 },
+                uPhase: { value: i * 0.73 },
+                uColor: { value: new THREE.Color(hex) },
+                uOpacity: { value: api.dark ? 0.42 : 0.28 }
+              },
+              vertexShader: [
+                'varying vec3 vNormView;',
+                'varying vec3 vViewPos;',
+                'void main() {',
+                '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                '  vNormView = normalize(normalMatrix * normal);',
+                '  vViewPos = -mv.xyz;',
+                '  gl_Position = projectionMatrix * mv;',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uTime;',
+                'uniform float uStageLevel;',
+                'uniform float uPhase;',
+                'uniform vec3 uColor;',
+                'uniform float uOpacity;',
+                'varying vec3 vNormView;',
+                'varying vec3 vViewPos;',
+                'void main() {',
+                '  float facing = clamp(abs(dot(normalize(vNormView), normalize(vViewPos))), 0.0, 1.0);',
+                '  float softCore = pow(facing, 2.2);',
+                '  float rimHalo = pow(1.0 - facing, 1.8) * pow(facing, 0.75) * 2.1;',
+                '  float breath = 0.78 + 0.22 * sin(uTime * 2.2 + uPhase);',
+                '  vec3 col = mix(uColor, vec3(0.95, 0.97, 1.0), softCore * 0.38 * uStageLevel);',
+                '  float alpha = clamp((softCore * 0.72 + rimHalo * 0.48) * breath * uOpacity, 0.0, 0.72);',
+                '  if (alpha < 0.008) discard;',
+                '  gl_FragColor = vec4(col, alpha);',
+                '}'
+              ].join('\n'),
+              transparent: true,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending || THREE.NormalBlending
+            }) : new THREE.MeshBasicMaterial({
+              color: hex,
+              transparent: true,
+              opacity: api.dark ? 0.22 : 0.14,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending || THREE.NormalBlending
+            });
+            var auraMesh = new THREE.Mesh(haloGeo, auraMat);
+            auraMesh.position.set(n.x, n.y + NET_Y_LIFT, n.z);
+            holder.add(auraMesh);
+            nodeHalos.push({ mesh: auraMesh, mat: auraMat, stage: n.stage, phase: i * 0.73, isShader: useShaders });
+          }
+
           group.add(holder);
           meshes[n.id] = holder;
           picks.push(mesh);
           (byStage[n.stage] = byStage[n.stage] || []).push(n);
         }
-        // Edges run stage to stage, so the picture reads as a pathway rather than
-        // a constellation. Dim and unlit on purpose: the nodes carry the signal.
+
+        // Curved synaptic pathways (stage-to-stage arcs) + GLSL phase-locked ignition wave packets
         var order = SIM_STAGE_KEYS;
-        // Faint and sparse. Inactive nodes shrink to about half size, which exposes
-        // edge segments that a full-size sphere used to hide — at the original
-        // weight the graph read as a scribble the moment anything went quiet.
         var lineMat = new THREE.LineBasicMaterial({
-          color: api.contrast ? 0xffffff : (api.dark ? 0x334155 : 0xcbd5e1),
-          transparent: true, opacity: api.contrast ? 0.85 : 0.30
+          color: api.contrast ? 0xfacc15 : (api.dark ? 0x64748b : 0x94a3b8),
+          transparent: true,
+          opacity: api.contrast ? 0.85 : (api.dark ? 0.30 : 0.28)
         });
+        var edgeCurves = [];
+        var hasTubeGeo = typeof THREE.TubeGeometry === 'function';
         for (var s = 0; s < order.length - 1; s++) {
           var from = byStage[order[s]] || [];
           var to = byStage[order[s + 1]] || [];
+          var stageFrom = order[s];
+          var stageTo = order[s + 1];
           for (var a = 0; a < from.length; a++) {
             for (var b = 0; b < to.length; b++) {
-              if ((a + b) % 3 !== 0) continue;   // thin it out; a full mesh is noise
-              var pts = [new THREE.Vector3(from[a].x, from[a].y + NET_Y_LIFT, from[a].z),
-                         new THREE.Vector3(to[b].x, to[b].y + NET_Y_LIFT, to[b].z)];
+              if ((a + b) % 3 !== 0) continue;
+              var p0 = new THREE.Vector3(from[a].x, from[a].y + NET_Y_LIFT, from[a].z);
+              var p2 = new THREE.Vector3(to[b].x, to[b].y + NET_Y_LIFT, to[b].z);
+              var mid = new THREE.Vector3(
+                (p0.x + p2.x) * 0.5,
+                (p0.y + p2.y) * 0.5 + 0.14 + ((a + b) % 2) * 0.06,
+                (p0.z + p2.z) * 0.5 + (a % 2 === 0 ? 0.08 : -0.08)
+              );
+              var pts;
+              var curveObj = null;
+              if (typeof THREE.QuadraticBezierCurve3 === 'function') {
+                curveObj = new THREE.QuadraticBezierCurve3(p0, mid, p2);
+                pts = curveObj.getPoints(12);
+              } else {
+                pts = [p0, mid, p2];
+              }
               group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat));
+              var edgeOffset = (s * 0.23 + a * 0.17 + b * 0.31) % 1;
+              var edgeHex = api.contrast ? 0x67e8f9 : NET_STAGE_COLORS[stageTo];
+              edgeCurves.push({
+                p0: p0, mid: mid, p2: p2, curve: curveObj,
+                stageFrom: stageFrom, stageTo: stageTo,
+                color: edgeHex,
+                offset: edgeOffset
+              });
+              if (useShaders && hasTubeGeo && curveObj) {
+                var pktGeo = new THREE.TubeGeometry(curveObj, 20, 0.011, 6, false);
+                var pktMat = new THREE.ShaderMaterial({
+                  uniforms: {
+                    uTime: { value: 2.2 },
+                    uFlow: { value: 0.35 },
+                    uPhase: { value: edgeOffset },
+                    uColor: { value: new THREE.Color(edgeHex) },
+                    uOpacity: { value: api.dark ? 0.85 : 0.62 }
+                  },
+                  vertexShader: [
+                    'varying vec2 vUv;',
+                    'void main() {',
+                    '  vUv = uv;',
+                    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                    '}'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform float uTime;',
+                    'uniform float uFlow;',
+                    'uniform float uPhase;',
+                    'uniform vec3 uColor;',
+                    'uniform float uOpacity;',
+                    'varying vec2 vUv;',
+                    'void main() {',
+                    '  if (uFlow < 0.08) discard;',
+                    '  float endFade = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x);',
+                    '  float speed = 0.38 + uFlow * 0.52;',
+                    '  float p1 = fract(vUv.x - uTime * speed + uPhase);',
+                    '  float p2 = fract(vUv.x - uTime * speed + uPhase + 0.5);',
+                    '  float pkt1 = exp(-pow((p1 - 0.5) * 7.5, 2.0));',
+                    '  float pkt2 = exp(-pow((p2 - 0.5) * 8.5, 2.0)) * 0.65;',
+                    '  float carrier = 0.5 + 0.5 * sin(vUv.x * 26.0 - uTime * 5.2 + uPhase * 6.2831853);',
+                    '  float energy = (pkt1 + pkt2) * (0.72 + 0.28 * carrier);',
+                    '  vec3 col = mix(uColor, vec3(0.96, 0.98, 1.0), clamp(pkt1 * 0.72, 0.0, 0.85));',
+                    '  float alpha = clamp((energy * 0.95 + 0.10) * endFade * uFlow * uOpacity, 0.0, 0.92);',
+                    '  if (alpha < 0.01) discard;',
+                    '  gl_FragColor = vec4(col, alpha);',
+                    '}'
+                  ].join('\n'),
+                  transparent: true,
+                  depthWrite: false,
+                  blending: THREE.AdditiveBlending || THREE.NormalBlending
+                });
+                var pktMesh = new THREE.Mesh(pktGeo, pktMat);
+                group.add(pktMesh);
+                synapticPacketMats.push({ mat: pktMat, stageFrom: stageFrom, stageTo: stageTo });
+              }
             }
           }
         }
+
+        // Luminous synaptic signal pulse beads along curved pathways
+        var pulseGeo = new THREE.SphereGeometry(0.038, 12, 8);
+        var pulses = [];
+        for (var pi = 0; pi < edgeCurves.length; pi++) {
+          if (pi % 2 !== 0 && edgeCurves.length > 10) continue;
+          var ec = edgeCurves[pi];
+          var pMat = useShaders ? new THREE.ShaderMaterial({
+            uniforms: {
+              uColor: { value: new THREE.Color(ec.color) },
+              uOpacity: { value: 0.0 }
+            },
+            vertexShader: [
+              'varying vec3 vNormView;',
+              'varying vec3 vViewPos;',
+              'void main() {',
+              '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+              '  vNormView = normalize(normalMatrix * normal);',
+              '  vViewPos = -mv.xyz;',
+              '  gl_Position = projectionMatrix * mv;',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform vec3 uColor;',
+              'uniform float uOpacity;',
+              'varying vec3 vNormView;',
+              'varying vec3 vViewPos;',
+              'void main() {',
+              '  float core = pow(clamp(abs(dot(normalize(vNormView), normalize(vViewPos))), 0.0, 1.0), 1.35);',
+              '  vec3 col = mix(uColor, vec3(1.0, 0.98, 1.0), core * 0.65);',
+              '  float a = clamp((0.35 + 0.65 * core) * uOpacity, 0.0, 0.95);',
+              '  if (a < 0.01) discard;',
+              '  gl_FragColor = vec4(col, a);',
+              '}'
+            ].join('\n'),
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending || THREE.NormalBlending
+          }) : new THREE.MeshBasicMaterial({
+            color: ec.color,
+            transparent: true,
+            opacity: 0.0,
+            depthWrite: false,
+            blending: api.contrast ? THREE.NormalBlending : (THREE.AdditiveBlending || THREE.NormalBlending)
+          });
+          var pMesh = new THREE.Mesh(pulseGeo, pMat);
+          group.add(pMesh);
+          pulses.push({ mesh: pMesh, mat: pMat, edge: ec, isShader: useShaders });
+        }
+
+        // Concentric expanding GLSL Global-Workspace broadcast interference rings & recurrent coherence ring
+        var broadcastRings = [];
+        var recurRing = null;
+        var recurIsShader = false;
+        if (useShaders && typeof THREE.RingGeometry === 'function') {
+          var gwRingGeo = new THREE.RingGeometry(0.18, 1.0, 64);
+          for (var ri = 0; ri < 3; ri++) {
+            var rMat = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 2.2 },
+                uProgress: { value: 0.32 + ri * 0.28 },
+                uWorkspace: { value: 0.0 },
+                uOpacity: { value: 0.0 },
+                uColA: { value: new THREE.Color(api.dark ? 0xa855f7 : 0x7c3aed) },
+                uColB: { value: new THREE.Color(api.dark ? 0x38bdf8 : 0x0ea5e9) }
+              },
+              vertexShader: [
+                'varying vec2 vRingPos;',
+                'void main() {',
+                '  vRingPos = position.xy;',
+                '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uTime;',
+                'uniform float uProgress;',
+                'uniform float uWorkspace;',
+                'uniform float uOpacity;',
+                'uniform vec3 uColA;',
+                'uniform vec3 uColB;',
+                'varying vec2 vRingPos;',
+                'void main() {',
+                '  if (uOpacity < 0.008) discard;',
+                '  float r = length(vRingPos);',
+                '  float rn = clamp((r - 0.18) / 0.82, 0.0, 1.0);',
+                '  float ang = atan(vRingPos.y, vRingPos.x);',
+                '  float edgeFade = smoothstep(0.0, 0.18, rn) * smoothstep(1.0, 0.72, rn);',
+                '  float front = exp(-pow((rn - 0.84) * 11.0, 2.0));',
+                '  float interference = pow(0.5 + 0.5 * sin(rn * 18.0 - uTime * 3.4 + uProgress * 6.2831853), 2.2) * edgeFade;',
+                '  float nodes = 0.72 + 0.28 * cos(ang * 6.0 - uTime * 1.15);',
+                '  vec3 col = mix(uColA, uColB, smoothstep(0.2, 0.9, rn));',
+                '  col = mix(col, vec3(0.95, 0.96, 1.0), front * 0.50);',
+                '  float alpha = clamp((front * 0.95 + interference * 0.42) * nodes * uOpacity, 0.0, 0.76);',
+                '  if (alpha < 0.008) discard;',
+                '  gl_FragColor = vec4(col, alpha);',
+                '}'
+              ].join('\n'),
+              transparent: true,
+              depthWrite: false,
+              side: THREE.DoubleSide,
+              blending: THREE.AdditiveBlending || THREE.NormalBlending
+            });
+            var rMesh = new THREE.Mesh(gwRingGeo, rMat);
+            rMesh.rotation.x = -Math.PI / 2;
+            rMesh.position.set(0.05, NET_Y_LIFT + 0.02 + ri * 0.004, 0);
+            group.add(rMesh);
+            broadcastRings.push({ mesh: rMesh, mat: rMat, phase: ri / 3, isShader: true });
+          }
+        } else if (typeof THREE.TorusGeometry === 'function') {
+          var ringGeo = new THREE.TorusGeometry(0.55, 0.014, 10, 48);
+          for (var ri2 = 0; ri2 < 3; ri2++) {
+            var rMat2 = new THREE.MeshBasicMaterial({
+              color: api.contrast ? 0xfacc15 : 0xa855f7,
+              transparent: true,
+              opacity: 0.0,
+              depthWrite: false,
+              blending: api.contrast ? THREE.NormalBlending : (THREE.AdditiveBlending || THREE.NormalBlending)
+            });
+            var rMesh2 = new THREE.Mesh(ringGeo, rMat2);
+            rMesh2.rotation.x = Math.PI / 2;
+            rMesh2.position.set(0.05, NET_Y_LIFT + 0.02, 0);
+            group.add(rMesh2);
+            broadcastRings.push({ mesh: rMesh2, mat: rMat2, phase: ri2 / 3, isShader: false });
+          }
+        }
+        if (typeof THREE.TorusGeometry === 'function') {
+          var recurMat = useShaders ? new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: { value: 2.2 },
+              uOpacity: { value: 0.35 },
+              uColA: { value: new THREE.Color(0x10b981) },
+              uColB: { value: new THREE.Color(0x38bdf8) }
+            },
+            vertexShader: [
+              'varying vec2 vUv;',
+              'void main() {',
+              '  vUv = uv;',
+              '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime;',
+              'uniform float uOpacity;',
+              'uniform vec3 uColA;',
+              'uniform vec3 uColB;',
+              'varying vec2 vUv;',
+              'void main() {',
+              '  float loopWave = 0.45 + 0.55 * pow(0.5 + 0.5 * sin(vUv.x * 12.56637 - uTime * 3.2), 2.0);',
+              '  vec3 col = mix(uColA, uColB, loopWave * 0.55);',
+              '  float a = clamp((0.35 + 0.65 * loopWave) * uOpacity, 0.0, 0.85);',
+              '  if (a < 0.01) discard;',
+              '  gl_FragColor = vec4(col, a);',
+              '}'
+            ].join('\n'),
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending || THREE.NormalBlending
+          }) : new THREE.MeshBasicMaterial({
+            color: api.contrast ? 0x86efac : 0x10b981,
+            transparent: true,
+            opacity: api.contrast ? 0.55 : 0.28,
+            depthWrite: false
+          });
+          recurIsShader = useShaders;
+          recurRing = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.014, 10, 42), recurMat);
+          recurRing.rotation.y = Math.PI / 2;
+          recurRing.position.set(-0.88, NET_Y_LIFT + 0.05, 0.02);
+          group.add(recurRing);
+        }
+
         api.scene.add(group);
-        return { meshes: meshes, picks: picks, anchor: group };
+
+        function evalEdge(edge, u, out) {
+          if (edge.curve && typeof edge.curve.getPoint === 'function') {
+            edge.curve.getPoint(u, out);
+            return;
+          }
+          var inv = 1 - u;
+          out.set(
+            inv * inv * edge.p0.x + 2 * inv * u * edge.mid.x + u * u * edge.p2.x,
+            inv * inv * edge.p0.y + 2 * inv * u * edge.mid.y + u * u * edge.p2.y,
+            inv * inv * edge.p0.z + 2 * inv * u * edge.mid.z + u * u * edge.p2.z
+          );
+        }
+
+        var tmpVec = new THREE.Vector3();
+        function frame(now, sp, reduced) {
+          var tSec = reduced ? 2.2 : now * 0.001;
+          var lv = (sp && sp.stageLevels) || {};
+          var wsLevel = Math.max(0, Math.min(1, lv.workspace || 0));
+          var recLevel = Math.max(0, Math.min(1, lv.recurrent || 0));
+
+          // Update Fresnel cortical / transformer layer envelope ignition
+          if (envelopeUniforms) {
+            envelopeUniforms.uTime.value = tSec;
+            envelopeUniforms.uIgnition.value = wsLevel;
+          }
+
+          // Update traveling phase-locked synaptic wave packets along arched conduits
+          for (var spk = 0; spk < synapticPacketMats.length; spk++) {
+            var spItem = synapticPacketMats[spk];
+            var spFlow = Math.max(lv[spItem.stageFrom] || 0, lv[spItem.stageTo] || 0);
+            spItem.mat.uniforms.uTime.value = tSec;
+            spItem.mat.uniforms.uFlow.value = spFlow;
+          }
+
+          // Breathe aura shells gently with neural coherence (static beauty frame in reduced-motion)
+          for (var hi = 0; hi < nodeHalos.length; hi++) {
+            var nh = nodeHalos[hi];
+            var stLvl = Math.max(0, Math.min(1, lv[nh.stage] || 0));
+            var wave = reduced ? 0.5 : (0.5 + 0.5 * Math.sin(tSec * 2.4 + nh.phase));
+            var baseOp = api.dark ? 0.16 : 0.11;
+            var op = Math.min(0.72, baseOp + stLvl * (0.34 + 0.18 * wave));
+            if (nh.isShader && nh.mat.uniforms) {
+              nh.mat.uniforms.uTime.value = tSec;
+              nh.mat.uniforms.uStageLevel.value = stLvl;
+              nh.mat.uniforms.uOpacity.value = op;
+            } else {
+              nh.mat.opacity = Math.min(0.62, op);
+            }
+            var sc = 0.92 + stLvl * 0.36 + (reduced ? 0 : 0.08 * wave * stLvl);
+            nh.mesh.scale.setScalar(sc);
+          }
+
+          // Concentric expanding global-workspace broadcast interference rings
+          for (var bi = 0; bi < broadcastRings.length; bi++) {
+            var br = broadcastRings[bi];
+            if (wsLevel < 0.08) {
+              if (br.isShader && br.mat.uniforms) br.mat.uniforms.uOpacity.value = 0;
+              else br.mat.opacity = 0;
+              continue;
+            }
+            var prog = reduced ? (0.32 + bi * 0.28) : ((tSec * 0.42 + br.phase) % 1);
+            var radScale = (br.isShader ? 0.55 : 0.45) + prog * (1.28 + wsLevel * 0.78);
+            br.mesh.scale.set(radScale, radScale, 1);
+            var brOp = Math.max(0, (1 - prog) * wsLevel * (api.contrast ? 0.8 : (api.dark ? 0.64 : 0.44)));
+            if (br.isShader && br.mat.uniforms) {
+              br.mat.uniforms.uTime.value = tSec;
+              br.mat.uniforms.uProgress.value = prog;
+              br.mat.uniforms.uWorkspace.value = wsLevel;
+              br.mat.uniforms.uOpacity.value = brOp;
+            } else {
+              br.mat.opacity = brOp;
+            }
+          }
+
+          // Local recurrent coherence ring pulse
+          if (recurRing) {
+            var recScale = 0.78 + recLevel * 0.42 + (reduced ? 0 : Math.sin(tSec * 3.1) * 0.05 * recLevel);
+            recurRing.scale.setScalar(recScale);
+            if (!reduced) recurRing.rotation.x = tSec * 0.55;
+            var recOp = Math.max(0.08, recLevel * (api.contrast ? 0.85 : 0.60));
+            if (recurIsShader && recurRing.material.uniforms) {
+              recurRing.material.uniforms.uTime.value = tSec;
+              recurRing.material.uniforms.uOpacity.value = recOp;
+            } else {
+              recurRing.material.opacity = recOp;
+            }
+          }
+
+          // Synaptic signal pulse beads traveling along active pathways
+          for (var k = 0; k < pulses.length; k++) {
+            var p = pulses[k];
+            var flow = Math.max(lv[p.edge.stageFrom] || 0, lv[p.edge.stageTo] || 0);
+            if (flow < 0.12) {
+              if (p.isShader && p.mat.uniforms) p.mat.uniforms.uOpacity.value = 0;
+              else p.mat.opacity = 0;
+              continue;
+            }
+            var u = reduced ? 0.5 : ((tSec * (0.45 + flow * 0.45) + p.edge.offset) % 1);
+            evalEdge(p.edge, u, tmpVec);
+            p.mesh.position.copy(tmpVec);
+            var env = Math.sin(u * Math.PI);
+            var pOp = Math.min(0.95, env * flow * (api.contrast ? 0.95 : 0.88));
+            if (p.isShader && p.mat.uniforms) p.mat.uniforms.uOpacity.value = pOp;
+            else p.mat.opacity = pOp;
+            p.mesh.scale.setScalar(0.75 + flow * 0.55);
+          }
+        }
+
+        return { meshes: meshes, picks: picks, anchor: group, frame: frame };
       }
     });
     return _netViewer;
@@ -2119,8 +2770,17 @@
         viewBox: '0 0 64 64', width: 52, height: 52, 'aria-hidden': 'true', focusable: 'false',
         style: { display: 'block', flexShrink: 0 }
       },
+        !contrast && h('defs', null,
+          h('radialGradient', { id: 'cns-emb-aura', cx: '50%', cy: '50%', r: '50%' },
+            h('stop', { offset: '0%', stopColor: '#a78bfa', stopOpacity: 0.6 }),
+            h('stop', { offset: '60%', stopColor: '#38bdf8', stopOpacity: 0.18 }),
+            h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: 0 })
+          )
+        ),
+        !contrast && h('circle', { cx: 32, cy: 32, r: 29, fill: 'url(#cns-emb-aura)' }),
         h('circle', { cx: 32, cy: 32, r: 27, fill: 'none', stroke: ringStroke, strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.72 }),
         h('path', { d: 'M14 32 C14 20 22 14 32 14 C42 14 50 20 50 32 C50 44 42 50 32 50 C22 50 14 44 14 32 Z', fill: 'none', stroke: ringStroke, strokeWidth: 2, opacity: 0.9 }),
+        !contrast && h('path', { d: 'M20 35 C23 23 31 20 38 25 C43 29 44 38 37 42 C30 46 23 42 22 36', fill: 'none', stroke: arcStroke, strokeWidth: 5.2, strokeLinecap: 'round', opacity: 0.24 }),
         h('path', { d: 'M20 35 C23 23 31 20 38 25 C43 29 44 38 37 42 C30 46 23 42 22 36', fill: 'none', stroke: arcStroke, strokeWidth: 2.4, strokeLinecap: 'round' }),
         h('line', { x1: 32, y1: 32, x2: 18, y2: 22, stroke: ringStroke, strokeWidth: 1.5, opacity: 0.8 }),
         h('line', { x1: 32, y1: 32, x2: 47, y2: 21, stroke: arcStroke, strokeWidth: 1.5, opacity: 0.85 }),
@@ -2130,8 +2790,9 @@
         h('circle', { cx: 47, cy: 21, r: 3.2, fill: arcStroke }),
         h('circle', { cx: 48, cy: 42, r: 3.2, fill: ringStroke }),
         h('circle', { cx: 18, cy: 43, r: 3.2, fill: arcStroke }),
-        h('circle', { cx: 32, cy: 32, r: 5.5, fill: coreFill }),
-        h('circle', { cx: 32, cy: 32, r: 9.5, fill: 'none', stroke: coreFill, strokeWidth: 1.4, opacity: 0.55 })
+        h('circle', { cx: 32, cy: 32, r: 13, fill: 'none', stroke: arcStroke, strokeWidth: 1, opacity: 0.35 }),
+        h('circle', { cx: 32, cy: 32, r: 9.5, fill: 'none', stroke: coreFill, strokeWidth: 1.4, opacity: 0.58 }),
+        h('circle', { cx: 32, cy: 32, r: 5.5, fill: coreFill })
       );
     }
 
@@ -2373,11 +3034,26 @@
         { id: 'integration', x: 610, short: profile.id === 'early' ? 'One Whole' : 'Integration', sub: 'Cause-effect' },
         { id: 'selfmodel', x: 744, short: profile.id === 'early' ? 'Focus Map' : 'Attention', sub: 'Control model' }
       ];
-      var svgBg = contrast ? '#000000' : dark ? '#0f172a' : '#f8fafc';
+      var svgBg = contrast ? '#000000' : dark ? '#0b1224' : '#f8fafc';
       var svgNodeFill = contrast ? '#111111' : dark ? '#1e293b' : '#ffffff';
       var svgStroke = contrast ? '#facc15' : dark ? '#475569' : '#cbd5e1';
       var svgActiveStroke = C.accent;
       var svgActiveFill = contrast ? '#262100' : dark ? '#2e1065' : '#ede9fe';
+      var matchXs = stageNodes.filter(function (nd) { return stageMatchesTheory({ id: nd.id }, selected); }).map(function (nd) { return nd.x; });
+      // Subtle neural-oscillation coherence ribbon along the lower band; amplitude rises beneath emphasized stage(s)
+      var wavePts = [];
+      for (var wx = 18; wx <= 802; wx += 8) {
+        var boost = 0;
+        for (var mxi = 0; mxi < matchXs.length; mxi++) {
+          var distX = Math.abs(wx - matchXs[mxi]);
+          if (distX < 92) boost = Math.max(boost, 1 - distX / 92);
+        }
+        var amp = 2.4 + boost * 7.2;
+        var wy = 142 + Math.sin(wx * 0.095) * amp * Math.cos(wx * 0.022);
+        wavePts.push(wx + ',' + wy.toFixed(1));
+      }
+      var recurMatch = stageMatchesTheory({ id: 'recurrence' }, selected);
+      var globalMatch = stageMatchesTheory({ id: 'global' }, selected);
       return h('section', { 'aria-labelledby': 'cns-journey-title' },
         h('div', { className: 'cns-section-heading' }, h('div', null, h('span', { className: 'cns-step' }, 'MODEL, NOT A LITERAL MAP'), h('h2', { id: 'cns-journey-title' }, 'One signal, several proposed turning points'))),
         h('p', { className: 'cns-lead' }, profile.id === 'early'
@@ -2385,49 +3061,119 @@
           : 'This learning diagram places several proposals on one processing journey. Real neural dynamics overlap; the sequence is an analogy, not an anatomical claim.'),
         h('div', { className: 'cns-svg-stage', style: { background: svgBg, borderColor: C.border } },
           h('svg', {
-            viewBox: '0 0 820 154', width: '100%', role: 'img',
+            viewBox: '0 0 820 158', width: '100%', role: 'img',
             'aria-label': __alloT('stem.consciousness.signal_pathway_diagram_aria', 'Schematic diagram of six proposed consciousness processing turning points highlighting ' + selected.name),
             style: { display: 'block', width: '100%', height: 'auto' }
           },
-            h('rect', { x: 1, y: 1, width: 818, height: 152, rx: 10, fill: svgBg, stroke: 'none' }),
-            // Subtle recurrent feedback loop arc under stage 2
+            !contrast && h('defs', null,
+              h('linearGradient', { id: 'cns-j-bg', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: dark ? '#0b1224' : '#f8fafc' }),
+                h('stop', { offset: '55%', stopColor: dark ? '#111936' : '#f1f5f9' }),
+                h('stop', { offset: '100%', stopColor: dark ? '#17153b' : '#eef2ff' })
+              ),
+              h('radialGradient', { id: 'cns-j-spot', cx: '50%', cy: '50%', r: '50%' },
+                h('stop', { offset: '0%', stopColor: svgActiveStroke, stopOpacity: dark ? 0.34 : 0.2 }),
+                h('stop', { offset: '100%', stopColor: svgActiveStroke, stopOpacity: 0 })
+              ),
+              h('linearGradient', { id: 'cns-j-card-hi', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: dark ? '#4c1d95' : '#f5f3ff' }),
+                h('stop', { offset: '100%', stopColor: dark ? '#2e1065' : '#e0e7ff' })
+              ),
+              h('linearGradient', { id: 'cns-j-card-lo', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: dark ? '#1e293b' : '#ffffff' }),
+                h('stop', { offset: '100%', stopColor: dark ? '#0f172a' : '#f8fafc' })
+              ),
+              h('pattern', { id: 'cns-j-dots', width: 20, height: 20, patternUnits: 'userSpaceOnUse' },
+                h('circle', { cx: 2, cy: 2, r: 0.9, fill: dark ? '#334155' : '#cbd5e1', opacity: dark ? 0.45 : 0.55 })
+              )
+            ),
+            h('rect', { x: 1, y: 1, width: 818, height: 156, rx: 10, fill: contrast ? svgBg : 'url(#cns-j-bg)', stroke: 'none' }),
+            !contrast && h('rect', { x: 1, y: 1, width: 818, height: 156, rx: 10, fill: 'url(#cns-j-dots)' }),
+            // Subtle neural-oscillation coherence ribbon along lower edge
+            !contrast && h('polyline', {
+              points: wavePts.join(' '),
+              fill: 'none',
+              stroke: svgActiveStroke,
+              strokeWidth: 4.5,
+              opacity: dark ? 0.14 : 0.10,
+              strokeLinejoin: 'round'
+            }),
+            h('polyline', {
+              points: wavePts.join(' '),
+              fill: 'none',
+              stroke: contrast ? '#67e8f9' : svgActiveStroke,
+              strokeWidth: 1.4,
+              opacity: contrast ? 0.65 : (dark ? 0.48 : 0.36),
+              strokeLinejoin: 'round'
+            }),
+            // Ambient spotlights behind matched stages
+            !contrast && matchXs.map(function (mx) {
+              return h('ellipse', { key: 'spot-' + mx, cx: mx, cy: 70, rx: 74, ry: 44, fill: 'url(#cns-j-spot)' });
+            }),
+            // Recurrent feedback loop arc under stage 2 with dual-pass glow + return arrow
+            recurMatch && !contrast && h('path', {
+              d: 'M 232 95 C 232 126 184 126 184 95',
+              fill: 'none',
+              stroke: svgActiveStroke,
+              strokeWidth: 7,
+              opacity: 0.22,
+              strokeLinecap: 'round'
+            }),
             h('path', {
               d: 'M 232 95 C 232 126 184 126 184 95',
               fill: 'none',
-              stroke: stageMatchesTheory({ id: 'recurrence' }, selected) ? svgActiveStroke : C.science,
-              strokeWidth: stageMatchesTheory({ id: 'recurrence' }, selected) ? 2.6 : 1.6,
+              stroke: recurMatch ? svgActiveStroke : C.science,
+              strokeWidth: recurMatch ? 2.6 : 1.6,
               strokeDasharray: '4 3'
             }),
+            h('polygon', { points: '180,101 184,93 189,100', fill: recurMatch ? svgActiveStroke : C.science }),
             h('text', { x: 208, y: 136, textAnchor: 'middle', fill: C.muted, fontSize: 10.5, fontWeight: 700 }, 'local loop'),
-            // Global broadcast fan rays above stage 3
+            // Global broadcast fan rays + concentric wave arcs above stage 3
+            !contrast && h('g', { opacity: globalMatch ? 0.85 : 0.35 },
+              h('path', { d: 'M 320 34 A 26 26 0 0 1 364 34', fill: 'none', stroke: globalMatch ? svgActiveStroke : C.science, strokeWidth: 1.5, strokeLinecap: 'round' }),
+              h('path', { d: 'M 307 26 A 40 40 0 0 1 377 26', fill: 'none', stroke: globalMatch ? svgActiveStroke : C.science, strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.6 })
+            ),
+            globalMatch && !contrast && h('path', {
+              d: 'M 342 40 L 296 18 M 342 40 L 342 15 M 342 40 L 388 18',
+              fill: 'none',
+              stroke: svgActiveStroke,
+              strokeWidth: 6,
+              strokeLinecap: 'round',
+              opacity: 0.2
+            }),
             h('path', {
               d: 'M 342 40 L 296 18 M 342 40 L 342 15 M 342 40 L 388 18',
               fill: 'none',
-              stroke: stageMatchesTheory({ id: 'global' }, selected) ? svgActiveStroke : C.science,
-              strokeWidth: stageMatchesTheory({ id: 'global' }, selected) ? 2.4 : 1.4,
+              stroke: globalMatch ? svgActiveStroke : C.science,
+              strokeWidth: globalMatch ? 2.4 : 1.4,
               strokeLinecap: 'round',
-              opacity: 0.85
+              opacity: 0.88
             }),
             h('text', { x: 342, y: 12, textAnchor: 'middle', fill: C.muted, fontSize: 10.5, fontWeight: 700 }, 'broadcast'),
-            // Connector lines between consecutive stages
+            // Connector lines between consecutive stages with dual-pass glow when adjacent to matched stage
             stageNodes.slice(0, -1).map(function (node, i) {
               var next = stageNodes[i + 1];
+              var lit = stageMatchesTheory({ id: node.id }, selected) || stageMatchesTheory({ id: next.id }, selected);
+              var col = lit ? svgActiveStroke : svgStroke;
               return h('g', { key: 'conn-' + node.id },
-                h('line', { x1: node.x + 48, y1: 70, x2: next.x - 52, y2: 70, stroke: svgStroke, strokeWidth: 2 }),
-                h('polygon', { points: (next.x - 52) + ',65 ' + (next.x - 45) + ',70 ' + (next.x - 52) + ',75', fill: svgStroke })
+                lit && !contrast && h('line', { x1: node.x + 48, y1: 70, x2: next.x - 52, y2: 70, stroke: svgActiveStroke, strokeWidth: 6, opacity: 0.2 }),
+                h('line', { x1: node.x + 48, y1: 70, x2: next.x - 52, y2: 70, stroke: col, strokeWidth: lit ? 2.4 : 1.8 }),
+                h('polygon', { points: (next.x - 52) + ',65 ' + (next.x - 45) + ',70 ' + (next.x - 52) + ',75', fill: col })
               );
             }),
-            // Stage cards
+            // Stage cards with subtle bevel shading & luminous focus halo
             stageNodes.map(function (node, idx) {
               var match = stageMatchesTheory({ id: node.id }, selected);
               return h('g', { key: node.id },
-                match && h('rect', { x: node.x - 52, y: 38, width: 104, height: 64, rx: 12, fill: 'none', stroke: svgActiveStroke, strokeWidth: 2.2, opacity: 0.45 }),
+                !contrast && h('rect', { x: node.x - 46, y: 45, width: 96, height: 56, rx: 9, fill: dark ? '#020617' : '#94a3b8', opacity: dark ? 0.55 : 0.2 }),
+                match && h('rect', { x: node.x - 52, y: 38, width: 104, height: 64, rx: 12, fill: 'none', stroke: svgActiveStroke, strokeWidth: 2.2, opacity: 0.52 }),
                 h('rect', {
                   x: node.x - 48, y: 42, width: 96, height: 56, rx: 9,
-                  fill: match ? svgActiveFill : svgNodeFill,
+                  fill: contrast ? (match ? svgActiveFill : svgNodeFill) : (match ? 'url(#cns-j-card-hi)' : 'url(#cns-j-card-lo)'),
                   stroke: match ? svgActiveStroke : svgStroke,
                   strokeWidth: match ? 2.2 : 1.3
                 }),
+                !contrast && h('line', { x1: node.x - 40, y1: 43.5, x2: node.x + 40, y2: 43.5, stroke: '#ffffff', strokeWidth: 1, opacity: dark ? 0.18 : 0.7 }),
                 h('circle', { cx: node.x - 35, cy: 55, r: 9, fill: match ? svgActiveStroke : (dark ? '#334155' : '#e2e8f0') }),
                 h('text', { x: node.x - 35, y: 59, textAnchor: 'middle', fill: match ? C.accentText : C.text, fontSize: 10.5, fontWeight: 800 }, String(idx + 1)),
                 h('text', { x: node.x + 6, y: 66, textAnchor: 'middle', fill: C.text, fontSize: 11, fontWeight: 800 }, node.short),
@@ -2583,14 +3329,25 @@
             'aria-label': __alloT('stem.consciousness.evidence_ladder_scale_aria', 'Four-rung epistemic confidence scale from Established to Unknown showing claims currently placed'),
             style: { display: 'block', width: '100%', height: 'auto' }
           },
+            !contrast && h('defs', null,
+              h('linearGradient', { id: 'cns-ladder-rail', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                h('stop', { offset: '0%', stopColor: rungColors[0] }),
+                h('stop', { offset: '34%', stopColor: rungColors[1] }),
+                h('stop', { offset: '68%', stopColor: rungColors[2] }),
+                h('stop', { offset: '100%', stopColor: rungColors[3] })
+              )
+            ),
             h('rect', { x: 1, y: 1, width: 678, height: 76, rx: 9, fill: ladderSvgBg }),
-            h('line', { x1: 42, y1: 30, x2: 638, y2: 30, stroke: C.border, strokeWidth: 3, strokeLinecap: 'round' }),
+            !contrast && h('line', { x1: 42, y1: 31, x2: 638, y2: 31, stroke: 'url(#cns-ladder-rail)', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.2 }),
+            h('line', { x1: 42, y1: 31, x2: 638, y2: 31, stroke: contrast ? C.border : 'url(#cns-ladder-rail)', strokeWidth: 3, strokeLinecap: 'round' }),
             EVIDENCE_LADDER_LABELS.map(function (lbl, idx) {
               var cx = 92 + idx * 165;
               var cnt = rungCounts[idx];
               var col = rungColors[idx];
               return h('g', { key: lbl },
+                cnt > 0 && !contrast && h('rect', { x: cx - 71, y: 7, width: 142, height: 48, rx: 10, fill: 'none', stroke: col, strokeWidth: 3.5, opacity: 0.2 }),
                 h('rect', { x: cx - 68, y: 10, width: 136, height: 42, rx: 8, fill: cnt > 0 ? (dark || contrast ? '#111827' : '#f8fafc') : ladderSvgBg, stroke: cnt > 0 ? col : C.border, strokeWidth: cnt > 0 ? 2 : 1.2 }),
+                cnt > 0 && !contrast && h('circle', { cx: cx - 50, cy: 31, r: 13, fill: col, opacity: 0.22 }),
                 h('circle', { cx: cx - 50, cy: 31, r: 9, fill: col }),
                 h('text', { x: cx - 50, y: 35, textAnchor: 'middle', fill: contrast ? '#000000' : '#ffffff', fontSize: 10.5, fontWeight: 900 }, String(idx + 1)),
                 h('text', { x: cx + 8, y: 27, textAnchor: 'middle', fill: C.text, fontSize: 11.5, fontWeight: 800 }, lbl),
@@ -3320,7 +4077,17 @@
             dark: dark, contrast: contrast,
             levels: levels,
             sceneKey: cfg.substrate,
-            sceneProps: { substrate: cfg.substrate }
+            sceneProps: {
+              substrate: cfg.substrate,
+              stageLevels: {
+                sensory: (stepTick && stepTick.sensory) || 0,
+                recurrent: (stepTick && stepTick.recurrent) || 0,
+                workspace: (stepTick && stepTick.workspace) || 0,
+                monitor: (stepTick && stepTick.monitor) || 0,
+                output: (stepTick && stepTick.output) || 0
+              },
+              ignited: !!(run && run.markers && run.markers.ignited)
+            }
           });
         }
         var layoutNote = cfg.substrate === 'model'
@@ -3418,6 +4185,9 @@
           : [['sensory', 'Sensory'], ['recurrent', 'Recurrence'], ['workspace', cfg.substrate === 'model' ? 'J-lens' : 'Workspace'], ['monitor', 'Monitor'], ['output', 'Output']];
         var threshY = yFor(SIM_IGNITION_THRESHOLD);
         var cursorX = xFor(stepIndex);
+        var wsAreaPts = ticks.map(function (tk, i) { return xFor(i).toFixed(1) + ',' + yFor(tk.workspace).toFixed(1); }).join(' ')
+          + ' ' + xFor(ticks.length - 1).toFixed(1) + ',' + (H - padB).toFixed(1)
+          + ' ' + xFor(0).toFixed(1) + ',' + (H - padB).toFixed(1);
         return h('div', { className: 'cns-svg-stage', style: { background: chartBg, borderColor: C.border, marginTop: '14px' } },
           h('div', { className: 'cns-chart-header' },
             h('strong', { style: { color: C.text, fontSize: '12px' } }, simple ? 'Activity over time (14 steps)' : 'Temporal ignition & stage dynamics (' + ticks.length + ' steps)'),
@@ -3429,32 +4199,74 @@
             'aria-label': __alloT('stem.consciousness.temporal_ignition_chart_aria', 'Time-series chart of stage activity across ' + ticks.length + ' steps showing the 50 percent ignition threshold'),
             style: { display: 'block', width: '100%', height: 'auto' }
           },
+            !contrast && h('defs', null,
+              h('linearGradient', { id: 'cns-ws-area', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: seriesColors.workspace, stopOpacity: dark ? 0.34 : 0.22 }),
+                h('stop', { offset: '100%', stopColor: seriesColors.workspace, stopOpacity: 0.02 })
+              ),
+              h('linearGradient', { id: 'cns-ign-zone', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: seriesColors.workspace, stopOpacity: dark ? 0.14 : 0.08 }),
+                h('stop', { offset: '100%', stopColor: seriesColors.workspace, stopOpacity: 0.01 })
+              )
+            ),
             h('rect', { x: 0, y: 0, width: W, height: H, rx: 8, fill: chartBg }),
+            // Subtle ignition zone tint above 50% threshold
+            !contrast && h('rect', { x: padL, y: padT, width: plotW, height: Math.max(0, threshY - padT), fill: 'url(#cns-ign-zone)' }),
             [0, 0.25, 0.5, 0.75, 1].map(function (v) {
               var y = yFor(v);
               return h('g', { key: 'y-' + v },
-                h('line', { x1: padL, y1: y, x2: W - padR, y2: y, stroke: gridCol, strokeWidth: v === 0.5 ? 1.5 : 1, strokeDasharray: v === 0.5 ? '6 4' : undefined }),
+                h('line', { x1: padL, y1: y, x2: W - padR, y2: y, stroke: v === 0.5 && !contrast ? C.warn : gridCol, strokeWidth: v === 0.5 ? 1.5 : 1, strokeDasharray: v === 0.5 ? '6 4' : undefined, opacity: v === 0.5 ? 0.75 : 1 }),
                 h('text', { x: padL - 7, y: y + 4, textAnchor: 'end', fill: C.muted, fontSize: 10.5 }, Math.round(v * 100) + '%')
               );
             }),
             h('text', { x: W - padR - 4, y: threshY - 5, textAnchor: 'end', fill: C.warn, fontSize: 10.5, fontWeight: 800 }, 'Ignition threshold (50%)'),
-            !simple && h('line', { x1: cursorX, y1: padT, x2: cursorX, y2: H - padB, stroke: C.accent, strokeWidth: 1.5, strokeDasharray: '3 3', opacity: 0.75 }),
-            run.markers.ignited && run.markers.ignitionTick != null && h('circle', {
-              cx: xFor(run.markers.ignitionTick),
-              cy: yFor((ticks[run.markers.ignitionTick] || {}).workspace),
-              r: 6, fill: seriesColors.workspace, stroke: chartBg, strokeWidth: 2
-            }),
+            // Shaded area fill beneath primary workspace trace
+            !contrast && h('polygon', { points: wsAreaPts, fill: 'url(#cns-ws-area)' }),
+            // Active step vertical band + scrubber line
+            !simple && !contrast && h('rect', { x: Math.max(padL, cursorX - 9), y: padT, width: 18, height: plotH, rx: 4, fill: C.accent, opacity: dark ? 0.14 : 0.09 }),
+            !simple && h('line', { x1: cursorX, y1: padT, x2: cursorX, y2: H - padB, stroke: C.accent, strokeWidth: 1.6, strokeDasharray: '3 3', opacity: 0.85 }),
             activeSeries.map(function (entry) {
               var key = entry[0];
               var pts = ticks.map(function (tk, i) { return xFor(i).toFixed(1) + ',' + yFor(tk[key]).toFixed(1); }).join(' ');
               var isWorkspace = key === 'workspace';
-              return h('polyline', {
-                key: key, points: pts, fill: 'none',
-                stroke: seriesColors[key], strokeWidth: isWorkspace ? 3 : 2,
-                strokeLinejoin: 'round', strokeLinecap: 'round',
-                opacity: isWorkspace ? 1 : 0.88
-              });
+              return h('g', { key: key },
+                isWorkspace && !contrast && h('polyline', {
+                  points: pts, fill: 'none',
+                  stroke: seriesColors[key], strokeWidth: 7.5,
+                  strokeLinejoin: 'round', strokeLinecap: 'round',
+                  opacity: dark ? 0.24 : 0.16
+                }),
+                h('polyline', {
+                  points: pts, fill: 'none',
+                  stroke: seriesColors[key], strokeWidth: isWorkspace ? 3 : 2,
+                  strokeLinejoin: 'round', strokeLinecap: 'round',
+                  opacity: isWorkspace ? 1 : 0.88
+                }),
+                !simple && stepTick && h('circle', {
+                  cx: cursorX, cy: yFor(stepTick[key]),
+                  r: isWorkspace ? 4.5 : 3.2,
+                  fill: seriesColors[key], stroke: chartBg, strokeWidth: 1.5
+                })
+              );
             }),
+            // Luminous ignition beacon rings
+            run.markers.ignited && run.markers.ignitionTick != null && h('g', null,
+              !contrast && h('circle', {
+                cx: xFor(run.markers.ignitionTick),
+                cy: yFor((ticks[run.markers.ignitionTick] || {}).workspace),
+                r: 13, fill: seriesColors.workspace, opacity: 0.2
+              }),
+              h('circle', {
+                cx: xFor(run.markers.ignitionTick),
+                cy: yFor((ticks[run.markers.ignitionTick] || {}).workspace),
+                r: 9, fill: 'none', stroke: seriesColors.workspace, strokeWidth: 1.5, opacity: 0.65
+              }),
+              h('circle', {
+                cx: xFor(run.markers.ignitionTick),
+                cy: yFor((ticks[run.markers.ignitionTick] || {}).workspace),
+                r: 5.5, fill: seriesColors.workspace, stroke: chartBg, strokeWidth: 2
+              })
+            ),
             [0, 3, 6, 9, 13].filter(function (i) { return i < ticks.length; }).map(function (i) {
               return h('text', { key: 'x-' + i, x: xFor(i), y: H - 12, textAnchor: 'middle', fill: C.muted, fontSize: 10.5 }, 'Step ' + (i + 1));
             })

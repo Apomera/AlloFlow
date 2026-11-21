@@ -22,6 +22,51 @@
 (function () {
   'use strict';
 
+  var hasOwn = Object.prototype.hasOwnProperty;
+  var MAX_LIBRARY_JSON_CHARS = 512 * 1024;
+  var MAX_ARCHIVE_JSON_CHARS = 2 * 1024 * 1024;
+  var MAX_AI_INSTRUCTION_CHARS = 4000;
+
+  function isUnsafeKey(key) {
+    return key === '__proto__' || key === 'prototype' || key === 'constructor';
+  }
+  function isPlainObject(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
+  }
+  function safeAssign(target, source) {
+    if (!isPlainObject(source)) return target;
+    Object.keys(source).forEach(function (key) {
+      if (!isUnsafeKey(key)) target[key] = source[key];
+    });
+    return target;
+  }
+  function safeJsonParse(raw, maxChars) {
+    if (typeof raw !== 'string') throw new Error('Expected JSON string');
+    if (maxChars && raw.length > maxChars) throw new Error('JSON payload exceeds maximum size');
+    return JSON.parse(raw, function (key, val) {
+      return isUnsafeKey(key) ? undefined : val;
+    });
+  }
+  function safeStringify(value) {
+    try { return JSON.stringify(value); } catch (_) { return null; }
+  }
+  function isBrowserAiBlocked(fn) {
+    if (fn && fn._alloQrBlocked === true) return true;
+    if (typeof window === 'undefined' || !window) return false;
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return true;
+    if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return true;
+    if (window.__alloQrStudentMode === true) {
+      if (typeof window.__alloAiUsable === 'function') {
+        try { return !window.__alloAiUsable('text', fn); } catch (_) { return true; }
+      }
+      return true;
+    }
+    if (typeof window.__alloAiUsable === 'function') {
+      try { return !window.__alloAiUsable('text', fn); } catch (_) { return true; }
+    }
+    return false;
+  }
+
   function getContracts(injected) {
     if (injected) return injected;
     if (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AgentCoreContracts) {
@@ -70,12 +115,12 @@
     // inputs so execution never consults whatever the controls contain later.
     function frozenSettings(request, legacySettings) {
       var req = request || {};
-      var prior = legacySettings && typeof legacySettings === 'object' && !Array.isArray(legacySettings) ? legacySettings : {};
+      var prior = isPlainObject(legacySettings) ? legacySettings : {};
       var primaryLanguage = req.primaryLanguage || req.language || prior.primaryLanguage || prior.language || prior.leveledTextLanguage || '';
       var reviewedImageStyle = req.universalImageStyle !== undefined ? req.universalImageStyle
         : (req.imageGenerationStyle !== undefined ? req.imageGenerationStyle
           : (prior.universalImageStyle !== undefined ? prior.universalImageStyle : prior.imageGenerationStyle));
-      var raw = Object.assign({}, prior, {
+      var raw = safeAssign(safeAssign({}, prior), {
         gradeLevel: req.gradeLevel || prior.gradeLevel || '',
         tone: req.tone !== undefined ? req.tone : prior.tone,
         primaryLanguage: primaryLanguage,
@@ -126,7 +171,7 @@
       });
       if (GenerationMatrix && typeof GenerationMatrix.buildFrozenGenerationSettings === 'function') {
         try {
-          var canonical = GenerationMatrix.buildFrozenGenerationSettings(Object.assign({}, raw, {
+          var canonical = GenerationMatrix.buildFrozenGenerationSettings(safeAssign(safeAssign({}, raw), {
             sourceText: req.sourceText || '',
             sourceFingerprint: req.sourceFingerprint || prior.sourceFingerprint || ''
           }));
@@ -134,7 +179,7 @@
           // Blueprint review also needs the translation inputs themselves, so
           // retain the complete Universal snapshot alongside its canonical
           // derived fields.
-          return Object.freeze(Object.assign({}, raw, canonical));
+          return Object.freeze(safeAssign(safeAssign({}, raw), canonical));
         } catch (_) {}
       }
       return Object.freeze(raw);
@@ -142,12 +187,13 @@
 
     function generationOptions(request, settings) {
       var req = request || {};
+      var base = isPlainObject(settings) ? settings : {};
       var artifacts = Array.isArray(req.existingArtifacts) ? req.existingArtifacts
         : (Array.isArray(req.history) ? req.history : []);
-      return Object.assign({}, settings || {}, {
+      return safeAssign(safeAssign({}, base), {
         existingArtifacts: artifacts,
         sourceText: req.sourceText || '',
-        sourceFingerprint: req.sourceFingerprint || settings.sourceFingerprint || ''
+        sourceFingerprint: req.sourceFingerprint || base.sourceFingerprint || ''
       });
     }
 
@@ -183,10 +229,12 @@
       if (!before || !after) return true;
       var beforeActivity = before.activityConfig && typeof before.activityConfig === 'object' ? before.activityConfig : null;
       var afterActivity = after.activityConfig && typeof after.activityConfig === 'object' ? after.activityConfig : null;
+      var leftJson = safeStringify(beforeActivity);
+      var rightJson = safeStringify(afterActivity);
       return String(before.tool || '') !== String(after.tool || '')
         || String(before.directive || '') !== String(after.directive || '')
         || String(before.activityMode || '') !== String(after.activityMode || '')
-        || JSON.stringify(beforeActivity) !== JSON.stringify(afterActivity);
+        || leftJson === null || rightJson === null || leftJson !== rightJson;
     }
 
     function generationSettingsChanged(before, after) {
@@ -203,7 +251,9 @@
         left[key] = before && before[key] !== undefined ? before[key] : null;
         right[key] = after && after[key] !== undefined ? after[key] : null;
       });
-      return JSON.stringify(left) !== JSON.stringify(right);
+      var leftJson = safeStringify(left);
+      var rightJson = safeStringify(right);
+      return leftJson === null || rightJson === null || leftJson !== rightJson;
     }
 
     function priorArtifactDescriptors(blueprint, row) {
@@ -353,7 +403,10 @@
         provenance: req.provenance
       };
       if (typeof d.autoConfigure === 'function') {
-        return Promise.resolve(d.autoConfigure(req)).then(function (legacyConfig) {
+        if (isBrowserAiBlocked(d.autoConfigure)) {
+          return Promise.reject(new Error('AI generation is disabled in this session'));
+        }
+        return Promise.resolve().then(function () { return d.autoConfigure(req); }).then(function (legacyConfig) {
           legacyConfig = legacyConfig && typeof legacyConfig === 'object' ? legacyConfig : {};
           legacyConfig.globalSettings = frozenSettings(req, legacyConfig.globalSettings);
           var bp = applyDraftTextAccessDefaults(C.fromLegacyConfig(legacyConfig, ctx), {
@@ -445,11 +498,11 @@
       // does not explicitly rebuild instructionalContext. The contract will
       // normalize and fingerprint this new reviewed snapshot.
       if ((ch.standardsContext !== undefined || standardsTextChanged) && ch.instructionalContext === undefined) {
-        nextInstructionalContext = Object.assign({}, b.instructionalContext || {}, {
+        nextInstructionalContext = Object.assign({}, nextInstructionalContext || {}, {
           standardsContext: nextStandardsContext,
           standardsFingerprint: ''
         });
-        if (b.instructionalContext && b.instructionalContext.adaptedTextPolicySource === 'standard') {
+        if (nextInstructionalContext && nextInstructionalContext.adaptedTextPolicySource === 'standard') {
           delete nextInstructionalContext.adaptedTextPolicy;
           delete nextInstructionalContext.adaptedTextPolicySource;
           delete nextInstructionalContext.textAccessReason;
@@ -458,15 +511,15 @@
       var next = {
         schemaVersion: b.schemaVersion,
         blueprintId: b.blueprintId,
-        audience: ch.audience ? Object.assign({}, b.audience, ch.audience) : b.audience,
+        audience: isPlainObject(ch.audience) ? safeAssign(safeAssign({}, b.audience), ch.audience) : b.audience,
         standards: typeof ch.standards === 'string' ? ch.standards : b.standards,
         standardsContext: nextStandardsContext,
         instructionalContext: nextInstructionalContext,
         sourcePolicy: b.sourcePolicy,
-        lessonDNA: ch.lessonDNA ? Object.assign({}, b.lessonDNA, ch.lessonDNA) : b.lessonDNA,
-        globalSettings: ch.globalSettings ? Object.assign({}, b.globalSettings, ch.globalSettings) : b.globalSettings,
+        lessonDNA: isPlainObject(ch.lessonDNA) ? safeAssign(safeAssign({}, b.lessonDNA), ch.lessonDNA) : b.lessonDNA,
+        globalSettings: isPlainObject(ch.globalSettings) ? safeAssign(safeAssign({}, b.globalSettings), ch.globalSettings) : b.globalSettings,
         plan: plan,
-        configs: ch.configs ? Object.assign({}, b.configs, ch.configs) : b.configs,
+        configs: isPlainObject(ch.configs) ? safeAssign(safeAssign({}, b.configs), ch.configs) : b.configs,
         warnings: b.warnings,
         review: { state: 'draft', reviewer: '' }, // edits always re-enter review
         provenance: b.provenance
@@ -504,10 +557,14 @@
       if (typeof d.modifyBlueprint !== 'function') {
         return Promise.reject(new Error('modifyBlueprint dependency not configured'));
       }
+      if (isBrowserAiBlocked(d.modifyBlueprint)) {
+        return Promise.reject(new Error('AI generation is disabled in this session'));
+      }
       var report = validate(blueprint);
       if (!report.ok) return Promise.reject(Object.assign(new Error('Invalid Blueprint'), { report: report }));
       var b = report.value;
-      return Promise.resolve(d.modifyBlueprint(C.toLegacyConfig(b), String(instruction || ''))).then(function (legacyConfig) {
+      var boundedInstruction = String(instruction || '').slice(0, MAX_AI_INSTRUCTION_CHARS);
+      return Promise.resolve().then(function () { return d.modifyBlueprint(C.toLegacyConfig(b), boundedInstruction); }).then(function (legacyConfig) {
         var rawPlan = legacyConfig && Array.isArray(legacyConfig.resourcePlan) ? legacyConfig.resourcePlan : [];
         var next = C.fromLegacyConfig(legacyConfig, {
           blueprintId: b.blueprintId,
@@ -571,9 +628,9 @@
         // The legacy shape cannot represent every Blueprint field. Preserve
         // contract context that the AI revision never received rather than
         // silently resetting it during the round-trip.
-        next.audience = Object.assign({}, b.audience, next.audience);
+        next.audience = safeAssign(safeAssign({}, b.audience), next.audience);
         next.sourcePolicy = b.sourcePolicy;
-        var revisionText = String(instruction || '');
+        var revisionText = boundedInstruction;
         var removeAdapted = /\b(?:remove|omit|exclude|without)\b[^.\n]{0,80}\b(?:adapted|simplified)\b/i.test(revisionText)
           || /\b(?:adapted|simplified)\b[^.\n]{0,80}\b(?:remove|omit|exclude)\b/i.test(revisionText);
         var includeAdapted = /\b(?:add|include|create|restore)\b[^.\n]{0,80}\b(?:adapted|simplified)\b/i.test(revisionText)
@@ -581,7 +638,7 @@
         next.instructionalContext = removeAdapted
           ? withReviewedAdaptedPolicy(b.instructionalContext, 'omit')
           : (includeAdapted ? withReviewedAdaptedPolicy(b.instructionalContext, 'include') : b.instructionalContext);
-        next.globalSettings = Object.assign({}, b.globalSettings, next.globalSettings);
+        next.globalSettings = safeAssign(safeAssign({}, b.globalSettings), next.globalSettings);
         next.warnings = b.warnings;
         next = applyDraftTextAccessDefaults(next, {
           ensureAnalysis: b.plan.some(function (row) { return row && row.tool === 'analysis'; }),
@@ -618,9 +675,15 @@
     function checkCapabilities(blueprint, manifest) {
       var report = validate(blueprint);
       if (!report.ok) return { ok: false, missing: [], errors: report.errors };
-      var m = manifest && manifest.schemaVersion ? manifest : null;
+      var m = null;
+      if (manifest && typeof C.validateCapabilityManifest === 'function') {
+        var mReport = C.validateCapabilityManifest(manifest);
+        m = mReport && mReport.ok ? mReport.value : null;
+      } else {
+        m = manifest && manifest.schemaVersion ? manifest : null;
+      }
       var missing = report.value.requiredCapabilities.filter(function (cap) {
-        var block = m && m[cap];
+        var block = m && typeof cap === 'string' && hasOwn.call(m, cap) ? m[cap] : null;
         return !(block && block.available);
       });
       return { ok: missing.length === 0, missing: missing, errors: [] };
@@ -637,7 +700,9 @@
       if (!report.ok) return { ok: false, errors: report.errors, steps: [], approvalRequired: true };
       var caps = checkCapabilities(report.value, manifest);
       var steps = report.value.plan.map(function (r, i) {
-        var commandId = C.TOOL_TO_COMMAND[r.tool] || null;
+        var commandId = (C.TOOL_TO_COMMAND && typeof r.tool === 'string' && hasOwn.call(C.TOOL_TO_COMMAND, r.tool))
+          ? (C.TOOL_TO_COMMAND[r.tool] || null)
+          : null;
         var contract = (commandId && typeof d.getCommandContract === 'function') ? d.getCommandContract(commandId) : null;
         return {
           index: i,
@@ -683,7 +748,8 @@
       var report = validate(blueprint);
       if (!report.ok) return { ok: false, errors: report.errors, value: null };
       var b = report.value;
-      b.review = { state: 'approved', reviewer: String(reviewer || 'teacher') };
+      var cleanReviewer = String(reviewer || 'teacher').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 200) || 'teacher';
+      b.review = { state: 'approved', reviewer: cleanReviewer };
       return { ok: true, errors: [], value: b };
     }
 
@@ -758,7 +824,7 @@
       // instead of silently dropping work the teacher thought was reviewed.
       return (Array.isArray(steps) ? steps : []).slice(0, maxSteps + 1).map(function (raw, index) {
         var command = commandById(ctx, raw && raw.commandId);
-        var params = raw && raw.params || {};
+        var params = isPlainObject(raw && raw.params) ? safeAssign({}, raw.params) : {};
         if (typeof d.sanitizeCommandParams === 'function') {
           try { params = d.sanitizeCommandParams(command, params); } catch (_) { params = {}; }
         }
@@ -792,7 +858,7 @@
       if (!report.ok) return report;
       var next = report.value;
       var ch = changes || {};
-      var steps = next.steps.map(function (step) { return Object.assign({}, step, { params: Object.assign({}, step.params) }); });
+      var steps = next.steps.map(function (step) { return Object.assign({}, step, { params: safeAssign({}, step.params) }); });
       if (Array.isArray(ch.replaceSteps)) steps = sanitizeSteps(ch.replaceSteps, ctx);
       if (ch.removeStepId) steps = steps.filter(function (step) { return step.stepId !== ch.removeStepId; });
       if (ch.moveStep && ch.moveStep.stepId) {
@@ -806,7 +872,7 @@
       if (ch.setParam && ch.setParam.stepId) {
         steps = steps.map(function (step) {
           if (step.stepId !== ch.setParam.stepId) return step;
-          var params = Object.assign({}, step.params);
+          var params = safeAssign({}, step.params);
           var paramKey = String(ch.setParam.key || '');
           if (paramKey && paramKey !== '__proto__' && paramKey !== 'constructor' && paramKey !== 'prototype') {
             params[paramKey] = ch.setParam.value;
@@ -857,10 +923,22 @@
         var setIndex = Number(match[1]) - 1;
         if (!steps[setIndex]) return { ok: false, errors: [{ code: 'unknown-step', path: 'steps', message: 'That step number is not in the workflow.' }], value: null, summary: '' };
         var rawValue = match[3].trim();
-        var value = /^(true|false)$/i.test(rawValue) ? /^true$/i.test(rawValue) : (/^-?\d+(?:\.\d+)?$/.test(rawValue) ? Number(rawValue) : rawValue);
+        var numericValue = /^-?\d+(?:\.\d+)?$/.test(rawValue) ? Number(rawValue) : NaN;
+        var value = /^(true|false)$/i.test(rawValue) ? /^true$/i.test(rawValue) : (Number.isFinite(numericValue) ? numericValue : rawValue);
+        var beforeParams = report.value.steps[setIndex].params || {};
         var setReport = revise(report.value, { setParam: { stepId: steps[setIndex].stepId, key: match[2], value: value } }, ctx);
-        if (setReport.ok && !Object.prototype.hasOwnProperty.call(setReport.value.steps[setIndex].params, match[2])) {
-          return { ok: false, errors: [{ code: 'unsupported-param', path: 'steps[' + setIndex + '].params.' + match[2], message: 'That command does not accept the requested parameter.' }], value: null, summary: '' };
+        if (setReport.ok) {
+          var afterParams = setReport.value.steps[setIndex].params || {};
+          var contractForStep = typeof d.getCommandContract === 'function' ? d.getCommandContract(steps[setIndex].commandId) : null;
+          var canonicalKey = (contractForStep && contractForStep.aliases && Object.prototype.hasOwnProperty.call(contractForStep.aliases, match[2]))
+            ? contractForStep.aliases[match[2]]
+            : match[2];
+          var hasKey = Object.prototype.hasOwnProperty.call(afterParams, match[2])
+            || Object.prototype.hasOwnProperty.call(afterParams, canonicalKey)
+            || JSON.stringify(afterParams) !== JSON.stringify(beforeParams);
+          if (!hasKey) {
+            return { ok: false, errors: [{ code: 'unsupported-param', path: 'steps[' + setIndex + '].params.' + match[2], message: 'That command does not accept the requested parameter.' }], value: null, summary: '' };
+          }
         }
         return Object.assign({}, setReport, { summary: 'Updated step ' + (setIndex + 1) + '.' });
       }
@@ -881,7 +959,8 @@
     function approve(workflow, reviewer, ctx) {
       var report = validate(workflow, ctx);
       if (!report.ok) return report;
-      return validate(Object.assign({}, report.value, { review: { state: 'approved', reviewer: String(reviewer || 'teacher').slice(0, 200) } }), ctx);
+      var cleanReviewer = String(reviewer || 'teacher').replace(/[\u0000-\u001F\u007F]/g, '').trim().slice(0, 200) || 'teacher';
+      return validate(Object.assign({}, report.value, { review: { state: 'approved', reviewer: cleanReviewer } }), ctx);
     }
     function planExecution(workflow, ctx, opts) {
       var report = validate(workflow, ctx);
@@ -910,7 +989,7 @@
       try {
         var raw = storage.getItem(COMMAND_WORKFLOW_LIBRARY_KEY);
         if (!raw) return { ok: true, errors: [], warnings: [], items: [] };
-        var parsed = JSON.parse(raw);
+        var parsed = safeJsonParse(raw, MAX_LIBRARY_JSON_CHARS);
         var items = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.items) ? parsed.items : null);
         if (!items) return libraryError('library-corrupt', 'The saved Command Blueprint library could not be read.');
         if (!Array.isArray(parsed) && parsed.schemaVersion !== C.SCHEMA_VERSION) return libraryError('library-version-unsupported', 'This saved Command Blueprint library uses an unsupported version.');
@@ -1041,7 +1120,9 @@
   var LESSON_TEMPLATE_VERSION = 1;
 
   function _templateSafeString(value, max) {
-    return String(value == null ? '' : value).slice(0, max || 120);
+    return String(value == null ? '' : value)
+      .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '')
+      .slice(0, max || 120);
   }
 
   // opts.directives: { [uiId]: 'keep' | 'blank' } — the save-time review.
@@ -1050,15 +1131,17 @@
     var cfg = (legacyConfig && typeof legacyConfig === 'object') ? legacyConfig : {};
     var o = opts || {};
     var policy = (o.directives && typeof o.directives === 'object') ? o.directives : {};
-    var rawPlan = Array.isArray(cfg.resourcePlan) ? cfg.resourcePlan : [];
+    var rawPlan = Array.isArray(cfg.resourcePlan) ? cfg.resourcePlan.slice(0, 64) : [];
     var plan = rawPlan.map(function (row, i) {
       var tool = row && (row.tool || row.type);
       if (!tool) return null;
-      var uiId = (row && (row.uiId || row.stepId)) || (String(tool) + '-' + i);
-      var keep = policy[uiId] !== 'blank';
+      var toolName = String(tool);
+      if (isUnsafeKey(toolName)) return null;
+      var uiId = String((row && (row.uiId || row.stepId)) || (toolName + '-' + i));
+      var keep = !(hasOwn.call(policy, uiId) && policy[uiId] === 'blank');
       return {
-        tool: String(tool),
-        uiId: String(uiId),
+        tool: toolName,
+        uiId: uiId,
         directive: keep ? _templateSafeString(row && row.directive, 600) : ''
       };
     }).filter(Boolean);
@@ -1080,13 +1163,15 @@
   // would otherwise appear to describe it.
   function applyLessonTemplate(template) {
     var t = (template && typeof template === 'object') ? template : {};
-    var plan = Array.isArray(t.resourcePlan) ? t.resourcePlan : [];
+    var plan = Array.isArray(t.resourcePlan) ? t.resourcePlan.slice(0, 64) : [];
     var rows = plan.map(function (row, i) {
       var tool = row && (row.tool || row.type);
       if (!tool) return null;
+      var toolName = String(tool);
+      if (isUnsafeKey(toolName)) return null;
       return {
-        tool: String(tool),
-        uiId: String((row && (row.uiId || row.stepId)) || (String(tool) + '-' + i)),
+        tool: toolName,
+        uiId: String((row && (row.uiId || row.stepId)) || (toolName + '-' + i)),
         directive: _templateSafeString(row && row.directive, 600)
       };
     }).filter(Boolean);
@@ -1094,7 +1179,10 @@
     var out = {
       resourcePlan: rows,
       recommendedResources: rows.map(function (r) { return r.tool; }),
-      toolDirectives: rows.reduce(function (acc, r) { if (!acc[r.tool]) acc[r.tool] = r.directive || ''; return acc; }, {}),
+      toolDirectives: rows.reduce(function (acc, r) {
+        if (!isUnsafeKey(r.tool) && !hasOwn.call(acc, r.tool)) acc[r.tool] = r.directive || '';
+        return acc;
+      }, {}),
       globalSettings: {}
     };
     if (gs.gradeLevel) out.globalSettings.gradeLevel = gs.gradeLevel;
@@ -1106,18 +1194,28 @@
 
   function createLessonTemplateLibrary(storage) {
     var store = storage || (function () { try { return window.localStorage; } catch (_) { return null; } })();
+    var frozen = false;
     function readAll() {
       if (!store) return [];
       try {
         var raw = store.getItem(LESSON_TEMPLATE_LIBRARY_KEY);
-        if (!raw) return [];
-        var env = JSON.parse(raw);
-        if (!env || env.v !== LESSON_TEMPLATE_VERSION || !Array.isArray(env.templates)) return [];
-        return env.templates;
-      } catch (_) { return []; }
+        if (!raw) { frozen = false; return []; }
+        var env = safeJsonParse(raw, MAX_LIBRARY_JSON_CHARS);
+        if (!env) {
+          frozen = true;
+          return [];
+        }
+        if (typeof env.v === 'number' && env.v > LESSON_TEMPLATE_VERSION) {
+          frozen = true;
+          return [];
+        }
+        frozen = false;
+        if (env.v !== LESSON_TEMPLATE_VERSION || !Array.isArray(env.templates)) return [];
+        return env.templates.slice(0, 100);
+      } catch (_) { frozen = true; return []; }
     }
     function writeAll(list) {
-      if (!store) return false;
+      if (!store || frozen) return false;
       try {
         store.setItem(LESSON_TEMPLATE_LIBRARY_KEY, JSON.stringify({
           v: LESSON_TEMPLATE_VERSION, savedAt: new Date().toISOString(), templates: list.slice(0, 100)
@@ -1127,9 +1225,10 @@
     }
     return {
       list: function () { return readAll(); },
+      isFrozen: function () { readAll(); return frozen; },
       get: function (id) { return readAll().filter(function (t) { return t && t.id === id; })[0] || null; },
       save: function (template) {
-        if (!template || !template.id) return null;
+        if (!template || typeof template.id !== 'string' || !template.id.trim()) return null;
         var list = readAll().filter(function (t) { return t && t.id !== template.id; });
         list.unshift(template);
         return writeAll(list) ? template : null;
@@ -1177,7 +1276,7 @@
       else if (s === 'failed' || s === 'interrupted') failed++;
     });
     var copy;
-    try { copy = JSON.parse(JSON.stringify({ plan: plan || null, run: run || null })); }
+    try { copy = safeJsonParse(JSON.stringify({ plan: plan || null, run: run || null }), MAX_ARCHIVE_JSON_CHARS); }
     catch (_) { return null; } // a non-serializable pair must not poison the cabinet
     return {
       v: BLUEPRINT_ARCHIVE_VERSION,
@@ -1200,8 +1299,12 @@
       try {
         var raw = store.getItem(BLUEPRINT_ARCHIVE_KEY);
         if (!raw) { frozen = false; return []; }
-        var env = JSON.parse(raw);
-        if (env && typeof env.v === 'number' && env.v > BLUEPRINT_ARCHIVE_VERSION) {
+        var env = safeJsonParse(raw, MAX_ARCHIVE_JSON_CHARS);
+        if (!env) {
+          frozen = true;
+          return [];
+        }
+        if (typeof env.v === 'number' && env.v > BLUEPRINT_ARCHIVE_VERSION) {
           // A NEWER build wrote this. Refuse to read or overwrite it — same
           // stance as the workspace-recovery payload check. Downgrades lose
           // access temporarily; they never lose data.
@@ -1209,9 +1312,9 @@
           return [];
         }
         frozen = false;
-        if (!env || env.v !== BLUEPRINT_ARCHIVE_VERSION || !Array.isArray(env.plans)) return [];
-        return env.plans;
-      } catch (_) { frozen = false; return []; }
+        if (env.v !== BLUEPRINT_ARCHIVE_VERSION || !Array.isArray(env.plans)) return [];
+        return env.plans.slice(0, BLUEPRINT_ARCHIVE_MAX);
+      } catch (_) { frozen = true; return []; }
     }
     function writeAll(list) {
       if (!store || frozen) return false;
@@ -1231,7 +1334,7 @@
       isFrozen: function () { readAll(); return frozen; },
       get: function (id) { return readAll().filter(function (p) { return p && p.id === id; })[0] || null; },
       add: function (record) {
-        if (!record || !record.id) return false;
+        if (!record || typeof record.id !== 'string' || !record.id.trim()) return false;
         var list = readAll().filter(function (p) { return p && p.id !== record.id; });
         list.unshift(record);
         return writeAll(list);

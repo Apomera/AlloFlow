@@ -35,7 +35,7 @@
 
   function MathCreateModal(props) {
     var t = props.t || function (k, f) { return typeof f === 'string' ? f : k; };
-    var onClose = props.onClose || function () {};
+    var onCloseProp = props.onClose || function () {};
     var addToast = props.addToast || function () {};
     var mathInput = props.mathInput || '';
     var setMathInput = props.setMathInput || function () {};
@@ -52,9 +52,19 @@
     var assessmentRunRef = React.useRef(false);
     var assessmentCacheRef = React.useRef(null);
     var assessmentMountedRef = React.useRef(true);
+    var srTimerRef = React.useRef(null);
+    var onCloseRef = React.useRef(onCloseProp);
+    onCloseRef.current = onCloseProp;
+    var onClose = function () { return onCloseRef.current(); };
     var _assessmentBusy = React.useState(false), assessmentBusy = _assessmentBusy[0], setAssessmentBusy = _assessmentBusy[1];
     var _assessmentResult = React.useState(null), assessmentResult = _assessmentResult[0], setAssessmentResult = _assessmentResult[1];
-    React.useEffect(function () { assessmentMountedRef.current = true; return function () { assessmentMountedRef.current = false; }; }, []);
+    React.useEffect(function () {
+      assessmentMountedRef.current = true;
+      return function () {
+        assessmentMountedRef.current = false;
+        if (srTimerRef.current) { clearTimeout(srTimerRef.current); srTimerRef.current = null; }
+      };
+    }, []);
     var setAssessmentBlocks = props.setAssessmentBlocks || function () {};
     var handleGenerateMath = props.handleGenerateMath;
     var setActiveView = props.setActiveView || function () {};
@@ -76,8 +86,12 @@
     var _sr = React.useState('');
     var srMsg = _sr[0], setSrMsg = _sr[1];
     function announceToSR(msg) {
+      if (srTimerRef.current) clearTimeout(srTimerRef.current);
       setSrMsg('');
-      setTimeout(function () { setSrMsg(String(msg || '')); }, 30);
+      srTimerRef.current = setTimeout(function () {
+        srTimerRef.current = null;
+        if (assessmentMountedRef.current) setSrMsg(String(msg || ''));
+      }, 30);
     }
 
     // Use the same MathLive dialog as the Math view. A request belongs to the
@@ -181,7 +195,7 @@
         if (e.defaultPrevented || (e.target instanceof Node && dialogRef.current && !dialogRef.current.contains(e.target))) return;
         if (e.key === 'Escape') { e.preventDefault(); onClose(); return; }
         if (e.key !== 'Tab' || !dialogRef.current) return;
-        var focusables = dialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+        var focusables = dialogRef.current.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
         if (!focusables.length) return;
         var first = focusables[0], last = focusables[focusables.length - 1];
         if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
@@ -205,13 +219,15 @@
           || (problem._verification?.reviewRequired === true
             && ['unsupported_verification', 'answer_needs_review'].includes(problem._verification.reason)));
     }
-    var assessmentReviewOnly = assessmentMatchesSettings && assessmentResult.sections.length > 0
+    var assessmentReviewOnly = assessmentMatchesSettings && Array.isArray(assessmentResult.sections) && assessmentResult.sections.length > 0
       && assessmentResult.sections.every(isPreparedForReview)
+      && Array.isArray(assessmentResult.content?.problems)
       && assessmentResult.content.problems.some(problem => problem._verification?.reviewRequired === true);
+    var totalAssessmentQty = assessmentBlocks.reduce((sum, block) => sum + (Number(block?.quantity) || 0), 0);
     var assessmentGenerateLabel = assessmentReviewOnly ? 'Prepared - open to review'
-      : (assessmentBusy ? 'Preparing (' : assessmentMatchesSettings && assessmentResult.content.preparation.status === 'partial'
+      : (assessmentBusy ? 'Preparing (' : assessmentMatchesSettings && assessmentResult.content?.preparation?.status === 'partial'
         ? 'Retry incomplete sections (' : 'Generate All (')
-        + assessmentBlocks.reduce((sum, block) => sum + block.quantity, 0) + ' problems)';
+        + totalAssessmentQty + ' problems)';
 
     var body = showAssessmentBuilder
       ? React.createElement("div", {
@@ -221,16 +237,18 @@
         }, /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-3"
         }, /*#__PURE__*/React.createElement("button", {
+          type: "button",
           onClick: () => setShowAssessmentBuilder(false),
-          className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors",
+          className: "min-w-11 min-h-11 inline-flex items-center justify-center p-2 hover:bg-slate-100 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
           'aria-label': 'Back'
         }, /*#__PURE__*/React.createElement(ArrowLeft, {
           size: 18,
-          className: "text-slate-500"
+          className: "text-slate-700",
+          "aria-hidden": "true"
         })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
           className: "text-lg font-bold text-slate-800"
         }, "\uD83D\uDCCB Assessment Builder"), /*#__PURE__*/React.createElement("p", {
-          className: "text-xs text-slate-500"
+          className: "text-xs text-slate-600"
         }, "Compose blocks of different problem types into a custom assessment")))), /*#__PURE__*/React.createElement("div", {
           className: "space-y-2"
         }, assessmentBlocks.map((block, idx) => /*#__PURE__*/React.createElement("div", {
@@ -240,9 +258,12 @@
           onDragStart: e => e.dataTransfer.setData('blockIdx', idx.toString()),
           onDragOver: e => e.preventDefault(),
           onDrop: e => {
-            const fromIdx = parseInt(e.dataTransfer.getData('blockIdx'));
+            e.preventDefault();
+            const fromIdx = parseInt(e.dataTransfer.getData('blockIdx'), 10);
+            if (!Number.isInteger(fromIdx) || fromIdx < 0 || fromIdx >= assessmentBlocks.length || fromIdx === idx) return;
             const newBlocks = [...assessmentBlocks];
             const [moved] = newBlocks.splice(fromIdx, 1);
+            if (!moved) return;
             newBlocks.splice(idx, 0, moved);
             setAssessmentBlocks(newBlocks);
           }
@@ -259,7 +280,7 @@
           // block.type is a machine value ('word_problems') and several blocks
           // commonly share one type — "Move block 2 up" is the only phrasing
           // that identifies which row is about to move.
-          className: "flex flex-col items-center pt-1 text-slate-500 group-hover:text-slate-600"
+          className: "flex flex-col items-center pt-1 text-slate-600 group-hover:text-slate-700"
         }, /*#__PURE__*/React.createElement("button", {
           type: "button",
           onClick: () => {
@@ -276,8 +297,8 @@
             announceToSR('Block moved up to position ' + idx + ' of ' + assessmentBlocks.length + '.');
           },
           disabled: idx === 0,
-          className: "px-1 leading-none text-xs rounded outline-none hover:text-indigo-600 focus:ring-2 focus:ring-indigo-400 disabled:opacity-30 disabled:hover:text-slate-500",
-          style: { minWidth: "32px", minHeight: "28px" },
+          className: "px-1 leading-none text-xs rounded outline-none hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-30 disabled:hover:text-slate-600",
+          style: { minWidth: "44px", minHeight: "44px" },
           "aria-label": "Move block " + (idx + 1) + " up"
         }, "▲"), /*#__PURE__*/React.createElement(GripVertical, {
           size: 16,
@@ -294,15 +315,15 @@
             announceToSR('Block moved down to position ' + (idx + 2) + ' of ' + assessmentBlocks.length + '.');
           },
           disabled: idx >= assessmentBlocks.length - 1,
-          className: "px-1 leading-none text-xs rounded outline-none hover:text-indigo-600 focus:ring-2 focus:ring-indigo-400 disabled:opacity-30 disabled:hover:text-slate-500",
-          style: { minWidth: "32px", minHeight: "28px" },
+          className: "px-1 leading-none text-xs rounded outline-none hover:text-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-30 disabled:hover:text-slate-600",
+          style: { minWidth: "44px", minHeight: "44px" },
           "aria-label": "Move block " + (idx + 1) + " down"
         }, "▼")), /*#__PURE__*/React.createElement("div", {
           className: "flex-1 space-y-2", style: { minWidth: 0 }
         }, /*#__PURE__*/React.createElement("div", {
           className: "flex flex-wrap items-center gap-2"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-xs font-bold text-slate-600", "aria-hidden": "true"
+          className: "text-xs font-bold text-slate-700", "aria-hidden": "true"
         }, "Part " + (idx + 1)), /*#__PURE__*/React.createElement("select", {
           // 'aria-label': 'Question type' also sat here. This object already ends
           // with "aria-label": "Block type", and the last duplicate key wins, so
@@ -310,10 +331,10 @@
           value: block.type,
           onChange: e => {
             const nb = [...assessmentBlocks];
-            nb[idx].type = e.target.value;
+            nb[idx] = { ...nb[idx], type: e.target.value };
             setAssessmentBlocks(nb);
           },
-          className: "px-3 py-1.5 min-h-[40px] text-sm font-bold border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none",
+          className: "px-3 py-1.5 min-h-[44px] text-sm font-bold border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none",
           style: { minWidth: 0, maxWidth: "100%" },
           "aria-label": "Block type"
         }, /*#__PURE__*/React.createElement("option", {
@@ -335,7 +356,7 @@
         }, "\u2728 Custom"), /*#__PURE__*/React.createElement("option", {
           value: "manipulative"
         }, "\uD83E\uDDF1 Manipulative Response")), /*#__PURE__*/React.createElement("span", {
-          className: "text-xs font-bold text-slate-600", "aria-hidden": "true"
+          className: "text-xs font-bold text-slate-700", "aria-hidden": "true"
         }, "How many"), /*#__PURE__*/React.createElement("input", {
           type: "number",
           min: "1",
@@ -343,15 +364,15 @@
           value: block.quantity,
           onChange: e => {
             const nb = [...assessmentBlocks];
-            nb[idx] = { ...nb[idx], quantity: Math.max(1, Math.min(30, parseInt(e.target.value) || 1)) };
+            nb[idx] = { ...nb[idx], quantity: Math.max(1, Math.min(30, parseInt(e.target.value, 10) || 1)) };
             setAssessmentBlocks(nb);
           },
-          className: "w-14 px-2 py-1.5 min-h-[40px] text-sm font-mono border border-slate-400 rounded-lg text-center",
+          className: "w-16 px-2 py-1.5 min-h-[44px] text-sm font-mono border border-slate-400 rounded-lg text-center",
           "aria-label": "Quantity"
         }), block.type === 'fluency' && /*#__PURE__*/React.createElement("span", {
-          className: "px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full"
+          className: "px-2 py-0.5 text-xs font-bold bg-amber-100 text-amber-800 rounded-full"
         }, "\u23F1 Timed"), block.type === 'manipulative' && /*#__PURE__*/React.createElement("span", {
-          className: "px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-full"
+          className: "px-2 py-0.5 text-xs font-bold bg-indigo-100 text-indigo-800 rounded-full"
         }, "\uD83E\uDDF1 Hands-on")), block.type === 'manipulative' && React.createElement('select', {
           value: block.manipulativeTool || '',
           'aria-label': 'Block ' + (idx + 1) + ' manipulative',
@@ -362,7 +383,7 @@
           value: block.directive,
           onChange: e => {
             const nb = [...assessmentBlocks];
-            nb[idx].directive = e.target.value;
+            nb[idx] = { ...nb[idx], directive: e.target.value };
             setAssessmentBlocks(nb);
           },
           placeholder: "What should these problems cover? (e.g. single-digit multiplication)",
@@ -370,31 +391,33 @@
           // is gone the moment the user types — so anyone returning to a filled
           // form got an unlabelled text box (WCAG 3.3.2).
           "aria-label": "Block " + (idx + 1) + " directive",
-          className: "w-full px-3 py-2 min-h-[40px] text-sm border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none placeholder-slate-500"
+          className: "w-full px-3 py-2 min-h-[44px] text-sm border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none placeholder-slate-500"
         }), authoringMathButton(block.id, "Open math keyboard for block " + (idx + 1) + " directive")), /*#__PURE__*/React.createElement("button", {
+          type: "button",
           onClick: () => setAssessmentBlocks(assessmentBlocks.filter((_, i) => i !== idx)),
-          className: "p-1 text-slate-500 hover:text-red-500 transition-colors flex items-center justify-center",
-          style: { minWidth: "40px", minHeight: "40px", flex: "0 0 auto" },
+          className: "p-1 text-slate-600 hover:text-red-700 transition-colors flex items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600",
+          style: { minWidth: "44px", minHeight: "44px", flex: "0 0 auto" },
           title: "Remove this part",
-          "aria-label": "Remove block"
+          "aria-label": "Remove block " + (idx + 1)
         }, /*#__PURE__*/React.createElement(X, {
-          size: 14
-        }))))), /*#__PURE__*/React.createElement("button", { "aria-label": "+ Add Block",
+          size: 14,
+          "aria-hidden": "true"
+        }))))), /*#__PURE__*/React.createElement("button", { type: "button", "aria-label": "+ Add Block",
           onClick: () => setAssessmentBlocks([...assessmentBlocks, {
-            id: 'b-' + Date.now(),
+            id: 'b-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7),
             type: 'computation',
             quantity: 5,
             directive: ''
           }]),
-          className: "w-full py-2.5 min-h-[44px] border-2 border-dashed border-slate-400 text-indigo-700 font-bold text-sm rounded-xl hover:border-indigo-400 hover:text-indigo-600 transition-all"
+          className: "w-full py-2.5 min-h-[44px] border-2 border-dashed border-slate-400 text-indigo-700 font-bold text-sm rounded-xl hover:border-indigo-400 hover:text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-all"
         }, "+ Add Block"), assessmentBlocks.length === 0 && /*#__PURE__*/React.createElement("p", {
           className: "text-sm text-slate-700", "data-math-studio-builder-empty": "true"
-        }, "An assessment is made of parts. Add one for each kind of problem you want, such as 5 computation problems and 3 word problems."), assessmentResult && React.createElement("div", { role: "status", className: "rounded-lg border border-amber-300 p-3 text-sm" }, assessmentResult.sections.map((section, index) => React.createElement("p", { key: section.id }, 'Section ' + (index + 1) + ': ' + (section.preparation?.prepared ?? section.preparation?.accepted ?? 0) + '/' + section.requested + ' prepared; ' + (section.preparation?.verified || 0) + ' answer calculations verified; ' + (section.preparation?.reviewRequired || 0) + ' need teacher review' + (section.error ? ' — ' + section.error : section.status === 'partial' ? (isPreparedForReview(section) ? ' - teacher review needed' : ' - review or retry needed') : ''))), assessmentResult.content.problems.length > 0 && React.createElement("button", { type: "button", disabled: assessmentBusy, className: "mt-2 rounded bg-indigo-700 px-3 py-2 text-white", onClick: () => {
+        }, "An assessment is made of parts. Add one for each kind of problem you want, such as 5 computation problems and 3 word problems."), assessmentResult && React.createElement("div", { role: "status", className: "rounded-lg border border-amber-300 p-3 text-sm" }, (assessmentResult.sections || []).map((section, index) => React.createElement("p", { key: section.id || index }, 'Section ' + (index + 1) + ': ' + (section.preparation?.prepared ?? section.preparation?.accepted ?? 0) + '/' + section.requested + ' prepared; ' + (section.preparation?.verified || 0) + ' answer calculations verified; ' + (section.preparation?.reviewRequired || 0) + ' need teacher review' + (section.error ? ' — ' + section.error : section.status === 'partial' ? (isPreparedForReview(section) ? ' - teacher review needed' : ' - review or retry needed') : ''))), (assessmentResult.content?.problems?.length || 0) > 0 && React.createElement("button", { type: "button", disabled: assessmentBusy, className: "mt-2 min-h-[44px] rounded bg-indigo-700 px-3 py-2 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600", onClick: () => {
           if (typeof props.setGeneratedContent === 'function') props.setGeneratedContent({ id: assessmentResult.id, type: 'math', title: assessmentResult.content.title, data: assessmentResult.content });
           setActiveView('math'); onClose();
         } }, "Open prepared assessment")), assessmentBlocks.length > 0 && /*#__PURE__*/React.createElement("div", {
           className: "flex flex-wrap gap-3 pt-2"
-        }, /*#__PURE__*/React.createElement("button", { "aria-label": "Generate assessment problems", disabled: assessmentBusy || assessmentReviewOnly, "aria-busy": assessmentBusy,
+        }, /*#__PURE__*/React.createElement("button", { type: "button", "aria-label": "Generate assessment problems", disabled: assessmentBusy || assessmentReviewOnly, "aria-busy": assessmentBusy,
           onClick: () => {
             if (assessmentReviewOnly) return;
             const fluencyBlocks = assessmentBlocks.filter(b => b.type === 'fluency');
@@ -456,9 +479,13 @@
               onProgress: ({ index, total }) => { if (assessmentMountedRef.current) announceToSR('Preparing section ' + (index + 1) + ' of ' + total); }
             }).then(result => {
               if (!assessmentMountedRef.current) return;
+              if (!result || !result.content || !result.content.preparation || !Array.isArray(result.sections)) {
+                addToast('Assessment preparation returned an incomplete result. Please try again.', 'error');
+                return;
+              }
               assessmentCacheRef.current = { signature, result };
               setAssessmentResult(result);
-              if (result.content.problems.length) {
+              if (Array.isArray(result.content.problems) && result.content.problems.length) {
                 const item = { id: result.id, type: 'math', data: result.content, title: result.content.title, meta: (mathSubject || 'Math') + ' - Assessment', timestamp: new Date(), config: { grade: gradeLevel, language: props.leveledTextLanguage || 'English' } };
                 setHistory(previous => previous.some(entry => entry.id === item.id) ? previous.map(entry => entry.id === item.id ? item : entry) : [...previous, item]);
               }
@@ -468,10 +495,11 @@
               .finally(() => { assessmentRunRef.current = false; if (assessmentMountedRef.current) setAssessmentBusy(false); });
           },
           style: { minWidth: "220px" },
-          className: "flex-1 py-3 bg-gradient-to-r from-indigo-700 to-blue-700 text-white font-bold rounded-xl text-sm hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+          className: "flex-1 min-h-[44px] py-3 bg-gradient-to-r from-indigo-700 to-blue-700 text-white font-bold rounded-xl text-sm hover:from-indigo-800 hover:to-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
         }, /*#__PURE__*/React.createElement(Sparkles, {
-          size: 16
-        }), assessmentGenerateLabel), /*#__PURE__*/React.createElement("button", { "aria-label": "Save plan to Resources",
+          size: 16,
+          "aria-hidden": "true"
+        }), assessmentGenerateLabel), /*#__PURE__*/React.createElement("button", { type: "button", "aria-label": "Save plan to Resources",
           onClick: () => {
             const stemAssessment = {
               id: 'stem-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
@@ -485,14 +513,14 @@
                   ...b
                 })),
                 subject: mathSubject || 'General Math',
-                totalProblems: assessmentBlocks.reduce((s, b) => s + b.quantity, 0),
+                totalProblems: assessmentBlocks.reduce((s, b) => s + (Number(b?.quantity) || 0), 0),
                 results: null
               }
             };
             setHistory(prev => [...prev, stemAssessment]);
             addToast('Assessment plan saved to Resources (' + assessmentBlocks.length + ' blocks). Generated questions are saved separately.', 'success');
           },
-          className: "py-3 px-5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl text-sm hover:from-emerald-800 hover:to-teal-800 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
+          className: "min-h-[44px] py-3 px-5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl text-sm hover:from-emerald-800 hover:to-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
         }, "\uD83D\uDCBE Save plan to Resources")), React.createElement("p", { className: "text-sm text-slate-700", role: "note" }, "Save plan stores the block settings. Generated questions, answer keys, and steps save automatically as a separate math resource. Student answers are saved when submitted; unsubmitted answers are not saved."))
       : React.createElement("div", {
           className: "space-y-5 max-w-3xl mx-auto animate-in fade-in duration-200"
@@ -507,15 +535,16 @@
         }, {
           id: 'solve',
           label: '✏️ Solve One'
-        }].map(m => /*#__PURE__*/React.createElement("button", { "aria-label": m.label.replace(/[^\w\s]/g, '').trim() + ' mode',
+        }].map(m => /*#__PURE__*/React.createElement("button", { type: "button", "aria-label": m.label.replace(/[^\w\s]/g, '').trim() + ' mode',
           // The chosen mode was shown by colour alone (WCAG 1.4.1, 4.1.2).
           "aria-pressed": stemLabCreateMode === m.id,
           key: m.id,
           onClick: () => setStemLabCreateMode(m.id),
-          className: `px-4 py-2 rounded-xl text-sm font-bold transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-400 text-slate-600 hover:border-indigo-600 hover:text-indigo-600'}`
+          className: `min-h-[44px] px-4 py-2 rounded-xl text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-700 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-400 text-slate-700 hover:border-indigo-600 hover:text-indigo-700'}`
         }, m.label)), /*#__PURE__*/React.createElement("div", {
           className: "flex-1"
         }), /*#__PURE__*/React.createElement("button", {
+          type: "button",
           // Direct door to the live timed-fluency panel (MathFluencyPanel in the
           // sidebar math accordion). Before this, Create's only fluency path was
           // hidden inside the Assessment Builder \u2014 compose blocks, set every one
@@ -528,14 +557,14 @@
             onClose();
             addToast(t('stem.fluency.panel_opened') || 'Fluency Probes is open in the Math panel. Set the operation and press Start.', 'info');
           },
-          className: "px-4 py-2 rounded-xl text-sm font-bold bg-white text-indigo-700 border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all flex items-center gap-2"
-        }, "\u23F1\uFE0F " + (t('stem.fluency.probe_button') || 'Fluency Probe')), /*#__PURE__*/React.createElement("button", { "aria-label": "Open assessment builder",
+          className: "min-h-[44px] px-4 py-2 rounded-xl text-sm font-bold bg-white text-indigo-700 border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-all flex items-center gap-2"
+        }, "\u23F1\uFE0F " + (t('stem.fluency.probe_button') || 'Fluency Probe')), /*#__PURE__*/React.createElement("button", { type: "button", "aria-label": "Open assessment builder",
           onClick: () => setShowAssessmentBuilder(true),
-          className: "px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-violet-700 to-purple-700 text-white shadow-lg shadow-purple-200 hover:from-violet-800 hover:to-purple-800 transition-all flex items-center gap-2"
+          className: "min-h-[44px] px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-violet-700 to-purple-700 text-white shadow-lg shadow-purple-200 hover:from-violet-800 hover:to-purple-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 transition-all flex items-center gap-2"
         }, "\uD83D\uDCCB Build Assessment")), stemLabCreateMode === 'topic' && /*#__PURE__*/React.createElement("div", {
           className: "flex flex-wrap items-center gap-2"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-xs font-bold text-slate-500 uppercase"
+          className: "text-xs font-bold text-slate-600 uppercase"
         }, "Style:"), [{
           // Values are the fixed mode ids the sidebar select and the math prompt use;
           // a translated label as the value broke both outside English.
@@ -547,13 +576,13 @@
         }, {
           val: 'Real-World Application',
           label: t('stem.solver.realworld') || 'Real-World'
-        }].map(s => /*#__PURE__*/React.createElement("button", { "aria-label": s.label + ' style',
+        }].map(s => /*#__PURE__*/React.createElement("button", { type: "button", "aria-label": s.label + ' style',
           "aria-pressed": mathMode === s.val,
           key: s.val,
           // Choosing the active style again clears it. There was no way back to a
           // plain problem set once any style had been picked.
           onClick: () => setMathMode(mathMode === s.val ? 'Problem Set Generator' : s.val),
-          className: `px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-600' : 'bg-white border border-slate-400 text-slate-600 hover:border-blue-200'}`
+          className: `px-3 py-1.5 min-h-[44px] rounded-lg text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-800 border border-blue-600' : 'bg-white border border-slate-400 text-slate-700 hover:border-blue-400'}`
         }, s.label)), /*#__PURE__*/React.createElement("span", {
           className: "text-xs text-slate-600", "data-math-studio-style-note": "true"
         }, ['Step-by-Step', 'Conceptual', 'Real-World Application'].indexOf(mathMode) === -1 ? "Optional. With none chosen you get a standard problem set." : "Choose it again to clear.")), /*#__PURE__*/React.createElement("div", {
@@ -562,7 +591,7 @@
           value: mathInput,
           onChange: e => setMathInput(e.target.value),
           placeholder: stemLabCreateMode === 'solve' ? 'Enter a math problem to solve step-by-step...' : stemLabCreateMode === 'content' ? 'Paste or describe content to generate math problems from...' : 'Enter topic, standard, or description (e.g. "3rd grade multiplication word problems")...',
-          className: "w-full h-28 px-4 py-3 text-sm border border-slate-500 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none bg-white",
+          className: "w-full h-28 px-4 py-3 text-sm border border-slate-500 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none bg-white text-slate-900",
           "aria-label": "Math problem input"
         }), authoringMathButton(null, "Open math keyboard for math prompt"), stemLabCreateMode === 'content' && /*#__PURE__*/React.createElement("p", {
           // "From My Content" never needed the teacher to re-paste the lesson:
@@ -570,7 +599,7 @@
           // useMathSourceContext flag (a MathPanel checkbox, default on). The
           // placeholder said "Paste or describe content", so teachers pasted
           // text the app already holds. Say what will actually happen instead.
-          className: "text-xs mt-2 font-semibold " + (useMathSourceContext !== false && hasSourceOrAnalysis ? "text-emerald-700" : "text-amber-700"),
+          className: "text-xs mt-2 font-semibold " + (useMathSourceContext !== false && hasSourceOrAnalysis ? "text-emerald-800" : "text-amber-800"),
           role: "note"
         }, useMathSourceContext !== false && hasSourceOrAnalysis
           ? (t('stem.solver.content_source_attached') || '📎 Your current lesson content is attached automatically. Describe what to focus on; no need to paste it.')
@@ -580,20 +609,20 @@
         ), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4 mt-3"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-xs font-bold text-slate-500"
+          className: "text-xs font-bold text-slate-700"
         }, "Quantity:"), /*#__PURE__*/React.createElement("input", {
           type: "range",
           min: "1",
           max: "20",
           value: mathQuantity,
-          onChange: e => setMathQuantity(parseInt(e.target.value)),
+          onChange: e => setMathQuantity(parseInt(e.target.value, 10) || 1),
           // The visible "Quantity:" caption beside this slider is a <span>, which
           // names nothing. An unnamed range input announces only a bare number.
           "aria-label": "Quantity",
           className: "flex-1 h-1.5 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
         }), /*#__PURE__*/React.createElement("span", {
           className: "text-sm font-bold text-indigo-700 w-8 text-center"
-        }, mathQuantity))), /*#__PURE__*/React.createElement("button", { "aria-label": tr("math.generate_problems_aria", "Generate math problems"),
+        }, mathQuantity))), /*#__PURE__*/React.createElement("button", { type: "button", "aria-label": tr("math.generate_problems_aria", "Generate math problems"),
           onClick: () => {
             // Resolve the mode ONCE and hand it to handleGenerateMath as
             // modeOverride. This button used to stage the mode and navigate to
@@ -627,15 +656,16 @@
           },
           disabled: !mathInput.trim(),
           "aria-describedby": !mathInput.trim() ? "math-studio-generate-hint" : undefined,
-          className: "w-full py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl text-sm hover:from-indigo-700 hover:to-blue-700 disabled:opacity-40 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+          className: "w-full min-h-[44px] py-3 bg-gradient-to-r from-indigo-700 to-blue-700 text-white font-bold rounded-xl text-sm hover:from-indigo-800 hover:to-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-40 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
         }, /*#__PURE__*/React.createElement(Sparkles, {
-          size: 16
+          size: 16,
+          "aria-hidden": "true"
         }), " ", stemLabCreateMode === 'solve' ? 'Solve Problem' : 'Generate Problems'), !mathInput.trim() && /*#__PURE__*/React.createElement("p", {
-          id: "math-studio-generate-hint", className: "text-xs text-slate-600 text-center", style: { marginTop: "6px" }
+          id: "math-studio-generate-hint", className: "text-xs text-slate-700 text-center", style: { marginTop: "6px" }
         }, stemLabCreateMode === 'solve' ? "Type a problem above to turn this on." : stemLabCreateMode === 'content' ? "Paste or describe your content above to turn this on." : "Type a topic above to turn this on."), /*#__PURE__*/React.createElement("div", {
           className: "flex flex-wrap items-center gap-2 pt-1"
         }, /*#__PURE__*/React.createElement("span", {
-          className: "text-[10px] text-slate-500 font-bold uppercase"
+          className: "text-xs text-slate-600 font-bold uppercase"
         }, "Tools:"), [{
           // @tool volume
           id: 'volume',
@@ -654,7 +684,7 @@
           id: 'fractionViz',
           icon: '🍕',
           label: t('stem.assessment.fraction_lab')
-        }].map(tool => /*#__PURE__*/React.createElement("button", { "aria-label": "Open " + tool.label,
+        }].map(tool => /*#__PURE__*/React.createElement("button", { type: "button", "aria-label": "Open " + tool.label,
           key: tool.id,
           onClick: () => {
             onClose();
@@ -663,7 +693,7 @@
             if (typeof setStemLabTab === 'function') setStemLabTab('explore');
             if (typeof setShowStemLab === 'function') setShowStemLab(true);
           },
-          className: "px-2 py-1 text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center gap-1"
+          className: "min-h-[44px] px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-700 border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-all flex items-center gap-1"
         }, tool.icon, " ", tool.label))));
 
     return React.createElement("div", {
@@ -674,17 +704,17 @@
       role: "dialog",
       "aria-modal": "true",
       "aria-labelledby": "math-create-title",
-      className: "bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden"
+      className: "allo-docsuite bg-white text-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden"
     }, React.createElement("div", {
       className: "flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-blue-50"
     }, React.createElement("div", null,
       React.createElement("h2", { id: "math-create-title", className: "font-bold text-slate-800 text-lg" }, "🧮 " + (t('math_create.title') || 'Math Studio')),
-      React.createElement("p", { className: "text-xs text-slate-500" }, t('math_create.subtitle') || 'Create math problems, assessments, and fluency practice.')
+      React.createElement("p", { className: "text-xs text-slate-600" }, t('math_create.subtitle') || 'Create math problems, assessments, and fluency practice.')
     ), React.createElement("button", {
       ref: closeBtnRef, type: "button", onClick: onClose,
-      className: "min-w-11 min-h-11 text-slate-600 hover:text-slate-800 text-2xl leading-none px-2 py-1 rounded-lg focus-visible:ring-2 focus-visible:ring-indigo-500",
+      className: "min-w-11 min-h-11 inline-flex items-center justify-center text-slate-700 hover:text-slate-900 text-2xl leading-none px-2 py-1 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
       "aria-label": t('common.close') || 'Close Math Studio'
-    }, React.createElement(X, { size: 20 }))),
+    }, React.createElement(X, { size: 20, "aria-hidden": "true" }))),
       React.createElement("div", { className: "p-5 overflow-y-auto flex-1" }, body),
       React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, srMsg)
     ));

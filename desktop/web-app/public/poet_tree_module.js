@@ -3116,10 +3116,14 @@
       var safeFormName = form ? escHtml(form.name) : '';
       var safeFormIcon = form ? form.icon : '';
       // Wrap poem in <article>; lines as <p>; stanza breaks as visible spacer with role="separator".
+      var _ptBionicOn = typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicHtml === 'function';
       var poemHtml = poemText
         .split('\n').map(function (l) {
           var t = l.trim();
-          if (t) return '<p class="line">' + escHtml(l) + '</p>';
+          if (t) {
+            var lineHtml = escHtml(l);
+            return '<p class="line">' + (_ptBionicOn ? window.__alloBionicHtml(lineHtml) : lineHtml) + '</p>';
+          }
           return '<div class="stanza-break" role="separator" aria-label="stanza break"></div>';
         }).join('\n');
       // Illustration: <figure> + <figcaption> for proper PDF tag-tree mapping; descriptive alt.
@@ -3227,9 +3231,12 @@
       var poemsHtml = pool.map(function (p, pi) {
         var f = FORMS.find(function (ff) { return ff.id === p.formId; });
         var safeTitle = esc(p.title || 'Untitled');
+        var _chapBionicOn = typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicHtml === 'function';
         var lines = String(p.text || '').split('\n').map(function (l) {
           var t = l.trim();
-          return t ? '<p class="line">' + esc(l) + '</p>' : '<div class="stanza-break" role="separator" aria-label="stanza break"></div>';
+          if (!t) return '<div class="stanza-break" role="separator" aria-label="stanza break"></div>';
+          var lineHtml = esc(l);
+          return '<p class="line">' + (_chapBionicOn ? window.__alloBionicHtml(lineHtml) : lineHtml) + '</p>';
         }).join('');
         return '<article class="page poem-page" id="poem-' + (pi + 1) + '" aria-labelledby="poem-' + (pi + 1) + '-title">'
           + '<header class="poem-header">'

@@ -39,18 +39,24 @@
   var React = window.React;
   var h = React.createElement;
 
+  var SAFE_COLOR_RE = /^(?:#[0-9a-f]{3,8}|[a-z]{1,30}|(?:rgb|rgba|hsl|hsla)\([\d.,%\s]+\))$/i;
+  function safeColor(v, fallback) {
+    return (typeof v === 'string' && SAFE_COLOR_RE.test(v.trim())) ? v.trim() : fallback;
+  }
+
   // ── EmptyState ──────────────────────────────────────────────────────
   // Friendly first-load placeholder. Replaces "nothing renders" with a
   // short "what goes here" prompt. Optional primary action button.
   //
   // Props: { emoji, title, hint, ctaLabel, onCta, accentColor }
   function EmptyState(props) {
+    props = (props && typeof props === 'object') ? props : {};
     var emoji = props.emoji || '✨';
     var title = props.title || '';
     var hint = props.hint || '';
     var ctaLabel = props.ctaLabel || '';
-    var onCta = props.onCta;
-    var accent = props.accentColor || '#6366f1'; // indigo-500
+    var onCta = typeof props.onCta === 'function' ? props.onCta : null;
+    var accent = safeColor(props.accentColor, '#6366f1'); // indigo-500
     return h('div', {
       className: 'flex flex-col items-center justify-center py-12 px-6 text-center',
       role: 'status',
@@ -62,6 +68,7 @@
       title && h('h3', { className: 'text-base font-bold text-slate-800 mb-1' }, title),
       hint && h('p', { className: 'text-sm text-slate-600 max-w-md leading-relaxed' }, hint),
       ctaLabel && onCta && h('button', {
+        type: 'button',
         onClick: onCta,
         className: 'mt-4 px-4 py-2 rounded-lg text-sm font-bold text-white transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',
         style: { background: accent },
@@ -76,7 +83,9 @@
   //
   // Props: { lines, variant: 'card' | 'list' | 'table' | 'reader' }
   function LoadingSkeleton(props) {
-    var lines = props.lines || 4;
+    props = (props && typeof props === 'object') ? props : {};
+    var rawLines = Number(props.lines);
+    var lines = Number.isFinite(rawLines) ? Math.max(1, Math.min(24, Math.floor(rawLines))) : 4;
     var variant = props.variant || 'list';
     var bars = [];
     for (var i = 0; i < lines; i++) {
@@ -113,6 +122,7 @@
   //
   // Props: { state: 'idle' | 'correct' | 'wrong', children, ...rest }
   function JuiceWrap(props) {
+    props = (props && typeof props === 'object') ? props : {};
     var state = props.state;
     var cls = state === 'correct' ? 'allo-correct-pulse'
             : state === 'wrong'   ? 'allo-wrong-nudge'
@@ -124,6 +134,6 @@
   }
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.UIPolish = { EmptyState: EmptyState, LoadingSkeleton: LoadingSkeleton, JuiceWrap: JuiceWrap };
+  window.AlloModules.UIPolish = Object.freeze({ EmptyState: EmptyState, LoadingSkeleton: LoadingSkeleton, JuiceWrap: JuiceWrap });
   console.log('[UIPolish] Registered EmptyState + LoadingSkeleton + JuiceWrap');
 })();

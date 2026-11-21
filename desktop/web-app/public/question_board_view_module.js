@@ -46,7 +46,7 @@
     const STATE_COLORS = {
         open:     { fill: '#fef9c3', border: '#a16207', text: '#713f12', label: 'Open' },
         answered: { fill: '#dcfce7', border: '#15803d', text: '#14532d', label: 'Answered' },
-        pending:  { fill: '#dbeafe', border: '#60a5fa', text: '#1e3a8a', label: 'Waiting for your teacher' }
+        pending:  { fill: '#dbeafe', border: '#1d4ed8', text: '#1e3a8a', label: 'Waiting for your teacher' }
     };
 
     // Never call a bare t(): a free t() is a ReferenceError inside a CDN module,
@@ -112,10 +112,13 @@
         const expired = contract.isExpired(board);
         const capacity = boardCapacity(contract, board);
 
-        const allItems = (board && board.items) || [];
-        const authors = {};
-        allItems.forEach(function (i) { if (i && i.uid) authors[i.uid] = true; });
-        const authorCount = Object.keys(authors).length;
+        const allItems = (board && Array.isArray(board.items)) ? board.items : [];
+        const authors = new Set();
+        allItems.forEach(function (i) { if (i && i.uid) authors.add(String(i.uid)); });
+        const reportedParticipants = (board && typeof board.participantCount === 'number' && Number.isFinite(board.participantCount))
+            ? Math.max(0, Math.floor(board.participantCount))
+            : 0;
+        const authorCount = Math.max(authors.size, reportedParticipants);
         const floor = config.minParticipants || 3;
 
         return {
@@ -169,11 +172,13 @@
 
     function QuestionBoardStudent(props) {
         const R = React();
-        if (!R) return null;
+        if (!R || !props || !props.contract) return null;
         const contract = props.contract;
         const tr = translator(props);
         const vm = buildBoardViewModel(contract, props.board, props.actor, { transport: props.transport, t: tr });
         const draft = props.draft || '';
+        const inputId = (typeof props.inputId === 'string' && props.inputId.trim()) ? props.inputId.trim() : 'allo-qb-input';
+        const hintId = inputId + '-hint';
 
         const submit = function () {
             if (!vm.canPost) return;
@@ -201,20 +206,21 @@
             // Composer. A real <button>, never a div with role+tabIndex — those
             // are keyboard-dead, and an aria-label on a role-less div is dropped.
             (!vm.isHost && !vm.expired) ? h('div', { key: 'composer', className: 'space-y-1' }, [
-                h('label', { key: 'label', className: 'block text-xs font-medium', htmlFor: 'allo-qb-input' },
+                h('label', { key: 'label', className: 'block text-xs font-medium text-slate-900', htmlFor: inputId },
                     tr('question_board.ask', 'What do you wonder?')),
                 h('textarea', {
                     key: 'input',
-                    id: 'allo-qb-input',
+                    id: inputId,
+                    'aria-describedby': hintId,
                     value: draft,
                     rows: 2,
                     maxLength: contract.LIMITS.ITEM_CHARS,
                     disabled: !vm.canPost,
                     onChange: function (e) { if (typeof props.onDraft === 'function') props.onDraft(e.target.value); },
-                    className: 'w-full min-h-11 rounded border p-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2'
+                    className: 'w-full min-h-11 rounded border border-slate-500 p-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2'
                 }),
                 h('div', { key: 'row', className: 'flex items-center justify-between' }, [
-                    h('span', { key: 'left', className: 'text-xs text-slate-600' },
+                    h('span', { key: 'left', id: hintId, className: 'text-xs text-slate-700' },
                         vm.canPost
                             ? tr('question_board.remaining', 'Questions you can still add') + ': ' + vm.remaining
                             : (vm.blockReason === 'board-full'
@@ -256,9 +262,11 @@
      * it is reported rather than left to fail at submit time.
      */
     function boardCapacity(contract, board) {
-        const items = (board && board.items) || [];
-        const cap = ((board && board.config) || {}).boardCap || 0;
-        const bytes = contract.estimateBoardBytes(board);
+        const items = (board && Array.isArray(board.items)) ? board.items : [];
+        const rawCap = Number(((board && board.config) || {}).boardCap);
+        const cap = (Number.isFinite(rawCap) && rawCap > 0) ? rawCap : 0;
+        const rawBytes = Number(contract.estimateBoardBytes(board));
+        const bytes = (Number.isFinite(rawBytes) && rawBytes >= 0) ? rawBytes : contract.LIMITS.DOC_BYTES;
         const byteCap = contract.LIMITS.DOC_BYTES;
         const byCount = cap ? items.length / cap : 0;
         const byBytes = byteCap ? bytes / byteCap : 0;
@@ -300,7 +308,7 @@
         lines.push('');
         lines.push(String(items.length) + ' questions from ' + countAuthors(items) + ' students · '
             + String(answered.length) + ' answered · ' + String(open.length) + ' still open');
-        if (config.expiresAt) lines.push('Board closed: ' + config.expiresAt);
+        if (config.expiresAt) lines.push('Board closed: ' + escapeMarkdown(config.expiresAt));
         lines.push('');
         lines.push('## Still open');
         if (!open.length) lines.push('_None — every question was answered._');
@@ -331,14 +339,15 @@
     // contract's sanitizer, so only the inline/leading markers need escaping.
     function escapeMarkdown(value) {
         return String(value == null ? '' : value)
-            .replace(/([\\`*_\[\]()#>|~])/g, '\\$1')
+            .replace(/[\r\n\u0000-\u001f\u007f]+/g, ' ')
+            .replace(/([\\`*_\[\]()#<>!|~])/g, '\\$1')
             .replace(/^(\s*)([-+])/, '$1\\$2');
     }
 
     function countAuthors(items) {
-        const seen = {};
-        (items || []).forEach(function (i) { if (i && i.uid) seen[i.uid] = true; });
-        return Object.keys(seen).length;
+        const seen = new Set();
+        (items || []).forEach(function (i) { if (i && i.uid) seen.add(String(i.uid)); });
+        return seen.size;
     }
 
     /** What to tell a student who cannot post right now, and why. */
@@ -363,9 +372,13 @@
         const errors = {};
         const prompt = contract.sanitizeText(d.prompt, contract.LIMITS.PROMPT_CHARS);
         if (!prompt) errors.prompt = 'Give the board a driving question.';
-        const per = parseInt(d.itemsPerStudent, 10);
-        if (d.itemsPerStudent != null && (!isFinite(per) || per < 1)) {
-            errors.itemsPerStudent = 'Each student needs at least one question.';
+        const maxPer = (contract && contract.LIMITS && contract.LIMITS.ITEMS_PER_STUDENT_MAX) || 10;
+        const hasPer = d.itemsPerStudent !== undefined && d.itemsPerStudent !== null;
+        const per = hasPer ? (String(d.itemsPerStudent).trim() === '' ? NaN : Number(d.itemsPerStudent)) : NaN;
+        if (hasPer && (!Number.isInteger(per) || per < 1 || per > maxPer)) {
+            errors.itemsPerStudent = per > maxPer
+                ? ('Students can add at most ' + maxPer + ' questions per board.')
+                : 'Each student needs at least one question.';
         }
         if (d.expiresAt && isNaN(Date.parse(d.expiresAt))) {
             errors.expiresAt = 'That end date is not a real date.';
@@ -403,21 +416,23 @@
         // Host visibility still comes from the contract, so the teacher panel
         // cannot invent a different answer from the student one.
         const all = isHost ? (contract.visibleItemsFor(actor, board) || []) : [];
-        const needsReview = all.filter(function (i) { return i.status !== 'approved'; });
-        const approved = all.filter(function (i) { return i.status === 'approved'; });
+        const needsReview = all.filter(function (i) { return i && (i.status === 'held' || i.status === 'pending' || !i.status); });
+        const hidden = all.filter(function (i) { return i && (i.status === 'hidden' || i.status === 'rejected'); });
+        const approved = all.filter(function (i) { return i && i.status === 'approved'; });
         const answered = approved.filter(function (i) { return !!i.answered; });
         const open = approved.filter(function (i) { return !i.answered; });
-        const authors = {};
-        all.forEach(function (i) { if (i && i.uid) authors[i.uid] = true; });
+        const authors = new Set();
+        all.forEach(function (i) { if (i && i.uid) authors.add(String(i.uid)); });
         return {
             isHost: isHost,
             prompt: config.prompt || '',
             expired: contract.isExpired(board),
             needsReview: needsReview,
+            hidden: hidden,
             open: open,
             answered: answered,
             total: all.length,
-            participantCount: Object.keys(authors).length,
+            participantCount: authors.size,
             // The number a teacher actually acts on at the end of a unit.
             unansweredCount: open.length,
             capacity: boardCapacity(contract, board),
@@ -429,24 +444,27 @@
     function ReviewRow(props) {
         const item = props.item || {};
         const tr = translator(props);
+        const snippet = String(item.text || '').slice(0, 60);
         return h('li', {
             key: item.id,
-            className: 'flex items-start justify-between gap-2 rounded border border-slate-300 bg-white p-2 text-sm'
+            className: 'flex items-start justify-between gap-2 rounded border border-slate-400 bg-white p-2 text-sm text-slate-900'
         }, [
             h('div', { key: 'text' }, [
-                h('p', { key: 'q' }, item.text || ''),
-                h('p', { key: 'who', className: 'text-xs text-slate-600' }, item.displayName || '')
+                h('p', { key: 'q', className: 'text-slate-900' }, item.text || ''),
+                h('p', { key: 'who', className: 'text-xs text-slate-700' }, item.displayName || '')
             ]),
             h('div', { key: 'actions', className: 'flex shrink-0 gap-1' }, [
                 h('button', {
                     key: 'approve', type: 'button',
+                    'aria-label': tr('question_board.approve', 'Show to class') + (snippet ? ': ' + snippet : ''),
                     onClick: function () { if (props.onApprove) props.onApprove(item); },
                     className: 'min-h-11 rounded bg-emerald-700 px-3 py-1 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2'
                 }, tr('question_board.approve', 'Show to class')),
                 h('button', {
                     key: 'hide', type: 'button',
+                    'aria-label': tr('question_board.hide', 'Keep hidden') + (snippet ? ': ' + snippet : ''),
                     onClick: function () { if (props.onHide) props.onHide(item); },
-                    className: 'min-h-11 rounded border border-slate-400 px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2'
+                    className: 'min-h-11 rounded border border-slate-500 bg-white px-3 py-1 text-xs font-bold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2'
                 }, tr('question_board.hide', 'Keep hidden'))
             ])
         ]);
@@ -457,6 +475,8 @@
         const tr = translator(props);
         const done = !!item.answered;
         const palette = STATE_COLORS[done ? 'answered' : 'open'];
+        const actionLabel = done ? tr('question_board.reopen', 'Reopen') : tr('question_board.mark_answered', 'Mark answered');
+        const snippet = String(item.text || '').slice(0, 60);
         return h('li', {
             key: item.id,
             className: 'flex items-start justify-between gap-2 rounded border p-2 text-sm',
@@ -471,16 +491,17 @@
             ]),
             h('button', {
                 key: 'toggle', type: 'button',
+                'aria-label': actionLabel + (snippet ? ': ' + snippet : ''),
                 onClick: function () { if (props.onToggleAnswered) props.onToggleAnswered(item, !done); },
                 className: 'shrink-0 min-h-11 rounded border px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800 focus-visible:ring-offset-2',
                 style: { borderColor: palette.border }
-            }, done ? tr('question_board.reopen', 'Reopen') : tr('question_board.mark_answered', 'Mark answered'))
+            }, actionLabel)
         ]);
     }
 
     function QuestionBoardTeacher(props) {
         const R = React();
-        if (!R) return null;
+        if (!R || !props || !props.contract) return null;
         const contract = props.contract;
         const tr = translator(props);
         const vm = buildTeacherViewModel(contract, props.board, props.actor, { transport: props.transport, t: tr });

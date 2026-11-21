@@ -1222,41 +1222,446 @@
       for (var i = 0; i < RX_PARTS.length; i++) if (RX_PARTS[i].id === id) return RX_PARTS[i].color;
       return '#94a3b8';
     };
+    var hasPbr = typeof THREE.MeshPhysicalMaterial === 'function' || typeof THREE.MeshStandardMaterial === 'function';
     var mat = function (id, o) {
       o = o || {};
+      var col = new THREE.Color(o.colour || colourOf(id));
+      var em = new THREE.Color(o.emissive || '#000000');
+      var isTrans = o.opacity != null && o.opacity < 1;
+      var op = o.opacity == null ? 1 : o.opacity;
+      if (hasPbr && !contrast) {
+        var PbrCtor = (o.clearcoat && typeof THREE.MeshPhysicalMaterial === 'function')
+          ? THREE.MeshPhysicalMaterial
+          : (typeof THREE.MeshStandardMaterial === 'function' ? THREE.MeshStandardMaterial : THREE.MeshPhongMaterial);
+        var opts = {
+          color: col,
+          roughness: o.roughness != null ? o.roughness : 0.42,
+          metalness: o.metalness != null ? o.metalness : 0.35,
+          transparent: isTrans,
+          opacity: op,
+          emissive: em,
+          emissiveIntensity: o.emissiveIntensity != null ? o.emissiveIntensity : 1
+        };
+        if (o.depthWrite === false) opts.depthWrite = false;
+        if (o.side != null) opts.side = o.side;
+        if (o.clearcoat && PbrCtor === THREE.MeshPhysicalMaterial) {
+          opts.clearcoat = o.clearcoat;
+          opts.clearcoatRoughness = o.clearcoatRoughness != null ? o.clearcoatRoughness : 0.12;
+        }
+        return new PbrCtor(opts);
+      }
       return new THREE.MeshPhongMaterial({
-        color: new THREE.Color(o.colour || colourOf(id)),
-        shininess: contrast ? 0 : 28,
-        specular: contrast ? 0x000000 : 0x5b6472,
-        transparent: o.opacity != null && o.opacity < 1,
-        opacity: o.opacity == null ? 1 : o.opacity,
-        emissive: new THREE.Color(o.emissive || '#000000')
+        color: col,
+        shininess: contrast ? 0 : (o.shininess != null ? o.shininess : 38),
+        specular: contrast ? 0x000000 : 0x6b7c93,
+        transparent: isTrans,
+        opacity: op,
+        emissive: em
       });
     };
 
     var H = 2.0, R = 1.05;
+    // Cherenkov underwater reactor glow intensity: bright electric-cyan in
+    // moderated water, intensifying as control rods withdraw and moderating
+    // as high-temperature steam voiding displaces the water.
+    var cherenkov = Math.max(0.18, Math.min(1, (0.36 + (1 - rodFrac) * 0.64) * (1 - hot * 0.58)));
+    var powerFrac = Math.max(0.14, Math.min(1, (1 - rodFrac) * 0.86 + 0.14));
+    var tStart = Date.now();
+    var rxUniforms = {
+      uTime: { value: 2.6 },
+      uPower: { value: powerFrac },
+      uHot: { value: hot },
+      uCherenkov: { value: cherenkov },
+      uRodFrac: { value: rodFrac }
+    };
+    var coreLight = null;
+    var coreLightBase = 1.35 * cherenkov + hot * 0.95;
+    var fluxDiscs = [];
+    var voidAnim = [];
 
     // containment shell
     var shell = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.55, R + 0.55, H + 1.1, 28, 1, true),
-      mat('containment', { opacity: contrast ? 1 : 0.13 }));
+      mat('containment', { opacity: contrast ? 1 : 0.12, roughness: 0.72, metalness: 0.12, depthWrite: false, side: THREE.DoubleSide }));
     anchor.add(shell);
     meshes.containment = shell;
     picks.push(shell);
 
-    // pressure vessel
+    // pressure vessel (machined steel alloy cylinder)
     var vessel = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.16, R + 0.16, H + 0.4, 26, 1, true),
-      mat('vessel', { opacity: contrast ? 1 : 0.3 }));
+      mat('vessel', { opacity: contrast ? 1 : 0.28, roughness: 0.32, metalness: 0.78, clearcoat: 0.35, depthWrite: false, side: THREE.DoubleSide }));
     anchor.add(vessel);
     meshes.vessel = vessel;
     picks.push(vessel);
 
-    // coolant volume, tinted by temperature
+    // coolant volume, tinted by temperature + electric-cyan Cherenkov sheen
     var coolCol = nkRamp([[0, '#60a5fa'], [0.45, '#38bdf8'], [0.7, '#fb923c'], [1, '#f87171']], hot);
-    var cool = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.05, R + 0.05, H + 0.2, 24),
-      mat('coolant', { colour: contrast ? '#ffffff' : coolCol, opacity: contrast ? 1 : 0.16 }));
+    var coolEmissive = contrast ? '#000000' : nkRamp([[0, '#00c8ff'], [0.45, '#0284c7'], [0.75, '#9a3412'], [1, '#7f1d1d']], hot);
+    var coolMat = mat('coolant', {
+      colour: contrast ? '#ffffff' : coolCol,
+      opacity: contrast ? 1 : 0.19,
+      roughness: 0.14,
+      metalness: 0.08,
+      clearcoat: 0.85,
+      clearcoatRoughness: 0.08,
+      emissive: coolEmissive,
+      emissiveIntensity: 0.32 + cherenkov * 0.38,
+      depthWrite: false
+    });
+    // Subtle GLSL Fresnel Cherenkov rim + rising thermal shimmer on the coolant volume
+    if (!contrast && coolMat && typeof coolMat.onBeforeCompile === 'function') {
+      coolMat.customProgramCacheKey = function () { return 'nk-coolant-cherenkov-v1'; };
+      coolMat.onBeforeCompile = function (shader) {
+        shader.uniforms.uNkTime = rxUniforms.uTime;
+        shader.uniforms.uNkPower = rxUniforms.uPower;
+        shader.uniforms.uNkHot = rxUniforms.uHot;
+        shader.uniforms.uNkCherenkov = rxUniforms.uCherenkov;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 vNkLocalPos;')
+          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvNkLocalPos = position;');
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>',
+            '#include <common>\n' +
+            'uniform float uNkTime;\n' +
+            'uniform float uNkPower;\n' +
+            'uniform float uNkHot;\n' +
+            'uniform float uNkCherenkov;\n' +
+            'varying vec3 vNkLocalPos;'
+          )
+          .replace('#include <tonemapping_fragment>',
+            'vec3 nkN = normalize(normal);\n' +
+            'vec3 nkV = normalize(vViewPosition);\n' +
+            'float nkFres = pow(1.0 - max(dot(nkN, nkV), 0.0), 2.4);\n' +
+            'float nkWave = 0.5 + 0.5 * sin(vNkLocalPos.y * 9.5 - uNkTime * (2.0 + uNkPower * 2.2) + sin(vNkLocalPos.x * 5.0 + vNkLocalPos.z * 5.0));\n' +
+            'vec3 nkRimCol = mix(vec3(0.02, 0.86, 1.0), vec3(1.0, 0.48, 0.24), smoothstep(0.55, 0.95, uNkHot));\n' +
+            'gl_FragColor.rgb += nkRimCol * (nkFres * (0.28 + 0.36 * uNkCherenkov) + nkWave * 0.08 * uNkCherenkov);\n' +
+            '#include <tonemapping_fragment>'
+          );
+      };
+    }
+    var cool = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.05, R + 0.05, H + 0.2, 24), coolMat);
     anchor.add(cool);
     meshes.coolant = cool;
     picks.push(cool);
+
+    // GLSL Volumetric Cherenkov Radiation Core, Neutron-Flux Interference Shells & Pool Caustics
+    if (!contrast) {
+      var bloomBlend = THREE.AdditiveBlending != null ? THREE.AdditiveBlending : undefined;
+      if (typeof THREE.ShaderMaterial === 'function') {
+        var nkVolVert = [
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec3 vWorldNorm;',
+          'varying vec3 vLocalPos;',
+          'void main() {',
+          '  vUv = uv;',
+          '  vLocalPos = position;',
+          '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+          '  vWorldPos = wp.xyz;',
+          '  vWorldNorm = normalize(mat3(modelMatrix) * normal);',
+          '  gl_Position = projectionMatrix * viewMatrix * wp;',
+          '}'
+        ].join('\n');
+
+        var nkCherenkovFrag = [
+          'precision mediump float;',
+          'uniform float uTime;',
+          'uniform float uPower;',
+          'uniform float uHot;',
+          'uniform float uCherenkov;',
+          'uniform float uLayer;',
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec3 vWorldNorm;',
+          'varying vec3 vLocalPos;',
+          'float nkHash(vec2 p) {',
+          '  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);',
+          '}',
+          'float nkNoise(vec2 p) {',
+          '  vec2 i = floor(p);',
+          '  vec2 f = fract(p);',
+          '  vec2 u = f * f * (3.0 - 2.0 * f);',
+          '  return mix(',
+          '    mix(nkHash(i + vec2(0.0, 0.0)), nkHash(i + vec2(1.0, 0.0)), u.x),',
+          '    mix(nkHash(i + vec2(0.0, 1.0)), nkHash(i + vec2(1.0, 1.0)), u.x),',
+          '    u.y',
+          '  );',
+          '}',
+          'float nkFbm(vec2 p) {',
+          '  float v = 0.0;',
+          '  float a = 0.55;',
+          '  for (int k = 0; k < 3; k++) {',
+          '    v += a * nkNoise(p);',
+          '    p = p * 2.03 + vec2(17.3, 9.2);',
+          '    a *= 0.5;',
+          '  }',
+          '  return v;',
+          '}',
+          'void main() {',
+          '  vec3 N = normalize(vWorldNorm);',
+          '  vec3 V = normalize(cameraPosition - vWorldPos);',
+          '  float ndv = abs(dot(N, V));',
+          '  float fres = pow(1.0 - ndv, 1.45);',
+          '  float axial = smoothstep(0.0, 0.22, vUv.y) * smoothstep(1.0, 0.78, vUv.y);',
+          '  float angle = atan(vLocalPos.z, vLocalPos.x);',
+          '  float convSpeed = 0.32 + uPower * 0.38 + uHot * 0.48;',
+          '  vec2 plumeUv = vec2(angle * 1.45, vUv.y * 4.2 - uTime * convSpeed);',
+          '  float plume = nkFbm(plumeUv + vec2(sin(vUv.y * 6.0 - uTime * 0.9) * 0.28, 0.0));',
+          '  float shimmer = 0.5 + 0.5 * sin(vUv.y * 24.0 - uTime * (3.2 + uPower * 2.6) + plume * 4.2);',
+          '  float volDensity = mix(0.45 + 0.55 * (1.0 - fres * 0.5), 0.28 + 0.72 * fres, uLayer);',
+          '  vec3 deepBlue = vec3(0.04, 0.30, 0.96);',
+          '  vec3 elecCyan = vec3(0.0, 0.88, 1.0);',
+          '  vec3 hotCore = vec3(0.68, 0.97, 1.0);',
+          '  vec3 thermalTint = vec3(1.0, 0.42, 0.16);',
+          '  vec3 col = mix(deepBlue, elecCyan, clamp(0.35 + plume * 0.75 - uLayer * 0.25, 0.0, 1.0));',
+          '  col = mix(col, hotCore, pow(clamp(plume * shimmer * uPower, 0.0, 1.0), 1.8) * (1.0 - uLayer * 0.5));',
+          '  col = mix(col, thermalTint, smoothstep(0.58, 0.98, uHot) * (0.35 + 0.35 * plume));',
+          '  float alpha = axial * volDensity * (0.45 + 0.55 * plume + 0.22 * shimmer) * uCherenkov * mix(0.24, 0.10, uLayer);',
+          '  gl_FragColor = vec4(col * (0.95 + 0.45 * uPower), clamp(alpha, 0.0, 0.55));',
+          '}'
+        ].join('\n');
+
+        var cherenkovShells = [
+          { rad: R * 0.85, h: H * 0.94, layer: 0.0 },
+          { rad: R * 0.99, h: H * 1.04, layer: 0.5 },
+          { rad: R * 1.15, h: H * 1.14, layer: 1.0 }
+        ];
+        for (var ci = 0; ci < cherenkovShells.length; ci++) {
+          var cs = cherenkovShells[ci];
+          var cShaderOpts = {
+            uniforms: {
+              uTime: rxUniforms.uTime,
+              uPower: rxUniforms.uPower,
+              uHot: rxUniforms.uHot,
+              uCherenkov: rxUniforms.uCherenkov,
+              uLayer: { value: cs.layer }
+            },
+            vertexShader: nkVolVert,
+            fragmentShader: nkCherenkovFrag,
+            transparent: true,
+            depthWrite: false
+          };
+          if (bloomBlend != null) cShaderOpts.blending = bloomBlend;
+          if (THREE.DoubleSide != null) cShaderOpts.side = THREE.DoubleSide;
+          var cMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(cs.rad, cs.rad, cs.h, 32, 1, true),
+            new THREE.ShaderMaterial(cShaderOpts)
+          );
+          anchor.add(cMesh);
+        }
+
+        // Concentric Neutron-Flux & Gamma Interference Shells around fuel assemblies
+        var nkFluxFrag = [
+          'precision mediump float;',
+          'uniform float uTime;',
+          'uniform float uPower;',
+          'uniform float uHot;',
+          'uniform float uRodFrac;',
+          'uniform float uRingScale;',
+          'varying vec2 vUv;',
+          'varying vec3 vWorldPos;',
+          'varying vec3 vWorldNorm;',
+          'varying vec3 vLocalPos;',
+          'void main() {',
+          '  vec3 N = normalize(vWorldNorm);',
+          '  vec3 V = normalize(cameraPosition - vWorldPos);',
+          '  float fres = pow(1.0 - abs(dot(N, V)), 1.7);',
+          '  float axial = smoothstep(0.02, 0.16, vUv.y) * smoothstep(0.98, 0.84, vUv.y);',
+          '  float angle = atan(vLocalPos.z, vLocalPos.x);',
+          '  float speed = 2.1 + uPower * 3.1;',
+          '  float waveA = sin(vUv.y * 26.0 * uRingScale - uTime * speed);',
+          '  float waveB = sin(vUv.y * 14.0 * uRingScale + uTime * (speed * 0.62) + cos(angle * 4.0));',
+          '  float interf = pow(max(0.0, 0.5 * (waveA + waveB)), 2.2);',
+          '  float latticeHarm = 0.55 + 0.45 * cos(angle * 8.0 - uTime * 0.85);',
+          '  float rodMask = mix(1.0, smoothstep(0.95, 0.32, vUv.y), uRodFrac * 0.72);',
+          '  vec3 neutronCol = vec3(0.18, 0.96, 0.82);',
+          '  vec3 gammaCol = vec3(0.42, 0.68, 1.0);',
+          '  vec3 col = mix(gammaCol, neutronCol, clamp(interf * latticeHarm, 0.0, 1.0));',
+          '  col = mix(col, vec3(1.0, 0.64, 0.25), smoothstep(0.65, 1.0, uHot) * 0.45);',
+          '  float fluxGain = 0.26 + 0.74 * uPower;',
+          '  float alpha = axial * rodMask * (0.28 + 0.72 * fres) * interf * latticeHarm * fluxGain * 0.24;',
+          '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.42));',
+          '}'
+        ].join('\n');
+
+        var fluxShells = [
+          { rad: R * 0.56, h: H * 0.96, scale: 1.0 },
+          { rad: R * 0.92, h: H * 0.98, scale: 1.35 }
+        ];
+        for (var fi = 0; fi < fluxShells.length; fi++) {
+          var fs = fluxShells[fi];
+          var fOpts = {
+            uniforms: {
+              uTime: rxUniforms.uTime,
+              uPower: rxUniforms.uPower,
+              uHot: rxUniforms.uHot,
+              uRodFrac: rxUniforms.uRodFrac,
+              uRingScale: { value: fs.scale }
+            },
+            vertexShader: nkVolVert,
+            fragmentShader: nkFluxFrag,
+            transparent: true,
+            depthWrite: false
+          };
+          if (bloomBlend != null) fOpts.blending = bloomBlend;
+          if (THREE.DoubleSide != null) fOpts.side = THREE.DoubleSide;
+          var fMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(fs.rad, fs.rad, fs.h, 36, 1, true),
+            new THREE.ShaderMaterial(fOpts)
+          );
+          anchor.add(fMesh);
+        }
+
+        // Radial neutron-flux interference wave planes + Dancing Cherenkov pool-water surface caustics
+        if (typeof THREE.CircleGeometry === 'function') {
+          var nkDiscVert = [
+            'varying vec2 vUv;',
+            'void main() {',
+            '  vUv = uv;',
+            '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+            '}'
+          ].join('\n');
+
+          var nkRadialFluxFrag = [
+            'precision mediump float;',
+            'uniform float uTime;',
+            'uniform float uPower;',
+            'uniform float uCherenkov;',
+            'uniform float uPhase;',
+            'varying vec2 vUv;',
+            'void main() {',
+            '  vec2 p = vUv * 2.0 - 1.0;',
+            '  float r = length(p);',
+            '  if (r > 1.0) discard;',
+            '  float ang = atan(p.y, p.x);',
+            '  float pulse = 0.5 + 0.5 * sin(r * 22.0 - uTime * (2.4 + uPower * 2.8) + uPhase);',
+            '  float rings = pow(pulse, 3.6);',
+            '  float spokes = 0.6 + 0.4 * cos(ang * 8.0 + r * 6.0 - uTime * 0.7);',
+            '  float edge = smoothstep(1.0, 0.72, r) * smoothstep(0.05, 0.22, r);',
+            '  vec3 col = mix(vec3(0.05, 0.76, 1.0), vec3(0.32, 1.0, 0.85), rings);',
+            '  float alpha = rings * spokes * edge * (0.14 + 0.20 * uPower) * uCherenkov;',
+            '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.36));',
+            '}'
+          ].join('\n');
+
+          var discHeights = [
+            { y: -0.22, phase: 0.0, dir: 1 },
+            { y: 0.28, phase: 2.1, dir: -1 }
+          ];
+          for (var di = 0; di < discHeights.length; di++) {
+            var dh = discHeights[di];
+            var dOpts = {
+              uniforms: {
+                uTime: rxUniforms.uTime,
+                uPower: rxUniforms.uPower,
+                uCherenkov: rxUniforms.uCherenkov,
+                uPhase: { value: dh.phase }
+              },
+              vertexShader: nkDiscVert,
+              fragmentShader: nkRadialFluxFrag,
+              transparent: true,
+              depthWrite: false
+            };
+            if (bloomBlend != null) dOpts.blending = bloomBlend;
+            if (THREE.DoubleSide != null) dOpts.side = THREE.DoubleSide;
+            var dMesh = new THREE.Mesh(new THREE.CircleGeometry(R * 0.98, 36), new THREE.ShaderMaterial(dOpts));
+            dMesh.rotation.x = -Math.PI / 2;
+            dMesh.position.y = dh.y;
+            anchor.add(dMesh);
+            fluxDiscs.push({ mesh: dMesh, dir: dh.dir });
+          }
+
+          // Dancing Cherenkov Pool-Water Surface & Floor Caustics
+          var nkCausticFrag = [
+            'precision mediump float;',
+            'uniform float uTime;',
+            'uniform float uPower;',
+            'uniform float uCherenkov;',
+            'uniform float uGain;',
+            'varying vec2 vUv;',
+            'float nkCausticLayer(vec2 p, float t) {',
+            '  vec2 q = p;',
+            '  float acc = 0.0;',
+            '  for (int i = 0; i < 3; i++) {',
+            '    float fi = float(i) + 1.0;',
+            '    q += vec2(',
+            '      cos(t * 0.55 * fi + q.y * 1.85) + sin(t * 0.42 - q.x * 1.45),',
+            '      sin(t * 0.62 * fi + q.x * 1.75) + cos(t * 0.38 + q.y * 1.55)',
+            '    ) * 0.42;',
+            '    acc += 1.0 / (0.18 + length(vec2(sin(q.x + t * 0.35), cos(q.y - t * 0.31))));',
+            '  }',
+            '  return clamp(acc * 0.14, 0.0, 1.0);',
+            '}',
+            'void main() {',
+            '  vec2 p = vUv * 2.0 - 1.0;',
+            '  float r = length(p);',
+            '  if (r > 1.0) discard;',
+            '  float t = uTime * (0.75 + uPower * 0.55);',
+            '  float cR = nkCausticLayer(p * 3.15 + vec2(0.03, 0.0), t);',
+            '  float cG = nkCausticLayer(p * 3.15, t * 1.02);',
+            '  float cB = nkCausticLayer(p * 3.15 - vec2(0.03, 0.02), t * 0.98);',
+            '  vec3 caust = vec3(pow(cR, 2.3) * 0.35, pow(cG, 1.9) * 0.92, pow(cB, 1.65) * 1.0);',
+            '  float rimGlow = smoothstep(0.62, 0.96, r) * smoothstep(1.0, 0.92, r) * 0.42;',
+            '  float mask = smoothstep(1.0, 0.78, r);',
+            '  vec3 col = caust + vec3(0.0, 0.84, 1.0) * rimGlow;',
+            '  float intensity = (0.34 + 0.66 * uCherenkov) * (0.65 + 0.45 * uPower) * uGain;',
+            '  float alpha = mask * (length(caust) * 0.58 + rimGlow * 0.55) * intensity;',
+            '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.58));',
+            '}'
+          ].join('\n');
+
+          var causticPlanes = [
+            { y: H / 2 + 0.12, gain: 0.95 },
+            { y: -H / 2 - 0.10, gain: 0.72 }
+          ];
+          for (var cpi = 0; cpi < causticPlanes.length; cpi++) {
+            var cp = causticPlanes[cpi];
+            var cpOpts = {
+              uniforms: {
+                uTime: rxUniforms.uTime,
+                uPower: rxUniforms.uPower,
+                uCherenkov: rxUniforms.uCherenkov,
+                uGain: { value: cp.gain }
+              },
+              vertexShader: nkDiscVert,
+              fragmentShader: nkCausticFrag,
+              transparent: true,
+              depthWrite: false
+            };
+            if (bloomBlend != null) cpOpts.blending = bloomBlend;
+            if (THREE.DoubleSide != null) cpOpts.side = THREE.DoubleSide;
+            var cpMesh = new THREE.Mesh(new THREE.CircleGeometry(R + 0.04, 40), new THREE.ShaderMaterial(cpOpts));
+            cpMesh.rotation.x = -Math.PI / 2;
+            cpMesh.position.y = cp.y;
+            anchor.add(cpMesh);
+          }
+        }
+      } else if (typeof THREE.MeshBasicMaterial === 'function') {
+        var cherenkovLayers = [
+          { rad: R * 0.88, h: H * 0.94, col: '#00f0ff', op: 0.16 * cherenkov },
+          { rad: R * 1.02, h: H * 1.04, col: '#0ea5e9', op: 0.11 * cherenkov },
+          { rad: R * 1.16, h: H * 1.14, col: '#2563eb', op: 0.065 * cherenkov }
+        ];
+        for (var cbi = 0; cbi < cherenkovLayers.length; cbi++) {
+          var cl = cherenkovLayers[cbi];
+          var cMatOpts = {
+            color: new THREE.Color(cl.col),
+            transparent: true,
+            opacity: cl.op,
+            depthWrite: false
+          };
+          if (bloomBlend != null) cMatOpts.blending = bloomBlend;
+          if (THREE.DoubleSide != null) cMatOpts.side = THREE.DoubleSide;
+          var cbMesh = new THREE.Mesh(new THREE.CylinderGeometry(cl.rad, cl.rad, cl.h, 24, 1, true), new THREE.MeshBasicMaterial(cMatOpts));
+          anchor.add(cbMesh);
+        }
+      }
+      if (typeof THREE.PointLight === 'function') {
+        var coreLightCol = hot > 0.65 ? nkRamp([[0.65, '#38bdf8'], [0.85, '#fb923c'], [1, '#ef4444']], hot) : '#00e5ff';
+        coreLight = new THREE.PointLight(new THREE.Color(coreLightCol), coreLightBase, 7.5, 1.8);
+        coreLight.position.set(0, 0.05, 0);
+        anchor.add(coreLight);
+      }
+    }
 
     // Steam voids — a SHAPE channel for temperature, not a colour one.
     // Contrast mode paints the coolant white and the fuel emissive black, so
@@ -1272,16 +1677,22 @@
       var voidGeo = new THREE.SphereGeometry(0.05, 6, 5);
       var voidMat = mat('coolant', {
         colour: contrast ? '#000000' : '#e2e8f0',
-        opacity: contrast ? 1 : 0.55
+        opacity: contrast ? 1 : 0.62,
+        roughness: 0.15,
+        metalness: 0.05,
+        emissive: contrast ? '#000000' : '#bae6fd',
+        emissiveIntensity: 0.25
       });
       for (var vi = 0; vi < voidCount; vi++) {
         // Golden-angle spiral: even coverage without random(), so successive
         // rebuilds at the same temperature are identical.
         var va = vi * 2.399963;
         var vr = (R - 0.18) * Math.sqrt((vi + 0.5) / voidCount);
+        var vyBase = ((vi % 7) / 6 - 0.5) * H * 0.8;
         var vm = new THREE.Mesh(voidGeo, voidMat);
-        vm.position.set(Math.cos(va) * vr, ((vi % 7) / 6 - 0.5) * H * 0.8, Math.sin(va) * vr);
+        vm.position.set(Math.cos(va) * vr, vyBase, Math.sin(va) * vr);
         voidGroup.add(vm);
+        voidAnim.push({ mesh: vm, baseY: vyBase, speed: 0.22 + (vi % 5) * 0.055 });
       }
       anchor.add(voidGroup);
       meshes.voids = voidGroup;
@@ -1290,13 +1701,29 @@
     // fuel assemblies on a square lattice inside the circle
     var fuelGroup = new THREE.Group();
     var rodGroup = new THREE.Group();
-    var fuelGeo = new THREE.CylinderGeometry(0.055, 0.055, H, 8);
-    var rodGeo = new THREE.CylinderGeometry(0.045, 0.045, H, 8);
+    var fuelGeo = new THREE.CylinderGeometry(0.055, 0.055, H, 10);
+    var rodGeo = new THREE.CylinderGeometry(0.045, 0.045, H, 10);
+    // Shared PBR metallic materials for fuel cladding (zirconium-gold alloy) & boron-steel control rods
     // Emissive only starts to show once the fuel is genuinely hot, so normal
     // operation still reads as unremarkable -- which is the lesson of the
     // steady scenario. Past that it climbs smoothly to a glowing red.
     var glow = nkRamp([[0, '#000000'], [0.35, '#000000'], [0.6, '#4a2405'],
                        [0.85, '#7f1d1d'], [1, '#dc2626']], hot);
+    var fuelMat = mat('fuel', {
+      emissive: contrast ? '#000000' : glow,
+      emissiveIntensity: 1.25,
+      metalness: 0.72,
+      roughness: 0.26
+    });
+    var rodMat = mat('rods', {
+      metalness: 0.82,
+      roughness: 0.28,
+      emissive: contrast ? '#000000' : '#0c4a6e',
+      emissiveIntensity: 0.35
+    });
+    var capMat = mat('vessel', { colour: contrast ? '#ffffff' : '#cbd5e1', metalness: 0.86, roughness: 0.24 });
+    var fuelCapGeo = new THREE.CylinderGeometry(0.068, 0.068, 0.06, 10);
+    var rodDriveGeo = new THREE.CylinderGeometry(0.022, 0.022, 0.38, 8);
     var gx, gz, px, pz, isRod, m, n = 0;
     for (gx = -4; gx <= 4; gx++) {
       for (gz = -4; gz <= 4; gz++) {
@@ -1305,17 +1732,34 @@
         n++;
         isRod = ((gx + 8) % 3 === 0 && (gz + 8) % 3 === 0);
         if (isRod) {
-          m = new THREE.Mesh(rodGeo, mat('rods'));
+          m = new THREE.Mesh(rodGeo, rodMat);
           // insertion: fully in sits centred, fully out is lifted clear of the core
           m.position.set(px, (1 - rodFrac) * H, pz);
           rodGroup.add(m);
+          var drive = new THREE.Mesh(rodDriveGeo, capMat);
+          drive.position.set(px, (1 - rodFrac) * H + H / 2 + 0.19, pz);
+          rodGroup.add(drive);
         } else {
-          m = new THREE.Mesh(fuelGeo, mat('fuel', { emissive: contrast ? '#000000' : glow }));
+          m = new THREE.Mesh(fuelGeo, fuelMat);
           m.position.set(px, 0, pz);
           if (api.wantShadow) m.castShadow = true;
           fuelGroup.add(m);
+          var fCap = new THREE.Mesh(fuelCapGeo, capMat);
+          fCap.position.set(px, H / 2 + 0.02, pz);
+          fuelGroup.add(fCap);
         }
       }
+    }
+    // Core spacer grid rings for crisp fuel-assembly architectural depth
+    if (typeof THREE.TorusGeometry === 'function') {
+      var gridRingGeo = new THREE.TorusGeometry(R - 0.04, 0.024, 8, 36);
+      var gridRingMat = mat('vessel', { colour: contrast ? '#ffffff' : '#94a3b8', metalness: 0.84, roughness: 0.28 });
+      [-0.52, 0, 0.52].forEach(function (gy) {
+        var gr = new THREE.Mesh(gridRingGeo, gridRingMat);
+        gr.rotation.x = Math.PI / 2;
+        gr.position.y = gy;
+        fuelGroup.add(gr);
+      });
     }
     anchor.add(fuelGroup);
     anchor.add(rodGroup);
@@ -1324,16 +1768,59 @@
     picks.push(fuelGroup);
     picks.push(rodGroup);
 
-    // upper and lower heads so it reads as a sealed vessel
+    // upper and lower heads + bolted steel pressure-vessel flanges
     var headGeo = new THREE.CylinderGeometry(R + 0.16, R + 0.16, 0.1, 26);
-    var top = new THREE.Mesh(headGeo, mat('vessel'));
+    var headMat = mat('vessel', { metalness: 0.82, roughness: 0.3 });
+    var top = new THREE.Mesh(headGeo, headMat);
     top.position.y = (H + 0.4) / 2;
     anchor.add(top);
-    var bot = new THREE.Mesh(headGeo, mat('vessel'));
+    var bot = new THREE.Mesh(headGeo, headMat);
     bot.position.y = -(H + 0.4) / 2;
     anchor.add(bot);
+    if (typeof THREE.TorusGeometry === 'function') {
+      var flangeGeo = new THREE.TorusGeometry(R + 0.19, 0.055, 10, 32);
+      var topFlange = new THREE.Mesh(flangeGeo, capMat);
+      topFlange.rotation.x = Math.PI / 2;
+      topFlange.position.y = (H + 0.4) / 2;
+      anchor.add(topFlange);
+      var botFlange = new THREE.Mesh(flangeGeo, capMat);
+      botFlange.rotation.x = Math.PI / 2;
+      botFlange.position.y = -(H + 0.4) / 2;
+      anchor.add(botFlange);
+      var baseRing = new THREE.Mesh(new THREE.TorusGeometry(R + 0.56, 0.045, 8, 36), mat('containment', { opacity: contrast ? 1 : 0.42, metalness: 0.35, roughness: 0.6 }));
+      baseRing.rotation.x = Math.PI / 2;
+      baseRing.position.y = -(H + 1.1) / 2;
+      anchor.add(baseRing);
+    }
 
-    return { meshes: meshes, picks: picks, anchor: anchor };
+    var rxFrame = function (nowMs, liveSp, isReduced) {
+      var reduced = !!(isReduced || api.reduced);
+      var tSec = reduced ? 2.6 : (((nowMs - tStart) * 0.001) % 3600);
+      rxUniforms.uTime.value = tSec;
+      if (coreLight) {
+        coreLight.intensity = reduced
+          ? coreLightBase
+          : coreLightBase * (0.93 + 0.07 * Math.sin(tSec * 2.1) + 0.03 * Math.sin(tSec * 5.3));
+      }
+      for (var fdi = 0; fdi < fluxDiscs.length; fdi++) {
+        fluxDiscs[fdi].mesh.rotation.z = reduced ? 0 : tSec * 0.14 * fluxDiscs[fdi].dir;
+      }
+      if (voidAnim.length > 0) {
+        var halfH = H * 0.4;
+        var spanH = H * 0.8;
+        for (var vai = 0; vai < voidAnim.length; vai++) {
+          var vaItem = voidAnim[vai];
+          if (reduced) {
+            vaItem.mesh.position.y = vaItem.baseY;
+          } else {
+            var yOff = ((vaItem.baseY + halfH + tSec * vaItem.speed) % spanH) - halfH;
+            vaItem.mesh.position.y = yOff;
+          }
+        }
+      }
+    };
+
+    return { meshes: meshes, picks: picks, anchor: anchor, frame: rxFrame };
   }
 
   var RX_NULL = {
@@ -1695,15 +2182,47 @@
           h('div', { className: 'ns-scene', 'data-ns-scene': 'investigation' },
             h('div', { className: 'ns-case-baseline' }, nt('case_before', 'Before: 1 m, no shield · '), h('strong', null, '100%')),
             h('p', { className: 'ns-case-source' }, nt('case_fixed_source', 'Source output stays fixed · 1 MeV gamma')),
-            !overview ? h(React.Fragment, null, h('svg', { className: 'ns-beam', viewBox: '0 0 500 190', 'aria-hidden': 'true' },
-              h('circle', { cx: 48, cy: 86, r: 28, fill: '#a78bfa', stroke: '#e9ddff', strokeWidth: 2 }),
-              h('text', { x: 48, y: 96, fill: '#171131', fontSize: 30, textAnchor: 'middle' }, 'γ'),
-              [60, 86, 112].map(function (y) { return h('path', { key: y, d: 'M80 ' + y + ' H' + detectorX, stroke: '#83f5e2', strokeWidth: 3, strokeDasharray: '7 5' }); }),
-              h('rect', { x: 185, y: 30, width: 56, height: 112, rx: 6, fill: measured.thickness ? '#3d6480' : '#10243b', stroke: '#a7d8f2', strokeWidth: 2, strokeDasharray: measured.thickness ? undefined : '5 5' }),
-              h('text', { x: 213, y: 93, textAnchor: 'middle', fill: '#edf5ff', fontSize: 15 }, measured.thickness ? '2 cm' : '0 cm'),
-              h('rect', { x: detectorX, y: 42, width: 18, height: 90, rx: 5, fill: '#65e2ce', stroke: '#b8fff2', strokeWidth: 2 }),
-              h('path', { d: 'M48 162 H' + detectorX, stroke: '#a7d8f2', strokeWidth: 1 }),
-              h('text', { x: (48 + detectorX) / 2, y: 182, textAnchor: 'middle', fill: '#d0e3f5', fontSize: 17 }, measured.distance + ' m')),
+            !overview ? h(React.Fragment, null, (function () {
+              var detPct = Math.max(0, Math.min(100, signal(measured)));
+              var detFrac = detPct / 100;
+              var hasLead = !!measured.thickness;
+              var slabX = 185, slabW = 56;
+              return h('svg', { className: 'ns-beam', viewBox: '0 0 500 190', 'aria-hidden': 'true' },
+                h('defs', null,
+                  h('radialGradient', { id: 'nk-det-src', cx: '50%', cy: '50%', r: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#f5f3ff', stopOpacity: 0.95 }),
+                    h('stop', { offset: '55%', stopColor: '#a78bfa', stopOpacity: 0.9 }),
+                    h('stop', { offset: '100%', stopColor: '#6d28d9', stopOpacity: 0 })),
+                  h('linearGradient', { id: 'nk-det-lead', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                    h('stop', { offset: '0%', stopColor: '#475569' }),
+                    h('stop', { offset: '50%', stopColor: '#334155' }),
+                    h('stop', { offset: '100%', stopColor: '#1e293b' })),
+                  h('linearGradient', { id: 'nk-det-atten', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                    h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0.55 }),
+                    h('stop', { offset: '100%', stopColor: '#2dd4bf', stopOpacity: Math.max(0.06, detFrac * 0.45) })),
+                  h('linearGradient', { id: 'nk-det-bar', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#99f6e4' }),
+                    h('stop', { offset: '50%', stopColor: '#2dd4bf' }),
+                    h('stop', { offset: '100%', stopColor: '#0d9488' }))),
+                h('circle', { cx: 48, cy: 86, r: 42, fill: 'url(#nk-det-src)', opacity: 0.55 }),
+                h('circle', { cx: 48, cy: 86, r: 28, fill: '#a78bfa', stroke: '#e9ddff', strokeWidth: 2 }),
+                h('text', { x: 48, y: 96, fill: '#171131', fontSize: 30, textAnchor: 'middle' }, 'γ'),
+                [60, 86, 112].map(function (y) {
+                  var midEnd = hasLead ? slabX : detectorX;
+                  return h('g', { key: y },
+                    h('path', { d: 'M80 ' + y + ' H' + midEnd, stroke: '#38bdf8', strokeWidth: 7, opacity: 0.16, strokeLinecap: 'round' }),
+                    h('path', { d: 'M80 ' + y + ' H' + midEnd, stroke: '#c4b5fd', strokeWidth: 2.6, strokeDasharray: '7 5' }),
+                    hasLead ? h('path', { d: 'M' + (slabX + slabW) + ' ' + y + ' H' + detectorX, stroke: '#2dd4bf', strokeWidth: 4 + detFrac * 4, opacity: 0.14 + detFrac * 0.18 }) : null,
+                    hasLead ? h('path', { d: 'M' + (slabX + slabW) + ' ' + y + ' H' + detectorX, stroke: '#83f5e2', strokeWidth: 1.8 + detFrac * 2, opacity: 0.28 + detFrac * 0.72, strokeDasharray: '7 5' }) : null);
+                }),
+                h('rect', { x: slabX, y: 30, width: slabW, height: 112, rx: 6, fill: hasLead ? 'url(#nk-det-lead)' : '#10243b', stroke: '#a7d8f2', strokeWidth: 2, strokeDasharray: hasLead ? undefined : '5 5' }),
+                hasLead ? h('rect', { x: slabX + 2, y: 46, width: slabW - 4, height: 80, rx: 4, fill: 'url(#nk-det-atten)' }) : null,
+                h('text', { x: 213, y: 93, textAnchor: 'middle', fill: '#edf5ff', fontSize: 15, fontWeight: 700 }, hasLead ? '2 cm' : '0 cm'),
+                h('rect', { x: detectorX - 4, y: 38, width: 26, height: 98, rx: 8, fill: '#2dd4bf', opacity: 0.1 + detFrac * 0.24 }),
+                h('rect', { x: detectorX, y: 42, width: 18, height: 90, rx: 5, fill: 'url(#nk-det-bar)', stroke: '#b8fff2', strokeWidth: 2 }),
+                h('path', { d: 'M48 162 H' + detectorX, stroke: '#a7d8f2', strokeWidth: 1 }),
+                h('text', { x: (48 + detectorX) / 2, y: 182, textAnchor: 'middle', fill: '#d0e3f5', fontSize: 17 }, measured.distance + ' m'));
+            })(),
             h('div', { className: 'ns-readout' }, h('strong', { 'data-ns-case-reading': 'true' }, signal(measured).toFixed(1) + '%'), h('span', null, nt('case_relative', 'of the original expected detector signal'))),
             h('p', { className: 'ns-scene-note', 'data-ns-case-measured': 'true' }, runs.length ? nt('case_review_setup', 'Saved test: {distance} m · {shield}', { distance: measured.distance, shield: measured.thickness ? nt('case_lead_present', '2 cm lead') : nt('case_no_lead', 'no lead') }) : nt('case_mystery_setup', 'Mystery setup: 2 m · 2 cm lead'))) : null,
             runs.length ? h('div', { className: 'ns-case-saved ns-case-stop' },
@@ -2289,11 +2808,36 @@
         h('div', { className: 'ns-scene', 'data-ns-scene': 'rays' },
           h('div', { className: 'ns-scene-top' }, h('span', null, nt('rays_scene', 'Source → paper → detector'))),
           h('svg', { className: 'ns-beam', viewBox: '0 0 420 180', 'aria-hidden': 'true' },
-            h('circle', { cx: 48, cy: 78, r: 28, fill: '#a78bfa', stroke: '#e9ddff', strokeWidth: 2 }),
-            h('text', { x: 48, y: 87, textAnchor: 'middle', fill: '#171131', fontSize: 28 }, last ? alpha ? 'α' : 'γ' : '?'),
-            h('rect', { x: 200, y: 20, width: 16, height: 112, rx: 3, fill: hasPaper ? '#d0e3f5' : 'none', stroke: '#d0e3f5', strokeWidth: 2, strokeDasharray: hasPaper ? undefined : '5 5' }),
-            last ? h('path', { d: stopped ? 'M82 78 H198' : 'M82 78 H360', stroke: '#83f5e2', strokeWidth: 4, strokeDasharray: alpha ? '3 9' : '12 5' }) : null,
-            stopped ? h('path', { d: 'M184 67 L198 89 M198 67 L184 89', stroke: '#fff1b5', strokeWidth: 3 }) : null,
+            h('defs', null,
+              h('radialGradient', { id: 'nk-rays-src', cx: '50%', cy: '50%', r: '50%' },
+                h('stop', { offset: '0%', stopColor: alpha ? '#fef08a' : '#e0f2fe', stopOpacity: 0.9 }),
+                h('stop', { offset: '55%', stopColor: alpha ? '#fb7185' : '#a78bfa', stopOpacity: 0.75 }),
+                h('stop', { offset: '100%', stopColor: alpha ? '#be123c' : '#4c1d95', stopOpacity: 0 })),
+              h('linearGradient', { id: 'nk-rays-paper', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#f8fafc' }),
+                h('stop', { offset: '50%', stopColor: '#dbeafe' }),
+                h('stop', { offset: '100%', stopColor: '#cbd5e1' })),
+              h('radialGradient', { id: 'nk-rays-bragg', cx: '50%', cy: '50%', r: '50%' },
+                h('stop', { offset: '0%', stopColor: '#fef9c3', stopOpacity: 0.95 }),
+                h('stop', { offset: '50%', stopColor: '#fb7185', stopOpacity: 0.55 }),
+                h('stop', { offset: '100%', stopColor: '#f43f5e', stopOpacity: 0 }))),
+            h('circle', { cx: 48, cy: 78, r: 42, fill: 'url(#nk-rays-src)', opacity: last ? 0.65 : 0.35 }),
+            h('circle', { cx: 48, cy: 78, r: 28, fill: last ? (alpha ? '#fb7185' : '#a78bfa') : '#a78bfa', stroke: '#e9ddff', strokeWidth: 2 }),
+            h('text', { x: 48, y: 87, textAnchor: 'middle', fill: '#171131', fontSize: 28, fontWeight: 700 }, last ? alpha ? 'α' : 'γ' : '?'),
+            h('rect', { x: 200, y: 20, width: 16, height: 112, rx: 3, fill: hasPaper ? 'url(#nk-rays-paper)' : 'none', stroke: '#d0e3f5', strokeWidth: 2, strokeDasharray: hasPaper ? undefined : '5 5' }),
+            last ? h('g', null,
+              h('path', { d: stopped ? 'M82 78 H198' : 'M82 78 H360', stroke: alpha ? '#fb7185' : '#38bdf8', strokeWidth: alpha ? 12 : 9, opacity: 0.22, strokeLinecap: 'round' }),
+              alpha
+                ? h('g', null,
+                    h('path', { d: stopped ? 'M82 78 H198' : 'M82 78 H360', stroke: '#fda4af', strokeWidth: 4.5, strokeDasharray: '4 8', strokeLinecap: 'round' }),
+                    [104, 132, 160, 186].concat(stopped ? [] : [232, 268, 304, 338]).map(function (px) {
+                      return h('circle', { key: 'a-' + px, cx: px, cy: 78, r: 3.4, fill: '#fef08a', stroke: '#fb7185', strokeWidth: 1.4 });
+                    }))
+                : h('path', { d: 'M82 78 Q92 64 102 78 T122 78 T142 78 T162 78 T182 78 T202 78 T222 78 T242 78 T262 78 T282 78 T302 78 T322 78 T342 78 T360 78', fill: 'none', stroke: '#83f5e2', strokeWidth: 3.2, strokeLinecap: 'round' })) : null,
+            stopped ? h('g', null,
+              h('circle', { cx: 196, cy: 78, r: 18, fill: 'url(#nk-rays-bragg)' }),
+              h('path', { d: 'M184 67 L198 89 M198 67 L184 89', stroke: '#fff1b5', strokeWidth: 3, strokeLinecap: 'round' })) : null,
+            last && !stopped ? h('rect', { x: 362, y: 37, width: 38, height: 82, rx: 9, fill: '#2dd4bf', opacity: 0.26 }) : null,
             h('rect', { x: 367, y: 42, width: 28, height: 72, rx: 6, fill: last && !stopped ? '#65e2ce' : '#18304b', stroke: '#b8fff2', strokeWidth: 2 }),
             h('text', { x: 48, y: 155, textAnchor: 'middle', fill: '#edf5ff', fontSize: 15 }, nt('rays_source_label', 'Source')),
             h('text', { x: 208, y: 155, textAnchor: 'middle', fill: '#edf5ff', fontSize: 15 }, nt('rays_paper_label', 'Paper')),
@@ -2485,14 +3029,51 @@
     var changedSettings = last && (last.material !== material.id || last.thickness !== thickness);
     var shieldScene = h('div', { className: 'ns-scene', 'data-ns-scene': 'shield' },
       h('div', { className: 'ns-scene-top' }, h('span', null, nt('gamma_beam', 'Gamma beam • 1 MeV')), h('span', null, nt('detector', 'Detector'))),
-      h('svg', { className: 'ns-beam', viewBox: '0 0 500 210', 'aria-hidden': 'true' },
-        h('circle', { cx: 52, cy: 100, r: 32, fill: '#a78bfa', stroke: '#e9ddff', strokeWidth: 2 }),
-        h('text', { x: 52, y: 110, fill: '#171131', fontSize: 30, textAnchor: 'middle' }, 'γ'),
-        [55, 77, 100, 123, 145].map(function (y) { return h('path', { key: 'in' + y, d: 'M90 ' + y + ' H217', stroke: '#c4b5fd', strokeWidth: 3, strokeDasharray: '7 5' }); }),
-        h('rect', { x: 223, y: 28, width: 58 + (last ? last.thickness : thickness) * 6, height: 145, rx: 8, fill: (last ? last.thickness : thickness) === 0 ? 'none' : '#3d6480', stroke: '#a7d8f2', strokeDasharray: (last ? last.thickness : thickness) === 0 ? '5 5' : undefined, strokeWidth: 2 }),
-        h('text', { x: 263, y: 102, fill: '#f1f8ff', fontSize: 19, textAnchor: 'middle' }, (last ? last.thickness : thickness) + ' cm'),
-        last ? [55, 77, 100, 123, 145].map(function (y) { return h('path', { key: 'out' + y, d: 'M350 ' + y + ' H433', stroke: '#83f5e2', strokeWidth: 2 + 4 * last.percent / 100, opacity: .2 + .8 * last.percent / 100, strokeDasharray: '7 5' }); }) : null,
-        h('rect', { x: 443, y: 30, width: 20, height: 143, rx: 6, fill: '#65e2ce', stroke: '#b8fff2', strokeWidth: 2 })),
+      (function () {
+        var curThick = last ? last.thickness : thickness;
+        var curMatId = last ? last.material : material.id;
+        var curPct = last ? last.percent : Math.round(100 * Math.exp(-material.mu * thickness) * 10) / 10;
+        var curFrac = Math.max(0, Math.min(1, curPct / 100));
+        var slabW = 58 + curThick * 6;
+        var slabPalette = curMatId === 'water'
+          ? ['#0ea5e9', '#0284c7', '#0369a1']
+          : curMatId === 'concrete'
+            ? ['#94a3b8', '#64748b', '#475569']
+            : ['#475569', '#334155', '#1e293b'];
+        return h('svg', { className: 'ns-beam', viewBox: '0 0 500 210', 'aria-hidden': 'true' },
+          h('defs', null,
+            h('radialGradient', { id: 'nk-shd-src', cx: '50%', cy: '50%', r: '50%' },
+              h('stop', { offset: '0%', stopColor: '#f5f3ff', stopOpacity: 0.95 }),
+              h('stop', { offset: '55%', stopColor: '#a78bfa', stopOpacity: 0.8 }),
+              h('stop', { offset: '100%', stopColor: '#6d28d9', stopOpacity: 0 })),
+            h('linearGradient', { id: 'nk-shd-slab', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: slabPalette[0], stopOpacity: curMatId === 'water' ? 0.55 : 0.92 }),
+              h('stop', { offset: '50%', stopColor: slabPalette[1], stopOpacity: curMatId === 'water' ? 0.65 : 0.95 }),
+              h('stop', { offset: '100%', stopColor: slabPalette[2], stopOpacity: curMatId === 'water' ? 0.72 : 0.98 })),
+            h('linearGradient', { id: 'nk-shd-atten', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+              h('stop', { offset: '0%', stopColor: '#c4b5fd', stopOpacity: 0.52 }),
+              h('stop', { offset: '45%', stopColor: '#38bdf8', stopOpacity: Math.max(0.06, 0.34 * Math.sqrt(curFrac)) }),
+              h('stop', { offset: '100%', stopColor: '#2dd4bf', stopOpacity: Math.max(0.03, 0.44 * curFrac) }))),
+          h('circle', { cx: 52, cy: 100, r: 46, fill: 'url(#nk-shd-src)', opacity: 0.6 }),
+          h('circle', { cx: 52, cy: 100, r: 32, fill: '#a78bfa', stroke: '#e9ddff', strokeWidth: 2 }),
+          h('text', { x: 52, y: 110, fill: '#171131', fontSize: 30, textAnchor: 'middle', fontWeight: 700 }, 'γ'),
+          [55, 77, 100, 123, 145].map(function (y) {
+            return h('g', { key: 'in' + y },
+              h('path', { d: 'M90 ' + y + ' H221', stroke: '#a78bfa', strokeWidth: 7, opacity: 0.16, strokeLinecap: 'round' }),
+              h('path', { d: 'M90 ' + y + ' Q98 ' + (y - 6) + ' 106 ' + y + ' T122 ' + y + ' T138 ' + y + ' T154 ' + y + ' T170 ' + y + ' T186 ' + y + ' T202 ' + y + ' T218 ' + y, fill: 'none', stroke: '#c4b5fd', strokeWidth: 2.5, strokeLinecap: 'round' }));
+          }),
+          h('rect', { x: 223, y: 28, width: slabW, height: 145, rx: 8, fill: curThick === 0 ? 'none' : 'url(#nk-shd-slab)', stroke: '#a7d8f2', strokeDasharray: curThick === 0 ? '5 5' : undefined, strokeWidth: 2 }),
+          curThick > 0 ? h('rect', { x: 225, y: 44, width: Math.max(4, slabW - 4), height: 113, rx: 5, fill: 'url(#nk-shd-atten)' }) : null,
+          h('text', { x: 223 + slabW / 2, y: 106, fill: '#f1f8ff', fontSize: 18, fontWeight: 700, textAnchor: 'middle' }, curThick + ' cm'),
+          last ? [55, 77, 100, 123, 145].map(function (y) {
+            var outX = 225 + slabW;
+            return h('g', { key: 'out' + y },
+              h('path', { d: 'M' + outX + ' ' + y + ' H435', stroke: '#2dd4bf', strokeWidth: 5 + 5 * curFrac, opacity: 0.08 + 0.24 * curFrac, strokeLinecap: 'round' }),
+              h('path', { d: 'M' + outX + ' ' + y + ' H435', stroke: '#83f5e2', strokeWidth: 1.6 + 3.4 * curFrac, opacity: 0.2 + 0.8 * curFrac, strokeDasharray: '7 5' }));
+          }) : null,
+          last ? h('rect', { x: 438, y: 25, width: 30, height: 153, rx: 9, fill: '#2dd4bf', opacity: 0.08 + 0.34 * curFrac }) : null,
+          h('rect', { x: 443, y: 30, width: 20, height: 143, rx: 6, fill: '#65e2ce', stroke: '#b8fff2', strokeWidth: 2 }));
+      })(),
       h('div', { className: 'ns-readout' }, h('strong', { 'data-ns-reading': 'true' }, last ? last.percent.toFixed(1) + '%' : '—'), h('span', null, nt('transmitted', 'of the original beam transmitted'))),
       h('p', { className: 'ns-note', style: { color: '#d0e3f5', textAlign: 'center', margin: '12px 0 0' } }, last ? nt('tested_setting', 'Last test: {material}, {thickness} cm', { material: materialName(last.material), thickness: last.thickness }) : nt('ready_test', 'Set up a shield, then test the beam.')));
     var shieldControls = h('div', { className: 'ns-controls' },
@@ -3417,6 +3998,15 @@
             c.lineTo(px(s.points[s.points.length - 1][0]), py(yLo));
             c.closePath(); c.fill();
           }
+          // Soft luminous underlay on primary solid curves (translucent so contrast checks stay pristine)
+          if (!s.dash) {
+            c.strokeStyle = nkRgba(s.colour, isDark ? 0.24 : 0.16);
+            c.lineWidth = ((s.width || 2) + 3.4) * dpr;
+            c.lineJoin = 'round'; c.lineCap = 'round';
+            c.beginPath();
+            s.points.forEach(function (p, i) { var x = px(p[0]), y = py(p[1]); if (i === 0) c.moveTo(x, y); else c.lineTo(x, y); });
+            c.stroke();
+          }
           c.strokeStyle = s.colour; c.lineWidth = (s.width || 2) * dpr;
           c.lineJoin = 'round'; c.lineCap = 'round';
           if (s.dash) c.setLineDash([6 * dpr, 4 * dpr]);
@@ -3448,6 +4038,8 @@
           // Ring in the chart's own background colour, so the marker stays
           // legible sitting on top of a line of its own colour.
           var mx = px(cfg.marker.x), my = py(cfg.marker.y);
+          c.beginPath(); c.arc(mx, my, 8.5 * dpr, 0, 6.2832);
+          c.fillStyle = nkRgba(cfg.marker.colour, isDark ? 0.24 : 0.18); c.fill();
           c.beginPath(); c.arc(mx, my, 5.5 * dpr, 0, 6.2832);
           c.fillStyle = chartBg; c.fill();
           c.beginPath(); c.arc(mx, my, 4 * dpr, 0, 6.2832);
@@ -3878,11 +4470,15 @@
           // prompt-jump period. Beyond prompt critical the period collapses and
           // no operator input can keep up — which is the entire point.
           var period;
-          if (rho >= RX_BETA) period = Math.max(0.05, RX_GEN / Math.max(1e-6, rho - RX_BETA));
-          else if (Math.abs(rho) < 1e-7) period = 1e9;
-          else period = (RX_BETA - rho) / (RX_LAMBDA_D * rho);
-          if (period > 0 && period < 0.5) period = 0.5;
-          if (period < 0 && period > -2) period = -2;
+          if (rho >= RX_BETA) {
+            period = Math.max(0.05, RX_GEN / Math.max(1e-6, rho - RX_BETA));
+          } else if (Math.abs(rho) < 1e-7) {
+            period = 1e9;
+          } else {
+            period = (RX_BETA - rho) / (RX_LAMBDA_D * rho);
+            if (period > 0 && period < 0.5) period = 0.5;
+            if (period < 0 && period > -2) period = -2;
+          }
           s.power = s.power * Math.exp(dt / period);
           s.power = Math.max(0.001, Math.min(100000, s.power));
         }
@@ -3896,16 +4492,20 @@
         // core asymptoted at about 407 C, so the blackout scenario could be won
         // by doing nothing at all. With cooling genuinely lost there is no
         // equilibrium below melting — which is the entire lesson of Fukushima.
-        var removal = (s.pumps ? 4.5 : 0.002) * (s.t - RX_T_REF);
-        s.t += (s.power * 0.9 - removal) * dt * RX_TIME_COMPRESSION;
+        var hCool = s.pumps ? 4.5 : 0.002;
+        var tEq = RX_T_REF + (s.power * 0.9) / hCool;
+        s.t = tEq + (s.t - tEq) * Math.exp(-hCool * RX_TIME_COMPRESSION * dt);
         s.t = Math.max(20, Math.min(4000, s.t));
         if (s.t > s.peakT) s.peakT = s.t;
 
-        // xenon-135: builds from iodine when power drops, burns out at high flux
+        // xenon-135: normalized so (iod=1, xe=1) is the exact steady equilibrium
+        // at 100% power (phi=1); builds from iodine when power drops, burns out at high flux
         var phi = s.power / 100;
-        var prodI = phi;
-        s.iod += (prodI * 0.0000642 - RX_LAM_I * s.iod) * dt * 60;
-        s.xe += (RX_LAM_I * s.iod + 0.0000032 * phi - RX_LAM_X * s.xe - 0.0000181 * phi * s.xe) * dt * 60;
+        var rxXeBurn = 5 * RX_LAM_X;
+        var rxXeTimeScale = 600;
+        s.iod += RX_LAM_I * (phi - s.iod) * dt * rxXeTimeScale;
+        s.iod = Math.max(0, Math.min(10, s.iod));
+        s.xe += ((RX_LAM_X + rxXeBurn) * (0.95 * s.iod + 0.05 * phi) - (RX_LAM_X + rxXeBurn * phi) * s.xe) * dt * rxXeTimeScale;
         s.xe = Math.max(0.05, Math.min(6, s.xe));
 
         // scenario scoring
@@ -4023,10 +4623,27 @@
             // one moment the trace is worth looking at.
             var plotTop = 26 * dpr, plotBot = H - 46 * dpr;
             function pwrY(pw) { return plotBot - (pw / 200) * (plotBot - plotTop); }
+            var traceCol = s.t > RX_T_CLAD ? '#f87171' : (s.power > 110 ? '#fbbf24' : '#34d399');
+            // Subtle Cherenkov underwater / thermal status bloom behind the scope
+            if (typeof c.createRadialGradient === 'function') {
+              var amb = c.createRadialGradient(W * 0.5, (plotTop + plotBot) * 0.55, 6 * dpr, W * 0.5, (plotTop + plotBot) * 0.55, Math.max(W * 0.58, H * 0.65));
+              amb.addColorStop(0, s.t > RX_T_CLAD ? 'rgba(248,113,113,0.16)' : (s.power > 110 ? 'rgba(251,191,36,0.14)' : 'rgba(14,165,233,0.15)'));
+              amb.addColorStop(0.6, s.t > RX_T_CLAD ? 'rgba(185,28,28,0.05)' : 'rgba(6,182,212,0.04)');
+              amb.addColorStop(1, 'rgba(11,17,32,0)');
+              c.fillStyle = amb;
+              c.fillRect(0, 0, W, plotBot + 4 * dpr);
+            }
+            // Subtle oscilloscope vertical time-base ticks
+            c.strokeStyle = 'rgba(56,189,248,0.08)';
+            c.lineWidth = Math.max(1, dpr);
+            for (var vti = 1; vti < 8; vti++) {
+              var vtx = (vti / 8) * W;
+              c.beginPath(); c.moveTo(vtx, plotTop); c.lineTo(vtx, plotBot); c.stroke();
+            }
             c.font = '600 ' + (9 * dpr) + 'px system-ui, sans-serif';
             c.textAlign = 'left'; c.textBaseline = 'alphabetic';
             [0, 100, 200].forEach(function (lv) {
-              c.strokeStyle = lv === 100 ? 'rgba(148,163,184,0.34)' : 'rgba(148,163,184,0.16)';
+              c.strokeStyle = lv === 100 ? 'rgba(56,189,248,0.34)' : 'rgba(148,163,184,0.16)';
               c.lineWidth = Math.max(1, dpr);
               if (lv === 200) c.setLineDash([4 * dpr, 4 * dpr]);
               c.beginPath(); c.moveTo(0, pwrY(lv)); c.lineTo(W, pwrY(lv)); c.stroke();
@@ -4034,15 +4651,54 @@
               c.fillStyle = 'rgba(148,163,184,0.85)';
               c.fillText(lv + '%', 4 * dpr, pwrY(lv) - 3 * dpr);
             });
-            c.strokeStyle = s.t > RX_T_CLAD ? '#f87171' : (s.power > 110 ? '#fbbf24' : '#34d399');
-            c.lineWidth = 2 * dpr;
+            // Luminous area gradient beneath the power trace
+            if (hist.length > 1) {
+              var trGrad = c.createLinearGradient(0, plotTop, 0, plotBot);
+              trGrad.addColorStop(0, nkRgba(traceCol, 0.28));
+              trGrad.addColorStop(1, nkRgba(traceCol, 0.02));
+              c.fillStyle = trGrad;
+              c.beginPath();
+              c.moveTo(0, plotBot);
+              hist.forEach(function (p, i) { c.lineTo((i / 240) * W, pwrY(p)); });
+              c.lineTo(((hist.length - 1) / 240) * W, plotBot);
+              c.closePath();
+              c.fill();
+            }
+            // Phosphor bloom underlay + crisp instrument trace
             c.lineJoin = 'round'; c.lineCap = 'round';
+            c.strokeStyle = nkRgba(traceCol, 0.28);
+            c.lineWidth = 6 * dpr;
             c.beginPath();
             hist.forEach(function (p, i) {
               var x = (i / 240) * W, y = pwrY(p);
               if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
             });
             c.stroke();
+            c.strokeStyle = traceCol;
+            c.lineWidth = 2.2 * dpr;
+            c.beginPath();
+            hist.forEach(function (p, i) {
+              var x = (i / 240) * W, y = pwrY(p);
+              if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
+            });
+            c.stroke();
+            // Live trace tip beacon
+            if (hist.length) {
+              var tipX = ((hist.length - 1) / 240) * W;
+              var tipY = pwrY(hist[hist.length - 1]);
+              c.beginPath(); c.arc(tipX, tipY, 5.5 * dpr, 0, 6.2832);
+              c.fillStyle = nkRgba(traceCol, 0.32); c.fill();
+              c.beginPath(); c.arc(tipX, tipY, 2.6 * dpr, 0, 6.2832);
+              c.fillStyle = traceCol; c.fill();
+            }
+            // Readout bay top rule + dividers
+            c.strokeStyle = 'rgba(56,189,248,0.22)';
+            c.lineWidth = Math.max(1, dpr);
+            c.beginPath(); c.moveTo(0, H - 44 * dpr); c.lineTo(W, H - 44 * dpr); c.stroke();
+            [0.245, 0.505, 0.765].forEach(function (frac) {
+              c.strokeStyle = 'rgba(148,163,184,0.16)';
+              c.beginPath(); c.moveTo(W * frac, H - 40 * dpr); c.lineTo(W * frac, H - 6 * dpr); c.stroke();
+            });
             // hist is clamped to 200, so past that the line goes flat along the
             // ceiling and reads as "power stopped rising" — the opposite of what
             // is happening. Say the real number instead.
@@ -5927,7 +6583,7 @@
                 setAgeShown(true);
                 var g = parseFloat(ageGuess);
                 setShownGuess(isNaN(g) ? null : g);
-                var close = !isNaN(g) && Math.abs(g - c14Age) / c14Age < 0.15;
+                var close = !isNaN(g) && (c14Age === 0 ? Math.abs(g) <= 50 : Math.abs(g - c14Age) / c14Age < 0.15);
                 var patch = { datedOnce: true };
                 // Guarded like the other two XP awards in this file. It was not:
                 // pressing Recalculate with a good guess still in the box paid
@@ -5955,6 +6611,15 @@
             // gap wastes the guess. The margin is the feedback.
             shownGuess != null ? (function () {
               var offBy = shownGuess - c14Age;
+              if (c14Age === 0) {
+                var isZeroClose = Math.abs(offBy) <= 50;
+                var zeroCol = isZeroClose ? '#34d399' : '#fb923c';
+                return h('p', { className: 'text-[0.6875rem] mt-1 font-bold', style: { color: ink(zeroCol) } },
+                  isZeroClose
+                    ? '✓ Your estimate of ' + nkFmt(shownGuess, 0) + ' years matches a living (0-year) sample — that counts as dated.'
+                    : 'You said ' + nkFmt(shownGuess, 0) + ', which is ' + nkFmt(Math.abs(offBy), 0) + ' years ' +
+                      (offBy > 0 ? 'too old' : 'too young') + '. At 100% C-14 remaining, no decay has occurred yet (0 years).');
+              }
               var pct = Math.abs(offBy) / c14Age * 100;
               var col = pct < 15 ? '#34d399' : (pct < 40 ? '#fbbf24' : '#fb923c');
               return h('p', { className: 'text-[0.6875rem] mt-1 font-bold', style: { color: ink(col) } },
@@ -6134,9 +6799,98 @@
                   ? 'Substantially attenuated. The "half-value layer" for this material is ' + nkFmt(Math.LN2 / shield.mu, 2) + ' cm — every one of those halves the intensity again.'
                   : 'Most of it is still coming through. Gamma needs real thickness of a dense material.');
             }
+            var pctClamped = nkClamp(through, 0, 100);
+            var thruFrac = pctClamped / 100;
+            var slabW5 = shieldId === 'air' ? 140 : Math.max(14, Math.min(150, 14 + (thick / 30) * 136));
+            var slabX5 = 186;
+            var slabEnd5 = slabX5 + slabW5;
+            var shFill5 = shieldId === 'lead' ? ['#475569', '#1e293b']
+              : shieldId === 'steel' ? ['#94a3b8', '#475569']
+              : shieldId === 'concrete' ? ['#a8a29e', '#57534e']
+              : shieldId === 'water' ? ['#38bdf8', '#0284c7']
+              : shieldId === 'paper' ? ['#e2e8f0', '#cbd5e1']
+              : ['#334155', '#1e293b'];
+            var trackYs = [32, 55, 78];
+            var trackCol = rad.colour;
             return h('div', { className: 'mt-2' },
+              h('svg', {
+                viewBox: '0 0 460 110',
+                'aria-hidden': 'true',
+                focusable: 'false',
+                style: {
+                  display: 'block',
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: '112px',
+                  marginBottom: '8px',
+                  borderRadius: '10px',
+                  background: isDark ? 'linear-gradient(90deg,#081122 0%,#0b172c 60%,#091325 100%)' : 'linear-gradient(90deg,#0f172a 0%,#16243d 60%,#0f172a 100%)',
+                  border: '1px solid ' + (isDark ? 'rgba(56,189,248,0.28)' : 'rgba(15,23,42,0.22)')
+                }
+              },
+                h('defs', null,
+                  h('radialGradient', { id: 'nk-s5-src', cx: '50%', cy: '50%', r: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.92 }),
+                    h('stop', { offset: '45%', stopColor: trackCol, stopOpacity: 0.85 }),
+                    h('stop', { offset: '100%', stopColor: trackCol, stopOpacity: 0 })),
+                  h('linearGradient', { id: 'nk-s5-slab', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: shFill5[0], stopOpacity: shieldId === 'air' ? 0.16 : (shieldId === 'water' ? 0.52 : 0.92) }),
+                    h('stop', { offset: '100%', stopColor: shFill5[1], stopOpacity: shieldId === 'air' ? 0.1 : (shieldId === 'water' ? 0.68 : 0.96) })),
+                  h('linearGradient', { id: 'nk-s5-atten', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                    h('stop', { offset: '0%', stopColor: trackCol, stopOpacity: 0.54 }),
+                    h('stop', { offset: '48%', stopColor: trackCol, stopOpacity: Math.max(0.02, 0.34 * Math.sqrt(thruFrac)) }),
+                    h('stop', { offset: '100%', stopColor: trackCol, stopOpacity: Math.max(0.01, 0.44 * thruFrac) })),
+                  h('radialGradient', { id: 'nk-s5-stop', cx: '50%', cy: '50%', r: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#fef9c3', stopOpacity: 0.95 }),
+                    h('stop', { offset: '55%', stopColor: trackCol, stopOpacity: 0.45 }),
+                    h('stop', { offset: '100%', stopColor: trackCol, stopOpacity: 0 }))),
+                // Source housing + glowing radioisotope core
+                h('circle', { cx: 42, cy: 55, r: 34, fill: 'url(#nk-s5-src)', opacity: 0.58 }),
+                h('circle', { cx: 42, cy: 55, r: 19, fill: trackCol, stroke: '#f8fafc', strokeWidth: 1.6 }),
+                h('text', { x: 42, y: 61, textAnchor: 'middle', fill: '#0b1120', fontSize: 17, fontWeight: 800, fontFamily: 'system-ui,sans-serif' }, rad.symbol),
+                // Incoming ionizing tracks (alpha dense, beta zigzag, gamma wave, neutron ballistic)
+                trackYs.map(function (ty, ti) {
+                  var stopX = (radId === 'alpha' && through === 0) ? (shieldId === 'air' ? slabX5 + Math.min(slabW5 * 0.72, 46) : slabX5 + 3)
+                    : (radId === 'beta' && through === 0) ? Math.min(slabEnd5 - 2, slabX5 + 12 + ti * 3)
+                    : slabX5;
+                  var inPath = radId === 'gamma'
+                    ? 'M64 ' + ty + ' Q74 ' + (ty - 6) + ' 84 ' + ty + ' T104 ' + ty + ' T124 ' + ty + ' T144 ' + ty + ' T164 ' + ty + ' T184 ' + ty
+                    : radId === 'beta'
+                      ? 'M64 ' + ty + ' L96 ' + (ty + (ti - 1) * 4) + ' L128 ' + (ty - (ti - 1) * 3) + ' L160 ' + (ty + 2) + ' L' + stopX + ' ' + ty
+                      : 'M64 ' + ty + ' H' + stopX;
+                  return h('g', { key: 's5-in-' + ti },
+                    h('path', { d: inPath, fill: 'none', stroke: trackCol, strokeWidth: radId === 'alpha' ? 8 : 5.5, opacity: 0.22, strokeLinecap: 'round' }),
+                    h('path', { d: inPath, fill: 'none', stroke: trackCol, strokeWidth: radId === 'alpha' ? 3.4 : 2.2, strokeDasharray: radId === 'neutron' ? '8 5' : undefined, strokeLinecap: 'round' }),
+                    (radId === 'alpha' || radId === 'beta') && through === 0
+                      ? h('circle', { cx: stopX, cy: ty, r: radId === 'alpha' ? 9 : 6, fill: 'url(#nk-s5-stop)' })
+                      : null);
+                }),
+                // Shielding slab with smooth exponential attenuation glow inside
+                h('rect', { x: slabX5, y: 12, width: slabW5, height: 86, rx: 6, fill: 'url(#nk-s5-slab)', stroke: shieldId === 'air' ? 'rgba(148,163,184,0.45)' : 'rgba(186,230,253,0.6)', strokeWidth: 1.5, strokeDasharray: shieldId === 'air' ? '4 4' : undefined }),
+                through > 0 ? h('rect', { x: slabX5 + 1.5, y: 20, width: Math.max(2, slabW5 - 3), height: 70, rx: 4, fill: 'url(#nk-s5-atten)' }) : null,
+                // Neutron elastic hydrogen scatter nodes inside hydrogenous shield
+                radId === 'neutron' && neutronHydrogenous && shieldId !== 'air' ? [0.22, 0.48, 0.74].map(function (f, ni) {
+                  var nx = slabX5 + slabW5 * f, ny = trackYs[ni];
+                  return h('g', { key: 'n-hit-' + ni },
+                    h('circle', { cx: nx, cy: ny, r: 5, fill: '#38bdf8', opacity: 0.3 }),
+                    h('circle', { cx: nx, cy: ny, r: 2.3, fill: '#e0f2fe' }));
+                }) : null,
+                // Exiting attenuated tracks toward scintillation detector
+                thruFrac > 0.005 ? trackYs.map(function (ty, ti) {
+                  var exPath = radId === 'gamma'
+                    ? 'M' + slabEnd5 + ' ' + ty + ' Q' + (slabEnd5 + 10) + ' ' + (ty - 5) + ' ' + (slabEnd5 + 20) + ' ' + ty + ' T' + (slabEnd5 + 40) + ' ' + ty + ' L408 ' + ty
+                    : 'M' + slabEnd5 + ' ' + ty + ' H408';
+                  return h('g', { key: 's5-out-' + ti },
+                    h('path', { d: exPath, fill: 'none', stroke: trackCol, strokeWidth: 3.5 + 4 * thruFrac, opacity: 0.08 + 0.24 * thruFrac, strokeLinecap: 'round' }),
+                    h('path', { d: exPath, fill: 'none', stroke: trackCol, strokeWidth: 1.3 + 2.2 * thruFrac, opacity: 0.22 + 0.78 * thruFrac, strokeDasharray: radId === 'neutron' ? '7 5' : undefined, strokeLinecap: 'round' }));
+                }) : null,
+                // Scintillation detector with glow proportional to transmission
+                h('rect', { x: 407, y: 15, width: 32, height: 80, rx: 8, fill: trackCol, opacity: 0.06 + 0.34 * thruFrac }),
+                h('rect', { x: 413, y: 20, width: 20, height: 70, rx: 5, fill: thruFrac > 0.02 ? trackCol : '#1e293b', opacity: thruFrac > 0.02 ? (0.35 + 0.65 * thruFrac) : 0.9, stroke: '#bae6fd', strokeWidth: 1.5 }),
+                h('text', { x: slabX5 + slabW5 / 2, y: 105, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 700, fontFamily: 'system-ui,sans-serif' }, shield.name + ' · ' + nkFmt(thick, 1) + ' cm')
+              ),
               h('div', { className: 'h-4 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
-                h('div', { style: { height: '100%', width: nkClamp(through, 0, 100).toFixed(1) + '%', background: rad.colour, borderRadius: '999px', transition: 'width 160ms linear' } })),
+                h('div', { style: { height: '100%', width: pctClamped.toFixed(1) + '%', background: rad.colour, borderRadius: '999px', transition: 'width 160ms linear' } })),
               h('p', { className: 'text-[0.6875rem] font-black mt-1', style: { color: ink(rad.colour) } },
                 nkFmt(through, through < 1 ? 3 : 1) + '% of the ' + rad.name.toLowerCase() + ' gets through ' + nkFmt(thick, 1) + ' cm of ' + shield.name.toLowerCase()),
               h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, nkShieldSpeech),

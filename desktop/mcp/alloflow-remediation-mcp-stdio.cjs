@@ -345,12 +345,14 @@ function enforceAllowedRoot(resolvedPath, label) {
         reject();
       }
       if (before.isSymbolicLink() || (!before.isDirectory() && current !== absolute)) reject();
-      const canonical = fs.realpathSync(current);
+      let canonical;
+      try { canonical = fs.realpathSync(current); } catch (_) { reject(); }
       if (!samePath(path.resolve(canonical), current)) reject();
       checked.push([current, before]);
     }
     for (const [name, before] of checked) {
-      const after = fs.lstatSync(name, { bigint: true });
+      let after;
+      try { after = fs.lstatSync(name, { bigint: true }); } catch (_) { reject(); }
       if (after.isSymbolicLink() || !sameFile(before, after)) reject();
     }
     return checked[checked.length - 1];
@@ -364,13 +366,20 @@ function enforceAllowedRoot(resolvedPath, label) {
   return target;
 }
 
+function sameResolvedPath(a, b) {
+  const ra = path.resolve(String(a || ''));
+  const rb = path.resolve(String(b || ''));
+  return process.platform === 'win32' ? ra.toLowerCase() === rb.toLowerCase() : ra === rb;
+}
+
 function authorizedOpenInputFile(filePath) {
-  if (!ALLOWED_ROOTS.length) return fs.openSync(filePath, 'r');
-  const checked = enforceAllowedRoot(filePath, 'input file');
+  const checked = ALLOWED_ROOTS.length ? enforceAllowedRoot(filePath, 'input file') : path.resolve(filePath);
+  const pre = fs.lstatSync(checked, { bigint: true });
+  if (pre.isSymbolicLink() || !pre.isFile()) throw invalidParams('Input file must be a regular non-symlink file.');
   const fd = fs.openSync(checked, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
   try {
     const opened = fs.fstatSync(fd, { bigint: true });
-    const current = fs.lstatSync(enforceAllowedRoot(checked, 'input file'), { bigint: true });
+    const current = fs.lstatSync(ALLOWED_ROOTS.length ? enforceAllowedRoot(checked, 'input file') : checked, { bigint: true });
     if (!opened.isFile() || current.isSymbolicLink() || opened.dev !== current.dev || opened.ino !== current.ino) throw invalidParams('Input file changed before reading.');
     return fd;
   } catch (error) { fs.closeSync(fd); throw error; }
@@ -383,13 +392,19 @@ function authorizedReadFileSync(filePath, encoding) {
 }
 
 function authorizedWriteFileSync(filePath, data, encoding) {
-  if (!ALLOWED_ROOTS.length) return fs.writeFileSync(filePath, data, encoding);
-  const checked = enforceAllowedRoot(filePath, 'output file');
+  const checked = ALLOWED_ROOTS.length ? enforceAllowedRoot(filePath, 'output file') : path.resolve(filePath);
+  try {
+    const pre = fs.lstatSync(checked, { bigint: true });
+    if (pre.isSymbolicLink()) throw invalidParams('Refusing to write through a symbolic link.');
+  } catch (e) {
+    if (e && e.rpcCode) throw e;
+    if (e && e.code !== 'ENOENT') throw e;
+  }
   // Do not truncate before checking the opened file against the authorized path.
   const fd = fs.openSync(checked, fs.constants.O_WRONLY | fs.constants.O_CREAT | (fs.constants.O_NOFOLLOW || 0), 0o600);
   try {
     const opened = fs.fstatSync(fd, { bigint: true });
-    const current = fs.lstatSync(enforceAllowedRoot(checked, 'output file'), { bigint: true });
+    const current = fs.lstatSync(ALLOWED_ROOTS.length ? enforceAllowedRoot(checked, 'output file') : checked, { bigint: true });
     if (!opened.isFile() || current.isSymbolicLink() || opened.dev !== current.dev || opened.ino !== current.ino) throw invalidParams('Output file changed before writing.');
     fs.ftruncateSync(fd, 0);
     fs.writeFileSync(fd, data, encoding);
@@ -630,18 +645,17 @@ function integerInRange(value, min, max) {
 }
 
 function atomicWriteBytes(finalPath, bytes, mode = 0o600, documentPath = false) {
-  const tempPath = finalPath + '.tmp';
+  const tempPath = finalPath + '.' + crypto.randomUUID() + '.tmp';
   let fd = null;
   if (documentPath) enforceAllowedRoot(finalPath, 'output file');
   fs.mkdirSync(path.dirname(finalPath), { recursive: true });
   try {
     if (documentPath) enforceAllowedRoot(tempPath, 'temporary output file');
-    fd = fs.openSync(tempPath, documentPath ? fs.constants.O_WRONLY | fs.constants.O_CREAT | (fs.constants.O_NOFOLLOW || 0) : 'w', mode);
+    fd = fs.openSync(tempPath, fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | (fs.constants.O_NOFOLLOW || 0), mode);
     if (documentPath) {
       const opened = fs.fstatSync(fd, { bigint: true });
       const current = fs.lstatSync(enforceAllowedRoot(tempPath, 'temporary output file'), { bigint: true });
       if (!opened.isFile() || current.isSymbolicLink() || opened.dev !== current.dev || opened.ino !== current.ino) throw invalidParams('Output file changed before writing.');
-      fs.ftruncateSync(fd, 0);
     }
     fs.writeFileSync(fd, bytes);
     fs.fsyncSync(fd);
@@ -664,6 +678,7 @@ function atomicWriteBytes(finalPath, bytes, mode = 0o600, documentPath = false) 
     }
   } catch (error) {
     try { if (fd !== null) fs.closeSync(fd); } catch (_) {}
+    try { fs.unlinkSync(tempPath); } catch (_) {}
     throw error;
   }
 }
@@ -1342,7 +1357,8 @@ function restoreJobs() {
     if (resumable) RESTORED_TO_REQUEUE.push(restoredJob);
     if (wasUnfinished) {
       if (!resumable) removeLocalCheckpointFiles(rec.jobId);
-      persistJob(restoredJob, { required: true });
+      try { persistJob(restoredJob, { required: true }); }
+      catch (err) { log('warning: could not persist restored job ' + rec.jobId + ': ' + ((err && err.message) || err)); }
     } else {
       removeLocalCheckpointFiles(rec.jobId);
     }
@@ -1800,6 +1816,7 @@ function startAgentRun(filePath, outDir, opts, workflow = {}) {
               resolveChromium: Driver.resolveChromium, mode: opts.narration, voice: opts.narrationVoice, provider: opts.narrationProvider, language: opts.narrationLanguage,
               epub: opts.readalongEpub, maxRunMinutes: opts.maxRunMinutes, signal: run.abortController.signal, onLog: rlog,
               onProgress: value => { run.progress.narration = value; },
+              readSource: p => authorizedReadFileSync(p),
               claimPath: name => claimOutputPath(outDir, name),
             });
             summary.resources = [...(summary.resources || []), ...(publishRunArtifacts(run.runId + '-audio-' + rows.length,
@@ -2446,7 +2463,10 @@ function listArtifactResources() {
       if (!filePath) continue;
       const meta = ARTIFACT_ROLE_META[role];
       let sizeBytes = null;
-      try { sizeBytes = fs.statSync(filePath).size; } catch (_) { continue; }
+      try {
+        enforceAllowedRoot(filePath, 'artifact');
+        sizeBytes = fs.statSync(filePath).size;
+      } catch (_) { continue; }
       out.push({
         uri: artifactUri(run.runId, role),
         name: run.runId + '/' + role,
@@ -2465,6 +2485,7 @@ function readArtifactResource(parsed) {
   const run = artifactRuns.get(parsed.runId);
   const filePath = run && run.entries.get(parsed.role);
   if (!filePath) return null;
+  enforceAllowedRoot(filePath, 'artifact');
   let stat;
   try { stat = fs.statSync(filePath); } catch (_) {
     throw new Error('That artifact is no longer on disk (' + filePath + '). It was moved or deleted after the run finished.');
@@ -2496,7 +2517,7 @@ async function validateCompletionManifest(manifestPath, filePath, outDir, compat
       manifest.schema !== COMPLETION_MANIFEST_SCHEMA ||
       manifest.kind !== COMPLETION_MANIFEST_KIND ||
       !hasExactKeys(manifest.source, ['path', 'sizeBytes', 'sha256']) ||
-      path.resolve(manifest.source.path) !== filePath ||
+      !sameResolvedPath(manifest.source.path, filePath) ||
       manifest.source.sha256 !== compatibility.inputSha256 ||
       !Number.isSafeInteger(manifest.source.sizeBytes) || manifest.source.sizeBytes < 0 ||
       !hasExactKeys(manifest.compatibility, ['optionsSha256', 'engineSha256']) ||
@@ -2549,17 +2570,17 @@ async function validateCompletionManifest(manifestPath, filePath, outDir, compat
     const reportPath = artifacts.get('report');
     if (!reportPath || !verifiedReportBytes) return null;
     const summary = JSON.parse(verifiedReportBytes.toString('utf8'));
-    if (!isPlainObject(summary) || path.resolve(summary.input || '') !== filePath ||
+    if (!isPlainObject(summary) || !sameResolvedPath(summary.input || '', filePath) ||
       !isPlainObject(summary.files) ||
-      path.resolve(summary.files.report || '') !== reportPath ||
-      path.resolve(summary.files.completionManifest || '') !== path.resolve(manifestPath)) return null;
+      !sameResolvedPath(summary.files.report || '', reportPath) ||
+      !sameResolvedPath(summary.files.completionManifest || '', manifestPath)) return null;
     for (const role of ['accessibleHtml', 'taggedPdf']) {
       const declared = summary.files[role];
       if (!!declared !== artifacts.has(role)) return null;
-      if (declared && path.resolve(declared) !== artifacts.get(role)) return null;
+      if (declared && !sameResolvedPath(declared, artifacts.get(role))) return null;
     }
     // A listed scan reading must be the one the report names (manifests written before it was listed have none).
-    if (artifacts.has('scanReading') && path.resolve(summary.files.scanReading || '') !== artifacts.get('scanReading')) return null;
+    if (artifacts.has('scanReading') && !sameResolvedPath(summary.files.scanReading || '', artifacts.get('scanReading'))) return null;
     return { manifest, manifestPath: path.resolve(manifestPath), summary };
   } catch (_) {
     return null;
@@ -2701,7 +2722,7 @@ function _htmlOutputPath(args, inputPath, suffix) {
     if (typeof args.output_path !== 'string' || !args.output_path.trim()) throw invalidParams('arguments.output_path must be a non-empty string');
     const p = enforceAllowedRoot(path.resolve(args.output_path), 'arguments.output_path');
     fs.mkdirSync(path.dirname(p), { recursive: true });
-    return p;
+    return claimOutputPath(path.dirname(p), path.basename(p));
   }
   const stem = path.basename(inputPath).replace(/\.html?$/i, '');
   return claimOutputPath(path.dirname(inputPath), stem + suffix);
@@ -5269,17 +5290,17 @@ const TOOL_HANDLERS = {
     assertAllowedKeys(args, ['report_path', 'confirmed_by', 'coverage_fingerprint', 'note'], 'arguments');
     const refuse = (code, message) => ({ released: false, code, message });
     if (typeof args.report_path !== 'string' || !path.isAbsolute(args.report_path) || !/-remediation-report(-\d+)?\.json$/i.test(args.report_path)) {
-      throw new Error('report_path must be the absolute path of a <name>-remediation-report.json');
+      throw invalidParams('report_path must be the absolute path of a <name>-remediation-report.json');
     }
     const confirmedBy = typeof args.confirmed_by === 'string' ? args.confirmed_by.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim() : '';
-    if (confirmedBy.length < 2 || confirmedBy.length > 200) throw new Error('confirmed_by must name the person who checked the words (2-200 characters)');
-    if (typeof args.coverage_fingerprint !== 'string' || !/^[a-f0-9]{16}$/.test(args.coverage_fingerprint)) throw new Error('coverage_fingerprint must be coverageRelease.fingerprint from the report');
+    if (confirmedBy.length < 2 || confirmedBy.length > 200) throw invalidParams('confirmed_by must name the person who checked the words (2-200 characters)');
+    if (typeof args.coverage_fingerprint !== 'string' || !/^[a-f0-9]{16}$/.test(args.coverage_fingerprint)) throw invalidParams('coverage_fingerprint must be coverageRelease.fingerprint from the report');
     const note = typeof args.note === 'string' ? args.note.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 1000) : '';
     const reportPath = enforceAllowedRoot(path.resolve(args.report_path), 'report');
     if (!fs.existsSync(reportPath) || fs.statSync(reportPath).size > 8 * 1024 * 1024) return refuse('report-unreadable', 'The report could not be read.');
     let report;
     try { report = JSON.parse(authorizedReadFileSync(reportPath, 'utf8')); } catch (_) { return refuse('report-unreadable', 'The report could not be read.'); }
-    if (!isPlainObject(report) || !isPlainObject(report.files) || path.resolve(String(report.files.report || '')) !== reportPath) return refuse('report-changed', 'This is not the report the run wrote.');
+    if (!isPlainObject(report) || !isPlainObject(report.files) || !sameResolvedPath(String(report.files.report || ''), reportPath)) return refuse('report-changed', 'This is not the report the run wrote.');
     const status = (r) => ({ verdict: r.verdict, deliveryStatus: r.deliveryStatus, deliveryExplanation: r.deliveryExplanation });
     const done = report.contentCoverage && report.contentCoverage.personConfirmation;
     if (done) return { released: true, alreadyReleased: true, taggedPdf: report.files.taggedPdf, report: reportPath, confirmedBy: done.confirmedBy, ...status(report) };
@@ -5290,7 +5311,7 @@ const TOOL_HANDLERS = {
     const heldPath = enforceAllowedRoot(path.resolve(String(report.files.heldTaggedPdf)), 'held PDF');
     const htmlPath = enforceAllowedRoot(path.resolve(String(report.files.accessibleHtml || '')), 'accessible HTML');
     const sourcePath = enforceAllowedRoot(path.resolve(String(report.input || '')), 'source file');
-    if (path.dirname(heldPath) !== outDir || !report.files.completionManifest) return refuse('report-changed', 'The report does not match the files beside it.');
+    if (!sameResolvedPath(path.dirname(heldPath), outDir) || !report.files.completionManifest) return refuse('report-changed', 'The report does not match the files beside it.');
     // Tampering or an edit after the check sends the person back to look again. The manifest binds source and report.
     let manifest = null;
     try { manifest = JSON.parse(authorizedReadFileSync(report.files.completionManifest, 'utf8')); } catch (_) {}
@@ -5461,7 +5482,7 @@ const TOOL_HANDLERS = {
   },
 
   pdf_batch_remediate_start(args) {
-    assertAllowedKeys(args, ['dir_path', 'effort', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'skip_existing', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['dir_path', 'effort', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'skip_existing', 'ocr_language', 'page_range'], 'arguments');
     if (args.skip_existing !== undefined && typeof args.skip_existing !== 'boolean') throw invalidParams('arguments.skip_existing must be a boolean');
     const skipExisting = args.skip_existing !== false;
     const { dir, files: pdfs } = listBatchInputs(args.dir_path, BATCH_LIMIT_REMEDIATE, 'remediation');
@@ -5481,7 +5502,7 @@ const TOOL_HANDLERS = {
   },
 
   pdf_remediate_from_scoreboard_start(args) {
-    assertAllowedKeys(args, ['scoreboard_path', 'dir_path', 'bands', 'effort', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'skip_existing', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['scoreboard_path', 'dir_path', 'bands', 'effort', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'skip_existing', 'ocr_language', 'page_range'], 'arguments');
     if (args.skip_existing !== undefined && typeof args.skip_existing !== 'boolean') throw invalidParams('arguments.skip_existing must be a boolean');
     const skipExisting = args.skip_existing !== false;
     const bands = validateBands(args.bands);
@@ -5494,7 +5515,7 @@ const TOOL_HANDLERS = {
     const selected = [];
     const missing = [];
     for (const row of rows) {
-      if (!row || !row.file || bands.indexOf(triageBand(row)) === -1) continue;
+      if (!row || typeof row.file !== 'string' || !row.file.trim() || bands.indexOf(triageBand(row)) === -1) continue;
       const resolvedRowFile = enforceAllowedRoot(path.resolve(row.file), 'a document listed in the scoreboard');
       // The scoreboard is a record of a past run; the folder may have moved on since. A file that
       // is gone is reported by name rather than silently dropped, so the count still adds up.
@@ -5562,7 +5583,7 @@ const TOOL_HANDLERS = {
     // No job_id: the most recent run (job or synchronous tool) in THIS server session.
     // Reads the existing driver instance without booting one — a diagnostics query must
     // never cost a browser launch.
-    const d = driver && typeof driver.takeLastRunDiagnostics === 'function' ? driver.takeLastRunDiagnostics() : null;
+    const d = driver && typeof driver.takeLastRunDiagnostics === 'function' ? boundedJobDiagnostics(driver.takeLastRunDiagnostics()) : null;
     if (!d || !d.snapshot) return { ok: false, error: 'No run has completed in this server session yet. Pass job_id for a persisted background job, or run a tool first.' };
     return { ok: true, source: 'last-run', capturedAt: d.capturedAt || null, fileName: d.fileName || null, diagnostics: d.snapshot };
   },
@@ -5657,7 +5678,7 @@ const TOOL_HANDLERS = {
     assertAllowedKeys(args,['file_path','dir_path','narration','narration_voice','narration_provider','narration_language'],'arguments');
     const files=narrationInputs(args),opts=validateNarrationOptions({narration:'accessible',...args});
     if(opts.narration==='none')throw invalidParams('Choose accessible or natural narration');
-    return Narration.preflight({filePaths:files,stateDir:STATE_DIR,assetsRoot:Driver.ASSETS_ROOT,resolveChromium:Driver.resolveChromium,mode:opts.narration,provider:opts.narrationProvider,voice:opts.narrationVoice,language:opts.narrationLanguage});
+    return Narration.preflight({filePaths:files,stateDir:STATE_DIR,assetsRoot:Driver.ASSETS_ROOT,resolveChromium:Driver.resolveChromium,mode:opts.narration,provider:opts.narrationProvider,voice:opts.narrationVoice,language:opts.narrationLanguage,readSource:p=>authorizedReadFileSync(p)});
   },
   document_narration_voices(args) {
     assertAllowedKeys(args,['language'],'arguments');
@@ -5723,7 +5744,7 @@ const TOOL_HANDLERS = {
     return TOOL_HANDLERS.remediation_agent_requests({run_id:args.run_id,wait_seconds:args.wait_seconds===undefined?0:args.wait_seconds});
   },
 
-  async remediation_agent_requests(args) {
+  async remediation_agent_requests(args, ctx) {
     assertAllowedKeys(args, ['run_id', 'wait_seconds', 'include_images', 'request_id', 'prompt_offset', 'image_index'], 'arguments');
     const run = requireAgentRun(args);
     const waitSeconds = optionalBoundedNumber(args, 'wait_seconds', 0, 30);
@@ -5743,15 +5764,23 @@ const TOOL_HANDLERS = {
     if ((promptOffset > 0 || imageIndex !== null) && !requestFilter) {
       throw invalidParams('arguments.request_id is required with prompt_offset or image_index');
     }
-    if (run.status === 'running' && run.pending.size === 0 && (waitSeconds === undefined ? 20 : waitSeconds) > 0) {
+    if (run.status === 'running' && run.pending.size === 0 && (waitSeconds === undefined ? 20 : waitSeconds) > 0 && !(ctx && ctx.signal && ctx.signal.aborted)) {
       await new Promise((resolveWait) => {
-        const waiter = { resolve: resolveWait, timer: null };
-        waiter.timer = setTimeout(() => {
+        const waiter = { resolve: null, timer: null };
+        const cleanup = () => {
+          if (waiter.timer) { clearTimeout(waiter.timer); waiter.timer = null; }
+          try { if (ctx && ctx.signal) ctx.signal.removeEventListener('abort', onAbort); } catch (_) {}
           const i = run.waiters.indexOf(waiter);
           if (i !== -1) run.waiters.splice(i, 1);
           resolveWait();
-        }, (waitSeconds === undefined ? 20 : waitSeconds) * 1000);
+        };
+        const onAbort = () => cleanup();
+        waiter.resolve = cleanup;
+        waiter.timer = setTimeout(cleanup, (waitSeconds === undefined ? 20 : waitSeconds) * 1000);
         waiter.timer.unref?.();
+        if (ctx && ctx.signal && typeof ctx.signal.addEventListener === 'function') {
+          ctx.signal.addEventListener('abort', onAbort, { once: true });
+        }
         run.waiters.push(waiter);
       });
     }
@@ -6008,7 +6037,8 @@ async function handleRequest(msg) {
         ? TOOL_HANDLERS[name]
         : null;
       if (typeof handler !== 'function') { sendError(id, -32602, 'Unknown tool: ' + String(name)); return; }
-      const key = String(id);
+      const key = typeof id + ':' + String(id);
+      if (IN_FLIGHT.has(key)) { sendError(id, -32600, 'Duplicate in-flight request id'); return; }
       const abortController = new AbortController();
       const entry = { tool: name, cancelled: false, abortController };
       IN_FLIGHT.set(key, entry);
@@ -6031,7 +6061,7 @@ async function handleRequest(msg) {
         if (e && e.rpcCode) { sendError(id, e.rpcCode, e.message); return; }
         sendResult(id, { content: [{ type: 'text', text: 'Tool failed: ' + (e && e.message ? e.message : 'unknown error') }], isError: true });
       } finally {
-        IN_FLIGHT.delete(key);
+        if (IN_FLIGHT.get(key) === entry) IN_FLIGHT.delete(key);
       }
       return;
     }
@@ -6046,7 +6076,9 @@ async function handleNotification(msg) {
   if (msg.method !== 'notifications/cancelled') return;
   const p = msg.params || {};
   if (p.requestId === undefined || p.requestId === null) return;
-  const entry = IN_FLIGHT.get(String(p.requestId));
+  const entry = IN_FLIGHT.get(typeof p.requestId + ':' + String(p.requestId))
+    || IN_FLIGHT.get('string:' + String(p.requestId))
+    || IN_FLIGHT.get('number:' + String(p.requestId));
   if (!entry) return; // already answered, or never ours — nothing to stop
   entry.cancelled = true;
   // Request-scoped cancellation is always signalled first. For pdf_validate_ua
@@ -6069,6 +6101,10 @@ function handleMessage(line) {
   let msg;
   try { msg = JSON.parse(line); } catch (_) { sendError(null, -32700, 'Parse error'); return; }
   if (!msg || msg.jsonrpc !== '2.0') { sendError(msg && msg.id !== undefined ? msg.id : null, -32600, 'Invalid request'); return; }
+  if (typeof msg.id === 'string' && msg.id.startsWith(HTTP_ID_PREFIX)) {
+    sendError(null, -32600, 'Reserved request id prefix');
+    return;
+  }
   if (msg.id === undefined || msg.id === null) return handleNotification(msg); // notification — acted on, never answered
   return handleRequest(msg);
 }
@@ -6078,9 +6114,13 @@ const stdinDecoder = new StringDecoder('utf8');
 let stdinBuffer = '';
 let stdinBytes = 0;
 let stdinOversized = false;
+const PENDING_STDIN_DISPATCHES = new Set();
 function dispatchStdinLine(rawLine) {
   const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine;
-  Promise.resolve().then(() => handleMessage(line)).catch((e) => log('unexpected error: ' + (e && e.message ? e.message : 'unknown')));
+  const p = Promise.resolve().then(() => handleMessage(line)).catch((e) => log('unexpected error: ' + (e && e.message ? e.message : 'unknown'))).finally(() => {
+    PENDING_STDIN_DISPATCHES.delete(p);
+  });
+  PENDING_STDIN_DISPATCHES.add(p);
 }
 process.stdin.on('data', (chunk) => {
   const text = Buffer.isBuffer(chunk) ? stdinDecoder.write(chunk) : String(chunk);
@@ -6148,7 +6188,9 @@ process.stdin.on('end', () => {
     if (finalLine) dispatchStdinLine(finalLine);
   }
   if (STDIO_KEEPALIVE) { log('stdin closed; HTTP transport keeps the server alive'); return; }
-  shutdown('stdin closed');
+  const drain = PENDING_STDIN_DISPATCHES.size ? Promise.allSettled(Array.from(PENDING_STDIN_DISPATCHES)) : Promise.resolve();
+  const drainCap = new Promise((resolve) => { const t = setTimeout(resolve, 2000); if (t.unref) t.unref(); });
+  Promise.race([drain, drainCap]).finally(() => shutdown('stdin closed'));
 });
 
 sweepAgentJournals();
@@ -6188,6 +6230,7 @@ function httpPortFromArgs() {
 }
 function startHttpTransport(port) {
   const host = process.env.ALLOFLOW_MCP_HTTP_HOST || '127.0.0.1';
+  const urlHost = host.includes(':') && !host.startsWith('[') ? '[' + host + ']' : host;
   const loopback = /^(127\.0\.0\.1|localhost|::1)$/.test(host);
   if (!loopback && process.env.ALLOFLOW_MCP_HTTP_ALLOW_REMOTE !== '1') {
     log('refusing to bind HTTP transport to ' + host + ' without ALLOFLOW_MCP_HTTP_ALLOW_REMOTE=1');
@@ -6205,14 +6248,16 @@ function startHttpTransport(port) {
     return bytes.length === tokenBytes.length && crypto.timingSafeEqual(bytes, tokenBytes);
   };
   const server = http.createServer((req, res) => {
-    if (req.headers && req.headers.host !== undefined && loopback && process.env.ALLOFLOW_MCP_HTTP_ALLOW_REMOTE !== '1'
-      && !/^(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(String(req.headers.host))) {
+    const rawHost = req && req.headers ? req.headers.host : undefined;
+    const missingRealHttpHost = !rawHost && typeof req.httpVersion === 'string' && req.httpVersion.length > 0;
+    if (loopback && process.env.ALLOFLOW_MCP_HTTP_ALLOW_REMOTE !== '1'
+      && (missingRealHttpHost || (rawHost !== undefined && !/^(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(String(rawHost))))) {
       res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' });
       res.end('forbidden host');
       return;
     }
     let url;
-    try { url = new URL(req.url, 'http://' + host); }
+    try { url = new URL(req.url, 'http://' + urlHost); }
     catch (_) { res.writeHead(400, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('invalid URL'); return; }
     const pathToken = /^\/mcp\/([^/]+)$/.exec(url.pathname);
     if (url.pathname !== '/mcp' && !pathToken) { res.writeHead(404, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('not found'); return; }
@@ -6254,8 +6299,24 @@ function startHttpTransport(port) {
         if (batch && (parsed.length < 1 || parsed.length > 64)) { if (!res.writableEnded && !res.destroyed) { res.writeHead(400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid batch size' } })); } return; }
         const messages = batch ? parsed : [parsed];
         const replies = [];
-        for (const msg of messages) {
+        const ownedPrivateIds = [];
+        res.on('close', () => {
+          if (res.writableEnded) return;
+          for (const pid of ownedPrivateIds) {
+            if (HTTP_PENDING.has(pid)) {
+              const waiter = HTTP_PENDING.get(pid);
+              HTTP_PENDING.delete(pid);
+              waiter.resolve(null);
+              handleNotification({ jsonrpc: '2.0', method: 'notifications/cancelled', params: { requestId: pid, reason: 'http client disconnected' } }).catch(() => {});
+            }
+          }
+        });
+        for (let msg of messages) {
           if (!msg || msg.jsonrpc !== '2.0') { replies.push({ jsonrpc: '2.0', id: msg && msg.id !== undefined ? msg.id : null, error: { code: -32600, message: 'Invalid request' } }); continue; }
+          if (typeof msg.id === 'string' && msg.id.startsWith(HTTP_ID_PREFIX)) {
+            replies.push({ jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Reserved request id prefix' } });
+            continue;
+          }
           if (msg.id === undefined || msg.id === null) {
             // Notifications: translate a cancel aimed at an HTTP request id to its private id.
             if (msg.method === 'notifications/cancelled' && msg.params && msg.params.requestId !== undefined) {
@@ -6265,6 +6326,7 @@ function startHttpTransport(port) {
             continue;
           }
           const privateId = HTTP_ID_PREFIX + (++HTTP_SEQ);
+          ownedPrivateIds.push(privateId);
           replies.push(new Promise((resolve) => {
             HTTP_PENDING.set(privateId, { origId: msg.id, resolve });
             Promise.resolve().then(() => handleRequest(Object.assign({}, msg, { id: privateId }))).then(() => {
@@ -6296,8 +6358,8 @@ function startHttpTransport(port) {
   server.on('error', (e) => log('http transport error: ' + ((e && e.message) || e)));
   server.listen(port, host, () => {
     const address = server.address();
-    HTTP_STATE.listening = true; HTTP_STATE.port = address.port; HTTP_STATE.endpoint = 'http://' + host + ':' + address.port + '/mcp';
-    log('http transport listening on http://' + host + ':' + address.port + '/mcp (bearer token required' + (generated ? '; generated token: ' + token : '') + ')');
+    HTTP_STATE.listening = true; HTTP_STATE.port = address.port; HTTP_STATE.endpoint = 'http://' + urlHost + ':' + address.port + '/mcp';
+    log('http transport listening on http://' + urlHost + ':' + address.port + '/mcp (bearer token required' + (generated ? '; generated token: ' + token : '') + ')');
   });
   return server;
 }

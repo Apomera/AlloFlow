@@ -599,7 +599,7 @@ describe('the reading tools in a read-along file', () => {
       expect(d.querySelector('[data-read-along-syllables]')).toBeNull();
       // The tools that mean something on a page of running text with recordings are offered; question-only tools are not.
       const shown = [...d.querySelectorAll('[data-tool-group]')].filter((g) => !g.hidden).map((g) => g.getAttribute('data-tool-group'));
-      expect(shown).toEqual(['size', 'colors', 'spacing', 'font', 'focus', 'lens', 'speed']);
+      expect(shown).toEqual(['size', 'colors', 'spacing', 'font', 'focus', 'lens', 'speed', 'bold']);
       d.querySelector('[data-tools-open]').click();
       d.querySelector('[data-tool="font-1"]').click();
       expect(d.documentElement.getAttribute('data-lt-font')).toBe('1');
@@ -635,8 +635,9 @@ describe('the reading tools in a read-along file', () => {
       const manifest = JSON.parse(/<script type="application\/json" id="packet-manifest">([\s\S]*?)<\/script>/.exec(html)[1]);
       expect(manifest.readAlong.sentencesWithSyllables).toBe(1);
       expect(JSON.stringify(manifest.attributions)).toContain('Syllable breaks: worked out when this file was made, from a word list (Moby Hyphenator II, Grady Ward, public domain by grant of the author (2001); checked against CMUdict, Carnegie Mellon University). No AI.');
-      // The table itself does not go into the file: only the breaks of this passage do.
-      expect(html.length).toBeLessThan(200000);
+      // The table itself (~1.2 MB) does not go into the file: only the breaks of this passage do.
+      // Re-pinned 2026-11-19 (Immersive Reader parity Waves 4-8) from 200000: offline Focus Mode, Crawl, Chunk pace/moods, POS, Word meanings, Tap Sounds/Speak (~207 KB).
+      expect(html.length).toBeLessThan(225000);
     } finally { page.dom.window.close(); }
   }, 120000);
 });

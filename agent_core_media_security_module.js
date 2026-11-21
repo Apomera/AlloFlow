@@ -8,9 +8,23 @@
 (function () {
   'use strict';
 
-  var SECRET_FIELD_RE = /(?:^|[_-])(?:api)?key$|token|secret|password|credential|authorization|bearer|privatekey/i;
+  var SECRET_FIELD_RE = /(?:^|[_-]|(?=[A-Z]))(?:api|access|private|auth|signing|client)?[_-]?keys?$|token|secret|password|passwd|credential|authorization|bearer|privatekey|cookie/i;
+  var FORBIDDEN_RESULT_KEYS = { prompt: true, chainOfThought: true, reasoning: true };
   var IDENTIFIER_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
   var MAX_DEPTH = 8;
+
+  function scanForbiddenResultFields(value, path, errors, depth) {
+    if (!value || typeof value !== 'object') return;
+    if (depth > MAX_DEPTH) return;
+    Object.keys(value).forEach(function (key) {
+      var nextPath = path ? path + '.' + key : key;
+      if (Object.prototype.hasOwnProperty.call(FORBIDDEN_RESULT_KEYS, key) && value[key] !== undefined) {
+        errors.push(issue('forbidden-result-field', nextPath, 'Media results must not store prompts or model reasoning.'));
+        return;
+      }
+      scanForbiddenResultFields(value[key], nextPath, errors, depth + 1);
+    });
+  }
 
   function getDependencies(injected) {
     var deps = injected || {};
@@ -58,15 +72,17 @@
     var errors = report.errors ? report.errors.slice() : [];
     var warnings = report.warnings ? report.warnings.slice() : [];
     scanSecrets(input, '', errors, 0);
-    if (input && (input.prompt !== undefined || input.chainOfThought !== undefined || input.reasoning !== undefined)) {
-      errors.push(issue('forbidden-result-field', 'prompt', 'Media results must not store prompts or model reasoning.'));
-    }
+    scanForbiddenResultFields(input, '', errors, 0);
     var provider = input && input.provider;
-    if (provider && provider.id !== undefined && (typeof provider.id !== 'string' || !IDENTIFIER_RE.test(provider.id))) {
-      errors.push(issue('bad-result-provider', 'provider.id', 'Result provider id is invalid.'));
-    }
-    if (provider && provider.model !== undefined && (typeof provider.model !== 'string' || !IDENTIFIER_RE.test(provider.model))) {
-      errors.push(issue('bad-result-model', 'provider.model', 'Result model id is invalid.'));
+    if (input && input.provider !== undefined && (!provider || typeof provider !== 'object' || Array.isArray(provider))) {
+      errors.push(issue('bad-result-provider', 'provider', 'Result provider metadata must be an object.'));
+    } else if (provider) {
+      if (provider.id !== undefined && (typeof provider.id !== 'string' || !IDENTIFIER_RE.test(provider.id))) {
+        errors.push(issue('bad-result-provider', 'provider.id', 'Result provider id is invalid.'));
+      }
+      if (provider.model !== undefined && (typeof provider.model !== 'string' || !IDENTIFIER_RE.test(provider.model))) {
+        errors.push(issue('bad-result-model', 'provider.model', 'Result model id is invalid.'));
+      }
     }
     if (errors.length) return { ok: false, errors: errors, warnings: warnings, value: null };
     return report;
@@ -82,10 +98,12 @@
       importAsset: base.importAsset,
       getMetadata: base.getMetadata,
       attach: base.attach,
+      detach: base.detach,
+      detachAllForArtifact: base.detachAllForArtifact,
       remove: base.remove,
       getStats: base.getStats,
       readBytesForAdapter: function (handle, request) {
-        var purpose = request && typeof request.purpose === 'string' ? request.purpose : '';
+        var purpose = request && typeof request.purpose === 'string' ? request.purpose.trim() : '';
         if (!purpose || opts.authorizeByteRead({ handle: handle, purpose: purpose }) !== true) {
           throw new Error('Managed asset byte read was not authorized by the runtime');
         }

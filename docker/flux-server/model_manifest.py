@@ -57,7 +57,7 @@ def provision(model_id, revision=None, *, download=False, snapshot_download=None
         for item in record['files']:
             try:
                 verify_snapshot(existing, {'files': [item]})
-            except ValueError:
+            except (ValueError, OSError, RuntimeError):
                 pending.append(item)
         if not pending:
             return {'model': model_id, 'revision': record['revision'], 'verified': True}
@@ -73,7 +73,28 @@ def provision(model_id, revision=None, *, download=False, snapshot_download=None
     location = snapshot_download(repo_id=model_id, revision=record['revision'],
                                  cache_dir=str(cache / 'hub'), allow_patterns=[f['path'] for f in pending],
                                  force_download=existing.is_dir())
-    verify_snapshot(location, record)
+    try:
+        verify_snapshot(location, record)
+    except Exception:
+        root = Path(location)
+        resolved_root = root.resolve()
+        allowed_roots = [resolved_root]
+        if resolved_root.parent.name == 'snapshots':
+            allowed_roots.append((resolved_root.parent.parent / 'blobs').resolve())
+        for item in pending:
+            relative = Path(item['path'])
+            if relative.anchor or relative.is_absolute() or '..' in relative.parts or '\\' in item['path']:
+                continue
+            target = root / relative
+            try:
+                resolved_target = target.resolve()
+                if any(resolved_target.is_relative_to(base) for base in allowed_roots) and resolved_target.is_file():
+                    resolved_target.unlink(missing_ok=True)
+                if target.is_symlink() or target.exists():
+                    target.unlink(missing_ok=True)
+            except OSError:
+                pass
+        raise
     return {'model': model_id, 'revision': record['revision'], 'verified': True}
 
 

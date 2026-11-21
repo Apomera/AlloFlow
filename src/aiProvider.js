@@ -37,7 +37,7 @@ class AIProvider {
         this._ttsProvider = (config.ttsProvider && config.ttsProvider !== 'auto') ? config.ttsProvider : null;
         this._imageProvider = (config.imageProvider && config.imageProvider !== 'auto') ? config.imageProvider : null;
         this.apiKey = config.apiKey ?? '';
-        this.baseUrl = config.baseUrl || this._defaultBaseUrl();
+        this.baseUrl = this._safeBaseUrl(config.baseUrl || this._defaultBaseUrl());
         this.isCanvasEnv = config.isCanvasEnv || false;
         this.models = {
             default: config.models?.default || 'gemini-2.5-flash',
@@ -52,8 +52,11 @@ class AIProvider {
 
         // Helper functions injected from the app context
         this._fetchWithRetry = config.fetchWithRetry || (async (url, opts) => {
-            const resp = await fetch(url, opts);
-            if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+            const resp = await this._fetchWithTimeout(url, opts, 60000);
+            if (!resp.ok) {
+                try { await resp.body?.cancel?.(); } catch (_) {}
+                throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+            }
             return resp;
         });
         this._optimizeImage = config.optimizeImage || ((url) => url);
@@ -63,6 +66,7 @@ class AIProvider {
         // TTS rate limiting state
         this._ttsRateLimitedUntil = 0;
         this._ttsCache = new Map();
+        this._ttsCacheLimit = 50;
         this._ttsQueue = Promise.resolve();
 
         // Imagen rate limiting state
@@ -70,6 +74,71 @@ class AIProvider {
         this._imagenQueue = Promise.resolve();
 
         this._debugLog(`[AIProvider] Initialized: backend=${this.backend}, isCanvas=${this.isCanvasEnv}`);
+    }
+
+    _safeBaseUrl(raw) {
+        if (typeof raw !== 'string' || !raw.trim()) {
+            throw new Error('AIProvider baseUrl must be a valid http(s) URL.');
+        }
+        const trimmed = raw.trim();
+        if (typeof URL === 'function') {
+            let parsed;
+            try {
+                parsed = new URL(trimmed);
+            } catch {
+                throw new Error('AIProvider baseUrl must be a valid http(s) URL.');
+            }
+            if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || parsed.username || parsed.password || parsed.search || parsed.hash) {
+                throw new Error('AIProvider baseUrl must use http: or https: without credentials, query, or fragment.');
+            }
+            return `${parsed.origin}${parsed.pathname}`.replace(/\/+$/, '');
+        }
+        if (!/^https?:\/\/[^/?#\s@]+(?:\/[^?#\s]*)?$/i.test(trimmed)) {
+            throw new Error('AIProvider baseUrl must use http: or https: without credentials, query, or fragment.');
+        }
+        return trimmed.replace(/\/+$/, '');
+    }
+
+    _safeModelSegment(model) {
+        const s = String(model == null ? '' : model).trim();
+        if (!s || s.length > 160 || s.includes('..') || !/^[A-Za-z0-9._:@/-]+$/.test(s)) {
+            throw new Error('Invalid AI model identifier.');
+        }
+        return encodeURIComponent(s);
+    }
+
+    _geminiHeaders(extra = {}) {
+        const headers = { 'Content-Type': 'application/json', ...extra };
+        if (this.apiKey) headers['x-goog-api-key'] = this.apiKey;
+        return headers;
+    }
+
+    _cacheTtsUrl(cacheKey, audioUrl) {
+        if (this._ttsCache.has(cacheKey)) {
+            const prev = this._ttsCache.get(cacheKey);
+            if (prev && prev !== audioUrl && typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+                try { URL.revokeObjectURL(prev); } catch (_) {}
+            }
+            this._ttsCache.delete(cacheKey);
+        }
+        while (this._ttsCache.size >= this._ttsCacheLimit) {
+            const oldestKey = this._ttsCache.keys().next().value;
+            const oldestUrl = this._ttsCache.get(oldestKey);
+            this._ttsCache.delete(oldestKey);
+            if (oldestUrl && typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+                try { URL.revokeObjectURL(oldestUrl); } catch (_) {}
+            }
+        }
+        this._ttsCache.set(cacheKey, audioUrl);
+    }
+
+    dispose() {
+        if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+            for (const audioUrl of this._ttsCache.values()) {
+                try { URL.revokeObjectURL(audioUrl); } catch (_) {}
+            }
+        }
+        this._ttsCache.clear();
     }
 
     _defaultBaseUrl() {
@@ -121,10 +190,57 @@ class AIProvider {
     }
 
     async _fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
-        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const controller = typeof AbortController !== 'undefined' && !options.signal ? new AbortController() : null;
         const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
         try {
-            return await fetch(url, controller ? { ...options, signal: controller.signal } : options);
+            return await fetch(url, {
+                credentials: 'omit',
+                referrerPolicy: 'no-referrer',
+                ...options,
+                signal: options.signal || (controller ? controller.signal : undefined),
+            });
+        } finally {
+            if (timer) clearTimeout(timer);
+        }
+    }
+
+    async _fetchJsonWithTimeout(url, options = {}, timeoutMs = 30000) {
+        const controller = typeof AbortController !== 'undefined' && !options.signal ? new AbortController() : null;
+        const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+        try {
+            const response = await fetch(url, {
+                credentials: 'omit',
+                referrerPolicy: 'no-referrer',
+                ...options,
+                signal: options.signal || (controller ? controller.signal : undefined),
+            });
+            if (!response.ok) {
+                try { await response.body?.cancel?.(); } catch (_) {}
+                const err = new Error(`HTTP ${response.status}: ${response.statusText}`);
+                err.status = response.status;
+                throw err;
+            }
+            return await response.json();
+        } finally {
+            if (timer) clearTimeout(timer);
+        }
+    }
+
+    async _fetchBlobWithTimeout(url, options = {}, timeoutMs = 15000) {
+        const controller = typeof AbortController !== 'undefined' && !options.signal ? new AbortController() : null;
+        const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+        try {
+            const response = await fetch(url, {
+                credentials: 'omit',
+                referrerPolicy: 'no-referrer',
+                ...options,
+                signal: options.signal || (controller ? controller.signal : undefined),
+            });
+            if (!response.ok) {
+                try { await response.body?.cancel?.(); } catch (_) {}
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return await response.blob();
         } finally {
             if (timer) clearTimeout(timer);
         }
@@ -133,8 +249,7 @@ class AIProvider {
     async _geminiGenerateText(prompt, { json, search, temperature, maxTokens, _repairDepth = 0 }) {
         const buildUrl = (model) => {
             this._debugLog(`[AIProvider] ✉ Using model: ${model}`);
-            const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-            return `${this.baseUrl}/models/${model}:generateContent${keyParam}`;
+            return `${this.baseUrl}/models/${this._safeModelSegment(model)}:generateContent`;
         };
 
         const payload = {
@@ -158,7 +273,7 @@ class AIProvider {
 
         const fetchOpts = {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: this._geminiHeaders(),
             body: JSON.stringify(payload),
         };
 
@@ -228,7 +343,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             model: this.models.default,
             messages: [{ role: 'user', content: prompt }],
             max_tokens: maxTokens,
-            ...(json ? { response_format: { type: 'json_object' } } : {}),
+            ...(this.backend === 'ollama'
+                ? { stream: false, ...(json ? { format: 'json' } : {}) }
+                : (json ? { response_format: { type: 'json_object' } } : {})),
             ...(temperature !== null ? { temperature } : {}),
         };
 
@@ -393,33 +510,49 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiGenerateImage(prompt, width, quality) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-        const url = `${this.baseUrl}/models/${this.models.imagen}:predict${keyParam}`;
+        const url = `${this.baseUrl}/models/${this._safeModelSegment(this.models.imagen)}:predict`;
         const payload = {
             instances: [{ prompt }],
             parameters: { sampleCount: 1 },
         };
 
         const executeRequest = async () => {
-            const response = await this._fetchWithTimeout(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            }, 60000);
+            const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const timer = controller ? setTimeout(() => controller.abort(), 60000) : null;
+            let data;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    credentials: 'omit',
+                    referrerPolicy: 'no-referrer',
+                    headers: this._geminiHeaders(),
+                    body: JSON.stringify(payload),
+                    signal: controller ? controller.signal : undefined,
+                });
 
-            if (response.status === 401 || response.status === 429 || response.status === 503) {
-                this._imagenRateLimited = true;
-                this._warnLog(`[AIProvider] ⚠️ Imagen rate limited (${response.status})`);
-                const error = new Error(`Rate limited: ${response.status}`);
-                error.isRateLimited = true;
-                throw error;
-            }
-            if (!response.ok) {
-                const errBody = await response.text().catch(() => '');
-                throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
-            }
+                if (response.status === 401 || response.status === 403) {
+                    try { await response.body?.cancel?.(); } catch (_) {}
+                    const err = new Error(`Authentication failed: ${response.status}`);
+                    err.noRetry = true;
+                    throw err;
+                }
+                if (response.status === 429 || response.status === 503) {
+                    try { await response.body?.cancel?.(); } catch (_) {}
+                    this._imagenRateLimited = true;
+                    this._warnLog(`[AIProvider] ⚠️ Imagen rate limited (${response.status})`);
+                    const error = new Error(`Rate limited: ${response.status}`);
+                    error.isRateLimited = true;
+                    throw error;
+                }
+                if (!response.ok) {
+                    try { await response.body?.cancel?.(); } catch (_) {}
+                    throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+                }
 
-            const data = await response.json();
+                data = await response.json();
+            } finally {
+                if (timer) clearTimeout(timer);
+            }
             if (data.error) {
                 throw new Error(`Imagen API Error: ${data.error.message || JSON.stringify(data.error)}`);
             }
@@ -442,11 +575,13 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             try {
                 return await executeRequest();
             } catch (err) {
-                if (err.message && (err.message.includes('Safety') || err.message.includes('Block') || err.message.includes('400'))) {
+                if (err.noRetry || (err.message && (err.message.includes('Safety') || err.message.includes('Block') || err.message.includes('400')))) {
                     throw err;
                 }
                 if (attempt < maxAttempts - 1) {
-                    this._warnLog(`⏳ Image gen retry ${attempt + 1}/${maxAttempts}...`);
+                    const delayMs = 1000 * Math.pow(2, attempt);
+                    this._warnLog(`⏳ Image gen retry ${attempt + 1}/${maxAttempts} in ${delayMs}ms...`);
+                    await new Promise(r => setTimeout(r, delayMs));
                     return executeWithRetry(attempt + 1, maxAttempts);
                 }
                 throw err;
@@ -525,8 +660,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiEditImage(prompt, base64Image, width, quality, referenceBase64) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-        const url = `${this.baseUrl}/models/${this.models.image}:generateContent${keyParam}`;
+        const url = `${this.baseUrl}/models/${this._safeModelSegment(this.models.image)}:generateContent`;
 
         const parts = [
             { text: prompt },
@@ -543,14 +677,12 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         };
 
         try {
-            const response = await this._fetchWithTimeout(url, {
+            const data = await this._fetchJsonWithTimeout(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: this._geminiHeaders(),
                 body: JSON.stringify(payload),
             }, 60000);
-            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            const data = await response.json();
-            const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+            const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data);
             if (!imagePart) throw new Error('No image generated in response');
             const rawUrl = `data:image/png;base64,${imagePart.inlineData.data}`;
             return await this._optimizeImage(rawUrl, width, quality);
@@ -619,8 +751,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiAnalyzeImage(prompt, base64Data, mimeType) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-        const url = `${this.baseUrl}/models/${this.models.vision}:generateContent${keyParam}`;
+        const url = `${this.baseUrl}/models/${this._safeModelSegment(this.models.vision)}:generateContent`;
 
         const payload = {
             contents: [{
@@ -631,13 +762,11 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }],
         };
 
-        const response = await this._fetchWithTimeout(url, {
+        const data = await this._fetchJsonWithTimeout(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: this._geminiHeaders(),
             body: JSON.stringify(payload),
         }, 45000);
-        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        const data = await response.json();
         return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     }
 
@@ -724,7 +853,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     _browserSpeechSynthesis(text, speed) {
-        if (window.speechSynthesis && text) {
+        if (typeof window !== 'undefined' && window.speechSynthesis && typeof SpeechSynthesisUtterance !== 'undefined' && text) {
             window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(text);
             utter.rate = speed || 1;
@@ -749,8 +878,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         // Queue for serialization
         const task = this._ttsQueue.then(async () => {
-            const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-            const url = `${this.baseUrl}/models/${this.models.tts}:generateContent${keyParam}`;
+            const url = `${this.baseUrl}/models/${this._safeModelSegment(this.models.tts)}:generateContent`;
 
             const payload = {
                 contents: [{ parts: [{ text }] }],
@@ -766,25 +894,43 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
             for (let attempt = 0; attempt <= 2; attempt++) {
                 try {
-                    const response = await this._fetchWithTimeout(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                    }, 30000);
+                    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+                    const timer = controller ? setTimeout(() => controller.abort(), 30000) : null;
+                    let data;
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            credentials: 'omit',
+                            referrerPolicy: 'no-referrer',
+                            headers: this._geminiHeaders(),
+                            body: JSON.stringify(payload),
+                            signal: controller ? controller.signal : undefined,
+                        });
 
-                    if (response.status === 429) {
-                        this._ttsRateLimitedUntil = Date.now() + 60000;
-                        this._warnLog('[AIProvider TTS] ⚠️ 429 — 60s cooldown');
-                        return null;
+                        if (response.status === 429) {
+                            try { await response.body?.cancel?.(); } catch (_) {}
+                            this._ttsRateLimitedUntil = Date.now() + 60000;
+                            this._warnLog('[AIProvider TTS] ⚠️ 429 — 60s cooldown');
+                            return null;
+                        }
+                        if (!response.ok) {
+                            try { await response.body?.cancel?.(); } catch (_) {}
+                            const err = new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            if (response.status === 401 || response.status === 403) err.noRetry = true;
+                            throw err;
+                        }
+
+                        data = await response.json();
+                    } finally {
+                        if (timer) clearTimeout(timer);
                     }
-                    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-                    const data = await response.json();
-                    const audioPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+                    const audioPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data);
                     if (!audioPart) throw new Error('No audio in response');
 
                     const base64 = audioPart.inlineData.data;
-                    const binaryString = window.atob(base64);
+                    const atobFn = typeof globalThis.atob === 'function' ? globalThis.atob.bind(globalThis) : null;
+                    if (!atobFn) throw new Error('Base64 decoder unavailable');
+                    const binaryString = atobFn(base64);
                     const bytes = new Uint8Array(binaryString.length);
                     for (let i = 0; i < binaryString.length; i++) {
                         bytes[i] = binaryString.charCodeAt(i);
@@ -794,10 +940,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     const wavBuffer = this._pcmToWav(bytes, 24000, 1);
                     const blob = new Blob([wavBuffer], { type: 'audio/wav' });
                     const audioUrl = URL.createObjectURL(blob);
-                    this._ttsCache.set(cacheKey, audioUrl);
+                    this._cacheTtsUrl(cacheKey, audioUrl);
                     return audioUrl;
                 } catch (e) {
-                    if (attempt < 2) {
+                    if (!e.noRetry && attempt < 2) {
                         await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
                     } else {
                         this._warnLog('[AIProvider TTS] All retries exhausted:', e.message);
@@ -834,16 +980,14 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     response_format: 'wav',
                 };
 
-                const response = await this._fetchWithTimeout(url, {
+                const blob = await this._fetchBlobWithTimeout(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                 }, 5000);
 
-                if (!response.ok) throw new Error(`TTS returned ${response.status}`);
-                const blob = await response.blob();
                 const audioUrl = URL.createObjectURL(blob);
-                this._ttsCache.set(cacheKey, audioUrl);
+                this._cacheTtsUrl(cacheKey, audioUrl);
                 this._debugLog(`[AIProvider TTS] ✅ Success from ${url}`);
                 return audioUrl;
             } catch (err) {
@@ -874,7 +1018,14 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             if (typeof result !== 'string' || !result.trim()) {
                 return { safe: true, reason: 'Safety check unavailable' };
             }
-            return JSON.parse(result);
+            const parsed = JSON.parse(result);
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+                return { safe: true, reason: 'Safety check unavailable' };
+            }
+            return {
+                safe: parsed.safe === true,
+                reason: typeof parsed.reason === 'string' ? parsed.reason : '',
+            };
         } catch (e) {
             this._warnLog('[AIProvider] Safety check failed:', e.message);
             return { safe: true, reason: 'Safety check unavailable' };
@@ -895,7 +1046,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 url = `${this.baseUrl}/api/tags`;
                 break;
             case 'gemini':
-                url = `${this.baseUrl}/models?key=${this.apiKey}`;
+                url = `${this.baseUrl}/models`;
+                if (this.apiKey) headers['x-goog-api-key'] = this.apiKey;
                 break;
             case 'claude':
                 return [
@@ -908,9 +1060,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 break;
         }
 
-        const response = await this._fetchWithTimeout(url, { headers }, 10000);
-        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        const data = await response.json();
+        const data = await this._fetchJsonWithTimeout(url, { headers }, 10000);
 
         if (this.backend === 'ollama') {
             return (data.models || []).map(m => ({ id: m.name, type: 'text' }));

@@ -1488,11 +1488,28 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       case 'div': a = calcDualNode(n.a); b = calcDualNode(n.b); return function(x) { var p = a(x), q = b(x); return [p[0] / q[0], (p[1] * q[0] - p[0] * q[1]) / (q[0] * q[0])]; };
       case 'pow':
         a = calcDualNode(n.a); b = calcDualNode(n.b);
-        if (!calcHasX(n.b)) return function(x) { var p = a(x), k = b(x)[0], val = calcPow(p[0], k); return [val, k === 0 || p[1] === 0 ? 0 : k * calcPow(p[0], k - 1) * p[1]]; };
-        return function(x) { var p = a(x), q = b(x), val = calcPow(p[0], q[0]); return [val, val * (q[1] * Math.log(p[0]) + (p[1] === 0 ? 0 : q[0] * p[1] / p[0]))]; };
+        if (!calcHasX(n.b)) return function(x) {
+          var p = a(x), k = b(x)[0], val = calcPow(p[0], k);
+          if (!calcFinite(val)) return [val, NaN];
+          if (k === 0) return [val, 0];
+          var dOuter = k * calcPow(p[0], k - 1);
+          return [val, p[1] === 0 && calcFinite(dOuter) ? 0 : dOuter * p[1]];
+        };
+        return function(x) {
+          var p = a(x), q = b(x), val = calcPow(p[0], q[0]);
+          if (!calcFinite(val)) return [val, NaN];
+          var logP = Math.log(p[0]);
+          var t1 = q[1] === 0 && calcFinite(logP) ? 0 : q[1] * logP;
+          var dBase = q[0] / p[0];
+          var t2 = p[1] === 0 && calcFinite(dBase) ? 0 : dBase * p[1];
+          return [val, val * (t1 + t2)];
+        };
       default:
         f = CALC_FN_IMPL[n.name]; df = CALC_FN_DERIV[n.name]; a = calcDualNode(n.a);
-        return function(x) { var p = a(x); return [f(p[0]), p[1] === 0 ? 0 : df(p[0]) * p[1]]; };
+        return function(x) {
+          var p = a(x), fv = f(p[0]), dfv = df(p[0]);
+          return [fv, p[1] === 0 && calcFinite(fv) && calcFinite(dfv) ? 0 : dfv * p[1]];
+        };
     }
   }
   var CALC_PREC = { add: 1, sub: 1, mul: 2, div: 2, neg: 3, pow: 4, num: 5, x: 5, fn: 5 };
@@ -2894,17 +2911,31 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             return Object.assign({}, prev, { calculus: Object.assign({}, prev.calculus, { [key]: val }) });
           });
         };
-        // Mission rewards sit in the render tree, so paying them there paid again on every
-        // re-render (one mission reached the 100 XP cap). Pay each mission once.
+        // Mission rewards sit in the render tree; queue them during render and flush
+        // in useEffect so we never call setLabToolData/awardStemXP synchronously mid-render.
         var _missionPaid = React.useRef({});
+        var _pendingMissionAwards = React.useRef([]);
         var awardMissionOnce = function(key, xp, label) {
           var paid = d.missionXP && typeof d.missionXP === 'object' ? d.missionXP : {};
           if (paid[key] || _missionPaid.current[key] || typeof awardStemXP !== 'function') return null;
           _missionPaid.current[key] = true;
-          upd('missionXP', Object.assign({}, paid, { [key]: true }));
-          awardStemXP('calculus', xp, label);
+          _pendingMissionAwards.current.push({ key: key, xp: xp, label: label });
           return null;
         };
+        React.useEffect(function() {
+          if (!_pendingMissionAwards.current.length) return;
+          var queued = _pendingMissionAwards.current.splice(0);
+          var paid = d.missionXP && typeof d.missionXP === 'object' ? Object.assign({}, d.missionXP) : {};
+          var changed = false;
+          queued.forEach(function(item) {
+            if (!paid[item.key]) {
+              paid[item.key] = true;
+              changed = true;
+              if (typeof awardStemXP === 'function') awardStemXP('calculus', item.xp, item.label);
+            }
+          });
+          if (changed) upd('missionXP', paid);
+        });
 
         // ── VISUALIZE: canvas hooks (declared at IIFE top so they fire every render) ──
         var _vizCvRef = React.useRef(null);
@@ -2958,8 +2989,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         // ── RAF LOOP FOR VISUALIZE CANVAS (attach once, dispatch per view) ──
         React.useEffect(function() {
           if ((d.tab || 'integral') !== 'visualize') return;
-          var tries = 0, retryTimer = null;
+          var tries = 0, retryTimer = null, cancelled = false, activeCleanup = null;
           function tryInit() {
+            if (cancelled) return;
             var cv = _vizCvRef.current;
             if (!cv) {
               // Tiered polling so the canvas isn't lost if React's ref attachment is delayed:
@@ -2975,6 +3007,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               tries++;
               return;
             }
+            if (activeCleanup) { activeCleanup(); activeCleanup = null; }
             var c = cv.getContext('2d');
             if (!c) return;
             function resize() {
@@ -3075,14 +3108,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               var ls = _vizLiveState.current;
               // Checked every frame: under reduced motion every view draws its control values.
               ls.reduced = reducedNow;
+              if (cancelled || !cv.isConnected) { _vizLoopRunning.current = false; if (_vizAnimId.current) { cancelAnimationFrame(_vizAnimId.current); _vizAnimId.current = null; } return; }
               if (ls.tab !== 'visualize') { _vizAnimId.current = requestAnimationFrame(frame); return; }
-              if (!cv.isConnected) { _vizLoopRunning.current = false; if (_vizAnimId.current) cancelAnimationFrame(_vizAnimId.current); return; }
               var r = cv.getBoundingClientRect();
               var W = r.width, H = r.height;
-              // Clear
-              var bg = c.createLinearGradient(0, 0, 0, H);
-              bg.addColorStop(0, '#0f172a'); bg.addColorStop(1, '#1e293b');
-              c.fillStyle = bg; c.fillRect(0, 0, W, H);
+              // Clear — deep mathematical-studio canvas ground
+              c.fillStyle = '#0b1326'; c.fillRect(0, 0, W, H);
 
               var fn = ls.CALC_FUNCS[ls.vizFn] || ls.CALC_FUNCS.quadratic;
 
@@ -3106,19 +3137,25 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               _vizLoopRunning.current = true;
               _vizAnimId.current = requestAnimationFrame(frame);
             }
-            cv._vizCleanup = function() {
+            var cleanup = function() {
               _vizLoopRunning.current = false;
-              if (_vizAnimId.current) cancelAnimationFrame(_vizAnimId.current);
-              if (resizeObs) { try { resizeObs.disconnect(); } catch(e) {} }
+              if (_vizAnimId.current) { cancelAnimationFrame(_vizAnimId.current); _vizAnimId.current = null; }
+              if (resizeObs) { try { resizeObs.disconnect(); } catch(e) {} resizeObs = null; }
               cv.removeEventListener('pointerdown', onPointerDown);
               cv.removeEventListener('pointermove', onPointerMove);
             };
+            activeCleanup = cleanup;
+            cv._vizCleanup = cleanup;
           }
           tryInit();
           return function() {
-            if (retryTimer) clearTimeout(retryTimer);
-            var cv = _vizCvRef.current;
-            if (cv && cv._vizCleanup) cv._vizCleanup();
+            cancelled = true;
+            if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+            if (activeCleanup) { activeCleanup(); activeCleanup = null; }
+            else {
+              var cv = _vizCvRef.current;
+              if (cv && cv._vizCleanup) cv._vizCleanup();
+            }
           };
         }, [d.tab]);
 
@@ -3158,39 +3195,83 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           c.fillText(fillT(__alloT('stem.calculus.viz_coming_soon', 'View "{view}" is not available'), { view: viewId }), W/2, H/2 - 8);
         }
 
-        // Helper: plot a function curve onto canvas rect with axis transforms
+        // Helper: plot a luminous dual-pass function curve onto canvas rect with axis transforms
         function plotCurve(c, fn, xR, yR, Lx, Rx, Ty, By, color, width) {
           c.save();
-          c.shadowColor = color; c.shadowBlur = 6;
+          c.lineJoin = 'round'; c.lineCap = 'round';
+          c.shadowColor = color; c.shadowBlur = 11;
           c.strokeStyle = color; c.lineWidth = width || 2;
           c.beginPath();
           var N = 200;
+          var pts = [];
           for (var i = 0; i <= N; i++) {
             var x = xR.min + (i / N) * (xR.max - xR.min);
             var y = fn(x);
             var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
             var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            pts.push([sx, sy]);
             if (i === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
           }
           c.stroke();
+          // Crisp luminous inner specular filament (lineWidth < 2 to stay razor sharp)
+          if ((width || 2) >= 2 && pts.length > 1) {
+            c.shadowBlur = 0;
+            c.strokeStyle = 'rgba(255,255,255,0.38)'; c.lineWidth = 0.85;
+            c.beginPath();
+            for (var j = 0; j < pts.length; j++) { if (j === 0) c.moveTo(pts[j][0], pts[j][1]); else c.lineTo(pts[j][0], pts[j][1]); }
+            c.stroke();
+          }
           c.restore();
         }
         function drawAxes(c, Lx, Rx, Ty, By, xR, yR, color) {
-          color = color || 'rgba(148,163,184,0.35)';
-          c.strokeStyle = color; c.lineWidth = 1;
-          // x=0 axis
+          color = color || 'rgba(148,163,184,0.48)';
+          c.save();
+          // Recessed studio plot well
+          var wellG = typeof c.createLinearGradient === 'function' ? c.createLinearGradient(0, Ty, 0, By) : null;
+          if (wellG && typeof wellG.addColorStop === 'function') {
+            wellG.addColorStop(0, 'rgba(2,6,23,0.44)'); wellG.addColorStop(1, 'rgba(15,23,42,0.18)');
+            c.fillStyle = wellG; c.fillRect(Lx, Ty, Rx - Lx, By - Ty);
+          }
+          // Subtle studio coordinate gridlines
+          c.strokeStyle = 'rgba(148,163,184,0.12)'; c.lineWidth = 0.8;
+          for (var gx = 1; gx < 6; gx++) {
+            var px = Lx + (gx / 6) * (Rx - Lx);
+            c.beginPath(); c.moveTo(px, Ty); c.lineTo(px, By); c.stroke();
+          }
+          for (var gy = 1; gy < 4; gy++) {
+            var py = Ty + (gy / 4) * (By - Ty);
+            c.beginPath(); c.moveTo(Lx, py); c.lineTo(Rx, py); c.stroke();
+          }
+          // Glowing principal coordinate axes
+          c.shadowColor = 'rgba(125,211,252,0.42)'; c.shadowBlur = 5;
+          c.strokeStyle = color; c.lineWidth = 1.3;
           if (xR.min < 0 && xR.max > 0) {
             var zeroX = Lx + ((0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
             c.beginPath(); c.moveTo(zeroX, Ty); c.lineTo(zeroX, By); c.stroke();
           }
-          // y=0 axis
           if (yR.min < 0 && yR.max > 0) {
             var zeroY = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
             c.beginPath(); c.moveTo(Lx, zeroY); c.lineTo(Rx, zeroY); c.stroke();
           }
+          c.shadowBlur = 0;
           // Frame
-          c.strokeStyle = 'rgba(148,163,184,0.25)';
+          c.strokeStyle = 'rgba(148,163,184,0.32)'; c.lineWidth = 1;
           c.strokeRect(Lx, Ty, Rx - Lx, By - Ty);
+          c.restore();
+        }
+        function drawCalcBeacon(c, bx, by, r, coreColor, glowRgba) {
+          c.save();
+          var bh = typeof c.createRadialGradient === 'function' ? c.createRadialGradient(bx, by, 1, bx, by, r * 3.1) : null;
+          if (bh && typeof bh.addColorStop === 'function') {
+            bh.addColorStop(0, glowRgba || 'rgba(253,224,71,0.68)');
+            bh.addColorStop(0.5, glowRgba ? glowRgba.replace(/[\d.]+\)$/, '0.20)') : 'rgba(253,224,71,0.20)');
+            bh.addColorStop(1, 'rgba(253,224,71,0)');
+            c.fillStyle = bh; c.beginPath(); c.arc(bx, by, r * 3.1, 0, Math.PI * 2); c.fill();
+          }
+          c.fillStyle = coreColor || '#fde047';
+          c.beginPath(); c.arc(bx, by, r, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+          c.restore();
         }
 
         // ── VIEW 1: Zoom to Linearity ──
@@ -3235,12 +3316,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           plotCurve(c, tanFn, xR, yR, Lx, Rx, Ty, By, 'rgba(52,211,153,0.85)', 2);
           c.shadowBlur = 0;
 
-          // Marker at (x0, f(x0))
+          // Marker beacon at (x0, f(x0))
           var mx = Lx + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
           var my = By - ((y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
-          c.fillStyle = '#fde047';
-          c.beginPath(); c.arc(mx, my, 5, 0, Math.PI * 2); c.fill();
-          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+          drawCalcBeacon(c, mx, my, 5.2, '#fde047', 'rgba(253,224,71,0.72)');
 
           // Zoom meter
           var zTxt = fillT(__alloT('stem.calculus.viz_zoom_meter', '{z}\u00D7 zoom'), { z: zoom.toFixed(0) });
@@ -3320,12 +3399,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           plotCurve(c, tanFn, xR, yR, Lx1, Rx1, Ty, By, 'rgba(52,211,153,0.85)', 2);
           c.shadowBlur = 0;
 
-          // Marker
+          // Marker beacon on f(x)
           var mx = Lx1 + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
           var my = By - ((y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
-          c.fillStyle = '#fde047';
-          c.beginPath(); c.arc(mx, my, 5, 0, Math.PI * 2); c.fill();
-          c.strokeStyle = '#0f172a'; c.lineWidth = 1.2; c.stroke();
+          drawCalcBeacon(c, mx, my, 5.2, '#fde047', 'rgba(253,224,71,0.72)');
 
           c.fillStyle = '#f87171'; c.textAlign = 'left';
           c.font = 'bold 11px "Inter", sans-serif';
@@ -3333,14 +3410,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // Right panel: f'(x) traced
           drawAxes(c, Lx2, Rx2, Ty, By, xR, dyR);
-          plotCurve(c, fn.df, xR, dyR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.6)', 1.5);
+          plotCurve(c, fn.df, xR, dyR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.78)', 1.8);
 
-          // A DOT on f'(x) at x0 — this is the "slope on the right matches tangent on the left"
+          // A glowing beacon on f'(x) at x0 — slope on the right matches tangent on the left
           var dmx = Lx2 + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
           var dmy = By - ((slope - dyR.min) / (dyR.max - dyR.min)) * (By - Ty);
-          c.fillStyle = '#fde047';
-          c.beginPath(); c.arc(dmx, dmy, 6, 0, Math.PI * 2); c.fill();
-          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+          drawCalcBeacon(c, dmx, dmy, 6, '#fde047', 'rgba(52,211,153,0.68)');
 
           // Arrow from left marker up to right dot — visual "they're the same"
           c.strokeStyle = 'rgba(253,224,71,0.35)'; c.lineWidth = 1; c.setLineDash([4, 4]);
@@ -3397,9 +3472,17 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ? (xR.min + ((Math.sin(t/80) + 1) / 2) * (xR.max - xR.min))
             : Math.max(xR.min + 0.01, Math.min(xR.max - 0.01, ls.vizFtcX));
 
-          // Shade area [xR.min .. sweepX] under f on left panel
+          // Gradient-shaded signed integral ribbon [xR.min .. sweepX] under f on left panel
           var zeroY_L = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
-          c.fillStyle = 'rgba(59,130,246,0.28)';
+          var ftcG = typeof c.createLinearGradient === 'function' ? c.createLinearGradient(0, Ty, 0, By) : null;
+          if (ftcG && typeof ftcG.addColorStop === 'function') {
+            ftcG.addColorStop(0, 'rgba(56,189,248,0.44)');
+            ftcG.addColorStop(0.55, 'rgba(59,130,246,0.22)');
+            ftcG.addColorStop(1, 'rgba(99,102,241,0.34)');
+            c.fillStyle = ftcG;
+          } else {
+            c.fillStyle = 'rgba(59,130,246,0.28)';
+          }
           c.beginPath();
           var startSx = Lx1;
           c.moveTo(startSx, zeroY_L);
@@ -3419,11 +3502,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // Curve on top of shading
           plotCurve(c, fn.f, xR, yR, Lx1, Rx1, Ty, By, '#f87171', 2.2);
 
-          // Sweep marker on left
-          c.strokeStyle = '#fde047'; c.lineWidth = 1.5;
+          // Glowing sweep laser on left
+          c.save();
+          c.shadowColor = '#fde047'; c.shadowBlur = 8;
+          c.strokeStyle = '#fde047'; c.lineWidth = 1.6;
           c.beginPath(); c.moveTo(endSx, Ty); c.lineTo(endSx, By); c.stroke();
-          c.fillStyle = '#fde047';
-          c.beginPath(); c.arc(endSx, zeroY_L, 4, 0, Math.PI * 2); c.fill();
+          c.restore();
+          drawCalcBeacon(c, endSx, zeroY_L, 4.2, '#fde047', 'rgba(253,224,71,0.72)');
 
           // Right panel: A(x) curve drawn only up to sweepX
           // First draw full ghost curve
@@ -3432,7 +3517,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             if (idx < 0) idx = 0; if (idx > N) idx = N;
             return AVals[idx];
           }, xR, aR, Lx2, Rx2, Ty, By, 'rgba(59,130,246,0.18)', 1.5);
-          // Then draw the solid portion
+          // Then draw the luminous solid portion
+          c.save();
+          c.shadowColor = '#60a5fa'; c.shadowBlur = 9;
           c.strokeStyle = '#60a5fa'; c.lineWidth = 2.5;
           c.beginPath();
           var drawn = 0;
@@ -3445,6 +3532,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             drawn++;
           }
           c.stroke();
+          c.restore();
 
           // Tangent to A(x) at sweepX — slope should equal f(sweepX)
           var idxS = Math.max(0, Math.min(N, Math.round((sweepX - xR.min) / dxS)));
@@ -3454,11 +3542,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var syAtS = By - ((aAtS - aR.min) / (aR.max - aR.min)) * (By - Ty);
           // Draw the tangent
           var tanA = function(x) { return fAtS * (x - sweepX) + aAtS; };
-          plotCurve(c, tanA, xR, aR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.85)', 2);
-          // Sweep dot on right
-          c.fillStyle = '#fde047';
-          c.beginPath(); c.arc(sxAtS, syAtS, 5, 0, Math.PI * 2); c.fill();
-          c.strokeStyle = '#0f172a'; c.lineWidth = 1.2; c.stroke();
+          plotCurve(c, tanA, xR, aR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.88)', 2);
+          // Glowing sweep beacon on right
+          drawCalcBeacon(c, sxAtS, syAtS, 5.2, '#fde047', 'rgba(52,211,153,0.68)');
 
           // Panel labels
           c.fillStyle = '#f87171'; c.textAlign = 'left';
@@ -3617,11 +3703,18 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             drawAxes(c, Lx, Rx, Ty, By, xR, yR);
             plotCurve(c, fn.f, xR, yR, Lx, Rx, Ty, By, m.col, 1.5);
 
-            // Draw rectangles
+            // Draw gradient-shaded Riemann integral ribbons
             var dx = (xR.max - xR.min) / n;
             var approx = 0;
             var zeroY = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
-            c.fillStyle = m.col.replace('#', 'rgba(') ? m.col : m.col; // fallback
+            var ribFill = m.col + '33';
+            var ribG = typeof c.createLinearGradient === 'function' ? c.createLinearGradient(0, Ty, 0, By) : null;
+            if (ribG && typeof ribG.addColorStop === 'function') {
+              ribG.addColorStop(0, m.col + '66');
+              ribG.addColorStop(0.55, m.col + '2b');
+              ribG.addColorStop(1, m.col + '52');
+              ribFill = ribG;
+            }
             for (var r = 0; r < n; r++) {
               var xi = xR.min + r * dx;
               var yVal;
@@ -3633,21 +3726,20 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
               var rxL = Lx + ((xi - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
               var rxR = Lx + ((xi + dx - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
-              var ryT, ryB;
               if (m.id === 'trapezoid') {
                 // Draw trapezoid polygon
                 var yL = fn.f(xi), yRv = fn.f(xi + dx);
                 var syL = By - ((yL - yR.min) / (yR.max - yR.min)) * (By - Ty);
                 var syR = By - ((yRv - yR.min) / (yR.max - yR.min)) * (By - Ty);
-                c.fillStyle = m.col + '33';
-                c.strokeStyle = m.col; c.lineWidth = 0.6;
+                c.fillStyle = ribFill;
+                c.strokeStyle = m.col; c.lineWidth = 0.7;
                 c.beginPath();
                 c.moveTo(rxL, zeroY); c.lineTo(rxL, syL); c.lineTo(rxR, syR); c.lineTo(rxR, zeroY); c.closePath();
                 c.fill(); c.stroke();
               } else {
                 var sy = By - ((yVal - yR.min) / (yR.max - yR.min)) * (By - Ty);
-                c.fillStyle = m.col + '33';
-                c.strokeStyle = m.col; c.lineWidth = 0.6;
+                c.fillStyle = ribFill;
+                c.strokeStyle = m.col; c.lineWidth = 0.7;
                 var top = Math.min(sy, zeroY), hr = Math.abs(sy - zeroY);
                 c.fillRect(rxL, top, rxR - rxL, hr);
                 c.strokeRect(rxL, top, rxR - rxL, hr);
@@ -4994,24 +5086,48 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var sX = m.toSX, sY = m.toSY, okRect = function(v) { return finiteCoord(v); };
           var secant = opts.secant || null, showSec = opts.showTangent && secant && m.h > 0.05;
           return h('svg', { viewBox: '0 0 '+W+' '+H, className: 'w-full bg-white rounded-xl border-2 border-red-200 shadow-sm', style:{maxHeight: opts.maxH || '280px', display:'block'}, role:'img', 'aria-label': opts.label || '' },
-            (function(){var gs=[];for(var gx=Math.ceil(m.xR.min);gx<=m.xR.max;gx++){var gsx=sX(gx);if(gsx>pad&&gsx<W-pad)gs.push(h('line',{key:'g'+gx,x1:gsx,y1:pad,x2:gsx,y2:H-pad,stroke:'#e2e8f0',strokeWidth:0.6}));}return gs;})(),
-            h('line',{x1:pad,y1:sY(0),x2:W-pad,y2:sY(0),stroke:'#64748b',strokeWidth:1.5}),
-            m.xR.min < 0 && m.xR.max > 0 && h('line',{x1:sX(0),y1:pad,x2:sX(0),y2:H-pad,stroke:'#64748b',strokeWidth:1.5}),
+            h('defs', null,
+              h('linearGradient', { id: 'calcPosRibbon', x1: '0', y1: '0', x2: '0', y2: '1' },
+                h('stop', { offset: '0%', stopColor: '#2563eb', stopOpacity: 0.34 }),
+                h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: 0.08 })),
+              h('linearGradient', { id: 'calcNegRibbon', x1: '0', y1: '0', x2: '0', y2: '1' },
+                h('stop', { offset: '0%', stopColor: '#f97316', stopOpacity: 0.12 }),
+                h('stop', { offset: '100%', stopColor: '#ea580c', stopOpacity: 0.34 })),
+              h('linearGradient', { id: 'calcSimpRibbon', x1: '0', y1: '0', x2: '0', y2: '1' },
+                h('stop', { offset: '0%', stopColor: '#9333ea', stopOpacity: 0.30 }),
+                h('stop', { offset: '100%', stopColor: '#a855f7', stopOpacity: 0.08 }))),
+            (function(){var gs=[];for(var gx=Math.ceil(m.xR.min);gx<=m.xR.max;gx++){var gsx=sX(gx);if(gsx>pad&&gsx<W-pad)gs.push(h('line',{key:'g'+gx,x1:gsx,y1:pad,x2:gsx,y2:H-pad,stroke:isContrast?'#334155':'#e2e8f0',strokeWidth:0.7}));}for(var gy=1;gy<=4;gy++){var gsy=pad+(gy/5)*(H-2*pad);gs.push(h('line',{key:'gy'+gy,x1:pad,y1:gsy,x2:W-pad,y2:gsy,stroke:isContrast?'#334155':'#f1f5f9',strokeWidth:0.7}));}return gs;})(),
+            h('line',{x1:pad,y1:sY(0),x2:W-pad,y2:sY(0),stroke:'#64748b',strokeWidth:1.6}),
+            m.xR.min < 0 && m.xR.max > 0 && h('line',{x1:sX(0),y1:pad,x2:sX(0),y2:H-pad,stroke:'#64748b',strokeWidth:1.6}),
             opts.showRects && h('rect',{x:sX(m.lo),y:pad,width:Math.abs(sX(m.hi)-sX(m.lo)),height:H-2*pad,fill:'none',stroke:'#ef4444',strokeWidth:1,strokeDasharray:'4 2'}),
             opts.showRects && m.rects.map(function(r,i){
-              if(r.type==='trap'){if(!okRect(r.hL)||!okRect(r.hR))return null;var pts=sX(r.x)+','+sY(0)+' '+sX(r.x)+','+sY(r.hL)+' '+sX(r.x+r.w)+','+sY(r.hR)+' '+sX(r.x+r.w)+','+sY(0);var tpos=(r.hL+r.hR)>=0;return h('polygon',{key:i,points:pts,fill:tpos?'rgba(59,130,246,0.18)':'rgba(249,115,22,0.22)',stroke:tpos?'#3b82f6':'#f97316',strokeWidth:0.8});}
-              if(r.type==='simp'){if(!okRect(r.hL)||!okRect(r.hM)||!okRect(r.hR))return null;var sp=[sX(r.x)+','+sY(0)];for(var sp2=0;sp2<=10;sp2++){var st=sp2/10,spx=r.x+st*r.w,spy=r.hL*(1-st)*(1-2*st)+4*r.hM*st*(1-st)+r.hR*st*(2*st-1);sp.push(sX(spx)+','+sY(spy));}sp.push(sX(r.x+r.w)+','+sY(0));return h('polygon',{key:i,points:sp.join(' '),fill:'rgba(168,85,247,0.15)',stroke:'#a855f7',strokeWidth:0.8});}
+              if(r.type==='trap'){if(!okRect(r.hL)||!okRect(r.hR))return null;var pts=sX(r.x)+','+sY(0)+' '+sX(r.x)+','+sY(r.hL)+' '+sX(r.x+r.w)+','+sY(r.hR)+' '+sX(r.x+r.w)+','+sY(0);var tpos=(r.hL+r.hR)>=0;return h('polygon',{key:i,points:pts,fill:tpos?'url(#calcPosRibbon)':'url(#calcNegRibbon)',stroke:tpos?'#2563eb':'#ea580c',strokeWidth:0.9});}
+              if(r.type==='simp'){if(!okRect(r.hL)||!okRect(r.hM)||!okRect(r.hR))return null;var sp=[sX(r.x)+','+sY(0)];for(var sp2=0;sp2<=10;sp2++){var st=sp2/10,spx=r.x+st*r.w,spy=r.hL*(1-st)*(1-2*st)+4*r.hM*st*(1-st)+r.hR*st*(2*st-1);sp.push(sX(spx)+','+sY(spy));}sp.push(sX(r.x+r.w)+','+sY(0));return h('polygon',{key:i,points:sp.join(' '),fill:'url(#calcSimpRibbon)',stroke:'#9333ea',strokeWidth:0.9});}
               if(!okRect(r.h))return null;
-              return h('rect',{key:i,x:sX(r.x),y:r.h>=0?sY(r.h):sY(0),width:Math.abs(sX(r.x+r.w)-sX(r.x)),height:Math.abs(sY(r.h)-sY(0)),fill:r.h>=0?'rgba(59,130,246,0.18)':'rgba(249,115,22,0.22)',stroke:r.h>=0?'#3b82f6':'#f97316',strokeWidth:0.8});
+              return h('g',{key:i},
+                h('rect',{x:sX(r.x),y:r.h>=0?sY(r.h):sY(0),width:Math.abs(sX(r.x+r.w)-sX(r.x)),height:Math.abs(sY(r.h)-sY(0)),fill:r.h>=0?'rgba(59,130,246,0.18)':'rgba(249,115,22,0.22)',stroke:r.h>=0?'#2563eb':'#ea580c',strokeWidth:0.9}),
+                h('rect',{x:sX(r.x),y:r.h>=0?sY(r.h):sY(0),width:Math.abs(sX(r.x+r.w)-sX(r.x)),height:Math.abs(sY(r.h)-sY(0)),fill:r.h>=0?'url(#calcPosRibbon)':'url(#calcNegRibbon)',fillOpacity:0.55,stroke:'none'}));
             }),
-            showSec && (secant === 'forward' || secant === 'both') && m.secantPts && h('polyline',{points:m.secantPts,fill:'none',stroke:'#b45309',strokeWidth:1.5,strokeDasharray:'5 3'}),
-            showSec && (secant === 'centred' || secant === 'both') && m.centredPts && h('polyline',{points:m.centredPts,fill:'none',stroke:'#7c3aed',strokeWidth:1.5,strokeDasharray:'2 3'}),
-            opts.showTangent && m.tangentPts && h('polyline',{points:m.tangentPts,fill:'none',stroke:'#dc2626',strokeWidth:2}),
-            m.segs.map(function(seg, si) { return h('polyline',{key:'c'+si,points:seg.join(' '),fill:'none',stroke:isContrast?'#ffff00':'#1e293b',strokeWidth:2.5}); }),
-            (opts.marks || []).map(function(mk, mi) { var p = m.svgPoint(mk.x, m.f(mk.x)); if (!p) return null; var xy = p.split(','); return h('circle',{key:'mk'+mi,cx:+xy[0],cy:+xy[1],r:5,fill:mk.color||'#dc2626',stroke:'white',strokeWidth:2}); }),
-            opts.showTangent && finiteCoord(m.fy0) && h('circle',{cx:sX(m.x0),cy:sY(m.fy0),r:5,fill:'#dc2626',stroke:'white',strokeWidth:2}),
-            showSec && (secant === 'forward' || secant === 'both') && finiteCoord(m.f(m.x0+m.h)) && h('circle',{cx:sX(m.x0+m.h),cy:sY(m.f(m.x0+m.h)),r:4,fill:'#b45309',stroke:'white',strokeWidth:2}),
-            showSec && (secant === 'centred' || secant === 'both') && finiteCoord(m.f(m.x0-m.h)) && h('circle',{cx:sX(m.x0-m.h),cy:sY(m.f(m.x0-m.h)),r:4,fill:'#7c3aed',stroke:'white',strokeWidth:2}),
+            showSec && (secant === 'forward' || secant === 'both') && m.secantPts && h('polyline',{points:m.secantPts,fill:'none',stroke:'#b45309',strokeWidth:1.6,strokeDasharray:'5 3'}),
+            showSec && (secant === 'centred' || secant === 'both') && m.centredPts && h('polyline',{points:m.centredPts,fill:'none',stroke:'#7c3aed',strokeWidth:1.6,strokeDasharray:'2 3'}),
+            opts.showTangent && m.tangentPts && h('g',null,
+              h('polyline',{points:m.tangentPts,fill:'none',stroke:'#ef4444',strokeWidth:5,strokeOpacity:0.18,strokeLinecap:'round'}),
+              h('polyline',{points:m.tangentPts,fill:'none',stroke:'#dc2626',strokeWidth:2.2,strokeLinecap:'round'})),
+            m.segs.map(function(seg, si) { return h('g',{key:'c'+si},
+              h('polyline',{points:seg.join(' '),fill:'none',stroke:isContrast?'#ffff00':'#3b82f6',strokeWidth:5.5,strokeOpacity:0.14,strokeLinecap:'round',strokeLinejoin:'round'}),
+              h('polyline',{points:seg.join(' '),fill:'none',stroke:isContrast?'#ffff00':'#1e293b',strokeWidth:2.6,strokeLinecap:'round',strokeLinejoin:'round'})); }),
+            (opts.marks || []).map(function(mk, mi) { var p = m.svgPoint(mk.x, m.f(mk.x)); if (!p) return null; var xy = p.split(','); return h('g',{key:'mk'+mi},
+              h('circle',{cx:+xy[0],cy:+xy[1],r:9,fill:mk.color||'#dc2626',fillOpacity:0.2}),
+              h('circle',{cx:+xy[0],cy:+xy[1],r:5,fill:mk.color||'#dc2626',stroke:'white',strokeWidth:2})); }),
+            opts.showTangent && finiteCoord(m.fy0) && h('g',null,
+              h('circle',{cx:sX(m.x0),cy:sY(m.fy0),r:10,fill:'#ef4444',fillOpacity:0.22}),
+              h('circle',{cx:sX(m.x0),cy:sY(m.fy0),r:5.2,fill:'#dc2626',stroke:'white',strokeWidth:2})),
+            showSec && (secant === 'forward' || secant === 'both') && finiteCoord(m.f(m.x0+m.h)) && h('g',null,
+              h('circle',{cx:sX(m.x0+m.h),cy:sY(m.f(m.x0+m.h)),r:8,fill:'#b45309',fillOpacity:0.2}),
+              h('circle',{cx:sX(m.x0+m.h),cy:sY(m.f(m.x0+m.h)),r:4.2,fill:'#b45309',stroke:'white',strokeWidth:2})),
+            showSec && (secant === 'centred' || secant === 'both') && finiteCoord(m.f(m.x0-m.h)) && h('g',null,
+              h('circle',{cx:sX(m.x0-m.h),cy:sY(m.f(m.x0-m.h)),r:8,fill:'#7c3aed',fillOpacity:0.2}),
+              h('circle',{cx:sX(m.x0-m.h),cy:sY(m.f(m.x0-m.h)),r:4.2,fill:'#7c3aed',stroke:'white',strokeWidth:2})),
             opts.caption && h('text',{x:W/2,y:H-6,textAnchor:'middle',fill:isContrast?'#ffff00':'#475569',style:{fontSize:'10px',fontWeight:'bold'}}, opts.caption)
           );
         };
@@ -6423,7 +6539,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               onPointerMove: function(e) { boundPointer(k, 'move', e); },
               onPointerUp: function(e) { boundPointer(k, 'up', e); },
               onPointerCancel: function(e) { boundPointer(k, 'up', e); },
-              style: { cursor: 'ew-resize', outline: 'none', pointerEvents: 'all' } },
+              style: { cursor: 'ew-resize', outline: '2px solid transparent', pointerEvents: 'all' } },
               h('rect', { x: x - hitW / 2, y: pad - 8, width: hitW, height: H - 2 * pad + 34, fill: 'transparent' }),
               h('line', { x1: x, y1: pad, x2: x, y2: H - pad, stroke: '#b91c1c', strokeWidth: active ? 3 : 2 }),
               active && h('rect', { x: x - 17, y: gy - 4, width: 34, height: 28, rx: 8, fill: 'none', stroke: ctx.isContrast ? '#ffff00' : '#0f172a', strokeWidth: 2, strokeDasharray: '4 2' }),
@@ -6520,25 +6636,50 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           h('style', null, css),
 
           // Header
-          h('section', { 'data-calculus-command': 'true', className: 'mb-4 overflow-hidden rounded-2xl border border-sky-300/40 bg-gradient-to-br from-slate-950 via-sky-950 to-violet-950 text-white shadow-xl' },
-            h('div', { className: 'p-3 sm:p-4' },
-              h('div', { className: 'flex flex-col gap-2' },
-                h('div', { className: 'min-w-0' },
-                  h('div', { className: 'flex items-center gap-2' },
-                    h('button', { onClick: function(){setStemLabTool(null);}, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-sky-300', 'aria-label': __alloT('stem.calculus.a11y_back_to_tools', 'Back to tools') }, h(ArrowLeft, {size:18})),
-                    h('span', { className: 'rounded-full bg-sky-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-sky-100 ring-1 ring-sky-200/30' }, __alloT('stem.calculus.badge_studio', 'Concept studio'))
+          h('section', {
+            'data-calculus-command': 'true',
+            className: 'mb-4 overflow-hidden rounded-2xl shadow-xl',
+            style: isContrast
+              ? { backgroundColor: '#000000', color: '#ffffff', border: '2px solid #ffff00' }
+              : { backgroundColor: '#0c1e38', backgroundImage: 'linear-gradient(135deg, #020617 0%, #082f49 52%, #2e1065 100%)', color: '#ffffff', border: '1px solid rgba(125, 211, 252, 0.35)' }
+          },
+            h('div', { className: 'p-3.5 sm:p-4' },
+              h('div', { className: 'flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between' },
+                h('div', { className: 'min-w-0 flex items-start gap-3' },
+                  h('svg', { width: 46, height: 46, viewBox: '0 0 48 48', 'aria-hidden': 'true', style: { flexShrink: 0, marginTop: 2 } },
+                    h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : '#0f172a', stroke: isContrast ? '#ffff00' : '#38bdf8', strokeWidth: 1.5 }),
+                    h('rect', { x: 10, y: 28, width: 7, height: 11, fill: isContrast ? '#00ffff' : 'rgba(56,189,248,0.45)', stroke: isContrast ? '#ffffff' : '#7dd3fc', strokeWidth: 0.8 }),
+                    h('rect', { x: 17, y: 21, width: 7, height: 18, fill: isContrast ? '#00ffff' : 'rgba(56,189,248,0.55)', stroke: isContrast ? '#ffffff' : '#7dd3fc', strokeWidth: 0.8 }),
+                    h('rect', { x: 24, y: 15, width: 7, height: 24, fill: isContrast ? '#00ffff' : 'rgba(167,139,250,0.55)', stroke: isContrast ? '#ffffff' : '#c4b5fd', strokeWidth: 0.8 }),
+                    h('line', { x1: 7, y1: 39, x2: 41, y2: 39, stroke: isContrast ? '#ffffff' : '#94a3b8', strokeWidth: 1.4 }),
+                    h('path', { d: 'M9 34 Q22 25 38 10', fill: 'none', stroke: isContrast ? '#ffff00' : '#f87171', strokeWidth: 2.2 }),
+                    h('line', { x1: 15, y1: 30, x2: 37, y2: 14, stroke: isContrast ? '#66ff66' : '#fbbf24', strokeWidth: 1.6, strokeDasharray: '3 2' }),
+                    h('circle', { cx: 26, cy: 22, r: 3, fill: isContrast ? '#ffff00' : '#fbbf24', stroke: '#020617', strokeWidth: 1 })
                   ),
-                  h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, '\u222B ' + __alloT('stem.calculus.title', 'Calculus Explorer')),
-                  h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-sky-100' }, __alloT('stem.calculus.subtitle', 'Connect change, accumulation, and limits through graphs, numerical evidence, and explanation.')),
-                  h('div', { className: 'mt-2 flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': __alloT('stem.calculus.band_group', 'Course level') },
-                    h('span', { className: 'text-[0.6875rem] font-bold text-sky-100 mr-1' }, __alloT('stem.calculus.band_group', 'Course level')),
-                    BANDS.map(function(b) {
-                      var on = band === b;
-                      return h('button', { key: b, type: 'button', 'aria-pressed': on, disabled: bandLocked && !on, onClick: function() { if (!bandLocked) { updMany({ calcBand: b, calcQuiz: null, matchQuiz: null }); say(fillT(__alloT('stem.calculus.sr_band', 'Level set to {b}.'), { b: bandLabel(b) })); } },
-                        className: 'min-h-[32px] px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold border ' + (on ? 'bg-sky-300 text-slate-950 border-sky-200' : 'bg-white/10 text-white border-white/30 hover:bg-white/20 disabled:opacity-50') }, bandLabel(b));
-                    }),
-                    bandLocked && h('span', { className: 'text-[0.6875rem] text-sky-100 ml-1' }, __alloT('stem.calculus.band_locked', '(set by your teacher)'))
+                  h('div', { className: 'min-w-0' },
+                    h('div', { className: 'flex flex-wrap items-center gap-2' },
+                      h('button', { onClick: function(){setStemLabTool(null);}, className: 'shrink-0 rounded-lg border border-white/25 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-sky-300', style: { minWidth: 40, minHeight: 40 }, 'aria-label': __alloT('stem.calculus.a11y_back_to_tools', 'Back to tools') }, h(ArrowLeft, {size:18})),
+                      h('span', { className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.16em]', style: { backgroundColor: isContrast ? '#000000' : '#0c4a6e', color: isContrast ? '#ffff00' : '#e0f2fe', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(186,230,253,0.35)') } }, __alloT('stem.calculus.badge_studio', 'Concept studio')),
+                      h('span', { className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-bold uppercase tracking-wider', style: { backgroundColor: isContrast ? '#000000' : '#0f172a', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255,255,255,0.22)') } }, __alloT('stem.calculus.subject_badge', 'Math · Calculus'))
+                    ),
+                    h('h3', { className: 'mt-2.5 text-xl font-black tracking-tight sm:text-2xl', style: { color: '#ffffff' } }, '\u222B ' + __alloT('stem.calculus.title', 'Calculus Explorer')),
+                    h('p', { className: 'mt-1 max-w-2xl text-sm leading-6', style: { color: isContrast ? '#ffffff' : '#e0f2fe' } }, __alloT('stem.calculus.subtitle', 'Connect change, accumulation, and limits through graphs, numerical evidence, and explanation.')),
+                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': __alloT('stem.calculus.band_group', 'Course level') },
+                      h('span', { className: 'text-[0.6875rem] font-bold mr-1', style: { color: isContrast ? '#ffff00' : '#e0f2fe' } }, __alloT('stem.calculus.band_group', 'Course level')),
+                      BANDS.map(function(b) {
+                        var on = band === b;
+                        return h('button', { key: b, type: 'button', 'aria-pressed': on, disabled: bandLocked && !on, onClick: function() { if (!bandLocked) { updMany({ calcBand: b, calcQuiz: null, matchQuiz: null }); say(fillT(__alloT('stem.calculus.sr_band', 'Level set to {b}.'), { b: bandLabel(b) })); } },
+                          className: 'min-h-[36px] px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold border ' + (on ? 'bg-sky-300 text-slate-950 border-sky-200' : 'bg-white/10 text-white border-white/30 hover:bg-white/20 disabled:opacity-50') }, bandLabel(b));
+                      }),
+                      bandLocked && h('span', { className: 'text-[0.6875rem] ml-1', style: { color: isContrast ? '#ffffff' : '#e0f2fe' } }, __alloT('stem.calculus.band_locked', '(set by your teacher)'))
+                    )
                   )
+                ),
+                h('div', { className: 'flex flex-wrap items-center gap-1.5 lg:justify-end', style: { minWidth: 0 } },
+                  h('span', { className: 'font-mono text-xs font-bold px-2.5 py-1 rounded-full', style: { backgroundColor: isContrast ? '#000000' : '#0f172a', color: isContrast ? '#ffff00' : '#7dd3fc', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(125,211,252,0.38)') } },
+                    'f(x) = ' + String(fBody || 'x²').slice(0, 24)),
+                  tab === 'integral' && h('span', { className: 'text-xs font-bold px-2.5 py-1 rounded-full', style: { backgroundColor: isContrast ? '#000000' : '#0f172a', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255,255,255,0.25)') } },
+                    methodName(mode) + ' · [' + calcFmtNum(xMin) + ', ' + calcFmtNum(xMax2) + '] · n = ' + nRects)
                 )
               )
             )
@@ -6577,7 +6718,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             };
             var meta = TAB_META[tab] || TAB_META.integral;
             return h('div', {
-              style: {
+              style: isContrast ? {
+                margin: '0 0 12px',
+                padding: '12px 14px',
+                borderRadius: 12,
+                backgroundColor: '#000000',
+                border: '2px solid #ffff00',
+                borderLeft: '4px solid #ffff00',
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              } : {
                 margin: '0 0 12px',
                 padding: '12px 14px',
                 borderRadius: 12,
@@ -6589,8 +6738,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             },
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
-                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45 } }, meta.hint)
+                h('h3', { style: { color: isContrast ? '#ffff00' : meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: isContrast ? '#ffffff' : '#334155', fontSize: 11, lineHeight: 1.45 } }, meta.hint)
               )
             );
           })(),
@@ -6603,14 +6752,38 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             functionBox('integral'),
 
             // Method selector
-            h('div', { className: 'flex flex-wrap gap-1 mb-3', role: 'group', 'data-calc-methods': true, 'aria-label': __alloT('stem.calculus.method_group', 'Approximation method') },
+            h('div', { className: 'flex flex-wrap gap-1.5 mb-3', role: 'group', 'data-calc-methods': true, 'aria-label': __alloT('stem.calculus.method_group', 'Approximation method') },
               MODES.map(function(m){
-                return h('button',{ key:m.id, type:'button', 'aria-pressed':mode===m.id, onClick:function(){updMany(Object.assign({ mode: m.id, methodsUsed: Object.assign({}, d.methodsUsed, {[m.id]:true}), overUnderChecked:false, overUnderGuess:null, overUnderTries:0 }, m.id==='simpson'&&nRects%2!==0 ? { n: nRects+1 } : {}));},className:'min-h-[32px] px-3 py-1.5 rounded-lg text-xs font-bold transition-all '+(mode===m.id?'bg-red-600 text-white shadow-md':'bg-slate-100 text-slate-700 hover:bg-red-50')},m.label);
+                return h('button',{ key:m.id, type:'button', 'aria-pressed':mode===m.id, onClick:function(){updMany(Object.assign({ mode: m.id, methodsUsed: Object.assign({}, d.methodsUsed, {[m.id]:true}), overUnderChecked:false, overUnderGuess:null, overUnderTries:0 }, m.id==='simpson'&&nRects%2!==0 ? { n: nRects+1 } : {}));},className:'min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold transition-all '+(mode===m.id?'bg-red-600 text-white shadow-md':'bg-slate-100 text-slate-700 hover:bg-red-50')},m.label);
               })
             ),
 
             integralGraph(),
             integralGraphControls(),
+            h('div', {
+              'data-calc-stage-key': 'true',
+              className: 'mt-2 rounded-xl border px-3 py-1.5 flex flex-wrap items-center gap-3 text-[0.6875rem] font-semibold',
+              style: isContrast
+                ? { backgroundColor: '#000000', borderColor: '#ffff00', color: '#ffffff' }
+                : { backgroundColor: '#f8fafc', borderColor: '#cbd5e1', color: '#334155' }
+            },
+              h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                h('svg', { width: 18, height: 10, viewBox: '0 0 18 10', 'aria-hidden': 'true' },
+                  h('line', { x1: 1, y1: 5, x2: 17, y2: 5, stroke: isContrast ? '#ffff00' : '#dc2626', strokeWidth: 2.4 })),
+                __alloT('stem.calculus.key_curve', 'Curve f(x)')),
+              h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                h('svg', { width: 14, height: 12, viewBox: '0 0 14 12', 'aria-hidden': 'true' },
+                  h('rect', { x: 1, y: 1, width: 12, height: 10, fill: isContrast ? '#00ffff' : 'rgba(37,99,235,0.28)', stroke: isContrast ? '#ffffff' : '#2563eb', strokeWidth: 1.2 })),
+                __alloT('stem.calculus.key_pos_area', 'Positive area (+)')),
+              h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                h('svg', { width: 14, height: 12, viewBox: '0 0 14 12', 'aria-hidden': 'true' },
+                  h('rect', { x: 1, y: 1, width: 12, height: 10, fill: isContrast ? '#ff8800' : 'rgba(234,88,12,0.28)', stroke: isContrast ? '#ffffff' : '#ea580c', strokeWidth: 1.2 })),
+                __alloT('stem.calculus.key_neg_area', 'Negative area (−)')),
+              h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                h('svg', { width: 14, height: 12, viewBox: '0 0 14 12', 'aria-hidden': 'true' },
+                  h('line', { x1: 7, y1: 1, x2: 7, y2: 11, stroke: isContrast ? '#ffff00' : '#b91c1c', strokeWidth: 2.2 })),
+                __alloT('stem.calculus.key_bounds', 'Draggable bounds a, b'))
+            ),
             narrow && h('div', { className: 'mt-3' }, learningPath()),
             graphAccessPanel('calc-ga-integral'),
 
@@ -6791,7 +6964,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('line',{x1:Cpad,y1:55,x2:CW-Cpad,y2:55,stroke:'#94a3b8',strokeWidth:0.5}),
                   convData.length > 1 && h('polyline',{points:convData.map(function(cd){return convToX(finiteNum(cd.n, 2))+','+convToY(cd.err);}).join(' '),fill:'none',stroke:'#dc2626',strokeWidth:1.5}),
                   finiteCoord(err) && nRects <= 50 && h('circle',{cx:convToX(Math.max(2, nRects)),cy:convToY(err),r:3,fill:'#dc2626',stroke:'white',strokeWidth:1}),
-                  h('text',{x:CW/2,y:8,textAnchor:'middle',fill:isContrast?'#ffff00':'#475569',style:{fontSize:'7.5px'}},__alloT('stem.calculus.chart_caption', 'error \u2192 0 as n \u2192 \u221E'))
+                  h('text',{x:CW/2,y:11,textAnchor:'middle',fill:isContrast?'#ffff00':'#475569',style:{fontSize:'10px'}},__alloT('stem.calculus.chart_caption', 'error \u2192 0 as n \u2192 \u221E'))
                 )
               )
             ),
@@ -6860,15 +7033,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Presets (quadratics)
-            h('div', { className: 'mt-3 flex flex-wrap gap-1.5 items-center' },
-              h('span',{ className:'text-[0.6875rem] font-bold text-slate-700' + onHostInk},__alloT('stem.calculus.load', 'Load:')),
+            !(predictMode && !predictSubmitted) && h('div', { className: 'mt-3 flex flex-wrap gap-1.5 items-center rounded-xl border p-2.5', style: isContrast ? { backgroundColor: '#000000', borderColor: '#ffff00' } : { backgroundColor: '#f8fafc', borderColor: '#cbd5e1' } },
+              h('span',{ className:'text-[0.6875rem] font-bold text-slate-700 mr-1' + onHostInk},__alloT('stem.calculus.load', 'Load:')),
               PRESETS.map(function(p){
                 return h('button',{ key:p.label,type:'button',onClick:function(){
                   updMany({fnMode:'quad',a:p.a,b:p.b,c:p.c,xMin:p.xMin,xMax:p.xMax,n:p.n,overUnderChecked:false,overUnderGuess:null,overUnderTries:0,predictSubmitted:false,antiChecked:false,antiText:''});
                   addToast('\uD83E\uDD14 '+p.tip,'info');
                   say(p.tip);
                   stemBeep&&stemBeep('click');
-                },className:'min-h-[28px] px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-red-50 text-red-700 border border-red-600 hover:bg-red-100 transition-all'},p.label);
+                },className:'min-h-[44px] px-3 py-1.5 rounded-full text-[0.75rem] font-bold bg-red-50 text-red-700 border border-red-600 hover:bg-red-100 transition-all'},p.label);
               })
             ),
 

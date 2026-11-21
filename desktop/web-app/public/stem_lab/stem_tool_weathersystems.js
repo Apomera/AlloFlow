@@ -4235,42 +4235,71 @@ var GEOGRAPHY_PROFILES = {
     g.save();
     g.translate(x, y);
     g.scale(scale, scale);
-    var top = storm ? (dark ? '#94a3b8' : '#e2e8f0') : (dark ? '#f8fafc' : '#ffffff');
-    var base = storm ? (dark ? '#334155' : '#64748b') : (dark ? '#8fa3bd' : '#c3d4e6');
+    var top = storm ? (dark ? '#cbd5e1' : '#f1f5f9') : (dark ? '#f8fafc' : '#ffffff');
+    var mid = storm ? (dark ? '#64748b' : '#94a3b8') : (dark ? '#cbd5e1' : '#e2edf8');
+    var base = storm ? (dark ? '#1e293b' : '#475569') : (dark ? '#7c93b0' : '#b4c9df');
     if (!contrast) {
-      g.shadowColor = 'rgba(2, 6, 23, .32)';
-      g.shadowBlur = 16;
-      g.shadowOffsetY = 8;
+      g.shadowColor = storm ? 'rgba(2, 6, 23, .44)' : 'rgba(2, 6, 23, .28)';
+      g.shadowBlur = storm ? 20 : 15;
+      g.shadowOffsetY = storm ? 10 : 7;
     }
     if (storm) {
-      // A spreading anvil top reads as a deep, mature convective cloud.
-      g.fillStyle = mixColor(top, base, 0.2);
+      // Illuminated spreading storm-anvil top + overshooting convective turret.
+      var anvilGrad = g.createLinearGradient(0, -38, 0, -14);
+      anvilGrad.addColorStop(0, contrast ? '#e2e8f0' : (dark ? '#e2e8f0' : '#ffffff'));
+      anvilGrad.addColorStop(0.55, mixColor(top, base, 0.28));
+      anvilGrad.addColorStop(1, mixColor(mid, base, 0.52));
+      g.fillStyle = anvilGrad;
       g.beginPath();
-      g.ellipse(2, -25, 44 + jitter * 6, 10, 0, 0, Math.PI * 2);
+      g.ellipse(4, -27, 48 + jitter * 7, 10.5, 0, 0, Math.PI * 2);
       g.fill();
+      if (!contrast) {
+        g.save();
+        g.shadowColor = 'transparent';
+        g.shadowBlur = 0;
+        g.strokeStyle = dark ? 'rgba(241,245,249,0.52)' : 'rgba(255,255,255,0.78)';
+        g.lineWidth = 1.6;
+        g.beginPath();
+        g.ellipse(4, -30, 40 + jitter * 5, 4.5, 0, Math.PI * 1.08, Math.PI * 1.92);
+        g.stroke();
+        g.restore();
+      }
     }
-    var body = g.createLinearGradient(0, -30, 0, 22);
+    var body = g.createLinearGradient(0, -32, 0, 22);
     body.addColorStop(0, top);
-    body.addColorStop(0.58, mixColor(top, base, 0.42));
+    body.addColorStop(0.42, mid);
+    body.addColorStop(0.82, mixColor(mid, base, 0.65));
     body.addColorStop(1, base);
     g.fillStyle = body;
     g.beginPath();
-    g.arc(-26, 5, 14 + jitter * 3, 0, Math.PI * 2);
-    g.arc(-8, -6, 20, 0, Math.PI * 2);
-    g.arc(10, -11 - jitter * 4, 21, 0, Math.PI * 2);
-    g.arc(29, 2, 15 + jitter * 3, 0, Math.PI * 2);
-    g.rect(-28, 2, 60, 17);
+    g.arc(-27, 5, 14.5 + jitter * 3, 0, Math.PI * 2);
+    g.arc(-9, -7, 20.5, 0, Math.PI * 2);
+    g.arc(10, -12 - jitter * 4, 21.5, 0, Math.PI * 2);
+    g.arc(30, 2, 15.5 + jitter * 3, 0, Math.PI * 2);
+    g.rect(-29, 2, 62, 17);
     g.fill();
     g.shadowColor = 'transparent';
     g.shadowBlur = 0;
     g.shadowOffsetY = 0;
     if (!contrast) {
-      // Lit crown separates the cloud tops from the flat, shaded base.
-      g.globalAlpha = storm ? 0.26 : 0.5;
+      // Sunlit silver-ivory crown separates the cloud tops from the shaded rain base.
+      g.globalAlpha = storm ? 0.36 : 0.58;
       g.fillStyle = dark ? '#f8fafc' : '#ffffff';
       g.beginPath();
-      g.arc(10, -12 - jitter * 4, 16, Math.PI * 1.06, Math.PI * 1.94);
+      g.arc(10, -13 - jitter * 4, 16.5, Math.PI * 1.05, Math.PI * 1.95);
       g.fill();
+      g.globalAlpha = storm ? 0.24 : 0.4;
+      g.beginPath();
+      g.arc(-9, -8, 15, Math.PI * 1.08, Math.PI * 1.88);
+      g.fill();
+      if (storm) {
+        // Subtle brooding underside darkening under convective cores.
+        g.globalAlpha = 0.28;
+        g.fillStyle = '#0f172a';
+        g.beginPath();
+        g.ellipse(1, 15, 31, 5.5, 0, 0, Math.PI * 2);
+        g.fill();
+      }
       g.globalAlpha = 1;
     }
     g.restore();
@@ -4289,38 +4318,56 @@ var GEOGRAPHY_PROFILES = {
     var last = points[points.length - 1];
     g.save();
     if (!contrast) {
-      // A shaded wedge behind the boundary shows which side the advancing air mass occupies.
-      var wedge = g.createLinearGradient(baseX - 104, 0, baseX + 14, 0);
+      // A shaded air-mass wedge behind the boundary emphasizes frontal lift and contrast.
+      var wedge = g.createLinearGradient(baseX - 116, 0, baseX + 14, 0);
       wedge.addColorStop(0, mixColor(color, '#ffffff', 0.15, 0));
-      wedge.addColorStop(1, mixColor(color, '#ffffff', 0.15, 0.24));
+      wedge.addColorStop(0.65, mixColor(color, '#ffffff', 0.12, 0.11));
+      wedge.addColorStop(1, mixColor(color, '#ffffff', 0.2, 0.28));
       g.fillStyle = wedge;
       g.beginPath();
       g.moveTo(points[0].x, points[0].y);
       for (var p = 1; p < points.length; p += 1) g.lineTo(points[p].x, points[p].y);
-      g.lineTo(last.x - 104, last.y);
-      g.lineTo(points[0].x - 104, points[0].y);
+      g.lineTo(last.x - 116, last.y);
+      g.lineTo(points[0].x - 116, points[0].y);
       g.closePath();
       g.fill();
-      g.shadowColor = mixColor(color, '#ffffff', 0.25, 0.8);
-      g.shadowBlur = 12;
+      g.shadowColor = mixColor(color, '#ffffff', 0.3, 0.85);
+      g.shadowBlur = 14;
     }
     // The same plan the 3D ground symbol uses (frontSymbolPlan).
     var symbolPlan = frontSymbolPlan(scenario.frontType, state.frontSpeed);
-    g.strokeStyle = color;
-    g.lineWidth = 4;
     g.lineJoin = 'round';
     g.lineCap = 'round';
     if (symbolPlan.dashed && g.setLineDash) g.setLineDash([10, 7]);
+    // Dark contrast casing beneath the front curve keeps it crisp over bright terrain or snow.
+    g.strokeStyle = contrast ? '#000000' : 'rgba(2, 6, 23, 0.45)';
+    g.lineWidth = 6.5;
+    g.beginPath();
+    for (var sc = 0; sc < points.length; sc += 1) {
+      if (sc === 0) g.moveTo(points[sc].x, points[sc].y); else g.lineTo(points[sc].x, points[sc].y);
+    }
+    g.stroke();
+    g.strokeStyle = color;
+    g.lineWidth = 4;
     g.beginPath();
     for (var s = 0; s < points.length; s += 1) {
       if (s === 0) g.moveTo(points[s].x, points[s].y); else g.lineTo(points[s].x, points[s].y);
     }
     g.stroke();
+    // Subtle luminous specular centerline along the front curve.
+    if (!contrast) {
+      g.shadowColor = 'transparent';
+      g.shadowBlur = 0;
+      g.strokeStyle = mixColor(color, '#ffffff', 0.65, 0.72);
+      g.lineWidth = 1.25;
+      g.stroke();
+    }
     if (symbolPlan.dashed && g.setLineDash) g.setLineDash([]);
     g.shadowColor = 'transparent';
     g.shadowBlur = 0;
-    var halfDisc = function (sx, sy, dir) { g.beginPath(); g.arc(sx + 7 * dir, sy, 7, dir > 0 ? -Math.PI / 2 : Math.PI / 2, dir > 0 ? Math.PI / 2 : Math.PI * 1.5); g.fill(); };
-    var triangle = function (sx, sy, dir) { g.beginPath(); g.moveTo(sx, sy - 7); g.lineTo(sx + 14 * dir, sy); g.lineTo(sx, sy + 7); g.closePath(); g.fill(); };
+    var symbolRim = contrast ? '#ffffff' : 'rgba(255,255,255,0.68)';
+    var halfDisc = function (sx, sy, dir) { g.beginPath(); g.arc(sx + 7 * dir, sy, 7, dir > 0 ? -Math.PI / 2 : Math.PI / 2, dir > 0 ? Math.PI / 2 : Math.PI * 1.5); g.fill(); g.strokeStyle = symbolRim; g.lineWidth = 1; g.stroke(); };
+    var triangle = function (sx, sy, dir) { g.beginPath(); g.moveTo(sx, sy - 7); g.lineTo(sx + 14 * dir, sy); g.lineTo(sx, sy + 7); g.closePath(); g.fill(); g.strokeStyle = symbolRim; g.lineWidth = 1; g.stroke(); };
     for (var j = 1; j < 12 && !symbolPlan.dashed; j += 2) {
       var sy = points[j].y;
       var sx = points[j].x;
@@ -4529,43 +4576,65 @@ var GEOGRAPHY_PROFILES = {
 
     var grad = g.createLinearGradient(0, 0, 0, H);
     grad.addColorStop(0, palette.sky0);
-    grad.addColorStop(0.3, palette.sky1);
-    grad.addColorStop(0.56, palette.sky2);
+    grad.addColorStop(0.24, mixColor(palette.sky0, palette.sky1, 0.65));
+    grad.addColorStop(0.46, palette.sky1);
+    grad.addColorStop(0.62, palette.sky2);
     grad.addColorStop(1, mixColor(palette.sky2, palette.land2, 0.35));
     g.fillStyle = grad;
     g.fillRect(0, 0, W, H);
 
-    // Sun disc and glow fade out as cloud cover climbs, which makes coverage legible at a glance.
+    // Subtle upper-horizon atmospheric scattering glow & synoptic deck depth.
+    if (!contrast) {
+      var horizonScatter = g.createRadialGradient(W * 0.45, 250, 20, W * 0.45, 250, W * 0.56);
+      horizonScatter.addColorStop(0, dark ? 'rgba(125,211,252,' + (0.14 * (1 - storminess * 0.65)).toFixed(3) + ')' : 'rgba(255,248,225,' + (0.24 * (1 - storminess * 0.7)).toFixed(3) + ')');
+      horizonScatter.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = horizonScatter;
+      g.fillRect(0, 80, W, 210);
+    }
+
+    // Sun disc and corona glow fade out as cloud cover climbs, making coverage legible at a glance.
     var sunStrength = appearance.sunStrength;
     if (!contrast && appearance.sunVisible) {
       var sunX = W * 0.3;
       var sunY = 82;
-      var sunGlow = g.createRadialGradient(sunX, sunY, 4, sunX, sunY, 190);
-      sunGlow.addColorStop(0, 'rgba(255,246,204,' + (0.8 * sunStrength).toFixed(3) + ')');
-      sunGlow.addColorStop(0.22, 'rgba(255,231,153,' + (0.26 * sunStrength).toFixed(3) + ')');
+      var sunGlow = g.createRadialGradient(sunX, sunY, 4, sunX, sunY, 210);
+      sunGlow.addColorStop(0, 'rgba(255,250,220,' + (0.86 * sunStrength).toFixed(3) + ')');
+      sunGlow.addColorStop(0.2, 'rgba(255,234,162,' + (0.32 * sunStrength).toFixed(3) + ')');
+      sunGlow.addColorStop(0.55, 'rgba(254,240,190,' + (0.09 * sunStrength).toFixed(3) + ')');
       sunGlow.addColorStop(1, 'rgba(255,231,153,0)');
       g.fillStyle = sunGlow;
-      g.fillRect(sunX - 200, sunY - 200, 400, 400);
+      g.fillRect(sunX - 215, sunY - 215, 430, 430);
       g.save();
       g.globalAlpha = clamp(sunStrength * 1.25, 0, 1);
       g.fillStyle = dark ? '#fde68a' : '#fffbeb';
       g.beginPath(); g.arc(sunX, sunY, 20, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = 'rgba(255,251,235,0.45)';
+      g.lineWidth = 2;
+      g.beginPath(); g.arc(sunX, sunY, 25, 0, Math.PI * 2); g.stroke();
       g.restore();
     }
 
     // High cirrus drifts with the wind and only appears when the sky is not already packed.
     if (!contrast && current.cloudCover < 72) {
       g.save();
-      g.globalAlpha = 0.42 * (1 - current.cloudCover / 72);
+      var cirrusBaseAlpha = 0.44 * (1 - current.cloudCover / 72);
       g.strokeStyle = dark ? '#e2e8f0' : '#ffffff';
-      g.lineWidth = 3;
       g.lineCap = 'round';
       for (var ci = 0; ci < 7; ci += 1) {
         var cirrusY = 34 + ci * 17 + sceneNoise(ci * 3.7) * 12;
         var cirrusX = ((ci * 197 + time * 0.006 * Math.max(3, state.windSpeed)) % (W + 300)) - 150;
+        g.globalAlpha = cirrusBaseAlpha;
+        g.lineWidth = 3;
         g.beginPath();
         g.moveTo(cirrusX, cirrusY);
         g.bezierCurveTo(cirrusX + 44, cirrusY - 6, cirrusX + 92, cirrusY + 5, cirrusX + 140, cirrusY - 3);
+        g.stroke();
+        // Secondary fine wispy filament gives upper-troposphere cirrus realistic feathering.
+        g.globalAlpha = cirrusBaseAlpha * 0.55;
+        g.lineWidth = 1.4;
+        g.beginPath();
+        g.moveTo(cirrusX + 16, cirrusY + 5);
+        g.bezierCurveTo(cirrusX + 60, cirrusY - 1, cirrusX + 105, cirrusY + 9, cirrusX + 152, cirrusY + 2);
         g.stroke();
       }
       g.restore();
@@ -4666,22 +4735,33 @@ var GEOGRAPHY_PROFILES = {
       g.beginPath(); g.moveTo(W / 2, 245); g.lineTo(gx, H); g.stroke();
     }
 
-    // Pressure contours.
+    // Luminous crisp pressure contours (isobars) with contrast casing.
     var pressureX = scenario.id === 'fair' ? 690 : 230;
+    var isHighSystem = scenario.id === 'fair';
     g.save();
     if (!contrast) {
       // A soft core tints the centre of the system: cool for high pressure, warm for low.
-      var core = g.createRadialGradient(pressureX, 315, 8, pressureX, 315, 215);
-      core.addColorStop(0, scenario.id === 'fair' ? 'rgba(56,189,248,.18)' : 'rgba(244,114,182,.18)');
+      var core = g.createRadialGradient(pressureX, 315, 8, pressureX, 315, 225);
+      core.addColorStop(0, isHighSystem ? 'rgba(56,189,248,.22)' : 'rgba(244,114,182,.22)');
+      core.addColorStop(0.55, isHighSystem ? 'rgba(56,189,248,.07)' : 'rgba(244,114,182,.07)');
       core.addColorStop(1, 'rgba(0,0,0,0)');
       g.fillStyle = core;
-      g.fillRect(pressureX - 225, 100, 450, 360);
+      g.fillRect(pressureX - 235, 95, 470, 370);
     }
-    g.strokeStyle = dark ? 'rgba(226,232,240,.32)' : 'rgba(15,23,42,.3)';
-    g.lineWidth = 1.5;
+    var isobarBaseStroke = contrast ? 'rgba(255,255,255,.75)' : (dark ? (isHighSystem ? 'rgba(186,230,253,.46)' : 'rgba(251,207,232,.44)') : 'rgba(15,23,42,.38)');
+    var isobarCasing = dark ? 'rgba(2,6,23,.45)' : 'rgba(255,255,255,.42)';
     for (var ring = 0; ring < 4; ring += 1) {
+      var irx = 72 + ring * 42;
+      var iry = 28 + ring * 18;
       g.beginPath();
-      g.ellipse(pressureX, 315, 72 + ring * 42, 28 + ring * 18, -0.15, 0, Math.PI * 2);
+      g.ellipse(pressureX, 315, irx, iry, -0.15, 0, Math.PI * 2);
+      if (!contrast) {
+        g.strokeStyle = isobarCasing;
+        g.lineWidth = 3.2;
+        g.stroke();
+      }
+      g.strokeStyle = isobarBaseStroke;
+      g.lineWidth = 1.65;
       g.stroke();
     }
     g.textAlign = 'left';
@@ -4689,9 +4769,9 @@ var GEOGRAPHY_PROFILES = {
     g.font = '700 24px system-ui';
     g.strokeStyle = dark ? 'rgba(2,6,23,.75)' : 'rgba(255,255,255,.85)';
     g.lineWidth = 4;
-    g.strokeText(scenario.id === 'fair' ? 'H' : 'L', pressureX - 9, 322);
+    g.strokeText(isHighSystem ? 'H' : 'L', pressureX - 9, 322);
     g.fillStyle = palette.text;
-    g.fillText(scenario.id === 'fair' ? 'H' : 'L', pressureX - 9, 322);
+    g.fillText(isHighSystem ? 'H' : 'L', pressureX - 9, 322);
     g.font = '600 11px system-ui';
     g.lineWidth = 3;
     g.strokeText(Math.round(state.pressure) + ' hPa', pressureX - 30, 342);
@@ -4717,7 +4797,7 @@ var GEOGRAPHY_PROFILES = {
         var shaftRgb = cloudPrecipType === 'snow' ? '248,250,252' : cloudPrecipType === 'mixed' ? '196,181,253' : '56,189,248';
         var shaft = g.createLinearGradient(0, shaftTop, 0, 332);
         shaft.addColorStop(0, 'rgba(' + shaftRgb + ',0)');
-        shaft.addColorStop(0.18, 'rgba(' + shaftRgb + ',' + (0.0016 * current.precipPotential).toFixed(3) + ')');
+        shaft.addColorStop(0.18, 'rgba(' + shaftRgb + ',' + (0.0018 * current.precipPotential).toFixed(3) + ')');
         shaft.addColorStop(1, 'rgba(' + shaftRgb + ',0)');
         g.fillStyle = shaft;
         var halfShaft = 34 * cloudScale;
@@ -4739,16 +4819,42 @@ var GEOGRAPHY_PROFILES = {
         g.strokeStyle = cloudPrecipType === 'snow' ? '#f8fafc' : cloudPrecipType === 'mixed' ? '#c4b5fd' : '#38bdf8';
         g.lineWidth = cloudPrecipType === 'snow' ? 3 : 1.7;
         g.lineCap = 'round';
-        var drops = Math.round(current.precipPotential / 18);
+        var drops = Math.round(current.precipPotential / 16);
         for (var r = 0; r < drops; r += 1) {
           var fall = (time / 7 + r * 37 + c * 19) % 62;
-          var rx = cx - 34 + r * 15 + fall * precipSkew * 0.03;
+          var rx = cx - 34 + r * 14 + fall * precipSkew * 0.03;
           var ry = cy + 24 + fall;
-          g.beginPath();
-          if (cloudPrecipType === 'snow') { g.arc(rx + Math.sin(time / 420 + r) * 5, ry, 2.2, 0, Math.PI * 2); }
-          else if (cloudPrecipType === 'mixed') { g.arc(rx, ry + (r % 2) * 5, 1.4, 0, Math.PI * 2); }
-          else { g.moveTo(rx, ry); g.lineTo(rx - 4 - precipSkew * 0.28, ry + 12 + state.windSpeed * 0.05); }
-          g.stroke();
+          var depthAlpha = 0.56 + (r % 3) * 0.16;
+          g.globalAlpha = contrast ? 1 : depthAlpha;
+          if (cloudPrecipType === 'snow') {
+            var flakeX = rx + Math.sin(time / 420 + r) * 5;
+            if (!contrast) {
+              g.fillStyle = 'rgba(248,250,252,0.34)';
+              g.beginPath(); g.arc(flakeX, ry, 4.4, 0, Math.PI * 2); g.fill();
+            }
+            g.beginPath();
+            g.arc(flakeX, ry, 2.0, 0, Math.PI * 2);
+            g.stroke();
+          } else if (cloudPrecipType === 'mixed') {
+            if (!contrast) {
+              g.fillStyle = 'rgba(237,233,254,0.65)';
+              g.beginPath(); g.arc(rx, ry + (r % 2) * 5, 2.5, 0, Math.PI * 2); g.fill();
+            }
+            g.beginPath();
+            g.arc(rx, ry + (r % 2) * 5, 1.4, 0, Math.PI * 2);
+            g.stroke();
+          } else {
+            var endX = rx - 4 - precipSkew * 0.28;
+            var endY = ry + 13 + state.windSpeed * 0.05;
+            g.beginPath();
+            g.moveTo(rx, ry);
+            g.lineTo(endX, endY);
+            g.stroke();
+            if (!contrast) {
+              g.fillStyle = 'rgba(224,242,254,0.88)';
+              g.beginPath(); g.arc(endX, endY, 1.15, 0, Math.PI * 2); g.fill();
+            }
+          }
         }
         g.restore();
       }
@@ -4807,26 +4913,36 @@ var GEOGRAPHY_PROFILES = {
       g.restore();
     }
 
-    // Wind tracers communicate direction and speed while remaining visually secondary.
+    // Luminous crisp wind-vector streamlines communicate direction and speed without overpowering stations.
     if (state.windLayer) {
       var radians = (state.windDir + 90) * Math.PI / 180;
       g.save();
-      g.strokeStyle = dark ? 'rgba(186,230,253,.56)' : 'rgba(3,105,161,.48)';
-      g.lineWidth = 1.5;
+      g.lineCap = 'round';
+      g.lineJoin = 'round';
       for (var w = 0; w < 22; w += 1) {
         var phase = (time * 0.02 * Math.max(4, state.windSpeed) + w * 47) % 260;
         var wx = (w * 83 + Math.cos(radians) * phase + 80) % W;
         var wy = 265 + ((w * 43 + Math.sin(radians) * phase) % 190);
-        var len = 8 + state.windSpeed * 0.38;
+        var len = 10 + state.windSpeed * 0.42;
         var windEndX = wx + Math.cos(radians) * len;
         var windEndY = wy + Math.sin(radians) * len;
+        if (!contrast) {
+          var windGrad = g.createLinearGradient(wx, wy, windEndX, windEndY);
+          windGrad.addColorStop(0, dark ? 'rgba(186,230,253,0.08)' : 'rgba(3,105,161,0.10)');
+          windGrad.addColorStop(1, dark ? 'rgba(224,242,254,0.78)' : 'rgba(2,132,199,0.72)');
+          g.strokeStyle = windGrad;
+        } else {
+          g.strokeStyle = '#e0f2fe';
+        }
+        g.lineWidth = w % 3 === 0 ? 1.85 : 1.35;
         g.beginPath(); g.moveTo(wx, wy); g.lineTo(windEndX, windEndY); g.stroke();
         if (w % 3 === 0) {
+          g.strokeStyle = contrast ? '#ffffff' : (dark ? 'rgba(224,242,254,0.86)' : 'rgba(3,105,161,0.78)');
+          g.lineWidth = 1.6;
           g.beginPath();
-          g.moveTo(windEndX, windEndY);
-          g.lineTo(windEndX - Math.cos(radians - 0.55) * 5, windEndY - Math.sin(radians - 0.55) * 5);
-          g.moveTo(windEndX, windEndY);
-          g.lineTo(windEndX - Math.cos(radians + 0.55) * 5, windEndY - Math.sin(radians + 0.55) * 5);
+          g.moveTo(windEndX - Math.cos(radians - 0.52) * 5.5, windEndY - Math.sin(radians - 0.52) * 5.5);
+          g.lineTo(windEndX, windEndY);
+          g.lineTo(windEndX - Math.cos(radians + 0.52) * 5.5, windEndY - Math.sin(radians + 0.52) * 5.5);
           g.stroke();
         }
       }
@@ -7893,16 +8009,18 @@ function openImmersiveTourStep(stepId) {
           context.fillRect(0, 0, size, size);
           // Top-lit shading, applied only where the puff already exists (source-atop).
           context.globalCompositeOperation = 'source-atop';
-          var shade = context.createLinearGradient(0, size * 0.22, 0, size * 0.86);
+          var shade = context.createLinearGradient(0, size * 0.18, 0, size * 0.88);
           shade.addColorStop(0, 'rgba(255,255,255,0)');
-          shade.addColorStop(0.5, 'rgba(176,190,212,0.28)');
-          shade.addColorStop(1, 'rgba(104,120,148,0.66)');
+          shade.addColorStop(0.45, 'rgba(170,186,214,0.28)');
+          shade.addColorStop(0.78, 'rgba(108,126,158,0.58)');
+          shade.addColorStop(1, 'rgba(72,88,118,0.74)');
           context.fillStyle = shade;
           context.fillRect(0, 0, size, size);
-          // Faint warm light on the upper left, where the sun sits for the default view.
-          var glow = context.createRadialGradient(size * 0.34, size * 0.3, 0, size * 0.34, size * 0.3, size * 0.42);
-          glow.addColorStop(0, 'rgba(255,247,226,0.42)');
-          glow.addColorStop(1, 'rgba(255,247,226,0)');
+          // Warm sunlit silver-gold rim light on the upper left, where the sun sits for the default view.
+          var glow = context.createRadialGradient(size * 0.34, size * 0.27, 0, size * 0.34, size * 0.27, size * 0.45);
+          glow.addColorStop(0, 'rgba(255,251,235,0.58)');
+          glow.addColorStop(0.45, 'rgba(255,244,214,0.26)');
+          glow.addColorStop(1, 'rgba(255,244,214,0)');
           context.fillStyle = glow;
           context.fillRect(0, 0, size, size);
           context.globalCompositeOperation = 'source-over';
@@ -8020,23 +8138,86 @@ function openImmersiveTourStep(stepId) {
         if (renderer.xr.setReferenceSpaceType) renderer.xr.setReferenceSpaceType('local-floor');
         immersiveRuntimeRef.current = { renderer: renderer, scene: scene, camera: camera, controls: null, cameraTransition: null, layerGroups: null, reduceMotion: reduceMotion, THREE: THREE, quality: quality };
 
+        var hasShaderMaterial = typeof THREE.ShaderMaterial === 'function';
+        function weatherIsHighContrast() {
+          try {
+            if (canvas && typeof canvas.closest === 'function' && canvas.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+            var de = document.documentElement;
+            if (de && (de.classList.contains('theme-contrast') || de.getAttribute('data-theme') === 'high-contrast' || de.getAttribute('data-theme') === 'contrast')) return true;
+            if (document.body && document.body.classList.contains('theme-contrast')) return true;
+            if (typeof window !== 'undefined' && window.matchMedia && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+          } catch (eHc) {}
+          return false;
+        }
+        var initialHC = weatherIsHighContrast();
+        var weatherShaderMats = [];
+        var weatherDecorativeMeshes = [];
+        var weatherNoRaycast = function () {};
+        var WEATHER_NOISE_GLSL = [
+          'float wHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }',
+          'float wNoise(vec2 p){ vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f); return mix(mix(wHash(i), wHash(i + vec2(1.0, 0.0)), u.x), mix(wHash(i + vec2(0.0, 1.0)), wHash(i + vec2(1.0, 1.0)), u.x), u.y); }',
+          'float wFbm(vec2 p){ float v = 0.0; float a = 0.5; mat2 rot = mat2(0.80, -0.60, 0.60, 0.80); for (int i = 0; i < 4; i++) { v += a * wNoise(p); p = rot * p * 2.04 + vec2(1.7, 9.2); a *= 0.5; } return v; }'
+        ].join('\n');
+
+        var skySunDir = new THREE.Vector3(stormy ? -14 : -26, stormy ? 24 : 18, stormy ? 12 : -30).normalize();
         var skyUniforms = {
-          topColor: { value: new THREE.Color(stormy ? 0x111827 : 0x075985) },
-          horizonColor: { value: new THREE.Color(stormy ? 0x475569 : 0x7dd3fc) },
-          groundColor: { value: new THREE.Color(stormy ? 0x172033 : 0xdbeafe) },
+          topColor: { value: new THREE.Color(stormy ? 0x0b1220 : 0x06466d) },
+          midColor: { value: new THREE.Color(stormy ? 0x24344c : 0x2483b8) },
+          horizonColor: { value: new THREE.Color(stormy ? 0x4c5d75 : 0x9be0fc) },
+          groundColor: { value: new THREE.Color(stormy ? 0x151e30 : 0xdbeafe) },
+          sunDir: { value: skySunDir },
+          sunGlowColor: { value: new THREE.Color(stormy ? 0x94a3b8 : 0xfff3c4) },
+          sunGlowStrength: { value: stormy ? 0.1 : clamp(1 - cloudCover / 115, 0.12, 0.42) },
           offset: { value: 6.0 },
-          exponent: { value: stormy ? 0.72 : 0.48 }
+          exponent: { value: stormy ? 0.72 : 0.48 },
+          uTime: { value: reduceMotion ? 3.6 : 0.0 },
+          uStormy: { value: stormy ? 1.0 : 0.0 },
+          uCloudCover: { value: clamp(cloudCover / 100, 0, 1) },
+          uLightningGlow: { value: 0.0 },
+          uHighContrast: { value: initialHC ? 1.0 : 0.0 }
         };
+        var skyMat = hasShaderMaterial ? new THREE.ShaderMaterial({
+          uniforms: skyUniforms,
+          vertexShader: 'varying vec3 vWorldPosition; void main(){ vec4 worldPosition = modelMatrix * vec4(position, 1.0); vWorldPosition = worldPosition.xyz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+          fragmentShader: [
+            'uniform vec3 topColor; uniform vec3 midColor; uniform vec3 horizonColor; uniform vec3 groundColor;',
+            'uniform vec3 sunDir; uniform vec3 sunGlowColor; uniform float sunGlowStrength; uniform float offset; uniform float exponent;',
+            'uniform float uTime; uniform float uStormy; uniform float uCloudCover; uniform float uLightningGlow; uniform float uHighContrast;',
+            'varying vec3 vWorldPosition;',
+            WEATHER_NOISE_GLSL,
+            'void main(){',
+            '  vec3 dir = normalize(vWorldPosition);',
+            '  float h = normalize(vWorldPosition + vec3(0.0, offset, 0.0)).y;',
+            '  float skyMix = pow(max(h, 0.0), exponent);',
+            '  vec3 lowerSky = mix(horizonColor, midColor, smoothstep(0.0, 0.45, skyMix));',
+            '  vec3 upper = mix(lowerSky, topColor, smoothstep(0.35, 1.0, skyMix));',
+            '  if (uHighContrast < 0.5) {',
+            '    float sunDot = max(dot(dir, normalize(sunDir)), 0.0);',
+            '    upper += sunGlowColor * (pow(sunDot, 12.0) * 0.65 + pow(sunDot, 3.0) * 0.25) * sunGlowStrength * smoothstep(-0.08, 0.16, h);',
+            '    vec2 skyUv = dir.xz / (max(dir.y, 0.12) + 0.28);',
+            '    float cirrus = wFbm(skyUv * 1.45 + vec2(uTime * 0.022, -uTime * 0.011));',
+            '    float veil = smoothstep(0.46, 0.84, cirrus) * smoothstep(0.06, 0.34, h) * smoothstep(0.95, 0.45, h);',
+            '    vec3 veilColor = mix(vec3(0.86, 0.94, 1.0), vec3(0.42, 0.50, 0.64), uStormy);',
+            '    upper = mix(upper, veilColor, veil * (0.14 + uCloudCover * 0.22));',
+            '    float horizonHaze = exp(-max(h, 0.0) * 7.5) * (0.18 + 0.14 * uStormy);',
+            '    upper += mix(vec3(0.55, 0.80, 0.96), vec3(0.28, 0.36, 0.48), uStormy) * horizonHaze * 0.32;',
+            '    if (uLightningGlow > 0.005) {',
+            '      float flashPatch = smoothstep(0.35, 0.85, wFbm(skyUv * 2.1 - vec2(uTime * 0.04, 0.0)));',
+            '      upper += vec3(0.68, 0.82, 1.0) * uLightningGlow * (0.18 + 0.34 * flashPatch) * smoothstep(0.02, 0.38, h);',
+            '    }',
+            '  }',
+            '  vec3 finalColor = mix(groundColor, upper, smoothstep(-0.18, 0.08, h));',
+            '  gl_FragColor = vec4(finalColor, 1.0);',
+            '}'
+          ].join('\n'),
+          side: THREE.BackSide,
+          depthWrite: false,
+          fog: false
+        }) : new THREE.MeshBasicMaterial({ color: stormy ? 0x1e293b : 0x0c4a6e, side: THREE.BackSide, depthWrite: false, fog: false });
+        if (hasShaderMaterial) weatherShaderMats.push(skyMat);
         var sky = new THREE.Mesh(
           new THREE.SphereGeometry(92, quality === 'performance' ? 20 : 36, quality === 'performance' ? 12 : 20),
-          new THREE.ShaderMaterial({
-            uniforms: skyUniforms,
-            vertexShader: 'varying vec3 vWorldPosition; void main(){ vec4 worldPosition = modelMatrix * vec4(position, 1.0); vWorldPosition = worldPosition.xyz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-            fragmentShader: 'uniform vec3 topColor; uniform vec3 horizonColor; uniform vec3 groundColor; uniform float offset; uniform float exponent; varying vec3 vWorldPosition; void main(){ float h = normalize(vWorldPosition + vec3(0.0, offset, 0.0)).y; float skyMix = pow(max(h, 0.0), exponent); vec3 upper = mix(horizonColor, topColor, skyMix); vec3 finalColor = mix(groundColor, upper, smoothstep(-0.18, 0.08, h)); gl_FragColor = vec4(finalColor, 1.0); }',
-            side: THREE.BackSide,
-            depthWrite: false,
-            fog: false
-          })
+          skyMat
         );
         scene.add(sky);
 
@@ -8209,17 +8390,115 @@ var geographyGroup = new THREE.Group();
         }
         scene.add(airMassGroup);
         var frontColor = frontType === 'warm' ? 0xef4444 : frontType === 'occluded' ? 0xa855f7 : frontType === 'outflow' ? 0x14b8a6 : 0x38bdf8;
-        var frontEdgeColor = frontType === 'warm' ? 0xfca5a5 : frontType === 'occluded' ? 0xd8b4fe : frontType === 'outflow' ? 0x99f6e4 : 0x7dd3fc;
-        var frontMat = new THREE.MeshPhongMaterial({ color: frontColor, emissive: frontColor, emissiveIntensity: 0.18, transparent: true, opacity: hasFrontalBoundary ? 0.34 : 0.08, side: THREE.DoubleSide, depthWrite: false });
+        var frontEdgeColor = frontType === 'warm' ? 0xfecaca : frontType === 'occluded' ? 0xe9d5ff : frontType === 'outflow' ? 0x99f6e4 : 0xbae6fd;
+        var frontWarmTint = frontType === 'warm' ? 0xfb923c : frontType === 'occluded' ? 0xe879f9 : frontType === 'outflow' ? 0x5eead4 : 0x7dd3fc;
+        var frontColdTint = frontType === 'warm' ? 0xf43f5e : frontType === 'occluded' ? 0x6366f1 : frontType === 'outflow' ? 0x0d9488 : 0x0284c7;
+        var frontMat = hasShaderMaterial ? new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: reduceMotion ? 3.6 : 0.0 },
+            uBaseColor: { value: new THREE.Color(frontColor) },
+            uWarmColor: { value: new THREE.Color(frontWarmTint) },
+            uColdColor: { value: new THREE.Color(frontColdTint) },
+            uEdgeColor: { value: new THREE.Color(frontEdgeColor) },
+            uSpeed: { value: clamp(0.45 + state.frontSpeed / 36, 0.35, 2.2) },
+            uOpacity: { value: hasFrontalBoundary ? 0.56 : 0.08 },
+            uHighContrast: { value: initialHC ? 1.0 : 0.0 }
+          },
+          vertexShader: [
+            'varying vec2 vUv; varying vec3 vWorldPos; varying vec3 vWorldNormal;',
+            'void main(){',
+            '  vUv = uv;',
+            '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+            '  vWorldPos = wp.xyz;',
+            '  vWorldNormal = normalize(mat3(modelMatrix) * normal);',
+            '  gl_Position = projectionMatrix * viewMatrix * wp;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime; uniform vec3 uBaseColor; uniform vec3 uWarmColor; uniform vec3 uColdColor; uniform vec3 uEdgeColor;',
+            'uniform float uSpeed; uniform float uOpacity; uniform float uHighContrast;',
+            'varying vec2 vUv; varying vec3 vWorldPos; varying vec3 vWorldNormal;',
+            WEATHER_NOISE_GLSL,
+            'void main(){',
+            '  if (uHighContrast > 0.5) {',
+            '    gl_FragColor = vec4(uBaseColor, uOpacity * 0.72);',
+            '    return;',
+            '  }',
+            '  vec3 viewDir = normalize(cameraPosition - vWorldPos);',
+            '  float fresnel = pow(1.0 - abs(dot(normalize(vWorldNormal), viewDir)), 1.9);',
+            '  float flow = vUv.x * 5.0 - uTime * uSpeed * 0.75;',
+            '  float shear = wFbm(vec2(vUv.x * 4.5 - uTime * uSpeed * 0.38, vUv.y * 5.2 + sin(vUv.x * 3.14159) * 0.6));',
+            '  float strata = 0.5 + 0.5 * sin(flow * 4.2 + shear * 4.5);',
+            '  float noseGlow = exp(-vUv.x * 5.5) * 0.72;',
+            '  float sideFade = smoothstep(0.0, 0.07, vUv.y) * smoothstep(1.0, 0.93, vUv.y);',
+            '  float topFade = smoothstep(1.0, 0.86, vUv.x);',
+            '  vec3 thermal = mix(uColdColor, uWarmColor, clamp(vUv.x * 0.85 + shear * 0.35, 0.0, 1.0));',
+            '  thermal = mix(thermal, uBaseColor, 0.35);',
+            '  thermal += uEdgeColor * (fresnel * 0.55 + noseGlow * 0.65 + pow(strata, 3.0) * 0.28);',
+            '  float alpha = uOpacity * sideFade * (0.42 + 0.42 * strata + 0.35 * fresnel + noseGlow * 0.45) * (0.35 + 0.65 * topFade);',
+            '  gl_FragColor = vec4(thermal, clamp(alpha, 0.0, 0.86));',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        }) : new THREE.MeshPhongMaterial({ color: frontColor, emissive: frontColor, emissiveIntensity: 0.28, transparent: true, opacity: hasFrontalBoundary ? 0.38 : 0.08, side: THREE.DoubleSide, depthWrite: false });
+        if (hasShaderMaterial) weatherShaderMats.push(frontMat);
         var frontPlane = new THREE.Group();
         frontPlane.name = 'Front boundary';
         frontPlane.userData.weatherFeatureId = 'frontBoundary';
         frontPlane.position.y = -0.8;
         frontProfile.faces.forEach(function (segment) {
           var face = boundaryFace(segment[0], segment[1], segment[2], segment[3], frontMat);
-          face.add(new THREE.LineSegments(new THREE.EdgesGeometry(face.geometry), new THREE.LineBasicMaterial({ color: frontEdgeColor, transparent: true, opacity: hasFrontalBoundary ? 0.78 : 0.2 })));
+          face.add(new THREE.LineSegments(new THREE.EdgesGeometry(face.geometry), new THREE.LineBasicMaterial({ color: frontEdgeColor, transparent: true, opacity: hasFrontalBoundary ? 0.9 : 0.2 })));
           frontPlane.add(face);
         });
+        // Luminous ground-hugging baroclinic thermal seam ribbon along the front interface.
+        if (hasFrontalBoundary && hasShaderMaterial) {
+          var seamGeo = new THREE.PlaneGeometry(2.6, MASS_DEPTH, 6, 36);
+          var seamPos = seamGeo.attributes.position;
+          var seamGroundX = frontType === 'outflow' ? frontX + 3 : frontX;
+          for (var sv = 0; sv < seamPos.count; sv += 1) {
+            var slx = seamPos.getX(sv);
+            var sly = seamPos.getY(sv);
+            var swx = seamGroundX + slx;
+            var swz = -sly;
+            seamPos.setZ(sv, groundHeightAt(swx, swz) + 0.8 + 0.06);
+          }
+          seamPos.needsUpdate = true;
+          var seamMat = new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: { value: reduceMotion ? 3.6 : 0.0 },
+              uColor: { value: new THREE.Color(frontColor) },
+              uGlow: { value: new THREE.Color(frontEdgeColor) },
+              uSpeed: { value: clamp(0.5 + state.frontSpeed / 40, 0.4, 2.0) }
+            },
+            vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+            fragmentShader: [
+              'uniform float uTime; uniform vec3 uColor; uniform vec3 uGlow; uniform float uSpeed; varying vec2 vUv;',
+              'void main(){',
+              '  float across = exp(-pow((vUv.x - 0.5) * 3.8, 2.0));',
+              '  float pulse = 0.65 + 0.35 * sin(vUv.y * 22.0 - uTime * uSpeed * 2.4);',
+              '  float ends = smoothstep(0.0, 0.1, vUv.y) * smoothstep(1.0, 0.9, vUv.y);',
+              '  vec3 col = mix(uColor, uGlow, across * pulse * 0.72);',
+              '  gl_FragColor = vec4(col, across * ends * (0.28 + 0.24 * pulse));',
+              '}'
+            ].join('\n'),
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide
+          });
+          weatherShaderMats.push(seamMat);
+          var seamRibbon = new THREE.Mesh(seamGeo, seamMat);
+          seamRibbon.rotation.x = -Math.PI / 2;
+          seamRibbon.position.set(seamGroundX, 0, 0);
+          seamRibbon.renderOrder = 3;
+          seamRibbon.visible = !initialHC;
+          seamRibbon.raycast = weatherNoRaycast;
+          frontPlane.add(seamRibbon);
+          weatherDecorativeMeshes.push(seamRibbon);
+        }
         // Where a ground tag reads best from the starting camera: on screen in the middle band
         // (the overlay rows hold the top and bottom), farthest from the station labels and
         // from tags already placed.
@@ -8376,16 +8655,19 @@ var geographyGroup = new THREE.Group();
             addPuff(cluster, (puffT - 0.5) * (layered ? 4.6 : 3.2) + (sceneNoise(cloudIndex + puff * 1.3) - 0.5) * 0.8, (sceneNoise(puff * 2.1 + cloudIndex) - 0.5) * 0.5, (puff % 2) * 0.7 - 0.35, layered ? 2.6 : 2.1 + sceneNoise(puff * 4.1) * 0.6, layered ? 0.85 : 0.35 + puffT * 0.4, layered ? 0.62 : 0.82);
           }
           if (tower) {
-            // A convective tower: puffs stacked to a height set by instability, capped by a
-            // wide, thin anvil once the updraft is strong enough to spread out aloft.
+            // A convective tower: brooding dark rain base, puffs stacked to a height set by
+            // instability, capped by an illuminated wide storm-anvil canopy once updrafts spread aloft.
+            addPuff(cluster, 0, -0.45, 0.15, 2.7, 0.08, 0.74);
             var towerHeight = 1.6 + convective * 3.4;
             for (var level = 1; level <= 3; level += 1) {
               var levelT = level / 3;
-              addPuff(cluster, (sceneNoise(level * 5.7 + cloudIndex) - 0.5) * 0.9, levelT * towerHeight, 0, 2.2 - levelT * 0.6, 0.45 + levelT * 0.5, 0.86);
+              addPuff(cluster, (sceneNoise(level * 5.7 + cloudIndex) - 0.5) * 0.9, levelT * towerHeight, 0, 2.25 - levelT * 0.55, 0.48 + levelT * 0.5, 0.88);
             }
             if (convective > 0.6) {
-              var anvil = addPuff(cluster, 1.2, towerHeight + 0.9, 0, 2.4, 0.95, 0.5);
-              anvil.scale.set(7.5, 1.4, 1);
+              var anvil = addPuff(cluster, 1.2, towerHeight + 0.85, 0, 2.5, 0.92, 0.56);
+              anvil.scale.set(7.8, 1.45, 1);
+              var anvilCrown = addPuff(cluster, 0.8, towerHeight + 1.25, -0.1, 2.1, 1.0, 0.48);
+              anvilCrown.scale.set(5.4, 0.95, 1);
             }
           }
           if (layered && along > 0.62) {
@@ -8399,6 +8681,79 @@ var geographyGroup = new THREE.Group();
           cluster.userData.bandMin = cloudBand.min - 1.5;
           cluster.userData.bandMax = cloudBand.max + 1.5;
           cloudGroup.add(cluster);
+        }
+        // GLSL Cyclonic Cloud-Vortex & FBM Storm-Band Canopy riding over the active cloud deck.
+        var cyclonicVortexMat = null;
+        if (hasShaderMaterial && cloudCover >= 15) {
+          var vortexW = Math.max(14, bandSpan + 9);
+          var vortexD = 22;
+          var vortexGeo = new THREE.PlaneGeometry(vortexW, vortexD, quality === 'performance' ? 14 : 26, quality === 'performance' ? 10 : 18);
+          var vPos = vortexGeo.attributes.position;
+          for (var vi = 0; vi < vPos.count; vi += 1) {
+            var vxn = vPos.getX(vi) / (vortexW * 0.5);
+            var vyn = vPos.getY(vi) / (vortexD * 0.5);
+            var domeLift = Math.max(0, 1 - (vxn * vxn * 0.65 + vyn * vyn * 0.65)) * (stormy ? 1.35 : 0.55);
+            vPos.setZ(vi, domeLift);
+          }
+          vPos.needsUpdate = true;
+          var swirlIntensity = clamp((1018 - pressure) / 24, 0, 1) * (stormy ? 1.0 : 0.45) + (frontType === 'occluded' ? 0.45 : 0);
+          cyclonicVortexMat = new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: { value: reduceMotion ? 3.6 : 0.0 },
+              uSwirl: { value: clamp(swirlIntensity, 0.12, 1.35) },
+              uWindVec: { value: new THREE.Vector2(Math.cos(flowRadians), Math.sin(flowRadians)) },
+              uWindSpeed: { value: clamp(0.25 + windSpeed / 42, 0.25, 2.2) },
+              uCoverage: { value: clamp(cloudCover / 100, 0.18, 1.0) },
+              uStormy: { value: stormy ? 1.0 : 0.0 },
+              uLightning: { value: 0.0 },
+              uLowColor: { value: new THREE.Color(stormy ? 0x334155 : 0xcbd5e1) },
+              uHighColor: { value: new THREE.Color(stormy ? 0xdbeafe : 0xfffbeb) }
+            },
+            vertexShader: 'varying vec2 vUv; varying vec3 vWorldPos; void main(){ vUv = uv; vec4 wp = modelMatrix * vec4(position, 1.0); vWorldPos = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }',
+            fragmentShader: [
+              'uniform float uTime; uniform float uSwirl; uniform vec2 uWindVec; uniform float uWindSpeed;',
+              'uniform float uCoverage; uniform float uStormy; uniform float uLightning; uniform vec3 uLowColor; uniform vec3 uHighColor;',
+              'varying vec2 vUv; varying vec3 vWorldPos;',
+              WEATHER_NOISE_GLSL,
+              'void main(){',
+              '  vec2 p = (vUv - 0.5) * 2.0;',
+              '  float r = length(p * vec2(0.92, 1.05));',
+              '  float edgeFade = smoothstep(1.04, 0.48, r);',
+              '  if (edgeFade <= 0.002) discard;',
+              '  float theta = atan(p.y, p.x);',
+              '  float swirlAng = uSwirl * 2.45 * exp(-r * 1.45) + uTime * (0.14 + uSwirl * 0.22);',
+              '  float cs = cos(swirlAng); float sn = sin(swirlAng);',
+              '  vec2 sp = mat2(cs, -sn, sn, cs) * p;',
+              '  vec2 advect = uWindVec * uTime * uWindSpeed * 0.16;',
+              '  float band1 = wFbm(sp * vec2(2.6, 3.4) - advect);',
+              '  float band2 = wFbm(sp * vec2(5.2, 4.6) + vec2(band1 * 1.35, -band1 * 1.1) - advect * 1.4);',
+              '  float spiralArm = 0.5 + 0.5 * sin(theta * 2.0 - r * (4.8 + uSwirl * 3.5) + uTime * 0.45 + band1 * 3.2);',
+              '  float density = mix(band2, band2 * 0.72 + spiralArm * 0.36, clamp(uSwirl * 0.85, 0.0, 0.9));',
+              '  float thresh = mix(0.56, 0.28, uCoverage);',
+              '  float cloudMask = smoothstep(thresh, thresh + 0.34, density) * edgeFade;',
+              '  float silverRim = smoothstep(0.45, 0.88, band1) * (1.0 - 0.35 * uStormy);',
+              '  vec3 col = mix(uLowColor, uHighColor, clamp(0.28 + silverRim * 0.72 + (1.0 - r) * 0.18, 0.0, 1.0));',
+              '  if (uLightning > 0.005) {',
+              '    float coreBolt = exp(-r * r * 5.5) * smoothstep(0.32, 0.82, band2);',
+              '    col += vec3(0.76, 0.89, 1.0) * uLightning * (0.45 + 1.15 * coreBolt);',
+              '  }',
+              '  float alpha = cloudMask * (0.28 + 0.36 * uCoverage + 0.14 * uStormy);',
+              '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.72));',
+              '}'
+            ].join('\n'),
+            transparent: true,
+            depthWrite: false,
+            side: THREE.DoubleSide
+          });
+          weatherShaderMats.push(cyclonicVortexMat);
+          var vortexMesh = new THREE.Mesh(vortexGeo, cyclonicVortexMat);
+          vortexMesh.rotation.x = -Math.PI / 2;
+          vortexMesh.position.set(cloudBand.min + bandSpan * 0.5, cloudBand.base + cloudBand.rise * 0.42 + 1.65, 0);
+          vortexMesh.renderOrder = 4;
+          vortexMesh.visible = !initialHC;
+          vortexMesh.raycast = weatherNoRaycast;
+          cloudGroup.add(vortexMesh);
+          weatherDecorativeMeshes.push(vortexMesh);
         }
         scene.add(cloudGroup);
 
@@ -8439,27 +8794,38 @@ var geographyGroup = new THREE.Group();
           });
           var cellsByType = { snow: [], mixed: [], rain: [] };
           precipCellTypes.forEach(function (type, index) { cellsByType[type].push(index); });
-          var softTexture = makeSoftTexture(64, [[0, 'rgba(255,255,255,1)'], [0.5, 'rgba(255,255,255,0.7)'], [1, 'rgba(255,255,255,0)']]);
-          // Rain reads as streaks; bare 0.075-unit points read as static.
+          var softTexture = makeSoftTexture(64, [[0, 'rgba(255,255,255,1)'], [0.35, 'rgba(248,252,255,0.88)'], [0.7, 'rgba(224,242,254,0.34)'], [1, 'rgba(255,255,255,0)']]);
+          // Tapered glossy rain streaks with bright leading droplet heads; bare points read as static.
           var streakTexture = null;
           var streakCanvas = document.createElement('canvas');
           streakCanvas.width = 32; streakCanvas.height = 64;
           var streak = streakCanvas.getContext('2d');
           if (streak) {
             var streakGradient = streak.createLinearGradient(0, 0, 0, 64);
-            streakGradient.addColorStop(0, 'rgba(255,255,255,0)'); streakGradient.addColorStop(0.35, 'rgba(255,255,255,0.9)'); streakGradient.addColorStop(1, 'rgba(255,255,255,0)');
-            streak.fillStyle = streakGradient; streak.fillRect(13, 0, 6, 64);
+            streakGradient.addColorStop(0, 'rgba(186,230,253,0)');
+            streakGradient.addColorStop(0.28, 'rgba(186,230,253,0.48)');
+            streakGradient.addColorStop(0.76, 'rgba(224,242,254,0.95)');
+            streakGradient.addColorStop(0.92, 'rgba(255,255,255,1)');
+            streakGradient.addColorStop(1, 'rgba(255,255,255,0)');
+            streak.fillStyle = streakGradient;
+            streak.beginPath();
+            streak.moveTo(16, 2);
+            streak.lineTo(18.5, 52);
+            streak.arc(16, 54, 2.5, 0, Math.PI);
+            streak.lineTo(13.5, 52);
+            streak.closePath();
+            streak.fill();
             streakTexture = new THREE.CanvasTexture(streakCanvas);
             streakTexture.center.set(0.5, 0.5);
             streakTexture.rotation = clamp(Math.cos(flowRadians) * windSpeed * 0.01, -0.5, 0.5);
             textureCache.push(streakTexture);
           }
           // Snow drifts as soft flakes, mixed falls as small lavender pellets (the 2D map's
-          // mixed colour) faster than flakes, rain as fast streaks.
+          // mixed colour) faster than flakes, rain as sleek luminous streaks.
           var precipLook = {
-            snow: { color: 0xf8fafc, size: 0.34, opacity: 0.9, fall: 1.4, map: softTexture },
-            mixed: { color: 0xc4b5fd, size: 0.24, opacity: 0.95, fall: 4.2, map: softTexture },
-            rain: { color: 0xbae6fd, size: 0.7, opacity: 0.6, fall: 7.5, map: streakTexture }
+            snow: { color: 0xf8fafc, size: 0.36, opacity: 0.92, fall: 1.4, map: softTexture },
+            mixed: { color: 0xc4b5fd, size: 0.25, opacity: 0.95, fall: 4.2, map: softTexture },
+            rain: { color: 0xd0f0ff, size: 0.76, opacity: 0.68, fall: 7.5, map: streakTexture }
           };
           var presentTypes = ['snow', 'mixed', 'rain'].filter(function (type) { return cellsByType[type].length > 0; });
           var given = 0;
@@ -8493,6 +8859,61 @@ var geographyGroup = new THREE.Group();
             points.userData = { precipType: type, fall: look.fall, cells: cells, respawn: 0 };
             precipitationPoints.add(points);
           });
+          // GPU-driven rain/snow streak curtain planes (volumetric virga shafts under the cloud band).
+          if (hasShaderMaterial) {
+            var snowShare = particleCount > 0 ? clamp((precipMix.snow + precipMix.mixed * 0.45) / particleCount, 0, 1) : (snowing ? 1 : 0);
+            var curtainSlant = clamp(Math.cos(flowRadians) * windSpeed * 0.016, -0.55, 0.55);
+            var curtainIntensity = clamp(0.35 + precipitation * 0.14 + (thundery ? 0.25 : 0), 0.32, 0.95);
+            var curtainMat = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: reduceMotion ? 3.6 : 0.0 },
+                uSlant: { value: curtainSlant },
+                uSnowMix: { value: snowShare },
+                uIntensity: { value: curtainIntensity },
+                uLightning: { value: 0.0 },
+                uRainColor: { value: new THREE.Color(0xbae6fd) },
+                uSnowColor: { value: new THREE.Color(0xf1f5f9) }
+              },
+              vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+              fragmentShader: [
+                'uniform float uTime; uniform float uSlant; uniform float uSnowMix; uniform float uIntensity; uniform float uLightning;',
+                'uniform vec3 uRainColor; uniform vec3 uSnowColor; varying vec2 vUv;',
+                WEATHER_NOISE_GLSL,
+                'void main(){',
+                '  float vertFade = smoothstep(0.0, 0.14, vUv.y) * smoothstep(1.0, 0.78, vUv.y);',
+                '  float sideFade = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x);',
+                '  vec2 rUv = vec2(vUv.x * 26.0 + vUv.y * uSlant * 14.0, vUv.y * 4.5 + uTime * 3.4);',
+                '  float rainCol = wNoise(vec2(floor(rUv.x), floor(rUv.y * 0.5)));',
+                '  float rainStreak = smoothstep(0.42, 0.92, fract(rUv.x)) * smoothstep(0.96, 0.72, fract(rUv.x)) * smoothstep(0.28, 0.92, wNoise(rUv * vec2(1.0, 2.2)));',
+                '  float rainShaft = smoothstep(0.34, 0.82, wFbm(vec2(vUv.x * 4.2 + vUv.y * uSlant * 1.4, vUv.y * 1.8 + uTime * 0.55)));',
+                '  float rainVal = rainStreak * (0.45 + 0.55 * rainCol) * 0.78 + rainShaft * 0.28;',
+                '  vec2 sUv = vec2(vUv.x * 16.0 + sin(vUv.y * 5.0 + uTime * 1.1) * 0.6 + uTime * uSlant * 0.45, vUv.y * 7.5 + uTime * 0.85);',
+                '  float flakeField = smoothstep(0.56, 0.94, wNoise(sUv * 2.2)) * 0.75 + smoothstep(0.45, 0.85, wFbm(sUv * 0.65)) * 0.38;',
+                '  float precip = mix(rainVal, flakeField, uSnowMix);',
+                '  vec3 col = mix(uRainColor, uSnowColor, uSnowMix);',
+                '  col += vec3(0.75, 0.90, 1.0) * uLightning * 0.48;',
+                '  float alpha = precip * vertFade * sideFade * uIntensity * 0.46;',
+                '  if (alpha < 0.008) discard;',
+                '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.62));',
+                '}'
+              ].join('\n'),
+              transparent: true,
+              depthWrite: false,
+              side: THREE.DoubleSide
+            });
+            weatherShaderMats.push(curtainMat);
+            var curtainOffsets = quality === 'performance' ? [-3.5, 3.5] : [-6.2, 0.0, 6.2];
+            var curtainCenterX = precipMin + precipSpan * 0.5;
+            curtainOffsets.forEach(function (cz) {
+              var curtainMesh = new THREE.Mesh(new THREE.PlaneGeometry(Math.max(4, precipSpan), 7.2, 1, 1), curtainMat);
+              curtainMesh.position.set(curtainCenterX, 3.1, cz);
+              curtainMesh.renderOrder = 3;
+              curtainMesh.visible = !initialHC;
+              curtainMesh.raycast = weatherNoRaycast;
+              precipitationPoints.add(curtainMesh);
+              weatherDecorativeMeshes.push(curtainMesh);
+            });
+          }
           // The rain/snow line: where the same analysis crosses the thresholds, drawn on the
           // ground and named. A child of the precipitation group, so it shows, hides and
           // explains with the precipitation it bounds.
@@ -8561,11 +8982,112 @@ var geographyGroup = new THREE.Group();
           var behindFront = hasFrontalBoundary && arrowX < frontX;
           var arrowWind = behindFront ? windBehind : windAhead;
           var arrowFlow = (arrowWind.dir + 90) * Math.PI / 180;
-          var arrow = makeArrowMesh(1.6 + arrowWind.speed * 0.05, behindFront ? 0x38bdf8 : 0x67e8f9, 0.82);
+          var arrow = makeArrowMesh(1.65 + arrowWind.speed * 0.052, behindFront ? 0x38bdf8 : 0xa5f3fc, 0.9);
           arrow.position.set(arrowX, 1.1 + (arrowIndex % 3) * 1.15, arrowZ);
           arrow.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), new THREE.Vector3(Math.cos(arrowFlow), 0.06, Math.sin(arrowFlow)).normalize());
           arrow.userData.speed = arrowWind.speed;
           windGroup.add(arrow);
+        }
+        // Smooth GLSL jet-stream & atmospheric wind-flow advection ribbons.
+        if (hasShaderMaterial) {
+          var ribbonCount = quality === 'performance' ? 4 : 6;
+          var behindFlowRad = (windBehind.dir + 90) * Math.PI / 180;
+          var aheadFlowRad = (windAhead.dir + 90) * Math.PI / 180;
+          var buildAdvectionRibbonGeo = function (curve, segs, halfW) {
+            var pts = curve.getPoints(segs);
+            var posArr = new Float32Array((segs + 1) * 2 * 3);
+            var uvArr = new Float32Array((segs + 1) * 2 * 2);
+            var idxArr = [];
+            var upVec = new THREE.Vector3(0, 1, 0);
+            var tangent = new THREE.Vector3();
+            var sideVec = new THREE.Vector3();
+            for (var si = 0; si <= segs; si += 1) {
+              var p0 = pts[Math.max(0, si - 1)];
+              var p1 = pts[Math.min(segs, si + 1)];
+              tangent.subVectors(p1, p0).normalize();
+              sideVec.crossVectors(tangent, upVec);
+              if (sideVec.lengthSq() < 1e-4) sideVec.set(0, 0, 1);
+              sideVec.normalize();
+              var pt = pts[si];
+              var uFrac = si / segs;
+              var taper = Math.sin(uFrac * Math.PI);
+              var wHere = halfW * (0.45 + 0.55 * taper);
+              var vi0 = si * 6;
+              posArr[vi0] = pt.x - sideVec.x * wHere;
+              posArr[vi0 + 1] = pt.y - sideVec.y * wHere;
+              posArr[vi0 + 2] = pt.z - sideVec.z * wHere;
+              posArr[vi0 + 3] = pt.x + sideVec.x * wHere;
+              posArr[vi0 + 4] = pt.y + sideVec.y * wHere;
+              posArr[vi0 + 5] = pt.z + sideVec.z * wHere;
+              var ui0 = si * 4;
+              uvArr[ui0] = uFrac; uvArr[ui0 + 1] = 0;
+              uvArr[ui0 + 2] = uFrac; uvArr[ui0 + 3] = 1;
+              if (si < segs) {
+                var a = si * 2, b = a + 1, c = a + 2, dIdx = a + 3;
+                idxArr.push(a, b, c, b, dIdx, c);
+              }
+            }
+            var geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+            geo.setAttribute('uv', new THREE.BufferAttribute(uvArr, 2));
+            geo.setIndex(idxArr);
+            return geo;
+          };
+          for (var ri = 0; ri < ribbonCount; ri += 1) {
+            var isJet = ri < Math.ceil(ribbonCount / 2);
+            var lane = (ri / Math.max(1, ribbonCount - 1) - 0.5) * 16;
+            var rPts = [];
+            var steps = 9;
+            var baseAlt = isJet ? (5.9 + (ri % 3) * 0.68) : (1.7 + (ri % 3) * 0.85);
+            for (var sp = 0; sp <= steps; sp += 1) {
+              var frac = sp / steps;
+              var rx = -17 + frac * 34;
+              var behindHere = hasFrontalBoundary && rx < frontX;
+              var dirAng = isJet ? (aheadFlowRad * 0.7 + behindFlowRad * 0.3) : (behindHere ? behindFlowRad : aheadFlowRad);
+              var waveZ = lane + Math.sin(frac * Math.PI * 1.6 + ri * 1.1) * (isJet ? 2.4 : 1.5) + Math.sin(dirAng) * (frac - 0.5) * 5.2;
+              var liftY = hasFrontalBoundary && !isJet ? Math.exp(-Math.pow((rx - frontX) / 4.2, 2)) * 1.45 : Math.sin(frac * Math.PI * 2 + ri) * 0.32;
+              rPts.push(new THREE.Vector3(rx, baseAlt + liftY, clamp(waveZ, -10.5, 10.5)));
+            }
+            var rCurve = new THREE.CatmullRomCurve3(rPts);
+            var rGeo = buildAdvectionRibbonGeo(rCurve, 34, isJet ? 0.36 : 0.26);
+            var rMat = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: reduceMotion ? 2.8 : 0.0 },
+                uSpeed: { value: clamp(0.45 + windSpeed / 28, 0.35, 2.4) * (isJet ? 1.25 : 0.9) },
+                uPhase: { value: ri * 1.37 },
+                uColorA: { value: new THREE.Color(isJet ? 0x38bdf8 : 0x7dd3fc) },
+                uColorB: { value: new THREE.Color(isJet ? 0xe0f2fe : 0x22d3ee) },
+                uOpacity: { value: isJet ? 0.54 : 0.44 }
+              },
+              vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+              fragmentShader: [
+                'uniform float uTime; uniform float uSpeed; uniform float uPhase;',
+                'uniform vec3 uColorA; uniform vec3 uColorB; uniform float uOpacity; varying vec2 vUv;',
+                'void main(){',
+                '  float edge = exp(-pow((vUv.y - 0.5) * 3.1, 2.0));',
+                '  float ends = smoothstep(0.0, 0.14, vUv.x) * smoothstep(1.0, 0.86, vUv.x);',
+                '  float stream1 = fract(vUv.x * 2.2 - uTime * uSpeed * 0.36 + uPhase);',
+                '  float pulse1 = smoothstep(0.15, 0.88, stream1) * smoothstep(1.0, 0.88, stream1);',
+                '  float stream2 = fract(vUv.x * 3.6 - uTime * uSpeed * 0.52 + uPhase * 0.6 + 0.5);',
+                '  float pulse2 = smoothstep(0.25, 0.90, stream2) * smoothstep(1.0, 0.90, stream2);',
+                '  float glow = 0.24 + pulse1 * 0.72 + pulse2 * 0.44;',
+                '  vec3 col = mix(uColorA, uColorB, clamp(pulse1 * 0.8 + edge * 0.35, 0.0, 1.0));',
+                '  gl_FragColor = vec4(col, clamp(edge * ends * glow * uOpacity, 0.0, 0.82));',
+                '}'
+              ].join('\n'),
+              transparent: true,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending,
+              side: THREE.DoubleSide
+            });
+            weatherShaderMats.push(rMat);
+            var rMesh = new THREE.Mesh(rGeo, rMat);
+            rMesh.renderOrder = 4;
+            rMesh.visible = !initialHC;
+            rMesh.raycast = weatherNoRaycast;
+            windGroup.add(rMesh);
+            weatherDecorativeMeshes.push(rMesh);
+          }
         }
         scene.add(windGroup);
 
@@ -9035,6 +9557,11 @@ var geographyGroup = new THREE.Group();
         renderer.setAnimationLoop(function () {
           var delta = Math.min(0.05, clock.getDelta());
           var sceneSeconds = clock.elapsedTime;
+          var hcNow = weatherIsHighContrast();
+          for (var dm = 0; dm < weatherDecorativeMeshes.length; dm += 1) {
+            weatherDecorativeMeshes[dm].visible = !hcNow;
+          }
+          var intraCloudGlow = 0;
           if (!reduceMotion) {
             // Arrival rings expand and fade, three times, then stay gone.
             for (var ap = 0; ap < arrivalPulses.length; ap += 1) {
@@ -9089,14 +9616,33 @@ var geographyGroup = new THREE.Group();
               if (sceneSeconds >= nextFlashAt) {
                 flashUntil = sceneSeconds + 0.22;
                 nextFlashAt = sceneSeconds + 4 + sceneNoise(sceneSeconds) * 4;
-                lightning.bolt.visible = true;
+                lightning.bolt.visible = !hcNow;
               }
               if (flashUntil > 0) {
                 var flashLeft = flashUntil - sceneSeconds;
                 if (flashLeft <= 0) { flashUntil = 0; lightning.bolt.visible = false; lightning.light.intensity = 0; }
-                else { lightning.light.intensity = 2.6 * Math.min(1, flashLeft / 0.14); lightning.bolt.visible = flashLeft > 0.06; }
+                else {
+                  var flashEnv = Math.min(1, flashLeft / 0.14);
+                  lightning.light.intensity = hcNow ? 0 : 2.6 * flashEnv;
+                  lightning.bolt.visible = !hcNow && flashLeft > 0.06;
+                  intraCloudGlow = Math.max(intraCloudGlow, flashEnv);
+                }
               }
             }
+            if (thundery && !hcNow) {
+              // Gentle sub-3Hz-safe intra-cloud sheet luminescence (~0.07 Hz smooth wave).
+              var slowRumble = Math.pow(Math.max(0, Math.sin(sceneSeconds * 0.44 + 0.7)), 10);
+              intraCloudGlow = clamp(Math.max(intraCloudGlow, slowRumble * 0.42), 0, 1);
+            }
+          }
+          var shaderTime = reduceMotion ? 3.6 : sceneSeconds;
+          for (var sm = 0; sm < weatherShaderMats.length; sm += 1) {
+            var u = weatherShaderMats[sm].uniforms;
+            if (!u) continue;
+            if (u.uTime) u.uTime.value = shaderTime;
+            if (u.uHighContrast) u.uHighContrast.value = hcNow ? 1.0 : 0.0;
+            if (u.uLightning) u.uLightning.value = hcNow ? 0.0 : intraCloudGlow;
+            if (u.uLightningGlow) u.uLightningGlow.value = hcNow ? 0.0 : intraCloudGlow;
           }
           var runtime = immersiveRuntimeRef.current;
           var transition = runtime && runtime.cameraTransition;
@@ -9871,30 +10417,67 @@ var geographyGroup = new THREE.Group();
           { id: 'forecast', label: 'Forecast Mission', icon: '\uD83D\uDCE1' },
           { id: 'teacher', label: 'Teacher Guide', icon: '\uD83C\uDF93' }
         ];
-        return h('div', { className: 'border-b ' + (dark ? 'border-slate-800 bg-slate-950/95' : 'border-sky-200 bg-white/95') },
-          h('div', { className: 'flex flex-wrap items-center gap-3 px-4 py-3' },
-            h('button', { type: 'button', onClick: function () { setStemLabTool(null); }, className: buttonClass, 'aria-label': __alloT('stem.weathersystems.a11y_back_to_stem_tools', 'Back to STEM tools') }, '\u2190 Back'),
-            h('div', { className: 'min-w-0 flex-1' },
-              h('div', { className: 'flex flex-wrap items-center gap-2' },
-                h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '\uD83C\uDF26\uFE0F'),
-                h('h2', { className: 'text-lg font-black tracking-tight' }, 'Weather Systems & Forecasting'),
-                h('span', { className: 'rounded-full bg-sky-700 px-2 py-1 text-xs font-black uppercase tracking-wide text-white' }, band)
+        var activeTabId = d.tab || 'map';
+        var hideForecastSpoilers = activeTabId === 'forecast';
+        return h('div', {
+          'data-weather-hero': 'true',
+          className: 'border-b ' + (dark ? 'border-slate-800 bg-slate-950/95' : 'border-sky-200 bg-white/95')
+        },
+          h('div', {
+            className: 'px-4 py-3.5',
+            style: contrast
+              ? { backgroundColor: '#000000', color: '#ffffff', borderBottom: '2px solid #ffff00' }
+              : { backgroundColor: '#0c2340', backgroundImage: 'linear-gradient(125deg, #020617 0%, #0c2d48 54%, #1e3a5f 100%)', color: '#ffffff', borderBottom: '1px solid rgba(125,211,252,0.28)' }
+          },
+            h('div', { className: 'flex flex-wrap items-center gap-3' },
+              h('button', {
+                type: 'button',
+                onClick: function () { setStemLabTool(null); },
+                className: 'min-h-11 rounded-xl border px-3 py-2 text-xs font-black transition-colors focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:outline-none',
+                style: contrast
+                  ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                  : { backgroundColor: 'rgba(255,255,255,0.12)', color: '#ffffff', borderColor: 'rgba(186,230,253,0.35)' },
+                'aria-label': __alloT('stem.weathersystems.a11y_back_to_stem_tools', 'Back to STEM tools')
+              }, '\u2190 Back'),
+              h('svg', { width: 46, height: 46, viewBox: '0 0 48 48', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+                h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: contrast ? '#000000' : '#0b1c33', stroke: contrast ? '#ffff00' : '#56b4e9', strokeWidth: 1.5 }),
+                h('circle', { cx: 24, cy: 24, r: 15, fill: 'none', stroke: contrast ? '#ffffff' : 'rgba(125,211,252,0.4)', strokeWidth: 1.2, strokeDasharray: '3 2' }),
+                h('circle', { cx: 24, cy: 24, r: 9, fill: 'none', stroke: contrast ? '#00ffff' : '#56b4e9', strokeWidth: 1.4 }),
+                h('path', { d: 'M10 31 Q24 18 38 25', fill: 'none', stroke: contrast ? '#ffff00' : '#e69f00', strokeWidth: 2 }),
+                h('line', { x1: 24, y1: 24, x2: 35, y2: 14, stroke: contrast ? '#66ff66' : '#22a568', strokeWidth: 2 }),
+                h('circle', { cx: 24, cy: 24, r: 3, fill: contrast ? '#ffff00' : '#e69f00' })
               ),
-              h('p', { className: 'text-xs ' + mutedClass }, 'Observe patterns, test a model, and defend a forecast with evidence.')
-            ),
-            h('button', {
-              type: 'button',
-              onClick: function () {
-                var snapshots = ctx.toolSnapshots || [];
-                if (ctx.setToolSnapshots) ctx.setToolSnapshots(snapshots.concat([{ id: 'weather-' + Date.now(), tool: 'weatherSystems', label: scenario.name + ' at T+' + state.simHour, data: Object.assign({}, d), timestamp: Date.now() }]));
-                if (addToast) addToast('Weather snapshot saved.', 'success');
-              },
-              className: buttonClass
-            }, '\uD83D\uDCF8 Snapshot')
+              h('div', { className: 'min-w-0 flex-1' },
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('span', { className: 'rounded-full px-2.5 py-0.5 text-[0.625rem] font-black uppercase tracking-wider', style: { backgroundColor: contrast ? '#000000' : '#0369a1', color: contrast ? '#ffff00' : '#e0f2fe', border: '1px solid ' + (contrast ? '#ffff00' : 'rgba(186,230,253,0.4)') } }, __alloT('stem.weathersystems.subject_badge', 'Earth Science · Meteorology')),
+                  h('span', { className: 'rounded-full px-2 py-0.5 text-xs font-black uppercase tracking-wide', style: { backgroundColor: contrast ? '#000000' : '#0f172a', color: '#ffffff', border: '1px solid ' + (contrast ? '#ffffff' : 'rgba(255,255,255,0.28)') } }, band)
+                ),
+                h('h2', { className: 'mt-1 text-lg sm:text-xl font-black tracking-tight text-white' }, 'Weather Systems & Forecasting'),
+                h('p', { className: 'text-xs', style: { color: contrast ? '#ffffff' : '#bae6fd' } }, 'Observe patterns, test a model, and defend a forecast with evidence.')
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-2', style: { minWidth: 0 } },
+                !hideForecastSpoilers && h('span', { className: 'rounded-full px-2.5 py-1 text-xs font-bold tabular-nums', style: { backgroundColor: contrast ? '#000000' : '#0f172a', color: contrast ? '#ffff00' : '#7dd3fc', border: '1px solid ' + (contrast ? '#ffff00' : 'rgba(125,211,252,0.38)') } },
+                  scenario.name + ' · T+' + state.simHour + 'h'),
+                !hideForecastSpoilers && h('span', { className: 'rounded-full px-2.5 py-1 text-xs font-bold tabular-nums', style: { backgroundColor: contrast ? '#000000' : '#0f172a', color: '#ffffff', border: '1px solid ' + (contrast ? '#ffffff' : 'rgba(255,255,255,0.25)') } },
+                  current.temperature + '\u00B0C · ' + current.pressure + ' hPa · ' + cardinal(current.windDir) + ' ' + current.windSpeed + ' km/h'),
+                h('button', {
+                  type: 'button',
+                  onClick: function () {
+                    var snapshots = ctx.toolSnapshots || [];
+                    if (ctx.setToolSnapshots) ctx.setToolSnapshots(snapshots.concat([{ id: 'weather-' + Date.now(), tool: 'weatherSystems', label: scenario.name + ' at T+' + state.simHour, data: Object.assign({}, d), timestamp: Date.now() }]));
+                    if (addToast) addToast('Weather snapshot saved.', 'success');
+                  },
+                  className: 'min-h-11 rounded-xl border px-3 py-2 text-xs font-black transition-colors focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:outline-none',
+                  style: contrast
+                    ? { backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' }
+                    : { backgroundColor: 'rgba(255,255,255,0.12)', color: '#ffffff', borderColor: 'rgba(186,230,253,0.35)' }
+                }, '\uD83D\uDCF8 Snapshot')
+              )
+            )
           ),
-          h('div', { className: 'flex flex-wrap gap-2 px-4 pb-3', role: 'tablist', 'aria-label': __alloT('stem.weathersystems.a11y_weather_lab_sections', 'Weather lab sections') },
+          h('div', { className: 'flex flex-wrap gap-2 px-4 py-3', role: 'tablist', 'aria-label': __alloT('stem.weathersystems.a11y_weather_lab_sections', 'Weather lab sections') },
             tabs.map(function (tab, tabIndex) {
-              var active = (d.tab || 'map') === tab.id;
+              var active = activeTabId === tab.id;
               return h('button', {
                 key: tab.id,
                 type: 'button',
@@ -9919,7 +10502,7 @@ var geographyGroup = new THREE.Group();
                   });
                   if (announce) announce(nextTab.label + ' selected.');
                 },
-                className: 'min-h-11 rounded-full px-4 py-2 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none ' + (active ? 'bg-sky-700 text-white' : (dark ? 'bg-slate-900 text-slate-300 hover:bg-slate-800' : 'bg-sky-100 text-sky-900 hover:bg-sky-200'))
+                className: 'min-h-11 rounded-full px-4 py-2 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none ' + (active ? 'bg-sky-700 text-white shadow-sm' : (dark ? 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-700' : 'bg-sky-100 text-sky-900 hover:bg-sky-200 border border-sky-200'))
               }, tab.icon + ' ' + tab.label);
             })
           )
@@ -9948,7 +10531,19 @@ var geographyGroup = new THREE.Group();
           h('select', { id: 'weather-scenario', value: scenario.id, onChange: function (event) { applyScenario(event.target.value); }, className: inputClass },
             SCENARIOS.map(function (item) { return h('option', { key: item.id, value: item.id }, item.name); })
           ),
-          h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, scenario.summary)
+          h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, scenario.summary),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.weathersystems.quick_scenarios_group', 'Starter weather scenarios'), className: 'mt-2.5 flex flex-wrap gap-1.5' },
+            SCENARIOS.slice(0, 4).map(function (item) {
+              var onS = scenario.id === item.id;
+              return h('button', {
+                key: 'qs-' + item.id,
+                type: 'button',
+                'aria-pressed': onS,
+                onClick: function () { applyScenario(item.id); },
+                className: 'min-h-11 rounded-full px-3 py-1.5 text-[0.6875rem] font-bold border transition-colors ' + (onS ? 'bg-sky-700 text-white border-sky-700' : (dark ? 'bg-slate-900 text-sky-200 border-slate-700 hover:bg-slate-800' : 'bg-sky-50 text-sky-900 border-sky-300 hover:bg-sky-100'))
+              }, item.icon + ' ' + item.name);
+            })
+          )
         );
       }
 
@@ -11701,10 +12296,21 @@ var geographyGroup = new THREE.Group();
               ),
               h('div', { id: 'weather-map-visual-key', className: 'flex flex-wrap items-center gap-x-4 gap-y-2 border-t px-3 py-2 text-xs font-bold ' + (dark ? 'border-slate-700 bg-slate-950/80 text-slate-300' : 'border-sky-200 bg-sky-50 text-slate-700'), 'data-weather-canvas-visual-key': true },
                 h('span', { className: 'font-black uppercase tracking-wide ' + skyAccentClass }, 'Canvas visual key'),
-                h('span', null, '\u25CF Selected station pulses amber'),
+                h('span', { className: 'inline-flex items-center gap-1' },
+                  h('svg', { width: 12, height: 12, viewBox: '0 0 12 12', 'aria-hidden': 'true' },
+                    h('circle', { cx: 6, cy: 6, r: 4, fill: '#f59e0b', stroke: contrast ? '#ffffff' : '#78350f', strokeWidth: 1.2 })),
+                  '\u25CF Selected station pulses amber'),
                 h('span', null, '\uD83C\uDF21\uFE0F Each station pill shows its temperature'),
-                h('span', null, '\u25B3 Front symbols show movement'),
-                h('span', null, '\u2192 Wind marks move with the air (downwind)'),
+                h('span', { className: 'inline-flex items-center gap-1' },
+                  h('svg', { width: 20, height: 12, viewBox: '0 0 20 12', 'aria-hidden': 'true' },
+                    h('line', { x1: 1, y1: 8, x2: 19, y2: 8, stroke: contrast ? '#00ffff' : '#2563eb', strokeWidth: 1.8 }),
+                    h('polygon', { points: '7,8 10,2 13,8', fill: contrast ? '#00ffff' : '#2563eb' })),
+                  '\u25B3 Front symbols show movement'),
+                h('span', { className: 'inline-flex items-center gap-1' },
+                  h('svg', { width: 18, height: 12, viewBox: '0 0 18 12', 'aria-hidden': 'true' },
+                    h('line', { x1: 2, y1: 6, x2: 14, y2: 6, stroke: contrast ? '#ffff00' : '#0284c7', strokeWidth: 1.8 }),
+                    h('polygon', { points: '12,3 17,6 12,9', fill: contrast ? '#ffff00' : '#0284c7' })),
+                  '\u2192 Wind marks move with the air (downwind)'),
                 h('span', null, '\uD83D\uDFE9\uD83D\uDFE8\uD83D\uDFE5 Radar: light to intense'),
                 h('span', null, '\uD83C\uDF24\uFE0F Sky and ground colour follow the model: ' + appearance.skyLabel + ' over ' + appearance.groundLabel)
               ),
@@ -14720,7 +15326,29 @@ var geographyGroup = new THREE.Group();
                   timelineControlsNotice('stage')
                 ),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-cyan-950/10 via-transparent to-slate-950/50', 'data-weather-conceptual-vignette': true, 'aria-hidden': true }),
-                !geographicMode && immersiveGuideOpen && selectedGlossaryFeature && selectedGlossaryFeature.overlay && h('div', { ref: immersiveCalloutRef, 'data-weather-feature-callout-anchor': 'projected', className: 'pointer-events-none absolute z-20 max-w-[220px] rounded-xl border border-cyan-200/40 bg-slate-950/90 px-3 py-2 text-left shadow-2xl backdrop-blur-md', style: { top: selectedGlossaryFeature.overlay.top, left: selectedGlossaryFeature.overlay.left, transform: 'translate(-8%, -50%)' }, 'data-weather-feature-callout': selectedGlossaryFeature.id, role: 'note', 'aria-label': selectedGlossaryFeature.label + '. ' + selectedGlossaryFeature.lookFor },
+                !geographicMode && immersiveGuideOpen && selectedGlossaryFeature && selectedGlossaryFeature.overlay && h('div', {
+                  ref: function (el) {
+                    immersiveCalloutRef.current = el;
+                    if (!el || !el.parentNode || !el.parentNode.getBoundingClientRect) return;
+                    var stageEl = el.parentNode;
+                    var stageBox = stageEl.getBoundingClientRect();
+                    if (!stageBox.height) return;
+                    var half = (el.offsetHeight || 88) / 2 + 8;
+                    var topRow = stageEl.querySelector('[data-weather-stage-overlays="conceptual"]');
+                    var topPx = topRow ? topRow.getBoundingClientRect().bottom - stageBox.top + half : 0;
+                    var bottomPx = stageBox.height;
+                    Array.prototype.forEach.call(stageEl.querySelectorAll('[data-weather-stage-overlays="conceptual-bottom"], [data-weather-stage-timeline]'), function (row) {
+                      bottomPx = Math.min(bottomPx, row.getBoundingClientRect().top - stageBox.top - half);
+                    });
+                    var minTop = Math.max(8, topPx / stageBox.height * 100);
+                    var maxTop = Math.min(92, bottomPx / stageBox.height * 100);
+                    var rawPct = parseFloat(selectedGlossaryFeature.overlay.top);
+                    var target = Number.isFinite(rawPct) ? rawPct : 54;
+                    var clamped = maxTop > minTop ? Math.max(minTop, Math.min(maxTop, target)) : Math.min(minTop, 92);
+                    el.style.top = (Math.round(clamped * 10) / 10) + '%';
+                  },
+                  'data-weather-feature-callout-anchor': 'projected', className: 'pointer-events-none absolute z-20 max-w-[220px] rounded-xl border border-cyan-200/40 bg-slate-950/90 px-3 py-2 text-left shadow-2xl backdrop-blur-md', style: { top: 'max(50%, ' + selectedGlossaryFeature.overlay.top + ')', left: selectedGlossaryFeature.overlay.left, transform: 'translate(-8%, -50%)' }, 'data-weather-feature-callout': selectedGlossaryFeature.id, role: 'note', 'aria-label': selectedGlossaryFeature.label + '. ' + selectedGlossaryFeature.lookFor
+                },
                   h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-cyan-300' }, d.immersiveObjectSelectionMethod === 'pointer' || d.immersiveObjectSelectionMethod === 'touch' ? 'Selected in 3D' : 'Scene feature'),
                   h('p', { className: 'mt-0.5 text-xs font-black text-white' }, selectedGlossaryFeature.label),
                   h('p', { className: 'mt-1 text-[0.625rem] leading-relaxed text-slate-300' }, selectedGlossaryFeature.lookFor)

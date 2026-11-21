@@ -68,7 +68,7 @@ function normalizeBaseUrl(value, allowRemote) {
 
 function requireIdentifier(value, label) {
   const text = String(value == null ? '' : value).trim();
-  if (!text || text.length > 180 || /[\/\\\u0000-\u001f\u007f]/.test(text)) {
+  if (!text || text === '.' || text === '..' || text.length > 180 || /[\/\\\u0000-\u001f\u007f]/.test(text)) {
     throw new AlloSheetBridgeError(`${label} is missing or invalid.`, 400, 'invalid-identifier');
   }
   return text;
@@ -299,6 +299,9 @@ async function readBoundedResponseText(response) {
     : '';
   const contentLength = Number(contentLengthValue);
   if (Number.isFinite(contentLength) && contentLength > MAX_RESPONSE_BYTES) {
+    if (response && response.body && typeof response.body.cancel === 'function') {
+      try { await response.body.cancel(); } catch (_) {}
+    }
     throw new AlloSheetBridgeError(
       'The Grist response exceeded the AlloSheet safety limit.',
       502,
@@ -524,68 +527,79 @@ function createAlloSheetGristBridge(options = {}) {
       const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
       let response;
       try {
-        const cookie = cookieHeaderFromJar(jar);
-        response = await fetchImpl(target, {
-          method: 'GET',
-          redirect: 'manual',
-          signal: controller.signal,
-          headers: {
-            Accept: 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.1',
-            ...(cookie ? { Cookie: cookie } : {})
+        try {
+          const cookie = cookieHeaderFromJar(jar);
+          response = await fetchImpl(target, {
+            method: 'GET',
+            redirect: 'manual',
+            signal: controller.signal,
+            headers: {
+              Accept: 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.1',
+              ...(cookie ? { Cookie: cookie } : {})
+            }
+          });
+        } catch (error) {
+          if (error && error.name === 'AbortError') {
+            throw new AlloSheetBridgeError(
+              'The managed spreadsheet session timed out.',
+              504,
+              'managed-session-timeout'
+            );
           }
-        });
-      } catch (error) {
-        if (error && error.name === 'AbortError') {
           throw new AlloSheetBridgeError(
-            'The managed spreadsheet session timed out.',
-            504,
-            'managed-session-timeout'
+            'The managed spreadsheet session could not be established.',
+            502,
+            'managed-session-failed'
           );
         }
-        throw new AlloSheetBridgeError(
-          'The managed spreadsheet session could not be established.',
-          502,
-          'managed-session-failed'
-        );
+
+        applySetCookieHeaders(jar, response.headers);
+        const status = Number(response.status);
+        const location = response.headers && typeof response.headers.get === 'function'
+          ? response.headers.get('location')
+          : '';
+        if (status >= 300 && status < 400) {
+          await discardResponseBody(response);
+          if (!location || redirectCount === MAX_SESSION_REDIRECTS) {
+            throw new AlloSheetBridgeError(
+              'The managed spreadsheet session returned too many redirects.',
+              502,
+              'managed-session-failed'
+            );
+          }
+          let next;
+          try {
+            next = new URL(location, target);
+          } catch (_) {
+            throw new AlloSheetBridgeError(
+              'The managed spreadsheet session returned an invalid redirect.',
+              502,
+              'managed-session-failed'
+            );
+          }
+          if (next.origin !== origin) {
+            throw new AlloSheetBridgeError(
+              'The managed spreadsheet session attempted to leave the local engine.',
+              502,
+              'managed-session-failed'
+            );
+          }
+          target = next;
+          continue;
+        }
+
+        await discardResponseBody(response);
+        if (!response.ok || jar.size < 2 || !jar.has(connection.sessionCookieName)) {
+          throw new AlloSheetBridgeError(
+            'The managed spreadsheet session could not be established.',
+            502,
+            'managed-session-failed'
+          );
+        }
+        return jar;
       } finally {
         clearTimeout(timeout);
       }
-
-      applySetCookieHeaders(jar, response.headers);
-      const status = Number(response.status);
-      const location = response.headers && typeof response.headers.get === 'function'
-        ? response.headers.get('location')
-        : '';
-      if (status >= 300 && status < 400) {
-        await discardResponseBody(response);
-        if (!location || redirectCount === MAX_SESSION_REDIRECTS) {
-          throw new AlloSheetBridgeError(
-            'The managed spreadsheet session returned too many redirects.',
-            502,
-            'managed-session-failed'
-          );
-        }
-        const next = new URL(location, target);
-        if (next.origin !== origin) {
-          throw new AlloSheetBridgeError(
-            'The managed spreadsheet session attempted to leave the local engine.',
-            502,
-            'managed-session-failed'
-          );
-        }
-        target = next;
-        continue;
-      }
-
-      await discardResponseBody(response);
-      if (!response.ok || jar.size < 2 || !jar.has(connection.sessionCookieName)) {
-        throw new AlloSheetBridgeError(
-          'The managed spreadsheet session could not be established.',
-          502,
-          'managed-session-failed'
-        );
-      }
-      return jar;
     }
     throw new AlloSheetBridgeError(
       'The managed spreadsheet session could not be established.',
@@ -665,51 +679,62 @@ function createAlloSheetGristBridge(options = {}) {
       throw new AlloSheetBridgeError('The requested Grist route is invalid.', 400, 'invalid-route');
     }
     let response;
+    let raw = '';
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const cookie = await ensureManagedSession(connection);
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
       try {
-        response = await fetchImpl(target, {
-          ...init,
-          redirect: 'error',
-          signal: controller.signal,
-          headers: {
-            ...(init.headers || {}),
-            Accept: 'application/json',
-            ...(connection.apiKey ? { Authorization: `Bearer ${connection.apiKey}` } : {}),
-            ...(cookie ? { Cookie: cookie } : {})
+        try {
+          response = await fetchImpl(target, {
+            ...init,
+            redirect: 'error',
+            signal: controller.signal,
+            headers: {
+              ...(init.headers || {}),
+              Accept: 'application/json',
+              ...(connection.apiKey ? { Authorization: `Bearer ${connection.apiKey}` } : {}),
+              ...(cookie ? { Cookie: cookie } : {})
+            }
+          });
+        } catch (error) {
+          if (error && error.name === 'AbortError') {
+            throw new AlloSheetBridgeError('The Grist request timed out.', 504, 'grist-timeout');
           }
-        });
-      } catch (error) {
-        if (error && error.name === 'AbortError') {
-          throw new AlloSheetBridgeError('The Grist request timed out.', 504, 'grist-timeout');
+          throw new AlloSheetBridgeError('The configured Grist service could not be reached.', 502, 'grist-unreachable');
         }
-        throw new AlloSheetBridgeError('The configured Grist service could not be reached.', 502, 'grist-unreachable');
+
+        if (
+          connection.bootstrapSession
+          && attempt === 0
+          && (response.status === 401 || response.status === 403)
+        ) {
+          await discardResponseBody(response);
+          resetManagedSession(connection.baseUrl.origin, privateSessionIdentity(connection));
+          continue;
+        }
+
+        if (
+          connection.bootstrapSession
+          && managedSessionOrigin === connection.baseUrl.origin
+          && managedSessionCredential === privateSessionIdentity(connection)
+        ) {
+          applySetCookieHeaders(managedSessionCookies, response.headers);
+        }
+        try {
+          raw = await readBoundedResponseText(response);
+        } catch (error) {
+          if (error instanceof AlloSheetBridgeError) throw error;
+          if (error && error.name === 'AbortError') {
+            throw new AlloSheetBridgeError('The Grist request timed out.', 504, 'grist-timeout');
+          }
+          throw new AlloSheetBridgeError('Grist returned an unreadable response.', 502, 'invalid-upstream-response');
+        }
+        break;
       } finally {
         clearTimeout(timeout);
       }
-
-      if (
-        connection.bootstrapSession
-        && attempt === 0
-        && (response.status === 401 || response.status === 403)
-      ) {
-        await discardResponseBody(response);
-        resetManagedSession(connection.baseUrl.origin, privateSessionIdentity(connection));
-        continue;
-      }
-      break;
     }
-
-    if (
-      connection.bootstrapSession
-      && managedSessionOrigin === connection.baseUrl.origin
-      && managedSessionCredential === privateSessionIdentity(connection)
-    ) {
-      applySetCookieHeaders(managedSessionCookies, response.headers);
-    }
-    const raw = await readBoundedResponseText(response);
     let payload = {};
     if (raw) {
       try {

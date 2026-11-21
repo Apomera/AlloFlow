@@ -160,9 +160,19 @@
     }
     const entries = Object.values(resource?.karaokeAudio?.entries || {});
     const current = enumerate(resource);
+    const store = modules().KaraokeAudioStore;
+    const expectedAdapterId = 'alloflow.' + resource?.type + '.read-aloud';
     const stale = current.filter(segment => {
       const matching = entries.filter(entry => entry?.identity?.segmentId === segment.segmentId && entry.identity.scopeId === segment.scopeId);
-      return matching.length && !matching.some(entry => !entry.quarantine && entry.identity.spokenText === segment.text && entry.identity.spokenFingerprint === fingerprint(segment.text) && modules().KaraokeAudioStore?.validateAudioPayload(entry.audio, entry.mime)?.ok);
+      return matching.length && !matching.some(entry => {
+        if (entry.quarantine) return false;
+        const identity = store?.normalizeIdentity ? store.normalizeIdentity(entry.identity) : entry.identity;
+        if (!identity || (identity.adapterId && identity.adapterId !== expectedAdapterId)) return false;
+        if (identity.spokenText !== segment.text || identity.spokenFingerprint !== fingerprint(segment.text)) return false;
+        const profile = store?.normalizeSynthesisProfile ? store.normalizeSynthesisProfile(entry.synthesisProfile) : entry.synthesisProfile;
+        if (profile?.language && profile.language !== segment.language) return false;
+        return Boolean(store?.validateAudioPayload(entry.audio, entry.mime)?.ok);
+      });
     });
     if (stale.length) issues.push({ code: 'stale', target: 'audio', count: stale.length, cardId: stale[0].cardId });
     const available = Object.keys(portableAudio(resource, 'local')?.entries || {}).length;
@@ -171,34 +181,50 @@
     return { issues, included, available };
   }
   function SharingCheck(props) {
-    const React = window.React, e = React.createElement, ref = React.useRef(null);
+    const React = window.React, e = React.createElement, ref = React.useRef(null), timerRef = React.useRef(null);
     const [channel, setChannel] = React.useState('qr');
     const [, refresh] = React.useState(0);
-    React.useEffect(() => { const listener = () => refresh(value => value + 1); window.addEventListener('alloflow:karaoke-audio-updated', listener); return () => window.removeEventListener('alloflow:karaoke-audio-updated', listener); }, []);
+    React.useEffect(() => {
+      const listener = () => refresh(value => value + 1);
+      window.addEventListener('alloflow:karaoke-audio-updated', listener);
+      return () => {
+        window.removeEventListener('alloflow:karaoke-audio-updated', listener);
+        if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+      };
+    }, []);
     const tr = (key, fallback) => { const value = props.t?.('studio_sharing.' + key); return value && value !== 'studio_sharing.' + key ? value : fallback; };
     const report = sharingReview(props.resource, channel);
     const descriptions = { facts: tr('facts', 'Check and verify lesson facts'), description: tr('description', 'Add a visual description'), visual_review: tr('visual_review', 'Review the visual before sharing'), stale: tr('stale', 'Update stale or damaged audio'), omitted: tr('omitted', 'Audio clips exceed this sharing limit') };
     const review = issue => {
       props.onReview?.(issue);
-      setTimeout(() => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        timerRef.current = null;
         const main = ref.current?.closest('main'); if (!main) return;
         const card = issue.cardId ? [...main.querySelectorAll('[data-studio-card-id]')].find(node => node.dataset.studioCardId === issue.cardId) : main;
-        const target = card?.querySelector('[data-studio-review="' + issue.target + '"]');
+        const target = card ? [...card.querySelectorAll('[data-studio-review]')].find(node => node.dataset.studioReview === issue.target) : null;
         if (target) { target.focus(); target.scrollIntoView?.({ block: 'center' }); }
       }, 0);
     };
-    return e('details', { ref, className: 'studio-sharing mb-4 rounded-2xl border border-amber-300 bg-amber-50 p-3' },
+    return e('details', { ref, className: 'studio-sharing mb-4 rounded-2xl border border-amber-300 bg-amber-50 text-slate-900 p-3' },
       e('summary', { className: 'min-h-11 cursor-pointer font-bold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1' }, tr('heading', 'Ready to share') + ' · ' + report.issues.length + ' ' + tr('items', 'items to review')),
-      e('label', { className: 'mt-2 flex flex-wrap items-center gap-2 text-sm' }, tr('channel', 'Sharing method'), e('select', { value: channel, onChange: event => setChannel(event.target.value), className: 'min-h-11 rounded-lg border bg-white px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1' }, e('option', { value: 'qr' }, tr('qr', 'Homework / QR')), e('option', { value: 'live' }, tr('live', 'Live / student pack')))),
+      e('label', { className: 'mt-2 flex flex-wrap items-center gap-2 text-sm' }, tr('channel', 'Sharing method'), e('select', { value: channel, onChange: event => setChannel(event.target.value), className: 'min-h-11 rounded-lg border bg-white text-slate-900 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1' }, e('option', { value: 'qr' }, tr('qr', 'Homework / QR')), e('option', { value: 'live' }, tr('live', 'Live / student pack')))),
       e('p', { role: 'status', className: 'my-2 text-sm' }, report.issues.length ? tr('review_note', 'Review these items before sharing. You decide when the resource is ready.') : tr('clear', 'No issues found by these checks. Review the content as a teacher before sharing.')),
-      report.issues.length > 0 && e('ul', { className: 'space-y-2' }, report.issues.map((issue, index) => e('li', { key: index }, e('button', { type: 'button', className: 'min-h-11 rounded-lg border border-amber-400 bg-white px-3 py-2 text-start text-sm underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1', onClick: () => review(issue) }, descriptions[issue.code] + (issue.count ? ' (' + issue.count + ')' : '') + (issue.label ? ': ' + issue.label : ''))))),
+      report.issues.length > 0 && e('ul', { className: 'space-y-2' }, report.issues.map((issue, index) => e('li', { key: index }, e('button', { type: 'button', className: 'min-h-11 rounded-lg border border-amber-400 bg-white text-slate-900 px-3 py-2 text-start text-sm underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1', onClick: () => review(issue) }, descriptions[issue.code] + (issue.count ? ' (' + issue.count + ')' : '') + (issue.label ? ': ' + issue.label : ''))))),
       e('p', { className: 'mt-2 text-xs' }, report.included + ' ' + tr('clips', 'current reference clips included. Missing clips can use a device voice.')));
   }
 
+  const CLIP_EXT_BY_MIME = Object.assign(Object.create(null), {
+    'audio/wav': '.wav', 'audio/x-wav': '.wav', 'audio/mpeg': '.mp3', 'audio/mp3': '.mp3', 'audio/ogg': '.ogg', 'audio/webm': '.webm', 'audio/mp4': '.m4a'
+  });
+  function isSafeAudioUrl(raw) {
+    return typeof raw === 'string' && /^(?:blob:|data:audio\/)/i.test(raw.trim());
+  }
   function clipExtension(resource, segment) {
-    const entry = Object.values(resource?.karaokeAudio?.entries || {}).find(entry => entry?.identity?.segmentId === segment.segmentId && entry.identity.scopeId === segment.scopeId && entry.identity.spokenText === segment.text);
-    const mime = entry?.mime || '';
-    return ({'audio/wav': '.wav', 'audio/x-wav': '.wav', 'audio/mpeg': '.mp3', 'audio/mp3': '.mp3', 'audio/ogg': '.ogg', 'audio/webm': '.webm', 'audio/mp4': '.m4a'})[mime] || '';
+    const fp = fingerprint(segment.text);
+    const entry = Object.values(resource?.karaokeAudio?.entries || {}).find(entry => entry && !entry.quarantine && entry?.identity?.segmentId === segment.segmentId && entry.identity.scopeId === segment.scopeId && entry.identity.spokenText === segment.text && (!entry.identity.spokenFingerprint || entry.identity.spokenFingerprint === fp));
+    const mime = typeof entry?.mime === 'string' ? entry.mime.toLowerCase() : '';
+    return Object.prototype.hasOwnProperty.call(CLIP_EXT_BY_MIME, mime) ? CLIP_EXT_BY_MIME[mime] : '';
   }
   function LocalText(props) {
     const React = window.React, e = React.createElement;
@@ -242,9 +268,11 @@
     const signature = JSON.stringify([resource?.id, segments]);
     const effectiveRuntimeAi = Boolean(allowRuntimeAi)
       && !window._alloQrBlocked
+      && !window.__alloQrStudentMode
       && !window.__alloStudentAiDisabled
       && !window.__alloAiSecretsLocked
-      && (typeof window.__alloAiUsable !== 'function' || Boolean(window.__alloAiUsable()));
+      && !(window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)
+      && (typeof window.__alloAiUsable !== 'function' || Boolean(window.__alloAiUsable('tts')));
     const current = React.useRef(null);
     current.current = { signature, allowRuntimeAi: effectiveRuntimeAi, canPrepare, resourceId: resource?.id, pauseBetween, followFocus };
     const bridge = () => window.__alloGetReadAloudAudioBridge?.();
@@ -283,17 +311,29 @@
         window.removeEventListener('alloflow:playback-stopped', stopped);
       };
     }, []);
-    React.useEffect(() => { stop(); runtime.current.prepare?.abort(); }, [signature, effectiveRuntimeAi, canPrepare]);
+    React.useEffect(() => {
+      stop();
+      if (runtime.current.prepare) {
+        runtime.current.prepare.abort();
+        runtime.current.prepare = null;
+        if (mounted.current) { setBusy(false); setProgress(''); }
+      }
+    }, [signature, effectiveRuntimeAi, canPrepare]);
     const prepare = async segment => {
       if (!canPrepare || !effectiveRuntimeAi || busy) return;
       const api = bridge(); if (!api) { setMessage(tr('unavailable', 'Read-aloud audio is not available yet.')); return; }
       const controller = new AbortController(); runtime.current.prepare = controller;
       setBusy(true); setMessage('');
       try {
-        const result = segment ? await api.regenerate(segment, { signal: controller.signal }) : await api.prepare(segments, (done, total) => { if (mounted.current) setProgress(done + '/' + total); }, { signal: controller.signal });
-        if (!controller.signal.aborted && mounted.current) setMessage(result && !result.failed && !result.cancelled ? tr('saved', 'Audio saved with this resource.') : tr('save_failed', 'Some audio could not be saved. Try again.'));
-      } catch (error) { if (error?.name !== 'AbortError' && mounted.current) setMessage(tr('save_failed', 'Some audio could not be saved. Try again.')); }
-      finally { if (runtime.current.prepare === controller) runtime.current.prepare = null; if (mounted.current) { setBusy(false); setProgress(''); setTick(value => value + 1); } }
+        const result = segment ? await api.regenerate(segment, { signal: controller.signal }) : await api.prepare(segments, (done, total) => { if (mounted.current && runtime.current.prepare === controller) setProgress(done + '/' + total); }, { signal: controller.signal });
+        if (!controller.signal.aborted && mounted.current && runtime.current.prepare === controller) setMessage(result && !result.failed && !result.cancelled ? tr('saved', 'Audio saved with this resource.') : tr('save_failed', 'Some audio could not be saved. Try again.'));
+      } catch (error) { if (error?.name !== 'AbortError' && mounted.current && runtime.current.prepare === controller) setMessage(tr('save_failed', 'Some audio could not be saved. Try again.')); }
+      finally {
+        if (runtime.current.prepare === controller) {
+          runtime.current.prepare = null;
+          if (mounted.current) { setBusy(false); setProgress(''); setTick(value => value + 1); }
+        }
+      }
     };
     const waitForResume = () => runtime.current.paused ? new Promise(resolve => { runtime.current.resume = resolve; }) : Promise.resolve();
     const togglePause = () => {
@@ -319,8 +359,9 @@
         const segment = segments[i]; setActive(i); if (current.current.followFocus) onActiveSegment?.(segment);
         try {
           const api = bridge(); const saved = api?.inspect(segment, 'reference');
-          let url = saved?.status === 'ready' ? (saved.url || saved.storedUrl) : null;
-          if (!url && current.current.allowRuntimeAi) url = await api?.resolve(segment, { reason: 'studio-reference-playback', signal: runtime.current.playController.signal });
+          let rawUrl = saved?.status === 'ready' ? (saved.url || saved.storedUrl) : null;
+          if (!rawUrl && current.current.allowRuntimeAi) rawUrl = await api?.resolve(segment, { reason: 'studio-reference-playback', signal: runtime.current.playController.signal });
+          const url = isSafeAudioUrl(rawUrl) ? rawUrl : null;
           if (!valid()) break;
           await waitForResume(); if (!valid()) break;
           await new Promise((resolve, reject) => {
@@ -349,7 +390,7 @@
     };
     if (!segments.length) return null;
     const buttonClass = 'min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 disabled:opacity-50';
-    return e('section', { tabIndex: -1, 'data-studio-review': 'audio', className: 'resource-read-aloud my-3 rounded-2xl border border-slate-200 bg-slate-50 p-3', 'aria-label': tr('label', 'Saved read-aloud audio') },
+    return e('section', { tabIndex: -1, 'data-studio-review': 'audio', className: 'resource-read-aloud my-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-900 p-3', 'aria-label': tr('label', 'Saved read-aloud audio') },
       e('style', null, '@media print{.resource-read-aloud,.studio-sharing,.studio-recovery{display:none!important}}'),
       e('div', { className: 'flex flex-wrap items-center gap-2' },
         e('button', { type: 'button', className: buttonClass, onClick: () => active >= 0 ? stop() : play(0) }, active >= 0 ? tr('stop', 'Stop reading') : mode === 'cue' ? tr('read_cue', 'Read cue aloud') : tr('listen', 'Read reference aloud')),
@@ -361,12 +402,14 @@
       e('div', { hidden: !expanded, className: 'mt-3 flex flex-wrap gap-3 text-sm' },
         e('label', { className: 'inline-flex min-h-11 items-center gap-2' }, e('input', { type: 'checkbox', className: 'rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1', checked: pauseBetween, onChange: event => setPauseBetween(event.target.checked) }), tr('pause_between', 'Pause after each field')),
         typeof onActiveSegment === 'function' && e('label', { className: 'inline-flex min-h-11 items-center gap-2' }, e('input', { type: 'checkbox', className: 'rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1', checked: followFocus, onChange: event => setFollowFocus(event.target.checked) }), tr('follow_focus', 'Move focus with reading'))),
-      paused && e('p', { role: 'status', className: 'mt-2 text-sm' }, tr('paused', 'Reading paused. Resume when you are ready.')),
-      message && e('p', { role: 'status', className: 'mt-2 text-sm text-slate-700' }, message),
-      e('ol', { id: instance.current, hidden: !expanded, className: 'mt-3 max-h-80 space-y-2 overflow-auto' }, segments.map((segment, index) => e('li', { key: segment.segmentId, className: 'rounded-xl border p-2 ' + (active === index ? 'border-teal-600 bg-teal-100 text-slate-950' : 'border-slate-200 bg-white'), 'aria-current': active === index ? 'step' : undefined },
-        e('button', { type: 'button', className: 'min-h-11 w-full rounded-lg p-2 text-start text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', onClick: () => play(index) }, segment.text),
-        canPrepare && e('button', { type: 'button', className: buttonClass, disabled: busy || !effectiveRuntimeAi, onClick: () => prepare(segment), 'aria-label': tr('regenerate', 'Regenerate clip') + ': ' + segment.text }, tr('regenerate', 'Regenerate clip') + ' · ' + tr(states[index].status, states[index].status)),
-        states[index].status === 'ready' && e('a', { className: 'inline-flex min-h-11 items-center rounded-lg px-3 text-sm underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', href: states[index].url || states[index].storedUrl, download: 'read-aloud-' + (index + 1) + clipExtension(resource, segment) }, tr('download', 'Download clip'))))));
+      e('p', { role: 'status', 'aria-live': 'polite', className: (paused || message) ? 'mt-2 text-sm text-slate-700' : 'sr-only' }, paused ? tr('paused', 'Reading paused. Resume when you are ready.') : (message || '')),
+      e('ol', { id: instance.current, hidden: !expanded, className: 'mt-3 max-h-80 space-y-2 overflow-auto' }, segments.map((segment, index) => {
+        const downloadHref = states[index].status === 'ready' && isSafeAudioUrl(states[index].url || states[index].storedUrl) ? (states[index].url || states[index].storedUrl) : null;
+        return e('li', { key: segment.segmentId, className: 'rounded-xl border p-2 ' + (active === index ? 'border-teal-600 bg-teal-100 text-slate-950' : 'border-slate-200 bg-white text-slate-900'), 'aria-current': active === index ? 'step' : undefined },
+          e('button', { type: 'button', className: 'min-h-11 w-full rounded-lg p-2 text-start text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', onClick: () => play(index) }, segment.text),
+          canPrepare && e('button', { type: 'button', className: buttonClass, disabled: busy || !effectiveRuntimeAi, onClick: () => prepare(segment), 'aria-label': tr('regenerate', 'Regenerate clip') + ': ' + segment.text }, tr('regenerate', 'Regenerate clip') + ' · ' + tr(states[index].status, states[index].status)),
+          downloadHref && e('a', { className: 'inline-flex min-h-11 items-center rounded-lg px-3 text-sm underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', href: downloadHref, download: 'read-aloud-' + (index + 1) + clipExtension(resource, segment) }, tr('download', 'Download clip')));
+      })));
   }
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ResourceReadAloud = { register, supports: type => adapters.has(type), enumerate, portableAudio, deliveryLimits, sharingReview, SharingCheck, Controls, CueControls, LocalText };

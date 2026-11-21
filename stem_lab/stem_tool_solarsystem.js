@@ -407,6 +407,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
     document.head.appendChild(st);
   })();
   // end contrast theme fixes
+
+  // Bespoke 3D Solar System Mission Control workbench polish + Light/Dark/High-Contrast parity
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-solarsystem-studio-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-solarsystem-studio-css';
+    st.textContent = [
+      '.solar-hero-identity { display: flex; align-items: flex-start; gap: 12px; flex: 1 1 280px; min-width: 0; }',
+      '.solar-emblem-box { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, rgba(79,70,229,0.30), rgba(15,23,42,0.94)); border: 1.5px solid rgba(129,140,248,0.56); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 6px 16px rgba(2,6,23,0.45); }',
+      '.solar-subject-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: #1e1b4b; border: 1px solid rgba(129,140,248,0.52); color: #e0e7ff; font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }',
+      '.solar-telemetry-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 10px 0 8px; min-width: 0; }',
+      '.solar-telemetry-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: #0f172a; border: 1px solid rgba(129,140,248,0.42); color: #e0e7ff; font-size: 11px; font-weight: 700; white-space: nowrap; }',
+      '.solar-orbital-schematic { margin: 8px 0 10px; padding: 7px 10px; border-radius: 12px; background: #0b1224; border: 1px solid rgba(129,140,248,0.34); }',
+      '.solar-starter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }',
+      '.solar-starter-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #3730a3; }',
+      '[data-solarsystem-command-center].bg-slate-950 .solar-starter-label { color: #c7d2fe; }',
+      '.solar-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: #0f172a; border: 1px solid rgba(129,140,248,0.46); color: #eef2ff; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
+      '.solar-starter-chip:hover:not(:disabled) { background: #3730a3; border-color: #c7d2fe; color: #ffffff; }',
+      '.solar-starter-chip[data-active="true"] { background: #4338ca; border-color: #e0e7ff; color: #ffffff; }',
+      '.solar-starter-chip:focus-visible { outline: 2.5px solid #818cf8; outline-offset: 2px; }',
+      '.theme-contrast [data-stem-tool-shell="solarSystem"] [data-solarsystem-command-center] { background: #000000 !important; background-image: none !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="solarSystem"] .solar-emblem-box, .theme-contrast [data-stem-tool-shell="solarSystem"] .solar-subject-badge, .theme-contrast [data-stem-tool-shell="solarSystem"] .solar-telemetry-pill, .theme-contrast [data-stem-tool-shell="solarSystem"] .solar-orbital-schematic { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="solarSystem"] .solar-starter-label { color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="solarSystem"] .solar-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="solarSystem"] .solar-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-solarsystem')) return;
@@ -1150,7 +1178,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
 
       // â"€â"€ Tool body (solarSystem) â"€â"€
       return (function() {
-const d = labToolData.solarSystem || {};
+const _rawSolarD = labToolData && labToolData.solarSystem;
+const d = (_rawSolarD && typeof _rawSolarD === 'object' && !Array.isArray(_rawSolarD)) ? _rawSolarD : {};
+const isSolarLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -3186,7 +3216,7 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos .solar-spotlight-ring{position:absolute;z-index:4;left:50%;top:50%;width:214px;height:58px;border:5px double var(--spotlight-ring);border-radius:50%;box-shadow:0 0 13px color-mix(in srgb,var(--spotlight-ring) 42%,transparent);transform:translate(-50%,-50%) rotate(-14deg);pointer-events:none}',
               '.solar-cosmos .solar-spotlight-moon{position:absolute;z-index:5;width:9px;height:9px;border:1px solid rgba(255,255,255,.72);border-radius:50%;background:#cbd5e1;box-shadow:inset -2px -2px 3px rgba(2,6,23,.62),0 0 8px rgba(226,232,240,.55)}',
               '.solar-cosmos .solar-spotlight-moon--0{left:18%;top:38%}.solar-cosmos .solar-spotlight-moon--1{right:16%;top:62%;width:7px;height:7px}.solar-cosmos .solar-spotlight-moon--2{left:29%;bottom:17%;width:6px;height:6px}',
-              '.solar-cosmos .solar-world-spotlight-watermark{position:absolute;z-index:2;left:50%;bottom:15px;max-width:90%;overflow:hidden;color:rgba(226,232,240,.10);font-size:44px;font-weight:950;letter-spacing:.08em;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap;transform:translateX(-50%)}',
+              '.solar-cosmos .solar-world-spotlight-watermark{position:absolute;z-index:2;left:50%;top:14px;max-width:90%;overflow:hidden;color:rgba(226,232,240,.10);font-size:44px;font-weight:950;letter-spacing:.08em;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap;transform:translateX(-50%);pointer-events:none}',
               '.solar-cosmos .solar-world-spotlight-caption{position:absolute;z-index:6;left:12px;right:12px;bottom:12px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;color:#cbd5e1;font-size:13px;font-weight:800;letter-spacing:.025em;line-height:1.4;text-transform:uppercase}',
               '.solar-cosmos .solar-world-spotlight-caption span{border-radius:999px;background:rgba(2,6,23,.70);padding:4px 7px;backdrop-filter:blur(8px)}',
               '.solar-cosmos .solar-world-spotlight-stats{position:relative;z-index:3;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:10px 12px 0}',
@@ -9512,6 +9542,31 @@ const d = labToolData.solarSystem || {};
               let H = canvas.clientHeight || 340;
 
               const scene = new THREE.Scene();
+              const solarReducedMotion = (function () { try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } })();
+              const solarShaderUniforms = {
+                uTime: { value: solarReducedMotion ? 1.85 : 0.0 },
+                uHc: { value: 0.0 }
+              };
+              const solarLivingFx = {
+                coronaShell: null,
+                solarWind: null,
+                cometIonRibbon: null,
+                cometIonMat: null,
+                cometAwayVec: new THREE.Vector3(1, 0, 0),
+                cometZAxis: new THREE.Vector3(0, 0, 1),
+                cometQuat: new THREE.Quaternion(),
+                disposables: []
+              };
+              function solarIsHighContrast() {
+                try {
+                  if (canvas && typeof canvas.closest === 'function' && canvas.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+                  var de = document.documentElement;
+                  if (de && (de.classList.contains('theme-contrast') || de.getAttribute('data-theme') === 'high-contrast' || de.getAttribute('data-theme') === 'contrast')) return true;
+                  if (document.body && document.body.classList.contains('theme-contrast')) return true;
+                  if (typeof window !== 'undefined' && window.matchMedia && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+                } catch (eHc) {}
+                return false;
+              }
 
               const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 1000);
 
@@ -9680,25 +9735,57 @@ var i = 0;
                 starCol[i * 3 + 1] = sg * dim * (inBand ? 0.97 : 1);
                 starCol[i * 3 + 2] = sb * dim * (inBand ? 0.92 : 1);
               }
+              // Soft circular radial star sprite so WebGL star points render as
+              // crisp luminous stellar discs rather than hard square pixels.
+              const starSpriteCanvas = document.createElement('canvas');
+              starSpriteCanvas.setAttribute('aria-hidden', 'true');
+              starSpriteCanvas.width = 32;
+              starSpriteCanvas.height = 32;
+              const starSpriteCtx = starSpriteCanvas.getContext('2d');
+              if (starSpriteCtx) {
+                const sGrad = starSpriteCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+                sGrad.addColorStop(0, 'rgba(255,255,255,1)');
+                sGrad.addColorStop(0.28, 'rgba(255,255,255,0.85)');
+                sGrad.addColorStop(0.62, 'rgba(220,235,255,0.22)');
+                sGrad.addColorStop(1, 'rgba(200,220,255,0)');
+                starSpriteCtx.fillStyle = sGrad;
+                starSpriteCtx.fillRect(0, 0, 32, 32);
+              }
+              const starSpriteTex = new THREE.CanvasTexture(starSpriteCanvas);
+              if (THREE.sRGBEncoding) starSpriteTex.encoding = THREE.sRGBEncoding;
+
               starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
               starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
-              scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ vertexColors: true, size: 0.18, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: false })));
+              scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ map: starSpriteTex, vertexColors: true, size: 1.75, transparent: true, opacity: 0.96, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: false })));
 
-              // Sparse foreground layer — bigger, brighter stars for parallax depth
+              // Sparse foreground layer — brighter multi-magnitude spectral stars for parallax depth
               const starGeoNear = new THREE.BufferGeometry();
-              const NEAR_COUNT = 120;
+              const NEAR_COUNT = 150;
               const starPosNear = new Float32Array(NEAR_COUNT * 3);
+              const starColNear = new Float32Array(NEAR_COUNT * 3);
               for (let i = 0; i < NEAR_COUNT; i++) {
                 const nz = Math.random() * 2 - 1;
                 const nTheta = Math.random() * Math.PI * 2;
                 const nRxy = Math.sqrt(Math.max(0, 1 - nz * nz));
-                const nRadius = 120 + Math.random() * 30;
+                const nRadius = 118 + Math.random() * 36;
                 starPosNear[i * 3] = Math.cos(nTheta) * nRxy * nRadius;
                 starPosNear[i * 3 + 1] = nz * nRadius;
                 starPosNear[i * 3 + 2] = Math.sin(nTheta) * nRxy * nRadius;
+                const nSpec = Math.random();
+                const nMag = 0.68 + Math.random() * 0.32;
+                let nr = 1, ng = 1, nb = 1;
+                if (nSpec < 0.22) { nr = 0.72; ng = 0.86; nb = 1.0; }       // O/B blue-white
+                else if (nSpec < 0.40) { nr = 0.94; ng = 0.97; nb = 1.0; }   // A crisp white
+                else if (nSpec < 0.62) { nr = 1.0; ng = 0.95; nb = 0.82; }   // F/G cream-gold
+                else if (nSpec < 0.82) { nr = 1.0; ng = 0.82; nb = 0.58; }   // K warm amber
+                else { nr = 1.0; ng = 0.68; nb = 0.56; }                     // M soft coral
+                starColNear[i * 3] = nr * nMag;
+                starColNear[i * 3 + 1] = ng * nMag;
+                starColNear[i * 3 + 2] = nb * nMag;
               }
               starGeoNear.setAttribute('position', new THREE.BufferAttribute(starPosNear, 3));
-              scene.add(new THREE.Points(starGeoNear, new THREE.PointsMaterial({ color: 0xffffff, size: 0.34, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: false })));
+              starGeoNear.setAttribute('color', new THREE.BufferAttribute(starColNear, 3));
+              scene.add(new THREE.Points(starGeoNear, new THREE.PointsMaterial({ map: starSpriteTex, vertexColors: true, size: 3.1, transparent: true, opacity: 0.92, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: false })));
 
               // Layered deep-space backdrop. This is decorative context rather than
               // a live sky for a particular observing date or location.
@@ -9787,26 +9874,85 @@ var i = 0;
               }
               const sunTexture = new THREE.CanvasTexture(sunCv);
               sunTexture.encoding = THREE.sRGBEncoding;
-              const sunMat = new THREE.ShaderMaterial({
+              const sunMat = (typeof THREE.ShaderMaterial === 'function') ? new THREE.ShaderMaterial({
                 name: 'solar-photosphere',
-                uniforms: { photosphere: { value: sunTexture } },
+                uniforms: {
+                  photosphere: { value: sunTexture },
+                  uTime: solarShaderUniforms.uTime,
+                  uHc: solarShaderUniforms.uHc
+                },
                 vertexShader: [
-                  'varying vec2 vUv; varying vec3 vNormal; varying vec3 vEye;',
-                  'void main() { vUv = uv; vNormal = normalMatrix * normal;',
-                  'vec4 p = modelViewMatrix * vec4(position, 1.0); vEye = -p.xyz; gl_Position = projectionMatrix * p; }'
+                  'varying vec2 vUv; varying vec3 vNormal; varying vec3 vEye; varying vec3 vLocalDir;',
+                  'void main() {',
+                  '  vUv = uv;',
+                  '  vLocalDir = normalize(position);',
+                  '  vNormal = normalMatrix * normal;',
+                  '  vec4 p = modelViewMatrix * vec4(position, 1.0);',
+                  '  vEye = -p.xyz;',
+                  '  gl_Position = projectionMatrix * p;',
+                  '}'
                 ].join('\n'),
                 fragmentShader: [
-                  'uniform sampler2D photosphere; varying vec2 vUv; varying vec3 vNormal; varying vec3 vEye;',
+                  'uniform sampler2D photosphere;',
+                  'uniform float uTime;',
+                  'uniform float uHc;',
+                  'varying vec2 vUv; varying vec3 vNormal; varying vec3 vEye; varying vec3 vLocalDir;',
+                  'float sHash3(vec3 p) {',
+                  '  p = fract(p * 0.3183099 + vec3(0.11, 0.17, 0.23));',
+                  '  p *= 17.0;',
+                  '  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));',
+                  '}',
+                  'float sNoise3(vec3 x) {',
+                  '  vec3 i = floor(x);',
+                  '  vec3 f = fract(x);',
+                  '  f = f * f * (3.0 - 2.0 * f);',
+                  '  return mix(',
+                  '    mix(mix(sHash3(i + vec3(0.0,0.0,0.0)), sHash3(i + vec3(1.0,0.0,0.0)), f.x),',
+                  '        mix(sHash3(i + vec3(0.0,1.0,0.0)), sHash3(i + vec3(1.0,1.0,0.0)), f.x), f.y),',
+                  '    mix(mix(sHash3(i + vec3(0.0,0.0,1.0)), sHash3(i + vec3(1.0,0.0,1.0)), f.x),',
+                  '        mix(sHash3(i + vec3(0.0,1.0,1.0)), sHash3(i + vec3(1.0,1.0,1.0)), f.x), f.y), f.z);',
+                  '}',
+                  'float sFbm3(vec3 p) {',
+                  '  float v = 0.0; float a = 0.5;',
+                  '  for (int k = 0; k < 4; k++) {',
+                  '    v += a * sNoise3(p);',
+                  '    p = p * 2.04 + vec3(13.1, -7.4, 5.7);',
+                  '    a *= 0.5;',
+                  '  }',
+                  '  return v;',
+                  '}',
                   'void main() {',
-                  'float mu = max(0.0, dot(normalize(vNormal), normalize(vEye)));',
-                  'vec3 surface = pow(texture2D(photosphere, vUv).rgb, vec3(2.2));',
-                  'float cells = 0.94 + 0.06 * sin(vUv.x * 628.3185 + sin(vUv.y * 219.91)) * sin(vUv.y * 402.12);',
-                  'gl_FragColor = vec4(surface * cells * (0.48 + 0.65 * mu), 1.0);',
-                  '#include <tonemapping_fragment>',
-                  '#include <encodings_fragment>',
+                  '  float mu = clamp(dot(normalize(vNormal), normalize(vEye)), 0.0, 1.0);',
+                  '  vec2 driftUv = vec2(fract(vUv.x + uTime * 0.004), vUv.y);',
+                  '  vec3 texSurface = pow(texture2D(photosphere, driftUv).rgb, vec3(2.2));',
+                  '  if (uHc > 0.5) {',
+                  '    gl_FragColor = vec4(texSurface * (0.68 + 0.42 * mu), 1.0);',
+                  '    #include <tonemapping_fragment>',
+                  '    #include <encodings_fragment>',
+                  '    return;',
+                  '  }',
+                  '  float t = uTime * 0.24;',
+                  '  vec3 p = normalize(vLocalDir) * 4.4;',
+                  '  vec3 warp = vec3(sFbm3(p + vec3(t, -t * 0.6, t * 0.3)), sFbm3(p + vec3(-t * 0.5, t * 0.8, 4.1)), sFbm3(p + vec3(2.7, t * 0.4, -t * 0.7)));',
+                  '  float plasma = sFbm3(p * 1.45 + (warp - 0.5) * 1.85 + vec3(0.0, t * 0.45, 0.0));',
+                  '  float granules = sFbm3(p * 3.8 - vec3(t * 0.9, 0.0, t * 0.6));',
+                  '  float ridge = 1.0 - abs(2.0 * plasma - 1.0);',
+                  '  float hotCore = smoothstep(0.46, 0.88, plasma * 0.65 + granules * 0.35);',
+                  '  vec3 crimson = vec3(0.76, 0.16, 0.02);',
+                  '  vec3 amber = vec3(1.0, 0.60, 0.10);',
+                  '  vec3 whiteGold = vec3(1.0, 0.98, 0.82);',
+                  '  vec3 convective = mix(crimson, amber, smoothstep(0.18, 0.62, plasma));',
+                  '  convective = mix(convective, whiteGold, hotCore * 0.88 + pow(ridge, 3.0) * 0.22);',
+                  '  vec3 blended = mix(texSurface * 1.08, convective, 0.68);',
+                  '  float limbDark = 0.40 + 0.74 * pow(mu, 0.58);',
+                  '  float chromoRim = pow(1.0 - mu, 2.65);',
+                  '  vec3 flareRim = mix(vec3(1.0, 0.32, 0.04), vec3(1.0, 0.72, 0.24), ridge) * chromoRim * (0.48 + 0.36 * granules);',
+                  '  gl_FragColor = vec4(blended * limbDark + flareRim, 1.0);',
+                  '  #include <tonemapping_fragment>',
+                  '  #include <encodings_fragment>',
                   '}'
                 ].join('\n')
-              });
+              }) : new THREE.MeshBasicMaterial({ map: sunTexture, color: 0xffe680 });
 
               const sun = new THREE.Mesh(sunGeo, sunMat);
 
@@ -9818,40 +9964,143 @@ var i = 0;
 
               scene.add(sunLight);
 
-              // Sun glow sprite
+              // Sun corona & prominence halo sprites (256x256 layered streamers + plasma loops)
 
-              const glowCanvas = document.createElement('canvas'); glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = 128; glowCanvas.height = 128;
+              const glowCanvas = document.createElement('canvas'); glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = 256; glowCanvas.height = 256;
 
               const gctx = glowCanvas.getContext('2d');
 
-              gctx.save();
-              gctx.translate(64, 64);
-              for (let coronaRay = 0; coronaRay < 40; coronaRay++) {
-                const coronaAngle = coronaRay / 40 * Math.PI * 2;
-                const coronaInner = 34 + (coronaRay % 4) * 1.4;
-                const coronaOuter = 47 + (coronaRay % 7) * 2.1;
-                gctx.strokeStyle = coronaRay % 3 === 0 ? 'rgba(255,226,118,0.18)' : 'rgba(255,174,54,0.10)';
-                gctx.lineWidth = coronaRay % 5 === 0 ? 1.4 : 0.7;
-                gctx.beginPath();
-                gctx.moveTo(Math.cos(coronaAngle) * coronaInner, Math.sin(coronaAngle) * coronaInner);
-                gctx.lineTo(Math.cos(coronaAngle) * coronaOuter, Math.sin(coronaAngle) * coronaOuter);
-                gctx.stroke();
+              if (gctx) {
+                gctx.save();
+                gctx.translate(128, 128);
+                // Layered solar coronal streamers with tapered radiance
+                for (let coronaRay = 0; coronaRay < 56; coronaRay++) {
+                  const coronaAngle = coronaRay / 56 * Math.PI * 2;
+                  const coronaInner = 62 + (coronaRay % 4) * 3.2;
+                  const coronaOuter = 94 + (coronaRay % 7) * 5.2 + (coronaRay % 11 === 0 ? 18 : 0);
+                  const rayGrad = gctx.createLinearGradient(
+                    Math.cos(coronaAngle) * coronaInner, Math.sin(coronaAngle) * coronaInner,
+                    Math.cos(coronaAngle) * coronaOuter, Math.sin(coronaAngle) * coronaOuter
+                  );
+                  rayGrad.addColorStop(0, coronaRay % 3 === 0 ? 'rgba(255,232,140,0.26)' : 'rgba(255,176,58,0.16)');
+                  rayGrad.addColorStop(1, 'rgba(255,130,20,0)');
+                  gctx.strokeStyle = rayGrad;
+                  gctx.lineWidth = coronaRay % 5 === 0 ? 2.6 : 1.25;
+                  gctx.lineCap = 'round';
+                  gctx.beginPath();
+                  gctx.moveTo(Math.cos(coronaAngle) * coronaInner, Math.sin(coronaAngle) * coronaInner);
+                  gctx.lineTo(Math.cos(coronaAngle) * coronaOuter, Math.sin(coronaAngle) * coronaOuter);
+                  gctx.stroke();
+                }
+                // Subtle magnetic prominence loops arching near the solar chromosphere limb
+                const prominenceAngles = [0.35, 1.48, 2.74, 3.85, 5.12];
+                for (let pi = 0; pi < prominenceAngles.length; pi++) {
+                  const pa = prominenceAngles[pi];
+                  const span = 0.24 + (pi % 2) * 0.09;
+                  const baseR = 66;
+                  const archR = 82 + (pi % 3) * 6;
+                  gctx.strokeStyle = pi % 2 === 0 ? 'rgba(255,132,56,0.34)' : 'rgba(255,178,76,0.28)';
+                  gctx.lineWidth = 2.2;
+                  gctx.beginPath();
+                  gctx.moveTo(Math.cos(pa - span) * baseR, Math.sin(pa - span) * baseR);
+                  gctx.quadraticCurveTo(
+                    Math.cos(pa) * archR, Math.sin(pa) * archR,
+                    Math.cos(pa + span) * baseR, Math.sin(pa + span) * baseR
+                  );
+                  gctx.stroke();
+                }
+                gctx.restore();
+
+                const grad = gctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+                grad.addColorStop(0, 'rgba(255,244,180,0.68)');
+                grad.addColorStop(0.28, 'rgba(255,205,74,0.34)');
+                grad.addColorStop(0.58, 'rgba(255,146,36,0.12)');
+                grad.addColorStop(1, 'rgba(255,110,0,0)');
+                gctx.fillStyle = grad; gctx.fillRect(0, 0, 256, 256);
               }
-              gctx.restore();
-
-              const grad = gctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-
-              grad.addColorStop(0, 'rgba(255,220,80,0.6)'); grad.addColorStop(0.4, 'rgba(255,180,40,0.2)'); grad.addColorStop(1, 'rgba(255,160,0,0)');
-
-              gctx.fillStyle = grad; gctx.fillRect(0, 0, 128, 128);
 
               const glowTex = new THREE.CanvasTexture(glowCanvas);
 
-              const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending }));
+              const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
 
               glowSprite.scale.set(18, 18, 1);
 
               scene.add(glowSprite);
+
+              // Outer diffuse solar corona veil for deep atmospheric falloff around the Sun
+              const outerCoronaCanvas = document.createElement('canvas'); outerCoronaCanvas.setAttribute('aria-hidden', 'true'); outerCoronaCanvas.width = 128; outerCoronaCanvas.height = 128;
+              const ocCtx = outerCoronaCanvas.getContext('2d');
+              if (ocCtx) {
+                const ocGrad = ocCtx.createRadialGradient(64, 64, 8, 64, 64, 64);
+                ocGrad.addColorStop(0, 'rgba(255,212,110,0.22)');
+                ocGrad.addColorStop(0.45, 'rgba(255,152,58,0.085)');
+                ocGrad.addColorStop(1, 'rgba(255,110,20,0)');
+                ocCtx.fillStyle = ocGrad;
+                ocCtx.fillRect(0, 0, 128, 128);
+              }
+              const outerCoronaTex = new THREE.CanvasTexture(outerCoronaCanvas);
+              const outerCoronaSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: outerCoronaTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.72 }));
+              outerCoronaSprite.scale.set(27, 27, 1);
+              scene.add(outerCoronaSprite);
+              if (typeof THREE.ShaderMaterial === 'function') {
+                try {
+                  const coronaShellGeo = new THREE.SphereGeometry(8.2, 48, 32);
+                  const coronaShellMat = new THREE.ShaderMaterial({
+                    name: 'solar-glsl-corona-veil',
+                    uniforms: {
+                      uTime: solarShaderUniforms.uTime,
+                      uHc: solarShaderUniforms.uHc
+                    },
+                    vertexShader: [
+                      'varying vec3 vWorldPos;',
+                      'varying vec3 vLocalDir;',
+                      'void main() {',
+                      '  vLocalDir = normalize(position);',
+                      '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+                      '  vWorldPos = wp.xyz;',
+                      '  gl_Position = projectionMatrix * viewMatrix * wp;',
+                      '}'
+                    ].join('\n'),
+                    fragmentShader: [
+                      'uniform float uTime;',
+                      'uniform float uHc;',
+                      'varying vec3 vWorldPos;',
+                      'varying vec3 vLocalDir;',
+                      'float cHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+                      'float cNoise(vec2 p) {',
+                      '  vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);',
+                      '  return mix(mix(cHash(i), cHash(i + vec2(1.0, 0.0)), u.x), mix(cHash(i + vec2(0.0, 1.0)), cHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+                      '}',
+                      'void main() {',
+                      '  if (uHc > 0.5) discard;',
+                      '  vec3 N = normalize(vWorldPos);',
+                      '  vec3 V = normalize(cameraPosition - vWorldPos);',
+                      '  float graze = clamp(-dot(N, V), 0.0, 1.0);',
+                      '  float shellEnv = pow(smoothstep(0.0, 0.58, graze), 1.85) * (1.0 - smoothstep(0.54, 0.92, graze));',
+                      '  float ang = atan(vLocalDir.y, vLocalDir.x);',
+                      '  float lat = asin(clamp(vLocalDir.z, -1.0, 1.0));',
+                      '  float rays = 0.52 + 0.48 * cNoise(vec2(ang * 5.0 + uTime * 0.25, lat * 4.0 - uTime * 0.18));',
+                      '  float prominences = pow(cNoise(vec2(ang * 9.0 - uTime * 0.42, graze * 6.0 + uTime * 0.35)), 2.2);',
+                      '  vec3 innerGold = vec3(1.0, 0.88, 0.44);',
+                      '  vec3 flareRed = vec3(1.0, 0.32, 0.06);',
+                      '  vec3 col = mix(flareRed, innerGold, smoothstep(0.18, 0.62, graze)) * (0.58 + 0.65 * rays + 0.52 * prominences);',
+                      '  float alpha = clamp(shellEnv * (0.48 + 0.44 * rays + 0.35 * prominences), 0.0, 0.88);',
+                      '  if (alpha < 0.005) discard;',
+                      '  gl_FragColor = vec4(col * alpha, alpha);',
+                      '}'
+                    ].join('\n'),
+                    side: THREE.BackSide,
+                    transparent: true,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending
+                  });
+                  const coronaShell = new THREE.Mesh(coronaShellGeo, coronaShellMat);
+                  coronaShell.name = 'solar-glsl-corona-shell';
+                  scene.add(coronaShell);
+                  solarLivingFx.coronaShell = coronaShell;
+                  solarLivingFx.disposables.push(coronaShellGeo, coronaShellMat);
+                } catch (eCor) {}
+              }
 
 
 
@@ -10025,36 +10274,57 @@ var i = 0;
               function solarAtmosphereShell(planet) {
                 const depth = solarAtmosphereDepth(planet);
                 const rgb = solarAtmosphereRgb(planet);
-                const material = new THREE.ShaderMaterial({
+                const sunsetTint = planet.key === 'Mars'
+                  ? new THREE.Color(0.55, 0.72, 0.96).convertSRGBToLinear()
+                  : new THREE.Color(1.0, 0.46, 0.22).convertSRGBToLinear();
+                const material = (typeof THREE.ShaderMaterial === 'function') ? new THREE.ShaderMaterial({
                   name: 'solar-directional-atmosphere',
                   uniforms: {
                     tint: { value: new THREE.Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255).convertSRGBToLinear() },
-                    strength: { value: 0.28 + depth * 0.62 }
+                    sunset: { value: sunsetTint },
+                    strength: { value: 0.36 + depth * 0.72 },
+                    uTime: solarShaderUniforms.uTime,
+                    uHc: solarShaderUniforms.uHc
                   },
                   vertexShader: [
-                    'varying vec3 vNormal; varying vec3 vEye; varying vec3 vLight;',
+                    'varying vec3 vNormal; varying vec3 vEye; varying vec3 vLight; varying vec3 vLocalPos;',
                     'void main() {',
+                    'vLocalPos = normalize(position);',
                     'vec4 p = modelViewMatrix * vec4(position, 1.0);',
                     'vNormal = normalMatrix * normal; vEye = -p.xyz;',
                     'vLight = (viewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz - p.xyz;',
                     'gl_Position = projectionMatrix * p; }'
                   ].join('\n'),
                   fragmentShader: [
-                    'uniform vec3 tint; uniform float strength;',
-                    'varying vec3 vNormal; varying vec3 vEye; varying vec3 vLight;',
+                    'uniform vec3 tint; uniform vec3 sunset; uniform float strength; uniform float uTime; uniform float uHc;',
+                    'varying vec3 vNormal; varying vec3 vEye; varying vec3 vLight; varying vec3 vLocalPos;',
                     'void main() {',
+                    'if (uHc > 0.5) discard;',
                     'vec3 n = normalize(vNormal);',
-                    'float facing = max(0.0, dot(n, normalize(vEye)));',
-                    'float daylight = smoothstep(-0.16, 0.45, dot(n, normalize(vLight)));',
-                    'float rim = pow(1.0 - facing, 3.2) * smoothstep(0.0, 0.12, facing);',
-                    'gl_FragColor = vec4(tint * (0.7 + daylight * 0.6), rim * daylight * strength);',
+                    'vec3 v = normalize(vEye);',
+                    'vec3 l = normalize(vLight);',
+                    'float facing = max(0.0, dot(n, v));',
+                    'float ndl = dot(n, l);',
+                    'float daylight = smoothstep(-0.22, 0.48, ndl);',
+                    'float terminator = exp(-pow((ndl - 0.02) * 4.4, 2.0));',
+                    'float nightRim = smoothstep(0.04, -0.32, ndl);',
+                    'float fresnelOuter = pow(1.0 - facing, 2.75) * smoothstep(0.0, 0.12, facing);',
+                    'float fresnelInner = pow(1.0 - facing, 5.2) * smoothstep(0.0, 0.08, facing);',
+                    'float forwardMie = pow(max(0.0, dot(v, -l)), 4.2) * 0.56;',
+                    'float airShimmer = 0.92 + 0.08 * sin(uTime * 0.85 + vLocalPos.y * 8.0 + vLocalPos.x * 6.0);',
+                    'vec3 rayleigh = mix(tint, sunset, terminator * 0.42);',
+                    'vec3 horizonScatter = mix(rayleigh, vec3(0.85, 0.95, 1.0), fresnelInner * 0.45 * daylight);',
+                    'vec3 nightGlow = tint * 0.24 * nightRim * fresnelInner * airShimmer;',
+                    'float alpha = (fresnelOuter * (daylight + terminator * 0.28) * (1.0 + forwardMie) + fresnelInner * nightRim * 0.22) * strength;',
+                    'vec3 finalRgb = horizonScatter * (0.78 + daylight * 0.62 + forwardMie * 0.48) * airShimmer + nightGlow;',
+                    'gl_FragColor = vec4(finalRgb, clamp(alpha, 0.0, 0.94));',
                     '#include <tonemapping_fragment>',
                     '#include <encodings_fragment>',
                     '}'
                   ].join('\n'),
                   transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
-                });
-                const shell = new THREE.Mesh(new THREE.SphereGeometry(planet.size * (1.012 + depth * 0.06), 48, 32), material);
+                }) : new THREE.MeshBasicMaterial({ color: new THREE.Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255), transparent: true, opacity: 0.25, depthWrite: false, blending: THREE.AdditiveBlending });
+                const shell = new THREE.Mesh(new THREE.SphereGeometry(planet.size * (1.015 + depth * 0.068), 48, 32), material);
                 shell.name = 'solar-atmosphere-' + planet.key;
                 shell.renderOrder = 1;
                 return shell;
@@ -10173,7 +10443,7 @@ var i = 0;
                   stripContext.fillRect(x, 0, 1, 4);
                 }
                 const ringTexture = new THREE.CanvasTexture(strip);
-                const ringMat = new THREE.ShaderMaterial({
+                const ringMat = (typeof THREE.ShaderMaterial === 'function') ? new THREE.ShaderMaterial({
                   name: 'solar-shadowed-ring',
                   uniforms: {
                     ringlets: { value: ringTexture },
@@ -10182,37 +10452,59 @@ var i = 0;
                     innerRadius: { value: planetSize * band.inner },
                     bandWidth: { value: planetSize * (band.outer - band.inner) },
                     planetRadius: { value: planetSize },
-                    localSun: { value: new THREE.Vector3() }
+                    localSun: { value: new THREE.Vector3() },
+                    uTime: solarShaderUniforms.uTime,
+                    uHc: solarShaderUniforms.uHc
                   },
                   vertexShader: [
-                    'varying vec3 vLocal;',
-                    'void main() { vLocal = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }'
+                    'varying vec3 vLocal; varying vec3 vWorldPos;',
+                    'void main() {',
+                    'vLocal = position;',
+                    'vec4 wp = modelMatrix * vec4(position, 1.0);',
+                    'vWorldPos = wp.xyz;',
+                    'gl_Position = projectionMatrix * viewMatrix * wp; }'
                   ].join('\n'),
                   fragmentShader: [
                     'uniform sampler2D ringlets; uniform vec3 tint; uniform vec3 localSun;',
                     'uniform float alpha; uniform float innerRadius; uniform float bandWidth; uniform float planetRadius;',
-                    'varying vec3 vLocal;',
+                    'uniform float uTime; uniform float uHc;',
+                    'varying vec3 vLocal; varying vec3 vWorldPos;',
+                    'float ringHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
                     'void main() {',
                     'vec3 lightRay = normalize(localSun - vLocal);',
                     'float along = dot(-vLocal, lightRay);',
                     'float miss = length(vLocal + max(0.0, along) * lightRay);',
-                    // Spherical occluder approximation; edge softness is illustrative.
-                    'float shadow = along > 0.0 ? smoothstep(planetRadius * 0.97, planetRadius * 1.025, miss) : 1.0;',
+                    'float shadow = along > 0.0 ? smoothstep(planetRadius * 0.965, planetRadius * 1.035, miss) : 1.0;',
+                    'float penumbra = along > 0.0 ? exp(-pow((miss - planetRadius) / (planetRadius * 0.045), 2.0)) : 0.0;',
                     'float radial = clamp((length(vLocal.xy) - innerRadius) / bandWidth, 0.0, 1.0);',
                     'float detail = texture2D(ringlets, vec2(radial, 0.5)).r;',
-                    'float illumination = (0.40 + 0.60 * sqrt(abs(lightRay.z))) * mix(0.075, 1.0, shadow);',
-                    'gl_FragColor = vec4(tint * detail * illumination, alpha * (0.70 + detail * 0.30));',
+                    'float edgeFeather = smoothstep(0.0, 0.045, radial) * smoothstep(1.0, 0.955, radial);',
+                    'vec3 viewDir = normalize(cameraPosition - vWorldPos);',
+                    'vec3 sunDirWorld = normalize(-vWorldPos);',
+                    'float forwardMie = pow(max(0.0, dot(viewDir, -sunDirWorld)), 4.2);',
+                    'float opposition = pow(max(0.0, dot(viewDir, sunDirWorld)), 4.6);',
+                    'float ringAngle = atan(vLocal.y, vLocal.x);',
+                    'float glintCell = ringHash(vec2(floor(radial * 96.0), floor(ringAngle * 42.0)));',
+                    'float glintWave = pow(max(0.0, sin(glintCell * 28.0 + uTime * 1.65 + ringAngle * 6.0)), 8.0);',
+                    'float icyGlint = (uHc > 0.5) ? 0.0 : (glintWave * (0.28 + 0.72 * (forwardMie + opposition)) * shadow * 0.42);',
+                    'float mieScatter = (uHc > 0.5) ? 0.0 : (forwardMie * 0.62 * (1.0 - alpha * 0.45) + opposition * 0.24);',
+                    'float illumination = (0.42 + 0.58 * sqrt(abs(lightRay.z))) * mix(0.075, 1.0, shadow);',
+                    'vec3 backlitTint = mix(tint, vec3(0.95, 0.96, 1.0), clamp(forwardMie * 0.55, 0.0, 0.55));',
+                    'vec3 refractedEdge = vec3(0.95, 0.48, 0.16) * penumbra * 0.18;',
+                    'vec3 ringColor = backlitTint * mix(0.76, 1.16, detail) * (illumination + mieScatter * shadow) + vec3(0.92, 0.96, 1.0) * icyGlint + refractedEdge;',
+                    'float ringAlpha = alpha * (0.64 + detail * 0.36) * mix(0.68, 1.0, edgeFeather) * (1.0 + forwardMie * 0.18);',
+                    'gl_FragColor = vec4(ringColor, clamp(ringAlpha, 0.0, 0.96));',
                     '#include <tonemapping_fragment>',
                     '#include <encodings_fragment>',
                     '}'
                   ].join('\n'),
                   side: THREE.DoubleSide, transparent: true, depthWrite: false
-                });
+                }) : new THREE.MeshBasicMaterial({ map: ringTexture, color: band.color, transparent: true, opacity: band.opacity, side: THREE.DoubleSide, depthWrite: false });
                 const ringMesh = new THREE.Mesh(ringGeo, ringMat);
                 ringMesh.name = 'solar-ring-band';
                 ringMesh.rotation.x = -Math.PI / 2;
                 ringMesh.renderOrder = 2;
-                solarLocalSun(ringMesh, ringMat.uniforms.localSun);
+                if (ringMat.uniforms && ringMat.uniforms.localSun) solarLocalSun(ringMesh, ringMat.uniforms.localSun);
                 parent.add(ringMesh);
               }
 
@@ -10253,6 +10545,33 @@ var i = 0;
                 scene.add(orbitMesh);
 
                 orbitLines.push(orbitMesh);
+
+                // Luminous Keplerian orbital wake trailing behind each planet
+                const ORBIT_WAKE_SEGMENTS = 36;
+                const wakeGeo = new THREE.BufferGeometry();
+                const wakePositions = new Float32Array(ORBIT_WAKE_SEGMENTS * 3);
+                const wakeColors = new Float32Array(ORBIT_WAKE_SEGMENTS * 3);
+                const wakeBaseColor = new THREE.Color(p.rgb[0], p.rgb[1], p.rgb[2]).lerp(new THREE.Color(1, 1, 1), 0.28);
+                for (let ws = 0; ws < ORBIT_WAKE_SEGMENTS; ws++) {
+                  const wf = Math.pow(ws / (ORBIT_WAKE_SEGMENTS - 1), 1.85);
+                  wakeColors[ws * 3] = wakeBaseColor.r * wf;
+                  wakeColors[ws * 3 + 1] = wakeBaseColor.g * wf;
+                  wakeColors[ws * 3 + 2] = wakeBaseColor.b * wf;
+                }
+                wakeGeo.setAttribute('position', new THREE.BufferAttribute(wakePositions, 3));
+                wakeGeo.setAttribute('color', new THREE.BufferAttribute(wakeColors, 3));
+                const wakeMat = new THREE.LineBasicMaterial({
+                  vertexColors: true,
+                  transparent: true,
+                  opacity: idx < 4 ? 0.58 : 0.44,
+                  blending: THREE.AdditiveBlending,
+                  depthWrite: false
+                });
+                const wakeLine = new THREE.Line(wakeGeo, wakeMat);
+                wakeLine.name = 'solar-orbit-wake-' + p.key;
+                wakeLine._wakeSegments = ORBIT_WAKE_SEGMENTS;
+                wakeLine._wakeSpan = 0.68;
+                scene.add(wakeLine);
 
 
 
@@ -10341,8 +10660,22 @@ var i = 0;
                 mesh._orbitSpeed = p.speed;
 
                 mesh._orbitBody = p;
+                mesh._orbitWake = wakeLine;
 
                 solarOrbitPoint(p, mesh._meanAnomaly, mesh.position);
+                if (wakeLine) {
+                  const wArr = wakeLine.geometry.attributes.position.array;
+                  const wPt = new THREE.Vector3();
+                  for (let ws = 0; ws < wakeLine._wakeSegments; ws++) {
+                    const wf = ws / (wakeLine._wakeSegments - 1);
+                    const sampleM = mesh._meanAnomaly - (1 - wf) * wakeLine._wakeSpan;
+                    solarOrbitPoint(p, sampleM, wPt);
+                    wArr[ws * 3] = wPt.x;
+                    wArr[ws * 3 + 1] = wPt.y;
+                    wArr[ws * 3 + 2] = wPt.z;
+                  }
+                  wakeLine.geometry.attributes.position.needsUpdate = true;
+                }
 
                 scene.add(mesh);
 
@@ -10613,6 +10946,168 @@ var i = 0;
 
               scene.add(cometMesh);
               planetMeshes.push(cometMesh);
+
+              // Radially streaming GLSL solar-wind particles & anti-solar comet ion-tail ribbon
+              if (typeof THREE.ShaderMaterial === 'function') {
+                try {
+                  const swCount = 360;
+                  const swPos = new Float32Array(swCount * 3);
+                  const swSeed = new Float32Array(swCount * 4);
+                  const swRng = solarSeededRandom(4909);
+                  for (let si = 0; si < swCount; si++) {
+                    const az = swRng() * Math.PI * 2;
+                    const el = (swRng() - 0.5) * 0.34;
+                    swPos[si * 3] = Math.cos(az) * Math.cos(el);
+                    swPos[si * 3 + 1] = Math.sin(el);
+                    swPos[si * 3 + 2] = Math.sin(az) * Math.cos(el);
+                    swSeed[si * 4] = swRng();                 // initial radial phase
+                    swSeed[si * 4 + 1] = 0.055 + swRng() * 0.075; // stream speed
+                    swSeed[si * 4 + 2] = 0.65 + swRng() * 0.85;   // size scale
+                    swSeed[si * 4 + 3] = az;                  // base azimuth for Parker spiral
+                  }
+                  const swGeo = new THREE.BufferGeometry();
+                  swGeo.setAttribute('position', new THREE.BufferAttribute(swPos, 3));
+                  swGeo.setAttribute('aWind', new THREE.BufferAttribute(swSeed, 4));
+                  const swMat = new THREE.ShaderMaterial({
+                    name: 'solar-glsl-wind-stream',
+                    uniforms: {
+                      uTime: solarShaderUniforms.uTime,
+                      uHc: solarShaderUniforms.uHc
+                    },
+                    vertexShader: [
+                      'attribute vec4 aWind;',
+                      'uniform float uTime;',
+                      'varying float vFrac;',
+                      'varying float vAlpha;',
+                      'void main() {',
+                      '  float f = fract(aWind.x + uTime * aWind.y);',
+                      '  float r = 6.3 + f * f * 58.0;',
+                      '  float spiral = aWind.w + f * 0.42;',
+                      '  float yTilt = position.y * r * 0.55;',
+                      '  vec3 worldPos = vec3(cos(spiral) * r, yTilt, sin(spiral) * r);',
+                      '  vFrac = f;',
+                      '  vAlpha = smoothstep(0.0, 0.14, f) * smoothstep(1.0, 0.45, f);',
+                      '  vec4 mvPos = modelViewMatrix * vec4(worldPos, 1.0);',
+                      '  gl_PointSize = clamp((24.0 * aWind.z * (1.15 - 0.55 * f)) / max(2.0, -mvPos.z), 1.4, 5.5);',
+                      '  gl_Position = projectionMatrix * mvPos;',
+                      '}'
+                    ].join('\n'),
+                    fragmentShader: [
+                      'uniform float uHc;',
+                      'varying float vFrac;',
+                      'varying float vAlpha;',
+                      'void main() {',
+                      '  if (uHc > 0.5) discard;',
+                      '  vec2 c = gl_PointCoord - vec2(0.5);',
+                      '  float r2 = dot(c, c);',
+                      '  if (r2 > 0.25) discard;',
+                      '  float glow = exp(-r2 * 16.0);',
+                      '  vec3 innerGold = vec3(1.0, 0.84, 0.42);',
+                      '  vec3 outerIon = vec3(0.32, 0.82, 1.0);',
+                      '  vec3 col = mix(innerGold, outerIon, smoothstep(0.08, 0.65, vFrac));',
+                      '  gl_FragColor = vec4(col, glow * vAlpha * 0.42);',
+                      '}'
+                    ].join('\n'),
+                    transparent: true,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending
+                  });
+                  const solarWindPts = new THREE.Points(swGeo, swMat);
+                  solarWindPts.name = 'solar-glsl-wind-stream';
+                  solarWindPts.frustumCulled = false;
+                  scene.add(solarWindPts);
+                  solarLivingFx.solarWind = solarWindPts;
+                  solarLivingFx.disposables.push(swGeo, swMat);
+                } catch (eSw) {}
+
+                try {
+                  // Crossed dual-ribbon geometry along +Z (0..1) so ion tail reads voluminously from any angle
+                  const ribSegs = 28;
+                  const rVerts = [];
+                  const rUvs = [];
+                  const rIdx = [];
+                  let baseIdx = 0;
+                  for (let plane = 0; plane < 2; plane++) {
+                    for (let s = 0; s <= ribSegs; s++) {
+                      const f = s / ribSegs;
+                      const halfW = 0.08 + f * 0.56;
+                      const z = f;
+                      if (plane === 0) {
+                        rVerts.push(-halfW, 0, z, halfW, 0, z);
+                      } else {
+                        rVerts.push(0, -halfW, z, 0, halfW, z);
+                      }
+                      rUvs.push(f, 0, f, 1);
+                    }
+                    for (let s = 0; s < ribSegs; s++) {
+                      const a = baseIdx + s * 2;
+                      rIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+                    }
+                    baseIdx += (ribSegs + 1) * 2;
+                  }
+                  const ribGeo = new THREE.BufferGeometry();
+                  ribGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(rVerts), 3));
+                  ribGeo.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(rUvs), 2));
+                  ribGeo.setIndex(rIdx);
+                  const ribMat = new THREE.ShaderMaterial({
+                    name: 'solar-glsl-comet-ion-ribbon',
+                    uniforms: {
+                      uTime: solarShaderUniforms.uTime,
+                      uStrength: { value: 0.7 },
+                      uHc: solarShaderUniforms.uHc
+                    },
+                    vertexShader: [
+                      'uniform float uTime;',
+                      'varying vec2 vUv;',
+                      'void main() {',
+                      '  vUv = uv;',
+                      '  vec3 p = position;',
+                      '  float wave = sin(uv.x * 11.0 - uTime * 3.2) * 0.09 * uv.x * uv.x;',
+                      '  p.x += wave;',
+                      '  p.y += cos(uv.x * 8.0 - uTime * 2.4) * 0.06 * uv.x * uv.x;',
+                      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
+                      '}'
+                    ].join('\n'),
+                    fragmentShader: [
+                      'uniform float uTime;',
+                      'uniform float uStrength;',
+                      'uniform float uHc;',
+                      'varying vec2 vUv;',
+                      'float ionHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+                      'float ionNoise(vec2 p) {',
+                      '  vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);',
+                      '  return mix(mix(ionHash(i), ionHash(i + vec2(1.0, 0.0)), u.x), mix(ionHash(i + vec2(0.0, 1.0)), ionHash(i + vec2(1.0, 1.0)), u.x), u.y);',
+                      '}',
+                      'void main() {',
+                      '  if (uHc > 0.5) discard;',
+                      '  float across = 1.0 - abs(vUv.y * 2.0 - 1.0);',
+                      '  float coreMask = pow(clamp(across, 0.0, 1.0), 1.9);',
+                      '  float lenFade = smoothstep(0.0, 0.08, vUv.x) * pow(1.0 - vUv.x, 1.35);',
+                      '  float streak1 = ionNoise(vec2(vUv.x * 7.5 - uTime * 2.4, vUv.y * 6.0));',
+                      '  float streak2 = ionNoise(vec2(vUv.x * 14.0 - uTime * 4.1, vUv.y * 11.0 + 3.1));',
+                      '  float plasma = 0.45 + 0.55 * streak1 + 0.35 * streak2;',
+                      '  vec3 comaCol = vec3(0.76, 0.98, 1.0);',
+                      '  vec3 ionBlue = vec3(0.18, 0.68, 1.0);',
+                      '  vec3 col = mix(comaCol, ionBlue, smoothstep(0.04, 0.62, vUv.x));',
+                      '  float alpha = coreMask * lenFade * plasma * (0.22 + 0.72 * uStrength);',
+                      '  if (alpha < 0.008) discard;',
+                      '  gl_FragColor = vec4(col * 1.15, clamp(alpha, 0.0, 0.85));',
+                      '}'
+                    ].join('\n'),
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending
+                  });
+                  const cometIonRibbon = new THREE.Mesh(ribGeo, ribMat);
+                  cometIonRibbon.name = 'solar-glsl-comet-ion-ribbon';
+                  cometIonRibbon.position.copy(cometMesh.position);
+                  scene.add(cometIonRibbon);
+                  solarLivingFx.cometIonRibbon = cometIonRibbon;
+                  solarLivingFx.cometIonMat = ribMat;
+                  solarLivingFx.disposables.push(ribGeo, ribMat);
+                } catch (eComet) {}
+              }
 
 
 
@@ -10968,6 +11463,12 @@ var i = 0;
                     disposeSolarResource(material);
                   });
                 });
+                solarLivingFx.disposables.forEach(disposeSolarResource);
+                solarLivingFx.disposables.length = 0;
+                solarLivingFx.coronaShell = null;
+                solarLivingFx.solarWind = null;
+                solarLivingFx.cometIonRibbon = null;
+                solarLivingFx.cometIonMat = null;
 
                 stopPlanetAmbience();
 
@@ -11040,6 +11541,17 @@ var i = 0;
                        }
                        mesh._tail.material.opacity = 0.18 + tailStrength * 0.62;
                        mesh._tail.geometry.attributes.position.needsUpdate = true;
+                       if (solarLivingFx.cometIonRibbon) {
+                         const ionLen = (4.8 + tailStrength * 6.5);
+                         solarLivingFx.cometAwayVec.set(awayX, awayY, awayZ).normalize();
+                         solarLivingFx.cometQuat.setFromUnitVectors(solarLivingFx.cometZAxis, solarLivingFx.cometAwayVec);
+                         solarLivingFx.cometIonRibbon.position.copy(mesh.position);
+                         solarLivingFx.cometIonRibbon.quaternion.copy(solarLivingFx.cometQuat);
+                         solarLivingFx.cometIonRibbon.scale.set(1.0 + tailStrength * 0.45, 1.0 + tailStrength * 0.45, ionLen);
+                         if (solarLivingFx.cometIonMat && solarLivingFx.cometIonMat.uniforms && solarLivingFx.cometIonMat.uniforms.uStrength) {
+                           solarLivingFx.cometIonMat.uniforms.uStrength.value = tailStrength;
+                         }
+                       }
                        if (mesh._dustTail && mesh._prevPos) {
                          // Direction of travel, taken from the step just completed.
                          let velX = mesh.position.x - mesh._prevPos.x;
@@ -11077,6 +11589,22 @@ var i = 0;
                   mesh._meanAnomaly = (mesh._meanAnomaly + timeScale * mesh._orbitSpeed) % (Math.PI * 2);
 
                   solarOrbitPoint(mesh._orbitBody, mesh._meanAnomaly, mesh.position);
+                  if (mesh._orbitWake) {
+                    const wArr = mesh._orbitWake.geometry.attributes.position.array;
+                    const wSegs = mesh._orbitWake._wakeSegments;
+                    const wSpan = mesh._orbitWake._wakeSpan;
+                    const wPt = mesh._wakeTmp || (mesh._wakeTmp = new THREE.Vector3());
+                    for (let ws = 0; ws < wSegs; ws++) {
+                      const wf = ws / (wSegs - 1);
+                      solarOrbitPoint(mesh._orbitBody, mesh._meanAnomaly - (1 - wf) * wSpan, wPt);
+                      wArr[ws * 3] = wPt.x;
+                      wArr[ws * 3 + 1] = wPt.y;
+                      wArr[ws * 3 + 2] = wPt.z;
+                    }
+                    mesh._orbitWake.geometry.attributes.position.needsUpdate = true;
+                    const targetWakeOp = (i === focusedPlanetIdx) ? 0.92 : (i < 4 ? 0.56 : 0.42);
+                    mesh._orbitWake.material.opacity += (targetWakeOp - mesh._orbitWake.material.opacity) * 0.12;
+                  }
 
                   // Sidereal day relative to Earth: Jupiter turns 2.4x faster, Venus 243x slower.
                   mesh.rotation.y += 0.02 * speed * (SOLAR_SPIN_RATE[mesh._orbitBody && mesh._orbitBody.key] || 1) * (isPaused ? 0 : 1);
@@ -11224,13 +11752,34 @@ var i = 0;
 
 
 
-                // Sun pulse
+                // Sun photosphere granulation + corona pulse (gated on prefers-reduced-motion & High-Contrast)
 
-                const pulse = 1.0 + Math.sin(time * 2) * 0.03;
+                const solarHc = solarIsHighContrast();
+                solarShaderUniforms.uHc.value = solarHc ? 1.0 : 0.0;
+                if (!isPaused && !_rmCam) {
+                  solarShaderUniforms.uTime.value = time;
+                } else if (_rmCam) {
+                  solarShaderUniforms.uTime.value = 1.85;
+                }
+                if (solarLivingFx.coronaShell) solarLivingFx.coronaShell.visible = !solarHc;
+                if (solarLivingFx.solarWind) solarLivingFx.solarWind.visible = !solarHc;
+                if (solarLivingFx.cometIonRibbon) solarLivingFx.cometIonRibbon.visible = !solarHc && cometMesh.visible;
+                if (glowSprite) glowSprite.visible = !solarHc;
+                if (outerCoronaSprite) outerCoronaSprite.visible = !solarHc;
+
+                const pulse = _rmCam ? 1.0 : (1.0 + Math.sin(time * 2) * 0.03);
 
                 sun.scale.set(pulse, pulse, pulse);
 
-                glowSprite.scale.set(14 * pulse, 14 * pulse, 1); // fuller corona (init scale was 18; loop had shrunk it to 12)
+                glowSprite.scale.set(16 * pulse, 16 * pulse, 1);
+                if (outerCoronaSprite) {
+                  const outerPulse = _rmCam ? 1.0 : (1.0 + Math.cos(time * 1.3) * 0.04);
+                  outerCoronaSprite.scale.set(27 * outerPulse, 27 * outerPulse, 1);
+                  if (!isPaused && !_rmCam) {
+                    glowSprite.material.rotation = (glowSprite.material.rotation || 0) + 0.00055 * speed;
+                    outerCoronaSprite.material.rotation = (outerCoronaSprite.material.rotation || 0) - 0.0003 * speed;
+                  }
+                }
 
 
 
@@ -11669,11 +12218,23 @@ var i = 0;
                 React.createElement("div", { className: "grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] items-stretch" },
                   React.createElement("div", { className: "solar-command-primary" },
                     React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
-                      React.createElement("div", null,
-                        React.createElement("div", { className: "text-[0.6875rem] font-black uppercase " + (isDark ? 'text-indigo-300' : 'text-indigo-600') }, "Start here"),
-                        React.createElement("h4", { className: "mt-1 text-xl font-black " + (isDark ? 'text-white' : 'text-slate-900') }, selectedName + " Explorer"),
-                        React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                          sel ? sel.fact : "Choose a world, choose a view, and collect evidence at your own pace."
+                      React.createElement("div", { className: "solar-hero-identity" },
+                        React.createElement("div", { className: "solar-emblem-box", "aria-hidden": "true" },
+                          React.createElement("svg", { width: 32, height: 32, viewBox: "0 0 36 36", fill: "none" },
+                            React.createElement("circle", { cx: 18, cy: 18, r: 5.5, fill: "#fbbf24" }),
+                            React.createElement("ellipse", { cx: 18, cy: 18, rx: 14, ry: 6, transform: "rotate(-22 18 18)", stroke: "#818cf8", strokeWidth: 1.8, fill: "none" }),
+                            React.createElement("ellipse", { cx: 18, cy: 18, rx: 10.5, ry: 10.5, stroke: "#38bdf8", strokeWidth: 1.2, strokeDasharray: "3 3", fill: "none" }),
+                            React.createElement("circle", { cx: 29.5, cy: 13.5, r: 2.4, fill: "#38bdf8" }),
+                            React.createElement("circle", { cx: 8.5, cy: 23, r: 2.0, fill: "#fb923c" })
+                          )
+                        ),
+                        React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                          React.createElement("span", { className: "solar-subject-badge" }, __alloT('stem.solarsystem.subject_badge', 'Planetary Science · Orbital Mechanics · Astrobiology')),
+                          React.createElement("div", { className: "mt-1.5 text-[0.6875rem] font-black uppercase " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, __alloT('stem.solarsystem.start_here_eyebrow', "Start here")),
+                          React.createElement("h4", { className: "mt-0.5 text-xl font-black " + (isDark ? 'text-white' : 'text-slate-900') }, selectedName + " Explorer"),
+                          React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') },
+                            sel ? sel.fact : __alloT('stem.solarsystem.default_explorer_hint', "Choose a world, choose a view, and collect evidence at your own pace.")
+                          )
                         )
                       ),
                       React.createElement("div", { className: "flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black " + (isDark ? 'bg-indigo-500/15 text-indigo-200 border border-indigo-400/25' : 'bg-indigo-50 text-indigo-700 border border-indigo-100') },
@@ -11681,6 +12242,72 @@ var i = 0;
                         React.createElement("span", { className: "h-1.5 w-1.5 rounded-full", style: { background: selectedAccent, boxShadow: '0 0 10px ' + selectedAccent } })
                       )
                     ),
+                    (function() {
+                      var selKey = sel && sel.key ? sel.key : 'Earth';
+                      var zoneIdx = (selKey === 'Mercury' || selKey === 'Venus' || selKey === 'Earth' || selKey === 'Mars' || selKey === 'Sun') ? 0
+                        : (selKey === 'Jupiter' || selKey === 'Saturn') ? 1
+                        : (selKey === 'Uranus' || selKey === 'Neptune') ? 2 : 3;
+                      var quickWorlds = ['Earth', 'Mars', 'Jupiter', 'Saturn'];
+                      return React.createElement("div", { style: { minWidth: 0 } },
+                        React.createElement("div", { className: "solar-telemetry-strip", role: "group", "aria-label": __alloT('stem.solarsystem.telemetry_aria', 'Solar System mission telemetry') },
+                          React.createElement("span", { className: "solar-telemetry-pill" }, __alloFill(__alloT('stem.solarsystem.pill_world', 'Target: {w}'), { w: selectedName })),
+                          React.createElement("span", { className: "solar-telemetry-pill" }, __alloFill(__alloT('stem.solarsystem.pill_visited', 'Visited: {v}/{t}'), { v: planetsVisited.length, t: PLANETS.length })),
+                          React.createElement("span", { className: "solar-telemetry-pill" }, __alloFill(__alloT('stem.solarsystem.pill_lens', 'Lens: {l}'), { l: activeModelLens.label })),
+                          React.createElement("span", { className: "solar-telemetry-pill" }, __alloFill(__alloT('stem.solarsystem.pill_rp', 'RP: {rp}'), { rp: researchPoints }))
+                        ),
+                        React.createElement("div", { className: "solar-orbital-schematic" },
+                          React.createElement("svg", {
+                            viewBox: "0 0 580 52",
+                            style: { width: '100%', height: 'auto', maxHeight: 54, display: 'block' },
+                            role: "img",
+                            "aria-label": __alloT('stem.solarsystem.architecture_aria', 'Heliocentric architecture from inner rocky planets through gas giants, ice giants, and outer Kuiper belt')
+                          },
+                            React.createElement("line", { x1: 126, y1: 26, x2: 156, y2: 26, stroke: "#818cf8", strokeWidth: 2, strokeDasharray: "4 3" }),
+                            React.createElement("line", { x1: 272, y1: 26, x2: 302, y2: 26, stroke: "#38bdf8", strokeWidth: 2, strokeDasharray: "4 3" }),
+                            React.createElement("line", { x1: 418, y1: 26, x2: 448, y2: 26, stroke: "#a5b4fc", strokeWidth: 2, strokeDasharray: "4 3" }),
+                            [
+                              { x: 10, w: 116, k: 'INNER ROCKY', v: '0.4–1.5 AU', stroke: '#fb923c', idx: 0 },
+                              { x: 156, w: 116, k: 'GAS GIANTS', v: '5.2–9.5 AU', stroke: '#fbbf24', idx: 1 },
+                              { x: 302, w: 116, k: 'ICE GIANTS', v: '19–30 AU', stroke: '#38bdf8', idx: 2 },
+                              { x: 448, w: 122, k: 'OUTER BELT', v: '>30 AU Kuiper', stroke: '#c084fc', idx: 3 }
+                            ].map(function(node) {
+                              var on = zoneIdx === node.idx;
+                              return React.createElement("g", { key: node.k },
+                                React.createElement("rect", {
+                                  x: node.x, y: 5, width: node.w, height: 42, rx: 8,
+                                  fill: on ? 'rgba(79,70,229,0.34)' : 'rgba(15,23,42,0.92)',
+                                  stroke: on ? '#e0e7ff' : node.stroke,
+                                  strokeWidth: on ? 2 : 1.2
+                                }),
+                                React.createElement("text", { x: node.x + node.w / 2, y: 21, textAnchor: "middle", fill: "#e0e7ff", fontSize: 10, fontWeight: 800, fontFamily: "system-ui, sans-serif" }, node.k),
+                                React.createElement("text", { x: node.x + node.w / 2, y: 37, textAnchor: "middle", fill: "#f8fafc", fontSize: 10.5, fontWeight: 700, fontFamily: "system-ui, sans-serif" }, node.v)
+                              );
+                            })
+                          )
+                        ),
+                        (d.mode !== 'quiz' && !isSolarLocked) && React.createElement("div", { className: "solar-starter-bar", role: "group", "aria-label": __alloT('stem.solarsystem.quick_focus_aria', 'Quick target planet focus shortcuts') },
+                          React.createElement("span", { className: "solar-starter-label" }, __alloT('stem.solarsystem.quick_focus_label', 'Quick Focus:')),
+                          quickWorlds.map(function(wName) {
+                            var pObj = PLANETS.find(function(x) { return x.name === wName || x.key === wName; });
+                            var isCur = sel && sel.name === wName;
+                            return React.createElement("button", {
+                              key: 'qf-' + wName,
+                              type: "button",
+                              className: "solar-starter-chip",
+                              "data-active": isCur ? "true" : "false",
+                              "aria-pressed": isCur ? "true" : "false",
+                              onClick: function() {
+                                upd('selectedPlanet', wName);
+                                if (pObj) playPlanetSelect(pObj.dist || 1);
+                                startPlanetAmbience(wName);
+                                var cv = document.querySelector('.solar3d-canvas');
+                                if (cv) cv.dataset.flyTo = wName;
+                              }
+                            }, __alloFill(__alloT('stem.solarsystem.quick_focus_btn', 'Focus {world}'), { world: wName }));
+                          })
+                        )
+                      );
+                    })(),
                     React.createElement("div", { role: "group", "aria-label": __alloT('stem.solarsystem.a11y_scientific_model_lens', 'Scientific model lens'), "data-solarsystem-model-lenses": true, className: "rounded-lg border p-3 " + (isDark ? 'border-slate-700 bg-slate-900/70' : 'border-white bg-white/75 shadow-sm') },
                       React.createElement("div", { className: "mb-2 flex flex-wrap items-center justify-between gap-2" },
                         React.createElement("span", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-800') }, "Choose a scientific lens"),
@@ -14165,23 +14792,30 @@ var i = 0;
         if (isDark) {
           for (var si2 = 0; si2 < cv._stars.length; si2++) {
             var star = cv._stars[si2];
-            var twinkle = star.b + Math.sin(visualTime * star.twinkleSpeed + si2) * 0.18;
-            ctx.globalAlpha = clamp(twinkle, 0.08, 0.9);
+            var twinkle = reduceMotion ? star.b : (star.b + Math.sin(visualTime * star.twinkleSpeed + si2) * 0.18);
+            ctx.globalAlpha = clamp(twinkle, 0.08, 0.92);
             ctx.beginPath();
             ctx.arc(star.x, star.y, star.r, 0, TAU);
             ctx.fillStyle = star.color || "#ffffff";
             ctx.fill();
-            // Subtle cross-shine on near-layer bright stars — adds sparkle without cost
-            if (star.layer === "near" && star.r > 1.6 && twinkle > 0.72) {
-              ctx.globalAlpha = clamp((twinkle - 0.72) * 1.8, 0, 0.5);
-              ctx.strokeStyle = star.color || "#ffffff";
-              ctx.lineWidth = 0.4;
+            // Subtle spectral halo + cross-shine on near-layer bright stars
+            if (star.layer === "near" && star.r > 1.45 && twinkle > 0.65) {
+              ctx.globalAlpha = clamp((twinkle - 0.65) * 0.55, 0, 0.24);
               ctx.beginPath();
-              ctx.moveTo(star.x - star.r * 3, star.y);
-              ctx.lineTo(star.x + star.r * 3, star.y);
-              ctx.moveTo(star.x, star.y - star.r * 3);
-              ctx.lineTo(star.x, star.y + star.r * 3);
-              ctx.stroke();
+              ctx.arc(star.x, star.y, star.r * 2.4, 0, TAU);
+              ctx.fillStyle = star.color || "#dbeafe";
+              ctx.fill();
+              if (star.r > 1.6 && twinkle > 0.72) {
+                ctx.globalAlpha = clamp((twinkle - 0.72) * 1.8, 0, 0.5);
+                ctx.strokeStyle = star.color || "#ffffff";
+                ctx.lineWidth = 0.45;
+                ctx.beginPath();
+                ctx.moveTo(star.x - star.r * 3.1, star.y);
+                ctx.lineTo(star.x + star.r * 3.1, star.y);
+                ctx.moveTo(star.x, star.y - star.r * 3.1);
+                ctx.lineTo(star.x, star.y + star.r * 3.1);
+                ctx.stroke();
+              }
             }
           }
           ctx.globalAlpha = 1;
@@ -14476,14 +15110,14 @@ var i = 0;
           }
           ctx.restore();
         })();
-        // ── Sun with pulsing corona + radial glow + subtle flare rays ──
+        // ── Sun with pulsing corona + radial glow + subtle prominence arcs & flare rays ──
         var sunR = clamp(Math.max(6, st.scale * 0.035), 6, 28);
-        // Gentle corona breath — 5.5% amplitude, slow period, looks alive without flicker
-        var sunPulse = 1 + Math.sin(visualTime * 0.00065) * 0.055;
+        // Gentle corona breath — gated on prefers-reduced-motion
+        var sunPulse = reduceMotion ? 1 : (1 + Math.sin(visualTime * 0.00065) * 0.055);
         // Outermost soft halo (far reach, very diffuse)
         var haloGrad = ctx.createRadialGradient(st.cx, st.cy, sunR * 2, st.cx, st.cy, sunR * 14 * sunPulse);
-        haloGrad.addColorStop(0, "rgba(255, 200, 80, 0.08)");
-        haloGrad.addColorStop(0.5, "rgba(255, 150, 40, 0.025)");
+        haloGrad.addColorStop(0, "rgba(255, 200, 80, 0.09)");
+        haloGrad.addColorStop(0.5, "rgba(255, 150, 40, 0.03)");
         haloGrad.addColorStop(1, "rgba(255, 120, 0, 0)");
         ctx.beginPath();
         ctx.arc(st.cx, st.cy, sunR * 14 * sunPulse, 0, TAU);
@@ -14491,24 +15125,24 @@ var i = 0;
         ctx.fill();
         // Outer corona glow (pulses)
         var coronaGrad = ctx.createRadialGradient(st.cx, st.cy, sunR * 0.5, st.cx, st.cy, sunR * 8 * sunPulse);
-        coronaGrad.addColorStop(0, "rgba(255, 220, 50, 0.28)");
-        coronaGrad.addColorStop(0.3, "rgba(255, 180, 20, 0.09)");
-        coronaGrad.addColorStop(1, "rgba(255, 150, 0, 0)");
+        coronaGrad.addColorStop(0, "rgba(255, 224, 64, 0.30)");
+        coronaGrad.addColorStop(0.32, "rgba(255, 178, 28, 0.11)");
+        coronaGrad.addColorStop(1, "rgba(255, 145, 0, 0)");
         ctx.beginPath();
         ctx.arc(st.cx, st.cy, sunR * 8 * sunPulse, 0, TAU);
         ctx.fillStyle = coronaGrad;
         ctx.fill();
-        // Subtle flare rays — 8 cardinal rays that rotate slowly, adds "star-shine" feel
+        // Subtle flare rays & chromospheric prominence loops (dark mode)
         if (isDark) {
-          var rayAngle = visualTime * 0.00015;
+          var rayAngle = reduceMotion ? 0.35 : (visualTime * 0.00015);
           ctx.save();
           ctx.translate(st.cx, st.cy);
           ctx.rotate(rayAngle);
           for (var ray = 0; ray < 8; ray++) {
             ctx.rotate(TAU / 8);
-            var rayLen = sunR * (6 + Math.sin(visualTime * 0.0008 + ray) * 1.2);
+            var rayLen = sunR * (6 + (reduceMotion ? 0.4 : Math.sin(visualTime * 0.0008 + ray) * 1.2));
             var rayGrad = ctx.createLinearGradient(0, 0, rayLen, 0);
-            rayGrad.addColorStop(0, "rgba(255, 220, 100, 0.18)");
+            rayGrad.addColorStop(0, "rgba(255, 220, 100, 0.20)");
             rayGrad.addColorStop(1, "rgba(255, 200, 80, 0)");
             ctx.fillStyle = rayGrad;
             ctx.beginPath();
@@ -14517,6 +15151,24 @@ var i = 0;
             ctx.lineTo(rayLen, sunR * 0.25);
             ctx.closePath();
             ctx.fill();
+          }
+          // Delicate arched solar prominence loops hugging the limb
+          if (sunR >= 8) {
+            for (var promIdx = 0; promIdx < 4; promIdx++) {
+              var promBase = promIdx * (TAU / 4) + 0.42;
+              var promSpan = 0.26;
+              var promHeight = sunR * (1.32 + (promIdx % 2) * 0.18) * sunPulse;
+              ctx.strokeStyle = promIdx % 2 === 0 ? "rgba(255, 134, 54, 0.38)" : "rgba(255, 186, 78, 0.32)";
+              ctx.lineWidth = Math.max(1, sunR * 0.08);
+              ctx.lineCap = "round";
+              ctx.beginPath();
+              ctx.moveTo(Math.cos(promBase - promSpan) * sunR * 0.96, Math.sin(promBase - promSpan) * sunR * 0.96);
+              ctx.quadraticCurveTo(
+                Math.cos(promBase) * promHeight, Math.sin(promBase) * promHeight,
+                Math.cos(promBase + promSpan) * sunR * 0.96, Math.sin(promBase + promSpan) * sunR * 0.96
+              );
+              ctx.stroke();
+            }
           }
           ctx.restore();
         }
@@ -15047,25 +15699,31 @@ var i = 0;
             nu: pos.nu
           };
 
-          // ── Trail behind body (short arc of recent path) ──
+          // ── Luminous tapering orbital wake behind body ──
           if (b.type === "planet" || b.type === "comet") {
-            var trailSteps = b.type === "comet" ? 40 : 24;
-            var trailDt = b.T * 0.002;
-            ctx.beginPath();
-            for (var ti = 0; ti < trailSteps; ti++) {
+            var trailSteps = b.type === "comet" ? 40 : 28;
+            var trailDt = b.T * (b.type === "comet" ? 0.0022 : 0.0026);
+            var prevTx = sx, prevTy = sy;
+            ctx.save();
+            ctx.lineCap = "round";
+            ctx.strokeStyle = b.color;
+            for (var ti = 1; ti < trailSteps; ti++) {
               var tt = t - ti * trailDt;
               var tM = (TAU * tt / b.T) % TAU;
               var tPos = orbitalPos(b.a, b.e, tM);
               var tsx = st.cx + tPos.x * st.scale;
               var tsy = st.cy - tPos.y * st.scale;
-              if (ti === 0) ctx.moveTo(tsx, tsy);
-              else ctx.lineTo(tsx, tsy);
+              var fade = Math.pow(1 - ti / trailSteps, 1.7);
+              ctx.globalAlpha = fade * (isSelOrbit ? 0.72 : (isDark ? 0.48 : 0.36));
+              ctx.lineWidth = (isSelOrbit ? 2.8 : 2.1) * (0.35 + 0.65 * fade);
+              ctx.beginPath();
+              ctx.moveTo(prevTx, prevTy);
+              ctx.lineTo(tsx, tsy);
+              ctx.stroke();
+              prevTx = tsx;
+              prevTy = tsy;
             }
-            ctx.strokeStyle = b.color;
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.4;
-            ctx.stroke();
-            ctx.globalAlpha = 1;
+            ctx.restore();
           }
 
           // ── Comet tail (points away from Sun) ──
@@ -15138,14 +15796,23 @@ var i = 0;
           ctx.fillStyle = glowGrad;
           ctx.fill();
 
-          // ── Earth atmospheric halo (soft blue ring at the edge of Earth's disc) ──
-          if (b.id === "earth" && dotR >= 4) {
-            var atmoGrad = ctx.createRadialGradient(sx, sy, dotR * 0.95, sx, sy, dotR * 1.45);
-            atmoGrad.addColorStop(0, "rgba(100,180,255,0.35)");
-            atmoGrad.addColorStop(0.5, "rgba(140,200,255,0.18)");
-            atmoGrad.addColorStop(1, "rgba(180,220,255,0)");
+          // ── Atmospheric Rayleigh limb halo (sunlit crescent + soft glow) ──
+          var atmoTint = b.id === "earth" ? "rgba(110,190,255,"
+            : b.id === "venus" ? "rgba(255,220,145,"
+            : b.id === "mars" ? "rgba(255,154,108,"
+            : b.id === "jupiter" ? "rgba(245,204,152,"
+            : b.id === "saturn" ? "rgba(246,222,162,"
+            : b.id === "uranus" ? "rgba(130,235,244,"
+            : b.id === "neptune" ? "rgba(96,158,255,"
+            : null;
+          if (atmoTint && dotR >= 4) {
+            var atmoRadius = dotR * (b.id === "earth" || b.id === "venus" ? 1.48 : 1.32);
+            var atmoGrad = ctx.createRadialGradient(sx, sy, dotR * 0.92, sx, sy, atmoRadius);
+            atmoGrad.addColorStop(0, atmoTint + (b.id === "earth" ? "0.42)" : "0.26)"));
+            atmoGrad.addColorStop(0.55, atmoTint + (b.id === "earth" ? "0.18)" : "0.10)"));
+            atmoGrad.addColorStop(1, atmoTint + "0)");
             ctx.beginPath();
-            ctx.arc(sx, sy, dotR * 1.45, 0, TAU);
+            ctx.arc(sx, sy, atmoRadius, 0, TAU);
             ctx.fillStyle = atmoGrad;
             ctx.fill();
           }
@@ -15166,6 +15833,18 @@ var i = 0;
           ctx.arc(sx, sy, dotR, 0, TAU);
           ctx.fillStyle = bodyGrad;
           ctx.fill();
+          // Crisp sunlit atmospheric Fresnel rim arc facing the Sun
+          if (atmoTint && dotR >= 4.5 && isDark) {
+            var sunFacingAng = Math.atan2(sunDy, sunDx);
+            ctx.save();
+            ctx.strokeStyle = atmoTint + (b.id === "earth" ? "0.68)" : "0.42)");
+            ctx.lineWidth = Math.max(0.9, dotR * 0.14);
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.arc(sx, sy, dotR * 0.98, sunFacingAng - 1.15, sunFacingAng + 1.15);
+            ctx.stroke();
+            ctx.restore();
+          }
 
           // ── Per-planet surface character (each has distinct visual personality) ──
           // All clipped to the body circle so nothing spills outside. Only rendered when
@@ -15307,29 +15986,10 @@ var i = 0;
             ctx.restore();
           }
 
-          // ── Saturn rings (multi-band disk with Cassini division) ──
+          // ── Saturn rings (translucent multi-band C/B/Cassini/A disk, front & back) ──
           if (b.id === "saturn") {
             var ringTilt = -0.35;
-            // Back half of rings (behind the planet) — draw first
-            ctx.save();
-            ctx.translate(sx, sy);
-            ctx.rotate(ringTilt);
-            // Outer A ring
-            ctx.beginPath();
-            ctx.ellipse(0, 0, dotR * 2.4, dotR * 0.68, 0, Math.PI, 0);
-            ctx.strokeStyle = "rgba(224,192,104,0.82)"; ctx.lineWidth = 2.6; ctx.stroke();
-            // Cassini division gap (darker thin line)
-            ctx.beginPath();
-            ctx.ellipse(0, 0, dotR * 2.05, dotR * 0.58, 0, Math.PI, 0);
-            ctx.strokeStyle = "rgba(60,40,20,0.55)"; ctx.lineWidth = 0.9; ctx.stroke();
-            // Inner B ring (brighter, thicker)
-            ctx.beginPath();
-            ctx.ellipse(0, 0, dotR * 1.75, dotR * 0.50, 0, Math.PI, 0);
-            ctx.strokeStyle = "rgba(240,212,140,0.88)"; ctx.lineWidth = 2.8; ctx.stroke();
-            ctx.restore();
-            // ── Ring shadow cast on Saturn's body (small polish detail) ──
-            // A thin dark arc across the planet mimics the real ring shadow. Only shows
-            // when Saturn is zoomed in enough for the detail to register.
+            // Ring shadow cast on Saturn's body
             if (dotR >= 6) {
               ctx.save();
               ctx.beginPath();
@@ -15349,6 +16009,34 @@ var i = 0;
               ctx.stroke();
               ctx.restore();
             }
+            // Front luminous ring arcs crossing in front of Saturn's sunlit disc
+            ctx.save();
+            ctx.translate(sx, sy);
+            ctx.rotate(ringTilt);
+            // Translucent inner C-ring crepe veil
+            ctx.beginPath();
+            ctx.ellipse(0, 0, dotR * 1.42, dotR * 0.40, 0, 0, TAU);
+            ctx.strokeStyle = "rgba(196,174,132,0.30)"; ctx.lineWidth = Math.max(1.0, dotR * 0.18); ctx.stroke();
+            // Bright icy B-ring
+            ctx.beginPath();
+            ctx.ellipse(0, 0, dotR * 1.76, dotR * 0.50, 0, 0, Math.PI);
+            ctx.strokeStyle = "rgba(246,226,168,0.88)"; ctx.lineWidth = Math.max(1.8, dotR * 0.34); ctx.stroke();
+            // Cassini Division dark gap
+            ctx.beginPath();
+            ctx.ellipse(0, 0, dotR * 2.04, dotR * 0.58, 0, 0, Math.PI);
+            ctx.strokeStyle = isDark ? "rgba(15,18,32,0.72)" : "rgba(60,40,20,0.52)"; ctx.lineWidth = Math.max(0.8, dotR * 0.12); ctx.stroke();
+            // Outer A-ring with crisp icy sheen
+            ctx.beginPath();
+            ctx.ellipse(0, 0, dotR * 2.34, dotR * 0.67, 0, 0, Math.PI);
+            ctx.strokeStyle = "rgba(228,204,142,0.72)"; ctx.lineWidth = Math.max(1.4, dotR * 0.26); ctx.stroke();
+            // Back ring arcs (visible beyond the limb)
+            ctx.beginPath();
+            ctx.ellipse(0, 0, dotR * 2.34, dotR * 0.67, 0, Math.PI + 0.45, TAU - 0.45);
+            ctx.strokeStyle = "rgba(220,194,126,0.62)"; ctx.lineWidth = Math.max(1.4, dotR * 0.26); ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(0, 0, dotR * 1.76, dotR * 0.50, 0, Math.PI + 0.58, TAU - 0.58);
+            ctx.strokeStyle = "rgba(238,214,150,0.76)"; ctx.lineWidth = Math.max(1.8, dotR * 0.34); ctx.stroke();
+            ctx.restore();
           }
 
           // ── Uranus ring (vertical, faint blue-cyan — axis is tilted 98°) ──

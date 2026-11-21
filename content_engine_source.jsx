@@ -1119,7 +1119,7 @@ var createContentEngine = function(deps) {
       .replace(/[ \t]+([.,;:!?])/g, '$1')
       .replace(/[ \t]+$/gm, '')
       .replace(/\n{3,}/g, '\n\n');
-    linkPlaceholders.forEach(function(link, idx) { protectedText = protectedText.replace('__LINK_PLACEHOLDER_' + idx + '__', link); });
+    linkPlaceholders.forEach(function(link, idx) { protectedText = protectedText.replace('__LINK_PLACEHOLDER_' + idx + '__', function() { return link; }); });
     return protectedText;
   };
   var cleanSourceMetaCommentary = function(text) {
@@ -2689,6 +2689,22 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       // JSON has been parsed and formatted; appending Markdown first corrupts an
       // otherwise valid response and forces the raw-JSON fallback.
       let deferredDialogueBibliography = '';
+      let activeGroundingChunks = result?.groundingMetadata?.groundingChunks || null;
+      const stripRejectedDialogueCitations = (bodyText, chunks) => {
+          if (!bodyText || !Array.isArray(chunks) || chunks.length === 0) return bodyText;
+          const kept = filterSources(chunks);
+          const keptSet = new Set(kept);
+          const rejectedIdx = new Set();
+          chunks.forEach((ch, i) => { if (!keptSet.has(ch)) rejectedIdx.add(i + 1); });
+          if (rejectedIdx.size === 0) return bodyText;
+          const superMap = {'\u2070':0,'\u00b9':1,'\u00b2':2,'\u00b3':3,'\u2074':4,'\u2075':5,'\u2076':6,'\u2077':7,'\u2078':8,'\u2079':9};
+          const decodeSup = (s) => { let n = 0; for (let i = 0; i < s.length; i++) n = n * 10 + (superMap[s[i]] || 0); return n; };
+          const dropRejected = (match, digits) => rejectedIdx.has(decodeSup(digits)) ? '' : match;
+          return bodyText
+              .replace(/\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\([^)\n]*\)/g, dropRejected)
+              .replace(/\[\u207d?([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e\]\([^)\n]*$/gm, dropRejected)
+              .replace(/\u207d([\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+)\u207e(?!\])/g, dropRejected);
+      };
       if (typeof result === 'object' && result !== null && 'text' in result) {
           const rawText = typeof result.text === 'string' ? result.text : '';
           if (effIncludeCitations && rawText) {
@@ -2724,7 +2740,9 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                       .replace(/\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, '');
                   text = normalizeCitationSpacing(processedText).trim();
                   if (result.groundingMetadata?.groundingChunks) {
+                      text = stripRejectedDialogueCitations(text, result.groundingMetadata.groundingChunks);
                       const { renumberedText, reorderedChunks } = renumberCitations(text, result.groundingMetadata.groundingChunks);
+                      activeGroundingChunks = reorderedChunks;
                       text = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
                       text = defensiveLastCitationRepair(text, reorderedChunks);
                       const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
@@ -2766,7 +2784,9 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                   let strippedText = cleaned.replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '\n');
                   text = normalizeCitationSpacing(strippedText).trim();
                   if (result.groundingMetadata?.groundingChunks) {
+                      text = stripRejectedDialogueCitations(text, result.groundingMetadata.groundingChunks);
                       const { renumberedText, reorderedChunks } = renumberCitations(text, result.groundingMetadata.groundingChunks);
+                      activeGroundingChunks = reorderedChunks;
                       // CANONICAL URL VALIDATION: the cleanup round-trip above can corrupt URLs
                       // (truncate mid-domain, drop the closing paren, space-pad at dots, drop
                       // the protocol). Rebuild every [⁽N⁾](url) using the canonical web.uri
@@ -2783,7 +2803,9 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                   let fallbackText = cleanPostGroundingPlaceholders(processGroundedResponseText(rawText, result, isDialogueMode));
                   fallbackText = fallbackText.replace(/(?:\n|^)\s*(?:#{1,4}\s*)?(?:\*+\s*)?(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|Verified\s+Sources|Works?\s+Cited|Bibliography|Citations)(?:\*+)?[\s:]*(?=\s*\d+\.\s*\[[^\]]+\]\()[\s\S]*$/i, '\n').trim();
                   if (result.groundingMetadata?.groundingChunks) {
+                      fallbackText = stripRejectedDialogueCitations(fallbackText, result.groundingMetadata.groundingChunks);
                       const { renumberedText, reorderedChunks } = renumberCitations(fallbackText, result.groundingMetadata.groundingChunks);
+                      activeGroundingChunks = reorderedChunks;
                       fallbackText = restoreCanonicalCitationUrls(renumberedText, reorderedChunks);
                       fallbackText = defensiveLastCitationRepair(fallbackText, reorderedChunks);
                       const tempMeta = { ...result.groundingMetadata, groundingChunks: reorderedChunks };
@@ -2863,8 +2885,8 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       }
       if (effIncludeCitations && text) {
           text = sanitizeRawUrls(text);
-          if (result?.groundingMetadata?.groundingChunks) {
-              text = validateAndRepairCitations(text, result.groundingMetadata.groundingChunks);
+          if (activeGroundingChunks) {
+              text = validateAndRepairCitations(text, activeGroundingChunks);
           }
           const hasCitationMarkers = /\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/.test(text) || /Source Text References/i.test(text);
           if (!hasCitationMarkers && isShortText && !usedLegacyNoSearchFallback && !isDialogueMode) {
@@ -3413,15 +3435,15 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       if (!selectionMenu || !selectionMenu.text) return;
       const aiAvailability = lookupAiAvailability();
       if (aiAvailability !== 'ready') {
-          if (addToast) addToast(aiAvailability === 'disabled' ? 'AI tools are disabled in this student view.' : 'AI provider is not available right now.', 'info');
+          if (addToast) addToast(aiAvailability === 'disabled' ? __alloT('content_engine.ai_disabled_student', 'AI tools are disabled in this student view.') : __alloT('content_engine.ai_unavailable', 'AI provider is not available right now.'), 'info');
           return;
       }
       if (['simplify', 'custom', 'custom-input'].includes(action) && !_s().isTeacherMode) {
-          if (addToast) addToast('Only teachers can revise the passage text.', 'info');
+          if (addToast) addToast(__alloT('content_engine.only_teachers_revise', 'Only teachers can revise the passage text.'), 'info');
           return;
       }
       if (['simplify', 'custom', 'custom-input'].includes(action) && _isOriginalReading(deps.getState().generatedContent)) {
-          addToast('Create an adapted copy to change the wording of an original.', 'info');
+          addToast(__alloT('content_engine.create_adapted_copy', 'Create an adapted copy to change the wording of an original.'), 'info');
           return;
       }
       const originalText = selectionMenu.text;
@@ -3954,8 +3976,30 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
               if (aiAttempt === job) aiAttempt = null;
           }
       };
+      const _localSyllables = (() => {
+          if (kind !== 'phonics' || !word || /\s/.test(word)) return null;
+          try {
+              if (typeof window !== 'undefined' && typeof window.__alloSplitSyllables === 'function') {
+                  const parts = window.__alloSplitSyllables(word, request.language);
+                  if (Array.isArray(parts) && parts.length > 0) return parts;
+              }
+              if (typeof window !== 'undefined' && typeof window.__alloEnsureSyllableTable === 'function') {
+                  window.__alloEnsureSyllableTable();
+              }
+          } catch (_) {}
+          return null;
+      })();
+      const _localPicture = (() => {
+          if (kind !== 'definition' || !dictionarySupported || !word) return null;
+          try {
+              if (typeof window !== 'undefined' && typeof window.__alloLookupWordPicture === 'function') {
+                  return window.__alloLookupWordPicture(word);
+              }
+          } catch (_) {}
+          return null;
+      })();
       setter({
-          word, text: null, data: null, language: request.language, grade: request.grade,
+          word, text: null, data: null, localSyllables: _localSyllables, picture: _localPicture, language: request.language, grade: request.grade,
           lookupRequest: request, preparedText: request.preparedText,
           getAiAvailability: lookupAiAvailability,
           aiStatus: 'loading', dictionaryStatus: dictionarySupported ? 'loading' : 'unsupported',
@@ -3964,6 +4008,13 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           x: event?.clientX || context.x || rect?.left || 0,
           y: event?.clientY || context.y || rect?.bottom || 0
       });
+      if (kind === 'definition' && dictionarySupported && !_localPicture && typeof window !== 'undefined' && typeof window.__alloEnsureWordPictures === 'function') {
+          window.__alloEnsureWordPictures().then(() => {
+              if (!isCurrent() || typeof window.__alloLookupWordPicture !== 'function') return;
+              const pic = window.__alloLookupWordPicture(word);
+              if (pic) update({ picture: pic });
+          }).catch(() => {});
+      }
       if (dictionarySupported) void lookupDictionary();
       await run();
   };

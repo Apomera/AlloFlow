@@ -10,6 +10,8 @@
     "**/*",
     "package.json",
     "!.local/**",
+    "!.app-build-stage-*/**",
+    "!electron-builder.*.effective.json",
     "!app-build/**",
     "!schoolbox/**",
     "!build-resources/**",

@@ -1196,7 +1196,7 @@
     var data = props.data;
     var primitives = props.primitives || {};
     var SuggestionBadge = primitives.SuggestionBadge;
-    var aiScalarText2 = primitives.aiScalarText || function(v) {
+    var aiScalarText = primitives.aiScalarText || function(v) {
       return typeof v === "string" ? v : v && typeof v === "object" && !Array.isArray(v) && typeof v.text === "string" ? v.text : v == null || typeof v === "object" ? "" : String(v);
     };
     if (!data) return null;
@@ -1206,12 +1206,15 @@
       borderRadius: "12px",
       background: "#f5f3ff",
       border: "1px solid #c4b5fd"
-    } }, SuggestionBadge && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "6px" } }, /* @__PURE__ */ React.createElement(SuggestionBadge, { t })), /* @__PURE__ */ React.createElement(AiResultBody, { data, t }));
+    } }, SuggestionBadge && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "6px" } }, /* @__PURE__ */ React.createElement(SuggestionBadge, { t })), /* @__PURE__ */ React.createElement(AiResultBody, { data, t, aiScalarText }));
   }
   function AiResultBody(props) {
     var data = props.data || {};
     var t = props.t || function(k) {
       return k;
+    };
+    var aiScalarText = typeof props.aiScalarText === "function" ? props.aiScalarText : function(v) {
+      return typeof v === "string" ? v : v && typeof v === "object" && !Array.isArray(v) && typeof v.text === "string" ? v.text : v == null || typeof v === "object" ? "" : String(v);
     };
     function renderQuestions(arr, label) {
       if (!Array.isArray(arr) || !arr.length) return null;
@@ -1975,7 +1978,9 @@
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F916} "),
       busy ? t("scientific.asking") || "Asking\u2026" : t("scientific.ask_another_button") || "Show me another reading"
-    ), aiResult && aiResult.blocked && /* @__PURE__ */ React.createElement(BlockedNote, { t, reason: aiResult.detail || aiResult.blockedReason }), aiResult && !aiResult.blocked && aiResult.data && /* @__PURE__ */ React.createElement(AiResultPanel, { t, data: aiResult.data, primitives }), aiResult && !aiResult.blocked && /* @__PURE__ */ React.createElement(
+    ), aiResult && aiResult.blocked && /* @__PURE__ */ React.createElement(BlockedNote, { t, reason: aiResult.detail || aiResult.blockedReason }), aiResult && !aiResult.blocked && aiResult.data && /* @__PURE__ */ React.createElement(AiResultPanel, { t, data: aiResult.data, primitives }), (aiResult && !aiResult.blocked || (journal.aiHistory || []).some(function(h) {
+      return h && h.touchpoint === "steelman_second_pass" && !h.blocked;
+    }) || !!(comp && comp.trim())) && /* @__PURE__ */ React.createElement(
       TextareaCard,
       {
         t,

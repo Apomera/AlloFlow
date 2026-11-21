@@ -437,7 +437,8 @@ describe('the builder: pictures off', () => {
     // takeHomeShell trusted 250ms/IME keydown guard): same 124 items and pictures-off still embeds zero picture code.
     // Re-pinned 2026-11-19 (Wave 8A: Dark/HC @media print reset, Reading Focus Dark/HC curtain + resize sync, Magnifier
     // .lt-grip null-guard & touch bounds clamp): same 124 items and pictures-off still embeds zero picture code.
-    all: { sha256: '5779e84944d37d022d1ba2899d919bebd652478fb147a1d6a3e20ea8a030a03a', bytes: 334548, items: 124 },
+    // Re-pinned 2026-11-19 (Phase 1 universal Bold start / Bionic reading in takeHomeTools, +2328 bytes): same 124 items and pictures-off still embeds zero picture code.
+    all: { sha256: '74b31e97bb3ba51a66333e03c912f0de0d98eb855d3985b7a59eefc9e1d7fd40', bytes: 309141, items: 124 },
     // Re-pinned 2026-11-12 (evening), as "all" above; the loader before still gives b3221d74.../71353.
     // Re-pinned 2026-11-12 (night), as "all" above; the loader before still gives 202974c1.../79452.
     // Re-pinned 2026-11-13 (polish pass, as "all" above: the R key and the end screen's practice line, +977 bytes); the loader before still gives dc61bb4c.../84670.
@@ -451,7 +452,8 @@ describe('the builder: pictures off', () => {
     // Re-pinned 2026-11-19 (Wave 6A isolation middle/last + posKey/opening/tools shell delta, +466 bytes over Wave 5A); the loader before still gives ad1bf69c.../158928.
     // Re-pinned 2026-11-19 (Wave 7A: takeHomeShell trusted 250ms/IME keydown guard, +249 bytes over Wave 6A); same 5 items.
     // Re-pinned 2026-11-19 (Wave 8A: Dark/HC @media print reset, Reading Focus Dark/HC curtain + resize sync, Magnifier null-guard & touch clamp); same 5 items.
-    isolation: { sha256: 'c2c20258759b77eea9e8847a9269b9b32e1748c2f78b6d9b34b0bd91cb8f9884', bytes: 161521, items: 5 },
+    // Re-pinned 2026-11-19 (Phase 1 universal Bold start / Bionic reading in takeHomeTools, +2328 bytes); same 5 items.
+    isolation: { sha256: 'c9280f646b8e94296a1b491f1477ca3ee8b3ae26166dba1b98cca88f62ca56be', bytes: 162118, items: 5 },
   };
   const CASES = { all: {}, isolation: { words: CVC.slice(0, 5), activities: ['isolation'], title: undefined } };
 

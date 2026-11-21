@@ -308,9 +308,12 @@ const handleDiceRollComplete = (deps) => {
                   const rawAdd = data.inventoryUpdate.add;
                   const itemsToAdd = Array.isArray(rawAdd) ? rawAdd : [rawAdd];
                   itemsToAdd.forEach(itemData => {
-                      const itemName = typeof itemData === 'object' ? itemData.name : itemData;
-                      const aiDescription = typeof itemData === 'object' ? itemData.description : null;
-                      let itemType = typeof itemData === 'object' ? itemData.type : undefined;
+                      if (itemData == null) return;
+                      const isObj = typeof itemData === 'object';
+                      const itemName = String(isObj ? (itemData.name ?? '') : itemData).trim();
+                      if (!itemName) return;
+                      const aiDescription = isObj ? itemData.description : null;
+                      let itemType = isObj ? itemData.type : undefined;
                       if (!itemType) {
                           const lower = itemName.toLowerCase();
                           const isConsumable = /ration|food|potion|drink|snack|eat|bandage|salve|elixir|fruit|bread|water|apple|berry/i.test(lower);
@@ -625,23 +628,30 @@ const handleDiceRollComplete = (deps) => {
                   if (data.inventoryUpdate.add) {
                       const rawAdd = data.inventoryUpdate.add;
                       const itemsToAdd = Array.isArray(rawAdd) ? rawAdd : [rawAdd];
-                      const names = itemsToAdd.map(i => typeof i === 'object' ? i.name : i).join(', ');
-                      addToast(`Obtained: ${names}`, "success");
-                      setTimeout(() => playAdventureEventSound('item_get'), 500);
+                      const names = itemsToAdd
+                          .map(i => i == null ? '' : String(typeof i === 'object' ? (i.name ?? '') : i).trim())
+                          .filter(Boolean)
+                          .join(', ');
+                      if (names) {
+                          addToast(`Obtained: ${names}`, "success");
+                          setTimeout(() => playAdventureEventSound('item_get'), 500);
+                      }
                   }
                   if (removedItemNames.length > 0) addToast(`Lost: ${removedItemNames.join(', ')}`, "error");
               }
               const stateNotification = data.systemStateUpdate || data.systemResourceUpdate;
               if (stateNotification) {
                   if (stateNotification.add) {
-                      const adds = Array.isArray(stateNotification.add) ? stateNotification.add : [stateNotification.add];
+                      const adds = (Array.isArray(stateNotification.add) ? stateNotification.add : [stateNotification.add])
+                          .filter(s => s && typeof s === 'object' && String(s.name || '').trim());
                       const stateNames = adds.map(s => `${s.icon || '📊'} ${s.name} (+${s.quantity || 1}${s.unit ? ' ' + s.unit : ''})`).join(', ');
-                      addToast(`${t('adventure.system_state') || 'System State'}: ${stateNames}`, "success");
+                      if (stateNames) addToast(`${t('adventure.system_state') || 'System State'}: ${stateNames}`, "success");
                   }
                   if (stateNotification.remove) {
-                      const removes = Array.isArray(stateNotification.remove) ? stateNotification.remove : [stateNotification.remove];
+                      const removes = (Array.isArray(stateNotification.remove) ? stateNotification.remove : [stateNotification.remove])
+                          .filter(s => s && typeof s === 'object' && String(s.name || '').trim());
                       const stateNames = removes.map(s => `${s.name} (-${s.quantity || 1}${s.unit ? ' ' + s.unit : ''})`).join(', ');
-                      addToast(`State Decreased: ${stateNames}`, "warning");
+                      if (stateNames) addToast(`State Decreased: ${stateNames}`, "warning");
                   }
               }
               triggerInventoryPixelArt();
@@ -810,8 +820,8 @@ const bumpNarrativeLedgerEpoch = (owner) => {
   }
   return next;
 };
-const cancelAdventureSceneImage = (setAdventureState) => {
-  bumpNarrativeLedgerEpoch(setAdventureState);
+const cancelAdventureSceneImage = (setAdventureState, opts) => {
+  if (!opts || !opts.keepLedger) bumpNarrativeLedgerEpoch(setAdventureState);
   const request = adventureSceneImageRequests.get(setAdventureState);
   if (!request) return false;
   request.cancelled = true;
@@ -833,7 +843,7 @@ const generateAdventureImage = (sceneText, targetTurn, deps) => {
       && state.currentScene?.text === text && !state.isLoading;
   const current = adventureSceneImageRequests.get(owner);
   if (current?.key === key && !current.cancelled) return current.promise;
-  cancelAdventureSceneImage(owner);
+  cancelAdventureSceneImage(owner, { keepLedger: true });
   const request = { key, cancelled: false, completed: false, promise: null };
   adventureSceneImageRequests.set(owner, request);
   const ownsRequest = () => !request.cancelled && adventureSceneImageRequests.get(owner) === request;
@@ -866,9 +876,14 @@ const runAdventureImage = async (sceneText, targetTurn, deps, request) => {
                   || adventureState.currentScene?.charactersInScene;
               let relevantChars;
               if (sceneChars && Array.isArray(sceneChars) && sceneChars.length > 0) {
-                  relevantChars = adventureState.characters.filter(c =>
-                      sceneChars.some(name => c.name.toLowerCase() === name.toLowerCase())
-                  );
+                  relevantChars = adventureState.characters.filter(c => {
+                      const charName = String(c?.name || '').trim().toLowerCase();
+                      if (!charName) return false;
+                      return sceneChars.some(entry => {
+                          const raw = typeof entry === 'string' ? entry : (entry && typeof entry === 'object' ? entry.name : '');
+                          return String(raw || '').trim().toLowerCase() === charName;
+                      });
+                  });
                   if (relevantChars.length === 0) relevantChars = [adventureState.characters[0]];
               } else {
                   relevantChars = adventureState.characters.filter(c =>

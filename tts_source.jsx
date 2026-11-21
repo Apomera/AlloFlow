@@ -24,13 +24,34 @@ const createTTS = (deps) => {
         // React callback
         setShowKokoroOfferModal,
     } = deps;
+    const _secretsLockedOrFenced = () => {
+        try {
+            if (typeof window === 'undefined') return false;
+            if (window.__alloAiSecretsLocked === true) return true;
+            if (typeof window.__alloPastedAiKeyFenceActive === 'function' && window.__alloPastedAiKeyFenceActive() === true) return true;
+            return false;
+        } catch (_) {
+            return true;
+        }
+    };
     const _getApiKey = () => {
+        if (_secretsLockedOrFenced()) return '';
         try {
             const live = typeof getApiKey === 'function' ? getApiKey() : apiKey;
             return typeof live === 'string' ? live : (live ? String(live) : '');
         } catch (_) {
-            return typeof apiKey === 'string' ? apiKey : '';
+            return '';
         }
+    };
+    const _validateTtsModelId = (model) => {
+        const id = String(model == null ? '' : model).replace(/^models\//, '').trim();
+        if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(id) || id === '.' || id === '..') {
+            const error = new Error('Invalid TTS model identifier.');
+            error.code = 'allo/invalid-model';
+            error.isFatal = true;
+            throw error;
+        }
+        return id;
     };
 
     // The managed AI v1 contract permits reviewed text inference only. These
@@ -59,6 +80,13 @@ const createTTS = (deps) => {
             studentError.useBrowserTts = true;
             studentError.studentAiOff = true;
             throw studentError;
+        }
+        if (typeof window !== 'undefined' && window.__alloAiSecretsLocked === true) {
+            const lockedError = new Error('Cloud speech is unavailable while AI keys are locked. Use a local or device voice.');
+            lockedError.code = 'BROWSER_TTS_REQUIRED';
+            lockedError.useBrowserTts = true;
+            lockedError.secretsLocked = true;
+            throw lockedError;
         }
         if (typeof window === 'undefined' || window.ALLOFLOW_MANAGED_AI_POLICY == null) return;
         const error = new Error('Cloud speech is not approved by the managed AI deployment. Use a local or device voice.');
@@ -389,6 +417,18 @@ const createTTS = (deps) => {
     });
     const fetchTTSBytes = (text, voiceName, speed = 1, language = 'English', signal = null, requestPriority = 'normal', requestedModel = GEMINI_MODELS?.tts) => {
         _assertCloudTtsAllowed();
+        const _ttsProvider = typeof getAiUserConfig === 'function' ? (getAiUserConfig()?.ttsProvider || 'auto') : 'auto';
+        if (_ttsProvider === 'off') {
+            const offError = new Error('Text-to-speech is turned off.');
+            offError.code = 'TTS_DISABLED';
+            throw offError;
+        }
+        if (String(_resolveRequestedVoice(voiceName) || '').toLowerCase() === 'browser' || _ttsProvider === 'browser') {
+            const browserError = new Error('Browser device voice cannot be fetched as audio bytes.');
+            browserError.code = 'BROWSER_TTS_REQUIRED';
+            browserError.useBrowserTts = true;
+            throw browserError;
+        }
         // Resolve against the LIVE catalog: TTS can initialize before VoiceConfig.
         const safeVoice = _resolveGeminiVoice(voiceName);
         const speechProfile = _normalizeTtsSpeechProfile(language);
@@ -436,7 +476,8 @@ const createTTS = (deps) => {
             try {
                 // bare: the retry after Gemini read the word framing aloud (see the length check below).
                 const attempt = async (bare) => {
-            const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${requestedModel}:generateContent`;
+            const safeRequestedModel = _validateTtsModelId(requestedModel);
+            const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${safeRequestedModel}:generateContent`;
             const url = baseUrl;
             const decodeBase64 = (base64) => {
                  const binaryString = window.atob(base64);
@@ -1354,7 +1395,7 @@ let piperLoadPromise = null;
                         }
                     }
                     if (!_kokoroLockedOut && (!window._kokoroTTS || !window._kokoroTTS.ready)) await ensureKokoroTts(undefined, _signal);
-                    if (!_kokoroLockedOut && window._kokoroTTS) {
+                    if (!_kokoroLockedOut && window._kokoroTTS && window._kokoroTTS.ready) {
                         // callTTS promises one COMPLETE playable URL. The streaming
                         // API returns only its first chunk and requires chainPlay,
                         // which karaoke and most read-aloud callers do not use.
@@ -1379,7 +1420,7 @@ let piperLoadPromise = null;
                         const relayKokoroAbort = () => { try { kokoroController?.abort(); } catch (_) {} };
                         if (_signal && kokoroController) {
                             if (_signal.aborted) relayKokoroAbort();
-                            else _signal.addEventListener('abort', relayKokoroAbort, { once: true });
+                            else { try { _signal.addEventListener?.('abort', relayKokoroAbort, { once: true }); } catch (_) {} }
                         }
                         let kokoroTimer = null;
                         try {
@@ -1851,11 +1892,12 @@ let piperLoadPromise = null;
                 for (let botAttempt = 0; botAttempt < botCanvasMaxAttempts; botAttempt++) {
                     try {
                 const botCanvasGeminiVoice = _resolveGeminiVoice(voiceName);
-                        const canvasCacheKey = JSON.stringify([String(text || ''), botCanvasGeminiVoice, _directLanguage, 'natural-rate-v1', _directModel]);
+                        const _canvasDirectProfile = _normalizeTtsSpeechProfile(_directLanguage, _directOpts.locale, _directOpts.dialect);
+                        const canvasCacheKey = JSON.stringify([String(text || ''), botCanvasGeminiVoice, _canvasDirectProfile.cacheIdentity, 'natural-rate-v1', _directModel]);
                         if (state.urlCache && state.urlCache.has(canvasCacheKey)) {
                             return state.urlCache.get(canvasCacheKey);
                         }
-                        const ttsResult = await fetchTTSBytes(text, botCanvasGeminiVoice, speed, _directLanguage, _directSignal, 'interactive', _directModel);
+                        const ttsResult = await fetchTTSBytes(text, botCanvasGeminiVoice, speed, _canvasDirectProfile, _directSignal, 'interactive', _directModel);
                         if (ttsResult) {
                             const { bytes: pcmBytes } = ttsResult;
                             const wavBuffer = pcmToWav(pcmBytes);
@@ -1905,7 +1947,7 @@ let piperLoadPromise = null;
                     // Same lazy wake as callTTS: an on-device model should serve
                     // bot lines too instead of losing them to the browser voice.
                     if (!window._kokoroTTS || !window._kokoroTTS.ready) await ensureKokoroTts(undefined, _directSignal);
-                    if (window._kokoroTTS) {
+                    if (window._kokoroTTS && window._kokoroTTS.ready) {
                         const url = await window._kokoroTTS.speakStreaming(cleanedText, voiceName, speed, { signal: _directSignal });
                         if (url) return url;
                     }
@@ -2007,8 +2049,10 @@ let piperLoadPromise = null;
         }
         const safeVoice = _resolveGeminiVoice(voiceName);
         if (safeVoice !== voiceName) console.warn(`[TTS-Bot] Voice "${voiceName}" is not a valid Gemini voice. Falling back to "${safeVoice}".`);
-        console.log("[TTS-Bot] 🎤 callTTSDirect called:", { characters: String(text || '').length, voice: safeVoice, speed });
-        const cacheKey = JSON.stringify([String(text || ''), safeVoice, _directLanguage, 'natural-rate-v1', _directModel]);
+        const _directSpeechProfile = _normalizeTtsSpeechProfile(_directLanguage, _directOpts.locale, _directOpts.dialect);
+        const _directIsPlainEnglish = /^english$/i.test(_directSpeechProfile.baseLanguage) && !_directSpeechProfile.locale && !_directSpeechProfile.dialect;
+        console.log("[TTS-Bot] 🎤 callTTSDirect called:", { characters: String(text || '').length, voice: safeVoice, speed, lang: _directSpeechProfile.cacheIdentity });
+        const cacheKey = JSON.stringify([String(text || ''), safeVoice, _directSpeechProfile.cacheIdentity, 'natural-rate-v1', _directModel]);
         if (state.urlCache.has(cacheKey)) {
             console.log("[TTS-Bot] ⚡ Cache HIT; characters:", String(text || '').length);
             return state.urlCache.get(cacheKey);
@@ -2025,7 +2069,8 @@ let piperLoadPromise = null;
                 const queuedTask = (state.botQueue || Promise.resolve()).then(async () => {
                     _assertCloudTtsAllowed();
                     console.log("[TTS-Bot] 🔄 Queue slot acquired, making API call...");
-                    const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${_directModel}:generateContent`;
+                    const safeDirectModel = _validateTtsModelId(_directModel);
+                    const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${safeDirectModel}:generateContent`;
                     const url = baseUrl;
                     const decodeBase64 = (base64) => {
                          const binaryString = window.atob(base64);
@@ -2034,8 +2079,11 @@ let piperLoadPromise = null;
                          for (let j = 0; j < len; j++) bytes[j] = binaryString.charCodeAt(j);
                          return bytes;
                     };
+                    const _directPromptText = _directIsPlainEnglish
+                        ? ((text.length > 10 ? 'Read the following text aloud naturally, do not perform sound effects or noises: ' : '') + text)
+                        : _cloudTtsPrompt(text, _directSpeechProfile);
                     const payload = {
-                      contents: [{ parts: [{ text: (text.length > 10 ? 'Read the following text aloud naturally, do not perform sound effects or noises: ' : '') + text }] }],
+                      contents: [{ parts: [{ text: _directPromptText }] }],
                       generationConfig: {
                         responseModalities: ["AUDIO"],
                         ...(state.ttsTemperatureUnsupported ? {} : { temperature: 0.7 }),
@@ -2124,7 +2172,8 @@ let piperLoadPromise = null;
                         console.warn("[TTS-Bot] ❌ Gemini Model Refusal (finishReason: OTHER).");
                         throw new Error("Gemini TTS model refused");
                     }
-                    const part = data.candidates?.[0]?.content?.parts?.[0];
+                    const parts = Array.isArray(data.candidates?.[0]?.content?.parts) ? data.candidates[0].content.parts : [];
+                    const part = parts.find(p => p?.inlineData?.data && (!p.inlineData.mimeType || /^audio\//i.test(p.inlineData.mimeType))) || parts.find(p => p?.inlineData?.data);
                     const base64Audio = part?.inlineData?.data;
                     if (!base64Audio) {
                         console.error("[TTS-Bot] ❌ No audio data in response.");
@@ -2132,6 +2181,9 @@ let piperLoadPromise = null;
                     }
                     console.log("[TTS-Bot] ✅ Audio data received, decoding...");
                     const bytes = decodeBase64(base64Audio);
+                    if (!bytes.length || bytes.length % 2 !== 0) {
+                        throw new Error("Invalid PCM audio payload.");
+                    }
                     _noteGeminiSuccess();
                     return { bytes, base64: base64Audio };
                 });
@@ -2166,12 +2218,14 @@ let piperLoadPromise = null;
         }
         // If an on-device engine is already loaded, fall back to it cleanly instead of failing.
         try {
-            if (typeof window !== 'undefined' && window._kokoroTTS?.ready && !_directSignal?.aborted) {
-                const kokoroUrl = await window._kokoroTTS.speak(text, { speed, voice: voiceName, signal: _directSignal });
+            const _fallbackLangCode = typeof languageToTTSCode === 'function' ? languageToTTSCode(_directSpeechProfile.baseLanguage) : 'en';
+            const _fallbackText = cleanTextForLocalTTS(text);
+            if (_fallbackLangCode === 'en' && typeof window !== 'undefined' && window._kokoroTTS?.ready && !_directSignal?.aborted) {
+                const kokoroUrl = await window._kokoroTTS.speak(_fallbackText, voiceName, speed, { signal: _directSignal });
                 if (kokoroUrl) return kokoroUrl;
             }
-            if (typeof window !== 'undefined' && window._piperTTS?.ready && window._piperTTS.supportsLanguage?.(_directLanguage) && !_directSignal?.aborted) {
-                const piperUrl = await window._piperTTS.speak(text, { speed, language: _directLanguage, signal: _directSignal });
+            if (typeof window !== 'undefined' && window._piperTTS?.ready && window._piperTTS.supportsLanguage?.(_fallbackLangCode) && !_directSignal?.aborted) {
+                const piperUrl = await window._piperTTS.speak(_fallbackText, _fallbackLangCode, speed, { signal: _directSignal });
                 if (piperUrl) return piperUrl;
             }
         } catch (localErr) {

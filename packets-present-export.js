@@ -152,11 +152,33 @@
     }
   }
 
+  function safeJsonParse(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
+
   function loadJson(url) {
     if (typeof root.fetch !== 'function') return Promise.reject(new Error('fetch unavailable'));
-    return root.fetch(url).then(function (res) {
-      if (!res.ok) throw new Error(url + ' ' + res.status);
-      return res.json();
+    var ctrl = typeof root.AbortController === 'function' ? new root.AbortController() : null;
+    var timer = 0;
+    return new Promise(function (resolve, reject) {
+      timer = typeof root.setTimeout === 'function' ? root.setTimeout(function () {
+        if (ctrl) { try { ctrl.abort(); } catch (_) {} }
+        reject(new Error(url + ' timed out'));
+      }, 15000) : 0;
+      Promise.resolve().then(function () {
+        return ctrl ? root.fetch(url, { signal: ctrl.signal }) : root.fetch(url);
+      }).then(function (res) {
+        if (!res || !res.ok) throw new Error(url + ' ' + (res ? res.status : 0));
+        return typeof res.text === 'function' ? res.text().then(safeJsonParse) : res.json();
+      }).then(function (data) {
+        if (timer && typeof root.clearTimeout === 'function') root.clearTimeout(timer);
+        resolve(data);
+      }, function (err) {
+        if (timer && typeof root.clearTimeout === 'function') root.clearTimeout(timer);
+        reject(err);
+      });
     });
   }
 
@@ -574,12 +596,12 @@
     var edits = null;
     try {
       var raw = storage.getItem('alloflow-packets-vocab/1');
-      if (raw) saved = JSON.parse(raw);
+      if (raw) saved = safeJsonParse(raw);
     } catch (_) { saved = null; }
     if (!saved || typeof saved !== 'object') return null;
     try {
       var rawEdits = storage.getItem('alloflow-packets-vocab-edits/1');
-      if (rawEdits) edits = JSON.parse(rawEdits);
+      if (rawEdits) edits = safeJsonParse(rawEdits);
     } catch (_) { edits = null; }
 
     var rawWords = Array.isArray(saved.words)
@@ -590,7 +612,7 @@
 
     var wordEdits = edits && edits.words && typeof edits.words === 'object' ? edits.words : {};
     var senseEdits = edits && edits.senses && typeof edits.senses === 'object' ? edits.senses : {};
-    var seen = {};
+    var seen = Object.create(null);
     var items = [];
     rawWords.forEach(function (word) {
       if (!word) return;
@@ -659,7 +681,7 @@
     var saved = null;
     try {
       var raw = storage.getItem('alloflow-packets-maker/1');
-      if (raw) saved = JSON.parse(raw);
+      if (raw) saved = safeJsonParse(raw);
     } catch (_) { saved = null; }
     if (!saved || typeof saved !== 'object') return null;
     var rawWords = Array.isArray(saved.words) && saved.words.length
@@ -667,7 +689,7 @@
       : (saved.mode === 'own'
           ? String(saved.own || '').split(/[\s,;]+/)
           : (Array.isArray(saved.chosen) ? saved.chosen : []));
-    var seen = {};
+    var seen = Object.create(null);
     var items = [];
     (rawWords || []).forEach(function (w) {
       var word = String(w == null ? '' : w).trim().toLowerCase();
@@ -725,6 +747,10 @@
   function packItemsOf(pack) {
     var list = (pack && (Array.isArray(pack.items) ? pack.items : pack.words)) || [];
     return enrichItems((pack && pack.title) || 'Word Cards', list);
+  }
+
+  function sheetReadingOpts() {
+    return { syllables: !!($('pe-opt-syllables') && $('pe-opt-syllables').checked), bold: !!($('pe-opt-bold') && $('pe-opt-bold').checked) };
   }
 
   function buildFlashcardsHtml(packArg) {
@@ -806,7 +832,7 @@
 
   function openInSymbolRunner(packArg) {
     var items = packItemsOf(activePack(packArg));
-    var seen = {};
+    var seen = Object.create(null);
     var shortWords = [];
     items.forEach(function (it) {
       var w = String((it && it.word) || '').trim();
@@ -974,6 +1000,9 @@
       'word-wall': { suffix: '-word-wall.html', label: 'classroom Word Wall cards', build: buildWordWallHtml },
     };
 
+    var mSup = root.AlloWordPracticeMedia;
+    if ($('pe-opt-syllables')) $('pe-opt-syllables').addEventListener('change', function () { if (this.checked && mSup && mSup.ensureSyllableTableLoaded) mSup.ensureSyllableTableLoaded(doc); });
+
     if (sheetDownloadBtn && sheetTypeSelect) {
       sheetDownloadBtn.addEventListener('click', function () {
         var key = sheetTypeSelect.value;
@@ -988,13 +1017,17 @@
           say('Add at least 2 words to make an I Have, Who Has loop.');
           return;
         }
-        var fname = slugTitle(pack.title) + spec.suffix;
-        downloadHtmlFile(spec.build(pack), fname);
-        if (key === 'bingo' && items.length < 8) {
-          say('Saved ' + spec.label + ' (' + fname + '). Fewer than 8 words, so words repeat on each 3x3 board — add 8 or more words for unique squares.');
-        } else {
-          say('Saved ' + spec.label + ' (' + fname + ').');
-        }
+        var opts = sheetReadingOpts();
+        var go = function () {
+          var fname = slugTitle(pack.title) + spec.suffix;
+          var rawHtml = spec.build(pack);
+          downloadHtmlFile(mSup && mSup.applySheetReadingSupports ? mSup.applySheetReadingSupports(rawHtml, opts) : rawHtml, fname);
+          say(key === 'bingo' && items.length < 8
+            ? 'Saved ' + spec.label + ' (' + fname + '). Fewer than 8 words, so words repeat on each 3x3 board — add 8 or more words for unique squares.'
+            : 'Saved ' + spec.label + ' (' + fname + ').');
+        };
+        if (opts.syllables && !(root.AlloModules && root.AlloModules.SyllableTableEn) && mSup && mSup.ensureSyllableTableLoaded) mSup.ensureSyllableTableLoaded(doc).then(go);
+        else go();
       });
     }
 

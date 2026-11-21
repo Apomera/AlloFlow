@@ -1234,8 +1234,14 @@
         return { __rejected: true, rejectReason: "analog_domain_too_close_to_question", attemptedShapeKeys: ["analog_domain_shape"] };
       }
     }
-    var IMP = /^(your warrant should|a better warrant|consider warranting|the warrant could be)/i;
-    var allText = JSON.stringify(out);
+    var IMP = /\b(your warrant should|a better warrant|consider warranting|the warrant could be)\b/i;
+    var questionStrings = [];
+    for (var qi = 0; qi < needed.length; qi++) {
+      (out[needed[qi]] || []).forEach(function(item) {
+        if (typeof item === "string") questionStrings.push(item);
+      });
+    }
+    var allText = questionStrings.length ? questionStrings.join("\n") : JSON.stringify(out);
     if (IMP.test(allText)) {
       return { __rejected: true, rejectReason: "directive_phrase_in_output", attemptedShapeKeys: ["*"] };
     }
@@ -2094,16 +2100,22 @@
     var sift = source.sift || {};
     var srcHost = hostnameFromRef(source.citation || "");
     var isHistoricalScholarly = (devLevel === "ap" || devLevel === "9_12") && source.kind === "scholarly_article";
-    var updateSift = function(path, value) {
+    var updateSiftPatch = function(entries) {
       var next = JSON.parse(JSON.stringify(sift));
-      var keys = path.split(".");
-      var ref = next;
-      for (var i = 0; i < keys.length - 1; i++) {
-        if (!ref[keys[i]]) ref[keys[i]] = {};
-        ref = ref[keys[i]];
-      }
-      ref[keys[keys.length - 1]] = value;
+      (entries || []).forEach(function(pair) {
+        var path = pair[0], value = pair[1];
+        var keys = path.split(".");
+        var ref = next;
+        for (var i = 0; i < keys.length - 1; i++) {
+          if (!ref[keys[i]]) ref[keys[i]] = {};
+          ref = ref[keys[i]];
+        }
+        ref[keys[keys.length - 1]] = value;
+      });
       onUpdate(Object.assign({}, source, { sift: next }));
+    };
+    var updateSift = function(path, value) {
+      updateSiftPatch([[path, value]]);
     };
     var promoteTier = function(tier) {
       var oldTier = sift.tier || "unvetted";
@@ -2222,8 +2234,7 @@
         rows: 2,
         maxLength: 400,
         onChange: function(e) {
-          updateSift("stop.firstReactionText", e.target.value);
-          updateSift("stop.ts", Date.now());
+          updateSiftPatch([["stop.firstReactionText", e.target.value], ["stop.ts", Date.now()]]);
         },
         style: {
           width: "100%",
@@ -2811,12 +2822,8 @@
     var primitives = ctx.primitives;
     var floors = devFloors(journal.devLevel || "6_8");
     var stageNote = (journal.stageNotes || {}).frame_question || {};
-    var _qt = useState(journal.questionTitle || "");
-    var qt = _qt[0];
-    var setQt = _qt[1];
-    var _rat = useState(stageNote.contestabilityRationale || "");
-    var rat = _rat[0];
-    var setRat = _rat[1];
+    var qt = journal.questionTitle || "";
+    var rat = stageNote.contestabilityRationale || "";
     var _addingSh = useState(false);
     var addingSh = _addingSh[0];
     var setAddingSh = _addingSh[1];
@@ -2830,18 +2837,22 @@
     var busy = _busy[0];
     var setBusy = _busy[1];
     var methodGuide = humanitiesMethodGuide(journal.activeMethodPack);
-    useEffect(function() {
+    var setQt = function(val) {
+      setJournal(function(prev) {
+        return Object.assign({}, prev, { questionTitle: (val || "").slice(0, 240) });
+      });
+    };
+    var setRat = function(val) {
       setJournal(function(prev) {
         var next = Object.assign({}, prev);
-        next.questionTitle = (qt || "").slice(0, 240);
         next.stageNotes = Object.assign({}, prev.stageNotes || {});
         next.stageNotes.frame_question = Object.assign({}, next.stageNotes.frame_question || {}, {
-          contestabilityRationale: rat,
+          contestabilityRationale: val,
           ts: Date.now()
         });
         return next;
       });
-    }, [qt, rat]);
+    };
     var stakeholders = journal.questionStakeholders || [];
     var plausibles = journal.humanitiesPlausibleAnswers || [];
     var sa = journal.stakesAudience;
@@ -3855,7 +3866,7 @@
         placeholder: t("humanities.framing_occlude_ph") || "What does it OCCLUDE? (optional)",
         style: { padding: "6px 8px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "11px", fontFamily: "inherit" }
       }
-    ), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": "Which vetted sources fit this framing? (at least 1)", style: { fontSize: "11px", fontWeight: 700, color: "#9d174d" } }, /* @__PURE__ */ React.createElement("div", null, "Which vetted sources fit this framing? (\u22651)"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, vettedSources.map(function(s) {
+    ), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("humanities.framing_sources_aria") || "Which vetted sources fit this framing? (at least 1)", style: { fontSize: "11px", fontWeight: 700, color: "#9d174d" } }, /* @__PURE__ */ React.createElement("div", null, "Which vetted sources fit this framing? (\u22651)"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" } }, vettedSources.map(function(s) {
       var on = draft.whichVettedSourcesFitIt.indexOf(s.id) !== -1;
       return /* @__PURE__ */ React.createElement(
         "button",
@@ -4016,8 +4027,8 @@
           if (patch.qualifier !== void 0 && Array.isArray(l.qualifierRevisionLog) && l.qualifierRevisionLog.length) {
             var log = l.qualifierRevisionLog.slice();
             for (var i = log.length - 1; i >= 0; i--) {
-              if (log[i] && log[i].toQualifier === null) {
-                log[i] = Object.assign({}, log[i], { toQualifier: patch.qualifier, resolvedTs: Date.now() });
+              if (log[i] && (log[i].open === true || log[i].toQualifier === null)) {
+                log[i] = Object.assign({}, log[i], { toQualifier: patch.qualifier, resolvedTs: Date.now(), open: true });
                 break;
               }
             }
@@ -4057,12 +4068,16 @@
         if (verdict === "warrant_contracts") {
           next.claimEvidenceLinks = (prev.claimEvidenceLinks || []).map(function(lnk) {
             if (lnk.id !== linkId) return lnk;
+            var prevLog = (lnk.qualifierRevisionLog || []).map(function(entry) {
+              return entry && entry.open ? Object.assign({}, entry, { open: false }) : entry;
+            });
             return Object.assign({}, lnk, {
-              qualifierRevisionLog: (lnk.qualifierRevisionLog || []).concat([{
+              qualifierRevisionLog: prevLog.concat([{
                 ts: Date.now(),
                 fromQualifier: lnk.qualifier || "",
                 toQualifier: null,
-                // back-filled by updateLink when the student next edits this link's qualifier
+                // updated live by updateLink until the next warrant_contracts probe
+                open: true,
                 triggeredByFramingProbeId: probeId
               }])
             });
@@ -4681,19 +4696,20 @@
     var obscuringPolarityOk = !inDenylist(draft.obscuringField, POSITIONALITY_OBSCURES_DENYLIST);
     var fieldsAtFloor = devLevel === "k2" || devLevel === "3_5" ? true : draft.materialRelationshipText.length >= 100 && draft.visibilityField.length >= 100 && draft.obscuringField.length >= 100 && draft.whoseStandpointIsStructurallyAbsentText.length >= 100 && draft.partialIncorporationCommitmentsText.length >= 100;
     var visObsDistinct = draft.visibilityField && draft.obscuringField ? tokenJaccard(draft.visibilityField, draft.obscuringField) < 0.55 : false;
-    var newTokensVsPrior = prior ? contentTokens(draft.materialRelationshipText + " " + draft.visibilityField + " " + draft.obscuringField).filter(function(tk) {
-      return !normalizeForCompare(prior.materialRelationshipText + " " + prior.visibilityField + " " + prior.obscuringField).split(/\W+/).includes(tk);
+    var newTokensVsPrior = latest ? contentTokens(draft.materialRelationshipText + " " + draft.visibilityField + " " + draft.obscuringField).filter(function(tk) {
+      return !normalizeForCompare(latest.materialRelationshipText + " " + latest.visibilityField + " " + latest.obscuringField).split(/\W+/).includes(tk);
     }).length >= 2 : true;
     var canSave = fieldsAtFloor && visObsDistinct && newTokensVsPrior && visibilityPolarityOk && obscuringPolarityOk && draft.epistemicStatus;
     var saveSnapshot = function() {
       if (!canSave) return;
       setJournal(function(prev) {
         var next = Object.assign({}, prev);
-        next.positionalitySnapshots = (prev.positionalitySnapshots || []).concat([Object.assign({}, draft, {
-          v: (prev.positionalitySnapshots || []).length + 1,
+        var prevSnaps = prev.positionalitySnapshots || [];
+        next.positionalitySnapshots = prevSnaps.concat([Object.assign({}, draft, {
+          v: prevSnaps.length + 1,
           ts: Date.now(),
           devLevelMode: devLevel === "k2" || devLevel === "3_5" ? "picture_voice" : "structured",
-          deltaFromPriorText: prior ? "Revised after " + (prev.loopBacks || []).length + " loop-backs" : "Initial reckoning"
+          deltaFromPriorText: prevSnaps.length > 0 ? "Revised after " + (prev.loopBacks || []).length + " loop-backs" : "Initial reckoning"
         })]);
         return next;
       });

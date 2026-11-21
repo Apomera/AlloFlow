@@ -622,6 +622,7 @@ function createWordSoundsCore(options = {}) {
     const data = new Map(pool.filter(p => p && typeof p === 'object')
       .map(p => [normalize(p.targetWord || p.word || p.term), p]));
     if (Array.isArray(phonemes) && phonemes.length) data.set(target, {...data.get(target), phonemes});
+    if (Array.isArray(answerPhonemes) && answerPhonemes.length) data.set(correct, {...data.get(correct), phonemes: answerPhonemes});
     const labels = w => ((data.get(w) || {}).phonemes || []).map(soundKey).filter(Boolean);
     const vowels = new Set(['a','e','i','o','u','ay','ee','ie','oa','oo','oo_short','oy','ow','aw','ar','er','or','air','ear','ure','schwa']);
     const rime = w => {
@@ -758,7 +759,7 @@ function createWordSoundsCore(options = {}) {
     const target=edgeSound(word,mode,phonemes) || (targetSound && soundKey(targetSound));
     if(!target) return null;
     if(teacherEdited){const board={version:VERSION,teacherEdited:true,mode,targetChar:soundKey(targetSound||target),difficulty:'medium',options:unique(matches),distractors:unique(distractors)};return validSoundBoard(board,word,pool)?board:null;}
-    const words=unique([...matches,...pool.map(p=>typeof p==='string'?p:(p.word||p.targetWord||p.term))]).filter(w=>w!==word);
+    const words=unique([...matches,...pool.map(p=>typeof p==='string'?p:p && (p.word||p.targetWord||p.term))]).filter(w=>w!==word);
     const sound=w=>edgeSound(w,mode,(data.get(w)||{}).phonemes);
     const yes=words.filter(w=>sound(w)!=null && soundKey(sound(w))===soundKey(target));
     const no=words.filter(w=>sound(w)!=null && soundKey(sound(w))!==soundKey(target));
@@ -904,9 +905,9 @@ function createWordSoundsCore(options = {}) {
     if (key.startsWith('short ') && key.length === 7) key = key.replace('short ', '');
     else if (key.endsWith('_short')) { out.push(key); key = key.replace('_short', ''); }
     else if (key.endsWith(' short')) key = key.replace(' short', '');
-    const special = PHONEME_BANK_SPECIAL[key] || key;
+    const special = Object.prototype.hasOwnProperty.call(PHONEME_BANK_SPECIAL, key) ? PHONEME_BANK_SPECIAL[key] : key;
     out.push(special, lower);
-    const match = PHONEME_BANK_MATCHES[lower] || PHONEME_BANK_MATCHES[special];
+    const match = Object.prototype.hasOwnProperty.call(PHONEME_BANK_MATCHES, lower) ? PHONEME_BANK_MATCHES[lower] : (Object.prototype.hasOwnProperty.call(PHONEME_BANK_MATCHES, special) ? PHONEME_BANK_MATCHES[special] : '');
     if (match) out.push(match);
     return [...new Set(out.filter(Boolean))];
   };
@@ -1905,19 +1906,19 @@ function createWordSoundsCore(options = {}) {
   };
   const activityIds = () => Object.keys(ACTIVITY_SKILLS);
   const activityEnglishName = (id) => {
-    const row = ACTIVITY_SKILLS[id];
+    const row = Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id] : null;
     if (row) return row.name;
     const plain = String(id || '').replace(/_/g, ' ').trim();
     return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : '';
   };
-  const activityLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.activity_' + id, ACTIVITY_SKILLS[id].name) : activityEnglishName(id);
-  const activitySkillLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.skill_' + id, ACTIVITY_SKILLS[id].skill) : '';
-  const activityStrand = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].strand : '';
-  const activityBig5 = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].big5.slice() : [];
+  const activityLabel = (id, translate) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? skillLookup(translate, 'word_sounds.activity_' + id, ACTIVITY_SKILLS[id].name) : activityEnglishName(id);
+  const activitySkillLabel = (id, translate) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? skillLookup(translate, 'word_sounds.skill_' + id, ACTIVITY_SKILLS[id].skill) : '';
+  const activityStrand = (id) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id].strand : '';
+  const activityBig5 = (id) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id].big5.slice() : [];
   const strandOrder = () => SKILL_STRANDS.map(row => row.key);
   const strandRow = (key) => SKILL_STRANDS.find(row => row.key === key) || null;
   const strandLabel = (key, translate) => strandRow(key) ? skillLookup(translate, 'word_sounds.strand_' + key, strandRow(key).name) : '';
-  const big5Label = (key, translate) => BIG5_NAMES[key] ? skillLookup(translate, 'word_sounds.big5_' + key, BIG5_NAMES[key]) : '';
+  const big5Label = (key, translate) => Object.prototype.hasOwnProperty.call(BIG5_NAMES, key) ? skillLookup(translate, 'word_sounds.big5_' + key, BIG5_NAMES[key]) : '';
   const strandBig5 = (key) => strandRow(key) ? strandRow(key).big5.slice() : [];
   const strandBig5Label = (key, translate) => strandBig5(key).map(tag => big5Label(tag, translate)).join(', ');
   // Ids keep their given order inside each strand; unknown ids come last under ''.
@@ -1956,7 +1957,7 @@ function createWordSoundsCore(options = {}) {
   // every activity keeps at least one item and none passes 20. Largest remainders first, so the
   // total is exact whenever the plan can hold it.
   const scaleLessonCounts = (entries, length) => {
-    const rows = planEntries(entries), target = LESSON_LENGTHS[length] ? LESSON_LENGTHS[length].items : 0;
+    const rows = planEntries(entries), target = Object.prototype.hasOwnProperty.call(LESSON_LENGTHS, length) ? LESSON_LENGTHS[length].items : 0;
     if (!rows.length || !target) return rows;
     const weight = rows.reduce((sum, row) => sum + row.count, 0);
     const exact = rows.map(row => row.count / weight * target);
@@ -1980,7 +1981,7 @@ function createWordSoundsCore(options = {}) {
     if (!row) return null;
     const unavailable = Array.isArray(options.unavailable) ? options.unavailable : [];
     const kept = row.activities.filter(([activity]) => !unavailable.includes(activity));
-    const length = LESSON_LENGTHS[options.length] ? options.length : LESSON_LENGTH_DEFAULT;
+    const length = Object.prototype.hasOwnProperty.call(LESSON_LENGTHS, options.length) ? options.length : LESSON_LENGTH_DEFAULT;
     const activities = scaleLessonCounts(kept.map(([activity, weight]) => ({ id: activity, count: weight })), length);
     return { id: row.id, length, masteryThreshold: row.mastery, activities, order: activities.map(activity => activity.id),
       dropped: row.activities.map(([activity]) => activity).filter(activity => unavailable.includes(activity)) };
@@ -2134,7 +2135,7 @@ function createWordSoundsCore(options = {}) {
   let ogTableCache = null;
   const ogTables = () => {
     if (ogTableCache) return ogTableCache;
-    const byKey = {}, byLabel = {}, pairByKey = {}, pairByLabel = {};
+    const byKey = Object.create(null), byLabel = Object.create(null), pairByKey = Object.create(null), pairByLabel = Object.create(null);
     const addLabel = (table, label, grapheme) => { (table[label] = table[label] || new Set()).add(grapheme); };
     Object.entries(OG_SPELLING_TEXT).forEach(([key, text]) => {
       byKey[key] = new Set(text.split(' '));
@@ -2409,7 +2410,7 @@ function createWordSoundsCore(options = {}) {
     // The word written sound by sound with each sound's plainest spelling (said -> sed, was -> woz).
     const plain = { ay: 'ai', ee: 'ee', ie: 'ie', oa: 'oa', oo: 'oo', oo_short: 'oo', schwa: 'u', dh: 'th', zh: 'sh', er: 'er' };
     const bySound = keys.length && keys.every(Boolean)
-      ? keys.map((key, index) => index === keys.length - 1 && key === 'ay' ? 'ay' : index === keys.length - 1 && key === 'ie' ? 'y' : plain[key] || key).join('') : '';
+      ? keys.map((key, index) => index === keys.length - 1 && key === 'ay' ? 'ay' : index === keys.length - 1 && key === 'ie' ? 'y' : (ownKey(plain, key) ? plain[key] : key)).join('') : '';
     const rules = [
       // c, k and ck for /k/.
       [...swap(/ck/, 'k'), ...swap(/c(?![eiyhk])/, 'k'), ...swap(/k(?=[aoulr])/, 'c'), ...swap(/ck/, 'c')],
@@ -2869,25 +2870,28 @@ var wsActivityExampleText = function (id) {
             if (!AC || !dataUri || typeof fetch !== 'function') return dataUri;
             const arr = await (await fetch(dataUri)).arrayBuffer();
             const ctx = new AC();
-            let buf;
-            try { buf = await ctx.decodeAudioData(arr.slice(0)); } catch (e) { if (ctx.close) ctx.close(); return dataUri; }
-            const len = buf.length, chs = buf.numberOfChannels;
-            if (!len) { if (ctx.close) ctx.close(); return dataUri; }
-            const data = new Float32Array(len);
-            for (let c = 0; c < chs; c++) { const cd = buf.getChannelData(c); for (let i = 0; i < len; i++) data[i] += cd[i] / chs; }
-            let peak = 0; for (let i = 0; i < len; i++) { const a = data[i] < 0 ? -data[i] : data[i]; if (a > peak) peak = a; }
-            if (peak <= 0.0001) { if (ctx.close) ctx.close(); return dataUri; }
-            const thresh = Math.max(0.015, peak * 0.08);
-            let start = 0; while (start < len && (data[start] < 0 ? -data[start] : data[start]) < thresh) start++;
-            let end = len - 1; while (end > start && (data[end] < 0 ? -data[end] : data[end]) < thresh) end--;
-            if (end <= start) { if (ctx.close) ctx.close(); return dataUri; }
-            const pad = Math.floor(buf.sampleRate * 0.02);
-            start = Math.max(0, start - pad); end = Math.min(len - 1, end + pad);
-            const outLen = end - start + 1;
-            const gain = Math.min(0.97 / peak, 6); // cap boost so near-silent clips don't amplify noise
-            const wav = encodePhonemeWav(data, start, outLen, buf.sampleRate, gain);
-            if (ctx.close) ctx.close();
-            return (wav && wav.length > 64) ? wav : dataUri;
+            try {
+                let buf;
+                try { buf = await ctx.decodeAudioData(arr.slice(0)); } catch (e) { return dataUri; }
+                const len = buf.length, chs = buf.numberOfChannels;
+                if (!len) return dataUri;
+                const data = new Float32Array(len);
+                for (let c = 0; c < chs; c++) { const cd = buf.getChannelData(c); for (let i = 0; i < len; i++) data[i] += cd[i] / chs; }
+                let peak = 0; for (let i = 0; i < len; i++) { const a = data[i] < 0 ? -data[i] : data[i]; if (a > peak) peak = a; }
+                if (peak <= 0.0001) return dataUri;
+                const thresh = Math.max(0.015, peak * 0.08);
+                let start = 0; while (start < len && (data[start] < 0 ? -data[start] : data[start]) < thresh) start++;
+                let end = len - 1; while (end > start && (data[end] < 0 ? -data[end] : data[end]) < thresh) end--;
+                if (end <= start) return dataUri;
+                const pad = Math.floor(buf.sampleRate * 0.02);
+                start = Math.max(0, start - pad); end = Math.min(len - 1, end + pad);
+                const outLen = end - start + 1;
+                const gain = Math.min(0.97 / peak, 6); // cap boost so near-silent clips don't amplify noise
+                const wav = encodePhonemeWav(data, start, outLen, buf.sampleRate, gain);
+                return (wav && wav.length > 64) ? wav : dataUri;
+            } finally {
+                try { if (ctx.close) ctx.close(); } catch (e) {}
+            }
         } catch (e) { return dataUri; }
     }
     const PhonemeVoicePackEditor = ({ onClose, t, focusKey }) => {
@@ -2925,6 +2929,10 @@ var wsActivityExampleText = function (id) {
         const recorderRef = React.useRef(null);
         const fileInputRef = React.useRef(null);
         const audioElRef = React.useRef(null); // the one preview clip currently playing
+        const playSeqRef = React.useRef(0); // generation token to cancel chained compare/word playback
+        const playTimerRef = React.useRef(null); // pending inter-phoneme delay timer
+        const activeIdRef = React.useRef(lib.activeId);
+        activeIdRef.current = lib.activeId;
         const modalRootRef = React.useRef(null); // dialog root, for the focus trap
         const previouslyFocusedRef = React.useRef(null); // element to restore focus to on close
         const [showDeletePackConfirm, setShowDeletePackConfirm] = React.useState(false);
@@ -3030,12 +3038,30 @@ var wsActivityExampleText = function (id) {
                 }
             };
         }, []);
+        // Stop any active preview audio or chained sequence timer.
+        const stopPreviewPlayback = (advanceSeq = true) => {
+            if (advanceSeq) playSeqRef.current += 1;
+            if (playTimerRef.current) { clearTimeout(playTimerRef.current); playTimerRef.current = null; }
+            try {
+                if (audioElRef.current) {
+                    audioElRef.current.onended = null;
+                    audioElRef.current.onerror = null;
+                    audioElRef.current.pause();
+                    audioElRef.current = null;
+                }
+            } catch (e) {}
+        };
         // Play a single clip, stopping whatever was playing first (no overlap/stacking).
-        const playPreview = (src) => {
-            try { if (audioElRef.current) { audioElRef.current.pause(); audioElRef.current = null; } } catch (e) {}
+        const playPreview = (src, opts) => {
+            const keepSeq = !!(opts && opts.keepSeq);
+            stopPreviewPlayback(!keepSeq);
             if (!src) return null;
             try { const a = new Audio(src); audioElRef.current = a; a.play().catch(() => {}); return a; } catch (e) { return null; }
         };
+        React.useEffect(() => () => {
+            stopPreviewPlayback(true);
+            try { if (recorderRef.current) recorderRef.current.stop(); } catch (e) {}
+        }, []);
         const clips = pack.clips || {};
         const kind = pack.kind === 'student-voice' ? 'student-voice' : 'teacher-model';
         const isStudent = kind === 'student-voice';
@@ -3062,11 +3088,12 @@ var wsActivityExampleText = function (id) {
         const performDeletePack = () => {
             setShowDeletePackConfirm(false);
             if (lib.packs.length <= 1) { setStatus(T('word_sounds.voice_pack_msg_keep_one', 'Keep at least one pack. Clear individual sounds with 🗑️ instead.')); return; }
-            setLib((prev) => {
-                const rest = prev.packs.filter((p) => p.id !== prev.activeId);
-                const packs = rest.length ? rest : [normalizePhonemePack({ id: genPhonemePackId(), name: 'My Voice Pack' })];
-                return { activeId: packs[0].id, packs };
-            });
+            const restNow = lib.packs.filter((p) => p.id !== lib.activeId);
+            const nextActiveNow = restNow.length ? restNow[0] : normalizePhonemePack({ id: genPhonemePackId(), name: 'My Voice Pack' });
+            const nextPacks = restNow.length ? restNow : [nextActiveNow];
+            setLib({ activeId: nextActiveNow.id, packs: nextPacks });
+            applyPhonemeVoicePackToBank(nextActiveNow.clips || {});
+            applyInstrToBank(nextActiveNow.instr || {});
             setChecks({}); setSelfChecks({}); setStatus('');
         };
         const deletePack = () => {
@@ -3106,15 +3133,21 @@ var wsActivityExampleText = function (id) {
         };
         const runAiCheck = (key, dataUri, packId) => {
             if (!aiAvailable || !dataUri) return;
-            setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'checking' } }));
+            const targetPackId = packId || activeIdRef.current;
+            const isActivePack = () => !targetPackId || activeIdRef.current === targetPackId;
+            if (isActivePack()) setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'checking' } }));
             const ex = PHONEME_PACK_EXAMPLES[key];
             const cue = PHONEME_PACK_CUES[key];
             const prompt = aiCheckPrompt(key);
             Promise.resolve().then(() => window.callGeminiAudio(prompt, dataUri, {})).then((resp) => {
                 const parsed = parsePhonemePackJsonLoose(resp);
-                if (parsed) { setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'done', match: parsed.match, clipped: parsed.clipped, note: parsed.note || '' } })); updateLatestAttempt(key, { ai: { match: parsed.match, clipped: parsed.clipped } }, packId); }
-                else setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'done', match: null, note: 'Could not analyze the clip.' } }));
-            }).catch(() => setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'error', note: 'AI check failed.' } })));
+                if (parsed) {
+                    if (isActivePack()) setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'done', match: parsed.match, clipped: parsed.clipped, note: parsed.note || '' } }));
+                    updateLatestAttempt(key, { ai: { match: parsed.match, clipped: parsed.clipped } }, targetPackId);
+                } else if (isActivePack()) {
+                    setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'done', match: null, note: 'Could not analyze the clip.' } }));
+                }
+            }).catch(() => { if (isActivePack()) setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'error', note: 'AI check failed.' } })); });
         };
         // AI voice (2026-11-18): Gemini TTS through the app (callTTSDirect, voice Aoede), the Phoneme app's
         // four prompts in turn; each result is cleaned like a recording and checked by the AI check, and the
@@ -3158,12 +3191,17 @@ var wsActivityExampleText = function (id) {
                     if (good || !aiAvailable) break;
                 }
             } finally { setAiVoiceKey(null); }
-            if (!best) { setStatus(T('word_sounds.voice_pack_msg_ai_failed', 'The AI voice could not make /{key}/. Try again, or record it.', { key: phonemePackLabel(key) })); return; }
+            if (!best) {
+                if (activeIdRef.current === targetId) setStatus(T('word_sounds.voice_pack_msg_ai_failed', 'The AI voice could not make /{key}/. Try again, or record it.', { key: phonemePackLabel(key) }));
+                return;
+            }
             setPackById(targetId, (prev) => Object.assign({}, prev, { clips: Object.assign({}, prev.clips, { [key]: best.clip }), ai: Object.assign({}, prev.ai, { [key]: true }) }));
-            if (best.verdict) setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'done', match: best.verdict.match, clipped: best.verdict.clipped, note: best.verdict.note || '' } }));
-            setStatus(best.good
-                ? T('word_sounds.voice_pack_msg_ai_done', '✨ Made /{key}/ with an AI voice. Tap 🔊 to hear it, then Save & Use.', { key: phonemePackLabel(key) })
-                : T('word_sounds.voice_pack_msg_ai_unsure', '✨ Made /{key}/ with an AI voice. Listen before you use it: it was not confirmed as right.', { key: phonemePackLabel(key) }));
+            if (activeIdRef.current === targetId) {
+                if (best.verdict) setChecks((prev) => Object.assign({}, prev, { [key]: { state: 'done', match: best.verdict.match, clipped: best.verdict.clipped, note: best.verdict.note || '' } }));
+                setStatus(best.good
+                    ? T('word_sounds.voice_pack_msg_ai_done', '✨ Made /{key}/ with an AI voice. Tap 🔊 to hear it, then Save & Use.', { key: phonemePackLabel(key) })
+                    : T('word_sounds.voice_pack_msg_ai_unsure', '✨ Made /{key}/ with an AI voice. Listen before you use it: it was not confirmed as right.', { key: phonemePackLabel(key) }));
+            }
         };
         const stopRecording = () => { try { if (recorderRef.current) recorderRef.current.stop(); } catch (e) {} };
         const startRecording = (key, opts) => {
@@ -3214,10 +3252,14 @@ var wsActivityExampleText = function (id) {
             const ref = phonemeReferenceClip(key);
             const mine = clips[key];
             if (!ref || !mine) return;
+            const seqId = ++playSeqRef.current;
             const lbl = phonemePackLabel(key);
             setStatus(T('word_sounds.voice_pack_msg_listen_compare', '🔁 Listen: the model first, then your /{lbl}/.', { lbl: lbl }));
-            const playMine = () => { playPreview(mine); };
-            const a = playPreview(ref);
+            const playMine = () => {
+                if (playSeqRef.current !== seqId) return;
+                playPreview(mine, { keepSeq: true });
+            };
+            const a = playPreview(ref, { keepSeq: true });
             if (a) { a.onended = playMine; a.onerror = playMine; } else { playMine(); }
         };
         const rateSelf = (key, val) => { const newVal = (selfChecks[key] === val) ? null : val; setSelfChecks((prev) => Object.assign({}, prev, { [key]: newVal })); updateLatestAttempt(key, { self: newVal }); };
@@ -3227,14 +3269,24 @@ var wsActivityExampleText = function (id) {
             // Teaches that words are made of sounds, in the most motivating way.
             const seq = w.keys.map((k) => clips[k]);
             if (seq.some((c) => !c)) { setStatus(T('word_sounds.voice_pack_msg_record_all', 'Record every sound in "{word}" first.', { word: w.word })); return; }
+            const seqId = ++playSeqRef.current;
             setStatus(T('word_sounds.voice_pack_msg_blending', '🔊 Blending "{word}" in your voice...', { word: w.word }));
             let i = 0;
+            const scheduleNext = () => {
+                if (playSeqRef.current !== seqId) return;
+                playTimerRef.current = setTimeout(() => {
+                    playTimerRef.current = null;
+                    if (playSeqRef.current !== seqId) return;
+                    next();
+                }, 240);
+            };
             const next = () => {
+                if (playSeqRef.current !== seqId) return;
                 if (i >= seq.length) { setStatus(T('word_sounds.voice_pack_msg_built', '🎉 You built "{word}" with your own sounds!', { word: w.word })); return; }
                 const clip = seq[i]; i++;
-                const a = playPreview(clip);
-                if (a) { a.onended = () => setTimeout(next, 240); a.onerror = () => setTimeout(next, 240); }
-                else setTimeout(next, 240);
+                const a = playPreview(clip, { keepSeq: true });
+                if (a) { a.onended = scheduleNext; a.onerror = scheduleNext; }
+                else scheduleNext();
             };
             next();
         };
@@ -3249,11 +3301,25 @@ var wsActivityExampleText = function (id) {
         };
         // Durability: autosave the whole library shortly after any change, so a
         // recording/rename/delete survives a reload even if the user never taps Save.
-        // Debounced so typing a pack name doesn't re-serialize the clips on every key.
+        // Debounced so typing a pack name doesn't re-serialize the clips on every key,
+        // and flushed on unmount so edits within 500ms of closing are never lost.
+        const persistRef = React.useRef(persist);
+        persistRef.current = persist;
+        const pendingPersistRef = React.useRef(false);
         React.useEffect(() => {
-            const id = setTimeout(() => { try { persist(); } catch (e) {} }, 500);
-            return () => clearTimeout(id);
+            pendingPersistRef.current = true;
+            const id = setTimeout(() => {
+                pendingPersistRef.current = false;
+                try { persistRef.current(); } catch (e) {}
+            }, 500);
+            return () => { clearTimeout(id); };
         }, [lib]);
+        React.useEffect(() => () => {
+            if (pendingPersistRef.current) {
+                pendingPersistRef.current = false;
+                try { persistRef.current(); } catch (e) {}
+            }
+        }, []);
         const savePack = () => {
             const applied = applyPhonemeVoicePackToBank(pack.clips);
             // Always re-apply: a slot the user CLEARED must revert to the default
@@ -6105,19 +6171,25 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             setOrderBeforeRecommended(null);
             setLessonPlanReorderStatus(tf('word_sounds.lesson_plan_recommended_undone', 'Your previous order is back.'));
         };
-        const moveLessonPlanActivity = (activityId, activityLabel, direction) => {
-            const fromIndex = lessonPlanOrder.indexOf(activityId);
-            const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
-            if (fromIndex < 0 || toIndex < 0 || toIndex >= lessonPlanOrder.length) return;
-            const next = [...lessonPlanOrder];
-            [next[fromIndex], next[toIndex]] = [next[toIndex], next[fromIndex]];
-            setLessonPlanOrder(next);
-            setLessonPlanReorderStatus(`${activityLabel} moved to position ${toIndex + 1} of ${next.length}.`);
-        };
         // Sound Swap has checked one-sound changes for a short list of words only;
         // it is offered when at least one selected word is on that list (2026-10-25).
         const soundSwapAvailable = previewList.some((word, i) => selectedIndices.has(i)
             && WS_CORE.manipulationReady(WS_CORE.resolveManipulationTask(word, null, wordSoundsLanguage)));
+        const moveLessonPlanActivity = (activityId, activityLabel, direction) => {
+            const visibleIds = lessonPlanOrder.filter(id => id !== 'manipulation' || soundSwapAvailable);
+            const visIdx = visibleIds.indexOf(activityId);
+            const targetVisIdx = direction === 'up' ? visIdx - 1 : visIdx + 1;
+            if (visIdx < 0 || targetVisIdx < 0 || targetVisIdx >= visibleIds.length) return;
+            const fromIndex = lessonPlanOrder.indexOf(activityId);
+            const targetOrderIndex = lessonPlanOrder.indexOf(visibleIds[targetVisIdx]);
+            if (fromIndex < 0 || targetOrderIndex < 0) return;
+            const updatedOrder = [...lessonPlanOrder];
+            [updatedOrder[fromIndex], updatedOrder[targetOrderIndex]] = [updatedOrder[targetOrderIndex], updatedOrder[fromIndex]];
+            setLessonPlanOrder(updatedOrder);
+            const toIndex = targetVisIdx;
+            const next = visibleIds;
+            setLessonPlanReorderStatus(`${activityLabel} moved to position ${toIndex + 1} of ${next.length}.`);
+        };
         const lessonPlanActivityOn = id => !!lessonPlan[id]?.enabled && (id !== 'manipulation' || soundSwapAvailable);
         const syllableBlendingSelected = sessionType === 'assessment' ? probeActivitySel === 'syllable_blending'
             : includeLessonPlan && !!lessonPlan.syllable_blending?.enabled;
@@ -7863,11 +7935,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <button type="button" data-help-key="ws_gen_minimize" onClick={() => { setIsMinimized(true); if (onMinimize) onMinimize(); }} className="min-w-11 min-h-11 inline-flex items-center justify-center bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors motion-reduce:transition-none" title={t('common.minimize')}>
-                                <Minimize size={24} />
+                            <button type="button" aria-label={tf('word_sounds.minimize_setup', 'Minimize Word Sounds setup')} data-help-key="ws_gen_minimize" onClick={() => { setIsMinimized(true); if (onMinimize) onMinimize(); }} className="min-w-11 min-h-11 inline-flex items-center justify-center bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors motion-reduce:transition-none" title={t('common.minimize')}>
+                                <Minimize size={24} aria-hidden="true" />
                             </button>
                             <button type="button" aria-label={tf('word_sounds.close_setup', 'Close Word Sounds setup')} data-help-key="ws_gen_close" onClick={handleGeneratorClose} className="min-w-11 min-h-11 inline-flex items-center justify-center bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors motion-reduce:transition-none" title={t('common.close')}>
-                                <X size={24} />
+                                <X size={24} aria-hidden="true" />
                             </button>
                         </div>
                     </div>
@@ -7958,10 +8030,37 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                             </div>
                         );
                     })()}
+                    <nav aria-label={tf('word_sounds.setup_steps_nav', 'Setup sections')} data-ws-setup-steps="true" className="bg-slate-100 border-b border-slate-200 px-4 sm:px-6 py-2 flex flex-wrap items-center gap-2 shrink-0">
+                        <span className="text-xs font-bold text-slate-600 uppercase tracking-wider mr-1">{tf('word_sounds.jump_to_step', 'Quick jump:')}</span>
+                        {[
+                            { id: 'ws-step-goals-words', label: tf('word_sounds.step_goals_words', '1. Goal & Words') },
+                            { id: 'ws-step-lesson', label: tf('word_sounds.step_lesson', '2. Lesson & Activities') },
+                            { id: 'ws-step-media', label: tf('word_sounds.step_media', '3. Audio, Images & AAC') },
+                        ].map((step) => (
+                            <button
+                                key={step.id}
+                                type="button"
+                                data-ws-step-jump={step.id}
+                                onClick={() => {
+                                    const fallbackId = step.id === 'ws-step-goals-words' ? 'word-sounds-active-sources-label' : step.id;
+                                    const target = setupDialogRef.current?.querySelector('#' + step.id)
+                                        || setupDialogRef.current?.querySelector('#' + fallbackId)
+                                        || (typeof document !== 'undefined' ? (document.getElementById(step.id) || document.getElementById(fallbackId)) : null);
+                                    if (target) {
+                                        target.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+                                        target.focus?.();
+                                    }
+                                }}
+                                className="min-h-11 px-3 py-1.5 rounded-full border border-indigo-200 bg-white hover:bg-indigo-50 text-xs font-bold text-indigo-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                            >
+                                {step.label}
+                            </button>
+                        ))}
+                    </nav>
                     <div className="flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden">
                         <div className="w-full lg:w-1/3 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 p-4 sm:p-6 flex flex-col gap-6 lg:overflow-y-auto">
                             <div className="space-y-3">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.session_type', 'Session Type')}</label>
+                                <h3 id="ws-step-lesson" tabIndex={-1} className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded">{tf('word_sounds.session_type', 'Session Type')}</h3>
                                 <div className="bg-white p-2 rounded-xl border border-slate-400 shadow-sm grid grid-cols-2 gap-2">
                                     <button type="button" data-help-key="ws_gen_mode_practice"
                                         onClick={() => setSessionType('practice')}
@@ -7981,8 +8080,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         <p className="text-[11px] font-semibold text-amber-800 leading-snug">
                                             {tf('word_sounds.assessment_note', 'Timed, no hints — a single-skill probe for progress monitoring, not practice. Lesson plans are turned off in this mode.')}
                                         </p>
-                                        <label className="block text-xs font-bold text-amber-900">{tf('word_sounds.probe_skill', 'Probe skill')}</label>
-                                        <select aria-label={tf('word_sounds.probe_skill', 'Probe skill')}
+                                        <label htmlFor="ws-probe-skill" className="block text-xs font-bold text-amber-900">{tf('word_sounds.probe_skill', 'Probe skill')}</label>
+                                        <select id="ws-probe-skill" aria-label={tf('word_sounds.probe_skill', 'Probe skill')}
                                             value={probeActivitySel} onChange={(e) => setProbeActivitySel(e.target.value)}
                                             className="w-full min-h-11 px-2 py-1.5 rounded-lg border border-amber-300 bg-white text-sm font-semibold text-slate-700">
                                             <option value="segmentation">{wsActivityName('segmentation')}</option>
@@ -8022,7 +8121,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                 )}
                             </div>
                             {!isAssessmentSetup && <div className="space-y-3" data-ws-plan-card="true">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.plan_heading', 'Lesson')}</label>
+                                <h3 className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.plan_heading', 'Lesson')}</h3>
                                 <div className="bg-white p-3 rounded-xl border border-slate-400 shadow-sm space-y-3">
                                     <div role="group" aria-label={tf('word_sounds.starting_points_label', 'Starting point')} className="grid grid-cols-2 gap-2" data-ws-starting-points="true">
                                         {startingPointRows.map(row => {
@@ -8138,11 +8237,12 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                         e.preventDefault();
                                                         const fromId = e.dataTransfer.getData('text/plain');
                                                         const toId = activity.id;
-                                                        if (fromId !== toId) {
+                                                        if (fromId && fromId !== toId) {
                                                             setLessonPlanOrder(prev => {
+                                                                const fromIdx = prev.indexOf(fromId);
+                                                                const toIdx = prev.indexOf(toId);
+                                                                if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return prev;
                                                                 const newOrder = [...prev];
-                                                                const fromIdx = newOrder.indexOf(fromId);
-                                                                const toIdx = newOrder.indexOf(toId);
                                                                 newOrder.splice(fromIdx, 1);
                                                                 newOrder.splice(toIdx, 0, fromId);
                                                                 return newOrder;
@@ -8177,7 +8277,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                             <button type="button" onClick={() => moveLessonPlanActivity(activity.id, activity.label, 'down')} disabled={activityIndex === lessonPlanOrder.length - 1} className="min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={`Move ${activity.label} down`}><span aria-hidden="true">↓</span></button>
                                                         </div>
                                                     </div>
-                                                    {lessonPlan[activity.id].enabled && planFineTuneOpen && (
+                                                    {lessonPlan[activity.id]?.enabled && planFineTuneOpen && (
                                                         <div className="mt-1 mb-1 flex items-center gap-3">
                                                         <input aria-label={tf('word_sounds.activity_min_items', '{activity}: minimum items', { activity: activity.label })}
                                                             type="range" min="1" max="20" step="1"
@@ -8200,7 +8300,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                 </div>
                             </div>}
                             <div className="space-y-3">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.settings', 'Settings')}</label>
+                                <h3 id="ws-step-media" tabIndex={-1} className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded">{tf('word_sounds.settings', 'Settings')}</h3>
                                 {isAssessmentSetup && <p className="text-xs text-slate-600 mt-2" data-ws-assessment-settings-note="true">{tf('word_sounds.assessment_settings_note', 'An assessment gives each selected word once, without pictures, so the session length and picture timing settings are hidden.')}</p>}
                                 <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
@@ -8232,10 +8332,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     {imageThemeMode === 'override' && (
                                         <input aria-label={t('common.image_theme_input')}
                                             type="text"
+                                            disabled={!imageAiHere}
                                             data-help-key="ws_gen_theme_input" value={imageTheme}
                                             onChange={(e) => setImageTheme(e.target.value)}
                                             placeholder={tf('word_sounds.theme_placeholder', 'e.g. cartoon, pixel art, realistic...')}
-                                            className="w-full min-h-11 mt-2 p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
+                                            className="w-full min-h-11 mt-2 p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none disabled:opacity-60 disabled:bg-slate-50"
                                         />
                                     )}
                                     <p className="text-xs text-slate-600 mt-2">Style changes apply to new Word Sounds images, not Glossary images.</p>
@@ -8250,7 +8351,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     </label>
                                     <label className="min-h-11 flex items-start gap-2 mt-2 cursor-pointer">
                                         <input type="checkbox" checked={aacDefaultOn}
-                                            onChange={(e) => { setAacDefaultOn(e.target.checked); if (e.target.checked) setIncludeAacImages(true); }}
+                                            onChange={(e) => { setAacDefaultOn(e.target.checked); if (e.target.checked && imageAiHere) setIncludeAacImages(true); }}
                                             className="mt-0.5 accent-teal-600" />
                                         <span className="text-xs text-slate-600">
                                             <span className="font-bold text-slate-700">{tf('word_sounds.aac_default_label', 'Start with symbol overlay ON')}</span><br/>
@@ -8283,8 +8384,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="flex-1">
-                                            <label className="text-xs text-slate-600 block mb-1">Min</label>
-                                            <input aria-label={t('common.min')}
+                                            <label htmlFor="ws-syllable-min" className="text-xs text-slate-600 block mb-1">Min</label>
+                                            <input id="ws-syllable-min" aria-label={t('common.min')}
                                                 type="number" min="1" max="12"
                                                 data-help-key="ws_gen_syllable_min" value={syllableRange.min}
                                                 onChange={(e) => {
@@ -8297,8 +8398,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         </div>
                                         <span className="text-slate-600 mt-4">-</span>
                                         <div className="flex-1">
-                                            <label className="text-xs text-slate-600 block mb-1">Max</label>
-                                            <input aria-label={t('common.max')}
+                                            <label htmlFor="ws-syllable-max" className="text-xs text-slate-600 block mb-1">Max</label>
+                                            <input id="ws-syllable-max" aria-label={t('common.max')}
                                                 type="number" min="1" max="12"
                                                 data-help-key="ws_gen_syllable_max" value={syllableRange.max}
                                                 onChange={(e) => {
@@ -8314,7 +8415,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.voice_pack_section', 'Voice')}</label>
+                                <h3 className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.voice_pack_section', 'Voice')}</h3>
                                 <button type="button" onClick={() => setShowVoicePack(true)} data-help-key="ws_gen_voice_pack" className="w-full min-h-11 p-3 rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors motion-reduce:transition-none flex items-center gap-3 text-left">
                                     <span className="text-xl">🎙️</span>
                                     <span className="flex-1 min-w-0">
@@ -8466,7 +8567,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                 </div>
                             </div>
                             {goalAiUsable && <div className="space-y-3 pt-4 mt-4 border-t border-slate-200">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">📋 {tf('word_sounds.lesson_plan_heading', 'Lesson plan')}</label>
+                                <h3 id="ws-step-goals-words" tabIndex={-1} className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded">📋 {tf('word_sounds.lesson_plan_heading', 'Lesson plan')}</h3>
                                 <div className="p-3 rounded-xl border-2 border-indigo-300 bg-indigo-50" data-ws-goal-plan="true">
                                     <label htmlFor="ws-goal-text" className="flex items-center gap-2 font-bold text-slate-800"><Sparkles size={18} className="text-indigo-700" aria-hidden="true" />{tf('word_sounds.goal_heading', 'Describe your goals')}</label>
                                     <p id="ws-goal-help" className="mt-1 text-sm text-slate-700">{tf('word_sounds.planner_help_plan', 'Ask AlloBot about this lesson, or ask for changes. It starts from your words and plan. Nothing changes until you press Use this.')}</p>
@@ -8548,8 +8649,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         {previewList.length > 0 && (
                                             <button type="button"
                                                 aria-label={t('common.toggle_all')}
+                                                disabled={isProcessing}
                                                 onClick={toggleAll}
-                                                className="min-h-11 px-2 text-xs font-bold uppercase tracking-wider text-violet-700 hover:text-violet-800 hover:underline rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                                className="min-h-11 px-2 text-xs font-bold uppercase tracking-wider text-violet-700 hover:text-violet-800 hover:underline rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 {selectedIndices.size === previewList.length ? tf('word_sounds.deselect_all', 'Deselect All') : tf('word_sounds.select_all', 'Select All')}
                                             </button>
@@ -8557,8 +8659,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     </div>
                                     {assessmentTickCap != null && previewList.length > assessmentTickCap && selectedIndices.size < previewList.length && <p className="mt-1 flex flex-wrap items-center gap-x-3 text-sm text-slate-700" data-ws-assessment-cap="true">
                                         <span>{tf('word_sounds.assessment_cap_note', 'A new assessment starts with the first {count} words ticked.', { count: assessmentTickCap })}</span>
-                                        <button type="button" onClick={() => tickAllFrom(previewList)} data-ws-assessment-add-all="true"
-                                            className="min-h-11 px-2 font-bold text-violet-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{tf('word_sounds.ready_list_add_all', 'Add all {total}', { total: previewList.length })}</button>
+                                        <button type="button" disabled={isProcessing} onClick={() => tickAllFrom(previewList)} data-ws-assessment-add-all="true"
+                                            className="min-h-11 px-2 font-bold text-violet-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 disabled:opacity-50 disabled:cursor-not-allowed">{tf('word_sounds.ready_list_add_all', 'Add all {total}', { total: previewList.length })}</button>
                                     </p>}
                                 </div>
                                 <div className="hidden lg:flex flex-col items-end gap-1">
@@ -8595,10 +8697,10 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                              <button type="button" onClick={cancelPreparation} data-ws-cancel-preparation="true" className="min-h-11 rounded-lg border border-violet-400 bg-white px-4 py-2 text-sm font-bold text-violet-900 hover:bg-violet-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2">{tf('word_sounds.prepare_cancel', 'Cancel')}</button>
                                          </div>
                                      </div>
-                                     <div className="w-full h-4 bg-violet-200/50 rounded-full overflow-hidden" role="progressbar" aria-label="Preparing Word Sounds activity" aria-valuemin={0} aria-valuemax={selectedIndices.size} aria-valuenow={generatedCount}>
+                                     <div className="w-full h-4 bg-violet-200/50 rounded-full overflow-hidden" role="progressbar" aria-label="Preparing Word Sounds activity" aria-valuemin={0} aria-valuemax={Math.max(1, selectedIndices.size)} aria-valuenow={generatedCount}>
                                          <div
                                              className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none"
-                                             style={{ width: `${(generatedCount / selectedIndices.size) * 100}%` }}
+                                             style={{ width: `${Math.min(100, (generatedCount / Math.max(1, selectedIndices.size)) * 100)}%` }}
                                          ></div>
                                      </div>
                                      <p className="text-violet-700 text-sm mt-2 text-center">
@@ -8695,10 +8797,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                  title={showCount && countSource ? countSource : undefined}
                                                  data-ws-word-chip={word}
                                                  key={i}
+                                                 disabled={isProcessing}
                                                  onClick={() => toggleSelection(i)}
                                                  aria-pressed={isSelected}
                                                  aria-label={String(word) + ': ' + (isSelected ? 'selected' : 'not selected')}
-                                                 className={`border-2 rounded-xl min-h-11 px-4 py-3 flex items-center text-start group cursor-pointer transition-all motion-reduce:transition-none ${
+                                                 className={`border-2 rounded-xl min-h-11 px-4 py-3 flex items-center text-start group cursor-pointer transition-all motion-reduce:transition-none disabled:opacity-60 disabled:cursor-not-allowed ${
                                                      isSelected
                                                          ? 'bg-violet-50 border-violet-500 shadow-md'
                                                          : 'bg-slate-50 border-slate-100 hover:border-violet-200'

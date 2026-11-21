@@ -7,7 +7,7 @@
  */
 function EndSessionPreview({
   preview,
-  note,
+  note = '',
   dialogRef,
   canSaveSummary,
   groupNamesById,
@@ -30,7 +30,7 @@ function EndSessionPreview({
       let value = translated && translated !== key ? translated : fallback;
       if (params && typeof params === 'object') {
         Object.keys(params).forEach(name => {
-          value = String(value || '').replace(new RegExp('\\{' + name + '\\}', 'g'), String(params[name]));
+          value = String(value || '').split('{' + name + '}').join(String(params[name]));
         });
       }
       return value;
@@ -187,6 +187,39 @@ function EndSessionPreview({
       onFollowUpResourceChange(next.followUpResourceId || '');
     }
   };
+  const [briefCopied, setBriefCopied] = React.useState(false);
+  const briefCopyTimerRef = React.useRef(null);
+  const briefMountedRef = React.useRef(true);
+  React.useEffect(() => {
+    briefMountedRef.current = true;
+    return () => {
+      briefMountedRef.current = false;
+      if (briefCopyTimerRef.current) clearTimeout(briefCopyTimerRef.current);
+    };
+  }, []);
+  const handleCopyBrief = text => {
+    try { copyToClipboard(text); } catch (_) {}
+    if (briefMountedRef.current) setBriefCopied(true);
+    if (briefCopyTimerRef.current) clearTimeout(briefCopyTimerRef.current);
+    briefCopyTimerRef.current = setTimeout(() => {
+      if (briefMountedRef.current) setBriefCopied(false);
+    }, 2000);
+  };
+  const noteStarters = [
+    { id: 'small-group', label: tx('end_session.note_chip_small_group', '+ Small-group follow-up'), snippet: tx('end_session.note_snippet_small_group', 'Plan small-group follow-up for: ') },
+    { id: 'extend', label: tx('end_session.note_chip_extend', '+ Ready to extend'), snippet: tx('end_session.note_snippet_extend', 'Ready for extension challenge: ') },
+    { id: 'vocab', label: tx('end_session.note_chip_vocab', '+ Revisit key terms'), snippet: tx('end_session.note_snippet_vocab', 'Revisit key vocabulary with: ') },
+  ];
+  const appendNoteStarter = snippet => {
+    if (typeof setEndSessionNote !== 'function') return;
+    const base = String(endSessionNote || '');
+    const joined = base.trim() ? (base.trimEnd() + '\n' + snippet) : snippet;
+    setEndSessionNote(joined.slice(0, 500));
+    try {
+      const box = effectiveDialogRef.current?.querySelector('#end-session-note');
+      if (box && typeof box.focus === 'function') box.focus();
+    } catch (_) {}
+  };
 
   return (
     <div className="fixed inset-0 z-[10020] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4" role="presentation">
@@ -194,9 +227,9 @@ function EndSessionPreview({
         <h2 id="end-session-summary-title" className="text-xl font-black text-slate-800">{tx('end_session.title', 'End session')}</h2>
         <p id="end-session-summary-description" className="text-sm text-slate-600 mt-1">{tx('end_session.review_summary', 'Review the privacy-limited roster summary before temporary live-session data is deleted.')}</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 my-4">
-          <div className="rounded-xl bg-emerald-50 p-3 text-center"><div className="text-2xl font-black text-emerald-700">{Object.keys(endSessionPreview.summary.participants || {}).length}</div><div className="text-[11px] font-bold text-emerald-800">{tx('end_session.roster_matched', 'Roster matched')}</div></div>
-          <div className="rounded-xl bg-amber-50 p-3 text-center"><div className="text-2xl font-black text-amber-700">{(endSessionPreview.summary.absentCodenames || []).length}</div><div className="text-[11px] font-bold text-amber-800">{tx('end_session.not_present', 'Not present')}</div></div>
-          <div className="rounded-xl bg-rose-50 p-3 text-center"><div className="text-2xl font-black text-rose-700">{(endSessionPreview.summary.unmatchedCodenames || []).length}</div><div className="text-[11px] font-bold text-rose-800">{tx('end_session.unmatched', 'Unmatched')}</div></div>
+          <div className="rounded-xl bg-emerald-50 p-3 text-center"><div className="text-2xl font-black text-emerald-700">{Object.keys(endSessionPreview.summary.participants || {}).length}</div><div className="text-xs font-bold text-emerald-800">{tx('end_session.roster_matched', 'Roster matched')}</div></div>
+          <div className="rounded-xl bg-amber-50 p-3 text-center"><div className="text-2xl font-black text-amber-700">{(endSessionPreview.summary.absentCodenames || []).length}</div><div className="text-xs font-bold text-amber-800">{tx('end_session.not_present', 'Not present')}</div></div>
+          <div className="rounded-xl bg-rose-50 p-3 text-center"><div className="text-2xl font-black text-rose-700">{(endSessionPreview.summary.unmatchedCodenames || []).length}</div><div className="text-xs font-bold text-rose-800">{tx('end_session.unmatched', 'Unmatched')}</div></div>
         </div>
         {endSessionPreview.summary.organizerActivity && (() => {
           const organizer = endSessionPreview.summary.organizerActivity;
@@ -210,14 +243,14 @@ function EndSessionPreview({
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <h3 id="end-session-organizer-title" className="text-sm font-black text-fuchsia-950">{tx('end_session.organizer_evidence', 'Visual organizer evidence')}</h3>
-                  <p className="mt-0.5 text-[11px] text-fuchsia-800">{tx('end_session.organizer_activity_summary', '{type} activity · {count} matched learner{plural}', { type: String(organizer.type || 'organizer').replace(/3d$/i, ' 3D').replace(/_/g, ' '), count: organizer.participantCount || 0, plural: organizer.participantCount === 1 ? '' : 's' })}</p>
+                  <p className="mt-0.5 text-xs text-fuchsia-800">{tx('end_session.organizer_activity_summary', '{type} activity · {count} matched learner{plural}', { type: String(organizer.type || 'organizer').replace(/3d$/i, ' 3D').replace(/_/g, ' '), count: organizer.participantCount || 0, plural: organizer.participantCount === 1 ? '' : 's' })}</p>
                 </div>
-                {(organizer.followUpCodenames || []).length > 0 && <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-1 text-[10px] font-black text-amber-900">{tx('end_session.may_need_launch_support', '{count} may need launch support', { count: organizer.followUpCodenames.length })}</span>}
+                {(organizer.followUpCodenames || []).length > 0 && <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-1 text-xs font-black text-amber-900">{tx('end_session.may_need_launch_support', '{count} may need launch support', { count: organizer.followUpCodenames.length })}</span>}
               </div>
               <div role="group" className="mt-2 flex flex-wrap gap-1.5" aria-label={tx('end_session.organizer_activity_outcomes', 'Visual organizer activity outcomes')}>
-                {labels.map(([status, label]) => <span key={status} className="rounded-full border border-fuchsia-200 bg-white px-2 py-1 text-[10px] font-bold text-fuchsia-900">{counts[status]} {label}</span>)}
+                {labels.map(([status, label]) => <span key={status} className="rounded-full border border-fuchsia-200 bg-white px-2 py-1 text-xs font-bold text-fuchsia-900">{counts[status]} {label}</span>)}
               </div>
-              <p className="mt-2 text-[10px] text-slate-600">{tx('end_session.organizer_evidence_privacy', 'Saved evidence contains bounded status and score totals only—not card text, answers, account IDs, or resource IDs.')}</p>
+              <p className="mt-2 text-xs text-slate-600">{tx('end_session.organizer_evidence_privacy', 'Saved evidence contains bounded status and score totals only—not card text, answers, account IDs, or resource IDs.')}</p>
             </section>
           );
         })()}
@@ -226,32 +259,32 @@ function EndSessionPreview({
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <h3 id="end-session-insight-title" className="text-sm font-black text-indigo-950">{tx('end_session.insight_brief', 'Insight brief')}</h3>
-                <p className="text-[11px] text-indigo-800 mt-0.5">{tx('end_session.insight_brief_disclaimer', 'A device-local summary of participation evidence—not an automated judgment of understanding.')}</p>
+                <p className="text-xs text-indigo-800 mt-0.5">{tx('end_session.insight_brief_disclaimer', 'A device-local summary of participation evidence—not an automated judgment of understanding.')}</p>
               </div>
-              <button type="button" onClick={() => copyToClipboard([
+              <button type="button" data-end-session-copy-brief="true" onClick={() => handleCopyBrief([
                 tx('end_session.brief_heading', 'Live session insight brief'),
                 tx('end_session.brief_counts', '{activities} activities · {submissions} submissions · {revisions} revisions', { activities: endSessionPreview.summary.insightBrief.activityCount || 0, submissions: endSessionPreview.summary.insightBrief.submissions || 0, revisions: endSessionPreview.summary.insightBrief.revisions || 0 }),
                 ...(endSessionPreview.summary.insightBrief.nextMoves || []).map(move => `${move.count}: ${move.label}`),
                 tx('end_session.brief_privacy', 'Privacy: aggregate participation evidence only; no raw answers or account IDs.'),
-              ].join('\n'))} className="rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-[11px] font-bold text-indigo-800 hover:bg-indigo-100">{tx('end_session.copy_brief', 'Copy brief')}</button>
+              ].join('\n'))} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600">{briefCopied ? tx('end_session.brief_copied', '✓ Brief copied') : tx('end_session.copy_brief', 'Copy brief')}</button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
-              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{endSessionPreview.summary.insightBrief.activityCount || 0}</div><div className="text-[10px] font-bold text-slate-600">{tx('end_session.activities', 'Activities')}</div></div>
-              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{endSessionPreview.summary.insightBrief.submissions || 0}</div><div className="text-[10px] font-bold text-slate-600">{tx('end_session.submissions', 'Submissions')}</div></div>
-              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{endSessionPreview.summary.insightBrief.revisions || 0}</div><div className="text-[10px] font-bold text-slate-600">{tx('end_session.revisions', 'Revisions')}</div></div>
-              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{(endSessionPreview.summary.insightBrief.followUpCodenames || []).length}</div><div className="text-[10px] font-bold text-slate-600">{tx('end_session.follow_up', 'Follow-up')}</div></div>
+              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{endSessionPreview.summary.insightBrief.activityCount || 0}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.activities', 'Activities')}</div></div>
+              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{endSessionPreview.summary.insightBrief.submissions || 0}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.submissions', 'Submissions')}</div></div>
+              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{endSessionPreview.summary.insightBrief.revisions || 0}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.revisions', 'Revisions')}</div></div>
+              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{(endSessionPreview.summary.insightBrief.followUpCodenames || []).length}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.follow_up', 'Follow-up')}</div></div>
             </div>
             {(endSessionPreview.summary.insightBrief.byKind || []).length > 0 && (
               <div role="group" className="mt-3 flex flex-wrap gap-1.5" aria-label={tx('end_session.activity_participation_by_type', 'Activity participation by type')}>
-                {endSessionPreview.summary.insightBrief.byKind.map(item => <span key={item.kind} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-[10px] font-bold text-indigo-800">{tx('end_session.kind_' + item.kind, item.kind.replace(/_/g, ' ').replace(/^./, first => first.toUpperCase()))} · {item.submitted}/{item.invited}</span>)}
+                {endSessionPreview.summary.insightBrief.byKind.map(item => <span key={item.kind} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs font-bold text-indigo-800">{tx('end_session.kind_' + item.kind, item.kind.replace(/_/g, ' ').replace(/^./, first => first.toUpperCase()))} · {item.submitted}/{item.invited}</span>)}
               </div>
             )}
             {(endSessionPreview.summary.insightBrief.evidenceCohorts || []).length > 0 && (
               <div role="group" className="mt-3 rounded-xl border border-violet-200 bg-white p-3" aria-label={tx('end_session.evidence_cohorts_follow_up', 'Evidence cohorts and targeted follow-up')}>
-                <div className="text-[10px] font-black uppercase tracking-wide text-violet-900">{tx('end_session.evidence_cohorts', 'Evidence cohorts')}</div>
-                <p className="mt-1 text-[11px] text-slate-600">{tx('end_session.participation_signals_disclaimer', 'Participation signals are review suggestions, not automatic mastery or misconception labels.')}</p>
+                <div className="text-xs font-black uppercase tracking-wide text-violet-900">{tx('end_session.evidence_cohorts', 'Evidence cohorts')}</div>
+                <p className="mt-1 text-xs text-slate-600">{tx('end_session.participation_signals_disclaimer', 'Participation signals are review suggestions, not automatic mastery or misconception labels.')}</p>
                 {(endSessionPreview.followUpResources || []).length > 0 && (
-                  <label className="mt-2 block text-[11px] font-bold text-slate-700">
+                  <label className="mt-2 block text-xs font-bold text-slate-700">
                     {tx('end_session.follow_up_resource', 'Follow-up resource')}
                     <select
                       value={endSessionPreview.followUpResourceId || ''}
@@ -277,7 +310,7 @@ function EndSessionPreview({
                         <div className="flex items-start gap-2">
                           <div className="min-w-0 flex-1">
                             <div className={'text-xs font-black ' + (supportCohort ? 'text-amber-900' : 'text-emerald-900')}>{cohort.label} - {cohort.count}</div>
-                            <div className="mt-0.5 text-[10px] text-slate-600">{cohort.recommendedAction}</div>
+                            <div className="mt-0.5 text-xs text-slate-600">{cohort.recommendedAction}</div>
                           </div>
                           {supportCohort && connectedCount > 0 && (endSessionPreview.followUpResources || []).length > 0 && (
                             <button
@@ -285,40 +318,40 @@ function EndSessionPreview({
                               disabled={!!endSessionPreview.followUpBusy || endSessionPreview.busy}
                               onClick={() => sendEndSessionEvidenceCohort(cohort)}
                               aria-label={sendActionLabel + '. ' + sendActionDescription}
-                              className="min-h-11 shrink-0 rounded-lg bg-violet-700 px-2.5 py-1.5 text-[10px] font-black text-white hover:bg-violet-800 disabled:opacity-50"
+                              className="min-h-11 shrink-0 rounded-lg bg-violet-700 px-2.5 py-1.5 text-xs font-black text-white hover:bg-violet-800 disabled:opacity-50"
                             >
                               {sendActionLabel}
                             </button>
                           )}
                         </div>
                         <details className="mt-1">
-                          <summary tabIndex={0} className="cursor-pointer rounded text-[10px] font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">{tx('end_session.review_codenames', 'Review codenames')}</summary>
-                          <div className="mt-1 text-[10px] text-slate-600">{(cohort.codenames || []).join(', ')}</div>
+                          <summary tabIndex={0} className="cursor-pointer rounded text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">{tx('end_session.review_codenames', 'Review codenames')}</summary>
+                          <div className="mt-1 text-xs text-slate-600">{(cohort.codenames || []).join(', ')}</div>
                         </details>
                       </div>
                     );
                   })}
                 </div>
-                {endSessionPreview.followUpStatus && <p role="status" aria-live="polite" className="mt-2 rounded-lg bg-violet-50 p-2 text-[11px] font-bold text-violet-900">{endSessionPreview.followUpStatus}</p>}
+                {endSessionPreview.followUpStatus && <p role="status" aria-live="polite" className="mt-2 rounded-lg bg-violet-50 p-2 text-xs font-bold text-violet-900">{endSessionPreview.followUpStatus}</p>}
               </div>
             )}
             {(endSessionPreview.summary.insightBrief.groups || []).some(group => group.followUpCount > 0) && (
               <div className="mt-3">
-                <div className="text-[10px] font-black uppercase tracking-wide text-indigo-900">{tx('end_session.group_patterns', 'Group patterns')}</div>
+                <div className="text-xs font-black uppercase tracking-wide text-indigo-900">{tx('end_session.group_patterns', 'Group patterns')}</div>
                 <div className="mt-1 flex flex-wrap gap-1.5">
-                  {endSessionPreview.summary.insightBrief.groups.filter(group => group.followUpCount > 0).map(group => <span key={group.groupId} className="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-bold text-amber-900">{tx('end_session.group_follow_up', '{name}: {count} follow-up', { name: rosterKey?.groups?.[group.groupId]?.name || group.groupId, count: group.followUpCount })}</span>)}
+                  {endSessionPreview.summary.insightBrief.groups.filter(group => group.followUpCount > 0).map(group => <span key={group.groupId} className="rounded-full bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900">{tx('end_session.group_follow_up', '{name}: {count} follow-up', { name: rosterKey?.groups?.[group.groupId]?.name || group.groupId, count: group.followUpCount })}</span>)}
                 </div>
               </div>
             )}
             {(endSessionPreview.summary.insightBrief.nextMoves || []).length > 0 && (
               <div className="mt-3">
-                <div className="text-[10px] font-black uppercase tracking-wide text-indigo-900">{tx('end_session.suggested_next_moves', 'Suggested next moves')}</div>
+                <div className="text-xs font-black uppercase tracking-wide text-indigo-900">{tx('end_session.suggested_next_moves', 'Suggested next moves')}</div>
                 <ul className="mt-1 space-y-1 text-xs text-slate-700">
                   {endSessionPreview.summary.insightBrief.nextMoves.map(move => <li key={move.code} className="flex gap-2"><span className="font-black text-indigo-700">{move.count}</span><span>{move.label}</span></li>)}
                 </ul>
               </div>
             )}
-            {(endSessionPreview.summary.insightBrief.followUpCodenames || []).length > 0 && <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] font-semibold text-amber-900">{tx('end_session.connections_active_disclaimer', 'Connections remain active during this review. Use the cohort controls above or the companion view before ending; ending removes temporary student connections.')}</p>}
+            {(endSessionPreview.summary.insightBrief.followUpCodenames || []).length > 0 && <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs font-semibold text-amber-900">{tx('end_session.connections_active_disclaimer', 'Connections remain active during this review. Use the cohort controls above or the companion view before ending; ending removes temporary student connections.')}</p>}
           </section>
         )}
         {(endSessionPreview.summary.unmatchedCodenames || []).length > 0 && <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 mb-4"><div className="text-xs font-black text-rose-800">{tx('end_session.unmatched_codenames_notice', 'Unmatched codenames are not added automatically')}</div><div className="text-xs text-rose-700 mt-1">{endSessionPreview.summary.unmatchedCodenames.join(', ')}</div></div>}
@@ -326,25 +359,40 @@ function EndSessionPreview({
           <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-3 mb-4">
             <div className="text-xs font-black text-amber-900">{tx('end_session.resource_delivery_status', 'Resource delivery status')}</div>
             <p className="mt-1 text-xs text-amber-800">{tx('end_session.delivery_summary', '{opened} of {assigned} targeted resources have been opened. {pending} remain unconfirmed{loadingText}{failedText}.', { opened: endSessionPreview.deliverySummary.opened, assigned: endSessionPreview.deliverySummary.assigned, pending: endSessionPreview.deliverySummary.pending, loadingText: endSessionPreview.deliverySummary.loading ? `; ${endSessionPreview.deliverySummary.loading} still loading` : '', failedText: endSessionPreview.deliverySummary.failed ? `; ${endSessionPreview.deliverySummary.failed} reported a load failure` : '' })}</p>
-            <p className="mt-1 text-[11px] text-amber-800">{tx('end_session.delivery_keep_open', 'The session can stay open while learners receive the resource. Ending removes temporary connections.')}</p>
+            <p className="mt-1 text-xs text-amber-800">{tx('end_session.delivery_keep_open', 'The session can stay open while learners receive the resource. Ending removes temporary connections.')}</p>
           </div>
         )}
         <details className="rounded-xl border border-slate-200 p-3 mb-4"><summary tabIndex={0} className="cursor-pointer rounded text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">{tx('end_session.what_will_be_saved', 'What will be saved?')}</summary><p className="text-xs text-slate-600 mt-2">{tx('end_session.saved_summary_details', 'Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. A codename-only teacher note is saved if provided. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not otherwise saved.')}</p></details>
         <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="end-session-note">{tx('end_session.optional_codename_note', 'Optional codename-only teacher note')}</label>
+        {typeof setEndSessionNote === 'function' && (
+          <div data-end-session-note-chips="true" className="mb-2 flex flex-wrap gap-1.5" role="group" aria-label={tx('end_session.note_starters_aria', 'Quick codename-only note starters')}>
+            {noteStarters.map(starter => (
+              <button
+                key={starter.id}
+                type="button"
+                data-end-session-note-chip={starter.id}
+                onClick={() => appendNoteStarter(starter.snippet)}
+                className="min-h-11 rounded-lg border border-slate-300 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
+              >
+                {starter.label}
+              </button>
+            ))}
+          </div>
+        )}
         <textarea id="end-session-note" aria-describedby="end-session-note-privacy" value={endSessionNote} maxLength={500} onChange={event => setEndSessionNote(event.target.value.slice(0, 500))} rows={3} placeholder={tx('end_session.teacher_note_placeholder', 'Example: Azure Fox may benefit from a fractions review')} className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
-        <div className="flex items-start justify-between gap-3 text-[11px] text-slate-500"><span id="end-session-note-privacy">{tx('end_session.note_privacy_guidance', 'Use codenames only. This note is stored with the roster summary and included in roster backups.')}</span><span className="shrink-0">{endSessionNote.length}/500</span></div>
+        <div className="flex items-start justify-between gap-3 text-xs text-slate-600"><span id="end-session-note-privacy">{tx('end_session.note_privacy_guidance', 'Use codenames only. This note is stored with the roster summary and included in roster backups.')}</span><span className="shrink-0">{endSessionNote.length}/500</span></div>
         {!rosterKey && <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">{tx('end_session.roster_required_notice', 'Create or import a class roster to save longitudinal summaries. You can still end this session normally.')}</p>}
         <div className="flex flex-col sm:flex-row gap-2 mt-5 justify-end">
-          <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={onKeepSessionOpen} className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold disabled:opacity-50">{tx('end_session.keep_open', 'Keep session open')}</button>
+          <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={onKeepSessionOpen} className="min-h-11 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50">{tx('end_session.keep_open', 'Keep session open')}</button>
           {endSessionPreview.deliveryGuard ? (
             <>
-              <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={() => completeLiveSessionEnd(false, true)} className="px-4 py-2.5 rounded-xl border border-rose-300 bg-rose-100 text-rose-800 font-bold disabled:opacity-50">{tx('end_session.end_without_saving_anyway', 'End without saving anyway')}</button>
-              {rosterKey && <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={() => completeLiveSessionEnd(true, true)} className="px-4 py-2.5 rounded-xl bg-amber-700 text-white font-bold shadow-lg hover:bg-amber-800 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end_anyway', 'Save summary & end anyway')}</button>}
+              <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => completeLiveSessionEnd(false, true)} className="min-h-11 px-4 py-2.5 rounded-xl border border-rose-300 bg-rose-100 text-rose-800 font-bold hover:bg-rose-200 focus-visible:ring-2 focus-visible:ring-rose-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.end_without_saving_anyway', 'End without saving anyway')}</button>
+              {rosterKey && <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => completeLiveSessionEnd(true, true)} className="min-h-11 px-4 py-2.5 rounded-xl bg-amber-700 text-white font-bold shadow-lg hover:bg-amber-800 focus-visible:ring-2 focus-visible:ring-amber-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end_anyway', 'Save summary & end anyway')}</button>}
             </>
           ) : (
             <>
-              <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={() => completeLiveSessionEnd(false)} className="px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold disabled:opacity-50">{tx('end_session.end_without_saving', 'End without saving')}</button>
-              {rosterKey && <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={() => completeLiveSessionEnd(true)} className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold shadow-lg disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end', 'Save summary & end')}</button>}
+              <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => completeLiveSessionEnd(false)} className="min-h-11 px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.end_without_saving', 'End without saving')}</button>
+              {rosterKey && <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => completeLiveSessionEnd(true)} className="min-h-11 px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold shadow-lg hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end', 'Save summary & end')}</button>}
             </>
           )}
         </div>

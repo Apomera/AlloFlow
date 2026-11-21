@@ -880,11 +880,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         return h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true' },
           // Wok glow / flame at high heat
           panTemp >= 400 ? h('ellipse', { cx: 140, cy: 95, rx: 115, ry: 60, fill: 'rgba(251,146,60,0.7)' }) : null,
-          // Wok shape (deeper than pan)
+          // Wok shape (deeper than pan) with metallic rim specular highlight
           h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 35, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
+          h('path', { d: 'M 56 86 Q 140 62 224 86', fill: 'none', stroke: 'rgba(255,244,214,0.34)', strokeWidth: 2, strokeLinecap: 'round' }),
           h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 30, fill: '#1c1410' }),
-          // Oil sheen
-          hasOil ? h('ellipse', { cx: 140, cy: 95, rx: 70, ry: 18, fill: 'rgba(255,220,120,0.4)' }) : null,
+          // Oil sheen with studio highlight
+          hasOil ? h('g', null,
+            h('ellipse', { cx: 140, cy: 95, rx: 70, ry: 18, fill: 'rgba(255,220,120,0.42)' }),
+            h('ellipse', { cx: 122, cy: 90, rx: 24, ry: 4.5, fill: 'rgba(255,255,255,0.2)' })
+          ) : null,
           // Aromatics (small bright dots)
           // Stuck-on patch when the wok sits unattended
           state.unattended ? h('ellipse', { cx: 140, cy: 97, rx: 40, ry: 9, fill: 'rgba(28,20,16,0.85)', stroke: '#7c2d12', strokeWidth: 1 }) : null,
@@ -912,10 +916,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // Sauce sheen
           hasSauce ? h('ellipse', { cx: 140, cy: 100, rx: 80, ry: 12, fill: 'rgba(120,53,15,0.5)' }) : null,
           // Wok hei smoke: real heat with food in it, char, or the oil past its smoke point
-          (panTemp > 420 && (hasHard || hasAr)) || charred || state.oilSmoking ? h('g', null,
-            h('path', { d: 'M 110 75 Q 105 60 115 45 Q 125 30 115 15', stroke: 'rgba(180,180,180,0.6)', strokeWidth: 2.5, fill: 'none' }),
-            h('path', { d: 'M 140 73 Q 138 55 148 40 Q 158 28 152 12', stroke: 'rgba(180,180,180,0.6)', strokeWidth: 2.5, fill: 'none' }),
-            h('path', { d: 'M 170 75 Q 165 58 175 42 Q 185 28 175 14', stroke: 'rgba(180,180,180,0.6)', strokeWidth: 2.5, fill: 'none' })
+          (panTemp > 420 && (hasHard || hasAr)) || charred || state.oilSmoking ? h('g', { className: 'kl-steam-wisp' },
+            h('path', { d: 'M 110 75 Q 105 60 115 45 Q 125 30 115 15', stroke: 'rgba(226,232,240,0.58)', strokeWidth: 2.4, strokeLinecap: 'round', fill: 'none' }),
+            h('path', { d: 'M 140 73 Q 138 55 148 40 Q 158 28 152 12', stroke: 'rgba(226,232,240,0.62)', strokeWidth: 2.4, strokeLinecap: 'round', fill: 'none' }),
+            h('path', { d: 'M 170 75 Q 165 58 175 42 Q 185 28 175 14', stroke: 'rgba(226,232,240,0.55)', strokeWidth: 2.4, strokeLinecap: 'round', fill: 'none' })
           ) : null,
           // Wok handle (longer than skillet)
           h('rect', { x: 232, y: 92, width: 45, height: 10, fill: '#1c1410', rx: 2 }),
@@ -1306,15 +1310,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           else if (browning >= 5) skinColor = '#d97706';   // light brown
         }
         return h('svg', { width: 280, height: 220, viewBox: '0 0 280 220', 'aria-hidden': 'true' },
-          // Oven cavity
-          h('rect', { x: 30, y: 20, width: 220, height: 180, fill: '#1c1410', stroke: '#3f2419', strokeWidth: 3, rx: 12 }),
+          // Oven cavity with warm studio lighting & convection currents
+          h('defs', null,
+            h('radialGradient', { id: 'kl-oven-glow', cx: '50%', cy: '50%', r: '62%' },
+              h('stop', { offset: '0%', stopColor: '#fb923c', stopOpacity: ovenTemp >= 350 ? Math.min(0.42, (ovenTemp - 280) / 480) : 0.08 }),
+              h('stop', { offset: '100%', stopColor: '#1c1410', stopOpacity: 0 })
+            )
+          ),
+          h('rect', { x: 30, y: 20, width: 220, height: 180, fill: '#1c1410', stroke: '#573624', strokeWidth: 3, rx: 12 }),
           // Heating elements
           ovenTemp >= 200 ? h('g', null,
-            h('line', { x1: 50, y1: 32, x2: 230, y2: 32, stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3, opacity: 0.8, strokeDasharray: '4 2' }),
-            h('line', { x1: 50, y1: 188, x2: 230, y2: 188, stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3, opacity: 0.8, strokeDasharray: '4 2' })
+            h('line', { x1: 50, y1: 32, x2: 230, y2: 32, stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3.5, opacity: 0.9, strokeDasharray: '4 2' }),
+            h('line', { x1: 50, y1: 188, x2: 230, y2: 188, stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3.5, opacity: 0.9, strokeDasharray: '4 2' })
           ) : null,
-          // Hot glow
-          ovenTemp >= 350 ? h('rect', { x: 35, y: 25, width: 210, height: 170, fill: 'rgba(251,146,60,' + Math.min(0.3, (ovenTemp - 300) / 500) + ')', rx: 10 }) : null,
+          // Hot radiant cavity glow + convection air wisps
+          h('rect', { x: 35, y: 25, width: 210, height: 170, fill: 'url(#kl-oven-glow)', rx: 10 }),
+          ovenTemp >= 300 ? h('g', { className: 'kl-steam-wisp', opacity: 0.45 },
+            h('path', { d: 'M 54 156 Q 48 112 62 72', fill: 'none', stroke: '#fdba74', strokeWidth: 1.5, strokeDasharray: '4 4', strokeLinecap: 'round' }),
+            h('path', { d: 'M 226 156 Q 232 112 218 72', fill: 'none', stroke: '#fdba74', strokeWidth: 1.5, strokeDasharray: '4 4', strokeLinecap: 'round' })
+          ) : null,
+          // Glass viewing-window specular streak
+          h('path', { d: 'M 44 36 L 88 36 L 56 122 L 44 122 Z', fill: 'rgba(255,255,255,0.05)' }),
           // Roasting pan
           hasChicken ? h('g', null,
             h('rect', { x: 70, y: 130, width: 140, height: 50, fill: '#3f3f46', stroke: '#1c1410', strokeWidth: 1.5, rx: 4 }),
@@ -1952,12 +1968,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('path', { d: 'M 90 92 Q 95 72 125 74 Q 150 66 175 78 Q 195 88 185 104 Q 170 116 140 114 Q 105 114 92 104 Q 85 98 90 92 Z', fill: 'rgba(255,255,255,' + whiteAlpha + ')', stroke: edge, strokeWidth: browning >= 0.4 ? 2.5 : 1 }),
             h('ellipse', { cx: 142, cy: 92, rx: 17, ry: 12, fill: yolkColor, stroke: 'rgba(120,53,15,0.35)', strokeWidth: 0.8 }),
             foodT < 160 ? h('ellipse', { cx: 136, cy: 88, rx: 5, ry: 3, fill: 'rgba(255,255,255,0.5)' }) : null,
-            panTemp > 212 && foodT < 205 ? h('g', { style: { filter: 'blur(0.7px)' } },
-              h('path', { d: 'M 115 68 Q 118 60 115 51', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' }),
-              h('path', { d: 'M 165 68 Q 168 60 165 51', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' })) : null,
+            panTemp > 212 && foodT < 205 ? h('g', { className: 'kl-steam-wisp', style: { filter: 'blur(0.7px)' } },
+              h('path', { d: 'M 115 68 Q 118 60 115 51', stroke: 'rgba(226,232,240,0.58)', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' }),
+              h('path', { d: 'M 165 68 Q 168 60 165 51', stroke: 'rgba(226,232,240,0.58)', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' })) : null,
             lidOn ? h('g', null,
-              h('ellipse', { cx: 140, cy: 90, rx: 96, ry: 30, fill: 'rgba(148,163,184,0.22)', stroke: 'rgba(203,213,225,0.7)', strokeWidth: 2 }),
-              h('circle', { cx: 140, cy: 62, r: 5, fill: '#cbd5e1' })) : null,
+              h('ellipse', { cx: 140, cy: 90, rx: 96, ry: 30, fill: 'rgba(148,163,184,0.22)', stroke: 'rgba(226,232,240,0.78)', strokeWidth: 2 }),
+              h('path', { d: 'M 74 76 Q 118 62 168 70', fill: 'none', stroke: 'rgba(255,255,255,0.52)', strokeWidth: 2.6, strokeLinecap: 'round' }),
+              h('path', { d: 'M 184 75 Q 204 82 214 91', fill: 'none', stroke: 'rgba(255,255,255,0.28)', strokeWidth: 1.8, strokeLinecap: 'round' }),
+              h('circle', { cx: 140, cy: 62, r: 5.5, fill: '#e2e8f0', stroke: '#475569', strokeWidth: 1 })) : null,
             // Yolk temperature readout, coloured by band: runny / jammy / firm
             h('rect', { x: 78, y: 138, width: 124, height: 22, rx: 6, fill: 'rgba(0,0,0,0.75)' }),
             h('text', { x: 140, y: 153, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: foodT < 150 ? '#fb923c' : foodT < 160 ? '#fbbf24' : foodT < 170 ? '#fde68a' : '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' },
@@ -2110,24 +2128,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           }
         }
         return h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true', 'data-kl-rice': hasRice ? Math.round(hydration * 100) + ',' + Math.round(moisture) : 'empty' },
+          h('defs', null,
+            h('linearGradient', { id: 'kl-pot-steel', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+              h('stop', { offset: '0%', stopColor: '#27272a' }),
+              h('stop', { offset: '22%', stopColor: '#52525b' }),
+              h('stop', { offset: '42%', stopColor: '#71717a' }),
+              h('stop', { offset: '78%', stopColor: '#3f3f46' }),
+              h('stop', { offset: '100%', stopColor: '#27272a' })
+            ),
+            h('linearGradient', { id: 'kl-water-col', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: 'rgba(147,197,253,0.62)' }),
+              h('stop', { offset: '100%', stopColor: 'rgba(59,130,246,0.34)' })
+            )
+          ),
           // burner glow under the pot: a dry pot on a live burner runs hot
           dryHot ? h('ellipse', { cx: 140, cy: 156, rx: 90, ry: 14, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 280) / 300) + ')' }) : null,
           level > 0 ? h('ellipse', { cx: 140, cy: 160, rx: 60, ry: 6, fill: 'rgba(251,146,60,' + (0.15 + 0.05 * level) + ')' }) : null,
-          // pot body and handles
-          h('path', { d: 'M 68 40 L 68 ' + floorY + ' Q 68 158 76 158 L 204 158 Q 212 158 212 ' + floorY + ' L 212 40 Z', fill: '#3f3f46', stroke: '#1c1410', strokeWidth: 2 }),
+          // pot body and handles (brushed metal gradient + glass cutaway specular streak)
+          h('path', { d: 'M 68 40 L 68 ' + floorY + ' Q 68 158 76 158 L 204 158 Q 212 158 212 ' + floorY + ' L 212 40 Z', fill: 'url(#kl-pot-steel)', stroke: '#1c1410', strokeWidth: 2 }),
           h('rect', { x: 44, y: 46, width: 24, height: 8, rx: 3, fill: '#1c1410' }),
           h('rect', { x: 212, y: 46, width: 24, height: 8, rx: 3, fill: '#1c1410' }),
           h('rect', { x: innerX, y: innerTop, width: innerW, height: floorY - innerTop + 4, fill: '#18181b' }),
           // water, then the rice layer at the bottom of it
-          waterH > 0 ? h('rect', { x: innerX, y: floorY + 4 - waterH, width: innerW, height: waterH, fill: 'rgba(96,165,250,' + (0.25 + 0.3 * Math.min(1, moisture / 300)) + ')' }) : null,
+          waterH > 0 ? h('g', null,
+            h('rect', { x: innerX, y: floorY + 4 - waterH, width: innerW, height: waterH, fill: 'url(#kl-water-col)' }),
+            h('line', { x1: innerX + 2, y1: floorY + 4 - waterH, x2: innerX + innerW - 2, y2: floorY + 4 - waterH, stroke: 'rgba(224,242,254,0.75)', strokeWidth: 1.4 })
+          ) : null,
           riceH > 0 ? h('rect', { x: innerX, y: floorY + 4 - riceH, width: innerW, height: riceH, fill: riceColor, stroke: 'rgba(0,0,0,0.15)' }) : null,
           browning >= 0.3 ? h('rect', { x: innerX, y: floorY - 2, width: innerW, height: 6, fill: browning >= 1 ? '#0c0a09' : '#6b3f14' }) : null,
+          // Translucent cutaway glass vertical specular reflection streak
+          h('rect', { x: innerX + 8, y: innerTop + 4, width: 6, height: floorY - innerTop - 6, rx: 3, fill: 'rgba(255,255,255,0.12)' }),
           bubbleEls.length ? h('g', null, bubbleEls) : null,
-          steamEls.length ? h('g', null, steamEls) : null,
-          // the lid
+          steamEls.length ? h('g', { className: 'kl-steam-wisp' }, steamEls) : null,
+          // the translucent glass lid with specular highlight
           hasRice && lidOn ? h('g', null,
-            h('rect', { x: 62, y: 32, width: 156, height: 8, rx: 3, fill: '#94a3b8', stroke: '#475569', strokeWidth: 1 }),
-            h('circle', { cx: 140, cy: 28, r: 5, fill: '#cbd5e1' })) : null,
+            h('path', { d: 'M 64 38 Q 140 20 216 38 Z', fill: 'rgba(186,230,253,0.22)', stroke: '#cbd5e1', strokeWidth: 1.2 }),
+            h('path', { d: 'M 86 33 Q 116 25 148 28', fill: 'none', stroke: 'rgba(255,255,255,0.6)', strokeWidth: 2, strokeLinecap: 'round' }),
+            h('rect', { x: 62, y: 34, width: 156, height: 6, rx: 3, fill: '#94a3b8', stroke: '#475569', strokeWidth: 1 }),
+            h('circle', { cx: 140, cy: 25, r: 5, fill: '#e2e8f0', stroke: '#475569', strokeWidth: 1 })) : null,
           // readout
           hasRice ? h('g', null,
             h('rect', { x: 34, y: 164, width: 212, height: 16, rx: 5, fill: 'rgba(0,0,0,0.75)' }),
@@ -4087,6 +4125,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
+  // Culinary studio SVG animations (rising steam wisps & calibrated temperature beacons, reduced-motion gated)
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-kitchenlab-visual-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-kitchenlab-visual-css';
+    st.textContent = [
+      '@keyframes kl-steam-rise { 0% { transform: translateY(2px); opacity: 0.25; } 50% { transform: translateY(-4px); opacity: 0.72; } 100% { transform: translateY(2px); opacity: 0.25; } }',
+      '@keyframes kl-beacon-pulse { 0% { opacity: 0.35; } 50% { opacity: 0.85; } 100% { opacity: 0.35; } }',
+      '[data-stem-tool-shell="kitchenLab"] .kl-steam-wisp { animation: kl-steam-rise 2.8s ease-in-out infinite; }',
+      '[data-stem-tool-shell="kitchenLab"] .kl-temp-beacon { animation: kl-beacon-pulse 2.2s ease-in-out infinite; }',
+      '.theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-steam-wisp, .theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-temp-beacon { animation: none !important; }',
+      '@media (prefers-reduced-motion: reduce) { [data-stem-tool-shell="kitchenLab"] .kl-steam-wisp, [data-stem-tool-shell="kitchenLab"] .kl-temp-beacon { animation: none !important; transform: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   window.StemLab.registerTool('kitchenLab', {
     icon: '🍳',
     label: 'Kitchen Lab',
@@ -4277,7 +4330,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var px = xOf(clamped);
         var z = tempZone(clamped);
         return h('svg', { viewBox: '0 0 340 56', width: 340, height: 56, className: 'kl-thermal-svg', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', maxWidth: 340, height: 'auto' } },
-          h('rect', { x: 1, y: 1, width: 338, height: 54, rx: 10, fill: 'rgba(15,23,42,0.72)', stroke: 'rgba(251,146,60,0.34)', strokeWidth: 1.2 }),
+          h('defs', null,
+            h('linearGradient', { id: 'kl-spec-bg', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: 'rgba(28,20,16,0.88)' }),
+              h('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.82)' })
+            )
+          ),
+          h('rect', { x: 1, y: 1, width: 338, height: 54, rx: 10, fill: 'url(#kl-spec-bg)', stroke: 'rgba(251,146,60,0.42)', strokeWidth: 1.2 }),
           h('text', { x: 12, y: 14, fill: '#fdba74', fontSize: 10, fontWeight: 800, letterSpacing: '0.06em' }, __alloT('stem.kitchenlab.thermal_spectrum_label', 'THERMAL SPECTRUM')),
           h('text', { x: 328, y: 14, textAnchor: 'end', fill: z.ink || z.color, fontSize: 10, fontWeight: 800 }, fmtT(clamped) + ' · ' + z.label),
           h('rect', { x: 12, y: 22, width: xOf(40) - 12, height: 10, rx: 3, fill: '#38bdf8' }),
@@ -4285,6 +4344,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           h('rect', { x: xOf(140), y: 22, width: xOf(212) - xOf(140), height: 10, fill: '#16a34a' }),
           h('rect', { x: xOf(212), y: 22, width: xOf(280) - xOf(212), height: 10, fill: '#f59e0b' }),
           h('rect', { x: xOf(280), y: 22, width: 328 - xOf(280), height: 10, rx: 3, fill: '#ea580c' }),
+          // Specular glass highlight strip across temperature zones
+          h('rect', { x: 12, y: 22, width: 316, height: 4, rx: 2, fill: '#ffffff', opacity: 0.22 }),
+          // Calibrated temperature-zone beacon halo & needle
+          h('circle', { className: 'kl-temp-beacon', cx: px, cy: 27, r: 8.5, fill: z.ink || z.color, opacity: 0.34 }),
           h('line', { x1: px, y1: 18, x2: px, y2: 36, stroke: '#fde68a', strokeWidth: 2.2 }),
           h('circle', { cx: px, cy: 27, r: 4.2, fill: '#fde68a', stroke: '#1c1410', strokeWidth: 1.4 }),
           h('text', { x: 12, y: 47, fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, fmtT(40)),
@@ -4319,9 +4382,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0, boxShadow: '0 4px 14px rgba(0,0,0,0.35)' } },
               h('svg', { viewBox: '0 0 48 48', width: 42, height: 42, 'aria-hidden': 'true', focusable: 'false' },
-                h('path', { d: 'M15 14C15 10.5 18 10 18 6.5M23 13C23 9.5 26 9 26 5.5M31 14C31 10.5 34 10 34 6.5', fill: 'none', stroke: '#fde68a', strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.85 }),
-                h('ellipse', { cx: 22, cy: 26, rx: 13.5, ry: 7.5, fill: '#292524', stroke: '#fb923c', strokeWidth: 1.8 }),
-                h('ellipse', { cx: 22, cy: 25, rx: 9.5, ry: 4.5, fill: '#b45309', opacity: 0.7 }),
+                h('defs', null,
+                  h('linearGradient', { id: 'kl-emblem-pan', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#44403c' }),
+                    h('stop', { offset: '55%', stopColor: '#292524' }),
+                    h('stop', { offset: '100%', stopColor: '#1c1917' })
+                  )
+                ),
+                h('path', { className: 'kl-steam-wisp', d: 'M15 14C15 10.5 18 10 18 6.5M23 13C23 9.5 26 9 26 5.5M31 14C31 10.5 34 10 34 6.5', fill: 'none', stroke: '#fde68a', strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.85 }),
+                h('ellipse', { cx: 22, cy: 26, rx: 13.5, ry: 7.5, fill: 'url(#kl-emblem-pan)', stroke: '#fb923c', strokeWidth: 1.8 }),
+                h('path', { d: 'M11.5 23.5 Q22 18.5 32.5 23.5', fill: 'none', stroke: '#fef3c7', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.45 }),
+                h('ellipse', { cx: 22, cy: 25, rx: 9.5, ry: 4.5, fill: '#b45309', opacity: 0.78 }),
                 h('path', { d: 'M34.5 25L44 21.5', stroke: '#fdba74', strokeWidth: 3.2, strokeLinecap: 'round' }),
                 h('path', { d: 'M14 37C16.5 33.5 18 33.5 19.5 36.5C21 33 23 32.5 24.5 36.5C26 33.5 28 33.5 30 37', fill: 'none', stroke: '#f97316', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                 h('circle', { cx: 22, cy: 24.5, r: 2.2, fill: '#fef3c7' })
@@ -4469,11 +4540,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               var curY = 62 - (curDm === Infinity ? 0 : Math.min(1, 20 / curDm)) * 40;
               return h('svg', { viewBox: '0 0 360 84', width: 360, height: 84, 'aria-hidden': 'true', focusable: 'false',
                 style: { display: 'block', width: '100%', maxWidth: 460, height: 'auto', marginBottom: 12 } },
-                h('rect', { x: 1, y: 1, width: 358, height: 82, rx: 10, fill: 'rgba(15,23,42,0.7)', stroke: 'rgba(148,163,184,0.3)', strokeWidth: 1 }),
-                h('rect', { x: sx(40), y: 16, width: sx(140) - sx(40), height: 46, fill: 'rgba(220,38,38,0.16)' }),
+                h('defs', null,
+                  h('linearGradient', { id: 'kl-danger-band', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: 'rgba(239,68,68,0.3)' }),
+                    h('stop', { offset: '100%', stopColor: 'rgba(220,38,38,0.06)' })
+                  )
+                ),
+                h('rect', { x: 1, y: 1, width: 358, height: 82, rx: 10, fill: 'rgba(15,23,42,0.78)', stroke: 'rgba(148,163,184,0.36)', strokeWidth: 1 }),
+                h('rect', { x: sx(40), y: 16, width: sx(140) - sx(40), height: 46, fill: 'url(#kl-danger-band)' }),
+                h('line', { x1: 24, y1: 42, x2: 336, y2: 42, stroke: 'rgba(148,163,184,0.2)', strokeWidth: 0.8, strokeDasharray: '3 3' }),
                 h('line', { x1: 24, y1: 62, x2: 336, y2: 62, stroke: '#64748b', strokeWidth: 1.2 }),
-                h('polyline', { fill: 'none', stroke: '#f87171', strokeWidth: 2.2, points: pts.join(' ') }),
+                h('polyline', { fill: 'none', stroke: '#f87171', strokeWidth: 2.4, strokeLinejoin: 'round', points: pts.join(' ') }),
                 h('line', { x1: curX, y1: 14, x2: curX, y2: 62, stroke: zone.ink || zone.color, strokeWidth: 1.8, strokeDasharray: '3 2' }),
+                h('circle', { className: 'kl-temp-beacon', cx: curX, cy: curY, r: 9, fill: zone.ink || zone.color, opacity: 0.34 }),
                 h('circle', { cx: curX, cy: curY, r: 4.5, fill: zone.ink || zone.color, stroke: '#0f172a', strokeWidth: 1.5 }),
                 h('text', { x: (sx(40) + sx(140)) / 2, y: 14, textAnchor: 'middle', fill: '#fca5a5', fontSize: 10, fontWeight: 800 }, __alloT('stem.kitchenlab.svg_danger_zone', 'DANGER ZONE')),
                 h('text', { x: sx(40), y: 76, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10, fontWeight: 700 }, fmtT(40)),
@@ -7426,8 +7505,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-label': __alloT('stem.kitchenlab.visual_pan', 'Visual pan'), 'aria-hidden': 'true' },
             // Glow / heat shimmer
             panTemp >= 300 ? h('ellipse', { cx: 140, cy: 95, rx: 110, ry: 55, fill: glow, opacity: 0.6 }) : null,
-            // Pan rim
+            // Pan rim with studio specular highlight
             h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 30, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
+            h('path', { d: 'M 58 88 Q 140 68 222 88', fill: 'none', stroke: 'rgba(255,244,214,0.34)', strokeWidth: 1.8, strokeLinecap: 'round' }),
             // Pan interior
             h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 25, fill: '#1c1410' }),
             // Butter (when added, before fully melted)
@@ -7447,10 +7527,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('ellipse', { cx: 175, cy: 96, rx: 11, ry: 4, fill: eggsColor, stroke: 'rgba(0,0,0,0.15)', strokeWidth: 0.5 })
               ) : null,
               // Steam: water leaving the eggs while the pan is above boiling
-              steaming ? h('g', { style: { filter: 'blur(0.7px)' } },
-                h('path', { d: 'M 110 78 Q 113 70 110 60', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' }),
-                h('path', { d: 'M 140 75 Q 145 65 138 55', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' }),
-                h('path', { d: 'M 170 78 Q 173 70 170 60', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' })
+              steaming ? h('g', { className: 'kl-steam-wisp', style: { filter: 'blur(0.7px)' } },
+                h('path', { d: 'M 110 78 Q 113 70 110 60', stroke: 'rgba(226,232,240,0.58)', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' }),
+                h('path', { d: 'M 140 75 Q 145 65 138 55', stroke: 'rgba(226,232,240,0.62)', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' }),
+                h('path', { d: 'M 170 78 Q 173 70 170 60', stroke: 'rgba(226,232,240,0.58)', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' })
               ) : null,
               // Smoke + scorch warning once browning has actually accumulated
               burning ? h('g', null,
@@ -8063,6 +8143,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             var swatchFill = state === 'burnt' ? '#1c1410' : state === 'deep' ? '#6b3a17' : state === 'active' ? '#b46924' : state === 'caramel' ? '#c26a19' : state === 'beginning' ? '#d9b578' : '#efe3c6';
             return h('svg', { viewBox: '0 0 340 66', width: 340, height: 66, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', width: '100%', maxWidth: 420, height: 'auto', margin: '0 auto' } },
               h('defs', null,
+                h('linearGradient', { id: 'kl-maillard-card', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#fffbeb' }),
+                  h('stop', { offset: '100%', stopColor: '#f8fafc' })
+                ),
                 h('linearGradient', { id: 'kl-maillard-grad', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
                   h('stop', { offset: '0%', stopColor: '#f3e9d2' }),
                   h('stop', { offset: '30%', stopColor: '#dcc18b' }),
@@ -8071,10 +8155,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   h('stop', { offset: '100%', stopColor: '#1c1410' })
                 )
               ),
-              h('rect', { x: 1, y: 1, width: 338, height: 64, rx: 10, fill: '#f8fafc', stroke: '#cbd5e1', strokeWidth: 1.2 }),
+              h('rect', { x: 1, y: 1, width: 338, height: 64, rx: 10, fill: 'url(#kl-maillard-card)', stroke: '#cbd5e1', strokeWidth: 1.2 }),
               h('rect', { x: 16, y: 14, width: 308, height: 14, rx: 7, fill: 'url(#kl-maillard-grad)', stroke: '#94a3b8', strokeWidth: 1 }),
+              h('rect', { x: 17, y: 15, width: 306, height: 5, rx: 3, fill: '#ffffff', opacity: 0.25 }),
+              // Reaction threshold ticks
+              h('line', { x1: 16 + (80 / 300) * 308, y1: 13, x2: 16 + (80 / 300) * 308, y2: 30, stroke: 'rgba(146,64,14,0.5)', strokeWidth: 1, strokeDasharray: '2 2' }),
+              h('line', { x1: 16 + (170 / 300) * 308, y1: 13, x2: 16 + (170 / 300) * 308, y2: 30, stroke: 'rgba(154,52,18,0.5)', strokeWidth: 1, strokeDasharray: '2 2' }),
+              h('line', { x1: 16 + (250 / 300) * 308, y1: 13, x2: 16 + (250 / 300) * 308, y2: 30, stroke: 'rgba(153,27,27,0.55)', strokeWidth: 1, strokeDasharray: '2 2' }),
+              // Calibrated temperature beacon halo + pointer
+              h('circle', { className: 'kl-temp-beacon', cx: mx, cy: 21, r: 9.5, fill: '#ea580c', opacity: 0.28 }),
               h('line', { x1: mx, y1: 10, x2: mx, y2: 32, stroke: '#0f172a', strokeWidth: 2.2 }),
               h('circle', { cx: mx, cy: 21, r: 5, fill: swatchFill, stroke: '#ffffff', strokeWidth: 1.8 }),
+              iq.tempF >= 280 ? h('path', { className: 'kl-steam-wisp', d: 'M ' + (mx - 6).toFixed(1) + ' 11 Q ' + (mx - 4).toFixed(1) + ' 6 ' + (mx - 6).toFixed(1) + ' 3 M ' + (mx + 6).toFixed(1) + ' 11 Q ' + (mx + 8).toFixed(1) + ' 6 ' + (mx + 6).toFixed(1) + ' 3', fill: 'none', stroke: '#d97706', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.65 }) : null,
               h('text', { x: 16, y: 48, fill: '#334155', fontSize: 10, fontWeight: 700 }, fmtT(200)),
               h('text', { x: 16 + (80 / 300) * 308, y: 48, textAnchor: 'middle', fill: '#92400e', fontSize: 10, fontWeight: 700 }, fmtT(280)),
               h('text', { x: 16 + (170 / 300) * 308, y: 48, textAnchor: 'middle', fill: '#9a3412', fontSize: 10, fontWeight: 700 }, fmtT(370)),

@@ -7,6 +7,7 @@ ALLOFLOW_TTS_ALLOWED_ORIGINS adds comma-separated exact browser origins.
 """
 
 import asyncio
+import hmac
 import http.server
 import json
 import io
@@ -16,9 +17,15 @@ import threading
 import os
 from urllib.parse import urlsplit
 
+LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
+
+
+def _offline_only_enabled():
+    return str(os.environ.get("ALLOFLOW_OFFLINE_ONLY", "")).strip().lower() in ("1", "true", "yes", "on")
+
 
 def is_allowed_host(host_header):
-    """Allow only loopback Host headers (or explicit EDGE_TTS_HOST) to defeat DNS rebinding."""
+    """Allow only loopback Host headers (or explicit non-wildcard bind/origin hosts) to defeat DNS rebinding."""
     if not isinstance(host_header, str):
         return False
     raw = host_header.strip().lower()
@@ -39,9 +46,20 @@ def is_allowed_host(host_header):
                 return False
         else:
             host = raw
-    allowed = {"127.0.0.1", "localhost", "::1"}
-    if HOST:
-        allowed.add(HOST.strip().lower())
+    allowed = set(LOOPBACK_HOSTS)
+    bind_host = (HOST or "").strip().lower()
+    if bind_host and bind_host not in ("0.0.0.0", "::", "*"):
+        allowed.add(bind_host)
+    for entry in os.environ.get("ALLOFLOW_TTS_ALLOWED_ORIGINS", "").split(","):
+        entry = entry.strip()
+        if not entry:
+            continue
+        try:
+            parsed = urlsplit(entry)
+            if parsed.hostname:
+                allowed.add(parsed.hostname.lower())
+        except ValueError:
+            continue
     return host in allowed
 
 
@@ -133,37 +151,79 @@ def resolve_edge_voice(voice, language=None):
     return VOICE_MAP.get(requested, VOICE_MAP["alloy"])
 
 
+MAX_CONCURRENT_REQUESTS = 4
+_speech_slots = threading.BoundedSemaphore(MAX_CONCURRENT_REQUESTS)
+
+
 def generate_speech_sync(text, voice, speed, language=None):
     """Generate speech using edge-tts (runs async internally)."""
     import edge_tts
-    
+
     async def _generate():
         edge_voice = resolve_edge_voice(voice, language)
         rate = f"+{int((speed - 1) * 100)}%" if speed > 1 else f"{int((speed - 1) * 100)}%" if speed < 1 else "+0%"
-        
+
         communicate = edge_tts.Communicate(text, edge_voice, rate=rate)
         audio_data = bytearray()
-        async for chunk in communicate.stream():
-            if chunk["type"] == "audio":
-                piece = chunk["data"]
-                if len(audio_data) + len(piece) > MAX_AUDIO_BYTES:
-                    raise ValueError("Generated audio exceeded maximum allowed size")
-                audio_data.extend(piece)
+        stream = communicate.stream()
+        try:
+            async for chunk in stream:
+                if chunk["type"] == "audio":
+                    piece = chunk["data"]
+                    if len(audio_data) + len(piece) > MAX_AUDIO_BYTES:
+                        raise ValueError("Generated audio exceeded maximum allowed size")
+                    audio_data.extend(piece)
+        finally:
+            await stream.aclose()
         return bytes(audio_data)
-    
-    loop = asyncio.new_event_loop()
-    try:
-        return loop.run_until_complete(asyncio.wait_for(_generate(), timeout=GENERATION_TIMEOUT_SEC))
-    finally:
-        loop.close()
+
+    return asyncio.run(asyncio.wait_for(_generate(), timeout=GENERATION_TIMEOUT_SEC))
+
+
+class _DaemonThreadingHTTPServer(http.server.ThreadingHTTPServer):
+    daemon_threads = True
+    allow_reuse_address = True
 
 
 class TTSHandler(http.server.BaseHTTPRequestHandler):
+    def setup(self):
+        if hasattr(self.request, "settimeout"):
+            self.request.settimeout(15)
+        super().setup()
+
+    def _add_security_headers(self):
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Cache-Control", "no-store")
+
     def _add_cors_headers(self):
+        self._add_security_headers()
         self.send_header("Vary", "Origin")
         origin = self.headers.get("Origin")
         if origin and is_allowed_origin(origin):
             self.send_header("Access-Control-Allow-Origin", origin)
+
+    def _check_auth(self):
+        configured_token = (os.environ.get("ALLOFLOW_TTS_API_TOKEN") or "").strip()
+        non_loopback = (HOST or "").strip().lower() not in LOOPBACK_HOSTS
+        if not configured_token and not non_loopback:
+            return True
+        if not configured_token and non_loopback:
+            self.send_response(403)
+            self.send_header("Content-Type", "application/json")
+            self._add_cors_headers()
+            self.end_headers()
+            self.wfile.write(b'{"error":"ALLOFLOW_TTS_API_TOKEN is required when binding beyond loopback."}')
+            return False
+        auth_header = self.headers.get("Authorization") or ""
+        provided = auth_header[7:].strip() if auth_header.startswith("Bearer ") else ""
+        if not provided or not hmac.compare_digest(provided, configured_token):
+            self.send_response(401)
+            self.send_header("Content-Type", "application/json")
+            self._add_cors_headers()
+            self.end_headers()
+            self.wfile.write(b'{"error":"Unauthorized TTS request."}')
+            return False
+        return True
 
     def _reject_untrusted_origin(self):
         if not is_allowed_host(self.headers.get("Host")):
@@ -187,9 +247,20 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             return
         if self.path != "/v1/audio/speech":
             self.send_response(404)
+            self._add_security_headers()
             self.end_headers()
             return
-        
+        if not self._check_auth():
+            return
+        if _offline_only_enabled():
+            self.send_response(503)
+            self.send_header("Content-Type", "application/json")
+            self._add_cors_headers()
+            self.end_headers()
+            self.wfile.write(b'{"error":"Edge TTS is disabled in ALLOFLOW_OFFLINE_ONLY mode."}')
+            return
+
+        acquired = False
         try:
             length = int(self.headers.get("Content-Length", 0))
             if length < 0 or length > MAX_REQUEST_BYTES:
@@ -207,10 +278,23 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b'{"error": "Expected a JSON object"}')
                 return
-            
+
             text = body.get("input", "")
-            voice = str(body.get("voice", "alloy")).lower()
-            speed = float(body.get("speed", 1.0))
+            raw_voice = body.get("voice", "alloy")
+            if raw_voice is None:
+                raw_voice = "alloy"
+            if not isinstance(raw_voice, str) or len(raw_voice) > 128:
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self._add_cors_headers()
+                self.end_headers()
+                self.wfile.write(b'{"error": "Invalid voice parameter"}')
+                return
+            voice = raw_voice.lower()
+            raw_speed = body.get("speed", 1.0)
+            if isinstance(raw_speed, bool):
+                raise TypeError("Speed must be a number")
+            speed = float(raw_speed)
             if not math.isfinite(speed) or speed <= 0:
                 self.send_response(400)
                 self.send_header("Content-Type", "application/json")
@@ -219,7 +303,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(b'{"error": "Speed must be a finite positive number"}')
                 return
             speed = max(0.5, min(2.5, speed))
-            
+
             if not isinstance(text, str) or not text.strip():
                 self.send_response(400)
                 self.send_header("Content-Type", "application/json")
@@ -234,24 +318,44 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b'{"error": "Invalid or oversized input text"}')
                 return
-            
-            audio_data = generate_speech_sync(text, voice, speed, body.get("language"))
-            
+
+            raw_lang = body.get("language")
+            if raw_lang is not None and (not isinstance(raw_lang, str) or len(raw_lang) > 64):
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self._add_cors_headers()
+                self.end_headers()
+                self.wfile.write(b'{"error": "Invalid language parameter"}')
+                return
+
+            acquired = _speech_slots.acquire(blocking=False)
+            if not acquired:
+                self.send_response(429)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Retry-After", "1")
+                self._add_cors_headers()
+                self.end_headers()
+                self.wfile.write(b'{"error": "TTS server busy; retry shortly"}')
+                return
+
+            audio_data = generate_speech_sync(text, voice, speed, raw_lang)
+
             if not audio_data:
                 self.send_response(500)
+                self.send_header("Content-Type", "application/json")
                 self._add_cors_headers()
                 self.end_headers()
                 self.wfile.write(b'{"error": "TTS generation failed"}')
                 return
-            
+
             self.send_response(200)
             self.send_header("Content-Type", "audio/mpeg")
             self.send_header("Content-Length", str(len(audio_data)))
             self._add_cors_headers()
             self.end_headers()
             self.wfile.write(audio_data)
-            
-        except (ValueError, TypeError):
+
+        except (ValueError, TypeError, OverflowError):
             self.send_response(400)
             self.send_header("Content-Type", "application/json")
             self._add_cors_headers()
@@ -264,7 +368,10 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             self._add_cors_headers()
             self.end_headers()
             self.wfile.write(b'{"error": "Speech generation failed"}')
-    
+        finally:
+            if acquired:
+                _speech_slots.release()
+
     def do_OPTIONS(self):
         """Handle CORS preflight."""
         if self._reject_untrusted_origin():
@@ -274,7 +381,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.end_headers()
-    
+
     def do_GET(self):
         if self._reject_untrusted_origin():
             return
@@ -291,8 +398,9 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             }).encode())
         else:
             self.send_response(404)
+            self._add_security_headers()
             self.end_headers()
-    
+
     def log_message(self, format, *args):
         # Log to console
         print(f"[EdgeTTS] {args[0]}" if args else "")
@@ -303,8 +411,8 @@ if __name__ == "__main__":
     print(f"[EdgeTTS] Endpoint: POST /v1/audio/speech")
     print(f"[EdgeTTS] {len(VOICE_MAP)} voices across {len(set(v.split('-')[0]+'-'+v.split('-')[1] for v in VOICE_MAP.values()))}+ languages")
     print(f"[EdgeTTS] Powered by Microsoft Edge Neural TTS (free, no API key)")
-    
-    server = http.server.ThreadingHTTPServer((HOST, PORT), TTSHandler)
+
+    server = _DaemonThreadingHTTPServer((HOST, PORT), TTSHandler)
     print(f"[EdgeTTS] ✅ Ready at http://localhost:{PORT}")
     
     try:

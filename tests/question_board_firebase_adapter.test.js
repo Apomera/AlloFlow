@@ -30,9 +30,10 @@ beforeAll(() => {
 
 // ── Executable mirror of the firestore.rules board block ────────────────────
 const rulesOracle = {
-  canReadItem(auth, board, item) {
+  canReadItem(auth, board, item, now = Date.now()) {
     if (!auth) return false;
     if (board.hostId === auth.uid) return true;          // isHost()
+    if (!(board.expiresAt && board.expiresAt > now)) return false; // boardOpen()
     if (item.uid === auth.uid) return true;              // isOwn()
     return item.status === 'approved';                   // held hidden from peers
   },
@@ -190,8 +191,8 @@ describe('the Firebase path passes the shared conformance suite', () => {
 });
 
 describe('the rules oracle mirrors what firestore.rules actually says', () => {
-  it('gates item reads on host, own, or approved', () => {
-    expect(RULES).toContain('allow get, list: if authed() && (isHost() || isOwn() || resource.data.status == "approved");');
+  it('gates item reads on host, or open board with own or approved', () => {
+    expect(RULES).toContain('allow get, list: if authed() && (isHost() || (boardOpen() && (isOwn() || resource.data.status == "approved")));');
   });
 
   it('binds authorship to the caller and forbids self-approval', () => {

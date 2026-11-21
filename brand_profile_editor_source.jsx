@@ -43,6 +43,15 @@ function normHex(v) {
   return h;
 }
 
+function toPickerHex(v) {
+  const h = normHex(v);
+  if (/^#[0-9a-fA-F]{6}$/.test(h)) return h;
+  if (/^#[0-9a-fA-F]{3}$/.test(h)) {
+    return '#' + h[1] + h[1] + h[2] + h[2] + h[3] + h[3];
+  }
+  return '#000000';
+}
+
 function BrandProfileEditor(props) {
   const onClose = props.onClose || function () {};
   const t = function (k, d) {
@@ -256,7 +265,10 @@ function BrandProfileEditor(props) {
   }, [api, draft]);
 
   function setColor(key, value) {
-    setDraft(function (d) { return Object.assign({}, d, { colors: Object.assign({}, d.colors, { [key]: value }) }); });
+    const raw = String(value == null ? '' : value);
+    const trimmed = raw.trim();
+    const next = trimmed && trimmed[0] !== '#' ? '#' + trimmed : raw;
+    setDraft(function (d) { return Object.assign({}, d, { colors: Object.assign({}, d.colors, { [key]: next }) }); });
   }
   function setField(key, value) {
     setDraft(function (d) { return Object.assign({}, d, { [key]: value }); });
@@ -268,8 +280,8 @@ function BrandProfileEditor(props) {
     setDraft(function (d) { return Object.assign({}, d, { footer: Object.assign({}, d.footer, patch) }); });
   }
 
-  function editProfile(p) { setDraft(JSON.parse(JSON.stringify(p))); }
-  function newProfile() { setDraft(blankDraft()); }
+  function editProfile(p) { setArmRemoveLogo(false); setDraft(JSON.parse(JSON.stringify(p))); }
+  function newProfile() { setArmRemoveLogo(false); setDraft(blankDraft()); }
 
   function autoFix() {
     if (!api) return;
@@ -312,9 +324,23 @@ function BrandProfileEditor(props) {
     setDeleteRequest({ id: id, name: name || t('brand.unnamed', 'unnamed profile') });
   }
 
+  const mountedRef = React.useRef(true);
+  const deleteFocusTimerRef = React.useRef(null);
+  const [armRemoveLogo, setArmRemoveLogo] = React.useState(false);
+  React.useEffect(function () {
+    mountedRef.current = true;
+    return function () {
+      mountedRef.current = false;
+      if (deleteFocusTimerRef.current) { window.clearTimeout(deleteFocusTimerRef.current); deleteFocusTimerRef.current = null; }
+    };
+  }, []);
+
   function closeDeleteDialog() {
     setDeleteRequest(null);
-    window.setTimeout(function () {
+    if (deleteFocusTimerRef.current) window.clearTimeout(deleteFocusTimerRef.current);
+    deleteFocusTimerRef.current = window.setTimeout(function () {
+      deleteFocusTimerRef.current = null;
+      if (!mountedRef.current) return;
       const trigger = deleteTriggerRef.current;
       if (trigger && trigger.isConnected && typeof trigger.focus === 'function') trigger.focus();
       else if (closeButtonRef.current) closeButtonRef.current.focus();
@@ -360,6 +386,7 @@ function BrandProfileEditor(props) {
     }
     const reader = new FileReader();
     reader.onload = function () {
+      if (!mountedRef.current) return;
       const res = api.importBrandProfile(String(reader.result || ''));
       if (res.ok) {
         addToast(t('brand.imported', 'Brand profile imported'), 'success');
@@ -369,6 +396,9 @@ function BrandProfileEditor(props) {
       } else {
         addToast((res.errors && res.errors[0]) || t('brand.import_failed', 'Import failed'), 'error');
       }
+    };
+    reader.onerror = function () {
+      if (mountedRef.current) addToast(t('brand.import_failed', 'Import failed'), 'error');
     };
     reader.readAsText(file);
     e.target.value = '';
@@ -396,14 +426,19 @@ function BrandProfileEditor(props) {
     }
     const reader = new FileReader();
     reader.onload = function () {
+      if (!mountedRef.current) return;
       const safeSrc = safeRasterLogoSrc(String(reader.result || ''));
       if (!safeSrc) {
         addToast(t('brand.logo_raster_only', 'Please choose a PNG, JPEG, WebP, or GIF image'), 'error');
         return;
       }
+      setArmRemoveLogo(false);
       setDraft(function (d) {
         return Object.assign({}, d, { logo: { src: safeSrc, alt: (d.logo && d.logo.alt) || '', width: null, height: null } });
       });
+    };
+    reader.onerror = function () {
+      if (mountedRef.current) addToast(t('brand.logo_read_failed', 'Could not read logo file'), 'error');
     };
     reader.readAsDataURL(file);
     e.target.value = '';
@@ -449,13 +484,13 @@ function BrandProfileEditor(props) {
                 return (
                   <div key={p.id} className={'mb-1 rounded-lg border px-2 py-2 ' + (isEditing ? 'border-blue-400 bg-blue-50' : 'border-transparent hover:bg-white')}>
                     <div className="flex items-center justify-between gap-1">
-                      <button type="button" onClick={function () { editProfile(p); }} aria-pressed={isEditing} className="text-left text-sm font-semibold text-slate-800 truncate flex-1 min-h-6" title={p.name}>{p.name || '(unnamed)'}</button>
-                      {isActive && <span className="text-[10px] font-bold uppercase text-green-700 bg-green-100 px-1.5 py-0.5 rounded">{t('brand.active', 'Active')}</span>}
+                      <button type="button" onClick={function () { editProfile(p); }} aria-pressed={isEditing} style={{ minHeight: '44px' }} className="text-left text-sm font-semibold text-slate-800 truncate flex-1 min-h-6" title={p.name}>{p.name || '(unnamed)'}</button>
+                      {isActive && <span className="text-xs font-bold uppercase text-green-700 bg-green-100 px-1.5 py-0.5 rounded">{t('brand.active', 'Active')}</span>}
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      {!isActive && <button type="button" onClick={function () { makeActive(p.id); }} className="inline-flex min-h-6 items-center text-[11px] text-blue-700 hover:underline">{t('brand.use', 'Set active')}</button>}
-                      <button type="button" onClick={function () { exportProfile(p.id); }} className="inline-flex min-h-6 items-center text-[11px] text-slate-600 hover:underline">{t('brand.export', 'Export')}</button>
-                      <button type="button" onClick={function (event) { requestRemove(event, p.id, p.name); }} className="inline-flex min-h-6 items-center text-[11px] text-red-700 hover:underline">{t('brand.delete', 'Delete')}</button>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      {!isActive && <button type="button" onClick={function () { makeActive(p.id); }} style={{ minHeight: '44px' }} className="inline-flex min-h-6 items-center text-xs text-blue-700 hover:underline">{t('brand.use', 'Set active')}</button>}
+                      <button type="button" onClick={function () { exportProfile(p.id); }} style={{ minHeight: '44px' }} className="inline-flex min-h-6 items-center text-xs text-slate-600 hover:underline">{t('brand.export', 'Export')}</button>
+                      <button type="button" onClick={function (event) { requestRemove(event, p.id, p.name); }} style={{ minHeight: '44px' }} className="inline-flex min-h-6 items-center text-xs text-red-700 hover:underline">{t('brand.delete', 'Delete')}</button>
                     </div>
                   </div>
                 );
@@ -478,10 +513,10 @@ function BrandProfileEditor(props) {
                   const valid = api.isValidHex(val);
                   return (
                     <div key={f.key} className="flex items-center gap-2">
-                      <input type="color" aria-label={f.label} value={valid ? (val.length === 4 ? val : val.slice(0, 7)) : '#000000'} onChange={function (e) { setColor(f.key, e.target.value); }} className="w-8 h-8 rounded border border-slate-300 shrink-0 cursor-pointer" />
+                      <input type="color" aria-label={f.label} value={valid ? toPickerHex(val) : '#000000'} onChange={function (e) { setColor(f.key, e.target.value); }} className="w-11 h-11 rounded border border-slate-300 shrink-0 cursor-pointer" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-[11px] text-slate-600 truncate">{f.label}</div>
-                        <input value={val} aria-label={f.label + ' hex value'} aria-invalid={!valid} aria-describedby={!valid ? 'brand-validation-status' : undefined} onChange={function (e) { setColor(f.key, e.target.value); }} className={'w-full px-1.5 py-0.5 border rounded text-xs font-mono ' + (valid ? 'border-slate-300 text-slate-800' : 'border-red-400 text-red-700')} />
+                        <div className="text-xs text-slate-600 truncate">{f.label}</div>
+                        <input value={val} aria-label={f.label + ' hex value'} aria-invalid={!valid} aria-describedby={!valid ? 'brand-validation-status' : undefined} onChange={function (e) { setColor(f.key, e.target.value); }} className={'w-full min-h-11 px-2 py-1 border rounded text-xs font-mono ' + (valid ? 'border-slate-300 text-slate-800' : 'border-red-400 text-red-700')} />
                       </div>
                     </div>
                   );
@@ -509,7 +544,11 @@ function BrandProfileEditor(props) {
                 <div className="flex-1">
                   <div className="flex gap-2">
                     <button type="button" onClick={function () { fileInputRef.current && fileInputRef.current.click(); }} className="min-h-11 px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-medium hover:bg-slate-100">{draft.logo && safeRasterLogoSrc(draft.logo.src) ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')}</button>
-                    {draft.logo && safeRasterLogoSrc(draft.logo.src) && <button type="button" onClick={removeLogo} className="min-h-11 px-3 py-1.5 rounded-lg text-red-800 text-xs font-medium hover:bg-red-50">{t('brand.logo_remove', 'Remove')}</button>}
+                    {draft.logo && safeRasterLogoSrc(draft.logo.src) && <button type="button" onClick={function () {
+                      if (!armRemoveLogo) { setArmRemoveLogo(true); return; }
+                      setArmRemoveLogo(false);
+                      removeLogo();
+                    }} className={'min-h-11 px-3 py-1.5 rounded-lg text-xs font-medium ' + (armRemoveLogo ? 'bg-red-700 text-white' : 'text-red-800 hover:bg-red-50')}>{armRemoveLogo ? t('brand.logo_remove_confirm', 'Tap again to remove') : t('brand.logo_remove', 'Remove')}</button>}
                     <input ref={fileInputRef} aria-label={t('brand.logo_file', 'Upload logo image file')} type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={onLogoFile} className="hidden" />
                   </div>
                   {draft.logo && safeRasterLogoSrc(draft.logo.src) && (
@@ -524,12 +563,12 @@ function BrandProfileEditor(props) {
               <div>
                 <span className="text-xs font-bold uppercase tracking-wide text-slate-600">{t('brand.header', 'Header band')}</span>
                 <input aria-label={t('brand.header_text', 'Header text')} value={draft.header.text} onChange={function (e) { setHeader({ text: e.target.value }); }} maxLength={200} placeholder={t('brand.header_ph', 'Header text (e.g. school name)')} className="mt-1 w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
-                <label className="flex items-center gap-2 mt-1 text-xs text-slate-600"><input type="checkbox" checked={!!draft.header.showLogo} onChange={function (e) { setHeader({ showLogo: e.target.checked }); }} /> {t('brand.header_logo', 'Show logo in header')}</label>
+                <label className="min-h-11 flex items-center gap-2 mt-1 text-xs text-slate-600 cursor-pointer"><input type="checkbox" className="w-4 h-4" checked={!!draft.header.showLogo} onChange={function (e) { setHeader({ showLogo: e.target.checked }); }} /> {t('brand.header_logo', 'Show logo in header')}</label>
               </div>
               <div>
                 <span className="text-xs font-bold uppercase tracking-wide text-slate-600">{t('brand.footer', 'Footer band')}</span>
                 <input aria-label={t('brand.footer_text', 'Footer text')} value={draft.footer.text} onChange={function (e) { setFooter({ text: e.target.value }); }} maxLength={200} placeholder={t('brand.footer_ph', 'Footer text (e.g. © School 2026)')} className="mt-1 w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
-                <label className="flex items-center gap-2 mt-1 text-xs text-slate-600"><input type="checkbox" checked={!!draft.footer.showPageNumber} onChange={function (e) { setFooter({ showPageNumber: e.target.checked }); }} /> {t('brand.footer_page', 'Show page numbers')}</label>
+                <label className="min-h-11 flex items-center gap-2 mt-1 text-xs text-slate-600 cursor-pointer"><input type="checkbox" className="w-4 h-4" checked={!!draft.footer.showPageNumber} onChange={function (e) { setFooter({ showPageNumber: e.target.checked }); }} /> {t('brand.footer_page', 'Show page numbers')}</label>
               </div>
             </div>
           </div>
@@ -561,9 +600,9 @@ function BrandProfileEditor(props) {
 
               {/* Validation */}
               <div id="brand-validation-status" className="mt-3 space-y-1" role="status" aria-live="polite" aria-atomic="false">
-                {validation.errors.map(function (er, i) { return <div key={'e' + i} className="text-[11px] text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">⛔ {er}</div>; })}
-                {validation.warnings.map(function (w, i) { return <div key={'w' + i} className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1">⚠️ {w}</div>; })}
-                {validation.ok && validation.warnings.length === 0 && <div className="text-[11px] text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">✓ {t('brand.passes', 'Meets WCAG AA contrast')}</div>}
+                {validation.errors.map(function (er, i) { return <div key={'e' + i} className="text-xs text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">⛔ {er}</div>; })}
+                {validation.warnings.map(function (w, i) { return <div key={'w' + i} className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1">⚠️ {w}</div>; })}
+                {validation.ok && validation.warnings.length === 0 && <div className="text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1">✓ {t('brand.passes', 'Meets WCAG AA contrast')}</div>}
               </div>
             </div>
             <div className="p-3 border-t border-slate-200 bg-slate-50 flex flex-col gap-2">

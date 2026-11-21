@@ -203,7 +203,8 @@ window.StemLab = window.StemLab || {
     { tier: 1, q: 'What was the first disease eradicated by vaccines?', a: 'smallpox', h: 'Eradicated in 1980.' },
 
     // Medium tier
-    { tier: 2, q: 'If R\u2080 = 4, what fraction must be immune for herd immunity?', a: '75%', h: 'Herd immunity threshold = 1 - 1/R\u2080.' },
+    { tier: 2, q: 'If R\u2080 = 4, what fraction must be immune for herd immunity?', a: '75%', h: 'Herd immunity threshold = 1 - 1/R\u2080.',
+      alt: ['3/4', '0.75', '75'] },
     { tier: 2, q: 'In the SEIR model, what does "E" represent?', a: 'exposed', h: 'Infected but not yet infectious.' },
     { tier: 2, q: 'What is the herd immunity threshold formula?', a: '1-1/r0', h: 'Involves the basic reproduction number.',
       alt: ['1 - 1/r0', '1-1/ r0', 'one minus one over r0', '1 minus 1 divided by r0', 'p c 1-1/r0'] },
@@ -220,7 +221,8 @@ window.StemLab = window.StemLab || {
     // Hard tier
     { tier: 3, q: 'Write the SIR equation for dI/dt.', a: 'beta*s*i-gamma*i', h: 'New infections minus recoveries.',
       alt: ['beta s i - gamma i', 'bsi-gi', 'bsi - gi', 'beta si - gamma i', 'beta*s*i - gamma*i', 'beta x s x i - gamma x i'] },
-    { tier: 3, q: 'If R\u2080=15 (measles), what % must be vaccinated for herd immunity?', a: '93%', h: '1 - 1/15 \u2248 0.933...' },
+    { tier: 3, q: 'If R\u2080=15 (measles), what % must be vaccinated for herd immunity?', a: '93%', h: '1 - 1/15 \u2248 0.933...',
+      alt: ['93.3%', '93.33%', '93.3', '93.33', '94%', '94', '14/15'] },
     { tier: 3, q: 'What is the relationship between R\u2080, \u03B2, and \u03B3?', a: 'r0=beta/gamma', h: 'R\u2080 equals transmission rate divided by recovery rate.',
       alt: ['r0 = beta/gamma', 'beta/gamma', 'beta divided by gamma', 'r0 beta/gamma', 'r0=b/g'] },
     { tier: 3, q: 'In SEIR, what parameter governs E\u2192I transition rate?', a: 'sigma', h: '\u03C3 = 1 / latent period.',
@@ -511,7 +513,8 @@ window.StemLab = window.StemLab || {
   //     keyboard spelling of an equation.
   // Since the Challenge pays XP and drives the streak badges, a grader that can be
   // gamed by typing a digit is worse than no grader.
-  var ANSWER_FILLER = /\b(the|a|an|is|are|it|its|of|to|for|about|that|this|i|think|answer|equals|equal|be|would|will|in|on|at|and|would|maybe|guess)\b/g;
+  var ANSWER_FILLER = /\b(the|a|an|is|are|it|its|of|to|for|about|that|this|think|answer|equals|equal|be|would|will|in|on|at|and|maybe|guess)\b/g;
+  var ANSWER_LEAD_I = /\bi\s+(?:think|guess|believe|say|suppose)\b/g;
   var ANSWER_NEGATION = /\b(not|no|isnt|arent|dont|doesnt|never|except|opposite|false)\b/;
 
   function normalizeAnswer(s) {
@@ -520,6 +523,7 @@ window.StemLab = window.StemLab || {
       .replace(/[‘’“”]/g, '')
       .replace(/\bper ?cent(age)?\b/g, '%')
       .replace(/[^a-z0-9%./*\-+=\s]/g, ' ')
+      .replace(ANSWER_LEAD_I, ' ')
       .replace(ANSWER_FILLER, ' ')
       .replace(/\s+/g, ' ')
       .replace(/\s+%/g, '%')
@@ -582,8 +586,18 @@ window.StemLab = window.StemLab || {
     return false;
   }
 
+  function parseHistoricalR0(raw) {
+    var m = String(raw == null ? '' : raw).match(/(\d+(?:\.\d+)?)(?:\s*[\u2013\u2014-]\s*(\d+(?:\.\d+)?))?/);
+    if (!m) return 2.5;
+    var lo = parseFloat(m[1]);
+    var hi = m[2] != null ? parseFloat(m[2]) : lo;
+    if (!isFinite(lo)) return 2.5;
+    return isFinite(hi) ? Math.round(((lo + hi) / 2) * 100) / 100 : lo;
+  }
+
   window.__EpidemicCore = Object.assign({}, window.__EpidemicCore || {}, {
-    normalizeAnswer: normalizeAnswer, answerMatches: answerMatches, getGradeBand: getGradeBand
+    normalizeAnswer: normalizeAnswer, answerMatches: answerMatches, getGradeBand: getGradeBand,
+    parseHistoricalR0: parseHistoricalR0
   });
 
   // ── SIR Euler Solver ──
@@ -1327,7 +1341,7 @@ window.StemLab = window.StemLab || {
     questHooks: [
       { id: 'run_sim', label: 'Run an epidemic simulation', icon: '\uD83E\uDDA0', check: function(d) { return d.particleRunning || false; }, progress: function(d) { return d.particleRunning ? 'Running!' : 'Start sim'; } },
       { id: 'challenge_tier_2', label: 'Reach challenge tier 2', icon: '\uD83C\uDFC6', check: function(d) { return (d.chalTier || 1) >= 2; }, progress: function(d) { return 'Tier ' + (d.chalTier || 1) + '/2'; } },
-      { id: 'view_3_tabs', label: 'Explore 3 epidemic model views', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 views'; } }
+      { id: 'view_3_tabs', label: 'Explore 3 epidemic model views', icon: '\uD83D\uDCCA', check: function(d) { var s = Object.assign({}, d.tabsViewed || {}); s[d.tab || 'sir'] = true; return Object.keys(s).length >= 3; }, progress: function(d) { var s = Object.assign({}, d.tabsViewed || {}); s[d.tab || 'sir'] = true; return Object.keys(s).length + '/3 views'; } }
     ],
     render: function(ctx) {
       // Demographic/outbreak hues are painted as TEXT on theme grounds; walk to the
@@ -1376,6 +1390,11 @@ window.StemLab = window.StemLab || {
           // plain value each write rebuilt the map from the same stale `d.badges`, so
           // three of the four silently vanished along with their XP.
           td[k] = (typeof v === 'function') ? v(td[k]) : v;
+          if (k === 'tab' && typeof td.tab === 'string') {
+            var seenU = Object.assign({}, (td.tabsViewed && typeof td.tabsViewed === 'object') ? td.tabsViewed : {});
+            seenU[td.tab] = true;
+            td.tabsViewed = seenU;
+          }
           copy.epidemicSim = td;
           return copy;
         });
@@ -1384,7 +1403,14 @@ window.StemLab = window.StemLab || {
         ctx.setToolData(function(prev) {
           var copy = Object.assign({}, prev);
           var td = Object.assign({}, copy.epidemicSim || {});
+          var prevTab = typeof td.tab === 'string' ? td.tab : 'sir';
           Object.keys(obj).forEach(function(k) { td[k] = obj[k]; });
+          if (obj && typeof obj.tab === 'string') {
+            var seenM = Object.assign({}, (td.tabsViewed && typeof td.tabsViewed === 'object') ? td.tabsViewed : {});
+            seenM[prevTab] = true;
+            seenM[obj.tab] = true;
+            td.tabsViewed = seenM;
+          }
           copy.epidemicSim = td;
           return copy;
         });
@@ -1400,6 +1426,22 @@ window.StemLab = window.StemLab || {
       function awardXP(amount, reason) {
         if (typeof awardHostXP === 'function') awardHostXP('epidemicSim', amount, reason);
       }
+      function awardXPOnce(xpKey, amount, reason, cap) {
+        var keys = (d.xpAwardedKeys && typeof d.xpAwardedKeys === 'object' && !Array.isArray(d.xpAwardedKeys)) ? d.xpAwardedKeys : {};
+        if (keys[xpKey]) return false;
+        if (cap) {
+          var prefix = xpKey.split(':')[0] + ':';
+          var count = Object.keys(keys).filter(function(k) { return k.indexOf(prefix) === 0; }).length;
+          if (count >= cap) return false;
+        }
+        upd('xpAwardedKeys', function(cur) {
+          var next = Object.assign({}, (cur && typeof cur === 'object' && !Array.isArray(cur)) ? cur : {});
+          next[xpKey] = true;
+          return next;
+        });
+        awardXP(amount, reason);
+        return true;
+      }
       // Same-pass guard: several checkBadge calls run inside ONE handler, before any of
       // their writes have committed, so `d.badges` cannot see the ones just awarded.
       var _badgedThisPass = {};
@@ -1414,7 +1456,13 @@ window.StemLab = window.StemLab || {
         awardXP(15, 'Badge: ' + id);
         var b = EPI_BADGES.find(function(x) { return x.id === id; });
         if (b) { upd('badgeToast', b.icon + ' ' + b.name); sfxVaccinate(); }
-        setTimeout(function() { upd('badgeToast', null); }, 3000);
+        if (typeof window !== 'undefined') {
+          if (window._epiBadgeToastTimer) clearTimeout(window._epiBadgeToastTimer);
+          window._epiBadgeToastTimer = setTimeout(function() {
+            window._epiBadgeToastTimer = null;
+            upd('badgeToast', null);
+          }, 3000);
+        }
       }
 
       function stemBeep(correct) {
@@ -1451,12 +1499,6 @@ window.StemLab = window.StemLab || {
       var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'sir';
       // Scenarios is AI-generated end to end: hidden when ctx hands no usable callGemini.
       if (!callGemini && 'scenarios' === tab) tab = 'sir';
-      // The "Explore 3 epidemic model views" quest counts tabsViewed, which nothing
-      // wrote. Record each view once, however it was opened. Deferred because this
-      // runs during render; the updater reads stored state, so a repeat is a no-op.
-      if (!(d.tabsViewed || {})[tab]) {
-        setTimeout(function() { upd('tabsViewed', function(cur) { if (cur && cur[tab]) return cur; var seen = Object.assign({}, cur || {}); seen[tab] = true; return seen; }); }, 0);
-      }
       var r0 = (typeof d.r0 === 'number' && isFinite(d.r0)) ? d.r0 : 2.5;
       var vaccRate = (typeof d.vaccRate === 'number' && isFinite(d.vaccRate)) ? d.vaccRate : 0;
       var infectPeriod = (typeof d.infectPeriod === 'number' && isFinite(d.infectPeriod)) ? d.infectPeriod : 10;
@@ -1488,7 +1530,10 @@ window.StemLab = window.StemLab || {
         { id: 'outbreak', label: 'Response', hint: 'Run a 26-week campaign.' }
       ];
 
-      // ── SIR/SEIR data compute ──
+      // ── SIR/SEIR/NPI data compute ──
+      var activeNPIs = Array.isArray(d.activeNPIs) ? d.activeNPIs : [];
+      var npiResult = (tab === 'interventions') ? solveSIR_NPI({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, popSize: popSize, simDays: simDays, initialInfectedPct: initialInfectedPct }, activeNPIs) : null;
+      var npiBaseline = (tab === 'interventions') ? solveSIR_NPI({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, popSize: popSize, simDays: simDays, initialInfectedPct: initialInfectedPct }, []) : null;
       var sirData = (tab === 'sir' || tab === 'r0explorer' || tab === 'vaccination') ? solveSIR({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, popSize: popSize, simDays: simDays, initialInfectedPct: initialInfectedPct }) : [];
       var seirData = tab === 'seir' ? solveSEIR({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, latentPeriod: latentPeriod, popSize: popSize, simDays: simDays, initialInfectedPct: initialInfectedPct }) : [];
       var lastRunData = null;
@@ -1506,7 +1551,7 @@ window.StemLab = window.StemLab || {
       // still computed (the curve needs it) but must not be presented to a student as a
       // vaccination target.
       var herdApplies = !PRESETS[selectedPreset] || !PRESETS[selectedPreset].vectorBorne;
-      var activeData = tab === 'seir' ? seirData : sirData;
+      var activeData = tab === 'seir' ? seirData : (tab === 'interventions' && npiResult && Array.isArray(npiResult.data)) ? npiResult.data : sirData;
       var runMetrics = summarizeEpidemicRun(activeData, vaccRate, r0);
       var effR0 = runMetrics.initialEffectiveR;
       var peakI = runMetrics.peakInfected;
@@ -1592,32 +1637,40 @@ window.StemLab = window.StemLab || {
         canvas.height = Math.round(ch * _epiDpr);
         // Keep CSS width responsive; only the backing buffer uses the measured size.
         canvas.style.height = ch + 'px';
-        var cx = canvas.getContext('2d');
+        var cx = canvas.getContext && canvas.getContext('2d');
+        if (!cx) return;
         cx.setTransform(_epiDpr, 0, 0, _epiDpr, 0, 0);
         var numP = Math.min(400, Math.max(80, Math.round(popSize / 5000)));
         var particles = [];
+        var pulses = [];
         var infRadius = 12;
         var pInf = Math.min(0.7, r0 * 0.04);
         var recoveryTicks = Math.round(infectPeriod * 8);
+        var frameCount = 0;
 
         function initParticles() {
           particles = [];
+          pulses = [];
+          var vaccCount = Math.round(numP * vaccRate / 100);
           for (var j = 0; j < numP; j++) {
             var state = 'S';
-            if (j < Math.round(numP * vaccRate / 100)) state = 'R';
-            else if (j < Math.round(numP * vaccRate / 100) + 3) state = 'I';
+            var vaccinated = false;
+            if (j < vaccCount) { state = 'R'; vaccinated = true; }
+            else if (j < vaccCount + 3) state = 'I';
             particles.push({
               x: Math.random() * cw,
               y: Math.random() * ch,
               vx: (Math.random() - 0.5) * 2,
               vy: (Math.random() - 0.5) * 2,
               state: state,
+              vaccinated: vaccinated,
               ticks: 0
             });
           }
         }
 
         function step() {
+          frameCount++;
           for (var a = 0; a < particles.length; a++) {
             var p = particles[a];
             p.x += p.vx;
@@ -1634,18 +1687,59 @@ window.StemLab = window.StemLab || {
                   var dx = p.x - particles[b].x, dy = p.y - particles[b].y;
                   if (dx * dx + dy * dy < infRadius * infRadius && Math.random() < pInf) {
                     particles[b].state = 'I';
+                    if (!reducedMotion && pulses.length < 28) {
+                      pulses.push({ x: particles[b].x, y: particles[b].y, r: 3.5, maxR: infRadius * 2.15, alpha: 0.9 });
+                    }
                   }
                 }
               }
             }
           }
+          if (pulses.length) {
+            var nextPulses = [];
+            for (var pi = 0; pi < pulses.length; pi++) {
+              var rp = pulses[pi];
+              rp.r += 0.9;
+              rp.alpha *= 0.91;
+              if (rp.r < rp.maxR && rp.alpha > 0.04) nextPulses.push(rp);
+            }
+            pulses = nextPulses;
+          }
         }
 
         function draw() {
           cx.clearRect(0, 0, cw, ch);
-          cx.fillStyle = 'rgba(15,23,42,0.85)';
+          // Atmospheric arena backdrop with soft central zone illumination
+          if (typeof cx.createRadialGradient === 'function') {
+            var bgGrad = cx.createRadialGradient(cw * 0.5, ch * 0.46, 14, cw * 0.5, ch * 0.5, Math.max(cw, ch) * 0.72);
+            bgGrad.addColorStop(0, '#162544');
+            bgGrad.addColorStop(0.58, '#0f172a');
+            bgGrad.addColorStop(1, '#070b14');
+            cx.fillStyle = bgGrad;
+          } else {
+            cx.fillStyle = 'rgba(15,23,42,0.92)';
+          }
           cx.fillRect(0, 0, cw, ch);
-          var colors = { S: '#3b82f6', I: '#ef4444', R: '#22c55e' };
+
+          // Subtle epidemiological arena coordinate grid & soft district zones
+          cx.save();
+          cx.strokeStyle = 'rgba(148,163,184,0.10)';
+          cx.lineWidth = 0.75;
+          var gridStep = 28;
+          cx.beginPath();
+          for (var gx = gridStep; gx < cw; gx += gridStep) { cx.moveTo(gx, 0); cx.lineTo(gx, ch); }
+          for (var gy = gridStep; gy < ch; gy += gridStep) { cx.moveTo(0, gy); cx.lineTo(cw, gy); }
+          cx.stroke();
+          // Soft concentric radar/zone rings
+          cx.strokeStyle = 'rgba(56,189,248,0.08)';
+          cx.lineWidth = 1;
+          cx.beginPath();
+          cx.arc(cw * 0.5, ch * 0.5, Math.min(cw, ch) * 0.28, 0, Math.PI * 2);
+          cx.arc(cw * 0.5, ch * 0.5, Math.min(cw, ch) * 0.44, 0, Math.PI * 2);
+          cx.stroke();
+          cx.restore();
+
+          var colors = { S: '#38bdf8', I: '#ef4444', R: '#22c55e', V: '#14b8a6' };
           var stateCounts = { S: 0, I: 0, R: 0 };
           for (var countIndex = 0; countIndex < particles.length; countIndex++) stateCounts[particles[countIndex].state]++;
           var accessibleLabel = 'Particle simulation: ' + stateCounts.S + ' susceptible, ' + stateCounts.I + ' infected, ' + stateCounts.R + ' recovered agents.' + (reducedMotion ? ' Static view because reduced motion is enabled.' : '');
@@ -1655,58 +1749,97 @@ window.StemLab = window.StemLab || {
             var particleStatus = canvas.parentNode && canvas.parentNode.querySelector('[data-epi-particle-status]');
             if (particleStatus) particleStatus.textContent = 'S ' + stateCounts.S + ' · I ' + stateCounts.I + ' · R ' + stateCounts.R + (reducedMotion ? ' · static view' : '');
           }
-          // Faint transmission-radius halos around infected agents (shows the contagion reach)
+
+          // Luminous status halos (infected transmission zones + soft susceptible/immune glow)
           cx.save();
           cx.globalCompositeOperation = 'lighter';
+          var hasRadial = typeof cx.createRadialGradient === 'function';
           for (var jh = 0; jh < particles.length; jh++) {
             var ph = particles[jh];
-            if (ph.state !== 'I') continue;
-            var halo = cx.createRadialGradient(ph.x, ph.y, 0, ph.x, ph.y, infRadius);
-            halo.addColorStop(0, 'rgba(239,68,68,0.15)');
-            halo.addColorStop(1, 'rgba(239,68,68,0)');
-            cx.fillStyle = halo;
-            cx.beginPath(); cx.arc(ph.x, ph.y, infRadius, 0, Math.PI * 2); cx.fill();
+            if (ph.state === 'I' && hasRadial) {
+              var pulseScale = reducedMotion ? 1 : (0.94 + 0.1 * Math.sin(frameCount * 0.12 + jh));
+              var radI = infRadius * pulseScale;
+              var halo = cx.createRadialGradient(ph.x, ph.y, 0, ph.x, ph.y, radI);
+              halo.addColorStop(0, 'rgba(248,113,113,0.28)');
+              halo.addColorStop(0.55, 'rgba(239,68,68,0.11)');
+              halo.addColorStop(1, 'rgba(239,68,68,0)');
+              cx.fillStyle = halo;
+              cx.beginPath(); cx.arc(ph.x, ph.y, radI, 0, Math.PI * 2); cx.fill();
+            } else if (ph.state === 'R' && ph.vaccinated && hasRadial) {
+              var vHalo = cx.createRadialGradient(ph.x, ph.y, 0, ph.x, ph.y, 7.5);
+              vHalo.addColorStop(0, 'rgba(20,184,166,0.20)');
+              vHalo.addColorStop(1, 'rgba(20,184,166,0)');
+              cx.fillStyle = vHalo;
+              cx.beginPath(); cx.arc(ph.x, ph.y, 7.5, 0, Math.PI * 2); cx.fill();
+            }
+          }
+          // Expanding radial transmission pulse rings on contagion events
+          for (var pr = 0; pr < pulses.length; pr++) {
+            var ring = pulses[pr];
+            cx.strokeStyle = 'rgba(251,113,133,' + (ring.alpha * 0.85).toFixed(2) + ')';
+            cx.lineWidth = 1.6;
+            cx.beginPath(); cx.arc(ring.x, ring.y, ring.r, 0, Math.PI * 2); cx.stroke();
           }
           cx.restore();
+
           // Redundant shapes keep state legible for learners who cannot distinguish
-          // the palette: susceptible=circle, recovered=square, infected=ring + cross.
+          // the palette: susceptible=circle, recovered/vaccinated=square(+shield ring), infected=ring + cross.
           for (var j = 0; j < particles.length; j++) {
             var p = particles[j];
             if (p.state === 'I') continue;
-            cx.fillStyle = colors[p.state] || '#94a3b8';
-            if (p.state === 'R') cx.fillRect(p.x - 3, p.y - 3, 6, 6);
-            else { cx.beginPath(); cx.arc(p.x, p.y, 3, 0, Math.PI * 2); cx.fill(); }
+            if (p.state === 'R') {
+              cx.fillStyle = p.vaccinated ? colors.V : colors.R;
+              cx.fillRect(p.x - 2.8, p.y - 2.8, 5.6, 5.6);
+              if (p.vaccinated) {
+                cx.strokeStyle = 'rgba(153,246,228,0.65)';
+                cx.lineWidth = 0.9;
+                cx.beginPath(); cx.arc(p.x, p.y, 5.2, 0, Math.PI * 2); cx.stroke();
+              }
+            } else {
+              cx.fillStyle = colors.S;
+              cx.beginPath(); cx.arc(p.x, p.y, 3, 0, Math.PI * 2); cx.fill();
+              cx.fillStyle = 'rgba(224,242,254,0.65)';
+              cx.beginPath(); cx.arc(p.x - 0.9, p.y - 0.9, 0.95, 0, Math.PI * 2); cx.fill();
+            }
           }
-          // Infected dots last, with a hot glow so outbreaks read at a glance
+
+          // Infected dots last, with a luminous crimson glow + crisp white bio-cross
           cx.save();
-          cx.shadowColor = '#ef4444'; cx.shadowBlur = 8;
+          cx.shadowColor = '#ef4444'; cx.shadowBlur = 10;
           cx.fillStyle = colors.I;
           for (var ji = 0; ji < particles.length; ji++) {
             var pI = particles[ji];
             if (pI.state !== 'I') continue;
             cx.beginPath();
-            cx.arc(pI.x, pI.y, 3.3, 0, Math.PI * 2);
+            cx.arc(pI.x, pI.y, 3.6, 0, Math.PI * 2);
             cx.fill();
-            cx.strokeStyle = 'rgba(255,255,255,0.9)';
-            cx.lineWidth = 0.9;
+            cx.strokeStyle = 'rgba(255,255,255,0.92)';
+            cx.lineWidth = 1;
             cx.beginPath();
-            cx.moveTo(pI.x - 1.8, pI.y - 1.8); cx.lineTo(pI.x + 1.8, pI.y + 1.8);
-            cx.moveTo(pI.x + 1.8, pI.y - 1.8); cx.lineTo(pI.x - 1.8, pI.y + 1.8);
+            cx.moveTo(pI.x - 1.9, pI.y - 1.9); cx.lineTo(pI.x + 1.9, pI.y + 1.9);
+            cx.moveTo(pI.x + 1.9, pI.y - 1.9); cx.lineTo(pI.x - 1.9, pI.y + 1.9);
             cx.stroke();
           }
           cx.restore();
-          // Live agent counts make the animated canvas readable without relying on color alone.
+
+          // Live agent counts HUD pill
           cx.save();
-          cx.font = '11px system-ui';
+          cx.fillStyle = 'rgba(2,6,23,0.72)';
+          cx.fillRect(cw - 178, 4, 174, 18);
+          cx.font = 'bold 10.5px system-ui';
           cx.textAlign = 'right';
-          cx.fillStyle = 'rgba(226,232,240,0.95)';
+          cx.fillStyle = 'rgba(226,232,240,0.96)';
           cx.fillText('Agents  S ' + stateCounts.S + '  I ' + stateCounts.I + '  R ' + stateCounts.R, cw - 10, 16);
           cx.restore();
-          // legend
-          cx.font = '10px system-ui';
-          cx.fillStyle = '#3b82f6'; cx.fillText('\u25CF S Susceptible', 10, ch - 8);
-          cx.fillStyle = '#ef4444'; cx.fillText('\u2297 I Infected', 120, ch - 8);
-          cx.fillStyle = '#22c55e'; cx.fillText('\u25A0 R Recovered', 215, ch - 8);
+          // Legend strip
+          cx.save();
+          cx.fillStyle = 'rgba(2,6,23,0.72)';
+          cx.fillRect(4, ch - 19, Math.min(cw - 8, 316), 16);
+          cx.font = 'bold 10px system-ui';
+          cx.fillStyle = '#38bdf8'; cx.fillText('\u25CF S Susceptible', 10, ch - 7.5);
+          cx.fillStyle = '#f87171'; cx.fillText('\u2297 I Infected', 112, ch - 7.5);
+          cx.fillStyle = '#4ade80'; cx.fillText('\u25A0 R Immune/Vax', 198, ch - 7.5);
+          cx.restore();
         }
 
         initParticles();
@@ -1765,10 +1898,13 @@ window.StemLab = window.StemLab || {
           gridChildren.push(h('text', { key: 'phasePeakLabel', x: Math.max(padL + 36, Math.min(w - padR - 36, xPos((growthEnd + peakEnd) / 2))), y: phaseLabelY, textAnchor: 'middle', fill: 'var(--allo-stem-red, #dc2626)', fontSize: 10, fontWeight: 'bold' }, 'Peak window'));
           gridChildren.push(h('text', { key: 'phaseRecoveryLabel', x: Math.min(w - padR - 30, xPos((peakEnd + maxDay) / 2)), y: phaseLabelY, textAnchor: 'middle', fill: 'var(--allo-stem-green, #15803d)', fontSize: 10, fontWeight: 'bold' }, 'Recovery'));
         }
-        // herd immunity line
+        // herd immunity line with luminous threshold glow
         if (herdThresh > 0 && herdThresh < 100) {
           var herdY = yPos(100 - herdThresh);
-          gridChildren.push(h('line', { key: 'herd', x1: padL, x2: w - padR, y1: herdY, y2: herdY, stroke: '#d97706', strokeWidth: 1.2, strokeDasharray: '4,3' }));
+          if (!ctx.isContrast) {
+            gridChildren.push(h('line', { key: 'herd-glow', x1: padL, x2: w - padR, y1: herdY, y2: herdY, stroke: '#f59e0b', strokeWidth: 6.5, opacity: 0.18 }));
+          }
+          gridChildren.push(h('line', { key: 'herd', x1: padL, x2: w - padR, y1: herdY, y2: herdY, stroke: '#d97706', strokeWidth: 1.4, strokeDasharray: '5,3' }));
           gridChildren.push(h('text', { key: 'herdt', x: w - padR - 2, y: Math.max(padT + 26, herdY - 4), textAnchor: 'end', fill: '#b45309', fontSize: 10, fontWeight: 'bold' }, 'Herd immunity: S < ' + (100 - herdThresh).toFixed(0) + '%'));
         }
 
@@ -1779,10 +1915,22 @@ window.StemLab = window.StemLab || {
         // 5%, so the chart could show a peak comfortably "under capacity" while the
         // gauge beside it read 300% and OVERWHELMED. ──
         var capY = yPos(HOSP_CAPACITY_PCT);
-        gridChildren.push(h('line', { key: 'capline', x1: padL, x2: w - padR, y1: capY, y2: capY, stroke: '#ef4444', strokeWidth: 1.2, strokeDasharray: '2,2', opacity: 0.85 }));
+        if (!ctx.isContrast) {
+          gridChildren.push(h('line', { key: 'capline-glow', x1: padL, x2: w - padR, y1: capY, y2: capY, stroke: '#ef4444', strokeWidth: 5.5, opacity: 0.14 }));
+        }
+        gridChildren.push(h('line', { key: 'capline', x1: padL, x2: w - padR, y1: capY, y2: capY, stroke: '#ef4444', strokeWidth: 1.3, strokeDasharray: '2,2', opacity: 0.9 }));
         gridChildren.push(h('text', { key: 'capt', x: padL + 4, y: capY - 4, textAnchor: 'start', fill: '#dc2626', fontSize: 10, fontWeight: 'bold' }, __alloT('stem.epidemic.healthcare_capacity', '🏥 Hospital capacity ({pct}% infected at once)').replace('{pct}', HOSP_CAPACITY_PCT)));
 
-        // area fills + lines
+        // Dual-pass gradient-shaded area fills + luminous epidemic curves
+        var gradHex = { S: '#3b82f6', E: '#f59e0b', I: '#ef4444', R: '#22c55e' };
+        var chartDefs = !ctx.isContrast ? h('defs', { key: 'epi-svg-defs' },
+          ['S', 'E', 'I', 'R'].map(function(cKey) {
+            return h('linearGradient', { key: 'g-' + cKey, id: 'epi-area-' + cKey, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: gradHex[cKey], stopOpacity: cKey === 'I' ? 0.30 : 0.18 }),
+              h('stop', { offset: '100%', stopColor: gradHex[cKey], stopOpacity: 0.01 })
+            );
+          })
+        ) : null;
         var curves = [];
         compartments.forEach(function(comp) {
           if (data.length < 2) return;
@@ -1793,8 +1941,11 @@ window.StemLab = window.StemLab || {
             areaD += ' L ' + xPos(data[j].day) + ' ' + yPos(data[j][comp]);
           }
           areaD += ' L ' + xPos(data[data.length - 1].day) + ' ' + yPos(0) + ' Z';
-          curves.push(h('path', { key: 'a' + comp, d: areaD, fill: compColors[comp], opacity: 0.1 }));
-          curves.push(h('path', { key: 'l' + comp, d: pathD, fill: 'none', stroke: compColors[comp], strokeWidth: 2.2 }));
+          curves.push(h('path', { key: 'a' + comp, d: areaD, fill: ctx.isContrast ? compColors[comp] : ('url(#epi-area-' + comp + ')'), opacity: ctx.isContrast ? 0.1 : 1 }));
+          if (!ctx.isContrast) {
+            curves.push(h('path', { key: 'lg' + comp, d: pathD, fill: 'none', stroke: gradHex[comp] || compColors[comp], strokeWidth: comp === 'I' ? 6.5 : 4.5, strokeLinejoin: 'round', strokeLinecap: 'round', opacity: comp === 'I' ? 0.22 : 0.12 }));
+          }
+          curves.push(h('path', { key: 'l' + comp, d: pathD, fill: 'none', stroke: compColors[comp], strokeWidth: comp === 'I' ? 2.6 : 2.2, strokeLinejoin: 'round', strokeLinecap: 'round' }));
         });
 
         // A dashed gray I curve makes the Run button a real experiment record:
@@ -1826,8 +1977,12 @@ window.StemLab = window.StemLab || {
           if (pkI > 0.5) {
             var pkx = xPos(pkDay), pky = yPos(pkI);
             var pkLabelX = Math.max(padL + 56, Math.min(pkx, w - padR - 58));
-            curves.push(h('circle', { key: 'pkdot', cx: pkx, cy: pky, r: 4, fill: '#ef4444', stroke: 'white', strokeWidth: 1.5 }));
-            curves.push(h('text', { key: 'pktxt', x: pkLabelX, y: Math.max(pky - 8, padT + 26), textAnchor: 'middle', fill: '#dc2626', fontSize: 10, fontWeight: 'bold' }, 'Peak ' + pkI.toFixed(1) + '% · day ' + pkDay));
+            if (!ctx.isContrast) {
+              curves.push(h('circle', { key: 'pkhalo', cx: pkx, cy: pky, r: 10.5, fill: '#ef4444', opacity: 0.2 }));
+              curves.push(h('circle', { key: 'pkring', cx: pkx, cy: pky, r: 7, fill: 'none', stroke: '#ef4444', strokeWidth: 1.4, opacity: 0.65 }));
+            }
+            curves.push(h('circle', { key: 'pkdot', cx: pkx, cy: pky, r: 4.2, fill: '#ef4444', stroke: 'white', strokeWidth: 1.6 }));
+            curves.push(h('text', { key: 'pktxt', x: pkLabelX, y: Math.max(pky - 10, padT + 26), textAnchor: 'middle', fill: '#dc2626', fontSize: 10, fontWeight: 'bold' }, 'Peak ' + pkI.toFixed(1) + '% · day ' + pkDay));
           }
         }
 
@@ -1905,6 +2060,7 @@ window.StemLab = window.StemLab || {
           },
             h('title', null, 'Epidemic compartments over ' + maxDay + ' days'),
             h('desc', null, 'Lines show the share of the population that is susceptible, exposed when present, infected, or recovered. Subtle shading marks growth, the peak window, and recovery. The highlighted day can be inspected with the timeline control below.'),
+            chartDefs,
             gridChildren,
             curves,
             hoverElements,
@@ -1921,12 +2077,12 @@ window.StemLab = window.StemLab || {
             h('span', { className: 'font-mono font-bold w-16 text-right' }, hoverDay == null ? '—' : 'Day ' + scrubValue)
           ),
           h('div', { className: 'flex flex-wrap items-center gap-2 text-[0.6875rem] text-slate-600' },
-            h('button', { type: 'button', onClick: toggleChartPlayback, 'aria-pressed': chartPlaybackActive ? 'true' : 'false', disabled: !data.length || !activeData.length,
+            h('button', { type: 'button', onClick: toggleChartPlayback, 'aria-pressed': chartPlaybackActive ? 'true' : 'false', disabled: !data.length,
               className: 'px-2 py-1 rounded-lg font-semibold ' + (chartPlaybackActive ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-700')
             }, reducedMotion ? 'Next day' : chartPlaybackActive ? '⏸ Pause' : '▶ Play'),
             !reducedMotion && h('label', { className: 'flex items-center gap-1' },
               h('span', null, 'Speed'),
-              h('select', { value: chartPlaybackSpeed, onChange: function(e) { upd('chartPlaybackSpeed', Number(e.target.value)); }, disabled: !activeData.length, 'aria-label': __alloT('stem.epidemic.a11y_playback_speed', 'Playback speed'), className: 'px-1 py-1 rounded border border-slate-500 bg-white text-[0.6875rem]' },
+              h('select', { value: chartPlaybackSpeed, onChange: function(e) { upd('chartPlaybackSpeed', Number(e.target.value)); }, disabled: !data.length, 'aria-label': __alloT('stem.epidemic.a11y_playback_speed', 'Playback speed'), className: 'px-1 py-1 rounded border border-slate-500 bg-white text-[0.6875rem]' },
                 h('option', { value: 1 }, '1×'),
                 h('option', { value: 2 }, '2×'),
                 h('option', { value: 4 }, '4×')
@@ -1996,8 +2152,10 @@ window.StemLab = window.StemLab || {
       var tierQs = CHALLENGE_QS.filter(function(q) { return q.tier === chalTier; });
       var chalQ = tierQs[chalIdx % tierQs.length];
 
+      var chalAnswered = !!d.chalAnswered;
+
       function chalCheck() {
-        if (!chalAnswer.trim()) return;
+        if (chalAnswered || !chalAnswer.trim()) return;
         var correct = answerMatches(chalAnswer, activeChalQ);
         var newStreak = correct ? chalStreak + 1 : 0;
         var bonus = correct ? (newStreak >= 5 ? 3 : newStreak >= 3 ? 2 : 1) : 0;
@@ -2009,15 +2167,20 @@ window.StemLab = window.StemLab || {
           chalFeedback: correct ? ('\u2705 Correct!' + (bonus > 1 ? ' x' + bonus + ' streak!' : '')) : ('\u274C Answer: ' + activeChalQ.a),
           chalStreak: newStreak,
           chalScore: newScore,
-          chalAnswer: ''
+          chalAnswer: '',
+          chalAnswered: true
         });
         if (correct) awardXP(10 * bonus, 'Challenge correct');
         if (newStreak >= 3) checkBadge('quizStreak3');
         if (newStreak >= 5) checkBadge('quizStreak5');
       }
 
+      function chalAdvance() {
+        updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '', chalUseAI: null, chalAnswered: false });
+      }
+
       function chalNext() {
-        updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '', chalStreak: 0 });
+        updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '', chalStreak: 0, chalUseAI: null, chalAnswered: false });
       }
 
       function chalAINext() {
@@ -2028,7 +2191,7 @@ window.StemLab = window.StemLab || {
           try {
             var parsed = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
             var aiQs = (d.chalAIQs || []).concat([{ tier: chalTier, q: parsed.q, a: parsed.a, h: parsed.h || 'Think carefully!' }]);
-            updMulti({ chalAIQs: aiQs, chalAILoading: false, chalFeedback: '', chalAnswer: '', chalUseAI: aiQs.length - 1 });
+            updMulti({ chalAIQs: aiQs, chalAILoading: false, chalFeedback: '', chalAnswer: '', chalUseAI: aiQs.length - 1, chalAnswered: false });
           } catch(e) {
             updMulti({ chalAILoading: false }); chalNext();
           }
@@ -2254,7 +2417,8 @@ window.StemLab = window.StemLab || {
         if (herdApplies && vaccRate >= herdThresh && herdThresh > 0) checkBadge('herdImmunity');
         if (peakI < 20 && peakI > 0) checkBadge('flatCurve');
         if (herdApplies && vaccRate >= herdThresh && herdThresh > 0) checkBadge('vaccHero');
-        awardXP(5, 'Recorded live setup');
+        var simKey = 'sim:' + [tab, r0, vaccRate, infectPeriod, latentPeriod, popSize, simDays, initialInfectedPct].join('|');
+        awardXPOnce(simKey, 5, 'Recorded live setup', 10);
         updMulti({
           sirRunNote: { peak: peakI, day: peakDay, attackRate: totalInf, initialEffectiveR: effR0, simDays: simDays, initialInfectedPct: initialInfectedPct },
           lastRunParams: { tab: tab, r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, latentPeriod: latentPeriod, popSize: popSize, simDays: simDays, initialInfectedPct: initialInfectedPct }
@@ -2271,11 +2435,7 @@ window.StemLab = window.StemLab || {
         if (Object.keys(lr).length >= LEARN_TOPICS.length) checkBadge('scholar');
       }
 
-      // ── Intervention state ──
-      var activeNPIs = Array.isArray(d.activeNPIs) ? d.activeNPIs : [];
-      var npiResult = (tab === 'interventions') ? solveSIR_NPI({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, popSize: popSize, simDays: simDays, initialInfectedPct: initialInfectedPct }, activeNPIs) : null;
-      var npiBaseline = (tab === 'interventions') ? solveSIR_NPI({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, popSize: popSize, simDays: simDays, initialInfectedPct: initialInfectedPct }, []) : null;
-
+      // ── Intervention helpers (activeNPIs, npiResult, npiBaseline computed above with activeData) ──
       function toggleNPI(id) {
         var list = activeNPIs.slice();
         var idx = list.indexOf(id);
@@ -2293,7 +2453,8 @@ window.StemLab = window.StemLab || {
         var overCapacity = false;
         for (var k = 0; k < res.data.length; k++) { if (res.data[k].hospitalPct > 100) overCapacity = true; }
         if (!overCapacity && activeNPIs.length > 0) checkBadge('hospitalMgr');
-        awardXP(10, 'NPI simulation');
+        var npiKey = 'npi:' + [r0, vaccRate, infectPeriod, activeNPIs.slice().sort().join(',')].join('|');
+        awardXPOnce(npiKey, 10, 'NPI simulation', 10);
         announceToSR('NPI Simulation: R_eff = ' + res.effR0.toFixed(2) + ', reduction = ' + (res.totalReduction * 100).toFixed(0) + '%');
       }
 
@@ -2681,28 +2842,43 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-xs font-mono font-bold', style: { color: epInkOnWhite(effR0 < 1 ? '#16a34a' : '#dc2626') } },
                 'R_eff = ' + effR0.toFixed(2) + (effR0 < 1 ? ' (Contained < 1.0)' : ' (Spreading > 1.0)'))
             ),
-            h('svg', { viewBox: '0 0 620 76', className: 'w-full h-auto block', 'aria-hidden': 'true', focusable: 'false' },
-              // Susceptible box
-              h('rect', { x: 8, y: 12, width: 152, height: 52, rx: 10, fill: ctx.isContrast ? '#000' : '#eff6ff', stroke: '#2563eb', strokeWidth: 2 }),
-              h('text', { x: 84, y: 32, textAnchor: 'middle', fill: ctx.isContrast ? '#ffffff' : '#1e3a8a', fontSize: 12, fontWeight: 'bold' }, 'Susceptible (S)'),
-              h('text', { x: 84, y: 50, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#1d4ed8', fontSize: 11, fontWeight: 'bold' }, Math.max(0, 100 - vaccRate - initialInfectedPct).toFixed(1) + '% start'),
-              // Arrow S -> I with beta
-              h('line', { x1: 164, y1: 38, x2: 224, y2: 38, stroke: '#ef4444', strokeWidth: 2.5 }),
-              h('polygon', { points: '224,33 234,38 224,43', fill: '#ef4444' }),
-              h('text', { x: 196, y: 26, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#b91c1c', fontSize: 10, fontWeight: 'bold' }, '\u03B2=' + beta.toFixed(2)),
-              // Infected box
-              h('rect', { x: 236, y: 12, width: 152, height: 52, rx: 10, fill: ctx.isContrast ? '#000' : '#fef2f2', stroke: '#dc2626', strokeWidth: 2 }),
-              h('text', { x: 312, y: 32, textAnchor: 'middle', fill: ctx.isContrast ? '#ffffff' : '#991b1b', fontSize: 12, fontWeight: 'bold' }, 'Infected (I)'),
-              h('text', { x: 312, y: 50, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#dc2626', fontSize: 11, fontWeight: 'bold' }, 'Peak ' + peakI.toFixed(1) + '% · d' + peakDay),
-              // Arrow I -> R with gamma
-              h('line', { x1: 392, y1: 38, x2: 452, y2: 38, stroke: '#16a34a', strokeWidth: 2.5 }),
-              h('polygon', { points: '452,33 462,38 452,43', fill: '#16a34a' }),
-              h('text', { x: 424, y: 26, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#15803d', fontSize: 10, fontWeight: 'bold' }, '\u03B3=' + gamma.toFixed(2)),
-              // Recovered / Immune box
-              h('rect', { x: 464, y: 12, width: 148, height: 52, rx: 10, fill: ctx.isContrast ? '#000' : '#ecfdf5', stroke: '#16a34a', strokeWidth: 2 }),
-              h('text', { x: 538, y: 32, textAnchor: 'middle', fill: ctx.isContrast ? '#ffffff' : '#14532d', fontSize: 12, fontWeight: 'bold' }, 'Recovered (R)'),
-              h('text', { x: 538, y: 50, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#15803d', fontSize: 11, fontWeight: 'bold' }, vaccRate + '% vax → ' + (sirData.length ? sirData[sirData.length - 1].R.toFixed(0) : vaccRate) + '%')
-            ),
+              h('svg', { viewBox: '0 0 620 76', className: 'w-full h-auto block', 'aria-hidden': 'true', focusable: 'false' },
+                !ctx.isContrast && h('defs', null,
+                  h('linearGradient', { id: 'epi-flow-s', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#eff6ff' }), h('stop', { offset: '100%', stopColor: '#dbeafe' })
+                  ),
+                  h('linearGradient', { id: 'epi-flow-i', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#fef2f2' }), h('stop', { offset: '100%', stopColor: '#fee2e2' })
+                  ),
+                  h('linearGradient', { id: 'epi-flow-r', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#ecfdf5' }), h('stop', { offset: '100%', stopColor: '#d1fae5' })
+                  )
+                ),
+                // Susceptible box
+                h('rect', { x: 8, y: 12, width: 152, height: 52, rx: 10, fill: ctx.isContrast ? '#000' : 'url(#epi-flow-s)', stroke: '#2563eb', strokeWidth: 2 }),
+                h('text', { x: 84, y: 32, textAnchor: 'middle', fill: ctx.isContrast ? '#ffffff' : '#1e3a8a', fontSize: 12, fontWeight: 'bold' }, 'Susceptible (S)'),
+                h('text', { x: 84, y: 50, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#1d4ed8', fontSize: 11, fontWeight: 'bold' }, Math.max(0, 100 - vaccRate - initialInfectedPct).toFixed(1) + '% start'),
+                // Arrow S -> I with beta glow when spreading
+                !ctx.isContrast && effR0 >= 1 && h('line', { x1: 164, y1: 38, x2: 224, y2: 38, stroke: '#ef4444', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.24 }),
+                h('line', { x1: 164, y1: 38, x2: 224, y2: 38, stroke: '#ef4444', strokeWidth: 2.6, strokeLinecap: 'round' }),
+                h('polygon', { points: '224,33 234,38 224,43', fill: '#ef4444' }),
+                h('text', { x: 196, y: 26, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#b91c1c', fontSize: 10, fontWeight: 'bold' }, '\u03B2=' + beta.toFixed(2)),
+                // Infected box
+                !ctx.isContrast && effR0 >= 1 && h('rect', { x: 233, y: 9, width: 158, height: 58, rx: 13, fill: 'none', stroke: '#ef4444', strokeWidth: 3.5, opacity: 0.2 }),
+                h('rect', { x: 236, y: 12, width: 152, height: 52, rx: 10, fill: ctx.isContrast ? '#000' : 'url(#epi-flow-i)', stroke: '#dc2626', strokeWidth: 2 }),
+                h('text', { x: 312, y: 32, textAnchor: 'middle', fill: ctx.isContrast ? '#ffffff' : '#991b1b', fontSize: 12, fontWeight: 'bold' }, 'Infected (I)'),
+                h('text', { x: 312, y: 50, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#dc2626', fontSize: 11, fontWeight: 'bold' }, 'Peak ' + peakI.toFixed(1) + '% · d' + peakDay),
+                // Arrow I -> R with gamma glow
+                !ctx.isContrast && h('line', { x1: 392, y1: 38, x2: 452, y2: 38, stroke: '#16a34a', strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.18 }),
+                h('line', { x1: 392, y1: 38, x2: 452, y2: 38, stroke: '#16a34a', strokeWidth: 2.6, strokeLinecap: 'round' }),
+                h('polygon', { points: '452,33 462,38 452,43', fill: '#16a34a' }),
+                h('text', { x: 424, y: 26, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#15803d', fontSize: 10, fontWeight: 'bold' }, '\u03B3=' + gamma.toFixed(2)),
+                // Recovered / Immune box with containment halo when R_eff < 1
+                !ctx.isContrast && effR0 < 1 && h('rect', { x: 461, y: 9, width: 154, height: 58, rx: 13, fill: 'none', stroke: '#16a34a', strokeWidth: 3.5, opacity: 0.24 }),
+                h('rect', { x: 464, y: 12, width: 148, height: 52, rx: 10, fill: ctx.isContrast ? '#000' : 'url(#epi-flow-r)', stroke: '#16a34a', strokeWidth: 2 }),
+                h('text', { x: 538, y: 32, textAnchor: 'middle', fill: ctx.isContrast ? '#ffffff' : '#14532d', fontSize: 12, fontWeight: 'bold' }, 'Recovered (R)'),
+                h('text', { x: 538, y: 50, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#15803d', fontSize: 11, fontWeight: 'bold' }, vaccRate + '% vax → ' + (sirData.length ? sirData[sirData.length - 1].R.toFixed(0) : vaccRate) + '%')
+              ),
             h('div', { className: 'flex flex-wrap items-center gap-1.5', 'data-epidemic-quick-scenarios': 'true' },
               h('span', { className: 'text-[0.6875rem] font-bold uppercase tracking-wide text-slate-600 mr-1' }, __alloT('stem.epidemic.try_scenario', 'Try regime:')),
               [
@@ -2985,9 +3161,19 @@ window.StemLab = window.StemLab || {
               var threshLabelX = Math.max(58, Math.min(402, threshX));
               var achieved = herdApplies && vaccRate >= herdThresh && herdThresh > 0;
               return h('svg', { viewBox: '0 0 460 52', className: 'w-full h-auto block', 'aria-hidden': 'true', focusable: 'false' },
+                !ctx.isContrast && h('defs', null,
+                  h('linearGradient', { id: 'epi-herd-fill-ok', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                    h('stop', { offset: '0%', stopColor: '#10b981' }), h('stop', { offset: '100%', stopColor: '#22c55e' })
+                  ),
+                  h('linearGradient', { id: 'epi-herd-fill-wait', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                    h('stop', { offset: '0%', stopColor: '#3b82f6' }), h('stop', { offset: '100%', stopColor: '#2563eb' })
+                  )
+                ),
                 herdThresh > 0 && herdThresh < 100 && h('text', { x: threshLabelX, y: 13, textAnchor: 'middle', fill: ctx.isContrast ? '#ffff00' : '#b91c1c', fontSize: 11, fontWeight: 'bold' }, 'Threshold: ' + herdThresh.toFixed(0) + '%'),
+                achieved && !ctx.isContrast && h('rect', { x: 13, y: 17, width: fillW + 6, height: 24, rx: 12, fill: '#22c55e', opacity: 0.22 }),
                 h('rect', { x: 16, y: 20, width: 428, height: 18, rx: 9, fill: ctx.isContrast ? '#1e293b' : '#e2e8f0', stroke: ctx.isContrast ? '#ffffff' : '#cbd5e1', strokeWidth: 1 }),
-                fillW > 0 && h('rect', { x: 16, y: 20, width: fillW, height: 18, rx: 9, fill: achieved ? '#16a34a' : '#2563eb' }),
+                fillW > 0 && h('rect', { x: 16, y: 20, width: fillW, height: 18, rx: 9, fill: ctx.isContrast ? (achieved ? '#16a34a' : '#2563eb') : (achieved ? 'url(#epi-herd-fill-ok)' : 'url(#epi-herd-fill-wait)') }),
+                herdThresh > 0 && herdThresh < 100 && !ctx.isContrast && h('line', { x1: threshX, y1: 16, x2: threshX, y2: 42, stroke: '#ef4444', strokeWidth: 6, opacity: 0.2 }),
                 herdThresh > 0 && herdThresh < 100 && h('line', { x1: threshX, y1: 17, x2: threshX, y2: 41, stroke: '#dc2626', strokeWidth: 2.5, strokeDasharray: '3 2' })
               );
             })(),
@@ -3146,9 +3332,8 @@ window.StemLab = window.StemLab || {
             if (opts.seed) fresh.seed = opts.seed;
             setOutbreak(fresh);
             if (addToast) addToast('🏥 Outbreak Response begins. Week 1 of 26 on ' + diff.label + '.', 'success');
-            // awardXP takes (amount, reason) — this passed an activity id as the amount,
-            // so the host was handed the string "outbreak_start" where points belong.
-            awardXP(10, 'Outbreak campaign (' + diff.label + ')');
+            // awardXP takes (amount, reason) — deduplicated per difficulty so restart cannot farm XP.
+            awardXPOnce('outbreak:' + diff.id, 10, 'Outbreak campaign (' + diff.label + ')');
             if (announceToSR) announceToSR('Outbreak Response campaign started on ' + diff.label + '. Week 1 of 26.');
           }
 
@@ -4239,13 +4424,22 @@ window.StemLab = window.StemLab || {
                 h('svg', { role: 'img', 'aria-label': 'Clinical map trajectories through day ' + currentStep + ', including a dashed no-additional-response infectious baseline', viewBox: '0 0 ' + w2 + ' ' + ht2, className: 'w-full', style: { maxHeight: ht2 + 'px' } },
                   h('title', null, 'Spatial clinical trajectories'),
                   h('desc', null, 'Solid lines show the response run. The dashed infectious line is the same seeded starting map with quarantine and pathogen-specific interventions off. The gold marker shows the current day.'),
-                  h('path', { d: pathS, fill: 'none', stroke: 'var(--allo-stem-blue, #3b82f6)', strokeWidth: 2 }),
-                  h('path', { d: pathE, fill: 'none', stroke: 'var(--allo-stem-yellow, #f59e0b)', strokeWidth: 2 }),
+                  !ctx.isContrast && h('defs', null,
+                    h('linearGradient', { id: 'epi-map-i-area', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#ef4444', stopOpacity: 0.28 }),
+                      h('stop', { offset: '100%', stopColor: '#ef4444', stopOpacity: 0.01 })
+                    )
+                  ),
+                  !ctx.isContrast && h('path', { d: pathI + ' L ' + x(maxSteps) + ' ' + (padT2 + ph) + ' L ' + x(0) + ' ' + (padT2 + ph) + ' Z', fill: 'url(#epi-map-i-area)' }),
+                  h('path', { d: pathS, fill: 'none', stroke: 'var(--allo-stem-blue, #3b82f6)', strokeWidth: 2, strokeLinejoin: 'round' }),
+                  h('path', { d: pathE, fill: 'none', stroke: 'var(--allo-stem-yellow, #f59e0b)', strokeWidth: 2, strokeLinejoin: 'round' }),
                   pathBaselineI && h('path', { d: pathBaselineI, fill: 'none', stroke: 'var(--allo-stem-red, #ef4444)', strokeWidth: 1.5, strokeDasharray: '5,4', opacity: 0.55 }),
-                  h('path', { d: pathI, fill: 'none', stroke: 'var(--allo-stem-red, #ef4444)', strokeWidth: 2 }),
-                  h('path', { d: pathH, fill: 'none', stroke: 'var(--allo-stem-purple, #a855f7)', strokeWidth: 2 }),
-                  h('path', { d: pathR, fill: 'none', stroke: 'var(--allo-stem-green, #22c55e)', strokeWidth: 2 }),
-                  h('line', { x1: x(currentStep), x2: x(currentStep), y1: padT2, y2: padT2 + ph, stroke: 'var(--allo-stem-yellow, #fbbf24)', strokeWidth: 1.5, strokeDasharray: '3,2' })
+                  !ctx.isContrast && h('path', { d: pathI, fill: 'none', stroke: '#ef4444', strokeWidth: 5.5, opacity: 0.2, strokeLinejoin: 'round' }),
+                  h('path', { d: pathI, fill: 'none', stroke: 'var(--allo-stem-red, #ef4444)', strokeWidth: 2.4, strokeLinejoin: 'round' }),
+                  h('path', { d: pathH, fill: 'none', stroke: 'var(--allo-stem-purple, #a855f7)', strokeWidth: 2, strokeLinejoin: 'round' }),
+                  h('path', { d: pathR, fill: 'none', stroke: 'var(--allo-stem-green, #22c55e)', strokeWidth: 2, strokeLinejoin: 'round' }),
+                  h('line', { x1: x(currentStep), x2: x(currentStep), y1: padT2, y2: padT2 + ph, stroke: 'var(--allo-stem-yellow, #fbbf24)', strokeWidth: 1.6, strokeDasharray: '3,2' }),
+                  h('circle', { cx: x(currentStep), cy: y(mapHistory[currentStep].I), r: 4, fill: '#ef4444', stroke: '#ffffff', strokeWidth: 1.4 })
                 ),
                 h('div', { className: 'mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[0.6875rem] font-semibold', 'aria-hidden': 'true' },
                   h('span', { className: 'text-blue-600' }, '— S susceptible'),
@@ -4312,20 +4506,33 @@ window.StemLab = window.StemLab || {
                   + ctRevealed.filter(function(id) { return ctNetwork.solution.indexOf(id) >= 0; }).length
                   + ' of ' + ctNetwork.solution.length + ' infections traced so far. Tab to a person who is in contact with a confirmed case, then press Enter to test them.'
               },
-                // edges
+                // Atmospheric radar backdrop for contact network
+                !ctx.isContrast && h('defs', null,
+                  h('radialGradient', { id: 'epi-ct-bg', cx: '50%', cy: '50%', r: '62%' },
+                    h('stop', { offset: '0%', stopColor: '#f8fafc' }),
+                    h('stop', { offset: '100%', stopColor: '#eef2ff' })
+                  )
+                ),
+                !ctx.isContrast && h('rect', { x: 2, y: 2, width: 696, height: 396, rx: 14, fill: 'url(#epi-ct-bg)', stroke: '#e2e8f0', strokeWidth: 1 }),
+                !ctx.isContrast && [85, 165, 245].map(function(rr) {
+                  return h('circle', { key: 'ctr-' + rr, cx: 350, cy: 200, r: rr, fill: 'none', stroke: '#cbd5e1', strokeWidth: 0.8, strokeDasharray: '4 4', opacity: 0.55 });
+                }),
+                // edges with dual-pass glow on confirmed transmission chains
                 ctNetwork.edges.map(function(e, idx) {
                   var n1 = ctNetwork.nodes[e.from], n2 = ctNetwork.nodes[e.to];
                   var bothRevealed = ctRevealed.indexOf(e.from) >= 0 && ctRevealed.indexOf(e.to) >= 0;
                   var isChainEdge = ctComplete && ctNetwork.chain.some(function(ce) {
                     return (ce.from === e.from && ce.to === e.to) || (ce.from === e.to && ce.to === e.from);
                   });
-                  return h('line', {
-                    key: 'e' + idx,
-                    x1: n1.x, y1: n1.y, x2: n2.x, y2: n2.y,
-                    stroke: isChainEdge ? '#ef4444' : bothRevealed ? '#94a3b8' : '#e2e8f0',
-                    strokeWidth: isChainEdge ? 3 : 1.5,
-                    strokeDasharray: bothRevealed ? 'none' : '4,3'
-                  });
+                  return h('g', { key: 'e' + idx },
+                    isChainEdge && !ctx.isContrast && h('line', { x1: n1.x, y1: n1.y, x2: n2.x, y2: n2.y, stroke: '#ef4444', strokeWidth: 8, opacity: 0.22, strokeLinecap: 'round' }),
+                    h('line', {
+                      x1: n1.x, y1: n1.y, x2: n2.x, y2: n2.y,
+                      stroke: isChainEdge ? '#ef4444' : bothRevealed ? '#94a3b8' : '#cbd5e1',
+                      strokeWidth: isChainEdge ? 3.2 : 1.5,
+                      strokeDasharray: bothRevealed ? 'none' : '4,3'
+                    })
+                  );
                 }),
                 // nodes
                 ctNetwork.nodes.map(function(node) {
@@ -4454,7 +4661,7 @@ window.StemLab = window.StemLab || {
                         [
                           { label: __alloT('stem.epidemic.deaths', 'Deaths'), value: p.deaths, color: '#ef4444' },
                           { label: __alloT('stem.epidemic.world_pop', '% World Pop'), value: p.pctDeath, color: '#f59e0b' },
-                          { label: __alloT('stem.epidemic.r_estimate', 'R\u2080 Estimate'), value: p.r0Est, color: r0Color(parseFloat(p.r0Est) || 3) },
+                          { label: __alloT('stem.epidemic.r_estimate', 'R\u2080 Estimate'), value: p.r0Est, color: r0Color(parseHistoricalR0(p.r0Est)) },
                           { label: __alloT('stem.epidemic.transmission', 'Transmission'), value: p.transmission, color: '#6366f1' }
                         ].map(function(s) {
                           return h('div', { key: s.label, className: 'bg-slate-50 rounded-lg p-2 text-center' },
@@ -4478,7 +4685,7 @@ window.StemLab = window.StemLab || {
                       // Actions
                       h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
                         callTTS && h('button', { 'aria-label': __alloT('stem.epidemic.read_aloud', 'Read Aloud'), onClick: function() { callTTS(p.gradeSummary[gradeBand] || p.gradeSummary['3-5'], undefined, undefined, { force: true }); }, className: 'px-3 py-1.5 text-[0.6875rem] font-bold bg-blue-50 text-blue-600 rounded-lg' }, __alloT('stem.epidemic.read_aloud_2', '\uD83D\uDD0A Read Aloud')),
-                        h('button', { 'aria-label': __alloT('stem.epidemic.simulate', 'Simulate'), onClick: function() { var approxR0 = parseFloat(String(p.r0Est).replace(/[^0-9.]/g, '')) || 2.5; var safeR0 = Math.max(0.5, Math.min(100, approxR0)); applyPreset(0); updMulti({ tab: 'sir', r0: safeR0, historySimulationNote: p.name + ' is shown as a simplified SIR approximation using R0≈' + safeR0 + '. Historical estimates vary by place, time, and transmission route.' }); }, className: 'px-3 py-1.5 text-[0.6875rem] font-bold bg-violet-50 text-violet-600 rounded-lg' }, 'Approximate in SIR')
+                        h('button', { 'aria-label': __alloT('stem.epidemic.simulate', 'Simulate'), onClick: function() { var approxR0 = parseHistoricalR0(p.r0Est); var safeR0 = Math.max(0.5, Math.min(100, approxR0)); applyPreset(0); updMulti({ tab: 'sir', r0: safeR0, historySimulationNote: p.name + ' is shown as a simplified SIR approximation using R0≈' + safeR0 + '. Historical estimates vary by place, time, and transmission route.' }); }, className: 'px-3 py-1.5 text-[0.6875rem] font-bold bg-violet-50 text-violet-600 rounded-lg' }, 'Approximate in SIR')
                       )
                     )
                   );
@@ -4605,7 +4812,7 @@ window.StemLab = window.StemLab || {
                 var labels = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
                 var colors = { 1: 'bg-emerald-100 text-emerald-700', 2: 'bg-amber-100 text-amber-700', 3: 'bg-red-100 text-red-700' };
                 return h('button', { key: t,
-                  onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '', chalUseAI: null }); },
+                  onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '', chalUseAI: null, chalAnswered: false }); },
                   className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-600 border border-slate-400')
                 }, labels[t]);
               })
@@ -4626,16 +4833,18 @@ window.StemLab = window.StemLab || {
               ),
               h('input', {
                 type: 'text', value: chalAnswer,
+                disabled: chalAnswered,
                 onChange: function(e) { upd('chalAnswer', e.target.value); },
-                onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); },
+                onKeyDown: function(e) { if (e.key === 'Enter') { if (chalAnswered) chalAdvance(); else chalCheck(); } },
                 placeholder: __alloT('stem.epidemic.type_your_answer', 'Type your answer...'),
-                className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm focus:border-indigo-400',
+                className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm focus:border-indigo-400 disabled:bg-slate-100',
                 'aria-label': __alloT('stem.epidemic.challenge_answer', 'Challenge answer')
               }),
-              h('div', { className: 'flex gap-2' },
-                h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, __alloT('stem.epidemic.check', 'Check')),
-                h('button', { onClick: function() { updMulti({ chalFeedback: '\uD83D\uDCA1 ' + (activeChalQ.h || 'No hint') + ' Streak reset.', chalStreak: 0 }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-800 rounded-xl border border-amber-200' }, __alloT('stem.epidemic.hint', '\uD83D\uDCA1 Hint')),
-                h('button', { onClick: chalNext, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, __alloT('stem.epidemic.skip', 'Skip \u27A1')),
+              h('div', { className: 'flex gap-2 flex-wrap' },
+                !chalAnswered && h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, __alloT('stem.epidemic.check', 'Check')),
+                chalAnswered && h('button', { onClick: chalAdvance, className: 'px-4 py-2 text-sm font-bold bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all' }, __alloT('stem.epidemic.next_question', 'Next Question \u27A1')),
+                !chalAnswered && h('button', { onClick: function() { updMulti({ chalFeedback: '\uD83D\uDCA1 ' + (activeChalQ.h || 'No hint') + ' Streak reset.', chalStreak: 0 }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-800 rounded-xl border border-amber-200' }, __alloT('stem.epidemic.hint', '\uD83D\uDCA1 Hint')),
+                !chalAnswered && h('button', { onClick: chalNext, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, __alloT('stem.epidemic.skip', 'Skip \u27A1')),
                 callGemini && h('button', { 'aria-label': __alloT('stem.epidemic.ai_next', 'AI Next'), onClick: chalAINext, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl' }, __alloT('stem.epidemic.ai_next_2', '\u2728 AI Next'))
               ),
               chalFeedback && h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm font-bold p-2 rounded-lg ' + (chalFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, chalFeedback)
@@ -4857,13 +5066,25 @@ window.StemLab = window.StemLab || {
                 }
                 return h('div', { className: 'mb-3 rounded border border-slate-200 bg-slate-50 p-2' },
                   h('svg', { role: 'img', 'aria-label': 'Live SIR trajectories at R effective ' + rEff.toFixed(2) + ': susceptible, infected, and recovered population fractions over model time', viewBox: '0 0 320 105', className: 'w-full h-28 block' },
-                    // Baseline
-                    h('line', { x1: 10, y1: 90, x2: 310, y2: 90, stroke: '#cbd5e1', strokeWidth: 0.5 }),
-                    h('line', { x1: 10, y1: 10, x2: 10, y2: 90, stroke: '#cbd5e1', strokeWidth: 0.5 }),
+                    !ctx.isContrast && h('defs', null,
+                      h('linearGradient', { id: 'epi-iq-i-area', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#dc2626', stopOpacity: 0.28 }),
+                        h('stop', { offset: '100%', stopColor: '#dc2626', stopOpacity: 0.01 })
+                      )
+                    ),
+                    // Baseline + subtle horizontal reference grid
+                    !ctx.isContrast && [30, 50, 70].map(function(gy) {
+                      return h('line', { key: 'iqg-' + gy, x1: 10, y1: gy, x2: 310, y2: gy, stroke: '#e2e8f0', strokeWidth: 0.6 });
+                    }),
+                    h('line', { x1: 10, y1: 90, x2: 310, y2: 90, stroke: '#cbd5e1', strokeWidth: 0.8 }),
+                    h('line', { x1: 10, y1: 10, x2: 10, y2: 90, stroke: '#cbd5e1', strokeWidth: 0.8 }),
+                    // Shaded area under Infected curve + dual-pass glow
+                    !ctx.isContrast && h('path', { d: toPath(iPts) + ' L 310,90 L 10,90 Z', fill: 'url(#epi-iq-i-area)' }),
+                    !ctx.isContrast && h('path', { d: toPath(iPts), stroke: '#dc2626', strokeWidth: 5.5, fill: 'none', opacity: 0.2, strokeLinejoin: 'round' }),
                     // S, I, R curves
-                    h('path', { d: toPath(sPts), stroke: '#0ea5e9', strokeWidth: 1.5, fill: 'none' }),
-                    h('path', { d: toPath(iPts), stroke: '#dc2626', strokeWidth: 2, fill: 'none' }),
-                    h('path', { d: toPath(rPts), stroke: '#10b981', strokeWidth: 1.5, fill: 'none' }),
+                    h('path', { d: toPath(sPts), stroke: '#0ea5e9', strokeWidth: 1.7, fill: 'none', strokeLinejoin: 'round' }),
+                    h('path', { d: toPath(iPts), stroke: '#dc2626', strokeWidth: 2.3, fill: 'none', strokeLinejoin: 'round' }),
+                    h('path', { d: toPath(rPts), stroke: '#10b981', strokeWidth: 1.7, fill: 'none', strokeLinejoin: 'round' }),
                     // Axis labels — minimal, no numeric values
                     h('text', { x: 14, y: 18, fontSize: 9, fill: '#0ea5e9', fontWeight: 'bold' }, 'S'),
                     h('text', { x: 14, y: 30, fontSize: 9, fill: '#dc2626', fontWeight: 'bold' }, 'I'),

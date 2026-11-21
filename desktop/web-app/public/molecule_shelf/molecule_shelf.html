@@ -254,7 +254,7 @@
   var raToggle = document.getElementById('raToggle');
 
   // ── Opener AI bridge ─────────────────────────────────────────────────
-  var pending = {};
+  var pending = Object.create(null);
   var verifiedOpenerOrigin = '';
   function isTrustedOrigin(origin) {
     var o = String(origin || '');
@@ -293,7 +293,7 @@
     if (!verifiedOpenerOrigin) verifiedOpenerOrigin = event.origin;
     if (data.type === 'alloflow-theme-change') { if (typeof window.applyAlloFlowTheme === 'function') window.applyAlloFlowTheme(data.theme); return; }
     if (data.type === 'allocmol-ready') { openerOk = true; aiAvailable = Boolean(data.ai); visionAvailable = Boolean(data.vision); renderAiState(); refreshDescribe(); return; }
-    if (data.type === 'allocmol-ai-response' && data.id && pending[data.id]) {
+    if (data.type === 'allocmol-ai-response' && typeof data.id === 'string' && Object.prototype.hasOwnProperty.call(pending, data.id)) {
       var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);
     }
   });
@@ -372,18 +372,22 @@
   }
   function describeView(question) {
     if (describing || !describeAvailable()) return;
+    var target = current;
+    if (!target) return;
     describing = true; describeBtn.disabled = true; stopSpeak();
     describedOut.classList.add('busy');
     describedOut.textContent = question ? 'Thinking about your question…' : 'Looking at the current view…';
     captureView().then(function (uri) {
+      if (!current || current.pdb !== target.pdb) return null;
       var base64 = uri ? String(uri).replace(/^data:image\/[a-z0-9.+-]+;base64,/i, '') : null;
       return bridgeRequest({
-        mode: 'describe', structure: current.name, pdb: current.pdb, meta: current.meta,
+        mode: 'describe', structure: target.name, pdb: target.pdb, meta: target.meta,
         question: question || null, image: base64, mime: 'image/png'
       }, 30000);
     }).then(function (res) {
       describing = false;
       describedOut.classList.remove('busy');
+      if (!current || current.pdb !== target.pdb) { refreshDescribe(); return; }
       var text = res && res.text ? String(res.text) : '';
       if (text) {
         describedOut.textContent = text;
@@ -393,6 +397,13 @@
         describedOut.textContent = 'The description could not be generated'
           + (res && res.error ? ' (' + res.error + ')' : '')
           + '. Try rotating the molecule, then describe again.';
+      }
+      refreshDescribe();
+    }).catch(function () {
+      describing = false;
+      describedOut.classList.remove('busy');
+      if (current && current.pdb === target.pdb) {
+        describedOut.textContent = 'The description could not be generated right now. Try rotating the molecule, then describe again.';
       }
       refreshDescribe();
     });
@@ -479,8 +490,7 @@
   function ensureViewer() {
     if (viewerPromise) return viewerPromise;
     if (typeof window.molstar === 'undefined' || !window.molstar.Viewer) {
-      viewerPromise = Promise.reject(new Error('Mol* library did not load'));
-      return viewerPromise;
+      return Promise.reject(new Error('Mol* library did not load'));
     }
     viewerPromise = window.molstar.Viewer.create('molstar', {
       layoutIsExpanded: false,
@@ -492,7 +502,10 @@
       viewportShowSelectionMode: false,
       pdbProvider: 'rcsb',
       emdbProvider: 'rcsb'
-    }).then(function (v) { viewer = v; return v; });
+    }).then(function (v) { viewer = v; return v; }).catch(function (err) {
+      viewerPromise = null;
+      throw err;
+    });
     return viewerPromise;
   }
   function loadStructure(pdb) {
@@ -548,7 +561,10 @@
   hello();
   setTimeout(hello, 900);
   setTimeout(renderAiState, 2600);
-  window.addEventListener('beforeunload', function () { toOpener({ type: 'allocmol-closed' }); });
+  window.addEventListener('beforeunload', function () {
+    toOpener({ type: 'allocmol-closed' });
+    if (viewer && typeof viewer.dispose === 'function') { try { viewer.dispose(); } catch (_) {} }
+  });
 })();
 </script>
 </body>

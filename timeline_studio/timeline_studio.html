@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com data:; frame-src https:; connect-src 'self' https://cdn.jsdelivr.net; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com data:; frame-src 'none'; connect-src 'self' https://cdn.jsdelivr.net; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AlloFlow Timeline Studio</title>
 <!--
@@ -225,7 +225,7 @@
       if (window.location && window.location.origin && o === window.location.origin) return true;
       var u = new URL(o);
       var host = (u.hostname || '').toLowerCase();
-      if (/^(localhost|127\.0\.0\.1)$/.test(host)) return true;
+      if (/^(localhost|127\.0\.0\.1)$/.test(host) && (u.protocol === 'http:' || u.protocol === 'https:')) return true;
       if (u.protocol !== 'https:') return false;
       return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
              host === 'alloflow.org' || /\.alloflow\.org$/.test(host) ||
@@ -250,7 +250,7 @@
     if (typeof DOMParser !== 'function') return escapeTimelineText(val);
     try {
       var doc = new DOMParser().parseFromString('<!DOCTYPE html><body>' + val, 'text/html');
-      var ALLOWED = { P: 1, BR: 1, STRONG: 1, B: 1, EM: 1, I: 1, U: 1, SMALL: 1, SUP: 1, SUB: 1, SPAN: 1, UL: 1, OL: 1, LI: 1, BLOCKQUOTE: 1, CODE: 1, A: 1 };
+      var ALLOWED = Object.assign(Object.create(null), { P: 1, BR: 1, STRONG: 1, B: 1, EM: 1, I: 1, U: 1, SMALL: 1, SUP: 1, SUB: 1, SPAN: 1, UL: 1, OL: 1, LI: 1, BLOCKQUOTE: 1, CODE: 1, A: 1 });
       var walk = function (node) {
         var kids = Array.prototype.slice.call(node.childNodes || []);
         for (var i = 0; i < kids.length; i += 1) {
@@ -268,16 +268,24 @@
             continue;
           }
           var attrs = Array.prototype.slice.call(child.attributes || []);
+          var keptHref = '';
           for (var j = 0; j < attrs.length; j += 1) {
             var an = String(attrs[j].name || '').toLowerCase();
             var av = String(attrs[j].value || '').trim();
-            if (tag === 'A' && an === 'href' && /^https?:\/\//i.test(av)) {
-              child.setAttribute('rel', 'noopener noreferrer');
-              child.setAttribute('target', '_blank');
-              continue;
+            if (tag === 'A' && an === 'href') {
+              try {
+                var parsedHref = new URL(av);
+                if (parsedHref.protocol === 'https:' && !parsedHref.username && !parsedHref.password && !/[\u0000-\u001f\u007f\s"'<>`\\()]/.test(parsedHref.href)) {
+                  keptHref = parsedHref.href;
+                }
+              } catch (_) {}
             }
-            if (tag === 'A' && (an === 'rel' || an === 'target')) continue;
             child.removeAttribute(attrs[j].name);
+          }
+          if (tag === 'A' && keptHref) {
+            child.setAttribute('href', keptHref);
+            child.setAttribute('rel', 'noopener noreferrer');
+            child.setAttribute('target', '_blank');
           }
           walk(child);
         }
@@ -293,7 +301,15 @@
     function safeHttpUrl(v) {
       if (typeof v !== 'string') return '';
       var trimmed = v.trim();
-      return /^https?:\/\//i.test(trimmed) ? trimmed : '';
+      if (!trimmed || /[\u0000-\u001f\u007f\s"'<>`\\()]/.test(trimmed)) return '';
+      try {
+        var parsed = new URL(trimmed);
+        if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return '';
+        if (/[\u0000-\u001f\u007f\s"'<>`\\()]/.test(parsed.href)) return '';
+        return parsed.href;
+      } catch (_) {
+        return '';
+      }
     }
     function scrubDate(dt) {
       if (!dt || typeof dt !== 'object') return;
@@ -311,6 +327,7 @@
         if (typeof s.text.headline === 'string') s.text.headline = sanitizeTimelineHtmlField(s.text.headline);
         if (typeof s.text.text === 'string') s.text.text = sanitizeTimelineHtmlField(s.text.text);
       }
+      if (typeof s.unique_id === 'string') s.unique_id = escapeTimelineText(s.unique_id.slice(0, 80));
       if (typeof s.group === 'string') s.group = escapeTimelineText(s.group);
       if (typeof s.display_date === 'string') s.display_date = escapeTimelineText(s.display_date);
       scrubDate(s.start_date);
@@ -330,7 +347,11 @@
       }
     }
     scrubSlide(tl.title);
-    if (Array.isArray(tl.events)) tl.events.forEach(scrubSlide);
+    if (Array.isArray(tl.events)) {
+      if (tl.events.length > 200) tl.events = tl.events.slice(0, 200);
+      tl.events.forEach(scrubSlide);
+    }
+    if (Array.isArray(tl.eras) && tl.eras.length > 50) tl.eras = tl.eras.slice(0, 50);
     if (Array.isArray(tl.eras)) tl.eras.forEach(scrubSlide);
     return tl;
   }

@@ -30,7 +30,8 @@
   function validWorld(w) {
     return !!(w && w.version === VERSION && Array.isArray(w.cells) && w.cells.length === COLS * ROWS &&
       ['minutes', 'rainM3', 'outM3', 'evapM3', 'initialM3', 'discharge', 'peak'].every(function (k) { return typeof w[k] === 'number' && isFinite(w[k]) && w[k] >= 0; }) &&
-      w.cells.every(function (c, i) { return c && c.x === i % COLS && c.y === Math.floor(i / COLS) && COVERS[c.cover] && ((c.x === 5 || c.x === 6) === (c.cover === 'stream')) &&
+      w.minutes <= 1e9 &&
+      w.cells.every(function (c, i) { return c && c.x === i % COLS && c.y === Math.floor(i / COLS) && Object.prototype.hasOwnProperty.call(COVERS, c.cover) && ((c.x === 5 || c.x === 6) === (c.cover === 'stream')) &&
         ['surface', 'soil', 'ground', 'elevation'].every(function (k) { return typeof c[k] === 'number' && isFinite(c[k]) && c[k] >= 0 && c[k] <= 100000; }) && c.soil <= 120 + 1e-8; }));
   }
   var PATTERNS={steady:'Steady rain',early:'Heavier first half',late:'Heavier second half'};
@@ -216,10 +217,12 @@
     var end = run.start.minutes + run.forcing.duration + 60;
     var target = Math.min(end, w.minutes + number(minutes, 0, 240, 1));
     while (w.minutes < target - 1e-9) {
+      var prevMinutes = w.minutes;
       var elapsed = w.minutes - run.start.minutes;
       var dt = Math.min(STEP, target - w.minutes);
       // Integrate rainfall depth exactly across the midpoint and storm-end boundaries.
       w = step(w, rainDuring(run.forcing, elapsed, dt), dt);
+      if (!(w.minutes > prevMinutes)) break;
       var t = w.minutes - run.start.minutes, last = run.samples[run.samples.length - 1];
       if (t - last.t >= 1 - 1e-8 || w.minutes >= end - 1e-8) {
         var m = measure(w); run.samples.push({ t: t, q: m.discharge, surface: m.surfaceM3, soil: m.soilM3 });
@@ -339,8 +342,10 @@
     function cumulative(entry) {
       var w=copy(entry.provenance.start),target=w.minutes+entry.minute,forcing=entry.provenance.forcing,totals={};keys.forEach(function(k){totals[k]=0;});
       while(w.minutes<target-1e-9){
+        var prevMin=w.minutes;
         var dt=Math.min(STEP,target-w.minutes),rain=rainDuring(forcing,w.minutes-entry.provenance.start.minutes,dt),trace={};
         w=step(w,rain,dt,{trace:trace});var local=trace.cells[selected];
+        if(!(w.minutes>prevMin))break;
         totals.rainMm+=rain*dt/60;
         ['infiltrationMm','drainageMm','releaseMm','surfaceEvaporationMm','soilEvapotranspirationMm'].forEach(function(k){totals[k]+=local[k];});
         trace.routes.forEach(function(route){if(route.to===selected)totals.incomingSurfaceMm+=route.depthMm;if(route.from===selected)totals.outgoingSurfaceMm+=route.depthMm;});

@@ -59,15 +59,23 @@ function AlloHelpDirectory({ t, idBase, intro }) {
           <div key={g.id} className="bg-white rounded-lg border border-slate-200 p-2.5">
             <h5 className="text-[11px] font-black text-slate-800 mb-1">{titles[g.id] || g.title}</h5>
             <ul className="space-y-1 list-none">
-              {sortByName(g.entries).map((e) => (
+              {sortByName(g.entries).map((e) => {
+                const _safeHref = _viewSafeHttpUrl(e.url);
+                const _linkLabel = e.id === 'at_programs' ? (tt('pdf_audit.help_directory.at_programs_name') || e.name) : e.name;
+                return (
                 <li key={e.id} className="text-[11px] text-slate-700 leading-snug">
-                  <a href={e.url} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-800 hover:text-indigo-950 underline">
-                    {e.id === 'at_programs' ? (tt('pdf_audit.help_directory.at_programs_name') || e.name) : e.name}
+                  {_safeHref ? (
+                  <a href={_safeHref} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-800 hover:text-indigo-950 underline">
+                    {_linkLabel}
                     <span className="sr-only"> {tt('pdf_audit.help_directory.new_tab') || '(opens in a new tab)'}</span>
                   </a>
+                  ) : (
+                  <span className="font-bold text-slate-800">{_linkLabel}</span>
+                  )}
                   {': '}{descs[e.id] || e.desc}
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
         ))}
@@ -441,6 +449,57 @@ function _viewSafeCssFontFamily(value, fallback) {
   const raw = String(value == null ? '' : value).trim();
   if (!raw || /(?:@import|url\s*\(|image-set\s*\(|src\s*:|expression\s*\(|behavior\s*:|javascript\s*:|vbscript\s*:)/i.test(raw) || /[{};]/.test(raw)) return fallback;
   return /^(?:[A-Za-z][A-Za-z0-9 -]*|"[A-Za-z][A-Za-z0-9 -]*"|'[A-Za-z][A-Za-z0-9 -]*')(?:\s*,\s*(?:[A-Za-z][A-Za-z0-9 -]*|"[A-Za-z][A-Za-z0-9 -]*"|'[A-Za-z][A-Za-z0-9 -]*'))*$/.test(raw) ? raw : fallback;
+}
+function _viewSafeJsonReviver(key, value) {
+  return (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : value;
+}
+function _viewSafeHttpUrl(url) {
+  const raw = String(url == null ? '' : url).trim();
+  if (!raw) return '';
+  try {
+    const parsed = new URL(raw);
+    if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || parsed.username || parsed.password) return '';
+    return parsed.href;
+  } catch (_) { return ''; }
+}
+function _viewIsPublicRemoteUrl(urlOrParsed) {
+  try {
+    const parsed = urlOrParsed instanceof URL ? urlOrParsed : new URL(String(urlOrParsed || '').trim());
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    if (parsed.username || parsed.password) return false;
+    const host = String(parsed.hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
+    if (!host) return false;
+    if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) return false;
+    if (host === '0.0.0.0' || host === '::' || host === '::1' || host.includes(':')) return false;
+    const ipv4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(host);
+    if (ipv4) {
+      const a = Number(ipv4[1]), b = Number(ipv4[2]);
+      if (a === 0 || a === 10 || a === 127) return false;
+      if (a === 169 && b === 254) return false;
+      if (a === 172 && b >= 16 && b <= 31) return false;
+      if (a === 192 && b === 168) return false;
+      if (a === 100 && b >= 64 && b <= 127) return false;
+      if (a >= 224) return false;
+    }
+    if (/^\d+$/.test(host) || /^0x[0-9a-f]+$/i.test(host)) return false;
+    return true;
+  } catch (_) { return false; }
+}
+function _viewSanitizeAiRestyleCss(rawCss) {
+  let clean = String(rawCss == null ? '' : rawCss).trim();
+  const fenced = clean.match(/^```(?:css)?\s*\n?([\s\S]*?)\n?```$/i);
+  if (fenced) clean = fenced[1].trim();
+  clean = clean.replace(/^```(?:css)?\s*\n?/gim, '').replace(/\n?```\s*$/gim, '');
+  clean = clean
+    .replace(/<\/?style\b[^>]*>/gi, '')
+    .replace(/@import\s+[^;]+;?/gi, '')
+    .replace(/url\s*\([^)]*\)/gi, 'none')
+    .replace(/image-set\s*\([^)]*\)/gi, 'none')
+    .replace(/expression\s*\([^)]*\)/gi, 'none')
+    .replace(/behavior\s*:\s*[^;}\n]+;?/gi, '')
+    .replace(/-moz-binding\s*:\s*[^;}\n]+;?/gi, '')
+    .replace(/(?:javascript|vbscript)\s*:/gi, '');
+  return clean.trim();
 }
 function _viewSanitizeReconTableHtml(rawHtml) {
   const raw = String(rawHtml == null ? '' : rawHtml);
@@ -1465,7 +1524,11 @@ function _htmlToStructuredText(html, markdown) {
       const st = clean(text);
       return st ? '_' + (/^[A-Za-z0-9]+$/.test(st) ? st : '(' + st + ')') : '';
     }
-    if (markdown && tag === 'a' && node.getAttribute('href')) text = '[' + (text || node.getAttribute('href')) + '](' + node.getAttribute('href').replace(/([()\\])/g, '\\$1') + ')';
+    if (markdown && tag === 'a' && node.getAttribute('href')) {
+      const _rawHref = String(node.getAttribute('href') || '').trim();
+      const _safeMdHref = /^#[^\s]*$/.test(_rawHref) ? _rawHref : _viewSafeHttpUrl(_rawHref);
+      if (_safeMdHref) text = '[' + (text || _safeMdHref) + '](' + _safeMdHref.replace(/([()\\])/g, '\\$1') + ')';
+    }
     if (markdown && (tag === 'strong' || tag === 'b')) text = '**' + text + '**';
     if (markdown && (tag === 'em' || tag === 'i')) text = '*' + text + '*';
     if (markdown && tag === 'code') text = mdTick + text.split(mdTick).join('\\' + mdTick) + mdTick;
@@ -2865,7 +2928,7 @@ function _pdfAuditAudioLanguage(html, fallback) {
     th: 'Thai', id: 'Indonesian', ms: 'Malay', sw: 'Swahili', so: 'Somali', am: 'Amharic',
     he: 'Hebrew', fa: 'Farsi', ps: 'Pashto', km: 'Khmer', my: 'Burmese', tl: 'Tagalog',
   };
-  return languageNames[primary] || raw;
+  return Object.prototype.hasOwnProperty.call(languageNames, primary) ? languageNames[primary] : raw;
 }
 // SMIL overlay: one <par> per segment. Per-segment audio files, so each clip is
 // 0..duration of its own file. `ext` is the audio extension (mp3 by default;
@@ -3100,6 +3163,12 @@ function _altFmtDecodeDataImage(src) {
     const bin = atob(base64);
     const bytes = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    if (mime === 'image/svg+xml') {
+      const svgText = typeof TextDecoder !== 'undefined' ? new TextDecoder('utf-8', { fatal: false }).decode(bytes) : bin;
+      if (/<(?:script|foreignObject|iframe|object|embed)\b|\bon[a-z]+\s*=|(?:javascript|vbscript)\s*:|data\s*:\s*text\/html/i.test(svgText)) {
+        return null;
+      }
+    }
     return { mime, ext, base64, bytes };
   } catch (_) { return null; }
 }
@@ -3116,11 +3185,23 @@ function _altFmtXhtmlFromHtml(html, opts) {
       d.querySelectorAll(_alloTeacherOnlySel()).forEach((el) => { try { el.remove(); } catch (_) {} });
     }
     _alloDedupeVennActivityDom(d);
-    d.querySelectorAll('.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,#allo-builder-view-filter,#allo-builder-paper-css,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,script,del[data-allo-change-id],[data-allo-change-kind="structure-delete"],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+    d.querySelectorAll('.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,#allo-builder-view-filter,#allo-builder-paper-css,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,script,iframe,object,embed,base,form,del[data-allo-change-id],[data-allo-change-kind="structure-delete"],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
     d.querySelectorAll('ins[data-allo-change-id]').forEach((ins) => { const p = ins.parentNode; if (p) { while (ins.firstChild) p.insertBefore(ins.firstChild, ins); p.removeChild(ins); } });
     _alloReplaceFormControlsForText(d, d.body || d, ' ___ ', false, true);
     _alloUnwrapInlineTermsToSpan(d, d);
     d.querySelectorAll('button,select,input,textarea').forEach((el) => el.remove());
+    d.querySelectorAll('*').forEach((el) => {
+      Array.from(el.attributes || []).forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        const val = String(attr.value || '').trim();
+        if (name.startsWith('on') || name === 'formaction') { el.removeAttribute(attr.name); return; }
+        if ((name === 'href' || name === 'xlink:href') && /^(?:javascript|vbscript|data):/i.test(val)) {
+          el.removeAttribute(attr.name);
+        } else if (name === 'src' && /^(?:javascript|vbscript|data:text\/html)/i.test(val)) {
+          el.removeAttribute(attr.name);
+        }
+      });
+    });
     d.querySelectorAll('link[rel~="stylesheet"][href]').forEach((link) => {
       const href = String(link.getAttribute('href') || '').trim();
       if (/^(?:https?:)?\/\//i.test(href)) link.remove();
@@ -3130,7 +3211,10 @@ function _altFmtXhtmlFromHtml(html, opts) {
       style.textContent = css
         .replace(/@import\s+[^;]+;/gi, '')
         .replace(/@font-face\s*\{[^}]*(?:https?:|\/\/)[^}]*\}/gi, '')
-        .replace(/url\(\s*(['"]?)(?:https?:)?\/\/[^)]+\)/gi, 'none');
+        .replace(/url\(\s*(['"]?)(?:https?:)?\/\/[^)]+\)/gi, 'none')
+        .replace(/image-set\s*\([^)]*\)/gi, 'none')
+        .replace(/expression\s*\([^)]*\)/gi, 'none')
+        .replace(/(?:javascript|vbscript)\s*:/gi, '');
     });
     d.querySelectorAll('svg').forEach((svg) => {
       if ((!svg.namespaceURI || svg.namespaceURI === 'http://www.w3.org/1999/xhtml') && !svg.getAttribute('xmlns')) {
@@ -4103,7 +4187,7 @@ function _alloLinearizeSpeechMath(mathEl) {
     if (t === 'mover' && ch.length >= 2) {
       const b = cleanSp(walkMath(ch[0]));
       const o = cleanSp(walkMath(ch[1]));
-      if (b && OVER_ACCENT[o]) return OVER_ACCENT[o] + '(' + b + ')';
+      if (b && Object.prototype.hasOwnProperty.call(OVER_ACCENT, o)) return OVER_ACCENT[o] + '(' + b + ')';
       return (b && o) ? mathBase(b) + '^' + mathScript(o) : (b || o);
     }
     if (t === 'mtable') {
@@ -4200,25 +4284,12 @@ function _audioReadyText(html, narrationOptions) {
   let preambleRuns = [];
   const _note = root.querySelector('[data-allo-translation-note], [data-allo-plain-note]');
   if (_note) { const _nt = (_note.textContent || '').replace(/\s+/g, ' ').trim(); if (_nt) { _preamble = _nt + '. '; if(options.languageRuns)preambleRuns=[..._narrationTextRuns(_note,options.language),{text:'. ',language:_narrationLanguageOf(_note,options.language)}]; } }
-  if(options.languageRuns){
-    _narrationPrepareDocument(doc, options);
-    root.querySelectorAll('[data-allo-translation-note], [data-allo-plain-note], details.allo-chart-data > summary, details.allo-image-desc > summary').forEach((el) => el.remove());
-    root.querySelectorAll('p,h1,h2,h3,h4,h5,h6,li,blockquote,dd,dt,tr,caption,figcaption,summary,.alloflow-cs-strip,.alloflow-tl-strip').forEach(el=>el.appendChild(doc.createTextNode('. ')));
-    return _narrationMergeRuns([...preambleRuns,..._narrationTextRuns(root,options.language)],true);
+  _narrationPrepareDocument(doc, options);
+  root.querySelectorAll('[data-allo-translation-note], [data-allo-plain-note], details.allo-chart-data > summary, details.allo-image-desc > summary').forEach((el) => el.remove());
+  // Preserve author <em> notes inside captions/details in languageRuns mode (MCP narration contract).
+  if (!options.languageRuns) {
+    root.querySelectorAll('details em, figcaption em').forEach((el) => { if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || '')) el.remove(); });
   }
-  _alloDedupeVennActivityDom(root);
-  _alloReplaceFormControlsForText(doc, root, ' blank ', true, !options.languageRuns);
-  root.querySelectorAll('button.alloflow-inline-term').forEach((btn) => {
-    const span = doc.createElement('span');
-    if (btn.lang) span.lang = btn.lang;
-    span.textContent = btn.textContent || '';
-    btn.replaceWith(span);
-  });
-  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], [data-allo-footnote-backlink], details.allo-math-source, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], script, style, button, input, select, textarea, del[data-allo-change-id],[data-allo-change-kind="structure-delete"], ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
-  _replaceAccessibleMathAndSvgForSpeech(root, { doc, includeTeacherOnly: !!options.includeTeacherOnly, preserveLanguageNodes: false });
-  root.querySelectorAll('details.allo-chart-data > summary, details.allo-image-desc > summary').forEach((el) => el.remove());
-  root.querySelectorAll('details em, figcaption em').forEach((el) => { if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || '')) el.remove(); });
-  root.querySelectorAll('annotation, annotation-xml, [data-allo-latex-src]').forEach((el) => el.remove());
   const imageText = (node, caption, alt) => {
     if(!options.languageRuns)return doc.createTextNode((caption ? caption.textContent.trim() : alt) ? ('Image: '+(caption ? caption.textContent.trim() : alt)+'. ') : '');
     const span=doc.createElement('span');span.lang=_narrationLanguageOf(caption||node,options.language);
@@ -4244,8 +4315,16 @@ function _audioReadyText(html, narrationOptions) {
       const role = img.getAttribute('role');
       const isPres = role === 'presentation' || role === 'none' || img.getAttribute('aria-hidden') === 'true';
       const capText = cap ? cap.textContent.trim() : '';
+      if (options.languageRuns) {
+        // Preserve distinct image descriptions and caption languages in MCP languageRuns mode,
+        // while still deduplicating exact alt===figcaption repeats.
+        if (capText && alt && alt.replace(/\s+/g, ' ').toLowerCase() === capText.replace(/\s+/g, ' ').toLowerCase()) {
+          img.remove();
+        }
+        return;
+      }
       const say = capText || (isPres ? '' : alt);
-      const replacement=options.languageRuns ? imageText(img,capText ? cap : null,say) : doc.createTextNode(say ? ('Image: ' + say + '. ') : '');
+      const replacement = doc.createTextNode(say ? ('Image: ' + say + '. ') : '');
       if (cap) cap.remove();
       img.replaceWith(replacement);
     }
@@ -4256,7 +4335,7 @@ function _audioReadyText(html, narrationOptions) {
     const alt = isPres ? '' : (img.getAttribute('alt') || '').trim();
     img.replaceWith(options.languageRuns ? imageText(img, null, alt) : doc.createTextNode(alt ? ('Image: ' + alt + '. ') : ''));
   });
-  root.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption, .alloflow-cs-strip, .alloflow-tl-strip').forEach((el) => { el.appendChild(doc.createTextNode('. ')); });
+  root.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption, summary, .alloflow-cs-strip, .alloflow-tl-strip').forEach((el) => { el.appendChild(doc.createTextNode('. ')); });
   if(options.languageRuns)return _narrationMergeRuns([...preambleRuns,..._narrationTextRuns(root,options.language)],true);
   return _preamble + (root.textContent || '')
     .replace(/\s+/g, ' ')
@@ -4588,20 +4667,32 @@ function _narrationMergeRuns(input, natural) {
 }
 function _srStyleTextFromHtml(html, spokenLabels, narrationOptions) {
   const options=narrationOptions||{};
-  const say = (node,key,fallback,n) => { const local=options.languageRuns?options.labelsByLanguage?.[_narrationLanguageOf(node,options.language).split('-')[0]]:spokenLabels; const phrase=local&&((Number(n)===1&&local[key+'One'])||local[key]);return phrase?phrase.replace(/\{n\}/g,String(n)):fallback; };
+  const say = (node,key,fallback,n) => { const primary=_narrationLanguageOf(node,options.language).split('-')[0].toLowerCase(); const local=options.languageRuns?options.labelsByLanguage?.[primary]:spokenLabels; const phrase=local&&((Number(n)===1&&local[key+'One'])||local[key]);return phrase?phrase.replace(/\{n\}/g,String(n)):fallback; };
   const doc=new DOMParser().parseFromString(html||'','text/html');
   _narrationPrepareDocument(doc, options);
-  const readable=node=>options.languageRuns?_narrationTextRuns(node,options.language).some(run=>run.text.trim()):!!(node.textContent||'').trim();
+  const inlineText=(node)=>{
+    if(!node)return '';
+    if(node.nodeType===3)return node.textContent||'';
+    if(node.nodeType!==1)return '';
+    if(node.tagName.toLowerCase()==='img'){
+      const role=node.getAttribute('role');
+      if(role==='presentation'||role==='none'||node.getAttribute('aria-hidden')==='true')return '';
+      const alt=(node.getAttribute('alt')||'').trim();
+      return alt?(' '+alt+' '):'';
+    }
+    return Array.from(node.childNodes).map(inlineText).join('');
+  };
+  const readable=node=>options.languageRuns?_narrationTextRuns(node,options.language).some(run=>run.text.trim()):!!inlineText(node).trim();
   const out=[],runs=[];
   const add=(node,...parts)=>{
-    out.push(parts.map(part=>typeof part==='string'?part:(part.textContent||'').trim()).join(''));
+    out.push(parts.map(part=>typeof part==='string'?part:inlineText(part).replace(/\s+/g,' ').trim()).join(''));
     if(options.languageRuns){if(runs.length)runs.push({text:'\n\n',language:_narrationLanguageOf(node,options.language)});
       for(const part of parts)runs.push(...(typeof part==='string'?[{text:part,language:_narrationLanguageOf(node,options.language)}]:_narrationTextRuns(part,options.language)));
     }
   };
   const walk=el=>{
     for(const node of Array.from(el.childNodes)){
-      if(node.nodeType!==1){if(options.languageRuns&&node.nodeType===3&&node.textContent.trim())add(el,node);continue;}
+      if(node.nodeType!==1){if(node.nodeType===3&&node.textContent.trim())add(el,node);continue;}
       const tag=node.tagName.toLowerCase(),txt=readable(node);
       if(/^h[1-6]$/.test(tag)){if(txt)add(node,say(node,'heading','Heading level '+tag[1],tag[1])+'. ',node,'.');continue;}
       if(tag==='p'||tag==='blockquote'||tag==='figcaption'){if(txt&&!node.closest('table'))add(node,node);continue;}
@@ -9184,8 +9275,8 @@ function PdfAuditView(props) {
   };
   const _axeActions = (v) => (
     <span className="shrink-0 flex gap-1">
-      {_axeTarget(v) && <button onClick={() => _jumpToAxe(v)} className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 hover:bg-indigo-200 font-bold" title={t('pdf_audit.issue.find_title') || 'Scroll the preview to this spot and highlight it'} aria-label={(t('pdf_audit.issue.find_aria') || 'Find in preview') + ': ' + (v.description || v.id)}>🔎</button>}
-      <button onClick={() => _axeToWorkbench(v)} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.issue.workbench_title') || 'Send to the Expert Workbench — prefills a targeted fix command (with the exact selector)'} aria-label={(t('pdf_audit.issue.workbench_aria') || 'Send to Expert Workbench') + ': ' + (v.description || v.id)}>🛠</button>
+      {_axeTarget(v) && <button type="button" onClick={() => _jumpToAxe(v)} className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 hover:bg-indigo-200 font-bold" title={t('pdf_audit.issue.find_title') || 'Scroll the preview to this spot and highlight it'} aria-label={(t('pdf_audit.issue.find_aria') || 'Find in preview') + ': ' + (v.description || v.id)}>🔎</button>}
+      <button type="button" onClick={() => _axeToWorkbench(v)} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.issue.workbench_title') || 'Send to the Expert Workbench — prefills a targeted fix command (with the exact selector)'} aria-label={(t('pdf_audit.issue.workbench_aria') || 'Send to Expert Workbench') + ': ' + (v.description || v.id)}>🛠</button>
     </span>
   );
   // Map a WCAG rule number to its W3C Understanding page slug.
@@ -9469,17 +9560,32 @@ function PdfAuditView(props) {
                           if (webJobBusy || _viewDocumentJobIsActive()) { addToast('A website or transcript operation is already running.', 'info'); return; }
                           const _webToken = _beginViewDocumentJob();
                           setWebJobBusy('fetch');
+                          // Parse and validate URL up front before YouTube routing or network/proxy fetch.
+                          let parsedUrl;
+                          try {
+                            parsedUrl = new URL(url);
+                            if (!_viewIsPublicRemoteUrl(parsedUrl)) {
+                              throw new Error('Only public http:// and https:// website URLs (without embedded credentials or private/local addresses) can be fetched.');
+                            }
+                          } catch (urlErr) {
+                            if (_finishViewDocumentJob(_webToken)) setWebJobBusy('');
+                            addToast(t('toasts.could_fetch_url_try_pasting') + (urlErr?.message || 'Invalid URL'), 'error');
+                            return;
+                          }
+                          const _webHost = parsedUrl.hostname.toLowerCase();
+                          const _isYouTubeUrl = (_webHost === 'youtu.be' && parsedUrl.pathname.length > 1)
+                            || ((_webHost === 'youtube.com' || _webHost.endsWith('.youtube.com')) && /^\/(?:watch|embed|shorts)\b/i.test(parsedUrl.pathname));
                           // YouTube → the pipeline as a transcript (2026-06-10):
                           // reuses the EXISTING Gemini fileUri extractor in
                           // utils_pure (fetchAndCleanUrl). Speech transcript v1 —
                           // digestion modes need an uploaded file ≤15MB.
-                          if (/(?:youtube\.com\/(?:watch|embed|shorts)|youtu\.be\/)/i.test(url)) {
+                          if (_isYouTubeUrl) {
                             try {
                               const _fac = typeof window !== 'undefined' && window.__alloUtils && window.__alloUtils.fetchAndCleanUrl;
                               if (typeof _fac !== 'function') throw new Error('URL extractor module not loaded yet — try again in a moment');
                               addToast(t('toasts.youtube_to_pipeline') || '🎬 YouTube detected — extracting the transcript for the accessibility pipeline…', 'info');
                               if (!_viewDocumentJobIsCurrent(_webToken)) return;
-                              const text = await _fac(url, null, addToast);
+                              const text = await _fac(parsedUrl.href, null, addToast);
                               if (!text || text.trim().length < 50) throw new Error('no transcript extracted (private/region-locked videos cannot be read)');
                               if (!_viewDocumentJobIsCurrent(_webToken)) return;
                               const r = await transcribeMediaToPayload(null, 'text/plain', { preText: text });
@@ -9499,8 +9605,6 @@ function PdfAuditView(props) {
                           }
                           addToast(t('toasts.fetching_website'), 'info');
                           try {
-                            const parsedUrl = new URL(url);
-                            if (!/^https?:$/.test(parsedUrl.protocol)) throw new Error('Only http:// and https:// website URLs can be fetched.');
                             const maxWebsiteBytes = 5 * 1024 * 1024;
                             let fetched = null;
                             let usedProxyFallback = false;
@@ -9529,11 +9633,11 @@ function PdfAuditView(props) {
                             }
                             if (!_viewDocumentJobIsCurrent(_webToken)) return;
                             let html = fetched.html;
-                            const finalSourceUrl = (!usedProxyFallback && fetched.response && fetched.response.url) ? fetched.response.url : parsedUrl.href;
+                            const finalSourceUrl = (!usedProxyFallback && fetched.response && fetched.response.url && _viewIsPublicRemoteUrl(fetched.response.url)) ? fetched.response.url : parsedUrl.href;
                             if (!/<base\b/i.test(html)) {
                               const baseHref = new URL(finalSourceUrl).href.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
                               const baseTag = '<base href="' + baseHref + '">';
-                              html = /<head\b[^>]*>/i.test(html) ? html.replace(/<head([^>]*)>/i, '<head$1>' + baseTag) : (baseTag + html);
+                              html = /<head\b[^>]*>/i.test(html) ? html.replace(/<head([^>]*)>/i, (_, attrs) => '<head' + attrs + '>' + baseTag) : (baseTag + html);
                             }
                             if (usedProxyFallback) addToast('AllOrigins proxy fallback was used because the direct request could not be read: ' + proxyFallbackReason + ' AllOrigins received the requested URL.', 'info');
                             document.getElementById('web-audit-html').value = html;
@@ -9824,7 +9928,7 @@ function PdfAuditView(props) {
                         AlloFlow Remediation build) */}
                     {!pdfBatchProcessing && !pdfBatchSummary && !batchIngesting && window.alloAPI?.remediation?.selectFolder && (
                       <div className="mb-4 text-center">
-                        <button
+                        <button type="button"
                           onClick={_alloLoadDesktopFolder}
                           disabled={_modalDismissBusy}
                           className="px-6 py-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-xl font-bold text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg inline-flex items-center gap-2"
@@ -9863,7 +9967,7 @@ function PdfAuditView(props) {
                               {t('pdf_audit.batch.resume.files_label') || 'Files:'} {resumableBatch.files.slice(0, 3).map(f => f.fileName).join(', ')}{resumableBatch.files.length > 3 ? ' ' + (t('pdf_audit.batch.resume.files_more', { n: resumableBatch.files.length - 3 }) || `+ ${resumableBatch.files.length - 3} more`) : ''}
                             </p>
                             <div className="flex gap-2">
-                              <button
+                              <button type="button"
                                 onClick={_resumeSavedBatch}
                                 disabled={_modalDismissBusy || (remediationReady === false && !_savedBatchOnlyFailures)}
                                 data-help-key="pdf_audit_view_batch_resume_btn"
@@ -9871,7 +9975,7 @@ function PdfAuditView(props) {
                               >
                                 {'▶'} {_savedBatchOnlyFailures ? 'Review saved files' : (t('pdf_audit.batch.resume.resume_button') || 'Resume Batch')}
                               </button>
-                              <button
+                              <button type="button"
                                 onClick={_discardSavedBatch}
                                 disabled={_modalDismissBusy}
                                 data-help-key="pdf_audit_view_batch_discard_btn"
@@ -9890,7 +9994,7 @@ function PdfAuditView(props) {
                       <div className="mb-4">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-xs font-bold text-slate-600">{_batchDisplay.counts.all} {_pdfWorkspaceText(t, 'batch_file_count', 'files in this batch')}</span>
-                          {!pdfBatchProcessing && !pdfBatchSummary && <button data-help-key="pdf_audit_view_batch_clear_all_btn" disabled={_modalDismissBusy} onClick={() => { if (_modalHasActiveWork() || pdfAuditLoading) return; _cancelBatchIngest(); setPdfBatchQueue([]); }} className="text-xs text-red-600 hover:text-red-600 font-bold">{t('pdf_audit.batch.clear_all') || 'Clear All'}</button>}
+                          {!pdfBatchProcessing && !pdfBatchSummary && <button type="button" data-help-key="pdf_audit_view_batch_clear_all_btn" disabled={_modalDismissBusy} onClick={() => { if (_modalHasActiveWork() || pdfAuditLoading) return; _cancelBatchIngest(); setPdfBatchQueue([]); }} className="text-xs text-red-600 hover:text-red-600 font-bold">{t('pdf_audit.batch.clear_all') || 'Clear All'}</button>}
                         </div>
                         <_PdfWorkspaceBatchFilters model={_batchDisplay} value={batchQueueFilter} onChange={setBatchQueueFilter} t={t} />
                         <div id="pdf-workspace-batch-queue" className="pdf-workspace-batch-queue max-h-40 overflow-y-auto space-y-1">
@@ -9918,7 +10022,7 @@ function PdfAuditView(props) {
                                   aria-label={'Retry ' + item.fileName}
                                 >{_pdfWorkspaceText(t, 'retry', 'Retry')}</button>
                               )}
-                              {!pdfBatchProcessing && !batchIngesting && item.status === 'pending' && <button data-help-key="pdf_audit_view_batch_row_remove_btn" aria-label={'Remove ' + item.fileName} disabled={_modalDismissBusy} onClick={() => { if (!_modalHasActiveWork() && !pdfAuditLoading) setPdfBatchQueue(prev => prev.filter(q => q.id !== item.id)); }} className="text-slate-600 hover:text-red-400">{'\u2715'}</button>}
+                              {!pdfBatchProcessing && !batchIngesting && item.status === 'pending' && <button type="button" data-help-key="pdf_audit_view_batch_row_remove_btn" aria-label={'Remove ' + item.fileName} disabled={_modalDismissBusy} onClick={() => { if (!_modalHasActiveWork() && !pdfAuditLoading) setPdfBatchQueue(prev => prev.filter(q => q.id !== item.id)); }} className="text-slate-600 hover:text-red-400">{'\u2715'}</button>}
                               <_PdfWorkspaceBatchReview item={item} t={t} />
                               {item.error && (() => {
                                 const error = classifyPdfError(item.error);
@@ -9945,7 +10049,7 @@ function PdfAuditView(props) {
                         </div>
                         <div className="flex items-start justify-between gap-3">
                           <p className="text-xs text-indigo-600 flex-1" role="status" aria-live="polite">{_batchStopRequested ? _pdfWorkspaceText(t, 'batch_stopping_detail', 'Stop requested. Keep this workspace open while the active work ends and the checkpoint is saved.') : pdfBatchStep}</p>
-                          <button
+                          <button type="button"
                             onClick={() => {
                               const controller = typeof window !== 'undefined' ? window.__alloPdfBatchAbortCtrl : null;
                               if (!controller?.signal || typeof controller.abort !== 'function') {
@@ -10042,16 +10146,16 @@ function PdfAuditView(props) {
                       {pdfBatchSummary && (
                         <>
                           {_batchSummaryIncomplete && _batchSummaryPending > 0 && (
-                            <button data-help-key="pdf_audit_view_batch_resume_pending_btn" onClick={() => _runBatchSelection('resume')} disabled={_modalDismissBusy || remediationReady === false} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-800 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <button type="button" data-help-key="pdf_audit_view_batch_resume_pending_btn" onClick={() => _runBatchSelection('resume')} disabled={_modalDismissBusy || remediationReady === false} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-800 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                               {'\u25b6'} Resume Pending ({_batchSummaryPending})
                             </button>
                           )}
                           {(pdfBatchSummary.processed || 0) > 0 && (
-                            <button data-help-key="pdf_audit_view_batch_download_zip_btn" onClick={() => downloadBatchResults()} className="px-6 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center gap-2">
+                            <button type="button" data-help-key="pdf_audit_view_batch_download_zip_btn" onClick={() => downloadBatchResults()} className="px-6 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center gap-2">
                               {'\ud83d\udce5'} {_batchSummaryIncomplete ? 'Download Processed (ZIP)' : 'Download All (ZIP)'}
                             </button>
                           )}
-                          <button disabled={_modalDismissBusy} data-help-key="pdf_audit_view_batch_new_batch_btn" onClick={async () => {
+                          <button type="button" disabled={_modalDismissBusy} data-help-key="pdf_audit_view_batch_new_batch_btn" onClick={async () => {
                             if (_modalHasActiveWork() || pdfAuditLoading) return;
                             const resetEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
                             _batchActionBusyRef.current = true;
@@ -10081,7 +10185,7 @@ function PdfAuditView(props) {
                               setPdfBatchSummary(null);
                             } finally { _batchActionBusyRef.current = false; setBatchActionBusy(false); }
                           }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">{t('pdf_audit.batch.new_batch') || 'New Batch'}</button>
-                          <button onClick={() => {
+                          <button type="button" onClick={() => {
                             const queue = pdfBatchQueue;
                             const summary = pdfBatchSummary;
                             const done = queue.filter(f => f.status === 'done');
@@ -10099,7 +10203,7 @@ function PdfAuditView(props) {
                             const good = scored.filter(f => f.result.afterScore >= 70 && f.result.afterScore < 90);
                             const needsWork = scored.filter(f => f.result.afterScore < 70);
 
-                            const allViolations = {};
+                            const allViolations = Object.create(null);
                             done.forEach(f => {
                               const issues = f.result?.verificationAudit?.issues || [];
                               issues.forEach(i => {
@@ -10269,7 +10373,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('pdf_audit.media.instructions_label') || 'Custom instructions (optional)'}</label>
                       <textarea aria-label={t('pdf_audit.media.instructions_label') || 'Custom instructions (optional)'} value={mediaInstructions} onChange={(e) => setMediaInstructions(e.target.value)} rows={2} placeholder={t('pdf_audit.media.instructions_ph') || 'e.g. "Focus on the lab demonstration steps" or "Ignore the Q&A at the end"'} className="w-full border border-slate-300 rounded-lg p-2 text-xs mt-0.5 mb-2" />
-                      <button disabled={mediaDigesting || typeof transcribeMediaToPayload !== 'function'} onClick={async () => {
+                      <button type="button" disabled={mediaDigesting || typeof transcribeMediaToPayload !== 'function'} onClick={async () => {
                         if (_viewDocumentJobIsActive()) { addToast('Another document operation is already running.', 'info'); return; }
                         const _mediaToken = _beginViewDocumentJob();
                         setMediaDigesting(true);
@@ -10312,7 +10416,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </div>
                   )}
                   <p className="text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200">🔒 {t('pdf_audit.gemini_disclosure') || 'Privacy: this document’s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don’t upload documents containing student personal information you aren’t permitted to share with a third-party AI service.'}</p>
-                  <button data-help-key="pdf_audit_view_make_accessible_btn" disabled={_oneClickOperationBusy || remediationReady === false} aria-busy={_oneClickOperationBusy ? 'true' : undefined} onClick={async () => {
+                  <button type="button" data-help-key="pdf_audit_view_make_accessible_btn" disabled={_oneClickOperationBusy || remediationReady === false} aria-busy={_oneClickOperationBusy ? 'true' : undefined} onClick={async () => {
                     const _gateBlockers = _oneClickGateBlockers();
                     if (_gateBlockers.length) {
                       _oneClickGateLog('one-click REJECTED — run did NOT start', { blockers: _gateBlockers, docEpoch: pdfDocumentEpoch });
@@ -10777,7 +10881,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </button>
                   <p className="text-[11px] text-slate-600 mt-2 text-center">{t('pdf_audit.one_click.desc') || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.'}
                     {typeof startPipelineTour === 'function' && (
-                      <button onClick={() => startPipelineTour('triage')} className="ml-2 text-indigo-600 underline font-bold hover:text-indigo-800" data-help-ignore="true">✨ {t('pdf_audit.tour.triage_cta') || '60-second tour'}</button>
+                      <button type="button" onClick={() => startPipelineTour('triage')} className="ml-2 text-indigo-600 underline font-bold hover:text-indigo-800" data-help-ignore="true">✨ {t('pdf_audit.tour.triage_cta') || '60-second tour'}</button>
                     )}
                   </p>
                   {/* ADA Title II context (2026-06-10): factual, dated, cited —
@@ -10878,7 +10982,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <div className="text-[11px] font-bold text-slate-600 uppercase mb-0.5">{t('pdf_audit.brand.heading') || 'Brand Colors'}</div>
                       <p className="text-[11px] text-slate-600 mb-1">{t('pdf_audit.brand.where_from') || 'Where do the colors come from?'}</p>
                       <div className="flex flex-wrap gap-1">
-                        <button onClick={() => { window.__pdfBrandMode = 'auto'; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="auto"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
+                        <button type="button" onClick={() => { window.__pdfBrandMode = 'auto'; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="auto"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="auto"
                           data-help-key="pdf_audit_view_brand_mode_auto_btn"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all ring-2 ring-indigo-400 bg-indigo-50 border-indigo-600">
@@ -10927,7 +11031,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             e.target.value = '';
                           }} />
                         </label>
-                        <button onClick={() => { window.__pdfBrandMode = 'none'; window.__pdfBrandOverride = null; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="none"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
+                        <button type="button" onClick={() => { window.__pdfBrandMode = 'none'; window.__pdfBrandOverride = null; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="none"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="none"
                           data-help-key="pdf_audit_view_brand_mode_none_btn"
                           className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-600 hover:bg-indigo-50">
@@ -10954,7 +11058,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           { id: 'magazine', label: '📰 Magazine', desc: 'Editorial layout' },
                           { id: 'matchOriginal', label: '📎 Match Original', desc: 'Extract from PDF' },
                         ].map(s => (
-                          <button key={s.id} onClick={() => { window.__pdfStyleSeed = s.id; window.__pdfStylePreference = s.id; document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector(`[data-style-pref="${s.id}"]`)?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
+                          <button type="button" key={s.id} onClick={() => { window.__pdfStyleSeed = s.id; window.__pdfStylePreference = s.id; document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector(`[data-style-pref="${s.id}"]`)?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                             data-style-pref={s.id}
                             className={`px-2 py-1.5 rounded-lg border text-left transition-all ${s.id === 'professional' ? 'ring-2 ring-indigo-400 bg-indigo-50 border-indigo-600' : 'border-slate-200 hover:border-indigo-600 hover:bg-indigo-50'}`}>
                             <div className="text-[11px] font-bold text-slate-700">{s.label}</div>
@@ -10965,7 +11069,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* Custom style presets (user-created, saved to localStorage) */}
                       {(() => {
                         var saved = {};
-                        try { saved = JSON.parse(localStorage.getItem('alloflow_custom_styles') || '{}'); } catch(e) {}
+                        try {
+                          const _parsedStyles = JSON.parse(localStorage.getItem('alloflow_custom_styles') || '{}', _viewSafeJsonReviver);
+                          if (_parsedStyles && typeof _parsedStyles === 'object' && !Array.isArray(_parsedStyles)) saved = _parsedStyles;
+                        } catch(e) {}
                         var savedKeys = Object.keys(saved);
                         return (
                           <>
@@ -10977,7 +11084,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     var s = saved[k];
                                     return (
                                       <div key={k} className="flex items-center gap-0">
-                                        <button onClick={() => {
+                                        <button type="button" onClick={() => {
                                           window.__pdfStyleSeed = 'custom';
                                           window.__pdfStylePreference = 'custom';
                                           window.__pdfCustomStyle = s;
@@ -10988,7 +11095,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           <div className="text-[11px] font-bold text-slate-700" style={{color: s.headingColor}}>🎨 {s.name}</div>
                                           <div className="text-[11px] text-slate-600">{s.font || 'Custom'}</div>
                                         </button>
-                                        <button onClick={() => {
+                                        <button type="button" onClick={() => {
                                           var updated = {...saved}; delete updated[k];
                                           try { localStorage.setItem('alloflow_custom_styles', JSON.stringify(updated)); } catch(e) {}
                                           addToast && addToast(t('toasts.deleted') + s.name + '"', 'info');
@@ -11034,7 +11141,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     <input id="custom-style-bg" type="color" defaultValue="#ffffff" aria-label={t('pdf_audit.style.bg_color_aria') || 'Background color'} className="w-full h-6 rounded border border-slate-400 cursor-pointer" />
                                   </div>
                                 </div>
-                                <button onClick={() => {
+                                <button type="button" onClick={() => {
                                   var name = document.getElementById('custom-style-name')?.value?.trim();
                                   if (!name) { addToast && addToast(t('toasts.enter_style_name'), 'warning'); return; }
                                   var style = {
@@ -11046,8 +11153,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     promptInstructions: 'STYLE PREFERENCE: Custom style "' + name + '" — use ' + (document.getElementById('custom-style-font')?.value || 'Inter') + ' font, heading color ' + (document.getElementById('custom-style-heading')?.value || '#1e3a5f') + ', accent ' + (document.getElementById('custom-style-accent')?.value || '#2563eb') + ', background ' + (document.getElementById('custom-style-bg')?.value || '#ffffff') + '.'
                                   };
                                   var existing = {};
-                                  try { existing = JSON.parse(localStorage.getItem('alloflow_custom_styles') || '{}'); } catch(e) {}
+                                  try {
+                                    const _parsedExisting = JSON.parse(localStorage.getItem('alloflow_custom_styles') || '{}', _viewSafeJsonReviver);
+                                    if (_parsedExisting && typeof _parsedExisting === 'object' && !Array.isArray(_parsedExisting)) existing = _parsedExisting;
+                                  } catch(e) {}
                                   var key = name.toLowerCase().replace(/\s+/g, '_');
+                                  if (key === '__proto__' || key === 'constructor' || key === 'prototype') key = '_' + key;
                                   existing[key] = style;
                                   try { localStorage.setItem('alloflow_custom_styles', JSON.stringify(existing)); } catch(e) {}
                                   window.__pdfStyleSeed = 'custom';
@@ -11075,7 +11186,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     <input type="checkbox" checked={pdfDiagnosticFreshRun} onChange={(e) => setPdfDiagnosticFreshRun(e.target.checked)} className="accent-indigo-600" />
                     {t('pdf_audit.fresh_run') || 'Run fresh (skip cached results)'}
                   </label>
-                  <button data-help-key="pdf_audit_view_start_btn" disabled={_modalDismissBusy || !_auditInputReady} onClick={async () => {
+                  <button type="button" data-help-key="pdf_audit_view_start_btn" disabled={_modalDismissBusy || !_auditInputReady} onClick={async () => {
                     if (_modalHasActiveWork() || pdfAuditLoading) return;
                     if (!_requireAuditReady()) return;
                     if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; }
@@ -11104,7 +11215,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
-                  {!_remediationMode && <button data-help-key="pdf_audit_view_skip_to_extract_btn" disabled={_modalDismissBusy} onClick={() => { if (_modalHasActiveWork() || pdfAuditLoading) return; if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
+                  {!_remediationMode && <button type="button" data-help-key="pdf_audit_view_skip_to_extract_btn" disabled={_modalDismissBusy} onClick={() => { if (_modalHasActiveWork() || pdfAuditLoading) return; if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all shadow-sm flex items-center gap-2 border border-slate-400">
                     <Sparkles size={16} /> Skip to Text Extraction
                   </button>}
                 </div>
@@ -11192,7 +11303,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {_inputIsPdf && (
                       <div className="pt-2 mt-2 border-t border-indigo-200">
                         <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider mb-1.5">{t('pdf_audit.quick_downloads.heading') || 'Quick downloads (no remediation needed)'}</div>
-                        <button
+                        <button type="button"
                           onClick={async () => {
                             try {
                               const _quickExec = _alloExecutableActiveContentFindings(pdfAuditResult);
@@ -11366,7 +11477,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
                               if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
                               if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
-                              if (_pp.builderFont) { try { localStorage.setItem('allo_selected_font', _pp.builderFont); } catch (_) {} }
+                              if (_pp.builderFont) { const _safeBuilderFont = _viewSafeCssFontFamily(_pp.builderFont, ''); if (_safeBuilderFont) { try { localStorage.setItem('allo_selected_font', _safeBuilderFont); } catch (_) {} } }
                             } catch (_) {}
                             // Restore the active page range so resume CONTINUES the same
                             // partial slice (e.g. pages 6-10) instead of silently treating the
@@ -11481,7 +11592,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
                             if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
                             if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
-                            if (_pp.builderFont) { try { localStorage.setItem('allo_selected_font', _pp.builderFont); } catch (_) {} }
+                            if (_pp.builderFont) { const _safeBuilderFont = _viewSafeCssFontFamily(_pp.builderFont, ''); if (_safeBuilderFont) { try { localStorage.setItem('allo_selected_font', _safeBuilderFont); } catch (_) {} } }
                           } catch (_) {}
                           addToast(t('toasts.loaded_2') + (project.fileName || 'project') + ' — continue editing!', 'success');
                         } catch(err) { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load') + err.message, 'error'); }
@@ -11497,7 +11608,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       e.target.value = '';
                     }} />
                   </label>
-                  <button disabled={_modalWorkBusy} onClick={_requestCloseAudit} className="text-xs text-slate-600 hover:text-slate-900 font-bold">Cancel</button>
+                  <button type="button" disabled={_modalWorkBusy} onClick={_requestCloseAudit} className="text-xs text-slate-600 hover:text-slate-900 font-bold">Cancel</button>
                 </div>
                 {/* Remediation history (2026-06-10): rides the project file —
                     Canvas has no cross-session storage, so this shows whatever
@@ -11526,7 +11637,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   // success rate, not "every run that didn't crash".
                   const _successRate = _outcomed.length ? Math.round(_succeeded.length / _outcomed.length * 100) : null;
                   // Most common failure stage, for an at-a-glance "where it breaks".
-                  const _stageTally = {};
+                  const _stageTally = Object.create(null);
                   _failed.forEach((r) => { const s = r.failStage || 'unknown'; _stageTally[s] = (_stageTally[s] || 0) + 1; });
                   const _topStage = Object.keys(_stageTally).sort((a, b) => _stageTally[b] - _stageTally[a])[0] || null;
                   return (
@@ -11541,7 +11652,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <button type="button" onClick={() => {
                         const head = 'date,file,source,outcome,verification,fail_stage,fail_reason,before,after,gain,passes,axe_violations,pages,retries,vision_calls,api_calls,api_ms,duration_s';
                         const _csv = (v) => { let s = String(v == null ? '' : v); if (/^\s*[=+\-@|]|^[\t\r\n]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
-                        const lines = _hist.map((r) => [String(r.at || '').slice(0, 10), _csv(r.fileName || ''), _csv(r.source || 'single'), r.outcome || '', _csv(r.verificationState || ''), _csv(r.failStage || ''), _csv(r.failReason || ''), r.beforeScore != null ? r.beforeScore : '', r.afterScore != null ? r.afterScore : '', (r.beforeScore != null && r.afterScore != null) ? (r.afterScore - r.beforeScore) : '', r.passes != null ? r.passes : '', r.axeViolations != null ? r.axeViolations : '', r.pages != null ? r.pages : '', r.retries != null ? r.retries : '', r.visionCalls != null ? r.visionCalls : '', r.apiCalls != null ? r.apiCalls : '', r.apiMs != null ? r.apiMs : '', r.durationMs != null ? Math.round(r.durationMs / 1000) : ''].join(','));
+                        const _num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : '');
+                        const lines = _hist.map((r) => [_csv(String(r.at || '').slice(0, 10)), _csv(r.fileName || ''), _csv(r.source || 'single'), _csv(r.outcome || ''), _csv(r.verificationState || ''), _csv(r.failStage || ''), _csv(r.failReason || ''), _num(r.beforeScore), _num(r.afterScore), (typeof r.beforeScore === 'number' && Number.isFinite(r.beforeScore) && typeof r.afterScore === 'number' && Number.isFinite(r.afterScore)) ? (r.afterScore - r.beforeScore) : '', _num(r.passes), _num(r.axeViolations), _num(r.pages), _num(r.retries), _num(r.visionCalls), _num(r.apiCalls), _num(r.apiMs), (typeof r.durationMs === 'number' && Number.isFinite(r.durationMs)) ? Math.round(r.durationMs / 1000) : ''].join(','));
                         safeDownloadBlob(new Blob(['\uFEFF' + head + '\n' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }), 'alloflow-remediation-history.csv');
                       }} className="ml-auto px-2 py-0.5 bg-white border border-indigo-300 text-indigo-700 rounded-full font-bold hover:bg-indigo-100 shrink-0">⬇ CSV</button>
                     </div>
@@ -11642,13 +11754,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </ul>
                   )}
                   <div className="flex gap-2 justify-center">
-                    <button onClick={() => {
+                    <button type="button" onClick={() => {
                       const saved = window.__pendingWebHtml || '';
                       setPdfAuditResult({ _choosing: true });
                       setPdfWebMode(true);
                       setTimeout(() => { const field = document.getElementById('web-audit-html'); if (field) field.value = saved; }, 0);
                     }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">Back to static HTML input</button>
-                    <button disabled={_modalWorkBusy} onClick={_requestCloseAudit} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
+                    <button type="button" disabled={_modalWorkBusy} onClick={_requestCloseAudit} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
                   </div>
                 </div>
               </div>) : pdfAuditResult && pdfAuditResult.score < 0 ? (
@@ -11661,7 +11773,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="p-4 bg-white space-y-3">
                   <p className="text-xs text-slate-600 text-center">{t('pdf_audit.unavailable.retry_hint') || 'A completed baseline audit is required before remediation. Retry the audit, or cancel and re-export the source document before trying again.'}</p>
                   <div className="flex gap-2 justify-center">
-                    <button data-help-key="pdf_workspace_retry_audit" disabled={_modalDismissBusy || !_auditInputReady} onClick={async () => {
+                    <button type="button" data-help-key="pdf_workspace_retry_audit" disabled={_modalDismissBusy || !_auditInputReady} onClick={async () => {
                       if (_modalHasActiveWork() || pdfAuditLoading) return;
                       if (!_requireAuditReady()) return;
                       const _auditSnapshot = pdfAuditResult;
@@ -11688,7 +11800,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         addToast('Audit retry failed: ' + ((error && error.message) || error), 'error');
                       }
                     }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">🔄 Retry Audit</button>
-                    <button disabled={_modalWorkBusy} onClick={_requestCloseAudit} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
+                    <button type="button" disabled={_modalWorkBusy} onClick={_requestCloseAudit} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -11696,8 +11808,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
               <div className="pdf-workspace-results" role="region" aria-label={_auditScoreKnown ? (pdfAuditResult._isWebAudit ? `Static HTML source audit. Evidence score: ${pdfAuditResult.score} out of 100. Verification: ${pdfAuditResult.verificationState || 'partial'}.` : `PDF accessibility audit complete. Score: ${pdfAuditResult.score} out of 100.`) : 'Accessibility audit coverage is incomplete; no numeric score is available.'}>
                 {pdfFixResult && (
                   <div role="tablist" aria-label={t('pdf_audit.tabs.aria') || 'Audit view'} className="flex gap-1 mb-3 bg-slate-100 p-1 rounded-xl w-fit">
-                    <button data-help-key="pdf_audit_results_tab_remediation_btn" role="tab" aria-selected={pdfAuditTab === 'results'} onClick={() => setPdfAuditTab('results')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'results' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.remediation_results') || 'Remediation Results'}</button>
-                    <button data-help-key="pdf_audit_results_tab_original_btn" role="tab" aria-selected={pdfAuditTab === 'original'} onClick={() => setPdfAuditTab('original')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'original' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.original_audit') || 'Original Audit'}</button>
+                    <button type="button" data-help-key="pdf_audit_results_tab_remediation_btn" role="tab" aria-selected={pdfAuditTab === 'results'} onClick={() => setPdfAuditTab('results')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'results' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.remediation_results') || 'Remediation Results'}</button>
+                    <button type="button" data-help-key="pdf_audit_results_tab_original_btn" role="tab" aria-selected={pdfAuditTab === 'original'} onClick={() => setPdfAuditTab('original')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${pdfAuditTab === 'original' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>{t('pdf_audit.tabs.original_audit') || 'Original Audit'}</button>
                   </div>
                 )}
                 {!pdfFixResult && (
@@ -11960,7 +12072,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       <span className="font-mono font-bold">{finding.id || 'unknown-rule'}</span>: {finding.description || 'Review this rule manually'}
                                       {finding.nodes > 0 ? (' (' + finding.nodes + ' location' + (finding.nodes === 1 ? '' : 's') + ')') : ''}
                                       {finding.wcagCriteria && finding.wcagCriteria.length ? (' · WCAG ' + finding.wcagCriteria.join(', ')) : ''}
-                                      {finding.helpUrl && <>{' · '}<a href={finding.helpUrl} target="_blank" rel="noopener noreferrer" className="font-bold underline text-blue-800">Guidance</a></>}
+                                      {_viewSafeHttpUrl(finding.helpUrl) && <>{' · '}<a href={_viewSafeHttpUrl(finding.helpUrl)} target="_blank" rel="noopener noreferrer" className="font-bold underline text-blue-800">Guidance</a></>}
                                     </li>
                                   ))}
                                   {axeIncomplete.length > 20 && <li>{axeIncomplete.length - 20} more rule(s) in the JSON report.</li>}
@@ -12297,7 +12409,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             );
                           })()}
                           <div className="flex gap-2 mt-2">
-                            <button
+                            <button type="button"
                               onClick={async () => {
                                 if (!_docPipeline || !_docPipeline.mergeRangesToFullHtml) return;
                                 let merged = _docPipeline.mergeRangesToFullHtml(pdfMultiSession.ranges, pdfAuditResult.pageCount || pdfMultiSession.pageCount || 1);
@@ -12310,7 +12422,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             >
                               ⬇ Download progress so far
                             </button>
-                            <button
+                            <button type="button"
                               onClick={async () => {
                                 if (!_docPipeline || !_docPipeline.clearMultiSession || !pdfMultiSession.sessionId) return;
                                 if (!(await askPdfConfirmation({
@@ -12375,7 +12487,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         />
                         <span className="text-xs text-indigo-700">of {pdfAuditResult.pageCount}</span>
                         {pdfPageRange && (
-                          <button
+                          <button type="button"
                             onClick={() => setPdfPageRange(null)}
                             className="text-xs text-indigo-600 underline hover:text-indigo-900"
                             aria-label={t('pdf_audit.page_range.clear_aria') || 'Clear page range and remediate whole document'}
@@ -12817,7 +12929,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                       </details>
                     ) : (
-                      <button data-help-key="pdf_workspace_fix_verify" onClick={async () => {
+                      <button type="button" data-help-key="pdf_workspace_fix_verify" onClick={async () => {
                         console.warn('[Fix&Verify btn] clicked — pendingPdfBase64:', !!pendingPdfBase64, 'pdfAuditResult:', !!pdfAuditResult, 'pageRange:', pdfPageRange);
                         if (!_requireRemediationReady()) return;
                         const _fixDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
@@ -12962,7 +13074,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           /* sticky + z-30 + shadow (2026-08-15): the in-flow card could scroll out of
                              view or sit under the Log FAB while its deadline ran — a timed choice the
                              user never saw. Sticky keeps it pinned inside the modal viewport. */
-                          <div className="mt-3 sticky bottom-2 z-30 shadow-lg bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-3 animate-in fade-in duration-300" role="region" aria-live="polite" aria-label={t('pdf_audit.boring_palette.region_aria') || 'Optional styling choice'}>
+                          <div className="mt-3 sticky bottom-2 z-30 shadow-lg bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-3 animate-in motion-reduce:animate-none fade-in duration-300" role="region" aria-live="polite" aria-label={t('pdf_audit.boring_palette.region_aria') || 'Optional styling choice'}>
                             <div className="text-xs font-bold text-amber-800 mb-1.5">🎨 The original document has minimal styling</div>
                             <div className="text-[10px] text-amber-700 mb-1">{t('pdf_audit.boring_palette.prompt') || 'Would you like to keep the original look or apply a theme?'}</div>
                             <div className="text-[10px] text-amber-600 mb-2" role="status">
@@ -12975,7 +13087,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 { id: 'academic', label: 'Academic', icon: '📚' },
                                 { id: 'highContrast', label: 'High Contrast', icon: '◼️' },
                               ].map(opt => (
-                                <button key={opt.id || 'keep'} onClick={() => {
+                                <button type="button" key={opt.id || 'keep'} onClick={() => {
                                   setBoringPalettePrompt(false);
                                   window.dispatchEvent(new CustomEvent('alloflow:boring-palette-choice', { detail: { seedId: opt.id } }));
                                 }}
@@ -13006,7 +13118,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 {t('pdf_audit.live_chunk.waiting') || 'Waiting for the first section… If this stays empty while the run progresses, the live view lost run ownership (see the 🔧 Log — the remediation itself is unaffected).'}
                               </p>
                             )}
-                            {chunkSaveFlash && <div className="text-[11px] text-emerald-600 font-bold text-center animate-in fade-in duration-200">💾 Progress auto-saved</div>}
+                            {chunkSaveFlash && <div className="text-[11px] text-emerald-600 font-bold text-center animate-in motion-reduce:animate-none fade-in duration-200">💾 Progress auto-saved</div>}
                             <div className="space-y-1.5 max-h-[250px] overflow-y-auto">
                               {liveChunkStream.map((chunk, ci) => {
                                 const isWorking = chunk.status === 'working';
@@ -13212,7 +13324,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                                   <span className="text-lg">🖼️</span>
                                   <h4 className="text-sm font-bold text-slate-800">{t('pdf_audit.images.review_heading') || 'Review Image Descriptions'}</h4>
-                                  <button
+                                  <button type="button"
                                     onClick={_downloadAll}
                                     disabled={_downloadableCount === 0}
                                     className="text-[10px] px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 font-bold inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -13475,7 +13587,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         <span className="font-bold">{t('pdf_audit.integrity.verifying') || 'Verifying content integrity…'}</span>
                                         <span className="text-sky-700 text-[11px]">pdf.js source comparison in progress — banner will update when recovery finishes.</span>
                                         {_hasDiffInputs && (
-                                          <button
+                                          <button type="button"
                                             onClick={async () => {
                                               console.debug('[Diff] Button clicked (during verification) — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff);
                                               setDiffViewOpen(true);
@@ -13503,7 +13615,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         <span className="font-bold">{t('pdf_audit.integrity.unverified') || 'Content integrity unverified'}</span>
                                         <span className="text-slate-500 text-[11px]">(ground-truth extraction unavailable — use Diff view to inspect source ↔ HTML manually, or Re-check to retry)</span>
                                         <div className="ml-auto inline-flex items-center gap-1 shrink-0">
-                                          <button
+                                          <button type="button"
                                             onClick={async () => {
                                             try { if (typeof window !== 'undefined') { window._diffDiagnostic = window._diffDiagnostic || []; window._diffDiagnostic.push({ ts: new Date().toISOString(), msg: 'button clicked', source: 'click', diffLibReady, hasWindowDiff: !!window.Diff, hasResult: !!pdfFixResult, srcLen: pdfFixResult && pdfFixResult.sourceText ? pdfFixResult.sourceText.length : null, finLen: pdfFixResult && pdfFixResult.finalText ? pdfFixResult.finalText.length : null }); console.warn('[Diff] button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff); } } catch (_) {}
                                             setDiffViewOpen(true);
@@ -13519,7 +13631,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           >
                                             📝 Diff view
                                           </button>
-                                          <button
+                                          <button type="button"
                                             onClick={_runCheck}
                                             className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
                                             aria-label={t('pdf_audit.integrity.recheck_aria') || 'Re-run pdf.js content integrity check'}
@@ -13534,7 +13646,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   const _reRun = (
                                     <div className="ml-auto inline-flex items-center gap-1 shrink-0">
                                       {_hasDiffInputs && (
-                                        <button
+                                        <button type="button"
                                           onClick={async () => {
                                             try { if (typeof window !== 'undefined') { window._diffDiagnostic = window._diffDiagnostic || []; window._diffDiagnostic.push({ ts: new Date().toISOString(), msg: 'button clicked', source: 'click', diffLibReady, hasWindowDiff: !!window.Diff, hasResult: !!pdfFixResult, srcLen: pdfFixResult && pdfFixResult.sourceText ? pdfFixResult.sourceText.length : null, finLen: pdfFixResult && pdfFixResult.finalText ? pdfFixResult.finalText.length : null }); console.warn('[Diff] button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff); } } catch (_) {}
                                             setDiffViewOpen(true);
@@ -13551,7 +13663,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           📝 Diff view
                                         </button>
                                       )}
-                                      <button
+                                      <button type="button"
                                         onClick={_runCheck}
                                         className="text-[10px] px-2 py-1 bg-white border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50 font-bold inline-flex items-center gap-1"
                                         aria-label={t('pdf_audit.integrity.recheck_aria') || 'Re-run pdf.js content integrity check'}
@@ -13676,7 +13788,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             </div>
                                           )}
                                           {pdfFixResult.sourceText && pdfFixResult.finalText && (
-                                            <button
+                                            <button type="button"
                                               onClick={async () => {
                                             try { if (typeof window !== 'undefined') { window._diffDiagnostic = window._diffDiagnostic || []; window._diffDiagnostic.push({ ts: new Date().toISOString(), msg: 'button clicked', source: 'click', diffLibReady, hasWindowDiff: !!window.Diff, hasResult: !!pdfFixResult, srcLen: pdfFixResult && pdfFixResult.sourceText ? pdfFixResult.sourceText.length : null, finLen: pdfFixResult && pdfFixResult.finalText ? pdfFixResult.finalText.length : null }); console.warn('[Diff] button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff); } } catch (_) {}
                                             setDiffViewOpen(true);
@@ -13709,7 +13821,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           <span className="font-mono text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded shrink-0">#{m.idx}</span>
                                           <span className="text-[10px] text-slate-700 shrink-0">{m.page ? `Page ${m.page}` : 'Unknown page'} — extraction failed</span>
                                           <span className="text-[10px] text-slate-500 italic truncate flex-1">{(m.description || '').substring(0, 80)}</span>
-                                          <button
+                                          <button type="button"
                                             onClick={() => _regenerateImage(m.idx, m.description)}
                                             data-help-key="pdf_audit_results_image_regenerate_btn"
                                             className="text-[10px] px-2 py-0.5 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700 shrink-0"
@@ -13726,7 +13838,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           <span className="font-mono text-[10px] bg-red-100 text-red-800 px-1.5 py-0.5 rounded shrink-0">#{idx}</span>
                                           <span className="text-[10px] text-slate-700 shrink-0">{t('pdf_audit.images.dropped_by_ai') || 'Dropped by AI pass'}</span>
                                           <span className="text-[10px] text-slate-500 italic truncate flex-1">{(desc || '').substring(0, 80)}</span>
-                                          <button
+                                          <button type="button"
                                             onClick={() => _regenerateImage(idx, desc)}
                                             data-help-key="pdf_audit_results_image_regenerate_btn"
                                             className="text-[10px] px-2 py-0.5 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700 shrink-0"
@@ -13755,7 +13867,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         <span className="font-bold" aria-hidden="true">✓✓</span>
                                         <span className="font-bold">{_total.toLocaleString()} {t('pdf_audit.auto_restore.title') || (_total === 1 ? 'word auto-restored' : 'words auto-restored')}</span>
                                         <span>{t('pdf_audit.auto_restore.detail') || 'Both Tesseract AND Vision saw these in your source, but the remediation had dropped them.'}{' '}{_ar.restoredInline > 0 ? `${_ar.restoredInline.toLocaleString()} ${t('pdf_audit.auto_restore.inline') || 'put back in context'}` : ''}{_ar.preservedInAppendix > 0 ? `${_ar.restoredInline > 0 ? ' · ' : ''}${_ar.preservedInAppendix.toLocaleString()} ${t('pdf_audit.auto_restore.appendix') || 'preserved in the Content Recovery section'}` : ''}.</span>
-                                        <button
+                                        <button type="button"
                                           onClick={() => {
                                             const _pre = _ar.preRestoreHtml;
                                             if (!_pre) return;
@@ -13789,7 +13901,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     <span className="font-bold">✨ Restore applied:</span>
                                     <span>{autoRestoreSummary.restored.length} word{autoRestoreSummary.restored.length === 1 ? '' : 's'} spliced back{autoRestoreSummary.unplaceable.length > 0 ? ` · ${autoRestoreSummary.unplaceable.length} in Content Recovery appendix` : ''}</span>
                                     {autoRestoreSummary.unplaceable.length > 0 && recoveryReviewIdx === null && (
-                                      <button onClick={() => { setRecoveryReviewIdx(0); setRecoveryReviewOutcomes({}); }} className="px-2 py-0.5 bg-amber-700 text-white rounded-full text-[10px] font-bold hover:bg-amber-800" title={t('pdf_audit.recovery_review.start_title') || 'Step through each word the automatic restore could not confidently place — see its original context and decide where it belongs, one at a time (like a spell checker).'}>
+                                      <button type="button" onClick={() => { setRecoveryReviewIdx(0); setRecoveryReviewOutcomes({}); }} className="px-2 py-0.5 bg-amber-700 text-white rounded-full text-[10px] font-bold hover:bg-amber-800" title={t('pdf_audit.recovery_review.start_title') || 'Step through each word the automatic restore could not confidently place — see its original context and decide where it belongs, one at a time (like a spell checker).'}>
                                         🔍 {t('pdf_audit.recovery_review.start') || 'Review one by one'}
                                       </button>
                                     )}
@@ -13811,7 +13923,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       <div className="mb-2 bg-emerald-50 border-2 border-emerald-300 rounded-xl p-2.5 text-[11px] text-emerald-900 flex items-center gap-2" role="status">
                                         <span className="font-bold">✅ {t('pdf_audit.recovery_review.done') || 'Review complete:'}</span>
                                         <span>{_ins} {t('pdf_audit.recovery_review.inserted') || 'inserted in context'} · {_items.length - _ins} {t('pdf_audit.recovery_review.kept') || 'kept in the appendix'}.</span>
-                                        <button onClick={() => setRecoveryReviewIdx(null)} className="ml-auto px-2 py-0.5 bg-emerald-700 text-white rounded text-[10px] font-bold">{t('pdf_audit.recovery_review.close') || 'Close'}</button>
+                                        <button type="button" onClick={() => setRecoveryReviewIdx(null)} className="ml-auto px-2 py-0.5 bg-emerald-700 text-white rounded text-[10px] font-bold">{t('pdf_audit.recovery_review.close') || 'Close'}</button>
                                       </div>
                                     );
                                   }
@@ -13927,15 +14039,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     <div className="mb-2 bg-amber-50 border-2 border-amber-300 rounded-xl p-3 text-xs text-amber-900" role="group" aria-label={t('pdf_audit.recovery_review.aria') || 'Content recovery word review'}>
                                       <div className="flex items-center justify-between mb-1.5">
                                         <span className="font-black">🔍 {t('pdf_audit.recovery_review.heading') || 'Word'} {recoveryReviewIdx + 1}/{_items.length}: <span className="bg-amber-200 px-1.5 rounded">{it.word}</span>{it.missingCount > 1 ? ' (×' + it.missingCount + ')' : ''}</span>
-                                        <button onClick={() => setRecoveryReviewIdx(null)} className="text-amber-700 hover:text-red-600 font-bold" aria-label={t('pdf_audit.recovery_review.close_aria') || 'Close review'}>✕</button>
+                                        <button type="button" onClick={() => setRecoveryReviewIdx(null)} className="text-amber-700 hover:text-red-600 font-bold" aria-label={t('pdf_audit.recovery_review.close_aria') || 'Close review'}>✕</button>
                                       </div>
                                       <p className="mb-2 text-[11px]"><span className="font-bold">{t('pdf_audit.recovery_review.source_ctx') || 'In the original document:'}</span> <span className="italic">…{_ctx}…</span></p>
                                       <p className="mb-2 text-[11px] text-amber-800">{_anchorHit
                                         ? (t('pdf_audit.recovery_review.anchor_found') || 'Found the matching spot in the remediated document — insert the word there?')
                                         : (t('pdf_audit.recovery_review.anchor_missing') || 'No confident match in the remediated document (the surrounding text was rewritten). The word stays safely in the Content Recovery appendix.')}</p>
                                       <div className="flex gap-2">
-                                        <button onClick={_doInsert} disabled={!_anchorHit} className="px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed">📍 {t('pdf_audit.recovery_review.insert') || 'Insert at match'}</button>
-                                        <button onClick={() => _advance('kept')} className="px-3 py-1.5 bg-white border border-amber-400 text-amber-800 rounded-lg text-[11px] font-bold hover:bg-amber-100">⏭ {t('pdf_audit.recovery_review.skip') || 'Keep in appendix'}</button>
+                                        <button type="button" onClick={_doInsert} disabled={!_anchorHit} className="px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed">📍 {t('pdf_audit.recovery_review.insert') || 'Insert at match'}</button>
+                                        <button type="button" onClick={() => _advance('kept')} className="px-3 py-1.5 bg-white border border-amber-400 text-amber-800 rounded-lg text-[11px] font-bold hover:bg-amber-100">⏭ {t('pdf_audit.recovery_review.skip') || 'Keep in appendix'}</button>
                                       </div>
                                     </div>
                                   );
@@ -13946,7 +14058,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase">
                                     via {String(method).replace('+', ' + ')}
                                   </span>
-                                  <button
+                                  <button type="button"
                                     onClick={_runCheck}
                                     className="text-[10px] px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200 font-bold inline-flex items-center gap-1"
                                     title={t('pdf_audit.fidelity.run_title') || 'Compare the remediated document against the source text — flags any words that appear in the source but not in the current remediated output.'}
@@ -13955,7 +14067,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     🔍 Run fidelity check
                                   </button>
                                   {fidelityResult && fidelityResult.missing && fidelityResult.missing.length > 0 && (
-                                    <button
+                                    <button type="button"
                                       onClick={_manualRestore}
                                       className="text-[10px] px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 font-bold inline-flex items-center gap-1"
                                       title={t('pdf_audit.fidelity.restore_title') || 'Splice missing words back into the remediated document using fuzzy context-anchor matching. Unplaceable words go to a Content Recovery appendix so nothing is lost.'}
@@ -14086,7 +14198,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <FileDown size={14} /> Report ▾
                       </button>
                       <div className="hidden group-hover:block group-focus-within:block absolute top-full left-0 mt-1 bg-white border border-indigo-200 rounded-xl shadow-xl z-10 min-w-[180px] overflow-hidden">
-                        <button onClick={() => {
+                        <button type="button" onClick={() => {
                           let html;
                           try { html = _viewSanitizeMarkupForExport(generateAuditReportHtml(pdfAuditResult, pendingPdfFile?.name || 'document.pdf'), _docPipeline); }
                           catch (error) { addToast((t('toasts.export_security_unavailable') || 'The report could not be opened safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; }
@@ -14104,7 +14216,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         }} className="w-full px-4 py-2.5 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors flex items-center gap-2">
                           📄 Formatted Report (PDF)
                         </button>
-                        <button onClick={() => {
+                        <button type="button" onClick={() => {
                           let html;
                           try { html = _viewSanitizeMarkupForExport(generateAuditReportHtml(pdfAuditResult, pendingPdfFile?.name || 'document.pdf'), _docPipeline); }
                           catch (error) { addToast((t('toasts.export_security_unavailable') || 'The report could not be downloaded safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; }
@@ -14114,7 +14226,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         }} className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2">
                           🌐 HTML Report
                         </button>
-                        <button onClick={() => {
+                        <button type="button" onClick={() => {
                           const reportData = { ...pdfAuditResult, fileName: pendingPdfFile?.name || 'document.pdf', auditDate: new Date().toISOString(), tool: 'AlloFlow PDF Accessibility Auditor', standard: 'WCAG 2.2 AA' };
                           const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
                           const url = URL.createObjectURL(blob);
@@ -14127,7 +14239,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
                       </div>
                     </div>
-                    {!_remediationMode && <button disabled={_modalDismissBusy} onClick={() => { if (_modalHasActiveWork() || pdfAuditLoading) return; setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors" title={t('pdf_audit.report.text_extract_title') || 'Extract text for content generation'}>
+                    {!_remediationMode && <button type="button" disabled={_modalDismissBusy} onClick={() => { if (_modalHasActiveWork() || pdfAuditLoading) return; setPdfAuditResult(null); proceedWithPdfTransform(); }} className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors" title={t('pdf_audit.report.text_extract_title') || 'Extract text for content generation'}>
                       Text Extract
                     </button>}
                   </div>
@@ -14135,7 +14247,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                   {/* ── Resume Remediation Prompt ── */}
                   {chunkResumePrompt && (
-                    <div className="mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-300 p-5 animate-in fade-in duration-300">
+                    <div className="mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-300 p-5 animate-in motion-reduce:animate-none fade-in duration-300">
                       <div className="flex items-start gap-3">
                         <span className="text-2xl">💾</span>
                         <div className="flex-1">
@@ -14146,11 +14258,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             Resume where you left off or start fresh?
                           </p>
                           <div className="flex gap-2 mt-3">
-                            <button onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-accept', { detail: { documentEpoch: chunkResumePrompt.documentEpoch, runId: chunkResumePrompt.runId, runSequence: chunkResumePrompt.runSequence } })); }}
+                            <button type="button" onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-accept', { detail: { documentEpoch: chunkResumePrompt.documentEpoch, runId: chunkResumePrompt.runId, runSequence: chunkResumePrompt.runSequence } })); }}
                               className="px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-colors">
                               ▶ Resume ({chunkResumePrompt.completedChunks}/{chunkResumePrompt.totalChunks})
                             </button>
-                            <button onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-decline', { detail: { documentEpoch: chunkResumePrompt.documentEpoch, runId: chunkResumePrompt.runId, runSequence: chunkResumePrompt.runSequence } })); }}
+                            <button type="button" onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-decline', { detail: { documentEpoch: chunkResumePrompt.documentEpoch, runId: chunkResumePrompt.runId, runSequence: chunkResumePrompt.runSequence } })); }}
                               className="px-4 py-2 bg-white border border-amber-300 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-50 transition-colors">
                               Start Fresh
                             </button>
@@ -14163,7 +14275,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {/* ── Live Chunk Review Panel ── */}
                   {/* Shows each chunk's fix as it happens in real time, with Accept/Reject/Re-fix per chunk */}
                   {(liveChunkSessionActive || liveChunkStream.length > 0) && (
-                    <div id="live-remediation-panel" className="mt-4 bg-gradient-to-b from-white to-indigo-50 rounded-2xl border-2 border-indigo-300 p-5 space-y-3 animate-in slide-in-from-bottom duration-300" role="region" aria-label={t('pdf_audit.live_chunk.review_aria') || 'Live chunk remediation review'}>
+                    <div id="live-remediation-panel" className="mt-4 bg-gradient-to-b from-white to-indigo-50 rounded-2xl border-2 border-indigo-300 p-5 space-y-3 animate-in motion-reduce:animate-none slide-in-from-bottom duration-300" role="region" aria-label={t('pdf_audit.live_chunk.review_aria') || 'Live chunk remediation review'}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-xl" aria-hidden="true">🔬</span>
@@ -14250,7 +14362,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {/* Action buttons — only shown after chunk is complete */}
                               {!isWorking && (
                                 <div className="flex items-center gap-1 px-2 pb-2 flex-wrap">
-                                  <button
+                                  <button type="button"
                                     onClick={() => setLiveChunkExpanded(prev => ({ ...prev, [chunk.index]: !prev[chunk.index] }))}
                                     className="text-[11px] bg-slate-100 text-slate-700 px-2 py-1 rounded-full font-bold hover:bg-slate-200 transition-colors focus:ring-2 focus:ring-slate-400"
                                     aria-expanded={isExpanded}
@@ -14259,7 +14371,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     {isExpanded ? '▼ Hide Diff' : '▶ View Diff'}
                                   </button>
                                   {!isRejected && !pdfFixLoading && !pdfAutoContinueRunning && (
-                                    <button
+                                    <button type="button"
                                       onClick={() => { _runOwnedSectionRefix(chunk.index, chunk.index + 1); }}
                                       className="text-[11px] bg-indigo-600 text-white px-2 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors focus:ring-2 focus:ring-indigo-400"
                                       aria-label={`Re-fix section ${chunk.index + 1}`}
@@ -14272,7 +14384,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       instead of clobbering them. Mid-round the CAS may refuse (geometry mid-rewrite)
                                       — that fails safe with the "changed before it could be reverted" toast. */}
                                   {!isRejected && !pdfFixLoading && (
-                                    <button
+                                    <button type="button"
                                       onClick={() => {
                                         try {
                                           const token = _captureAsyncHtmlToken();
@@ -14300,7 +14412,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     </button>
                                   )}
                                   {isRejected && !pdfFixLoading && (
-                                    <button
+                                    <button type="button"
                                       onClick={() => {
                                         try {
                                           const token = _captureAsyncHtmlToken();
@@ -14363,7 +14475,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {!liveChunkSessionActive && liveChunkStream.length > 0 && (
                         <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-indigo-200">
                           <span>{_liveChunkPendingCount ? `AI verification pending - ${_liveChunkPendingCount} section(s) will be retried` : `Review complete - ${Object.keys(liveChunkRejected).length} section(s) rejected`}</span>
-                          <button
+                          <button type="button"
                             onClick={() => { setLiveChunkStream([]); setLiveChunkRejected({}); setLiveChunkExpanded({}); }}
                             className="text-[11px] text-slate-600 hover:text-slate-700 font-bold underline"
                             aria-label={t('pdf_audit.live_chunk.clear_history_aria') || 'Clear live review history'}
@@ -14629,7 +14741,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           : (t('pdf_audit.sheet_review.contrast_question') || 'Check that nothing meaningful disappears in Windows high contrast mode, then confirm it for this document.')}
                                     </span>
                                   )}
-                                  {f.helpUrl && <a href={f.helpUrl} target="_blank" rel="noopener noreferrer" className="font-bold underline">{t('pdf_audit.wcag_report.guidance') || 'Guidance'}</a>}
+                                  {_viewSafeHttpUrl(f.helpUrl) && <a href={_viewSafeHttpUrl(f.helpUrl)} target="_blank" rel="noopener noreferrer" className="font-bold underline">{t('pdf_audit.wcag_report.guidance') || 'Guidance'}</a>}
                                 </div>
                                 <div className="pdf-workspace-review-actions shrink-0 flex gap-1">
                                   {_rfIsSheet(f) && _rfCanConfirmSheet && (
@@ -14828,7 +14940,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="-mx-5 px-5 py-2 bg-indigo-50 border-b border-indigo-200">
                               <div className="flex items-center justify-between gap-2 mb-1">
                                 <span className="text-[11px] font-bold text-indigo-800">👁 {t('pdf_audit.watch_live.title') || 'Live document — read-only; repaints each time a round commits'}</span>
-                                <button onClick={() => setWatchLiveOpen(false)} className="text-[11px] font-bold text-indigo-700 underline shrink-0">{t('pdf_audit.watch_live.hide') || 'Hide'}</button>
+                                <button type="button" onClick={() => setWatchLiveOpen(false)} className="text-[11px] font-bold text-indigo-700 underline shrink-0">{t('pdf_audit.watch_live.hide') || 'Hide'}</button>
                               </div>
                               <iframe title={t('pdf_audit.watch_live.iframe') || 'Live remediated document (read-only)'} sandbox="allow-same-origin" srcDoc={pdfFixResult.accessibleHtml} className="w-full bg-white border border-indigo-200 rounded-lg" style={{ height: '45vh' }} />
                               <p className="text-[10px] text-indigo-700 mt-1">{t('pdf_audit.watch_live.note') || 'Showing the last committed version — section-by-section changes stream in the panel above. To intervene, use a section’s Reject button or the Expert Workbench; the loop adopts your change at its next pass.'}</p>
@@ -14965,15 +15077,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </_AlloQualifier>
                               );
                             })()}                            <span className="h-4 w-px bg-slate-300 mx-0.5" aria-hidden="true"></span>
-                            <button className={_chip} onClick={() => _jump('allo-sec-verify')}>✅ {t('pdf_audit.dashboard.verify') || 'Verification'}</button>
-                            <button className={_chip} onClick={() => _jump('allo-sec-recovery')}>🩹 {t('pdf_audit.dashboard.recovery') || 'Recovery'}</button>
-                            <button className={_chip} onClick={() => _jump('allo-sec-axe')}>🪓 {t('pdf_audit.dashboard.axe') || 'Issues (axe)'}</button>
-                            <button className={_chip} onClick={() => _jump('allo-sec-downloads')}>📥 {t('pdf_audit.dashboard.downloads') || 'Downloads'}</button>
-                            <button className={_chip} onClick={() => _jump('allo-sec-taginspect')}>🔍 {t('pdf_audit.dashboard.tags') || 'Tag inspector'}</button>
-                            <button className={_chip} onClick={() => _jump('allo-sec-workbench')}>🛠 {t('pdf_audit.dashboard.workbench') || 'Workbench'}</button>
-                            <button className={_chip} onClick={() => _jump('allo-sec-changed')}>📋 {t('pdf_audit.dashboard.changed') || 'What changed'}</button>
+                            <button type="button" className={_chip} onClick={() => _jump('allo-sec-verify')}>✅ {t('pdf_audit.dashboard.verify') || 'Verification'}</button>
+                            <button type="button" className={_chip} onClick={() => _jump('allo-sec-recovery')}>🩹 {t('pdf_audit.dashboard.recovery') || 'Recovery'}</button>
+                            <button type="button" className={_chip} onClick={() => _jump('allo-sec-axe')}>🪓 {t('pdf_audit.dashboard.axe') || 'Issues (axe)'}</button>
+                            <button type="button" className={_chip} onClick={() => _jump('allo-sec-downloads')}>📥 {t('pdf_audit.dashboard.downloads') || 'Downloads'}</button>
+                            <button type="button" className={_chip} onClick={() => _jump('allo-sec-taginspect')}>🔍 {t('pdf_audit.dashboard.tags') || 'Tag inspector'}</button>
+                            <button type="button" className={_chip} onClick={() => _jump('allo-sec-workbench')}>🛠 {t('pdf_audit.dashboard.workbench') || 'Workbench'}</button>
+                            <button type="button" className={_chip} onClick={() => _jump('allo-sec-changed')}>📋 {t('pdf_audit.dashboard.changed') || 'What changed'}</button>
                             {typeof startPipelineTour === 'function' && (
-                              <button className={_chip} onClick={() => startPipelineTour('results')} data-help-ignore="true" title={t('pdf_audit.tour.results_title') || 'A 60-second guided walk through this screen — what to download, what the score means, where the reports live.'}>✨ {t('pdf_audit.tour.results_cta') || 'Tour'}</button>
+                              <button type="button" className={_chip} onClick={() => startPipelineTour('results')} data-help-ignore="true" title={t('pdf_audit.tour.results_title') || 'A 60-second guided walk through this screen — what to download, what the score means, where the reports live.'}>✨ {t('pdf_audit.tour.results_cta') || 'Tour'}</button>
                             )}
                           </div></details>
                           {_foundationDetailsOpen && _foundationMatrix && (
@@ -15009,7 +15121,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             loop ends it reverts to Start New Audit. (Stop only sets the abort flag, so
                             there's no reset-while-running resurrection race.) */}
                         {pdfAutoContinueRunning ? (
-                          <button
+                          <button type="button"
                             onClick={() => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} _remOpLog('Stop pressed — finishing the current round, then stopping.', { button: 'stop-after-round', documentEpoch: pdfDocumentEpoch }); addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); }}
                             className="text-[11px] px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-400 rounded-md font-bold inline-flex items-center gap-1 hover:bg-amber-100"
                             title={t('pdf_audit.stop_then_new_title') || 'Remediation is still improving the document. Stop it (keeps what’s done) — then this becomes “Start New Audit”.'}
@@ -15017,7 +15129,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             ⏹ {t('pdf_audit.stop_running') || 'Stop (still working…)'}
                           </button>
                         ) : (
-                          <button
+                          <button type="button"
                             onClick={async () => {
                               if (_modalHasActiveWork() || pdfAuditLoading) return;
                               if (await askPdfConfirmation({
@@ -15045,7 +15157,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {/* The reverse door, surfaced (2026-06-11): the Full
                             Differentiation Pipeline button existed deep in the
                             languages panel — same source, every content tool. */}
-                        <button onClick={() => {
+                        <button type="button" onClick={() => {
                           if (_modalHasActiveWork() || pdfAuditLoading) return;
                           const rawHtml = String((pdfFixResult && pdfFixResult.accessibleHtml) || '');
                           let extracted = '';
@@ -15067,7 +15179,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         if (imgReviewIdx === null) return (
                           <div className="bg-violet-50/70 border border-violet-200 rounded-xl px-3 py-2 text-xs text-slate-700 flex items-center gap-2 flex-wrap" data-help-key="pdf_audit_img_review_panel">
                             <span>🤖 {(_n === 1 ? (t('pdf_audit.imgreview.one') || 'AI looked at 1 image and described it.') : (t('pdf_audit.imgreview.many') || 'AI looked at ' + _n + ' images and described them.'))} {t('pdf_audit.imgreview.pitch') || 'Its descriptions are good but not infallible — a 30-second review catches what it got wrong.'}</span>
-                            <button onClick={() => { const items = _collectClassifiedImgs(pdfFixResult.accessibleHtml); if (!items.length) return; setImgReviewItems(items); setImgReviewIdx(0); setImgReviewDraft(items[0].alt); }} className="ml-auto px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold hover:bg-violet-700 shrink-0">🔍 {t('pdf_audit.imgreview.start') || 'Review one by one'}</button>
+                            <button type="button" onClick={() => { const items = _collectClassifiedImgs(pdfFixResult.accessibleHtml); if (!items.length) return; setImgReviewItems(items); setImgReviewIdx(0); setImgReviewDraft(items[0].alt); }} className="ml-auto px-2.5 py-1 bg-violet-600 text-white rounded-full text-[11px] font-bold hover:bg-violet-700 shrink-0">🔍 {t('pdf_audit.imgreview.start') || 'Review one by one'}</button>
                           </div>
                         );
                         const it = imgReviewItems[imgReviewIdx];
@@ -15115,15 +15227,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </div>
                             </div>
                             <div className="flex gap-2 flex-wrap mt-2">
-                              <button onClick={() => { _mutateClassifiedImg(it.i, (im) => { im.setAttribute('alt', imgReviewDraft); }); _advance(); }} className="px-3 py-1.5 bg-violet-600 text-white rounded-lg font-bold hover:bg-violet-700">✓ {imgReviewDraft.trim() !== it.alt.trim() ? (t('pdf_audit.imgreview.save') || 'Save & next') : (t('pdf_audit.imgreview.accept') || 'Looks right — next')}</button>
+                              <button type="button" onClick={() => { _mutateClassifiedImg(it.i, (im) => { im.setAttribute('alt', imgReviewDraft); }); _advance(); }} className="px-3 py-1.5 bg-violet-600 text-white rounded-lg font-bold hover:bg-violet-700">✓ {imgReviewDraft.trim() !== it.alt.trim() ? (t('pdf_audit.imgreview.save') || 'Save & next') : (t('pdf_audit.imgreview.accept') || 'Looks right — next')}</button>
                               {(it.latex || it.hasChartBlock || it.hasMathBlock) && (
-                                <button onClick={() => { _mutateClassifiedImg(it.i, (im) => {
+                                <button type="button" onClick={() => { _mutateClassifiedImg(it.i, (im) => {
                                   im.removeAttribute('data-allo-latex');
                                   let sib = im.nextElementSibling;
                                   while (sib && sib.matches && (sib.matches('details.allo-math-source') || sib.matches('details.allo-chart-data'))) { const nx = sib.nextElementSibling; sib.remove(); sib = nx; }
                                 }); _advance(); }} className="px-3 py-1.5 bg-amber-50 border border-amber-400 text-amber-800 rounded-lg font-bold hover:bg-amber-100" title={t('pdf_audit.imgreview.strip_title') || 'Removes the AI-transcribed LaTeX/MathML and chart-data blocks for THIS image (the description stays). Use when the transcription is wrong.'}>🧹 {t('pdf_audit.imgreview.strip') || 'Strip AI extras'}</button>
                               )}
-                              <button onClick={_advance} className="px-3 py-1.5 text-slate-600 font-bold hover:text-slate-800">{t('pdf_audit.imgreview.skip') || 'Skip'}</button>
+                              <button type="button" onClick={_advance} className="px-3 py-1.5 text-slate-600 font-bold hover:text-slate-800">{t('pdf_audit.imgreview.skip') || 'Skip'}</button>
                             </div>
                           </div>
                         );
@@ -15433,7 +15545,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               the shared _reauditAndScore (stale-HTML guarded), so it folds the refreshed score
                               + remaining-issues back into the result. */}
                           {pdfFixResult._aiVerificationIncomplete && pdfFixResult.accessibleHtml && (
-                            <button
+                            <button type="button"
                               disabled={pdfFixLoading}
                               onClick={() => {
                                 if (pdfFixLoading) return;
@@ -15485,15 +15597,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             <div className="font-bold text-slate-500 mb-1 flex items-center gap-2">
                                               <span className="flex-1">{t('pdf_audit.issue.source_html') || 'Source (from the remediated document)'}{_src.pages ? ' · ' + (t('pdf_audit.issue.source_page') || 'page') + ' ' + _src.pages.join(', ') : ''}</span>
                                               {!_issueEdit[_srcKey] && _src.fullHtml && _src.fullHtml.length <= 8000 && (
-                                                <button onClick={() => _setIssueEdit(prev => ({ ...prev, [_srcKey]: { original: _src.fullHtml, draft: _src.fullHtml } }))} className="shrink-0 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 font-bold normal-case" title={t('pdf_audit.issue.edit_title') || 'Edit this section’s HTML yourself and re-check — a direct expert path that does not use the AI (works even when the AI is rate-limited).'}>✏ {t('pdf_audit.issue.edit') || 'Edit & re-check'}</button>
+                                                <button type="button" onClick={() => _setIssueEdit(prev => ({ ...prev, [_srcKey]: { original: _src.fullHtml, draft: _src.fullHtml } }))} className="shrink-0 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 font-bold normal-case" title={t('pdf_audit.issue.edit_title') || 'Edit this section’s HTML yourself and re-check — a direct expert path that does not use the AI (works even when the AI is rate-limited).'}>✏ {t('pdf_audit.issue.edit') || 'Edit & re-check'}</button>
                                               )}
                                             </div>
                                             {_issueEdit[_srcKey] ? (
                                               <>
                                                 <textarea value={_issueEdit[_srcKey].draft} onChange={(e) => { const v = e.target.value; _setIssueEdit(prev => ({ ...prev, [_srcKey]: { ...prev[_srcKey], draft: v } })); }} spellCheck={false} rows={6} className="w-full bg-slate-50 border border-emerald-300 rounded p-1.5 font-mono text-[10px] leading-snug resize-y" aria-label={(t('pdf_audit.issue.edit_aria') || 'Edit the HTML for this issue') + ': ' + issue.issue} />
                                                 <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                                                  <button onClick={() => _saveManualEdit(issue, _srcKey)} disabled={!!_issueEdit[_srcKey].saving} className={'px-2 py-0.5 rounded bg-emerald-700 text-white font-bold ' + (_issueEdit[_srcKey].saving ? 'opacity-50 cursor-wait' : 'hover:bg-emerald-700')}>{_issueEdit[_srcKey].saving ? (t('pdf_audit.issue.edit_saving') || 'Re-checking…') : ('✓ ' + (t('pdf_audit.issue.edit_save') || 'Save & re-check'))}</button>
-                                                  <button onClick={() => _setIssueEdit(prev => { const n = { ...prev }; delete n[_srcKey]; return n; })} disabled={!!_issueEdit[_srcKey].saving} className="px-2 py-0.5 rounded bg-white border border-slate-300 text-slate-600 font-bold hover:bg-slate-100">{t('pdf_audit.issue.edit_cancel') || 'Cancel'}</button>
+                                                  <button type="button" onClick={() => _saveManualEdit(issue, _srcKey)} disabled={!!_issueEdit[_srcKey].saving} className={'px-2 py-0.5 rounded bg-emerald-700 text-white font-bold ' + (_issueEdit[_srcKey].saving ? 'opacity-50 cursor-wait' : 'hover:bg-emerald-700')}>{_issueEdit[_srcKey].saving ? (t('pdf_audit.issue.edit_saving') || 'Re-checking…') : ('✓ ' + (t('pdf_audit.issue.edit_save') || 'Save & re-check'))}</button>
+                                                  <button type="button" onClick={() => _setIssueEdit(prev => { const n = { ...prev }; delete n[_srcKey]; return n; })} disabled={!!_issueEdit[_srcKey].saving} className="px-2 py-0.5 rounded bg-white border border-slate-300 text-slate-600 font-bold hover:bg-slate-100">{t('pdf_audit.issue.edit_cancel') || 'Cancel'}</button>
                                                   <span className="text-[10px] text-slate-600 italic">{t('pdf_audit.issue.edit_hint') || 'Edits the HTML directly, then runs the same check the Workbench uses — no AI.'}</span>
                                                 </div>
                                                 {/* S1: or describe the fix in words — the agent edits ONLY this section (bounded), then re-checks. */}
@@ -15504,7 +15616,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                                         placeholder={t('pdf_audit.issue.ai_placeholder') || 'or describe the fix — the AI edits just this section'}
                                                         aria-label={(t('pdf_audit.issue.ai_aria') || 'Describe a fix for this section for the AI') + ': ' + issue.issue}
                                                         className="flex-1 min-w-0 px-2 py-1 text-[10px] border border-indigo-300 rounded focus:ring-2 focus:ring-indigo-400" />
-                                                      <button onClick={() => _applyScopedIntent(issue, _srcKey)} disabled={!!_issueEdit[_srcKey].saving || !((_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || '').trim()} className={'px-2 py-0.5 rounded bg-indigo-600 text-white font-bold shrink-0 ' + ((_issueEdit[_srcKey].saving || !((_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700')} title={t('pdf_audit.issue.ai_btn_title') || 'The AI edits ONLY this section (bounded), then re-checks — accept or revert.'}>✨ {t('pdf_audit.issue.ai_btn') || 'Apply with AI'}</button>
+                                                      <button type="button" onClick={() => _applyScopedIntent(issue, _srcKey)} disabled={!!_issueEdit[_srcKey].saving || !((_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || '').trim()} className={'px-2 py-0.5 rounded bg-indigo-600 text-white font-bold shrink-0 ' + ((_issueEdit[_srcKey].saving || !((_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700')} title={t('pdf_audit.issue.ai_btn_title') || 'The AI edits ONLY this section (bounded), then re-checks — accept or revert.'}>✨ {t('pdf_audit.issue.ai_btn') || 'Apply with AI'}</button>
                                                     </div>
                                                     <span className="text-[10px] text-slate-600 italic">{t('pdf_audit.issue.ai_scoped_hint') || 'Scoped to this section only — bounded so the agent can’t touch the rest of the document.'}</span>
                                                   </div>
@@ -15824,7 +15936,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                                       <span className="font-mono font-bold">{rule.id}</span>
                                                       <span className="opacity-70"> ({rule.engine === 'ea' ? 'Equal Access' : 'axe-core'}{rule.nodes ? ', ' + _plural(rule.nodes, 'element', 'elements') : ''}{rule.impact ? ', ' + rule.impact : ''})</span>
                                                       {rule.description && <span className="opacity-90"> — {rule.description}</span>}
-                                                      {rule.helpUrl && <a href={rule.helpUrl} target="_blank" rel="noopener noreferrer" className="ml-1 font-bold underline">{t('pdf_audit.wcag_report.guidance') || 'Guidance'}</a>}
+                                                      {_viewSafeHttpUrl(rule.helpUrl) && <a href={_viewSafeHttpUrl(rule.helpUrl)} target="_blank" rel="noopener noreferrer" className="ml-1 font-bold underline">{t('pdf_audit.wcag_report.guidance') || 'Guidance'}</a>}
                                                     </span>
                                                   </li>
                                                 ))}
@@ -15915,7 +16027,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       <input type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" />
                                     </label>
                                   </div>
-                                  <button
+                                  <button type="button"
                                     onClick={async () => {
                                       // runAutoFixLoop reads pdfFixResultRef.current.accessibleHtml as the
                                       // starting point, so this naturally re-runs against existing remediation.
@@ -15928,7 +16040,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </details>
                             )}
                             {pdfAutoContinueRunning && (
-                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; try { pdfAutoContinueAbortCtrlRef.current?.abort(); } catch(_) {} _remOpLog('Stop pressed — aborting the in-flight AI call immediately.', { button: 'stop-abort-in-flight', documentEpoch: pdfDocumentEpoch }); addToast(t('toasts.stopping_aborting_flight_gemini_call'), 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label={t('pdf_audit.auto_fix.stop_aria') || 'Stop auto-continue remediation'}>
+                              <button type="button" onClick={() => { pdfAutoContinueAbortRef.current = true; try { pdfAutoContinueAbortCtrlRef.current?.abort(); } catch(_) {} _remOpLog('Stop pressed — aborting the in-flight AI call immediately.', { button: 'stop-abort-in-flight', documentEpoch: pdfDocumentEpoch }); addToast(t('toasts.stopping_aborting_flight_gemini_call'), 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label={t('pdf_audit.auto_fix.stop_aria') || 'Stop auto-continue remediation'}>
                                 ⏸ Stop auto-continue
                               </button>
                             )}
@@ -15993,7 +16105,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   {cr.score}
                                 </div>
                                 {cr.score < 80 && !pdfFixLoading && (
-                                  <button
+                                  <button type="button"
                                     onClick={() => { _runOwnedSectionRefix(ci, ci + 1); }}
                                     className="text-[11px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold hover:bg-indigo-700 transition-colors cursor-pointer shrink-0 focus:ring-2 focus:ring-indigo-400"
                                     aria-label={`Re-fix section ${ci + 1} (score ${cr.score}/100)`}
@@ -16145,7 +16257,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                       {/* Action buttons */}
                       <div className="flex gap-2 flex-wrap">
-                        <button onClick={() => { setPdfPreviewOpen(true); setTimeout(updatePdfPreview, 200); }}
+                        <button type="button" onClick={() => { setPdfPreviewOpen(true); setTimeout(updatePdfPreview, 200); }}
                           disabled={_oneClickOperationBusy}
                           title={_oneClickOperationBusy ? (t('pdf_audit.preview.busy_guard') || 'Finishing remediation — Preview & Edit opens when the run settles, so you edit the final document rather than a snapshot mid-rewrite.') : undefined}
                           className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-bold text-sm hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -16226,8 +16338,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const _sourceHtml = String((_compareHtmlToken && _compareHtmlToken.html) || '');
                                 if (!_sourceHtml) return;
                                 const html = _sourceHtml.includes('</main>')
-                                  ? _sourceHtml.replace('</main>', fig + '</main>')
-                                  : _sourceHtml.replace(/<\/body>/i, fig + '</body>');
+                                  ? _sourceHtml.replace('</main>', () => fig + '</main>')
+                                  : _sourceHtml.replace(/<\/body>/i, () => fig + '</body>');
                                 if (!_commitAsyncHtmlIfCurrent(_compareHtmlToken, (prev) => prev ? { ...prev, accessibleHtml: html } : prev)) return;
                                 if (_compareHtmlToken) _compareHtmlToken = { ..._compareHtmlToken, html };
                                 addToast('✂ Cropped region added to the remediated document with alt text — re-export (PDF/Word/HTML) to include it.', 'success');
@@ -16772,7 +16884,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             (integrity banner + Verification details accordion) can be
                             buried by doc-specific state — this one is discoverable. */}
                         {pdfFixResult.sourceText && pdfFixResult.finalText && (
-                          <button
+                          <button type="button"
                             onClick={async () => {
                                             try { if (typeof window !== 'undefined') { window._diffDiagnostic = window._diffDiagnostic || []; window._diffDiagnostic.push({ ts: new Date().toISOString(), msg: 'button clicked', source: 'click', diffLibReady, hasWindowDiff: !!window.Diff, hasResult: !!pdfFixResult, srcLen: pdfFixResult && pdfFixResult.sourceText ? pdfFixResult.sourceText.length : null, finLen: pdfFixResult && pdfFixResult.finalText ? pdfFixResult.finalText.length : null }); console.warn('[Diff] button clicked — diffLibReady=' + diffLibReady + ', window.Diff=' + !!window.Diff); } } catch (_) {}
                                             setDiffViewOpen(true);
@@ -16789,7 +16901,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             📝 Diff
                           </button>
                         )}
-                        <button onClick={() => downloadAccessiblePdf(pdfFixResult.accessibleHtml, _viewRemediationBaseName(pendingPdfFile?.name) + '-accessible')}
+                        <button type="button" onClick={() => downloadAccessiblePdf(pdfFixResult.accessibleHtml, _viewRemediationBaseName(pendingPdfFile?.name) + '-accessible')}
                           className="px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm hover:bg-blue-100 transition-colors flex items-center gap-1.5"
                           title={t('pdf_audit.pdf_from_html.title') || 'Print-style PDF via your browser’s Save as PDF. Layout reflows, and tag preservation depends on the browser — this copy is NOT independently verified. For the tagged file (and its report), use Tagged PDF.'}>
                           📥 {t('pdf_audit.pdf_from_html.label') || 'Print-style PDF (unverified)'}
@@ -16812,7 +16924,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       verify the table right here — no preview pane
                                       needed. The html is sanitized at the preview boundary. */}
                                   {r.html && (
-                                    <button onClick={() => setReconPreviewIdx((prev) => prev === i ? null : i)} aria-expanded={reconPreviewIdx === i} className="shrink-0 px-2 py-0.5 bg-white border border-purple-300 text-purple-700 rounded text-[10px] font-bold hover:bg-purple-50">
+                                    <button type="button" onClick={() => setReconPreviewIdx((prev) => prev === i ? null : i)} aria-expanded={reconPreviewIdx === i} className="shrink-0 px-2 py-0.5 bg-white border border-purple-300 text-purple-700 rounded text-[10px] font-bold hover:bg-purple-50">
                                       {reconPreviewIdx === i ? ('▾ ' + (t('pdf_audit.recon.hide_preview') || 'Hide')) : ('🔍 ' + (t('pdf_audit.recon.preview') || 'Preview here'))}
                                     </button>
                                   )}
@@ -16820,7 +16932,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       in the document html, but nothing showed WHERE — jump the
                                       preview to it and flash an outline. Honest fallback when the
                                       preview pane isn't open/rendered. */}
-                                  <button onClick={() => {
+                                  <button type="button" onClick={() => {
                                     try {
                                       const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
                                       const el = d && d.body && d.body.querySelectorAll('table[data-allo-reconstructed]')[i];
@@ -16834,7 +16946,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       }
                                     } catch (_) {}
                                   }} className="shrink-0 px-2 py-0.5 bg-white border border-purple-300 text-purple-700 rounded text-[10px] font-bold hover:bg-purple-50">👁 {t('pdf_audit.recon.show') || 'Show'}</button>
-                                  <button onClick={() => {
+                                  <button type="button" onClick={() => {
                                     try {
                                       const _doc = new DOMParser().parseFromString(pdfFixResult.accessibleHtml || '', 'text/html');
                                       const _ts = _doc.querySelectorAll('table[data-allo-reconstructed]');
@@ -16902,7 +17014,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="mt-2">
                             <div className="flex items-center justify-between gap-2 mb-1">
                               <span className="text-[10px] text-slate-500">Derived from the remediated HTML — the same structure createTaggedPdf tags. Re-tag a block (role dropdown), mark a figure decorative (◐), or reorder (▲▼). Click a row to find it in the preview.</span>
-                              <button onClick={() => { try { const _h = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || ''; setTagOutline(_buildTagOutline(_h)); } catch (_) { setTagOutline([]); } }} className="px-2 py-0.5 bg-slate-200 rounded text-[10px] font-bold hover:bg-slate-300 shrink-0">↻ Refresh</button>
+                              <button type="button" onClick={() => { try { const _h = (typeof getPdfPreviewHtml === 'function' && getPdfPreviewHtml()) || (pdfFixResult && pdfFixResult.accessibleHtml) || ''; setTagOutline(_buildTagOutline(_h)); } catch (_) { setTagOutline([]); } }} className="px-2 py-0.5 bg-slate-200 rounded text-[10px] font-bold hover:bg-slate-300 shrink-0">↻ Refresh</button>
                             </div>
                             {Array.isArray(tagOutline) && tagOutline.length > 0 && (
                               <div>
@@ -16917,7 +17029,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     const _hl = (on) => { const el = _findEl(); if (!el) return; try { el.style.outline = on ? '3px solid #6366f1' : ''; el.style.outlineOffset = on ? '2px' : ''; } catch (_) {} };
                                     return (
                                     <li key={idx} style={{ paddingLeft: (n.indent * 12) + 'px' }} className="flex items-start gap-1.5" onMouseEnter={() => _hl(true)} onMouseLeave={() => _hl(false)}>
-                                      <button onClick={() => { const el = _findEl(); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center' }); }} onFocus={() => _hl(true)} onBlur={() => _hl(false)} className="text-left hover:underline flex-1 min-w-0" title="Scroll the preview to this element">
+                                      <button type="button" onClick={() => { const el = _findEl(); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center' }); }} onFocus={() => _hl(true)} onBlur={() => _hl(false)} className="text-left hover:underline flex-1 min-w-0" title="Scroll the preview to this element">
                                         <span className="inline-block px-1 rounded bg-indigo-100 text-indigo-700 font-mono text-[10px] font-bold">{n.role}</span>
                                         <span className="text-slate-600 ml-1">{n.text || '(empty)'}</span>
                                       </button>
@@ -16928,16 +17040,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         </select>
                                       )}
                                       {n.role === 'Figure' && (
-                                        <button onClick={() => _editTagAt(n, (el) => _toggleDecorativeEl(el))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-violet-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.decorative_title') || 'Mark this image as decorative (artifact — screen readers skip it) / restore as content'} aria-label="Toggle decorative">◐</button>
+                                        <button type="button" onClick={() => _editTagAt(n, (el) => _toggleDecorativeEl(el))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-violet-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.decorative_title') || 'Mark this image as decorative (artifact — screen readers skip it) / restore as content'} aria-label="Toggle decorative">◐</button>
                                       )}
                                       {n.role === 'Table' && (<>
-                                        <button onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstRowHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-800 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_rowhead_title') || 'Make the first ROW header cells (th, scope=col) — so columns are announced'} aria-label="First row as headers">⬓H</button>
-                                        <button onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstColHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-800 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_colhead_title') || 'Make the first COLUMN header cells (th, scope=row) — so rows are announced'} aria-label="First column as headers">▏H</button>
+                                        <button type="button" onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstRowHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-800 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_rowhead_title') || 'Make the first ROW header cells (th, scope=col) — so columns are announced'} aria-label="First row as headers">⬓H</button>
+                                        <button type="button" onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstColHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-800 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_colhead_title') || 'Make the first COLUMN header cells (th, scope=row) — so rows are announced'} aria-label="First column as headers">▏H</button>
                                       </>)}
-                                      <button onClick={() => _editTagAt(n, (el) => _moveTagEl(el, 'up'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_up_title') || 'Move earlier in the reading order'} aria-label="Move up">▲</button>
-                                      <button onClick={() => _editTagAt(n, (el) => _moveTagEl(el, 'down'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_down_title') || 'Move later in the reading order'} aria-label="Move down">▼</button>
+                                      <button type="button" onClick={() => _editTagAt(n, (el) => _moveTagEl(el, 'up'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_up_title') || 'Move earlier in the reading order'} aria-label="Move up">▲</button>
+                                      <button type="button" onClick={() => _editTagAt(n, (el) => _moveTagEl(el, 'down'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_down_title') || 'Move later in the reading order'} aria-label="Move down">▼</button>
                                       {n.warnings.length > 0 && <span className="text-amber-600 text-[11px] shrink-0" title={n.warnings.join('; ')}>⚠</span>}
-                                      <button
+                                      <button type="button"
                                         onClick={() => {
                                           // Bridge to the Expert Workbench: prefill a targeted
                                           // command for THIS block (warnings included so the
@@ -16971,9 +17083,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="font-black mb-1">⚠ {t('pdf_audit.gate.heading') || 'This tagged PDF did not pass its own structure check'}</div>
                             <p className="mb-2">{t('pdf_audit.gate.body') || 'The accessibility structure may not have survived saving:'} <span className="font-mono text-[11px]">{taggedGateIssue}</span></p>
                             <div className="flex gap-2 flex-wrap">
-                              <button onClick={() => { try { const g = _taggedGateBytesRef.current; if (g) { safeDownloadBlob(new Blob([g.bytes], { type: 'application/pdf' }), g.fileName); _lastTaggedDeliveryRef.current = { withheld: false }; addToast(t('toasts.unverified_downloaded') || '⚠ Unverified tagged PDF downloaded (filename marked) — verify in PAC 2024 or a screen reader before distributing.', 'warning'); } } catch (_) {} setTaggedGateIssue(null); }} className="px-3 py-1.5 bg-white border border-amber-500 text-amber-800 rounded-lg font-bold hover:bg-amber-100">⬇ {t('pdf_audit.gate.anyway') || 'Download anyway (marked unverified)'}</button>
-                              <button onClick={() => { setTaggedGateIssue(null); try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-700 text-white rounded-lg font-bold hover:bg-emerald-800">📝 {t('pdf_audit.gate.word_instead') || 'Use the Word or HTML download instead'}</button>
-                              <button onClick={() => setTaggedGateIssue(null)} className="px-3 py-1.5 text-amber-700 font-bold hover:text-red-600">✕ {t('pdf_audit.gate.dismiss') || 'Dismiss'}</button>
+                              <button type="button" onClick={() => { try { const g = _taggedGateBytesRef.current; if (g) { safeDownloadBlob(new Blob([g.bytes], { type: 'application/pdf' }), g.fileName); _lastTaggedDeliveryRef.current = { withheld: false }; addToast(t('toasts.unverified_downloaded') || '⚠ Unverified tagged PDF downloaded (filename marked) — verify in PAC 2024 or a screen reader before distributing.', 'warning'); } } catch (_) {} setTaggedGateIssue(null); }} className="px-3 py-1.5 bg-white border border-amber-500 text-amber-800 rounded-lg font-bold hover:bg-amber-100">⬇ {t('pdf_audit.gate.anyway') || 'Download anyway (marked unverified)'}</button>
+                              <button type="button" onClick={() => { setTaggedGateIssue(null); try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-700 text-white rounded-lg font-bold hover:bg-emerald-800">📝 {t('pdf_audit.gate.word_instead') || 'Use the Word or HTML download instead'}</button>
+                              <button type="button" onClick={() => setTaggedGateIssue(null)} className="px-3 py-1.5 text-amber-700 font-bold hover:text-red-600">✕ {t('pdf_audit.gate.dismiss') || 'Dismiss'}</button>
                             </div>
                           </div>
                         )}
@@ -16985,9 +17097,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="font-black mb-1">⚠ {t('pdf_audit.fidelity_gate.heading') || 'Review the content before distributing this document'}</div>
                             <p className="mb-2">{t('pdf_audit.fidelity_gate.body') || 'The remediated document may be missing source content'} — <span className="font-semibold">{fidelityGateIssue}</span>. {t('pdf_audit.fidelity_gate.body2') || 'A tagged PDF will look complete but could be missing text. Open the Diff to compare it against the original first.'}</p>
                             <div className="flex gap-2 flex-wrap">
-                              <button onClick={() => { setFidelityGateIssue(null); try { setDiffViewOpen(true); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-700 text-white rounded-lg font-bold hover:bg-emerald-800">🔍 {t('pdf_audit.fidelity_gate.diff') || 'Open the Diff to review'}</button>
-                              <button onClick={() => { try { const g = _fidelityGateBytesRef.current; if (g) { safeDownloadBlob(new Blob([g.bytes], { type: 'application/pdf' }), g.fileName); _lastTaggedDeliveryRef.current = { withheld: false }; addToast(t('toasts.fidelity_downloaded') || '⚠ Downloaded (filename marked) — verify the content against the source before distributing.', 'warning'); } } catch (_) {} setFidelityGateIssue(null); }} className="px-3 py-1.5 bg-white border border-orange-500 text-orange-800 rounded-lg font-bold hover:bg-orange-100">⬇ {t('pdf_audit.fidelity_gate.anyway') || 'Download anyway (I’ve reviewed)'}</button>
-                              <button onClick={() => setFidelityGateIssue(null)} className="px-3 py-1.5 text-orange-700 font-bold hover:text-red-600">✕ {t('pdf_audit.fidelity_gate.dismiss') || 'Dismiss'}</button>
+                              <button type="button" onClick={() => { setFidelityGateIssue(null); try { setDiffViewOpen(true); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-700 text-white rounded-lg font-bold hover:bg-emerald-800">🔍 {t('pdf_audit.fidelity_gate.diff') || 'Open the Diff to review'}</button>
+                              <button type="button" onClick={() => { try { const g = _fidelityGateBytesRef.current; if (g) { safeDownloadBlob(new Blob([g.bytes], { type: 'application/pdf' }), g.fileName); _lastTaggedDeliveryRef.current = { withheld: false }; addToast(t('toasts.fidelity_downloaded') || '⚠ Downloaded (filename marked) — verify the content against the source before distributing.', 'warning'); } } catch (_) {} setFidelityGateIssue(null); }} className="px-3 py-1.5 bg-white border border-orange-500 text-orange-800 rounded-lg font-bold hover:bg-orange-100">⬇ {t('pdf_audit.fidelity_gate.anyway') || 'Download anyway (I’ve reviewed)'}</button>
+                              <button type="button" onClick={() => setFidelityGateIssue(null)} className="px-3 py-1.5 text-orange-700 font-bold hover:text-red-600">✕ {t('pdf_audit.fidelity_gate.dismiss') || 'Dismiss'}</button>
                             </div>
                           </div>
                         )}
@@ -16996,7 +17108,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             unreadable toast cascade). */}
                         {lastTaggedReport && (
                           <div role="status" aria-live="polite" className="w-full mt-2 bg-white border-2 border-indigo-300 rounded-xl p-3 text-xs relative shadow-md">
-                            <button onClick={() => setLastTaggedReport(null)} aria-label={t('pdf_audit.tagged_report.close_aria') || 'Dismiss tagged-PDF report'} className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-800 text-slate-600 font-bold">✕</button>
+                            <button type="button" onClick={() => setLastTaggedReport(null)} aria-label={t('pdf_audit.tagged_report.close_aria') || 'Dismiss tagged-PDF report'} className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-800 text-slate-600 font-bold">✕</button>
                             <div className="font-black text-indigo-800 mb-1.5 pr-7">📄 {t('pdf_audit.tagged_report.heading') || 'Tagged PDF report'} <span className="font-normal text-slate-500">— {lastTaggedReport.file} · {lastTaggedReport.when}</span></div>
                             <ul className="space-y-1" role="list">
                               {lastTaggedReport.lines.map((l, i) => (
@@ -17026,7 +17138,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             ensurePdfBase64. Office inputs (DOCX/PPTX) have no PDF
                             bytes to tag — they get the Word/HTML exports instead. */}
                         {_inputIsPdf ? (
-                        <button
+                        <button type="button"
                           id="allo-tagged-pdf-btn"
                           onClick={() => _runOriginalTaggedPdfExport({ trigger: 'results-button' })}
                           className={_hasExecutableActiveContent ? "px-4 py-2.5 bg-emerald-700 text-white rounded-xl font-bold text-sm hover:bg-emerald-800 transition-colors flex items-center gap-1.5" : "px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5"}
@@ -17035,7 +17147,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {_hasExecutableActiveContent ? '🧼 Clean tagged PDF (recommended)' : '📄 Tagged PDF'}
                         </button>
                         ) : (
-                        <button
+                        <button type="button"
                           id="allo-tagged-pdf-btn"
                           data-help-key="pdf_audit_view_typeset_tagged_btn"
                           onClick={() => _runTypesetExport()}
@@ -17052,7 +17164,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             that drops all original active content. Secondary styling so the fidelity-
                             preserving export is available only as an explicit advanced override when executable actions were detected. */}
                         {_inputIsPdf && (
-                        <button
+                        <button type="button"
                           id="allo-tagged-pdf-clean-btn"
                           data-help-key="pdf_audit_view_sanitized_rebuild_btn"
                           onClick={() => {
@@ -17101,14 +17213,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const deck = _docxSpecToSlides(_htmlToDocxSpec(pdfFixResult.accessibleHtml));
                             // Theme: preset, or AI-suggested palette with deterministic
                             // legibility enforcement (the AI picks mood, never contrast).
-                            let _theme = _PPTX_THEMES[pptxThemeId] || _PPTX_THEMES.classic;
+                            let _theme = Object.prototype.hasOwnProperty.call(_PPTX_THEMES, pptxThemeId) ? _PPTX_THEMES[pptxThemeId] : _PPTX_THEMES.classic;
                             let _themeLabel = _theme.label;
                             if (pptxThemeId === 'ai' && typeof callGemini === 'function') {
                               try {
                                 addToast(t('toasts.pptx_ai_theme') || '🎨 Asking AI for a topic-matched palette (legibility enforced locally)…', 'info');
                                 const _titles = [deck.title].concat(deck.slides.map((s) => s.title).filter(Boolean)).slice(0, 12).join(' | ');
                                 const _raw = await callGemini('Suggest a presentation color palette matching this content: "' + _titles + '". Reply ONLY with JSON: {"bg":"RRGGBB","title":"RRGGBB","body":"RRGGBB","tableHeadFill":"RRGGBB","tableBorder":"RRGGBB","font":"a common PowerPoint font name"}. Calm, classroom-appropriate colors.', true);
-                                _theme = JSON.parse(typeof _raw === 'string' ? _raw : '{}');
+                                const _parsedTheme = JSON.parse(typeof _raw === 'string' ? _raw : '{}', _viewSafeJsonReviver);
+                                _theme = (_parsedTheme && typeof _parsedTheme === 'object' && !Array.isArray(_parsedTheme)) ? _parsedTheme : _PPTX_THEMES.classic;
                                 _themeLabel = 'AI-matched';
                               } catch (_aiErr) { _theme = _PPTX_THEMES.classic; _themeLabel = 'Classic Light (AI palette unavailable)'; }
                             } else if (pptxThemeId === 'ai') { _theme = _PPTX_THEMES.classic; _themeLabel = 'Classic Light (AI unavailable)'; }
@@ -17142,7 +17255,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <option value="highcontrast">◐ High Contrast</option>
                           <option value="ai">✨ AI: match my topic</option>
                         </select>
-                        <button onClick={() => {
+                        <button type="button" onClick={() => {
                           let _readerHtml;
                           try { _readerHtml = _viewSanitizeMarkupForExport(pdfFixResult.accessibleHtml, _docPipeline); } catch (error) { addToast((t('toasts.export_security_unavailable') || 'The accessible HTML could not be exported safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; }
                           const blob = new Blob([_wrapAsReaderApp(_readerHtml)], { type: 'text/html' });
@@ -17187,12 +17300,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 // when the user ran the in-browser validator. null if they didn't — the report
                                 // then notes that no independent validation was run (it does NOT imply conformance).
                                 const veraPdf = cached && cached.veraPdf ? cached.veraPdf : null;
-                                const html = _docPipeline.generateAccessibilityReportHtml(
+                                const rawReportHtml = _docPipeline.generateAccessibilityReportHtml(
                                   pdfFixResult,
                                   pdfAuditResult,
                                   checks,
                                   { fileName: pendingPdfFile?.name || 'document.pdf', postExportValidator, roundTrip, veraPdf }
                                 );
+                                const html = _viewSanitizeMarkupForExport(rawReportHtml, _docPipeline);
                                 const blob = new Blob([html], { type: 'text/html' });
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement('a');
@@ -17495,7 +17609,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </>
                               );
                             })()}
-                            <button onClick={() => {
+                            <button type="button" onClick={() => {
                               const _rptAi = pdfFixResult.afterScore; const _rptAxe = pdfFixResult.axeAudit?.score ?? null; const _rptBlended = (_rptAi != null ? _rptAi : _rptAxe) /* canonical engine blend; no re-blend (audit 2026-06-13) */; const _rptVerification = _verificationForExport(pdfFixResult);
                               const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, afterScoreVerified: _rptVerification.afterScoreVerified, verificationState: _rptVerification.verificationState, verificationReasons: _rptVerification.reasons, verificationHtmlBinding: _rptVerification.verificationHtmlBinding, verificationResult: pdfFixResult, htmlFoundations: _foundationMatrix, summary: pdfAuditResult?.summary || '', integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, verificationCoverage: _rptVerification.coverage, requiresManualReview: _rptVerification.requiresManualReview, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, _estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, _estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null };
                               let html;
@@ -17513,7 +17627,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             }} data-help-key="pdf_audit_view_formatted_report_btn" className="w-full px-4 py-2 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors">
                               📄 Formatted Report (PDF)
                             </button>
-                            <button onClick={() => {
+                            <button type="button" onClick={() => {
                               const _dlAi = pdfFixResult.afterScore; const _dlAxe = pdfFixResult.axeAudit?.score ?? null; const _dlBlended = (_dlAi != null ? _dlAi : _dlAxe); const _dlVerification = _verificationForExport(pdfFixResult);
                               const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, afterScoreVerified: _dlVerification.afterScoreVerified, verificationState: _dlVerification.verificationState, verificationReasons: _dlVerification.reasons, verificationHtmlBinding: _dlVerification.verificationHtmlBinding, verificationResult: pdfFixResult, htmlFoundations: _foundationMatrix, summary: pdfAuditResult?.summary || '', integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, verificationCoverage: _dlVerification.coverage, requiresManualReview: _dlVerification.requiresManualReview, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, _estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, _estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null };
                               let html;
@@ -17527,7 +17641,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             }} data-help-key="pdf_audit_view_html_report_btn" className="w-full px-4 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors border-t border-slate-100">
                               🌐 HTML Report
                             </button>
-                            <button onClick={() => {
+                            <button type="button" onClick={() => {
                               const _jsonAi = pdfFixResult.afterScore; const _jsonAxe = pdfFixResult.axeAudit?.score ?? null; const _jsonBlended = (_jsonAi != null ? _jsonAi : _jsonAxe); const _jsonVerification = _verificationForExport(pdfFixResult);
                               const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: _jsonVerification.afterScoreVerified, verificationState: _jsonVerification.verificationState, verificationReasons: _jsonVerification.reasons, verificationHtmlBinding: _jsonVerification.verificationHtmlBinding, afterScoreBasis: _jsonVerification.afterScoreVerified ? 'min(content,automated) — weakest-layer governing score, NOT an average' : 'unverified (' + _jsonVerification.verificationState + '): ' + (_jsonVerification.reasons || []).join(' '), integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, verificationCoverage: _jsonVerification.coverage, requiresManualReview: _jsonVerification.requiresManualReview, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null, htmlFoundations: _foundationMatrix, fileName: pendingPdfFile?.name, date: new Date().toISOString(), tool: 'AlloFlow', standard: 'WCAG 2.2 AA', engines: (() => { const _p = pdfAuditResult && (pdfAuditResult.auditorCount || (pdfAuditResult.scores && pdfAuditResult.scores.length)); return ['AI (Gemini' + (_p ? ', ' + _p + '-pass self-consistency' : '') + ')'].concat((pdfFixResult.axeAudit && typeof pdfFixResult.axeAudit.score === 'number') ? ['axe-core (Deque WCAG 2.2 AA)'] : []).concat(pdfFixResult.secondEngineAudit ? ['IBM Equal Access (WCAG 2.2 AA)'] : []); })(), issueResolution: pdfFixResult.issueResolution || null, fidelityNotes: pdfFixResult.fidelityNotes || [], fidelityLimited: !!pdfFixResult.fidelityLimited, expertReview: { needed: !!pdfFixResult.needsExpertReview, reason: pdfFixResult.expertReviewReason || null }, ocrAccuracy: pdfFixResult.ocrAccuracy || null, groundTruth: { charCount: pdfFixResult.groundTruthCharCount || null, method: pdfFixResult.groundTruthMethod || null }, remainingIssues: pdfFixResult.remainingIssues ?? null, preservationReview: { ...window.AlloModules.RemediationReview.evidence(pdfFixResult), acknowledgments: window.AlloModules.RemediationReview.acknowledgments(pdfFixResult.preservationAcknowledgments) } };
                               const blob = new Blob([JSON.stringify(full, null, 2)], { type: 'application/json' });
@@ -17549,7 +17663,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 we don't overclaim legal defensibility. */}
                             <button type="button" onClick={async () => {
                               try {
-                                const teacherName = (localStorage.getItem('alloflow_teacher_name') || '').trim();
+                                let teacherName = '';
+                                try { teacherName = (localStorage.getItem('alloflow_teacher_name') || '').trim(); } catch (_) {}
                                 const promptedSigner = await promptForPdfText('Sign this audit trail as a teacher or institution. Submit a blank value to sign as Unknown.', teacherName, {
                                   title: 'Sign audit trail', confirmText: 'Sign trail', cancelText: 'Cancel', maxLength: 160,
                                 });
@@ -17667,15 +17782,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   },
                                   summary: pdfAuditResult?.summary || '',
                                 };
-                                const payloadJson = JSON.stringify(payloadCore, null, 2);
+                                const payloadJson = JSON.stringify(payloadCore, null, 2).replace(/</g, '\\u003c');
                                 const enc = new TextEncoder().encode(payloadJson);
                                 const hashBuf = await crypto.subtle.digest('SHA-256', enc);
                                 const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
-                                const baseReport = generateAuditReportHtml(
+                                const rawBaseReport = generateAuditReportHtml(
                                   { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: blended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: blended, afterScoreVerified: _trailVerification.afterScoreVerified, verificationCoverage: _trailVerification.coverage, verificationState: _trailVerification.verificationState, verificationReasons: _trailVerification.reasons, verificationHtmlBinding: _trailVerification.verificationHtmlBinding, verificationResult: pdfFixResult, htmlFoundations: _foundationMatrix, requiresManualReview: _trailVerification.requiresManualReview, summary: pdfAuditResult?.summary || '', _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, _estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null },
                                   pendingPdfFile?.name || 'document.pdf',
                                   true
                                 );
+                                const baseReport = _viewSanitizeMarkupForExport(rawBaseReport, _docPipeline);
                                 const _veraSummaryHtml = veraPdfTrail
                                   ? (veraPdfTrail.error
                                       ? '<span style="color:#d97706">⚠ validation did not complete (' + _escT(veraPdfTrail.error) + ') — validate externally before claiming conformance</span>'
@@ -17707,7 +17823,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
     <pre style="background:#0f172a;color:#e2e8f0;padding:12px;border-radius:6px;font-size:11px;overflow-x:auto;margin-top:8px"><code id="aat-payload-display"></code></pre>
   </details>
 </section>
-<script type="application/json" id="aat-payload">${payloadJson.replace(/<\\//g, '<\\\\/')}</script>
+<script type="application/json" id="aat-payload">${payloadJson}</script>
 <script>
   (function(){
     var storedHash = ${JSON.stringify(hashHex)};
@@ -17739,7 +17855,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
     }
   })();
 </script>`;
-                                const withTrail = baseReport.replace(/<\/body>/i, trailFooter + '</body>');
+                                const withTrail = baseReport.replace(/<\/body>/i, () => trailFooter + '</body>');
                                 const blob = new Blob([withTrail], { type: 'text/html' });
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement('a');
@@ -17814,10 +17930,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {_lowPages.length > 0 && (
                               <div className="mb-1.5 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 flex items-center gap-2 flex-wrap">
                                 <span>⚠ {t('pdf_audit.low_conf_ocr') || 'Low OCR confidence on'} page{_lowPages.length === 1 ? '' : 's'} {_lowPages.slice(0, 8).join(', ')}{_lowPages.length > 8 ? '…' : ''}. {t('pdf_audit.low_conf_ocr_hint') || 'The text may be misread.'}</span>
-                                <button onClick={() => _reRun({ pages: _lowPages })} disabled={_remediationBusy || pdfAutoContinueRunning} className="ml-auto px-2 py-0.5 bg-white border border-amber-400 text-amber-800 rounded-full font-bold hover:bg-amber-100 disabled:opacity-40 shrink-0">🔄 Re-OCR {_lowPages.length} {_lowPages.length === 1 ? (t('pdf_audit.page') || 'page') : (t('pdf_audit.pages') || 'pages')}</button>
+                                <button type="button" onClick={() => _reRun({ pages: _lowPages })} disabled={_remediationBusy || pdfAutoContinueRunning} className="ml-auto px-2 py-0.5 bg-white border border-amber-400 text-amber-800 rounded-full font-bold hover:bg-amber-100 disabled:opacity-40 shrink-0">🔄 Re-OCR {_lowPages.length} {_lowPages.length === 1 ? (t('pdf_audit.page') || 'page') : (t('pdf_audit.pages') || 'pages')}</button>
                               </div>
                             )}
-                            <button onClick={() => _reRun('all')} disabled={_remediationBusy || pdfAutoContinueRunning} title={t('pdf_audit.rescan_ocr_tooltip') || 'Re-run OCR on the whole document, ignoring the embedded text layer and any saved text. Use this if the extracted text looks garbled.'} className="w-full px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40">
+                            <button type="button" onClick={() => _reRun('all')} disabled={_remediationBusy || pdfAutoContinueRunning} title={t('pdf_audit.rescan_ocr_tooltip') || 'Re-run OCR on the whole document, ignoring the embedded text layer and any saved text. Use this if the extracted text looks garbled.'} className="w-full px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40">
                               🔄 {t('pdf_audit.rescan_ocr') || 'Re-scan with OCR (text looks wrong?)'}
                             </button>
                           </div>
@@ -17826,7 +17942,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {/* Save / Load Project — manual button now delegates to the shared saveProjectToFile helper,
                           which also powers auto-save after the initial remediation + auto-continue loop. */}
                       <div className="flex gap-2">
-                        <button data-help-key="pdf_audit_view_save_project_btn" onClick={() => { saveProjectToFile(false); }} className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5">
+                        <button type="button" data-help-key="pdf_audit_view_save_project_btn" onClick={() => { saveProjectToFile(false); }} className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5">
                           💾 Save Project
                         </button>
                         <label data-help-key="pdf_audit_view_load_project_btn" className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
@@ -17954,7 +18070,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
                                   if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
                                   if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
-                                  if (_pp.builderFont) { try { localStorage.setItem('allo_selected_font', _pp.builderFont); } catch (_) {} }
+                                  if (_pp.builderFont) { const _safeBuilderFont = _viewSafeCssFontFamily(_pp.builderFont, ''); if (_safeBuilderFont) { try { localStorage.setItem('allo_selected_font', _safeBuilderFont); } catch (_) {} } }
                                 } catch (_) {}
                                 if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
                                   setPdfMultiSession(project.multiSession);
@@ -18049,7 +18165,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           },
                         };
                         try {
-                          const saved = JSON.parse(localStorage.getItem('alloflow_templates') || '[]');
+                          const parsedSaved = JSON.parse(localStorage.getItem('alloflow_templates') || '[]', _viewSafeJsonReviver);
+                          const saved = Array.isArray(parsedSaved) ? parsedSaved : [];
                           saved.push(template);
                           localStorage.setItem('alloflow_templates', JSON.stringify(saved));
                         } catch(e) {}
@@ -18086,7 +18203,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-2 mb-0.5">{t('pdf_audit.export_menu.group_access') || 'Accessible formats'}</div>
 
                           {/* ePub */}
-                          <button onClick={() => {
+                          <button type="button" onClick={() => {
                             let html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
                             try { html = _viewSanitizeMarkupForExport(html, _docPipeline); } catch (error) { addToast((t('toasts.export_security_unavailable') || 'The EPUB could not be exported safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; }
@@ -18116,7 +18233,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </button>
 
                           {/* Braille BRF */}
-                          <button onClick={() => {
+                          <button type="button" onClick={() => {
                             const html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
                             // Text flattening and the Grade-1 fallback are module scope (_buildBrailleBrf), shared
@@ -18181,7 +18298,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-2 mb-0.5">{t('pdf_audit.export_menu.group_text') || 'Text & editable'}</div>
 
                           {/* Plain text */}
-                          <button onClick={() => {
+                          <button type="button" onClick={() => {
                             const html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
                             const text = _htmlToPlainTextExport(html);
@@ -18196,7 +18313,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </button>
 
                           {/* Markdown */}
-                          <button onClick={() => {
+                          <button type="button" onClick={() => {
                             const html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
                             let md = _htmlToMarkdownExport(html);
@@ -18240,7 +18357,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <p className="text-[11px] text-slate-600">{t('pdf_audit.palette.lead') || 'Recolour the document with a vetted palette. Contrast is GUARANTEED — each colour is automatically nudged to meet WCAG before it is applied, and links keep their underline so colour never carries meaning alone.'}</p>
                             <div className="flex flex-wrap gap-1.5">
                               {_docPipeline.palettePresets.map((preset) => (
-                                <button key={preset.id} onClick={() => _applyPalette(preset)} disabled={_paletteBusy}
+                                <button type="button" key={preset.id} onClick={() => _applyPalette(preset)} disabled={_paletteBusy}
                                   aria-pressed={!!(_appliedPalette && _appliedPalette.id === preset.id)}
                                   className={'px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors inline-flex items-center gap-1.5 ' + (_appliedPalette && _appliedPalette.id === preset.id ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-violet-50') + (_paletteBusy ? ' opacity-50 cursor-wait' : '')}
                                   title={t('pdf_audit.palette.apply_title') || 'Apply this palette (contrast guaranteed) and re-check'}>
@@ -18249,7 +18366,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </button>
                               ))}
                               {_appliedPalette && (
-                                <button onClick={_revertPalette} disabled={_paletteBusy} className={'px-2.5 py-1 rounded-full text-[11px] font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 ' + (_paletteBusy ? 'opacity-50 cursor-wait' : '')} title={t('pdf_audit.palette.revert_title') || 'Restore the original colours'}>↩ {t('pdf_audit.palette.revert') || 'Revert'}</button>
+                                <button type="button" onClick={_revertPalette} disabled={_paletteBusy} className={'px-2.5 py-1 rounded-full text-[11px] font-bold border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 ' + (_paletteBusy ? 'opacity-50 cursor-wait' : '')} title={t('pdf_audit.palette.revert_title') || 'Restore the original colours'}>↩ {t('pdf_audit.palette.revert') || 'Revert'}</button>
                               )}
                             </div>
                             {_docPipeline && typeof _docPipeline.proposePaletteFromIntent === 'function' && (
@@ -18276,7 +18393,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </summary>
                           <div className="px-3 pb-3 space-y-2">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <button onClick={_suggestRestyles} disabled={_restyleProposalsBusy}
+                              <button type="button" onClick={_suggestRestyles} disabled={_restyleProposalsBusy}
                                 className={'px-3 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white ' + (_restyleProposalsBusy ? 'opacity-50 cursor-wait' : 'hover:bg-indigo-700')}>
                                 {_restyleProposalsBusy ? ('⏳ ' + (t('pdf_audit.region.suggest_busy') || 'Analyzing…')) : ('✨ ' + (t('pdf_audit.region.suggest_btn') || 'Suggest callouts & lists'))}
                               </button>
@@ -18296,7 +18413,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       {p.reason && <div className="text-[11px] text-slate-700">{p.reason}</div>}
                                       <div className="text-[10px] text-slate-500 truncate" title={p.preview}>“{p.preview}”</div>
                                     </div>
-                                    <button onClick={() => _applyProposal(p)} className="shrink-0 px-2 py-0.5 rounded bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700">{t('pdf_audit.region.suggest_apply') || 'Apply'}</button>
+                                    <button type="button" onClick={() => _applyProposal(p)} className="shrink-0 px-2 py-0.5 rounded bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700">{t('pdf_audit.region.suggest_apply') || 'Apply'}</button>
                                     <button type="button" onClick={() => setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev)} className="shrink-0 min-w-6 min-h-6 px-1.5 py-0.5 rounded text-slate-600 text-[11px] font-bold hover:bg-slate-100" aria-label={t('pdf_audit.region.suggest_dismiss') || 'Dismiss this suggestion'}>✕</button>
                                   </li>
                                 ))}
@@ -18488,7 +18605,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <div className="text-[11px] font-bold text-violet-600 uppercase tracking-widest">📚 Differentiate This Document</div>
 
                         {/* Bionic Reading - toggle on/off */}
-                        <button onClick={() => {
+                        <button type="button" onClick={() => {
                           if (pdfFixResult._preBionicHtml) {
                             setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev._preBionicHtml, _preBionicHtml: null }));
                             addToast(t('toasts.bionic_reading_removed'), 'info');
@@ -18511,7 +18628,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
 
                         {/* Line Guide — alternating background stripes for reading tracking */}
-                        <button onClick={() => {
+                        <button type="button" onClick={() => {
                           const html = pdfFixResult.accessibleHtml;
                           if (pdfFixResult._preLineGuideHtml) {
                             setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev._preLineGuideHtml, _preLineGuideHtml: null }));
@@ -18653,7 +18770,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
 
                         {/* Full Pipeline */}
-                        <button onClick={() => {
+                        <button type="button" onClick={() => {
                           const rawHtml = String((pdfFixResult && pdfFixResult.accessibleHtml) || '');
                           let extracted = '';
                           if (rawHtml && typeof DOMParser !== 'undefined') {
@@ -18672,7 +18789,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <p className="text-[11px] text-violet-500">Translations and simplifications stack — add French, then Spanish, then a 3rd grade version, all in one document. Each appears as a new section. Use "Full Pipeline" to feed into AlloFlow's complete differentiation system.</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {callTTS && !audioJob && <button id="allo-export-audio" data-help-key="pdf_audit_audio_download_btn" onClick={() => {
+                        {callTTS && !audioJob && <button type="button" id="allo-export-audio" data-help-key="pdf_audit_audio_download_btn" onClick={() => {
                           const fullText = _audioReadyText(pdfFixResult.accessibleHtml);
                           if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                           // Sentence-boundary segmentation (~600 chars/segment) — the
@@ -18697,7 +18814,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             voice, but announcing structure the way a screen
                             reader would — heading levels, list counts, table
                             rows, image alts. */}
-                        {callTTS && !audioJob && <button id="allo-export-audio-sr" data-help-key="pdf_audit_audio_sr_btn" onClick={() => {
+                        {callTTS && !audioJob && <button type="button" id="allo-export-audio-sr" data-help-key="pdf_audit_audio_sr_btn" onClick={() => {
                           const srText = _srStyleTextFromHtml(pdfFixResult.accessibleHtml).trim();
                           if (!srText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                           const segments = [];
@@ -18720,7 +18837,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             terms grounded in THIS document, appended as an
                             accessible <dl> section — every export (HTML, Word,
                             tagged PDF, audio) inherits it automatically. */}
-                        {callGemini && <button data-help-key="pdf_audit_glossary_appendix_btn" disabled={glossaryAppendixBusy} onClick={async () => {
+                        {callGemini && <button type="button" data-help-key="pdf_audit_glossary_appendix_btn" disabled={glossaryAppendixBusy} onClick={async () => {
                           if (!pdfFixResult?.accessibleHtml) return;
                           const _glossaryToken = _captureAsyncHtmlToken();
                           const _glossarySource = String((_glossaryToken && _glossaryToken.html) || '');
@@ -18741,7 +18858,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const _glossaryCommitted = _commitAsyncHtmlIfCurrent(_glossaryToken, (prev) => {
                               if (!prev || !prev.accessibleHtml) return prev;
                               let html = prev.accessibleHtml.replace(/<section data-allo-glossary="true"[\s\S]*?<\/section>/i, '');
-                              html = html.includes('</main>') ? html.replace('</main>', section + '</main>') : html.replace(/<\/body>/i, section + '</body>');
+                              html = html.includes('</main>') ? html.replace('</main>', () => section + '</main>') : html.replace(/<\/body>/i, () => section + '</body>');
                               return { ...prev, accessibleHtml: html, _userEditedAt: Date.now() };
                             });
                             if (!_glossaryCommitted) { _cancelRemediationOperation(_glossaryOperation); return; }
@@ -18778,7 +18895,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <datalist id="allo-translate-langs">
                               {['Spanish', 'Portuguese', 'French', 'Haitian Creole', 'Arabic', 'Vietnamese', 'Chinese (Simplified)', 'Korean', 'Somali', 'Russian', 'Ukrainian', 'Tagalog', 'Swahili', 'Pashto', 'Dari', 'Hmong', 'Karen', 'Amharic', 'Polish', 'Japanese'].map((l) => <option key={l} value={l} />)}
                             </datalist>
-                            <button disabled={pdfTranslateBusy} onClick={async () => {
+                            <button type="button" disabled={pdfTranslateBusy} onClick={async () => {
                               if (!pdfFixResult?.accessibleHtml) return;
                               const _translationToken = _captureAsyncHtmlToken();
                               const _translationSource = String((_translationToken && _translationToken.html) || '');
@@ -18827,10 +18944,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {pdfTranslateBusy ? ('⏳ ' + (pdfTranslateProgress || '…')) : '🌐'} {pdfTranslateBusy ? (t('pdf_audit.translate.busy') || 'Translating') : (t('pdf_audit.translate.btn') || 'Translate document')}
                             </button>
                             {pdfFixResult._translation && !pdfTranslateBusy && (<>
-                              <button onClick={() => setShowTranslationCompare(true)} className="px-3 py-2 bg-sky-100 border border-sky-300 text-sky-800 rounded-xl font-bold text-xs hover:bg-sky-200" title={t('pdf_audit.translate.compare_title') || 'Side-by-side: the remediated original and the translation.'}>
+                              <button type="button" onClick={() => setShowTranslationCompare(true)} className="px-3 py-2 bg-sky-100 border border-sky-300 text-sky-800 rounded-xl font-bold text-xs hover:bg-sky-200" title={t('pdf_audit.translate.compare_title') || 'Side-by-side: the remediated original and the translation.'}>
                                 ⚖ {(t('pdf_audit.translate.compare') || 'Compare')} ({pdfFixResult._translation.lang})
                               </button>
-                              <button onClick={() => {
+                              <button type="button" onClick={() => {
                                 if (!_requireFreshCompanion(pdfFixResult._translation, 'This translation')) return;
                                 let _translatedReaderHtml;
                                 try { _translatedReaderHtml = _viewSanitizeMarkupForExport(pdfFixResult._translation.html, _docPipeline); } catch (error) { addToast((t('toasts.export_security_unavailable') || 'The translated HTML could not be exported safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; }
@@ -18863,7 +18980,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               }} className="px-3 py-2 bg-sky-100 border border-sky-300 text-sky-800 rounded-xl font-bold text-xs hover:bg-sky-200" title={t('pdf_audit.translate.tagged_title') || 'A clean typeset tagged PDF of the TRANSLATION — correct lang metadata, the Noto fonts handle non-Latin scripts, and RTL targets warn honestly (use the HTML export for those).'}>
                                 📑 {(t('pdf_audit.translate.tagged') || 'Tagged PDF')} ({pdfFixResult._translation.langCode || '…'})
                               </button>
-                              {callTTS && !audioJob && <button onClick={() => {
+                              {callTTS && !audioJob && <button type="button" onClick={() => {
                                 if (!_requireFreshCompanion(pdfFixResult._translation, 'This translation')) return;
                                 const fullText = _audioReadyText(pdfFixResult._translation.html);
                                 if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
@@ -18898,7 +19015,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <option value="3-4">{t('pdf_audit.plain.level_34') || 'Grade 3-4'}</option>
                               <option value="5-6">{t('pdf_audit.plain.level_56') || 'Grade 5-6'}</option>
                             </select>
-                            <button disabled={plainLangBusy} onClick={async () => {
+                            <button type="button" disabled={plainLangBusy} onClick={async () => {
                               if (!pdfFixResult?.accessibleHtml) return;
                               const _plainToken = _captureAsyncHtmlToken();
                               const _plainSource = String((_plainToken && _plainToken.html) || '');
@@ -18932,10 +19049,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {plainLangBusy ? ('⏳ ' + (plainLangProgress || '…')) : '🪶'} {plainLangBusy ? (t('pdf_audit.plain.busy') || 'Simplifying') : (t('pdf_audit.plain.btn') || 'Plain-language version')}
                             </button>
                             {pdfFixResult._plainLanguage && !plainLangBusy && (<>
-                              <button onClick={() => setShowPlainCompare(true)} className="px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200" title={t('pdf_audit.plain.compare_title') || 'Side-by-side: the original and the plain-language version.'}>
+                              <button type="button" onClick={() => setShowPlainCompare(true)} className="px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200" title={t('pdf_audit.plain.compare_title') || 'Side-by-side: the original and the plain-language version.'}>
                                 ⚖ {t('pdf_audit.plain.compare') || 'Compare'}
                               </button>
-                              <button onClick={() => {
+                              <button type="button" onClick={() => {
                                 if (!_requireFreshCompanion(pdfFixResult._plainLanguage, 'This plain-language version')) return;
                                 let _plainReaderHtml;
                                 try { _plainReaderHtml = _viewSanitizeMarkupForExport(pdfFixResult._plainLanguage.html, _docPipeline); } catch (error) { addToast((t('toasts.export_security_unavailable') || 'The plain-language HTML could not be exported safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; }
@@ -18967,7 +19084,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               }} className="px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200">
                                 📑 {t('pdf_audit.plain.tagged') || 'Tagged PDF'}
                               </button>
-                              {callTTS && !audioJob && <button onClick={() => {
+                              {callTTS && !audioJob && <button type="button" onClick={() => {
                                 if (!_requireFreshCompanion(pdfFixResult._plainLanguage, 'This plain-language version')) return;
                                 const fullText = _audioReadyText(pdfFixResult._plainLanguage.html);
                                 if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
@@ -18994,7 +19111,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             review panel → semantic fields. HTML export becomes fillable
                             in any browser; Word keeps visible blanks; real PDF AcroForm
                             fields are S1. */}
-                        {typeof detectFormBlanks === 'function' && <button data-help-key="pdf_audit_make_fillable_btn" onClick={() => {
+                        {typeof detectFormBlanks === 'function' && <button type="button" data-help-key="pdf_audit_make_fillable_btn" onClick={() => {
                           if (!pdfFixResult?.accessibleHtml) return;
                           try {
                             const cands = detectFormBlanks(pdfFixResult.accessibleHtml);
@@ -19011,7 +19128,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             pdf.js locates every blank's page coordinates; widgets go exactly
                             there; the tagger's Stage 3 tags them. Born-digital only (scans:
                             OCR → typeset → S1 is the honest path). */}
-                        {typeof detectPdfBlankFields === 'function' && _inputIsPdf && <button data-help-key="pdf_audit_fillable_original_btn" disabled={pdfFieldBusy} onClick={async () => {
+                        {typeof detectPdfBlankFields === 'function' && _inputIsPdf && <button type="button" data-help-key="pdf_audit_fillable_original_btn" disabled={pdfFieldBusy} onClick={async () => {
                           setPdfFieldBusy(true);
                           try {
                             const b64 = await ensurePdfBase64();
@@ -19034,7 +19151,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             deterministically and generation continues into the
                             next part file. */}
                         {callTTS && !audioJob && pdfFixResult._audioJobMeta && pdfFixResult._audioJobMeta.nextIdx > 0 && pdfFixResult._audioJobMeta.nextIdx < pdfFixResult._audioJobMeta.total && (
-                          <button onClick={_resumeAudioFromMeta} className="px-4 py-2 bg-amber-100 border border-amber-400 text-amber-800 rounded-xl font-bold text-xs hover:bg-amber-200 transition-colors" title={t('pdf_audit.audio.resume_meta_title') || 'This project saved an unfinished audio job. Resuming regenerates nothing you already downloaded — it continues from the saved section into a new part file (play the part files in order).'}>
+                          <button type="button" onClick={_resumeAudioFromMeta} className="px-4 py-2 bg-amber-100 border border-amber-400 text-amber-800 rounded-xl font-bold text-xs hover:bg-amber-200 transition-colors" title={t('pdf_audit.audio.resume_meta_title') || 'This project saved an unfinished audio job. Resuming regenerates nothing you already downloaded — it continues from the saved section into a new part file (play the part files in order).'}>
                             ⏯ {(t('pdf_audit.audio.resume_meta') || 'Resume audio at section ')}{pdfFixResult._audioJobMeta.nextIdx + 1}/{pdfFixResult._audioJobMeta.total}{pdfFixResult._audioJobMeta.srMode ? ' (SR-style)' : ''}
                           </button>
                         )}
@@ -19044,10 +19161,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <span className="font-bold">🎧 {t('pdf_audit.audio.job') || 'Audio'}: {audioJob.done}/{audioJob.total} {t('pdf_audit.audio.sections') || 'sections'}{audioJob.failed > 0 ? (' · ' + audioJob.failed + ' ' + (t('pdf_audit.audio.failed') || 'failed')) : ''}</span>
                               <span className={'px-1.5 py-0.5 rounded font-bold text-[10px] uppercase ' + (audioJob.status === 'running' ? 'bg-blue-100 text-blue-700' : audioJob.status === 'complete' ? 'bg-green-100 text-green-700' : 'bg-amber-200 text-amber-800')}>{audioJob.status === 'stalled' ? (t('pdf_audit.audio.stalled') || 'rate-limited — resume in ~1 min') : audioJob.status}</span>
                               <div className="flex gap-1.5 ml-auto">
-                                {audioJob.status === 'running' && <button onClick={() => { if (audioJobRef.current) audioJobRef.current.pauseRequested = true; }} className="px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100">⏸ {t('pdf_audit.audio.pause') || 'Pause'}</button>}
-                                {(audioJob.status === 'paused' || audioJob.status === 'stalled') && <button onClick={_runAudioJob} className="px-2 py-1 bg-amber-700 text-white rounded-lg font-bold hover:bg-amber-800">▶ {t('pdf_audit.audio.resume') || 'Resume'}</button>}
-                                {audioJob.done > 0 && audioJob.status !== 'complete' && <button onClick={() => _stitchAudioJob(false)} className="px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100" title={t('pdf_audit.audio.partial_title') || 'Stitch the finished sections into one playable file now — you can keep generating afterwards.'}>⬇ {t('pdf_audit.audio.partial') || 'Download what’s ready'}</button>}
-                                <button onClick={() => { const j = audioJobRef.current; if (j) { j.pauseRequested = true; if (j.nextIdx > 0 && j.nextIdx < j.segments.length) _saveAudioMeta(j, false, j.operationTicket); _cancelRemediationOperation(j.operationTicket); } if (audioJobRef.current === j) audioJobRef.current = null; setAudioJob(null); }} className="px-2 py-1 text-amber-700 font-bold hover:text-red-600" title={t('pdf_audit.audio.dismiss_title') || 'Close this job. Progress position is kept in the project — save the project and you can resume in a future session.'}>✕</button>
+                                {audioJob.status === 'running' && <button type="button" onClick={() => { if (audioJobRef.current) audioJobRef.current.pauseRequested = true; }} className="px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100">⏸ {t('pdf_audit.audio.pause') || 'Pause'}</button>}
+                                {(audioJob.status === 'paused' || audioJob.status === 'stalled') && <button type="button" onClick={_runAudioJob} className="px-2 py-1 bg-amber-700 text-white rounded-lg font-bold hover:bg-amber-800">▶ {t('pdf_audit.audio.resume') || 'Resume'}</button>}
+                                {audioJob.done > 0 && audioJob.status !== 'complete' && <button type="button" onClick={() => _stitchAudioJob(false)} className="px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100" title={t('pdf_audit.audio.partial_title') || 'Stitch the finished sections into one playable file now — you can keep generating afterwards.'}>⬇ {t('pdf_audit.audio.partial') || 'Download what’s ready'}</button>}
+                                <button type="button" onClick={() => { const j = audioJobRef.current; if (j) { j.pauseRequested = true; if (j.nextIdx > 0 && j.nextIdx < j.segments.length) _saveAudioMeta(j, false, j.operationTicket); _cancelRemediationOperation(j.operationTicket); } if (audioJobRef.current === j) audioJobRef.current = null; setAudioJob(null); }} className="px-2 py-1 text-amber-700 font-bold hover:text-red-600" title={t('pdf_audit.audio.dismiss_title') || 'Close this job. Progress position is kept in the project — save the project and you can resume in a future session.'}>✕</button>
                               </div>
                             </div>
                             <div className="mt-1.5 h-1.5 bg-amber-100 rounded-full overflow-hidden"><div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: Math.round((audioJob.done / Math.max(1, audioJob.total)) * 100) + '%' }}></div></div>
@@ -19314,12 +19431,12 @@ Return ONLY the plain-language summary.`, false));
         <div className="allo-docsuite fixed inset-0 z-[70] bg-black/50 flex items-stretch" role="dialog" aria-modal="true" aria-label={t('pdf_audit.preview.modal_aria') || 'Accessible document preview and editor'}
           ref={pdfPreviewTrapRef} tabIndex={-1}
           onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); _cancelRemediationOperationPrefix('preview-'); setPdfPreviewOpen(false); } }}>
-          <div className="flex flex-1 m-4 gap-0 animate-in fade-in duration-200">
+          <div className="flex flex-1 m-4 gap-0 animate-in motion-reduce:animate-none fade-in duration-200">
             {/* Left panel: controls */}
             <div className="w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-indigo-800">♿ Preview & Edit</h3>
-                <button onClick={() => { _cancelRemediationOperationPrefix('preview-'); setPdfPreviewOpen(false); }} className="p-1 hover:bg-slate-100 rounded-lg transition-colors" aria-label={t('pdf_audit.preview.close_aria') || 'Close preview'}>
+                <button type="button" onClick={() => { _cancelRemediationOperationPrefix('preview-'); setPdfPreviewOpen(false); }} className="p-1 hover:bg-slate-100 rounded-lg transition-colors" aria-label={t('pdf_audit.preview.close_aria') || 'Close preview'}>
                   <X size={18} />
                 </button>
               </div>
@@ -19334,7 +19451,7 @@ Return ONLY the plain-language summary.`, false));
                   it can never read a stale snapshot. If auto-continuation / one-click tail work is
                   running, the export queues until the run settles (the run's persistence is the
                   user's stated priority) with a visible status toast. */}
-              <button
+              <button type="button"
                 onClick={() => {
                   _cancelRemediationOperationPrefix('preview-');
                   let _editedResult = null;
@@ -19457,7 +19574,7 @@ Return ONLY the plain-language summary.`, false));
                 return (
                   <div className="bg-teal-50/60 border border-teal-300 rounded-lg p-2">
                     <div className="text-[11px] font-bold text-teal-800 uppercase mb-1.5">📝 {t('export_preview.writing.heading') || 'Writing Check'}</div>
-                    <button onClick={runWritingCheck} data-help-key="pdf_audit_writing_check_btn" disabled={wc && wc.status === 'loading'} aria-busy={!!(wc && wc.status === 'loading')} className="w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
+                    <button type="button" onClick={runWritingCheck} data-help-key="pdf_audit_writing_check_btn" disabled={wc && wc.status === 'loading'} aria-busy={!!(wc && wc.status === 'loading')} className="w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
                       {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check spelling & grammar (English)')}
                     </button>
                     <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; the ~18 MB checker downloads on first use, then checks both spelling and grammar.'}</p>
@@ -19470,15 +19587,15 @@ Return ONLY the plain-language summary.`, false));
                         <div className="text-[10px] font-bold text-slate-600">{wc.items.length} {t('export_preview.writing.suggestions') || 'suggestion(s)'}{wc.capped ? ' (first 150 shown)' : ''} — {t('export_preview.writing.suggestions_note') || 'nothing is changed unless you Apply it'}:</div>
                         {wc.items.map((item, ii) => (
                           <div key={ii} className="bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]">
-                            <button onClick={() => _locate(item, true)} className="text-left w-full hover:underline" title={t('export_preview.writing.locate_title') || 'Scroll the preview to this spot'}>
+                            <button type="button" onClick={() => _locate(item, true)} className="text-left w-full hover:underline" title={t('export_preview.writing.locate_title') || 'Scroll the preview to this spot'}>
                               <span className="text-slate-700">{item.message}</span>
                               <span className="block text-slate-500 italic mt-0.5">{item.snippet}</span>
                             </button>
                             <div className="flex gap-1 mt-1 flex-wrap items-center">
                               {item.suggestions.map((s, si) => (
-                                <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || (t('export_preview.writing.remove') || '(remove)')}</button>
+                                <button type="button" key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || (t('export_preview.writing.remove') || '(remove)')}</button>
                               ))}
-                              <button onClick={() => _dismiss(item)} className="px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto" title={t('export_preview.writing.keep_title') || 'Keep the original wording and dismiss this suggestion'}>✓ {t('export_preview.writing.keep') || 'Keep as-is'}</button>
+                              <button type="button" onClick={() => _dismiss(item)} className="px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto" title={t('export_preview.writing.keep_title') || 'Keep the original wording and dismiss this suggestion'}>✓ {t('export_preview.writing.keep') || 'Keep as-is'}</button>
                             </div>
                           </div>
                         ))}
@@ -19494,7 +19611,7 @@ Return ONLY the plain-language summary.`, false));
                 <p className="text-[11px] text-slate-600 mb-1">{t('pdf_audit.preview.wcag_guaranteed') || 'Text contrast is re-verified by the deterministic sanitizer on every style change (contrast only — not a full WCAG audit).'}</p>
                 <div className="grid grid-cols-2 gap-1">
                   {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === 'Match Original').map(([key, s]) => (
-                    <button key={key} onClick={() => { setPdfPreviewTheme(key); setTimeout(() => updatePdfPreview(key), 50); }}
+                    <button type="button" key={key} onClick={() => { setPdfPreviewTheme(key); setTimeout(() => updatePdfPreview(key), 50); }}
                       className={`text-[11px] font-bold px-2 py-1.5 rounded-lg border transition-all text-left ${pdfPreviewTheme === key ? 'border-indigo-400 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-300' : 'border-slate-200 text-slate-600 hover:border-indigo-600'}`}>
                       {s.emoji} {s.name}{s.wcagLevel === 'AAA' ? ' ♿' : ''}
                     </button>
@@ -19513,7 +19630,7 @@ Return ONLY the plain-language summary.`, false));
                     { label: '🌙 Dark', prompt: 'Elegant dark mode: dark charcoal background, soft white text, indigo accents, subtle borders, beautiful contrast for screen reading.' },
                     { label: '🧊 Minimal', prompt: 'Ultra-minimal: whitespace, thin sans-serif, muted grays, one accent color, hairline borders, understated elegance.' },
                   ].map(preset => (
-                    <button key={preset.label} disabled={isGeneratingStyle} onClick={async () => {
+                    <button type="button" key={preset.label} disabled={isGeneratingStyle} onClick={async () => {
                       if (!callGemini) return;
                       setIsGeneratingStyle(true);
                       addToast(t('toasts.generating_2') + preset.label.replace(/[^\w\s]/g, '').trim() + ' style...', 'info');
@@ -19524,7 +19641,7 @@ Return ONLY the plain-language summary.`, false));
                           const old = doc.getElementById('ai-restyle'); if (old) old.remove();
                           const style = doc.createElement('style');
                           style.id = 'ai-restyle';
-                          style.textContent = css.replace(/```[\s\S]*?```/g, '').replace(/^```\w*\n?/gm, '').replace(/\n?```$/gm, '').trim();
+                          style.textContent = _viewSanitizeAiRestyleCss(css);
                           doc.head.appendChild(style);
                           try {
                             const fullHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
@@ -19546,7 +19663,7 @@ Return ONLY the plain-language summary.`, false));
                     >{isGeneratingStyle ? '⏳ Styling...' : preset.label}</button>
                   ))}
                   {pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle') && (
-                    <button onClick={() => {
+                    <button type="button" onClick={() => {
                       const old = pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle');
                       if (old) { old.remove(); addToast(t('toasts.ai_style_removed'), 'info'); }
                     }} className="px-2 py-1 bg-red-50 border border-red-600 rounded-md text-[11px] font-bold text-red-700 hover:bg-red-100 transition-colors">✕ Reset</button>
@@ -19716,7 +19833,7 @@ Return ONLY the plain-language summary.`, false));
                     <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Style</div>
                     <div className="grid grid-cols-3 gap-1" role="radiogroup">
                       {[['goldFoil','✨','Gold'],['neonGlow','💡','Neon'],['retroArcade','🕹️','Retro'],['chalkboard','🖍️','Chalk'],['embossed','🏛️','3D'],['rainbow','🌈','Rainbow']].map(([key, emoji, label], i) => (
-                        <button key={key} data-preset={key} aria-checked={i === 0 ? 'true' : 'false'} role="radio" aria-label={label + ' style'}
+                        <button type="button" key={key} data-preset={key} aria-checked={i === 0 ? 'true' : 'false'} role="radio" aria-label={label + ' style'}
                           style={i === 0 ? { background: '#fde68a', color: '#78350f', borderColor: '#f59e0b' } : { background: 'white', borderColor: '#fcd34d' }}
                           className="pdf-wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all"
                           onClick={(e) => {
@@ -19735,7 +19852,7 @@ Return ONLY the plain-language summary.`, false));
                       <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Size</div>
                       <div className="flex gap-0.5" role="radiogroup">
                         {[['S','S'],['M','M'],['L','L'],['XL','XL']].map(([key, label], i) => (
-                          <button key={key} data-size={key} aria-checked={i === 2 ? 'true' : 'false'} role="radio" aria-label={label + ' size'}
+                          <button type="button" key={key} data-size={key} aria-checked={i === 2 ? 'true' : 'false'} role="radio" aria-label={label + ' size'}
                             style={i === 2 ? { background: '#4338ca', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569', borderColor: '#e2e8f0' }}
                             className="pdf-wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             onClick={(e) => {
@@ -19753,7 +19870,7 @@ Return ONLY the plain-language summary.`, false));
                       <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Align</div>
                       <div className="flex gap-0.5" role="radiogroup">
                         {[['left','⇤','Left'],['center','⇔','Center'],['right','⇥','Right']].map(([key, icon, label], i) => (
-                          <button key={key} data-align={key} aria-checked={i === 1 ? 'true' : 'false'} role="radio" aria-label={label + ' alignment'}
+                          <button type="button" key={key} data-align={key} aria-checked={i === 1 ? 'true' : 'false'} role="radio" aria-label={label + ' alignment'}
                             style={i === 1 ? { background: '#4338ca', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569', borderColor: '#e2e8f0' }}
                             className="pdf-wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             onClick={(e) => {
@@ -19768,7 +19885,7 @@ Return ONLY the plain-language summary.`, false));
                       </div>
                     </div>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => {
                       const iframe = pdfPreviewRef.current;
                       const doc = iframe?.contentDocument;
@@ -19795,10 +19912,13 @@ Return ONLY the plain-language summary.`, false));
                           rainbow: 'background:linear-gradient(90deg,#dc2626 0%,#ea580c 17%,#ca8a04 33%,#16a34a 50%,#0891b2 67%,#4f46e5 83%,#9333ea 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;'
                         };
                         const sz = { S: '1.5rem', M: '2.5rem', L: '4rem', XL: '6rem' };
-                        const safe = String(text).replace(/[<>&]/g, (c) => c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&amp;');
-                        const inner = '<span style="display:inline-block;font-size:' + (sz[size] || sz.L) + ';line-height:1.1;' + (P[preset] || P.goldFoil) + '">' + safe + '</span>';
-                        const wrapped = preset === 'chalkboard' ? '<span style="display:inline-block;background:#14532d;padding:1rem 1.5rem;border-radius:8px;border:3px solid #78350f;">' + inner + '</span>' : inner;
-                        html = '<div class="alloflow-wordart" data-wa-preset="' + preset + '" data-wa-size="' + size + '" data-wa-align="' + align + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + align + '">' + wrapped + '</div>';
+                        const safePreset = Object.prototype.hasOwnProperty.call(P, preset) ? preset : 'goldFoil';
+                        const safeSize = Object.prototype.hasOwnProperty.call(sz, size) ? size : 'L';
+                        const safeAlign = (align === 'left' || align === 'center' || align === 'right') ? align : 'center';
+                        const safe = _viewEscapeGeneratedText(text);
+                        const inner = '<span style="display:inline-block;font-size:' + sz[safeSize] + ';line-height:1.1;' + P[safePreset] + '">' + safe + '</span>';
+                        const wrapped = safePreset === 'chalkboard' ? '<span style="display:inline-block;background:#14532d;padding:1rem 1.5rem;border-radius:8px;border:3px solid #78350f;">' + inner + '</span>' : inner;
+                        html = '<div class="alloflow-wordart" data-wa-preset="' + safePreset + '" data-wa-size="' + safeSize + '" data-wa-align="' + safeAlign + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + safeAlign + '">' + wrapped + '</div>';
                       }
                       if (!html) { addToast(t('toasts.could_render_word_art'), 'error'); return; }
                       iframe.contentWindow.focus();
@@ -19832,12 +19952,12 @@ Return ONLY the plain-language summary.`, false));
               </details>
 
               {/* A11y Inspect toggle */}
-              <button onClick={() => { const next = !pdfPreviewA11yInspect; setPdfPreviewA11yInspect(next); setTimeout(() => updatePdfPreview(undefined, undefined, next), 50); }}
+              <button type="button" onClick={() => { const next = !pdfPreviewA11yInspect; setPdfPreviewA11yInspect(next); setTimeout(() => updatePdfPreview(undefined, undefined, next), 50); }}
                 className={`w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${pdfPreviewA11yInspect ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-slate-200 text-slate-600 hover:border-violet-300'}`}>
                 🔍 A11y Inspect {pdfPreviewA11yInspect ? 'ON' : 'OFF'}
               </button>
               {/* S1 region-select arm (2026-06-23): drag a box over the preview to scope an AI edit to one block */}
-              <button onClick={() => setRegionArmed((v) => !v)}
+              <button type="button" onClick={() => setRegionArmed((v) => !v)}
                 aria-pressed={_regionArmed}
                 title={t('pdf_audit.region.arm_title') || 'Drag a box over the preview to pick a block, then describe a change the AI applies to ONLY that region (bounded — accept or revert).'}
                 className={`w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${_regionArmed ? 'bg-indigo-100 border-indigo-400 text-indigo-800' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}>
@@ -19856,7 +19976,7 @@ Return ONLY the plain-language summary.`, false));
               )}
 
               {/* Screen Reader Simulator */}
-              <button onClick={() => {
+              <button type="button" onClick={() => {
                 const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                 const existing = doc.getElementById('sr-simulator-panel');
                 if (existing) { existing.remove(); return; }
@@ -19901,8 +20021,13 @@ Return ONLY the plain-language summary.`, false));
                     const id = el.getAttribute('id');
                     let label = ariaLabel || '';
                     if (!label && id) {
-                      const lab = doc.querySelector('label[for="' + (id || '').replace(/"/g, '\\"') + '"]');
-                      if (lab) label = lab.textContent.trim();
+                      try {
+                        const labelSel = (typeof window !== 'undefined' && window.CSS && typeof window.CSS.escape === 'function')
+                          ? ('label[for=' + window.CSS.escape(id) + ']')
+                          : ('label[for="' + String(id).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"]');
+                        const lab = doc.querySelector(labelSel);
+                        if (lab) label = lab.textContent.trim();
+                      } catch (_) {}
                     }
                     if (!label) {
                       const wrap = el.closest('label');
@@ -20011,7 +20136,7 @@ Return ONLY the plain-language summary.`, false));
                         aria-label={t('pdf_audit.ai_image.prompt_aria') || 'Image generation prompt'}
                         className="w-full text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
                         onKeyDown={(e) => { if (e.key === 'Enter') document.getElementById('pdf-preview-gen-img-btn')?.click(); }} />
-                      <button id="pdf-preview-gen-img-btn" onClick={async () => {
+                      <button type="button" id="pdf-preview-gen-img-btn" onClick={async () => {
                         const prompt = document.getElementById('pdf-preview-img-prompt')?.value;
                         if (!prompt?.trim()) return;
                         addToast(t('toasts.generating_image'), 'info');
@@ -20041,7 +20166,7 @@ Return ONLY the plain-language summary.`, false));
                       </button>
                     </div>
                     <p className="text-[11px] text-slate-600">{t('pdf_audit.ai_image.select_hint') || 'Click an image in the preview to select it, then:'}</p>
-                    <button onClick={async () => {
+                    <button type="button" onClick={async () => {
                       const img = selectedPreviewImgRef.current;
                       if (!img || !img.src) { addToast(t('toasts.click_image_preview_select_first'), 'info'); return; }
                       if (!callGeminiImageEdit) { addToast(t('toasts.image_editing_available_build'), 'error'); return; }
@@ -20064,16 +20189,48 @@ Return ONLY the plain-language summary.`, false));
                             if (isRemoteHttp && window._isDesktopBundledApp === true && parsedSrc.origin !== window.location.origin) {
                               throw new Error('Remote image fetch is disabled in offline Desktop mode');
                             }
-                            const fetchOpts = isRemoteHttp ? { credentials: 'omit', referrerPolicy: 'no-referrer' } : {};
-                            const resp = await _withTimeout(fetch(parsedSrc.href, fetchOpts), 20000, 'image fetch');
-                            if (!resp || !resp.ok) throw new Error('Image fetch failed');
-                            const declaredLen = Number(resp.headers && typeof resp.headers.get === 'function' ? resp.headers.get('content-length') : NaN);
-                            if (Number.isFinite(declaredLen) && declaredLen > 20 * 1024 * 1024) {
-                              try { resp.body && resp.body.cancel && resp.body.cancel(); } catch (_) {}
-                              throw new Error('Image exceeds 20 MB safety limit');
+                            if (isRemoteHttp && parsedSrc.origin !== window.location.origin && !_viewIsPublicRemoteUrl(parsedSrc)) {
+                              throw new Error('Blocked private or invalid remote image URL');
                             }
-                            const blob = await resp.blob();
-                            if (blob && blob.size > 20 * 1024 * 1024) throw new Error('Image exceeds 20 MB safety limit');
+                            const imgCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+                            const imgTimer = imgCtrl ? setTimeout(() => { try { imgCtrl.abort(); } catch (_) {} }, 20000) : null;
+                            let blob;
+                            try {
+                              const fetchOpts = isRemoteHttp
+                                ? { credentials: 'omit', referrerPolicy: 'no-referrer', ...(imgCtrl ? { signal: imgCtrl.signal } : {}) }
+                                : (imgCtrl ? { signal: imgCtrl.signal } : {});
+                              const resp = await _withTimeout(fetch(parsedSrc.href, fetchOpts), 20000, 'image fetch');
+                              if (!resp || !resp.ok) throw new Error('Image fetch failed');
+                              const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
+                              const declaredLen = Number(resp.headers && typeof resp.headers.get === 'function' ? resp.headers.get('content-length') : NaN);
+                              if (Number.isFinite(declaredLen) && declaredLen > MAX_IMAGE_BYTES) {
+                                try { resp.body && resp.body.cancel && resp.body.cancel(); } catch (_) {}
+                                throw new Error('Image exceeds 20 MB safety limit');
+                              }
+                              if (resp.body && typeof resp.body.getReader === 'function') {
+                                const reader = resp.body.getReader();
+                                const chunks = [];
+                                let totalBytes = 0;
+                                while (true) {
+                                  const { done, value } = await reader.read();
+                                  if (done) break;
+                                  if (value && value.byteLength) {
+                                    totalBytes += value.byteLength;
+                                    if (totalBytes > MAX_IMAGE_BYTES) {
+                                      try { await reader.cancel(); } catch (_) {}
+                                      throw new Error('Image exceeds 20 MB safety limit');
+                                    }
+                                    chunks.push(value);
+                                  }
+                                }
+                                blob = new Blob(chunks, { type: (resp.headers && resp.headers.get('content-type')) || 'application/octet-stream' });
+                              } else {
+                                blob = await resp.blob();
+                                if (blob && blob.size > MAX_IMAGE_BYTES) throw new Error('Image exceeds 20 MB safety limit');
+                              }
+                            } finally {
+                              if (imgTimer) clearTimeout(imgTimer);
+                            }
                             base64 = await new Promise((resolve, reject) => {
                               const fr = new FileReader();
                               fr.onload = () => { const s = String(fr.result || ''); resolve(s.includes(',') ? s.split(',')[1] : null); };
@@ -21261,7 +21418,7 @@ Return ONLY the plain-language summary.`, false));
                         // Sentence Frame template change
                         if (t.classList && t.classList.contains('allo-frame-template-select')) {
                           const block = t.closest('.allo-block-frame'); if (!block) return;
-                          const tpl = _SENTENCE_FRAMES[t.value];
+                          const tpl = Object.prototype.hasOwnProperty.call(_SENTENCE_FRAMES, t.value) ? _SENTENCE_FRAMES[t.value] : null;
                           if (!tpl) return;
                           // Heuristic: detect if user has typed substantive text into any blank.
                           // Skip pure underscores/whitespace; flag blanks with 4+ "real" chars.
@@ -21305,7 +21462,7 @@ Return ONLY the plain-language summary.`, false));
                         if (t.classList && t.classList.contains('allo-math-formula-select')) {
                           const key = t.value;
                           if (!key) return;
-                          const formula = _MATH_FORMULAS[key];
+                          const formula = Object.prototype.hasOwnProperty.call(_MATH_FORMULAS, key) ? _MATH_FORMULAS[key] : null;
                           if (!formula) return;
                           const block = t.closest('.allo-block-math'); if (!block) return;
                           const inp = block.querySelector('.allo-math-input');
@@ -21629,7 +21786,7 @@ Return ONLY the plain-language summary.`, false));
                       { label: 'Relaxed', val: '1.5rem' },
                       { label: 'Spacious', val: '2.5rem' },
                     ].map(sp => (
-                      <button key={sp.label} onClick={() => {
+                      <button type="button" key={sp.label} onClick={() => {
                         const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                         doc.querySelectorAll('p, li, h2, h3, h4, table, figure, blockquote, div').forEach(el => {
                           el.style.marginBottom = sp.val;
@@ -21640,7 +21797,7 @@ Return ONLY the plain-language summary.`, false));
                   </div>
 
                   <div className="text-[11px] font-bold text-slate-600 uppercase mt-2">{t('pdf_audit.layout.header_branding') || 'Header / Branding'}</div>
-                  <button onClick={() => {
+                  <button type="button" onClick={() => {
                     const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                     const existing = doc.getElementById('doc-header-brand');
                     if (existing) { existing.remove(); return; }
@@ -21656,7 +21813,7 @@ Return ONLY the plain-language summary.`, false));
                     🏛️ Toggle Document Header
                   </button>
 
-                  <button onClick={() => {
+                  <button type="button" onClick={() => {
                     const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                     const existing = doc.getElementById('doc-footer-brand');
                     if (existing) { existing.remove(); return; }
@@ -21712,33 +21869,45 @@ Return ONLY the plain-language summary.`, false));
                   {/* Load saved accessibility templates */}
                   {(() => {
                     let savedTemplates = [];
-                    try { savedTemplates = JSON.parse(localStorage.getItem('alloflow_templates') || '[]'); } catch(e) {}
+                    try {
+                      const _parsedTpls = JSON.parse(localStorage.getItem('alloflow_templates') || '[]', _viewSafeJsonReviver);
+                      if (Array.isArray(_parsedTpls)) savedTemplates = _parsedTpls.filter(item => item && typeof item === 'object' && Array.isArray(item.structure));
+                    } catch(e) {}
                     return savedTemplates.length > 0 ? (
                       <div className="mt-1.5">
                         <div className="text-[11px] font-bold text-slate-600 uppercase mb-1">{t('pdf_audit.templates.saved_heading') || 'Saved Accessible Templates'}</div>
                         <div className="space-y-1">
                           {savedTemplates.map((tmpl, i) => (
-                            <button key={i} onClick={() => {
+                            <button type="button" key={i} onClick={() => {
                               const doc = (exportPreviewRef.current || pdfPreviewRef.current)?.contentDocument;
                               if (!doc) return;
-                              let html = `<!DOCTYPE html><html lang="${tmpl.lang || 'en'}"><head><meta charset="UTF-8"><title>${tmpl.name}</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:${tmpl.styles?.fontFamily || 'system-ui, sans-serif'};max-width:800px;margin:0 auto;padding:2rem;line-height:1.7;color:#1e293b}h1,h2,h3{color:${tmpl.styles?.headingColor || '#1e293b'}}table{width:100%;border-collapse:collapse;margin:1rem 0}th{background:#f1f5f9;padding:8px 12px;text-align:left;font-weight:700;border:1px solid #e2e8f0}td{padding:8px 12px;border:1px solid #e2e8f0}@media print{body{max-width:100%}}</style></head><body>`;
+                              const safeLang = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(String(tmpl.lang || '').trim()) ? String(tmpl.lang).trim() : 'en';
+                              const safeName = _viewEscapeGeneratedText(tmpl.name || 'Accessible Template');
+                              const safeFont = _viewSafeCssFontFamily(tmpl.styles?.fontFamily, 'system-ui, sans-serif');
+                              const safeHeadingColor = _viewSafeCssColor(tmpl.styles?.headingColor, '#1e293b');
+                              let html = `<!DOCTYPE html><html lang="${safeLang}"><head><meta charset="UTF-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline';"><title>${safeName}</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:${safeFont};max-width:800px;margin:0 auto;padding:2rem;line-height:1.7;color:#1e293b}h1,h2,h3{color:${safeHeadingColor}}table{width:100%;border-collapse:collapse;margin:1rem 0}th{background:#f1f5f9;padding:8px 12px;text-align:left;font-weight:700;border:1px solid #e2e8f0}td{padding:8px 12px;border:1px solid #e2e8f0}@media print{body{max-width:100%}}</style></head><body>`;
                               html += '<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>';
                               html += '<main id="main-content" role="main">';
-                              tmpl.structure.forEach(s => {
+                              (Array.isArray(tmpl.structure) ? tmpl.structure : []).forEach(s => {
+                                if (!s || typeof s !== 'object') return;
                                 if (s.type === 'heading') {
-                                  html += `<h${s.level}>${s.text || '[Section Title]'}</h${s.level}>\n<p>[Content for this section]</p>\n`;
+                                  const lvl = Math.min(6, Math.max(1, parseInt(s.level, 10) || 2));
+                                  html += `<h${lvl}>${_viewEscapeGeneratedText(s.text || '[Section Title]')}</h${lvl}>\n<p>[Content for this section]</p>\n`;
                                 } else if (s.type === 'table') {
-                                  html += `<table role="table"><caption>${s.caption || '[Table Description]'}</caption><thead><tr>`;
-                                  (s.headers || ['Column 1', 'Column 2', 'Column 3']).forEach(h => { html += `<th scope="col">${h}</th>`; });
+                                  const hdrs = Array.isArray(s.headers) && s.headers.length ? s.headers.slice(0, 20) : ['Column 1', 'Column 2', 'Column 3'];
+                                  html += `<table role="table"><caption>${_viewEscapeGeneratedText(s.caption || '[Table Description]')}</caption><thead><tr>`;
+                                  hdrs.forEach(h => { html += `<th scope="col">${_viewEscapeGeneratedText(h)}</th>`; });
                                   html += '</tr></thead><tbody>';
-                                  for (let r = 0; r < Math.min(s.rowCount || 3, 5); r++) {
-                                    html += '<tr>' + (s.headers || ['','','']).map(() => '<td>[Data]</td>').join('') + '</tr>';
+                                  const rowCap = Math.min(Math.max(1, parseInt(s.rowCount, 10) || 3), 5);
+                                  for (let r = 0; r < rowCap; r++) {
+                                    html += '<tr>' + hdrs.map(() => '<td>[Data]</td>').join('') + '</tr>';
                                   }
                                   html += '</tbody></table>\n';
                                 } else if (s.type === 'list') {
                                   const tag = s.ordered ? 'ol' : 'ul';
                                   html += `<${tag} role="list">`;
-                                  for (let li = 0; li < Math.min(s.itemCount || 3, 8); li++) { html += '<li>[List item]</li>'; }
+                                  const itemCap = Math.min(Math.max(1, parseInt(s.itemCount, 10) || 3), 8);
+                                  for (let li = 0; li < itemCap; li++) { html += '<li>[List item]</li>'; }
                                   html += `</${tag}>\n`;
                                 }
                               });
@@ -21748,7 +21917,7 @@ Return ONLY the plain-language summary.`, false));
                               addToast(t('toasts.template_2') + tmpl.name + '" applied — click any text to edit', 'success');
                             }} className="w-full text-[11px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-600 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between">
                               <span>📐 {tmpl.name}</span>
-                              <span className="text-[11px] text-amber-700">{tmpl.structure?.filter(s => s.type === 'heading').length || 0} sections</span>
+                              <span className="text-[11px] text-amber-700">{tmpl.structure?.filter(s => s && s.type === 'heading').length || 0} sections</span>
                             </button>
                           ))}
                         </div>
@@ -21765,11 +21934,10 @@ Return ONLY the plain-language summary.`, false));
                       const reader = new FileReader();
                       reader.onload = (ev) => {
                         try {
-                          const safeReviver = (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v);
-                          const tmpl = JSON.parse(ev.target.result, safeReviver);
-                          if (!tmpl || typeof tmpl !== 'object' || tmpl.type !== 'alloflow-template' || typeof tmpl.name !== 'string' || !tmpl.structure) { addToast(t('toasts.invalid_template_file'), 'error'); return; }
+                          const tmpl = JSON.parse(ev.target.result, _viewSafeJsonReviver);
+                          if (!tmpl || typeof tmpl !== 'object' || tmpl.type !== 'alloflow-template' || typeof tmpl.name !== 'string' || !Array.isArray(tmpl.structure)) { addToast(t('toasts.invalid_template_file'), 'error'); return; }
                           try {
-                            const saved = JSON.parse(localStorage.getItem('alloflow_templates') || '[]', safeReviver);
+                            const saved = JSON.parse(localStorage.getItem('alloflow_templates') || '[]', _viewSafeJsonReviver);
                             if (Array.isArray(saved) && !saved.some(s => s && s.name === tmpl.name)) { saved.push(tmpl); localStorage.setItem('alloflow_templates', JSON.stringify(saved)); }
                           } catch(e) {}
                           addToast(t('toasts.template_2') + tmpl.name + '" loaded! It now appears in Saved Templates above.', 'success');
@@ -21788,7 +21956,7 @@ Return ONLY the plain-language summary.`, false));
                   📊 Stats & Readability <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                 </summary>
                 <div className="mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400 space-y-2">
-                  <button onClick={() => {
+                  <button type="button" onClick={() => {
                     const doc = pdfPreviewRef.current?.contentDocument;
                     const text = doc?.body?.textContent || '';
                     if (!text.trim()) { addToast(t('toasts.content_analyze'), 'info'); return; }
@@ -21834,7 +22002,7 @@ Return ONLY the plain-language summary.`, false));
                   }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
                     📊 Toggle Reading Level & Stats
                   </button>
-                  <button onClick={async () => {
+                  <button type="button" onClick={async () => {
                     const doc = pdfPreviewRef.current?.contentDocument;
                     if (!doc) return;
                     const issues = [];
@@ -21856,7 +22024,7 @@ Return ONLY the plain-language summary.`, false));
                   }} className="w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-colors">
                     ♿ Quick A11y Check
                   </button>
-                  <button onClick={async () => {
+                  <button type="button" onClick={async () => {
                     const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                     const images = Array.from(doc.querySelectorAll('img'));
                     const needsAlt = images.filter(img => !img.alt || img.alt.trim() === '' || img.alt === 'undefined');
@@ -21900,7 +22068,7 @@ Return ONLY the plain-language summary.`, false));
               </details>
 
               {/* Accessibility Statement (features applied — not a certified conformance claim) */}
-              <button onClick={() => {
+              <button type="button" onClick={() => {
                 const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                 const existing = doc.getElementById('a11y-compliance-statement');
                 if (existing) { existing.remove(); addToast(__t("toasts.provenance_note_removed", "Accessibility tools and review note removed"), 'info'); return; }
@@ -21957,7 +22125,7 @@ Return ONLY the plain-language summary.`, false));
               </button>
 
               {/* Auto Table of Contents */}
-              <button onClick={() => {
+              <button type="button" onClick={() => {
                 const doc = pdfPreviewRef.current?.contentDocument;
                 if (!doc) return;
                 const existing = doc.getElementById('alloflow-toc');
@@ -22009,7 +22177,7 @@ Return ONLY the plain-language summary.`, false));
                     { label: 'SAMPLE', color: '#2563eb', opacity: 0.08 },
                     { label: 'DO NOT DISTRIBUTE', color: '#dc2626', opacity: 0.06 },
                   ].map(wm => (
-                    <button key={wm.label} onClick={() => {
+                    <button type="button" key={wm.label} onClick={() => {
                       const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                       const existing = doc.getElementById('alloflow-watermark');
                       if (existing && existing.dataset.label === wm.label) { existing.remove(); addToast(t('toasts.watermark_removed'), 'info'); return; }
@@ -22033,7 +22201,7 @@ Return ONLY the plain-language summary.`, false));
                       { label: 'Revised ' + new Date().toLocaleDateString(), icon: '📝' },
                       { label: 'Approved ' + new Date().toLocaleDateString(), icon: '✅' },
                     ].map(stamp => (
-                      <button key={stamp.label} onClick={() => {
+                      <button type="button" key={stamp.label} onClick={() => {
                         const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                         const existing = doc.getElementById('alloflow-version-stamp');
                         if (existing) existing.remove();
@@ -22052,7 +22220,7 @@ Return ONLY the plain-language summary.`, false));
               </details>
 
               {/* Bilingual Side-by-Side Layout */}
-              <button onClick={() => {
+              <button type="button" onClick={() => {
                 const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                 const existing = doc.getElementById('bilingual-style');
                 if (existing) { existing.remove(); addToast(t('toasts.bilingual_layout_removed_content_restored'), 'info'); return; }
@@ -22104,7 +22272,7 @@ Return ONLY the plain-language summary.`, false));
 
               {/* Download audio */}
               {callTTS && (
-                <button id="preview-audio-dl-btn" onClick={async () => {
+                <button type="button" id="preview-audio-dl-btn" onClick={async () => {
                   const btn = document.getElementById('preview-audio-dl-btn');
                   const doc = pdfPreviewRef.current?.contentDocument;
                   const fullText = (doc?.body?.textContent || '').trim();
@@ -22188,10 +22356,10 @@ Return ONLY the plain-language summary.`, false));
               )}
 
               {/* Re-run axe-core on edited content */}
-              <button disabled={!!previewAuditBusy} onClick={() => _runOwnedPreviewAudit('axe')} className="w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-2 disabled:opacity-50">
+              <button type="button" disabled={!!previewAuditBusy} onClick={() => _runOwnedPreviewAudit('axe')} className="w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-2 disabled:opacity-50">
                 🔬 Re-audit (axe-core)
               </button>
-              <button disabled={!!previewAuditBusy} onClick={() => _runOwnedPreviewAudit('full')} className="w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-600 hover:bg-purple-100 transition-colors flex items-center gap-2 disabled:opacity-50">
+              <button type="button" disabled={!!previewAuditBusy} onClick={() => _runOwnedPreviewAudit('full')} className="w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-600 hover:bg-purple-100 transition-colors flex items-center gap-2 disabled:opacity-50">
                 🤖 Full Re-audit (AI + axe-core)
               </button>
 
@@ -22292,7 +22460,7 @@ Return ONLY the plain-language summary.`, false));
 
               {/* Export from preview */}
               <div className="mt-auto space-y-2 pt-3 border-t border-slate-200">
-                <button onClick={() => {
+                <button type="button" onClick={() => {
                   const html = getPdfPreviewHtml();
                   setPdfFixResult(prev => ({ ...prev, accessibleHtml: html }));
                   downloadAccessiblePdf(html, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-accessible');
@@ -22300,7 +22468,7 @@ Return ONLY the plain-language summary.`, false));
                   title={(t("pdf_audit.preview.print_copy_review_title") || "Print-style copy via your browser's Save as PDF. Tag preservation depends on the browser; this copy is not independently verified. Use Generate Tagged PDF for the tagged file and its report.")}>
                   📥 {t('pdf_audit.preview.print_style_label') || 'Save as PDF (print-style, unverified)'}
                 </button>
-                <button onClick={() => {
+                <button type="button" onClick={() => {
                   const html = getPdfPreviewHtml();
                   setPdfFixResult(prev => ({ ...prev, accessibleHtml: html }));
                   let _editedReaderHtml;
@@ -22313,7 +22481,7 @@ Return ONLY the plain-language summary.`, false));
                 }} className="w-full px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-600 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2">
                   📄 Save as HTML
                 </button>
-                <button onClick={() => { _cancelRemediationOperationPrefix('preview-'); setPdfPreviewOpen(false); }} className="w-full text-[11px] text-slate-600 hover:text-slate-900 font-bold text-center py-1">
+                <button type="button" onClick={() => { _cancelRemediationOperationPrefix('preview-'); setPdfPreviewOpen(false); }} className="w-full text-[11px] text-slate-600 hover:text-slate-900 font-bold text-center py-1">
                   Close Preview
                 </button>
               </div>
@@ -22334,7 +22502,7 @@ Return ONLY the plain-language summary.`, false));
                   { cmd: 'underline', icon: 'U', label: 'Underline', style: 'underline' },
                   { cmd: 'strikeThrough', icon: 'S', label: 'Strikethrough', style: 'line-through' },
                 ].map(btn => (
-                  <button key={btn.cmd} onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, null); }}
+                  <button type="button" key={btn.cmd} onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, null); }}
                     className={`w-7 h-7 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`}
                     aria-label={btn.label} title={btn.label}>{btn.icon}</button>
                 ))}
@@ -22345,26 +22513,26 @@ Return ONLY the plain-language summary.`, false));
                   { cmd: 'formatBlock', val: '<h3>', icon: 'H3', label: 'Heading 3' },
                   { cmd: 'formatBlock', val: '<p>', icon: '¶', label: 'Paragraph' },
                 ].map(btn => (
-                  <button key={btn.icon} onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, btn.val); }}
+                  <button type="button" key={btn.icon} onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, btn.val); }}
                     className="px-1.5 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
                     aria-label={btn.label} title={btn.label}>{btn.icon}</button>
                 ))}
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
-                <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertUnorderedList', false, null); }}
+                <button type="button" onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertUnorderedList', false, null); }}
                   className="w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.bullet_list') || 'Bullet list'} title={t('pdf_audit.toolbar.bullet_list') || 'Bullet list'}>•</button>
-                <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertOrderedList', false, null); }}
+                <button type="button" onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertOrderedList', false, null); }}
                   className="w-7 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.numbered_list') || 'Numbered list'} title={t('pdf_audit.toolbar.numbered_list') || 'Numbered list'}>1.</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
-                <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('justifyLeft', false, null); }}
+                <button type="button" onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('justifyLeft', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.align_left') || 'Align left'} title={t('pdf_audit.toolbar.align_left') || 'Align left'}>≡</button>
-                <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('justifyCenter', false, null); }}
+                <button type="button" onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('justifyCenter', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.align_center') || 'Align center'} title={t('pdf_audit.toolbar.align_center_title') || 'Center'}>≡</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
-                <button onClick={async () => {
+                <button type="button" onClick={async () => {
                   const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                   const selection = doc.getSelection?.();
                   const savedRange = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
@@ -22383,17 +22551,17 @@ Return ONLY the plain-language summary.`, false));
                   }
                 }} className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.insert_link') || 'Insert link'} title={t('pdf_audit.toolbar.insert_link') || 'Insert link'}>🔗</button>
-                <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('unlink', false, null); }}
+                <button type="button" onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('unlink', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.remove_link') || 'Remove link'} title={t('pdf_audit.toolbar.remove_link') || 'Remove link'}>🚫</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
-                <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('removeFormat', false, null); }}
+                <button type="button" onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('removeFormat', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.clear_formatting') || 'Clear formatting'} title={t('pdf_audit.toolbar.clear_formatting') || 'Clear formatting'}>✕</button>
-                <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('undo', false, null); }}
+                <button type="button" onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('undo', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.undo') || 'Undo'} title={t('pdf_audit.toolbar.undo') || 'Undo'}>↩</button>
-                <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('redo', false, null); }}
+                <button type="button" onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('redo', false, null); }}
                   className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.redo') || 'Redo'} title={t('pdf_audit.toolbar.redo') || 'Redo'}>↪</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
@@ -22417,12 +22585,12 @@ Return ONLY the plain-language summary.`, false));
                   <option value="#e9d5ff">🟣 Purple</option>
                   <option value="transparent">✕ Remove</option>
                 </select>
-                <button onClick={() => {
+                <button type="button" onClick={() => {
                   const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                   doc.execCommand('insertHTML', false, '<table style="width:100%;border-collapse:collapse;margin:12px 0"><caption style="font-weight:bold;margin-bottom:4px">Table Title</caption><thead><tr><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 1</th><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 2</th><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 3</th></tr></thead><tbody><tr><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td></tr><tr><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td></tr></tbody></table>');
                 }} className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.insert_table_aria') || 'Insert table'} title={t('pdf_audit.toolbar.insert_table_title') || 'Insert accessible table'}>📊</button>
-                <button data-help-key="pdf_audit_smart_table_btn" onClick={() => setSmartTableOpen((v) => !v)}
+                <button type="button" data-help-key="pdf_audit_smart_table_btn" onClick={() => setSmartTableOpen((v) => !v)}
                   className={`px-1.5 h-7 rounded text-[11px] transition-colors border ${smartTableOpen ? 'bg-violet-100 text-violet-700 border-violet-400' : 'text-slate-600 border-transparent hover:bg-violet-100 hover:border-violet-600'}`}
                   aria-expanded={smartTableOpen}
                   aria-label={t('pdf_audit.toolbar.smart_table_aria') || 'Smart table: paste data, get an accessible table'} title={t('pdf_audit.toolbar.smart_table_title') || 'Smart table — paste ANY data (rows from email, notes, CSV) and get a clean accessible table. Delimited data parses instantly with no AI; messy data is organized by AI using only your values.'}>📊✨</button>
@@ -22508,7 +22676,7 @@ Return ONLY the plain-language summary.`, false));
                       ))}
                     </div>
                     <div className="px-4 py-3 border-t border-slate-200 flex items-center gap-2">
-                      <button onClick={() => {
+                      <button type="button" onClick={() => {
                         try {
                           const r = applyFormBlanks(pdfFixResult.accessibleHtml, fillableAccepted);
                           setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: r.html, _userEditedAt: Date.now() } : prev);
@@ -22522,7 +22690,7 @@ Return ONLY the plain-language summary.`, false));
                       }} disabled={Object.keys(fillableAccepted).length === 0} className="px-4 py-2 bg-fuchsia-600 text-white rounded-xl text-xs font-bold hover:bg-fuchsia-700 disabled:opacity-50">
                         ✅ {(t('pdf_audit.fillable.apply') || 'Convert')} {Object.keys(fillableAccepted).length} {(t('pdf_audit.fillable.apply2') || 'fields')}
                       </button>
-                      <button onClick={() => setFillableCandidates(null)} className="px-3 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">{t('pdf_audit.fillable.cancel') || 'Cancel'}</button>
+                      <button type="button" onClick={() => setFillableCandidates(null)} className="px-3 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">{t('pdf_audit.fillable.cancel') || 'Cancel'}</button>
                       <span className="text-[10px] text-slate-500 ml-auto">{t('pdf_audit.fillable.footer') || 'Amber labels need a name — unlabeled fields confuse screen readers.'}</span>
                     </div>
                   </div>
@@ -22540,7 +22708,7 @@ Return ONLY the plain-language summary.`, false));
                           <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5">⚠ {pdfFixResult._plainLanguage.chunksFailed}/{pdfFixResult._plainLanguage.chunksTotal} {t('pdf_audit.translate.kept_original') || 'sections kept the original text'}</span>
                         )}
                         {_companionIsStale(pdfFixResult._plainLanguage) && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.plain.stale_title') || 'The document changed after this plain-language version was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
-                        <button onClick={() => setShowPlainCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
+                        <button type="button" onClick={() => setShowPlainCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
                       </div>
                     </div>
                     <div className="flex-1 grid grid-cols-2 gap-0 min-h-0">
@@ -22570,7 +22738,7 @@ Return ONLY the plain-language summary.`, false));
                           <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5">⚠ {pdfFixResult._translation.chunksFailed}/{pdfFixResult._translation.chunksTotal} {t('pdf_audit.translate.kept_original') || 'sections kept the original text'}</span>
                         )}
                         {_companionIsStale(pdfFixResult._translation) && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.translate.stale_title') || 'The document changed after this translation was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
-                        <button onClick={() => setShowTranslationCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
+                        <button type="button" onClick={() => setShowTranslationCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
                       </div>
                     </div>
                     <div className="flex-1 grid grid-cols-2 gap-0 min-h-0">

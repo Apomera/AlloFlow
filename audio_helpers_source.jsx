@@ -269,12 +269,25 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
     setDownloadingContentId(contentId);
     addToast(t('common.audio_generating'), "info");
     try {
+        if (String(selectedVoice || '').trim().toLowerCase() === 'browser') {
+            const browserError = new Error('Browser device voice cannot be saved as a file.');
+            browserError.code = 'BROWSER_TTS_REQUIRED';
+            browserError.useBrowserTts = true;
+            throw browserError;
+        }
         const cleanText = prepareDownloadAudioText(rawText);
         if (!cleanText) throw new Error('No speakable text remains after removing citations and references');
         const pcmChunks = [];
         if (cleanText.length > DOWNLOAD_AUDIO_MAX_TEXT_CHARS) throw new Error('Text is too long for one audio download');
-        const voicePool = AVAILABLE_VOICES.filter(v => v !== selectedVoice);
-        if (voicePool.length === 0) voicePool.push(selectedVoice || 'Kore');
+        const isSelectedKokoro = /^(af_|am_|bf_|bm_)/i.test(String(selectedVoice || ''));
+        const kokoroCandidates = Array.isArray(deps.KOKORO_VOICES) && deps.KOKORO_VOICES.length
+            ? deps.KOKORO_VOICES.map(v => (typeof v === 'string' ? v : v?.id || v?.voice)).filter(Boolean)
+            : (Array.isArray(window.AlloModules?.VoiceConfig?.KOKORO_VOICES)
+                ? window.AlloModules.VoiceConfig.KOKORO_VOICES.map(v => (typeof v === 'string' ? v : v?.id || v?.voice)).filter(Boolean)
+                : ['af_heart', 'af_bella', 'am_adam', 'am_michael', 'bf_emma', 'bm_george']);
+        const basePool = isSelectedKokoro ? kokoroCandidates : (Array.isArray(AVAILABLE_VOICES) ? AVAILABLE_VOICES : []);
+        const voicePool = basePool.filter(v => v !== selectedVoice);
+        if (voicePool.length === 0) voicePool.push(selectedVoice || (isSelectedKokoro ? 'af_heart' : 'Kore'));
         if (!persistentVoiceMapRef.current) {
             const initMap = Object.create(null);
             initMap["Narrator"] = selectedVoice;
@@ -344,10 +357,12 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
             if (requestedSegmentCount >= DOWNLOAD_AUDIO_MAX_REQUESTS) throw new Error('Audio download needs too many TTS segments');
             requestedSegmentCount += 1;
             let result;
-            const localKokoroVoice = /^(af_|am_|bf_|bm_)/i.test(String(voice || ''));
-            // Student AI off: never download the Kokoro model for a learner;
-            // callTTS uses one only when it is already on this device.
+            const isEnglishDownload = !deps.language || /^(?:english\b|en(?:[-_]|$))/i.test(String(deps.language).trim());
+            const localKokoroVoice = isEnglishDownload && /^(af_|am_|bf_|bm_)/i.test(String(voice || ''));
+            // Student AI off / secrets locked: never download the Kokoro model for a learner
+            // and never send text to cloud Gemini TTS while keys are locked.
             const studentAiOff = window.__alloStudentAiDisabled === true;
+            const secretsLocked = window.__alloAiSecretsLocked === true;
             if (localKokoroVoice && typeof callTTS === 'function') {
                 if (!studentAiOff && !window._kokoroTTS?.ready && typeof window.__loadKokoroTTS === 'function') {
                     await window.__loadKokoroTTS();
@@ -358,20 +373,30 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
                     signal: downloadSignal,
                     priority: 'normal',
                     reason: 'download-audio',
+                    word: false,
                     ...(deps.language ? { language: deps.language } : {}),
                 });
-                if (!audioUrl && studentAiOff) {
+                if (!audioUrl && (studentAiOff || secretsLocked)) {
                     const studentError = new Error('No on-device voice is ready for this download.');
                     studentError.code = 'BROWSER_TTS_REQUIRED';
                     studentError.useBrowserTts = true;
-                    studentError.studentAiOff = true;
+                    studentError.studentAiOff = studentAiOff;
                     throw studentError;
                 }
                 if (!audioUrl) throw new Error(`Local TTS returned no audio for segment ${requestedSegmentCount}`);
                 const response = await fetch(audioUrl, { signal: downloadSignal || undefined });
                 if (!response.ok) throw new Error(`Local TTS clip could not be read for segment ${requestedSegmentCount}`);
                 result = { bytes: _extractMonoPcm16WavBytes(await response.arrayBuffer(), requestedSegmentCount) };
-            } else result = await fetchTTSBytes(text, voice, 1, deps.language || null, downloadSignal, 'normal');
+            } else {
+                if (studentAiOff || secretsLocked) {
+                    const blockedError = new Error('Cloud audio download is disabled in this mode.');
+                    blockedError.code = 'BROWSER_TTS_REQUIRED';
+                    blockedError.useBrowserTts = true;
+                    blockedError.studentAiOff = studentAiOff;
+                    throw blockedError;
+                }
+                result = await fetchTTSBytes(text, voice, 1, deps.language || null, downloadSignal, 'normal');
+            }
             if (downloadSignal?.aborted) throw _downloadAbortError();
             const bytes = _normalizeRequiredTtsBytes(result, requestedSegmentCount);
             totalPcmBytes += bytes.byteLength;
@@ -481,9 +506,17 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
     }
 };
 
+let activeCardSequence = null;
 const handleCardAudioSequence = async (e, deps) => {
   const { generatedContent, selectedVoice, setIsPlaying, setPlayingContentId, audioRef, isPlayingRef, playbackSessionRef, playbackRateRef, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, addBlobUrl, callTTS, stopPlayback, t, warnLog } = deps;
   if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+  if (activeCardSequence && activeCardSequence.playbackSessionRef === playbackSessionRef && activeCardSequence.isActive()) {
+    const prevFinish = activeCardSequence.finish;
+    activeCardSequence = null;
+    stopPlayback();
+    prevFinish();
+    return;
+  }
   const item = generatedContent?.data?.[flashcardIndex];
   const isMuted = () => {
     try { return typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : localStorage.getItem('alloflow-global-muted') === 'true'; }
@@ -508,19 +541,20 @@ const handleCardAudioSequence = async (e, deps) => {
     const rate = Number(groupRate ?? window.__alloPlaybackRate ?? playbackRateRef.current);
     const volume = Number(window.__alloVoiceVolume ?? 1);
     return {
-      rate: Number.isFinite(rate) && rate > 0 ? Math.max(0.1, Math.min(10, rate)) : 1,
+      rate: Number.isFinite(rate) && rate > 0 ? Math.max(0.5, Math.min(2, rate)) : 1,
       volume: Number.isFinite(volume) ? Math.max(0, Math.min(1, volume)) : 1
     };
   };
   const applyPreferences = () => {
     if (!ownedAudio) return;
     const pref = preferences();
-    ownedAudio.playbackRate = pref.rate;
-    ownedAudio.volume = pref.volume;
+    try { ownedAudio.playbackRate = pref.rate; } catch (_) {}
+    try { ownedAudio.volume = pref.volume; } catch (_) {}
   };
   const finish = () => {
     if (finished) return;
     finished = true;
+    if (activeCardSequence && activeCardSequence.finish === finish) activeCardSequence = null;
     controller.abort();
     if (timer) clearTimeout(timer);
     timer = null;
@@ -550,6 +584,11 @@ const handleCardAudioSequence = async (e, deps) => {
     resolveDelay = resolve;
     timer = setTimeout(() => { timer = null; resolveDelay = null; resolve(); }, ms);
   });
+  activeCardSequence = {
+    playbackSessionRef,
+    finish,
+    isActive: () => !finished && playbackSessionRef.current === sessionId,
+  };
   window.addEventListener('alloflow-mute-changed', onMute);
   window.addEventListener('alloflow:playback-stopped', finish);
   window.addEventListener('alloflow:audio-preferences-changed', applyPreferences);
@@ -596,52 +635,62 @@ const handleCardAudioSequence = async (e, deps) => {
               ].filter(Boolean);
           }
     const playNext = async idx => {
-      if (!isCurrent() || idx >= sequence.length) { finish(); return; }
-      let url = null;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-          url = await callTTS(sequence[idx].text, window.__alloSelectedVoice || selectedVoice, 1, { language: sequence[idx].language, signal: controller.signal });
-        } catch (error) {
+      try {
+        if (!isCurrent() || idx >= sequence.length) { finish(); return; }
+        let url = null;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            url = await callTTS(sequence[idx].text, window.__alloSelectedVoice || selectedVoice, 1, { language: sequence[idx].language, signal: controller.signal });
+          } catch (error) {
+            if (!isCurrent()) { finish(); return; }
+            warnLog('Card audio generation failed:', error);
+          }
           if (!isCurrent()) { finish(); return; }
-          warnLog('Card audio generation failed:', error);
+          if (url || window.__alloStudentAiDisabled === true) break;
+          if (attempt === 0) await delay(1500);
+          if (!isCurrent()) { finish(); return; }
         }
-        if (!isCurrent()) { finish(); return; }
-        if (url || window.__alloStudentAiDisabled === true) break;
-        if (attempt === 0) await delay(1500);
-        if (!isCurrent()) { finish(); return; }
-      }
-      const advance = () => {
-        if (!isCurrent()) { finish(); return; }
-        timer = setTimeout(() => { timer = null; playNext(idx + 1); }, 500);
-      };
-      if (!url) {
-        const pref = preferences();
-        let spokenDone = false;
-        const spoken = _audioStudentDeviceVoice(sequence[idx].text, {
-          rate: pref.rate, volume: pref.volume, language: sequence[idx].language,
-          onEnd: () => { if (spokenDone) return; spokenDone = true; deviceVoiceSpeaking = false; advance(); }
-        });
-        if (spoken) { deviceVoiceSpeaking = true; return; }
-        advance(); return;
-      }
-      addBlobUrl(url);
-      const audio = new Audio(url);
-      ownedAudio = audio;
-      audioRef.current = audio;
-      applyPreferences();
-      let terminal = false;
-      const nextOnce = () => {
-        if (terminal) return;
-        terminal = true;
-        audio.onended = null;
-        audio.onerror = null;
-        advance();
-      };
-      audio.onended = nextOnce;
-      audio.onerror = nextOnce;
-      try { await Promise.resolve(audio.play()); }
-      catch (error) {
-        if (isCurrent()) warnLog('Card audio playback failed:', error);
+        const advance = () => {
+          if (!isCurrent()) { finish(); return; }
+          timer = setTimeout(() => { timer = null; playNext(idx + 1); }, 500);
+        };
+        if (!url) {
+          const pref = preferences();
+          let spokenDone = false;
+          const spoken = _audioStudentDeviceVoice(sequence[idx].text, {
+            rate: pref.rate, volume: pref.volume, language: sequence[idx].language,
+            onEnd: () => { if (spokenDone) return; spokenDone = true; deviceVoiceSpeaking = false; advance(); }
+          });
+          if (spoken) { deviceVoiceSpeaking = true; return; }
+          advance(); return;
+        }
+        addBlobUrl(url);
+        const audio = new Audio(url);
+        ownedAudio = audio;
+        audioRef.current = audio;
+        applyPreferences();
+        let terminal = false;
+        const nextOnce = () => {
+          if (terminal) return;
+          terminal = true;
+          audio.onended = null;
+          audio.onerror = null;
+          advance();
+        };
+        audio.onended = nextOnce;
+        audio.onerror = nextOnce;
+        try {
+          await Promise.resolve(audio.play());
+          if (!isCurrent()) {
+            try { audio.pause(); } catch (_) {}
+            finish();
+          }
+        } catch (error) {
+          if (isCurrent()) warnLog('Card audio playback failed:', error);
+          finish();
+        }
+      } catch (error) {
+        if (isCurrent()) warnLog('Card audio segment failed:', error);
         finish();
       }
     };

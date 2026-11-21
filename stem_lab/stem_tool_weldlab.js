@@ -5414,7 +5414,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // The hub screen paints no ground, so its title, subtitle, section
       // label and footer sit on the HOST surface - white in light and dark,
       // pure BLACK in the contrast theme, where 'WeldLab' measured 1.44:1.
-      var isContrast = !!ctx.isContrast;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
       var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React || window.React;
       var h = React.createElement;
@@ -5422,8 +5422,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       var useEffect = React.useEffect;
       var useRef = React.useRef;
 
-      var d = (ctx.toolData && ctx.toolData['weldLab']) || {};
-      var upd = function(key, val) { ctx.update('weldLab', key, val); };
+      var rawWeldData = (ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData['weldLab'] : null;
+      var d = (rawWeldData && typeof rawWeldData === 'object' && !Array.isArray(rawWeldData)) ? rawWeldData : {};
+      var upd = function(key, val) { if (typeof ctx.update === 'function') ctx.update('weldLab', key, val); };
       // Bound for any view that reads toolData / setToolData directly rather
       // than through upd. (The heatHunt inquiry widget that once needed this
       // was folded into the Heat Input Calculator's notebook and removed.)
@@ -7659,9 +7660,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           var hwAvg = hw.reduce(function (s2, v) { return s2 + v; }, 0) / hw.length;
           var twAvg = tw.reduce(function (s2, v) { return s2 + v; }, 0) / tw.length;
           if (opt.M !== 'aluminum' && twAvg > 0.5) {
+            // Iridescent metallurgical HAZ rainbow temper-color progression on brushed steel/stainless.
             var stops = opt.M === 'stainless'
-              ? [[0, 'rgba(77,85,99,0.75)'], [0.2, 'rgba(90,76,154,0.6)'], [0.45, 'rgba(143,74,42,0.5)'], [0.72, 'rgba(216,182,94,0.42)'], [1, 'rgba(216,182,94,0)']]
-              : [[0, 'rgba(93,102,114,0.7)'], [0.2, 'rgba(61,95,158,0.55)'], [0.45, 'rgba(156,100,41,0.48)'], [0.72, 'rgba(214,180,90,0.4)'], [1, 'rgba(214,180,90,0)']];
+              ? [[0, 'rgba(71,85,105,0.78)'], [0.16, 'rgba(59,130,246,0.62)'], [0.34, 'rgba(139,92,246,0.58)'], [0.54, 'rgba(194,104,46,0.54)'], [0.76, 'rgba(234,197,94,0.46)'], [1, 'rgba(234,197,94,0)']]
+              : [[0, 'rgba(82,94,108,0.74)'], [0.18, 'rgba(56,112,188,0.58)'], [0.36, 'rgba(124,84,168,0.48)'], [0.56, 'rgba(186,108,42,0.50)'], [0.78, 'rgba(232,194,96,0.42)'], [1, 'rgba(232,194,96,0)']];
             [-1, 1].forEach(function (side) {
               var tg0 = c.createLinearGradient(0, jy + side * hwAvg, 0, jy + side * (hwAvg + twAvg));
               stops.forEach(function (st) { tg0.addColorStop(st[0], st[1]); });
@@ -7903,55 +7905,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             c.closePath();
             c.fill();
           }
-          // Weld pool: a teardrop that stretches as travel speeds up.
+          // Molten weld pool: incandescent teardrop with orange-gold shimmer.
           var poolL = hwA * (1.05 + tsA / 18), poolW = hwA * 0.98;
           var pcx = arcPx - poolL * 0.35;
+          var poolShimmer = _prefersReducedMotion ? 1 : (0.94 + 0.06 * Math.sin(elapsed * 8.5));
           var pg = c.createRadialGradient(pcx + poolL * 0.3, jy, 1, pcx, jy, poolL);
           if (al) {
             pg.addColorStop(0, '#ffffff');
-            pg.addColorStop(0.5, '#eef2f6');
-            pg.addColorStop(1, '#c3ccd5');
+            pg.addColorStop(0.42, '#f1f5f9');
+            pg.addColorStop(0.82, '#cbd5e1');
+            pg.addColorStop(1, 'rgba(195,204,213,0.75)');
           } else {
             pg.addColorStop(0, '#ffffff');
-            pg.addColorStop(0.45, '#fff1b0');
-            pg.addColorStop(1, '#ffb347');
+            pg.addColorStop(0.28, '#fef08a');
+            pg.addColorStop(0.62, '#fb923c');
+            pg.addColorStop(1, 'rgba(234,88,12,0.85)');
           }
           c.fillStyle = pg;
           c.beginPath();
-          c.ellipse(pcx, jy, poolL, poolW, 0, 0, Math.PI * 2);
+          c.ellipse(pcx, jy, poolL * poolShimmer, poolW, 0, 0, Math.PI * 2);
           c.fill();
-          // Arc glow: amplitude from the shared sub-3 Hz waveform (static when
-          // reduced motion is on).
+          if (!al) {
+            // Subtle molten ripple glint across the liquid puddle surface.
+            c.strokeStyle = 'rgba(255,251,235,' + (0.48 * poolShimmer).toFixed(2) + ')';
+            c.lineWidth = 1.1;
+            c.beginPath();
+            c.ellipse(pcx + poolL * 0.08, jy, poolL * 0.45, poolW * 0.56, 0, -Math.PI * 0.42, Math.PI * 0.42);
+            c.stroke();
+          }
+          // Electric-blue/white plasma arc core bloom: amplitude from the shared sub-3 Hz waveform (static when reduced motion is on).
           var rG = (10 + 7 * pulse) * Math.sqrt(ppi / 94.5);
-          var ag = c.createRadialGradient(arcPx, jy, 0, arcPx, jy, rG * 2.2);
-          ag.addColorStop(0, 'rgba(255,255,240,' + pulse.toFixed(3) + ')');
-          ag.addColorStop(0.35, 'rgba(255,240,170,' + (0.7 * pulse).toFixed(3) + ')');
-          ag.addColorStop(1, 'rgba(255,200,90,0)');
+          var blueCorona = c.createRadialGradient(arcPx, jy, 0, arcPx, jy, rG * 2.85);
+          blueCorona.addColorStop(0, 'rgba(224,242,254,' + (0.85 * pulse).toFixed(3) + ')');
+          blueCorona.addColorStop(0.24, 'rgba(96,165,250,' + (0.52 * pulse).toFixed(3) + ')');
+          blueCorona.addColorStop(0.58, 'rgba(56,189,248,' + (0.20 * pulse).toFixed(3) + ')');
+          blueCorona.addColorStop(1, 'rgba(37,99,235,0)');
+          c.fillStyle = blueCorona;
+          c.beginPath();
+          c.arc(arcPx, jy, rG * 2.85, 0, Math.PI * 2);
+          c.fill();
+          var ag = c.createRadialGradient(arcPx, jy, 0, arcPx, jy, rG * 2.0);
+          ag.addColorStop(0, 'rgba(255,255,255,' + pulse.toFixed(3) + ')');
+          ag.addColorStop(0.22, 'rgba(224,242,254,' + (0.85 * pulse).toFixed(3) + ')');
+          ag.addColorStop(0.52, 'rgba(253,224,71,' + (0.42 * pulse).toFixed(3) + ')');
+          ag.addColorStop(1, 'rgba(251,146,60,0)');
           c.fillStyle = ag;
           c.beginPath();
-          c.arc(arcPx, jy, rG * 2.2, 0, Math.PI * 2);
+          c.arc(arcPx, jy, rG * 2.0, 0, Math.PI * 2);
           c.fill();
-          c.fillStyle = 'rgba(255,255,255,0.95)';
+          // Crisp 4-point plasma optical diffraction flare.
+          var flareR = rG * 1.45;
+          c.strokeStyle = 'rgba(224,242,254,' + (0.58 * pulse).toFixed(3) + ')';
+          c.lineWidth = 1.2;
           c.beginPath();
-          c.arc(arcPx, jy, 3.5, 0, Math.PI * 2);
+          c.moveTo(arcPx - flareR, jy); c.lineTo(arcPx + flareR, jy);
+          c.moveTo(arcPx, jy - flareR * 0.72); c.lineTo(arcPx, jy + flareR * 0.72);
+          c.stroke();
+          c.fillStyle = 'rgba(255,255,255,0.98)';
+          c.beginPath();
+          c.arc(arcPx, jy, 3.8, 0, Math.PI * 2);
           c.fill();
           // Sparks fly from MIG and stick arcs (TIG and oxy-fuel run spark-free);
           // more when the model predicts spatter. Each spark lives ~0.45 s.
           if (!_prefersReducedMotion && (opt.P === 'mig' || opt.P === 'stick')) {
-            var nSp = 6 + Math.round(10 * (opt.spatter || 0));
+            var nSp = 7 + Math.round(11 * (opt.spatter || 0));
             var sc = Math.sqrt(ppi / 94.5);
-            c.lineWidth = 1.2;
             for (var s = 0; s < nSp; s++) {
               var life = elapsed * 2.2 + s * 0.618;
               var ph = life - Math.floor(life);
               var ang = s * 2.399 + Math.floor(life) * 1.7;
-              var dist = (4 + ph * 34) * sc;
-              var dxs = Math.cos(ang), dys = Math.sin(ang) * 0.5;
-              c.strokeStyle = 'rgba(255,' + Math.round(180 + 75 * (1 - ph)) + ',90,' + ((1 - ph) * 0.85).toFixed(2) + ')';
-              c.beginPath();
-              c.moveTo(arcPx + dxs * (dist - 5 * sc), jy + dys * (dist - 5 * sc));
-              c.lineTo(arcPx + dxs * dist, jy + dys * dist);
-              c.stroke();
+              var dist = (4 + ph * 36) * sc;
+              var dxs = Math.cos(ang), dys = Math.sin(ang) * 0.52;
+              var sxA = arcPx + dxs * (dist - 6 * sc), syA = jy + dys * (dist - 6 * sc);
+              var sxB = arcPx + dxs * dist, syB = jy + dys * dist;
+              c.lineWidth = 2.4;
+              c.strokeStyle = 'rgba(251,146,60,' + ((1 - ph) * 0.36).toFixed(2) + ')';
+              c.beginPath(); c.moveTo(sxA, syA); c.lineTo(sxB, syB); c.stroke();
+              c.lineWidth = 1.25;
+              c.strokeStyle = 'rgba(255,' + Math.round(205 + 50 * (1 - ph)) + ',125,' + ((1 - ph) * 0.94).toFixed(2) + ')';
+              c.beginPath(); c.moveTo(sxA, syA); c.lineTo(sxB, syB); c.stroke();
             }
           }
         }
@@ -9897,29 +9929,228 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             oxyGroup.visible = false;
             torchGroup.add(oxyGroup);
 
+            // ── Cinema-grade WebGL1 / GLSL ES 1.00 Welding Shaders ──
+            // Track every custom ShaderMaterial & BufferGeometry for strict unmount disposal.
+            var weldShaderDisposables = [];
+            function isWeldHC() {
+              try {
+                if (typeof document !== 'undefined') {
+                  var de = document.documentElement, bd = document.body;
+                  if ((de && de.classList && de.classList.contains('theme-contrast')) ||
+                      (bd && bd.classList && bd.classList.contains('theme-contrast'))) return true;
+                }
+                if (typeof window !== 'undefined' && window.matchMedia &&
+                    (window.matchMedia('(forced-colors: active)').matches ||
+                     window.matchMedia('(prefers-contrast: more)').matches)) return true;
+              } catch (e) {}
+              return false;
+            }
+            var canWeldShader = typeof THREE.ShaderMaterial === 'function';
+            var weldGlslNoise =
+              'float wHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }\n' +
+              'float wNoise(vec2 p){\n' +
+              '  vec2 i = floor(p); vec2 f = fract(p);\n' +
+              '  vec2 u = f * f * (3.0 - 2.0 * f);\n' +
+              '  return mix(mix(wHash(i), wHash(i + vec2(1.0, 0.0)), u.x),\n' +
+              '             mix(wHash(i + vec2(0.0, 1.0)), wHash(i + vec2(1.0, 1.0)), u.x), u.y);\n' +
+              '}\n' +
+              'float wFbm(vec2 p){\n' +
+              '  float v = 0.0; float a = 0.5;\n' +
+              '  for (int i = 0; i < 4; i++) { v += a * wNoise(p); p *= 2.04; a *= 0.5; }\n' +
+              '  return v;\n' +
+              '}\n' +
+              'vec3 wBlackbody(float t){\n' +
+              '  t = clamp(t, 0.0, 1.0);\n' +
+              '  vec3 c0 = vec3(0.14, 0.02, 0.01);\n' +
+              '  vec3 c1 = vec3(0.84, 0.14, 0.02);\n' +
+              '  vec3 c2 = vec3(1.00, 0.56, 0.08);\n' +
+              '  vec3 c3 = vec3(1.00, 0.96, 0.80);\n' +
+              '  vec3 lo = mix(c0, c1, smoothstep(0.0, 0.38, t));\n' +
+              '  vec3 md = mix(lo, c2, smoothstep(0.32, 0.72, t));\n' +
+              '  return mix(md, c3, smoothstep(0.68, 1.0, t));\n' +
+              '}\n';
+
             // ── Weld pool puddle ──
             // A flat glowing disc just ahead of the arc representing the
-            // molten metal pool. Bright orange-yellow with emissive
-            // material. Size scales with heat input.
+            // molten metal pool. Bright orange-yellow with blackbody cooling
+            // meniscus ripples (WebGL1 ShaderMaterial with MeshStandard fallback).
             var weldPoolMat = new THREE.MeshStandardMaterial({
               color: 0xfbbf24, emissive: 0xea580c, emissiveIntensity: 0.85, roughness: 0.3
             });
-            var weldPool = new THREE.Mesh(new THREE.CircleGeometry(0.07, 16), weldPoolMat);
+            var weldPoolShaderMat = canWeldShader ? new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 2.4 },
+                uHeat: { value: 0.85 },
+                uProcess: { value: 0.0 }
+              },
+              vertexShader:
+                'varying vec2 vUv;\n' +
+                'void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+              fragmentShader:
+                'uniform float uTime;\n' +
+                'uniform float uHeat;\n' +
+                'uniform float uProcess;\n' +
+                'varying vec2 vUv;\n' +
+                weldGlslNoise +
+                'void main(){\n' +
+                '  vec2 p = (vUv - 0.5) * 2.0;\n' +
+                '  p.x *= 0.76;\n' +
+                '  float r = length(p);\n' +
+                '  if (r > 1.0) discard;\n' +
+                '  float swirl = wFbm(p * 4.5 + vec2(-uTime * 1.4, uTime * 0.6));\n' +
+                '  float ripple = 0.5 + 0.5 * sin(r * 26.0 - uTime * 5.2 + swirl * 3.2);\n' +
+                '  float edgeMask = smoothstep(1.0, 0.12, r);\n' +
+                '  float temp = clamp(edgeMask * (0.72 + 0.35 * uHeat) + (ripple - 0.5) * 0.14 + (swirl - 0.5) * 0.18, 0.0, 1.0);\n' +
+                '  vec3 col = wBlackbody(temp);\n' +
+                '  if (uProcess > 0.5 && uProcess < 1.5) col = mix(col, vec3(1.0, 0.99, 0.90), smoothstep(0.65, 1.0, temp) * 0.35);\n' +
+                '  if (uProcess > 2.5) col = mix(col, vec3(1.0, 0.38, 0.06), 0.22);\n' +
+                '  float meniscus = smoothstep(0.72, 0.92, r) * smoothstep(1.0, 0.88, r) * (0.45 + 0.55 * ripple);\n' +
+                '  col += vec3(1.0, 0.86, 0.58) * meniscus * 0.42;\n' +
+                '  float alpha = smoothstep(1.0, 0.76, r);\n' +
+                '  gl_FragColor = vec4(col * (1.05 + 0.32 * uHeat), alpha);\n' +
+                '}',
+              transparent: true,
+              depthWrite: false
+            }) : null;
+            if (weldPoolShaderMat) weldShaderDisposables.push(weldPoolShaderMat);
+            var weldPoolGeom = new THREE.CircleGeometry(0.085, 24);
+            weldShaderDisposables.push(weldPoolGeom);
+            var weldPool = new THREE.Mesh(weldPoolGeom, weldPoolShaderMat || weldPoolMat);
             weldPool.rotation.x = -Math.PI / 2; // lying flat
+            weldPool.renderOrder = 3;
             jointGroup.add(weldPool);
+
+            // ── Molten Cooling Bead Trail + Temper-Oxide HAZ Iridescent Strip ──
+            var hazStripMat = canWeldShader ? new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 2.4 },
+                uProgress: { value: 0.5 },
+                uHeat: { value: 0.75 },
+                uArcOn: { value: 1.0 },
+                uRecorded: { value: 0.0 }
+              },
+              vertexShader:
+                'varying vec2 vUv;\n' +
+                'varying vec3 vNormal;\n' +
+                'varying vec3 vViewDir;\n' +
+                'void main(){\n' +
+                '  vUv = uv;\n' +
+                '  vNormal = normalize(normalMatrix * normal);\n' +
+                '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);\n' +
+                '  vViewDir = normalize(-mvPos.xyz);\n' +
+                '  gl_Position = projectionMatrix * mvPos;\n' +
+                '}',
+              fragmentShader:
+                'uniform float uTime;\n' +
+                'uniform float uProgress;\n' +
+                'uniform float uHeat;\n' +
+                'uniform float uArcOn;\n' +
+                'uniform float uRecorded;\n' +
+                'varying vec2 vUv;\n' +
+                'varying vec3 vNormal;\n' +
+                'varying vec3 vViewDir;\n' +
+                weldGlslNoise +
+                'void main(){\n' +
+                '  float distBehind = uProgress - vUv.x;\n' +
+                '  if (distBehind < -0.05) discard;\n' +
+                '  float lateral = abs(vUv.y - 0.5) * 2.0;\n' +
+                '  float edgeNoise = (wFbm(vec2(vUv.x * 16.0, vUv.y * 9.0)) - 0.5) * 0.14;\n' +
+                '  float band = clamp(lateral + edgeNoise, 0.0, 1.0);\n' +
+                '  float ndotv = clamp(abs(dot(normalize(vNormal), normalize(vViewDir))), 0.0, 1.0);\n' +
+                '  float iridShift = (1.0 - ndotv) * 0.22;\n' +
+                '  float oxideT = clamp(band * 1.15 - iridShift, 0.0, 1.0);\n' +
+                '  vec3 straw  = vec3(0.86, 0.70, 0.34);\n' +
+                '  vec3 bronze = vec3(0.76, 0.38, 0.18);\n' +
+                '  vec3 violet = vec3(0.48, 0.24, 0.68);\n' +
+                '  vec3 cobalt = vec3(0.18, 0.42, 0.86);\n' +
+                '  vec3 steelB = vec3(0.32, 0.46, 0.60);\n' +
+                '  vec3 ox = mix(straw, bronze, smoothstep(0.08, 0.28, oxideT));\n' +
+                '  ox = mix(ox, violet, smoothstep(0.28, 0.50, oxideT));\n' +
+                '  ox = mix(ox, cobalt, smoothstep(0.50, 0.72, oxideT));\n' +
+                '  ox = mix(ox, steelB, smoothstep(0.72, 0.94, oxideT));\n' +
+                '  float sheen = 0.78 + 0.42 * pow(1.0 - ndotv, 1.8);\n' +
+                '  float coolTrail = exp(-max(0.0, distBehind) * 5.2) * smoothstep(-0.04, 0.015, distBehind);\n' +
+                '  float hotZone = coolTrail * smoothstep(0.78, 0.02, lateral) * uHeat * (1.0 - uRecorded);\n' +
+                '  float ripple = 0.88 + 0.12 * sin((vUv.x * 64.0) - uTime * 3.0);\n' +
+                '  vec3 hotCol = wBlackbody(clamp(hotZone * 1.15 * ripple, 0.0, 1.0));\n' +
+                '  vec3 finalCol = mix(ox * sheen, hotCol * 1.35, clamp(hotZone * 1.1, 0.0, 0.95));\n' +
+                '  float laidMask = smoothstep(-0.04, 0.02, distBehind);\n' +
+                '  float hazAlpha = laidMask * smoothstep(1.0, 0.28, band) * smoothstep(0.02, 0.14, lateral) * (0.48 + 0.22 * uHeat);\n' +
+                '  float glowAlpha = hotZone * 0.85 * uArcOn;\n' +
+                '  gl_FragColor = vec4(finalCol, clamp(max(hazAlpha, glowAlpha), 0.0, 0.88));\n' +
+                '}',
+              transparent: true,
+              depthWrite: false,
+              polygonOffset: true,
+              polygonOffsetFactor: -2,
+              polygonOffsetUnits: -2
+            }) : null;
+            var hazStrip = null;
+            if (hazStripMat) {
+              var hazStripGeom = new THREE.PlaneGeometry(2.0, 0.34, 1, 1);
+              weldShaderDisposables.push(hazStripMat, hazStripGeom);
+              hazStrip = new THREE.Mesh(hazStripGeom, hazStripMat);
+              hazStrip.rotation.x = -Math.PI / 2;
+              hazStrip.renderOrder = 2;
+              jointGroup.add(hazStrip);
+            }
 
             // ── Shielding gas cone (MIG + TIG only) ──
             // Translucent cone of inert gas coming from torch nozzle
             // shielding the arc + weld pool from atmospheric oxygen +
-            // nitrogen. Visible as a faint blue-white volume around the
-            // tip. Hidden for stick + oxy (stick uses flux for shielding;
-            // oxy uses its own flame envelope).
+            // nitrogen. Upgraded with rising thermal-shimmer GLSL veil.
             var gasMat = new THREE.MeshBasicMaterial({
               color: 0xb8d4ff, transparent: true, opacity: 0.16,
               side: THREE.DoubleSide, depthWrite: false
             });
-            var gasCone = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.14, 16, 1, true), gasMat);
+            var gasShaderMat = canWeldShader ? new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 2.4 },
+                uHeat: { value: 0.8 },
+                uProcess: { value: 0.0 }
+              },
+              vertexShader:
+                'varying vec2 vUv;\n' +
+                'varying vec3 vNormal;\n' +
+                'varying vec3 vViewDir;\n' +
+                'void main(){\n' +
+                '  vUv = uv;\n' +
+                '  vNormal = normalize(normalMatrix * normal);\n' +
+                '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);\n' +
+                '  vViewDir = normalize(-mvPos.xyz);\n' +
+                '  gl_Position = projectionMatrix * mvPos;\n' +
+                '}',
+              fragmentShader:
+                'uniform float uTime;\n' +
+                'uniform float uHeat;\n' +
+                'uniform float uProcess;\n' +
+                'varying vec2 vUv;\n' +
+                'varying vec3 vNormal;\n' +
+                'varying vec3 vViewDir;\n' +
+                weldGlslNoise +
+                'void main(){\n' +
+                '  float ndotv = abs(dot(normalize(vNormal), normalize(vViewDir)));\n' +
+                '  float rim = pow(1.0 - ndotv, 1.65);\n' +
+                '  float shroud = wFbm(vec2(vUv.x * 7.0, vUv.y * 5.0 + uTime * 2.1));\n' +
+                '  float rise = wFbm(vec2(vUv.x * 11.0 + 3.1, vUv.y * 7.0 - uTime * 2.8));\n' +
+                '  float vFade = smoothstep(0.0, 0.22, vUv.y) * smoothstep(1.0, 0.18, vUv.y);\n' +
+                '  vec3 gasCol = mix(vec3(0.55, 0.78, 1.0), vec3(0.86, 0.95, 1.0), shroud);\n' +
+                '  if (uProcess > 0.5 && uProcess < 1.5) gasCol = mix(gasCol, vec3(0.68, 0.84, 1.0), 0.45);\n' +
+                '  vec3 warmShimmer = vec3(1.0, 0.82, 0.56) * smoothstep(0.55, 0.92, rise) * smoothstep(0.65, 0.12, vUv.y) * 0.45;\n' +
+                '  float alpha = vFade * (0.08 + 0.24 * rim + 0.14 * shroud) * (0.75 + 0.35 * uHeat);\n' +
+                '  gl_FragColor = vec4(gasCol + warmShimmer, clamp(alpha, 0.0, 0.44));\n' +
+                '}',
+              transparent: true,
+              depthWrite: false,
+              side: THREE.DoubleSide,
+              blending: THREE.AdditiveBlending
+            }) : null;
+            if (gasShaderMat) weldShaderDisposables.push(gasShaderMat);
+            var gasConeGeom = new THREE.ConeGeometry(0.085, 0.15, 20, 1, true);
+            weldShaderDisposables.push(gasConeGeom);
+            var gasCone = new THREE.Mesh(gasConeGeom, gasShaderMat || gasMat);
             gasCone.rotation.x = Math.PI; // point downward
+            gasCone.renderOrder = 4;
             jointGroup.add(gasCone);
 
             // ── Workspace environment ──
@@ -10076,17 +10307,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // Store the new pieces on sceneRef for render-loop access
             sceneRef.current = sceneRef.current || {};
 
-            // ── Arc + arc light ──
+            // ── Arc + Electric-Arc Plasma Core + Corona + Arc Light ──
             var arcMat = new THREE.MeshBasicMaterial({ color: 0xffeeaa, transparent: true, opacity: 0.95 });
-            var arcSphere = new THREE.Mesh(new THREE.SphereGeometry(0.04, 10, 8), arcMat);
+            var arcPlasmaMat = canWeldShader ? new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 2.4 },
+                uHeat: { value: 0.9 },
+                uPulse: { value: 0.9 },
+                uProcess: { value: 0.0 }
+              },
+              vertexShader:
+                'varying vec2 vUv;\n' +
+                'varying vec3 vNormal;\n' +
+                'varying vec3 vViewDir;\n' +
+                'void main(){\n' +
+                '  vUv = uv;\n' +
+                '  vNormal = normalize(normalMatrix * normal);\n' +
+                '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);\n' +
+                '  vViewDir = normalize(-mvPos.xyz);\n' +
+                '  gl_Position = projectionMatrix * mvPos;\n' +
+                '}',
+              fragmentShader:
+                'uniform float uTime;\n' +
+                'uniform float uHeat;\n' +
+                'uniform float uPulse;\n' +
+                'uniform float uProcess;\n' +
+                'varying vec2 vUv;\n' +
+                'varying vec3 vNormal;\n' +
+                'varying vec3 vViewDir;\n' +
+                weldGlslNoise +
+                'void main(){\n' +
+                '  float ndotv = clamp(abs(dot(normalize(vNormal), normalize(vViewDir))), 0.0, 1.0);\n' +
+                '  float turb = wFbm(vec2(vUv.x * 9.0 + uTime * 2.2, vUv.y * 9.0 - uTime * 3.1));\n' +
+                '  float filaments = smoothstep(0.32, 0.85, turb);\n' +
+                '  float core = pow(ndotv, 1.35);\n' +
+                '  float corona = pow(1.0 - ndotv, 1.6);\n' +
+                '  vec3 hotWhite = vec3(1.0, 0.99, 0.96);\n' +
+                '  vec3 arcBlue  = vec3(0.42, 0.78, 1.00);\n' +
+                '  vec3 arcViolet = vec3(0.32, 0.42, 1.00);\n' +
+                '  if (uProcess > 2.5) { arcBlue = vec3(1.0, 0.62, 0.16); arcViolet = vec3(0.92, 0.24, 0.05); }\n' +
+                '  else if (uProcess > 0.5 && uProcess < 1.5) { arcBlue = vec3(0.56, 0.86, 1.00); arcViolet = vec3(0.45, 0.62, 1.00); }\n' +
+                '  vec3 col = mix(arcViolet, arcBlue, smoothstep(0.15, 0.75, filaments + core * 0.4));\n' +
+                '  col = mix(col, hotWhite, clamp(core * 0.95 + filaments * 0.35, 0.0, 1.0));\n' +
+                '  float alpha = clamp((core * 0.92 + corona * filaments * 0.78) * uPulse, 0.0, 1.0);\n' +
+                '  gl_FragColor = vec4(col * (1.25 + 0.35 * uHeat), alpha);\n' +
+                '}',
+              transparent: true,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending
+            }) : null;
+            if (arcPlasmaMat) weldShaderDisposables.push(arcPlasmaMat);
+            var arcSphere = new THREE.Mesh(new THREE.SphereGeometry(0.052, 16, 12), arcPlasmaMat || arcMat);
+            arcSphere.renderOrder = 5;
             jointGroup.add(arcSphere);
+            var arcCoronaMat = canWeldShader ? new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: { value: 2.4 },
+                uHeat: { value: 0.9 },
+                uPulse: { value: 0.9 },
+                uProcess: { value: 0.0 }
+              },
+              vertexShader:
+                'varying vec2 vUv;\n' +
+                'varying vec3 vNormal;\n' +
+                'varying vec3 vViewDir;\n' +
+                'void main(){\n' +
+                '  vUv = uv;\n' +
+                '  vNormal = normalize(normalMatrix * normal);\n' +
+                '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);\n' +
+                '  vViewDir = normalize(-mvPos.xyz);\n' +
+                '  gl_Position = projectionMatrix * mvPos;\n' +
+                '}',
+              fragmentShader:
+                'uniform float uTime;\n' +
+                'uniform float uHeat;\n' +
+                'uniform float uPulse;\n' +
+                'uniform float uProcess;\n' +
+                'varying vec2 vUv;\n' +
+                'varying vec3 vNormal;\n' +
+                'varying vec3 vViewDir;\n' +
+                weldGlslNoise +
+                'void main(){\n' +
+                '  float ndotv = clamp(abs(dot(normalize(vNormal), normalize(vViewDir))), 0.0, 1.0);\n' +
+                '  float n = wFbm(vec2(vUv.x * 12.0 - uTime * 2.5, vUv.y * 8.0 + uTime * 3.8));\n' +
+                '  float vMask = smoothstep(0.0, 0.25, vUv.y) * smoothstep(1.0, 0.15, vUv.y);\n' +
+                '  vec3 col = uProcess > 2.5 ? vec3(1.0, 0.56, 0.14) : vec3(0.48, 0.82, 1.0);\n' +
+                '  col = mix(col, vec3(1.0, 0.98, 0.94), smoothstep(0.55, 0.95, n) * 0.65);\n' +
+                '  float alpha = vMask * (0.22 + 0.52 * n) * (0.35 + 0.65 * ndotv) * uPulse;\n' +
+                '  gl_FragColor = vec4(col * (1.2 + 0.3 * uHeat), clamp(alpha, 0.0, 0.82));\n' +
+                '}',
+              transparent: true,
+              depthWrite: false,
+              side: THREE.DoubleSide,
+              blending: THREE.AdditiveBlending
+            }) : null;
+            var arcCorona = null;
+            if (arcCoronaMat) {
+              var arcCoronaGeom = new THREE.CylinderGeometry(0.012, 0.052, 0.095, 16, 1, true);
+              weldShaderDisposables.push(arcCoronaMat, arcCoronaGeom);
+              arcCorona = new THREE.Mesh(arcCoronaGeom, arcCoronaMat);
+              arcCorona.renderOrder = 5;
+              jointGroup.add(arcCorona);
+            }
             var arcLight = new THREE.PointLight(0xffddaa, 1.8, 2.0, 2);
             jointGroup.add(arcLight);
 
-            // ── Sparks ──
-            // 12 small spheres updated per frame. Stateless math (same
-            // pattern as the 2D view) — positions derived from elapsed +
-            // index, no per-spark buffer.
+            // ── Sparks + Ballistic Glowing Weld-Spatter Streaks ──
+            // 12 small spheres + 16 velocity-aligned glowing ballistic streaks.
             var sparkCount = 12;
             var sparks = [];
             var sparkMat = new THREE.MeshBasicMaterial({ color: 0xffaa44, transparent: true, opacity: 0.9 });
@@ -10094,6 +10421,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               var sp = new THREE.Mesh(new THREE.SphereGeometry(0.015, 5, 4), sparkMat.clone());
               jointGroup.add(sp);
               sparks.push(sp);
+            }
+            var spatterStreakMat = canWeldShader ? new THREE.ShaderMaterial({
+              uniforms: { uTime: { value: 2.4 } },
+              vertexShader:
+                'varying vec2 vUv;\n' +
+                'void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+              fragmentShader:
+                'uniform float uTime;\n' +
+                'varying vec2 vUv;\n' +
+                weldGlslNoise +
+                'void main(){\n' +
+                '  float head = smoothstep(0.0, 0.92, vUv.y);\n' +
+                '  vec3 col = wBlackbody(0.28 + 0.72 * head);\n' +
+                '  float alpha = smoothstep(0.0, 0.25, vUv.y) * smoothstep(1.0, 0.82, vUv.y) * 0.95;\n' +
+                '  gl_FragColor = vec4(col * 1.45, alpha);\n' +
+                '}',
+              transparent: true,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending
+            }) : null;
+            var spatterStreaks = [];
+            var _streakUp = new THREE.Vector3(0, 1, 0);
+            var _streakVel = new THREE.Vector3();
+            if (spatterStreakMat) {
+              var spatterStreakGeom = new THREE.CylinderGeometry(0.0018, 0.0068, 0.095, 5, 1, false);
+              weldShaderDisposables.push(spatterStreakMat, spatterStreakGeom);
+              for (var ssi = 0; ssi < 16; ssi++) {
+                var streak = new THREE.Mesh(spatterStreakGeom, spatterStreakMat);
+                streak.visible = false;
+                streak.renderOrder = 5;
+                jointGroup.add(streak);
+                spatterStreaks.push(streak);
+              }
             }
 
             // Initial joint build so plates + bead anchor are correct
@@ -10246,12 +10606,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               // Process colors
               s.applyProcessColors(live.P);
 
-              // Arc — sphere + light + opacity pulse
-              s.arcSphere.position.set(torchX, anchorY + 0.012, anchorZ);
+              // Arc — sphere + plasma corona + light + opacity pulse
+              var weldHC = isWeldHC();
+              var shaderT = _prefersReducedMotion ? 2.4 : elapsed;
+              var heatNorm = Math.max(0.25, Math.min(1.35, (live.net || 24) / 72));
+              var procIdx = live.P === 'tig' ? 1.0 : live.P === 'stick' ? 2.0 : live.P === 'oxy' ? 3.0 : 0.0;
+              s.arcSphere.position.set(torchX, anchorY + 0.014, anchorZ);
               s.arcLight.position.set(torchX, anchorY + 0.16, anchorZ);
               s.arcSphere.visible = frame.arcOn;
               s.arcLight.visible = frame.arcOn;
               s.torchGroup.visible = !frame.recorded || t > 0;
+              var arcPulseVal = 0.9;
               if (_prefersReducedMotion) {
                 s.arcMat.opacity = 0.9;
                 s.arcLight.intensity = 1.5;
@@ -10261,33 +10626,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 // which exceeded the 3-flashes-per-second photosensitivity guideline
                 // (and is now bloom-amplified). Reads more organic, stays arc-alive.
                 var pulse = 0.78 + 0.12 * Math.sin(elapsed * 15.1) + 0.06 * Math.sin(elapsed * 5.7);
+                arcPulseVal = pulse;
                 s.arcMat.opacity = pulse;
                 s.arcLight.intensity = 1.4 + pulse * 0.7;
               }
+              if (arcPlasmaMat) {
+                s.arcSphere.material = weldHC ? s.arcMat : arcPlasmaMat;
+                arcPlasmaMat.uniforms.uTime.value = shaderT;
+                arcPlasmaMat.uniforms.uHeat.value = heatNorm;
+                arcPlasmaMat.uniforms.uPulse.value = arcPulseVal;
+                arcPlasmaMat.uniforms.uProcess.value = procIdx;
+              }
+              if (arcCorona && arcCoronaMat) {
+                arcCorona.visible = frame.arcOn && !weldHC;
+                arcCorona.position.set(torchX, anchorY + 0.056, anchorZ);
+                arcCoronaMat.uniforms.uTime.value = shaderT;
+                arcCoronaMat.uniforms.uHeat.value = heatNorm;
+                arcCoronaMat.uniforms.uPulse.value = arcPulseVal;
+                arcCoronaMat.uniforms.uProcess.value = procIdx;
+              }
 
-              // Weld pool puddle — glowing disc tracking torch tip.
-              // Size scales with heat input (more heat → wider pool).
-              // Hidden when bead is "done" (t ≈ 1) to suggest arc has stopped.
+              // Weld pool puddle — glowing blackbody molten disc tracking torch tip.
               var poolSize = 0.05 + Math.min(0.08, (live.net || 20) / 1000);
               weldPool.scale.set(poolSize / 0.07, 1, poolSize / 0.07);
-              weldPool.position.set(torchX - 0.02, anchorY + 0.002, anchorZ);
+              weldPool.position.set(torchX - 0.02, anchorY + 0.004, anchorZ);
               weldPool.visible = frame.arcOn;
-              // Pulse pool emissive slightly with arc pulse for liveness
-              if (!_prefersReducedMotion) {
+              if (weldPoolShaderMat) {
+                weldPool.material = weldHC ? weldPoolMat : weldPoolShaderMat;
+                weldPoolShaderMat.uniforms.uTime.value = shaderT;
+                weldPoolShaderMat.uniforms.uHeat.value = heatNorm;
+                weldPoolShaderMat.uniforms.uProcess.value = procIdx;
+              } else if (!_prefersReducedMotion) {
                 weldPoolMat.emissiveIntensity = 0.75 + 0.25 * (Math.sin(elapsed * 12) * 0.5 + 0.5);
               }
 
-              // Shielding gas cone — translucent cone from torch nozzle
-              // covering the arc + weld pool. Only visible when arc is on
-              // (gas flows only while welding). Scales gently with amperage
-              // (higher amperage → more aggressive arc → wider gas envelope).
+              // Temper-oxide HAZ iridescence + molten cooling trail strip along seam
+              if (hazStrip && hazStripMat) {
+                hazStrip.visible = !weldHC && t > 0.01;
+                hazStrip.position.set(anchor.x, anchorY - 0.007, anchorZ);
+                var hazScaleZ = Math.max(0.75, Math.min(1.65, beadWidthVis / 0.11));
+                hazStrip.scale.set(1, hazScaleZ, 1);
+                hazStripMat.uniforms.uTime.value = shaderT;
+                hazStripMat.uniforms.uProgress.value = t;
+                hazStripMat.uniforms.uHeat.value = heatNorm;
+                hazStripMat.uniforms.uArcOn.value = frame.arcOn ? 1.0 : 0.0;
+                hazStripMat.uniforms.uRecorded.value = frame.recorded ? 1.0 : 0.0;
+              }
+
+              // Shielding gas cone — translucent cone with thermal shimmer veil (MIG + TIG)
               var gasScale = 1 + Math.min(0.4, (props.A || 200) / 400);
               gasCone.position.set(torchX, anchorY + 0.07, anchorZ);
               gasCone.scale.set(gasScale, 1, gasScale);
               gasCone.visible = (live.P === 'mig' || live.P === 'tig') && frame.arcOn;
-              if (!_prefersReducedMotion) {
-                // Faint flicker — gas flow isn't actually visible IRL, but
-                // a subtle wave conveys the shielding-gas concept
+              if (gasShaderMat) {
+                gasCone.material = weldHC ? gasMat : gasShaderMat;
+                gasShaderMat.uniforms.uTime.value = shaderT;
+                gasShaderMat.uniforms.uHeat.value = heatNorm;
+                gasShaderMat.uniforms.uProcess.value = procIdx;
+              } else if (!_prefersReducedMotion) {
                 gasMat.opacity = 0.12 + 0.06 * (Math.sin(elapsed * 4) * 0.5 + 0.5);
               }
 
@@ -10314,7 +10710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               }
               if (frame.recorded) plateMat.emissiveIntensity = 0;
 
-              // Sparks — only when arc is welding (t < 1) and motion allowed
+              // Sparks + ballistic spatter streaks — only when arc is welding and motion allowed
               if (frame.arcOn && !_prefersReducedMotion) {
                 for (var sk = 0; sk < s.sparks.length; sk++) {
                   var sphase = (elapsed * 50 + sk * 1.7) % 1;
@@ -10327,8 +10723,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   s.sparks[sk].material.opacity = (1 - sphase) * 0.85;
                   s.sparks[sk].visible = true;
                 }
+                if (spatterStreaks.length && !weldHC && live.P !== 'tig') {
+                  spatterStreakMat.uniforms.uTime.value = shaderT;
+                  var spRate = live.P === 'stick' ? 1.35 : live.P === 'oxy' ? 0.65 : 1.1;
+                  for (var bs2 = 0; bs2 < spatterStreaks.length; bs2++) {
+                    var st = spatterStreaks[bs2];
+                    var cycle = (elapsed * (1.85 + (bs2 % 5) * 0.32) * spRate + bs2 * 0.371) % 1.0;
+                    var seed = Math.floor(elapsed * (1.85 + (bs2 % 5) * 0.32) * spRate + bs2 * 0.371) * 19.13 + bs2 * 7.77;
+                    var az = (Math.sin(seed * 12.9898) * 43758.5453) % (Math.PI * 2);
+                    var spd = (0.42 + (Math.abs(Math.sin(seed * 78.233)) * 0.65)) * (0.85 + 0.3 * heatNorm);
+                    var v0x = Math.cos(az) * spd;
+                    var v0z = Math.sin(az) * spd * 0.68;
+                    var v0y = 0.48 + Math.abs(Math.sin(seed * 31.71)) * 0.65;
+                    var age = cycle * 0.48;
+                    var grav = 2.6;
+                    var bx2 = torchX + v0x * age;
+                    var bz2 = anchorZ + v0z * age;
+                    var byRaw = v0y * age - 0.5 * grav * age * age;
+                    var vy2 = v0y - grav * age;
+                    if (byRaw < 0) {
+                      byRaw = -byRaw * 0.32;
+                      vy2 = -vy2 * 0.32;
+                    }
+                    st.position.set(bx2, anchorY + 0.014 + byRaw, bz2);
+                    _streakVel.set(v0x, vy2, v0z);
+                    if (_streakVel.lengthSq() > 1e-6) {
+                      _streakVel.normalize();
+                      st.quaternion.setFromUnitVectors(_streakUp, _streakVel);
+                    }
+                    var lifeScale = Math.max(0.15, (1.0 - cycle * 0.72));
+                    st.scale.set(1, lifeScale * (0.7 + 0.6 * spd), 1);
+                    st.visible = true;
+                  }
+                } else {
+                  for (var sh2 = 0; sh2 < spatterStreaks.length; sh2++) spatterStreaks[sh2].visible = false;
+                }
               } else {
                 for (var sh = 0; sh < s.sparks.length; sh++) s.sparks[sh].visible = false;
+                for (var sh3 = 0; sh3 < spatterStreaks.length; sh3++) spatterStreaks[sh3].visible = false;
               }
 
               // ── Defect rendering ──
@@ -10644,6 +11076,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 beadGeom.dispose(); segmentGeom.dispose(); beadMat.dispose();
                 sectionMarkerGeom.dispose(); sectionMarkerMat.dispose();
                 arcMat.dispose(); arcSphere.geometry.dispose();
+                weldPoolMat.dispose(); gasMat.dispose();
+                slagMat.dispose(); if (slag && slag.geometry) slag.geometry.dispose();
+                for (var sdi = 0; sdi < weldShaderDisposables.length; sdi++) {
+                  if (weldShaderDisposables[sdi] && weldShaderDisposables[sdi].dispose) weldShaderDisposables[sdi].dispose();
+                }
                 for (var di = 0; di < sparks.length; di++) {
                   sparks[di].geometry.dispose();
                   if (sparks[di].material && sparks[di].material.dispose) sparks[di].material.dispose();
@@ -10973,23 +11410,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ctxC.stroke();
             }
 
-            // ── Penumbra: orange glow around the arc ──
-            // The hot weld pool radiates visible light through the lens.
-            // Radial gradient that fades to nothing at ~120 px radius.
+            // ── Molten weld-pool penumbra + orange-gold shimmer through Shade 11 lens ──
             if (frame.arcOn) {
-            var penumbraR = Math.min(130, W * 0.2);
-            var penumbra = ctxC.createRadialGradient(arcX, jointY, 8, arcX, jointY, penumbraR);
-            penumbra.addColorStop(0,   'rgba(255, 200, 80, 0.85)');
-            penumbra.addColorStop(0.25,'rgba(255, 140, 40, 0.55)');
-            penumbra.addColorStop(0.6, 'rgba(180, 60, 20, 0.18)');
-            penumbra.addColorStop(1,   'rgba(120, 30, 10, 0)');
-            ctxC.fillStyle = penumbra;
-            ctxC.beginPath();
-            ctxC.arc(arcX, jointY, penumbraR, 0, Math.PI * 2);
-            ctxC.fill();
+              var penumbraR = Math.min(138, W * 0.22);
+              var penumbra = ctxC.createRadialGradient(arcX, jointY, 8, arcX, jointY, penumbraR);
+              penumbra.addColorStop(0,   'rgba(255, 214, 102, 0.88)');
+              penumbra.addColorStop(0.24,'rgba(255, 146, 44, 0.58)');
+              penumbra.addColorStop(0.56,'rgba(194, 65, 24, 0.22)');
+              penumbra.addColorStop(1,   'rgba(120, 30, 10, 0)');
+              ctxC.fillStyle = penumbra;
+              ctxC.beginPath();
+              ctxC.arc(arcX, jointY, penumbraR, 0, Math.PI * 2);
+              ctxC.fill();
+              // Incandescent molten teardrop puddle trailing behind the plasma arc.
+              var hPool = ctxC.createRadialGradient(arcX - 10, jointY, 2, arcX - 14, jointY, 34);
+              hPool.addColorStop(0, 'rgba(255, 252, 232, 0.94)');
+              hPool.addColorStop(0.38, 'rgba(253, 186, 116, 0.72)');
+              hPool.addColorStop(0.75, 'rgba(234, 88, 12, 0.34)');
+              hPool.addColorStop(1, 'rgba(180, 40, 10, 0)');
+              ctxC.fillStyle = hPool;
+              ctxC.beginPath();
+              ctxC.ellipse(arcX - 14, jointY, 34, 15, 0, 0, Math.PI * 2);
+              ctxC.fill();
             }
 
-            // ── Arc bloom: bright yellow-white core ──
+            // ── Electric-blue/white plasma arc core bloom ──
             if (frame.arcOn) {
               // ★ Same compound sub-3Hz waveform the top-down arc uses (2.40 + 0.91 Hz,
               // amplitude +/-0.18). This view kept the ORIGINAL sin(elapsed * 28) ~ 4.46 Hz
@@ -10999,41 +11444,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               // per second. Kept byte-identical to the sibling so the two cannot drift again.
               var pulse = _prefersReducedMotion ? 1
                 : (0.78 + 0.12 * Math.sin(elapsed * 15.1) + 0.06 * Math.sin(elapsed * 5.7));
-              // Outer glow
-              var bloomR = 50;
+              // Electric-blue ionized plasma outer corona
+              var plasmaR = 68;
+              var plasma = ctxC.createRadialGradient(arcX, jointY, 0, arcX, jointY, plasmaR);
+              plasma.addColorStop(0, 'rgba(224, 242, 254, ' + (0.85 * pulse) + ')');
+              plasma.addColorStop(0.24, 'rgba(96, 165, 250, ' + (0.55 * pulse) + ')');
+              plasma.addColorStop(0.58, 'rgba(56, 189, 248, ' + (0.20 * pulse) + ')');
+              plasma.addColorStop(1, 'rgba(37, 99, 235, 0)');
+              ctxC.fillStyle = plasma;
+              ctxC.beginPath();
+              ctxC.arc(arcX, jointY, plasmaR, 0, Math.PI * 2);
+              ctxC.fill();
+              // Inner incandescent bloom
+              var bloomR = 48;
               var bloom = ctxC.createRadialGradient(arcX, jointY, 0, arcX, jointY, bloomR);
-              bloom.addColorStop(0,   'rgba(255, 255, 240, ' + pulse + ')');
-              bloom.addColorStop(0.18,'rgba(255, 240, 180, ' + (0.85 * pulse) + ')');
-              bloom.addColorStop(0.5, 'rgba(255, 180, 80, 0.4)');
+              bloom.addColorStop(0,   'rgba(255, 255, 250, ' + pulse + ')');
+              bloom.addColorStop(0.18,'rgba(224, 242, 254, ' + (0.88 * pulse) + ')');
+              bloom.addColorStop(0.5, 'rgba(255, 190, 96, 0.42)');
               bloom.addColorStop(1,   'rgba(255, 120, 40, 0)');
               ctxC.fillStyle = bloom;
               ctxC.beginPath();
               ctxC.arc(arcX, jointY, bloomR, 0, Math.PI * 2);
               ctxC.fill();
+              // Crisp lens diffraction spikes
+              ctxC.strokeStyle = 'rgba(224, 242, 254, ' + (0.55 * pulse) + ')';
+              ctxC.lineWidth = 1.4;
+              ctxC.beginPath();
+              ctxC.moveTo(arcX - 36, jointY); ctxC.lineTo(arcX + 36, jointY);
+              ctxC.moveTo(arcX, jointY - 22); ctxC.lineTo(arcX, jointY + 22);
+              ctxC.stroke();
               // Bright core
               ctxC.fillStyle = 'rgba(255, 255, 255, ' + Math.min(1, pulse + 0.1) + ')';
               ctxC.beginPath();
-              ctxC.arc(arcX, jointY, 4 + 2 * pulse, 0, Math.PI * 2);
+              ctxC.arc(arcX, jointY, 4.5 + 2 * pulse, 0, Math.PI * 2);
               ctxC.fill();
 
-              // ── Sparks — bright streaks ──
+              // ── Sparks — glowing incandescent streaks ──
               if (!_prefersReducedMotion) {
-                var sparkCount = 10;
-                ctxC.lineWidth = 1.4;
+                var sparkCount = 12;
                 for (var sp = 0; sp < sparkCount; sp++) {
                   var sphase = (elapsed * 55 + sp * 1.7) % 1;
                   var sangle = (sp / sparkCount) * Math.PI * 2 + elapsed * 7 + sp;
-                  var sdist = 6 + sphase * 36;
-                  var x1 = arcX + Math.cos(sangle) * (sdist - 6);
-                  var y1 = jointY + Math.sin(sangle) * (sdist - 6) * 0.45;
+                  var sdist = 6 + sphase * 40;
+                  var x1 = arcX + Math.cos(sangle) * (sdist - 7);
+                  var y1 = jointY + Math.sin(sangle) * (sdist - 7) * 0.45;
                   var x2 = arcX + Math.cos(sangle) * sdist;
                   var y2 = jointY + Math.sin(sangle) * sdist * 0.45;
                   var sparkAlpha = (1 - sphase) * 0.95;
-                  ctxC.strokeStyle = 'rgba(255, ' + Math.round(200 + 55 * (1 - sphase)) + ', 100, ' + sparkAlpha + ')';
-                  ctxC.beginPath();
-                  ctxC.moveTo(x1, y1);
-                  ctxC.lineTo(x2, y2);
-                  ctxC.stroke();
+                  ctxC.lineWidth = 2.8;
+                  ctxC.strokeStyle = 'rgba(251, 146, 60, ' + (sparkAlpha * 0.35) + ')';
+                  ctxC.beginPath(); ctxC.moveTo(x1, y1); ctxC.lineTo(x2, y2); ctxC.stroke();
+                  ctxC.lineWidth = 1.4;
+                  ctxC.strokeStyle = 'rgba(255, ' + Math.round(212 + 43 * (1 - sphase)) + ', 130, ' + sparkAlpha + ')';
+                  ctxC.beginPath(); ctxC.moveTo(x1, y1); ctxC.lineTo(x2, y2); ctxC.stroke();
                 }
               }
             }
@@ -12781,7 +13244,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               'data-limit': limit, style: { display: 'block', width: '100%', height: 24, overflow: 'visible' } },
               h('line', { x1: 8, y1: 12, x2: 292, y2: 12, stroke: border, strokeWidth: 2 }),
               [8, 150, 292].map(function (x) { return h('line', { key: x, x1: x, y1: x === 150 ? 1 : 7, x2: x, y2: x === 150 ? 23 : 17, stroke: soft, strokeWidth: x === 150 ? 2 : 1 }); }),
-              value !== null && value !== 0 && h('rect', Object.assign({ x: Math.min(150, end), y: 6, width: Math.abs(end - 150), height: 12, rx: 2,
+              value !== null && value !== 0 && h('rect', Object.assign({ x: Math.min(150, end), y: 6, width: Math.abs(end - 150), height: 12,
                 fill: excluded || value < 0 ? card : tone, stroke: excluded ? soft : tone, strokeWidth: 2, strokeDasharray: excluded || value < 0 ? '4 2' : undefined,
                 'data-value': value, 'data-from': 0, 'data-to': value }, hook)),
               value === 0 && h('circle', { cx: 150, cy: 12, r: 4, fill: card, stroke: soft, strokeWidth: 2, 'data-proc-ledger-zero': factor || '' }),
@@ -16644,7 +17107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('div', { className: 'flex flex-wrap justify-between gap-2 text-sm' }, h('span', { className: 'font-bold' }, band.label), h('span', { className: 'font-mono font-black' }, band.flow + ' cfm')),
                 h('div', { className: 'rounded-lg p-2', style: { background: '#0f172a', color: '#ffffff' } },
                   h('svg', { 'data-ppe-vent-flow-plot': band.id, viewBox: '0 0 640 32', preserveAspectRatio: 'none', 'aria-hidden': true, focusable: 'false', style: { display: 'block', width: '100%', height: 32 } },
-                    h('rect', { x: 20, y: 9, width: 600, height: 14, rx: 3, fill: '#334155', stroke: '#94a3b8', strokeWidth: 1 }),
+                    h('rect', { x: 20, y: 9, width: 600, height: 14, fill: '#334155', stroke: '#94a3b8', strokeWidth: 1 }),
                     h('rect', { 'data-ppe-vent-flow-bar': band.id, 'data-value': band.flow, x: 20, y: 9, width: band.flow, height: 14, fill: on ? focus : '#94a3b8', stroke: '#ffffff', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' })),
                   h('div', { 'aria-hidden': true, className: 'text-xs font-mono', style: { position: 'relative', height: 16, color: '#ffffff' } },
                     h('span', { style: { position: 'absolute', left: '3.125%' } }, '0'), h('span', { style: { position: 'absolute', left: '96.875%', transform: 'translateX(-100%)', whiteSpace: 'nowrap' } }, '600 cfm'))
@@ -20218,23 +20681,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           ctx.fillRect(X(k) - 0.5, rulerH - 4, 1, 5);
           if (k % every === 0) ctx.fillText(String(k), X(k), rulerH - 6);
         }
-        // Plate: 1/4" before the step, 1/8" after it (lighter: thinner sheet).
-        ctx.fillStyle = '#6b7686';
+        // Brushed steel plates: 1/4" before the step, 1/8" after it with metallic sheen.
+        var thickSteel = ctx.createLinearGradient(0, py0, 0, py0 + ph);
+        thickSteel.addColorStop(0, '#5a6575');
+        thickSteel.addColorStop(0.28, '#778395');
+        thickSteel.addColorStop(0.65, '#647080');
+        thickSteel.addColorStop(1, '#4b5563');
+        ctx.fillStyle = thickSteel;
         ctx.fillRect(X(0), py0, X(plan.xStep) - X(0), ph);
-        ctx.fillStyle = '#8f9aa6';
+        var thinSteel = ctx.createLinearGradient(0, py0, 0, py0 + ph);
+        thinSteel.addColorStop(0, '#7c8795');
+        thinSteel.addColorStop(0.28, '#a0aab6');
+        thinSteel.addColorStop(0.65, '#86929f');
+        thinSteel.addColorStop(1, '#687382');
+        ctx.fillStyle = thinSteel;
         ctx.fillRect(X(plan.xStep), py0, X(L) - X(plan.xStep), ph);
-        ctx.strokeStyle = '#7d8794';
+        ctx.strokeStyle = 'rgba(226,232,240,0.14)';
         ctx.lineWidth = 1;
-        for (var b = 0; b < 7; b++) {
-          var by = py0 + ph * (0.1 + b * 0.13);
-          ctx.beginPath(); ctx.moveTo(X(0), by); ctx.lineTo(X(L), by + 1); ctx.stroke();
+        for (var b = 0; b < 9; b++) {
+          var by = py0 + ph * (0.08 + b * 0.105);
+          ctx.beginPath(); ctx.moveTo(X(0), by); ctx.lineTo(X(L), by + 0.8); ctx.stroke();
         }
-        // Plate heat: a warm tint that grows with each slice's plate temperature.
+        // HAZ rainbow temper-color gradient + thermal glow along the welded joint.
         slices.forEach(function (s) {
-          var a = clamp((s.plateT - 70) / 530, 0, 1) * 0.32;
+          var halfS = Math.max(2.5, s.width * sx / 2);
+          var hazSpan = Math.min(ph * 0.42, halfS * 1.9);
+          var slX = X(s.x - RUN_SLICE_IN / 2), slW = RUN_SLICE_IN * sx + 0.7;
+          var hazG = ctx.createLinearGradient(0, cy - halfS - hazSpan, 0, cy + halfS + hazSpan);
+          hazG.addColorStop(0, 'rgba(234,197,94,0)');
+          hazG.addColorStop(0.14, 'rgba(234,197,94,0.34)');
+          hazG.addColorStop(0.26, 'rgba(194,104,46,0.40)');
+          hazG.addColorStop(0.36, 'rgba(139,92,246,0.42)');
+          hazG.addColorStop(0.44, 'rgba(59,130,246,0.46)');
+          hazG.addColorStop(0.56, 'rgba(59,130,246,0.46)');
+          hazG.addColorStop(0.64, 'rgba(139,92,246,0.42)');
+          hazG.addColorStop(0.74, 'rgba(194,104,46,0.40)');
+          hazG.addColorStop(0.86, 'rgba(234,197,94,0.34)');
+          hazG.addColorStop(1, 'rgba(234,197,94,0)');
+          ctx.fillStyle = hazG;
+          ctx.fillRect(slX, cy - halfS - hazSpan, slW, (halfS + hazSpan) * 2);
+          var a = clamp((s.plateT - 70) / 530, 0, 1) * 0.34;
           if (a < 0.02) return;
           ctx.fillStyle = 'rgba(255,96,0,' + a.toFixed(3) + ')';
-          ctx.fillRect(X(s.x - RUN_SLICE_IN / 2), cy - ph * 0.32, RUN_SLICE_IN * sx + 0.6, ph * 0.64);
+          ctx.fillRect(slX, cy - ph * 0.30, slW, ph * 0.60);
         });
         // Joint seam, fit-up gap (dark slit), tack welds (bumps).
         ctx.fillStyle = '#262c35';
@@ -20379,27 +20868,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // Bead Lab; held steady under reduced motion.
             var pulse = v.reduced ? 0.85 : (0.78 + 0.12 * Math.sin(elapsed * 15.1) + 0.06 * Math.sin(elapsed * 5.7));
             var gr = Math.max(30, 0.9 * sx);
+            // Electric-blue ionized plasma outer corona around the welding arc.
+            var blueHalo = ctx.createRadialGradient(tx, cy, 2, tx, cy, gr * 1.32);
+            blueHalo.addColorStop(0, 'rgba(224,242,254,' + (0.68 * pulse).toFixed(3) + ')');
+            blueHalo.addColorStop(0.30, 'rgba(96,165,250,' + (0.44 * pulse).toFixed(3) + ')');
+            blueHalo.addColorStop(0.68, 'rgba(56,189,248,' + (0.16 * pulse).toFixed(3) + ')');
+            blueHalo.addColorStop(1, 'rgba(37,99,235,0)');
+            ctx.fillStyle = blueHalo;
+            ctx.beginPath(); ctx.arc(tx, cy, gr * 1.32, 0, Math.PI * 2); ctx.fill();
             var glow = ctx.createRadialGradient(tx, cy, 2, tx, cy, gr);
             glow.addColorStop(0, 'rgba(255,248,220,' + (0.75 * pulse).toFixed(3) + ')');
             glow.addColorStop(0.35, 'rgba(255,190,90,' + (0.35 * pulse).toFixed(3) + ')');
             glow.addColorStop(1, 'rgba(255,140,40,0)');
             ctx.fillStyle = glow;
             ctx.beginPath(); ctx.arc(tx, cy, gr, 0, Math.PI * 2); ctx.fill();
-            var pool = ctx.createRadialGradient(tx - wpx * 0.2, cy, 1, tx - wpx * 0.2, cy, wpx * 1.25);
+            var pool = ctx.createRadialGradient(tx - wpx * 0.2, cy, 1, tx - wpx * 0.2, cy, wpx * 1.32);
             pool.addColorStop(0, '#ffffff');
-            pool.addColorStop(0.4, '#fde68a');
-            pool.addColorStop(0.8, '#fb923c');
-            pool.addColorStop(1, 'rgba(249,115,22,0)');
+            pool.addColorStop(0.34, '#fef08a');
+            pool.addColorStop(0.72, '#fb923c');
+            pool.addColorStop(1, 'rgba(234,88,12,0)');
             ctx.fillStyle = pool;
-            ctx.beginPath(); ctx.ellipse(tx - wpx * 0.2, cy, wpx * 1.35, wpx * 1.1, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(tx - wpx * 0.2, cy, wpx * 1.42, wpx * 1.12, 0, 0, Math.PI * 2); ctx.fill();
+            // Crisp 4-point plasma arc flare glint (steady under reduced motion).
+            ctx.strokeStyle = 'rgba(224,242,254,' + (0.55 * pulse).toFixed(3) + ')';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(tx - gr * 0.48, cy); ctx.lineTo(tx + gr * 0.48, cy);
+            ctx.moveTo(tx, cy - gr * 0.34); ctx.lineTo(tx, cy + gr * 0.34);
+            ctx.stroke();
             if (!v.reduced) {
-              ctx.fillStyle = '#fde68a';
-              for (var sp2 = 0; sp2 < 6; sp2++) {
+              for (var sp2 = 0; sp2 < 8; sp2++) {
                 var ph2 = (elapsed * 1.3 + sp2 * 0.37) % 1;
                 var ang = sp2 * 1.7 + elapsed * 0.6;
-                var rr = (0.12 + 0.3 * ph2) * sx;
+                var rr = (0.12 + 0.34 * ph2) * sx;
+                var rr0 = Math.max(0.04 * sx, rr - 0.08 * sx);
                 ctx.globalAlpha = 1 - ph2;
-                ctx.beginPath(); ctx.arc(tx + Math.cos(ang) * rr, cy + Math.sin(ang) * rr * 0.7, 1.2, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#fb923c';
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.moveTo(tx + Math.cos(ang) * rr0, cy + Math.sin(ang) * rr0 * 0.7);
+                ctx.lineTo(tx + Math.cos(ang) * rr, cy + Math.sin(ang) * rr * 0.7);
+                ctx.stroke();
+                ctx.fillStyle = '#fef3c7';
+                ctx.beginPath(); ctx.arc(tx + Math.cos(ang) * rr, cy + Math.sin(ang) * rr * 0.7, 1.3, 0, Math.PI * 2); ctx.fill();
               }
               ctx.globalAlpha = 1;
             }
@@ -36567,6 +37078,107 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       else if (view === 'mathBlueprint') viewBody = h(MathBlueprintLab);
       else if (view === 'careerStories') viewBody = h(CareerStories);
       else viewBody = h(MainMenu);
+      var weldBadgesMap = (d.weldBadges && typeof d.weldBadges === 'object' && !Array.isArray(d.weldBadges)) ? d.weldBadges : {};
+      var weldVisitedCount = BADGE_IDS.filter(function(id) { return !!weldBadgesMap[id]; }).length;
+      var weldTotalCount = BADGE_IDS.length;
+      var weldPct = weldTotalCount > 0 ? Math.round((weldVisitedCount / weldTotalCount) * 100) : 0;
+      var weldFillW = Math.round((weldPct / 100) * 432);
+      var weldPresetsLocked = !!(ctx.quizMode || ctx.teacherLock || d._teacherLocked);
+      var weldQuickStations = [
+        { id: 'ppeSafety', label: '🦺 PPE & Safety' },
+        { id: 'heatInput', label: '⚡ Heat Input' },
+        { id: 'beadLab', label: '🔥 Weld Bead Lab' },
+        { id: 'defectHunt', label: '🔍 Defect Hunt' },
+        { id: 'metallurgy', label: '🧪 Metallurgy' },
+        { id: 'symbolsReader', label: '📐 AWS Symbols' }
+      ];
+      var weldWorkbenchBanner = view === 'menu' ? h('div', {
+        'data-weldlab-hero': 'true',
+        className: 'px-4 sm:px-6 pt-4 max-w-6xl mx-auto'
+      },
+        h('div', {
+          className: 'rounded-2xl p-4 sm:p-5',
+          style: isContrast
+            ? { backgroundColor: '#000000', color: '#ffffff', border: '2px solid #ffff00' }
+            : {
+                backgroundColor: '#1c1917',
+                backgroundImage: 'linear-gradient(128deg, #0f172a 0%, #431407 52%, #7c2d12 100%)',
+                color: '#ffffff',
+                border: '1px solid rgba(251,146,60,0.45)',
+                boxShadow: '0 14px 32px -14px rgba(15, 23, 42, 0.45)'
+              }
+        },
+          h('div', { className: 'flex flex-wrap items-center gap-3.5', style: { minWidth: 0 } },
+            h('svg', { width: 50, height: 50, viewBox: '0 0 56 56', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0 } },
+              h('rect', { x: 2, y: 2, width: 52, height: 52, rx: 14, fill: isContrast ? '#000000' : '#0f172a', stroke: isContrast ? '#ffff00' : '#fb923c', strokeWidth: 1.8 }),
+              h('path', { d: 'M16 12 L27 25 L23 28 L12 15 Z', fill: isContrast ? '#ffffff' : '#cbd5e1' }),
+              h('line', { x1: 25, y1: 26, x2: 30, y2: 33, stroke: isContrast ? '#ffff00' : '#fde047', strokeWidth: 2.2, strokeLinecap: 'round' }),
+              h('circle', { cx: 31, cy: 35, r: 5.5, fill: isContrast ? '#ffff00' : '#fb923c' }),
+              h('circle', { cx: 31, cy: 35, r: 2.5, fill: '#ffffff' }),
+              h('path', { d: 'M11 42 L45 42', stroke: isContrast ? '#00ffff' : '#94a3b8', strokeWidth: 3.5, strokeLinecap: 'round' }),
+              h('path', { d: 'M20 42 Q26 36 31 42 Q36 36 42 42', fill: 'none', stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 2.4, strokeLinecap: 'round' }),
+              h('line', { x1: 37, y1: 26, x2: 43, y2: 20, stroke: isContrast ? '#ffff00' : '#fde047', strokeWidth: 1.6, strokeLinecap: 'round' }),
+              h('line', { x1: 39, y1: 31, x2: 45, y2: 29, stroke: isContrast ? '#00ffff' : '#fb923c', strokeWidth: 1.6, strokeLinecap: 'round' })
+            ),
+            h('div', { className: 'flex-1 min-w-0' },
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('span', {
+                  className: 'rounded-full px-2.5 py-0.5 text-[0.6875rem] font-extrabold uppercase tracking-wider',
+                  style: { backgroundColor: isContrast ? '#000000' : 'rgba(234,88,12,0.34)', color: isContrast ? '#ffff00' : '#ffedd5', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(253,186,116,0.5)') }
+                }, 'Skilled Trades · Metallurgy & Arc Physics'),
+                h('span', {
+                  className: 'rounded-full px-2.5 py-0.5 text-xs font-bold tabular-nums',
+                  style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.75)', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255,255,255,0.28)') }
+                }, weldVisitedCount + ' / ' + weldTotalCount + ' Stations')
+              ),
+              h('div', { className: 'mt-1 text-base sm:text-lg font-black tracking-tight text-white' }, 'WeldLab Industrial Workbench')
+            ),
+            h('div', { className: 'flex flex-wrap items-center gap-2' },
+              h('span', {
+                className: 'rounded-full px-3 py-1 text-xs font-bold',
+                style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.76)', color: isContrast ? '#ffff00' : '#fde68a', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(251,191,36,0.4)') }
+              }, 'MIG · TIG · Stick · Oxy-Fuel'),
+              h('span', {
+                className: 'rounded-full px-3 py-1 text-xs font-bold',
+                style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.76)', color: '#ffffff', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(255,255,255,0.28)') }
+              }, 'AWS D1.1 · OSHA 1910.252')
+            )
+          ),
+          h('div', {
+            className: 'mt-3 rounded-xl p-2.5',
+            style: { backgroundColor: isContrast ? '#000000' : 'rgba(2,6,23,0.52)', border: '1px solid ' + (isContrast ? '#ffffff' : 'rgba(251,146,60,0.32)') }
+          },
+            h('svg', {
+              viewBox: '0 0 640 48',
+              className: 'w-full h-auto block',
+              role: 'img',
+              'aria-label': 'Shop floor exploration progress bar showing ' + weldVisitedCount + ' of ' + weldTotalCount + ' stations visited'
+            },
+              h('text', { x: 10, y: 18, fill: isContrast ? '#ffff00' : '#fdba74', fontSize: 11, fontWeight: 800 }, 'SHOP FLOOR COVERAGE'),
+              h('text', { x: 630, y: 18, textAnchor: 'end', fill: '#ffffff', fontSize: 11, fontWeight: 700 }, weldPct + '% (' + weldVisitedCount + '/' + weldTotalCount + ')'),
+              h('rect', { x: 10, y: 27, width: 432, height: 11, rx: 5, fill: '#1e293b', stroke: isContrast ? '#ffffff' : '#475569', strokeWidth: 1 }),
+              weldFillW > 0 && h('rect', { x: 10, y: 27, width: Math.max(8, weldFillW), height: 11, rx: 5, fill: isContrast ? '#ffff00' : '#f97316' }),
+              h('text', { x: 458, y: 37, fill: '#e2e8f0', fontSize: 11, fontWeight: 600 }, 'Q = (V × A × 60) / (TS × 1000)')
+            )
+          ),
+          !weldPresetsLocked && h('div', { className: 'mt-3 flex flex-wrap items-center gap-2', role: 'group', 'aria-label': 'Quick-start welding stations' },
+            h('span', { className: 'text-xs font-bold uppercase tracking-wider mr-1', style: { color: isContrast ? '#ffff00' : '#fed7aa' } }, 'Quick Jump:'),
+            weldQuickStations.map(function (st) {
+              var done = !!weldBadgesMap[st.id];
+              return h('button', {
+                key: st.id,
+                type: 'button',
+                onClick: function () { goto(st.id); },
+                className: 'min-h-11 rounded-xl px-3 py-2 text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300',
+                style: isContrast
+                  ? { backgroundColor: done ? '#ffff00' : '#000000', color: done ? '#000000' : '#ffffff', border: '1px solid #ffff00' }
+                  : { backgroundColor: done ? 'rgba(249,115,22,0.34)' : 'rgba(15,23,42,0.72)', color: '#ffffff', border: '1px solid ' + (done ? '#fdba74' : 'rgba(255,255,255,0.28)') }
+              }, st.label + (done ? ' ✓' : ''));
+            })
+          )
+        )
+      ) : null;
+      if (weldWorkbenchBanner) viewBody = h(React.Fragment, null, weldWorkbenchBanner, viewBody);
       return h(React.Fragment, null, defectCelebOverlay(), h('div', { ref: viewRootRef, 'data-weld-view': view }, viewBody));
     }
   });

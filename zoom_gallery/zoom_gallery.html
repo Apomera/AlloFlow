@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'none'; form-action 'none';">
 <title>AlloFlow Zoom Gallery</title>
 <!--
   AlloFlow Zoom Gallery — OpenSeadragon deep-zoom viewer + Notice-Wonder coach
@@ -502,12 +503,15 @@
   function applyStrings(incoming) {
     if (!incoming || typeof incoming !== 'object') return;
     Object.keys(incoming).forEach(function (k) {
-      if (typeof incoming[k] === 'string' && incoming[k]) STR[k] = incoming[k];
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+      if (typeof incoming[k] === 'string' && incoming[k] && (Object.prototype.hasOwnProperty.call(STR, k) || /^img_[a-z0-9_]+_(?:name|meta|notice|wonder|describe)$/i.test(k))) {
+        STR[k] = incoming[k];
+      }
     });
-    document.querySelectorAll('[data-s]').forEach(function (n) { var k = n.getAttribute('data-s'); if (STR[k]) n.textContent = STR[k]; });
-    document.querySelectorAll('[data-s-aria]').forEach(function (n) { var k = n.getAttribute('data-s-aria'); if (STR[k]) n.setAttribute('aria-label', STR[k]); });
-    document.querySelectorAll('[data-s-ph]').forEach(function (n) { var k = n.getAttribute('data-s-ph'); if (STR[k]) n.setAttribute('placeholder', STR[k]); });
-    document.querySelectorAll('[data-s-title]').forEach(function (n) { var k = n.getAttribute('data-s-title'); if (STR[k]) n.setAttribute('title', STR[k]); });
+    document.querySelectorAll('[data-s]').forEach(function (n) { var k = n.getAttribute('data-s'); if (k && Object.prototype.hasOwnProperty.call(STR, k) && STR[k]) n.textContent = STR[k]; });
+    document.querySelectorAll('[data-s-aria]').forEach(function (n) { var k = n.getAttribute('data-s-aria'); if (k && Object.prototype.hasOwnProperty.call(STR, k) && STR[k]) n.setAttribute('aria-label', STR[k]); });
+    document.querySelectorAll('[data-s-ph]').forEach(function (n) { var k = n.getAttribute('data-s-ph'); if (k && Object.prototype.hasOwnProperty.call(STR, k) && STR[k]) n.setAttribute('placeholder', STR[k]); });
+    document.querySelectorAll('[data-s-title]').forEach(function (n) { var k = n.getAttribute('data-s-title'); if (k && Object.prototype.hasOwnProperty.call(STR, k) && STR[k]) n.setAttribute('title', STR[k]); });
     buildPicker();
     renderAiState();
     renderCoach();
@@ -527,8 +531,8 @@
   function announce(text) { srLive.textContent = ''; setTimeout(function () { srLive.textContent = text; }, 30); }
 
   // ── Opener bridge ────────────────────────────────────────────────────
-  var pending = {};
-  var pendingSpeak = {};
+  var pending = Object.create(null);
+  var pendingSpeak = Object.create(null);
   var speakingKey = '';
   var verifiedOpenerOrigin = '';
   function isTrustedOrigin(origin) {
@@ -579,6 +583,7 @@
       openerOk = true; aiAvailable = Boolean(data.ai); ttsAvailable = Boolean(data.tts);
       if (data.notes && typeof data.notes === 'object') {
         Object.keys(data.notes).forEach(function (id) {
+          if (id === '__proto__' || id === 'constructor' || id === 'prototype') return;
           var n = data.notes[id] || {};
           perImg[id] = { notice: String(n.notice || ''), wonder: String(n.wonder || ''), feedback: String(n.feedback || ''), pins: Array.isArray(n.pins) ? n.pins.slice(0, 20) : [] };
         });
@@ -587,11 +592,11 @@
       applyStrings(data.strings);
       return;
     }
-    if (data.type === 'alloczoom-speak-result' && data.id && pendingSpeak[data.id]) {
+    if (data.type === 'alloczoom-speak-result' && typeof data.id === 'string' && Object.prototype.hasOwnProperty.call(pendingSpeak, data.id)) {
       var se = pendingSpeak[data.id]; delete pendingSpeak[data.id]; clearTimeout(se.timer); se.done(!!data.ok);
       return;
     }
-    if (data.type === 'alloczoom-ai-response' && data.id && pending[data.id]) {
+    if (data.type === 'alloczoom-ai-response' && typeof data.id === 'string' && Object.prototype.hasOwnProperty.call(pending, data.id)) {
       var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);
     }
   });
@@ -1020,6 +1025,8 @@
       loadmsg.textContent = STR.viewer_failed;
       return;
     }
+    if (loadImage._activeOpen) { try { v.removeHandler('open', loadImage._activeOpen); } catch (_) {} loadImage._activeOpen = null; }
+    if (loadImage._activeFail) { try { v.removeHandler('open-failed', loadImage._activeFail); } catch (_) {} loadImage._activeFail = null; }
     var settled = false;
     var onOpen = function () {
       if (settled) return; settled = true;
@@ -1032,12 +1039,18 @@
       creditLine.style.display = 'block';
       drawPins(); updateZoomReadout(); updatePinButton(); renderDescribe();
       v.removeHandler('open', onOpen); v.removeHandler('open-failed', onFail);
+      if (loadImage._activeOpen === onOpen) loadImage._activeOpen = null;
+      if (loadImage._activeFail === onFail) loadImage._activeFail = null;
     };
     var onFail = function () {
       if (settled) return; settled = true;
       loadmsg.textContent = fmt(STR.image_failed, { name: imgStr(current, 'name') });
       v.removeHandler('open', onOpen); v.removeHandler('open-failed', onFail);
+      if (loadImage._activeOpen === onOpen) loadImage._activeOpen = null;
+      if (loadImage._activeFail === onFail) loadImage._activeFail = null;
     };
+    loadImage._activeOpen = onOpen;
+    loadImage._activeFail = onFail;
     v.addHandler('open', onOpen);
     v.addHandler('open-failed', onFail);
     var ts = tileSourceFor(current);
@@ -1054,7 +1067,11 @@
     backbar.style.display = 'none';
     creditLine.style.display = 'none';
     zoomRead.style.display = 'none'; scaleBar.style.display = 'none';
-    try { if (viewer) viewer.close(); } catch (_) {}
+    if (viewer) {
+      if (loadImage._activeOpen) { try { viewer.removeHandler('open', loadImage._activeOpen); } catch (_) {} loadImage._activeOpen = null; }
+      if (loadImage._activeFail) { try { viewer.removeHandler('open-failed', loadImage._activeFail); } catch (_) {} loadImage._activeFail = null; }
+      try { viewer.close(); } catch (_) {}
+    }
     overlayEls = [];
   }
 
@@ -1071,13 +1088,20 @@
       meta: url, notice: STR.custom_notice, wonder: STR.custom_wonder };
     if (/info\.json(\?|$)/i.test(url)) {
       customGo.disabled = true;
-      fetch(url, { mode: 'cors' }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (info) {
-        customGo.disabled = false;
-        if (!info || !info.width || !info.height) throw new Error('bad info');
-        customItem = Object.assign(base, { type: 'iiif', cors: true, width: info.width, height: info.height, src: url.replace(/\/info\.json.*$/i, '') });
+      var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+      var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 12000) : null;
+      var fetchOpts = { mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer' };
+      if (ctrl) fetchOpts.signal = ctrl.signal;
+      fetch(url, fetchOpts).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (info) {
+        var w = Number(info && info.width), h = Number(info && info.height);
+        if (!info || !Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) throw new Error('bad info');
+        customItem = Object.assign(base, { type: 'iiif', cors: true, width: w, height: h, src: url.replace(/\/info\.json.*$/i, '') });
         perImg.custom = { notice: '', wonder: '', feedback: '', pins: [] };
         loadImage('custom');
-      }).catch(function () { customGo.disabled = false; customErr.textContent = STR.custom_err_iiif; });
+      }).catch(function () { customErr.textContent = STR.custom_err_iiif; }).finally(function () {
+        if (timer) clearTimeout(timer);
+        customGo.disabled = false;
+      });
       return;
     }
     customItem = Object.assign(base, { type: 'image', cors: false, src: url });

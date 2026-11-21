@@ -217,7 +217,8 @@
   // it publishes. Fallback is always English.
   var PHET_LOCALES = { en: 'en', es: 'es', fr: 'fr', pt: 'pt', ar: 'ar', zh: 'zh_CN', vi: 'vi', ru: 'ru', de: 'de', ht: 'ht', so: 'so', uk: 'uk' };
   var params = new URLSearchParams(window.location.search);
-  var locale = PHET_LOCALES[(params.get('lang') || 'en').split('-')[0]] || 'en';
+  var rawLangKey = (params.get('lang') || 'en').split('-')[0].toLowerCase();
+  var locale = Object.prototype.hasOwnProperty.call(PHET_LOCALES, rawLangKey) ? PHET_LOCALES[rawLangKey] : 'en';
 
   function simUrl(slug) {
     return 'https://phet.colorado.edu/sims/html/' + slug + '/latest/' + slug + '_' + locale + '.html';
@@ -238,7 +239,7 @@
   var tabs = { predict: document.getElementById('tabPredict'), explore: document.getElementById('tabExplore'), explain: document.getElementById('tabExplain') };
 
   // ── Opener AI bridge (Video Studio / Data Lab pattern) ──────────────
-  var pending = {};
+  var pending = Object.create(null);
   var verifiedOpenerOrigin = '';
   function isTrustedOrigin(origin) {
     var o = String(origin || '');
@@ -277,7 +278,7 @@
     if (!verifiedOpenerOrigin) verifiedOpenerOrigin = event.origin;
     if (data.type === 'alloflow-theme-change') { if (typeof window.applyAlloFlowTheme === 'function') window.applyAlloFlowTheme(data.theme); return; }
     if (data.type === 'allosimshelf-ready') { openerOk = true; aiAvailable = Boolean(data.ai); renderAiState(); return; }
-    if (data.type === 'allosimshelf-ai-response' && data.id && pending[data.id]) {
+    if (data.type === 'allosimshelf-ai-response' && typeof data.id === 'string' && Object.prototype.hasOwnProperty.call(pending, data.id)) {
       var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);
     }
   });

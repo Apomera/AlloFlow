@@ -291,6 +291,7 @@ const getAdventureReadingHistory = (history, reading) => (Array.isArray(history)
 
 let adventureLaunchInFlight = false;
 let adventureTurnInFlight = false;
+let adventureHintInFlight = false;
 let adventureRunEpoch = 0;
 const executeStartAdventure = async (contextOverride = null, deps) => {
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureArtStyle, adventureCustomArtStyle, universalImageStyle, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, callImagen, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
@@ -413,6 +414,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
     adventureLaunchInFlight = true;
     adventureRunEpoch += 1;
     adventureTurnInFlight = false;
+    adventureHintInFlight = false;
     const launchEpoch = adventureRunEpoch;
     let openingActive = true;
     try {
@@ -460,6 +462,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
       const jsonOptionsExample = adventureFreeResponseEnabled
           ? "[]"
           : `["Choice 1", "Choice 2", "Choice 3", "Choice 4", "Choice 5", "Choice 6"]`;
+            let prompt = '';
             if (adventureInputMode === 'debate') {
           prompt = `
             You are a Debate Moderator setting up an educational debate simulation.
@@ -618,14 +621,17 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
           return;
       }
       let initialInventory = [];
-      let inventoryPromises = [];
+      let pendingInitialArt = [];
       if (sceneData.inventoryUpdate && sceneData.inventoryUpdate.add) {
           const rawAdd = sceneData.inventoryUpdate.add;
           const itemsToAdd = Array.isArray(rawAdd) ? rawAdd : [rawAdd];
           itemsToAdd.forEach(itemData => {
-              const newItemName = typeof itemData === 'object' ? itemData.name : itemData;
-              const itemType = typeof itemData === 'object' ? itemData.type : 'consumable';
-              const newItemDesc = typeof itemData === 'object' ? itemData.description : null;
+              if (itemData == null) return;
+              const isObj = typeof itemData === 'object';
+              const newItemName = String(isObj ? (itemData.name ?? '') : itemData).trim();
+              if (!newItemName) return;
+              const itemType = isObj ? itemData.type : 'consumable';
+              const newItemDesc = isObj ? itemData.description : null;
               const newItem = {
                   id: Date.now() + Math.random(),
                   name: newItemName,
@@ -636,23 +642,12 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
                   genContext: newItemDesc
               };
               initialInventory.push(newItem);
-              const promise = generatePixelArtItem(newItemName, newItemDesc).then(url => {
-                  if (launchEpoch !== adventureRunEpoch) return;
-                  setAdventureState(prev => ({
-                      ...prev,
-                      inventory: prev.inventory.map(i => i.id === newItem.id ? { ...i, image: url || null, isLoading: false } : i)
-                  }));
-              }).catch(() => {
-                  if (launchEpoch !== adventureRunEpoch) return;
-                  setAdventureState(prev => ({
-                      ...prev,
-                      inventory: prev.inventory.map(i => i.id === newItem.id ? { ...i, isLoading: false } : i)
-                  }));
-              });
-              inventoryPromises.push(promise);
+              pendingInitialArt.push({ id: newItem.id, name: newItemName, desc: newItemDesc });
           });
-          const names = itemsToAdd.map(i => typeof i === 'object' ? i.name : i).join(', ');
-          addToast(`Obtained: ${names}`, "success");
+          if (initialInventory.length > 0) {
+              const names = initialInventory.map(i => i.name).join(', ');
+              addToast(`Obtained: ${names}`, "success");
+          }
       }
       let initialSystemResources = [];
       if (adventureInputMode === 'system' && enableFactionResources !== false && factionResourceMode === 'manual') {
@@ -767,6 +762,21 @@ ${_advFenceBlock('UNTRUSTED_SCENE_TEXT', sceneText.substring(0, 1200))}
         characters: sceneCharacters,
         isReviewingCharacters: sceneCharacters.length > 0,
       };
+      });
+      pendingInitialArt.forEach(itemSpec => {
+          Promise.resolve(generatePixelArtItem(itemSpec.name, itemSpec.desc)).then(url => {
+              if (launchEpoch !== adventureRunEpoch) return;
+              setAdventureState(prev => ({
+                  ...prev,
+                  inventory: prev.inventory.map(i => i.id === itemSpec.id ? { ...i, image: url || null, isLoading: false } : i)
+              }));
+          }).catch(() => {
+              if (launchEpoch !== adventureRunEpoch) return;
+              setAdventureState(prev => ({
+                  ...prev,
+                  inventory: prev.inventory.map(i => i.id === itemSpec.id ? { ...i, isLoading: false } : i)
+              }));
+          });
       });
       // Cast confirmation owns the opening illustration. A temporary setting
       // here used a second provider request before the real scene art.
@@ -1441,6 +1451,13 @@ Do NOT force all characters into every scene — let the narrative decide natura
           data.scene.text = String(data.scene.text || (t('adventure.status_messages.continue') || 'The adventure continues.'));
           if (!Array.isArray(data.scene.options)) data.scene.options = [];
           if (!data.feedback && !data.evaluation) data.evaluation = t('adventure.status_messages.turn_complete') || 'Turn complete.';
+          if (data.soundParams && data.scene) {
+              data.scene.soundParams = data.soundParams;
+          }
+          if (!adventureState.climax?.isActive && data.climaxResult) {
+              warnLog('[Adventure] AI returned climaxResult=' + data.climaxResult + ' but climax is not active — ignoring');
+              delete data.climaxResult;
+          }
           let xpVal = data.xpAwarded !== undefined ? data.xpAwarded : (data.xpChange || 0);
           xpVal = parseInt(xpVal, 10);
           if (isNaN(xpVal)) xpVal = 0;
@@ -1678,6 +1695,20 @@ const handleAdventureChoice = async (choice, deps) => {
       }
       historyContext += getAssistedKnowledgeContext(adventureState);
       historyContext += buildAdventureLearningGoalsContext(deps);
+      let choiceCharacterManifest = '';
+      if (adventureConsistentCharacters && adventureState.characters?.length > 0) {
+          const charList = adventureState.characters.map(c =>
+              `- "${_stripAdvFence(c.name)}" (${_stripAdvFence(c.role)}): ${_stripAdvFence(c.appearance)}`
+          ).join('\n');
+          choiceCharacterManifest = `
+--- CONSISTENT CAST ---
+${_advFenceBlock('UNTRUSTED_CAST', charList)}
+INSTRUCTIONS: Refer to these characters by name. Keep their descriptions consistent.
+Return "charactersInScene": ["Name1", "Name2"] listing ONLY the characters visually present in this scene.
+The Protagonist should appear in most scenes unless it is a cutaway.
+Do NOT force all characters into every scene — let the narrative decide naturally.
+`;
+      }
       const prompt = `
         Continue the "${adventureInputMode === 'system' ? 'System Simulation' : 'Adventure'}" simulation.
         ${_advUntrustedRule}
@@ -1693,6 +1724,7 @@ const handleAdventureChoice = async (choice, deps) => {
         -------------------------
         Source Material:
         ${_advFenceBlock('UNTRUSTED_SOURCE_TEXT', `${sourceText.substring(0, 1000)}...`)}
+        ${choiceCharacterManifest}
         ${langInstruction}
         ${toneInstruction}
         ${socialStoryInstruction}
@@ -1744,7 +1776,8 @@ const handleAdventureChoice = async (choice, deps) => {
               "intensity": "Number from 0.0 (very gentle) to 1.0 (urgent)",
               "motion": "One of: Still, Steady, Travel, Chase, Urgent",
               "space": "One of: Open, Room, Cave, Void"
-          }
+          }${adventureConsistentCharacters && adventureState.characters?.length > 0 ? `,
+          "charactersInScene": ["Protagonist Name", "Other Character Present"]` : ''}
         }
       `;
       const result = await callGemini(prompt + buildAdventureModeInstruction(deps), true);
@@ -1808,7 +1841,10 @@ const handleAdventureChoice = async (choice, deps) => {
       setAdventureState(prev => {
           return {
               ...safeState,
-              isLoading: false
+              isLoading: false,
+              isImageLoading: false,
+              imagePolishStage: null,
+              loadingStage: null
           };
       });
     }
@@ -2065,11 +2101,13 @@ const handleAdventureHint = async (deps) => {
   if (adventureState.hintUsedTurn === adventureState.turnCount) return; // one per scene
 
   const requestTurn = adventureState.turnCount;
-  if (adventureState.currentHint?.turn === requestTurn && adventureState.currentHint.loading) return;
+  if (adventureHintInFlight || (adventureState.currentHint?.turn === requestTurn && adventureState.currentHint.loading)) return;
   if (!_advHandlerAiUsable('text', callGemini)) {
     if (typeof addToast === 'function' && typeof t === 'function') addToast(t('toasts.ai_available'), 'error');
     return;
   }
+  const hintEpoch = adventureRunEpoch;
+  adventureHintInFlight = true;
   const sceneText = String(scene.text || '').replace(/\s+/g, ' ').trim();
   const sourceText = String(resolveAdventureReadingSource(deps).text || '').replace(/\s+/g, ' ').trim().slice(0, 2800);
   const topicText = String(sourceTopic || '').trim();
@@ -2134,7 +2172,9 @@ Do NOT resolve the obstacle, choose an option, write the student's response, sta
 Return ONLY JSON:
 {"notice":"...","connect":"...","try":"...","starter":"..."}`;
     const resp = await callGemini(prompt, true, false, 0.7);
+    if (hintEpoch !== adventureRunEpoch) return;
     const parsed = (typeof resilientJsonParse === 'function' ? await resilientJsonParse(resp) : JSON.parse(resp)) || {};
+    if (hintEpoch !== adventureRunEpoch) return;
     const notice = String(parsed.notice || parsed.clue || '').trim();
     const connect = String(parsed.connect || parsed.question || '').trim();
     const tryStep = String(parsed.try || parsed.strategy || '').trim();
@@ -2142,7 +2182,7 @@ Return ONLY JSON:
     if (notice.length < 18 || connect.length < 18 || tryStep.length < 18) {
       throw new Error('Strategy Hint response was too vague');
     }
-    setAdventureState(prev => prev.turnCount !== requestTurn ? prev : ({
+    setAdventureState(prev => (hintEpoch !== adventureRunEpoch || prev.turnCount !== requestTurn) ? prev : ({
       ...prev,
       hintUsedTurn: requestTurn,
       currentHint: {
@@ -2158,12 +2198,15 @@ Return ONLY JSON:
     }));
     addToast(t('adventure.hint_ready') || 'Strategy hint ready.', 'success');
   } catch (error) {
+    if (hintEpoch !== adventureRunEpoch) return;
     warnLog('Adventure hint failed', error);
     setAdventureState(prev => {
-      if (prev.turnCount !== requestTurn || prev.currentHint?.turn !== requestTurn) return prev;
+      if (hintEpoch !== adventureRunEpoch || prev.turnCount !== requestTurn || prev.currentHint?.turn !== requestTurn) return prev;
       return { ...prev, currentHint: null };
     });
     addToast(t('adventure.hint_failed') || "Couldn't build a useful strategy hint. Please try again.", 'error');
+  } finally {
+    adventureHintInFlight = false;
   }
 };
 

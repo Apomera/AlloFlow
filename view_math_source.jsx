@@ -426,14 +426,94 @@ function _normalizeMathProblems(generatedContent, resourceId) {
   }
 }
 
+// Convert common LaTeX math expressions into clear spoken phrasing for read-aloud.
+function _mathToSpokenText(raw) {
+  return String(raw == null ? '' : raw)
+    .replace(/\\frac\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1 over $2')
+    .replace(/\\sqrt\s*\{([^}]+)\}/g, 'square root of $1')
+    .replace(/\\times|\\cdot/g, ' times ')
+    .replace(/\\div/g, ' divided by ')
+    .replace(/\\le(?:q)?\b/g, ' less than or equal to ')
+    .replace(/\\ge(?:q)?\b/g, ' greater than or equal to ')
+    .replace(/\\ne(?:q)?\b/g, ' not equal to ')
+    .replace(/\\pm\b/g, ' plus or minus ')
+    .replace(/\\pi\b/g, ' pi ')
+    .replace(/\^2\b|\^\{2\}/g, ' squared')
+    .replace(/\^3\b|\^\{3\}/g, ' cubed')
+    .replace(/\\text\s*\{([^}]*)\}/g, '$1')
+    .replace(/\$\$/g, ' ')
+    .replace(/\$/g, ' ')
+    .replace(/\\[a-zA-Z]+/g, ' ')
+    .replace(/[{}]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function MathView(props) {
   props = _mathSafeShallowCopy(props);
   var noop = () => {};
+  var bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
+  var bt = function (s) {
+    return (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function')
+      ? window.__alloBionicReact(s)
+      : s;
+  };
   var accessibleInputRegistryRef = React.useRef({ resourceId: null, artifact: null, contexts: new Map() });
   var nextAccessibleInputRegistry = { resourceId: null, artifact: null, contexts: new Map() };
   var accessibleInputPendingRef = React.useRef(new Map());
   var accessibleInputSequenceRef = React.useRef(0);
   var activeManipulativeSessionRef = React.useRef(null);
+  var mathSpokenSlotRef = React.useRef(null);
+  var spokenMathAudioRef = React.useRef(null);
+  var stopSpokenMathAudio = function () {
+    var activeAudio = spokenMathAudioRef.current;
+    spokenMathAudioRef.current = null;
+    if (activeAudio) {
+      try { activeAudio.pause(); activeAudio.currentTime = 0; } catch (_) {}
+    }
+  };
+  React.useEffect(function () {
+    return function () {
+      stopSpokenMathAudio();
+      mathSpokenSlotRef.current = null;
+      try {
+        if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+      } catch (_) {}
+    };
+  }, []);
+  var canSpeakMath = typeof window !== 'undefined' && Boolean(
+    (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function')
+    || typeof window.callTTS === 'function'
+    || (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function')
+  );
+  var handleSpeakMathProblem = function (slotKey, problemNum, questionText) {
+    var spoken = _mathToSpokenText('Problem ' + problemNum + '. ' + questionText);
+    if (!spoken) return;
+    try {
+      if (typeof window !== 'undefined' && window.__alloMuted === true) return;
+      var player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
+      var playerBusy = player && typeof player.isPlaying === 'function' && player.isPlaying();
+      var synthBusy = typeof window !== 'undefined' && window.speechSynthesis && window.speechSynthesis.speaking;
+      if (mathSpokenSlotRef.current === slotKey && (playerBusy || synthBusy)) {
+        mathSpokenSlotRef.current = null;
+        if (player && typeof player.stop === 'function') player.stop();
+        else if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+        return;
+      }
+      mathSpokenSlotRef.current = slotKey;
+      if (player && typeof player.speak === 'function') {
+        Promise.resolve(player.speak(spoken)).catch(noop);
+      } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
+        window.callTTS(spoken);
+      } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+        window.speechSynthesis.cancel();
+        var utt = new window.SpeechSynthesisUtterance(spoken);
+        utt.rate = window.__alloPlaybackRate || 1;
+        utt.volume = Number.isFinite(window.__alloVoiceVolume) ? Math.max(0, Math.min(1, window.__alloVoiceVolume)) : 1;
+        window.speechSynthesis.speak(utt);
+      }
+    } catch (_) {}
+  };
   React.useLayoutEffect(() => {
     var previousRegistry = accessibleInputRegistryRef.current;
     var pending = accessibleInputPendingRef.current;
@@ -635,18 +715,40 @@ function MathView(props) {
   var playSpokenMath = async (formats) => {
     const spoken = formats?.spoken || formats?.plainText || formats?.latex || '';
     if (!spoken) return;
+    if (typeof window !== 'undefined' && window.__alloMuted === true) return;
+    stopSpokenMathAudio();
     if (typeof callTTS === 'function') {
-      const url = await callTTS(spoken, selectedVoice);
-      if (url) {
-        const audio = new Audio(url);
-        await audio.play();
+      try {
+        const url = await callTTS(spoken, selectedVoice);
+        if (url) {
+          const audio = new Audio(url);
+          if (typeof window !== 'undefined') {
+            if (Number.isFinite(window.__alloPlaybackRate) && window.__alloPlaybackRate > 0) audio.playbackRate = window.__alloPlaybackRate;
+            if (Number.isFinite(window.__alloVoiceVolume)) audio.volume = Math.max(0, Math.min(1, window.__alloVoiceVolume));
+          }
+          spokenMathAudioRef.current = audio;
+          audio.onended = () => { if (spokenMathAudioRef.current === audio) spokenMathAudioRef.current = null; };
+          audio.onerror = () => { if (spokenMathAudioRef.current === audio) spokenMathAudioRef.current = null; };
+          await audio.play();
+          return;
+        }
+        if (url || typeof window === 'undefined' || window.__alloStudentAiDisabled !== true) return;
+      } catch (_) {
+        stopSpokenMathAudio();
+        return;
       }
-      // Student AI off: no cloud voice came back; the device voice below reads instead.
-      if (url || typeof window === 'undefined' || window.__alloStudentAiDisabled !== true) return;
+    } else if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+      try {
+        await window.AlloSpeechPlayer.speak(spoken, { voice: selectedVoice });
+        return;
+      } catch (_) {}
     }
     if (typeof window !== 'undefined' && window.speechSynthesis && typeof SpeechSynthesisUtterance === 'function') {
       window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(new SpeechSynthesisUtterance(spoken));
+      const utterance = new SpeechSynthesisUtterance(spoken);
+      utterance.rate = window.__alloPlaybackRate || 1;
+      utterance.volume = Number.isFinite(window.__alloVoiceVolume) ? Math.max(0, Math.min(1, window.__alloVoiceVolume)) : 1;
+      window.speechSynthesis.speak(utterance);
     }
   };
   var appendInlineMath = (currentValue, latex) => {
@@ -765,7 +867,7 @@ function MathView(props) {
       value: problem.question || problem.problem || '',
       problemToken
     });
-    var teacherSolutionEditing = isTeacherMode && !mathSelfGradeMode && showMathAnswers
+    var teacherSolutionEditing = isTeacherMode && !mathSelfGradeMode
       && canHandleMathProblemEdit && isMathEditing(problemIndex, problem.__viewKey, mathResourceId);
     accessibleContexts.set(mathAccessibleContextKey('teacher-answer', problem.__viewKey), {
       enabled: teacherSolutionEditing,
@@ -1207,6 +1309,63 @@ function MathView(props) {
                                 </p>
                                 </>
                             )}
+                            {mathProblems.length >= 2 && (!isTeacherMode || isIndependentMode || mathSelfGradeMode) && (() => {
+                                var statuses = mathProblems.map((prob) => {
+                                    var key = prob.__viewKey;
+                                    if (mathSelfGradeMode) {
+                                        return _mathScalarText(mathStudentAnswers[key]).trim() ? 'started' : 'empty';
+                                    }
+                                    var cr = getMathCheckResult(key);
+                                    if (cr && cr.checked && cr.verdict && cr.verdict !== 'error') return cr.verdict;
+                                    return _mathScalarText(resourceStudentResponses[key]).trim() ? 'started' : 'empty';
+                                });
+                                var startedCount = statuses.filter(s => s !== 'empty').length;
+                                var checkedCount = statuses.filter(s => ['correct', 'partial', 'incorrect'].includes(s)).length;
+                                return (
+                                    <div data-math-progress-bar className="mt-3 pt-3 border-t border-indigo-200/70 flex flex-wrap items-center justify-between gap-2">
+                                        <span className="text-xs font-bold text-indigo-900">
+                                            {mathSelfGradeMode
+                                                ? _mathT(t, 'math.stepper_answered', '{done} / {total} answered', { done: startedCount, total: mathProblems.length })
+                                                : checkedCount > 0
+                                                    ? _mathT(t, 'math.stepper_started_checked', '{done} / {total} started · {checked} checked', { done: startedCount, total: mathProblems.length, checked: checkedCount })
+                                                    : _mathT(t, 'math.stepper_started', '{done} / {total} started', { done: startedCount, total: mathProblems.length })}
+                                        </span>
+                                        <div className="flex flex-wrap gap-1.5" role="navigation" aria-label={_mathT(t, 'math.jump_to_problem_nav', 'Jump to problem')}>
+                                            {mathProblems.map((prob, idx) => {
+                                                var st = statuses[idx];
+                                                var pillTone = st === 'correct'
+                                                    ? 'bg-emerald-600 text-white border-emerald-700'
+                                                    : st === 'partial'
+                                                        ? 'bg-amber-100 text-amber-900 border-amber-400'
+                                                        : st === 'incorrect'
+                                                            ? 'bg-rose-100 text-rose-900 border-rose-400'
+                                                            : st === 'started'
+                                                                ? 'bg-indigo-100 text-indigo-900 border-indigo-400'
+                                                                : 'bg-white text-slate-700 border-slate-300 hover:bg-indigo-50';
+                                                return (
+                                                    <a
+                                                        key={prob.__viewKey}
+                                                        href={`#math-problem-${idx}`}
+                                                        data-math-jump={idx}
+                                                        onClick={(e) => {
+                                                            var target = typeof document !== 'undefined' ? document.getElementById('math-problem-' + idx) : null;
+                                                            if (target && typeof target.scrollIntoView === 'function') {
+                                                                e.preventDefault();
+                                                                var reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                                                                target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+                                                            }
+                                                        }}
+                                                        aria-label={_mathT(t, 'math.jump_to_problem_n', 'Jump to problem {n}', { n: idx + 1 })}
+                                                        className={`min-h-9 min-w-9 inline-flex items-center justify-center px-2 rounded-full border text-xs font-bold no-underline transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${pillTone}`}
+                                                    >
+                                                        {st === 'correct' ? '✓ ' : ''}{idx + 1}
+                                                    </a>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </div>
                         {graphHtml && (
                             <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2">
@@ -1224,7 +1383,7 @@ function MathView(props) {
                             </div>
                         )}
                         {mathProblems.map((problem, pIdx) => (
-                            <section key={problem.__viewKey} aria-label={`Problem ${pIdx + 1}`} className="space-y-4 border-b border-slate-100 pb-8 last:border-0" data-help-key="math_problem">
+                            <section id={`math-problem-${pIdx}`} key={problem.__viewKey} aria-label={`Problem ${pIdx + 1}`} className="space-y-4 border-b border-slate-100 pb-8 last:border-0 scroll-mt-4" data-help-key="math_problem">
                                 <div className={`bg-white p-4 rounded-xl border shadow-sm flex flex-wrap sm:flex-nowrap gap-4 items-start ${isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? 'border-amber-300 ring-2 ring-amber-100' : 'border-indigo-100'}`}>
                                     <div aria-hidden="true" className="bg-indigo-600 text-white font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm mt-0.5 shadow-sm">
                                         {pIdx + 1}
@@ -1241,6 +1400,7 @@ function MathView(props) {
                                                 onChange={(e) => handleMathProblemEdit(pIdx, 'question', e.target.value, null, problem.__viewKey, mathResourceId)}
                                                 disabled={!canHandleMathProblemEdit}
                                                 onKeyDown={(event) => {
+                                                    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
                                                     if (event.key !== 'Enter' || (!event.ctrlKey && !event.metaKey) || !canToggleMathEdit) return;
                                                     event.preventDefault();
                                                     toggleMathEdit(pIdx, problem.__viewKey, mathResourceId);
@@ -1291,6 +1451,20 @@ function MathView(props) {
                                                     : _mathT(t, 'math.verification_needs_review', 'Needs teacher review')}
                                         </p>}
                                     </div>
+                                    {!isMathEditing(pIdx, problem.__viewKey, mathResourceId) && (
+                                        <button
+                                            type="button"
+                                            data-math-listen={pIdx}
+                                            disabled={!canSpeakMath}
+                                            onClick={() => handleSpeakMathProblem(problem.__viewKey, pIdx + 1, formatMathQuestion(problem))}
+                                            aria-label={_mathT(t, 'math.listen_problem_aria', 'Listen to problem {n}', { n: pIdx + 1 })}
+                                            title={_mathT(t, 'math.listen_problem_aria', 'Listen to problem {n}', { n: pIdx + 1 })}
+                                            className="min-h-[44px] shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50/70 text-xs font-bold text-indigo-800 hover:bg-indigo-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                        >
+                                            <span aria-hidden="true">🔊</span>
+                                            <span>{_mathT(t, 'common.listen', 'Listen')}</span>
+                                        </button>
+                                    )}
                                     {isTeacherMode && !mathSelfGradeMode && (
                                         <button
                                             id={mathEditButtonId(problem.__viewKey)}
@@ -1380,7 +1554,7 @@ function MathView(props) {
                                             )}
                                         </div>
                                     )}
-                                    {showMathAnswers ? (
+                                    {(showMathAnswers || isMathEditing(pIdx, problem.__viewKey, mathResourceId)) ? (
                                         <div className="animate-in motion-reduce:animate-none fade-in slide-in-from-top-2 duration-300">
                                             {problem.steps && problem.steps.length > 0 && (
                                             <div className="ml-0 sm:ml-4 pl-4 border-l-2 border-slate-200 space-y-4 mt-4">
@@ -1453,7 +1627,7 @@ function MathView(props) {
                                                          <input
                                                              type="text"
                                                              className="w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none bg-amber-50/50 font-serif text-lg font-bold text-green-900"
-                                                             aria-label={t('math.edit_answer') || `Edit answer for problem ${pIdx + 1}`}
+                                                             aria-label={(() => { const _lbl = t('math.edit_answer'); return (_lbl && !/\$\{/.test(_lbl)) ? _lbl : `Edit answer for problem ${pIdx + 1}`; })()}
                                                              value={problem.answer || ''}
                                                              onChange={(e) => handleMathProblemEdit(pIdx, 'answer', e.target.value, null, problem.__viewKey, mathResourceId)}
                                                              disabled={!canHandleMathProblemEdit}
@@ -1490,7 +1664,7 @@ function MathView(props) {
                                                          />
                                                      ) : (
                                                     <p className="text-sm text-orange-900 leading-relaxed font-medium">
-                                                        {problem.realWorld}
+                                                        {typeof formatInlineText === 'function' ? formatInlineText(problem.realWorld, false) : bt(problem.realWorld)}
                                                     </p>
                                                      )}
                                                 </div>
@@ -1588,8 +1762,8 @@ function MathView(props) {
                     <div key={hIdx} className="flex gap-2 items-start p-3 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">
                         <span className="text-lg flex-shrink-0">{hIdx === 0 ? '💡' : hIdx === 1 ? '🔦' : '🔍'}</span>
                         <div className="flex-1">
-                            <span className="text-[11px] font-black text-amber-800 uppercase tracking-widest">{_mathT(t, 'math.hint.label', 'Hint {n} of 3', { n: hIdx + 1 })}</span>
-                            <p className="text-sm text-amber-900 font-medium leading-relaxed mt-0.5">{hint}</p>
+                            <span className="text-xs font-black text-amber-800 uppercase tracking-widest">{hintLimit === 3 ? _mathT(t, 'math.hint.label', 'Hint {n} of 3', { n: hIdx + 1 }) : _mathT(t, 'math.hint.label_of_total', 'Hint {n} of {total}', { n: hIdx + 1, total: Math.max(hintLimit, hintInfo.hints.length) })}</span>
+                            <p className="text-sm text-amber-900 font-medium leading-relaxed mt-0.5">{typeof formatInlineText === 'function' ? formatInlineText(hint, false) : bt(hint)}</p>
                         </div>
                     </div>
                 ))}
@@ -1661,7 +1835,7 @@ function MathView(props) {
                                                                     checkResult.verdict === 'partial' ? 'text-amber-800' :
                                                                     'text-red-800'
                                                                 }`}>
-                                                                    {checkResult.feedback}
+                                                                    {typeof formatInlineText === 'function' ? formatInlineText(checkResult.feedback, false) : bt(checkResult.feedback)}
                                                                 </p>
                                                             </div>
                                                             <div className="px-4 pb-3 flex justify-end">
@@ -1699,7 +1873,7 @@ function MathView(props) {
                                                                             {sIdx + 1}
                                                                         </div>
                                                                         <div className="flex-1 min-w-0">
-                                                                            <p className="text-sm text-slate-700 font-medium leading-relaxed">{step.explanation}</p>
+                                                                            <p className="text-sm text-slate-700 font-medium leading-relaxed">{typeof formatInlineText === 'function' ? formatInlineText(step.explanation, false) : bt(step.explanation)}</p>
                                                                             {step.latex && (
                                                                                 <div role="region" tabIndex={0} aria-label={tr('math.step_expression_aria', 'Expression for step {n} of problem {p}', { n: sIdx + 1, p: pIdx + 1 })} className="mt-1.5 px-3 py-1.5 bg-slate-50 rounded-md border border-slate-400 text-xs text-indigo-700 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-indigo-300">
                                                                                     <MathSymbol text={step.latex} />
@@ -1716,9 +1890,9 @@ function MathView(props) {
                                                                 {problem.answer && (
                                                                     <div className="p-3 bg-green-50 rounded-lg border border-green-200 flex items-center gap-2">
                                                                         <span className="text-sm">✅</span>
-                                                                        <span className="text-sm font-bold text-green-700">{_mathT(t, 'math.solution.answer_label', 'Answer:')} {problem.answer}</span>
+                                                                        <span className="text-sm font-bold text-green-700">{_mathT(t, 'math.solution.answer_label', 'Answer:')} <MathSymbol text={problem.answer} /></span>
                                                                         {(mathSubject === 'Geometry' || /volum|prism|cube|dimension|rectangular/i.test(problem.question || problem.title || '')) && (
-                                                                            <button type="button" disabled={!canOpenCubeLab} onClick={() => { setShowStemLab(true); setStemLabTab('explore'); setStemLabTool('volume'); setCubeBuilderMode('freeform'); setCubePositions(new Set()); const vol = _mathCubeChallengeVolume(problem.answer); setCubeBuilderChallenge(vol ? {type:'volume', answer: vol, shape:'any'} : null); setCubeBuilderFeedback(null); }} className="ml-auto min-h-[44px] text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50">
+                                                                            <button type="button" disabled={!canOpenCubeLab} onClick={() => { setShowStemLab(true); setStemLabTab('explore'); setStemLabTool('volume'); setCubeBuilderMode('freeform'); setCubePositions(new Set()); const vol = _mathCubeChallengeVolume(problem.answer); setCubeBuilderChallenge(vol ? {type:'volume', answer: vol, shape:'any'} : null); setCubeBuilderFeedback(null); }} className="ml-auto min-h-[44px] text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50">
                                                                                 📦 {_mathT(t, 'math.solution.try_with_cubes', 'Try with cubes')}
                                                                             </button>
                                                                         )}
@@ -1736,7 +1910,7 @@ function MathView(props) {
                                 )}
                             </section>
                         ))}
-                        {mathProblems.length === 1 && (
+                        {mathProblems.length === 1 && _mathViewAiUsable() && (
                             <div className="mt-8 flex justify-center pb-4">
                                 <button type="button"
                                     onClick={handleGenerateSimilar}
@@ -1749,12 +1923,12 @@ function MathView(props) {
                                 </button>
                             </div>
                         )}
-                        {isTeacherMode && mathProblems.length > 0 && (
+                        {isTeacherMode && mathProblems.length > 0 && _mathViewAiUsable() && (
                             <div className="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-sm">✏️</span>
                                     <span className="text-xs font-bold text-indigo-700">{t('math.edit_with_allobot')}</span>
-                                    <span className="text-[11px] text-indigo-700 font-medium">{t('math.edit_helper')}</span>
+                                    <span className="text-xs text-indigo-700 font-medium">{t('math.edit_helper')}</span>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     <input
@@ -1788,7 +1962,7 @@ if (e.key !== "Enter" || !mathEditInput.trim() || isMathEditingChat || isProcess
                                         <button key={suggestion} type="button"
                                             onClick={() => { setMathEditInput(suggestion); handleMathEdit(suggestion, mathResourceId); }}
                                             disabled={!canSetMathEditInput || !canHandleMathEdit || isMathEditingChat || isProcessing}
-                                            className="min-h-[44px] px-2 py-1 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-600 rounded-full hover:bg-indigo-100 transition-all disabled:opacity-40"
+                                            className="min-h-[44px] px-2 py-1 text-xs font-bold text-indigo-600 bg-white border border-indigo-600 rounded-full hover:bg-indigo-100 transition-all disabled:opacity-40"
                                         >
                                             {suggestion}
                                         </button>

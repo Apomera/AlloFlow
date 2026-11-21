@@ -128,6 +128,8 @@ function DirectionsResultView({
   onChoose = directionsResultNoop,
   onToggleManual = directionsResultNoop
 }) {
+  const bionicOn = typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function' ? window.__alloUseBionic() : false;
+  const bt = s => bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function' ? window.__alloBionicReact(s) : s;
   const translationKeys = {
     mapHide: 'directions.map_hide',
     mapShow: 'directions.map_show',
@@ -154,7 +156,10 @@ function DirectionsResultView({
     selectedSuffix: 'directions.selected_suffix',
     chooseActivity: 'directions.choose_activity',
     openActivity: 'directions.open_activity',
-    choiceHint: 'directions.choice_hint'
+    choiceHint: 'directions.choice_hint',
+    listenDirections: 'directions.listen_directions',
+    listen: 'directions.listen',
+    stopListening: 'directions.stop_listening'
   };
   const text = (key, fallback, maxLength, params) => directionsResultTranslation(t, translationKeys[key] || key, fallback, params, maxLength);
 
@@ -217,23 +222,127 @@ function DirectionsResultView({
   };
   const mapAriaLabel = text('mapSummary', 'Quest map') + ': ' + visitedCount + '/' + stations.length + ' ' + text('stationsVisited', 'stations visited') + (goalTotal ? ', ' + doneCount + '/' + goalTotal + ' ' + text('goals', 'goals') : '');
   const trustedBodyHtml = typeof bodyHtml === 'string' ? bodyHtml : '';
+  const resolvedTitle = directionsResultText(title, text('directions.title', 'Lesson Directions'), 140);
+  const speakingState = typeof React.useState === 'function' ? React.useState(false) : [false, directionsResultNoop];
+  const isSpeaking = speakingState[0];
+  const updateSpeaking = speakingState[1];
+  const goalFilterState = typeof React.useState === 'function' ? React.useState('all') : ['all', directionsResultNoop];
+  const goalFilter = goalFilterState[0];
+  const updateGoalFilter = goalFilterState[1];
+  const openGoalCount = goals.filter(goal => !goal.missing && !goal.done).length;
+  const goalProgressPct = goalTotal > 0 ? Math.round(doneCount / goalTotal * 100) : 0;
+  const canFilterGoals = goals.length >= 3 && openGoalCount > 0 && doneCount > 0;
+  const effectiveGoalFilter = canFilterGoals && goalFilter === 'open' ? 'open' : 'all';
+  const displayedGoals = effectiveGoalFilter === 'open' ? goals.filter(goal => !goal.done) : goals;
+  const speakingRef = typeof React.useRef === 'function' ? React.useRef(false) : {
+    current: false
+  };
+  speakingRef.current = isSpeaking;
+  const speechListenerRef = typeof React.useRef === 'function' ? React.useRef(null) : {
+    current: null
+  };
+  const detachSpeechListener = () => {
+    if (speechListenerRef.current && typeof window !== 'undefined') {
+      window.removeEventListener('allo-speech-state', speechListenerRef.current);
+    }
+    speechListenerRef.current = null;
+  };
+  if (typeof React.useEffect === 'function') {
+    React.useEffect(() => () => {
+      detachSpeechListener();
+      if (!speakingRef.current || typeof window === 'undefined') return;
+      try {
+        if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop();else if (window.speechSynthesis) window.speechSynthesis.cancel();
+      } catch (_) {}
+    }, []);
+  }
+  const htmlToPlainText = rawHtml => {
+    if (!rawHtml) return '';
+    if (typeof document !== 'undefined') {
+      try {
+        const scratch = document.createElement('div');
+        const safe = typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function' ? window.sanitizeHtml(rawHtml) : String(rawHtml).replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '');
+        scratch.innerHTML = safe;
+        return String(scratch.textContent || '').replace(/\s+/g, ' ').trim();
+      } catch (_) {}
+    }
+    return String(rawHtml).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  };
+  const speakDirections = () => {
+    const plainBody = htmlToPlainText(trustedBodyHtml);
+    const goalLines = goals.filter(g => !g.missing && g.label).map(g => g.label);
+    const parts = [resolvedTitle];
+    if (plainBody) parts.push(plainBody);
+    if (choiceBoard && choiceBoard.prompt) parts.push(choiceBoard.title + '. ' + choiceBoard.prompt);
+    if (goalLines.length) parts.push(text('yourGoals', 'Your goals') + ': ' + goalLines.join('. '));
+    const speechText = parts.join('. ').trim();
+    if (!speechText || typeof window === 'undefined') return;
+    const player = window.AlloSpeechPlayer;
+    const done = () => {
+      detachSpeechListener();
+      updateSpeaking(false);
+    };
+    detachSpeechListener();
+    if (isSpeaking) {
+      if (player && typeof player.stop === 'function') player.stop();else if (window.speechSynthesis) window.speechSynthesis.cancel();
+      updateSpeaking(false);
+      return;
+    }
+    if (window.__alloMuted === true) return;
+    if (player && typeof player.speak === 'function') {
+      if (typeof player.isPlaying === 'function' && player.isPlaying() && typeof player.stop === 'function') {
+        player.stop();
+      }
+      let ourId = null;
+      const onState = e => {
+        const d = e && e.detail || {};
+        if (ourId === null) {
+          if (d.isPlaying) ourId = d.currentId;
+          return;
+        }
+        if (!d.isPlaying || d.currentId !== ourId) done();
+      };
+      speechListenerRef.current = onState;
+      window.addEventListener('allo-speech-state', onState);
+      updateSpeaking(true);
+      Promise.resolve(player.speak(speechText)).then(result => {
+        if (result === null && ourId === null) done();
+      }, done);
+    } else if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+      window.speechSynthesis.cancel();
+      const utterance = new window.SpeechSynthesisUtterance(speechText);
+      utterance.rate = window.__alloPlaybackRate || 1;
+      utterance.volume = Number.isFinite(window.__alloVoiceVolume) ? Math.max(0, Math.min(1, window.__alloVoiceVolume)) : 1;
+      utterance.onend = done;
+      utterance.onerror = done;
+      updateSpeaking(true);
+      window.speechSynthesis.speak(utterance);
+    }
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "max-w-2xl mx-auto p-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-2xl border-2 border-amber-200 shadow-lg p-5"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 mb-3"
+    className: "flex items-center gap-2 mb-3 flex-wrap"
   }, /*#__PURE__*/React.createElement(ClipboardList, {
     size: 20,
     className: "text-amber-600",
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("h1", {
-    className: "text-lg font-bold text-slate-800 flex-1"
-  }, directionsResultText(title, text('directions.title', 'Lesson Directions'), 140)), stations.length > 0 && /*#__PURE__*/React.createElement("button", {
+    className: "text-lg font-bold text-slate-800 flex-1 min-w-0"
+  }, resolvedTitle), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-directions-listen": "true",
+    "aria-pressed": isSpeaking,
+    onClick: speakDirections,
+    "aria-label": isSpeaking ? text('stopListening', 'Stop listening') : text('listenDirections', 'Listen to directions'),
+    className: "min-h-11 text-xs font-bold text-amber-900 bg-amber-50 border border-amber-300 hover:bg-amber-100 rounded-lg px-2.5 py-1 transition-all motion-reduce:transition-none flex-shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
+  }, isSpeaking ? '⏹️ ' + text('stopListening', 'Stop') : '🔊 ' + text('listen', 'Listen')), stations.length > 0 && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onToggleMap,
     "aria-pressed": showMap,
-    className: "min-h-11 text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-lg px-2 py-1 transition-all motion-reduce:transition-none flex-shrink-0"
+    className: "min-h-11 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-lg px-2 py-1 transition-all motion-reduce:transition-none flex-shrink-0"
   }, "\uD83D\uDDFA\uFE0F ", showMap ? text('mapHide', 'Hide map') : text('mapShow', 'Quest map'))), showMap && stations.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 overflow-x-auto rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/60 to-amber-50/40 p-2"
   }, /*#__PURE__*/React.createElement("svg", {
@@ -393,14 +502,14 @@ function DirectionsResultView({
     size: 15,
     "aria-hidden": "true"
   })), nextGoalLabel && /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] text-amber-700 font-semibold"
+    className: "text-xs text-amber-700 font-semibold"
   }, text('mapNextGoal', 'finishes your goal: ' + nextGoalLabel, 300, {
     goal: nextGoalLabel
   })), alternateStations.map(station => /*#__PURE__*/React.createElement("button", {
     type: "button",
     key: 'alt' + station.id,
     onClick: () => travelTo(station),
-    className: "min-h-11 flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 hover:border-amber-400 text-amber-800 font-semibold rounded-lg text-[11px] transition-all motion-reduce:transition-none"
+    className: "min-h-11 flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 hover:border-amber-400 text-amber-800 font-semibold rounded-lg text-xs transition-all motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, station.icon), /*#__PURE__*/React.createElement("span", null, text('mapAlsoReady', 'or') + ' ' + (station.title || station.typeLabel).slice(0, 26))))) : /*#__PURE__*/React.createElement("p", {
@@ -408,7 +517,7 @@ function DirectionsResultView({
   }, visitedCount === stations.length ? text('mapAllVisited', '🎉 You have been to every station on this map.') : text('directions.map_choose_station', 'Choose a station from the map or the list below to continue.')), /*#__PURE__*/React.createElement("details", {
     className: "mt-2"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "min-h-11 inline-flex items-center text-[11px] text-indigo-700 font-bold cursor-pointer"
+    className: "min-h-11 inline-flex items-center text-xs text-indigo-700 font-bold cursor-pointer"
   }, text('mapJumpAny', 'Go to any station')), /*#__PURE__*/React.createElement("ul", {
     className: "flex flex-wrap gap-1.5 mt-2 list-none p-0 m-0"
   }, stations.map(station => /*#__PURE__*/React.createElement("li", {
@@ -416,7 +525,7 @@ function DirectionsResultView({
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => travelTo(station),
-    className: 'min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all motion-reduce:transition-none ' + (station.visited ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:border-emerald-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400')
+    className: 'min-h-11 flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold border transition-all motion-reduce:transition-none ' + (station.visited ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:border-emerald-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400')
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, station.icon), /*#__PURE__*/React.createElement("span", null, (station.title || station.typeLabel).slice(0, 30)), /*#__PURE__*/React.createElement("span", {
@@ -424,12 +533,15 @@ function DirectionsResultView({
   }, ', ' + station.typeLabel + (station.visited ? ', ' + text('mapVisitedSr', 'already visited') : '')))))))), trustedBodyHtml && /*#__PURE__*/React.createElement("div", {
     className: "prose prose-sm max-w-none text-slate-700 mb-4 break-words",
     dangerouslySetInnerHTML: {
-      __html: typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function' ? window.sanitizeHtml(trustedBodyHtml) : ''
+      __html: (() => {
+        const clean = typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function' ? window.sanitizeHtml(trustedBodyHtml) : '';
+        return bionicOn && clean && typeof window !== 'undefined' && typeof window.__alloBionicHtml === 'function' ? window.__alloBionicHtml(clean) : clean;
+      })()
     }
   }), missingChoiceCount > 0 && /*#__PURE__*/React.createElement("div", {
     role: "alert",
     className: "mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900"
-  }, text('missingChoices', 'Some activity choices are no longer available in this assignment. Choose from the activities still listed below or ask your teacher for an updated board.', 500)), choiceBoard && /*#__PURE__*/React.createElement("section", {
+  }, bt(text('missingChoices', 'Some activity choices are no longer available in this assignment. Choose from the activities still listed below or ask your teacher for an updated board.', 500))), choiceBoard && /*#__PURE__*/React.createElement("section", {
     className: "border-t border-indigo-100 pt-4 mb-4",
     "aria-labelledby": "directions-choice-board-title"
   }, /*#__PURE__*/React.createElement("div", {
@@ -441,8 +553,8 @@ function DirectionsResultView({
     className: "text-base font-black text-indigo-900"
   }, choiceBoard.title), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-1"
-  }, choiceBoard.prompt)), /*#__PURE__*/React.createElement("span", {
-    className: "text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200"
+  }, bt(choiceBoard.prompt))), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold uppercase tracking-wide rounded-full px-2 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200"
   }, choiceBoard.items.length, " ", choiceBoard.items.length === 1 ? text('directions.choice', 'choice') : text('choices', 'choices'))), selectedChoice && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-900"
@@ -462,68 +574,114 @@ function DirectionsResultView({
     className: "min-w-0 flex-1"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block text-sm font-black text-slate-800"
-  }, item.label), /*#__PURE__*/React.createElement("span", {
-    className: "mt-1 block text-[10px] font-bold uppercase tracking-wide text-indigo-700"
+  }, bt(item.label)), /*#__PURE__*/React.createElement("span", {
+    className: "mt-1 block text-xs font-bold uppercase tracking-wide text-indigo-700"
   }, item.typeLabel), item.description && /*#__PURE__*/React.createElement("span", {
     className: "mt-1 block text-xs leading-5 text-slate-600"
-  }, item.description), /*#__PURE__*/React.createElement("span", {
-    className: "mt-2 block text-[11px] font-bold text-indigo-700 group-hover:text-indigo-900"
+  }, bt(item.description)), /*#__PURE__*/React.createElement("span", {
+    className: "mt-2 block text-xs font-bold text-indigo-700 group-hover:text-indigo-900"
   }, text('openActivity', 'Open activity'), " ", /*#__PURE__*/React.createElement(ArrowRight, {
     size: 12,
     className: "inline",
     "aria-hidden": "true"
   })))))), /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[10px] text-slate-500"
-  }, choiceBoard.items.length > 1 ? text('choiceHint', 'Choose one activity to begin. You can return here and choose another card later.', 300) : text('directions.single_choice_hint', 'Open the remaining activity, or ask your teacher for an updated board.', 300))), goals.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 text-xs text-slate-600"
+  }, bt(choiceBoard.items.length > 1 ? text('choiceHint', 'Choose one activity to begin. You can return here and choose another card later.', 300) : text('directions.single_choice_hint', 'Open the remaining activity, or ask your teacher for an updated board.', 300)))), goals.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "border-t border-amber-100 pt-3",
     role: "group",
     "aria-label": text('yourGoals', 'Your goals')
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-between gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-amber-700 mb-2",
+    className: "text-xs font-bold text-amber-700",
     "aria-live": "polite"
-  }, text('yourGoals', 'Your goals'), goalTotal > 0 ? ' · ' + doneCount + '/' + goalTotal : ''), /*#__PURE__*/React.createElement("ul", {
+  }, text('yourGoals', 'Your goals'), goalTotal > 0 ? ' · ' + doneCount + '/' + goalTotal : ''), goalTotal > 0 && doneCount === goalTotal && /*#__PURE__*/React.createElement("span", {
+    "data-directions-all-goals-done": "true",
+    className: "rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-bold text-emerald-700"
+  }, "\uD83C\uDF89 ", text('directions.all_goals_done', 'All goals complete!')), canFilterGoals && /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1",
+    role: "group",
+    "aria-label": text('directions.goal_filter_group', 'Filter goals')
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-directions-goal-filter": "all",
+    "aria-pressed": effectiveGoalFilter === 'all',
+    onClick: () => updateGoalFilter('all'),
+    className: 'min-h-11 rounded-lg border px-2.5 py-1 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ' + (effectiveGoalFilter === 'all' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50')
+  }, text('directions.goal_filter_all', 'All'), " (", goals.length, ")"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-directions-goal-filter": "open",
+    "aria-pressed": effectiveGoalFilter === 'open',
+    onClick: () => updateGoalFilter('open'),
+    className: 'min-h-11 rounded-lg border px-2.5 py-1 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700 ' + (effectiveGoalFilter === 'open' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50')
+  }, text('directions.goal_filter_open', 'To do'), " (", openGoalCount, ")"))), goalTotal > 0 && /*#__PURE__*/React.createElement("div", {
+    "data-directions-progress-bar": "true",
+    role: "progressbar",
+    "aria-label": text('yourGoals', 'Your goals'),
+    "aria-valuenow": doneCount,
+    "aria-valuemin": 0,
+    "aria-valuemax": goalTotal,
+    className: "mb-3 h-2 w-full overflow-hidden rounded-full bg-slate-200"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: 'h-full rounded-full transition-all motion-reduce:transition-none ' + (doneCount === goalTotal ? 'bg-emerald-600' : 'bg-amber-500'),
+    style: {
+      width: goalProgressPct + '%'
+    }
+  })), /*#__PURE__*/React.createElement("ul", {
     className: "space-y-2 list-none p-0 m-0"
-  }, goals.map(goal => goal.missing ? /*#__PURE__*/React.createElement("li", {
-    key: goal.id,
-    className: "flex items-center gap-2",
-    "data-goal-missing": "true"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "w-4 h-4 rounded-full border-2 border-dashed border-slate-300 inline-block flex-shrink-0",
-    "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "text-sm text-slate-600"
-  }, goal.label, /*#__PURE__*/React.createElement("span", {
-    className: "sr-only"
-  }, ', ')), /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] text-slate-600 font-semibold ml-auto flex-shrink-0"
-  }, text('goalMissing', 'Not in this pack'))) : /*#__PURE__*/React.createElement("li", {
-    key: goal.id,
-    className: goal.kind === 'manual' ? 'min-h-11 flex items-center gap-2' : 'flex items-center gap-2'
-  }, goal.kind === 'manual' ? /*#__PURE__*/React.createElement("input", {
-    type: "checkbox",
-    checked: goal.done,
-    onChange: () => onToggleManual(goal.id),
-    "aria-label": goal.label,
-    className: "w-4 h-4 accent-emerald-600 flex-shrink-0"
-  }) : goal.done ? /*#__PURE__*/React.createElement(CheckCircle2, {
-    size: 16,
-    className: "text-emerald-600 flex-shrink-0",
-    "aria-hidden": "true"
-  }) : /*#__PURE__*/React.createElement("span", {
-    className: "w-4 h-4 rounded-full border-2 border-slate-300 inline-block flex-shrink-0",
-    "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: 'text-sm ' + (goal.done ? 'text-emerald-700 line-through decoration-emerald-300' : 'text-slate-700')
-  }, goal.label, goal.kind !== 'manual' && /*#__PURE__*/React.createElement("span", {
-    className: "sr-only"
-  }, goal.done ? ', ' + text('goalDone', 'complete') : ', ' + text('goalOpen', 'not yet complete'))), goal.progressText && !goal.done && /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] text-amber-700 font-bold ml-auto flex-shrink-0"
-  }, goal.progressText), goal.done && /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] text-emerald-600 font-bold ml-auto flex-shrink-0",
-    "aria-hidden": "true"
-  }, "\u2713")))), /*#__PURE__*/React.createElement("p", {
+  }, displayedGoals.map(goal => {
+    const linkedStation = !goal.done && !goal.missing && goal.resourceRef ? stations.find(station => station.id === goal.resourceRef) || null : null;
+    return goal.missing ? /*#__PURE__*/React.createElement("li", {
+      key: goal.id,
+      className: "flex items-center gap-2",
+      "data-goal-missing": "true"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "w-4 h-4 rounded-full border-2 border-dashed border-slate-300 inline-block flex-shrink-0",
+      "aria-hidden": "true"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "text-sm text-slate-600"
+    }, bt(goal.label), /*#__PURE__*/React.createElement("span", {
+      className: "sr-only"
+    }, ', ')), /*#__PURE__*/React.createElement("span", {
+      className: "text-xs text-slate-600 font-semibold ml-auto flex-shrink-0"
+    }, text('goalMissing', 'Not in this pack'))) : /*#__PURE__*/React.createElement("li", {
+      key: goal.id,
+      className: goal.kind === 'manual' ? 'min-h-11 flex items-center gap-2' : 'flex items-center gap-2'
+    }, goal.kind === 'manual' ? /*#__PURE__*/React.createElement("label", {
+      className: "min-h-11 flex items-center gap-2 cursor-pointer flex-1"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: goal.done,
+      onChange: () => onToggleManual(goal.id),
+      className: "w-4 h-4 accent-emerald-600 flex-shrink-0"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: 'text-sm ' + (goal.done ? 'text-emerald-700 line-through decoration-emerald-300' : 'text-slate-700')
+    }, bt(goal.label))) : /*#__PURE__*/React.createElement(React.Fragment, null, goal.done ? /*#__PURE__*/React.createElement(CheckCircle2, {
+      size: 16,
+      className: "text-emerald-600 flex-shrink-0",
+      "aria-hidden": "true"
+    }) : /*#__PURE__*/React.createElement("span", {
+      className: "w-4 h-4 rounded-full border-2 border-slate-300 inline-block flex-shrink-0",
+      "aria-hidden": "true"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: 'text-sm ' + (goal.done ? 'text-emerald-700 line-through decoration-emerald-300' : 'text-slate-700')
+    }, bt(goal.label), /*#__PURE__*/React.createElement("span", {
+      className: "sr-only"
+    }, goal.done ? ', ' + text('goalDone', 'complete') : ', ' + text('goalOpen', 'not yet complete')))), goal.progressText && !goal.done && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs text-amber-700 font-bold ml-auto flex-shrink-0"
+    }, goal.progressText), linkedStation && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-directions-goal-jump": goal.id,
+      onClick: () => travelTo(linkedStation),
+      "aria-label": text('openActivity', 'Open activity') + ': ' + (linkedStation.title || linkedStation.typeLabel),
+      className: (goal.progressText ? 'ml-1 ' : 'ml-auto ') + 'min-h-11 flex-shrink-0 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 hover:border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700'
+    }, text('directions.goal_go', 'Go'), " \u2192"), goal.done && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs text-emerald-600 font-bold ml-auto flex-shrink-0",
+      "aria-hidden": "true"
+    }, "\u2713"));
+  })), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-3"
-  }, text('signalsNote', 'Goals check themselves on this device as you play and earn XP, and your own checkmarks count too.', 500)))));
+  }, bt(text('signalsNote', 'Goals check themselves on this device as you play and earn XP, and your own checkmarks count too.', 500))))));
 }
 
   window.AlloModules = window.AlloModules || {};

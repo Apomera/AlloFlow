@@ -1982,17 +1982,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         // Broad, muted ejecta and a raised rim surround a concave bowl.
         ctx.fillStyle='rgba(177,170,151,0.10)';ctx.beginPath();ctx.ellipse(x,y,r*1.24,ry*1.30,0,0,Math.PI*2);ctx.fill();
         ctx.fillStyle='#393c38';ctx.beginPath();ctx.ellipse(x,y,r,ry,0,0,Math.PI*2);ctx.fill();
-        // With sunlight from the left, the right inner wall faces the Sun.
-        ctx.fillStyle='rgba(176,170,151,0.55)';ctx.beginPath();
+        // With raking terminator sunlight from the left, the right inner wall gleams bright while the left floor drops into ink-black vacuum shadow.
+        ctx.fillStyle='rgba(208,202,182,0.72)';ctx.beginPath();
         ctx.ellipse(x,y,r,ry,0,-Math.PI*0.5,Math.PI*0.5);
         ctx.ellipse(x-r*0.24,y,r*0.84,ry*0.68,0,Math.PI*0.5,-Math.PI*0.5,true);ctx.closePath();ctx.fill();
-        ctx.fillStyle='rgba(12,17,17,0.38)';ctx.beginPath();
-        ctx.ellipse(x-r*0.19,y-ry*0.02,r*0.65,ry*0.60,0,0,Math.PI*2);ctx.fill();
-        // The outer left rim faces the same Sun; the lower lip stays subdued.
-        ctx.lineWidth=Math.max(0.6,r*0.075);ctx.strokeStyle='rgba(205,199,180,0.64)';
+        ctx.fillStyle='rgba(5,8,10,0.62)';ctx.beginPath();
+        ctx.ellipse(x-r*0.20,y-ry*0.02,r*0.66,ry*0.60,0,0,Math.PI*2);ctx.fill();
+        // Crisp raking outer left rim highlight + deep leeward ejecta shadow.
+        ctx.lineWidth=Math.max(0.75,r*0.085);ctx.strokeStyle='rgba(232,226,206,0.80)';
         ctx.beginPath();ctx.ellipse(x,y,r,ry,0,Math.PI*0.55,Math.PI*1.52);ctx.stroke();
-        ctx.lineWidth=Math.max(0.5,r*0.06);ctx.strokeStyle='rgba(20,24,23,0.25)';
-        ctx.beginPath();ctx.ellipse(x,y+0.5,r*1.06,ry*1.10,0,0.08,Math.PI*0.92);ctx.stroke();
+        ctx.lineWidth=Math.max(0.6,r*0.075);ctx.strokeStyle='rgba(8,11,13,0.46)';
+        ctx.beginPath();ctx.ellipse(x+r*0.08,y+0.5,r*1.07,ry*1.12,0,-Math.PI*0.35,Math.PI*0.55);ctx.stroke();
       }
       if(layer===1)for(var bi=0;bi<9;bi++) {
         var bx=tile*tileWidth+rng.next()*tileWidth-cameraX+W*0.5;
@@ -2029,26 +2029,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     // reach the level ground at a different distance from the nozzle.
     ctx.beginPath();ctx.rect(0,0,W,surfaceY);ctx.clip();
     ctx.translate(x,y);ctx.rotate(bank);
-    function fan(aperture,spread,reach,alpha) {
+    function fan(aperture,spread,reach,alpha,warmCore) {
       var end=exitY+reach,edge=aperture+reach*spread;
       var fade=ctx.createLinearGradient(0,exitY,0,end);
-      fade.addColorStop(0,'rgba(209,218,243,'+alpha+')');
-      fade.addColorStop(0.18,'rgba(190,207,235,'+(alpha*0.64)+')');
-      fade.addColorStop(0.55,'rgba(165,188,224,'+(alpha*0.18)+')');
-      fade.addColorStop(1,'rgba(165,188,224,0)');
+      fade.addColorStop(0,warmCore?'rgba(255,244,228,'+alpha+')':'rgba(218,228,252,'+alpha+')');
+      fade.addColorStop(0.18,warmCore?'rgba(232,226,252,'+(alpha*0.72)+')':'rgba(186,208,244,'+(alpha*0.66)+')');
+      fade.addColorStop(0.55,'rgba(162,188,236,'+(alpha*0.22)+')');
+      fade.addColorStop(1,'rgba(162,188,236,0)');
       ctx.fillStyle=fade;ctx.beginPath();ctx.moveTo(-aperture,exitY);
       ctx.quadraticCurveTo(-aperture-reach*spread*0.60,exitY+reach*0.42,-edge,end);
       ctx.lineTo(edge,end);
       ctx.quadraticCurveTo(aperture+reach*spread*0.60,exitY+reach*0.42,aperture,exitY);
       ctx.closePath();ctx.fill();
     }
-    // Nested translucent fans soften the expanding edge without smoke,
-    // flicker, extra particles or any changes to the ballistic dust model.
-    var strength=0.45+output*0.55;
-    fan(5.7,0.78,length,0.045*strength);
-    fan(5.4,0.58,length*0.94,0.070*strength);
-    fan(4.8,0.37,length*0.80,0.095*strength);
-    fan(3.2,0.16,length*0.52,0.13*strength);
+    // Nested translucent fans soften the expanding vacuum plume with a luminous throat core.
+    var strength=0.48+output*0.52;
+    fan(5.8,0.82,length,0.055*strength,false);
+    fan(5.4,0.58,length*0.94,0.085*strength,false);
+    fan(4.6,0.36,length*0.78,0.125*strength,true);
+    fan(3.0,0.15,length*0.48,0.22*strength,true);
     ctx.restore();
   }
 
@@ -4943,12 +4942,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var ux = dx / commandLength, uy = dy / commandLength;
       function rcsJet(jx, jy) {
         var jetX = eagleX - jx * 15 * k, jetY = eagleY - jy * 15 * k;
-        var jet = ctx.createLinearGradient(jetX, jetY, jetX - jx * 27 * k, jetY - jy * 27 * k);
-        jet.addColorStop(0, 'rgba(243,239,255,0.7)'); jet.addColorStop(0.3, 'rgba(191,187,255,0.2)'); jet.addColorStop(1, 'rgba(191,187,255,0)');
-        ctx.fillStyle = jet; ctx.beginPath(); ctx.moveTo(jetX - jy * 1.7 * k, jetY + jx * 1.7 * k);
-        ctx.lineTo(jetX - jx * 27 * k - jy * 5 * k, jetY - jy * 27 * k + jx * 5 * k);
-        ctx.lineTo(jetX - jx * 27 * k + jy * 5 * k, jetY - jy * 27 * k - jx * 5 * k);
-        ctx.lineTo(jetX + jy * 1.7 * k, jetY - jx * 1.7 * k); ctx.closePath(); ctx.fill();
+        var jet = ctx.createLinearGradient(jetX, jetY, jetX - jx * 29 * k, jetY - jy * 29 * k);
+        jet.addColorStop(0, 'rgba(255,252,255,0.88)'); jet.addColorStop(0.28, 'rgba(186,214,255,0.34)'); jet.addColorStop(1, 'rgba(165,180,252,0)');
+        ctx.fillStyle = jet; ctx.beginPath(); ctx.moveTo(jetX - jy * 1.9 * k, jetY + jx * 1.9 * k);
+        ctx.lineTo(jetX - jx * 29 * k - jy * 5.6 * k, jetY - jy * 29 * k + jx * 5.6 * k);
+        ctx.lineTo(jetX - jx * 29 * k + jy * 5.6 * k, jetY - jy * 29 * k - jx * 5.6 * k);
+        ctx.lineTo(jetX + jy * 1.9 * k, jetY - jx * 1.9 * k); ctx.closePath(); ctx.fill();
+        var core = ctx.createLinearGradient(jetX, jetY, jetX - jx * 14 * k, jetY - jy * 14 * k);
+        core.addColorStop(0, 'rgba(255,255,255,0.95)'); core.addColorStop(1, 'rgba(224,242,254,0)');
+        ctx.fillStyle = core; ctx.beginPath(); ctx.moveTo(jetX - jy * 0.9 * k, jetY + jx * 0.9 * k);
+        ctx.lineTo(jetX - jx * 14 * k - jy * 2.1 * k, jetY - jy * 14 * k + jx * 2.1 * k);
+        ctx.lineTo(jetX - jx * 14 * k + jy * 2.1 * k, jetY - jy * 14 * k - jx * 2.1 * k);
+        ctx.lineTo(jetX + jy * 0.9 * k, jetY - jx * 0.9 * k); ctx.closePath(); ctx.fill();
       }
       // The quads use fixed nozzles: diagonal acceleration combines two axes.
       if (Math.abs(dx) > 1e-8) rcsJet(Math.sign(dx), 0);
@@ -10677,6 +10682,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     return sum / dirs;
   }
 
+  // High-contrast detector & WebGL1 / GLSL ES 1.00 shader factories for 3D Descent & EVA views.
+  function _mmIsHighContrast(el) {
+    try {
+      if (el && typeof el.closest === 'function' &&
+        el.closest('.theme-contrast, [data-theme="high-contrast"], [data-theme="contrast"]')) return true;
+      var de = typeof document !== 'undefined' ? document.documentElement : null;
+      if (de && (de.classList.contains('theme-contrast') ||
+        de.getAttribute('data-theme') === 'high-contrast' ||
+        de.getAttribute('data-theme') === 'contrast')) return true;
+      var bd = typeof document !== 'undefined' ? document.body : null;
+      if (bd && (bd.classList.contains('theme-contrast') ||
+        bd.getAttribute('data-theme') === 'high-contrast' ||
+        bd.getAttribute('data-theme') === 'contrast')) return true;
+    } catch (e) {}
+    return false;
+  }
+  function _mmCreateEarthshineHaloMat(THREE, hc) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 1.45 },
+        uReduced: { value: 0.0 },
+        uHc: { value: hc ? 1.0 : 0.0 }
+      },
+      vertexShader: [
+        'varying vec2 vUv;',
+        'void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform float uReduced;',
+        'uniform float uHc;',
+        'varying vec2 vUv;',
+        'void main() {',
+        '  if (uHc > 0.5) discard;',
+        '  vec2 p = (vUv - 0.5) * 2.0;',
+        '  float r = length(p);',
+        '  if (r > 1.0 || r < 0.42) discard;',
+        '  float t = uReduced > 0.5 ? 1.45 : uTime;',
+        '  float limb = exp(-pow((r - 0.54) / 0.14, 2.0));',
+        '  float corona = pow(clamp(1.0 - r, 0.0, 1.0), 2.1) * 0.55;',
+        '  float ang = atan(p.y, p.x);',
+        '  float sunSide = smoothstep(-0.35, 0.85, cos(ang + 0.65));',
+        '  float shimmer = 0.90 + 0.10 * sin(ang * 5.0 - t * 0.9);',
+        '  vec3 rayleigh = mix(vec3(0.18, 0.54, 0.98), vec3(0.68, 0.92, 1.0), limb);',
+        '  float alpha = (limb * 0.62 + corona) * (0.28 + 0.72 * sunSide) * shimmer;',
+        '  gl_FragColor = vec4(rayleigh, clamp(alpha, 0.0, 0.78));',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      fog: false
+    });
+  }
+  function _mmCreateTrajectoryRibbonMat(THREE, hc) {
+    if (typeof THREE.ShaderMaterial !== 'function') return null;
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 1.45 },
+        uReduced: { value: 0.0 },
+        uHc: { value: hc ? 1.0 : 0.0 }
+      },
+      vertexShader: [
+        'varying vec2 vUv;',
+        'void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime;',
+        'uniform float uReduced;',
+        'uniform float uHc;',
+        'varying vec2 vUv;',
+        'void main() {',
+        '  if (uHc > 0.5) discard;',
+        '  float t = uReduced > 0.5 ? 1.45 : uTime;',
+        '  float across = 1.0 - abs(vUv.y - 0.5) * 2.0;',
+        '  float core = pow(clamp(across, 0.0, 1.0), 1.65);',
+        '  float ends = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x);',
+        '  float pulse1 = pow(0.5 + 0.5 * sin(vUv.x * 26.0 - t * 4.4), 5.0);',
+        '  float pulse2 = pow(0.5 + 0.5 * sin(vUv.x * 9.0 - t * 1.9 + 1.2), 3.0);',
+        '  vec3 col = mix(vec3(0.22, 0.84, 0.98), vec3(1.0, 0.88, 0.45), pulse1 * 0.72);',
+        '  float alpha = core * ends * (0.16 + 0.62 * pulse1 + 0.22 * pulse2);',
+        '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.84));',
+        '}'
+      ].join('\n'),
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      fog: false
+    });
+  }
+
   // The regolith's own photometry, patched into MeshStandardMaterial. The Moon is not
   // a Lambertian surface: it barely darkens toward grazing view (Lommel-Seeliger, the
   // reason the full Moon looks like a flat disc), and it brightens sharply looking
@@ -10687,7 +10786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var rock = kind === 'rock';
     mat.onBeforeCompile = function (shader) {
       shader.uniforms.uLunarOpp = { value: rock ? 0.4 : 0.62 };
-      shader.uniforms.uLunarBounce = { value: rock ? 0.34 : 0.3 };
+      shader.uniforms.uLunarBounce = { value: rock ? 0.28 : 0.24 };
       shader.uniforms.uLunarCbs = { value: rock ? 0.2 : 0.42 };
       if (kind === 'ground') shader.uniforms.uLunarBumpRes = { value: (mat.bumpMap && mat.bumpMap.image && mat.bumpMap.image.width) || 512 };
       var vary = rock ? 'varying vec2 vLunarInst;\n' : 'varying vec3 vLunarBake;\n';
@@ -10730,7 +10829,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         '  float surge = 1.0 + uLunarOpp / (1.0 + tg / 0.07);\n' +
         '  surge += uLunarCbs / (1.0 + tg / 0.012);\n' +   // the narrow core, within a degree or two
         '  float phase = mix(1.0, 0.62, smoothstep(0.0, 1.0, 0.5 - 0.5 * cg));\n' +
-        '  reflectedLight.directDiffuse += directLight.color * (ls * surge * phase * lunarSunVis) * material.diffuseColor;\n' +
+        '  float rakingRim = pow(mu0, 0.72) * (1.0 - smoothstep(0.0, 0.55, mu)) * 0.16;\n' +
+        '  vec2 glintCell = floor(vLunarXZ * 22.0);\n' +
+        '  float glintHash = fract(sin(dot(glintCell, vec2(127.1, 311.7))) * 43758.5453);\n' +
+        '  float microGlint = smoothstep(0.965, 0.998, glintHash) * pow(mu0, 1.1) * (0.35 + 0.65 * smoothstep(0.3, 1.0, cg)) * 0.36;\n' +
+        '  reflectedLight.directDiffuse += directLight.color * ((ls * surge * phase + rakingRim + microGlint) * lunarSunVis) * material.diffuseColor;\n' +
         '}\n#define RE_Direct RE_Direct_Lunar\n');
       fs = fs.replace('#include <lights_fragment_begin>', (rock ? 'lunarSunVis = vLunarInst.x;\n' :
         'float lunarEdge = 0.018 + length(vViewPosition) * 0.00004;\nlunarSunVis = smoothstep(-lunarEdge, lunarEdge, vLunarBake.x);\nlunarAO = vLunarBake.y;\n') + '#include <lights_fragment_begin>');
@@ -11350,6 +11453,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
+    // ── Earthrise blue-marble with Rayleigh atmospheric limb glow in the lunar sky ──
+    var skyEarthGroup = new THREE.Group();
+    skyEarthGroup.name = 'moon-descent-earthrise';
+    try {
+      var dEarthCv = document.createElement('canvas'); dEarthCv.setAttribute('aria-hidden', 'true'); dEarthCv.width = dEarthCv.height = 256;
+      var dEarthCtx = dEarthCv.getContext('2d');
+      if (dEarthCtx && dEarthCtx.createRadialGradient) {
+        dEarthCtx.clearRect(0, 0, 256, 256);
+        var limbBg = dEarthCtx.createRadialGradient(120, 124, 72, 128, 128, 122);
+        limbBg.addColorStop(0, 'rgba(56,189,248,0.42)');
+        limbBg.addColorStop(0.42, 'rgba(37,99,235,0.22)');
+        limbBg.addColorStop(0.78, 'rgba(30,64,175,0.06)');
+        limbBg.addColorStop(1, 'rgba(0,0,0,0)');
+        dEarthCtx.fillStyle = limbBg; dEarthCtx.fillRect(0, 0, 256, 256);
+        drawDetailedEarth(dEarthCtx, 128, 128, 78, 500, -2.55, 0.64);
+        // Sunlit cerulean atmospheric limb arc along the sunlit side.
+        dEarthCtx.save();
+        dEarthCtx.globalCompositeOperation = 'lighter';
+        var arcLimb = dEarthCtx.createRadialGradient(128, 128, 72, 128, 128, 86);
+        arcLimb.addColorStop(0, 'rgba(125,211,252,0)');
+        arcLimb.addColorStop(0.55, 'rgba(125,211,252,0.44)');
+        arcLimb.addColorStop(0.82, 'rgba(56,189,248,0.22)');
+        arcLimb.addColorStop(1, 'rgba(56,189,248,0)');
+        dEarthCtx.fillStyle = arcLimb;
+        dEarthCtx.beginPath(); dEarthCtx.arc(128, 128, 86, Math.PI * 0.62, Math.PI * 1.72);
+        dEarthCtx.lineTo(128, 128); dEarthCtx.closePath(); dEarthCtx.fill();
+        dEarthCtx.restore();
+      }
+      var dEarthTex = new THREE.CanvasTexture(dEarthCv);
+      try { dEarthTex.encoding = THREE.sRGBEncoding; } catch (_deEnc) {}
+      var dEarthSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: dEarthTex, transparent: true, depthWrite: false, fog: false }));
+      dEarthSprite.position.set(-460, 420, -1420);
+      dEarthSprite.scale.set(168, 168, 1);
+      dEarthSprite.renderOrder = -2;
+      skyEarthGroup.add(dEarthSprite);
+      var dEarthHaloMat = _mmCreateEarthshineHaloMat(THREE, _mmIsHighContrast(hostEl));
+      var dEarthHaloMesh = null;
+      if (dEarthHaloMat) {
+        dEarthHaloMesh = new THREE.Mesh(new THREE.PlaneGeometry(235, 235), dEarthHaloMat);
+        dEarthHaloMesh.position.set(-461, 420, -1425);
+        dEarthHaloMesh.lookAt(0, 0, 0);
+        dEarthHaloMesh.renderOrder = -3;
+        dEarthHaloMesh.visible = !_mmIsHighContrast(hostEl);
+        skyEarthGroup.add(dEarthHaloMesh);
+      }
+    } catch (_deErr) {}
+    scene.add(skyEarthGroup);
+
     // ── Regolith heightfield ──
     // A genuinely displaced plane, so craters have rims that catch the sun and
     // cast shadow across their own floors. The 2D view drew craters as flat
@@ -11461,7 +11612,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     // bright only because the Moon sits against pure black with no atmosphere to
     // haze it. Painting the regolith light made the whole scene milky and, worse,
     // pushed it over the bloom threshold so the landing site washed out.
-    var terMat = new THREE.MeshStandardMaterial({ color: 0x8f8a80, map: groundTexture, bumpMap: groundBump, bumpScale: 0.08, vertexColors: true, roughness: 1.0, metalness: 0.0 });
+    var terMat = new THREE.MeshStandardMaterial({ color: 0x8f8a80, map: groundTexture, bumpMap: groundBump, bumpScale: 0.14, vertexColors: true, roughness: 0.98, metalness: 0.0 });
+    var terGlintUniforms = { uHc: { value: _mmIsHighContrast(hostEl) ? 1.0 : 0.0 } };
+    if (typeof terMat.onBeforeCompile === 'function') {
+      terMat.onBeforeCompile = function (shader) {
+        shader.uniforms.uMmHc = terGlintUniforms.uHc;
+        shader.vertexShader = 'varying vec3 vMmWPos;\nvarying vec3 vMmWNorm;\n' +
+          shader.vertexShader.replace(
+            '#include <worldpos_vertex>',
+            '#include <worldpos_vertex>\nvec4 mmWp = modelMatrix * vec4(transformed, 1.0);\nvMmWPos = mmWp.xyz;\nvMmWNorm = normalize(mat3(modelMatrix) * objectNormal);'
+          );
+        shader.fragmentShader = 'uniform float uMmHc;\nvarying vec3 vMmWPos;\nvarying vec3 vMmWNorm;\n' +
+          shader.fragmentShader.replace(
+            '#include <dithering_fragment>',
+            [
+              'if (uMmHc < 0.5) {',
+              '  vec3 mmN = normalize(vMmWNorm);',
+              '  vec3 mmV = normalize(cameraPosition - vMmWPos);',
+              '  float mmRim = pow(1.0 - max(dot(mmN, mmV), 0.0), 3.1);',
+              '  vec2 mmCell = floor(vMmWPos.xz * 1.35);',
+              '  float mmH = fract(sin(dot(mmCell, vec2(127.1, 311.7))) * 43758.5453);',
+              '  float mmGlint = smoothstep(0.955, 0.996, mmH) * max(dot(mmN, normalize(vec3(0.75, 0.35, 0.55))), 0.0) * 0.22;',
+              '  gl_FragColor.rgb += vec3(0.78, 0.86, 0.98) * mmRim * 0.09 + vec3(0.98, 0.95, 0.86) * mmGlint;',
+              '}',
+              '#include <dithering_fragment>'
+            ].join('\n')
+          );
+      };
+      terMat.customProgramCacheKey = function () { return 'mm-descent-regolith-glint-v1'; };
+    }
     var terrain = new THREE.Mesh(terGeo, terMat);
     terrain.name='moon-descent-terrain';terrain.userData.descentSurface=renderedTerrain;
     terrain.receiveShadow = true;
@@ -11500,11 +11679,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     // ── Lighting: a low, hard sun and a weak regolith bounce ──
     // Apollo landed near lunar dawn precisely so shadows would be long and the
     // relief readable from the window. Same reason here.
-    // Vacuum: almost nothing fills the shadows except regolith bounce, so the
-    // ambient terms stay very low and the shadows stay genuinely dark.
-    scene.add(new THREE.AmbientLight(0x141419, 0.28));
-    scene.add(new THREE.HemisphereLight(0x05050a, 0x2a251e, 0.3));
-    var sun = new THREE.DirectionalLight(0xfff6e0, 1.35);
+    // Vacuum: almost nothing fills the shadows except faint regolith bounce, so
+    // raking terminator crater walls blaze bright against ink-black shadow bowls.
+    scene.add(new THREE.AmbientLight(0x101118, 0.16));
+    scene.add(new THREE.HemisphereLight(0x04050b, 0x252019, 0.22));
+    var sun = new THREE.DirectionalLight(0xfff8ea, 1.72);
     // Low sun angle, as Apollo deliberately chose: long shadows are what make
     // relief readable on a surface with almost no colour variation to go by.
     sun.position.set(MM_DESCENT_SUN.x, MM_DESCENT_SUN.y, MM_DESCENT_SUN.z);
@@ -11596,27 +11775,154 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     if(shadowCaster)shadowCaster.castShadow=true;
     scene.add(lm);
 
-    // ── Exhaust plume ──
-    // With almost no ambient pressure, exhaust expands broadly from the bell.
-    // Its faint tint is a teaching cue: the hypergolic exhaust is much less
-    // conspicuous than the orange flame of a launch rocket in atmosphere.
+    // ── Exhaust plume (Supersonic Mach-diamond plasma core + Fresnel vacuum expansion + RCS puffs) ──
+    var descentHc0 = _mmIsHighContrast(hostEl);
     var plumeGrp = new THREE.Group();
-    var plumeMat = new THREE.MeshBasicMaterial({
-      color: 0xa8b9df, transparent: true, opacity: 0.08,
-      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
-    });
-    var plume = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 3.4, 5.5, 20, 1, true), plumeMat);
-    plume.position.y = -2.75;
+    var plumeMat = (typeof THREE.ShaderMaterial === 'function') ? new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+      uniforms: { uOpacity: { value: 0.18 }, uTime: { value: 1.45 }, uThrottle: { value: 0.6 }, uReduced: { value: reduce ? 1 : 0 }, uHc: { value: descentHc0 ? 1 : 0 } },
+      vertexShader: [
+        'varying vec2 vUv;',
+        'varying vec3 vNormalV;',
+        'varying vec3 vViewPos;',
+        'void main() {',
+        '  vUv = uv;',
+        '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+        '  vViewPos = -mv.xyz;',
+        '  vNormalV = normalize(normalMatrix * normal);',
+        '  gl_Position = projectionMatrix * mv;',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uOpacity;',
+        'uniform float uTime;',
+        'uniform float uThrottle;',
+        'uniform float uReduced;',
+        'uniform float uHc;',
+        'varying vec2 vUv;',
+        'varying vec3 vNormalV;',
+        'varying vec3 vViewPos;',
+        'void main() {',
+        '  if (uHc > 0.5) discard;',
+        '  float t = uReduced > 0.5 ? 1.45 : uTime;',
+        '  float edge = pow(abs(dot(normalize(vNormalV), normalize(vViewPos))), 1.25);',
+        '  float axial = pow(clamp(vUv.y, 0.0, 1.0), 1.35);',
+        '  float machFreq = mix(16.0, 26.0, clamp(uThrottle, 0.0, 1.0));',
+        '  float machCell = pow(0.5 + 0.5 * cos(vUv.y * machFreq - t * 14.0), 2.8);',
+        '  float turb = 0.84 + 0.16 * sin(vUv.x * 18.85 + vUv.y * 12.0 - t * 22.0);',
+        '  vec3 skirt = mix(vec3(0.46, 0.68, 1.0), vec3(0.86, 0.62, 1.0), 0.35 + 0.35 * machCell);',
+        '  vec3 throat = vec3(1.0, 0.93, 0.78);',
+        '  vec3 col = mix(skirt, throat, clamp(pow(vUv.y, 1.9) + machCell * 0.35 * vUv.y, 0.0, 1.0));',
+        '  float alpha = edge * axial * (0.72 + 0.55 * machCell) * turb * uOpacity;',
+        '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.92));',
+        '}'
+      ].join('\n')
+    }) : new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false });
+    var plume = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 3.6, 5.6, 24, 1, true), plumeMat);
+    plume.position.y = -2.8;
     plumeGrp.add(plume);
-    var coreMat = new THREE.MeshBasicMaterial({
-      color: 0xe5e6ff, transparent: true, opacity: 0.15,
-      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
-    });
-    var plumeCore = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 1.0, 2.2, 14, 1, true), coreMat);
-    plumeCore.position.y = -1.1;
+    var coreMat = (typeof THREE.ShaderMaterial === 'function') ? new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+      uniforms: { uOpacity: { value: 0.38 }, uTime: { value: 1.45 }, uThrottle: { value: 0.6 }, uReduced: { value: reduce ? 1 : 0 }, uHc: { value: descentHc0 ? 1 : 0 } },
+      vertexShader: [
+        'varying vec2 vUv;',
+        'varying vec3 vNormalV;',
+        'varying vec3 vViewPos;',
+        'void main() {',
+        '  vUv = uv;',
+        '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+        '  vViewPos = -mv.xyz;',
+        '  vNormalV = normalize(normalMatrix * normal);',
+        '  gl_Position = projectionMatrix * mv;',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uOpacity;',
+        'uniform float uTime;',
+        'uniform float uThrottle;',
+        'uniform float uReduced;',
+        'uniform float uHc;',
+        'varying vec2 vUv;',
+        'varying vec3 vNormalV;',
+        'varying vec3 vViewPos;',
+        'void main() {',
+        '  float edge = pow(abs(dot(normalize(vNormalV), normalize(vViewPos))), 1.1);',
+        '  float axial = pow(clamp(vUv.y, 0.0, 1.0), 1.15);',
+        '  if (uHc > 0.5) { gl_FragColor = vec4(1.0, 0.92, 0.55, clamp(edge * axial * 0.72, 0.0, 0.85)); return; }',
+        '  float t = uReduced > 0.5 ? 1.45 : uTime;',
+        '  float diamonds = pow(0.5 + 0.5 * cos(vUv.y * 28.0 - t * 18.0), 4.0) * smoothstep(0.1, 0.95, vUv.y);',
+        '  float shimmer = 0.92 + 0.08 * sin(vUv.y * 24.0 - t * 32.0);',
+        '  vec3 col = mix(vec3(0.84, 0.90, 1.0), vec3(1.0, 0.95, 0.80), clamp(pow(vUv.y, 1.2) + diamonds * 0.65, 0.0, 1.0));',
+        '  float alpha = edge * axial * (0.78 + 0.62 * diamonds * (0.5 + 0.5 * uThrottle)) * shimmer * uOpacity;',
+        '  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.96));',
+        '}'
+      ].join('\n')
+    }) : new THREE.MeshBasicMaterial({ color: 0xfef3c7, transparent: true, opacity: 0.45, side: THREE.DoubleSide, depthWrite: false });
+    var plumeCore = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 1.05, 2.35, 16, 1, true), coreMat);
+    plumeCore.position.y = -1.175;
     plumeGrp.add(plumeCore);
     plumeGrp.position.y = bellExitY;
     lm.add(plumeGrp);
+
+    // Luminous RCS attitude-control thruster puffs mounted on ascent-stage side quads.
+    var rcsMat = new THREE.MeshBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.42, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    var rcsGeo = new THREE.ConeGeometry(0.34, 2.1, 10, 1, true);
+    var rcsLeft = new THREE.Mesh(rcsGeo, rcsMat);
+    rcsLeft.position.set(-2.35, 0.85, 0); rcsLeft.rotation.z = -Math.PI * 0.5; rcsLeft.visible = false;
+    var rcsRight = new THREE.Mesh(rcsGeo, rcsMat);
+    rcsRight.position.set(2.35, 0.85, 0); rcsRight.rotation.z = Math.PI * 0.5; rcsRight.visible = false;
+    lm.add(rcsLeft); lm.add(rcsRight);
+
+    // Radially expanding sunlit lunar landing regolith dust-spray veil near touchdown.
+    var dustKickupMat = (typeof THREE.ShaderMaterial === 'function') ? new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+      uniforms: { uStrength: { value: 0 }, uThrottle: { value: 0.6 }, uTime: { value: 1.45 }, uReduced: { value: reduce ? 1 : 0 }, uHc: { value: descentHc0 ? 1 : 0 } },
+      vertexShader: 'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+      fragmentShader: [
+        'uniform float uStrength;',
+        'uniform float uThrottle;',
+        'uniform float uTime;',
+        'uniform float uReduced;',
+        'uniform float uHc;',
+        'varying vec2 vUv;',
+        'void main() {',
+        '  if (uHc > 0.5) discard;',
+        '  vec2 p = (vUv - 0.5) * 2.0;',
+        '  float r = length(p);',
+        '  if (r > 1.0) discard;',
+        '  float ang = atan(p.y, p.x);',
+        '  float t = uReduced > 0.5 ? 1.45 : uTime;',
+        '  float phase = t * (3.2 + uThrottle * 2.4);',
+        '  float streaks = 0.62 + 0.38 * sin(ang * 18.0 + sin(r * 9.0 - phase));',
+        '  float shockRing = exp(-pow((r - fract(t * 0.55) * 0.82 - 0.12) / 0.11, 2.0)) * (1.0 - r);',
+        '  float ring = smoothstep(0.05, 0.26, r) * pow(1.0 - r, 1.75);',
+        '  float core = exp(-r * r * 8.5) * 0.72;',
+        '  float sunFan = 0.72 + 0.28 * cos(ang - 0.45);',
+        '  vec3 dustCol = mix(vec3(0.86, 0.79, 0.68), vec3(1.0, 0.96, 0.88), clamp(core * 1.4 + shockRing * 0.55, 0.0, 1.0));',
+        '  float alpha = (ring * streaks * 0.40 + shockRing * 0.22 + core * 0.30) * sunFan * uStrength;',
+        '  gl_FragColor = vec4(dustCol, clamp(alpha, 0.0, 0.85));',
+        '}'
+      ].join('\n')
+    }) : new THREE.MeshBasicMaterial({ color: 0xd6cbb6, transparent: true, opacity: 0.2, depthWrite: false });
+    var dustKickupMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), dustKickupMat);
+    dustKickupMesh.rotation.x = -Math.PI * 0.5;
+    dustKickupMesh.name = 'moon-descent-dust-veil';
+    dustKickupMesh.renderOrder = 2;
+    dustKickupMesh.visible = false;
+    scene.add(dustKickupMesh);
+
+    // Luminous animated approach / translunar telemetry trajectory ribbon (outside descentFrameBox)
+    var trajRibbonMat = _mmCreateTrajectoryRibbonMat(THREE, descentHc0);
+    var trajRibbonMesh = null;
+    if (trajRibbonMat) {
+      var trajGeo = new THREE.PlaneGeometry(1, 0.85, 36, 1);
+      trajRibbonMesh = new THREE.Mesh(trajGeo, trajRibbonMat);
+      trajRibbonMesh.name = 'moon-descent-trajectory-ribbon';
+      trajRibbonMesh.renderOrder = 3;
+      trajRibbonMesh.frustumCulled = false;
+      trajRibbonMesh.visible = !descentHc0;
+      scene.add(trajRibbonMesh);
+    }
 
     // Both views share immutable births; 3D resolves the first terrain impact.
     // Trail pieces lie within individual ground faces, with a fixed allocation.
@@ -11629,9 +11935,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     dustGeo.setDrawRange(0,0);
     glCv.dataset.descentDustCollisionMode=terrainDust?'mesh-triangles':'flat-projection';
     var dustMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,
-      uniforms:{tint:{value:new THREE.Color(0xbcb2a0)}},
+      uniforms:{tint:{value:new THREE.Color(0xd6cbb6)}},
       vertexShader:'attribute float opacity; varying float grainOpacity; void main(){grainOpacity=opacity;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-      fragmentShader:'uniform vec3 tint; varying float grainOpacity; void main(){gl_FragColor=vec4(tint,sqrt(grainOpacity)*0.65);}' });
+      fragmentShader:'uniform vec3 tint; varying float grainOpacity; void main(){gl_FragColor=vec4(tint,sqrt(grainOpacity)*0.78);}' });
     var dust=new THREE.LineSegments(dustGeo,dustMat);
     dust.name='moon-descent-dust';dust.frustumCulled=false;scene.add(dust);
 
@@ -11849,8 +12155,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         }
       }
 
-      // A steady hypergolic burn, with a subtle deterministic shimmer. Scale
+      // A steady hypergolic burn with standing Mach-diamond shock nodes. Scale
       // the GROUP from the nozzle so throttle never detaches the exhaust.
+      var hcNow = _mmIsHighContrast(hostEl);
+      terGlintUniforms.uHc.value = hcNow ? 1.0 : 0.0;
+      if (dEarthHaloMat && dEarthHaloMesh) {
+        dEarthHaloMat.uniforms.uTime.value = reduce ? 1.45 : simTime;
+        dEarthHaloMat.uniforms.uReduced.value = reduce ? 1.0 : 0.0;
+        dEarthHaloMat.uniforms.uHc.value = hcNow ? 1.0 : 0.0;
+        dEarthHaloMesh.visible = !hcNow;
+      }
       plumeGrp.visible = burning;
       if (burning) {
         var chug = reduce ? 1 : 1 + Math.sin(simTime * 19) * 0.015;
@@ -11858,8 +12172,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         var nozzleClearance = Math.max(0, nozzleY - surfaceHeight(groundX + nozzleX, groundZ));
         var exhaustLength = Math.min(0.55 + thrust * 0.85, nozzleClearance / Math.max(0.1, bankCos) / 5.5);
         plumeGrp.scale.set(0.8 + thrust * 0.25, exhaustLength * chug, 0.8 + thrust * 0.25);
-        plumeMat.opacity = 0.045 + thrust * 0.07;
-        coreMat.opacity = 0.09 + thrust * 0.11;
+        if (plumeMat.uniforms) {
+          plumeMat.uniforms.uOpacity.value = 0.12 + thrust * 0.20;
+          plumeMat.uniforms.uTime.value = reduce ? 1.45 : simTime;
+          plumeMat.uniforms.uThrottle.value = Math.min(1, Math.max(0, thrust));
+          plumeMat.uniforms.uHc.value = hcNow ? 1.0 : 0.0;
+        }
+        if (coreMat.uniforms) {
+          coreMat.uniforms.uOpacity.value = 0.24 + thrust * 0.34;
+          coreMat.uniforms.uTime.value = reduce ? 1.45 : simTime;
+          coreMat.uniforms.uThrottle.value = Math.min(1, Math.max(0, thrust));
+          coreMat.uniforms.uHc.value = hcNow ? 1.0 : 0.0;
+        }
+      }
+      // Subtle RCS attitude puffs when banking with remaining fuel (reduced-motion safe).
+      var rcsActive = !s.done && s.fuel > 0 && Math.abs(tilt) > 0.025;
+      var rcsPulse = reduce ? 1 : (0.86 + 0.14 * Math.sin(simTime * 31));
+      rcsLeft.visible = rcsActive && tilt > 0.025;
+      rcsRight.visible = rcsActive && tilt < -0.025;
+      if (rcsActive) {
+        var rcsMag = Math.min(1, Math.abs(tilt) / 0.28);
+        rcsMat.opacity = (0.20 + rcsMag * 0.34) * rcsPulse;
+        var rcsLen = 0.65 + rcsMag * 0.65;
+        rcsLeft.scale.set(1, rcsLen, 1);
+        rcsRight.scale.set(1, rcsLen, 1);
+      }
+      // Subtle lunar dust kick-up & engine impingement veil below 28 m near touchdown.
+      var kickupProx = burning && alt < 28 ? Math.max(0, 1 - alt / 28) * Math.min(1, thrust) : 0;
+      dustKickupMesh.visible = !hcNow && kickupProx > 0.01;
+      if (dustKickupMesh.visible) {
+        var impX = -(alt + 0.7) * Math.tan(tilt) * 0.6;
+        var impY = surfaceHeight(groundX + impX, groundZ) + 0.22;
+        var kickRadius = 8 + kickupProx * 18;
+        dustKickupMesh.position.set(impX, impY, 0);
+        dustKickupMesh.scale.set(kickRadius * 2, kickRadius * 2, 1);
+        if (dustKickupMat.uniforms) {
+          dustKickupMat.uniforms.uStrength.value = Math.min(1, kickupProx * 1.15);
+          dustKickupMat.uniforms.uThrottle.value = Math.min(1, Math.max(0, thrust));
+          dustKickupMat.uniforms.uTime.value = reduce ? 1.45 : simTime;
+          dustKickupMat.uniforms.uHc.value = hcNow ? 1.0 : 0.0;
+        }
+      }
+      // Animated approach / translunar telemetry guidance ribbon from lander toward touchdown nadir
+      if (trajRibbonMesh && trajRibbonMat) {
+        trajRibbonMesh.visible = !hcNow && !s.done && alt > 4;
+        if (trajRibbonMesh.visible) {
+          var startY = lm.position.y - 2.6, endY = groundH + 0.35;
+          var driftX = Math.max(-45, Math.min(45, (Number(s.vx) || 0) * 2.2));
+          var posA = trajRibbonMesh.geometry.attributes.position;
+          var segN = 36;
+          for (var ti = 0; ti <= segN; ti++) {
+            var frac = ti / segN;
+            var px = lm.position.x + driftX * frac * frac;
+            var py = startY + (endY - startY) * frac + Math.sin(frac * Math.PI) * Math.min(3.5, altUnits * 0.12);
+            var halfW = 0.24 + frac * 0.42;
+            posA.setXYZ(ti, px, py, -halfW);
+            posA.setXYZ(ti + segN + 1, px, py, halfW);
+          }
+          posA.needsUpdate = true;
+          trajRibbonMat.uniforms.uTime.value = reduce ? 1.45 : simTime;
+          trajRibbonMat.uniforms.uReduced.value = reduce ? 1.0 : 0.0;
+          trajRibbonMat.uniforms.uHc.value = hcNow ? 1.0 : 0.0;
+        }
       }
 
       // Rendering neither emits grains nor advances the flight. Each cached
@@ -11927,9 +12301,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       frameDescentCamera(s.outcomeBounds ? s.outcomeBounds.top : W < 620 ? 168 : null,
         s.outcomeBounds ? s.outcomeBounds.bottom : W < 620 ? H - 64 : null);
 
-      // Stars ride the camera so they never parallax — at this range they are
-      // effectively at infinity, and drifting them would read as tumbling.
+      // Stars and Earthrise ride the camera so they sit at infinity with zero parallax.
       stars.position.copy(camera.position);
+      skyEarthGroup.position.copy(camera.position);
 
       try {
         if (composer) composer.render();
@@ -15288,11 +15662,21 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                     // Background: black space + Moon surface below
                     ctx.fillStyle = '#000005';
                     ctx.fillRect(0, 0, W, H);
-                    // Enhanced starfield (upper portion of canvas only)
+                    // Enhanced starfield + Earthrise blue-marble with atmospheric limb glow (upper lunar sky)
                     ctx.save();
                     ctx.beginPath(); ctx.rect(0, 0, W, H * 0.45); ctx.clip();
                     ctx.globalAlpha = 0.25;
                     drawStarfield(ctx, W, H * 0.45, 0, 40);
+                    ctx.globalAlpha = 1;
+                    if (H > 220 && ctx.createRadialGradient) {
+                      var erX = W * 0.82, erY = H * 0.17, erR = Math.max(11, Math.min(20, Math.min(W, H) * 0.042));
+                      var erHalo = ctx.createRadialGradient(erX - erR * 0.2, erY - erR * 0.15, erR * 0.85, erX, erY, erR * 1.75);
+                      erHalo.addColorStop(0, 'rgba(56,189,248,0.44)');
+                      erHalo.addColorStop(0.45, 'rgba(37,99,235,0.18)');
+                      erHalo.addColorStop(1, 'rgba(0,0,0,0)');
+                      ctx.fillStyle = erHalo; ctx.beginPath(); ctx.arc(erX, erY, erR * 1.75, 0, Math.PI * 2); ctx.fill();
+                      drawDetailedEarth(ctx, erX, erY, erR, 500, -2.55, 0.64);
+                    }
                     ctx.restore();
 
                     // A compressed side view preserves visible clearance all
@@ -15925,12 +16309,53 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                     var earthLit = (1 - _evaSunV.dot(_earthDir)) / 2;
                     var earthSunAng = Math.atan2(-_evaSunV.dot(_earthUp), _evaSunV.dot(_earthRight));
                     drawDetailedEarth(eCtx, 256, 256, 172, 500, earthSunAng, earthLit); // halo (r*1.45) fits the texture
+                    // Crisp Rayleigh cerulean atmospheric limb glow hugging the sunlit Earthrise crescent.
+                    if (eCtx && eCtx.createRadialGradient) {
+                      eCtx.save();
+                      eCtx.globalCompositeOperation = 'lighter';
+                      var evaLimb = eCtx.createRadialGradient(256, 256, 160, 256, 256, 192);
+                      evaLimb.addColorStop(0, 'rgba(125,211,252,0)');
+                      evaLimb.addColorStop(0.52, 'rgba(125,211,252,0.46)');
+                      evaLimb.addColorStop(0.78, 'rgba(56,189,248,0.22)');
+                      evaLimb.addColorStop(1, 'rgba(37,99,235,0)');
+                      eCtx.fillStyle = evaLimb;
+                      eCtx.beginPath();
+                      eCtx.arc(256, 256, 192, earthSunAng - Math.PI * 0.58, earthSunAng + Math.PI * 0.58);
+                      eCtx.lineTo(256, 256); eCtx.closePath(); eCtx.fill();
+                      eCtx.restore();
+                    }
                     var earthTex = new THREE.CanvasTexture(earthCv);
                     earthTex.encoding = THREE.sRGBEncoding;
                     var earthSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: earthTex, transparent: true, depthWrite: false }));
                     earthSprite.position.set(-60, 70, -120);
                     earthSprite.scale.set(12, 12, 1);
                     scene.add(earthSprite);
+                    var evaHc0 = _mmIsHighContrast(canvasEl);
+                    var evaEarthHaloMat = _mmCreateEarthshineHaloMat(THREE, evaHc0);
+                    var evaEarthHaloMesh = null;
+                    if (evaEarthHaloMat) {
+                      var evaEarthHaloGeo = new THREE.PlaneGeometry(17.2, 17.2);
+                      evaEarthHaloMesh = new THREE.Mesh(evaEarthHaloGeo, evaEarthHaloMat);
+                      evaEarthHaloMesh.position.set(-60.2, 70, -120.5);
+                      evaEarthHaloMesh.lookAt(0, 1.7, 0);
+                      evaEarthHaloMesh.visible = !evaHc0;
+                      scene.add(evaEarthHaloMesh);
+                      skyGeos.push(evaEarthHaloGeo); skyMats.push(evaEarthHaloMat);
+                    }
+                    var evaOrbitArcMat = _mmCreateTrajectoryRibbonMat(THREE, evaHc0);
+                    var evaOrbitArcMesh = null;
+                    if (evaOrbitArcMat) {
+                      var evaArcCurve = new THREE.QuadraticBezierCurve3(
+                        new THREE.Vector3(-135, 32, -120),
+                        new THREE.Vector3(-18, 92, -128),
+                        new THREE.Vector3(120, 28, -110)
+                      );
+                      var evaArcGeo = new THREE.TubeGeometry(evaArcCurve, 44, 0.34, 6, false);
+                      evaOrbitArcMesh = new THREE.Mesh(evaArcGeo, evaOrbitArcMat);
+                      evaOrbitArcMesh.visible = !evaHc0;
+                      scene.add(evaOrbitArcMesh);
+                      skyGeos.push(evaArcGeo); skyMats.push(evaOrbitArcMat);
+                    }
 
                     // ── The lunar surface ──
                     // mmLunarField owns the landscape and this builds three meshes from it:
@@ -17969,6 +18394,21 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                       // Visibility/VR reset the clock; a visible stall admits at most one second.
                       var evaDt = evaResourceDt;
                       var evaHopDt = evaResourceDt;
+                      var evaHcNow = _mmIsHighContrast(canvasEl);
+                      var evaReducedNow = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                      var evaFxTime = evaReducedNow ? 1.45 : (evaNow * 0.001);
+                      if (evaEarthHaloMat && evaEarthHaloMesh) {
+                        evaEarthHaloMat.uniforms.uTime.value = evaFxTime;
+                        evaEarthHaloMat.uniforms.uReduced.value = evaReducedNow ? 1.0 : 0.0;
+                        evaEarthHaloMat.uniforms.uHc.value = evaHcNow ? 1.0 : 0.0;
+                        evaEarthHaloMesh.visible = !evaHcNow;
+                      }
+                      if (evaOrbitArcMat && evaOrbitArcMesh) {
+                        evaOrbitArcMat.uniforms.uTime.value = evaFxTime;
+                        evaOrbitArcMat.uniforms.uReduced.value = evaReducedNow ? 1.0 : 0.0;
+                        evaOrbitArcMat.uniforms.uHc.value = evaHcNow ? 1.0 : 0.0;
+                        evaOrbitArcMesh.visible = !evaHcNow;
+                      }
 
                       // Keyboard yaw (Q/E). Comfort mode turns at the slower rate, matching
                       // the mouse-sensitivity reduction.

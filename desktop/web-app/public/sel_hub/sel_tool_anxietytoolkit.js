@@ -185,6 +185,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       var _anxBg = function(h){ return _anxHC ? (_anx_BGH[h]||h) : (_anxL ? (_anx_BGL[h]||h) : h); };
       var _anxFg = function(h){ return _anxHC ? (_anx_FGH[h]||h) : (_anxL ? (_anx_FGL[h]||h) : h); };
       var _anxBd = function(h){ return _anxHC ? (_anx_BDH[h]||h) : (_anxL ? (_anx_BDL[h]||h) : h); };
+      var _anxAccentInk = function(c){ return _anxHC ? '#ffff00' : c; };
+      var _anxBtnFill = function(c){
+        if (_anxHC) return '#000000';
+        return ({ '#f59e0b': '#b45309', '#22c55e': '#15803d', '#ef4444': '#b91c1c', '#a855f7': '#7e22ce', '#0ea5e9': '#0369a1' }[String(c || '').toLowerCase()] || c);
+      };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -192,6 +197,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag;
 
       var d = labToolData.anxietyToolkit || defaultState();
       var _anxBand = (ctx && ctx.gradeBand) || 'high';
@@ -204,10 +210,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           return Object.assign({}, prev, { anxietyToolkit: next });
         });
       }
+      function scanAnxietyText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed) return false;
+        try {
+          if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+            var res = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'anxietytoolkit', onSafetyFlag: onSafetyFlag || null });
+            if (res && res.action === 'block') {
+              setA({ _crisisTier: 3 });
+              if (typeof window.SelHub.showCrisisModal === 'function') {
+                window.SelHub.showCrisisModal({ toolName: 'Anxiety Toolkit', contentSnippet: trimmed });
+              }
+              return true;
+            }
+          }
+        } catch (_) {}
+        return false;
+      }
       // Triage gate: first-time visitors land on 'triage'; returning users (who explicitly
       // skipped or completed it) go to their last view or 'home'. Persisted d.skippedTriage
       // ensures returning users are never re-gated.
-      var initialView = d.view || (d.skippedTriage ? 'home' : 'triage');
+      var initialView = (d.view && !(d.view === 'triage' && d.skippedTriage)) ? d.view : (d.skippedTriage ? 'home' : 'triage');
       var view = initialView;
       function goto(v) { setA({ view: v }); }
       function printNow() { try { window.print(); } catch (e) {} }
@@ -236,10 +259,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
         ];
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Anxiety Toolkit sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
+            return h('button', {
+              id: 'anx-tab-' + t.id,
+              key: t.id,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(ev) {
+                var nextIdx = idx;
+                if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+                else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                else if (ev.key === 'Home') nextIdx = 0;
+                else if (ev.key === 'End') nextIdx = tabs.length - 1;
+                else return;
+                ev.preventDefault();
+                goto(tabs[nextIdx].id);
+                setTimeout(function() {
+                  var nextBtn = document.getElementById('anx-tab-' + tabs[nextIdx].id);
+                  if (nextBtn) nextBtn.focus();
+                }, 0);
+              },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'anx-panel-' + t.id, tabIndex: active ? 0 : -1,
               style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#06b6d4' : '#334155'),
                 background: active ? 'rgba(6,182,212,0.18)' : _anxBg('#1e293b'),
                 color: active ? _anxFg('#a5f3fc') : _anxFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
@@ -364,30 +404,55 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
         var crisisRoute = suicidal === 'yes';
         var softRoute = !crisisRoute && answeredEnough && (intensity >= 8 || basicNeeds === 'no');
 
+        // Leaving the triage clears the Q1 answer: the project should not keep
+        // a record of a self-harm disclosure once it has done its routing job.
         function continueToToolkit() {
           // Mark triage as completed/skipped so the user is never re-gated,
           // then route to the psychoeducation home view.
-          setA({ skippedTriage: true, view: 'home' });
+          setA({ skippedTriage: true, triageSuicidal: null, view: 'home' });
         }
 
         function skipTriage() {
-          setA({ skippedTriage: true, view: 'home' });
+          setA({ skippedTriage: true, triageSuicidal: null, view: 'home' });
         }
 
         function openCrisisCompanion() {
           // Persist skip so they don't see triage again next time they return.
-          setA({ skippedTriage: true });
+          setA({ skippedTriage: true, triageSuicidal: null, view: 'home' });
           if (setSelHubTool) setSelHubTool('crisiscompanion');
         }
 
         function openTipp() {
-          setA({ skippedTriage: true });
+          setA({ skippedTriage: true, triageSuicidal: null, view: 'home' });
           if (setSelHubTool) setSelHubTool('tipp');
+        }
+
+        // A "yes" to Q1 is an explicit risk disclosure, so it goes through the
+        // same on-device flag pipeline as the SEL coaches (sel_safety_layer.js).
+        // Only the fact of the answer is recorded, never free text; per the
+        // safety layer, no adult is alerted automatically in any mode.
+        function pickSuicidal(v) {
+          setA({ triageSuicidal: v });
+          if (v === 'yes' && suicidal !== 'yes' && typeof onSafetyFlag === 'function') {
+            try {
+              onSafetyFlag({
+                category: 'self_harm',
+                match: 'Anxiety Toolkit check-in: answered yes to thoughts of suicide or self-harm',
+                severity: 'critical',
+                source: 'sel_anxietyToolkit_triage',
+                context: 'triage question 1',
+                timestamp: new Date().toISOString(),
+                aiGenerated: false,
+                confidence: 1
+              });
+            } catch (_) { /* flag is best-effort; the crisis card still shows */ }
+          }
         }
 
         // Yes/No/Prefer button — accessible, high-contrast
         function choiceBtn(label, value, current, onPick, color) {
           var active = current === value;
+          var accentColor = _anxAccentInk(color);
           return h('button', {
             key: value,
             onClick: function() { onPick(value); },
@@ -395,11 +460,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             'aria-label': label,
             style: {
               flex: 1, minWidth: 120, padding: '12px 14px', borderRadius: 8,
-              border: '2px solid ' + (active ? color : _anxFg('#475569')),
+              border: '2px solid ' + (active ? accentColor : _anxFg('#475569')),
               background: active ? 'rgba(255,255,255,0.06)' : _anxBg('#1e293b'),
-              color: active ? '#f1f5f9' : _anxFg('#cbd5e1'),
+              color: active ? _anxFg('#e2e8f0') : _anxFg('#cbd5e1'),
               cursor: 'pointer', fontSize: 14, fontWeight: 700,
-              boxShadow: active ? ('0 0 0 1px ' + color + ' inset') : 'none'
+              boxShadow: active ? ('0 0 0 1px ' + accentColor + ' inset') : 'none'
             }
           }, label);
         }
@@ -424,9 +489,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('div', { id: 'triage-q1', style: { fontSize: 14, fontWeight: 800, color: _anxFg('#fecaca'), marginBottom: 10, lineHeight: 1.5 } },
               '1. Are you having thoughts of suicide or hurting yourself right now?'),
             h('div', { role: 'group', 'aria-labelledby': 'triage-q1', style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-              choiceBtn('Yes', 'yes', suicidal, function(v) { setA({ triageSuicidal: v }); }, _anxBg('#ef4444')),
-              choiceBtn('No', 'no', suicidal, function(v) { setA({ triageSuicidal: v }); }, '#22c55e'),
-              choiceBtn('Prefer not to say', 'prefer-not', suicidal, function(v) { setA({ triageSuicidal: v }); }, _anxFg('#64748b'))
+              choiceBtn('Yes', 'yes', suicidal, pickSuicidal, '#ef4444'),
+              choiceBtn('No', 'no', suicidal, pickSuicidal, '#22c55e'),
+              choiceBtn('Prefer not to say', 'prefer-not', suicidal, pickSuicidal, _anxFg('#64748b'))
             )
           ),
 
@@ -455,7 +520,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('div', { role: 'group', 'aria-labelledby': 'triage-q3', style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               choiceBtn('Yes', 'yes', basicNeeds, function(v) { setA({ triageBasicNeeds: v }); }, '#22c55e'),
               choiceBtn('Somewhat', 'somewhat', basicNeeds, function(v) { setA({ triageBasicNeeds: v }); }, '#f59e0b'),
-              choiceBtn('No', 'no', basicNeeds, function(v) { setA({ triageBasicNeeds: v }); }, _anxBg('#ef4444'))
+              choiceBtn('No', 'no', basicNeeds, function(v) { setA({ triageBasicNeeds: v }); }, '#ef4444')
             )
           ),
 
@@ -466,10 +531,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('div', { style: { fontSize: 18, fontWeight: 900, color: _anxFg('#fecaca'), marginBottom: 8 } }, 'What you are feeling matters.'),
             h('p', { style: { margin: '0 0 10px', color: _anxFg('#fee2e2'), fontSize: 14, lineHeight: 1.7 } },
               'Please reach out NOW. You do not have to be in a "bad enough" place to call — these lines are for exactly this moment.'),
-            h('ul', { style: { margin: '0 0 12px', padding: '0 0 0 22px', color: _anxFg('#fef2f2'), fontSize: 14, lineHeight: 1.9 } },
-              h('li', null, h('strong', null, '988'), ' — call or text (Suicide & Crisis Lifeline, US)'),
-              h('li', null, 'Text ', h('strong', null, 'HOME'), ' to ', h('strong', null, '741741'), ' (Crisis Text Line)')
-            ),
+            // The shared crisis block (988, Crisis Text Line, trusted adult) so
+            // this card picks up any change to the canonical resources; the
+            // local list is the fallback when the safety layer has not loaded.
+            // Its own role="alert" is dropped because this whole card is
+            // already the alert; nesting them would announce it twice.
+            (window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+              ? h('div', { style: { margin: '0 0 12px' } }, React.cloneElement(window.SelHub.renderCrisisResources(h, _anxBand), { role: null, 'aria-live': null }))
+              : h('ul', { style: { margin: '0 0 12px', padding: '0 0 0 22px', color: _anxFg('#fef2f2'), fontSize: 14, lineHeight: 1.9 } },
+                  h('li', null, h('strong', null, '988'), ' — call or text (Suicide & Crisis Lifeline, US)'),
+                  h('li', null, 'Text ', h('strong', null, 'HOME'), ' to ', h('strong', null, '741741'), ' (Crisis Text Line)')
+                ),
             h('p', { style: { margin: '0 0 12px', color: _anxFg('#fee2e2'), fontSize: 13, lineHeight: 1.65 } },
               'Opening the Crisis Companion tool in this app is also a good step — it has a safety plan template and grounding skills designed for right now.'),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
@@ -491,7 +563,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           },
             h('div', { style: { fontSize: 16, fontWeight: 900, color: _anxFg('#fde68a'), marginBottom: 6 } }, 'It sounds like you are carrying a lot.'),
             h('p', { style: { margin: '0 0 12px', color: _anxFg('#fef3c7'), fontSize: 13.5, lineHeight: 1.7 } },
-              'This toolkit can help, AND it is worth thinking about getting human support too — a counselor, a trusted adult, or one of the lines above. You do not have to handle this alone.'),
+              'This toolkit can help, AND it is worth thinking about getting human support too — a counselor, a trusted adult, or 24/7 free support (call or text 988, or text HOME to 741741). You do not have to handle this alone.'),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { onClick: openCrisisCompanion, 'aria-label': 'Open Crisis Companion tool',
                 style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #fcd34d', background: 'rgba(245,158,11,0.22)', color: _anxFg('#fef3c7'), cursor: 'pointer', fontSize: 14, fontWeight: 700 } },
@@ -562,8 +634,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           h('div', { style: { fontSize: 11, color: _anxFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginTop: 14 } }, 'Skills in this toolkit'),
           stepCard('🌳 The worry tree', 'Is this worry productive (something I can act on) or unproductive (going in circles)? Different worries need different moves.', function() { goto('tree'); }, '#22c55e'),
           stepCard('🅿️ Worry time (parking lot)', 'Park your worries to a scheduled 15-20 minutes per day. Frees the rest of your day from running mental loops.', function() { goto('parking'); }, '#f59e0b'),
-          stepCard('🪜 Decatastrophize', 'When the worry is "what if the worst happens?" — walk down the ladder: worst case, best case, MOST LIKELY case, and what you would actually do.', function() { goto('decat'); }, _anxBg('#a855f7')),
-          stepCard('🌍 Grounding skills', 'When anxiety has already taken over, body-based skills (5-4-3-2-1, paced breathing, cold water) bring you back.', function() { goto('ground'); }, _anxBg('#0ea5e9')),
+          stepCard('🪜 Decatastrophize', 'When the worry is "what if the worst happens?" — walk down the ladder: worst case, best case, MOST LIKELY case, and what you would actually do.', function() { goto('decat'); }, '#a855f7'),
+          stepCard('🌍 Grounding skills', 'When anxiety has already taken over, body-based skills (5-4-3-2-1, paced breathing, cold water) bring you back.', function() { goto('ground'); }, '#0ea5e9'),
           stepCard('🔍 My patterns', 'Identify YOUR triggers, body signs, common worry thoughts, and what actually helps you. The kit becomes personalized.', function() { goto('patterns'); }, '#ec4899'),
 
           softPointer()
@@ -571,9 +643,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       }
 
       function stepCard(title, blurb, onClick, color) {
+        var accent = _anxAccentInk(color);
         return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _anxBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _anxFg('#e2e8f0') } },
-          h('div', { style: { fontSize: 14, fontWeight: 800, color: color, marginBottom: 4 } }, title),
+          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + accent, background: _anxBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _anxFg('#e2e8f0') } },
+          h('div', { style: { fontSize: 14, fontWeight: 800, color: accent, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _anxFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
       }
@@ -594,6 +667,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('textarea', { id: 'a-worry', value: d.worryItem || '',
               placeholder: 'Be specific. Not "school," but "the math test on Tuesday."',
               onChange: function(e) { setA({ worryItem: e.target.value }); },
+              onBlur: function(e) { scanAnxietyText(e.target.value); },
               style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
           ),
 
@@ -603,9 +677,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               h('div', { style: { fontSize: 13, color: _anxFg('#bbf7d0'), fontWeight: 800, marginBottom: 10 } }, 'Is there something I can DO about this right now (today or this week)?'),
               h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
                 h('button', { onClick: function() { setA({ worryActionable: true }); }, 'aria-pressed': d.worryActionable === true,
-                  style: { flex: 1, minWidth: 140, padding: 12, borderRadius: 8, border: '2px solid ' + (d.worryActionable === true ? '#22c55e' : _anxFg('#475569')), background: d.worryActionable === true ? 'rgba(34,197,94,0.18)' : _anxBg('#1e293b'), color: d.worryActionable === true ? _anxFg('#bbf7d0') : _anxFg('#cbd5e1'), cursor: 'pointer', fontSize: 14, fontWeight: 700 } }, '✓ Yes — there is something I can do'),
+                  style: { flex: 1, minWidth: 140, padding: 12, borderRadius: 8, border: '2px solid ' + (d.worryActionable === true ? _anxAccentInk('#22c55e') : _anxFg('#475569')), background: d.worryActionable === true ? 'rgba(34,197,94,0.18)' : _anxBg('#1e293b'), color: d.worryActionable === true ? _anxFg('#bbf7d0') : _anxFg('#cbd5e1'), cursor: 'pointer', fontSize: 14, fontWeight: 700 } }, '✓ Yes — there is something I can do'),
                 h('button', { onClick: function() { setA({ worryActionable: false }); }, 'aria-pressed': d.worryActionable === false,
-                  style: { flex: 1, minWidth: 140, padding: 12, borderRadius: 8, border: '2px solid ' + (d.worryActionable === false ? _anxBg('#a855f7') : _anxFg('#475569')), background: d.worryActionable === false ? 'rgba(168,85,247,0.18)' : _anxBg('#1e293b'), color: d.worryActionable === false ? _anxFg('#e9d5ff') : _anxFg('#cbd5e1'), cursor: 'pointer', fontSize: 14, fontWeight: 700 } }, '✕ No — nothing I can do right now')
+                  style: { flex: 1, minWidth: 140, padding: 12, borderRadius: 8, border: '2px solid ' + (d.worryActionable === false ? _anxAccentInk('#a855f7') : _anxFg('#475569')), background: d.worryActionable === false ? 'rgba(168,85,247,0.18)' : _anxBg('#1e293b'), color: d.worryActionable === false ? _anxFg('#e9d5ff') : _anxFg('#cbd5e1'), cursor: 'pointer', fontSize: 14, fontWeight: 700 } }, '✕ No — nothing I can do right now')
               )
             ),
 
@@ -616,6 +690,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               h('textarea', { id: 'a-worry-action', value: d.worryAction || '',
                 placeholder: 'The next concrete step is...',
                 onChange: function(e) { setA({ worryAction: e.target.value }); },
+                onBlur: function(e) { scanAnxietyText(e.target.value); },
                 style: { width: '100%', minHeight: 90, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } }),
               d.worryAction ? h('div', { style: { padding: 10, borderRadius: 6, background: 'rgba(34,197,94,0.18)', marginTop: 8, fontSize: 12.5, color: _anxFg('#bbf7d0'), lineHeight: 1.6 } },
                 h('strong', null, '🎯 The CBT move: '),
@@ -630,10 +705,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               h('textarea', { id: 'a-worry-redirect', value: d.worryLetGoNotes || '',
                 placeholder: 'What will you redirect to? A specific activity, a coping skill, a person to text.',
                 onChange: function(e) { setA({ worryLetGoNotes: e.target.value }); },
+                onBlur: function(e) { scanAnxietyText(e.target.value); },
                 style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } }),
               h('div', { style: { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' } },
                 h('button', { onClick: function() {
                   if (d.worryItem) {
+                    if (scanAnxietyText(d.worryItem)) return;
                     var parked = (d.parkedWorries || []).concat([{ text: d.worryItem, date: todayISO() }]);
                     setA({ parkedWorries: parked });
                     if (addToast) addToast('Worry parked. Use worry time later.', 'info');
@@ -656,7 +733,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
         function parkInput() {
           var el = document.getElementById('a-park-input');
           if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
-          var parked = (d.parkedWorries || []).concat([{ text: el.value.trim(), date: todayISO() }]);
+          var text = el.value.trim();
+          if (scanAnxietyText(text)) { el.value = ''; return; }
+          var parked = (d.parkedWorries || []).concat([{ text: text, date: todayISO() }]);
           setA({ parkedWorries: parked });
           el.value = '';
           if (announceToSR) announceToSR('Worry parked.');
@@ -685,8 +764,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               ),
               h('div', null,
                 h('label', { htmlFor: 'a-worry-mins', style: { display: 'block', fontSize: 11, color: _anxFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'How many minutes'),
-                h('input', { id: 'a-worry-mins', type: 'number', min: 5, max: 60, value: d.worryTimeMinutes || 20,
-                  onChange: function(e) { setA({ worryTimeMinutes: parseInt(e.target.value, 10) }); },
+                h('input', { id: 'a-worry-mins', type: 'number', min: 5, max: 60, value: d.worryTimeMinutes === '' ? '' : (Number.isFinite(Number(d.worryTimeMinutes)) ? Number(d.worryTimeMinutes) : 20),
+                  onChange: function(e) {
+                    var raw = e.target.value;
+                    if (raw === '') { setA({ worryTimeMinutes: '' }); return; }
+                    var n = parseInt(raw, 10);
+                    if (Number.isFinite(n)) setA({ worryTimeMinutes: n });
+                  },
+                  onBlur: function(e) {
+                    var n = parseInt(e.target.value, 10);
+                    setA({ worryTimeMinutes: Number.isFinite(n) ? Math.max(5, Math.min(60, n)) : 20 });
+                  },
                   style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13 } })
               )
             )
@@ -701,7 +789,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); parkInput(); } },
                 style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13 } }),
               h('button', { onClick: parkInput, 'aria-label': 'Park worry',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _anxBg('#b45309'), color: _anxFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Park')
+                style: { padding: '8px 14px', borderRadius: 6, border: _anxHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _anxBtnFill('#f59e0b'), color: _anxFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Park')
             )
           ),
 
@@ -749,6 +837,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('textarea', { id: 'a-catastrophe', value: d.catastrophe || '',
               placeholder: 'What is the catastrophe you are worried about?',
               onChange: function(e) { setA({ catastrophe: e.target.value }); },
+              onBlur: function(e) { scanAnxietyText(e.target.value); },
               style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13.5, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
           ),
 
@@ -758,6 +847,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('textarea', { id: 'a-worst', value: d.worstCase || '',
               placeholder: 'If everything went wrong, what would specifically happen?',
               onChange: function(e) { setA({ worstCase: e.target.value }); },
+              onBlur: function(e) { scanAnxietyText(e.target.value); },
               style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
           ),
 
@@ -767,6 +857,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('textarea', { id: 'a-best', value: d.bestCase || '',
               placeholder: 'If it went great, what would happen?',
               onChange: function(e) { setA({ bestCase: e.target.value }); },
+              onBlur: function(e) { scanAnxietyText(e.target.value); },
               style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
           ),
 
@@ -776,6 +867,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('textarea', { id: 'a-likely', value: d.mostLikely || '',
               placeholder: 'Realistically, what is most likely to actually happen?',
               onChange: function(e) { setA({ mostLikely: e.target.value }); },
+              onBlur: function(e) { scanAnxietyText(e.target.value); },
               style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
           ),
 
@@ -785,6 +877,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('textarea', { id: 'a-cope', value: d.copingPlan || '',
               placeholder: 'If the worst case happened, my next steps would be...',
               onChange: function(e) { setA({ copingPlan: e.target.value }); },
+              onBlur: function(e) { scanAnxietyText(e.target.value); },
               style: { width: '100%', minHeight: 100, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.65, resize: 'vertical' } })
           ),
 
@@ -862,10 +955,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
         function listEditor(key, title, color, starters, blurb) {
           var items = d[key] || [];
+          var accent = _anxAccentInk(color);
           function addItem(value) {
             if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
+            var trimmed = value.trim();
+            if (scanAnxietyText(trimmed)) return;
             var list = items.slice();
-            if (list.indexOf(value.trim()) === -1) list.push(value.trim());
+            if (list.indexOf(trimmed) === -1) list.push(trimmed);
             var patch = {}; patch[key] = list;
             setA(patch);
           }
@@ -883,13 +979,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             el.value = '';
           }
 
-          return h('div', { style: { padding: 14, borderRadius: 10, background: _anxBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 10 } },
-            h('div', { style: { fontSize: 13, color: color, fontWeight: 800, marginBottom: 6 } }, title),
+          return h('div', { style: { padding: 14, borderRadius: 10, background: _anxBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + accent, marginBottom: 10 } },
+            h('div', { style: { fontSize: 13, color: accent, fontWeight: 800, marginBottom: 6 } }, title),
             h('div', { style: { fontSize: 11.5, color: _anxFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55, fontStyle: 'italic' } }, blurb),
 
             items.length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               items.map(function(s, i) {
-                return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 14, background: _anxBg('#1e293b'), border: '1px solid ' + color + '44', fontSize: 12, color: _anxFg('#e2e8f0') } },
+                return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 14, background: _anxBg('#1e293b'), border: '1px solid ' + accent + '44', fontSize: 12, color: _anxFg('#e2e8f0') } },
                   h('span', null, s),
                   h('button', { onClick: function() { removeItem(i); }, 'aria-label': 'Remove grounding item: ' + s,
                     style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _anxFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕')
@@ -898,11 +994,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             ) : null,
 
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' } },
+              h('label', { htmlFor: inputId, className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, title),
               h('input', { id: inputId, type: 'text', placeholder: 'Type and Enter to add...',
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
                 style: { flex: 1, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: submit, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: color, color: _anxFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+              h('button', { onClick: submit, 'aria-label': 'Add to ' + title,
+                style: { padding: '8px 14px', borderRadius: 6, border: _anxHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _anxBtnFill(color), color: _anxFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             h('details', null,
               h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _anxFg('#94a3b8') } }, 'Need ideas? Tap a starter'),
@@ -910,7 +1007,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
                 starters.map(function(s, si) {
                   var already = items.indexOf(s) !== -1;
                   return h('button', { key: si, onClick: function() { addItem(s); }, disabled: already, 'aria-label': 'Add starter: ' + s,
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + color + '66', background: already ? _anxBg('#1e293b') : 'rgba(15,23,42,0.6)', color: already ? _anxFg('#64748b') : _anxFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
+                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + accent + '66', background: already ? _anxBg('#1e293b') : 'rgba(15,23,42,0.6)', color: already ? _anxFg('#64748b') : _anxFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
                     (already ? '✓ ' : '+ ') + s);
                 })
               )
@@ -926,9 +1023,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
           listEditor('myTriggers', '⚡ My common triggers', '#f59e0b', TRIGGER_STARTERS,
             'What tends to set off your anxiety? Specific situations, people, times of day.'),
-          listEditor('myBodySigns', '🫀 How anxiety shows up in MY body', _anxBg('#ef4444'), BODY_STARTERS,
+          listEditor('myBodySigns', '🫀 How anxiety shows up in MY body', '#ef4444', BODY_STARTERS,
             'Your specific physical signs. Knowing these helps you catch anxiety earlier.'),
-          listEditor('mySigsThoughts', '💭 My common anxious thoughts', _anxBg('#a855f7'), THOUGHT_STARTERS,
+          listEditor('mySigsThoughts', '💭 My common anxious thoughts', '#a855f7', THOUGHT_STARTERS,
             'The specific thoughts that loop when you\'re anxious. Naming them weakens their grip.'),
           listEditor('myWhatHelps', '🛟 What ACTUALLY helps me', '#22c55e', HELP_STARTERS,
             'Not what should help; what really does. Be honest with yourself.'),
@@ -1046,28 +1143,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
             // My patterns
             (d.myTriggers || []).length > 0 ? h('div', { style: { marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _anxBg('#b45309'), color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '⚡ My common triggers'),
+              h('div', { style: { background: _anxBtnFill('#f59e0b'), border: _anxHC ? '1px solid #ffff00' : 'none', color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '⚡ My common triggers'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _anxFg('#0f172a'), fontSize: 12.5, lineHeight: 1.8 } },
                 d.myTriggers.map(function(t, i) { return h('li', { key: i }, t); })
               )
             ) : null,
 
             (d.myBodySigns || []).length > 0 ? h('div', { style: { marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _anxBg('#ef4444'), color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🫀 How anxiety shows up in my body'),
+              h('div', { style: { background: _anxBtnFill('#ef4444'), border: _anxHC ? '1px solid #ffff00' : 'none', color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🫀 How anxiety shows up in my body'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _anxFg('#0f172a'), fontSize: 12.5, lineHeight: 1.8 } },
                 d.myBodySigns.map(function(t, i) { return h('li', { key: i }, t); })
               )
             ) : null,
 
             (d.mySigsThoughts || []).length > 0 ? h('div', { style: { marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _anxBg('#a855f7'), color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '💭 My common anxious thoughts'),
+              h('div', { style: { background: _anxBtnFill('#a855f7'), border: _anxHC ? '1px solid #ffff00' : 'none', color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '💭 My common anxious thoughts'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _anxFg('#0f172a'), fontSize: 12.5, lineHeight: 1.8 } },
                 d.mySigsThoughts.map(function(t, i) { return h('li', { key: i }, t); })
               )
             ) : null,
 
             (d.myWhatHelps || []).length > 0 ? h('div', { style: { marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _anxBg('#15803d'), color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🛟 What actually helps me'),
+              h('div', { style: { background: _anxBtnFill('#22c55e'), border: _anxHC ? '1px solid #ffff00' : 'none', color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🛟 What actually helps me'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _anxFg('#0f172a'), fontSize: 12.5, lineHeight: 1.8 } },
                 d.myWhatHelps.map(function(t, i) { return h('li', { key: i }, t); })
               )
@@ -1075,7 +1172,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
             // Recent decatastrophizing work
             (d.catastrophe || d.worstCase || d.mostLikely || d.copingPlan) ? h('div', { style: { marginBottom: 12, pageBreakInside: 'avoid' } },
-              h('div', { style: { background: _anxBg('#7c3aed'), color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🪜 Recent decatastrophizing work'),
+              h('div', { style: { background: _anxBtnFill('#7c3aed'), border: _anxHC ? '1px solid #ffff00' : 'none', color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🪜 Recent decatastrophizing work'),
               d.catastrophe ? h('div', { style: { marginBottom: 6, padding: '4px 12px' } },
                 h('div', { style: { fontSize: 10, color: _anxFg('#64748b'), textTransform: 'uppercase', fontWeight: 700, marginBottom: 2 } }, 'The worry'),
                 h('div', { style: { fontSize: 12.5, color: _anxFg('#0f172a'), lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, d.catastrophe)
@@ -1096,7 +1193,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
             // Parked worries
             parked.length > 0 ? h('div', { style: { marginBottom: 12 } },
-              h('div', { style: { background: _anxBg('#0369a1'), color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🅿️ Recent parked worries (' + parked.length + ')'),
+              h('div', { style: { background: _anxBtnFill('#0369a1'), border: _anxHC ? '1px solid #ffff00' : 'none', color: _anxFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🅿️ Recent parked worries (' + parked.length + ')'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _anxFg('#0f172a'), fontSize: 12, lineHeight: 1.75 } },
                 parked.slice(-10).map(function(w, i) { return h('li', { key: i }, h('span', { style: { color: _anxFg('#64748b'), fontFamily: 'ui-monospace, monospace', fontSize: 10 } }, w.date + '  '), w.text); })
               )
@@ -1130,8 +1227,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
 
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Anxiety Toolkit' },
         header(),
+        (d._crisisTier >= 3 && view !== 'triage' && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _anxBand))
+          : null,
         showNav ? navTabs() : null,
-        body
+        showNav ? h('div', { id: 'anx-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'anx-tab-' + view }, body) : body
       );
     }
   });

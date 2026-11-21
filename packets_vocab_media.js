@@ -19,11 +19,32 @@
   var isObject = function (v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
 
   var index = null, loadingIndex = null, files = Object.create(null), wavs = Object.create(null);
+  function safeJsonParse(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
   function getJson(url) {
-    return Promise.resolve().then(function () { return root.fetch(url); }).then(function (reply) {
-      if (!reply.ok) throw new Error(url + ' answered ' + reply.status);
-      return reply.text();
-    }).then(function (text) { return JSON.parse(text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text); });
+    var ctrl = typeof root.AbortController === 'function' ? new root.AbortController() : null;
+    var timer = 0;
+    return new Promise(function (resolve, reject) {
+      timer = typeof root.setTimeout === 'function' ? root.setTimeout(function () {
+        if (ctrl) { try { ctrl.abort(); } catch (_) {} }
+        reject(new Error(url + ' timed out'));
+      }, 15000) : 0;
+      Promise.resolve().then(function () {
+        return ctrl ? root.fetch(url, { signal: ctrl.signal }) : root.fetch(url);
+      }).then(function (reply) {
+        if (!reply || !reply.ok) throw new Error(url + ' answered ' + (reply ? reply.status : 0));
+        return reply.text();
+      }).then(function (text) {
+        if (timer && typeof root.clearTimeout === 'function') root.clearTimeout(timer);
+        resolve(safeJsonParse(text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text));
+      }, function (err) {
+        if (timer && typeof root.clearTimeout === 'function') root.clearTimeout(timer);
+        reject(err);
+      });
+    });
   }
   // The store's index (about 100 KB): which word is in which file.
   function store() {
@@ -46,7 +67,7 @@
   }
   // What getting these words would take: { words: [the words the store has], download: bytes still to fetch }.
   function plan(words) {
-    var have = (words || []).filter(function (w) { return !!fileOf(w); }), seen = {}, download = 0;
+    var have = (words || []).filter(function (w) { return !!fileOf(w); }), seen = Object.create(null), download = 0;
     have.forEach(function (w) { var f = fileOf(w); if (!seen[f.url] && !files[f.url]) { seen[f.url] = true; download += f.bytes; } });
     return { words: have, download: download };
   }

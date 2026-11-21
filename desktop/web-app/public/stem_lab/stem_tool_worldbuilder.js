@@ -89,18 +89,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('stop', { offset: '0%', stopColor: '#1e1b4b' }),
             h('stop', { offset: '55%', stopColor: '#4c1d95' }),
             h('stop', { offset: '100%', stopColor: '#7c3aed' })
+          ),
+          h('radialGradient', { id: 'wb-moon-halo', cx: '50%', cy: '50%', r: '50%' },
+            h('stop', { offset: '0%', stopColor: '#fef08a', stopOpacity: 0.55 }),
+            h('stop', { offset: '100%', stopColor: '#fef08a', stopOpacity: 0 })
+          ),
+          h('linearGradient', { id: 'wb-castle-body', x1: '0', y1: '0', x2: '1', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#f5f3ff' }),
+            h('stop', { offset: '100%', stopColor: '#a78bfa' })
           )
         ),
         h('rect', { x: 0, y: 0, width: 240, height: 68, fill: 'url(#wb-sky-fantasy)' }),
-        h('circle', { cx: 186, cy: 19, r: 9, fill: '#fef08a', opacity: 0.92 }),
-        h('circle', { cx: 206, cy: 14, r: 4.5, fill: '#e9d5ff', opacity: 0.8 }),
-        h('circle', { cx: 170, cy: 12, r: 2.5, fill: '#c4b5fd', opacity: 0.85 }),
-        h('path', { d: 'M0,68 L0,46 L38,34 L76,48 L122,30 L170,46 L210,36 L240,48 L240,68 Z', fill: '#2e1065', opacity: 0.75 }),
-        h('path', { d: 'M86,68 L86,36 L94,20 L102,36 L102,42 L112,42 L112,26 L120,10 L128,26 L128,42 L138,42 L138,34 L145,22 L152,34 L152,68 Z', fill: '#ddd6fe', opacity: 0.92 }),
+        h('circle', { cx: 186, cy: 19, r: 22, fill: 'url(#wb-moon-halo)' }),
+        h('circle', { cx: 186, cy: 19, r: 9, fill: '#fef08a', opacity: 0.96 }),
+        h('circle', { cx: 206, cy: 14, r: 4.5, fill: '#e9d5ff', opacity: 0.85 }),
+        h('circle', { cx: 170, cy: 12, r: 2.5, fill: '#c4b5fd', opacity: 0.88 }),
+        h('path', { d: 'M0,68 L0,42 L48,28 L94,44 L148,26 L196,42 L240,34 L240,68 Z', fill: '#3b0764', opacity: 0.52 }),
+        h('path', { d: 'M0,68 L0,46 L38,34 L76,48 L122,30 L170,46 L210,36 L240,48 L240,68 Z', fill: '#2e1065', opacity: 0.82 }),
+        h('path', { d: 'M86,68 L86,36 L94,20 L102,36 L102,42 L112,42 L112,26 L120,10 L128,26 L128,42 L138,42 L138,34 L145,22 L152,34 L152,68 Z', fill: 'url(#wb-castle-body)', opacity: 0.96 }),
         h('rect', { x: 117, y: 48, width: 6, height: 20, rx: 3, fill: '#4c1d95' }),
-        h('circle', { cx: 34, cy: 18, r: 1.5, fill: '#ffffff', opacity: 0.8 }),
-        h('circle', { cx: 60, cy: 12, r: 1.2, fill: '#fde68a', opacity: 0.9 }),
-        h('circle', { cx: 222, cy: 26, r: 1.3, fill: '#ffffff', opacity: 0.75 })
+        h('rect', { x: 118.5, y: 28, width: 3, height: 6, rx: 1.5, fill: '#fef08a' }),
+        h('rect', { x: 92.5, y: 38, width: 3, height: 5, rx: 1.5, fill: '#fde68a' }),
+        h('rect', { x: 143.5, y: 36, width: 3, height: 5, rx: 1.5, fill: '#fde68a' }),
+        h('rect', { x: 0, y: 61, width: 240, height: 7, fill: '#6d28d9', opacity: 0.25 }),
+        h('circle', { cx: 34, cy: 18, r: 1.5, fill: '#ffffff', opacity: 0.85 }),
+        h('circle', { cx: 60, cy: 12, r: 1.2, fill: '#fde68a', opacity: 0.92 }),
+        h('circle', { cx: 222, cy: 26, r: 1.3, fill: '#ffffff', opacity: 0.8 })
       );
     }
     if (worldId === 'scifi') {
@@ -110,37 +124,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h('stop', { offset: '0%', stopColor: '#020617' }),
             h('stop', { offset: '60%', stopColor: '#0f172a' }),
             h('stop', { offset: '100%', stopColor: '#7f1d1d' })
+          ),
+          h('radialGradient', { id: 'wb-star-corona', cx: '50%', cy: '50%', r: '50%' },
+            h('stop', { offset: '0%', stopColor: '#fde047', stopOpacity: 0.95 }),
+            h('stop', { offset: '42%', stopColor: '#fb923c', stopOpacity: 0.72 }),
+            h('stop', { offset: '74%', stopColor: '#dc2626', stopOpacity: 0.36 }),
+            h('stop', { offset: '100%', stopColor: '#dc2626', stopOpacity: 0 })
+          ),
+          h('linearGradient', { id: 'wb-hull-metal', x1: '0', y1: '0', x2: '1', y2: '0' },
+            h('stop', { offset: '0%', stopColor: '#64748b' }),
+            h('stop', { offset: '45%', stopColor: '#f1f5f9' }),
+            h('stop', { offset: '100%', stopColor: '#475569' })
           )
         ),
         h('rect', { x: 0, y: 0, width: 240, height: 68, fill: 'url(#wb-sky-scifi)' }),
-        h('circle', { cx: 196, cy: 48, r: 30, fill: '#dc2626', opacity: 0.55 }),
-        h('circle', { cx: 196, cy: 48, r: 21, fill: '#fb923c', opacity: 0.8 }),
-        h('ellipse', { cx: 112, cy: 36, rx: 56, ry: 12, fill: 'none', stroke: '#38bdf8', strokeWidth: 2, opacity: 0.85 }),
-        h('rect', { x: 104, y: 16, width: 16, height: 40, rx: 4, fill: '#cbd5e1' }),
+        h('circle', { cx: 196, cy: 48, r: 42, fill: 'url(#wb-star-corona)' }),
+        h('circle', { cx: 196, cy: 48, r: 21, fill: '#fb923c', opacity: 0.85 }),
+        h('ellipse', { cx: 112, cy: 36, rx: 56, ry: 12, fill: 'none', stroke: '#38bdf8', strokeWidth: 5.5, opacity: 0.2 }),
+        h('ellipse', { cx: 112, cy: 36, rx: 56, ry: 12, fill: 'none', stroke: '#38bdf8', strokeWidth: 2, opacity: 0.9 }),
+        h('rect', { x: 104, y: 16, width: 16, height: 40, rx: 4, fill: 'url(#wb-hull-metal)' }),
         h('rect', { x: 74, y: 31, width: 76, height: 10, rx: 4, fill: '#94a3b8' }),
-        h('circle', { cx: 112, cy: 36, r: 4, fill: '#22d3ee' }),
+        h('line', { x1: 78, y1: 33.2, x2: 146, y2: 33.2, stroke: '#ffffff', strokeWidth: 1.2, opacity: 0.6 }),
+        h('circle', { cx: 112, cy: 36, r: 7.5, fill: '#22d3ee', opacity: 0.28 }),
+        h('circle', { cx: 112, cy: 36, r: 4, fill: '#67e8f9', stroke: '#ffffff', strokeWidth: 0.8 }),
         h('circle', { cx: 26, cy: 14, r: 1.4, fill: '#ffffff', opacity: 0.85 }),
         h('circle', { cx: 54, cy: 48, r: 1.2, fill: '#7dd3fc', opacity: 0.8 }),
-        h('circle', { cx: 152, cy: 14, r: 1.5, fill: '#ffffff', opacity: 0.9 })
+        h('circle', { cx: 152, cy: 14, r: 1.5, fill: '#ffffff', opacity: 0.9 }),
+        h('circle', { cx: 40, cy: 26, r: 0.9, fill: '#bae6fd', opacity: 0.7 })
       );
     }
     if (worldId === 'mystery') {
       return h('svg', { viewBox: '0 0 240 68', width: '100%', height: 68, 'aria-hidden': 'true', style: { display: 'block', borderRadius: 10 } },
         h('defs', null,
           h('linearGradient', { id: 'wb-sky-mystery', x1: '0', y1: '0', x2: '0', y2: '1' },
-            h('stop', { offset: '0%', stopColor: '#0f172a' }),
+            h('stop', { offset: '0%', stopColor: '#0b1120' }),
             h('stop', { offset: '100%', stopColor: '#1e3a5f' })
+          ),
+          h('radialGradient', { id: 'wb-mist-moon', cx: '50%', cy: '50%', r: '50%' },
+            h('stop', { offset: '0%', stopColor: '#f8fafc', stopOpacity: 0.55 }),
+            h('stop', { offset: '100%', stopColor: '#e2e8f0', stopOpacity: 0 })
+          ),
+          h('radialGradient', { id: 'wb-clock-glow', cx: '50%', cy: '50%', r: '50%' },
+            h('stop', { offset: '0%', stopColor: '#fef08a', stopOpacity: 0.6 }),
+            h('stop', { offset: '100%', stopColor: '#f59e0b', stopOpacity: 0 })
           )
         ),
         h('rect', { x: 0, y: 0, width: 240, height: 68, fill: 'url(#wb-sky-mystery)' }),
-        h('circle', { cx: 48, cy: 20, r: 12, fill: '#e2e8f0', opacity: 0.22 }),
-        h('circle', { cx: 48, cy: 20, r: 8, fill: '#f8fafc', opacity: 0.88 }),
+        h('circle', { cx: 48, cy: 20, r: 22, fill: 'url(#wb-mist-moon)' }),
+        h('circle', { cx: 48, cy: 20, r: 8, fill: '#f8fafc', opacity: 0.92 }),
         h('path', { d: 'M104,68 L104,24 L120,8 L136,24 L136,68 Z', fill: '#0b1120', stroke: '#64748b', strokeWidth: 1 }),
+        h('circle', { cx: 120, cy: 34, r: 16, fill: 'url(#wb-clock-glow)' }),
         h('circle', { cx: 120, cy: 34, r: 9, fill: '#fef3c7', stroke: '#94a3b8', strokeWidth: 1.5 }),
-        h('line', { x1: 120, y1: 34, x2: 120, y2: 27, stroke: '#1e293b', strokeWidth: 1.5 }),
-        h('line', { x1: 120, y1: 34, x2: 125, y2: 34, stroke: '#1e293b', strokeWidth: 1.5 }),
-        h('path', { d: 'M0,68 L0,52 L24,42 L48,54 L76,46 L104,54 L136,52 L168,42 L198,54 L224,44 L240,52 L240,68 Z', fill: '#0f172a', opacity: 0.82 }),
-        h('rect', { x: 0, y: 56, width: 240, height: 12, fill: '#94a3b8', opacity: 0.14 })
+        h('line', { x1: 120, y1: 34, x2: 120, y2: 27, stroke: '#1e293b', strokeWidth: 1.5, strokeLinecap: 'round' }),
+        h('line', { x1: 120, y1: 34, x2: 125, y2: 34, stroke: '#1e293b', strokeWidth: 1.5, strokeLinecap: 'round' }),
+        h('path', { d: 'M0,68 L0,52 L24,42 L48,54 L76,46 L104,54 L136,52 L168,42 L198,54 L224,44 L240,52 L240,68 Z', fill: '#0f172a', opacity: 0.86 }),
+        h('path', { d: 'M0,58 Q60,52 120,58 T240,56 L240,68 L0,68 Z', fill: '#cbd5e1', opacity: 0.16 })
       );
     }
     return h('svg', { viewBox: '0 0 240 68', width: '100%', height: 68, 'aria-hidden': 'true', style: { display: 'block', borderRadius: 10 } },
@@ -149,32 +187,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           h('stop', { offset: '0%', stopColor: '#78350f' }),
           h('stop', { offset: '55%', stopColor: '#b45309' }),
           h('stop', { offset: '100%', stopColor: '#d97706' })
+        ),
+        h('radialGradient', { id: 'wb-sun-hist', cx: '50%', cy: '50%', r: '50%' },
+          h('stop', { offset: '0%', stopColor: '#fef3c7', stopOpacity: 0.92 }),
+          h('stop', { offset: '55%', stopColor: '#fbbf24', stopOpacity: 0.35 }),
+          h('stop', { offset: '100%', stopColor: '#d97706', stopOpacity: 0 })
+        ),
+        h('linearGradient', { id: 'wb-sea-hist', x1: '0', y1: '0', x2: '0', y2: '1' },
+          h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0.78 }),
+          h('stop', { offset: '100%', stopColor: '#0369a1', stopOpacity: 0.88 })
         )
       ),
       h('rect', { x: 0, y: 0, width: 240, height: 68, fill: 'url(#wb-sky-hist)' }),
-      h('circle', { cx: 190, cy: 24, r: 12, fill: '#fef3c7', opacity: 0.9 }),
-      h('path', { d: 'M40,68 L40,42 Q60,22 80,42 L80,68 Z', fill: '#451a03', opacity: 0.85 }),
-      h('path', { d: 'M98,68 L98,38 Q120,16 142,38 L142,68 Z', fill: '#7c2d12', opacity: 0.9 }),
+      h('circle', { cx: 190, cy: 24, r: 24, fill: 'url(#wb-sun-hist)' }),
+      h('circle', { cx: 190, cy: 24, r: 10, fill: '#fef3c7', opacity: 0.94 }),
+      h('path', { d: 'M40,68 L40,42 Q60,22 80,42 L80,68 Z', fill: '#451a03', opacity: 0.88 }),
+      h('path', { d: 'M98,68 L98,38 Q120,16 142,38 L142,68 Z', fill: '#7c2d12', opacity: 0.92 }),
+      h('path', { d: 'M122,22 Q134,27 140,38', fill: 'none', stroke: '#fde68a', strokeWidth: 1.2, opacity: 0.55 }),
       h('rect', { x: 152, y: 34, width: 10, height: 34, fill: '#451a03', opacity: 0.85 }),
-      h('path', { d: 'M0,56 Q60,50 120,56 T240,54 L240,68 L0,68 Z', fill: '#0ea5e9', opacity: 0.55 }),
-      h('path', { d: 'M172,56 L184,38 L194,56 Z', fill: '#fffbeb', opacity: 0.92 })
+      h('path', { d: 'M0,56 Q60,50 120,56 T240,54 L240,68 L0,68 Z', fill: 'url(#wb-sea-hist)' }),
+      h('path', { d: 'M172,56 L184,38 L194,56 Z', fill: '#fffbeb', opacity: 0.95 }),
+      h('line', { x1: 174, y1: 60, x2: 194, y2: 60, stroke: '#fef3c7', strokeWidth: 1.2, opacity: 0.5 })
     );
   }
 
-  // Bespoke Quill & Compass Crest Emblem for WriteCraft hero header
+  // Bespoke Quill & Cartographic Compass Rose Crest Emblem for WriteCraft hero header
   function renderWriteCraftCrest(h) {
     return h('svg', { width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true', style: { flexShrink: 0 } },
       h('defs', null,
         h('linearGradient', { id: 'wb-crest-bg', x1: '0', y1: '0', x2: '1', y2: '1' },
           h('stop', { offset: '0%', stopColor: '#7c3aed' }),
-          h('stop', { offset: '100%', stopColor: '#2563eb' })
+          h('stop', { offset: '100%', stopColor: '#1d4ed8' })
+        ),
+        h('radialGradient', { id: 'wb-crest-glow', cx: '32%', cy: '28%', r: '72%' },
+          h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.28 }),
+          h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0.22 })
         )
       ),
       h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 11, fill: 'url(#wb-crest-bg)', stroke: '#ddd6fe', strokeWidth: 1.5 }),
-      h('circle', { cx: 21, cy: 21, r: 13, fill: 'none', stroke: '#fde68a', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.75 }),
+      h('rect', { x: 2.5, y: 2.5, width: 37, height: 37, rx: 10.5, fill: 'url(#wb-crest-glow)' }),
+      // Subtle 4-point compass rose behind quill
+      h('path', { d: 'M21,6 L23,19 L36,21 L23,23 L21,36 L19,23 L6,21 L19,19 Z', fill: '#fde68a', opacity: 0.22 }),
+      h('circle', { cx: 21, cy: 21, r: 13, fill: 'none', stroke: '#fde68a', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.8 }),
       h('path', { d: 'M12,30 C16,20 23,12 31,10 C29,18 24,24 16,28 L12,30 Z', fill: '#fef08a', stroke: '#ffffff', strokeWidth: 1 }),
       h('line', { x1: 12, y1: 30, x2: 26, y2: 15, stroke: '#4c1d95', strokeWidth: 1.4, strokeLinecap: 'round' }),
-      h('circle', { cx: 30, cy: 30, r: 2.2, fill: '#38bdf8' })
+      h('circle', { cx: 30, cy: 30, r: 4, fill: '#38bdf8', opacity: 0.28 }),
+      h('circle', { cx: 30, cy: 30, r: 2.2, fill: '#67e8f9', stroke: '#ffffff', strokeWidth: 0.6 })
     );
   }
 
@@ -297,6 +355,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
       var Sparkles = ctx.icons.Sparkles;
       var X = ctx.icons.X;
       var addToast = ctx.addToast;
+      // Safety gate for all 5 student-writing AI surfaces (SEL NPC chat, item
+      // crafting, structure building, battle actions, exploration actions).
+      // Non-combat SEL conversations use the full shared gate; RPG gameplay
+      // blocks self-harm and real-world threats while allowing fantasy battle
+      // verbs ("attack", "shoot") so normal RPG writing does not false-positive.
+      var wbSafetyGate = function(text, surface, isRpgAction) {
+        var msg = String(text || '').trim();
+        if (!msg) return false;
+        var onFlag = typeof ctx.onSafetyFlag === 'function' ? ctx.onSafetyFlag : null;
+        var blocked = false;
+        var flagged = null;
+        if (!isRpgAction && window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          try {
+            var res = window.SelHub.safeRehearseCheck(msg, { toolId: 'worldBuilder_' + surface, onSafetyFlag: onFlag });
+            if (res && res.action === 'block') { blocked = true; flagged = res.flag || { severity: 'critical' }; }
+          } catch (_) { /* fall through to direct checker */ }
+        }
+        if (!blocked) {
+          var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+          var flags = null;
+          try { flags = (checker && checker.check) ? checker.check(msg) : null; } catch (_) { flags = null; }
+          if (Array.isArray(flags) && flags.length) {
+            var crit = flags.find(function(f) {
+              if (!f || f.severity !== 'critical') return false;
+              if (isRpgAction && f.category === 'harm_to_others' && /^(attack|shoot)$/i.test(String(f.match || '').trim())) return false;
+              return true;
+            });
+            if (crit) {
+              blocked = true;
+              flagged = crit;
+              if (onFlag) {
+                try { onFlag(Object.assign({}, crit, { source: 'stem_worldBuilder_' + surface, context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {}
+              }
+            }
+          }
+        }
+        if (blocked) {
+          upd('_safetyPause', true);
+          if (addToast) addToast('Paused for safety — help resources are shown at the top of the screen.', 'warn');
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal({ toolName: 'World Builder', contentSnippet: msg }); } catch (_) {}
+          }
+        }
+        return blocked;
+      };
       // Student AI-off: each AI fn is null unless usable (blocked/absent fn or policy
       // off); teachers keep prior behaviour. Students with no text AI get a short
       // "needs AI" state below instead of a dead UI.
@@ -482,6 +585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           if (addToast) addToast('You can only craft one item per turn! Take an action first.', 'info');
           return;
         }
+        if (wbSafetyGate(description, 'craft_item', true)) return;
         updMulti({ actionLoading: true, actionResult: null });
         var vocabList = targetVocab.length > 0 ? targetVocab.join(', ') : '';
         var prompt = 'You evaluate creative item descriptions in a literary RPG for ' + gradeLevel + ' students.\n' +
@@ -599,6 +703,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
       var respondToNPC = function() {
         if (!callGemini || !actionText.trim() || !activeNPC) return;
+        if (wbSafetyGate(actionText, 'npc_dialogue', false)) return;
         updMulti({ actionLoading: true, actionResult: null });
         var npcKey = activeNPC.name;
         var currentRapport = npcRapport[npcKey] !== undefined ? npcRapport[npcKey] : 10;
@@ -810,6 +915,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
       // ── Build Structure (3-turn cooldown) ──
       var buildStructure = function(description) {
         if (!callGemini || !description.trim()) return;
+        if (wbSafetyGate(description, 'build_structure', true)) return;
         if (structureCooldown > 0) {
           if (addToast) addToast('🏗️ Still recovering from your last build! ' + structureCooldown + ' turn(s) until you can craft again.', 'info');
           return;
@@ -907,6 +1013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
       var performBattleAction = function() {
         if (!callGemini || !actionText.trim() || !activeBattle) return;
+        if (wbSafetyGate(actionText, 'battle_action', true)) return;
         updMulti({ actionLoading: true, actionResult: null });
 
         var prompt = 'You are the battle narrator AND a master literary writer for a literary RPG for ' + gradeLevel + ' students.\n' +
@@ -1040,6 +1147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
       var performAction = function() {
         if (!callGemini || !actionText.trim() || !room) return;
         if (pasteDetected) { upd('pasteDetected', false); if (addToast) addToast('Write your own words to take action!', 'info'); return; }
+        if (wbSafetyGate(actionText, 'world_action', true)) return;
         updMulti({ actionLoading: true, actionResult: null });
 
         var prompt = 'You are the narrator of a collaborative literary RPG for ' + gradeLevel + ' students.\n' +
@@ -1212,7 +1320,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             ),
             h('div', { className: 'flex gap-4 items-center mb-3 flex-wrap' },
               h('svg', { role: 'img', 'aria-label': __alloT('stem.worldbuilder.orbit_img', 'Orbit diagram'), width: 210, height: 184, viewBox: '0 0 210 184', style: { flex: '0 0 210px', maxWidth: '100%' } },
-                h('circle', { cx: cxR, cy: cyR, r: radius + 4, fill: '#020617', opacity: 0.45 }),
+                !isContrast && h('defs', null,
+                  h('radialGradient', { id: 'wb-radar-field', cx: '50%', cy: '50%', r: '54%' },
+                    h('stop', { offset: '0%', stopColor: sm.color, stopOpacity: 0.16 }),
+                    h('stop', { offset: '70%', stopColor: '#0f172a', stopOpacity: 0.65 }),
+                    h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.85 })
+                  ),
+                  h('radialGradient', { id: 'wb-radar-poly', cx: '50%', cy: '50%', r: '60%' },
+                    h('stop', { offset: '0%', stopColor: sm.color, stopOpacity: 0.45 }),
+                    h('stop', { offset: '100%', stopColor: sm.color, stopOpacity: 0.16 })
+                  )
+                ),
+                h('circle', { cx: cxR, cy: cyR, r: radius + 6, fill: isContrast ? '#000000' : 'url(#wb-radar-field)', stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 1 }),
                 [0.25, 0.5, 0.75, 1.0].map(function(s, i) {
                   var rr = s * radius;
                   var poly = '';
@@ -1220,13 +1339,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     var a = -Math.PI / 2 + (k * 2 * Math.PI / n);
                     poly += (cxR + Math.cos(a) * rr) + ',' + (cyR + Math.sin(a) * rr) + ' ';
                   }
-                  return h('polygon', { key: 'g' + i, points: poly.trim(), fill: 'none', stroke: i === 3 ? '#475569' : '#334155', strokeWidth: i === 3 ? 1.2 : 0.9, strokeDasharray: i === 3 ? '0' : '2 3' });
+                  return h('polygon', { key: 'g' + i, points: poly.trim(), fill: 'none', stroke: i === 3 ? '#64748b' : '#334155', strokeWidth: i === 3 ? 1.2 : 0.9, strokeDasharray: i === 3 ? '0' : '2 3' });
                 }),
                 outerPts.map(function(op, i) {
                   return h('line', { key: 'sp' + i, x1: cxR, y1: cyR, x2: op[0], y2: op[1], stroke: '#334155', strokeWidth: 0.9 });
                 }),
-                h('polygon', { points: pts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '), fill: sm.color + '44', stroke: sm.color, strokeWidth: 2.2 }),
-                pts.map(function(p, i) { return h('circle', { key: 'p' + i, cx: p[0], cy: p[1], r: 3.6, fill: sm.color, stroke: '#020617', strokeWidth: 1 }); }),
+                !isContrast && h('polygon', { points: pts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '), fill: 'none', stroke: sm.color, strokeWidth: 6, strokeLinejoin: 'round', opacity: 0.22 }),
+                h('polygon', { points: pts.map(function(p) { return p[0] + ',' + p[1]; }).join(' '), fill: isContrast ? (sm.color + '44') : 'url(#wb-radar-poly)', stroke: sm.color, strokeWidth: 2.2, strokeLinejoin: 'round' }),
+                pts.map(function(p, i) {
+                  return h('g', { key: 'p' + i },
+                    !isContrast && h('circle', { cx: p[0], cy: p[1], r: 7, fill: sm.color, opacity: 0.22 }),
+                    h('circle', { cx: p[0], cy: p[1], r: 3.8, fill: sm.color, stroke: '#020617', strokeWidth: 1.1 }),
+                    !isContrast && h('circle', { cx: p[0] - 1, cy: p[1] - 1, r: 1, fill: '#ffffff', opacity: 0.85 })
+                  );
+                }),
                 labelPts.map(function(lp, i) { return h('text', { key: 'l' + i, x: lp[0], y: lp[1] + 3, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 9.5, fontWeight: 700 }, axes[i].short); })
               ),
               h('div', { className: 'flex-1 text-xs min-w-[200px]' },
@@ -1235,15 +1361,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 h('div', { className: 'flex justify-between py-1 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.carrying_cap', 'Carrying cap')), h('span', { className: 'font-mono', style: { color: sm.color } }, maxPop.toFixed(0) + 'M')),
                 h('div', { className: 'flex justify-between py-1 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.fragility_index', 'Fragility index')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, (fragility * 100).toFixed(0) + '%')),
                 h('div', { className: 'flex justify-between py-1 border-b border-slate-700' }, h('span', null, __alloT('stem.worldbuilder.story_tension', 'Story tension')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, sm.label)),
-                // Segmented tension scale meter SVG
+                // Segmented tension scale meter SVG with glass specular bevel & glowing needle
                 h('div', { className: 'mt-2.5' },
                   h('svg', { viewBox: '0 0 220 28', width: '100%', height: 28, 'aria-hidden': 'true', style: { display: 'block' } },
+                    !isContrast && h('rect', { x: 3, y: 9, width: 214, height: 9, rx: 4, fill: '#020617', opacity: 0.55 }),
                     h('rect', { x: 4, y: 10, width: 42, height: 7, rx: 3, fill: '#4ade80' }),
                     h('rect', { x: 47, y: 10, width: 42, height: 7, fill: '#22d3ee' }),
                     h('rect', { x: 90, y: 10, width: 42, height: 7, fill: '#facc15' }),
                     h('rect', { x: 133, y: 10, width: 42, height: 7, fill: '#fb923c' }),
                     h('rect', { x: 176, y: 10, width: 40, height: 7, rx: 3, fill: '#f87171' }),
-                    h('polygon', { points: (4 + fragilityPct * 2.12) + ',2 ' + (4 + fragilityPct * 2.12 - 4) + ',9 ' + (4 + fragilityPct * 2.12 + 4) + ',9', fill: '#ffffff' }),
+                    !isContrast && h('rect', { x: 6, y: 11, width: 208, height: 2, rx: 1, fill: '#ffffff', opacity: 0.35 }),
+                    !isContrast && h('circle', { cx: 4 + fragilityPct * 2.12, cy: 13.5, r: 6, fill: sm.color, opacity: 0.3 }),
+                    h('polygon', { points: (4 + fragilityPct * 2.12) + ',2 ' + (4 + fragilityPct * 2.12 - 4) + ',9 ' + (4 + fragilityPct * 2.12 + 4) + ',9', fill: '#ffffff', stroke: '#020617', strokeWidth: 0.6 }),
                     h('text', { x: 4, y: 26, fill: '#cbd5e1', fontSize: 7.5, fontWeight: 700 }, 'Utopian'),
                     h('text', { x: 110, y: 26, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 7.5, fontWeight: 700 }, 'Tense'),
                     h('text', { x: 216, y: 26, textAnchor: 'end', fill: '#cbd5e1', fontSize: 7.5, fontWeight: 700 }, 'Collapsing')
@@ -1372,6 +1501,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
         // Header
         renderWorkbenchHero(true),
+
+        // Safety pause banner (shown when wbSafetyGate blocks student free text)
+        d._safetyPause && h('div', { className: 'rounded-xl p-3 border-2 border-red-400 bg-red-50 text-red-900 space-y-2', role: 'alert' },
+          (window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+            ? React.cloneElement(window.SelHub.renderCrisisResources(h, ctx.gradeBand || 'high'), { role: null, 'aria-live': null })
+            : h('div', { className: 'text-sm space-y-1' },
+                h('div', { className: 'font-bold' }, 'Hey — we paused the story for a moment. Your wellbeing matters more than the game.'),
+                h('div', null, 'Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.')
+              ),
+          h('button', { type: 'button', onClick: function() { upd('_safetyPause', false); }, className: 'px-3 py-1 rounded-lg text-xs font-bold bg-white border border-red-300 text-red-800 hover:bg-red-100' }, 'Return to World Builder')
+        ),
 
         // ═══ WORLDBUILDING INQUIRY widget (H7b'') ═══ (renderWorldInquiry, above)
         !selectedWorld && renderWorldInquiry(),
@@ -1569,29 +1709,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   var key = rm.id < cid ? rm.id + '|' + cid : cid + '|' + rm.id;
                   if (seen[key]) return; seen[key] = 1;
                   var live = (rm.id === currentRoom || cid === currentRoom);
-                  edges.push(h('line', { key: key, x1: pos[rm.id].x, y1: pos[rm.id].y, x2: pos[cid].x, y2: pos[cid].y, stroke: live ? '#7c3aed' : '#94a3b8', strokeWidth: live ? 2.6 : 1.3, strokeDasharray: live ? '0' : '4 3', opacity: live ? 0.95 : 0.65 }));
+                  if (live && !isContrast) {
+                    edges.push(h('line', { key: key + '-gl', x1: pos[rm.id].x, y1: pos[rm.id].y, x2: pos[cid].x, y2: pos[cid].y, stroke: '#8b5cf6', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.2 }));
+                  }
+                  edges.push(h('line', { key: key, x1: pos[rm.id].x, y1: pos[rm.id].y, x2: pos[cid].x, y2: pos[cid].y, stroke: live ? '#7c3aed' : '#94a3b8', strokeWidth: live ? 2.6 : 1.3, strokeDasharray: live ? '0' : '4 3', strokeLinecap: 'round', opacity: live ? 0.96 : 0.65 }));
                 });
               });
-              return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 480, display: 'block', margin: '0 auto', borderRadius: 12, background: 'radial-gradient(circle at center, #f5f3ff 0%, #f8fafc 70%, #f1f5f9 100%)', border: '1px solid #e2e8f0' }, role: 'img', 'aria-label': 'Map of ' + world.name + '. You are at ' + room.name + '.' },
-                // Subtle cartography compass rings & cardinal ticks
-                h('circle', { cx: cx, cy: cy, r: R + 22, fill: 'none', stroke: '#e2e8f0', strokeWidth: 1, strokeDasharray: '2 4' }),
-                h('circle', { cx: cx, cy: cy, r: R * 0.52, fill: 'none', stroke: '#e2e8f0', strokeWidth: 0.9, strokeDasharray: '3 4' }),
-                h('text', { x: 14, y: 18, fontSize: 9, fontWeight: 800, fill: '#64748b' }, 'N ↑'),
+              return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 480, display: 'block', margin: '0 auto', borderRadius: 12, background: isContrast ? '#000000' : '#f8fafc', border: isContrast ? '2px solid #ffff00' : '1px solid #cbd5e1' }, role: 'img', 'aria-label': 'Map of ' + world.name + '. You are at ' + room.name + '.' },
+                !isContrast && h('defs', null,
+                  h('radialGradient', { id: 'wb-map-ocean', cx: '50%', cy: '48%', r: '66%' },
+                    h('stop', { offset: '0%', stopColor: '#f5f3ff' }),
+                    h('stop', { offset: '62%', stopColor: '#e0f2fe', stopOpacity: 0.45 }),
+                    h('stop', { offset: '100%', stopColor: '#cbd5e1', stopOpacity: 0.38 })
+                  ),
+                  h('radialGradient', { id: 'wb-map-relief', cx: '46%', cy: '44%', r: '52%' },
+                    h('stop', { offset: '0%', stopColor: '#fef3c7', stopOpacity: 0.55 }),
+                    h('stop', { offset: '68%', stopColor: '#d1fae5', stopOpacity: 0.3 }),
+                    h('stop', { offset: '100%', stopColor: '#e0f2fe', stopOpacity: 0 })
+                  )
+                ),
+                // Bathymetric sea backdrop & shaded continental relief contour
+                !isContrast && h('rect', { x: 0, y: 0, width: W, height: Hh, fill: 'url(#wb-map-ocean)' }),
+                !isContrast && h('ellipse', { cx: cx, cy: cy, rx: R + 32, ry: R + 16, fill: 'url(#wb-map-relief)' }),
+                // Finely drafted cartographic neatline double border + latitude/longitude graticule arcs
+                h('rect', { x: 5, y: 5, width: W - 10, height: Hh - 10, rx: 8, fill: 'none', stroke: isContrast ? '#ffffff' : '#94a3b8', strokeWidth: 1.1, opacity: isContrast ? 0.9 : 0.55 }),
+                h('rect', { x: 8.5, y: 8.5, width: W - 17, height: Hh - 17, rx: 6, fill: 'none', stroke: isContrast ? '#ffff00' : '#cbd5e1', strokeWidth: 0.7, strokeDasharray: '6 4', opacity: 0.75 }),
+                !isContrast && h('g', { fill: 'none', stroke: '#94a3b8', strokeWidth: 0.65, opacity: 0.35 },
+                  h('path', { d: 'M 10 ' + (cy - 52) + ' Q ' + cx + ' ' + (cy - 68) + ' ' + (W - 10) + ' ' + (cy - 52) }),
+                  h('path', { d: 'M 10 ' + (cy + 52) + ' Q ' + cx + ' ' + (cy + 68) + ' ' + (W - 10) + ' ' + (cy + 52) }),
+                  h('path', { d: 'M ' + (cx - 72) + ' 10 Q ' + (cx - 90) + ' ' + cy + ' ' + (cx - 72) + ' ' + (Hh - 10) }),
+                  h('path', { d: 'M ' + (cx + 72) + ' 10 Q ' + (cx + 90) + ' ' + cy + ' ' + (cx + 72) + ' ' + (Hh - 10) })
+                ),
+                // Cartographic compass rings & subtle atmospheric circulation directional chevrons
+                h('circle', { cx: cx, cy: cy, r: R + 22, fill: 'none', stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 1, strokeDasharray: '2 4', opacity: 0.6 }),
+                h('circle', { cx: cx, cy: cy, r: R * 0.52, fill: 'none', stroke: isContrast ? '#ffffff' : '#cbd5e1', strokeWidth: 0.9, strokeDasharray: '3 4', opacity: 0.7 }),
+                // Finely drafted 8-point cartographic compass rose in top-left corner
+                h('g', { transform: 'translate(28, 30)', 'aria-hidden': 'true' },
+                  h('circle', { cx: 0, cy: 0, r: 12, fill: isContrast ? '#000000' : '#ffffff', fillOpacity: isContrast ? 1 : 0.78, stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 0.9 }),
+                  h('polygon', { points: '0,-11 2.4,-2.4 0,0 -2.4,-2.4', fill: isContrast ? '#ffff00' : '#6d28d9' }),
+                  h('polygon', { points: '0,11 2.4,2.4 0,0 -2.4,2.4', fill: isContrast ? '#ffffff' : '#94a3b8' }),
+                  h('polygon', { points: '11,0 2.4,-2.4 0,0 2.4,2.4', fill: isContrast ? '#ffffff' : '#64748b' }),
+                  h('polygon', { points: '-11,0 -2.4,-2.4 0,0 -2.4,2.4', fill: isContrast ? '#ffffff' : '#94a3b8' }),
+                  h('circle', { cx: 0, cy: 0, r: 1.8, fill: isContrast ? '#000000' : '#f8fafc', stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 0.7 }),
+                  h('text', { x: 0, y: -13.5, textAnchor: 'middle', fontSize: 7.5, fontWeight: 900, fill: isContrast ? '#ffff00' : '#4c1d95' }, 'N')
+                ),
                 edges,
                 rooms.map(function(rm) {
                   var p = pos[rm.id], isCur = rm.id === currentRoom, isVisited = roomsVisited.indexOf(rm.id) >= 0, canGo = neighbors.indexOf(rm.id) >= 0;
-                  var fill = isCur ? '#ede9fe' : isVisited ? '#ecfdf5' : canGo ? '#eff6ff' : '#f8fafc';
-                  var stroke = isCur ? '#6d28d9' : isVisited ? '#15803d' : canGo ? '#2563eb' : '#94a3b8';
+                  var fill = isContrast ? '#000000' : (isCur ? '#ede9fe' : isVisited ? '#ecfdf5' : canGo ? '#eff6ff' : '#f8fafc');
+                  var stroke = isContrast ? (isCur ? '#ffff00' : '#ffffff') : (isCur ? '#6d28d9' : isVisited ? '#15803d' : canGo ? '#2563eb' : '#94a3b8');
                   var bright = isVisited || isCur || canGo;
                   return h('g', { key: rm.id,
                     style: { cursor: canGo ? 'pointer' : 'default' },
                     onClick: canGo ? function() { moveToRoom(rm.id); } : null,
                     role: canGo ? 'button' : null,
-                    // This declared role="button" and an aria-label and then supplied
-                    // neither tabIndex nor a key handler, so a screen reader announced a
-                    // travel control that could not be focused or pressed. Travel between
-                    // rooms is the only navigation in this world, so it was not awkward
-                    // by keyboard, it was impossible.
                     tabIndex: canGo ? 0 : null,
                     'data-wb-room': canGo ? rm.id : null,
                     onKeyDown: canGo ? function(id) { return function(ev) {
@@ -1600,12 +1771,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                       moveToRoom(id);
                     }; }(rm.id) : null,
                     'aria-label': canGo ? ('Travel to ' + rm.name) : (rm.name + (isCur ? ' — you are here' : '')) },
-                    isCur ? h('circle', { cx: p.x, cy: p.y, r: 21, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5, strokeDasharray: '3 2', opacity: 0.75 }) : null,
-                    canGo ? h('circle', { cx: p.x, cy: p.y, r: 19, fill: 'none', stroke: '#3b82f6', strokeWidth: 1, opacity: 0.45 }) : null,
-                    h('circle', { cx: p.x, cy: p.y, r: 15.5, fill: fill, stroke: stroke, strokeWidth: isCur ? 3 : 2, opacity: bright ? 1 : 0.7 }),
+                    !isContrast && h('ellipse', { cx: p.x, cy: p.y + 15.5, rx: 13, ry: 3.5, fill: 'rgba(15,23,42,0.14)' }),
+                    isCur && !isContrast ? h('circle', { cx: p.x, cy: p.y, r: 23, fill: '#7c3aed', opacity: 0.14 }) : null,
+                    isCur ? h('circle', { cx: p.x, cy: p.y, r: 21, fill: 'none', stroke: isContrast ? '#ffff00' : '#7c3aed', strokeWidth: 1.6, strokeDasharray: '3 2', opacity: 0.82 }) : null,
+                    canGo ? h('circle', { cx: p.x, cy: p.y, r: 19, fill: 'none', stroke: isContrast ? '#00ff00' : '#3b82f6', strokeWidth: 1.2, opacity: 0.55 }) : null,
+                    h('circle', { cx: p.x, cy: p.y, r: 15.5, fill: fill, stroke: stroke, strokeWidth: isCur ? 3 : 2, opacity: bright ? 1 : 0.75 }),
+                    !isContrast && h('path', { d: 'M' + (p.x - 10) + ' ' + (p.y - 6) + ' A 12 12 0 0 1 ' + (p.x + 10) + ' ' + (p.y - 6), fill: 'none', stroke: '#ffffff', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.65 }),
                     h('text', { x: p.x, y: p.y + 5, textAnchor: 'middle', fontSize: 15 }, rm.emoji),
-                    h('text', { x: p.x, y: p.y + 29, textAnchor: 'middle', fontSize: 8.5, fontWeight: isCur ? 800 : 700, fill: bright ? '#1e293b' : '#475569' }, rm.name.length > 16 ? rm.name.slice(0, 15) + '…' : rm.name),
-                    (isVisited && !isCur) ? h('text', { x: p.x + 12, y: p.y - 10, textAnchor: 'middle', fontSize: 9.5, fontWeight: 800, fill: '#15803d' }, '✓') : null
+                    h('text', { x: p.x, y: p.y + 29, textAnchor: 'middle', fontSize: 8.5, fontWeight: isCur ? 800 : 700, fill: isContrast ? '#ffffff' : (bright ? '#1e293b' : '#475569') }, rm.name.length > 16 ? rm.name.slice(0, 15) + '…' : rm.name),
+                    (isVisited && !isCur) ? h('text', { x: p.x + 12, y: p.y - 10, textAnchor: 'middle', fontSize: 9.5, fontWeight: 800, fill: isContrast ? '#00ff00' : '#15803d' }, '✓') : null
                   );
                 })
               );

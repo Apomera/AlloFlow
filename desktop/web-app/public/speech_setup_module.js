@@ -72,6 +72,7 @@ function summaryKind(choice, modelReady) {
   return 'unavailable';
 }
 var SPEECH_SETUP_CSS = ['.allo-ss-backdrop{position:fixed;inset:0;z-index:2147483100;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.72)}', '.allo-ss{--ss-bg:#fff;--ss-text:#0f172a;--ss-soft:#475569;--ss-line:#cbd5e1;--ss-tint:#f1f5f9;--ss-accent:#3730a3;--ss-on-accent:#fff;--ss-good:#166534;--ss-warn:#92400e;box-sizing:border-box;width:100%;max-width:560px;max-height:100%;overflow-y:auto;border-radius:14px;padding:20px;background:var(--ss-bg);color:var(--ss-text);font-size:14px;line-height:1.5;box-shadow:0 20px 50px rgba(0,0,0,.4)}', '.allo-ss--dark{--ss-bg:#0f172a;--ss-text:#f1f5f9;--ss-soft:#cbd5e1;--ss-line:#475569;--ss-tint:#1e293b;--ss-accent:#a5b4fc;--ss-on-accent:#0f172a;--ss-good:#86efac;--ss-warn:#fcd34d}', '.allo-ss--contrast{--ss-bg:#000;--ss-text:#fff;--ss-soft:#fff;--ss-line:#fff;--ss-tint:#000;--ss-accent:#fde047;--ss-on-accent:#000;--ss-good:#fde047;--ss-warn:#fde047;border:2px solid #fff}', '.allo-ss *{box-sizing:border-box}', '.allo-ss:focus{outline:none}', '.allo-ss h2{margin:0;font-size:20px;font-weight:800;color:inherit}', '.allo-ss h3{margin:0 0 8px;font-size:15px;font-weight:800;color:inherit}', '.allo-ss p{margin:0;color:inherit}', '.allo-ss-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}', '.allo-ss-section{border:0;border-top:1px solid var(--ss-line);margin:16px 0 0;padding:14px 0 0;min-width:0}', '.allo-ss-section legend{float:left;width:100%;padding:0;margin:0 0 8px;font-size:15px;font-weight:800}', '.allo-ss-section legend + *{clear:both}', '.allo-ss-soft{color:var(--ss-soft);font-size:13px}', '.allo-ss-banner{border:1px solid var(--ss-line);border-left:5px solid var(--ss-accent);border-radius:8px;padding:10px 12px;background:var(--ss-tint);font-weight:650}', '.allo-ss-banner[data-kind="ready"],.allo-ss-banner[data-kind="desktop"]{border-left-color:var(--ss-good)}', '.allo-ss-banner[data-kind="browser"],.allo-ss-banner[data-kind="needs-model"],.allo-ss-banner[data-kind="unavailable"]{border-left-color:var(--ss-warn)}', '.allo-ss-note{margin-top:8px;border-radius:8px;padding:8px 10px;background:var(--ss-tint);font-size:13px}', '.allo-ss-error{margin-top:8px;font-size:13px;font-weight:650;color:var(--ss-warn)}', '.allo-ss-option{display:flex;gap:10px;align-items:flex-start;min-height:44px;padding:8px 10px;margin-top:6px;border:1px solid var(--ss-line);border-radius:8px;cursor:pointer}', '.allo-ss-option[data-selected="true"]{border-color:var(--ss-accent);box-shadow:inset 0 0 0 1px var(--ss-accent)}', '.allo-ss-option[data-disabled="true"]{cursor:not-allowed}', '.allo-ss-option input{margin:3px 0 0;flex:none;width:16px;height:16px;accent-color:var(--ss-accent)}', '.allo-ss-option strong{display:block;font-weight:750}', '.allo-ss-option span{display:block;color:var(--ss-soft);font-size:13px}', '.allo-ss-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--ss-line)}', '.allo-ss-row:last-of-type{border-bottom:0}', '.allo-ss-ok{font-weight:750;color:var(--ss-good)}', '.allo-ss-tag{display:inline-block;margin-left:6px;padding:0 6px;border:1px solid var(--ss-line);border-radius:999px;font-size:12px;font-weight:650}', '.allo-ss-button{min-height:44px;min-width:44px;padding:6px 14px;border:1px solid var(--ss-accent);border-radius:8px;background:var(--ss-accent);color:var(--ss-on-accent);font:inherit;font-weight:750;cursor:pointer}', '.allo-ss-button[data-quiet="true"]{background:transparent;color:var(--ss-text);border-color:var(--ss-line)}', '.allo-ss-button:disabled{cursor:not-allowed;opacity:.65}', '.allo-ss-close{min-width:44px;min-height:44px;border:1px solid var(--ss-line);border-radius:8px;background:transparent;color:var(--ss-text);font-size:20px;line-height:1;cursor:pointer}', '.allo-ss button:focus-visible,.allo-ss input:focus-visible{outline:3px solid var(--ss-accent);outline-offset:2px}', '.allo-ss-track{height:10px;margin-top:6px;border:1px solid var(--ss-line);border-radius:999px;background:var(--ss-tint);overflow:hidden}', '.allo-ss-fill{height:100%;background:var(--ss-accent)}', '.allo-ss-quote{margin:8px 0;padding:8px 10px;border-left:3px solid var(--ss-line);font-style:italic}', '.allo-ss-heard{margin-top:8px;padding:8px 10px;border:1px solid var(--ss-line);border-radius:8px;background:var(--ss-tint)}', '.allo-ss-foot{display:flex;justify-content:flex-end;margin-top:16px}', '@media (forced-colors: active){.allo-ss-fill{background:Highlight}.allo-ss-button{border:1px solid ButtonText}}'].join('');
+var EMPTY_LANG_CONTEXT = typeof React !== 'undefined' && typeof React.createContext === 'function' ? React.createContext(null) : null;
 function SpeechSetupPanel(props) {
   var t = props.t || function () {
     return '';
@@ -82,7 +83,9 @@ function SpeechSetupPanel(props) {
     return window.AlloFlowVoice || null;
   };
   var V = voiceNow();
-  var languageContext = React.useContext(window.AlloLanguageContext || React.createContext(null)) || {};
+  var activeLangCtx = window.AlloLanguageContext || EMPTY_LANG_CONTEXT;
+  var languageContext = (activeLangCtx && typeof React.useContext === 'function' ? React.useContext(activeLangCtx) : null) || {};
+  var backdropDownRef = React.useRef(false);
   var uiLanguageTag = '';
   try {
     if (languageContext.currentUiLanguage && window.AlloFlowLang && typeof window.AlloFlowLang.bcp47Full === 'function') {
@@ -149,6 +152,34 @@ function SpeechSetupPanel(props) {
     mountedRef.current = true;
     var previousFocus = document.activeElement;
     var dialog = dialogRef.current;
+    var isolatedSiblings = [];
+    if (dialog && typeof document !== 'undefined' && document.body) {
+      var node = dialog;
+      while (node && node.parentElement && node !== document.body) {
+        var parent = node.parentElement;
+        Array.prototype.slice.call(parent.children).forEach(function (sibling) {
+          if (sibling === node || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
+          isolatedSiblings.push({
+            el: sibling,
+            hadInert: sibling.hasAttribute('inert'),
+            prevAriaHidden: sibling.getAttribute('aria-hidden')
+          });
+          sibling.inert = true;
+          sibling.setAttribute('inert', '');
+          sibling.setAttribute('aria-hidden', 'true');
+        });
+        node = parent;
+      }
+    }
+    var alloScrollLock = typeof window !== 'undefined' ? window.__alloScrollLockState || (window.__alloScrollLockState = {
+      count: 0,
+      prev: ''
+    }) : null;
+    var alloScrollLocked = !!(alloScrollLock && typeof document !== 'undefined' && document.body);
+    if (alloScrollLocked && ++alloScrollLock.count === 1) {
+      alloScrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    }
     var stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack = window.__alloFocusTrapStack || [] : null;
     var trap = {
       root: dialog
@@ -177,7 +208,11 @@ function SpeechSetupPanel(props) {
       var d = dialogRef.current;
       if (!d) return;
       if (d.contains(document.activeElement) && document.activeElement !== d) return;
-      var firstFocusable = getFocusables(d)[0];
+      var focusables = getFocusables(d);
+      var preferred = focusables.find(function (el) {
+        return el.getAttribute && el.getAttribute('data-autofocus') === 'true';
+      });
+      var firstFocusable = preferred || focusables[0];
       try {
         if (firstFocusable && typeof firstFocusable.focus === 'function') firstFocusable.focus();else d.focus();
       } catch (_) {}
@@ -268,6 +303,18 @@ function SpeechSetupPanel(props) {
       mountedRef.current = false;
       clearTimeout(focusTimer);
       document.removeEventListener('keydown', onDocKeyDown);
+      if (alloScrollLocked) {
+        alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
+        if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+      }
+      isolatedSiblings.forEach(function (entry) {
+        if (!entry.hadInert) {
+          entry.el.inert = false;
+          entry.el.removeAttribute('inert');
+        }
+        if (entry.prevAriaHidden === null) entry.el.removeAttribute('aria-hidden');else if (entry.prevAriaHidden !== 'true') entry.el.setAttribute('aria-hidden', entry.prevAriaHidden);
+      });
+      var wasTop = isTopTrap();
       if (stack) {
         var idx = stack.lastIndexOf(trap);
         if (idx >= 0) stack.splice(idx, 1);
@@ -285,7 +332,7 @@ function SpeechSetupPanel(props) {
         checkRef.current = null;
       }
       try {
-        if (previousFocus && previousFocus.isConnected && previousFocus !== document.body && typeof previousFocus.focus === 'function') {
+        if (wasTop && previousFocus && previousFocus.isConnected && previousFocus !== document.body && typeof previousFocus.focus === 'function') {
           previousFocus.focus();
         }
       } catch (_) {}
@@ -293,14 +340,26 @@ function SpeechSetupPanel(props) {
   }, []);
   if (!V) {
     return /*#__PURE__*/React.createElement("div", {
-      className: "allo-ss-backdrop"
+      className: "allo-ss-backdrop",
+      role: "presentation",
+      onMouseDown: function (e) {
+        backdropDownRef.current = e.target === e.currentTarget;
+      },
+      onClick: function (e) {
+        var allow = backdropDownRef.current;
+        backdropDownRef.current = false;
+        if (allow && e.target === e.currentTarget) onClose();
+      }
     }, /*#__PURE__*/React.createElement("style", null, SPEECH_SETUP_CSS), /*#__PURE__*/React.createElement("div", {
       className: 'allo-ss allo-ss--' + theme,
       role: "dialog",
       "aria-modal": "true",
       "aria-labelledby": "allo-ss-title",
       tabIndex: -1,
-      ref: dialogRef
+      ref: dialogRef,
+      onClick: function (e) {
+        e.stopPropagation();
+      }
     }, /*#__PURE__*/React.createElement("div", {
       className: "allo-ss-head"
     }, /*#__PURE__*/React.createElement("h2", {
@@ -410,7 +469,7 @@ function SpeechSetupPanel(props) {
     }).catch(function () {});
   }
   function startCheck() {
-    if (check.phase === 'listening' || check.phase === 'transcribing' || typeof V.startMicrophoneCheck !== 'function') return;
+    if (checkRef.current || checkPhaseRef.current !== 'idle' || typeof V.startMicrophoneCheck !== 'function') return;
     var status = typeof V.getActiveVoiceSessionStatus === 'function' ? V.getActiveVoiceSessionStatus() : null;
     var stoppedOther = !!(status && status.state && status.state !== 'idle' && status.owner);
     checkPhaseRef.current = 'starting';
@@ -421,18 +480,22 @@ function SpeechSetupPanel(props) {
       error: '',
       stoppedOther: stoppedOther
     });
-    var run = V.startMicrophoneCheck({
+    var run = null;
+    run = V.startMicrophoneCheck({
       seconds: TEST_SECONDS,
       lang: lang,
       tier: canUseOnDevice && profile.supported ? testTier : null,
       onLevel: function (level) {
-        if (mountedRef.current) setCheck(function (previous) {
+        if (checkRef.current !== run || !mountedRef.current) return;
+        var safeLevel = Number.isFinite(level) ? Math.max(0, Math.min(1, level)) : 0;
+        setCheck(function (previous) {
           return Object.assign({}, previous, {
-            level: level
+            level: safeLevel
           });
         });
       },
       onPhase: function (phase) {
+        if (checkRef.current !== run) return;
         checkPhaseRef.current = phase;
         if (mountedRef.current) setCheck(function (previous) {
           return Object.assign({}, previous, {
@@ -444,6 +507,7 @@ function SpeechSetupPanel(props) {
     });
     checkRef.current = run;
     run.promise.then(function (report) {
+      if (checkRef.current !== run) return;
       checkRef.current = null;
       checkPhaseRef.current = 'idle';
       if (!mountedRef.current) return;
@@ -458,6 +522,7 @@ function SpeechSetupPanel(props) {
         return n + 1;
       });
     }, function (error) {
+      if (checkRef.current !== run) return;
       checkRef.current = null;
       checkPhaseRef.current = 'idle';
       if (!mountedRef.current) return;
@@ -508,7 +573,16 @@ function SpeechSetupPanel(props) {
     })));
   }
   return /*#__PURE__*/React.createElement("div", {
-    className: "allo-ss-backdrop"
+    className: "allo-ss-backdrop",
+    role: "presentation",
+    onMouseDown: function (e) {
+      backdropDownRef.current = e.target === e.currentTarget;
+    },
+    onClick: function (e) {
+      var allow = backdropDownRef.current;
+      backdropDownRef.current = false;
+      if (allow && e.target === e.currentTarget) onClose();
+    }
   }, /*#__PURE__*/React.createElement("style", null, SPEECH_SETUP_CSS), /*#__PURE__*/React.createElement("div", {
     className: 'allo-ss allo-ss--' + theme,
     role: "dialog",
@@ -517,7 +591,10 @@ function SpeechSetupPanel(props) {
     "aria-describedby": "allo-ss-summary",
     tabIndex: -1,
     ref: dialogRef,
-    "data-testid": "speech-setup-panel"
+    "data-testid": "speech-setup-panel",
+    onClick: function (e) {
+      e.stopPropagation();
+    }
   }, /*#__PURE__*/React.createElement("div", {
     className: "allo-ss-head"
   }, /*#__PURE__*/React.createElement("h2", {
@@ -562,7 +639,7 @@ function SpeechSetupPanel(props) {
     role: "status"
   }, say(t('speech_setup.download_progress'), 'Downloaded {loaded} of {total} MB. You can keep working while this finishes.', {
     loaded: download.loadedMb,
-    total: TIER_SIZES_MB[download.tier]
+    total: TIER_SIZES_MB[download.tier] || 0
   })), /*#__PURE__*/React.createElement("div", {
     className: "allo-ss-track",
     role: "progressbar",
@@ -723,7 +800,7 @@ function SpeechSetupPanel(props) {
     className: "allo-ss-fill",
     "data-testid": "speech-setup-level",
     style: {
-      width: Math.round(check.level * 100) + '%'
+      width: Math.round((Number.isFinite(check.level) ? Math.max(0, Math.min(1, check.level)) : 0) * 100) + '%'
     }
   }))), check.phase === 'transcribing' && /*#__PURE__*/React.createElement("p", {
     className: "allo-ss-soft",

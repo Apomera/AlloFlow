@@ -156,11 +156,14 @@ function _isCommandStoreSetupGuideRequest(value) {
   ].some((alias) => text === alias || text === "please " + alias));
 }
 function _aiUsable(kind, fn) {
+  if (typeof fn !== "function" || fn._alloQrBlocked) return false;
+  if (typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || !!window.__alloQrStudentMode || window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)) return false;
   try {
-    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return window.__alloAiUsable(kind, fn);
+    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return Boolean(window.__alloAiUsable(kind, fn));
   } catch (_) {
+    return false;
   }
-  return typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+  return true;
 }
 function _cmdAudioFn(fn) {
   return _aiUsable("audio", fn) ? fn : null;
@@ -186,7 +189,7 @@ const tx = (ctx, key, fallback, params) => {
   }
   result = result && result !== key ? String(result) : String(fallback || "");
   if (params && typeof params === "object") Object.keys(params).forEach((name) => {
-    result = result.replace(new RegExp("\\{" + name + "\\}", "g"), String(params[name]));
+    result = result.split("{" + name + "}").join(String(params[name]));
   });
   return result;
 };
@@ -1220,7 +1223,7 @@ function buildAlloCommands(ctx, opts = {}) {
     // the recorder: that one coaches while you record, this one is the tool you
     // open when a website is fighting you.
     { id: "open_it_coach", icon: "\u{1F469}\u200D\u{1F3EB}", roles: "all", when: () => typeof window !== "undefined" && typeof window.open === "function", label: t("cmd.open_it_coach", "Coach me through another website"), aliases: ["it coach", "help me use this website", "help me use another website", "guide me through a website", "walk me through this site", "how do i use this site", "stuck on a website"], hint: t("cmd.open_it_coach_hint", "Opens a coach that watches a site you share and suggests the next step \u2014 it advises, you do the clicking"), run: (c) => {
-      const posture = c && c.isTeacherMode && !c.isParentMode ? "educator" : "learner";
+      const posture = getCommandAudience(c) === "teacher" ? "educator" : "learner";
       const VS = window.AlloModules && window.AlloModules.VideoStudio || null;
       let win;
       if (VS && typeof VS.openCoachWindow === "function") {
@@ -1508,6 +1511,7 @@ function buildAlloCommands(ctx, opts = {}) {
     } },
     { id: "generate_anchor_chart", icon: "\u{1F4CC}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateAnchorChart === "function", label: t("cmd.generate_anchor_chart", "Make an anchor chart"), aliases: ["anchor chart", "class poster", "reference chart"], hint: t("cmd.generate_anchor_chart_hint", "Generate an anchor chart from the current content"), runAsync: (c) => Promise.resolve(c.generateAnchorChart()).then(() => t("cmd.generate_anchor_chart_ready", "Anchor chart ready.")) },
     { id: "generate_memory_aid", icon: "\u{1F9E0}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateMemoryAid === "function", label: t("cmd.generate_memory_aid", "Make a memory aid"), aliases: ["memory aid", "mnemonic", "make a mnemonic", "study cue"], hint: t("cmd.generate_memory_aid_hint", "Generate a Memory Aid Studio resource from the current content"), runAsync: (c) => Promise.resolve(c.generateMemoryAid()).then(() => t("cmd.generate_memory_aid_ready", "Memory Aid Studio ready.")) },
+    { id: "generate_applied_challenge", icon: "\u{1F3AF}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateAppliedChallenge === "function", label: t("cmd.generate_applied_challenge", "Make an applied challenge"), aliases: ["applied challenge", "applied challenge studio", "real world challenge", "application task"], hint: t("cmd.generate_applied_challenge_hint", "Generate an Applied Challenge Studio resource from the current content"), runAsync: (c) => Promise.resolve(c.generateAppliedChallenge()).then(() => t("cmd.generate_applied_challenge_ready", "Applied Challenge Studio ready.")) },
     { id: "generate_brainstorm", icon: "\u{1F9E9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateBrainstorm === "function", label: t("cmd.generate_brainstorm", "Make a brainstorm web"), aliases: ["brainstorm", "idea web", "mind web", "concept web"], hint: t("cmd.generate_brainstorm_hint", "Generate a brainstorm organizer from the current content"), runAsync: (c) => Promise.resolve(c.generateBrainstorm()).then(() => t("cmd.generate_brainstorm_ready", "Brainstorm web ready.")) },
     { id: "generate_concept_sort", icon: "\u{1F5C2}\uFE0F", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateConceptSort === "function", label: t("cmd.generate_concept_sort", "Make a concept sort"), aliases: ["concept sort", "card sort", "sorting activity"], hint: t("cmd.generate_concept_sort_hint", "Generate a concept-sorting activity from the current content"), runAsync: (c) => Promise.resolve(c.generateConceptSort()).then(() => t("cmd.generate_concept_sort_ready", "Concept sort ready.")) },
     { id: "generate_faq", icon: "\u2753", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateFaq === "function", label: t("cmd.generate_faq", "Make an FAQ list"), aliases: ["faq", "frequently asked questions", "question list"], hint: t("cmd.generate_faq_hint", "Generate an FAQ list from the current content"), runAsync: (c) => Promise.resolve(c.generateFaq()).then(() => t("cmd.generate_faq_ready", "FAQ list ready.")) },
@@ -1864,7 +1868,6 @@ function buildAlloCommands(ctx, opts = {}) {
       c.startLessonFlow(p || {});
       return p && p.topic ? t("cmd.create_lesson_done", "Starting a lesson flow about \u201C") + p.topic + "\u201D" + (p.grade ? t("cmd.create_lesson_done2", " for grade ") + p.grade : "") + t("cmd.create_lesson_done3", " \u2014 AlloBot will guide the next steps.") : c.hasSourceText ? t("cmd.create_lesson_done_source", "Starting the guided lesson flow using your current source material.") : t("cmd.create_lesson_done_blank", "Starting the guided lesson flow \u2014 AlloBot will ask for your topic.");
     } },
-    { id: "use_contextual_suggestion", re: /^(?:use|choose|do|take|select)\s+(?:the\s+)?(?:suggested\s+)?(?:option|step|choice)\s*(?:number\s*)?([123])\s*\??$/i, params: (m) => ({ option: m[1] }) },
     { id: "set_grade_level", icon: "\u{1F39A}\uFE0F", roles: ["teacher", "independent", "parent"], when: (c) => !!c.setSetupGradeLevel, label: t("cmd.set_grade_level", "Set the grade level"), aliases: ["set grade level", "grade level", "target grade", "reading level", "set target level"], hint: t("cmd.set_grade_level_hint", "e.g. set grade level to 5"), run: (c, p) => {
       const v = c.setSetupGradeLevel(p && p.grade);
       return v ? t("cmd.set_grade_level_done", "Grade level set to ") + v + "." : t("cmd.set_grade_level_pick", "Say a grade like grade 5.");
@@ -1955,7 +1958,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.launchFlashcards();
       return t("cmd.launch_flashcards_done", "Flashcards ready.");
     } },
-    { id: "open_persona_chat", icon: "\u{1F3AD}", roles: "all", label: t("cmd.open_persona_chat", "Open Persona interview"), aliases: ["persona", "interview", "interview mode", "talk to a character", "role play", "historical figure"], hint: t("cmd.open_persona_chat_hint", "Interview an AI persona about this topic"), run: (c) => {
+    { id: "open_persona_chat", icon: "\u{1F3AD}", roles: "all", when: (c) => !c.studentAiFeaturesHidden && typeof c.openPersona === "function", label: t("cmd.open_persona_chat", "Open Persona interview"), aliases: ["persona", "interview", "interview mode", "talk to a character", "role play", "historical figure"], hint: t("cmd.open_persona_chat_hint", "Interview an AI persona about this topic"), run: (c) => {
       c.openPersona();
       return t("cmd.open_persona_chat_done", "Persona interview opened.");
     } },
@@ -2251,8 +2254,9 @@ function listMainVoiceEditableFields(context = {}) {
       });
     } else if (generatedContent.data && typeof generatedContent.data.text === "string") {
       let responseIndex = 0;
-      generatedContent.data.text.split(/(\[.*?\])/).forEach((part, renderIndex) => {
-        if (!part.startsWith("[")) return;
+      const scaffoldBlankPattern = /(\[(?!\s*\d+(?:\s*[,;-]\s*\d+)*\s*\])[^\]\n]*\](?!\())/;
+      generatedContent.data.text.split(scaffoldBlankPattern).forEach((part, renderIndex) => {
+        if (renderIndex % 2 !== 1) return;
         responseIndex += 1;
         const key = "paragraph-" + renderIndex;
         fields.push({
@@ -2268,16 +2272,40 @@ function listMainVoiceEditableFields(context = {}) {
   }
   if (generatedContent && generatedContent.id && generatedContent.type === "math") {
     const responses = studentResponses[generatedContent.id] || {};
-    const problems = Array.isArray(generatedContent.data) ? generatedContent.data : [];
+    const problems = Array.isArray(generatedContent.data?.problems) ? generatedContent.data.problems : Array.isArray(generatedContent.data) ? generatedContent.data : [];
+    const _cmdMathStableHash = (value) => {
+      const text = String(value == null ? "" : value);
+      let hash = 2166136261;
+      for (let i = 0; i < text.length; i++) {
+        hash ^= text.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return (hash >>> 0).toString(36);
+    };
+    const _cmdMathProblemKey = (problem, idx) => {
+      const rawId = problem && (problem.id != null ? problem.id : problem.problemId);
+      const suppliedKey = typeof rawId === "string" || typeof rawId === "number" ? String(rawId).trim() : "";
+      if (suppliedKey) {
+        return Object.prototype.hasOwnProperty.call(Object.prototype, suppliedKey) ? "problem-id-" + _cmdMathStableHash((generatedContent.id || "math") + "|" + suppliedKey) : suppliedKey;
+      }
+      const seed = [
+        generatedContent.id || "legacy-math",
+        problem && (problem.question || problem.problem || ""),
+        problem && (problem.answer || problem.correct_answer || ""),
+        problem && (problem.taskType || "")
+      ].join("|");
+      return "problem-" + _cmdMathStableHash(seed) + "-" + idx;
+    };
     problems.forEach((problem, index) => {
       if (problem && problem.manipulativeResponse) return;
+      const problemKey = _cmdMathProblemKey(problem, index);
       fields.push({
         id: "math-work-" + index,
         label: "Show your work for problem " + (index + 1),
         aliases: ["math response " + (index + 1), "problem " + (index + 1), "student work " + (index + 1)],
-        value: responses[index] || "",
+        value: responses[problemKey] != null ? responses[problemKey] : responses[index] || "",
         maxLength: 8e3,
-        setValue: (next) => handleStudentInput(generatedContent.id, index, next)
+        setValue: (next) => handleStudentInput(generatedContent.id, problemKey, next)
       });
     });
   }
@@ -3582,6 +3610,7 @@ const _COMMAND_SUGGESTION_HANDLERS = Object.freeze({
   generate_anchor_chart: "generateAnchorChart",
   generate_note_taking: "generateNoteTaking",
   generate_memory_aid: "generateMemoryAid",
+  generate_applied_challenge: "generateAppliedChallenge",
   generate_brainstorm: "generateBrainstorm",
   generate_concept_sort: "generateConceptSort",
   open_source_input: "openSourceInput",
@@ -3857,6 +3886,7 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     { id: "create_lesson", re: /^(?:create|generate|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || "").trim() || null, grade: m[2] || null }) },
     // "make phonics words for short a with my first graders": the whole request becomes the goals.
     { id: "open_word_sounds", re: /^(?:(?:can|could|would)\s+you\s+(?:please\s+)?)?(?:make|build|plan|create|find|give\s+me|suggest)\s+(?:me\s+)?(?:a\s+|some\s+)?(?:phonics|word\s+sounds|phonemic\s+awareness|decodable|word\s+family)\s+(?:words?|word\s+lists?|lesson|practice|activities)\b.*$/i, params: (m) => ({ goal: m[0].trim() }) },
+    { id: "use_contextual_suggestion", re: /^(?:use|choose|do|take|select)\s+(?:the\s+)?(?:suggested\s+)?(?:option|step|choice)\s*(?:number\s*)?([123])\s*\??$/i, params: (m) => ({ option: m[1] }) },
     { id: "rebuild_lesson_step", re: /^(?:rebuild|regenerate|redo|retry)\s+(?:lesson\s+)?step\s+(\d+)\s*[.!]?$/i, params: (m) => ({ step: Number(m[1]) }) },
     { id: "apply_lesson_template", re: /^(?:use|apply|load)\s+(?:the\s+)?(?:lesson\s+)?template\s+["“]?(.+?)["”]?\s*[.!]?$/i, params: (m) => ({ name: m[1].trim() }) },
     { id: "set_grade_level", re: /^(?:set|change|make)\s+(?:the\s+)?(?:grade|grade level|target grade|reading level|level)\s*(?:to|for)?\s*(kindergarten|k|pre[-\s]?k|college|graduate(?: level)?|\d{1,2}(?:st|nd|rd|th)?(?:\s*grade)?)\s*\??$/i, params: (m) => ({ grade: m[1] || null }) },
@@ -3900,7 +3930,7 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   }
   if (opts.preview && bestScore >= 60 && _deferToPlanner(best, text)) return null;
   if (bestScore >= 60 && (!opts.preview || bestScore >= 80 && text.length >= 3)) return _runCmd(best, "deterministic", {}, bestScore / 100);
-  if (!opts.allowAi || typeof ctx.callGemini !== "function") return null;
+  if (!opts.allowAi || !_aiUsable("text", ctx && ctx.callGemini)) return null;
   if (text.split(/\s+/).length > 14) return null;
   try {
     _throwIfCommandPlanningAborted(opts.signal);
@@ -4141,7 +4171,7 @@ function executeCommand(ctx, commandOrId, params, opts = {}) {
     const outcome = cmd.run(ctx, safeParams);
     const structured = !!(outcome && typeof outcome === "object" && !Array.isArray(outcome));
     const message = structured ? outcome.narration || outcome.message : outcome;
-    _recordCommandUse(cmd.id);
+    if (!(structured && outcome.ok === false)) _recordCommandUse(cmd.id);
     const narration = _rememberCommandNarration(message || t("router.done", "Done."));
     return Object.assign(
       {},
@@ -4281,7 +4311,7 @@ async function planUtterance(ctx, rawText, opts = {}) {
     error.code = "COMMAND_PLAN_INPUT_TOO_LONG";
     throw error;
   }
-  if (!ctx || typeof ctx.callGemini !== "function") return null;
+  if (!ctx || !_aiUsable("text", ctx.callGemini)) return null;
   const commands = buildAlloCommands(ctx, { includeGated: true }).filter((c) => {
     if (c.chatSkip || c.destructive) return false;
     return !opts.demoSafeOnly || getCommandContract(c).demoSafe;
@@ -4476,12 +4506,17 @@ function _deviceStorage() {
       if (typeof window.__alloConfigureTrustedScript !== "function") throw new Error("Trusted script delivery is unavailable.");
       window.__alloConfigureTrustedScript(s, DEVICE_STORAGE_URL);
       var settled = false;
+      var loadTimer = null;
       var finish = function(fn, arg) {
         if (settled) return;
         settled = true;
+        if (loadTimer != null) {
+          clearTimeout(loadTimer);
+          loadTimer = null;
+        }
         fn(arg);
       };
-      setTimeout(function() {
+      loadTimer = setTimeout(function() {
         finish(reject, new Error("Device storage module timed out."));
       }, 15e3);
       s.onload = function() {
@@ -5029,7 +5064,8 @@ try {
 } catch (_) {
 }
 function createVoiceLoop(getCtx, opts = {}) {
-  let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null, muteChangeHandler = null, speechSkipKeyHandler = null;
+  let rec = null, active = false, sessionSerial = 0, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null, muteChangeHandler = null, speechSkipKeyHandler = null;
+  let activeChunkTimerClear = null;
   let micMeterRelease = null;
   let sharedRecognition = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
@@ -5217,8 +5253,15 @@ function createVoiceLoop(getCtx, opts = {}) {
   };
   const interruptSpeech = (reason = "speech-skipped", interruptOpts = {}) => {
     const currentExternal = externalSpeech;
-    const hadOutput = !!(speaking || currentExternal || replyAudio || pendingReply);
+    const hadOutput = !!(speaking || currentExternal || replyAudio || pendingReply || activeChunkTimerClear);
     if (!hadOutput) return false;
+    if (activeChunkTimerClear) {
+      try {
+        activeChunkTimerClear();
+      } catch (_) {
+      }
+      activeChunkTimerClear = null;
+    }
     clearPendingReply();
     ++speakSerial;
     externalSpeech = null;
@@ -5305,11 +5348,12 @@ function createVoiceLoop(getCtx, opts = {}) {
       };
       bargeTimer = setTimeout(tick, 50);
     };
-    const existing = sharedRecognition && typeof sharedRecognition.getStream === "function" ? sharedRecognition.getStream() : null;
+    const existing = (sharedRecognition && typeof sharedRecognition.getStream === "function" ? sharedRecognition.getStream() : null) || (whisperState && whisperState.stream ? whisperState.stream : null);
     if (existing) {
       attach(existing, false);
       return;
     }
+    if (typeof window !== "undefined" && window._isCanvasEnv === true) return;
     if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== "function") return;
     nav.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function(stream) {
       attach(stream, true);
@@ -5471,7 +5515,18 @@ function createVoiceLoop(getCtx, opts = {}) {
     const voiceRate = Number.isFinite(requestedRate) ? Math.max(0.5, Math.min(2, requestedRate)) : 1;
     const requestedVolume = Number(c && c.voiceVolume);
     const voiceVolume = Number.isFinite(requestedVolume) ? Math.max(0, Math.min(1, requestedVolume)) : 1;
+    if (activeChunkTimerClear) {
+      try {
+        activeChunkTimerClear();
+      } catch (_) {
+      }
+      activeChunkTimerClear = null;
+    }
     const finishReply = () => {
+      if (activeChunkTimerClear) {
+        activeChunkTimerClear();
+        activeChunkTimerClear = null;
+      }
       if (speakSerial !== my || !speaking) return;
       speaking = false;
       activeResume = null;
@@ -5483,8 +5538,24 @@ function createVoiceLoop(getCtx, opts = {}) {
       const text = replyChunks[chunkIndex];
       const currentChunk = ++chunkSerial;
       const replyCeilingMs = Math.max(15e3, Math.min(6e4, Math.ceil(text.length * 70 / voiceRate) + 5e3));
+      const chunkTimers = [];
+      const trackChunkTimer = (id) => {
+        if (id != null) chunkTimers.push(id);
+        return id;
+      };
+      const clearChunkTimers = () => {
+        while (chunkTimers.length) {
+          try {
+            clearTimeout(chunkTimers.pop());
+          } catch (_) {
+          }
+        }
+      };
+      activeChunkTimerClear = clearChunkTimers;
+      let attemptSerial = 0;
       const resume2 = () => {
         if (speakSerial !== my || !speaking || currentChunk !== chunkSerial) return;
+        clearChunkTimers();
         if (chunkIndex + 1 < replyChunks.length) {
           chunkIndex += 1;
           stopBargeWatch();
@@ -5496,6 +5567,8 @@ function createVoiceLoop(getCtx, opts = {}) {
       };
       const speakWithBrowser = () => {
         if (speakSerial !== my) return false;
+        clearChunkTimers();
+        const browserAttempt = ++attemptSerial;
         if (voiceOutputMuted(c)) {
           stopReplyOutputForMute();
           return false;
@@ -5511,7 +5584,7 @@ function createVoiceLoop(getCtx, opts = {}) {
           let browserStarted = false;
           let browserFailureReported = false;
           const browserFailure = () => {
-            if (browserFailureReported || speakSerial !== my) return;
+            if (browserFailureReported || speakSerial !== my || browserAttempt !== attemptSerial) return;
             browserFailureReported = true;
             if (c && typeof c.addToast === "function") {
               try {
@@ -5543,15 +5616,15 @@ function createVoiceLoop(getCtx, opts = {}) {
           startBargeWatch();
           suspendInputForOutput();
           window.speechSynthesis.speak(u);
-          setTimeout(() => {
-            if (speakSerial !== my || !speaking || browserStarted) return;
+          trackChunkTimer(setTimeout(() => {
+            if (speakSerial !== my || !speaking || browserStarted || browserAttempt !== attemptSerial) return;
             try {
               window.speechSynthesis.cancel();
             } catch (_) {
             }
             browserFailure();
-          }, 8e3);
-          setTimeout(resume2, replyCeilingMs);
+          }, 8e3));
+          trackChunkTimer(setTimeout(resume2, replyCeilingMs));
           return true;
         } catch (_) {
           if (speaking) resume2();
@@ -5571,6 +5644,7 @@ function createVoiceLoop(getCtx, opts = {}) {
             }
             replyAudio = null;
           }
+          const kokoroAttempt = ++attemptSerial;
           speaking = true;
           updateVoiceSession("processing", "Preparing the spoken response.");
           activeResume = resume2;
@@ -5579,10 +5653,14 @@ function createVoiceLoop(getCtx, opts = {}) {
           let kokoroFinished = false;
           let browserFallbackStarted = false;
           const fallbackToBrowser = () => {
-            if (browserFallbackStarted || speakSerial !== my) return false;
+            if (browserFallbackStarted || speakSerial !== my || kokoroAttempt !== attemptSerial) return false;
             browserFallbackStarted = true;
+            clearChunkTimers();
             if (replyAudio) {
               try {
+                replyAudio.onended = null;
+                replyAudio.onerror = null;
+                replyAudio.onloadedmetadata = null;
                 replyAudio.pause();
               } catch (_) {
               }
@@ -5593,6 +5671,7 @@ function createVoiceLoop(getCtx, opts = {}) {
           Promise.resolve(window._kokoroTTS.speak(text, kv, voiceRate)).then((url) => {
             kokoroFinished = true;
             if (speakSerial !== my) return;
+            if (kokoroAttempt !== attemptSerial) return;
             if (browserFallbackStarted) return;
             if (voiceOutputMuted(c)) {
               stopReplyOutputForMute();
@@ -5611,18 +5690,19 @@ function createVoiceLoop(getCtx, opts = {}) {
             a.onended = resume2;
             a.onerror = fallbackToBrowser;
             a.onloadedmetadata = () => {
+              if (browserFallbackStarted || speakSerial !== my || kokoroAttempt !== attemptSerial) return;
               const ms = isFinite(a.duration) && a.duration > 0 ? a.duration * 1e3 + 1500 : 0;
-              if (ms) setTimeout(resume2, ms);
+              if (ms) trackChunkTimer(setTimeout(resume2, ms));
             };
             Promise.resolve(a.play()).catch(fallbackToBrowser);
           }).catch(() => {
             kokoroFinished = true;
             fallbackToBrowser();
           });
-          setTimeout(() => {
+          trackChunkTimer(setTimeout(() => {
             if (!kokoroFinished) fallbackToBrowser();
-          }, 8e3);
-          setTimeout(resume2, replyCeilingMs);
+          }, 8e3));
+          trackChunkTimer(setTimeout(resume2, replyCeilingMs));
           return;
         }
       } catch (_) {
@@ -5714,6 +5794,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     };
   };
   const stop = (reason, stopOpts = {}) => {
+    ++sessionSerial;
     interruptSpeech("voice-stopped", { suppressResume: true, suppressStatus: true });
     cancelRoute();
     clearPendingConfirmation();
@@ -5884,7 +5965,18 @@ function createVoiceLoop(getCtx, opts = {}) {
           const resolved = result && typeof result.then === "function" ? await result : result;
           if (!active) return;
           if (!resolved || !resolved.handled || resolved.ok === false) announce(resolved && resolved.narration || tx(getCtx(), "voice.action_unavailable", "That action is no longer available here, so nothing was changed."));
-          else announce(resolved.narration || tx(getCtx(), "router.done", "Done."), !resolved.suppressVoiceReply);
+          else {
+            announce(resolved.narration || tx(getCtx(), "router.done", "Done."), !resolved.suppressVoiceReply);
+            if (resolved.pending && resolved.completion && typeof resolved.completion.then === "function") {
+              const confirmSession = sessionSerial;
+              resolved.completion.then((done) => {
+                if (active && sessionSerial === confirmSession && done && done.narration) {
+                  announce(done.narration, !done.suppressVoiceReply);
+                }
+              }).catch(() => {
+              });
+            }
+          }
           return;
         }
         if (pending.kind === "command") {
@@ -5892,7 +5984,18 @@ function createVoiceLoop(getCtx, opts = {}) {
           const resolved = result && typeof result.then === "function" ? await result : result;
           if (!active) return;
           if (!resolved || !resolved.handled) announce(tx(getCtx(), "voice.action_unavailable", "That action is no longer available here, so nothing was changed."));
-          else announce(resolved.narration || tx(getCtx(), "router.done", "Done."));
+          else {
+            announce(resolved.narration || tx(getCtx(), "router.done", "Done."));
+            if (resolved.pending && resolved.completion && typeof resolved.completion.then === "function") {
+              const confirmSession = sessionSerial;
+              resolved.completion.then((done) => {
+                if (active && sessionSerial === confirmSession && done && done.narration) {
+                  announce(done.narration, !done.suppressVoiceReply);
+                }
+              }).catch(() => {
+              });
+            }
+          }
           return;
         }
         if (pending.kind === "plan") {
@@ -6088,12 +6191,14 @@ function createVoiceLoop(getCtx, opts = {}) {
     }
     return true;
   };
-  const startWhisperEngine = async (profile) => {
+  const startWhisperEngine = async (profile, expectedSession) => {
+    const mySession = expectedSession == null ? sessionSerial : expectedSession;
     activeRecognitionEngine = "browser-whisper";
     activeRecognitionEngineLabel = "On-device Whisper";
     const asr = await _getWhisperPipeline(profile);
+    if (!active || sessionSerial !== mySession) return;
     const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
-    if (!active) {
+    if (!active || sessionSerial !== mySession) {
       try {
         stream.getTracks().forEach(function(tr) {
           tr.stop();
@@ -6103,7 +6208,18 @@ function createVoiceLoop(getCtx, opts = {}) {
       return;
     }
     const AC2 = window.AudioContext || window.webkitAudioContext;
-    const ac = new AC2();
+    let ac;
+    try {
+      ac = new AC2();
+    } catch (acErr) {
+      try {
+        stream.getTracks().forEach(function(tr) {
+          tr.stop();
+        });
+      } catch (_) {
+      }
+      throw acErr;
+    }
     const cleanupWhisperSetup = () => {
       try {
         stream.getTracks().forEach(function(tr) {
@@ -6120,7 +6236,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       await ac.resume();
     } catch (_) {
     }
-    if (!active) {
+    if (!active || sessionSerial !== mySession) {
       cleanupWhisperSetup();
       return;
     }
@@ -6255,6 +6371,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       }
     }
     active = true;
+    const mySession = ++sessionSerial;
     updateVoiceSession("starting", tx(c, "voice.starting_control", "Starting voice control."));
     errStreak = 0;
     awake = false;
@@ -6324,7 +6441,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     }
     let engineChosen = false;
     const probeTimer = setTimeout(function() {
-      if (engineChosen || !active) return;
+      if (engineChosen || !active || sessionSerial !== mySession) return;
       engineChosen = true;
       announce(tx(c, "voice.browser_fallback_timeout", "Using browser speech: the on-device model did not answer in time."));
       beginWebSpeech(c, false);
@@ -6342,7 +6459,10 @@ function createVoiceLoop(getCtx, opts = {}) {
       return true;
     }
     modelCache.hasWhisper(whisperProfile).then(function(has) {
-      if (!active) return;
+      if (!active || sessionSerial !== mySession) {
+        clearTimeout(probeTimer);
+        return;
+      }
       if (engineChosen) return;
       clearTimeout(probeTimer);
       engineChosen = true;
@@ -6352,16 +6472,21 @@ function createVoiceLoop(getCtx, opts = {}) {
       }
       engineName = "whisper";
       standby = standbyWanted;
-      return startWhisperEngine(whisperProfile).then(function() {
-        if (!active) return;
+      return startWhisperEngine(whisperProfile, mySession).then(function() {
+        if (!active || sessionSerial !== mySession) return;
         updateVoiceSession("listening", standby ? tx(c, "voice.whisper_waiting_for_wake", "On-device recognition is waiting for Hey Allo.") : tx(c, "voice.whisper_listening", "On-device recognition is listening."), tx(c, "voice.audio_local", "Audio stays on this device."));
         announce(standby ? tx(c, "voice.whisper_standby_active", "On-device listening in standby \u2014 say \u201Chey Allo\u201D before a command. Audio never leaves this device.") : tx(c, "voice.whisper_active", "On-device recognition active \u2014 audio stays on this device."));
+      }).catch(function(e) {
+        if (!active || sessionSerial !== mySession) return;
+        whisperState = null;
+        announce(tx(c, "voice.whisper_start_failed", "On-device engine could not start ({error}) \u2014 using browser speech instead.", { error: e && e.message || "unknown" }));
+        beginWebSpeech(c, false);
       });
     }).catch(function(e) {
       clearTimeout(probeTimer);
       if (engineChosen) return;
       engineChosen = true;
-      if (!active) return;
+      if (!active || sessionSerial !== mySession) return;
       whisperState = null;
       announce(tx(c, "voice.whisper_start_failed", "On-device engine could not start ({error}) \u2014 using browser speech instead.", { error: e && e.message || "unknown" }));
       beginWebSpeech(c, false);
@@ -6428,21 +6553,25 @@ function createVoiceLoop(getCtx, opts = {}) {
   const resume = async () => {
     clearPauseResumeTimer();
     if (!active || !paused) return false;
+    const mySession = sessionSerial;
     paused = false;
     if (sharedRecognition && typeof sharedRecognition.resume === "function") {
       try {
         const resumed = await Promise.resolve(sharedRecognition.resume());
+        if (!active || sessionSerial !== mySession || paused) return false;
         if (!resumed) throw new Error("Microphone could not resume.");
       } catch (e) {
+        if (!active || sessionSerial !== mySession) return false;
         paused = true;
         updateVoiceSession("paused", tx(getCtx(), "voice.microphone_resume_failed", "Microphone could not resume."));
         announce(tx(getCtx(), "voice.microphone_turn_on_failed", "Could not turn the microphone back on: {error}", { error: e && e.message || "unknown" }));
         return false;
       }
     } else if (engineName === "whisper" && whisperState) {
+      let stream = null;
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
-        if (!active || paused) {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+        if (!active || sessionSerial !== mySession || paused || !whisperState) {
           try {
             stream.getTracks().forEach(function(tr) {
               tr.stop();
@@ -6456,6 +6585,15 @@ function createVoiceLoop(getCtx, opts = {}) {
         whisperState.stream = stream;
         whisperState.src = src2;
       } catch (e) {
+        if (stream) {
+          try {
+            stream.getTracks().forEach(function(tr) {
+              tr.stop();
+            });
+          } catch (_) {
+          }
+        }
+        if (!active || sessionSerial !== mySession) return false;
         paused = true;
         updateVoiceSession("paused", tx(getCtx(), "voice.microphone_resume_failed", "Microphone could not resume."));
         announce(tx(getCtx(), "voice.microphone_turn_on_failed", "Could not turn the microphone back on: {error}", { error: e && e.message || "unknown" }));
@@ -6467,6 +6605,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       } catch (_) {
       }
     }
+    if (!active || sessionSerial !== mySession || paused) return false;
     if (!sharedRecognition) startMicMeter(engineName === "whisper" && whisperState ? whisperState.stream : null);
     updateVoiceSession("listening", "Listening for a command.");
     announce(tx(getCtx(), "voice.listening_again", "Listening again."));
@@ -6712,6 +6851,7 @@ const CMD_GROUP = {
   filter_glossary: "create",
   generate_anchor_chart: "create",
   generate_memory_aid: "create",
+  generate_applied_challenge: "create",
   generate_brainstorm: "create",
   generate_concept_sort: "create",
   generate_faq: "create",
@@ -6934,6 +7074,7 @@ const AlloCommandPalette = ({ ctx }) => {
   const dialogRef = useRef(null);
   const inputRef = useRef(null);
   const prevFocusRef = useRef(null);
+  const executedCommandRef = useRef(false);
   const t = _mkT(ctx && ctx.t);
   const commands = useMemo(() => open && ctx ? buildAlloCommands(ctx, { includeUnavailable: getCommandAudience(ctx) === "teacher" }) : [], [open, ctx]);
   const rows = useMemo(() => {
@@ -7074,13 +7215,22 @@ const AlloCommandPalette = ({ ctx }) => {
     return () => window.removeEventListener("alloflow:command-usage", onUsage);
   }, []);
   useEffect(() => {
-    if (open && inputRef.current) inputRef.current.focus();
+    if (open) {
+      executedCommandRef.current = false;
+      if (inputRef.current) inputRef.current.focus();
+    }
     if (!open && prevFocusRef.current) {
       const previous = prevFocusRef.current;
       prevFocusRef.current = null;
-      try {
-        if (previous.isConnected && typeof previous.focus === "function") previous.focus();
-      } catch (_) {
+      const skipRestore = executedCommandRef.current;
+      executedCommandRef.current = false;
+      const activeEl = typeof document !== "undefined" ? document.activeElement : null;
+      const movedElsewhere = !!(activeEl && activeEl !== document.body && activeEl !== document.documentElement && (!dialogRef.current || !dialogRef.current.contains(activeEl)));
+      if (!skipRestore && !movedElsewhere) {
+        try {
+          if (previous.isConnected && typeof previous.focus === "function") previous.focus();
+        } catch (_) {
+        }
       }
     }
   }, [open]);
@@ -7208,6 +7358,7 @@ const AlloCommandPalette = ({ ctx }) => {
       return;
     }
     rememberCommand(cmd.id);
+    executedCommandRef.current = true;
     setOpen(false);
     if (result.narration) announce(result.narration, result.pending ? "info" : "success");
   }, [ctx, confirming, announce, rememberCommand, t]);
@@ -7372,7 +7523,7 @@ const AlloCommandProgress = ({ ctx }) => {
         "aria-atomic": "true",
         className: `rounded-xl border p-3 shadow-xl ${failed ? "border-rose-300 bg-rose-50 text-rose-950" : cancelled ? "border-amber-300 bg-amber-50 text-amber-950" : item.status === "success" ? "border-emerald-300 bg-emerald-50 text-emerald-950" : "border-indigo-300 bg-white text-slate-900"}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: `mt-0.5 text-lg ${pending ? "animate-pulse motion-reduce:animate-none" : ""}`, "aria-hidden": "true" }, pending ? "\u23F3" : failed ? "\u26A0\uFE0F" : cancelled ? "\u23F9\uFE0F" : "\u2705"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold" }, item.label || item.commandId), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-5" }, item.narration || (pending ? t("cmd.working", "Working...") : cancelled ? t("cmd.cancelled", "Cancellation requested.") : t("router.done", "Done."))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, pending && item.cancellable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancel(item), "aria-label": cancelLabel, className: "min-h-9 rounded-lg border border-amber-500 bg-amber-50 px-3 text-xs font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, t("cmd.cancel", "Cancel")), failed && item.retryable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => retry(item), "aria-label": retryLabel, className: "min-h-9 rounded-lg bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" }, t("cmd.retry", "Retry")))), !pending && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => dismiss(item.progressKey), "aria-label": t("palette.dismiss_progress", "Dismiss progress for {label}").replace("{label}", item.label || item.commandId), className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-lg hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")))
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: `mt-0.5 text-lg ${pending ? "animate-pulse motion-reduce:animate-none" : ""}`, "aria-hidden": "true" }, pending ? "\u23F3" : failed ? "\u26A0\uFE0F" : cancelled ? "\u23F9\uFE0F" : "\u2705"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold" }, item.label || item.commandId), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-5" }, item.narration || (pending ? t("cmd.working", "Working...") : cancelled ? t("cmd.cancelled", "Cancellation requested.") : t("router.done", "Done."))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, pending && item.cancellable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancel(item), "aria-label": cancelLabel, className: "min-h-11 rounded-lg border border-amber-500 bg-amber-50 px-3 text-xs font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, t("cmd.cancel", "Cancel")), failed && item.retryable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => retry(item), "aria-label": retryLabel, className: "min-h-11 rounded-lg bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" }, t("cmd.retry", "Retry")))), !pending && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => dismiss(item.progressKey), "aria-label": t("palette.dismiss_progress", "Dismiss progress for {label}").replace("{label}", item.label || item.commandId), className: "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-lg hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")))
     );
   }));
 };

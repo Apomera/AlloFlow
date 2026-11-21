@@ -1817,6 +1817,7 @@
   var token = (v) => typeof v === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(v) && !["constructor", "prototype", "__proto__"].includes(v);
   var text2 = (v, max) => typeof v === "string" && v.trim().length > 0 && v.length <= max;
   var object = (v) => !!v && typeof v === "object" && !Array.isArray(v);
+  var own = (obj, prop) => !!obj && Object.prototype.hasOwnProperty.call(obj, prop);
   var pair = (v, max) => Array.isArray(v) && v.length === 2 && v.every((x) => Number.isInteger(x) && x >= 0 && x <= max) && v[0] + v[1] > 0;
   var normalized = (v) => String(v || "").normalize("NFC").replace(/\s+/g, " ").trim();
   function validateBoard(board, source) {
@@ -2158,10 +2159,10 @@ ${_lbSanitize(JSON.stringify(node))}
       const value = parsed.value, raw = Array.isArray(value.locations) ? value.locations.find((item) => item?.id === node.id) || value.locations[0] : object(value.location) ? value.location : value;
       const revised = { ...object(raw) ? raw : {}, id: node.id, conceptId: board.concepts.some((item) => item.id === raw?.conceptId) ? raw.conceptId : node.conceptId, ...raw?.symbol === void 0 && node.symbol ? { symbol: node.symbol } : {} };
       const healed = healBoard({ ...board, locations: board.locations.map((item) => item.id === node.id ? revised : item) }, source, { goal: goalOf(board), chance: board.chance === true }), errors = validateBoard(healed.board, source);
-      const own = errors.filter((error) => error.endsWith(": " + node.id) || !before.has(error));
-      if (!own.length) return { board: errors.length ? healed.board : prepareBoard(healed.board, source), fixes: [.../* @__PURE__ */ new Set([...parsed.notes.length ? ["json"] : [], ...healed.fixes])], attempts: attempt + 1 };
-      lastError = Error(own.join("\n"));
-      prompt = base2 + "\nREPAIR REQUEST. Fix these problems and return only the corrected location object.\nValidation errors:\n- " + own.slice(0, 20).join("\n- ");
+      const own2 = errors.filter((error) => error.endsWith(": " + node.id) || !before.has(error));
+      if (!own2.length) return { board: errors.length ? healed.board : prepareBoard(healed.board, source), fixes: [.../* @__PURE__ */ new Set([...parsed.notes.length ? ["json"] : [], ...healed.fixes])], attempts: attempt + 1 };
+      lastError = Error(own2.join("\n"));
+      prompt = base2 + "\nREPAIR REQUEST. Fix these problems and return only the corrected location object.\nValidation errors:\n- " + own2.slice(0, 20).join("\n- ");
     }
     throw Object.assign(Error("The revised location could not be validated. The board is unchanged. " + String(lastError?.message || "").slice(0, 1200)), { code: "board-location-not-validated" });
   }
@@ -2245,9 +2246,9 @@ ${_lbSanitize(JSON.stringify(node))}
     const compact = { ...result };
     delete compact.marks;
     delete compact.attempts;
-    compact.mk = members.map((uid) => typeof result.marks?.[uid] === "boolean" ? result.marks[uid] ? "1" : "0" : "-").join("").replace(/-+$/, "");
+    compact.mk = members.map((uid) => own(result.marks, uid) && typeof result.marks[uid] === "boolean" ? result.marks[uid] ? "1" : "0" : "-").join("").replace(/-+$/, "");
     if (object(result.attempts)) compact.ak = members.map((uid) => {
-      const a = result.attempts[uid];
+      const a = own(result.attempts, uid) ? result.attempts[uid] : null;
       return object(a) ? [a.answered, a.correct, a.firstCorrect ? 1 : 0, a.lastCorrect ? 1 : 0].join(".") : "";
     }).join(",").replace(/,+$/, "");
     return { ...patch, [key3]: { ...done, result: compact }, ...members.length !== known.length ? { members } : {} };
@@ -2353,7 +2354,7 @@ ${_lbSanitize(JSON.stringify(node))}
       if (!result) continue;
       if (node) {
         for (const [uid, stats] of Object.entries(attemptRecords(step, run.members))) if (token(uid)) {
-          const record = performance[uid] || (performance[uid] = { answered: 0, correct: 0 });
+          const record = own(performance, uid) ? performance[uid] : performance[uid] = { answered: 0, correct: 0 };
           record.answered += stats.answered;
           record.correct += stats.correct;
         }
@@ -2455,7 +2456,7 @@ ${_lbSanitize(JSON.stringify(node))}
           fieldRelay = stage === 2 ? null : { ...fieldRelay, stage, targetId: fieldRelay.stops[stage].targetId, reward: fieldRelay.stops[stage].reward.slice() };
         }
         if (requirementsBefore && usedProjects.length > 0 && result.success && node.id === board.starts[0]) returned = true;
-      } else if (project && step.route === void 0 && result.success && !built.includes(project.id)) {
+      } else if (project && step.route === void 0 && result.success && !built.includes(project.id) && (!tabletop || buildSite(board, project) === position && visited.includes(position))) {
         const payment = fundingForProgress(board, { visited, built, balance: balance2, bonus, kitCount, usedProjects, fieldCrew, fieldCommission }, project).find((option) => option.id === (step.funding === void 0 ? "standard" : step.funding));
         if (payment?.legal) {
           built.push(project.id);
@@ -2586,7 +2587,7 @@ ${_lbSanitize(JSON.stringify(node))}
   function processAction(board, run, action, uid, context) {
     const step = stepOf(run);
     if (!token(uid) || !validAction(action, context.attemptId, run.turn, step.retryRound || 0)) return {};
-    const prefix = "steps.t" + run.turn + ".", responsePrefix = prefix + (step.retryRound > 0 ? "responseRounds.r" + step.retryRound + "." : ""), previous = step.seen?.[uid];
+    const prefix = "steps.t" + run.turn + ".", responsePrefix = prefix + (step.retryRound > 0 ? "responseRounds.r" + step.retryRound + "." : ""), previous = own(step.seen, uid) ? step.seen[uid] : void 0;
     if (previous?.requestId === action.requestId) return {};
     let code = "closed", patch = {};
     if (context.active && !context.paused && !derive(board, run).complete) {
@@ -2596,7 +2597,7 @@ ${_lbSanitize(JSON.stringify(node))}
       }
       if (action.kind === "answer" && step.phase === "answer" && action.targetId === step.targetId && (!(step.retryRound > 0) || action.requestId.startsWith("r" + step.retryRound + "_"))) {
         const node = board.locations.find((n) => n.id === step.targetId);
-        if (step.answers?.[uid]) code = "already-answered";
+        if (own(step.answers, uid) && step.answers[uid]) code = "already-answered";
         else if (node && validValue(node, action.value)) {
           patch[responsePrefix + "answers." + uid] = { value: action.value, correct: action.value === solution(node) };
           code = "answer-recorded";
@@ -2612,7 +2613,7 @@ ${_lbSanitize(JSON.stringify(node))}
       const keys = path.split(".");
       if (keys.some((k) => ["__proto__", "constructor", "prototype"].includes(k))) throw Error("Unsafe board path.");
       let at = next;
-      for (const key3 of keys.slice(0, -1)) at = at[key3] || (at[key3] = {});
+      for (const key3 of keys.slice(0, -1)) at = own(at, key3) && at[key3] && typeof at[key3] === "object" ? at[key3] : at[key3] = {};
       at[keys.at(-1)] = value;
     }
     return next;
@@ -2635,7 +2636,7 @@ ${_lbSanitize(JSON.stringify(node))}
     if (step.retryRound > 0) {
       const attempts = JSON.parse(JSON.stringify(step.retryStats || {}));
       for (const [uid, correct] of Object.entries(marks)) {
-        const previous = attempts[uid];
+        const previous = own(attempts, uid) ? attempts[uid] : void 0;
         attempts[uid] = { answered: (previous?.answered || 0) + 1, correct: (previous?.correct || 0) + Number(correct), firstCorrect: previous?.firstCorrect ?? correct, lastCorrect: correct };
       }
       result.attempts = attempts;
@@ -3866,10 +3867,10 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     if (state?.mode !== "lesson-board" || !state.isActive) return [];
     const run = runOf(state), step = stepOf(run), kind = step.phase === "choose" ? "vote" : step.phase === "answer" ? "answer" : "";
     if (!kind) return [];
-    const shared = state.teamProgress?.All?.boardActions || {}, own = state.privateAnswers === true && kind === "answer" ? privateActions || {} : {};
-    return [.../* @__PURE__ */ new Set([...Object.keys(shared), ...Object.keys(own)])].map((uid) => {
+    const shared = state.teamProgress?.All?.boardActions || {}, own2 = state.privateAnswers === true && kind === "answer" ? privateActions || {} : {};
+    return [.../* @__PURE__ */ new Set([...Object.keys(shared), ...Object.keys(own2)])].map((uid) => {
       const usable = (action) => action && action.kind === kind && validAction(action, state.attemptId, run.turn, step.retryRound || 0) && step.seen?.[uid]?.requestId !== action.requestId;
-      return [uid, usable(own[uid]) ? own[uid] : usable(shared[uid]) ? shared[uid] : null];
+      return [uid, usable(own2[uid]) ? own2[uid] : usable(shared[uid]) ? shared[uid] : null];
     }).filter(([uid, action]) => action && Object.prototype.hasOwnProperty.call(roster, uid) && state.teams?.[uid] === "All");
   }
   function receivedBoardResponses(state, roster = {}, privateActions = {}) {
@@ -3926,11 +3927,11 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     for (const [uid, entry] of Object.entries(target.answers)) if (entry?.received && object2(stored[uid])) target.answers[uid] = { value: stored[uid].value, correct: stored[uid].correct === true };
     return next;
   }
-  function withOwnAnswer(run, uid, own) {
+  function withOwnAnswer(run, uid, own2) {
     const step = stepOf(run), entry = step.answers?.[uid];
-    if (!entry?.received || !object2(own) || own.requestId !== step.seen?.[uid]?.requestId || typeof own.value !== "string") return run;
+    if (!entry?.received || !object2(own2) || own2.requestId !== step.seen?.[uid]?.requestId || typeof own2.value !== "string") return run;
     const next = JSON.parse(JSON.stringify(run)), raw = next.steps["t" + run.turn], round = step.retryRound || 0, target = round > 0 ? raw?.responseRounds?.["r" + round] : raw;
-    if (object2(target?.answers?.[uid])) target.answers[uid] = { value: own.value, correct: null };
+    if (object2(target?.answers?.[uid])) target.answers[uid] = { value: own2.value, correct: null };
     return next;
   }
   async function clearPrivateAnswers(fb, appId, code, attemptId) {
@@ -4227,9 +4228,9 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     return learner.locations.filter((item) => complete || reviewed.has(item.id)).map((item) => ({ id: item.id, name: item.name, conceptId: item.conceptId, reason: !item.answered ? "unattempted" : !item.lastCorrect ? "revisit" : item.improved ? "strengthen" : "secure" })).filter((item) => item.reason !== "secure").sort((a, b) => ["revisit", "unattempted", "strengthen"].indexOf(a.reason) - ["revisit", "unattempted", "strengthen"].indexOf(b.reason));
   }
   function responseDetails(board, location, uid, responses) {
-    const stop = responses?.[location.id] || {}, own = stop[uid] || {}, node = board.locations.find((item) => item.id === location.id);
-    const text3 = (value) => typeof value === "string" && node ? responseText(node, value) || "" : "", assisted = location.improved && !!(own.revealed || stop["*"]?.revealed);
-    return { ...text3(own.first) ? { firstResponse: text3(own.first) } : {}, ...text3(own.latest) ? { latestResponse: text3(own.latest) } : {}, ...assisted ? { assisted: true, improved: false } : {} };
+    const stop = responses?.[location.id] || {}, own2 = stop[uid] || {}, node = board.locations.find((item) => item.id === location.id);
+    const text3 = (value) => typeof value === "string" && node ? responseText(node, value) || "" : "", assisted = location.improved && !!(own2.revealed || stop["*"]?.revealed);
+    return { ...text3(own2.first) ? { firstResponse: text3(own2.first) } : {}, ...text3(own2.latest) ? { latestResponse: text3(own2.latest) } : {}, ...assisted ? { assisted: true, improved: false } : {} };
   }
   function learningReport(board, run, roster, context = {}) {
     const summary = learningSummary(board, run, roster), progress = derive(board, run), responses = context.responses || {};
@@ -4312,7 +4313,7 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
   }
   var cell = (value) => {
     let text3 = String(value ?? "");
-    if (/^[\s]*[=+@|-]/.test(text3) || /^[\t\r\n]/.test(text3)) text3 = "'" + text3;
+    if (/^[\s]*[=+@-]/.test(text3) || /^[\t\r\n]/.test(text3)) text3 = "'" + text3;
     return '"' + text3.replaceAll('"', '""') + '"';
   };
   function reportCSV(report) {
@@ -4408,9 +4409,9 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     useEffect4(() => {
       if (config?.enabled) setOpen(true);
     }, [config?.enabled]);
-    const assignments = roleAssignments(config, roster, run.turn), own = assignments.filter((item) => item.uid === uid);
+    const assignments = roleAssignments(config, roster, run.turn), own2 = assignments.filter((item) => item.uid === uid);
     if (!teacher && !config?.enabled) return null;
-    return /* @__PURE__ */ React8.createElement("details", { "data-board-roles": true, open, onToggle: (event) => setOpen(event.currentTarget.open) }, /* @__PURE__ */ React8.createElement("summary", null, tr(t, "roles_title", "Classroom roles")), teacher && /* @__PURE__ */ React8.createElement("label", { className: "lb-row" }, /* @__PURE__ */ React8.createElement("input", { style: { width: "auto" }, type: "checkbox", "data-toggle-board-roles": true, checked: !!config?.enabled, disabled: busy, onChange: onToggle }), tr(t, "roles_toggle", "Use rotating classroom roles")), config?.enabled && /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("p", null, tr(t, "roles_help", "Roles rotate when a new move opens. A retry keeps the same roles. Everyone can propose moves and answer every activity; learners may share or pass a responsibility.")), /* @__PURE__ */ React8.createElement("div", { className: "lb-form" }, (teacher ? assignments : own).map((item) => /* @__PURE__ */ React8.createElement("section", { className: "lb-panel", key: item.id, "data-class-role": item.id }, /* @__PURE__ */ React8.createElement("h4", null, tr(t, item.key, item.label)), teacher && /* @__PURE__ */ React8.createElement("strong", null, roster[item.uid]?.name || item.uid), /* @__PURE__ */ React8.createElement("p", null, tr(t, item.helpKey, item.help))))), !assignments.length && /* @__PURE__ */ React8.createElement("p", null, tr(t, "roles_waiting", "Roles will appear when learners join.")), !teacher && !own.length && /* @__PURE__ */ React8.createElement("p", null, tr(t, "roles_contributor", "You are a contributing explorer this move. Offer a proposal, examine the evidence, and submit your response."))));
+    return /* @__PURE__ */ React8.createElement("details", { "data-board-roles": true, open, onToggle: (event) => setOpen(event.currentTarget.open) }, /* @__PURE__ */ React8.createElement("summary", null, tr(t, "roles_title", "Classroom roles")), teacher && /* @__PURE__ */ React8.createElement("label", { className: "lb-row" }, /* @__PURE__ */ React8.createElement("input", { style: { width: "auto" }, type: "checkbox", "data-toggle-board-roles": true, checked: !!config?.enabled, disabled: busy, onChange: onToggle }), tr(t, "roles_toggle", "Use rotating classroom roles")), config?.enabled && /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("p", null, tr(t, "roles_help", "Roles rotate when a new move opens. A retry keeps the same roles. Everyone can propose moves and answer every activity; learners may share or pass a responsibility.")), /* @__PURE__ */ React8.createElement("div", { className: "lb-form" }, (teacher ? assignments : own2).map((item) => /* @__PURE__ */ React8.createElement("section", { className: "lb-panel", key: item.id, "data-class-role": item.id }, /* @__PURE__ */ React8.createElement("h4", null, tr(t, item.key, item.label)), teacher && /* @__PURE__ */ React8.createElement("strong", null, roster[item.uid]?.name || item.uid), /* @__PURE__ */ React8.createElement("p", null, tr(t, item.helpKey, item.help))))), !assignments.length && /* @__PURE__ */ React8.createElement("p", null, tr(t, "roles_waiting", "Roles will appear when learners join.")), !teacher && !own2.length && /* @__PURE__ */ React8.createElement("p", null, tr(t, "roles_contributor", "You are a contributing explorer this move. Offer a proposal, examine the evidence, and submit your response."))));
   }
   function ConceptReview({ report, t }) {
     const concepts = conceptPriorities(report);
@@ -5715,17 +5716,17 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     if (!result || !node && !project) return null;
     const progress = derive(board, run), beforeRun = { ...run, steps: { ...run.steps, ["t" + run.turn]: { ...step, result: void 0 } } }, before = derive(board, beforeRun), priorReady = targets(board, beforeRun).map((item) => item.id), newlyReady = targets(board, run).filter((item) => !item.cost && !priorReady.includes(item.id)), reward = progress.balance.map((value, index) => value - derive(board, { ...run, turn: run.turn - 1 }).balance[index]), personal = result.marks?.[uid];
     return /* @__PURE__ */ React19.createElement("div", { "data-board-recap": true }, /* @__PURE__ */ React19.createElement(FundingReceipt, { board, run, t }), /* @__PURE__ */ React19.createElement(TacticsReward, { board, run, t }), /* @__PURE__ */ React19.createElement(ContractRewards, { board, run, t }), /* @__PURE__ */ React19.createElement("p", { className: "lb-notice" }, project ? tr(t, "project_completed", "Project built. Its effect now applies to your board.") : result.success ? tr(t, "location_completed", "Location explored. Resources collected and connected paths opened.") : tr(t, "retry_activity_now", "This idea needs another look. No resources were lost. Review the evidence, then retry or choose another route.")), result.success && /* @__PURE__ */ React19.createElement("div", { className: "lb-move-rewards", "data-board-rewards": true }, /* @__PURE__ */ React19.createElement("h4", null, project ? tr(t, "spent_this_move", "Spent on this construction") : tr(t, "earned_this_move", "Earned this move")), /* @__PURE__ */ React19.createElement(Amounts, { board, values: project ? fundingCost(board, project, step.funding || "standard") || project.cost : reward, prefix: project ? "" : "+" }), newlyReady.length > 0 && /* @__PURE__ */ React19.createElement("p", null, tr(t, "new_routes", "New locations open: {names}", { names: newlyReady.map((item) => item.name).join(", ") }))), node && (() => {
-      const own = step.answers?.[uid]?.value, keyHidden = turnLimit(board, run).canRetry, quoteText = String(node.sourceQuote || "").trim() !== String(node.explanation || "").trim() ? /* @__PURE__ */ React19.createElement("blockquote", null, lbMd6().inline(node.sourceQuote)) : null;
+      const own2 = step.answers?.[uid]?.value, keyHidden = turnLimit(board, run).canRetry, quoteText = String(node.sourceQuote || "").trim() !== String(node.explanation || "").trim() ? /* @__PURE__ */ React19.createElement("blockquote", null, lbMd6().inline(node.sourceQuote)) : null;
       const quote = quoteText && result.success ? /* @__PURE__ */ React19.createElement("details", { "data-board-source-quote": true }, /* @__PURE__ */ React19.createElement("summary", null, tr(t, "source", "Lesson source")), quoteText) : quoteText;
-      const itemized = role !== "teacher" && !!own && (() => {
+      const itemized = role !== "teacher" && !!own2 && (() => {
         try {
-          return !!(isSpatialChallenge(node) && challengeFeedback(node, own) || isPuzzle(node) && puzzleFeedback(node, own));
+          return !!(isSpatialChallenge(node) && challengeFeedback(node, own2) || isPuzzle(node) && puzzleFeedback(node, own2));
         } catch (_) {
           return false;
         }
-      })(), matched = role !== "teacher" && !!own && own === solution(node);
+      })(), matched = role !== "teacher" && !!own2 && own2 === solution(node);
       const solution2 = /* @__PURE__ */ React19.createElement("p", { "data-board-solution": true }, /* @__PURE__ */ React19.createElement("strong", null, tr(t, "solution", "Solution"), ": "), lbMd6().inline(responseText(node, solution(node)))), explained = /* @__PURE__ */ React19.createElement(React19.Fragment, null, /* @__PURE__ */ React19.createElement("div", null, lbMd6().block(node.explanation)), quote), keyPuzzle = role === "teacher" && /* @__PURE__ */ React19.createElement(PuzzleReview, { node, value: solution(node), t });
-      return /* @__PURE__ */ React19.createElement(React19.Fragment, null, role !== "teacher" && /* @__PURE__ */ React19.createElement(ChallengeReview, { node, value: own, t }), role !== "teacher" && /* @__PURE__ */ React19.createElement(PuzzleReview, { node, value: own, hideKey: keyHidden, t }), !keyHidden && keyPuzzle, /* @__PURE__ */ React19.createElement("div", { className: "lb-answer-review", "data-board-answer-review": true }, role !== "teacher" && own && !itemized && /* @__PURE__ */ React19.createElement("p", null, /* @__PURE__ */ React19.createElement("strong", null, tr(t, "response", "Your response"), ": "), lbMd6().inline(responseText(node, own))), !keyHidden && !matched && solution2), keyHidden ? /* @__PURE__ */ React19.createElement(React19.Fragment, null, Array.isArray(node.hints) && node.hints.length > 0 && /* @__PURE__ */ React19.createElement("div", { "data-board-retry-hints": true }, /* @__PURE__ */ React19.createElement("h4", null, tr(t, "retry_hints", "Hints for another try")), /* @__PURE__ */ React19.createElement("ul", null, node.hints.map((hint, index) => /* @__PURE__ */ React19.createElement("li", { key: index }, lbMd6().inline(hint))))), /* @__PURE__ */ React19.createElement("details", { "data-board-reveal": true, onToggle: (event) => {
+      return /* @__PURE__ */ React19.createElement(React19.Fragment, null, role !== "teacher" && /* @__PURE__ */ React19.createElement(ChallengeReview, { node, value: own2, t }), role !== "teacher" && /* @__PURE__ */ React19.createElement(PuzzleReview, { node, value: own2, hideKey: keyHidden, t }), !keyHidden && keyPuzzle, /* @__PURE__ */ React19.createElement("div", { className: "lb-answer-review", "data-board-answer-review": true }, role !== "teacher" && own2 && !itemized && /* @__PURE__ */ React19.createElement("p", null, /* @__PURE__ */ React19.createElement("strong", null, tr(t, "response", "Your response"), ": "), lbMd6().inline(responseText(node, own2))), !keyHidden && !matched && solution2), keyHidden ? /* @__PURE__ */ React19.createElement(React19.Fragment, null, Array.isArray(node.hints) && node.hints.length > 0 && /* @__PURE__ */ React19.createElement("div", { "data-board-retry-hints": true }, /* @__PURE__ */ React19.createElement("h4", null, tr(t, "retry_hints", "Hints for another try")), /* @__PURE__ */ React19.createElement("ul", null, node.hints.map((hint, index) => /* @__PURE__ */ React19.createElement("li", { key: index }, lbMd6().inline(hint))))), /* @__PURE__ */ React19.createElement("details", { "data-board-reveal": true, onToggle: (event) => {
         if (event.currentTarget.open) onReveal?.(node.id);
       } }, /* @__PURE__ */ React19.createElement("summary", null, tr(t, "reveal_answer", "Show the answer and explanation")), keyPuzzle, solution2, explained)) : explained, typeof personal === "boolean" && /* @__PURE__ */ React19.createElement("p", null, personal ? tr(t, "your_correct", "Your response demonstrated this idea.") : keyHidden ? tr(t, "your_retry", "Use the hints and the lesson evidence, then try again. Open the answer only if you are stuck.") : tr(t, "your_revisit", "Revisit your response using this explanation.")), role === "teacher" && /* @__PURE__ */ React19.createElement("p", null, tr(t, "round_learning", "{correct}/{total} submitted responses were correct.", { correct: Object.values(result.marks || {}).filter(Boolean).length, total: Object.keys(result.marks || {}).length })), role === "teacher" && /* @__PURE__ */ React19.createElement(ResponseSpread, { node, answers: step.answers, showKey: !keyHidden, t }));
     })());
@@ -8731,10 +8732,17 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
       const stack = typeof window !== "undefined" ? window.__alloFocusTrapStack = window.__alloFocusTrapStack || [] : [];
       const trap = { root: dialog };
       stack.push(trap);
+      const lockState = typeof window !== "undefined" ? window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, overflow: "" } : null;
+      if (lockState && typeof document !== "undefined" && document.body) {
+        if (lockState.count === 0) lockState.overflow = document.body.style.overflow;
+        lockState.count += 1;
+        document.body.style.overflow = "hidden";
+      }
       const isTopTrap = () => !Array.isArray(window.__alloFocusTrapStack) || window.__alloFocusTrapStack.length === 0 || window.__alloFocusTrapStack[window.__alloFocusTrapStack.length - 1] === trap;
+      const liveSel = '[aria-live], [role="status"], [role="alert"], [role="log"], [data-toast-region]';
       const isolate = () => {
         for (let branch = dialog; branch?.parentElement && branch !== document.body; branch = branch.parentElement) {
-          for (const sibling of branch.parentElement.children) if (sibling !== branch && !changed.has(sibling) && !["SCRIPT", "STYLE"].includes(sibling.tagName)) {
+          for (const sibling of branch.parentElement.children) if (sibling !== branch && !changed.has(sibling) && !["SCRIPT", "STYLE"].includes(sibling.tagName) && !sibling.matches?.(liveSel) && !sibling.querySelector?.(liveSel)) {
             changed.set(sibling, sibling.inert);
             sibling.inert = true;
           }
@@ -8782,6 +8790,10 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
         changed.forEach((value, el) => {
           el.inert = value;
         });
+        if (lockState && typeof document !== "undefined" && document.body) {
+          lockState.count = Math.max(0, lockState.count - 1);
+          if (lockState.count === 0) document.body.style.overflow = lockState.overflow;
+        }
         if (previous?.isConnected && typeof previous.focus === "function") previous.focus();
       };
     }, []);
@@ -8933,7 +8945,7 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     const resumeSaved = () => {
       const saved = readCurrent();
       if (["saved", "legacy"].includes(saved.status)) {
-        install({ ...saved, scope, issue: "", dirty: false });
+        install({ ...saved, reportAttemptId: saved.reportAttemptId || current.current.reportAttemptId || identity("learning"), scope, issue: "", dirty: false });
         setError("");
         setReset((n) => n + 1);
       } else if (saved.status === "empty") {
@@ -8961,7 +8973,7 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     const blocked = ["corrupt", "conflict"].includes(state.status), unsaved = ["unavailable", "memory"].includes(state.status);
     const saveStatus = /* @__PURE__ */ React55.createElement("span", { "data-solo-save-status": true }, preview ? tr(t, "preview_label", "Practice preview") : state.status === "saved" ? tr(t, "solo_device_saved", "Solo \xB7 saved on this device") : state.status === "empty" ? tr(t, "solo_device_ready", "Solo \xB7 progress will save on this device as you play") : state.status === "legacy" ? tr(t, "solo_migrating", "Moving this tab\u2019s progress to this device\u2026") : tr(t, "solo_not_saved", "Solo \xB7 current progress is not saved"));
     const soloControls = /* @__PURE__ */ React55.createElement("div", { className: "lb-row" }, /* @__PURE__ */ React55.createElement("button", { type: "button", onClick: onBack }, tr(t, "back_setup", "Back to board setup")), /* @__PURE__ */ React55.createElement("button", { type: "button", onClick: () => setConfirm({ kind: "restart", revision: state.revision }) }, preview ? tr(t, "reset_preview", "Reset preview") : tr(t, "restart_solo", "Restart solo board")), board.playStyle !== "tabletop" && saveStatus, source && /* @__PURE__ */ React55.createElement(BoardDownload, { support: boardSupport, board, source, language, t }));
-    return /* @__PURE__ */ React55.createElement(React55.Fragment, null, board.playStyle === "tabletop" ? /* @__PURE__ */ React55.createElement("details", { className: "lb-game-menu", "data-tabletop-game-menu": true }, /* @__PURE__ */ React55.createElement("summary", null, tr(t, "tabletop_game_menu", "Game menu"), saveStatus), soloControls) : soloControls, error && /* @__PURE__ */ React55.createElement("p", { className: "lb-notice", role: "alert" }, error), !preview && (blocked || unsaved || state.issue) && /* @__PURE__ */ React55.createElement("div", { className: "lb-notice", "data-solo-save-recovery": true, role: blocked ? "alert" : "status" }, /* @__PURE__ */ React55.createElement("p", null, state.status === "conflict" ? tr(t, "solo_save_conflict", "Another tab changed this saved game. Choose which progress to use before continuing.") : state.status === "corrupt" ? tr(t, "solo_corrupt_save", "Your saved solo game could not be restored. The saved data has been kept.") : state.status === "memory" ? tr(t, "solo_memory_mode", "Playing without saving. Keep this page open; closing it will lose this game\u2019s progress.") : tr(t, "solo_device_unavailable", "Progress could not be saved on this device. Keep this page open and retry saving.")), state.issue && /* @__PURE__ */ React55.createElement("p", null, state.issue), /* @__PURE__ */ React55.createElement("div", { className: "lb-row" }, state.status === "conflict" && /* @__PURE__ */ React55.createElement(React55.Fragment, null, /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!confirm, onClick: resumeSaved }, tr(t, "solo_load_saved", "Resume saved progress")), /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!confirm, onClick: offerReplacement }, tr(t, "solo_replace_saved", "Keep this game and replace save"))), state.status === "corrupt" && /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!confirm, onClick: () => setConfirm({ kind: "restart", revision: state.revision }) }, tr(t, "new_local", "Start a new local game")), state.status === "unavailable" && /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!confirm, onClick: () => persist(current.current) }, tr(t, "solo_retry_save", "Retry saving progress")), state.status !== "memory" && /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!confirm, onClick: () => {
+    return /* @__PURE__ */ React55.createElement(React55.Fragment, null, board.playStyle === "tabletop" ? /* @__PURE__ */ React55.createElement("details", { className: "lb-game-menu", "data-tabletop-game-menu": true }, /* @__PURE__ */ React55.createElement("summary", null, tr(t, "tabletop_game_menu", "Game menu"), saveStatus), soloControls) : soloControls, error && /* @__PURE__ */ React55.createElement("p", { className: "lb-notice", role: "alert" }, error), !preview && (blocked || unsaved || state.issue) && /* @__PURE__ */ React55.createElement("div", { className: "lb-notice", "data-solo-save-recovery": true }, /* @__PURE__ */ React55.createElement("div", { role: blocked ? "alert" : "status" }, /* @__PURE__ */ React55.createElement("p", null, state.status === "conflict" ? tr(t, "solo_save_conflict", "Another tab changed this saved game. Choose which progress to use before continuing.") : state.status === "corrupt" ? tr(t, "solo_corrupt_save", "Your saved solo game could not be restored. The saved data has been kept.") : state.status === "memory" ? tr(t, "solo_memory_mode", "Playing without saving. Keep this page open; closing it will lose this game\u2019s progress.") : tr(t, "solo_device_unavailable", "Progress could not be saved on this device. Keep this page open and retry saving.")), state.issue && /* @__PURE__ */ React55.createElement("p", null, state.issue)), /* @__PURE__ */ React55.createElement("div", { className: "lb-row" }, state.status === "conflict" && /* @__PURE__ */ React55.createElement(React55.Fragment, null, /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!confirm, onClick: resumeSaved }, tr(t, "solo_load_saved", "Resume saved progress")), /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!confirm, onClick: offerReplacement }, tr(t, "solo_replace_saved", "Keep this game and replace save"))), state.status === "corrupt" && /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!confirm, onClick: () => setConfirm({ kind: "restart", revision: state.revision }) }, tr(t, "new_local", "Start a new local game")), state.status === "unavailable" && /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!confirm, onClick: () => persist(current.current) }, tr(t, "solo_retry_save", "Retry saving progress")), state.status !== "memory" && /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!confirm, onClick: () => {
       install({ ...current.current, status: "memory", dirty: false, issue: "" });
       setError("");
     } }, tr(t, "solo_without_save", "Play without saving")))), confirm && /* @__PURE__ */ React55.createElement(Confirmation, { t, title: confirm.kind === "replace" ? tr(t, "solo_replace_title", "Replace the saved progress?") : tr(t, "restart_title", "Restart this board?"), message: confirm.kind === "replace" ? tr(t, "solo_replace_notice", "Save this open game over the other saved progress on this device? Other tabs will need to resume this version.") : tr(t, "restart_solo_notice", "This resets your local progress and unfinished settings. The board stays available."), confirm: confirm.kind === "replace" ? tr(t, "solo_replace_confirm", "Replace saved progress") : tr(t, "reset_progress", "Reset my progress"), onCancel: () => setConfirm(null), onConfirm: confirmAction }), /* @__PURE__ */ React55.createElement(BoardView, { support: boardSupport, key: scope + ":" + reset, board, run: state.run, busy: blocked || !!confirm, roster: { solo: { name: user?.displayName || tr(t, "you", "You") } }, reportContext: { appId, owner: uid, preview, mode: "solo", attemptId: state.reportAttemptId, coverage }, onReveal: (id) => {
@@ -9000,7 +9012,11 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     const [board, setBoard] = useState12(null), [library, setLibrary] = useState12([]), [stage, setStage] = useState12(""), [error, setError] = useState12(""), [notice, setNotice] = useState12(""), [theme, setTheme] = useState12(""), [level, setLevel] = useState12(""), [goal, setGoal] = useState12("core"), [playing, setPlaying] = useState12(""), [choice, setChoice] = useState12(null);
     const [repairInfo, setRepairInfo] = useState12(null), [versions, setVersions] = useState12([]), [report, setReport] = useState12(null), [failure, setFailure] = useState12(null), [chancePref, setChancePref] = useState12(true), manual = useRef10(false);
     const [supportState, setSupportState] = useState12(null), [supportBusy, setSupportBusy] = useState12(false), [vocabularyState, setVocabulary] = useState12(null), vocabulary = vocabularyState?.scope === scope ? vocabularyState.terms : [], supportScope = scope + ":" + JSON.stringify(board), support = supportState?.scope === supportScope ? supportState.value : null;
-    const receiveSupport = (value, revision) => setSupportState((previous) => ({ scope: supportScope, value, revision: revision !== void 0 ? revision : previous?.scope === supportScope ? previous.revision : void 0 }));
+    const pendingNoticeRef = useRef10("");
+    const receiveSupport = (value, revision, targetBoard) => {
+      const targetScope = targetBoard ? scope + ":" + JSON.stringify(targetBoard) : supportScope;
+      setSupportState((previous) => ({ scope: targetScope, value, revision: revision !== void 0 ? revision : previous?.scope === targetScope ? previous.revision : void 0 }));
+    };
     const sceneryPreference = useSceneryPreference(appId, user?.uid || "local");
     const scenery = useBoardScenery({ board, scope, supportState, supportBusy, playing, library, appId, uid: user?.uid || "local", callImagen: sceneryImagen, onSupport: receiveSupport });
     const closeDialog = () => {
@@ -9015,7 +9031,7 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
       if (!support) return;
       if (!hasSupport(support) && supportState?.revision === null) return;
       const saved = saveSupport(localStorage, valid, appId, user?.uid || "local", support, supportState?.revision);
-      receiveSupport(saved.support, saved.revision);
+      receiveSupport(saved.support, saved.revision, valid);
     };
     useEffect11(() => {
       mounted.current = true;
@@ -9032,7 +9048,9 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
       request.current++;
       setStage("");
       setError("");
-      setNotice("");
+      const nextNotice = pendingNoticeRef.current;
+      pendingNoticeRef.current = "";
+      setNotice(nextNotice);
       setBoard(null);
       setLibrary([]);
       setPlaying("");
@@ -9147,11 +9165,13 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
           try {
             const response = await Promise.race([callGemini(...args), new Promise((_, reject) => {
               timer = setTimeout(() => reject(Error(tr(t, "generation_timeout", "The board took too long to generate. Your current board is kept. Try again when the AI connection is ready."))), 9e4);
+              ticket.timer = timer;
             })]);
             if (!current()) throw Error("Generation cancelled.");
             return response;
           } finally {
             clearTimeout(timer);
+            if (ticket.timer === timer) ticket.timer = null;
           }
         };
         const apply = await work(provider, (value) => {
@@ -9277,7 +9297,7 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     const [editTarget, setEditTarget] = useState12(null), editStop = (id) => setEditTarget(id || "");
     useEffect11(() => {
       if (editTarget === null) return;
-      const editor = dialog.current?.querySelector("[data-board-editor]"), item = editTarget ? editor?.querySelector('[data-edit-location="' + editTarget + '"]') : null, target = item || editor;
+      const editor = dialog.current?.querySelector("[data-board-editor]"), item = editTarget ? Array.from(editor?.querySelectorAll("[data-edit-location]") || []).find((el) => el.getAttribute("data-edit-location") === editTarget) || null : null, target = item || editor;
       setEditTarget(null);
       if (!editor) return;
       editor.open = true;
@@ -9303,9 +9323,11 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     };
     const save = () => {
       try {
-        const next = saveBoard(localStorage, source, language, board);
+        const valid = prepareBoard(board, source);
+        if (JSON.stringify(valid) !== JSON.stringify(board)) editBoard(valid);
+        const next = saveBoard(localStorage, source, language, valid);
         setLibrary(next);
-        keepSupport(board);
+        keepSupport(valid);
         setNotice(tr(t, "saved", "Board saved in this browser."));
         setError("");
       } catch (error2) {
@@ -9314,9 +9336,10 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     };
     const play = (type) => {
       try {
-        prepareBoard(board, source);
+        const valid = prepareBoard(board, source);
+        if (JSON.stringify(valid) !== JSON.stringify(board)) editBoard(valid);
         setNotice("");
-        if (type === "solo") keepInLibrary(board);
+        if (type === "solo") keepInLibrary(valid);
         setError("");
         setPlaying(type);
       } catch (error2) {
@@ -9381,19 +9404,21 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
       scenery.cancel(true);
       request.current++;
       setStage("");
+      const fileNotice = tr(t, "file_opened", "Board opened for review. It has not been saved or launched.");
+      pendingNoticeRef.current = fileNotice;
       setImportContext(pack);
       setSupportState(null);
       setBoard(pack.board);
       setPlaying("");
       setChoice(null);
       setError("");
-      setNotice(tr(t, "file_opened", "Board opened for review. It has not been saved or launched."));
+      setNotice(fileNotice);
       setTimeout(() => dialog.current?.querySelector("[data-board-play-solo]")?.focus(), 0);
     };
     return /* @__PURE__ */ React55.createElement("div", { className: "lb-backdrop" }, /* @__PURE__ */ React55.createElement("section", { className: "lb lb-dialog", "data-theme": board?.theme, "data-play-style": playing ? board?.playStyle : void 0, ref: dialog, role: "dialog", "aria-modal": "true", "aria-label": tr(t, "title", "Lesson board game"), tabIndex: -1 }, /* @__PURE__ */ React55.createElement(Styles, null), /* @__PURE__ */ React55.createElement("div", { className: "lb-row lb-between" }, /* @__PURE__ */ React55.createElement("h2", null, tr(t, "title", "Lesson board game")), /* @__PURE__ */ React55.createElement("button", { type: "button", onClick: closeDialog }, tr(t, "close", "Close"))), /* @__PURE__ */ React55.createElement(BoardSceneryStatus, { status: scenery.status, onCancel: scenery.cancel, t }), playing && notice && /* @__PURE__ */ React55.createElement("p", { className: "lb-notice", role: "status" }, notice), playing && board ? /* @__PURE__ */ React55.createElement(LessonBoardSolo, { key: JSON.stringify([appId, user?.uid || "local", board]), board, support, user, appId, preview: playing === "preview", coverage: coverageSnapshot(coverage), source, language, t, onBack: () => {
       setPlaying("");
       setTimeout(() => dialog.current?.querySelector("[data-board-play-solo]")?.focus(), 0);
-    } }) : /* @__PURE__ */ React55.createElement(React55.Fragment, null, !board && /* @__PURE__ */ React55.createElement("section", { className: "lb-panel", "data-board-sample-intro": true }, /* @__PURE__ */ React55.createElement("h3", null, tr(t, "tabletop_sample_title", "Start with a ready-made expedition")), /* @__PURE__ */ React55.createElement("p", null, tr(t, "tabletop_sample_help", "Explore Waterworks with a party pawn, buildable routes, sorting, connections and placement challenges. No AI connection is needed.")), /* @__PURE__ */ React55.createElement("button", { type: "button", "data-board-sample": true, disabled: !!stage || !!choice || supportBusy, onClick: () => openFile({ board: makeWaterworksBoard(), source: WATERWORKS_SOURCE, language: "English", sample: true }) }, tr(t, "tabletop_sample_open", "Open Waterworks expedition"))), importContext && /* @__PURE__ */ React55.createElement("p", { className: "lb-notice", role: "status" }, tr(t, "imported_context", "Using the lesson and language included in the imported board. Your main lesson is unchanged."), " ", /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!stage || !!choice || supportBusy, onClick: () => setChoice({ kind: "main" }) }, tr(t, "return_main_lesson", "Return to main lesson"))), /* @__PURE__ */ React55.createElement(BoardSetupGuide, { t }), /* @__PURE__ */ React55.createElement("p", null, tr(t, "language", "Board language: {language}", { language })), /* @__PURE__ */ React55.createElement("details", null, /* @__PURE__ */ React55.createElement("summary", null, tr(t, "source", "Lesson source")), /* @__PURE__ */ React55.createElement("blockquote", null, source || tr(t, "need_source", "Add lesson text or generate a quiz first."))), error && /* @__PURE__ */ React55.createElement("p", { className: "lb-notice", role: "alert" }, error), /* @__PURE__ */ React55.createElement(DraftRecovery, { failure, disabled: !!stage || !!choice || supportBusy, onOpen: openDraft, onAskAI: textAi ? fixDraft : null, onDismiss: () => setFailure(null), t }), /* @__PURE__ */ React55.createElement("p", { role: "status" }, stageLabel || notice), board && /* @__PURE__ */ React55.createElement("section", { className: "lb-panel lb-blueprint", style: { marginTop: 18 } }, /* @__PURE__ */ React55.createElement(BoardBlueprint, { board, t }), /* @__PURE__ */ React55.createElement(CoveragePanel, { coverage, t }), allowLive && activeSessionCode && /* @__PURE__ */ React55.createElement("label", { className: "lb-row" }, /* @__PURE__ */ React55.createElement("input", { type: "checkbox", style: { width: "auto" }, "data-setup-board-roles": true, checked: useClassRoles, onChange: (event) => setUseClassRoles(event.target.checked), disabled: !!stage }), tr(t, "roles_toggle", "Use rotating classroom roles")), /* @__PURE__ */ React55.createElement("label", { className: "lb-row" }, /* @__PURE__ */ React55.createElement("input", { type: "checkbox", style: { width: "auto" }, "data-board-chance": true, checked: board.chance === true, disabled: !!stage || !!choice || supportBusy, onChange: (event) => setChance(event.target.checked) }), tr(t, "chance_encounters_toggle", "Fortune dice, discovery cards, and expedition encounters")), /* @__PURE__ */ React55.createElement("p", { className: "lb-muted" }, tr(t, "chance_destination_help", "Correct answers earn a d20 roll for bonus tokens or discoveries. Tabletop encounters after 2, 5, and 8 new spaces offer supplies, investigation preparation, a construction crew, or a rewarded destination lead. Dice only add resources. Supply and rendezvous encounters also offer an optional 1-for-2 exchange; trading spends supplies only when you confirm.")), /* @__PURE__ */ React55.createElement("div", { className: "lb-row lb-setup-actions" }, /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!stage || !!choice || supportBusy, onClick: () => play("preview") }, tr(t, "try_board", "Try the board")), /* @__PURE__ */ React55.createElement("button", { type: "button", "data-board-play-solo": true, disabled: !!stage || !!choice || supportBusy, onClick: () => play("solo") }, resume?.status === "resume" ? tr(t, "resume_solo", "Resume solo board") : resume?.status === "complete" ? tr(t, "review_solo", "Review completed solo board") : tr(t, "play_solo", "Play solo")), /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!stage || !!choice || supportBusy, onClick: save }, tr(t, "save_board", "Save board")), allowLive && activeSessionCode && /* @__PURE__ */ React55.createElement("button", { type: "button", className: "lb-primary", "data-launch-board": true, disabled: !!stage || !!choice || supportBusy || sessionData?.escapeRoomState?.isActive || sessionData?.quizState?.isActive, onClick: launch }, tr(t, "launch", "Launch for everyone"))), resume && /* @__PURE__ */ React55.createElement("p", { "data-solo-resume": true }, resume.status === "unavailable" ? tr(t, "solo_resume_unavailable", "A solo save could not be checked. Open solo play to review recovery options.") : tr(t, "solo_resume_details", "Saved on this device: move {turn} \xB7 Concepts explored: {concepts} \xB7 Projects built: {projects}.", resume)), /* @__PURE__ */ React55.createElement("p", { className: "lb-muted" }, tr(t, "review_guidance", "Check the activities, solutions and constructions before play. Connection and balance checks do not establish factual accuracy.")), allowLive && activeSessionCode && /* @__PURE__ */ React55.createElement("p", { className: "lb-muted" }, tr(t, "host_required", "Keep the teacher session open and connected during live play. The teacher chooses moves and resolves activities after learners respond."))), board?.playStyle === "tabletop" && source === WATERWORKS_SOURCE && board.locations.some((node) => node.id === "camp") && board.locations.some((node) => node.id === "lookout") && /* @__PURE__ */ React55.createElement(WaterworksExpeditionPicker, { board, onDeal: dealExpedition, disabled: !!stage || !!choice || supportBusy, t }), /* @__PURE__ */ React55.createElement(BoardSupportSetup, { artStyle: sceneryPreference.value.style, onArtStyle: (style) => sceneryPreference.update({ style }), onSceneryRequest: () => scenery.cancel(true), Activity, board, source, language, history: importContext ? [] : history, generatedContent: importContext ? null : generatedContent, callImagen: sceneryImagen, appId, uid: user?.uid || "local", scope, support, loaded: supportState?.scope === supportScope, initialSupport: importContext?.board === board ? importContext.support : null, onChange: receiveSupport, onVocabulary: (terms) => setVocabulary({ scope, terms }), onBusy: setSupportBusy, disabled: !!stage || !!choice, t }), /* @__PURE__ */ React55.createElement(BoardMissionPicker, { board, source, value: board ? board.goal || "core" : goal, onChange: chooseGoal, disabled: !!stage || !!choice || supportBusy, t }), /* @__PURE__ */ React55.createElement("label", null, tr(t, "tabletop_play_style", "Playing style"), /* @__PURE__ */ React55.createElement("select", { "data-board-play-style": true, value: board ? board.playStyle || "exploration" : playStyle, disabled: !!stage || !!choice || supportBusy, onChange: (event) => choosePlayStyle(event.target.value) }, /* @__PURE__ */ React55.createElement("option", { value: "tabletop" }, tr(t, "tabletop_style_option", "Tabletop expedition \u2014 move, explore, build, return")), /* @__PURE__ */ React55.createElement("option", { value: "exploration" }, tr(t, "tabletop_legacy_option", "Open exploration \u2014 choose any open activity")))), /* @__PURE__ */ React55.createElement("p", { className: "lb-muted" }, tr(t, "tabletop_style_help", "Tabletop expeditions have a party position and construction sites. Changing rules creates a separate solo game; progress on your original board stays saved.")), board && /* @__PURE__ */ React55.createElement(React55.Fragment, null, /* @__PURE__ */ React55.createElement("label", null, tr(t, "challenge_label", "Challenge level"), /* @__PURE__ */ React55.createElement("select", { "data-board-challenge-level": true, value: challengeOf(board), disabled: !!stage || !!choice || supportBusy, onChange: (event) => chooseChallenge(event.target.value) }, /* @__PURE__ */ React55.createElement("option", { value: "relaxed" }, tr(t, "challenge_relaxed", "Relaxed \u2014 plenty of supplies to build")), /* @__PURE__ */ React55.createElement("option", { value: "strategic" }, tr(t, "challenge_strategic", "Strategic \u2014 projects cost more, so plan your route")))), /* @__PURE__ */ React55.createElement("p", { className: "lb-muted" }, tr(t, "challenge_help", "Strategic raises project costs, so building takes more exploring and payment choices matter. Changing it creates a separate solo game; progress on your original board stays saved."))), board?.playStyle === "tabletop" && /* @__PURE__ */ React55.createElement(BoardTravelPicker, { board, onChange: chooseTravelLimit, disabled: !!stage || !!choice || supportBusy, t }), board?.playStyle === "tabletop" && /* @__PURE__ */ React55.createElement(ExpeditionKitPicker, { board, currentValue: board.expeditionKit || "", onChange: chooseExpeditionKit, disabled: !!stage || !!choice || supportBusy, t }), /* @__PURE__ */ React55.createElement("details", null, /* @__PURE__ */ React55.createElement("summary", null, tr(t, "generation_preferences", "Setting and learner preferences")), /* @__PURE__ */ React55.createElement("div", { className: "lb-form" }, /* @__PURE__ */ React55.createElement("label", null, tr(t, "theme", "Setting preference (optional)"), /* @__PURE__ */ React55.createElement("input", { value: theme, maxLength: 150, disabled: !!stage || !!choice || supportBusy, onChange: (e) => setTheme(e.target.value) })), /* @__PURE__ */ React55.createElement("label", null, tr(t, "level", "Learner level (optional)"), /* @__PURE__ */ React55.createElement("input", { value: level, maxLength: 80, disabled: !!stage || !!choice || supportBusy, onChange: (e) => setLevel(e.target.value) })))), !board && /* @__PURE__ */ React55.createElement("label", { className: "lb-row" }, /* @__PURE__ */ React55.createElement("input", { type: "checkbox", style: { width: "auto" }, "data-generate-chance": true, checked: chancePref, disabled: !!stage || !!choice || supportBusy, onChange: (event) => setChancePref(event.target.checked) }), tr(t, "chance_encounters_toggle", "Fortune dice, discovery cards, and expedition encounters")), (board ? board.playStyle === "tabletop" : playStyle === "tabletop") && /* @__PURE__ */ React55.createElement(BoardSceneryPreference, { value: sceneryPreference.value, onChange: (patch) => {
+    } }) : /* @__PURE__ */ React55.createElement(React55.Fragment, null, !board && /* @__PURE__ */ React55.createElement("section", { className: "lb-panel", "data-board-sample-intro": true }, /* @__PURE__ */ React55.createElement("h3", null, tr(t, "tabletop_sample_title", "Start with a ready-made expedition")), /* @__PURE__ */ React55.createElement("p", null, tr(t, "tabletop_sample_help", "Explore Waterworks with a party pawn, buildable routes, sorting, connections and placement challenges. No AI connection is needed.")), /* @__PURE__ */ React55.createElement("button", { type: "button", "data-board-sample": true, disabled: !!stage || !!choice || supportBusy, onClick: () => openFile({ board: makeWaterworksBoard(), source: WATERWORKS_SOURCE, language: "English", sample: true }) }, tr(t, "tabletop_sample_open", "Open Waterworks expedition"))), importContext && /* @__PURE__ */ React55.createElement("div", { className: "lb-notice lb-row lb-between" }, /* @__PURE__ */ React55.createElement("span", { role: "status" }, tr(t, "imported_context", "Using the lesson and language included in the imported board. Your main lesson is unchanged.")), " ", /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!stage || !!choice || supportBusy, onClick: () => setChoice({ kind: "main" }) }, tr(t, "return_main_lesson", "Return to main lesson"))), /* @__PURE__ */ React55.createElement(BoardSetupGuide, { t }), /* @__PURE__ */ React55.createElement("p", null, tr(t, "language", "Board language: {language}", { language })), /* @__PURE__ */ React55.createElement("details", null, /* @__PURE__ */ React55.createElement("summary", null, tr(t, "source", "Lesson source")), /* @__PURE__ */ React55.createElement("blockquote", null, source || tr(t, "need_source", "Add lesson text or generate a quiz first."))), error && /* @__PURE__ */ React55.createElement("p", { className: "lb-notice", role: "alert" }, error), /* @__PURE__ */ React55.createElement(DraftRecovery, { failure, disabled: !!stage || !!choice || supportBusy, onOpen: openDraft, onAskAI: textAi ? fixDraft : null, onDismiss: () => setFailure(null), t }), /* @__PURE__ */ React55.createElement("p", { role: "status" }, stageLabel || notice), board && /* @__PURE__ */ React55.createElement("section", { className: "lb-panel lb-blueprint", style: { marginTop: 18 } }, /* @__PURE__ */ React55.createElement(BoardBlueprint, { board, t }), /* @__PURE__ */ React55.createElement(CoveragePanel, { coverage, t }), allowLive && activeSessionCode && /* @__PURE__ */ React55.createElement("label", { className: "lb-row" }, /* @__PURE__ */ React55.createElement("input", { type: "checkbox", style: { width: "auto" }, "data-setup-board-roles": true, checked: useClassRoles, onChange: (event) => setUseClassRoles(event.target.checked), disabled: !!stage }), tr(t, "roles_toggle", "Use rotating classroom roles")), /* @__PURE__ */ React55.createElement("label", { className: "lb-row" }, /* @__PURE__ */ React55.createElement("input", { type: "checkbox", style: { width: "auto" }, "data-board-chance": true, checked: board.chance === true, disabled: !!stage || !!choice || supportBusy, onChange: (event) => setChance(event.target.checked) }), tr(t, "chance_encounters_toggle", "Fortune dice, discovery cards, and expedition encounters")), /* @__PURE__ */ React55.createElement("p", { className: "lb-muted" }, tr(t, "chance_destination_help", "Correct answers earn a d20 roll for bonus tokens or discoveries. Tabletop encounters after 2, 5, and 8 new spaces offer supplies, investigation preparation, a construction crew, or a rewarded destination lead. Dice only add resources. Supply and rendezvous encounters also offer an optional 1-for-2 exchange; trading spends supplies only when you confirm.")), /* @__PURE__ */ React55.createElement("div", { className: "lb-row lb-setup-actions" }, /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!stage || !!choice || supportBusy, onClick: () => play("preview") }, tr(t, "try_board", "Try the board")), /* @__PURE__ */ React55.createElement("button", { type: "button", "data-board-play-solo": true, disabled: !!stage || !!choice || supportBusy, onClick: () => play("solo") }, resume?.status === "resume" ? tr(t, "resume_solo", "Resume solo board") : resume?.status === "complete" ? tr(t, "review_solo", "Review completed solo board") : tr(t, "play_solo", "Play solo")), /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!stage || !!choice || supportBusy, onClick: save }, tr(t, "save_board", "Save board")), allowLive && activeSessionCode && /* @__PURE__ */ React55.createElement("button", { type: "button", className: "lb-primary", "data-launch-board": true, disabled: !!stage || !!choice || supportBusy || sessionData?.escapeRoomState?.isActive || sessionData?.quizState?.isActive, onClick: launch }, tr(t, "launch", "Launch for everyone"))), resume && /* @__PURE__ */ React55.createElement("p", { "data-solo-resume": true }, resume.status === "unavailable" ? tr(t, "solo_resume_unavailable", "A solo save could not be checked. Open solo play to review recovery options.") : tr(t, "solo_resume_details", "Saved on this device: move {turn} \xB7 Concepts explored: {concepts} \xB7 Projects built: {projects}.", resume)), /* @__PURE__ */ React55.createElement("p", { className: "lb-muted" }, tr(t, "review_guidance", "Check the activities, solutions and constructions before play. Connection and balance checks do not establish factual accuracy.")), allowLive && activeSessionCode && /* @__PURE__ */ React55.createElement("p", { className: "lb-muted" }, tr(t, "host_required", "Keep the teacher session open and connected during live play. The teacher chooses moves and resolves activities after learners respond."))), board?.playStyle === "tabletop" && source === WATERWORKS_SOURCE && board.locations.some((node) => node.id === "camp") && board.locations.some((node) => node.id === "lookout") && /* @__PURE__ */ React55.createElement(WaterworksExpeditionPicker, { board, onDeal: dealExpedition, disabled: !!stage || !!choice || supportBusy, t }), /* @__PURE__ */ React55.createElement(BoardSupportSetup, { artStyle: sceneryPreference.value.style, onArtStyle: (style) => sceneryPreference.update({ style }), onSceneryRequest: () => scenery.cancel(true), Activity, board, source, language, history: importContext ? [] : history, generatedContent: importContext ? null : generatedContent, callImagen: sceneryImagen, appId, uid: user?.uid || "local", scope, support, loaded: supportState?.scope === supportScope, initialSupport: importContext?.board === board ? importContext.support : null, onChange: receiveSupport, onVocabulary: (terms) => setVocabulary({ scope, terms }), onBusy: setSupportBusy, disabled: !!stage || !!choice, t }), /* @__PURE__ */ React55.createElement(BoardMissionPicker, { board, source, value: board ? board.goal || "core" : goal, onChange: chooseGoal, disabled: !!stage || !!choice || supportBusy, t }), /* @__PURE__ */ React55.createElement("label", null, tr(t, "tabletop_play_style", "Playing style"), /* @__PURE__ */ React55.createElement("select", { "data-board-play-style": true, value: board ? board.playStyle || "exploration" : playStyle, disabled: !!stage || !!choice || supportBusy, onChange: (event) => choosePlayStyle(event.target.value) }, /* @__PURE__ */ React55.createElement("option", { value: "tabletop" }, tr(t, "tabletop_style_option", "Tabletop expedition \u2014 move, explore, build, return")), /* @__PURE__ */ React55.createElement("option", { value: "exploration" }, tr(t, "tabletop_legacy_option", "Open exploration \u2014 choose any open activity")))), /* @__PURE__ */ React55.createElement("p", { className: "lb-muted" }, tr(t, "tabletop_style_help", "Tabletop expeditions have a party position and construction sites. Changing rules creates a separate solo game; progress on your original board stays saved.")), board && /* @__PURE__ */ React55.createElement(React55.Fragment, null, /* @__PURE__ */ React55.createElement("label", null, tr(t, "challenge_label", "Challenge level"), /* @__PURE__ */ React55.createElement("select", { "data-board-challenge-level": true, value: challengeOf(board), disabled: !!stage || !!choice || supportBusy, onChange: (event) => chooseChallenge(event.target.value) }, /* @__PURE__ */ React55.createElement("option", { value: "relaxed" }, tr(t, "challenge_relaxed", "Relaxed \u2014 plenty of supplies to build")), /* @__PURE__ */ React55.createElement("option", { value: "strategic" }, tr(t, "challenge_strategic", "Strategic \u2014 projects cost more, so plan your route")))), /* @__PURE__ */ React55.createElement("p", { className: "lb-muted" }, tr(t, "challenge_help", "Strategic raises project costs, so building takes more exploring and payment choices matter. Changing it creates a separate solo game; progress on your original board stays saved."))), board?.playStyle === "tabletop" && /* @__PURE__ */ React55.createElement(BoardTravelPicker, { board, onChange: chooseTravelLimit, disabled: !!stage || !!choice || supportBusy, t }), board?.playStyle === "tabletop" && /* @__PURE__ */ React55.createElement(ExpeditionKitPicker, { board, currentValue: board.expeditionKit || "", onChange: chooseExpeditionKit, disabled: !!stage || !!choice || supportBusy, t }), /* @__PURE__ */ React55.createElement("details", null, /* @__PURE__ */ React55.createElement("summary", null, tr(t, "generation_preferences", "Setting and learner preferences")), /* @__PURE__ */ React55.createElement("div", { className: "lb-form" }, /* @__PURE__ */ React55.createElement("label", null, tr(t, "theme", "Setting preference (optional)"), /* @__PURE__ */ React55.createElement("input", { value: theme, maxLength: 150, disabled: !!stage || !!choice || supportBusy, onChange: (e) => setTheme(e.target.value) })), /* @__PURE__ */ React55.createElement("label", null, tr(t, "level", "Learner level (optional)"), /* @__PURE__ */ React55.createElement("input", { value: level, maxLength: 80, disabled: !!stage || !!choice || supportBusy, onChange: (e) => setLevel(e.target.value) })))), !board && /* @__PURE__ */ React55.createElement("label", { className: "lb-row" }, /* @__PURE__ */ React55.createElement("input", { type: "checkbox", style: { width: "auto" }, "data-generate-chance": true, checked: chancePref, disabled: !!stage || !!choice || supportBusy, onChange: (event) => setChancePref(event.target.checked) }), tr(t, "chance_encounters_toggle", "Fortune dice, discovery cards, and expedition encounters")), (board ? board.playStyle === "tabletop" : playStyle === "tabletop") && /* @__PURE__ */ React55.createElement(BoardSceneryPreference, { value: sceneryPreference.value, onChange: (patch) => {
       sceneryPreference.update(patch);
       if (patch.enabled === false) scenery.cancel();
     }, disabled: !!stage || !!choice || supportBusy, available: !!sceneryImagen, t }), /* @__PURE__ */ React55.createElement("div", { className: "lb-row lb-generate-row" }, textAi && /* @__PURE__ */ React55.createElement("button", { type: "button", className: "lb-primary", "data-generate-board": true, disabled: !!stage || !!choice || supportBusy || source.length < 40, onClick: generate }, board ? tr(t, "generate_another", "Generate another board") : tr(t, "generate", "Generate lesson board")), ["generating", "repairing"].includes(stage) && /* @__PURE__ */ React55.createElement("button", { type: "button", onClick: cancelGeneration }, tr(t, "cancel_generation", "Cancel generation"))), library.length > 0 && /* @__PURE__ */ React55.createElement("details", { "data-board-library": true }, /* @__PURE__ */ React55.createElement("summary", null, tr(t, "saved_boards", "Saved boards for this lesson"), " (", library.length, "/4)"), library.map((saved, index) => /* @__PURE__ */ React55.createElement("div", { className: "lb-row", key: index }, /* @__PURE__ */ React55.createElement("span", null, saved.title), /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!stage || !!choice || supportBusy, onClick: () => setChoice({ kind: "open", index, board: saved }) }, tr(t, "open_saved", "Open saved board")), /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!stage || !!choice || supportBusy, onClick: () => setChoice({ kind: "remove", index, board: saved }) }, tr(t, "remove_saved", "Remove saved board")), board && JSON.stringify(board) !== JSON.stringify(saved) && /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: !!stage || !!choice || supportBusy, "data-replace-saved": index, onClick: () => setChoice({ kind: "replace", index, board: saved }) }, tr(t, "replace_saved", "Replace this saved copy"))))), choice && /* @__PURE__ */ React55.createElement(Confirmation, { t, title: choice.kind === "main" ? tr(t, "return_main_lesson", "Return to main lesson") : choice.kind === "replace" ? tr(t, "replace_saved", "Replace this saved copy") : choice.kind === "open" ? tr(t, "open_saved", "Open saved board") : tr(t, "remove_saved", "Remove saved board"), message: choice.kind === "main" ? tr(t, "return_main_notice", "Return to the main lesson and its saved boards? This replaces the imported preview and its unsaved edits.") : choice.kind === "replace" ? tr(t, "replace_saved_notice", "Replace the saved board {old} with the current board {next}? Download a backup first if you want to keep both versions.", { old: choice.board?.title, next: board?.title }) : choice.kind === "open" ? tr(t, "replace_notice", "Replace the current preview and any unsaved edits with {name}?", { name: choice.board?.title }) : tr(t, "remove_notice", "Remove {name} from this browser library? The current preview stays available.", { name: choice.board?.title }), confirm: choice.kind === "main" ? tr(t, "return_main_confirm", "Use main lesson") : choice.kind === "replace" ? tr(t, "replace_copy", "Replace saved copy") : choice.kind === "open" ? tr(t, "replace_preview", "Replace preview") : tr(t, "remove_saved", "Remove saved board"), onCancel: () => setChoice(null), onConfirm: () => {
@@ -9498,12 +9523,12 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
     }, [scope, state?.isActive, state?.privateAnswers]);
     useEffect11(() => {
       if (state?.mode !== "lesson-board" || !state.isActive || state.isPaused || runtime.locks.has(scope) || validateBoard(state.board).length) return;
-      const collect = (latest, accepted) => {
+      const collect = (latest, accepted, enforceAccepted = false) => {
         if (current.current.scope !== scope) return null;
         const fresh = latest?.escapeRoomState;
         if (fresh?.mode !== "lesson-board" || !fresh.isActive || fresh.isPaused || fresh.attemptId !== state.attemptId) return null;
         const run = runOf(fresh), keep = fresh.privateAnswers === true;
-        const requests = boardRequests(fresh, latest.roster || {}, privateActions.current).filter(([uid, action]) => !keep || !accepted || action.kind !== "answer" || accepted.has(uid + ":" + action.requestId)).slice(0, 16);
+        const requests = boardRequests(fresh, latest.roster || {}, privateActions.current).filter(([uid, action]) => !keep || !enforceAccepted || action.kind !== "answer" || accepted instanceof Set && accepted.has(uid + ":" + action.requestId)).slice(0, 16);
         if (!requests.length) return null;
         let next = run, patch = {};
         const answered = /* @__PURE__ */ new Set();
@@ -9518,7 +9543,7 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
         checkSize(applyDocument(latest, update2));
         return { update: update2, values: split.values, answered };
       };
-      const plan = (latest, accepted) => collect(latest, accepted)?.update || null;
+      const plan = (latest, accepted) => collect(latest, accepted, true)?.update || null;
       let first;
       try {
         first = collect(sessionData, null);
@@ -9587,6 +9612,20 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
         mounted.current = false;
       };
     }, []);
+    const overlayVisible = state?.mode === "lesson-board" && !!state.isActive;
+    useEffect11(() => {
+      if (!overlayVisible || typeof window === "undefined" || !document.body) return void 0;
+      const scrollLock = window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, prev: "" };
+      if (scrollLock.count === 0) {
+        scrollLock.prev = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+      }
+      scrollLock.count += 1;
+      return () => {
+        scrollLock.count = Math.max(0, scrollLock.count - 1);
+        if (scrollLock.count === 0 && document.body) document.body.style.overflow = scrollLock.prev;
+      };
+    }, [overlayVisible]);
     useEffect11(() => {
       pendingRef.current = null;
       sendRef.current = null;
@@ -9714,9 +9753,9 @@ ${WATERWORKS_EVIDENCE.reserveSupplies}`, "The six-token classroom plan has alrea
       const target = studentRoot.current?.querySelector(".lb-current > h3");
       target?.focus();
       target?.scrollIntoView?.({ block: "center" });
-    } }), state.teams?.[user?.uid] !== "All" && /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: joining, onClick: () => join(true) }, tr(t, "join_board", "Join shared board")), error && /* @__PURE__ */ React55.createElement("p", { className: "lb-notice", role: "alert" }, error), pending && /* @__PURE__ */ React55.createElement("div", { className: "lb-notice", "data-board-pending": true, role: "status" }, /* @__PURE__ */ React55.createElement("p", { "data-board-delivery": delivery }, sending ? tr(t, "sending", "Sending your action\u2026") : !online && delivery !== "sent" && delivery !== "timeout" ? tr(t, "pending_offline", "Your action is kept on this page. Retry when your session connection is available.") : delivery === "timeout" ? tr(t, "delivery_timeout", "Delivery has not been confirmed. You can retry the same action; it will only count once.") : delivery === "restored" ? tr(t, "delivery_restored", "An unconfirmed action was restored. Retry to check delivery, or wait for the teacher\u2019s confirmation.") : delivery === "sent" ? tr(t, "delivery_sent", "Action sent. Waiting for teacher confirmation. Keep this page open.") : tr(t, "delivery_kept", "Your action is kept on this page. Retry when connected.")), online && slow && delivery === "sent" && /* @__PURE__ */ React55.createElement("p", null, tr(t, "teacher_confirmation_help", "Still waiting? Ask the teacher to keep the shared board open and connected.")), !pendingSaved && /* @__PURE__ */ React55.createElement("p", null, tr(t, "pending_not_saved", "Browser storage is unavailable. Keep this page open until confirmation; a reload may lose this pending action.")), /* @__PURE__ */ React55.createElement("button", { type: "button", ref: pendingRetry, "data-board-retry-delivery": true, "aria-disabled": sending || state.isPaused || state.teams?.[user?.uid] !== "All", onClick: () => {
+    } }), state.teams?.[user?.uid] !== "All" && /* @__PURE__ */ React55.createElement("button", { type: "button", disabled: joining, onClick: () => join(true) }, tr(t, "join_board", "Join shared board")), error && /* @__PURE__ */ React55.createElement("p", { className: "lb-notice", role: "alert" }, error), pending && /* @__PURE__ */ React55.createElement("div", { className: "lb-notice", "data-board-pending": true }, /* @__PURE__ */ React55.createElement("div", { role: "status" }, /* @__PURE__ */ React55.createElement("p", { "data-board-delivery": delivery }, sending ? tr(t, "sending", "Sending your action\u2026") : !online && delivery !== "sent" && delivery !== "timeout" ? tr(t, "pending_offline", "Your action is kept on this page. Retry when your session connection is available.") : delivery === "timeout" ? tr(t, "delivery_timeout", "Delivery has not been confirmed. You can retry the same action; it will only count once.") : delivery === "restored" ? tr(t, "delivery_restored", "An unconfirmed action was restored. Retry to check delivery, or wait for the teacher\u2019s confirmation.") : delivery === "sent" ? tr(t, "delivery_sent", "Action sent. Waiting for teacher confirmation. Keep this page open.") : tr(t, "delivery_kept", "Your action is kept on this page. Retry when connected.")), online && slow && delivery === "sent" && /* @__PURE__ */ React55.createElement("p", null, tr(t, "teacher_confirmation_help", "Still waiting? Ask the teacher to keep the shared board open and connected.")), !pendingSaved && /* @__PURE__ */ React55.createElement("p", null, tr(t, "pending_not_saved", "Browser storage is unavailable. Keep this page open until confirmation; a reload may lose this pending action.")), state.isPaused && /* @__PURE__ */ React55.createElement("p", null, tr(t, "delivery_paused", "The teacher paused this board. Your action is kept; retry after the board resumes."))), /* @__PURE__ */ React55.createElement("button", { type: "button", ref: pendingRetry, "data-board-retry-delivery": true, "aria-disabled": sending || state.isPaused || state.teams?.[user?.uid] !== "All", onClick: () => {
       if (!sending) transmit(pending, true);
-    } }, tr(t, "retry_action", "Retry this action")), state.isPaused && /* @__PURE__ */ React55.createElement("p", null, tr(t, "delivery_paused", "The teacher paused this board. Your action is kept; retry after the board resumes."))), /* @__PURE__ */ React55.createElement(BoardView, { support: state.boardSupport, key: scope, board: state.board, run: privateOn ? withOwnAnswer(run, user.uid, ownAnswer) : run, role: "student", uid: user.uid, roster: sessionData.roster, pending, onReviewPending: () => {
+    } }, tr(t, "retry_action", "Retry this action"))), /* @__PURE__ */ React55.createElement(BoardView, { support: state.boardSupport, key: scope, board: state.board, run: privateOn ? withOwnAnswer(run, user.uid, ownAnswer) : run, role: "student", uid: user.uid, roster: sessionData.roster, pending, onReviewPending: () => {
       pendingRetry.current?.focus();
       pendingRetry.current?.scrollIntoView?.({ block: "center" });
     }, paused: state.isPaused, busy: state.teams?.[user?.uid] !== "All", classRoles: state.boardRoles, notice, workspaceKey: "allo-board-draft:" + scope, t, onMove: (id) => action("vote", id), onAnswer: (value) => action("answer", stepOf(run).targetId, value) })));

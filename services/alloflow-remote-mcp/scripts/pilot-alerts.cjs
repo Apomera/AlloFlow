@@ -134,32 +134,92 @@ function evaluateAlerts(rows) {
   );
 }
 
+const MAX_ANALYTICS_RESPONSE_BYTES = 2 * 1024 * 1024;
+const PRINTABLE_ASCII_TOKEN_RE = /^[\x21-\x7e]+$/u;
+
+async function readBoundedJsonResponse(response, maxBytes, invalidCode) {
+  let text;
+  if (response.body && typeof response.body.getReader === "function") {
+    const reader = response.body.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          total += value.byteLength;
+          if (total > maxBytes) {
+            try { await reader.cancel(); } catch {}
+            throw new Error(invalidCode);
+          }
+          chunks.push(Buffer.from(value));
+        }
+      }
+    } finally {
+      try { reader.releaseLock(); } catch {}
+    }
+    text = Buffer.concat(chunks, total).toString("utf8");
+  } else if (typeof response.text === "function") {
+    text = await response.text();
+    if (Buffer.byteLength(text, "utf8") > maxBytes) {
+      throw new Error(invalidCode);
+    }
+  } else if (typeof response.json === "function") {
+    try {
+      return await response.json();
+    } catch {
+      throw new Error(invalidCode);
+    }
+  } else {
+    throw new Error(invalidCode);
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(invalidCode);
+  }
+}
+
 async function fetchAlertRows(options) {
   const accountId = options.accountId;
   const token = options.token;
   if (!ACCOUNT_ID_RE.test(accountId || "")) {
     throw new Error("invalid_cloudflare_account_id");
   }
-  if (typeof token !== "string" || token.length < 20) {
+  if (typeof token !== "string" || token.length < 20 || !PRINTABLE_ASCII_TOKEN_RE.test(token)) {
     throw new Error("analytics_api_token_required");
   }
   const fetchImpl = options.fetchImpl || globalThis.fetch;
-  const response = await fetchImpl(
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/analytics_engine/sql`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "text/plain; charset=utf-8",
+  let response;
+  try {
+    response = await fetchImpl(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/analytics_engine/sql`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+        body: buildAlertQuery(options.dataset, options.windowMinutes),
+        redirect: "error",
+        signal: AbortSignal.timeout(15_000),
       },
-      body: buildAlertQuery(options.dataset, options.windowMinutes),
-      signal: AbortSignal.timeout(15_000),
-    },
-  );
+    );
+  } catch (error) {
+    if (error instanceof TypeError && /Headers|Authorization|Bearer/iu.test(error.message)) {
+      throw new Error("analytics_api_token_required");
+    }
+    throw error;
+  }
   if (!response.ok) {
     throw new Error(`analytics_query_failed_${response.status}`);
   }
-  const payload = await response.json();
+  const payload = await readBoundedJsonResponse(
+    response,
+    MAX_ANALYTICS_RESPONSE_BYTES,
+    "invalid_analytics_response",
+  );
   if (!payload || !Array.isArray(payload.data)) {
     throw new Error("invalid_analytics_response");
   }

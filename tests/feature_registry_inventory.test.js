@@ -71,7 +71,7 @@ describe('feature registry inventory', () => {
         expect(j.exportFormats.drive).toEqual(expect.arrayContaining(['google-doc', 'google-form']));
         const mailbox = j.scripts.find((s) => s.script === 'session_mailbox');
         expect(mailbox.actions).toEqual(expect.arrayContaining(['deliver', 'deliverform', 'fetchpage']));
-        expect(mailbox.scopes).toEqual(['drive.file', 'script.external_request']);
+        expect(mailbox.scopes).toEqual(['userinfo.email', 'drive.file', 'script.external_request']);
         expect(j.packs.every((p) => p.title)).toBe(true);
     });
 });

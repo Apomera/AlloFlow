@@ -14251,8 +14251,8 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
                             h('b', null, tlLevelLetters[tlIndex]), h('span', null, ['Cloud', 'Middle', 'Surface'][tlIndex]));
                         })),
                       h('svg', { className: 'wc-tl-plot', viewBox: '0 0 240 228', preserveAspectRatio: 'none', 'aria-hidden': true, focusable: 'false', 'data-tl-extent': tlExtent },
-                        h('rect', { className: 'wc-tl-cold', x: 16, y: 10, width: 104, height: 206, rx: 8 }),
-                        h('rect', { className: 'wc-tl-warm', x: 120, y: 10, width: 104, height: 206, rx: 8 }),
+                        h('rect', { className: 'wc-tl-cold', x: 16, y: 10, width: 104, height: 206 }),
+                        h('rect', { className: 'wc-tl-warm', x: 120, y: 10, width: 104, height: 206 }),
                         [28,52,76,100].map(function(tlX) { return h('path', { key: tlX, className: 'wc-tl-hatch', d: 'M' + tlX + ' 14v198' }); }),
                         h('line', { className: 'wc-tl-zero', 'data-tl-boundary': 'zero', x1: 120, y1: 10, x2: 120, y2: 216 }),
                         tlContext.nodes.map(function(tlRow) { return h('line', { key: tlRow.id, className: 'wc-tl-guide', 'data-selected': String(tlRow.id === tlReading.node), x1: 16, y1: tlChartY(tlRow.progress), x2: 224, y2: tlChartY(tlRow.progress) }); }),
@@ -15453,6 +15453,27 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
             sunDisc.position.copy(sun.position).multiplyScalar(3.1);
             scene.add(sunDisc);
             sunDisc.name = 'pilot-sun-disc';
+            var sunCoronaCanvas = document.createElement('canvas');
+            sunCoronaCanvas.width = sunCoronaCanvas.height = 128;
+            var sunCoronaCtx = sunCoronaCanvas.getContext('2d');
+            if (sunCoronaCtx) {
+              var sunCoronaGrad = sunCoronaCtx.createRadialGradient(64, 64, 4, 64, 64, 64);
+              sunCoronaGrad.addColorStop(0, 'rgba(255,252,232,0.92)');
+              sunCoronaGrad.addColorStop(0.24, 'rgba(254,240,178,0.52)');
+              sunCoronaGrad.addColorStop(0.58, 'rgba(253,216,120,0.16)');
+              sunCoronaGrad.addColorStop(1, 'rgba(253,216,120,0)');
+              sunCoronaCtx.fillStyle = sunCoronaGrad;
+              sunCoronaCtx.fillRect(0, 0, 128, 128);
+            }
+            var sunCoronaTex = new THREE.CanvasTexture(sunCoronaCanvas);
+            var sunCorona = new THREE.Sprite(new THREE.SpriteMaterial({
+              map: sunCoronaTex, color: 0xfff8dc, transparent: true, opacity: 0.72,
+              depthWrite: false, fog: false, blending: THREE.AdditiveBlending
+            }));
+            sunCorona.name = 'pilot-sun-corona';
+            sunCorona.scale.set(92, 92, 1);
+            sunCorona.position.copy(sunDisc.position);
+            scene.add(sunCorona);
 
 
             // ── Ocean ────────────────────────────────────────────────────────
@@ -15477,7 +15498,8 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
             var pilotWaterUniforms = {
               rippleTime: { value: 0 },
               rippleStrength: { value: 0.75 },
-              reflectedSky: { value: new THREE.Color(0x99bdcc) }
+              reflectedSky: { value: new THREE.Color(0x99bdcc) },
+              causticStrength: { value: 0.34 }
             };
             ocean.name = 'pilot-ocean-surface';
             ocean.material.shininess = 92;
@@ -15486,10 +15508,12 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
               shader.uniforms.pilotRippleTime = pilotWaterUniforms.rippleTime;
               shader.uniforms.pilotRippleStrength = pilotWaterUniforms.rippleStrength;
               shader.uniforms.pilotReflectedSky = pilotWaterUniforms.reflectedSky;
+              shader.uniforms.pilotOceanSunDir = skyUniforms.sunDirection;
+              shader.uniforms.pilotCausticStrength = pilotWaterUniforms.causticStrength;
               shader.vertexShader = 'varying vec3 vPilotWaterWorld;\n' + shader.vertexShader;
               shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>',
                 '#include <worldpos_vertex>\nvPilotWaterWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
-              shader.fragmentShader = 'varying vec3 vPilotWaterWorld;\nuniform float pilotRippleTime;\nuniform float pilotRippleStrength;\nuniform vec3 pilotReflectedSky;\n' + shader.fragmentShader;
+              shader.fragmentShader = 'varying vec3 vPilotWaterWorld;\nuniform float pilotRippleTime;\nuniform float pilotRippleStrength;\nuniform vec3 pilotReflectedSky;\nuniform vec3 pilotOceanSunDir;\nuniform float pilotCausticStrength;\n' + shader.fragmentShader;
               shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_maps>', [
                 '#include <normal_fragment_maps>',
                 'float pWarpA = dot(vPilotWaterWorld.xz, vec2(0.047, -0.031)); float pWarpB = dot(vPilotWaterWorld.xz, vec2(0.023, 0.061)); float pWaveA = dot(vPilotWaterWorld.xz, vec2(0.68, 0.21)) + 2.8 * sin(pWarpA) + pilotRippleTime * 1.35;',
@@ -15502,11 +15526,17 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
               shader.fragmentShader = shader.fragmentShader.replace('#include <envmap_fragment>', [
                 '#include <envmap_fragment>',
                 'float pFresnel = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);',
-                'outgoingLight = mix(outgoingLight, pilotReflectedSky, 0.025 + pFresnel * 0.28);'
+                'vec3 pViewSun = normalize(mat3(viewMatrix) * pilotOceanSunDir);',
+                'vec3 pHalfVec = normalize(pViewSun + normalize(vViewPosition));',
+                'float pSunGlint = pow(max(0.0, dot(normal, pHalfVec)), 140.0) * 0.42 + pow(max(0.0, dot(normal, pHalfVec)), 28.0) * 0.09;',
+                'float pCaustA = sin(vPilotWaterWorld.x * 0.28 + pilotRippleTime * 0.85 + cos(vPilotWaterWorld.z * 0.24 - pilotRippleTime * 0.62) * 1.4);',
+                'float pCaustB = cos(vPilotWaterWorld.z * 0.31 - pilotRippleTime * 0.72 + sin(vPilotWaterWorld.x * 0.25 + pilotRippleTime * 0.54) * 1.3);',
+                'float pCaustic = pow(max(0.0, 1.0 - abs(pCaustA + pCaustB) * 0.68), 3.4) * (1.0 - smoothstep(140.0, 560.0, length(vViewPosition)));',
+                'outgoingLight = mix(outgoingLight, pilotReflectedSky, 0.025 + pFresnel * 0.28) + vec3(1.0, 0.94, 0.78) * pSunGlint + vec3(0.42, 0.88, 0.98) * pCaustic * pilotCausticStrength;'
               ].join('\n'));
               ocean.userData.surfaceShader = shader;
             };
-            ocean.material.customProgramCacheKey = function() { return 'pilot-water-ripples-v1'; };
+            ocean.material.customProgramCacheKey = function() { return 'pilot-water-ripples-v3'; };
 
             ocean.position.y = 0;
             scene.add(ocean);
@@ -15678,6 +15708,47 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
             sunPatchLabel.name = 'pilot-sunlight-label';
             sunPatchLabel.position.set(START_X, 10, START_Z + SUN_PATCH_R + 6);
             scene.add(sunPatchLabel);
+            // Volumetric crepuscular solar shafts descending into the sunlit ocean zone.
+            var solarShaftUniforms = {
+              uTime: pilotWaterUniforms.rippleTime,
+              uIntensity: { value: 0.24 },
+              uColorTop: { value: new THREE.Color(0xfffbeb) },
+              uColorBot: { value: new THREE.Color(0xfcd34d) }
+            };
+            var solarShaftMat = new THREE.ShaderMaterial({
+              uniforms: solarShaftUniforms,
+              transparent: true, depthWrite: false, side: THREE.DoubleSide,
+              blending: THREE.AdditiveBlending, fog: false,
+              vertexShader: 'varying vec2 vShaftUv; void main(){ vShaftUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+              fragmentShader: [
+                'uniform float uTime; uniform float uIntensity; uniform vec3 uColorTop; uniform vec3 uColorBot; varying vec2 vShaftUv;',
+                'void main(){',
+                '  float edge = sin(clamp(vShaftUv.x, 0.0, 1.0) * 3.14159265);',
+                '  edge = pow(max(0.0, edge), 2.1);',
+                '  float vert = smoothstep(0.0, 0.16, vShaftUv.y) * smoothstep(1.0, 0.14, vShaftUv.y);',
+                '  float rays = 0.62 + 0.38 * sin(vShaftUv.x * 18.8495 + uTime * 0.45) * cos(vShaftUv.x * 9.4247 - uTime * 0.28);',
+                '  vec3 col = mix(uColorBot, uColorTop, vShaftUv.y);',
+                '  float alpha = edge * vert * rays * uIntensity;',
+                '  if (alpha < 0.002) discard;',
+                '  gl_FragColor = vec4(col, alpha);',
+                '}'
+              ].join('\n')
+            });
+            var solarShafts = new THREE.Group();
+            solarShafts.name = 'pilot-solar-shafts';
+            var solarShaftGeo = new THREE.PlaneGeometry(38, 128, 1, 1);
+            solarShaftGeo.translate(0, 64, 0);
+            for (var ssi = 0; ssi < 4; ssi++) {
+              var shaftMesh = new THREE.Mesh(solarShaftGeo, solarShaftMat);
+              shaftMesh.rotation.y = (ssi / 4) * Math.PI + 0.22;
+              shaftMesh.position.set(Math.cos(ssi * 1.57) * 5.2, 0, Math.sin(ssi * 1.57) * 5.2);
+              shaftMesh.scale.set(0.84 + (ssi % 2) * 0.24, 0.92 + (ssi % 3) * 0.11, 1);
+              shaftMesh.renderOrder = 3;
+              solarShafts.add(shaftMesh);
+            }
+            solarShafts.position.set(START_X, 0.3, START_Z);
+            solarShafts.rotation.set(0.24, 0, 0.36);
+            scene.add(solarShafts);
             // Cache triangle weights once. Following the actual ocean vertices
             // also follows a paused or reduced-motion surface without a new clock.
             // Expanding landing rings need fresh weights at their changing XZ.
@@ -16012,12 +16083,17 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
                   'float ridgeSnowCover = smoothstep(ridgeSnowLine - 0.035, ridgeSnowLine + 0.17, vRidgeHeight + ridgeSnowPatch);',
                   'ridgeSnowCover *= smoothstep(0.25, 0.78, vRidgeUp) * ridgeWinterSnow;',
                   'float ridgeDrift = 0.95 + 0.05 * sin(vRidgePosition.z * 0.28 + sin(vRidgePosition.x * 0.063) * 2.0);',
-                  'vec3 ridgeSnowTint = mix(vec3(0.67, 0.80, 0.88), vec3(0.94, 0.97, 1.0), vRidgeUp) * ridgeDrift;',
+                  'float ridgeAlpineSparkle = pow(max(0.0, sin(vRidgePosition.x * 1.37 + vRidgePosition.z * 0.93) * cos(vRidgePosition.x * 0.79 - vRidgePosition.z * 1.19)), 10.0) * smoothstep(0.55, 0.95, vRidgeUp);',
+                  'vec3 ridgeSnowTint = mix(vec3(0.67, 0.80, 0.88), vec3(0.96, 0.985, 1.0), vRidgeUp) * ridgeDrift + vec3(0.14, 0.18, 0.22) * ridgeAlpineSparkle;',
                   'diffuseColor.rgb = mix(diffuseColor.rgb, ridgeSnowTint, ridgeSnowCover);'
+                ].join('\n'));
+                shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>', [
+                  '#include <roughnessmap_fragment>',
+                  'roughnessFactor = mix(roughnessFactor, 0.34, ridgeSnowCover * 0.72);'
                 ].join('\n'));
                 ridgeLayer.userData.snowShader = shader;
               };
-              ridgeLayer.material.customProgramCacheKey = function() { return 'pilot-ridge-slope-snow-v1'; };
+              ridgeLayer.material.customProgramCacheKey = function() { return 'pilot-ridge-slope-snow-v2'; };
             });
             function paintWatershedRidge(isDesert, isWinter) {
               ridgeWinterSnow.value = isWinter ? 1 : 0;
@@ -16298,10 +16374,10 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
                 'normal = normalize(normal + mat3(viewMatrix) * vec3(lakeGradient.x, 0.0, lakeGradient.y) * lakeDetail * lakeWindStrength * lakeShoreCalm * mix(1.0, 0.32, pilotLakeWinter));'
               ].join('\n'));
               shader.fragmentShader = shader.fragmentShader.replace('#include <envmap_fragment>',
-                '#include <envmap_fragment>\nfloat lakeFresnel = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);\noutgoingLight = mix(outgoingLight, mix(vec3(0.52, 0.68, 0.72), vec3(0.70, 0.78, 0.82), pilotLakeWinter), lakeFresnel * 0.28);');
+                '#include <envmap_fragment>\nfloat lakeFresnel = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);\nfloat lakeSparkle = pow(max(0.0, dot(normal, normalize(normalize(vViewPosition) + vec3(-0.42, 0.82, 0.38)))), 96.0) * pilotLakeSunlight * mix(1.0, 0.35, pilotLakeWinter);\noutgoingLight = mix(outgoingLight, mix(vec3(0.54, 0.72, 0.78), vec3(0.74, 0.82, 0.88), pilotLakeWinter), lakeFresnel * 0.32) + vec3(1.0, 0.95, 0.82) * lakeSparkle * 0.38;');
               lake.userData.surfaceShader = shader;
             };
-            lake.material.customProgramCacheKey = function() { return 'pilot-lake-depth-ripples-v6'; };
+            lake.material.customProgramCacheKey = function() { return 'pilot-lake-depth-ripples-v7'; };
             land.add(lake);
             var lakeShore = new THREE.Group(); lakeShore.name = 'pilot-lake-shore';
             lakeShore.position.set(268, 0, -104);
@@ -16677,11 +16753,12 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
             var pilotStreamTime = { value: 0 };
             streamMesh.material.onBeforeCompile = function(shader) {
               shader.uniforms.pilotStreamTime = pilotStreamTime;
+              shader.uniforms.pilotStreamCaustic = pilotWaterUniforms.causticStrength;
               shader.vertexShader = 'attribute float streamCrossChannel;\nvarying float vStreamCrossChannel;\nvarying vec3 vPilotStreamWorld;\n' + shader.vertexShader;
               shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvStreamCrossChannel = streamCrossChannel;');
               shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>',
                 '#include <worldpos_vertex>\nvPilotStreamWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
-              shader.fragmentShader = 'varying float vStreamCrossChannel;\nvarying vec3 vPilotStreamWorld;\nuniform float pilotStreamTime;\n' + shader.fragmentShader;
+              shader.fragmentShader = 'varying float vStreamCrossChannel;\nvarying vec3 vPilotStreamWorld;\nuniform float pilotStreamTime;\nuniform float pilotStreamCaustic;\n' + shader.fragmentShader;
               shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
                 '#include <color_fragment>',
                 'float streamShallow = smoothstep(0.22, 0.95, abs(vStreamCrossChannel));',
@@ -16701,11 +16778,15 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
                 'float streamDetail = 1.0 - smoothstep(70.0, 300.0, length(vViewPosition));',
                 'normal = normalize(normal + mat3(viewMatrix) * vec3(sin(streamA) * 0.055, 0.0, cos(streamB) * 0.035) * streamDetail);'
               ].join('\n'));
-              shader.fragmentShader = shader.fragmentShader.replace('#include <envmap_fragment>',
-                '#include <envmap_fragment>\nfloat streamFresnel = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);\noutgoingLight = mix(outgoingLight, vec3(0.48, 0.65, 0.69), streamFresnel * 0.2);');
+              shader.fragmentShader = shader.fragmentShader.replace('#include <envmap_fragment>', [
+                '#include <envmap_fragment>',
+                'float streamFresnel = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);',
+                'float streamCaust = pow(max(0.0, 0.5 + 0.5 * sin(streamA * 1.35) * cos(streamB * 1.25)), 3.2) * (1.0 - smoothstep(60.0, 260.0, length(vViewPosition)));',
+                'outgoingLight = mix(outgoingLight, vec3(0.48, 0.65, 0.69), streamFresnel * 0.2) + vec3(0.54, 0.92, 1.0) * streamCaust * pilotStreamCaustic * 0.95;'
+              ].join('\n'));
               streamMesh.userData.surfaceShader = shader;
             };
-            streamMesh.material.customProgramCacheKey = function() { return 'pilot-stream-depth-ripples-v3'; };
+            streamMesh.material.customProgramCacheKey = function() { return 'pilot-stream-depth-ripples-v4'; };
             streamGroup.add(streamMesh);
             // Small broken wave crests identify steeper reaches. This is a
             // visual riffle cue, not a discharge or sediment-transport solver.
@@ -17336,6 +17417,78 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
             }));
             heatShimmer.frustumCulled = false;
             scene.add(heatShimmer);
+
+            // Translucent rising convective evaporation wisps over sunlit ocean & lake ripples.
+            function isPilotHighContrast(el) {
+              try {
+                if (el && el.closest && (el.closest('.theme-contrast') || el.closest('[data-theme="contrast"]') || el.closest('[data-theme="high-contrast"]'))) return true;
+                var r = document.documentElement;
+                if (r && (r.classList.contains('theme-contrast') || r.getAttribute('data-theme') === 'contrast' || r.getAttribute('data-theme') === 'high-contrast')) return true;
+                if (document.body && document.body.classList.contains('theme-contrast')) return true;
+                if (window.matchMedia && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+              } catch (e) {}
+              return false;
+            }
+            var evapWispUniforms = {
+              uTime: { value: 2.8 },
+              uStrength: { value: 0.22 }
+            };
+            var evapWispMat = typeof THREE.ShaderMaterial === 'function' ? new THREE.ShaderMaterial({
+              uniforms: evapWispUniforms,
+              transparent: true, depthWrite: false, side: THREE.DoubleSide,
+              blending: THREE.AdditiveBlending, fog: true,
+              vertexShader: [
+                'uniform float uTime; varying vec2 vWispUv; varying float vWispPhase;',
+                'void main(){',
+                '  vWispUv = uv; vWispPhase = position.x * 0.19 + position.z * 0.13;',
+                '  vec3 p = position;',
+                '  float sway = sin(uv.y * 5.2 - uTime * 1.45 + vWispPhase) * (0.45 + uv.y * 1.35);',
+                '  p.x += sway; p.z += cos(uv.y * 4.1 - uTime * 1.15 + vWispPhase) * (0.35 + uv.y * 0.85);',
+                '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uTime; uniform float uStrength; varying vec2 vWispUv; varying float vWispPhase;',
+                'void main(){',
+                '  float horiz = pow(max(0.0, sin(clamp(vWispUv.x, 0.0, 1.0) * 3.14159265)), 2.0);',
+                '  float vert = smoothstep(0.0, 0.20, vWispUv.y) * smoothstep(1.0, 0.15, vWispUv.y);',
+                '  float wispA = 0.52 + 0.48 * sin(vWispUv.x * 7.8 + sin(vWispUv.y * 5.6 - uTime * 1.55 + vWispPhase) * 1.35);',
+                '  float wispB = 0.56 + 0.44 * sin(vWispUv.y * 11.2 - uTime * 2.15 + vWispPhase * 1.7 - vWispUv.x * 4.2);',
+                '  float rise = wispA * 0.55 + wispB * 0.45;',
+                '  vec3 col = mix(vec3(1.0, 0.92, 0.68), vec3(0.76, 0.94, 1.0), smoothstep(0.05, 0.85, vWispUv.y));',
+                '  float alpha = horiz * vert * rise * uStrength;',
+                '  if (alpha < 0.003) discard;',
+                '  gl_FragColor = vec4(col, alpha);',
+                '}'
+              ].join('\n')
+            }) : new THREE.MeshBasicMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide });
+            var evapWispGroup = new THREE.Group();
+            evapWispGroup.name = 'pilot-evap-vapor-wisps';
+            var evapWispGeo = new THREE.PlaneGeometry(4.8, 22, 1, 12);
+            evapWispGeo.translate(0, 11, 0);
+            for (var ewi = 0; ewi < 6; ewi++) {
+              var wispAngle = (ewi / 6) * Math.PI * 2 + 0.35;
+              var wispDist = 5.5 + (ewi % 3) * 5.6;
+              var wispMesh = new THREE.Mesh(evapWispGeo, evapWispMat);
+              wispMesh.position.set(START_X + Math.cos(wispAngle) * wispDist, 0.6, START_Z + Math.sin(wispAngle) * wispDist);
+              wispMesh.rotation.y = wispAngle + Math.PI * 0.35;
+              wispMesh.scale.set(0.85 + (ewi % 3) * 0.22, 0.8 + (ewi % 2) * 0.32, 1);
+              wispMesh.renderOrder = 3;
+              evapWispGroup.add(wispMesh);
+            }
+            scene.add(evapWispGroup);
+            var lakeEvapWisps = new THREE.Group();
+            lakeEvapWisps.name = 'pilot-lake-evap-wisps';
+            for (var lwi = 0; lwi < 4; lwi++) {
+              var lwAng = (lwi / 4) * Math.PI * 2 + 0.6;
+              var lwMesh = new THREE.Mesh(evapWispGeo, evapWispMat);
+              lwMesh.position.set(268 + Math.cos(lwAng) * (9 + (lwi % 2) * 7), 8.8, -104 + Math.sin(lwAng) * (9 + (lwi % 2) * 7));
+              lwMesh.rotation.y = lwAng + 0.5;
+              lwMesh.scale.set(0.75 + (lwi % 2) * 0.2, 0.68 + (lwi % 3) * 0.15, 1);
+              lwMesh.renderOrder = 3;
+              lakeEvapWisps.add(lwMesh);
+            }
+            scene.add(lakeEvapWisps);
 
             // Sun glints reveal the ocean's moving facets without pretending
             // that every bright speck is a water molecule. Land naturally hides
@@ -18884,16 +19037,19 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
                   'vec3 cloudSun=normalize(vPilotCloudSun);',
                   'float cloudSolar=clamp(pilotCloudSolar,0.0,1.0);',
                   'float cloudDiffuse=clamp((dot(cloudNormal,cloudSun)+0.45)/1.45,0.0,1.0);',
-                  'float cloudFill=0.80+0.06*cloudSolar;',
-                  'float cloudDirect=0.22*cloudSolar*cloudDiffuse;',
+                  'float cloudCrownLift=smoothstep(0.32,0.92,vUv.y);',
+                  'float cloudFill=0.78+0.08*cloudSolar;',
+                  'float cloudDirect=0.25*cloudSolar*cloudDiffuse;',
                   'float cloudShelter=clamp(pilotCloudShelter,0.0,0.20);',
-                  'cloudFill*=1.0-cloudShelter; cloudDirect*=1.0-cloudShelter*0.60;',
-                  'float cloudRim=0.04*cloudSolar*pow(max(0.0,-cloudSun.z),2.0)*pow(1.0-max(0.0,cloudNormal.z),2.0);',
-                  'vec3 cloudFillTone=mix(vec3(0.95,0.98,1.02),vec3(1.0),clamp(vUv.y*1.3,0.0,1.0));',
-                  'diffuseColor.rgb*=cloudFillTone*cloudFill+vec3(1.015,1.005,0.98)*cloudDirect+vec3(cloudRim);'
+                  'cloudFill*=1.0-cloudShelter*1.08; cloudDirect*=1.0-cloudShelter*0.62;',
+                  'float cloudRim=0.055*cloudSolar*pow(max(0.0,-cloudSun.z),2.0)*pow(1.0-max(0.0,cloudNormal.z),2.0);',
+                  'float cloudCrownSilver=0.11*cloudSolar*cloudCrownLift*pow(max(0.0,dot(cloudNormal,cloudSun)),2.4)*(1.0-cloudShelter*2.2);',
+                  'float cloudBaseShadow=(1.0-cloudCrownLift)*(0.06+cloudShelter*0.42);',
+                  'vec3 cloudFillTone=mix(vec3(0.88,0.93,1.0),vec3(1.01,1.005,0.99),clamp(vUv.y*1.25,0.0,1.0));',
+                  'diffuseColor.rgb*=cloudFillTone*(cloudFill-cloudBaseShadow)+vec3(1.03,1.01,0.96)*cloudDirect+vec3(1.0,0.98,0.92)*(cloudRim+cloudCrownSilver);'
                 ].join('\n'));
               };
-              material.customProgramCacheKey = function() { return 'pilot-cloud-world-sun-density-v3'; };
+              material.customProgramCacheKey = function() { return 'pilot-cloud-world-sun-density-v4'; };
             }
             // A cumulus has a FLAT BASE at the condensation level and a heaped,
             // cauliflower top. Scattering lobes on a phyllotaxis spiral - the
@@ -19219,7 +19375,31 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
               }
               snowpackGroundActive=true;return snowpackGroundY;
             }
-            var snowpackMaterial = new THREE.MeshPhongMaterial({color:0xe7f1f4,shininess:14,specular:0xb5d8e7});
+            var pilotSnowGlintUniforms = { uPilotSnowBoost: { value: 1.0 } };
+            var snowpackMaterial = new THREE.MeshPhongMaterial({
+              color: 0xeef7fb, shininess: 46, specular: 0xe0f2fe,
+              emissive: 0x0b2236, emissiveIntensity: 0.08
+            });
+            snowpackMaterial.onBeforeCompile = function(shader) {
+              shader.uniforms.uPilotSnowBoost = pilotSnowGlintUniforms.uPilotSnowBoost;
+              shader.vertexShader = shader.vertexShader
+                .replace('#include <common>', '#include <common>\nvarying vec3 vPilotSnowWorld;')
+                .replace('#include <begin_vertex>', '#include <begin_vertex>\nvPilotSnowWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+              shader.fragmentShader = shader.fragmentShader
+                .replace('#include <common>', '#include <common>\nuniform float uPilotSnowBoost;\nvarying vec3 vPilotSnowWorld;')
+                .replace('#include <dithering_fragment>', [
+                  'vec3 snowN = normalize(vNormal);',
+                  'vec3 snowV = normalize(vViewPosition);',
+                  'float snowRim = pow(1.0 - clamp(dot(snowN, snowV), 0.0, 1.0), 2.8);',
+                  'vec3 snowCell = floor(vPilotSnowWorld * 5.2);',
+                  'float snowHash = fract(sin(dot(snowCell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);',
+                  'float snowFacet = pow(max(0.0, dot(reflect(-snowV, snowN), normalize(vec3(0.45, 0.78, 0.42)))), 14.0);',
+                  'float snowDiamond = step(0.84, snowHash) * snowFacet * 0.55;',
+                  'gl_FragColor.rgb += (vec3(0.16, 0.32, 0.46) * snowRim * 0.46 + vec3(0.84, 0.96, 1.0) * snowDiamond) * uPilotSnowBoost;',
+                  '#include <dithering_fragment>'
+                ].join('\n'));
+            };
+            snowpackMaterial.customProgramCacheKey = function() { return 'pilot-snowpack-alpine-rim-v2'; };
             // A shared, scalloped mound gives the reservoir a settled snow edge.
             // Keep its volume fixed: the kernel's melt exposure is not a mass fraction.
             var snowpackMoundGeometry = new THREE.SphereGeometry(1,32,16);
@@ -19285,7 +19465,7 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
             // Small pooled facets catch the light without an animated sparkle
             // overlay, so pause and reduced motion retain exactly this surface.
             var snowpackGranules=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.15,0),
-              new THREE.MeshPhongMaterial({color:0xf5fbff,shininess:70,specular:0xffffff}),48);
+              new THREE.MeshPhongMaterial({color:0xf8fcff,shininess:120,specular:0xffffff,emissive:0x143852,emissiveIntensity:0.16}),48);
             snowpackGranules.name='pilot-snowpack-ice-granules';
             var snowGranuleDummy=new THREE.Object3D();
             for(var snowGranuleIndex=0;snowGranuleIndex<48;snowGranuleIndex++){
@@ -21203,7 +21383,11 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
             // is a cutaway key, not a porosity measurement or a fluid solver.
             var poreCanvas = document.createElement('canvas'); poreCanvas.width = poreCanvas.height = 256;
             var poreContext = poreCanvas.getContext('2d');
-            poreContext.fillStyle = '#4b9fb8'; poreContext.fillRect(0, 0, 256, 256);
+            var poreBgGrad = poreContext.createLinearGradient(0, 0, 256, 256);
+            poreBgGrad.addColorStop(0, '#22d3ee');
+            poreBgGrad.addColorStop(0.5, '#38bdf8');
+            poreBgGrad.addColorStop(1, '#0ea5e9');
+            poreContext.fillStyle = poreBgGrad; poreContext.fillRect(0, 0, 256, 256);
             for (var poreRow = -1; poreRow < 5; poreRow++) {
               for (var poreColumn = -1; poreColumn < 5; poreColumn++) {
                 var poreCenterX = poreColumn * 64 + (poreRow % 2 ? 32 : 0);
@@ -21212,29 +21396,47 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
                 poreContext.beginPath();
                 for (var poreCorner = 0; poreCorner < 7; poreCorner++) {
                   var poreAngle = poreCorner / 7 * Math.PI * 2 + poreSeed * 0.13;
-                  var poreRadius = 27 + Math.sin(poreCorner * 2.1 + poreSeed) * 2;
+                  var poreRadius = 26.5 + Math.sin(poreCorner * 2.1 + poreSeed) * 2;
                   var poreX = poreCenterX + Math.cos(poreAngle) * poreRadius;
                   var poreY = poreCenterY + Math.sin(poreAngle) * poreRadius;
                   if (poreCorner === 0) poreContext.moveTo(poreX, poreY); else poreContext.lineTo(poreX, poreY);
                 }
                 poreContext.closePath();
-                poreContext.fillStyle = ['#89978f', '#a3a494', '#748b90'][poreSeed % 3];
-                poreContext.fill(); poreContext.strokeStyle = '#526e79'; poreContext.lineWidth = 2; poreContext.stroke();
+                var grainGrad = poreContext.createRadialGradient(poreCenterX - 7, poreCenterY - 7, 3, poreCenterX, poreCenterY, 29);
+                var grainBase = ['#89978f', '#a3a494', '#748b90'][poreSeed % 3];
+                var grainHi = ['#b0beb6', '#c6c7b7', '#9bb2b8'][poreSeed % 3];
+                grainGrad.addColorStop(0, grainHi);
+                grainGrad.addColorStop(1, grainBase);
+                poreContext.fillStyle = grainGrad;
+                poreContext.fill();
+                poreContext.strokeStyle = 'rgba(186,230,253,0.65)'; poreContext.lineWidth = 2.4; poreContext.stroke();
               }
             }
             var aquiferPoreTexture = new THREE.CanvasTexture(poreCanvas);
             aquiferPoreTexture.wrapS = aquiferPoreTexture.wrapT = THREE.RepeatWrapping;
             aquiferPoreTexture.repeat.set(3, 3);
             aquiferPoreTexture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+            var pilotAquiferFlowTime = { value: 0 };
             var groundwaterPathway = new THREE.Group();
             groundwaterPathway.name = 'pilot-groundwater-cutaway';
             var aquiferWindow = new THREE.Mesh(
               new THREE.PlaneGeometry(32, 70),
               new THREE.MeshBasicMaterial({
-                color: 0xffffff, map: aquiferPoreTexture, transparent: true, opacity: 0.84,
+                color: 0xffffff, map: aquiferPoreTexture, transparent: true, opacity: 0.88,
                 depthWrite: false, side: THREE.DoubleSide
               })
             );
+            aquiferWindow.material.onBeforeCompile = function(shader) {
+              shader.uniforms.pilotAquiferTime = pilotAquiferFlowTime;
+              shader.fragmentShader = 'uniform float pilotAquiferTime;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', [
+                '#include <map_fragment>',
+                'float poreMask = smoothstep(0.08, 0.28, diffuseColor.b - max(diffuseColor.r, diffuseColor.g * 0.92));',
+                'float percWave = 0.5 + 0.5 * sin(vUv.y * 16.0 - pilotAquiferTime * 2.4 + sin(vUv.x * 9.0) * 1.1);',
+                'diffuseColor.rgb += vec3(0.14, 0.52, 0.68) * poreMask * (0.28 + percWave * 0.52);'
+              ].join('\n'));
+            };
+            aquiferWindow.material.customProgramCacheKey = function() { return 'pilot-aquifer-pore-percolation-v1'; };
             aquiferWindow.name = 'pilot-saturated-pore-bed';
             var aquiferUV = aquiferWindow.geometry.attributes.uv;
             for (var aquiferUVIndex = 0; aquiferUVIndex < aquiferUV.count; aquiferUVIndex++) aquiferUV.setY(aquiferUVIndex, aquiferUV.getY(aquiferUVIndex) * 2);
@@ -21281,13 +21483,26 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
             }
             shapeAquiferGrains(1);
             groundwaterPathway.add(aquiferGrains);
-            var groundwaterRibbon = makePathwayRibbon(groundwaterLocalCurve, 0x67b6d2, 0.35, 0.22);
+            var groundwaterRibbon = makePathwayRibbon(groundwaterLocalCurve, 0x38bdf8, 0.42, 0.36);
             groundwaterRibbon.name = 'pilot-groundwater-route';
-            groundwaterRibbon.material.blending = THREE.NormalBlending;
+            groundwaterRibbon.material.blending = THREE.AdditiveBlending;
+            groundwaterRibbon.material.onBeforeCompile = function(shader) {
+              shader.uniforms.pilotAquiferTime = pilotAquiferFlowTime;
+              shader.vertexShader = 'varying vec2 vGwUv;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvGwUv = uv;');
+              shader.fragmentShader = 'uniform float pilotAquiferTime; varying vec2 vGwUv;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <dithering_fragment>', [
+                'float gwPulse = 0.58 + 0.42 * sin(vGwUv.x * 28.0 - pilotAquiferTime * 3.1);',
+                'gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.72, 0.96, 1.0), gwPulse * 0.45);',
+                'gl_FragColor.a *= (0.72 + gwPulse * 0.45);',
+                '#include <dithering_fragment>'
+              ].join('\n'));
+            };
+            groundwaterRibbon.material.customProgramCacheKey = function() { return 'pilot-groundwater-percolation-ribbon-v1'; };
             groundwaterPathway.add(groundwaterRibbon);
-            var groundwaterBeads = makePathwayBeads(groundwaterLocalCurve, 0xc7d2fe, 2.5, 0.075);
+            var groundwaterBeads = makePathwayBeads(groundwaterLocalCurve, 0xbae6fd, 2.5, 0.075);
             groundwaterBeads.name = 'pilot-groundwater-flow';
-            groundwaterBeads.material.size = 1.4; groundwaterBeads.material.blending = THREE.NormalBlending;
+            groundwaterBeads.material.size = 1.85; groundwaterBeads.material.blending = THREE.AdditiveBlending;
             groundwaterPathway.add(groundwaterBeads);
             groundwaterPathway.visible = false;
             scene.add(groundwaterPathway);
@@ -22784,8 +22999,15 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
               // Heat-energy glints stay over the marked sun patch. They are a
               // visual meter for absorbed energy, never a claim that vapour is
               // visible. The real vapour form remains a labelled rendering aid.
-              heatShimmer.visible = f === 'liquid';
+              var pilotHc = isPilotHighContrast(canvasEl);
+              pilotSnowGlintUniforms.uPilotSnowBoost.value = pilotHc ? 0.0 : 1.0;
+              pilotWaterUniforms.causticStrength.value = pilotHc ? 0.0 : (0.18 + env.solar * 0.28);
+              heatShimmer.visible = !pilotHc && f === 'liquid';
               heatShimmer.material.opacity = 0.18 + sim.energy * 0.5;
+              evapWispGroup.visible = !pilotHc && f === 'liquid' && env.solar > 0.25;
+              lakeEvapWisps.visible = !pilotHc && lake.visible && env.solar > 0.35 && (f === 'liquid' || sim.altitudeM < 500);
+              evapWispUniforms.uTime.value = motionReduced ? 2.8 : (pilotWaterUniforms.rippleTime ? pilotWaterUniforms.rippleTime.value : t);
+              evapWispUniforms.uStrength.value = pilotHc ? 0.0 : Math.max(0.08, Math.min(0.36, 0.08 + env.solar * 0.16 + sim.energy * 0.14));
               canvasEl.dataset.evaporationVisual = heatShimmer.visible
                 ? 'heat-energy-shimmer-vapour-invisible' : 'hidden';
               if (heatShimmer.visible) {
@@ -22917,6 +23139,7 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
                 pilotLakeTime.value = t * (env.id === 'mountainWinter' ? 0.35 : 1);
                 pilotStreamTime.value = t * streamFlowRate / 0.075;
                 pilotWaterUniforms.rippleTime.value = t;
+                pilotAquiferFlowTime.value += parcelMotionDt;
               }
               if (streamFlow.visible) {
                 var streamAttr = streamFlowGeo.attributes.position;
@@ -23185,6 +23408,8 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
               // for somewhere to evaporate; once airborne it is visual noise.
               var atSurface = sim.form === 'liquid';
               sunPatch.visible = atSurface; sunPatchFill.visible = atSurface; sunPatchLabel.visible = atSurface;
+              solarShafts.visible = atSurface && env.solar > 0.25;
+              solarShaftUniforms.uIntensity.value = Math.max(0.06, Math.min(0.32, (receivingSunlight ? 0.20 : 0.12) * Math.max(0.3, env.solar)));
               if (atSurface) { updateSunlightSurface(sunPatch); updateSunlightSurface(sunPatchFill); }
               canvasEl.dataset.sunlightZone = !atSurface ? 'hidden' : receivingSunlight ? 'inside' : 'outside';
 
@@ -23278,6 +23503,8 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
               // direction and sky colour stay stable as the parcel travels.
               sky.position.copy(camera.position);
               sunDisc.position.copy(camera.position).addScaledVector(skyUniforms.sunDirection.value, 720);
+              sunCorona.position.copy(sunDisc.position);
+              sunCorona.material.opacity = Math.max(0.28, Math.min(0.86, 0.38 + env.solar * 0.44));
 
               if (sim.form !== lastForm) {
                 var previousForm = lastForm;

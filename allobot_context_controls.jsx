@@ -1,18 +1,34 @@
+const _ALLOBOT_FALLBACK_PRIVACY = {
+  get: () => ({ recent: false, excerpt: '' }),
+  set: () => {},
+  clear: () => {},
+  destination: () => ({ active: false, label: 'Not configured', origin: '', managed: false }),
+  recentMessages: () => [],
+};
+
 function AllobotContextControls({ messages, busy, setInput, clearChat, t, theme = 'light', taskActive = false }) {
   const tx = (key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; };
-  const privacy = window.AlloFlowChatPrivacy;
+  const privacy = (typeof window !== 'undefined' && window.AlloFlowChatPrivacy) || _ALLOBOT_FALLBACK_PRIVACY;
   const [choice, setChoice] = React.useState(() => privacy.get());
   const [topic, setTopic] = React.useState('');
   const [notice, setNotice] = React.useState('');
   const [panel, setPanel] = React.useState('');
+  const [confirmClear, setConfirmClear] = React.useState(false);
   const panelId = React.useId();
-  React.useEffect(() => { const update = () => setChoice(privacy.get()); window.addEventListener('alloflow:chat-context', update); return () => window.removeEventListener('alloflow:chat-context', update); }, []);
+  React.useEffect(() => {
+    const update = () => {
+      const p = (typeof window !== 'undefined' && window.AlloFlowChatPrivacy) || _ALLOBOT_FALLBACK_PRIVACY;
+      setChoice(p.get());
+    };
+    window.addEventListener('alloflow:chat-context', update);
+    return () => window.removeEventListener('alloflow:chat-context', update);
+  }, []);
   const [, refreshDestination] = React.useState(0);
   React.useEffect(() => {
     const refresh = () => refreshDestination(value => value + 1);
-    window.addEventListener('alloflow:ai-config-changed', refresh);
-    window.addEventListener('storage', refresh);
-    return () => { window.removeEventListener('alloflow:ai-config-changed', refresh); window.removeEventListener('storage', refresh); };
+    const events = ['alloflow:ai-config-changed', 'alloflow:ai-key-lock-changed', 'alloflow:student-ai-config-changed', 'storage'];
+    events.forEach(ev => window.addEventListener(ev, refresh));
+    return () => { events.forEach(ev => window.removeEventListener(ev, refresh)); };
   }, []);
   const destination = privacy.destination();
   const hasContext = choice.recent || Boolean(choice.excerpt);
@@ -60,7 +76,14 @@ function AllobotContextControls({ messages, busy, setInput, clearChat, t, theme 
         <details className="my-2">
           <summary className="cursor-pointer min-h-11 py-2">{tx('chat_guide.chat_storage_details', 'Chat history and saved copies')}</summary>
           <p className="my-2">{tx('chat_guide.chat_storage', 'Live chat stays in this session until you clear it or reload. Saving chat or advice adds a separate item to History and its configured storage or sync. Delete saved items in History. Recovery snapshots and exported files can retain separate copies; manage those separately. Clearing here does not delete saved copies or provider records.')}</p>
-          <button type="button" disabled={busy} onClick={() => { privacy.clear(); clearChat(); setNotice(tx('chat_guide.chat_cleared', 'Live conversation and pending context cleared. Saved History items are unchanged.')); }} className={button}>{tx('chat_guide.clear_live_chat', 'Clear live conversation')}</button>
+          {confirmClear ? (
+            <div className="flex flex-wrap gap-2">
+              <button type="button" disabled={busy} onClick={() => { setConfirmClear(false); privacy.clear(); if (typeof clearChat === 'function') clearChat(); setNotice(tx('chat_guide.chat_cleared', 'Live conversation and pending context cleared. Saved History items are unchanged.')); }} className={button + ' font-bold'}>{tx('chat_guide.confirm_clear_live_chat', 'Confirm clear')}</button>
+              <button type="button" disabled={busy} onClick={() => setConfirmClear(false)} className={button}>{tx('common.cancel', 'Cancel')}</button>
+            </div>
+          ) : (
+            <button type="button" disabled={busy} onClick={() => setConfirmClear(true)} className={button}>{tx('chat_guide.clear_live_chat', 'Clear live conversation')}</button>
+          )}
         </details>
       </div>
       <p role="status" className={notice ? 'my-2' : ''}>{notice}</p>
@@ -74,22 +97,35 @@ function AllobotAdviceSave({ text, question, evidence, save, busy, t, className 
   const [saving, setSaving] = React.useState(false);
   const [notice, setNotice] = React.useState('');
   const pending = React.useRef(false);
-  React.useEffect(() => { setIncludeQuestion(false); setNotice(''); }, [text, question]);
+  const mountedRef = React.useRef(true);
+  const epochRef = React.useRef(0);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; epochRef.current += 1; };
+  }, []);
+  React.useEffect(() => { epochRef.current += 1; setIncludeQuestion(false); setNotice(''); }, [text, question]);
   const saveAdvice = async () => {
     if (pending.current || busy) return;
+    const epoch = ++epochRef.current;
     pending.current = true; setSaving(true); setNotice('');
     try {
       const result = await save(text, includeQuestion ? question : '', evidence);
+      if (!mountedRef.current || epoch !== epochRef.current) return;
       setNotice(result?.ok === false ? tx('chat_guide.save_failed', 'Advice could not be saved. Try again.') : tx('chat_guide.saved_without_ai', 'Advice copied to History without another AI request.'));
       if (result?.ok !== false) setIncludeQuestion(false);
-    } catch (_) { setNotice(tx('chat_guide.save_failed', 'Advice could not be saved. Try again.')); }
-    finally { pending.current = false; setSaving(false); }
+    } catch (_) {
+      if (mountedRef.current && epoch === epochRef.current) setNotice(tx('chat_guide.save_failed', 'Advice could not be saved. Try again.'));
+    }
+    finally {
+      pending.current = false;
+      if (mountedRef.current) setSaving(false);
+    }
   };
   return <section className="mt-2 text-xs" aria-label={tx('chat_guide.save_advice_options', 'Save advice options')}>
     <p>{tx('chat_guide.save_as_shown', 'Copies this answer and its source links to History as shown. No additional AI request.')}</p>
-    {question && <label className="flex items-start gap-2 my-2"><input type="checkbox" checked={includeQuestion} disabled={busy || saving} onChange={event => { setIncludeQuestion(event.target.checked); setNotice(''); }} />{tx('chat_guide.save_include_question', 'Also save my preceding question')}</label>}
+    {question && <label className="flex min-h-11 items-start gap-2 my-2 py-1 cursor-pointer"><input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" checked={includeQuestion} disabled={busy || saving} onChange={event => { setIncludeQuestion(event.target.checked); setNotice(''); }} />{tx('chat_guide.save_include_question', 'Also save my preceding question')}</label>}
     {includeQuestion && <pre className="whitespace-pre-wrap break-words max-h-32 overflow-auto border p-2" aria-label={tx('chat_guide.save_question_preview', 'Question to be saved')}>{question}</pre>}
-    <button type="button" onClick={saveAdvice} data-help-key="chat_save_advice_btn" disabled={busy || saving} className={'min-h-11 px-3 rounded border ' + className}>{saving ? tx('chat_guide.saving_advice', 'Saving…') : tx('chat_guide.save_advice_history', 'Save advice to History')}</button>
+    <button type="button" onClick={saveAdvice} data-help-key="chat_save_advice_btn" disabled={busy || saving} className={'min-h-11 px-3 rounded border focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' + className}>{saving ? tx('chat_guide.saving_advice', 'Saving…') : tx('chat_guide.save_advice_history', 'Save advice to History')}</button>
     <p role="status">{notice}</p>
   </section>;
 }

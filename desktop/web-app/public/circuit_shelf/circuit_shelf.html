@@ -200,7 +200,7 @@
   var tabs = { predict: document.getElementById('tabPredict'), explore: document.getElementById('tabExplore'), explain: document.getElementById('tabExplain') };
 
   // ── Opener AI bridge (Sim Shelf / Data Lab pattern) ──────────────────
-  var pending = {};
+  var pending = Object.create(null);
   var verifiedOpenerOrigin = '';
   function isTrustedOrigin(origin) {
     var o = String(origin || '');
@@ -239,7 +239,7 @@
     if (!verifiedOpenerOrigin) verifiedOpenerOrigin = event.origin;
     if (data.type === 'alloflow-theme-change') { if (typeof window.applyAlloFlowTheme === 'function') window.applyAlloFlowTheme(data.theme); return; }
     if (data.type === 'alloccircuit-ready') { openerOk = true; aiAvailable = Boolean(data.ai); renderAiState(); return; }
-    if (data.type === 'alloccircuit-ai-response' && data.id && pending[data.id]) {
+    if (data.type === 'alloccircuit-ai-response' && typeof data.id === 'string' && Object.prototype.hasOwnProperty.call(pending, data.id)) {
       var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);
     }
   });

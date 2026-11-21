@@ -19,6 +19,17 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  var _ctx = null;
+  var __alloT = function (key, fallback) {
+    var fn = (_ctx && typeof _ctx.t === 'function')
+      ? _ctx.t
+      : ((typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.t === 'function')
+        ? window.SelHub.t
+        : ((typeof window !== 'undefined' && typeof window.__alloT === 'function') ? window.__alloT : null));
+    var v = null;
+    if (fn) { try { v = fn(key, fallback); } catch (_) { v = null; } }
+    return (typeof v === 'string' && v && v !== key) ? v : (fallback != null ? fallback : key);
+  };
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-social')) return;
@@ -41,9 +52,13 @@ window.SelHub = window.SelHub || {
     if (!_audioCtx) {
       try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
     }
+    if (_audioCtx && _audioCtx.state === 'suspended') {
+      try { _audioCtx.resume(); } catch(e) {}
+    }
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
       var osc = ac.createOscillator();
@@ -845,7 +860,7 @@ window.SelHub = window.SelHub || {
     { id: 'deep_listen_1',  icon: '\uD83C\uDFA7',       name: 'Active Listener',      desc: 'Complete your first deep listening challenge' },
     { id: 'deep_listen_all', icon: '\uD83D\uDC96',      name: 'Empathy Expert',       desc: 'Practice all 4 active listening skills' },
     { id: 'health_check',   icon: '\uD83E\uDE7A',       name: 'Friendship Checker',   desc: 'Complete the Friendship Health Check' },
-    { id: 'social_butterfly', icon: '\uD83E\uDD8B',     name: 'Social Butterfly',     desc: 'Try all 8 activity tabs at least once' }
+    { id: 'social_butterfly', icon: '\uD83E\uDD8B',     name: 'Social Butterfly',     desc: 'Try all 9 activity tabs at least once' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -864,6 +879,7 @@ window.SelHub = window.SelHub || {
     color: 'sky',
     category: 'relationship-skills',
     render: function(ctx) {
+      _ctx = ctx;
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _socT = (ctx && ctx.theme) || {};
       var _socHC = !!_socT.isContrast, _socL = !_socHC && !_socT.isDark;
@@ -962,8 +978,8 @@ window.SelHub = window.SelHub || {
       var fhDone         = d.fhDone || false;
       var fhShowResults  = d.fhShowResults || false;
 
-      // Tab visits tracking (for Social Butterfly badge)
-      var tabVisits      = d.tabVisits || {};
+      // Tab visits tracking (for Social Butterfly badge; seed initial 'convo' tab)
+      var tabVisits      = Object.assign({ convo: true }, d.tabVisits || {});
 
       // Practice log
       var practiceLog    = d.practiceLog || [];
@@ -1054,28 +1070,45 @@ window.SelHub = window.SelHub || {
         { id: 'log',       label: '\uD83D\uDCCA Progress' }
       ];
 
+      var selectSocTab = function(tabId) {
+        upd('activeTab', tabId);
+        if (soundEnabled) sfxClick();
+        var newVisits = Object.assign({}, tabVisits);
+        newVisits[tabId] = true;
+        upd('tabVisits', newVisits);
+        // Social Butterfly: visited all 9 activity tabs (not 'log')
+        var actTabs = ['convo','sim','listen','listenDeep','body','blReader','coop','friends','healthChk'];
+        var allVisited = actTabs.every(function(t) { return newVisits[t]; });
+        if (allVisited) tryAwardBadge('social_butterfly');
+      };
+
       var tabBar = h('div', {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         h('div', { role: 'tablist', 'aria-label': 'Social Skills tabs', style: { display: 'flex', gap: 2 } },
-          tabs.map(function(tab) {
+          tabs.map(function(tab, idx) {
           var isActive = activeTab === tab.id;
           return h('button', {
             key: tab.id,
-            role: 'tab', 'aria-selected': isActive,
-            onClick: function() {
-              upd('activeTab', tab.id);
-              if (soundEnabled) sfxClick();
-              var newVisits = Object.assign({}, tabVisits);
-              newVisits[tab.id] = true;
-              upd('tabVisits', newVisits);
-              // Social Butterfly: visited all 8 activity tabs (not 'log')
-              var actTabs = ['convo','sim','listen','listenDeep','body','blReader','coop','friends','healthChk'];
-              var allVisited = actTabs.every(function(t) { return newVisits[t]; });
-              if (allVisited) tryAwardBadge('social_butterfly');
+            id: 'soc-tab-' + tab.id,
+            role: 'tab', 'aria-selected': isActive, 'aria-controls': 'soc-tab-panel',
+            tabIndex: isActive ? 0 : -1,
+            onClick: function() { selectSocTab(tab.id); },
+            onKeyDown: function(e) {
+              var nextIdx = null;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+              else if (e.key === 'Home') nextIdx = 0;
+              else if (e.key === 'End') nextIdx = tabs.length - 1;
+              if (nextIdx !== null) {
+                e.preventDefault();
+                var target = tabs[nextIdx];
+                selectSocTab(target.id);
+                setTimeout(function() { var el = document.getElementById('soc-tab-' + target.id); if (el) el.focus(); }, 0);
+              }
             },
             style: {
-              padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
+              padding: '7px 12px', borderRadius: 8, border: (isActive && _socHC) ? '1px solid #ffff00' : 'none', cursor: 'pointer',
               background: isActive ? _socBg('#0ea5e9') : 'transparent',
               color: isActive ? _socFg('#fff') : _socFg('#94a3b8'),
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
@@ -1122,7 +1155,7 @@ window.SelHub = window.SelHub || {
             style: { position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)' },
             onClick: function() { upd('showBadgePopup', null); }
           },
-            h('div', {               style: { background: 'linear-gradient(135deg, #0c1631 0%, #1e293b 100%)', borderRadius: 20, padding: '32px 40px', textAlign: 'center', border: '2px solid #0ea5e9', maxWidth: 320 },
+            h('div', {               style: { background: _socHC ? '#000000' : (_socL ? '#ffffff' : 'linear-gradient(135deg, #0c1631 0%, #1e293b 100%)'), borderRadius: 20, padding: '32px 40px', textAlign: 'center', border: '2px solid ' + (_socHC ? '#ffff00' : '#0ea5e9'), maxWidth: 320 },
               onClick: function(e) { e.stopPropagation(); }
             },
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
@@ -1133,7 +1166,7 @@ window.SelHub = window.SelHub || {
               h('button', {
                 type: 'button',
                 onClick: function() { upd('showBadgePopup', null); },
-                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.14)', color: '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: _socHC ? '1px solid #ffff00' : 'none', background: _socHC ? '#000000' : '#0369a1', color: _socHC ? '#ffff00' : '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
               }, 'Nice')
             )
           );
@@ -1143,14 +1176,16 @@ window.SelHub = window.SelHub || {
       // ── Badges Panel ──
       if (showBadgesPanel) {
         return h('div', { style: { minHeight: '100%' } },
-          tabBar, badgePopup,
+          tabBar,
+          (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
+          badgePopup,
           h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _socFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
               shownBadges.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
-                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _socBg('#1e293b'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? '#0ea5e9' : _socBg('#334155')) }
+                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? (_socHC ? '#000000' : (_socL ? '#e0f2fe' : '#0c1631')) : _socBg('#1e293b'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? (_socHC ? '#ffff00' : '#0ea5e9') : _socBg('#334155')) }
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4, filter: earned ? 'none' : 'grayscale(1)' } }, badge.icon),
                   h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _socFg('#e2e8f0') : _socFg('#94a3b8') } }, badge.name),
@@ -1219,13 +1254,16 @@ window.SelHub = window.SelHub || {
                 style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: _socBg('#0ea5e9'), color: _socFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
               }, '\uD83D\uDCA1 See Tips'),
 
-              _socAiOn && callGemini && convoDraft.trim().length > 5 && h('button', { 'aria-label': 'ai_practice',
+              _socAiOn && callGemini && convoDraft.trim().length > 5 && h('button', { 'aria-label': 'Get AI feedback on conversation draft',
                 onClick: function() {
                   if (!_socAiOn) return;
                   var cSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
                     ? window.SelHub.safeRehearseCheck(convoDraft, { toolId: 'social_convo', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
                     : { action: 'continue' };
                   if (cSafety.action === 'block') {
+                    if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+                      try { window.SelHub.showCrisisModal({ toolName: 'Social Skills Lab', contentSnippet: convoDraft }); } catch (_) {}
+                    }
                     upd({ convoAiResp: window.SelHub.rehearseBreakCharacterText(cSafety.severity), convoAiLoading: false, convoRevealed: true, _lastTier: 3 });
                     return;
                   }
@@ -1320,17 +1358,33 @@ window.SelHub = window.SelHub || {
           // Comprehension question
           h('p', { style: { fontSize: 12, fontWeight: 700, color: _socFg('#cbd5e1'), marginBottom: 12 } }, currentListen.question),
 
-          // Response options
-          !listenRevealed && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-            h('button', {
-              onClick: function() { upd({ listenChoice: 'good', listenRevealed: true }); if (soundEnabled) sfxCorrect(); awardXP(10); var nc = listenCompleted + 1; upd('listenCompleted', nc); tryAwardBadge('listen_1'); if (nc >= 5) tryAwardBadge('listen_5'); logPractice('listen', currentListen.skill); },
-              style: { padding: '14px 16px', borderRadius: 12, border: '1px solid #334155', background: _socBg('#1e293b'), color: _socFg('#f1f5f9'), fontSize: 13, cursor: 'pointer', textAlign: 'left', lineHeight: 1.5 }
-            }, '\uD83D\uDFE2 "' + currentListen.goodResponse + '"'),
-            h('button', {
-              onClick: function() { upd({ listenChoice: 'bad', listenRevealed: true }); if (soundEnabled) sfxWrong(); var nc = listenCompleted + 1; upd('listenCompleted', nc); tryAwardBadge('listen_1'); if (nc >= 5) tryAwardBadge('listen_5'); logPractice('listen', currentListen.skill); },
-              style: { padding: '14px 16px', borderRadius: 12, border: '1px solid #334155', background: _socBg('#1e293b'), color: _socFg('#f1f5f9'), fontSize: 13, cursor: 'pointer', textAlign: 'left', lineHeight: 1.5 }
-            }, '\uD83D\uDFE1 "' + currentListen.badResponse + '"')
-          ),
+          // Response options (deterministically ordered by listenIdx % 2 with neutral A/B labels)
+          !listenRevealed && (function() {
+            var goodFirst = (listenIdx % 2) === 0;
+            var opts = goodFirst
+              ? [{ kind: 'good', text: currentListen.goodResponse }, { kind: 'bad', text: currentListen.badResponse }]
+              : [{ kind: 'bad', text: currentListen.badResponse }, { kind: 'good', text: currentListen.goodResponse }];
+            return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              opts.map(function(opt, oi) {
+                var letter = oi === 0 ? 'A.' : 'B.';
+                return h('button', {
+                  key: opt.kind,
+                  onClick: function() {
+                    var isGood = opt.kind === 'good';
+                    upd({ listenChoice: opt.kind, listenRevealed: true });
+                    if (soundEnabled) { isGood ? sfxCorrect() : sfxWrong(); }
+                    if (isGood) awardXP(10);
+                    var nc = listenCompleted + 1;
+                    upd('listenCompleted', nc);
+                    tryAwardBadge('listen_1');
+                    if (nc >= 5) tryAwardBadge('listen_5');
+                    logPractice('listen', currentListen.skill);
+                  },
+                  style: { padding: '14px 16px', borderRadius: 12, border: '1px solid #334155', background: _socBg('#1e293b'), color: _socFg('#f1f5f9'), fontSize: 13, cursor: 'pointer', textAlign: 'left', lineHeight: 1.5 }
+                }, letter + ' "' + opt.text + '"');
+              })
+            );
+          })(),
 
           // Revealed
           listenRevealed && h('div', null,
@@ -1374,7 +1428,7 @@ window.SelHub = window.SelHub || {
           }, '\uD83D\uDCDA Learn'),
           h('button', { 'aria-label': 'Quiz',
             onClick: function() { upd('blMode', 'quiz'); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 18px', borderRadius: '0 8px 8px 0', border: '1px solid #334155', background: blMode === 'quiz' ? _socFg('#f59e0b') : _socBg('#1e293b'), color: blMode === 'quiz' ? _socFg('#fff') : _socFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+            style: { padding: '6px 18px', borderRadius: '0 8px 8px 0', border: '1px solid ' + (_socHC && blMode === 'quiz' ? '#ffff00' : '#334155'), background: blMode === 'quiz' ? _socBg('#b45309') : _socBg('#1e293b'), color: blMode === 'quiz' ? _socFg('#fff') : _socFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83E\uDDE9 Quiz')
         );
 
@@ -1396,6 +1450,7 @@ window.SelHub = window.SelHub || {
                 var isExplored = blExplored[bl.id];
                 return h('div', { key: bl.id, style: { borderRadius: 14, border: '1px solid ' + (isExpanded ? bl.color + '66' : _socBg('#334155')), background: isExpanded ? bl.color + '08' : _socBg('#1e293b'), overflow: 'hidden' } },
                   h('button', {
+                    'aria-expanded': isExpanded,
                     onClick: function() {
                       var newExp = isExpanded ? null : bl.id;
                       upd('friendExpanded', newExp);
@@ -1610,6 +1665,7 @@ window.SelHub = window.SelHub || {
 
               return h('div', { key: skill.id, style: { borderRadius: 14, border: '1px solid ' + (isExpanded ? skill.color + '66' : _socBg('#334155')), background: isExpanded ? skill.color + '08' : _socBg('#1e293b'), overflow: 'hidden' } },
                 h('button', {
+                  'aria-expanded': isExpanded,
                   onClick: function() {
                     var newExp = isExpanded ? null : 'fr_' + skill.id;
                     upd('friendExpanded', newExp);
@@ -1782,11 +1838,11 @@ window.SelHub = window.SelHub || {
         var blrToggle = h('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 16 } },
           h('button', { 'aria-label': 'Study Cues',
             onClick: function() { upd('blrMode', 'study'); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 18px', borderRadius: '8px 0 0 8px', border: '1px solid #334155', background: blrMode === 'study' ? '#8b5cf6' : _socBg('#1e293b'), color: blrMode === 'study' ? _socFg('#fff') : _socFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+            style: { padding: '6px 18px', borderRadius: '8px 0 0 8px', border: '1px solid ' + (_socHC && blrMode === 'study' ? '#ffff00' : '#334155'), background: blrMode === 'study' ? _socBg('#8b5cf6') : _socBg('#1e293b'), color: blrMode === 'study' ? _socFg('#fff') : _socFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83D\uDCDA Study Cues'),
           h('button', { 'aria-label': 'Matching Quiz',
             onClick: function() { upd('blrMode', 'quiz'); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 18px', borderRadius: '0 8px 8px 0', border: '1px solid #334155', background: blrMode === 'quiz' ? _socFg('#f59e0b') : _socBg('#1e293b'), color: blrMode === 'quiz' ? _socFg('#fff') : _socFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+            style: { padding: '6px 18px', borderRadius: '0 8px 8px 0', border: '1px solid ' + (_socHC && blrMode === 'quiz' ? '#ffff00' : '#334155'), background: blrMode === 'quiz' ? _socBg('#b45309') : _socBg('#1e293b'), color: blrMode === 'quiz' ? _socFg('#fff') : _socFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83E\uDDE9 Matching Quiz')
         );
 
@@ -1810,6 +1866,7 @@ window.SelHub = window.SelHub || {
                 var isStudied = blrStudied[cue.id];
                 return h('div', { key: cue.id, style: { borderRadius: 14, border: '1px solid ' + (isExp ? '#8b5cf666' : _socBg('#334155')), background: isExp ? '#8b5cf608' : _socBg('#1e293b'), overflow: 'hidden' } },
                   h('button', {
+                    'aria-expanded': isExp,
                     onClick: function() {
                       var newExp = isExp ? null : cue.id;
                       upd('blrExpanded', newExp);
@@ -1986,6 +2043,9 @@ window.SelHub = window.SelHub || {
                     ? window.SelHub.safeRehearseCheck(ldDraft, { toolId: 'social_listen', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
                     : { action: 'continue' };
                   if (lSafety.action === 'block') {
+                    if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+                      try { window.SelHub.showCrisisModal({ toolName: 'Social Skills Lab', contentSnippet: ldDraft }); } catch (_) {}
+                    }
                     upd({ ldAiResp: window.SelHub.rehearseBreakCharacterText(lSafety.severity), ldAiLoading: false, ldRevealed: true, _lastTier: 3 });
                     return;
                   }
@@ -2119,18 +2179,21 @@ window.SelHub = window.SelHub || {
 
             allAnswered && h('button', {
               onClick: function() {
-                upd('fhShowResults', true);
-                upd('fhDone', true);
+                var wasDone = !!fhDone;
+                var wasXp = !!d.fhXpAwarded;
+                upd({ fhShowResults: true, fhDone: true, fhXpAwarded: true });
                 if (soundEnabled) sfxBadge();
-                awardXP(20);
+                if (!wasDone && !wasXp) {
+                  awardXP(20);
+                  logPractice('healthChk', 'completed');
+                }
                 tryAwardBadge('health_check');
-                logPractice('healthChk', 'completed');
               },
-              style: { width: '100%', marginTop: 16, padding: '14px 0', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #0369a1, #7c3aed)', color: _socFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+              style: { width: '100%', marginTop: 16, padding: '14px 0', borderRadius: 12, border: _socHC ? '1px solid #ffff00' : 'none', background: _socHC ? '#000000' : 'linear-gradient(135deg, #0369a1, #7c3aed)', color: _socFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
             }, '\uD83E\uDE7A See My Results'),
 
             !allAnswered && h('p', { style: { textAlign: 'center', color: _socFg('#94a3b8'), fontSize: 11, marginTop: 12 } },
-              (fhStatements.length - Object.keys(fhAnswers).length) + ' questions remaining'
+              fhStatements.filter(function(st) { return fhAnswers[st.id] == null; }).length + ' questions remaining'
             )
           );
         } else {
@@ -2204,7 +2267,7 @@ window.SelHub = window.SelHub || {
                 onClick: function() { upd({ fhAnswers: {}, fhShowResults: false, fhDone: false }); },
                 style: { flex: 1, padding: '12px 0', borderRadius: 10, border: '1px solid #334155', background: _socBg('#1e293b'), color: _socFg('#94a3b8'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDD04 Retake'),
-              h('button', { 'aria-label': 'Back to Questions',
+              h('button', { 'aria-label': __alloT('sel.social.back_to_questions_aria', 'Back to Questions'),
                 onClick: function() { upd('fhShowResults', false); },
                 style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: _socBg('#0ea5e9'), color: _socFg('#fff'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, '\u2190 Back to Questions')
@@ -2291,7 +2354,7 @@ window.SelHub = window.SelHub || {
                     var labels = { convo: '\uD83D\uDDE3\uFE0F Conversation', sim: '\uD83C\uDFAC Simulator', listen: '\uD83D\uDC42 Listening', listenDeep: '\uD83C\uDFA7 Deep Listen', body: '\uD83D\uDC40 Body Language', body_quiz: '\uD83E\uDDE9 BL Quiz', blReader: '\uD83D\uDD75\uFE0F BL Reader', blr_quiz: '\uD83C\uDFAF BLR Quiz', coop: '\uD83E\uDD1D Cooperation', healthChk: '\uD83E\uDE7A Health Check' };
                     return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, background: _socBg('#0f172a'), marginBottom: 4 } },
                       h('span', { style: { flex: 1, fontSize: 12, color: _socFg('#e2e8f0'), fontWeight: 600 } }, labels[entry.type] || entry.type),
-                      h('span', { style: { fontSize: 10, color: _socFg('#475569'), flexShrink: 0 } }, new Date(entry.timestamp).toLocaleDateString())
+                      h('span', { style: { fontSize: 10, color: _socFg('#94a3b8'), flexShrink: 0 } }, new Date(entry.timestamp).toLocaleDateString())
                     );
                   })
                 )
@@ -2307,16 +2370,18 @@ window.SelHub = window.SelHub || {
         tabBar,
         (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
         badgePopup,
-        convoContent,
-        simContent,
-        listenContent,
-        listenDeepContent,
-        bodyContent,
-        blReaderContent,
-        coopContent,
-        friendsContent,
-        healthChkContent,
-        logContent
+        h('div', { id: 'soc-tab-panel', role: 'tabpanel', 'aria-labelledby': 'soc-tab-' + activeTab },
+          convoContent,
+          simContent,
+          listenContent,
+          listenDeepContent,
+          bodyContent,
+          blReaderContent,
+          coopContent,
+          friendsContent,
+          healthChkContent,
+          logContent
+        )
       );
     }
   });

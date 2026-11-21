@@ -39,9 +39,21 @@ if [[ "${1:-}" != "--verified-candidate" || "$#" -ne 3 ]]; then
   echo "Run ./dev-tools/deploy_verified_candidate.sh --help for the verified-candidate publication flow." >&2
   exit 2
 fi
-for name in SKIP_RENDER_CHECK SKIP_CHANGED_TESTS SKIP_CDN_DEPLOYABLE SKIP_COMMENT_BUDGET SKIP_POST_VERIFY SKIP_DESKTOP_BUILD SKIP_FIREBASE_DEPLOY SKIP_BACKUP; do
+for name in SKIP_RENDER_CHECK SKIP_CHANGED_TESTS SKIP_CDN_DEPLOYABLE SKIP_COMMENT_BUDGET SKIP_POST_VERIFY SKIP_DESKTOP_BUILD SKIP_FIREBASE_DEPLOY SKIP_BACKUP SKIP_CLOUD_PARITY ALLOFLOW_SKIP_RUNTIME_INTEGRITY; do
   if [[ -n "${!name:-}" && "${!name}" != "0" ]]; then
     echo "Release blocked: $name is not supported for candidate publication." >&2
+    exit 2
+  fi
+done
+for name in "${!SKIP_@}" "${!ALLOFLOW_SKIP_@}"; do
+  if [[ -n "${!name:-}" && "${!name}" != "0" ]]; then
+    echo "Release blocked: $name is not supported for candidate publication." >&2
+    exit 2
+  fi
+done
+for name in WRANGLER_CONFIG CLOUDFLARE_API_BASE_URL; do
+  if [[ -n "${!name:-}" ]]; then
+    echo "Release blocked: $name override is not allowed for candidate publication." >&2
     exit 2
   fi
 done
@@ -62,10 +74,27 @@ if [[ ! "$WRANGLER_VERSION" =~ (^|[[:space:]])4\.[0-9]+\.[0-9]+([[:space:]]|$) ]
   exit 2
 fi
 
+CALLER_PWD="$PWD"
+MANIFEST_ARG="$2"
+PAYLOAD_ARG="$3"
+[[ "$MANIFEST_ARG" = /* || "$MANIFEST_ARG" =~ ^[A-Za-z]:[\\/] ]] || MANIFEST_ARG="$CALLER_PWD/$MANIFEST_ARG"
+[[ "$PAYLOAD_ARG" = /* || "$PAYLOAD_ARG" =~ ^[A-Za-z]:[\\/] ]] || PAYLOAD_ARG="$CALLER_PWD/$PAYLOAD_ARG"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$SCRIPT_DIR"
 RELEASE_GATE="$SCRIPT_DIR/dev-tools/security_release_candidate.cjs"
-VERIFIED_STAGE="$(node "$RELEASE_GATE" stage "--root=$SCRIPT_DIR" "--manifest=$2" "--payload=$3")"
+VERIFIED_STAGE="$(node "$RELEASE_GATE" stage "--root=$SCRIPT_DIR" "--manifest=$MANIFEST_ARG" "--payload=$PAYLOAD_ARG")"
+[[ -n "$VERIFIED_STAGE" && ! -L "$VERIFIED_STAGE" && -d "$VERIFIED_STAGE/payload/site" && "$(basename -- "$VERIFIED_STAGE")" == alloflow-verified-release-* ]] || {
+  echo "Release blocked: invalid staging directory returned." >&2
+  exit 2
+}
+STAGE_PARENT="$(dirname -- "$VERIFIED_STAGE")"
+for cfg in wrangler.toml wrangler.json wrangler.jsonc; do
+  if [[ -e "$STAGE_PARENT/$cfg" ]]; then
+    echo "Release blocked: unexpected $cfg in staging parent directory." >&2
+    exit 2
+  fi
+done
 echo "Publishing verified candidate to Cloudflare Pages: alloflow-cdn (main)"
 (
   cd "$VERIFIED_STAGE/payload/site"

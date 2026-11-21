@@ -52,11 +52,11 @@ const blockedIpv6 = new net.BlockList();
   ["64:ff9b::", 96],
   ["64:ff9b:1::", 48],
   ["100::", 64],
-  ["2001::", 32],
-  ["2001:10::", 28],
-  ["2001:20::", 28],
+  ["2001::", 23],
   ["2001:db8::", 32],
   ["2002::", 16],
+  ["3fff::", 20],
+  ["5f00::", 16],
   ["fc00::", 7],
   ["fe80::", 10],
   ["fec0::", 10],
@@ -96,7 +96,9 @@ function validatePublicHttpUrl(value) {
   }
   const hostname = normalizedHostname(url.hostname);
   if (!hostname || hostname.length > 253 || hostname === "localhost" || hostname.endsWith(".localhost")
-      || hostname.endsWith(".local") || hostname.endsWith(".internal") || hostname === "metadata.google") {
+      || hostname.endsWith(".local") || hostname.endsWith(".internal") || hostname.endsWith(".home.arpa")
+      || hostname === "metadata.google" || hostname.endsWith(".metadata.google")
+      || (!net.isIP(hostname) && !hostname.includes("."))) {
     throw sourceError("blocked-target", 403, "Local and internal network addresses are not allowed.");
   }
   if (net.isIP(hostname) && !isPublicIp(hostname)) {
@@ -106,17 +108,27 @@ function validatePublicHttpUrl(value) {
   return url;
 }
 
-async function resolvePublicAddresses(urlValue, lookup = dns.lookup) {
+async function resolvePublicAddresses(urlValue, lookup = dns.lookup, timeoutMs = FETCH_TIMEOUT_MS) {
   const url = urlValue instanceof URL ? urlValue : validatePublicHttpUrl(urlValue);
   const hostname = normalizedHostname(url.hostname);
   let records;
   if (net.isIP(hostname)) {
     records = [{ address: hostname, family: net.isIP(hostname) }];
   } else {
+    const budget = Math.max(50, Number(timeoutMs) || FETCH_TIMEOUT_MS);
+    let timer = null;
     try {
-      records = await lookup(hostname, { all: true, verbatim: true });
-    } catch (_) {
+      const lookupPromise = Promise.resolve().then(() => lookup(hostname, { all: true, verbatim: true }));
+      lookupPromise.catch(() => {});
+      const timeoutPromise = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(sourceError("source-timeout", 504, "The source host lookup timed out.")), budget);
+      });
+      records = await Promise.race([lookupPromise, timeoutPromise]);
+    } catch (error) {
+      if (error instanceof SourceFetchError) throw error;
       throw sourceError("dns-failed", 422, "The source host could not be resolved.");
+    } finally {
+      if (timer) clearTimeout(timer);
     }
   }
   records = (Array.isArray(records) ? records : [records]).map((record) => ({
@@ -141,7 +153,7 @@ async function resolvePublicAddresses(urlValue, lookup = dns.lookup) {
 
 async function assertPublicTarget(value, options = {}) {
   const url = validatePublicHttpUrl(value);
-  const addresses = await resolvePublicAddresses(url, options.lookup || dns.lookup);
+  const addresses = await resolvePublicAddresses(url, options.lookup || dns.lookup, options.timeoutMs);
   return { url, addresses };
 }
 
@@ -198,7 +210,8 @@ function requestPinnedPage(url, addresses, options = {}) {
       const status = Number(response.statusCode) || 0;
       const headers = response.headers || {};
       if ([301, 302, 303, 307, 308].includes(status)) {
-        response.resume();
+        response.destroy();
+        req.destroy();
         finish(resolve, { status, headers, body: Buffer.alloc(0) });
         return;
       }
@@ -260,6 +273,70 @@ function normalizeReadableText(value) {
     .slice(0, MAX_SOURCE_TEXT_CHARS);
 }
 
+const STRIP_BLOCK_TAGS = new Set(["script", "style", "template", "noscript", "svg", "canvas", "form", "nav", "footer", "aside"]);
+
+function stripHtmlCommentsAndBlocks(input) {
+  const text = String(input || "");
+  const lower = text.toLowerCase();
+  let out = "";
+  let pos = 0;
+  const len = text.length;
+  while (pos < len) {
+    const lt = text.indexOf("<", pos);
+    if (lt < 0) {
+      out += text.slice(pos);
+      break;
+    }
+    if (lt > pos) out += text.slice(pos, lt);
+    if (lower.startsWith("<!--", lt)) {
+      const endComment = lower.indexOf("-->", lt + 4);
+      if (endComment < 0) {
+        out += " ";
+        break;
+      }
+      out += " ";
+      pos = endComment + 3;
+      continue;
+    }
+    let nameEnd = lt + 1;
+    while (nameEnd < len) {
+      const ch = lower.charCodeAt(nameEnd);
+      if (ch >= 97 && ch <= 122) nameEnd += 1;
+      else break;
+    }
+    const tagName = lower.slice(lt + 1, nameEnd);
+    const nextChar = nameEnd < len ? lower[nameEnd] : "";
+    if (tagName && STRIP_BLOCK_TAGS.has(tagName) && (nextChar === ">" || nextChar === "/" || /\s/.test(nextChar))) {
+      const openEnd = text.indexOf(">", nameEnd);
+      if (openEnd < 0) {
+        out += " ";
+        break;
+      }
+      const closeNeedle = "</" + tagName;
+      let searchFrom = openEnd + 1;
+      let closedAt = -1;
+      while (searchFrom < len) {
+        const idx = lower.indexOf(closeNeedle, searchFrom);
+        if (idx < 0) break;
+        let after = idx + closeNeedle.length;
+        while (after < len && /\s/.test(lower[after])) after += 1;
+        if (after < len && lower[after] === ">") {
+          closedAt = after + 1;
+          break;
+        }
+        searchFrom = idx + closeNeedle.length;
+      }
+      out += " ";
+      if (closedAt < 0) break;
+      pos = closedAt;
+      continue;
+    }
+    out += "<";
+    pos = lt + 1;
+  }
+  return out;
+}
+
 function extractHtmlDocument(html) {
   const raw = String(html || "");
   const titleMatch = raw.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i);
@@ -268,9 +345,7 @@ function extractHtmlDocument(html) {
   const articleMatch = raw.match(/<article\b[^>]*>([\s\S]*?)<\/article\s*>/i);
   const mainMatch = raw.match(/<main\b[^>]*>([\s\S]*?)<\/main\s*>/i);
   let body = articleMatch && articleMatch[1] || mainMatch && mainMatch[1] || raw;
-  body = body
-    .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(/<(script|style|template|noscript|svg|canvas|form|nav|footer|aside)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, " ")
+  body = stripHtmlCommentsAndBlocks(body)
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<li\b[^>]*>/gi, "\n• ")
     .replace(/<\/(p|div|li|section|article|main|h[1-6]|tr|td|th|blockquote|pre)\s*>/gi, "\n")
@@ -319,7 +394,9 @@ async function fetchPublicPage(value, options = {}) {
     const key = current.toString();
     if (visited.has(key)) throw sourceError("redirect-loop", 422, "The source page redirects in a loop.");
     visited.add(key);
-    const target = await assertPublicTarget(current, { lookup });
+    const remainingBeforeDns = deadline - Date.now();
+    if (remainingBeforeDns <= 0) throw sourceError("source-timeout", 504, "The source page took too long to respond.");
+    const target = await assertPublicTarget(current, { lookup, timeoutMs: remainingBeforeDns });
     const remaining = deadline - Date.now();
     if (remaining <= 0) throw sourceError("source-timeout", 504, "The source page took too long to respond.");
     let response;

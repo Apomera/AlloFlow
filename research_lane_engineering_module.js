@@ -408,8 +408,22 @@
             bypass_signals: ["candidate_near_duplicate"]
           };
         }
-        var satA = new Set([].concat(concepts[a].constraintsSatisfied || [], concepts[a].constraintsPunted || []));
-        var satB = new Set([].concat(concepts[b].constraintsSatisfied || [], concepts[b].constraintsPunted || []));
+        var satA = new Set([].concat(
+          (concepts[a].constraintsSatisfied || []).map(function(id) {
+            return "S:" + id;
+          }),
+          (concepts[a].constraintsPunted || []).map(function(id) {
+            return "P:" + id;
+          })
+        ));
+        var satB = new Set([].concat(
+          (concepts[b].constraintsSatisfied || []).map(function(id) {
+            return "S:" + id;
+          }),
+          (concepts[b].constraintsPunted || []).map(function(id) {
+            return "P:" + id;
+          })
+        ));
         var union = new Set([].concat(Array.from(satA), Array.from(satB)));
         var inter = 0;
         satA.forEach(function(x) {
@@ -591,9 +605,7 @@
       var matched = runs.filter(function(r) {
         return r.criterionId === c.id;
       });
-      return matched.length > 0 && matched.every(function(r) {
-        return r.passed === false;
-      });
+      return matched.length > 0 && matched[matched.length - 1].passed === false;
     });
   }
   function stakeholderTranslatorGate(journal) {
@@ -940,6 +952,7 @@
   function tradeoffInverterPrompt(journal) {
     var devLevel = journal.devLevel || "6_8";
     var sp = journal.stakeholderProfile || {};
+    var decl = stripUntrustedEng(((journal.stageNotes || {}).plan_test || {}).tradeOffDeclaration || "");
     var ledger = (journal.tradeOffLedger || []).map(function(r, i) {
       var gained = ((journal.constraintMatrix || []).filter(function(c) {
         return c.id === r.criterion;
@@ -951,9 +964,9 @@
       })[0] || {}).criterion || ((journal.criteria || []).filter(function(c) {
         return c.id === r.sacrificedCriterion;
       })[0] || {}).name || r.sacrificedCriterion;
-      return i + 1 + '. gained "' + stripUntrustedEng(gained) + '", sacrificed "' + stripUntrustedEng(sac) + '", justification: "' + stripUntrustedEng((r.justification || r.accepted || "").slice(0, 200)) + '", whoseInterestThisServes: "' + stripUntrustedEng(r.whoseInterestThisServes || "") + '"';
+      var justSource = (r.justification || r.accepted || "").trim() || decl;
+      return i + 1 + '. gained "' + stripUntrustedEng(gained) + '", sacrificed "' + stripUntrustedEng(sac) + '", justification: "' + stripUntrustedEng(justSource.slice(0, 200)) + '", whoseInterestThisServes: "' + stripUntrustedEng(r.whoseInterestThisServes || "") + '"';
     }).join("\n");
-    var decl = stripUntrustedEng(((journal.stageNotes || {}).plan_test || {}).tradeOffDeclaration || "");
     return [
       "SYSTEM: You are an engineering-design coach voicing a stakeholder with INVERTED priorities \u2014 the stakeholder who would have rejected the student's trade-off.",
       'You MUST NOT tell the student their priorities are wrong. You MUST NOT suggest a different chosen candidate. You MUST NOT propose a "correct" trade-off.',
@@ -982,7 +995,7 @@
     var declNorm = normalizeForCompare(((journal.stageNotes || {}).plan_test || {}).tradeOffDeclaration || "");
     var allJustText = ledger.map(function(r) {
       return normalizeForCompare(r.justification || r.accepted || "");
-    }).join(" ");
+    }).concat(declNorm ? [declNorm] : []).join(" ");
     for (var i = 0; i < out.per_tradeoff.length; i++) {
       var pt = out.per_tradeoff[i];
       if (!pt || typeof pt.quoted_phrase !== "string") {
@@ -1000,8 +1013,15 @@
         return { __rejected: true, rejectReason: "quoted_phrase_too_long_at_" + i, attemptedShapeKeys: ["per_tradeoff", "quoted_phrase"] };
       }
     }
-    var allAiText = JSON.stringify(out);
-    var aiNorm = normalizeForCompare(allAiText);
+    var questionParts = [];
+    out.per_tradeoff.forEach(function(pt2) {
+      if (pt2 && Array.isArray(pt2.inversion_questions)) questionParts = questionParts.concat(pt2.inversion_questions);
+      if (pt2 && Array.isArray(pt2.stakeholder_voice_questions)) questionParts = questionParts.concat(pt2.stakeholder_voice_questions);
+    });
+    if (Array.isArray(out.what_did_you_not_consider_questions)) {
+      questionParts = questionParts.concat(out.what_did_you_not_consider_questions);
+    }
+    var aiNorm = normalizeForCompare(questionParts.join(" "));
     if (declNorm.length > 24) {
       var declWords = declNorm.split(/\s+/);
       for (var w = 0; w + 6 <= declWords.length; w++) {
@@ -2001,7 +2021,8 @@
     var draft = _draft[0];
     var setDraft = _draft[1];
     var unitValid = isWhitelistedUnit(draft.unit);
-    var canSave = (draft.name || "").trim().length >= 4 && unitValid && (draft.target + "").length > 0;
+    var targetValid = String(draft.target != null ? draft.target : "").trim().length > 0 && Number.isFinite(parseFloat(draft.target));
+    var canSave = (draft.name || "").trim().length >= 4 && unitValid && targetValid;
     return /* @__PURE__ */ React.createElement("div", { style: {
       padding: "8px",
       borderRadius: "8px",
@@ -2561,7 +2582,8 @@
         var w = parseInt(c.weight, 10) || 1;
         var s = cell(candidateId, c.id).score;
         if (typeof s === "number") {
-          total += s * w;
+          var effective = c.direction === "minimize" ? 6 - s : s;
+          total += effective * w;
           wsum += w;
         }
       });
@@ -2571,7 +2593,7 @@
       return /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0", fontSize: "11px", color: "#64748b", fontStyle: "italic" } }, t("engineering.matrix_need_both") || "Add at least one candidate AND one criterion to build the decision matrix.");
     }
     return /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px", borderBottom: "1px solid #cbd5e1" } }, t("engineering.matrix_candidate") || "Candidate"), crits.map(function(c) {
-      return /* @__PURE__ */ React.createElement("th", { key: c.id, style: { textAlign: "left", padding: "6px", borderBottom: "1px solid #cbd5e1", minWidth: "160px" } }, c.name, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", color: "#64748b", fontWeight: 400 } }, c.direction, " ", c.target, " ", c.unit, " \xB7 w", c.weight));
+      return /* @__PURE__ */ React.createElement("th", { key: c.id, style: { textAlign: "left", padding: "6px", borderBottom: "1px solid #cbd5e1", minWidth: "160px" } }, c.name, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", color: "#64748b", fontWeight: 400 } }, c.direction, " ", c.target, " ", c.unit, " \xB7 w", c.weight, " (", c.direction === "minimize" ? "1=best" : "5=best", ")"));
     }), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "6px", borderBottom: "1px solid #cbd5e1" } }, t("engineering.matrix_score") || "\u03A3(score\xD7w)/\u03A3w"))), /* @__PURE__ */ React.createElement("tbody", null, concepts.map(function(cn) {
       var dominated = paretoDominated.indexOf(cn.id) !== -1;
       return /* @__PURE__ */ React.createElement("tr", { key: cn.id, style: { background: dominated ? "#f1f5f9" : "transparent" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "6px", borderBottom: "1px solid #e2e8f0", verticalAlign: "top" } }, /* @__PURE__ */ React.createElement("strong", null, cn.name), dominated && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", color: "#64748b", fontStyle: "italic" } }, t("engineering.matrix_dominated") || "(possibly dominated)")), crits.map(function(cr) {

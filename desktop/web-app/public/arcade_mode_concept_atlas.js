@@ -148,7 +148,7 @@
     var nodeRadius = opts.nodeRadius || (nodes.length > 8 ? 18 : 22);
     var isMini = opts.size === 'mini';
     if (isMini) {
-      nodeRadius = 8;
+      nodeRadius = opts.nodeRadius || 8;
       showLabels = false;
       showEdgeLabels = false;
     }
@@ -202,9 +202,11 @@
     var cx = width / 2;
     var cy = height / 2;
     var labelMargin = showLabels ? 18 : 4;
+    var maxFit = Math.max(8, Math.min(width, height) / 2 - nodeRadius - labelMargin - 2);
     var radius = Math.min(width, height) / 2 - nodeRadius - labelMargin - 6;
-    if (radius < 60) radius = 60;
-    var nodePos = {};
+    if (isMini) radius = maxFit;
+    else if (radius < 60) radius = Math.min(60, maxFit);
+    var nodePos = Object.create(null);
     nodes.forEach(function (n, i) {
       var angle;
       if (nodes.length === 1) {
@@ -285,7 +287,7 @@
         var emojiByVerb = {
           illuminates: '💡', connects: '🔗', transforms: '✨', supports: '🛡️', contrasts: '⚡'
         };
-        var emoji = emojiByVerb[e.edgeType] || '·';
+        var emoji = Object.prototype.hasOwnProperty.call(emojiByVerb, e.edgeType) ? emojiByVerb[e.edgeType] : '·';
         els.push(h('rect', {
           key: 'erl-' + e.id + '-' + i,
           x: mx - 8, y: my - 9,
@@ -489,7 +491,15 @@
     var sessionState = sessionStateTuple[0];
     var setSessionState = sessionStateTuple[1];
     useEffect(function () {
-      if (!ctx.sessionCode || typeof ctx.sessionSubscribe !== 'function') return;
+      if (!ctx.sessionCode) {
+        setSessionState(null);
+        return;
+      }
+      if (typeof ctx.sessionSubscribe !== 'function') {
+        setSessionState(ctx.session || null);
+        return;
+      }
+      setSessionState(ctx.session || null);
       var unsubscribe = ctx.sessionSubscribe(function (data) { setSessionState(data); });
       return typeof unsubscribe === 'function' ? unsubscribe : function () {};
     }, [ctx.sessionCode]);
@@ -743,7 +753,15 @@
     var sessionState = sessionStateTuple[0];
     var setSessionState = sessionStateTuple[1];
     useEffect(function () {
-      if (!ctx.sessionCode || typeof ctx.sessionSubscribe !== 'function') return;
+      if (!ctx.sessionCode) {
+        setSessionState(null);
+        return;
+      }
+      if (typeof ctx.sessionSubscribe !== 'function') {
+        setSessionState(ctx.session || null);
+        return;
+      }
+      setSessionState(ctx.session || null);
       var unsubscribe = ctx.sessionSubscribe(function (data) { setSessionState(data); });
       return typeof unsubscribe === 'function' ? unsubscribe : function () {};
     }, [ctx.sessionCode]);
@@ -875,12 +893,41 @@
       setHand(d.slice(0, HAND_SIZE));
     }
 
-    // Persistence — every atlas change syncs to host
+    // Persistence — every atlas change syncs to host (skip class students and empty untouched atlases)
     useEffect(function () {
+      if (isClassStudent) return;
+      if (!atlas.topic && (atlas.edges || []).length === 0) return;
       if (typeof ctx.onAtlasUpdate === 'function') {
         ctx.onAtlasUpdate(atlas);
       }
-    }, [atlas]); // eslint-disable-line
+    }, [atlas, isClassStudent]); // eslint-disable-line
+
+    // Milestone token awards — ref-deduped effect so rapid concurrent edges
+    // compute milestones inside functional setAtlas(prev => ...) without stale
+    // closures or duplicate payouts.
+    var awardedMilestonesRef = useRef(null);
+    if (awardedMilestonesRef.current === null) {
+      var initAwarded = Object.create(null);
+      (atlas.milestones || []).forEach(function (m) {
+        if (m && m.level != null) initAwarded[atlas.id + ':' + m.level] = true;
+      });
+      awardedMilestonesRef.current = initAwarded;
+    }
+    useEffect(function () {
+      var list = atlas.milestones || [];
+      if (!list.length) return;
+      var seen = awardedMilestonesRef.current;
+      list.forEach(function (m) {
+        if (!m || m.level == null) return;
+        var mKey = atlas.id + ':' + m.level;
+        if (seen[mKey]) return;
+        seen[mKey] = true;
+        if (m.tokensAwarded > 0 && typeof ctx.onAwardTokens === 'function') {
+          ctx.onAwardTokens(m.tokensAwarded, 'atlas-milestone', { atlasId: atlas.id, level: m.level });
+          ctx.addToast(m.emoji + ' ' + m.label + ' unlocked · +' + m.tokensAwarded + ' 🪙');
+        }
+      });
+    }, [atlas.id, atlas.milestones]); // eslint-disable-line
 
     // ── Phase S4 — Host broadcast effect ──
     // Mirrors Realm Builder Phase D. Fires on every atlas change while
@@ -920,6 +967,10 @@
         conceptAtlas.classRewardKey = 'atlas-' + atlas.id;
         conceptAtlas.classRewardTokens = 3;
         conceptAtlas.classRewardEdgeCount = edgeCount;
+      } else if (!atlas.isComplete && sessionState && sessionState.conceptAtlas && sessionState.conceptAtlas.classRewardKey) {
+        conceptAtlas.classRewardKey = null;
+        conceptAtlas.classRewardTokens = null;
+        conceptAtlas.classRewardEdgeCount = null;
       }
       Promise.resolve(ctx.sessionUpdate({ conceptAtlas: conceptAtlas })).catch(function () {});
     }, [atlas, isClassHost]); // eslint-disable-line
@@ -927,14 +978,16 @@
     // ── Phase S7 — Student class-reward claim ──
     // Awards tokens once per atlas (server-of-record dedupe via getEarnings
     // metadata.classRewardKey). Mirrors Realm Builder Phase D reward flow.
-    var claimedRewardRef = useRef({});
+    var claimedRewardRef = useRef(Object.create(null));
     useEffect(function () {
       if (!isClassStudent) return;
       if (!sessionState || !sessionState.conceptAtlas) return;
       var ca = sessionState.conceptAtlas;
+      if (ca.status !== 'closed' && !ca.isComplete) return;
       var key = ca.classRewardKey;
       var amount = ca.classRewardTokens;
       if (!key || !amount) return;
+      if (ca.atlasId && key !== 'atlas-' + ca.atlasId) return;
       if (claimedRewardRef.current[key]) return;
       if (typeof ctx.getEarnings === 'function') {
         var earnings = ctx.getEarnings() || [];
@@ -961,6 +1014,8 @@
     var classIssue = classIssueTuple[0];
     var setClassIssue = classIssueTuple[1];
     useEffect(function () {
+      setPrivateDocs({});
+      setClassIssue(null);
       if (!isClassHost && !isClassStudent) return;
       var kit = getClassWork();
       var chan = kit ? kit.channel(ctx) : ((window.__alloFirebase || ctx.firestoreDb) ? { kind: 'unavailable' } : { kind: 'legacy' });
@@ -1004,9 +1059,9 @@
     // Each graded edge arrives as a private document (older hosts: in
     // session.conceptAtlas.submissions). The host applies it, then clears it.
     // processedSubsRef dedupes so the same id isn't applied twice across re-renders.
-    var processedSubsRef = useRef({});
+    var processedSubsRef = useRef(Object.create(null));
     useEffect(function () {
-      if (!isClassHost) return;
+      if (!isClassHost || !atlas.topic || atlas.isComplete) return;
       var subs = classSubs;
       var keys = Object.keys(subs);
       if (keys.length === 0) return;
@@ -1022,6 +1077,7 @@
         var sub = subs[k];
         if (!sub || !sub.fromCardName || !sub.toCardName || !sub.verb) return;
         if (sub.awaitingTeacher) return; // not graded: stays queued until the teacher scores it
+        if (sub.atlasId && sub.atlasId !== atlas.id) return; // submission belongs to another atlas
         processed[k] = true;
         applyEdgeFromSubmission(sub);
         if (sub.privateDoc) {
@@ -1034,11 +1090,11 @@
         clearPayload.conceptAtlas.submissions[k] = null;
         Promise.resolve(ctx.sessionUpdate(clearPayload)).catch(function () {});
       });
-    }, [sessionState, privateDocs, isClassHost]); // eslint-disable-line
+    }, [sessionState, privateDocs, isClassHost, atlas.id, atlas.topic, atlas.isComplete]); // eslint-disable-line
 
     // AI-off class play: the teacher's score is the first real result. The edge
     // lands once the session write succeeds, so a failed write can be retried.
-    var scoringRef = useRef({});
+    var scoringRef = useRef(Object.create(null));
     function scoreSubmission(subId, sub, band, note) {
       if (!isClassHost || !selfCheck || scoringRef.current[subId]) return;
       if (typeof ctx.sessionUpdate !== 'function') return;
@@ -1060,7 +1116,7 @@
     }
 
     // Class student: pick up the teacher's scores for this student's work.
-    var teacherSeenRef = useRef({});
+    var teacherSeenRef = useRef(Object.create(null));
     useEffect(function () {
       if (!isClassStudent || !selfCheck) return;
       var ca = sessionState && sessionState.conceptAtlas;
@@ -1112,22 +1168,19 @@
         resonant: isResonant,
         contributorNickname: contributorNickname
       }, selfCheck ? selfCheck.evidenceFields(sub) : {});
-      var nextEdgeCount = (atlas.edges || []).length + 1;
-      var countedEdges = (atlas.edges || []).filter(function (e) { return !e.selfRated; }).length + 1;
-      var alreadyLevels = (atlas.milestones || []).map(function (m) { return m.level; });
-      var newMilestones = MILESTONES.filter(function (m) {
-        return countedEdges >= m.edges && alreadyLevels.indexOf(m.level) === -1;
-      }).map(function (m) {
-        return { level: m.level, label: m.label, emoji: m.emoji, edges: m.edges, achievedAt: nowIso, tokensAwarded: m.tokens };
-      });
-      if (newMilestones.length > 0 && typeof ctx.onAwardTokens === 'function') {
-        newMilestones.forEach(function (m) {
-          ctx.onAwardTokens(m.tokensAwarded, 'atlas-milestone', { atlasId: atlas.id, level: m.level });
-          ctx.addToast(m.emoji + ' ' + m.label + ' unlocked · +' + m.tokensAwarded + ' 🪙');
-        });
-      }
-      var isComplete = atlas.isComplete || nextEdgeCount >= MILESTONES[MILESTONES.length - 1].edges;
       setAtlas(function (prev) {
+        var prevEdges = prev.edges || [];
+        var nextEdges = prevEdges.concat([newEdge]);
+        var nextEdgeCount = nextEdges.length;
+        var countedEdges = nextEdges.filter(function (e) { return !e.selfRated; }).length;
+        var prevMilestones = prev.milestones || [];
+        var alreadyLevels = prevMilestones.map(function (m) { return m.level; });
+        var newMilestones = MILESTONES.filter(function (m) {
+          return countedEdges >= m.edges && alreadyLevels.indexOf(m.level) === -1;
+        }).map(function (m) {
+          return { level: m.level, label: m.label, emoji: m.emoji, edges: m.edges, achievedAt: nowIso, tokensAwarded: m.tokens };
+        });
+        var isComplete = prev.isComplete || nextEdgeCount >= MILESTONES[MILESTONES.length - 1].edges;
         var nodes = prev.nodes || [];
         function addNodeIfMissing(card) {
           if (!card || !card.id) return;
@@ -1146,8 +1199,8 @@
         addNodeIfMissing(toCard);
         return Object.assign({}, prev, {
           nodes: nodes,
-          edges: (prev.edges || []).concat([newEdge]),
-          milestones: (prev.milestones || []).concat(newMilestones),
+          edges: nextEdges,
+          milestones: prevMilestones.concat(newMilestones),
           isComplete: isComplete,
           updatedAt: nowIso
         });
@@ -1314,6 +1367,7 @@
       var payload = { conceptAtlas: { submissions: {} } };
       payload.conceptAtlas.submissions[subId] = {
         subId: subId,
+        atlasId: (classAtlas && classAtlas.atlasId) || null,
         awaitingTeacher: true,
         nickname: nickname,
         participantId: participantId,
@@ -1370,6 +1424,7 @@
       var payload = { conceptAtlas: { submissions: {} } };
       payload.conceptAtlas.submissions[subId] = {
         subId: subId,
+        atlasId: (classAtlas && classAtlas.atlasId) || null,
         nickname: nickname,
         fromCardId: fromCard.id,
         fromCardName: fromCard.name,
@@ -1518,31 +1573,28 @@
       }, isSelfRated && selfCheck ? selfCheck.evidenceFields(parsed) : {});
 
       // Self-rated edges draw the map but never count toward these milestones,
-      // because milestones pay tokens.
-      var nextEdgeCount = (atlas.edges || []).length + 1;
-      var countedEdges = (atlas.edges || []).filter(function (e) { return !e.selfRated; }).length + 1;
-      var alreadyLevels = (atlas.milestones || []).map(function (m) { return m.level; });
-      var newMilestones = isSelfRated ? [] : MILESTONES.filter(function (m) {
-        return countedEdges >= m.edges && alreadyLevels.indexOf(m.level) === -1;
-      }).map(function (m) {
-        return { level: m.level, label: m.label, emoji: m.emoji, edges: m.edges, achievedAt: nowIso, tokensAwarded: m.tokens };
-      });
-      if (newMilestones.length > 0 && typeof ctx.onAwardTokens === 'function') {
-        newMilestones.forEach(function (m) {
-          ctx.onAwardTokens(m.tokensAwarded, 'atlas-milestone', { atlasId: atlas.id, level: m.level });
-          ctx.addToast(m.emoji + ' ' + m.label + ' unlocked · +' + m.tokensAwarded + ' 🪙');
-        });
-      }
-      var isComplete = atlas.isComplete || nextEdgeCount >= MILESTONES[MILESTONES.length - 1].edges;
-
+      // because milestones pay tokens. Compute milestones inside setAtlas(prev)
+      // so rapid concurrent updates never rely on stale closure state.
       setAtlas(function (prev) {
+        var prevEdges = prev.edges || [];
+        var nextEdges = prevEdges.concat([newEdge]);
+        var nextEdgeCount = nextEdges.length;
+        var countedEdges = nextEdges.filter(function (e) { return !e.selfRated; }).length;
+        var prevMilestones = prev.milestones || [];
+        var alreadyLevels = prevMilestones.map(function (m) { return m.level; });
+        var newMilestones = isSelfRated ? [] : MILESTONES.filter(function (m) {
+          return countedEdges >= m.edges && alreadyLevels.indexOf(m.level) === -1;
+        }).map(function (m) {
+          return { level: m.level, label: m.label, emoji: m.emoji, edges: m.edges, achievedAt: nowIso, tokensAwarded: m.tokens };
+        });
+        var isComplete = prev.isComplete || nextEdgeCount >= MILESTONES[MILESTONES.length - 1].edges;
         var nodes = prev.nodes || [];
         nodes = ensureNode(fromCard, nodes, nowIso);
         nodes = ensureNode(toCard, nodes, nowIso);
         return Object.assign({}, prev, {
           nodes: nodes,
-          edges: (prev.edges || []).concat([newEdge]),
-          milestones: (prev.milestones || []).concat(newMilestones),
+          edges: nextEdges,
+          milestones: prevMilestones.concat(newMilestones),
           isComplete: isComplete,
           updatedAt: nowIso
         });
@@ -1597,7 +1649,7 @@
       var viewAtlas = isClassStudent ? (classAtlas || {}) : atlas;
       var contributors = (function () {
         if (!isClassHost) return 0;
-        var seen = {};
+        var seen = Object.create(null);
         (atlas.edges || []).forEach(function (e) {
           var k = e.contributorNickname || '';
           if (k && k !== nickname) seen[k] = true;
@@ -1764,7 +1816,7 @@
         };
       });
       // Avoid duplicates between existing nodes and hand
-      var nodeIds = {};
+      var nodeIds = Object.create(null);
       nodeCards.forEach(function (c) { nodeIds[c.id] = true; });
       var freshHand = hand.filter(function (c) { return !nodeIds[c.id]; });
       return { nodes: nodeCards, hand: freshHand };
@@ -1849,7 +1901,7 @@
           role: 'status', 'aria-live': 'polite',
           style: {
             padding: '10px 12px', marginBottom: '12px',
-            background: lastFeedback.resonant ? (palette.accent + '22' || 'rgba(96,165,250,0.18)') : (palette.surface || '#1e293b'),
+            background: lastFeedback.resonant ? (palette.accent ? palette.accent + '22' : 'rgba(96,165,250,0.18)') : (palette.surface || '#1e293b'),
             border: '1.5px solid ' + (lastFeedback.resonant ? (palette.accent || '#60a5fa') : (palette.border || '#334155')),
             borderRadius: '10px',
             color: palette.text || '#e2e8f0'
@@ -1866,7 +1918,7 @@
               style: {
                 marginLeft: 'auto',
                 fontVariantNumeric: 'tabular-nums',
-                background: lastFeedback.score >= 18 ? (palette.accent || '#60a5fa') : (lastFeedback.score >= 11 ? (palette.accent + '22' || 'rgba(96,165,250,0.18)') : 'transparent'),
+                background: lastFeedback.score >= 18 ? (palette.accent || '#60a5fa') : (lastFeedback.score >= 11 ? (palette.accent ? palette.accent + '22' : 'rgba(96,165,250,0.18)') : 'transparent'),
                 color: lastFeedback.score >= 18 ? (palette.onAccent || '#0f172a') : (lastFeedback.score >= 11 ? (palette.accent || '#60a5fa') : (palette.textMute || '#94a3b8')),
                 padding: '2px 9px', borderRadius: '999px',
                 fontWeight: lastFeedback.score >= 18 ? 800 : 700,
@@ -1950,7 +2002,7 @@
                   'aria-label': voiceMode === 'idle' ? 'Speak your justification' : label,
                   'aria-busy': busy ? 'true' : 'false',
                   style: {
-                    background: voiceMode === 'idle' ? 'transparent' : (palette.accent + '22' || 'rgba(96,165,250,0.18)'),
+                    background: voiceMode === 'idle' ? 'transparent' : (palette.accent ? palette.accent + '22' : 'rgba(96,165,250,0.18)'),
                     color: voiceMode === 'idle' ? (palette.text || '#e2e8f0') : (palette.accent || '#60a5fa'),
                     border: '1px solid ' + (voiceMode === 'idle' ? (palette.border || '#334155') : (palette.accent || '#60a5fa')),
                     borderRadius: '999px',
@@ -2011,14 +2063,14 @@
             : (aiOff && isClassStudent ? __alloT('arcade.teacher_queue.send', 'Send to your teacher') : '🗺 Add edge to atlas'))
         ),
         // Edges-so-far recap (with resonant edges flagged 🌟)
-        (atlas.edges || []).length > 0 ? h('div', { style: { marginTop: '14px', padding: '10px 12px', background: palette.surface || '#1e293b', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px' } },
+        (viewAtlas.edges || []).length > 0 ? h('div', { style: { marginTop: '14px', padding: '10px 12px', background: palette.surface || '#1e293b', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px' } },
           h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.textMute || '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
-            'Edges in your atlas · ' + atlas.edges.length),
+            'Edges in your atlas · ' + viewAtlas.edges.length),
           h('ul', {
             role: 'list',
             style: { display: 'flex', flexDirection: 'column', gap: '4px', margin: 0, padding: 0, listStyle: 'none', maxHeight: '200px', overflowY: 'auto' }
           },
-            atlas.edges.slice().reverse().slice(0, 8).map(function (e) {
+            viewAtlas.edges.slice().reverse().slice(0, 8).map(function (e) {
               return h('li', { key: 'er-' + e.id, role: 'listitem', style: { listStyle: 'none', fontSize: '11px', color: palette.textDim || '#cbd5e1', display: 'flex', gap: '6px', alignItems: 'center' } },
                 e.resonant ? h('span', null, '🌟') : h('span', null, '·'),
                 h('strong', { style: { color: palette.text || '#e2e8f0' } }, e.fromCardName),
@@ -2030,7 +2082,7 @@
                   var sc = e.score || 0;
                   var bg, fg;
                   if (sc >= 18) { bg = (palette.accent || '#60a5fa'); fg = (palette.onAccent || '#0f172a'); }
-                  else if (sc >= 11) { bg = (palette.accent + '22' || 'rgba(96,165,250,0.18)'); fg = (palette.accent || '#60a5fa'); }
+                  else if (sc >= 11) { bg = (palette.accent ? palette.accent + '22' : 'rgba(96,165,250,0.18)'); fg = (palette.accent || '#60a5fa'); }
                   else { bg = 'transparent'; fg = (palette.textMute || '#94a3b8'); }
                   return h('span', {
                     style: {
@@ -2048,7 +2100,7 @@
               );
             })
           ),
-          atlas.edges.length > 8 ? h('div', { style: { fontSize: '10px', color: palette.textMute || '#94a3b8', marginTop: '4px', fontStyle: 'italic' } }, 'showing newest 8 — full list in print packet') : null
+          viewAtlas.edges.length > 8 ? h('div', { style: { fontSize: '10px', color: palette.textMute || '#94a3b8', marginTop: '4px', fontStyle: 'italic' } }, 'showing newest 8 — full list in print packet') : null
         ) : null
       );
     }

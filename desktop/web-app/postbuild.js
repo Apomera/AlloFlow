@@ -9,6 +9,7 @@ const { createHash } = require('crypto');
 const { assertBuiltDelivery } = require('../../dev-tools/build_browser_delivery_manifest.cjs');
 const { assertOptionalHost } = require('../../dev-tools/build_optional_browser_delivery_policy.cjs');
 const { assertRuntimeHost } = require('../../dev-tools/build_runtime_graph_delivery_policy.cjs');
+const writeGeneratedAtomic = require('../../dev-tools/write_generated_atomic.cjs');
 
 const releaseScriptPattern = /<script\b[^>]*\bid=["']alloflow-release["'][^>]*>[\s\S]*?<\/script>/i;
 const MAX_RELEASE_ASSET_BYTES = 64 * 1024 * 1024;
@@ -25,13 +26,35 @@ function normalizeShellHtml(html) {
         });
 }
 
+function assertRegularAncestry(rootDir, relativePath, label) {
+    const resolvedRoot = path.resolve(rootDir);
+    const rootStat = fs.lstatSync(resolvedRoot);
+    if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) {
+        throw new Error('Build directory must be a regular directory: ' + resolvedRoot);
+    }
+    const cleanRel = relativePath.replace(/^\.\//, '');
+    const parts = cleanRel.split(/[\\/]+/).filter(Boolean);
+    let current = resolvedRoot;
+    for (const part of parts) {
+        if (part === '.' || part === '..') throw new Error('Asset escapes build directory: ' + label);
+        current = path.join(current, part);
+        const stat = fs.lstatSync(current);
+        if (stat.isSymbolicLink()) throw new Error('Release asset traverses a symbolic link: ' + label);
+    }
+    return current;
+}
+
 function assetBytes(buildDir, reference) {
     const relative = reference.split(/[?#]/, 1)[0];
-    const file = path.resolve(buildDir, relative);
-    if (!file.startsWith(path.resolve(buildDir) + path.sep)) throw new Error('Asset escapes build directory: ' + reference);
-    const stat = fs.statSync(file);
-    if (!stat.isFile() || stat.size > MAX_RELEASE_ASSET_BYTES) throw new Error('Release asset is not a bounded file: ' + reference);
-    return fs.readFileSync(file);
+    const resolvedRoot = path.resolve(buildDir);
+    const file = path.resolve(resolvedRoot, relative);
+    if (!file.startsWith(resolvedRoot + path.sep)) throw new Error('Asset escapes build directory: ' + reference);
+    const checked = assertRegularAncestry(resolvedRoot, path.relative(resolvedRoot, file), reference);
+    const stat = fs.lstatSync(checked);
+    if (stat.isSymbolicLink() || !stat.isFile() || stat.size > MAX_RELEASE_ASSET_BYTES) {
+        throw new Error('Release asset is not a bounded file: ' + reference);
+    }
+    return fs.readFileSync(checked);
 }
 
 function integrityRecord(bytes) {
@@ -39,11 +62,23 @@ function integrityRecord(bytes) {
 }
 
 function staticCodePaths(buildDir) {
+    const resolvedRoot = path.resolve(buildDir);
+    const rootStat = fs.lstatSync(resolvedRoot);
+    if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) {
+        throw new Error('Build directory must be a regular directory: ' + resolvedRoot);
+    }
     const assets = [];
     const visit = relative => {
-        const directory = path.join(buildDir, relative);
-        if (!fs.existsSync(directory)) return;
-        for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+        const parts = relative.split('/').filter(Boolean);
+        let cur = resolvedRoot;
+        for (const part of parts) {
+            cur = path.join(cur, part);
+            const st = fs.lstatSync(cur, { throwIfNoEntry: false });
+            if (!st) return;
+            if (st.isSymbolicLink()) throw new Error('Generated static assets must not be symbolic links: ' + relative);
+            if (!st.isDirectory()) return;
+        }
+        for (const entry of fs.readdirSync(cur, { withFileTypes: true })) {
             const asset = relative + '/' + entry.name;
             if (entry.isSymbolicLink()) throw new Error('Generated static assets must not be symbolic links: ' + asset);
             if (entry.isDirectory()) visit(asset);
@@ -116,28 +151,28 @@ function postbuild(options = {}) {
     html = html.replace(/<script\b[^>]*\bid=["']alloflow-ai-backend-script["'][^>]*>/i, (tag) => {
         const backendPath = path.join(buildDir, 'ai_backend_module.js');
         if (!fs.existsSync(backendPath)) throw new Error('AI backend preload has no ai_backend_module.js in the build');
-        const version = createHash('sha256').update(fs.readFileSync(backendPath)).digest('hex').slice(0, 8);
-        const backendSrc = /\bsrc=(["'])\.\/ai_backend_module\.js(?:\?v=[a-f0-9]+)?\1/;
+        const version = createHash('sha256').update(assetBytes(buildDir, './ai_backend_module.js')).digest('hex').slice(0, 8);
+        const backendSrc = /(?<=[\s/])src=(["'])\.\/ai_backend_module\.js(?:\?v=[a-f0-9]+)?\1/;
         if (!backendSrc.test(tag)) throw new Error('AI backend preload has an unexpected src: ' + tag);
-        return tag.replace(backendSrc, 'src=$1./ai_backend_module.js?v=' + version + '$1');
+        return tag.replace(backendSrc, (_, quote) => 'src=' + quote + './ai_backend_module.js?v=' + version + quote);
     });
 
     // The trusted HTML anchors boot code and styles even before a worker has
     // installed. A query stamp names a cache entry; SRI verifies its bytes.
     const bootPaths = new Set([...supportPaths, ...assetPaths]);
     html = html.replace(/<(script|link)\b[^>]*>/gi, (tag, kind) => {
-        if (kind.toLowerCase() === 'link' && !/\brel=["'][^"']*\bstylesheet\b[^"']*["']/i.test(tag)) return tag;
+        if (kind.toLowerCase() === 'link' && !/(?<=[\s/])rel=["'][^"']*\bstylesheet\b[^"']*["']/i.test(tag)) return tag;
         const attribute = kind.toLowerCase() === 'script' ? 'src' : 'href';
-        const pattern = new RegExp('\\b' + attribute + '=(["\'])([^"\']+)\\1', 'i');
+        const pattern = new RegExp('(?<=[\\s/])' + attribute + '=(["\'])([^"\']+)\\1', 'i');
         const match = tag.match(pattern);
         if (!match || /^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(match[2])) return tag;
         const reference = match[2].replace(/^\//, './').split('#', 1)[0];
         const bytes = assetBytes(buildDir, reference);
         const sri = 'sha384-' + createHash('sha384').update(bytes).digest('base64');
         bootPaths.add(reference);
-        return tag.replace(pattern, attribute + '="' + reference + '"')
+        return tag.replace(pattern, () => attribute + '="' + reference + '"')
             .replace(/\s(?:integrity|crossorigin)=(?:"[^"]*"|'[^']*')/gi, '')
-            .replace(/>$/, ' integrity="' + sri + '" crossorigin="anonymous">');
+            .replace(/>$/, () => ' integrity="' + sri + '" crossorigin="anonymous">');
     });
 
     // Main JS contains the version-pinned dynamic module/plugin URLs. Hashing
@@ -192,12 +227,12 @@ function postbuild(options = {}) {
         integrityRecord(asset === './index.html' ? Buffer.from(html) : assetBytes(buildDir, asset))]));
 
     const swContent = swTemplate
-        .replace(/__BUILD_TS__/g, String(releaseBuiltAt))
-        .replace(/__RELEASE_ID__/g, releaseId)
-        .replace('__PRECACHE_PATHS__', JSON.stringify(precachePaths))
-        .replace('__PRECACHE_DIGESTS__', JSON.stringify(precacheDigests));
-    fs.writeFileSync(htmlPath, html, 'utf8');
-    fs.writeFileSync(path.join(buildDir, 'sw.js'), swContent, 'utf8');
+        .replace(/__BUILD_TS__/g, () => String(releaseBuiltAt))
+        .replace(/__RELEASE_ID__/g, () => releaseId)
+        .replace('__PRECACHE_PATHS__', () => JSON.stringify(precachePaths))
+        .replace('__PRECACHE_DIGESTS__', () => JSON.stringify(precacheDigests));
+    writeGeneratedAtomic(htmlPath, html);
+    writeGeneratedAtomic(path.join(buildDir, 'sw.js'), swContent);
     console.log('✓ Split shell HTML:', (Buffer.byteLength(html) / 1024).toFixed(1) + ' KB');
     console.log('✓ Preserved hashed assets:', assetPaths.join(', '));
     console.log('✓ App release:', releaseId, '(built ' + releaseBuiltAt + ')');
@@ -243,13 +278,13 @@ function assertReleaseDigests(buildDir) {
     const has = key => Object.prototype.hasOwnProperty.call(records, key);
     const required = new Set(['./index.html', './alloflow_desktop_bridge.js', './alloflow_update.js', ...staticCodePaths(root), ...precache]);
     for (const tag of html.match(/<(?:script|link)\b[^>]*>/gi) || []) {
-        if (/^<link\b/i.test(tag) && !/\brel=["'][^"']*\bstylesheet\b[^"']*["']/i.test(tag)) continue;
-        const reference = tag.match(/\b(?:src|href)=(["'])([^"']+)\1/i)?.[2];
+        if (/^<link\b/i.test(tag) && !/(?<=[\s/])rel=["'][^"']*\bstylesheet\b[^"']*["']/i.test(tag)) continue;
+        const reference = tag.match(/(?<=[\s/])(?:src|href)=(["'])([^"']+)\1/i)?.[2];
         if (!reference || /^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(reference)) continue;
         required.add(reference);
         const sri = 'sha384-' + createHash('sha384').update(read(reference)).digest('base64');
-        if (tag.match(/\bintegrity=(["'])([^"']+)\1/i)?.[2] !== sri
-            || !/\bcrossorigin=["']anonymous["']/i.test(tag)) throw new Error('Boot asset SRI does not match final bytes: ' + reference);
+        if (tag.match(/(?<=[\s/])integrity=(["'])([^"']+)\1/i)?.[2] !== sri
+            || !/(?<=[\s/])crossorigin=["']anonymous["']/i.test(tag)) throw new Error('Boot asset SRI does not match final bytes: ' + reference);
     }
     for (const asset of required) if (!has(asset)) throw new Error('Required release digest is missing: ' + asset);
     for (const [asset, expected] of Object.entries(records)) {

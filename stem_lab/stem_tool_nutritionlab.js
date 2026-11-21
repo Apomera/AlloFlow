@@ -18409,10 +18409,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var figure = new THREE.Group();
     api.scene.add(figure);
 
+    // Warm culinary/lab studio hemisphere + rim + side accent lighting
+    if (!contrast) {
+      if (typeof THREE.HemisphereLight === 'function') {
+        api.scene.add(new THREE.HemisphereLight(0xfff5e4, 0x1e293b, 0.36));
+      }
+      if (typeof THREE.DirectionalLight === 'function') {
+        var rimLight = new THREE.DirectionalLight(0x93c5fd, 0.42);
+        rimLight.position.set(-2.2, 2.6, -2.8);
+        api.scene.add(rimLight);
+        var warmAccent = new THREE.DirectionalLight(0xfde68a, 0.24);
+        warmAccent.position.set(2.4, 1.2, -1.6);
+        api.scene.add(warmAccent);
+      }
+    }
+
+    // Procedural radial soft shadow & glow halo DataTextures (auto-disposed by makeBayViewer)
+    function makeRadialTex(power, innerClamp) {
+      if (typeof THREE.DataTexture !== 'function') return null;
+      var sz = 64, buf = new Uint8Array(sz * sz * 4), half = (sz - 1) / 2;
+      for (var y = 0; y < sz; y++) {
+        for (var x = 0; x < sz; x++) {
+          var dx = (x - half) / half, dy = (y - half) / half;
+          var d = Math.min(1, Math.sqrt(dx * dx + dy * dy));
+          var a = Math.pow(Math.max(0, 1 - d), power || 2.2);
+          if (innerClamp && d < innerClamp) a = Math.max(a, 0.92);
+          var i = (y * sz + x) * 4;
+          buf[i] = 255; buf[i + 1] = 255; buf[i + 2] = 255;
+          buf[i + 3] = Math.max(0, Math.min(255, Math.round(a * 255)));
+        }
+      }
+      var tex = new THREE.DataTexture(buf, sz, sz, THREE.RGBAFormat);
+      tex.needsUpdate = true;
+      return tex;
+    }
+    var contactTex = contrast ? null : makeRadialTex(2.1, 0.16);
+    var hasStdMat = typeof THREE.MeshStandardMaterial === 'function';
+    var hasPhysMat = typeof THREE.MeshPhysicalMaterial === 'function';
+    var shaderClock = {
+      uTime: { value: 1.6 },
+      uFlowColor: { value: new THREE.Color('#fde68a') }
+    };
+
     function organic(hex, opts) {
       var o = opts || {};
-      // Organic surfaces: dark, weak specular. The shell's trim() is tuned for
-      // painted metal and its pale specular swamps deep reds and browns.
+      if (hasStdMat && !contrast) {
+        var sh = o.shininess == null ? 10 : o.shininess;
+        var rough = Math.max(0.22, Math.min(0.84, 0.78 - sh / 110));
+        var stdMat = new THREE.MeshStandardMaterial({
+          color: new THREE.Color(hex),
+          roughness: rough,
+          metalness: sh >= 30 ? 0.16 : 0.05,
+          emissive: new THREE.Color(o.emissive || '#000000'),
+          transparent: !!o.opacity && o.opacity < 1,
+          opacity: o.opacity == null ? 1 : o.opacity,
+          depthWrite: o.depthWrite == null ? true : o.depthWrite,
+          side: o.side || THREE.FrontSide
+        });
+        if (!(o.opacity && o.opacity < 1) && typeof stdMat.onBeforeCompile === 'function') {
+          stdMat.customProgramCacheKey = function () { return 'allo_nutri_organ_sss_v1'; };
+          stdMat.onBeforeCompile = function (shader) {
+            shader.uniforms.uTime = shaderClock.uTime;
+            shader.fragmentShader = shader.fragmentShader
+              .replace('#include <common>', '#include <common>\nuniform float uTime;')
+              .replace('#include <lights_fragment_end>', [
+                '#include <lights_fragment_end>',
+                'vec3 orgN = normalize(normal);',
+                'vec3 orgV = normalize(geometry.viewDir);',
+                'float orgNdotV = clamp(dot(orgN, orgV), 0.0, 1.0);',
+                'float orgRim = pow(1.0 - orgNdotV, 2.45);',
+                'float orgPulse = 0.88 + 0.12 * sin(uTime * 1.45);',
+                'vec3 orgSss = mix(diffuseColor.rgb, vec3(1.0, 0.76, 0.58), 0.44) * (orgRim * 0.28 * orgPulse);',
+                'totalEmissiveRadiance += orgSss;'
+              ].join('\n'));
+          };
+        }
+        return stdMat;
+      }
       return new THREE.MeshPhongMaterial({
         color: new THREE.Color(contrast ? '#ffffff' : hex),
         shininess: contrast ? 0 : (o.shininess == null ? 6 : o.shininess),
@@ -18463,12 +18536,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     }
     var V = function (x, y, z) { return new THREE.Vector3(x, y, z); };
 
-    // Soft floor disc so the figure stands on something (opaque — a translucent
-    // ground would blend over everything beneath it).
-    var floor = new THREE.Mesh(new THREE.CircleGeometry(0.78, 40), organic(contrast ? '#111111' : '#16213a', { shininess: 2 }));
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -0.895;
+    // Ceramic studio floor pedestal + grounded contact shadow disc beneath the feet.
+    var floorMat = hasPhysMat && !contrast
+      ? new THREE.MeshPhysicalMaterial({ color: 0x1b2740, roughness: 0.34, metalness: 0.14, clearcoat: 0.45, clearcoatRoughness: 0.25 })
+      : organic(contrast ? '#111111' : '#16213a', { shininess: 14 });
+    var floor = new THREE.Mesh(new THREE.CylinderGeometry(0.80, 0.84, 0.045, 44), floorMat);
+    floor.position.y = -0.92;
+    if (api.wantShadow) floor.receiveShadow = true;
     figure.add(floor);
+    if (!contrast) {
+      if (typeof THREE.ShaderMaterial === 'function' && typeof THREE.CircleGeometry === 'function') {
+        var holoRing = new THREE.Mesh(
+          new THREE.CircleGeometry(0.94, 64),
+          new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: shaderClock.uTime,
+              uFlowColor: shaderClock.uFlowColor
+            },
+            vertexShader: [
+              'varying vec2 vPos;',
+              'void main() {',
+              '  vPos = position.xy;',
+              '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime;',
+              'uniform vec3 uFlowColor;',
+              'varying vec2 vPos;',
+              'void main() {',
+              '  float r = length(vPos);',
+              '  if (r > 0.94 || r < 0.62) discard;',
+              '  float ang = atan(vPos.y, vPos.x);',
+              '  float ringA = exp(-pow((r - 0.82) * 58.0, 2.0));',
+              '  float ringB = exp(-pow((r - 0.89) * 66.0, 2.0));',
+              '  float ticks = smoothstep(0.72, 0.96, cos(ang * 48.0)) * exp(-pow((r - 0.855) * 44.0, 2.0));',
+              '  float sweep = exp(-mod(ang - uTime * 0.55 + 6.2831853, 6.2831853) * 1.9) * exp(-pow((r - 0.82) * 32.0, 2.0));',
+              '  vec3 baseCol = mix(vec3(0.22, 0.74, 0.97), uFlowColor, 0.32 + 0.45 * sweep);',
+              '  float alpha = clamp(ringA * 0.52 + ringB * 0.34 + ticks * 0.30 + sweep * 0.50, 0.0, 0.88);',
+              '  gl_FragColor = vec4(baseCol, alpha);',
+              '}'
+            ].join('\n'),
+            transparent: true,
+            depthWrite: false,
+            side: THREE.DoubleSide || 2,
+            blending: THREE.AdditiveBlending || 2
+          })
+        );
+        holoRing.rotation.x = -Math.PI / 2;
+        holoRing.position.y = -0.894;
+        figure.add(holoRing);
+      } else {
+        var rimRing = new THREE.Mesh(
+          new THREE.TorusGeometry(0.81, 0.011, 8, 48),
+          new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.36, depthWrite: false })
+        );
+        rimRing.rotation.x = Math.PI / 2;
+        rimRing.position.y = -0.896;
+        figure.add(rimRing);
+      }
+      if (contactTex) {
+        var footShadow = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.1, 0.85),
+          new THREE.MeshBasicMaterial({ color: 0x020617, map: contactTex, transparent: true, opacity: 0.56, depthWrite: false })
+        );
+        footShadow.rotation.x = -Math.PI / 2;
+        footShadow.position.set(0, -0.892, 0.04);
+        figure.add(footShadow);
+      }
+    }
 
     // ── Opaque organs first (transparent glass draws after them) ──
     // Brain
@@ -18612,7 +18748,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     // click), and it opts out of the shell's selection scaling.
     var skin = new THREE.Group();
     skin.userData.noPick = true;
-    var glassMat = organic(contrast ? '#ffffff' : '#bfdbfe', { opacity: contrast ? 0.18 : 0.24, depthWrite: false, shininess: 90, emissive: '#16305c' });
+    var glassMat = hasPhysMat && !contrast
+      ? new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color('#cfe8ff'),
+          emissive: new THREE.Color('#142a52'),
+          roughness: 0.10,
+          metalness: 0.06,
+          clearcoat: 1.0,
+          clearcoatRoughness: 0.08,
+          transparent: true,
+          opacity: 0.21,
+          depthWrite: false
+        })
+      : organic(contrast ? '#ffffff' : '#bfdbfe', { opacity: contrast ? 0.18 : 0.24, depthWrite: false, shininess: 90, emissive: '#16305c' });
+    if (!contrast && typeof glassMat.onBeforeCompile === 'function') {
+      glassMat.customProgramCacheKey = function () { return 'allo_nutri_borosilicate_glass_v1'; };
+      glassMat.onBeforeCompile = function (shader) {
+        shader.uniforms.uTime = shaderClock.uTime;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 vGlassObjPos;')
+          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvGlassObjPos = transformed;');
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', '#include <common>\nuniform float uTime;\nvarying vec3 vGlassObjPos;')
+          .replace('#include <lights_fragment_end>', [
+            '#include <lights_fragment_end>',
+            'vec3 gN = normalize(normal);',
+            'vec3 gV = normalize(geometry.viewDir);',
+            'float gNdotV = clamp(abs(dot(gN, gV)), 0.0, 1.0);',
+            'float gFres = pow(1.0 - gNdotV, 2.75);',
+            'float gSheen = 0.5 + 0.5 * sin(vGlassObjPos.y * 9.0 - uTime * 0.72 + vGlassObjPos.x * 3.5);',
+            'vec3 boroRim = mix(vec3(0.45, 0.87, 1.0), vec3(0.62, 0.70, 1.0), gSheen * 0.55) * (gFres * 0.72);',
+            'vec3 boroSpec = vec3(0.92, 0.98, 1.0) * (pow(1.0 - gNdotV, 5.2) * (0.35 + 0.25 * gSheen));',
+            'totalEmissiveRadiance += boroRim + boroSpec;',
+            'diffuseColor.a = clamp(diffuseColor.a + gFres * 0.32, 0.0, 0.82);'
+          ].join('\n'));
+      };
+    }
     ball(skin, 1, 0.235, 0.26, 0.245, glassMat, 0, 1.2, 0);                    // head
     rod(skin, V(0, 0.98, 0), V(0, 1.06, 0), 0.075, glassMat);                   // neck
     ball(skin, 1, 0.44, 0.6, 0.27, glassMat, 0, 0.52, 0);                       // torso
@@ -18653,7 +18824,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var streamMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(contrast ? '#ffffff' : '#fde68a'), transparent: true, opacity: 0.95 });
     var streamGroup = new THREE.Group();
     figure.add(streamGroup);
-    BODY_REGIONS.forEach(function (r) {
+    var pathways = {};
+    var canPathShader = !contrast && typeof THREE.ShaderMaterial === 'function' && typeof THREE.TubeGeometry === 'function' && typeof THREE.QuadraticBezierCurve3 === 'function';
+    BODY_REGIONS.forEach(function (r, rIdx) {
       var end = anchors[r.id];
       if (!end) return;
       // Bow the path toward the viewer so it reads in front of the body.
@@ -18666,6 +18839,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         list.push(p);
       }
       streams[r.id] = { parts: list, a: GUT_POINT.clone(), b: mid, c: end.clone() };
+      if (canPathShader) {
+        var pCurve = new THREE.QuadraticBezierCurve3(GUT_POINT.clone(), mid.clone(), end.clone());
+        var pGeo = new THREE.TubeGeometry(pCurve, 28, 0.0085, 8, false);
+        var pUniforms = {
+          uTime: shaderClock.uTime,
+          uFlowColor: shaderClock.uFlowColor,
+          uRegionColor: { value: new THREE.Color(r.color || '#38bdf8') },
+          uIntensity: { value: 0.0 },
+          uPhase: { value: rIdx * 0.63 }
+        };
+        var pMat = new THREE.ShaderMaterial({
+          uniforms: pUniforms,
+          vertexShader: [
+            'varying vec2 vUv;',
+            'varying vec3 vNorm;',
+            'varying vec3 vView;',
+            'void main() {',
+            '  vUv = uv;',
+            '  vec4 mvPos = modelViewMatrix * vec4(position, 1.0);',
+            '  vNorm = normalize(normalMatrix * normal);',
+            '  vView = normalize(-mvPos.xyz);',
+            '  gl_Position = projectionMatrix * mvPos;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform float uTime;',
+            'uniform vec3 uFlowColor;',
+            'uniform vec3 uRegionColor;',
+            'uniform float uIntensity;',
+            'uniform float uPhase;',
+            'varying vec2 vUv;',
+            'varying vec3 vNorm;',
+            'varying vec3 vView;',
+            'void main() {',
+            '  if (uIntensity <= 0.01) discard;',
+            '  float fres = pow(1.0 - abs(dot(normalize(vNorm), normalize(vView))), 1.5);',
+            '  float flowA = fract(vUv.x * 2.5 - uTime * 0.42 + uPhase);',
+            '  float pulseA = exp(-pow((flowA - 0.5) * 6.5, 2.0));',
+            '  float flowB = fract(vUv.x * 5.0 - uTime * 0.84 + uPhase * 1.7);',
+            '  float pulseB = exp(-pow((flowB - 0.5) * 8.0, 2.0)) * 0.55;',
+            '  float endFade = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x);',
+            '  vec3 col = mix(uFlowColor, uRegionColor, 0.35 + 0.35 * vUv.x) + vec3(0.95, 0.99, 1.0) * (pulseA * 0.52);',
+            '  float alpha = clamp((0.18 + pulseA * 0.72 + pulseB * 0.42 + fres * 0.25) * endFade * uIntensity, 0.0, 0.92);',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n'),
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending || 2
+        });
+        var pMesh = new THREE.Mesh(pGeo, pMat);
+        pMesh.visible = false;
+        pMesh.renderOrder = 8;
+        streamGroup.add(pMesh);
+        pathways[r.id] = { mesh: pMesh, uniforms: pUniforms };
+      }
     });
 
     // ── Arrival pins ──
@@ -18708,17 +18937,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       pin.visible = false;
       pin.renderOrder = 12;
       figure.add(pin);
+      var pinHalo = null;
+      if (!contrast) {
+        pinHalo = new THREE.Mesh(
+          new THREE.SphereGeometry(0.088, 14, 12),
+          new THREE.MeshBasicMaterial({
+            color: col, transparent: true, opacity: 0.28, depthTest: false, depthWrite: false,
+            blending: THREE.AdditiveBlending
+          })
+        );
+        pinHalo.position.copy(at);
+        pinHalo.visible = false;
+        pinHalo.renderOrder = 11;
+        figure.add(pinHalo);
+      }
       // Staggered phase: twelve pins beating in lockstep read as a strobe, and
       // 0.35 Hz stays far below the 3-per-second photosensitivity guideline.
-      pins[r.id] = { pin: pin, phase: ri * 0.7 };
+      pins[r.id] = { pin: pin, halo: pinHalo, phase: ri * 0.7 };
     });
     var tmp = new THREE.Vector3();
     var lastColor = '';
     function frame(now, sp, reduced) {
       var active = (sp && sp.active) || null;
       var color = (sp && sp.flowColor) || '#fde68a';
-      if (!contrast && color !== lastColor) { lastColor = color; try { streamMat.color.set(color); } catch (e) {} }
+      if (!contrast && color !== lastColor) {
+        lastColor = color;
+        try { streamMat.color.set(color); } catch (e) {}
+        try { shaderClock.uFlowColor.value.set(color); } catch (e) {}
+      }
       var t0 = (now || 0) / 1000;
+      shaderClock.uTime.value = reduced ? 1.6 : t0;
       // Behaviour probe (dev-tools/check_stem_behavior pattern): which regions
       // are streaming this frame, and the magnitude each one was drawn at. Filled
       // during the loop below so it reports what the SCENE used, not what the view
@@ -18735,15 +18983,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var pr = pins[id];
         if (pr) {
           pr.pin.visible = on;
+          if (pr.halo) pr.halo.visible = on;
           if (on) {
             // ~0.35 Hz, staggered per region. Level drives SIZE, so a 22% organ
             // and an 8% one are told apart at a glance in resting-energy mode.
             var beat = reduced ? 1 : (0.92 + 0.16 * Math.sin(t0 * 2.2 + pr.phase));
             var mag = Math.max(0.25, Math.min(1, lvl));
-            pr.pin.scale.setScalar((0.62 + 0.66 * mag) * beat);
+            var scPin = (0.62 + 0.66 * mag) * beat;
+            pr.pin.scale.setScalar(scPin);
+            if (pr.halo) pr.halo.scale.setScalar(scPin * (reduced ? 1.15 : 1.18 + 0.12 * Math.sin(t0 * 2.2 + pr.phase)));
           }
         }
         if (lit && on) { lit.push(id); mags[id] = Math.max(0.25, Math.min(1, lvl)); }
+        var pw = pathways[id];
+        if (pw) {
+          pw.mesh.visible = on;
+          if (on) pw.uniforms.uIntensity.value = Math.max(0.32, Math.min(1.0, lvl));
+        }
         for (var i = 0; i < s.parts.length; i++) {
           var p = s.parts[i];
           if (!on) { if (p.visible) p.visible = false; continue; }
@@ -19439,16 +19695,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                  ' A ' + rInner + ',' + rInner + ' 0 ' + largeArc + ' 0 ' + x0i + ',' + y0i + ' Z';
         }
         var slices = [
-          { kcal: c_kcal, color: '#d97706', label: __alloT('stem.nutritionlab.carbs', 'Carbs'),   g: c_g, kcalPerG: 4 },
-          { kcal: p_kcal, color: '#be123c', label: __alloT('stem.nutritionlab.protein', 'Protein'), g: p_g, kcalPerG: 4 },
-          { kcal: f_kcal, color: '#a16207', label: 'Fat',     g: f_g, kcalPerG: 9 }
+          { kcal: c_kcal, color: '#d97706', gradId: 'nl-macro-carbs', label: __alloT('stem.nutritionlab.carbs', 'Carbs'),   g: c_g, kcalPerG: 4 },
+          { kcal: p_kcal, color: '#be123c', gradId: 'nl-macro-prot',  label: __alloT('stem.nutritionlab.protein', 'Protein'), g: p_g, kcalPerG: 4 },
+          { kcal: f_kcal, color: '#a16207', gradId: 'nl-macro-fat',   label: 'Fat',     g: f_g, kcalPerG: 9 }
         ];
         var cum = 0;
         var paths = [];
         slices.forEach(function(s, i) {
           if (s.kcal <= 0) return;
           var startF = cum / total, endF = (cum + s.kcal) / total;
-          paths.push(h('path', { key: i, d: arcPath(startF, endF), fill: s.color }));
+          paths.push(h('path', { key: i, d: arcPath(startF, endF), fill: 'url(#' + s.gradId + ')', stroke: '#ffffff', strokeWidth: 2, strokeLinejoin: 'round' }));
           cum += s.kcal;
         });
         var pctRow = function(s, i) {
@@ -19463,10 +19719,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5' },
           h('div', { className: 'flex flex-col md:flex-row items-center gap-5' },
             h('svg', {
-              width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, style: { filter: 'drop-shadow(0 2px 3px rgba(15,23,42,0.15))' },
+              width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, style: { filter: 'drop-shadow(0 3px 6px rgba(15,23,42,0.16))' },
               role: 'img',
               'aria-label': __alloFill(__alloT('stem.nutritionlab.a11y_energy_split_for_this_meal_carbs_kcal_protein_k', 'Energy split for this meal: carbs {value1} kcal, protein {value2} kcal, fat {value3} kcal. Total {value4} kcal.'), { value1: c_kcal.toFixed(0), value2: p_kcal.toFixed(0), value3: f_kcal.toFixed(0), value4: total.toFixed(0) })},
+              h('defs', null,
+                h('linearGradient', { id: 'nl-macro-carbs', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#f59e0b' }), h('stop', { offset: '100%', stopColor: '#b45309' })),
+                h('linearGradient', { id: 'nl-macro-prot', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#e11d48' }), h('stop', { offset: '100%', stopColor: '#9f1239' })),
+                h('linearGradient', { id: 'nl-macro-fat', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#ca8a04' }), h('stop', { offset: '100%', stopColor: '#854d0e' })),
+                h('radialGradient', { id: 'nl-plate-well', cx: '45%', cy: '40%', r: '60%' },
+                  h('stop', { offset: '0%', stopColor: '#ffffff' }), h('stop', { offset: '100%', stopColor: '#f1f5f9' }))
+              ),
+              h('circle', { cx: cx, cy: cy, r: rOuter + 5, fill: 'none', stroke: '#e2e8f0', strokeWidth: 2 }),
               paths,
+              h('circle', { cx: cx, cy: cy, r: rInner - 2, fill: 'url(#nl-plate-well)', stroke: '#e2e8f0', strokeWidth: 1.5 }),
               h('text', { x: cx, y: cy - 4, textAnchor: 'middle', fontSize: 22, fontWeight: 800, fill: '#1e293b' }, total.toFixed(0)),
               h('text', { x: cx, y: cy + 16, textAnchor: 'middle', fontSize: 12, fill: '#475569' }, __alloT('stem.nutritionlab.kcal_in_plate', 'kcal in plate'))
             ),
@@ -19507,22 +19775,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             h('div', { className: 'text-[0.75rem] text-slate-700 italic' }, __alloT('stem.nutritionlab.informational_only_not_a_goal_per_meal', 'Informational only — not a goal per meal.'))
           ),
           h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': __alloT('stem.nutritionlab.bar_chart_comparing_this_meal_s_nutrie', 'Bar chart comparing this meal\'s nutrients to typical adolescent daily reference intakes.') },
+            h('defs', null,
+              h('linearGradient', { id: 'nl-bar-fiber', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                h('stop', { offset: '0%', stopColor: '#16a34a' }), h('stop', { offset: '100%', stopColor: '#15803d' })),
+              h('linearGradient', { id: 'nl-bar-prot', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                h('stop', { offset: '0%', stopColor: '#be123c' }), h('stop', { offset: '100%', stopColor: '#9f1239' })),
+              h('linearGradient', { id: 'nl-bar-fat', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                h('stop', { offset: '0%', stopColor: '#ca8a04' }), h('stop', { offset: '100%', stopColor: '#854d0e' })),
+              h('linearGradient', { id: 'nl-bar-carb', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                h('stop', { offset: '0%', stopColor: '#d97706' }), h('stop', { offset: '100%', stopColor: '#92400e' }))
+            ),
             // Background grid: 25%/50%/75%/100% of the typical daily target
             REFS.map(function(r, i) {
               var y = pad.t + i * (barH + 4) + barH / 2;
               var targetX = pad.l + (r.target / maxLabelTarget) * (W - pad.l - pad.r);
               var valueX = pad.l + Math.min(r.value, maxLabelTarget) / maxLabelTarget * (W - pad.l - pad.r);
               var pctOfDay = r.target > 0 ? (r.value / r.target * 100) : 0;
+              var barW = Math.max(2, valueX - pad.l);
+              var barFill = r.label === 'Fiber' ? 'url(#nl-bar-fiber)' : (r.label === 'Protein' ? 'url(#nl-bar-prot)' : (r.label === 'Fat' ? 'url(#nl-bar-fat)' : 'url(#nl-bar-carb)'));
               return h('g', { key: i },
                 // Label
                 h('text', { x: pad.l - 8, y: y + lane / 2 + 4, textAnchor: 'end', fontSize: 12, fontWeight: 700, fill: '#1e293b' }, r.label),
                 // Daily target band (faded, behind the value bar)
-                h('rect', { x: pad.l, y: y - barH / 2 + lane, width: targetX - pad.l, height: barH - lane, fill: '#cbd5e1', opacity: 0.45, rx: 4 }),
+                h('rect', { x: pad.l, y: y - barH / 2 + lane, width: targetX - pad.l, height: barH - lane, fill: '#cbd5e1', opacity: 0.45, rx: 5 }),
                 // Tick at exactly the target
-                h('line', { x1: targetX, y1: y - barH / 2 + lane - 2, x2: targetX, y2: y + barH / 2 + 2, stroke: '#475569', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+                h('line', { x1: targetX, y1: y - barH / 2 + lane - 2, x2: targetX, y2: y + barH / 2 + 2, stroke: '#475569', strokeWidth: 1.6, strokeDasharray: '3 3' }),
+                h('circle', { cx: targetX, cy: y - barH / 2 + lane, r: 2.5, fill: '#475569' }),
                 h('text', { x: targetX, y: y - barH / 2 + lane - 4, textAnchor: 'middle', fontSize: 12, fill: '#334155', fontWeight: 700 }, '~' + r.target + r.unit + ' / day'),
-                // Actual value bar
-                h('rect', { x: pad.l, y: y - barH / 2 + lane + 2, width: Math.max(2, valueX - pad.l), height: barH - lane - 4, fill: r.label === 'Fiber' ? '#15803d' : (r.label === 'Protein' ? '#9f1239' : (r.label === 'Fat' ? '#a16207' : '#b45309')), rx: 3 }),
+                // Actual value bar with subtle top highlight sheen
+                h('rect', { x: pad.l, y: y - barH / 2 + lane + 2, width: barW, height: barH - lane - 4, fill: barFill, rx: 4 }),
+                barW > 8 && h('rect', { x: pad.l + 2, y: y - barH / 2 + lane + 3.5, width: Math.max(0, barW - 4), height: 3, fill: '#ffffff', opacity: 0.24, rx: 1.5 }),
                 // Value annotation
                 h('text', { x: Math.max(valueX, pad.l + 30), y: y + lane / 2 + 4, fontSize: 12, fontWeight: 700, fill: '#fff', textAnchor: 'end', dx: -4 },
                   r.value.toFixed(0) + r.unit

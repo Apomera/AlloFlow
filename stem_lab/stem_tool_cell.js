@@ -2235,28 +2235,34 @@ window.StemLab = window.StemLab || {
   function iaPaintCytosol(c, env, sc, st) {
     var type = env.type, k = env.k, hc = st.contrast;
     var pal = hc ? (type === 'plant' ? ['#0b2c22', '#08221a', '#051710'] : type === 'bacterium' ? ['#0e2748', '#0a1d38', '#07152a'] : ['#0a2e38', '#07222a', '#04171d'])
-      : type === 'plant' ? ['#1d6550', '#134a3c', '#0b3229'] : type === 'bacterium' ? ['#255a8c', '#1a426c', '#102c4c'] : ['#18606f', '#104857', '#09313c'];
-    var gr = c.createRadialGradient(env.cx - env.RX * 0.25, env.cy - env.RY * 0.32, 4 * k, env.cx, env.cy, Math.max(env.RX, env.RY) * 1.06);
-    gr.addColorStop(0, pal[0]); gr.addColorStop(0.62, pal[1]); gr.addColorStop(1, pal[2]);
+      : type === 'plant' ? ['#21725a', '#134c3e', '#082921'] : type === 'bacterium' ? ['#29659c', '#18426c', '#0c2440'] : ['#1c6c7d', '#0f4958', '#062630'];
+    var gr = c.createRadialGradient(env.cx - env.RX * 0.25, env.cy - env.RY * 0.32, 4 * k, env.cx, env.cy, Math.max(env.RX, env.RY) * 1.08);
+    gr.addColorStop(0, pal[0]); gr.addColorStop(0.58, pal[1]); gr.addColorStop(1, pal[2]);
     c.fillStyle = gr; c.fillRect(env.cx - env.RX - 2, env.cy - env.RY - 2, env.RX * 2 + 4, env.RY * 2 + 4);
     // soft mottling: the cytosol is a crowded gel, not an even wash of colour
     if (!hc) sc.mottle.forEach(function (m) {
       var mg = c.createRadialGradient(m[0], m[1], 0, m[0], m[1], m[2]);
-      mg.addColorStop(0, m[3] ? 'rgba(204,251,241,0.06)' : 'rgba(0,10,16,0.1)'); mg.addColorStop(1, 'rgba(0,0,0,0)');
+      mg.addColorStop(0, m[3] ? 'rgba(204,251,241,0.075)' : 'rgba(0,10,16,0.11)'); mg.addColorStop(1, 'rgba(0,0,0,0)');
       c.fillStyle = mg; c.beginPath(); c.arc(m[0], m[1], m[2], 0, IA_TAU); c.fill();
     });
-    var crowd = type === 'bacterium' ? ['rgba(191,219,254,0.08)', 'rgba(253,230,138,0.06)', 'rgba(167,243,208,0.06)'] : ['rgba(165,243,252,0.08)', 'rgba(253,230,138,0.055)', 'rgba(216,180,254,0.06)'];
+    var crowd = type === 'bacterium' ? ['rgba(191,219,254,0.085)', 'rgba(253,230,138,0.06)', 'rgba(167,243,208,0.065)'] : ['rgba(165,243,252,0.085)', 'rgba(253,230,138,0.055)', 'rgba(216,180,254,0.065)'];
     sc.crowd.forEach(function (bucket, b) {
       c.fillStyle = crowd[b]; c.beginPath();
       bucket.forEach(function (e) { c.moveTo(e[0] + Math.cos(e[4]) * e[2], e[1] + Math.sin(e[4]) * e[2]); c.ellipse(e[0], e[1], e[2], e[3], e[4], 0, IA_TAU); });
       c.fill();
     });
-    var grain = hc ? ['rgba(226,232,240,0.06)', 'rgba(226,232,240,0.05)', 'rgba(0,0,0,0.25)'] : ['rgba(207,250,254,0.13)', 'rgba(165,243,252,0.09)', 'rgba(0,12,18,0.28)'];
+    var grain = hc ? ['rgba(226,232,240,0.06)', 'rgba(226,232,240,0.05)', 'rgba(0,0,0,0.25)'] : ['rgba(207,250,254,0.14)', 'rgba(165,243,252,0.095)', 'rgba(0,12,18,0.28)'];
     sc.grain.forEach(function (bucket, b) { c.fillStyle = grain[b]; iaCircles(c, bucket); c.fill(); });
     if (!hc) {
-      var lx = env.cx - env.RX * 0.42, ly = env.cy - env.RY * 0.55, sh = c.createRadialGradient(lx, ly, 0, lx, ly, Math.max(env.RX, env.RY) * 0.95);
-      sh.addColorStop(0, 'rgba(236,254,255,0.11)'); sh.addColorStop(1, 'rgba(236,254,255,0)');
+      // volumetric dome highlight + subtle deep-cytoplasm subsurface caustic sheen
+      var lx = env.cx - env.RX * 0.42, ly = env.cy - env.RY * 0.55, sh = c.createRadialGradient(lx, ly, 0, lx, ly, Math.max(env.RX, env.RY) * 0.96);
+      sh.addColorStop(0, 'rgba(236,254,255,0.15)'); sh.addColorStop(0.55, 'rgba(165,243,252,0.045)'); sh.addColorStop(1, 'rgba(236,254,255,0)');
       c.fillStyle = sh; c.fillRect(env.cx - env.RX - 2, env.cy - env.RY - 2, env.RX * 2 + 4, env.RY * 2 + 4);
+      var rimFx = c.createRadialGradient(env.cx, env.cy, Math.min(env.RX, env.RY) * 0.58, env.cx, env.cy, Math.max(env.RX, env.RY) * 1.04);
+      rimFx.addColorStop(0, 'rgba(103,232,249,0)');
+      rimFx.addColorStop(0.76, type === 'plant' ? 'rgba(52,211,153,0.06)' : 'rgba(56,189,248,0.075)');
+      rimFx.addColorStop(1, type === 'plant' ? 'rgba(167,243,208,0.18)' : 'rgba(165,243,252,0.20)');
+      c.fillStyle = rimFx; c.fillRect(env.cx - env.RX - 2, env.cy - env.RY - 2, env.RX * 2 + 4, env.RY * 2 + 4);
     }
   }
   function iaPaintFibres(c, env, sc, st) {
@@ -2332,6 +2338,12 @@ window.StemLab = window.StemLab || {
   }
   function iaPaintNucleus(c, env, sc, st, it) {
     var x = it.x, y = it.y, R = it.R, k = env.k, hc = st.contrast, i;
+    if (!hc) {
+      var nucHalo = c.createRadialGradient(x, y, R * 0.85, x, y, R + 7.5 * k);
+      nucHalo.addColorStop(0, 'rgba(196,181,253,0.28)');
+      nucHalo.addColorStop(1, 'rgba(196,181,253,0)');
+      c.fillStyle = nucHalo; c.beginPath(); c.arc(x, y, R + 7.5 * k, 0, IA_TAU); c.fill();
+    }
     c.fillStyle = 'rgba(1,8,14,0.34)'; c.beginPath(); c.arc(x + 2.5 * k, y + 3.5 * k, R + 2.2 * k, 0, IA_TAU); c.fill();
     c.fillStyle = hc ? '#fef9c3' : '#e4dcff'; c.beginPath(); c.arc(x, y, R, 0, IA_TAU); c.fill();
     c.fillStyle = '#2a1658'; c.beginPath(); c.arc(x, y, R - 1.5 * k, 0, IA_TAU); c.fill();
@@ -2407,13 +2419,14 @@ window.StemLab = window.StemLab || {
     }
     c.fillStyle = 'rgba(2,10,18,0.45)'; c.beginPath(); dots.forEach(function (d) { c.moveTo(d[0] + 0.5 * k + d[2], d[1] + 0.6 * k); c.arc(d[0] + 0.5 * k, d[1] + 0.6 * k, d[2], 0, IA_TAU); }); c.fill();
     c.fillStyle = hc ? '#fef08a' : '#fcd977'; iaCircles(c, dots); c.fill();
-    // membrane edge, lumen, and a lit inner sheen: a flattened sac seen edge-on
+    // membrane edge, depth shadow, lumen, and lit specular sheen: flattened cisternae
     c.beginPath(); iaRerPath(c, env, sc);
+    c.save(); c.translate(1.2 * k, 1.8 * k); c.strokeStyle = 'rgba(1,8,14,0.34)'; c.lineWidth = th * 2 + 2.4 * k; c.stroke(); c.restore();
     c.strokeStyle = hc ? '#f8fafc' : '#0b5f8a'; c.lineWidth = th * 2 + (hc ? 2.4 : 1.8) * k; c.stroke();
     var gr = c.createLinearGradient(N.x - N.R * 2.6, N.y - N.R * 1.8, N.x, N.y + N.R * 1.6);
-    gr.addColorStop(0, '#d9f1ff'); gr.addColorStop(0.5, '#8fd3f6'); gr.addColorStop(1, '#4fb2e3');
+    gr.addColorStop(0, '#e6f6ff'); gr.addColorStop(0.5, '#8fd3f6'); gr.addColorStop(1, '#3da1d6');
     c.strokeStyle = gr; c.lineWidth = th * 2; c.stroke();
-    c.strokeStyle = 'rgba(240,249,255,0.55)'; c.lineWidth = 0.9 * k; c.stroke();
+    c.save(); c.translate(-0.6 * k, -0.7 * k); c.strokeStyle = 'rgba(240,249,255,0.72)'; c.lineWidth = 1.1 * k; c.stroke(); c.restore();
     c.restore();
   }
   function iaPaintSER(c, env, sc, st) {
@@ -2444,8 +2457,14 @@ window.StemLab = window.StemLab || {
       var e = iaGolgiPt(gs, ci, 1.08); c.quadraticCurveTo(e[0], e[1], bot[bot.length - 1][0], bot[bot.length - 1][1]);
       for (var m = bot.length - 2; m >= 0; m--) c.lineTo(bot[m][0], bot[m][1]);
       var s0 = iaGolgiPt(gs, ci, -1.08); c.quadraticCurveTo(s0[0], s0[1], top[0][0], top[0][1]); c.closePath();
+      if (!hc) { c.save(); c.translate(1.0 * k, 1.5 * k); c.fillStyle = 'rgba(1,8,14,0.26)'; c.fill(); c.restore(); }
       c.fillStyle = cols[ci]; c.fill();
       c.strokeStyle = hc ? '#f8fafc' : iaMix(cols[ci], '#3b2a0a', 0.55); c.lineWidth = (hc ? 1.3 : 0.8) * k; c.stroke();
+      if (!hc) {
+        c.beginPath(); c.moveTo(top[2][0], top[2][1]);
+        for (var jh = 3; jh < top.length - 2; jh++) c.lineTo(top[jh][0], top[jh][1]);
+        c.strokeStyle = 'rgba(255,255,255,0.42)'; c.lineWidth = 0.85 * k; c.stroke();
+      }
     }
     var ves = [];
     // ER-derived carriers arriving at the cis face
@@ -2536,18 +2555,24 @@ window.StemLab = window.StemLab || {
     var gr = c.createLinearGradient(-a, -b, a * 0.5, b);
     gr.addColorStop(0, '#86efac'); gr.addColorStop(0.35, '#34b56a'); gr.addColorStop(1, '#14653a');
     c.fillStyle = gr; c.beginPath(); c.ellipse(0, 0, a - 2.4 * k, b - 2.4 * k, 0, 0, IA_TAU); c.fill();
-    // stroma lamellae link the grana
-    c.strokeStyle = 'rgba(187,247,208,0.6)'; c.lineWidth = 0.75 * k; c.beginPath(); c.moveTo(-a * 0.72, b * 0.08); c.lineTo(a * 0.72, -b * 0.08); c.moveTo(-a * 0.6, -b * 0.3); c.lineTo(a * 0.55, b * 0.3); c.stroke();
-    // grana: stacked thylakoid discs
+    // stroma lamellae link the grana with subtle chlorophyll sheen
+    c.strokeStyle = 'rgba(187,247,208,0.72)'; c.lineWidth = 0.85 * k; c.beginPath(); c.moveTo(-a * 0.72, b * 0.08); c.lineTo(a * 0.72, -b * 0.08); c.moveTo(-a * 0.6, -b * 0.3); c.lineTo(a * 0.55, b * 0.3); c.stroke();
+    // grana: stacked thylakoid discs with crisp illuminated top rims
     var stacks = extra ? 3 : 5, discH = Math.max(0.9 * k, b * 0.085), gap = discH * 0.5, discs = extra ? 3 : 5;
     var dW = a * (extra ? 0.32 : 0.24);
-    c.fillStyle = '#0f4a2a'; c.beginPath();
+    var thylHighlights = [];
+    c.fillStyle = '#0d4426'; c.beginPath();
     for (var s = 0; s < stacks; s++) {
       var gx = -a * 0.62 + s * (a * 1.24 / (stacks - 1)), lim = b * Math.sqrt(Math.max(0, 1 - (gx * gx) / (a * a))) * 0.78, total = discs * (discH + gap), gy0 = (s % 2 ? 0.1 : -0.12) * b - total / 2;
-      for (var d = 0; d < discs; d++) { var dy = gy0 + d * (discH + gap); if (Math.abs(dy) + discH > lim) continue; var dw = Math.min(dW, Math.sqrt(Math.max(0, 1 - (dy * dy) / (b * b))) * a * 0.9 - Math.abs(gx) * 0.1); c.moveTo(gx - dw / 2, dy); c.lineTo(gx + dw / 2, dy); c.lineTo(gx + dw / 2, dy + discH); c.lineTo(gx - dw / 2, dy + discH); c.closePath(); }
+      for (var d = 0; d < discs; d++) { var dy = gy0 + d * (discH + gap); if (Math.abs(dy) + discH > lim) continue; var dw = Math.min(dW, Math.sqrt(Math.max(0, 1 - (dy * dy) / (b * b))) * a * 0.9 - Math.abs(gx) * 0.1); c.moveTo(gx - dw / 2, dy); c.lineTo(gx + dw / 2, dy); c.lineTo(gx + dw / 2, dy + discH); c.lineTo(gx - dw / 2, dy + discH); c.closePath(); thylHighlights.push([gx - dw * 0.44, dy + 0.3 * k, gx + dw * 0.44]); }
     }
     c.fill();
-    c.strokeStyle = 'rgba(167,243,208,0.55)'; c.lineWidth = 0.45 * k; c.stroke();
+    c.strokeStyle = 'rgba(167,243,208,0.65)'; c.lineWidth = 0.5 * k; c.stroke();
+    if (!hc && thylHighlights.length) {
+      c.strokeStyle = 'rgba(220,252,231,0.58)'; c.lineWidth = 0.55 * k; c.beginPath();
+      thylHighlights.forEach(function (th) { c.moveTo(th[0], th[1]); c.lineTo(th[2], th[1]); });
+      c.stroke();
+    }
     if (!extra) {
       c.fillStyle = 'rgba(254,243,199,0.88)'; c.beginPath(); c.ellipse(a * 0.28, b * 0.42, a * 0.17, b * 0.15, 0.2, 0, IA_TAU); c.fill();
       c.fillStyle = 'rgba(250,204,21,0.75)'; c.beginPath(); [[-0.42, 0.45], [0.55, -0.4], [0.05, 0.6]].forEach(function (p) { c.moveTo(a * p[0] + 1 * k, b * p[1]); c.arc(a * p[0], b * p[1], 1 * k, 0, IA_TAU); }); c.fill();
@@ -2598,9 +2623,18 @@ window.StemLab = window.StemLab || {
     iaMark(st, 'begin', 'cellMembrane');
     c.save(); c.lineJoin = 'round';
     var lit = c.createLinearGradient(env.cx - env.RX, env.cy - env.RY, env.cx + env.RX, env.cy + env.RY);
-    lit.addColorStop(0, hc ? '#fef9c3' : 'rgba(224,251,255,0.95)'); lit.addColorStop(0.55, hc ? '#fde047' : 'rgba(103,232,249,0.55)'); lit.addColorStop(1, hc ? '#facc15' : 'rgba(14,116,144,0.4)');
+    lit.addColorStop(0, hc ? '#fef9c3' : 'rgba(224,251,255,0.98)'); lit.addColorStop(0.55, hc ? '#fde047' : 'rgba(103,232,249,0.68)'); lit.addColorStop(1, hc ? '#facc15' : 'rgba(14,116,144,0.48)');
+    // Translucent Fresnel-lit plasma membrane outer & inner rim glow
+    if (!hc) {
+      c.strokeStyle = type === 'plant' ? 'rgba(110,231,183,0.16)' : 'rgba(103,232,249,0.20)';
+      c.lineWidth = 10 * k; traceInteriorBoundary(c, g, type, -1.8 * k); c.stroke();
+      c.strokeStyle = type === 'plant' ? 'rgba(167,243,208,0.28)' : 'rgba(165,243,252,0.34)';
+      c.lineWidth = 4.2 * k; traceInteriorBoundary(c, g, type, -0.4 * k); c.stroke();
+      c.strokeStyle = 'rgba(165,243,252,0.18)';
+      c.lineWidth = 5 * k; traceInteriorBoundary(c, g, type, m1 + 2.4 * k); c.stroke();
+    }
     // rim light along the outer face
-    c.strokeStyle = lit; c.lineWidth = 1.5 * k; traceInteriorBoundary(c, g, type, 0.6 * k); c.stroke();
+    c.strokeStyle = lit; c.lineWidth = 1.8 * k; traceInteriorBoundary(c, g, type, 0.6 * k); c.stroke();
     // hydrophobic core with fatty-acid tails
     c.strokeStyle = hc ? '#1f2937' : '#0a3542'; c.lineWidth = band; traceInteriorBoundary(c, g, type, mid); c.stroke();
     c.setLineDash([0.7 * k, 1.4 * k]); c.strokeStyle = hc ? 'rgba(254,240,138,0.5)' : 'rgba(165,243,252,0.32)'; c.lineWidth = band * 0.6; c.stroke(); c.setLineDash([]);
@@ -2789,24 +2823,36 @@ window.StemLab = window.StemLab || {
     gr.addColorStop(0, '#fda4af'); gr.addColorStop(0.35, '#e11d48'); gr.addColorStop(1, '#7f1236');
     c.fillStyle = gr; c.beginPath(); iaMitoOutline(c, L - 2.5 * k, Wd - 2.5 * k, flex); c.fill();
     c.save(); c.clip();
-    // cristae: inner-membrane folds reaching into the matrix
+    // cristae: inner-membrane folds reaching into the matrix with warm depth highlights
     c.lineCap = 'round'; c.beginPath();
     for (var j = 0; j < 7; j++) {
       var cx0 = -L * 0.7 + j * (L * 1.4 / 6), bend = flex * L * 0.4 * (1 - (cx0 / L) * (cx0 / L)), top = j % 2 === 0, yEdge = (top ? -1 : 1) * Wd + bend, yTip = (top ? 1 : -1) * Wd * 0.22 + bend;
       c.moveTo(cx0, yEdge); c.quadraticCurveTo(cx0 + (top ? 1 : -1) * L * 0.1, (yEdge + yTip) / 2, cx0, yTip);
     }
-    c.strokeStyle = '#ffe4e6'; c.lineWidth = 2.5 * k; c.stroke();
-    c.strokeStyle = '#9f1239'; c.lineWidth = 0.8 * k; c.stroke();
+    c.strokeStyle = 'rgba(255,228,230,0.96)'; c.lineWidth = 2.8 * k; c.stroke();
+    c.strokeStyle = '#9f1239'; c.lineWidth = 0.85 * k; c.stroke();
+    if (!hc) {
+      c.save(); c.translate(-0.5 * k, -0.5 * k);
+      c.strokeStyle = 'rgba(255,255,255,0.48)'; c.lineWidth = 0.65 * k; c.stroke();
+      c.restore();
+    }
     c.fillStyle = 'rgba(76,5,25,0.7)'; c.beginPath(); [[-0.42, 0.12], [0.1, -0.3], [0.48, 0.2], [-0.05, 0.42]].forEach(function (p) { c.moveTo(L * p[0] + 1.1 * k, Wd * p[1]); c.arc(L * p[0], Wd * p[1], 1.1 * k, 0, IA_TAU); }); c.fill();
     c.restore();
-    c.fillStyle = 'rgba(255,241,242,0.24)'; c.beginPath(); c.ellipse(-L * 0.32, -Wd * 0.45, L * 0.38, Wd * 0.16, -0.08, 0, IA_TAU); c.fill();
+    c.fillStyle = 'rgba(255,241,242,0.28)'; c.beginPath(); c.ellipse(-L * 0.32, -Wd * 0.45, L * 0.38, Wd * 0.16, -0.08, 0, IA_TAU); c.fill();
     c.restore();
-    // ATP leaves for the rest of the cell
-    c.save(); c.fillStyle = '#fde047';
+    // ATP leaves for the rest of the cell with a soft golden halo
+    c.save();
     var baseAlpha = c.globalAlpha;
     for (var a = 0; a < 3; a++) {
       var p2 = st.reduced ? 0.25 + a * 0.22 : (tt * 0.22 + a / 3 + ph * 0.17) % 1, ang = a / 3 * IA_TAU + ph * 0.8, rr = R * (0.9 + p2 * 1.5);
-      c.globalAlpha = baseAlpha * Math.max(0, 1 - p2) * 0.9; c.beginPath(); c.arc(x + Math.cos(ang) * rr, y + Math.sin(ang) * rr * 0.75, Math.max(1.1 * k, R * 0.07), 0, IA_TAU); c.fill();
+      var atpX = x + Math.cos(ang) * rr, atpY = y + Math.sin(ang) * rr * 0.75, atpR = Math.max(1.1 * k, R * 0.07);
+      var fade = Math.max(0, 1 - p2);
+      if (!hc) {
+        c.globalAlpha = baseAlpha * fade * 0.36; c.fillStyle = '#fde047';
+        c.beginPath(); c.arc(atpX, atpY, atpR * 2.4, 0, IA_TAU); c.fill();
+      }
+      c.globalAlpha = baseAlpha * fade * 0.94; c.fillStyle = '#fef08a';
+      c.beginPath(); c.arc(atpX, atpY, atpR, 0, IA_TAU); c.fill();
     }
     c.restore();
   }

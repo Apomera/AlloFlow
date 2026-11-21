@@ -42,9 +42,9 @@
   };
   // Notes that say how to read a result. They do not put a ring on a chart dot.
   var QUIET = { finished_early: true, no_check_value: true, untimed: true, untimed_no_rate: true };
-  var TOOL_NAMES = { textLarger: 'larger text', textLargest: 'largest text', contrastHigh: 'high contrast',
+  var TOOL_NAMES = { textLarger: 'larger text', textLargest: 'largest text', textExtraLarge: 'extra large text', contrastHigh: 'high contrast',
     contrastSoft: 'soft contrast', colorsDark: 'dark colors', colorsOcean: 'ocean colors', colorsSunny: 'sunny colors',
-    colorsForest: 'forest colors', spacingWide: 'wider spacing', lettersLexend: 'Lexend letters', lettersAtkinson: 'Atkinson letters', lettersBook: 'book letters', lettersRounded: 'rounded letters', readingFocus: 'reading focus line',
+    colorsForest: 'forest colors', colorsRose: 'rose colors', spacingWide: 'wider spacing', lettersLexend: 'Lexend letters', lettersAtkinson: 'Atkinson letters', lettersBook: 'book letters', lettersRounded: 'rounded letters', lettersMono: 'monospace letters', lettersOpenDyslexic: 'OpenDyslexic letters', readingFocus: 'reading focus line',
     magnifier: 'magnifier', readChoices: 'read choices aloud' };
 
   var reader = window.AlloPacketResults;
@@ -378,66 +378,74 @@
     busy = true;
     lastRemoved = null;
     var drop = startDrop();
-    var files = all.slice(0, reader.MAX_FILES);
-    state.leftOut += all.length - files.length;
-    say('Reading ' + count(files.length, 'file') + '.');
-    var budget = reader.MAX_FILES;
-    for (var i = 0; i < files.length; i++) {
-      var file = files[i], result;
-      if (isZipFile(file) && typeof reader.unpackZip === 'function') {
-        if (budget <= 0) { state.leftOut++; continue; }
-        var zipLimit = Number(reader.MAX_ZIP_BYTES) || MAX_ZIP_BYTES;
-        if (Number(file.size) > zipLimit) {
-          absorb({ ok: false, name: String(file.name || 'archive.zip'), why: 'This .zip file is larger than 50 MB. Unzip it on your device and drop the results files in smaller groups.' }, drop);
-          continue;
-        }
-        var unpacked;
-        try { unpacked = await reader.unpackZip(await readBuffer(file), { maxFiles: budget }); }
-        catch (_) { unpacked = { ok: false, why: reader.REASONS.unreadable, entries: [], skipped: [], leftOut: 0 }; }
-        if (!unpacked.ok) {
-          absorb({ ok: false, name: String(file.name || 'archive.zip'), why: unpacked.why }, drop);
-          continue;
-        }
-        state.leftOut += unpacked.leftOut || 0;
-        (unpacked.skipped || []).forEach(function (skip) {
-          state.notResults.push({ file: skip.name, why: skip.why });
-          drop.look++;
-        });
-        if (!unpacked.entries.length && (unpacked.skipped || []).length) drop.read++;
-        for (var j = 0; j < unpacked.entries.length; j++) {
+    try {
+      var files = all.slice(0, reader.MAX_FILES);
+      state.leftOut += all.length - files.length;
+      say('Reading ' + count(files.length, 'file') + '.');
+      var budget = reader.MAX_FILES;
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i], result;
+        if (isZipFile(file) && typeof reader.unpackZip === 'function') {
           if (budget <= 0) { state.leftOut++; continue; }
-          budget--;
-          var entry = unpacked.entries[j];
-          try { result = await reader.read(entry.text, { name: entry.name, lastModified: file.lastModified }); }
-          catch (_) { result = reader.refuse('unreadable', entry.name); }
-          absorb(result, drop);
+          var zipLimit = Number(reader.MAX_ZIP_BYTES) || MAX_ZIP_BYTES;
+          if (Number(file.size) > zipLimit) {
+            absorb({ ok: false, name: String(file.name || 'archive.zip'), why: 'This .zip file is larger than 50 MB. Unzip it on your device and drop the results files in smaller groups.' }, drop);
+            continue;
+          }
+          var unpacked;
+          try { unpacked = await reader.unpackZip(await readBuffer(file), { maxFiles: budget }); }
+          catch (_) { unpacked = { ok: false, why: reader.REASONS.unreadable, entries: [], skipped: [], leftOut: 0 }; }
+          if (!unpacked.ok) {
+            absorb({ ok: false, name: String(file.name || 'archive.zip'), why: unpacked.why }, drop);
+            continue;
+          }
+          state.leftOut += unpacked.leftOut || 0;
+          (unpacked.skipped || []).forEach(function (skip) {
+            state.notResults.push({ file: skip.name, why: skip.why });
+            drop.look++;
+          });
+          if (!unpacked.entries.length && (unpacked.skipped || []).length) drop.read++;
+          for (var j = 0; j < unpacked.entries.length; j++) {
+            if (budget <= 0) { state.leftOut++; continue; }
+            budget--;
+            var entry = unpacked.entries[j];
+            try { result = await reader.read(entry.text, { name: entry.name, lastModified: file.lastModified }); }
+            catch (_) { result = reader.refuse('unreadable', entry.name); }
+            absorb(result, drop);
+          }
+          continue;
         }
-        continue;
+        if (budget <= 0) { state.leftOut++; continue; }
+        budget--;
+        if (Number(file.size) > reader.MAX_BYTES) result = reader.refuse('too_big', file.name);
+        else {
+          try { result = await reader.read(await readText(file), { name: file.name, lastModified: file.lastModified }); }
+          catch (_) { result = reader.refuse('unreadable', file.name); }
+        }
+        absorb(result, drop);
       }
-      if (budget <= 0) { state.leftOut++; continue; }
-      budget--;
-      if (Number(file.size) > reader.MAX_BYTES) result = reader.refuse('too_big', file.name);
-      else {
-        try { result = await reader.read(await readText(file), { name: file.name, lastModified: file.lastModified }); }
-        catch (_) { result = reader.refuse('unreadable', file.name); }
-      }
-      absorb(result, drop);
+    } finally {
+      busy = false;
     }
-    busy = false;
     finishDrop(drop);
   }
   async function loadSamples() {
     if (busy) return;
     busy = true;
+    lastRemoved = null;
+    unsavedEdits = false;
     state = fresh();
     state.sample = true;
     say('Reading the sample files.');
     var drop = { read: 0, look: 0 };
-    for (var i = 0; i < SAMPLE_FILES.length; i++) {
-      var text = String.fromCharCode(0xFEFF) + SAMPLE_FILES[i].lines.join('\r\n') + '\r\n';
-      absorb(await reader.read(text, { name: SAMPLE_FILES[i].name }), drop);
+    try {
+      for (var i = 0; i < SAMPLE_FILES.length; i++) {
+        var text = String.fromCharCode(0xFEFF) + SAMPLE_FILES[i].lines.join('\r\n') + '\r\n';
+        absorb(await reader.read(text, { name: SAMPLE_FILES[i].name }), drop);
+      }
+    } finally {
+      busy = false;
     }
-    busy = false;
     finishDrop(drop);
   }
 
@@ -477,7 +485,11 @@
     try { raw = storage().getItem(STORE_KEY); } catch (_) { raw = null; }
     if (!raw) return false;
     var bundle = null;
-    try { bundle = reader.readBundle(JSON.parse(raw)); } catch (_) { bundle = null; }
+    try {
+      bundle = reader.readBundle(JSON.parse(raw, function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      }));
+    } catch (_) { bundle = null; }
     if (!bundle || !bundle.ok || !bundle.sessions.length) { forgetStored(); return false; }
     takeBundle(bundle, { read: 0, look: 0 });
     state.keep = true;
@@ -910,7 +922,7 @@
             var mnDisp = String(it.word || it.target || '').trim();
             if (!mnDisp) return;
             recordMiss(learnerSeen, 'mn:' + mnDisp.toLowerCase(), mnDisp, 'mn', it);
-          } else if (reader && reader.ACTIVITIES && reader.ACTIVITIES[act]) {
+          } else if (reader && reader.ACTIVITIES && own(reader.ACTIVITIES, act)) {
             var ww = String(it.word || it.target || '').trim();
             if (!ww || !/^[a-z]{2,16}$/i.test(ww)) return;
             recordMiss(learnerSeen, 'ws:' + ww.toLowerCase(), ww.toLowerCase(), 'ws', it);
@@ -1039,7 +1051,9 @@
         sorter.addEventListener('click', function () {
           var next = state.sort[spec.id] = { by: column.id, down: on ? !sort.down : !!column.number };
           drawGroup();
-          var again = $('group-table').querySelector('.sort[data-table="' + spec.id + '"][data-sort="' + column.id + '"]');
+          var again = Array.prototype.find.call($('group-table').querySelectorAll('.sort'), function (btn) {
+            return btn.getAttribute('data-table') === spec.id && btn.getAttribute('data-sort') === column.id;
+          });
           if (again) again.focus();
           say('Sorted by ' + column.label + ', ' + (column.number ? (next.down ? 'high to low' : 'low to high') : (next.down ? 'Z to A' : 'A to Z')) + '.');
         });
@@ -1532,6 +1546,7 @@
     var mathSeen = Object.create(null), mathMissed = [];
     var mathKnownSeen = Object.create(null), mathKnownCandidates = [];
     var qdMissedCount = 0, mnMissedCount = 0;
+    var mathBlocked = Object.create(null);
     learner.sessions.forEach(function (s) {
       var sMode = srModeOf(s);
       var srSpecial = isSrSpecialMode(sMode);
@@ -1542,6 +1557,8 @@
           var mf = parseMathFactText(it.word);
           if (!mf) return;
           if (!(it.firstTry && it.correct)) {
+            mathBlocked[mf.key] = true;
+            if (mf.op === '+' || mf.op === 'x') mathBlocked[mf.b + mf.op + mf.a] = true;
             if (!mathSeen[mf.key] && mathMissed.length < 12) {
               mathSeen[mf.key] = true;
               mathMissed.push(mf.text);
@@ -1575,7 +1592,7 @@
           qdMissedCount += 1;
         } else if (act === 'missing_number') {
           mnMissedCount += 1;
-        } else if (reader && reader.ACTIVITIES && reader.ACTIVITIES[act]) {
+        } else if (reader && reader.ACTIVITIES && own(reader.ACTIVITIES, act)) {
           var ww = String(it.word || it.target || '').trim();
           var wKey = ww.toLowerCase();
           if (!ww || !/^[a-z]{2,16}$/i.test(ww) || wsSeen[wKey] || wsMissed.length >= 12) return;
@@ -1583,13 +1600,6 @@
           wsMissed.push(ww);
         }
       });
-    });
-    var mathBlocked = Object.create(null);
-    mathMissed.forEach(function (raw) {
-      var parsed = parseMathFactText(raw);
-      if (!parsed) return;
-      mathBlocked[parsed.key] = true;
-      if (parsed.op === '+' || parsed.op === 'x') mathBlocked[parsed.b + parsed.op + parsed.a] = true;
     });
     var mathKnown = [];
     mathKnownCandidates.forEach(function (cand) {
@@ -1651,6 +1661,7 @@
           markEdited();
           changed();
           if (!state.sessions.length) {
+            lastRemoved = null;
             go('empty', false);
             if ($('choose')) $('choose').focus();
             say('Removed the last result. The page is clear.');

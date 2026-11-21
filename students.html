@@ -814,7 +814,7 @@
     </button>
 
     <script>
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
         document.getElementById('year').innerText = new Date().getFullYear();
 
         // Scroll Reveal

@@ -1,22 +1,18 @@
 # SEL Hub Browser QA
 
-Generated: 2026-09-21T01:10:49.098Z
+Generated: 2026-11-21T03:57:17.767Z
 
 Harness: standalone SEL Hub and AlloHaven browser fixture
 
 ## Summary
 
-- Passed: 20
-- Failed: 1
+- Passed: 21
+- Failed: 0
 - Scenarios: 6
 
 ## Checks
 
 ### desktop-light-focus
-- FAIL runtime-error: locator.waitFor: Timeout 10000ms exceeded.
-Call log:
-[2m  - waiting for getByRole('button', { name: /Build a new custom SEL Station/i }).first() to be visible[22m
-
 - PASS responsive-overflow
 - PASS theme-class-detected
 - PASS first-run-explainer-dismissable
@@ -25,6 +21,7 @@ Call log:
 - PASS share-packet-lifecycle-reopen-draft
 - PASS share-packet-lifecycle-update-in-place
 - PASS teacher-launch-loads-station-preview
+- PASS station-builder-focus-handoff
 
 ### desktop-dark-responsive
 - PASS responsive-overflow

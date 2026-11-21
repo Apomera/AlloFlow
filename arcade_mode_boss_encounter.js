@@ -1215,6 +1215,7 @@
         var score = typeof d.score === 'number' ? d.score : 1;
         relayedBossRef.current[id] = true;
         subFields[id] = {
+          encounterKey: bossEncounterKey,
           nickname: d.nickname || 'anon', cardName: d.cardName || '', cardSource: d.cardSource || 'decoration', cardTier: d.cardTier || null,
           verb: d.verb || '', score: score, damage: score < 11 ? 0 : (score >= 18 ? score : (score - 5)), healed: score >= 18,
           round: typeof d.round === 'number' ? d.round : 1, submittedAt: d.submittedAt || new Date().toISOString()
@@ -1237,9 +1238,14 @@
     var classView = (function () {
       if (!isClassMode || !classSessionState) return null;
       var be = classSessionState.bossEncounter || {};
+      var activeEncounterKey = be.startedAt || '';
       var submissionsMap = be.submissions || {};
       var subList = Object.keys(submissionsMap).map(function (k) {
         return Object.assign({ id: k }, submissionsMap[k] || {});
+      }).filter(function (sub) {
+        if (!activeEncounterKey) return true;
+        if (sub.encounterKey) return sub.encounterKey === activeEncounterKey;
+        return !sub.submittedAt || sub.submittedAt >= activeEncounterKey;
       }).sort(function (a, b) {
         return (a.submittedAt || '').localeCompare(b.submittedAt || '');
       });
@@ -1375,6 +1381,9 @@
             timerPaused: false,
             pausedRemainingMs: null,
             timerPausedAt: null,
+            endedOutcome: null,
+            endedAt: null,
+            classRewardTokens: null,
             maxRounds: MAX_ROUNDS
           }
         }).catch(function () { /* ignore — best-effort */ });
@@ -1832,18 +1841,56 @@
         willTransform: willTransform
       };
       var nextHistory = history.concat([entry]);
-      setHistory(nextHistory);
-      setLastResult(entry);
-      setHp(newHp);
-      setSubmitting(false);
-      // Phase 3b.full.c — in class mode, also write the submission to
-      // the session doc so all participants see shared HP fall. The
-      // local hp state stays for solo + as an optimistic-update echo;
-      // class-mode HP rendering reads from classView.sharedHp instead.
+      var nextTransformCount = willTransform ? transformCount + 1 : transformCount;
+
+      function commitSparkTurn() {
+        setHistory(nextHistory);
+        setLastResult(entry);
+        setHp(newHp);
+        setSubmitting(false);
+        if (willTransform) {
+          applyVisualSparkTransform(pickedCard, pickedVerb, parsed);
+        }
+
+        // Phase 3b.full.c — local HP only authoritative in solo mode.
+        // In class mode, win condition is computed from the snapshot
+        // (sum of all participants' damages) by the useEffect watcher.
+        if (!isClassMode && newHp <= 0) {
+          emitEncounterRecord('won', newHp, { history: nextHistory, transformCount: nextTransformCount });
+          publishClassEncounterEnd('won');
+          setPhase('won');
+          return;
+        }
+        // Advance round. In solo mode, round overflow ends the encounter.
+        // In class mode, an individual's round overflow ends THEIR turn-
+        // taking but doesn't end the class encounter — they transition to
+        // 'lost' locally (no further submissions) while peers play on.
+        // We DON'T call publishClassEncounterEnd here because individual
+        // round-out is not a group decision.
+        var nextRound = round + 1;
+        if (nextRound > MAX_ROUNDS) {
+          emitEncounterRecord('lost', newHp, { history: nextHistory, transformCount: nextTransformCount });
+          if (!isClassMode) publishClassEncounterEnd('lost');
+          setPhase('lost');
+          return;
+        }
+        setRound(nextRound);
+        // Reset turn UI; refill hand
+        discardAndDraw(pickedCard.id);
+        setPickedCard(null);
+        setPickedVerb(null);
+        setJustification('');
+      }
+
+      // Phase 3b.full.c — in class mode, write the submission to the
+      // session doc (or private class channel) and only commit turn
+      // advancement once delivery succeeds so a failed send never
+      // discards the student's card or loses their justification.
       if (isClassMode && typeof ctx.sessionUpdate === 'function') {
         var subId = 'sub-' + (ctx.studentNickname || 'anon').replace(/\s+/g, '_') + '-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
         var subFields = {};
         subFields[subId] = {
+          encounterKey: bossEncounterKey,
           nickname: ctx.studentNickname || 'anon',
           cardName: entry.cardName,
           cardSource: entry.cardSource,
@@ -1875,47 +1922,21 @@
           } else {
             sparkSent = Promise.resolve(ctx.sessionUpdate({ bossEncounter: { submissions: subFields } }));
           }
-          sparkSent.catch(function (err) {
+          sparkSent.then(function () {
+            commitSparkTurn();
+          }).catch(function (err) {
+            setSubmitting(false);
             ctx.addToast(classSendMessage(err));
             setJustification(entry.justification);
           });
         } catch (e) {
+          setSubmitting(false);
           ctx.addToast(classSendMessage(e));
           setJustification(entry.justification);
         }
-      }
-      if (willTransform) {
-        applyVisualSparkTransform(pickedCard, pickedVerb, parsed);
-      }
-
-      // Phase 3b.full.c — local HP only authoritative in solo mode.
-      // In class mode, win condition is computed from the snapshot
-      // (sum of all participants' damages) by the useEffect watcher.
-      if (!isClassMode && newHp <= 0) {
-        emitEncounterRecord('won', newHp);
-        publishClassEncounterEnd('won');
-        setPhase('won');
         return;
       }
-      // Advance round. In solo mode, round overflow ends the encounter.
-      // In class mode, an individual's round overflow ends THEIR turn-
-      // taking but doesn't end the class encounter — they transition to
-      // 'lost' locally (no further submissions) while peers play on.
-      // We DON'T call publishClassEncounterEnd here because individual
-      // round-out is not a group decision.
-      var nextRound = round + 1;
-      if (nextRound > MAX_ROUNDS) {
-        emitEncounterRecord('lost', newHp);
-        if (!isClassMode) publishClassEncounterEnd('lost');
-        setPhase('lost');
-        return;
-      }
-      setRound(nextRound);
-      // Reset turn UI; refill hand
-      discardAndDraw(pickedCard.id);
-      setPickedCard(null);
-      setPickedVerb(null);
-      setJustification('');
+      commitSparkTurn();
     }
 
     // Phase 3b.history — build a self-contained encounter record + emit
@@ -1928,8 +1949,9 @@
     // Firestore submission carries originalScore + teacherAdjusted when
     // it has been edited; both fields propagate through to the print
     // packet's audit-trail rendering. Solo mode stays on local history.
-    function buildEncounterRecord(outcome, finalHpOverride) {
+    function buildEncounterRecord(outcome, finalHpOverride, overrides) {
       var sourceHistory;
+      var baseHistory = (overrides && Array.isArray(overrides.history)) ? overrides.history : history;
       if (isClassMode && classView && classView.submissions) {
         var myNick = ctx.studentNickname || 'anon';
         sourceHistory = classView.submissions
@@ -1954,7 +1976,7 @@
             return entry;
           });
       } else {
-        sourceHistory = history.map(function (e) {
+        sourceHistory = baseHistory.map(function (e) {
           return {
             round: e.round,
             cardName: e.cardName,
@@ -1999,17 +2021,17 @@
         bossHpStart: BOSS_HP_START,
         bossHpFinal: typeof finalHpOverride === 'number' ? finalHpOverride : hp,
         bossImageBase64: bossImage,
-        transformCount: transformCount,
+        transformCount: (overrides && typeof overrides.transformCount === 'number') ? overrides.transformCount : transformCount,
         history: sourceHistory,
         strongestSpark: strongestRecord
       };
     }
-    function emitEncounterRecord(outcome, finalHpOverride) {
+    function emitEncounterRecord(outcome, finalHpOverride, overrides) {
       if (encounterRecordedRef.current) return;
       encounterRecordedRef.current = true;
       if (typeof ctx.onEncounterRecord !== 'function') return;
       try {
-        ctx.onEncounterRecord(buildEncounterRecord(outcome, finalHpOverride));
+        ctx.onEncounterRecord(buildEncounterRecord(outcome, finalHpOverride, overrides));
       } catch (e) { /* ignore */ }
     }
 
@@ -2635,11 +2657,12 @@
                   max: 20,
                   value: editingScore,
                   onChange: function (e) {
+                    setEditingScore(e.target.value);
+                  },
+                  onBlur: function (e) {
                     var n = parseInt(e.target.value, 10);
-                    if (!isFinite(n)) return;
-                    if (n < (s.score || 1)) n = s.score || 1;
-                    if (n > 20) n = 20;
-                    setEditingScore(n);
+                    if (!isFinite(n)) { setEditingScore(s.score || 1); return; }
+                    setEditingScore(Math.max(s.score || 1, Math.min(20, n)));
                   },
                   style: {
                     width: '54px',
@@ -2657,11 +2680,12 @@
                   'Upgrade-only · floor ' + (s.score || 1) + ', max 20'),
                 h('button', {
                   onClick: function () {
-                    if (editingScore <= (s.score || 1)) {
+                    var parsedScore = parseInt(editingScore, 10);
+                    if (!isFinite(parsedScore) || parsedScore <= (s.score || 1)) {
                       ctx.addToast('Pick a higher score to apply.');
                       return;
                     }
-                    saveSubmissionEdit(s, editingScore);
+                    saveSubmissionEdit(s, Math.min(20, parsedScore));
                   },
                   style: {
                     background: palette.accent, color: palette.onAccent,
@@ -2716,7 +2740,7 @@
             style: {
               marginLeft: 'auto',
               fontVariantNumeric: 'tabular-nums',
-              background: lastResult.score >= 18 ? (palette.accent || '#60a5fa') : (lastResult.score >= 11 ? (palette.accent + '22' || 'rgba(96,165,250,0.18)') : 'transparent'),
+              background: lastResult.score >= 18 ? (palette.accent || '#60a5fa') : (lastResult.score >= 11 ? (palette.accent ? palette.accent + '22' : 'rgba(96,165,250,0.18)') : 'transparent'),
               color: lastResult.score >= 18 ? (palette.onAccent || '#0f172a') : (lastResult.score >= 11 ? (palette.accent || '#60a5fa') : (palette.textMute || '#94a3b8')),
               padding: '2px 9px', borderRadius: '999px',
               fontWeight: lastResult.score >= 18 ? 800 : 700,
@@ -2950,7 +2974,8 @@
         // becomes a "Spark cast — waiting for next round" indicator.
         (function () {
           var alreadyThisRound = isClassMode && classView && classView.hasSubmittedThisRound;
-          var disabled = submitting || voiceMode !== 'idle' || (justification || '').trim().length < 10 || alreadyThisRound;
+          var channelBlocked = isClassStudent && (bossIssue === 'rules' || bossIssue === 'transport');
+          var disabled = submitting || voiceMode !== 'idle' || (justification || '').trim().length < 10 || alreadyThisRound || channelBlocked;
           return h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' } },
             h('div', { style: { fontSize: '10px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
               alreadyThisRound

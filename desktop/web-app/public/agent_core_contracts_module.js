@@ -21,34 +21,36 @@
   'use strict';
 
   var SCHEMA_VERSION = '1.0';
+  var hasOwn = Object.prototype.hasOwnProperty;
 
-  var DEPLOYMENT_MODES = ['canvas', 'desktop-local', 'district-hosted', 'demo'];
+  var DEPLOYMENT_MODES = Object.freeze(['canvas', 'desktop-local', 'district-hosted', 'demo']);
 
   // Mirrors the phase_k fallback list; live callers should inject the
   // ToolCatalog registry (window.TOOL_CATALOG) instead of relying on this.
-  var FALLBACK_TOOL_IDS = ['analysis', 'simplified', 'glossary', 'outline', 'image', 'quiz',
+  var FALLBACK_TOOL_IDS = Object.freeze(['analysis', 'simplified', 'glossary', 'outline', 'image', 'quiz',
     'sentence-frames', 'brainstorm', 'timeline', 'concept-sort', 'adventure', 'faq', 'persona',
-    'dbq', 'note-taking', 'anchor-chart', 'math', 'lesson-plan', 'gemini-bridge', 'alignment-report'];
+    'dbq', 'note-taking', 'anchor-chart', 'math', 'lesson-plan', 'gemini-bridge', 'alignment-report',
+    'memory-aid', 'applied-challenge']);
 
   // Capability each blueprint tool needs from the provider registry.
-  var TOOL_CAPABILITY = { image: 'imageGeneration' };
+  var TOOL_CAPABILITY = Object.freeze({ image: 'imageGeneration' });
   var DEFAULT_CAPABILITY = 'text';
 
   // Blueprint tool → AlloCommands command id, where a live command contract
   // exists (PLAN_CONTRACTS in allo_commands_source.jsx). Lets the service
   // reuse getCommandContract semantics instead of duplicating them.
-  var TOOL_TO_COMMAND = {
+  var TOOL_TO_COMMAND = Object.freeze({
     quiz: 'generate_quiz',
     glossary: 'generate_glossary',
     simplified: 'generate_simplified',
     'sentence-frames': 'generate_sentence_frames',
     analysis: 'generate_analysis',
     outline: 'generate_outline'
-  };
+  });
 
-  var PERMISSIONS = ['artifact:read', 'artifact:draft', 'artifact:execute', 'artifact:export',
-    'catalog:read', 'catalog:stage', 'catalog:publish'];
-  var DEMO_ALLOWED_PERMISSIONS = ['artifact:read', 'artifact:draft', 'catalog:read'];
+  var PERMISSIONS = Object.freeze(['artifact:read', 'artifact:draft', 'artifact:execute', 'artifact:export',
+    'catalog:read', 'catalog:stage', 'catalog:publish']);
+  var DEMO_ALLOWED_PERMISSIONS = Object.freeze(['artifact:read', 'artifact:draft', 'catalog:read']);
 
   // MCP tool names must satisfy Claude's API charset (letters, digits, _ , -).
   // No dots: clients namespace by server (mcp__alloflow__blueprint_create).
@@ -90,22 +92,51 @@
     { name: 'catalog_get_submission_status', title: 'Read submission review status', kind: 'read-only' }
   ];
 
+  TOOL_CLASSIFICATION.forEach(function (entry) { Object.freeze(entry); });
+  Object.freeze(TOOL_CLASSIFICATION);
+
   // Demo deployments may only advertise tools that cannot spend money,
   // write outside the workspace, or touch the public catalog write path.
-  var DEMO_SAFE_TOOL_KINDS = { 'read-only': true, 'draft-writing': true };
+  var DEMO_SAFE_TOOL_KINDS = Object.freeze({ 'read-only': true, 'draft-writing': true });
 
-  var JOB_STATUSES = ['queued', 'running', 'input_required', 'completed', 'failed', 'cancelled'];
+  var JOB_STATUSES = Object.freeze(['queued', 'running', 'input_required', 'completed', 'failed', 'cancelled']);
 
-  var SECRET_FIELD_RE = /(?:^|[_-])(?:api)?key$|token|secret|password|credential|passphrase/i;
+  var SECRET_FIELD_RE = /(?:^|[_-])(?:api)?key$|token|secret|password|credential|passphrase|(?:^|[_-])(?:authorization|cookie)$/i;
   var CAMEL_SECRET_FIELD_RE = /(?:^|[a-z])(?:Access|Refresh|Session|Auth|Bearer|Id|Api|Client|Private|Signing|Encryption)Key$|^(?:access|refresh|session|auth|bearer|id|api|client|private|signing|encryption)Key$|(?:^|[a-z])(?:Client|Api|App|Jwt|Webhook|Signing)Secret$|^(?:client|api|app|jwt|webhook|signing)Secret$|^privateKey$/;
   var UNSAFE_PATH_RE = /^(?:[A-Za-z]:[\\/]|\\\\|\/)/;
+  var SAFE_HTTP_URL_RE = /^https?:\/\/[^\s"'<>]+$/i;
   // 10, not 8: a real AlloPack nests envelope > data > history[i] > data > visualPlan > panels[i] > labels[i] (9 levels).
   var MAX_SCAN_DEPTH = 10;
+  var MAX_SCAN_NODES = 10000;
+  var MAX_SCAN_ERRORS = 100;
 
   // ── small helpers ──────────────────────────────────────────────────────
 
   function isPlainObject(v) {
     return !!v && typeof v === 'object' && !Array.isArray(v);
+  }
+
+  function safeShallowClone(src, extra) {
+    var out = {};
+    if (isPlainObject(src)) {
+      Object.keys(src).forEach(function (k) {
+        if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') out[k] = src[k];
+      });
+    }
+    if (isPlainObject(extra)) {
+      Object.keys(extra).forEach(function (k) {
+        if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') out[k] = extra[k];
+      });
+    }
+    return out;
+  }
+
+  function safeUrl(value, limit) {
+    if (value === undefined || value === null) return '';
+    var cleaned = String(value).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, limit || 600);
+    if (!cleaned) return '';
+    if (!SAFE_HTTP_URL_RE.test(cleaned)) return '';
+    return cleaned;
   }
 
   function err(code, path, message) {
@@ -114,14 +145,28 @@
 
   // Recursively scan for secret-like field names and unsafe path-like string
   // values. Returns error objects; empty array = clean.
-  function scanUnsafeFields(obj, path, out, depth) {
+  function scanUnsafeFields(obj, path, out, depth, state) {
     if (!obj || typeof obj !== 'object') return out;
+    var ctx = state || { visited: new Set(), nodes: 0, limitReported: false };
+    if (out.length >= MAX_SCAN_ERRORS) return out;
     if (depth > MAX_SCAN_DEPTH) {
       out.push(err('payload-too-deep', path, 'Contract payloads may not exceed ' + MAX_SCAN_DEPTH + ' levels of nesting.'));
       return out;
     }
+    if (ctx.visited.has(obj)) {
+      out.push(err('cyclic-payload', path, 'Contract payloads must be acyclic JSON data.'));
+      return out;
+    }
+    if (++ctx.nodes > MAX_SCAN_NODES) {
+      if (!ctx.limitReported) {
+        ctx.limitReported = true;
+        out.push(err('payload-too-large', path, 'Contract payload exceeds the node traversal budget.'));
+      }
+      return out;
+    }
+    ctx.visited.add(obj);
     var keys = Array.isArray(obj) ? obj.map(function (_, i) { return i; }) : Object.keys(obj);
-    for (var i = 0; i < keys.length; i++) {
+    for (var i = 0; i < keys.length && out.length < MAX_SCAN_ERRORS; i++) {
       var k = keys[i];
       var p = path ? path + '.' + k : String(k);
       if (typeof k === 'string' && (k === '__proto__' || k === 'constructor' || k === 'prototype')) {
@@ -136,9 +181,10 @@
       if (typeof v === 'string' && UNSAFE_PATH_RE.test(v)) {
         out.push(err('unsafe-path-value', p, 'Absolute filesystem paths are not allowed in contract payloads.'));
       } else if (v && typeof v === 'object') {
-        scanUnsafeFields(v, p, out, depth + 1);
+        scanUnsafeFields(v, p, out, depth + 1, ctx);
       }
     }
+    ctx.visited.delete(obj);
     return out;
   }
 
@@ -167,7 +213,7 @@
 
   function validateToolTable() {
     var errors = [];
-    var seen = {};
+    var seen = Object.create(null);
     for (var i = 0; i < TOOL_CLASSIFICATION.length; i++) {
       var t = TOOL_CLASSIFICATION[i];
       if (!TOOL_NAME_RE.test(t.name)) errors.push(err('bad-tool-name', 'tools[' + i + ']', 'Tool name "' + t.name + '" violates [a-zA-Z0-9_-]{1,64}.'));
@@ -180,7 +226,7 @@
 
   function isDemoSafeTool(name) {
     var c = getToolClassification(name);
-    return !!(c && DEMO_SAFE_TOOL_KINDS[c.kind]);
+    return !!(c && hasOwn.call(DEMO_SAFE_TOOL_KINDS, c.kind));
   }
 
   // ── CapabilityManifest ─────────────────────────────────────────────────
@@ -278,7 +324,7 @@
       var allowed = ['unspecified', 'preserve-primary', 'supplemental-adaptation-permitted', 'educator-directed', 'adaptation-prohibited'];
       if (allowed.indexOf(expectation) === -1) expectation = 'unspecified';
       var basis = cap(source.basis || source.source || source.authority, 240);
-      var sourceUrl = cap(source.sourceUrl || source.url, 600);
+      var sourceUrl = safeUrl(source.sourceUrl || source.url, 600);
       return {
         textAccessExpectation: expectation,
         basis: basis,
@@ -304,7 +350,7 @@
     };
     var urls = Array.isArray(input.sourceUrls) ? input.sourceUrls : [];
     for (var u = 0; u < urls.length && out.sourceUrls.length < 12; u++) {
-      var url = cap(urls[u], 600);
+      var url = safeUrl(urls[u], 600);
       if (url && out.sourceUrls.indexOf(url) === -1) out.sourceUrls.push(url);
     }
     var rawStandards = Array.isArray(input.standards) ? input.standards : [];
@@ -320,8 +366,8 @@
         jurisdiction: cap(raw.jurisdiction || raw.region || raw.state, 160),
         grade: cap(raw.grade || raw.gradeLevel || raw.band, 120),
         subject: cap(raw.subject || raw.discipline, 160),
-        sourceUrl: cap(raw.sourceUrl || raw.url || raw.officialUrl, 600),
-        sourceUrls: Array.isArray(raw.sourceUrls) ? raw.sourceUrls.slice(0, 12).map(function (v) { return cap(v, 600); }).filter(Boolean) : [],
+        sourceUrl: safeUrl(raw.sourceUrl || raw.url || raw.officialUrl, 600),
+        sourceUrls: Array.isArray(raw.sourceUrls) ? raw.sourceUrls.slice(0, 12).map(function (v) { return safeUrl(v, 600); }).filter(Boolean) : [],
         instructionalConstraints: normalizeInstructionalConstraints(
           raw.instructionalConstraints || raw.textAccessPolicy
         ),
@@ -351,7 +397,7 @@
         provider: cap(input.provenance.provider, 160),
         datasetVersion: cap(input.provenance.datasetVersion, 160),
         snapshotId: cap(input.provenance.snapshotId, 160),
-        sourceUrls: Array.isArray(input.provenance.sourceUrls) ? input.provenance.sourceUrls.slice(0, 12).map(function (v) { return cap(v, 600); }).filter(Boolean) : [],
+        sourceUrls: Array.isArray(input.provenance.sourceUrls) ? input.provenance.sourceUrls.slice(0, 12).map(function (v) { return safeUrl(v, 600); }).filter(Boolean) : [],
         resolutionStatus: cap(input.provenance.resolutionStatus, 80),
         retrievedAt: cap(input.provenance.retrievedAt, 80),
         license: cap(input.provenance.license, 240),
@@ -516,22 +562,25 @@
   function normalizePlanItems(rawPlan, toolDirectives) {
     var items = [];
     var list = Array.isArray(rawPlan) ? rawPlan : [];
+    var dirMap = isPlainObject(toolDirectives) ? toolDirectives : null;
     for (var i = 0; i < list.length; i++) {
       var item = list[i];
       var tool = typeof item === 'string' ? item : (item && (item.tool || item.type || item.id));
       if (!tool) continue;
+      var toolKey = String(tool);
+      var mappedDir = (dirMap && hasOwn.call(dirMap, toolKey)) ? dirMap[toolKey] : '';
       var directive = typeof item === 'string'
-        ? ((toolDirectives && toolDirectives[tool]) || '')
-        : (item.directive || item.instructions || item.customInstructions || (toolDirectives && toolDirectives[tool]) || '');
+        ? mappedDir
+        : (item.directive || item.instructions || item.customInstructions || mappedDir || '');
       // Stable per-row identity. Preserved when the caller already has one
       // (round-trips are idempotent), minted from the PRE-REORDER index
       // otherwise so it travels with the item through the sort below.
-      var uiId = (item && typeof item === 'object' && (item.uiId || item.stepId)) || (String(tool) + '-' + i);
+      var uiId = (item && typeof item === 'object' && (item.uiId || item.stepId)) || (toolKey + '-' + i);
       var normalized = {
-        tool: String(tool),
+        tool: toolKey,
         directive: String(directive || ''),
         uiId: String(uiId),
-        instructionalText: normalizeInstructionalText(item && typeof item === 'object' ? item.instructionalText : null, String(tool))
+        instructionalText: normalizeInstructionalText(item && typeof item === 'object' ? item.instructionalText : null, toolKey)
       };
       // GenerationMatrix is reviewed plan data, not ambient UI state. Keep its
       // row-level decision and exact variants intact across every
@@ -539,33 +588,33 @@
       // additive so older plans retain their original single-call behavior.
       if (item && typeof item === 'object') {
         if (typeof item.generationAction === 'string') normalized.generationAction = item.generationAction;
-        if (Object.prototype.hasOwnProperty.call(item, 'generationIdentity')) {
+        if (hasOwn.call(item, 'generationIdentity')) {
           normalized.generationIdentity = isPlainObject(item.generationIdentity)
-            ? Object.assign({}, item.generationIdentity) : item.generationIdentity;
+            ? safeShallowClone(item.generationIdentity) : item.generationIdentity;
         }
         if (Array.isArray(item.generationVariants)) {
           normalized.generationVariants = item.generationVariants.slice(0, 100).map(function (variant) {
-            return isPlainObject(variant) ? Object.assign({}, variant) : variant;
+            return isPlainObject(variant) ? safeShallowClone(variant) : variant;
           });
         }
-        if (Object.prototype.hasOwnProperty.call(item, 'existingArtifactId')) normalized.existingArtifactId = item.existingArtifactId;
+        if (hasOwn.call(item, 'existingArtifactId')) normalized.existingArtifactId = item.existingArtifactId;
         if (typeof item.variantKey === 'string') normalized.variantKey = item.variantKey;
-        if (Object.prototype.hasOwnProperty.call(item, 'explicitVariantKey')) normalized.explicitVariantKey = item.explicitVariantKey;
+        if (hasOwn.call(item, 'explicitVariantKey')) normalized.explicitVariantKey = item.explicitVariantKey;
         if (item.variantKeyDerived === true || item.variantKeyDerived === false) normalized.variantKeyDerived = item.variantKeyDerived;
         if (typeof item.sourceFingerprint === 'string') normalized.sourceFingerprint = item.sourceFingerprint;
-        if (Object.prototype.hasOwnProperty.call(item, 'sourceArtifactId')) normalized.sourceArtifactId = item.sourceArtifactId;
+        if (hasOwn.call(item, 'sourceArtifactId')) normalized.sourceArtifactId = item.sourceArtifactId;
         if (typeof item.contextFingerprint === 'string') normalized.contextFingerprint = item.contextFingerprint;
         if (typeof item.contextInputsFingerprint === 'string') normalized.contextInputsFingerprint = item.contextInputsFingerprint;
         if (item.contextFingerprintDerived === true || item.contextFingerprintDerived === false) normalized.contextFingerprintDerived = item.contextFingerprintDerived;
-        if (isPlainObject(item.generationConfig)) normalized.generationConfig = Object.assign({}, item.generationConfig);
+        if (isPlainObject(item.generationConfig)) normalized.generationConfig = safeShallowClone(item.generationConfig);
         if (typeof item.generationConfigFingerprint === 'string') normalized.generationConfigFingerprint = item.generationConfigFingerprint;
         if (typeof item.generationPolicy === 'string') normalized.generationPolicy = item.generationPolicy;
         if (item.novelResource === true || item.novelResource === false) normalized.novelResource = item.novelResource;
-        if (Array.isArray(item.suppressedGenerationVariants)) normalized.suppressedGenerationVariants = item.suppressedGenerationVariants.map(function (variant) { return isPlainObject(variant) ? Object.assign({}, variant) : variant; });
+        if (Array.isArray(item.suppressedGenerationVariants)) normalized.suppressedGenerationVariants = item.suppressedGenerationVariants.slice(0, 100).map(function (variant) { return isPlainObject(variant) ? safeShallowClone(variant) : variant; });
         // Transitional container accepted by early GenerationMatrix callers.
         // The canonical resolver currently emits the flattened fields above,
         // but retaining this object prevents a reviewed plan from losing data.
-        if (isPlainObject(item.generationMatrix)) normalized.generationMatrix = Object.assign({}, item.generationMatrix);
+        if (isPlainObject(item.generationMatrix)) normalized.generationMatrix = safeShallowClone(item.generationMatrix);
         if (item.generationMatrixUnavailable === true) normalized.generationMatrixUnavailable = true;
       }
       items.push(normalized);
@@ -579,9 +628,12 @@
   }
 
   function requiredCapabilitiesForPlan(plan) {
-    var caps = {};
-    for (var i = 0; i < plan.length; i++) {
-      caps[TOOL_CAPABILITY[plan[i].tool] || DEFAULT_CAPABILITY] = true;
+    var caps = Object.create(null);
+    var rows = Array.isArray(plan) ? plan : [];
+    for (var i = 0; i < rows.length; i++) {
+      var tool = rows[i] && typeof rows[i].tool === 'string' ? rows[i].tool : '';
+      var cap = hasOwn.call(TOOL_CAPABILITY, tool) ? TOOL_CAPABILITY[tool] : DEFAULT_CAPABILITY;
+      caps[cap] = true;
     }
     return Object.keys(caps).sort();
   }
@@ -659,7 +711,7 @@
     var value = {
       schemaVersion: SCHEMA_VERSION,
       blueprintId: input.blueprintId,
-      audience: isPlainObject(input.audience) ? input.audience : {},
+      audience: isPlainObject(input.audience) ? safeShallowClone(input.audience) : {},
       standards: typeof input.standards === 'string' ? input.standards : '',
       standardsContext: blueprintStandardsContext,
       instructionalContext: normalizeInstructionalContext(input.instructionalContext, {
@@ -667,14 +719,16 @@
         standardsContext: blueprintStandardsContext,
         standards: input.standards
       }),
-      sourcePolicy: isPlainObject(input.sourcePolicy) ? input.sourcePolicy : { kind: 'workspace-source' },
-      lessonDNA: isPlainObject(input.lessonDNA) ? input.lessonDNA : {},
-      globalSettings: isPlainObject(input.globalSettings) ? input.globalSettings : {},
+      sourcePolicy: isPlainObject(input.sourcePolicy) ? safeShallowClone(input.sourcePolicy) : { kind: 'workspace-source' },
+      lessonDNA: isPlainObject(input.lessonDNA) ? safeShallowClone(input.lessonDNA) : {},
+      globalSettings: isPlainObject(input.globalSettings) ? safeShallowClone(input.globalSettings) : {},
       plan: plan,
-      configs: isPlainObject(input.configs) ? input.configs : {},
+      configs: isPlainObject(input.configs) ? safeShallowClone(input.configs) : {},
       requiredCapabilities: requiredCapabilitiesForPlan(plan),
-      warnings: Array.isArray(input.warnings) ? input.warnings.slice(0, 20) : [],
-      review: { state: review.state, reviewer: typeof review.reviewer === 'string' ? review.reviewer : '' },
+      warnings: Array.isArray(input.warnings) ? input.warnings.slice(0, 20).map(function (w) {
+        return typeof w === 'string' ? w.slice(0, 400) : (isPlainObject(w) ? safeShallowClone(w) : String(w == null ? '' : w).slice(0, 400));
+      }) : [],
+      review: { state: review.state, reviewer: typeof review.reviewer === 'string' ? review.reviewer.replace(/[\u0000-\u001F\u007F]/g, '').slice(0, 200) : '' },
       provenance: provenance
     };
     return { ok: true, errors: [], warnings: warnings, value: value };
@@ -704,8 +758,8 @@
       if (!row || (row.tool !== 'analysis' && row.tool !== 'simplified')) return row;
       var existing = row.instructionalText || {};
       if (existing.designationSource === 'educator') return row;
-      return Object.assign({}, row, {
-        instructionalText: normalizeInstructionalText(Object.assign({}, existing, {
+      return safeShallowClone(row, {
+        instructionalText: normalizeInstructionalText(safeShallowClone(existing, {
           role: row.tool === 'analysis' ? 'primary' : 'supplemental',
           form: row.tool === 'analysis' ? 'original' : 'adapted',
           designationSource: 'workflow-default'
@@ -713,16 +767,19 @@
       });
     });
     var configs = {};
-    LEGACY_CONFIG_KEYS.forEach(function (k) { if (isPlainObject(c[k])) configs[k] = c[k]; });
+    LEGACY_CONFIG_KEYS.forEach(function (k) { if (hasOwn.call(c, k) && isPlainObject(c[k])) configs[k] = c[k]; });
     var legacyInstructionalInput = isPlainObject(ctx.instructionalContext)
       ? ctx.instructionalContext
       : (isPlainObject(c.instructionalContext) ? c.instructionalContext : {});
     var legacyStandardsContext = normalizeStandardsContext(
       legacyInstructionalInput.standardsContext || ctx.standardsContext || c.standardsContext
     );
+    var fallbackPlanJson = '';
+    try { fallbackPlanJson = JSON.stringify(plan) || ''; }
+    catch (_) { fallbackPlanJson = plan.map(function (r) { return r.tool + ':' + r.uiId; }).join('|'); }
     return {
       schemaVersion: SCHEMA_VERSION,
-      blueprintId: String(ctx.blueprintId || 'bp-' + Math.abs(JSON.stringify(plan).split('').reduce(function (a, ch) { return ((a << 5) - a + ch.charCodeAt(0)) | 0; }, 0))),
+      blueprintId: String(ctx.blueprintId || 'bp-' + Math.abs(fallbackPlanJson.split('').reduce(function (a, ch) { return ((a << 5) - a + ch.charCodeAt(0)) | 0; }, 0))),
       audience: {
         gradeLevel: (c.globalSettings && c.globalSettings.gradeLevel) || ctx.gradeLevel || '',
         language: ctx.language || '',
@@ -761,28 +818,33 @@
       resourcePlan: plan.map(function (r) {
         var row = { tool: r.tool, directive: r.directive, uiId: r.uiId, instructionalText: r.instructionalText };
         if (typeof r.generationAction === 'string') row.generationAction = r.generationAction;
-        if (Object.prototype.hasOwnProperty.call(r, 'generationIdentity')) row.generationIdentity = isPlainObject(r.generationIdentity) ? Object.assign({}, r.generationIdentity) : r.generationIdentity;
-        if (Array.isArray(r.generationVariants)) row.generationVariants = r.generationVariants.map(function (variant) { return isPlainObject(variant) ? Object.assign({}, variant) : variant; });
-        if (Object.prototype.hasOwnProperty.call(r, 'existingArtifactId')) row.existingArtifactId = r.existingArtifactId;
+        if (hasOwn.call(r, 'generationIdentity')) row.generationIdentity = isPlainObject(r.generationIdentity) ? safeShallowClone(r.generationIdentity) : r.generationIdentity;
+        if (Array.isArray(r.generationVariants)) row.generationVariants = r.generationVariants.slice(0, 100).map(function (variant) { return isPlainObject(variant) ? safeShallowClone(variant) : variant; });
+        if (hasOwn.call(r, 'existingArtifactId')) row.existingArtifactId = r.existingArtifactId;
         if (typeof r.variantKey === 'string') row.variantKey = r.variantKey;
-        if (Object.prototype.hasOwnProperty.call(r, 'explicitVariantKey')) row.explicitVariantKey = r.explicitVariantKey;
+        if (hasOwn.call(r, 'explicitVariantKey')) row.explicitVariantKey = r.explicitVariantKey;
         if (r.variantKeyDerived === true || r.variantKeyDerived === false) row.variantKeyDerived = r.variantKeyDerived;
         if (typeof r.sourceFingerprint === 'string') row.sourceFingerprint = r.sourceFingerprint;
-        if (Object.prototype.hasOwnProperty.call(r, 'sourceArtifactId')) row.sourceArtifactId = r.sourceArtifactId;
+        if (hasOwn.call(r, 'sourceArtifactId')) row.sourceArtifactId = r.sourceArtifactId;
         if (typeof r.contextFingerprint === 'string') row.contextFingerprint = r.contextFingerprint;
         if (typeof r.contextInputsFingerprint === 'string') row.contextInputsFingerprint = r.contextInputsFingerprint;
         if (r.contextFingerprintDerived === true || r.contextFingerprintDerived === false) row.contextFingerprintDerived = r.contextFingerprintDerived;
-        if (isPlainObject(r.generationConfig)) row.generationConfig = Object.assign({}, r.generationConfig);
+        if (isPlainObject(r.generationConfig)) row.generationConfig = safeShallowClone(r.generationConfig);
         if (typeof r.generationConfigFingerprint === 'string') row.generationConfigFingerprint = r.generationConfigFingerprint;
         if (typeof r.generationPolicy === 'string') row.generationPolicy = r.generationPolicy;
         if (r.novelResource === true || r.novelResource === false) row.novelResource = r.novelResource;
-        if (Array.isArray(r.suppressedGenerationVariants)) row.suppressedGenerationVariants = r.suppressedGenerationVariants.map(function (variant) { return isPlainObject(variant) ? Object.assign({}, variant) : variant; });
-        if (isPlainObject(r.generationMatrix)) row.generationMatrix = Object.assign({}, r.generationMatrix);
+        if (Array.isArray(r.suppressedGenerationVariants)) row.suppressedGenerationVariants = r.suppressedGenerationVariants.slice(0, 100).map(function (variant) { return isPlainObject(variant) ? safeShallowClone(variant) : variant; });
+        if (isPlainObject(r.generationMatrix)) row.generationMatrix = safeShallowClone(r.generationMatrix);
         if (r.generationMatrixUnavailable === true) row.generationMatrixUnavailable = true;
         return row;
       }),
       recommendedResources: plan.map(function (r) { return r.tool; }),
-      toolDirectives: plan.reduce(function (acc, r) { if (!acc[r.tool]) acc[r.tool] = r.directive || ''; return acc; }, {}),
+      toolDirectives: plan.reduce(function (acc, r) {
+        if (r.tool !== '__proto__' && r.tool !== 'constructor' && r.tool !== 'prototype' && !hasOwn.call(acc, r.tool)) {
+          acc[r.tool] = r.directive || '';
+        }
+        return acc;
+      }, {}),
       lessonDNA: isPlainObject(b.lessonDNA) ? b.lessonDNA : {},
       globalSettings: isPlainObject(b.globalSettings) ? b.globalSettings : {},
       standards: typeof b.standards === 'string' ? b.standards : '',
@@ -801,8 +863,8 @@
 
   // ── CommandWorkflow ────────────────────────────────────────────────────
 
-  var COMMAND_WORKFLOW_AUDIENCES = ['teacher', 'student', 'independent', 'parent'];
-  var COMMAND_WORKFLOW_FAILURE_POLICIES = ['pause', 'stop'];
+  var COMMAND_WORKFLOW_AUDIENCES = Object.freeze(['teacher', 'student', 'independent', 'parent']);
+  var COMMAND_WORKFLOW_FAILURE_POLICIES = Object.freeze(['pause', 'stop']);
   // A reviewed CommandWorkflow is the durable long-horizon plan primitive.
   // Twenty-four steps is large enough for a full lesson-production arc while
   // remaining bounded for review, persistence, dry-run, stop, and resume.
@@ -856,7 +918,7 @@
     else if (!rawSteps.length) errors.push(err('empty-workflow', 'steps', 'A command workflow needs at least one step.'));
     else if (rawSteps.length > COMMAND_WORKFLOW_MAX_STEPS) errors.push(err('too-many-workflow-steps', 'steps', 'A command workflow may contain at most ' + COMMAND_WORKFLOW_MAX_STEPS + ' steps.'));
 
-    var seenStepIds = {};
+    var seenStepIds = Object.create(null);
     var steps = [];
     (Array.isArray(rawSteps) ? rawSteps.slice(0, COMMAND_WORKFLOW_MAX_STEPS) : []).forEach(function (raw, index) {
       var path = 'steps[' + index + ']';
@@ -923,7 +985,7 @@
     if (typeof input.blueprintId !== 'string' || !input.blueprintId.trim()) errors.push(err('missing-blueprint-id', 'blueprintId', 'blueprintId is required.'));
     if (JOB_STATUSES.indexOf(input.status) === -1) errors.push(err('unknown-status', 'status', 'status must be one of ' + JOB_STATUSES.join(', ') + '.'));
     if (input.resultArtifactIds !== undefined) {
-      if (!Array.isArray(input.resultArtifactIds) || input.resultArtifactIds.some(function (id) { return typeof id !== 'string' || id.length > 200; })) {
+      if (!Array.isArray(input.resultArtifactIds) || input.resultArtifactIds.length > 200 || input.resultArtifactIds.some(function (id) { return typeof id !== 'string' || id.length > 200; })) {
         errors.push(err('bad-result-artifacts', 'resultArtifactIds', 'resultArtifactIds must be short string IDs — never embedded payloads.'));
       }
     }
@@ -937,12 +999,12 @@
         jobId: input.jobId,
         blueprintId: input.blueprintId,
         status: input.status,
-        currentStep: typeof input.currentStep === 'number' ? input.currentStep : 0,
-        progress: typeof input.progress === 'number' ? Math.max(0, Math.min(1, input.progress)) : 0,
+        currentStep: (typeof input.currentStep === 'number' && Number.isFinite(input.currentStep) && input.currentStep >= 0) ? Math.floor(input.currentStep) : 0,
+        progress: (typeof input.progress === 'number' && Number.isFinite(input.progress)) ? Math.max(0, Math.min(1, input.progress)) : 0,
         warnings: Array.isArray(input.warnings) ? input.warnings.slice(0, 20) : [],
-        resultArtifactIds: Array.isArray(input.resultArtifactIds) ? input.resultArtifactIds.slice() : [],
-        createdAt: typeof input.createdAt === 'string' ? input.createdAt : '',
-        updatedAt: typeof input.updatedAt === 'string' ? input.updatedAt : ''
+        resultArtifactIds: Array.isArray(input.resultArtifactIds) ? input.resultArtifactIds.slice(0, 200) : [],
+        createdAt: typeof input.createdAt === 'string' ? input.createdAt.slice(0, 80) : '',
+        updatedAt: typeof input.updatedAt === 'string' ? input.updatedAt.slice(0, 80) : ''
       }
     };
   }
@@ -1011,8 +1073,11 @@
     }
     if (input.data !== undefined) {
       var size = 0;
-      try { size = typeof input.data === 'string' ? input.data.length : JSON.stringify(input.data).length; }
-      catch (_) { errors.push(err('unserializable-data', 'data', 'data must be JSON-serializable.')); }
+      try {
+        var serialized = typeof input.data === 'string' ? input.data : JSON.stringify(input.data);
+        if (typeof serialized !== 'string') throw new Error('unserializable');
+        size = serialized.length;
+      } catch (_) { errors.push(err('unserializable-data', 'data', 'data must be JSON-serializable.')); }
       if (size > ARTIFACT_MAX_DATA_CHARS) {
         errors.push(err('data-too-large', 'data', 'data exceeds ' + ARTIFACT_MAX_DATA_CHARS + ' serialized characters; reference a file instead.'));
       }

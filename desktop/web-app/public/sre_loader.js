@@ -155,11 +155,24 @@
         }
         script.src = urls[index];
         script.async = true;
+        var settled = false;
+        var timer = setTimeout(function () {
+          if (settled) return;
+          settled = true;
+          try { script.remove(); } catch (_) {}
+          tryAt(index + 1);
+        }, 15000);
         script.onload = function () {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
           if (isReady()) resolve({ url: urls[index], index: index });
           else { try { script.remove(); } catch (_) {} tryAt(index + 1); }
         };
         script.onerror = function () {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
           try { script.remove(); } catch (_) {}
           tryAt(index + 1);
         };
@@ -185,8 +198,23 @@
         }
         link.href = urls[index];
         link.setAttribute('data-allo-temml-css', urls[index]);
-        link.onload = function () { resolve({ url: urls[index], index: index }); };
+        var settled = false;
+        var timer = setTimeout(function () {
+          if (settled) return;
+          settled = true;
+          try { link.remove(); } catch (_) {}
+          tryAt(index + 1);
+        }, 15000);
+        link.onload = function () {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          resolve({ url: urls[index], index: index });
+        };
         link.onerror = function () {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
           try { link.remove(); } catch (_) {}
           tryAt(index + 1);
         };
@@ -251,9 +279,9 @@
   function resolveLocale(lang, settings) {
     if (!lang) return 'en';
     var name = normalizedLanguageName(lang);
-    if (LANG_NAME_TO_LOCALE[name]) return LANG_NAME_TO_LOCALE[name];
+    if (Object.prototype.hasOwnProperty.call(LANG_NAME_TO_LOCALE, name)) return LANG_NAME_TO_LOCALE[name];
     var code = name.slice(0, 2);
-    if (SUPPORTED_LOCALES[code]) return code;
+    if (Object.prototype.hasOwnProperty.call(SUPPORTED_LOCALES, code)) return code;
     return settings.unsupportedLocale === 'english' ? 'en' : null;
   }
 
@@ -353,7 +381,7 @@
             continue;
           }
           var tag = String(child.tagName || '').toLowerCase();
-          if (!ALLOWED_MATHML_TAGS[tag]) {
+          if (!Object.prototype.hasOwnProperty.call(ALLOWED_MATHML_TAGS, tag)) {
             if (child.parentNode) child.parentNode.removeChild(child);
             continue;
           }
@@ -361,7 +389,7 @@
           for (var j = 0; j < attrs.length; j += 1) {
             var name = String(attrs[j].name || '').toLowerCase();
             var val = String(attrs[j].value || '');
-            if (!ALLOWED_MATHML_ATTRS[name] || /(?:javascript|vbscript|data)\s*:/i.test(val)) {
+            if (!Object.prototype.hasOwnProperty.call(ALLOWED_MATHML_ATTRS, name) || /(?:javascript|vbscript|data)\s*:/i.test(val)) {
               child.removeAttribute(attrs[j].name);
             }
           }
@@ -372,7 +400,7 @@
       for (var k = 0; k < rootAttrs.length; k += 1) {
         var rName = String(rootAttrs[k].name || '').toLowerCase();
         var rVal = String(rootAttrs[k].value || '');
-        if (!ALLOWED_MATHML_ATTRS[rName] || /(?:javascript|vbscript|data)\s*:/i.test(rVal)) {
+        if (!Object.prototype.hasOwnProperty.call(ALLOWED_MATHML_ATTRS, rName) || /(?:javascript|vbscript|data)\s*:/i.test(rVal)) {
           root.removeAttribute(rootAttrs[k].name);
         }
       }

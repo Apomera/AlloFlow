@@ -109,12 +109,47 @@ function _alloShowRetiredVersionNotice(win, doc, state) {
   } catch (_) {}
 })();
 
+const _extractJsonSlice = (text) => {
+  if (!text || typeof text !== 'string') return '';
+  const stripped = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  const firstBrace = stripped.indexOf('{');
+  const firstBracket = stripped.indexOf('[');
+  let startIdx = -1;
+  let endIdx = -1;
+  if (firstBrace === -1 && firstBracket === -1) return '';
+  if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+    startIdx = firstBrace;
+    endIdx = stripped.lastIndexOf('}');
+  } else {
+    startIdx = firstBracket;
+    endIdx = stripped.lastIndexOf(']');
+  }
+  if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) return '';
+  return stripped.substring(startIdx, endIdx + 1);
+};
 const safeJsonParse = (text) => {
   if (!text || typeof text !== 'string') return null;
   try {
+    const slice = _extractJsonSlice(text);
+    if (!slice || slice === '{}') {
+      return null;
+    }
+    try {
+      return JSON.parse(slice);
+    } catch (_) {
+      // Standard JSON.parse failed — try jsonrepair on untouched slice before regex cleanup
+    }
+    if (typeof window !== 'undefined' && window.jsonrepair) {
+      try {
+        const repaired = window.jsonrepair(slice);
+        if (repaired && repaired.trim() && repaired.trim() !== '{}') {
+          return JSON.parse(repaired);
+        }
+      } catch (_) {}
+    }
     const cleaned = cleanJson(text);
     if (!cleaned || cleaned.trim().length === 0 || cleaned === "{}") {
-        return null;
+      return null;
     }
     if (typeof window !== 'undefined' && window.jsonrepair) {
       try {
@@ -133,8 +168,8 @@ const safeJsonParse = (text) => {
 const cleanJson = (text) => {
     if (!text) return "{}";
     let cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    // Sanitize invalid backslash escapes inside JSON strings (keep valid: \" \\ \/ \b \f \n \r \t \u)
-    cleaned = cleaned.replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+    // Sanitize invalid backslash escapes while preserving valid pairs (\" \\ \/ \b \f \n \r \t \u)
+    cleaned = cleaned.replace(/\\(["\\/bfnrtu]|.)/g, (m, ch) => (/^["\\/bfnrtu]$/.test(ch) ? m : '\\\\' + ch));
     const firstBrace = cleaned.indexOf('{');
     const firstBracket = cleaned.indexOf('[');
     let startIdx = -1;
@@ -163,7 +198,7 @@ const cleanJson = (text) => {
     cleaned = cleaned.replace(/"\s*\n\s*"/g, '",\n"');
     cleaned = cleaned.replace(/}\s*\n\s*{/g, '},\n{');
     cleaned = cleaned.replace(/]\s*\n\s*\[/g, '],\n[');
-    cleaned = cleaned.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
+    cleaned = cleaned.replace(/"(?:\\.|[^"\\])*"|([{,]\s*)(\w+)(\s*:)/g, (m, p1, p2, p3) => (p2 ? `${p1}"${p2}"${p3}` : m));
     return cleaned;
 };
 const calculateTextEntropy = (text) => {
@@ -1347,6 +1382,25 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
     };
     assertLegacyImportAllowed();
     let targetUrl = url.trim();
+    const resolveRuntimeGeminiKey = () => {
+        try {
+            if (typeof window !== 'undefined') {
+                if (window.__alloAiSecretsLocked === true) return '';
+                if (typeof window.__alloPastedAiKeyFenceActive === 'function' && window.__alloPastedAiKeyFenceActive() === true) return '';
+                if (window.apiKey) return String(window.apiKey);
+            }
+            if (typeof localStorage !== 'undefined') {
+                const hostRead = typeof window !== 'undefined' ? window.__alloReadStoredAiConfig : null;
+                const cfg = (typeof hostRead === 'function' ? hostRead() : JSON.parse(localStorage.getItem('alloflow_ai_config') || 'null')) || {};
+                if (String(cfg.backend || 'gemini') !== 'gemini') return '';
+                return String(cfg.apiKey || '');
+            }
+        } catch (_) {}
+        return '';
+    };
+    const resolvedApiKey = resolveRuntimeGeminiKey();
+    const resolvedIsCanvasEnv = (typeof window !== 'undefined') ? Boolean(window._isCanvasEnv) : _isCanvasEnv;
+    const resolvedGeminiModels = (typeof window !== 'undefined' && window.GEMINI_MODELS) || GEMINI_MODELS;
     // ─────────────────────────────────────────────────────────────
     // Tier-2 fallback: Gemini URL Context tool
     // Called when Jina + raw-HTML extraction all fail or return garbage.
@@ -1355,12 +1409,12 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
     // ─────────────────────────────────────────────────────────────
     const tryGeminiUrlContext = async () => {
         if (!cloudAiOk) return null;
-        if (!apiKey && !_isCanvasEnv) {
+        if (!resolvedApiKey && !resolvedIsCanvasEnv) {
             console.log('[URL Fetch] ⏭️ Gemini URL Context skipped — no API key');
             return null;
         }
         console.log('[URL Fetch] Attempting cloud URL Context fallback');
-        const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;
+        const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${resolvedGeminiModels.default}:generateContent`;
         const urlCtxPayload = {
             contents: [{
                 parts: [{
@@ -1373,7 +1427,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
         try {
             const resp = await sourceFetch(urlCtxEndpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
+                headers: { 'Content-Type': 'application/json', ...(resolvedApiKey ? { 'x-goog-api-key': resolvedApiKey } : {}) },
                 body: JSON.stringify(urlCtxPayload)
             }, 45000);
             if (!resp.ok) {
@@ -1412,10 +1466,10 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
         throw new Error("Cannot fetch Google Redirects directly. Please open the link, copy the final URL from the address bar, and paste it here.");
     }
     targetUrl = _normalizeSafeExternalHttpUrl(targetUrl);
-    if (isYouTubeUrl(targetUrl) && cloudAiOk) {
+    if (isYouTubeUrl(targetUrl) && cloudAiOk && (resolvedApiKey || resolvedIsCanvasEnv)) {
         if (toastCallback) toastCallback("🎬 YouTube detected — extracting transcript via Gemini...", "info");
         try {
-            const ytUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;
+            const ytUrl = `https://generativelanguage.googleapis.com/v1beta/models/${resolvedGeminiModels.default}:generateContent`;
             const ytPayload = {
                 contents: [{
                     parts: [
@@ -1427,7 +1481,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             };
             const ytResponse = await sourceFetch(ytUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
+                headers: { 'Content-Type': 'application/json', ...(resolvedApiKey ? { 'x-goog-api-key': resolvedApiKey } : {}) },
                 body: JSON.stringify(ytPayload)
             }, 90000);
             if (!ytResponse.ok) {

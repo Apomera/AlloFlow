@@ -124,58 +124,90 @@
     if (cache) {
       var hit = await cache.match(url);
       if (hit) {
-        if (onProgress) onProgress({ file: label, pct: 1, cached: true });
-        return await hit.arrayBuffer();
-      }
-    }
-    var response = await fetch(url);
-    if (!response.ok) throw new Error(label + ' download failed (HTTP ' + response.status + ')');
-    // Memory discipline: these files are up to ~1.7GB and the target machines
-    // have 8-16GB total. The cache is fed by a clone that the browser streams
-    // to CacheStorage in parallel (no JS-heap copy), and when the server
-    // reports a length we read straight into ONE preallocated buffer — peak
-    // stays ~1x file size instead of the previous ~3-4x.
-    var cachePutPromise = null;
-    if (cache) {
-      try { cachePutPromise = cache.put(url, response.clone()).catch(function () { /* quota — still usable this session */ }); }
-      catch (_) { cachePutPromise = null; }
-    }
-    var total = Number(response.headers.get('content-length')) || 0;
-    if (total > MAX_MODEL_BYTES) throw new Error(label + ' exceeds maximum model size limit');
-    var reader = response.body.getReader();
-    var received = 0;
-    var buffer = total ? new Uint8Array(total) : null;
-    var chunks = buffer ? null : [];
-    for (;;) {
-      var step = await reader.read();
-      if (step.done) break;
-      if (received + step.value.length > MAX_MODEL_BYTES) {
-        try { if (typeof reader.cancel === 'function') reader.cancel(); } catch (_) {}
-        throw new Error(label + ' exceeded maximum model size limit');
-      }
-      if (buffer) {
-        if (received + step.value.length > buffer.length) {
-          // Server lied about content-length — fall back to chunk collection.
-          chunks = [buffer.subarray(0, received)];
-          buffer = null;
-          chunks.push(step.value);
+        var hitLen = Number(hit.headers && hit.headers.get && hit.headers.get('content-length')) || 0;
+        if (hitLen > MAX_MODEL_BYTES) {
+          try { await cache.delete(url); } catch (_) {}
         } else {
-          buffer.set(step.value, received);
+          var cachedBuf = await hit.arrayBuffer();
+          if (cachedBuf.byteLength > MAX_MODEL_BYTES) {
+            try { await cache.delete(url); } catch (_) {}
+          } else {
+            if (onProgress) onProgress({ file: label, pct: 1, cached: true });
+            return cachedBuf;
+          }
         }
-      } else {
-        chunks.push(step.value);
       }
-      received += step.value.length;
-      if (onProgress && total) onProgress({ file: label, pct: Math.min(1, received / total) });
     }
-    if (cachePutPromise) { try { await cachePutPromise; } catch (_) {} }
-    if (buffer) {
-      return received === buffer.length ? buffer.buffer : buffer.buffer.slice(0, received);
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var stallTimer = null;
+    var resetStall = function () {
+      if (!ctrl) return;
+      if (stallTimer !== null) clearTimeout(stallTimer);
+      stallTimer = setTimeout(function () { ctrl.abort(); }, 60000);
+    };
+    resetStall();
+    var cachePutPromise = null;
+    try {
+      var response = await fetch(url, ctrl ? { signal: ctrl.signal } : undefined);
+      if (!response.ok) throw new Error(label + ' download failed (HTTP ' + response.status + ')');
+      var total = Number(response.headers.get('content-length')) || 0;
+      if (total > MAX_MODEL_BYTES) {
+        try { if (response.body && typeof response.body.cancel === 'function') response.body.cancel(); } catch (_) {}
+        throw new Error(label + ' exceeds maximum model size limit');
+      }
+      // Memory discipline: these files are up to ~1.7GB and the target machines
+      // have 8-16GB total. The cache is fed by a clone that the browser streams
+      // to CacheStorage in parallel (no JS-heap copy), and when the server
+      // reports a length we read straight into ONE preallocated buffer — peak
+      // stays ~1x file size instead of the previous ~3-4x.
+      if (cache) {
+        try { cachePutPromise = cache.put(url, response.clone()).catch(function () { /* quota — still usable this session */ }); }
+        catch (_) { cachePutPromise = null; }
+      }
+      var reader = response.body.getReader();
+      var received = 0;
+      var buffer = total ? new Uint8Array(total) : null;
+      var chunks = buffer ? null : [];
+      for (;;) {
+        resetStall();
+        var step = await reader.read();
+        if (step.done) break;
+        if (received + step.value.length > MAX_MODEL_BYTES) {
+          try { if (typeof reader.cancel === 'function') reader.cancel(); } catch (_) {}
+          throw new Error(label + ' exceeded maximum model size limit');
+        }
+        if (buffer) {
+          if (received + step.value.length > buffer.length) {
+            // Server lied about content-length — fall back to chunk collection.
+            chunks = [buffer.subarray(0, received)];
+            buffer = null;
+            chunks.push(step.value);
+          } else {
+            buffer.set(step.value, received);
+          }
+        } else {
+          chunks.push(step.value);
+        }
+        received += step.value.length;
+        if (onProgress && total) onProgress({ file: label, pct: Math.min(1, received / total) });
+      }
+      if (cachePutPromise) { try { await cachePutPromise; } catch (_) {} }
+      if (buffer) {
+        return received === buffer.length ? buffer.buffer : buffer.buffer.slice(0, received);
+      }
+      var joined = new Uint8Array(received);
+      var offset = 0;
+      for (var i = 0; i < chunks.length; i++) { joined.set(chunks[i], offset); offset += chunks[i].length; }
+      return joined.buffer;
+    } catch (err) {
+      if (cache) {
+        if (cachePutPromise) { try { await cachePutPromise; } catch (_) {} }
+        try { await cache.delete(url); } catch (_) {}
+      }
+      throw err;
+    } finally {
+      if (stallTimer !== null) clearTimeout(stallTimer);
     }
-    var joined = new Uint8Array(received);
-    var offset = 0;
-    for (var i = 0; i < chunks.length; i++) { joined.set(chunks[i], offset); offset += chunks[i].length; }
-    return joined.buffer;
   }
 
   async function init(onProgress) {

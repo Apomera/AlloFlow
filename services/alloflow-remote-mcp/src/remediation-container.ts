@@ -27,6 +27,7 @@ import {
   readBoundedText,
   sha256Base64Url,
 } from "./security";
+import { exactLengthBodyStream } from "./request-bounds";
 
 type JobOutboundParams = {
   jobId: string;
@@ -247,6 +248,7 @@ async function storageOutbound(
         !object ||
         !checkpointObjectMatches(jobId, checkpoint, object)
       ) {
+        await object?.body?.cancel().catch(() => undefined);
         const cleared = await clearJobCheckpoint(
           env,
           jobId,
@@ -275,6 +277,7 @@ async function storageOutbound(
         current.checkpoint_seq !== checkpoint.seq ||
         current.checkpoint_key !== checkpoint.key
       ) {
+        await object.body?.cancel().catch(() => undefined);
         throw new PilotError("runner_storage_denied", 403);
       }
       return new Response(object.body, {
@@ -296,9 +299,15 @@ async function storageOutbound(
         throw new PilotError("runner_checkpoint_invalid", 400);
       }
       const checkpoint = checkpointCommitFromRequest(request, job);
+      const boundedCheckpointBody = exactLengthBodyStream(
+        request.body,
+        checkpoint.sizeBytes,
+        new PilotError("runner_checkpoint_invalid", 413),
+        new PilotError("runner_checkpoint_invalid", 400),
+      );
       let object = await env.DOCUMENTS.put(
         checkpoint.key,
-        request.body,
+        boundedCheckpointBody,
         {
           onlyIf: { etagDoesNotMatch: "*" },
           httpMetadata: {
@@ -318,6 +327,7 @@ async function storageOutbound(
           },
         },
       );
+      const createdByThisPut = Boolean(object);
       if (!object) {
         object = await env.DOCUMENTS.head(checkpoint.key);
       }
@@ -329,12 +339,15 @@ async function storageOutbound(
         !object ||
         !checkpointObjectMatches(jobId, candidate, object)
       ) {
-        const current = await getInternalJob(env, jobId);
-        if (
-          current.status === "running" &&
-          current.attempt_id === attemptId
-        ) {
-          await env.DOCUMENTS.delete(checkpoint.key);
+        if (createdByThisPut) {
+          const current = await getInternalJob(env, jobId);
+          if (
+            current.status === "running" &&
+            current.attempt_id === attemptId &&
+            current.checkpoint_key !== checkpoint.key
+          ) {
+            await env.DOCUMENTS.delete(checkpoint.key);
+          }
         }
         throw new PilotError("runner_checkpoint_invalid", 400);
       }
@@ -381,7 +394,13 @@ async function storageOutbound(
       }
       const size = contentLength(request, 64 * 1024 * 1024);
       const declaredSha256 = sha256.toLowerCase();
-      const stored = await env.DOCUMENTS.put(job.result_key, request.body, {
+      const boundedPdfBody = exactLengthBodyStream(
+        request.body,
+        size,
+        new PilotError("runner_output_invalid", 413),
+        new PilotError("runner_output_invalid", 400),
+      );
+      const stored = await env.DOCUMENTS.put(job.result_key, boundedPdfBody, {
         httpMetadata: {
           contentType: "application/pdf",
           cacheControl: "no-store",
@@ -437,7 +456,13 @@ async function storageOutbound(
       }
       const size = contentLength(request, 2 * 1024 * 1024);
       const declaredSha256 = sha256.toLowerCase();
-      const stored = await env.DOCUMENTS.put(job.report_key, request.body, {
+      const boundedReportBody = exactLengthBodyStream(
+        request.body,
+        size,
+        new PilotError("runner_output_invalid", 413),
+        new PilotError("runner_output_invalid", 400),
+      );
+      const stored = await env.DOCUMENTS.put(job.report_key, boundedReportBody, {
         httpMetadata: {
           contentType: "application/json",
           cacheControl: "no-store",
@@ -529,7 +554,7 @@ async function geminiOutbound(
           Accept: "application/json",
           "x-goog-api-key": env.GEMINI_API_KEY,
         },
-        body: bodyBytes,
+        body: Uint8Array.from(bodyBytes).buffer,
         redirect: "error",
         signal: AbortSignal.timeout(90_000),
       },
@@ -539,7 +564,7 @@ async function geminiOutbound(
         upstream.headers.get("Content-Type") || "application/json",
     });
     const upstreamLength = upstream.headers.get("Content-Length");
-    if (upstreamLength) {
+    if (upstreamLength && !upstream.headers.has("Content-Encoding")) {
       headers.set("Content-Length", upstreamLength);
     }
     return new Response(upstream.body, {

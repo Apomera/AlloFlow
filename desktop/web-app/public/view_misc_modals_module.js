@@ -70,7 +70,7 @@ var Headphones = _lazyIcon('Headphones');
       if (["https:", "http:"].includes(url.protocol)) origin = url.origin;
     } catch (_) {
     }
-    return { backend, label: names[backend] || "Other AI", origin, active: Boolean(tag || descriptor.backend || typeof active === "string"), managed: window.ALLOFLOW_MANAGED_AI_POLICY != null };
+    return { backend, label: Object.prototype.hasOwnProperty.call(names, backend) ? names[backend] : "Other AI", origin, active: Boolean(tag || descriptor.backend || typeof active === "string"), managed: window.ALLOFLOW_MANAGED_AI_POLICY != null };
   };
   window.AlloFlowChatPrivacy = Object.freeze({
     destination,
@@ -124,30 +124,42 @@ ${excerpt}` : ""
     }
   });
 })();
+const _ALLOBOT_FALLBACK_PRIVACY = {
+  get: () => ({ recent: false, excerpt: "" }),
+  set: () => {
+  },
+  clear: () => {
+  },
+  destination: () => ({ active: false, label: "Not configured", origin: "", managed: false }),
+  recentMessages: () => []
+};
 function AllobotContextControls({ messages, busy, setInput, clearChat, t, theme = "light", taskActive = false }) {
   const tx = (key, fallback) => {
     const value = typeof t === "function" ? t(key) : "";
     return value && value !== key ? value : fallback;
   };
-  const privacy = window.AlloFlowChatPrivacy;
+  const privacy = typeof window !== "undefined" && window.AlloFlowChatPrivacy || _ALLOBOT_FALLBACK_PRIVACY;
   const [choice, setChoice] = React.useState(() => privacy.get());
   const [topic, setTopic] = React.useState("");
   const [notice, setNotice] = React.useState("");
   const [panel, setPanel] = React.useState("");
+  const [confirmClear, setConfirmClear] = React.useState(false);
   const panelId = React.useId();
   React.useEffect(() => {
-    const update = () => setChoice(privacy.get());
+    const update = () => {
+      const p = typeof window !== "undefined" && window.AlloFlowChatPrivacy || _ALLOBOT_FALLBACK_PRIVACY;
+      setChoice(p.get());
+    };
     window.addEventListener("alloflow:chat-context", update);
     return () => window.removeEventListener("alloflow:chat-context", update);
   }, []);
   const [, refreshDestination] = React.useState(0);
   React.useEffect(() => {
     const refresh = () => refreshDestination((value) => value + 1);
-    window.addEventListener("alloflow:ai-config-changed", refresh);
-    window.addEventListener("storage", refresh);
+    const events = ["alloflow:ai-config-changed", "alloflow:ai-key-lock-changed", "alloflow:student-ai-config-changed", "storage"];
+    events.forEach((ev) => window.addEventListener(ev, refresh));
     return () => {
-      window.removeEventListener("alloflow:ai-config-changed", refresh);
-      window.removeEventListener("storage", refresh);
+      events.forEach((ev) => window.removeEventListener(ev, refresh));
     };
   }, []);
   const destination = privacy.destination();
@@ -167,11 +179,12 @@ function AllobotContextControls({ messages, busy, setInput, clearChat, t, theme 
   }, className: button + (panel === name ? " font-bold underline" : "") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, panel === name ? "\u2212 " : "+ "), label))), /* @__PURE__ */ React.createElement("div", { hidden: !panel, className: "mt-2 overflow-y-auto overscroll-contain", style: { maxHeight: "min(16rem, 30vh)" } }, /* @__PURE__ */ React.createElement("div", { id: panelId + "-context", hidden: panel !== "context" }, /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.extra_context_help", "Want to refer to an earlier reply or a piece of text? Choose what the AI can use below. These choices apply to one chat request, then clear.")), /* @__PURE__ */ React.createElement("label", { className: "flex gap-2 items-start my-2 min-h-11" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: choice.recent, disabled: busy, onChange: (e) => privacy.set({ ...choice, recent: e.target.checked }), className: "mt-1 h-4 w-4 shrink-0" }), /* @__PURE__ */ React.createElement("span", null, tx("chat_guide.include_recent_chat", "Include recent chat messages"), /* @__PURE__ */ React.createElement("span", { className: "block mt-1" }, tx("chat_guide.recent_chat_limit", "Up to 4 messages, shortened to 500 characters each. Preview below.")))), choice.recent && /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap break-words border rounded p-2 font-sans " + field, "aria-label": tx("chat_guide.context_preview", "Recent-message preview") }, recent.length ? recent.map((m) => `${m.role === "user" ? tx("chat_guide.context_you", "You") : "Allobot"}: ${m.text}`).join("\n") : tx("chat_guide.no_recent_chat", "No earlier chat messages to include yet.")), /* @__PURE__ */ React.createElement("label", { className: "block my-2" }, tx("chat_guide.paste_background", "Paste background text (optional)"), /* @__PURE__ */ React.createElement("textarea", { rows: 2, maxLength: 1500, value: choice.excerpt, disabled: busy, onChange: (e) => privacy.set({ ...choice, excerpt: e.target.value }), placeholder: tx("chat_guide.background_example", "For example, a paragraph you want help adapting."), className: "block w-full min-w-0 border rounded p-2 mt-1 " + field })), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.background_limit", "Up to 1,500 characters. Added context goes to your selected AI, never to web search.")), hasContext && /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => privacy.clear(), className: button }, tx("chat_guide.remove_extra_context", "Remove added context"))), /* @__PURE__ */ React.createElement("div", { id: panelId + "-search", hidden: panel !== "search" }, /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.web_search_help", "Look up public sources about a general topic. Add the search to your message, review it, then send. Keep names and student details out of the topic.")), /* @__PURE__ */ React.createElement("label", { className: "block my-2" }, tx("chat_guide.public_topic", "Topic to search"), /* @__PURE__ */ React.createElement("input", { type: "text", maxLength: 200, value: topic, disabled: busy, onChange: (e) => setTopic(e.target.value), placeholder: tx("chat_guide.research_topic_hint", "For example: causes of the American Revolution"), className: "block w-full min-w-0 border rounded p-2 mt-1 " + field })), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy || !topic.trim(), onClick: () => {
     setInput(`Search for ${topic.trim()}`);
     setNotice(tx("chat_guide.research_topic_ready", "Search placed in the message box. Review it, then send."));
-  }, className: button }, tx("chat_guide.draft_web_search", "Add search to message")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.search_context_separate", "Web search receives the public topic, not your added context. Availability depends on your AI and search settings."))), /* @__PURE__ */ React.createElement("div", { id: panelId + "-privacy", hidden: panel !== "privacy" }, /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.chat_sharing_help", "Chat replies use your message and any context you choose. Lesson plans and app actions also use the inputs needed for that task. Some questions may look up public references.")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.student_data_connection", "Use a district-approved AI connection before including student information.")), /* @__PURE__ */ React.createElement("details", { className: "my-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-11 py-2" }, tx("chat_guide.connection_details", "AI connection details")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.connection_address_help", "This is the technical address the app uses to contact the AI. It is not a webpage to open.")), /* @__PURE__ */ React.createElement("p", { className: "break-words" }, /* @__PURE__ */ React.createElement("strong", null, tx("chat_guide.connection_address", "Service address"), ":"), " ", /* @__PURE__ */ React.createElement("code", { style: { overflowWrap: "anywhere" } }, destination.origin || tx("chat_guide.address_not_available", "Not available"))), destination.managed && /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.managed_checks", "Managed connection checks are enabled. This label does not verify district approval."))), /* @__PURE__ */ React.createElement("details", { className: "my-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-11 py-2" }, tx("chat_guide.chat_storage_details", "Chat history and saved copies")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.chat_storage", "Live chat stays in this session until you clear it or reload. Saving chat or advice adds a separate item to History and its configured storage or sync. Delete saved items in History. Recovery snapshots and exported files can retain separate copies; manage those separately. Clearing here does not delete saved copies or provider records.")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => {
+  }, className: button }, tx("chat_guide.draft_web_search", "Add search to message")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.search_context_separate", "Web search receives the public topic, not your added context. Availability depends on your AI and search settings."))), /* @__PURE__ */ React.createElement("div", { id: panelId + "-privacy", hidden: panel !== "privacy" }, /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.chat_sharing_help", "Chat replies use your message and any context you choose. Lesson plans and app actions also use the inputs needed for that task. Some questions may look up public references.")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.student_data_connection", "Use a district-approved AI connection before including student information.")), /* @__PURE__ */ React.createElement("details", { className: "my-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-11 py-2" }, tx("chat_guide.connection_details", "AI connection details")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.connection_address_help", "This is the technical address the app uses to contact the AI. It is not a webpage to open.")), /* @__PURE__ */ React.createElement("p", { className: "break-words" }, /* @__PURE__ */ React.createElement("strong", null, tx("chat_guide.connection_address", "Service address"), ":"), " ", /* @__PURE__ */ React.createElement("code", { style: { overflowWrap: "anywhere" } }, destination.origin || tx("chat_guide.address_not_available", "Not available"))), destination.managed && /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.managed_checks", "Managed connection checks are enabled. This label does not verify district approval."))), /* @__PURE__ */ React.createElement("details", { className: "my-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-11 py-2" }, tx("chat_guide.chat_storage_details", "Chat history and saved copies")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.chat_storage", "Live chat stays in this session until you clear it or reload. Saving chat or advice adds a separate item to History and its configured storage or sync. Delete saved items in History. Recovery snapshots and exported files can retain separate copies; manage those separately. Clearing here does not delete saved copies or provider records.")), confirmClear ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => {
+    setConfirmClear(false);
     privacy.clear();
-    clearChat();
+    if (typeof clearChat === "function") clearChat();
     setNotice(tx("chat_guide.chat_cleared", "Live conversation and pending context cleared. Saved History items are unchanged."));
-  }, className: button }, tx("chat_guide.clear_live_chat", "Clear live conversation")))), /* @__PURE__ */ React.createElement("p", { role: "status", className: notice ? "my-2" : "" }, notice)));
+  }, className: button + " font-bold" }, tx("chat_guide.confirm_clear_live_chat", "Confirm clear")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => setConfirmClear(false), className: button }, tx("common.cancel", "Cancel"))) : /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => setConfirmClear(true), className: button }, tx("chat_guide.clear_live_chat", "Clear live conversation")))), /* @__PURE__ */ React.createElement("p", { role: "status", className: notice ? "my-2" : "" }, notice)));
 }
 function AllobotAdviceSave({ text, question, evidence, save, busy, t, className = "" }) {
   const tx = (key, fallback) => {
@@ -182,60 +195,103 @@ function AllobotAdviceSave({ text, question, evidence, save, busy, t, className 
   const [saving, setSaving] = React.useState(false);
   const [notice, setNotice] = React.useState("");
   const pending = React.useRef(false);
+  const mountedRef = React.useRef(true);
+  const epochRef = React.useRef(0);
   React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      epochRef.current += 1;
+    };
+  }, []);
+  React.useEffect(() => {
+    epochRef.current += 1;
     setIncludeQuestion(false);
     setNotice("");
   }, [text, question]);
   const saveAdvice = async () => {
     if (pending.current || busy) return;
+    const epoch = ++epochRef.current;
     pending.current = true;
     setSaving(true);
     setNotice("");
     try {
       const result = await save(text, includeQuestion ? question : "", evidence);
+      if (!mountedRef.current || epoch !== epochRef.current) return;
       setNotice(result?.ok === false ? tx("chat_guide.save_failed", "Advice could not be saved. Try again.") : tx("chat_guide.saved_without_ai", "Advice copied to History without another AI request."));
       if (result?.ok !== false) setIncludeQuestion(false);
     } catch (_) {
-      setNotice(tx("chat_guide.save_failed", "Advice could not be saved. Try again."));
+      if (mountedRef.current && epoch === epochRef.current) setNotice(tx("chat_guide.save_failed", "Advice could not be saved. Try again."));
     } finally {
       pending.current = false;
-      setSaving(false);
+      if (mountedRef.current) setSaving(false);
     }
   };
-  return /* @__PURE__ */ React.createElement("section", { className: "mt-2 text-xs", "aria-label": tx("chat_guide.save_advice_options", "Save advice options") }, /* @__PURE__ */ React.createElement("p", null, tx("chat_guide.save_as_shown", "Copies this answer and its source links to History as shown. No additional AI request.")), question && /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 my-2" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: includeQuestion, disabled: busy || saving, onChange: (event) => {
+  return /* @__PURE__ */ React.createElement("section", { className: "mt-2 text-xs", "aria-label": tx("chat_guide.save_advice_options", "Save advice options") }, /* @__PURE__ */ React.createElement("p", null, tx("chat_guide.save_as_shown", "Copies this answer and its source links to History as shown. No additional AI request.")), question && /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 items-start gap-2 my-2 py-1 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", className: "mt-0.5 h-4 w-4 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600", checked: includeQuestion, disabled: busy || saving, onChange: (event) => {
     setIncludeQuestion(event.target.checked);
     setNotice("");
-  } }), tx("chat_guide.save_include_question", "Also save my preceding question")), includeQuestion && /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap break-words max-h-32 overflow-auto border p-2", "aria-label": tx("chat_guide.save_question_preview", "Question to be saved") }, question), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveAdvice, "data-help-key": "chat_save_advice_btn", disabled: busy || saving, className: "min-h-11 px-3 rounded border " + className }, saving ? tx("chat_guide.saving_advice", "Saving\u2026") : tx("chat_guide.save_advice_history", "Save advice to History")), /* @__PURE__ */ React.createElement("p", { role: "status" }, notice));
+  } }), tx("chat_guide.save_include_question", "Also save my preceding question")), includeQuestion && /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap break-words max-h-32 overflow-auto border p-2", "aria-label": tx("chat_guide.save_question_preview", "Question to be saved") }, question), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveAdvice, "data-help-key": "chat_save_advice_btn", disabled: busy || saving, className: "min-h-11 px-3 rounded border focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 " + className }, saving ? tx("chat_guide.saving_advice", "Saving\u2026") : tx("chat_guide.save_advice_history", "Save advice to History")), /* @__PURE__ */ React.createElement("p", { role: "status" }, notice));
 }
 function AllobotSearchSettings({ t }) {
   const tx = (key2, fallback) => {
     const value = typeof t === "function" ? t(key2) : "";
     return value && value !== key2 ? value : fallback;
   };
+  const isLocked = () => typeof window !== "undefined" && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true);
+  const [locked, setLocked] = React.useState(isLocked);
+  React.useEffect(() => {
+    const sync = () => setLocked(isLocked());
+    const events = ["alloflow:ai-key-lock-changed", "alloflow:student-ai-config-changed", "alloflow:ai-config-changed"];
+    events.forEach((ev) => window.addEventListener(ev, sync));
+    return () => {
+      events.forEach((ev) => window.removeEventListener(ev, sync));
+    };
+  }, []);
   const read = () => {
     try {
-      return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
+      const parsed = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
     } catch (_) {
       return {};
     }
   };
-  const managed = window.ALLOFLOW_MANAGED_AI_POLICY;
+  const managed = typeof window !== "undefined" ? window.ALLOFLOW_MANAGED_AI_POLICY : null;
   const managedSearchOff = managed != null && (managed.version !== 1 || managed.allowExternalSearch !== true);
-  const [key, setKey] = React.useState(() => String(read().serperApiKey || ""));
-  const [enabled, setEnabled] = React.useState(() => read().allobotWebSearch === true || read().allobotWebSearch !== false && (!read().backend || read().backend === "gemini"));
+  const [key, setKey] = React.useState(() => isLocked() ? "" : String(read().serperApiKey || ""));
+  const [hasSavedKey, setHasSavedKey] = React.useState(() => !isLocked() && Boolean(String(read().serperApiKey || "").trim()));
+  const [enabled, setEnabled] = React.useState(() => {
+    if (isLocked()) return false;
+    const cfg = read();
+    return cfg.allobotWebSearch === true || cfg.allobotWebSearch !== false && (!cfg.backend || cfg.backend === "gemini");
+  });
   const [saved, setSaved] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
+  React.useEffect(() => {
+    if (locked) {
+      setKey("");
+      setHasSavedKey(false);
+    }
+  }, [locked]);
+  if (locked) return null;
   const save = (patch) => {
+    if (isLocked()) return;
     try {
-      localStorage.setItem("alloflow_ai_config", JSON.stringify({ ...read(), ...patch }));
+      const next = { ...read(), ...patch };
+      localStorage.setItem("alloflow_ai_config", JSON.stringify(next));
+      setHasSavedKey(Boolean(String(next.serperApiKey || "").trim()));
       setSaved(true);
       setFailed(false);
+      try {
+        window.dispatchEvent(new Event("alloflow:ai-config-changed"));
+      } catch (_) {
+      }
     } catch (_) {
       setFailed(true);
       setSaved(false);
     }
   };
-  return /* @__PURE__ */ React.createElement("section", { "aria-label": tx("chat_guide.search_settings", "Allobot web sources"), className: "border-t border-slate-200 pt-4 space-y-2 text-slate-800" }, managed != null && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs" }, tx("chat_guide.managed_policy", "Managed AI restrictions are active. Requests to unapproved endpoints or credentials are blocked. This policy currently permits approved text connections only; media generation is disabled. Your administrator controls external research access.")), /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-sm" }, tx("chat_guide.search_settings", "Allobot web sources")), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-sm" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", className: "mt-1", checked: !managedSearchOff && enabled, disabled: managedSearchOff, onChange: (event) => {
+  const focusBtn = "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-800 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+  return /* @__PURE__ */ React.createElement("section", { "aria-label": tx("chat_guide.search_settings", "Allobot web sources"), className: "border-t border-slate-200 pt-4 space-y-2 text-slate-800" }, managed != null && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs" }, tx("chat_guide.managed_policy", "Managed AI restrictions are active. Requests to unapproved endpoints or credentials are blocked. This policy currently permits approved text connections only; media generation is disabled. Your administrator controls external research access.")), /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-sm" }, tx("chat_guide.search_settings", "Allobot web sources")), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 items-start gap-2 py-1 text-sm cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", className: "mt-1 h-4 w-4 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600", checked: !managedSearchOff && enabled, disabled: managedSearchOff, onChange: (event) => {
     setEnabled(event.target.checked);
     save({ allobotWebSearch: event.target.checked });
   } }), tx("chat_guide.search_enabled", "Look up public sources for UDL, standards and research questions")), /* @__PURE__ */ React.createElement("label", { className: "block text-sm" }, /* @__PURE__ */ React.createElement("span", { className: "block font-medium mb-1" }, tx("chat_guide.personal_serper", "Your Serper API key (optional)")), /* @__PURE__ */ React.createElement(
@@ -246,13 +302,14 @@ function AllobotSearchSettings({ t }) {
       spellCheck: false,
       value: key,
       placeholder: "serper.dev",
+      disabled: managedSearchOff,
       onChange: (event) => {
         setKey(event.target.value);
         setSaved(false);
       },
-      className: "w-full min-w-0 rounded-lg border border-slate-300 p-2 text-slate-900 bg-white"
+      className: "min-h-11 w-full min-w-0 rounded-lg border border-slate-300 p-2 text-slate-900 bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50"
     }
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-sm", onClick: () => save({ serperApiKey: key.trim() }) }, tx("chat_guide.save_search_key", "Save search key")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-sm", onClick: () => {
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: focusBtn, disabled: managedSearchOff, onClick: () => save({ serperApiKey: key.trim() }) }, tx("chat_guide.save_search_key", "Save search key")), /* @__PURE__ */ React.createElement("button", { type: "button", className: focusBtn, disabled: !hasSavedKey && !key.trim(), onClick: () => {
     setKey("");
     save({ serperApiKey: "" });
   } }, tx("chat_guide.remove_search_key", "Remove personal key"))), /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs" }, failed ? tx("chat_guide.search_save_failed", "Could not save these settings in this browser.") : saved ? tx("chat_guide.search_saved", "Search settings saved.") : ""), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed" }, tx("chat_guide.search_key_help", "Leave blank to use the configured search service or Gemini Google grounding when available. A saved personal key takes priority for Allobot lookups and Serper searches. It is stored in this browser and can be read by code running in the app; use a personal key, not a shared district secret.")), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed" }, tx("chat_guide.search_privacy_help", "Serper is outside your district Google environment. Any topic can be searched. A search that looks like it contains an email address, phone number or ID number is not sent, with or without a personal key. Ordinary Allobot replies send your current question; you can include recent messages or a reviewed excerpt for one reply. Other generation workflows use their task inputs. Use a district-approved connection for student information. A Gemini API key alone does not establish district coverage. Local AI requires this lookup option to be enabled.")));
@@ -738,12 +795,15 @@ function UDLGuideModal(props) {
     setIsDictationMode(false);
   }, [setIsDictationMode]);
   const closeGuide = React.useCallback(() => {
+    setChatMenuOpen(false);
     stopLegacyDictation();
     setIsConversationMode(false);
     handleSetShowUDLGuideToFalse();
   }, [handleSetShowUDLGuideToFalse, setIsConversationMode, stopLegacyDictation]);
   const guideRef = React.useRef(null);
   const closeGuideRef = React.useRef(closeGuide);
+  const [confirmDeleteTemplateId, setConfirmDeleteTemplateId] = React.useState("");
+  const [confirmDeleteArchiveId, setConfirmDeleteArchiveId] = React.useState("");
   closeGuideRef.current = closeGuide;
   const previewRef = React.useRef(null);
   const closePreviewRef = React.useRef(closeBlueprintPreview);
@@ -753,6 +813,10 @@ function UDLGuideModal(props) {
     const overlay = previewRef.current;
     if (!overlay) return void 0;
     const previousFocus = typeof document !== "undefined" ? document.activeElement : null;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: overlay };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
     const focusable = () => Array.from(overlay.querySelectorAll(
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
     )).filter((el) => {
@@ -765,8 +829,9 @@ function UDLGuideModal(props) {
     });
     (focusable()[0] || overlay).focus();
     const onKey = (ev) => {
+      if (!isTopTrap()) return;
       if (ev.key === "Escape") {
-        if (ev.isComposing || ev.keyCode === 229) return;
+        if (ev.isComposing || ev.nativeEvent?.isComposing || ev.keyCode === 229) return;
         ev.preventDefault();
         ev.stopPropagation();
         closePreviewRef.current();
@@ -781,9 +846,9 @@ function UDLGuideModal(props) {
       const first = items[0];
       const last = items[items.length - 1];
       const active = document.activeElement;
-      if (!overlay.contains(active)) {
+      if (!overlay.contains(active) || active === overlay) {
         ev.preventDefault();
-        first.focus();
+        (ev.shiftKey ? last : first).focus();
         return;
       }
       if (ev.shiftKey && active === first) {
@@ -797,8 +862,11 @@ function UDLGuideModal(props) {
     document.addEventListener("keydown", onKey, true);
     return () => {
       document.removeEventListener("keydown", onKey, true);
+      const wasTop = isTopTrap();
+      const idx = trapStack.indexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
       try {
-        if (previousFocus && typeof previousFocus.focus === "function" && document.contains(previousFocus)) previousFocus.focus();
+        if (wasTop && previousFocus && typeof previousFocus.focus === "function" && document.contains(previousFocus)) previousFocus.focus();
       } catch (_) {
       }
     };
@@ -808,8 +876,9 @@ function UDLGuideModal(props) {
     const previousFocus = typeof document !== "undefined" ? document.activeElement : null;
     const onKey = (ev) => {
       if (ev.key !== "Escape") return;
-      if (ev.isComposing || ev.keyCode === 229) return;
+      if (ev.isComposing || ev.nativeEvent?.isComposing || ev.keyCode === 229) return;
       if (ev.defaultPrevented) return;
+      if (Array.isArray(window.__alloFocusTrapStack) && window.__alloFocusTrapStack.length > 0) return;
       const root = guideRef.current;
       if (root && root.querySelector('[data-testid="bp-preview-overlay"]')) return;
       ev.preventDefault();
@@ -845,6 +914,9 @@ function UDLGuideModal(props) {
     return next;
   });
   const [isCollapsed, setIsCollapsed] = useState(false);
+  React.useEffect(() => {
+    if (!showUDLGuide || isCollapsed) setChatMenuOpen(false);
+  }, [showUDLGuide, isCollapsed]);
   const [dirtyFields, setDirtyFields] = useState({});
   const markFieldsDirty = (id, dirty) => setDirtyFields((previous) => {
     if (!!previous[id] === dirty) return previous;
@@ -932,7 +1004,7 @@ function UDLGuideModal(props) {
             setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.talk_hint") || "Listening for app commands. You can also ask a question or describe a multi-step request; proposed actions appear in a plan card you review before anything runs. Try \u201Copen the learning hub\u201D, \u201Cread this page\u201D, or \u201Cwhere is the export button?\u201D Say \u201Cpause listening\u201D to pause or \u201Cstop listening\u201D to finish. Privacy note: this uses your selected recognition engine. On-device Whisper keeps recognition audio on this device; a browser speech service may send command audio to its provider; Gemini cloud transcription sends each completed spoken turn to Gemini only when you explicitly select it." }]);
           }
         },
-        className: `hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "bg-red-600 text-white border-red-400 motion-safe:animate-pulse" : "border-white/40"}`,
+        className: `hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-xs font-bold border ${alloVoiceActive ? voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "bg-red-600 text-white border-red-400 motion-safe:animate-pulse" : "border-white/40"}`,
         title: alloVoiceActive ? voicePaused ? t("chat_guide.talk_stop_paused_tooltip", "Stop the paused AlloBot voice session") : t("chat_guide.talk_stop_tooltip", "Stop AlloBot command listening") : t("chat_guide.talk_start_tooltip", "Start AlloBot command listening")
       },
       /* @__PURE__ */ React.createElement(Headphones, { size: 12 }),
@@ -949,13 +1021,13 @@ function UDLGuideModal(props) {
           const loop = window.__alloVoiceLoop;
           if (!loop) return;
           if (voicePaused) {
-            Promise.resolve(loop.resume()).then((ok) => setVoicePaused(!ok));
+            Promise.resolve(loop.resume()).then((ok) => setVoicePaused(!ok)).catch(() => setVoicePaused(true));
           } else {
             loop.pause();
             setVoicePaused(true);
           }
         },
-        className: `hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "border-white/40"}`,
+        className: `hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-xs font-bold border ${voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "border-white/40"}`,
         title: voicePaused ? t("chat_guide.resume_tooltip", "Resume AlloBot command listening") : t("chat_guide.pause_tooltip", "Pause AlloBot command listening and release its microphone session")
       },
       voicePaused ? t("chat_guide.resume", "Resume") : t("chat_guide.pause", "Pause")
@@ -981,7 +1053,7 @@ function UDLGuideModal(props) {
         onKeyDown: (ev) => {
           if (ev.key !== "ArrowDown" && ev.key !== "ArrowUp" && ev.key !== "Home" && ev.key !== "End") return;
           ev.preventDefault();
-          const items = Array.from(ev.currentTarget.querySelectorAll('[role^="menuitem"]'));
+          const items = Array.from(ev.currentTarget.querySelectorAll('[role^="menuitem"]:not(:disabled):not([aria-disabled="true"])'));
           if (!items.length) return;
           const at = items.indexOf(document.activeElement);
           const next = ev.key === "Home" ? 0 : ev.key === "End" ? items.length - 1 : ev.key === "ArrowDown" ? (at + 1) % items.length : (at - 1 + items.length) % items.length;
@@ -1002,14 +1074,15 @@ function UDLGuideModal(props) {
           className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100"
         },
         /* @__PURE__ */ React.createElement(Eye, { size: 14, className: "mt-0.5 shrink-0" }),
-        /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.show_me", "Point things out on screen")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-500" }, isShowMeMode ? t("common.on", "On") : t("common.off", "Off"), " \u2014 ", t("chat_guide.show_me_desc", "Asking \u201Cwhere is\u2026\u201D always points, with or without this.")))
+        /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.show_me", "Point things out on screen")), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, isShowMeMode ? t("common.on", "On") : t("common.off", "Off"), " \u2014 ", t("chat_guide.show_me_desc", "Asking \u201Cwhere is\u2026\u201D always points, with or without this.")))
       ),
       props.canReviseLesson === true && /* @__PURE__ */ React.createElement(
         "button",
         {
           role: "menuitem",
           type: "button",
-          disabled: isChatProcessing,
+          disabled: isChatProcessing || aiOff,
+          title: aiTitle,
           onClick: () => {
             handleSendUDLMessage({ action: "lesson-revision-start" });
             setChatMenuOpen(false);
@@ -1101,7 +1174,7 @@ function UDLGuideModal(props) {
           className: `px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${choice.tone === "secondary" ? chatStyles.secondaryButton : chatStyles.button}`
         },
         choice.label
-      ))), idx === udlMessages.length - 1 && /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-[11px] italic ${chatStyles.subText}` }, t("chat_guide.chips.or_type") || "\u2026or just type your answer below.")), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
+      ))), idx === udlMessages.length - 1 && /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-xs italic ${chatStyles.subText}` }, t("chat_guide.chips.or_type") || "\u2026or just type your answer below.")), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
         AllobotAdviceSave,
         {
           text: msg.text,
@@ -1113,7 +1186,7 @@ function UDLGuideModal(props) {
           className: chatStyles.secondaryButton
         }
       ))),
-      !activeBlueprint && Array.isArray(lessonTemplates) && lessonTemplates.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full", "data-testid": "bp-template-picker" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] mb-1 ${chatStyles.subText}` }, t("blueprint.template_picker_title") || "Start from one of your templates:"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, lessonTemplates.slice(0, 8).map((tpl) => /* @__PURE__ */ React.createElement("li", { key: tpl.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+      !activeBlueprint && Array.isArray(lessonTemplates) && lessonTemplates.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full", "data-testid": "bp-template-picker" }, /* @__PURE__ */ React.createElement("p", { className: `text-xs mb-1 ${chatStyles.subText}` }, t("blueprint.template_picker_title") || "Start from one of your templates:"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, lessonTemplates.slice(0, 8).map((tpl) => /* @__PURE__ */ React.createElement("li", { key: tpl.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -1133,14 +1206,24 @@ function UDLGuideModal(props) {
         {
           type: "button",
           "data-testid": "bp-template-delete",
-          onClick: () => handleDeleteLessonTemplate(tpl.id),
-          "aria-label": `${t("blueprint.template_delete") || "Delete template"}: ${tpl.name}`,
-          title: t("blueprint.template_delete") || "Delete template",
-          className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+          onClick: () => {
+            if (confirmDeleteTemplateId !== tpl.id) {
+              setConfirmDeleteTemplateId(tpl.id);
+              return;
+            }
+            setConfirmDeleteTemplateId("");
+            handleDeleteLessonTemplate(tpl.id);
+          },
+          onBlur: () => {
+            if (confirmDeleteTemplateId === tpl.id) setConfirmDeleteTemplateId("");
+          },
+          "aria-label": `${confirmDeleteTemplateId === tpl.id ? "Confirm delete template" : t("blueprint.template_delete") || "Delete template"}: ${tpl.name}`,
+          title: confirmDeleteTemplateId === tpl.id ? "Click again to delete template" : t("blueprint.template_delete") || "Delete template",
+          className: `inline-flex items-center justify-center min-w-11 min-h-11 text-xs px-2 py-1.5 rounded border ${confirmDeleteTemplateId === tpl.id ? "border-rose-500 bg-rose-50 text-rose-800 font-bold" : "border-slate-300 text-slate-700 hover:bg-slate-100"}`
         },
-        "\xD7"
+        confirmDeleteTemplateId === tpl.id ? "Delete?" : "\xD7"
       ))))),
-      !activeBlueprint && Array.isArray(archivedPlans) && archivedPlans.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full", "data-testid": "bp-archive-picker" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] mb-1 ${chatStyles.subText}` }, t("blueprint.archive_title") || "Previous plans:"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, archivedPlans.slice(0, 8).map((rec) => /* @__PURE__ */ React.createElement("li", { key: rec.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+      !activeBlueprint && Array.isArray(archivedPlans) && archivedPlans.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full", "data-testid": "bp-archive-picker" }, /* @__PURE__ */ React.createElement("p", { className: `text-xs mb-1 ${chatStyles.subText}` }, t("blueprint.archive_title") || "Previous plans:"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, archivedPlans.slice(0, 8).map((rec) => /* @__PURE__ */ React.createElement("li", { key: rec.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -1157,12 +1240,22 @@ function UDLGuideModal(props) {
           type: "button",
           "data-testid": "bp-archive-delete",
           "data-help-key": "blueprint_archive_delete_btn",
-          onClick: () => handleDeleteArchivedPlan(rec.id),
-          "aria-label": `${t("blueprint.archive_delete") || "Delete archived plan"}: ${rec.name}`,
-          title: t("blueprint.archive_delete") || "Delete archived plan",
-          className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+          onClick: () => {
+            if (confirmDeleteArchiveId !== rec.id) {
+              setConfirmDeleteArchiveId(rec.id);
+              return;
+            }
+            setConfirmDeleteArchiveId("");
+            handleDeleteArchivedPlan(rec.id);
+          },
+          onBlur: () => {
+            if (confirmDeleteArchiveId === rec.id) setConfirmDeleteArchiveId("");
+          },
+          "aria-label": `${confirmDeleteArchiveId === rec.id ? "Confirm delete archived plan" : t("blueprint.archive_delete") || "Delete archived plan"}: ${rec.name}`,
+          title: confirmDeleteArchiveId === rec.id ? "Click again to delete archived plan" : t("blueprint.archive_delete") || "Delete archived plan",
+          className: `inline-flex items-center justify-center min-w-11 min-h-11 text-xs px-2 py-1.5 rounded border ${confirmDeleteArchiveId === rec.id ? "border-rose-500 bg-rose-50 text-rose-800 font-bold" : "border-slate-300 text-slate-700 hover:bg-slate-100"}`
         },
-        "\xD7"
+        confirmDeleteArchiveId === rec.id ? "Delete?" : "\xD7"
       ))))),
       isChatProcessing && /* @__PURE__ */ React.createElement("div", { className: "flex items-start" }, /* @__PURE__ */ React.createElement("div", { role: "status", className: `p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "motion-safe:animate-spin", "aria-hidden": "true" }), " ", t("bot.mood_thinking")))
     ),
@@ -1354,14 +1447,14 @@ function UDLGuideModal(props) {
         // generateResourceHTML has no branch for some types and returns
         // '' — say so rather than showing an empty white box.
         /* @__PURE__ */ React.createElement("p", { className: `text-sm ${chatStyles.subText}`, "data-testid": "bp-preview-unsupported" }, t("blueprint.preview_unsupported") || "This resource type opens in its own view rather than a preview.")
-      ) : /* @__PURE__ */ React.createElement(
+      ) : typeof window !== "undefined" && typeof window.sanitizeHtml === "function" ? /* @__PURE__ */ React.createElement(
         "div",
         {
           className: "allo-preview-body text-sm",
           "data-testid": "bp-preview-body",
-          dangerouslySetInnerHTML: { __html: typeof window !== "undefined" && typeof window.sanitizeHtml === "function" ? window.sanitizeHtml(blueprintPreview.html || "") : String(blueprintPreview.html || "") }
+          dangerouslySetInnerHTML: { __html: window.sanitizeHtml(blueprintPreview.html || "") }
         }
-      ))
+      ) : /* @__PURE__ */ React.createElement("p", { className: `text-sm ${chatStyles.subText}`, "data-testid": "bp-preview-sanitizer-unavailable" }, t("blueprint.preview_unavailable") || "Safe preview is unavailable right now. Open this resource directly from History."))
     ),
     /* @__PURE__ */ React.createElement("div", { className: `shrink-0 p-3 border-t ${theme === "dark" ? "border-slate-700" : "border-slate-200"} ${chatStyles.inputArea}` }, !isChoosingCommand && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
       "button",
@@ -1376,7 +1469,7 @@ function UDLGuideModal(props) {
       standardToolsOpen ? /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronRight, { size: 12 }),
       /* @__PURE__ */ React.createElement(ShieldCheck, { size: 11 }),
       tx("chat_guide.curriculum_standards", "Find or discuss curriculum standards")
-    ), /* @__PURE__ */ React.createElement("div", { id: "udl-standard-tools", hidden: !standardToolsOpen }, /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(Search, { size: 10 }), " ", t("standards.finder_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { id: "udl-standard-tools", hidden: !standardToolsOpen }, /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(Search, { size: 10 }), " ", t("standards.finder_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("standards.region_framework_placeholder"),
@@ -1394,7 +1487,12 @@ function UDLGuideModal(props) {
         type: "text",
         value: aiStandardQuery,
         onChange: (e) => setAiStandardQuery(e.target.value),
-        onKeyDown: (e) => e.key === "Enter" && handleFindStandards(),
+        onKeyDown: (e) => {
+          if (e.key === "Enter" && !e.isComposing && !e.nativeEvent?.isComposing && e.keyCode !== 229 && !isFindingStandards && aiStandardQuery.trim() && !aiOff) {
+            e.preventDefault();
+            handleFindStandards();
+          }
+        },
         placeholder: isIndependentMode ? t("wizard.independent_learning_goal") : t("wizard.skill_search_placeholder"),
         className: `flex-grow text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`
       }
@@ -1420,9 +1518,9 @@ function UDLGuideModal(props) {
         },
         className: `w-full text-left p-2 min-h-[24px] transition-colors group flex flex-col gap-1 ${theme === "dark" ? "hover:bg-indigo-900/50" : theme === "contrast" ? "hover:bg-yellow-900" : "hover:bg-green-50"}`
       },
-      /* @__PURE__ */ React.createElement("span", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-bold px-1 rounded border ${theme === "dark" ? "bg-indigo-900 text-indigo-200 border-indigo-700" : theme === "contrast" ? "bg-black text-yellow-400 border-yellow-400" : "bg-indigo-50 text-indigo-700 border-indigo-100"}` }, std.code), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] uppercase ml-auto ${chatStyles.subText}` }, std.framework)),
-      /* @__PURE__ */ React.createElement("span", { className: `block text-[11px] leading-snug line-clamp-2 ${chatStyles.text}` }, std.description)
-    ))))), /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1.5" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10 }), " ", t("standards.consult_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("span", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold px-1 rounded border ${theme === "dark" ? "bg-indigo-900 text-indigo-200 border-indigo-700" : theme === "contrast" ? "bg-black text-yellow-400 border-yellow-400" : "bg-indigo-50 text-indigo-700 border-indigo-100"}` }, std.code), /* @__PURE__ */ React.createElement("span", { className: `text-xs uppercase ml-auto ${chatStyles.subText}` }, std.framework)),
+      /* @__PURE__ */ React.createElement("span", { className: `block text-xs leading-snug line-clamp-2 ${chatStyles.text}` }, std.description)
+    ))))), /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1.5" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10 }), " ", t("standards.consult_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
       "select",
       {
         "data-help-key": "chat_framework_select",
@@ -1468,7 +1566,7 @@ function UDLGuideModal(props) {
         "data-help-key": "chat_consult_btn",
         disabled: aiOff,
         onClick: () => handleSendUDLMessage(t("standards.prompts.identify_key_standards", { framework: udlStandardFramework, grade: udlStandardGrade })),
-        className: `p-1.5 rounded transition-colors border ${theme === "dark" ? "bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800" : theme === "contrast" ? "bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900" : "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200"}`,
+        className: `p-1.5 rounded transition-colors border disabled:opacity-50 disabled:cursor-not-allowed ${theme === "dark" ? "bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800" : theme === "contrast" ? "bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900" : "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200"}`,
         title: aiTitle || t("standards.consult_btn_title")
       },
       /* @__PURE__ */ React.createElement(ArrowRight, { size: 14 })
@@ -1504,6 +1602,7 @@ function UDLGuideModal(props) {
         value: udlInput,
         onChange: (e) => setUdlInput(e.target.value),
         onKeyDown: (e) => {
+          if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
           if (e.key !== "Enter") return;
           e.preventDefault();
           if (!isChatProcessing && udlInput.trim()) handleSendUDLMessage();
@@ -1527,7 +1626,7 @@ function UDLGuideModal(props) {
   );
 }
 function PlatformDiagnosticsSection(props) {
-  const { t } = props;
+  const { t, onCloseModal } = props;
   const [platProbe, setPlatProbe] = React.useState(null);
   const [probeRunning, setProbeRunning] = React.useState(false);
   const runPlatformProbe = async () => {
@@ -1805,9 +1904,12 @@ function PlatformDiagnosticsSection(props) {
     } catch (_) {
     }
   };
-  return /* @__PURE__ */ React.createElement("section", { id: "ai-platform-diagnostics-section", "data-help-key": "ai_platform_diagnostics", className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "ai-platform-diagnostics-title", className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("platform_diag.header") || "Platform & Browser Diagnostics"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, "Check capabilities that affect AI, files, storage, and pop-up workflows."))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runPlatformProbe, disabled: probeRunning, className: "bg-violet-600 text-white border-2 border-violet-600 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-700 disabled:opacity-60" }, "\u{1F52C} ", probeRunning ? "Running platform check\u2026" : t("platform_diag.run") || "Run platform check"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-ignore": "true", "data-a11y-ignore": "diagnostic-confirm", onClick: runDialogProbe, className: "bg-white text-violet-700 border-2 border-violet-200 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-50" }, "\u{1F9EA} ", t("platform_diag.dialog") || "Test dialog"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-ignore": "true", onClick: () => {
-    if (typeof window.__alloOpenDeviceStorageProbe === "function") window.__alloOpenDeviceStorageProbe();
-  }, className: "bg-white text-violet-700 border-2 border-violet-200 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-50" }, "\u{1F4BE} ", t("platform_diag.storage_probe") || "Test device storage")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, "Use this when a feature behaves differently across environments. Copy the report and include it when asking for help."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("platform_diag.storage_probe_hint") || "Test device storage only checks whether this browser can keep data. To see, restore, or erase your saved resource packs, use Local storage and downloads above."), platProbe && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-lg p-2 text-[11px]", role: "region", "aria-labelledby": "ai-platform-results-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { id: "ai-platform-results-title", className: "font-bold text-slate-700" }, t("platform_diag.results") || "Results", " \u2014 ", platProbe.when), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyProbeReport, "aria-label": t("platform_diag.copy") || "Copy report", className: "min-h-11 shrink-0 px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold hover:bg-slate-200" }, "\u{1F4CB} ", t("platform_diag.copy") || "Copy report")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-0.5" }, platProbe.rows.map((row, index) => /* @__PURE__ */ React.createElement("li", { key: index, className: "flex gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-bold " + (row.status === "pass" ? "text-green-700" : row.status === "fail" ? "text-red-700" : row.status === "warn" ? "text-amber-700" : "text-slate-500") }, row.status === "pass" ? "\u2713" : row.status === "fail" ? "\u2717" : row.status === "warn" ? "\u26A0" : "\u2139"), /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, row.name, ":"), " ", row.detail))))), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, "Platform check complete. ", platProbe.rows.length, " results available.")));
+  return /* @__PURE__ */ React.createElement("section", { id: "ai-platform-diagnostics-section", "data-help-key": "ai_platform_diagnostics", className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "ai-platform-diagnostics-title", className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("platform_diag.header") || "Platform & Browser Diagnostics"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, "Check capabilities that affect AI, files, storage, and pop-up workflows."))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runPlatformProbe, disabled: probeRunning, className: "bg-violet-600 text-white border-2 border-violet-600 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-700 disabled:opacity-60" }, "\u{1F52C} ", probeRunning ? "Running platform check\u2026" : t("platform_diag.run") || "Run platform check"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-ignore": "true", "data-a11y-ignore": "diagnostic-confirm", onClick: runDialogProbe, className: "bg-white text-violet-700 border-2 border-violet-200 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-50" }, "\u{1F9EA} ", t("platform_diag.dialog") || "Test dialog"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-ignore": "true", onClick: () => {
+    if (typeof window.__alloOpenDeviceStorageProbe === "function") {
+      if (typeof onCloseModal === "function") onCloseModal();
+      window.__alloOpenDeviceStorageProbe();
+    }
+  }, className: "bg-white text-violet-700 border-2 border-violet-200 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-50" }, "\u{1F4BE} ", t("platform_diag.storage_probe") || "Test device storage")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, "Use this when a feature behaves differently across environments. Copy the report and include it when asking for help."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("platform_diag.storage_probe_hint") || "Test device storage only checks whether this browser can keep data. To see, restore, or erase your saved resource packs, use Local storage and downloads above."), platProbe && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-lg p-2 text-xs", role: "region", "aria-labelledby": "ai-platform-results-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { id: "ai-platform-results-title", className: "font-bold text-slate-700" }, t("platform_diag.results") || "Results", " \u2014 ", platProbe.when), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyProbeReport, "aria-label": t("platform_diag.copy") || "Copy report", className: "min-h-11 shrink-0 px-2 py-0.5 bg-slate-100 rounded text-xs font-bold hover:bg-slate-200" }, "\u{1F4CB} ", t("platform_diag.copy") || "Copy report")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-0.5" }, platProbe.rows.map((row, index) => /* @__PURE__ */ React.createElement("li", { key: index, className: "flex gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-bold " + (row.status === "pass" ? "text-green-700" : row.status === "fail" ? "text-red-700" : row.status === "warn" ? "text-amber-700" : "text-slate-600") }, row.status === "pass" ? "\u2713" : row.status === "fail" ? "\u2717" : row.status === "warn" ? "\u26A0" : "\u2139"), /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, row.name, ":"), " ", row.detail))))), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, "Platform check complete. ", platProbe.rows.length, " results available.")));
 }
 function ModelDiagnosticsSection(props) {
   const { t, _isCanvasEnv, GEMINI_MODELS } = props;
@@ -1891,40 +1993,41 @@ function ModelDiagnosticsSection(props) {
     if (ago < 36e5) return Math.floor(ago / 6e4) + "m ago";
     return Math.floor(ago / 36e5) + "h ago";
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-indigo-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("model_diag.header") || "AI Model Diagnostics")), /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-violet-50/60 border border-violet-200 rounded-lg p-2.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1" }, "\u26FD ", t("model_diag.usage_header") || "Your Gemini usage (this session)"), _sessionCallTotal === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("model_diag.usage_none") || "No AI calls yet this session.") : /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, _sessionCallTotal), " ", t("model_diag.usage_calls") || "AI call(s):", " ", _sessionTotals.map((pair, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "font-mono" }, pair[0], " \xD7", pair[1], i < _sessionTotals.length - 1 ? " \xB7 " : ""))), _quotaHits.length > 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 font-bold mt-1" }, "\u{1F6D1} ", t("model_diag.quota_hit") || "Quota limit (HTTP 429) hit this session", " \u2014 ", new Date(_quotaHits[_quotaHits.length - 1].at).toLocaleTimeString(), " (", _quotaHits[_quotaHits.length - 1].model, "). ", t("model_diag.quota_hit_advice") || "If retries keep failing, the daily quota is spent \u2014 free-tier quotas reset around midnight Pacific.") : /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-green-700 mt-1" }, "\u2713 ", t("model_diag.quota_ok") || "No quota errors this session."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("model_diag.usage_caveat") || "Honest limits of this meter: Google does not let apps see your remaining balance, so this counts AlloFlow\u2019s own calls and resets when the page reloads. A 429 error is the only definitive \u201Cquota reached\u201D signal \u2014 when one happens, a red banner appears at the top of the app (dismissable) and it\u2019s recorded here.")), /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("model_diag.served_header") || "Models actually used this session"), usageEntries.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2.5 rounded-lg border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, t("model_diag.no_calls_yet") || "No AI calls completed yet this session. Run an audit, generate text, or use any AI feature to populate.")) : /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "text-[11px] w-full" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "bg-slate-100 text-slate-700" }, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 font-bold" }, t("model_diag.col_requested") || "Requested"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 font-bold" }, t("model_diag.col_served") || "Served by Google"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1.5 font-bold" }, t("model_diag.col_count") || "Calls"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1.5 font-bold" }, t("model_diag.col_last") || "Last"))), /* @__PURE__ */ React.createElement("tbody", null, usageEntries.map((entry, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: entry.divergent ? "bg-amber-50 border-t border-amber-200" : "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "p-1.5 font-mono text-slate-700" }, entry.requested), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 font-mono text-slate-700" }, entry.served || /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-600" }, t("model_diag.unreported") || "(unreported)"), entry.divergent && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-amber-700 font-bold", title: t("model_diag.divergent_tooltip") || "Google routed this request to a different model" }, "\u21C4")), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-right text-slate-700 font-bold" }, entry.count), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-right text-slate-600" }, formatRelativeTime(entry.lastSeen))))))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mt-1 italic" }, t("model_diag.served_hint") || "\u21C4 marks a row where Google served a different model than the one requested (silent reroute by the API).")), /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t("model_diag.catalog_header") || "Available models for your API key"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-indigo-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("model_diag.header") || "AI Model Diagnostics")), /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-violet-50/60 border border-violet-200 rounded-lg p-2.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-slate-700 uppercase tracking-wider mb-1" }, "\u26FD ", t("model_diag.usage_header") || "Your Gemini usage (this session)"), _sessionCallTotal === 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("model_diag.usage_none") || "No AI calls yet this session.") : /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, _sessionCallTotal), " ", t("model_diag.usage_calls") || "AI call(s):", " ", _sessionTotals.map((pair, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "font-mono" }, pair[0], " \xD7", pair[1], i < _sessionTotals.length - 1 ? " \xB7 " : ""))), _quotaHits.length > 0 ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-red-700 font-bold mt-1" }, "\u{1F6D1} ", t("model_diag.quota_hit") || "Quota limit (HTTP 429) hit this session", " \u2014 ", new Date(_quotaHits[_quotaHits.length - 1].at).toLocaleTimeString(), " (", _quotaHits[_quotaHits.length - 1].model, "). ", t("model_diag.quota_hit_advice") || "If retries keep failing, the daily quota is spent \u2014 free-tier quotas reset around midnight Pacific.") : /* @__PURE__ */ React.createElement("p", { className: "text-xs text-green-700 mt-1" }, "\u2713 ", t("model_diag.quota_ok") || "No quota errors this session."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("model_diag.usage_caveat") || "Honest limits of this meter: Google does not let apps see your remaining balance, so this counts AlloFlow\u2019s own calls and resets when the page reloads. A 429 error is the only definitive \u201Cquota reached\u201D signal \u2014 when one happens, a red banner appears at the top of the app (dismissable) and it\u2019s recorded here.")), /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("model_diag.served_header") || "Models actually used this session"), usageEntries.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2.5 rounded-lg border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, t("model_diag.no_calls_yet") || "No AI calls completed yet this session. Run an audit, generate text, or use any AI feature to populate.")) : /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "text-xs w-full" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "bg-slate-100 text-slate-700" }, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 font-bold" }, t("model_diag.col_requested") || "Requested"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 font-bold" }, t("model_diag.col_served") || "Served by Google"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1.5 font-bold" }, t("model_diag.col_count") || "Calls"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1.5 font-bold" }, t("model_diag.col_last") || "Last"))), /* @__PURE__ */ React.createElement("tbody", null, usageEntries.map((entry, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: entry.divergent ? "bg-amber-50 border-t border-amber-200" : "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "p-1.5 font-mono text-slate-700" }, entry.requested), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 font-mono text-slate-700" }, entry.served || /* @__PURE__ */ React.createElement("span", { className: "italic text-slate-600" }, t("model_diag.unreported") || "(unreported)"), entry.divergent && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-amber-700 font-bold", title: t("model_diag.divergent_tooltip") || "Google routed this request to a different model" }, "\u21C4")), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-right text-slate-700 font-bold" }, entry.count), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-right text-slate-600" }, formatRelativeTime(entry.lastSeen))))))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1 italic" }, t("model_diag.served_hint") || "\u21C4 marks a row where Google served a different model than the one requested (silent reroute by the API).")), /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("model_diag.catalog_header") || "Available models for your API key"), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: refreshCatalog,
       disabled: catalogLoading,
-      className: "text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded hover:bg-indigo-200 disabled:opacity-50 active:scale-95"
+      className: "text-xs font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded hover:bg-indigo-200 disabled:opacity-50 active:scale-95"
     },
     catalogLoading ? t("model_diag.loading") || "\u23F3 Loading..." : (catalogFetched ? "\u21BB " : "\u2193 ") + (t("model_diag.refresh") || "Fetch catalog")
-  )), catalogError && /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 p-2 rounded-lg border border-red-100 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 font-medium" }, "\u26A0 ", catalogError)), catalog.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 max-h-40 overflow-y-auto" }, /* @__PURE__ */ React.createElement("table", { className: "text-[10px] w-full" }, /* @__PURE__ */ React.createElement("thead", { className: "sticky top-0 bg-slate-100" }, /* @__PURE__ */ React.createElement("tr", { className: "text-slate-700" }, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1 font-bold" }, t("model_diag.col_id") || "Model"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1 font-bold" }, t("model_diag.col_display") || "Name"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1 font-bold", title: t("model_diag.col_in_tt") || "Input token limit" }, t("model_diag.col_in") || "In tok"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1 font-bold", title: t("model_diag.col_out_tt") || "Output token limit" }, t("model_diag.col_out") || "Out tok"))), /* @__PURE__ */ React.createElement("tbody", null, catalog.map((m, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "p-1 font-mono text-slate-700" }, m.id), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-slate-700" }, m.displayName), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-right text-slate-600" }, m.inputTokenLimit ? m.inputTokenLimit.toLocaleString() : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-right text-slate-600" }, m.outputTokenLimit ? m.outputTokenLimit.toLocaleString() : "\u2014")))))), !catalogFetched && !catalogError && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 italic" }, t("model_diag.click_to_load") || 'Click "Fetch catalog" to query Google for the list of models your key can access.')), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, t("model_diag.map_header") || "Current model map (what the app requests)"), Object.keys(storedOverrides).length > 0 && /* @__PURE__ */ React.createElement(
+  )), catalogError && /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 p-2 rounded-lg border border-red-100 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-red-700 font-medium" }, "\u26A0 ", catalogError)), catalog.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 max-h-40 overflow-y-auto" }, /* @__PURE__ */ React.createElement("table", { className: "text-xs w-full" }, /* @__PURE__ */ React.createElement("thead", { className: "sticky top-0 bg-slate-100" }, /* @__PURE__ */ React.createElement("tr", { className: "text-slate-700" }, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1 font-bold" }, t("model_diag.col_id") || "Model"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1 font-bold" }, t("model_diag.col_display") || "Name"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1 font-bold", title: t("model_diag.col_in_tt") || "Input token limit" }, t("model_diag.col_in") || "In tok"), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-right p-1 font-bold", title: t("model_diag.col_out_tt") || "Output token limit" }, t("model_diag.col_out") || "Out tok"))), /* @__PURE__ */ React.createElement("tbody", null, catalog.map((m, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "p-1 font-mono text-slate-700" }, m.id), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-slate-700" }, m.displayName), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-right text-slate-600" }, m.inputTokenLimit ? m.inputTokenLimit.toLocaleString() : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "p-1 text-right text-slate-600" }, m.outputTokenLimit ? m.outputTokenLimit.toLocaleString() : "\u2014")))))), !catalogFetched && !catalogError && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, t("model_diag.click_to_load") || 'Click "Fetch catalog" to query Google for the list of models your key can access.')), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("model_diag.map_header") || "Current model map (what the app requests)"), Object.keys(storedOverrides).length > 0 && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: clearAllOverrides,
-      className: "text-[10px] font-bold uppercase tracking-wider bg-slate-200 text-slate-700 px-2 py-1 rounded hover:bg-slate-300 active:scale-95",
+      className: "text-xs font-bold uppercase tracking-wider bg-slate-200 text-slate-700 px-2 py-1 rounded hover:bg-slate-300 active:scale-95",
       title: t("model_diag.clear_all_tt") || "Remove every per-slot override and revert to app defaults"
     },
     t("model_diag.clear_all") || "\u21A9 Clear overrides"
   )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-100 p-2 space-y-1.5" }, slots.map((slot) => {
     const current = GEMINI_MODELS && GEMINI_MODELS[slot] || "(not set)";
     const overridden = !!storedOverrides[slot];
-    const inCatalog = catalog.length === 0 || catalog.some((m) => m.id === current);
-    return /* @__PURE__ */ React.createElement("div", { key: slot + ":" + refreshKey, className: "flex items-center gap-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 uppercase tracking-wider w-14 shrink-0" }, slot), catalog.length > 0 ? /* @__PURE__ */ React.createElement(
+    const activeModel = storedOverrides[slot] || current;
+    const inCatalog = catalog.length === 0 || catalog.some((m) => m.id === activeModel);
+    return /* @__PURE__ */ React.createElement("div", { key: slot + ":" + refreshKey, className: "flex items-center gap-1.5 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 uppercase tracking-wider w-14 shrink-0" }, slot), catalog.length > 0 ? /* @__PURE__ */ React.createElement(
       "select",
       {
         defaultValue: storedOverrides[slot] || "",
         onChange: (e) => saveOverride(slot, e.target.value),
-        className: "flex-1 p-1 text-[11px] border border-slate-200 rounded bg-white font-mono text-slate-700",
+        className: "flex-1 p-1 text-xs border border-slate-200 rounded bg-white font-mono text-slate-700",
         "aria-label": (t("model_diag.slot_aria") || "Model override for slot") + ": " + slot
       },
       /* @__PURE__ */ React.createElement("option", { value: "" }, (t("model_diag.use_default_prefix") || "Use app default") + " (" + current + ")"),
       catalog.map((m, i) => /* @__PURE__ */ React.createElement("option", { key: i, value: m.id }, m.id))
-    ) : /* @__PURE__ */ React.createElement("span", { className: "flex-1 font-mono text-slate-700" }, current), overridden && !inCatalog && catalog.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-amber-700 font-bold whitespace-nowrap", title: t("model_diag.not_in_catalog_tt") || "This override is not in your current model catalog \u2014 may 404 at request time" }, "\u26A0 ", t("model_diag.not_in_catalog") || "not in catalog"), overridden && (inCatalog || catalog.length === 0) && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-indigo-700 font-bold", title: t("model_diag.overridden_tt") || "You have overridden this slot" }, "\u270E"));
-  })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5 italic" }, "\u26A1 ", t("model_diag.reload_hint") || "Reload the page after changing a model override for it to take effect."), _isCanvasEnv && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-0.5 italic" }, t("model_diag.canvas_hint") || "In Gemini Canvas, available models are determined by Google and may be a narrower set than public GA.")));
+    ) : /* @__PURE__ */ React.createElement("span", { className: "flex-1 font-mono text-slate-700" }, current), overridden && !inCatalog && catalog.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-amber-700 font-bold whitespace-nowrap", title: t("model_diag.not_in_catalog_tt") || "This override is not in your current model catalog \u2014 may 404 at request time" }, "\u26A0 ", t("model_diag.not_in_catalog") || "not in catalog"), overridden && (inCatalog || catalog.length === 0) && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-indigo-700 font-bold", title: t("model_diag.overridden_tt") || "You have overridden this slot" }, "\u270E"));
+  })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1.5 italic" }, "\u26A1 ", t("model_diag.reload_hint") || "Reload the page after changing a model override for it to take effect."), _isCanvasEnv && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5 italic" }, t("model_diag.canvas_hint") || "In Gemini Canvas, available models are determined by Google and may be a narrower set than public GA.")));
 }
 function AIBackendModal(props) {
   if (!(props.showAIBackendModal && !props._isCanvasEnv)) return null;
@@ -1942,10 +2045,39 @@ function AIBackendModalBody(props) {
   const launchPadActive = typeof document !== "undefined" && !!document.body && document.body.classList.contains("alloflow-launchpad-active");
   const aiBackendOverlayZ = launchPadActive ? 2147483002 : props.showStemLab ? 10490 : void 0;
   const aiBackendDialogRef = React.useRef(null);
+  const aiBackendBackdropDownRef = React.useRef(null);
+  const aiBackendTrapRef = React.useRef(null);
   React.useEffect(() => {
     const dialog = aiBackendDialogRef.current;
     if (!dialog) return void 0;
     const previouslyFocused = document.activeElement;
+    const isolatedSiblings = [];
+    let branch = dialog.parentElement || dialog;
+    while (branch && branch.parentElement && branch !== document.body) {
+      const parent = branch.parentElement;
+      Array.from(parent.children).forEach((sibling) => {
+        if (sibling === branch || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || typeof sibling.matches === "function" && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
+        isolatedSiblings.push({
+          el: sibling,
+          hadInert: sibling.hasAttribute("inert"),
+          prevAriaHidden: sibling.getAttribute("aria-hidden")
+        });
+        sibling.inert = true;
+        sibling.setAttribute("inert", "");
+        sibling.setAttribute("aria-hidden", "true");
+      });
+      branch = parent;
+    }
+    const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    const alloScrollLocked = !!document.body;
+    if (alloScrollLocked && ++alloScrollLock.count === 1) {
+      alloScrollLock.prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    aiBackendTrapRef.current = trap;
+    trapStack.push(trap);
     try {
       dialog.focus({ preventScroll: true });
     } catch (_) {
@@ -1955,7 +2087,24 @@ function AIBackendModalBody(props) {
       }
     }
     return () => {
-      if (previouslyFocused && previouslyFocused !== document.body && previouslyFocused.isConnected && typeof previouslyFocused.focus === "function") {
+      if (alloScrollLocked) {
+        alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
+        if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
+      }
+      isolatedSiblings.forEach(({ el, hadInert, prevAriaHidden }) => {
+        if (!el || !el.isConnected) return;
+        if (!hadInert) {
+          el.inert = false;
+          el.removeAttribute("inert");
+        }
+        if (prevAriaHidden === null) el.removeAttribute("aria-hidden");
+        else if (prevAriaHidden !== "true") el.setAttribute("aria-hidden", prevAriaHidden);
+      });
+      const wasTop = trapStack[trapStack.length - 1] === trap;
+      const idx = trapStack.indexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      if (aiBackendTrapRef.current === trap) aiBackendTrapRef.current = null;
+      if (wasTop && previouslyFocused && previouslyFocused !== document.body && previouslyFocused.isConnected && typeof previouslyFocused.focus === "function") {
         try {
           previouslyFocused.focus({ preventScroll: true });
         } catch (_) {
@@ -1968,7 +2117,10 @@ function AIBackendModalBody(props) {
     };
   }, []);
   const [confirmForgetKey, setConfirmForgetKey] = React.useState(false);
+  const [confirmForgetCloudKey, setConfirmForgetCloudKey] = React.useState(false);
   const handleAIBackendDialogKeyDown = (event) => {
+    const trapStack = window.__alloFocusTrapStack;
+    if (Array.isArray(trapStack) && trapStack.length > 0 && aiBackendTrapRef.current && trapStack[trapStack.length - 1] !== aiBackendTrapRef.current) return;
     if (event.key === "Escape") {
       if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
       event.preventDefault();
@@ -2175,6 +2327,11 @@ function AIBackendModalBody(props) {
         const keyLock = keyLockApi();
         if (keyLock && typeof keyLock.forgetAiKey === "function") keyLock.forgetAiKey();
         if (isStudentAiSetup) window.dispatchEvent(new CustomEvent("alloflow:student-ai-config-changed"));
+      }
+      setKeyLockTick((tick) => tick + 1);
+      try {
+        window.dispatchEvent(new CustomEvent("alloflow:ai-config-changed"));
+      } catch (_) {
       }
     } catch (_) {
     }
@@ -2436,7 +2593,7 @@ function AIBackendModalBody(props) {
       status.className = "text-xs font-bold mt-2 text-emerald-800 bg-emerald-50 p-2.5 rounded-xl border border-emerald-100";
     }
   };
-  const renderUrlField = () => /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.server_url_label") || "Server URL"), /* @__PURE__ */ React.createElement(
+  const renderUrlField = () => /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.server_url_label") || "Server URL"), /* @__PURE__ */ React.createElement(
     "input",
     {
       "data-help-key": "ai_backend_custom_url_input",
@@ -2454,17 +2611,17 @@ function AIBackendModalBody(props) {
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
     }
   ));
-  const renderTeacherKeyTermsNotice = () => /* @__PURE__ */ React.createElement("div", { id: "ai-backend-key-terms", className: "mb-3 rounded-xl border-2 border-rose-200 bg-rose-50/70 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-rose-800" }, t("ai_backend.key_terms_kicker") || "For teachers only"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-rose-900" }, t("ai_backend.key_terms_age") || "Each AI provider sets its own rules for minors and for how it handles what you send. Check them before connecting. AlloFlow never uses this key in student mode, on any device."), String(readAIBackendConfig().backend || "gemini") === "gemini" && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-xs leading-relaxed text-rose-900" }, t("ai_backend.key_terms_review") || "Google's Gemini API terms require users to be 18 or older and restrict use in apps likely to be accessed by people under 18. On the free tier, people at Google may review what you send, and Google may use it to improve its products. Leave out student names and personal details, or turn on billing for this key: Google does not use paid-tier prompts that way."));
+  const renderTeacherKeyTermsNotice = () => /* @__PURE__ */ React.createElement("div", { id: "ai-backend-key-terms", className: "mb-3 rounded-xl border-2 border-rose-200 bg-rose-50/70 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black uppercase tracking-wider text-rose-800" }, t("ai_backend.key_terms_kicker") || "For teachers only"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-rose-900" }, t("ai_backend.key_terms_age") || "Each AI provider sets its own rules for minors and for how it handles what you send. Check them before connecting. AlloFlow never uses this key in student mode, on any device."), String(readAIBackendConfig().backend || "gemini") === "gemini" && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-xs leading-relaxed text-rose-900" }, t("ai_backend.key_terms_review") || "Google's Gemini API terms require users to be 18 or older and restrict use in apps likely to be accessed by people under 18. On the free tier, people at Google may review what you send, and Google may use it to improve its products. Leave out student names and personal details, or turn on billing for this key: Google does not use paid-tier prompts that way."));
   const renderKeyProtectRow = () => {
     const status = keyLockStatus();
     if (!status) return null;
     if (status.saved && !status.unsaved && !status.plaintextOnDevice) {
-      return /* @__PURE__ */ React.createElement("p", { id: "ai-backend-key-lock-state", role: "status", className: "mt-2 text-[11px] font-bold text-emerald-800" }, t("ai_backend.key_lock_saved_state") || "Saved on this device and locked with your educator access code.");
+      return /* @__PURE__ */ React.createElement("p", { id: "ai-backend-key-lock-state", role: "status", className: "mt-2 text-xs font-bold text-emerald-800" }, t("ai_backend.key_lock_saved_state") || "Saved on this device and locked with your educator access code.");
     }
     if (!status.unsaved && !status.plaintextOnDevice) return null;
     const configured = keyLockApi().isConfigured();
     const save = () => runKeyLock((api, code) => api.protectAiKey(code), t("ai_backend.key_lock_saved_msg") || "Your key is saved and locked.");
-    return /* @__PURE__ */ React.createElement("div", { id: "ai-backend-key-lock", className: "mt-2 rounded-xl border-2 border-amber-200 bg-amber-50/70 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed text-amber-900" }, status.plaintextOnDevice ? t("ai_backend.key_lock_plaintext_warning") || "This key is saved on this device without protection. Lock it so nobody else using this device can read it." : t("ai_backend.key_lock_tab_only") || "This key works until you close this tab. To keep it on this device, lock it with your educator access code."), /* @__PURE__ */ React.createElement("label", { htmlFor: "ai-backend-key-lock-code", className: "mt-2 block text-[11px] font-bold text-amber-900" }, configured ? t("ai_backend.key_lock_code_label") || "Educator access code" : t("ai_backend.key_lock_create_label") || "Create an educator access code (at least 6 characters)"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-col gap-2 sm:flex-row" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { id: "ai-backend-key-lock", className: "mt-2 rounded-xl border-2 border-amber-200 bg-amber-50/70 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed text-amber-900" }, status.plaintextOnDevice ? t("ai_backend.key_lock_plaintext_warning") || "This key is saved on this device without protection. Lock it so nobody else using this device can read it." : t("ai_backend.key_lock_tab_only") || "This key works until you close this tab. To keep it on this device, lock it with your educator access code."), /* @__PURE__ */ React.createElement("label", { htmlFor: "ai-backend-key-lock-code", className: "mt-2 block text-xs font-bold text-amber-900" }, configured ? t("ai_backend.key_lock_code_label") || "Educator access code" : t("ai_backend.key_lock_create_label") || "Create an educator access code (at least 6 characters)"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-col gap-2 sm:flex-row" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "ai-backend-key-lock-code",
@@ -2473,16 +2630,17 @@ function AIBackendModalBody(props) {
         value: keyLockCode,
         onChange: (e) => setKeyLockCode(e.target.value),
         onKeyDown: (e) => {
-          if (e.key === "Enter") {
+          if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+          if (e.key === "Enter" && !keyLockBusy && keyLockCode) {
             e.preventDefault();
             save();
           }
         },
         className: "min-h-11 flex-1 rounded-xl border-2 border-amber-300 bg-white p-2 text-sm text-slate-800"
       }
-    ), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: keyLockBusy || !keyLockCode, onClick: save, className: "min-h-11 rounded-xl bg-amber-800 px-3 py-2 text-xs font-bold text-white hover:bg-amber-900 disabled:opacity-60" }, t("ai_backend.key_lock_save_btn") || "Save and lock key")), !configured && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] leading-relaxed text-amber-900" }, t("ai_backend.key_lock_create_hint") || "You will also use this code to enter teacher mode on this device. If you forget it, you can remove the saved key and enter it again."), keyLockMessage && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-[11px] font-bold text-amber-950" }, keyLockMessage));
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: keyLockBusy || !keyLockCode, onClick: save, className: "min-h-11 rounded-xl bg-amber-800 px-3 py-2 text-xs font-bold text-white hover:bg-amber-900 disabled:opacity-60" }, t("ai_backend.key_lock_save_btn") || "Save and lock key")), !configured && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-amber-900" }, t("ai_backend.key_lock_create_hint") || "You will also use this code to enter teacher mode on this device. If you forget it, you can remove the saved key and enter it again."), keyLockMessage && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-xs font-bold text-amber-950" }, keyLockMessage));
   };
-  const renderApiKeyField = (labelText, hintText) => /* @__PURE__ */ React.createElement("div", null, !isStudentAiSetup && renderTeacherKeyTermsNotice(), /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, labelText || t("ai_backend.api_key_label") || "API Key", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, hintText || t("ai_backend.api_key_hint") || "(cloud providers only)")), /* @__PURE__ */ React.createElement(
+  const renderApiKeyField = (labelText, hintText) => /* @__PURE__ */ React.createElement("div", null, !isStudentAiSetup && renderTeacherKeyTermsNotice(), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, labelText || t("ai_backend.api_key_label") || "API Key", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, hintText || t("ai_backend.api_key_hint") || "(cloud providers only)")), /* @__PURE__ */ React.createElement(
     "input",
     {
       "data-help-key": "ai_backend_api_key_input",
@@ -2506,15 +2664,26 @@ function AIBackendModalBody(props) {
     {
       type: "button",
       "data-help-key": "ai_backend_forget_gemini_key",
-      onClick: forgetGeminiCloudServicesKey,
-      className: "mt-2 min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+      onClick: () => {
+        const hasLockedSavedKey = Boolean(keyLockStatus()?.saved);
+        if (hasLockedSavedKey && !confirmForgetCloudKey) {
+          setConfirmForgetCloudKey(true);
+          return;
+        }
+        setConfirmForgetCloudKey(false);
+        forgetGeminiCloudServicesKey();
+      },
+      onBlur: () => {
+        if (confirmForgetCloudKey) setConfirmForgetCloudKey(false);
+      },
+      className: `mt-2 min-h-11 rounded-lg border px-3 py-2 text-xs font-bold ${confirmForgetCloudKey ? "border-rose-500 bg-rose-50 text-rose-800 hover:bg-rose-100" : "border-slate-300 bg-white text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"}`
     },
-    "Forget saved Gemini key"
+    confirmForgetCloudKey ? "Confirm forget saved Gemini key" : "Forget saved Gemini key"
   ));
   const renderGeminiCloudServicesField = () => {
     const cfg = readAIBackendConfig();
     if (isStudentAiSetup || String(cfg.backend || "gemini") === "gemini") return null;
-    return /* @__PURE__ */ React.createElement("div", { id: "ai-backend-gemini-services-section", tabIndex: -1, className: "rounded-xl border-2 border-sky-100 bg-sky-50/70 p-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "ai-backend-gemini-services-key", className: "block text-[11px] font-bold text-sky-900 uppercase tracking-wider mb-1.5" }, "Gemini cloud-services key ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-sky-800" }, "(optional)")), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { id: "ai-backend-gemini-services-section", tabIndex: -1, className: "rounded-xl border-2 border-sky-100 bg-sky-50/70 p-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "ai-backend-gemini-services-key", className: "block text-xs font-bold text-sky-900 uppercase tracking-wider mb-1.5" }, "Gemini cloud-services key ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-sky-800" }, "(optional)")), /* @__PURE__ */ React.createElement(
       "input",
       {
         "data-help-key": "ai_backend_gemini_services_key_input",
@@ -2536,11 +2705,22 @@ function AIBackendModalBody(props) {
       {
         type: "button",
         "data-help-key": "ai_backend_forget_gemini_services_key",
-        onClick: forgetGeminiCloudServicesKey,
-        className: "mt-2 min-h-11 rounded-lg border border-sky-300 bg-white px-3 py-2 text-xs font-bold text-sky-900 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+        onClick: () => {
+          const hasLockedSavedKey = Boolean(keyLockStatus()?.saved);
+          if (hasLockedSavedKey && !confirmForgetCloudKey) {
+            setConfirmForgetCloudKey(true);
+            return;
+          }
+          setConfirmForgetCloudKey(false);
+          forgetGeminiCloudServicesKey();
+        },
+        onBlur: () => {
+          if (confirmForgetCloudKey) setConfirmForgetCloudKey(false);
+        },
+        className: `mt-2 min-h-11 rounded-lg border px-3 py-2 text-xs font-bold ${confirmForgetCloudKey ? "border-rose-500 bg-rose-50 text-rose-800 hover:bg-rose-100" : "border-sky-300 bg-white text-sky-900 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"}`
       },
-      "Forget saved Gemini key"
-    ), /* @__PURE__ */ React.createElement("p", { id: "ai-backend-gemini-services-help", className: "mt-1 text-[11px] leading-relaxed text-sky-900" }, "Used only for Gemini cloud features you explicitly select, including Gemini voice transcription. Your primary text AI remains ", GUIDED_BACKEND_LABELS[String(cfg.backend || "")] || String(cfg.backend || "the selected backend"), "."));
+      confirmForgetCloudKey ? "Confirm forget saved Gemini key" : "Forget saved Gemini key"
+    ), /* @__PURE__ */ React.createElement("p", { id: "ai-backend-gemini-services-help", className: "mt-1 text-xs leading-relaxed text-sky-900" }, "Used only for Gemini cloud features you explicitly select, including Gemini voice transcription. Your primary text AI remains ", GUIDED_BACKEND_LABELS[String(cfg.backend || "")] || String(cfg.backend || "the selected backend"), "."));
   };
   const renderEngineStrip = () => /* @__PURE__ */ React.createElement("div", { id: "ai-backend-engine-strip", style: { display: "none" }, "aria-live": "polite", ref: (node) => {
     if (node && !node.dataset.engineInit) {
@@ -2548,7 +2728,7 @@ function AIBackendModalBody(props) {
       setTimeout(refreshEngineStrip, 0);
     }
   } });
-  const guidedStepHeading = (text) => /* @__PURE__ */ React.createElement("p", { ref: guidedHeadingRef, tabIndex: -1, role: "status", "aria-live": "polite", className: "text-[11px] font-black text-violet-700 uppercase tracking-wider outline-none" }, text);
+  const guidedStepHeading = (text) => /* @__PURE__ */ React.createElement("p", { ref: guidedHeadingRef, tabIndex: -1, role: "status", "aria-live": "polite", className: "text-xs font-black text-violet-700 uppercase tracking-wider outline-none" }, text);
   const guidedBackBtn = (target) => /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_back_btn", onClick: () => {
     setGuidedReady(false);
     setGuidedView(target);
@@ -2561,13 +2741,13 @@ function AIBackendModalBody(props) {
       onClick,
       className: "w-full text-left border-2 border-slate-200 rounded-2xl p-4 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99] motion-reduce:transition-none motion-reduce:transform-none"
     },
-    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, emoji), /* @__PURE__ */ React.createElement("span", { className: "font-black text-sm text-slate-800" }, title), badge && /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] font-black uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full" }, badge)),
+    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, emoji), /* @__PURE__ */ React.createElement("span", { className: "font-black text-sm text-slate-800" }, title), badge && /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-xs font-black uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full" }, badge)),
     /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600 mt-1 leading-relaxed" }, body),
-    req && /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 mt-1" }, req)
+    req && /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600 mt-1" }, req)
   );
   const renderGuidedStep = () => {
     const cfg = readAIBackendConfig();
-    if (guidedView === "gemini") return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, guidedStepHeading(t("ai_backend.guided_gemini_kicker") || "Step 2 of 2 \xB7 Google Gemini"), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal ml-5 space-y-1.5 text-xs text-slate-700 leading-relaxed" }, /* @__PURE__ */ React.createElement("li", null, /* @__PURE__ */ React.createElement("a", { href: "https://aistudio.google.com/apikey", target: "_blank", rel: "noopener noreferrer", className: "font-bold text-violet-700 underline" }, t("ai_backend.guided_gemini_step1") || "Open Google AI Studio \u2197")), /* @__PURE__ */ React.createElement("li", null, t("ai_backend.guided_gemini_step2_adult") || "Sign in with your own adult Google account."), /* @__PURE__ */ React.createElement("li", null, t("ai_backend.guided_gemini_step3") || 'Press "Create API key" and copy it.'), /* @__PURE__ */ React.createElement("li", null, t("ai_backend.guided_gemini_step4") || "Paste the key below.")), /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border-2 border-amber-200 bg-amber-50/70 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-amber-800" }, t("ai_backend.gemini_images_kicker") || "Text yes, pictures no"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-amber-900" }, t("ai_backend.gemini_images_note") || "The free Google API tier does not include image generation. Every text tool works: lessons, questions, translation, levelling, glossaries. The tools that DRAW something will not, on a free key."), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-xs leading-relaxed text-amber-900" }, t("ai_backend.gemini_images_fix") || "For pictures, run AlloFlow in Gemini Canvas instead, or enable billing on this key. Neither is needed for anything else.")), renderApiKeyField(t("ai_backend.guided_gemini_key_label") || "Your Gemini API key", " "), /* @__PURE__ */ React.createElement("label", { className: "mt-3 flex items-start gap-2.5 rounded-xl border-2 border-violet-200 bg-violet-50/60 p-3 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+    if (guidedView === "gemini") return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, guidedStepHeading(t("ai_backend.guided_gemini_kicker") || "Step 2 of 2 \xB7 Google Gemini"), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal ml-5 space-y-1.5 text-xs text-slate-700 leading-relaxed" }, /* @__PURE__ */ React.createElement("li", null, /* @__PURE__ */ React.createElement("a", { href: "https://aistudio.google.com/apikey", target: "_blank", rel: "noopener noreferrer", className: "font-bold text-violet-700 underline" }, t("ai_backend.guided_gemini_step1") || "Open Google AI Studio \u2197")), /* @__PURE__ */ React.createElement("li", null, t("ai_backend.guided_gemini_step2_adult") || "Sign in with your own adult Google account."), /* @__PURE__ */ React.createElement("li", null, t("ai_backend.guided_gemini_step3") || 'Press "Create API key" and copy it.'), /* @__PURE__ */ React.createElement("li", null, t("ai_backend.guided_gemini_step4") || "Paste the key below.")), /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border-2 border-amber-200 bg-amber-50/70 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black uppercase tracking-wider text-amber-800" }, t("ai_backend.gemini_images_kicker") || "Text yes, pictures no"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-amber-900" }, t("ai_backend.gemini_images_note") || "The free Google API tier does not include image generation. Every text tool works: lessons, questions, translation, levelling, glossaries. The tools that DRAW something will not, on a free key."), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-xs leading-relaxed text-amber-900" }, t("ai_backend.gemini_images_fix") || "For pictures, run AlloFlow in Gemini Canvas instead, or enable billing on this key. Neither is needed for anything else.")), renderApiKeyField(t("ai_backend.guided_gemini_key_label") || "Your Gemini API key", " "), /* @__PURE__ */ React.createElement("label", { className: "mt-3 flex items-start gap-2.5 rounded-xl border-2 border-violet-200 bg-violet-50/60 p-3 cursor-pointer" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "checkbox",
@@ -2575,10 +2755,10 @@ function AIBackendModalBody(props) {
         defaultChecked: !!readAIBackendConfig().contributePledge,
         onChange: (e) => {
           const current = readAIBackendConfig();
-          writeAIBackendConfig({ ...current, contributePledge: e.target.checked });
+          writeAIBackendConfig({ ...current, contributePledge: e.target.checked }, { preserveValidation: true });
         }
       }
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs leading-relaxed text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-black" }, t("ai_backend.pledge_title") || "I will help make AlloFlow better."), " ", t("ai_backend.pledge_body") || "A developer key is a developer tool. If something breaks I will report it, and if I build a lesson or tool worth sharing I will send it to the Community Catalog from my history so other teachers get it too.", " ", /* @__PURE__ */ React.createElement("a", { href: "https://github.com/Apomera/AlloFlow/issues/new", target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("ai_backend.pledge_report") || "Report something \u2197"), " \xB7 ", /* @__PURE__ */ React.createElement("a", { href: "https://apomera.github.io/AlloFlow/feedback.html", target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("ai_backend.pledge_share") || "Share what you made \u2197"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("ai_backend.guided_gemini_key_note_teacher") || "Stored only on this device and never used in student mode."), guidedBackBtn("choose"));
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs leading-relaxed text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-black" }, t("ai_backend.pledge_title") || "I will help make AlloFlow better."), " ", t("ai_backend.pledge_body") || "A developer key is a developer tool. If something breaks I will report it, and if I build a lesson or tool worth sharing I will send it to the Community Catalog from my history so other teachers get it too.", " ", /* @__PURE__ */ React.createElement("a", { href: "https://github.com/Apomera/AlloFlow/issues/new", target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("ai_backend.pledge_report") || "Report something \u2197"), " \xB7 ", /* @__PURE__ */ React.createElement("a", { href: "https://apomera.github.io/AlloFlow/feedback.html", target: "_blank", rel: "noopener noreferrer", className: "font-bold underline" }, t("ai_backend.pledge_share") || "Share what you made \u2197"))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("ai_backend.guided_gemini_key_note_teacher") || "Stored only on this device and never used in student mode."), guidedBackBtn("choose"));
     if (guidedView === "private") return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, guidedStepHeading(t("ai_backend.guided_private_kicker") || "Step 2 of 2 \xB7 Private AI on this computer"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-slate-700 leading-relaxed" }, /* @__PURE__ */ React.createElement("li", null, "\u2705 ", /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.guided_private_b1a") || "Private:"), " ", t("ai_backend.guided_private_b1b") || "lessons and student text never leave this computer."), /* @__PURE__ */ React.createElement("li", null, "\u{1F4E5} ", /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.guided_private_b2a") || "One-time download:"), " ", t("ai_backend.guided_private_b2b") || "a starter AI model (about 2 GB). Keep the app open until it finishes."), /* @__PURE__ */ React.createElement("li", null, "\u{1F5A5}\uFE0F ", /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.guided_private_b3a") || "Hardware:"), " ", t("ai_backend.guided_private_b3b") || "works best with 8 GB+ memory and ~2.5 GB free disk."), /* @__PURE__ */ React.createElement("li", null, "\u23F1\uFE0F ", /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.guided_private_b4a") || "Speed:"), " ", t("ai_backend.guided_private_b4b") || "answers take a bit longer than cloud AI \u2014 that's the privacy trade.")), renderEngineStrip(), guidedBackBtn("choose"));
     if (guidedView === "connect") return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, guidedStepHeading(t("ai_backend.guided_connect_kicker") || "Step 2 of 3 \xB7 Which app do you run?"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, GUIDED_CONNECT_APPS.map((app) => /* @__PURE__ */ React.createElement(
       "button",
@@ -2594,7 +2774,7 @@ function AIBackendModalBody(props) {
         className: "text-left border-2 border-slate-200 rounded-xl p-3 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99] motion-reduce:transition-none motion-reduce:transform-none"
       },
       /* @__PURE__ */ React.createElement("span", { className: "block font-black text-xs text-slate-800" }, app.title),
-      /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 mt-0.5" }, app.body)
+      /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600 mt-0.5" }, app.body)
     ))), guidedBackBtn("choose"));
     if (guidedView.startsWith("connect-detail:")) {
       const app = GUIDED_CONNECT_APPS.find((a) => a.id === guidedView.slice("connect-detail:".length)) || GUIDED_CONNECT_APPS[3];
@@ -2603,7 +2783,7 @@ function AIBackendModalBody(props) {
     const currentBackend = cfg.backend || "gemini";
     const connected = Boolean(cfg.validation && cfg.validation.ok);
     const badgeFor = (backend) => currentBackend === backend && cfg.backend ? t("ai_backend.guided_current_badge") || "Current" : "";
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, guidedStepHeading(t("ai_backend.guided_choose_kicker") || "First-time setup \xB7 Choose your AI"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, t("ai_backend.guided_intro") || "AlloFlow uses an AI engine to create lessons, read aloud, and answer questions. Pick how you'd like it to work \u2014 you can change this any time."), connected && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-green-800 bg-green-50 border border-green-100 rounded-xl p-2" }, "\u2705 ", (t("ai_backend.guided_connected_chip") || "Connected \u2014") + " " + (GUIDED_BACKEND_LABELS[currentBackend] || currentBackend)), !connected && guidedCard(
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, guidedStepHeading(t("ai_backend.guided_choose_kicker") || "First-time setup \xB7 Choose your AI"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, t("ai_backend.guided_intro") || "AlloFlow uses an AI engine to create lessons, read aloud, and answer questions. Pick how you'd like it to work \u2014 you can change this any time."), connected && /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-green-800 bg-green-50 border border-green-100 rounded-xl p-2" }, "\u2705 ", (t("ai_backend.guided_connected_chip") || "Connected \u2014") + " " + (GUIDED_BACKEND_LABELS[currentBackend] || currentBackend)), !connected && guidedCard(
       { "data-help-key": "ai_backend_guided_card_canvas" },
       () => {
         try {
@@ -2656,6 +2836,7 @@ function AIBackendModalBody(props) {
   const guidedTestVisible = advancedOpen || guidedView === "gemini" || guidedView === "private" || guidedView.startsWith("connect-detail:");
   const openDeviceStorageManager = () => {
     if (typeof window.__alloOpenStorageRecoveryManager === "function") {
+      if (typeof setShowAIBackendModal === "function") setShowAIBackendModal(false);
       window.__alloOpenStorageRecoveryManager();
       return;
     }
@@ -2678,9 +2859,16 @@ function AIBackendModalBody(props) {
         "data-ai-backend-modal-overlay": "true",
         style: { zIndex: aiBackendOverlayZ },
         className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300",
-        onClick: () => setShowAIBackendModal(false)
+        onMouseDown: (e) => {
+          aiBackendBackdropDownRef.current = e.target === e.currentTarget;
+        },
+        onClick: (e) => {
+          const allow = aiBackendBackdropDownRef.current !== false;
+          aiBackendBackdropDownRef.current = null;
+          if (e.target === e.currentTarget && allow) setShowAIBackendModal(false);
+        }
       },
-      /* @__PURE__ */ React.createElement("div", { ref: aiBackendDialogRef, "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: handleAIBackendDialogKeyDown, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-4 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, t("ai_backend.key_lock_locked_title") || "Saved AI key is locked")), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, t("ai_backend.key_lock_locked_body") || "Enter your educator access code to use or change the AI key saved on this device."), /* @__PURE__ */ React.createElement("label", { htmlFor: "ai-backend-key-unlock-code", className: "mt-4 block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.key_lock_code_label") || "Educator access code"), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { ref: aiBackendDialogRef, "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: handleAIBackendDialogKeyDown, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-4 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, t("ai_backend.key_lock_locked_title") || "Saved AI key is locked")), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, t("ai_backend.key_lock_locked_body") || "Enter your educator access code to use or change the AI key saved on this device."), /* @__PURE__ */ React.createElement("label", { htmlFor: "ai-backend-key-unlock-code", className: "mt-4 block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.key_lock_code_label") || "Educator access code"), /* @__PURE__ */ React.createElement(
         "input",
         {
           id: "ai-backend-key-unlock-code",
@@ -2689,7 +2877,8 @@ function AIBackendModalBody(props) {
           value: keyLockCode,
           onChange: (e) => setKeyLockCode(e.target.value),
           onKeyDown: (e) => {
-            if (e.key === "Enter") {
+            if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+            if (e.key === "Enter" && !keyLockBusy && keyLockCode) {
               e.preventDefault();
               unlock();
             }
@@ -2735,7 +2924,14 @@ function AIBackendModalBody(props) {
       "data-ai-backend-modal-overlay": "true",
       style: { zIndex: aiBackendOverlayZ },
       className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300",
-      onClick: () => setShowAIBackendModal(false)
+      onMouseDown: (e) => {
+        aiBackendBackdropDownRef.current = e.target === e.currentTarget;
+      },
+      onClick: (e) => {
+        const allow = aiBackendBackdropDownRef.current !== false;
+        aiBackendBackdropDownRef.current = null;
+        if (e.target === e.currentTarget && allow) setShowAIBackendModal(false);
+      }
     },
     /* @__PURE__ */ React.createElement("div", { ref: aiBackendDialogRef, "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": isStudentAiSetup ? "true" : "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: handleAIBackendDialogKeyDown, onClick: (e) => e.stopPropagation() }, isStudentAiSetup && /* @__PURE__ */ React.createElement("style", null, `
               [data-student-ai-setup="true"] #ai-backend-engine-strip,
@@ -2747,7 +2943,7 @@ function AIBackendModalBody(props) {
               [data-student-ai-setup="true"] #ai-backend-device-storage-section {
                 display: none !important;
               }
-            `), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, isStudentAiSetup ? t("ai_backend.personal_title") || "Connect Personal AI" : t("sidebar.ai_setup_name") || "AI setup")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, isStudentAiSetup && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, t("ai_backend.personal_session_title") || "Personal AI for this session"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, t("ai_backend.personal_storage_notice") || "Use only your own provider account. Your credential is stored only in this browser tab and transmitted only to the provider you choose; it is never placed in the QR, Class Mailbox, or student submission."), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, t("ai_backend.personal_privacy_notice") || "Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.")), !advancedOpen && !isStudentAiSetup && renderGuidedStep(), !advancedOpen && !isStudentAiSetup && /* @__PURE__ */ React.createElement("section", { id: "ai-backend-guided-storage-shortcut", className: "rounded-xl border border-cyan-200 bg-cyan-50 p-3", "aria-labelledby": "ai-backend-guided-storage-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "ai-backend-guided-storage-title", className: "text-xs font-black text-cyan-950" }, t("canvas_settings.local_storage_title") || "Saved work on this device"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-cyan-900" }, t("canvas_settings.local_storage_hint") || "Open your saved resource packs to restore, pin, export, or erase them. Also shows space used and the offline voice models such as Whisper and Kokoro.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_storage_btn", onClick: openDeviceStorageManager, className: "min-h-11 shrink-0 rounded-xl border-2 border-cyan-600 bg-white px-4 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2" }, t("canvas_settings.local_storage_btn") || "Open saved work"))), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
+            `), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, isStudentAiSetup ? t("ai_backend.personal_title") || "Connect Personal AI" : t("sidebar.ai_setup_name") || "AI setup")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, isStudentAiSetup && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, t("ai_backend.personal_session_title") || "Personal AI for this session"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, t("ai_backend.personal_storage_notice") || "Use only your own provider account. Your credential is stored only in this browser tab and transmitted only to the provider you choose; it is never placed in the QR, Class Mailbox, or student submission."), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, t("ai_backend.personal_privacy_notice") || "Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.")), !advancedOpen && !isStudentAiSetup && renderGuidedStep(), !advancedOpen && !isStudentAiSetup && /* @__PURE__ */ React.createElement("section", { id: "ai-backend-guided-storage-shortcut", className: "rounded-xl border border-cyan-200 bg-cyan-50 p-3", "aria-labelledby": "ai-backend-guided-storage-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "ai-backend-guided-storage-title", className: "text-xs font-black text-cyan-950" }, t("canvas_settings.local_storage_title") || "Saved work on this device"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-cyan-900" }, t("canvas_settings.local_storage_hint") || "Open your saved resource packs to restore, pin, export, or erase them. Also shows space used and the offline voice models such as Whisper and Kokoro.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_storage_btn", onClick: openDeviceStorageManager, className: "min-h-11 shrink-0 rounded-xl border-2 border-cyan-600 bg-white px-4 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2" }, t("canvas_settings.local_storage_btn") || "Open saved work"))), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
       "select",
       {
         "data-help-key": "ai_backend_provider_select",
@@ -2767,7 +2963,7 @@ function AIBackendModalBody(props) {
         node.dataset.sdInit = "1";
         setTimeout(refreshSdTurboStrip, 0);
       }
-    } }), renderApiKeyField(), renderGeminiCloudServicesField(), readAIBackendConfig().wolframAppId || "" ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.wolfram_label") || "Wolfram Alpha App ID", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.wolfram_hint") || "(optional \u2014 enhances math)")), /* @__PURE__ */ React.createElement(
+    } }), renderApiKeyField(), renderGeminiCloudServicesField(), readAIBackendConfig().wolframAppId || "" ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.wolfram_label") || "Wolfram Alpha App ID", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.wolfram_hint") || "(optional \u2014 enhances math)")), /* @__PURE__ */ React.createElement(
       "input",
       {
         "data-help-key": "ai_backend_wolfram_input",
@@ -2778,11 +2974,11 @@ function AIBackendModalBody(props) {
         defaultValue: readAIBackendConfig().wolframAppId || "",
         onChange: (e) => {
           const current = readAIBackendConfig();
-          writeAIBackendConfig({ ...current, wolframAppId: e.target.value });
+          writeAIBackendConfig({ ...current, wolframAppId: e.target.value }, { preserveValidation: true });
         },
         className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
       }
-    ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("ai_backend.wolfram_unused_note") || "No tool uses this yet. It is kept on this device only; clear the box to remove it.")) : null), !advancedOpen && guidedReady && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-green-200 bg-green-50 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black text-green-900" }, "\u2705 ", (t("ai_backend.guided_ready") || "You're ready \u2014 AlloFlow is using") + " " + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || "gemini"] || readAIBackendConfig().backend) + "."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-green-800 mt-1" }, t("ai_backend.guided_ready_note") || "Your choice is active now \u2014 close this window and start working."), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_done_btn", onClick: () => setShowAIBackendModal(false), className: "mt-2 bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-800 transition-all active:scale-95" }, t("ai_backend.guided_done") || "Done")), guidedTestVisible && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-1" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("ai_backend.wolfram_unused_note") || "No tool uses this yet. It is kept on this device only; clear the box to remove it.")) : null), !advancedOpen && guidedReady && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-green-200 bg-green-50 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black text-green-900" }, "\u2705 ", (t("ai_backend.guided_ready") || "You're ready \u2014 AlloFlow is using") + " " + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || "gemini"] || readAIBackendConfig().backend) + "."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-green-800 mt-1" }, t("ai_backend.guided_ready_note") || "Your choice is active now \u2014 close this window and start working."), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_done_btn", onClick: () => setShowAIBackendModal(false), className: "mt-2 bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-800 transition-all active:scale-95" }, t("ai_backend.guided_done") || "Done")), guidedTestVisible && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-1" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -2891,6 +3087,7 @@ function AIBackendModalBody(props) {
         type: "button",
         onClick: () => {
           clearAIBackendConfig();
+          setConfigRevision((revision) => revision + 1);
           const p = document.getElementById("ai-backend-provider");
           const u = document.getElementById("ai-backend-url");
           const k = document.getElementById("ai-backend-apikey");
@@ -2916,7 +3113,7 @@ function AIBackendModalBody(props) {
         className: "bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
       },
       isStudentAiSetup ? "Disconnect & erase key" : "\u21A9 Reset"
-    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-status", role: "status", "aria-live": "polite", "aria-atomic": "true" })), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-blue-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.model_selection_header") || "Model Selection")), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.default_model_label") || "Default Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.default_model_hint") || "(text generation)")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-status", role: "status", "aria-live": "polite", "aria-atomic": "true" })), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-blue-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.model_selection_header") || "Model Selection")), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.default_model_label") || "Default Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.default_model_hint") || "(text generation)")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "data-help-key": "ai_backend_model_select",
@@ -2932,7 +3129,7 @@ function AIBackendModalBody(props) {
         className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
       /* @__PURE__ */ React.createElement("option", { value: "" }, t("ai_backend.auto_server_default") || "Auto (server default)")
-    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.fallback_model_label") || "Fallback Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.fallback_model_hint") || "(rate-limit cascade)")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.fallback_model_label") || "Fallback Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.fallback_model_hint") || "(rate-limit cascade)")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "aria-label": t("ai_backend.fallback_model_aria") || "Fallback AI model",
@@ -2947,7 +3144,7 @@ function AIBackendModalBody(props) {
         className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
       /* @__PURE__ */ React.createElement("option", { value: "" }, t("ai_backend.same_as_default") || "Same as default")
-    )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, '\u{1F4A1} Click "Test Connection" above to auto-populate available models from your backend.'))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Headphones, { size: 14, className: "text-emerald-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, "Text-to-Speech")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, '\u{1F4A1} Click "Test Connection" above to auto-populate available models from your backend.'))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Headphones, { size: 14, className: "text-emerald-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, "Text-to-Speech")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "data-help-key": "ai_backend_tts_provider_select",
@@ -2956,7 +3153,7 @@ function AIBackendModalBody(props) {
         defaultValue: readAIBackendConfig().ttsProvider || "auto",
         onChange: (e) => {
           const current = readAIBackendConfig();
-          writeAIBackendConfig({ ...current, ttsProvider: e.target.value });
+          writeAIBackendConfig({ ...current, ttsProvider: e.target.value }, { preserveValidation: true });
         },
         className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
@@ -2965,7 +3162,7 @@ function AIBackendModalBody(props) {
       /* @__PURE__ */ React.createElement("option", { value: "local" }, "\u{1F5A5}\uFE0F Local TTS (Kokoro \u2192 Edge TTS cascade)"),
       /* @__PURE__ */ React.createElement("option", { value: "browser" }, "\u{1F310} Browser Built-in (speechSynthesis)"),
       /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F507} Off (disable narration)")
-    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-emerald-50 p-2 rounded-lg border border-emerald-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Auto:"), " Gemini voices for cloud backends, Edge TTS voices for local backends. Narrator voice selection is in the header bar (\u{1F3A7} button)."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-800 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.local_cascade_label") || "Local cascade:"), " Kokoro (:8880, 8 langs) \u2192 Edge TTS (:5500, 40+ langs) \u2192 Browser fallback"))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14, className: "text-amber-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.image_generation_header") || "Image Generation")), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-emerald-50 p-2 rounded-lg border border-emerald-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Auto:"), " Gemini voices for cloud backends, Edge TTS voices for local backends. Narrator voice selection is in the header bar (\u{1F3A7} button)."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-800 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.local_cascade_label") || "Local cascade:"), " Kokoro (:8880, 8 langs) \u2192 Edge TTS (:5500, 40+ langs) \u2192 Browser fallback"))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14, className: "text-amber-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.image_generation_header") || "Image Generation")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "aria-label": t("ai_backend.image_provider_aria") || "Image generation provider",
@@ -2973,7 +3170,7 @@ function AIBackendModalBody(props) {
         defaultValue: readAIBackendConfig().imageProvider || "auto",
         onChange: (e) => {
           const current = readAIBackendConfig();
-          writeAIBackendConfig({ ...current, imageProvider: e.target.value });
+          writeAIBackendConfig({ ...current, imageProvider: e.target.value }, { preserveValidation: true });
         },
         className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
@@ -2982,7 +3179,9 @@ function AIBackendModalBody(props) {
       /* @__PURE__ */ React.createElement("option", { value: "imagen" }, "\u{1F3A8} Imagen 4.0 (Google Cloud)"),
       /* @__PURE__ */ React.createElement("option", { value: "flux" }, "\u{1F5BC}\uFE0F FLUX (Local \u2014 port 7860)"),
       /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F6AB} Off (disable image generation)")
-    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(AllobotSearchSettings, { t }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(PlatformDiagnosticsSection, { t }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-device-storage-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && !(typeof window !== "undefined" && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true)) && /* @__PURE__ */ React.createElement(AllobotSearchSettings, { t }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(PlatformDiagnosticsSection, { t, onCloseModal: () => {
+      if (typeof setShowAIBackendModal === "function") setShowAIBackendModal(false);
+    } }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-device-storage-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -2991,7 +3190,7 @@ function AIBackendModalBody(props) {
       },
       "\u{1F50C} ",
       t("canvas_settings.device_storage_btn") || "Manage device storage"
-    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-diagnostics-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.diagnostics_label") || "Diagnostics & Logs"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.diagnostics_hint") || "View captured errors and the read-aloud (text-to-speech) activity trace \u2014 useful when audio stalls without a visible error."), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-diagnostics-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.diagnostics_label") || "Diagnostics & Logs"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, t("canvas_settings.diagnostics_hint") || "View captured errors and the read-aloud (text-to-speech) activity trace \u2014 useful when audio stalls without a visible error."), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -3002,20 +3201,21 @@ function AIBackendModalBody(props) {
             hasErrors = (window.AlloModules.ErrorReporter.getBuffer() || []).length > 0;
           } catch (e) {
           }
+          if (typeof setShowAIBackendModal === "function") setShowAIBackendModal(false);
           window.__alloOpenDiagnosticsLog(hasErrors ? "errors" : "tts");
         },
         className: "bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
       },
       "\u{1FA7A} ",
       t("canvas_settings.diagnostics_btn") || "Open error & read-aloud log"
-    )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-600" }, "Active:"), " ", (() => {
+    )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-600" }, "Active:"), " ", (() => {
       try {
         const c = readAIBackendConfig();
         return c.backend ? c.backend.charAt(0).toUpperCase() + c.backend.slice(1) + (c.baseUrl ? " \u2192 " + c.baseUrl : "") : "Gemini (default)";
       } catch {
         return "Gemini (default)";
       }
-    })()), !isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium mt-1" }, "\u26A1 ", t("ai_backend.reload_after_change") || "Reload page after changing backend to apply."), isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium mt-1" }, t("ai_backend.student_verified_note") || "Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(
+    })()), !isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-medium mt-1" }, "\u26A1 ", t("ai_backend.reload_after_change") || "Reload page after changing backend to apply."), isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-medium mt-1" }, t("ai_backend.student_verified_note") || "Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(
       "button",
       {
         "data-help-key": "ai_backend_advanced_toggle",

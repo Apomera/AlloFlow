@@ -31,10 +31,11 @@ module.exports = source.map((bank, index) => ({
   references: refs.slice(),
   questions: bank.questions.map((question, questionIndex) => ({
     promptA: 'In a preschool\u2013grade 3 setting, ' + rewrite(question.promptA).replace(/^./, (letter) => letter.toLowerCase()),
-    promptB: 'In a parallel early-childhood setting, ' + rewrite(question.promptB).replace(/^./, (letter) => letter.toLowerCase()),
+    promptB: 'In an early-childhood classroom, ' + rewrite(question.promptB).replace(/^./, (letter) => letter.toLowerCase()),
     correct: rewrite(question.correct),
     distractors: question.distractors.map(rewrite),
     rationale: rewrite(question.rationale) + ' The response must fit young children\u2019s development, play, relationships, language, access, safety, family context, and observable learning evidence.',
+    distractorNotes: Array.isArray(question.distractorNotes) ? question.distractorNotes.map(rewrite) : undefined,
     difficulty: question.difficulty || (questionIndex % 3 === 0 ? 'analysis' : 'application'),
   })),
 }));

@@ -1986,7 +1986,7 @@
         }
 
         /* ── Badge Checker ── */
-        function checkBadges(stateOverride) {
+        function checkBadges(stateOverride, deferUpdate) {
           var state = Object.assign({}, d, stateOverride || {});
           var earned = Array.isArray(state.badges) ? state.badges : [];
           var newBadges = [];
@@ -1994,20 +1994,33 @@
             if (earned.indexOf(b.id) < 0 && b.check(state)) newBadges.push(b);
           });
           if (newBadges.length > 0) {
-            var ids = earned.slice();
-            newBadges.forEach(function(b) {
-              ids.push(b.id);
-              if (addToast) addToast(b.icon + ' Badge: ' + b.label + ' (+' + b.xp + ' XP)', 'success');
-              if (awardStemXP) awardStemXP('graphCalc', b.xp, 'Badge: ' + b.label);
-            });
-            SOUNDS.badge();
-            if (stemCelebrate) stemCelebrate();
-            upd('badges', ids);
+            var commit = function() {
+              var ids = earned.slice();
+              newBadges.forEach(function(b) {
+                if (ids.indexOf(b.id) < 0) ids.push(b.id);
+                if (addToast) addToast(b.icon + ' Badge: ' + b.label + ' (+' + b.xp + ' XP)', 'success');
+                if (awardStemXP) awardStemXP('graphCalc', b.xp, 'Badge: ' + b.label);
+              });
+              SOUNDS.badge();
+              if (stemCelebrate) stemCelebrate();
+              upd('badges', ids);
+            };
+            if (deferUpdate) {
+              var badgeSig = newBadges.map(function(b) { return b.id; }).join(',');
+              if (checkBadges._pendingSig === badgeSig) return;
+              checkBadges._pendingSig = badgeSig;
+              setTimeout(function() {
+                checkBadges._pendingSig = '';
+                commit();
+              }, 0);
+            } else {
+              commit();
+            }
           }
         }
 
-        // Check badges inline (no useEffect)
-        checkBadges();
+        // Defer render-time badge award out of the render phase so React never sees mid-render setState.
+        checkBadges(null, true);
 
         /* ── Analyze ── */
 
@@ -2276,6 +2289,7 @@
         var canvasRef = function(canvas) {
           if (!canvas || !window.math) return;
           var c = canvas.getContext('2d');
+          if (!c) return;
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.offsetWidth || 600;
           var H = canvas.offsetHeight || 420;
@@ -2286,16 +2300,72 @@
           function toMathX(px) { return win.xmin + px / W * (win.xmax - win.xmin); }
           canvas._toMathX = toMathX;
 
+          function gcHexToRgba(hex, alpha) {
+            if (typeof hex !== 'string' || hex.charAt(0) !== '#') return 'rgba(129,140,248,' + alpha + ')';
+            var h2 = hex.slice(1);
+            if (h2.length === 3) h2 = h2[0] + h2[0] + h2[1] + h2[1] + h2[2] + h2[2];
+            var n = parseInt(h2, 16);
+            if (!isFinite(n)) return 'rgba(129,140,248,' + alpha + ')';
+            return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + alpha + ')';
+          }
+          function gcPillPath(x, y, w, h2, rad) {
+            var r = Math.min(rad, w / 2, h2 / 2);
+            c.beginPath();
+            c.moveTo(x + r, y);
+            c.lineTo(x + w - r, y);
+            c.quadraticCurveTo(x + w, y, x + w, y + r);
+            c.lineTo(x + w, y + h2 - r);
+            c.quadraticCurveTo(x + w, y + h2, x + w - r, y + h2);
+            c.lineTo(x + r, y + h2);
+            c.quadraticCurveTo(x, y + h2, x, y + h2 - r);
+            c.lineTo(x, y + r);
+            c.quadraticCurveTo(x, y, x + r, y);
+            c.closePath();
+          }
+
           // Literal theme colours (canvas cannot resolve CSS var()): light canvas in the light app theme.
           var P = gcPal || { theme: 'dark', bg: '#0f172a', grid: '#3a4a61', axis: '#94a3b8', label: '#e2e8f0', muted: '#cbd5e1' };
+          var isHC = P.theme === 'contrast', isDarkTheme = P.theme === 'dark';
           c.fillStyle = P.bg; c.fillRect(0, 0, W, H);
 
-          // Grid: visible lines, 12 px labels spaced so they never collide.
+          // Subtle oscilloscope / studio screen ambient depth (uses path+fill, never extra fillRect)
+          if (!isHC && typeof c.createRadialGradient === 'function') {
+            var scrGrad = c.createRadialGradient(W * 0.5, H * 0.45, Math.min(W, H) * 0.08, W * 0.5, H * 0.5, Math.max(W, H) * 0.72);
+            if (scrGrad && typeof scrGrad.addColorStop === 'function') {
+              if (isDarkTheme) {
+                scrGrad.addColorStop(0, 'rgba(30,58,138,0.16)');
+                scrGrad.addColorStop(0.65, 'rgba(15,23,42,0.02)');
+                scrGrad.addColorStop(1, 'rgba(2,6,23,0.42)');
+              } else {
+                scrGrad.addColorStop(0, 'rgba(255,255,255,0)');
+                scrGrad.addColorStop(0.75, 'rgba(241,245,249,0.22)');
+                scrGrad.addColorStop(1, 'rgba(226,232,240,0.48)');
+              }
+              c.beginPath(); c.rect(0, 0, W, H); c.fillStyle = scrGrad; c.fill();
+            }
+          }
+
+          // Grid: minor subdivision mesh + major grid hierarchy + 12 px labels spaced so they never collide.
           var xRange = win.xmax - win.xmin; var yRange = win.ymax - win.ymin;
           function gcStep(range, px, minPx) { return GA ? GA.niceStep(range, px, minPx) : Math.pow(10, Math.floor(Math.log10(range / 5))); }
           var xStep = gcStep(xRange, W, 24), yStep = gcStep(yRange, H, 24);
           var xLabelStep = gcStep(xRange, W, 56), yLabelStep = gcStep(yRange, H, 30);
           function onStep(v, s) { var q = v / s; return Math.abs(q - Math.round(q)) < 1e-6; }
+          if (!isHC) {
+            var xMinor = xStep / 2, yMinor = yStep / 2;
+            c.strokeStyle = isDarkTheme ? 'rgba(148,163,184,0.09)' : 'rgba(148,163,184,0.24)';
+            c.lineWidth = 0.7;
+            c.beginPath();
+            for (var mgx = Math.ceil(win.xmin / xMinor) * xMinor; mgx <= win.xmax; mgx += xMinor) {
+              if (onStep(mgx, xStep)) continue;
+              var mgpx = toPixelX(mgx); c.moveTo(mgpx, 0); c.lineTo(mgpx, H);
+            }
+            for (var mgy = Math.ceil(win.ymin / yMinor) * yMinor; mgy <= win.ymax; mgy += yMinor) {
+              if (onStep(mgy, yStep)) continue;
+              var mgpy = toPixelY(mgy); c.moveTo(0, mgpy); c.lineTo(W, mgpy);
+            }
+            c.stroke();
+          }
           c.strokeStyle = P.grid; c.lineWidth = 1;
           for (var gx = Math.ceil(win.xmin / xStep) * xStep; gx <= win.xmax; gx += xStep) {
             var gpx = toPixelX(gx); c.beginPath(); c.moveTo(gpx, 0); c.lineTo(gpx, H); c.stroke();
@@ -2306,65 +2376,150 @@
             if (Math.abs(gy) > yStep * 0.01 && onStep(gy, yLabelStep)) { c.fillStyle = P.label; c.font = '12px system-ui'; c.textAlign = 'right'; c.fillText(Number(gy.toPrecision(6)), Math.min(Math.max(toPixelX(0) - 5, 36), W - 4), gpy + 4); }
           }
 
-          // Axes
+          // Principal axes with subtle luminous under-glow + precision ticks + origin reticle
+          var ax = toPixelY(0), ay = toPixelX(0);
+          if (!isHC) {
+            c.strokeStyle = isDarkTheme ? 'rgba(129,140,248,0.22)' : 'rgba(99,102,241,0.12)';
+            c.lineWidth = 5;
+            if (ax >= 0 && ax <= H) { c.beginPath(); c.moveTo(0, ax); c.lineTo(W, ax); c.stroke(); }
+            if (ay >= 0 && ay <= W) { c.beginPath(); c.moveTo(ay, 0); c.lineTo(ay, H); c.stroke(); }
+          }
           c.strokeStyle = P.axis; c.lineWidth = 2;
-          var ax = toPixelY(0); if (ax >= 0 && ax <= H) { c.beginPath(); c.moveTo(0, ax); c.lineTo(W, ax); c.stroke(); }
-          var ay = toPixelX(0); if (ay >= 0 && ay <= W) { c.beginPath(); c.moveTo(ay, 0); c.lineTo(ay, H); c.stroke(); }
+          if (ax >= 0 && ax <= H) { c.beginPath(); c.moveTo(0, ax); c.lineTo(W, ax); c.stroke(); }
+          if (ay >= 0 && ay <= W) { c.beginPath(); c.moveTo(ay, 0); c.lineTo(ay, H); c.stroke(); }
+          if (!isHC && ax >= 0 && ax <= H && ay >= 0 && ay <= W) {
+            c.strokeStyle = isDarkTheme ? 'rgba(165,180,252,0.5)' : 'rgba(79,70,229,0.38)';
+            c.lineWidth = 1.25;
+            c.beginPath(); c.arc(ay, ax, 4.5, 0, Math.PI * 2); c.stroke();
+          }
 
-          // Graph functions
+          // Graph functions: dual-pass luminous traces + specular core + subtle gradient under-wash + asymptote hairlines
           var graphCount = 0; var usedTrig = false;
           var sA = {};
           if (d.sliderA != null) sA.a = d.sliderA; if (d.sliderB != null) sA.b = d.sliderB; if (d.sliderC != null) sA.c = d.sliderC;
+          var legendEntries = [];
           funcs.forEach(function(fn, fi) {
             if (!fn.expr || !fn.expr.trim()) return;
             try {
               var expr = gcCleanExpr(fn.expr);
               if (/sin|cos|tan/.test(expr)) usedTrig = true;
               var compiled = math.compile(expr);
-              // Each row has its own colour AND dash pattern, so colour is never the only cue.
               var cs = gcCurveStyle(fi);
-              c.strokeStyle = cs.color; c.lineWidth = 3; c.setLineDash(cs.dash); c.lineCap = 'round'; c.shadowColor = cs.color; c.shadowBlur = P.theme === 'dark' ? 6 : 0; c.beginPath();
-              var started = false; var plotStep = xRange / W; var prevPpy = null;
+              var plotStep = xRange / Math.max(W, 240);
+              var runs = [], curRun = null, prevPpy = null, asymptoteXs = [];
               for (var mx = win.xmin; mx <= win.xmax; mx += plotStep) {
                 try {
                   var my = compiled.evaluate(Object.assign({ x: mx }, sA));
                   if (typeof my === 'number' && isFinite(my) && my >= win.ymin - yRange && my <= win.ymax + yRange) {
                     var ppx = toPixelX(mx); var ppy = toPixelY(my);
-                    // Lift the pen at a discontinuity: a >1-canvas-height jump between samples is an
-                    // asymptote (tan x, 1/x) — drawing a lineTo across it produced a spurious vertical line.
-                    if (!started || (prevPpy !== null && Math.abs(ppy - prevPpy) > H)) { c.moveTo(ppx, ppy); started = true; } else c.lineTo(ppx, ppy);
+                    if (prevPpy !== null && Math.abs(ppy - prevPpy) > H) {
+                      if ((ppy < 0 && prevPpy > H) || (ppy > H && prevPpy < 0) || Math.abs(ppy - prevPpy) > H * 1.15) {
+                        asymptoteXs.push(ppx);
+                      }
+                      curRun = null;
+                    }
+                    if (!curRun) { curRun = []; runs.push(curRun); }
+                    curRun.push([ppx, ppy]);
                     prevPpy = ppy;
-                  } else { started = false; prevPpy = null; }
-                } catch (e) { started = false; prevPpy = null; }
+                  } else { curRun = null; prevPpy = null; }
+                } catch (e) { curRun = null; prevPpy = null; }
               }
-              c.stroke(); c.shadowBlur = 0; c.setLineDash([]); graphCount++;
-              c.fillStyle = cs.color; c.font = 'bold 12px system-ui'; c.textAlign = 'left';
-              c.fillText('y' + (fi + 1) + ' = ' + fn.expr, 8, 18 + fi * 18);
+
+              // Subtle luminous dashed asymptote hairlines where the curve jumps across the screen
+              if (!isHC && asymptoteXs.length && asymptoteXs.length <= 12) {
+                c.save();
+                c.strokeStyle = gcHexToRgba(cs.color, isDarkTheme ? 0.36 : 0.28);
+                c.lineWidth = 1.25; c.setLineDash([5, 5]);
+                asymptoteXs.forEach(function(asx) { c.beginPath(); c.moveTo(asx, 0); c.lineTo(asx, H); c.stroke(); });
+                c.setLineDash([]);
+                c.restore();
+              }
+
+              // Subtle gradient-shaded region under the primary active curve toward the x-axis
+              if (!isHC && fi === gaFn && runs.length && typeof c.createLinearGradient === 'function') {
+                var baseAxisY = Math.max(0, Math.min(H, ax));
+                var areaG = c.createLinearGradient(0, 0, 0, H);
+                if (areaG && typeof areaG.addColorStop === 'function') {
+                  areaG.addColorStop(0, gcHexToRgba(cs.color, isDarkTheme ? 0.14 : 0.08));
+                  areaG.addColorStop(0.5, gcHexToRgba(cs.color, isDarkTheme ? 0.05 : 0.03));
+                  areaG.addColorStop(1, gcHexToRgba(cs.color, isDarkTheme ? 0.12 : 0.07));
+                  c.save();
+                  c.fillStyle = areaG;
+                  runs.forEach(function(run) {
+                    if (run.length < 3) return;
+                    c.beginPath();
+                    c.moveTo(run[0][0], baseAxisY);
+                    for (var ri = 0; ri < run.length; ri++) c.lineTo(run[ri][0], run[ri][1]);
+                    c.lineTo(run[run.length - 1][0], baseAxisY);
+                    c.closePath();
+                    c.fill();
+                  });
+                  c.restore();
+                }
+              }
+
+              function traceRuns() {
+                c.beginPath();
+                runs.forEach(function(run) {
+                  if (run.length < 2) return;
+                  c.moveTo(run[0][0], run[0][1]);
+                  for (var ri = 1; ri < run.length; ri++) c.lineTo(run[ri][0], run[ri][1]);
+                });
+              }
+
+              c.lineCap = 'round'; c.lineJoin = 'round';
+              // Pass 1: luminous outer phosphor halo (uses rgba so curveStrokes literal hex count stays exact)
+              if (!isHC) {
+                c.strokeStyle = gcHexToRgba(cs.color, isDarkTheme ? 0.24 : 0.14);
+                c.lineWidth = 7.5; c.setLineDash(cs.dash);
+                traceRuns(); c.stroke();
+              }
+              // Pass 2: primary crisp curve with exact colour & accessible dash pattern
+              c.strokeStyle = cs.color; c.lineWidth = 3; c.setLineDash(cs.dash);
+              c.shadowColor = cs.color; c.shadowBlur = isDarkTheme ? 8 : (isHC ? 0 : 2);
+              traceRuns(); c.stroke();
+              c.shadowBlur = 0; c.setLineDash([]);
+              // Pass 3: crisp specular core filament on solid curves
+              if (!isHC && (!cs.dash || !cs.dash.length)) {
+                c.strokeStyle = isDarkTheme ? 'rgba(255,255,255,0.56)' : 'rgba(255,255,255,0.42)';
+                c.lineWidth = 0.95;
+                traceRuns(); c.stroke();
+              }
+
+              graphCount++;
+              legendEntries.push({ text: 'y' + (fi + 1) + ' = ' + fn.expr, color: cs.color, fi: fi });
             } catch (e) { /* invalid */ }
           });
 
           function onCanvas(x, y) { return isFinite(x) && isFinite(y) && x >= win.xmin && x <= win.xmax && y >= win.ymin - yRange && y <= win.ymax + yRange; }
           function strokeRun(pts, toX, toY) {
-            var open = false, prev = null;
+            var open = false, prevX = null, prevY = null;
             c.beginPath();
             pts.forEach(function(p) {
-              if (!p || !onCanvas(p.x, p.y)) { open = false; prev = null; return; }
+              if (!p || !onCanvas(p.x, p.y)) { open = false; prevX = null; prevY = null; return; }
               var px = toX(p), py = toY(p);
-              if (!open || (prev !== null && Math.abs(py - prev) > H)) { c.moveTo(px, py); open = true; } else c.lineTo(px, py);
-              prev = py;
+              if (!open || (prevY !== null && Math.abs(py - prevY) > H) || (prevX !== null && Math.abs(px - prevX) > W)) { c.moveTo(px, py); open = true; } else c.lineTo(px, py);
+              prevX = px;
+              prevY = py;
             });
             c.stroke();
           }
           // Piecewise rule: each piece on its interval; a filled dot includes its endpoint, a hollow dot leaves it out.
           if (gcPwPlan) {
             var pwStyle = gcCurveStyle(4);
+            if (!isHC) {
+              c.strokeStyle = gcHexToRgba(pwStyle.color, isDarkTheme ? 0.24 : 0.14); c.lineWidth = 7; c.setLineDash([]);
+              gcPwPlan.pieces.forEach(function(pc) { strokeRun(pc.points, function(p) { return toPixelX(p.x); }, function(p) { return toPixelY(p.y); }); });
+            }
             c.strokeStyle = pwStyle.color; c.lineWidth = 3; c.setLineDash([]);
             gcPwPlan.pieces.forEach(function(pc) { strokeRun(pc.points, function(p) { return toPixelX(p.x); }, function(p) { return toPixelY(p.y); }); });
             gcPwPlan.dots.forEach(function(dot) {
               if (dot.y < win.ymin || dot.y > win.ymax) return;
+              c.save(); c.shadowColor = pwStyle.color; c.shadowBlur = isDarkTheme ? 7 : 0;
               c.beginPath(); c.arc(toPixelX(dot.x), toPixelY(dot.y), 6, 0, Math.PI * 2);
               c.fillStyle = dot.closed ? pwStyle.color : P.bg; c.fill();
               c.strokeStyle = pwStyle.color; c.lineWidth = 2.5; c.stroke();
+              c.restore();
             });
           }
           // Data: square markers, the fitted curve (dashed) and, on request, residual segments.
@@ -2373,6 +2528,10 @@
             if (gcFitResult && gcFitResult.predict) {
               var fitPts = [];
               for (var fx = 0; fx <= 300; fx++) { var fxv = win.xmin + (win.xmax - win.xmin) * fx / 300; fitPts.push({ x: fxv, y: gcFitResult.predict(fxv) }); }
+              if (!isHC) {
+                c.strokeStyle = gcHexToRgba(dataInk, isDarkTheme ? 0.24 : 0.14); c.lineWidth = 6.5; c.setLineDash([8, 5]);
+                strokeRun(fitPts, function(p) { return toPixelX(p.x); }, function(p) { return toPixelY(p.y); });
+              }
               c.strokeStyle = dataInk; c.lineWidth = 2.5; c.setLineDash([8, 5]);
               strokeRun(fitPts, function(p) { return toPixelX(p.x); }, function(p) { return toPixelY(p.y); });
               c.setLineDash([]);
@@ -2400,38 +2559,60 @@
             (gcHlXs || []).forEach(function(hx) { c.beginPath(); c.arc(toPixelX(hx), toPixelY(gcHlY), 6, 0, Math.PI * 2); c.fillStyle = P.label; c.fill(); });
           }
 
-          // Zeros & intersections markers
+          // Zeros & intersections — glowing crosshair target beacons
           if (analysisCurrent && d._zeros) d._zeros.forEach(function(z) {
             var zx = toPixelX(z.x); var zy = toPixelY(0);
-            c.save(); c.shadowColor = '#34d399'; c.shadowBlur = P.theme === 'dark' ? 8 : 0; c.beginPath(); c.arc(zx, zy, 6, 0, Math.PI * 2); c.fillStyle = '#34d399'; c.fill(); c.restore(); c.strokeStyle = P.label; c.lineWidth = 2; c.stroke();
-            c.fillStyle = P.label; c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillText('x=' + Number(z.x.toPrecision(4)), zx, zy - 12);
+            if (!isHC) {
+              c.strokeStyle = 'rgba(52,211,153,0.45)'; c.lineWidth = 1;
+              c.beginPath(); c.moveTo(zx - 11, zy); c.lineTo(zx + 11, zy); c.moveTo(zx, zy - 11); c.lineTo(zx, zy + 11); c.stroke();
+              c.beginPath(); c.arc(zx, zy, 10, 0, Math.PI * 2); c.fillStyle = 'rgba(52,211,153,0.2)'; c.fill();
+            }
+            c.save(); c.shadowColor = '#34d399'; c.shadowBlur = isDarkTheme ? 9 : 0; c.beginPath(); c.arc(zx, zy, 5.5, 0, Math.PI * 2); c.fillStyle = '#34d399'; c.fill(); c.restore(); c.strokeStyle = P.label; c.lineWidth = 1.8; c.stroke();
+            c.fillStyle = P.label; c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillText('x=' + Number(z.x.toPrecision(4)), zx, zy - 13);
           });
           if (analysisCurrent && d._intersections) d._intersections.forEach(function(pt) {
             var ipx = toPixelX(pt.x); var ipy = toPixelY(pt.y);
-            c.beginPath(); c.arc(ipx, ipy, 6, 0, Math.PI * 2); c.fillStyle = '#f472b6'; c.fill(); c.strokeStyle = P.label; c.lineWidth = 2; c.stroke();
-            c.fillStyle = P.label; c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillText('(' + Number(pt.x.toPrecision(3)) + ',' + Number(pt.y.toPrecision(3)) + ')', ipx, ipy - 12);
+            if (!isHC) {
+              c.strokeStyle = 'rgba(244,114,182,0.5)'; c.lineWidth = 1;
+              c.beginPath(); c.moveTo(ipx - 11, ipy); c.lineTo(ipx + 11, ipy); c.moveTo(ipx, ipy - 11); c.lineTo(ipx, ipy + 11); c.stroke();
+              c.beginPath(); c.arc(ipx, ipy, 10, 0, Math.PI * 2); c.fillStyle = 'rgba(244,114,182,0.22)'; c.fill();
+            }
+            c.save(); c.shadowColor = '#f472b6'; c.shadowBlur = isDarkTheme ? 9 : 0; c.beginPath(); c.arc(ipx, ipy, 5.5, 0, Math.PI * 2); c.fillStyle = '#f472b6'; c.fill(); c.restore(); c.strokeStyle = P.label; c.lineWidth = 1.8; c.stroke();
+            c.fillStyle = P.label; c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillText('(' + Number(pt.x.toPrecision(3)) + ',' + Number(pt.y.toPrecision(3)) + ')', ipx, ipy - 13);
           });
 
-          // Derivative tangent
+          // Derivative tangent — luminous dual-pass tangent ray
           if (d.showDeriv && funcs[0] && funcs[0].expr) {
             try {
               var dx = derivX, yAtX = tangentEstimate.y, slope = tangentEstimate.slope;
               if (typeof slope === 'number' && isFinite(slope)) {
                 var tanInk = P.theme === 'light' ? '#c2410c' : '#fb923c';
+                if (!isHC) {
+                  c.strokeStyle = gcHexToRgba(tanInk, isDarkTheme ? 0.25 : 0.16); c.lineWidth = 6; c.beginPath();
+                  c.moveTo(toPixelX(win.xmin), toPixelY(yAtX + slope * (win.xmin - dx)));
+                  c.lineTo(toPixelX(win.xmax), toPixelY(yAtX + slope * (win.xmax - dx)));
+                  c.stroke();
+                }
                 c.strokeStyle = tanInk; c.lineWidth = 2.5; c.setLineDash([6, 3]); c.beginPath();
                 c.moveTo(toPixelX(win.xmin), toPixelY(yAtX + slope * (win.xmin - dx)));
                 c.lineTo(toPixelX(win.xmax), toPixelY(yAtX + slope * (win.xmax - dx)));
                 c.stroke(); c.setLineDash([]);
-                c.beginPath(); c.arc(toPixelX(dx), toPixelY(yAtX), 6, 0, Math.PI * 2);
+                var tpx = toPixelX(dx), tpy = toPixelY(yAtX);
+                if (!isHC) { c.beginPath(); c.arc(tpx, tpy, 10, 0, Math.PI * 2); c.fillStyle = gcHexToRgba(tanInk, 0.22); c.fill(); }
+                c.beginPath(); c.arc(tpx, tpy, 6, 0, Math.PI * 2);
                 c.fillStyle = tanInk; c.fill(); c.strokeStyle = P.label; c.lineWidth = 2; c.stroke();
               }
             } catch (e) { /* skip */ }
           }
 
-          // Trace crosshair
+          // Interactive trace-cursor crosshair & coordinate reticle beacon
           if (d.traceMode) {
             var trX = toPixelX(traceX);
-            c.strokeStyle = P.muted; c.lineWidth = 1.5; c.setLineDash([3, 3]);
+            if (!isHC) {
+              c.strokeStyle = isDarkTheme ? 'rgba(56,189,248,0.22)' : 'rgba(79,70,229,0.14)'; c.lineWidth = 4.5;
+              c.beginPath(); c.moveTo(trX, 0); c.lineTo(trX, H); c.stroke();
+            }
+            c.strokeStyle = isHC ? P.label : (isDarkTheme ? '#7dd3fc' : '#4338ca'); c.lineWidth = 1.5; c.setLineDash([4, 3]);
             c.beginPath(); c.moveTo(trX, 0); c.lineTo(trX, H); c.stroke(); c.setLineDash([]);
             c.font = 'bold 12px monospace';
             funcs.forEach(function(fn, fi) {
@@ -2439,9 +2620,22 @@
               try {
                 var trY = math.compile(gcCleanExpr(fn.expr)).evaluate(Object.assign({ x: traceX }, sA));
                 if (typeof trY === 'number' && isFinite(trY)) {
-                  c.beginPath(); c.arc(trX, toPixelY(trY), 5, 0, Math.PI * 2); c.fillStyle = gcCurveStyle(fi).color; c.fill();
-                  c.fillStyle = P.label; c.textAlign = 'left';
-                  c.fillText('(' + Number(traceX.toPrecision(4)) + ', ' + Number(trY.toPrecision(4)) + ')', trX + 8, toPixelY(trY) - 6);
+                  var trPy = toPixelY(trY), trCol = gcCurveStyle(fi).color;
+                  if (!isHC && trPy >= 0 && trPy <= H) {
+                    c.strokeStyle = gcHexToRgba(trCol, isDarkTheme ? 0.35 : 0.25); c.lineWidth = 1; c.setLineDash([3, 3]);
+                    c.beginPath(); c.moveTo(0, trPy); c.lineTo(W, trPy); c.stroke(); c.setLineDash([]);
+                    c.beginPath(); c.arc(trX, trPy, 10, 0, Math.PI * 2); c.fillStyle = gcHexToRgba(trCol, 0.22); c.fill();
+                    c.beginPath(); c.arc(trX, trPy, 8, 0, Math.PI * 2); c.strokeStyle = gcHexToRgba(trCol, 0.65); c.lineWidth = 1.2; c.stroke();
+                  }
+                  c.save(); c.shadowColor = trCol; c.shadowBlur = isDarkTheme ? 8 : 0;
+                  c.beginPath(); c.arc(trX, trPy, 5, 0, Math.PI * 2); c.fillStyle = trCol; c.fill();
+                  c.restore();
+                  if (!isHC) { c.beginPath(); c.arc(trX, trPy, 2, 0, Math.PI * 2); c.fillStyle = '#ffffff'; c.fill(); }
+                  var coordTxt = '(' + Number(traceX.toPrecision(4)) + ', ' + Number(trY.toPrecision(4)) + ')';
+                  var lx = trX > W - 150 ? trX - 10 : trX + 10;
+                  c.textAlign = trX > W - 150 ? 'right' : 'left';
+                  c.fillStyle = P.label;
+                  c.fillText(coordTxt, lx, Math.max(16, Math.min(H - 8, trPy - 8)));
                 }
               } catch (e) { /* skip */ }
             });
@@ -2452,6 +2646,7 @@
             var exX = toPixelX(gaPoint.x), exY = toPixelY(gaPoint.y);
             c.strokeStyle = P.muted; c.lineWidth = 1.5; c.setLineDash([4, 4]);
             c.beginPath(); c.moveTo(exX, 0); c.lineTo(exX, H); c.stroke(); c.setLineDash([]);
+            if (!isHC) { c.beginPath(); c.arc(exX, exY, 12, 0, Math.PI * 2); c.fillStyle = isDarkTheme ? 'rgba(226,232,240,0.14)' : 'rgba(15,23,42,0.08)'; c.fill(); }
             c.beginPath(); c.arc(exX, exY, 8, 0, Math.PI * 2); c.strokeStyle = P.label; c.lineWidth = 3; c.stroke();
           }
 
@@ -2459,6 +2654,10 @@
           if (gcRocPts && gcRocPts.dy !== null) {
             var rInk = gcCurveStyle(gaInfo.index === 4 ? 1 : 4).color;
             var rax = toPixelX(gcRocPts.x1), ray = toPixelY(gcRocPts.y1), rbx = toPixelX(gcRocPts.x2), rby = toPixelY(gcRocPts.y2);
+            if (!isHC) {
+              c.fillStyle = gcHexToRgba(rInk, isDarkTheme ? 0.1 : 0.07);
+              c.beginPath(); c.moveTo(rax, ray); c.lineTo(rbx, ray); c.lineTo(rbx, rby); c.closePath(); c.fill();
+            }
             c.strokeStyle = rInk; c.lineWidth = 2.5; c.setLineDash([6, 4]); c.beginPath(); c.moveTo(rax, ray); c.lineTo(rbx, rby); c.stroke(); c.setLineDash([]);
             c.lineWidth = 2; c.beginPath(); c.moveTo(rax, ray); c.lineTo(rbx, ray); c.lineTo(rbx, rby); c.stroke();
             c.fillStyle = P.label; c.font = 'bold 12px system-ui'; c.textAlign = 'center';
@@ -2471,9 +2670,44 @@
             });
           }
 
+          // Top-left luminous equation badges (uses rounded path+fill, never extra fillRect)
+          legendEntries.forEach(function(item, li) {
+            var ly = 18 + li * 20;
+            c.font = 'bold 12px system-ui'; c.textAlign = 'left';
+            if (!isHC) {
+              var tw = (typeof c.measureText === 'function' && c.measureText(item.text)) ? (c.measureText(item.text).width || 96) : 96;
+              gcPillPath(6, ly - 13, Math.min(W - 16, tw + 22), 18, 5);
+              c.fillStyle = isDarkTheme ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.88)';
+              c.fill();
+              c.strokeStyle = gcHexToRgba(item.color, 0.45); c.lineWidth = 1; c.stroke();
+              c.beginPath(); c.arc(14, ly - 4, 3.2, 0, Math.PI * 2); c.fillStyle = item.color; c.fill();
+              c.fillStyle = item.color;
+              c.fillText(item.text, 22, ly);
+            } else {
+              c.fillStyle = item.color;
+              c.fillText(item.text, 8, ly);
+            }
+          });
+
+          // Subtle oscilloscope bezel inner frame & corner reticles
+          if (!isHC) {
+            c.strokeStyle = isDarkTheme ? 'rgba(129,140,248,0.22)' : 'rgba(148,163,184,0.34)';
+            c.lineWidth = 1;
+            c.beginPath(); c.rect(0.5, 0.5, W - 1, H - 1); c.stroke();
+            var cr = 9;
+            c.strokeStyle = isDarkTheme ? 'rgba(56,189,248,0.45)' : 'rgba(79,70,229,0.28)';
+            c.lineWidth = 1.5;
+            c.beginPath();
+            c.moveTo(2, 2 + cr); c.lineTo(2, 2); c.lineTo(2 + cr, 2);
+            c.moveTo(W - 2 - cr, 2); c.lineTo(W - 2, 2); c.lineTo(W - 2, 2 + cr);
+            c.moveTo(2, H - 2 - cr); c.lineTo(2, H - 2); c.lineTo(2 + cr, H - 2);
+            c.moveTo(W - 2 - cr, H - 2); c.lineTo(W - 2, H - 2); c.lineTo(W - 2, H - 2 - cr);
+            c.stroke();
+          }
+
           // Window info
           c.fillStyle = P.muted; c.font = '12px system-ui'; c.textAlign = 'right';
-          c.fillText('[' + win.xmin + ', ' + win.xmax + '] x [' + win.ymin + ', ' + win.ymax + ']', W - 4, H - 4);
+          c.fillText('[' + win.xmin + ', ' + win.xmax + '] x [' + win.ymin + ', ' + win.ymax + ']', W - 6, H - 6);
 
           // Track state. This ref is new each render, so React calls it on every
           // commit: write only a changed value, or each write re-renders and loops.
@@ -2644,9 +2878,10 @@
                 h('button', { type: 'button', 'data-graphcalc-fit-graph': true, onClick: graphFit, style: gaButton }, __alloT('stem.graphcalc.fit_graph', 'Graph this fit in a free row')),
                 h('button', { type: 'button', 'data-graphcalc-resid': true, 'aria-pressed': !!gcData.resid, onClick: function() { gcSet('data', { resid: !gcData.resid }); }, style: gaButton }, __alloT('stem.graphcalc.fit_residuals', 'Residuals'))),
               resid ? h('div', { 'data-graphcalc-residuals': true },
-                h('svg', { viewBox: '0 0 300 120', role: 'img', 'aria-label': gcFill(__alloT('stem.graphcalc.resid_plot', 'Residual plot: {n} residuals, the largest {max} away from zero. Points above the line were under-predicted, points below were over-predicted.'), { n: resid.length, max: gcSig(rMax) }), style: { display: 'block', width: '100%', maxWidth: 360, marginTop: 6, background: gcPal ? gcPal.bg : '#ffffff', borderRadius: 6 } },
-                  h('line', { x1: 8, x2: 292, y1: 60, y2: 60, stroke: gcPal ? gcPal.axis : '#334155', strokeWidth: 1.5 }),
-                  resid.map(function(r, i) { return isFinite(r.res) ? h('rect', { key: i, x: rx(r.x) - 4, y: ry(r.res) - 4, width: 8, height: 8, fill: gcPal ? gcPal.curve(2).color : '#047857' }) : null; })),
+                h('svg', { viewBox: '0 0 300 120', role: 'img', 'aria-label': gcFill(__alloT('stem.graphcalc.resid_plot', 'Residual plot: {n} residuals, the largest {max} away from zero. Points above the line were under-predicted, points below were over-predicted.'), { n: resid.length, max: gcSig(rMax) }), style: { display: 'block', width: '100%', maxWidth: 360, marginTop: 6, background: gcPal ? gcPal.bg : '#ffffff', borderRadius: 6, border: '1px solid ' + (gcPal ? gcPal.grid : '#cbd5e1') } },
+                  [20, 40, 80, 100].map(function(gy) { return h('line', { key: 'rg' + gy, x1: 8, x2: 292, y1: gy, y2: gy, stroke: gcPal ? gcPal.grid : '#cbd5e1', strokeWidth: 0.8, strokeDasharray: '3 3', opacity: 0.7 }); }),
+                  h('line', { x1: 8, x2: 292, y1: 60, y2: 60, stroke: gcPal ? gcPal.axis : '#334155', strokeWidth: 1.6 }),
+                  resid.map(function(r, i) { return isFinite(r.res) ? h('g', { key: i }, h('line', { x1: rx(r.x), x2: rx(r.x), y1: 60, y2: ry(r.res), stroke: gcPal ? gcPal.curve(2).color : '#047857', strokeWidth: 1.4, opacity: 0.5 }), h('rect', { x: rx(r.x) - 4, y: ry(r.res) - 4, width: 8, height: 8, rx: 1.5, fill: gcPal ? gcPal.curve(2).color : '#047857' })) : null; })),
                 h('div', { tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.graphcalc.resid_table', 'Residuals table'), style: { overflowX: 'auto', marginTop: 6 } },
                   h('table', { style: { borderCollapse: 'collapse', fontFamily: 'monospace', fontSize: 12, color: gcText } },
                     h('caption', { style: { textAlign: 'left', fontWeight: 700 } }, __alloT('stem.graphcalc.resid_table', 'Residuals table')),

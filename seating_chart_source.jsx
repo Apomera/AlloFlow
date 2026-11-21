@@ -246,20 +246,23 @@ function normalizeLayout(raw, taken, studentSet) {
 // layouts) because they describe STUDENTS, not rooms.
 function normalizeSeating(raw, studentNames) {
   var src = raw && typeof raw === 'object' ? raw : {};
-  var studentSet = {};
+  var studentSet = Object.create(null);
   (studentNames || []).forEach(function (n) { studentSet[n] = 1; });
-  var layoutsTaken = {};
+  var layoutsTaken = Object.create(null);
   var layoutsRaw = src.layouts && typeof src.layouts === 'object' ? src.layouts : {};
   var layouts = {};
   Object.keys(layoutsRaw).forEach(function (k) {
+    if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
     var l = normalizeLayout(layoutsRaw[k], layoutsTaken, studentSet);
     if (l && l.id === k) layouts[k] = l;
   });
   var layoutIds = Object.keys(layouts);
-  var activeLayoutId = typeof src.activeLayoutId === 'string' && layouts[src.activeLayoutId] ? src.activeLayoutId : (layoutIds[0] || null);
-  var seatSet = {};
-  if (activeLayoutId) layouts[activeLayoutId].seats.forEach(function (s) { seatSet[s.id] = 1; });
-  var cTaken = {};
+  var activeLayoutId = typeof src.activeLayoutId === 'string' && Object.prototype.hasOwnProperty.call(layouts, src.activeLayoutId) ? src.activeLayoutId : (layoutIds[0] || null);
+  var seatSet = Object.create(null);
+  layoutIds.forEach(function (lid) {
+    (layouts[lid].seats || []).forEach(function (s) { seatSet[s.id] = 1; });
+  });
+  var cTaken = Object.create(null);
   var constraints = (Array.isArray(src.constraints) ? src.constraints : [])
     .map(function (c) { return normalizeConstraint(c, studentSet, seatSet, cTaken); })
     .filter(Boolean)
@@ -365,13 +368,13 @@ function buildTemplate(kind, count) {
 // SKIPPED here (surfaced separately by anchorGaps) so the solver never chases
 // unfixable cost.
 function scoreAssignment(layout, assignments, constraints) {
-  var seatById = {};
+  var seatById = Object.create(null);
   layout.seats.forEach(function (s) { seatById[s.id] = s; });
-  var seatOf = {};
+  var seatOf = Object.create(null);
   Object.keys(assignments).forEach(function (seatId) {
     if (seatById[seatId] && assignments[seatId]) seatOf[assignments[seatId]] = seatById[seatId];
   });
-  var anchors = {};
+  var anchors = Object.create(null);
   layout.furniture.forEach(function (f) { (anchors[f.kind] = anchors[f.kind] || []).push(f); });
   var frontCutoff = null;
   if (layout.seats.length > 1) {
@@ -399,10 +402,12 @@ function scoreAssignment(layout, assignments, constraints) {
       var d = centerDist(a, b);
       if (c.type === 'keep_apart' && d < ADJ_DIST) { bad = true; msg = 'seated next to each other'; }
       if (c.type === 'keep_together' && d > ADJ_DIST) { bad = true; msg = 'not seated together'; }
+    } else if (c.type === 'fixed_seat') {
+      var hasSeatInLayout = !!(layout && Array.isArray(layout.seats) && layout.seats.some(function (s) { return s.id === c.seatId; }));
+      if (!hasSeatInLayout) return; // fixed_seat belongs to another layout
+      if (!(assignments[c.seatId] === c.students[0])) { bad = true; msg = 'not in their assigned seat'; }
     } else if (!a) {
       return; // unseated
-    } else if (c.type === 'fixed_seat') {
-      if (!(assignments[c.seatId] === c.students[0])) { bad = true; msg = 'not in their assigned seat'; }
     } else if (c.type === 'front_row') {
       if (frontCutoff != null && seatCenter(a).y > frontCutoff) { bad = true; msg = 'not near the front'; }
     } else if (c.type === 'near_teacher' || c.type === 'near_door') {
@@ -441,25 +446,28 @@ function solveSeating(layout, studentNames, constraints, opts) {
   var rng = makeRng(clampNum(opts.seed, 1, 1e9, 1));
   var seats = layout.seats;
   if (!seats.length) return { assignments: {}, score: 0, violations: [] };
-  var students = (studentNames || []).slice(0, seats.length);
+  var allStudents = (studentNames || []).slice();
+  var seatIdSet = Object.create(null);
+  seats.forEach(function (s) { seatIdSet[s.id] = 1; });
   var cons = constraints || [];
 
   var assignments = {};
-  var placed = {};
-  // 1. Fixed seats first (last write wins per student; first wins per seat).
+  var placed = Object.create(null);
+  // 1. Fixed seats first (against the full roster so pinned students past seats.length aren't truncated).
   cons.forEach(function (c) {
-    if (c.type !== 'fixed_seat' || placed[c.students[0]] || assignments[c.seatId]) return;
-    if (students.indexOf(c.students[0]) === -1) return;
+    if (c.type !== 'fixed_seat' || placed[c.students[0]] || assignments[c.seatId] || !seatIdSet[c.seatId]) return;
+    if (allStudents.indexOf(c.students[0]) === -1) return;
     assignments[c.seatId] = c.students[0];
     placed[c.students[0]] = 1;
   });
-  // 2. Greedy: most-constrained student first, best marginal seat.
-  var degree = {};
+  // 2. Greedy: most-constrained student first, capped to remaining available seats.
+  var remainingSeats = Math.max(0, seats.length - Object.keys(placed).length);
+  var degree = Object.create(null);
   cons.forEach(function (c) { c.students.forEach(function (s) { degree[s] = (degree[s] || 0) + 1; }); });
-  var queue = students.filter(function (s) { return !placed[s]; }).sort(function (a, b) {
+  var queue = allStudents.filter(function (s) { return !placed[s]; }).sort(function (a, b) {
     var d = (degree[b] || 0) - (degree[a] || 0);
     return d !== 0 ? d : (a < b ? -1 : a > b ? 1 : 0);
-  });
+  }).slice(0, remainingSeats);
   var seatOrder = shuffled(seats, rng);
   queue.forEach(function (student) {
     var bestSeat = null, bestScore = Infinity;
@@ -473,7 +481,7 @@ function solveSeating(layout, studentNames, constraints, opts) {
     if (bestSeat) assignments[bestSeat.id] = student;
   });
   // 3. Swap repair until stable (bounded passes). Fixed-seat students stay put.
-  var fixedSeats = {};
+  var fixedSeats = Object.create(null);
   cons.forEach(function (c) { if (c.type === 'fixed_seat' && assignments[c.seatId] === c.students[0]) fixedSeats[c.seatId] = 1; });
   var seatIds = seats.map(function (s) { return s.id; });
   var current = scoreAssignment(layout, assignments, cons).score;
@@ -519,13 +527,13 @@ function buildPrintableSvg(layout, displayNameOf, title, opts) {
   parts.push('<g transform="translate(0,40)">');
   parts.push('<rect x="0" y="0" width="' + W + '" height="' + (ROOM_H * SCALE) + '" fill="none" stroke="#334155" stroke-width="2"/>');
   parts.push('<rect x="' + (W * 0.2) + '" y="0" width="' + (W * 0.6) + '" height="6" fill="#334155"/>');
-  parts.push('<text x="' + (W / 2) + '" y="22" text-anchor="middle" font-size="12" fill="#64748b">' + escapeXml(tr('Front of room')) + '</text>');
+  parts.push('<text x="' + (W / 2) + '" y="22" text-anchor="middle" font-size="12" fill="#475569">' + escapeXml(tr('Front of room')) + '</text>');
   layout.furniture.forEach(function (f) {
-    parts.push('<rect x="' + (f.x * SCALE) + '" y="' + (f.y * SCALE) + '" width="' + (f.w * SCALE) + '" height="' + (f.h * SCALE) + '" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="4 3"/>');
-    parts.push('<text x="' + ((f.x + f.w / 2) * SCALE) + '" y="' + ((f.y + f.h / 2) * SCALE + 4) + '" text-anchor="middle" font-size="11" fill="#64748b">' + escapeXml(f.label || furnitureLabel(f.kind)) + '</text>');
+    parts.push('<rect x="' + (f.x * SCALE) + '" y="' + (f.y * SCALE) + '" width="' + (f.w * SCALE) + '" height="' + (f.h * SCALE) + '" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-dasharray="4 3"/>');
+    parts.push('<text x="' + ((f.x + f.w / 2) * SCALE) + '" y="' + ((f.y + f.h / 2) * SCALE + 4) + '" text-anchor="middle" font-size="11" fill="#334155">' + escapeXml(f.label || furnitureLabel(f.kind)) + '</text>');
   });
   var sortedForNumbers = layout.seats.slice().sort(function (a, b) { return (a.y - b.y) || (a.x - b.x); });
-  var numberOf = {};
+  var numberOf = Object.create(null);
   sortedForNumbers.forEach(function (s, i) { numberOf[s.id] = i + 1; });
   layout.seats.forEach(function (s) {
     var name = blank ? '' : (layout.assignments[s.id] || '');
@@ -533,7 +541,7 @@ function buildPrintableSvg(layout, displayNameOf, title, opts) {
     if (name) {
       parts.push('<text x="' + ((s.x + s.w / 2) * SCALE) + '" y="' + ((s.y + s.h / 2) * SCALE + 4) + '" text-anchor="middle" font-size="13" font-weight="600" fill="#1e293b">' + escapeXml(displayNameOf ? displayNameOf(name) : name) + '</text>');
     } else if (blank) {
-      parts.push('<text x="' + ((s.x + s.w / 2) * SCALE) + '" y="' + ((s.y + s.h / 2) * SCALE + 5) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#94a3b8">' + numberOf[s.id] + '</text>');
+      parts.push('<text x="' + ((s.x + s.w / 2) * SCALE) + '" y="' + ((s.y + s.h / 2) * SCALE + 5) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#475569">' + numberOf[s.id] + '</text>');
     }
   });
   parts.push('</g></svg>');
@@ -610,7 +618,7 @@ function listPods(rosterKey) {
   if (!layout || layout.seats.length < 2) return [];
   var seats = layout.seats;
   // Union seats into adjacency clusters (BFS).
-  var clusterOf = {};
+  var clusterOf = Object.create(null);
   var clusters = [];
   seats.forEach(function (seed) {
     if (clusterOf[seed.id] != null) return;
@@ -655,7 +663,7 @@ function listPods(rosterKey) {
 // Seats sitting on top of PHYSICAL furniture (rug excluded — seats on a rug
 // are a real arrangement). Soft warning only; teachers can keep the overlap.
 function overlappingSeatIds(layout) {
-  var out = {};
+  var out = Object.create(null);
   if (!layout) return out;
   var solid = (layout.furniture || []).filter(function (f) { return f.kind !== 'rug'; });
   (layout.seats || []).forEach(function (s) {
@@ -696,19 +704,46 @@ var FURN_EMOJI = { teacher_desk: '🧑‍🏫', table: '🟫', rug: '🟪', shel
 // Resolved once at module scope (like teacher_module) so the hook identity is
 // stable across renders — the host app registers __alloHooks before any CDN
 // module loads.
+var _SEATING_EXT_TRAP = (typeof window !== 'undefined' && window.__alloHooks && typeof window.__alloHooks.useFocusTrap === 'function')
+  ? window.__alloHooks.useFocusTrap
+  : null;
 function _useSeatingFocusTrap(rootRef, active, onEscape) {
-  var extHooks = (typeof window !== 'undefined' && window.__alloHooks) || null;
-  var extTrap = extHooks && typeof extHooks.useFocusTrap === 'function' ? extHooks.useFocusTrap : null;
   var onEscapeRef = React.useRef(onEscape);
   onEscapeRef.current = onEscape;
-  if (extTrap) extTrap(rootRef, active, onEscape);
+  if (_SEATING_EXT_TRAP) {
+    _SEATING_EXT_TRAP(rootRef, active, onEscape);
+    return;
+  }
   React.useEffect(function () {
-    if (extTrap || !active || !rootRef || !rootRef.current) return undefined;
+    if (!active || !rootRef || !rootRef.current) return undefined;
     var root = rootRef.current;
     var previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
     var trap = { root: root };
     var trapStack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : null;
     if (trapStack) trapStack.push(trap);
+    var isolated = [];
+    var seenSibs = new Set();
+    var cursor = root;
+    while (cursor && cursor.parentElement && typeof document !== 'undefined') {
+      var parentEl = cursor.parentElement;
+      Array.from(parentEl.children).forEach(function (sibling) {
+        if (!sibling || sibling === cursor || seenSibs.has(sibling) || !sibling.tagName || /^(SCRIPT|STYLE|LINK|TEMPLATE)$/i.test(sibling.tagName) || (typeof sibling.matches === 'function' && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]'))) return;
+        seenSibs.add(sibling);
+        isolated.push({ sibling: sibling, hadInert: sibling.hasAttribute('inert'), ariaHidden: sibling.getAttribute('aria-hidden') });
+        try { sibling.inert = true; } catch (_) {}
+        try { sibling.setAttribute('inert', ''); } catch (_) {}
+        try { sibling.setAttribute('aria-hidden', 'true'); } catch (_) {}
+      });
+      if (parentEl === document.body) break;
+      cursor = parentEl;
+    }
+    var scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' })) : null;
+    var bodyEl = typeof document !== 'undefined' ? document.body : null;
+    var scrollLocked = false;
+    if (bodyEl && scrollLock) {
+      scrollLocked = true;
+      if (++scrollLock.count === 1) { scrollLock.prev = bodyEl.style.overflow; bodyEl.style.overflow = 'hidden'; }
+    }
     var getFocusable = function () {
       return Array.from(root.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
         .filter(function (el) {
@@ -753,11 +788,25 @@ function _useSeatingFocusTrap(rootRef, active, onEscape) {
     document.addEventListener('keydown', onKeyDown);
     return function () {
       document.removeEventListener('keydown', onKeyDown);
+      if (scrollLocked && bodyEl && scrollLock) {
+        scrollLock.count = Math.max(0, scrollLock.count - 1);
+        if (scrollLock.count === 0) bodyEl.style.overflow = scrollLock.prev;
+      }
+      isolated.forEach(function (entry) {
+        if (!entry.sibling || !entry.sibling.isConnected) return;
+        if (!entry.hadInert) {
+          try { entry.sibling.inert = false; } catch (_) {}
+          try { entry.sibling.removeAttribute('inert'); } catch (_) {}
+        }
+        if (entry.ariaHidden == null) { try { entry.sibling.removeAttribute('aria-hidden'); } catch (_) {} }
+        else if (entry.ariaHidden !== 'true') { try { entry.sibling.setAttribute('aria-hidden', entry.ariaHidden); } catch (_) {} }
+      });
+      var wasTopTrap = !trapStack || trapStack[trapStack.length - 1] === trap;
       if (trapStack) {
         var idx = trapStack.lastIndexOf(trap);
         if (idx >= 0) trapStack.splice(idx, 1);
       }
-      if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+      if (wasTopTrap && previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
         try { previousFocus.focus(); } catch (_) {}
       }
     };
@@ -783,35 +832,48 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   var _setLlTick = React.useState(0)[1];
   LL_CUR.lang = uiLang; LL_CUR.cache = _llCacheRef.current;
   React.useEffect(function () {
-    if (uiLang === 'English' || typeof window === 'undefined' || typeof window.callGemini !== 'function' || window.callGemini._alloQrBlocked || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', window.callGemini))) return undefined;
+    if (!isOpen || uiLang === 'English' || typeof window === 'undefined' || typeof window.callGemini !== 'function' || window.callGemini._alloQrBlocked || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', window.callGemini))) return undefined;
     var cache = _llCacheRef.current[uiLang] || {}, attempted = _llAttemptedRef.current[uiLang] || {};
     var missing = Object.keys(STR_REG).filter(function (k) { return !cache[k] && !attempted[k]; });
     if (!missing.length) return undefined;
     var att = _llAttemptedRef.current[uiLang] || (_llAttemptedRef.current[uiLang] = {});
+    var cancelled = false;
     var to = setTimeout(function () {
+      if (cancelled) return;
       var list = missing.slice(0, 200); list.forEach(function (k) { att[k] = true; });
       Promise.resolve().then(function () { return window.callGemini(llPrompt(uiLang, list)); }).then(function (raw) {
+        if (cancelled) return;
         var pack = null; try { pack = llSanitize(JSON.parse(llCleanJson(raw)), list); } catch (_) {}
-        if (pack) { var next = Object.assign({}, _llCacheRef.current); next[uiLang] = Object.assign({}, next[uiLang] || {}, pack); _llCacheRef.current = next; llStore(next); _setLlTick(function (n) { return n + 1; }); }
+        if (pack && !cancelled) { var next = Object.assign({}, _llCacheRef.current); next[uiLang] = Object.assign({}, next[uiLang] || {}, pack); _llCacheRef.current = next; llStore(next); _setLlTick(function (n) { return n + 1; }); }
       }).catch(function () {});
     }, 500);
-    return function () { clearTimeout(to); };
-  });
+    return function () { cancelled = true; clearTimeout(to); };
+  }, [uiLang, isOpen, Object.keys(STR_REG).length]);
 
   const students = (rosterKey && rosterKey.students && typeof rosterKey.students === 'object') ? rosterKey.students : {};
   const groups = (rosterKey && rosterKey.groups) || {};
   const studentNames = React.useMemo(() => Object.keys(students).sort(), [students]);
   const displayNameOf = (name) => name;
   const groupColorOf = (name) => {
-    const g = groups[students[name]];
-    return (g && g.color) || '#94a3b8';
+    const gid = Object.prototype.hasOwnProperty.call(students, name) ? students[name] : null;
+    const g = (typeof gid === 'string' && Object.prototype.hasOwnProperty.call(groups, gid)) ? groups[gid] : null;
+    return (g && g.color) || '#64748b';
   };
 
   const seating = React.useMemo(() => normalizeSeating(rosterKey && rosterKey.seating, studentNames), [rosterKey, studentNames]);
   const layout = seating.activeLayoutId ? seating.layouts[seating.activeLayoutId] : null;
 
-  const [mode, setMode] = useState(live ? 'live' : 'assign');   // 'assign' | 'edit' | 'live'
+  const [rawMode, setMode] = useState(live ? 'live' : 'assign');   // 'assign' | 'edit' | 'live'
+  const mode = (rawMode === 'live' && !live) ? 'assign' : rawMode;
+  React.useEffect(() => {
+    if (!live && rawMode === 'live') setMode('assign');
+  }, [live, rawMode]);
   const [view, setView] = useState('map');               // 'map' | 'list'
+  const [nameDraft, setNameDraft] = useState(layout ? layout.name : '');
+  React.useEffect(() => {
+    setNameDraft(layout ? layout.name : '');
+  }, [layout && layout.id, layout && layout.name]);
+  const [armRemoveConstraintId, setArmRemoveConstraintId] = useState(null);
   // Staleness ticks so "quiet" badges update even between session snapshots.
   const [, setLiveTick] = useState(0);
   React.useEffect(() => {
@@ -842,6 +904,8 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   const [showConstraints, setShowConstraints] = useState(false);
   const [lastSolve, setLastSolve] = useState(null);       // {score, violations}
   const [confirmState, setConfirmState] = useState(null); // {message, onYes}
+  const panelBackdropDownRef = useRef(null);
+  const confirmBackdropDownRef = useRef(null);
   // Constraint form
   const [cType, setCType] = useState('keep_apart');
   const [cA, setCA] = useState('');
@@ -871,15 +935,27 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   };
   const patchLayout = (patch) => {
     if (!layout) return;
-    const nextLayout = { ...layout, ...patch };
-    commitSeating({ ...seating, layouts: { ...seating.layouts, [layout.id]: nextLayout } });
+    const targetId = layout.id;
+    setRosterKey(prev => {
+      const base = prev || { groups: {}, students: {} };
+      const prevSeating = (base.seating && typeof base.seating === 'object') ? base.seating : seating;
+      const prevLayouts = (prevSeating.layouts && typeof prevSeating.layouts === 'object') ? prevSeating.layouts : seating.layouts;
+      const curLayout = Object.prototype.hasOwnProperty.call(prevLayouts, targetId) ? prevLayouts[targetId] : layout;
+      const nextPatch = typeof patch === 'function' ? patch(curLayout) : patch;
+      const nextLayout = { ...curLayout, ...nextPatch };
+      return { ...base, seating: { ...prevSeating, layouts: { ...prevLayouts, [targetId]: nextLayout } } };
+    });
   };
 
   // ── Undo (room edits) ── snapshot BEFORE each edit-mode action; a drag
-  // pushes once at pointer-down (not per move), nudges coalesce per burst.
+  // pushes once at first real move (not on simple click), nudges coalesce per burst.
   const undoRef = useRef([]);
   const lastUndoPushRef = useRef(0);
   const [undoCount, setUndoCount] = useState(0);
+  const clearUndo = () => {
+    undoRef.current = [];
+    setUndoCount(0);
+  };
   const pushUndo = (coalesceMs) => {
     if (!layout) return;
     const nowMs = Date.now();
@@ -890,12 +966,13 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   };
   const undoRoomEdit = () => {
     const stack = undoRef.current;
-    if (!stack.length) return;
+    if (!stack.length || !layout) return;
     const snapshot = stack[stack.length - 1];
     undoRef.current = stack.slice(0, -1);
     setUndoCount(undoRef.current.length);
-    if (!seating.layouts[snapshot.id]) return;   // that layout was deleted since
+    if (snapshot.id !== layout.id || !seating.layouts[snapshot.id]) return;
     commitSeating({ ...seating, layouts: { ...seating.layouts, [snapshot.id]: snapshot } });
+    setLastSolve(null);
     announce(tr('Room edit undone'));
   };
 
@@ -907,6 +984,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
       : buildTemplate(templateKind, Math.max(studentNames.length, 4));
     const nameMap = { rows: tr('Rows'), pairs: tr('Pairs'), pods: tr('Pods'), horseshoe: tr('Horseshoe'), blank: tr('Blank room') };
     const newLayout = { id, name: (nameMap[templateKind] || tr('Layout')) + ' ' + id.replace('layout', ''), seats: base.seats, furniture: base.furniture, assignments: {} };
+    clearUndo();
     commitSeating(pushHistory({ ...seating, activeLayoutId: id, layouts: { ...seating.layouts, [id]: newLayout } }, newLayout, 'created', new Date().toISOString()));
     setLastSolve(null);
   };
@@ -915,6 +993,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     const id = nextId(Object.keys(seating.layouts), 'layout');
     const copy = JSON.parse(JSON.stringify(layout));
     copy.id = id; copy.name = layout.name + ' ' + tr('copy');
+    clearUndo();
     commitSeating({ ...seating, activeLayoutId: id, layouts: { ...seating.layouts, [id]: copy } });
   };
   const deleteLayout = () => {
@@ -925,6 +1004,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
         const layouts = { ...seating.layouts };
         delete layouts[layout.id];
         const remaining = Object.keys(layouts);
+        clearUndo();
         commitSeating({ ...seating, layouts, activeLayoutId: remaining[0] || null });
         setLastSolve(null);
       },
@@ -933,7 +1013,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
 
   // ── Assignment ──
   const seatedNameSet = React.useMemo(() => {
-    const s = {};
+    const s = Object.create(null);
     if (layout) Object.keys(layout.assignments).forEach(id => { s[layout.assignments[id]] = id; });
     return s;
   }, [layout]);
@@ -950,6 +1030,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
       if (occupant && fromSeat) next[fromSeat] = occupant;   // swap
       next[seatId] = selectedStudent;
       patchLayout({ assignments: next });
+      setLastSolve(null);
       announce(tr('{name} seated', { name: displayNameOf(selectedStudent) }));
       setSelectedStudent(null);
     } else if (occupant) {
@@ -962,6 +1043,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     const next = { ...layout.assignments };
     delete next[seatId];
     patchLayout({ assignments: next });
+    setLastSolve(null);
   };
 
   // ── Edit-room actions ──
@@ -970,6 +1052,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     pushUndo();
     const id = nextId(layout.seats.map(s => s.id), 'seat');
     patchLayout({ seats: layout.seats.concat([{ id, x: Math.round((ROOM_W - SEAT_W) / 2), y: Math.round((ROOM_H - SEAT_H) / 2), w: SEAT_W, h: SEAT_H }]) });
+    setLastSolve(null);
     setSelectedItem(id);
   };
   const addFurniture = (kind) => {
@@ -987,10 +1070,20 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
       const next = { ...layout.assignments };
       delete next[selectedItem];
       patchLayout({ seats: layout.seats.filter(s => s.id !== selectedItem), assignments: next });
+      setLastSolve(null);
     } else {
       patchLayout({ furniture: layout.furniture.filter(f => f.id !== selectedItem) });
     }
     setSelectedItem(null);
+    const focusAfterDelete = () => {
+      try {
+        const nextEl = svgRef.current && svgRef.current.querySelector('.seating-map-item');
+        if (nextEl && typeof nextEl.focus === 'function') nextEl.focus();
+        else if (panelRef.current && typeof panelRef.current.focus === 'function') panelRef.current.focus();
+      } catch (_) {}
+    };
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(focusAfterDelete);
+    else setTimeout(focusAfterDelete, 0);
   };
 
   // ── Dragging (edit mode) ── pointer events on the SVG; axis-aligned
@@ -1004,7 +1097,6 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   const startDrag = (evt, item, isSeat) => {
     if (mode !== 'edit') return;
     evt.preventDefault();
-    pushUndo();
     setSelectedItem(item.id);
     const p = roomPoint(evt);
     dragRef.current = { id: item.id, isSeat, dx: p.x - item.x, dy: p.y - item.y, moved: false };
@@ -1020,6 +1112,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     const nx = Math.round(clampNum(p.x - d.dx, 0, ROOM_W - item.w, item.x));
     const ny = Math.round(clampNum(p.y - d.dy, 0, ROOM_H - item.h, item.y));
     if (nx === item.x && ny === item.y) return;
+    if (!d.moved) pushUndo();
     d.moved = true;
     const nextList = list.map(it => it.id === d.id ? { ...it, x: nx, y: ny } : it);
     patchLayout(d.isSeat ? { seats: nextList } : { furniture: nextList });
@@ -1067,7 +1160,8 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   // a keyboard path).
   const nudgeSelected = (evt) => {
     if (evt.isComposing || evt.nativeEvent?.isComposing || evt.keyCode === 229 || evt.nativeEvent?.keyCode === 229) return;
-    if (mode !== 'edit' || !layout) return;
+    if (mode !== 'edit' || view !== 'map' || !layout) return;
+    if (evt.target && typeof evt.target.closest === 'function' && evt.target.closest('input, select, textarea, [contenteditable="true"], [contenteditable=""]')) return;
     if ((evt.ctrlKey || evt.metaKey) && (evt.key === 'z' || evt.key === 'Z')) { evt.preventDefault(); undoRoomEdit(); return; }
     if (!selectedItem) return;
     const step = evt.shiftKey ? 5 : 1;
@@ -1132,8 +1226,15 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
     document.body.appendChild(frame);
     frame.onload = () => {
+      let cleaned = false;
+      const cleanup = () => {
+        if (cleaned) return;
+        cleaned = true;
+        try { if (frame.parentNode) frame.parentNode.removeChild(frame); } catch (e) {}
+      };
+      try { if (frame.contentWindow) frame.contentWindow.onafterprint = cleanup; } catch (e) {}
       try { frame.contentWindow.focus(); frame.contentWindow.print(); } catch (e) {}
-      setTimeout(() => { try { document.body.removeChild(frame); } catch (e) {} }, 2000);
+      setTimeout(cleanup, 60000);
     };
     frame.srcdoc = html;
   };
@@ -1167,10 +1268,12 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
 
   if (!isOpen) return null;
 
-  const btn = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none disabled:opacity-40';
+  const btn = 'min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none disabled:opacity-40';
 
   return (
-    <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center p-2 sm:p-4" role="presentation" onClick={onClose}>
+    <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center p-2 sm:p-4" role="presentation"
+      onMouseDown={e => { panelBackdropDownRef.current = (e.target === e.currentTarget); }}
+      onClick={e => { const allow = panelBackdropDownRef.current !== false; panelBackdropDownRef.current = null; if (e.target === e.currentTarget && allow) onClose(); }}>
       <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={tr('Seating Chart')} onClick={e => e.stopPropagation()}
         className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[94vh] flex flex-col overflow-hidden">
         {/* Header */}
@@ -1178,10 +1281,10 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
           <span className="text-2xl" aria-hidden="true">🪑</span>
           <div className="flex-1 min-w-0">
             <h2 className="text-base font-black text-slate-800 truncate">{tr('Seating Chart')}{rosterKey && rosterKey.className ? ' — ' + rosterKey.className : ''}</h2>
-            <p className="text-[11px] text-slate-600">{tr('Charts and constraints stay on this device inside your roster. Nothing is sent anywhere.')}</p>
+            <p className="text-xs text-slate-600">{tr('Charts and constraints stay on this device inside your roster. Nothing is sent anywhere.')}</p>
           </div>
           {layout && (
-            <select value={seating.activeLayoutId || ''} onChange={e => { commitSeating({ ...seating, activeLayoutId: e.target.value }); setLastSolve(null); setSelectedItem(null); }}
+            <select value={seating.activeLayoutId || ''} onChange={e => { clearUndo(); commitSeating({ ...seating, activeLayoutId: e.target.value }); setLastSolve(null); setSelectedItem(null); }}
               aria-label={tr('Choose layout')} className="px-2 py-1.5 rounded-lg border border-slate-400 text-xs font-bold bg-white max-w-[160px]">
               {Object.keys(seating.layouts).map(id => <option key={id} value={id}>{seating.layouts[id].name}</option>)}
             </select>
@@ -1210,21 +1313,21 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
             <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-slate-100">
               <div role="group" aria-label={tr('Mode')} className="flex rounded-lg overflow-hidden border border-slate-300">
                 {live && (
-                  <button type="button" aria-pressed={mode === 'live'} onClick={() => { setMode('live'); setSelectedItem(null); setSelectedStudent(null); }} className={'px-3 py-1.5 text-xs font-bold ' + (mode === 'live' ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 hover:bg-emerald-50')}>{'🟢 ' + tr('Live')}</button>
+                  <button type="button" aria-pressed={mode === 'live'} onClick={() => { setMode('live'); setSelectedItem(null); setSelectedStudent(null); }} className={'min-h-11 px-3 py-1.5 text-xs font-bold ' + (mode === 'live' ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 hover:bg-emerald-50')}>{'🟢 ' + tr('Live')}</button>
                 )}
-                <button type="button" aria-pressed={mode === 'assign'} onClick={() => { setMode('assign'); setSelectedItem(null); }} className={'px-3 py-1.5 text-xs font-bold ' + (mode === 'assign' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('Assign')}</button>
-                <button type="button" aria-pressed={mode === 'edit'} onClick={() => { setMode('edit'); setSelectedStudent(null); }} className={'px-3 py-1.5 text-xs font-bold ' + (mode === 'edit' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('Edit room')}</button>
+                <button type="button" aria-pressed={mode === 'assign'} onClick={() => { setMode('assign'); setSelectedItem(null); }} className={'min-h-11 px-3 py-1.5 text-xs font-bold ' + (mode === 'assign' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('Assign')}</button>
+                <button type="button" aria-pressed={mode === 'edit'} onClick={() => { setMode('edit'); setSelectedStudent(null); }} className={'min-h-11 px-3 py-1.5 text-xs font-bold ' + (mode === 'edit' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('Edit room')}</button>
               </div>
               <div role="group" aria-label={tr('View')} className="flex rounded-lg overflow-hidden border border-slate-300">
-                <button type="button" aria-pressed={view === 'map'} onClick={() => setView('map')} className={'px-3 py-1.5 text-xs font-bold ' + (view === 'map' ? 'bg-slate-700 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('Map')}</button>
-                <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')} className={'px-3 py-1.5 text-xs font-bold ' + (view === 'list' ? 'bg-slate-700 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('List')}</button>
+                <button type="button" aria-pressed={view === 'map'} onClick={() => setView('map')} className={'min-h-11 px-3 py-1.5 text-xs font-bold ' + (view === 'map' ? 'bg-slate-700 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('Map')}</button>
+                <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')} className={'min-h-11 px-3 py-1.5 text-xs font-bold ' + (view === 'list' ? 'bg-slate-700 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('List')}</button>
               </div>
               <button type="button" onClick={() => runSolve(false)} className={btn + ' bg-emerald-700 text-white hover:bg-emerald-800'}>✨ {tr('Auto-arrange')}</button>
               <button type="button" onClick={() => runSolve(true)} title={tr('New arrangement that still honors your constraints')} className={btn + ' bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}>🔀 {tr('Reshuffle')}</button>
               <button type="button" onClick={() => setShowConstraints(v => !v)} aria-expanded={showConstraints} className={btn + ' ' + (liveScore.violations.length ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')}>
                 ⚖️ {tr('Constraints')} ({seating.constraints.length}{liveScore.violations.length ? ' · ' + tr('{n} unmet', { n: liveScore.violations.length }) : ''})
               </button>
-              <div className="ml-auto flex gap-2">
+              <div className="ml-auto flex flex-wrap gap-2">
                 {mode === 'edit' && (
                   <React.Fragment>
                     <button type="button" onClick={undoRoomEdit} disabled={!undoCount} title={tr('Undo the last room edit (Ctrl+Z)')} className={btn + ' bg-slate-100 text-slate-700 hover:bg-slate-200'}>↩ {tr('Undo')}</button>
@@ -1250,25 +1353,28 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
             </div>
 
             {mode === 'live' && (
-              <div className="px-4 py-1.5 text-[11px] text-emerald-800 bg-emerald-50/70 border-b border-emerald-100">
+              <div className="px-4 py-1.5 text-xs text-emerald-800 bg-emerald-50/70 border-b border-emerald-100">
                 {tr('Live overlay: tap a seat to send the recognition selected in the Live Dock. Dim = quiet for a few minutes; dashed = not joined. Awards are private.')}
                 {!live.recognitionEnabled && <b> {tr('Recognition is OFF — enable it in the Live Dock to award from here.')}</b>}
               </div>
             )}
             {mode === 'edit' && (
-              <div className="px-4 py-1.5 text-[11px] text-slate-600 bg-indigo-50/60 border-b border-indigo-100">
+              <div className="px-4 py-1.5 text-xs text-slate-600 bg-indigo-50/60 border-b border-indigo-100">
                 {overlapCount > 0 && <b className="text-rose-700">{tr('{n} seats overlap furniture (outlined red) — drag them clear or leave them if intended.', { n: overlapCount })} </b>}
                 {tr('Drag desks and furniture to match your room. Click an item then use arrow keys to nudge (Shift = faster), Delete to remove.')}
                 {' '}{tr('Or click an item, then click an empty spot to move it there, or use the arrow buttons.')}
                 {layout && ' '}
                 <label className="inline-flex items-center gap-1 ml-2 font-bold">
                   {tr('Layout name')}:
-                  <input type="text" value={layout.name} onChange={e => patchLayout({ name: e.target.value.slice(0, 60) })} className="px-2 py-0.5 rounded border border-slate-400 text-[11px] w-36" />
+                  <input type="text" value={nameDraft} onChange={e => setNameDraft(e.target.value.slice(0, 60))}
+                    onBlur={() => { const trimmed = nameDraft.trim() || 'Layout'; setNameDraft(trimmed); if (layout && trimmed !== layout.name) patchLayout({ name: trimmed }); }}
+                    onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+                    className="px-2 py-0.5 rounded border border-slate-400 text-xs w-36" />
                 </label>
               </div>
             )}
 
-            <div className="flex-1 flex min-h-0">
+            <div className="flex-1 flex flex-col md:flex-row min-h-0">
               {/* ── Canvas / list ── */}
               <div className="flex-1 min-w-0 p-3 overflow-auto custom-scrollbar" onKeyDown={nudgeSelected}>
                 {view === 'map' ? (
@@ -1284,10 +1390,10 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                     aria-describedby="seating-map-instructions"
                     className="w-full h-auto max-h-full select-none bg-slate-50 rounded-xl border border-slate-200"
                     onPointerDown={onSvgPointerDown} onClick={placeSelectedAt}
-                    onPointerMove={onSvgPointerMove} onPointerUp={endDrag} onPointerLeave={endDrag}>
+                    onPointerMove={onSvgPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag} onPointerLeave={endDrag}>
                     {/* Board / front-of-room marker */}
                     <rect x={ROOM_W * 0.2} y={0} width={ROOM_W * 0.6} height={1.4} fill="#334155" />
-                    <text x={ROOM_W / 2} y={4.6} textAnchor="middle" fontSize="2.6" fill="#64748b">{tr('Front of room')}</text>
+                    <text x={ROOM_W / 2} y={4.6} textAnchor="middle" fontSize="2.6" fill="#475569">{tr('Front of room')}</text>
                     {/* Furniture */}
                     {layout.furniture.map(f => (
                       <g key={f.id} onPointerDown={e => startDrag(e, f, false)} onClick={() => mode === 'edit' && setSelectedItem(f.id)}
@@ -1298,8 +1404,8 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                         style={{ cursor: mode === 'edit' ? 'move' : 'default' }}>
                         <rect x={f.x} y={f.y} width={f.w} height={f.h} rx="1.2"
                           fill={f.kind === 'rug' ? '#ede9fe' : f.kind === 'window' ? '#e0f2fe' : '#f1f5f9'}
-                          stroke={selectedItem === f.id ? '#4f46e5' : '#94a3b8'} strokeWidth={selectedItem === f.id ? 0.8 : 0.4} strokeDasharray="1.6 1" />
-                        <text x={f.x + f.w / 2} y={f.y + f.h / 2 + 0.9} textAnchor="middle" fontSize="2.4" fill="#64748b">
+                          stroke={selectedItem === f.id ? '#4f46e5' : '#64748b'} strokeWidth={selectedItem === f.id ? 0.8 : 0.4} strokeDasharray="1.6 1" />
+                        <text x={f.x + f.w / 2} y={f.y + f.h / 2 + 0.9} textAnchor="middle" fontSize="2.4" fill="#334155">
                           {FURN_EMOJI[f.kind]} {f.label || furnitureLabel(f.kind)}
                         </text>
                       </g>
@@ -1338,12 +1444,12 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                             stroke={isOverlap ? '#e11d48' : isSel ? '#f59e0b' : (mode === 'live' && name) ? (status === 'on' ? '#10b981' : '#94a3b8') : name ? groupColorOf(name) : '#94a3b8'}
                             strokeWidth={isSel || isOverlap ? 1 : 0.6}
                             strokeDasharray={name ? (mode === 'live' && status === 'off' ? '1.6 1' : undefined) : '1.6 1'} />
-                          <text x={s.x + 1.2} y={s.y + 2.6} fontSize="2" fill="#94a3b8">{seatNumberOf[s.id]}</text>
+                          <text x={s.x + 1.2} y={s.y + 2.6} fontSize="2" fill="#475569">{seatNumberOf[s.id]}</text>
                           {name
                             ? <text x={s.x + s.w / 2} y={s.y + s.h / 2 + 1} textAnchor="middle" fontSize={displayNameOf(name).length > 10 ? 2 : 2.6} fontWeight="700" fill="#1e293b">{displayNameOf(name).slice(0, 14)}</text>
-                            : <text x={s.x + s.w / 2} y={s.y + s.h / 2 + 1} textAnchor="middle" fontSize="2.2" fill="#cbd5e1">{mode === 'assign' && selectedStudent ? '⬇' : '·'}</text>}
+                            : <text x={s.x + s.w / 2} y={s.y + s.h / 2 + 1} textAnchor="middle" fontSize="2.2" fill="#475569">{mode === 'assign' && selectedStudent ? '⬇' : '·'}</text>}
                           {signal ? <text x={s.x + s.w - 1.2} y={s.y + 2.8} textAnchor="end" fontSize="2.8" aria-hidden="true">{signal.emoji}</text> : null}
-                          {mode === 'live' && entry && entry.xp > 0 ? <text x={s.x + s.w - 1.2} y={s.y + s.h - 1} textAnchor="end" fontSize="1.8" fill="#64748b">{entry.xp}</text> : null}
+                          {mode === 'live' && entry && entry.xp > 0 ? <text x={s.x + s.w - 1.2} y={s.y + s.h - 1} textAnchor="end" fontSize="1.8" fill="#475569">{entry.xp}</text> : null}
                         </g>
                       );
                     })}
@@ -1390,15 +1496,15 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                               const signal = entry ? liveSignalOf(entry) : null;
                               return (
                                 <td className="py-1.5 ps-3">
-                                  {!name ? <span className="text-slate-600">—</span> : !entry ? <span className="text-slate-500 italic">{tr('not joined')}</span> : (
+                                  {!name ? <span className="text-slate-600">—</span> : !entry ? <span className="text-slate-600 italic">{tr('not joined')}</span> : (
                                     <span className="inline-flex items-center gap-2 text-xs">
-                                      <span className={status === 'on' ? 'text-emerald-700 font-bold' : 'text-slate-500'}>
+                                      <span className={status === 'on' ? 'text-emerald-700 font-bold' : 'text-slate-600'}>
                                         {(signal ? signal.emoji + ' ' + signal.label + ' · ' : '') + (status === 'on' ? tr('active') : tr('quiet')) + (entry.xp ? ' · ' + entry.xp + ' XP' : '')}
                                       </span>
-                                      <button type="button" disabled={!live.recognitionEnabled}
+                                        <button type="button" disabled={!live.recognitionEnabled}
                                         onClick={() => live.onRecognizeStudent(entry.uid)}
                                         aria-label={tr('Recognize {name}', { name: displayNameOf(name) })}
-                                        className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 disabled:opacity-40">🌿</button>
+                                        className="min-h-11 min-w-11 px-2 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 disabled:opacity-40">🌿</button>
                                     </span>
                                   )}
                                 </td>
@@ -1413,7 +1519,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
               </div>
 
               {/* ── Sidebar ── */}
-              <div className="w-64 shrink-0 border-l border-slate-100 flex flex-col min-h-0">
+              <div className="w-full md:w-64 max-h-60 md:max-h-none shrink-0 border-t md:border-t-0 md:border-l border-slate-100 flex flex-col min-h-0">
                 <div className="p-3 flex-1 overflow-y-auto custom-scrollbar space-y-3">
                   {/* Live pod recognition strip */}
                   {mode === 'live' && livePods.length > 0 && (
@@ -1428,72 +1534,82 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                               onClick={() => live.onRecognizeStudents(podUids, tr('students in Pod {n}', { n: pod.index }))}
                               title={live.recognitionEnabled ? tr('Recognize every connected student in this pod (Live Dock reason and tokens).') : tr('Enable recognition in the Live Dock first.')}
                               aria-label={tr('Recognize Pod {n} — {k} connected students', { n: pod.index, k: podUids.length })}
-                              className={'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (disabled ? 'border-slate-200 text-slate-600 bg-slate-50' : 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100')}>
+                              className={'min-h-11 px-3 py-1 rounded-lg text-xs font-bold border ' + (disabled ? 'border-slate-200 text-slate-600 bg-slate-50' : 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100')}>
                               {tr('Pod {n}', { n: pod.index })} ({podUids.length})
                             </button>
                           );
                         })}
                       </div>
-                      <p className="text-[10px] text-slate-500 mt-1">{tr('Pod goals with tokens live in the Live Dock’s Class Goals; this strip sends the standard recognition.')}</p>
+                      <p className="text-xs text-slate-600 mt-1">{tr('Pod goals with tokens live in the Live Dock’s Class Goals; this strip sends the standard recognition.')}</p>
                     </div>
                   )}
                   {/* Unassigned tray */}
                   <div>
                     <h3 className="text-xs font-black text-slate-600 uppercase tracking-wide mb-1.5">{tr('Unseated')} ({unassigned.length})</h3>
-                    {unassigned.length === 0 && <p className="text-[11px] text-slate-500 italic">{tr('Everyone has a seat.')}</p>}
+                    {unassigned.length === 0 && <p className="text-xs text-slate-600 italic">{tr('Everyone has a seat.')}</p>}
                     <div className="flex flex-wrap gap-1.5">
                       {unassigned.map(n2 => (
                         <button key={n2} type="button" aria-pressed={selectedStudent === n2}
                           onClick={() => { setSelectedStudent(selectedStudent === n2 ? null : n2); setMode('assign'); }}
                           style={{ borderColor: groupColorOf(n2) }}
-                          className={'px-2 py-1 rounded-full text-[11px] font-bold border-2 ' + (selectedStudent === n2 ? 'bg-amber-100 text-amber-900' : 'bg-white text-slate-700 hover:bg-slate-50')}>
+                          className={'min-h-11 px-3 py-1 rounded-full text-xs font-bold border-2 ' + (selectedStudent === n2 ? 'bg-amber-100 text-amber-900' : 'bg-white text-slate-700 hover:bg-slate-50')}>
                           {displayNameOf(n2)}
                         </button>
                       ))}
                     </div>
-                    {selectedStudent && <p className="text-[11px] text-amber-700 mt-1.5">{tr('Now click a seat for {name}.', { name: displayNameOf(selectedStudent) })}</p>}
+                    {selectedStudent && <p className="text-xs text-amber-700 mt-1.5">{tr('Now click a seat for {name}.', { name: displayNameOf(selectedStudent) })}</p>}
                   </div>
 
                   {/* Constraints */}
                   {showConstraints && (
                     <div className="border-t border-slate-100 pt-2">
                       <h3 className="text-xs font-black text-slate-600 uppercase tracking-wide mb-1.5">{tr('Constraints')}</h3>
-                      <p className="text-[10px] text-slate-500 mb-2">{tr('Your professional judgment, encoded once — Auto-arrange honors it every time.')}</p>
+                      <p className="text-xs text-slate-600 mb-2">{tr('Your professional judgment, encoded once — Auto-arrange honors it every time.')}</p>
                       <div className="space-y-1.5 mb-2">
                         {seating.constraints.map(c => {
                           const unmet = liveScore.violations.some(v => v.id === c.id);
                           const gap = gaps.some(g => g.id === c.id);
+                          const armed = armRemoveConstraintId === c.id;
                           return (
-                            <div key={c.id} className={'flex items-start gap-1.5 rounded-lg px-2 py-1.5 text-[11px] ' + (unmet ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50')}>
+                            <div key={c.id} className={'flex items-start gap-1.5 rounded-lg px-2 py-1.5 text-xs ' + (unmet ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50')}>
                               <span className="flex-1">
                                 <b>{constraintTypeLabel(c.type)}</b>: {c.students.map(displayNameOf).join(' + ')}
                                 {c.type === 'fixed_seat' && seatNumberOf[c.seatId] ? ' → ' + tr('Seat {n}', { n: seatNumberOf[c.seatId] }) : ''}
                                 {unmet && <span className="block text-amber-700">{tr('unmet in current arrangement')}</span>}
                                 {gap && <span className="block text-sky-700">{tr('add a {kind} to the map for this to work', { kind: furnitureLabel(CONSTRAINT_TYPES.filter(s => s.type === c.type)[0].anchor) })}</span>}
                               </span>
-                              <button type="button" onClick={() => removeConstraint(c.id)} aria-label={tr('Remove constraint')} className="text-slate-600 hover:text-rose-600 font-bold">✕</button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!armed) { setArmRemoveConstraintId(c.id); return; }
+                                  setArmRemoveConstraintId(null);
+                                  removeConstraint(c.id);
+                                }}
+                                aria-label={armed ? tr('Confirm remove constraint') : tr('Remove constraint')}
+                                className={'min-h-11 min-w-11 px-2 inline-flex items-center justify-center rounded font-bold ' + (armed ? 'bg-rose-600 text-white' : 'text-slate-600 hover:text-rose-600')}
+                              >{armed ? tr('Remove?') : '✕'}</button>
                             </div>
                           );
                         })}
-                        {!seating.constraints.length && <p className="text-[11px] text-slate-500 italic">{tr('None yet.')}</p>}
+                        {!seating.constraints.length && <p className="text-xs text-slate-600 italic">{tr('None yet.')}</p>}
                       </div>
                       {/* Add form */}
                       <div className="space-y-1.5 bg-slate-50 rounded-lg p-2">
-                        <select value={cType} onChange={e => setCType(e.target.value)} aria-label={tr('Constraint type')} className="w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white">
+                        <select value={cType} onChange={e => setCType(e.target.value)} aria-label={tr('Constraint type')} className="w-full px-2 py-1 rounded border border-slate-400 text-xs bg-white">
                           {CONSTRAINT_TYPES.map(ct => <option key={ct.type} value={ct.type}>{constraintTypeLabel(ct.type)}</option>)}
                         </select>
-                        <select value={cA} onChange={e => setCA(e.target.value)} aria-label={tr('Student')} className="w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white">
+                        <select value={cA} onChange={e => setCA(e.target.value)} aria-label={tr('Student')} className="w-full px-2 py-1 rounded border border-slate-400 text-xs bg-white">
                           <option value="">{tr('Student')}…</option>
                           {studentNames.map(n2 => <option key={n2} value={n2}>{displayNameOf(n2)}</option>)}
                         </select>
                         {(CONSTRAINT_TYPES.filter(ct => ct.type === cType)[0] || {}).pair && (
-                          <select value={cB} onChange={e => setCB(e.target.value)} aria-label={tr('Second student')} className="w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white">
+                          <select value={cB} onChange={e => setCB(e.target.value)} aria-label={tr('Second student')} className="w-full px-2 py-1 rounded border border-slate-400 text-xs bg-white">
                             <option value="">{tr('Second student')}…</option>
                             {studentNames.filter(n2 => n2 !== cA).map(n2 => <option key={n2} value={n2}>{displayNameOf(n2)}</option>)}
                           </select>
                         )}
                         {cType === 'fixed_seat' && (
-                          <select value={cSeat} onChange={e => setCSeat(e.target.value)} aria-label={tr('Seat')} className="w-full px-2 py-1 rounded border border-slate-400 text-[11px] bg-white">
+                          <select value={cSeat} onChange={e => setCSeat(e.target.value)} aria-label={tr('Seat')} className="w-full px-2 py-1 rounded border border-slate-400 text-xs bg-white">
                             <option value="">{tr('Seat')}…</option>
                             {sortedSeats.map(s => <option key={s.id} value={s.id}>{tr('Seat {n}', { n: seatNumberOf[s.id] })}</option>)}
                           </select>
@@ -1505,7 +1621,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
 
                   {/* Solve result */}
                   {lastSolve && (
-                    <div className={'rounded-lg px-2.5 py-2 text-[11px] ' + (lastSolve.violations.length ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-800')}>
+                    <div className={'rounded-lg px-2.5 py-2 text-xs ' + (lastSolve.violations.length ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-800')}>
                       {lastSolve.violations.length
                         ? tr('{n} constraints could not be fully satisfied — they are marked in the list above.', { n: lastSolve.violations.length })
                         : '✓ ' + tr('All constraints satisfied.')}
@@ -1516,7 +1632,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                 {Object.keys(groups).length > 0 && (
                   <div className="p-2.5 border-t border-slate-100 flex flex-wrap gap-2">
                     {Object.keys(groups).map(gid => (
-                      <span key={gid} className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-600">
+                      <span key={gid} className="inline-flex items-center gap-1 text-xs font-bold text-slate-600">
                         <span aria-hidden="true" className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: (groups[gid] && groups[gid].color) || '#94a3b8' }} />
                         {(groups[gid] && groups[gid].name) || gid}
                       </span>
@@ -1530,7 +1646,9 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
 
         {/* Confirm dialog */}
         {confirmState && (
-          <div className="fixed inset-0 z-[220] bg-black/40 flex items-center justify-center p-4" role="presentation" onClick={() => setConfirmState(null)}>
+          <div className="fixed inset-0 z-[220] bg-black/40 flex items-center justify-center p-4" role="presentation"
+            onMouseDown={e => { confirmBackdropDownRef.current = (e.target === e.currentTarget); }}
+            onClick={e => { const allow = confirmBackdropDownRef.current !== false; confirmBackdropDownRef.current = null; if (e.target === e.currentTarget && allow) setConfirmState(null); }}>
             <div ref={confirmRef} tabIndex={-1} role="alertdialog" aria-modal="true" aria-label={confirmState.message} onClick={e => e.stopPropagation()} className="allo-docsuite bg-white rounded-xl shadow-2xl p-5 max-w-sm w-full">
               <p className="text-sm text-slate-700 font-medium">{confirmState.message}</p>
               <div className="flex gap-2 justify-end mt-4">

@@ -82,10 +82,12 @@ window.StemLab = window.StemLab || {
     var namedHeader = yIndex >= 0 && (labelIndex >= 0 || xIndex >= 0);
     var start = namedHeader ? 1 : 0, rows = [], skipped = 0;
     records.slice(start).forEach(function(parts, rowIndex) {
-      var inferredXY = !namedHeader && parts.length >= 3 && isFinite(Number(String(parts[1]).trim())) && isFinite(Number(String(parts[2]).trim()));
+      var p1 = parts.length >= 2 ? String(parts[1] == null ? '' : parts[1]).trim() : '';
+      var p2 = parts.length >= 3 ? String(parts[2] == null ? '' : parts[2]).trim() : '';
+      var inferredXY = !namedHeader && parts.length >= 3 && p1 !== '' && p2 !== '' && isFinite(Number(p1)) && isFinite(Number(p2));
       var li = namedHeader ? labelIndex : 0, xi = namedHeader ? xIndex : (inferredXY ? 1 : -1), yi = namedHeader ? yIndex : (inferredXY ? 2 : 1);
       var label = li >= 0 ? String(parts[li] == null ? '' : parts[li]).trim() : 'Point ' + (rowIndex + 1);
-      if (/^'[=+\-@]/.test(label)) label = label.slice(1);
+      if (/^'[=+\-@|]/.test(label)) label = label.slice(1);
       if (!label) label = 'Point ' + (rowIndex + 1);
       var rawY = String(parts[yi] == null ? '' : parts[yi]).trim().replace(/[$,%]/g, ''), value = Number(rawY);
       var rawX = xi >= 0 ? String(parts[xi] == null ? '' : parts[xi]).trim() : '', x = Number(rawX);
@@ -97,7 +99,7 @@ window.StemLab = window.StemLab || {
   }
   function dataStudioCSVCell(value, protectFormula) {
     var text = String(value == null ? '' : value);
-    if (protectFormula && /^[=+\-@]/.test(text)) text = "'" + text;
+    if (protectFormula && /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(text)) text = "'" + text;
     return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
   }
   function serializeDataStudioCSV(rows) {
@@ -176,6 +178,10 @@ window.StemLab = window.StemLab || {
       var isContrast = ctx.isContrast;
 
       // ── Tool body (dataStudio) ──
+      var _dsKernelBusyState = React.useState(false);
+      var kernelBusy = _dsKernelBusyState[0], setKernelBusy = _dsKernelBusyState[1];
+      var _dsAiLoadingState = React.useState(false);
+      var aiLoading = _dsAiLoadingState[0], setAiLoading = _dsAiLoadingState[1];
       return (function() {
 var d = (labToolData && labToolData._dataStudio) || {};
 
@@ -280,7 +286,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
             }
           },
             React.createElement("div", { className: "min-w-0 flex-1" },
-              React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide", style: { color: isDark || isContrast ? '#22d3ee' : '#0e7490' } },
+              React.createElement("div", { className: "text-xs font-black uppercase tracking-wide", style: { color: isDark || isContrast ? '#22d3ee' : '#0e7490' } },
                 t('stem.datastudio.imported_from_particlelab', 'Imported from Particle Lab 3D')),
               React.createElement("div", { className: "text-xs font-bold mt-0.5" }, plMetaParts.join(' \u2022 '))
             ),
@@ -369,8 +375,12 @@ var d = (labToolData && labToolData._dataStudio) || {};
           }
 
           var editRow = d.editRow || { label: '', x: '', value: '' };
+          function canAddEditDataRow() {
+            var valStr = String(editRow.value == null ? '' : editRow.value).trim();
+            return !!(String(editRow.label || '').trim() && valStr !== '' && isFinite(Number(valStr)));
+          }
           function buildEditDataRow() {
-            var row = { label: editRow.label, value: Number(editRow.value) };
+            var row = { label: String(editRow.label || '').trim(), value: Number(editRow.value) };
             if (editRow.x !== '' && isFinite(Number(editRow.x))) row.x = Number(editRow.x);
             return row;
           }
@@ -462,7 +472,6 @@ var d = (labToolData && labToolData._dataStudio) || {};
           // query is read-only and derived results remain in the Data Studio
           // snapshot so they can travel with an exported analysis.
           var kernelSQL = d.kernelSQL || 'SELECT COUNT(*) AS rows, AVG(value) AS mean_value FROM data';
-          var kernelBusy = !!d.kernelBusy;
           var kernelError = d.kernelError || '';
           var kernelResult = d.kernelResult && typeof d.kernelResult === 'object' ? d.kernelResult : null;
           var kernelHistoryVisible = !!d.kernelHistoryVisible;
@@ -481,12 +490,14 @@ var d = (labToolData && labToolData._dataStudio) || {};
           var runKernelQuery = function (sqlOverride, recipeOverride) {
             var kernel = window.AlloDataKernel;
             var selectedRecipe = recipeOverride === undefined ? (kernelRecipeId || null) : (recipeOverride || null);
-            var queryText = String(sqlOverride || kernelSQL || '').trim();
+            var queryText = String(typeof sqlOverride === 'string' ? sqlOverride : (kernelSQL || '')).trim();
             if (!kernel || typeof kernel.queryRows !== 'function') {
-              updDSMany({ kernelError: 'The local analytical workspace is still loading. Try again in a moment.', kernelBusy: false });
+              setKernelBusy(false);
+              updDSMany({ kernelError: 'The local analytical workspace is still loading. Try again in a moment.' });
               return;
             }
-            updDSMany({ kernelSQL: queryText, kernelBusy: true, kernelError: '', kernelResult: null });
+            setKernelBusy(true);
+            updDSMany({ kernelSQL: queryText, kernelError: '', kernelResult: null });
             Promise.resolve().then(function () { return kernel.queryRows(dataRows, queryText); }).then(function (result) {
               var rows = Array.isArray(result && result.rows) ? result.rows.slice(0, 100) : [];
               var columns = rows.length ? Object.keys(rows[0]) : [];
@@ -494,14 +505,16 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 tool: 'dataStudio', recipe: selectedRecipe, sql: (result && result.query) || queryText, backend: result.backend || 'local',
                 rowCount: rows.length, sourceRowCount: result.provenance && result.provenance.rowCount, columns: result.provenance && result.provenance.columns
               }) : kernelHistory;
-              updDSMany({ kernelBusy: false, kernelError: '', kernelHistory: history, kernelResult: {
+              setKernelBusy(false);
+              updDSMany({ kernelError: '', kernelHistory: history, kernelResult: {
                 rows: rows, columns: columns, backend: result.backend || 'local',
                 provenance: result.provenance || null, summary: result.summary || null
               } });
               if (addToast) addToast('Local analysis complete. The query and dataset shape stay on this device.', 'success');
               if (typeof announceToSR === 'function') announceToSR('Local analysis complete. ' + rows.length + ' result row' + (rows.length === 1 ? '' : 's') + '.');
             }).catch(function (error) {
-              updDSMany({ kernelBusy: false, kernelError: String(error && error.message || error || 'Local analysis failed.'), kernelResult: null });
+              setKernelBusy(false);
+              updDSMany({ kernelError: String(error && error.message || error || 'Local analysis failed.'), kernelResult: null });
               if (addToast) addToast('Local analysis failed. ' + String(error && error.message || error || ''), 'warning');
             });
           };
@@ -613,7 +626,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
           var maxRow = displayRows.find(function(row) { return row.value === maxVal; });
           var lowerFence = q1 - 1.5 * iqr, upperFence = q3 + 1.5 * iqr;
           var outliers = iqr > 0 ? displayRows.filter(function(row) { return row.value < lowerFence || row.value > upperFence; }) : [];
-          var nonOutlierValues = sorted.filter(function(value) { return value >= lowerFence && value <= upperFence; });
+          var nonOutlierValues = iqr > 0 ? sorted.filter(function(value) { return value >= lowerFence && value <= upperFence; }) : sorted;
           var whiskerMin = nonOutlierValues.length ? nonOutlierValues[0] : minVal;
           var whiskerMax = nonOutlierValues.length ? nonOutlierValues[nonOutlierValues.length - 1] : maxVal;
           var trend = calcTrendline(displayRows, chartType === 'scatter');
@@ -652,7 +665,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
           }
           function aggregateDuplicateLabels(method) {
             if (!duplicateLabelCount) { if (addToast) addToast('No duplicate labels to combine.', 'info'); return; }
-            var groups = {}, order = [];
+            var groups = Object.create(null), order = [];
             dataRows.forEach(function(row, index) {
               var normalized = String(row.label || '').trim().toLowerCase();
               var key = normalized || ('__blank_' + index);
@@ -776,7 +789,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 React.createElement("div", { className: "min-w-0 flex-1" },
 
-                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-widest mb-1", style: { color: isContrast ? '#ffff00' : '#a5f3fc' } },
+                  React.createElement("div", { className: "text-xs font-black uppercase tracking-widest mb-1", style: { color: isContrast ? '#ffff00' : '#a5f3fc' } },
                     t('stem.datastudio.kicker', "DATA LITERACY · VISUAL ANALYTICS")),
 
                   React.createElement("h3", { className: "text-xl font-black flex items-center gap-2", style: { color: isContrast ? '#ffff00' : '#ffffff', margin: 0 } }, t('stem.datastudio.data_studio', "📊 Charts & Graphs")),
@@ -826,7 +839,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 ].map(function (kpi) {
                   return React.createElement("span", {
                     key: kpi.k, role: "listitem",
-                    className: "px-2.5 py-1 rounded-full text-[11px] font-bold",
+                    className: "px-2.5 py-1 rounded-full text-xs font-bold",
                     style: { background: isContrast ? '#000000' : 'rgba(2,6,23,0.32)', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(255,255,255,0.24)'), color: isContrast ? '#ffff00' : '#f0fdfa' }
                   }, kpi.k + ': ' + kpi.v);
                 })
@@ -890,7 +903,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center",
 
-              style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
+              style: { background: _card, border: '1px solid ' + _border, color: _text, outline: '2px solid transparent' },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #0e7490'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
             }),
@@ -936,11 +949,36 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 React.createElement("title", null, chartTitle),
                 React.createElement("desc", null, (descriptionRows.length ? descriptionRows.map(function(row, i) { return chartType === 'scatter' ? row.label + ': x ' + getScatterX(row, i) + ', y ' + row.value : row.label + ': ' + row.value; }).join('; ') : 'No data points are currently visible.') + (displayRows.length > descriptionRows.length ? '; plus ' + (displayRows.length - descriptionRows.length) + ' additional points available in the data table.' : '') + (dataSource ? ' Source: ' + dataSource + '.' : '')),
                 React.createElement("defs", null,
+                  React.createElement("linearGradient", { id: "ds-stage-bg", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                    React.createElement("stop", { offset: "0%", stopColor: isContrast ? '#000000' : (isDark ? '#111b2e' : '#f8fafc') }),
+                    React.createElement("stop", { offset: "100%", stopColor: isContrast ? '#000000' : (isDark ? '#090f1d' : '#ffffff') })
+                  ),
+                  React.createElement("linearGradient", { id: "ds-plot-well", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                    React.createElement("stop", { offset: "0%", stopColor: isContrast ? '#000000' : (isDark ? '#070c18' : '#f1f5f9') }),
+                    React.createElement("stop", { offset: "100%", stopColor: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff') })
+                  ),
                   React.createElement("linearGradient", { id: "ds-line-area-grad", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
-                    React.createElement("stop", { offset: "0%", stopColor: _accent, stopOpacity: 0.28 }),
-                    React.createElement("stop", { offset: "100%", stopColor: _accent, stopOpacity: 0.02 })
-                  )
+                    React.createElement("stop", { offset: "0%", stopColor: _accent, stopOpacity: isContrast ? 0.14 : 0.34 }),
+                    React.createElement("stop", { offset: "65%", stopColor: _accent, stopOpacity: isContrast ? 0.05 : 0.11 }),
+                    React.createElement("stop", { offset: "100%", stopColor: _accent, stopOpacity: 0.01 })
+                  ),
+                  React.createElement("radialGradient", { id: "ds-pie-sheen", cx: "36%", cy: "28%", r: "65%" },
+                    React.createElement("stop", { offset: "0%", stopColor: "#ffffff", stopOpacity: isContrast ? 0 : 0.24 }),
+                    React.createElement("stop", { offset: "100%", stopColor: "#0f172a", stopOpacity: isContrast ? 0 : 0.12 })
+                  ),
+                  COLORS.map(function (col, ci) {
+                    return React.createElement("linearGradient", { key: 'ds-bg-' + ci, id: 'ds-bar-' + ci, x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                      React.createElement("stop", { offset: "0%", stopColor: col, stopOpacity: 1 }),
+                      React.createElement("stop", { offset: "100%", stopColor: col, stopOpacity: isContrast ? 0.92 : 0.72 })
+                    );
+                  })
                 ),
+                // Recessed analytical studio backdrop
+                React.createElement("rect", { x: 0, y: 0, width: W, height: H, fill: "url(#ds-stage-bg)" }),
+                chartType !== 'pie' && React.createElement("rect", {
+                  x: pad, y: chartTop, width: W - pad - 10, height: H - pad - chartTop, rx: 6,
+                  fill: "url(#ds-plot-well)", stroke: _border, strokeOpacity: isContrast ? 0.85 : 0.55, strokeWidth: 1
+                }),
                 chartType !== 'pie' && xAxisLabel && React.createElement("text", { x: W / 2, y: H - 8, textAnchor: "middle", style: { fontSize: '9.5px', fontWeight: 'bold', fill: _muted } }, xAxisLabel),
                 chartType !== 'pie' && yAxisLabel && React.createElement("text", { x: 14, y: H / 2, textAnchor: "middle", transform: "rotate(-90 14 " + (H / 2) + ")", style: { fontSize: '9.5px', fontWeight: 'bold', fill: _muted } }, yAxisLabel),
 
@@ -962,15 +1000,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   return React.createElement("g", null,
 
-                    // Y axis
+                    // Y axis & zero baseline
 
-                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 1.1 }),
 
-                    // X axis
+                    React.createElement("line", { x1: pad, y1: barZeroY, x2: W - 10, y2: barZeroY, stroke: _muted, strokeWidth: 1.1 }),
 
-                    React.createElement("line", { x1: pad, y1: barZeroY, x2: W - 10, y2: barZeroY, stroke: _muted, strokeWidth: 0.5 }),
-
-                    // Y labels
+                    // Y labels & calibrated tick hierarchy
 
                     [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
 
@@ -980,15 +1016,17 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       return React.createElement("g", { key: 'yl' + i },
 
-                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal),
+                        React.createElement("line", { x1: pad - 4, y1: yPos, x2: pad, y2: yPos, stroke: _muted, strokeWidth: i % 2 === 0 ? 1.2 : 0.8 }),
 
-                        showGridlines && React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
+                        React.createElement("text", { x: pad - 6, y: yPos + 3.5, textAnchor: "end", style: { fontSize: '10.5px', fontWeight: i % 2 === 0 ? 700 : 500, fill: _muted } }, yVal),
+
+                        showGridlines && React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: i % 2 === 0 ? 0.5 : 0.3, strokeOpacity: isContrast ? 0.45 : 0.35, strokeDasharray: i === 0 ? "none" : "3 3" })
 
                       );
 
                     }),
 
-                    // Bars
+                    // Gradient-beveled bars with top specular sheen
 
                     displayRows.map(function (row, i) {
 
@@ -996,27 +1034,36 @@ var d = (labToolData && labToolData._dataStudio) || {};
                       var barH = Math.abs(barZeroY - valueY);
                       var x = pad + i * gap + (gap - barW) / 2;
                       var y = Math.min(barZeroY, valueY);
-                      var valueLabelY = row.value < 0 ? Math.min(H - pad - 4, y + barH + 11) : Math.max(chartTop - 4, y - 4);
+                      var valueLabelY = row.value < 0 ? Math.min(H - pad - 4, y + barH + 11) : Math.max(chartTop - 4, y - 5);
+                      var ci = i % COLORS.length;
 
                       return React.createElement("g", { key: 'bar' + i },
 
-                        React.createElement("rect", { x: x, y: y, width: barW, height: Math.max(1, barH), rx: 4, fill: COLORS[i % COLORS.length], opacity: 0.9 },
+                        !isContrast && barH > 4 && React.createElement("rect", { x: x + 2, y: y + 2, width: barW, height: Math.max(1, barH - 1), rx: 4, fill: "#020617", opacity: isDark ? 0.35 : 0.1 }),
+
+                        React.createElement("rect", { x: x, y: y, width: barW, height: Math.max(1, barH), rx: 4, fill: 'url(#ds-bar-' + ci + ')', stroke: isContrast ? '#ffff00' : COLORS[ci], strokeOpacity: isContrast ? 0.9 : 0.35, strokeWidth: 0.9 },
                           React.createElement("title", null, row.label + ': ' + row.value)),
+
+                        !isContrast && barH > 7 && barW >= 6 && React.createElement("rect", { x: x + 2, y: y + 1.5, width: Math.max(2, barW - 4), height: 3.2, rx: 1.6, fill: "#ffffff", opacity: 0.32 }),
 
                         effectiveDataLabels && React.createElement("text", { x: x + barW / 2, y: valueLabelY, textAnchor: "middle", style: { fontSize: '10.5px', fontWeight: 'bold', fill: _text } }, row.value),
 
-                        React.createElement("text", { x: x + barW / 2, y: H - pad + 13, textAnchor: "middle", style: { fontSize: '8.5px', fill: _muted } }, row.label.length > 7 ? row.label.substring(0, 6) + '…' : row.label)
+                        React.createElement("text", { x: x + barW / 2, y: H - pad + 14, textAnchor: "middle", style: { fontSize: '8.5px', fontWeight: 600, fill: _muted } }, row.label.length > 7 ? row.label.substring(0, 6) + '…' : row.label)
 
                       );
 
                     }),
-                    // Live mean reference line
+                    // Dual-pass luminous mean threshold reference line & calibrated badge
                     showStats && displayRows.length > 1 && (function () {
                       var meanY = chartTop + ((barScaleMax - mean) / barScaleRange) * (H - pad - chartTop);
                       if (meanY < chartTop || meanY > H - pad) return null;
+                      var badgeY = Math.max(chartTop + 3, meanY - 15);
                       return React.createElement("g", { key: "bar-mean-ref" },
-                        React.createElement("line", { x1: pad, y1: meanY, x2: W - 12, y2: meanY, stroke: _accent, strokeWidth: 1.3, strokeDasharray: "5 3", opacity: 0.85 }),
-                        React.createElement("text", { x: W - 14, y: Math.max(chartTop + 9, meanY - 4), textAnchor: "end", style: { fontSize: '8.5px', fontWeight: 'bold', fill: _accent } }, 'Mean ' + mean.toFixed(1))
+                        !isContrast && React.createElement("line", { x1: pad, y1: meanY, x2: W - 12, y2: meanY, stroke: _accent, strokeWidth: 4.5, strokeOpacity: 0.2 }),
+                        React.createElement("line", { x1: pad, y1: meanY, x2: W - 12, y2: meanY, stroke: _accent, strokeWidth: 1.5, strokeDasharray: "5 3", opacity: 0.92 }),
+                        React.createElement("circle", { cx: pad + 3, cy: meanY, r: 3, fill: _accent, stroke: _svgBg, strokeWidth: 1.2 }),
+                        React.createElement("rect", { x: W - 76, y: badgeY, width: 64, height: 14, rx: 7, fill: _svgBg, stroke: _accent, strokeWidth: 1 }),
+                        React.createElement("text", { x: W - 44, y: badgeY + 10, textAnchor: "middle", style: { fontSize: '8.2px', fontWeight: 'bold', fill: _accent } }, 'Mean ' + mean.toFixed(1))
                       );
                     })()
 
@@ -1036,9 +1083,15 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   return React.createElement("g", null,
 
+                    !isContrast && React.createElement("circle", { cx: cx, cy: cy + 4, r: r + 3, fill: "#020617", opacity: isDark ? 0.36 : 0.08 }),
+
+                    React.createElement("circle", { cx: cx, cy: cy, r: r + 5, fill: "none", stroke: _border, strokeWidth: 1, strokeDasharray: "3 3", opacity: 0.6 }),
+
                     displayRows.map(function (row, i) {
 
-                      var angle = total > 0 ? (row.value / total) * 2 * Math.PI : 0;
+                      if (!total || row.value <= 0) return null;
+
+                      var angle = (row.value / total) * 2 * Math.PI;
 
                       var startAngle = cumAngle;
 
@@ -1058,19 +1111,20 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       var midAngle = startAngle + angle / 2;
 
-                      var lx = Math.max(46, Math.min(W - 46, cx + (r + 18) * Math.cos(midAngle)));
+                      var lx = Math.max(46, Math.min(W - 46, cx + (r + 20) * Math.cos(midAngle)));
 
-                      var ly = Math.max(36, Math.min(H - 14, cy + (r + 16) * Math.sin(midAngle)));
+                      var ly = Math.max(36, Math.min(H - 14, cy + (r + 18) * Math.sin(midAngle)));
 
-                      var pct = total > 0 ? Math.round(row.value / total * 100) : 0;
+                      var pct = Math.round(row.value / total * 100);
 
-                      if (displayRows.length === 1) {
+                      if (row.value >= total || angle >= 2 * Math.PI - 1e-6) {
 
                         return React.createElement("g", { key: 'pie' + i },
 
-                          React.createElement("circle", { cx: cx, cy: cy, r: r, fill: COLORS[0], opacity: 0.88 }),
+                          React.createElement("circle", { cx: cx, cy: cy, r: r, fill: 'url(#ds-bar-' + (i % COLORS.length) + ')', stroke: _svgBg, strokeWidth: 2 },
+                            React.createElement("title", null, row.label + ': ' + row.value + ' (100%)')),
 
-                          React.createElement("text", { x: cx, y: cy + 4, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: '#fff' } }, '100%')
+                          effectiveDataLabels && React.createElement("text", { x: cx, y: Math.max(16, cy - r - 8), textAnchor: "middle", style: { fontSize: '8.5px', fontWeight: 'bold', fill: _text } }, row.label.substring(0, 12) + ' 100%')
 
                         );
 
@@ -1082,7 +1136,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                           d: 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z',
 
-                          fill: COLORS[i % COLORS.length], opacity: 0.9, stroke: _svgBg, strokeWidth: 2
+                          fill: 'url(#ds-bar-' + (i % COLORS.length) + ')', stroke: _svgBg, strokeWidth: 2
 
                         }, React.createElement("title", null, row.label + ': ' + row.value + ' (' + pct + '%)')),
 
@@ -1091,8 +1145,10 @@ var d = (labToolData && labToolData._dataStudio) || {};
                       );
 
                     }),
-                    // Crisp donut center summary medallion
-                    React.createElement("circle", { key: "pie-hub", cx: cx, cy: cy, r: Math.round(r * 0.38), fill: _svgBg, stroke: _border, strokeWidth: 1.5 }),
+                    !isContrast && React.createElement("circle", { cx: cx, cy: cy, r: r, fill: "url(#ds-pie-sheen)", pointerEvents: "none" }),
+                    // Sculpted donut center summary medallion with subtle luminous halo
+                    !isContrast && React.createElement("circle", { key: "pie-hub-halo", cx: cx, cy: cy, r: Math.round(r * 0.42), fill: _accent, opacity: 0.14 }),
+                    React.createElement("circle", { key: "pie-hub", cx: cx, cy: cy, r: Math.round(r * 0.38), fill: _svgBg, stroke: _accent, strokeWidth: 1.8 }),
                     React.createElement("text", { key: "pie-hub-lbl", x: cx, y: cy - 3, textAnchor: "middle", style: { fontSize: '8.5px', fontWeight: 'bold', fill: _muted } }, "TOTAL"),
                     React.createElement("text", { key: "pie-hub-val", x: cx, y: cy + 12, textAnchor: "middle", style: { fontSize: '12px', fontWeight: '900', fill: _text } }, Number(total.toFixed(1)))
 
@@ -1126,7 +1182,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   var areaD = pathD + ' L ' + pts[pts.length - 1].x + ' ' + (H - pad) + ' L ' + pts[0].x + ' ' + (H - pad) + ' Z';
 
-                  // Trendline
+                  // Dual-pass luminous Trendline
 
                   var trendEls = [];
 
@@ -1140,9 +1196,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       var tlY1 = (H - pad) - (((tl.slope * (displayRows.length - 1) + tl.intercept) - minVal) / rangeYLine) * (H - pad - chartTop);
 
-                      trendEls.push(React.createElement("line", { key: 'tl', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '6 3', opacity: 0.7 }));
+                      var tlCol = isContrast ? '#00ff00' : '#ef4444';
 
-                      trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 12, y: tlY1 - 5, textAnchor: "end", style: { fontSize: '7px', fontWeight: 'bold', fill: '#ef4444' } }, 'y=' + tl.slope.toFixed(1) + 'x+' + tl.intercept.toFixed(1)));
+                      if (!isContrast) trendEls.push(React.createElement("line", { key: 'tl-glow', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: tlCol, strokeWidth: 5.5, strokeOpacity: 0.2, strokeLinecap: 'round' }));
+
+                      trendEls.push(React.createElement("line", { key: 'tl', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: tlCol, strokeWidth: 1.8, strokeDasharray: '6 3', opacity: 0.9 }));
+
+                      trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 14, y: Math.max(chartTop + 10, tlY1 - 6), textAnchor: "end", style: { fontSize: '8px', fontWeight: 'bold', fill: tlCol } }, 'y=' + tl.slope.toFixed(1) + 'x' + (tl.intercept >= 0 ? '+' : '-') + Math.abs(tl.intercept).toFixed(1)));
 
                     }
 
@@ -1150,24 +1210,30 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   return React.createElement("g", null,
 
-                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 1.1 }),
 
-                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 1.1 }),
 
                     [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
 
-                      var yVal = (minVal + rangeYLine * frac).toFixed(0);
+                      var tickDec = rangeYLine < 5 ? 2 : (rangeYLine < 20 ? 1 : 0);
+                      var yVal = (minVal + rangeYLine * frac).toFixed(tickDec);
 
                       var yPos = (H - pad) - frac * (H - pad - chartTop);
 
                       return React.createElement("g", { key: 'lyl' + i },
-                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '10.5px', fill: _muted } }, yVal),
-                        showGridlines && React.createElement("line", { x1: pad, y1: yPos, x2: W - 12, y2: yPos, stroke: _muted, strokeWidth: 0.25, strokeDasharray: "3 3" })
+                        React.createElement("line", { x1: pad - 4, y1: yPos, x2: pad, y2: yPos, stroke: _muted, strokeWidth: i % 2 === 0 ? 1.2 : 0.8 }),
+                        React.createElement("text", { x: pad - 6, y: yPos + 3.5, textAnchor: "end", style: { fontSize: '10.5px', fontWeight: i % 2 === 0 ? 700 : 500, fill: _muted } }, yVal),
+                        showGridlines && React.createElement("line", { x1: pad, y1: yPos, x2: W - 12, y2: yPos, stroke: _muted, strokeWidth: i % 2 === 0 ? 0.5 : 0.3, strokeOpacity: isContrast ? 0.45 : 0.35, strokeDasharray: i === 0 ? "none" : "3 3" })
                       );
 
                     }),
 
                     React.createElement("path", { d: areaD, fill: "url(#ds-line-area-grad)" }),
+
+                    // Dual-pass luminous series line
+
+                    !isContrast && React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeOpacity: 0.24, strokeWidth: 7.5, strokeLinecap: "round", strokeLinejoin: "round" }),
 
                     React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeWidth: 2.8, strokeLinecap: "round", strokeLinejoin: "round" }),
 
@@ -1177,11 +1243,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       return React.createElement("g", { key: 'lp' + i },
 
-                        React.createElement("circle", { cx: p.x, cy: p.y, r: 4, fill: _accent, stroke: _svgBg, strokeWidth: 2 }),
+                        !isContrast && React.createElement("circle", { cx: p.x, cy: p.y, r: 7.5, fill: _accent, opacity: 0.2 }),
 
-                        effectiveDataLabels && React.createElement("text", { x: p.x, y: p.y - 8, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, p.value),
+                        React.createElement("circle", { cx: p.x, cy: p.y, r: 4.3, fill: _accent, stroke: _svgBg, strokeWidth: 2 }),
 
-                        React.createElement("text", { x: p.x, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, p.label.length > 5 ? p.label.substring(0, 4) + '..' : p.label)
+                        effectiveDataLabels && React.createElement("text", { x: p.x, y: p.y - 9, textAnchor: "middle", style: { fontSize: '8.5px', fontWeight: 'bold', fill: _text } }, p.value),
+
+                        React.createElement("text", { x: p.x, y: H - pad + 13, textAnchor: "middle", style: { fontSize: '7.5px', fontWeight: 600, fill: _muted } }, p.label.length > 5 ? p.label.substring(0, 4) + '..' : p.label)
 
                       );
 
@@ -1211,34 +1279,44 @@ var d = (labToolData && labToolData._dataStudio) || {};
                       var ssRes = 0, ssTot = 0;
                       displayRows.forEach(function(row, i) { var pred = tl.slope * xValues[i] + tl.intercept; ssRes += Math.pow(row.value - pred, 2); ssTot += Math.pow(row.value - mean, 2); });
                       var rSquared = ssTot > 0 ? Math.max(0, 1 - ssRes / ssTot) : 0;
-                      trendEls.push(React.createElement("line", { key: 'tl', x1: scaleX(minX), y1: scaleY(yAtMin), x2: scaleX(maxX), y2: scaleY(yAtMax), stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '6 3', opacity: 0.8 }));
-                      trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 12, y: chartTop + 10, textAnchor: "end", style: { fontSize: '8px', fontWeight: 'bold', fill: '#ef4444' } }, 'y=' + tl.slope.toFixed(2) + 'x' + (tl.intercept >= 0 ? '+' : '') + tl.intercept.toFixed(2)));
-                      trendEls.push(React.createElement("text", { key: 'r2', x: W - 12, y: chartTop + 21, textAnchor: "end", style: { fontSize: '8px', fill: '#ef4444' } }, 'R²=' + rSquared.toFixed(3)));
+                      var tlCol = isContrast ? '#00ff00' : '#ef4444';
+                      if (!isContrast) trendEls.push(React.createElement("line", { key: 'tl-glow', x1: scaleX(minX), y1: scaleY(yAtMin), x2: scaleX(maxX), y2: scaleY(yAtMax), stroke: tlCol, strokeWidth: 6, strokeOpacity: 0.2, strokeLinecap: 'round' }));
+                      trendEls.push(React.createElement("line", { key: 'tl', x1: scaleX(minX), y1: scaleY(yAtMin), x2: scaleX(maxX), y2: scaleY(yAtMax), stroke: tlCol, strokeWidth: 1.8, strokeDasharray: '6 3', opacity: 0.9 }));
+                      trendEls.push(React.createElement("rect", { key: 'tl-pill', x: W - 118, y: chartTop + 3, width: 104, height: 24, rx: 6, fill: _svgBg, fillOpacity: 0.92, stroke: tlCol, strokeWidth: 0.9 }));
+                      trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 18, y: chartTop + 13, textAnchor: "end", style: { fontSize: '8px', fontWeight: 'bold', fill: tlCol } }, 'y=' + tl.slope.toFixed(2) + 'x' + (tl.intercept >= 0 ? '+' : '') + tl.intercept.toFixed(2)));
+                      trendEls.push(React.createElement("text", { key: 'r2', x: W - 18, y: chartTop + 23, textAnchor: "end", style: { fontSize: '8px', fontWeight: 'bold', fill: tlCol } }, 'R²=' + rSquared.toFixed(3)));
                     }
                   }
                   return React.createElement("g", null,
-                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 1.1 }),
+                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: _muted, strokeWidth: 1.1 }),
                     [0, 0.25, 0.5, 0.75, 1].map(function(frac, i) {
                       var rawY = yDomainMin + (yDomainMax - yDomainMin) * frac, y = scaleY(rawY);
                       return React.createElement("g", { key: 'scatter-y-' + i },
-                        React.createElement("text", { x: pad - 5, y: y + 3, textAnchor: "end", style: { fontSize: '9px', fill: _muted } }, Number(rawY.toFixed(2))),
-                        showGridlines && React.createElement("line", { x1: pad, y1: y, x2: W - pad, y2: y, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" }));
+                        React.createElement("line", { x1: pad - 4, y1: y, x2: pad, y2: y, stroke: _muted, strokeWidth: i % 2 === 0 ? 1.2 : 0.8 }),
+                        React.createElement("text", { x: pad - 6, y: y + 3, textAnchor: "end", style: { fontSize: '9px', fontWeight: i % 2 === 0 ? 700 : 500, fill: _muted } }, Number(rawY.toFixed(2))),
+                        showGridlines && React.createElement("line", { x1: pad, y1: y, x2: W - pad, y2: y, stroke: _muted, strokeWidth: i % 2 === 0 ? 0.5 : 0.3, strokeOpacity: isContrast ? 0.45 : 0.35, strokeDasharray: "3 3" }));
                     }),
                     [0, 0.25, 0.5, 0.75, 1].map(function(frac, i) {
                       var rawX = xDomainMin + (xDomainMax - xDomainMin) * frac, x = scaleX(rawX);
                       return React.createElement("g", { key: 'scatter-x-' + i },
-                        React.createElement("text", { x: x, y: H - pad + 13, textAnchor: "middle", style: { fontSize: '8px', fill: _muted } }, Number(rawX.toFixed(2))),
-                        React.createElement("line", { x1: x, y1: H - pad, x2: x, y2: H - pad + 4, stroke: _muted }));
+                        React.createElement("text", { x: x, y: H - pad + 14, textAnchor: "middle", style: { fontSize: '8px', fontWeight: i % 2 === 0 ? 700 : 500, fill: _muted } }, Number(rawX.toFixed(2))),
+                        React.createElement("line", { x1: x, y1: H - pad, x2: x, y2: H - pad + 4.5, stroke: _muted, strokeWidth: i % 2 === 0 ? 1.2 : 0.8 }));
                     }),
                     trendEls,
                     pts.map(function(point, i) {
+                      var pCol = COLORS[i % COLORS.length];
                       return React.createElement("g", { key: 'sp' + i },
-                        React.createElement("circle", { cx: point.x, cy: point.y, r: 5, fill: COLORS[i % COLORS.length], stroke: _svgBg, strokeWidth: 2, opacity: 0.9 },
+                        !isContrast && React.createElement("circle", { cx: point.x, cy: point.y, r: 8.5, fill: pCol, opacity: 0.2 }),
+                        React.createElement("circle", { cx: point.x, cy: point.y, r: 5.2, fill: pCol, stroke: _svgBg, strokeWidth: 2, opacity: 0.95 },
                           React.createElement("title", null, point.label + ': x ' + point.rawX + ', y ' + point.value)),
-                        effectiveDataLabels && React.createElement("text", { x: point.x, y: point.y - 8, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, point.label.length > 8 ? point.label.substring(0, 7) + '..' : point.label));
+                        !isContrast && React.createElement("circle", { cx: point.x - 1.5, cy: point.y - 1.5, r: 1.3, fill: "#ffffff", opacity: 0.7 }),
+                        effectiveDataLabels && React.createElement("text", { x: point.x, y: point.y - 9, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, point.label.length > 8 ? point.label.substring(0, 7) + '..' : point.label));
                     }),
-                    pearsonR !== null && React.createElement("text", { x: pad + 4, y: chartTop + 10, style: { fontSize: '8px', fontWeight: 'bold', fill: _accent } }, 'Pearson r=' + pearsonR.toFixed(3))
+                    pearsonR !== null && React.createElement("g", { key: "scatter-r-badge" },
+                      React.createElement("rect", { x: pad + 5, y: chartTop + 3, width: 78, height: 15, rx: 7.5, fill: _svgBg, fillOpacity: 0.92, stroke: _accent, strokeWidth: 0.9 }),
+                      React.createElement("text", { x: pad + 44, y: chartTop + 13, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _accent } }, 'Pearson r=' + pearsonR.toFixed(3))
+                    )
                   );
                 })(),
 
@@ -1251,20 +1329,33 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   var scaleBox = function(value) { return plotLeft + ((value - domainMin) / (domainMax - domainMin)) * (plotRight - plotLeft); };
                   var boxTop = plotY - 38, boxHeight = 76;
                   var tickValues = [minVal, q1, median, q3, maxVal].filter(function(value, i, all) { return all.indexOf(value) === i; });
+                  var boxW = Math.max(2, scaleBox(q3) - scaleBox(q1));
+                  var medCol = isContrast ? '#00ff00' : '#dc2626';
                   return React.createElement("g", null,
-                    React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY, x2: scaleBox(whiskerMax), y2: plotY, stroke: _accent, strokeWidth: 3 }),
-                    React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY - 18, x2: scaleBox(whiskerMin), y2: plotY + 18, stroke: _accent, strokeWidth: 2 }),
-                    React.createElement("line", { x1: scaleBox(whiskerMax), y1: plotY - 18, x2: scaleBox(whiskerMax), y2: plotY + 18, stroke: _accent, strokeWidth: 2 }),
-                    React.createElement("rect", { x: scaleBox(q1), y: boxTop, width: Math.max(1, scaleBox(q3) - scaleBox(q1)), height: boxHeight, rx: 4, fill: _accent, opacity: 0.2, stroke: _accent, strokeWidth: 2 }),
-                    React.createElement("line", { x1: scaleBox(median), y1: boxTop, x2: scaleBox(median), y2: boxTop + boxHeight, stroke: '#dc2626', strokeWidth: 3 }),
-                    React.createElement("polygon", { points: scaleBox(mean) + ',' + (plotY - 6) + ' ' + (scaleBox(mean) + 6) + ',' + plotY + ' ' + scaleBox(mean) + ',' + (plotY + 6) + ' ' + (scaleBox(mean) - 6) + ',' + plotY, fill: _accent, stroke: _svgBg, strokeWidth: 1.5 },
+                    // Subtle whisker range guide rail
+                    !isContrast && React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY, x2: scaleBox(whiskerMax), y2: plotY, stroke: _accent, strokeOpacity: 0.22, strokeWidth: 8, strokeLinecap: "round" }),
+                    React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY, x2: scaleBox(whiskerMax), y2: plotY, stroke: _accent, strokeWidth: 2.6 }),
+                    React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY - 19, x2: scaleBox(whiskerMin), y2: plotY + 19, stroke: _accent, strokeWidth: 2.2, strokeLinecap: "round" }),
+                    React.createElement("line", { x1: scaleBox(whiskerMax), y1: plotY - 19, x2: scaleBox(whiskerMax), y2: plotY + 19, stroke: _accent, strokeWidth: 2.2, strokeLinecap: "round" }),
+                    // Sculpted IQR box with specular top sheen
+                    React.createElement("rect", { x: scaleBox(q1), y: boxTop, width: boxW, height: boxHeight, rx: 6, fill: _accent, fillOpacity: isContrast ? 0.16 : 0.22, stroke: _accent, strokeWidth: 2.2 }),
+                    !isContrast && boxW > 8 && React.createElement("rect", { x: scaleBox(q1) + 3, y: boxTop + 3, width: boxW - 6, height: 6, rx: 3, fill: "#ffffff", opacity: 0.28 }),
+                    // Dual-pass luminous median beam
+                    !isContrast && React.createElement("line", { x1: scaleBox(median), y1: boxTop, x2: scaleBox(median), y2: boxTop + boxHeight, stroke: medCol, strokeOpacity: 0.26, strokeWidth: 7.5 }),
+                    React.createElement("line", { x1: scaleBox(median), y1: boxTop, x2: scaleBox(median), y2: boxTop + boxHeight, stroke: medCol, strokeWidth: 3 }),
+                    // Glowing mean diamond beacon
+                    !isContrast && React.createElement("circle", { cx: scaleBox(mean), cy: plotY, r: 10, fill: _accent, opacity: 0.22 }),
+                    React.createElement("polygon", { points: scaleBox(mean) + ',' + (plotY - 6.5) + ' ' + (scaleBox(mean) + 6.5) + ',' + plotY + ' ' + scaleBox(mean) + ',' + (plotY + 6.5) + ' ' + (scaleBox(mean) - 6.5) + ',' + plotY, fill: _accent, stroke: _svgBg, strokeWidth: 1.6 },
                       React.createElement("title", null, 'Mean: ' + mean.toFixed(2))),
-                    outliers.map(function(row, i) { return React.createElement("circle", { key: 'box-outlier-' + i, cx: scaleBox(row.value), cy: plotY, r: 5, fill: '#f59e0b', stroke: _svgBg, strokeWidth: 2 }); }),
-                    React.createElement("line", { x1: plotLeft, y1: H - pad, x2: plotRight, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
+                    outliers.map(function(row, i) { return React.createElement("g", { key: 'box-outlier-' + i },
+                      !isContrast && React.createElement("circle", { cx: scaleBox(row.value), cy: plotY, r: 8.5, fill: '#f59e0b', opacity: 0.24 }),
+                      React.createElement("circle", { cx: scaleBox(row.value), cy: plotY, r: 5, fill: '#f59e0b', stroke: _svgBg, strokeWidth: 2 })
+                    ); }),
+                    React.createElement("line", { x1: plotLeft, y1: H - pad, x2: plotRight, y2: H - pad, stroke: _muted, strokeWidth: 1 }),
                     tickValues.map(function(value, i) { return React.createElement("g", { key: 'box-tick-' + i },
-                      React.createElement("line", { x1: scaleBox(value), y1: H - pad, x2: scaleBox(value), y2: H - pad + 5, stroke: _muted }),
-                      React.createElement("text", { x: scaleBox(value), y: H - pad + 17, textAnchor: "middle", style: { fontSize: '9px', fill: _muted } }, Number(value.toFixed(2)))); }),
-                    React.createElement("text", { x: W / 2, y: 42, textAnchor: "middle", style: { fontSize: '9px', fill: _muted } }, "Whiskers show non-outlier range; dots mark possible outliers")
+                      React.createElement("line", { x1: scaleBox(value), y1: H - pad, x2: scaleBox(value), y2: H - pad + 5.5, stroke: _muted, strokeWidth: 1.2 }),
+                      React.createElement("text", { x: scaleBox(value), y: H - pad + 17, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 700, fill: _muted } }, Number(value.toFixed(2)))); }),
+                    React.createElement("text", { x: W / 2, y: 40, textAnchor: "middle", style: { fontSize: '9px', fontWeight: 600, fill: _muted } }, "Whiskers show non-outlier range; dots mark possible outliers")
                   );
                 })(),
 
@@ -1283,11 +1374,10 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   for (var b = 0; b < numBins; b++) bins.push({ lo: minVal + b * binW, hi: minVal + (b + 1) * binW, count: 0 });
 
                   values.forEach(function (v) {
-
-                    var bi = Math.min(numBins - 1, Math.floor((v - minVal) / binW));
-
+                    if (!isFinite(v)) return;
+                    var rawBi = binW > 0 ? Math.floor((v - minVal) / binW) : 0;
+                    var bi = Math.max(0, Math.min(numBins - 1, isFinite(rawBi) ? rawBi : 0));
                     bins[bi].count++;
-
                   });
 
                   var maxCount = Math.max.apply(null, bins.map(function (b) { return b.count; }).concat([1]));
@@ -1296,16 +1386,17 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   return React.createElement("g", null,
 
-                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.6 }),
+                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 1.1 }),
 
-                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.6 }),
+                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 1.1 }),
 
                     [0, 0.5, 1].map(function (frac, gi) {
                       var gy = (H - pad) - frac * (H - pad - chartTop);
                       var gVal = Math.round(maxCount * frac);
                       return React.createElement("g", { key: 'hgy-' + gi },
-                        React.createElement("text", { x: pad - 5, y: gy + 3, textAnchor: "end", style: { fontSize: '10px', fill: _muted } }, gVal),
-                        showGridlines && frac > 0 && React.createElement("line", { x1: pad, y1: gy, x2: W - 10, y2: gy, stroke: _muted, strokeWidth: 0.25, strokeDasharray: "3 3" })
+                        React.createElement("line", { x1: pad - 4, y1: gy, x2: pad, y2: gy, stroke: _muted, strokeWidth: 1.1 }),
+                        React.createElement("text", { x: pad - 6, y: gy + 3.5, textAnchor: "end", style: { fontSize: '10px', fontWeight: 700, fill: _muted } }, gVal),
+                        showGridlines && frac > 0 && React.createElement("line", { x1: pad, y1: gy, x2: W - 10, y2: gy, stroke: _muted, strokeWidth: 0.45, strokeOpacity: isContrast ? 0.45 : 0.35, strokeDasharray: "3 3" })
                       );
                     }),
 
@@ -1317,14 +1408,20 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       var y = (H - pad) - bh;
 
+                      var ci = i % COLORS.length;
+
                       return React.createElement("g", { key: 'hb' + i },
 
-                        React.createElement("rect", { x: x, y: y, width: bw, height: bh, fill: COLORS[i % COLORS.length], opacity: 0.88, rx: 3 },
+                        !isContrast && bh > 4 && React.createElement("rect", { x: x + 2, y: y + 2, width: bw, height: Math.max(1, bh - 1), rx: 3.5, fill: "#020617", opacity: isDark ? 0.35 : 0.1 }),
+
+                        React.createElement("rect", { x: x, y: y, width: bw, height: bh, fill: 'url(#ds-bar-' + ci + ')', stroke: isContrast ? '#ffff00' : COLORS[ci], strokeOpacity: isContrast ? 0.9 : 0.35, strokeWidth: 0.9, rx: 3.5 },
                           React.createElement("title", null, bin.lo.toFixed(1) + '–' + bin.hi.toFixed(1) + ': ' + bin.count + ' items')),
 
-                        effectiveDataLabels && bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: Math.max(chartTop - 4, y - 4), textAnchor: "middle", style: { fontSize: '10.5px', fontWeight: 'bold', fill: _text } }, bin.count),
+                        !isContrast && bh > 7 && bw >= 6 && React.createElement("rect", { x: x + 2, y: y + 1.5, width: Math.max(2, bw - 4), height: 3.2, rx: 1.6, fill: "#ffffff", opacity: 0.32 }),
 
-                        React.createElement("text", { x: x + bw / 2, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '7.5px', fill: _muted } }, bin.lo.toFixed(0) + '-' + bin.hi.toFixed(0))
+                        effectiveDataLabels && bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: Math.max(chartTop - 4, y - 5), textAnchor: "middle", style: { fontSize: '10.5px', fontWeight: 'bold', fill: _text } }, bin.count),
+
+                        React.createElement("text", { x: x + bw / 2, y: H - pad + 13, textAnchor: "middle", style: { fontSize: '7.5px', fontWeight: 600, fill: _muted } }, bin.lo.toFixed(0) + '-' + bin.hi.toFixed(0))
 
                       );
 
@@ -1344,7 +1441,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             dataSource && React.createElement("p", { className: "px-2 text-[0.6875rem]", role: "note", style: { color: _muted } },
               React.createElement("strong", null, "Source: "), dataSource),
-            showDataLabels && !effectiveDataLabels && React.createElement("p", { className: "px-2 text-[0.6875rem]", role: "status", style: { color: isDark ? '#fcd34d' : '#92400e' } },
+            showDataLabels && !effectiveDataLabels && React.createElement("p", { className: "px-2 text-[0.6875rem]", role: "status", style: { color: isContrast ? '#ffff00' : (isDark ? '#fcd34d' : '#92400e') } },
               "Data labels are automatically hidden above 100 visible points to keep the chart readable. Filter the data to restore them."),
 
             React.createElement("details", { className: "rounded-xl p-2 text-xs", style: { background: _card, border: '1px solid ' + _border } },
@@ -1372,10 +1469,10 @@ var d = (labToolData && labToolData._dataStudio) || {};
               )
             ),
             displayRows.length === 0 && React.createElement("div", { role: "status", className: "rounded-xl p-3 text-sm font-bold text-center",
-              style: { background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.35)', color: isDark ? '#fcd34d' : '#92400e' } },
+              style: { background: isContrast ? '#000000' : 'rgba(245,158,11,0.12)', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(245,158,11,0.35)'), color: isContrast ? '#ffff00' : (isDark ? '#fcd34d' : '#92400e') } },
               dataRows.length ? (filterMin !== '' && filterMax !== '' && filterMin > filterMax ? 'The minimum filter is greater than the maximum. Adjust or clear the filters.' : 'No rows match the current filters. Clear the filters to see your chart.') : 'Add a data point or choose a preset to begin.'),
             chartType === 'pie' && (total <= 0 || values.some(function(v) { return v < 0; })) && React.createElement("div", { role: "note", className: "rounded-xl p-2 text-xs",
-              style: { background: 'rgba(245,158,11,0.12)', color: isDark ? '#fcd34d' : '#92400e' } },
+              style: { background: isContrast ? '#000000' : 'rgba(245,158,11,0.12)', border: isContrast ? '1px solid #ffff00' : 'none', color: isContrast ? '#ffff00' : (isDark ? '#fcd34d' : '#92400e') } },
               'Pie charts represent parts of a positive whole. Use at least one positive value and remove or filter negative values.'),
 
             React.createElement("div", { className: "flex gap-2 flex-wrap items-center", style: { marginBottom: 4 } },
@@ -1407,7 +1504,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("input", { type: "search", placeholder: t('stem.datastudio.label_contains','Label contains?'), value: labelFilter, "aria-label": t('stem.datastudio.filter_rows_by_label','Filter rows by label'),
                 onChange: function(e) { updDSMany({ labelFilter: e.target.value, tablePage: 0 }); }, className: "w-28 px-1.5 py-1 rounded-lg text-[0.6875rem]",
-                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' } }),
+                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: '2px solid transparent' } }),
 
               React.createElement("input", {
 
@@ -1417,7 +1514,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 className: "w-14 px-1.5 py-1 rounded-lg text-[0.6875rem] font-mono",
 
-                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: '2px solid transparent' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
               }),
@@ -1432,7 +1529,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 className: "w-14 px-1.5 py-1 rounded-lg text-[0.6875rem] font-mono",
 
-                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                style: { background: _card, border: '1px solid ' + _border, color: _text, outline: '2px solid transparent' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
               }),
@@ -1622,10 +1719,10 @@ var d = (labToolData && labToolData._dataStudio) || {};
               ),
               React.createElement("textarea", { value: kernelSQL, onChange: function(e) { updDSMany({ kernelSQL: e.target.value, kernelRecipeId: '' }); }, rows: 2, spellCheck: false, "aria-label": t('stem.datastudio.local_analytical_sql_query','Local analytical SQL query'), className: "w-full px-2 py-1.5 rounded-lg text-[0.6875rem] font-mono", placeholder: t('stem.datastudio.select_count_as_row_count_from_data','SELECT COUNT(*) AS row_count FROM data'), style: { background: _svgBg, border: '1px solid ' + _border, color: _text, resize: 'vertical' } }),
               React.createElement("div", { className: "flex items-center gap-2 mt-2 flex-wrap" },
-                React.createElement("button", { onClick: runKernelQuery, disabled: kernelBusy || !dataRows.length, className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold disabled:opacity-40", style: { background: _btnBg, color: '#fff' } }, kernelBusy ? "⏳ Loading local engine…" : "▶ Run local query"),
+                React.createElement("button", { onClick: function() { runKernelQuery(); }, disabled: kernelBusy || !dataRows.length, className: "px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold disabled:opacity-40", style: { background: _btnBg, color: _btnFg, border: '1px solid ' + _btnBorder } }, kernelBusy ? "⏳ Loading local engine…" : "▶ Run local query"),
                 !dataRows.length && React.createElement("span", { className: "text-[0.625rem]", style: { color: _muted } }, "Add data first.")
               ),
-              kernelError && React.createElement("div", { role: "alert", className: "mt-2 p-2 rounded-lg text-[0.6875rem]", style: { background: 'rgba(127,29,29,0.16)', border: '1px solid rgba(248,113,113,0.35)', color: isDark ? '#fca5a5' : '#991b1b' } }, kernelError),
+              kernelError && React.createElement("div", { role: "alert", className: "mt-2 p-2 rounded-lg text-[0.6875rem]", style: { background: isContrast ? '#000000' : 'rgba(127,29,29,0.16)', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(248,113,113,0.35)'), color: isContrast ? '#ffff00' : (isDark ? '#fca5a5' : '#991b1b') } }, kernelError),
               kernelResult && React.createElement("div", { className: "mt-3 pt-2", style: { borderTop: '1px solid ' + _border } },
                 React.createElement("div", { className: "text-[0.6875rem] font-bold", style: { color: _accent } }, "Result · " + kernelResult.rows.length + " row" + (kernelResult.rows.length === 1 ? '' : 's') + " · " + (kernelResult.backend || 'local')),
                 kernelResult.provenance && React.createElement("div", { className: "text-[0.625rem] mt-1", style: { color: _muted } }, "Source: " + kernelResult.provenance.rowCount + " rows · " + (kernelResult.provenance.columns || []).join(', ') + " · read-only query"),
@@ -1667,7 +1764,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   className: "min-w-0 flex-1 px-2 py-1.5 rounded-lg text-xs",
 
-                  style: { width: '100%', minHeight: 44, minWidth: 0, background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                  style: { width: '100%', minHeight: 44, minWidth: 0, background: _svgBg, border: '1px solid ' + _border, color: _text, outline: '2px solid transparent' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
                 })),
@@ -1678,7 +1775,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   type: "number", placeholder: "X", value: editRow.x,
                   onChange: function(e) { updDS('editRow', { label: editRow.label, x: e.target.value, value: editRow.value }); },
                   className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono",
-                  style: { width: '100%', minHeight: 44, minWidth: 0, background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                  style: { width: '100%', minHeight: 44, minWidth: 0, background: _svgBg, border: '1px solid ' + _border, color: _text, outline: '2px solid transparent' },
                   "aria-label": t('stem.datastudio.new_point_x_value','New point X value')
                 })),
 
@@ -1695,7 +1792,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   onKeyDown: function (e) {
 
-                    if (e.key === 'Enter' && editRow.label && editRow.value !== '') {
+                    if (e.key === 'Enter' && canAddEditDataRow()) {
 
                       commitDataRows(dataRows.concat([buildEditDataRow()]), {}, 'Data row added.');
 
@@ -1707,7 +1804,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono",
 
-                  style: { width: '100%', minHeight: 44, minWidth: 0, background: _svgBg, border: '1px solid ' + _border, color: _text, outline: 'none' },
+                  style: { width: '100%', minHeight: 44, minWidth: 0, background: _svgBg, border: '1px solid ' + _border, color: _text, outline: '2px solid transparent' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #6366f1'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
                 })),
@@ -1716,7 +1813,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   onClick: function () {
 
-                    if (editRow.label && editRow.value !== '') {
+                    if (canAddEditDataRow()) {
 
                       commitDataRows(dataRows.concat([buildEditDataRow()]), {}, 'Data row added.');
 
@@ -1893,8 +1990,6 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               var aiStory = d.aiStory || '';
 
-              var aiLoading = !!d.aiLoading;
-
               var aiError = d.aiError || '';
 
               var LEVELS = [
@@ -1917,7 +2012,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 }
 
-                updDS('aiLoading', true); updDS('aiError', ''); updDS('aiStory', '');
+                setAiLoading(true); updDSMany({ aiError: '', aiStory: '' });
 
                 var levelObj = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
 
@@ -1943,13 +2038,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                   updDS('aiStory', String(resp || '').trim());
 
-                  updDS('aiLoading', false);
+                  setAiLoading(false);
 
                   if (typeof announceToSR === 'function') announceToSR('Data story ready.');
 
                 }).catch(function () {
 
-                  updDS('aiLoading', false);
+                  setAiLoading(false);
 
                   updDS('aiError', 'Could not reach AI tutor. Try again in a moment.');
 
@@ -2005,7 +2100,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 ),
 
-                aiError && React.createElement("p", { className: "text-[0.6875rem] mt-1", role: "alert", style: { color: '#ef4444' } }, aiError),
+                aiError && React.createElement("p", { className: "text-[0.6875rem] mt-1", role: "alert", style: { color: isContrast ? '#ffff00' : (isDark ? '#fca5a5' : '#b91c1c') } }, aiError),
 
                 aiStory && React.createElement("p", { className: "text-xs leading-relaxed mt-1", style: { color: _text } }, aiStory),
 

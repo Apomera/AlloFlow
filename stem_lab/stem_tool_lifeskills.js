@@ -5837,10 +5837,99 @@ window.StemLab = window.StemLab || {
     return new Ctor(args[0], args[1], args[2], args[3]);
   }
 
+  var _lsSharedShaderUniforms = { uTime: { value: 1.65 } };
+
+  function _lsIsHighContrast() {
+    try {
+      if (typeof document !== 'undefined') {
+        if (document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) return true;
+        if (document.body && document.body.classList && document.body.classList.contains('theme-contrast')) return true;
+        if (typeof document.querySelector === 'function' && document.querySelector('.theme-contrast')) return true;
+      }
+      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+        if (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches) return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  function _lsApplyStudioFresnelShader(THREE, mat, kind) {
+    if (!mat || _lsIsHighContrast() || typeof mat.onBeforeCompile !== 'function') return mat;
+    var fresnelPow = kind === 'glass' ? 2.1 : (kind === 'ceramic' ? 2.6 : (kind === 'wood' ? 2.9 : 3.2));
+    var fresnelGain = kind === 'glass' ? 0.34 : (kind === 'ceramic' ? 0.24 : (kind === 'wood' ? 0.20 : 0.14));
+    var tintR = kind === 'glass' ? 0.78 : (kind === 'ceramic' ? 0.92 : (kind === 'wood' ? 1.0 : 0.96));
+    var tintG = kind === 'glass' ? 0.93 : (kind === 'ceramic' ? 0.96 : (kind === 'wood' ? 0.84 : 0.95));
+    var tintB = kind === 'glass' ? 1.0 : (kind === 'ceramic' ? 1.0 : (kind === 'wood' ? 0.62 : 0.90));
+    var grainAmp = kind === 'wood' ? 0.08 : (kind === 'ceramic' ? 0.06 : 0.03);
+    var tintVec = (THREE && typeof THREE.Vector3 === 'function')
+      ? new THREE.Vector3(tintR, tintG, tintB)
+      : { x: tintR, y: tintG, z: tintB };
+    mat.customProgramCacheKey = function() { return 'ls-studio-sheen-' + kind + '-v1'; };
+    mat.onBeforeCompile = function(shader) {
+      shader.uniforms.uLsTime = _lsSharedShaderUniforms.uTime;
+      shader.uniforms.uLsPow = { value: fresnelPow };
+      shader.uniforms.uLsGain = { value: fresnelGain };
+      shader.uniforms.uLsTint = { value: tintVec };
+      shader.uniforms.uLsGrain = { value: grainAmp };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vLsWorldPos;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvLsWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>',
+          '#include <common>\n' +
+          'uniform float uLsTime;\n' +
+          'uniform float uLsPow;\n' +
+          'uniform float uLsGain;\n' +
+          'uniform vec3 uLsTint;\n' +
+          'uniform float uLsGrain;\n' +
+          'varying vec3 vLsWorldPos;'
+        )
+        .replace('#include <tonemapping_fragment>',
+          'vec3 lsN = normalize(normal);\n' +
+          'vec3 lsV = normalize(vViewPosition);\n' +
+          'float lsFresnel = pow(1.0 - clamp(dot(lsN, lsV), 0.0, 1.0), uLsPow);\n' +
+          'float lsSweep = pow(0.5 + 0.5 * sin(vLsWorldPos.x * 1.55 + vLsWorldPos.y * 1.15 - uLsTime * 0.65), 4.0);\n' +
+          'float lsMicro = 0.5 + 0.5 * sin(vLsWorldPos.x * 18.0 + vLsWorldPos.z * 14.0 + vLsWorldPos.y * 8.0);\n' +
+          'float lsLift = lsFresnel * uLsGain * (0.86 + 0.14 * lsMicro) + lsSweep * uLsGrain * (0.35 + 0.65 * lsFresnel);\n' +
+          'gl_FragColor.rgb += uLsTint * lsLift;\n' +
+          '#include <tonemapping_fragment>'
+        );
+    };
+    return mat;
+  }
+
   function _lsMakeMat(THREE, opts) {
     if (!THREE) return opts || {};
+    var src = opts || {};
+    if (typeof THREE.MeshStandardMaterial === 'function') {
+      var pbr = Object.assign({}, src);
+      var colNum = typeof pbr.color === 'number' ? pbr.color : 0x64748b;
+      var cr = (colNum >> 16) & 255, cg = (colNum >> 8) & 255, cb = colNum & 255;
+      var maxC = Math.max(cr, cg, cb), minC = Math.min(cr, cg, cb);
+      var sat = maxC > 0 ? (maxC - minC) / maxC : 0;
+      var matKind = 'polymer';
+      if (pbr.transparent && (pbr.opacity || 1) < 0.85) matKind = 'glass';
+      else if (sat < 0.22 && maxC > 95) matKind = 'ceramic';
+      else if (cr > 140 && cg > 70 && cb < 60) matKind = 'wood';
+      if (pbr.roughness === undefined) {
+        if (matKind === 'glass') pbr.roughness = 0.14; // glass / translucent panel
+        else if (matKind === 'ceramic') pbr.roughness = 0.32; // brushed ceramic / stainless / anodized metal
+        else if (matKind === 'wood') pbr.roughness = 0.42; // brass / copper / warm wood
+        else pbr.roughness = 0.56; // tactile indoor fabric / painted plaster / polymer
+      }
+      if (pbr.metalness === undefined) {
+        if (matKind === 'glass') pbr.metalness = 0.08;
+        else if (sat < 0.20 && maxC >= 60 && maxC <= 215) pbr.metalness = 0.52;
+        else if (cr > 160 && cg > 75 && cb < 40 && maxC < 220) pbr.metalness = 0.44;
+        else pbr.metalness = 0.12;
+      }
+      var mat = new THREE.MeshStandardMaterial(pbr);
+      var skipSheen = (pbr.roughness === 1 && pbr.metalness === 0) || !!pbr._lsNoShader;
+      if (!skipSheen) _lsApplyStudioFresnelShader(THREE, mat, matKind);
+      return mat;
+    }
     var Ctor = THREE.MeshPhongMaterial || THREE.MeshLambertMaterial || THREE.MeshBasicMaterial;
-    return typeof Ctor === 'function' ? new Ctor(opts || {}) : (opts || {});
+    return typeof Ctor === 'function' ? new Ctor(src) : src;
   }
 
   function _lsPlace(obj, x, y, z) {
@@ -5885,8 +5974,58 @@ window.StemLab = window.StemLab || {
     if (!target) return;
     var p = target.pos || [0, 0, 0];
     var r = Math.max(0.32, Math.max(target.size[0] || 0.5, target.size[2] || 0.5) * 0.72);
-    var halo = _lsAddMesh(THREE, S.model, 'TorusGeometry', [r, 0.04, 10, 28], { color: 0xfacc15, emissive: 0xca8a04 }, [p[0], p[1], p[2]], [Math.PI / 2, 0, 0], target.id);
+    var halo = _lsAddMesh(THREE, S.model, 'TorusGeometry', [r, 0.04, 10, 32], { color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.75, roughness: 0.25, metalness: 0.35 }, [p[0], p[1], p[2]], [Math.PI / 2, 0, 0], target.id);
     if (halo && halo.userData) halo.userData.isSelectHalo = true;
+    var outerMatOpts = { color: 0xfef08a, emissive: 0xf59e0b, emissiveIntensity: 0.9, transparent: true, opacity: 0.34, depthWrite: false };
+    if (THREE && THREE.AdditiveBlending !== undefined) outerMatOpts.blending = THREE.AdditiveBlending;
+    var outerHalo = _lsAddMesh(THREE, S.model, 'TorusGeometry', [r * 1.18, 0.024, 8, 32], outerMatOpts, [p[0], p[1], p[2]], [Math.PI / 2, 0, 0], null);
+    if (outerHalo && outerHalo.userData) outerHalo.userData.isSelectHalo = true;
+    // Animated pulsing holographic selection-beacon floor ring (GLSL ES 1.00)
+    if (THREE && S && S.model && !_lsIsHighContrast() && typeof THREE.ShaderMaterial === 'function' && typeof THREE.PlaneGeometry === 'function' && typeof THREE.Mesh === 'function') {
+      var beaconSpan = r * 3.1;
+      var beaconGeo = new THREE.PlaneGeometry(beaconSpan, beaconSpan, 1, 1);
+      var beaconColor = (typeof THREE.Color === 'function') ? new THREE.Color(target.color || '#facc15') : { r: 0.98, g: 0.80, b: 0.08 };
+      var beaconMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: _lsSharedShaderUniforms.uTime,
+          uAccent: { value: beaconColor }
+        },
+        vertexShader:
+          'varying vec2 vUv;\n' +
+          'void main() {\n' +
+          '  vUv = uv;\n' +
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n' +
+          '}',
+        fragmentShader:
+          'uniform float uTime;\n' +
+          'uniform vec3 uAccent;\n' +
+          'varying vec2 vUv;\n' +
+          'void main() {\n' +
+          '  vec2 q = (vUv - vec2(0.5)) * 2.0;\n' +
+          '  float rad = length(q);\n' +
+          '  if (rad > 1.0) discard;\n' +
+          '  float ang = atan(q.y, q.x);\n' +
+          '  float coreRing = exp(-pow((rad - 0.56) * 14.0, 2.0));\n' +
+          '  float wavePhase = fract(rad * 1.85 - uTime * 0.58);\n' +
+          '  float expandRing = pow(smoothstep(0.55, 0.96, wavePhase) * smoothstep(1.0, 0.96, wavePhase), 1.4);\n' +
+          '  float ticks = 0.65 + 0.35 * smoothstep(0.25, 0.85, sin(ang * 12.0 + uTime * 1.35));\n' +
+          '  float sweep = 0.72 + 0.28 * sin(ang - uTime * 1.8);\n' +
+          '  float falloff = smoothstep(1.0, 0.28, rad) * smoothstep(0.18, 0.38, rad);\n' +
+          '  float alpha = (coreRing * 0.62 * ticks + expandRing * 0.44 * sweep) * falloff;\n' +
+          '  vec3 col = mix(vec3(0.99, 0.86, 0.32), uAccent, 0.42) + vec3(0.16, 0.22, 0.26) * expandRing;\n' +
+          '  gl_FragColor = vec4(col, alpha * 0.68);\n' +
+          '}',
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide !== undefined ? THREE.DoubleSide : 2,
+        blending: THREE.AdditiveBlending !== undefined ? THREE.AdditiveBlending : 2
+      });
+      var beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
+      _lsPlace(beaconMesh, p[0], p[1] - 0.03, p[2]);
+      _lsRot(beaconMesh, -Math.PI / 2, 0, 0);
+      beaconMesh.userData = Object.assign({}, beaconMesh.userData || {}, { isSelectHalo: true, isHoloBeacon: true, partId: null });
+      if (typeof S.model.add === 'function') S.model.add(beaconMesh);
+    }
   }
 
   function _lsSetTargetHalf(THREE, S, targetArr, halfArr) {
@@ -9045,7 +9184,7 @@ window.StemLab = window.StemLab || {
     }
     if (factory) {
       var lastTHREE = null, lastS = null;
-      var viewer = factory({
+      var viewer = factory.call(window.StemLab, {
         attr: 'data-lifeskills-3d-canvas',
         clearColor: 0x0f172a,
         fov: 42,
@@ -9054,15 +9193,19 @@ window.StemLab = window.StemLab || {
         env: true,
         failMessage: 'WebGL preview paused — using live axonometric 3D blueprint.',
         lights: function(THREE, scene) {
-          if (typeof THREE.AmbientLight === 'function') scene.add(new THREE.AmbientLight(0xffffff, 0.62));
-          if (typeof THREE.HemisphereLight === 'function') scene.add(new THREE.HemisphereLight(0xe0f2fe, 0x1e293b, 0.45));
+          // Warm daylight indoor studio hemisphere + 3-point rim & bounce lighting
+          if (typeof THREE.AmbientLight === 'function') scene.add(new THREE.AmbientLight(0xfff8ee, 0.44));
+          if (typeof THREE.HemisphereLight === 'function') scene.add(new THREE.HemisphereLight(0xfff5e4, 0x1e293b, 0.62));
           if (typeof THREE.DirectionalLight === 'function') {
-            var key = new THREE.DirectionalLight(0xffffff, 0.85);
-            _lsPlace(key, 6, 9, 7);
+            var key = new THREE.DirectionalLight(0xfffbeb, 0.96);
+            _lsPlace(key, 6, 9.5, 7.5);
             scene.add(key);
-            var rim = new THREE.DirectionalLight(0x93c5fd, 0.35);
-            _lsPlace(rim, -5, 4, -6);
+            var rim = new THREE.DirectionalLight(0x93c5fd, 0.46);
+            _lsPlace(rim, -5.5, 4.8, -6.5);
             scene.add(rim);
+            var bounce = new THREE.DirectionalLight(0xfde68a, 0.22);
+            _lsPlace(bounce, 1.5, -4.2, 3.2);
+            scene.add(bounce);
           }
         },
         build: function(THREE, S, next) {
@@ -9070,6 +9213,82 @@ window.StemLab = window.StemLab || {
           lastTHREE = THREE;
           lastS = S;
           bay.buildScene(THREE, S, payload);
+          // Grounded concentric contact shadow discs beneath the studio model floor
+          if (S && S.model && THREE && typeof THREE.CircleGeometry === 'function') {
+            var shHalf = Array.isArray(bay.half) ? bay.half : [3.0, 2.2, 2.4];
+            var shRad = Math.max(1.8, Math.max(Number(shHalf[0]) || 2.6, Number(shHalf[2]) || 2.2) * 0.72);
+            var shY = -Math.max(1.08, (Number(shHalf[1]) || 2.1) * 0.50);
+            var shLayers = [[shRad * 0.78, 0.24, 0], [shRad * 1.05, 0.13, -0.004], [shRad * 1.32, 0.06, -0.008]];
+            for (var shi = 0; shi < shLayers.length; shi++) {
+              var shM = _lsAddMesh(THREE, S.model, 'CircleGeometry', [shLayers[shi][0], 36], {
+                color: 0x020617, transparent: true, opacity: shLayers[shi][1], depthWrite: false, roughness: 1, metalness: 0
+              }, [0, shY + shLayers[shi][2], 0], [-Math.PI / 2, 0, 0], null);
+              if (shM) shM.userData = Object.assign({}, shM.userData || {}, { isGroundShadow: true, partId: null });
+            }
+          }
+          // Soft sunlit indoor studio dust motes (GLSL ES 1.00 ShaderMaterial, auto-disposed with S.model)
+          if (S && S.model && THREE && !_lsIsHighContrast() && typeof THREE.ShaderMaterial === 'function' && typeof THREE.BufferGeometry === 'function' && typeof THREE.BufferAttribute === 'function' && typeof THREE.Points === 'function') {
+            var dHalf = Array.isArray(bay.half) ? bay.half : [2.8, 2.0, 2.4];
+            var dxSpan = Math.max(1.8, Number(dHalf[0]) || 2.8);
+            var dySpan = Math.max(1.4, Number(dHalf[1]) || 2.0);
+            var dzSpan = Math.max(1.8, Number(dHalf[2]) || 2.4);
+            var dustCount = 42;
+            var dPos = new Float32Array(dustCount * 3);
+            var dSeed = new Float32Array(dustCount * 3);
+            for (var di = 0; di < dustCount; di++) {
+              var df = (di + 0.5) / dustCount;
+              var da = di * 2.39996323;
+              var dr = Math.sqrt(df);
+              dPos[di * 3] = Math.cos(da) * dr * dxSpan * 0.92;
+              dPos[di * 3 + 1] = (((di * 13) % 23) / 23 - 0.45) * dySpan * 1.35;
+              dPos[di * 3 + 2] = Math.sin(da) * dr * dzSpan * 0.92;
+              dSeed[di * 3] = df * 6.28318;
+              dSeed[di * 3 + 1] = 0.55 + ((di * 7) % 13) / 13 * 0.85;
+              dSeed[di * 3 + 2] = 0.40 + ((di * 11) % 17) / 17 * 0.60;
+            }
+            var dustGeo = new THREE.BufferGeometry();
+            dustGeo.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
+            dustGeo.setAttribute('aSeed', new THREE.BufferAttribute(dSeed, 3));
+            var dustMat = new THREE.ShaderMaterial({
+              uniforms: {
+                uTime: _lsSharedShaderUniforms.uTime
+              },
+              vertexShader:
+                'uniform float uTime;\n' +
+                'attribute vec3 aSeed;\n' +
+                'varying float vTwinkle;\n' +
+                'varying float vWarm;\n' +
+                'void main() {\n' +
+                '  vec3 p = position;\n' +
+                '  float t = uTime * (0.36 + aSeed.y * 0.22) + aSeed.x;\n' +
+                '  p.x += sin(t * 0.85 + p.y * 0.9) * 0.14;\n' +
+                '  p.y += sin(t * 0.62 + p.x * 0.7) * 0.12;\n' +
+                '  p.z += cos(t * 0.74 + p.x * 0.6) * 0.14;\n' +
+                '  vTwinkle = 0.45 + 0.55 * sin(uTime * (1.45 + aSeed.y) + aSeed.x * 2.7);\n' +
+                '  vWarm = aSeed.z;\n' +
+                '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);\n' +
+                '  gl_PointSize = clamp((13.0 + 9.0 * aSeed.z) / max(1.0, -mvPos.z), 2.0, 7.5);\n' +
+                '  gl_Position = projectionMatrix * mvPos;\n' +
+                '}',
+              fragmentShader:
+                'varying float vTwinkle;\n' +
+                'varying float vWarm;\n' +
+                'void main() {\n' +
+                '  vec2 c = gl_PointCoord - vec2(0.5);\n' +
+                '  float d = length(c);\n' +
+                '  if (d > 0.5) discard;\n' +
+                '  float soft = pow(smoothstep(0.5, 0.05, d), 2.0);\n' +
+                '  vec3 col = mix(vec3(0.84, 0.94, 1.0), vec3(1.0, 0.93, 0.74), vWarm);\n' +
+                '  gl_FragColor = vec4(col, soft * vTwinkle * 0.36);\n' +
+                '}',
+              transparent: true,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending !== undefined ? THREE.AdditiveBlending : 2
+            });
+            var dustPoints = new THREE.Points(dustGeo, dustMat);
+            dustPoints.userData = { isStudioDust: true, partId: null };
+            if (typeof S.model.add === 'function') S.model.add(dustPoints);
+          }
           if (payload.explode && S && S.model && Array.isArray(S.model.children)) {
             for (var ci = 0; ci < S.model.children.length; ci++) {
               var ch = S.model.children[ci];
@@ -9082,7 +9301,7 @@ window.StemLab = window.StemLab || {
             var activeSel = payload.sel || (bay.parts[0] && bay.parts[0].id) || '';
             for (var xi = 0; xi < S.model.children.length; xi++) {
               var xm = S.model.children[xi];
-              if (xm && xm.material) {
+              if (xm && xm.material && !(xm.userData && (xm.userData.isHoloBeacon || xm.userData.isStudioDust))) {
                 if (xm.userData && xm.userData.partId) {
                   if (xm.userData.partId !== activeSel) {
                     xm.material.transparent = true;
@@ -9458,6 +9677,9 @@ window.StemLab = window.StemLab || {
             if (cutPlane) cutPlane.userData = Object.assign({}, cutPlane.userData || {}, { isCutawayPlane: true });
           }
           if (S) S._lsLastMs = null;
+          if (_lsPrefersReducedMotion()) {
+            _lsSharedShaderUniforms.uTime.value = 1.65;
+          }
           if (payload.livePulse && S && !_lsPrefersReducedMotion()) {
             var pulseRings = (S.model && Array.isArray(S.model.children)) ? S.model.children.filter(function(ch) {
               return !!(ch && ch.userData && (ch.userData.isSelectHalo || ch.userData.isStressRing || ch.userData.isMitigateRing || ch.userData.isMeasureRule || ch.userData.isPlumbGrid || ch.userData.isAxisTriad || ch.userData.isFlowLink || ch.userData.isPartBounds || ch.userData.isSightRay || ch.userData.isSafeZone || ch.userData.isLoadVector || ch.userData.isServiceTrack || ch.userData.isStancePad));
@@ -9466,6 +9688,7 @@ window.StemLab = window.StemLab || {
               var nowNum = Number(nowMs) || 0;
               var dt = (typeof S._lsLastMs === 'number') ? Math.min(1.0, Math.max(0, (nowNum - S._lsLastMs) * 0.001)) : 0;
               S._lsLastMs = nowNum;
+              _lsSharedShaderUniforms.uTime.value = 1.65 + ((nowNum * 0.001) % 3600.0);
               S.rotY = (typeof S.rotY === 'number' ? S.rotY : ((bay.rot && bay.rot.y) || 0)) + dt * 12;
               var pulse = 1 + 0.11 * Math.sin(nowNum * 0.001 * 3.2);
               for (var pri = 0; pri < pulseRings.length; pri++) {
@@ -10765,7 +10988,21 @@ window.StemLab = window.StemLab || {
                     zIndex: 1
                   }
                 },
-                  h('rect', { x: 0, y: 0, width: svgW, height: svgH, fill: '#0f172a' }),
+                  h('defs', null,
+                    h('radialGradient', { id: 'ls-svg-bg-' + bayId, cx: '50%', cy: '44%', r: '68%' },
+                      h('stop', { offset: '0%', stopColor: '#16243d' }),
+                      h('stop', { offset: '100%', stopColor: '#090f1d' })
+                    ),
+                    h('radialGradient', { id: 'ls-svg-sel-' + bayId, cx: '50%', cy: '50%', r: '50%' },
+                      h('stop', { offset: '0%', stopColor: '#facc15', stopOpacity: '0.45' }),
+                      h('stop', { offset: '100%', stopColor: '#facc15', stopOpacity: '0' })
+                    )
+                  ),
+                  h('rect', { x: 0, y: 0, width: svgW, height: svgH, fill: 'url(#ls-svg-bg-' + bayId + ')' }),
+                  h('g', { stroke: 'rgba(148,163,184,0.08)', strokeWidth: 0.75 },
+                    [60, 120, 180, 240, 300, 360, 420].map(function(gx) { return h('line', { key: 'bgx' + gx, x1: gx, y1: 0, x2: gx, y2: svgH }); }),
+                    [52, 104, 156, 208].map(function(gy) { return h('line', { key: 'bgy' + gy, x1: 0, y1: gy, x2: svgW, y2: gy }); })
+                  ),
                   xray && h('text', { x: 10, y: 18, fill: '#22d3ee', fontSize: '12', fontWeight: '800' }, 'X-RAY ISOLATE: ' + activePart.label.split(' (')[0].toUpperCase()),
                   focusPart && h('text', { x: 10, y: xray ? 32 : 18, fill: '#facc15', fontSize: '12', fontWeight: '800' }, 'FOCUS TARGET (' + activePart.pos[0] + ', ' + activePart.pos[1] + ', ' + activePart.pos[2] + '): ' + activePart.label.split(' (')[0].toUpperCase()),
                   stressTest && h('text', { x: 10, y: (xray ? 14 : 0) + (focusPart ? 14 : 0) + 18, fill: '#fca5a5', fontSize: '12', fontWeight: '800' }, 'STRESS TEST MODE: PEAK FAULT ON ' + activePart.label.split(' (')[0].toUpperCase()),
@@ -10800,6 +11037,7 @@ window.StemLab = window.StemLab || {
                       onClick: function(ev) { ev.stopPropagation(); selectPart(part.id, 'Clicked 3D node: '); }
                     },
                       h('line', { x1: originPt.x, y1: originPt.y, x2: pr.x, y2: pr.y, stroke: isSel ? '#facc15' : '#475569', strokeWidth: isSel ? 1.8 : 1, strokeDasharray: '2 3' }),
+                      isSel && h('circle', { cx: pr.x, cy: pr.y, r: rad + 15, fill: 'url(#ls-svg-sel-' + bayId + ')' }),
                       isSel && h('circle', { cx: pr.x, cy: pr.y, r: rad + 6, fill: 'none', stroke: '#facc15', strokeWidth: 2.2 }),
                       focusPart && isSel && h('g', { 'data-lifeskills-3d-reticle': part.id },
                         h('line', { x1: pr.x - rad - 14, y1: pr.y, x2: pr.x - rad - 8, y2: pr.y, stroke: '#facc15', strokeWidth: 2 }),
@@ -13090,22 +13328,54 @@ window.StemLab = window.StemLab || {
         asText(d.lifeSkills3dStatus) && h('div', { className: 'fixed top-16 right-4 z-50 bg-slate-900 text-white px-4 py-2 rounded-xl shadow-lg text-xs font-bold', role: 'status', 'aria-live': 'polite' }, asText(d.lifeSkills3dStatus)),
 
         // Header
-        h('div', { className: 'bg-gradient-to-r from-cyan-700 via-teal-700 to-emerald-700 rounded-2xl p-5 text-white shadow-lg' },
-          h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
-            h('div', null,
-              h('h3', { className: 'text-base font-bold flex items-center gap-2' }, __alloT('stem.lifeskills.life_skills_lab', '\uD83E\uDDED Life Skills Lab')),
-              h('p', { className: 'text-[12px]' }, roleGradeText(
-                'Learn about money, safety, and how things work!',
-                'Essential knowledge: taxes, data analysis, home science',
-                'Applied STEM: financial literacy, data analysis, engineering principles',
-                'Adulting essentials: progressive taxation, actuarial science, thermodynamics, electrical engineering'))
-            ),
-            h('div', { className: 'flex items-center gap-1 px-2 py-1 bg-black/20 rounded-lg' },
-              h('span', { className: 'text-xs' }, '\uD83C\uDFC6'),
-              h('span', { className: 'text-xs font-bold' }, Object.keys(lsBadges).length + '/' + LS_BADGES.length)
+        (function () {
+          var isHC = !!ctx.isContrast;
+          var roleBadgeTop = lsLifeRole === 'transition' ? 'Transition 18-22' : lsLifeRole === 'youth' ? 'Youth 8-13' : 'Teen 14-17';
+          var supportBadgeTop = lsSupportMode === 'steam' ? 'Deep STEAM' : lsSupportMode === 'plain' ? 'Plain' : 'Standard';
+          var earnedCount = Object.keys(lsBadges).length;
+          var badgePct = Math.max(0, Math.min(100, Math.round((earnedCount / Math.max(1, LS_BADGES.length)) * 100)));
+          return h('section', {
+            'data-lifeskills-hero': 'true',
+            className: 'rounded-2xl p-4 sm:p-5 text-white shadow-lg',
+            style: isHC
+              ? { backgroundColor: '#000000', color: '#ffffff', border: '2px solid #ffff00' }
+              : { backgroundColor: '#0f4c5c', backgroundImage: 'linear-gradient(125deg, #083344 0%, #0f766e 52%, #065f46 100%)', color: '#ffffff', border: '1px solid rgba(94, 234, 212, 0.35)' }
+          },
+            h('div', { className: 'flex items-center justify-between flex-wrap gap-3' },
+              h('div', { className: 'flex items-start gap-3 min-w-0 flex-1' },
+                h('svg', { width: 46, height: 46, viewBox: '0 0 48 48', 'aria-hidden': 'true', style: { flexShrink: 0, marginTop: 2 } },
+                  h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isHC ? '#000000' : '#042f2e', stroke: isHC ? '#ffff00' : '#5eead4', strokeWidth: 1.5 }),
+                  h('circle', { cx: 24, cy: 24, r: 14, fill: 'none', stroke: isHC ? '#ffffff' : 'rgba(153,246,228,0.55)', strokeWidth: 1.5 }),
+                  h('polygon', { points: '24,11 28,24 24,22 20,24', fill: isHC ? '#ffff00' : '#fbbf24' }),
+                  h('polygon', { points: '24,37 28,24 24,26 20,24', fill: isHC ? '#00ffff' : '#5eead4' }),
+                  h('circle', { cx: 24, cy: 24, r: 2.5, fill: '#ffffff' })
+                ),
+                h('div', { className: 'min-w-0' },
+                  h('div', { className: 'flex flex-wrap items-center gap-1.5 mb-1' },
+                    h('span', { className: 'rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wider', style: { backgroundColor: isHC ? '#000000' : '#115e59', color: isHC ? '#ffff00' : '#ccfbf1', border: '1px solid ' + (isHC ? '#ffff00' : 'rgba(94,234,212,0.4)') } }, __alloT('stem.lifeskills.subject_badge', 'Applied STEAM · Life Readiness')),
+                    h('span', { className: 'rounded-full px-2 py-0.5 text-xs font-bold', style: { backgroundColor: isHC ? '#000000' : '#0f172a', color: '#ffffff', border: '1px solid ' + (isHC ? '#ffffff' : 'rgba(255,255,255,0.25)') } }, roleBadgeTop + ' \u00B7 ' + supportBadgeTop)
+                  ),
+                  h('h3', { className: 'text-lg sm:text-xl font-black tracking-tight flex items-center gap-2', style: { color: '#ffffff' } }, __alloT('stem.lifeskills.life_skills_lab', '\uD83E\uDDED Life Skills Lab')),
+                  h('p', { className: 'text-[12px] mt-0.5', style: { color: isHC ? '#ffffff' : '#ccfbf1' } }, roleGradeText(
+                    'Learn about money, safety, and how things work!',
+                    'Essential knowledge: taxes, data analysis, home science',
+                    'Applied STEM: financial literacy, data analysis, engineering principles',
+                    'Adulting essentials: progressive taxation, actuarial science, thermodynamics, electrical engineering'))
+                )
+              ),
+              h('div', { className: 'flex flex-col items-end gap-1.5', style: { minWidth: 120 } },
+                h('div', { className: 'flex items-center gap-1.5 px-3 py-1 rounded-full', style: { backgroundColor: isHC ? '#000000' : '#0f172a', border: '1px solid ' + (isHC ? '#ffff00' : 'rgba(255,255,255,0.28)') } },
+                  h('span', { className: 'text-xs', 'aria-hidden': 'true' }, '\uD83C\uDFC6'),
+                  h('span', { className: 'text-xs font-bold', style: { color: isHC ? '#ffff00' : '#ffffff' } }, earnedCount + '/' + LS_BADGES.length)
+                ),
+                h('svg', { width: 112, height: 8, viewBox: '0 0 112 8', preserveAspectRatio: 'none', 'aria-hidden': 'true', style: { display: 'block', borderRadius: 4, overflow: 'hidden', border: '1px solid ' + (isHC ? '#ffffff' : 'rgba(255,255,255,0.3)') } },
+                  h('rect', { x: 0, y: 0, width: 112, height: 8, fill: isHC ? '#000000' : 'rgba(15,23,42,0.75)' }),
+                  h('rect', { x: 0, y: 0, width: Math.round(112 * badgePct / 100), height: 8, fill: isHC ? '#ffff00' : '#34d399' })
+                )
+              )
             )
-          )
-        ),
+          );
+        })(),
 
         // UDL Role, Support Depth, Domain Filter & Tab Search Bar
         h('div', { className: glassCard + ' space-y-2.5', 'data-lifeskills-udl-nav': 'true' },
@@ -13115,7 +13385,7 @@ window.StemLab = window.StemLab || {
               [{ id: 'youth', label: 'Youth 8-13' }, { id: 'teen', label: 'Teen 14-17' }, { id: 'transition', label: 'Transition 18-22' }].map(function(opt) {
                 var on = lsLifeRole === opt.id;
                 return h('button', { key: opt.id, type: 'button', 'aria-pressed': on, onClick: function() { upd('lsLifeRole', opt.id); announceToSR('Life role set to ' + opt.label); },
-                  className: 'px-2 py-1 rounded-lg text-[12px] font-bold transition-all ' + (on ? 'bg-slate-900 text-white' : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100')
+                  className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[12px] font-bold transition-all ' + (on ? 'bg-slate-900 text-white' : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100')
                 }, opt.label);
               })
             ),
@@ -13124,7 +13394,7 @@ window.StemLab = window.StemLab || {
               [{ id: 'plain', label: 'Plain' }, { id: 'standard', label: 'Standard' }, { id: 'steam', label: 'Deep STEAM' }].map(function(opt) {
                 var on = lsSupportMode === opt.id;
                 return h('button', { key: opt.id, type: 'button', 'aria-pressed': on, onClick: function() { upd('lsSupportMode', opt.id); announceToSR('Support depth set to ' + opt.label); },
-                  className: 'px-2 py-1 rounded-lg text-[12px] font-bold transition-all ' + (on ? 'bg-indigo-700 text-white' : 'bg-white border border-slate-300 text-slate-700 hover:bg-indigo-50')
+                  className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[12px] font-bold transition-all ' + (on ? 'bg-indigo-700 text-white' : 'bg-white border border-slate-300 text-slate-700 hover:bg-indigo-50')
                 }, opt.label);
               })
             ),
@@ -13134,17 +13404,30 @@ window.StemLab = window.StemLab || {
                 onChange: function(e) { upd('lsTabSearch', e.target.value); },
                 placeholder: __alloT('stem.lifeskills.placeholder_search_33_life_skills_tabs', 'Search 33 life skills tabs...'),
                 'aria-label': __alloT('stem.lifeskills.aria_filter_life_skills_tabs', 'Filter life skills tabs'),
-                className: 'w-full px-2.5 py-1 rounded-lg text-xs border border-slate-500 bg-white text-slate-800'
+                className: 'w-full min-h-11 px-2.5 py-1.5 rounded-lg text-xs border border-slate-500 bg-white text-slate-800'
               }),
-              lsTabSearch && h('button', { type: 'button', onClick: function() { upd('lsTabSearch', ''); }, 'aria-label': __alloT('stem.lifeskills.aria_clear_tab_filter', 'Clear tab filter'), className: 'px-2 py-1 rounded-lg text-[12px] font-bold bg-slate-200 text-slate-700' }, '\u2715')
+              lsTabSearch && h('button', { type: 'button', onClick: function() { upd('lsTabSearch', ''); }, 'aria-label': __alloT('stem.lifeskills.aria_clear_tab_filter', 'Clear tab filter'), className: 'min-h-11 min-w-11 px-2 py-1 rounded-lg text-[12px] font-bold bg-slate-200 text-slate-700' }, '\u2715')
             )
           ),
           h('div', { className: 'flex flex-wrap gap-1.5 items-center', role: 'group', 'aria-label': __alloT('stem.lifeskills.aria_life_skills_domains', 'Life skills domains') },
             SUBTOOL_DOMAINS.map(function(dom) {
               var on = lsDomain === dom.id;
               return h('button', { key: dom.id, type: 'button', 'aria-pressed': on, onClick: function() { upd('lsDomain', dom.id); announceToSR('Showing domain ' + dom.label); },
-                className: 'px-2.5 py-1 rounded-full text-[12px] font-bold transition-all ' + (on ? 'bg-teal-700 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-teal-50 border border-slate-300')
+                className: 'min-h-11 px-3 py-1.5 rounded-full text-[12px] font-bold transition-all ' + (on ? 'bg-teal-700 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-teal-50 border border-slate-300')
               }, dom.icon + ' ' + dom.label);
+            })
+          ),
+          tab === 'overview' && h('div', { className: 'flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-slate-200/80', role: 'group', 'aria-label': __alloT('stem.lifeskills.quick_starters_group', 'Quick starter modules'), 'data-lifeskills-starters': 'true' },
+            h('span', { className: 'text-[12px] font-bold uppercase text-teal-800 mr-1' }, __alloT('stem.lifeskills.quick_starters_lbl', 'Quick launch:')),
+            [
+              { id: 'paycheck', label: '\uD83E\uDDFE ' + __alloT('stem.lifeskills.starter_paycheck', 'Paycheck + Tax') },
+              { id: 'budget', label: '\uD83D\uDCB0 ' + __alloT('stem.lifeskills.starter_budget', 'Budgeting') },
+              { id: 'homesafety', label: '\uD83D\uDEE1\uFE0F ' + __alloT('stem.lifeskills.starter_safety', 'Home Safety') },
+              { id: 'cooking', label: '\uD83C\uDF73 ' + __alloT('stem.lifeskills.starter_cooking', 'Cooking Science') }
+            ].map(function(q) {
+              return h('button', { key: 'ls-qs-' + q.id, type: 'button', onClick: function() { updMulti({ tab: q.id, lsDomain: 'all' }); announceToSR('Switched to ' + q.label); },
+                className: 'min-h-11 px-3 py-1.5 rounded-full text-[12px] font-bold bg-teal-50 text-teal-900 border border-teal-600 hover:bg-teal-100 transition-colors'
+              }, q.label);
             })
           ),
           lsPinnedTabs.length > 0 && h('div', { className: 'flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-200/80', 'data-lifeskills-pinned-bar': 'true' },
@@ -13153,14 +13436,14 @@ window.StemLab = window.StemLab || {
               var foundSub = SUBTOOLS.find(function(s) { return s.id === pid; });
               if (!foundSub) return null;
               return h('button', { key: pid, type: 'button', onClick: function() { upd('tab', pid); },
-                className: 'px-2 py-0.5 rounded-lg text-[12px] font-bold ' + (tab === pid ? 'bg-amber-800 text-white' : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100')
+                className: 'min-h-11 px-2.5 py-1 rounded-lg text-[12px] font-bold ' + (tab === pid ? 'bg-amber-800 text-white' : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100')
               }, foundSub.icon + ' ' + foundSub.label);
             })
           )
         ),
 
         // Sub-tool tabs
-        h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', },
+        h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', 'aria-label': __alloT('stem.lifeskills.aria_module_tabs', 'Life skills modules') },
           SUBTOOLS.map(function(st, tabIndex) {
             var active = tab === st.id;
             var matchesDomain = !domainAllowedIds || domainAllowedIds.indexOf(st.id) !== -1;
@@ -13168,7 +13451,7 @@ window.StemLab = window.StemLab || {
             var matchesFilter = matchesDomain && matchesSearch;
             return h('button', { key: st.id, id: 'lifeskills-tab-' + st.id,
               'aria-controls': 'lifeskills-panel-' + st.id,
-              style: (!matchesFilter && !active) ? { display: 'none' } : undefined,
+              style: (!matchesFilter && !active) ? { display: 'none' } : { minHeight: 44 },
               onClick: function() { updMulti({ tab: st.id }); announceToSR('Switched to ' + st.label); },
               onKeyDown: function(e) { lifeSkillsTabKeyDown(e, tabIndex); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-teal-50 border border-slate-400'),
@@ -13226,9 +13509,17 @@ window.StemLab = window.StemLab || {
           var isPinned = lsPinnedTabs.indexOf(tab) !== -1;
           var roleBadge = lsLifeRole === 'transition' ? 'Transition 18-22' : lsLifeRole === 'youth' ? 'Youth 8-13' : 'Teen 14-17';
           var supportBadge = lsSupportMode === 'steam' ? 'Deep STEAM' : lsSupportMode === 'plain' ? 'Plain Language' : 'Standard';
+          var isHC2 = !!ctx.isContrast;
           return h('div', { role: 'tabpanel', id: 'lifeskills-panel-' + tab,
             'aria-labelledby': 'lifeskills-tab-' + tab, tabIndex: 0,
-            style: {
+            style: isHC2 ? {
+              padding: '12px 14px',
+              borderRadius: 12,
+              backgroundColor: '#000000',
+              border: '2px solid #ffff00',
+              borderLeft: '4px solid #ffff00',
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            } : {
               padding: '12px 14px',
               borderRadius: 12,
               background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
@@ -13240,15 +13531,15 @@ window.StemLab = window.StemLab || {
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('div', { className: 'flex items-center gap-2 flex-wrap' },
-                h('h3', { style: { color: heroInk, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('h3', { style: { color: isHC2 ? '#ffff00' : heroInk, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
                 h('span', { className: 'px-2 py-0.5 rounded-full text-[12px] font-bold bg-white/80 border border-slate-300 text-slate-700' }, roleBadge + ' \u00B7 ' + supportBadge)
               ),
               // Fixed ink: the band stays light in dark theme (light tool card), where the soft var is light.
-              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: lsSupportMode === 'plain' ? 13 : 12, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: isHC2 ? '#ffffff' : '#475569', fontSize: lsSupportMode === 'plain' ? 13 : 12, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             ),
             h('div', { className: 'flex items-center gap-1.5 shrink-0' },
-              h('button', { type: 'button', onClick: function() { speakLifeSkillsText(meta.title + '. ' + meta.hint); }, 'aria-label': __alloT('stem.lifeskills.aria_read_section_overview_aloud', 'Read section overview aloud'), className: 'px-2.5 py-1 rounded-lg text-[12px] font-bold bg-white border border-slate-300 text-slate-800 hover:bg-teal-50' }, '\uD83D\uDD0A Read'),
-              h('button', { type: 'button', 'aria-pressed': isPinned, onClick: function() { togglePinnedTab(tab); }, 'aria-label': isPinned ? __alloAriaFill(__alloT('stem.lifeskills.a11y_unpin', 'Unpin {title}'), { title: meta.title }) : __alloAriaFill(__alloT('stem.lifeskills.a11y_pin', 'Pin {title}'), { title: meta.title }), className: 'px-2.5 py-1 rounded-lg text-[12px] font-bold ' + (isPinned ? 'bg-amber-800 text-white' : 'bg-white border border-slate-300 text-slate-800 hover:bg-amber-50') }, isPinned ? '\u2605 Pinned' : '\u2B50 Pin')
+              h('button', { type: 'button', onClick: function() { speakLifeSkillsText(meta.title + '. ' + meta.hint); }, 'aria-label': __alloT('stem.lifeskills.aria_read_section_overview_aloud', 'Read section overview aloud'), className: 'min-h-11 px-3 py-1.5 rounded-lg text-[12px] font-bold bg-white border border-slate-300 text-slate-800 hover:bg-teal-50' }, '\uD83D\uDD0A Read'),
+              h('button', { type: 'button', 'aria-pressed': isPinned, onClick: function() { togglePinnedTab(tab); }, 'aria-label': isPinned ? __alloAriaFill(__alloT('stem.lifeskills.a11y_unpin', 'Unpin {title}'), { title: meta.title }) : __alloAriaFill(__alloT('stem.lifeskills.a11y_pin', 'Pin {title}'), { title: meta.title }), className: 'min-h-11 px-3 py-1.5 rounded-lg text-[12px] font-bold ' + (isPinned ? 'bg-amber-800 text-white' : 'bg-white border border-slate-300 text-slate-800 hover:bg-amber-50') }, isPinned ? '\u2605 Pinned' : '\u2B50 Pin')
             )
           );
         })(),

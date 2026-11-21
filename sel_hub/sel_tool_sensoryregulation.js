@@ -132,8 +132,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       var _senT = (ctx && ctx.theme) || {};
       var _senHC = !!_senT.isContrast, _senL = !_senHC && !_senT.isDark;
       var _sen_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _sen_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#15803d':'#000000','#6366f1':'#000000','#fff':'#000000','#f8fafc':'#000000','#4f46e5':'#000000'};
-      var _sen_FGL = {'#cbd5e1':'#334155','#fdba74':'#9a3412','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#fee2e2':'#991b1b','#a5b4fc':'#3730a3','#fca5a5':'#991b1b','#86efac':'#166534','#6ee7b7':'#065f46','#c7d2fe':'#312e81','#fcd34d':'#78350f','#fde68a':'#92400e'}, _sen_FGH = {'#6366f1':'#ffff00','#dc2626':'#ffff00','#cbd5e1':'#ffff00','#fdba74':'#ffff00','#94a3b8':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fecaca':'#ffff00','#fee2e2':'#ffff00','#a5b4fc':'#ffff00','#fca5a5':'#ffff00','#86efac':'#ffff00','#6ee7b7':'#ffff00','#fff':'#ffff00','#c7d2fe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
-      var _sen_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _sen_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#f97316':'#ffff00','#22c55e':'#ffff00','#6366f1':'#ffff00','#dc2626':'#ffff00','#10b981':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#ea580c':'#ffff00','#f59e0b':'#ffff00'};
+      var _sen_FGL = {'#cbd5e1':'#334155','#fdba74':'#9a3412','#fed7aa':'#9a3412','#94a3b8':'#475569','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#fee2e2':'#991b1b','#a5b4fc':'#3730a3','#fca5a5':'#991b1b','#86efac':'#166534','#bbf7d0':'#166534','#dcfce7':'#14532d','#6ee7b7':'#065f46','#c7d2fe':'#312e81','#fcd34d':'#78350f','#fde68a':'#92400e','#f97316':'#9a3412','#22c55e':'#166534','#6366f1':'#3730a3','#0ea5e9':'#0369a1','#a855f7':'#6b21a8','#f59e0b':'#92400e','#ec4899':'#9d174d','#10b981':'#065f46'}, _sen_FGH = {'#6366f1':'#ffff00','#dc2626':'#ffff00','#cbd5e1':'#ffff00','#fdba74':'#ffff00','#94a3b8':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#dcfce7':'#ffff00','#fecaca':'#ffff00','#fee2e2':'#ffff00','#a5b4fc':'#ffff00','#fca5a5':'#ffff00','#86efac':'#ffff00','#6ee7b7':'#ffff00','#fff':'#ffff00','#c7d2fe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00','#f97316':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#a855f7':'#ffff00','#f59e0b':'#ffff00','#ec4899':'#ffff00','#10b981':'#ffff00'};
+      var _sen_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#94a3b8','#94a3b8':'#64748b'}, _sen_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#f97316':'#ffff00','#22c55e':'#ffff00','#6366f1':'#ffff00','#dc2626':'#ffff00','#10b981':'#ffff00','#475569':'#ffff00','#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#ea580c':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#a855f7':'#ffff00'};
       var _senBg = function(h){ return _senHC ? (_sen_BGH[h]||h) : (_senL ? (_sen_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
       // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
@@ -150,24 +150,53 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var _senBand = (ctx && ctx.gradeBand) || 'high';
 
       var d = labToolData.sensoryRegulation || defaultState();
       function setSens(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.sensoryRegulation) || defaultState();
-          var next = Object.assign({}, prior, patch);
+          var resolved = typeof patch === 'function' ? patch(prior) : patch;
+          var next = Object.assign({}, prior, resolved);
           next.lastUpdated = todayISO();
           return Object.assign({}, prev, { sensoryRegulation: next });
         });
       }
-      var view = d.view || 'home';
-      function goto(v) { setSens({ view: v }); }
+      function scanSensoryText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed || !window.SelHub) return false;
+        var blocked = false;
+        if (typeof window.SelHub.safeRehearseCheck === 'function') {
+          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'sensoryRegulation', onSafetyFlag: onSafetyFlag });
+          if (chk && chk.action === 'block') blocked = true;
+        }
+        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && (scan.triggered || scan.hasCrisis)) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') {
+              try { onSafetyFlag({ toolId: 'sensoryRegulation', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+            }
+          }
+        }
+        if (blocked) {
+          setSens({ _crisisTier: 3 });
+          if (typeof window.SelHub.showCrisisModal === 'function') {
+            window.SelHub.showCrisisModal({ toolName: 'Sensory Regulation', contentSnippet: trimmed });
+          }
+        }
+        return blocked;
+      }
+      var VALID_VIEWS = { home: 1, profile: 1, diet: 1, accommodations: 1, print: 1, about: 1 };
+      var view = Object.prototype.hasOwnProperty.call(VALID_VIEWS, d.view) ? d.view : 'home';
+      function goto(v) { setSens({ view: Object.prototype.hasOwnProperty.call(VALID_VIEWS, v) ? v : 'home' }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _senFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: _senBg('#1e293b'), border: '1px solid ' + _senBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _senFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _senFg('#fdba74'), fontSize: 22, fontWeight: 900 } }, '🌈 Sensory Regulation'),
             h('div', { style: { fontSize: 12, color: _senFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Understanding your sensory processing. Identity-first, neurodiversity-affirming.')
@@ -188,10 +217,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, id: 'sens-tab-' + t.id, 'aria-controls': 'sens-panel-' + t.id, tabIndex: active ? 0 : -1, onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f97316' : '#334155'),
-                background: active ? 'rgba(249,115,22,0.18)' : _senBg('#1e293b'),
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _senBd('#f97316') : _senBd('#334155')),
+                background: active ? (_senHC ? '#000000' : 'rgba(249,115,22,0.18)') : _senBg('#1e293b'),
                 color: active ? _senFg('#fed7aa') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -200,7 +229,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _senFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _senBg('#0f172a'), border: '1px solid ' + _senBd('#334155'), fontSize: 11, color: _senFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'This is descriptive self-understanding, not diagnostic assessment. For formal sensory evaluation, an occupational therapist (OT) is the right professional. Crisis Text Line: text HOME to 741741.'
         );
@@ -209,28 +238,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       function sensoryCommandPanel() {
         var profileCount = Object.keys(d.profile || {}).filter(function(k) { return !!d.profile[k]; }).length;
         var activities = ((Array.isArray(d.regulatingActivities) ? d.regulatingActivities : [])).length;
-        var accommodations = (d.myAccommodations || []).length;
+        var accommodations = (Array.isArray(d.myAccommodations) ? d.myAccommodations : []).length;
         var profileMix = { seek: 0, avoid: 0, mixed: 0, typical: 0 };
         Object.keys(d.profile || {}).forEach(function(k) {
           var mode = d.profile[k];
-          if (profileMix[mode] !== undefined) profileMix[mode] += 1;
+          if (Object.prototype.hasOwnProperty.call(profileMix, mode)) profileMix[mode] += 1;
         });
         var needLabels = { less: 'Less input', more: 'More input', control: 'More control', steady: 'Steady enough' };
+        var currentNeedLabel = Object.prototype.hasOwnProperty.call(needLabels, d.currentNeed) ? needLabels[d.currentNeed] : null;
         function status(label, value, color) {
-          return h('div', { style: { padding: 10, borderRadius: 8, background: _senBg('#0f172a'), border: '1px solid #1e293b' } },
+          return h('div', { style: { padding: 10, borderRadius: 8, background: _senBg('#0f172a'), border: '1px solid ' + _senBd('#1e293b') } },
             h('div', { style: { fontSize: 11, color: _senFg('#94a3b8'), fontWeight: 800, textTransform: 'uppercase', marginBottom: 3 } }, label),
             h('div', { style: { fontSize: 20, color: _senFg(color), fontWeight: 900 } }, value)
           );
         }
         function route(label, blurb, target, color) {
           return h('button', { onClick: function() { goto(target); }, 'aria-label': label,
-            style: { textAlign: 'left', padding: 12, borderRadius: 8, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, background: _senBg('#0f172a'), color: _senFg('#e2e8f0'), cursor: 'pointer', minHeight: 92 } },
+            style: { textAlign: 'left', padding: 12, borderRadius: 8, borderTop: '1px solid ' + _senBd('#1e293b'), borderRight: '1px solid ' + _senBd('#1e293b'), borderBottom: '1px solid ' + _senBd('#1e293b'), borderLeft: '3px solid ' + (_senHC ? '#ffff00' : color), background: _senBg('#0f172a'), color: _senFg('#e2e8f0'), cursor: 'pointer', minHeight: 92 } },
             h('div', { style: { fontSize: 13, color: _senFg(color), fontWeight: 900, marginBottom: 4 } }, label),
             h('div', { style: { fontSize: 11.5, color: _senFg('#94a3b8'), lineHeight: 1.5 } }, blurb)
           );
         }
         return h('section', { className: 'no-print', 'aria-label': 'Sensory Regulation workspace summary',
-          style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(249,115,22,0.16) 0%, rgba(15,23,42,0.62) 70%)', border: '1px solid rgba(249,115,22,0.34)', marginBottom: 14 } },
+          style: { padding: 14, borderRadius: 12, background: _senHC ? '#000000' : (_senL ? 'linear-gradient(135deg, rgba(249,115,22,0.12) 0%, #f8fafc 70%)' : 'linear-gradient(135deg, rgba(249,115,22,0.16) 0%, rgba(15,23,42,0.62) 70%)'), border: '1px solid ' + (_senHC ? '#ffff00' : 'rgba(249,115,22,0.34)'), marginBottom: 14 } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 } },
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('div', { style: { fontSize: 12, color: _senFg('#fdba74'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, 'Sensory workspace'),
@@ -250,15 +280,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 6 } },
             SYSTEMS.map(function(s) {
               var marked = !!((d.profile || {})[s.id]);
-              return h('div', { key: s.id, style: { padding: '6px 8px', borderRadius: 8, background: marked ? s.color + '16' : _senBg('#1e293b'), border: '1px solid ' + (marked ? s.color : '#334155'), color: marked ? _senFg(s.color) : _senFg('#94a3b8'), fontSize: 11, fontWeight: 800, textAlign: 'center' } },
+              return h('div', { key: s.id, style: { padding: '6px 8px', borderRadius: 8, background: marked ? (_senHC ? '#000000' : s.color + '16') : _senBg('#1e293b'), border: '1px solid ' + (marked ? (_senHC ? '#ffff00' : s.color) : _senBd('#334155')), color: marked ? _senFg(s.color) : _senFg('#94a3b8'), fontSize: 11, fontWeight: 800, textAlign: 'center' } },
                 s.label
               );
             })
           ),
-          profileCount ? h('div', { style: { marginTop: 10, padding: 10, borderRadius: 9, background: _senBg('#0f172a'), border: '1px solid #1e293b' } },
+          profileCount ? h('div', { style: { marginTop: 10, padding: 10, borderRadius: 9, background: _senBg('#0f172a'), border: '1px solid ' + _senBd('#1e293b') } },
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 7 } },
               h('span', { style: { color: _senFg('#e2e8f0'), fontSize: 11.5, fontWeight: 900 } }, 'My profile mix'),
-              d.currentNeed ? h('span', { style: { padding: '4px 7px', borderRadius: 999, background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.35)', color: _senFg('#fdba74'), fontSize: 10.5, fontWeight: 900 } }, 'Right now: ' + needLabels[d.currentNeed]) : null
+              currentNeedLabel ? h('span', { style: { padding: '4px 7px', borderRadius: 999, background: _senHC ? '#000000' : 'rgba(249,115,22,0.12)', border: '1px solid ' + (_senHC ? '#ffff00' : 'rgba(249,115,22,0.35)'), color: _senFg('#fdba74'), fontSize: 10.5, fontWeight: 900 } }, 'Right now: ' + currentNeedLabel) : null
             ),
             h('div', { role: 'img', 'aria-label': 'Sensory profile mix: ' + profileMix.seek + ' seeking, ' + profileMix.avoid + ' avoiding, ' + profileMix.mixed + ' mixed, and ' + profileMix.typical + ' typical',
               style: { display: 'flex', width: '100%', height: 10, overflow: 'hidden', borderRadius: 999, background: _senBg('#1e293b'), border: '1px solid #334155', marginBottom: 7 } },
@@ -356,7 +386,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         return h('div', null,
           sensoryCommandPanel(),
           sensoryCheckin(),
-          h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(249,115,22,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(249,115,22,0.4)', marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 14, background: _senHC ? '#000000' : (_senL ? 'linear-gradient(135deg, rgba(249,115,22,0.12) 0%, #f8fafc 60%)' : 'linear-gradient(135deg, rgba(249,115,22,0.16) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_senHC ? '#ffff00' : 'rgba(249,115,22,0.4)'), marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _senFg('#fed7aa'), marginBottom: 4 } }, 'Sensory difference is identity, not deficit.'),
             h('p', { style: { margin: '0 0 8px', color: _senFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'Every brain processes sensory information differently. For some people, the differences are subtle. For autistic people, ADHD people, sensory processing disorder people, and many others, the differences are dramatic — and they shape every part of daily life: school, food, clothes, friendships, sleep, focus, regulation.'
@@ -457,20 +487,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
               // Mode picker
               h('div', { style: { display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }, role: 'radiogroup', 'aria-label': s.label + ' profile' },
                 h('button', { onClick: function() { setSystem(s.id, 'seek'); }, role: 'radio', 'aria-checked': current === 'seek',
-                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'seek' ? '#22c55e' : _senFg('#475569')), background: current === 'seek' ? 'rgba(34,197,94,0.18)' : 'transparent', color: current === 'seek' ? _senFg('#86efac') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '+ Seeker'),
+                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'seek' ? _senBd('#22c55e') : _senBd('#475569')), background: current === 'seek' ? (_senHC ? '#000000' : 'rgba(34,197,94,0.18)') : 'transparent', color: current === 'seek' ? _senFg('#86efac') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '+ Seeker'),
                 h('button', { onClick: function() { setSystem(s.id, 'avoid'); }, role: 'radio', 'aria-checked': current === 'avoid',
-                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'avoid' ? '#ef4444' : _senFg('#475569')), background: current === 'avoid' ? 'rgba(239,68,68,0.18)' : 'transparent', color: current === 'avoid' ? _senFg('#fecaca') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '✕ Avoider'),
+                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'avoid' ? _senBd('#ef4444') : _senBd('#475569')), background: current === 'avoid' ? (_senHC ? '#000000' : 'rgba(239,68,68,0.18)') : 'transparent', color: current === 'avoid' ? _senFg('#fecaca') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '✕ Avoider'),
                 h('button', { onClick: function() { setSystem(s.id, 'mixed'); }, role: 'radio', 'aria-checked': current === 'mixed',
-                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'mixed' ? '#a855f7' : _senFg('#475569')), background: current === 'mixed' ? 'rgba(168,85,247,0.18)' : 'transparent', color: current === 'mixed' ? _senFg('#c7d2fe') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '↕ Mixed'),
+                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'mixed' ? _senBd('#a855f7') : _senBd('#475569')), background: current === 'mixed' ? (_senHC ? '#000000' : 'rgba(168,85,247,0.18)') : 'transparent', color: current === 'mixed' ? _senFg('#c7d2fe') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '↕ Mixed'),
                 h('button', { onClick: function() { setSystem(s.id, 'typical'); }, role: 'radio', 'aria-checked': current === 'typical',
-                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'typical' ? _senFg('#94a3b8') : _senFg('#475569')), background: current === 'typical' ? _senFg('#475569') : 'transparent', color: _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '~ Typical')
+                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'typical' ? _senBd('#94a3b8') : _senBd('#475569')), background: current === 'typical' ? (_senHC ? '#000000' : (_senL ? '#e2e8f0' : '#475569')) : 'transparent', color: current === 'typical' ? (_senHC ? '#ffff00' : (_senL ? '#0f172a' : '#f8fafc')) : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '~ Typical')
               ),
 
               h('label', { htmlFor: 'sens-notes-' + s.id, style: { display: 'block', fontSize: 11, color: _senFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'My specific notes (optional)'),
               h('textarea', { id: 'sens-notes-' + s.id, value: notes,
                 placeholder: 'Be specific. What helps, what hurts, what you need.',
                 onChange: function(e) { setNotes(s.id, e.target.value); },
-                style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _senBg('#1e293b'), color: _senFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' } })
+                onBlur: function(e) { scanSensoryText(e.target.value); },
+                style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid ' + _senBd('#334155'), background: _senBg('#1e293b'), color: _senFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical' } })
             );
           }),
 
@@ -483,19 +514,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       // ═══════════════════════════════════════════════════════════
       function renderDiet() {
         function addActivity() {
-          var label = document.getElementById('sens-act-label').value;
-          var system = document.getElementById('sens-act-system').value;
-          var when = document.getElementById('sens-act-when').value;
+          var labelEl = document.getElementById('sens-act-label');
+          var systemEl = document.getElementById('sens-act-system');
+          var whenEl = document.getElementById('sens-act-when');
+          var label = labelEl ? labelEl.value : '';
+          var system = systemEl ? systemEl.value : (SYSTEMS[0] && SYSTEMS[0].id);
+          var when = whenEl ? whenEl.value : '';
           if (!label || !label.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
-          var entry = { label: label.trim(), system: system, when: when || 'as needed' };
-          setSens({ regulatingActivities: ((Array.isArray(d.regulatingActivities) ? d.regulatingActivities : [])).concat([entry]) });
-          document.getElementById('sens-act-label').value = '';
-          document.getElementById('sens-act-when').value = '';
+          scanSensoryText(label + ' ' + when);
+          var entry = { label: label.trim(), system: system, when: (when && when.trim()) || 'as needed' };
+          setSens(function(prior) {
+            var list = Array.isArray(prior.regulatingActivities) ? prior.regulatingActivities : [];
+            return { regulatingActivities: list.concat([entry]) };
+          });
+          if (labelEl) labelEl.value = '';
+          if (whenEl) whenEl.value = '';
         }
         function removeActivity(i) {
-          var nx = ((Array.isArray(d.regulatingActivities) ? d.regulatingActivities : [])).slice();
-          nx.splice(i, 1);
-          setSens({ regulatingActivities: nx });
+          setSens(function(prior) {
+            var nx = (Array.isArray(prior.regulatingActivities) ? prior.regulatingActivities : []).slice();
+            nx.splice(i, 1);
+            return { regulatingActivities: nx };
+          });
         }
 
         var activities = (Array.isArray(d.regulatingActivities) ? d.regulatingActivities : []);
@@ -551,19 +591,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
               )
             ),
             h('button', { onClick: addActivity, 'aria-label': 'Add to sensory diet',
-              style: { padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _senBg('#15803d'), color: _senFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add')
+              style: { padding: '8px 16px', borderRadius: 6, border: _senHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _senBg('#15803d'), color: _senFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add')
           ),
 
-          activities.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _senBg('#0f172a'), border: '1px solid #1e293b' } },
+          activities.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _senBg('#0f172a'), border: '1px solid ' + _senBd('#1e293b') } },
             h('div', { style: { fontSize: 12, color: _senFg('#bbf7d0'), fontWeight: 800, marginBottom: 8 } }, 'My sensory diet (' + activities.length + ')'),
             activities.map(function(a, i) {
               var sys = SYSTEMS.find(function(s) { return s.id === a.system; });
-              return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _senBg('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, borderLeft: '3px solid ' + (sys ? sys.color : _senFg('#64748b')) } },
+              return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _senBg('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, borderLeft: '3px solid ' + (sys ? (_senHC ? '#ffff00' : sys.color) : _senFg('#64748b')) } },
                 h('span', { style: { fontSize: 16 } }, sys ? sys.icon : '◆'),
                 h('span', { style: { flex: 1, fontSize: 13, color: _senFg('#e2e8f0') } }, a.label,
                   h('span', { style: { fontSize: 11, color: _senFg('#94a3b8'), marginLeft: 6 } }, '· ' + a.when)),
-                h('button', { onClick: function() { removeActivity(i); }, 'aria-label': 'Remove activity',
-                  style: { background: 'transparent', border: '1px solid #475569', color: _senFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                h('button', { onClick: function() { removeActivity(i); }, 'aria-label': 'Remove activity: ' + a.label,
+                  style: { minWidth: 24, minHeight: 24, background: 'transparent', border: '1px solid ' + _senBd('#475569'), color: _senFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
               );
             })
           ) : null,
@@ -576,63 +616,70 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       // ACCOMMODATIONS
       // ═══════════════════════════════════════════════════════════
       function renderAccommodations() {
+        var myAccommodations = Array.isArray(d.myAccommodations) ? d.myAccommodations : [];
         function addAccommodation(value) {
           if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
-          var list = (d.myAccommodations || []).slice();
-          if (list.indexOf(value.trim()) === -1) list.push(value.trim());
-          setSens({ myAccommodations: list });
+          var trimmed = value.trim();
+          setSens(function(prior) {
+            var list = (Array.isArray(prior.myAccommodations) ? prior.myAccommodations : []).slice();
+            if (list.indexOf(trimmed) === -1) list.push(trimmed);
+            return { myAccommodations: list };
+          });
         }
         function removeAccommodation(i) {
-          var list = (d.myAccommodations || []).slice();
-          list.splice(i, 1);
-          setSens({ myAccommodations: list });
+          setSens(function(prior) {
+            var list = (Array.isArray(prior.myAccommodations) ? prior.myAccommodations : []).slice();
+            list.splice(i, 1);
+            return { myAccommodations: list };
+          });
         }
         function submitInput() {
           var el = document.getElementById('sens-acc-input');
           if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
+          scanSensoryText(el.value);
           addAccommodation(el.value);
           el.value = '';
         }
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', marginBottom: 14, fontSize: 13, color: _senFg('#c7d2fe'), lineHeight: 1.7 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _senHC ? '#000000' : 'rgba(99,102,241,0.10)', borderTop: '1px solid ' + (_senHC ? '#ffff00' : 'rgba(99,102,241,0.3)'), borderRight: '1px solid ' + (_senHC ? '#ffff00' : 'rgba(99,102,241,0.3)'), borderBottom: '1px solid ' + (_senHC ? '#ffff00' : 'rgba(99,102,241,0.3)'), borderLeft: '3px solid ' + _senBd('#6366f1'), marginBottom: 14, fontSize: 13, color: _senFg('#c7d2fe'), lineHeight: 1.7 } },
             h('strong', null, '📝 Concrete accommodations '),
             'follow from your sensory profile. Build this list before your next IEP meeting, 504 conversation, or self-advocacy chat with a teacher. The Self-Advocacy and DEAR MAN tools in this SEL Hub help you actually ASK for these.'
           ),
 
           // Selected accommodations
-          (d.myAccommodations || []).length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _senBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
-            h('div', { style: { fontSize: 12, color: _senFg('#c7d2fe'), fontWeight: 800, marginBottom: 8 } }, 'My accommodations list (' + d.myAccommodations.length + ')'),
-            d.myAccommodations.map(function(a, i) {
+          myAccommodations.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _senBg('#0f172a'), borderTop: '1px solid ' + _senBd('#1e293b'), borderRight: '1px solid ' + _senBd('#1e293b'), borderBottom: '1px solid ' + _senBd('#1e293b'), borderLeft: '3px solid ' + _senBd('#6366f1'), marginBottom: 10 } },
+            h('div', { style: { fontSize: 12, color: _senFg('#c7d2fe'), fontWeight: 800, marginBottom: 8 } }, 'My accommodations list (' + myAccommodations.length + ')'),
+            myAccommodations.map(function(a, i) {
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _senBg('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { flex: 1, fontSize: 13, color: _senFg('#e2e8f0') } }, '✓ ' + a),
-                h('button', { onClick: function() { removeAccommodation(i); }, 'aria-label': 'Remove accommodation',
-                  style: { background: 'transparent', border: '1px solid #475569', color: _senFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                h('button', { onClick: function() { removeAccommodation(i); }, 'aria-label': 'Remove accommodation: ' + a,
+                  style: { minWidth: 24, minHeight: 24, background: 'transparent', border: '1px solid ' + _senBd('#475569'), color: _senFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
               );
             })
           ) : null,
 
           // Add
-          h('div', { style: { padding: 14, borderRadius: 10, background: _senBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _senBg('#0f172a'), borderTop: '1px solid ' + _senBd('#1e293b'), borderRight: '1px solid ' + _senBd('#1e293b'), borderBottom: '1px solid ' + _senBd('#1e293b'), borderLeft: '3px solid ' + _senBd('#6366f1'), marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _senFg('#c7d2fe'), marginBottom: 8 } }, '+ Add an accommodation'),
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'sens-acc-input', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add accommodation'),
               h('input', { id: 'sens-acc-input', type: 'text', placeholder: 'A specific accommodation you need',
                 onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submitInput(); } },
-                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _senBg('#1e293b'), color: _senFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: submitInput, 'aria-label': 'Add',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _senBg(_senSolid('#6366f1')), color: _senFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _senBd('#334155'), background: _senBg('#1e293b'), color: _senFg('#e2e8f0'), fontSize: 13 } }),
+              h('button', { onClick: submitInput, 'aria-label': 'Add accommodation',
+                style: { padding: '8px 14px', borderRadius: 6, border: _senHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _senBg(_senSolid('#6366f1')), color: _senFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             )
           ),
 
           // Starters
-          h('div', { style: { padding: 12, borderRadius: 10, background: _senBg('#0f172a'), border: '1px solid #1e293b' } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _senBg('#0f172a'), border: '1px solid ' + _senBd('#1e293b') } },
             h('div', { style: { fontSize: 12, color: _senFg('#94a3b8'), fontWeight: 700, marginBottom: 10 } }, 'Common school accommodations (tap to add)'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               ACCOMMODATION_STARTERS.map(function(a, i) {
-                var already = (d.myAccommodations || []).indexOf(a) !== -1;
+                var already = myAccommodations.indexOf(a) !== -1;
                 return h('button', { key: i, onClick: function() { addAccommodation(a); }, disabled: already, 'aria-label': 'Add: ' + a,
-                  style: { padding: '4px 10px', borderRadius: 14, border: '1px solid #6366f166', background: already ? _senBg('#1e293b') : 'rgba(15,23,42,0.6)', color: already ? _senFg('#64748b') : _senFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
+                  style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + (_senHC ? '#ffff00' : '#6366f166'), background: already ? _senBg('#1e293b') : _senBg('#0f172a'), color: already ? _senFg('#64748b') : _senFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
                   (already ? '✓ ' : '+ ') + a);
               })
             )
@@ -646,30 +693,33 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       // PRINT
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
+        var printAccommodations = Array.isArray(d.myAccommodations) ? d.myAccommodations : [];
+        var printActivities = Array.isArray(d.regulatingActivities) ? d.regulatingActivities : [];
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(249,115,22,0.10)', borderRadius: 8, border: '1px solid rgba(249,115,22,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _senHC ? '#000000' : 'rgba(249,115,22,0.10)', borderRadius: 8, border: '1px solid ' + (_senHC ? '#ffff00' : 'rgba(249,115,22,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _senFg('#fed7aa'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print my sensory profile + accommodations. '),
               'Useful for IEP/504 meetings or self-advocacy conversations.'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #9a3412 0%, #c2410c 100%)', color: _senFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _senHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _senHC ? '#000000' : 'linear-gradient(135deg, #9a3412 0%, #c2410c 100%)', color: _senFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _senBg('#1e293b'), color: _senFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _senBd('#475569'), background: _senBg('#1e293b'), color: _senFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'sens-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _senBg('#fff'), color: _senFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _senBg('#fff'), color: _senFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _senBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#sens-print-region, #sens-print-region * { visibility: visible !important; } ' +
-              '#sens-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#sens-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+              '#sens-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
 
-            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #ea580c' } },
+            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _senBd('#ea580c') } },
               h('div', { style: { fontSize: 10, color: _senFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Sensory Profile + Accommodations'),
               h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, 'My sensory profile'),
               d.lastUpdated ? h('div', { style: { fontSize: 12, color: _senFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
@@ -681,28 +731,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
               var notes = (d.profileNotes || {})[s.id];
               if (!prof) return null;
               var profLabel = prof === 'seek' ? 'Seeker' : prof === 'avoid' ? 'Avoider' : prof === 'mixed' ? 'Mixed' : 'Typical';
-              return h('div', { key: s.id, style: { marginBottom: 12, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + s.color, background: _senBg('#f8fafc') } },
+              return h('div', { key: s.id, style: { marginBottom: 12, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + (_senHC ? '#ffff00' : s.color), background: _senBg('#f8fafc') } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
                   h('strong', { style: { fontSize: 13, color: _senFg('#0f172a') } }, s.icon + ' ' + s.label),
-                  h('span', { style: { fontSize: 12, fontWeight: 800, color: _senFg(s.color) } }, profLabel)
+                  h('span', { style: { fontSize: 12, fontWeight: 800, color: _senHC ? '#ffff00' : (_sen_FGL[s.color] || '#0f172a') } }, profLabel)
                 ),
                 notes ? h('div', { style: { fontSize: 12, color: _senFg('#0f172a'), fontStyle: 'italic', lineHeight: 1.6 } }, notes) : null
               );
             }),
 
             // Accommodations
-            (d.myAccommodations || []).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
+            printAccommodations.length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
               h('div', { style: { background: _senBg('#4f46e5'), color: _senFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '📝 Accommodations I need'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _senFg('#0f172a'), fontSize: 13, lineHeight: 1.85 } },
-                d.myAccommodations.map(function(a, i) { return h('li', { key: i }, a); })
+                printAccommodations.map(function(a, i) { return h('li', { key: i }, a); })
               )
             ) : null,
 
             // Sensory diet
-            ((Array.isArray(d.regulatingActivities) ? d.regulatingActivities : [])).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
+            printActivities.length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
               h('div', { style: { background: _senBg('#15803d'), color: _senFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🥗 My sensory diet'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _senFg('#0f172a'), fontSize: 13, lineHeight: 1.85 } },
-                d.regulatingActivities.map(function(a, i) {
+                printActivities.map(function(a, i) {
                   var sys = SYSTEMS.find(function(s) { return s.id === a.system; });
                   return h('li', { key: i }, a.label + (a.when ? ' (' + a.when + ')' : '') + (sys ? ' — ' + sys.label : ''));
                 })
@@ -796,7 +846,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Sensory Regulation' },
         header(),
         navTabs(),
-        body
+        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+          ? window.SelHub.renderCrisisResources(h, _senBand) : null,
+        h('div', { id: 'sens-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'sens-tab-' + view, tabIndex: 0 }, body)
       );
     }
   });

@@ -21,7 +21,7 @@ const StudentJoinThemeFallbackContext = (window.React && window.React.createCont
 
 const cx = (...parts) => parts.filter(Boolean).join(' ');
 
-const normalizeJoinCode = (value) => String(value || '').replace(/[\s-]+/g, '').toUpperCase().slice(0, 5);
+const normalizeJoinCode = (value) => String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
 
 function getStudentJoinThemeStyles(themeContext = {}) {
   const theme = themeContext.theme || 'light';
@@ -101,9 +101,45 @@ function StudentJoinPanel({
   const canJoin = cleanJoinCode.length >= 5;
   const themeContext = React.useContext(window.AlloThemeContext || StudentJoinThemeFallbackContext);
   const styles = getStudentJoinThemeStyles(themeContext);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const submittingRef = React.useRef(false);
+  const mountedRef = React.useRef(true);
+  const codeInputRef = React.useRef(null);
+  const collapsedBtnRef = React.useRef(null);
+  const prevExpandedRef = React.useRef(isJoinPanelExpanded);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+  React.useEffect(() => {
+    if (prevExpandedRef.current !== isJoinPanelExpanded) {
+      prevExpandedRef.current = isJoinPanelExpanded;
+      const target = isJoinPanelExpanded ? codeInputRef.current : collapsedBtnRef.current;
+      if (target && typeof target.focus === 'function') {
+        try { target.focus({ preventScroll: true }); } catch (_) {}
+      }
+    }
+  }, [isJoinPanelExpanded]);
+  const triggerJoin = () => {
+    if (!canJoin || submittingRef.current) return;
+    submittingRef.current = true;
+    setIsSubmitting(true);
+    let pending;
+    try {
+      pending = joinClassSession(cleanJoinCode);
+    } catch (err) {
+      pending = Promise.reject(err);
+    }
+    Promise.resolve(pending)
+      .catch(() => {})
+      .finally(() => {
+        submittingRef.current = false;
+        if (mountedRef.current) setIsSubmitting(false);
+      });
+  };
   const handleJoinSubmit = (e) => {
     e.preventDefault();
-    if (canJoin) joinClassSession(cleanJoinCode);
+    triggerJoin();
   };
 
   return (
@@ -118,10 +154,10 @@ function StudentJoinPanel({
             type="button"
             aria-label={t('common.minimize')}
             onClick={handleSetIsJoinPanelExpandedToFalse}
-            className={cx('absolute -top-2 -right-2 p-2 transition-colors rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.muted, styles.hoverPanel, styles.focusOffset)}
+            className={cx('absolute -top-2 -right-2 min-w-11 min-h-11 inline-flex items-center justify-center p-2 transition-colors rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.muted, styles.hoverPanel, styles.focusOffset)}
             title={t('common.minimize')}
           >
-            <Minimize size={16} />
+            <Minimize size={16} aria-hidden="true" />
           </button>
           <div className={cx('w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4', styles.icon)} aria-hidden="true">
             <Wifi size={32} />
@@ -142,6 +178,7 @@ function StudentJoinPanel({
             </div>
             <label htmlFor={codeInputId} className="sr-only">{t('common.enter_join_code_input')}</label>
             <input
+              ref={codeInputRef}
               id={codeInputId}
               aria-label={t('common.enter_join_code_input')}
               aria-describedby={instructionsId}
@@ -149,9 +186,10 @@ function StudentJoinPanel({
               value={joinCodeInput}
               onChange={(e) => setJoinCodeInput(normalizeJoinCode(e.target.value))}
               onKeyDown={(e) => {
+                if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
                 if (e.key === 'Enter' && canJoin) {
                   e.preventDefault();
-                  joinClassSession(cleanJoinCode);
+                  triggerJoin();
                 }
               }}
               placeholder={t('session.code_placeholder')}
@@ -162,8 +200,9 @@ function StudentJoinPanel({
             />
             <button
               type="submit"
-              disabled={!canJoin}
-              aria-disabled={!canJoin}
+              disabled={!canJoin || isSubmitting}
+              aria-disabled={!canJoin || isSubmitting}
+              aria-busy={isSubmitting || undefined}
               className={cx('w-full font-bold text-lg py-3 rounded-2xl transition-all transform hover:scale-[1.02] active:scale-95 motion-reduce:transform-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primary, styles.focusOffset)}
             >
               {t('session.join_action')} <ArrowRight size={20} aria-hidden="true"/>
@@ -172,8 +211,8 @@ function StudentJoinPanel({
         </div>
       ) : (
         <button
+          ref={collapsedBtnRef}
           type="button"
-          aria-labelledby={collapsedTitleId}
           onClick={handleSetIsJoinPanelExpandedToTrue}
           className={cx('w-full flex items-center justify-between p-2 rounded-2xl transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.hoverPanel, styles.focusOffset)}
         >

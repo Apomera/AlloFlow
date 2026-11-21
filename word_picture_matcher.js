@@ -264,7 +264,50 @@
     astronomy: ['star', 'planet', 'telescope'],
     chemistry: ['beaker', 'atom', 'molecule', 'science'],
     mechanics: ['gear', 'lever', 'wheel'],
-    landforms: ['mountain', 'river', 'valley']
+    landforms: ['mountain', 'river', 'valley'],
+
+    // Everyday K-5 classroom & story cues (filling high-frequency gaps without touching pinned symbol review fixtures)
+    happy: ['smile', 'star'],
+    laughing: ['smile'],
+    mom: ['woman', 'family'],
+    dad: ['family'],
+    gran: ['grandmother', 'woman', 'family'],
+    box: ['present', 'square'],
+    boxes: ['present', 'square'],
+    hat: ['cap', 'crown'],
+    chicken: ['bird', 'egg', 'farm'],
+    chickens: ['bird', 'egg', 'farm'],
+    climb: ['ladder', 'mountain'],
+    kick: ['soccer', 'foot', 'ball'],
+    brush: ['comb', 'broom'],
+    clean: ['soap', 'broom'],
+    feed: ['eat', 'food', 'bowl'],
+    fold: ['paper', 'shirt'],
+    blood: ['heart'],
+    office: ['desk', 'computer'],
+    ride: ['horse', 'bicycle', 'car'],
+    track: ['train', 'road'],
+    pet: ['dog', 'cat'],
+    bow: ['ribbon'],
+    chimp: ['monkey'],
+    moonlight: ['moon', 'night'],
+    athletic: ['run', 'jump', 'soccer'],
+    giant: ['tall', 'monster'],
+    switch: ['button'],
+    realm: ['castle', 'crown'],
+    cross: ['plus'],
+    rich: ['crown', 'coin', 'money'],
+    crack: ['egg', 'rock'],
+    pop: ['balloon', 'corn'],
+    clap: ['music', 'smile'],
+    fight: ['fist', 'hit'],
+    struggle: ['mountain', 'ladder'],
+    gentle: ['butterfly', 'feather', 'heart'],
+    luck: ['clover', 'star'],
+    burst: ['star', 'balloon'],
+    wipe: ['soap', 'towel', 'sponge'],
+    shut: ['door', 'lock'],
+    tap: ['water', 'drum']
   };
 
   var STOP_TOKENS = {
@@ -284,6 +327,33 @@
     were: 1, what: 1, when: 1, where: 1, which: 1, who: 1, will: 1,
     with: 1, without: 1, would: 1, you: 1, your: 1, act: 1, action: 1,
     group: 1, able: 1, about: 1, above: 1, across: 1, after: 1, again: 1
+  };
+
+  // Extra vague/generic words ignored ONLY during free-text definition fallback
+  // so abstract words do not inherit misleading concrete icons (e.g. "discrimination" -> "come", "grasp" -> "first").
+  var DEF_STOP_TOKENS = {
+    good: 1, bad: 1, hard: 1, soft: 1, first: 1, last: 1, next: 1, second: 1, third: 1,
+    right: 1, left: 1, high: 1, low: 1, long: 1, short: 1, fast: 1, slow: 1, full: 1, empty: 1,
+    open: 1, close: 1, near: 1, far: 1, early: 1, late: 1, free: 1, real: 1, true: 1, false: 1,
+    sure: 1, clear: 1, strong: 1, weak: 1, easy: 1, heavy: 1, light: 1, dark: 1, deep: 1, wide: 1,
+    flat: 1, sharp: 1, clean: 1, dirty: 1, front: 1, back: 1, top: 1, bottom: 1, side: 1, end: 1,
+    start: 1, begin: 1, come: 1, coming: 1, came: 1, get: 1, getting: 1, got: 1, take: 1, taking: 1,
+    took: 1, give: 1, giving: 1, gave: 1, go: 1, going: 1, went: 1, work: 1, works: 1, working: 1,
+    watch: 1, watching: 1, look: 1, looking: 1, carry: 1, carried: 1, carrying: 1, put: 1, putting: 1,
+    keep: 1, keeping: 1, find: 1, finding: 1, hold: 1, holding: 1, turn: 1, turning: 1, move: 1,
+    moving: 1, set: 1, setting: 1, try: 1, trying: 1, want: 1, need: 1, feel: 1, feeling: 1,
+    seem: 1, become: 1, show: 1, showing: 1, bring: 1, bringing: 1, cause: 1, causing: 1, allow: 1,
+    let: 1, help: 1, helping: 1, say: 1, saying: 1, tell: 1, telling: 1, ask: 1, asking: 1,
+    know: 1, knowing: 1, think: 1, thinking: 1, world: 1, life: 1, time: 1, year: 1, day: 1,
+    man: 1, woman: 1, people: 1, number: 1, amount: 1, level: 1, point: 1, area: 1, case: 1,
+    fact: 1, idea: 1, name: 1, order: 1, power: 1, result: 1, sense: 1, system: 1, value: 1,
+    word: 1, words: 1, change: 1, changing: 1, different: 1, similar: 1, important: 1, common: 1,
+    general: 1, special: 1, normal: 1, certain: 1, possible: 1, likely: 1, ready: 1, human: 1,
+    living: 1, natural: 1, physical: 1, social: 1, public: 1, private: 1, local: 1, national: 1,
+    modern: 1, recent: 1, current: 1, main: 1, major: 1, basic: 1, simple: 1, single: 1,
+    double: 1, whole: 1, total: 1, extra: 1, final: 1,
+    makes: 1, past: 1, future: 1, before: 1, below: 1, against: 1, higher: 1,
+    longer: 1, moved: 1, down: 1, spelling: 1, great: 1, stand: 1, fairy: 1
   };
 
   function resolveSymbols(explicit) {
@@ -527,14 +597,14 @@
     var tokens = String(definition).toLowerCase().split(/[^a-z]+/);
     for (var t = 0; t < tokens.length; t++) {
       var tok = tokens[t];
-      if (!tok || tok === clean || STOP_TOKENS[tok]) continue;
+      if (!tok || tok === clean || STOP_TOKENS[tok] || DEF_STOP_TOKENS[tok]) continue;
       if ((tok.length >= 4 || SAFE_SHORT_DEF_NOUNS[tok]) && hasSymbol(bank, tok)) {
         return buildMatch(bank, rawWord, tok, 'definition', options);
       }
     }
     for (var t2 = 0; t2 < tokens.length; t2++) {
       var tok2 = tokens[t2];
-      if (!tok2 || tok2.length < 4 || tok2 === clean || STOP_TOKENS[tok2]) continue;
+      if (!tok2 || tok2.length < 4 || tok2 === clean || STOP_TOKENS[tok2] || DEF_STOP_TOKENS[tok2]) continue;
       if (CONCEPT_CUES[tok2]) {
         var defCue = firstCueHit(CONCEPT_CUES[tok2]);
         if (defCue) return defCue;
@@ -542,7 +612,7 @@
       var tokStems = generateLemmaCandidates(tok2);
       for (var ts = 0; ts < tokStems.length; ts++) {
         var st = tokStems[ts];
-        if ((st.length >= 4 || SAFE_SHORT_DEF_NOUNS[st]) && !STOP_TOKENS[st] && hasSymbol(bank, st)) {
+        if ((st.length >= 4 || SAFE_SHORT_DEF_NOUNS[st]) && !STOP_TOKENS[st] && !DEF_STOP_TOKENS[st] && hasSymbol(bank, st)) {
           return buildMatch(bank, rawWord, st, 'definition', options);
         }
       }
@@ -568,6 +638,17 @@
       }
       if (phrase && phrase !== clean && hasSymbol(bank, phrase)) {
         return buildMatch(bank, rawWord, phrase, 'exact', options);
+      }
+
+      // Exact curriculum diagram (when preferDiagrams) or curated concept cue takes priority
+      // over aggressive morphological prefix/suffix stripping (e.g., "predator" -> lion/owl/wolf, not "date").
+      if (preferDiagrams && clean && Object.prototype.hasOwnProperty.call(CURRICULUM_DIAGRAMS, clean)) {
+        var exactDiag = getDiagram(clean, lemma, rawWord);
+        if (exactDiag) return exactDiag;
+      }
+      if (clean && Object.prototype.hasOwnProperty.call(CONCEPT_CUES, clean)) {
+        var exactCue = matchConceptCue(bank, rawWord, clean, '', options);
+        if (exactCue) return exactCue;
       }
 
       // Tier 2: Explicit lemma + morphological inflections
@@ -683,35 +764,37 @@
 
     // Optional Global Symbols online fallback (main app only)
     if (opts.allowOnlineGlobalSymbols && q && typeof fetch === 'function' && hits.length < limit) {
+      var timer = null;
       try {
         var url = 'https://globalsymbols.com/api/v1/labels/search?query=' +
           encodeURIComponent(q) +
           '&symbolset=mulberry&language=eng&language_iso_format=639-3&limit=20';
         var controller = typeof AbortController === 'function' ? new AbortController() : null;
-        var timer = controller ? setTimeout(function () { controller.abort(); }, 4500) : null;
+        timer = controller ? setTimeout(function () { controller.abort(); }, 4500) : null;
         var res = await fetch(url, controller ? { signal: controller.signal } : undefined);
-        if (timer) clearTimeout(timer);
         if (res && res.ok) {
           var payload = await res.json();
           var list = Array.isArray(payload) ? payload : (Array.isArray(payload && payload.data) ? payload.data : []);
           for (var g = 0; g < list.length && hits.length < limit; g++) {
             var item = list[g] || {};
             var pic = item.pic || item.symbol || {};
-            var imgUrl = pic.image_url || item.image_url || '';
+            var imgUrl = String(pic.image_url || item.image_url || '').trim();
             var text = item.text || pic.name || q;
-            if (!imgUrl || seen['gs:' + imgUrl]) continue;
+            if (!imgUrl || imgUrl.length > 2048 || !/^https:\/\/[^\s"'<>\\]+$/i.test(imgUrl) || seen['gs:' + imgUrl]) continue;
             seen['gs:' + imgUrl] = true;
             hits.push({
               word: String(text),
               label: String(text),
-              src: String(imgUrl),
+              src: imgUrl,
               set: 'globalsymbols',
               credit: 'Global Symbols (Mulberry)',
               matchTier: 'online'
             });
           }
         }
-      } catch (_) {}
+      } catch (_) {} finally {
+        if (timer) clearTimeout(timer);
+      }
     }
 
     return hits;

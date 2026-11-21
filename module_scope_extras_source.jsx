@@ -41,16 +41,6 @@ function sanitizeWordSoundsAudioProvenance(value) {
 const getSpeechLangCode = (friendlyName) => {
     if (!friendlyName) return 'en-US';
     const raw = String(friendlyName).trim();
-    // Preserve real BCP-47 tags so "es" and "es-ES" do not silently
-    // fall through to the English default.
-    if (/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(raw)) {
-        return raw.split('-').map((part, index) => {
-            if (index === 0) return part.toLowerCase();
-            if (/^[A-Za-z]{4}$/.test(part)) return part[0].toUpperCase() + part.slice(1).toLowerCase();
-            if (/^(?:[A-Za-z]{2}|\d{3})$/.test(part)) return part.toUpperCase();
-            return part.toLowerCase();
-        }).join('-');
-    }
     const normalize = (str) => str.toLowerCase().trim();
     const input = normalize(raw);
     const map = {
@@ -156,7 +146,18 @@ const getSpeechLangCode = (friendlyName) => {
         'maay maay': 'ymm-SO',
         'marshallese': 'mh-MH',
     };
-    return map[input] || 'en-US';
+    if (Object.prototype.hasOwnProperty.call(map, input)) return map[input];
+    // Preserve real BCP-47 tags so "es" and "es-ES" do not silently
+    // fall through to the English default (checked after friendly names so "Lao" -> "lo-LA").
+    if (/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(raw)) {
+        return raw.split('-').map((part, index) => {
+            if (index === 0) return part.toLowerCase();
+            if (/^[A-Za-z]{4}$/.test(part)) return part[0].toUpperCase() + part.slice(1).toLowerCase();
+            if (/^(?:[A-Za-z]{2}|\d{3})$/.test(part)) return part.toUpperCase();
+            return part.toLowerCase();
+        }).join('-');
+    }
+    return 'en-US';
 };
 const languageToTTSCode = (friendlyName) => {
     const bcp47 = getSpeechLangCode(friendlyName);
@@ -202,15 +203,26 @@ class ErrorBoundary extends React.Component {
   render() {
     const t = this.context?.t || ((key) => { const f = { 'errors.component_title': 'Something went wrong', 'errors.default_desc': 'This component encountered an error. Please try again.', 'errors.try_again': 'Try Again', 'common.refresh': 'Refresh', 'common.error_details': 'Error Details' }; return f[key] || key; });
     if (this.state.hasError) {
+      const safeErrorText = (() => {
+        try {
+          if (!this.state.error) return '';
+          if (typeof this.state.error === 'string') return this.state.error;
+          return String(this.state.error.message || this.state.error);
+        } catch (_) {
+          return 'Unknown error';
+        }
+      })();
       return (
-        <div role="alert" aria-live="assertive" aria-atomic="true" className="w-full h-full min-h-[400px] flex flex-col items-center justify-center p-8 bg-red-50 border-2 border-red-200 rounded-xl text-center animate-in fade-in zoom-in duration-300 motion-reduce:animate-none relative z-50">
+        <div className="w-full h-full min-h-[400px] flex flex-col items-center justify-center p-8 bg-red-50 border-2 border-red-200 rounded-xl text-center animate-in fade-in zoom-in duration-300 motion-reduce:animate-none relative z-50">
           <div className="bg-red-100 p-4 rounded-full text-red-700 mb-4 shadow-sm">
              <AlertCircle size={48} aria-hidden="true" />
           </div>
-          <h2 className="text-xl font-black text-red-800 mb-2">{this.props.title || t('errors.component_title')}</h2>
-          <p className="text-sm text-red-600 mb-6 max-w-md font-medium leading-relaxed">
-            {this.props.fallbackMessage || t('errors.default_desc')}
-          </p>
+          <div role="alert" aria-live="assertive" aria-atomic="true">
+            <h2 className="text-xl font-black text-red-900 mb-2">{this.props.title || t('errors.component_title')}</h2>
+            <p className="text-sm text-red-800 mb-6 max-w-md font-medium leading-relaxed">
+              {this.props.fallbackMessage || t('errors.default_desc')}
+            </p>
+          </div>
           <div className="flex gap-3">
               <button
                 type="button"
@@ -218,15 +230,15 @@ class ErrorBoundary extends React.Component {
                     if (this.props.onRetry) this.props.onRetry();
                     this.setState({ hasError: false, error: null });
                 }}
-                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-lg flex items-center gap-2 active:scale-95 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2"
+                className="min-h-11 px-6 py-3 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none shadow-lg flex items-center gap-2 active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
               >
                 <RefreshCw size={16} aria-hidden="true" /> {this.props.retryLabel || t('errors.try_again')}
               </button>
           </div>
           {Boolean(this.state.error) && (
-              <details className="mt-8 text-[11px] text-red-600 text-left max-w-sm opacity-60 cursor-pointer">
-                  <summary>{t('common.error_details')}</summary>
-                  <pre className="mt-2 whitespace-pre-wrap">{this.state.error.toString()}</pre>
+              <details className="mt-8 text-xs text-red-800 text-left max-w-sm">
+                  <summary className="min-h-11 inline-flex items-center cursor-pointer font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 rounded">{t('common.error_details')}</summary>
+                  <pre className="mt-2 whitespace-pre-wrap break-words">{safeErrorText}</pre>
               </details>
           )}
         </div>
@@ -282,7 +294,12 @@ const makeSessionAssetId = (prefix, parts) => {
   }
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 };
-const getSessionAssetRef = (appId, assetId) => doc(db, "artifacts", appId, "public", "data", "session_assets", assetId);
+const getSessionAssetRef = (appId, assetId) => {
+  if (typeof assetId !== "string" || !/^[a-zA-Z0-9_-]{1,420}$/.test(assetId)) {
+    throw createSessionAssetHydrationError(assetId, "invalid-asset-id");
+  }
+  return doc(db, "artifacts", appId, "public", "data", "session_assets", assetId);
+};
 const getSessionAssetSecurityMetadata = (sessionCode) => {
   const ownerUid = window.__alloFirebase && window.__alloFirebase.auth && window.__alloFirebase.auth.currentUser && window.__alloFirebase.auth.currentUser.uid;
   const parentId = sanitizeSessionAssetIdPart(sessionCode);
@@ -320,13 +337,13 @@ const enqueueChunkedStringAsset = (appId, assetId, kind, data, writeTasks, metad
     for (let offset = 0; offset < text.length; offset += SESSION_RESOURCE_CHUNK_SIZE) {
       const chunkId = `${assetId}_chunk_${chunkIds.length}`;
       chunkIds.push(chunkId);
-      pushSetDoc(chunkId, {
+      pushSetDoc(chunkId, stripUndefinedForFirestore({
         kind: `${kind}Chunk`,
         parent: assetId,
         index: chunkIds.length - 1,
         data: text.slice(offset, offset + SESSION_RESOURCE_CHUNK_SIZE),
         ...metadata
-      });
+      }));
     }
     pushSetDoc(assetId, stripUndefinedForFirestore({
       kind: `${kind}Chunks`,
@@ -349,7 +366,6 @@ const enqueueSessionResourceAsset = (appId, assetId, item, itemJson, writeTasks,
       id: item && item.id,
       type: item && item.type,
       title: item && item.title,
-      meta: item && item.meta,
       ...metadata
     });
   } else {
@@ -379,13 +395,14 @@ const sanitizePortableAacImage = (value) => {
     return null;
   }
 };
+const _validatedPortablePreparedAudio = new WeakSet();
 const sanitizePortableAacAudio = (audio, allowPrepared) => {
   if (!allowPrepared || !audio || typeof audio !== "object" || Array.isArray(audio) || audio.kind !== "prepared") return null;
   const data = typeof audio.data === "string" ? audio.data : "";
   const match = data.match(/^data:(audio\/(?:mpeg|mp3|mp4|aac|ogg|wav|webm|flac|x-wav));base64,[A-Za-z0-9+/]*={0,2}$/i);
   const mime = String(audio.mime || "").toLowerCase();
   if (!match || mime !== match[1].toLowerCase()) return null;
-  const clean = { kind: "prepared", mime, data, __alloPortablePreparedAudio: true };
+  const clean = { kind: "prepared", mime, data };
   if (audio.profile && typeof audio.profile === "object" && !Array.isArray(audio.profile)) {
     const profile = {};
     ["voice", "language", "provider", "engine", "model", "voiceResolverVersion"].forEach((key) => {
@@ -396,6 +413,7 @@ const sanitizePortableAacAudio = (audio, allowPrepared) => {
     if (Number.isFinite(rate)) profile.synthesisRate = Math.max(0.25, Math.min(4, rate));
     if (Object.keys(profile).length) clean.profile = profile;
   }
+  _validatedPortablePreparedAudio.add(clean);
   return clean;
 };
 const sanitizePortableAacResource = (item) => {
@@ -471,7 +489,8 @@ const sanitizePortableAacResource = (item) => {
 };
 const stripUnsafeLiveSessionFields = (value, keyName = "", options = {}) => {
   if (value == null) return value;
-  const allowPreparedAudio = options.allowPreparedAudio === true || value.__alloPortablePreparedAudio === true;
+  const isValidatedPrepared = typeof value === "object" && _validatedPortablePreparedAudio.has(value);
+  const allowPreparedAudio = options.allowPreparedAudio === true || isValidatedPrepared;
   if (typeof value === "string") {
     if (/^(audioRecording|rawAudio|voiceClip|recording|karaokeStudentAudio)$/i.test(keyName)
       || (/^data:audio/i.test(value) && !allowPreparedAudio)) return null;
@@ -487,9 +506,10 @@ const stripUnsafeLiveSessionFields = (value, keyName = "", options = {}) => {
       // object on the teacher device.
       if (/^(audioRecording|rawAudio|voiceClip|recording|mimeType|karaokeStudentAudio)$/i.test(key)
         || key === "__alloPortablePreparedAudio") return;
-      const childOptions = (key === "audio" && value[key] && value[key].__alloPortablePreparedAudio)
+      const childVal = value[key];
+      const childOptions = (key === "audio" && childVal && typeof childVal === "object" && _validatedPortablePreparedAudio.has(childVal))
         ? { ...options, allowPreparedAudio: true } : options;
-      out[key] = stripUnsafeLiveSessionFields(value[key], key, childOptions);
+      out[key] = stripUnsafeLiveSessionFields(childVal, key, childOptions);
     });
     return out;
   }
@@ -641,6 +661,7 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
   });
   const writeTasks = [];
   const processField = (obj, key, assetSeed) => {
+    if (!obj || typeof obj !== "object") return;
     const val = obj[key];
     if (val && typeof val === "string" && val.startsWith("data:image")) {
       const assetId = makeSessionAssetId("img", assetSeed.concat([key, hashStringForSessionAsset(val)]));
@@ -667,7 +688,8 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
     enqueueChunkedStringAsset(appId, assetId, "sessionJson", json, writeTasks, securityMetadata, { contentAddressed: true });
   };
   safeResources.forEach((item, index) => {
-    const seed = [sessionCode || "session", index, item && item.id || item && item.type || "resource"];
+    if (!item || typeof item !== "object") return;
+    const seed = [sessionCode || "session", index, item.id || item.type || "resource"];
     if (item.type === "image" && item.data) {
       processField(item.data, "imageUrl", seed);
     }
@@ -799,6 +821,7 @@ const hydrateSessionAssets = async (appId, resources) => {
   }));
   const fetchPromises = [];
   const restoreField = (obj, key) => {
+    if (!obj || typeof obj !== 'object') return;
     const val = obj[key];
     if (val && typeof val === 'string' && val.startsWith('ref::')) {
       const assetId = val.slice('ref::'.length);
@@ -827,6 +850,7 @@ const hydrateSessionAssets = async (appId, resources) => {
     }
   };
   hydrated.forEach((item) => {
+    if (!item || typeof item !== 'object') return;
     if (item.type === 'image' && item.data) restoreField(item.data, 'imageUrl');
     if (item.type === 'glossary' && Array.isArray(item.data)) item.data.forEach((term) => restoreField(term, 'image'));
     // Mirrors uploadSessionAssets; without it students got a ref:: string as the picture.

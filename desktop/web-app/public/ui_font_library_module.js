@@ -515,13 +515,16 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     lh.row.appendChild(lh.input); panel.appendChild(lh.row);
     var ls = range('spacing', tx('settings.text.spacing', 'Letter Spacing'), 0, 0.2, 0.01, s.letterSpacing, function (v) { return Number(v).toFixed(2) + ' em'; });
     ls.row.appendChild(ls.input); panel.appendChild(ls.row);
-    // Bionic reading and reading theme; an older host exposes neither.
-    var bionic = null, themeSel = null;
+    // Bionic reading, syllable breaks, and reading theme.
+    var bionic = null, sylls = null, themeSel = null;
     if (typeof s.bionic === 'boolean') {
       bionic = el('input', { type: 'checkbox', id: uid + '-bionic' });
       bionic.checked = s.bionic;
       panel.appendChild(el('div', { 'class': 'rs-row' }, [el('label', { 'class': 'rs-check', 'for': uid + '-bionic' }, [bionic, el('span', { text: tx('settings.text.bionic', 'Bionic Reading Style') })])]));
     }
+    sylls = el('input', { type: 'checkbox', id: uid + '-syllables' });
+    sylls.checked = isSyllablesOn();
+    panel.appendChild(el('div', { 'class': 'rs-row' }, [el('label', { 'class': 'rs-check', 'for': uid + '-syllables' }, [sylls, el('span', { text: tx('settings.text.syllables', 'Syllable Breaks (a·b·c)') })])]));
     if (Array.isArray(s.readingThemes) && s.readingThemes.length) {
       var themeKeys = { highContrast: 'contrast', dyslexia: 'easy_read' };
       var themeNames = { default: 'Default', warm: 'Warm', sepia: 'Sepia', dark: 'Dark', highContrast: 'Contrast', blue: 'Blue', green: 'Green', rose: 'Rose', dyslexia: 'Easy Read', dim: 'Dim' };
@@ -553,6 +556,26 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     var ruler = el('input', { type: 'checkbox', id: uid + '-ruler' });
     ruler.checked = !!s.readingRuler;
     panel.appendChild(el('div', { 'class': 'rs-row' }, [el('label', { 'class': 'rs-check', 'for': uid + '-ruler' }, [ruler, el('span', { text: tx('reading_settings.ruler', 'Reading ruler') })])]));
+    var rulerLinesChoices = el('div', { 'class': 'rs-choices' });
+    var rulerLineRadios = {};
+    var curRulerLines = [1, 3, 5].indexOf(Number(s.rulerLines)) >= 0 ? Number(s.rulerLines) : 3;
+    [
+      [1, tx('reading_settings.ruler_1', '1 line')],
+      [3, tx('reading_settings.ruler_3', '3 lines')],
+      [5, tx('reading_settings.ruler_5', '5 lines')]
+    ].forEach(function (pair) {
+      var n = pair[0];
+      var r = el('input', { type: 'radio', name: uid + '-ruler-lines', value: String(n) });
+      r.checked = curRulerLines === n;
+      rulerLineRadios[n] = r;
+      rulerLinesChoices.appendChild(el('label', null, [r, el('span', { text: pair[1] })]));
+    });
+    var rulerLinesSet = el('fieldset', { 'data-rs-ruler-lines': '1' }, [
+      el('legend', { text: tx('reading_settings.ruler_lines', 'Ruler height') }),
+      rulerLinesChoices,
+    ]);
+    rulerLinesSet.hidden = !s.readingRuler;
+    panel.appendChild(rulerLinesSet);
     var reset = el('button', { type: 'button', text: tx('header.reset_size_spacing', 'Reset size & spacing') });
     panel.appendChild(reset);
     // Wiring: every change applies at once; the host echo refreshes the readouts.
@@ -563,8 +586,15 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     lh.input.addEventListener('input', function () { api.set({ lineHeight: Number(lh.input.value) }); });
     ls.input.addEventListener('input', function () { api.set({ letterSpacing: Number(ls.input.value) }); });
     Object.keys(radios).forEach(function (k) { radios[k].addEventListener('change', function () { if (radios[k].checked) api.set({ colorOverlay: k }); }); });
-    ruler.addEventListener('change', function () { api.set({ readingRuler: ruler.checked }); });
+    ruler.addEventListener('change', function () {
+      rulerLinesSet.hidden = !ruler.checked;
+      api.set({ readingRuler: ruler.checked });
+    });
+    Object.keys(rulerLineRadios).forEach(function (k) {
+      rulerLineRadios[k].addEventListener('change', function () { if (rulerLineRadios[k].checked) api.set({ rulerLines: Number(k) }); });
+    });
     if (bionic) bionic.addEventListener('change', function () { api.set({ bionic: bionic.checked }); });
+    if (sylls) sylls.addEventListener('change', function () { setSyllablesOn(sylls.checked); });
     if (themeSel) themeSel.addEventListener('change', function () { api.set({ readingTheme: themeSel.value }); });
     reset.addEventListener('click', function () { api.set({ baseFontSize: 16, lineHeight: 1.6, letterSpacing: 0 }); });
     var refresh = function (n) {
@@ -576,9 +606,15 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
       });
       Object.keys(radios).forEach(function (k) { radios[k].checked = n.colorOverlay === k; });
       ruler.checked = !!n.readingRuler;
+      rulerLinesSet.hidden = !n.readingRuler;
+      var rl = [1, 3, 5].indexOf(Number(n.rulerLines)) >= 0 ? Number(n.rulerLines) : 3;
+      Object.keys(rulerLineRadios).forEach(function (k) { rulerLineRadios[k].checked = Number(k) === rl; });
       if (bionic) bionic.checked = !!n.bionic;
+      if (sylls) sylls.checked = isSyllablesOn();
       if (themeSel && n.readingTheme && themeSel.value !== n.readingTheme) themeSel.value = n.readingTheme;
     };
+    var onSyllablesEvent = function () { if (sylls) sylls.checked = isSyllablesOn(); };
+    window.addEventListener('alloflow:syllables-changed', onSyllablesEvent);
     var unsubscribe = typeof api.subscribe === 'function' ? api.subscribe(refresh) : function () {};
     container.appendChild(panel);
     // Place it by the opener (bottom sheet on narrow screens, by CSS).
@@ -616,6 +652,7 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
         if (rsActive !== handle) return;
         rsActive = null;
         unsubscribe();
+        window.removeEventListener('alloflow:syllables-changed', onSyllablesEvent);
         doc.removeEventListener('pointerdown', onDown, true);
         window.removeEventListener('resize', place);
         panel.remove();
@@ -695,6 +732,494 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     return job.then(function (css) { return { head: '', css: css }; }, function () { return none; });
   }
 
+  // ---------------------------------------------------------------------------
+  // Universal Bionic Reading (Bold start) and Zero-AI Syllable Breaks runtime
+  // for all React resource views, non-React surfaces, and HTML/print exports.
+  // React views call __alloUseBionic() + __alloBionicReact(text) so React owns
+  // every node with zero DOM conflicts.
+  // ---------------------------------------------------------------------------
+  var _syllablesOn = (function () {
+    try { return typeof localStorage !== 'undefined' && localStorage.getItem('allo_syllable_breaks') === '1'; } catch (_) { return false; }
+  })();
+  var _syllableTableLoading = false;
+  var _syllableRevision = 0;
+
+  function isBionicOnlyOn() {
+    try {
+      if (window.__alloReadingSettings && typeof window.__alloReadingSettings.get === 'function') {
+        return !!window.__alloReadingSettings.get().bionic;
+      }
+    } catch (_) {}
+    try {
+      return document.documentElement.getAttribute('data-allo-bionic') === '1';
+    } catch (_) { return false; }
+  }
+  function isSyllablesOn() {
+    if (_syllablesOn) return true;
+    try { return document.documentElement.getAttribute('data-allo-syllables') === '1'; } catch (_) { return false; }
+  }
+  function isBionicOn() {
+    return isBionicOnlyOn() || isSyllablesOn();
+  }
+  function syncBionicAttr(on) {
+    try {
+      if (on) document.documentElement.setAttribute('data-allo-bionic', '1');
+      else document.documentElement.removeAttribute('data-allo-bionic');
+    } catch (_) {}
+  }
+  function syncSyllablesAttr(on) {
+    try {
+      if (on) document.documentElement.setAttribute('data-allo-syllables', '1');
+      else document.documentElement.removeAttribute('data-allo-syllables');
+    } catch (_) {}
+  }
+  function notifySyllablesChanged() {
+    _syllableRevision++;
+    if (typeof window === 'undefined') return;
+    try {
+      window.dispatchEvent(new CustomEvent('alloflow:syllables-changed', {
+        detail: { syllables: isSyllablesOn(), revision: _syllableRevision }
+      }));
+    } catch (_) {}
+  }
+  function ensureSyllableTable() {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    if (window.AlloModules && window.AlloModules.SyllableTableEn && typeof window.AlloModules.SyllableTableEn.lookup === 'function') return;
+    if (_syllableTableLoading) return;
+    _syllableTableLoading = true;
+    try {
+      if (typeof window.__alloEnsureLazyModule === 'function') {
+        Promise.resolve(window.__alloEnsureLazyModule('SyllableTableEn')).then(function () {
+          _syllableTableLoading = false;
+          notifySyllablesChanged();
+        }, function () { _syllableTableLoading = false; });
+        return;
+      }
+      var existing = document.querySelector('script[data-allo-syllable-table="1"]');
+      if (existing) { _syllableTableLoading = false; return; }
+      var sc = document.createElement('script');
+      sc.src = 'syllable_table_en.js';
+      sc.async = true;
+      sc.setAttribute('data-allo-syllable-table', '1');
+      sc.onload = function () { _syllableTableLoading = false; notifySyllablesChanged(); };
+      sc.onerror = function () { _syllableTableLoading = false; };
+      (document.head || document.documentElement).appendChild(sc);
+    } catch (_) { _syllableTableLoading = false; }
+  }
+  function setSyllablesOn(next) {
+    var val = !!next;
+    _syllablesOn = val;
+    try { if (typeof localStorage !== 'undefined') localStorage.setItem('allo_syllable_breaks', val ? '1' : '0'); } catch (_) {}
+    syncSyllablesAttr(val);
+    if (val) ensureSyllableTable();
+    notifySyllablesChanged();
+  }
+  // Deterministic on-device Spanish syllabification (mirrors syllable_prep_core.js).
+  var _ES_VOWELS = 'aeiou\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc';
+  var _ES_STRONG = 'aeo\u00e1\u00e9\u00f3';
+  var _ES_ACCENTED_WEAK = '\u00ed\u00fa';
+  var _ES_ONSETS = /^(pr|pl|br|bl|tr|dr|cr|cl|gr|gl|fr|fl|ch|ll|rr)$/;
+  var _ES_EXCEPTIONS = {
+    subrayar: 'sub|ra|yar',
+    subrayado: 'sub|ra|ya|do',
+    subrogar: 'sub|ro|gar',
+    transatlantico: 'trans|at|lan|ti|co',
+    'transatl\u00e1ntico': 'trans|at|l\u00e1n|ti|co'
+  };
+  function _looksForeignToSpanish(w) {
+    return /[kw]|ph|th|sh|ck|tion$|ing$/.test(w) || !/[aeiou\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc]/.test(w);
+  }
+  function _syllabifySpanish(word) {
+    if (Object.prototype.hasOwnProperty.call(_ES_EXCEPTIONS, word)) return _ES_EXCEPTIONS[word].split('|');
+    var nuclei = [], i = 0;
+    while (i < word.length) {
+      var silentU = word[i] === 'u' && (word[i - 1] === 'q' || (word[i - 1] === 'g' && /[e\u00e9i\u00ed]/.test(word[i + 1] || '')));
+      if (_ES_VOWELS.indexOf(word[i]) >= 0 && !silentU) {
+        var j = i + 1, last = word[i];
+        while (j < word.length && _ES_VOWELS.indexOf(word[j]) >= 0) {
+          var next = word[j];
+          var hiatus = (_ES_STRONG.indexOf(last) >= 0 && _ES_STRONG.indexOf(next) >= 0)
+            || _ES_ACCENTED_WEAK.indexOf(last) >= 0 || _ES_ACCENTED_WEAK.indexOf(next) >= 0 || last === next;
+          if (hiatus) break;
+          last = next; j++;
+        }
+        nuclei.push([i, j]);
+        i = j;
+      } else i++;
+    }
+    if (nuclei.length < 2) return [word];
+    var parts = [], start = 0;
+    for (var k = 0; k < nuclei.length - 1; k++) {
+      var cluster = word.slice(nuclei[k][1], nuclei[k + 1][0]), cut;
+      if (cluster.length < 2) cut = nuclei[k][1];
+      else if (_ES_ONSETS.test(cluster.slice(-2))) cut = nuclei[k + 1][0] - 2;
+      else cut = nuclei[k + 1][0] - 1;
+      parts.push(word.slice(start, cut));
+      start = cut;
+    }
+    parts.push(word.slice(start));
+    return parts;
+  }
+  function _mapPartsToWord(word, parts) {
+    if (!Array.isArray(parts) || parts.length < 2) return null;
+    var joined = parts.join('');
+    if (joined.length !== word.length) return null;
+    var out = [], pos = 0;
+    for (var i = 0; i < parts.length; i++) {
+      var len = parts[i].length;
+      out.push(word.slice(pos, pos + len));
+      pos += len;
+    }
+    return out;
+  }
+  function splitSyllables(word, langHint) {
+    if (typeof word !== 'string' || word.length < 4 || !/^[A-Za-z\u00C0-\u024F]+$/.test(word)) return null;
+    var lower = word.normalize ? word.normalize('NFC').toLowerCase() : word.toLowerCase();
+    var hint = String(langHint || '').trim().toLowerCase();
+    var docLang = '';
+    try { docLang = String((typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) || '').trim().toLowerCase(); } catch (_) {}
+    var explicitEs = /^(es\b|es-|spanish|espa)/.test(hint);
+    var explicitNonEs = !!hint && !explicitEs;
+    var hasEsDiacritic = /[\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1]/.test(lower);
+    var docEs = !explicitNonEs && /^(es\b|es-)/.test(docLang);
+    if ((explicitEs || hasEsDiacritic || docEs) && !_looksForeignToSpanish(lower)) {
+      var esParts = _syllabifySpanish(lower);
+      if (esParts.length >= 2) return _mapPartsToWord(word, esParts);
+      return null;
+    }
+    if (!/^[A-Za-z]+$/.test(word)) return null;
+    var tbl = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SyllableTableEn;
+    if (!tbl || typeof tbl.lookup !== 'function') return null;
+    var found = tbl.lookup(lower);
+    if (!found || found.check || !Array.isArray(found.parts) || found.parts.length < 2) return null;
+    return _mapPartsToWord(word, found.parts);
+  }
+  if (typeof window !== 'undefined') {
+    syncBionicAttr(isBionicOnlyOn());
+    syncSyllablesAttr(_syllablesOn);
+    if (_syllablesOn) ensureSyllableTable();
+    window.addEventListener('alloflow:reading-settings-changed', function (ev) {
+      if (ev && ev.detail && typeof ev.detail.bionic === 'boolean') syncBionicAttr(ev.detail.bionic);
+    });
+  }
+  function useAlloBionic(explicit) {
+    var R = typeof window !== 'undefined' ? window.React : null;
+    if (!R || typeof R.useState !== 'function' || typeof R.useEffect !== 'function') {
+      return typeof explicit === 'boolean' ? explicit : isBionicOn();
+    }
+    var pair = R.useState(function () { return { on: typeof explicit === 'boolean' ? explicit : isBionicOn(), rev: _syllableRevision }; });
+    var state = pair[0], setState = pair[1];
+    R.useEffect(function () {
+      if (typeof explicit === 'boolean') { setState({ on: explicit, rev: _syllableRevision }); return undefined; }
+      var sync = function () { setState({ on: isBionicOn(), rev: _syllableRevision }); };
+      sync();
+      var unsub = null;
+      var api = window.__alloReadingSettings;
+      if (api && typeof api.subscribe === 'function') {
+        unsub = api.subscribe(function () { sync(); });
+      } else {
+        window.addEventListener('alloflow:reading-settings-changed', sync);
+      }
+      window.addEventListener('alloflow:syllables-changed', sync);
+      return function () {
+        if (typeof unsub === 'function') unsub();
+        else window.removeEventListener('alloflow:reading-settings-changed', sync);
+        window.removeEventListener('alloflow:syllables-changed', sync);
+      };
+    }, [explicit]);
+    return typeof explicit === 'boolean' ? explicit : state.on;
+  }
+  function _renderWordReact(R, key, lead, word, trail, useBionic, useSyllables, lang) {
+    var syls = useSyllables ? splitSyllables(word, lang) : null;
+    var dot = function (dk) {
+      return R.createElement('span', { key: dk, 'aria-hidden': 'true', className: 'select-none opacity-60' }, '\u00B7');
+    };
+    if (!useBionic) {
+      if (!syls) return lead + word + trail;
+      var kids = [];
+      if (lead) kids.push(lead);
+      for (var s = 0; s < syls.length; s++) {
+        if (s > 0) kids.push(dot('d' + s));
+        kids.push(syls[s]);
+      }
+      if (trail) kids.push(trail);
+      return R.createElement('span', { key: key, 'data-allo-syllable-word': '1' }, kids);
+    }
+    var boldLen = word.length <= 3 ? Math.max(1, word.length - 1) : Math.ceil(word.length * 0.45);
+    if (!syls) {
+      return R.createElement('span', { key: key, 'data-allo-bionic-word': '1' },
+        lead || null,
+        R.createElement('b', { className: 'font-bold font-inherit' }, word.slice(0, boldLen)),
+        R.createElement('span', { className: 'font-normal opacity-85 font-inherit' }, word.slice(boldLen)),
+        trail || null
+      );
+    }
+    var mixed = [];
+    if (lead) mixed.push(lead);
+    var offset = 0;
+    for (var j = 0; j < syls.length; j++) {
+      if (j > 0) mixed.push(dot('d' + j));
+      var seg = syls[j];
+      var end = offset + seg.length;
+      if (end <= boldLen) {
+        mixed.push(R.createElement('b', { key: 'b' + j, className: 'font-bold font-inherit' }, seg));
+      } else if (offset >= boldLen) {
+        mixed.push(R.createElement('span', { key: 'n' + j, className: 'font-normal opacity-85 font-inherit' }, seg));
+      } else {
+        var cut = boldLen - offset;
+        mixed.push(R.createElement('b', { key: 'b' + j, className: 'font-bold font-inherit' }, seg.slice(0, cut)));
+        mixed.push(R.createElement('span', { key: 'n' + j, className: 'font-normal opacity-85 font-inherit' }, seg.slice(cut)));
+      }
+      offset = end;
+    }
+    if (trail) mixed.push(trail);
+    return R.createElement('span', { key: key, 'data-allo-bionic-word': '1', 'data-allo-syllable-word': '1' }, mixed);
+  }
+  function bionicReact(text, opts) {
+    if (typeof text !== 'string' || !text) return text;
+    var R = typeof window !== 'undefined' ? window.React : null;
+    if (!R || typeof R.createElement !== 'function') return text;
+    var useBionic = opts && typeof opts.bionic === 'boolean' ? opts.bionic : isBionicOnlyOn();
+    var useSyllables = opts && typeof opts.syllables === 'boolean' ? opts.syllables : isSyllablesOn();
+    var lang = opts && typeof opts.lang === 'string' ? opts.lang : '';
+    if (!useBionic && !useSyllables) useBionic = true;
+    var parts = text.split(/(\s+)/);
+    var out = [];
+    for (var i = 0; i < parts.length; i++) {
+      var part = parts[i];
+      if (!part) continue;
+      if (/^\s+$/.test(part)) { out.push(part); continue; }
+      var m = /^([^A-Za-z\u00C0-\u024F]*)([A-Za-z\u00C0-\u024F]+)(.*)$/.exec(part);
+      if (!m || m[2].length < 2) { out.push(part); continue; }
+      out.push(_renderWordReact(R, i, m[1], m[2], m[3], useBionic, useSyllables, lang));
+    }
+    return out;
+  }
+  function _renderWordHtml(w, useBionic, useSyllables, lang) {
+    var syls = useSyllables ? splitSyllables(w, lang) : null;
+    var dotHtml = '<span aria-hidden="true" style="user-select:none;opacity:.6">\u00B7</span>';
+    if (!useBionic) {
+      return syls ? syls.join(dotHtml) : w;
+    }
+    var boldLen = w.length <= 3 ? Math.max(1, w.length - 1) : Math.ceil(w.length * 0.45);
+    if (!syls) {
+      return '<b style="font-weight:700">' + w.slice(0, boldLen) + '</b>' + w.slice(boldLen);
+    }
+    var buf = '', offset = 0;
+    for (var j = 0; j < syls.length; j++) {
+      if (j > 0) buf += dotHtml;
+      var seg = syls[j], end = offset + seg.length;
+      if (end <= boldLen) buf += '<b style="font-weight:700">' + seg + '</b>';
+      else if (offset >= boldLen) buf += seg;
+      else {
+        var cut = boldLen - offset;
+        buf += '<b style="font-weight:700">' + seg.slice(0, cut) + '</b>' + seg.slice(cut);
+      }
+      offset = end;
+    }
+    return buf;
+  }
+  function bionicHtml(html, opts) {
+    if (typeof html !== 'string' || !html) return html;
+    var useBionic = opts && typeof opts.bionic === 'boolean' ? opts.bionic : isBionicOnlyOn();
+    var useSyllables = opts && typeof opts.syllables === 'boolean' ? opts.syllables : isSyllablesOn();
+    var lang = opts && typeof opts.lang === 'string' ? opts.lang : '';
+    if (!useBionic && !useSyllables) useBionic = true;
+    var skipDepth = 0;
+    var SKIP_OPEN = /^<(?:script|style|code|pre|svg|math|title|option|textarea)\b/i;
+    var SKIP_CLOSE = /^<\/(?:script|style|code|pre|svg|math|title|option|textarea)\b/i;
+    return html.replace(/(<[^>]+>)|([^<]+)/g, function (all, tag, text) {
+      if (tag) {
+        if (SKIP_OPEN.test(tag) && !/\/>$/.test(tag)) skipDepth++;
+        else if (SKIP_CLOSE.test(tag) && skipDepth > 0) skipDepth--;
+        return tag;
+      }
+      if (skipDepth > 0 || !text || !/[A-Za-z\u00C0-\u024F]{2,}/.test(text)) return text;
+      return text.replace(/(&[a-z#0-9]+;)|([A-Za-z\u00C0-\u024F]{2,})/gi, function (tok, ent, w) {
+        if (ent || !w) return tok;
+        return _renderWordHtml(w, useBionic, useSyllables, lang);
+      });
+    });
+  }
+  function applyBionicDom(rootEl, on, opts) {
+    if (!rootEl || typeof document === 'undefined') return;
+    var existing = rootEl.querySelectorAll('[data-allo-bionic-dom]');
+    for (var i = 0; i < existing.length; i++) {
+      var sp = existing[i], p = sp.parentNode;
+      if (p) { p.replaceChild(document.createTextNode(sp.getAttribute('data-allo-bionic-raw') || sp.textContent || ''), sp); try { p.normalize(); } catch (_) {} }
+    }
+    var useBionic = opts && typeof opts.bionic === 'boolean' ? opts.bionic : (on ? isBionicOnlyOn() : false);
+    var useSyllables = opts && typeof opts.syllables === 'boolean' ? opts.syllables : (on ? isSyllablesOn() : false);
+    var lang = opts && typeof opts.lang === 'string' ? opts.lang : '';
+    if (!on) return;
+    if (!useBionic && !useSyllables) useBionic = true;
+    var SKIP = 'script,style,textarea,input,select,option,code,pre,svg,math,button,.sr-only,[aria-hidden=true],[data-allo-bionic-dom],[data-allo-bionic-word],[data-allo-syllable-word]';
+    var walk = document.createTreeWalker(rootEl, 4), hits = [], n;
+    while ((n = walk.nextNode())) {
+      if (!n.parentNode || !n.nodeValue || !/[A-Za-z\u00C0-\u024F]{2,}/.test(n.nodeValue)) continue;
+      if (n.parentNode.closest && n.parentNode.closest(SKIP)) continue;
+      hits.push(n);
+    }
+    var mkDot = function () {
+      var d = document.createElement('span');
+      d.setAttribute('aria-hidden', 'true');
+      d.className = 'select-none opacity-60';
+      d.textContent = '\u00B7';
+      return d;
+    };
+    hits.forEach(function (tn) {
+      var par = tn.parentNode;
+      if (!par) return;
+      var raw = tn.nodeValue, wrap = document.createElement('span');
+      wrap.setAttribute('data-allo-bionic-dom', '1');
+      wrap.setAttribute('data-allo-bionic-raw', raw);
+      var re = /[A-Za-z\u00C0-\u024F]+/g, m, last = 0, changed = false;
+      while ((m = re.exec(raw))) {
+        if (m.index > last) wrap.appendChild(document.createTextNode(raw.slice(last, m.index)));
+        var w = m[0];
+        if (w.length < 2) {
+          wrap.appendChild(document.createTextNode(w));
+        } else {
+          var syls = useSyllables ? splitSyllables(w, lang) : null;
+          if (!useBionic) {
+            if (syls) {
+              changed = true;
+              for (var s = 0; s < syls.length; s++) {
+                if (s > 0) wrap.appendChild(mkDot());
+                wrap.appendChild(document.createTextNode(syls[s]));
+              }
+            } else {
+              wrap.appendChild(document.createTextNode(w));
+            }
+          } else {
+            changed = true;
+            var cut = w.length <= 3 ? Math.max(1, w.length - 1) : Math.ceil(w.length * 0.45);
+            if (!syls) {
+              var b = document.createElement('b');
+              b.className = 'font-bold font-inherit';
+              b.textContent = w.slice(0, cut);
+              wrap.appendChild(b);
+              if (cut < w.length) wrap.appendChild(document.createTextNode(w.slice(cut)));
+            } else {
+              var offset = 0;
+              for (var j = 0; j < syls.length; j++) {
+                if (j > 0) wrap.appendChild(mkDot());
+                var seg = syls[j], end = offset + seg.length;
+                if (end <= cut) {
+                  var b1 = document.createElement('b');
+                  b1.className = 'font-bold font-inherit';
+                  b1.textContent = seg;
+                  wrap.appendChild(b1);
+                } else if (offset >= cut) {
+                  wrap.appendChild(document.createTextNode(seg));
+                } else {
+                  var partCut = cut - offset;
+                  var b2 = document.createElement('b');
+                  b2.className = 'font-bold font-inherit';
+                  b2.textContent = seg.slice(0, partCut);
+                  wrap.appendChild(b2);
+                  wrap.appendChild(document.createTextNode(seg.slice(partCut)));
+                }
+                offset = end;
+              }
+            }
+          }
+        }
+        last = m.index + w.length;
+      }
+      if (!changed) return;
+      if (last < raw.length) wrap.appendChild(document.createTextNode(raw.slice(last)));
+      par.replaceChild(wrap, tn);
+    });
+  }
+  // Zero-AI offline picture dictionary lookup (3,400+ Mulberry/OpenMoji symbols + 696 K-12 diagrams).
+  var _wordPicturesPromise = null;
+  function _safePictureSvg(svg) {
+    if (typeof svg !== 'string' || !svg || svg.length > 260000) return false;
+    if (!/<svg[\s>]/i.test(svg)) return false;
+    if (/<(?:script|foreignObject|iframe|object|embed)\b|on[a-z]+\s*=|javascript:/i.test(svg)) return false;
+    return true;
+  }
+  function lookupWordPicture(word) {
+    if (typeof word !== 'string') return null;
+    var clean = word.trim();
+    if (!clean || clean.length > 48 || !/[A-Za-z]/.test(clean)) return null;
+    var matcher = (typeof window !== 'undefined' && (window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher))) || null;
+    var symbols = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.WordSoundsSymbols) || null;
+    var symReady = !!(symbols && typeof symbols.get === 'function' && (typeof symbols.ready !== 'function' || symbols.ready()));
+    var hit = null;
+    if (symReady && typeof symbols.has === 'function' && symbols.has(clean)) {
+      try {
+        var got = symbols.get(clean);
+        if (got && _safePictureSvg(got.svg)) {
+          hit = { svg: got.svg, set: got.set || 'mulberry' };
+        }
+      } catch (_) {}
+    }
+    if (!hit && matcher && typeof matcher.matchWord === 'function') {
+      try {
+        var m = matcher.matchWord({ word: clean }, { symbols: symReady ? symbols : null, preferDiagrams: true });
+        if (m && _safePictureSvg(m.svg)) {
+          hit = { svg: m.svg, set: m.set || (m.matchTier === 'diagram' || m.matchType === 'diagram' ? 'diagram' : 'mulberry') };
+        }
+      } catch (_) {}
+    }
+    if (!hit) return null;
+    var credit = hit.set === 'diagram'
+      ? 'AlloFlow Curriculum Diagram (offline)'
+      : hit.set === 'openmoji'
+        ? 'OpenMoji (CC BY-SA 4.0)'
+        : 'Mulberry Symbols (CC BY-SA 4.0)';
+    return {
+      dataUri: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(hit.svg),
+      alt: clean,
+      set: hit.set,
+      credit: credit,
+    };
+  }
+  function ensureWordPictures() {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return Promise.resolve(false);
+    var hasMatcher = !!(window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher));
+    if (hasMatcher) return Promise.resolve(true);
+    if (_wordPicturesPromise) return _wordPicturesPromise;
+    var loadScript = function (src, attr) {
+      return new Promise(function (resolve) {
+        if (document.querySelector('script[' + attr + '="1"]')) { resolve(true); return; }
+        var sc = document.createElement('script');
+        sc.src = src;
+        sc.async = true;
+        sc.setAttribute(attr, '1');
+        sc.onload = function () { resolve(true); };
+        sc.onerror = function () { resolve(false); };
+        (document.head || document.documentElement).appendChild(sc);
+      });
+    };
+    _wordPicturesPromise = Promise.all([
+      loadScript('word_sounds_symbols_en.js', 'data-allo-word-symbols'),
+      loadScript('word_picture_matcher.js', 'data-allo-word-matcher')
+    ]).then(function () {
+      return !!(window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher));
+    }, function () {
+      _wordPicturesPromise = null;
+      return false;
+    });
+    return _wordPicturesPromise;
+  }
+  if (typeof window !== 'undefined') {
+    window.__alloIsBionicOn = isBionicOn;
+    window.__alloIsBionicOnlyOn = isBionicOnlyOn;
+    window.__alloIsSyllablesOn = isSyllablesOn;
+    window.__alloSetSyllables = setSyllablesOn;
+    window.__alloEnsureSyllableTable = ensureSyllableTable;
+    window.__alloSplitSyllables = splitSyllables;
+    window.__alloLookupWordPicture = lookupWordPicture;
+    window.__alloEnsureWordPictures = ensureWordPictures;
+    window.__alloUseBionic = useAlloBionic;
+    window.__alloBionicReact = bionicReact;
+    window.__alloBionicHtml = bionicHtml;
+    window.__alloApplyBionicDom = applyBionicDom;
+  }
+
   // Register on AlloModules so callers + the host upgrade hook can find us.
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.UIFontLibrary = {
@@ -704,6 +1229,17 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     closeReadingSettings: closeReadingSettings,
     readerExportCss: readerExportCss,
     exportFontFaceCss: exportFontFaceCss,
+    isBionicOn: isBionicOn,
+    isBionicOnlyOn: isBionicOnlyOn,
+    isSyllablesOn: isSyllablesOn,
+    setSyllablesOn: setSyllablesOn,
+    splitSyllables: splitSyllables,
+    lookupWordPicture: lookupWordPicture,
+    ensureWordPictures: ensureWordPictures,
+    useAlloBionic: useAlloBionic,
+    bionicReact: bionicReact,
+    bionicHtml: bionicHtml,
+    applyBionicDom: applyBionicDom,
   };
 
   // Trigger the host-scope upgrade hook if the monolith set one up.

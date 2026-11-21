@@ -25,8 +25,12 @@ const DEFAULT_MODULES = Object.freeze([
 const VERAPDF_HTML_ROUTE = 'verapdf/verapdf_validator.html';
 const VERAPDF_JAR_ROUTE = 'verapdf/verapdf-cli.jar';
 
-const md5 = buffer => crypto.createHash('md5').update(buffer).digest('hex');
+const sha256 = buffer => crypto.createHash('sha256').update(buffer).digest('hex');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const MAX_LIVE_FETCH_BYTES = 64 * 1024 * 1024;
+const LIVE_FETCH_TIMEOUT_MS = 30_000;
+const MAX_REDIRECT_HOPS = 5;
+const SAFE_GIT_REF_RE = /^[A-Za-z0-9._/@^{}~-]+$/;
 
 function runTool(command, args, cwd) {
   const isWinCmd = process.platform === 'win32' && /\.(?:cmd|bat)$/i.test(command);
@@ -135,8 +139,9 @@ function evaluateSecurityHeaders({ rootHeaders = {}, engineHeaders = {} }) {
   if ((root['x-content-type-options'] || '').toLowerCase() !== 'nosniff') {
     failures.push('missing or invalid X-Content-Type-Options: nosniff on /app/');
   }
-  if (!/^max-age=\d+/i.test(root['strict-transport-security'] || '')) {
-    failures.push('missing Strict-Transport-Security header on /app/');
+  const hstsMatch = /(?:^|;\s*)max-age=(\d+)(?:\s*;|$)/i.exec(root['strict-transport-security'] || '');
+  if (!hstsMatch || Number(hstsMatch[1]) < 31536000) {
+    failures.push('missing or weak Strict-Transport-Security header on /app/');
   }
   if (engine['access-control-allow-origin'] !== '*') {
     failures.push('missing Access-Control-Allow-Origin: * header on /axe-core/axe.min.js');
@@ -226,18 +231,74 @@ function runPreflight(options) {
   return report;
 }
 
-async function fetchLiveUrl(url) {
-  const response = await fetch(url, {
-    redirect: 'follow',
-    cache: 'no-store',
-    headers: { 'Cache-Control': 'no-cache, no-store', Pragma: 'no-cache' },
-  });
-  const arrayBuffer = await response.arrayBuffer();
+async function fetchLiveUrl(url, expectedOrigin) {
+  let currentUrl = new URL(url);
+  if (currentUrl.protocol !== 'https:') {
+    throw new Error('Live verification URL must use HTTPS: ' + url);
+  }
+  const pinnedOrigin = expectedOrigin || currentUrl.origin;
+  let response = null;
+  for (let hop = 0; hop <= MAX_REDIRECT_HOPS; hop++) {
+    if (currentUrl.protocol !== 'https:' || currentUrl.origin !== pinnedOrigin) {
+      throw new Error('Refusing cross-origin or non-HTTPS redirect: ' + currentUrl.href);
+    }
+    response = await fetch(currentUrl.href, {
+      redirect: 'manual',
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache, no-store', Pragma: 'no-cache' },
+      signal: AbortSignal.timeout(LIVE_FETCH_TIMEOUT_MS),
+    });
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (!location || hop === MAX_REDIRECT_HOPS) {
+        throw new Error('Invalid or excessive redirect while verifying: ' + currentUrl.href);
+      }
+      currentUrl = new URL(location, currentUrl);
+      continue;
+    }
+    break;
+  }
+  const declaredLen = Number(response.headers.get('content-length'));
+  if (Number.isFinite(declaredLen) && declaredLen > MAX_LIVE_FETCH_BYTES) {
+    throw new Error('Live response exceeds 64 MiB safety limit: ' + currentUrl.href);
+  }
+  let buffer;
+  if (response.body && typeof response.body.getReader === 'function') {
+    const reader = response.body.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          total += value.byteLength;
+          if (total > MAX_LIVE_FETCH_BYTES) {
+            try { await reader.cancel(); } catch (_) {}
+            throw new Error('Live response exceeds 64 MiB safety limit: ' + currentUrl.href);
+          }
+          chunks.push(Buffer.from(value));
+        }
+      }
+    } finally {
+      try { reader.releaseLock(); } catch (_) {}
+    }
+    buffer = Buffer.concat(chunks, total);
+  } else {
+    const arrayBuffer = await response.arrayBuffer();
+    if (arrayBuffer.byteLength > MAX_LIVE_FETCH_BYTES) {
+      throw new Error('Live response exceeds 64 MiB safety limit: ' + currentUrl.href);
+    }
+    buffer = Buffer.from(arrayBuffer);
+  }
   const headers = Object.fromEntries(response.headers.entries());
-  return { status: response.status, headers, buffer: Buffer.from(arrayBuffer) };
+  return { status: response.status, headers, buffer };
 }
 
-function gitFileMd5(root, ref, relPath) {
+function gitFileSha256(root, ref, relPath) {
+  if (typeof ref !== 'string' || !ref || ref.startsWith('-') || !SAFE_GIT_REF_RE.test(ref)) {
+    throw new Error('Unsafe git ref for live verification: ' + ref);
+  }
   const res = spawnSync('git', ['show', `${ref}:${relPath}`], {
     cwd: root,
     encoding: null,
@@ -246,15 +307,35 @@ function gitFileMd5(root, ref, relPath) {
     maxBuffer: 32 * 1024 * 1024,
   });
   if (res.error || res.status !== 0 || !res.stdout) return null;
-  return md5(res.stdout);
+  return sha256(res.stdout);
 }
 
 async function runLiveVerify(options) {
   const root = path.resolve(options.root || path.join(__dirname, '..'));
   const cdnBase = String(options.cdn || DEFAULT_CDN).replace(/\/+$/, '');
+  let parsedCdn;
+  try {
+    parsedCdn = new URL(cdnBase);
+  } catch (_) {
+    throw new Error('Invalid --cdn URL: ' + cdnBase);
+  }
+  if (parsedCdn.protocol !== 'https:' || parsedCdn.username || parsedCdn.password) {
+    throw new Error('CDN URL must be a credential-free HTTPS origin: ' + cdnBase);
+  }
   const ref = options.ref || 'HEAD';
-  const retries = options.retries ?? 4;
-  const waitMs = options.waitMs ?? 20000;
+  if (typeof ref !== 'string' || !ref || ref.startsWith('-') || !SAFE_GIT_REF_RE.test(ref)) {
+    throw new Error('Invalid --ref value: ' + ref);
+  }
+  const rawRetries = options.retries ?? 4;
+  const rawWaitMs = options.waitMs ?? 20000;
+  if (!Number.isSafeInteger(rawRetries) || rawRetries < 0 || rawRetries > 60) {
+    throw new Error('Invalid --retries value (must be integer 0..60)');
+  }
+  if (!Number.isSafeInteger(rawWaitMs) || rawWaitMs < 0 || rawWaitMs > 300000) {
+    throw new Error('Invalid --wait-ms value (must be integer 0..300000)');
+  }
+  const retries = rawRetries;
+  const waitMs = rawWaitMs;
   const bust = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 
   const failures = [];
@@ -262,8 +343,8 @@ async function runLiveVerify(options) {
   console.log(`=== Post-Publish Live CDN Verification (${cdnBase}, ref ${ref}) ===`);
 
   const [rootAppResp, axeResp] = await Promise.all([
-    fetchLiveUrl(`${cdnBase}/app/?verify=${bust}-hdr1`),
-    fetchLiveUrl(`${cdnBase}/axe-core/axe.min.js?verify=${bust}-hdr2`),
+    fetchLiveUrl(`${cdnBase}/app/?verify=${bust}-hdr1`, parsedCdn.origin),
+    fetchLiveUrl(`${cdnBase}/axe-core/axe.min.js?verify=${bust}-hdr2`, parsedCdn.origin),
   ]);
   const sec = evaluateSecurityHeaders({ rootHeaders: rootAppResp.headers, engineHeaders: axeResp.headers });
   if (sec.ok) console.log('  [PASS] Security & CORS headers (_headers active)');
@@ -276,19 +357,25 @@ async function runLiveVerify(options) {
 
   let stale = [];
   for (const mod of DEFAULT_MODULES) {
-    const expected = gitFileMd5(root, ref, mod);
+    const expected = gitFileSha256(root, ref, mod);
     if (!expected) {
-      warnings.push(`${mod}: missing at git ref ${ref}`);
-      console.log(`  [WARN] ${mod}: missing at git ref ${ref}`);
+      failures.push(`${mod}: missing at git ref ${ref}`);
+      console.error(`  [FAIL] ${mod}: missing at git ref ${ref}`);
       continue;
     }
-    const resp = await fetchLiveUrl(`${cdnBase}/${mod}?v=${bust}`);
+    let resp;
+    try {
+      resp = await fetchLiveUrl(`${cdnBase}/${mod}?v=${bust}`, parsedCdn.origin);
+    } catch (err) {
+      stale.push({ mod, expected, reason: err.message });
+      continue;
+    }
     if (resp.status !== 200 || !resp.buffer.length) {
       failures.push(`${mod}: HTTP ${resp.status} / empty`);
       console.error(`  [FAIL] ${mod}: HTTP ${resp.status} / empty`);
       continue;
     }
-    if (md5(resp.buffer) === expected) {
+    if (sha256(resp.buffer) === expected) {
       console.log(`  [PASS] ${mod}: reachable + fresh`);
     } else {
       stale.push({ mod, expected });
@@ -300,30 +387,43 @@ async function runLiveVerify(options) {
     await sleep(waitMs);
     const still = [];
     for (const item of stale) {
-      const resp = await fetchLiveUrl(`${cdnBase}/${item.mod}?v=${bust}-${attempt}`);
-      if (resp.status === 200 && md5(resp.buffer) === item.expected) {
-        console.log(`  [PASS] ${item.mod}: now fresh`);
-      } else {
-        still.push(item);
+      try {
+        const resp = await fetchLiveUrl(`${cdnBase}/${item.mod}?v=${bust}-${attempt}`, parsedCdn.origin);
+        if (resp.status === 200 && sha256(resp.buffer) === item.expected) {
+          console.log(`  [PASS] ${item.mod}: now fresh`);
+        } else {
+          still.push(item);
+        }
+      } catch (err) {
+        still.push({ ...item, reason: err.message });
       }
     }
     stale = still;
   }
   for (const item of stale) {
-    warnings.push(`${item.mod}: content digest differs after ${retries} retries`);
-    console.log(`  [WARN] ${item.mod}: still propagating after ${retries} retries`);
+    const msg = `${item.mod}: content SHA-256 digest differs after ${retries} retries${item.reason ? ` (${item.reason})` : ''}`;
+    failures.push(msg);
+    console.error(`  [FAIL] ${msg}`);
   }
 
   let htmlResult = { ok: false, reason: 'not checked' };
   let jarResult = { ok: false, reason: 'not checked' };
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (!htmlResult.ok) {
-      const htmlResp = await fetchLiveUrl(`${cdnBase}/${VERAPDF_HTML_ROUTE}?verify=${bust}-${attempt}`);
-      htmlResult = evaluateVeraPdfHtml(htmlResp.status, htmlResp.buffer.toString('utf8'));
+      try {
+        const htmlResp = await fetchLiveUrl(`${cdnBase}/${VERAPDF_HTML_ROUTE}?verify=${bust}-${attempt}`, parsedCdn.origin);
+        htmlResult = evaluateVeraPdfHtml(htmlResp.status, htmlResp.buffer.toString('utf8'));
+      } catch (err) {
+        htmlResult = { ok: false, reason: err.message };
+      }
     }
     if (!jarResult.ok) {
-      const jarResp = await fetchLiveUrl(`${cdnBase}/${VERAPDF_JAR_ROUTE}?verify=${bust}-${attempt}`);
-      jarResult = evaluateVeraPdfJar(jarResp.status, jarResp.headers['content-type'], jarResp.buffer);
+      try {
+        const jarResp = await fetchLiveUrl(`${cdnBase}/${VERAPDF_JAR_ROUTE}?verify=${bust}-${attempt}`, parsedCdn.origin);
+        jarResult = evaluateVeraPdfJar(jarResp.status, jarResp.headers['content-type'], jarResp.buffer);
+      } catch (err) {
+        jarResult = { ok: false, reason: err.message };
+      }
     }
     if (htmlResult.ok && jarResult.ok) break;
     if (attempt < retries) await sleep(waitMs);

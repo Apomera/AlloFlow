@@ -70,24 +70,56 @@
     if (typeof window.__app_id !== 'undefined') return window.__app_id;
     return 'default-app-id';
   };
+  const _lpHasOwn = Object.prototype.hasOwnProperty;
+  const isUnsafePropKey = (key) => key === '__proto__' || key === 'constructor' || key === 'prototype';
+  const ownGet = (obj, key, fallback) => {
+    if (!obj || typeof obj !== 'object') return fallback;
+    const k = String(key == null ? '' : key);
+    if (isUnsafePropKey(k)) return fallback;
+    return _lpHasOwn.call(obj, k) ? obj[k] : fallback;
+  };
+  const safeJsonParse = (raw, fallback) => {
+    try {
+      if (typeof raw !== 'string') return fallback;
+      return JSON.parse(raw, function (key, value) {
+        return isUnsafePropKey(key) ? undefined : value;
+      });
+    } catch (_) {
+      return fallback;
+    }
+  };
+  const isSafePathSegment = (value) => {
+    if (typeof value !== 'string' && typeof value !== 'number') return false;
+    const s = String(value).trim();
+    return s.length > 0 && s.length <= 160 && !/[\\/]/.test(s) && s !== '.' && s !== '..' && !s.includes('..');
+  };
+  const MAX_LIVE_TIMESTAMP_MS = 8640000000000000;
+  const isValidSdpDesc = (desc, expectedType) => (
+    !!(desc && typeof desc === 'object' && desc.type === expectedType && typeof desc.sdp === 'string' && desc.sdp.length > 0 && desc.sdp.length <= 65536)
+  );
   // signalingPath lets other live features reuse this exact transport on
   // their own signaling collection (the Pictionary-coexistence pattern) —
   // e.g. the live quiz rides 'quiz-signaling' so poll and quiz stars can
   // run simultaneously without answering each other's offers.
   const signalingDocRef = (sessionCode, peerUid, signalingPath) => {
     const fb = getFb();
-    if (!fb) return null;
-    return fb.doc(fb.db, 'artifacts', getAppId(), 'public', 'data', signalingPath || 'signaling', sessionCode, 'peers', peerUid);
+    const pathSeg = signalingPath || 'signaling';
+    const appSeg = getAppId();
+    if (!fb || !isSafePathSegment(appSeg) || !isSafePathSegment(pathSeg) || !isSafePathSegment(sessionCode) || !isSafePathSegment(peerUid)) return null;
+    return fb.doc(fb.db, 'artifacts', appSeg, 'public', 'data', pathSeg, String(sessionCode).trim(), 'peers', String(peerUid).trim());
   };
   const signalingCollectionRef = (sessionCode, signalingPath) => {
     const fb = getFb();
-    if (!fb || !fb.collection) return null;
-    return fb.collection(fb.db, 'artifacts', getAppId(), 'public', 'data', signalingPath || 'signaling', sessionCode, 'peers');
+    const pathSeg = signalingPath || 'signaling';
+    const appSeg = getAppId();
+    if (!fb || !fb.collection || !isSafePathSegment(appSeg) || !isSafePathSegment(pathSeg) || !isSafePathSegment(sessionCode)) return null;
+    return fb.collection(fb.db, 'artifacts', appSeg, 'public', 'data', pathSeg, String(sessionCode).trim(), 'peers');
   };
   const sessionDocRef = (sessionCode) => {
     const fb = getFb();
-    if (!fb) return null;
-    return fb.doc(fb.db, 'artifacts', getAppId(), 'public', 'data', 'sessions', sessionCode);
+    const appSeg = getAppId();
+    if (!fb || !isSafePathSegment(appSeg) || !isSafePathSegment(sessionCode)) return null;
+    return fb.doc(fb.db, 'artifacts', appSeg, 'public', 'data', 'sessions', String(sessionCode).trim());
   };
 
   // ── Routing-rule evaluator ────────────────────────────────────────────
@@ -264,7 +296,7 @@
     try {
       const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
       const raw = target && target.getItem(key);
-      return raw ? normalizeLivePollDraft(JSON.parse(raw), pollId) : null;
+      return raw ? normalizeLivePollDraft(safeJsonParse(raw, null), pollId) : null;
     } catch (err) { return null; }
   };
   const writeLivePollDraft = (sessionCode, userUid, poll, value, storage, meta) => {
@@ -311,7 +343,7 @@
     try {
       const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
       const raw = target && target.getItem(key);
-      const draft = raw ? normalizeLiveSessionQaDraft(JSON.parse(raw), now) : null;
+      const draft = raw ? normalizeLiveSessionQaDraft(safeJsonParse(raw, null), now) : null;
       if (!draft && raw && target) target.removeItem(key);
       return draft;
     } catch (err) { return null; }
@@ -483,7 +515,8 @@
       const start = text.indexOf('{');
       const end = text.lastIndexOf('}');
       if (start >= 0 && end > start) text = text.slice(start, end + 1);
-      try { parsed = JSON.parse(text); } catch (err) { return []; }
+      parsed = safeJsonParse(text, null);
+      if (!parsed) return [];
     }
     const clusters = parsed && Array.isArray(parsed.clusters) ? parsed.clusters : [];
     const used = new Set();
@@ -507,13 +540,16 @@
   const buildWordCloudAliasPatch = (items, suggestion) => {
     const memberKeys = new Set(Array.isArray(suggestion && suggestion.memberKeys) ? suggestion.memberKeys : []);
     const label = normalizeWordCloudTerm(suggestion && suggestion.label);
-    if (!label || memberKeys.size < 2) return {};
+    if (!label || memberKeys.size < 2) return Object.create(null);
     return (Array.isArray(items) ? items : []).reduce(function (patch, item) {
       if (!item || !memberKeys.has(wordCloudTermKey(item.label))) return patch;
       const sourceKeys = Array.isArray(item.sourceKeys) && item.sourceKeys.length ? item.sourceKeys : [item.value];
-      sourceKeys.forEach(function (key) { if (key) patch[String(key)] = label; });
+      sourceKeys.forEach(function (key) {
+        const k = String(key || '');
+        if (k && !isUnsafePropKey(k)) patch[k] = label;
+      });
       return patch;
-    }, {});
+    }, Object.create(null));
   };
   const stableWordCloudColor = (value) => {
     const colors = ['#1d4ed8', '#7c3aed', '#0f766e', '#be123c', '#b45309', '#0369a1'];
@@ -582,24 +618,25 @@
       concept_quest: 'Concept Quest', adventure: 'Adventure mode', word_sounds: 'Word Sounds practice',
       visual_organizer: 'Visual organizer', escape_room: 'Escape room', resource: 'Assigned resource'
     };
-    return labels[key] || (key ? key.replace(/_/g, ' ') : 'No live activity');
+    return ownGet(labels, key, null) || (key ? key.replace(/_/g, ' ') : 'No live activity');
   };
   const LIVE_STUDENT_SIGNAL_ACTIVE_MS = 95000;
   const LIVE_STUDENT_SIGNAL_RECENT_MS = 200000;
   const normalizeLiveActivityTimestamp = (value) => {
-    if (typeof value === 'number' && Number.isFinite(value)) return Math.max(0, value);
+    const clampTs = (n) => (Number.isFinite(n) ? Math.min(MAX_LIVE_TIMESTAMP_MS, Math.max(0, n)) : 0);
+    if (typeof value === 'number' && Number.isFinite(value)) return clampTs(value);
     if (value && typeof value.toMillis === 'function') {
       try {
         const millis = Number(value.toMillis());
-        if (Number.isFinite(millis)) return Math.max(0, millis);
+        if (Number.isFinite(millis)) return clampTs(millis);
       } catch (err) {}
     }
     if (value && typeof value === 'object' && Number.isFinite(Number(value.seconds))) {
       const millis = (Number(value.seconds) * 1000) + Math.floor((Number(value.nanoseconds) || 0) / 1000000);
-      return Math.max(0, millis);
+      return clampTs(millis);
     }
     const numeric = Number(value);
-    return Number.isFinite(numeric) ? Math.max(0, numeric) : 0;
+    return clampTs(numeric);
   };
   const LIVE_ACTIVITY_PROGRESS_STATUSES = ['waiting', 'loading', 'ready', 'working', 'opened', 'attempted', 'submitted', 'revised', 'complete', 'failed', 'paused'];
   const normalizeLiveActivityProgressReceipt = (value) => {
@@ -1026,7 +1063,7 @@
     try {
       const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
       const raw = target && target.getItem(key);
-      return normalizeLiveCommandCenterRecovery(raw ? JSON.parse(raw) : null, now);
+      return normalizeLiveCommandCenterRecovery(raw ? safeJsonParse(raw, null) : null, now);
     } catch (err) { return normalizeLiveCommandCenterRecovery(null, now); }
   };
   const writeLiveCommandCenterRecovery = (sessionCode, value, storage, now) => {
@@ -1106,7 +1143,7 @@
     try {
       const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
       const raw = target && target.getItem(key);
-      return raw ? normalizeLiveTeacherActionStateMap(JSON.parse(raw), now) : {};
+      return raw ? normalizeLiveTeacherActionStateMap(safeJsonParse(raw, null), now) : {};
     } catch (err) { return {}; }
   };
   const writeLiveTeacherActionState = (sessionCode, state, storage, now) => {
@@ -2424,6 +2461,8 @@
     async _acceptPeer(uid, offerData, signalingRef) {
       const fb = getFb();
       if (!fb || !this._isUidAllowed(uid)) return;
+      if (!offerData || !isValidSdpDesc(offerData.offer, 'offer')) return;
+      if (!this.peers.has(uid) && this.peers.size >= 250) return;
       const pc = new RTCPeerConnection(getRtcConfig());
       const codename = (typeof offerData.codename === 'string' && offerData.codename.slice(0, 64)) || 'Guest';
       const initialIce = Array.isArray(offerData.iceFromGuest) ? offerData.iceFromGuest.slice(0, 64) : [];
@@ -2490,21 +2529,23 @@
           try {
             if (this._stopped || !this._isUidAllowed(uid) || this.peers.get(uid) !== peerRecord) return;
             if (typeof msg.data !== 'string' || msg.data.length > 65536) return;
-            const parsed = JSON.parse(msg.data);
-            if (parsed && parsed.type === 'confirmedResponse' && parsed.payload) {
+            const parsed = safeJsonParse(msg.data, null);
+            if (!parsed || typeof parsed !== 'object') return;
+            if (parsed.type === 'confirmedResponse' && parsed.payload) {
               this._receiveConfirmedResponse(uid, codename, parsed.payload);
-            } else if (parsed && parsed.type === 'response' && parsed.payload) {
+            } else if (parsed.type === 'response' && parsed.payload) {
               this._receiveResponse(uid, codename, parsed.payload);
-            } else if (parsed && parsed.type === 'responseStatus' && parsed.payload) {
+            } else if (parsed.type === 'responseStatus' && parsed.payload) {
               if (this.activePoll && parsed.payload.pollId === this.activePoll.id && this._isUidInActiveAudience(uid)) {
                 const status = parsed.payload.status === 'submitted' || parsed.payload.status === 'editing' || parsed.payload.status === 'withdrawn'
                   ? parsed.payload.status
                   : 'drafting';
+                const rawTs = Number(parsed.payload.timestamp);
                 this.onResponseStatus(uid, codename, {
                   pollId: parsed.payload.pollId,
                   status: status,
                   attempt: clampInt(parsed.payload.attempt, 1, 1, 2),
-                  timestamp: Number(parsed.payload.timestamp) || Date.now(),
+                  timestamp: Number.isFinite(rawTs) ? Math.min(MAX_LIVE_TIMESTAMP_MS, Math.max(0, rawTs)) : Date.now(),
                 });
               }
             } else if (parsed && parsed.type === 'peerVote' && parsed.payload) {
@@ -2980,19 +3021,20 @@
         try {
           if (this.pc !== pc || this.dc !== dc) return;
           if (typeof msg.data !== 'string' || msg.data.length > 262144) return;
-          const parsed = JSON.parse(msg.data);
-          if (parsed && parsed.type === 'poll') this.onPoll(parsed.payload);
-          else if (parsed && parsed.type === 'closePoll') this.onPollClose(parsed.payload);
-          else if (parsed && parsed.type === 'confirmedResponseReceipt') this._receiveConfirmedResponseReceipt(parsed.payload);
-          else if (parsed && (parsed.type === 'responseReceipt' || parsed.type === 'responseState')) {
+          const parsed = safeJsonParse(msg.data, null);
+          if (!parsed || typeof parsed !== 'object') return;
+          if (parsed.type === 'poll' && parsed.payload && typeof parsed.payload === 'object' && !Array.isArray(parsed.payload)) this.onPoll(parsed.payload);
+          else if (parsed.type === 'closePoll') this.onPollClose(parsed.payload && typeof parsed.payload === 'object' ? parsed.payload : {});
+          else if (parsed.type === 'confirmedResponseReceipt') this._receiveConfirmedResponseReceipt(parsed.payload);
+          else if (parsed.type === 'responseReceipt' || parsed.type === 'responseState') {
             const receipt = normalizeResponseReceipt(parsed.payload);
             if (receipt) (parsed.type === 'responseState' ? this.onResponseState : this.onResponseReceipt)(receipt);
           }
-          else if (parsed && parsed.type === 'pollResults') this.onPollResults(parsed.payload);
-          else if (parsed && parsed.type === 'peerShowcase') {
+          else if (parsed.type === 'pollResults' && parsed.payload && typeof parsed.payload === 'object' && !Array.isArray(parsed.payload)) this.onPollResults(parsed.payload);
+          else if (parsed.type === 'peerShowcase') {
             const round = sanitizePeerShowcaseRound(parsed.payload, '');
             if (round) {
-              round.candidates = (parsed.payload.candidates || []).slice(0, PEER_SHOWCASE_MAX_CANDIDATES).map((item) => ({
+              round.candidates = (Array.isArray(parsed.payload && parsed.payload.candidates) ? parsed.payload.candidates : []).slice(0, PEER_SHOWCASE_MAX_CANDIDATES).map((item) => ({
                 candidateId: String((item && item.candidateId) || '').slice(0, 64),
                 response: normalizePeerShowcaseText(item && item.response),
                 own: item && item.own === true,
@@ -3000,23 +3042,23 @@
               this.onPeerShowcase(round);
             }
           }
-          else if (parsed && parsed.type === 'peerVoteResults') this.onPeerVoteResults(parsed.payload);
-          else if (parsed && parsed.type === 'peerShowcaseClose') this.onPeerShowcaseClose(parsed.payload || {});
-          else if (parsed && parsed.type === 'sessionQaState') {
+          else if (parsed.type === 'peerVoteResults' && parsed.payload && typeof parsed.payload === 'object' && !Array.isArray(parsed.payload)) this.onPeerVoteResults(parsed.payload);
+          else if (parsed.type === 'peerShowcaseClose') this.onPeerShowcaseClose(parsed.payload && typeof parsed.payload === 'object' ? parsed.payload : {});
+          else if (parsed.type === 'sessionQaState') {
             this.onSessionQaState(sanitizeSessionQaGuestPacket(parsed.payload));
           }
-          else if (parsed && parsed.type === 'sessionQaFeatured') {
+          else if (parsed.type === 'sessionQaFeatured') {
             this.onSessionQaFeatured(sanitizeFeaturedQaPacket(parsed.payload));
           }
-          else if (parsed && parsed.type === 'feedback') {
+          else if (parsed.type === 'feedback') {
             const packet = sanitizeFeedbackPacket(parsed.payload, parsed.payload && parsed.payload.pollId);
             if (packet) this.onFeedback(packet);
           }
-          else if (parsed && parsed.type === 'checkIn') {
+          else if (parsed.type === 'checkIn') {
             const packet = normalizeLiveCheckInPacket(parsed.payload);
             if (packet) this.onCheckIn(packet);
           }
-          else if (parsed && parsed.type === 'hostClosed') this.onHostClosed(parsed.payload || {});
+          else if (parsed.type === 'hostClosed') this.onHostClosed(parsed.payload && typeof parsed.payload === 'object' ? parsed.payload : {});
         } catch (err) {}
       };
 
@@ -3058,7 +3100,7 @@
         if (this.pc !== pc) return;
         const data = (snap && snap.data && snap.data()) || null;
         if (!data) return;
-        if (data.answer && pc.signalingState === 'have-local-offer') {
+        if (isValidSdpDesc(data.answer, 'answer') && pc.signalingState === 'have-local-offer') {
           pc.setRemoteDescription(new RTCSessionDescription(data.answer)).catch(() => {});
         }
         if (Array.isArray(data.iceFromHost)) {
@@ -3257,6 +3299,7 @@
   // application data the student would have sent over WebRTC; nothing
   // identifying beyond the codename.
   const exportResponseForFallback = (pollId, response, codename) => {
+    const safeName = String(codename || 'guest').replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'guest';
     const blob = new Blob([JSON.stringify({
       pollId: pollId,
       response: response,
@@ -3265,12 +3308,15 @@
     }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'poll-response-' + (codename || 'guest') + '-' + Date.now() + '.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    try {
+      a.href = url;
+      a.download = 'poll-response-' + safeName + '-' + Date.now() + '.json';
+      document.body.appendChild(a);
+      a.click();
+    } finally {
+      if (a.parentNode) a.parentNode.removeChild(a);
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+    }
   };
 
   // ──────────────────────────────────────────────────────────────────────
@@ -3289,14 +3335,19 @@
   // by the teacher and are never sent for translation. English fallback.
   var LP_I18N_KEY = 'allo_livepolling_ui_i18n_v1';
   var LANG_CTX = (typeof window !== 'undefined' && window.AlloLanguageContext) || (typeof window !== 'undefined' && window.React ? window.React.createContext(null) : null);
-  var STR_REG = {};
-  var LL_CUR = { lang: 'English', cache: {} };
-  function llLoad() { try { return JSON.parse(localStorage.getItem(LP_I18N_KEY)) || {}; } catch (e) { return {}; } }
+  var STR_REG = Object.create(null);
+  var LL_CUR = { lang: 'English', cache: Object.create(null) };
+  function llLoad() {
+    try {
+      var parsed = safeJsonParse(localStorage.getItem(LP_I18N_KEY), null);
+      return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+    } catch (e) { return {}; }
+  }
   function llStore(v) { try { localStorage.setItem(LP_I18N_KEY, JSON.stringify(v)); } catch (e) {} }
   function llInterp(s, params) { if (s == null || !params) return s; Object.keys(params).forEach(function (k) { s = s.split('{' + k + '}').join(String(params[k])); }); return s; }
-  function tr(en, params) { if (en && typeof en === 'string') STR_REG[en] = true; var p = LL_CUR.cache[LL_CUR.lang]; return llInterp((p && p[en] != null) ? p[en] : en, params); }
+  function tr(en, params) { if (en && typeof en === 'string' && !isUnsafePropKey(en)) STR_REG[en] = true; var p = ownGet(LL_CUR.cache, LL_CUR.lang, null); var hit = p ? ownGet(p, en, null) : null; return llInterp(hit != null ? hit : en, params); }
   function llCleanJson(raw) { var s = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, ''); var f = s.indexOf('{'), l = s.lastIndexOf('}'); return f >= 0 && l > f ? s.slice(f, l + 1) : s; }
-  function llSanitize(obj, wanted) { if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null; var out = {}, n = 0; wanted.forEach(function (k) { var v = obj[k]; if (typeof v === 'string') { v = v.trim().slice(0, 400); if (v) { out[k] = v; n++; } } }); return n ? out : null; }
+  function llSanitize(obj, wanted) { if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null; var out = Object.create(null), n = 0; wanted.forEach(function (k) { if (isUnsafePropKey(k)) return; var v = ownGet(obj, k, undefined); if (typeof v === 'string') { v = v.trim().slice(0, 400); if (v) { out[k] = v; n++; } } }); return n ? out : null; }
   function llPrompt(langName, list) { var safeLang = String(langName || 'English').replace(/[^A-Za-z0-9 ()_-]/g, '').slice(0, 64) || 'English'; return ['Translate these user-interface labels for a classroom live-polling activity (a teacher broadcasts a quick poll; students answer on their own devices) into natural, concise ' + safeLang + ' (buttons, headings, status messages — keep them short).', 'Keep any {tokens}, numbers, and symbols (≤ ≥ → % + ✕) EXACTLY as written. No commentary.', 'Return ONLY a JSON object mapping each ENGLISH string (used verbatim as the key) to its ' + safeLang + ' translation.', JSON.stringify(list)].join(String.fromCharCode(10)); }
   // Shared hook: both HostPanel (teacher) and GuestOverlay (student) call this
   // at the top of their render so tr() works in render, handlers, and helpers.
@@ -3305,30 +3356,30 @@
     var uiLang = (langCtx && langCtx.currentUiLanguage) || (typeof window !== 'undefined' && window.__alloTextLanguage) || 'English';
     var llCacheRef = R.useRef(llLoad());
     var llReqRef = R.useRef(0);
-    var llAttemptedRef = R.useRef({});
+    var llAttemptedRef = R.useRef(Object.create(null));
     var setLlTick = R.useState(0)[1];
     LL_CUR.lang = uiLang; LL_CUR.cache = llCacheRef.current; // publish snapshot for module-scope tr()
     function llTranslateBatch(list) {
       var cg = (typeof window !== 'undefined') && window.callGemini;
-      if (!_lpAiUsable('text', cg) || !list.length) return;
+      if (!_lpAiUsable('text', cg) || !list.length || isUnsafePropKey(uiLang)) return;
       var reqId = ++llReqRef.current, lang = uiLang;
-      var att = llAttemptedRef.current[lang] || (llAttemptedRef.current[lang] = {});
-      list.forEach(function (k) { att[k] = true; });
+      var att = ownGet(llAttemptedRef.current, lang, null) || (llAttemptedRef.current[lang] = Object.create(null));
+      list.forEach(function (k) { if (!isUnsafePropKey(k)) att[k] = true; });
       Promise.resolve().then(function () { return cg(llPrompt(lang, list)); }).then(function (raw) {
         if (reqId !== llReqRef.current) return;
-        var pack = null; try { pack = llSanitize(JSON.parse(llCleanJson(raw)), list); } catch (_) {}
+        var pack = null; try { pack = llSanitize(safeJsonParse(llCleanJson(raw), null), list); } catch (_) {}
         if (pack) {
           var next = Object.assign({}, llCacheRef.current);
-          next[lang] = Object.assign({}, next[lang] || {}, pack);
+          next[lang] = Object.assign({}, ownGet(next, lang, null) || {}, pack);
           llCacheRef.current = next; llStore(next);
           setLlTick(function (n) { return n + 1; });
         }
       }).catch(function () {});
     }
     R.useEffect(function () {
-      if (uiLang === 'English' || typeof window === 'undefined' || !_lpAiUsable('text', window.callGemini)) return;
-      var cache = llCacheRef.current[uiLang] || {}, attempted = llAttemptedRef.current[uiLang] || {};
-      var missing = Object.keys(STR_REG).filter(function (k) { return !cache[k] && !attempted[k]; });
+      if (uiLang === 'English' || isUnsafePropKey(uiLang) || typeof window === 'undefined' || !_lpAiUsable('text', window.callGemini)) return;
+      var cache = ownGet(llCacheRef.current, uiLang, null) || {}, attempted = ownGet(llAttemptedRef.current, uiLang, null) || {};
+      var missing = Object.keys(STR_REG).filter(function (k) { return !ownGet(cache, k, false) && !ownGet(attempted, k, false); });
       if (!missing.length) return undefined;
       var to = setTimeout(function () { llTranslateBatch(missing); }, 500);
       return function () { clearTimeout(to); };
@@ -3399,16 +3450,20 @@
   }
 
   const renderWordCloudItems = function (items, ariaLabel) {
-    const safeItems = Array.isArray(items) ? items.filter((item) => item && item.label) : [];
+    const safeItems = Array.isArray(items) ? items.filter((item) => item && item.label).slice(0, 200) : [];
     if (!safeItems.length) return null;
-    const maxCount = Math.max.apply(null, safeItems.map((item) => Number(item.count) || 1));
+    const maxCount = safeItems.reduce((max, item) => {
+      const c = Number(item.count);
+      return Number.isFinite(c) && c > max ? c : max;
+    }, 1);
     return ce('div', {
       role: 'list',
       'aria-label': ariaLabel || tr('Word cloud'),
       'data-word-cloud-layout': 'stable',
       style: { display: 'flex', alignItems: 'center', justifyContent: 'center', alignContent: 'center', flexWrap: 'wrap', gap: '0.45rem 0.8rem', minHeight: 110, padding: '0.8rem', background: 'white', border: '1px solid #dbeafe', borderRadius: 10 }
     }, safeItems.map(function (item, index) {
-      const count = Math.max(1, Number(item.count) || 1);
+      const rawCount = Number(item.count);
+      const count = Number.isFinite(rawCount) && rawCount > 1 ? rawCount : 1;
       const strength = count / maxCount;
       const size = stableWordCloudSize(count, maxCount);
       return ce('span', {
@@ -4048,7 +4103,7 @@
       });
       hostRef.current = host;
       host.setAllowedUids(allowedUidValues);
-      host.start().catch(function (err) { console.warn('[LivePolling HostPanel] start failed', err); });
+      host.start().catch(function (err) { console.warn('[LivePolling HostPanel] start failed:', err && err.message); });
       // Tier-1 presence marker: student shells gate guest joins on an
       // actually-listening host (see GuestOverlay's hostActive prop) instead
       // of dialing a closed panel on a retry loop. hostOpenedAt doubles as a
@@ -4795,10 +4850,12 @@
     }, { pending: 0, approved: 0, hidden: 0 });
     const approvedWordCloudUniqueCount = wordCloudTermsForActive.filter(function (item) { return item.status === 'approved'; }).length;
     const setWordCloudTermStatus = function (key, status) {
-      if (!activePoll || activePoll.type !== 'wordcloud' || !key) return;
+      if (!activePoll || activePoll.type !== 'wordcloud' || !key || isUnsafePropKey(String(key))) return;
       setWordCloudModerationByPoll(function (prev) {
         const next = Object.assign({}, prev);
-        next[activePoll.id] = Object.assign({}, next[activePoll.id] || {}, { [key]: status });
+        const forPoll = Object.assign(Object.create(null), ownGet(next, activePoll.id, null) || {});
+        forPoll[String(key)] = status;
+        next[activePoll.id] = forPoll;
         return next;
       });
       setLastSharedResultsAt(null);
@@ -4808,9 +4865,9 @@
       if (status !== 'approved' && status !== 'hidden') return;
       setWordCloudModerationByPoll(function (prev) {
         const next = Object.assign({}, prev);
-        const forPoll = Object.assign({}, next[activePoll.id] || {});
+        const forPoll = Object.assign(Object.create(null), ownGet(next, activePoll.id, null) || {});
         visiblePendingWordCloudTerms.forEach(function (item) {
-          forPoll[item.value] = status;
+          if (item && item.value && !isUnsafePropKey(String(item.value))) forPoll[String(item.value)] = status;
         });
         next[activePoll.id] = forPoll;
         return next;
@@ -4818,19 +4875,23 @@
       setLastSharedResultsAt(null);
     };
     const renameWordCloudTerm = function (key) {
-      if (!activePoll || activePoll.type !== 'wordcloud' || !key) return;
-      const label = normalizeWordCloudTerm(wordCloudRenameDrafts[key]);
+      if (!activePoll || activePoll.type !== 'wordcloud' || !key || isUnsafePropKey(String(key))) return;
+      const label = normalizeWordCloudTerm(ownGet(wordCloudRenameDrafts, key, ''));
       if (!label) return;
       const targetKey = wordCloudTermKey(label);
+      if (isUnsafePropKey(targetKey)) return;
       setWordCloudAliasesByPoll(function (prev) {
         const next = Object.assign({}, prev);
-        next[activePoll.id] = Object.assign({}, next[activePoll.id] || {}, { [key]: label });
+        const forPoll = Object.assign(Object.create(null), ownGet(next, activePoll.id, null) || {});
+        forPoll[String(key)] = label;
+        next[activePoll.id] = forPoll;
         return next;
       });
       setWordCloudModerationByPoll(function (prev) {
         const next = Object.assign({}, prev);
-        const forPoll = Object.assign({}, next[activePoll.id] || {});
-        if (forPoll[key] && !forPoll[targetKey]) forPoll[targetKey] = forPoll[key];
+        const forPoll = Object.assign(Object.create(null), ownGet(next, activePoll.id, null) || {});
+        const curStatus = ownGet(forPoll, key, null);
+        if (curStatus && !ownGet(forPoll, targetKey, null)) forPoll[targetKey] = curStatus;
         next[activePoll.id] = forPoll;
         return next;
       });
@@ -5123,8 +5184,10 @@
               ce('h3', { id: 'live-student-detail-timeline-title', style: { margin: 0, color: '#1e3a8a', fontSize: '0.86rem' } }, tr('Recent activity milestones')),
               ce('p', { style: { margin: '0.2rem 0 0', color: '#64748b', fontSize: '0.66rem' } }, tr('Content-free status changes from this live session.')),
               detail.timeline.length ? ce('ol', { style: { margin: '0.65rem 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 6 } }, detail.timeline.map(function (item) {
+                const safeAt = normalizeLiveActivityTimestamp(item.at);
+                const isoTime = safeAt > 0 ? new Date(safeAt).toISOString() : '';
                 return ce('li', { key: item.id, style: { display: 'grid', gridTemplateColumns: 'minmax(88px, auto) 1fr', gap: 8, alignItems: 'start', padding: '0.48rem 0.55rem', border: '1px solid #e2e8f0', borderRadius: 7, background: 'white' } },
-                  ce('time', { dateTime: new Date(item.at).toISOString(), style: { color: '#64748b', fontSize: '0.64rem', fontWeight: 800, fontVariantNumeric: 'tabular-nums' } }, formatLiveElapsed(Math.max(0, healthNow - item.at)) + ' ' + tr('ago')),
+                  ce('time', { dateTime: isoTime, style: { color: '#64748b', fontSize: '0.64rem', fontWeight: 800, fontVariantNumeric: 'tabular-nums' } }, formatLiveElapsed(Math.max(0, healthNow - safeAt)) + ' ' + tr('ago')),
                   ce('span', { style: { color: '#1e293b', fontSize: '0.72rem' } }, ce('strong', null, tr(item.label)), item.detail ? ce('span', { style: { display: 'block', marginTop: 1, color: '#64748b', fontSize: '0.66rem' } }, tr(item.detail)) : null)
                 );
               })) : ce('p', { style: { margin: '0.65rem 0 0', color: '#64748b', fontSize: '0.72rem' } }, tr('No activity milestones have arrived yet.'))
@@ -5876,11 +5939,12 @@
           // Aggregate routing summary (teacher-only; counts per group)
           activePoll && Array.isArray(activePoll.routingRules) && activePoll.routingRules.length > 0
             ? (function () {
-                const counts = {};
-                const routedMap = routingByPoll[activePoll.id] || {};
+                const counts = Object.create(null);
+                const routedMap = ownGet(routingByPoll, activePoll.id, null) || {};
                 Object.keys(routedMap).forEach(function (uid) {
                   if (!activeParticipantUidSet.has(String(uid))) return;
-                  const gid = routedMap[uid];
+                  const gid = String(ownGet(routedMap, uid, '') || '');
+                  if (!gid || isUnsafePropKey(gid)) return;
                   counts[gid] = (counts[gid] || 0) + 1;
                 });
                 const entries = Object.keys(counts);
@@ -6478,7 +6542,7 @@
         },
       });
       guestRef.current = guest;
-      guest.join().catch(function (err) { console.warn('[LivePolling GuestOverlay] join failed', err); if (disposed) return; setConnectionState('failed'); scheduleRejoin(); });
+      guest.join().catch(function (err) { console.warn('[LivePolling GuestOverlay] join failed:', err && err.message); if (disposed) return; setConnectionState('failed'); scheduleRejoin(); });
       return function () {
         disposed = true;
         if (retryTimerRef.current) { clearTimeout(retryTimerRef.current); retryTimerRef.current = null; }

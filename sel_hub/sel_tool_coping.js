@@ -18,13 +18,17 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
-  function __alloT(key, fallback) {
-    try {
-      var fn = typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : null;
-      if (fn) { var v = fn(key, fallback); if (v != null && v !== key) return v; }
-    } catch (_) {}
-    return fallback != null ? fallback : key;
-  }
+  var _ctx = null;
+  var __alloT = function (key, fallback) {
+    var fn = (_ctx && typeof _ctx.t === 'function')
+      ? _ctx.t
+      : ((typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.t === 'function')
+        ? window.SelHub.t
+        : ((typeof window !== 'undefined' && typeof window.__alloT === 'function') ? window.__alloT : null));
+    var v = null;
+    if (fn) { try { v = fn(key, fallback); } catch (_) { v = null; } }
+    return (typeof v === 'string' && v && v !== key) ? v : (fallback != null ? fallback : key);
+  };
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-coping')) return;
@@ -26431,6 +26435,7 @@ window.SelHub = window.SelHub || {
     color: 'teal',
     category: 'self-regulation',
     render: function(ctx) {
+      _ctx = ctx;
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _copT = (ctx && ctx.theme) || {};
       var _copHC = !!_copT.isContrast, _copL = !_copHC && !_copT.isDark;

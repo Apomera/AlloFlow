@@ -100,7 +100,7 @@ function fetchWhole(call, admin, n) {
 describe('Class Mailbox v29 submission pickup', () => {
     it('lists, downloads and marks submissions, including files saved before v29', () => {
         const { call, admin, driveFiles, folder } = makeSandbox();
-        expect(call({ a: 'hello' }).v).toBe(30);
+        expect(call({ a: 'hello' }).v).toBe(32);
         // A file an older script saved, with no index yet.
         folder.createFile('submission-Old_Kid-20260101-000000-aaaaaaaa.json', JSON.stringify({ studentName: 'Old Kid', kind: 'alloflow-student-submission' }));
         expect(call({ a: 'putpack', admin, id: PACK, k: PACK_K, part: 1, of: 1, title: 'T', expiresAt: new Date(Date.now() + 864e5).toISOString(), activities: [], data: '{}' }).ok).toBe(true);

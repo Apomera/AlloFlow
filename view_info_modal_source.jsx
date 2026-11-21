@@ -316,18 +316,18 @@ function FeaturedCard({ item }) {
     <div className="min-w-0 bg-white rounded-xl border border-slate-200 p-4 flex flex-col shadow-sm hover:shadow-md hover:border-indigo-200 transition-all">
       <div className="min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-1">
         <h5 className="min-w-0 break-words font-bold text-slate-800 text-sm leading-tight">{item.name}</h5>
-        <span className="max-w-full self-start sm:self-auto text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-normal break-words">{item.license}</span>
+        <span className="max-w-full self-start sm:self-auto text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-normal break-words">{item.license}</span>
       </div>
       {item.owner && <p className="text-[11px] text-slate-600 font-medium mb-2">{item.owner}</p>}
       <p className="text-xs text-slate-600 leading-relaxed flex-1">{item.blurb}</p>
       <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100">
         {item.site && (
-          <a href={item.site} target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg px-3 py-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+          <a href={item.site} target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg px-3 py-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
             <ExternalLink size={12} aria-hidden="true" /> Website
           </a>
         )}
         {item.repo && (
-          <a href={item.repo} target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg px-3 py-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+          <a href={item.repo} target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg px-3 py-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
             <Code size={12} aria-hidden="true" /> Source
           </a>
         )}
@@ -363,10 +363,10 @@ function OpenSourceTab({ t }) {
             <a key={item.name} href={item.url} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-emerald-100 bg-white p-3 hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">
               <span className="flex items-start justify-between gap-2">
                 <strong className="text-xs text-slate-800">{item.name}</strong>
-                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">{item.status}</span>
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">{item.status}</span>
               </span>
-              <span className="block text-[11px] font-medium text-slate-500 mt-1">{item.license}</span>
-              <span className="block text-[11px] text-slate-600 leading-relaxed mt-1">{item.guidance}</span>
+              <span className="block text-xs font-medium text-slate-600 mt-1">{item.license}</span>
+              <span className="block text-xs text-slate-600 leading-relaxed mt-1">{item.guidance}</span>
             </a>
           ))}
         </div>
@@ -387,15 +387,15 @@ function OpenSourceTab({ t }) {
           <div className="px-3 pb-3 pt-1 space-y-4">
             {READING_SOURCE_CREDITS.map((section) => (
               <div key={section.group}>
-                <h6 className="font-bold text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">{section.group}</h6>
+                <h6 className="font-bold text-xs uppercase tracking-wider text-slate-600 mb-1.5">{section.group}</h6>
                 <ul className="space-y-2 list-none">
                   {section.items.map((item) => (
-                    <li key={item.sourceId} className="text-[11px] text-slate-700 leading-relaxed">
+                    <li key={item.sourceId} className="text-xs text-slate-700 leading-relaxed">
                       <a href={item.url} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-700 hover:text-indigo-900 hover:underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
                         {item.name}
                       </a>
                       <span className="text-slate-600"> — {item.scope}</span>
-                      <span className="block text-slate-500"><span className="font-semibold">Rights:</span> {item.license}</span>
+                      <span className="block text-slate-600"><span className="font-semibold">Rights:</span> {item.license}</span>
                     </li>
                   ))}
                 </ul>
@@ -406,7 +406,7 @@ function OpenSourceTab({ t }) {
       </div>
 
       <div>
-        <h5 className="font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-2">
+        <h5 className="font-bold text-xs uppercase tracking-wider text-slate-600 mb-2">
           {t('about.oss_featured_header') || 'Learning tools we integrate'}
         </h5>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -424,7 +424,7 @@ function OpenSourceTab({ t }) {
         <div className="px-4 pb-4 pt-1 space-y-4">
           {OSS_CREDITS.map((section) => (
             <div key={section.group}>
-              <h5 className="font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-1.5">{section.group}</h5>
+              <h5 className="font-bold text-xs uppercase tracking-wider text-slate-600 mb-1.5">{section.group}</h5>
               <ul className="space-y-1.5 list-none">
                 {section.items.map((item) => (
                   <li key={item.name} className="text-xs text-slate-700 leading-snug flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
@@ -437,7 +437,7 @@ function OpenSourceTab({ t }) {
                       {item.name}
                     </a>
                     <span className="text-slate-600">
-                      — {item.use} <span className="text-slate-600">·</span> <span className="font-medium text-slate-500">{item.license}</span>
+                      — {item.use} <span className="text-slate-600">·</span> <span className="font-medium text-slate-600">{item.license}</span>
                     </span>
                   </li>
                 ))}
@@ -1025,15 +1025,15 @@ function AtlasHubRoute({ hub, visual }) {
   return (
     <div className={'rounded-xl border ' + visual.border + ' bg-gradient-to-r ' + visual.surface + ' p-3'}>
       <div className="flex flex-wrap items-baseline justify-between gap-1 mb-2">
-        <p className={'text-[10px] font-black uppercase tracking-widest ' + visual.text}>{visual.eyebrow}</p>
-        <p className="text-[10px] text-slate-500">A guide, not a required sequence</p>
+        <p className={'text-xs font-black uppercase tracking-widest ' + visual.text}>{visual.eyebrow}</p>
+        <p className="text-xs text-slate-600">A guide, not a required sequence</p>
       </div>
       <p className="sr-only">{hub.hub} overview: {visual.route.join(', ')}.</p>
       <div aria-hidden="true" className="grid grid-cols-1 gap-1.5 sm:flex sm:items-center">
         {visual.route.map((step, index) => (
           <React.Fragment key={step}>
             {index > 0 && <span className="hidden sm:block h-px min-w-2 flex-1 bg-slate-300" />}
-            <span className="min-w-0 sm:flex-1 whitespace-normal break-words rounded-lg border border-white/90 bg-white/80 px-2 py-1.5 text-center text-[10px] font-bold text-slate-700 shadow-sm">
+            <span className="min-w-0 sm:flex-1 whitespace-normal break-words rounded-lg border border-white/90 bg-white/80 px-2 py-1.5 text-center text-xs font-bold text-slate-700 shadow-sm">
               {step}
             </span>
           </React.Fragment>
@@ -1100,29 +1100,29 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
     <details open={forceOpen || undefined} className="rounded-xl border border-slate-200 bg-slate-50/70 shadow-sm">
       <summary className="min-h-11 cursor-pointer p-3 hover:bg-white/70 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
         <span className="flex items-start gap-2.5">
-          <span aria-hidden="true" className={'w-7 h-7 shrink-0 rounded-lg ' + visual.accent + ' text-white flex items-center justify-center text-[11px] font-black shadow-sm'}>
+          <span aria-hidden="true" className={'w-7 h-7 shrink-0 rounded-lg ' + visual.accent + ' text-white flex items-center justify-center text-xs font-black shadow-sm'}>
             {index + 1}
           </span>
           <span className="min-w-0 flex-1">
             <span className="font-bold text-xs leading-tight text-slate-800 block"><AtlasHighlight text={cat.name} query={query} /></span>
-            <span className="text-[10px] leading-relaxed text-slate-500 block mt-0.5"><AtlasHighlight text={areaDescription} query={query} /></span>
+            <span className="text-xs leading-relaxed text-slate-600 block mt-0.5"><AtlasHighlight text={areaDescription} query={query} /></span>
             <span className="block mt-2">
               <span className="text-[9px] font-black uppercase tracking-wider text-slate-600 block mb-1">Area focus</span>
               <span role="list" aria-label={cat.name + ' focus'} className="flex flex-wrap gap-1">
                 {areaLens.map((focus) => (
-                  <span role="listitem" key={focus} className={'inline-flex items-center gap-1 rounded-full border ' + visual.border + ' bg-white px-1.5 py-0.5 text-[9px] font-bold text-slate-600'}>
+                  <span role="listitem" key={focus} className={'inline-flex items-center gap-1 rounded-full border ' + visual.border + ' bg-white px-1.5 py-0.5 text-xs font-bold text-slate-600'}>
                     <span aria-hidden="true" className={'w-1.5 h-1.5 rounded-full ' + visual.accent} />
                     {focus}
                   </span>
                 ))}
               </span>
             </span>
-            <span className="text-[9px] leading-relaxed text-slate-500 block mt-1.5">
+            <span className="text-xs leading-relaxed text-slate-600 block mt-1.5">
               <span className="font-black uppercase tracking-wider text-slate-600">Examples: </span>
               {sampleTools.join(' / ')}
             </span>
           </span>
-          <span className="shrink-0 text-[10px] font-bold text-slate-500 bg-white border border-slate-200 rounded-full px-1.5 py-0.5">
+          <span className="shrink-0 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-full px-1.5 py-0.5">
             {countText} entries
           </span>
         </span>
@@ -1131,7 +1131,7 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
         <p className="text-[9px] font-black uppercase tracking-wider text-slate-600 mb-2">Catalog entries in this area</p>
         <div role="list" className="flex flex-wrap gap-1.5" aria-label={cat.name + ' catalog entries'}>
           {cat.tools.map((tool, i) => (
-            <span role="listitem" key={tool + i} className="text-[10px] font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2 py-0.5">
+            <span role="listitem" key={tool + i} className="text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2 py-0.5">
               <AtlasHighlight text={tool} query={query} />
             </span>
           ))}
@@ -1159,10 +1159,10 @@ function AtlasHubCard({ hub, isOpen, onToggle, cardRef, isFiltered, query, onLau
         <span className={'col-start-1 row-start-1 w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br ' + visual.surface + ' border ' + visual.border + ' flex items-center justify-center text-xl leading-none'} aria-hidden="true">{hub.icon}</span>
         <span className="col-start-2 row-start-1 min-w-0 flex-1">
           <span className="font-bold text-slate-800 text-sm block"><AtlasHighlight text={hub.hub} query={query} /></span>
-          <span className="text-[11px] text-slate-500 font-normal leading-snug block mt-0.5"><AtlasHighlight text={visual.description} query={query} /></span>
+          <span className="text-xs text-slate-600 font-normal leading-snug block mt-0.5"><AtlasHighlight text={visual.description} query={query} /></span>
           <span className="text-[9px] font-bold text-slate-600 leading-snug block mt-1"><AtlasHighlight text={hub.sourceLabel || 'Curated product index'} query={query} /></span>
         </span>
-        <span className="col-start-2 col-span-2 row-start-2 mt-2 justify-self-start max-w-full text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-normal break-words sm:mt-0 sm:shrink-0 sm:whitespace-nowrap">
+        <span className="col-start-2 col-span-2 row-start-2 mt-2 justify-self-start max-w-full text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-normal break-words sm:mt-0 sm:shrink-0 sm:whitespace-nowrap">
           {isFiltered ? resultLabel : hub.total + ' entries' + (catCount > 1 ? ' / ' + catCount + ' areas' : '')}
         </span>
         <span aria-hidden="true" className="col-start-3 row-start-1 self-center text-slate-600 group-open:rotate-90 transition-transform motion-reduce:transition-none text-xs">&gt;</span>
@@ -1173,7 +1173,7 @@ function AtlasHubCard({ hub, isOpen, onToggle, cardRef, isFiltered, query, onLau
           <div className={'flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border ' + visual.border + ' bg-white p-3 shadow-sm'}>
             <div>
               <p className="text-xs font-black text-slate-800">Continue into the live workspace</p>
-              <p className="text-[10px] leading-relaxed text-slate-500 mt-0.5">Uses the shared command palette so mode, permissions, and panel stacking stay respected.</p>
+              <p className="text-xs leading-relaxed text-slate-600 mt-0.5">Uses the shared command palette so mode, permissions, and panel stacking stay respected.</p>
             </div>
             <button
               type="button"
@@ -1209,9 +1209,9 @@ function AtlasLandscape({ hubs, onChooseHub }) {
   return (
     <section aria-labelledby="atlas-landscape-title" className="relative overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-4">
       <div className="relative z-10 text-center">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Whole-app overview</p>
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-indigo-500">Whole-app overview</p>
         <h5 id="atlas-landscape-title" className="text-sm font-black text-slate-900 mt-0.5">Choose a region of AlloFlow</h5>
-        <p className="text-[11px] text-slate-500 mt-1">Each region opens into areas, then searchable catalog entries.</p>
+        <p className="text-xs text-slate-600 mt-1">Each region opens into areas, then searchable catalog entries.</p>
         <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 text-white px-3 py-1.5 mt-3 shadow-sm">
           <span aria-hidden="true">+</span>
           <span className="text-xs font-black tracking-wide">AlloFlow</span>
@@ -1239,10 +1239,10 @@ function AtlasLandscape({ hubs, onChooseHub }) {
                 <span className="text-xl leading-none" aria-hidden="true">{hub.icon}</span>
                 <span className="min-w-0 flex-1">
                   <span className={'block text-xs font-black ' + visual.text}>{hub.hub}</span>
-                  <span className="block text-[10px] leading-snug text-slate-600 mt-0.5">{visual.eyebrow}</span>
-                  <span className="block text-[9px] font-bold text-slate-500 mt-1">{hub.sourceKind === 'registry' ? 'Registry-backed' : 'Curated / mixed index'}</span>
+                  <span className="block text-xs leading-snug text-slate-600 mt-0.5">{visual.eyebrow}</span>
+                  <span className="block text-xs font-bold text-slate-600 mt-1">{hub.sourceKind === 'registry' ? 'Registry-backed' : 'Curated / mixed index'}</span>
                 </span>
-                <span className="shrink-0 text-[10px] font-black text-slate-600 bg-white/80 rounded-full px-1.5 py-0.5 border border-white">{hub.total} entries</span>
+                <span className="shrink-0 text-xs font-black text-slate-600 bg-white/80 rounded-full px-1.5 py-0.5 border border-white">{hub.total} entries</span>
               </span>
             </button>
           );
@@ -1261,23 +1261,23 @@ function AtlasScopeNote({ hubs }) {
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
         <div>
           <h5 id="atlas-scope-title" className="text-xs font-black text-slate-800">How this map stays trustworthy</h5>
-          <p className="text-[10px] leading-relaxed text-slate-500 mt-0.5">The map labels automated registry data separately from indexes that require editorial review.</p>
+          <p className="text-xs leading-relaxed text-slate-600 mt-0.5">The map labels automated registry data separately from indexes that require editorial review.</p>
         </div>
-        <span className="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-500">
+        <span className="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-1 text-xs font-black uppercase tracking-wider text-slate-600">
           {registryHubs.length} registry-backed / {curatedHubs.length} curated or mixed
         </span>
       </div>
       <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
         <div className="rounded-lg border border-emerald-100 bg-emerald-50/70 p-3">
-          <dt className="text-[10px] font-black text-emerald-800">Registry-backed</dt>
-          <dd className="text-[10px] leading-relaxed text-slate-600 mt-0.5">{registryHubs.map((hub) => hub.hub).join(' • ')}</dd>
+          <dt className="text-xs font-black text-emerald-800">Registry-backed</dt>
+          <dd className="text-xs leading-relaxed text-slate-600 mt-0.5">{registryHubs.map((hub) => hub.hub).join(' • ')}</dd>
         </div>
         <div className="rounded-lg border border-amber-100 bg-amber-50/70 p-3">
-          <dt className="text-[10px] font-black text-amber-800">Curated or mixed</dt>
-          <dd className="text-[10px] leading-relaxed text-slate-600 mt-0.5">{curatedHubs.map((hub) => hub.hub).join(' • ')}</dd>
+          <dt className="text-xs font-black text-amber-800">Curated or mixed</dt>
+          <dd className="text-xs leading-relaxed text-slate-600 mt-0.5">{curatedHubs.map((hub) => hub.hub).join(' • ')}</dd>
         </div>
       </dl>
-      <p className="text-[10px] leading-relaxed text-slate-500 mt-2">
+      <p className="text-xs leading-relaxed text-slate-600 mt-2">
         Counts represent searchable catalog entries—not necessarily unique tools. A surface can appear in more than one product grouping.
       </p>
     </aside>
@@ -1307,16 +1307,16 @@ function AtlasJourneys({ onChooseHub }) {
     <section aria-labelledby="atlas-journeys-title" className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Cross-hub connections</p>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-600">Cross-hub connections</p>
           <h5 id="atlas-journeys-title" className="text-sm font-black text-slate-900 mt-0.5">Common routes through AlloFlow</h5>
         </div>
-        <p className="text-[10px] text-slate-500">Examples only - mix and match freely.</p>
+        <p className="text-xs text-slate-600">Examples only - mix and match freely.</p>
       </div>
       <div className="grid grid-cols-1 gap-2.5">
         {ATLAS_JOURNEYS.map((journey) => (
           <article key={journey.title} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
             <h6 className="text-xs font-black text-slate-800">{journey.title}</h6>
-            <p className="text-[10px] leading-relaxed text-slate-500 mt-0.5">{journey.description}</p>
+            <p className="text-xs leading-relaxed text-slate-600 mt-0.5">{journey.description}</p>
             <div role="group" className="flex flex-col sm:flex-row sm:items-center gap-1.5 mt-2.5" aria-label={journey.title + ' route'}>
               {journey.stops.map((stop, index) => {
                 const visual = ATLAS_HUB_VISUALS[stop] || ATLAS_DEFAULT_VISUAL;
@@ -1331,7 +1331,7 @@ function AtlasJourneys({ onChooseHub }) {
                     <button
                       type="button"
                       onClick={() => onChooseHub(stop)}
-                      className={'min-h-11 flex-1 rounded-lg border ' + visual.border + ' bg-gradient-to-r ' + visual.surface + ' px-3 py-2 text-[10px] font-black ' + visual.text + ' hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2'}
+                      className={'min-h-11 flex-1 rounded-lg border ' + visual.border + ' bg-gradient-to-r ' + visual.surface + ' px-3 py-2 text-xs font-black ' + visual.text + ' hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2'}
                     >
                       {stop}
                     </button>
@@ -1500,9 +1500,9 @@ function AtlasTab({ t, onRequestClose }) {
             <div className="flex flex-wrap items-end justify-between gap-2 mb-2">
               <div>
                 <label id="atlas-search-label" htmlFor="atlas-search-input" className="block text-xs font-black text-slate-800">Find a tool or area</label>
-                <p className="text-[10px] text-slate-500 mt-0.5">Search hub names, area purposes, or individual tools.</p>
+                <p className="text-xs text-slate-600 mt-0.5">Search hub names, area purposes, or individual tools.</p>
               </div>
-              <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">
+              <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">
                 {totalEntries} entries / {totalAreas} areas
               </span>
             </div>
@@ -1531,13 +1531,13 @@ function AtlasTab({ t, onRequestClose }) {
                   type="button"
                   onClick={clearSearch}
                   aria-label="Clear Atlas search"
-                  className="absolute right-0 top-0 min-h-11 min-w-11 flex items-center justify-center rounded-r-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600"
+                  className="absolute right-0 top-0 min-h-11 min-w-11 flex items-center justify-center rounded-r-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600"
                 >
                   <span aria-hidden="true">&times;</span>
                 </button>
               )}
             </div>
-            <p id="atlas-search-status" role="status" aria-live="polite" className="text-[10px] text-slate-500 mt-2">
+            <p id="atlas-search-status" role="status" aria-live="polite" className="text-xs text-slate-600 mt-2">
               {isSearching
                 ? (resultStats.entries
                   ? resultStats.entries + (resultStats.entries === 1 ? ' matching catalog entry' : ' matching catalog entries') + ' across ' + resultStats.areas + (resultStats.areas === 1 ? ' area.' : ' areas.')
@@ -1553,7 +1553,7 @@ function AtlasTab({ t, onRequestClose }) {
                 type="button"
                 onClick={expandVisibleHubs}
                 aria-controls="atlas-directory-hubs"
-                className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
               >
                 Expand hubs
               </button>
@@ -1561,7 +1561,7 @@ function AtlasTab({ t, onRequestClose }) {
                 type="button"
                 onClick={collapseVisibleHubs}
                 aria-controls="atlas-directory-hubs"
-                className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
               >
                 Collapse hubs
               </button>
@@ -1588,7 +1588,7 @@ function AtlasTab({ t, onRequestClose }) {
               <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
                 <span aria-hidden="true" className="text-2xl">&#x1F9ED;</span>
                 <h6 className="font-bold text-sm text-slate-800 mt-2">No matching region</h6>
-                <p className="text-xs text-slate-500 mt-1">Try a broader subject, purpose, or tool name.</p>
+                <p className="text-xs text-slate-600 mt-1">Try a broader subject, purpose, or tool name.</p>
                 <button
                   type="button"
                   onClick={clearSearch}
@@ -1703,7 +1703,7 @@ function PrivacyTab({ t }) {
           <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">3.</span><span>Confirm institutional approval, provider age/use restrictions, and applicable agreements with your privacy or IT administrator.</span></li>
           <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">4.</span><span>Minimize names and other identifying details, then review generated output before sharing it.</span></li>
         </ol>
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium">
           <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">Gemini API terms ↗</a>
           <a href="https://edu.google.com/ai/gemini-for-education/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">Gemini for Education ↗</a>
           <a href="https://platform.openai.com/docs/models/default-usage-policies-by-endpoint" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">OpenAI API data controls ↗</a>
@@ -1739,7 +1739,7 @@ function AccessibilityNote({ t }) {
       <p className="text-xs text-slate-600 leading-relaxed mb-2">
         {t('about.a11y_intro') || 'Accessibility isn’t a feature here — it’s the whole point. AlloFlow is designed toward WCAG 2.2 AA (a target, not a certification). Automated axe-core and IBM Equal Access checks are available in relevant interface and document workflows. The PDF pipeline can run veraPDF validation against PDF/UA-1 (ISO 14289-1); AlloFlow withholds a conformance claim unless the available checks support it.'}
       </p>
-      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-slate-700 list-none">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-slate-700 list-none">
         <li className="flex items-start gap-1.5"><span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span><span>Dyslexia-friendly &amp; low-vision font options (OpenDyslexic, Atkinson Hyperlegible, Lexend)</span></li>
         <li className="flex items-start gap-1.5"><span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span><span>Text-to-speech and read-aloud across core reading and content views</span></li>
         <li className="flex items-start gap-1.5"><span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span><span>Keyboard navigation and screen-reader labels</span></li>
@@ -2128,30 +2128,30 @@ function InfoModal({
                     <h5 id="about-start-heading" className="font-bold text-sm">Start here</h5>
                     <p className="text-xs text-slate-300 mt-0.5">Use the live product map and guided workflows—nothing here can drift into a broken walkthrough.</p>
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300">
+                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">
                     {ATLAS_HUBS.reduce((sum, hub) => sum + hub.total, 0)} current catalog entries
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <button type="button" onClick={handleSetInfoModalTabToAtlas} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><Layers size={16} className="text-indigo-300" aria-hidden="true" /> Map the platform</span>
-                    <span className="block text-[11px] text-slate-300 mt-1">Explore major regions, area maps, searchable entries, and source notes.</span>
+                    <span className="block text-xs text-slate-300 mt-1">Explore major regions, area maps, searchable entries, and source notes.</span>
                   </button>
                   <button type="button" onClick={handleSetInfoModalTabToFeatures} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><Sparkles size={16} className="text-indigo-300" aria-hidden="true" /> Browse guided workflows</span>
-                    <span className="block text-[11px] text-slate-300 mt-1">See inputs, processing steps, outputs, and practical tips.</span>
+                    <span className="block text-xs text-slate-300 mt-1">See inputs, processing steps, outputs, and practical tips.</span>
                   </button>
                   <button type="button" onClick={handleSetInfoModalTabToPrivacy} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><ShieldCheck size={16} className="text-indigo-300" aria-hidden="true" /> Review data paths</span>
-                    <span className="block text-[11px] text-slate-300 mt-1">Compare local, classroom-session, and hosted-service choices.</span>
+                    <span className="block text-xs text-slate-300 mt-1">Compare local, classroom-session, and hosted-service choices.</span>
                   </button>
                   <button type="button" onClick={() => openCommandPaletteFromInfo('', 'about')} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><Search size={16} className="text-indigo-300" aria-hidden="true" /> Find any tool</span>
-                    <span className="block text-[11px] text-slate-300 mt-1">Open the command palette and search the live app.</span>
+                    <span className="block text-xs text-slate-300 mt-1">Open the command palette and search the live app.</span>
                   </button>
                   <button type="button" onClick={openVideoLibraryFromInfo} className="sm:col-span-2 min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><MonitorPlay size={16} className="text-indigo-300" aria-hidden="true" /> Watch how it works</span>
-                    <span className="block text-[11px] text-slate-300 mt-1">A short tour of the platform. Streams from the AlloFlow CDN, not a video platform.</span>
+                    <span className="block text-xs text-slate-300 mt-1">A short tour of the platform. Streams from the AlloFlow CDN, not a video platform.</span>
                   </button>
                 </div>
               </section>
@@ -2179,7 +2179,7 @@ function InfoModal({
                       <p className="text-xs text-slate-600 mb-3 leading-relaxed">
                         {t('about.rep_desc') || "Presenting information in different ways."}
                       </p>
-                      <ul className="space-y-1.5 text-[11px] text-slate-700 pl-1 list-none">
+                      <ul className="space-y-1.5 text-xs text-slate-700 pl-1 list-none">
                         <li className="flex items-start gap-1.5">
                           <span aria-hidden="true" className="text-emerald-600 font-bold shrink-0">✓</span>
                           <span><strong>Leveled Texts:</strong> Adjust complexity from kindergarten through college</span>
@@ -2198,7 +2198,7 @@ function InfoModal({
                         </li>
                       </ul>
                     </div>
-                    <div className="mt-3 pt-2 border-t border-emerald-100/50 text-[10px] text-emerald-800 font-medium">
+                    <div className="mt-3 pt-2 border-t border-emerald-100/50 text-xs text-emerald-800 font-medium">
                       Allows all students to access key ideas.
                     </div>
                   </div>
@@ -2215,7 +2215,7 @@ function InfoModal({
                       <p className="text-xs text-slate-600 mb-3 leading-relaxed">
                         {t('about.action_desc') || "Providing options for students to demonstrate what they know."}
                       </p>
-                      <ul className="space-y-1.5 text-[11px] text-slate-700 pl-1 list-none">
+                      <ul className="space-y-1.5 text-xs text-slate-700 pl-1 list-none">
                         <li className="flex items-start gap-1.5">
                           <span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span>
                           <span><strong>Interactive Games:</strong> Sorting, matching, puzzles</span>
@@ -2234,7 +2234,7 @@ function InfoModal({
                         </li>
                       </ul>
                     </div>
-                    <div className="mt-3 pt-2 border-t border-teal-100/50 text-[10px] text-teal-800 font-medium">
+                    <div className="mt-3 pt-2 border-t border-teal-100/50 text-xs text-teal-800 font-medium">
                       Offers flexible choices to show understanding.
                     </div>
                   </div>
@@ -2251,7 +2251,7 @@ function InfoModal({
                       <p className="text-xs text-slate-600 mb-3 leading-relaxed">
                         {t('about.engage_desc') || "Tapping into interests to challenge and motivate."}
                       </p>
-                      <ul className="space-y-1.5 text-[11px] text-slate-700 pl-1 list-none">
+                      <ul className="space-y-1.5 text-xs text-slate-700 pl-1 list-none">
                         <li className="flex items-start gap-1.5">
                           <span aria-hidden="true" className="text-amber-600 font-bold shrink-0">✓</span>
                           <span><strong>Adventure Mode:</strong> DM roleplay simulations</span>
@@ -2270,7 +2270,7 @@ function InfoModal({
                         </li>
                       </ul>
                     </div>
-                    <div className="mt-3 pt-2 border-t border-amber-100/50 text-[10px] text-amber-800 font-medium">
+                    <div className="mt-3 pt-2 border-t border-amber-100/50 text-xs text-amber-800 font-medium">
                       Builds sustained motivation and learning drive.
                     </div>
                   </div>
@@ -2339,7 +2339,7 @@ function InfoModal({
                     }[selectedFeature.icon] || Sparkles, { size: 24, 'aria-hidden': true })}
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider block">
+                    <span className="text-xs font-bold uppercase tracking-wider block">
                       {selectedFeature.categoryName}
                     </span>
                     <h4 className="font-extrabold text-xl leading-none mt-1">{selectedFeature.title}</h4>
@@ -2485,7 +2485,7 @@ function InfoModal({
                     </button>
                   )}
                 </div>
-                <p role="status" aria-live="polite" className="text-[11px] text-slate-500 mt-1.5">
+                <p role="status" aria-live="polite" className="text-xs text-slate-600 mt-1.5">
                   Showing {visibleFeatureItems.length} of {featureCatalogItems.length} guides
                 </p>
               </div>
@@ -2536,7 +2536,7 @@ function InfoModal({
               {visibleFeatureItems.length === 0 && (
                 <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
                   <p className="text-sm font-bold text-slate-700">No guided workflows match “{featureQuery.trim()}”.</p>
-                  <p className="text-xs text-slate-500 mt-1">Clear the search or use Atlas for the complete directory.</p>
+                  <p className="text-xs text-slate-600 mt-1">Clear the search or use Atlas for the complete directory.</p>
                   <button type="button" onClick={() => setFeatureQuery('')} className="min-h-11 mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
                     Clear search
                   </button>

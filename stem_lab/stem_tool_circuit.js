@@ -411,6 +411,7 @@ window.StemLab = window.StemLab || {
       if(['resistor','bulb','capacitor'].indexOf(c.type)!==-1)part.value=c.value;
       if(c.type==='switch')part.closed=!!c.closed;
       if(c.type==='led'){part.reversed=!!c.reversed;part.ledColor=c.ledColor||'#ef4444';}
+      if((c.type==='bulb'||c.type==='led')&&c.unscrewed)part.unscrewed=true;
       return part;
     })}};
   }
@@ -438,6 +439,10 @@ window.StemLab = window.StemLab || {
         if(typeof c.reversed!=='boolean')throw Error(prefix+'LED polarity is missing.');
         if(['#ef4444','#22c55e','#3b82f6','#eab308','#f8fafc'].indexOf(c.ledColor)===-1)throw Error(prefix+'unsupported LED color.');
         part.reversed=c.reversed;part.ledColor=c.ledColor;
+      }
+      if((c.type==='bulb'||c.type==='led')&&c.unscrewed!==undefined){
+        if(typeof c.unscrewed!=='boolean')throw Error(prefix+'bulb or LED connection state must be boolean.');
+        if(c.unscrewed)part.unscrewed=true;
       }
       return part;
     });
@@ -2025,16 +2030,16 @@ window.StemLab = window.StemLab || {
     var tube=function(group,points,mat,radius){var path=curve(points);if(!path)return null;var m=mesh(group,new T.TubeGeometry(path,Math.max(16,points.length*8),radius||.018,8,false),mat);return {mesh:m,curve:path};};
     var currentCamera=function(){var offset=camera.position.clone().sub(controls.target),radius=offset.length(),azimuth=Math.atan2(offset.x,offset.z)*180/Math.PI,elevation=Math.asin(Math.max(-1,Math.min(1,offset.y/radius)))*180/Math.PI,fit=model?circuitNetworkOrbitDistance(model,{azimuth:azimuth,elevation:elevation},camera.aspect):baseDistance;return circuitNetworkOrbitCamera({azimuth:azimuth,elevation:elevation,zoom:fit/radius,targetX:model?controls.target.x/(model.width/2):0,targetZ:model?controls.target.z/(model.depth/2):0});};
     var flowActive=function(){return lastOptions.flowPlaying===true&&lastOptions.flow!=='off'&&trailCount>0;};
-    var positionTrails=function(){Object.values(partViews).forEach(function(v){v.routes.forEach(function(r){if(!r.trail.visible)return;var positions=circuitNetworkOrbitTrail(r.length,r.direction,flowPhase),w=r.weight==null?1:r.weight,core=.7+.4*w,glow=.45+.85*w;positions.forEach(function(u,i){var p=r.curve.getPointAt(u);trailMatrix.makeScale(core,core,core).setPosition(p.x,p.y+.025,p.z);r.trail.setMatrixAt(i,trailMatrix);trailMatrix.makeScale(glow,glow,glow).setPosition(p.x,p.y+.025,p.z);r.halo.setMatrixAt(i,trailMatrix);});r.trail.count=r.halo.count=positions.length;r.trail.instanceMatrix.needsUpdate=r.halo.instanceMatrix.needsUpdate=true;});});canvas.dataset.orbitFlowPhase=String(flowPhase);};
+    var positionTrails=function(){Object.values(partViews).forEach(function(v){v.routes.forEach(function(r){if(!r.trail.visible)return;var positions=circuitNetworkOrbitTrail(r.length,r.direction,flowPhase),w=r.weight==null?1:r.weight,pulse=flowActive()?(1+.14*Math.sin(flowPhase*5.5)):1,core=(.66+.48*w)*(.94+.06*pulse),glow=(.52+1.02*w)*pulse;positions.forEach(function(u,i){var p=r.curve.getPointAt(u);trailMatrix.makeScale(core,core,core).setPosition(p.x,p.y+.025,p.z);r.trail.setMatrixAt(i,trailMatrix);trailMatrix.makeScale(glow,glow,glow).setPosition(p.x,p.y+.025,p.z);r.halo.setMatrixAt(i,trailMatrix);});r.trail.count=r.halo.count=positions.length;r.trail.instanceMatrix.needsUpdate=r.halo.instanceMatrix.needsUpdate=true;});});canvas.dataset.orbitFlowPhase=String(flowPhase);};
     var glide=null,stepGlide=function(now){if(!glide)return false;var k=Math.min(1,(now-glide.start)/420),e=k<.5?2*k*k:1-Math.pow(2-2*k,2)/2,a=glide.from,b=glide.to,mix=function(x,y){return x+(y-x)*e;},az=a.az+(((b.az-a.az+3*Math.PI)%(2*Math.PI))-Math.PI)*e,el=mix(a.el,b.el),r=mix(a.r,b.r);controls.target.set(mix(a.tx,b.tx),.15,mix(a.tz,b.tz));camera.position.set(controls.target.x+r*Math.cos(el)*Math.sin(az),controls.target.y+r*Math.sin(el),controls.target.z+r*Math.cos(el)*Math.cos(az));synchronizing=true;controls.update();synchronizing=false;if(k>=1)glide=null;return true;};
     var settle=function(){var busy=false;Object.values(partViews).forEach(function(v){var g=v.pivot&&v.pivot.userData.goal;if(g==null)return;var d=g-v.pivot.rotation.z;if(Math.abs(d)<.004){v.pivot.rotation.z=g;return;}v.pivot.rotation.z+=d*.22;busy=true;});return busy;};
     var draw=function(now){frame=0;if(disposed||document.hidden||!visible){lastTick=0;return;}var moving=flowActive(),easing=stepGlide(now)|settle();if(easing)renderer.shadowMap.needsUpdate=true;if(moving){var elapsed=lastTick?Math.max(0,Math.min(.1,(now-lastTick)/1000)):0;lastTick=now;flowPhase+=elapsed*.7;positionTrails();}else lastTick=0;if(easing||!moving||!lastDraw||now-lastDraw>=32){renderer.render(scene,camera);lastDraw=now;canvas.dataset.orbitReady='true';canvas.dataset.orbitDraws=String((Number(canvas.dataset.orbitDraws)||0)+1);}if(moving||easing)render();};
     var render=function(){if(!disposed&&!frame)frame=requestAnimationFrame(draw);};
     var applyCamera=function(raw,smooth){if(!model)return;var c=circuitNetworkOrbitCamera(raw);baseDistance=circuitNetworkOrbitDistance(model,c,camera.aspect);controls.minDistance=baseDistance/3;controls.maxDistance=baseDistance/.65;var az=c.azimuth*Math.PI/180,el=c.elevation*Math.PI/180,radius=baseDistance/c.zoom,tx=c.targetX*model.width/2,tz=c.targetZ*model.depth/2;if(smooth&&lastDraw){var off=camera.position.clone().sub(controls.target),r0=off.length(),from={az:Math.atan2(off.x,off.z),el:Math.asin(Math.max(-1,Math.min(1,off.y/r0))),r:r0,tx:controls.target.x,tz:controls.target.z};if(Math.abs(from.r-radius)+Math.abs(from.tx-tx)+Math.abs(from.tz-tz)+Math.abs(from.el-el)+Math.abs(Math.sin((from.az-az)/2))>1e-3){glide={from:from,to:{az:az,el:el,r:radius,tx:tx,tz:tz},start:performance.now()};canvas.dataset.orbitCamera=JSON.stringify(c);render();return;}}glide=null;controls.target.set(tx,.15,tz);camera.position.set(controls.target.x+radius*Math.cos(el)*Math.sin(az),controls.target.y+radius*Math.sin(el),controls.target.z+radius*Math.cos(el)*Math.cos(az));synchronizing=true;controls.update();synchronizing=false;canvas.dataset.orbitCamera=JSON.stringify(c);render();};
     var resize=function(){if(disposed)return;var width=Math.max(1,canvas.clientWidth),height=Math.max(1,canvas.clientHeight),prior=currentCamera();camera.aspect=width/height;camera.updateProjectionMatrix();var size=renderer.getSize(new T.Vector2());if(size.x!==width||size.y!==height){delete canvas.dataset.orbitReady;renderer.setSize(width,height,false);}if(model){baseDistance=circuitNetworkOrbitDistance(model,prior,camera.aspect);controls.minDistance=baseDistance/3;controls.maxDistance=baseDistance/.65;camera.far=Math.max(100,baseDistance*4);camera.updateProjectionMatrix();applyCamera(prior);}render();};
-    var build=function(s){disposeTree(content);while(content.children.length)content.remove(content.children[0]);partViews={};nodeViews={};flowPhase=0;trailCount=0;model=circuitNetworkOrbitGeometry(s.design);var metal=material('#bacbd2',.65,.29),gold=material('#dbc384',.55,.35),board=material('#ffffff',.12,.5),edge=material('#122937',.32,.42),dark=material('#182936',.18,.44);box(content,[model.width+.15,.12,model.depth+.15],edge,0,-.12,-.1);box(content,[model.width,.07,model.depth],board,0,-.025,-.1);var floorMat=material('#ffffff',.02,.9);floorMat.envMapIntensity=.15;floorMat.map=studio.paint(256,256,function(g,w,h){var s=g.createRadialGradient(w/2,h/2,8,w/2,h/2,w/2);s.addColorStop(0,'#183446');s.addColorStop(.3,'#0b1a26');s.addColorStop(1,'#04090e');g.fillStyle=s;g.fillRect(0,0,w,h);});var floor=box(content,[model.width+40,.07,model.depth+40],floorMat,0,-.38,-.1);floor.castShadow=false;
-      var seed=7,rand=function(){seed=(seed*16807)%2147483647;return seed/2147483647;};board.map=studio.paint(512,512,function(g,w,h){g.fillStyle='#21544f';g.fillRect(0,0,w,h);for(var i=0;i<2600;i++){g.fillStyle=rand()<.5?'rgba(255,255,255,.035)':'rgba(0,0,0,.05)';g.fillRect(rand()*w,rand()*h,2,2);}g.strokeStyle='#a8873a';g.lineWidth=4;g.strokeRect(4,4,w-8,h-8);g.strokeStyle='rgba(236,248,240,.5)';g.lineWidth=2;g.strokeRect(22,22,w-44,h-44);});board.map.anisotropy=renderer.capabilities.getMaxAnisotropy();var silk=new T.LineBasicMaterial({color:'#eef8f2',transparent:true,opacity:.5});
-      var trailGeometry=new T.SphereGeometry(.041,8,6),trailMaterial=new T.MeshBasicMaterial({color:'#e9ffb6',toneMapped:false}),haloGeometry=new T.SphereGeometry(.088,10,8),haloMaterial=new T.MeshBasicMaterial({color:'#c6ff6a',transparent:true,opacity:.22,blending:T.AdditiveBlending,depthWrite:false,toneMapped:false});
+    var build=function(s){disposeTree(content);while(content.children.length)content.remove(content.children[0]);partViews={};nodeViews={};flowPhase=0;trailCount=0;model=circuitNetworkOrbitGeometry(s.design);var metal=material('#cadbe2',.78,.22),gold=material('#e6c97a',.72,.26),board=material('#ffffff',.16,.42),edge=material('#122937',.38,.36),dark=material('#182936',.22,.40);box(content,[model.width+.15,.12,model.depth+.15],edge,0,-.12,-.1);box(content,[model.width,.07,model.depth],board,0,-.025,-.1);var floorMat=material('#ffffff',.02,.9);floorMat.envMapIntensity=.15;floorMat.map=studio.paint(256,256,function(g,w,h){var s=g.createRadialGradient(w/2,h/2,8,w/2,h/2,w/2);s.addColorStop(0,'#1b3b4f');s.addColorStop(.32,'#0c1d2b');s.addColorStop(1,'#04090e');g.fillStyle=s;g.fillRect(0,0,w,h);});var floor=box(content,[model.width+40,.07,model.depth+40],floorMat,0,-.38,-.1);floor.castShadow=false;
+      var seed=7,rand=function(){seed=(seed*16807)%2147483647;return seed/2147483647;};board.map=studio.paint(512,512,function(g,w,h){var bg=g.createRadialGradient(w*.45,h*.4,20,w*.5,h*.5,w*.72);bg.addColorStop(0,'#266059');bg.addColorStop(.55,'#1c4b46');bg.addColorStop(1,'#133634');g.fillStyle=bg;g.fillRect(0,0,w,h);for(var i=0;i<2800;i++){g.fillStyle=rand()<.5?'rgba(255,255,255,.038)':'rgba(0,0,0,.055)';g.fillRect(rand()*w,rand()*h,2,2);}g.strokeStyle='rgba(86,188,166,.12)';g.lineWidth=1.5;for(var t=48;t<w-48;t+=44){g.beginPath();g.moveTo(28,t);g.lineTo(t*.6,t);g.lineTo(t*.6+18,t+18);g.lineTo(w-28,t+18);g.stroke();}for(var v=0;v<18;v++){var vx=44+rand()*(w-88),vy=44+rand()*(h-88);g.fillStyle='#c4a24d';g.beginPath();g.arc(vx,vy,4,0,Math.PI*2);g.fill();g.fillStyle='#0d2524';g.beginPath();g.arc(vx,vy,1.8,0,Math.PI*2);g.fill();}g.strokeStyle='#c9a34c';g.lineWidth=4;g.strokeRect(4,4,w-8,h-8);g.strokeStyle='rgba(236,248,240,.52)';g.lineWidth=2;g.strokeRect(22,22,w-44,h-44);[[34,34],[w-34,34],[34,h-34],[w-34,h-34]].forEach(function(c){g.strokeStyle='#d4b25c';g.lineWidth=2;g.beginPath();g.arc(c[0],c[1],7,0,Math.PI*2);g.stroke();g.fillStyle='#f3dd9a';g.beginPath();g.arc(c[0],c[1],2.4,0,Math.PI*2);g.fill();});});board.map.anisotropy=renderer.capabilities.getMaxAnisotropy();var silk=new T.LineBasicMaterial({color:'#eef8f2',transparent:true,opacity:.5});
+      var trailGeometry=new T.SphereGeometry(.044,8,6),trailMaterial=new T.MeshBasicMaterial({color:'#eaffc2',toneMapped:false}),haloGeometry=new T.SphereGeometry(.096,10,8),haloMaterial=new T.MeshBasicMaterial({color:'#7bf5b8',transparent:true,opacity:.28,blending:T.AdditiveBlending,depthWrite:false,toneMapped:false});
       var extent=Math.max(model.width,model.depth);key.shadow.camera.left=key.shadow.camera.bottom=-extent;key.shadow.camera.right=key.shadow.camera.top=extent;key.shadow.camera.far=40+extent;key.shadow.camera.updateProjectionMatrix();
       var grid=new T.Group();grid.name='surface-grid';content.add(grid);var gridMat=new T.LineBasicMaterial({color:'#9fd0c4',transparent:true,opacity:.11});for(var x=-4;x<=4;x+=.4){var g=new T.BufferGeometry().setFromPoints([new T.Vector3(x,.018,-model.depth/2+.08),new T.Vector3(x,.018,model.depth/2-.25)]);grid.add(new T.Line(g,gridMat));}for(var z=-model.depth/2+.12;z<model.depth/2-.2;z+=.4){var g=new T.BufferGeometry().setFromPoints([new T.Vector3(-4,.018,z),new T.Vector3(4,.018,z)]);grid.add(new T.Line(g,gridMat));}
       [-1,1].forEach(function(a){[-1,1].forEach(function(b){var x=a*(model.width/2-.2),z=b*(model.depth/2-.2)-.1;cylinder(content,.08,.07,metal,x,.045,z);box(content,[.10,.006,.018],dark,x,.083,z);cylinder(content,.11,.21,dark,x,-.23,z);});});
@@ -4338,9 +4343,9 @@ function CircuitActiveLessonLab(props) {
       var p=points.map(function(v){return project(v[0],v[1],v[2]);});
       var path=roundedPath(p,focus?14:6), grid=width&&width<1, weight=(width||4)*(focus?2:1);
       push(p,h('g',null,
-        !grid&&h('path',{d:path,fill:'none',stroke:'#020a11',strokeWidth:weight+3,strokeLinecap:'round',strokeLinejoin:'round',opacity:.5,transform:'translate(0 2)'}),
+        !grid&&h('path',{d:path,fill:'none',stroke:'#020a11',strokeWidth:weight+3.2,strokeLinecap:'round',strokeLinejoin:'round',opacity:.54,transform:'translate(0 2.1)'}),
         h('path',{d:path,fill:'none',stroke:color||'#5eead4',strokeWidth:weight,strokeLinecap:'round',strokeLinejoin:'round'}),
-        !grid&&h('path',{d:path,fill:'none',stroke:'#ffffff',strokeWidth:.65,strokeLinecap:'round',strokeLinejoin:'round',opacity:.4,transform:'translate(0 -.7)'})));
+        !grid&&h('path',{d:path,fill:'none',stroke:'#ffffff',strokeWidth:.85,strokeLinecap:'round',strokeLinejoin:'round',opacity:.52,transform:'translate(0 -.8)'})));
     };
     var label=function(x,y,z,text,color,part) {
       var p=project(x,y,z);
@@ -4351,22 +4356,23 @@ function CircuitActiveLessonLab(props) {
     var glass=function(x,y,z,r,level,color) {
       var p=project(x,y,z),lit=level>.07; r*=sceneScale;
       push([p],h('g',{'data-bulb-level':level.toFixed(2)},
-        lit&&h('circle',{cx:p[0],cy:p[1],r:r*(1.5+.9*level),fill:'url(#circuit-bulb-bloom)',opacity:.2+.6*level}),
-        lit&&h('circle',{cx:p[0],cy:p[1],r:r*1.45,fill:'url(#circuit-bulb-bloom)',opacity:.1+.3*level}),
-        h('circle',{cx:p[0],cy:p[1],r:r,fill:lit?'url(#circuit-glass-warm)':'url(#circuit-glass-cool)',stroke:lit?'#fde68a':'#94a3b8',strokeWidth:1,opacity:.97}),
-        h('ellipse',{cx:p[0]-r*.35,cy:p[1]-r*.35,rx:r*.20,ry:r*.38,fill:'#fff',opacity:.65,transform:'rotate(30 '+p[0]+' '+p[1]+')'}),
-        h('path',{d:'M '+(p[0]-r*.4)+' '+(p[1]+r*.65)+' Q '+p[0]+' '+(p[1]+r*.85)+' '+(p[0]+r*.6)+' '+(p[1]+r*.4),fill:'none',stroke:'#e0f2fe',strokeWidth:.65,opacity:.65})));
+        lit&&h('circle',{cx:p[0],cy:p[1],r:r*(1.85+1.05*level),fill:'url(#circuit-bulb-bloom)',opacity:.26+.62*level}),
+        lit&&h('circle',{cx:p[0],cy:p[1],r:r*1.45,fill:'url(#circuit-bulb-bloom)',opacity:.18+.38*level}),
+        h('circle',{cx:p[0],cy:p[1],r:r,fill:lit?'url(#circuit-glass-warm)':'url(#circuit-glass-cool)',stroke:lit?'#fef08a':'#94a3b8',strokeWidth:1.1,opacity:.97}),
+        h('ellipse',{cx:p[0]-r*.35,cy:p[1]-r*.35,rx:r*.22,ry:r*.40,fill:'#fff',opacity:.72,transform:'rotate(30 '+p[0]+' '+p[1]+')'}),
+        h('path',{d:'M '+(p[0]-r*.4)+' '+(p[1]+r*.65)+' Q '+p[0]+' '+(p[1]+r*.85)+' '+(p[0]+r*.6)+' '+(p[1]+r*.4),fill:'none',stroke:'#e0f2fe',strokeWidth:.7,opacity:.7})));
     };
-    // A bevelled lab tray, quiet grid, and machined mounting screws.
-    box(0,0,-19,550,350,17,'#244a58');
+    // A bevelled PCB solder-mask lab tray, copper border trace, quiet grid, and machined mounting screws.
+    box(0,0,-19,550,350,17,'#214b56');
     box(0,0,-20,542,342,2,'#0b1d2a');
-    polygon([[-267,-174,0],[267,-174,0],[275,-166,0],[275,166,0],[267,174,0],[-267,174,0],[-275,166,0],[-275,-166,0]],'#153744','#2d5663');
-    polygon([[-258,-156,.5],[258,-156,.5],[258,156,.5],[-258,156,.5]],'#12303d','#204955');
-    for(var gx=-250;gx<=250;gx+=25)wire([[gx,-150,1],[gx,150,1]],'#204552',.45);
-    for(var gy=-150;gy<=150;gy+=25)wire([[-250,gy,1],[250,gy,1]],'#204552',.45);
+    polygon([[-267,-174,0],[267,-174,0],[275,-166,0],[275,166,0],[267,174,0],[-267,174,0],[-275,166,0],[-275,-166,0]],'#143b42','#b8964e');
+    polygon([[-258,-156,.5],[258,-156,.5],[258,156,.5],[-258,156,.5]],'#11333b','#275c63');
+    for(var gx=-250;gx<=250;gx+=25)wire([[gx,-150,1],[gx,150,1]],'#224d57',.45);
+    for(var gy=-150;gy<=150;gy+=25)wire([[-250,gy,1],[250,gy,1]],'#224d57',.45);
     [[-261,-160],[261,-160],[-261,160],[261,160]].forEach(function(p){
-      cylinder(p[0],p[1],1,4.5,1.8,'#90a7b5');
-      wire([[p[0]-2.5,p[1],3],[p[0]+2.5,p[1],3]],'#425768',.8);
+      cylinder(p[0],p[1],1,5.6,1.2,'#c7a24f');
+      cylinder(p[0],p[1],1.6,4.2,1.8,'#a3bac7');
+      wire([[p[0]-2.5,p[1],3.6],[p[0]+2.5,p[1],3.6]],'#3c5263',.8);
     });
 
     // Contact shadows and pools of light are projected onto the work surface.
@@ -4577,8 +4583,8 @@ function CircuitActiveLessonLab(props) {
       h('svg', {ref:sceneRef,viewBox:'0 0 640 410',role: 'img','aria-label':__alloFill(__alloT('stem.circuit.a11y_rotatable_3d_representation_of_the_circuit_with', 'Rotatable 3D representation of the {value1} circuit with {value2} parts. {value3}. Read individual measurements below.'), { value1: solved.mode, value2: count, value3: circuitCurrentText(solved.current) }),'aria-describedby':[d.sceneCurrent?'circuit-flow-note':'',d.sceneProbes?'circuit-probe-help':''].filter(Boolean).join(' ')||undefined},
         h('defs',null,
           solved.rows.map(function(r,i){return h('radialGradient',{key:i,id:'circuit-light-pool-'+i},h('stop',{offset:'0%',stopColor:r.component.type==='led'?(r.component.ledColor||'#ef4444'):'#fbbf24',stopOpacity:.45}),h('stop',{offset:'100%',stopColor:'#153744',stopOpacity:0}));}),
-          h('radialGradient',{id:'circuit-3d-backdrop',cx:'48%',cy:'45%',r:'70%'},h('stop',{offset:'0%',stopColor:'#21495c'}),h('stop',{offset:'100%',stopColor:'#081723'})),
-          h('radialGradient',{id:'circuit-bulb-bloom'},h('stop',{offset:'0%',stopColor:'#ffda80',stopOpacity:.35}),h('stop',{offset:'40%',stopColor:'#fbbf24',stopOpacity:.14}),h('stop',{offset:'100%',stopColor:'#fbbf24',stopOpacity:0})),
+          h('radialGradient',{id:'circuit-3d-backdrop',cx:'48%',cy:'42%',r:'72%'},h('stop',{offset:'0%',stopColor:'#235264'}),h('stop',{offset:'58%',stopColor:'#102a3a'}),h('stop',{offset:'100%',stopColor:'#06131e'})),
+          h('radialGradient',{id:'circuit-bulb-bloom'},h('stop',{offset:'0%',stopColor:'#fff8c4',stopOpacity:.62}),h('stop',{offset:'36%',stopColor:'#fbbf24',stopOpacity:.28}),h('stop',{offset:'72%',stopColor:'#f59e0b',stopOpacity:.08}),h('stop',{offset:'100%',stopColor:'#fbbf24',stopOpacity:0})),
           h('radialGradient',{id:'circuit-glass-warm',cx:'30%',cy:'22%',r:'78%'},h('stop',{offset:'0%',stopColor:'#fffef0',stopOpacity:.95}),h('stop',{offset:'30%',stopColor:'#fceca4',stopOpacity:.72}),h('stop',{offset:'75%',stopColor:'#dfa855',stopOpacity:.22}),h('stop',{offset:'100%',stopColor:'#fff0b5',stopOpacity:.62})),
           h('radialGradient',{id:'circuit-glass-cool',cx:'30%',cy:'22%',r:'78%'},h('stop',{offset:'0%',stopColor:'#effaff',stopOpacity:.85}),h('stop',{offset:'35%',stopColor:'#bae6fd',stopOpacity:.12}),h('stop',{offset:'100%',stopColor:'#c6def0',stopOpacity:.42})),
           h('filter',{id:'circuit-board-shadow',x:'-25%',y:'-25%',width:'150%',height:'150%'},h('feGaussianBlur',{stdDeviation:12}))),
@@ -7575,7 +7581,7 @@ function CircuitActiveLessonLab(props) {
               var loopSeconds = Math.max(0.6, Math.min(60, 3 / current));
               for (var ei = 0; ei < numDots; ei++) {
                 var pt = getPositionAlongPath(path, ei / numDots);
-                electronDots.push({ x: pt.x, y: pt.y, path: path, dur: loopSeconds, offset: ei / numDots });
+                electronDots.push({ x: pt.x, y: pt.y, path: path, dur: loopSeconds, offset: ei / numDots, amps: current });
               }
             } else {
               // Parallel mode: split dots proportional to branch current
@@ -7590,7 +7596,7 @@ function CircuitActiveLessonLab(props) {
                   var loopSeconds = Math.max(0.6, Math.min(60, 2.4 / compI));
                   for (var ei = 0; ei < numDots; ei++) {
                     var pt = getPositionAlongPath(path, ei / numDots);
-                    electronDots.push({ x: pt.x, y: pt.y, path: path, dur: loopSeconds, offset: ei / numDots });
+                    electronDots.push({ x: pt.x, y: pt.y, path: path, dur: loopSeconds, offset: ei / numDots, amps: compI });
                   }
                 }
               }
@@ -7979,17 +7985,55 @@ function CircuitActiveLessonLab(props) {
                 h('defs', null,
                   h('clipPath',{id:'circuit-signal-feed'},h('rect',{x:35,y:10,width:mode==='series'?45:145,height:20})),
                   h('pattern', { id: 'grid', width: 20, height: 20, patternUnits: 'userSpaceOnUse' },
-                    h('path', { d: 'M 20 0 L 0 0 0 20', fill: 'none', stroke: 'rgba(255,255,255,0.03)', strokeWidth: 1 })
+                    h('path', { d: 'M 10 0 L 10 20 M 0 10 L 20 10', fill: 'none', stroke: 'rgba(110,231,183,0.025)', strokeWidth: 0.6 }),
+                    h('path', { d: 'M 20 0 L 0 0 0 20', fill: 'none', stroke: 'rgba(148,210,196,0.06)', strokeWidth: 1 })
+                  ),
+                  h('linearGradient', { id: 'circuit-pcb-base', x1: '0', y1: '0', x2: '1', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: isShort ? '#1f0c14' : '#0b2228' }),
+                    h('stop', { offset: '55%', stopColor: isShort ? '#160912' : '#081921' }),
+                    h('stop', { offset: '100%', stopColor: '#051018' })
                   ),
                   h('radialGradient', { id: 'circuit-ambient', cx: '42%', cy: '48%', r: '72%' },
-                    h('stop', { offset: '0%', stopColor: isShort ? '#ef4444' : '#0891b2', stopOpacity: current > 0.001 ? 0.18 : 0.04 }),
-                    h('stop', { offset: '62%', stopColor: isShort ? '#7f1d1d' : '#172554', stopOpacity: current > 0.001 ? 0.12 : 0.03 }),
+                    h('stop', { offset: '0%', stopColor: isShort ? '#ef4444' : '#14b8a6', stopOpacity: current > 0.001 ? 0.16 : 0.05 }),
+                    h('stop', { offset: '62%', stopColor: isShort ? '#7f1d1d' : '#0e4a5c', stopOpacity: current > 0.001 ? 0.11 : 0.03 }),
                     h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0 })
                   ),
                   h('linearGradient', { id: 'circuit-battery', x1: '0', y1: '0', x2: '1', y2: '1' },
-                    h('stop', { offset: '0%', stopColor: isShort ? '#f87171' : '#fde047' }),
-                    h('stop', { offset: '48%', stopColor: isShort ? '#991b1b' : '#ca8a04' }),
+                    h('stop', { offset: '0%', stopColor: isShort ? '#fca5a5' : '#fef08a' }),
+                    h('stop', { offset: '42%', stopColor: isShort ? '#b91c1c' : '#d97706' }),
                     h('stop', { offset: '100%', stopColor: isShort ? '#450a0a' : '#713f12' })
+                  ),
+                  h('linearGradient', { id: 'circuit-chrome-terminal', x1: '0', y1: '0', x2: '1', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#f8fafc' }),
+                    h('stop', { offset: '45%', stopColor: '#cbd5e1' }),
+                    h('stop', { offset: '100%', stopColor: '#475569' })
+                  ),
+                  h('linearGradient', { id: 'circuit-brass-cap', x1: '0', y1: '0', x2: '1', y2: '0' },
+                    h('stop', { offset: '0%', stopColor: '#fef08a' }),
+                    h('stop', { offset: '50%', stopColor: '#d97706' }),
+                    h('stop', { offset: '100%', stopColor: '#92400e' })
+                  ),
+                  h('linearGradient', { id: 'circuit-resistor-sheen', x1: '0', y1: '0', x2: '1', y2: '0' },
+                    h('stop', { offset: '0%', stopColor: '#0f172a', stopOpacity: 0.45 }),
+                    h('stop', { offset: '28%', stopColor: '#ffffff', stopOpacity: 0.24 }),
+                    h('stop', { offset: '52%', stopColor: '#ffffff', stopOpacity: 0.06 }),
+                    h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.42 })
+                  ),
+                  h('linearGradient', { id: 'circuit-resistor-sheen-h', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.28 }),
+                    h('stop', { offset: '38%', stopColor: '#ffffff', stopOpacity: 0.06 }),
+                    h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.48 })
+                  ),
+                  h('radialGradient', { id: 'circuit-bulb-filament-halo', cx: '50%', cy: '50%', r: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#fffbeb', stopOpacity: 0.92 }),
+                    h('stop', { offset: '32%', stopColor: '#fde047', stopOpacity: 0.56 }),
+                    h('stop', { offset: '68%', stopColor: '#f59e0b', stopOpacity: 0.18 }),
+                    h('stop', { offset: '100%', stopColor: '#f59e0b', stopOpacity: 0 })
+                  ),
+                  h('radialGradient', { id: 'circuit-electron-halo', cx: '50%', cy: '50%', r: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#ecfeff', stopOpacity: 0.92 }),
+                    h('stop', { offset: '42%', stopColor: '#22d3ee', stopOpacity: 0.52 }),
+                    h('stop', { offset: '100%', stopColor: '#06b6d4', stopOpacity: 0 })
                   ),
                   h('filter', { id: 'circuit-wire-glow', x: '-30%', y: '-80%', width: '160%', height: '260%' },
                     h('feGaussianBlur', { stdDeviation: isShort ? '2.8' : '1.8', result: 'wireBlur' }),
@@ -8002,21 +8046,34 @@ function CircuitActiveLessonLab(props) {
                   components.map(function(c) {
                     if (c.type !== 'led') return null;
                     return h('linearGradient', { key: 'led-grad-' + c.id, id: 'led-grad-' + c.id, x1: 0, y1: 0, x2: 0, y2: 1 },
-                      h('stop', { offset: '0%', stopColor: c.ledColor || '#ef4444', stopOpacity: 0.7 }),
+                      h('stop', { offset: '0%', stopColor: c.ledColor || '#ef4444', stopOpacity: 0.78 }),
                       h('stop', { offset: '100%', stopColor: c.ledColor || '#ef4444', stopOpacity: 0 })
                     );
                   })
                 ),
                 
-                // Grid Background
+                // Tactile PCB solder-mask drafting substrate & corner mounting eyelets
+                h('rect', { width: W, height: H, fill: 'url(#circuit-pcb-base)', rx: 12 }),
                 h('rect', { width: W, height: H, fill: 'url(#grid)', rx: 12 }),
                 h('rect', { width: W, height: H, fill: 'url(#circuit-ambient)', rx: 12, pointerEvents: 'none' }),
+                h('rect', { x: 5, y: 5, width: W - 10, height: H - 10, fill: 'none', stroke: isShort ? 'rgba(248,113,113,0.32)' : 'rgba(212,175,92,0.28)', strokeWidth: 1, rx: 9, 'aria-hidden': 'true', pointerEvents: 'none' }),
+                h('g', { 'aria-hidden': 'true', pointerEvents: 'none', opacity: 0.75 },
+                  [[13, 13], [W - 13, 13], [13, H - 13], [W - 13, H - 13]].map(function(pad, pi) {
+                    return h('g', { key: 'pad-' + pi },
+                      h('circle', { cx: pad[0], cy: pad[1], r: 4.2, fill: 'none', stroke: '#d4af5c', strokeWidth: 1.2 }),
+                      h('circle', { cx: pad[0], cy: pad[1], r: 1.8, fill: '#040d14', stroke: '#94a3b8', strokeWidth: 0.5 })
+                    );
+                  })
+                ),
                 
-                // Battery
-                h('rect', { x: 11, y: 36, width: 48, height: 68, fill: isShort ? '#ef4444' : '#eab308', opacity: current > 0.001 ? 0.18 : 0.08, rx: 10, filter: 'url(#circuit-wire-glow)' }),
+                // Battery with metallic terminals & brushed housing sheen
+                h('rect', { x: 11, y: 36, width: 48, height: 68, fill: isShort ? '#ef4444' : '#eab308', opacity: current > 0.001 ? 0.22 : 0.08, rx: 10, filter: 'url(#circuit-wire-glow)' }),
+                h('rect', { x: 28, y: 34, width: 14, height: 6, fill: 'url(#circuit-chrome-terminal)', stroke: '#e2e8f0', strokeWidth: 0.7, rx: 2, 'aria-hidden': 'true' }),
+                h('rect', { x: 29, y: 100, width: 12, height: 4, fill: 'url(#circuit-chrome-terminal)', stroke: '#94a3b8', strokeWidth: 0.6, rx: 1.5, 'aria-hidden': 'true' }),
                 h('rect', { x: 15, y: 40, width: 40, height: 60, fill: 'url(#circuit-battery)', stroke: isShort ? '#fca5a5' : '#fde047', strokeWidth: 2, rx: 6 }),
-                // Highlight on battery
-                h('rect', { x: 17, y: 42, width: 12, height: 56, fill: 'rgba(255,255,255,0.08)', rx: 3 }),
+                // Specular highlight & metallic band on battery
+                h('rect', { x: 17, y: 42, width: 11, height: 56, fill: 'rgba(255,255,255,0.16)', rx: 3 }),
+                h('rect', { x: 15, y: 48, width: 40, height: 4, fill: 'rgba(15,23,42,0.34)', 'aria-hidden': 'true' }),
                 h('text', { x: 35, y: 74, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: '900', fontFamily: 'system-ui' }, fill: '#ffffff' }, voltage + 'V'),
                 h('text', { x: 35, y: 30, textAnchor: 'middle', style: { fontSize: '12px' } }, '\uD83D\uDD0B'),
                 h('text', { x: 20, y: 38, fill: '#ef4444', style: { fontSize: '12px', fontWeight: 'bold' } }, '+'),
@@ -8082,6 +8139,19 @@ function CircuitActiveLessonLab(props) {
                 // Battery connections
                 h('line', { 'data-circuit-battery-lead':'positive',x1: 35, y1: 40, x2: 35, y2: 20, stroke: isShort ? '#ef4444' : '#475569', strokeWidth: 2 }),
                 h('line', { 'data-circuit-battery-lead':'negative',x1: 35, y1: 100, x2: 35, y2: mode==='parallel'?parallelReturnY:170, stroke: isShort ? '#ef4444' : '#475569', strokeWidth: 2 }),
+                // Metallic copper/chrome solder pads at battery & rail junctions
+                h('g', { 'aria-hidden': 'true', pointerEvents: 'none' },
+                  [[35, 20], [35, mode === 'parallel' ? parallelReturnY : 170]].concat(
+                    components.length === 0 ? [[400, 20], [400, 170]]
+                    : mode === 'parallel' ? [[180, 20], [260, parallelReturnY]]
+                    : [[80, 20]]
+                  ).map(function(node, ni) {
+                    return h('g', { key: 'solder-' + ni },
+                      h('circle', { cx: node[0], cy: node[1], r: 3.4, fill: 'url(#circuit-brass-cap)', opacity: 0.9 }),
+                      h('circle', { cx: node[0], cy: node[1], r: 1.7, fill: 'url(#circuit-chrome-terminal)' })
+                    );
+                  })
+                ),
 
                 // Electric-field signal pulse: it races around the conductor while
                 // individual charge carriers below remain discrete and visibly slower.
@@ -8122,56 +8192,67 @@ function CircuitActiveLessonLab(props) {
                         // Component body
                         comp.type === 'resistor'
                           ? h('g', null,
-                              h('rect', { x: cx - 12, y: 55, width: 24, height: 45, fill: '#1e293b', stroke: '#eab308', strokeWidth: 1.5, rx: 4 }),
+                              // Metallic chrome/brass terminal collars & ceramic resistor housing
+                              h('rect', { x: cx - 7, y: 52, width: 14, height: 4, fill: 'url(#circuit-chrome-terminal)', rx: 1.5, 'aria-hidden': 'true' }),
+                              h('rect', { x: cx - 7, y: 99, width: 14, height: 4, fill: 'url(#circuit-chrome-terminal)', rx: 1.5, 'aria-hidden': 'true' }),
+                              h('rect', { x: cx - 12, y: 55, width: 24, height: 45, fill: '#263344', stroke: '#eab308', strokeWidth: 1.5, rx: 5 }),
                               // Color bands
-                              h('rect', { x: cx - 12, y: 62, width: 24, height: 4, fill: '#d97706' }),
-                              h('rect', { x: cx - 12, y: 70, width: 24, height: 4, fill: '#4f46e5' }),
-                              h('rect', { x: cx - 12, y: 78, width: 24, height: 4, fill: '#0891b2' }),
-                              h('rect', { x: cx - 12, y: 86, width: 24, height: 4, fill: '#ca8a04' })
+                              h('rect', { x: cx - 11.2, y: 62, width: 22.4, height: 4.2, fill: '#ea580c' }),
+                              h('rect', { x: cx - 11.2, y: 70, width: 22.4, height: 4.2, fill: '#6366f1' }),
+                              h('rect', { x: cx - 11.2, y: 78, width: 22.4, height: 4.2, fill: '#06b6d4' }),
+                              h('rect', { x: cx - 11.2, y: 86, width: 22.4, height: 4.2, fill: '#eab308' }),
+                              // Cylindrical metallic sheen & crisp specular highlight stripe
+                              h('rect', { x: cx - 12, y: 55, width: 24, height: 45, fill: 'url(#circuit-resistor-sheen)', rx: 5, pointerEvents: 'none', 'aria-hidden': 'true' }),
+                              h('line', { x1: cx - 6, y1: 58, x2: cx - 6, y2: 97, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.34, 'aria-hidden': 'true' })
                             )
 
                           : comp.type === 'switch'
                           ? h('g', { onClick: function() { toggleSwitch(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'Switch, part ' + partPosition(comp.id) + ' (currently ' + (comp.closed ? 'closed/ON' : 'open/OFF') + '). Press Enter to toggle.', 'aria-pressed': !!comp.closed, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSwitch(comp.id); } }, style: { cursor: 'pointer' } },
-                              h('rect', { x: cx - 14, y: 55, width: 28, height: 40, fill: comp.closed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', stroke: comp.closed ? '#10b981' : '#ef4444', strokeWidth: 1.5, rx: 5 }),
-                              h('line', { 'data-circuit-switch-lead':'top',x1:cx,y1:55,x2:cx,y2:68,stroke:'#94a3b8',strokeWidth:1.5 }),
-                              h('line', { 'data-circuit-switch-lead':'bottom',x1:cx,y1:86,x2:cx,y2:95,stroke:'#94a3b8',strokeWidth:1.5 }),
-                              h('circle', { cx: cx, cy: 68, r: 3, fill: '#94a3b8' }),
-                              h('circle', { cx: cx, cy: 86, r: 3, fill: '#94a3b8' }),
-                              h('line', { 'data-circuit-switch-arm':true,x1:cx,y1:68,x2:comp.closed?cx:cx+10,y2:comp.closed?86:80,stroke:comp.closed?'#10b981':'#ef4444',strokeWidth:2.5 }),
+                              h('rect', { x: cx - 14, y: 55, width: 28, height: 40, fill: comp.closed ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)', stroke: comp.closed ? '#10b981' : '#ef4444', strokeWidth: 1.5, rx: 5 }),
+                              h('line', { 'data-circuit-switch-lead':'top',x1:cx,y1:55,x2:cx,y2:68,stroke:'#cbd5e1',strokeWidth:1.6 }),
+                              h('line', { 'data-circuit-switch-lead':'bottom',x1:cx,y1:86,x2:cx,y2:95,stroke:'#cbd5e1',strokeWidth:1.6 }),
+                              h('circle', { cx: cx, cy: 68, r: 3.2, fill: 'url(#circuit-chrome-terminal)', stroke: '#e2e8f0', strokeWidth: 0.6 }),
+                              h('circle', { cx: cx, cy: 86, r: 3.2, fill: 'url(#circuit-chrome-terminal)', stroke: '#e2e8f0', strokeWidth: 0.6 }),
+                              h('line', { 'data-circuit-switch-arm':true,x1:cx,y1:68,x2:comp.closed?cx:cx+10,y2:comp.closed?86:80,stroke:comp.closed?'#34d399':'#f87171',strokeWidth:2.6,strokeLinecap:'round' }),
                               h('text', { x: cx-11, y: 62, textAnchor: 'start', style: { fontSize: '6px', fontWeight: '900', fontFamily: 'system-ui' }, fill: comp.closed ? '#10b981' : '#ef4444' }, comp.closed ? __alloT('stem.circuit.switch_on', 'ON') : __alloT('stem.circuit.switch_off', 'OFF'))
                             )
 
                           : comp.type === 'led'
                           ? h('g', { transform: 'rotate(' + ((!!comp.reversed !== (i % 2 === 1)) ? 180 : 0) + ' ' + cx + ' 75)', onClick: function() { cycleLedColor(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'LED, part ' + partPosition(comp.id) + ' (' + (LED_COLOR_NAMES[comp.ledColor || '#ef4444'] || 'custom') + '). Press Enter to cycle color.', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleLedColor(comp.id); } }, style: { cursor: 'pointer' } },
-                              // Glow light cone
+                              // Glow light cone & dual radial LED bloom halo
                               ledGlow > 0.1 && h('polygon', { points: (cx - 14) + ',78 ' + (cx + 14) + ',78 ' + cx + ',115', fill: 'url(#led-grad-' + comp.id + ')', pointerEvents: 'none' }),
-                              ledGlow > 0.1 && h('circle', { cx: cx, cy: 75, r: 14 + ledGlow * 6, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow * 0.35).toFixed(2)), filter: 'blur(2px)' }),
+                              ledGlow > 0.1 && h('circle', { cx: cx, cy: 75, r: 19 + ledGlow * 9, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow * 0.22).toFixed(2)), filter: 'blur(4px)', 'aria-hidden': 'true' }),
+                              ledGlow > 0.1 && h('circle', { cx: cx, cy: 75, r: 12 + ledGlow * 5, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow * 0.42).toFixed(2)), filter: 'blur(2px)', 'aria-hidden': 'true' }),
                               h('polygon', { points: (cx - 10) + ',65 ' + (cx + 10) + ',65 ' + cx + ',85', fill: ledGlow > 0.2 ? (comp.ledColor || '#ef4444') : '#475569', stroke: comp.ledColor || '#ef4444', strokeWidth: 1.5 }),
-                              h('line', { x1: cx - 10, y1: 85, x2: cx + 10, y2: 85, stroke: comp.ledColor || '#ef4444', strokeWidth: 2 })
+                              h('line', { x1: cx - 5, y1: 68, x2: cx - 1, y2: 78, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: ledGlow > 0.2 ? 0.65 : 0.25, 'aria-hidden': 'true' }),
+                              h('line', { x1: cx - 10, y1: 85, x2: cx + 10, y2: 85, stroke: comp.ledColor || '#ef4444', strokeWidth: 2.2 })
                             )
 
                           : comp.type === 'ammeter'
                           ? h('g', null,
-                              h('circle', { cx: cx, cy: 75, r: 15, fill: '#0f172a', stroke: '#06b6d4', strokeWidth: 2 }),
-                              h('text', { x: cx, y: 79, textAnchor: 'middle', style: { fontSize: '12px', fontWeight: '900', fontFamily: 'monospace' }, fill: '#06b6d4' }, 'A'),
-                              current > 0.001 && h('text', { x: cx, y: 66, textAnchor: 'middle', style: { fontSize: '6px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, circuitAmps(current) + 'A')
+                              h('circle', { cx: cx, cy: 75, r: 15, fill: '#0b1628', stroke: '#22d3ee', strokeWidth: 2 }),
+                              h('path', { d: 'M ' + (cx - 10) + ' 69 A 12 12 0 0 1 ' + (cx + 8) + ' 65', fill: 'none', stroke: '#ffffff', strokeWidth: 1, opacity: 0.24, 'aria-hidden': 'true' }),
+                              h('text', { x: cx, y: 79, textAnchor: 'middle', style: { fontSize: '12px', fontWeight: '900', fontFamily: 'monospace' }, fill: '#22d3ee' }, 'A'),
+                              current > 0.001 && h('text', { x: cx, y: 66, textAnchor: 'middle', style: { fontSize: '6px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#67e8f9' }, circuitAmps(current) + 'A')
                             )
 
                           : comp.type === 'voltmeter'
                           ? h('g', null,
-                              h('circle', { cx: cx, cy: 75, r: 15, fill: '#0f172a', stroke: '#f59e0b', strokeWidth: 2 }),
+                              h('circle', { cx: cx, cy: 75, r: 15, fill: '#0b1628', stroke: '#f59e0b', strokeWidth: 2 }),
+                              h('path', { d: 'M ' + (cx - 10) + ' 69 A 12 12 0 0 1 ' + (cx + 8) + ' 65', fill: 'none', stroke: '#ffffff', strokeWidth: 1, opacity: 0.24, 'aria-hidden': 'true' }),
                               h('text', { x: cx, y: 79, textAnchor: 'middle', style: { fontSize: '12px', fontWeight: '900', fontFamily: 'monospace' }, fill: '#f59e0b' }, 'V'),
-                              h('text', { x: cx, y: 66, textAnchor: 'middle', style: { fontSize: '6px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#fbbf24' }, voltage.toFixed(1) + 'V')
+                              h('text', { x: cx, y: 66, textAnchor: 'middle', style: { fontSize: '6px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#fde68a' }, voltage.toFixed(1) + 'V')
                             )
 
                           : comp.type === 'capacitor'
                           ? h('g', null,
-                              h('rect', { x: cx - 14, y: 55, width: 28, height: 45, fill: '#0f172a', stroke: '#38bdf8', strokeWidth: 1.5, rx: 4 }),
-                              h('line', { 'data-circuit-capacitor-lead':'top',x1:cx,y1:55,x2:cx,y2:72,stroke:'#38bdf8',strokeWidth:1.5 }),
-                              h('line', { 'data-circuit-capacitor-lead':'bottom',x1:cx,y1:80,x2:cx,y2:100,stroke:'#38bdf8',strokeWidth:1.5 }),
+                              h('rect', { x: cx - 14, y: 55, width: 28, height: 45, fill: '#0b1628', stroke: '#38bdf8', strokeWidth: 1.5, rx: 4 }),
+                              h('rect', { x: cx - 12, y: 57, width: 6, height: 41, fill: 'rgba(255,255,255,0.07)', rx: 2, 'aria-hidden': 'true' }),
+                              h('line', { 'data-circuit-capacitor-lead':'top',x1:cx,y1:55,x2:cx,y2:72,stroke:'#38bdf8',strokeWidth:1.6 }),
+                              h('line', { 'data-circuit-capacitor-lead':'bottom',x1:cx,y1:80,x2:cx,y2:100,stroke:'#38bdf8',strokeWidth:1.6 }),
                               // Parallel plates
-                              h('line', { x1: cx - 8, y1: 72, x2: cx + 8, y2: 72, stroke: '#38bdf8', strokeWidth: 2.5 }),
-                              h('line', { x1: cx - 8, y1: 80, x2: cx + 8, y2: 80, stroke: '#38bdf8', strokeWidth: 2.5 }),
+                              h('line', { x1: cx - 8, y1: 72, x2: cx + 8, y2: 72, stroke: '#7dd3fc', strokeWidth: 2.6, strokeLinecap: 'round' }),
+                              h('line', { x1: cx - 8, y1: 80, x2: cx + 8, y2: 80, stroke: '#7dd3fc', strokeWidth: 2.6, strokeLinecap: 'round' }),
                               h('text', { x: cx, y: 64, textAnchor: 'middle', style: { fontSize: '6px', fontWeight: 'bold' }, fill: '#38bdf8' }, 'C'),
                               // Charge accumulation signs (+ / -)
                               current > 0.001 && h('g', { opacity: chargeLvl },
@@ -8182,12 +8263,15 @@ function CircuitActiveLessonLab(props) {
                               )
                             )
 
-                          // Bulb
+                          // Bulb: warm radial incandescent filament bloom halo + glass glint + brass collar
                           : h('g', null,
-                              bulbBright > 0.07 && h('circle', { cx: cx, cy: 77, r: 18 + bulbBright * 15, fill: 'rgba(251,191,36,' + (bulbBright * 0.35).toFixed(2) + ')', filter: 'blur(3px)' }),
-                              h('circle', { cx: cx, cy: 77, r: 15, fill: bulbBright > 0.07 ? 'rgba(253,224,71,' + (0.3 + bulbBright * 0.7).toFixed(2) + ')' : '#334155', stroke: '#eab308', strokeWidth: 1.5 }),
-                              // filament
-                              h('path', { d: 'M ' + (cx - 4) + ' 82 Q ' + cx + ' 68 ' + (cx + 4) + ' 82', fill: 'none', stroke: bulbBright > 0.07 ? '#ffffff' : '#94a3b8', strokeWidth: 1.5 })
+                              bulbBright > 0.07 && h('circle', { cx: cx, cy: 77, r: 24 + bulbBright * 18, fill: 'url(#circuit-bulb-filament-halo)', opacity: (0.35 + bulbBright * 0.6).toFixed(2), 'aria-hidden': 'true' }),
+                              bulbBright > 0.07 && h('circle', { cx: cx, cy: 77, r: 18 + bulbBright * 9, fill: 'rgba(253,224,71,' + (bulbBright * 0.36).toFixed(2) + ')', filter: 'blur(3px)', 'aria-hidden': 'true' }),
+                              h('rect', { x: cx - 6, y: 90, width: 12, height: 5, fill: 'url(#circuit-brass-cap)', rx: 1.5, 'aria-hidden': 'true' }),
+                              h('circle', { cx: cx, cy: 77, r: 15, fill: bulbBright > 0.07 ? 'rgba(253,224,71,' + (0.28 + bulbBright * 0.66).toFixed(2) + ')' : '#283548', stroke: bulbBright > 0.07 ? '#fef08a' : '#eab308', strokeWidth: 1.6 }),
+                              // Glass specular crescent & tungsten filament
+                              h('path', { d: 'M ' + (cx - 10) + ' 72 A 11 11 0 0 1 ' + (cx - 3) + ' 65', fill: 'none', stroke: '#ffffff', strokeWidth: 1.5, strokeLinecap: 'round', opacity: 0.55, 'aria-hidden': 'true' }),
+                              h('path', { d: 'M ' + (cx - 5) + ' 84 L ' + (cx - 3) + ' 74 Q ' + cx + ' 67 ' + (cx + 3) + ' 74 L ' + (cx + 5) + ' 84', fill: 'none', stroke: bulbBright > 0.07 ? '#fffbeb' : '#94a3b8', strokeWidth: bulbBright > 0.07 ? 2 : 1.5, strokeLinecap: 'round', filter: bulbBright > 0.2 ? 'url(#circuit-wire-glow)' : null })
                             ),
 
                         // Value label
@@ -8233,68 +8317,81 @@ function CircuitActiveLessonLab(props) {
                           fill: comp.type === 'bulb' ? '#fde047' : (comp.type === 'led' ? (comp.ledColor || '#ef4444') : '#fb923c'),
                           opacity: Math.min(0.08 + compP2 / 55, 0.34), filter: 'blur(5px)', 'aria-hidden': 'true'
                         }),
-                        // Branch glow and junction nodes encode how total current divides.
+                        // Branch glow and metallic junction pads encode how total current divides.
                         !isShort && compI2 > 0.001 && h('g', { 'aria-hidden': 'true', pointerEvents: 'none', filter: 'url(#circuit-wire-glow)' },
                           h('line', { x1: 180, y1: cy, x2: terminalLeft, y2: cy, stroke: '#22d3ee', strokeWidth: 2 + branchStrength * 4, opacity: 0.24 + branchStrength * 0.6 }),
                           h('line', { x1: terminalRight, y1: cy, x2: 260, y2: cy, stroke: '#22d3ee', strokeWidth: 2 + branchStrength * 4, opacity: 0.24 + branchStrength * 0.6 }),
                           h('circle', { cx: 180, cy: cy, r: 2.5 + branchStrength * 1.8, fill: '#a5f3fc', stroke: '#0891b2', strokeWidth: 1 }),
                           h('circle', { cx: 260, cy: cy, r: 2.5 + branchStrength * 1.8, fill: '#a5f3fc', stroke: '#0891b2', strokeWidth: 1 })
                         ),                        // Leads connecting to bus lines
-                        h('line', { 'data-circuit-branch-lead':'left',x1: 180, y1: cy, x2: terminalLeft, y2: cy, stroke: '#475569', strokeWidth: 1.5 }),
-                        h('line', { 'data-circuit-branch-lead':'right',x1: terminalRight, y1: cy, x2: 260, y2: cy, stroke: '#475569', strokeWidth: 1.5 }),
+                        h('line', { 'data-circuit-branch-lead':'left',x1: 180, y1: cy, x2: terminalLeft, y2: cy, stroke: '#64748b', strokeWidth: 1.6 }),
+                        h('line', { 'data-circuit-branch-lead':'right',x1: terminalRight, y1: cy, x2: 260, y2: cy, stroke: '#64748b', strokeWidth: 1.6 }),
 
                         // Component body (parallel - horizontal)
                         comp.type === 'resistor'
                           ? h('g', null,
-                              h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: '#1e293b', stroke: '#eab308', strokeWidth: 1.5, rx: 3 }),
-                              h('rect', { x: 208, y: cy - 8, width: 3, height: 16, fill: '#d97706' }),
-                              h('rect', { x: 216, y: cy - 8, width: 3, height: 16, fill: '#4f46e5' }),
-                              h('rect', { x: 224, y: cy - 8, width: 3, height: 16, fill: '#0891b2' })
+                              h('rect', { x: 198, y: cy - 5, width: 3.5, height: 10, fill: 'url(#circuit-chrome-terminal)', rx: 1, 'aria-hidden': 'true' }),
+                              h('rect', { x: 238.5, y: cy - 5, width: 3.5, height: 10, fill: 'url(#circuit-chrome-terminal)', rx: 1, 'aria-hidden': 'true' }),
+                              h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: '#263344', stroke: '#eab308', strokeWidth: 1.5, rx: 3.5 }),
+                              h('rect', { x: 208, y: cy - 7.3, width: 3.4, height: 14.6, fill: '#ea580c' }),
+                              h('rect', { x: 216, y: cy - 7.3, width: 3.4, height: 14.6, fill: '#6366f1' }),
+                              h('rect', { x: 224, y: cy - 7.3, width: 3.4, height: 14.6, fill: '#06b6d4' }),
+                              h('rect', { x: 231, y: cy - 7.3, width: 2.6, height: 14.6, fill: '#eab308' }),
+                              h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: 'url(#circuit-resistor-sheen-h)', rx: 3.5, pointerEvents: 'none', 'aria-hidden': 'true' }),
+                              h('line', { x1: 203, y1: cy - 4.5, x2: 237, y2: cy - 4.5, stroke: '#ffffff', strokeWidth: 1, strokeLinecap: 'round', opacity: 0.34, 'aria-hidden': 'true' })
                             )
 
                           : comp.type === 'switch'
                           ? h('g', { onClick: function() { toggleSwitch(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'Switch, part ' + partPosition(comp.id) + ' (currently ' + (comp.closed ? 'closed/ON' : 'open/OFF') + '). Press Enter to toggle.', 'aria-pressed': !!comp.closed, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSwitch(comp.id); } }, style: { cursor: 'pointer' } },
-                              h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: comp.closed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', stroke: comp.closed ? '#10b981' : '#ef4444', strokeWidth: 1.5, rx: 3 }),
-                              h('line', { 'data-circuit-switch-lead':'left',x1:200,y1:cy,x2:208,y2:cy,stroke:'#94a3b8',strokeWidth:1.5 }),
-                              h('line', { 'data-circuit-switch-lead':'right',x1:232,y1:cy,x2:240,y2:cy,stroke:'#94a3b8',strokeWidth:1.5 }),
-                              h('circle', { cx: 208, cy: cy, r: 2.5, fill: '#94a3b8' }),
-                              h('circle', { cx: 232, cy: cy, r: 2.5, fill: '#94a3b8' }),
-                              h('line', { x1: 208, y1: cy, x2: 232, y2: cy, stroke: comp.closed ? '#10b981' : '#ef4444', strokeWidth: 2, style: { transform: comp.closed ? 'none' : 'rotate(-35deg)', transformOrigin: '208px ' + cy + 'px', transition: 'transform 0.25s ease' } }),
+                              h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: comp.closed ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)', stroke: comp.closed ? '#10b981' : '#ef4444', strokeWidth: 1.5, rx: 3 }),
+                              h('line', { 'data-circuit-switch-lead':'left',x1:200,y1:cy,x2:208,y2:cy,stroke:'#cbd5e1',strokeWidth:1.6 }),
+                              h('line', { 'data-circuit-switch-lead':'right',x1:232,y1:cy,x2:240,y2:cy,stroke:'#cbd5e1',strokeWidth:1.6 }),
+                              h('circle', { cx: 208, cy: cy, r: 2.6, fill: 'url(#circuit-chrome-terminal)' }),
+                              h('circle', { cx: 232, cy: cy, r: 2.6, fill: 'url(#circuit-chrome-terminal)' }),
+                              h('line', { x1: 208, y1: cy, x2: 232, y2: cy, stroke: comp.closed ? '#34d399' : '#f87171', strokeWidth: 2.2, strokeLinecap: 'round', style: { transform: comp.closed ? 'none' : 'rotate(-35deg)', transformOrigin: '208px ' + cy + 'px', transition: 'transform 0.25s ease' } }),
                               h('text', { x: 220, y: cy - 10, textAnchor: 'middle', style: { fontSize: '7px', fontWeight: '900' }, fill: comp.closed ? '#10b981' : '#ef4444' }, comp.closed ? __alloT('stem.circuit.switch_on', 'ON') : __alloT('stem.circuit.switch_off', 'OFF'))
                             )
 
                           : comp.type === 'led'
                           ? h('g', { transform: 'rotate(' + (comp.reversed ? 90 : -90) + ' 220 ' + cy + ')', onClick: function() { cycleLedColor(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'LED, part ' + partPosition(comp.id) + ' (' + (LED_COLOR_NAMES[comp.ledColor || '#ef4444'] || 'custom') + '). Press Enter to cycle color.', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleLedColor(comp.id); } }, style: { cursor: 'pointer' } },
-                              ledGlow2 > 0.1 && h('circle', { cx: 220, cy: cy, r: 12 + ledGlow2 * 5, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow2 * 0.35).toFixed(2)), filter: 'blur(2px)' }),
+                              ledGlow2 > 0.1 && h('circle', { cx: 220, cy: cy, r: 16 + ledGlow2 * 7, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow2 * 0.22).toFixed(2)), filter: 'blur(3.5px)', 'aria-hidden': 'true' }),
+                              ledGlow2 > 0.1 && h('circle', { cx: 220, cy: cy, r: 12 + ledGlow2 * 5, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow2 * 0.42).toFixed(2)), filter: 'blur(2px)', 'aria-hidden': 'true' }),
                               h('polygon', { points: '212,' + (cy - 5) + ' 228,' + (cy - 5) + ' 220,' + (cy + 7), fill: ledGlow2 > 0.2 ? (comp.ledColor || '#ef4444') : '#475569', stroke: comp.ledColor || '#ef4444', strokeWidth: 1.2 }),
-                              h('line', { x1: 212, y1: cy + 7, x2: 228, y2: cy + 7, stroke: comp.ledColor || '#ef4444', strokeWidth: 1.5 })
+                              h('line', { x1: 216, y1: cy - 3, x2: 219, y2: cy + 3, stroke: '#ffffff', strokeWidth: 1, strokeLinecap: 'round', opacity: ledGlow2 > 0.2 ? 0.65 : 0.25, 'aria-hidden': 'true' }),
+                              h('line', { x1: 212, y1: cy + 7, x2: 228, y2: cy + 7, stroke: comp.ledColor || '#ef4444', strokeWidth: 1.6 })
                             )
 
                           : comp.type === 'ammeter'
                           ? h('g', null,
-                              h('circle', { cx: 220, cy: cy, r: 10, fill: '#0f172a', stroke: '#06b6d4', strokeWidth: 1.5 }),
-                              h('text', { x: 220, y: cy + 3.5, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#06b6d4' }, 'A')
+                              h('circle', { cx: 220, cy: cy, r: 10, fill: '#0b1628', stroke: '#22d3ee', strokeWidth: 1.6 }),
+                              h('path', { d: 'M 213 ' + (cy - 4) + ' A 8 8 0 0 1 224 ' + (cy - 7), fill: 'none', stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.25, 'aria-hidden': 'true' }),
+                              h('text', { x: 220, y: cy + 3.5, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, 'A')
                             )
 
                           : comp.type === 'voltmeter'
                           ? h('g', null,
-                              h('circle', { cx: 220, cy: cy, r: 10, fill: '#0f172a', stroke: '#f59e0b', strokeWidth: 1.5 }),
+                              h('circle', { cx: 220, cy: cy, r: 10, fill: '#0b1628', stroke: '#f59e0b', strokeWidth: 1.6 }),
+                              h('path', { d: 'M 213 ' + (cy - 4) + ' A 8 8 0 0 1 224 ' + (cy - 7), fill: 'none', stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.25, 'aria-hidden': 'true' }),
                               h('text', { x: 220, y: cy + 3.5, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#f59e0b' }, 'V')
                             )
 
                           : comp.type === 'capacitor'
                           ? h('g', null,
-                              h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: '#0f172a', stroke: '#38bdf8', strokeWidth: 1.5, rx: 3 }),
-                              h('line', { 'data-circuit-capacitor-lead':'left',x1:200,y1:cy,x2:216,y2:cy,stroke:'#38bdf8',strokeWidth:1.5 }),
-                              h('line', { 'data-circuit-capacitor-lead':'right',x1:224,y1:cy,x2:240,y2:cy,stroke:'#38bdf8',strokeWidth:1.5 }),
-                              h('line', { x1: 216, y1: cy - 6, x2: 216, y2: cy + 6, stroke: '#38bdf8', strokeWidth: 2 }),
-                              h('line', { x1: 224, y1: cy - 6, x2: 224, y2: cy + 6, stroke: '#38bdf8', strokeWidth: 2 })
+                              h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: '#0b1628', stroke: '#38bdf8', strokeWidth: 1.5, rx: 3 }),
+                              h('rect', { x: 202, y: cy - 6.5, width: 36, height: 4, fill: 'rgba(255,255,255,0.07)', rx: 1, 'aria-hidden': 'true' }),
+                              h('line', { 'data-circuit-capacitor-lead':'left',x1:200,y1:cy,x2:216,y2:cy,stroke:'#38bdf8',strokeWidth:1.6 }),
+                              h('line', { 'data-circuit-capacitor-lead':'right',x1:224,y1:cy,x2:240,y2:cy,stroke:'#38bdf8',strokeWidth:1.6 }),
+                              h('line', { x1: 216, y1: cy - 6, x2: 216, y2: cy + 6, stroke: '#7dd3fc', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                              h('line', { x1: 224, y1: cy - 6, x2: 224, y2: cy + 6, stroke: '#7dd3fc', strokeWidth: 2.2, strokeLinecap: 'round' })
                             )
 
-                          // bulb
+                          // bulb: warm radial incandescent halo + filament + glass glint
                           : h('g', null,
-                              bulbBright2 > 0.07 && h('circle', { cx: 220, cy: cy, r: 12 + bulbBright2 * 5, fill: 'rgba(251,191,36,' + (bulbBright2 * 0.25).toFixed(2) + ')', filter: 'blur(3px)' }),
-                              h('circle', { cx: 220, cy: cy, r: 10, fill: bulbBright2 > 0.07 ? 'rgba(253,224,71,' + (0.3 + bulbBright2 * 0.7).toFixed(2) + ')' : '#334155', stroke: '#eab308', strokeWidth: 1.2 })
+                              bulbBright2 > 0.07 && h('circle', { cx: 220, cy: cy, r: 16 + bulbBright2 * 10, fill: 'url(#circuit-bulb-filament-halo)', opacity: (0.35 + bulbBright2 * 0.58).toFixed(2), 'aria-hidden': 'true' }),
+                              bulbBright2 > 0.07 && h('circle', { cx: 220, cy: cy, r: 12 + bulbBright2 * 5, fill: 'rgba(253,224,71,' + (bulbBright2 * 0.32).toFixed(2) + ')', filter: 'blur(2.5px)', 'aria-hidden': 'true' }),
+                              h('circle', { cx: 220, cy: cy, r: 10, fill: bulbBright2 > 0.07 ? 'rgba(253,224,71,' + (0.28 + bulbBright2 * 0.68).toFixed(2) + ')' : '#283548', stroke: bulbBright2 > 0.07 ? '#fef08a' : '#eab308', strokeWidth: 1.3 }),
+                              h('path', { d: 'M 213 ' + (cy - 3) + ' A 7 7 0 0 1 218 ' + (cy - 7), fill: 'none', stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.55, 'aria-hidden': 'true' }),
+                              h('path', { d: 'M 216 ' + (cy + 3) + ' Q 220 ' + (cy - 5) + ' 224 ' + (cy + 3), fill: 'none', stroke: bulbBright2 > 0.07 ? '#fffbeb' : '#94a3b8', strokeWidth: 1.3, strokeLinecap: 'round' })
                             ),
 
                         // Value/reading labels (parallel)
@@ -8324,9 +8421,20 @@ function CircuitActiveLessonLab(props) {
                   h('text', { x: 170, y: 64, textAnchor: 'middle', fill: '#fecaca', style: { fontSize: '9px', fontWeight: '900', fontFamily: 'system-ui' } }, __alloT('stem.circuit.short_circuit_label', 'SHORT CIRCUIT')),
                   h('text', { x: 170, y: 76, textAnchor: 'middle', fill: '#fda4af', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, __alloT('stem.circuit.short_circuit_detail', 'near-zero resistance • current surge'))
                 ),
+                // Luminous amperage-scaled current flow pulse halos (gated on reduced motion)
+                electronDots.length > 0 && h('g', { 'aria-hidden': 'true', pointerEvents: 'none' },
+                  electronDots.map(function(dot, i) {
+                    var flowGlow = Math.min(1, Math.log10(1 + Math.max(0, dot.amps || current) * 18) / 1.55);
+                    var haloR = 5.4 + flowGlow * 4.4;
+                    var haloOpacity = Number((0.36 + flowGlow * 0.44).toFixed(2));
+                    if (_prefersReducedMotion) return h('circle', { key: 'eh' + i, cx: dot.x, cy: dot.y, r: haloR, fill: 'url(#circuit-electron-halo)', opacity: haloOpacity });
+                    return h('circle', { key: 'eh' + i, cx: 0, cy: 0, r: haloR, fill: 'url(#circuit-electron-halo)', opacity: haloOpacity },
+                      h('animateMotion', { dur: dot.dur.toFixed(2) + 's', begin: (-dot.offset * dot.dur).toFixed(2) + 's', repeatCount: 'indefinite', path: 'M ' + dot.path.map(function(p) { return p.x + ' ' + p.y; }).join(' L ') }));
+                  })
+                ),
                 // Electron dots
                 electronDots.map(function(dot, i) {
-                  var style = { key: 'e' + i, r: 3, fill: '#06b6d4', opacity: 0.8, filter: 'drop-shadow(0 0 2px #06b6d4)', 'aria-hidden': 'true' };
+                  var style = { key: 'e' + i, r: 3, fill: '#06b6d4', opacity: 0.88, filter: 'drop-shadow(0 0 2.5px #22d3ee)', 'aria-hidden': 'true' };
                   if (_prefersReducedMotion) return h('circle', Object.assign(style, { cx: dot.x, cy: dot.y }));
                   return h('circle', Object.assign(style, { cx: 0, cy: 0, 'data-circuit-flow-dot': true }),
                     h('animateMotion', { dur: dot.dur.toFixed(2) + 's', begin: (-dot.offset * dot.dur).toFixed(2) + 's', repeatCount: 'indefinite', path: 'M ' + dot.path.map(function(p) { return p.x + ' ' + p.y; }).join(' L ') }));

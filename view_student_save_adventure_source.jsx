@@ -24,10 +24,18 @@ const StudentSaveThemeFallbackContext = (window.React && window.React.createCont
 const cx = (...parts) => parts.filter(Boolean).join(' ');
 // Solo Adventure turns need text AI; the live class adventure does not (the teacher's device generates).
 function _aiUsable(kind, fn) {
+  if (typeof window !== 'undefined' && (
+    window.__alloStudentAiDisabled === true ||
+    window.__alloAiSecretsLocked === true ||
+    window.__alloQrStudentMode === true ||
+    window._alloQrBlocked === true ||
+    (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)
+  )) return false;
+  if (fn && fn._alloQrBlocked === true) return false;
   try {
-    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn));
   } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+  return typeof fn === 'function';
 }
 const STUDENT_SAVE_ANIMATION_CSS = `
 @keyframes student-save-history-pulse {
@@ -122,7 +130,7 @@ function getStudentSaveThemeStyles(themeContext = {}) {
     progressTrack: 'bg-slate-100 border border-slate-400',
     progressFill: 'bg-purple-500',
     progressLabel: 'text-slate-600',
-    unlockedBadge: 'bg-green-100 text-green-700 border border-green-200',
+    unlockedBadge: 'bg-green-100 text-green-800 border border-green-200',
     livePanel: 'bg-indigo-50 border border-indigo-200',
     liveTitle: 'text-indigo-800',
     liveText: 'text-indigo-700',
@@ -194,9 +202,18 @@ function StudentSaveAdventurePanel({
   const saveTitleId = 'student-save-panel-title';
   const adventureTitleId = 'student-adventure-panel-title';
   const adventureProgressId = 'student-adventure-progress-label';
+  const [, setAiPolicyTick] = React.useState(0);
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
+    const bump = () => setAiPolicyTick((n) => (n + 1) % 1000000);
+    const evs = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed', 'storage'];
+    evs.forEach((ev) => window.addEventListener(ev, bump));
+    return () => evs.forEach((ev) => window.removeEventListener(ev, bump));
+  }, []);
+  const safePoints = Math.max(0, Number(globalPoints) || 0);
   const rawUnlockXp = Math.max(0, Number(studentProjectSettings?.adventureUnlockXP ?? 0) || 0);
   const unlockXp = Math.max(1, rawUnlockXp || 1);
-  const boundedPoints = Math.max(0, Math.min(globalPoints, unlockXp));
+  const boundedPoints = Math.max(0, Math.min(safePoints, unlockXp));
   const adventureProgress = Math.min(100, (boundedPoints / unlockXp) * 100);
   const adventureAvailable = isAdventureAvailable !== false;
   const soloAdventureAiOff = !activeSessionCode && !_aiUsable('text', typeof window !== 'undefined' ? window.callGemini : undefined);
@@ -243,7 +260,7 @@ function StudentSaveAdventurePanel({
             type="button"
             aria-label={t('student.load_file')}
             data-help-key="student_load_file"
-            onClick={() => projectFileInputRef.current?.click()}
+            onClick={() => projectFileInputRef?.current?.click()}
             className={cx('min-h-11 px-4 py-2 font-bold text-xs rounded-xl transition-colors motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.secondary, styles.focusTeal, styles.focusOffset)}
           >
             <FolderOpen size={14} aria-hidden="true"/> {t('student.load_file')}
@@ -275,12 +292,12 @@ function StudentSaveAdventurePanel({
           <div id={adventureTitleId} className={cx('text-sm font-bold flex items-center gap-2', styles.adventureTitle)}>
             <MapIcon size={16} aria-hidden="true" /> {t('adventure.title')}
           </div>
-          {globalPoints >= rawUnlockXp && (
+          {safePoints >= rawUnlockXp && (
             <span className={cx('text-[11px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1', styles.unlockedBadge)} role="status"><CheckCircle2 size={10} aria-hidden="true"/> {t('adventure.unlocked')}</span>
           )}
         </div>
         <div className="p-4">
-          {globalPoints < rawUnlockXp ? (
+          {safePoints < rawUnlockXp ? (
             <div className="space-y-3">
               <div className={cx('flex items-center gap-3 mb-2', styles.muted)}>
                 <div className={cx('p-2 rounded-full', styles.iconBubble)} aria-hidden="true"><Lock size={20}/></div>
@@ -303,14 +320,13 @@ function StudentSaveAdventurePanel({
                 ></div>
               </div>
               <div id={adventureProgressId} className={cx('text-[11px] text-right font-mono', styles.progressLabel)}>
-                {globalPoints} / {rawUnlockXp} XP
+                {safePoints} / {rawUnlockXp} XP
               </div>
             </div>
           ) : (
             offlineAdventurePlay ? (
               <button
                 type="button"
-                aria-label={t('common.start_adventure')}
                 data-help-key="adventure_start_btn" data-adventure-offline-start onClick={handleStartAdventure}
                 className={cx('min-h-11 w-full py-3 rounded-2xl font-bold transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
               >
@@ -343,7 +359,6 @@ function StudentSaveAdventurePanel({
                 ) : (
                   <button
                     type="button"
-                    aria-label={t('common.start_adventure')}
                     data-help-key="adventure_start_btn" onClick={handleStartAdventure}
                     className={cx('min-h-11 w-full py-3 rounded-2xl font-bold transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
                   >

@@ -1,223 +1,5 @@
 // Generated journey pilot. Run dev-tools/campaign-adventure-pilot/build-in-app.cjs.
 (() => {
-  var __defProp = Object.defineProperty;
-  var __getOwnPropNames = Object.getOwnPropertyNames;
-  var __esm = (fn, res, err) => function __init() {
-    if (err) throw err[0];
-    try {
-      return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-    } catch (e) {
-      throw err = [e], e;
-    }
-  };
-  var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
-  };
-
-  // dev-tools/campaign-adventure-pilot/response-records.mjs
-  function responseText(value) {
-    if (typeof value !== "string" || !value.trim() || value.trim().length > 1200) throw Error("Write a response of 1 to 1,200 characters.");
-    return value.trim();
-  }
-  function validateResponses(raw, commands) {
-    if (!Array.isArray(raw) || raw.length > 100) throw Error("Invalid saved written responses.");
-    let prior = 0, total = 0;
-    const responses = raw.map((r) => {
-      if (!r || !Number.isInteger(r.revision) || r.revision <= prior || r.revision > commands.length || r.actionId !== commands[r.revision - 1]) throw Error("Written response does not match its saved decision.");
-      const text = responseText(r.text);
-      prior = r.revision;
-      total += text.length;
-      return { revision: r.revision, actionId: r.actionId, text };
-    });
-    if (total > 36e3) throw Error("This journey has reached its written-response limit. Download the journal or continue using choices.");
-    return responses;
-  }
-  var init_response_records = __esm({
-    "dev-tools/campaign-adventure-pilot/response-records.mjs"() {
-    }
-  });
-
-  // dev-tools/campaign-adventure-pilot/core.mjs
-  var core_exports = {};
-  __export(core_exports, {
-    MAX_COMMANDS: () => MAX_COMMANDS,
-    PREFIX: () => PREFIX,
-    addNote: () => addNote,
-    dispatch: () => dispatch,
-    forkRun: () => forkRun,
-    listRuns: () => listRuns,
-    makeRun: () => makeRun,
-    materialize: () => materialize,
-    narrate: () => narrate,
-    readRun: () => readRun,
-    saveKey: () => saveKey,
-    saveRun: () => saveRun,
-    validateRun: () => validateRun
-  });
-  function makeRun(adapter, { seed = "FIELD-01", runId, config = {} } = {}) {
-    if (typeof seed !== "string" || !seed.trim() || seed.length > 32) throw new Error("Use a world seed of 1 to 32 characters.");
-    const id = runId || globalThis.crypto.randomUUID();
-    if (!/^[a-zA-Z0-9-]{1,64}$/.test(id)) throw new Error("Invalid run ID.");
-    const initial = adapter.start(seed.trim(), config);
-    return {
-      version: 1,
-      campaignId: adapter.id,
-      runId: id,
-      seed: seed.trim(),
-      config: adapter.config(initial),
-      commands: [],
-      notes: [],
-      createdAt: (/* @__PURE__ */ new Date()).toISOString()
-    };
-  }
-  function materialize(adapter, run) {
-    if (run.campaignId !== adapter.id) throw new Error("This save belongs to a different campaign.");
-    let model = adapter.start(run.seed, run.config);
-    for (const id of run.commands) {
-      const action = adapter.actions(model).find((a) => a.id === id);
-      if (!action || action.disabled) throw new Error("Saved action is no longer valid: " + id);
-      model = adapter.step(model, id);
-    }
-    return model;
-  }
-  function dispatch(adapter, run, actionId, expectedRevision = run.commands.length) {
-    if (expectedRevision !== run.commands.length) throw new Error("That decision has already been handled.");
-    if (run.commands.length >= MAX_COMMANDS) throw new Error("This pilot run has reached its decision limit.");
-    const model = materialize(adapter, run);
-    const action = adapter.actions(model).find((a) => a.id === actionId);
-    if (!action || action.disabled) throw new Error("That action is unavailable in the current situation.");
-    const next = { ...copy(run), commands: [...run.commands, actionId] };
-    materialize(adapter, next);
-    return next;
-  }
-  function validateRun(adapter, raw) {
-    if (!raw || ![1, 2].includes(raw.version) || raw.campaignId !== adapter.id || !/^[a-zA-Z0-9-]{1,64}$/.test(raw.runId || "")) throw new Error("Unrecognized pilot save.");
-    if (typeof raw.seed !== "string" || !raw.seed.trim() || raw.seed.length > 32) throw new Error("Invalid saved world seed.");
-    if (!Array.isArray(raw.commands) || raw.commands.length > MAX_COMMANDS || raw.commands.some((c) => typeof c !== "string" || c.length > 120)) throw new Error("Invalid saved decisions.");
-    if (!Array.isArray(raw.notes) || raw.notes.length > 100 || raw.notes.some((n) => !n || !Number.isInteger(n.revision) || n.revision < 0 || n.revision > raw.commands.length || typeof n.text !== "string" || n.text.length > 1200)) throw new Error("Invalid saved field notes.");
-    if (typeof raw.createdAt !== "string" || !Number.isFinite(Date.parse(raw.createdAt))) throw new Error("Invalid saved date.");
-    const run = {
-      version: raw.version,
-      campaignId: raw.campaignId,
-      runId: raw.runId,
-      seed: raw.seed,
-      config: copy(raw.config),
-      commands: raw.commands.slice(),
-      notes: copy(raw.notes),
-      createdAt: raw.createdAt
-    };
-    if (raw.version === 2) run.responses = validateResponses(raw.responses, run.commands);
-    else if (raw.responses !== void 0) throw Error("Written responses require save version 2.");
-    materialize(adapter, run);
-    return run;
-  }
-  function saveKey(run) {
-    return PREFIX + run.campaignId + ":" + run.runId;
-  }
-  function saveRun(storage, run) {
-    try {
-      const key = saveKey(run), existing = storage.getItem?.(key);
-      if (existing) {
-        let old;
-        try {
-          old = JSON.parse(existing);
-        } catch {
-          return { ok: false, message: "The existing saved journey needs recovery and was left untouched. Download this journey to keep your work." };
-        }
-        if (![1, 2].includes(old.version) || old.version === 2 && run.version !== 2 || old.campaignId !== run.campaignId || old.runId !== run.runId || old.seed !== run.seed || !Array.isArray(old.commands) || !Array.isArray(old.notes) || old.commands.some((id, i) => run.commands[i] !== id) || old.notes.some((note, i) => JSON.stringify(run.notes[i]) !== JSON.stringify(note)) || old.version === 2 && (!Array.isArray(old.responses) || old.responses.some((r, i) => JSON.stringify(run.responses?.[i]) !== JSON.stringify(r)))) {
-          return { ok: false, message: "Another version of this journey is already saved. It was left untouched. Download your journal before reopening the saved version." };
-        }
-      }
-      storage.setItem(key, JSON.stringify(run));
-      return { ok: true };
-    } catch (error) {
-      return { ok: false, message: "This browser could not save the journey. Keep this page open and download your journal." };
-    }
-  }
-  function readRun(storage, key, adapters) {
-    if (!key.startsWith(PREFIX)) throw new Error("Only pilot saves can be opened here.");
-    const text = storage.getItem(key);
-    if (!text || text.length > 18e4) throw new Error("This pilot save cannot be read. It has been left untouched.");
-    const raw = JSON.parse(text);
-    const adapter = adapters.find((a) => a.id === raw.campaignId);
-    if (!adapter) throw new Error("This save needs a campaign that is not available in this pilot.");
-    const run = validateRun(adapter, raw);
-    if (saveKey(run) !== key) throw new Error("Saved journey identity does not match its storage key.");
-    return run;
-  }
-  function listRuns(storage, adapters) {
-    const result = [];
-    for (let i = 0; i < storage.length; i++) {
-      const key = storage.key(i);
-      if (!key || !adapters.some((a) => key.startsWith(PREFIX + a.id + ":"))) continue;
-      try {
-        const run = readRun(storage, key, adapters);
-        result.push({ key, run });
-      } catch (error) {
-        result.push({ key, error: "Saved journey needs recovery; original data retained." });
-      }
-    }
-    return result.sort((a, b) => (b.run?.createdAt || "").localeCompare(a.run?.createdAt || ""));
-  }
-  function addNote(run, text) {
-    const value = String(text).trim();
-    if (!value || value.length > 1200 || run.notes.length >= 100) throw new Error("Write a field note of 1 to 1,200 characters (up to 100 notes per journey).");
-    return { ...copy(run), notes: [...run.notes, { revision: run.commands.length, text: value }] };
-  }
-  function forkRun(run, revision, runId = globalThis.crypto.randomUUID()) {
-    if (!Number.isInteger(revision) || revision < 0 || revision > run.commands.length) throw new Error("Invalid replay point.");
-    return {
-      ...copy(run),
-      runId,
-      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-      commands: run.commands.slice(0, revision),
-      notes: run.notes.filter((n) => n.revision <= revision),
-      ...run.version === 2 ? { responses: (run.responses || []).filter((r) => r.revision <= revision) } : {}
-    };
-  }
-  async function narrate(scene, provider, { timeoutMs = 1800, signal } = {}) {
-    if (!provider) return { text: scene.body, status: "authored" };
-    if (signal?.aborted) return { text: scene.body, status: "fallback" };
-    const controller = new AbortController();
-    const abort = () => controller.abort();
-    signal?.addEventListener("abort", abort, { once: true });
-    if (signal?.aborted) controller.abort();
-    let timer;
-    try {
-      const result = await Promise.race([
-        Promise.resolve().then(() => provider(copy({ title: scene.title, body: scene.body, evidence: scene.evidence }), { signal: controller.signal })),
-        new Promise((_, reject) => {
-          timer = setTimeout(() => {
-            controller.abort();
-            reject(new Error("timeout"));
-          }, timeoutMs);
-        }),
-        new Promise((_, reject) => {
-          controller.signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
-        })
-      ]);
-      if (controller.signal.aborted) throw new Error("aborted");
-      if (typeof result !== "string" || !result.trim() || result.length > 1800) throw new Error("Invalid narration.");
-      return { text: result.trim(), status: "optional" };
-    } catch {
-      return { text: scene.body, status: "fallback" };
-    } finally {
-      clearTimeout(timer);
-      controller.abort();
-      signal?.removeEventListener("abort", abort);
-    }
-  }
-  var PREFIX, MAX_COMMANDS, copy;
-  var init_core = __esm({
-    "dev-tools/campaign-adventure-pilot/core.mjs"() {
-      init_response_records();
-      PREFIX = "alloflow-campaign-pilot:v1:";
-      MAX_COMMANDS = 500;
-      copy = (x) => JSON.parse(JSON.stringify(x));
-    }
-  });
-
   // dev-tools/campaign-adventure-pilot/watershed-source.mjs
   function createWatershedRuntime() {
     const window2 = { StemLab: { findById: (items, id) => items.find((item) => item.id === id) } };
@@ -898,6 +680,7 @@
       intro: "Follow the water from forest to mainstem. Choose where to put your effort, then return each year to see what changed.",
       disclosure: "An educational watershed model, not a forecast. Quality, connectivity, and support are 0\u2013100 model indices. Regional context recognizes Indigenous-led restoration; the narrator does not speak for a Tribal Nation.",
       start(seed, config = {}) {
+        if (!config || typeof config !== "object" || Array.isArray(config)) throw new Error("Unsupported watershed settings.");
         const difficulty = config.difficulty || "coordinator";
         if (!Object.hasOwn(water.difficulties, difficulty) || Object.keys(config).some((k) => k !== "difficulty")) throw new Error("Unsupported watershed settings.");
         return water.start({ seed, difficulty });
@@ -965,6 +748,7 @@
       intro: "Three trees. Nine habitat patches. Guide a grove through weather and renewal, and see which descendants take root.",
       disclosure: "An educational grove scenario using Tree Life Lab\u2019s existing physiology and seeded events. Shared priorities are a game abstraction. A new arrival counts as established only after surviving a later annual update.",
       start(seed, config = {}) {
+        if (!config || typeof config !== "object" || Array.isArray(config)) throw new Error("Unsupported grove settings.");
         const mode = config.mode || "deck";
         if (!["deck", "generated"].includes(mode) || Object.keys(config).some((k) => k !== "mode")) throw new Error("Unsupported grove settings.");
         return tree.groveStart({ version: 1, seed, mode, choices: [] });
@@ -1032,8 +816,197 @@
     return [watershed, grove];
   }
 
-  // dev-tools/campaign-adventure-pilot/app.mjs
-  init_core();
+  // dev-tools/campaign-adventure-pilot/response-records.mjs
+  function responseText(value) {
+    if (typeof value !== "string" || !value.trim() || value.trim().length > 1200) throw Error("Write a response of 1 to 1,200 characters.");
+    return value.trim();
+  }
+  function validateResponses(raw, commands) {
+    if (!Array.isArray(raw) || raw.length > 100) throw Error("Invalid saved written responses.");
+    let prior = 0, total = 0;
+    const responses = raw.map((r) => {
+      if (!r || !Number.isInteger(r.revision) || r.revision <= prior || r.revision > commands.length || r.actionId !== commands[r.revision - 1]) throw Error("Written response does not match its saved decision.");
+      const text = responseText(r.text);
+      prior = r.revision;
+      total += text.length;
+      return { revision: r.revision, actionId: r.actionId, text };
+    });
+    if (total > 36e3) throw Error("This journey has reached its written-response limit. Download the journal or continue using choices.");
+    return responses;
+  }
+
+  // dev-tools/campaign-adventure-pilot/core.mjs
+  var PREFIX = "alloflow-campaign-pilot:v1:";
+  var MAX_COMMANDS = 500;
+  var copy = (x) => JSON.parse(JSON.stringify(x));
+  function makeRunId() {
+    if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
+      return globalThis.crypto.randomUUID();
+    }
+    if (globalThis.crypto && typeof globalThis.crypto.getRandomValues === "function") {
+      const bytes = new Uint8Array(16);
+      globalThis.crypto.getRandomValues(bytes);
+      bytes[6] = bytes[6] & 15 | 64;
+      bytes[8] = bytes[8] & 63 | 128;
+      const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+      return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+    }
+    return "run-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+  }
+  function makeRun(adapter, { seed = "FIELD-01", runId, config = {} } = {}) {
+    if (typeof seed !== "string" || !seed.trim() || seed.length > 32) throw new Error("Use a world seed of 1 to 32 characters.");
+    const id = runId || makeRunId();
+    if (!/^[a-zA-Z0-9-]{1,64}$/.test(id)) throw new Error("Invalid run ID.");
+    const initial = adapter.start(seed.trim(), config);
+    return {
+      version: 1,
+      campaignId: adapter.id,
+      runId: id,
+      seed: seed.trim(),
+      config: adapter.config(initial),
+      commands: [],
+      notes: [],
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+  }
+  function materialize(adapter, run) {
+    if (run.campaignId !== adapter.id) throw new Error("This save belongs to a different campaign.");
+    let model = adapter.start(run.seed, run.config);
+    for (const id of run.commands) {
+      const action = adapter.actions(model).find((a) => a.id === id);
+      if (!action || action.disabled) throw new Error("Saved action is no longer valid: " + id);
+      model = adapter.step(model, id);
+    }
+    return model;
+  }
+  function dispatch(adapter, run, actionId, expectedRevision = run.commands.length) {
+    if (expectedRevision !== run.commands.length) throw new Error("That decision has already been handled.");
+    if (run.commands.length >= MAX_COMMANDS) throw new Error("This pilot run has reached its decision limit.");
+    const model = materialize(adapter, run);
+    const action = adapter.actions(model).find((a) => a.id === actionId);
+    if (!action || action.disabled) throw new Error("That action is unavailable in the current situation.");
+    const next = { ...copy(run), commands: [...run.commands, actionId] };
+    materialize(adapter, next);
+    return next;
+  }
+  function validateRun(adapter, raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw) || ![1, 2].includes(raw.version) || raw.campaignId !== adapter.id || !/^[a-zA-Z0-9-]{1,64}$/.test(raw.runId || "")) throw new Error("Unrecognized pilot save.");
+    if (typeof raw.seed !== "string" || !raw.seed.trim() || raw.seed.length > 32) throw new Error("Invalid saved world seed.");
+    if (!raw.config || typeof raw.config !== "object" || Array.isArray(raw.config)) throw new Error("Invalid saved campaign settings.");
+    if (!Array.isArray(raw.commands) || raw.commands.length > MAX_COMMANDS || raw.commands.some((c) => typeof c !== "string" || c.length > 120)) throw new Error("Invalid saved decisions.");
+    if (!Array.isArray(raw.notes) || raw.notes.length > 100 || raw.notes.some((n) => !n || !Number.isInteger(n.revision) || n.revision < 0 || n.revision > raw.commands.length || typeof n.text !== "string" || n.text.length > 1200)) throw new Error("Invalid saved field notes.");
+    if (typeof raw.createdAt !== "string" || !Number.isFinite(Date.parse(raw.createdAt))) throw new Error("Invalid saved date.");
+    const run = {
+      version: raw.version,
+      campaignId: raw.campaignId,
+      runId: raw.runId,
+      seed: raw.seed,
+      config: copy(raw.config),
+      commands: raw.commands.slice(),
+      notes: copy(raw.notes),
+      createdAt: raw.createdAt
+    };
+    if (raw.version === 2) run.responses = validateResponses(raw.responses, run.commands);
+    else if (raw.responses !== void 0) throw Error("Written responses require save version 2.");
+    materialize(adapter, run);
+    return run;
+  }
+  function saveKey(run) {
+    return PREFIX + run.campaignId + ":" + run.runId;
+  }
+  function saveRun(storage, run) {
+    try {
+      const key = saveKey(run), existing = storage.getItem?.(key);
+      if (existing) {
+        let old;
+        try {
+          old = JSON.parse(existing);
+        } catch {
+          return { ok: false, message: "The existing saved journey needs recovery and was left untouched. Download this journey to keep your work." };
+        }
+        if (![1, 2].includes(old.version) || old.version === 2 && run.version !== 2 || old.campaignId !== run.campaignId || old.runId !== run.runId || old.seed !== run.seed || !Array.isArray(old.commands) || !Array.isArray(old.notes) || old.commands.some((id, i) => run.commands[i] !== id) || old.notes.some((note, i) => JSON.stringify(run.notes[i]) !== JSON.stringify(note)) || old.version === 2 && (!Array.isArray(old.responses) || old.responses.some((r, i) => JSON.stringify(run.responses?.[i]) !== JSON.stringify(r)))) {
+          return { ok: false, message: "Another version of this journey is already saved. It was left untouched. Download your journal before reopening the saved version." };
+        }
+      }
+      storage.setItem(key, JSON.stringify(run));
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, message: "This browser could not save the journey. Keep this page open and download your journal." };
+    }
+  }
+  function readRun(storage, key, adapters) {
+    if (!key.startsWith(PREFIX)) throw new Error("Only pilot saves can be opened here.");
+    const text = storage.getItem(key);
+    if (!text || text.length > 18e4) throw new Error("This pilot save cannot be read. It has been left untouched.");
+    const raw = JSON.parse(text);
+    const adapter = adapters.find((a) => a.id === raw.campaignId);
+    if (!adapter) throw new Error("This save needs a campaign that is not available in this pilot.");
+    const run = validateRun(adapter, raw);
+    if (saveKey(run) !== key) throw new Error("Saved journey identity does not match its storage key.");
+    return run;
+  }
+  function listRuns(storage, adapters) {
+    const result = [];
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
+      if (!key || !adapters.some((a) => key.startsWith(PREFIX + a.id + ":"))) continue;
+      try {
+        const run = readRun(storage, key, adapters);
+        result.push({ key, run });
+      } catch (error) {
+        result.push({ key, error: "Saved journey needs recovery; original data retained." });
+      }
+    }
+    return result.sort((a, b) => (b.run?.createdAt || "").localeCompare(a.run?.createdAt || ""));
+  }
+  function addNote(run, text) {
+    const value = String(text).trim();
+    if (!value || value.length > 1200 || run.notes.length >= 100) throw new Error("Write a field note of 1 to 1,200 characters (up to 100 notes per journey).");
+    return { ...copy(run), notes: [...run.notes, { revision: run.commands.length, text: value }] };
+  }
+  function forkRun(run, revision, runId = makeRunId()) {
+    if (!Number.isInteger(revision) || revision < 0 || revision > run.commands.length) throw new Error("Invalid replay point.");
+    return {
+      ...copy(run),
+      runId,
+      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+      commands: run.commands.slice(0, revision),
+      notes: run.notes.filter((n) => n.revision <= revision),
+      ...run.version === 2 ? { responses: (run.responses || []).filter((r) => r.revision <= revision) } : {}
+    };
+  }
+  async function narrate(scene, provider, { timeoutMs = 1800, signal } = {}) {
+    if (!provider) return { text: scene.body, status: "authored" };
+    if (signal?.aborted) return { text: scene.body, status: "fallback" };
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    signal?.addEventListener("abort", abort, { once: true });
+    if (signal?.aborted) controller.abort();
+    let timer;
+    try {
+      const result = await Promise.race([
+        Promise.resolve().then(() => provider(copy({ title: scene.title, body: scene.body, evidence: scene.evidence }), { signal: controller.signal })),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => {
+            controller.abort();
+            reject(new Error("timeout"));
+          }, timeoutMs);
+        }),
+        new Promise((_, reject) => {
+          controller.signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+        })
+      ]);
+      if (controller.signal.aborted) throw new Error("aborted");
+      if (typeof result !== "string" || !result.trim() || result.length > 1800) throw new Error("Invalid narration.");
+      return { text: result.trim(), status: "optional" };
+    } catch {
+      return { text: scene.body, status: "fallback" };
+    } finally {
+      clearTimeout(timer);
+      controller.abort();
+      signal?.removeEventListener("abort", abort);
+    }
+  }
 
   // dev-tools/campaign-adventure-pilot/scene-art.mjs
   var NS = "http://www.w3.org/2000/svg";
@@ -1104,8 +1077,6 @@
   }
 
   // dev-tools/campaign-adventure-pilot/responses.mjs
-  init_response_records();
-  init_core();
   var normalize = (text) => text.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
   function reviewResponse(adapter, run, value, { location } = {}) {
     const text = responseText(value), model = materialize(adapter, run), view = adapter.view(model);
@@ -1210,6 +1181,12 @@
       }
       audioGain = null;
     }
+    function syncSoundButton() {
+      const btn = $("sound-toggle");
+      if (!btn) return;
+      btn.textContent = sound ? "Sound on" : "Sound off";
+      btn.setAttribute("aria-pressed", String(sound));
+    }
     async function playSound() {
       stopSound();
       if (!sound || !view || !view.sound || document.hidden || destroyed) return;
@@ -1224,23 +1201,26 @@
           if (destroyed || serial !== soundSerial) return;
           sound = false;
           stopSound();
+          syncSoundButton();
           message("Sound could not start. The journey remains available.", true);
         });
         audioGain = audioContext.createGain();
         audioGain.gain.value = 0.15;
         audioGain.connect(audioContext.destination);
-        audioNodes = window.AlloModules.playGenerativeSoundscape(audioContext, audioGain, view.sound, { gentle: true, sceneText: view.body, themeSeed: run.seed });
+        const nodes = window.AlloModules.playGenerativeSoundscape(audioContext, audioGain, view.sound, { gentle: true, sceneText: view.body, themeSeed: run.seed });
+        audioNodes = Array.isArray(nodes) ? nodes : [];
       } catch {
         if (destroyed || serial !== soundSerial) return;
         sound = false;
         stopSound();
+        syncSoundButton();
         message("Sound is unavailable. The journey remains available.", true);
       }
     }
     function stopReading() {
       if (reading) {
-        window.speechSynthesis?.cancel();
         reading = null;
+        window.speechSynthesis?.cancel();
       }
     }
     function readScene() {
@@ -1260,8 +1240,10 @@
         if (audioGain) audioGain.gain.value = 0.15;
       };
       utterance.onend = restore;
-      utterance.onerror = () => {
+      utterance.onerror = (ev) => {
+        const stale = reading !== utterance;
         restore();
+        if (stale || ev?.error === "canceled" || ev?.error === "interrupted") return;
         message("Read aloud could not finish. The scene text is still available.", true);
       };
       window.speechSynthesis.speak(utterance);
@@ -1419,17 +1401,22 @@
         if (!chosen) return;
         try {
           if (chosen.size > 18e4) throw new Error("Choose a pilot journal smaller than 180 KB.");
-          const raw = JSON.parse(await chosen.text());
+          const text = await chosen.text();
+          if (destroyed) return;
+          const raw = JSON.parse(text);
+          if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("This is not a recognized pilot journey.");
           const a = adapters.find((a2) => a2.id === raw.campaignId);
           if (!a) throw new Error("This is not a recognized pilot journey.");
-          const { validateRun: validateRun2 } = await Promise.resolve().then(() => (init_core(), core_exports));
-          const checked = validateRun2(a, raw), next = forkRun(checked, checked.commands.length);
+          const checked = validateRun(a, raw), next = forkRun(checked, checked.commands.length);
+          if (destroyed) return;
           run = next;
           adapter = a;
           persist();
           activate(next);
         } catch (error) {
-          message(error.message, true);
+          if (!destroyed) message(error.message, true);
+        } finally {
+          file.value = "";
         }
       });
       const tools = el("div", "footer-tools");
@@ -1498,6 +1485,9 @@
           proposal = null;
           review.replaceChildren();
         });
+        input.addEventListener("blur", () => {
+          options.onFreeText?.(input.value);
+        });
         form.append(label, input, el("p", "status-line", "Your confirmed response stays in your journal. Review the action before it runs."));
         const showReview = () => {
           review.replaceChildren();
@@ -1541,6 +1531,7 @@
           }, "primary"));
         };
         form.append(button("Review my response", () => {
+          options.onFreeText?.(input.value);
           try {
             proposal = reviewResponse(adapter, run, input.value, { location: adapter.id === "watershed" ? selected : void 0 });
             showReview();
@@ -1602,10 +1593,10 @@
       const tools = el("div", "header-actions");
       const soundButton = button(sound ? "Sound on" : "Sound off", () => {
         sound = !sound;
+        syncSoundButton();
         playSound();
-        soundButton.textContent = sound ? "Sound on" : "Sound off";
-        soundButton.setAttribute("aria-pressed", String(sound));
       });
+      soundButton.id = "sound-toggle";
       soundButton.setAttribute("aria-pressed", String(sound));
       if (view.sound) tools.append(soundButton);
       tools.append(button("Download journal", downloadJournal));
@@ -1750,7 +1741,11 @@
       input.value = noteDrafts.get(run.runId) || "";
       const noteRunId = run.runId;
       input.addEventListener("input", () => noteDrafts.set(noteRunId, input.value));
+      input.addEventListener("blur", () => {
+        options.onFreeText?.(input.value);
+      });
       notes.append(label, input, button("Save field note", () => {
+        options.onFreeText?.(input.value);
         try {
           run = addNote(run, input.value);
           noteDrafts.delete(run.runId);
@@ -1899,7 +1894,7 @@
     intro: "Join a fictional group project, ask for support, discuss a change and decide what to try next. Respond with choices, your own words or both.",
     disclosure: "A fictional practice story with several valid approaches. Characters\u2019 replies are authored possibilities, not predictions or a score of your social skills. You may pause or leave at any time.",
     start(seed, config = {}) {
-      if (Object.keys(config).length) throw Error("Unsupported practice settings.");
+      if (!config || typeof config !== "object" || Array.isArray(config) || Object.keys(config).length) throw Error("Unsupported practice settings.");
       return { chapter: 0, history: [] };
     },
     config: () => ({}),
@@ -1962,7 +1957,7 @@
   }
 
   // dev-tools/campaign-adventure-pilot/native-view.mjs
-  var moduleUrl = document.currentScript?.src;
+  var moduleUrl = typeof document !== "undefined" ? document.currentScript?.src : void 0;
   async function ensureSound() {
     if (typeof window.AlloModules?.playGenerativeSoundscape === "function") return;
     if (!moduleUrl) throw new Error("Sound asset location is unavailable.");
@@ -1976,7 +1971,60 @@
   }
   function JourneyHost({ ctx, kind = "stem" }) {
     const React = ctx.React, host = React.useRef(null);
+    const [crisisTier, setCrisisTier] = React.useState(0);
+    const onSafetyFlagRef = React.useRef(ctx.onSafetyFlag || null);
+    onSafetyFlagRef.current = ctx.onSafetyFlag || null;
     React.useEffect(() => {
+      const toolId = kind === "sel" ? "practiceJourneys" : "fieldJourneys";
+      const toolName = kind === "sel" ? "Practice Journeys" : "Field Journeys";
+      const onFreeText = (text) => {
+        const trimmed = String(text || "").trim();
+        if (!trimmed) return false;
+        const onFlag = typeof onSafetyFlagRef.current === "function" ? onSafetyFlagRef.current : null;
+        let blocked = false;
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === "function") {
+          const chk = window.SelHub.safeRehearseCheck(trimmed, { toolId, onSafetyFlag: onFlag });
+          if (chk && chk.action === "block") blocked = true;
+        } else {
+          const checker = window.__alloShared && window.__alloShared.SafetyContentChecker || window.SafetyContentChecker || null;
+          let flags = null;
+          try {
+            flags = checker && checker.check ? checker.check(trimmed) : null;
+          } catch (_) {
+            flags = null;
+          }
+          if (Array.isArray(flags) && flags.length) {
+            const rank = { low: 1, medium: 2, high: 3, critical: 4 };
+            const top = flags.reduce((a, f) => f && (rank[f.severity] || 0) > (rank[a.severity] || 0) ? f : a, flags[0] || {});
+            if (onFlag) {
+              try {
+                onFlag(Object.assign({}, top, { source: (kind === "sel" ? "sel_rehearse_" : "stem_") + toolId, context: trimmed.slice(0, 100), aiGenerated: false }));
+              } catch (_) {
+              }
+            }
+            if (top.severity === "critical") blocked = true;
+          }
+        }
+        if (!blocked && window.SelHub && typeof window.SelHub.scanForCrisis === "function") {
+          const scan = window.SelHub.scanForCrisis(trimmed);
+          if (scan && scan.triggered) {
+            blocked = true;
+            if (onFlag) {
+              try {
+                onFlag({ toolId, tier: 3, snippet: trimmed.slice(0, 120) });
+              } catch (_) {
+              }
+            }
+          }
+        }
+        if (blocked) {
+          setCrisisTier(3);
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === "function") {
+            window.SelHub.showCrisisModal({ toolName, contentSnippet: trimmed });
+          }
+        }
+        return blocked;
+      };
       const root = host.current.shadowRoot || host.current.attachShadow({ mode: "open" });
       const style = document.createElement("style");
       style.textContent = styles_default.replace(":root{", ":host{") + `
@@ -1994,7 +2042,7 @@
       :host([data-theme="contrast"]){--ink:#fff;--muted:#eee;--paper:#000;--line:#aaa;--control-line:#aaa;--accent:#fff;color-scheme:dark}
       :host([data-theme="contrast"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art){background:#000;color:#fff;border-color:#fff}
       :host([data-theme="contrast"]) :is(p,.scene-meta .eyebrow,.action-hint,.map-caption,.location-info p){color:#eee}
-      :host([data-theme="contrast"]) button:focus-visible{outline-color:#ff0}
+      :host([data-theme="contrast"]) :is(button,a,input,textarea,select,summary,.receipts):focus-visible{outline:3px solid #ff0;outline-offset:4px}
       :host([data-theme="contrast"]) .map-location{background:#000;color:#fff}
       :host([data-theme="contrast"]) .map-location[aria-pressed=true]{outline:3px solid #ff0}
       @container(max-width:720px){.response-mode{align-items:start;flex-direction:column}.response-mode select{width:100%}}
@@ -2016,30 +2064,38 @@
       };
       window.addEventListener("keydown", protectTyping, true);
       const sessionStore = kind === "sel" ? createSessionStore(ctx.toolData?.practiceJourneys?.records, (records) => ctx.update("practiceJourneys", "records", records)) : void 0;
-      const journey = mountFieldJourneys(root, { embedded: true, hub: kind, storage: sessionStore, sessionOnly: kind === "sel", ensureSound, adapters: kind === "sel" ? [selfAdvocacyJourney] : void 0, initialCampaign: kind === "stem" ? ctx.journeyEntry : null, returnToSource: ctx.journeyEntry ? () => ctx.setStemLabTool("waterCycle") : null, openRelatedTool: kind === "sel" ? ctx.setSelHubTool : null });
+      const journey = mountFieldJourneys(root, { embedded: true, hub: kind, storage: sessionStore, sessionOnly: kind === "sel", ensureSound, adapters: kind === "sel" ? [selfAdvocacyJourney] : void 0, initialCampaign: kind === "stem" ? ctx.journeyEntry : null, returnToSource: ctx.journeyEntry ? () => ctx.setStemLabTool("waterCycle") : null, openRelatedTool: kind === "sel" ? ctx.setSelHubTool : null, onFreeText });
       return () => {
         journey.destroy();
         window.removeEventListener("keydown", protectTyping, true);
         root.replaceChildren();
       };
     }, []);
-    return React.createElement("div", {
-      ref: host,
-      "data-field-journeys": "true",
-      "data-journey-hub": kind,
-      "data-theme": typeof ctx.theme === "string" ? ctx.theme : ctx.isContrast ? "contrast" : ctx.isDark ? "dark" : "light",
-      style: { width: "100%", minWidth: 0 }
-    });
+    const crisisBanner = crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === "function" ? window.SelHub.renderCrisisResources(React.createElement, ctx.gradeBand || "high") : null;
+    return React.createElement(
+      React.Fragment,
+      null,
+      crisisBanner,
+      React.createElement("div", {
+        ref: host,
+        "data-field-journeys": "true",
+        "data-journey-hub": kind,
+        "data-theme": typeof ctx.theme === "string" ? ctx.theme : ctx.isContrast ? "contrast" : ctx.isDark ? "dark" : "light",
+        style: { width: "100%", minWidth: 0 }
+      })
+    );
   }
 
   // dev-tools/campaign-adventure-pilot/sel-app.mjs
-  window.SelHub.registerTool("practiceJourneys", {
-    icon: "\u{1F5FA}\uFE0F",
-    label: "Practice Journeys (Pilot)",
-    category: "relationship-skills",
-    recommendedRange: "5-12",
-    lightBackground: true,
-    desc: "Practice a group project through four connected encounters. Use choices, your own words, or both.",
-    render: (ctx) => ctx.React.createElement(JourneyHost, { ctx, kind: "sel" })
-  });
+  if (typeof window !== "undefined" && window.SelHub && typeof window.SelHub.registerTool === "function") {
+    window.SelHub.registerTool("practiceJourneys", {
+      icon: "\u{1F5FA}\uFE0F",
+      label: "Practice Journeys (Pilot)",
+      category: "relationship-skills",
+      recommendedRange: "5-12",
+      lightBackground: true,
+      desc: "Practice a group project through four connected encounters. Use choices, your own words, or both.",
+      render: (ctx) => ctx.React.createElement(JourneyHost, { ctx, kind: "sel" })
+    });
+  }
 })();

@@ -65,19 +65,32 @@
           signature: JSON.stringify([true, SUBMIT_URL, true]) };
       }
       var value = window.ALLOFLOW_SUPPORT_REPORTING_POLICY;
-      if (!value || typeof value !== 'object' || Array.isArray(value)
-          || Object.keys(value).some(function (key) { return !['version', 'enabled', 'endpoint', 'allowGoogleFormFallback'].includes(key); })
-          || value.version !== 1 || typeof value.enabled !== 'boolean'
-          || (value.endpoint !== undefined && typeof value.endpoint !== 'string')
-          || (value.allowGoogleFormFallback !== undefined && typeof value.allowGoogleFormFallback !== 'boolean')) return blocked;
-      var endpoint = value.endpoint === undefined ? SUBMIT_URL : value.endpoint;
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return blocked;
+      var proto = Object.getPrototypeOf(value);
+      if (proto !== null && Object.getPrototypeOf(proto) !== null) return blocked;
+      var allowed = ['version', 'enabled', 'endpoint', 'allowGoogleFormFallback'];
+      var ownKeys = Reflect.ownKeys(value);
+      if (ownKeys.length > allowed.length) return blocked;
+      var data = Object.create(null);
+      for (var ki = 0; ki < ownKeys.length; ki++) {
+        var key = ownKeys[ki];
+        if (typeof key !== 'string' || allowed.indexOf(key) < 0) return blocked;
+        var desc = Object.getOwnPropertyDescriptor(value, key);
+        if (!desc || !Object.prototype.hasOwnProperty.call(desc, 'value')) return blocked;
+        data[key] = desc.value;
+      }
+      if (allowed.some(function (k) { return !Object.prototype.hasOwnProperty.call(value, k) && k in value; })) return blocked;
+      if (data.version !== 1 || typeof data.enabled !== 'boolean'
+          || (data.endpoint !== undefined && typeof data.endpoint !== 'string')
+          || (data.allowGoogleFormFallback !== undefined && typeof data.allowGoogleFormFallback !== 'boolean')) return blocked;
+      var endpoint = data.endpoint === undefined ? SUBMIT_URL : data.endpoint;
       var parsed = new URL(endpoint);
       if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.search || parsed.hash
           || endpoint.trim() !== endpoint || /[?#]/.test(endpoint)) return blocked;
       endpoint = parsed.href;
-      var allowForm = value.enabled && value.allowGoogleFormFallback === true;
-      return { valid: true, enabled: value.enabled, endpoint: endpoint, allowGoogleFormFallback: allowForm,
-        signature: JSON.stringify([value.enabled, endpoint, allowForm]) };
+      var allowForm = data.enabled && data.allowGoogleFormFallback === true;
+      return { valid: true, enabled: data.enabled, endpoint: endpoint, allowGoogleFormFallback: allowForm,
+        signature: JSON.stringify([data.enabled, endpoint, allowForm]) };
     } catch (_) { return blocked; }
   }
 
@@ -112,7 +125,7 @@
   // it in localStorage and every bug report sent it. Scrub wherever a URL
   // or message is stored or sent.
   function isCredentialField(key) {
-    return /^(?:authorization|proxy[-_]authorization|x[-_](?:goog[-_])?api[-_]key|api[-_]?key|access[-_]?token|refresh[-_]?token|id[-_]?token|token|secret|client[-_]?secret|password|passwd|credential|private[-_]?key|session[-_]?(?:id|token|secret)|cookie|set[-_]cookie)$/i.test(key);
+    return /^(?:authorization|proxy[-_]authorization|x[-_](?:goog[-_])?api[-_]key|(?:[a-z]+[-_]?)?api[-_]?key|(?:access|refresh|id|auth|bearer)[-_]?token|token|secret|(?:client|pack|join)[-_]?secret|password|passwd|passphrase|recovery[-_]?(?:code|key)|access[-_]?code|credential|private[-_]?key|session[-_]?(?:id|token|secret)|cookie|set[-_]cookie)$/i.test(key);
   }
   function redactSecrets(s, nesting) {
     if (!s) return s || '';
@@ -158,7 +171,7 @@
         return scheme + ' [redacted]';
       })
       .replace(/\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\b/g, '[redacted]')
-      .replace(/(?:sk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{16,}|AIza[0-9A-Za-z_-]{20,}|gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{16,})\b/g, '[redacted]')
+      .replace(/(?:sk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{16,}|AIza[0-9A-Za-z_-]{20,}|ya29\.[0-9A-Za-z._-]{20,}|gsk_[A-Za-z0-9_-]{20,}|xai-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{16,})\b/g, '[redacted]')
       .replace(/(\b(?:cookie|set-cookie)\s*:\s*)(?!["'])[^\r\n]*/gi, '$1[redacted]')
       .replace(/(^|[^A-Za-z0-9_-])(["']?)([A-Za-z][A-Za-z0-9_-]*)(\2\s*[:=]\s*)(\[redacted\]|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s,;&}\]]+)/g, function (whole, prefix, keyQuote, key, separator, value) {
         if (!isCredentialField(key)) return whole;
@@ -172,12 +185,23 @@
         try {
           var url = new URL(suffix ? raw.slice(0, -suffix.length) : raw);
           url.username = ''; url.password = '';
+          var seenParamKeys = Object.create(null);
           Array.from(url.searchParams.keys()).forEach(function (key) {
+            if (seenParamKeys[key]) return;
+            seenParamKeys[key] = true;
             if (/^(?:allo_(?:mbp?|pack))$|key|token|secret|passw(?:or)?d|auth|signature|credential|session[-_]?id/i.test(key)) url.searchParams.set(key, '[redacted]');
             else if (depth < 3) {
-              var value = url.searchParams.get(key);
-              var cleaned = redactSecrets(value, depth + 1);
-              if (cleaned !== value) url.searchParams.set(key, cleaned);
+              var values = url.searchParams.getAll(key);
+              var changed = false;
+              var cleanedValues = values.map(function (value) {
+                var cleaned = redactSecrets(value, depth + 1);
+                if (cleaned !== value) changed = true;
+                return cleaned;
+              });
+              if (changed) {
+                url.searchParams.delete(key);
+                cleanedValues.forEach(function (cv) { url.searchParams.append(key, cv); });
+              }
             }
           });
           if (url.hash) url.hash = '[redacted]';
@@ -201,7 +225,7 @@
       .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[ssn]')
       .replace(/(?:\+?1[\s.-]?)?(?:\(\d{3}\)\s?|\b\d{3}[\s.-])\d{3}[\s.-]\d{4}\b/g, '[phone]')
       .replace(/\b(student\s*id|district\s*id|medicaid|case\s*(?:no|number)|dob|date\s+of\s+birth|birth\s*date)(\s*[:#-]?\s*)[A-Z0-9][A-Z0-9\/.-]*/gi, '$1$2[id]')
-      .replace(/\b\d{1,5}\s+[A-Z][A-Za-z]*\s+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Court|Ct|Way|Place|Pl|Terrace|Ter)\b\.?/g, '[address]')
+      .replace(/\b\d{1,5}\s+(?:[A-Za-z][A-Za-z0-9'.-]*\s+){1,4}(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd|Court|Ct|Way|Place|Pl|Terrace|Ter)\b\.?/gi, '[address]')
       .replace(/\b(Mr|Mrs|Ms|Mx|Dr|Miss)\.?\s+[A-Z][a-z]+(?:[ -][A-Z][a-z]+)?/g, '$1. [name]')
       // Chrome quotes the start of the text that failed to parse:
       // Unexpected token 'J', "Jordan wro"... is not valid JSON
@@ -224,7 +248,7 @@
     var names = [];
     try {
       var roster = JSON.parse(window.localStorage.getItem('alloflow_roster_key') || 'null');
-      var students = roster && roster.students && typeof roster.students === 'object' ? roster.students : {};
+      var students = roster && roster.students && typeof roster.students === 'object' && !Array.isArray(roster.students) ? roster.students : {};
       names = Object.keys(students).map(function (n) { return String(n).trim(); }).filter(function (n) { return n.length >= 2 && n.length <= 80; });
     } catch (_) {}
     rosterCache = { at: Date.now(), names: names };
@@ -266,7 +290,7 @@
   // earlier users' text on a shared device. An older host never sets the flag,
   // so it keeps today's behavior.
   function quietStudentView() {
-    try { return window.__alloStudentView === true; } catch (_) { return false; }
+    try { return window.__alloStudentView === true || !!window.__alloQrStudentMode; } catch (_) { return false; }
   }
 
   function sanitizeDiagnosticValue(value, depth, seen) {
@@ -277,12 +301,15 @@
     if (visited.has(value)) return '[circular diagnostic]';
     visited.add(value);
     var output = Array.isArray(value) ? [] : {};
-    Object.keys(value).forEach(function (key) {
+    var keys = Object.keys(value);
+    var limit = Math.min(keys.length, 120);
+    for (var i = 0; i < limit; i++) {
+      var key = keys[i];
       var safeKey = redactSecrets(key);
-      if (safeKey === '__proto__' || safeKey === 'constructor' || safeKey === 'prototype') return;
+      if (safeKey === '__proto__' || safeKey === 'constructor' || safeKey === 'prototype') continue;
       output[safeKey] = isCredentialField(key)
         ? '[redacted]' : sanitizeDiagnosticValue(value[key], (depth || 0) + 1, visited);
-    });
+    }
     return output;
   }
 
@@ -328,19 +355,35 @@
       if (!Array.isArray(stored)) return [];
       var now = Date.now();
       return stored.filter(function (entry) {
-        if (!entry || typeof entry !== 'object') return false;
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
         if (entry.v && entry.v !== APP_BUILD_TAG) return false;
         // Age is the only pruning the web gets (see LOAD_ID).
         var seen = Date.parse(entry.lastTs || entry.ts);
         if (!(seen > now - MAX_AGE_MS)) return false;
         try { if (shouldIgnore(entry.message)) return false; } catch (e) {}
         return true;
-      }).map(function (entry) { return sanitizeDiagnosticValue(entry); });
+      }).slice(-MAX_BUFFERED).map(function (entry) {
+        var clean = sanitizeDiagnosticValue(entry);
+        clean.level = clean.level === 'warn' ? 'warn' : 'error';
+        clean.message = String(clean.message || '').slice(0, 2000);
+        clean.stack = clean.stack ? String(clean.stack).slice(0, 2000) : '';
+        clean.source = clean.source ? String(clean.source).slice(0, 200) : '';
+        clean.ts = String(clean.ts || '');
+        clean.count = Math.max(1, Math.floor(Number(clean.count) || 1));
+        clean.line = Math.max(0, Math.floor(Number(clean.line) || 0));
+        clean.column = Math.max(0, Math.floor(Number(clean.column) || 0));
+        return clean;
+      });
     }
     catch (e) { return []; }
   })();
   var prefs = (function () {
-    try { return JSON.parse(localStorage.getItem(STORAGE_PREFS) || '{}'); }
+    try {
+      var parsed = JSON.parse(localStorage.getItem(STORAGE_PREFS) || '{}', function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      });
+      return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+    }
     catch (e) { return {}; }
   })();
   var includeWarns = !!prefs.includeWarns;
@@ -354,42 +397,50 @@
   }
   persistBuffer();
 
+  var isRecording = false;
   function record(level, message, stack, source, line, column, api) {
-    if (shouldIgnore(message)) return;
-    var msg = redactSecrets(String(message || '')).slice(0, 2000);
-    // Coalesce a repeat of the most recent entry (same level + message) into a count rather than
-    // flooding the log, the badge, and the 50-slot buffer — e.g. a recurring 401 auth error that
-    // fires every few seconds. The first ts is kept; lastTs + count track the repeats so the
-    // report/panel show one line with "×N" instead of N identical rows.
-    var last = buffer.length ? buffer[buffer.length - 1] : null;
-    if (last && last.load === LOAD_ID && last.level === level && last.message === msg
-        && (!api ? !last.api : last.api && last.api.requestId === api.requestId && last.api.state === api.state)) {
-      last.count = (last.count || 1) + 1;
-      last.lastTs = new Date().toISOString();
+    if (isRecording) return;
+    isRecording = true;
+    try {
+      if (shouldIgnore(message)) return;
+      var normLevel = level === 'warn' ? 'warn' : 'error';
+      var msg = redactSecrets(String(message || '')).slice(0, 2000);
+      // Coalesce a repeat of the most recent entry (same level + message) into a count rather than
+      // flooding the log, the badge, and the 50-slot buffer — e.g. a recurring 401 auth error that
+      // fires every few seconds. The first ts is kept; lastTs + count track the repeats so the
+      // report/panel show one line with "×N" instead of N identical rows.
+      var last = buffer.length ? buffer[buffer.length - 1] : null;
+      if (last && last.load === LOAD_ID && last.level === normLevel && last.message === msg
+          && (!api ? !last.api : last.api && last.api.requestId === api.requestId && last.api.state === api.state)) {
+        last.count = (last.count || 1) + 1;
+        last.lastTs = new Date().toISOString();
+        persistBuffer();
+        updateBadge();
+        refreshPanelForLog();
+        return;
+      }
+      var entry = {
+        ts: new Date().toISOString(),
+        level: normLevel,                                // 'error' | 'warn'
+        message: msg,
+        stack: stack ? redactSecrets(String(stack)).slice(0, 2000) : '',
+        source: source ? redactSecrets(String(source)).slice(0, 200) : '',
+        line: Math.max(0, Math.floor(Number(line) || 0)),
+        column: Math.max(0, Math.floor(Number(column) || 0)),
+        url: redactSecrets(window.location.href).slice(0, 300),
+        count: 1,
+        v: APP_BUILD_TAG,  // which app build captured this — stale-entry pruning key
+        load: LOAD_ID,      // which page load - only this load's errors reach the badge
+        ...(api ? { api: sanitizeDiagnosticValue(api) } : {})
+      };
+      buffer.push(entry);
+      while (buffer.length > MAX_BUFFERED) buffer.shift();
       persistBuffer();
       updateBadge();
       refreshPanelForLog();
-      return;
+    } finally {
+      isRecording = false;
     }
-    var entry = {
-      ts: new Date().toISOString(),
-      level: level,                                    // 'error' | 'warn'
-      message: msg,
-      stack: stack ? redactSecrets(String(stack)).slice(0, 2000) : '',
-      source: source ? redactSecrets(String(source)).slice(0, 200) : '',
-      line: line || 0,
-      column: column || 0,
-      url: redactSecrets(window.location.href).slice(0, 300),
-      count: 1,
-      v: APP_BUILD_TAG,  // which app build captured this — stale-entry pruning key
-      load: LOAD_ID,      // which page load - only this load's errors reach the badge
-      ...(api ? { api: sanitizeDiagnosticValue(api) } : {})
-    };
-    buffer.push(entry);
-    while (buffer.length > MAX_BUFFERED) buffer.shift();
-    persistBuffer();
-    updateBadge();
-    refreshPanelForLog();
   }
 
   function receiveApiFeedback(detail) {
@@ -590,15 +641,20 @@
   // message content. Apps Script caps simultaneous runs per mailbox owner.
   function mailboxCallLines(ring, flight, now) {
     if (!Array.isArray(ring) || !ring.length) return '';
-    var recent = ring.filter(function (c) { return c && now - c.at <= 600000; });
-    var counts = {};
-    recent.forEach(function (c) { counts[c.a] = (counts[c.a] || 0) + 1; });
+    var recent = ring.filter(function (c) { return c && Number.isFinite(c.at) && now - c.at <= 600000; });
+    var counts = Object.create(null);
+    recent.forEach(function (c) {
+      var act = String(c.a || 'unknown');
+      counts[act] = (counts[act] || 0) + 1;
+    });
     var byAction = Object.keys(counts).sort(function (x, y) { return counts[y] - counts[x]; })
       .map(function (a) { return a + ' ' + counts[a]; }).join(', ');
     var lines = ['-- Mailbox calls (last 10 min: ' + recent.length + (byAction ? '; ' + byAction : '') + ') --'];
     if (flight) lines.push('in flight ' + flight.inFlight + '/' + flight.max + ', queued ' + flight.queued + ', peak in flight ' + flight.peakInFlight + ', peak queued ' + flight.peakQueued);
     ring.slice(-12).forEach(function (c) {
-      lines.push(new Date(c.at).toISOString().slice(11, 19) + ' ' + c.a + ' wait ' + c.waitMs + 'ms run ' + c.ms + 'ms ' + c.outcome);
+      if (!c) return;
+      var ts = Number.isFinite(c.at) ? new Date(c.at).toISOString().slice(11, 19) : '??:??:??';
+      lines.push(ts + ' ' + String(c.a || 'unknown') + ' wait ' + c.waitMs + 'ms run ' + c.ms + 'ms ' + c.outcome);
     });
     return lines.join('\n');
   }
@@ -610,7 +666,9 @@
     var errorsOnly = buffer.filter(function (e) { return e.level === 'error'; });
     var entriesToInclude = (errorsOnly.length === 0 ? buffer : errorsOnly).slice(-15);
     var nowCount = errorsOnly.filter(countsTowardBadge).length;
-    if (!fullLogRequested()) return buildSafeReportPayload(entriesToInclude, nowCount, browserDevice);
+    var full = fullLogRequested();
+    reportDraftFullLog = full;
+    if (!full) return buildSafeReportPayload(entriesToInclude, nowCount, browserDevice);
     var what = entriesToInclude.map(function (e, i) {
       var tags = entryTags(e);
       var head = '[' + (i + 1) + '] ' + e.ts + '  ' + e.level.toUpperCase() + (e.count > 1 ? ('  (repeated ×' + e.count + (e.lastTs ? ', last ' + e.lastTs : '') + ')') : '') + (tags.length ? '  [' + tags.join('; ') + ']' : '') + '\n' + e.message;
@@ -695,7 +753,20 @@
       url: redactOutgoing(safePageUrl()).slice(0, 500)
     };
   }
-  function fullLogRequested() { return includeTechnicalLog === true && reporterPosture() === 'educator'; }
+  function fullLogRequested() { return includeTechnicalLog === true && reporterPosture() === 'educator' && !quietStudentView(); }
+  function syncPostureDraft() {
+    if (quietStudentView() || reporterPosture() !== 'educator') {
+      var downgraded = includeTechnicalLog || (!!reportDraft && reportDraftFullLog);
+      includeTechnicalLog = false;
+      if (reportDraft && reportDraftFullLog) {
+        reportDraft = null;
+        reportDraftFullLog = false;
+        reviewedSignature = '';
+      }
+      return downgraded;
+    }
+    return false;
+  }
   var REPORT_CATEGORIES = [
     ['', 'Choose one (optional)'],
     ['click', 'A button or control did not work'],
@@ -710,6 +781,11 @@
   }
 
   function ensureReportDraft() {
+    if (reportDraft && reportDraftFullLog && !fullLogRequested()) {
+      reportDraft = null;
+      reportDraftFullLog = false;
+      reviewedSignature = '';
+    }
     if (!reportDraft) reportDraft = buildCapturedReportPayload();
     return reportDraft;
   }
@@ -829,6 +905,7 @@
   // This outgoing copy is frozen across later log captures. Only explicit
   // editing or Update report changes it; the persisted diagnostic log is separate.
   var reportDraft = null;
+  var reportDraftFullLog = false;
   // Off by default and offered only in teacher view; see buildSafeReportPayload.
   var includeTechnicalLog = false;
   var reportCategory = '';
@@ -950,21 +1027,23 @@
   }
 
   function logEntryHtml(e, idx) {
-    var color = e.level === 'error' ? '#dc2626' : '#d97706';
-    var bg = e.level === 'error' ? '#fef2f2' : '#fffbeb';
-    var border = e.level === 'error' ? '#fecaca' : '#fde68a';
-    var loc = (e.source && e.line) ? ('  ' + escapeHtml(e.source) + ':' + e.line + ':' + e.column) : '';
+    var level = e && e.level === 'warn' ? 'warn' : 'error';
+    var count = Math.max(1, Math.floor(Number(e && e.count) || 1));
+    var color = level === 'error' ? '#b91c1c' : '#92400e';
+    var bg = level === 'error' ? '#fef2f2' : '#fffbeb';
+    var border = level === 'error' ? '#fecaca' : '#fde68a';
+    var loc = (e && e.source && e.line) ? ('  ' + e.source + ':' + (Math.max(0, Math.floor(Number(e.line) || 0))) + ':' + (Math.max(0, Math.floor(Number(e.column) || 0)))) : '';
     return '<article style="background:' + bg + ';border:1px solid ' + border + ';border-radius:8px;padding:8px 10px;margin-bottom:6px;">' +
       '<header style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font:700 10px/1 system-ui,sans-serif;text-transform:uppercase;letter-spacing:0.06em;color:' + color + ';">' +
-      '<span>' + e.level + '</span>' +
-      '<span style="color:#64748b;font-weight:500;">#' + (idx + 1) + '</span>' +
-      '<span style="color:#64748b;font-weight:500;">' + escapeHtml(e.ts) + '</span>' +
-      (e.count > 1 ? '<span style="background:' + color + ';color:#fff;font-weight:700;padding:1px 6px;border-radius:999px;">×' + e.count + '</span>' : '') +
+      '<span>' + escapeHtml(level) + '</span>' +
+      '<span style="color:#475569;font-weight:500;">#' + (idx + 1) + '</span>' +
+      '<span style="color:#475569;font-weight:500;">' + escapeHtml(e && e.ts || '') + '</span>' +
+      (count > 1 ? '<span style="background:' + color + ';color:#fff;font-weight:700;padding:1px 6px;border-radius:999px;">×' + count + '</span>' : '') +
       entryTags(e).map(function (tag) { return '<span style="color:#334155;font-weight:600;">' + escapeHtml(tag) + '</span>'; }).join('') +
       '</header>' +
       '<pre style="margin:0;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#1e293b;white-space:pre-wrap;word-break:break-word;">' +
-      escapeHtml(e.message) + escapeHtml(loc) +
-      (e.stack ? '\n' + escapeHtml(e.stack) : '') +
+      escapeHtml(e && e.message || '') + escapeHtml(loc) +
+      (e && e.stack ? '\n' + escapeHtml(e.stack) : '') +
       '</pre>' +
       '</article>';
   }
@@ -1008,7 +1087,7 @@
     try { var d = traceDetail(e); if (d != null) detail = JSON.stringify(sanitizeDiagnosticValue(d)); } catch (_) { detail = '[unserializable]'; }
     if (detail.length > 200) detail = detail.slice(0, 200) + '…';
     return '<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid #f1f5f9;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;">' +
-      '<span style="color:#94a3b8;white-space:nowrap;">' + escapeHtml(when) + '</span>' +
+      '<span style="color:#475569;white-space:nowrap;">' + escapeHtml(when) + '</span>' +
       '<span style="color:' + ttsEventColor(String(e.event || '')) + ';font-weight:700;white-space:nowrap;">' + escapeHtml(String(e.event || '')) + '</span>' +
       '<span style="color:#475569;word-break:break-word;">' + escapeHtml(detail) + '</span>' +
     '</div>';
@@ -1097,7 +1176,7 @@
     var resultHtml = '';
     if (last) {
       var good = !!last.ok;
-      var sample = (last.sample || []).map(function (s) {
+      var sample = (Array.isArray(last.sample) ? last.sample : []).map(function (s) {
         var safeHref = '';
         try {
           var parsedUrl = new URL(String(s && s.url || ''));
@@ -1105,7 +1184,7 @@
         } catch (_) {}
         var labelHtml = escapeHtml(s && s.title || safeHref || 'Result');
         return safeHref
-          ? '<li style="margin:2px 0;"><a href="' + escapeHtml(safeHref) + '" target="_blank" rel="noopener noreferrer" style="color:#0d9488;">' + labelHtml + '</a></li>'
+          ? '<li style="margin:2px 0;"><a href="' + escapeHtml(safeHref) + '" target="_blank" rel="noopener noreferrer" style="color:#0f766e;">' + labelHtml + '</a></li>'
           : '<li style="margin:2px 0;"><span style="color:#475569;">' + labelHtml + '</span></li>';
       }).join('');
       resultHtml =
@@ -1120,9 +1199,9 @@
 
     return '<div style="padding:10px 18px;border-bottom:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;">' +
         '<span style="font:600 11px/1.4 system-ui,sans-serif;color:#475569;flex:1;min-width:200px;">' + escapeHtml(searchTransportSummary()) + '</span>' +
-        '<button id="aer-search-test" type="button" style="background:#0d9488;border:none;color:#fff;padding:5px 10px;border-radius:6px;font:700 11px/1 system-ui,sans-serif;cursor:pointer;">Run test search</button>' +
-        '<button id="aer-search-refresh" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Refresh</button>' +
-        '<button id="aer-search-copy" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Copy diagnostics</button>' +
+        '<button id="aer-search-test" type="button" style="background:#0f766e;border:none;color:#fff;min-height:44px;padding:10px 12px;border-radius:6px;font:700 12px/1 system-ui,sans-serif;cursor:pointer;">Run test search</button>' +
+        '<button id="aer-search-refresh" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;min-height:44px;padding:10px 12px;border-radius:6px;font:600 12px/1 system-ui,sans-serif;cursor:pointer;">Refresh</button>' +
+        '<button id="aer-search-copy" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;min-height:44px;padding:10px 12px;border-radius:6px;font:600 12px/1 system-ui,sans-serif;cursor:pointer;">Copy diagnostics</button>' +
       '</div>' +
       resultHtml +
       '<div role="region" aria-label="Web search diagnostic events" style="flex:1;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' + rows + '</div>' +
@@ -1227,9 +1306,11 @@
     if (!window.indexedDB) return Promise.resolve(row);
     return new Promise(function (resolve) {
       var finished = false;
+      var idbTimer = null;
       var finish = function (ok, detail) {
         if (finished) return;
         finished = true;
+        if (idbTimer) { clearTimeout(idbTimer); idbTimer = null; }
         row.status = ok ? 'ok' : 'no';
         row.detail = detail;
         resolve(row);
@@ -1243,7 +1324,7 @@
         req.onerror = function () { finish(false, 'Refused: ' + String(req.error && req.error.name || 'error')); };
         req.onblocked = function () { finish(false, 'Blocked by another open copy.'); };
       } catch (e) { finish(false, 'Refused: ' + String(e && e.name || e)); }
-      setTimeout(function () { finish(false, 'No answer within 3 seconds.'); }, 3000);
+      idbTimer = setTimeout(function () { finish(false, 'No answer within 3 seconds.'); }, 3000);
     });
   }
 
@@ -1372,7 +1453,16 @@
     var input = document.createElement('input');
     input.type = 'file';
     input.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
-    var cleanup = function () { try { input.remove(); } catch (_) {} };
+    var cleaned = false;
+    var cleanup = function () {
+      if (cleaned) return;
+      cleaned = true;
+      try { window.removeEventListener('focus', onWindowFocus); } catch (_) {}
+      try { input.remove(); } catch (_) {}
+    };
+    var onWindowFocus = function () {
+      setTimeout(function () { if (!cleaned && (!input.files || !input.files.length)) cleanup(); }, 1000);
+    };
     input.addEventListener('change', function () {
       var file = input.files && input.files[0];
       setCompatRow(file
@@ -1385,6 +1475,7 @@
       cleanup();
     });
     document.body.appendChild(input);
+    window.addEventListener('focus', onWindowFocus, { once: true });
     try { input.click(); } catch (e) {
       setCompatRow(compatRow('file-picker', 'Upload files', 'no', 'Refused: ' + String(e && e.name || e)));
       cleanup();
@@ -1605,7 +1696,7 @@
       '<p id="aer-send-hint" style="width:100%;margin:0;font:13px/1.5 system-ui,sans-serif;color:#854d0e;"' + (needsReviewConfirmation(policy, confirmed) ? '' : ' hidden') + '>' +
         'Send is off until you check “I reviewed this report…” in the review section above. ' +
         '<button id="aer-goto-confirm" type="button" style="background:none;border:none;padding:0;color:#0f766e;font:700 13px/1.5 system-ui,sans-serif;text-decoration:underline;cursor:pointer;">Go to the checkbox</button></p>' +
-      '<button id="aer-send" type="button"' + (busy || saved || !confirmed ? ' disabled' : '') + (needsReviewConfirmation(policy, confirmed) ? ' aria-describedby="aer-send-hint"' : '') + ' style="background:' + (saved ? '#15803d' : '#0d9488') + ';border:none;color:#fff;padding:9px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:' + (busy || saved || !confirmed ? 'default' : 'pointer') + ';">' +
+      '<button id="aer-send" type="button"' + (busy || saved || !confirmed ? ' disabled' : '') + (needsReviewConfirmation(policy, confirmed) ? ' aria-describedby="aer-send-hint"' : '') + ' style="background:' + (saved ? '#15803d' : '#0f766e') + ';border:none;color:#fff;min-height:44px;padding:10px 16px;border-radius:8px;font:700 13px/1 system-ui,sans-serif;cursor:' + (busy || saved || !confirmed ? 'default' : 'pointer') + ';">' +
         (busy ? 'Sending…' : saved ? 'Report saved' : failed ? 'Try sending again' : 'Send reviewed report') + '</button>' +
       (saved && submission.id ? '<button id="aer-copy-receipt" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;padding:9px 12px;border-radius:8px;font:700 12px/1 system-ui,sans-serif;cursor:pointer;">Copy receipt</button>' : '') +
       (saved ? '<button id="aer-new-report" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;padding:9px 12px;border-radius:8px;font:700 12px/1 system-ui,sans-serif;cursor:pointer;">New report</button>' : '') +
@@ -1705,7 +1796,7 @@
     var filterVal = prefs.filter || 'errors';
     var onErrors = activeTab !== 'tts' && activeTab !== 'session' && activeTab !== 'search' && activeTab !== 'compat';
     var tabStyle = function (on) {
-      return 'padding:7px 14px;border:none;border-bottom:2px solid ' + (on ? '#0d9488' : 'transparent') + ';background:transparent;color:' + (on ? '#0f172a' : '#64748b') + ';font:700 12px/1 system-ui,sans-serif;cursor:pointer;';
+      return 'min-height:44px;padding:10px 14px;border:none;border-bottom:2px solid ' + (on ? '#0f766e' : 'transparent') + ';background:transparent;color:' + (on ? '#0f172a' : '#475569') + ';font:700 12px/1 system-ui,sans-serif;cursor:pointer;';
     };
 
     var body;
@@ -1726,8 +1817,8 @@
           'Also capture console.warn going forward' +
         '</label>' +
         '<span style="flex:1;"></span>' +
-        '<button id="aer-clear" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Clear log</button>' +
-        '<button id="aer-copy" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Copy log</button>' +
+        '<button id="aer-clear" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;min-height:44px;padding:10px 12px;border-radius:6px;font:600 12px/1 system-ui,sans-serif;cursor:pointer;">Clear log</button>' +
+        '<button id="aer-copy" type="button" style="background:#fff;border:1px solid #64748b;color:#334155;min-height:44px;padding:10px 12px;border-radius:6px;font:600 12px/1 system-ui,sans-serif;cursor:pointer;">Copy log</button>' +
       '</div>' +
       // Log scroll
       '<div id="aer-error-content" role="region" aria-label="Captured error entries" style="flex:1;min-height:0;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' +
@@ -1754,9 +1845,9 @@
           '<div>' +
             '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">🩺 AlloFlow Diagnostics</h2>' +
             '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Review a copy before sharing it with support.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : (activeTab === 'search' ? 'Web-search transports and query activity for this session.' : (activeTab === 'compat' ? 'What this browser or app lets AlloFlow do.' : 'Read-aloud & text-to-speech activity for this session.')))) + '</p>' +
-            '<p style="margin:2px 0 0;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#94a3b8;">' + escapeHtml(identityLine()) + '</p>' +
+            '<p style="margin:2px 0 0;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#475569;">' + escapeHtml(identityLine()) + '</p>' +
           '</div>' +
-          '<button id="aer-close" type="button" aria-label="Close diagnostics" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;">✕</button>' +
+          '<button id="aer-close" type="button" aria-label="Close diagnostics" style="background:transparent;border:1px solid #64748b;color:#334155;width:44px;height:44px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;flex-shrink:0;">✕</button>' +
         '</div>' +
         '<div role="tablist" aria-label="Diagnostics sections" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">' +
           '<button id="aer-tab-errors" type="button" role="tab" aria-selected="' + (onErrors ? 'true' : 'false') + '" style="' + tabStyle(onErrors) + '">⚠ Errors</button>' +
@@ -1771,14 +1862,24 @@
   }
 
 
+  var panelBackgroundNodes = [];
   function openPanel(tab) {
+    syncPostureDraft();
     if (tab === 'tts' || tab === 'errors' || tab === 'session' || tab === 'search' || tab === 'compat') activeTab = tab;
     if (panel) {
       // Already open: a tab request switches tabs instead of toggling closed.
       if (tab) { refreshPanelIfOpen(); return; }
       closePanel(); return;
     }
+    if (!document.body) return;
     panelTrigger = document.activeElement;
+    panelBackgroundNodes = [];
+    Array.prototype.slice.call(document.body.children).forEach(function (child) {
+      if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE' || child.tagName === 'LINK') return;
+      panelBackgroundNodes.push({ node: child, inert: child.hasAttribute('inert'), ariaHidden: child.getAttribute('aria-hidden') });
+      child.setAttribute('inert', '');
+      child.setAttribute('aria-hidden', 'true');
+    });
     panel = document.createElement('div');
     panel.id = 'allo-err-panel';
     panel.setAttribute('role', 'dialog');
@@ -1813,8 +1914,10 @@
           .filter(function (node) { return node.tabIndex >= 0 && !node.hidden && !node.closest('[hidden]'); });
         var first = controls[0], last = controls[controls.length - 1];
         if (!first) { ev.preventDefault(); return; }
-        if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
-        else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+        var active = document.activeElement;
+        if (controls.indexOf(active) === -1) { ev.preventDefault(); (ev.shiftKey ? last : first).focus(); }
+        else if (ev.shiftKey && active === first) { ev.preventDefault(); last.focus(); }
+        else if (!ev.shiftKey && active === last) { ev.preventDefault(); first.focus(); }
       }
     });
   }
@@ -1828,6 +1931,12 @@
     logRefreshPending = false;
     ['pointerup', 'pointercancel', 'keyup'].forEach(function (type) { document.removeEventListener(type, releasePanelPress, true); });
     window.removeEventListener('blur', releasePanelPress);
+    panelBackgroundNodes.forEach(function (entry) {
+      if (!entry.inert) entry.node.removeAttribute('inert');
+      if (entry.ariaHidden === null) entry.node.removeAttribute('aria-hidden');
+      else entry.node.setAttribute('aria-hidden', entry.ariaHidden);
+    });
+    panelBackgroundNodes = [];
     if (panel) { panel.remove(); panel = null; }
     var target = panelTrigger && panelTrigger.isConnected ? panelTrigger : badge;
     panelTrigger = null;
@@ -1859,9 +1968,10 @@
     if (!panel) return;
     // Replacing an active IME composition would lose unfinished input.
     if (descriptionComposing) { descriptionRefreshPending = true; return; }
+    var postureDowngraded = syncPostureDraft();
     captureDescriptionDraft();
-    captureOutgoingDraft();
-    var retainedFields = OUTGOING_FIELDS.map(function (spec) {
+    if (!postureDowngraded) captureOutgoingDraft();
+    var retainedFields = postureDowngraded ? [] : OUTGOING_FIELDS.map(function (spec) {
       var field = panel.querySelector('#' + spec[0]);
       return field ? { field: field, spec: spec, start: field.selectionStart, end: field.selectionEnd,
         direction: field.selectionDirection, top: field.scrollTop, left: field.scrollLeft } : null;
@@ -1879,7 +1989,7 @@
       description.placeholder = replacement.placeholder;
       if (description.value !== descriptionDraft) description.value = descriptionDraft;
       replacement.parentNode.replaceChild(description, replacement);
-      description.setSelectionRange(selection.start, selection.end, selection.direction);
+      try { description.setSelectionRange(selection.start, selection.end, selection.direction); } catch (_) {}
     }
     retainedFields.forEach(function (item) {
       var replacementField = panel.querySelector('#' + item.spec[0]);
@@ -1887,7 +1997,7 @@
       item.field.readOnly = replacementField.readOnly;
       item.field.value = reportDraft[item.spec[1]];
       replacementField.parentNode.replaceChild(item.field, replacementField);
-      item.field.setSelectionRange(item.start, item.end, item.direction);
+      try { item.field.setSelectionRange(item.start, item.end, item.direction); } catch (_) {}
       item.field.scrollTop = item.top; item.field.scrollLeft = item.left;
     });
     wirePanelHandlers();
@@ -1972,7 +2082,7 @@
         return;
       }
       if (btn) { btn.disabled = true; btn.textContent = 'Searching...'; }
-      p.selfTest().then(function (res) {
+      Promise.resolve().then(function () { return p.selfTest(); }).then(function (res) {
         window.__alloSearchSelfTest = res;
       }).catch(function (err) {
         window.__alloSearchSelfTest = {
@@ -2230,7 +2340,7 @@
     redactSecrets: redactSecrets,
     openPanel: openPanel,
     // The host calls this when the view changes, so the badge and an open panel follow it.
-    refreshView: function () { updateBadge(); refreshPanelIfOpen(); },
+    refreshView: function () { syncPostureDraft(); updateBadge(); refreshPanelIfOpen(); },
     // Direct deep-link to the read-aloud/TTS trace tab (AI backend settings
     // exposes this so the log is reachable with ZERO captured errors — a
     // stuck read-aloud rarely throws, it just stalls).

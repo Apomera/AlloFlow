@@ -70,31 +70,36 @@
   var state = null, edits = null, rows = [], step = 1;
   var editing = null;      // the one text box open on the check screens: { key, what: 'def' | 'example' | 'wrong', i }
   var focusAfter = '';     // a selector to focus once the rows are drawn again
-  var openMenus = {};      // the words whose Change meaning menu is open, kept open when the rows are drawn again
+  var openMenus = Object.create(null);      // the words whose Change meaning menu is open, kept open when the rows are drawn again
   // 2026-11-13 (teacher-journey L7): on a phone each word's buttons wait behind one Change button (packets-vocab.css);
   // the words whose Change is open, kept open when the rows are drawn again. On a wider screen the buttons are always there.
-  var changing = {};
+  var changing = Object.create(null);
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '';
   var wordsTimer = 0;
   // Recordings and pictures (packets_vocab_media.js, word_sounds_symbols_en.js, word_sounds_packet_builder.js, word_picture_matcher.js, packets_my_words.js).
   var media = null, symbols = null, art = null, matcher = null, myWords = null, pictureState = 'idle', heard = null, pendingPicWord = '';
-  var myPictures = {}, myPicSyncRun = 0;
-  var previewOmit = {}, previewSlot = {}, previewSession = null, inPreviewAction = false;
+  var myPictures = Object.create(null), myPicSyncRun = 0;
+  var previewOmit = Object.create(null), previewSlot = Object.create(null), previewSession = null, inPreviewAction = false;
+  function readJsonSafe(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
   function stopPreviewSession() {
     if (previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
   }
   function resetPreview(stopSession) {
-    previewOmit = {};
-    previewSlot = {};
+    previewOmit = Object.create(null);
+    previewSlot = Object.create(null);
     if (stopSession) stopPreviewSession();
   }
   function activePreviewOmits() {
-    var activeActs = {};
+    var activeActs = Object.create(null);
     typesNow().forEach(function (id) {
       var t = builder.TYPES.filter(function (x) { return x.id === id; })[0];
       if (t) activeActs[t.activity] = true;
     });
-    var rowKeys = {};
+    var rowKeys = Object.create(null);
     rows.forEach(function (r) { if (r && r.key) rowKeys[r.key] = true; });
     return Object.keys(previewOmit).filter(function (k) {
       var bar = k.indexOf('|');
@@ -115,7 +120,7 @@
   }
   function recall() {
     var fresh = defaults(), saved = null;
-    try { saved = JSON.parse(window.localStorage.getItem(STORE_KEY) || 'null'); } catch (_) { saved = null; }
+    try { saved = readJsonSafe(window.localStorage.getItem(STORE_KEY) || 'null'); } catch (_) { saved = null; }
     if (!isObject(saved) || saved.v !== 1) return fresh;
     if (typeof saved.words === 'string') fresh.words = saved.words.slice(0, MAX_TYPED);
     if (Array.isArray(saved.types)) fresh.types = builder.TYPES.map(function (t) { return t.id; }).filter(function (id) { return saved.types.indexOf(id) >= 0; });
@@ -130,7 +135,7 @@
   function freshEdits() { return { v: 1, words: {}, senses: {} }; }
   function recallEdits() {
     var saved = null;
-    try { saved = JSON.parse(window.localStorage.getItem(EDITS_KEY) || 'null'); } catch (_) { saved = null; }
+    try { saved = readJsonSafe(window.localStorage.getItem(EDITS_KEY) || 'null'); } catch (_) { saved = null; }
     if (!isObject(saved) || saved.v !== 1) return freshEdits();
     var out = { v: 1, words: isObject(saved.words) ? saved.words : {}, senses: isObject(saved.senses) ? saved.senses : {} };
     Object.keys(out.words).forEach(function (k) {
@@ -796,8 +801,9 @@
   }
   function codeNow() { return String($('f-code').value || '').trim(); }
   function buildWith(learner, types, clips) {
+    var sylTbl = (window.AlloModules && window.AlloModules.SyllableTableEn) || null;
     var vocabOpts = { loader: loader, rows: rows, types: types, mode: state.mode, title: state.title, readAloud: state.readAloud,
-      voices: state.voices, clips: clips || null, pictures: pictureState === 'ready' ? symbols : null, diagrams: !!state.diagrams, matcher: matcher, art: art };
+      voices: state.voices, clips: clips || null, pictures: pictureState === 'ready' ? symbols : null, diagrams: !!state.diagrams, matcher: matcher, art: art, syllables: sylTbl };
     if (Object.keys(previewOmit).length) vocabOpts.omitItems = previewOmit;
     var lesson = builder.lessonFromVocab(vocabOpts);
     return builder.buildVocabPacket({ lesson: lesson, loader: loader, rows: rows, bank: bankState === 'ready' ? bank : null, teacherCode: state.mode === 'check' ? codeNow() : '', learner: learner || '', voices: state.voices, diagrams: !!state.diagrams, repeatMissed: state.mode !== 'check' && !!state.repeatMissed });
@@ -1408,7 +1414,7 @@
         var reader = new FileReader();
         reader.onload = function () {
           var uri = String(reader.result || '');
-          var safe = typeof builder.validCustomDataUri === 'function' ? builder.validCustomDataUri(uri, art) : (/^data:image\/(png|jpeg|svg\+xml);base64,/i.test(uri) ? uri : '');
+          var safe = typeof builder.validCustomDataUri === 'function' ? builder.validCustomDataUri(uri, art) : (/^data:image\/(?:png|jpeg);base64,[A-Za-z0-9+/]+=*$/i.test(uri) ? uri : '');
           finish(safe);
         };
         reader.onerror = function () { setText('custom-pic-said', 'This browser could not read that image.'); };
@@ -1455,6 +1461,37 @@
     $('back-3').addEventListener('click', function () { goTo(2); });
     $('fix-rows').addEventListener('click', function () { goTo(2); });
     $('save').addEventListener('click', saveFile);
+    var cards = window.AlloPacketPrintCards;
+    if (cards && typeof cards.wire === 'function' && $('print-cards')) cards.wire($('print-cards'), function () {
+      return {
+        words: rows.map(function (r) { return r.word; }),
+        title: state.title || 'Vocabulary words',
+        pictures: true,
+        symbols: symbols,
+        matcher: state.diagrams ? matcher : null,
+        syllables: (window.AlloModules && window.AlloModules.SyllableTableEn) || null,
+        loadPictures: symbols && media ? function () {
+          if (pictureState === 'ready') return Promise.resolve(true);
+          pictureState = 'loading';
+          return media.pictures(symbols).then(function (ok) {
+            pictureState = ok ? 'ready' : 'failed';
+            return !!ok;
+          }, function () {
+            pictureState = 'failed';
+            return false;
+          });
+        } : null,
+        own: function (wordList) {
+          var map = Object.create(null);
+          (Array.isArray(wordList) ? wordList : []).forEach(function (w) {
+            var k = builder.keyOf(w);
+            var pic = myPictures[k];
+            if (pic && pic.dataUri) map[w] = { picture: { dataUri: pic.dataUri, credit: pic.credit || { own: true } } };
+          });
+          return Promise.resolve(map);
+        }
+      };
+    });
     $('reopen-choose').addEventListener('click', function () { $('reopen-file').click(); });
     $('reopen-file').addEventListener('change', function () {
       var file = this.files && this.files[0];
@@ -1569,6 +1606,16 @@
       if (typeof myWords.onChange === 'function') myWords.onChange(function (change) { if (!change || !change.here) syncMyPictures(); });
     }
     startBank();
+    if (!(window.AlloModules && window.AlloModules.SyllableTableEn) && doc && doc.createElement && !(doc.querySelector && doc.querySelector('script[data-allo-syllable-table="1"]'))) {
+      try {
+        var sylSc = doc.createElement('script');
+        sylSc.src = 'syllable_table_en.js';
+        sylSc.async = true;
+        sylSc.setAttribute('data-allo-syllable-table', '1');
+        sylSc.onload = function () { if (step === 3 && built) makeSoon(60); };
+        (doc.head || doc.documentElement).appendChild(sylSc);
+      } catch (_) {}
+    }
     if (rehearseCount >= 4) {
       setText('rehearse-note', 'Loaded ' + count(rehearseCount, 'missed word') + ' from results. Review the questions below, or change the word list in step 1.');
       show('rehearse-note', true);

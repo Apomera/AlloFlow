@@ -176,6 +176,17 @@ const FALLBACK_LANGUAGE_OPTIONS = [
     if (endonym === entry.value) return entry.value + suffix;
     return endonym + ' — ' + entry.value + suffix;
   };
+  const _langAiUsable = () => {
+    if (typeof window === 'undefined') return true;
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true) {
+      return false;
+    }
+    if (typeof window.__alloAiUsable === 'function') {
+      try { return Boolean(window.__alloAiUsable('text')); } catch (_) {}
+    }
+    return true;
+  };
+  const aiTranslationAllowed = _langAiUsable();
   const handleChange = (e) => {
     const val = e.target.value;
     if (val === "Custom") {
@@ -186,12 +197,19 @@ const FALLBACK_LANGUAGE_OPTIONS = [
     }
   };
   const handleManualSubmit = () => {
-    if (manualInput.trim()) {
-        setUiLanguage(manualInput.trim());
-        setManualInput('');
-    }
+    const cleaned = String(manualInput || '')
+      .replace(/[\u0000-\u001f\u007f<>]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 60);
+    if (!cleaned) return;
+    const isDeployed = commonLanguages.some((l) => l.value.toLowerCase() === cleaned.toLowerCase());
+    if (!isDeployed && !_langAiUsable()) return;
+    setUiLanguage(cleaned);
+    setManualInput('');
   };
   const handleRegenerate = () => {
+      if (!_langAiUsable()) return;
       const _setConfirm = typeof props.setConfirmDialog === 'function' ? props.setConfirmDialog
         : (typeof window !== 'undefined' ? window.setConfirmDialog : null);
       const message = languageCopy('language_selector.confirm_regenerate', 'Regenerate language pack?');
@@ -238,7 +256,7 @@ const FALLBACK_LANGUAGE_OPTIONS = [
                 ))}
                 <option value="Custom">{languageCopy('language_selector.custom_option', 'Custom...')}</option>
             </select>
-            {currentUiLanguage !== 'English' && (
+            {currentUiLanguage !== 'English' && aiTranslationAllowed && (
                 <button type="button"
                     onClick={handleRegenerate}
                     className="min-h-11 min-w-11 inline-flex items-center justify-center p-1 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
@@ -291,7 +309,8 @@ const FALLBACK_LANGUAGE_OPTIONS = [
                     type="text"
                     ref={manualInputRef}
                     value={manualInput}
-                    onChange={(e) => setManualInput(e.target.value)}
+                    maxLength={60}
+                    onChange={(e) => setManualInput(e.target.value.slice(0, 60))}
                     onKeyDown={(e) => {
                       if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
                       if (e.key === 'Enter') handleManualSubmit();

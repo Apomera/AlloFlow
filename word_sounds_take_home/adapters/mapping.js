@@ -224,13 +224,16 @@ module.exports = {
       }
     };
 
+    var chipSlot = function (ci) { return ci % 6; };
+    var chipBg = function (ci) { return 'var(--c' + chipSlot(ci) + 'b,var(--soft))'; };
+    var chipBd = function (ci) { return 'var(--c' + chipSlot(ci) + ',var(--accent))'; };
     var tray = ctx.el('ul', { class: 'row', 'data-map-tray': '', 'aria-label': L.mapping_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:12px' });
     var chipEls = item.chips.map(function (chip, ci) {
       var two = spanOf(ci) > 1;
-      var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-map-tile': String(ci),
+      var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false', 'data-map-tile': String(ci), 'data-map-c': String(chipSlot(ci)),
         'aria-label': ctx.fmt(L.mapping_pick, { spelling: chip.text }) + (two ? '. ' + ctx.fmt(L.mapping_two_sounds, { spelling: chip.text }) : ''),
         'data-span': two ? String(spanOf(ci)) : null,
-        style: (two ? 'min-width:154px;' : 'min-width:72px;') + 'min-height:56px;font-size:1.5rem;font-weight:700;touch-action:none',
+        style: (two ? 'min-width:var(--map-span,154px);' : 'min-width:var(--map-sz,72px);') + 'min-height:var(--map-h,56px);font-size:1.5rem;font-weight:700;touch-action:none;color:var(--ink);background:' + chipBg(ci) + ';border:3px solid ' + chipBd(ci) + ';box-shadow:0 3px 0 ' + chipBd(ci),
         on: { click: function (e) { if (dragged()) return; onChip(ci, e); }, pointerdown: function (e) { dragStart(e, ci, 'tray', -1); } } }, [chip.text]);
       var li = ctx.el('li', { class: 'row', style: 'gap:6px' }, [pick]);
       tray.appendChild(li);
@@ -238,7 +241,7 @@ module.exports = {
     });
     var slotList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.mapping_slots });
     var slotEls = slots.map(function (_, si) {
-      var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-map-slot': String(si), style: 'min-width:80px;min-height:80px;font-size:1.5rem;font-weight:700',
+      var btn = ctx.el('button', { type: 'button', class: 'slot', 'data-map-slot': String(si), style: 'min-width:var(--map-box,80px);min-height:var(--map-box,80px);border-width:3px;font-size:1.5rem;font-weight:700',
         on: { click: function (e) { if (dragged()) return; onSlot(si, e); }, pointerdown: function (e) { if (slots[si] != null) dragStart(e, slots[si], 'slot', si); } } });
       var li = ctx.el('li', {}, [btn]);
       slotList.appendChild(li);
@@ -255,7 +258,13 @@ module.exports = {
       var holding = picked != null && !locked();
       chipEls.forEach(function (c, ci) {
         c.li.hidden = slots.indexOf(ci) >= 0;
-        c.pick.setAttribute('aria-pressed', picked === ci ? 'true' : 'false');
+        var on = picked === ci;
+        var bg = chipBg(ci), bd = chipBd(ci);
+        c.pick.setAttribute('aria-pressed', on ? 'true' : 'false');
+        c.pick.style.background = on ? bd : bg;
+        c.pick.style.color = on ? 'var(--accent-ink)' : 'var(--ink)';
+        c.pick.style.borderColor = bd;
+        c.pick.style.boxShadow = on ? '0 0 0 3px var(--card), 0 0 0 7px ' + bd : '0 3px 0 ' + bd;
         if (locked()) c.pick.setAttribute('aria-disabled', 'true');
       });
       slotEls.forEach(function (el, si) {
@@ -280,13 +289,14 @@ module.exports = {
           btn.style.position = '';
           btn.textContent = text(ci);
         }
-        btn.style.minWidth = two ? '170px' : '80px';
+        btn.style.minWidth = two ? 'var(--map-span-box,170px)' : 'var(--map-box,80px)';
         if (two) btn.setAttribute('data-span', String(spanOf(ci))); else btn.removeAttribute('data-span');
+        if (ci != null && !bad) btn.setAttribute('data-map-c', String(chipSlot(ci))); else btn.removeAttribute('data-map-c');
         if (bad) btn.setAttribute('data-mapping-error', 'true'); else btn.removeAttribute('data-mapping-error');
         btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
-        btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : 'var(--accent)';
-        btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : 'var(--soft)';
-        btn.style.color = bad ? 'var(--warn)' : '';
+        btn.style.borderColor = bad ? 'var(--warn)' : ci == null ? (holding ? 'var(--accent)' : 'var(--muted)') : chipBd(ci);
+        btn.style.background = bad ? 'var(--warn-bg)' : ci == null ? (holding ? 'var(--soft)' : '') : chipBg(ci);
+        btn.style.color = bad ? 'var(--warn)' : ci == null ? '' : 'var(--ink)';
         btn.style.boxShadow = ci == null && holding ? '0 0 0 3px var(--accent)' : '';
         btn.style.touchAction = ci == null ? 'manipulation' : 'none';
         var baseLabel = ci == null ? ctx.fmt(L.mapping_slot_empty, { n: si + 1 })
@@ -394,7 +404,7 @@ module.exports = {
         draw();
         // The answer shown: every surprising spelling of the word is explained too.
         item.chips.forEach(function (chip, ci) { note(ci, false); });
-        slotEls.forEach(function (el) { el.btn.style.borderColor = 'var(--ok)'; el.btn.style.background = 'var(--ok-bg)'; el.btn.style.color = ''; });
+        slotEls.forEach(function (el) { el.btn.removeAttribute('data-map-c'); el.btn.style.borderColor = 'var(--ok)'; el.btn.style.background = 'var(--ok-bg)'; el.btn.style.color = ''; });
       },
     };
   },

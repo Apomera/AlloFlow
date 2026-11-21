@@ -41,6 +41,38 @@ function SpotlightTourView(props) {
   var panelRef = React.useRef(null);
   var closeButtonRef = React.useRef(null);
   React.useEffect(function () {
+    if (typeof document === 'undefined') return undefined;
+    var onDocumentKeyDown = function (e) {
+      if (e.defaultPrevented || (e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsSpotlightMode(false);
+      }
+    };
+    var onDocumentPointerDown = function (e) {
+      if (spotlightOpenTimeRef && spotlightOpenTimeRef.current && (Date.now() - spotlightOpenTimeRef.current < 500)) return;
+      var target = e.target;
+      if (panelRef.current && target && panelRef.current.contains(target)) return;
+      if (target && typeof target.closest === 'function' && target.closest('[data-help-ignore="true"]')) return;
+      // Keep the highlighted target control directly operable without dismissing first.
+      if (tourRect && typeof e.clientX === 'number' && typeof e.clientY === 'number') {
+        var pad = 8;
+        if (e.clientX >= (tourRect.left - pad) && e.clientX <= (tourRect.right + pad) && e.clientY >= (tourRect.top - pad) && e.clientY <= (tourRect.bottom + pad)) {
+          return;
+        }
+      }
+      if (typeof debugLog === 'function') debugLog('Backdrop Dismiss');
+      setIsSpotlightMode(false);
+    };
+    document.addEventListener('keydown', onDocumentKeyDown);
+    document.addEventListener('pointerdown', onDocumentPointerDown);
+    return function () {
+      document.removeEventListener('keydown', onDocumentKeyDown);
+      document.removeEventListener('pointerdown', onDocumentPointerDown);
+    };
+  }, [setIsSpotlightMode, debugLog, spotlightOpenTimeRef, tourRect]);
+  React.useEffect(function () {
     var prevFocus = (typeof document !== 'undefined') ? document.activeElement : null;
     try { if (closeButtonRef.current) closeButtonRef.current.focus(); } catch (e) {}
     return function () {
@@ -178,9 +210,11 @@ function SpotlightTourView(props) {
                      width: popupWidth + 'px',
                  }}
             >
-                <div id="spotlight-message-panel" ref={panelRef} role="dialog" aria-modal="false" aria-labelledby="spotlight-message-title" aria-describedby="spotlight-message-body" onKeyDown={function (e) { if (e.defaultPrevented || (e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setIsSpotlightMode(false); } }} className="bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] motion-reduce:transition-none">
-                     <div className="absolute -top-20 -right-20 w-40 h-40 bg-violet-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse motion-reduce:animate-none"></div>
-                     <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse motion-reduce:animate-none" style={{animationDelay: '1s'}}></div>
+                <div id="spotlight-message-panel" ref={panelRef} role="dialog" aria-modal="false" aria-labelledby="spotlight-message-title" aria-describedby="spotlight-message-body" onKeyDown={function (e) { if (e.defaultPrevented || (e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setIsSpotlightMode(false); } }} className="bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-visible group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] motion-reduce:transition-none" style={{ backgroundColor: 'rgba(15, 23, 42, 0.96)', color: '#f8fafc' }}>
+                     <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none" aria-hidden="true">
+                       <div className="absolute -top-20 -right-20 w-40 h-40 bg-violet-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse motion-reduce:animate-none"></div>
+                       <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse motion-reduce:animate-none" style={{animationDelay: '1s'}}></div>
+                     </div>
                      <div className="flex items-start justify-between mb-4 relative z-10">
                          <h3 id="spotlight-message-title" className={`font-bold text-white flex items-center gap-3 text-lg tracking-tight rounded-xl transition-colors duration-300 motion-reduce:transition-none ${_isReadingTitle ? 'bg-amber-300/15 ring-1 ring-amber-300/30 px-2 py-1 -mx-2' : ''}`}>
                             <div aria-hidden="true" className="p-2 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-lg shadow-lg shadow-violet-500/20">
@@ -198,7 +232,8 @@ function SpotlightTourView(props) {
                                  data-help-ignore="true"
                                  aria-label={ttsState === 'playing' ? t('common.stop_reading', { defaultValue: 'Stop reading aloud' }) : t('common.read_aloud', { defaultValue: 'Read this aloud' })}
                                  title={ttsState === 'playing' ? t('common.stop_reading', { defaultValue: 'Stop reading aloud' }) : t('common.read_aloud', { defaultValue: 'Read this aloud' })}
-                                 className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${ttsState === 'playing' ? 'text-white bg-violet-600/40 hover:bg-violet-600/60' : 'text-white/60 hover:text-white hover:bg-white/10'} ${ttsState === 'loading' ? 'cursor-wait opacity-70' : ''}`}
+                                 className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${ttsState === 'playing' ? 'text-white bg-violet-600/60 hover:bg-violet-600/80' : 'text-slate-100 bg-white/10 hover:text-white hover:bg-white/20'} ${ttsState === 'loading' ? 'cursor-wait opacity-70' : ''}`}
+                                 style={{ color: '#f8fafc' }}
                              >
                                 <span aria-hidden="true" style={{ fontSize: '17px', lineHeight: 1, display: 'block', width: 20, height: 20 }}>{ttsState === 'loading' ? '⏳' : ttsState === 'playing' ? '⏹' : '🔊'}</span>
                              </button>
@@ -211,7 +246,8 @@ function SpotlightTourView(props) {
                                   e.stopPropagation();
                                   setIsSpotlightMode(false);
                               }}
-                              data-help-ignore="true" className="text-white/60 hover:text-white hover:bg-white/10 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                              data-help-ignore="true" className="text-slate-100 bg-white/10 hover:text-white hover:bg-white/20 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                              style={{ color: '#f8fafc' }}
                            >
                               <X aria-hidden="true" size={20} />
                            </button>

@@ -1,11 +1,13 @@
 'use strict';
 
+const MAX_INT64_HANDLE = 0x7fffffffffffffffn;
+
 function parseWindowHandle(sourceId) {
   const match = /^window:(0x[0-9a-f]+|[0-9]+):[0-9]+$/i.exec(String(sourceId || '').trim());
   if (!match) return '';
   try {
     const value = BigInt(match[1]);
-    return value > 0n ? value.toString(10) : '';
+    return value > 0n && value <= MAX_INT64_HANDLE ? value.toString(10) : '';
   } catch (_) {
     return '';
   }
@@ -22,11 +24,16 @@ function normalizeWindowTitle(value) {
 }
 
 function selectUniqueWindowSource(sources, trackLabel) {
+  const list = Array.isArray(sources) ? sources : [];
   const directHandle = parseWindowHandle(trackLabel);
-  if (directHandle) return { handle: directHandle, id: String(trackLabel), name: '' };
+  if (directHandle) {
+    const matchedDirect = list.find((source) => source && parseWindowHandle(source.id) === directHandle);
+    if (!matchedDirect) return null;
+    return { handle: directHandle, id: String(matchedDirect.id), name: String(matchedDirect.name || '') };
+  }
   const wanted = normalizeWindowTitle(trackLabel);
   if (!wanted) return null;
-  const matches = (Array.isArray(sources) ? sources : []).filter((source) => (
+  const matches = list.filter((source) => (
     source && parseWindowHandle(source.id) && normalizeWindowTitle(source.name) === wanted
   ));
   if (matches.length !== 1) return null;

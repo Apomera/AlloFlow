@@ -10,7 +10,7 @@
     "early_childhood_5025": {
       "duplicateRate": 0,
       "frameShare": 0.41,
-      "crossPackItems": 110,
+      "crossPackItems": 50,
       "scaffoldPrompts": 0
     },
     "educational_leadership_5412": {
@@ -58,7 +58,7 @@
     "plt_early_childhood_5621": {
       "duplicateRate": 0,
       "frameShare": 0.09,
-      "crossPackItems": 156,
+      "crossPackItems": 130,
       "scaffoldPrompts": 0
     },
     "plt_k6_5622": {
@@ -69,8 +69,8 @@
     },
     "praxis_core_5752": {
       "duplicateRate": 0,
-      "frameShare": 0.06,
-      "crossPackItems": 21,
+      "frameShare": 0.02,
+      "crossPackItems": 22,
       "scaffoldPrompts": 0
     },
     "reading_specialist_5302": {
@@ -100,37 +100,37 @@
     "special_education_5355": {
       "duplicateRate": 0,
       "frameShare": 0.01,
-      "crossPackItems": 190,
+      "crossPackItems": 196,
       "scaffoldPrompts": 0
     },
     "special_education_behavior_emotional_5372": {
       "duplicateRate": 0,
       "frameShare": 0.11,
-      "crossPackItems": 144,
+      "crossPackItems": 146,
       "scaffoldPrompts": 0
     },
     "special_education_early_childhood_5692": {
       "duplicateRate": 0,
       "frameShare": 0.04,
-      "crossPackItems": 78,
+      "crossPackItems": 24,
       "scaffoldPrompts": 0
     },
     "special_education_intellectual_disabilities_5322": {
       "duplicateRate": 0,
-      "frameShare": 0.28,
-      "crossPackItems": 144,
+      "frameShare": 0.11,
+      "crossPackItems": 148,
       "scaffoldPrompts": 0
     },
     "special_education_learning_disabilities_5383": {
       "duplicateRate": 0,
       "frameShare": 0.12,
-      "crossPackItems": 188,
+      "crossPackItems": 156,
       "scaffoldPrompts": 0
     },
     "special_education_severe_profound_5547": {
       "duplicateRate": 0,
       "frameShare": 0.13,
-      "crossPackItems": 180,
+      "crossPackItems": 190,
       "scaffoldPrompts": 0
     },
     "speech_language_pathology_5331": {

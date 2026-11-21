@@ -8,21 +8,43 @@ var _alloReviewSessionKind = 'review-document-session';
 var _alloReviewTransactionKind = 'review-document-transaction';
 var _alloReviewInvalidationReason = 'content-modified-pending-reverification';
 var _alloReviewWorkspaceModes = Object.freeze(['author', 'advanced-review']);
+var _alloReviewMaxLedger = 500;
+var _alloReviewMaxCommands = 100;
+var _alloReviewMaxJsonChars = 10 * 1024 * 1024;
 
 function _alloReviewOwn(value, key) {
   return !!value && Object.prototype.hasOwnProperty.call(value, key);
 }
 
+function _alloReviewStripCtl(value) {
+  return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+}
+
+function _alloReviewSafeAssign(target) {
+  var out = target || {};
+  for (var i = 1; i < arguments.length; i++) {
+    var src = arguments[i];
+    if (!src || typeof src !== 'object') continue;
+    var keys = Object.keys(src);
+    for (var j = 0; j < keys.length; j++) {
+      var k = keys[j];
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+      out[k] = src[k];
+    }
+  }
+  return out;
+}
+
 function _alloReviewNow(value) {
-  if (typeof value === 'string' && value.trim()) return value.trim();
+  if (typeof value === 'string' && value.trim()) return _alloReviewStripCtl(value).trim().slice(0, 80);
   if (value instanceof Date && Number.isFinite(value.getTime())) return value.toISOString();
   return new Date().toISOString();
 }
 
 function _alloReviewId(prefix, explicit) {
-  if (typeof explicit === 'string' && explicit.trim()) return explicit.trim();
+  if (typeof explicit === 'string' && explicit.trim()) return _alloReviewStripCtl(explicit).trim().slice(0, 120);
   _alloReviewSessionCounter += 1;
-  return String(prefix || 'review') + '-' + Date.now().toString(36) + '-' + _alloReviewSessionCounter.toString(36);
+  return _alloReviewStripCtl(prefix || 'review').slice(0, 40) + '-' + Date.now().toString(36) + '-' + _alloReviewSessionCounter.toString(36);
 }
 
 function _alloReviewMode(value, fallback) {
@@ -38,19 +60,19 @@ function _alloReviewFreezeRecord(value) {
 
 function _alloReviewFreezeList(values) {
   return Object.freeze((Array.isArray(values) ? values : []).map(function (value) {
-    return value && typeof value === 'object' ? _alloReviewFreezeRecord(Object.assign({}, value)) : value;
+    return value && typeof value === 'object' ? _alloReviewFreezeRecord(_alloReviewSafeAssign({}, value)) : value;
   }));
 }
 
 function _alloReviewReason(value) {
-  var reason = typeof value === 'string' ? value.trim() : '';
+  var reason = typeof value === 'string' ? _alloReviewStripCtl(value).trim().slice(0, 240) : '';
   return reason || _alloReviewInvalidationReason;
 }
 
 function _alloReviewAppendReason(values, reason) {
   var result = [];
-  (Array.isArray(values) ? values : []).forEach(function (value) {
-    var normalized = typeof value === 'string' ? value.trim() : '';
+  (Array.isArray(values) ? values.slice(0, 50) : []).forEach(function (value) {
+    var normalized = typeof value === 'string' ? _alloReviewStripCtl(value).trim().slice(0, 240) : '';
     if (normalized && result.indexOf(normalized) === -1) result.push(normalized);
   });
   if (result.indexOf(reason) === -1) result.push(reason);
@@ -85,7 +107,7 @@ function _alloReviewIsTransaction(value) {
 // runtime proof slots; the explicit deletes cover enumerable legacy variants.
 function _alloReviewInvalidateRemediation(value, reason) {
   if (!value || typeof value !== 'object') return value;
-  var next = Object.assign({}, value);
+  var next = _alloReviewSafeAssign({}, value);
   var coverage = _alloReviewCoverage();
   var reasons = _alloReviewAppendReason(value.verificationReasons, reason);
 
@@ -148,9 +170,9 @@ function _alloReviewInvalidateRemediation(value, reason) {
 function _alloReviewLedgerEntry(entry, defaults) {
   var source = entry && typeof entry === 'object' ? entry : {};
   var fallback = defaults || {};
-  return Object.freeze(Object.assign({}, source, {
+  return Object.freeze(_alloReviewSafeAssign({}, source, {
     id: _alloReviewId('entry', source.id || fallback.id),
-    type: String(source.type || fallback.type || 'note'),
+    type: _alloReviewStripCtl(source.type || fallback.type || 'note').slice(0, 80),
     at: _alloReviewNow(source.at || fallback.at),
     revision: Number.isFinite(source.revision) ? source.revision : (Number.isFinite(fallback.revision) ? fallback.revision : 0),
     transactionId: source.transactionId || fallback.transactionId || null,
@@ -174,29 +196,29 @@ function _alloReviewCreateSession(input) {
   var updatedAt = _alloReviewNow(source.updatedAt || createdAt);
   var revision = Number.isFinite(source.revision) ? Math.max(0, Math.floor(source.revision)) : 0;
   var ledger = Array.isArray(source.ledger)
-    ? source.ledger.map(function (entry) { return _alloReviewLedgerEntry(entry, { revision: revision }); })
+    ? source.ledger.slice(-_alloReviewMaxLedger).map(function (entry) { return _alloReviewLedgerEntry(entry, { revision: revision }); })
     : [];
   var evidenceSource = source.evidence && typeof source.evidence === 'object' ? source.evidence : {};
   var workflowSource = source.workflow && typeof source.workflow === 'object' ? source.workflow : {};
   var hasCurrentEvidence = !!(remediationResult && remediationResult.verificationHtmlBinding)
     && remediationResult.verificationState !== 'unavailable';
-  var documentValue = Object.freeze(Object.assign({}, sourceDocument, {
+  var documentValue = Object.freeze(_alloReviewSafeAssign({}, sourceDocument, {
     id: sourceDocument.id || source.documentId || null,
     baselineHtml: baselineHtml,
     currentHtml: currentHtml,
-    remediationResult: remediationResult ? Object.freeze(Object.assign({}, remediationResult)) : null,
+    remediationResult: remediationResult ? Object.freeze(_alloReviewSafeAssign({}, remediationResult)) : null,
   }));
-  var evidenceValue = Object.freeze(Object.assign({}, evidenceSource, {
+  var evidenceValue = Object.freeze(_alloReviewSafeAssign({}, evidenceSource, {
     state: evidenceSource.state || (hasCurrentEvidence ? 'current' : 'unavailable'),
     stale: evidenceSource.stale === true,
     reason: evidenceSource.reason || null,
   }));
-  var workflowValue = Object.freeze(Object.assign({}, workflowSource, {
+  var workflowValue = Object.freeze(_alloReviewSafeAssign({}, workflowSource, {
     state: workflowSource.state || 'ready',
     dirty: workflowSource.dirty === true,
     needsReview: workflowSource.needsReview === true,
   }));
-  return Object.freeze(Object.assign({}, source, {
+  return Object.freeze(_alloReviewSafeAssign({}, source, {
     kind: _alloReviewSessionKind,
     schemaVersion: 1,
     id: _alloReviewId('session', source.id),
@@ -214,11 +236,18 @@ function _alloReviewCreateSession(input) {
 function _alloReviewHydrateSession(value, options) {
   var source = value;
   if (typeof source === 'string') {
-    try { source = JSON.parse(source); } catch (_) { source = {}; }
+    if (source.length > _alloReviewMaxJsonChars) source = {};
+    else {
+      try {
+        source = JSON.parse(source, function (k, v) {
+          return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+        });
+      } catch (_) { source = {}; }
+    }
   }
   if (_alloReviewIsSession(source) && (!options || !Object.keys(options).length)) return source;
-  if (_alloReviewIsSession(source)) return _alloReviewCreateSession(Object.assign({}, source, options || {}));
-  return _alloReviewCreateSession(Object.assign({}, options || {}, { remediationResult: source || null }));
+  if (_alloReviewIsSession(source)) return _alloReviewCreateSession(_alloReviewSafeAssign({}, source, options || {}));
+  return _alloReviewCreateSession(_alloReviewSafeAssign({}, options || {}, { remediationResult: source || null }));
 }
 
 function _alloReviewInvalidateSession(session, reason, options) {
@@ -230,31 +259,32 @@ function _alloReviewInvalidateSession(session, reason, options) {
   var invalidated = current.document.remediationResult
     ? _alloReviewInvalidateRemediation(current.document.remediationResult, reason)
     : null;
-  var documentValue = Object.freeze(Object.assign({}, current.document, {
+  var documentValue = Object.freeze(_alloReviewSafeAssign({}, current.document, {
     remediationResult: invalidated,
   }));
-  var evidenceValue = Object.freeze(Object.assign({}, current.evidence, {
+  var evidenceValue = Object.freeze(_alloReviewSafeAssign({}, current.evidence, {
     state: 'stale',
     stale: true,
     reason: reason,
     invalidatedAt: at,
   }));
-  var workflowValue = Object.freeze(Object.assign({}, current.workflow, {
+  var workflowValue = Object.freeze(_alloReviewSafeAssign({}, current.workflow, {
     state: 'needs-review',
     dirty: true,
     needsReview: true,
   }));
-  var extraEntries = Array.isArray(metadata.entries) ? metadata.entries : [];
+  var extraEntries = Array.isArray(metadata.entries) ? metadata.entries.slice(0, _alloReviewMaxCommands) : [];
   var ledger = current.ledger.concat(extraEntries.map(function (entry) {
     return _alloReviewLedgerEntry(entry, { revision: revision, at: at, transactionId: transactionId });
   }));
   ledger.push(_alloReviewLedgerEntry({
     type: 'evidence.invalidate',
     reason: reason,
-    summary: metadata.summary || 'Content changed; prior verification evidence is no longer bound to the current artifact.',
+    summary: _alloReviewStripCtl(metadata.summary || 'Content changed; prior verification evidence is no longer bound to the current artifact.').slice(0, 600),
   }, { revision: revision, at: at, transactionId: transactionId }));
+  if (ledger.length > _alloReviewMaxLedger) ledger = ledger.slice(-_alloReviewMaxLedger);
 
-  return Object.freeze(Object.assign({}, current, {
+  return Object.freeze(_alloReviewSafeAssign({}, current, {
     revision: revision,
     document: documentValue,
     evidence: evidenceValue,
@@ -283,10 +313,12 @@ function _alloReviewSetWorkspaceMode(session, workspaceMode, options) {
     to: nextMode,
     summary: 'Switched workspace from ' + current.workspaceMode + ' to ' + nextMode + '.',
   }, { revision: revision, at: at, transactionId: metadata.transactionId });
-  return Object.freeze(Object.assign({}, current, {
+  var nextLedger = current.ledger.concat([entry]);
+  if (nextLedger.length > _alloReviewMaxLedger) nextLedger = nextLedger.slice(-_alloReviewMaxLedger);
+  return Object.freeze(_alloReviewSafeAssign({}, current, {
     workspaceMode: nextMode,
     revision: revision,
-    ledger: Object.freeze(current.ledger.concat([entry])),
+    ledger: Object.freeze(nextLedger),
     updatedAt: at,
   }));
 }
@@ -299,9 +331,9 @@ function _alloReviewBeginTransaction(session, options) {
     id: _alloReviewId('transaction', metadata.id),
     sessionId: current.id,
     baseRevision: current.revision,
-    label: String(metadata.label || 'Review edit'),
+    label: _alloReviewStripCtl(metadata.label || 'Review edit').slice(0, 240),
     commands: Object.freeze([]),
-    metadata: Object.freeze(Object.assign({}, metadata.metadata || {})),
+    metadata: Object.freeze(_alloReviewSafeAssign({}, metadata.metadata || {})),
     createdAt: _alloReviewNow(metadata.at),
   });
 }
@@ -311,8 +343,11 @@ function _alloReviewAddCommand(transaction, command) {
   if (!command || typeof command !== 'object' || !String(command.type || '').trim()) {
     throw new TypeError('A typed review command is required.');
   }
-  var typed = Object.freeze(Object.assign({}, command, { type: String(command.type).trim() }));
-  return Object.freeze(Object.assign({}, transaction, {
+  if (transaction.commands.length >= _alloReviewMaxCommands) {
+    throw new RangeError('review-transaction-command-limit');
+  }
+  var typed = Object.freeze(_alloReviewSafeAssign({}, command, { type: _alloReviewStripCtl(command.type).trim().slice(0, 80) }));
+  return Object.freeze(_alloReviewSafeAssign({}, transaction, {
     commands: Object.freeze(transaction.commands.concat([typed])),
   }));
 }
@@ -330,10 +365,10 @@ function _alloReviewCommitTransaction(session, transaction, output) {
   if (!changed) return current;
   var at = _alloReviewNow(result.at);
   var remediationResult = current.document.remediationResult
-    ? Object.assign({}, current.document.remediationResult, { accessibleHtml: nextHtml, htmlChars: nextHtml.length })
+    ? _alloReviewSafeAssign({}, current.document.remediationResult, { accessibleHtml: nextHtml, htmlChars: nextHtml.length })
     : null;
-  var staged = Object.freeze(Object.assign({}, current, {
-    document: Object.freeze(Object.assign({}, current.document, {
+  var staged = Object.freeze(_alloReviewSafeAssign({}, current, {
+    document: Object.freeze(_alloReviewSafeAssign({}, current.document, {
       currentHtml: nextHtml,
       remediationResult: remediationResult,
     })),

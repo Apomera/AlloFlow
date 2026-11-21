@@ -3385,12 +3385,47 @@
               el('button', { onClick: function() { if (cyberTab === 'password') { _cyberPasswordSample = ''; upd({ pwInput: '', pwShowPassword: false, pwBruteAnim: null, pwBreachResult: null }); } ctx.setStemLabTool(null); }, 'aria-label': t('stem.cyberdefense.back_to_stem_tools', 'Back to STEM tools'), title: t('stem.cyberdefense.back', 'Back'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '8px 12px', minWidth: 44, minHeight: 44, cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
               el('div', { className: 'cyberd-header-icon', 'aria-hidden': true },
                 el('svg', { viewBox: '0 0 64 64', width: 38, height: 38, 'aria-hidden': 'true', focusable: 'false' },
-                  el('path', { d: 'M32 5 L54 14 V31 C54 45 44.5 54.5 32 59 C19.5 54.5 10 45 10 31 V14 Z', fill: '#111827', stroke: '#818cf8', strokeWidth: 2.5 }),
-                  el('path', { d: 'M32 11 L48 18 V31 C48 41.5 41 49 32 53 C23 49 16 41.5 16 31 V18 Z', fill: 'rgba(99,102,241,0.18)', stroke: '#38bdf8', strokeWidth: 1.4 }),
-                  el('circle', { cx: 32, cy: 29, r: 6.5, fill: '#0f172a', stroke: '#34d399', strokeWidth: 2 }),
-                  el('path', { d: 'M32 35.5 V43 M22 25 L26 27 M42 25 L38 27', stroke: '#34d399', strokeWidth: 2, strokeLinecap: 'round' }),
-                  el('circle', { cx: 20, cy: 24, r: 2, fill: '#fb7185' }),
-                  el('circle', { cx: 44, cy: 24, r: 2, fill: '#fbbf24' })
+                  el('defs', null,
+                    el('radialGradient', { id: 'cyberd-sh-aura', cx: '50%', cy: '38%', r: '56%' },
+                      el('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0.42 }),
+                      el('stop', { offset: '62%', stopColor: '#6366f1', stopOpacity: 0.16 }),
+                      el('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0 })
+                    ),
+                    el('linearGradient', { id: 'cyberd-sh-body', x1: '0', y1: '0', x2: '1', y2: '1' },
+                      el('stop', { offset: '0%', stopColor: '#1e293b' }),
+                      el('stop', { offset: '55%', stopColor: '#0f172a' }),
+                      el('stop', { offset: '100%', stopColor: '#020617' })
+                    ),
+                    el('linearGradient', { id: 'cyberd-sh-rim', x1: '0', y1: '0', x2: '1', y2: '1' },
+                      el('stop', { offset: '0%', stopColor: '#a5b4fc' }),
+                      el('stop', { offset: '50%', stopColor: '#38bdf8' }),
+                      el('stop', { offset: '100%', stopColor: '#34d399' })
+                    ),
+                    el('radialGradient', { id: 'cyberd-sh-core', cx: '38%', cy: '32%', r: '66%' },
+                      el('stop', { offset: '0%', stopColor: '#6ee7b7', stopOpacity: 0.45 }),
+                      el('stop', { offset: '55%', stopColor: '#0f172a', stopOpacity: 0.92 }),
+                      el('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 1 })
+                    )
+                  ),
+                  el('circle', { cx: 32, cy: 32, r: 30, fill: 'url(#cyberd-sh-aura)' }),
+                  // Dual-pass outer shield halo + crisp metallic shield body
+                  el('path', { d: 'M32 5 L54 14 V31 C54 45 44.5 54.5 32 59 C19.5 54.5 10 45 10 31 V14 Z', fill: 'none', stroke: '#38bdf8', strokeWidth: 4.5, opacity: 0.22 }),
+                  el('path', { d: 'M32 5 L54 14 V31 C54 45 44.5 54.5 32 59 C19.5 54.5 10 45 10 31 V14 Z', fill: 'url(#cyberd-sh-body)', stroke: 'url(#cyberd-sh-rim)', strokeWidth: 2.2 }),
+                  el('path', { d: 'M32 10.5 L48.5 17.5 V31 C48.5 41.5 41.2 49.2 32 53.2 C22.8 49.2 15.5 41.5 15.5 31 V17.5 Z', fill: 'rgba(56,189,248,0.1)', stroke: '#38bdf8', strokeWidth: 1.2, strokeOpacity: 0.78 }),
+                  // Specular top bevel highlight
+                  el('path', { d: 'M16 18 L32 11.2 L48 18', fill: 'none', stroke: '#e0f2fe', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.45 }),
+                  // Dual-pass telemetry traces
+                  el('path', { d: 'M32 35.5 V44 M21 24.5 L26 27.2 M43 24.5 L38 27.2', fill: 'none', stroke: '#34d399', strokeWidth: 4.2, strokeLinecap: 'round', opacity: 0.22 }),
+                  el('path', { d: 'M32 35.5 V44 M21 24.5 L26 27.2 M43 24.5 L38 27.2', fill: 'none', stroke: '#34d399', strokeWidth: 1.9, strokeLinecap: 'round' }),
+                  // Shield core lock/radar ring with specular catchlight
+                  el('circle', { cx: 32, cy: 29, r: 9, fill: 'none', stroke: '#34d399', strokeWidth: 1.2, strokeDasharray: '3 2.5', opacity: 0.55 }),
+                  el('circle', { cx: 32, cy: 29, r: 6.5, fill: 'url(#cyberd-sh-core)', stroke: '#34d399', strokeWidth: 1.9 }),
+                  el('circle', { cx: 30, cy: 26.8, r: 1.6, fill: '#ecfdf5', opacity: 0.85 }),
+                  // Dual-pass threat & sensor beacons
+                  el('circle', { cx: 20, cy: 24, r: 4.2, fill: '#fb7185', opacity: 0.26 }),
+                  el('circle', { cx: 20, cy: 24, r: 2.1, fill: '#fb7185', stroke: '#ffe4e6', strokeWidth: 0.6 }),
+                  el('circle', { cx: 44, cy: 24, r: 4.2, fill: '#fbbf24', opacity: 0.26 }),
+                  el('circle', { cx: 44, cy: 24, r: 2.1, fill: '#fbbf24', stroke: '#fef3c7', strokeWidth: 0.6 })
                 )
               ),
               el('div', { style: { minWidth: 0 } },
@@ -3851,26 +3886,62 @@
                     el('div', { style: { width: (pwStrength.score / 5 * 100) + '%', height: '100%', borderRadius: 5, background: pwStrength.color, transition: 'all 0.5s ease-out', boxShadow: '0 0 10px ' + pwStrength.color + '60' } })
                   ),
                   (function () {
+                    var isHC = !!(ctx && ctx.isContrast);
                     var estBits = pwInput ? Math.min(100, Math.max(0, Math.round(pwStrength.entropy || (pwStrength.score * 16)))) : 0;
                     var markerX = 16 + (estBits / 100) * 528;
-                    return el('div', { style: { marginTop: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(2,6,23,0.42)', border: '1px solid rgba(148,163,184,0.18)' } },
+                    return el('div', { style: { marginTop: 10, padding: '10px 12px', borderRadius: 10, background: isHC ? '#000000' : 'rgba(2,6,23,0.48)', border: isHC ? '1px solid #ffff00' : '1px solid rgba(148,163,184,0.22)' } },
                       el('svg', {
-                        viewBox: '0 0 560 66', width: '100%', role: 'img',
+                        viewBox: '0 0 560 72', width: '100%', role: 'img',
                         'aria-label': t('stem.cyberdefense.entropy_gauge_aria', 'Password entropy scale from 0 to 100 bits across four resistance zones') + ': ' + estBits + ' ' + t('stem.cyberdefense.bits_label', 'bits'),
                         style: { display: 'block', width: '100%', height: 'auto' }
                       },
-                        el('rect', { x: 16, y: 20, width: 148, height: 16, rx: 4, fill: 'rgba(239,68,68,0.34)', stroke: '#f87171', strokeWidth: 1 }),
-                        el('rect', { x: 166, y: 20, width: 100, height: 16, fill: 'rgba(245,158,11,0.32)', stroke: '#fbbf24', strokeWidth: 1 }),
-                        el('rect', { x: 268, y: 20, width: 120, height: 16, fill: 'rgba(56,189,248,0.28)', stroke: '#38bdf8', strokeWidth: 1 }),
-                        el('rect', { x: 390, y: 20, width: 154, height: 16, rx: 4, fill: 'rgba(34,197,94,0.32)', stroke: '#4ade80', strokeWidth: 1 }),
-                        el('text', { x: 90, y: 52, textAnchor: 'middle', fill: '#fca5a5', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_weak', '<28b Weak')),
-                        el('text', { x: 216, y: 52, textAnchor: 'middle', fill: '#fde68a', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_fair', '28–48b Fair')),
-                        el('text', { x: 328, y: 52, textAnchor: 'middle', fill: '#7dd3fc', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_strong', '48–70b Strong')),
-                        el('text', { x: 467, y: 52, textAnchor: 'middle', fill: '#86efac', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_resilient', '70b+ Resilient')),
+                        el('defs', null,
+                          el('linearGradient', { id: 'cyberd-ent-bg', x1: '0', y1: '0', x2: '0', y2: '1' },
+                            el('stop', { offset: '0%', stopColor: '#020617' }),
+                            el('stop', { offset: '100%', stopColor: '#0f172a' })
+                          ),
+                          el('linearGradient', { id: 'cyberd-ent-weak', x1: '0', y1: '0', x2: '0', y2: '1' },
+                            el('stop', { offset: '0%', stopColor: '#f87171', stopOpacity: 0.52 }),
+                            el('stop', { offset: '100%', stopColor: '#991b1b', stopOpacity: 0.34 })
+                          ),
+                          el('linearGradient', { id: 'cyberd-ent-fair', x1: '0', y1: '0', x2: '0', y2: '1' },
+                            el('stop', { offset: '0%', stopColor: '#fbbf24', stopOpacity: 0.48 }),
+                            el('stop', { offset: '100%', stopColor: '#92400e', stopOpacity: 0.3 })
+                          ),
+                          el('linearGradient', { id: 'cyberd-ent-strong', x1: '0', y1: '0', x2: '0', y2: '1' },
+                            el('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0.46 }),
+                            el('stop', { offset: '100%', stopColor: '#075985', stopOpacity: 0.28 })
+                          ),
+                          el('linearGradient', { id: 'cyberd-ent-resil', x1: '0', y1: '0', x2: '0', y2: '1' },
+                            el('stop', { offset: '0%', stopColor: '#34d399', stopOpacity: 0.5 }),
+                            el('stop', { offset: '100%', stopColor: '#065f46', stopOpacity: 0.3 })
+                          )
+                        ),
+                        // Recessed dark-field telemetry chassis
+                        el('rect', { x: 4, y: 2, width: 552, height: 68, rx: 9, fill: isHC ? '#000000' : 'url(#cyberd-ent-bg)', stroke: isHC ? '#ffff00' : 'rgba(56,189,248,0.2)', strokeWidth: 1 }),
+                        // Fine telemetry bit calibration ticks
+                        [0, 28, 48, 70, 100].map(function (bt) {
+                          var tx = 16 + (bt / 100) * 528;
+                          return el('line', { key: 'bt-' + bt, x1: tx, y1: 18, x2: tx, y2: 45, stroke: isHC ? '#ffff00' : 'rgba(148,163,184,0.28)', strokeWidth: 1, strokeDasharray: '2 2' });
+                        }),
+                        // Resistance zones with luminous specular top bevels
+                        el('rect', { x: 16, y: 23, width: 148, height: 17, rx: 4, fill: isHC ? '#000000' : 'url(#cyberd-ent-weak)', stroke: isHC ? '#ffff00' : '#f87171', strokeWidth: 1.1 }),
+                        el('rect', { x: 166, y: 23, width: 100, height: 17, rx: 2, fill: isHC ? '#000000' : 'url(#cyberd-ent-fair)', stroke: isHC ? '#ffff00' : '#fbbf24', strokeWidth: 1.1 }),
+                        el('rect', { x: 268, y: 23, width: 120, height: 17, rx: 2, fill: isHC ? '#000000' : 'url(#cyberd-ent-strong)', stroke: isHC ? '#ffff00' : '#38bdf8', strokeWidth: 1.1 }),
+                        el('rect', { x: 390, y: 23, width: 154, height: 17, rx: 4, fill: isHC ? '#000000' : 'url(#cyberd-ent-resil)', stroke: isHC ? '#00ff00' : '#4ade80', strokeWidth: 1.1 }),
+                        !isHC && el('line', { x1: 20, y1: 25, x2: 540, y2: 25, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.25 }),
+                        el('text', { x: 90, y: 58, textAnchor: 'middle', fill: isHC ? '#ffff00' : '#fca5a5', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_weak', '<28b Weak')),
+                        el('text', { x: 216, y: 58, textAnchor: 'middle', fill: isHC ? '#ffff00' : '#fde68a', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_fair', '28–48b Fair')),
+                        el('text', { x: 328, y: 58, textAnchor: 'middle', fill: isHC ? '#ffff00' : '#7dd3fc', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_strong', '48–70b Strong')),
+                        el('text', { x: 467, y: 58, textAnchor: 'middle', fill: isHC ? '#00ff00' : '#86efac', style: { fontSize: '10px', fontWeight: 700 } }, t('stem.cyberdefense.tier_resilient', '70b+ Resilient')),
                         pwInput && el('g', null,
-                          el('line', { x1: markerX, y1: 12, x2: markerX, y2: 39, stroke: '#ffffff', strokeWidth: 2.5 }),
-                          el('polygon', { points: (markerX - 6) + ',8 ' + (markerX + 6) + ',8 ' + markerX + ',15', fill: pwStrength.color, stroke: '#ffffff', strokeWidth: 1 }),
-                          el('text', { x: Math.min(510, Math.max(52, markerX)), y: 12, textAnchor: 'middle', fill: '#f8fafc', style: { fontSize: '10px', fontWeight: 900 } }, estBits + 'b')
+                          !isHC && el('rect', { x: 16, y: 23, width: Math.max(2, markerX - 16), height: 17, rx: 4, fill: pwStrength.color, opacity: 0.16 }),
+                          // Dual-pass luminous needle + glossy beacon indicator
+                          !isHC && el('line', { x1: markerX, y1: 14, x2: markerX, y2: 43, stroke: pwStrength.color, strokeWidth: 6.5, opacity: 0.28, strokeLinecap: 'round' }),
+                          el('line', { x1: markerX, y1: 14, x2: markerX, y2: 43, stroke: isHC ? '#00ff00' : '#ffffff', strokeWidth: 2.4, strokeLinecap: 'round' }),
+                          el('polygon', { points: (markerX - 6) + ',9 ' + (markerX + 6) + ',9 ' + markerX + ',17', fill: isHC ? '#00ff00' : pwStrength.color, stroke: '#ffffff', strokeWidth: 1 }),
+                          el('circle', { cx: markerX, cy: 31.5, r: 3.4, fill: isHC ? '#00ff00' : pwStrength.color, stroke: '#ffffff', strokeWidth: 1.2 }),
+                          el('text', { x: Math.min(510, Math.max(52, markerX)), y: 12, textAnchor: 'middle', fill: isHC ? '#ffff00' : '#f8fafc', style: { fontSize: '10px', fontWeight: 900 } }, estBits + 'b')
                         )
                       ),
                       el('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 8 } },
@@ -4009,6 +4080,7 @@
                     el('div', { style: { color: '#fcd34d', fontSize: 11, fontWeight: 800 } }, cipherMode === 'caesar' ? ('A \u2192 ' + String.fromCharCode((caesarShift % 26) + 65) + ' (+' + caesarShift + ')') : 'A \u2194 Z (Mirror)')
                   ),
                   (function () {
+                    var isHC = !!(ctx && ctx.isContrast);
                     var anchors = [0, 3, 6, 9, 12, 15, 18, 21, 24];
                     var cx = 110, cy = 82, rOut = 64, rIn = 42;
                     return el('svg', {
@@ -4018,10 +4090,45 @@
                         : t('stem.cyberdefense.wheel_atbash_aria', 'Atbash mirror cipher wheel diagram reversing A through Z'),
                       style: { display: 'block', maxWidth: 240, margin: '0 auto 10px', height: 'auto' }
                     },
-                      el('circle', { cx: cx, cy: cy, r: rOut + 12, fill: 'rgba(15,23,42,0.72)', stroke: 'rgba(148,163,184,0.32)', strokeWidth: 1.5 }),
-                      el('circle', { cx: cx, cy: cy, r: rIn + 10, fill: 'rgba(99,102,241,0.16)', stroke: '#818cf8', strokeWidth: 1.5 }),
-                      el('circle', { cx: cx, cy: cy, r: 22, fill: '#0b1120', stroke: '#fbbf24', strokeWidth: 1.5 }),
-                      el('text', { x: cx, y: cy + 4, textAnchor: 'middle', fill: '#fde68a', style: { fontSize: '11px', fontWeight: 900 } }, cipherMode === 'caesar' ? ('+' + caesarShift) : 'A\u2194Z'),
+                      el('defs', null,
+                        el('radialGradient', { id: 'cyberd-wh-aura', cx: '50%', cy: '50%', r: '50%' },
+                          el('stop', { offset: '0%', stopColor: '#6366f1', stopOpacity: 0.36 }),
+                          el('stop', { offset: '68%', stopColor: '#0f172a', stopOpacity: 0.88 }),
+                          el('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.96 })
+                        ),
+                        el('radialGradient', { id: 'cyberd-wh-in', cx: '38%', cy: '32%', r: '68%' },
+                          el('stop', { offset: '0%', stopColor: '#312e81', stopOpacity: 0.72 }),
+                          el('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0.92 })
+                        ),
+                        el('radialGradient', { id: 'cyberd-wh-hub', cx: '35%', cy: '30%', r: '68%' },
+                          el('stop', { offset: '0%', stopColor: '#451a03' }),
+                          el('stop', { offset: '55%', stopColor: '#0b1120' }),
+                          el('stop', { offset: '100%', stopColor: '#020617' })
+                        )
+                      ),
+                      // Outer dark-field telemetry rotor bezel
+                      !isHC && el('circle', { cx: cx, cy: cy, r: rOut + 15, fill: 'none', stroke: '#38bdf8', strokeWidth: 3.2, opacity: 0.14 }),
+                      el('circle', { cx: cx, cy: cy, r: rOut + 12, fill: isHC ? '#000000' : 'url(#cyberd-wh-aura)', stroke: isHC ? '#ffff00' : 'rgba(148,163,184,0.38)', strokeWidth: 1.5 }),
+                      el('circle', { cx: cx, cy: cy, r: rOut + 8, fill: 'none', stroke: isHC ? '#ffff00' : 'rgba(56,189,248,0.28)', strokeWidth: 1, strokeDasharray: '2 4' }),
+                      // Inner ciphertext rotor ring with dual-pass glow
+                      !isHC && el('circle', { cx: cx, cy: cy, r: rIn + 10, fill: 'none', stroke: '#818cf8', strokeWidth: 4.5, opacity: 0.2 }),
+                      el('circle', { cx: cx, cy: cy, r: rIn + 10, fill: isHC ? '#000000' : 'url(#cyberd-wh-in)', stroke: isHC ? '#00ff00' : '#818cf8', strokeWidth: 1.6 }),
+                      // Spoke link lines mapping plaintext outer letters to inner ciphertext
+                      anchors.map(function (idx) {
+                        var ang = (idx / 26) * Math.PI * 2 - Math.PI / 2;
+                        var x1 = cx + Math.cos(ang) * (rOut - 8), y1 = cy + Math.sin(ang) * (rOut - 8);
+                        var x2 = cx + Math.cos(ang) * (rIn + 10), y2 = cy + Math.sin(ang) * (rIn + 10);
+                        var isPrimary = idx === 0;
+                        return el('g', { key: 'sp-' + idx },
+                          isPrimary && !isHC && el('line', { x1: x1, y1: y1, x2: x2, y2: y2, stroke: '#fbbf24', strokeWidth: 4.5, opacity: 0.3, strokeLinecap: 'round' }),
+                          el('line', { x1: x1, y1: y1, x2: x2, y2: y2, stroke: isPrimary ? (isHC ? '#00ff00' : '#fbbf24') : (isHC ? '#ffff00' : 'rgba(148,163,184,0.28)'), strokeWidth: isPrimary ? 1.8 : 1, strokeDasharray: isPrimary ? undefined : '2 2' })
+                        );
+                      }),
+                      // Center gold/amber hub with specular rim reflection
+                      !isHC && el('circle', { cx: cx, cy: cy, r: 24, fill: 'none', stroke: '#fbbf24', strokeWidth: 3.5, opacity: 0.2 }),
+                      el('circle', { cx: cx, cy: cy, r: 22, fill: isHC ? '#000000' : 'url(#cyberd-wh-hub)', stroke: isHC ? '#ffff00' : '#fbbf24', strokeWidth: 1.8 }),
+                      !isHC && el('path', { d: 'M' + (cx - 14) + ',' + (cy - 11) + ' A18,18 0 0,1 ' + (cx + 14) + ',' + (cy - 11), fill: 'none', stroke: '#fef3c7', strokeWidth: 1.1, opacity: 0.45, strokeLinecap: 'round' }),
+                      el('text', { x: cx, y: cy + 4, textAnchor: 'middle', fill: isHC ? '#ffff00' : '#fde68a', style: { fontSize: '11px', fontWeight: 900 } }, cipherMode === 'caesar' ? ('+' + caesarShift) : 'A\u2194Z'),
                       anchors.map(function (idx) {
                         var ang = (idx / 26) * Math.PI * 2 - Math.PI / 2;
                         var ox = cx + Math.cos(ang) * rOut, oy = cy + Math.sin(ang) * rOut;
@@ -4029,8 +4136,9 @@
                         var plainCh = String.fromCharCode(65 + idx);
                         var mappedCh = cipherMode === 'caesar' ? String.fromCharCode(((idx + caesarShift) % 26) + 65) : String.fromCharCode(90 - idx);
                         return el('g', { key: 'wh-' + idx },
-                          el('text', { x: ox, y: oy + 4, textAnchor: 'middle', fill: '#cbd5e1', style: { fontSize: '10px', fontWeight: 800, fontFamily: 'monospace' } }, plainCh),
-                          el('text', { x: ix, y: iy + 4, textAnchor: 'middle', fill: idx === 0 ? '#fde047' : '#a5b4fc', style: { fontSize: '10px', fontWeight: 900, fontFamily: 'monospace' } }, mappedCh)
+                          idx === 0 && el('circle', { cx: ix, cy: iy, r: 8.5, fill: isHC ? '#000000' : 'rgba(251,191,36,0.18)', stroke: isHC ? '#00ff00' : '#fbbf24', strokeWidth: 1 }),
+                          el('text', { x: ox, y: oy + 4, textAnchor: 'middle', fill: isHC ? '#ffff00' : '#e2e8f0', style: { fontSize: '10px', fontWeight: 800, fontFamily: 'monospace' } }, plainCh),
+                          el('text', { x: ix, y: iy + 4, textAnchor: 'middle', fill: idx === 0 ? (isHC ? '#00ff00' : '#fde047') : (isHC ? '#ffff00' : '#a5b4fc'), style: { fontSize: '10px', fontWeight: 900, fontFamily: 'monospace' } }, mappedCh)
                         );
                       })
                     );
@@ -4123,6 +4231,112 @@
                   })),
                 el('div', { role: 'note', style: { marginBottom: 14, padding: '10px 12px', borderRadius: 8, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.25)', color: '#bfdbfe', fontSize: 11, lineHeight: 1.55 } },
                   el('strong', null, 'Analyst rule: '), 'one port or protocol is rarely proof. Use several indicators, compare traffic with the organization\'s normal baseline, and treat a flag as a reason to investigate.'),
+                // Live Network Topology, Packet-Flow & Threat-Shield SVG (strictly zero spoilers before submission)
+                (function () {
+                  var isHC = !!(ctx && ctx.isContrast);
+                  var totalPkts = netPackets.length;
+                  var flaggedCount = netFlagged.length;
+                  var encryptedCount = netPackets.filter(function (p) { return p.proto === 'HTTPS'; }).length;
+                  var confirmedThreats = netShowAnswer ? netPackets.filter(function (p) { return p.suspicious; }).length : 0;
+                  var shieldColor = isHC ? '#00ff00' : (netShowAnswer ? (confirmedThreats > 0 ? '#fb7185' : '#34d399') : (flaggedCount > 0 ? '#fbbf24' : '#38bdf8'));
+                  var protoColors = { HTTPS: '#34d399', HTTP: '#fb923c', DNS: '#38bdf8', TCP: '#a78bfa', SMTP: '#f472b6', FTP: '#fbbf24', ICMP: '#94a3b8', NTP: '#94a3b8' };
+                  var lanes = [
+                    { y: 42, label: 'TLS / HTTPS', color: isHC ? '#00ff00' : '#34d399' },
+                    { y: 78, label: 'DNS / App', color: isHC ? '#ffff00' : '#38bdf8' },
+                    { y: 114, label: 'Raw / Ports', color: isHC ? '#ffff00' : '#a78bfa' }
+                  ];
+                  var topologyAria = totalPkts > 0
+                    ? t('stem.cyberdefense.net_topo_active_aria', 'Network topology telemetry showing LAN workstation, packet-inspection firewall shield, and external endpoints') + ': ' + totalPkts + ' packets, ' + flaggedCount + ' flagged'
+                    : t('stem.cyberdefense.net_topo_idle_aria', 'Network topology telemetry standby showing LAN workstation, packet-inspection firewall shield, and external endpoints');
+                  return el('div', { style: { marginBottom: 14, borderRadius: 12, overflow: 'hidden', border: isHC ? '2px solid #ffff00' : '1px solid rgba(56,189,248,0.26)', background: isHC ? '#000000' : '#020617' } },
+                    el('svg', { viewBox: '0 0 660 156', width: '100%', role: 'img', 'aria-label': topologyAria, style: { display: 'block', width: '100%', height: 'auto' } },
+                      el('defs', null,
+                        el('radialGradient', { id: 'cyberd-net-bg', cx: '50%', cy: '50%', r: '62%' },
+                          el('stop', { offset: '0%', stopColor: '#0c2340', stopOpacity: 0.92 }),
+                          el('stop', { offset: '65%', stopColor: '#071124', stopOpacity: 0.96 }),
+                          el('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 1 })
+                        ),
+                        el('radialGradient', { id: 'cyberd-net-shield-halo', cx: '50%', cy: '50%', r: '50%' },
+                          el('stop', { offset: '0%', stopColor: shieldColor, stopOpacity: 0.36 }),
+                          el('stop', { offset: '65%', stopColor: shieldColor, stopOpacity: 0.08 }),
+                          el('stop', { offset: '100%', stopColor: shieldColor, stopOpacity: 0 })
+                        ),
+                        el('linearGradient', { id: 'cyberd-net-node', x1: '0', y1: '0', x2: '0', y2: '1' },
+                          el('stop', { offset: '0%', stopColor: '#1e293b' }),
+                          el('stop', { offset: '100%', stopColor: '#0f172a' })
+                        )
+                      ),
+                      // Dark-field cyber-ops telemetry backdrop + tactical grid
+                      el('rect', { x: 0, y: 0, width: 660, height: 156, fill: isHC ? '#000000' : 'url(#cyberd-net-bg)' }),
+                      !isHC && [110, 220, 330, 440, 550].map(function (gx) {
+                        return el('line', { key: 'ngx-' + gx, x1: gx, y1: 12, x2: gx, y2: 144, stroke: 'rgba(56,189,248,0.08)', strokeWidth: 1, strokeDasharray: '3 5' });
+                      }),
+                      !isHC && [42, 78, 114].map(function (gy) {
+                        return el('line', { key: 'ngy-' + gy, x1: 20, y1: gy, x2: 640, y2: gy, stroke: 'rgba(56,189,248,0.07)', strokeWidth: 1 });
+                      }),
+                      // Dual-pass network-link traces (LAN -> Firewall Shield -> External Cloud)
+                      lanes.map(function (ln, li) {
+                        var dLeft = 'M 148 78 C 204 78, 218 ' + ln.y + ', 296 ' + ln.y;
+                        var dRight = 'M 364 ' + ln.y + ' C 442 ' + ln.y + ', 456 78, 512 78';
+                        return el('g', { key: 'lane-' + li },
+                          !isHC && el('path', { d: dLeft, fill: 'none', stroke: ln.color, strokeWidth: 5.5, opacity: totalPkts > 0 ? 0.2 : 0.08 }),
+                          el('path', { d: dLeft, fill: 'none', stroke: ln.color, strokeWidth: 1.7, strokeDasharray: totalPkts > 0 ? undefined : '5 4', opacity: totalPkts > 0 ? 0.85 : 0.45 }),
+                          !isHC && el('path', { d: dRight, fill: 'none', stroke: ln.color, strokeWidth: 5.5, opacity: totalPkts > 0 ? 0.2 : 0.08 }),
+                          el('path', { d: dRight, fill: 'none', stroke: ln.color, strokeWidth: 1.7, strokeDasharray: totalPkts > 0 ? undefined : '5 4', opacity: totalPkts > 0 ? 0.85 : 0.45 })
+                        );
+                      }),
+                      // Packet beads along telemetry links (neutral protocol color before review; reveals threat beacons ONLY after netShowAnswer)
+                      netPackets.slice(0, 8).map(function (pkt, pi) {
+                        var laneIdx = pkt.proto === 'HTTPS' ? 0 : (pkt.proto === 'DNS' || pkt.proto === 'HTTP' || pkt.proto === 'SMTP' ? 1 : 2);
+                        var ly = lanes[laneIdx].y;
+                        var onLeft = pi % 2 === 0;
+                        var slot = Math.floor(pi / 2);
+                        var px = onLeft ? (194 + slot * 24) : (392 + slot * 24);
+                        var py = ly + (onLeft ? (78 - ly) * (0.34 - slot * 0.08) : (78 - ly) * (0.08 + slot * 0.08));
+                        var isFl = netFlagged.indexOf(pkt.id) !== -1;
+                        var beadCol = isHC ? (isFl ? '#00ff00' : '#ffff00') : (netShowAnswer ? (pkt.suspicious ? '#f43f5e' : '#34d399') : (isFl ? '#fbbf24' : (protoColors[pkt.proto] || '#38bdf8')));
+                        return el('g', { key: 'pb-' + pi },
+                          !isHC && el('circle', { cx: px, cy: py, r: (isFl || (netShowAnswer && pkt.suspicious)) ? 9 : 6.5, fill: beadCol, opacity: 0.24 }),
+                          (isFl || (netShowAnswer && pkt.suspicious)) && el('circle', { cx: px, cy: py, r: 7.2, fill: 'none', stroke: beadCol, strokeWidth: 1.2, strokeDasharray: '2.5 2' }),
+                          el('circle', { cx: px, cy: py, r: 4.2, fill: beadCol, stroke: '#f8fafc', strokeWidth: 1 }),
+                          !isHC && el('circle', { cx: px - 1.2, cy: py - 1.2, r: 1.1, fill: '#ffffff', opacity: 0.85 })
+                        );
+                      }),
+                      // Left Node: Campus / Internal LAN
+                      el('g', null,
+                        el('rect', { x: 26, y: 46, width: 122, height: 64, rx: 10, fill: isHC ? '#000000' : 'url(#cyberd-net-node)', stroke: isHC ? '#ffff00' : '#38bdf8', strokeWidth: 1.5 }),
+                        !isHC && el('line', { x1: 36, y1: 48, x2: 138, y2: 48, stroke: '#bae6fd', strokeWidth: 1, opacity: 0.4 }),
+                        el('circle', { cx: 42, cy: 62, r: 3.2, fill: isHC ? '#00ff00' : '#34d399' }),
+                        el('text', { x: 52, y: 65, fill: isHC ? '#ffff00' : '#e0f2fe', style: { fontSize: '10px', fontWeight: 900 } }, t('stem.cyberdefense.net_lan_node', 'INTERNAL LAN')),
+                        el('text', { x: 40, y: 82, fill: isHC ? '#ffff00' : '#94a3b8', style: { fontSize: '9px', fontFamily: 'monospace' } }, '10.0.x.x / 192.168.x'),
+                        el('text', { x: 40, y: 98, fill: isHC ? '#00ff00' : '#7dd3fc', style: { fontSize: '9px', fontWeight: 800 } }, totalPkts > 0 ? (totalPkts + ' ' + t('stem.cyberdefense.net_pkts_captured', 'pkts captured')) : t('stem.cyberdefense.net_standby', 'Capture standby'))
+                      ),
+                      // Center Node: Firewall / Inspection Shield Halo
+                      el('g', null,
+                        !isHC && el('circle', { cx: 330, cy: 78, r: 52, fill: 'url(#cyberd-net-shield-halo)' }),
+                        el('circle', { cx: 330, cy: 78, r: 37, fill: 'none', stroke: shieldColor, strokeWidth: 1.2, strokeDasharray: '4 3', opacity: 0.65 }),
+                        el('path', { d: 'M330 43 L360 54 V77 C360 95 347.5 107.5 330 113 C312.5 107.5 300 95 300 77 V54 Z', fill: isHC ? '#000000' : '#0f172a', stroke: shieldColor, strokeWidth: 2.1 }),
+                        el('path', { d: 'M330 50 L353 58.5 V76.5 C353 90 343.5 100 330 104.5 C316.5 100 307 90 307 76.5 V58.5 Z', fill: isHC ? '#000000' : 'rgba(56,189,248,0.12)', stroke: shieldColor, strokeWidth: 1, opacity: 0.8 }),
+                        el('text', { x: 330, y: 74, textAnchor: 'middle', fill: isHC ? '#ffff00' : '#f8fafc', style: { fontSize: '9px', fontWeight: 900, letterSpacing: '0.06em' } }, t('stem.cyberdefense.net_firewall', 'FIREWALL')),
+                        el('text', { x: 330, y: 88, textAnchor: 'middle', fill: shieldColor, style: { fontSize: '9.5px', fontWeight: 900, fontFamily: 'monospace' } }, netShowAnswer ? (confirmedThreats + ' ' + t('stem.cyberdefense.net_alerts', 'ALERTS')) : (flaggedCount + ' ' + t('stem.cyberdefense.net_flagged', 'FLAGGED')))
+                      ),
+                      // Right Node: External Endpoints
+                      el('g', null,
+                        el('rect', { x: 512, y: 46, width: 122, height: 64, rx: 10, fill: isHC ? '#000000' : 'url(#cyberd-net-node)', stroke: isHC ? '#ffff00' : '#818cf8', strokeWidth: 1.5 }),
+                        !isHC && el('line', { x1: 522, y1: 48, x2: 624, y2: 48, stroke: '#c7d2fe', strokeWidth: 1, opacity: 0.4 }),
+                        el('circle', { cx: 528, cy: 62, r: 3.2, fill: isHC ? '#00ff00' : '#a78bfa' }),
+                        el('text', { x: 538, y: 65, fill: isHC ? '#ffff00' : '#e0e7ff', style: { fontSize: '10px', fontWeight: 900 } }, t('stem.cyberdefense.net_ext_hosts', 'EXTERNAL NET')),
+                        el('text', { x: 526, y: 82, fill: isHC ? '#ffff00' : '#94a3b8', style: { fontSize: '9px', fontFamily: 'monospace' } }, totalPkts > 0 ? (encryptedCount + ' TLS / ' + (totalPkts - encryptedCount) + ' other') : 'WAN / DNS / Cloud'),
+                        el('text', { x: 526, y: 98, fill: isHC ? '#00ff00' : '#c4b5fd', style: { fontSize: '9px', fontWeight: 800 } }, netShowAnswer ? t('stem.cyberdefense.net_review_done', 'Audit complete') : t('stem.cyberdefense.net_inspect_hint', 'Inspect packet rows'))
+                      ),
+                      // Bottom telemetry legend bar
+                      el('text', { x: 26, y: 142, fill: isHC ? '#ffff00' : '#94a3b8', style: { fontSize: '9px', fontWeight: 700 } }, t('stem.cyberdefense.net_legend_tls', '● Encrypted TLS')),
+                      el('text', { x: 140, y: 142, fill: isHC ? '#ffff00' : '#7dd3fc', style: { fontSize: '9px', fontWeight: 700 } }, t('stem.cyberdefense.net_legend_app', '● DNS / App Traffic')),
+                      el('text', { x: 274, y: 142, fill: isHC ? '#00ff00' : '#fbbf24', style: { fontSize: '9px', fontWeight: 700 } }, t('stem.cyberdefense.net_legend_flag', '◎ Analyst Flagged')),
+                      netShowAnswer && el('text', { x: 422, y: 142, fill: isHC ? '#00ff00' : '#fb7185', style: { fontSize: '9px', fontWeight: 800 } }, t('stem.cyberdefense.net_legend_threat', '◎ Confirmed Threat'))
+                    )
+                  );
+                })(),
                 netPackets.length > 0 && el('div', { id: 'cyber-packet-table-help', role: 'note', style: { marginBottom: 8, color: '#cbd5e1', fontSize: 11, lineHeight: 1.5 } },
                   '\u2194 Scroll sideways to inspect every field. Select rows you would investigate; with a keyboard, use Tab and then Enter or Space.'),
                 // Packet list

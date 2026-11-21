@@ -1125,7 +1125,7 @@ function GuidedModeBanner({
   const [pendingReadinessAction, setPendingReadinessAction] = React.useState(null);
   const [pendingUnsafeExit, setPendingUnsafeExit] = React.useState(false);
   const _busyTimingRef = React.useRef(null);
-  const _skipUiPersistRef = React.useRef(false);
+  const _skipPersistRef = React.useRef({ ui: false, readiness: false, delivery: false, context: false });
   const guidedBusy = !!isGuidedRetrying;
   const _historyById = new Map((Array.isArray(history) ? history : []).filter((item) => item && item.id).map((item) => [item.id, item]));
   const _madeFromSource = (item) => item.type !== "analysis" && !!(item.sourceSnapshot || item.config?.sourceSnapshot || item.sourceArtifactId || item.config?.sourceArtifactId || item.sourceFamilyId || item.config?.sourceFamilyId);
@@ -1145,8 +1145,8 @@ function GuidedModeBanner({
   const _sourceBaselineRef = React.useRef({ fingerprint: sourceWarningFingerprint(inputText), ids: [] });
   const [sourceWarningSaveFailed, setSourceWarningSaveFailed] = React.useState(false);
   React.useEffect(() => {
-    if (_skipUiPersistRef.current) {
-      _skipUiPersistRef.current = false;
+    if (_skipPersistRef.current.ui) {
+      _skipPersistRef.current.ui = false;
       return;
     }
     try {
@@ -1158,6 +1158,10 @@ function GuidedModeBanner({
     if (_savedUiState.showAbout && !showGuidedTip) setShowGuidedTip(true);
   }, []);
   React.useEffect(() => {
+    if (_skipPersistRef.current.readiness) {
+      _skipPersistRef.current.readiness = false;
+      return;
+    }
     if (!readinessContextKey) return;
     try {
       localStorage.setItem("allo_guided_readiness_checks", JSON.stringify({ version: 2, contextKey: readinessContextKey, checks: readinessChecks }));
@@ -1171,12 +1175,20 @@ function GuidedModeBanner({
     }
   }, [readinessContextKey, readinessState]);
   React.useEffect(() => {
+    if (_skipPersistRef.current.delivery) {
+      _skipPersistRef.current.delivery = false;
+      return;
+    }
     try {
       localStorage.setItem("allo_guided_delivery_preferences", JSON.stringify({ setting: deliverySetting, priority: deliveryPriority }));
     } catch (_) {
     }
   }, [deliverySetting, deliveryPriority]);
   React.useEffect(() => {
+    if (_skipPersistRef.current.context) {
+      _skipPersistRef.current.context = false;
+      return;
+    }
     try {
       localStorage.setItem("allo_guided_classroom_context", JSON.stringify(classroomContext));
     } catch (_) {
@@ -1617,6 +1629,8 @@ function GuidedModeBanner({
       }
     } else if (a) {
       try {
+        a.onended = null;
+        a.onerror = null;
         a.pause();
         a.src = "";
       } catch (_) {
@@ -1675,14 +1689,17 @@ function GuidedModeBanner({
     _ttsUrlRef.current = url;
     const audio = new Audio(url);
     _ttsAudioRef.current = audio;
-    audio.onended = _stopTts;
-    audio.onerror = _stopTts;
+    const onDone = () => {
+      if (myGen === _ttsGenRef.current) _stopTts();
+    };
+    audio.onended = onDone;
+    audio.onerror = onDone;
     try {
       await audio.play();
       if (myGen === _ttsGenRef.current) setTtsState("playing");
       else _stopTts();
     } catch (_) {
-      _stopTts();
+      if (myGen === _ttsGenRef.current) _stopTts();
     }
   };
   const allSteps = allGuidedSteps || GUIDED_STEPS;
@@ -2504,11 +2521,11 @@ ${contextLines.join("\n")}` : goal;
     goToGuidedStepId("package-deliver");
   };
   const performStartTeaching = () => {
+    setPendingReadinessAction(null);
     if (documentRoute) {
       if (canReviewDocument) openGuidedDocumentReview(documentRoute);
       return;
     }
-    setPendingReadinessAction(null);
     if (deliverySetting === "live") {
       startGuidedLiveSession?.();
       return;
@@ -2707,7 +2724,7 @@ ${contextLines.join("\n")}` : goal;
     if (progressSaveStatus !== "error" && pendingUnsafeExit) setPendingUnsafeExit(false);
   }, [progressSaveStatus, pendingUnsafeExit]);
   const clearGuidedLocalData = () => {
-    _skipUiPersistRef.current = true;
+    _skipPersistRef.current = { ui: true, readiness: true, delivery: true, context: true };
     try {
       ["allo_guided_completed_runs", "allo_guided_last_completion", "allo_guided_duration_stats", "allo_guided_feedback", "allo_guided_ui_state", "allo_guided_path_prompt_seen", "allo_guided_auto_advance", "allo_guided_readiness_checks", "allo_guided_delivery_preferences", "allo_guided_saved_plans", "allo_guided_planner_draft", "allo_guided_classroom_context", "allo_guided_source_baseline"].forEach((key) => localStorage.removeItem(key));
     } catch (_) {

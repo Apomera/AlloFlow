@@ -4,7 +4,8 @@
 const fs = require('fs');
 const path = require('path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
-const itemBanks = require('./speech_language_pathology_5331/item_content.cjs');
+const { applyChoiceOverrides } = require('./speech_language_pathology_5331/choice_overrides/index.cjs');
+const itemBanks = applyChoiceOverrides(require('./speech_language_pathology_5331/item_content.cjs'));
 const { chapters: chapterSpecs, memoryAids: memoryAidSpecs } = require('./speech_language_pathology_5331/learning_content.cjs');
 const root = path.resolve(__dirname, '..');
 const itemBankBySkill = new Map(itemBanks.map((bank) => [bank.id, bank]));
